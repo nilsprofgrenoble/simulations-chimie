@@ -23,10 +23,3 @@ jobs:
           path: dist
       - uses: actions/deploy-pages@v4
         id: deployment
-```
-
-Sauvegardez puis dans le terminal :
-```
-git add .
-git commit -m "Fix workflow GitHub Pages"
-git push
