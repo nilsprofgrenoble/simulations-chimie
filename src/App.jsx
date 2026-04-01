@@ -371,7 +371,7 @@ function Simulation2() {
 function Simulation3() {
   return (
     <iframe
-      src="/titrage-electrochimie.html"
+      src="/simulations-chimie/titrage-electrochimie.html"
       style={{
         width: "100%",
         height: "100%",
