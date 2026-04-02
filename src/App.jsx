@@ -1899,7 +1899,7 @@ const SIMULATIONS = [
   { id: 2, label: "Titrage volumétrique  - 1G spé PC",       icon: "🧪", color: "#e63946", component: Simulation2 },
   { id: 3, label: "Titrages électrochimiques - BTS MDC Analyse", icon: "⚡", color: "#e9a824", component: Simulation3 },
   { id: 4, label: "Diagramme de Hansen  - BTS MDC Formulation", icon: "🔵", color: "#6a4c93", component: Simulation4 },
-  { id: 5, label: "Régulation de niveau - TSTL SP", icon: "🔵", color: "#2a6099", component: Simulation5 },
+  { id: 5, label: "Régulation de niveau - TSTL SP", icon: "⚙️", color: "#2a6099", component: Simulation5 },
 ];
 
 // ============================================================
