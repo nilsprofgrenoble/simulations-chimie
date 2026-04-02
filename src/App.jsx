@@ -712,12 +712,18 @@ function SchemaElectro({ mode, x }) {
         {/* ── Réactions aux électrodes ── */}
         {/* EI1 anode (oxydation, rouge) */}
         <text x="60" y="322" textAnchor="middle" fontSize="12" fill="#c0392b" fontWeight="bold">
-          {x < 0.98 ? "Fe²⁺→Fe³⁺" : "Ce³⁺→Ce⁴⁺"}
+          {x <= 0.02 || Math.abs(x - 1) <= 0.02 ? "" : x < 0.98 ? "Fe²⁺→Fe³⁺" : "Ce³⁺→Ce⁴⁺"}
         </text>
         {/* EI2 cathode (réduction, bleu) */}
         <text x="258" y="322" textAnchor="middle" fontSize="12" fill="#1a6eb5" fontWeight="bold">
-          {x <= 0.02 ? "H⁺→H₂" : x < 0.98 ? "Fe³⁺→Fe²⁺" : x < 1.02 ? "Fe³⁺→Fe²⁺" : "Ce⁴⁺→Ce³⁺"}
+          {x <= 0.02 || Math.abs(x - 1) <= 0.02 ? "" : x < 0.98 ? "Fe³⁺→Fe²⁺" : "Ce⁴⁺→Ce³⁺"}
         </text>
+        {/* Pas de réaction à x=0 et x=1 */}
+        {(x <= 0.02 || Math.abs(x - 1) <= 0.02) && (
+          <text x="159" y="322" textAnchor="middle" fontSize="12" fill="#888" fontStyle="italic">
+            Pas de réactions !
+          </text>
+        )}
 
       </>}
 

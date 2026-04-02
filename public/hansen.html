@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Visualisation Hansen - Sphère et Construction</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; padding: 0; display: flex; height: 100vh; }
+  #controls { width: 360px; padding: 10px; box-sizing: border-box; border-right: 1px solid #ccc; overflow-y: auto; }
+  #plots { flex: 1; display: flex; flex-direction: row; }
+  #plot3d, #plot2d { flex: 1; min-width: 50%; height: 100%; }
+  .solvent-checkbox { display: flex; align-items: center; margin: 2px 0; }
+  .solvent-checkbox input { margin-right: 6px; }
+  h3 { margin-bottom: 5px; }
+</style>
+</head>
+
+<body>
+
+<div id="controls">
+  <h3>Résine</h3>
+  <label>Nom: <input type="text" id="resineNom" value="CAB"></label><br>
+  <label>δD: <input type="number" id="resineD" value="17.2" step="0.1"></label><br>
+  <label>δP: <input type="number" id="resineP" value="13.8" step="0.1"></label><br>
+  <label>δH: <input type="number" id="resineH" value="2.8" step="0.1"></label><br>
+
+  <h3>Solvants à afficher</h3>
+  <button id="checkAll">Tout cocher</button>
+  <button id="uncheckAll">Tout décocher</button>
+  <div id="solvantsList" style="max-height:200px; overflow-y:auto; border:1px solid #ccc; padding:5px; margin-top:5px;"></div>
+
+  <button id="updatePlot" style="margin-top:10px;">Mettre à jour le graphique</button>
+
+  <h3>Mélange de solvants</h3>
+  <label>Solvant 1: <select id="mix1"></select></label><br>
+  <label>Pourcentage: <input type="number" id="pct1" value="50" min="0" max="100"></label><br>
+  <label>Solvant 2: <select id="mix2"></select></label><br>
+  <label>Pourcentage: <input type="number" id="pct2" value="50" min="0" max="100"></label><br>
+  <label>Solvant 3: <select id="mix3"></select></label>
+  <input type="checkbox" id="enableMix3"> Activer<br>
+  <label>Pourcentage: <input type="number" id="pct3" value="0" min="0" max="100" disabled></label><br>
+
+  <button id="optimize">Optimiser le mélange</button>
+  <button id="showMix">Visualiser le mélange</button>
+</div>
+
+<div id="plots">
+  <div id="plot3d"></div>
+  <div id="plot2d"></div>
+</div>
+
+<script>
+let solvants = {
+    'Cyclohexane':[16.8,0,0.2],'Toluene':[18,1.4,2],'Diethyl Ether':[14.5,2.9,4.6],'Methyl Ethyl Ketone (MEK)':[16,9,5.1],
+    'Chloroforme':[18,3.1,5.7],'Acétate de butyle':[15.8,3.7,6.3],'Acétone':[15.5,10.4,7],'Ethyl Acetate':[15.8,5.3,7.2],
+    'Methyl Acetate':[15.5,7.2,7.6],'Diacetone Alcohol':[15.8,8.2,10.8],'Ethyl Lactate':[16,7.6,12.5],'Ethanol/Acétone':[15.65,9.6,13.2],
+    '2-Propanol':[15.8,6.1,16.4],'1-Propanol':[16,6.8,17.4],'Ethanol':[15.8,8.8,19.4],'Methanol':[14.7,12.3,22.3]
+};
+
+let delta = 9.0;
+let solventKeys = Object.keys(solvants);
+let checkboxes = {};
+let listDiv = document.getElementById('solvantsList');
+
+solventKeys.forEach(s => {
+    let div = document.createElement('div');
+    div.className='solvent-checkbox';
+    let cb = document.createElement('input');
+    cb.type='checkbox'; cb.checked=false;
+    cb.id='cb_'+s.replace(/\W/g,'_');
+    let lbl = document.createElement('label');
+    lbl.htmlFor=cb.id; lbl.innerText=s;
+    div.appendChild(cb); div.appendChild(lbl);
+    listDiv.appendChild(div);
+    checkboxes[s] = cb;
+});
+
+document.getElementById('checkAll').onclick = ()=>solventKeys.forEach(s=>checkboxes[s].checked=true);
+document.getElementById('uncheckAll').onclick = ()=>solventKeys.forEach(s=>checkboxes[s].checked=false);
+document.getElementById('updatePlot').onclick = ()=>plotHansen();
+
+['mix1','mix2','mix3'].forEach(id=>{
+    let sel = document.getElementById(id);
+    solventKeys.forEach(s=>{
+        let opt=document.createElement('option');
+        opt.value=s; opt.innerText=s;
+        sel.appendChild(opt);
+    });
+});
+
+document.getElementById('enableMix3').onchange = function(){
+    document.getElementById('pct3').disabled = !this.checked;
+    if(!this.checked) document.getElementById('pct3').value = 0;
+};
+
+let showMix = false;
+document.getElementById('showMix').onclick = function(){ showMix = true; plotHansen(); };
+
+function computeMix(){
+    let s1 = parseFloat(document.getElementById('pct1').value);
+    let s2 = parseFloat(document.getElementById('pct2').value);
+    let s3 = document.getElementById('enableMix3').checked ? parseFloat(document.getElementById('pct3').value) : 0;
+    let tot = s1+s2+s3; if(tot==0) return null;
+
+    let f1 = s1/tot, f2 = s2/tot, f3 = s3/tot;
+    let mix1 = solvants[document.getElementById('mix1').value];
+    let mix2 = solvants[document.getElementById('mix2').value];
+    let mix3 = solvants[document.getElementById('mix3').value];
+
+    return [
+        f1*mix1[0] + f2*mix2[0] + f3*mix3[0],
+        f1*mix1[1] + f2*mix2[1] + f3*mix3[1],
+        f1*mix1[2] + f2*mix2[2] + f3*mix3[2]
+    ];
+}
+
+function inSphere(pt, centre){
+    let dx=pt[0]-centre[0], dy=pt[1]-centre[1], dz=pt[2]-centre[2];
+    return dx*dx + dy*dy + dz*dz <= delta*delta;
+}
+
+function optimizeMix(){
+    let centre = [
+        parseFloat(document.getElementById('resineD').value),
+        parseFloat(document.getElementById('resineP').value),
+        parseFloat(document.getElementById('resineH').value)
+    ];
+
+    let s = [document.getElementById('mix1').value, document.getElementById('mix2').value];
+    if(document.getElementById('enableMix3').checked)
+        s.push(document.getElementById('mix3').value);
+
+    let bestScore = 1e9, best=[0,0,0];
+    let step = 5, n=s.length;
+
+    function score(w){
+        let pt=[0,0,0];
+        for(let i=0;i<n;i++){
+            let coeff=w[i]/100;
+            let sol=solvants[s[i]];
+            pt[0]+=coeff*sol[0];
+            pt[1]+=coeff*sol[1];
+            pt[2]+=coeff*sol[2];
+        }
+        return (pt[0]-centre[0])**2 + (pt[1]-centre[1])**2 + (pt[2]-centre[2])**2;
+    }
+
+    if(n==2){
+        for(let i=0;i<=100;i+=step){
+            let j=100-i;
+            let sc=score([i,j]);
+            if(sc<bestScore){ bestScore=sc; best=[i,j,0]; }
+        }
+    } else {
+        for(let i=0;i<=100;i+=step){
+            for(let j=0;j<=100-i;j+=step){
+                let k=100-i-j;
+                let sc=score([i,j,k]);
+                if(sc<bestScore){ best=[i,j,k]; bestScore=sc; }
+            }
+        }
+    }
+
+    document.getElementById('pct1').value = best[0];
+    document.getElementById('pct2').value = best[1];
+    document.getElementById('pct3').value = best[2];
+    document.getElementById('enableMix3').checked = best[2]>0;
+}
+
+function plotHansen(){
+    let centre=[
+        parseFloat(document.getElementById('resineD').value),
+        parseFloat(document.getElementById('resineP').value),
+        parseFloat(document.getElementById('resineH').value)
+    ];
+
+    // --- 3D sphere ---
+    let u=[],v=[];
+    for(let i=0;i<60;i++) u.push(2*Math.PI*i/59);
+    for(let i=0;i<30;i++) v.push(Math.PI*i/29);
+
+    let X=[],Y=[],Z=[];
+    for(let i=0;i<v.length;i++){
+        X.push([]); Y.push([]); Z.push([]);
+        for(let j=0;j<u.length;j++){
+            X[i].push(delta*Math.sin(v[i])*Math.cos(u[j])+centre[0]);
+            Y[i].push(delta*Math.sin(v[i])*Math.sin(u[j])+centre[1]);
+            Z[i].push(delta*Math.cos(v[i])+centre[2]);
+        }
+    }
+
+    // --- Solvent points ---
+    let insP=[],insH=[],insD=[],insText=[];
+    let outP=[],outH=[],outD=[],outText=[];
+
+    solventKeys.forEach(s=>{
+        if(checkboxes[s].checked){
+            let pt = solvants[s];
+            if(inSphere(pt,centre)){
+                insD.push(pt[0]); insP.push(pt[1]); insH.push(pt[2]); insText.push(s);
+            } else {
+                outD.push(pt[0]); outP.push(pt[1]); outH.push(pt[2]); outText.push(s);
+            }
+        }
+    });
+
+    let mix = showMix ? computeMix() : null;
+
+    // 3D plot
+    let data3d = [
+        {x:insD,y:insP,z:insH,mode:'markers+text',text:insText,textposition:'top center',
+         marker:{color:'green',size:6},type:'scatter3d'},
+        {x:outD,y:outP,z:outH,mode:'markers+text',text:outText,textposition:'top center',
+         marker:{color:'red',size:6},type:'scatter3d'},
+        {x:[centre[0]],y:[centre[1]],z:[centre[2]],mode:'markers+text',
+         text:[document.getElementById('resineNom').value],
+         marker:{color:'blue',size:9,symbol:'diamond'},type:'scatter3d'},
+        {x:X,y:Y,z:Z,type:'surface',opacity:0.35,
+         colorscale:[[0,'lightblue'],[1,'lightblue']],showscale:false},
+    ];
+
+    Plotly.newPlot('plot3d', data3d,
+        {margin:{l:0,r:0,b:0,t:0},scene:{xaxis:{title:'δD'},yaxis:{title:'δP'},zaxis:{title:'δH'}}}
+    );
+
+    // --- 2D projection (δP vs δH) ---
+    let circleX=[],circleY=[];
+    for(let theta=0; theta<=2*Math.PI; theta+=0.05){
+        circleX.push(centre[1] + delta*Math.cos(theta)); // δP
+        circleY.push(centre[2] + delta*Math.sin(theta)); // δH
+    }
+
+    let data2d = [
+        {x:circleX, y:circleY, mode:'lines', line:{color:'lightblue'}, name:'Sphère'},
+        {x:insP, y:insH, mode:'markers+text', text:insText, textposition:'top center', marker:{color:'green', size:8}, name:'Inside'},
+        {x:outP, y:outH, mode:'markers+text', text:outText, textposition:'top center', marker:{color:'red', size:8}, name:'Outside'},
+        {x:[centre[1]], y:[centre[2]], mode:'markers+text', text:[document.getElementById('resineNom').value], marker:{color:'blue', size:10, symbol:'diamond'}, textposition:'top center', name:'Résine'}
+    ];
+
+    if(mix){
+        data2d.push({x:[mix[1]], y:[mix[2]], mode:'markers+text', text:['Mélange'], marker:{color:'orange', size:10, symbol:'diamond'}, textposition:'top center'});
+    }
+
+    Plotly.newPlot('plot2d', data2d,
+        {xaxis:{title:'δP', scaleanchor:'y'}, yaxis:{title:'δH', scaleratio:1}}
+    );
+}
+
+document.getElementById('optimize').onclick = function(){
+    optimizeMix();
+    showMix = true;
+    plotHansen();
+};
+
+plotHansen();
+</script>
+
+</body>
+</html>
