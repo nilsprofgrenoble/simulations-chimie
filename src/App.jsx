@@ -501,45 +501,45 @@ function SchemaElectro({ mode, x }) {
   return (
     <svg viewBox="0 0 320 400" style={{ width: "100%", minHeight: 380, display: "block" }}>
 
-      {/* ── Bécher ── */}
-      <rect x="60" y="155" width="200" height="120" fill={couleurSolution} opacity="0.65"/>
-      <line x1="60"  y1="125" x2="60"  y2="275" stroke="#5599bb" strokeWidth="2"/>
-      <line x1="260" y1="125" x2="260" y2="275" stroke="#5599bb" strokeWidth="2"/>
-      <line x1="60"  y1="275" x2="260" y2="275" stroke="#5599bb" strokeWidth="2"/>
-
-      {/* Contenu bécher */}
-      <text x="160" y="200" textAnchor="middle" fontSize="16" fill="#334" fontWeight="bold">
-        {x <= 0.02 ? "Fe²⁺" : x < 0.98 ? "Fe²⁺ + Fe³⁺" : x < 1.02 ? "Fe³⁺ + Ce³⁺" : "Fe³⁺ + Ce³⁺ + Ce⁴⁺"}
-      </text>
-      <text x="160" y="222" textAnchor="middle" fontSize="14" fill="#555">
-        {`x = ${x.toFixed(2)}`}
-      </text>
-
-      {/* Potentiel de Nernst sous le bécher */}
-      <text x="160" y="295" textAnchor="middle" fontSize="13"
-        fill={undef ? "#c0392b" : "#1a7a3a"} fontWeight={undef ? "bold" : "normal"}>
-        {undef ? ligne1 : "E ="}
-      </text>
-      {!undef && (
-        <text x="160" y="313" textAnchor="middle" fontSize="12" fill="#1a7a3a">
-          {ligne1}
-        </text>
-      )}
-      {ligne2 !== "" && (
-        <text x="160" y="333" textAnchor="middle" fontSize="15" fill="#1a7a3a" fontWeight="bold">
-          {ligne2}
-        </text>
-      )}
-
+       
       {/* ── Mode potentiométrie i=0 : ET + ER + Voltmètre ── */}
       {mode === "pot0" && <>
-        {/* Électrode de travail ET — dépasse à mi-hauteur dans le bécher */}
+
+        {/* Électrode de travail ET */}
         <rect x="108" y="100" width="10" height="115" rx="2" fill="#888"/>
         <text x="113" y="93" textAnchor="middle" fontSize="14" fill="#555" fontWeight="bold">ET</text>
 
-        {/* Électrode de référence ER — dépasse à mi-hauteur dans le bécher */}
+        {/* Électrode de référence ER */}
         <rect x="200" y="100" width="10" height="115" rx="2" fill="#e9a824"/>
         <text x="205" y="93" textAnchor="middle" fontSize="14" fill="#b07800" fontWeight="bold">ER</text>
+
+        {/* ── Bécher ── */}
+        <rect x="60" y="155" width="200" height="120" fill={couleurSolution} opacity="0.65"/>
+        <line x1="60"  y1="125" x2="60"  y2="275" stroke="#5599bb" strokeWidth="2"/>
+        <line x1="260" y1="125" x2="260" y2="275" stroke="#5599bb" strokeWidth="2"/>
+        <line x1="60"  y1="275" x2="260" y2="275" stroke="#5599bb" strokeWidth="2"/>
+
+        {/* Contenu bécher */}
+        <text x="160" y="205" textAnchor="middle" fontSize="15" fill="#334" fontWeight="bold">
+          {x <= 0.02 ? "Fe²⁺" : x < 0.98 ? "Fe²⁺ + Fe³⁺" : x < 1.02 ? "Fe³⁺ + Ce³⁺" : "Fe³⁺ + Ce³⁺ + Ce⁴⁺"}
+        </text>
+        <text x="160" y="223" textAnchor="middle" fontSize="13" fill="#555">{`x = ${x.toFixed(2)}`}</text>
+
+        {/* Potentiel de Nernst sous le bécher */}
+        <text x="160" y="295" textAnchor="middle" fontSize="12"
+          fill={undef ? "#c0392b" : "#1a7a3a"} fontWeight={undef ? "bold" : "normal"}>
+          {undef ? "⚠ Potentiel E mal défini !" : "E ="}
+        </text>
+        {!undef && (
+          <text x="160" y="312" textAnchor="middle" fontSize="11" fill="#1a7a3a">
+            {ligne1}
+          </text>
+        )}
+        {ligne2 !== "" && (
+          <text x="160" y="330" textAnchor="middle" fontSize="14" fill="#1a7a3a" fontWeight="bold">
+            {ligne2}
+          </text>
+        )}
 
         {/* Fil ET vers voltmètre */}
         <line x1="113" y1="100" x2="113" y2="65" stroke="#333" strokeWidth="2"/>
@@ -552,53 +552,173 @@ function SchemaElectro({ mode, x }) {
         {/* Voltmètre */}
         <circle cx="160" cy="65" r="26" fill="white" stroke="#333" strokeWidth="2"/>
         <text x="160" y="71" textAnchor="middle" fontSize="20" fill="#333" fontWeight="bold">V</text>
+
+        
       </>}
 
-      {/* ── Mode potentiométrie i=courant ── */}
       {mode === "courant" && <>
-        <rect x="108" y="50" width="10" height="100" rx="2" fill="#888"/>
-        <text x="113" y="42" textAnchor="middle" fontSize="14" fill="#555" fontWeight="bold">ET</text>
-        <rect x="200" y="60" width="10" height="90" rx="2" fill="#e9a824"/>
-        <text x="205" y="52" textAnchor="middle" fontSize="14" fill="#b07800" fontWeight="bold">ER</text>
-        <rect x="148" y="55" width="10" height="85" rx="2" fill="#e63946"/>
-        <text x="153" y="47" textAnchor="middle" fontSize="14" fill="#e63946" fontWeight="bold">EA</text>
-        <line x1="113" y1="50" x2="113" y2="18" stroke="#333" strokeWidth="2"/>
-        <line x1="113" y1="18" x2="136" y2="18" stroke="#333" strokeWidth="2"/>
-        <line x1="205" y1="60" x2="205" y2="18" stroke="#b07800" strokeWidth="2"/>
-        <line x1="205" y1="18" x2="184" y2="18" stroke="#b07800" strokeWidth="2"/>
-        <circle cx="160" cy="18" r="26" fill="white" stroke="#333" strokeWidth="2"/>
-        <text x="160" y="24" textAnchor="middle" fontSize="20" fill="#333" fontWeight="bold">V</text>
-        <line x1="153" y1="55" x2="153" y2="5"  stroke="#e63946" strokeWidth="2"/>
-        <line x1="153" y1="5"  x2="250" y2="5"  stroke="#e63946" strokeWidth="2"/>
-        <line x1="250" y1="5"  x2="250" y2="60" stroke="#e63946" strokeWidth="2"/>
-        <rect x="220" y="60" width="60" height="28" rx="5" fill="#ffe0e0" stroke="#e63946" strokeWidth="1.5"/>
-        <text x="250" y="72" textAnchor="middle" fontSize="11" fill="#a00" fontWeight="bold">Géné. i</text>
-        <text x="250" y="83" textAnchor="middle" fontSize="10" fill="#a00">qq µA</text>
-        <line x1="250" y1="88" x2="250" y2="125" stroke="#e63946" strokeWidth="2"/>
-        <line x1="250" y1="125" x2="158" y2="125" stroke="#e63946" strokeWidth="2"/>
-        <line x1="158" y1="125" x2="158" y2="140" stroke="#e63946" strokeWidth="2"/>
+
+        {/* ── Label générateur AU DESSUS ── */}
+        <text x="160" y="16" textAnchor="middle" fontSize="13" fill="#a00" fontWeight="bold">Géné. i = 10 µA</text>
+
+        {/* ── Générateur centré sur les fils ── */}
+        <rect x="118" y="22" width="84" height="28" rx="6" fill="#ffe0e0" stroke="#c0392b" strokeWidth="1.5"/>
+        <text x="136" y="40" textAnchor="middle" fontSize="13" fill="#c0392b" fontWeight="bold">+</text>
+        <text x="184" y="40" textAnchor="middle" fontSize="13" fill="#1a6eb5" fontWeight="bold">−</text>
+
+        {/* ── EI1 à gauche (anode +) ── */}
+        <rect x="55" y="95" width="10" height="175" rx="2" fill="#c0392b"/>
+        <text x="70" y="88" textAnchor="start" fontSize="14" fill="#c0392b" fontWeight="bold">EI1</text>
+        <text x="70" y="75" textAnchor="start" fontSize="13" fill="#c0392b">+</text>
+
+        {/* ── EI2 à droite (cathode -) ── */}
+        <rect x="253" y="95" width="10" height="175" rx="2" fill="#1a6eb5"/>
+        <text x="248" y="88" textAnchor="end" fontSize="14" fill="#1a6eb5" fontWeight="bold">EI2</text>
+        <text x="248" y="75" textAnchor="end" fontSize="13" fill="#1a6eb5">−</text>
+
+        {/* ── Fils générateur ── */}
+        {/* EI1 → borne + géné (fil rouge) */}
+        <line x1="60"  y1="95" x2="60"  y2="36" stroke="#c0392b" strokeWidth="2"/>
+        <line x1="60"  y1="36" x2="118" y2="36" stroke="#c0392b" strokeWidth="2"/>
+        {/* borne - géné → EI2 (fil bleu) */}
+        <line x1="202" y1="36" x2="258" y2="36" stroke="#1a6eb5" strokeWidth="2"/>
+        <line x1="258" y1="36" x2="258" y2="95" stroke="#1a6eb5" strokeWidth="2"/>
+
+        {/* ── Flèches sens courant i (sens inverse des électrons) ── */}
+        {/* Courant descend géné → EI1 (côté gauche) */}
+        <polygon points="56,82 64,82 60,92" fill="#c0392b"/>
+        {/* Courant monte EI2 → géné (côté droit) */}
+        <polygon points="254,62 262,62 258,52" fill="#1a6eb5"/>
+        {/* Courant fil horizontal géné → gauche */}
+        <polygon points="98,32 98,40 88,36" fill="#c0392b"/>
+        {/* Courant fil horizontal droite → géné */}
+        <polygon points="232,32 232,40 222,36" fill="#1a6eb5"/>
+
+        {/* ── Flèches électrons (verticales, en pointillé, à l'extérieur) ── */}
+        {/* Gauche de EI1 : électrons montent (sens inverse du courant) */}
+        <line x1="44" y1="95" x2="44" y2="58" stroke="#666" strokeWidth="1.5" strokeDasharray="4,3"/>
+        <polygon points="40,62 48,62 44,52" fill="#666"/>
+        <text x="36" y="80" textAnchor="middle" fontSize="11" fill="#666">e⁻</text>
+
+        {/* Droite de EI2 : électrons descendent */}
+        <line x1="274" y1="58" x2="274" y2="95" stroke="#666" strokeWidth="1.5" strokeDasharray="4,3"/>
+        <polygon points="270,88 278,88 274,98" fill="#666"/>
+        <text x="282" y="80" textAnchor="middle" fontSize="11" fill="#666">e⁻</text>
+
+        {/* ── Bécher ── */}
+        <rect x="35" y="195" width="248" height="110" fill={couleurSolution} opacity="0.65"/>
+        <line x1="35"  y1="165" x2="35"  y2="305" stroke="#5599bb" strokeWidth="2"/>
+        <line x1="283" y1="165" x2="283" y2="305" stroke="#5599bb" strokeWidth="2"/>
+        <line x1="35"  y1="305" x2="283" y2="305" stroke="#5599bb" strokeWidth="2"/>
+
+        {/* Contenu bécher */}
+        <text x="159" y="248" textAnchor="middle" fontSize="15" fill="#334" fontWeight="bold">
+          {x <= 0.02 ? "Fe²⁺" : x < 0.98 ? "Fe²⁺ + Fe³⁺" : x < 1.02 ? "Fe³⁺ + Ce³⁺" : "Fe³⁺ + Ce³⁺ + Ce⁴⁺"}
+        </text>
+        <text x="159" y="266" textAnchor="middle" fontSize="13" fill="#555">{`x = ${x.toFixed(2)}`}</text>
+
+        {/* ── Voltmètre ΔE centré entre EI1 et EI2 ── */}
+        <circle cx="159" cy="130" r="24" fill="white" stroke="#333" strokeWidth="2"/>
+        <text x="159" y="126" textAnchor="middle" fontSize="13" fill="#333" fontWeight="bold">V</text>
+        <text x="159" y="141" textAnchor="middle" fontSize="11" fill="#333">ΔE</text>
+        {/* Fil voltmètre → EI1 */}
+        <line x1="135" y1="130" x2="65"  y2="130" stroke="#333" strokeWidth="1.5" strokeDasharray="4,3"/>
+        {/* Fil voltmètre → EI2 */}
+        <line x1="183" y1="130" x2="253" y2="130" stroke="#333" strokeWidth="1.5" strokeDasharray="4,3"/>
+
+        {/* ── Réactions juste sous chaque électrode ── */}
+        {/* EI1 anode (oxydation, rouge) */}
+        <text x="60" y="322" textAnchor="middle" fontSize="12" fill="#c0392b" fontWeight="bold">
+          {x < 0.98 ? "Fe²⁺→Fe³⁺" : "Ce³⁺→Ce⁴⁺"}
+        </text>
+        {/* EI2 cathode (réduction, bleu) */}
+        <text x="258" y="322" textAnchor="middle" fontSize="12" fill="#1a6eb5" fontWeight="bold">
+          {x <= 0.02 ? "H⁺→H₂" : x < 0.98 ? "Fe³⁺→Fe²⁺" : x < 1.02 ? "Fe³⁺→Fe²⁺" : "Ce⁴⁺→Ce³⁺"}
+        </text>
+
+        
       </>}
 
       {/* ── Mode ampérométrie ── */}
       {mode === "ampero" && <>
-        <rect x="108" y="50" width="10" height="100" rx="2" fill="#888"/>
-        <text x="113" y="42" textAnchor="middle" fontSize="14" fill="#555" fontWeight="bold">ET</text>
-        <rect x="200" y="50" width="10" height="100" rx="2" fill="#888"/>
-        <text x="205" y="42" textAnchor="middle" fontSize="14" fill="#555" fontWeight="bold">EA</text>
-        <line x1="113" y1="50" x2="113" y2="18" stroke="#333" strokeWidth="2"/>
-        <line x1="113" y1="18" x2="126" y2="18" stroke="#333" strokeWidth="2"/>
-        <line x1="205" y1="50" x2="205" y2="18" stroke="#333" strokeWidth="2"/>
-        <line x1="205" y1="18" x2="192" y2="18" stroke="#333" strokeWidth="2"/>
-        <rect x="126" y="4" width="66" height="28" rx="5" fill="#ffe0a0" stroke="#e9a824" strokeWidth="1.5"/>
-        <text x="159" y="16" textAnchor="middle" fontSize="11" fill="#7a4f00" fontWeight="bold">Géné. ΔE</text>
-        <text x="159" y="27" textAnchor="middle" fontSize="10" fill="#7a4f00">qq mV</text>
-        <circle cx="160" cy="310" r="22" fill="white" stroke="#333" strokeWidth="2"/>
-        <text x="160" y="317" textAnchor="middle" fontSize="20" fill="#333" fontWeight="bold">A</text>
-        <line x1="113" y1="150" x2="113" y2="332" stroke="#333" strokeWidth="2"/>
-        <line x1="113" y1="332" x2="138" y2="332" stroke="#333" strokeWidth="2"/>
-        <line x1="182" y1="332" x2="205" y2="332" stroke="#333" strokeWidth="2"/>
-        <line x1="205" y1="150" x2="205" y2="332" stroke="#333" strokeWidth="2"/>
-        <text x="160" y="365" textAnchor="middle" fontSize="13" fill="#666">i mesuré</text>
+
+        {/* ── Label générateur AU DESSUS ── */}
+        <text x="160" y="16" textAnchor="middle" fontSize="13" fill="#7a4f00" fontWeight="bold">Géné. ΔV ≈ 100 mV</text>
+
+        {/* ── Générateur de tension ── */}
+        <rect x="118" y="22" width="84" height="28" rx="6" fill="#ffe0a0" stroke="#e9a824" strokeWidth="1.5"/>
+        <text x="136" y="40" textAnchor="middle" fontSize="13" fill="#c0392b" fontWeight="bold">+</text>
+        <text x="184" y="40" textAnchor="middle" fontSize="13" fill="#1a6eb5" fontWeight="bold">−</text>
+
+        {/* ── EI1 à gauche (anode +) ── */}
+        <rect x="55" y="95" width="10" height="175" rx="2" fill="#c0392b"/>
+        <text x="70" y="88" textAnchor="start" fontSize="14" fill="#c0392b" fontWeight="bold">EI1</text>
+        <text x="70" y="75" textAnchor="start" fontSize="13" fill="#c0392b">+</text>
+
+        {/* ── EI2 à droite (cathode -) ── */}
+        <rect x="235" y="95" width="10" height="175" rx="2" fill="#1a6eb5"/>
+        <text x="230" y="88" textAnchor="end" fontSize="14" fill="#1a6eb5" fontWeight="bold">EI2</text>
+        <text x="230" y="75" textAnchor="end" fontSize="13" fill="#1a6eb5">−</text>
+
+        {/* ── Fils circuit ── */}
+        {/* EI1 → borne + géné (fil rouge) */}
+        <line x1="60"  y1="95" x2="60"  y2="36" stroke="#c0392b" strokeWidth="2"/>
+        <line x1="60"  y1="36" x2="118" y2="36" stroke="#c0392b" strokeWidth="2"/>
+        {/* borne - géné → ampèremètre (fil bleu) */}
+        {/* borne - géné → ampèremètre */}
+        <line x1="202" y1="36" x2="258" y2="36" stroke="#1a6eb5" strokeWidth="2"/>
+        <line x1="258" y1="36" x2="258" y2="53" stroke="#1a6eb5" strokeWidth="2"/>
+        <line x1="258" y1="89" x2="258" y2="95" stroke="#1a6eb5" strokeWidth="2"/>
+        <line x1="258" y1="95" x2="240" y2="95" stroke="#1a6eb5" strokeWidth="2"/>
+        <line x1="240" y1="95" x2="240" y2="105" stroke="#1a6eb5" strokeWidth="2"/>
+        {/* ampèremètre → EI2 */}
+        <line x1="258" y1="36" x2="258" y2="60" stroke="#1a6eb5" strokeWidth="2"/>
+        <line x1="258" y1="82" x2="258" y2="95" stroke="#1a6eb5" strokeWidth="2"/>
+
+        {/* ── Ampèremètre sur le fil EI2 ── */}
+        <circle cx="258" cy="71" r="18" fill="white" stroke="#1a6eb5" strokeWidth="2"/>
+        <text x="258" y="76" textAnchor="middle" fontSize="15" fill="#1a6eb5" fontWeight="bold">A</text>
+
+        {/* ── Flèches sens courant i ── */}
+        {/* Courant descend géné → EI1 (côté gauche) */}
+        <polygon points="56,82 64,82 60,92" fill="#c0392b"/>
+        {/* Courant fil horizontal gauche */}
+        <polygon points="98,32 98,40 88,36" fill="#c0392b"/>
+        {/* Courant fil horizontal droite — INVERSÉ (va vers la droite) */}
+        <polygon points="222,32 222,40 232,36" fill="#1a6eb5"/>
+
+        {/* ── Flèches électrons (verticales, pointillé, extérieur) ── */}
+        {/* Gauche de EI1 : électrons montent */}
+        <line x1="44" y1="95" x2="44" y2="58" stroke="#666" strokeWidth="1.5" strokeDasharray="4,3"/>
+        <polygon points="40,62 48,62 44,52" fill="#666"/>
+        <text x="36" y="80" textAnchor="middle" fontSize="11" fill="#666">e⁻</text>
+        {/* Droite de EI2 : électrons descendent */}
+        <line x1="280" y1="58" x2="280" y2="95" stroke="#666" strokeWidth="1.5" strokeDasharray="4,3"/>
+        <polygon points="276,88 284,88 280,98" fill="#666"/>
+        <text x="290" y="80" textAnchor="middle" fontSize="11" fill="#666">e⁻</text>
+
+        {/* ── Bécher ── */}
+        <rect x="35" y="195" width="248" height="110" fill={couleurSolution} opacity="0.65"/>
+        <line x1="35"  y1="165" x2="35"  y2="305" stroke="#5599bb" strokeWidth="2"/>
+        <line x1="283" y1="165" x2="283" y2="305" stroke="#5599bb" strokeWidth="2"/>
+        <line x1="35"  y1="305" x2="283" y2="305" stroke="#5599bb" strokeWidth="2"/>
+
+        {/* Contenu bécher */}
+        <text x="159" y="248" textAnchor="middle" fontSize="15" fill="#334" fontWeight="bold">
+          {x <= 0.02 ? "Fe²⁺" : x < 0.98 ? "Fe²⁺ + Fe³⁺" : x < 1.02 ? "Fe³⁺ + Ce³⁺" : "Fe³⁺ + Ce³⁺ + Ce⁴⁺"}
+        </text>
+        <text x="159" y="266" textAnchor="middle" fontSize="13" fill="#555">{`x = ${x.toFixed(2)}`}</text>
+
+        {/* ── Réactions aux électrodes ── */}
+        {/* EI1 anode (oxydation, rouge) */}
+        <text x="60" y="322" textAnchor="middle" fontSize="12" fill="#c0392b" fontWeight="bold">
+          {x < 0.98 ? "Fe²⁺→Fe³⁺" : "Ce³⁺→Ce⁴⁺"}
+        </text>
+        {/* EI2 cathode (réduction, bleu) */}
+        <text x="258" y="322" textAnchor="middle" fontSize="12" fill="#1a6eb5" fontWeight="bold">
+          {x <= 0.02 ? "H⁺→H₂" : x < 0.98 ? "Fe³⁺→Fe²⁺" : x < 1.02 ? "Fe³⁺→Fe²⁺" : "Ce⁴⁺→Ce³⁺"}
+        </text>
+
       </>}
 
       {/* Légende mode */}
