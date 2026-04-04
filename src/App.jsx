@@ -44,7 +44,7 @@ const cardStyle = {
 //  SIMULATION 1 — Avancement d'une réaction chimique
 // ============================================================
 
-function Simulation1() {
+function Simulation1({ plotlyReady }) {
   const [a, setA] = useState(2);
   const [b, setB] = useState(1);
   const [c, setC] = useState(2);
@@ -213,7 +213,7 @@ const td = { border: "1px solid #ccc", padding: "5px 10px", textAlign: "center" 
 //  SIMULATION 2 — Titrage volumétrique
 // ============================================================
 
-function Simulation2() {
+function Simulation2({ plotlyReady }) {
   const [VB, setVB] = useState(0);
   const [a, setA] = useState(1);
   const [b, setB] = useState(1);
@@ -282,8 +282,9 @@ function Simulation2() {
         { displayModeBar: false, responsive: true }
       );
     }
-  }, [VB, a, b, c, d, cA, VA, cB, nADirect, activeTab]);
+  }, [VB, a, b, c, d, cA, VA, cB, nADirect, activeTab, plotlyReady]);
 
+  
   // SVG
 // SVG dynamique
   const hBurette = 275; // hauteur totale solution burette
@@ -741,7 +742,7 @@ function SchemaElectro({ mode, x }) {
 //  SIMULATION 3 — Titrages électrochimiques
 // ============================================================
 
-function Simulation3() {
+function Simulation3({ plotlyReady }) {
   const [x, setX] = useState(0.0);
   const [mode, setMode] = useState("pot0");
   const [deltaEmV, setDeltaEmV] = useState(100);
@@ -998,7 +999,7 @@ function Simulation3() {
 //  SIMULATION 4 — Diagramme de Hansen
 // ============================================================
 
-function Simulation4() {
+function Simulation4({ plotlyReady }) {
   const SOLVANTS = {
     'Acétate de butyle':   { d:[15.8,3.7,  6.3],  pvap:11,   ie:1.0,  rho:0.882, M:116.2 },
     'Acétate d\'éthyle':   { d:[15.8,5.3,  7.2],  pvap:97,   ie:4.1,  rho:0.902, M:88.1  },
@@ -1501,7 +1502,7 @@ function Simulation4() {
 //  SIMULATION 5 — Régulation de niveau
 // ============================================================
 
-function Simulation5() {
+function Simulation5({ plotlyReady }) {
   const [mode, setMode]           = useState("TOR");
   const [running, setRunning]     = useState(false);
   const [frame, setFrame]         = useState(0);
@@ -1623,6 +1624,31 @@ function Simulation5() {
     return () => clearInterval(animRef.current);
   }, [running, simData]);
 
+  // ── Initialisation graphiques vides ──
+  useEffect(() => {
+    if (!window.Plotly || !plotlyReady) return;
+    const layoutCommon = {
+      margin:{t:20,b:50,l:60,r:20},
+      paper_bgcolor:'rgba(0,0,0,0)',
+      plot_bgcolor:'#fafcff',
+      autosize:true,
+      showlegend:false,
+    };
+    if (plotHRef.current)
+      window.Plotly.react(plotHRef.current, [], {
+        ...layoutCommon,
+        xaxis:{title:'Temps (s)', range:[0,3000]},
+        yaxis:{title:'Hauteur (cm)', range:[0,45]},
+      }, {displayModeBar:false, responsive:true});
+    if (plotQRef.current)
+      window.Plotly.react(plotQRef.current, [], {
+        ...layoutCommon,
+        xaxis:{title:'Temps (s)', range:[0,3000]},
+        yaxis:{title:'Débit pompe (L/h)', range:[-10,220]},
+      }, {displayModeBar:false, responsive:true});
+  }, [plotlyReady]);
+
+ 
   // ── Plotly ──
   useEffect(() => {
     if (!window.Plotly || !simData) return;
@@ -1670,7 +1696,9 @@ function Simulation5() {
         showlegend:false,
       }, {displayModeBar:false, responsive:true});
     }
-  }, [frame, simData]);
+  }, [frame, simData, plotlyReady]);
+
+  
 
   // ── Schéma réservoir ──
   const H_cur = simData ? (simData.Hs[frame] ?? H0) : H0;
@@ -1909,7 +1937,7 @@ function Simulation5() {
 //  SIMULATION 6 — Point de fonctionnement régulation P
 // ============================================================
 
-function Simulation6() {
+function Simulation6({ plotlyReady }) {
   const [activeTab, setActiveTab] = useState("caract");
   const [xp, setXp]               = useState(10);
   const [rPuisage, setRPuisage]   = useState(0.002);
@@ -2742,7 +2770,29 @@ export default function App() {
   const active = SIMULATIONS.find((s) => s.id === activeId);
   const ActiveComponent = active.component;
   const [expanded, setExpanded] = useState({ "1G": true, "TSTL": true, "BTS": true });
+  const [plotlyReady, setPlotlyReady] = useState(false);
 
+  useEffect(() => {
+    const check = setInterval(() => {
+      if (window.Plotly) {
+        setPlotlyReady(true);
+        clearInterval(check);
+      }
+    }, 100);
+    return () => clearInterval(check);
+  }, []);
+  
+
+  useEffect(() => {
+    const check = setInterval(() => {
+      if (window.Plotly) {
+        setPlotlyReady(true);
+        clearInterval(check);
+      }
+    }, 100);
+    return () => clearInterval(check);
+  }, []);
+  
   return (
     <div style={styles.root}>
       <div style={styles.bgBlob1} />
@@ -2836,7 +2886,7 @@ export default function App() {
           <h1 style={{ ...styles.pageTitle, color: active.color }}>{active.label}</h1>
         </div>
         <div style={styles.simContainer}>
-          <ActiveComponent />
+          <ActiveComponent plotlyReady={plotlyReady} />
         </div>
       </main>
     </div>
