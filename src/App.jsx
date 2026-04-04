@@ -1726,7 +1726,7 @@ function Simulation5() {
                     value={hHaut} onChange={e=>setHHaut(parseFloat(e.target.value))}/>
                 </div>
                 <div style={fieldStyle}>
-                  <span style={labelStyle}>Rayon robinet (cm)</span>
+                  <span style={labelStyle}>Rayon robinet de puisage (m)</span>
                   <input type="number" style={inputStyle} step="0.01" min="0.05" max="0.5"
                     value={rPuisage} onChange={e=>setRPuisage(parseFloat(e.target.value))}/>
                 </div>
@@ -1961,6 +1961,9 @@ function Simulation6() {
   // Y (%) → Q_pompe = Y/100 × Qmax → H = calcH(Q)
   const Qcur = Y / 100 * Qmax;
   const Hcur = calcH(Qcur);
+  const inter = findIntersection();
+  const HReservoir = activeTab === "fonct" ? (inter ? inter.H : 0) : Hcur;
+  const QReservoir = activeTab === "fonct" ? (inter ? inter.Q : 0) : Qcur;
 
   // ── Plotly caractéristique statique ──
   useEffect(() => {
@@ -2037,7 +2040,7 @@ function Simulation6() {
 
   // ── Schéma réservoir ──
   const hMax  = 45;
-  const hPct  = Math.min(Math.max(Hcur / hMax, 0), 1);
+  const hPct  = Math.min(Math.max(HReservoir / hMax, 0), 1);
   const reservoirH = 160;
   const waterH     = Math.round(hPct * reservoirH);
   const waterY     = 30 + reservoirH - waterH;
@@ -2148,8 +2151,8 @@ function Simulation6() {
               {/* Pompe */}
               <rect x="15" y="50" width="28" height="10" rx="3" fill="#2a6099"/>
               <text x="29" y="42" textAnchor="middle" fontSize="10" fill="#2a6099" fontWeight="bold">Pompe</text>
-              <text x="29" y="78" textAnchor="middle" fontSize="9" fill="#2a6099">Y={Y}%</text>
-              <text x="29" y="90" textAnchor="middle" fontSize="9" fill="#2a6099">Q={Qcur.toFixed(0)} L/h</text>
+              <text x="29" y="78" textAnchor="middle" fontSize="9" fill="#2a6099">Y={activeTab==="fonct" ? (inter ? (inter.Q/Qmax*100).toFixed(0) : 0) : Y}%</text>
+              <text x="29" y="90" textAnchor="middle" fontSize="9" fill="#2a6099">Q={QReservoir.toFixed(0)} L/h</text>
 
               {/* Corps réservoir */}
               <rect x="43" y="30" width="110" height={reservoirH} rx="4"
@@ -2183,7 +2186,7 @@ function Simulation6() {
               {/* H courant */}
               <text x="98" y={Math.max(waterY-5,38)} textAnchor="middle"
                 fontSize="11" fill="#2a6099" fontWeight="bold">
-                H={Hcur.toFixed(1)} cm
+                H={HReservoir.toFixed(1)} cm
               </text>
 
               {/* Robinet puisage */}
@@ -2217,7 +2220,7 @@ function Simulation6() {
             <div style={{fontWeight:600, color:"#445", marginBottom:10}}>Paramètres</div>
             <div style={{display:"flex", flexDirection:"column", gap:8}}>
               <div style={fieldStyle}>
-                <span style={labelStyle}>Rayon robinet (m)</span>
+                <span style={labelStyle}>Rayon robinet de puisage (m)</span>
                 <input type="number" style={inputStyle} step="0.0005" min="0.0005" max="0.003"
                   value={rPuisage} onChange={e=>setRPuisage(parseFloat(e.target.value))}/>
               </div>
