@@ -1895,12 +1895,19 @@ function Simulation5() {
 // ============================================================
 
 const SIMULATIONS = [
-  { id: 1, label: "Avancement d'une réaction - 1G spé PC", icon: "⚗️", color: "#2a9d8f", component: Simulation1 },
-  { id: 2, label: "Titrage volumétrique  - 1G spé PC",       icon: "🧪", color: "#e63946", component: Simulation2 },
-  { id: 3, label: "Titrages électrochimiques - BTS MDC Analyse", icon: "⚡", color: "#e9a824", component: Simulation3 },
-  { id: 4, label: "Diagramme de Hansen  - BTS MDC Formulation", icon: "🔵", color: "#6a4c93", component: Simulation4 },
-  { id: 5, label: "Régulation de niveau - TSTL SP", icon: "⚙️", color: "#2a6099", component: Simulation5 },
+  { id: 1, label: "Avancement d'une réaction", icon: "⚗️", color: "#2a9d8f", component: Simulation1, niveau: "1G" },
+  { id: 2, label: "Titrage volumétrique",       icon: "🧪", color: "#e63946", component: Simulation2, niveau: "1G" },
+  { id: 3, label: "Titrages électrochimiques",  icon: "⚡", color: "#e9a824", component: Simulation3, niveau: "BTS" },
+  { id: 4, label: "Diagramme de Hansen",         icon: "🔵", color: "#6a4c93", component: Simulation4, niveau: "BTS" },
+  { id: 5, label: "Régulation de niveau",        icon: "⚙️", color: "#2a6099", component: Simulation5, niveau: "TSTL" },
 ];
+
+const NIVEAUX = [
+  { label: "1G",   key: "1G",   color: "#2a9d8f" },
+  { label: "TSTL", key: "TSTL", color: "#2a6099" },
+  { label: "BTS",  key: "BTS",  color: "#6a4c93" },
+];
+
 
 // ============================================================
 //  COMPOSANT PRINCIPAL
@@ -1910,6 +1917,7 @@ export default function App() {
   const [activeId, setActiveId] = useState(1);
   const active = SIMULATIONS.find((s) => s.id === activeId);
   const ActiveComponent = active.component;
+  const [expanded, setExpanded] = useState({ "1G": true, "TSTL": true, "BTS": true });
 
   return (
     <div style={styles.root}>
@@ -1926,20 +1934,54 @@ export default function App() {
         </div>
         <div style={styles.divider} />
         <nav style={styles.nav}>
-          {SIMULATIONS.map((sim) => {
-            const isActive = sim.id === activeId;
+          {NIVEAUX.map(niv => {
+            const simsNiv = SIMULATIONS.filter(s => s.niveau === niv.key);
+            const isExpanded = expanded[niv.key];
             return (
-              <button key={sim.id} onClick={() => setActiveId(sim.id)} style={{
-                ...styles.navBtn,
-                background: isActive ? sim.color : "transparent",
-                color: isActive ? "#fff" : "#444",
-                boxShadow: isActive ? `0 4px 18px ${sim.color}55` : "none",
-                transform: isActive ? "translateX(4px)" : "translateX(0)",
-              }}>
-                <span style={{ fontSize: "1.3rem" }}>{sim.icon}</span>
-                <span style={{ flex: 1 }}>{sim.label}</span>
-                {isActive && <span style={{ fontSize: "1.4rem", opacity: 0.8 }}>›</span>}
-              </button>
+              <div key={niv.key}>
+                {/* En-tête section */}
+                <button onClick={() => setExpanded(prev => ({...prev, [niv.key]: !prev[niv.key]}))}
+                  style={{
+                    display:"flex", alignItems:"center", justifyContent:"space-between",
+                    width:"100%", padding:"0.5rem 0.75rem", border:"none",
+                    background:"transparent", cursor:"pointer",
+                    borderRadius:"8px", marginBottom:"0.2rem",
+                  }}>
+                  <span style={{
+                    fontSize:"0.72rem", fontWeight:"800", letterSpacing:"0.1em",
+                    textTransform:"uppercase", color: niv.color
+                  }}>
+                    {niv.label}
+                  </span>
+                  <span style={{fontSize:"0.8rem", color:niv.color, transition:"transform 0.2s",
+                    display:"inline-block", transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)"}}>
+                    ›
+                  </span>
+                </button>
+
+                {/* Simulations de ce niveau */}
+                {isExpanded && simsNiv.map(sim => {
+                  const isActive = sim.id === activeId;
+                  return (
+                    <button key={sim.id} onClick={() => setActiveId(sim.id)} style={{
+                      ...styles.navBtn,
+                      marginLeft:"0.5rem",
+                      background: isActive ? sim.color : "transparent",
+                      color: isActive ? "#fff" : "#444",
+                      boxShadow: isActive ? `0 4px 18px ${sim.color}55` : "none",
+                      transform: isActive ? "translateX(4px)" : "translateX(0)",
+                      fontSize:"0.85rem",
+                    }}>
+                      <span style={{fontSize:"1.1rem"}}>{sim.icon}</span>
+                      <span style={{flex:1}}>{sim.label}</span>
+                      {isActive && <span style={{fontSize:"1.2rem", opacity:0.8}}>›</span>}
+                    </button>
+                  );
+                })}
+
+                {/* Séparateur entre niveaux */}
+                <div style={{height:"1px", background:"linear-gradient(to right, #e0e0e0, transparent)", margin:"0.5rem 0"}}/>
+              </div>
             );
           })}
         </nav>
