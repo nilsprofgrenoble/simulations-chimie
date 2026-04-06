@@ -2741,6 +2741,459 @@ useEffect(() => {
 }
 
 // ============================================================
+//  SIMULATION 8 — Chaîne de mesure / capteur de lumière
+// ============================================================
+
+function Simulation8({ plotlyReady }) {
+  const [E, setE]                   = useState(500);
+  const [bits, setBits]             = useState(10);
+  const [R, setR]                   = useState(1000);
+  const [activeBlock, setActiveBlock] = useState("capteur");
+  const [pharesOn, setPharesOn]     = useState(false);
+  const [pharesEtat, setPharesEtat] = useState("OFF");
+  const [canInput, setCanInput]     = useState("Ur");
+  const [algoN1, setAlgoN1]         = useState(310);
+  const [algoEtat1, setAlgoEtat1]   = useState("HIGH");
+  const [algoN2, setAlgoN2]         = useState(682);
+  const [algoEtat2, setAlgoEtat2]   = useState("LOW");
+
+  const plotRef = useRef(null);
+
+  // ── Modèle Rp = f(E) ──
+  const calcRp = e => {
+    if (e <= 0) return 5600;
+    if (e >= 1590) return 346;
+    // Données expérimentales
+    const data = [
+      [11,5600],[70,2500],[200,1540],[360,1210],
+      [470,1010],[680,790],[880,581],[1050,387],[1590,346]
+    ];
+    // Interpolation log-log
+    const logE = Math.log(e);
+    for (let i=0; i<data.length-1; i++) {
+      const [e1,r1] = data[i];
+      const [e2,r2] = data[i+1];
+      if (e >= e1 && e <= e2) {
+        const t = (Math.log(e)-Math.log(e1)) / (Math.log(e2)-Math.log(e1));
+        return Math.round(r1 + (r2-r1)*t);
+      }
+    }
+    return 346;
+  };
+
+  // ── Calculs chaîne ──
+  const Rp   = calcRp(E);
+  const Ur   = 5 * R / (Rp + R);
+  const Nmax = Math.pow(2, bits) - 1;
+  const N    = Math.round(Ur / 5 * Nmax);
+
+  // ── Valeurs CAN ──
+  const canMax    = canInput==="Ur" ? 5 : canInput==="Rp" ? 10000 : 1500;
+  const canUnite  = canInput==="Ur" ? "V" : canInput==="Rp" ? "Ω" : "lx";
+  const canValReel = canInput==="Ur" ? Ur : canInput==="Rp" ? Rp : E;
+  const canVal5V   = canInput==="Ur" ? Ur : canInput==="Rp" ? Rp/10000*5 : E/1500*5;
+  const NcanVal    = Math.round(canVal5V / 5 * Nmax);
+  const quantum    = canMax / Nmax;
+
+  // ── Algorithme phares ──
+  useEffect(() => {
+    if (!pharesOn) { setPharesEtat("OFF"); return; }
+    if (N < algoN1 && algoEtat1 === "HIGH") setPharesEtat("ON");
+    if (N > algoN2 && algoEtat2 === "LOW")  setPharesEtat("OFF");
+  }, [N, pharesOn, algoN1, algoN2, algoEtat1, algoEtat2]);
+
+  const ledOn = pharesOn && pharesEtat === "ON";
+
+  // ── Animation soleil ──
+  const nuagePct      = 1 - Math.min(E, 1500) / 1500;
+  const soleilOpacity = E < 10 ? 0 : 0.3 + (1-nuagePct)*0.7;
+  const cielColor     = E < 10
+    ? "#0a0a2e"
+    : `rgb(${Math.round(55+(1-nuagePct)*80)},${Math.round(100+(1-nuagePct)*80)},${Math.round(180+(1-nuagePct)*40)})`;
+
+  // ── Plotly ──
+  useEffect(() => {
+    if (!window.Plotly || !plotRef.current || !plotlyReady) return;
+
+    if (activeBlock==="capteur") {
+      const Es  = Array.from({length:300},(_,i)=>i*5+5);
+      const Rps = Es.map(calcRp);
+      window.Plotly.react(plotRef.current,[
+        {x:Es,y:Rps,mode:'lines',line:{color:'#f4a261',width:2.5},name:'Rp(E)'},
+        {x:[E],y:[Rp],mode:'markers',marker:{color:'#2a6099',size:12,symbol:'diamond'},name:'Point courant'},
+        {x:[0,E],y:[Rp,Rp],mode:'lines',line:{dash:'dot',color:'#888',width:1},showlegend:false},
+        {x:[E,E],y:[0,Rp],mode:'lines',line:{dash:'dot',color:'#888',width:1},showlegend:false},
+      ],{
+        xaxis:{title:'Éclairement E (lx)',range:[0,1600]},
+        yaxis:{title:'Résistance Rp (Ω)',range:[0,8000]},
+        margin:{t:20,b:50,l:70,r:20},
+        paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'#fafcff',
+        legend:{orientation:'h',y:-0.3},autosize:true,
+      },{displayModeBar:false,responsive:true});
+    }
+
+    if (activeBlock==="conditionneur") {
+      const Rps = Array.from({length:300},(_,i)=>i*35);
+      const Urs = Rps.map(rp=>5*R/(rp+R));
+      window.Plotly.react(plotRef.current,[
+        {x:Rps,y:Urs,mode:'lines',line:{color:'#e9a824',width:2.5},name:'Ur(Rp)'},
+        {x:[Rp],y:[Ur],mode:'markers',marker:{color:'#2a6099',size:12,symbol:'diamond'},name:'Point courant'},
+        {x:[0,Rp],y:[Ur,Ur],mode:'lines',line:{dash:'dot',color:'#888',width:1},showlegend:false},
+        {x:[Rp,Rp],y:[0,Ur],mode:'lines',line:{dash:'dot',color:'#888',width:1},showlegend:false},
+      ],{
+        xaxis:{title:'Résistance Rp (Ω)',range:[0,10500]},
+        yaxis:{title:'Tension Ur (V)',range:[0,5.2]},
+        margin:{t:20,b:50,l:70,r:20},
+        paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'#fafcff',
+        legend:{orientation:'h',y:-0.3},autosize:true,
+      },{displayModeBar:false,responsive:true});
+    }
+
+    if (activeBlock==="can") {
+      window.Plotly.react(plotRef.current,[
+        {x:[`${canInput} (${canUnite})`],y:[canValReel],
+         type:'bar',marker:{color:'#e9a824'},
+         name:`${canInput} = ${canValReel.toFixed(canInput==="Ur"?3:0)} ${canUnite}`,yaxis:'y'},
+        {x:['N'],y:[NcanVal],
+         type:'bar',marker:{color:'#2a6099'},
+         name:`N = ${NcanVal}`,yaxis:'y2'},
+      ],{
+        yaxis:{title:`${canInput} (${canUnite})`,range:[0,canMax*1.05],side:'left'},
+        yaxis2:{title:`N (0 à ${Nmax})`,range:[0,Nmax*1.05],overlaying:'y',side:'right'},
+        margin:{t:20,b:100,l:70,r:70},
+        paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'#fafcff',
+        legend:{orientation:'h',y:-0.4},showlegend:true,autosize:true,
+        barmode:'group',
+        annotations:[
+          {x:`${canInput} (${canUnite})`,y:canValReel*1.05,
+           text:`${canValReel.toFixed(canInput==="Ur"?3:0)} ${canUnite}`,
+           showarrow:false,font:{size:12,color:'#e9a824'}},
+          {x:'N',y:NcanVal+(Nmax*0.03),
+           text:`${NcanVal}`,
+           showarrow:false,font:{size:12,color:'#2a6099'}},
+          {x:0.5,y:-0.35,xref:'paper',yref:'paper',
+           text:`⚡ Quantum = ${quantum.toFixed(canInput==="Ur"?4:1)} ${canUnite}/pas`,
+           showarrow:false,font:{size:12,color:'#2a9d8f'},xanchor:'center'},
+        ]
+      },{displayModeBar:false,responsive:true});
+    }
+
+  },[E,R,bits,activeBlock,canInput,plotlyReady]);
+
+  // ── SVG Soleil ──
+  const SoleilSVG = (
+    <svg viewBox="0 0 240 120" style={{width:"100%",display:"block"}}>
+      <rect x="0" y="0" width="240" height="120" fill={cielColor}/>
+      {E<80 && [[20,15],[60,25],[120,10],[180,20],[210,35],[40,45],[160,12],[90,40]].map(([x,y],i)=>(
+        <circle key={i} cx={x} cy={y} r="1.5" fill="white" opacity={Math.max(0,1-E/80)}/>
+      ))}
+      {E>5 && Array.from({length:12},(_,i)=>{
+        const a=i*30*Math.PI/180,r1=28,r2=42;
+        return <line key={i} x1={70+r1*Math.cos(a)} y1={60+r1*Math.sin(a)}
+          x2={70+r2*Math.cos(a)} y2={60+r2*Math.sin(a)}
+          stroke="#FFD700" strokeWidth="3" strokeLinecap="round" opacity={soleilOpacity}/>;
+      })}
+      {E>5 && <>
+        <circle cx="70" cy="60" r="25"
+          fill={`rgb(${Math.round(255*E/1500)},${Math.round(229*E/1500)},0)`}
+          opacity={soleilOpacity}/>
+        <circle cx="70" cy="60" r="18" fill="#FFE500" opacity={soleilOpacity}/>
+      </>}
+      {nuagePct>0.05 && <g transform={`translate(${240-nuagePct*200},25)`} opacity={Math.min(nuagePct*2,1)}>
+        <ellipse cx="55" cy="25" rx="42" ry="22" fill="white" opacity="0.92"/>
+        <ellipse cx="32" cy="33" rx="30" ry="18" fill="white" opacity="0.92"/>
+        <ellipse cx="78" cy="33" rx="28" ry="16" fill="white" opacity="0.92"/>
+        <ellipse cx="55" cy="37" rx="48" ry="14" fill="white" opacity="0.92"/>
+      </g>}
+      {nuagePct>0.35 && <g transform={`translate(${240-nuagePct*160},5)`} opacity={Math.min((nuagePct-0.35)*2,1)}>
+        <ellipse cx="45" cy="22" rx="38" ry="20" fill="#e0e0e0" opacity="0.95"/>
+        <ellipse cx="25" cy="30" rx="26" ry="14" fill="#e0e0e0" opacity="0.95"/>
+        <ellipse cx="68" cy="30" rx="24" ry="13" fill="#e0e0e0" opacity="0.95"/>
+        <ellipse cx="45" cy="34" rx="42" ry="12" fill="#e0e0e0" opacity="0.95"/>
+      </g>}
+      {nuagePct>0.65 && <g transform={`translate(${240-nuagePct*130},35)`} opacity={Math.min((nuagePct-0.65)*3,1)}>
+        <ellipse cx="40" cy="20" rx="35" ry="18" fill="#bbb" opacity="0.95"/>
+        <ellipse cx="22" cy="28" rx="24" ry="12" fill="#bbb" opacity="0.95"/>
+        <ellipse cx="60" cy="28" rx="22" ry="11" fill="#bbb" opacity="0.95"/>
+        <ellipse cx="40" cy="32" rx="38" ry="10" fill="#bbb" opacity="0.95"/>
+      </g>}
+      <text x="165" y="60" textAnchor="middle" fontSize="13" fill="white" fontWeight="bold">E = {E} lx</text>
+    </svg>
+  );
+
+  // ── SVG Montage Arduino (fixe) ──
+  const MontageSVG = (
+    <svg viewBox="0 0 380 220" style={{width:"100%",display:"block"}}>
+
+      {/* Carte Arduino image */}
+      <image href="/simulations-chimie/ArduinoUno.svg"
+        x="200" y="10" width="170" height="125"/>
+
+      {/* Labels broches */}
+      <text x="196" y="58" textAnchor="end" fontSize="8" fill="#FFD700" fontWeight="bold">A0</text>
+      <text x="196" y="75" textAnchor="end" fontSize="8" fill="#333" fontWeight="bold">GND</text>
+      <text x="196" y="92" textAnchor="end" fontSize="8" fill="#e63946" fontWeight="bold">5V</text>
+      {pharesOn && <text x="196" y="109" textAnchor="end" fontSize="8"
+        fill={ledOn?"#FFD700":"#888"} fontWeight="bold">Pin 11</text>}
+
+      {/* Points de connexion broches */}
+      <circle cx="200" cy="55" r="3" fill="#FFD700"/>
+      <circle cx="200" cy="72" r="3" fill="#333"/>
+      <circle cx="200" cy="89" r="3" fill="#e63946"/>
+      {pharesOn && <circle cx="200" cy="106" r="3" fill={ledOn?"#FFD700":"#888"}/>}
+
+      {/* ── CIRCUIT PRINCIPAL : 5V → Rp → r → GND ── */}
+
+      {/* Fil 5V (rouge) depuis broche 5V vers Rp */}
+      <line x1="200" y1="89" x2="100" y2="89" stroke="#e63946" strokeWidth="1.8"/>
+      <line x1="100" y1="89" x2="100" y2="30" stroke="#e63946" strokeWidth="1.8"/>
+
+      {/* Photorésistance Rp (en haut) */}
+      <ellipse cx="100" cy="20" rx="18" ry="12" fill="#777" stroke="#555" strokeWidth="1.5"/>
+      <text x="100" y="24" textAnchor="middle" fontSize="7" fill="white">Rp</text>
+      <text x="70" y="20" textAnchor="end" fontSize="9" fill="#555" fontWeight="bold">
+        {Rp.toLocaleString()}Ω
+      </text>
+
+      {/* Nœud entre Rp et r (point de mesure A0) */}
+      <line x1="100" y1="30" x2="100" y2="8" stroke="#e63946" strokeWidth="1.8"/>
+      <circle cx="100" cy="110" r="4" fill="#FFD700" stroke="#cc8800" strokeWidth="1"/>
+
+      {/* Fil du nœud vers Rp bas */}
+      <line x1="100" y1="32" x2="100" y2="110" stroke="#e9a824" strokeWidth="1.8"/>
+
+      {/* Fil nœud → A0 (jaune) */}
+      <line x1="100" y1="110" x2="200" y2="55" stroke="#FFD700" strokeWidth="1.8" strokeDasharray="none"/>
+
+      {/* Résistance r */}
+      <rect x="80" y="112" width="40" height="18" rx="4" fill="#f4a261" stroke="#c07000" strokeWidth="1.5"/>
+      <text x="100" y="125" textAnchor="middle" fontSize="9" fill="#333" fontWeight="bold">{R} Ω</text>
+
+      {/* Fil r → GND (noir) */}
+      <line x1="100" y1="130" x2="100" y2="155" stroke="#333" strokeWidth="1.8"/>
+      <line x1="40" y1="155" x2="200" y2="155" stroke="#333" strokeWidth="1.8"/>
+      <line x1="200" y1="155" x2="200" y2="72" stroke="#333" strokeWidth="1.8"/>
+
+      {/* Label nœud A0 */}
+      <text x="115" y="108" fontSize="8" fill="#FFD700" fontWeight="bold">nœud A0</text>
+      <text x="115" y="118" fontSize="8" fill="#555">Ur = {Ur.toFixed(3)} V</text>
+
+      {/* ── CIRCUIT LED PHARES ── */}
+      {pharesOn && <>
+        {/* Fil Pin11 → résistance LED */}
+        <line x1="200" y1="106" x2="150" y2="106" stroke={ledOn?"#FFD700":"#888"} strokeWidth="1.5"/>
+        <line x1="150" y1="106" x2="150" y2="175" stroke={ledOn?"#FFD700":"#888"} strokeWidth="1.5"/>
+
+        {/* Résistance 1kΩ LED */}
+        <rect x="130" y="175" width="40" height="16" rx="3" fill="#f4a261" stroke="#c07000" strokeWidth="1"/>
+        <text x="150" y="186" textAnchor="middle" fontSize="8" fill="#333">1 kΩ</text>
+
+        {/* LED */}
+        <polygon points="138,195 162,195 150,210"
+          fill={ledOn?"#FFD700":"#aaa"} stroke={ledOn?"#FFA500":"#888"} strokeWidth="1.2"/>
+        <line x1="138" y1="195" x2="162" y2="195" stroke={ledOn?"#FFA500":"#888"} strokeWidth="1.5"/>
+        {ledOn && <circle cx="150" cy="203" r="15" fill="#FFD700" opacity="0.2"/>}
+        <line x1="150" y1="210" x2="150" y2="155" stroke="#333" strokeWidth="1.5"/>
+
+        {/* Label LED */}
+        <text x="170" y="203" fontSize="10" fill={ledOn?"#e65100":"#888"} fontWeight="bold">
+          {ledOn?"💡 ON":"OFF"}
+        </text>
+      </>}
+
+      {/* Symbole GND */}
+      <line x1="40" y1="155" x2="40" y2="165" stroke="#333" strokeWidth="1.5"/>
+      <line x1="32" y1="165" x2="48" y2="165" stroke="#333" strokeWidth="2"/>
+      <line x1="35" y1="168" x2="45" y2="168" stroke="#333" strokeWidth="1.5"/>
+      <line x1="38" y1="171" x2="42" y2="171" stroke="#333" strokeWidth="1"/>
+      <text x="40" y="180" textAnchor="middle" fontSize="8" fill="#333">GND</text>
+
+    </svg>
+  );
+
+  // ── Styles blocs ──
+  const blockBtn = (key, color, title, sub, val) => (
+    <div onClick={()=>setActiveBlock(key)} style={{
+      padding:"8px 12px", borderRadius:8,
+      border:`2px solid ${activeBlock===key?color:'#ddd'}`,
+      cursor:"pointer", background:activeBlock===key?color+'18':'white',
+      transition:"all 0.2s", textAlign:"center", userSelect:"none", width:"100%",
+    }}>
+      <div style={{fontWeight:600,fontSize:13}}>{title}</div>
+      <div style={{fontSize:11,color:"#888"}}>{sub}</div>
+      <div style={{fontSize:12,color,fontWeight:600}}>{val}</div>
+    </div>
+  );
+
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:14,
+      fontFamily:"Inter, system-ui, Arial",fontSize:14}}>
+
+      <div style={{display:"flex",gap:14,flexWrap:"wrap"}}>
+
+        {/* ── COLONNE GAUCHE ── */}
+        <div style={{flex:"0 0 260px",display:"flex",flexDirection:"column",gap:10}}>
+
+          {/* Source lumineuse */}
+          <div style={cardStyle}>
+            {SoleilSVG}
+            <input type="range" min="0" max="100" step="1"
+              value={Math.round(Math.sqrt(E/1500)*100)}
+              onChange={e=>{const v=parseFloat(e.target.value)/100;setE(Math.round(v*v*1500));}}
+              style={{width:"100%",accentColor:"#f4a261",marginTop:6}}/>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#888"}}>
+              <span>0 lx (nuit)</span>
+              <span>1500 lx (soleil)</span>
+            </div>
+          </div>
+
+          {/* Chaîne verticale */}
+          <div style={{...cardStyle,display:"flex",flexDirection:"column",
+            alignItems:"center",gap:4}}>
+            {blockBtn("capteur","#f4a261","📡 Capteur","photorésistance",`Rp = ${Rp.toLocaleString()} Ω`)}
+            <div style={{fontSize:22,color:"#333"}}>↓</div>
+            {blockBtn("conditionneur","#e9a824","⚡ Conditionneur",`pont diviseur R=${R}Ω`,`Ur = ${Ur.toFixed(3)} V`)}
+            <div style={{fontSize:22,color:"#333"}}>↓</div>
+            {blockBtn("can","#2a6099","🔢 CAN Arduino",`${bits} bits (0 à ${Nmax})`,`N = ${N}`)}
+            <div style={{fontSize:22,color:"#333"}}>↓</div>
+            {blockBtn("arduino","#2a9d8f","🤖 Traitement","algorithme phares",
+              pharesOn?(ledOn?"Sortie 11 : HIGH 💡":"Sortie 11 : LOW"):"inactif")}
+          </div>
+        </div>
+
+        {/* ── COLONNE DROITE ── */}
+        <div style={{flex:1,minWidth:300,display:"flex",flexDirection:"column",gap:12}}>
+
+          {/* Graphique (change selon bloc) */}
+          {activeBlock!=="arduino" && (
+            <div style={cardStyle}>
+              <div style={{fontWeight:600,color:"#445",marginBottom:6,
+                display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                {activeBlock==="capteur" && "Caractéristique — Rp = f(E)"}
+                {activeBlock==="conditionneur" && <>
+                  <span>Caractéristique — Ur = f(Rp)</span>
+                  <span style={{fontSize:12,color:"#888"}}>R =</span>
+                  <input type="number" value={R} onChange={e=>setR(parseFloat(e.target.value))}
+                    step="100" min="100" max="10000"
+                    style={{width:75,fontSize:12,padding:"2px 6px",borderRadius:4,border:"1px solid #ccc"}}/>
+                  <span style={{fontSize:12,color:"#888"}}>Ω</span>
+                </>}
+                {activeBlock==="can" && <>
+                  <span>Conversion CAN</span>
+                  <select value={bits} onChange={e=>setBits(parseInt(e.target.value))}
+                    style={{fontSize:12,padding:"2px 4px",borderRadius:4,border:"1px solid #ccc"}}>
+                    <option value={1}>1 bit (0-1)</option>
+                    <option value={2}>2 bits (0-3)</option>
+                    <option value={4}>4 bits (0-15)</option>
+                    <option value={8}>8 bits (0-255)</option>
+                    <option value={10}>10 bits (0-1023)</option>
+                    <option value={12}>12 bits (0-4095)</option>
+                  </select>
+                  <span style={{fontSize:12,color:"#888"}}>Entrée :</span>
+                  <select value={canInput} onChange={e=>setCanInput(e.target.value)}
+                    style={{fontSize:12,padding:"2px 4px",borderRadius:4,border:"1px solid #ccc"}}>
+                    <option value="Ur">Ur (V)</option>
+                    <option value="Rp">Rp (Ω)</option>
+                    <option value="E">E (lx)</option>
+                  </select>
+                </>}
+              </div>
+              <div ref={plotRef} style={{height:280}}/>
+              {/* Formule conditionneur */}
+              {activeBlock==="conditionneur" && (
+                <div style={{marginTop:8,padding:"10px 14px",borderRadius:6,
+                  background:"#fffbf0",border:"1px solid #e9a824",fontSize:13}}>
+                  <strong>Pont diviseur de tension :</strong><br/>
+                  <span style={{fontFamily:"monospace",fontSize:15,color:"#e9a824"}}>
+                    Ur = 5 × R / (Rp + R)
+                  </span><br/>
+                  <span style={{color:"#888",fontSize:12}}>
+                    R={R}Ω, Rp={Rp.toLocaleString()}Ω → <strong>Ur = {Ur.toFixed(3)} V</strong>
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Algorithme (seulement si traitement actif ET phares activés) */}
+          {activeBlock==="arduino" && pharesOn && (
+            <div style={cardStyle}>
+              <div style={{fontWeight:600,color:"#445",marginBottom:10}}>
+                Algorithme de contrôle
+              </div>
+              <div style={{fontFamily:"monospace",fontSize:12,lineHeight:2,
+                background:"#1e1e2e",color:"#cdd6f4",padding:12,borderRadius:8}}>
+                <div style={{color:"#89b4fa"}}>boucle infinie :</div>
+                <div style={{paddingLeft:16}}>
+                  <span style={{color:"#cba6f7"}}>Si </span>N &lt;&nbsp;
+                  <input type="number" value={algoN1}
+                    onChange={e=>setAlgoN1(parseInt(e.target.value))}
+                    style={{width:65,background:"#313244",color:"#f38ba8",
+                      border:"1px solid #45475a",borderRadius:4,padding:"1px 4px",
+                      fontFamily:"monospace",fontSize:12}}/>
+                  <span style={{color:"#cba6f7"}}> alors </span>sortie 11 =&nbsp;
+                  <select value={algoEtat1} onChange={e=>setAlgoEtat1(e.target.value)}
+                    style={{background:"#313244",color:"#a6e3a1",
+                      border:"1px solid #45475a",borderRadius:4,padding:"1px 4px",
+                      fontFamily:"monospace",fontSize:12}}>
+                    <option value="HIGH">HIGH</option>
+                    <option value="LOW">LOW</option>
+                  </select>
+                </div>
+                <div style={{paddingLeft:16}}>
+                  <span style={{color:"#cba6f7"}}>Si </span>N &gt;&nbsp;
+                  <input type="number" value={algoN2}
+                    onChange={e=>setAlgoN2(parseInt(e.target.value))}
+                    style={{width:65,background:"#313244",color:"#f38ba8",
+                      border:"1px solid #45475a",borderRadius:4,padding:"1px 4px",
+                      fontFamily:"monospace",fontSize:12}}/>
+                  <span style={{color:"#cba6f7"}}> alors </span>sortie 11 =&nbsp;
+                  <select value={algoEtat2} onChange={e=>setAlgoEtat2(e.target.value)}
+                    style={{background:"#313244",color:"#a6e3a1",
+                      border:"1px solid #45475a",borderRadius:4,padding:"1px 4px",
+                      fontFamily:"monospace",fontSize:12}}>
+                    <option value="HIGH">HIGH</option>
+                    <option value="LOW">LOW</option>
+                  </select>
+                </div>
+                <div style={{paddingLeft:16,color:"#6c7086"}}>délai 5s → relancer boucle</div>
+              </div>
+              <div style={{marginTop:8,padding:"8px 12px",borderRadius:6,
+                background:ledOn?"#fff3e0":"#f5f5f5",
+                border:`1px solid ${ledOn?"#f4a261":"#ddd"}`,
+                fontSize:12,fontWeight:600,color:ledOn?"#e65100":"#888"}}>
+                {ledOn
+                  ? `💡 Phares ALLUMÉS — N=${N} < ${algoN1}`
+                  : N>algoN2
+                    ? `💡 Phares ÉTEINTS — N=${N} > ${algoN2}`
+                    : `⏳ En attente — N=${N} (entre ${algoN1} et ${algoN2})`}
+              </div>
+            </div>
+          )}
+
+          {/* ── SCHÉMA MONTAGE FIXE (toujours visible) ── */}
+          <div style={cardStyle}>
+            <div style={{fontWeight:600,color:"#445",marginBottom:8,
+              display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <span>Montage Arduino</span>
+              <button onClick={()=>setPharesOn(v=>!v)}
+                style={{padding:"4px 12px",borderRadius:6,border:"none",
+                  cursor:"pointer",fontWeight:600,fontSize:12,
+                  background:pharesOn?"#f4a261":"#eee",
+                  color:pharesOn?"white":"#333"}}>
+                {pharesOn?"🔦 Désactiver phares":"🔦 Activer phares"}
+              </button>
+            </div>
+            {MontageSVG}
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 //  MENU — modifiez les noms et icônes ici
 // ============================================================
 
@@ -2752,6 +3205,7 @@ const SIMULATIONS = [
   { id: 5, label: "Régulation de niveau",        icon: "⚙️", color: "#2a6099", component: Simulation5, niveau: "TSTL" },
   { id: 6, label: "Point de fonctionnement", icon: "📈", color: "#e76f51", component: Simulation6, niveau: "TSTL" },
   { id: 7, label: "Cristallisation", icon: "❄️", color: "#0096c7", component: Simulation7, niveau: "TSTL" },
+  { id: 8, label: "Chaîne de mesure", icon: "💡", color: "#f4a261", component: Simulation8, niveau: "TSTL" },
 ];
 
 const NIVEAUX = [
