@@ -3188,14 +3188,157 @@ const NIVEAUX = [
   { label: "BTS",  key: "BTS",  color: "#6a4c93" },
 ];
 
+// ============================================================
+//  PAGE D'ACCUEIL
+// ============================================================
+
+function PageAccueil({ onStart }) {
+  const cardA = {
+    background: "white",
+    borderRadius: 14,
+    padding: "20px 24px",
+    boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
+    border: "1px solid #eee",
+  };
+
+  const simulations = [
+    { niveau:"1G", color:"#2a9d8f", sims:[
+      { icon:"⚗️", label:"Avancement d'une réaction", desc:"Modélisation de l'avancement d'une réaction chimique avec histogrammes et courbes continues." },
+      { icon:"🧪", label:"Titrage volumétrique", desc:"Simulation d'un titrage avec bécher animé, agitateur magnétique et courbes en temps réel." },
+    ]},
+    { niveau:"TSTL", color:"#e9a824", sims:[
+      { icon:"⚡", label:"Titrages électrochimiques", desc:"Potentiométrie, ampérométrie — courbes i=f(E) et suivi du titrage." },
+      { icon:"🔵", label:"Diagramme de Hansen", desc:"Sphère de Hansen, solubilité des polymères, optimisation de mélanges de solvants." },
+      { icon:"⚙️", label:"Régulation de niveau", desc:"Régulations TOR, P et PI d'un réservoir avec animations en temps réel." },
+      { icon:"📈", label:"Point de fonctionnement", desc:"Caractéristique statique d'un procédé et point de fonctionnement d'une régulation P." },
+      { icon:"❄️", label:"Cristallisation", desc:"Cristallisation par refroidissement ou évaporation avec animation du bécher." },
+      { icon:"💡", label:"Chaîne de mesure", desc:"Capteur de lumière Arduino — photorésistance, conditionneur, CAN et algorithme de contrôle." },
+    ]},
+    { niveau:"BTS", color:"#6a4c93", sims:[]},
+  ];
+
+  return (
+    <div style={{display:"flex", flexDirection:"column", gap:24,
+      fontFamily:"Inter, system-ui, Arial", maxWidth:900, margin:"0 auto"}}>
+
+      {/* Hero */}
+      <div style={{...cardA, background:"linear-gradient(135deg, #2a9d8f15, #e9a82415)",
+        borderColor:"#2a9d8f33", textAlign:"center", padding:"32px 24px"}}>
+        <div style={{fontSize:48, marginBottom:20}}>⚗️🧪🔬</div>
+        <h2 style={{fontSize:24, fontWeight:700, color:"#222", margin:"0 0 12px"}}>
+          Labo Chimie & Physique
+        </h2>
+        <p style={{fontSize:15, color:"#555", lineHeight:1.7, maxWidth:600, margin:"0 auto 20px"}}>
+          Un ensemble de simulations interactives pour explorer la chimie (et un peu la physique),
+          conçues pour les niveaux 1G spé PC, TSTL et BTS Métiers de la Chimie. 
+        
+        </p>
+        <button onClick={onStart} style={{
+          padding:"10px 28px", borderRadius:8, border:"none",
+          background:"#2a9d8f", color:"white", fontSize:15,
+          fontWeight:700, cursor:"pointer",
+          boxShadow:"0 4px 14px #2a9d8f44"
+        }}>
+          Explorer les simulations →
+        </button>
+      </div>
+
+      {/* Simulations par niveau */}
+      {simulations.map(({niveau, color, sims}) => sims.length > 0 && (
+        <div key={niveau}>
+          <div style={{display:"flex", alignItems:"center", gap:10, marginBottom:12}}>
+            <div style={{height:3, width:28, borderRadius:2, background:color}}/>
+            <span style={{fontSize:13, fontWeight:700, color, textTransform:"uppercase",
+              letterSpacing:"0.1em"}}>
+              Niveau {niveau}
+            </span>
+            <div style={{flex:1, height:1, background:"#eee"}}/>
+          </div>
+          <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))",
+            gap:12}}>
+            {sims.map(({icon, label, desc}) => (
+              <div key={label} style={{...cardA,
+                borderLeft:`3px solid ${color}`,
+                transition:"transform 0.15s, box-shadow 0.15s",
+                cursor:"default"
+              }}
+                onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)"; e.currentTarget.style.boxShadow="0 6px 20px rgba(0,0,0,0.1)";}}
+                onMouseLeave={e=>{e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="0 2px 12px rgba(0,0,0,0.07)";}}>
+                <div style={{fontSize:24, marginBottom:6}}>{icon}</div>
+                <div style={{fontWeight:700, fontSize:14, color:"#222", marginBottom:4}}>{label}</div>
+                <div style={{fontSize:12, color:"#777", lineHeight:1.6}}>{desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      {/* Sources et crédits */}
+      <div style={{...cardA, background:"#f8f8f8", borderColor:"#e0e0e0"}}>
+        <div style={{fontWeight:700, fontSize:15, color:"#333", marginBottom:14}}>
+          📚 Sources & inspirations
+        </div>
+        <div style={{display:"flex", flexDirection:"column", gap:12, fontSize:13, color:"#555", lineHeight:1.7}}>
+
+          <div style={{display:"flex", gap:12, alignItems:"flex-start"}}>
+            <span style={{fontSize:20, flexShrink:0}}>🎨</span>
+            <div>
+              <strong style={{color:"#333"}}>Marc-Olivier REULA</strong>
+              {" "}— Enseignant en BTS Métiers de la Chimie à l'ENCPB (Paris).
+              Source d'inspiration pour la conception de ce site, auteur de simulations
+              pédagogiques interactives :{" "}
+              <a href="https://marcoprofparis.github.io/couleur/" target="_blank"
+                style={{color:"#2a9d8f", textDecoration:"none", fontWeight:600}}>
+                Couleur
+              </a>
+              {" · "}
+              <a href="https://marcoprofparis.github.io/rheologie/" target="_blank"
+                style={{color:"#2a9d8f", textDecoration:"none", fontWeight:600}}>
+                Rhéologie & Mouillage
+              </a>
+            </div>
+          </div>
+
+          <div style={{display:"flex", gap:12, alignItems:"flex-start"}}>
+            <span style={{fontSize:20, flexShrink:0}}>⚡</span>
+            <div>
+              <strong style={{color:"#333"}}>Jean LAMERENX</strong>
+              {" "}— Enseignant en CPGE au lycée Louis-le-Grand (Paris).
+              Les courbes i = f(E) de la simulation "Titrages électrochimiques" ont été
+              codées initialement en Python et aimablement partagées à l'occasion des{" "}
+              <strong>JIREC 2024</strong>.
+            </div>
+          </div>
+
+          <div style={{display:"flex", gap:12, alignItems:"flex-start"}}>
+            <span style={{fontSize:20, flexShrink:0}}>🤖</span>
+            <div>
+              <strong style={{color:"#333"}}>Claude (Anthropic)</strong>
+              {" "}— L'ensemble des simulations a été développé par itérations
+              successives en collaboration avec Claude, assistant IA d'Anthropic,
+              à partir de discussions, de codes Python existants et de quelques idées pédagogiques plus ou moins pertinentes!
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{textAlign:"center", fontSize:12, color:"#aaa", paddingBottom:16}}>
+        Labo Chimie & Physique — Simulations interactives pédagogiques
+      </div>
+
+    </div>
+  );
+}
 
 // ============================================================
 //  COMPOSANT PRINCIPAL
 // ============================================================
 
 export default function App() {
-  const [activeId, setActiveId] = useState(1);
-  const active = SIMULATIONS.find((s) => s.id === activeId);
+  const [activeId, setActiveId] = useState(0);
+  const active = SIMULATIONS.find(s => s.id === activeId) || SIMULATIONS[0];
   const ActiveComponent = active.component;
   const [expanded, setExpanded] = useState({ "1G": true, "TSTL": true, "BTS": true });
   const [plotlyReady, setPlotlyReady] = useState(false);
@@ -3232,9 +3375,23 @@ export default function App() {
           <div>
             <div style={styles.siteTitle}>Labo Chimie et Physique</div>
             <div style={styles.siteSub}>Simulations interactives</div>
+            <div style={{fontSize:"0.72rem", color:"#aaa", fontStyle:"italic", fontFamily:"'Outfit', sans-serif"}}>par Nils ARONSSOHN, enseignant au lycée Argouges de Grenoble</div>
           </div>
         </div>
         <div style={styles.divider} />
+        <button onClick={() => setActiveId(0)} style={{
+            ...styles.navBtn,
+            background: activeId === 0 ? "#2a9d8f" : "transparent",
+            color: activeId === 0 ? "#fff" : "#444",
+            boxShadow: activeId === 0 ? "0 4px 18px #2a9d8f55" : "none",
+            transform: activeId === 0 ? "translateX(4px)" : "translateX(0)",
+            marginBottom: 8,
+          }}>
+            <span style={{ fontSize: "1.3rem" }}>🏠</span>
+            <span style={{ flex: 1 }}>Accueil</span>
+            {activeId === 0 && <span style={{ fontSize: "1.4rem", opacity: 0.8 }}>›</span>}
+          </button>
+          <div style={styles.divider}/>
         <nav style={styles.nav}>
           {NIVEAUX.map(niv => {
             const simsNiv = SIMULATIONS.filter(s => s.niveau === niv.key);
@@ -3307,14 +3464,22 @@ export default function App() {
       <main style={styles.main}>
         <div style={{
           ...styles.topBar,
-          background: `linear-gradient(135deg, ${active.color}22, ${active.color}08)`,
-          borderBottom: `3px solid ${active.color}`
+          background: activeId === 0
+            ? "linear-gradient(135deg, #2a9d8f22, #2a9d8f08)"
+            : `linear-gradient(135deg, ${active.color}22, ${active.color}08)`,
+          borderBottom: `3px solid ${activeId === 0 ? "#2a9d8f" : active.color}`
         }}>
-          <span style={{ fontSize: "2rem" }}>{active.icon}</span>
-          <h1 style={{ ...styles.pageTitle, color: active.color }}>{active.label}</h1>
+          <span style={{ fontSize: "2rem" }}>{activeId === 0 ? "🏠" : active.icon}</span>
+          <h1 style={{ ...styles.pageTitle, color: activeId === 0 ? "#2a9d8f" : active.color }}>
+            <span style={{fontFamily:"'Outfit', sans-serif", fontWeight:800, letterSpacing:"-0.5px"}}>
+              {activeId === 0 ? "Bienvenue !" : active.label}
+            </span>
+          </h1>
         </div>
         <div style={styles.simContainer}>
-          <ActiveComponent plotlyReady={plotlyReady} />
+          {activeId === 0
+            ? <PageAccueil onStart={() => setActiveId(1)} />
+            : <ActiveComponent key={activeId} plotlyReady={plotlyReady} />}
         </div>
       </main>
     </div>
@@ -3327,7 +3492,7 @@ const styles = {
   bgBlob2: { position: "fixed", bottom: "-100px", left: "200px", width: "350px", height: "350px", borderRadius: "50%", background: "radial-gradient(circle, #2a9d8f22 0%, transparent 70%)", pointerEvents: "none", zIndex: 0 },
   sidebar: { width: "230px", minHeight: "100vh", background: "#ffffff", boxShadow: "4px 0 24px rgba(0,0,0,0.07)", display: "flex", flexDirection: "column", padding: "1.5rem 1rem", position: "relative", zIndex: 10, flexShrink: 0 },
   sidebarHeader: { display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" },
-  siteTitle: { fontFamily: "'Playfair Display', Georgia, serif", fontSize: "1.15rem", fontWeight: "700", color: "#222", lineHeight: 1.2 },
+  siteTitle: { fontFamily: "'Outfit', sans-serif", fontSize: "1.15rem", fontWeight: "800", color: "#222", lineHeight: 1.2, letterSpacing:"-0.3px" },
   siteSub: { fontSize: "0.68rem", color: "#999", textTransform: "uppercase", letterSpacing: "0.08em" },
   divider: { height: "1px", background: "linear-gradient(to right, #e0e0e0, transparent)", margin: "0.5rem 0 1rem" },
   nav: { display: "flex", flexDirection: "column", gap: "0.5rem", flex: 1 },
