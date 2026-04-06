@@ -1507,6 +1507,8 @@ function Simulation5({ plotlyReady }) {
   const [running, setRunning]     = useState(false);
   const [frame, setFrame]         = useState(0);
   const [simData, setSimData]     = useState(null);
+  const [Hcons, setHcons] = useState(30);
+  const [Qmax, setQmax]   = useState(200);
 
   // Paramètres TOR
   const [hBas, setHBas]           = useState(25);
@@ -1523,10 +1525,8 @@ function Simulation5({ plotlyReady }) {
 
   // ── Constantes physiques ──
   const S       = Math.PI * (15/100)**2; // m²
-  const H0      = 5;    // cm
-  const Hcons   = 30;   // cm
+  const H0      = 0;    // cm
   const Qmin    = 0;    // L/h
-  const Qmax    = 200;  // L/h
 
   // ── Débit de puisage (Torricelli) ──
   const [rPuisage, setRPuisage] = useState(0.2);
@@ -1742,6 +1742,21 @@ function Simulation5({ plotlyReady }) {
             <div style={{fontWeight:600, color:"#445", marginBottom:10}}>Paramètres</div>
             <div style={{display:"flex", gap:12, flexWrap:"wrap"}}>
 
+              {/* Consigne — seulement P et PI */}
+            {(mode==="P" || mode==="PI") && (
+              <div style={fieldStyle}>
+                <span style={labelStyle}>Consigne H (cm)</span>
+                <input type="number" style={inputStyle} step="1" min="5" max="40"
+                  value={Hcons} onChange={e=>setHcons(parseFloat(e.target.value))}/>
+              </div>
+            )}
+            {/* Débit max pompe — tous les modes */}
+            <div style={fieldStyle}>
+              <span style={labelStyle}>Débit max pompe (L/h)</span>
+              <input type="number" style={inputStyle} step="10" min="50" max="500"
+                value={Qmax} onChange={e=>setQmax(parseFloat(e.target.value))}/>
+            </div>
+
               {mode==="TOR" && <>
                 <div style={fieldStyle}>
                   <span style={labelStyle}>H seuil bas (cm)</span>
@@ -1882,7 +1897,7 @@ function Simulation5({ plotlyReady }) {
               <rect x="170" y="230" width="30" height="10" rx="3" fill="#888"/>
               <text x="185" y="255" textAnchor="middle" fontSize="9" fill="#666">Puisage</text>
               {/* Jet d'eau sortant */}
-              {(() => {
+              {simData && (() => {
                 const Qsort = Math.PI * rEff**2 * Math.sqrt(2 * 9.81 * Math.max(H_cur,0)/100) * 3600 * 1000;
                 const jetW = Math.min(8, Math.max(1, Qsort/25));
                 const jetL = Math.min(25, Math.max(2, Qsort/8));
@@ -2799,8 +2814,12 @@ function Simulation8({ plotlyReady }) {
   // ── Algorithme phares ──
   useEffect(() => {
     if (!pharesOn) { setPharesEtat("OFF"); return; }
-    if (N < algoN1 && algoEtat1 === "HIGH") setPharesEtat("ON");
-    if (N > algoN2 && algoEtat2 === "LOW")  setPharesEtat("OFF");
+    if (N < algoN1) {
+      setPharesEtat(algoEtat1 === "HIGH" ? "ON" : "OFF");
+    } else if (N > algoN2) {
+      setPharesEtat(algoEtat2 === "HIGH" ? "ON" : "OFF");
+    }
+    // Entre les deux seuils : l'état reste inchangé (mémoire)
   }, [N, pharesOn, algoN1, algoN2, algoEtat1, algoEtat2]);
 
   const ledOn = pharesOn && pharesEtat === "ON";
@@ -3121,7 +3140,7 @@ function Simulation8({ plotlyReady }) {
                     style={{width:65, background:"#313244", color:"#f38ba8",
                       border:"1px solid #45475a", borderRadius:4, padding:"1px 4px",
                       fontFamily:"monospace", fontSize:12}}/>
-                  <span style={{color:"#cba6f7"}}> alors </span>sortie 11 =&nbsp;
+                  <span style={{color:"#cba6f7"}}> alors </span>sortie 8 =&nbsp;
                   <select value={algoEtat1} onChange={e=>setAlgoEtat1(e.target.value)}
                     style={{background:"#313244", color:"#a6e3a1",
                       border:"1px solid #45475a", borderRadius:4, padding:"1px 4px",
@@ -3137,7 +3156,7 @@ function Simulation8({ plotlyReady }) {
                     style={{width:65, background:"#313244", color:"#f38ba8",
                       border:"1px solid #45475a", borderRadius:4, padding:"1px 4px",
                       fontFamily:"monospace", fontSize:12}}/>
-                  <span style={{color:"#cba6f7"}}> alors </span>sortie 11 =&nbsp;
+                  <span style={{color:"#cba6f7"}}> alors </span>sortie 8 =&nbsp;
                   <select value={algoEtat2} onChange={e=>setAlgoEtat2(e.target.value)}
                     style={{background:"#313244", color:"#a6e3a1",
                       border:"1px solid #45475a", borderRadius:4, padding:"1px 4px",
