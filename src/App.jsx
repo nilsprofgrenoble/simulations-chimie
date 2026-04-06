@@ -2923,90 +2923,109 @@ function Simulation8({ plotlyReady }) {
 
   // ── SVG Montage Arduino (fixe) ──
   const MontageSVG = (
-    <svg viewBox="0 0 380 220" style={{width:"100%",display:"block"}}>
+    <svg viewBox="0 0 400 240" style={{width:"100%", display:"block"}}>
 
-      {/* Carte Arduino image */}
-      <image href="/simulations-chimie/ArduinoUno.svg"
-        x="200" y="10" width="170" height="125"/>
+      {/* ── Carte Arduino ── */}
+      <rect x="240" y="20" width="150" height="190" rx="8"
+        fill="#0097a7" stroke="#006978" strokeWidth="2"/>
+      <rect x="245" y="25" width="140" height="180" rx="6"
+        fill="#00acc1" opacity="0.2"/>
+      {/* Logo Arduino */}
+      <text x="315" y="55" textAnchor="middle" fontSize="13"
+        fill="white" fontWeight="bold">Arduino</text>
+      <text x="315" y="72" textAnchor="middle" fontSize="11"
+        fill="white" opacity="0.8">UNO</text>
+      {/* Connecteur USB */}
+      <rect x="240" y="170" width="20" height="30" rx="3"
+        fill="#888" stroke="#555" strokeWidth="1"/>
+      <text x="250" y="210" textAnchor="middle" fontSize="8" fill="#555">USB</text>
 
-      {/* Labels broches */}
-      <text x="196" y="58" textAnchor="end" fontSize="8" fill="#FFD700" fontWeight="bold">A0</text>
-      <text x="196" y="75" textAnchor="end" fontSize="8" fill="#333" fontWeight="bold">GND</text>
-      <text x="196" y="92" textAnchor="end" fontSize="8" fill="#e63946" fontWeight="bold">5V</text>
-      {pharesOn && <text x="196" y="109" textAnchor="end" fontSize="8"
-        fill={ledOn?"#FFD700":"#888"} fontWeight="bold">Pin 11</text>}
+      {/* ── Broches ── */}
+      {/* 5V */}
+      <rect x="240" y="100" width="10" height="7" rx="1" fill="#e63946"/>
+      <text x="236" y="107" textAnchor="end" fontSize="9" fill="#e63946" fontWeight="bold">5V</text>
+      {/* GND */}
+      <rect x="240" y="118" width="10" height="7" rx="1" fill="#333"/>
+      <text x="236" y="125" textAnchor="end" fontSize="9" fill="#333" fontWeight="bold">GND</text>
+      {/* A0 */}
+      <rect x="240" y="136" width="10" height="7" rx="1" fill="#FFD700"/>
+      <text x="236" y="143" textAnchor="end" fontSize="9" fill="#cc9900" fontWeight="bold">A0</text>
+      {/* Pin 11 */}
+      {pharesOn && <>
+        <rect x="240" y="154" width="10" height="7" rx="1"
+          fill={ledOn?"#FFD700":"#888"}/>
+        <text x="236" y="161" textAnchor="end" fontSize="9"
+          fill={ledOn?"#cc9900":"#888"} fontWeight="bold">11</text>
+      </>}
 
-      {/* Points de connexion broches */}
-      <circle cx="200" cy="55" r="3" fill="#FFD700"/>
-      <circle cx="200" cy="72" r="3" fill="#333"/>
-      <circle cx="200" cy="89" r="3" fill="#e63946"/>
-      {pharesOn && <circle cx="200" cy="106" r="3" fill={ledOn?"#FFD700":"#888"}/>}
+      {/* ── CIRCUIT : 5V → Rp → r → GND ── */}
 
-      {/* ── CIRCUIT PRINCIPAL : 5V → Rp → r → GND ── */}
-
-      {/* Fil 5V (rouge) depuis broche 5V vers Rp */}
-      <line x1="200" y1="89" x2="100" y2="89" stroke="#e63946" strokeWidth="1.8"/>
-      <line x1="100" y1="89" x2="100" y2="30" stroke="#e63946" strokeWidth="1.8"/>
+      {/* Fil rouge : 5V → haut du circuit */}
+      <line x1="240" y1="103" x2="80" y2="103" stroke="#e63946" strokeWidth="2"/>
+      <line x1="80" y1="103" x2="80" y2="30" stroke="#e63946" strokeWidth="2"/>
 
       {/* Photorésistance Rp (en haut) */}
-      <ellipse cx="100" cy="20" rx="18" ry="12" fill="#777" stroke="#555" strokeWidth="1.5"/>
-      <text x="100" y="24" textAnchor="middle" fontSize="7" fill="white">Rp</text>
-      <text x="70" y="20" textAnchor="end" fontSize="9" fill="#555" fontWeight="bold">
-        {Rp.toLocaleString()}Ω
+      {/* Corps Rp */}
+      <ellipse cx="80" cy="22" rx="20" ry="13"
+        fill="#6d4c41" stroke="#4e342e" strokeWidth="1.5"/>
+      <text x="80" y="26" textAnchor="middle" fontSize="8" fill="white" fontWeight="bold">Rp</text>
+      {/* Pattes Rp */}
+      <line x1="80" y1="35" x2="80" y2="9" stroke="#6d4c41" strokeWidth="1.5"/>
+      {/* Label Rp */}
+      <text x="45" y="22" textAnchor="end" fontSize="9" fill="#555">{Rp.toLocaleString()} Ω</text>
+
+      {/* Fil de Rp vers GND (haut) */}
+      <line x1="80" y1="9" x2="80" y2="5" stroke="#333" strokeWidth="2"/>
+      <line x1="60" y1="5" x2="100" y2="5" stroke="#333" strokeWidth="2"/>
+      {/* Symbole GND haut */}
+      <line x1="65" y1="5" x2="30" y2="5" stroke="#333" strokeWidth="2"/>
+      <line x1="30" y1="5" x2="30" y2="180" stroke="#333" strokeWidth="2"/>
+      <line x1="30" y1="180" x2="240" y2="180" stroke="#333" strokeWidth="2"/>
+      <line x1="240" y1="180" x2="240" y2="122" stroke="#333" strokeWidth="2"/>
+
+      {/* Nœud entre Rp et r → A0 */}
+      <circle cx="80" cy="115" r="4" fill="#FFD700" stroke="#cc9900" strokeWidth="1.5"/>
+      {/* Fil nœud → A0 */}
+      <line x1="80" y1="115" x2="240" y2="140" stroke="#FFD700" strokeWidth="1.8"/>
+      {/* Label nœud */}
+      <text x="145" y="122" textAnchor="middle" fontSize="9" fill="#cc9900" fontWeight="bold">
+        Ur = {Ur.toFixed(3)} V
       </text>
 
-      {/* Nœud entre Rp et r (point de mesure A0) */}
-      <line x1="100" y1="30" x2="100" y2="8" stroke="#e63946" strokeWidth="1.8"/>
-      <circle cx="100" cy="110" r="4" fill="#FFD700" stroke="#cc8800" strokeWidth="1"/>
-
-      {/* Fil du nœud vers Rp bas */}
-      <line x1="100" y1="32" x2="100" y2="110" stroke="#e9a824" strokeWidth="1.8"/>
-
-      {/* Fil nœud → A0 (jaune) */}
-      <line x1="100" y1="110" x2="200" y2="55" stroke="#FFD700" strokeWidth="1.8" strokeDasharray="none"/>
-
       {/* Résistance r */}
-      <rect x="80" y="112" width="40" height="18" rx="4" fill="#f4a261" stroke="#c07000" strokeWidth="1.5"/>
-      <text x="100" y="125" textAnchor="middle" fontSize="9" fill="#333" fontWeight="bold">{R} Ω</text>
+      <rect x="60" y="118" width="40" height="20" rx="4"
+        fill="#f4a261" stroke="#c07000" strokeWidth="1.5"/>
+      <text x="80" y="132" textAnchor="middle" fontSize="9" fill="#333" fontWeight="bold">
+        {R} Ω
+      </text>
 
-      {/* Fil r → GND (noir) */}
-      <line x1="100" y1="130" x2="100" y2="155" stroke="#333" strokeWidth="1.8"/>
-      <line x1="40" y1="155" x2="200" y2="155" stroke="#333" strokeWidth="1.8"/>
-      <line x1="200" y1="155" x2="200" y2="72" stroke="#333" strokeWidth="1.8"/>
+      {/* Fil entre Rp et r */}
+      <line x1="80" y1="35" x2="80" y2="118" stroke="#e9a824" strokeWidth="2"/>
 
-      {/* Label nœud A0 */}
-      <text x="115" y="108" fontSize="8" fill="#FFD700" fontWeight="bold">nœud A0</text>
-      <text x="115" y="118" fontSize="8" fill="#555">Ur = {Ur.toFixed(3)} V</text>
+      {/* Fil r → GND */}
+      <line x1="80" y1="138" x2="80" y2="180" stroke="#333" strokeWidth="2"/>
 
-      {/* ── CIRCUIT LED PHARES ── */}
+      {/* ── LED PHARES ── */}
       {pharesOn && <>
-        {/* Fil Pin11 → résistance LED */}
-        <line x1="200" y1="106" x2="150" y2="106" stroke={ledOn?"#FFD700":"#888"} strokeWidth="1.5"/>
-        <line x1="150" y1="106" x2="150" y2="175" stroke={ledOn?"#FFD700":"#888"} strokeWidth="1.5"/>
-
-        {/* Résistance 1kΩ LED */}
-        <rect x="130" y="175" width="40" height="16" rx="3" fill="#f4a261" stroke="#c07000" strokeWidth="1"/>
-        <text x="150" y="186" textAnchor="middle" fontSize="8" fill="#333">1 kΩ</text>
-
+        {/* Fil Pin11 → résistance 1kΩ */}
+        <line x1="240" y1="157" x2="170" y2="157" stroke={ledOn?"#FFD700":"#888"} strokeWidth="1.8"/>
+        <line x1="170" y1="157" x2="170" y2="195" stroke={ledOn?"#FFD700":"#888"} strokeWidth="1.8"/>
+        {/* Résistance 1kΩ */}
+        <rect x="150" y="195" width="40" height="18" rx="4"
+          fill="#f4a261" stroke="#c07000" strokeWidth="1.5"/>
+        <text x="170" y="208" textAnchor="middle" fontSize="8" fill="#333">1 kΩ</text>
         {/* LED */}
-        <polygon points="138,195 162,195 150,210"
-          fill={ledOn?"#FFD700":"#aaa"} stroke={ledOn?"#FFA500":"#888"} strokeWidth="1.2"/>
-        <line x1="138" y1="195" x2="162" y2="195" stroke={ledOn?"#FFA500":"#888"} strokeWidth="1.5"/>
-        {ledOn && <circle cx="150" cy="203" r="15" fill="#FFD700" opacity="0.2"/>}
-        <line x1="150" y1="210" x2="150" y2="155" stroke="#333" strokeWidth="1.5"/>
-
-        {/* Label LED */}
-        <text x="170" y="203" fontSize="10" fill={ledOn?"#e65100":"#888"} fontWeight="bold">
+        <polygon points="155,217 185,217 170,232"
+          fill={ledOn?"#FFD700":"#ccc"} stroke={ledOn?"#FFA500":"#888"} strokeWidth="1.2"/>
+        <line x1="155" y1="217" x2="185" y2="217"
+          stroke={ledOn?"#FFA500":"#888"} strokeWidth="1.5"/>
+        {ledOn && <circle cx="170" cy="225" r="14" fill="#FFD700" opacity="0.25"/>}
+        <line x1="170" y1="232" x2="170" y2="180"
+          stroke="#333" strokeWidth="1.5"/>
+        <text x="192" y="228" fontSize="10" fill={ledOn?"#e65100":"#888"} fontWeight="bold">
           {ledOn?"💡 ON":"OFF"}
         </text>
       </>}
-
-      {/* Symbole GND */}
-      <line x1="40" y1="155" x2="40" y2="165" stroke="#333" strokeWidth="1.5"/>
-      <line x1="32" y1="165" x2="48" y2="165" stroke="#333" strokeWidth="2"/>
-      <line x1="35" y1="168" x2="45" y2="168" stroke="#333" strokeWidth="1.5"/>
-      <line x1="38" y1="171" x2="42" y2="171" stroke="#333" strokeWidth="1"/>
-      <text x="40" y="180" textAnchor="middle" fontSize="8" fill="#333">GND</text>
 
     </svg>
   );
