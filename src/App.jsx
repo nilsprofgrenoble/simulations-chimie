@@ -1769,7 +1769,7 @@ function Simulation5({ plotlyReady }) {
                     value={hHaut} onChange={e=>setHHaut(parseFloat(e.target.value))}/>
                 </div>
                 <div style={fieldStyle}>
-                  <span style={labelStyle}>Rayon robinet de puisage (m)</span>
+                  <span style={labelStyle}>Rayon robinet de puisage (cm)</span>
                   <input type="number" style={inputStyle} step="0.01" min="0.05" max="0.5"
                     value={rPuisage} onChange={e=>setRPuisage(parseFloat(e.target.value))}/>
                 </div>
