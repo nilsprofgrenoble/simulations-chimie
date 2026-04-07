@@ -5333,6 +5333,1081 @@ function BeerLambertBTS({ plotlyReady }) {
   );
 }
 
+// SIM 12 — SIMULATION CLHP (BTS)
+// Modèle de X. Bataille (ENCPB/RNChimie, 2008)
+
+const MOLECULES_CLHP = [
+  { nom: "Paracétamol",          logP:  0.34 },
+  { nom: "Caféine",              logP: -0.13 },
+  { nom: "Phénol",               logP:  1.48 },
+  { nom: "Phénacétine",          logP:  1.63 },
+  { nom: "o-nitrophénol",        logP:  1.71 },
+  { nom: "Ac. 2-aminobenzoïque", logP:  1.21 },
+  { nom: "Ac. 2-chlorobenzoïque",logP:  2.01 },
+  { nom: "Benzophénone",         logP:  3.18 },
+  { nom: "Benzoate de méthyle",  logP:  2.20 },
+  { nom: "Lidocaïne",            logP:  2.36 },
+  { nom: "4-nitrobenz. éthyle",  logP:  2.33 },
+  { nom: "Triphénylcarbinol",    logP:  4.59 },
+  { nom: "1,3-diphénylacétone",  logP:  2.99 },
+  { nom: "Benzaldéhyde",         logP:  1.64 },
+  { nom: "Diméthylaniline",      logP:  1.86 },
+  { nom: "m-nitrophénol",        logP:  1.93 },
+  { nom: "Hydrobenzoïne",        logP:  1.86 },
+];
+
+function SimulationCLHP({ plotlyReady }) {
+  const [longueur, setLongueur] = useState(15);
+  const [diametre, setDiametre] = useState(4.6);
+  const [dp, setDp] = useState(5);
+  const [nC, setNC] = useState(18);
+  const [porosite, setPorosite] = useState(0.8);
+  const [temperature, setTemperature] = useState(25);
+  const [debit, setDebit] = useState(2.5);
+  const [pctSolvOrg, setPctSolvOrg] = useState(50);
+  const [mp, setMp] = useState(-0.64);
+  const [mo, setMo] = useState(-0.61);
+  const [bParam, setBParam] = useState(19);
+  const [cParam, setCParam] = useState(-1.6);
+  const [selected, setSelected] = useState([2, 4]);
+  const [customMols, setCustomMols] = useState([]);
+  const [newNom, setNewNom] = useState('');
+  const [newLogP, setNewLogP] = useState(1.0);
+  const [concs, setConcs] = useState({});
+  const [epsilons, setEpsilons] = useState({});
+  const [showExpData, setShowExpData] = useState(false);
+  const [expTr, setExpTr] = useState({});
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const plotRef = useRef(null);
+
+  const r = diametre / 20;
+  const dpCm = dp * 1e-4;
+  const phi = pctSolvOrg / 100;
+  const tm = porosite * Math.PI * r * r * longueur / debit;
+  const nPlateaux = longueur / (dpCm * nC);
+
+  const allMols = [
+    ...selected.map(i => ({
+      ...MOLECULES_CLHP[i], idx: 'pre_' + i,
+      conc: concs['pre_' + i] ?? 1,
+      epsilon: epsilons['pre_' + i] ?? 10,
+    })),
+    ...customMols.map((m, i) => ({
+      ...m, idx: 'cust_' + i,
+      conc: concs['cust_' + i] ?? 1,
+      epsilon: epsilons['cust_' + i] ?? 10,
+    })),
+  ];
+
+  function calcMol(mol) {
+    const ai = mp * mol.logP + mo;
+    const lnk = phi > 0 ? ai * Math.log(phi) + bParam / temperature + cParam : -20;
+    const k = Math.exp(lnk);
+    const tr = tm * (1 + k);
+    const W = nPlateaux > 0 ? 2.355 * tr / Math.sqrt(nPlateaux) : 0.1;
+    const sigma = W / 2.355;
+    return { k, tr, W, sigma };
+  }
+
+  const molsCalc = allMols.map(m => ({ ...m, ...calcMol(m) }))
+    .sort((a, b) => a.tr - b.tr);
+
+  const resolutions = molsCalc.slice(0, -1).map((m, i) => {
+    const next = molsCalc[i + 1];
+    if (m.W + next.W === 0) return null;
+    return 1.18 * (next.tr - m.tr) / (m.W + next.W);
+  });
+
+  useEffect(() => {
+    if (!plotlyReady || !plotRef.current || allMols.length === 0) return;
+    const tMax = Math.max(tm * 2, ...molsCalc.map(m => m.tr + 3 * m.sigma));
+    const N = 1200;
+    const tArr = Array.from({ length: N }, (_, i) => i * tMax / (N - 1));
+    const colors = ['#e63946','#2a9d8f','#6a4c93','#e9a824','#457b9d','#2d6a4f','#f4a261','#c77dff','#06d6a0'];
+    const traces = [];
+    const sigmaMort = Math.max(tm * 0.015, 0.005);
+    traces.push({
+      x: tArr, y: tArr.map(t => 0.3 * Math.exp(-0.5 * ((t - tm) / sigmaMort) ** 2)),
+      mode: 'lines', name: 'Pic tps mort',
+      line: { color: '#aaa', width: 1.5, dash: 'dot' },
+    });
+    const yTotal = new Array(N).fill(0);
+    molsCalc.forEach((mol, idx) => {
+      const { tr, sigma, conc, epsilon } = mol;
+      const A = (conc ?? 1) * (epsilon ?? 10);
+      const y = tArr.map(t => A * Math.exp(-0.5 * ((t - tr) / sigma) ** 2));
+      y.forEach((v, i) => { yTotal[i] += v; });
+      traces.push({
+        x: tArr, y, mode: 'lines', name: mol.nom,
+        line: { color: colors[idx % colors.length], width: 2 },
+      });
+    });
+    traces.push({
+      x: tArr, y: yTotal, mode: 'lines', name: 'Signal total',
+      line: { color: '#333', width: 1.5, dash: 'dash' }, visible: 'legendonly',
+    });
+    Plotly.react(plotRef.current, traces, {
+      xaxis: { title: 't (min)', gridcolor: 'rgba(128,128,128,0.15)', zeroline: false },
+      yaxis: { title: 'Réponse détecteur', gridcolor: 'rgba(128,128,128,0.15)', zeroline: false },
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+      margin: { t: 20, r: 20, b: 50, l: 60 },
+      legend: { bgcolor: 'transparent' }, font: { size: 12 },
+    }, { responsive: true, displayModeBar: false });
+  }, [plotlyReady, JSON.stringify(molsCalc.map(m => ({ tr: m.tr, sigma: m.sigma, conc: m.conc, epsilon: m.epsilon, nom: m.nom }))), pctSolvOrg, temperature, debit]);
+
+  function toggleMol(idx) {
+    setSelected(prev => prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]);
+  }
+  function addCustomMol() {
+    if (!newNom.trim()) return;
+    setCustomMols(prev => [...prev, { nom: newNom.trim(), logP: newLogP }]);
+    setNewNom(''); setNewLogP(1.0);
+  }
+  function removeCustom(i) { setCustomMols(prev => prev.filter((_, j) => j !== i)); }
+
+  const inp = {
+    width: 70, fontSize: 12, padding: '2px 6px',
+    border: '1px solid var(--color-border-tertiary)', borderRadius: 4,
+    background: 'var(--color-background-primary)', color: 'var(--color-text-primary)',
+  };
+
+  return (
+    <div style={cardStyle}>
+      <h2 style={{ marginTop: 0, fontSize: 18, color: 'var(--color-text-primary)' }}>
+        Simulation CLHP — Phase inverse — Niveau BTS
+      </h2>
+      <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 16 }}>
+        D'après X. Bataille (ENCPB / RNChimie, 2008) — Phase inverse C{nC}, éluant acétonitrile/eau
+      </div>
+
+      {/* Paramètres */}
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+
+        {/* Colonne */}
+        <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10, padding: '12px 16px', minWidth: 220 }}>
+          <div style={{ fontWeight: 500, fontSize: 13, marginBottom: 10 }}>Colonne</div>
+          {[
+            ['Longueur (cm)', longueur, setLongueur, 1, 50, 1],
+            ['Diamètre (mm)', diametre, setDiametre, 1, 10, 0.1],
+            ['Taille particules dp (µm)', dp, setDp, 1, 20, 1],
+            ['Greffage nC', nC, setNC, 1, 30, 1],
+            ['Porosité ε', porosite, setPorosite, 0.1, 1, 0.05],
+          ].map(([label, val, setter, min, max, step]) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: 5 }}>
+              <span style={{ flex: 1, color: 'var(--color-text-secondary)' }}>{label}</span>
+              <input type="number" value={val} min={min} max={max} step={step}
+                onChange={e => setter(parseFloat(e.target.value) || min)} style={inp}/>
+            </div>
+          ))}
+        </div>
+
+        {/* Éluant */}
+        <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10, padding: '12px 16px', minWidth: 220 }}>
+          <div style={{ fontWeight: 500, fontSize: 13, marginBottom: 10 }}>Éluant</div>
+          <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 4 }}>
+            % solvant organique : <strong style={{ color: '#2a9d8f' }}>{pctSolvOrg} %</strong>
+          </div>
+          <input type="range" min={5} max={95} step={1} value={pctSolvOrg}
+            onChange={e => setPctSolvOrg(Number(e.target.value))} style={{ width: '100%', marginBottom: 10 }}/>
+          {[
+            ['Débit (mL/min)', debit, setDebit, 0.1, 10, 0.1],
+            ['Température (°C)', temperature, setTemperature, 5, 80, 1],
+          ].map(([label, val, setter, min, max, step]) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: 5 }}>
+              <span style={{ flex: 1, color: 'var(--color-text-secondary)' }}>{label}</span>
+              <input type="number" value={val} min={min} max={max} step={step}
+                onChange={e => setter(parseFloat(e.target.value) || min)} style={inp}/>
+            </div>
+          ))}
+        </div>
+
+        {/* Infos colonne */}
+        <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10, padding: '12px 16px', minWidth: 180 }}>
+          <div style={{ fontWeight: 500, fontSize: 13, marginBottom: 10 }}>Colonne calculée</div>
+          {[
+            ['Temps mort tₘ', tm.toFixed(3) + ' min'],
+            ['Plateaux théoriques N', Math.round(nPlateaux).toLocaleString('fr-FR')],
+            ['HEPT', (longueur / nPlateaux * 10).toFixed(2) + ' mm'],
+          ].map(([l, v]) => (
+            <div key={l} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 5, gap: 12 }}>
+              <span style={{ color: 'var(--color-text-secondary)' }}>{l}</span>
+              <strong>{v}</strong>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Paramètres avancés */}
+      <button onClick={() => setShowAdvanced(v => !v)}
+        style={{ fontSize: 12, padding: '4px 12px', borderRadius: 6, cursor: 'pointer', marginBottom: 10,
+          border: '1px solid var(--color-border-secondary)',
+          background: 'var(--color-background-secondary)', color: 'var(--color-text-secondary)' }}>
+        {showAdvanced ? '▲ Masquer paramètres avancés' : '▼ Paramètres avancés du modèle (mp, mo, b, c)'}
+      </button>
+
+      {showAdvanced && (
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16,
+          padding: '12px 16px', background: 'var(--color-background-secondary)', borderRadius: 10 }}>
+          <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', width: '100%', marginBottom: 4 }}>
+            ln(k'ᵢ) = (mp·logPᵢ + mo)·ln(φ) + b/T + c &nbsp;—&nbsp; T en °C, φ = fraction vol. solvant organique
+          </div>
+          {[['mp', mp, setMp, -3, 0, 0.01],['mo', mo, setMo, -3, 1, 0.01],
+            ['b', bParam, setBParam, 0, 50, 0.5],['c', cParam, setCParam, -5, 0, 0.1]].map(([label, val, setter, min, max, step]) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+              <span style={{ color: 'var(--color-text-secondary)', minWidth: 20 }}>{label} =</span>
+              <input type="number" value={val} min={min} max={max} step={step}
+                onChange={e => setter(parseFloat(e.target.value))} style={{ ...inp, width: 80 }}/>
+            </div>
+          ))}
+          <button onClick={() => { setMp(-0.64); setMo(-0.61); setBParam(19); setCParam(-1.6); }}
+            style={{ fontSize: 11, padding: '3px 10px', borderRadius: 5, cursor: 'pointer',
+              border: '1px solid var(--color-border-secondary)',
+              background: 'var(--color-background-primary)', color: 'var(--color-text-secondary)' }}>
+            Réinitialiser
+          </button>
+        </div>
+      )}
+
+      <hr style={{ margin: '12px 0', borderColor: 'var(--color-border-tertiary)' }}/>
+
+      {/* Sélection molécules */}
+      <div style={{ fontWeight: 500, fontSize: 14, marginBottom: 10 }}>Composition du mélange</div>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+        {MOLECULES_CLHP.map((m, i) => (
+          <button key={i} onClick={() => toggleMol(i)}
+            style={{ fontSize: 11, padding: '4px 10px', borderRadius: 16, cursor: 'pointer',
+              border: selected.includes(i) ? '2px solid #2a9d8f' : '1px solid var(--color-border-tertiary)',
+              background: selected.includes(i) ? '#e8f8f5' : 'var(--color-background-secondary)',
+              color: selected.includes(i) ? '#1a7a6e' : 'var(--color-text-secondary)',
+              fontWeight: selected.includes(i) ? 500 : 400 }}>
+            {m.nom} <span style={{ opacity: 0.6, fontSize: 10 }}>logP={m.logP}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Ajout molécule custom */}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', marginBottom: 12, flexWrap: 'wrap' }}>
+        <Field label="Nom de la molécule" value={newNom} onChange={setNewNom} width={160} type="text"/>
+        <Field label="logP" value={newLogP} onChange={v => setNewLogP(parseFloat(v) || 0)} width={70}/>
+        <button onClick={addCustomMol}
+          style={{ padding: '5px 14px', fontSize: 12, borderRadius: 6, cursor: 'pointer',
+            background: '#2a9d8f', color: 'white', border: 'none', fontWeight: 500 }}>
+          + Ajouter
+        </button>
+        {customMols.map((m, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11,
+            padding: '4px 10px', borderRadius: 16, border: '2px solid #6a4c93',
+            background: '#f3eeff', color: '#6a4c93' }}>
+            {m.nom} (logP={m.logP})
+            <button onClick={() => removeCustom(i)}
+              style={{ marginLeft: 4, background: 'none', border: 'none',
+                cursor: 'pointer', color: '#6a4c93', fontSize: 14, padding: 0 }}>×</button>
+          </div>
+        ))}
+      </div>
+
+      {/* Tableau résultats */}
+      {allMols.length > 0 && (
+        <div style={{ overflowX: 'auto', marginBottom: 12 }}>
+          <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%' }}>
+            <thead>
+              <tr style={{ background: 'var(--color-background-secondary)' }}>
+                {['Molécule', 'logP', 'C (u.a.)', 'ε réponse', "tr calc. (min)", 'W½ (min)', "k'"].concat(
+                  showExpData ? ['tr expéri. (min)', 'Écart (%)'] : []
+                ).map(h => (
+                  <th key={h} style={{ padding: '5px 8px', borderBottom: '1px solid var(--color-border-tertiary)',
+                    textAlign: 'left', fontWeight: 500, whiteSpace: 'nowrap', fontSize: 11 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {molsCalc.map((mol, idx) => {
+                const ecart = showExpData && expTr[mol.idx]
+                  ? Math.abs((mol.tr - expTr[mol.idx]) / expTr[mol.idx] * 100)
+                  : null;
+                const ecartColor = ecart !== null ? (ecart < 5 ? '#16a34a' : ecart < 15 ? '#d97706' : '#dc2626') : '';
+                return (
+                  <tr key={mol.idx} style={{ background: idx % 2 ? 'var(--color-background-secondary)' : 'transparent' }}>
+                    <td style={{ padding: '4px 8px', fontWeight: 500 }}>{mol.nom}</td>
+                    <td style={{ padding: '4px 8px', color: 'var(--color-text-secondary)' }}>{mol.logP}</td>
+                    <td style={{ padding: '4px 8px' }}>
+                      <input type="number" value={concs[mol.idx] ?? 1} min={0} step={0.1}
+                        onChange={e => setConcs(p => ({ ...p, [mol.idx]: parseFloat(e.target.value) || 0 }))}
+                        style={{ ...inp, width: 60 }}/>
+                    </td>
+                    <td style={{ padding: '4px 8px' }}>
+                      <input type="number" value={epsilons[mol.idx] ?? 10} min={0} step={1}
+                        onChange={e => setEpsilons(p => ({ ...p, [mol.idx]: parseFloat(e.target.value) || 0 }))}
+                        style={{ ...inp, width: 60 }}/>
+                    </td>
+                    <td style={{ padding: '4px 8px', fontWeight: 500 }}>{mol.tr.toFixed(3)}</td>
+                    <td style={{ padding: '4px 8px' }}>{mol.W.toFixed(4)}</td>
+                    <td style={{ padding: '4px 8px' }}>{mol.k.toFixed(3)}</td>
+                    {showExpData && (
+                      <>
+                        <td style={{ padding: '4px 8px' }}>
+                          <input type="number" value={expTr[mol.idx] ?? ''} min={0} step={0.01} placeholder="—"
+                            onChange={e => setExpTr(p => ({ ...p, [mol.idx]: parseFloat(e.target.value) || '' }))}
+                            style={{ ...inp, width: 70 }}/>
+                        </td>
+                        <td style={{ padding: '4px 8px', fontWeight: 500, color: ecartColor }}>
+                          {ecart !== null ? ecart.toFixed(1) + ' %' : '—'}
+                        </td>
+                      </>
+                    )}
+                  </tr>
+                );
+              })}
+              {showExpData && molsCalc.some(m => expTr[m.idx]) && (() => {
+                const vals = molsCalc.filter(m => expTr[m.idx])
+                  .map(m => Math.abs((m.tr - expTr[m.idx]) / expTr[m.idx] * 100));
+                const moy = vals.reduce((a, b) => a + b, 0) / vals.length;
+                return (
+                  <tr style={{ background: 'var(--color-background-secondary)', fontWeight: 500 }}>
+                    <td colSpan={7} style={{ padding: '4px 8px' }}>Écart moyen</td>
+                    <td/>
+                    <td style={{ padding: '4px 8px', color: moy < 5 ? '#16a34a' : moy < 15 ? '#d97706' : '#dc2626' }}>
+                      {moy.toFixed(1)} %
+                    </td>
+                  </tr>
+                );
+              })()}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Bouton comparaison expé */}
+      <button onClick={() => setShowExpData(v => !v)}
+        style={{ fontSize: 12, padding: '4px 12px', borderRadius: 6, cursor: 'pointer', marginBottom: 12,
+          border: '1px solid var(--color-border-secondary)',
+          background: showExpData ? '#e8f8f5' : 'var(--color-background-secondary)',
+          color: showExpData ? '#1a7a6e' : 'var(--color-text-secondary)' }}>
+        {showExpData ? '✓ Comparaison expérimentale activée' : '+ Comparer avec des tr expérimentaux'}
+      </button>
+
+      {/* Résolutions */}
+      {resolutions.length > 0 && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+          {resolutions.map((R, i) => {
+            if (R === null || isNaN(R)) return null;
+            const color = R >= 1.5 ? '#16a34a' : R >= 1.0 ? '#d97706' : '#dc2626';
+            const symbole = R >= 1.5 ? '✓' : R >= 1.0 ? '⚠' : '✗';
+            return (
+              <div key={i} style={{ background: 'var(--color-background-secondary)',
+                borderRadius: 8, padding: '5px 10px', fontSize: 12,
+                border: '1px solid var(--color-border-tertiary)' }}>
+                <span style={{ color: 'var(--color-text-secondary)' }}>
+                  R({molsCalc[i].nom.split(' ')[0]} / {molsCalc[i+1].nom.split(' ')[0]}) =
+                </span>
+                {' '}
+                <strong style={{ color }}>{R.toFixed(2)} {symbole}</strong>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Chromatogramme */}
+      {allMols.length > 0
+        ? <div ref={plotRef} style={{ width: '100%', height: 380 }}/>
+        : (
+          <div style={{ padding: '2rem', textAlign: 'center', fontSize: 13,
+            color: 'var(--color-text-secondary)', background: 'var(--color-background-secondary)', borderRadius: 10 }}>
+            Sélectionnez au moins une molécule pour afficher le chromatogramme.
+          </div>
+        )
+      }
+
+      <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 8 }}>
+        Résolution : <span style={{ color: '#16a34a' }}>✓ R ≥ 1,5</span> pics séparés ·{' '}
+        <span style={{ color: '#d97706' }}>⚠ 1,0 ≤ R &lt; 1,5</span> partiellement séparés ·{' '}
+        <span style={{ color: '#dc2626' }}>✗ R &lt; 1,0</span> pics superposés
+      </div>
+    </div>
+  );
+}
+
+// ====================================================
+// SIM 13 — ÉTALON INTERNE / NORMALISATION INTERNE (BTS)
+// ====================================================
+
+// ---- Utilitaires communs ----
+
+function chromatoTraces(pics, tMax, colors) {
+  const N = 1000;
+  const tArr = Array.from({ length: N }, (_, i) => i * tMax / (N - 1));
+  const traces = [];
+  const yTotal = new Array(N).fill(0);
+  pics.forEach(({ nom, tr, aire, color }, idx) => {
+    if (!tr || !aire || aire <= 0) return;
+    // Largeur proportionnelle à tr (pic gaussien dont l'aire est fixée)
+    const sigma = tr * 0.04;
+    const A_peak = aire / (sigma * Math.sqrt(2 * Math.PI));
+    const y = tArr.map(t => A_peak * Math.exp(-0.5 * ((t - tr) / sigma) ** 2));
+    y.forEach((v, i) => { yTotal[i] += v; });
+    traces.push({
+      x: tArr, y, mode: 'lines', name: nom,
+      line: { color: color || colors[idx % colors.length], width: 2 },
+      fill: 'tozeroy', fillcolor: (color || colors[idx % colors.length]) + '22',
+    });
+  });
+  return { tArr, traces, yTotal };
+}
+
+const COLORS_EI = ['#2a9d8f', '#e63946', '#6a4c93', '#e9a824', '#457b9d', '#f4a261', '#06d6a0'];
+
+// ============================================================
+// SOUS-COMPOSANT : Chromatogramme gaussien
+// ============================================================
+function ChromatoPlot({ plotlyReady, plotId, pics, title, tMax = 6 }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!plotlyReady || !ref.current) return;
+    const validPics = pics.filter(p => p.tr > 0 && p.aire > 0);
+    if (validPics.length === 0) {
+      Plotly.purge(ref.current);
+      return;
+    }
+    const tMaxCalc = Math.max(...validPics.map(p => p.tr)) * 1.4;
+    const { tArr, traces } = chromatoTraces(validPics, tMaxCalc, COLORS_EI);
+    Plotly.react(ref.current, traces, {
+      title: { text: title, font: { size: 13 } },
+      xaxis: { title: 't (min)', gridcolor: 'rgba(128,128,128,0.15)', zeroline: false },
+      yaxis: { title: 'Réponse', gridcolor: 'rgba(128,128,128,0.15)', zeroline: false },
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+      margin: { t: 40, r: 10, b: 50, l: 55 },
+      legend: { bgcolor: 'transparent', font: { size: 11 } },
+      font: { size: 11 },
+      showlegend: true,
+    }, { responsive: true, displayModeBar: false });
+  }, [plotlyReady, JSON.stringify(pics), title]);
+
+  return <div ref={ref} style={{ width: '100%', height: 280 }}/>;
+}
+
+// ============================================================
+// MÉTHODE DE L'ÉTALON INTERNE
+// ============================================================
+
+const EX_EI = {
+  titre: "Dosage hydrobenzoïne/benzoïne/benzile par CLHP — étalon interne : paracétamol",
+  eiNom: "Paracétamol",
+  eiColor: "#888",
+  // Solution étalon
+  etalon: {
+    analytes: [
+      { nom: "Hydrobenzoïne", Cm: 10.20, couleur: '#2a9d8f' },
+      { nom: "Benzoïne",      Cm: 10.59, couleur: '#e63946' },
+      { nom: "Benzile",       Cm: 10.37, couleur: '#6a4c93' },
+    ],
+    CmEI: 10.25,
+    // Aires (% d'aire → on utilise directement les % comme aires relatives)
+    airesAnalytes: [17.22, 20.33, 33.20],
+    aireEI: 29.25,
+    // Temps de rétention simulés (min)
+    trAnalytes: [1.8, 2.2, 3.1],
+    trEI: 1.2,
+  },
+  // Solution échantillon
+  echantillon: {
+    CmEI: 10.25,
+    airesAnalytes: [26.3, 2.4, 12.2],
+    aireEI: 57.2,
+    trAnalytes: [1.8, 2.2, 3.1],
+    trEI: 1.2,
+    masseEchantillon: 101.7, // mg dans fiole 4
+    volumeFiole: 20,         // mL
+    dilution: 40 / 20000,    // 40 µL prélevés dans 20 mL
+  },
+};
+
+function SectionEtalonInterne({ plotlyReady }) {
+  const [tab, setTab] = useState('exemple');
+  const [eiNom, setEiNom] = useState('Paracétamol');
+  // Nombre d'analytes
+  const [nAnalytes, setNAnalytes] = useState(3);
+  // Données saisies manuellement — étalon
+  const [etNoms, setEtNoms] = useState(['Analyte 1','Analyte 2','Analyte 3']);
+  const [etCm, setEtCm] = useState([10,10,10]);
+  const [etAires, setEtAires] = useState([0,0,0]);
+  const [etTr, setEtTr] = useState([1.0,1.5,2.0]);
+  const [etCmEI, setEtCmEI] = useState(10);
+  const [etAireEI, setEtAireEI] = useState(0);
+  const [etTrEI, setEtTrEI] = useState(0.8);
+  // Données saisies manuellement — échantillon
+  const [echAires, setEchAires] = useState([0,0,0]);
+  const [echTr, setEchTr] = useState([1.0,1.5,2.0]);
+  const [echAireEI, setEchAireEI] = useState(0);
+  const [echTrEI, setEchTrEI] = useState(0.8);
+  const [echCmEI, setEchCmEI] = useState(10);
+  const [echMasse, setEchMasse] = useState(100);
+  const [echVolume, setEchVolume] = useState(20);
+  const [echDilVolPrelevement, setEchDilVolPrelevement] = useState(40);
+  const [echDilVolFiole, setEchDilVolFiole] = useState(20000);
+
+  // Données actives
+  const isExemple = tab === 'exemple';
+  const ex = EX_EI;
+
+  const noms = isExemple ? ex.etalon.analytes.map(a => a.nom) : etNoms.slice(0, nAnalytes);
+  const colors = isExemple ? ex.etalon.analytes.map(a => a.couleur) : COLORS_EI;
+  const CmEt = isExemple ? ex.etalon.analytes.map(a => a.Cm) : etCm.slice(0, nAnalytes);
+  const airesEt = isExemple ? ex.etalon.airesAnalytes : etAires.slice(0, nAnalytes);
+  const trEt = isExemple ? ex.etalon.trAnalytes : etTr.slice(0, nAnalytes);
+  const CmEI_et = isExemple ? ex.etalon.CmEI : etCmEI;
+  const aireEI_et = isExemple ? ex.etalon.aireEI : etAireEI;
+  const trEI_et = isExemple ? ex.etalon.trEI : etTrEI;
+
+  const airesEch = isExemple ? ex.echantillon.airesAnalytes : echAires.slice(0, nAnalytes);
+  const trEch = isExemple ? ex.echantillon.trAnalytes : echTr.slice(0, nAnalytes);
+  const aireEI_ech = isExemple ? ex.echantillon.aireEI : echAireEI;
+  const trEI_ech = isExemple ? ex.echantillon.trEI : echTrEI;
+  const CmEI_ech = isExemple ? ex.echantillon.CmEI : echCmEI;
+  const masseEch = isExemple ? ex.echantillon.masseEchantillon : echMasse;
+  const volFiole = isExemple ? ex.echantillon.volumeFiole : echVolume;
+  const dilFact = isExemple ? ex.echantillon.dilution : (echDilVolPrelevement / 1000) / (echDilVolFiole / 1000);
+
+  // Calcul Cm échantillon
+  const CmEch = noms.map((_, i) => {
+    if (!airesEt[i] || !aireEI_et || !airesEch[i] || !aireEI_ech) return null;
+    return CmEt[i] * (aireEI_et / airesEt[i]) * (airesEch[i] / aireEI_ech);
+  });
+
+  // Masse analyte dans fiole échantillon avant dilution
+  const masseAnalyte = CmEch.map(cm => {
+    if (cm === null) return null;
+    // Cm en mg/L dans la fiole injectée → remonter à la fiole originale
+    // Cm_fiole_injectée * V_fiole_injectée(L) / dilFact
+    return cm * (volFiole / 1000) / dilFact;
+  });
+
+  // Pics pour chromatogrammes
+  const picsEtalon = [
+    ...noms.map((nom, i) => ({ nom, tr: trEt[i], aire: airesEt[i], color: colors[i] })),
+    { nom: eiNom, tr: trEI_et, aire: aireEI_et, color: '#aaa' },
+  ];
+  const picsEch = [
+    ...noms.map((nom, i) => ({ nom, tr: trEch[i], aire: airesEch[i], color: colors[i] })),
+    { nom: eiNom, tr: trEI_ech, aire: aireEI_ech, color: '#aaa' },
+  ];
+
+  const inp = {
+    fontSize: 12, padding: '2px 6px', width: 80,
+    border: '1px solid var(--color-border-tertiary)', borderRadius: 4,
+    background: 'var(--color-background-primary)', color: 'var(--color-text-primary)',
+  };
+
+  function updateArr(arr, setArr, i, val) {
+    const next = [...arr]; next[i] = parseFloat(val) || 0; setArr(next);
+  }
+  function updateStr(arr, setArr, i, val) {
+    const next = [...arr]; next[i] = val; setArr(next);
+  }
+
+  return (
+    <div>
+      <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 12 }}>
+        <strong>Principe :</strong> On ajoute une quantité connue d'étalon interne (EI) à la fois dans la solution étalon et dans la solution échantillon. La concentration de chaque analyte dans l'échantillon se calcule par : C_éch = C_étalon × (A_EI_étalon / A_analyte_étalon) × (A_analyte_éch / A_EI_éch)
+      </div>
+
+      <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
+        {[['exemple','Exemple (hydrobenzoïne/benzoïne/benzile)'],['manuel','Saisie manuelle']].map(([k,l]) => (
+          <TabBtn key={k} active={tab===k} onClick={() => setTab(k)}>{l}</TabBtn>
+        ))}
+      </div>
+
+      {tab === 'exemple' && (
+        <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 10,
+          padding: '8px 12px', background: 'var(--color-background-secondary)', borderRadius: 8 }}>
+          Dosage de l'hydrobenzoïne, benzoïne et benzile dans un produit de synthèse par CLHP.
+          Étalon interne : paracétamol (même concentration dans les deux solutions).
+          Aires exprimées en % d'aire totale.
+        </div>
+      )}
+
+      {tab === 'manuel' && (
+        <div style={{ marginBottom: 12, padding: '10px 14px',
+          background: 'var(--color-background-secondary)', borderRadius: 8 }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap', marginBottom: 8 }}>
+            <CoeffInput label="Nombre d'analytes" value={nAnalytes}
+              onChange={v => setNAnalytes(Math.max(1, Math.min(8, v)))} min={1} max={8}/>
+            <Field label="Nom étalon interne" value={eiNom} onChange={setEiNom} width={140} type="text"/>
+          </div>
+        </div>
+      )}
+
+      {/* Deux colonnes : étalon | échantillon */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+
+        {/* === SOLUTION ÉTALON === */}
+        <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10, padding: '12px 14px' }}>
+          <div style={{ fontWeight: 500, fontSize: 13, marginBottom: 10, color: '#2a9d8f' }}>
+            Solution étalon
+          </div>
+          <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%' }}>
+            <thead>
+              <tr>
+                {['Composé', 'Cm (mg/L)', 'tr (min)', 'Aire'].map(h => (
+                  <th key={h} style={{ padding: '3px 6px', borderBottom: '1px solid var(--color-border-tertiary)',
+                    textAlign: 'left', fontWeight: 500, fontSize: 11 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {noms.map((nom, i) => (
+                <tr key={i}>
+                  <td style={{ padding: '3px 6px' }}>
+                    {isExemple ? <span style={{ color: colors[i], fontWeight: 500 }}>{nom}</span> :
+                      <input value={etNoms[i] ?? ''} onChange={e => updateStr(etNoms, setEtNoms, i, e.target.value)}
+                        style={{ ...inp, width: 100, color: colors[i] }}/>}
+                  </td>
+                  <td style={{ padding: '3px 6px' }}>
+                    {isExemple ? CmEt[i] :
+                      <input type="number" value={etCm[i] ?? ''} onChange={e => updateArr(etCm, setEtCm, i, e.target.value)} style={inp}/>}
+                  </td>
+                  <td style={{ padding: '3px 6px' }}>
+                    {isExemple ? trEt[i] :
+                      <input type="number" value={etTr[i] ?? ''} onChange={e => updateArr(etTr, setEtTr, i, e.target.value)} style={inp}/>}
+                  </td>
+                  <td style={{ padding: '3px 6px' }}>
+                    {isExemple ? airesEt[i] :
+                      <input type="number" value={etAires[i] ?? ''} onChange={e => updateArr(etAires, setEtAires, i, e.target.value)} style={inp}/>}
+                  </td>
+                </tr>
+              ))}
+              {/* Ligne EI */}
+              <tr style={{ background: 'var(--color-background-primary)', fontStyle: 'italic' }}>
+                <td style={{ padding: '3px 6px', color: '#888' }}>{eiNom} (EI)</td>
+                <td style={{ padding: '3px 6px' }}>
+                  {isExemple ? CmEI_et :
+                    <input type="number" value={etCmEI} onChange={e => setEtCmEI(parseFloat(e.target.value)||0)} style={inp}/>}
+                </td>
+                <td style={{ padding: '3px 6px' }}>
+                  {isExemple ? trEI_et :
+                    <input type="number" value={etTrEI} onChange={e => setEtTrEI(parseFloat(e.target.value)||0)} style={inp}/>}
+                </td>
+                <td style={{ padding: '3px 6px' }}>
+                  {isExemple ? aireEI_et :
+                    <input type="number" value={etAireEI} onChange={e => setEtAireEI(parseFloat(e.target.value)||0)} style={inp}/>}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <ChromatoPlot plotlyReady={plotlyReady} plotId="ei_etalon" pics={picsEtalon} title="Chromatogramme étalon"/>
+        </div>
+
+        {/* === SOLUTION ÉCHANTILLON === */}
+        <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10, padding: '12px 14px' }}>
+          <div style={{ fontWeight: 500, fontSize: 13, marginBottom: 10, color: '#e63946' }}>
+            Solution échantillon
+          </div>
+          <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%' }}>
+            <thead>
+              <tr>
+                {['Composé', 'tr (min)', 'Aire'].map(h => (
+                  <th key={h} style={{ padding: '3px 6px', borderBottom: '1px solid var(--color-border-tertiary)',
+                    textAlign: 'left', fontWeight: 500, fontSize: 11 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {noms.map((nom, i) => (
+                <tr key={i}>
+                  <td style={{ padding: '3px 6px', color: colors[i], fontWeight: 500 }}>{nom}</td>
+                  <td style={{ padding: '3px 6px' }}>
+                    {isExemple ? trEch[i] :
+                      <input type="number" value={echTr[i] ?? ''} onChange={e => updateArr(echTr, setEchTr, i, e.target.value)} style={inp}/>}
+                  </td>
+                  <td style={{ padding: '3px 6px' }}>
+                    {isExemple ? airesEch[i] :
+                      <input type="number" value={echAires[i] ?? ''} onChange={e => updateArr(echAires, setEchAires, i, e.target.value)} style={inp}/>}
+                  </td>
+                </tr>
+              ))}
+              <tr style={{ background: 'var(--color-background-primary)', fontStyle: 'italic' }}>
+                <td style={{ padding: '3px 6px', color: '#888' }}>{eiNom} (EI)</td>
+                <td style={{ padding: '3px 6px' }}>
+                  {isExemple ? trEI_ech :
+                    <input type="number" value={echTrEI} onChange={e => setEchTrEI(parseFloat(e.target.value)||0)} style={inp}/>}
+                </td>
+                <td style={{ padding: '3px 6px' }}>
+                  {isExemple ? aireEI_ech :
+                    <input type="number" value={echAireEI} onChange={e => setEchAireEI(parseFloat(e.target.value)||0)} style={inp}/>}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <ChromatoPlot plotlyReady={plotlyReady} plotId="ei_ech" pics={picsEch} title="Chromatogramme échantillon"/>
+        </div>
+      </div>
+
+      {/* Paramètres dilution */}
+      {!isExemple && (
+        <div style={{ marginTop: 12, padding: '10px 14px',
+          background: 'var(--color-background-secondary)', borderRadius: 8 }}>
+          <div style={{ fontWeight: 500, fontSize: 12, marginBottom: 8 }}>Paramètres de la préparation</div>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 12 }}>
+            {[
+              ['Cm EI dans éch. (mg/L)', echCmEI, setEchCmEI],
+              ['Masse solide analysé (mg)', echMasse, setEchMasse],
+              ['Volume fiole principale (mL)', echVolume, setEchVolume],
+              ['Volume prélevé (µL)', echDilVolPrelevement, setEchDilVolPrelevement],
+              ['Volume fiole injectée (µL)', echDilVolFiole, setEchDilVolFiole],
+            ].map(([label, val, setter]) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ color: 'var(--color-text-secondary)' }}>{label}</span>
+                <input type="number" value={val} onChange={e => setter(parseFloat(e.target.value)||0)}
+                  style={{ ...inp, width: 80 }}/>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Résultats */}
+      <div style={{ marginTop: 16, padding: '14px 16px',
+        background: 'var(--color-background-secondary)', borderRadius: 10 }}>
+        <div style={{ fontWeight: 500, fontSize: 14, marginBottom: 12 }}>Résultats</div>
+        <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%', maxWidth: 600 }}>
+          <thead>
+            <tr style={{ background: 'var(--color-background-primary)' }}>
+              {['Analyte', 'Cm dans solution injectée (mg/L)', 'Masse dans fiole éch. (mg)'].map(h => (
+                <th key={h} style={{ padding: '6px 10px', borderBottom: '1px solid var(--color-border-tertiary)',
+                  textAlign: 'left', fontWeight: 500, fontSize: 11 }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {noms.map((nom, i) => {
+              const cm = CmEch[i];
+              const m = masseAnalyte[i];
+              return (
+                <tr key={i} style={{ background: i%2 ? 'var(--color-background-primary)' : 'transparent' }}>
+                  <td style={{ padding: '5px 10px', color: colors[i], fontWeight: 500 }}>{nom}</td>
+                  <td style={{ padding: '5px 10px', fontWeight: cm !== null ? 500 : 400,
+                    color: cm !== null ? 'var(--color-text-primary)' : 'var(--color-text-secondary)' }}>
+                    {cm !== null ? cm.toFixed(3) : '—'}
+                  </td>
+                  <td style={{ padding: '5px 10px', fontWeight: m !== null ? 500 : 400,
+                    color: m !== null ? '#2a9d8f' : 'var(--color-text-secondary)' }}>
+                    {m !== null ? m.toFixed(2) : '—'}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginTop: 10,
+          padding: '8px 12px', background: 'var(--color-background-primary)', borderRadius: 6,
+          fontFamily: 'monospace' }}>
+          C_éch = C_étalon × (A_EI_étalon / A_analyte_étalon) × (A_analyte_éch / A_EI_éch)
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// MÉTHODE DE LA NORMALISATION INTERNE
+// ============================================================
+
+const EX_NI = {
+  titre: "Mélange éthanol / toluène / acétate de butyle — sujet BTS 2018",
+  reference: 0, // index de l'espèce de référence (éthanol)
+  composesEtalon: [
+    { nom: "Éthanol",          pctMasse: 50.1, aire: 155000, tr: 1.2, couleur: '#2a9d8f' },
+    { nom: "Toluène",          pctMasse: 20.1, aire: 527000, tr: 2.1, couleur: '#e63946' },
+    { nom: "Acétate de butyle",pctMasse: 29.8, aire: 318000, tr: 3.0, couleur: '#6a4c93' },
+  ],
+  composesEch: [
+    { aire: 62000,  tr: 1.2 },
+    { aire: 787000, tr: 2.1 },
+    { aire: 534000, tr: 3.0 },
+  ],
+};
+
+function SectionNormalisationInterne({ plotlyReady }) {
+  const [tab, setTab] = useState('exemple');
+  const [nComps, setNComps] = useState(3);
+  const [refIdx, setRefIdx] = useState(0);
+  const [nomsComp, setNomsComp] = useState(['Composé 1','Composé 2','Composé 3']);
+  const [pctEt, setPctEt] = useState([33.3, 33.3, 33.4]);
+  const [airesEt, setAiresEt] = useState([1000, 1000, 1000]);
+  const [trEt, setTrEt] = useState([1.0, 2.0, 3.0]);
+  const [airesEch, setAiresEch] = useState([1000, 1000, 1000]);
+  const [trEch, setTrEch] = useState([1.0, 2.0, 3.0]);
+
+  const isExemple = tab === 'exemple';
+  const ex = EX_NI;
+
+  const noms = isExemple ? ex.composesEtalon.map(c => c.nom) : nomsComp.slice(0, nComps);
+  const colors = isExemple ? ex.composesEtalon.map(c => c.couleur) : COLORS_EI;
+  const pctMasseEt = isExemple ? ex.composesEtalon.map(c => c.pctMasse) : pctEt.slice(0, nComps);
+  const airesEtalon = isExemple ? ex.composesEtalon.map(c => c.aire) : airesEt.slice(0, nComps);
+  const trEtalon = isExemple ? ex.composesEtalon.map(c => c.tr) : trEt.slice(0, nComps);
+  const airesEchantillon = isExemple ? ex.composesEch.map(c => c.aire) : airesEch.slice(0, nComps);
+  const trEchantillon = isExemple ? ex.composesEch.map(c => c.tr) : trEch.slice(0, nComps);
+  const ref = isExemple ? ex.reference : refIdx;
+
+  // Calcul des Ki/1 (coefficients de réponse relatifs)
+  const Ki = noms.map((_, i) => {
+    if (i === ref) return 1;
+    if (!airesEtalon[ref] || !airesEtalon[i] || !pctMasseEt[ref] || !pctMasseEt[i]) return null;
+    return (pctMasseEt[i] / pctMasseEt[ref]) * (airesEtalon[ref] / airesEtalon[i]);
+  });
+
+  // Calcul des %massiques dans l'échantillon
+  const denomEch = noms.reduce((s, _, i) => {
+    const k = Ki[i]; const a = airesEchantillon[i];
+    return s + (k !== null ? k * a : 0);
+  }, 0);
+
+  const pctEch = noms.map((_, i) => {
+    const k = Ki[i]; const a = airesEchantillon[i];
+    if (k === null || !denomEch) return null;
+    return (k * a / denomEch) * 100;
+  });
+
+  // Pics
+  const picsEtalon = noms.map((nom, i) => ({ nom, tr: trEtalon[i], aire: airesEtalon[i], color: colors[i] }));
+  const picsEch = noms.map((nom, i) => ({ nom, tr: trEchantillon[i], aire: airesEchantillon[i], color: colors[i] }));
+
+  const inp = {
+    fontSize: 12, padding: '2px 6px', width: 80,
+    border: '1px solid var(--color-border-tertiary)', borderRadius: 4,
+    background: 'var(--color-background-primary)', color: 'var(--color-text-primary)',
+  };
+
+  function updateArr(arr, setArr, i, val) {
+    const next = [...arr]; next[i] = parseFloat(val) || 0; setArr(next);
+  }
+  function updateStr(arr, setArr, i, val) {
+    const next = [...arr]; next[i] = val; setArr(next);
+  }
+
+  return (
+    <div>
+      <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 12 }}>
+        <strong>Principe :</strong> On utilise un étalon de composition connue pour calculer les coefficients de réponse relatifs Ki/1. On en déduit ensuite les pourcentages massiques de chaque composé dans l'échantillon sans ajout d'étalon externe.
+      </div>
+
+      <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
+        {[['exemple','Exemple (éthanol/toluène/acétate de butyle — BTS 2018)'],['manuel','Saisie manuelle']].map(([k,l]) => (
+          <TabBtn key={k} active={tab===k} onClick={() => setTab(k)}>{l}</TabBtn>
+        ))}
+      </div>
+
+      {tab === 'exemple' && (
+        <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 10,
+          padding: '8px 12px', background: 'var(--color-background-secondary)', borderRadius: 8 }}>
+          Mélange éthanol/toluène/acétate de butyle analysé par CPG. Sujet BTS MDC 2018.
+          Espèce de référence : <strong>Éthanol</strong> (K_Eth/Eth = 1 par définition).
+        </div>
+      )}
+
+      {tab === 'manuel' && (
+        <div style={{ marginBottom: 12, padding: '10px 14px',
+          background: 'var(--color-background-secondary)', borderRadius: 8 }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+            <CoeffInput label="Nombre de composés" value={nComps}
+              onChange={v => setNComps(Math.max(2, Math.min(8, v)))} min={2} max={8}/>
+            <div style={{ fontSize: 12 }}>
+              <label style={{ color: 'var(--color-text-secondary)', display: 'block', marginBottom: 4 }}>
+                Composé de référence
+              </label>
+              <select value={refIdx} onChange={e => setRefIdx(Number(e.target.value))}
+                style={{ fontSize: 12, padding: '3px 6px' }}>
+                {nomsComp.slice(0, nComps).map((n, i) => (
+                  <option key={i} value={i}>{n || `Composé ${i+1}`}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Deux colonnes : étalon | échantillon */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+
+        {/* Étalon */}
+        <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10, padding: '12px 14px' }}>
+          <div style={{ fontWeight: 500, fontSize: 13, marginBottom: 10, color: '#2a9d8f' }}>
+            Étalon (composition connue)
+          </div>
+          <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%' }}>
+            <thead>
+              <tr>
+                {['Composé', '% massique', 'tr (min)', 'Aire'].map(h => (
+                  <th key={h} style={{ padding: '3px 6px', borderBottom: '1px solid var(--color-border-tertiary)',
+                    textAlign: 'left', fontWeight: 500, fontSize: 11 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {noms.map((nom, i) => (
+                <tr key={i} style={{ background: i === ref ? '#fffbe6' : 'transparent' }}>
+                  <td style={{ padding: '3px 6px' }}>
+                    {isExemple
+                      ? <span style={{ color: colors[i], fontWeight: 500 }}>{nom}{i===ref?' ★':''}</span>
+                      : <input value={nomsComp[i] ?? ''} onChange={e => updateStr(nomsComp, setNomsComp, i, e.target.value)}
+                          style={{ ...inp, width: 110, color: colors[i] }}/>}
+                  </td>
+                  <td style={{ padding: '3px 6px' }}>
+                    {isExemple ? pctMasseEt[i] :
+                      <input type="number" value={pctEt[i] ?? ''} onChange={e => updateArr(pctEt, setPctEt, i, e.target.value)} style={inp}/>}
+                  </td>
+                  <td style={{ padding: '3px 6px' }}>
+                    {isExemple ? trEtalon[i] :
+                      <input type="number" value={trEt[i] ?? ''} onChange={e => updateArr(trEt, setTrEt, i, e.target.value)} style={inp}/>}
+                  </td>
+                  <td style={{ padding: '3px 6px' }}>
+                    {isExemple ? airesEtalon[i].toLocaleString('fr-FR') :
+                      <input type="number" value={airesEt[i] ?? ''} onChange={e => updateArr(airesEt, setAiresEt, i, e.target.value)} style={{ ...inp, width: 90 }}/>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <ChromatoPlot plotlyReady={plotlyReady} plotId="ni_etalon" pics={picsEtalon} title="Chromatogramme étalon"/>
+        </div>
+
+        {/* Échantillon */}
+        <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10, padding: '12px 14px' }}>
+          <div style={{ fontWeight: 500, fontSize: 13, marginBottom: 10, color: '#e63946' }}>
+            Échantillon (composition inconnue)
+          </div>
+          <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%' }}>
+            <thead>
+              <tr>
+                {['Composé', 'tr (min)', 'Aire'].map(h => (
+                  <th key={h} style={{ padding: '3px 6px', borderBottom: '1px solid var(--color-border-tertiary)',
+                    textAlign: 'left', fontWeight: 500, fontSize: 11 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {noms.map((nom, i) => (
+                <tr key={i}>
+                  <td style={{ padding: '3px 6px', color: colors[i], fontWeight: 500 }}>{nom}</td>
+                  <td style={{ padding: '3px 6px' }}>
+                    {isExemple ? trEchantillon[i] :
+                      <input type="number" value={trEch[i] ?? ''} onChange={e => updateArr(trEch, setTrEch, i, e.target.value)} style={inp}/>}
+                  </td>
+                  <td style={{ padding: '3px 6px' }}>
+                    {isExemple ? airesEchantillon[i].toLocaleString('fr-FR') :
+                      <input type="number" value={airesEch[i] ?? ''} onChange={e => updateArr(airesEch, setAiresEch, i, e.target.value)} style={{ ...inp, width: 90 }}/>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <ChromatoPlot plotlyReady={plotlyReady} plotId="ni_ech" pics={picsEch} title="Chromatogramme échantillon"/>
+        </div>
+      </div>
+
+      {/* Coefficients de réponse */}
+      <div style={{ marginTop: 14, padding: '12px 16px',
+        background: 'var(--color-background-secondary)', borderRadius: 10 }}>
+        <div style={{ fontWeight: 500, fontSize: 13, marginBottom: 8 }}>
+          Coefficients de réponse relatifs K_i/{noms[ref] ?? '1'}
+        </div>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          {noms.map((nom, i) => (
+            <div key={i} style={{ background: 'var(--color-background-primary)', borderRadius: 8,
+              padding: '6px 14px', fontSize: 12 }}>
+              <span style={{ color: 'var(--color-text-secondary)' }}>K_{nom.split(' ')[0]}/{noms[ref]?.split(' ')[0] ?? '1'} = </span>
+              <strong style={{ color: colors[i] }}>
+                {Ki[i] !== null ? Ki[i].toFixed(4) : '—'}
+                {i === ref ? ' (réf.)' : ''}
+              </strong>
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 8, fontFamily: 'monospace' }}>
+          K_i/1 = (%i_étalon / %1_étalon) × (Aire_1_étalon / Aire_i_étalon)
+        </div>
+      </div>
+
+      {/* Résultats */}
+      <div style={{ marginTop: 12, padding: '14px 16px',
+        background: 'var(--color-background-secondary)', borderRadius: 10 }}>
+        <div style={{ fontWeight: 500, fontSize: 14, marginBottom: 12 }}>Résultats — % massiques dans l'échantillon</div>
+        <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%', maxWidth: 480 }}>
+          <thead>
+            <tr style={{ background: 'var(--color-background-primary)' }}>
+              {['Composé', '% massique calculé'].map(h => (
+                <th key={h} style={{ padding: '6px 10px', borderBottom: '1px solid var(--color-border-tertiary)',
+                  textAlign: 'left', fontWeight: 500, fontSize: 11 }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {noms.map((nom, i) => (
+              <tr key={i} style={{ background: i%2 ? 'var(--color-background-primary)' : 'transparent' }}>
+                <td style={{ padding: '5px 10px', color: colors[i], fontWeight: 500 }}>{nom}</td>
+                <td style={{ padding: '5px 10px', fontWeight: 500 }}>
+                  {pctEch[i] !== null ? pctEch[i].toFixed(2) + ' %' : '—'}
+                </td>
+              </tr>
+            ))}
+            <tr style={{ background: 'var(--color-background-secondary)', fontWeight: 500 }}>
+              <td style={{ padding: '5px 10px' }}>Somme</td>
+              <td style={{ padding: '5px 10px', color: '#2a9d8f' }}>
+                {pctEch.every(p => p !== null)
+                  ? pctEch.reduce((s, p) => s + p, 0).toFixed(2) + ' %'
+                  : '—'}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 10, fontFamily: 'monospace' }}>
+          %i_éch = (K_i/1 × A_i_éch) / (A_1_éch + Σ K_k/1 × A_k_éch) × 100
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// COMPOSANT PRINCIPAL
+// ============================================================
+
+function SimulationEtalonnageInterne({ plotlyReady }) {
+  const [methode, setMethode] = useState('ei');
+
+  return (
+    <div style={cardStyle}>
+      <h2 style={{ marginTop: 0, fontSize: 18, color: 'var(--color-text-primary)' }}>
+        Méthodes d'étalonnage interne — Niveau BTS
+      </h2>
+
+      {/* Choix méthode */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+        {[
+          ['ei',  '📌 Étalon interne (EI)',          'Ajout d\'un composé étalon à concentration connue dans chaque solution'],
+          ['ni',  '🔄 Normalisation interne (NI)',    'Étalon de composition connue — calcul de coefficients de réponse relatifs'],
+        ].map(([k, l, desc]) => (
+          <button key={k} onClick={() => setMethode(k)}
+            style={{ padding: '10px 18px', fontSize: 14, borderRadius: 8, cursor: 'pointer',
+              fontWeight: 500, textAlign: 'left',
+              border: methode===k ? '2px solid #2a9d8f' : '1px solid var(--color-border-secondary)',
+              background: methode===k ? '#e8f8f5' : 'var(--color-background-secondary)',
+              color: methode===k ? '#1a7a6e' : 'var(--color-text-secondary)' }}>
+            <div>{l}</div>
+            <div style={{ fontSize: 11, fontWeight: 400, marginTop: 2, opacity: 0.8 }}>{desc}</div>
+          </button>
+        ))}
+      </div>
+
+      <hr style={{ margin: '0 0 20px', borderColor: 'var(--color-border-tertiary)' }}/>
+
+      {methode === 'ei' && <SectionEtalonInterne plotlyReady={plotlyReady}/>}
+      {methode === 'ni' && <SectionNormalisationInterne plotlyReady={plotlyReady}/>}
+    </div>
+  );
+}
 
 
 // ============================================================
@@ -5351,6 +6426,8 @@ const SIMULATIONS = [
   { id: 9, label: "Étude inter-laboratoire", icon: "📊", color: "#c0392b", component: Simulation9, niveau: "BTS" },
   { id: 10, label: "Beer-Lambert",  icon: "🌈", color: "#1a7abf", component: BeerLambert1G,  niveau: "1G"  },
   { id: 11, label: "Dosage par étalonnage", icon: "📐", color: "#7b2d8b", component: BeerLambertBTS, niveau: "BTS" },
+  { id: 12, label: "Simulation CLHP", icon: "💉", color: "#0d6e6e", component: SimulationCLHP, niveau: "BTS" },
+  { id: 13, label: "Étalon interne / Normalisation interne", icon: "📐", color: "#c0392b", component: SimulationEtalonnageInterne, niveau: "BTS" },
 ];
 
 const NIVEAUX = [
@@ -5376,7 +6453,7 @@ function PageAccueil({ onStart }) {
     { niveau:"1G", color:"#2a9d8f", sims:[
       { icon:"⚗️", label:"Avancement d'une réaction", desc:"Modélisation de l'avancement d'une réaction chimique avec histogrammes et courbes continues." },
       { icon:"🧪", label:"Titrage volumétrique", desc:"Simulation d'un titrage avec bécher animé, agitateur magnétique et courbes en temps réel." },
-      { icon:"🔬", label:"Beer-Lambert", desc:"Schéma animé du spectrophotomètre, spectre UV-visible interactif et courbe d'étalonnage." },
+      { icon:"🌈", label:"Beer-Lambert", desc:"Schéma animé du spectrophotomètre, spectre UV-visible interactif et courbe d'étalonnage." },
     ]},
     { niveau:"TSTL", color:"#e9a824", sims:[
       { icon:"⚙️", label:"Régulation de niveau", desc:"Régulations TOR, P et PI d'un réservoir avec animations en temps réel." },
@@ -5388,7 +6465,9 @@ function PageAccueil({ onStart }) {
       { icon:"⚡", label:"Titrages électrochimiques", desc:"Potentiométrie, ampérométrie — courbes i=f(E) et suivi du titrage." },
       { icon:"🔵", label:"Diagramme de Hansen", desc:"Sphère de Hansen, solubilité des polymères, optimisation de mélanges de solvants." },
       { icon:"📊", label:"Étude inter-laboratoire", desc:"Tests de Cochran et Grubbs, fidélité inter-laboratoires selon les normes ISO." },
-      { icon:"⚖️", label:"Dosage par étalonnage", desc:"Courbe d'étalonnage, résidus, LD/LQ et test de Fisher-Snedecor pour la linéarité." },
+      { icon:"📐", label:"Dosage par étalonnage", desc:"Courbe d'étalonnage, résidus, LD/LQ et test de Fisher-Snedecor pour la linéarité." },
+      { icon:"💉", label:"Simulation CLHP", desc:"Chromatogrammes en phase inverse — influence du logP, de l'éluant et de la colonne sur la séparation." },
+      { icon:"📐", label:"Étalon interne / Normalisation interne", desc:"Exploitation de chromatogrammes par méthode de l'étalon interne ou de la normalisation interne." },
     ]},
   ];
 
@@ -5471,6 +6550,15 @@ function PageAccueil({ onStart }) {
                 style={{color:"#2a9d8f", textDecoration:"none", fontWeight:600}}>
                 Rhéologie & Mouillage
               </a>
+            </div>
+          </div>
+
+          <div style={{display:"flex", gap:12, alignItems:"flex-start"}}>
+            <span style={{fontSize:20, flexShrink:0}}>📝</span>
+            <div>
+              <strong style={{color:"#333"}}>Xavier BATAILLE</strong>
+              {" "}— Enseignant en BTS Métiers de la Chimie à l'ENCPB (Paris).
+              La simulation CLHP repose <strong>entièrement</strong> sur un fichier excel de sa propre conception. Merci à lui !
             </div>
           </div>
 
