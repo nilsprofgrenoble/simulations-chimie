@@ -6893,6 +6893,14 @@ function PageAccueil({ onStart }) {
             </div>
           </div>
           <div style={{display:"flex", gap:12, alignItems:"flex-start"}}>
+            <span style={{fontSize:20, flexShrink:0}}>🚀</span>
+            <div>
+              <strong style={{color:"#333"}}>Xavier BATAILLE</strong>
+              {" "}— Enseignant en BTS Métiers de la Chimie à l'ENCPB (Paris).
+              La simulation de la CLHP repose entièrement sur un fichier excel qu'il a lui même créé et aimablement partagé à ses collègues de BTS 🙂 
+            </div>
+          </div>
+          <div style={{display:"flex", gap:12, alignItems:"flex-start"}}>
             <span style={{fontSize:20, flexShrink:0}}>⚡</span>
             <div>
               <strong style={{color:"#333"}}>Jean LAMERENX</strong>
@@ -6924,14 +6932,26 @@ function PageAccueil({ onStart }) {
 // ============================================================
 //  COMPOSANT PRINCIPAL
 // ============================================================
-
 export default function App() {
-  const [activeId, setActiveId] = useState(0);
+  // Lecture de l'URL au démarrage : ?sim=11
+  const getInitialId = () => {
+    const params = new URLSearchParams(window.location.search);
+    const simParam = params.get('sim');
+    if (simParam) {
+      const id = parseInt(simParam);
+      if (SIMULATIONS.find(s => s.id === id)) return id;
+    }
+    return 0;
+  };
+
+  const [activeId, setActiveId] = useState(getInitialId);
   const active = SIMULATIONS.find(s => s.id === activeId) || SIMULATIONS[0];
   const ActiveComponent = active.component;
   const [expanded, setExpanded] = useState({ "1G": true, "TSTL": true, "BTS": true });
   const [plotlyReady, setPlotlyReady] = useState(false);
+  const [copyMsg, setCopyMsg] = useState('');
 
+  // Plotly ready (un seul useEffect)
   useEffect(() => {
     const check = setInterval(() => {
       if (window.Plotly) {
@@ -6941,18 +6961,28 @@ export default function App() {
     }, 100);
     return () => clearInterval(check);
   }, []);
-  
 
+  // Mise à jour de l'URL quand on change de simulation
   useEffect(() => {
-    const check = setInterval(() => {
-      if (window.Plotly) {
-        setPlotlyReady(true);
-        clearInterval(check);
-      }
-    }, 100);
-    return () => clearInterval(check);
-  }, []);
-  
+    const url = new URL(window.location.href);
+    if (activeId === 0) {
+      url.searchParams.delete('sim');
+    } else {
+      url.searchParams.set('sim', activeId);
+    }
+    window.history.replaceState(null, '', url.toString());
+  }, [activeId]);
+
+  // Copier le lien de partage
+  function partager() {
+    const url = new URL(window.location.href);
+    if (activeId > 0) url.searchParams.set('sim', activeId);
+    navigator.clipboard.writeText(url.toString()).then(() => {
+      setCopyMsg('Lien copié !');
+      setTimeout(() => setCopyMsg(''), 2000);
+    });
+  }
+
   return (
     <div style={styles.root}>
       <div style={styles.bgBlob1} />
@@ -6987,7 +7017,6 @@ export default function App() {
             const isExpanded = expanded[niv.key];
             return (
               <div key={niv.key}>
-                {/* En-tête section */}
                 <button onClick={() => setExpanded(prev => ({...prev, [niv.key]: !prev[niv.key]}))}
                   style={{
                     display:"flex", alignItems:"center", justifyContent:"space-between",
@@ -7007,7 +7036,6 @@ export default function App() {
                   </span>
                 </button>
 
-                {/* Simulations de ce niveau */}
                 {isExpanded && simsNiv.map(sim => {
                   const isActive = sim.id === activeId;
                   return (
@@ -7027,30 +7055,31 @@ export default function App() {
                   );
                 })}
 
-                {/* Séparateur entre niveaux */}
                 <div style={{height:"1px", background:"linear-gradient(to right, #e0e0e0, transparent)", margin:"0.5rem 0"}}/>
               </div>
             );
           })}
         </nav>
-        {/* Contact */}
-<div style={{paddingTop:"1rem"}}>
-  <div style={{height:"1px", background:"linear-gradient(to right, #e0e0e0, transparent)", marginBottom:"0.75rem"}}/>
-  <a href="mailto:nils.aronssohn@ac-grenoble.fr"
-    style={{display:"flex", alignItems:"center", gap:"0.5rem",
-      fontSize:"0.85rem", color:"#888", textDecoration:"none",
-      padding:"0.6rem 1rem", borderRadius:"12px", transition:"all 0.2s",
-      fontWeight:"600", fontFamily:"'Nunito', sans-serif"}}
-    onMouseEnter={e=>{e.currentTarget.style.color="#e63946"; e.currentTarget.style.background="#fff0f0"}}
-    onMouseLeave={e=>{e.currentTarget.style.color="#888"; e.currentTarget.style.background="transparent"}}>
-    ✉️ Contact
-  </a>
-</div>
 
-<div style={styles.sidebarFooter}></div>
+        {/* Contact */}
+        <div style={{paddingTop:"1rem"}}>
+          <div style={{height:"1px", background:"linear-gradient(to right, #e0e0e0, transparent)", marginBottom:"0.75rem"}}/>
+          <a href="mailto:nils.aronssohn@ac-grenoble.fr"
+            style={{display:"flex", alignItems:"center", gap:"0.5rem",
+              fontSize:"0.85rem", color:"#888", textDecoration:"none",
+              padding:"0.6rem 1rem", borderRadius:"12px", transition:"all 0.2s",
+              fontWeight:"600", fontFamily:"'Nunito', sans-serif"}}
+            onMouseEnter={e=>{e.currentTarget.style.color="#e63946"; e.currentTarget.style.background="#fff0f0"}}
+            onMouseLeave={e=>{e.currentTarget.style.color="#888"; e.currentTarget.style.background="transparent"}}>
+            ✉️ Contact
+          </a>
+        </div>
+
+        <div style={styles.sidebarFooter}></div>
       </aside>
 
       <main style={styles.main}>
+        {/* Barre du haut */}
         <div style={{
           ...styles.topBar,
           background: activeId === 0
@@ -7059,12 +7088,28 @@ export default function App() {
           borderBottom: `3px solid ${activeId === 0 ? "#2a9d8f" : active.color}`
         }}>
           <span style={{ fontSize: "2rem" }}>{activeId === 0 ? "🏠" : active.icon}</span>
-          <h1 style={{ ...styles.pageTitle, color: activeId === 0 ? "#2a9d8f" : active.color }}>
+          <h1 style={{ ...styles.pageTitle, color: activeId === 0 ? "#2a9d8f" : active.color, flex: 1 }}>
             <span style={{fontFamily:"'Outfit', sans-serif", fontWeight:800, letterSpacing:"-0.5px"}}>
               {activeId === 0 ? "Bienvenue !" : active.label}
             </span>
           </h1>
+
+          {/* Bouton Partager — visible uniquement sur une simulation */}
+          {activeId > 0 && (
+            <button onClick={partager} style={{
+              display:"flex", alignItems:"center", gap:6,
+              padding:"6px 14px", borderRadius:8, border:"none",
+              background: copyMsg ? "#2a9d8f" : "#f0f0f0",
+              color: copyMsg ? "white" : "#555",
+              fontSize:13, fontWeight:600, cursor:"pointer",
+              transition:"all 0.2s", fontFamily:"'Nunito', sans-serif",
+              whiteSpace:"nowrap",
+            }}>
+              {copyMsg ? '✓ ' + copyMsg : '🔗 Partager'}
+            </button>
+          )}
         </div>
+
         <div style={styles.simContainer}>
           {activeId === 0
             ? <PageAccueil onStart={(id) => setActiveId(id || 1)} />
