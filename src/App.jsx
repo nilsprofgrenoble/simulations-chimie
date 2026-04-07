@@ -4442,7 +4442,7 @@ function SpectroSchema({ analyteName, lambdaNm, onLambdaChange, concRatio=0.5 })
 
 
 // ---- Composant étalonnage (commun 1G et BTS) ----
-function CalibrationPlot({ plotlyReady, xs, ys, xsScale, ysScale, mesurande, unite, grandeurLabel, aechValue, onAechChange, showResiduals=false, nLevels=null, maxLevels=null, onNLevels=null, lambdaNm, peakNm }) {
+function CalibrationPlot({ plotlyReady, xs, ys, xsScale, ysScale, mesurande, unite, grandeurLabel, aechValue, onAechChange, showResiduals=false, nLevels=null, maxLevels=null, onNLevels=null, lambdaNm, peakNm, calibClassName, residClassName }) {
   const divId = 'calib-'+Math.random().toString(36).slice(2);
   const residId = 'resid-'+divId;
   const plotRef = useRef(null);
@@ -4530,11 +4530,11 @@ function CalibrationPlot({ plotlyReady, xs, ys, xsScale, ysScale, mesurande, uni
           <span style={{fontSize:13,fontWeight:'500'}}>{nLevels} / {maxLevels}</span>
         </div>
       )}
-      <div ref={plotRef} style={{width:'100%',height:320}}/>
+      <div ref={plotRef} className={calibClassName||''} style={{width:'100%',height:320}}/>
       {showResiduals && (
         <>
           <div style={{fontSize:12,color:'var(--color-text-secondary)',margin:'8px 0 4px'}}>Graphique des résidus</div>
-          <div ref={residRef} style={{width:'100%',height:220}}/>
+          <div ref={residRef} className={residClassName||''} style={{width:'100%',height:220}}/>
         </>
       )}
       {/* Lecture Cech */}
@@ -4820,7 +4820,7 @@ function BeerLambert1G({ plotlyReady }) {
 // ====================================================
 
 function BeerLambertBTS({ plotlyReady }) {
-  const [methode, setMethode] = useState('beerlambert'); // 'beerlambert' | 'autre'
+  const [methode, setMethode] = useState('beerlambert');
   const [analyte, setAnalyte] = useState('permanganate');
   const [lambdaNm, setLambdaNm] = useState(525);
   const [tab, setTab] = useState(null);
@@ -4836,6 +4836,8 @@ function BeerLambertBTS({ plotlyReady }) {
   const [customNom, setCustomNom] = useState('');
   const [customLambda, setCustomLambda] = useState(500);
   const [showFormules, setShowFormules] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const reportRef = useRef(null);
 
   const a = analyte !== 'autre' ? ANALYTES_BL[analyte] : null;
 
@@ -4844,14 +4846,12 @@ function BeerLambertBTS({ plotlyReady }) {
     setTab(methode === 'autre' ? 'exemple' : null);
   }, [methode, analyte]);
 
-  // Sensibilité (Beer-Lambert uniquement)
   const sensibilite = (methode === 'beerlambert' && analyte !== 'autre') ? getAbsAtNm(analyte, lambdaNm) : 1;
   const sensibiliteMax = (methode === 'beerlambert' && analyte !== 'autre') ? getAbsAtNm(analyte, a.peakNm) : 1;
   const facteurLambda = sensibiliteMax > 0 ? sensibilite / sensibiliteMax : 1;
   const pct = Math.round(facteurLambda * 100);
   const sensColor = pct > 70 ? '#16a34a' : pct > 35 ? '#d97706' : '#dc2626';
 
-  // ── Exemple Beer-Lambert : KMnO₄, 5 niveaux × 5 répétitions ──
   const exBL = {
     mesurande: 'C(KMnO₄)', unite: 'mg/L', grandeur: 'Absorbance',
     niveaux: 5, repetitions: 5,
@@ -4865,29 +4865,18 @@ function BeerLambertBTS({ plotlyReady }) {
     ]
   };
 
-  // ── Exemple Autre : K+ par SAA, 11 niveaux × 3 répétitions ──
   const exAutre = {
     mesurande: 'C(K⁺)', unite: 'mg/L', grandeur: 'Intensité I',
     niveaux: 11, repetitions: 3,
     concentrations: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20],
     absorbances: [
-      [0,   -2,  1 ],
-      [20,   21, 19 ],
-      [38,   41, 40 ],
-      [59,   62, 57 ],
-      [78,   81, 80 ],
-      [98,   99, 99 ],
-      [114, 115, 117],
-      [131, 133, 132],
-      [149, 147, 148],
-      [166, 165, 164],
-      [180, 181, 182],
+      [0,-2,1],[20,21,19],[38,41,40],[59,62,57],[78,81,80],
+      [98,99,99],[114,115,117],[131,133,132],[149,147,148],[166,165,164],[180,181,182],
     ]
   };
 
   const exCourant = methode === 'beerlambert' ? exBL : exAutre;
 
-  // ── Construction allLevels ──
   let allLevels = [];
   if (tab === 'exemple') {
     allLevels = exCourant.concentrations.map((c,i) => ({
@@ -4914,7 +4903,6 @@ function BeerLambertBTS({ plotlyReady }) {
 
   let xs = [], ys = [], xsMax = [], ysMax = [];
   included.forEach(({c,abs}) => abs.forEach(v => { xs.push(c); ys.push(v); }));
-  // ysMax toujours calculé au lambda MAX (facteur=1) pour fixer l'échelle Y
   if (tab === 'exemple' && methode === 'beerlambert') {
     exBL.concentrations.forEach((c,i) =>
       exBL.absorbances[i].forEach(v => { xsMax.push(c); ysMax.push(v); })
@@ -4924,12 +4912,10 @@ function BeerLambertBTS({ plotlyReady }) {
   }
 
   const reg = xs.length >= 2 ? linReg(xs, ys) : null;
-
   const mesLabel = tab === 'exemple' ? exCourant.mesurande : mesurande;
   const uniteLabel = tab === 'exemple' ? exCourant.unite : unite;
   const grandeurLabel = tab === 'exemple' ? exCourant.grandeur : grandeur;
 
-  // ── LD / LQ : s(b) = erreur standard sur l'ordonnée ──
   let sB = null, LD = null, LQ = null;
   if (reg && xs.length >= 3) {
     const n = xs.length;
@@ -4942,7 +4928,6 @@ function BeerLambertBTS({ plotlyReady }) {
     LQ = reg.slope !== 0 ? 10*sB/reg.slope : null;
   }
 
-  // ── Fisher-Snedecor ──
   const nRepMin = included.length > 0 ? Math.min(...included.map(l=>l.abs.length)) : 0;
   const canFisher = included.length >= 3 && nRepMin >= 2;
   let fisherResult = null;
@@ -4968,7 +4953,6 @@ function BeerLambertBTS({ plotlyReady }) {
     };
   }
 
-  // ── Saisie manuelle ──
   function initManualGrid() {
     setManualData({
       concentrations: Array(nNiveaux).fill(0),
@@ -4982,11 +4966,327 @@ function BeerLambertBTS({ plotlyReady }) {
     setManualData(d=>{const ab=d.absorbances.map(r=>[...r]);ab[i][j]=parseFloat(val)||0;return{...d,absorbances:ab};});
   }
 
+  // ── Export PDF ──
+   async function exportPDF() {
+    if (!reg || !window.html2canvas || !window.jspdf) {
+      alert('Librairies PDF non disponibles. Verifiez les scripts dans index.html.');
+      return;
+    }
+    setPdfLoading(true);
+    try {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const W = 210, margin = 15, contentW = W - 2 * margin;
+      let y = 0;
+
+      // Palette
+      const TEAL   = [42, 157, 143];
+      const PURPLE = [106, 76, 147];
+      const DARK   = [30, 30, 40];
+      const GREY   = [120, 120, 130];
+      const WHITE  = [255, 255, 255];
+      const TEAL_L = [232, 248, 245];
+      const PURP_L = [243, 238, 255];
+      const GREEN  = [21, 128, 61];
+      const GREEN_L= [240, 253, 244];
+      const RED    = [180, 30, 30];
+      const RED_L  = [254, 242, 242];
+
+      // ── Nettoyage caractères spéciaux ──
+      const cleanTxt = (s) => String(s)
+        .replace(/λ/g,'lambda').replace(/₄/g,'4').replace(/₂/g,'2')
+        .replace(/₃/g,'3').replace(/⁺/g,'+').replace(/⁻/g,'-')
+        .replace(/→/g,'->').replace(/✓/g,'OK').replace(/✗/g,'NON')
+        .replace(/—/g,'-').replace(/≥/g,'>=').replace(/≤/g,'<=')
+        .replace(/[^\x00-\x7F]/g, c => {
+          const map = {
+            'é':'e','è':'e','ê':'e','ë':'e',
+            'à':'a','â':'a','ä':'a','ã':'a',
+            'ô':'o','ö':'o','ò':'o','ó':'o',
+            'î':'i','ï':'i','ì':'i','í':'i',
+            'ù':'u','û':'u','ü':'u','ú':'u',
+            'ç':'c','ñ':'n',
+            'É':'E','È':'E','Ê':'E','Ë':'E',
+            'À':'A','Â':'A','Ä':'A',
+            'Ô':'O','Ö':'O','Î':'I','Ï':'I',
+            'Ù':'U','Û':'U','Ü':'U','Ç':'C',
+            'ε':'eps','µ':'mu','°':'deg','²':'2','³':'3',
+          };
+          return map[c] || '';
+        });
+
+      // ── Helpers ──
+      const setColor  = (rgb) => pdf.setTextColor(...rgb);
+      const setFill   = (rgb) => pdf.setFillColor(...rgb);
+      const setDraw   = (rgb) => pdf.setDrawColor(...rgb);
+      const txt       = (t, x, yy, opts) => pdf.text(cleanTxt(t), x, yy, opts||{});
+      const bold      = (sz=10) => { pdf.setFont('helvetica','bold');   pdf.setFontSize(sz); };
+      const normal    = (sz=10) => { pdf.setFont('helvetica','normal'); pdf.setFontSize(sz); };
+      const pageCheck = (need=30) => { if (y + need > 282) { pdf.addPage(); y = margin; addPageFooter(); } };
+      const hLine     = (col=GREY) => { setDraw(col); pdf.line(margin, y, W-margin, y); y += 5; };
+
+      // ── Pied de page (appelé sur chaque page) ──
+      function addPageFooter() {
+        const pageH = 297;
+        setFill([248,248,250]);
+        pdf.rect(0, pageH-12, W, 12, 'F');
+        setDraw([220,220,225]);
+        pdf.line(0, pageH-12, W, pageH-12);
+        normal(7); setColor(GREY);
+        txt('Labo Chimie & Physique — nilsprofgrenoble.github.io/simulations-chimie/', margin, pageH-5);
+        txt(`Simulation : Dosage par etalonnage BTS  |  ${new Date().toLocaleDateString('fr-FR')}`, W-margin, pageH-5, {align:'right'});
+      }
+
+      // ════════════════════════════════════════
+      // EN-TÊTE PAGE 1
+      // ════════════════════════════════════════
+
+      // Bande supérieure dégradée simulée (deux rectangles)
+      setFill(TEAL);
+      pdf.rect(0, 0, W, 28, 'F');
+      setFill([26, 130, 118]);
+      pdf.rect(0, 20, W, 8, 'F');
+
+      // Icône ronde blanche
+      setFill(WHITE);
+      pdf.circle(margin + 8, 14, 7, 'F');
+      setColor(TEAL);
+      bold(11);
+      txt('BTS', margin + 4.5, 17);
+
+      // Titre principal
+      setColor(WHITE);
+      bold(16);
+      txt('Dosage par etalonnage — Niveau BTS', margin + 20, 11);
+      normal(8);
+      txt('Rapport genere automatiquement', margin + 20, 17);
+
+      // Date et URL en haut à droite
+      normal(8); setColor([200,240,235]);
+      txt(new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}), W-margin, 10, {align:'right'});
+      txt('nilsprofgrenoble.github.io/simulations-chimie/', W-margin, 16, {align:'right'});
+      txt(`Simulation : Dosage par etalonnage — ?sim=11`, W-margin, 22, {align:'right'});
+
+      y = 35;
+
+      // ════════════════════════════════════════
+      // BLOC PARAMÈTRES
+      // ════════════════════════════════════════
+      setColor(DARK);
+
+      // Titre section avec barre colorée gauche
+      setFill(TEAL);
+      pdf.rect(margin, y-1, 3, 6, 'F');
+      bold(11); setColor(TEAL);
+      txt('Parametres', margin + 6, y + 4); y += 9;
+
+      const infos = [
+        ['Methode',        methode==='beerlambert' ? 'Spectrophotometrie UV-visible (Beer-Lambert)' : 'Autre methode instrumentale'],
+        ['Mesurande',      cleanTxt(`${mesLabel} (${uniteLabel})`)],
+        ['Grandeur',       cleanTxt(grandeurLabel)],
+        ['Niveaux inclus', `${nLevelsIncluded} / ${maxLevels}`],
+        ['Repetitions',    `${nRepMin} par niveau`],
+      ];
+      if (methode==='beerlambert' && analyte!=='autre') {
+        infos.push(['Analyte',  cleanTxt(a.label)]);
+        infos.push(['Lambda',   `${lambdaNm} nm  (sensibilite ${pct}%)`]);
+      }
+
+      // Tableau paramètres sur 2 colonnes
+      const colW = contentW / 2 - 4;
+      infos.forEach(([k,v], i) => {
+        // Chaque paramètre sur sa propre ligne, pas de double colonne
+        pageCheck(12);
+        if (i % 2 === 0) {
+          setFill([248, 250, 252]);
+          pdf.rect(margin, y - 4, contentW, 11, 'F');
+        }
+        bold(8); setColor(GREY);
+        txt(k, margin + 2, y);
+        normal(9); setColor(DARK);
+        txt(v, margin + 2, y + 4.5);
+        y += 12;
+      });
+      y += 2;
+
+      hLine(TEAL);
+
+      // ════════════════════════════════════════
+      // BLOC STATISTIQUES
+      // ════════════════════════════════════════
+      pageCheck(50);
+      setFill(PURPLE);
+      pdf.rect(margin, y-1, 3, 6, 'F');
+      bold(11); setColor(PURPLE);
+      txt('Statistiques de la regression lineaire', margin + 6, y + 4); y += 10;
+
+      const stats = [
+        ['Pente a',                           reg.slope.toFixed(5) + '  ' + cleanTxt(grandeurLabel) + ' / ' + cleanTxt(uniteLabel)],
+        ["Ordonnee a l'origine b",            reg.intercept.toFixed(5)],
+        ['Coefficient de determination R2',   reg.r2.toFixed(6)],
+      ];
+      if (sB !== null) stats.push(['Ecart-type sur b  s(b)', sB.toFixed(5)]);
+      if (LD !== null) stats.push(['Limite de detection (LD)',      LD.toFixed(4) + '  ' + cleanTxt(uniteLabel)]);
+      if (LQ !== null) stats.push(['Limite de quantification (LQ)', LQ.toFixed(4) + '  ' + cleanTxt(uniteLabel)]);
+
+      // En-tête tableau stats
+      setFill(PURPLE);
+      pdf.rect(margin, y-4, contentW, 6, 'F');
+      bold(8); setColor(WHITE);
+      txt('Grandeur', margin+2, y);
+      txt('Valeur', margin + contentW*0.65, y);
+      y += 6;
+
+      stats.forEach(([k,v], i) => {
+        pageCheck(8);
+        if (i%2===0) { setFill([248,244,255]); pdf.rect(margin, y-4, contentW, 6, 'F'); }
+        else         { setFill(WHITE);          pdf.rect(margin, y-4, contentW, 6, 'F'); }
+        bold(9); setColor([60,40,90]);
+        txt(k, margin+2, y);
+        normal(9); setColor(DARK);
+        txt(v, margin + contentW*0.65, y);
+        y += 6;
+      });
+
+      // Résultat Cech
+      if (aech && !isNaN(parseFloat(aech)) && reg) {
+        const A = parseFloat(aech);
+        const Cech = (A - reg.intercept) / reg.slope;
+        y += 3;
+        setFill(TEAL_L);
+        pdf.rect(margin, y-4, contentW, 9, 'F');
+        setDraw(TEAL);
+        pdf.rect(margin, y-4, contentW, 9, 'S');
+        bold(10); setColor(TEAL);
+        txt(`Resultat  ->  ${cleanTxt(grandeurLabel)} = ${A}  =>  ${cleanTxt(mesLabel)} = ${Cech.toFixed(4)} ${cleanTxt(uniteLabel)}`, margin+4, y+1);
+        y += 12;
+      }
+
+      y += 3;
+      hLine(PURPLE);
+
+      // ════════════════════════════════════════
+      // GRAPHES
+      // ════════════════════════════════════════
+      const plotEl  = reportRef.current?.querySelector('.calib-plot');
+      const residEl = reportRef.current?.querySelector('.resid-plot');
+
+      if (plotEl) {
+        pageCheck(80);
+        setFill(TEAL);
+        pdf.rect(margin, y-1, 3, 6, 'F');
+        bold(11); setColor(TEAL);
+        txt("Courbe d'etalonnage", margin+6, y+4); y += 10;
+
+        const canvas = await window.html2canvas(plotEl, { scale:2, backgroundColor:'#ffffff' });
+        const imgW = contentW, imgH = (canvas.height/canvas.width)*imgW;
+        pageCheck(imgH);
+        // Bordure légère autour du graphe
+        setDraw([220,220,225]);
+        pdf.rect(margin-1, y-1, contentW+2, imgH+2, 'S');
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin, y, imgW, imgH);
+        y += imgH + 8;
+      }
+
+      if (residEl) {
+        pageCheck(70);
+        setFill(PURPLE);
+        pdf.rect(margin, y-1, 3, 6, 'F');
+        bold(11); setColor(PURPLE);
+        txt('Graphique des residus', margin+6, y+4); y += 10;
+
+        const canvas2 = await window.html2canvas(residEl, { scale:2, backgroundColor:'#ffffff' });
+        const imgW2 = contentW, imgH2 = (canvas2.height/canvas2.width)*imgW2;
+        pageCheck(imgH2);
+        setDraw([220,220,225]);
+        pdf.rect(margin-1, y-1, contentW+2, imgH2+2, 'S');
+        pdf.addImage(canvas2.toDataURL('image/png'), 'PNG', margin, y, imgW2, imgH2);
+        y += imgH2 + 8;
+      }
+
+      // ════════════════════════════════════════
+      // FISHER-SNEDECOR
+      // ════════════════════════════════════════
+      if (fisherResult) {
+        pageCheck(60);
+        hLine(PURPLE);
+
+        setFill(PURPLE);
+        pdf.rect(margin, y-1, 3, 6, 'F');
+        bold(11); setColor(PURPLE);
+        txt('Test de Fisher-Snedecor  —  Linearite (seuil 1 %)', margin+6, y+4); y += 10;
+
+        // En-tête tableau
+        const fishCols = [55, 28, 12, 28, 20, 20];
+        const fishHeaders = ['Source', 'SCE', 'ddl', 'Variance', 'F exp', 'F crit 1%'];
+        setFill(PURPLE);
+        pdf.rect(margin, y-4, contentW, 6.5, 'F');
+        bold(8); setColor(WHITE);
+        let xp = margin+1;
+        fishHeaders.forEach((h,i)=>{ txt(h,xp,y); xp+=fishCols[i]; });
+        y += 7;
+
+        const fishRows = [
+          ['Regression lineaire', (reg.ssTot-reg.ssRes).toFixed(5), '1', '-', '-', '-'],
+          ['Non-linearite',       fisherResult.SCE_nl, String(fisherResult.ddl_nl), fisherResult.varNl, fisherResult.Fexp??'-', String(fisherResult.Fcrit??'-')],
+          ['Residuelle',          fisherResult.SCE_r,  String(fisherResult.ddl_r),  fisherResult.varR,  '-', '-'],
+        ];
+
+        fishRows.forEach((row,ri) => {
+          setFill(ri%2===0 ? WHITE : PURP_L);
+          pdf.rect(margin, y-4, contentW, 6.5, 'F');
+          setColor(DARK); xp = margin+1;
+          row.forEach((cell,i)=>{
+            bold(8); if(i===0) normal(8);
+            if(i===4||i===5) { bold(9); setColor(PURPLE); } else setColor(DARK);
+            txt(String(cell), xp, y); xp+=fishCols[i];
+          });
+          y += 7;
+        });
+
+        // Conclusion Fisher
+        y += 2;
+        const isOk = fisherResult.linearite === true;
+        setFill(isOk ? GREEN_L : RED_L);
+        pdf.rect(margin, y-4, contentW, 9, 'F');
+        setDraw(isOk ? GREEN : RED);
+        pdf.rect(margin, y-4, contentW, 9, 'S');
+        bold(10); setColor(isOk ? GREEN : RED);
+        const conclu = isOk
+          ? `OK  F exp (${fisherResult.Fexp}) < F crit (${fisherResult.Fcrit})  ->  Linearite verifiee au seuil 1 %`
+          : `NON  F exp (${fisherResult.Fexp}) >= F crit (${fisherResult.Fcrit})  ->  Linearite non verifiee`;
+        txt(conclu, margin+4, y+1);
+        y += 12;
+      }
+
+      // Pied de page page 1
+      addPageFooter();
+
+      pdf.save(`etalonnage_BTS_${new Date().toISOString().slice(0,10)}.pdf`);
+    } catch(e) {
+      console.error('Erreur PDF:', e);
+      alert('Erreur lors de la generation du PDF : ' + e.message);
+    }
+    setPdfLoading(false);
+  }
+
+
   return (
-    <div style={cardStyle}>
-      <h2 style={{marginTop:0,fontSize:18,color:'var(--color-text-primary)'}}>
-        Dosage par étalonnage — Niveau BTS
-      </h2>
+    <div style={cardStyle} ref={reportRef}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16,flexWrap:'wrap',gap:8}}>
+        <h2 style={{margin:0,fontSize:18,color:'var(--color-text-primary)'}}>
+          Dosage par étalonnage — Niveau BTS
+        </h2>
+        {tab && reg && (
+          <button onClick={exportPDF} disabled={pdfLoading}
+            style={{display:'flex',alignItems:'center',gap:6,padding:'7px 16px',
+              borderRadius:8,border:'none',cursor:'pointer',fontSize:13,fontWeight:600,
+              background: pdfLoading ? '#aaa' : '#2a9d8f',color:'white',
+              fontFamily:"'Nunito', sans-serif"}}>
+            {pdfLoading ? '⏳ Génération...' : '📄 Exporter en PDF'}
+          </button>
+        )}
+      </div>
 
       {/* Choix méthode */}
       <div style={{display:'flex',gap:8,marginBottom:16,flexWrap:'wrap'}}>
@@ -5001,7 +5301,6 @@ function BeerLambertBTS({ plotlyReady }) {
         ))}
       </div>
 
-      {/* ── BLOC BEER-LAMBERT ── */}
       {methode === 'beerlambert' && (
         <>
           <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12,flexWrap:'wrap'}}>
@@ -5010,7 +5309,6 @@ function BeerLambertBTS({ plotlyReady }) {
               {Object.entries(ANALYTES_BL).map(([k,v])=>(<option key={k} value={k}>{v.label}</option>))}
             </select>
           </div>
-
           {analyte === 'autre' && (
             <div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:12,alignItems:'flex-end',
               padding:'10px 14px',background:'var(--color-background-secondary)',borderRadius:8}}>
@@ -5023,7 +5321,6 @@ function BeerLambertBTS({ plotlyReady }) {
               </div>
             </div>
           )}
-
           {analyte !== 'autre' && (
             <SpectroSchema analyteName={analyte} lambdaNm={lambdaNm} onLambdaChange={setLambdaNm}/>
           )}
@@ -5035,7 +5332,6 @@ function BeerLambertBTS({ plotlyReady }) {
                 background:nmToColor(customLambda),verticalAlign:'middle'}}/>
             </div>
           )}
-
           {analyte !== 'autre' && (
             <div style={{display:'flex',alignItems:'center',gap:10,margin:'8px 0 4px',flexWrap:'wrap'}}>
               <span style={{fontSize:13,color:'var(--color-text-secondary)'}}>Sensibilité à {lambdaNm} nm :</span>
@@ -5049,18 +5345,15 @@ function BeerLambertBTS({ plotlyReady }) {
         </>
       )}
 
-      {/* ── BLOC AUTRE MÉTHODE ── */}
       {methode === 'autre' && (
-        <div style={{padding:'10px 14px',fontSize:13,
-          background:'var(--color-background-secondary)',borderRadius:8,marginBottom:8,
-          color:'var(--color-text-secondary)'}}>
+        <div style={{padding:'10px 14px',fontSize:13,background:'var(--color-background-secondary)',
+          borderRadius:8,marginBottom:8,color:'var(--color-text-secondary)'}}>
           Méthode instrumentale sans spectrophotomètre UV-visible — saisissez directement vos données d'étalonnage.
         </div>
       )}
 
       <hr style={{margin:'16px 0',borderColor:'var(--color-border-tertiary)'}}/>
 
-      {/* ── SECTION COURBE D'ÉTALONNAGE ── */}
       <div style={{marginBottom:10}}>
         <div style={{fontSize:15,fontWeight:'500',marginBottom:6}}>Courbe d'étalonnage</div>
         {methode === 'beerlambert' && (
@@ -5075,26 +5368,18 @@ function BeerLambertBTS({ plotlyReady }) {
         </div>
       </div>
 
-      {/* Onglet exemple */}
       {tab==='exemple' && methode==='beerlambert' && (
         <div style={{fontSize:13,color:'var(--color-text-secondary)',marginBottom:8}}>
           Étalonnage KMnO₄ par spectrophotométrie — {exBL.niveaux} niveaux × {exBL.repetitions} répétitions, λ = {lambdaNm} nm.{' '}
-          {analyte !== 'autre' && (
-            <span style={{color:sensColor,fontWeight:'500'}}>
-              Sensibilité : {pct}% du maximum (à {a.peakNm} nm).
-            </span>
-          )}
+          {analyte !== 'autre' && <span style={{color:sensColor,fontWeight:'500'}}>Sensibilité : {pct}% du maximum (à {a.peakNm} nm).</span>}
         </div>
       )}
       {tab==='exemple' && methode==='autre' && (
         <div style={{fontSize:13,color:'var(--color-text-secondary)',marginBottom:8}}>
-          Dosage du potassium K⁺ par spectroscopie d'absorption atomique (SAA) —{' '}
-          {exAutre.niveaux} niveaux de concentration (0 à 20 mg/L) × {exAutre.repetitions} répétitions.
-          Grandeur mesurée : Intensité I (u.a.)
+          Dosage du potassium K⁺ par SAA — {exAutre.niveaux} niveaux × {exAutre.repetitions} répétitions. Grandeur mesurée : Intensité I (u.a.)
         </div>
       )}
 
-      {/* Onglet saisie manuelle */}
       {tab==='manuel' && (
         <div style={{marginBottom:12}}>
           <div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:10,alignItems:'flex-end'}}>
@@ -5107,11 +5392,7 @@ function BeerLambertBTS({ plotlyReady }) {
             <Field label="Grandeur mesurée" value={grandeur} onChange={setGrandeur} width={130} type="text"/>
             <button onClick={initManualGrid} style={{padding:'4px 12px',fontSize:13}}>Créer le tableau</button>
           </div>
-          {nRep < 2 && (
-            <div style={{fontSize:12,color:'#d97706',marginBottom:8}}>
-              ⚠ Le test de Fisher-Snedecor nécessite au moins 2 répétitions par niveau.
-            </div>
-          )}
+          {nRep < 2 && <div style={{fontSize:12,color:'#d97706',marginBottom:8}}>⚠ Le test de Fisher-Snedecor nécessite au moins 2 répétitions par niveau.</div>}
           {manualData && (
             <div style={{overflowX:'auto'}}>
               <table style={{borderCollapse:'collapse',fontSize:12}}>
@@ -5127,8 +5408,7 @@ function BeerLambertBTS({ plotlyReady }) {
                   {manualData.concentrations.map((c,i)=>(
                     <tr key={i}>
                       <td style={{padding:'2px 4px'}}>
-                        <input type="number" value={c} onChange={e=>updateManualConc(i,e.target.value)}
-                          style={{width:80,fontSize:12,padding:'2px 4px'}}/>
+                        <input type="number" value={c} onChange={e=>updateManualConc(i,e.target.value)} style={{width:80,fontSize:12,padding:'2px 4px'}}/>
                       </td>
                       {Array(nRep).fill(0).map((_,j)=>(
                         <td key={j} style={{padding:'2px 4px'}}>
@@ -5146,7 +5426,6 @@ function BeerLambertBTS({ plotlyReady }) {
         </div>
       )}
 
-      {/* Onglet tableur */}
       {tab==='tableur' && (
         <div style={{marginBottom:12}}>
           <p style={{fontSize:13,color:'var(--color-text-secondary)',marginTop:0}}>
@@ -5167,10 +5446,8 @@ function BeerLambertBTS({ plotlyReady }) {
         </div>
       )}
 
-      {/* Stats + graphes */}
       {tab && reg && (
         <>
-          {/* Slider restriction domaine */}
           {maxLevels > 2 && (
             <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:12,flexWrap:'wrap',
               padding:'8px 12px',background:'var(--color-background-secondary)',borderRadius:8}}>
@@ -5179,14 +5456,11 @@ function BeerLambertBTS({ plotlyReady }) {
                 onChange={e=>setNLevelsIncluded(Number(e.target.value))} style={{width:160}}/>
               <span style={{fontSize:13,fontWeight:'500'}}>{nLevelsIncluded} / {maxLevels}</span>
               {nLevelsIncluded < maxLevels && (
-                <span style={{fontSize:12,color:'#d97706'}}>
-                  ⚠ {maxLevels-nLevelsIncluded} niveau(x) exclu(s) (les plus concentrés)
-                </span>
+                <span style={{fontSize:12,color:'#d97706'}}>⚠ {maxLevels-nLevelsIncluded} niveau(x) exclu(s)</span>
               )}
             </div>
           )}
 
-          {/* Statistiques */}
           <div style={{display:'flex',gap:12,flexWrap:'wrap',marginBottom:16}}>
             {[
               ['Pente a', reg.slope.toFixed(5)],
@@ -5203,7 +5477,6 @@ function BeerLambertBTS({ plotlyReady }) {
             ))}
           </div>
 
-          {/* Graphe étalonnage + résidus */}
           <CalibrationPlot
             plotlyReady={plotlyReady} xs={xs} ys={ys}
             xsScale={xsMax} ysScale={ysMax}
@@ -5212,11 +5485,12 @@ function BeerLambertBTS({ plotlyReady }) {
             aechValue={aech} onAechChange={setAech}
             showResiduals={true}
             lambdaNm={lambdaNm}
-            peakNm={methode==='beerlambert' && analyte!=='autre' ? a.peakNm : lambdaNm}/>
+            peakNm={methode==='beerlambert' && analyte!=='autre' ? a.peakNm : lambdaNm}
+            calibClassName="calib-plot"
+            residClassName="resid-plot"/>
 
           <hr style={{margin:'20px 0',borderColor:'var(--color-border-tertiary)'}}/>
 
-          {/* Test Fisher-Snedecor */}
           <div style={{marginBottom:8}}>
             <div style={{fontSize:15,fontWeight:'500',marginBottom:6}}>
               Test de Fisher-Snedecor — Vérification de la linéarité (seuil 1 %)
@@ -5269,17 +5543,14 @@ function BeerLambertBTS({ plotlyReady }) {
                   color: fisherResult.linearite===true ? '#15803d' : fisherResult.linearite===false ? '#dc2626' : 'var(--color-text-secondary)',
                   border:`1px solid ${fisherResult.linearite===true?'#bbf7d0':fisherResult.linearite===false?'#fecaca':'var(--color-border-tertiary)'}`,
                 }}>
-                  {fisherResult.linearite===true &&
-                    `✓ F exp (${fisherResult.Fexp}) < F crit (${fisherResult.Fcrit}) → Linéarité vérifiée au seuil 1 % — ${fisherResult.p} niveaux × ${fisherResult.n} répétitions`}
-                  {fisherResult.linearite===false &&
-                    `✗ F exp (${fisherResult.Fexp}) ≥ F crit (${fisherResult.Fcrit}) → Linéarité non vérifiée — essayez de restreindre le domaine avec le curseur`}
+                  {fisherResult.linearite===true && `✓ F exp (${fisherResult.Fexp}) < F crit (${fisherResult.Fcrit}) → Linéarité vérifiée au seuil 1 % — ${fisherResult.p} niveaux × ${fisherResult.n} répétitions`}
+                  {fisherResult.linearite===false && `✗ F exp (${fisherResult.Fexp}) ≥ F crit (${fisherResult.Fcrit}) → Linéarité non vérifiée — essayez de restreindre le domaine avec le curseur`}
                   {fisherResult.linearite===null && 'Calcul impossible'}
                 </div>
               </>
             )}
           </div>
 
-          {/* Bouton formules */}
           <button onClick={()=>setShowFormules(v=>!v)}
             style={{fontSize:12,padding:'5px 14px',borderRadius:6,cursor:'pointer',
               border:'1px solid var(--color-border-secondary)',
@@ -5294,31 +5565,21 @@ function BeerLambertBTS({ plotlyReady }) {
               <div style={{fontWeight:'500',marginBottom:8,fontSize:13}}>Formules utilisées</div>
               <div style={{marginBottom:10}}>
                 <strong>Régression linéaire</strong> (moindres carrés, points individuels) :<br/>
-                Y = a·C + b<br/>
-                a = [n·Σ(CᵢYᵢ) − ΣCᵢ·ΣYᵢ] / [n·ΣCᵢ² − (ΣCᵢ)²]<br/>
-                b = (ΣYᵢ − a·ΣCᵢ) / n
+                Y = a·C + b &nbsp;|&nbsp; a = [n·Σ(CᵢYᵢ) − ΣCᵢ·ΣYᵢ] / [n·ΣCᵢ² − (ΣCᵢ)²]
               </div>
               <div style={{marginBottom:10}}>
-                <strong>Erreur standard sur b</strong> :<br/>
-                s²_rés = Σ(Yᵢ − Ŷᵢ)² / (n−2){'   '}avec n = nombre total de mesures<br/>
-                s(b) = √[ s²_rés · (1/n + C̄² / Scc) ]{'   '}avec Scc = Σ(Cᵢ−C̄)²
+                <strong>Erreur standard sur b</strong> : s(b) = √[ s²_rés · (1/n + C̄² / Scc) ]
               </div>
               <div style={{marginBottom:10}}>
-                <strong>LD et LQ</strong> (méthode des moindres carrés ordinaires) :<br/>
-                LD = 3·s(b) / a{'   '}LQ = 10·s(b) / a
+                <strong>LD et LQ</strong> : LD = 3·s(b) / a &nbsp;|&nbsp; LQ = 10·s(b) / a
               </div>
               <div style={{marginBottom:10}}>
-                <strong>Test de Fisher-Snedecor</strong> (NF ISO 8466-1, seuil 1 %) :<br/>
-                p niveaux, n répétitions par niveau<br/>
-                SCE_nonlin = n·Σⱼ(Āⱼ − Ŷⱼ)²{'   '}ddl = p−2<br/>
-                SCE_résid = Σⱼ Σᵢ(Yᵢⱼ − Āⱼ)²{'   '}ddl = p·(n−1)<br/>
-                F_exp = (SCE_nonlin/(p−2)) / (SCE_résid/(p·(n−1)))<br/>
-                Si F_exp {'<'} F_crit(p−2 ; p·(n−1)) → linéarité vérifiée
+                <strong>Test de Fisher-Snedecor</strong> :<br/>
+                SCE_nonlin = n·Σⱼ(Āⱼ − Ŷⱼ)² (ddl = p−2) &nbsp;|&nbsp;
+                SCE_résid = Σⱼ Σᵢ(Yᵢⱼ − Āⱼ)² (ddl = p·(n−1))<br/>
+                F_exp = (SCE_nonlin/(p−2)) / (SCE_résid/(p·(n−1)))
               </div>
-              <div>
-                <strong>Détermination de C_éch</strong> :<br/>
-                C_éch = (Y_éch − b) / a
-              </div>
+              <div><strong>C_éch</strong> = (Y_éch − b) / a</div>
             </div>
           )}
         </>
@@ -5332,6 +5593,7 @@ function BeerLambertBTS({ plotlyReady }) {
     </div>
   );
 }
+
 
 // SIM 12 — SIMULATION CLHP (BTS)
 // Modèle de X. Bataille (ENCPB/RNChimie, 2008)
@@ -6992,7 +7254,7 @@ export default function App() {
         <div style={styles.sidebarHeader}>
           <div style={{ fontSize: "2.2rem" }}>⚛️</div>
           <div>
-            <div style={styles.siteTitle}>Labo Chimie et Physique</div>
+            <div style={styles.siteTitle}>Labo Chimie (et un peu Physique!)</div>
             <div style={styles.siteSub}>Simulations interactives</div>
             <div style={{fontSize:"0.72rem", color:"#aaa", fontStyle:"italic", fontFamily:"'Outfit', sans-serif"}}>par Nils ARONSSOHN, enseignant au lycée Argouges de Grenoble</div>
           </div>
