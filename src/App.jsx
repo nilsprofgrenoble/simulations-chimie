@@ -7556,10 +7556,10 @@ function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCharges=t
     for(let i=0;i<=N;i++){
       const x=(i/N)*SVG_W, t=i/N;
       const dy=amp===0?0:(
-        Math.sin(t*Math.PI*2.3+0.7)*amp*0.50+
-        Math.sin(t*Math.PI*5.1+1.3)*amp*0.30+
-        Math.sin(t*Math.PI*8.7+2.1)*amp*0.15+
-        Math.sin(t*Math.PI*13.2+0.4)*amp*0.05
+        Math.sin(t*Math.PI*7.4+0.7)*amp*0.35+
+        Math.sin(t*Math.PI*14.6+1.3)*amp*0.30+
+        Math.sin(t*Math.PI*22.2+2.1)*amp*0.20+
+        Math.sin(t*Math.PI*31.8+0.4)*amp*0.15
       );
       // Contraindre : le segment ne descend JAMAIS sous yBase-FILM_MIN/2
       const yCandidat = yTop+dy;
@@ -7622,8 +7622,8 @@ function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCharges=t
             const x = xRel * SVG_W;
             const yDepart = yTop + (0.4+i%3*0.2)*solvantHFinal;
             // Monte progressivement : à progress=1 le losange est sorti par le haut
-            const progressRetarde = Math.max(0, progress - 0.2);
-            const montee = progressRetarde * (yDepart + 30) * 0.6;
+            const progressRetarde = Math.max(0, progress - 0.7);
+            const montee = progressRetarde * (yDepart + 30) * 1.8;
             const py = yDepart - montee;
             // Disparaît quand il sort du cadre
             if (py < -10) return null;
