@@ -4245,7 +4245,9 @@ function nmToColor(nm) {
 }
 
 function getAbsAtNm(analyteName, nm) {
-  const curve = ANALYTES_BL[analyteName].curve;
+  const entry = ANALYTES_BL[analyteName];
+  if (!entry || !entry.curve) return 0;
+  const curve = entry.curve;
   for (let i=0; i<curve.length-1; i++) {
     if (nm>=curve[i][0] && nm<=curve[i+1][0]) {
       const t=(nm-curve[i][0])/(curve[i+1][0]-curve[i][0]);
@@ -4571,7 +4573,7 @@ function BeerLambert1G({ plotlyReady }) {
 
   const [customNom, setCustomNom] = useState('');
   const [customLambda, setCustomLambda] = useState(500);
-  const a = ANALYTES_BL[analyte];
+  const a = analyte !== 'autre' ? ANALYTES_BL[analyte] : null;
   useEffect(() => {
     if (analyte !== 'autre') setLambdaNm(a.peakNm);
     else setLambdaNm(customLambda);
@@ -4580,7 +4582,7 @@ function BeerLambert1G({ plotlyReady }) {
 
   // Sensibilité au λ choisi
   const sensibilite = getAbsAtNm(analyte, lambdaNm);
-  const sensibiliteMax = getAbsAtNm(analyte, a.peakNm);
+  const sensibiliteMax = a ? getAbsAtNm(analyte, a.peakNm) : 1;
   const facteurLambda = sensibiliteMax > 0 ? sensibilite / sensibiliteMax : 0;
   const pct = Math.round(facteurLambda * 100);
   const sensColor = pct > 70 ? '#16a34a' : pct > 35 ? '#d97706' : '#dc2626';
@@ -4591,6 +4593,7 @@ function BeerLambert1G({ plotlyReady }) {
   let xsMax = [], ysMax = [];
 
   if (tab === 'exemple') {
+    if (!a) return;
     const ex = a.exampleData;
     mesLabel = ex.mesurande; uniteLabel = ex.unite;
     ex.concentrations.forEach((c,i) =>
@@ -4619,7 +4622,7 @@ function BeerLambert1G({ plotlyReady }) {
   const regMax = xsMax.length >= 2 ? linReg(xsMax, ysMax) : null;
 
   let blankVals = [];
-  if (tab === 'exemple') blankVals = a.exampleData.absorbances[0].map(v => v * facteurLambda);
+  if (tab === 'exemple' && a) blankVals = a.exampleData.absorbances[0].map(v => v * facteurLambda);
   else if (tab === 'manuel' && manualData) blankVals = manualData.absorbances[0];
   const stdBlank = stdDev(blankVals);
   const LD = reg && reg.slope ? 3*stdBlank/reg.slope : null;
@@ -4645,14 +4648,14 @@ function BeerLambert1G({ plotlyReady }) {
       {/* Choix analyte */}
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12,flexWrap:'wrap'}}>
         <label style={{fontSize:13,color:'var(--color-text-secondary)'}}>Analyte :</label>
-        <select value={analyte} onChange={e=>setAnalyte(e.target.value)} style={{fontSize:13}}>
+        <select value={analyte} onChange={e=>{setAnalyte(e.target.value); if(tab==='exemple') setTab('manuel');}} style={{fontSize:13}}>
           {Object.entries(ANALYTES_BL).map(([k,v])=>(<option key={k} value={k}>{v.label}</option>))}
         </select>
       </div>
       {analyte === 'autre' && (
         <div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:12,alignItems:'flex-end',
           padding:'10px 14px',background:'var(--color-background-secondary)',borderRadius:8}}>
-          <Field label="Nom de l'analyte" value={customNom} onChange={setCustomNom} width={160}/>
+          <Field label="Nom de l'analyte" value={customNom} onChange={setCustomNom} width={160} type="text"/>
           <div>
             <div style={{fontSize:12,color:'var(--color-text-secondary)',marginBottom:4}}>λ max (nm)</div>
             <input type="number" value={customLambda} min={380} max={780}
@@ -4679,15 +4682,17 @@ function BeerLambert1G({ plotlyReady }) {
         </div>
       )}
 
-      {/* Barre de sensibilité */}
-      <div style={{display:'flex',alignItems:'center',gap:10,margin:'8px 0 4px',flexWrap:'wrap'}}>
-        <span style={{fontSize:13,color:'var(--color-text-secondary)'}}>Sensibilité à {lambdaNm} nm :</span>
-        <div style={{flex:1,maxWidth:200,height:10,background:'var(--color-background-secondary)',borderRadius:5,overflow:'hidden'}}>
-          <div style={{width:`${pct}%`,height:'100%',background:sensColor,borderRadius:5,transition:'width 0.3s,background 0.3s'}}/>
+      {/* Barre de sensibilité — masquée pour "autre analyte" */}
+      {analyte !== 'autre' && (
+        <div style={{display:'flex',alignItems:'center',gap:10,margin:'8px 0 4px',flexWrap:'wrap'}}>
+          <span style={{fontSize:13,color:'var(--color-text-secondary)'}}>Sensibilité à {lambdaNm} nm :</span>
+          <div style={{flex:1,maxWidth:200,height:10,background:'var(--color-background-secondary)',borderRadius:5,overflow:'hidden'}}>
+            <div style={{width:`${pct}%`,height:'100%',background:sensColor,borderRadius:5,transition:'width 0.3s,background 0.3s'}}/>
+          </div>
+          <span style={{fontSize:13,fontWeight:'500',color:sensColor}}>{pct}%</span>
+          {pct < 50 && <span style={{fontSize:12,color:'#d97706'}}>⚠ Sensibilité faible</span>}
         </div>
-        <span style={{fontSize:13,fontWeight:'500',color:sensColor}}>{pct}%</span>
-        {pct < 50 && <span style={{fontSize:12,color:'#d97706'}}>⚠ Sensibilité faible</span>}
-      </div>
+      )}
 
       <hr style={{margin:'16px 0',borderColor:'var(--color-border-tertiary)'}}/>
 
@@ -4700,18 +4705,20 @@ function BeerLambert1G({ plotlyReady }) {
           Choisissez une source de données pour afficher la courbe :
         </div>
         <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-          {[['exemple','Exemple'],['manuel','Saisie manuelle'],['tableur','Copier-coller tableur']].map(([k,l])=>(
-            <TabBtn key={k} active={tab===k} onClick={()=>setTab(k)}>{l}</TabBtn>
-          ))}
+          {[['exemple','Exemple'],['manuel','Saisie manuelle'],['tableur','Copier-coller tableur']]
+            .filter(([k])=> !(k==='exemple' && analyte==='autre'))
+            .map(([k,l])=>(
+              <TabBtn key={k} active={tab===k} onClick={()=>setTab(k)}>{l}</TabBtn>
+            ))}
         </div>
       </div>
 
       {/* Contenu onglet exemple */}
       {tab==='exemple' && (
         <div style={{fontSize:13,color:'var(--color-text-secondary)',marginBottom:8}}>
-          Étalonnage {a.exampleData.mesurande} — {a.exampleData.niveaux} niveaux × {a.exampleData.repetitions} répétitions.{' '}
+          {a && <>Étalonnage {a.exampleData.mesurande} — {a.exampleData.niveaux} niveaux × {a.exampleData.repetitions} répétitions.{' '}</>}
           <span style={{color:sensColor,fontWeight:'500'}}>
-            Absorbances simulées à {lambdaNm} nm ({pct}% du max à {a.peakNm} nm).
+            Absorbances simulées à {lambdaNm} nm{a ? ` (${pct}% du max à ${a.peakNm} nm)` : ''}.
           </span>
         </div>
       )}
@@ -4802,7 +4809,7 @@ function BeerLambert1G({ plotlyReady }) {
             xsScale={xsMax} ysScale={ysMax}
             mesurande={mesLabel} unite={uniteLabel}
             aechValue={aech} onAechChange={setAech}
-            lambdaNm={lambdaNm} peakNm={a.peakNm}/>
+            lambdaNm={lambdaNm} peakNm={a ? a.peakNm : lambdaNm}/>
         </>
       )}
 
@@ -5362,9 +5369,11 @@ function BeerLambertBTS({ plotlyReady }) {
           </div>
         )}
         <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-          {[['exemple','Exemple'],['manuel','Saisie manuelle'],['tableur','Copier-coller tableur']].map(([k,l])=>(
-            <TabBtn key={k} active={tab===k} onClick={()=>setTab(k)}>{l}</TabBtn>
-          ))}
+          {[['exemple','Exemple'],['manuel','Saisie manuelle'],['tableur','Copier-coller tableur']]
+            .filter(([k])=> !(k==='exemple' && analyte==='autre'))
+            .map(([k,l])=>(
+              <TabBtn key={k} active={tab===k} onClick={()=>setTab(k)}>{l}</TabBtn>
+            ))}
         </div>
       </div>
 
