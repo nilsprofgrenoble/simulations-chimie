@@ -7469,7 +7469,7 @@ function genParticules(SVG_W, nbPig, nbCh, lambdaClamp) {
   return {pigments,charges};
 }
 
-function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCharges=true, hasLiant=true, masseLiant=100, hasCoalescence=false }) {
+function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCharges=true, hasLiant=true, masseLiant=100, hasCoalescence=false, showRayons=false }) {
   const SVG_W=600, SVG_H=160, SUPPORT_H=20, TOTAL_H=SVG_H+SUPPORT_H+10;
 
   // Hauteur minimale du film (jamais moins de 30px au-dessus du support)
@@ -7600,6 +7600,23 @@ function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCharges=t
     `L ${SVG_W},${yBase}`,'Z'].join(' ');
   const filStroke=2.2;
 
+const rayonsData = useMemo(()=>{
+  console.log('rayonsData recalcul', showRayons, segPts.length);
+  if (!showRayons || segPts.length === 0) return [];
+  const positions = [0.1, 0.25, 0.42, 0.63, 0.82];
+  return positions.map(xRel => {
+    const x = xRel * SVG_W;
+    // Interpolation inline sans dépendre de ySegAt
+    const t = Math.max(0, Math.min(1, x/SVG_W));
+    const idx = t*(segPts.length-1);
+    const i0 = Math.floor(idx), i1 = Math.min(segPts.length-1, i0+1);
+    const ySurf = segPts[i0][1]*(1-(idx-i0)) + segPts[i1][1]*(idx-i0);
+    const dispersion = lambda * 70 * (Math.PI/180);
+    const angleReflechi = -Math.PI/4 + (Math.random()-0.5)*dispersion*2;
+    return { x, ySurf, angleReflechi };
+  });
+}, [showRayons, segPts]);
+
   return (
     <svg width="100%" viewBox={`0 0 ${SVG_W} ${TOTAL_H}`}
       style={{borderRadius:12,border:'1.5px solid #e2e8f0',background:'#f8fafc'}}>
@@ -7664,6 +7681,55 @@ function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCharges=t
         <line x1={SVG_W} y1={segPts[segPts.length-1][1]} x2={SVG_W} y2={yBase} stroke="#1d4ed8" strokeWidth={1.5}/>
       </>}
 
+      {/* Rayons lumineux */}
+        {showRayons && rayonsData.map((r,i)=>{
+          const longueur = 55;
+          const colInc = '#f59e0b';  // jaune — rayon incident
+          const colRef = '#ef4444';  // rouge — rayon réfléchi
+
+          // Rayon incident : arrive à 45° depuis le haut-gauche
+          const xInc = r.x - longueur * Math.cos(Math.PI/4);
+          const yInc = r.ySurf - longueur * Math.sin(Math.PI/4);
+
+          // Rayon réfléchi
+          const xRef = r.x + longueur * Math.cos(-r.angleReflechi);
+          const yRef = r.ySurf - longueur * Math.sin(Math.abs(r.angleReflechi));
+
+          // Flèche incident : triangle au milieu pointant vers la surface
+          const xMid = r.x - (longueur/2)*Math.cos(Math.PI/4);
+          const yMid = r.ySurf - (longueur/2)*Math.sin(Math.PI/4);
+          const angInc = Math.PI/4; // direction vers le bas-droite (vers la surface)
+          const arrowSize = 7;
+
+          // Flèche réfléchi : triangle à la POINTE du segment (en xRef, yRef)
+          const angRef = Math.atan2(yRef - r.ySurf, xRef - r.x);
+
+          return (
+            <g key={i}>
+              {/* Rayon incident */}
+              <line x1={xInc} y1={yInc} x2={r.x} y2={r.ySurf}
+                stroke={colInc} strokeWidth={2} opacity={0.95}/>
+              {/* Flèche milieu incident */}
+              <polygon points={`
+                ${xMid + arrowSize*Math.cos(angInc)},${yMid + arrowSize*Math.sin(angInc)}
+                ${xMid + arrowSize*Math.cos(angInc+2.4)},${yMid + arrowSize*Math.sin(angInc+2.4)}
+                ${xMid + arrowSize*Math.cos(angInc-2.4)},${yMid + arrowSize*Math.sin(angInc-2.4)}
+              `} fill={colInc}/>
+
+              {/* Rayon réfléchi avec flèche en bout */}
+              <defs>
+                <marker id={`arrow-${i}`} markerWidth="6" markerHeight="6"
+                  refX="3" refY="3" orient="auto">
+                  <polygon points="0,0 6,3 0,6" fill={colRef}/>
+                </marker>
+              </defs>
+              <line x1={r.x} y1={r.ySurf} x2={xRef} y2={yRef}
+                stroke={colRef} strokeWidth={2} opacity={0.95}
+                markerEnd={`url(#arrow-${i})`}/>
+            </g>
+          );
+        })}
+
       {/* Labels */}
       {solvantHFinal>5 && (
         <text x={SVG_W-6} y={yTop-5} textAnchor="end" fontSize={9} fill="#3b82f6">
@@ -7680,7 +7746,9 @@ function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCharges=t
       )}
     </svg>
   );
+showRayons=false
 }
+
 function SimulationPeinture({ plotlyReady }) {
   const [mps, setMps] = useState(MP_DEFAUT.map(m=>({...m})));
   const [progress, setProgress] = useState(0);
@@ -7689,6 +7757,7 @@ function SimulationPeinture({ plotlyReady }) {
   const [etatAdditif, setEtatAdditif] = useState({}); // {i: 'liquide'|'solide'}
   const [showFormules, setShowFormules] = useState(false);
   const playRef=useRef(null), startRef=useRef(null), startPRef=useRef(0);
+  const [showRayons, setShowRayons] = useState(false);
 
   const props = calculerProprietes(mps);
   const lambda = parseFloat(props.lambda);
@@ -8177,12 +8246,23 @@ function SimulationPeinture({ plotlyReady }) {
           </div>
         </div>
 
+          {Math.round(progress*100) === 100 && (
+            <label style={{display:'flex',alignItems:'center',gap:6,fontSize:12,
+              cursor:'pointer',color:'var(--color-text-secondary)'}}>
+              <input type="checkbox" checked={showRayons}
+                onChange={e=>setShowRayons(e.target.checked)}/>
+              ☀️ Tracer les rayons lumineux
+            </label>
+          )}
+          {Math.round(progress*100) < 100 && showRayons && setShowRayons(false)}
+
         <AnimationSechageTest lambda={lambda} progress={progress}
           hasPigments={mps.some(m=>(m.role==='Pigment')&&(m.masse||0)>0)}
           hasCharges={mps.some(m=>(m.role==='Charge')&&(m.masse||0)>0)}
           masseLiant={mps.filter(m=>m.role==='Liant').reduce((s,m)=>s+(m.masse||0),0)}
           hasLiant={mps.some(m=>m.role==='Liant'&&(m.masse||0)>0)}
-          hasCoalescence={mps.some(m=>m.role==='Additif'&&(m.masse||0)>0&&m.nom.toLowerCase().includes('coalesc'))}/>
+          hasCoalescence={mps.some(m=>m.role==='Additif'&&(m.masse||0)>0&&m.nom.toLowerCase().includes('coalesc'))}
+          showRayons={showRayons && Math.round(progress*100)===100}/>
 
         <div style={{display:'flex',gap:12,flexWrap:'wrap',marginTop:8,fontSize:11,
           color:'var(--color-text-secondary)'}}>
