@@ -8258,14 +8258,18 @@ function PageAccueil({ onStart }) {
       { icon:"❄️", label:"Cristallisation", desc:"Cristallisation par refroidissement ou évaporation avec animation du bécher." },
       { icon:"💡", label:"Chaîne de mesure", desc:"Capteur de lumière Arduino — photorésistance, conditionneur, CAN et algorithme de contrôle." },
     ]},
-    { niveau:"BTS", color:"#6a4c93", sims:[
-      { icon:"⚡", label:"Titrages électrochimiques", desc:"Potentiométrie, ampérométrie — courbes i=f(E) et suivi du titrage." },
-      { icon:"🔵", label:"Diagramme de Hansen", desc:"Sphère de Hansen, solubilité des polymères, optimisation de mélanges de solvants." },
-      { icon:"📊", label:"Étude inter-laboratoire", desc:"Tests de Cochran et Grubbs, fidélité inter-laboratoires selon les normes ISO." },
-      { icon:"📐", label:"Dosage par étalonnage", desc:"Courbe d'étalonnage, résidus, LD/LQ et test de Fisher-Snedecor pour la linéarité." },
-      { icon:"💉", label:"Simulation CLHP", desc:"Chromatogrammes en phase inverse — influence du logP, de l'éluant et de la colonne sur la séparation." },
-      { icon:"📐", label:"Étalon interne / Normalisation interne", desc:"Exploitation de chromatogrammes par méthode de l'étalon interne ou de la normalisation interne." },
-      { icon:"🎨", label:"Séchage d'une peinture", desc:"CPV, CPVC, extrait sec et animation du séchage d'un film de peinture." },
+    { niveau:"BTS", color:"#6a4c93", sousMenus:[
+      { label:"🔬 Analyse", sims:[
+        { icon:"⚡", label:"Titrages électrochimiques", desc:"Potentiométrie, ampérométrie — courbes i=f(E) et suivi du titrage." },
+        { icon:"📊", label:"Étude inter-laboratoire", desc:"Tests de Cochran et Grubbs, fidélité inter-laboratoires selon les normes ISO." },
+        { icon:"📐", label:"Dosage par étalonnage", desc:"Courbe d'étalonnage, résidus, LD/LQ et test de Fisher-Snedecor pour la linéarité." },
+        { icon:"💉", label:"Simulation CLHP", desc:"Chromatogrammes en phase inverse — influence du logP, de l'éluant et de la colonne sur la séparation." },
+        { icon:"📐", label:"Étalon interne / Normalisation interne", desc:"Exploitation de chromatogrammes par méthode de l'étalon interne ou de la normalisation interne." },
+      ]},
+      { label:"🧪 Formulation", sims:[
+        { icon:"🔵", label:"Diagramme de Hansen", desc:"Sphère de Hansen, solubilité des polymères, optimisation de mélanges de solvants." },
+        { icon:"🎨", label:"Séchage d'une peinture", desc:"CPV, CPVC, extrait sec et animation du séchage d'un film de peinture." },
+      ]},
     ]},
   ];
 
@@ -8281,106 +8285,102 @@ function PageAccueil({ onStart }) {
           Labo Chimie & Physique
         </h2>
         <p style={{fontSize:15, color:"#555", lineHeight:1.7, maxWidth:600, margin:"0 auto 20px"}}>
-          Un ensemble de simulations interactives pour explorer la chimie (et un peu la physique),
-          conçues pour les niveaux 1G spé PC, TSTL et BTS Métiers de la Chimie.
+          Simulations interactives pour les niveaux 1G spé PC, TSTL et BTS Métiers de la Chimie.
         </p>
         <button onClick={()=>onStart(1)} style={{
           padding:"10px 28px", borderRadius:8, border:"none",
           background:"#2a9d8f", color:"white", fontSize:15,
-          fontWeight:700, cursor:"pointer",
-          boxShadow:"0 4px 14px #2a9d8f44"
+          fontWeight:700, cursor:"pointer", boxShadow:"0 4px 14px #2a9d8f44"
         }}>
           Explorer les simulations →
         </button>
       </div>
 
       {/* Simulations par niveau */}
-      {simulations.map(({niveau, color, sims}) => sims.length > 0 && (
+      {simulations.map(({niveau, color, sims, sousMenus}) => (
         <div key={niveau}>
+          {/* En-tête niveau */}
           <div style={{display:"flex", alignItems:"center", gap:10, marginBottom:12}}>
             <div style={{height:3, width:28, borderRadius:2, background:color}}/>
             <span style={{fontSize:13, fontWeight:700, color, textTransform:"uppercase",
-              letterSpacing:"0.1em"}}>
-              Niveau {niveau}
-            </span>
+              letterSpacing:"0.1em"}}>Niveau {niveau}</span>
             <div style={{flex:1, height:1, background:"#eee"}}/>
           </div>
-          <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))",
-            gap:12}}>
-            {sims.map(({icon, label, desc}) => {
-              const sim = SIMULATIONS.find(s => s.label === label);
-              return (
-                <div key={label}
-                  onClick={() => sim && onStart(sim.id)}
-                  style={{...cardA,
-                    borderLeft:`3px solid ${color}`,
-                    transition:"transform 0.15s, box-shadow 0.15s",
-                    cursor: sim ? "pointer" : "default"
-                  }}
-                  onMouseEnter={e=>{
-                    e.currentTarget.style.transform="translateY(-2px)";
-                    e.currentTarget.style.boxShadow="0 6px 20px rgba(0,0,0,0.1)";
-                  }}
-                  onMouseLeave={e=>{
-                    e.currentTarget.style.transform="translateY(0)";
-                    e.currentTarget.style.boxShadow="0 2px 12px rgba(0,0,0,0.07)";
-                  }}>
-                  <div style={{fontSize:24, marginBottom:6}}>{icon}</div>
-                  <div style={{fontWeight:700, fontSize:14, color:"#222", marginBottom:4}}>{label}</div>
-                  <div style={{fontSize:12, color:"#777", lineHeight:1.6}}>{desc}</div>
-                </div>
-              );
-            })}
-          </div>
+
+          {/* Cas normal : pas de sous-menu */}
+          {sims && (
+            <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:12}}>
+              {sims.map(({icon, label, desc}) => {
+                const sim=SIMULATIONS.find(s=>s.label===label);
+                return (
+                  <div key={label} onClick={()=>sim&&onStart(sim.id)}
+                    style={{...cardA, borderLeft:`3px solid ${color}`,
+                      transition:"transform 0.15s, box-shadow 0.15s",
+                      cursor:sim?"pointer":"default"}}
+                    onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 6px 20px rgba(0,0,0,0.1)";}}
+                    onMouseLeave={e=>{e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.boxShadow="0 2px 12px rgba(0,0,0,0.07)";}}>
+                    <div style={{fontSize:24, marginBottom:6}}>{icon}</div>
+                    <div style={{fontWeight:700, fontSize:14, color:"#222", marginBottom:4}}>{label}</div>
+                    <div style={{fontSize:12, color:"#777", lineHeight:1.6}}>{desc}</div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Cas avec sous-menus (BTS) */}
+          {sousMenus && sousMenus.map(({label:sLabel, sims:sSims})=>(
+            <div key={sLabel} style={{marginBottom:16}}>
+              {/* En-tête sous-menu */}
+              <div style={{display:"flex", alignItems:"center", gap:8, marginBottom:10}}>
+                <div style={{height:2, width:18, borderRadius:2, background:color, opacity:0.5}}/>
+                <span style={{fontSize:12, fontWeight:700, color,
+                  background:color+'18', padding:"3px 12px",
+                  borderRadius:20, border:`1px solid ${color}44`}}>
+                  {sLabel}
+                </span>
+              </div>
+              <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:12, paddingLeft:8}}>
+                {sSims.map(({icon, label, desc}) => {
+                  const sim=SIMULATIONS.find(s=>s.label===label);
+                  return (
+                    <div key={label} onClick={()=>sim&&onStart(sim.id)}
+                      style={{...cardA, borderLeft:`3px solid ${color}`,
+                        transition:"transform 0.15s, box-shadow 0.15s",
+                        cursor:sim?"pointer":"default"}}
+                      onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 6px 20px rgba(0,0,0,0.1)";}}
+                      onMouseLeave={e=>{e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.boxShadow="0 2px 12px rgba(0,0,0,0.07)";}}>
+                      <div style={{fontSize:24, marginBottom:6}}>{icon}</div>
+                      <div style={{fontWeight:700, fontSize:14, color:"#222", marginBottom:4}}>{label}</div>
+                      <div style={{fontSize:12, color:"#777", lineHeight:1.6}}>{desc}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       ))}
 
-      {/* Sources et crédits */}
+      {/* Sources */}
       <div style={{...cardA, background:"#f8f8f8", borderColor:"#e0e0e0"}}>
-        <div style={{fontWeight:700, fontSize:15, color:"#333", marginBottom:14}}>
-          📚 Sources & inspirations
-        </div>
+        <div style={{fontWeight:700, fontSize:15, color:"#333", marginBottom:14}}>📚 Sources & inspirations</div>
         <div style={{display:"flex", flexDirection:"column", gap:12, fontSize:13, color:"#555", lineHeight:1.7}}>
           <div style={{display:"flex", gap:12, alignItems:"flex-start"}}>
             <span style={{fontSize:20, flexShrink:0}}>🎨</span>
-            <div>
-              <strong style={{color:"#333"}}>Marc-Olivier REULA</strong>
-              {" "}— Enseignant en BTS Métiers de la Chimie à l'ENCPB (Paris).
-              Source d'inspiration pour la conception de ce site, auteur de simulations
-              pédagogiques interactives :{" "}
-              <a href="https://marcoprofparis.github.io/couleur/" target="_blank"
-                style={{color:"#2a9d8f", textDecoration:"none", fontWeight:600}}>Couleur</a>
-              {" · "}
-              <a href="https://marcoprofparis.github.io/rheologie/" target="_blank"
-                style={{color:"#2a9d8f", textDecoration:"none", fontWeight:600}}>Rhéologie & Mouillage</a>
-            </div>
-          </div>
-          <div style={{display:"flex", gap:12, alignItems:"flex-start"}}>
-            <span style={{fontSize:20, flexShrink:0}}>🚀</span>
-            <div>
-              <strong style={{color:"#333"}}>Xavier BATAILLE</strong>
-              {" "}— Enseignant en BTS Métiers de la Chimie à l'ENCPB (Paris).
-              La simulation de la CLHP repose entièrement sur un fichier excel qu'il a lui même créé et aimablement partagé à ses collègues de BTS 🙂 
-            </div>
+            <div><strong style={{color:"#333"}}>Marc-Olivier REULA</strong> — Enseignant en BTS Métiers de la Chimie à l'ENCPB (Paris). Source d'inspiration pour la conception de ce site.</div>
           </div>
           <div style={{display:"flex", gap:12, alignItems:"flex-start"}}>
             <span style={{fontSize:20, flexShrink:0}}>⚡</span>
-            <div>
-              <strong style={{color:"#333"}}>Jean LAMERENX</strong>
-              {" "}— Enseignant en CPGE au lycée Louis-le-Grand (Paris).
-              Les courbes i = f(E) de la simulation "Titrages électrochimiques" ont été
-              codées initialement en Python et aimablement partagées à l'occasion des{" "}
-              <strong>JIREC 2024</strong>.
-            </div>
+            <div><strong style={{color:"#333"}}>Jean LAMERENX</strong> — Enseignant en CPGE au lycée Louis-le-Grand (Paris). Les courbes i=f(E) ont été codées initialement en Python et partagées lors des JIREC 2024.</div>
+          </div>
+          <div style={{display:"flex", gap:12, alignItems:"flex-start"}}>
+            <span style={{fontSize:20, flexShrink:0}}>💻</span>
+            <div><strong style={{color:"#333"}}>Xavier BATAILLE</strong> — Enseignant en BTS Métiers de la Chimie à l'ENCPB (Paris). Le modèle de simulation CLHP en phase inverse est issu de ses travaux publiés sur RNChimie (2008).</div>
           </div>
           <div style={{display:"flex", gap:12, alignItems:"flex-start"}}>
             <span style={{fontSize:20, flexShrink:0}}>🤖</span>
-            <div>
-              <strong style={{color:"#333"}}>Claude (Anthropic)</strong>
-              {" "}— L'ensemble des simulations a été développé par itérations
-              successives en collaboration avec Claude, assistant IA d'Anthropic,
-              à partir de discussions, de codes Python existants et de quelques idées pédagogiques plus ou moins pertinentes!
-            </div>
+            <div><strong style={{color:"#333"}}>Claude (Anthropic)</strong> — L'ensemble des simulations a été développé par itérations successives en collaboration avec Claude, assistant IA d'Anthropic.</div>
           </div>
         </div>
       </div>
@@ -8478,6 +8478,13 @@ export default function App() {
           {NIVEAUX.map(niv => {
             const simsNiv = SIMULATIONS.filter(s => s.niveau === niv.key);
             const isExpanded = expanded[niv.key];
+
+            // Sous-groupes pour BTS
+            const sousgroupes = niv.key === 'BTS' ? [
+              { label:'🔬 Analyse', ids:[3,9,11,12,13] },
+              { label:'🧪 Formulation', ids:[4,14] },
+            ] : null;
+
             return (
               <div key={niv.key}>
                 <button onClick={() => setExpanded(prev => ({...prev, [niv.key]: !prev[niv.key]}))}
@@ -8487,10 +8494,8 @@ export default function App() {
                     background:"transparent", cursor:"pointer",
                     borderRadius:"8px", marginBottom:"0.2rem",
                   }}>
-                  <span style={{
-                    fontSize:"0.72rem", fontWeight:"800", letterSpacing:"0.1em",
-                    textTransform:"uppercase", color: niv.color
-                  }}>
+                  <span style={{fontSize:"0.72rem", fontWeight:"800", letterSpacing:"0.1em",
+                    textTransform:"uppercase", color: niv.color}}>
                     {niv.label}
                   </span>
                   <span style={{fontSize:"0.8rem", color:niv.color, transition:"transform 0.2s",
@@ -8499,7 +8504,7 @@ export default function App() {
                   </span>
                 </button>
 
-                {isExpanded && simsNiv.map(sim => {
+                {isExpanded && !sousgroupes && simsNiv.map(sim => {
                   const isActive = sim.id === activeId;
                   return (
                     <button key={sim.id} onClick={() => setActiveId(sim.id)} style={{
@@ -8515,6 +8520,43 @@ export default function App() {
                       <span style={{flex:1}}>{sim.label}</span>
                       {isActive && <span style={{fontSize:"1.2rem", opacity:0.8}}>›</span>}
                     </button>
+                  );
+                })}
+
+                {isExpanded && sousgroupes && sousgroupes.map(({label, ids}) => {
+                  const [sgExpanded, setSgExpanded] = useState(true);
+                  const sgSims = simsNiv.filter(s => ids.includes(s.id));
+                  return (
+                    <div key={label}>
+                      <button onClick={() => setSgExpanded(v => !v)}
+                        style={{display:"flex", alignItems:"center", gap:6,
+                          width:"100%", padding:"0.3rem 0.75rem", border:"none",
+                          background:"transparent", cursor:"pointer", marginLeft:"0.25rem"}}>
+                        <span style={{fontSize:"0.68rem", fontWeight:"700", color:niv.color,
+                          opacity:0.8, letterSpacing:"0.05em"}}>{label}</span>
+                        <span style={{fontSize:"0.7rem", color:niv.color, opacity:0.6,
+                          transform: sgExpanded ? "rotate(90deg)" : "rotate(0deg)",
+                          transition:"transform 0.2s", display:"inline-block"}}>›</span>
+                      </button>
+                      {sgExpanded && sgSims.map(sim => {
+                        const isActive = sim.id === activeId;
+                        return (
+                          <button key={sim.id} onClick={() => setActiveId(sim.id)} style={{
+                            ...styles.navBtn,
+                            marginLeft:"1rem",
+                            background: isActive ? sim.color : "transparent",
+                            color: isActive ? "#fff" : "#444",
+                            boxShadow: isActive ? `0 4px 18px ${sim.color}55` : "none",
+                            transform: isActive ? "translateX(4px)" : "translateX(0)",
+                            fontSize:"0.8rem",
+                          }}>
+                            <span style={{fontSize:"1rem"}}>{sim.icon}</span>
+                            <span style={{flex:1}}>{sim.label}</span>
+                            {isActive && <span style={{fontSize:"1.1rem", opacity:0.8}}>›</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
                   );
                 })}
 
