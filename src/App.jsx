@@ -7749,6 +7749,458 @@ const rayonsData = useMemo(()=>{
 showRayons=false
 }
 
+// ====================================================
+// SIM 15 — QUANTUM DU CAN → RÉSOLUTION EN TEMPÉRATURE
+// ====================================================
+
+// Régression polynomiale (ordre 2 ou 3)
+function polyReg(xs, ys, ordre) {
+  const n = xs.length;
+  const deg = ordre + 1;
+  // Matrice de Vandermonde
+  const A = xs.map(x => Array.from({length: deg}, (_, k) => Math.pow(x, k)));
+  // Moindres carrés : (A^T A) c = A^T y
+  const ATA2 = Array.from({length: deg}, (_, i) =>
+    Array.from({length: deg}, (_, j) =>
+      xs.reduce((s, x, k) => s + Math.pow(x, i) * Math.pow(x, j), 0)
+    )
+  );
+  const ATy = Array.from({length: deg}, (_, i) =>
+    xs.reduce((s, x, k) => s + Math.pow(x, i) * ys[k], 0)
+  );
+  // Résolution par élimination de Gauss
+  const M = ATA2.map((row, i) => [...row, ATy[i]]);
+  for (let col = 0; col < deg; col++) {
+    let maxRow = col;
+    for (let row = col + 1; row < deg; row++)
+      if (Math.abs(M[row][col]) > Math.abs(M[maxRow][col])) maxRow = row;
+    [M[col], M[maxRow]] = [M[maxRow], M[col]];
+    for (let row = col + 1; row < deg; row++) {
+      const f = M[row][col] / M[col][col];
+      for (let k = col; k <= deg; k++) M[row][k] -= f * M[col][k];
+    }
+  }
+  const coeffs = new Array(deg).fill(0);
+  for (let i = deg - 1; i >= 0; i--) {
+    coeffs[i] = M[i][deg] / M[i][i];
+    for (let k = i - 1; k >= 0; k--) M[k][deg] -= M[k][i] * coeffs[i];
+  }
+  // R²
+  const yMean = ys.reduce((s, v) => s + v, 0) / n;
+  const ssTot = ys.reduce((s, v) => s + (v - yMean) ** 2, 0);
+  const ssRes = ys.reduce((s, v, i) => {
+    const yHat = coeffs.reduce((sum, c, k) => sum + c * Math.pow(xs[i], k), 0);
+    return s + (v - yHat) ** 2;
+  }, 0);
+  const r2 = 1 - ssRes / ssTot;
+  return { coeffs, r2 };
+}
+
+function evalPoly(coeffs, x) {
+  return coeffs.reduce((s, c, k) => s + c * Math.pow(x, k), 0);
+}
+
+// Données exemple (CTN 10kΩ, β≈3950K, série 10kΩ, Vcc=5V)
+const CAN_EXEMPLE = `T (°C)\tUr (V)
+5\t4.21
+10\t4.02
+15\t3.81
+20\t3.58
+25\t3.34
+30\t3.09
+35\t2.84
+40\t2.59
+45\t2.35
+50\t2.12
+55\t1.91
+60\t1.71
+65\t1.53
+70\t1.37`;
+
+function parseDonnees(texte) {
+  const lignes = texte.trim().split('\n');
+  const pts = [];
+  for (const ligne of lignes) {
+        // Séparateur : tabulation ou point-virgule uniquement
+    // (la virgule est réservée au séparateur décimal FR)
+    const cols = ligne.trim().split(/[\t;]+/);
+    if (cols.length < 2) continue;
+    const t = parseFloat(cols[0].replace(',', '.'));
+    const u = parseFloat(cols[1].replace(',', '.'));
+    if (!isNaN(t) && !isNaN(u)) pts.push({ t, u });
+  }
+  return pts.sort((a, b) => a.u - b.u);
+}
+
+function SimulationCAN({ plotlyReady }) {
+  const [texte, setTexte] = useState(CAN_EXEMPLE);
+  const [ordre, setOrdre] = useState(2);
+  const [vmin, setVmin] = useState(0);
+  const [vmax, setVmax] = useState(5);
+  const [nbits, setNbits] = useState(10);
+  const [urVal, setUrVal] = useState(null);
+  const [showExemple, setShowExemple] = useState(true);
+
+  const pts = useMemo(() => parseDonnees(texte), [texte]);
+  const valide = pts.length >= ordre + 2;
+
+  const quantum = (vmax - vmin) / (Math.pow(2, nbits) - 1);
+
+  const reg = useMemo(() => {
+    if (!valide) return null;
+    return polyReg(pts.map(p => p.u), pts.map(p => p.t), ordre);
+  }, [pts, ordre, valide]);
+
+  const urMin = valide ? Math.min(...pts.map(p => p.u)) : 0;
+  const urMax = valide ? Math.max(...pts.map(p => p.u)) : 5;
+  const urCur = urVal !== null ? urVal : (urMin + urMax) / 2;
+
+  // Graphe principal
+  useEffect(() => {
+    if (!plotlyReady || !valide || !reg) return;
+    const xs = [], ys = [];
+    const N = 200;
+    for (let i = 0; i <= N; i++) {
+      const u = urMin + (urMax - urMin) * i / N;
+      xs.push(u);
+      ys.push(evalPoly(reg.coeffs, u));
+    }
+    const T0 = evalPoly(reg.coeffs, urCur);
+
+    Plotly.react('can-main', [
+      { x: pts.map(p => p.u), y: pts.map(p => p.t), mode: 'markers',
+        marker: { color: '#94a3b8', size: 7 }, name: 'Points exp.' },
+      { x: xs, y: ys, mode: 'lines',
+        line: { color: '#2a9d8f', width: 2.5 }, name: 'Modèle' },
+      { x: [urCur], y: [T0], mode: 'markers',
+        marker: { color: '#f59e0b', size: 11, symbol: 'circle' }, name: 'Point choisi' },
+    ], {
+      margin: { l: 52, r: 16, t: 10, b: 44 },
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+      font: { color: 'var(--color-text-secondary)', size: 11 },
+      xaxis: { title: 'Ur (V)', gridcolor: 'rgba(128,128,128,0.15)', zeroline: false },
+      yaxis: { title: 'T (°C)', gridcolor: 'rgba(128,128,128,0.15)', zeroline: false },
+      legend: { x: 0.02, y: 0.98, bgcolor: 'transparent' },
+      showlegend: true,
+      shapes: [
+        { type: 'line', x0: urCur, x1: urCur, y0: 0, y1: T0,
+          line: { color: '#f59e0b', width: 1, dash: 'dot' } },
+        { type: 'line', x0: urMin, x1: urCur, y0: T0, y1: T0,
+          line: { color: '#f59e0b', width: 1, dash: 'dot' } },
+      ],
+    }, { displayModeBar: false, responsive: true });
+  }, [plotlyReady, pts, reg, urCur, urMin, urMax]);
+
+  // Graphe zoom
+  const dTmax = useMemo(() => {
+    if (!reg) return 0.2;
+    let max = 0;
+    for (let i = 0; i <= 100; i++) {
+      const u = urMin + (urMax - urMin) * i / 100;
+      const dT = Math.abs(evalPoly(reg.coeffs, u + quantum) - evalPoly(reg.coeffs, u));
+      if (dT > max) max = dT;
+    }
+    return max;
+  }, [reg, urMin, urMax, quantum]);
+
+  useEffect(() => {
+    if (!plotlyReady || !valide || !reg) return;
+    const T0 = evalPoly(reg.coeffs, urCur);
+    const T1 = evalPoly(reg.coeffs, urCur + quantum);
+    const span = quantum * 5;
+    const xs = [], ys = [];
+    for (let i = 0; i <= 80; i++) {
+      const u = (urCur - span) + 2 * span * i / 80;
+      xs.push(u);
+      ys.push(evalPoly(reg.coeffs, u));
+    }
+    Plotly.react('can-zoom', [
+      { x: xs, y: ys, mode: 'lines',
+        line: { color: '#2a9d8f', width: 2.5 }, hoverinfo: 'skip' },
+      { x: [urCur, urCur + quantum], y: [T0, T1], mode: 'markers',
+        marker: { color: '#f59e0b', size: 8 }, hoverinfo: 'skip' },
+    ], {
+      margin: { l: 56, r: 16, t: 10, b: 44 },
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+      font: { color: 'var(--color-text-secondary)', size: 10 },
+          xaxis: { title: 'Ur (V)', gridcolor: 'rgba(128,128,128,0.15)',
+      zeroline: false, tickformat: '.4f',
+      range: [urCur - quantum*5, urCur + quantum*6] },
+        yaxis: { title: 'T (°C)', gridcolor: 'rgba(128,128,128,0.15)',
+      zeroline: false, tickformat: '.2f',
+      range: [Math.min(T0,T1) - dTmax*4, Math.max(T0,T1) + dTmax*4] },
+      showlegend: false,
+      shapes: [
+        { type: 'line', x0: urCur, x1: urCur, y0: Math.min(T0,T1), y1: T0,
+          line: { color: '#f59e0b', width: 1, dash: 'dot' } },
+        { type: 'line', x0: urCur+quantum, x1: urCur+quantum, y0: Math.min(T0,T1), y1: T1,
+          line: { color: '#f59e0b', width: 1, dash: 'dot' } },
+              { type: 'line', x0: urCur, x1: urCur+quantum, y0: Math.min(T0,T1), y1: Math.min(T0,T1),
+        line: { color: '#f59e0b', width: 1.5 } },
+      { type: 'rect', x0: urCur, x1: urCur+quantum,
+        y0: Math.min(T0,T1), y1: Math.max(T0,T1),
+        fillcolor: 'rgba(245,158,11,0.15)', line: { color: '#f59e0b', width: 1 } },
+      ],
+    }, { displayModeBar: false, responsive: true });
+  }, [plotlyReady, reg, urCur, quantum]);
+
+  // Graphe ΔT = f(T)
+
+  // Tableau 5 points
+  const tableauPts = useMemo(() => {
+    if (!valide || !reg) return [];
+    const tMin = evalPoly(reg.coeffs, urMax);
+    const tMax = evalPoly(reg.coeffs, urMin);
+    return Array.from({ length: 5 }, (_, i) => {
+      const T = tMin + i * (tMax - tMin) / 4;
+      // Trouver Ur correspondant par dichotomie
+      let lo = urMin, hi = urMax;
+      for (let k = 0; k < 60; k++) {
+        const mid = (lo + hi) / 2;
+        if (evalPoly(reg.coeffs, mid) > T) lo = mid; else hi = mid;
+      }
+      const u = (lo + hi) / 2;
+      const dT = Math.abs(evalPoly(reg.coeffs, u + quantum) - evalPoly(reg.coeffs, u));
+      return { T: T.toFixed(1), u: u.toFixed(3), dT: (dT * 1000).toFixed(0) };
+    });
+  }, [reg, urMin, urMax, quantum, valide]);
+
+  const T0 = reg ? evalPoly(reg.coeffs, urCur) : 0;
+  const dT = reg ? Math.abs(evalPoly(reg.coeffs, urCur + quantum) - T0) : 0;
+
+      const inpStyle = {
+    fontSize: 12, padding: '4px 8px',
+    border: '1.5px solid #94a3b8',
+    borderRadius: 6,
+    background: 'white',
+    color: '#1e293b',
+    width: 120,
+  };
+
+    return (
+    <div style={cardStyle}>
+      <h2 style={{ marginTop: 0, fontSize: 18, color: 'var(--color-text-primary)' }}>
+        Quantum du CAN → résolution en température
+      </h2>
+      <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 0, marginBottom: 16 }}>
+        Un pas de conversion ΔU constant, projeté sur une courbe d'étalonnage non linéaire T = f(U<sub>r</sub>),
+        ne donne pas le même ΔT partout sur la plage de mesure.
+      </p>
+
+      {/* ── LIGNE 1 : Saisie + Paramètres CAN + Ordre polynôme (tout en ligne) ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 16, marginBottom: 16 }}>
+
+        {/* Données expérimentales */}
+        <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10,
+          padding: '14px 16px', border: '1px solid var(--color-border-secondary)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <div style={{ fontWeight: 600, fontSize: 13 }}>Données expérimentales</div>
+            <button onClick={() => { setTexte(CAN_EXEMPLE); setShowExemple(true); }}
+              style={{ fontSize: 11, padding: '3px 10px', borderRadius: 5, cursor: 'pointer',
+                border: '1px solid var(--color-border-secondary)',
+                background: 'var(--color-background-primary)',
+                color: 'var(--color-text-secondary)' }}>
+              Charger l'exemple
+            </button>
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
+            Collez vos données depuis Google Sheets (2 colonnes : T en °C, U<sub>r</sub> en V) :
+          </div>
+          <textarea value={texte} onChange={e => { setTexte(e.target.value); setShowExemple(false); }}
+            rows={7}
+            style={{ width: '100%', fontSize: 12, fontFamily: 'monospace', padding: 8,
+              boxSizing: 'border-box', borderRadius: 6,
+              border: '1px solid var(--color-border-secondary)',
+              background: 'var(--color-background-primary)',
+                            color: 'var(--color-text-primary)', resize: 'vertical',
+              colorScheme: 'light' }}
+            placeholder={"T (°C)\tUr (V)\n5\t4.21\n10\t4.02\n..."}
+          />
+          <div style={{ fontSize: 11, color: valide ? '#16a34a' : '#dc2626', marginTop: 4 }}>
+            {valide ? `✓ ${pts.length} points chargés` : `⚠ Saisissez au moins ${ordre + 2} points`}
+          </div>
+        </div>
+
+        {/* Paramètres CAN */}
+        <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10,
+          padding: '14px 16px', border: '1px solid var(--color-border-secondary)' }}>
+          <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 10 }}>Paramètres du CAN</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginBottom: 3 }}>Tension min (V)</div>
+              <input type="number" value={vmin} step="0.1"
+                onChange={e => setVmin(parseFloat(e.target.value) || 0)} style={inpStyle}/>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginBottom: 3 }}>Tension max (V)</div>
+              <input type="number" value={vmax} step="0.1"
+                onChange={e => setVmax(parseFloat(e.target.value) || 5)} style={inpStyle}/>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginBottom: 3 }}>Nombre de bits</div>
+              <input type="number" value={nbits} min={4} max={16}
+                onChange={e => setNbits(parseInt(e.target.value) || 10)} style={inpStyle}/>
+            </div>
+          </div>
+          <div style={{ marginTop: 10, padding: '8px 10px',
+            background: 'var(--color-background-primary)', borderRadius: 7,
+            fontFamily: 'monospace', fontSize: 11, lineHeight: 1.8 }}>
+            ΔU = ({vmax}−{vmin}) / (2<sup>{nbits}</sup>−1)<br/>
+            = <strong style={{ color: '#f59e0b' }}>{(quantum * 1000).toFixed(2)} mV</strong>
+          </div>
+        </div>
+
+        {/* Ordre polynôme + coefficients */}
+        <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10,
+          padding: '14px 16px', border: '1px solid var(--color-border-secondary)' }}>
+          <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 8 }}>Modèle polynomial</div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                {[1, 2, 3].map(o => (
+              <button key={o} onClick={() => setOrdre(o)}
+                style={{ flex: 1, padding: '6px 0', borderRadius: 7, border: 'none',
+                  cursor: 'pointer', fontWeight: 600, fontSize: 13,
+                  background: ordre === o ? '#2a9d8f' : 'var(--color-background-primary)',
+                  color: ordre === o ? 'white' : 'var(--color-text-secondary)' }}>
+                Ordre {o}
+              </button>
+            ))}
+          </div>
+                      {reg && (
+              <div style={{ fontSize: 11, color: 'var(--color-text-secondary)',
+                fontFamily: 'monospace', lineHeight: 1.9 }}>
+                {reg.coeffs.map((c, k) => (
+                  <div key={k}>a<sub>{k}</sub> = {c.toFixed(5)}</div>
+                ))}
+                <div style={{ marginTop: 6, fontSize: 11, fontStyle: 'italic',
+                  color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
+                  T = {reg.coeffs.map((c, k) => {
+                    const signe = c >= 0 && k > 0 ? '+' : '';
+                    if (k === 0) return `${c.toFixed(3)}`;
+                    if (k === 1) return ` ${signe}${c.toFixed(3)}·Ur`;
+                    return ` ${signe}${c.toFixed(3)}·Ur${k === 2 ? '²' : '³'}`;
+                  }).join('')}
+                </div>
+                <div style={{ marginTop: 4, fontSize: 12,
+                  color: reg.r2 > 0.9999 ? '#16a34a' : '#d97706', fontWeight: 700 }}>
+                  R² = {reg.r2.toFixed(6)}
+                </div>
+              </div>
+            )}
+          {!valide && (
+            <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 8 }}>
+              Chargez des données pour voir les coefficients.
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── LIGNES 2 + 3 : affichées seulement si données valides ── */}
+      {valide && reg && (
+        <>
+          {/* ── LIGNE 2 : Courbe principale + Zoom + Encart ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 16 }}>
+
+            {/* Courbe principale */}
+            <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10,
+              padding: '14px 16px', border: '1px solid var(--color-border-secondary)' }}>
+              <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 6 }}>
+                Courbe d'étalonnage T = f(U<sub>r</sub>)
+              </div>
+              <div id="can-main" style={{ width: '100%', height: 480 }}/>
+              <div style={{ marginTop: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between',
+                  fontSize: 11, color: 'var(--color-text-secondary)', marginBottom: 4 }}>
+                  <span>Ur = {urMin.toFixed(3)} V</span>
+                  <span style={{ color: '#f59e0b', fontWeight: 600 }}>Ur = {urCur.toFixed(3)} V</span>
+                  <span>Ur = {urMax.toFixed(3)} V</span>
+                </div>
+                <input type="range"
+                  min={urMin} max={urMax - quantum} step={quantum}
+                  value={urCur}
+                  onChange={e => setUrVal(parseFloat(e.target.value))}
+                  style={{ width: '100%', accentColor: '#f59e0b', cursor: 'pointer' }}/>
+              </div>
+            </div>
+
+            {/* Zoom + Encart chiffré */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10,
+                padding: '14px 16px', border: '1px solid var(--color-border-secondary)' }}>
+                <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 6 }}>
+                  Zoom — à l'échelle réelle
+                </div>
+                <div id="can-zoom" style={{ width: '100%', height: 280 }}/>
+              </div>
+              <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10,
+                padding: '14px 16px', border: '1px solid var(--color-border-secondary)',
+                fontFamily: 'monospace', fontSize: 13 }}>
+                {[
+                  ['Ur choisi', `${urCur.toFixed(3)} V`],
+                  ['T correspondante', `${T0.toFixed(2)} °C`],
+                  ['ΔU (quantum CAN)', `${(quantum * 1000).toFixed(2)} mV`],
+                  ['ΔT résultant', `${(dT).toFixed(3)} °C`, true],
+                ].map(([k, v, hi]) => (
+                  <div key={k} style={{ display: 'flex', justifyContent: 'space-between',
+                    padding: '6px 0', borderBottom: '1px dashed var(--color-border-secondary)' }}>
+                    <span style={{ color: 'var(--color-text-secondary)', fontSize: 11 }}>{k}</span>
+                    <span style={{ fontWeight: 700, color: hi ? '#f59e0b' : 'var(--color-text-primary)' }}>{v}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ── LIGNE 3 : Tableau comparatif pleine largeur ── */}
+          <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10,
+            padding: '14px 16px', border: '1px solid var(--color-border-secondary)' }}>
+            <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 10 }}>
+              Tableau comparatif — résolution ΔT sur 5 points de la plage
+            </div>
+            <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%', maxWidth: 500 }}>
+              <thead>
+                <tr style={{ background: 'var(--color-background-primary)' }}>
+                  {['T (°C)', 'Ur (V)', 'ΔT (°C)'].map(h => (
+                    <th key={h} style={{ padding: '6px 12px',
+                      borderBottom: '1.5px solid var(--color-border-secondary)',
+                      textAlign: 'right', fontWeight: 600, fontSize: 11,
+                      color: 'var(--color-text-secondary)' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {tableauPts.map((pt, i) => (
+                  <tr key={i} style={{ background: i % 2 ? 'var(--color-background-primary)' : 'transparent' }}>
+                    <td style={{ padding: '6px 12px', textAlign: 'right' }}>{pt.T}</td>
+                    <td style={{ padding: '6px 12px', textAlign: 'right', fontFamily: 'monospace' }}>{pt.u}</td>
+                    <td style={{ padding: '6px 12px', textAlign: 'right',
+                      fontWeight: 700, color: '#a855f7' }}>{pt.dT/1000}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 10, lineHeight: 1.6, maxWidth: 600 }}>
+              <strong>Lecture :</strong> le quantum ΔU du CAN est constant, mais comme la courbe T = f(U<sub>r</sub>)
+              est non linéaire, le ΔT correspondant varie selon la zone de la plage.
+              La résolution en température n'est donc pas uniforme sur toute la plage de mesure.
+            </div>
+          </div>
+        </>
+      )}
+
+      {!valide && (
+        <div style={{ padding: '20px', textAlign: 'center',
+          color: 'var(--color-text-secondary)', fontSize: 13,
+          background: 'var(--color-background-secondary)', borderRadius: 10 }}>
+          Collez vos données (au moins {ordre + 2} points) pour afficher la simulation.
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+
+
 function SimulationPeinture({ plotlyReady }) {
   const [mps, setMps] = useState(MP_DEFAUT.map(m=>({...m})));
   const [progress, setProgress] = useState(0);
@@ -8314,6 +8766,8 @@ const SIMULATIONS = [
   { id: 12, label: "Simulation CLHP", icon: "💉", color: "#0d6e6e", component: SimulationCLHP, niveau: "BTS" },
   { id: 13, label: "Étalon interne / Normalisation interne", icon: "📐", color: "#c0392b", component: SimulationEtalonnageInterne, niveau: "BTS" },
   { id:14, label:"Séchage d'une peinture", icon:"🎨", color:"#e76f51", component:SimulationPeinture, niveau:"BTS" },
+  { id:15, label:"Quantum du CAN", niveau:"TSTL", icon:"📡", color:"#0ea5e9",
+  component: SimulationCAN },
 ];
 
 const NIVEAUX = [
@@ -8485,7 +8939,6 @@ function PageAccueil({ onStart }) {
 //  COMPOSANT PRINCIPAL
 // ============================================================
 export default function App() {
-  // Lecture de l'URL au démarrage : ?sim=11
   const getInitialId = () => {
     const params = new URLSearchParams(window.location.search);
     const simParam = params.get('sim');
@@ -8502,30 +8955,22 @@ export default function App() {
   const [expanded, setExpanded] = useState({ "1G": true, "TSTL": true, "BTS": true });
   const [plotlyReady, setPlotlyReady] = useState(false);
   const [copyMsg, setCopyMsg] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false); // fermé par défaut
 
-  // Plotly ready (un seul useEffect)
   useEffect(() => {
     const check = setInterval(() => {
-      if (window.Plotly) {
-        setPlotlyReady(true);
-        clearInterval(check);
-      }
+      if (window.Plotly) { setPlotlyReady(true); clearInterval(check); }
     }, 100);
     return () => clearInterval(check);
   }, []);
 
-  // Mise à jour de l'URL quand on change de simulation
   useEffect(() => {
     const url = new URL(window.location.href);
-    if (activeId === 0) {
-      url.searchParams.delete('sim');
-    } else {
-      url.searchParams.set('sim', activeId);
-    }
+    if (activeId === 0) url.searchParams.delete('sim');
+    else url.searchParams.set('sim', activeId);
     window.history.replaceState(null, '', url.toString());
   }, [activeId]);
 
-  // Copier le lien de partage
   function partager() {
     const url = new URL(window.location.href);
     if (activeId > 0) url.searchParams.set('sim', activeId);
@@ -8535,40 +8980,73 @@ export default function App() {
     });
   }
 
+  // Ferme le menu et navigue
+  function naviguer(id) {
+    setActiveId(id);
+    setMenuOpen(false);
+  }
+
+  const sidebarW = menuOpen ? 230 : 0;
+
   return (
     <div style={styles.root}>
       <div style={styles.bgBlob1} />
       <div style={styles.bgBlob2} />
 
-      <aside style={styles.sidebar}>
+      {/* Overlay sombre quand menu ouvert */}
+      {menuOpen && (
+        <div onClick={() => setMenuOpen(false)}
+          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.18)',
+            zIndex:9, transition:'opacity 0.2s' }}/>
+      )}
+
+      {/* Sidebar — glisse depuis la gauche */}
+      <aside style={{
+        ...styles.sidebar,
+        width: 230,
+        transform: menuOpen ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform 0.25s cubic-bezier(0.4,0,0.2,1)',
+        position: 'fixed', top: 0, left: 0, height: '100vh',
+        zIndex: 10, overflowY: 'auto',
+      }}>
+        {/* Bouton fermer dans le menu */}
+        <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:8 }}>
+          <button onClick={() => setMenuOpen(false)}
+            style={{ background:'none', border:'none', fontSize:22,
+              cursor:'pointer', color:'#888', padding:'0 4px' }}>✕</button>
+        </div>
+
         <div style={styles.sidebarHeader}>
           <div style={{ fontSize: "2.2rem" }}>⚛️</div>
           <div>
             <div style={styles.siteTitle}>Labo Chimie (et un peu Physique!)</div>
             <div style={styles.siteSub}>Simulations interactives</div>
-            <div style={{fontSize:"0.72rem", color:"#aaa", fontStyle:"italic", fontFamily:"'Outfit', sans-serif"}}>par Nils ARONSSOHN, enseignant au lycée Argouges de Grenoble</div>
+            <div style={{fontSize:"0.72rem", color:"#aaa", fontStyle:"italic",
+              fontFamily:"'Outfit', sans-serif"}}>
+              par Nils ARONSSOHN, enseignant au lycée Argouges de Grenoble
+            </div>
           </div>
         </div>
         <div style={styles.divider} />
-        <button onClick={() => setActiveId(0)} style={{
-            ...styles.navBtn,
-            background: activeId === 0 ? "#2a9d8f" : "transparent",
-            color: activeId === 0 ? "#fff" : "#444",
-            boxShadow: activeId === 0 ? "0 4px 18px #2a9d8f55" : "none",
-            transform: activeId === 0 ? "translateX(4px)" : "translateX(0)",
-            marginBottom: 8,
-          }}>
-            <span style={{ fontSize: "1.3rem" }}>🏠</span>
-            <span style={{ flex: 1 }}>Accueil</span>
-            {activeId === 0 && <span style={{ fontSize: "1.4rem", opacity: 0.8 }}>›</span>}
-          </button>
-          <div style={styles.divider}/>
+
+        <button onClick={() => naviguer(0)} style={{
+          ...styles.navBtn,
+          background: activeId === 0 ? "#2a9d8f" : "transparent",
+          color: activeId === 0 ? "#fff" : "#444",
+          boxShadow: activeId === 0 ? "0 4px 18px #2a9d8f55" : "none",
+          transform: activeId === 0 ? "translateX(4px)" : "translateX(0)",
+          marginBottom: 8,
+        }}>
+          <span style={{ fontSize: "1.3rem" }}>🏠</span>
+          <span style={{ flex: 1 }}>Accueil</span>
+          {activeId === 0 && <span style={{ fontSize: "1.4rem", opacity: 0.8 }}>›</span>}
+        </button>
+        <div style={styles.divider}/>
+
         <nav style={styles.nav}>
           {NIVEAUX.map(niv => {
             const simsNiv = SIMULATIONS.filter(s => s.niveau === niv.key);
             const isExpanded = expanded[niv.key];
-
-            // Sous-groupes pour BTS
             const sousgroupes = niv.key === 'BTS' ? [
               { label:'🔬 Analyse', ids:[3,9,11,12,13] },
               { label:'🧪 Formulation', ids:[4,14] },
@@ -8577,28 +9055,22 @@ export default function App() {
             return (
               <div key={niv.key}>
                 <button onClick={() => setExpanded(prev => ({...prev, [niv.key]: !prev[niv.key]}))}
-                  style={{
-                    display:"flex", alignItems:"center", justifyContent:"space-between",
+                  style={{ display:"flex", alignItems:"center", justifyContent:"space-between",
                     width:"100%", padding:"0.5rem 0.75rem", border:"none",
                     background:"transparent", cursor:"pointer",
-                    borderRadius:"8px", marginBottom:"0.2rem",
-                  }}>
-                  <span style={{fontSize:"0.72rem", fontWeight:"800", letterSpacing:"0.1em",
-                    textTransform:"uppercase", color: niv.color}}>
-                    {niv.label}
-                  </span>
-                  <span style={{fontSize:"0.8rem", color:niv.color, transition:"transform 0.2s",
-                    display:"inline-block", transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)"}}>
-                    ›
-                  </span>
+                    borderRadius:"8px", marginBottom:"0.2rem" }}>
+                  <span style={{ fontSize:"0.72rem", fontWeight:"800", letterSpacing:"0.1em",
+                    textTransform:"uppercase", color: niv.color }}>{niv.label}</span>
+                  <span style={{ fontSize:"0.8rem", color:niv.color, transition:"transform 0.2s",
+                    display:"inline-block",
+                    transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)" }}>›</span>
                 </button>
 
                 {isExpanded && !sousgroupes && simsNiv.map(sim => {
                   const isActive = sim.id === activeId;
                   return (
-                    <button key={sim.id} onClick={() => setActiveId(sim.id)} style={{
-                      ...styles.navBtn,
-                      marginLeft:"0.5rem",
+                    <button key={sim.id} onClick={() => naviguer(sim.id)} style={{
+                      ...styles.navBtn, marginLeft:"0.5rem",
                       background: isActive ? sim.color : "transparent",
                       color: isActive ? "#fff" : "#444",
                       boxShadow: isActive ? `0 4px 18px ${sim.color}55` : "none",
@@ -8618,21 +9090,20 @@ export default function App() {
                   return (
                     <div key={label}>
                       <button onClick={() => setSgExpanded(v => !v)}
-                        style={{display:"flex", alignItems:"center", gap:6,
+                        style={{ display:"flex", alignItems:"center", gap:6,
                           width:"100%", padding:"0.3rem 0.75rem", border:"none",
-                          background:"transparent", cursor:"pointer", marginLeft:"0.25rem"}}>
-                        <span style={{fontSize:"0.68rem", fontWeight:"700", color:niv.color,
-                          opacity:0.8, letterSpacing:"0.05em"}}>{label}</span>
-                        <span style={{fontSize:"0.7rem", color:niv.color, opacity:0.6,
+                          background:"transparent", cursor:"pointer", marginLeft:"0.25rem" }}>
+                        <span style={{ fontSize:"0.68rem", fontWeight:"700", color:niv.color,
+                          opacity:0.8, letterSpacing:"0.05em" }}>{label}</span>
+                        <span style={{ fontSize:"0.7rem", color:niv.color, opacity:0.6,
                           transform: sgExpanded ? "rotate(90deg)" : "rotate(0deg)",
-                          transition:"transform 0.2s", display:"inline-block"}}>›</span>
+                          transition:"transform 0.2s", display:"inline-block" }}>›</span>
                       </button>
                       {sgExpanded && sgSims.map(sim => {
                         const isActive = sim.id === activeId;
                         return (
-                          <button key={sim.id} onClick={() => setActiveId(sim.id)} style={{
-                            ...styles.navBtn,
-                            marginLeft:"1rem",
+                          <button key={sim.id} onClick={() => naviguer(sim.id)} style={{
+                            ...styles.navBtn, marginLeft:"1rem",
                             background: isActive ? sim.color : "transparent",
                             color: isActive ? "#fff" : "#444",
                             boxShadow: isActive ? `0 4px 18px ${sim.color}55` : "none",
@@ -8649,46 +9120,59 @@ export default function App() {
                   );
                 })}
 
-                <div style={{height:"1px", background:"linear-gradient(to right, #e0e0e0, transparent)", margin:"0.5rem 0"}}/>
+                <div style={{ height:"1px",
+                  background:"linear-gradient(to right, #e0e0e0, transparent)",
+                  margin:"0.5rem 0" }}/>
               </div>
             );
           })}
         </nav>
 
-        {/* Contact */}
         <div style={{paddingTop:"1rem"}}>
-          <div style={{height:"1px", background:"linear-gradient(to right, #e0e0e0, transparent)", marginBottom:"0.75rem"}}/>
+          <div style={{ height:"1px",
+            background:"linear-gradient(to right, #e0e0e0, transparent)",
+            marginBottom:"0.75rem" }}/>
           <a href="mailto:nils.aronssohn@ac-grenoble.fr"
-            style={{display:"flex", alignItems:"center", gap:"0.5rem",
+            style={{ display:"flex", alignItems:"center", gap:"0.5rem",
               fontSize:"0.85rem", color:"#888", textDecoration:"none",
               padding:"0.6rem 1rem", borderRadius:"12px", transition:"all 0.2s",
-              fontWeight:"600", fontFamily:"'Nunito', sans-serif"}}
-            onMouseEnter={e=>{e.currentTarget.style.color="#e63946"; e.currentTarget.style.background="#fff0f0"}}
-            onMouseLeave={e=>{e.currentTarget.style.color="#888"; e.currentTarget.style.background="transparent"}}>
+              fontWeight:"600", fontFamily:"'Nunito', sans-serif" }}
+            onMouseEnter={e=>{e.currentTarget.style.color="#e63946";e.currentTarget.style.background="#fff0f0"}}
+            onMouseLeave={e=>{e.currentTarget.style.color="#888";e.currentTarget.style.background="transparent"}}>
             ✉️ Contact
           </a>
         </div>
-
-        <div style={styles.sidebarFooter}></div>
+        <div style={styles.sidebarFooter}/>
       </aside>
 
-      <main style={styles.main}>
+      {/* Zone principale — pleine largeur */}
+      <main style={{ ...styles.main, marginLeft: 0 }}>
         {/* Barre du haut */}
         <div style={{
           ...styles.topBar,
           background: activeId === 0
             ? "linear-gradient(135deg, #2a9d8f22, #2a9d8f08)"
             : `linear-gradient(135deg, ${active.color}22, ${active.color}08)`,
-          borderBottom: `3px solid ${activeId === 0 ? "#2a9d8f" : active.color}`
+          borderBottom: `3px solid ${activeId === 0 ? "#2a9d8f" : active.color}`,
         }}>
+          {/* Bouton hamburger */}
+          <button onClick={() => setMenuOpen(v => !v)}
+            style={{ background:'none', border:'none', fontSize:22,
+              cursor:'pointer', color:'#555', padding:'4px 8px',
+              borderRadius:8, flexShrink:0,
+              lineHeight:1 }}>
+            ☰
+          </button>
+
           <span style={{ fontSize: "2rem" }}>{activeId === 0 ? "🏠" : active.icon}</span>
-          <h1 style={{ ...styles.pageTitle, color: activeId === 0 ? "#2a9d8f" : active.color, flex: 1 }}>
-            <span style={{fontFamily:"'Outfit', sans-serif", fontWeight:800, letterSpacing:"-0.5px"}}>
+          <h1 style={{ ...styles.pageTitle,
+            color: activeId === 0 ? "#2a9d8f" : active.color, flex: 1 }}>
+            <span style={{ fontFamily:"'Outfit', sans-serif",
+              fontWeight:800, letterSpacing:"-0.5px" }}>
               {activeId === 0 ? "Bienvenue !" : active.label}
             </span>
           </h1>
 
-          {/* Bouton Partager — visible uniquement sur une simulation */}
           {activeId > 0 && (
             <button onClick={partager} style={{
               display:"flex", alignItems:"center", gap:6,
@@ -8715,19 +9199,41 @@ export default function App() {
 }
 
 const styles = {
-  root: { display: "flex", minHeight: "100vh", fontFamily: "'Nunito', 'Segoe UI', sans-serif", background: "#f5f7fa", position: "relative", overflow: "hidden" },
-  bgBlob1: { position: "fixed", top: "-120px", right: "-120px", width: "400px", height: "400px", borderRadius: "50%", background: "radial-gradient(circle, #e6394622 0%, transparent 70%)", pointerEvents: "none", zIndex: 0 },
-  bgBlob2: { position: "fixed", bottom: "-100px", left: "200px", width: "350px", height: "350px", borderRadius: "50%", background: "radial-gradient(circle, #2a9d8f22 0%, transparent 70%)", pointerEvents: "none", zIndex: 0 },
-  sidebar: { width: "230px", minHeight: "100vh", background: "#ffffff", boxShadow: "4px 0 24px rgba(0,0,0,0.07)", display: "flex", flexDirection: "column", padding: "1.5rem 1rem", position: "relative", zIndex: 10, flexShrink: 0 },
-  sidebarHeader: { display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" },
-  siteTitle: { fontFamily: "'Outfit', sans-serif", fontSize: "1.15rem", fontWeight: "800", color: "#222", lineHeight: 1.2, letterSpacing:"-0.3px" },
-  siteSub: { fontSize: "0.68rem", color: "#999", textTransform: "uppercase", letterSpacing: "0.08em" },
-  divider: { height: "1px", background: "linear-gradient(to right, #e0e0e0, transparent)", margin: "0.5rem 0 1rem" },
-  nav: { display: "flex", flexDirection: "column", gap: "0.5rem", flex: 1 },
-  navBtn: { display: "flex", alignItems: "center", gap: "0.7rem", padding: "0.75rem 1rem", borderRadius: "12px", border: "none", cursor: "pointer", fontSize: "0.9rem", fontWeight: "600", fontFamily: "'Nunito', sans-serif", transition: "all 0.2s ease", textAlign: "left", width: "100%" },
-  sidebarFooter: { marginTop: "auto", paddingTop: "1rem", textAlign: "center" },
-  main: { flex: 1, display: "flex", flexDirection: "column", position: "relative", zIndex: 1, minWidth: 0 },
-  topBar: { display: "flex", alignItems: "center", gap: "1rem", padding: "1.25rem 2rem" },
-  pageTitle: { fontFamily: "'Playfair Display', Georgia, serif", fontSize: "1.5rem", fontWeight: "700", margin: 0 },
-  simContainer: { flex: 1, padding: "1.5rem 2rem", overflowY: "auto" },
+  root: { display:"flex", minHeight:"100vh",
+    fontFamily:"'Nunito', 'Segoe UI', sans-serif",
+    background:"#f5f7fa", position:"relative", overflow:"hidden" },
+  bgBlob1: { position:"fixed", top:"-120px", right:"-120px", width:"400px", height:"400px",
+    borderRadius:"50%",
+    background:"radial-gradient(circle, #e6394622 0%, transparent 70%)",
+    pointerEvents:"none", zIndex:0 },
+  bgBlob2: { position:"fixed", bottom:"-100px", left:"200px", width:"350px", height:"350px",
+    borderRadius:"50%",
+    background:"radial-gradient(circle, #2a9d8f22 0%, transparent 70%)",
+    pointerEvents:"none", zIndex:0 },
+  sidebar: { width:230, minHeight:"100vh", background:"#ffffff",
+    boxShadow:"4px 0 24px rgba(0,0,0,0.12)",
+    display:"flex", flexDirection:"column",
+    padding:"1rem 1rem 1.5rem", flexShrink:0 },
+  sidebarHeader: { display:"flex", alignItems:"center", gap:"0.75rem", marginBottom:"1rem" },
+  siteTitle: { fontFamily:"'Outfit', sans-serif", fontSize:"1.05rem",
+    fontWeight:"800", color:"#222", lineHeight:1.2, letterSpacing:"-0.3px" },
+  siteSub: { fontSize:"0.68rem", color:"#999",
+    textTransform:"uppercase", letterSpacing:"0.08em" },
+  divider: { height:"1px",
+    background:"linear-gradient(to right, #e0e0e0, transparent)",
+    margin:"0.5rem 0 1rem" },
+  nav: { display:"flex", flexDirection:"column", gap:"0.5rem", flex:1 },
+  navBtn: { display:"flex", alignItems:"center", gap:"0.7rem",
+    padding:"0.75rem 1rem", borderRadius:"12px", border:"none",
+    cursor:"pointer", fontSize:"0.9rem", fontWeight:"600",
+    fontFamily:"'Nunito', sans-serif", transition:"all 0.2s ease",
+    textAlign:"left", width:"100%" },
+  sidebarFooter: { marginTop:"auto", paddingTop:"1rem", textAlign:"center" },
+  main: { flex:1, display:"flex", flexDirection:"column",
+    position:"relative", zIndex:1, minWidth:0 },
+  topBar: { display:"flex", alignItems:"center", gap:"1rem", padding:"1.25rem 2rem" },
+  pageTitle: { fontFamily:"'Playfair Display', Georgia, serif",
+    fontSize:"1.5rem", fontWeight:"700", margin:0 },
+  simContainer: { flex:1, padding:"1.5rem 2rem", overflowY:"auto" },
 };
+
