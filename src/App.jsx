@@ -7833,17 +7833,21 @@ function parseDonnees(texte) {
 }
 
 function SimulationCAN({ plotlyReady }) {
-  const [texte, setTexte] = useState(CAN_EXEMPLE);
+  const [source, setSource] = useState(null); // null | 'exemple' | 'perso'
+  const [texte, setTexte] = useState('');
   const [ordre, setOrdre] = useState(2);
   const [vmin, setVmin] = useState(0);
   const [vmax, setVmax] = useState(5);
   const [nbits, setNbits] = useState(10);
   const [urVal, setUrVal] = useState(null);
-  const [showExemple, setShowExemple] = useState(true);
+  const [showQuant, setShowQuant] = useState(false);
+
+  const [etapeDonnees, setEtapeDonnees] = useState(false);
+  const [etapeModele, setEtapeModele] = useState(false);
+  const [etapeZoom, setEtapeZoom] = useState(false);
 
   const pts = useMemo(() => parseDonnees(texte), [texte]);
   const valide = pts.length >= ordre + 2;
-
   const quantum = (vmax - vmin) / (Math.pow(2, nbits) - 1);
 
   const reg = useMemo(() => {
@@ -7855,41 +7859,80 @@ function SimulationCAN({ plotlyReady }) {
   const urMax = valide ? Math.max(...pts.map(p => p.u)) : 5;
   const urCur = urVal !== null ? urVal : (urMin + urMax) / 2;
 
-  // Graphe principal
-  useEffect(() => {
-    if (!plotlyReady || !valide || !reg) return;
-    const xs = [], ys = [];
-    const N = 200;
-    for (let i = 0; i <= N; i++) {
-      const u = urMin + (urMax - urMin) * i / N;
-      xs.push(u);
-      ys.push(evalPoly(reg.coeffs, u));
-    }
-    const T0 = evalPoly(reg.coeffs, urCur);
+  function choisirExemple() {
+    setTexte(CAN_EXEMPLE);
+    setSource('exemple');
+    setEtapeDonnees(false); setEtapeModele(false); setEtapeZoom(false);
+  }
+  function choisirPerso() {
+    setTexte('');
+    setSource('perso');
+    setEtapeDonnees(false); setEtapeModele(false); setEtapeZoom(false);
+  }
 
-    Plotly.react('can-main', [
+  // Graphe principal — nuage de points (+ modèle si étape suivante active)
+  useEffect(() => {
+    if (!plotlyReady || !valide || !etapeDonnees) return;
+    const traces = [
       { x: pts.map(p => p.u), y: pts.map(p => p.t), mode: 'markers',
-        marker: { color: '#94a3b8', size: 7 }, name: 'Points exp.' },
-      { x: xs, y: ys, mode: 'lines',
-        line: { color: '#2a9d8f', width: 2.5 }, name: 'Modèle' },
-      { x: [urCur], y: [T0], mode: 'markers',
-        marker: { color: '#f59e0b', size: 11, symbol: 'circle' }, name: 'Point choisi' },
-    ], {
+        marker: { color: '#334155', size: 8 }, name: 'Points exp.' },
+    ];
+    let shapes = [];
+    if (etapeModele && reg) {
+      const xs = [], ys = [];
+      const N = 200;
+      for (let i = 0; i <= N; i++) {
+        const u = urMin + (urMax - urMin) * i / N;
+        xs.push(u); ys.push(evalPoly(reg.coeffs, u));
+      }
+      const T0 = evalPoly(reg.coeffs, urCur);
+      traces.push({ x: xs, y: ys, mode: 'lines',
+        line: { color: '#2a9d8f', width: 2.5 }, name: 'Modèle' });
+      if (etapeZoom) {
+        traces.push({ x: [urCur], y: [T0], mode: 'markers',
+          marker: { color: '#f59e0b', size: 11 }, name: 'Point choisi' });
+        shapes = [
+          { type: 'line', x0: urCur, x1: urCur, y0: 0, y1: T0,
+            line: { color: '#f59e0b', width: 1, dash: 'dot' } },
+          { type: 'line', x0: urMin, x1: urCur, y0: T0, y1: T0,
+            line: { color: '#f59e0b', width: 1, dash: 'dot' } },
+        ];
+      }
+    }
+
+     // Niveaux de quantification : segments Ur (verticaux, s'arrêtent sur le modèle)
+    // + segments T (horizontaux, jusqu'à l'axe)
+    if (showQuant && etapeModele && reg) {
+      const kMin = Math.ceil((urMin - vmin) / quantum);
+      const kMax = Math.floor((urMax - vmin) / quantum);
+      const nLevels = kMax - kMin;
+      if (nLevels > 0 && nLevels <= 80) {
+        const yAxisMin = Math.min(...pts.map(p => p.t)) - 5;
+        for (let k = kMin; k <= kMax; k++) {
+          const u = vmin + k * quantum;
+          if (u < urMin || u > urMax) continue;
+          const tSurModele = evalPoly(reg.coeffs, u);
+          // Segment vertical : du bas jusqu'au modèle (pas jusqu'en haut)
+          shapes.push({ type: 'line', x0: u, x1: u, y0: yAxisMin, y1: tSurModele,
+            line: { color: 'rgba(148,163,184,0.6)', width: 1 } });
+          // Segment horizontal : du modèle jusqu'à l'axe Y (gauche)
+          shapes.push({ type: 'line', x0: urMin, x1: u, y0: tSurModele, y1: tSurModele,
+            line: { color: 'rgba(148,163,184,0.6)', width: 1 } });
+        }
+      }
+    }
+
+    Plotly.react('can-main', traces, {
       margin: { l: 52, r: 16, t: 10, b: 44 },
       paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
-      font: { color: 'var(--color-text-secondary)', size: 11 },
-      xaxis: { title: 'Ur (V)', gridcolor: 'rgba(128,128,128,0.15)', zeroline: false },
-      yaxis: { title: 'T (°C)', gridcolor: 'rgba(128,128,128,0.15)', zeroline: false },
-      legend: { x: 0.02, y: 0.98, bgcolor: 'transparent' },
+      font: { color: '#1e293b', size: 12 },
+      xaxis: { title: 'Ur (V)', gridcolor: showQuant ? 'transparent' : 'rgba(0,0,0,0.1)', zeroline: false, color: '#1e293b' },
+      yaxis: { title: 'T (°C)', gridcolor: showQuant ? 'transparent' : 'rgba(0,0,0,0.1)', zeroline: false, color: '#1e293b' },
+      legend: { x: 0.02, y: 0.98, bgcolor: 'transparent', font: { color: '#1e293b' } },
       showlegend: true,
-      shapes: [
-        { type: 'line', x0: urCur, x1: urCur, y0: 0, y1: T0,
-          line: { color: '#f59e0b', width: 1, dash: 'dot' } },
-        { type: 'line', x0: urMin, x1: urCur, y0: T0, y1: T0,
-          line: { color: '#f59e0b', width: 1, dash: 'dot' } },
-      ],
+      shapes,
     }, { displayModeBar: false, responsive: true });
-  }, [plotlyReady, pts, reg, urCur, urMin, urMax]);
+  }, [plotlyReady, pts, reg, urCur, urMin, urMax, etapeDonnees, etapeModele, etapeZoom, showQuant, quantum, vmin]);
 
   // Graphe zoom
   const dTmax = useMemo(() => {
@@ -7904,16 +7947,27 @@ function SimulationCAN({ plotlyReady }) {
   }, [reg, urMin, urMax, quantum]);
 
   useEffect(() => {
-    if (!plotlyReady || !valide || !reg) return;
+    if (!plotlyReady || !valide || !reg || !etapeZoom) return;
     const T0 = evalPoly(reg.coeffs, urCur);
     const T1 = evalPoly(reg.coeffs, urCur + quantum);
     const span = quantum * 5;
     const xs = [], ys = [];
     for (let i = 0; i <= 80; i++) {
       const u = (urCur - span) + 2 * span * i / 80;
-      xs.push(u);
-      ys.push(evalPoly(reg.coeffs, u));
+      xs.push(u); ys.push(evalPoly(reg.coeffs, u));
     }
+
+    let quantShapesZoom = [];
+    if (showQuant) {
+      const kMin = Math.floor((urCur - span - vmin) / quantum);
+      const kMax = Math.ceil((urCur + span - vmin) / quantum);
+      for (let k = kMin; k <= kMax; k++) {
+        const u = vmin + k * quantum;
+        quantShapesZoom.push({ type: 'line', x0: u, x1: u, y0: 0, y1: 1, yref: 'paper',
+          line: { color: 'rgba(148,163,184,0.7)', width: 1 } });
+      }
+    }
+
     Plotly.react('can-zoom', [
       { x: xs, y: ys, mode: 'lines',
         line: { color: '#2a9d8f', width: 2.5 }, hoverinfo: 'skip' },
@@ -7922,282 +7976,275 @@ function SimulationCAN({ plotlyReady }) {
     ], {
       margin: { l: 56, r: 16, t: 10, b: 44 },
       paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
-      font: { color: 'var(--color-text-secondary)', size: 10 },
-          xaxis: { title: 'Ur (V)', gridcolor: 'rgba(128,128,128,0.15)',
-      zeroline: false, tickformat: '.4f',
-      range: [urCur - quantum*5, urCur + quantum*6] },
-        yaxis: { title: 'T (°C)', gridcolor: 'rgba(128,128,128,0.15)',
-      zeroline: false, tickformat: '.2f',
-      range: [Math.min(T0,T1) - dTmax*4, Math.max(T0,T1) + dTmax*4] },
+      font: { color: '#1e293b', size: 11 },
+      xaxis: { title: 'Ur (V)', gridcolor: 'rgba(0,0,0,0.1)',
+        zeroline: false, tickformat: '.4f', color: '#1e293b',
+        range: [urCur - quantum*5, urCur + quantum*6] },
+      yaxis: { title: 'T (°C)', gridcolor: 'rgba(0,0,0,0.1)',
+        zeroline: false, tickformat: '.2f', color: '#1e293b',
+        range: [Math.min(T0,T1) - dTmax*4, Math.max(T0,T1) + dTmax*4] },
       showlegend: false,
       shapes: [
+        ...quantShapesZoom,
         { type: 'line', x0: urCur, x1: urCur, y0: Math.min(T0,T1), y1: T0,
           line: { color: '#f59e0b', width: 1, dash: 'dot' } },
         { type: 'line', x0: urCur+quantum, x1: urCur+quantum, y0: Math.min(T0,T1), y1: T1,
           line: { color: '#f59e0b', width: 1, dash: 'dot' } },
-              { type: 'line', x0: urCur, x1: urCur+quantum, y0: Math.min(T0,T1), y1: Math.min(T0,T1),
-        line: { color: '#f59e0b', width: 1.5 } },
-      { type: 'rect', x0: urCur, x1: urCur+quantum,
-        y0: Math.min(T0,T1), y1: Math.max(T0,T1),
-        fillcolor: 'rgba(245,158,11,0.15)', line: { color: '#f59e0b', width: 1 } },
+        { type: 'line', x0: urCur, x1: urCur+quantum, y0: Math.min(T0,T1), y1: Math.min(T0,T1),
+          line: { color: '#f59e0b', width: 1.5 } },
+        { type: 'rect', x0: urCur, x1: urCur+quantum,
+          y0: Math.min(T0,T1), y1: Math.max(T0,T1),
+          fillcolor: 'rgba(245,158,11,0.15)', line: { color: '#f59e0b', width: 1 } },
       ],
     }, { displayModeBar: false, responsive: true });
-  }, [plotlyReady, reg, urCur, quantum]);
-
-  // Graphe ΔT = f(T)
-
-  // Tableau 5 points
-  const tableauPts = useMemo(() => {
-    if (!valide || !reg) return [];
-    const tMin = evalPoly(reg.coeffs, urMax);
-    const tMax = evalPoly(reg.coeffs, urMin);
-    return Array.from({ length: 5 }, (_, i) => {
-      const T = tMin + i * (tMax - tMin) / 4;
-      // Trouver Ur correspondant par dichotomie
-      let lo = urMin, hi = urMax;
-      for (let k = 0; k < 60; k++) {
-        const mid = (lo + hi) / 2;
-        if (evalPoly(reg.coeffs, mid) > T) lo = mid; else hi = mid;
-      }
-      const u = (lo + hi) / 2;
-      const dT = Math.abs(evalPoly(reg.coeffs, u + quantum) - evalPoly(reg.coeffs, u));
-      return { T: T.toFixed(1), u: u.toFixed(3), dT: (dT * 1000).toFixed(0) };
-    });
-  }, [reg, urMin, urMax, quantum, valide]);
+  }, [plotlyReady, reg, urCur, quantum, etapeZoom, dTmax, showQuant, vmin]);
 
   const T0 = reg ? evalPoly(reg.coeffs, urCur) : 0;
   const dT = reg ? Math.abs(evalPoly(reg.coeffs, urCur + quantum) - T0) : 0;
 
-      const inpStyle = {
-    fontSize: 12, padding: '4px 8px',
-    border: '1.5px solid #94a3b8',
-    borderRadius: 6,
-    background: 'white',
-    color: '#1e293b',
-    width: 120,
+  const TXT = '#0f172a';
+  const TXT2 = '#475569';
+  const BORDER = '#cbd5e1';
+  const BG = '#f8fafc';
+
+  const inpStyle = {
+    fontSize: 13, padding: '5px 9px',
+    border: `1.5px solid ${BORDER}`,
+    borderRadius: 6, background: 'white', color: TXT, width: 120,
   };
 
-    return (
+  const boxStyle = {
+    background: BG, borderRadius: 10,
+    padding: '14px 16px', border: `1px solid ${BORDER}`,
+  };
+
+  const stepBtnStyle = () => ({
+    padding: '10px 22px', borderRadius: 8, border: 'none',
+    cursor: 'pointer', fontWeight: 700, fontSize: 14,
+    background: '#2a9d8f', color: 'white', marginTop: 12,
+  });
+
+  return (
     <div style={cardStyle}>
-      <h2 style={{ marginTop: 0, fontSize: 18, color: 'var(--color-text-primary)' }}>
+      <h2 style={{ marginTop: 0, fontSize: 18, color: TXT, fontWeight: 700 }}>
         Quantum du CAN → résolution en température
       </h2>
-      <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 0, marginBottom: 16 }}>
-        Un pas de conversion ΔU constant, projeté sur une courbe d'étalonnage non linéaire T = f(U<sub>r</sub>),
-        ne donne pas le même ΔT partout sur la plage de mesure.
-      </p>
 
-      {/* ── LIGNE 1 : Saisie + Paramètres CAN + Ordre polynôme (tout en ligne) ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 16, marginBottom: 16 }}>
-
-        {/* Données expérimentales */}
-        <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10,
-          padding: '14px 16px', border: '1px solid var(--color-border-secondary)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <div style={{ fontWeight: 600, fontSize: 13 }}>Données expérimentales</div>
-            <button onClick={() => { setTexte(CAN_EXEMPLE); setShowExemple(true); }}
-              style={{ fontSize: 11, padding: '3px 10px', borderRadius: 5, cursor: 'pointer',
-                border: '1px solid var(--color-border-secondary)',
-                background: 'var(--color-background-primary)',
-                color: 'var(--color-text-secondary)' }}>
-              Charger l'exemple
+      {/* ── CHOIX DE LA SOURCE ── */}
+      {!source && (
+        <div style={{ ...boxStyle, textAlign: 'center', padding: '28px 20px' }}>
+          <div style={{ fontWeight: 700, fontSize: 15, color: TXT, marginBottom: 16 }}>
+            Quelle source de données utiliser ?
+          </div>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button onClick={choisirExemple}
+              style={{ padding: '12px 24px', borderRadius: 10, border: 'none',
+                cursor: 'pointer', fontWeight: 700, fontSize: 14,
+                background: '#2a9d8f', color: 'white' }}>
+              📊 Générer des données exemple (T, Ur)
+            </button>
+            <button onClick={choisirPerso}
+              style={{ padding: '12px 24px', borderRadius: 10, border: 'none',
+                cursor: 'pointer', fontWeight: 700, fontSize: 14,
+                background: '#0ea5e9', color: 'white' }}>
+              📋 Utiliser mes données expérimentales
             </button>
           </div>
-          <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginBottom: 6 }}>
-            Collez vos données depuis Google Sheets (2 colonnes : T en °C, U<sub>r</sub> en V) :
-          </div>
-          <textarea value={texte} onChange={e => { setTexte(e.target.value); setShowExemple(false); }}
-            rows={7}
-            style={{ width: '100%', fontSize: 12, fontFamily: 'monospace', padding: 8,
-              boxSizing: 'border-box', borderRadius: 6,
-              border: '1px solid var(--color-border-secondary)',
-              background: 'var(--color-background-primary)',
-                            color: 'var(--color-text-primary)', resize: 'vertical',
-              colorScheme: 'light' }}
-            placeholder={"T (°C)\tUr (V)\n5\t4.21\n10\t4.02\n..."}
-          />
-          <div style={{ fontSize: 11, color: valide ? '#16a34a' : '#dc2626', marginTop: 4 }}>
-            {valide ? `✓ ${pts.length} points chargés` : `⚠ Saisissez au moins ${ordre + 2} points`}
-          </div>
         </div>
-
-        {/* Paramètres CAN */}
-        <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10,
-          padding: '14px 16px', border: '1px solid var(--color-border-secondary)' }}>
-          <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 10 }}>Paramètres du CAN</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div>
-              <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginBottom: 3 }}>Tension min (V)</div>
-              <input type="number" value={vmin} step="0.1"
-                onChange={e => setVmin(parseFloat(e.target.value) || 0)} style={inpStyle}/>
-            </div>
-            <div>
-              <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginBottom: 3 }}>Tension max (V)</div>
-              <input type="number" value={vmax} step="0.1"
-                onChange={e => setVmax(parseFloat(e.target.value) || 5)} style={inpStyle}/>
-            </div>
-            <div>
-              <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginBottom: 3 }}>Nombre de bits</div>
-              <input type="number" value={nbits} min={4} max={16}
-                onChange={e => setNbits(parseInt(e.target.value) || 10)} style={inpStyle}/>
-            </div>
-          </div>
-          <div style={{ marginTop: 10, padding: '8px 10px',
-            background: 'var(--color-background-primary)', borderRadius: 7,
-            fontFamily: 'monospace', fontSize: 11, lineHeight: 1.8 }}>
-            ΔU = ({vmax}−{vmin}) / (2<sup>{nbits}</sup>−1)<br/>
-            = <strong style={{ color: '#f59e0b' }}>{(quantum * 1000).toFixed(2)} mV</strong>
-          </div>
-        </div>
-
-        {/* Ordre polynôme + coefficients */}
-        <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10,
-          padding: '14px 16px', border: '1px solid var(--color-border-secondary)' }}>
-          <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 8 }}>Modèle polynomial</div>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                {[1, 2, 3].map(o => (
-              <button key={o} onClick={() => setOrdre(o)}
-                style={{ flex: 1, padding: '6px 0', borderRadius: 7, border: 'none',
-                  cursor: 'pointer', fontWeight: 600, fontSize: 13,
-                  background: ordre === o ? '#2a9d8f' : 'var(--color-background-primary)',
-                  color: ordre === o ? 'white' : 'var(--color-text-secondary)' }}>
-                Ordre {o}
-              </button>
-            ))}
-          </div>
-                      {reg && (
-              <div style={{ fontSize: 11, color: 'var(--color-text-secondary)',
-                fontFamily: 'monospace', lineHeight: 1.9 }}>
-                {reg.coeffs.map((c, k) => (
-                  <div key={k}>a<sub>{k}</sub> = {c.toFixed(5)}</div>
-                ))}
-                <div style={{ marginTop: 6, fontSize: 11, fontStyle: 'italic',
-                  color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
-                  T = {reg.coeffs.map((c, k) => {
-                    const signe = c >= 0 && k > 0 ? '+' : '';
-                    if (k === 0) return `${c.toFixed(3)}`;
-                    if (k === 1) return ` ${signe}${c.toFixed(3)}·Ur`;
-                    return ` ${signe}${c.toFixed(3)}·Ur${k === 2 ? '²' : '³'}`;
-                  }).join('')}
-                </div>
-                <div style={{ marginTop: 4, fontSize: 12,
-                  color: reg.r2 > 0.9999 ? '#16a34a' : '#d97706', fontWeight: 700 }}>
-                  R² = {reg.r2.toFixed(6)}
-                </div>
-              </div>
-            )}
-          {!valide && (
-            <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 8 }}>
-              Chargez des données pour voir les coefficients.
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── LIGNES 2 + 3 : affichées seulement si données valides ── */}
-      {valide && reg && (
-        <>
-          {/* ── LIGNE 2 : Courbe principale + Zoom + Encart ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 16 }}>
-
-            {/* Courbe principale */}
-            <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10,
-              padding: '14px 16px', border: '1px solid var(--color-border-secondary)' }}>
-              <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 6 }}>
-                Courbe d'étalonnage T = f(U<sub>r</sub>)
-              </div>
-              <div id="can-main" style={{ width: '100%', height: 480 }}/>
-              <div style={{ marginTop: 10 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between',
-                  fontSize: 11, color: 'var(--color-text-secondary)', marginBottom: 4 }}>
-                  <span>Ur = {urMin.toFixed(3)} V</span>
-                  <span style={{ color: '#f59e0b', fontWeight: 600 }}>Ur = {urCur.toFixed(3)} V</span>
-                  <span>Ur = {urMax.toFixed(3)} V</span>
-                </div>
-                <input type="range"
-                  min={urMin} max={urMax - quantum} step={quantum}
-                  value={urCur}
-                  onChange={e => setUrVal(parseFloat(e.target.value))}
-                  style={{ width: '100%', accentColor: '#f59e0b', cursor: 'pointer' }}/>
-              </div>
-            </div>
-
-            {/* Zoom + Encart chiffré */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10,
-                padding: '14px 16px', border: '1px solid var(--color-border-secondary)' }}>
-                <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 6 }}>
-                  Zoom — à l'échelle réelle
-                </div>
-                <div id="can-zoom" style={{ width: '100%', height: 280 }}/>
-              </div>
-              <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10,
-                padding: '14px 16px', border: '1px solid var(--color-border-secondary)',
-                fontFamily: 'monospace', fontSize: 13 }}>
-                {[
-                  ['Ur choisi', `${urCur.toFixed(3)} V`],
-                  ['T correspondante', `${T0.toFixed(2)} °C`],
-                  ['ΔU (quantum CAN)', `${(quantum * 1000).toFixed(2)} mV`],
-                  ['ΔT résultant', `${(dT).toFixed(3)} °C`, true],
-                ].map(([k, v, hi]) => (
-                  <div key={k} style={{ display: 'flex', justifyContent: 'space-between',
-                    padding: '6px 0', borderBottom: '1px dashed var(--color-border-secondary)' }}>
-                    <span style={{ color: 'var(--color-text-secondary)', fontSize: 11 }}>{k}</span>
-                    <span style={{ fontWeight: 700, color: hi ? '#f59e0b' : 'var(--color-text-primary)' }}>{v}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* ── LIGNE 3 : Tableau comparatif pleine largeur ── */}
-          <div style={{ background: 'var(--color-background-secondary)', borderRadius: 10,
-            padding: '14px 16px', border: '1px solid var(--color-border-secondary)' }}>
-            <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 10 }}>
-              Tableau comparatif — résolution ΔT sur 5 points de la plage
-            </div>
-            <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%', maxWidth: 500 }}>
-              <thead>
-                <tr style={{ background: 'var(--color-background-primary)' }}>
-                  {['T (°C)', 'Ur (V)', 'ΔT (°C)'].map(h => (
-                    <th key={h} style={{ padding: '6px 12px',
-                      borderBottom: '1.5px solid var(--color-border-secondary)',
-                      textAlign: 'right', fontWeight: 600, fontSize: 11,
-                      color: 'var(--color-text-secondary)' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {tableauPts.map((pt, i) => (
-                  <tr key={i} style={{ background: i % 2 ? 'var(--color-background-primary)' : 'transparent' }}>
-                    <td style={{ padding: '6px 12px', textAlign: 'right' }}>{pt.T}</td>
-                    <td style={{ padding: '6px 12px', textAlign: 'right', fontFamily: 'monospace' }}>{pt.u}</td>
-                    <td style={{ padding: '6px 12px', textAlign: 'right',
-                      fontWeight: 700, color: '#a855f7' }}>{pt.dT/1000}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 10, lineHeight: 1.6, maxWidth: 600 }}>
-              <strong>Lecture :</strong> le quantum ΔU du CAN est constant, mais comme la courbe T = f(U<sub>r</sub>)
-              est non linéaire, le ΔT correspondant varie selon la zone de la plage.
-              La résolution en température n'est donc pas uniforme sur toute la plage de mesure.
-            </div>
-          </div>
-        </>
       )}
 
-      {!valide && (
-        <div style={{ padding: '20px', textAlign: 'center',
-          color: 'var(--color-text-secondary)', fontSize: 13,
-          background: 'var(--color-background-secondary)', borderRadius: 10 }}>
-          Collez vos données (au moins {ordre + 2} points) pour afficher la simulation.
+      {/* ── DONNÉES + PARAMÈTRES CAN ── */}
+      {source && (
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 16 }}>
+          <div style={boxStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ fontWeight: 700, fontSize: 14, color: TXT }}>Données expérimentales</div>
+              <button onClick={() => setSource(null)}
+                style={{ fontSize: 11, padding: '3px 10px', borderRadius: 5, cursor: 'pointer',
+                  border: `1px solid ${BORDER}`, background: 'white', color: TXT2 }}>
+                ↺ Changer de source
+              </button>
+            </div>
+            {source === 'perso' && (
+              <div style={{ fontSize: 12, color: TXT2, marginBottom: 6 }}>
+                Collez vos données depuis Google Sheets (2 colonnes : T en °C, U<sub>r</sub> en V) :
+              </div>
+            )}
+            <textarea value={texte} onChange={e => setTexte(e.target.value)}
+              rows={7}
+              style={{ width: '100%', fontSize: 12, fontFamily: 'monospace', padding: 8,
+                boxSizing: 'border-box', borderRadius: 6,
+                border: `1px solid ${BORDER}`, background: 'white',
+                color: TXT, resize: 'vertical', colorScheme: 'light' }}
+              placeholder={"T (°C)\tUr (V)\n5\t4.21\n10\t4.02\n..."}
+            />
+            <div style={{ fontSize: 12, color: valide ? '#15803d' : '#dc2626', marginTop: 6, fontWeight: 600 }}>
+              {valide ? `✓ ${pts.length} points chargés` : `⚠ Saisissez au moins ${ordre + 2} points`}
+            </div>
+            {valide && !etapeDonnees && (
+              <button onClick={() => setEtapeDonnees(true)} style={stepBtnStyle()}>
+                Afficher la courbe d'étalonnage →
+              </button>
+            )}
+          </div>
+
+          <div style={boxStyle}>
+            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 10, color: TXT }}>Paramètres du CAN</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div>
+                <div style={{ fontSize: 12, color: TXT2, marginBottom: 3, fontWeight: 600 }}>Tension min (V)</div>
+                <input type="number" value={vmin} step="0.1"
+                  onChange={e => setVmin(parseFloat(e.target.value) || 0)} style={inpStyle}/>
+              </div>
+              <div>
+                <div style={{ fontSize: 12, color: TXT2, marginBottom: 3, fontWeight: 600 }}>Tension max (V)</div>
+                <input type="number" value={vmax} step="0.1"
+                  onChange={e => setVmax(parseFloat(e.target.value) || 5)} style={inpStyle}/>
+              </div>
+              <div>
+                <div style={{ fontSize: 12, color: TXT2, marginBottom: 3, fontWeight: 600 }}>Nombre de bits</div>
+                <input type="number" value={nbits} min={4} max={16}
+                  onChange={e => setNbits(parseInt(e.target.value) || 10)} style={inpStyle}/>
+              </div>
+            </div>
+            <div style={{ marginTop: 10, padding: '8px 10px',
+              background: 'white', borderRadius: 7, border: `1px solid ${BORDER}`,
+              fontFamily: 'monospace', fontSize: 12, color: TXT }}>
+              ΔU = ({vmax}−{vmin}) / (2<sup>{nbits}</sup>−1)<br/>
+              = <strong style={{ color: '#d97706' }}>{(quantum * 1000).toFixed(2)} mV</strong>
+            </div>
+          </div>
+        </div>
+      )}
+
+            {/* ── NUAGE DE POINTS + MODÈLE (fusionnés) ── */}
+      {source && valide && etapeDonnees && (
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginBottom: 16 }}>
+          <div style={boxStyle}>
+            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, color: TXT }}>
+              Courbe d'étalonnage
+            </div>
+            <div id="can-main" style={{ width: '100%', height: 380 }}/>
+          </div>
+
+          <div style={boxStyle}>
+            {!etapeModele ? (
+              <>
+                <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 10, color: TXT }}>
+                  Ajuster un modèle
+                </div>
+                <button onClick={() => setEtapeModele(true)} style={{ ...stepBtnStyle(), width: '100%', marginTop: 0 }}>
+                  Ajuster un modèle →
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8, color: TXT }}>Modèle polynomial</div>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                  {[1, 2, 3].map(o => (
+                    <button key={o} onClick={() => setOrdre(o)}
+                      style={{ flex: 1, padding: '6px 0', borderRadius: 7, border: 'none',
+                        cursor: 'pointer', fontWeight: 700, fontSize: 13,
+                        background: ordre === o ? '#2a9d8f' : 'white',
+                        border: `1.5px solid ${ordre === o ? '#2a9d8f' : BORDER}`,
+                        color: ordre === o ? 'white' : TXT2 }}>
+                      Ordre {o}
+                    </button>
+                  ))}
+                </div>
+                {reg && (
+                  <div style={{ fontSize: 12, color: TXT, fontFamily: 'monospace', lineHeight: 1.9 }}>
+                    {reg.coeffs.map((c, k) => (
+                      <div key={k}>a<sub>{k}</sub> = {c.toFixed(5)}</div>
+                    ))}
+                    <div style={{ marginTop: 6, fontSize: 12, fontStyle: 'italic', color: TXT, lineHeight: 1.6 }}>
+                      T = {reg.coeffs.map((c, k) => {
+                        const signe = c >= 0 && k > 0 ? '+' : '';
+                        if (k === 0) return `${c.toFixed(3)}`;
+                        if (k === 1) return ` ${signe}${c.toFixed(3)}·Ur`;
+                        return ` ${signe}${c.toFixed(3)}·Ur${k === 2 ? '²' : '³'}`;
+                      }).join('')}
+                    </div>
+                    <div style={{ marginTop: 6, fontSize: 13,
+                      color: reg.r2 > 0.9999 ? '#15803d' : '#b45309', fontWeight: 700 }}>
+                      R² = {reg.r2.toFixed(6)}
+                    </div>
+                  </div>
+                )}
+                {!etapeZoom && (
+                  <button onClick={() => setEtapeZoom(true)} style={{ ...stepBtnStyle(), width: '100%' }}>
+                    Activer le zoom →
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+
+      {/* ── ZOOM + ENCART CHIFFRÉ ── */}
+      {source && valide && etapeZoom && reg && (
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
+          <div style={boxStyle}>
+            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, color: TXT }}>
+              Curseur sur la courbe (voir graphique principal ci-dessus)
+            </div>
+            <div style={{ marginTop: 4 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between',
+                fontSize: 12, color: TXT2, marginBottom: 4, fontWeight: 600 }}>
+                <span>Ur = {urMin.toFixed(3)} V</span>
+                <span style={{ color: '#d97706', fontWeight: 700 }}>Ur = {urCur.toFixed(3)} V</span>
+                <span>Ur = {urMax.toFixed(3)} V</span>
+              </div>
+                <input type="range"
+                min={vmin + Math.ceil((urMin - vmin) / quantum) * quantum}
+                max={vmin + Math.floor((urMax - vmin) / quantum) * quantum}
+                step={quantum}
+                value={urCur}
+                onChange={e => setUrVal(parseFloat(e.target.value))}
+                style={{ width: '100%', accentColor: '#f59e0b', cursor: 'pointer' }}/>
+            </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12,
+              color: TXT2, marginTop: 14, cursor: 'pointer', fontWeight: 600 }}>
+              <input type="checkbox" checked={showQuant}
+                onChange={e => setShowQuant(e.target.checked)}/>
+              Afficher les niveaux de quantification du CAN
+            </label>
+            {showQuant && (urMax - urMin) / quantum > 80 && (
+              <div style={{ fontSize: 11, color: '#b45309', marginTop: 6 }}>
+                ⚠ Trop de niveaux pour être visibles sur cette courbe — regardez le graphique zoomé à droite.
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={boxStyle}>
+              <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, color: TXT }}>
+                Zoom — à l'échelle réelle
+              </div>
+              <div id="can-zoom" style={{ width: '100%', height: 260 }}/>
+            </div>
+            <div style={{ ...boxStyle, fontFamily: 'monospace', fontSize: 13 }}>
+              {[
+                ['Ur choisi', `${urCur.toFixed(3)} V`],
+                ['T correspondante', `${T0.toFixed(2)} °C`],
+                ['ΔU (quantum CAN)', `${(quantum * 1000).toFixed(2)} mV`],
+                ['ΔT résultant', `${dT.toFixed(3)} °C`, true],
+              ].map(([k, v, hi]) => (
+                <div key={k} style={{ display: 'flex', justifyContent: 'space-between',
+                  padding: '6px 0', borderBottom: `1px dashed ${BORDER}` }}>
+                  <span style={{ color: TXT2, fontSize: 12, fontWeight: 600 }}>{k}</span>
+                  <span style={{ fontWeight: 700, color: hi ? '#d97706' : TXT }}>{v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
 }
-
 
 
 
@@ -8800,6 +8847,7 @@ function PageAccueil({ onStart }) {
       { icon:"📈", label:"Point de fonctionnement", desc:"Caractéristique statique d'un procédé et point de fonctionnement d'une régulation P." },
       { icon:"❄️", label:"Cristallisation", desc:"Cristallisation par refroidissement ou évaporation avec animation du bécher." },
       { icon:"💡", label:"Chaîne de mesure", desc:"Capteur de lumière Arduino — photorésistance, conditionneur, CAN et algorithme de contrôle." },
+      { icon:"📡", label:"Quantum du CAN", desc:"Résolution en température d'un CAN : impact de la non-linéarité de la courbe d'étalonnage sur le quantum de mesure." },
     ]},
     { niveau:"BTS", color:"#6a4c93", sousMenus:[
       { label:"🔬 Analyse", sims:[
