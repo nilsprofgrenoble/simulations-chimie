@@ -3,6 +3,8 @@ import { SimulationAptitude } from "./simulations/Aptitude";
 import { Simulation1 } from "./simulations/Avancement";
 import { BeerLambert1G, BeerLambertBTS } from "./simulations/BeerLambert";
 import { SimulationBernoulli } from "./simulations/Bernoulli";
+import { SimulationHydrogene } from "./simulations/Hydrogene";
+import { SimulationProduction1 } from "./simulations/Production1";
 import { SimulationCLHP } from "./simulations/CLHP";
 import { Simulation8 } from "./simulations/ChaineMesure";
 import { Simulation7 } from "./simulations/Cristallisation";
@@ -41,12 +43,17 @@ const SIMULATIONS = [
     component: SimulationAptitude },
   { id:17, label:"Circuit hydraulique", niveau:"TSTL", icon:"🚰", color:"#0284c7",
     component: SimulationBernoulli },
+  { id:18, label:"Atelier Hydrogène", niveau:"ES", icon:"💧", color:"#16a34a",
+    component: SimulationHydrogene },
+  { id:19, label:"Production 1 · Turbine Pelton", niveau:"ES", icon:"🌊", color:"#0284c7",
+    component: SimulationProduction1 },
 ];
 
 const NIVEAUX = [
   { label: "1G",   key: "1G",   color: "#2a9d8f" },
   { label: "TSTL", key: "TSTL", color: "#2a6099" },
   { label: "BTS",  key: "BTS",  color: "#6a4c93" },
+  { label: "Energy@School", key: "ES", color: "#16a34a" },
 ];
 
 // ============================================================
@@ -90,6 +97,10 @@ function PageAccueil({ onStart }) {
         { icon:"🎨", label:"Séchage d'une peinture", desc:"CPV, CPVC, extrait sec et animation du séchage d'un film de peinture." },
       ]},
     ]},
+    { niveau:"Energy@School", color:"#16a34a", sims:[
+      { icon:"💧", label:"Atelier Hydrogène", desc:"Préparer la journée à l'ENSE3 : électrolyse de l'eau, pile à combustible, rendements et dimensionnement d'une pile." },
+      { icon:"🌊", label:"Production 1 · Turbine Pelton", desc:"Conduite forcée, turbine Pelton et alternateur : puissance hydraulique, rendement, oscilloscope et vitesse de l'auget." },
+    ]},
   ];
 
   return (
@@ -122,7 +133,7 @@ function PageAccueil({ onStart }) {
           <div style={{display:"flex", alignItems:"center", gap:10, marginBottom:12}}>
             <div style={{height:3, width:28, borderRadius:2, background:color}}/>
             <span style={{fontSize:13, fontWeight:700, color, textTransform:"uppercase",
-              letterSpacing:"0.1em"}}>Niveau {niveau}</span>
+              letterSpacing:"0.1em"}}>{niveau === "Energy@School" ? "Energy@School · ENSE3" : `Niveau ${niveau}`}</span>
             <div style={{flex:1, height:1, background:"#eee"}}/>
           </div>
 
@@ -228,7 +239,7 @@ export default function App() {
   const [activeId, setActiveId] = useState(getInitialId);
   const active = SIMULATIONS.find(s => s.id === activeId) || SIMULATIONS[0];
   const ActiveComponent = active.component;
-  const [expanded, setExpanded] = useState({ "1G": true, "TSTL": true, "BTS": true });
+  const [expanded, setExpanded] = useState({ "1G": true, "TSTL": true, "BTS": true, "ES": true });
   // Sous-groupes du menu BTS (Analyse, Formulation) : un seul état pour tous,
   // déclaré ici car React interdit un useState dans une boucle ou une condition.
   const [sgOuverts, setSgOuverts] = useState({});
