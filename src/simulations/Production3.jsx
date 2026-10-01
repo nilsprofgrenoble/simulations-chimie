@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours } from "../commun";
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER PRODUCTION 3
@@ -51,9 +51,8 @@ export function SimulationProduction3() {
   const [pesee, setPesee] = useState({ actif: false, t: 0, m: 0, fini: null });
   const [chrono, setChrono] = useState({ actif: false, t: 0, tours: 0, fini: null });
   // Parcours guidé
-  const [etape, setEtape] = useState(0);
-  const [reps, setReps] = useState({});
-  const [verifs, setVerifs] = useState({});
+  const [guide, setGuide] = useState({ etape: 0, reps: {}, verifs: {} });
+  const etape = guide.etape;
   const [vus, setVus] = useState({ co: false, cc: false });
   const [mission, setMission] = useState(null);
 
@@ -168,7 +167,7 @@ export function SimulationProduction3() {
         V = m / ρ, avec ρ = 1,0 × 10³ kg·m⁻³. Le débit est Q<sub>V</sub> = V / Δt.</>,
       tache: { type: 'num', id: 'Q', q: <>Débit volumique Q<sub>V</sub></>, unite: 'm³·s⁻¹', vrai: Qmes, tol: 0.03,
         pieges: Qmes ? [[15 / tPes, 'Il faut d’abord passer de la masse au volume : V = m / ρ.'], [Qmes * 1000, 'Le volume doit être en m³ : 15 kg d’eau = 0,015 m³.']] : [],
-        aide: 'Vous pouvez écrire 2,7e-3.' } },
+        aide: 'Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' } },
     { titre: 'La vitesse de l’eau', focus: ['H', 'L'],
       texte: <>L'eau occupe dans le canal une section rectangulaire : hauteur d'eau H = <strong>5,0 cm</strong>, largeur
         L = <strong>7,5 cm</strong>. On utilise Q<sub>V</sub> = v × S, avec S = H × L.</>,
@@ -235,25 +234,7 @@ export function SimulationProduction3() {
         (changer le débit, la hauteur d'eau…) ou relever le défi.</>,
       tache: null },
   ];
-  const et = ETAPES[etape];
-  const tache = et.tache;
-  const justeEt = (() => {
-    if (!tache) return true;
-    if (tache.type === 'action') return tache.ok;
-    if (tache.type === 'qcm') return reps[etape] === tache.bonne;
-    const x = lireNombre(reps[etape]);
-    return tache.vrai != null && isFinite(x) && proche(x, tache.vrai, tache.tol);
-  })();
-  const verifie = !!verifs[etape];
-  const reussie = tache && tache.type === 'action' ? tache.ok : verifie && justeEt;
-  const piege = () => {
-    const x = lireNombre(reps[etape]);
-    if (!isFinite(x)) return 'Entrez une valeur numérique (virgule ou point).';
-    const pg = (tache.pieges || []).find(([v]) => proche(x, v, Math.max(tache.tol, 0.04)));
-    if (pg) return pg[1];
-    if (tache.vrai && (proche(x, tache.vrai * 1000, 0.05) || proche(x, tache.vrai / 1000, 0.05))) return 'Facteur 1000 : vérifiez les unités.';
-    return null;
-  };
+  const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   // Ce qui est visible selon l'avancement du parcours
   const vu = k => !enGuide || etape >= k;
   const revele = { balance: vu(2), charge: vu(6), chrono: vu(11), graphe: vu(14) };
@@ -495,87 +476,14 @@ export function SimulationProduction3() {
     </div>
   );
 
-  // ════════════════ CARTE DU PARCOURS ════════════════
-  const carteEtape = (
-    <div style={{ ...box, background: 'white', border: `2px solid ${COUL.focus}`, display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, color: TXT2, fontWeight: 700 }}>
-          <span>Étape {etape + 1} / {ETAPES.length}</span>
-          {etape > 0 && <button onClick={() => setEtape(0)} style={{ background: 'none', border: 'none', color: TXT2, cursor: 'pointer', textDecoration: 'underline', fontSize: 12 }}>recommencer</button>}
-        </div>
-        <div style={{ height: 6, background: '#e2e8f0', borderRadius: 3, marginTop: 4 }}>
-          <div style={{ width: `${(etape + 1) / ETAPES.length * 100}%`, height: '100%', background: COUL.focus, borderRadius: 3, transition: 'width 0.3s' }}/>
-        </div>
-      </div>
-      <div style={{ fontSize: 18, fontWeight: 700, color: TXT }}>{et.titre}</div>
-      <div style={{ fontSize: 15, color: TXT, lineHeight: 1.6 }}>{et.texte}</div>
-      {tache && tache.type === 'action' && (
-        <div>
-          {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}</div> : tache.label && !tache.ok &&
-            <button onClick={tache.faire} disabled={!!tache.attente} style={btn(true, '#0284c7')}>{tache.label}</button>}
-          {tache.consigne && <div style={{ fontSize: 14, fontWeight: 700, color: TXT, marginTop: 6, whiteSpace: 'pre' }}>{tache.consigne}</div>}
-          {tache.attente && <div style={{ fontSize: 14, color: TXT2, marginTop: 6 }}>{tache.attente}</div>}
-          {tache.ok && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}>✅ C'est fait !</div>}
-        </div>
-      )}
-      {tache && tache.type === 'qcm' && (
-        <div>
-          <div style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{tache.q}</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            {tache.options.map((o, i) => <button key={i} onClick={() => { setReps(p => ({ ...p, [etape]: i })); setVerifs(v => ({ ...v, [etape]: false })); }}
-              style={{ ...petitBtn(reps[etape] === i, '#0ea5e9'), textAlign: 'left', fontSize: 14 }}>{o}</button>)}
-          </div>
-        </div>
-      )}
-      {tache && tache.type === 'num' && (
-        <div>
-          <div style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{tache.q}</div>
-          {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}</div> : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <input value={reps[etape] || ''} placeholder="?" aria-label="Votre réponse"
-                onChange={x => { const v = x.target.value; setReps(p => ({ ...p, [etape]: v })); setVerifs(vv => ({ ...vv, [etape]: false })); }}
-                onKeyDown={x => { if (x.key === 'Enter') setVerifs(v => ({ ...v, [etape]: true })); }}
-                style={{ ...inp, width: 130, fontSize: 15 }}/>
-              <span style={{ fontSize: 14, color: TXT2 }}>{tache.unite}</span>
-            </div>
-          )}
-          {tache.aide && !verifie && <div style={{ fontSize: 12.5, color: TXT2, marginTop: 4 }}>{tache.aide}</div>}
-        </div>
-      )}
-      {tache && tache.type !== 'action' && !tache.bloque && (
-        <div>
-          {!reussie && <button onClick={() => setVerifs(v => ({ ...v, [etape]: true }))} style={btn(true, '#16a34a')}>✓ Vérifier</button>}
-          {verifie && justeEt && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}>✅ Bravo !{tache.expl ? ' ' : ''}<span style={{ fontWeight: 400, color: TXT }}>{tache.expl}</span></div>}
-          {verifie && !justeEt && (
-            <div style={{ marginTop: 6 }}>
-              <div style={{ fontSize: 14, color: '#b91c1c', fontWeight: 700 }}>❌ Pas encore.</div>
-              {tache.type === 'num' && piege() && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{piege()}</div>}
-              {reps[`vu${etape}`] ? (
-                <div style={{ fontSize: 13.5, color: TXT2, marginTop: 4 }}>
-                  {tache.type === 'num' ? `Réponse attendue : ${sci(tache.vrai)} ${tache.unite}` : `Réponse : ${tache.options[tache.bonne]}. ${tache.expl || ''}`}
-                </div>
-              ) : (
-                <button onClick={() => setReps(p => ({ ...p, [`vu${etape}`]: true }))} style={{ fontSize: 12.5, marginTop: 4, background: 'none',
-                  border: 'none', color: TXT2, textDecoration: 'underline', cursor: 'pointer', padding: 0 }}>voir la réponse</button>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, marginTop: 4 }}>
-        <button onClick={() => setEtape(k => Math.max(0, k - 1))} disabled={etape === 0} style={{ ...btn(false), opacity: etape === 0 ? 0.4 : 1 }}>◀ Précédent</button>
-        {etape < ETAPES.length - 1 ? (
-          <button onClick={() => setEtape(k => k + 1)} disabled={!!tache && !reussie && !reps[`vu${etape}`]}
-            style={{ ...btn(!tache || reussie || !!reps[`vu${etape}`], COUL.focus), opacity: !tache || reussie || reps[`vu${etape}`] ? 1 : 0.45 }}>Suivant ▶</button>
-        ) : (
-          <span style={{ display: 'flex', gap: 6 }}>
-            <button onClick={() => setMode('explore')} style={btn(true, '#334155')}>🔍 Explorer</button>
-            <button onClick={() => { setMode('defi'); nouvelleMission(); }} style={btn(true, '#0ea5e9')}>🎯 Défi</button>
-          </span>
-        )}
-      </div>
-    </div>
+  // ════════════════ CARTE DU PARCOURS (composant commun) ════════════════
+  const finParcours = (
+    <span style={{ display: 'flex', gap: 6 }}>
+      <button onClick={() => setMode('explore')} style={btn(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => { setMode('defi'); nouvelleMission(); }} style={btn(true, '#0ea5e9')}>🎯 Défi</button>
+    </span>
   );
+  const carteEtape = <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>;
 
   // ════════════════ DÉFI : UNE MISSION D'INGÉNIEUR ════════════════
   function nouvelleMission() {

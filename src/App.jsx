@@ -498,7 +498,11 @@ export default function App() {
         <div style={styles.simContainer}>
           {activeId === 0
             ? <PageAccueil onStart={(id) => setActiveId(id || 1)} />
-            : <ActiveComponent key={activeId} plotlyReady={plotlyReady} />}
+            : <div style={{ textAlign: "left" }}>
+                {/* Le fichier App.css du modèle Vite centre tout le texte (#root) : on rétablit l'alignement
+                    à gauche pour les simulations ; la page d'accueil garde sa mise en page centrée. */}
+                <ActiveComponent key={activeId} plotlyReady={plotlyReady} />
+              </div>}
         </div>
       </main>
     </div>

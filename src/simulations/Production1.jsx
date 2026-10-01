@@ -183,7 +183,7 @@ export function SimulationProduction1() {
       texte: <>Le seau de 1,0 L a été rempli en <strong>{tS ? fmt(tS, 1) : '?'} s</strong>. Le débit est Q<sub>V</sub> = V / Δt,
         avec V en m³ (1 L = 10⁻³ m³).</>,
       tache: { type: 'num', q: <>Débit volumique Q<sub>V</sub></>, unite: 'm³·s⁻¹', vrai: Qm, tol: 0.03,
-        pieges: Qm ? [[1 / tS, '1 L = 10⁻³ m³ : convertissez le volume.']] : [], aide: 'Vous pouvez écrire 6,7e-5.' } },
+        pieges: Qm ? [[1 / tS, '1 L = 10⁻³ m³ : convertissez le volume.']] : [], aide: 'Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' } },
     { titre: 'La puissance hydraulique', focus: ['mano'],
       texte: <>Le manomètre indique la pression dans la conduite forcée : <strong>{fmt(pB, 2)} bar</strong> (1 bar = 10⁵ Pa).
         La puissance apportée par l'eau vaut P<sub>hyd</sub> = p × Q<sub>V</sub>, avec p en Pa et Q<sub>V</sub> en m³·s⁻¹.</>,
@@ -527,7 +527,7 @@ export function SimulationProduction1() {
     const Qm = 1e-3 / t, Ph = pBar * 1e5 * Qm, Pe = U * I;
     if (niveau === 2) return [
       { id: 'Q', type: 'num', q: <>Débit Q<sub>V</sub> = V / Δt (le seau de 1 L est rempli en {fmt(t, 1)} s)</>, unite: 'm³·s⁻¹', vrai: Qm, tol: 0.03,
-        pieges: [[1 / t, '1 L = 10⁻³ m³ : convertissez le volume en m³.']], aide: 'Vous pouvez écrire 7,1e-5.' },
+        pieges: [[1 / t, '1 L = 10⁻³ m³ : convertissez le volume en m³.']], aide: 'Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' },
       { id: 'Ph', type: 'num', q: <>Puissance hydraulique P<sub>hyd</sub> = p × Q<sub>V</sub> (manomètre : {fmt(pBar, 2)} bar)</>, unite: 'W', vrai: Ph, tol: 0.04,
         pieges: [[pBar * Qm, '1 bar = 10⁵ Pa : convertissez la pression en pascals.']] },
       { id: 'Pe', type: 'num', q: <>Puissance électrique P<sub>élec</sub> = U × I (U = {fmt(U, 2)} V ; I = {fmt(I, 3)} A)</>, unite: 'W', vrai: Pe, tol: 0.03 },

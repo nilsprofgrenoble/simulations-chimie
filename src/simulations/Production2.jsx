@@ -134,7 +134,7 @@ export function SimulationProduction2() {
       texte: <>Le panneau d'affichage indique un débit de <strong>15 L/min</strong>. Pour les calculs, il faut le convertir en m³·s⁻¹
         (1 L = 10⁻³ m³ ; 1 min = 60 s).</>,
       tache: { type: 'num', q: 'Débit en m³·s⁻¹', unite: 'm³·s⁻¹', vrai: Qg, tol: 0.03,
-        pieges: [[15 / 1000, 'N’oubliez pas les minutes : divisez aussi par 60.'], [15 / 60, '1 L = 10⁻³ m³ : divisez aussi par 1000.']], aide: 'Vous pouvez écrire 2,5e-4.' } },
+        pieges: [[15 / 1000, 'N’oubliez pas les minutes : divisez aussi par 60.'], [15 / 60, '1 L = 10⁻³ m³ : divisez aussi par 1000.']], aide: 'Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' } },
     { titre: 'La puissance hydraulique', focus: ['panneau', 'tuyere'],
       texte: <>La pression en amont de la tuyère vaut <strong>1,0 bar</strong> (1 bar = 10⁵ Pa). La puissance apportée par l'eau
         vaut P<sub>hyd</sub> = p × Q<sub>V</sub>.</>,
@@ -144,7 +144,7 @@ export function SimulationProduction2() {
       texte: <>Le frein est relâché : la roue tourne librement, à <strong>{n0g} tr/min</strong>.</>,
       tache: { type: 'qcm', q: 'Pourquoi la puissance mécanique récupérée est-elle nulle à vide ?',
         options: ['Parce que le couple de freinage est nul', 'Parce que la roue ne tourne pas', 'Parce que le débit est nul'], bonne: 0,
-        expl: 'P_méca = C × ω : la roue tourne vite, mais on ne lui demande rien.' } },
+        expl: <>P<sub>méca</sub> = C × ω : la roue tourne vite, mais on ne lui demande rien.</> } },
     { titre: 'La vitesse de l’auget à vide', focus: ['roue'],
       texte: <>Le jet frappe les augets à r = <strong>5,00 cm</strong> de l'axe. On rappelle v = r × ω avec ω = 2π × n / 60
         (n en tr/min).</>,
@@ -424,7 +424,7 @@ export function SimulationProduction2() {
       const Qs = q / 60000, Ph = pBar * 1e5 * Qs, C = (f1 - f1 / P2_RAPPORT_F) * P2_D / 2, w = 2 * Math.PI * n / 60, Pm = C * w;
       return [
         { id: 'Q', type: 'num', q: <>Débit en m³·s⁻¹ ({fmt(q, 1)} L/min)</>, unite: 'm³·s⁻¹', vrai: Qs, tol: 0.03,
-          pieges: [[q / 1000, 'N’oubliez pas les minutes : 1 min = 60 s.'], [q / 60, '1 L = 10⁻³ m³.']], aide: 'Vous pouvez écrire 2,5e-4.' },
+          pieges: [[q / 1000, 'N’oubliez pas les minutes : 1 min = 60 s.'], [q / 60, '1 L = 10⁻³ m³.']], aide: 'Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' },
         { id: 'Ph', type: 'num', q: <>Puissance hydraulique P<sub>hyd</sub> = p × Q (p = {fmt(pBar, 2)} bar)</>, unite: 'W', vrai: Ph, tol: 0.04,
           pieges: [[pBar * Qs, '1 bar = 10⁵ Pa.'], [pBar * 1e5 * q / 1000, 'Le débit doit être en m³·s⁻¹ (divisez aussi par 60).']] },
         { id: 'C', type: 'num', q: <>Couple de freinage C = (F<sub>1</sub> − F<sub>2</sub>) × D/2 (F<sub>1</sub> = {fmt(f1, 1)} N ; F<sub>2</sub> = {fmt(f1 / P2_RAPPORT_F, 1)} N ; D = 5,0 cm)</>,

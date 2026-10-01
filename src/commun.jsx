@@ -42,7 +42,8 @@ export function TabBtn({ active, color, onClick, children }) {
 
 export const cardStyle = {
   background: "#fff", border: "1px solid #eef5ff",
-  borderRadius: 10, padding: 14, boxSizing: "border-box"
+  borderRadius: 10, padding: 14, boxSizing: "border-box",
+  textAlign: "left"   // le gabarit Vite (App.css) centre tout le texte du site par défaut
 };
 
 

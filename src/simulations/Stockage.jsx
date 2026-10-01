@@ -233,7 +233,7 @@ export function SimulationStockage() {
       texte: <>Chaque ion Li⁺ qui traverse s'accompagne d'un électron dans le circuit. La charge totale vaut Q × 3600 (en coulombs),
         et une mole d'électrons porte F = 96 485 C (constante de Faraday).</>,
       tache: { type: 'num', q: 'Quantité de lithium qui fait l’aller-retour n = Q × 3600 / F', unite: 'mol', vrai: Qcap * 3600 / ST_F, tol: 0.03,
-        pieges: [[Qcap / ST_F, 'Convertissez d’abord la capacité en coulombs : 1 Ah = 3600 C.']], aide: 'Vous pouvez écrire 0,11.' } },
+        pieges: [[Qcap / ST_F, 'Convertissez d’abord la capacité en coulombs : 1 Ah = 3600 C.']], aide: 'Notation scientifique acceptée : pour 4,5 × 10⁻⁶, tapez 4,5e-6.' } },
     { titre: 'Bravo !', focus: [],
       texte: <>Vous savez ce qui se passe dans une batterie et comment la caractériser (tension, capacité, énergie, densité).
         Passez à l'atelier 2 pour assembler des cellules et relever des missions.</>, tache: null },
@@ -596,8 +596,8 @@ export function SimulationStockage() {
   );
   const resultats2 = (
     <>
-      {ligne('Tension U = n_série × U_cellule', `${fmt(bat.U, 2)} V`, '#2563eb', 'u')}
-      {ligne('Capacité Q = n_parallèle × Q_cellule', `${fmt(bat.Q, 2)} Ah`, '#16a34a', 'q')}
+      {ligne(<>Tension U = n<sub>série</sub> × U<sub>cellule</sub></>, `${fmt(bat.U, 2)} V`, '#2563eb', 'u')}
+      {ligne(<>Capacité Q = n<sub>parallèle</sub> × Q<sub>cellule</sub></>, `${fmt(bat.Q, 2)} Ah`, '#16a34a', 'q')}
       {ligne('Énergie E = U × Q', bat.E >= 1000 ? `${fmt(bat.E / 1000, 2)} kWh` : `${fmt(bat.E, 2)} Wh`, '#ea580c', 'e')}
       {ligne('Masse', bat.m >= 1000 ? `${fmt(bat.m / 1000, 2)} kg` : `${fmt(bat.m, 0)} g`, TXT, 'm')}
       {ligne('Densité d’énergie', `${fmt(bat.dens, 0)} Wh/kg`, '#7c3aed', 'd')}
