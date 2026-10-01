@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE } from "../commun";
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER HYDROGÈNE (ENSE3)
@@ -77,7 +77,11 @@ const MODULES = [
 // ════════════════ COMPOSANT PRINCIPAL ════════════════
 export function SimulationHydrogene() {
   const [atelier, setAtelier] = useState(1);        // 1 : maquette, 2 : banc
-  const [mode, setMode] = useState('explore');      // 'explore' | 'defi'
+  const [mode, setMode] = useState('guide');        // 'guide' | 'explore' | 'defi'
+  const [guide1, setGuide1] = useState({ etape: 0, reps: {}, verifs: {} });
+  const [guide2, setGuide2] = useState({ etape: 0, reps: {}, verifs: {} });
+  const [releveG, setReleveG] = useState(null);
+  const [modulesVus, setModulesVus] = useState([]);
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true, module: true });
 
   // ── Maquette ──
@@ -199,6 +203,139 @@ export function SimulationHydrogene() {
     );
   }
 
+  // ════════════════ PARCOURS GUIDÉS ════════════════
+  const enGuide = mode === 'guide';
+  const etape1 = guide1.etape, etape2 = guide2.etape;
+  const vu1 = k => !enGuide || etape1 >= k, vu2 = k => !enGuide || etape2 >= k;
+  const rev1 = { chrono: vu1(2), lampe: vu1(5), pile: vu1(13), caract: vu1(15), puissance: vu1(16) };
+  const rev2 = { courant: vu2(3), ui: vu2(8), eta: vu2(9) };
+  const rg = releveG;
+  const Pg = rg ? rg.u * rg.i : null, Eg = rg ? Pg * rg.t : null, ng = rg ? rg.v / 1000 / H2_VM : null, Esg = ng != null ? ng * H2_DH : null;
+  const releveGOk = etat.t >= 180 && iEl > 0 && ecl === 100 && !pacOn && etat.vH2 < H2_TUBE;
+  const p10g = pointPac(10);
+  const pile10 = pacOn && chargeId === '10' && stock;
+  const ETAPES1 = [
+    { titre: 'Stocker l’énergie du Soleil', focus: ['lampe', 'electro', 'pile'],
+      texte: <>Le Soleil ne brille pas toujours quand on a besoin d'électricité. Une solution : utiliser l'électricité solaire
+        pour fabriquer du <strong>dihydrogène</strong>, le stocker, puis le transformer à nouveau en électricité plus tard.
+        La maquette fait tout le trajet : la <strong>lampe</strong> éclaire un <strong>panneau solaire</strong>, qui alimente un
+        <strong> électrolyseur</strong> ; les gaz sont stockés dans deux tubes, puis une <strong>pile à combustible</strong> les
+        recombine pour faire tourner un moteur.</>, tache: null },
+    { titre: 'Un vecteur d’énergie', focus: ['tubes'],
+      texte: <>On ne trouve pas de dihydrogène pur dans la nature : il faut le fabriquer.</>,
+      tache: { type: 'qcm', q: 'À quoi sert le dihydrogène dans cette installation ?',
+        options: ['À stocker l’énergie électrique pour la rendre plus tard', 'À produire de l’énergie à partir de rien', 'À refroidir le panneau solaire'], bonne: 0,
+        expl: 'Le dihydrogène est un vecteur d’énergie, comme une batterie : il transporte et stocke l’énergie, il ne la crée pas.' } },
+    { titre: 'Lancer l’électrolyse', focus: ['electro'],
+      texte: <>Les commandes sont apparues sous le schéma. Lancez le chronomètre (vous pouvez accélérer le temps × 60) et
+        laissez l'électrolyse tourner au moins <strong>3 minutes</strong>. Regardez les bulles monter dans les tubes.</>,
+      tache: { type: 'action', ok: etat.t >= 180 && etat.vH2 > 0, consigne: `Durée : ${fmt(etat.t / 60, 1)} min / 3 min` } },
+    { titre: 'Deux gaz différents', focus: ['tubes'],
+      texte: <>L'électrolyse décompose l'eau : 2 H<sub>2</sub>O → 2 H<sub>2</sub> + O<sub>2</sub>.</>,
+      tache: { type: 'qcm', q: 'Quel tube se remplit le plus vite ?', options: ['Le tube de H₂', 'Le tube de O₂', 'Les deux au même rythme'], bonne: 0 } },
+    { titre: 'Dans quelle proportion ?', focus: ['tubes'],
+      texte: <>Comparez les deux volumes (onglet « Volumes de gaz » du graphique).</>,
+      tache: { type: 'qcm', q: 'Que constatez-vous ?', options: ['V(H₂) ≈ 2 × V(O₂)', 'V(H₂) ≈ V(O₂)', 'V(O₂) ≈ 2 × V(H₂)'], bonne: 0,
+        expl: 'L’équation l’annonce : 2 molécules de H₂ pour 1 molécule de O₂.' } },
+    { titre: 'Le rôle de la lumière', focus: ['lampe'],
+      texte: <>Le réglage de l'éclairement est apparu. Diminuez-le et observez l'intensité et la production de gaz.</>,
+      tache: { type: 'qcm', q: 'Quand on diminue l’éclairement, la production de gaz…', options: ['augmente', 'diminue', 'ne change pas'], bonne: 1,
+        expl: 'Moins de lumière, moins de courant : moins d’électrons pour décomposer l’eau.' } },
+    { titre: 'Votre manip', focus: ['electro', 'tubes'],
+      texte: <>Remettez la lampe à <strong>100 %</strong>, videz les tubes, puis relancez l'électrolyse au moins
+        <strong> 3 minutes</strong> (pile débranchée). Relevez alors vos mesures : elles serviront aux calculs suivants.</>,
+      tache: { type: 'action', label: '📋 Relever mes mesures', ok: !!rg && !releveGOk ? !!rg : !!rg,
+        faire: () => setReleveG({ u: Math.round(uEl * 100) / 100, i: Math.round(iEl * 1000) / 1000, t: Math.round(etat.t), v: Math.round(etat.vH2 * 10) / 10 }),
+        bloque: !rg && !releveGOk ? 'Conditions : lampe à 100 %, pile débranchée, au moins 3 min d’électrolyse, tube non plein.' : null,
+        consigne: rg ? `U = ${fmt(rg.u, 2)} V ; I = ${fmt(rg.i, 3)} A ; Δt = ${rg.t} s ; V(H₂) = ${fmt(rg.v, 1)} mL` : null } },
+    { titre: 'La puissance reçue', focus: ['electro'],
+      texte: <>Avec vos mesures : U = {rg ? fmt(rg.u, 2) : '?'} V et I = {rg ? fmt(rg.i, 3) : '?'} A.</>,
+      tache: { type: 'num', q: 'Puissance reçue par l’électrolyseur P = U × I', unite: 'W', vrai: Pg, tol: 0.03 } },
+    { titre: 'L’énergie consommée', focus: ['electro'],
+      texte: <>L'électrolyse a duré Δt = {rg ? rg.t : '?'} s. L'énergie reçue vaut E = P × Δt.</>,
+      tache: { type: 'num', q: 'Énergie électrique consommée E', unite: 'J', vrai: Eg, tol: 0.04,
+        pieges: Eg ? [[Eg / 60, 'Δt doit être en secondes.']] : [] } },
+    { titre: 'La quantité de dihydrogène', focus: ['tubes'],
+      texte: <>Vous avez obtenu V(H<sub>2</sub>) = {rg ? fmt(rg.v, 1) : '?'} mL. À 20 °C, un gaz occupe V<sub>m</sub> = 24 L·mol⁻¹ :
+        n = V / V<sub>m</sub>, avec V en litres.</>,
+      tache: { type: 'num', q: <>Quantité de H<sub>2</sub> produite</>, unite: 'mol', vrai: ng, tol: 0.04,
+        pieges: rg ? [[ng * 1000, 'Le volume doit être en litres : 1 mL = 10⁻³ L.'], [rg.v / 1000 / 22.4, '22,4 L·mol⁻¹ vaut à 0 °C ; à 20 °C, V_m = 24 L·mol⁻¹.']] : [],
+        aide: 'Vous pouvez écrire 3,8e-4.' } },
+    { titre: 'L’énergie stockée', focus: ['tubes'],
+      texte: <>Chaque mole de dihydrogène stocke 285 kJ (c'est l'énergie que libère sa réaction avec le dioxygène).</>,
+      tache: { type: 'num', q: <>Énergie stockée E<sub>stockée</sub> = n × 285 000 J·mol⁻¹</>, unite: 'J', vrai: Esg, tol: 0.05,
+        pieges: Esg ? [[Esg / 1000, '285 kJ·mol⁻¹ = 285 000 J·mol⁻¹.']] : [] } },
+    { titre: 'Le rendement de l’électrolyseur', focus: ['electro'],
+      texte: <>Le rendement compare l'énergie stockée à l'énergie consommée.</>,
+      tache: { type: 'num', q: 'Rendement de l’électrolyseur', unite: '%', vrai: Eg ? Esg / Eg * 100 : null, tol: 0.06,
+        pieges: Eg ? [[Eg / Esg * 100, 'C’est l’inverse : énergie stockée sur énergie consommée.'], [Esg / Eg, 'Exprimez le rendement en pourcentage.']] : [] } },
+    { titre: 'Où est passée l’énergie ?', focus: ['electro'],
+      texte: <>Une partie de l'énergie électrique n'a pas été stockée dans le dihydrogène.</>,
+      tache: { type: 'qcm', q: 'Où est passé le reste ?', options: ['Elle a disparu', 'En chaleur', 'Dans le panneau solaire'], bonne: 1,
+        expl: 'L’énergie se conserve : ce qui n’est pas stocké est dissipé en chaleur.' } },
+    { titre: 'Rendre l’énergie : la pile', focus: ['pile', 'charge'],
+      texte: <>Les commandes de la pile sont apparues. Branchez la pile (interrupteur) sur la charge de <strong>10 Ω</strong>.</>,
+      tache: { type: 'action', ok: pile10, consigne: pile10 ? null : `${pacOn ? '✅' : '⬜'} pile branchée   ${chargeId === '10' ? '✅' : '⬜'} charge 10 Ω   ${stock ? '✅' : '⬜'} gaz en réserve` } },
+    { titre: 'La puissance de la pile', focus: ['pile'],
+      texte: <>Relevez la tension et l'intensité de la pile.</>,
+      tache: { type: 'num', q: 'Puissance fournie par la pile P = U × I', unite: 'W', vrai: p10g.p, tol: 0.06,
+        bloque: !pile10 ? 'La pile doit être branchée sur 10 Ω, avec du gaz en réserve.' : null,
+        pieges: [[p10g.p * 1000, 'La réponse est demandée en W (1 mW = 10⁻³ W).']] } },
+    { titre: 'Changer la charge', focus: ['charge'],
+      texte: <>Branchez la pile sur 200 Ω, puis sur 1 Ω (onglet « Pile : U = f(I) »).</>,
+      tache: { type: 'qcm', q: 'Quand la résistance diminue, la tension de la pile…', options: ['augmente', 'diminue', 'reste la même'], bonne: 1,
+        expl: 'La pile débite plus de courant et perd plus de tension dans sa propre résistance.' } },
+    { titre: 'La meilleure charge', focus: ['charge'],
+      texte: <>L'onglet « Puissance » compare la puissance fournie pour chaque résistance.</>,
+      tache: { type: 'qcm', q: 'Pour quelle charge la pile fournit-elle la plus grande puissance ?', options: ['200 Ω', '50 Ω', '10 Ω', '1 Ω'], bonne: 2,
+        expl: 'Avec 200 Ω le courant est trop faible, avec 1 Ω la tension s’effondre : le maximum est entre les deux.' } },
+    { titre: 'Bravo !', focus: [],
+      texte: <>Vous avez suivi l'énergie de la lampe jusqu'au moteur, et mesuré le rendement de l'électrolyseur.
+        Explorez librement la maquette, passez à l'atelier 2 (le banc de la pile) ou relevez le défi.</>, tache: null },
+  ];
+  const U10b = Math.round(uBanc(10) * 100) / 100;
+  const ETAPES2 = [
+    { titre: 'Une vraie pile à combustible', focus: ['pac'],
+      texte: <>Le banc de l'ENSE3 utilise une pile de <strong>10 cellules</strong> empilées, alimentée en dihydrogène par un
+        réservoir et en dioxygène par l'air. Votre objectif : mesurer ses performances et comprendre comment on la dimensionne.</>, tache: null },
+    { titre: 'Les éléments du banc', focus: ['reservoir', 'detendeur', 'capteurs', 'ventilateur', 'charge'],
+      texte: <>Cliquez sur au moins <strong>4 éléments</strong> du schéma pour découvrir leur rôle (le rôle s'affiche sous le schéma).</>,
+      tache: { type: 'action', ok: modulesVus.length >= 4, consigne: `Éléments découverts : ${modulesVus.length} / 4` } },
+    { titre: 'Le ventilateur', focus: ['ventilateur'],
+      texte: <>Le ventilateur est au-dessus de la pile.</>,
+      tache: { type: 'qcm', q: 'À quoi sert-il ?', options: ['À apporter le dioxygène de l’air et refroidir la pile', 'À pousser le dihydrogène', 'À mesurer le courant'], bonne: 0 } },
+    { titre: 'Faire débiter la pile', focus: ['charge'],
+      texte: <>Le réglage du courant est apparu. Demandez <strong>10 A</strong> à la pile.</>,
+      tache: { type: 'action', ok: Math.abs(iBanc - 10) < 0.05, consigne: `Courant actuel : ${fmt(iBanc, 1)} A` } },
+    { titre: 'La tension d’une cellule', focus: ['pac'],
+      texte: <>La charge électronique affiche la tension de toute la pile : <strong>{fmt(U10b, 2)} V</strong> pour 10 cellules en série.</>,
+      tache: { type: 'num', q: 'Tension aux bornes d’une cellule', unite: 'V', vrai: U10b / 10, tol: 0.03,
+        bloque: Math.abs(iBanc - 10) >= 0.05 ? 'Remettez le courant à 10 A.' : null, pieges: [[U10b, 'Divisez par le nombre de cellules.']] } },
+    { titre: 'La densité de courant', focus: ['pac'],
+      texte: <>Chaque cellule a une surface de <strong>25 cm²</strong>. On compare les piles avec la densité de courant J = I / S.</>,
+      tache: { type: 'num', q: 'Densité de courant J', unite: 'A·cm⁻²', vrai: 0.4, tol: 0.02, pieges: [[2.5, 'C’est I / S, pas S / I.']] } },
+    { titre: 'La puissance', focus: ['charge'],
+      texte: <>La pile débite 10 A sous {fmt(U10b, 2)} V.</>,
+      tache: { type: 'num', q: 'Puissance électrique P = U × I', unite: 'W', vrai: U10b * 10, tol: 0.03 } },
+    { titre: 'Le rendement', focus: ['pac'],
+      texte: <>Une cellule parfaite, qui transformerait toute l'énergie de la réaction en électricité, aurait une tension de
+        <strong> 1,48 V</strong> (on le démontre avec la loi de Faraday). Le rendement vaut donc η = U<sub>cellule</sub> / 1,48 V.</>,
+      tache: { type: 'num', q: 'Rendement de la pile à 10 A', unite: '%', vrai: U10b / 10 / U_TH * 100, tol: 0.04,
+        pieges: [[U10b / U_TH * 100, 'Utilisez la tension d’une seule cellule.'], [U10b / 10 / U_TH, 'Exprimez le rendement en pourcentage.']] } },
+    { titre: 'La caractéristique de la pile', focus: ['charge'],
+      texte: <>Le graphique U = f(I) est apparu, avec les vraies mesures du banc. Faites varier le courant de 0 à 10 A.</>,
+      tache: { type: 'qcm', q: 'Quand le courant augmente, la tension de la pile…', options: ['augmente', 'diminue', 'reste constante'], bonne: 1 } },
+    { titre: 'Rendement ou puissance ?', focus: [],
+      texte: <>Regardez les onglets « Rendement » et « P = f(I) ».</>,
+      tache: { type: 'qcm', q: 'Le rendement de la pile est meilleur…', options: ['à faible courant', 'à fort courant', 'il ne dépend pas du courant'], bonne: 0,
+        expl: 'Mais à faible courant, la puissance est faible : il faut choisir entre rendement et puissance.' } },
+    { titre: 'Bravo !', focus: [],
+      texte: <>Vous savez lire les performances d'une pile à combustible. Pour aller plus loin, l'exploration libre permet de
+        dimensionner une pile réelle (nombre de cellules, surface) pour une puissance et une tension voulues.</>, tache: null },
+  ];
+  const et1 = ETAPES1[Math.min(etape1, ETAPES1.length - 1)], et2 = ETAPES2[Math.min(etape2, ETAPES2.length - 1)];
+  const hl = id => enGuide && (atelier === 1 ? et1 : et2).focus.includes(id);
+
   // ════════════════ SCHÉMA : MAQUETTE ════════════════
   const afficheur = (x, y, texte, c) => (
     <g>
@@ -312,6 +449,11 @@ export function SimulationHydrogene() {
       <text x="320" y="292" fontSize="14" fill={TXT2} textAnchor="middle">
         Chronomètre : {fmt(etat.t / 60, 1)} min{marche ? ` (accéléré × ${vitesse})` : ''}
       </text>
+      <Cadre actif={hl('lampe')} x={10} y={36} w={170} h={140}/>
+      <Cadre actif={hl('tubes')} x={180} y={12} w={190} h={142}/>
+      <Cadre actif={hl('electro')} x={180} y={12} w={190} h={272}/>
+      <Cadre actif={hl('pile')} x={394} y={146} w={122} h={130}/>
+      <Cadre actif={hl('charge')} x={552} y={104} w={82} h={136}/>
     </svg>
   );
 
@@ -320,7 +462,7 @@ export function SimulationHydrogene() {
   const cadreModule = (id, x, y, w, h) => (
     <rect x={x} y={y} width={w} height={h} rx="8" fill={actifM(id) ? '#fef9c3' : 'transparent'}
       stroke={actifM(id) ? '#ca8a04' : 'transparent'} strokeWidth="2.5" strokeDasharray="6 3"
-      onClick={() => setModule(m => (m === id ? null : id))} style={{ cursor: 'pointer' }}/>
+      onClick={() => { setModule(m => (m === id ? null : id)); setModulesVus(l => (l.includes(id) ? l : [...l, id])); }} style={{ cursor: 'pointer' }}/>
   );
   const dureeHelice = iBanc > 0.05 ? Math.max(0.2, 2.5 - iBanc * 0.22) : 0;
   const schemaBanc = (
@@ -425,8 +567,9 @@ export function SimulationHydrogene() {
   // ════════════════ VOLETS D'EXPLORATION ════════════════
   const commandesMaquette = (
     <>
-      {curseur("Éclairement de la lampe", ecl, setEcl, 0, 100, 5, '%')}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
+      {!rev1.chrono && <div style={{ fontSize: 13, color: TXT2 }}>Les commandes apparaîtront au fil du parcours.</div>}
+      {rev1.lampe && curseur("Éclairement de la lampe", ecl, setEcl, 0, 100, 5, '%')}
+      {rev1.chrono && <><div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
         <button onClick={() => setMarche(m => !m)} style={btn(true, marche ? '#d97706' : '#16a34a')}>
           {marche ? '⏸ Pause' : '▶ Lancer le chrono'}
         </button>
@@ -435,8 +578,8 @@ export function SimulationHydrogene() {
       <div style={{ fontSize: 12, color: TXT2, fontWeight: 700, marginBottom: 3 }}>Vitesse du temps</div>
       <div style={{ display: 'flex', gap: 5, marginBottom: 10 }}>
         {[1, 10, 60].map(v => <button key={v} onClick={() => setVitesse(v)} style={petitBtn(vitesse === v)}>× {v}</button>)}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
+      </div></>}
+      {rev1.pile && <><div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 10 }}>
         <button onClick={() => setElecOn(v => !v)} style={petitBtn(elecOn, COUL.elec)}>
           {elecOn ? '🔌 Électrolyseur branché' : '🔌 Électrolyseur débranché'}
         </button>
@@ -448,7 +591,7 @@ export function SimulationHydrogene() {
       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
         {CHARGES.map(c => <button key={c.id} onClick={() => setChargeId(c.id)}
           style={{ ...petitBtn(chargeId === c.id, COUL.pile), padding: '3px 8px' }}>{c.nom}</button>)}
-      </div>
+      </div></>}
       {pacOn && affame && (
         <div style={{ fontSize: 12.5, color: '#b45309', marginTop: 8 }}>
           Les tubes sont presque vides : la pile ne consomme que le gaz produit à l'instant par l'électrolyseur,
@@ -467,12 +610,12 @@ export function SimulationHydrogene() {
       {ligne('Durée', `${fmt(etat.t, 0)} s (${fmt(etat.t / 60, 1)} min)`)}
       {ligne(<>Électrolyseur : tension U</>, `${fmt(uEl, 2)} V`, COUL.elec)}
       {ligne(<>Électrolyseur : intensité I</>, `${fmt(iEl, 3)} A`, COUL.elec)}
-      {ligne(<>Électrolyseur : puissance P = U × I</>, `${fmt(uEl * iEl, 3)} W`, COUL.elec)}
+      {!enGuide && ligne(<>Électrolyseur : puissance P = U × I</>, `${fmt(uEl * iEl, 3)} W`, COUL.elec)}
       {ligne(<>Volume de H<sub>2</sub></>, `${fmt(etat.vH2, 1)} mL`, COUL.h2)}
       {ligne(<>Volume de O<sub>2</sub></>, `${fmt(etat.vO2, 1)} mL`, COUL.o2)}
-      {ligne(<>Pile : tension U</>, `${fmt(pt.u, 2)} V`, COUL.pile)}
-      {ligne(<>Pile : intensité I</>, `${fmt(pt.i, 3)} A`, COUL.pile)}
-      {ligne(<>Pile : puissance P = U × I</>, `${fmt(pt.p * 1000, 1)} mW`, COUL.pile)}
+      {rev1.pile && ligne(<>Pile : tension U</>, `${fmt(pt.u, 2)} V`, COUL.pile)}
+      {rev1.pile && ligne(<>Pile : intensité I</>, `${fmt(pt.i, 3)} A`, COUL.pile)}
+      {!enGuide && ligne(<>Pile : puissance P = U × I</>, `${fmt(pt.p * 1000, 1)} mW`, COUL.pile)}
     </>
   );
   const bilanMaquette = (
@@ -509,8 +652,11 @@ export function SimulationHydrogene() {
 
   const commandesBanc = (
     <>
-      {curseur('Courant demandé à la pile', iBanc, setIBanc, 0, 10, 0.1, 'A', 1)}
+      {rev2.courant ? curseur('Courant demandé à la pile', iBanc, setIBanc, 0, 10, 0.1, 'A', 1)
+        : <div style={{ fontSize: 13, color: TXT2, marginBottom: 6 }}>Le réglage du courant apparaîtra au fil du parcours.</div>}
+      {ligne('Courant I', `${fmt(iBanc, 1)} A`, COUL.pile)}
       {ligne('Tension de la pile U', `${fmt(uB, 2)} V`, COUL.elec)}
+      {!enGuide && <>
       {ligne('Puissance P = U × I', `${fmt(pB, 1)} W`, '#16a34a')}
       {ligne('Tension par cellule (10 cellules)', `${fmt(uCell, 3)} V`)}
       {ligne('Densité de courant J = I / 25 cm²', `${fmt(jB, 2)} A·cm⁻²`)}
@@ -518,7 +664,7 @@ export function SimulationHydrogene() {
       {ligne(<>Consommation de H<sub>2</sub></>, `${fmt(debitH2, 2)} L·min⁻¹`, COUL.h2)}
       <div style={{ fontSize: 12.5, color: TXT2, marginTop: 6, lineHeight: 1.5 }}>
         Rendement = tension d'une cellule / 1,48 V : voir « D'où vient 1,48 V ? ».
-      </div>
+      </div></>}
     </>
   );
   const origine148 = (
@@ -844,11 +990,20 @@ export function SimulationHydrogene() {
        section('v148', "D'où vient 1,48 V ?", origine148)];
 
   function changerAtelier(a) { setAtelier(a); setNiveau(null); setReps({}); setVerifie(false); }
+  function changerMode(m) { setMode(m); if (m === 'guide') setEcl(100); }
+  const finParcours = (
+    <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {atelier === 1 && <button onClick={() => changerAtelier(2)} style={btn(true, '#dc2626')}>Atelier 2 ▶</button>}
+      <button onClick={() => changerMode('explore')} style={btn(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('defi')} style={btn(true, '#0ea5e9')}>🎯 Défi</button>
+    </span>
+  );
 
-  const ongletsG = atelier === 1
-    ? [['volumes', 'Volumes de gaz'], ['caract', 'Pile : U = f(I)'], ['puissance', 'Puissance']]
-    : [['ui', 'U = f(I)'], ['pi', 'P = f(I)'], ['eta', 'Rendement']];
-  const ongletG = atelier === 1 ? ongletG1 : ongletG2;
+  const ongletsG = (atelier === 1
+    ? [['volumes', 'Volumes de gaz', rev1.chrono], ['caract', 'Pile : U = f(I)', rev1.caract], ['puissance', 'Puissance', rev1.puissance]]
+    : [['ui', 'U = f(I)', rev2.ui], ['pi', 'P = f(I)', rev2.eta], ['eta', 'Rendement', rev2.eta]]).filter(o => o[2]);
+  const ongletG0 = atelier === 1 ? ongletG1 : ongletG2;
+  const ongletG = ongletsG.some(o => o[0] === ongletG0) ? ongletG0 : (ongletsG[0] || [])[0];
   const setOngletG = atelier === 1 ? setOngletG1 : setOngletG2;
   const legendeG = {
     volumes: <>Les deux courbes montent en même temps : V(H<sub>2</sub>) ≈ 2 × V(O<sub>2</sub>).</>,
@@ -858,6 +1013,16 @@ export function SimulationHydrogene() {
     pi: <>La puissance augmente avec le courant, mais moins vite que si la tension restait constante.</>,
     eta: <>Le rendement est meilleur à faible courant : on ne peut pas avoir à la fois un grand rendement et une grande puissance.</>,
   }[ongletG];
+
+  const blocGraphe = (
+    <div style={box}>
+      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
+        {ongletsG.map(([k, l]) => <button key={k} onClick={() => setOngletG(k)} style={petitBtn(ongletG === k, '#334155')}>{l}</button>)}
+      </div>
+      {atelier === 1 ? grapheMaquette : grapheBanc}
+      <div style={{ fontSize: 13, color: TXT2, marginTop: 6, lineHeight: 1.5 }}>{legendeG}</div>
+    </div>
+  );
 
   // ════════════════ MISE EN PAGE ════════════════
   return (
@@ -879,9 +1044,10 @@ export function SimulationHydrogene() {
           <button onClick={() => changerAtelier(1)} style={btn(atelier === 1, '#16a34a')}>Atelier 1 · De l'eau à l'hydrogène</button>
           <button onClick={() => changerAtelier(2)} style={btn(atelier === 2, '#dc2626')}>Atelier 2 · Le banc de la pile</button>
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
-          <button onClick={() => setMode('explore')} style={btn(mode === 'explore', '#334155')}>🔍 Exploration</button>
-          <button onClick={() => setMode('defi')} style={btn(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
+          <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
+          <button onClick={() => changerMode('defi')} style={btn(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
         </div>
       </div>
 
@@ -889,8 +1055,10 @@ export function SimulationHydrogene() {
         <div style={box}>
           <div style={titreBox}>{atelier === 1 ? 'La maquette : de la lumière au moteur' : 'Le banc de la pile à combustible'}</div>
           {atelier === 1 ? schemaMaquette : schemaBanc}
+          {enGuide && atelier === 2 && moduleInfo && <div style={{ fontSize: 14, color: TXT, marginTop: 8, padding: '6px 10px',
+            background: '#fef9c3', borderRadius: 6 }}><strong>{moduleInfo.nom}</strong> : {moduleInfo.role}</div>}
           <div style={{ fontSize: 13, color: TXT2, marginTop: 6, lineHeight: 1.5 }}>
-            {atelier === 1
+            {enGuide ? <>L'élément encadré en orange est celui dont parle l'étape en cours.</> : atelier === 1
               ? <>La lumière produit du courant ; l'électrolyseur s'en sert pour casser l'eau en H<sub>2</sub> et O<sub>2</sub>,
                   stockés dans les tubes ; la pile les recombine pour rendre de l'électricité. Cliquez sur les interrupteurs.</>
               : <>Le dihydrogène sort du réservoir, traverse le détendeur et les capteurs, puis réagit dans la pile
@@ -898,16 +1066,20 @@ export function SimulationHydrogene() {
           </div>
         </div>
 
-        <div style={box}>
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
-            {ongletsG.map(([k, l]) => <button key={k} onClick={() => setOngletG(k)} style={petitBtn(ongletG === k, '#334155')}>{l}</button>)}
-          </div>
-          {atelier === 1 ? grapheMaquette : grapheBanc}
-          <div style={{ fontSize: 13, color: TXT2, marginTop: 6, lineHeight: 1.5 }}>{legendeG}</div>
-        </div>
+        {enGuide ? (atelier === 1
+          ? <CarteParcours key="g1" etapes={ETAPES1} etat={guide1} setEtat={setGuide1} fin={finParcours}/>
+          : <CarteParcours key="g2" etapes={ETAPES2} etat={guide2} setEtat={setGuide2} fin={finParcours}/>) : blocGraphe}
       </div>
 
-      {mode === 'explore' ? (
+      {enGuide ? (
+        <div className="h2-l2">
+          {ongletsG.length > 0 && blocGraphe}
+          <div>
+            {atelier === 1 ? <>{section('commandes', 'Commandes', commandesMaquette)}{rev1.chrono && section('mesures', 'Mesures', mesuresMaquette)}</>
+              : section('commandes', 'Commandes et mesures', commandesBanc)}
+          </div>
+        </div>
+      ) : mode === 'explore' ? (
         <div className="h2-l2">{volet}</div>
       ) : (
         <div className="h2-l2-defi">

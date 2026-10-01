@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE } from "../commun";
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER PRODUCTION 1
@@ -62,7 +62,9 @@ const PR_CHARGES = [0, 1, 2, 3, 5, 8, 10, 12, 15, 20, 30, 50, 100, Infinity];
 const nomCharge = R => (R === 0 ? 'court-circuit' : R === Infinity ? 'circuit ouvert' : `${R} Ω`);
 
 export function SimulationProduction1() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState('guide');
+  const [guide, setGuide] = useState({ etape: 0, reps: {}, verifs: {} });
+  const [vus, setVus] = useState({ co: false, cc: false });
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true, points: true });
   const [ouv, setOuv] = useState(80);                 // ouverture du robinet (%)
   const [kR, setKR] = useState(6);                    // indice dans PR_CHARGES (10 Ω)
@@ -78,11 +80,19 @@ export function SimulationProduction1() {
   const [verifie, setVerifie] = useState(false);
   const [releve, setReleve] = useState(null);
 
+  const enGuide = mode === 'guide';
+  const etape = guide.etape;
+  const vu = k => !enGuide || etape >= k;
+  const revele = { seau: vu(3), charge: vu(6), graphe: vu(12), oscillo: vu(14), vitesses: vu(18) };
   const s = ouv / 80;
   const cacherEta = mode === 'defi' && niveau === 2 && !verifie;
   const R = PR_CHARGES[kR];
   const Q = PR_Q_REF * s, p = PR_P_REF * s * s, Phyd = p * Q;
   const pt = pointFonct(s, R);
+  useEffect(() => {
+    if (R === Infinity) setVus(v => (v.co ? v : { ...v, co: true }));
+    if (R === 0) setVus(v => (v.cc ? v : { ...v, cc: true }));
+  }, [R]);
   const Pel = pt.U * pt.I, eta = Phyd > 0 ? Pel / Phyd : 0;
   const f = PR_P * pt.n, T = f > 0 ? 1 / f : Infinity;
   const vJet = Q / (Math.PI * PR_R_JET ** 2), vAuget = 2 * Math.PI * PR_R_ROUE * pt.n;
@@ -142,6 +152,111 @@ export function SimulationProduction1() {
       <text x={x + w / 2} y={y + 19} fontSize="16" fill={c} textAnchor="middle" fontFamily="monospace" fontWeight="700">{texte}</text>
     </g>
   );
+
+  // ════════════════ PARCOURS GUIDÉ ════════════════
+  const tS = seau.fini ? Math.round(seau.fini * 10) / 10 : null;
+  const Qm = tS ? 1e-3 / tS : null;
+  const pB = Math.round(PR_P_REF / 1e5 * 100) / 100;
+  const Phm = Qm ? pB * 1e5 * Qm : null;
+  const p10 = pointFonct(1, 10), U10 = Math.round(p10.U * 100) / 100, I10 = Math.round(p10.I * 1000) / 1000, P10 = U10 * I10;
+  const prochesOpt = [12, 15, 20].includes(R);
+  const ETAPES = [
+    { titre: 'Une petite centrale hydroélectrique', focus: ['conduite', 'roue', 'alternateur'],
+      texte: <>Dans une centrale de montagne, l'eau d'un barrage descend dans une <strong>conduite forcée</strong>, sort en jet
+        et fait tourner une <strong>turbine Pelton</strong>, qui entraîne un <strong>alternateur</strong>. La maquette reproduit
+        cette chaîne en petit (alternateur de 6 W). Votre objectif : mesurer la puissance électrique et le rendement,
+        et trouver le point de fonctionnement optimal.</>, tache: null },
+    { titre: 'La chaîne énergétique (1/2)', focus: ['jet'],
+      texte: <>Suivez l'eau : elle arrive sous pression par la conduite, puis sort très vite par l'injecteur.</>,
+      tache: { type: 'qcm', q: 'Quelle énergie le jet apporte-t-il à la turbine ?',
+        options: ['De l’énergie cinétique (l’eau va vite)', 'De l’énergie électrique', 'De l’énergie thermique'], bonne: 0,
+        expl: 'La pression de l’eau est convertie en vitesse dans l’injecteur.' } },
+    { titre: 'La chaîne énergétique (2/2)', focus: ['alternateur'],
+      texte: <>La turbine fait tourner l'arbre de l'alternateur.</>,
+      tache: { type: 'qcm', q: 'L’alternateur convertit l’énergie mécanique de rotation en…',
+        options: ['énergie électrique', 'énergie cinétique de l’eau', 'énergie chimique'], bonne: 0 } },
+    { titre: 'Mesurer le débit', focus: ['seau'],
+      texte: <>Pour connaître le débit, on mesure la durée nécessaire pour remplir un seau de <strong>1 L</strong>.</>,
+      tache: { type: 'action', label: '🪣 Remplir le seau', faire: lancerSeau, ok: !!seau.fini,
+        attente: seau.actif ? 'Remplissage en cours…' : null } },
+    { titre: 'Calculer le débit', focus: ['seau'],
+      texte: <>Le seau de 1,0 L a été rempli en <strong>{tS ? fmt(tS, 1) : '?'} s</strong>. Le débit est Q<sub>V</sub> = V / Δt,
+        avec V en m³ (1 L = 10⁻³ m³).</>,
+      tache: { type: 'num', q: <>Débit volumique Q<sub>V</sub></>, unite: 'm³·s⁻¹', vrai: Qm, tol: 0.03,
+        pieges: Qm ? [[1 / tS, '1 L = 10⁻³ m³ : convertissez le volume.']] : [], aide: 'Vous pouvez écrire 6,7e-5.' } },
+    { titre: 'La puissance hydraulique', focus: ['mano'],
+      texte: <>Le manomètre indique la pression dans la conduite forcée : <strong>{fmt(pB, 2)} bar</strong> (1 bar = 10⁵ Pa).
+        La puissance apportée par l'eau vaut P<sub>hyd</sub> = p × Q<sub>V</sub>, avec p en Pa et Q<sub>V</sub> en m³·s⁻¹.</>,
+      tache: { type: 'num', q: <>Puissance hydraulique P<sub>hyd</sub></>, unite: 'W', vrai: Phm, tol: 0.04,
+        pieges: Qm ? [[pB * Qm, '1 bar = 10⁵ Pa : convertissez la pression.']] : [] } },
+    { titre: 'Brancher la charge', focus: ['charge'],
+      texte: <>L'alternateur alimente une <strong>charge</strong> réglable, du court-circuit au circuit ouvert. Le curseur est
+        apparu sous le schéma : essayez les deux extrêmes et regardez le voltmètre et l'ampèremètre.</>,
+      tache: { type: 'action', ok: vus.co && vus.cc, consigne: `${vus.co ? '✅' : '⬜'} circuit ouvert   ${vus.cc ? '✅' : '⬜'} court-circuit` } },
+    { titre: 'Que faut-il mesurer ?', focus: ['charge'],
+      texte: <>On veut connaître la puissance électrique produite par l'alternateur.</>,
+      tache: { type: 'qcm', q: 'Quelles grandeurs faut-il mesurer en sortie de l’alternateur ?',
+        options: ['La tension et l’intensité', 'La pression et le débit', 'La fréquence seule'], bonne: 0,
+        expl: 'P = U × I (valeurs efficaces, pour une charge résistive).' } },
+    { titre: 'Circuit ouvert', focus: ['charge'], texte: <>En circuit ouvert, la puissance électrique est nulle.</>,
+      tache: { type: 'qcm', q: 'Pourquoi ?', options: ['l’intensité I = 0 A', 'la tension U = 0 V'], bonne: 0,
+        expl: 'Aucun courant ne circule, même si l’alternateur produit une tension.' } },
+    { titre: 'Court-circuit', focus: ['charge'], texte: <>En court-circuit, la puissance électrique est aussi nulle.</>,
+      tache: { type: 'qcm', q: 'Pourquoi ?', options: ['l’intensité I = 0 A', 'la tension U = 0 V'], bonne: 1,
+        expl: 'Entre les deux extrêmes, la puissance passe donc par un maximum.' } },
+    { titre: 'La puissance électrique', focus: ['charge'],
+      texte: <>Réglez la charge sur <strong>10 Ω</strong> et relevez U et I.</>,
+      tache: { type: 'num', q: <>Puissance électrique P<sub>élec</sub> = U × I</>, unite: 'W', vrai: P10, tol: 0.04,
+        bloque: R !== 10 ? 'Réglez d’abord la charge sur 10 Ω.' : null } },
+    { titre: 'Le rendement', focus: ['charge', 'conduite'],
+      texte: <>Le rendement compare la puissance utile (électrique) à la puissance absorbée (hydraulique) : r = P<sub>élec</sub> / P<sub>hyd</sub>.</>,
+      tache: { type: 'num', q: 'Rendement r', unite: '%', vrai: Phm ? P10 / Phm * 100 : null, tol: 0.06,
+        pieges: Phm ? [[Phm / P10 * 100, 'C’est l’inverse : puissance utile sur puissance absorbée.'], [P10 / Phm, 'Exprimez le rendement en pourcentage (× 100).']] : [] } },
+    { titre: 'Tracer la courbe de rendement', focus: ['charge'],
+      texte: <>Le graphique est apparu. Changez la charge, du court-circuit au circuit ouvert, et ajoutez un point à chaque
+        réglage (menu « Mes points »).</>,
+      tache: { type: 'action', ok: points.length >= 6, consigne: `Points ajoutés : ${points.length} / 6` } },
+    { titre: 'Le point optimal', focus: [],
+      texte: <>Observez votre courbe.</>,
+      tache: { type: 'qcm', q: 'Pour quelle tension environ le rendement est-il le plus grand ?',
+        options: ['vers 1 V', 'vers 5 V', 'vers 8,7 V (circuit ouvert)'], bonne: 1 } },
+    { titre: 'L’oscilloscope', focus: ['alternateur'],
+      texte: <>Placez-vous au maximum de rendement (charge de 12, 15 ou 20 Ω), puis ouvrez l'onglet <strong>Oscilloscope</strong>.
+        La tension est alternative : mesurez sa période T en comptant les divisions, puis calculez f = 1 / T.</>,
+      tache: { type: 'num', q: 'Fréquence f du signal', unite: 'Hz', vrai: f, tol: 0.06,
+        bloque: !prochesOpt ? 'Réglez d’abord la charge sur 12, 15 ou 20 Ω.' : null,
+        pieges: [[1 / f * 1000, 'Vous avez donné T en ms : f = 1 / T, avec T en secondes.'], [f / 1000, 'T doit être en secondes : 1 ms = 10⁻³ s.']] } },
+    { titre: 'Les paires de pôles', focus: ['alternateur'],
+      texte: <>La fréquence est liée à la vitesse de rotation : f = n × p, avec p le nombre de paires de pôles de l'alternateur.
+        À basse vitesse, on a mesuré : la turbine fait <strong>10 tours en 4 s</strong>, et le signal a une période <strong>T = 100 ms</strong>.</>,
+      tache: { type: 'num', q: 'Nombre de paires de pôles p = f / n', unite: '', vrai: 4, tol: 0.01,
+        pieges: [[0.25, 'C’est p = f / n, et non n / f.'], [1, 'n = 10 / 4 = 2,5 tr·s⁻¹ et f = 1 / 0,100 = 10 Hz.']] } },
+    { titre: 'La vitesse de rotation', focus: ['roue'],
+      texte: <>Au maximum de rendement, vous avez mesuré f. L'alternateur a p = 4 paires de pôles.</>,
+      tache: { type: 'num', q: 'Vitesse de rotation n = f / p', unite: 'tr·s⁻¹', vrai: pt.n, tol: 0.06,
+        bloque: !prochesOpt ? 'Gardez la charge sur 12, 15 ou 20 Ω.' : null, pieges: [[f * PR_P, 'C’est n = f / p (et non f × p).']] } },
+    { titre: 'La vitesse de l’auget', focus: ['roue'],
+      texte: <>Le jet frappe les augets à r = <strong>4,0 cm</strong> de l'axe. On rappelle v = r × ω, avec ω = 2π n (n en tr·s⁻¹).</>,
+      tache: { type: 'num', q: <>Vitesse de l'auget v<sub>a</sub></>, unite: 'm·s⁻¹', vrai: 2 * Math.PI * PR_R_ROUE * pt.n, tol: 0.06,
+        bloque: !prochesOpt ? 'Gardez la charge sur 12, 15 ou 20 Ω.' : null,
+        pieges: [[PR_R_ROUE * pt.n, 'N’oubliez pas 2π : 1 tr·s⁻¹ = 2π rad·s⁻¹.'], [2 * Math.PI * 4 * pt.n, 'r doit être en mètres : 4,0 cm = 0,040 m.']] } },
+    { titre: 'La vitesse du jet', focus: ['jet'],
+      texte: <>Le jet a un diamètre de <strong>2,0 mm</strong>. Avec le débit mesuré plus tôt, v<sub>e</sub> = Q<sub>V</sub> / S,
+        où S = π r² est l'aire de la section du jet.</>,
+      tache: { type: 'num', q: <>Vitesse du jet v<sub>e</sub></>, unite: 'm·s⁻¹', vrai: Qm ? Qm / (Math.PI * PR_R_JET ** 2) : null, tol: 0.05,
+        pieges: Qm ? [[Qm / (Math.PI * PR_R_JET ** 2) / 4, 'S = π r², avec le rayon r = 1,0 mm (pas le diamètre).'], [Qm / (Math.PI * 1e-6) * 1e-6, 'Le rayon doit être en mètres.']] : [] } },
+    { titre: 'Le secret de la turbine Pelton', focus: ['roue', 'jet'],
+      texte: <>Comparez la vitesse de l'auget et celle du jet au point de rendement maximal (onglet <strong>Vitesses</strong>).</>,
+      tache: { type: 'qcm', q: 'Au rendement maximal, la vitesse de l’auget vaut environ…',
+        options: ['la vitesse du jet', 'la moitié de la vitesse du jet', 'le double de la vitesse du jet'], bonne: 1,
+        expl: 'Si la roue va aussi vite que le jet, l’eau ne la pousse plus ; si elle est bloquée, elle ne récupère rien. Le meilleur compromis est à mi-chemin.' } },
+    { titre: 'Bravo !', focus: [],
+      texte: <>Vous avez caractérisé toute la centrale : débit, puissance hydraulique, puissance électrique, rendement,
+        fréquence, vitesse de rotation et vitesses du jet et de l'auget. Explorez librement la maquette (changez
+        l'ouverture du robinet…) ou relevez le défi.</>, tache: null },
+  ];
+  const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
+  function hl(id) { return enGuide && et.focus.includes(id); }
 
   // ════════════════ SCHÉMA ════════════════
   const cx = 300, cy = 140, rRoue = 64;
@@ -209,6 +324,7 @@ export function SimulationProduction1() {
       <text x="448" y="136" fontSize="15" fontWeight="700" fill={TXT} textAnchor="middle">Alter-</text>
       <text x="448" y="154" fontSize="15" fontWeight="700" fill={TXT} textAnchor="middle">nateur</text>
       <text x="448" y="196" fontSize="12.5" fill={TXT2} textAnchor="middle">4 paires de pôles</text>
+      {revele.charge && <g>
       {/* Charge (rhéostat) */}
       <polyline points="486,120 540,120 540,96" fill="none" stroke={COUL.elec} strokeWidth="2.5"/>
       <polyline points="486,160 600,160 600,96" fill="none" stroke={COUL.elec} strokeWidth="2.5"/>
@@ -218,6 +334,8 @@ export function SimulationProduction1() {
       {afficheur(512, 176, `${fmt(pt.U, 2)} V`, '#93c5fd', 110)}
       {afficheur(512, 208, `${fmt(pt.I, 3)} A`, '#fca5a5', 110)}
       <text x="567" y="252" fontSize="12.5" fill={TXT2} textAnchor="middle">valeurs efficaces</text>
+      </g>}
+      {revele.seau && <g>
       {/* Seau de 1 L pour mesurer le débit */}
       <path d="M 26 236 L 32 300 L 88 300 L 94 236" fill="none" stroke={TXT} strokeWidth="2.5"/>
       <clipPath id="prSeau"><path d="M 26 236 L 32 300 L 88 300 L 94 236 Z"/></clipPath>
@@ -227,6 +345,14 @@ export function SimulationProduction1() {
       <text x="60" y="226" fontSize="14" fontWeight="700" fill={TXT} textAnchor="middle">
         {seau.fini ? `${fmt(seau.fini, 1)} s` : seau.actif ? `${fmt(seau.t, 1)} s` : 'seau'}
       </text>
+      </g>}
+      <Cadre actif={hl('conduite')} x={14} y={10} w={186} h={196}/>
+      <Cadre actif={hl('mano')} x={80} y={60} w={64} h={100}/>
+      <Cadre actif={hl('roue')} x={cx - 80} y={cy - 84} w={160} h={168}/>
+      <Cadre actif={hl('jet')} x={206} y={184} w={96} h={50}/>
+      <Cadre actif={hl('alternateur')} x={402} y={96} w={92} h={110}/>
+      <Cadre actif={hl('charge')} x={504} y={30} w={128} h={230}/>
+      <Cadre actif={hl('seau')} x={14} y={208} w={110} h={104}/>
     </svg>
   );
 
@@ -287,14 +413,14 @@ export function SimulationProduction1() {
   // ════════════════ VOLETS ════════════════
   const commandes = (
     <>
-      <div style={{ marginBottom: 10 }}>
+      {!enGuide && <div style={{ marginBottom: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, color: TXT2, fontWeight: 700 }}>
           <span>Ouverture du robinet</span><span style={{ color: TXT }}>{ouv} %</span>
         </div>
         <input type="range" min={0} max={100} step={5} value={ouv} onChange={e => setOuv(+e.target.value)}
           style={{ width: '100%', accentColor: '#0284c7' }}/>
-      </div>
-      <div style={{ marginBottom: 10 }}>
+      </div>}
+      {revele.charge && <div style={{ marginBottom: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, color: TXT2, fontWeight: 700 }}>
           <span>Charge branchée sur l'alternateur</span><span style={{ color: TXT }}>{nomCharge(R)}</span>
         </div>
@@ -303,23 +429,24 @@ export function SimulationProduction1() {
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, color: TXT2 }}>
           <span>court-circuit</span><span>circuit ouvert</span>
         </div>
-      </div>
-      <button onClick={lancerSeau} disabled={seau.actif || ouv === 0} style={{ ...btn(!seau.actif, '#2563eb'), opacity: seau.actif || ouv === 0 ? 0.6 : 1 }}>
+      </div>}
+      {revele.seau ? <><button onClick={lancerSeau} disabled={seau.actif || ouv === 0} style={{ ...btn(!seau.actif, '#2563eb'), opacity: seau.actif || ouv === 0 ? 0.6 : 1 }}>
         🪣 Mesurer le débit (seau de 1 L)
       </button>
       <div style={{ fontSize: 12, color: TXT2, marginTop: 5 }}>
         {seau.fini ? <>Seau rempli en <strong>{fmt(seau.fini, 1)} s</strong>.</> : seau.actif ? 'Remplissage en cours…' : 'Le chronomètre s’arrête quand le seau est plein.'}
-      </div>
+      </div></> : <div style={{ fontSize: 13, color: TXT2 }}>Les commandes apparaîtront au fil du parcours.</div>}
     </>
   );
-  const enDefi = mode === 'defi';
+  const enDefi = mode !== 'explore';
   const mesures = (
     <>
       {ligne('Pression dans la conduite', `${fmt(p / 1e5, 2)} bar`, COUL.eau, 'p')}
       {!enDefi && ligne(<>Débit Q<sub>V</sub></>, `${sci(Q)} m³·s⁻¹`, COUL.eau, 'q')}
       {!enDefi && ligne(<>Puissance hydraulique P<sub>hyd</sub> = p × Q<sub>V</sub></>, `${fmt(Phyd, 1)} W`, COUL.eau, 'ph')}
-      {ligne('Tension U (efficace)', `${fmt(pt.U, 2)} V`, COUL.elec, 'u')}
-      {ligne('Intensité I (efficace)', `${fmt(pt.I, 3)} A`, COUL.elec, 'i')}
+      {enGuide && revele.seau && ligne('Seau de 1 L rempli en', seau.fini ? `${fmt(seau.fini, 1)} s` : '—', COUL.eau, 'seau')}
+      {revele.charge && ligne('Tension U (efficace)', `${fmt(pt.U, 2)} V`, COUL.elec, 'u')}
+      {revele.charge && ligne('Intensité I (efficace)', `${fmt(pt.I, 3)} A`, COUL.elec, 'i')}
       {!enDefi && ligne(<>Puissance électrique P<sub>élec</sub> = U × I</>, `${fmt(Pel, 2)} W`, COUL.elec, 'pe')}
       {!enDefi && ligne(<>Rendement P<sub>élec</sub> / P<sub>hyd</sub></>, `${fmt(eta * 100, 1)} %`, COUL.chaleur, 'eta')}
       {!enDefi && ligne('Fréquence du signal f', `${fmt(f, 1)} Hz`, COUL.meca, 'f')}
@@ -533,7 +660,23 @@ export function SimulationProduction1() {
   );
 
   // ════════════════ MISE EN PAGE ════════════════
-  const onglets = [['rendement', 'Rendement'], ['oscillo', 'Oscilloscope'], ['vitesses', 'Vitesses']];
+  function changerMode(m) { setMode(m); if (m === 'guide') setOuv(80); }
+  const finParcours = (
+    <span style={{ display: 'flex', gap: 6 }}>
+      <button onClick={() => changerMode('explore')} style={btn(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('defi')} style={btn(true, '#0ea5e9')}>🎯 Défi</button>
+    </span>
+  );
+  const onglets = [['rendement', 'Rendement', revele.graphe], ['oscillo', 'Oscilloscope', revele.oscillo], ['vitesses', 'Vitesses', revele.vitesses]].filter(o => o[2]);
+  const blocGraphe = (
+    <div style={box}>
+      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
+        {onglets.map(([k, l]) => <button key={k} onClick={() => setOnglet(k)} style={petitBtn(onglet === k, '#334155')}>{l}</button>)}
+      </div>
+      {graphe}
+      <div style={{ fontSize: 13, color: TXT2, marginTop: 6, lineHeight: 1.5 }}>{legende}</div>
+    </div>
+  );
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       <style>{`
@@ -544,9 +687,10 @@ export function SimulationProduction1() {
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         <h2 style={{ margin: 0, fontSize: 18, color: TXT }}>Production 1 · Conduite forcée, turbine Pelton et alternateur</h2>
-        <div style={{ display: 'flex', gap: 6 }}>
-          <button onClick={() => setMode('explore')} style={btn(mode === 'explore', '#334155')}>🔍 Exploration</button>
-          <button onClick={() => setMode('defi')} style={btn(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
+          <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
+          <button onClick={() => changerMode('defi')} style={btn(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
         </div>
       </div>
 
@@ -555,20 +699,24 @@ export function SimulationProduction1() {
           <div style={titreBox}>La maquette : de l'eau à l'électricité</div>
           {schema}
           <div style={{ fontSize: 13, color: TXT2, marginTop: 6, lineHeight: 1.5 }}>
-            L'eau sous pression sort en jet et fait tourner la roue ; l'arbre entraîne l'alternateur, qui alimente la charge.
-            L'animation de la roue est très ralentie : en vrai, elle fait plusieurs dizaines de tours par seconde.
+            {enGuide ? <>L'élément encadré en orange est celui dont parle l'étape en cours. L'animation de la roue est très ralentie.</>
+              : <>L'eau sous pression sort en jet et fait tourner la roue ; l'arbre entraîne l'alternateur, qui alimente la charge.
+                L'animation de la roue est très ralentie : en vrai, elle fait plusieurs dizaines de tours par seconde.</>}
           </div>
         </div>
-        <div style={box}>
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
-            {onglets.map(([k, l]) => <button key={k} onClick={() => setOnglet(k)} style={petitBtn(onglet === k, '#334155')}>{l}</button>)}
-          </div>
-          {graphe}
-          <div style={{ fontSize: 13, color: TXT2, marginTop: 6, lineHeight: 1.5 }}>{legende}</div>
-        </div>
+        {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : blocGraphe}
       </div>
 
-      {mode === 'explore' ? (
+      {enGuide ? (
+        <div className="pr-l2">
+          {revele.graphe && blocGraphe}
+          <div>
+            {section('commandes', 'Commandes', commandes)}
+            {revele.seau && section('mesures', 'Mesures', mesures)}
+          </div>
+          {revele.graphe && section('points', 'Mes points', mesPoints)}
+        </div>
+      ) : mode === 'explore' ? (
         <div className="pr-l2">
           {section('commandes', 'Commandes', commandes)}
           {section('mesures', 'Mesures', mesures)}

@@ -107,7 +107,7 @@ export function Graphe({ xMax, yMax, xLabel, yLabel, courbes = [], points = [], 
         const bw = (W - g - d) / barres.length;
         const x0 = g + i * bw + bw * 0.18;
         return (
-          <g key={br.label}>
+          <g key={`${i}-${br.label}`}>
             <rect x={x0} y={Y(br.val)} width={bw * 0.64} height={H - b - Y(br.val)}
               fill={br.color} opacity={br.fort ? 1 : 0.45} stroke={br.fort ? '#0f172a' : 'none'} strokeWidth="1.5"/>
             <text x={x0 + bw * 0.32} y={H - b + 17} fontSize="12" fill={'#334155'} textAnchor="middle">{br.label}</text>
@@ -133,3 +133,135 @@ export function Graphe({ xMax, yMax, xLabel, yLabel, courbes = [], points = [], 
   );
 }
 
+
+// ============================================================
+//  PARCOURS GUIDÉ (pages Energy@School)
+//  etapes : [{ titre, texte, tache }]
+//  tache : null
+//        | { type: 'action', ok, label?, faire?, attente?, consigne?, bloque? }
+//        | { type: 'qcm', q, options, bonne, expl? }
+//        | { type: 'num', q, unite, vrai, tol, pieges?, aide?, expl?, bloque? }
+//  etat = { etape, reps, verifs } est conservé par la page (setEtat).
+// ============================================================
+
+export const ORANGE_GUIDE = '#f59e0b';
+
+export function Cadre({ actif, x, y, w, h }) {
+  if (!actif) return null;
+  return (
+    <rect x={x} y={y} width={w} height={h} rx="10" fill="none" stroke={ORANGE_GUIDE} strokeWidth="4" strokeDasharray="8 4" pointerEvents="none">
+      <animate attributeName="stroke-opacity" values="1;0.35;1" dur="1.4s" repeatCount="indefinite"/>
+    </rect>
+  );
+}
+
+export function CarteParcours({ etapes, etat, setEtat, fin }) {
+  const { etape, reps, verifs } = etat;
+  const et = etapes[Math.min(etape, etapes.length - 1)];
+  const tache = et.tache;
+  const TXT = '#0f172a', TXT2 = '#334155', BORDER = '#cbd5e1';
+  const btn = (actif, c = '#0284c7') => ({ padding: '7px 14px', borderRadius: 8, cursor: 'pointer',
+    fontWeight: 700, fontSize: 14, border: `1.5px solid ${actif ? c : BORDER}`,
+    background: actif ? c : 'white', color: actif ? 'white' : TXT2 });
+  const maj = f => setEtat(e => ({ ...e, ...f(e) }));
+  const setRep = v => maj(e => ({ reps: { ...e.reps, [etape]: v }, verifs: { ...e.verifs, [etape]: false } }));
+  const verifier = () => maj(e => ({ verifs: { ...e.verifs, [etape]: true } }));
+  const juste = (() => {
+    if (!tache) return true;
+    if (tache.type === 'action') return !!tache.ok;
+    if (tache.type === 'qcm') return reps[etape] === tache.bonne;
+    const x = lireNombre(reps[etape]);
+    return tache.vrai != null && isFinite(x) && proche(x, tache.vrai, tache.tol);
+  })();
+  const verifie = !!verifs[etape];
+  const reussie = tache && tache.type === 'action' ? !!tache.ok : verifie && juste;
+  const vuRep = !!reps[`vu${etape}`];
+  const peutSuivre = !tache || reussie || vuRep;
+  const piege = () => {
+    const x = lireNombre(reps[etape]);
+    if (!isFinite(x)) return 'Entrez une valeur numérique (virgule ou point).';
+    const pg = (tache.pieges || []).find(([v]) => proche(x, v, Math.max(tache.tol, 0.04)));
+    if (pg) return pg[1];
+    if (tache.vrai && (proche(x, tache.vrai * 1000, 0.05) || proche(x, tache.vrai / 1000, 0.05))) return 'Facteur 1000 : vérifiez les unités.';
+    return null;
+  };
+  return (
+    <div style={{ background: 'white', borderRadius: 10, padding: '10px 12px', border: `2px solid ${ORANGE_GUIDE}`,
+      display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, color: TXT2, fontWeight: 700 }}>
+          <span>Étape {etape + 1} / {etapes.length}</span>
+          {etape > 0 && <button onClick={() => maj(() => ({ etape: 0 }))} style={{ background: 'none', border: 'none', color: TXT2,
+            cursor: 'pointer', textDecoration: 'underline', fontSize: 12 }}>revenir au début</button>}
+        </div>
+        <div style={{ height: 6, background: '#e2e8f0', borderRadius: 3, marginTop: 4 }}>
+          <div style={{ width: `${(etape + 1) / etapes.length * 100}%`, height: '100%', background: ORANGE_GUIDE, borderRadius: 3, transition: 'width 0.3s' }}/>
+        </div>
+      </div>
+      <div style={{ fontSize: 18, fontWeight: 700, color: TXT }}>{et.titre}</div>
+      <div style={{ fontSize: 15, color: TXT, lineHeight: 1.6 }}>{et.texte}</div>
+      {tache && tache.type === 'action' && (
+        <div>
+          {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}</div>
+            : tache.label && !tache.ok && <button onClick={tache.faire} disabled={!!tache.attente} style={btn(true)}>{tache.label}</button>}
+          {tache.consigne && <div style={{ fontSize: 14, fontWeight: 700, color: TXT, marginTop: 6, whiteSpace: 'pre-wrap' }}>{tache.consigne}</div>}
+          {tache.attente && <div style={{ fontSize: 14, color: TXT2, marginTop: 6 }}>{tache.attente}</div>}
+          {tache.ok && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}>✅ C'est fait !</div>}
+        </div>
+      )}
+      {tache && tache.type === 'qcm' && (
+        <div>
+          <div style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{tache.q}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            {tache.options.map((o, i) => <button key={i} onClick={() => setRep(i)}
+              style={{ ...btn(reps[etape] === i, '#0ea5e9'), padding: '6px 10px', textAlign: 'left' }}>{o}</button>)}
+          </div>
+        </div>
+      )}
+      {tache && tache.type === 'num' && (
+        <div>
+          <div style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{tache.q}</div>
+          {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}</div> : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <input value={reps[etape] ?? ''} placeholder="?" aria-label="Votre réponse"
+                onChange={x => setRep(x.target.value)} onKeyDown={x => { if (x.key === 'Enter') verifier(); }}
+                style={{ fontSize: 15, padding: '4px 8px', border: `1.5px solid ${BORDER}`, borderRadius: 6, width: 130, color: TXT }}/>
+              <span style={{ fontSize: 14, color: TXT2 }}>{tache.unite}</span>
+            </div>
+          )}
+          {tache.aide && !verifie && <div style={{ fontSize: 12.5, color: TXT2, marginTop: 4 }}>{tache.aide}</div>}
+        </div>
+      )}
+      {tache && tache.type !== 'action' && !tache.bloque && (
+        <div>
+          {!reussie && <button onClick={verifier} style={btn(true, '#16a34a')}>✓ Vérifier</button>}
+          {verifie && juste && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}>
+            ✅ Bravo ! <span style={{ fontWeight: 400, color: TXT }}>{tache.expl}</span></div>}
+          {verifie && !juste && (
+            <div style={{ marginTop: 6 }}>
+              <div style={{ fontSize: 14, color: '#b91c1c', fontWeight: 700 }}>❌ Pas encore.</div>
+              {tache.type === 'num' && piege() && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed',
+                border: '1px solid #fdba74', borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{piege()}</div>}
+              {vuRep ? (
+                <div style={{ fontSize: 13.5, color: TXT2, marginTop: 4 }}>
+                  {tache.type === 'num' ? `Réponse attendue : ${sci(tache.vrai)} ${tache.unite}` : `Réponse : ${tache.options[tache.bonne]}. ${tache.expl || ''}`}
+                </div>
+              ) : (
+                <button onClick={() => maj(e => ({ reps: { ...e.reps, [`vu${etape}`]: true } }))} style={{ fontSize: 12.5, marginTop: 4,
+                  background: 'none', border: 'none', color: TXT2, textDecoration: 'underline', cursor: 'pointer', padding: 0 }}>voir la réponse</button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+        <button onClick={() => maj(e => ({ etape: Math.max(0, e.etape - 1) }))} disabled={etape === 0}
+          style={{ ...btn(false), opacity: etape === 0 ? 0.4 : 1 }}>◀ Précédent</button>
+        {etape < etapes.length - 1 ? (
+          <button onClick={() => maj(e => ({ etape: e.etape + 1 }))} disabled={!peutSuivre}
+            style={{ ...btn(peutSuivre, ORANGE_GUIDE), opacity: peutSuivre ? 1 : 0.45 }}>Suivant ▶</button>
+        ) : fin}
+      </div>
+    </div>
+  );
+}

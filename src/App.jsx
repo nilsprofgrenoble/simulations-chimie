@@ -5,6 +5,10 @@ import { BeerLambert1G, BeerLambertBTS } from "./simulations/BeerLambert";
 import { SimulationBernoulli } from "./simulations/Bernoulli";
 import { SimulationHydrogene } from "./simulations/Hydrogene";
 import { SimulationProduction1 } from "./simulations/Production1";
+import { SimulationProduction2 } from "./simulations/Production2";
+import { SimulationProduction3 } from "./simulations/Production3";
+import { SimulationTransport } from "./simulations/Transport";
+import { SimulationStockage } from "./simulations/Stockage";
 import { SimulationCLHP } from "./simulations/CLHP";
 import { Simulation8 } from "./simulations/ChaineMesure";
 import { Simulation7 } from "./simulations/Cristallisation";
@@ -43,10 +47,18 @@ const SIMULATIONS = [
     component: SimulationAptitude },
   { id:17, label:"Circuit hydraulique", niveau:"TSTL", icon:"🚰", color:"#0284c7",
     component: SimulationBernoulli },
-  { id:18, label:"Atelier Hydrogène", niveau:"ES", icon:"💧", color:"#16a34a",
-    component: SimulationHydrogene },
   { id:19, label:"Production 1 · Turbine Pelton", niveau:"ES", icon:"🌊", color:"#0284c7",
     component: SimulationProduction1 },
+  { id:20, label:"Production 2 · Banc Pelton", niveau:"ES", icon:"⚙️", color:"#7c3aed",
+    component: SimulationProduction2 },
+  { id:21, label:"Production 3 · Au fil de l'eau", niveau:"ES", icon:"🏞️", color:"#0891b2",
+    component: SimulationProduction3 },
+  { id:22, label:"Transport · Réseau électrique", niveau:"ES", icon:"🗼", color:"#7c3aed",
+    component: SimulationTransport },
+  { id:23, label:"Stockage · Batteries", niveau:"ES", icon:"🔋", color:"#2563eb",
+    component: SimulationStockage },
+  { id:18, label:"Hydrogène · Électrolyse et pile", niveau:"ES", icon:"💧", color:"#16a34a",
+    component: SimulationHydrogene },
 ];
 
 const NIVEAUX = [
@@ -98,8 +110,12 @@ function PageAccueil({ onStart }) {
       ]},
     ]},
     { niveau:"Energy@School", color:"#16a34a", sims:[
-      { icon:"💧", label:"Atelier Hydrogène", desc:"Préparer la journée à l'ENSE3 : électrolyse de l'eau, pile à combustible, rendements et dimensionnement d'une pile." },
       { icon:"🌊", label:"Production 1 · Turbine Pelton", desc:"Conduite forcée, turbine Pelton et alternateur : puissance hydraulique, rendement, oscilloscope et vitesse de l'auget." },
+      { icon:"⚙️", label:"Production 2 · Banc Pelton", desc:"Turbine Pelton freinée (banc HM 150.19) : couple, puissance mécanique, rendement et vitesse optimale." },
+      { icon:"🏞️", label:"Production 3 · Au fil de l'eau", desc:"Canal et roue à aubes : débit à la balance, puissance de l'eau, alternateur triphasé, rendement." },
+      { icon:"🗼", label:"Transport · Réseau électrique", desc:"Transformateurs et câbles : régler la tension de la ligne et choisir la section des câbles pour perdre le moins d'énergie." },
+      { icon:"🔋", label:"Stockage · Batteries", desc:"Ce qui se passe dans une batterie Li-ion en charge et en décharge, puis assembler des cellules pour un réveil, un téléphone, un vélo ou une voiture." },
+      { icon:"💧", label:"Hydrogène · Électrolyse et pile", desc:"De l'eau à l'hydrogène, puis le banc de la pile à combustible : électrolyse, rendements et dimensionnement d'une pile." },
     ]},
   ];
 
