@@ -1,0 +1,42 @@
+Copyright (c) 2026 Nils Aronssohn
+
+Ce dépôt contient le code source et le contenu pédagogique du site
+"Simulations de chimie-physique" (nilsprofgrenoble.github.io/simulations-chimie).
+
+Ce travail est mis à disposition sous licence Creative Commons
+Attribution - Pas d'Utilisation Commerciale - Pas de Modification 4.0
+International (CC BY-NC-ND 4.0).
+
+Vous êtes autorisé à :
+  - Consulter, utiliser et partager ce site et son contenu,
+    y compris dans un cadre scolaire ou universitaire,
+  - à condition de citer l'auteur (Nils Aronssohn, Lycée Argouges,
+    Grenoble) et de faire un lien vers le site d'origine.
+
+Vous n'êtes PAS autorisé à :
+  - Utiliser ce travail à des fins commerciales,
+  - Modifier, adapter, traduire ou redistribuer une version modifiée
+    de ce code ou des simulations qu'il contient,
+  - Republier tout ou partie de ce code sur un autre site ou dépôt
+    sans l'autorisation explicite de l'auteur.
+
+Texte complet de la licence :
+https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr
+
+---
+
+This repository contains the source code and educational content of the
+website "Simulations de chimie-physique" (nilsprofgrenoble.github.io/simulations-chimie).
+
+This work is licensed under a Creative Commons Attribution-NonCommercial-
+NoDerivatives 4.0 International License (CC BY-NC-ND 4.0).
+
+You are free to view, use, and share this site and its content, including
+for educational purposes, as long as you credit the author (Nils Aronssohn,
+Lycée Argouges, Grenoble) and link back to the original site.
+
+You may NOT use this work commercially, modify or create derivative works
+from this code or its simulations, or republish any part of it elsewhere
+without the author's explicit permission.
+
+Full license text: https://creativecommons.org/licenses/by-nc-nd/4.0/

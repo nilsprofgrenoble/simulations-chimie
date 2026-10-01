@@ -504,6 +504,16 @@ export default function App() {
                 <ActiveComponent key={activeId} plotlyReady={plotlyReady} />
               </div>}
         </div>
+        <div style={{ textAlign: "center", fontSize: "0.78rem", color: "#94a3b8",
+          padding: "18px 12px 8px", borderTop: "1px solid #e2e8f0", marginTop: 24 }}>
+          © {new Date().getFullYear()} Nils Aronssohn — Lycée Argouges, Grenoble ·
+          {" "}
+          <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr" target="_blank"
+            rel="noopener noreferrer" style={{ color: "inherit" }}>
+            CC BY-NC-ND 4.0
+          </a>
+          {" "}· libre d'accès, reproduction et modification non autorisées
+        </div>
       </main>
     </div>
   );
