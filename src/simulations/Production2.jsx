@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant } from "../commun";
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER PRODUCTION 2
@@ -47,7 +47,7 @@ const COUL = { eau: '#2563eb', meca: '#7c3aed', frein: '#dc2626', chaleur: '#ea5
 
 export function SimulationProduction2() {
   const [mode, setMode] = useState('guide');
-  const [guide, setGuide] = useState({ etape: 0, reps: {}, verifs: {} });
+  const [guide, setGuide] = useEtatPersistant('es1-production2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true, points: true });
   const [qL, setQL] = useState(15);
   const [F1, setF1] = useState(0);

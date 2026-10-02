@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant } from "../commun";
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER PRODUCTION 1
@@ -63,7 +63,7 @@ const nomCharge = R => (R === 0 ? 'court-circuit' : R === Infinity ? 'circuit ou
 
 export function SimulationProduction1() {
   const [mode, setMode] = useState('guide');
-  const [guide, setGuide] = useState({ etape: 0, reps: {}, verifs: {} });
+  const [guide, setGuide] = useEtatPersistant('es1-production1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [vus, setVus] = useState({ co: false, cc: false });
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true, points: true });
   const [ouv, setOuv] = useState(80);                 // ouverture du robinet (%)

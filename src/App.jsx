@@ -3,12 +3,8 @@ import { SimulationAptitude } from "./simulations/Aptitude";
 import { Simulation1 } from "./simulations/Avancement";
 import { BeerLambert1G, BeerLambertBTS } from "./simulations/BeerLambert";
 import { SimulationBernoulli } from "./simulations/Bernoulli";
-import { SimulationHydrogene } from "./simulations/Hydrogene";
-import { SimulationProduction1 } from "./simulations/Production1";
-import { SimulationProduction2 } from "./simulations/Production2";
-import { SimulationProduction3 } from "./simulations/Production3";
-import { SimulationTransport } from "./simulations/Transport";
-import { SimulationStockage } from "./simulations/Stockage";
+import { BandeauContexte } from "./commun";
+import { CONTEXTES } from "./contextes";
 import { SimulationCLHP } from "./simulations/CLHP";
 import { Simulation8 } from "./simulations/ChaineMesure";
 import { Simulation7 } from "./simulations/Cristallisation";
@@ -25,6 +21,8 @@ import { Simulation3 } from "./simulations/TitragesElectrochimiques";
 // ============================================================
 //  MENU — modifiez les noms et icônes ici
 // ============================================================
+
+const ENERGY_URL = "https://nilsprofgrenoble.github.io/energy-at-school/";
 
 const SIMULATIONS = [
   { id: 1, label: "Avancement d'une réaction", icon: "⚗️", color: "#2a9d8f", component: Simulation1, niveau: "1G" },
@@ -47,25 +45,12 @@ const SIMULATIONS = [
     component: SimulationAptitude },
   { id:17, label:"Circuit hydraulique", niveau:"TSTL", icon:"🚰", color:"#0284c7",
     component: SimulationBernoulli },
-  { id:19, label:"Production 1 · Turbine Pelton", niveau:"ES", icon:"🌊", color:"#0284c7",
-    component: SimulationProduction1 },
-  { id:20, label:"Production 2 · Banc Pelton", niveau:"ES", icon:"⚙️", color:"#7c3aed",
-    component: SimulationProduction2 },
-  { id:21, label:"Production 3 · Au fil de l'eau", niveau:"ES", icon:"🏞️", color:"#0891b2",
-    component: SimulationProduction3 },
-  { id:22, label:"Transport · Réseau électrique", niveau:"ES", icon:"🗼", color:"#7c3aed",
-    component: SimulationTransport },
-  { id:23, label:"Stockage · Batteries", niveau:"ES", icon:"🔋", color:"#2563eb",
-    component: SimulationStockage },
-  { id:18, label:"Hydrogène · Électrolyse et pile", niveau:"ES", icon:"💧", color:"#16a34a",
-    component: SimulationHydrogene },
 ];
 
 const NIVEAUX = [
   { label: "1G",   key: "1G",   color: "#2a9d8f" },
   { label: "TSTL", key: "TSTL", color: "#2a6099" },
   { label: "BTS",  key: "BTS",  color: "#6a4c93" },
-  { label: "Energy@School", key: "ES", color: "#16a34a" },
 ];
 
 // ============================================================
@@ -109,14 +94,6 @@ function PageAccueil({ onStart }) {
         { icon:"🎨", label:"Séchage d'une peinture", desc:"CPV, CPVC, extrait sec et animation du séchage d'un film de peinture." },
       ]},
     ]},
-    { niveau:"Energy@School", color:"#16a34a", sims:[
-      { icon:"🌊", label:"Production 1 · Turbine Pelton", desc:"Conduite forcée, turbine Pelton et alternateur : puissance hydraulique, rendement, oscilloscope et vitesse de l'auget." },
-      { icon:"⚙️", label:"Production 2 · Banc Pelton", desc:"Turbine Pelton freinée (banc HM 150.19) : couple, puissance mécanique, rendement et vitesse optimale." },
-      { icon:"🏞️", label:"Production 3 · Au fil de l'eau", desc:"Canal et roue à aubes : débit à la balance, puissance de l'eau, alternateur triphasé, rendement." },
-      { icon:"🗼", label:"Transport · Réseau électrique", desc:"Transformateurs et câbles : régler la tension de la ligne et choisir la section des câbles pour perdre le moins d'énergie." },
-      { icon:"🔋", label:"Stockage · Batteries", desc:"Ce qui se passe dans une batterie Li-ion en charge et en décharge, puis assembler des cellules pour un réveil, un téléphone, un vélo ou une voiture." },
-      { icon:"💧", label:"Hydrogène · Électrolyse et pile", desc:"De l'eau à l'hydrogène, puis le banc de la pile à combustible : électrolyse, rendements et dimensionnement d'une pile." },
-    ]},
   ];
 
   return (
@@ -142,6 +119,18 @@ function PageAccueil({ onStart }) {
         </button>
       </div>
 
+      {/* Lien vers le site Energy@School */}
+      <a href={ENERGY_URL} style={{...cardA, display:"flex", alignItems:"center", gap:16, textDecoration:"none",
+        borderColor:"#ea580c55", background:"linear-gradient(135deg, #ea580c12, #16a34a12)"}}>
+        <div style={{fontSize:36}}>⚡</div>
+        <div style={{flex:1, textAlign:"left"}}>
+          <div style={{fontSize:16, fontWeight:800, color:"#222"}}>Energy@School a désormais son propre site</div>
+          <div style={{fontSize:13.5, color:"#555", lineHeight:1.5}}>Production, transport, stockage de l'énergie et hydrogène :
+            les simulations pour préparer la journée à Grenoble INP – Ense³.</div>
+        </div>
+        <div style={{fontSize:20, color:"#ea580c", fontWeight:800}}>→</div>
+      </a>
+
       {/* Simulations par niveau */}
       {simulations.map(({niveau, color, sims, sousMenus}) => (
         <div key={niveau}>
@@ -149,7 +138,7 @@ function PageAccueil({ onStart }) {
           <div style={{display:"flex", alignItems:"center", gap:10, marginBottom:12}}>
             <div style={{height:3, width:28, borderRadius:2, background:color}}/>
             <span style={{fontSize:13, fontWeight:700, color, textTransform:"uppercase",
-              letterSpacing:"0.1em"}}>{niveau === "Energy@School" ? "Energy@School · ENSE3" : `Niveau ${niveau}`}</span>
+              letterSpacing:"0.1em"}}>{`Niveau ${niveau}`}</span>
             <div style={{flex:1, height:1, background:"#eee"}}/>
           </div>
 
@@ -248,6 +237,8 @@ export default function App() {
     if (simParam) {
       const id = parseInt(simParam);
       if (SIMULATIONS.find(s => s.id === id)) return id;
+      const ancien = { 18: 'hydrogene', 19: 'production-1', 20: 'production-2', 21: 'production-3', 22: 'transport', 23: 'stockage', 24: '' };
+      if (id in ancien) window.location.replace(ancien[id] ? `${ENERGY_URL}?atelier=${ancien[id]}` : ENERGY_URL);
     }
     return 0;
   };
@@ -255,7 +246,7 @@ export default function App() {
   const [activeId, setActiveId] = useState(getInitialId);
   const active = SIMULATIONS.find(s => s.id === activeId) || SIMULATIONS[0];
   const ActiveComponent = active.component;
-  const [expanded, setExpanded] = useState({ "1G": true, "TSTL": true, "BTS": true, "ES": true });
+  const [expanded, setExpanded] = useState({ "1G": true, "TSTL": true, "BTS": true });
   // Sous-groupes du menu BTS (Analyse, Formulation) : un seul état pour tous,
   // déclaré ici car React interdit un useState dans une boucle ou une condition.
   const [sgOuverts, setSgOuverts] = useState({});
@@ -433,6 +424,10 @@ export default function App() {
               </div>
             );
           })}
+          <a href={ENERGY_URL} style={{ display: "block", margin: "14px 10px 4px", padding: "9px 12px", borderRadius: 8,
+            border: "1.5px solid #ea580c", color: "#ea580c", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+            ⚡ Energy@School ↗
+          </a>
         </nav>
 
         <div style={{paddingTop:"1rem"}}>
@@ -501,6 +496,7 @@ export default function App() {
             : <div style={{ textAlign: "left" }}>
                 {/* Le fichier App.css du modèle Vite centre tout le texte (#root) : on rétablit l'alignement
                     à gauche pour les simulations ; la page d'accueil garde sa mise en page centrée. */}
+                <BandeauContexte key={`b${activeId}`} id={activeId} contexte={CONTEXTES[activeId]} couleur={active.color} />
                 <ActiveComponent key={activeId} plotlyReady={plotlyReady} />
               </div>}
         </div>

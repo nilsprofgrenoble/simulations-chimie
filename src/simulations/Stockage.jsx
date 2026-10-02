@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant } from "../commun";
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER STOCKAGE
@@ -45,8 +45,8 @@ const COUL = { neg: '#dc2626', pos: '#64748b', li: '#2563eb', anion: '#7c3aed', 
 export function SimulationStockage() {
   const [atelier, setAtelier] = useState(1);
   const [mode, setMode] = useState('guide');
-  const [guide1, setGuide1] = useState({ etape: 0, reps: {}, verifs: {} });
-  const [guide2, setGuide2] = useState({ etape: 0, reps: {}, verifs: {} });
+  const [guide1, setGuide1] = useEtatPersistant('es1-stockage-a1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const [guide2, setGuide2] = useEtatPersistant('es1-stockage-a2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true, assemblage: true, missions: true });
 
   // ── Atelier 1 ──

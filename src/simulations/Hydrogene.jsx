@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant } from "../commun";
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER HYDROGÈNE (ENSE3)
@@ -78,8 +78,8 @@ const MODULES = [
 export function SimulationHydrogene() {
   const [atelier, setAtelier] = useState(1);        // 1 : maquette, 2 : banc
   const [mode, setMode] = useState('guide');        // 'guide' | 'explore' | 'defi'
-  const [guide1, setGuide1] = useState({ etape: 0, reps: {}, verifs: {} });
-  const [guide2, setGuide2] = useState({ etape: 0, reps: {}, verifs: {} });
+  const [guide1, setGuide1] = useEtatPersistant('es1-hydrogene-a1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const [guide2, setGuide2] = useEtatPersistant('es1-hydrogene-a2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [releveG, setReleveG] = useState(null);
   const [modulesVus, setModulesVus] = useState([]);
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true, module: true });

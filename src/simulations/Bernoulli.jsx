@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { cardStyle } from "../commun";
+import { cardStyle, CarteParcours, useEtatPersistant, ORANGE_GUIDE, lireNombre } from "../commun";
 
 // ====================================================
 // SIM 17 — THÉORÈME DE BERNOULLI (TSTL)
@@ -329,7 +329,10 @@ export function bernCorrection(ex) {
 }
 
 export function SimulationBernoulli({ plotlyReady }) {
-  const [mode, setMode] = useState('explore'); // 'explore' | 'exercice'
+  const [mode, setMode] = useState('guide');   // 'guide' | 'explore' | 'exercice' (le défi)
+  const [guide, setGuide] = useEtatPersistant('bern-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const [termesVus, setTermesVus] = useState({});
+  const [coudesDepart, setCoudesDepart] = useState(null);   // nombre de coudes en arrivant sur l'étape des pertes
   const [dz, setDz] = useState(5);
   const [qvLh, setQvLh] = useState(600);
   const [dMm, setDMm] = useState(16);
@@ -339,7 +342,7 @@ export function SimulationBernoulli({ plotlyReady }) {
   const [impose, setImpose] = useState('debit'); // 'debit' | 'pompe'
   const [pabs, setPabs] = useState(20);          // W, si la pompe est imposée
   // Terme survolé : 'p' | 'zA' | 'vA' | 'pompe' | 'pertes' | 'zB' | 'vB' | null
-  const [survol, setSurvol] = useState(null);
+  const [survolU, setSurvolU] = useState(null);
   const [ouverts, setOuverts] = useState({ reglages: true, resultats: false, detail: false, enonce: false });
 
   // Mode exercice
@@ -375,7 +378,7 @@ export function SimulationBernoulli({ plotlyReady }) {
     const c = bernLireCode(codeSaisi);
     if (c) demarrerExo(c.niveau, c.graine); else setCodeErreur(true);
   }
-  function changerMode(m) { setMode(m); setSurvol(null); }
+  function changerMode(m) { setMode(m); setSurvolU(null); if (m === 'guide') setImpose('debit'); }
   function ouvrirCorrection() {
     if (profMdp !== BERN_MDP_PROF) { setProfErreur('Mot de passe incorrect.'); return; }
     const c = bernLireCode(profCode);
@@ -388,14 +391,116 @@ export function SimulationBernoulli({ plotlyReady }) {
   const Vx = exo ? exo.V : null;
   const sit = enExo ? exo.situation : 'base';
   const termine = enExo && !!valides[3];
-  const afficherBilan = mode === 'explore' || termine;
-  const simplifie = mode === 'explore' || !!valides[1];   // carte d'identité validée
+  const commeExplore = mode !== 'exercice';                // le parcours guidé montre tout, comme l'exploration
+  const afficherBilan = commeExplore || termine;
+  const simplifie = commeExplore || !!valides[1];   // carte d'identité validée
 
   // Ce que la situation implique pour la relation de Bernoulli
   const pressionsAtm = sit !== 'pression' && sit !== 'aspiration';
   const cinAnnulees = sit === 'aspiration';                // v_A = v_B (même tuyau)
   const cinA = sit === 'colonne';                          // ½·ρ·v_A² non nul
   const cinB = sit !== 'surface' && !cinAnnulees;          // ½·ρ·v_B² à calculer
+
+  // ════════════════ PARCOURS GUIDÉ ════════════════
+  const enGuide = mode === 'guide';
+  const etapeG = guide.etape;
+  const vuG = k => !enGuide || etapeG >= k;
+  const kpa = x => x / 1000;
+  const vusP = !!termesVus.p, vusZ = !!(termesVus.zA || termesVus.zB), vusV = !!(termesVus.vA || termesVus.vB);
+  const ETAPES_GUIDE = [
+    { titre: 'Pomper de l’eau vers un réservoir plus haut', survol: null,
+      texte: <>Une pompe aspire l'eau d'un grand réservoir <strong>A</strong>, ouvert à l'air libre, et la refoule par un tuyau vers un
+        réservoir <strong>B</strong> situé {bernFmt(dz, 0)} m plus haut. Quelle puissance faut-il à la pompe ? Pour le savoir, on suit
+        l'énergie de l'eau de A jusqu'à B : c'est ce que dit la <strong>relation de Bernoulli</strong>, affichée en haut de la page.</>, tache: null },
+    { titre: 'Les trois formes d’énergie de l’eau', survol: null,
+      texte: <>Chaque mètre cube d'eau transporte de l'énergie sous trois formes : sa <strong>pression</strong> P, son
+        <strong> altitude</strong> (ρ·g·z) et sa <strong>vitesse</strong> (½·ρ·v²). Chaque terme est en pascals (1 Pa = 1 J/m³).
+        Touchez ou survolez un terme de pression, un terme d'altitude et un terme de vitesse dans la relation : il s'allume sur le schéma.</>,
+      tache: { type: 'action', ok: vusP && vusZ && vusV, consigne: `${vusP ? '✅' : '⬜'} pression   ${vusZ ? '✅' : '⬜'} altitude   ${vusV ? '✅' : '⬜'} vitesse` } },
+    { titre: 'Le point A', survol: 'vA',
+      texte: <>Le point A est à la surface du réservoir A : la pression y vaut P<sub>atm</sub> (réservoir ouvert), et on prend
+        cette surface comme origine des altitudes (z<sub>A</sub> = 0).</>,
+      tache: { type: 'qcm', q: <>Pourquoi peut-on écrire v<sub>A</sub> ≈ 0 ?</>,
+        options: ['Le réservoir est très large : sa surface ne descend que très lentement', 'Il n’y a pas de pompe dans le réservoir', 'L’eau est toujours immobile à l’entrée d’un tuyau'], bonne: 0,
+        expl: 'Le débit est le même partout, mais la section du réservoir est immense devant celle du tuyau : v = Q / S y est quasi nulle.' } },
+    { titre: 'Le point B', survol: 'p',
+      texte: <>Le point B est la sortie du tuyau, au-dessus du réservoir B : l'eau en sort en jet, à l'altitude z<sub>B</sub> = Δz,
+        avec la vitesse qu'elle avait dans le tuyau.</>,
+      tache: { type: 'qcm', q: 'Que vaut la pression en B ?', options: ['P_atm : le jet sort à l’air libre', 'Zéro', 'La pression de la pompe'], bonne: 0,
+        expl: 'Comme P_A = P_B = P_atm, les deux termes de pression se compensent : ils sont barrés dans la relation.' } },
+    { titre: 'La vitesse dans le tuyau', survol: 'vB',
+      texte: <>Les réglages sont apparus. Le débit vaut Q<sub>V</sub> = <strong>{bernFmt(qvEff, 0)} L/h</strong> et le diamètre intérieur
+        du tuyau D = <strong>{dMm} mm</strong>. On a v = Q<sub>V</sub> / S, avec S = π·D² / 4 ; attention aux unités (1 L/h = 1/3 600 000 m³/s).</>,
+      tache: { type: 'num', q: 'Vitesse de l’eau dans le tuyau', unite: 'm/s', vrai: r.v, tol: 0.03,
+        pieges: [[r.v * 4, 'S = π·D²/4 : n’oubliez pas le 4.'], [r.v / 4, 'S = π·D²/4, avec D le diamètre (et non le rayon).'], [r.v * 1000, 'Convertissez le débit en m³/s.'], [r.v * 3600, 'Convertissez le débit en m³/s : divisez aussi par 3600.']] } },
+    { titre: 'Les pertes de charge', survol: 'pertes',
+      texte: <>En frottant sur les parois, et à chaque coude, vanne ou filtre, l'eau perd de l'énergie : ce sont les <strong>pertes de
+        charge</strong> ΔP<sub>charge</sub>. Dans les réglages (« Géométrie du circuit », puis « Singularités »), ajoutez au moins deux coudes, et regardez la partie
+        hachurée du bilan grandir.</>,
+      tache: { type: 'action', ok: coudesDepart != null && n.coude >= Math.max(6, coudesDepart + 2),
+        consigne: `Coudes : ${n.coude} / ${coudesDepart == null ? 6 : Math.max(6, coudesDepart + 2)}` } },
+    { titre: 'Où part l’énergie perdue ?', survol: 'pertes',
+      texte: <>Les pertes de charge valent ici {bernFmt(kpa(r.dpCharge), 2)} kPa.</>,
+      tache: { type: 'qcm', q: 'Que devient cette énergie ?', options: ['Elle est transformée en chaleur par les frottements', 'Elle disparaît', 'Elle est stockée dans le tuyau'], bonne: 0 } },
+    { titre: 'Le bilan en image', survol: null,
+      texte: <>Le bilan, à droite du schéma, empile les termes de chaque membre de la relation.</>,
+      tache: { type: 'qcm', q: 'Pourquoi les deux colonnes ont-elles toujours la même hauteur ?',
+        options: ['L’énergie se conserve : ce qu’il y a en A, plus l’apport de la pompe, moins les pertes, arrive en B', 'C’est un réglage du dessin', 'Parce que le débit est constant'], bonne: 0 } },
+    { titre: 'L’énergie d’altitude', survol: 'zB',
+      texte: <>Calculons les termes un par un. ρ = 1000 kg/m³, g = 9,81 m/s², Δz = {bernFmt(dz, 1)} m.</>,
+      tache: { type: 'num', q: 'ρ·g·z_B, en kPa', unite: 'kPa', vrai: kpa(r.Epot), tol: 0.02,
+        pieges: [[r.Epot, 'La réponse est demandée en kPa : 1 kPa = 1000 Pa.'], [kpa(r.Epot) / BERN_G, 'N’oubliez pas g = 9,81 m/s².']] } },
+    { titre: 'L’énergie de vitesse', survol: 'vB',
+      texte: <>Avec la vitesse calculée plus tôt (v<sub>B</sub> = {bernFmt(r.v, 2)} m/s).</>,
+      tache: { type: 'num', q: '½·ρ·v_B², en kPa', unite: 'kPa', vrai: kpa(r.Ecin), tol: 0.03,
+        pieges: [[kpa(r.Ecin) * 2, 'N’oubliez pas le ½.'], [r.Ecin, 'La réponse est demandée en kPa.'], [kpa(r.Ecin) / r.v, 'La vitesse est au carré.']] } },
+    { titre: 'Ce que doit apporter la pompe', survol: 'pompe',
+      texte: <>Les pressions se compensent, z<sub>A</sub> = 0 et v<sub>A</sub> ≈ 0 : la relation se simplifie en
+        P<sub>hyd</sub>/Q<sub>V</sub> = ρ·g·z<sub>B</sub> + ½·ρ·v<sub>B</sub>² + ΔP<sub>charge</sub>, avec ΔP<sub>charge</sub> = {bernFmt(kpa(r.dpCharge), 2)} kPa.</>,
+      tache: { type: 'num', q: 'P_hyd / Q_V, en kPa', unite: 'kPa', vrai: kpa(r.Wp), tol: 0.03,
+        pieges: [[kpa(r.Epot + r.Ecin - r.dpCharge), 'Les pertes s’ajoutent : la pompe doit aussi les compenser.'], [kpa(r.Epot + r.dpCharge), 'N’oubliez pas l’énergie de vitesse ½·ρ·v_B².']] } },
+    { titre: 'La puissance hydraulique', survol: 'pompe',
+      texte: <>P<sub>hyd</sub>/Q<sub>V</sub> est une énergie par mètre cube (J/m³). Pour obtenir une puissance (J/s = W), on multiplie par le débit
+        en m³/s : Q<sub>V</sub> = {bernFmt(qvEff, 0)} L/h.</>,
+      tache: { type: 'num', q: 'Puissance hydraulique P_hyd', unite: 'W', vrai: r.Phyd, tol: 0.03,
+        pieges: [[kpa(r.Wp) * r.Q, 'P_hyd/Q_V doit être en Pa (et non en kPa).'], [r.Wp * qvEff, 'Le débit doit être en m³/s.']] } },
+    { titre: 'La puissance de la pompe', survol: 'pompe',
+      texte: <>La pompe a un rendement η = {bernFmt(eta, 0)} % : une partie de l'énergie électrique qu'elle reçoit ne passe pas dans l'eau.</>,
+      tache: { type: 'num', q: 'Puissance électrique absorbée par la pompe P_abs', unite: 'W', vrai: r.Pabs, tol: 0.03,
+        pieges: [[r.Phyd * eta / 100, 'C’est P_hyd / η : la pompe absorbe plus qu’elle ne donne à l’eau.']] } },
+    { titre: 'Et si l’on double le débit ?', survol: 'pertes',
+      texte: <>Doublez le débit dans les réglages, et regardez les pertes de charge.</>,
+      tache: { type: 'qcm', q: 'Quand le débit double, les pertes de charge…', options: ['doublent', 'sont multipliées par 3 à 4 environ', 'ne changent pas'], bonne: 1,
+        expl: 'Les pertes augmentent à peu près comme le carré de la vitesse : un tuyau trop petit pour le débit coûte cher en énergie.' } },
+    { titre: 'Le choix du diamètre', survol: 'pertes',
+      texte: <>Revenez à un débit de 600 L/h, puis passez le diamètre de 16 mm à 10 mm.</>,
+      tache: { type: 'qcm', q: 'Avec un tuyau plus fin…', options: ['les pertes de charge sont beaucoup plus grandes', 'les pertes diminuent', 'rien ne change'], bonne: 0,
+        expl: 'La vitesse augmente comme 1/D², et les pertes encore plus vite. C’est pourquoi on investit dans des canalisations assez larges : la pompe consomme ensuite moins chaque jour.' } },
+    { titre: 'Bravo !', survol: null,
+      texte: <>Vous savez faire le bilan d'énergie d'un circuit hydraulique : carte d'identité des points A et B, simplification de la
+        relation de Bernoulli, calcul des termes et de la puissance de la pompe. Le défi propose maintenant des exercices sur quatre
+        niveaux, avec d'autres situations (réservoir fermé, aspiration…). Commencez par le niveau 1.</>, tache: null },
+  ];
+  const etG = ETAPES_GUIDE[Math.min(etapeG, ETAPES_GUIDE.length - 1)];
+  // En parcours guidé, une valeur n'apparaît qu'une fois que l'élève l'a calculée lui-même
+  const ETAPE_DU_TERME = { zB: 8, vB: 9, pompe: 10 };
+  const montreG = id => !enGuide || ETAPE_DU_TERME[id] == null || !!(guide.reussies && guide.reussies[ETAPE_DU_TERME[id]]);
+  const valG = (id, texte) => (montreG(id) ? texte : '?');
+  const survol = survolU ?? (enGuide ? etG.survol : null);
+  function setSurvol(f) {
+    setSurvolU(prev => {
+      const v = typeof f === 'function' ? f(prev) : f;
+      // seuls comptent les termes touchés pendant l'étape « Les trois formes d'énergie »
+      if (v && enGuide && etapeG === 1) setTermesVus(t => (t[v] ? t : { ...t, [v]: true }));
+      return v;
+    });
+  }
+  // En arrivant sur une étape d'action, on repart de zéro : ce qui a été fait avant ne compte pas
+  useEffect(() => {
+    if (!enGuide) return;
+    if (etapeG === 1) setTermesVus({});
+    if (etapeG === 5) setCoudesDepart(n.coude);
+  }, [etapeG, enGuide]);
 
   // ── Survol : relie un terme, sa barre et l'élément du schéma ──
   const ev = id => ({
@@ -976,7 +1081,7 @@ export function SimulationBernoulli({ plotlyReady }) {
     if (!simplifie && (t.barre || t.pression)) return '?';
     if (t.barre) return t.aff;
     if (t.pression) return textePression(t.pression);
-    if (mode === 'explore' || termine) return fmtKpa(t.valeur);
+    if (commeExplore || termine) return montreG(t.id) ? fmtKpa(t.valeur) : '? kPa';
     const c = connu(t.id);
     if (c === 'donne') return `${fmtKpa(t.valeur)} (donné)`;
     return c ? fmtKpa(t.valeur) : '? kPa';
@@ -1030,7 +1135,7 @@ export function SimulationBernoulli({ plotlyReady }) {
         {membre(membreDroite, 'ce qui arrive en B')}
       </div>
       <div style={{ marginTop: 6, fontSize: 11.5, color: TXT2, textAlign: 'center' }}>
-        {afficherBilan && (
+        {afficherBilan && montreG('pompe') && (
           <span style={{ color: TXT, marginRight: 14 }}>
             Membre de gauche : <strong>{fmtKpa(totalGauche)}</strong> ; membre de droite : <strong>{fmtKpa(totalDroite)}</strong>
             {!pressionsAtm && <> (pressions comptées à partir de P<sub>atm</sub>)</>}.
@@ -1137,7 +1242,7 @@ export function SimulationBernoulli({ plotlyReady }) {
           + P<tspan dy="3" fontSize="10">hyd</tspan><tspan dy="-3">/Q</tspan><tspan dy="3" fontSize="10">V</tspan>
         </text>
         <text x={xL - 14} y={(Y(hautG) + Y(baseG)) / 2 + 13} fontSize="14" fontWeight="700" fill={BERN_C.pompe} textAnchor="end">
-          {bernFmt(Wk, 2)}
+          {valG('pompe', bernFmt(Wk, 2))}
         </text>
       </g>
       {segG.map(s => (
@@ -1157,7 +1262,7 @@ export function SimulationBernoulli({ plotlyReady }) {
         <g key={`e${s.id}`} opacity={dim(s.id)}>
           <text x={xR + cw + 6} y={ysD[i]} fontSize="14" fontWeight="700" fill={s.id === 'vB' ? '#b45309' : s.c}>{s.tex}</text>
           <text x={xR + cw + 6} y={ysD[i] + 17} fontSize="14" fontWeight="700" fill={s.id === 'vB' ? '#b45309' : s.c}>
-            {bernFmt(s.val, s.val < 1 ? 3 : 2)}
+            {valG(s.id, bernFmt(s.val, s.val < 1 ? 3 : 2))}
           </text>
         </g>
       ))}
@@ -1246,11 +1351,13 @@ export function SimulationBernoulli({ plotlyReady }) {
       {sousMenu('pompe', 'Pompe (facultatif)', `η = ${eta} %`, (
         <>
           {slider("Rendement η", eta, setEta, 10, 90, 5, "%")}
+          {!enGuide && <>
           <div style={lab}>Ce que l'on impose</div>
           <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
             <button onClick={() => setImpose('debit')} style={petitBtn(impose === 'debit')}>Le débit</button>
             <button onClick={() => setImpose('pompe')} style={petitBtn(impose === 'pompe')}>La puissance</button>
           </div>
+          </>}
           {impose === 'pompe' && slider(<>Puissance absorbée P<sub>abs</sub></>, pabs, setPabs, 5, 500, 5, "W")}
           <div style={{ fontSize: 11.5, color: TXT2, lineHeight: 1.5 }}>
             {impose === 'debit'
@@ -1621,7 +1728,17 @@ export function SimulationBernoulli({ plotlyReady }) {
     </>
   );
 
-  const volet = mode === 'explore'
+  const finParcours = (
+    <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      <button onClick={() => changerMode('explore')} style={btn(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('exercice')} style={btn(true, '#0ea5e9')}>🎯 Défi</button>
+    </span>
+  );
+  const volet = enGuide
+    ? [<CarteParcours key="carte" etapes={ETAPES_GUIDE} etat={guide} setEtat={setGuide} fin={finParcours}/>,
+       vuG(4) && <div key="esp" style={{ height: 8 }}/>,
+       vuG(4) && section('reglages', 'Réglages', reglages)]
+    : mode === 'explore'
     ? [section('reglages', 'Réglages', reglages),
        section('resultats', 'Résultats', resultats),
        section('detail', 'Détail des pertes de charge', detail)]
@@ -1655,9 +1772,10 @@ export function SimulationBernoulli({ plotlyReady }) {
         <h2 style={{ margin: 0, fontSize: 18, color: TXT, fontWeight: 700 }}>
           Circuit hydraulique et relation de Bernoulli
         </h2>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => changerMode('explore')} style={btn(mode === 'explore')}>🔍 Exploration</button>
-          <button onClick={() => changerMode('exercice')} style={btn(mode === 'exercice', '#0ea5e9')}>✏️ Exercice</button>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
+          <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
+          <button onClick={() => changerMode('exercice')} style={btn(mode === 'exercice', '#0ea5e9')}>🎯 Défi (exercices)</button>
         </div>
       </div>
 

@@ -175,9 +175,17 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
     return tache.vrai != null && isFinite(x) && proche(x, tache.vrai, tache.tol);
   })();
   const verifie = !!verifs[etape];
-  const reussie = tache && tache.type === 'action' ? !!tache.ok : verifie && juste;
+  const reussieMaintenant = tache && tache.type === 'action' ? !!tache.ok : verifie && juste;
+  const dejaReussie = !!(etat.reussies && etat.reussies[etape]);
+  const reussie = reussieMaintenant || dejaReussie;
   const vuRep = !!reps[`vu${etape}`];
   const peutSuivre = !tache || reussie || vuRep;
+  // Une étape réussie le reste, même si la page est rechargée et qu'une mesure a disparu
+  useEffect(() => {
+    if (reussieMaintenant && !dejaReussie) setEtat(e => ({ ...e, reussies: { ...(e.reussies || {}), [etape]: true } }));
+  }, [reussieMaintenant, dejaReussie, etape, setEtat]);
+  // Message de reprise, affiché une seule fois quand on retrouve un parcours commencé
+  const [reprise] = useState(() => etape > 0);
   const piege = () => {
     const x = lireNombre(reps[etape]);
     if (!isFinite(x)) return 'Entrez une valeur numérique (virgule ou point).';
@@ -192,13 +200,18 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, color: TXT2, fontWeight: 700 }}>
           <span>Étape {etape + 1} / {etapes.length}</span>
-          {etape > 0 && <button onClick={() => maj(() => ({ etape: 0 }))} style={{ background: 'none', border: 'none', color: TXT2,
+          {etape > 0 && <button onClick={() => setEtat({ etape: 0, reps: {}, verifs: {}, reussies: {} })} style={{ background: 'none', border: 'none', color: TXT2,
             cursor: 'pointer', textDecoration: 'underline', fontSize: 12 }}>revenir au début</button>}
         </div>
         <div style={{ height: 6, background: '#e2e8f0', borderRadius: 3, marginTop: 4 }}>
           <div style={{ width: `${(etape + 1) / etapes.length * 100}%`, height: '100%', background: ORANGE_GUIDE, borderRadius: 3, transition: 'width 0.3s' }}/>
         </div>
       </div>
+      {reprise && etape > 0 && (
+        <div style={{ fontSize: 13, color: '#1e3a8a', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 6, padding: '5px 8px' }}>
+          Vous reprenez votre parcours là où vous l'aviez laissé. Si une mesure a disparu, revenez à l'étape où elle a été faite.
+        </div>
+      )}
       <div style={{ fontSize: 18, fontWeight: 700, color: TXT }}>{et.titre}</div>
       <div style={{ fontSize: 15, color: TXT, lineHeight: 1.6 }}>{et.texte}</div>
       {tache && tache.type === 'action' && (
@@ -233,6 +246,9 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
           {tache.aide && !verifie && <div style={{ fontSize: 12.5, color: TXT2, marginTop: 4 }}>{tache.aide}</div>}
         </div>
       )}
+      {dejaReussie && !reussieMaintenant && (
+        <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700 }}>✅ Étape déjà réussie.</div>
+      )}
       {tache && tache.type !== 'action' && !tache.bloque && (
         <div>
           {!reussie && <button onClick={verifier} style={btn(true, '#16a34a')}>✓ Vérifier</button>}
@@ -263,6 +279,121 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
             style={{ ...btn(peutSuivre, ORANGE_GUIDE), opacity: peutSuivre ? 1 : 0.45 }}>Suivant ▶</button>
         ) : fin}
       </div>
+    </div>
+  );
+}
+
+
+// ============================================================
+//  KIT COMMUN : mémorisation, bandeau de contexte, briques d'interface
+// ============================================================
+
+// useState dont la valeur est gardée sur l'appareil (localStorage) : elle survit au rechargement de la page.
+export function useEtatPersistant(cle, initial) {
+  const [valeur, setValeur] = useState(() => {
+    try {
+      const brut = window.localStorage.getItem(cle);
+      return brut ? JSON.parse(brut) : initial;
+    } catch { return initial; }
+  });
+  useEffect(() => {
+    try { window.localStorage.setItem(cle, JSON.stringify(valeur)); } catch { /* stockage indisponible : on continue sans */ }
+  }, [cle, valeur]);
+  return [valeur, setValeur];
+}
+
+// Bandeau « À propos de cette simulation » : à quoi elle sert, ce qu'on y apprend, par où commencer.
+// Il peut être replié ; ce choix est mémorisé pour chaque simulation.
+export function BandeauContexte({ id, contexte, couleur = '#0284c7' }) {
+  const [replie, setReplie] = useEtatPersistant(`bandeau-replie-${id}`, false);
+  if (!contexte) return null;
+  const TXT = '#0f172a', TXT2 = '#334155';
+  if (replie) return (
+    <button onClick={() => setReplie(false)} style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '0 0 10px',
+      padding: '6px 12px', borderRadius: 8, border: `1.5px solid ${couleur}`, background: 'white', color: couleur,
+      fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
+      ℹ️ Mode d'emploi de cette simulation
+    </button>
+  );
+  const ligneB = (emoji, titre, contenu) => (
+    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+      <span style={{ fontSize: 18, lineHeight: '22px' }}>{emoji}</span>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 12.5, fontWeight: 800, color: couleur, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{titre}</div>
+        <div style={{ fontSize: 14.5, color: TXT, lineHeight: 1.55 }}>{contenu}</div>
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ textAlign: 'left', background: 'white', border: `1.5px solid ${couleur}`, borderLeft: `6px solid ${couleur}`,
+      borderRadius: 10, padding: '12px 14px', margin: '0 0 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontSize: 15.5, fontWeight: 800, color: TXT }}>ℹ️ À propos de cette simulation</span>
+        <button onClick={() => setReplie(true)} style={{ background: 'none', border: 'none', color: TXT2, cursor: 'pointer',
+          fontSize: 13, textDecoration: 'underline' }}>masquer</button>
+      </div>
+      {ligneB('🎯', 'À quoi ça sert', contexte.but)}
+      {ligneB('📚', 'Vous allez apprendre', contexte.apprendre)}
+      {ligneB('👣', 'Par où commencer', (
+        <ol style={{ margin: '2px 0 0', paddingLeft: 20 }}>
+          {contexte.etapes.map((e, k) => <li key={k} style={{ marginBottom: 2 }}>{e}</li>)}
+        </ol>
+      ))}
+      {contexte.niveau && <div style={{ fontSize: 12.5, color: TXT2 }}>Niveau : {contexte.niveau}</div>}
+    </div>
+  );
+}
+
+// Briques d'interface partagées (mêmes styles que les pages Energy@School)
+export const KIT = { txt: '#0f172a', txt2: '#334155', bord: '#cbd5e1', fond: '#f8fafc' };
+export const styleBouton = (actif, c = '#0284c7') => ({ padding: '7px 14px', borderRadius: 8, cursor: 'pointer',
+  fontWeight: 700, fontSize: 14, border: `1.5px solid ${actif ? c : KIT.bord}`,
+  background: actif ? c : 'white', color: actif ? 'white' : KIT.txt2 });
+export const stylePetitBouton = (actif, c) => ({ ...styleBouton(actif, c), padding: '5px 10px', fontSize: 13 });
+export const styleBoite = { background: KIT.fond, borderRadius: 10, padding: '10px 12px', border: `1px solid ${KIT.bord}` };
+
+export function Section({ titre, ouvert, onBascule, children }) {
+  return (
+    <div style={{ border: `1px solid ${KIT.bord}`, borderRadius: 10, background: KIT.fond, marginBottom: 8 }}>
+      <button onClick={onBascule} aria-expanded={!!ouvert}
+        style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: '9px 12px', background: 'none', border: 'none', cursor: 'pointer',
+          fontWeight: 700, fontSize: 15.5, color: KIT.txt, textAlign: 'left' }}>
+        <span>{titre}</span><span style={{ fontSize: 11, color: KIT.txt2 }}>{ouvert ? '▲' : '▼'}</span>
+      </button>
+      {ouvert && <div style={{ padding: '0 12px 12px' }}>{children}</div>}
+    </div>
+  );
+}
+
+export function LigneMesure({ nom, valeur, couleur }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, padding: '5px 0',
+      borderBottom: `1px dashed ${KIT.bord}`, fontSize: 14 }}>
+      <span style={{ color: KIT.txt2, fontWeight: 600 }}>{nom}</span>
+      <span style={{ color: couleur || KIT.txt, fontWeight: 700, fontFamily: 'monospace', whiteSpace: 'nowrap' }}>{valeur}</span>
+    </div>
+  );
+}
+
+export function Curseur({ nom, valeur, onChange, min, max, pas, unite = '', decimales = 0, couleur = '#0284c7' }) {
+  return (
+    <div style={{ marginBottom: 8 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, color: KIT.txt2, fontWeight: 700 }}>
+        <span>{nom}</span><span style={{ color: KIT.txt }}>{fmt(valeur, decimales)} {unite}</span>
+      </div>
+      <input type="range" min={min} max={max} step={pas} value={valeur} onChange={x => onChange(parseFloat(x.target.value))}
+        aria-label={nom} style={{ width: '100%', accentColor: couleur }}/>
+    </div>
+  );
+}
+
+// Les trois boutons de mode, identiques sur toutes les pages
+export function BoutonsModes({ mode, setMode, modes = ['guide', 'explore', 'defi'] }) {
+  const def = { guide: ['🧭 Parcours guidé', ORANGE_GUIDE], explore: ['🔍 Exploration libre', '#334155'], defi: ['🎯 Défi', '#0ea5e9'] };
+  return (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {modes.map(m => <button key={m} onClick={() => setMode(m)} style={styleBouton(mode === m, def[m][1])}>{def[m][0]}</button>)}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant } from "../commun";
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER PRODUCTION 3
@@ -51,7 +51,7 @@ export function SimulationProduction3() {
   const [pesee, setPesee] = useState({ actif: false, t: 0, m: 0, fini: null });
   const [chrono, setChrono] = useState({ actif: false, t: 0, tours: 0, fini: null });
   // Parcours guidé
-  const [guide, setGuide] = useState({ etape: 0, reps: {}, verifs: {} });
+  const [guide, setGuide] = useEtatPersistant('es1-production3', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const etape = guide.etape;
   const [vus, setVus] = useState({ co: false, cc: false });
   const [mission, setMission] = useState(null);

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE } from "../commun";
+import { cardStyle, Graphe, fmt, sci, lireNombre, proche, CarteParcours, Cadre, ORANGE_GUIDE, useEtatPersistant } from "../commun";
 
 // ====================================================
 // ENERGY@SCHOOL — ATELIER TRANSPORT
@@ -50,7 +50,7 @@ const COUL = { gen: '#16a34a', ligne: '#7c3aed', charge: '#ea580c', pertes: '#dc
 
 export function SimulationTransport() {
   const [mode, setMode] = useState('guide');
-  const [guide, setGuide] = useState({ etape: 0, reps: {}, verifs: {} });
+  const [guide, setGuide] = useEtatPersistant('es1-transport', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true, points: true });
   const [m1, setM1] = useState(1);
   const [m2, setM2] = useState(1);
