@@ -8,17 +8,6 @@
 // ============================================================
 
 export const CONTEXTES = {
-  2: {
-    but: "Réaliser virtuellement un titrage à la burette et comprendre ce qui se passe avant, à et après l'équivalence.",
-    apprendre: "La notion d'équivalence, la relation à l'équivalence et la prévision du volume équivalent Véq.",
-    etapes: [
-      "Écrivez l'équation du titrage avec ses coefficients.",
-      "Décrivez la solution titrée (concentration et volume, quantité de matière, ou masse et masse molaire) et la concentration de la solution titrante.",
-      "Versez la solution titrante avec le curseur VB et observez les quantités de chaque espèce.",
-      "Comparez le moment où un réactif disparaît au volume équivalent prévu, affiché sous les réglages.",
-    ],
-    niveau: "1re générale",
-  },
   3: {
     but: "Comprendre les titrages électrochimiques à partir des courbes intensité-potentiel i = f(E), sur l'exemple du dosage des ions Fe²⁺ par les ions Ce⁴⁺.",
     apprendre: "Relier la position des courbes i = f(E) à l'allure des courbes de titrage en potentiométrie (à courant nul ou imposé) et en ampérométrie.",
