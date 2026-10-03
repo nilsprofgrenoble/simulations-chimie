@@ -308,7 +308,7 @@ export function Simulation2() {
         @media (max-width: 900px) { .td-l1 { grid-template-columns: minmax(0, 1fr); } }
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt }}>Titrage direct : le diiode du Lugol</h2>
+        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt }}>Titrage direct</h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
           <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
