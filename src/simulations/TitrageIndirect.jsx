@@ -1,19 +1,19 @@
 import { useState, useEffect, useRef } from "react";
-import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, Cadre, useEtatPersistant, KIT, styleBouton,
+import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE } from "../commun";
 import { Formule } from "./Avancement";
+import { V_BURETTE, seuilVisible, couleurSolution, ContexteBanc, SchemaBurette } from "./titrageCommun";
 
 // ====================================================
-// TITRAGE VOLUMÉTRIQUE (1re spé PC)
+// TITRAGE INDIRECT, OU « EN RETOUR » (1re spé PC)
 // Parcours : DS « Titrage de la vitamine C dans une gélule » — titrage indirect (en retour) :
 //   C₆H₈O₆ + I₂ → C₆H₆O₆ + 2 H⁺ + 2 I⁻ (diiode en excès), puis I₂ + 2 S₂O₃²⁻ → 2 I⁻ + S₄O₆²⁻.
-// Exploration : le banc de titrage (masse, attente, volumes, empois d'amidon) et un titrage pour toute réaction.
+// Exploration : le banc de titrage (masse, attente, volumes, empois d'amidon) et un titrage en retour pour toute réaction.
 // ====================================================
 
 const M_VITC = 176.12;      // g/mol
 const V_FIOLE = 100;        // mL
 const TAU_DEGR = 3.56;      // h : une solution restée 8 h à la lumière garde 10,6 % de sa vitamine C (DS : V₂,ₑ = 19,1 mL)
-const V_BURETTE = 25;       // mL
 
 // ── Modèle du titrage ──
 function modeleTitrage({ m, attente = 0, V0 = 25, V1 = 10, c1 = 0.010, c2 = 0.010 }) {
@@ -30,129 +30,97 @@ function etatErlen(mod, V2) {
   const Vtot = (mod.V0 + mod.V1 + V2) / 1000;
   return { nI2, cI2: nI2 / Vtot, nThioExces: Math.max(0, mod.c2 * V2 / 1000 - 2 * mod.nI2reste) };
 }
-// Concentration de diiode en dessous de laquelle l'œil ne voit plus de couleur (l'empois d'amidon est bien plus sensible)
-const seuilVisible = amidon => (amidon ? 1e-7 : 0.004 * 1.64e-3);
-// Couleur de la solution : diiode orangé → jaune → jaune pâle → incolore ; avec l'empois d'amidon, bleu sombre tant qu'il reste du diiode
-function couleur(cI2, amidon) {
-  const mix = (a, b, t) => a.map((x, k) => Math.round(x + (b[k] - x) * t));
-  const hex = c => `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
-  if (amidon) {
-    const t = Math.min(1, cI2 / 2e-5);                          // l'empois est très sensible : bleu dès des traces
-    return cI2 < 1e-7 ? hex([248, 250, 252]) : hex(mix([186, 198, 255], [30, 27, 75], Math.sqrt(t)));
-  }
-  const a = Math.min(1, cI2 / 1.64e-3);
-  if (a < 0.004) return hex([248, 250, 252]);
-  const pal = [[248, 250, 252], [254, 249, 195], [253, 224, 71], [245, 158, 11], [194, 65, 12]];
-  const x = Math.pow(a, 0.45) * (pal.length - 1), k = Math.min(pal.length - 2, Math.floor(x));
-  return hex(mix(pal[k], pal[k + 1], x - k));
-}
-
-// ════════════════ OUTIL GÉNÉRAL : TITRAGE POUR TOUTE RÉACTION ════════════════
-const COUL_ESP = ['#2563eb', '#dc2626', '#16a34a', '#9333ea', '#ea580c'];
-function OutilTitrageGeneral() {
-  const [titre, setTitre] = useEtatPersistant('titrage-outil-titre', { f: 'Fe2+(aq)', a: 5, mode: 'cV', c: 0.05, V: 20, n: 1e-3, m: 0.1, M: 55.8 });
-  const [titrant, setTitrant] = useEtatPersistant('titrage-outil-titrant', { f: 'MnO4-(aq)', b: 1, c: 0.02 });
-  const [produits, setProduits] = useEtatPersistant('titrage-outil-produits', [{ f: 'Fe3+(aq)', a: 5 }, { f: 'Mn2+(aq)', a: 1 }]);
-  const [VB, setVB] = useState(0);
-  const nA0 = titre.mode === 'cV' ? titre.c * titre.V / 1000 : titre.mode === 'n' ? titre.n : titre.m / titre.M;
-  const Veq = nA0 * titrant.b / titre.a / Math.max(titrant.c, 1e-12) * 1000;       // mL
-  const VBmax = Math.max(1, Math.ceil(Veq * 2));
-  const quant = v => {
-    const x = Math.min(titrant.c * v / 1000 / titrant.b, nA0 / titre.a);           // l'avancement suit le titrant tant qu'il reste du titré
-    return { A: nA0 - titre.a * x, B: titrant.c * v / 1000 - titrant.b * x, P: produits.map(p => p.a * x) };
-  };
-  const q = quant(VB);
-  const especes = [{ f: titre.f, n: q.A, c: COUL_ESP[0] }, { f: titrant.f, n: q.B, c: COUL_ESP[1] },
-    ...produits.map((p, k) => ({ f: p.f, n: q.P[k], c: COUL_ESP[2 + k] }))];
-  const nMax = Math.max(1e-12, nA0, ...produits.map(p => p.a * nA0 / titre.a), quant(VBmax).B);
+// ════════════════ TITRAGE EN RETOUR POUR TOUTE RÉACTION ════════════════
+// Réaction 1 (dans l'erlenmeyer) : a A + r₁ R → … avec R en excès connu.
+// Réaction 2 (titrage) : r₂ R + t T → … : on titre le R restant par le titrant T.
+function OutilTitrageRetour() {
+  const [A, setA] = useEtatPersistant('titrage-retour-A', { f: 'C6H8O6(aq)', a: 1, c: 1.7e-3, V: 25 });
+  const [R, setR] = useEtatPersistant('titrage-retour-R', { f: 'I2(aq)', r1: 1, r2: 1, c: 0.010, V: 10 });
+  const [T, setT] = useEtatPersistant('titrage-retour-T', { f: 'S2O32-(aq)', t: 2, c: 0.010 });
+  const [VT, setVT] = useState(0);
+  const nA = A.c * A.V / 1000, nR0 = R.c * R.V / 1000;
+  const nRreagi = R.r1 / A.a * nA;
+  const enExces = nRreagi < nR0;
+  const nRrest = Math.max(0, nR0 - nRreagi);
+  const Veq = T.t / R.r2 * nRrest / Math.max(T.c, 1e-12) * 1000;
+  const VTmax = Math.max(1, Math.ceil(Veq * 1.6));
+  const nRerlen = v => Math.max(0, nRrest - R.r2 / T.t * T.c * v / 1000);
+  const nTexces = v => Math.max(0, T.c * v / 1000 - T.t / R.r2 * nRrest);
   const inp = { fontSize: 14, padding: '4px 6px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6 };
-  const num = (val, set, label, w = 80) => <input value={val} aria-label={label} onChange={e => { const x = lireNombre(e.target.value); if (isFinite(x) && x >= 0) set(x); }} style={{ ...inp, width: w }}/>;
-  const coef = a => (a === 1 ? '' : `${a} `);
-  // graphique n = f(V)
-  const W = 520, H = 240, g = 56, d = 14, h = 14, b = 40;
-  const X = v => g + v / VBmax * (W - g - d), Y = n => H - b - Math.max(0, n) / nMax * (H - b - h);
-  const pts = k => Array.from({ length: 121 }, (_, i) => { const v = i * VBmax / 120, qq = quant(v); const n = k === 0 ? qq.A : k === 1 ? qq.B : qq.P[k - 2]; return `${X(v).toFixed(1)},${Y(n).toFixed(1)}`; }).join(' ');
+  const nombre = (val, set, label, w = 80) => <input defaultValue={val} aria-label={label} onBlur={e => { const x = lireNombre(e.target.value); if (isFinite(x) && x >= 0) set(x); }}
+    onKeyDown={e => { if (e.key === 'Enter') e.target.blur(); }} style={{ ...inp, width: w }}/>;
+  const entier = (val, set, label) => <input type="number" min={1} max={20} value={val} aria-label={label} onChange={e => set(Math.max(1, parseInt(e.target.value, 10) || 1))} style={{ ...inp, width: 54 }}/>;
+  const formule = (val, set, label) => <input value={val} aria-label={label} onChange={e => set(e.target.value)} style={{ ...inp, flex: 1, minWidth: 0 }}/>;
+  const k = x => (x === 1 ? '' : `${x} `);
+  const W = 520, H = 220, g = 56, d = 14, h = 14, b = 40;
+  const nMaxG = Math.max(1e-12, nRrest, nTexces(VTmax));
+  const X = v => g + v / VTmax * (W - g - d), Y = n => H - b - n / nMaxG * (H - b - h);
+  const courbe = f => Array.from({ length: 121 }, (_, i) => { const v = i * VTmax / 120; return `${X(v).toFixed(1)},${Y(f(v)).toFixed(1)}`; }).join(' ');
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={styleBoite}>
-        <div style={{ fontSize: 22, fontFamily: 'Georgia, serif', color: KIT.txt, textAlign: 'center', padding: '6px 0', overflowX: 'auto' }}>
-          {coef(titre.a)}<Formule texte={titre.f}/> + {coef(titrant.b)}<Formule texte={titrant.f}/> → {produits.map((p, k) => <span key={k}>{k > 0 && ' + '}{coef(p.a)}<Formule texte={p.f}/></span>)}
-        </div>
-        <div style={{ fontSize: 12.5, color: KIT.txt2, textAlign: 'center' }}>Formules au clavier : MnO4- → MnO₄⁻, Fe2+ → Fe²⁺, S2O32- → S₂O₃²⁻. Les espèces spectatrices (H⁺, H₂O…) peuvent être omises.</div>
+        <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Réaction 1, dans l'erlenmeyer (le réactif R est en excès connu)</div>
+        <div style={{ fontSize: 21, fontFamily: 'Georgia, serif', color: KIT.txt, textAlign: 'center', margin: '2px 0 8px' }}>
+          {k(A.a)}<Formule texte={A.f}/> + {k(R.r1)}<Formule texte={R.f}/> → produits</div>
+        <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Réaction 2, le titrage du R restant</div>
+        <div style={{ fontSize: 21, fontFamily: 'Georgia, serif', color: KIT.txt, textAlign: 'center', margin: '2px 0 4px' }}>
+          {k(R.r2)}<Formule texte={R.f}/> + {k(T.t)}<Formule texte={T.f}/> → produits</div>
+        <div style={{ fontSize: 12.5, color: KIT.txt2, textAlign: 'center' }}>Formules au clavier : I2 → I₂, S2O32- → S₂O₃²⁻, MnO4- → MnO₄⁻.</div>
       </div>
-      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
         <div style={styleBoite}>
-          <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Espèce titrée (dans l'erlenmeyer)</div>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 6 }}>
-            <input type="number" min={1} max={20} value={titre.a} aria-label="Coefficient de l'espèce titrée" onChange={e => setTitre(t => ({ ...t, a: Math.max(1, parseInt(e.target.value, 10) || 1) }))} style={{ ...inp, width: 54 }}/>
-            <input value={titre.f} aria-label="Formule de l'espèce titrée" onChange={e => setTitre(t => ({ ...t, f: e.target.value }))} style={{ ...inp, flex: 1 }}/>
-          </div>
-          <div style={{ display: 'flex', gap: 4, marginBottom: 6, flexWrap: 'wrap' }}>
-            {[['cV', 'c et V'], ['n', 'n'], ['mM', 'm et M']].map(([k, t]) => <button key={k} onClick={() => setTitre(x => ({ ...x, mode: k }))} style={stylePetitBouton(titre.mode === k, '#e63946')}>{t}</button>)}
-          </div>
-          {titre.mode === 'cV' && <div style={{ fontSize: 13.5, color: KIT.txt2 }}>c = {num(titre.c, v => setTitre(t => ({ ...t, c: v })), 'Concentration du titré')} mol/L ; V = {num(titre.V, v => setTitre(t => ({ ...t, V: v })), 'Volume du titré', 60)} mL</div>}
-          {titre.mode === 'n' && <div style={{ fontSize: 13.5, color: KIT.txt2 }}>n = {num(titre.n, v => setTitre(t => ({ ...t, n: v })), 'Quantité du titré', 100)} mol</div>}
-          {titre.mode === 'mM' && <div style={{ fontSize: 13.5, color: KIT.txt2 }}>m = {num(titre.m, v => setTitre(t => ({ ...t, m: v })), 'Masse du titré', 70)} g ; M = {num(titre.M, v => setTitre(t => ({ ...t, M: v })), 'Masse molaire du titré', 70)} g/mol</div>}
+          <div style={{ fontWeight: 700, fontSize: 15, color: COUL_R[0], marginBottom: 6 }}>A : l'espèce à doser</div>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>{entier(A.a, v => setA(x => ({ ...x, a: v })), 'Coefficient de A')}{formule(A.f, v => setA(x => ({ ...x, f: v })), 'Formule de A')}</div>
+          <div style={{ fontSize: 13.5, color: KIT.txt2 }}>c = {nombre(A.c, v => setA(x => ({ ...x, c: v })), 'Concentration de A', 90)} mol/L ; V = {nombre(A.V, v => setA(x => ({ ...x, V: v })), 'Volume de A', 56)} mL</div>
+          <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>En vrai, c'est la grandeur inconnue : on la retrouve grâce au titrage.</div>
         </div>
         <div style={styleBoite}>
-          <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Solution titrante (dans la burette)</div>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 6 }}>
-            <input type="number" min={1} max={20} value={titrant.b} aria-label="Coefficient du titrant" onChange={e => setTitrant(t => ({ ...t, b: Math.max(1, parseInt(e.target.value, 10) || 1) }))} style={{ ...inp, width: 54 }}/>
-            <input value={titrant.f} aria-label="Formule du titrant" onChange={e => setTitrant(t => ({ ...t, f: e.target.value }))} style={{ ...inp, flex: 1 }}/>
-          </div>
-          <div style={{ fontSize: 13.5, color: KIT.txt2 }}>c = {num(titrant.c, v => setTitrant(t => ({ ...t, c: v })), 'Concentration du titrant')} mol/L</div>
-          <div style={{ fontWeight: 700, fontSize: 14, color: KIT.txt, margin: '10px 0 4px', display: 'flex', justifyContent: 'space-between' }}>
-            <span>Produits ({produits.length})</span>
-            <span style={{ display: 'flex', gap: 4 }}>
-              <button onClick={() => produits.length > 1 && setProduits(l => l.slice(0, -1))} style={stylePetitBouton(false)} aria-label="Retirer un produit">−</button>
-              <button onClick={() => produits.length < 3 && setProduits(l => [...l, { f: '', a: 1 }])} style={stylePetitBouton(false)} aria-label="Ajouter un produit">+</button>
-            </span>
-          </div>
-          {produits.map((p, k) => (
-            <div key={k} style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
-              <input type="number" min={1} max={20} value={p.a} aria-label={`Coefficient du produit ${k + 1}`} onChange={e => setProduits(l => l.map((x, j) => (j === k ? { ...x, a: Math.max(1, parseInt(e.target.value, 10) || 1) } : x)))} style={{ ...inp, width: 54 }}/>
-              <input value={p.f} aria-label={`Formule du produit ${k + 1}`} onChange={e => setProduits(l => l.map((x, j) => (j === k ? { ...x, f: e.target.value } : x)))} style={{ ...inp, flex: 1 }}/>
-            </div>
-          ))}
+          <div style={{ fontWeight: 700, fontSize: 15, color: COUL_R[1], marginBottom: 6 }}>R : le réactif en excès</div>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>{formule(R.f, v => setR(x => ({ ...x, f: v })), 'Formule de R')}</div>
+          <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 4 }}>coefficient dans la réaction 1 : {entier(R.r1, v => setR(x => ({ ...x, r1: v })), 'Coefficient de R dans la réaction 1')} ; dans la réaction 2 : {entier(R.r2, v => setR(x => ({ ...x, r2: v })), 'Coefficient de R dans la réaction 2')}</div>
+          <div style={{ fontSize: 13.5, color: KIT.txt2 }}>c = {nombre(R.c, v => setR(x => ({ ...x, c: v })), 'Concentration de R', 90)} mol/L ; V = {nombre(R.V, v => setR(x => ({ ...x, V: v })), 'Volume de R', 56)} mL</div>
+        </div>
+        <div style={styleBoite}>
+          <div style={{ fontWeight: 700, fontSize: 15, color: COUL_R[2], marginBottom: 6 }}>T : le titrant (burette)</div>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>{entier(T.t, v => setT(x => ({ ...x, t: v })), 'Coefficient de T')}{formule(T.f, v => setT(x => ({ ...x, f: v })), 'Formule de T')}</div>
+          <div style={{ fontSize: 13.5, color: KIT.txt2 }}>c = {nombre(T.c, v => setT(x => ({ ...x, c: v })), 'Concentration de T', 90)} mol/L</div>
         </div>
       </div>
       <div style={styleBoite}>
-        <Curseur nom="Volume de titrant versé V" valeur={VB} onChange={setVB} min={0} max={VBmax} pas={VBmax / 200} unite="mL" decimales={2} couleur="#e63946"/>
-        <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8 }}>
-          Volume équivalent : <strong>V<sub>éq</sub> = {fmt(Veq, 2)} mL</strong> ; relation à l'équivalence : n(<Formule texte={titre.f}/>)<sub>initial</sub> / {titre.a} = n(<Formule texte={titrant.f}/>)<sub>versé</sub> / {titrant.b}.
-          {' '}{VB < Veq ? 'Avant l’équivalence : le titrant est le réactif limitant.' : VB > Veq ? 'Après l’équivalence : le titré est épuisé, le titrant s’accumule.' : 'À l’équivalence.'}
-        </div>
-        <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
-          <svg viewBox="0 0 520 220" role="img" aria-label="Quantités de matière" style={{ width: '100%', height: 'auto', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
-            {especes.map((e, k) => {
-              const w = 440 / especes.length, xb = 50 + k * w, hb = Math.max(0, e.n) / nMax * 160;
-              return <g key={k}>
-                <rect x={xb + w * 0.15} y={185 - hb} width={w * 0.7} height={hb} fill={e.c} opacity="0.85"/>
-                <text x={xb + w / 2} y={180 - hb} fontSize="12" fill={KIT.txt} textAnchor="middle">{sci(Math.max(0, e.n), 3)}</text>
-                <foreignObject x={xb} y={190} width={w} height={26}><div style={{ textAlign: 'center', fontSize: 14 }}><Formule texte={e.f}/></div></foreignObject>
-              </g>;
-            })}
-            <line x1="45" y1="185" x2="510" y2="185" stroke={KIT.txt}/>
-          </svg>
-          <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Quantités en fonction du volume versé" style={{ width: '100%', height: 'auto', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
-            {especes.map((e, k) => <polyline key={k} points={pts(k)} fill="none" stroke={e.c} strokeWidth="2.5"/>)}
-            <line x1={X(Veq)} y1={h} x2={X(Veq)} y2={H - b} stroke="#94a3b8" strokeDasharray="5 4"/>
-            <text x={X(Veq)} y={h + 10} fontSize="12" fill={KIT.txt2} textAnchor="middle">V éq</text>
-            <line x1={X(VB)} y1={h} x2={X(VB)} y2={H - b} stroke={ORANGE_GUIDE} strokeWidth="2"/>
-            <line x1={g} y1={H - b} x2={W - d} y2={H - b} stroke={KIT.txt}/><line x1={g} y1={h} x2={g} y2={H - b} stroke={KIT.txt}/>
-            <text x={g} y={H - b + 16} fontSize="12" fill={KIT.txt2} textAnchor="middle">0</text>
-            <text x={W - d} y={H - b + 16} fontSize="12" fill={KIT.txt2} textAnchor="end">{fmt(VBmax, 1)} mL</text>
-            <text x={(g + W - d) / 2} y={H - 6} fontSize="13" fontWeight="700" fill={KIT.txt} textAnchor="middle">volume versé V (mL)</text>
-            <text x="14" y={(h + H - b) / 2} fontSize="12.5" fontWeight="700" fill={KIT.txt} textAnchor="middle" transform={`rotate(-90 14 ${(h + H - b) / 2})`}>n (mol)</text>
-          </svg>
-        </div>
+        <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Ce que devient le réactif R</div>
+        {!enExces ? <div style={{ fontSize: 14, color: '#b91c1c', fontWeight: 700 }}>R n'est pas en excès : tout le réactif R réagit avec A, il n'en reste rien à titrer. Augmentez la quantité de R.</div> : <>
+          <div style={{ display: 'flex', height: 34, borderRadius: 6, overflow: 'hidden', border: `1px solid ${KIT.bord}`, fontSize: 12.5 }}>
+            <div style={{ width: `${nRreagi / nR0 * 100}%`, background: '#cbd5e1', padding: '8px 6px', whiteSpace: 'nowrap', overflow: 'hidden' }}>a réagi avec A : {sci(nRreagi, 3)} mol</div>
+            <div style={{ width: `${nRrest / nR0 * 100}%`, background: '#fdba74', padding: '8px 6px', whiteSpace: 'nowrap', overflow: 'hidden' }}>restant, titré : {sci(nRrest, 3)} mol</div>
+          </div>
+          <div style={{ fontSize: 14, color: KIT.txt, marginTop: 8, lineHeight: 1.6 }}>
+            n(R) introduit = {sci(nR0, 3)} mol. Volume équivalent du titrage : <strong>V<sub>éq</sub> = {fmt(Veq, 2)} mL</strong>.
+            <br/>Pour remonter à A : n(A) = ({A.a} / {R.r1}) × [n(R)<sub>introduit</sub> − ({R.r2} / {T.t}) × c<sub>T</sub> × V<sub>éq</sub>] = <strong>{sci(nA, 3)} mol</strong>.
+          </div>
+        </>}
       </div>
+      {enExces && <div style={styleBoite}>
+        <Curseur nom="Volume de titrant versé" valeur={VT} onChange={setVT} min={0} max={VTmax} pas={VTmax / 200} unite="mL" decimales={2} couleur="#e63946"/>
+        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Réactif R restant et titrant en excès en fonction du volume versé" style={{ width: '100%', maxWidth: 640, height: 'auto', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
+          <polyline points={courbe(nRerlen)} fill="none" stroke={COUL_R[1]} strokeWidth="2.5"/>
+          <polyline points={courbe(nTexces)} fill="none" stroke={COUL_R[2]} strokeWidth="2.5"/>
+          <line x1={X(Veq)} y1={h} x2={X(Veq)} y2={H - b} stroke="#94a3b8" strokeDasharray="5 4"/>
+          <line x1={X(VT)} y1={h} x2={X(VT)} y2={H - b} stroke={ORANGE_GUIDE} strokeWidth="2"/>
+          <line x1={g} y1={H - b} x2={W - d} y2={H - b} stroke={KIT.txt}/><line x1={g} y1={h} x2={g} y2={H - b} stroke={KIT.txt}/>
+          <text x={X(Veq)} y={h + 10} fontSize="12" fill={KIT.txt2} textAnchor="middle">V éq</text>
+          <text x={(g + W - d) / 2} y={H - 6} fontSize="13" fontWeight="700" fill={KIT.txt} textAnchor="middle">volume de titrant versé (mL)</text>
+          <text x={W - d - 4} y={h + 12} fontSize="12" fill={COUL_R[1]} textAnchor="end">R restant</text>
+          <text x={W - d - 4} y={h + 28} fontSize="12" fill={COUL_R[2]} textAnchor="end">T en excès</text>
+        </svg>
+        <div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 6 }}>Pour V = {fmt(VT, 2)} mL : il reste {sci(nRerlen(VT), 3)} mol de R dans l'erlenmeyer{nTexces(VT) > 0 ? `, et ${sci(nTexces(VT), 3)} mol de titrant en excès` : ''}.</div>
+      </div>}
     </div>
   );
 }
+const COUL_R = ['#2563eb', '#ea580c', '#16a34a'];
 
 // ════════════════ SIMULATION ════════════════
-export function Simulation2() {
+export function SimulationTitrageIndirect() {
   const [mode, setMode] = useState('guide');
   const [onglet, setOnglet] = useState('banc');
   const [guide, setGuide] = useEtatPersistant('titrage-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
@@ -178,7 +146,7 @@ export function Simulation2() {
       : { m: mExp, attente: attExp, V1: V1Exp, c1: c1Exp, c2: c2Exp };
   const mod = modeleTitrage(params);
   const er = etatErlen(mod, V2);
-  const coul = couleur(er.cI2, amidon);
+  const coul = couleurSolution(er.cI2, amidon, 1.64e-3);
 
   // Écoulement de la burette (0,6 mL/s robinet ouvert)
   const refOuvert = useRef(ouvert); refOuvert.current = ouvert;
@@ -334,64 +302,7 @@ export function Simulation2() {
   const yB0 = 30, yB1 = 230;                       // burette : 0 mL en haut, 25 mL en bas
   const yNivB = yB0 + V2 / V_BURETTE * (yB1 - yB0);
   const coule = ouvert;
-  const schema = (
-    <svg viewBox="0 0 640 380" role="img" aria-label="Montage du titrage : burette, erlenmeyer, agitateur magnétique"
-      style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
-      {/* potence */}
-      <rect x="150" y="350" width="260" height="10" fill="#94a3b8"/><rect x="330" y="20" width="8" height="332" fill="#94a3b8"/>
-      <rect x="250" y="120" width="86" height="8" fill="#94a3b8"/>
-      {/* burette */}
-      <rect x="236" y={yB0 - 12} width="24" height={yB1 - yB0 + 12} fill="#f8fafc" stroke={KIT.txt} strokeWidth="2"/>
-      <rect x="238" y={yNivB} width="20" height={yB1 - yNivB} fill="#e0f2fe"/>
-      {Array.from({ length: 26 }, (_, k) => k).map(v => {
-        const y = yB0 + v / V_BURETTE * (yB1 - yB0);
-        return <g key={v}><line x1={260} y1={y} x2={v % 5 === 0 ? 270 : 265} y2={y} stroke={KIT.txt} strokeWidth="1"/>
-          {v % 5 === 0 && <text x="274" y={y + 4} fontSize="11" fill={KIT.txt}>{v}</text>}</g>;
-      })}
-      <path d={`M 236 ${yB1} L 244 ${yB1 + 22} L 252 ${yB1 + 22} L 260 ${yB1} Z`} fill="#e0f2fe" stroke={KIT.txt} strokeWidth="2"/>
-      <rect x="240" y={yB1 + 22} width="16" height="8" rx="2" fill={ouvert ? '#16a34a' : '#dc2626'}/>
-      <line x1="248" y1={yB1 + 30} x2="248" y2={yB1 + 44} stroke={KIT.txt} strokeWidth="3"/>
-      {coule && [0, 1, 2].map(k => <circle key={k} cx="248" cy={yB1 + 48} r="2.5" fill="#7dd3fc"><animate attributeName="cy" from={yB1 + 46} to={yB1 + 78} dur="0.45s" begin={`${k * 0.15}s`} repeatCount="indefinite"/></circle>)}
-      <text x="214" y={yB0 - 18} fontSize="12" fill={KIT.txt2} textAnchor="middle">S₂O₃²⁻</text>
-      {/* zoom de lecture */}
-      {(() => {
-        const z0 = 110, zy = 40, zh = 130, zw = 56, mlParPx = 2 / zh, Yz = v => zy + zh / 2 + (v - V2) / mlParPx;
-        return <g>
-          <rect x={z0} y={zy} width={zw} height={zh} fill="#f8fafc" stroke={KIT.txt} strokeWidth="1.5"/>
-          <rect x={z0} y={Math.max(zy, Math.min(zy + zh, Yz(V2)))} width={zw} height={Math.max(0, zy + zh - Math.max(zy, Yz(V2)))} fill="#e0f2fe"/>
-          {Array.from({ length: 41 }, (_, k) => Math.round(V2 * 10) / 10 - 2 + k * 0.1).map(v => {
-            const y = Yz(v); if (y < zy || y > zy + zh || v < -0.001 || v > V_BURETTE + 0.001) return null;
-            const r10 = Math.round(v * 10);
-            return <g key={r10}><line x1={z0 + zw - (r10 % 10 === 0 ? 18 : r10 % 5 === 0 ? 13 : 8)} y1={y} x2={z0 + zw} y2={y} stroke={KIT.txt}/>
-              {r10 % 10 === 0 && <text x={z0 - 4} y={y + 4} fontSize="12" fill={KIT.txt} textAnchor="end">{r10 / 10}</text>}</g>;
-          })}
-          <path d={`M ${z0} ${Yz(V2) - 2} Q ${z0 + zw / 2} ${Yz(V2) + 6} ${z0 + zw} ${Yz(V2) - 2}`} fill="none" stroke="#0284c7" strokeWidth="2"/>
-          <text x={z0 + zw / 2} y={zy - 6} fontSize="12" fill={KIT.txt2} textAnchor="middle">zoom (mL)</text>
-          <line x1={z0 + zw} y1={zy + zh / 2} x2="236" y2={yNivB} stroke="#94a3b8" strokeDasharray="3 3"/>
-        </g>;
-      })()}
-      {/* erlenmeyer et agitateur */}
-      <rect x="196" y="320" width="104" height="30" rx="5" fill="#e2e8f0" stroke={KIT.txt} strokeWidth="1.5"/>
-      <circle cx="222" cy="335" r="5" fill="none" stroke={KIT.txt}/><circle cx="240" cy="335" r="5" fill="none" stroke={KIT.txt}/>
-      <path d="M 234 266 L 234 280 L 206 318 L 290 318 L 262 280 L 262 266 Z" fill="white" stroke={KIT.txt} strokeWidth="2"/>
-      <path d="M 224 296 L 272 296 L 287 316 L 209 316 Z" fill={coul}/>
-      <rect x="240" y="311" width="16" height="4" rx="2" fill="white" stroke={KIT.txt2}>
-        <animateTransform attributeName="transform" type="rotate" from="0 248 313" to="360 248 313" dur="0.6s" repeatCount="indefinite"/>
-      </rect>
-      {/* repères à légender */}
-      {[[290, 80, '1'], [300, 300, '2'], [312, 335, '3']].map(([x, y, n]) => (
-        <g key={n}><line x1={x - 22} y1={y} x2={x + 16} y2={y} stroke={KIT.txt2} strokeDasharray="4 3"/>
-          <circle cx={x + 28} cy={y} r="11" fill="white" stroke={ORANGE_GUIDE} strokeWidth="2"/><text x={x + 28} y={y + 4.5} fontSize="13" fontWeight="800" fill={KIT.txt} textAnchor="middle">{n}</text></g>
-      ))}
-      {/* légende de couleur */}
-      <text x="470" y="290" fontSize="13" fontWeight="700" fill={KIT.txt} textAnchor="middle">couleur de la solution</text>
-      <rect x="430" y="298" width="80" height="34" rx="6" fill={coul} stroke={KIT.txt}/>
-      <text x="470" y="352" fontSize="12" fill={KIT.txt2} textAnchor="middle">{amidon ? 'avec empois d’amidon' : 'sans indicateur'}</text>
-      <Cadre actif={hl('burette')} x={204} y={8} w={90} h={270}/>
-      <Cadre actif={hl('erlen')} x={198} y={260} w={100} h={60}/>
-      <Cadre actif={hl('agitateur')} x={190} y={318} w={116} h={36}/>
-    </svg>
-  );
+  const schema = <SchemaBurette V2={V2} ouvert={ouvert} coul={coul} indicateur={amidon ? 'avec empois d’amidon' : null} hl={hl}/>;
 
   // ════════════════ TABLEAU ET LÉGENDES ════════════════
   const cell = { padding: '5px 6px', border: `1px solid ${KIT.bord}`, textAlign: 'center', fontSize: 14 };
@@ -533,7 +444,7 @@ export function Simulation2() {
         @media (max-width: 900px) { .ti-l1 { grid-template-columns: minmax(0, 1fr); } }
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt }}>Titrage de la vitamine C d'une gélule</h2>
+        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt }}>Titrage indirect (en retour) : la vitamine C d'une gélule</h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
           <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
@@ -542,17 +453,22 @@ export function Simulation2() {
       </div>
       {mode === 'explore' && (
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-          {[['banc', '🧪 Le banc de titrage'], ['general', '📋 Titrage pour toute réaction']].map(([k, n]) =>
+          {[['banc', '🧪 Le banc de titrage de la vitamine C'], ['general', '📋 Titrage en retour pour toute réaction']].map(([k, n]) =>
             <button key={k} onClick={() => setOnglet(k)} style={stylePetitBouton(onglet === k, '#e63946')}>{n}</button>)}
         </div>
       )}
-      {mode === 'explore' && onglet === 'general' && <OutilTitrageGeneral/>}
+      {mode === 'explore' && onglet === 'general' && <OutilTitrageRetour/>}
       {vueBanc && <>
         <div className="ti-l1">
           <div style={styleBoite}>
             <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>
               {enGuide && etape >= ETAPE_TECHNICIEN ? 'Le titrage du technicien (solution restée 8 h à la lumière)' : 'Le titrage du diiode restant'}
             </div>
+            {!enGuide && <ContexteBanc
+              erlen={<>la prise d'essai de S₀ (V₀ = 25 mL, vitamine C) et le diiode en excès ({enDefi ? '10,0' : fmt(V1Exp, 1)} mL à {enDefi ? '0,010' : fmt(c1Exp, 3)} mol/L), après 5 minutes d'agitation.</>}
+              burette={<>le thiosulfate de sodium, à {enDefi ? '0,010' : fmt(c2Exp, 3)} mol/L.</>}
+              equations={[['Réaction dans l’erlenmeyer (lente, totale)', <>C₆H₈O₆ + I₂ → C₆H₆O₆ + 2 H⁺ + 2 I⁻</>],
+                ['Réaction de titrage (rapide, totale)', <>I₂ + 2 S₂O₃²⁻ → 2 I⁻ + S₄O₆²⁻</>]]}/>}
             {schema}
             <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>
               L'erlenmeyer contient la prise d'essai de S₀ et le diiode, après 5 minutes d'agitation. La burette contient le thiosulfate.
