@@ -4,9 +4,9 @@ import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, Cadre, useEtatP
 
 // ====================================================
 // AVANCEMENT D'UNE TRANSFORMATION CHIMIQUE (1re spé PC)
-// Parcours : TP « détermination du volume molaire d'un gaz » (Mg + 2 H⁺ → Mg²⁺ + H₂), puis métrologie
-// (dispersion, moyenne, écart-type, incertitude-type). Exploration : la manip, un outil général de tableau
-// d'avancement (formules saisies au clavier) et un outil de métrologie pour les données de la classe.
+// Parcours : TP « détermination du volume molaire d'un gaz » (Mg + 2 H⁺ → Mg²⁺ + H₂).
+// Exploration : la manip, et un outil général de tableau d'avancement (formules saisies au clavier).
+// La métrologie (dispersion des résultats de la classe) a sa propre simulation : « Mesure et incertitudes ».
 // ====================================================
 
 const M_MG = 24.0;          // g/mol (valeur de l'énoncé)
@@ -23,7 +23,6 @@ function rng(graine) {
   let a = graine >>> 0;
   return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
-const gauss = r => Math.sqrt(-2 * Math.log(1 - r())) * Math.cos(2 * Math.PI * r());
 
 // ── Modèle de l'expérience ──
 function modele({ m, Va, c, T }) {
@@ -84,66 +83,7 @@ export function Formule({ texte, taille = 1 }) {
   );
 }
 
-// ── Statistiques ──
-const moyenne = v => v.reduce((a, b) => a + b, 0) / v.length;
-const ecartType = v => { if (v.length < 2) return NaN; const m = moyenne(v); return Math.sqrt(v.reduce((a, b) => a + (b - m) ** 2, 0) / (v.length - 1)); };
-const ecartTypePop = v => { const m = moyenne(v); return Math.sqrt(v.reduce((a, b) => a + (b - m) ** 2, 0) / v.length); };
-// Arrondi par excès à un chiffre significatif
-const arrondiExces1CS = x => { if (!(x > 0)) return x; const p = Math.pow(10, Math.floor(Math.log10(x))); return Math.ceil(x / p - 1e-9) * p; };
-
-// Résultats des autres groupes de la classe (8 groupes « normaux » et un groupe qui a eu une fuite)
-function resultatsClasse(graine) {
-  const r = rng(graine * 7 + 13);
-  const v = [];
-  for (let k = 0; k < 8; k++) v.push(Math.round((24.4 + 0.75 * gauss(r)) * 10) / 10);
-  v.splice(Math.floor(r() * 8), 0, Math.round((15.5 + 3 * r()) * 10) / 10);
-  return v;
-}
-
 const COUL = { gaz: '#e0f2fe', acide: '#fef9c3', eau: '#bfdbfe', mg: '#64748b', h2: '#0284c7', hist: '#60a5fa', moy: '#dc2626', ec: '#2563eb' };
-
-// ════════════════ HISTOGRAMME ════════════════
-function Histogramme({ valeurs, largeur, exclues = [], titre = 'Volume molaire (L/mol)' }) {
-  const ret = valeurs.filter((_, i) => !exclues.includes(i));
-  if (!valeurs.length) return <div style={{ fontSize: 14, color: KIT.txt2 }}>Aucune valeur.</div>;
-  const mn = Math.floor(Math.min(...valeurs) / largeur) * largeur, mx = Math.ceil((Math.max(...valeurs) + 1e-9) / largeur) * largeur;
-  const nb = Math.max(1, Math.round((mx - mn) / largeur));
-  const comptes = Array.from({ length: nb }, () => ({ ret: 0, exc: 0 }));
-  valeurs.forEach((v, i) => { const k = Math.min(nb - 1, Math.floor((v - mn) / largeur + 1e-9)); comptes[k][exclues.includes(i) ? 'exc' : 'ret']++; });
-  const cMax = Math.max(1, ...comptes.map(c => c.ret + c.exc));
-  const W = 520, H = 260, g = 44, d = 12, h = 30, b = 44;
-  const X = v => g + (v - mn) / (mx - mn) * (W - g - d);
-  const Y = n => H - b - n / cMax * (H - b - h);
-  const m = ret.length ? moyenne(ret) : NaN, s = ecartType(ret);
-  const pasX = (mx - mn) / largeur > 14 ? largeur * Math.ceil((mx - mn) / largeur / 14) : largeur;
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Histogramme des résultats"
-      style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
-      {Array.from({ length: cMax + 1 }, (_, n) => (
-        <g key={n}><line x1={g} y1={Y(n)} x2={W - d} y2={Y(n)} stroke="#e2e8f0"/>
-          <text x={g - 6} y={Y(n) + 4} fontSize="13" fill={KIT.txt2} textAnchor="end">{n}</text></g>
-      ))}
-      {comptes.map((c, k) => (
-        <g key={k}>
-          {c.ret > 0 && <rect x={X(mn + k * largeur) + 1} y={Y(c.ret)} width={X(mn + largeur) - X(mn) - 2} height={Y(0) - Y(c.ret)} fill={COUL.hist} stroke="#1e3a8a"/>}
-          {c.exc > 0 && <rect x={X(mn + k * largeur) + 1} y={Y(c.ret + c.exc)} width={X(mn + largeur) - X(mn) - 2} height={Y(c.ret) - Y(c.ret + c.exc)} fill="#fecaca" stroke="#b91c1c" strokeDasharray="4 3"/>}
-        </g>
-      ))}
-      {Array.from({ length: Math.round((mx - mn) / pasX) + 1 }, (_, k) => mn + k * pasX).map(v => (
-        <text key={v} x={X(v)} y={H - b + 18} fontSize="13" fill={KIT.txt2} textAnchor="middle">{fmt(v, largeur < 1 ? 1 : 0)}</text>
-      ))}
-      <line x1={g} y1={Y(0)} x2={W - d} y2={Y(0)} stroke={KIT.txt}/><line x1={g} y1={h - 6} x2={g} y2={Y(0)} stroke={KIT.txt}/>
-      <text x={(g + W - d) / 2} y={H - 6} fontSize="13.5" fontWeight="700" fill={KIT.txt} textAnchor="middle">{titre}</text>
-      <text x="13" y={(h + H - b) / 2} fontSize="13" fontWeight="700" fill={KIT.txt} transform={`rotate(-90 13 ${(h + H - b) / 2})`} textAnchor="middle">effectif</text>
-      {isFinite(m) && <>
-        <line x1={X(m)} y1={h - 8} x2={X(m)} y2={Y(0)} stroke={COUL.moy} strokeWidth="2.5"/>
-        <text x={X(m)} y={h - 12} fontSize="13" fontWeight="700" fill={COUL.moy} textAnchor="middle">moyenne</text>
-        {isFinite(s) && [m - s, m + s].map((v, k) => v >= mn && v <= mx &&
-          <line key={k} x1={X(v)} y1={h} x2={X(v)} y2={Y(0)} stroke={COUL.ec} strokeWidth="2" strokeDasharray="6 4"/>)}
-      </>}
-    </svg>
-  );
-}
 
 // ════════════════ OUTIL GÉNÉRAL : TABLEAU D'AVANCEMENT ════════════════
 const COUL_ESP = ['#2563eb', '#dc2626', '#16a34a', '#9333ea', '#ea580c', '#0891b2', '#ca8a04', '#db2777'];
@@ -289,47 +229,6 @@ function OutilGeneral() {
   );
 }
 
-// ════════════════ OUTIL DE MÉTROLOGIE (données de la classe) ════════════════
-function OutilMetrologie({ defaut }) {
-  const [texte, setTexte] = useEtatPersistant('avancement-metro-texte', defaut.map(v => fmt(v, 1)).join(' ; '));
-  const [largeur, setLargeur] = useState(1);
-  const [exclues, setExclues] = useState([]);
-  const valeurs = texte.split(/[;\s\n\t]+/).map(lireNombre).filter(v => isFinite(v));
-  const ret = valeurs.filter((_, i) => !exclues.includes(i));
-  const m = ret.length ? moyenne(ret) : NaN, s = ecartType(ret), u = s / Math.sqrt(ret.length);
-  return (
-    <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
-      <div style={styleBoite}>
-        <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Les résultats de la classe</div>
-        <textarea value={texte} onChange={e => { setTexte(e.target.value); setExclues([]); }} rows={3} aria-label="Valeurs mesurées"
-          style={{ width: '100%', boxSizing: 'border-box', fontSize: 14, padding: 6, border: `1.5px solid ${KIT.bord}`, borderRadius: 6 }}/>
-        <div style={{ fontSize: 12.5, color: KIT.txt2, margin: '4px 0 8px' }}>Collez ou tapez vos valeurs, séparées par des espaces ou des points-virgules (copier-coller depuis un tableur possible).
-          Touchez une valeur pour l'écarter ou la reprendre.</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 10 }}>
-          {valeurs.map((v, i) => (
-            <button key={i} onClick={() => setExclues(l => (l.includes(i) ? l.filter(k => k !== i) : [...l, i]))}
-              style={{ ...stylePetitBouton(!exclues.includes(i), '#2563eb'), textDecoration: exclues.includes(i) ? 'line-through' : 'none' }}>{fmt(v, 2)}</button>
-          ))}
-        </div>
-        <div style={{ fontSize: 13.5, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Largeur des barres</div>
-        <div style={{ display: 'flex', gap: 5, marginBottom: 10 }}>
-          {[0.5, 1, 2, 5].map(w => <button key={w} onClick={() => setLargeur(w)} style={stylePetitBouton(largeur === w, '#334155')}>{fmt(w, w < 1 ? 1 : 0)}</button>)}
-        </div>
-        <LigneMesure nom="Nombre de mesures retenues N" valeur={`${ret.length} sur ${valeurs.length}`}/>
-        <LigneMesure nom="Moyenne x̄" valeur={fmt(m, 2)} couleur={COUL.moy}/>
-        <LigneMesure nom="Écart-type expérimental sₓ" valeur={fmt(s, 2)} couleur={COUL.ec}/>
-        <LigneMesure nom="Incertitude-type u = sₓ / √N" valeur={`${fmt(u, 3)} → ${fmt(arrondiExces1CS(u), 2)}`}/>
-        <LigneMesure nom="Intervalle [x̄ − u ; x̄ + u]" valeur={isFinite(u) ? `[${fmt(m - arrondiExces1CS(u), 2)} ; ${fmt(m + arrondiExces1CS(u), 2)}]` : '—'}/>
-      </div>
-      <div style={styleBoite}>
-        <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Histogramme</div>
-        <Histogramme valeurs={valeurs} largeur={largeur} exclues={exclues} titre="valeur mesurée"/>
-        <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6 }}>Trait rouge : moyenne des valeurs retenues. Pointillés bleus : moyenne ± écart-type. En rouge hachuré : valeurs écartées.</div>
-      </div>
-    </div>
-  );
-}
-
 // ════════════════ SIMULATION ════════════════
 export function Simulation1() {
   const [mode, setMode] = useState('guide');
@@ -348,9 +247,6 @@ export function Simulation1() {
   const [phase, setPhase] = useState('vide');             // vide | acide | reaction
   const [t, setT] = useState(0);
   const [vitesse, setVitesse] = useState(5);
-  const [largeur, setLargeur] = useState(2);
-  const [largeursVues, setLargeursVues] = useState({});
-  const [aberranteExclue, setAberranteExclue] = useState(false);
   const [tab, setTab] = useState({ init: ['', '', '', ''], cours: ['', '', '', ''], fin: ['', '', '', ''], xf: '', verif: {} });
   const [defi, setDefi] = useState(null);
 
@@ -389,13 +285,6 @@ export function Simulation1() {
   const n1 = mod.n1, n2 = mod.n2, xmax = mod.xmax;
   const n1Aff = ech.m / 1000 / M_MG;                       // ce que l'élève calcule avec la masse affichée
   const VmEleve = (Veleve / 1000) / n1Aff;
-  const classe = useMemo(() => resultatsClasse(ech.graine), [ech.graine]);
-  const valeursClasse = useMemo(() => [Math.round((mes.Vm ?? VmEleve) * 10) / 10, ...classe], [mes.Vm, VmEleve, classe]);
-  const iAberrante = valeursClasse.reduce((ib, v, i) => (Math.abs(v - 24.4) > Math.abs(valeursClasse[ib] - 24.4) ? i : ib), 0);
-  const retenues = valeursClasse.filter((_, i) => i !== iAberrante);
-  const xb = moyenne(retenues), sx = ecartType(retenues), uVm = arrondiExces1CS(sx / Math.sqrt(retenues.length));
-  const refDansIntervalle = Math.abs(VM_REF - xb) <= uVm;
-
   // ── Tableau d'avancement à compléter (parcours) ──
   const OPT_COURS = [
     ['n₁ − x', 'n₁ − 2x', 'n₁ + x'], ['n₂ − 2x', 'n₂ − x', '2n₂ − x'], ['x', '2x', '0'], ['x', '2x', 'n₂ − x']];
@@ -475,62 +364,15 @@ export function Simulation1() {
       tache: { type: 'qcm', q: 'Qu’est-ce qui peut expliquer un volume un peu trop grand ?',
         options: ['De la vapeur d’eau se mélange au dihydrogène, et le gaz peut être encore tiède', 'Il manque du magnésium', 'L’acide était trop concentré'], bonne: 0,
         expl: 'La vapeur d’eau ajoute environ 2 % au volume à 20 °C. D’autres erreurs, comme une fuite au bouchon ou du gaz perdu avant de reboucher, donneraient au contraire un volume trop petit.' } },
-    // ── Partie 2 : métrologie ──
-    { id: 'classe', titre: 'Partie 2 · Les résultats de la classe', focus: [],
-      texte: <>Les neuf autres groupes ont fait la même manip. Leurs résultats et le vôtre sont dans l'histogramme qui a remplacé le schéma.</>,
-      tache: { type: 'qcm', q: 'Que constatez-vous ?', options: ['Les résultats sont dispersés autour d’une valeur', 'Tous les groupes trouvent la même valeur', 'Les résultats sont au hasard'], bonne: 0 } },
-    { id: 'causes', titre: 'Pourquoi cette dispersion ?', focus: [],
-      texte: <>Chaque groupe a fait la même manip, mais pas tout à fait dans les mêmes conditions.</>,
-      tache: { type: 'qcm', q: 'Laquelle de ces causes peut expliquer qu’un groupe trouve beaucoup moins que les autres ?',
-        options: ['Une fuite au niveau du bouchon, ou du gaz perdu avant de reboucher', 'Un ruban de magnésium plus lourd que les autres', 'Un acide légèrement plus concentré'], bonne: 0,
-        expl: 'Du gaz perdu donne un volume trop petit, donc un V_m trop petit. Une masse différente ne change rien : chaque groupe divise par sa propre quantité de matière, et l’acide est de toute façon en excès.' } },
-    { id: 'histo', titre: 'L’histogramme', focus: [],
-      texte: <>Un histogramme compte combien de résultats tombent dans chaque intervalle. Essayez plusieurs largeurs de barres (sous l'histogramme) :
-        la forme change, mais pas les résultats.</>,
-      tache: { type: 'action', ok: Object.keys(largeursVues).length >= 2, consigne: `Largeurs essayées : ${Object.keys(largeursVues).length} / 2` } },
-    { id: 'aberrante', titre: 'Une valeur aberrante ?', focus: [],
-      texte: <>Une valeur est très éloignée des autres. On ne l'écarte pas parce qu'elle gêne, mais parce qu'on a une <strong>raison</strong> de
-        penser qu'elle est fausse : ici, ce groupe a constaté une fuite au bouchon.</>,
-      tache: { type: 'qcm', q: 'Quelle valeur est aberrante ?', options: valeursClasse.map(v => `${fmt(v, 1)} L/mol`), bonne: iAberrante,
-        expl: 'Cliquez sur « Écarter la valeur aberrante » sous l’histogramme pour la retirer des calculs.' } },
-    { id: 'moyenne', titre: 'La moyenne', focus: [],
-      texte: <>Sans la valeur aberrante, il reste N = {retenues.length} mesures : {retenues.map(v => fmt(v, 1)).join(' ; ')} (en L/mol).
-        Utilisez votre calculatrice (mode statistiques).</>,
-      tache: { type: 'num', q: 'Moyenne x̄ des valeurs retenues', unite: 'L/mol', vrai: xb, tol: 0.003,
-        pieges: [[moyenne(valeursClasse), 'Vous avez gardé la valeur aberrante.']] } },
-    { id: 'ecartType', titre: 'L’écart-type expérimental', focus: [],
-      texte: <>L'écart-type expérimental s<sub>x</sub> est une « sorte de moyenne » des écarts à la moyenne. Sur la calculatrice, c'est
-        σ<sub>n−1</sub> (ou s<sub>x</sub>).</>,
-      tache: { type: 'num', q: 'Écart-type expérimental s_x', unite: 'L/mol', vrai: sx, tol: 0.02,
-        pieges: [[ecartTypePop(retenues), 'C’est σ_n (on divise par N) : prenez σ_n−1, qui divise par N − 1.'], [ecartType(valeursClasse), 'Vous avez gardé la valeur aberrante.']] } },
-    { id: 'u', titre: 'L’incertitude-type', focus: [],
-      texte: <>L'incertitude-type sur la moyenne vaut u(V<sub>m</sub>) = s<sub>x</sub> / √N. On l'arrondit <strong>par excès</strong>, avec un seul
-        chiffre significatif.</>,
-      tache: { type: 'num', q: 'Incertitude-type u(V_m), arrondie par excès à 1 chiffre significatif', unite: 'L/mol', vrai: uVm, tol: 0.001,
-        pieges: [[sx / Math.sqrt(retenues.length), 'C’est la bonne valeur, mais il faut l’arrondir par excès à un seul chiffre significatif.'], [sx, 'Divisez par √N.'], [sx / retenues.length, 'On divise par la racine de N.']] } },
-    { id: 'intervalle', titre: 'L’intervalle', focus: [],
-      texte: <>La valeur vraie a de bonnes chances (environ 2 sur 3) de se trouver dans l'intervalle [x̄ − u ; x̄ + u].</>,
-      tache: { type: 'num', q: 'Borne inférieure x̄ − u', unite: 'L/mol', vrai: xb - uVm, tol: 0.003,
-        pieges: [[xb - sx, 'Utilisez u, et non s_x.']] } },
-    { id: 'conclusion', titre: 'La valeur de référence', focus: [],
-      texte: <>L'intervalle va de {fmt(xb - uVm, 2)} à {fmt(xb + uVm, 2)} L/mol. La valeur de référence pour un gaz sec est {fmt(VM_REF, 1)} L/mol.</>,
-      tache: { type: 'qcm', q: 'La valeur de référence est-elle dans l’intervalle ?', options: ['Oui', 'Non'], bonne: refDansIntervalle ? 0 : 1,
-        expl: refDansIntervalle ? 'La mesure est compatible avec la valeur de référence.'
-          : 'Elle est un peu au-dessus : la vapeur d’eau mélangée au dihydrogène fait trouver un peu plus que 24,1 L/mol à tous les groupes. C’est une erreur systématique, que la moyenne ne fait pas disparaître.' } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
-      texte: <>Vous avez mené une étude quantitative complète : tableau d'avancement, réactif limitant, volume molaire, puis traitement statistique
-        des résultats de la classe. En exploration libre, vous trouverez la manip avec tous les réglages, un tableau d'avancement pour n'importe
-        quelle réaction, et un outil pour traiter les vrais résultats de votre classe.</>, tache: null },
+      texte: <>Vous avez mené une étude quantitative complète : quantités de matière, tableau d'avancement, réactif limitant et volume
+        molaire. En exploration libre, vous trouverez la manip avec tous les réglages, et un tableau d'avancement pour n'importe quelle
+        réaction. Pour traiter les résultats de toute la classe, voyez la simulation « Mesure et incertitudes ».</>, tache: null },
   ];
   const idx = id => ETAPES.findIndex(e => e.id === id);
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const hl = id => enGuide && et.focus.includes(id);
   const vu = id => !enGuide || etape >= idx(id);
-  const partieMetro = enGuide && etape >= idx('classe');
-  // Les largeurs ne comptent que si elles sont essayées pendant l'étape de l'histogramme
-  useEffect(() => { if (enGuide && etape === idx('histo')) setLargeursVues({}); }, [etape, enGuide]);
-  function choisirLargeur(w) { setLargeur(w); if (enGuide && etape === idx('histo')) setLargeursVues(l => ({ ...l, [w]: true })); }
-
   // ════════════════ SCHÉMA DE LA MANIP ════════════════
   const fMg = phase === 'reaction' ? Math.max(0, 1 - inst.x / Math.max(mod.n1, 1e-12)) : 1;     // part de ruban restante
   const enReaction = phase === 'reaction' && !inst.finie;
@@ -672,23 +514,6 @@ export function Simulation1() {
       </>}
     </>
   );
-  const blocHisto = (
-    <div style={styleBoite}>
-      <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Volume molaire mesuré par les 10 groupes</div>
-      <Histogramme valeurs={valeursClasse} largeur={largeur} exclues={aberranteExclue ? [iAberrante] : []}/>
-      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
-        <span style={{ fontSize: 13.5, color: KIT.txt2, fontWeight: 700 }}>Largeur des barres :</span>
-        {[0.5, 1, 2, 5].map(w => <button key={w} onClick={() => choisirLargeur(w)} style={stylePetitBouton(largeur === w, '#334155')}>{fmt(w, w < 1 ? 1 : 0)} L/mol</button>)}
-        {vu('aberrante') && <button onClick={() => setAberranteExclue(e => !e)} style={stylePetitBouton(aberranteExclue, '#b91c1c')}>
-          {aberranteExclue ? 'Reprendre la valeur aberrante' : 'Écarter la valeur aberrante'}</button>}
-      </div>
-      <div style={{ fontSize: 13, color: KIT.txt, marginTop: 8, lineHeight: 1.6 }}>
-        Résultats : {valeursClasse.map((v, i) => <span key={i} style={{ marginRight: 8, fontWeight: i === 0 ? 800 : 400, textDecoration: aberranteExclue && i === iAberrante ? 'line-through' : 'none' }}>
-          {fmt(v, 1)}{i === 0 ? ' (vous)' : ''}</span>)}
-      </div>
-    </div>
-  );
-
   // ════════════════ DÉFI ════════════════
   function nouveauDefi(type) {
     const r = Math.random;
@@ -774,16 +599,15 @@ export function Simulation1() {
       </div>
       {mode === 'explore' && (
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-          {[['manip', '🧪 La manip du volume molaire'], ['tableau', '📋 Tableau d’avancement (toute réaction)'], ['metro', '📊 Métrologie : les résultats de ma classe']].map(([k, n]) =>
+          {[['manip', '🧪 La manip du volume molaire'], ['tableau', '📋 Tableau d’avancement (toute réaction)']].map(([k, n]) =>
             <button key={k} onClick={() => setOnglet(k)} style={stylePetitBouton(onglet === k, '#2a9d8f')}>{n}</button>)}
         </div>
       )}
       {mode === 'explore' && onglet === 'tableau' && <OutilGeneral/>}
-      {mode === 'explore' && onglet === 'metro' && <OutilMetrologie defaut={valeursClasse}/>}
       {vueManip && <>
         <div className="av-l1">
           <div style={styleBoite}>
-            {partieMetro ? blocHisto : <>
+            {<>
               <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Recueil du dihydrogène par déplacement d'eau</div>
               {schema}
               <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>
@@ -805,13 +629,13 @@ export function Simulation1() {
               </div>}
         </div>
         <div className="av-l2">
-          {!partieMetro && <div>
+          {<div>
             <Section titre="Commandes" ouvert={ouverts.commandes} onBascule={() => setOuverts(o => ({ ...o, commandes: !o.commandes }))}>
               {enGuide && !vu('manip') ? <div style={{ fontSize: 13, color: KIT.txt2 }}>Les commandes apparaîtront au fil du parcours.</div> : commandesManip}
             </Section>
           </div>}
-          {!partieMetro && <div><Section titre="Mesures" ouvert={ouverts.mesures} onBascule={() => setOuverts(o => ({ ...o, mesures: !o.mesures }))}>{mesuresManip}</Section></div>}
-          {enGuide && vu('tabInit') && !partieMetro && <div style={{ ...styleBoite, gridColumn: '1 / -1', position: 'relative' }}>
+          {<div><Section titre="Mesures" ouvert={ouverts.mesures} onBascule={() => setOuverts(o => ({ ...o, mesures: !o.mesures }))}>{mesuresManip}</Section></div>}
+          {enGuide && vu('tabInit') && <div style={{ ...styleBoite, gridColumn: '1 / -1', position: 'relative' }}>
             <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Tableau d'avancement</div>
             {tableau}
             {hl('tableau') && <div style={{ position: 'absolute', inset: -3, border: `3px dashed ${ORANGE_GUIDE}`, borderRadius: 12, pointerEvents: 'none' }}/>}
