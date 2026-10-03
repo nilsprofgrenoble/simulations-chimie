@@ -166,7 +166,14 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
     background: actif ? c : 'white', color: actif ? 'white' : TXT2 });
   const maj = f => setEtat(e => ({ ...e, ...f(e) }));
   const setRep = v => maj(e => ({ reps: { ...e.reps, [etape]: v }, verifs: { ...e.verifs, [etape]: false } }));
-  const verifier = () => maj(e => ({ verifs: { ...e.verifs, [etape]: true } }));
+  const verifier = () => {
+    maj(e => ({ verifs: { ...e.verifs, [etape]: true } }));
+    // Une étape numérique peut demander à garder la valeur trouvée par l'élève (par exemple un volume lu)
+    if (tache && tache.type === 'num' && tache.surReussite) {
+      const x = lireNombre(reps[etape]);
+      if (tache.vrai != null && isFinite(x) && proche(x, tache.vrai, tache.tol)) tache.surReussite(x);
+    }
+  };
   const juste = (() => {
     if (!tache) return true;
     if (tache.type === 'action') return !!tache.ok;
@@ -293,8 +300,9 @@ export function useEtatPersistant(cle, initial) {
   const [valeur, setValeur] = useState(() => {
     try {
       const brut = window.localStorage.getItem(cle);
-      return brut ? JSON.parse(brut) : initial;
-    } catch { return initial; }
+      if (brut) return JSON.parse(brut);
+    } catch { /* valeur illisible : on repart de la valeur initiale */ }
+    return typeof initial === 'function' ? initial() : initial;
   });
   useEffect(() => {
     try { window.localStorage.setItem(cle, JSON.stringify(valeur)); } catch { /* stockage indisponible : on continue sans */ }
