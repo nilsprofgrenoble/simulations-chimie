@@ -8,17 +8,6 @@
 // ============================================================
 
 export const CONTEXTES = {
-  1: {
-    but: "Suivre l'évolution des quantités de matière au cours d'une transformation chimique, grâce à l'avancement X.",
-    apprendre: "Remplir un tableau d'avancement, trouver le réactif limitant et l'avancement final Xf.",
-    etapes: [
-      "Écrivez l'équation : choisissez les coefficients stœchiométriques des réactifs A et B et des produits C et D.",
-      "Entrez les quantités initiales (en mol) de chaque espèce.",
-      "Faites glisser le curseur de l'avancement X et regardez les quantités évoluer dans les histogrammes et dans le tableau.",
-      "Repérez le réactif qui s'épuise en premier (réactif limitant) et la valeur de Xf.",
-    ],
-    niveau: "1re générale",
-  },
   2: {
     but: "Réaliser virtuellement un titrage à la burette et comprendre ce qui se passe avant, à et après l'équivalence.",
     apprendre: "La notion d'équivalence, la relation à l'équivalence et la prévision du volume équivalent Véq.",
