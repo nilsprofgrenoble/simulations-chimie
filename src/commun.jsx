@@ -156,6 +156,26 @@ export function Cadre({ actif, x, y, w, h }) {
   );
 }
 
+// ── Indices dans les textes affichés : « n_versé,e », « V_B,e », « x_max » s'affichent avec un vrai indice ──
+// Les identifiants de code (deux tirets bas d'affilée dans un même mot, comme Qv_pompe_MIN) restent tels quels.
+const RE_INDICE = /_([A-Za-zÀ-ÿ0-9−]+(?:,[A-Za-zÀ-ÿ]+)?)/g;
+export function avecIndices(t) {
+  if (typeof t !== 'string' || !t.includes('_')) return t;
+  const morceaux = [];
+  t.split(/(\s+)/).forEach((mot, k) => {
+    if (!mot.includes('_') || /[A-Za-z0-9]_[A-Za-z0-9]+_[A-Za-z0-9]/.test(mot)) { morceaux.push(mot); return; }
+    let dernier = 0, m;
+    RE_INDICE.lastIndex = 0;
+    while ((m = RE_INDICE.exec(mot))) {
+      if (m.index > dernier) morceaux.push(mot.slice(dernier, m.index));
+      morceaux.push(<sub key={`${k}-${m.index}`}>{m[1]}</sub>);
+      dernier = m.index + m[0].length;
+    }
+    if (dernier < mot.length) morceaux.push(mot.slice(dernier));
+  });
+  return <>{morceaux}</>;
+}
+
 export function CarteParcours({ etapes, etat, setEtat, fin }) {
   const { etape, reps, verifs } = etat;
   const et = etapes[Math.min(etape, etapes.length - 1)];
@@ -225,23 +245,23 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
         <div>
           {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}</div>
             : tache.label && !tache.ok && <button onClick={tache.faire} disabled={!!tache.attente} style={btn(true)}>{tache.label}</button>}
-          {tache.consigne && <div style={{ fontSize: 14, fontWeight: 700, color: TXT, marginTop: 6, whiteSpace: 'pre-wrap' }}>{tache.consigne}</div>}
+          {tache.consigne && <div style={{ fontSize: 14, fontWeight: 700, color: TXT, marginTop: 6, whiteSpace: 'pre-wrap' }}>{avecIndices(tache.consigne)}</div>}
           {tache.attente && <div style={{ fontSize: 14, color: TXT2, marginTop: 6 }}>{tache.attente}</div>}
           {tache.ok && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}>✅ C'est fait !</div>}
         </div>
       )}
       {tache && tache.type === 'qcm' && (
         <div>
-          <div style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{tache.q}</div>
+          <div style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{avecIndices(tache.q)}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {tache.options.map((o, i) => <button key={i} onClick={() => setRep(i)}
-              style={{ ...btn(reps[etape] === i, '#0ea5e9'), padding: '6px 10px', textAlign: 'left' }}>{o}</button>)}
+              style={{ ...btn(reps[etape] === i, '#0ea5e9'), padding: '6px 10px', textAlign: 'left' }}>{avecIndices(o)}</button>)}
           </div>
         </div>
       )}
       {tache && tache.type === 'num' && (
         <div>
-          <div style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{tache.q}</div>
+          <div style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{avecIndices(tache.q)}</div>
           {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}</div> : (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <input value={reps[etape] ?? ''} placeholder="?" aria-label="Votre réponse"
@@ -260,15 +280,15 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
         <div>
           {!reussie && <button onClick={verifier} style={btn(true, '#16a34a')}>✓ Vérifier</button>}
           {verifie && juste && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}>
-            ✅ Bravo ! <span style={{ fontWeight: 400, color: TXT }}>{tache.expl}</span></div>}
+            ✅ Bravo ! <span style={{ fontWeight: 400, color: TXT }}>{avecIndices(tache.expl)}</span></div>}
           {verifie && !juste && (
             <div style={{ marginTop: 6 }}>
               <div style={{ fontSize: 14, color: '#b91c1c', fontWeight: 700 }}>❌ Pas encore.</div>
               {tache.type === 'num' && piege() && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed',
-                border: '1px solid #fdba74', borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{piege()}</div>}
+                border: '1px solid #fdba74', borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{avecIndices(piege())}</div>}
               {vuRep ? (
                 <div style={{ fontSize: 13.5, color: TXT2, marginTop: 4 }}>
-                  {tache.type === 'num' ? `Réponse attendue : ${sci(tache.vrai)} ${tache.unite}` : `Réponse : ${tache.options[tache.bonne]}. ${tache.expl || ''}`}
+                  {avecIndices(tache.type === 'num' ? `Réponse attendue : ${tache.affiche ? tache.affiche(tache.vrai) : sci(tache.vrai)} ${tache.unite}` : `Réponse : ${tache.options[tache.bonne]}. ${typeof tache.expl === 'string' ? tache.expl : ''}`)}
                 </div>
               ) : (
                 <button onClick={() => maj(e => ({ reps: { ...e.reps, [`vu${etape}`]: true } }))} style={{ fontSize: 12.5, marginTop: 4,
@@ -378,7 +398,7 @@ export function LigneMesure({ nom, valeur, couleur }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, padding: '5px 0',
       borderBottom: `1px dashed ${KIT.bord}`, fontSize: 14 }}>
-      <span style={{ color: KIT.txt2, fontWeight: 600 }}>{nom}</span>
+      <span style={{ color: KIT.txt2, fontWeight: 600 }}>{avecIndices(nom)}</span>
       <span style={{ color: couleur || KIT.txt, fontWeight: 700, fontFamily: 'monospace', whiteSpace: 'nowrap' }}>{valeur}</span>
     </div>
   );
@@ -388,7 +408,7 @@ export function Curseur({ nom, valeur, onChange, min, max, pas, unite = '', deci
   return (
     <div style={{ marginBottom: 8 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, color: KIT.txt2, fontWeight: 700 }}>
-        <span>{nom}</span><span style={{ color: KIT.txt }}>{fmt(valeur, decimales)} {unite}</span>
+        <span>{avecIndices(nom)}</span><span style={{ color: KIT.txt }}>{fmt(valeur, decimales)} {unite}</span>
       </div>
       <input type="range" min={min} max={max} step={pas} value={valeur} onChange={x => onChange(parseFloat(x.target.value))}
         aria-label={nom} style={{ width: '100%', accentColor: couleur }}/>

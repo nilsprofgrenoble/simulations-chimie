@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE } from "../commun";
+  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
 import { Formule } from "./Avancement";
 import { V_BURETTE, seuilVisible, couleurSolution, ContexteBanc, SchemaBurette } from "./titrageCommun";
 
 // ====================================================
-// TITRAGE INDIRECT, OU « EN RETOUR » (1re spé PC)
-// Parcours : DS « Titrage de la vitamine C dans une gélule » — titrage indirect (en retour) :
+// TITRAGE EN RETOUR (1re spé PC) : on ajoute un excès connu d'un réactif, puis on titre ce qui n'a pas réagi
+// Parcours : DS « Titrage de la vitamine C dans une gélule » — titrage en retour :
 //   C₆H₈O₆ + I₂ → C₆H₆O₆ + 2 H⁺ + 2 I⁻ (diiode en excès), puis I₂ + 2 S₂O₃²⁻ → 2 I⁻ + S₄O₆²⁻.
 // Exploration : le banc de titrage (masse, attente, volumes, empois d'amidon) et un titrage en retour pour toute réaction.
 // ====================================================
@@ -122,7 +122,7 @@ const COUL_R = ['#2563eb', '#ea580c', '#16a34a'];
 // ════════════════ SIMULATION ════════════════
 export function SimulationTitrageIndirect() {
   const [mode, setMode] = useState('guide');
-  const [onglet, setOnglet] = useState('banc');
+  const [onglet, setOnglet] = useState('general');
   const [guide, setGuide] = useEtatPersistant('titrage-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [mes, setMes] = useEtatPersistant('titrage-mesures-v1', { Ve: null, VeVieille: null });
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true });
@@ -197,8 +197,8 @@ export function SimulationTitrageIndirect() {
   const ETAPES = [
     { id: 'contexte', titre: 'Doser la vitamine C d’une gélule', focus: [],
       texte: <>Une gélule de Timoferol doit contenir <strong>30 mg de vitamine C</strong>. Pour le vérifier, on fait un <strong>titrage
-        indirect</strong> (ou « en retour ») : on ajoute un excès connu de diiode I₂, qui réagit avec toute la vitamine C ; puis on titre
-        le diiode qui reste.
+        en retour</strong> : on ajoute un excès connu de diiode I₂, qui réagit avec toute la vitamine C ; puis on titre l'excès de
+        diiode, celui qui n'a pas réagi.
         <div style={{ display: 'flex', margin: '8px 0', borderRadius: 6, overflow: 'hidden', border: `1px solid ${KIT.bord}`, fontSize: 12.5 }}>
           <div style={{ flex: 43, background: '#cbd5e1', padding: '5px 6px' }}>I₂ qui a réagi avec la vitamine C</div>
           <div style={{ flex: 57, background: '#fdba74', padding: '5px 6px' }}>I₂ restant : titré par le thiosulfate</div>
@@ -287,7 +287,7 @@ export function SimulationTitrageIndirect() {
       tache: { type: 'qcm', q: 'Pourquoi ajoute-t-on l’empois d’amidon ?', options: ['Pour rendre le changement de couleur à l’équivalence bien plus net', 'Pour accélérer la réaction', 'Pour neutraliser l’acide'], bonne: 0,
         expl: 'Le bleu sombre disparaît brusquement à l’équivalence. On l’ajoute près de la fin, quand la solution est déjà jaune pâle.' } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
-      texte: <>Vous avez réalisé un titrage indirect complet. En exploration libre, réglez la masse de vitamine C, le temps d'attente de la
+      texte: <>Vous avez réalisé un titrage en retour complet. En exploration libre, réglez la masse de vitamine C, le temps d'attente de la
         solution, les volumes et les concentrations ; un second onglet permet de simuler le titrage de n'importe quelle réaction. Le défi
         vous propose une gélule mystère.</>, tache: null },
   ];
@@ -411,7 +411,7 @@ export function SimulationTitrageIndirect() {
             : (defi.reps.conf || '').trim().toLowerCase() === (Math.abs(defi.m - 30) <= 3 ? 'oui' : 'non');
           return (
             <div key={q.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {q.q}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {avecIndices(q.q)}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input value={defi.reps[q.id] || ''} placeholder="?" aria-label={`Réponse ${k + 1}`} onChange={x => { const v = x.target.value; setDefi(d => ({ ...d, verifie: false, reps: { ...d.reps, [q.id]: v } })); }}
                   style={{ fontSize: 14, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 110 }}/>
@@ -444,7 +444,7 @@ export function SimulationTitrageIndirect() {
         @media (max-width: 900px) { .ti-l1 { grid-template-columns: minmax(0, 1fr); } }
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt }}>Titrage indirect (en retour) : la vitamine C d'une gélule</h2>
+        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt }}>Titrage en retour</h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
           <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
@@ -453,7 +453,7 @@ export function SimulationTitrageIndirect() {
       </div>
       {mode === 'explore' && (
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-          {[['banc', '🧪 Le banc de titrage de la vitamine C'], ['general', '📋 Titrage en retour pour toute réaction']].map(([k, n]) =>
+          {[['general', '📋 Titrage en retour pour toute réaction'], ['banc', '🧪 Exemple du dosage de la vitamine C d’une gélule']].map(([k, n]) =>
             <button key={k} onClick={() => setOnglet(k)} style={stylePetitBouton(onglet === k, '#e63946')}>{n}</button>)}
         </div>
       )}
@@ -462,14 +462,15 @@ export function SimulationTitrageIndirect() {
         <div className="ti-l1">
           <div style={styleBoite}>
             <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>
-              {enGuide && etape >= ETAPE_TECHNICIEN ? 'Le titrage du technicien (solution restée 8 h à la lumière)' : 'Le titrage du diiode restant'}
+              {enGuide && etape >= ETAPE_TECHNICIEN ? 'Exemple : le titrage du technicien (solution restée 8 h à la lumière)' : 'Exemple : le dosage de la vitamine C d’une gélule'}
             </div>
-            {!enGuide && <ContexteBanc
-              erlen={<>la prise d'essai de S₀ (V₀ = 25 mL, vitamine C) et le diiode en excès ({enDefi ? '10,0' : fmt(V1Exp, 1)} mL à {enDefi ? '0,010' : fmt(c1Exp, 3)} mol/L), après 5 minutes d'agitation.</>}
-              burette={<>le thiosulfate de sodium, à {enDefi ? '0,010' : fmt(c2Exp, 3)} mol/L.</>}
-              equations={[['Réaction dans l’erlenmeyer (lente, totale)', <>C₆H₈O₆ + I₂ → C₆H₆O₆ + 2 H⁺ + 2 I⁻</>],
-                ['Réaction de titrage (rapide, totale)', <>I₂ + 2 S₂O₃²⁻ → 2 I⁻ + S₄O₆²⁻</>]]}/>}
             {schema}
+            {/* les deux équations, toujours sous le schéma ; hors parcours, aussi le contenu de l'erlenmeyer et de la burette */}
+            <ContexteBanc
+              erlen={!enGuide && <>la prise d'essai de S₀ (V₀ = 25 mL, vitamine C) et le diiode en excès ({enDefi ? '10,0' : fmt(V1Exp, 1)} mL à {enDefi ? '0,010' : fmt(c1Exp, 3)} mol/L), après 5 minutes d'agitation.</>}
+              burette={!enGuide && <>le thiosulfate de sodium, à {enDefi ? '0,010' : fmt(c2Exp, 3)} mol/L.</>}
+              equations={[['Réaction préalable, dans l’erlenmeyer (lente, totale ; le diiode est en excès)', <>C₆H₈O₆<sub>(aq)</sub> + I₂<sub>(aq)</sub> → C₆H₆O₆<sub>(aq)</sub> + 2 H⁺<sub>(aq)</sub> + 2 I⁻<sub>(aq)</sub></>],
+                ['Réaction support du titrage de l’excès de diiode (rapide, totale)', <>I₂<sub>(aq)</sub> + 2 S₂O₃²⁻<sub>(aq)</sub> → 2 I⁻<sub>(aq)</sub> + S₄O₆²⁻<sub>(aq)</sub></>]]}/>
             <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>
               L'erlenmeyer contient la prise d'essai de S₀ et le diiode, après 5 minutes d'agitation. La burette contient le thiosulfate.
               Le zoom permet de lire le volume versé au dixième de millilitre.

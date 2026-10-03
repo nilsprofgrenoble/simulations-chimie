@@ -3,7 +3,7 @@ import { fmt, sci, lireNombre, useEtatPersistant, KIT, stylePetitBouton, styleBo
 import { Formule } from "./Avancement";
 
 // ====================================================
-// ÉLÉMENTS COMMUNS AUX DEUX TITRAGES (direct et indirect) :
+// ÉLÉMENTS COMMUNS AUX DEUX TITRAGES (direct et en retour) :
 // la burette et son zoom, la couleur de la solution, l'encadré de contexte, l'outil « titrage pour toute réaction ».
 // ====================================================
 
@@ -31,14 +31,17 @@ export function couleurSolution(cI2, indicateur, cRef) {
   return rgb(mix(pal[k], pal[k + 1], x - k));
 }
 
-// Encadré de contexte : ce qu'il y a dans l'erlenmeyer, dans la burette, et les équations
+// Encadré placé sous le schéma : l'équation (ou les équations) support du titrage, et, hors parcours guidé, le contenu de l'erlenmeyer et de la burette
 export function ContexteBanc({ erlen, burette, equations }) {
   return (
-    <div style={{ ...styleBoite, background: 'white', marginBottom: 10, fontSize: 14, color: KIT.txt, lineHeight: 1.55 }}>
-      <div><strong>Dans l'erlenmeyer :</strong> {erlen}</div>
-      <div><strong>Dans la burette :</strong> {burette}</div>
+    <div style={{ ...styleBoite, background: 'white', marginTop: 8, fontSize: 14, color: KIT.txt, lineHeight: 1.55 }}>
+      {erlen && <div><strong>Dans l'erlenmeyer :</strong> {erlen}</div>}
+      {burette && <div><strong>Dans la burette :</strong> {burette}</div>}
       {equations.map(([nom, eq], k) => (
-        <div key={k} style={{ marginTop: 4 }}><strong>{nom} :</strong> <span style={{ fontFamily: 'Georgia, serif', fontSize: 15.5 }}>{eq}</span></div>
+        <div key={k} style={{ marginTop: erlen || k ? 6 : 0 }}>
+          <strong>{nom} :</strong>
+          <div style={{ fontFamily: 'Georgia, serif', fontSize: 17, textAlign: 'center', whiteSpace: 'nowrap', overflowX: 'auto', padding: '2px 0' }}>{eq}</div>
+        </div>
       ))}
     </div>
   );

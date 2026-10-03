@@ -518,6 +518,12 @@ export function Simulation3({ plotlyReady }) {
         <div style={{flex:"0 0 420px", minWidth:380}}>
   <div style={{...cardStyle, height:"100%"}}>
     <SchemaElectro mode={mode} x={x}/>
+    {/* l'équation support du titrage, sous le schéma */}
+    <div style={{ marginTop: 10, background: 'white', border: '1px solid #cbd5e1', borderRadius: 8, padding: '8px 10px', fontSize: 14, color: '#0f172a', lineHeight: 1.5 }}>
+      <strong>Réaction support du titrage :</strong>{' '}
+      <span style={{ fontFamily: 'Georgia, serif', fontSize: 16, whiteSpace: 'nowrap' }}>Fe²⁺<sub>(aq)</sub> + Ce⁴⁺<sub>(aq)</sub> → Fe³⁺<sub>(aq)</sub> + Ce³⁺<sub>(aq)</sub></span>
+      <div style={{ fontSize: 12.5, color: '#334155' }}>Dans le bécher : les ions Fe²⁺ (espèce titrée). Dans la burette : les ions Ce⁴⁺ (titrant).</div>
+    </div>
   </div>
 </div>
 

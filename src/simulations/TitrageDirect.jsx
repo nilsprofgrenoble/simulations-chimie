@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE } from "../commun";
+  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
 import { V_BURETTE, seuilVisible, couleurSolution, ContexteBanc, SchemaBurette, OutilTitrageGeneral } from "./titrageCommun";
 
 // ====================================================
@@ -127,8 +127,8 @@ export function Simulation2() {
         expl: 'Un écart de quelques pourcents vient de la lecture de la burette (à une goutte près), de la pipette et de la concentration du thiosulfate.' } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       texte: <>Vous avez réalisé un titrage direct complet. En exploration libre, un onglet permet de simuler le titrage de n'importe
-        quelle réaction, et le banc du Lugol propose tous les réglages. La simulation « Titrage indirect » montre une autre façon de
-        doser : le titrage en retour.</>, tache: null },
+        quelle réaction, et l'exemple du Lugol propose tous les réglages. La simulation « Titrage en retour » montre une autre façon de
+        doser : on titre l'excès d'un réactif.</>, tache: null },
   ];
   const idx = id => ETAPES.findIndex(e => e.id === id);
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
@@ -275,7 +275,7 @@ export function Simulation2() {
             : proche(lireNombre(defi.reps[q.id] || ''), vrai, 0.03);
           return (
             <div key={q.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {q.q}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {avecIndices(q.q)}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input value={defi.reps[q.id] || ''} placeholder="?" aria-label={`Réponse ${k + 1}`} onChange={x => { const v = x.target.value; setDefi(d => ({ ...d, verifie: false, reps: { ...d.reps, [q.id]: v } })); }}
                   style={{ fontSize: 14, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 120 }}/>
@@ -308,7 +308,7 @@ export function Simulation2() {
         @media (max-width: 900px) { .td-l1 { grid-template-columns: minmax(0, 1fr); } }
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt }}>Titrage direct : le diiode du Lugol</h2>
+        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt }}>Titrage direct</h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
           <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
@@ -317,7 +317,7 @@ export function Simulation2() {
       </div>
       {mode === 'explore' && (
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-          {[['general', '📋 Titrage pour toute réaction'], ['banc', '🧪 Le banc : diiode et thiosulfate']].map(([k, n]) =>
+          {[['general', '📋 Titrage pour toute réaction'], ['banc', '🧪 Exemple du dosage du diiode par le thiosulfate']].map(([k, n]) =>
             <button key={k} onClick={() => setOnglet(k)} style={stylePetitBouton(onglet === k, '#e63946')}>{n}</button>)}
         </div>
       )}
@@ -325,12 +325,13 @@ export function Simulation2() {
       {vueBanc && <>
         <div className="td-l1">
           <div style={styleBoite}>
-            {!enGuide && <ContexteBanc
-              erlen={<>V<sub>A</sub> = {mode === 'explore' ? fmt(VAExp, 0) : '10,0'} mL de Lugol (diiode I₂, concentration c<sub>A</sub> à déterminer), avec un barreau aimanté.</>}
-              burette={<>le thiosulfate de sodium (2 Na⁺ + S₂O₃²⁻), à c<sub>B</sub> = {mode === 'explore' ? fmt(cBExp, 4) : '0,0500'} mol/L.</>}
-              equations={[['Réaction de titrage (rapide, totale)', <>2 S₂O₃²⁻ + I₂ → S₄O₆²⁻ + 2 I⁻</>]]}/>}
-            <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Le titrage du diiode par le thiosulfate</div>
+            <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Exemple : le dosage du diiode du Lugol par le thiosulfate</div>
             {schema}
+            {/* l'équation support du titrage, toujours sous le schéma ; hors parcours, aussi le contenu de l'erlenmeyer et de la burette */}
+            <ContexteBanc
+              erlen={!enGuide && <>V<sub>A</sub> = {mode === 'explore' ? fmt(VAExp, 0) : '10,0'} mL de Lugol (diiode I₂, concentration c<sub>A</sub> à déterminer), avec un barreau aimanté.</>}
+              burette={!enGuide && <>le thiosulfate de sodium (2 Na⁺ + S₂O₃²⁻), à c<sub>B</sub> = {mode === 'explore' ? fmt(cBExp, 4) : '0,0500'} mol/L.</>}
+              equations={[['Réaction support du titrage (rapide, totale)', <>2 S₂O₃²⁻<sub>(aq)</sub> + I₂<sub>(aq)</sub> → S₄O₆²⁻<sub>(aq)</sub> + 2 I⁻<sub>(aq)</sub></>]]}/>
             <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>
               Le zoom permet de lire le volume versé au dixième de millilitre ; la burette est graduée tous les 0,05 mL, soit environ une goutte.
             </div>

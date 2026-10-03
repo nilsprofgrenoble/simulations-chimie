@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { cardStyle, fmt, CarteParcours, Cadre, useEtatPersistant, KIT, styleBouton, stylePetitBouton,
-  styleBoite, Section, LigneMesure, Curseur, BoutonsModes, lireNombre, proche, sci } from "../commun";
+  styleBoite, Section, LigneMesure, Curseur, BoutonsModes, lireNombre, proche, sci, avecIndices } from "../commun";
 
 // ====================================================
 // RÉGULATION DU NIVEAU D'UN CHÂTEAU D'EAU — TOR, P, PI (Terminale STL)
@@ -457,7 +457,7 @@ export function Simulation5() {
           const ok = defi.verifie && justeV(q);
           return (
             <div key={q.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {q.q}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {avecIndices(q.q)}</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input value={defi.reps[q.id] || ''} placeholder="?" aria-label={`Réponse ${k + 1}`}
                   onChange={x => { const v = x.target.value; setDefi(d => ({ ...d, verifie: false, reps: { ...d.reps, [q.id]: v } })); }}

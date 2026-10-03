@@ -29,7 +29,7 @@ const ENERGY_URL = "https://nilsprofgrenoble.github.io/energy-at-school/";
 const SIMULATIONS = [
   { id: 1, label: "Avancement d'une réaction", icon: "⚗️", color: "#2a9d8f", component: Simulation1, niveau: "1G" },
   { id: 2, label: "Titrage direct",             icon: "🧪", color: "#e63946", component: Simulation2, niveau: "1G" },
-  { id: 25, label: "Titrage indirect (en retour)", icon: "💊", color: "#be123c", component: SimulationTitrageIndirect, niveau: "1G" },
+  { id: 25, label: "Titrage en retour", icon: "💊", color: "#be123c", component: SimulationTitrageIndirect, niveau: "1G" },
   { id: 26, label: "Mesure et incertitudes", icon: "📏", color: "#0f766e", component: SimulationMetrologie, niveau: "1G" },
   { id: 3, label: "Titrages électrochimiques",  icon: "⚡", color: "#e9a824", component: Simulation3, niveau: "BTS" },
   { id: 4, label: "Diagramme de Hansen",         icon: "🔵", color: "#6a4c93", component: Simulation4, niveau: "BTS" },
@@ -73,9 +73,9 @@ function PageAccueil({ onStart }) {
   const simulations = [
     { niveau:"1G", color:"#2a9d8f", sims:[
       { icon:"⚗️", label:"Avancement d'une réaction", desc:"Le volume molaire d'un gaz par la réaction du magnésium sur l'acide : tableau d'avancement, réactif limitant. Et un tableau d'avancement pour toute réactions." },
-      { icon:"🧪", label:"Titrage direct", desc:"Titrer le diiode du Lugol par le thiosulfate : équivalence, repérage colorimétrique, calcul de la concentration. Et un titrage pour toute réaction." },
+      { icon:"🧪", label:"Titrage direct", desc:"On fait réagir l'espèce à doser avec une solution titrante jusqu'à l'équivalence. Exemple : le diiode du Lugol par le thiosulfate. Et un titrage pour toute réaction." },
       { icon:"📏", label:"Mesure et incertitudes", desc:"Pourquoi des groupes qui font la même mesure ne trouvent-ils pas la même valeur ? Moyenne, écart-type, incertitude-type, comparaison à une référence." },
-      { icon:"💊", label:"Titrage indirect (en retour)", desc:"Doser la vitamine C d'une gélule avec un excès de diiode, puis titrer ce qui reste. Et un titrage en retour pour toute réaction." },
+      { icon:"💊", label:"Titrage en retour", desc:"On ajoute un excès connu d'un réactif, puis on titre ce qui n'a pas réagi. Exemple : la vitamine C d'une gélule. Et un titrage en retour pour toute réaction." },
       { icon:"🌈", label:"Beer-Lambert", desc:"Schéma animé du spectrophotomètre, spectre UV-visible interactif et courbe d'étalonnage." },
     ]},
     { niveau:"TSTL", color:"#e9a824", sims:[
