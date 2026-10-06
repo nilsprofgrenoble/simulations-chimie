@@ -36,7 +36,7 @@ const SIMULATIONS = [
   { id: 6, label: "Point de fonctionnement", icon: "📈", color: "#e76f51", component: Simulation6, niveau: "TSTL" },
   { id: 7, label: "Cristallisation", icon: "❄️", color: "#0096c7", component: Simulation7, niveau: "TSTL" },
   { id: 8, label: "Chaîne de mesure", icon: "💡", color: "#f4a261", component: Simulation8, niveau: "TSTL" },
-  { id: 9, label: "Étude inter-laboratoire", icon: "📊", color: "#c0392b", component: Simulation9, niveau: "BTS" },
+  { id: 9, label: "Fidélité d'une méthode : étude interlaboratoire", icon: "📊", color: "#c0392b", component: Simulation9, niveau: "BTS" },
   { id: 10, label: "Beer-Lambert",  icon: "🌈", color: "#1a7abf", component: BeerLambert1G,  niveau: "1G"  },
   { id: 11, label: "Dosage par étalonnage", icon: "📐", color: "#7b2d8b", component: BeerLambertBTS, niveau: "BTS" },
   { id: 12, label: "Simulation CLHP", icon: "💉", color: "#0d6e6e", component: SimulationCLHP, niveau: "BTS" },
@@ -44,7 +44,7 @@ const SIMULATIONS = [
   { id:14, label:"Séchage d'une peinture", icon:"🎨", color:"#e76f51", component:SimulationPeinture, niveau:"BTS" },
   { id:15, label:"Quantum du CAN", niveau:"TSTL", icon:"📡", color:"#0ea5e9",
     component: SimulationCAN },
-  { id:16, label:"Essais d'aptitude", niveau:"BTS", icon:"🎯", color:"#dc2626",
+  { id:16, label:"Essais d'aptitude : comparaison interlaboratoire", niveau:"BTS", icon:"🎯", color:"#dc2626",
     component: SimulationAptitude },
   { id:17, label:"Circuit hydraulique", niveau:"TSTL", icon:"🚰", color:"#0284c7",
     component: SimulationBernoulli },
@@ -87,11 +87,11 @@ function PageAccueil({ onStart }) {
     { niveau:"BTS", color:"#6a4c93", sousMenus:[
       { label:"🔬 Analyse", sims:[
         { icon:"⚡", label:"Titrages électrochimiques", desc:"Potentiométrie, ampérométrie — courbes i=f(E) et suivi du titrage." },
-        { icon:"📊", label:"Étude inter-laboratoire", desc:"Tests de Cochran et Grubbs, fidélité inter-laboratoires selon les normes ISO." },
+        { icon:"📊", label:"Fidélité d'une méthode : étude interlaboratoire", desc:"Plusieurs laboratoires analysent le même échantillon pour évaluer la fidélité de la méthode (ISO 5725) : tests de Cochran et de Grubbs, répétabilité et reproductibilité." },
         { icon:"📐", label:"Dosage par étalonnage", desc:"Courbe d'étalonnage, résidus, LD/LQ et test de Fisher-Snedecor pour la linéarité." },
         { icon:"💉", label:"Simulation CLHP", desc:"Chromatogrammes en phase inverse — influence du logP, de l'éluant et de la colonne sur la séparation." },
         { icon:"📐", label:"Étalon interne / Normalisation interne", desc:"Exploitation de chromatogrammes par méthode de l'étalon interne ou de la normalisation interne." },
-        { icon:"🎯", label:"Essais d'aptitude", desc:"Z-score, moyenne et écart-type inter-laboratoires selon la norme d'essais d'aptitude." },
+        { icon:"🎯", label:"Essais d'aptitude : comparaison interlaboratoire", desc:"Plusieurs laboratoires analysent le même échantillon pour évaluer la compétence de chacun : le z-score, ses différentes formules et ses hypothèses." },
       ]},
       { label:"🧪 Formulation", sims:[
         { icon:"🔵", label:"Diagramme de Hansen", desc:"Sphère de Hansen, solubilité des polymères, optimisation de mélanges de solvants." },

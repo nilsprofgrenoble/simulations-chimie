@@ -64,7 +64,7 @@ export const CONTEXTES = {
     niveau: "Terminale STL",
   },
   9: {
-    but: "Valider une méthode d'analyse par une étude inter-laboratoires (norme ISO 5725) : plusieurs laboratoires analysent le même échantillon.",
+    but: "Évaluer la fidélité d'une méthode d'analyse par une étude interlaboratoire (norme ISO 5725) : plusieurs laboratoires analysent le même échantillon, et l'on évalue la méthode, non les laboratoires.",
     apprendre: "Repérer les laboratoires aberrants avec les tests de Cochran (dispersions) et de Grubbs (moyennes), puis calculer la répétabilité sr et la reproductibilité sR.",
     etapes: [
       "Choisissez le nombre de laboratoires p, le nombre d'essais par laboratoire n et la valeur cible.",

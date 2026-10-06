@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle } from "../commun";
 
 // ============================================================
-//  SIMULATION 9 — Étude inter-laboratoire
+//  SIMULATION 9 — Fidélité d'une méthode : étude interlaboratoire (ISO 5725)
 // ============================================================
 
 export function Simulation9({ plotlyReady }) {
