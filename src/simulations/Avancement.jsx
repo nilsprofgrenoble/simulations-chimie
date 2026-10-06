@@ -6,7 +6,6 @@ import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, Cadre, useEtatP
 // AVANCEMENT D'UNE TRANSFORMATION CHIMIQUE (1re spé PC)
 // Parcours : TP « détermination du volume molaire d'un gaz » (Mg + 2 H⁺ → Mg²⁺ + H₂).
 // Exploration : la manip, et un outil général de tableau d'avancement (formules saisies au clavier).
-// La métrologie (dispersion des résultats de la classe) a sa propre simulation : « Mesure et incertitudes ».
 // ====================================================
 
 const M_MG = 24.0;          // g/mol (valeur de l'énoncé)
@@ -367,7 +366,7 @@ export function Simulation1() {
     { id: 'bravo', titre: 'Bravo !', focus: [],
       texte: <>Vous avez mené une étude quantitative complète : quantités de matière, tableau d'avancement, réactif limitant et volume
         molaire. En exploration libre, vous trouverez la manip avec tous les réglages, et un tableau d'avancement pour n'importe quelle
-        réaction. Pour traiter les résultats de toute la classe, voyez la simulation « Mesure et incertitudes ».</>, tache: null },
+        réaction.</>, tache: null },
   ];
   const idx = id => ETAPES.findIndex(e => e.id === id);
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];

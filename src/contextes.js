@@ -74,17 +74,6 @@ export const CONTEXTES = {
     ],
     niveau: "BTS Métiers de la chimie",
   },
-  10: {
-    but: "Comprendre le fonctionnement d'un spectrophotomètre et la loi de Beer-Lambert, puis doser une espèce colorée.",
-    apprendre: "Ce qu'est l'absorbance, pourquoi on travaille au maximum d'absorption, et comment une courbe d'étalonnage permet de retrouver une concentration.",
-    etapes: [
-      "Choisissez l'espèce colorée (analyte).",
-      "Cliquez sur le spectre d'absorption pour choisir la longueur d'onde de travail : visez le maximum.",
-      "Affichez une courbe d'étalonnage (exemple, saisie manuelle ou copier-coller depuis un tableur).",
-      "Utilisez la courbe pour trouver la concentration d'une solution inconnue à partir de son absorbance.",
-    ],
-    niveau: "1re générale",
-  },
   11: {
     but: "Réaliser un dosage par étalonnage, en spectrophotométrie ou avec une autre technique (absorption atomique, CLHP…).",
     apprendre: "Construire et exploiter une droite d'étalonnage par régression linéaire, et en déduire la concentration d'un échantillon.",
@@ -139,15 +128,5 @@ export const CONTEXTES = {
       "Lisez la résolution en température qui en découle, et regardez si elle change selon la température.",
     ],
     niveau: "Terminale STL",
-  },
-  16: {
-    but: "Évaluer la performance de chaque laboratoire, ou de chaque technicien d'une classe, qui a analysé le même échantillon, à l'aide du critère du z-score.",
-    apprendre: "Calculer un z-score et l'interpréter : satisfaisant, discutable ou insatisfaisant.",
-    etapes: [
-      "Générez un jeu de données, ou collez les résultats de votre classe.",
-      "Observez les résultats de chaque laboratoire par rapport à la valeur de référence.",
-      "Lisez le z-score de chacun et son interprétation.",
-    ],
-    niveau: "BTS Métiers de la chimie",
   },
 };
