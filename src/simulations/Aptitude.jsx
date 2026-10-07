@@ -194,6 +194,9 @@ function Hypotheses() {
       <li><strong>Assez de participants</strong> : avec la formule du référentiel, |z| ne peut pas dépasser (p − 1) / √p ; les estimations robustes demandent au moins une douzaine de laboratoires.</li>
       <li><strong>Avec la norme ISO</strong> : σ<sub>pt</sub> fixé à l'avance (exigence de la méthode, campagnes précédentes, étude de fidélité, ou écart-type robuste des participants),
         et une valeur assignée assez sûre : u(x<sub>pt</sub>) ≤ 0,3 σ<sub>pt</sub>.</li>
+      <li><strong>Une simplification</strong> : pour une valeur de consensus, la norme calcule une moyenne robuste et un écart-type robuste par un algorithme
+        itératif (l'« algorithme A ») ; ici, on utilise la médiane et s* = 1,483 × MAD, plus simples. L'incertitude u(x<sub>pt</sub>) = 1,25 s* / √p vient de la
+        médiane : pour des données de loi normale, elle est environ √(π/2) ≈ 1,25 fois moins précise qu'une moyenne.</li>
     </ul>
   );
 }

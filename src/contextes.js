@@ -19,17 +19,6 @@ export const CONTEXTES = {
     ],
     niveau: "BTS Métiers de la chimie",
   },
-  4: {
-    but: "Prévoir si une résine ou un polymère se dissout dans un solvant, ou dans un mélange de solvants, grâce aux paramètres de solubilité de Hansen.",
-    apprendre: "Les trois paramètres δD, δP et δH, la sphère de solubilité de rayon R, et comment un mélange de deux mauvais solvants peut devenir un bon solvant.",
-    etapes: [
-      "Entrez les paramètres de la résine et le rayon de sa sphère de solubilité (ou gardez l'exemple).",
-      "Cochez les solvants à afficher, et regardez lesquels tombent à l'intérieur de la sphère.",
-      "Composez un mélange de deux solvants en faisant varier leurs proportions.",
-      "Cherchez une proportion qui fait entrer le mélange dans la sphère.",
-    ],
-    niveau: "BTS Métiers de la chimie",
-  },
   6: {
     but: "Découvrir une boucle de régulation de niveau et la caractéristique statique du procédé, puis trouver son point de fonctionnement.",
     apprendre: "Le vocabulaire de la régulation (grandeur réglée, réglante, perturbatrice, signal de commande et de mesure) et la notion de point de fonctionnement.",
@@ -74,17 +63,6 @@ export const CONTEXTES = {
     ],
     niveau: "BTS Métiers de la chimie",
   },
-  11: {
-    but: "Réaliser un dosage par étalonnage, en spectrophotométrie ou avec une autre technique (absorption atomique, CLHP…).",
-    apprendre: "Construire et exploiter une droite d'étalonnage par régression linéaire, et en déduire la concentration d'un échantillon.",
-    etapes: [
-      "Choisissez la méthode : spectrophotométrie (Beer-Lambert) ou autre méthode.",
-      "Choisissez l'analyte et la longueur d'onde (en spectrophotométrie).",
-      "Entrez vos solutions étalons : exemple, saisie manuelle ou copier-coller depuis un tableur.",
-      "Analysez la droite d'étalonnage, puis calculez la concentration de l'échantillon.",
-    ],
-    niveau: "BTS Métiers de la chimie",
-  },
   12: {
     but: "Simuler une séparation par chromatographie liquide haute performance (CLHP) en phase inverse C18, avec un éluant acétonitrile / eau (modèle de X. Bataille).",
     apprendre: "L'influence de la colonne, de la composition de l'éluant, du débit et de la température sur les temps de rétention et la qualité de la séparation.",
@@ -104,17 +82,6 @@ export const CONTEXTES = {
       "Suivez le mode opératoire de l'exemple (hydrobenzoïne, benzoïne, benzile), ou saisissez vos propres données.",
       "Observez les chromatogrammes obtenus.",
       "Retrouvez les concentrations avec la formule affichée.",
-    ],
-    niveau: "BTS Métiers de la chimie",
-  },
-  14: {
-    but: "Formuler une peinture et prévoir son aspect une fois sèche (brillant, satiné ou mat).",
-    apprendre: "Calculer l'extrait sec, la concentration pigmentaire volumique CPV, la CPV critique (CPVC) et le rapport λ = CPV / CPVC qui fixe l'aspect du film.",
-    etapes: [
-      "Ajustez les masses des matières premières, en repérant le rôle de chacune (solvant, liant, pigment, charge, additif).",
-      "Lisez l'extrait sec, la CPV, la CPVC et λ dans les résultats.",
-      "Regardez l'aspect prévu pour le film, puis lancez l'animation du séchage.",
-      "Modifiez la formulation pour obtenir un autre aspect.",
     ],
     niveau: "BTS Métiers de la chimie",
   },

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { SimulationAptitude } from "./simulations/Aptitude";
 import { Simulation1 } from "./simulations/Avancement";
-import { BeerLambertBTS } from "./simulations/BeerLambert";
+import { SimulationDosageEtalonnage } from "./simulations/DosageEtalonnage";
 import { BeerLambert1G } from "./simulations/BeerLambert1G";
 import { SimulationBernoulli } from "./simulations/Bernoulli";
 import { BandeauContexte } from "./commun";
@@ -31,17 +31,17 @@ const SIMULATIONS = [
   { id: 2, label: "Titrage direct",             icon: "🧪", color: "#e63946", component: Simulation2, niveau: "1G" },
   { id: 25, label: "Titrage en retour", icon: "💊", color: "#be123c", component: SimulationTitrageIndirect, niveau: "1G" },
   { id: 3, label: "Titrages électrochimiques",  icon: "⚡", color: "#e9a824", component: Simulation3, niveau: "BTS" },
-  { id: 4, label: "Diagramme de Hansen",         icon: "🔵", color: "#6a4c93", component: Simulation4, niveau: "BTS" },
+  { id: 4, label: "Paramètres de Hansen : vernis à ongle",         icon: "🔵", color: "#6a4c93", component: Simulation4, niveau: "BTS" },
   { id: 5, label: "Régulation de niveau",        icon: "⚙️", color: "#2a6099", component: Simulation5, niveau: "TSTL" },
   { id: 6, label: "Point de fonctionnement", icon: "📈", color: "#e76f51", component: Simulation6, niveau: "TSTL" },
   { id: 7, label: "Cristallisation", icon: "❄️", color: "#0096c7", component: Simulation7, niveau: "TSTL" },
   { id: 8, label: "Chaîne de mesure", icon: "💡", color: "#f4a261", component: Simulation8, niveau: "TSTL" },
   { id: 9, label: "Fidélité d'une méthode : étude interlaboratoire", icon: "📊", color: "#c0392b", component: Simulation9, niveau: "BTS" },
   { id: 10, label: "Beer-Lambert",  icon: "🌈", color: "#1a7abf", component: BeerLambert1G,  niveau: "1G"  },
-  { id: 11, label: "Dosage par étalonnage", icon: "📐", color: "#7b2d8b", component: BeerLambertBTS, niveau: "BTS" },
+  { id: 11, label: "Dosage par étalonnage", icon: "📐", color: "#7b2d8b", component: SimulationDosageEtalonnage, niveau: "BTS" },
   { id: 12, label: "Simulation CLHP", icon: "💉", color: "#0d6e6e", component: SimulationCLHP, niveau: "BTS" },
   { id: 13, label: "Étalon interne / Normalisation interne", icon: "📐", color: "#c0392b", component: SimulationEtalonnageInterne, niveau: "BTS" },
-  { id:14, label:"Séchage d'une peinture", icon:"🎨", color:"#e76f51", component:SimulationPeinture, niveau:"BTS" },
+  { id:14, label:"Formulation et séchage d'une peinture", icon:"🎨", color:"#e76f51", component:SimulationPeinture, niveau:"BTS" },
   { id:15, label:"Quantum du CAN", niveau:"TSTL", icon:"📡", color:"#0ea5e9",
     component: SimulationCAN },
   { id:16, label:"Essais d'aptitude : comparaison interlaboratoire", niveau:"BTS", icon:"🎯", color:"#dc2626",
@@ -88,14 +88,14 @@ function PageAccueil({ onStart }) {
       { label:"🔬 Analyse", sims:[
         { icon:"⚡", label:"Titrages électrochimiques", desc:"Potentiométrie, ampérométrie — courbes i=f(E) et suivi du titrage." },
         { icon:"📊", label:"Fidélité d'une méthode : étude interlaboratoire", desc:"Plusieurs laboratoires analysent le même échantillon pour évaluer la fidélité de la méthode (ISO 5725) : tests de Cochran et de Grubbs, répétabilité et reproductibilité." },
-        { icon:"📐", label:"Dosage par étalonnage", desc:"Courbe d'étalonnage, résidus, LD/LQ et test de Fisher-Snedecor pour la linéarité." },
+        { icon:"📐", label:"Dosage par étalonnage", desc:"Concevoir une gamme à partir de l'ordre de grandeur attendu, la réaliser, exploiter la droite (résidus, test de Fisher, LD/LQ) et doser l'échantillon. Exemple : la caféine d'une crème en CLHP." },
         { icon:"💉", label:"Simulation CLHP", desc:"Chromatogrammes en phase inverse — influence du logP, de l'éluant et de la colonne sur la séparation." },
         { icon:"📐", label:"Étalon interne / Normalisation interne", desc:"Exploitation de chromatogrammes par méthode de l'étalon interne ou de la normalisation interne." },
         { icon:"🎯", label:"Essais d'aptitude : comparaison interlaboratoire", desc:"Plusieurs laboratoires analysent le même échantillon pour évaluer la compétence de chacun : le z-score, ses différentes formules et ses hypothèses." },
       ]},
       { label:"🧪 Formulation", sims:[
-        { icon:"🔵", label:"Diagramme de Hansen", desc:"Sphère de Hansen, solubilité des polymères, optimisation de mélanges de solvants." },
-        { icon:"🎨", label:"Séchage d'une peinture", desc:"CPV, CPVC, extrait sec et animation du séchage d'un film de peinture." },
+        { icon:"🔵", label:"Paramètres de Hansen : vernis à ongle", desc:"Sphère de solubilité de la nitrocellulose, RED, optimisation d'un mélange de solvants, et séchage d'un vernis : rester dans la sphère jusqu'au bout." },
+        { icon:"🎨", label:"Formulation et séchage d'une peinture", desc:"Reformuler une base blanche mate avec une nouvelle résine : extrait sec, CPV, CPVC (prises d'huile des fiches ou mesurées), dispersant, TMFF, coalescent et COV." },
       ]},
     ]},
   ];
