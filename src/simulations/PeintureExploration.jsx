@@ -474,13 +474,14 @@ export function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCh
   const lam = Math.max(0, Math.min(1.6, isFinite(lambda) ? lambda : 0));
 
   // Hauteur de la couche humide : de toute la hauteur au film sec
-  const hFilm = Math.max(FILM_FINAL, SVG_H * (1 - progress * 0.9));
+  const FIN_EAU = 0.82;                                // l'eau a fini de s'évaporer : les particules sont au contact
+  const hFilm = SVG_H - (SVG_H - FILM_FINAL) * Math.min(1, progress / FIN_EAU);
   const yTop = yBase - hFilm;
   const alphaEau = Math.max(0, (1 - progress) * 0.5);
   // Les trois temps
-  const tContact = lisse(0.45, 0.62, progress);       // l'eau qui s'évapore concentre les particules, jusqu'au contact
-  const tDeform = lisse(0.6, 0.78, progress);         // déformation des particules de latex
-  const tCoal = lisse(0.78, 0.97, progress);          // coalescence : frontières qui disparaissent
+  const conc = Math.max(0, Math.min(1, (progress - 0.06) / (FIN_EAU - 0.06)));   // avancement de la concentration des particules
+  const tDeform = lisse(0.8, 0.9, progress);          // déformation des particules de latex, une fois au contact
+  const tCoal = lisse(0.88, 0.99, progress);          // coalescence : frontières qui disparaissent
 
   // Les places des grains dans le film sec : empilement compact (3 rangées décalées)
   const grains = useMemo(() => {
@@ -494,19 +495,27 @@ export function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCh
     const rapport = lam <= 1 ? 1 : ((1 - cpv) / cpv) / ((1 - CPVC_ANIM) / CPVC_ANIM);   // liant présent / liant nécessaire
     const nLatex = hasLiant ? Math.round(besoin * Math.min(1, rapport)) : 0;
     const partPig = hasPigments && hasCharges ? 0.4 : hasPigments ? 1 : 0;
+    const ordre = places.map((p, i) => i).sort((a, b) => places[a].x - places[b].x);       // du plus à gauche au plus à droite
+    const rang = []; ordre.forEach((idx, k) => { rang[idx] = k; });
     return places.map((p, i) => {
       const type = i < nPulv ? (i < Math.round(nPulv * partPig) ? 'pig' : 'ch') : i < nPulv + nLatex ? 'latex' : 'vide';
-      return { ...p, type, x0: 10 + r() * (SVG_W - 20), y0rel: 0.05 + r() * 0.9, ph: r() * 6.28 };
+      const y0rel = 0.04 + 0.92 * ((rang[i] * 0.6180339887 + r() * 0.15) % 1);               // répartis sur toute la hauteur de l'eau
+      return { ...p, type, x0: Math.max(10, Math.min(SVG_W - 10, p.x + (r() - 0.5) * 70)), y0rel,
+        retard: (1 - y0rel) * 0.22 + r() * 0.12,                                         // les grains du bas se calent les premiers
+        ph: r() * 6.28, ph2: r() * 6.28, f1: 0.8 + r() * 0.9, f2: 1.6 + r() * 1.4 };
     });
   }, [lam, hasPigments, hasCharges, hasLiant]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Agitation brownienne pendant la dispersion
-  const [tic, setTic] = useState(0);
+  // Agitation brownienne : temps continu (≈ 30 images par seconde), de moins en moins ample à mesure que les particules se tassent
+  const [tm, setTm] = useState(0);
+  const agite = progress < FIN_EAU + 0.02;
   useEffect(() => {
-    if (progress >= 0.6) return;
-    const id = setInterval(() => setTic(t => t + 1), 90);
-    return () => clearInterval(id);
-  }, [progress >= 0.6]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!agite) return undefined;
+    let id, dern = 0;
+    const boucle = now => { if (now - dern > 33) { dern = now; setTm(now / 1000); } id = requestAnimationFrame(boucle); };
+    id = requestAnimationFrame(boucle);
+    return () => cancelAnimationFrame(id);
+  }, [agite]);
 
   // La surface : rugosité croissante avec λ (les grains affleurent)
   const amp = lam * progress * 5;
@@ -522,11 +531,15 @@ export function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCh
   const segPath = segPts.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(2)},${y.toFixed(2)}`).join(' ');
   const fillPath = [`M 0,${yBase}`, `L 0,${segPts[0][1].toFixed(2)}`, ...segPts.map(([x, y]) => `L ${x.toFixed(2)},${y.toFixed(2)}`), `L ${SVG_W},${yBase}`, 'Z'].join(' ');
 
-  // Position courante d'un grain : dispersé dans la couche humide, puis à sa place dans l'empilement
+  // Position courante d'un grain : en suspension dans la couche d'eau (qui descend), puis tassé à sa place dans l'empilement.
+  // Chaque grain a son propre retard et une progression douce : les grains du bas se calent d'abord, ceux du haut sont rattrapés par la surface.
   const position = g => {
-    const jit = (1 - tContact) * 3;
-    const xd = g.x0 + Math.sin(tic * 0.7 + g.ph) * jit, yd = yTop + R + 1 + g.y0rel * Math.max(0, hFilm - 2 * R - 3) + Math.cos(tic * 0.9 + g.ph) * jit;
-    return [xd + (g.x - xd) * tContact, yd + (g.y - yd) * tContact];
+    const t = (() => { const x = Math.max(0, Math.min(1, (conc - g.retard) / (1 - 0.34))); return x * x * x * (x * (6 * x - 15) + 10); })();
+    const amp = 5 * (1 - t) * (1 - t);
+    const wx = amp * (Math.sin(tm * g.f1 + g.ph) + 0.6 * Math.sin(tm * g.f2 + g.ph2)) / 1.6;
+    const wy = amp * (Math.cos(tm * g.f1 * 0.9 + g.ph2) + 0.6 * Math.cos(tm * g.f2 * 1.1 + g.ph)) / 1.6;
+    const yd = yTop + R + 1 + g.y0rel * Math.max(0, hFilm - 2 * R - 3);
+    return [g.x0 + (g.x - g.x0) * t + wx, Math.max(yTop + R, yd + (g.y - yd) * t + wy)];
   };
   const latex = grains.filter(g => g.type === 'latex'), poudres = grains.filter(g => g.type === 'pig' || g.type === 'ch'), vides = grains.filter(g => g.type === 'vide');
   const poreux = lam > 1 && hasLiant;
@@ -542,9 +555,9 @@ export function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCh
     });
   }, [showRayons, segPts]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const etapeTxt = progress <= 0 ? '' : progress < 0.6 ? '1. L’eau s’évapore : les particules se rapprochent (agitation brownienne)'
-    : progress < 0.78 ? '2. Les particules se touchent et se déforment, l’eau restant entre elles'
-      : progress < 0.97 ? '3. Coalescence : les particules de latex fusionnent' : '';
+  const etapeTxt = progress <= 0 ? '' : progress < 0.7 ? '1. L’eau s’évapore : les particules se rapprochent (agitation brownienne)'
+    : progress < 0.88 ? '2. Les particules se touchent et se déforment, l’eau restant entre elles'
+      : progress < 0.99 ? '3. Coalescence : les particules de latex fusionnent' : '';
   return (
     <svg width="100%" viewBox={`0 0 ${SVG_W} ${TOTAL_H}`} style={{ borderRadius: 12, border: '1.5px solid #e2e8f0', background: '#f8fafc', maxWidth: 760, display: 'block', margin: '0 auto' }}>
       <rect x={0} y={SVG_H} width={SVG_W} height={SUPPORT_H} rx={2} fill="#4b5563"/>
@@ -561,7 +574,7 @@ export function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCh
       {/* l'agent de coalescence, qui quitte le film en dernier */}
       {hasCoalescence && [0.12, 0.28, 0.44, 0.6, 0.76, 0.88].map((xRel, i) => {
         const x = xRel * SVG_W, yDepart = yTop + (0.4 + (i % 3) * 0.2) * hFilm;
-        const py = yDepart - lisse(0.72, 0.95, progress) * (yDepart - yTop + 45);
+        const py = yDepart - lisse(0.82, 0.98, progress) * (yDepart - yTop + 45);
         const op = py < yTop ? Math.max(0, 1 - (yTop - py) / 40) : 1;   // sorti du film, il s'évapore
         if (op <= 0) return null;
         return <polygon key={'c' + i} points={`${x},${py - 5} ${x + 5},${py} ${x},${py + 5} ${x - 5},${py}`} fill="#fbbf24" stroke="#d97706" strokeWidth={0.8} opacity={op}/>;
@@ -594,7 +607,7 @@ export function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCh
       {/* textes */}
       {etapeTxt && <text x={10} y={14} fontSize={11} fontWeight="600" fill="#334155">{etapeTxt}</text>}
       {alphaEau > 0.05 && <text x={SVG_W - 6} y={Math.max(24, yTop - 5)} textAnchor="end" fontSize={9} fill="#3b82f6">{Math.round((1 - progress) * 100)}% eau</text>}
-      {progress >= 0.97 && (
+      {progress >= 0.99 && (
         <text x={10} y={14} fontSize={11} fontWeight="600" fill={lambda < 0.5 ? '#2a9d8f' : lambda > 0.8 ? '#e63946' : '#e9a824'}>
           {lambda < 0.5 ? 'Film brillant — surface lisse' : lambda > 1 ? 'Film mat et poreux — le liant ne remplit pas tous les vides (λ > 1)'
             : lambda > 0.8 ? 'Film mat — les grains affleurent : surface rugueuse' : 'Film satiné — légères irrégularités'}
@@ -647,7 +660,7 @@ export function PeintureExploration({ plotlyReady }) {
     startPRef.current=progress>=1?0:progress;
     if (progress>=1) setProgress(0);
     function step(now){
-      const newP=Math.min(1,startPRef.current+(now-startRef.current)/12000);
+      const newP=Math.min(1,startPRef.current+(now-startRef.current)/16000);
       setProgress(newP);
       if (newP<1) playRef.current=requestAnimationFrame(step);
       else setPlaying(false);

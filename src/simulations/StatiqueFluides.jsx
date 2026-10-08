@@ -206,8 +206,8 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
             <tbody><tr><td style={{ padding: '3px 10px', fontWeight: 700 }}>P (hPa)</td>{hs.map(h => <td key={h} style={{ padding: '3px 10px', textAlign: 'center' }}>{L(h / 100)}</td>)}</tr></tbody>
           </table>
           <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 4 }}>Rappels : P = Patm + ρ·g·h ; g = 9,81 m/s² ; 1 hPa = 100 Pa.</div>
-          <button onClick={() => { setFluide(defi.fluide); setPatm(defi.patm); setMesures([]); setModele(0); setHCm(0); setHinc(defi.H / 100); setZCm(0); setRevele(false); setMode('explore'); }}
-            style={{ ...stylePetitBouton(false, '#334155'), marginTop: 6 }}>🔍 Reproduire cette expérience dans l’exploration</button>
+          <button onClick={() => { setFluide(defi.fluide); setPatm(defi.patm); setMesures(hs.map(h => ({ h, p: L(h / 100) }))); setModele(0); setHCm(0); setHinc(defi.H / 100); setZCm(0); setRevele(false); setMode('explore'); }}
+            style={{ ...stylePetitBouton(false, '#334155'), marginTop: 6 }}>🔍 Reporter ces points dans l’exploration (graphique P = f(h))</button>
         </div>
         {Q.map((qu, k) => {
           const rep = defi.reps[qu.id] || '', ok = proche(lireNombre(rep), qu.vrai, qu.tol);
