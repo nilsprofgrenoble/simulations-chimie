@@ -22,8 +22,8 @@ export const rpDe = e => {
 };
 // Pont diviseur alimenté en 5 V, tension prise aux bornes de R (la photorésistance est côté 5 V)
 const urDe = (Rp, R) => 5 * R / (Rp + R);
-// CAN idéal à n bits, référence 5 V : N = arrondi de Ur / 5 × (2ⁿ − 1)
-const nDe = (Ur, bits) => Math.round(Ur / 5 * (Math.pow(2, bits) - 1));
+// CAN idéal à n bits, référence 5 V : N = partie entière de Ur / 5 × (2ⁿ − 1)
+const nDe = (Ur, bits) => Math.floor(Ur / 5 * (Math.pow(2, bits) - 1) + 1e-9);
 const SEUIL_BAS = 393, SEUIL_HAUT = 491;   // valeurs par défaut de l'algorithme (10 bits)
 const PRESETS_E = [12, 70, 200, 470, 1050, 1500];
 
@@ -63,7 +63,7 @@ export function Simulation8({ plotlyReady }) {
   const canUnite  = canInput==="Ur" ? "V" : canInput==="Rp" ? "Ω" : "lx";
   const canValReel = canInput==="Ur" ? Ur : canInput==="Rp" ? Rp : E;
   const canVal5V   = canInput==="Ur" ? Ur : canInput==="Rp" ? Rp/10000*5 : E/1500*5;
-  const NcanVal    = Math.round(canVal5V / 5 * Nmax);
+  const NcanVal    = Math.floor(canVal5V / 5 * Nmax + 1e-9);
   const quantum    = canMax / Nmax;
 
   // ── Algorithme phares ──
@@ -128,7 +128,7 @@ export function Simulation8({ plotlyReady }) {
       tache: { type: 'num', q: 'Quantum q pour 10 bits', unite: 'mV', vrai: q10, tol: 0.01, affiche: x => fmt(x, 2),
         bloque: bits !== B0 ? 'Choisissez 10 bits dans la liste.' : null, expl: `q = 5 / 1023 = ${fmt(q10 / 1000, 5)} V = ${fmt(q10, 2)} mV.` } },
     { id: 'n', titre: 'Le nombre N', focus: ['can', 'graph'], bloc: 'can',
-      texte: <>Le CAN calcule N = Ur / 5 × (2<sup>n</sup> − 1), arrondi à l'entier le plus proche. Reprenez Ur = {fmt(Ur200, 2)} V (E = 200 lx).</>,
+      texte: <>Le CAN calcule N = Ur / 5 × (2<sup>n</sup> − 1), tronqué à l'entier inférieur. Reprenez Ur = {fmt(Ur200, 2)} V (E = 200 lx).</>,
       tache: { type: 'num', q: 'Nombre N donné par le CAN', unite: '', vrai: N200, tol: 0.004, affiche: x => fmt(x, 0),
         bloque: !reglage200 ? 'Gardez E = 200 lx, R = 1000 Ω et 10 bits.' : null,
         expl: `N = ${fmt(Ur200, 3)} / 5 × 1023 ≈ ${fmt(N200, 0)}.` } },
@@ -197,7 +197,7 @@ export function Simulation8({ plotlyReady }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.55 }}>
           La photorésistance reçoit un éclairement de <strong>{defi.E} lx</strong>. Elle est montée en pont diviseur avec <strong>R = {fmt(defi.R, 0)} Ω</strong> (alimentation 5 V), et la tension Ur est lue par un CAN <strong>{defi.bits} bits</strong> de référence 5 V.
-          <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 4 }}>Rappels : Ur = 5 R / (Rp + R) ; N = Ur / 5 × (2<sup>n</sup> − 1) arrondi ; q = 5 / (2<sup>n</sup> − 1).</div>
+          <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 4 }}>Rappels : Ur = 5 R / (Rp + R) ; N = Ur / 5 × (2<sup>n</sup> − 1) tronqué ; q = 5 / (2<sup>n</sup> − 1).</div>
           <button onClick={() => { setE(defi.E); setR(defi.R); setBits(defi.bits); setCanInput('Ur'); setActiveBlock('capteur'); setMode('explore'); }}
             style={{ ...stylePetitBouton(false, '#334155'), marginTop: 6 }}>🔍 Régler l’exploration sur ces valeurs</button>
         </div>
@@ -229,7 +229,7 @@ export function Simulation8({ plotlyReady }) {
       <li><strong>Photorésistance</strong> : la caractéristique Rp(E) est donnée par 9 points de mesure ; entre deux points, on interpole linéairement en échelle log-log. En dessous de 11 lx (resp. au-dessus de 1590 lx), Rp garde la valeur du point extrême. La température, la couleur de la lumière et le temps de réponse sont ignorés, et l'éclairement est uniforme sur le capteur.</li>
       <li><strong>Alimentation et résistance R</strong> : alimentation 5 V parfaite et stable ; R exacte (tolérance ignorée).</li>
       <li><strong>Pont diviseur non chargé</strong> : l'entrée du CAN ne prélève pas de courant, donc Ur = 5 R / (R<sub>p</sub> + R). La photorésistance est reliée au 5 V, la résistance R à la masse, et Ur est prise aux bornes de R.</li>
-      <li><strong>CAN idéal à n bits, référence 5 V</strong> : N = Ur / 5 × (2<sup>n</sup> − 1), arrondi à l'entier le plus proche, et quantum q = 5 / (2<sup>n</sup> − 1). Pas de bruit ni d'erreur de gain ou de décalage. Le CAN réel d'une carte Uno est à 10 bits et convertit sur 1024 pas : l'écart avec ce modèle est d'au plus un pas.</li>
+      <li><strong>CAN idéal à n bits, référence 5 V</strong> : N = Ur / 5 × (2<sup>n</sup> − 1), tronqué à l'entier inférieur (comme sur une carte Arduino), et quantum q = 5 / (2<sup>n</sup> − 1). Pas de bruit ni d'erreur de gain ou de décalage. Le CAN réel d'une carte Uno est à 10 bits et convertit sur 1024 pas : l'écart avec ce modèle est d'au plus un pas.</li>
       <li><strong>Algorithme</strong> : N est comparé à deux seuils (hystérésis) ; entre les deux seuils, la sortie 8 garde son état précédent. Les phares sont éteints au départ. Le délai de 5 s entre deux lectures n'est pas simulé.</li>
     </ul>
   );
@@ -611,7 +611,7 @@ export function Simulation8({ plotlyReady }) {
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       <style>{`
-        .cm-l1 { display: grid; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 1fr); }
+        .cm-l1 { display: grid; align-items: start; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 1fr); }
         .cm-l1.cote { grid-template-columns: minmax(0, 2.1fr) minmax(300px, 1fr); align-items: start; }
         .cm-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
         @media (max-width: 960px) { .cm-l1.cote { grid-template-columns: minmax(0, 1fr); } }

@@ -19,17 +19,6 @@ export const CONTEXTES = {
     ],
     niveau: "BTS Métiers de la chimie",
   },
-  7: {
-    but: "Faire cristalliser du nitrate de potassium KNO₃ par refroidissement ou par évaporation, à l'aide de son diagramme de solubilité.",
-    apprendre: "Distinguer une solution insaturée d'une solution saturée, lire une courbe de solubilité et calculer la masse de cristaux obtenue.",
-    etapes: [
-      "Choisissez le mode : par refroidissement ou par évaporation.",
-      "Fixez la masse de soluté dissoute.",
-      "Baissez la température (ou évaporez le solvant) et suivez le point sur le diagramme de solubilité.",
-      "Dès que la solution est saturée, lisez la masse cristallisée dans le bilan de matière.",
-    ],
-    niveau: "Terminale STL",
-  },
   9: {
     but: "Évaluer la fidélité d'une méthode d'analyse par une étude interlaboratoire (norme ISO 5725) : plusieurs laboratoires analysent le même échantillon, et l'on évalue la méthode, non les laboratoires.",
     apprendre: "Repérer les laboratoires aberrants avec les tests de Cochran (dispersions) et de Grubbs (moyennes), puis calculer la répétabilité sr et la reproductibilité sR.",
@@ -62,16 +51,5 @@ export const CONTEXTES = {
       "Retrouvez les concentrations avec la formule affichée.",
     ],
     niveau: "BTS Métiers de la chimie",
-  },
-  15: {
-    but: "Déterminer la plus petite variation de température qu'une chaîne de mesure peut détecter, à partir du quantum de son convertisseur analogique-numérique (CAN).",
-    apprendre: "Le quantum d'un CAN, la sensibilité d'un capteur, et comment les deux fixent la résolution en température.",
-    etapes: [
-      "Générez des données d'exemple (température T et tension Ur), ou utilisez vos mesures de TP.",
-      "Choisissez un modèle qui relie la température à la tension mesurée.",
-      "Zoomez sur la courbe pour voir les « marches » du CAN : la largeur d'une marche est le quantum.",
-      "Lisez la résolution en température qui en découle, et regardez si elle change selon la température.",
-    ],
-    niveau: "Terminale STL",
   },
 };

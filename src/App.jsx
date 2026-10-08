@@ -522,7 +522,7 @@ export default function App() {
 const styles = {
   root: { display:"flex", minHeight:"100vh",
     fontFamily:"'Nunito', 'Segoe UI', sans-serif",
-    background:"#f5f7fa", position:"relative", overflow:"hidden" },
+    background:"#f5f7fa", position:"relative", overflow:"clip" },
   bgBlob1: { position:"fixed", top:"-120px", right:"-120px", width:"400px", height:"400px",
     borderRadius:"50%",
     background:"radial-gradient(circle, #e6394622 0%, transparent 70%)",
@@ -555,7 +555,7 @@ const styles = {
   topBar: { display:"flex", alignItems:"center", gap:"1rem", padding:"1.25rem 2rem" },
   pageTitle: { fontFamily:"'Playfair Display', Georgia, serif",
     fontSize:"1.5rem", fontWeight:"700", margin:0 },
-  simContainer: { flex:1, padding:"1.5rem 2rem", overflowY:"auto" },
+  simContainer: { flex:1, padding:"1.5rem 2rem", overflowX:"clip" },
 };
 
 

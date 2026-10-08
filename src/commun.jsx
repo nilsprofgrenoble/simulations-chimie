@@ -223,7 +223,9 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
   };
   return (
     <div style={{ background: 'white', borderRadius: 10, padding: '10px 12px', border: `2px solid ${ORANGE_GUIDE}`,
-      display: 'flex', flexDirection: 'column', gap: 10 }}>
+      display: 'flex', flexDirection: 'column', gap: 10,
+      // La carte reste visible quand on fait défiler la page (dans une mise en page à deux colonnes)
+      position: 'sticky', top: 8, maxHeight: 'calc(100vh - 24px)', overflowY: 'auto', zIndex: 5 }}>
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, color: TXT2, fontWeight: 700 }}>
           <span>Étape {etape + 1} / {etapes.length}</span>
