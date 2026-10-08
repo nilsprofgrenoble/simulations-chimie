@@ -42,7 +42,6 @@ function chQsi(q, u) {
   return [{ num: [{ n: q, s: sig(q, 2), u: 'm³' }], den: [{ u: 'h' }] }, facteurConv('h', 's', 'den')];
 }
 const chV = (q, S) => [{ num: [{ n: q, s: sciTxt(q, 2), u: 'm³' }], den: [{ u: 's' }] }, { div: true, num: [{ n: S, s: sciTxt(S, 3), u: 'm²' }], den: [] }];
-const chVS = (v, S) => [{ num: [{ n: v, s: sig(v, 2), u: 'm' }], den: [{ u: 's' }] }, { num: [{ n: S, s: sciTxt(S, 3), u: 'm²' }], den: [] }];
 const litS = k => `π × R_${k}² = π × (D_${k} / 2)² = π × D_${k}² / 4`;
 const chQm = (rho, q) => [{ compact: true, num: [{ n: rho, u: 'kg' }], den: [{ u: 'm³' }] }, { num: [{ n: q, s: sciTxt(q, 2), u: 'm³' }], den: [{ u: 's' }] }];
 
@@ -376,28 +375,20 @@ export function SimulationVitesseDebit() {
   const coulF = FLUIDES[fluide].coul;
 
   // ── Boîtes de calcul (exploration libre) ──
-  const boiteSection = (k, D, S, v) => (
+  const boiteSection = (k, D, S) => (
     <div key={k} style={{ ...styleBoite, ...cadre('calc') }}>
       <div style={{ fontWeight: 700, fontSize: 14, color: TXT, marginBottom: 6 }}>Section {k} : D<sub>{k}</sub> = {D} mm</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <ConvPrefixe nom={`D_${k}`} n={D} de="mm" vers="m" e={-3}/>
         <Chaine nom={`S_${k}`} litt={litS(k)} facteurs={chS(D)} nsf={3} sci/>
         <Chaine nom={`v_${k}`} litt={`Q_v / S_${k}`} facteurs={chV(qsi, S)} nsf={2}/>
-        <Chaine nom="Q_v" litt={`v_${k} × S_${k}`} facteurs={chVS(v, S)} nsf={2} sci/>
       </div>
     </div>
   );
-  const rap = (D1 / D2) ** 2;
-  const boiteDebit = (
+  const boiteConv = (
     <div style={{ ...styleBoite, ...cadre('calc') }}>
-      <div style={{ fontWeight: 700, fontSize: 14, color: TXT, marginBottom: 6 }}>Débit réglé et conservation</div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ fontSize: 13.5, color: TXT }}>Q<sub>v</sub> converti en m³·s⁻¹ (même débit dans les deux sections) :</div>
-        <Chaine nom="Q_v" facteurs={chQsi(q, uQ)} nsf={2} sci/>
-        <div style={{ fontSize: 13.5, color: TXT, lineHeight: 1.6 }}>
-          S₁ / S₂ = (D₁ / D₂)² = ({D1} / {D2})² = <strong>{sig(rap, 2)}</strong> ; donc v₂ / v₁ = <strong>{sig(rap, 2)}</strong> : {D2 < D1 ? 'la section se rétrécit, le fluide accélère.' : D2 > D1 ? 'la section s’élargit, le fluide ralentit.' : 'les sections sont identiques, la vitesse ne change pas.'}
-        </div>
-      </div>
+      <div style={{ fontWeight: 700, fontSize: 14, color: TXT, marginBottom: 6 }}>Débit volumique en m³·s⁻¹ (pour les calculs des deux sections)</div>
+      <Chaine nom="Q_v" facteurs={chQsi(q, uQ)} nsf={2} sci/>
     </div>
   );
   const boiteMasse = (
@@ -462,8 +453,9 @@ export function SimulationVitesseDebit() {
         <div style={{ fontSize: 13.5, color: TXT, marginTop: 8 }}>Densité du fluide : <strong>d = {String(d).replace('.', ',')}</strong> <span style={{ color: TXT2 }}>(sans unité)</span></div>
       </div>
       {!enGuide && <>
-        <div className="vd-l2">{boiteSection(1, D1, S1, v1)}{boiteSection(2, D2, S2, v2)}</div>
-        <div className="vd-l2">{boiteDebit}{boiteMasse}</div>
+        {boiteConv}
+        <div className="vd-l2">{boiteSection(1, D1, S1)}{boiteSection(2, D2, S2)}</div>
+        {boiteMasse}
       </>}
     </div>
   );
@@ -496,7 +488,7 @@ export function SimulationVitesseDebit() {
               <li>Prenez D<sub>1</sub> = D<sub>2</sub> : que deviennent les tranches du schéma ?</li>
               <li>Changez de fluide : quelles grandeurs changent, lesquelles ne changent pas ?</li>
               <li>Changez l’unité du débit et regardez quelles unités se simplifient (barrées) dans le calcul.</li>
-              <li>Comparez v₁ × S₁ et v₂ × S₂ dans les deux boîtes de calcul.</li>
+              <li>Comparez v₁ et v₂ : de quels diamètres dépend leur rapport ?</li>
             </ul>
           </div>
           {panneauHypo}
