@@ -48,10 +48,18 @@ function henry(v) {
 
 // ── Les formules du z-score ──
 export const FORMULES = {
-  ref: { nom: 'Référentiel BTS', court: 'référentiel', formule: <>z = (x<sub>i</sub> − x̄) / s</>, detail: 'x̄ et s : moyenne et écart-type expérimental de tous les laboratoires, le laboratoire évalué compris.' },
-  exclu: { nom: 'Labo évalué exclu', court: 'labo exclu', formule: <>z = (x<sub>i</sub> − x̄<sub>(sans i)</sub>) / s<sub>(sans i)</sub></>, detail: 'x̄ et s sont calculés sans le laboratoire évalué : il ne peut plus influencer sa propre référence. Variante pédagogique.' },
-  robuste: { nom: 'Statistiques robustes', court: 'robuste', formule: <>z = (x<sub>i</sub> − médiane) / s*</>, detail: 's* = 1,483 × MAD (médiane des écarts absolus à la médiane) : peu sensible aux valeurs aberrantes.' },
-  iso: { nom: 'Norme ISO 13528', court: 'ISO 13528', formule: <>z = (x<sub>i</sub> − x<sub>pt</sub>) / σ<sub>pt</sub></>, detail: 'x_pt : valeur assignée (matériau de référence ou consensus) ; σ_pt : écart-type pour l’évaluation de l’aptitude, fixé par l’organisateur.' },
+  ref: { nom: 'Référentiel BTS', court: 'référentiel', formule: <>z = (x<sub>i</sub> − x̄) / s</>,
+    ou: ['x_i : résultat du laboratoire évalué', 'x̄ : moyenne de tous les laboratoires, y compris le laboratoire évalué', 's : écart-type expérimental de tous les laboratoires (diviseur N − 1)'] },
+  exclu: { nom: 'Labo évalué exclu', court: 'labo exclu', formule: <>z = (x<sub>i</sub> − x̄<sub>autres</sub>) / s<sub>autres</sub></>,
+    ou: ['x̄_autres et s_autres : moyenne et écart-type des autres laboratoires seulement', 'Le laboratoire évalué ne peut plus influencer sa propre référence (variante pédagogique, non normalisée).'] },
+  robuste: { nom: 'Médiane et MAD (robuste)', court: 'médiane/MAD', formule: <>z = (x<sub>i</sub> − médiane) / s*</>,
+    ou: ['médiane : valeur centrale des résultats rangés',
+      'MAD (Median Absolute Deviation, écart absolu médian) : on calcule l’écart de chaque résultat à la médiane, on le prend en valeur absolue, puis on prend la médiane de ces écarts',
+      's* = 1,483 × MAD : le facteur 1,483 (= 1 / 0,6745) fait que s* estime l’écart-type d’une loi normale',
+      'Peu sensible aux valeurs aberrantes, contrairement à x̄ et s.'],
+    source: 'Estimateurs robustes utilisés en essais d’aptitude : norme ISO 13528 (qui privilégie l’« algorithme A », plus élaboré) ; Analytical Methods Committee (Royal Society of Chemistry), Technical Brief n° 6 « Robust statistics » ; Rousseeuw et Croux, J. Am. Stat. Assoc. 88 (1993) pour le facteur 1,483.' },
+  iso: { nom: 'Norme ISO 13528', court: 'ISO 13528', formule: <>z = (x<sub>i</sub> − x<sub>pt</sub>) / σ<sub>pt</sub></>,
+    ou: ['x_pt : valeur assignée, fixée par l’organisateur (matériau de référence, ou consensus des participants)', 'σ_pt : écart-type pour l’évaluation de l’aptitude, fixé à l’avance (exigence de la méthode, campagnes précédentes, étude de fidélité…)'] },
 };
 export function zScores(v, formule, { xpt, sigmaPt }) {
   if (formule === 'ref') { const m = moyenne(v), s = ecartType(v); return { z: v.map(x => (x - m) / s), centre: m, disp: s }; }
@@ -128,7 +136,7 @@ function VueResultats({ v, centre, disp, unite, dec, montrerLoi, surligne = -1, 
       {v.map((x, i) => <circle key={i} cx={X(x)} cy={H - b - 8 - (pos[i] - 1) * 13} r={i === surligne ? 6.5 : 5} fill={i === surligne ? '#fde047' : '#1e3a8a'} stroke={KIT.txt} strokeWidth={i === surligne ? 2 : 0.5}/>)}
       <line x1={g} y1={H - b} x2={W - d} y2={H - b} stroke={KIT.txt}/>
       {Array.from({ length: 7 }, (_, k) => mn + k * (mx - mn) / 6).map((x, k) => <text key={k} x={X(x)} y={H - b + 16} fontSize="12" fill={KIT.txt2} textAnchor="middle">{fmt(x, dec)}</text>)}
-      <text x={(g + W - d) / 2} y={H - 6} fontSize="13" fontWeight="700" fill={KIT.txt} textAnchor="middle">résultat ({unite}) — en bas, les graduations ± 2 et ± 3 écarts-types de la formule choisie</text>
+      <text x={(g + W - d) / 2} y={H - 6} fontSize="13" fontWeight="700" fill={KIT.txt} textAnchor="middle">résultat{unite ? ` (${unite})` : ''} — en haut, les graduations ± 2 et ± 3 écarts-types</text>
     </svg>
   );
 }
@@ -152,7 +160,7 @@ function VueZ({ z, surligne = -1 }) {
   );
 }
 function VueHenry({ v, unite, dec }) {
-  const h = henry(v), W = 560, H = 240, g = 56, d = 14, t = 14, b = 40;
+  const h = henry(v), W = 560, H = 250, g = 56, d = 14, t = 14, b = 50;
   const qMin = Math.min(...h.q), qMax = Math.max(...h.q), sMin = Math.min(...h.s), sMax = Math.max(...h.s);
   const X = q => g + (q - qMin) / ((qMax - qMin) || 1) * (W - g - d), Y = s => H - b - (s - sMin) / ((sMax - sMin) || 1) * (H - b - t);
   const mq = moyenne(h.q), ms = moyenne(h.s), pente = h.q.reduce((a, q, i) => a + (q - mq) * (h.s[i] - ms), 0) / h.q.reduce((a, q) => a + (q - mq) ** 2, 0);
@@ -162,10 +170,47 @@ function VueHenry({ v, unite, dec }) {
       {h.q.map((q, i) => <circle key={i} cx={X(q)} cy={Y(h.s[i])} r="5" fill="#1e3a8a"/>)}
       <line x1={g} y1={H - b} x2={W - d} y2={H - b} stroke={KIT.txt}/><line x1={g} y1={t} x2={g} y2={H - b} stroke={KIT.txt}/>
       {[sMin, (sMin + sMax) / 2, sMax].map((s, k) => <text key={k} x={g - 5} y={Y(s) + 4} fontSize="11.5" fill={KIT.txt2} textAnchor="end">{fmt(s, dec)}</text>)}
-      <text x={(g + W - d) / 2} y={H - 18} fontSize="12" fill={KIT.txt2} textAnchor="middle">valeur attendue pour une loi normale (quantile)</text>
+      {[-2, -1, 0, 1, 2].filter(k => k > qMin && k < qMax).map(k => <g key={k}><line x1={X(k)} y1={H - b} x2={X(k)} y2={H - b + 4} stroke={KIT.txt}/><text x={X(k)} y={H - b + 15} fontSize="11.5" fill={KIT.txt2} textAnchor="middle">{k < 0 ? `−${-k}` : k}</text></g>)}
+      <text x={(g + W - d) / 2} y={H - 18} fontSize="12" fill={KIT.txt2} textAnchor="middle">valeur z attendue pour une loi normale (quantile u)</text>
       <text x={(g + W - d) / 2} y={H - 4} fontSize="12.5" fontWeight="700" fill={KIT.txt} textAnchor="middle">r = {fmt(h.r, 3)} (seuil à 5 % : {fmt(h.rCrit, 3)}) — {h.r >= h.rCrit ? 'alignement compatible avec une loi normale' : 'alignement douteux'}</text>
-      <text x="14" y={(t + H - b) / 2} fontSize="12" fontWeight="700" fill={KIT.txt} textAnchor="middle" transform={`rotate(-90 14 ${(t + H - b) / 2})`}>résultats rangés ({unite})</text>
+      <text x="14" y={(t + H - b) / 2} fontSize="12" fontWeight="700" fill={KIT.txt} textAnchor="middle" transform={`rotate(-90 14 ${(t + H - b) / 2})`}>résultats rangés{unite ? ` (${unite})` : ''}</text>
     </svg>
+  );
+}
+function ExplicationHenry({ v, unite, dec }) {
+  const [ouvert, setOuvert] = useState(true), [toutes, setToutes] = useState(false);
+  const h = henry(v), n = v.length, mq = moyenne(h.q), ms = moyenne(h.s);
+  const pente = h.q.reduce((a, q, i) => a + (q - mq) * (h.s[i] - ms), 0) / h.q.reduce((a, q) => a + (q - mq) ** 2, 0), ord = ms - pente * mq;
+  const F = i => (i + 1 - 0.375) / (n + 0.25);
+  const lignes = toutes ? h.s.map((_, i) => i) : [...new Set([0, 1, 2, n - 1].filter(i => i < n))];
+  const p = { margin: '0 0 6px', fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 };
+  return (
+    <div style={{ ...styleBoite, marginTop: 8 }}>
+      <Section titre="Comment est tracée la droite de Henry ?" ouvert={ouvert} onBascule={() => setOuvert(o => !o)}>
+        <p style={p}><strong>L'idée.</strong> Si les résultats suivent une loi normale, le plus petit est « très bas », celui du milieu est « moyen », le plus grand est « très haut », et
+          on sait calculer <em>de combien</em> pour une loi normale. On compare donc chaque résultat à ce qu'on attendrait, et on regarde si les points s'alignent.</p>
+        <ol style={{ margin: '0 0 8px', paddingLeft: 20, fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
+          <li><strong>Ranger</strong> les {n} résultats du plus petit (rang 1) au plus grand (rang {n}).</li>
+          <li><strong>Fréquence cumulée.</strong> Au rang i, on estime la proportion de résultats situés en dessous : F<sub>i</sub> = (i − 0,375) / (N + 0,25). Les nombres 0,375 et 0,25 évitent
+            d'obtenir 0 % ou 100 %, que la loi normale n'atteint jamais (formule de Blom).</li>
+          <li><strong>Quantile de la loi normale.</strong> On cherche le nombre u<sub>i</sub> tel que, pour une loi normale centrée réduite, une proportion F<sub>i</sub> des valeurs soit inférieure à u<sub>i</sub>.
+            C'est le z-score que le résultat de rang i aurait si les données étaient parfaitement normales. Dans un tableur : LOI.NORMALE.STANDARD.INVERSE(F<sub>i</sub>).</li>
+          <li><strong>Placer les points</strong> (u<sub>i</sub> ; x<sub>i</sub>) : u<sub>i</sub> en abscisse, résultat en ordonnée.</li>
+          <li><strong>Lire.</strong> Pour une loi normale, x = x̄ + s · u : les points sont sur une droite, d'ordonnée à l'origine x̄ et de pente s.
+            Ici, la droite tracée (ajustée par moindres carrés) a pour ordonnée à l'origine {fmt(ord, dec + 1)} (x̄ = {fmt(ms, dec + 1)}) et pour pente {fmt(pente, dec + 1)} (s = {fmt(ecartType(v), dec + 1)}) {unite}.
+            Un point qui s'écarte nettement de la droite est un résultat « anormal » par rapport aux autres.</li>
+          <li><strong>Un nombre pour conclure.</strong> Le coefficient de corrélation r entre les x<sub>i</sub> et les u<sub>i</sub> vaut 1 pour un alignement parfait. S'il est inférieur à un seuil
+            (ici r = {fmt(h.r, 3)} contre {fmt(h.rCrit, 3)}), l'hypothèse de loi normale est douteuse. Ce seuil à 5 % est une valeur approchée, ajustée par simulation (des tables existent, dites de Filliben).</li>
+        </ol>
+        <table style={{ borderCollapse: 'collapse', background: 'white', marginBottom: 6 }}>
+          <thead><tr><th style={cellule}>Rang i</th><th style={cellule}>Résultat x<sub>i</sub></th><th style={cellule}>F<sub>i</sub></th><th style={cellule}>u<sub>i</sub></th></tr></thead>
+          <tbody>{lignes.map(i => <tr key={i}>
+            <td style={cellule}>{i + 1}</td><td style={cellule}>{fmt(h.s[i], dec)}</td><td style={cellule}>{fmt(F(i), 3)}</td><td style={cellule}>{fmt(h.q[i], 2)}</td></tr>)}</tbody>
+        </table>
+        <button onClick={() => setToutes(t => !t)} style={stylePetitBouton(false, '#334155')}>{toutes ? 'Réduire le tableau' : 'Voir tous les rangs'}</button>
+        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>Même avec des données parfaitement normales, un petit nombre de laboratoires donne des points qui s'écartent un peu de la droite : n'interprétez pas de petits écarts.</div>
+      </Section>
+    </div>
   );
 }
 function VueSuivi() {
@@ -184,21 +229,32 @@ function VueSuivi() {
   );
 }
 
-function Hypotheses() {
-  return (
-    <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
-      <li><strong>Échantillon homogène et stable</strong> : tous les laboratoires mesurent la même chose.</li>
-      <li><strong>Loi normale</strong> : les résultats des laboratoires compétents se répartissent selon une loi normale. C'est ce qui donne leur sens aux
-        seuils : un laboratoire compétent n'a que 4,6 % de chances de dépasser |z| = 2 et 0,27 % de dépasser |z| = 3. À vérifier sur les données (droite de Henry).</li>
-      <li><strong>Une référence qui ne dépend pas du laboratoire évalué</strong> : sinon, un résultat aberrant déplace la moyenne et gonfle l'écart-type, et se « cache » lui-même.</li>
-      <li><strong>Assez de participants</strong> : avec la formule du référentiel, |z| ne peut pas dépasser (p − 1) / √p ; les estimations robustes demandent au moins une douzaine de laboratoires.</li>
-      <li><strong>Avec la norme ISO</strong> : σ<sub>pt</sub> fixé à l'avance (exigence de la méthode, campagnes précédentes, étude de fidélité, ou écart-type robuste des participants),
-        et une valeur assignée assez sûre : u(x<sub>pt</sub>) ≤ 0,3 σ<sub>pt</sub>.</li>
-      <li><strong>Une simplification</strong> : pour une valeur de consensus, la norme calcule une moyenne robuste et un écart-type robuste par un algorithme
-        itératif (l'« algorithme A ») ; ici, on utilise la médiane et s* = 1,483 × MAD, plus simples. L'incertitude u(x<sub>pt</sub>) = 1,25 s* / √p vient de la
-        médiane : pour des données de loi normale, elle est environ √(π/2) ≈ 1,25 fois moins précise qu'une moyenne.</li>
-    </ul>
-  );
+function Hypotheses({ formules = ['ref'], consensus = false }) {
+  const f = formules;
+  const li = (k, titre, corps) => <li key={k}><strong>{titre}</strong> : {corps}</li>;
+  const L = [
+    li('hom', 'Échantillon homogène et stable', 'tous les laboratoires mesurent la même chose.'),
+    li('normale', 'Loi normale', <>les résultats des laboratoires compétents se répartissent selon une loi normale. C'est ce qui donne leur sens aux
+      seuils : un laboratoire compétent n'a que 4,6 % de chances de dépasser |z| = 2 et 0,27 % de dépasser |z| = 3. À vérifier sur les données (droite de Henry).</>),
+  ];
+  if (f.includes('ref')) {
+    L.push(li('refcache', 'Un résultat aberrant se cache lui-même', 'il déplace la moyenne et gonfle l’écart-type qui servent à le juger.'));
+    L.push(li('borne', 'Assez de participants', <>avec cette formule, |z| ne peut pas dépasser (p − 1) / √p, où p est le nombre de laboratoires : avec peu de laboratoires, le seuil 3 est inatteignable.</>));
+  }
+  if (f.includes('exclu')) {
+    L.push(li('indep', 'Une référence indépendante du laboratoire évalué', 'le calcul est refait sans lui. Les autres laboratoires doivent être assez nombreux, et eux-mêmes sans valeur aberrante, sinon leur x̄ et leur s sont faussés.'));
+  }
+  if (f.includes('robuste')) {
+    L.push(li('robnb', 'Assez de participants', 'avec moins d’une douzaine de laboratoires, la médiane et s* sont eux-mêmes peu fiables.'));
+    L.push(li('robpart', 'Une minorité de valeurs aberrantes', 'la médiane et la MAD résistent tant que moins de la moitié des résultats sont aberrants.'));
+    L.push(li('robsimple', 'Une simplification', <>la norme ISO 13528 calcule une moyenne et un écart-type robustes par un algorithme itératif (l'« algorithme A »). Ici, on utilise la médiane et s* = 1,483 × MAD, plus simples à comprendre.</>));
+  }
+  if (f.includes('iso')) {
+    L.push(li('sigpt', 'σ_pt fixé à l’avance', 'par l’organisateur (exigence de la méthode, campagnes précédentes, étude de fidélité…), et non calculé avec les résultats que l’on juge.'));
+    if (consensus) L.push(li('xptcons', 'Une valeur assignée assez sûre', <>ici, x<sub>pt</sub> est la médiane des participants : elle est elle-même incertaine, d'incertitude u(x<sub>pt</sub>) ≈ 1,25 s* / √p. La norme demande u(x<sub>pt</sub>) ≤ 0,3 σ<sub>pt</sub> ; sinon, la valeur assignée est trop incertaine pour juger les laboratoires.</>));
+    else L.push(li('xptref', 'Une valeur assignée sûre', 'matériau de référence certifié, ou valeur de référence d’un laboratoire expert, dont l’incertitude est négligeable devant σ_pt.'));
+  }
+  return <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>{L}</ul>;
 }
 
 // ════════════════ SIMULATION ════════════════
@@ -308,7 +364,7 @@ export function SimulationAptitude() {
       tache: { type: 'qcm', q: 'Avec 10 laboratoires, quelle catégorie est impossible à atteindre ?', options: ['non satisfaisant : |z| ne peut pas dépasser 2,85', 'discutable', 'aucune'], bonne: 0,
         expl: 'Avec 9 laboratoires, la borne tombe à 2,67 ; avec 5, à 1,79 : même « discutable » devient impossible. Il faut le savoir avant d’interpréter un essai à peu de participants.' } },
     { id: 'robuste', titre: 'Des statistiques robustes', focus: ['formule'],
-      texte: <>Choisissez « Statistiques robustes » : la médiane remplace la moyenne, et s* = 1,483 × MAD remplace s. Une valeur aberrante les déplace très peu.</>,
+      texte: <>Choisissez « Médiane et MAD (robuste) » : la médiane remplace la moyenne, et s* = 1,483 × MAD remplace s (la MAD est la médiane des écarts absolus à la médiane). Une valeur aberrante les déplace très peu.</>,
       tache: { type: 'num', q: 'Médiane des 10 résultats', unite: 'mg/L', vrai: medP, tol: 0.001, affiche: x => fmt(x, 2),
         pieges: [[mP, 'C’est la moyenne : rangez les valeurs et prenez celle du milieu (ici la moyenne des deux du milieu).']] } },
     { id: 'iso', titre: 'La norme ISO 13528', focus: ['formule'],
@@ -357,7 +413,15 @@ export function SimulationAptitude() {
         <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Formule du z-score :</span>
         {Object.entries(FORMULES).map(([k, f]) => <button key={k} onClick={() => choisirFormule(k)} style={stylePetitBouton(formuleActive === k, '#0f766e')}>{f.nom}</button>)}
       </div>
-      <div style={{ fontSize: 14, color: KIT.txt }}><span style={{ fontFamily: 'Georgia, serif', fontSize: 16 }}>{FORMULES[formuleActive].formule}</span> — {avecIndices(FORMULES[formuleActive].detail)}</div>
+      <div style={{ background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: 8, padding: '8px 12px', display: 'inline-block', fontFamily: 'Georgia, serif', fontSize: 18, color: KIT.txt }}>{FORMULES[formuleActive].formule}</div>
+      <div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 6, lineHeight: 1.5 }}>
+        <div style={{ fontWeight: 700, color: KIT.txt2 }}>où :</div>
+        <ul style={{ margin: '2px 0 0', paddingLeft: 18 }}>{FORMULES[formuleActive].ou.map((t, k) => <li key={k}>{avecIndices(t)}</li>)}</ul>
+        {tous && formuleActive === 'ref' && <div style={{ marginTop: 4 }}>Ici : x̄ = {fmt(calc.centre, D.dec + 1)} et s = {fmt(calc.disp, D.dec + 1)} {D.unite}.</div>}
+        {tous && formuleActive === 'robuste' && <div style={{ marginTop: 4 }}>Ici : médiane = {fmt(calc.centre, D.dec + 1)}, MAD = {fmt(calc.disp / 1.483, D.dec + 1)}, donc s* = 1,483 × MAD = {fmt(calc.disp, D.dec + 1)} {D.unite}.</div>}
+        {tous && formuleActive === 'iso' && <div style={{ marginTop: 4 }}>{avecIndices(`Ici : x_pt = ${fmt(calc.centre, D.dec + 1)} et σ_pt = ${fmt(calc.disp, D.dec + 1)} ${D.unite}.`)}</div>}
+        {FORMULES[formuleActive].source && <div style={{ marginTop: 4, fontSize: 12.5, color: KIT.txt2 }}>Sources : {FORMULES[formuleActive].source}</div>}
+      </div>
     </div>
   );
   const selecteurJeu = (!enGuide || vu('reperes')) && (
@@ -380,7 +444,7 @@ export function SimulationAptitude() {
       </div>
       {visibles.length === 0 ? <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: KIT.txt2, fontSize: 14, background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>En attente des résultats…</div>
         : vue === 'z' && montrerZ ? <VueZ z={calc.z} surligne={enGuide && jeuActif === 'parcours' ? iLab : -1}/>
-          : vue === 'henry' && vu('henry') && v.length >= 3 ? <VueHenry v={v} unite={D.unite} dec={D.dec}/>
+          : vue === 'henry' && vu('henry') && v.length >= 3 ? <><VueHenry v={v} unite={D.unite} dec={D.dec}/><ExplicationHenry v={v} unite={D.unite} dec={D.dec}/></>
             : <VueResultats v={visibles} centre={calc.centre} disp={formuleActive === 'exclu' ? NaN : calc.disp} unite={D.unite} dec={D.dec}
               montrerLoi={tous && (montrerZ || !enGuide)} surligne={enGuide && jeuActif === 'parcours' && etape >= idx('z') ? iLab : -1} legendeCentre={legendeCentre}/>}
       {!tous && <div style={{ marginTop: 8 }}><button onClick={() => setEnArrivee(true)} disabled={enArrivee} style={{ ...styleBouton(!enArrivee, '#16a34a'), opacity: enArrivee ? 0.6 : 1 }}>{enArrivee ? 'Réception…' : '▶ Recevoir les résultats'}</button></div>}
@@ -431,13 +495,13 @@ export function SimulationAptitude() {
             background: a.niveau === 'fort' ? '#fee2e2' : a.niveau === 'moyen' ? '#fef3c7' : '#f1f5f9', color: KIT.txt }}>
             {a.niveau === 'fort' ? '⚠️ ' : a.niveau === 'moyen' ? '⚠️ ' : 'ℹ️ '}{a.t}</div>
         ))}
-        {vu('suivi') && <div style={{ marginTop: 8, ...cadre('suivi') }}><div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Suivi d'un laboratoire : z-score sur six campagnes</div><VueSuivi/></div>}
+        {enGuide && vu('suivi') && <div style={{ marginTop: 8, ...cadre('suivi') }}><div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Suivi d'un laboratoire : z-score sur six campagnes</div><VueSuivi/></div>}
       </Section>
     </div>
   );
   const panneauHypo = vu('hypotheses') && (
     <div style={{ ...styleBoite, ...cadre('hypo') }} data-apparait={`${idx('hypotheses')}`}>
-      <Section titre="Hypothèses de travail" ouvert={ouverts.hypo} onBascule={() => setOuverts(o => ({ ...o, hypo: !o.hypo }))}><Hypotheses/></Section>
+      <Section titre={`Hypothèses de travail : ${FORMULES[formuleActive].nom}`} ouvert={ouverts.hypo} onBascule={() => setOuverts(o => ({ ...o, hypo: !o.hypo }))}><Hypotheses formules={[formuleActive]} consensus={D.consensus}/></Section>
     </div>
   );
   const reglages = jeuActif === 'simulee' ? (
@@ -446,29 +510,33 @@ export function SimulationAptitude() {
       <Curseur nom="Dispersion des laboratoires compétents" valeur={dispersion} onChange={setDispersion} min={0.2} max={2} pas={0.1} unite="mg/L" decimales={1} couleur="#0f766e"/>
       <label style={{ display: 'flex', gap: 6, fontSize: 14, color: KIT.txt, marginBottom: 4 }}><input type="checkbox" checked={biais} onChange={e => setBiais(e.target.checked)}/> Un laboratoire a un gros biais</label>
       <label style={{ display: 'flex', gap: 6, fontSize: 14, color: KIT.txt, marginBottom: 8 }}><input type="checkbox" checked={deux} onChange={e => setDeux(e.target.checked)}/> Un tiers des laboratoires utilise une autre méthode</label>
-      <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2, margin: '4px 0' }}>Pour la formule ISO</div>
-      <Curseur nom="σ_pt fixé par l'organisateur" valeur={sigmaPtExp} onChange={setSigmaPtExp} min={0.4} max={2.5} pas={0.1} unite="mg/L" decimales={1} couleur="#0f766e"/>
-      <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
-        <button onClick={() => setXptMode('reference')} style={stylePetitBouton(xptMode === 'reference', '#0f766e')}>x_pt : référence 24,0</button>
-        <button onClick={() => setXptMode('consensus')} style={stylePetitBouton(xptMode === 'consensus', '#0f766e')}>x_pt : consensus (médiane)</button>
-      </div>
+      {formuleActive === 'iso' && <>
+        <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2, margin: '4px 0' }}>Norme ISO 13528 : x<sub>pt</sub> et σ<sub>pt</sub></div>
+        <Curseur nom="σ_pt fixé par l'organisateur" valeur={sigmaPtExp} onChange={setSigmaPtExp} min={0.4} max={2.5} pas={0.1} unite="mg/L" decimales={1} couleur="#0f766e"/>
+        <div style={{ display: 'flex', gap: 5, marginBottom: 8, flexWrap: 'wrap' }}>
+          <button onClick={() => setXptMode('reference')} style={stylePetitBouton(xptMode === 'reference', '#0f766e')}>x_pt : référence 24,0</button>
+          <button onClick={() => setXptMode('consensus')} style={stylePetitBouton(xptMode === 'consensus', '#0f766e')}>x_pt : consensus (médiane)</button>
+        </div>
+      </>}
       <button onClick={() => setTirage(t => t + 1)} style={styleBouton(false)}>🎲 Une autre campagne</button>
     </>
   ) : jeuActif === 'reperes' ? (
     <>
-      <div style={{ fontSize: 13.5, color: KIT.txt, marginBottom: 6, lineHeight: 1.5 }}>Moyennes des 4 essais de chaque laboratoire, d'après l'exemple des « Repères pour la formation ». Pour la formule ISO, x<sub>pt</sub> = médiane des laboratoires, et σ<sub>pt</sub> est à choisir :</div>
-      <Curseur nom="σ_pt (exigence de la méthode)" valeur={sigmaReperes} onChange={setSigmaReperes} min={0.05} max={0.5} pas={0.01} unite="u.a." decimales={2} couleur="#0f766e"/>
+      <div style={{ fontSize: 13.5, color: KIT.txt, marginBottom: 6, lineHeight: 1.5 }}>Moyennes des 4 essais de chaque laboratoire, d'après l'exemple des « Repères pour la formation ».{formuleActive === 'iso' && <> Ici, x<sub>pt</sub> = médiane des laboratoires, et σ<sub>pt</sub> est à choisir :</>}</div>
+      {formuleActive === 'iso' && <Curseur nom="σ_pt (exigence de la méthode)" valeur={sigmaReperes} onChange={setSigmaReperes} min={0.05} max={0.5} pas={0.01} unite="u.a." decimales={2} couleur="#0f766e"/>}
     </>
   ) : jeuActif === 'mes' ? (
     <>
       <textarea value={texte} onChange={e => setTexte(e.target.value)} rows={3} aria-label="Résultats des laboratoires" style={{ width: '100%', boxSizing: 'border-box', fontSize: 14, padding: 6, border: `1.5px solid ${KIT.bord}`, borderRadius: 6 }}/>
       <div style={{ fontSize: 12.5, color: KIT.txt2, margin: '4px 0 8px' }}>Un résultat par laboratoire (ou par apprenti), séparés par des espaces ou des points-virgules.</div>
-      <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 14, color: KIT.txt, marginBottom: 6 }}>x<sub>pt</sub> (formule ISO) :
+      {formuleActive === 'iso' && <>
+      <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 14, color: KIT.txt, marginBottom: 6 }}>x<sub>pt</sub> :
         <input value={xptSaisi} placeholder="vide : médiane" onChange={e => setXptSaisi(e.target.value)} aria-label="Valeur assignée" style={{ width: 120, fontSize: 14, padding: '3px 6px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6 }}/></label>
-      <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 14, color: KIT.txt }}>σ<sub>pt</sub> (formule ISO) :
+      <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 14, color: KIT.txt }}>σ<sub>pt</sub> :
         <input value={sigmaSaisi} onChange={e => setSigmaSaisi(e.target.value)} aria-label="Écart-type pour l'aptitude" style={{ width: 90, fontSize: 14, padding: '3px 6px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6 }}/></label>
+      </>}
     </>
-  ) : <div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>Matériau de référence certifié : x<sub>pt</sub> = 24,0 mg/L ; σ<sub>pt</sub> = 1,2 mg/L fixé par l'organisateur.</div>;
+  ) : <div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>Dosage des ions nitrate d'une eau par 10 laboratoires, dont un est nettement aberrant.{formuleActive === 'iso' && <> Matériau de référence certifié : x<sub>pt</sub> = 24,0 mg/L ; σ<sub>pt</sub> = 1,2 mg/L fixé par l'organisateur.</>}</div>;
 
   // ════════════════ DÉFI ════════════════
   function nouveauDefi() {
@@ -543,7 +611,7 @@ export function SimulationAptitude() {
           <button onClick={() => changerMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
         </div>
       </div>
-      {enDefi ? <div className="ap-l1"><div style={styleBoite}>{voletDefi}</div><div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Hypothèses de travail</div><Hypotheses/></div></div> : <>
+      {enDefi ? <div className="ap-l1"><div style={styleBoite}>{voletDefi}</div><div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Hypothèses de travail</div><Hypotheses formules={['ref', 'iso']}/></div></div> : <>
         {selecteurJeu}
         {selecteurFormule}
         <div className="ap-l1">
