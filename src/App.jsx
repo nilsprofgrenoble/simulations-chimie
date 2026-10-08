@@ -501,7 +501,7 @@ export default function App() {
                 {/* Le fichier App.css du modèle Vite centre tout le texte (#root) : on rétablit l'alignement
                     à gauche pour les simulations ; la page d'accueil garde sa mise en page centrée. */}
                 <BandeauContexte key={`b${activeId}`} id={activeId} contexte={CONTEXTES[activeId]} couleur={active.color} />
-                <ActiveComponent key={activeId} plotlyReady={plotlyReady} />
+                <ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} />
               </div>}
         </div>
         <div style={{ textAlign: "center", fontSize: "0.78rem", color: "#94a3b8",

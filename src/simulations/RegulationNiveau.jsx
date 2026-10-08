@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
-import { cardStyle, fmt, CarteParcours, Cadre, useEtatPersistant, KIT, styleBouton, stylePetitBouton,
+import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton,
   styleBoite, Section, LigneMesure, Curseur, BoutonsModes, lireNombre, proche, sci, avecIndices } from "../commun";
+import { SchemaChateau, COUL, H_FOND, H_TROP, ecrireTransfert, lireTransfert, effacerTransfert } from "./chateauEau";
 
 // ====================================================
 // RÉGULATION DU NIVEAU D'UN CHÂTEAU D'EAU — TOR, P, PI (Terminale STL)
@@ -9,7 +10,6 @@ import { cardStyle, fmt, CarteParcours, Cadre, useEtatPersistant, KIT, styleBout
 // ====================================================
 
 const S = 720;                  // m², section du réservoir
-const H_FOND = 30, H_TROP = 36; // m, fond et trop-plein du réservoir
 const H0 = 33;                  // m, hauteur initiale
 const DT = 0.05;                // h, pas de calcul
 const CONSO = 150;              // L par jour et par habitant (notre-environnement.gouv.fr, 2020)
@@ -32,9 +32,9 @@ function debitPuisage(t, Qp, profil) {
 
 // Simulation complète sur la durée choisie
 function simuler(p) {
-  const { mode, hBas, hHaut, consigne, Kp, Ti, Qmax, Qp, profil, retard, duree } = p;
+  const { mode, hBas, hHaut, consigne, Kp, Ti, Qmax, Qp, profil, retard, duree, hInit = H0 } = p;
   const n = Math.round(duree / DT), nRet = Math.round(retard / DT);
-  let H = H0, Y = 0, integ = 0, perdu = 0, penurie = 0, demarrages = 0, marche = 0, yPrec = 0;
+  let H = hInit, Y = 0, integ = 0, perdu = 0, penurie = 0, demarrages = 0, marche = 0, yPrec = 0;
   const histH = [], pts = [];
   for (let k = 0; k <= n; k++) {
     const t = k * DT;
@@ -83,22 +83,24 @@ function simuler(p) {
 }
 
 // Seuils d'alerte : on ignore les dépassements infimes dus au pas de calcul quand un seuil est réglé pile sur 30 ou 36 m
-const COUL = { eau: '#2563eb', pompe: '#16a34a', puisage: '#dc2626', consigne: '#ea580c', seuil: '#7c3aed' };
 
-export function Simulation5() {
+export function Simulation5({ naviguer }) {
+  const [tr] = useState(lireTransfert);                      // réglages venus de « Point de fonctionnement », s'il y en a
+  useEffect(() => { if (tr) effacerTransfert(); }, []);
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre                // guide | explore | defi
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true });
-  const [regul, setRegul] = useState('tor');                // tor | p | pi
+  const [regul, setRegul] = useState(tr ? 'p' : 'tor');       // tor | p | pi
   const [hBas, setHBas] = useState(31);
   const [hHaut, setHHaut] = useState(33);
-  const [consigne, setConsigne] = useState(33);
-  const [Kp, setKp] = useState(20);
+  const [consigne, setConsigne] = useState(tr ? tr.consigne : 33);
+  const [Kp, setKp] = useState(tr ? tr.Kp : 20);
   const [Ti, setTi] = useState(50);
-  const [Qmax, setQmax] = useState(100);
-  const [Qp, setQp] = useState(20);
+  const [Qmax, setQmax] = useState(tr ? tr.Qmax : 100);
+  const [Qp, setQp] = useState(tr ? tr.Qp : 20);
   const [profil, setProfil] = useState('constant');
   const [retard, setRetard] = useState(0);
   const [duree, setDuree] = useState(1000);
+  const [hInit, setHInit] = useState(H0);                // niveau initial du réservoir
   const [tCur, setTCur] = useState(null);                   // instant affiché sur le schéma (null = fin)
   const [lecture, setLecture] = useState(false);
   const [survol, setSurvol] = useState(null);
@@ -106,8 +108,8 @@ export function Simulation5() {
   const [defi, setDefi] = useState(null);
 
   const enGuide = mode === 'guide';
-  const sim = useMemo(() => simuler({ mode: regul, hBas, hHaut, consigne, Kp, Ti, Qmax, Qp, profil, retard, duree }),
-    [regul, hBas, hHaut, consigne, Kp, Ti, Qmax, Qp, profil, retard, duree]);
+  const sim = useMemo(() => simuler({ mode: regul, hBas, hHaut, consigne, Kp, Ti, Qmax, Qp, profil, retard, duree, hInit }),
+    [regul, hBas, hHaut, consigne, Kp, Ti, Qmax, Qp, profil, retard, duree, hInit]);
   const tAff = tCur == null ? duree : Math.min(tCur, duree);
   const ptCur = sim.pts[Math.min(sim.pts.length - 1, Math.round(tAff / (DT * 10)))];
 
@@ -258,48 +260,10 @@ export function Simulation5() {
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const hl = id => enGuide && et.focus.includes(id);
 
-  // ════════════════ SCHÉMA DU CHÂTEAU D'EAU ════════════════
-  const yH = h => 300 - (h - 26) * 22;            // 26 m → 300 px ; 38 m → 36 px
-  const Hc = ptCur ? ptCur.H : H0, Yc = ptCur ? ptCur.Y : 0;
-  const schema = (
-    <svg viewBox="0 0 232 400" role="img" aria-label="Château d'eau, pompe et habitations" style={{ width: '100%', height: 'auto', display: 'block' }}>
-      {[28, 30, 32, 34, 36, 38].map(h => (
-        <g key={h}><line x1="30" y1={yH(h)} x2="36" y2={yH(h)} stroke={KIT.txt2}/><text x="26" y={yH(h) + 4} fontSize="13.5" fill={KIT.txt2} textAnchor="end">{h}</text></g>
-      ))}
-      <text x="4" y="24" fontSize="13.5" fill={KIT.txt2}>h (m)</text>
-      {/* réservoir */}
-      <rect x="58" y={yH(H_TROP)} width="100" height={yH(H_FOND) - yH(H_TROP)} fill="#f1f5f9" stroke={KIT.txt} strokeWidth="2.5"/>
-      <rect x="60" y={yH(Math.min(H_TROP, Hc))} width="96" height={Math.max(0, yH(H_FOND) - yH(Math.min(H_TROP, Hc)))} fill="#93c5fd"/>
-      <line x1="58" y1={yH(Hc)} x2="158" y2={yH(Hc)} stroke={COUL.eau} strokeWidth="2"/>
-      {regul === 'tor' ? [[hHaut, 'seuil haut'], [hBas, 'seuil bas']].map(([h, n]) => (
-        <g key={n}><line x1="50" y1={yH(h)} x2="166" y2={yH(h)} stroke={COUL.seuil} strokeWidth="1.5" strokeDasharray="4 3"/>
-          <text x="168" y={yH(h) + 4} fontSize="13" fill={COUL.seuil}>{n}</text></g>
-      )) : (
-        <g><line x1="50" y1={yH(consigne)} x2="166" y2={yH(consigne)} stroke={COUL.consigne} strokeWidth="1.5" strokeDasharray="4 3"/>
-          <text x="168" y={yH(consigne) + 4} fontSize="13" fill={COUL.consigne}>consigne</text></g>
-      )}
-      <text x="116" y={yH(H_TROP) - 6} fontSize="14.5" fontWeight="700" fill={KIT.txt} textAnchor="middle">A · réservoir</text>
-      {/* tour et canalisations */}
-      <rect x="93" y={yH(H_FOND)} width="30" height={360 - yH(H_FOND)} fill="#e2e8f0" stroke={KIT.txt} strokeWidth="1.5"/>
-      <polyline points={`54,360 48,360 48,${yH(H_TROP) - 10} 70,${yH(H_TROP) - 10} 70,${yH(H_TROP) + 8}`} fill="none" stroke={Yc > 0 ? COUL.pompe : '#94a3b8'} strokeWidth="4"/>
-      <polyline points={`142,${yH(H_FOND)} 142,360 200,360 200,344`} fill="none" stroke={COUL.puisage} strokeWidth="4"/>
-      {/* pompe */}
-      <circle cx="40" cy="360" r="13" fill={Yc > 0 ? '#dcfce7' : 'white'} stroke={KIT.txt} strokeWidth="2"/>
-      <text x="40" y="365" fontSize="14.5" fontWeight="800" fill={KIT.txt} textAnchor="middle">B</text>
-      <text x="40" y="390" fontSize="13.5" fill={KIT.txt} textAnchor="middle">{regul === 'tor' ? (Yc > 0 ? 'pompe ON' : 'pompe OFF') : `pompe ${fmt(Yc, 0)} %`}</text>
-      {/* maison et robinet */}
-      <polygon points="182,320 200,304 218,320" fill="#fed7aa" stroke={KIT.txt} strokeWidth="1.5"/>
-      <rect x="185" y="320" width="30" height="24" fill="#fff7ed" stroke={KIT.txt} strokeWidth="1.5"/>
-      <text x="200" y="337" fontSize="13.5" fontWeight="800" fill={KIT.txt} textAnchor="middle">C</text>
-      <text x="200" y="390" fontSize="13.5" fill={KIT.txt} textAnchor="middle">abonnés</text>
-      <text x="116" y="378" fontSize="13" fill={KIT.txt2} textAnchor="middle">t = {fmt(tAff, 0)} h</text>
-      {sim.perdu > 20 && <text x="108" y={yH(H_TROP) - 20} fontSize="13.5" fontWeight="800" fill="#b91c1c" textAnchor="middle">débordement !</text>}
-      {sim.penurie > 1 && <text x="108" y={yH(H_FOND) + 16} fontSize="13.5" fontWeight="800" fill="#b91c1c" textAnchor="middle">réservoir vide !</text>}
-      <Cadre actif={hl('reservoir')} x={46} y={yH(H_TROP) - 22} w={130} h={yH(H_FOND) - yH(H_TROP) + 30}/>
-      <Cadre actif={hl('pompe')} x={14} y={340} w={54} h={58}/>
-      <Cadre actif={hl('maison')} x={176} y={296} w={54} h={102}/>
-    </svg>
-  );
+  // ════════════════ SCHÉMA DU CHÂTEAU D'EAU (maquette commune avec « Point de fonctionnement ») ════════════════
+  const Hc = ptCur ? ptCur.H : hInit, Yc = ptCur ? ptCur.Y : 0;
+  const schema = <SchemaChateau regul={regul} hHaut={hHaut} hBas={hBas} consigne={consigne} H={Hc} Y={Yc} t={tAff}
+    perdu={sim.perdu} penurie={sim.penurie} hl={hl}/>;
 
   // ════════════════ COURBES H(t) ET Q(t) ════════════════
   const W = 470, gx = 46, dx = 10, HH = 200, HQ = 120, gap = 34;
@@ -394,6 +358,11 @@ export function Simulation5() {
           {[['constant', 'constante'], ['journee', 'journée type'], ['incendie', 'incendie à t = 200 h']].map(([k, n]) =>
             <button key={k} onClick={() => setProfil(k)} style={stylePetitBouton(profil === k, COUL.puisage)}>{n}</button>)}
         </div>
+        <Curseur nom="Niveau initial du réservoir" valeur={hInit} onChange={setHInit} min={30} max={36} pas={0.5} unite="m" decimales={1} couleur={COUL.eau}/>
+        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
+          <button onClick={() => setHInit(30)} style={stylePetitBouton(hInit === 30, COUL.eau)}>partir du réservoir vide</button>
+          <button onClick={() => setHInit(H0)} style={stylePetitBouton(hInit === H0, COUL.eau)}>33 m (par défaut)</button>
+        </div>
         <Curseur nom="Retard de la mesure" valeur={retard} onChange={setRetard} min={0} max={8} pas={0.5} unite="h" decimales={1} couleur="#334155"/>
         <div style={{ fontSize: 13.5, color: KIT.txt2, fontWeight: 700, margin: '4px 0' }}>Durée simulée</div>
         <div style={{ display: 'flex', gap: 5 }}>
@@ -416,6 +385,14 @@ export function Simulation5() {
         {!enGuide && <LigneMesure nom="Écart consigne − niveau final" valeur={`${fmt(consigne - sim.Hfin, 2)} m`} couleur={COUL.consigne}/>}
         {!enGuide && <LigneMesure nom="Écart maximal après 72 h" valeur={sim.ecartMax != null ? `${fmt(sim.ecartMax, 2)} m` : '—'} couleur={COUL.consigne}/>}
       </>}
+      {regul === 'p' && naviguer && (
+        <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
+          Pourquoi le niveau ne rejoint-il pas la consigne ? Le <strong>point de fonctionnement</strong> l'explique à partir de ces mêmes réglages.
+          <div style={{ marginTop: 4 }}>
+            <button onClick={() => { ecrireTransfert({ consigne, Kp, Qmax, Qp }); naviguer(6); }} style={stylePetitBouton(true, '#e76f51')}>🎯 Voir le point de fonctionnement</button>
+          </div>
+        </div>
+      )}
       {sim.perdu > 20 && <LigneMesure nom="Eau perdue par débordement" valeur={`${fmt(sim.perdu, 0)} m³`} couleur="#b91c1c"/>}
       {sim.penurie > 1 && <LigneMesure nom="Durée où le réservoir est vide" valeur={`${fmt(sim.penurie, 1)} h`} couleur="#b91c1c"/>}
     </>
@@ -427,11 +404,11 @@ export function Simulation5() {
     if (type === 'ville') {
       const hab = Math.round((3000 + Math.random() * 12000) / 100) * 100;
       setDefi({ type, hab, reps: {}, verifie: false });
-      setRegul('tor'); setProfil('constant'); setQmax(100); setHBas(31); setHHaut(33); setQp(20); setRetard(0); setDuree(1000);
+      setRegul('tor'); setProfil('constant'); setQmax(100); setHBas(31); setHHaut(33); setQp(20); setRetard(0); setDuree(1000); setHInit(H0);
     } else {
       const moy = Math.round(30 + Math.random() * 30);
       setDefi({ type, moy, valide: null });
-      setRegul('pi'); setProfil('journee'); setQp(moy); setQmax(100); setConsigne(33); setKp(5); setTi(200); setRetard(1); setDuree(500);
+      setRegul('pi'); setProfil('journee'); setQp(moy); setQmax(100); setConsigne(33); setKp(5); setTi(200); setRetard(1); setDuree(500); setHInit(H0);
     }
   }
   const qVille = defi && defi.type === 'ville' ? defi.hab * CONSO / 1000 / 24 : null;
@@ -497,7 +474,7 @@ export function Simulation5() {
   function changerMode(m) {
     setMode(m);
     if (m === 'defi' && !defi) nouveauDefi('ville');
-    if (m === 'guide') { setProfil('constant'); setQmax(100); setRetard(0); setDuree(1000); }
+    if (m === 'guide') { setProfil('constant'); setQmax(100); setRetard(0); setDuree(1000); setHInit(H0); }
   }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
@@ -537,7 +514,8 @@ export function Simulation5() {
                 <li>En TOR, rapprochez les seuils : que deviennent le nombre de démarrages et le taux d'utilisation ?</li>
                 <li>Passez en « journée type » : le TOR suit-il encore ? Et un PI ?</li>
                 <li>Déclenchez l'incendie : le réservoir tient-il le coup ?</li>
-                <li>En P, augmentez fortement K<sub>p</sub> avec un retard de mesure de 4 h.</li>
+                <li>En P, réglez K<sub>p</sub> = 200 %/m avec un retard de mesure de 8 h : le niveau oscille sans se stabiliser.</li>
+                <li>Partez du réservoir vide : combien de temps faut-il pour le remplir ?</li>
                 <li>En PI, cherchez le T<sub>i</sub> le plus petit qui n'oscille pas trop.</li>
               </ul>
             </div>}

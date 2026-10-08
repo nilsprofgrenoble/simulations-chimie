@@ -19,17 +19,6 @@ export const CONTEXTES = {
     ],
     niveau: "BTS Métiers de la chimie",
   },
-  6: {
-    but: "Découvrir une boucle de régulation de niveau et la caractéristique statique du procédé, puis trouver son point de fonctionnement.",
-    apprendre: "Le vocabulaire de la régulation (grandeur réglée, réglante, perturbatrice, signal de commande et de mesure) et la notion de point de fonctionnement.",
-    etapes: [
-      "Repérez sur le schéma chaque élément de la boucle : actionneur, système à régler, capteur.",
-      "Faites varier le signal de commande Y et observez la hauteur d'eau H obtenue.",
-      "Ouvrez l'onglet « Caractéristique statique » pour voir H en fonction du débit, puis l'onglet « Point de fonctionnement ».",
-      "Modifiez l'ouverture du robinet de puisage (une perturbation) et regardez le point de fonctionnement se déplacer.",
-    ],
-    niveau: "Terminale STL",
-  },
   7: {
     but: "Faire cristalliser du nitrate de potassium KNO₃ par refroidissement ou par évaporation, à l'aide de son diagramme de solubilité.",
     apprendre: "Distinguer une solution insaturée d'une solution saturée, lire une courbe de solubilité et calculer la masse de cristaux obtenue.",
