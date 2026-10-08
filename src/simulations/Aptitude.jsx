@@ -398,6 +398,8 @@ export function SimulationAptitude() {
   const idx = id => ETAPES.findIndex(e => e.id === id);
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const vu = id => !enGuide || etape >= idx(id);
+  const passe = id => !enGuide || etape > idx(id);   // étape dépassée (toujours vrai hors parcours guidé)
+  const zCache = enGuide && formuleActive === 'iso' && !passe('iso');   // z (ISO) du labo 10 : c'est la réponse de l'étape « iso »
   useEffect(() => { if (enGuide && etape > idx('arrivee') && arrives < v.length) setArrives(v.length); }, [etape, enGuide]);
   // Dans le parcours, le jeu « Repères » n'est proposé qu'à son étape ; on revient à la campagne des nitrates ailleurs
   useEffect(() => { if (enGuide && etape < idx('reperes') && jeu !== 'parcours') setJeu('parcours'); }, [etape, enGuide]);
@@ -418,7 +420,7 @@ export function SimulationAptitude() {
         <div style={{ fontWeight: 700, color: KIT.txt2 }}>où :</div>
         <ul style={{ margin: '2px 0 0', paddingLeft: 18 }}>{FORMULES[formuleActive].ou.map((t, k) => <li key={k}>{avecIndices(t)}</li>)}</ul>
         {tous && formuleActive === 'ref' && <div style={{ marginTop: 4 }}>Ici : x̄ = {fmt(calc.centre, D.dec + 1)} et s = {fmt(calc.disp, D.dec + 1)} {D.unite}.</div>}
-        {tous && formuleActive === 'robuste' && <div style={{ marginTop: 4 }}>Ici : médiane = {fmt(calc.centre, D.dec + 1)}, MAD = {fmt(calc.disp / 1.483, D.dec + 1)}, donc s* = 1,483 × MAD = {fmt(calc.disp, D.dec + 1)} {D.unite}.</div>}
+        {tous && formuleActive === 'robuste' && <div style={{ marginTop: 4 }}>Ici : médiane = {passe('robuste') ? fmt(calc.centre, D.dec + 1) : '?'}, MAD = {fmt(calc.disp / 1.483, D.dec + 1)}, donc s* = 1,483 × MAD = {fmt(calc.disp, D.dec + 1)} {D.unite}.</div>}
         {tous && formuleActive === 'iso' && <div style={{ marginTop: 4 }}>{avecIndices(`Ici : x_pt = ${fmt(calc.centre, D.dec + 1)} et σ_pt = ${fmt(calc.disp, D.dec + 1)} ${D.unite}.`)}</div>}
         {FORMULES[formuleActive].source && <div style={{ marginTop: 4, fontSize: 12.5, color: KIT.txt2 }}>Sources : {FORMULES[formuleActive].source}</div>}
       </div>
@@ -465,14 +467,15 @@ export function SimulationAptitude() {
             return (
               <tr key={i}>
                 <td style={cellule}>{i + 1}</td><td style={cellule}>{fmt(x, D.dec)}</td>
-                <td style={{ ...cellule, background: '#ecfeff', fontWeight: 700 }}>{montrerZ ? fmt(zz, 2) : '?'}</td>
+                <td style={{ ...cellule, background: '#ecfeff', fontWeight: 700 }}>{montrerZ && !zCache ? fmt(zz, 2) : '?'}</td>
                 <td style={cellule}>{enGuide && etape === idx('classer') ? (
                   <select value={choisi || ''} aria-label={`Classement du laboratoire ${i + 1}`} onChange={e => { const val = e.target.value; setClasses(cl => ({ ...cl, [i]: val })); setClassesVerif(false); }}
                     style={{ fontSize: 13.5, padding: '2px 4px', borderRadius: 5, border: `1.5px solid ${classesVerif ? (juste ? '#16a34a' : '#dc2626') : KIT.bord}` }}>
                     <option value="">?</option><option value="sat">satisfaisant</option><option value="disc">discutable</option><option value="nonsat">non satisfaisant</option>
-                  </select>) : montrerZ ? <span style={{ background: c.bg, color: c.color, fontWeight: 700, padding: '1px 8px', borderRadius: 10, fontSize: 12.5 }}>{c.label}</span> : '?'}</td>
+                  </select>) : montrerZ && !zCache ? <span style={{ background: c.bg, color: c.color, fontWeight: 700, padding: '1px 8px', borderRadius: 10, fontSize: 12.5 }}>{c.label}</span> : '?'}</td>
                 {montrerComparaison && Object.keys(FORMULES).filter(k => k !== formuleActive).map(k => {
                   const zk = tousZ[k][i], ck = categorie(zk);
+                  if ((k === 'iso' && !passe('iso')) || zCache) return <td key={k} style={cellule}>{k === 'iso' ? '?' : fmt(zk, 2)}</td>;
                   return <td key={k} style={{ ...cellule, color: ck.color }}>{fmt(zk, 2)}{ck.cle !== c.cle && <span title="classement différent"> ⚠</span>}</td>;
                 })}
               </tr>
@@ -599,7 +602,7 @@ export function SimulationAptitude() {
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       <style>{`
-        .ap-l1 { display: grid; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
+        .ap-l1 { display: grid; align-items: start; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
         .ap-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
         @media (max-width: 900px) { .ap-l1 { grid-template-columns: minmax(0, 1fr); } }
       `}</style>

@@ -281,6 +281,7 @@ export function SimulationDosageEtalonnage() {
   const idx = id => ETAPES.findIndex(e => e.id === id);
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const vu = id => !enGuide || etape >= idx(id);
+  const passe = id => !enGuide || etape > idx(id);   // étape dépassée (toujours vrai hors parcours guidé)
   const hl = id => enGuide && et.focus.includes(id);
   const cadre = id => (hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3 } : {});
 
@@ -290,7 +291,7 @@ export function SimulationDosageEtalonnage() {
   const blocGamme = (
     <div style={{ ...styleBoite, ...cadre('gamme') }} data-apparait={`${idx('gamme')} ${idx('mesurer')}`}>
       <Section titre="Ma gamme" ouvert={ouverts.gamme} onBascule={() => setOuverts(o => ({ ...o, gamme: !o.gamme }))}>
-        <div style={{ fontSize: 13.5, color: KIT.txt, marginBottom: 6 }}>{T.refTxt} (C<sub>ref</sub> = {fmt(T.cRef, 0)} {T.uC}) ; fioles jaugées de {T.vFiole} mL ; prélèvements à la {T.outil}.</div>
+        <div style={{ fontSize: 13.5, color: KIT.txt, marginBottom: 6 }}>{T.refTxt} (C<sub>ref</sub> = {passe('sref') ? fmt(T.cRef, 0) : '?'} {T.uC}) ; fioles jaugées de {T.vFiole} mL ; prélèvements à la {T.outil}.</div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 6 }}>
           <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Nombre d'étalons (sans le blanc) :</span>
           <button onClick={() => volumes.length > 2 && setVolumes(v => v.slice(0, -1))} style={stylePetitBouton(false)} aria-label="Un étalon de moins">−</button>
@@ -306,13 +307,13 @@ export function SimulationDosageEtalonnage() {
                 <tr key={i}><td style={cell}>{i + 1}</td>
                   <td style={cell}><input type="number" step={pasV} value={v} aria-label={`Volume de l'étalon ${i + 1}`} onChange={e => { const x = lireNombre(e.target.value); setVolumes(l => l.map((w, j) => (j === i ? (isFinite(x) ? x : 0) : w))); }}
                     style={{ width: 80, fontSize: 14, padding: '2px 5px', border: `1.5px solid ${KIT.bord}`, borderRadius: 5 }}/></td>
-                  <td style={cell}>{fmt(verif.c[i], T.uC === 'mg/L' && verif.c[i] < 10 ? 3 : 2)}</td></tr>
+                  <td style={cell}>{passe('volume') ? fmt(verif.c[i], T.uC === 'mg/L' && verif.c[i] < 10 ? 3 : 2) : '?'}</td></tr>
               ))}
             </tbody>
           </table>
         </div>
         <div style={{ marginTop: 8 }}>
-          {verif.L.map((l, k) => <div key={k} style={{ fontSize: 13.5, color: KIT.txt, marginBottom: 3 }}>{l.ok === true ? '✅' : l.ok === false ? '❌' : 'ℹ️'} {l.t}</div>)}
+          {verif.L.map((l, k) => <div key={k} style={{ fontSize: 13.5, color: KIT.txt, marginBottom: 3 }}>{l.ok === true ? '✅' : l.ok === false ? '❌' : 'ℹ️'} {!passe('cInj') && l.t.startsWith("L'échantillon attendu") ? l.t.replace(/\([^)]*mg\/L\)/, '(? mg/L)') : l.t}</div>)}
         </div>
         {vu('mesurer') && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
           <button onClick={() => mesurer('injection')} disabled={!verif.valide} style={{ ...styleBouton(verif.valide, '#2563eb'), opacity: verif.valide ? 1 : 0.5 }}>🧪 Préparer et mesurer (même fiole mesurée deux fois)</button>
@@ -343,10 +344,10 @@ export function SimulationDosageEtalonnage() {
           {reg.fisher ? <LigneMesure nom={`Test de Fisher (${reg.fisher.d1} ; ${reg.fisher.d2} ddl)`} valeur={`F = ${fmt(reg.fisher.F, 2)} ; F_crit = ${fmt(reg.fisher.Fc, 2)} → ${reg.fisher.F > reg.fisher.Fc ? 'linéarité rejetée' : 'linéarité acceptée'}`}
             couleur={reg.fisher.F > reg.fisher.Fc ? '#b91c1c' : '#15803d'}/> : <LigneMesure nom="Test de Fisher" valeur="impossible (pas de répétitions)"/>}
           {reg.fisher && donnees.mode === 'injection' && <div style={{ fontSize: 12.5, color: '#b45309', margin: '4px 0' }}>⚠️ Répétitions = deux mesures de la même fiole : l'hypothèse de répétitions indépendantes n'est pas vérifiée, le test n'est pas fiable.</div>}
-          <LigneMesure nom="LD = 3 s(b) / a ; LQ = 10 s(b) / a" valeur={`${fmt(LD, 3)} ; ${fmt(LQ, 3)} ${T.uC}`}/>
+          <LigneMesure nom="LD = 3 s(b) / a ; LQ = 10 s(b) / a" valeur={passe('ld') ? `${fmt(LD, 3)} ; ${fmt(LQ, 3)} ${T.uC}` : '? ; ?'}/>
           {cInj != null && <>
             <LigneMesure nom="Échantillon : signal moyen (2 mesures)" valeur={fmt(echMoy, T.dec)}/>
-            <LigneMesure nom="C injectée = (A − b) / a" valeur={`${fmt(cInj, 3)} ± ${fmt(uC, 3)} ${T.uC} (incertitude-type due à l'étalonnage)`} couleur="#dc2626"/>
+            <LigneMesure nom="C injectée = (A − b) / a" valeur={passe('cEch') ? `${fmt(cInj, 3)} ± ${fmt(uC, 3)} ${T.uC} (incertitude-type due à l'étalonnage)` : '?'} couleur="#dc2626"/>
             {pourcent != null && vu('pourcent') && etape > idx('pourcent') || (pourcent != null && !enGuide) ? <LigneMesure nom="Teneur en caféine de la crème" valeur={`${fmt(pourcent, 2)} %`} couleur="#dc2626"/> : null}
             {cInj < LQ && <div style={{ fontSize: 12.5, color: '#b91c1c' }}>L'échantillon est sous la limite de quantification.</div>}
             {(cInj < Math.min(...donnees.x.filter(x => x > 0)) || cInj > Math.max(...donnees.x)) && <div style={{ fontSize: 12.5, color: '#b91c1c' }}>L'échantillon est hors de la gamme : le résultat est extrapolé.</div>}
@@ -422,7 +423,7 @@ export function SimulationDosageEtalonnage() {
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       <style>{`
-        .de-l1 { display: grid; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
+        .de-l1 { display: grid; align-items: start; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
         .de-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
         @media (max-width: 900px) { .de-l1 { grid-template-columns: minmax(0, 1fr); } }
       `}</style>

@@ -306,7 +306,7 @@ export function SimulationPeinture({ plotlyReady }) {
             <tbody>
               <tr><td style={cell}>Eau</td><td style={cell}>solvant</td><td style={cell}>—</td><td style={cell}>{champ('eau', 1)}</td></tr>
               {['tio2', 'caco3'].map(k => <tr key={k}><td style={cell}>{POUDRES[k].nom}</td><td style={cell}>{POUDRES[k].role}</td>
-                <td style={cell}>ρ = {fmt(POUDRES[k].rho, 2)} ; prise d'huile : fiche {POUDRES[k].phFiche}{vu('mesureCaco3') ? `, mesurée ${POUDRES[k].phMesuree}` : ''}</td><td style={cell}>{champ(k, 1)}</td></tr>)}
+                <td style={cell}>ρ = {fmt(POUDRES[k].rho, 2)} ; prise d'huile : fiche {POUDRES[k].phFiche}{(!enGuide || avant('mesureCaco3') || etape > loc('mesureCaco3')) ? `, mesurée ${POUDRES[k].phMesuree}` : ''}</td><td style={cell}>{champ(k, 1)}</td></tr>)}
               <tr><td style={cell}>{p.R.nom}</td><td style={cell}>liant</td><td style={cell}>ES {p.R.es} % ; ρ sec {fmt(p.R.rhoSec, 2)} ; TMFF {p.R.tmff} °C</td><td style={cell}>{champ('liant', 1)}</td></tr>
               {Object.entries(ADDITIFS).map(([k, a]) => <tr key={k}><td style={cell}>{a.nom}</td><td style={cell}>additif</td><td style={cell}>{a.cov ? 'volatil (COV)' : `ES ${a.es} %`} ; ρ {fmt(a.rho, 2)}</td><td style={cell}>{champ(k, 2)}</td></tr>)}
             </tbody>
@@ -405,7 +405,7 @@ export function SimulationPeinture({ plotlyReady }) {
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       <style>{`
-        .pe-l1 { display: grid; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
+        .pe-l1 { display: grid; align-items: start; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
         .pe-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
         @media (max-width: 900px) { .pe-l1 { grid-template-columns: minmax(0, 1fr); } }
       `}</style>

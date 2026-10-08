@@ -333,7 +333,7 @@ export function BeerLambert1G() {
       tache: { type: 'num', q: 'Concentration c_X des ions cuivre(II)', unite: 'mol/L', vrai: cXcalc, tol: 0.02, affiche: v => fmt(v, 4),
         pieges: [[AX * k, 'C’est A_X / k, et non A_X × k.']] } },
     { id: 'cm', titre: 'La concentration en masse', focus: [],
-      texte: <>On a c<sub>m</sub> = c × M, avec M(CuSO₄, 5 H₂O) = 249,68 g/mol. Le fabricant annonce 15 g/L.</>,
+      texte: <>On a c<sub>m</sub> = c × M, avec M(CuSO₄, 5 H₂O) = 249,68 g/mol.</>,
       tache: { type: 'num', q: 'Concentration en masse c_m de la bouillie', unite: 'g/L', vrai: cmX, tol: 0.02, affiche: v => fmt(v, 1),
         pieges: [[cXcalc / M_CUSO4, 'C’est c × M, et non c / M.']] } },
     { id: 'conclusion', titre: 'Conclusion', focus: [],
@@ -487,7 +487,7 @@ export function BeerLambert1G() {
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       <style>{`
-        .bl-l1 { display: grid; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
+        .bl-l1 { display: grid; align-items: start; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
         .bl-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
         @media (max-width: 900px) { .bl-l1 { grid-template-columns: minmax(0, 1fr); } }
       `}</style>

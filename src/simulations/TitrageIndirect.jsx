@@ -262,7 +262,7 @@ export function SimulationTitrageIndirect() {
       texte: <>À l'équivalence, le diiode restant et le thiosulfate versé sont dans les proportions de l'équation : 1 I₂ pour 2 S₂O₃²⁻.</>,
       tache: { type: 'qcm', q: 'Quelle relation est juste ?', options: ['n(I₂)restant = n(S₂O₃²⁻)ₑ / 2', 'n(I₂)restant = 2 n(S₂O₃²⁻)ₑ', 'n(I₂)restant = n(S₂O₃²⁻)ₑ'], bonne: 0 } },
     { id: 'Vth', titre: 'Le volume équivalent théorique', focus: ['burette'],
-      texte: <>Avec n(S₂O₃²⁻)ₑ = c₂ × V₂,ₑ et c₂ = 0,010 mol/L.{mes.Ve != null ? ` Vous avez mesuré ${fmt(mes.Ve, 1)} mL.` : ''}</>,
+      texte: <>Avec n(S₂O₃²⁻)ₑ = c₂ × V₂,ₑ et c₂ = 0,010 mol/L.{mes.Ve != null && guide.reussies?.[etape] ? ` Vous avez mesuré ${fmt(mes.Ve, 1)} mL.` : ''}</>,
       tache: { type: 'num', q: 'V₂,ₑ théorique = 2 n(I₂)restant / c₂, en mL', unite: 'mL', vrai: ref.Veq, tol: 0.025,
         pieges: [[ref.Veq / 4, 'n(S₂O₃²⁻) = 2 n(I₂) : multipliez par 2, ne divisez pas.'], [ref.Veq / 1000, 'La réponse est demandée en mL.']] } },
     { id: 'technicien', titre: 'Partie 3 · Le technicien', focus: ['erlen'],
@@ -295,14 +295,16 @@ export function SimulationTitrageIndirect() {
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const hl = id => enGuide && et.focus.includes(id);
   const vu = id => !enGuide || etape >= idx(id);
-  // En arrivant sur l'étape du technicien (ou d'un titrage), on repart d'une burette pleine
-  useEffect(() => { if (enGuide && (etape === idx('titrer') || etape === idx('technicien'))) nouveauTitrage(); }, [etape, enGuide]);
+  const passe = id => !enGuide || etape > idx(id);          // étape dépassée (toujours vrai hors parcours guidé)
+  // En arrivant sur l'étape du technicien (ou d'un titrage), on repart d'une burette pleine ; à l'étape « V₂,ₑ théorique », on la remet aussi à zéro pour qu'elle n'affiche plus la valeur mesurée
+  useEffect(() => { if (enGuide && (etape === idx('titrer') || etape === idx('Vth') || etape === idx('technicien'))) nouveauTitrage(); }, [etape, enGuide]);
 
   // ════════════════ SCHÉMA : BURETTE, ERLENMEYER, AGITATEUR ════════════════
   const yB0 = 30, yB1 = 230;                       // burette : 0 mL en haut, 25 mL en bas
   const yNivB = yB0 + V2 / V_BURETTE * (yB1 - yB0);
   const coule = ouvert;
-  const schema = <SchemaBurette V2={V2} ouvert={ouvert} coul={coul} indicateur={amidon ? 'avec empois d’amidon' : null} hl={hl}/>;
+  const schema = <SchemaBurette V2={V2} ouvert={ouvert} coul={coul} indicateur={amidon ? 'avec empois d’amidon' : null} hl={hl}
+    etiquetteBurette={passe('montage') ? 'S₂O₃²⁻' : '?'}/>;   // en parcours, le titrant est l'objet de l'étape « Le montage »
 
   // ════════════════ TABLEAU ET LÉGENDES ════════════════
   const cell = { padding: '5px 6px', border: `1px solid ${KIT.bord}`, textAlign: 'center', fontSize: 14 };
@@ -439,7 +441,7 @@ export function SimulationTitrageIndirect() {
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       <style>{`
-        .ti-l1 { display: grid; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
+        .ti-l1 { display: grid; align-items: start; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
         .ti-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
         @media (max-width: 900px) { .ti-l1 { grid-template-columns: minmax(0, 1fr); } }
       `}</style>
@@ -472,7 +474,7 @@ export function SimulationTitrageIndirect() {
               equations={[['Réaction préalable, dans l’erlenmeyer (lente, totale ; le diiode est en excès)', <>C₆H₈O₆<sub>(aq)</sub> + I₂<sub>(aq)</sub> → C₆H₆O₆<sub>(aq)</sub> + 2 H⁺<sub>(aq)</sub> + 2 I⁻<sub>(aq)</sub></>],
                 ['Réaction support du titrage de l’excès de diiode (rapide, totale)', <>I₂<sub>(aq)</sub> + 2 S₂O₃²⁻<sub>(aq)</sub> → 2 I⁻<sub>(aq)</sub> + S₄O₆²⁻<sub>(aq)</sub></>]]}/>
             <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>
-              L'erlenmeyer contient la prise d'essai de S₀ et le diiode, après 5 minutes d'agitation. La burette contient le thiosulfate.
+              L'erlenmeyer contient la prise d'essai de S₀ et le diiode, après 5 minutes d'agitation.{passe('montage') ? ' La burette contient le thiosulfate.' : ''}{' '}
               Le zoom permet de lire le volume versé au dixième de millilitre.
             </div>
           </div>

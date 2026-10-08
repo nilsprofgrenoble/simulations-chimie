@@ -13,7 +13,7 @@ const yH = h => 300 - (h - 26) * 22;        // 26 m → 300 px ; 38 m → 36 px
 // Schéma : réservoir (A), pompe (B), abonnés (C).
 // H : hauteur d'eau (m) ; Y : commande de la pompe (%) ; regul : 'tor' | 'p' | 'pi' ;
 // t : instant affiché (h), ou null si le schéma ne représente pas un instant précis.
-export function SchemaChateau({ regul, hHaut, hBas, consigne, H, Y, t = null, perdu = 0, penurie = 0, hl = () => false }) {
+export function SchemaChateau({ regul, hHaut, hBas, consigne, H, Y, t = null, perdu = 0, penurie = 0, hl = () => false, masqueY = false }) {
   const Hc = H, Yc = Y;
   return (
     <svg viewBox="0 0 232 400" role="img" aria-label="Château d'eau, pompe et habitations" style={{ width: '100%', height: 'auto', display: 'block' }}>
@@ -40,7 +40,7 @@ export function SchemaChateau({ regul, hHaut, hBas, consigne, H, Y, t = null, pe
       {/* pompe */}
       <circle cx="40" cy="360" r="13" fill={Yc > 0 ? '#dcfce7' : 'white'} stroke={KIT.txt} strokeWidth="2"/>
       <text x="40" y="365" fontSize="14.5" fontWeight="800" fill={KIT.txt} textAnchor="middle">B</text>
-      <text x="40" y="390" fontSize="13.5" fill={KIT.txt} textAnchor="middle">{regul === 'tor' ? (Yc > 0 ? 'pompe ON' : 'pompe OFF') : `pompe ${fmt(Yc, 0)} %`}</text>
+      <text x="40" y="390" fontSize="13.5" fill={KIT.txt} textAnchor="middle">{regul === 'tor' ? (Yc > 0 ? 'pompe ON' : 'pompe OFF') : `pompe ${masqueY ? '?' : fmt(Yc, 0)} %`}</text>
       {/* maison et robinet */}
       <polygon points="182,320 200,304 218,320" fill="#fed7aa" stroke={KIT.txt} strokeWidth="1.5"/>
       <rect x="185" y="320" width="30" height="24" fill="#fff7ed" stroke={KIT.txt} strokeWidth="1.5"/>

@@ -37,7 +37,7 @@ function Hypotheses() {
 }
 
 // ── Graphique : débits en fonction de la hauteur d'eau ──
-function GraphePF({ c, Kp, Qmax, Qp, eq, showPuisage, showRegul, showPoint, showXp }) {
+function GraphePF({ c, Kp, Qmax, Qp, eq, showPuisage, showRegul, showPoint, showXp, valXp = true }) {
   const W = 420, Hg = 372, l = 54, r = 14, t = 44, b = 90, hMin = 26, hMax = 38;
   const qTop = Math.ceil(Math.max(Qmax, Qp, 100) * 1.1 / 20) * 20;
   const X = h => l + (h - hMin) / (hMax - hMin) * (W - l - r), Y = q => t + (1 - q / qTop) * (Hg - t - b);
@@ -77,7 +77,7 @@ function GraphePF({ c, Kp, Qmax, Qp, eq, showPuisage, showRegul, showPoint, show
         <line x1={X(Math.max(hMin, c - xp))} y1={bas + 52} x2={X(c)} y2={bas + 52} stroke="#7c3aed" strokeWidth="2"/>
         <line x1={X(c)} y1={bas + 47} x2={X(c)} y2={bas + 57} stroke="#7c3aed" strokeWidth="2"/>
         {c - xp >= hMin && <line x1={X(c - xp)} y1={bas + 47} x2={X(c - xp)} y2={bas + 57} stroke="#7c3aed" strokeWidth="2"/>}
-        <text x={(X(Math.max(hMin, c - xp)) + X(c)) / 2} y={bas + 74} fontSize="12.5" fill="#7c3aed" textAnchor="middle">X<tspan fontSize="10" dy="3">p</tspan><tspan dy="-3"> = 100 / Kp = {fmt(xp, 1)} m{c - xp < hMin ? ' (déborde à gauche)' : ''}</tspan></text>
+        <text x={(X(Math.max(hMin, c - xp)) + X(c)) / 2} y={bas + 74} fontSize="12.5" fill="#7c3aed" textAnchor="middle">X<tspan fontSize="10" dy="3">p</tspan><tspan dy="-3"> = 100 / Kp{valXp ? ` = ${fmt(xp, 1)} m` : ''}{valXp && c - xp < hMin ? ' (déborde à gauche)' : ''}</tspan></text>
       </g>}
       <line x1={l} y1={bas} x2={W - r} y2={bas} stroke={KIT.txt}/><line x1={l} y1={t} x2={l} y2={bas} stroke={KIT.txt}/>
       <text x={14} y={(t + bas) / 2} fontSize="13.5" fontWeight="700" fill={KIT.txt} transform={`rotate(-90 14 ${(t + bas) / 2})`} textAnchor="middle">débit (m³/h)</text>
@@ -257,9 +257,9 @@ export function Simulation6({ naviguer }) {
   const maquette = (
     <div style={{ ...styleBoite, ...cadre('graph') }}>
       <div className="pf-schema">
-        <div style={cadre('reservoir')}><SchemaChateau regul="p" consigne={consigne} H={eq.H} Y={Yschema} hl={hl}/></div>
+        <div style={cadre('reservoir')}><SchemaChateau regul="p" consigne={consigne} H={eq.H} Y={Yschema} hl={hl} masqueY={enGuide && etape <= idx('commande')}/></div>
         <div>
-          <GraphePF c={consigne} Kp={Kp} Qmax={Qmax} Qp={Qp} eq={eq} showPuisage={vu('equilibre')} showRegul={vu('regulateur')} showPoint={vu('point')} showXp={vu('xp')}/>
+          <GraphePF c={consigne} Kp={Kp} Qmax={Qmax} Qp={Qp} eq={eq} showPuisage={vu('equilibre')} showRegul={vu('regulateur')} showPoint={vu('point')} showXp={vu('xp')} valXp={!enGuide || etape > idx('xp')}/>
           {eq.cas === 'vide' && vu('point') && <div style={{ marginTop: 6, fontSize: 13.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '5px 8px', lineHeight: 1.5 }}>
             ⚠ Les deux courbes se coupent sous le fond du réservoir (H = {fmt(eq.Hth, 1)} m) : <strong>il n'y a pas de point de fonctionnement dans le réservoir, qui se vide</strong>. À H = 30 m, le régulateur ne
             demande que {fmt(eq.QpMax, 0)} m³/h, moins que le puisage ({fmt(Qp, 0)} m³/h). Il faut augmenter K<sub>p</sub> ou diminuer le puisage.</div>}

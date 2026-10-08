@@ -278,9 +278,9 @@ export function Simulation8({ plotlyReady }) {
         {x:[`${canInput} (${canUnite})`], y:[canValReel],
          type:'bar', marker:{color:'#e9a824'},
          name:`${canInput} = ${canValReel.toFixed(canInput==="Ur"?3:0)} ${canUnite}`, yaxis:'y'},
-        {x:['N'], y:[NcanVal],
+        {x:['N'], y:[montreN ? NcanVal : 0],
          type:'bar', marker:{color:'#2a6099'},
-         name:`N = ${NcanVal}`, yaxis:'y2'},
+         name:`N = ${montreN ? NcanVal : '?'}`, yaxis:'y2'},
       ], {
         yaxis:{
           title:`${canInput} (${canUnite})`,
@@ -527,7 +527,7 @@ export function Simulation8({ plotlyReady }) {
                     Ur = 5 × R / (Rp + R)
                   </span><br/>
                   <span style={{color:"#888", fontSize:12}}>
-                    R={R}Ω, Rp={Rp.toLocaleString()}Ω → <strong>Ur = {Ur.toFixed(3)} V</strong>
+                    R={R}Ω, Rp={Rp.toLocaleString()}Ω → <strong>Ur = {passe('ur') ? Ur.toFixed(3) + ' V' : '?'}</strong>
                   </span>
                 </div>
               )}
@@ -581,11 +581,13 @@ export function Simulation8({ plotlyReady }) {
                 background:ledOn?"#fff3e0":"#f5f5f5",
                 border:`1px solid ${ledOn?"#f4a261":"#ddd"}`,
                 fontSize:12, fontWeight:600, color:ledOn?"#e65100":"#888"}}>
-                {ledOn
-                  ? `💡 Phares ALLUMÉS — N=${N} < ${algoN1}`
-                  : N>algoN2
-                    ? `💡 Phares ÉTEINTS — N=${N} > ${algoN2}`
-                    : `⏳ En attente — N=${N} (entre ${algoN1} et ${algoN2})`}
+                {!pharesOn
+                  ? `⏸ Phares non activés — N=${N}`
+                  : `${ledOn ? '💡 Phares ALLUMÉS' : '🌑 Phares ÉTEINTS'} — ${N < algoN1
+                    ? `N=${N} < ${algoN1}`
+                    : N > algoN2
+                      ? `N=${N} > ${algoN2}`
+                      : `N=${N} est entre ${algoN1} et ${algoN2} : l'état précédent est conservé`}`}
               </div>
             </div>
           )}

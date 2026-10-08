@@ -262,8 +262,10 @@ export function Simulation5({ naviguer }) {
 
   // ════════════════ SCHÉMA DU CHÂTEAU D'EAU (maquette commune avec « Point de fonctionnement ») ════════════════
   const Hc = ptCur ? ptCur.H : hInit, Yc = ptCur ? ptCur.Y : 0;
-  const schema = <SchemaChateau regul={regul} hHaut={hHaut} hBas={hBas} consigne={consigne} H={Hc} Y={Yc} t={tAff}
-    perdu={sim.perdu} penurie={sim.penurie} hl={hl}/>;
+  // Étape « valeur de la commande Y » : le libellé « pompe xx % » du schéma donnerait la réponse, on le masque jusqu'à l'étape suivante.
+  const masqueY = enGuide && regul !== 'tor' && etape <= 17;
+  const schema = <div className={masqueY ? 'rn-masque-y' : undefined}><SchemaChateau regul={regul} hHaut={hHaut} hBas={hBas} consigne={consigne} H={Hc} Y={Yc} t={tAff}
+    perdu={sim.perdu} penurie={sim.penurie} hl={hl}/></div>;
 
   // ════════════════ COURBES H(t) ET Q(t) ════════════════
   const W = 470, gx = 46, dx = 10, HH = 200, HQ = 120, gap = 34;
@@ -485,7 +487,8 @@ export function Simulation5({ naviguer }) {
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       <style>{`
-        .rn-l1 { display: grid; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
+        .rn-masque-y text[x="40"][y="390"] { visibility: hidden; }
+        .rn-l1 { display: grid; align-items: start; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
         .rn-schema { display: grid; gap: 10px; grid-template-columns: minmax(170px, 230px) minmax(0, 1fr); align-items: start; }
         .rn-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
         @media (max-width: 900px) { .rn-l1 { grid-template-columns: minmax(0, 1fr); } }

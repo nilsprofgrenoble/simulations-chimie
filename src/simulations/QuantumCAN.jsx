@@ -374,6 +374,7 @@ export function SimulationCAN({ plotlyReady }) {
   const idx = id => ETAPES.findIndex(e => e.id === id);
   const passe = id => !enGuide || etape > idx(id);
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
+  const montreQ = passe('quantum') && (nbits !== 3 || passe('q3'));   // à 3 bits, le quantum est la réponse de l'étape « q3 »
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
   const cols = mode === 'explore' ? '2fr 1fr' : 'minmax(0, 1fr)';
 
@@ -579,7 +580,7 @@ export function SimulationCAN({ plotlyReady }) {
               background: 'white', borderRadius: 7, border: `1px solid ${BORDER}`,
               fontFamily: 'monospace', fontSize: 12, color: TXT }}>
               ΔU = ({vmax}−{vmin}) / (2<sup>{nbits}</sup>−1)<br/>
-              = <strong style={{ color: '#d97706' }}>{passe('quantum') ? `${(quantum * 1000).toFixed(2)} mV` : '?'}</strong>
+              = <strong style={{ color: '#d97706' }}>{montreQ ? `${(quantum * 1000).toFixed(2)} mV` : '?'}</strong>
             </div>
           </div>
         </div>
@@ -704,7 +705,7 @@ export function SimulationCAN({ plotlyReady }) {
               {[
                 ['Ur choisi', `${urCur.toFixed(3)} V`],
                 ['T correspondante', `${T0.toFixed(2)} °C`],
-                ['ΔU (quantum CAN)', passe('quantum') ? `${(quantum * 1000).toFixed(2)} mV` : '?'],
+                ['ΔU (quantum CAN)', montreQ ? `${(quantum * 1000).toFixed(2)} mV` : '?'],
                 ['ΔT résultant', passe('dt') ? `${dT.toFixed(3)} °C` : '?', true],
               ].map(([k, v, hi]) => (
                 <div key={k} style={{ display: 'flex', justifyContent: 'space-between',

@@ -1077,7 +1077,10 @@ export function SimulationBernoulli({ plotlyReady }) {
       note: cinAnnulees ? <>s'annule (v<sub>A</sub> = v<sub>B</sub>)</> : surfB ? <>v<sub>B</sub> ≈ 0</> : 'sortie du tuyau' },
   ];
 
+  // Parcours guidé, étape « Le point B » : la relation montrerait déjà P_A et P_B barrés (« s'annule ») = la réponse du QCM
+  const cacheP = t => enGuide && t.id === 'p' && !(guide.reussies && guide.reussies[3]);
   const valeurAffichee = t => {
+    if (cacheP(t) && t.pression === 'B') return '?';
     if (!simplifie && (t.barre || t.pression)) return '?';
     if (t.barre) return t.aff;
     if (t.pression) return textePression(t.pression);
@@ -1097,7 +1100,7 @@ export function SimulationBernoulli({ plotlyReady }) {
       border: `2px solid ${hl(t.id) ? t.color : BORDER}`,
     }}>
       <span style={{ fontSize: 16, fontWeight: 700, color: t.color, fontFamily: 'Georgia, serif',
-        textDecoration: t.barre && simplifie ? 'line-through' : 'none', textDecorationColor: TXT,
+        textDecoration: t.barre && simplifie && !cacheP(t) ? 'line-through' : 'none', textDecorationColor: TXT,
         textDecorationThickness: 2 }}>
         {t.tex}
       </span>
@@ -1105,7 +1108,7 @@ export function SimulationBernoulli({ plotlyReady }) {
         {valeurAffichee(t)}
       </span>
       <span style={{ fontSize: 10.5, color: TXT2, textAlign: 'center', maxWidth: 96, lineHeight: 1.25 }}>
-        {(t.barre || t.cache || t.pression) && !simplifie ? 'à déterminer' : t.note}
+        {(t.barre || t.cache || t.pression) && !simplifie ? 'à déterminer' : cacheP(t) ? (t.pression === 'A' ? 'réservoir ouvert' : 'à déterminer') : t.note}
       </span>
     </div>
   );

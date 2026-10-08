@@ -118,7 +118,7 @@ export function Simulation2() {
       texte: <>On peut regrouper les trois calculs précédents en une seule expression littérale.</>,
       tache: { type: 'qcm', q: 'Quelle expression donne c_A ?', options: ['c_A = c_B × V_B,e / (2 × V_A)', 'c_A = 2 × c_B × V_B,e / V_A', 'c_A = c_B × V_A / (2 × V_B,e)'], bonne: 0 } },
     { id: 'masse', titre: 'Comparer à l’étiquette', focus: [],
-      texte: <>L'étiquette annonce 1,00 g de diiode pour 100 mL. M(I₂) = 253,8 g/mol.</>,
+      texte: <>M(I₂) = 253,8 g/mol.</>,
       tache: { type: 'num', q: 'Masse de diiode dans 100 mL de Lugol', unite: 'g', vrai: mE, tol: 0.02,
         pieges: [[mE * 10, 'Dans 100 mL = 0,100 L, et non 1 L.'], [cAE * M_I2, 'C’est la masse dans 1 L : prenez 100 mL.']] } },
     { id: 'conclusion', titre: 'L’étiquette est-elle juste ?', focus: [],
@@ -134,6 +134,7 @@ export function Simulation2() {
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const hl = id => enGuide && et.focus.includes(id);
   const vu = id => !enGuide || etape >= idx(id);
+  const passe = id => !enGuide || etape > idx(id);          // étape dépassée (toujours vrai hors parcours guidé)
   useEffect(() => { if (enGuide && (etape === idx('rapide') || etape === idx('precis'))) nouveauTitrage(); }, [etape, enGuide]);
 
   function decolore() {             // titrage rapide : il suffit d'avoir décoloré la solution
@@ -209,7 +210,8 @@ export function Simulation2() {
   );
 
   // ════════════════ SCHÉMA, COMMANDES, MESURES ════════════════
-  const schema = <SchemaBurette V2={VB} ouvert={ouvert} coul={coul} indicateur={thiodene ? 'avec thiodène' : null} hl={hl}/>;
+  const schema = <SchemaBurette V2={VB} ouvert={ouvert} coul={coul} indicateur={thiodene ? 'avec thiodène' : null} hl={hl}
+    etiquetteBurette={passe('schema') ? 'S₂O₃²⁻' : '?'}/>;   // en parcours, le contenu de la burette est l'objet des étapes « Qui va où ? » et « schéma »
   const commandes = (
     <>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
@@ -303,7 +305,7 @@ export function Simulation2() {
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       <style>{`
-        .td-l1 { display: grid; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
+        .td-l1 { display: grid; align-items: start; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
         .td-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
         @media (max-width: 900px) { .td-l1 { grid-template-columns: minmax(0, 1fr); } }
       `}</style>

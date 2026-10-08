@@ -239,6 +239,7 @@ export function Simulation4({ plotlyReady }) {
   const loc = id => ORDRE[parc - 1].indexOf(id);
   const avant = id => ORDRE.slice(0, parc - 1).some(l => l.includes(id));
   const vu = id => !enGuide || avant(id) || (loc(id) >= 0 && etape >= loc(id));
+  const passe = id => !enGuide || avant(id) || (loc(id) >= 0 && etape > loc(id));   // étape dépassée (toujours vrai hors parcours guidé)
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const hl = id => enGuide && et.focus.includes(id);
   const cadre = id => (hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3 } : {});
@@ -301,8 +302,8 @@ export function Simulation4({ plotlyReady }) {
         {Object.entries(SOLVANTS).map(([k, s]) => <Curseur key={k} nom={`${s.nom} (% du volume)`} valeur={tot > 0 ? Math.round(vol[k] / tot * 100) : 0}
           onChange={v => setVol(o => { const autres = Object.keys(o).filter(x => x !== k), reste = autres.reduce((a, x) => a + o[x], 0), nv = { ...o, [k]: v };
             autres.forEach(x => { nv[x] = reste > 0 ? o[x] / reste * (100 - v) : (100 - v) / autres.length; }); return nv; })} min={0} max={100} pas={pas} unite="%" couleur={s.color}/>)}
-        <LigneMesure nom="Point du mélange (δd ; δp ; δh)" valeur={`${fmt(mel.d, 1)} ; ${fmt(mel.p, 2)} ; ${fmt(mel.h, 2)}`}/>
-        <LigneMesure nom="RED du mélange" valeur={`${fmt(redMel, 2)} : ${redMel < 1 ? 'dissout la nitrocellulose' : 'ne la dissout pas'}`} couleur={redMel < 1 ? '#15803d' : '#b91c1c'}/>
+        <LigneMesure nom="Point du mélange (δd ; δp ; δh)" valeur={`${fmt(mel.d, 1)} ; ${passe('moyenne') ? fmt(mel.p, 2) : '?'} ; ${passe('moyenne') ? fmt(mel.h, 2) : '?'}`}/>
+        <LigneMesure nom="RED du mélange" valeur={passe('red5050') ? `${fmt(redMel, 2)} : ${redMel < 1 ? 'dissout la nitrocellulose' : 'ne la dissout pas'}` : '?'} couleur={passe('red5050') ? (redMel < 1 ? '#15803d' : '#b91c1c') : undefined}/>
         <LigneMesure nom="Part d'alcool" valeur={`${fmt(tot > 0 ? (vol.etoh + vol.ipa) / tot * 100 : 0, 0)} %`}/>
       </Section>
     </div>
@@ -366,7 +367,7 @@ export function Simulation4({ plotlyReady }) {
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       <style>{`
-        .ha-l1 { display: grid; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
+        .ha-l1 { display: grid; align-items: start; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
         .ha-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
         @media (max-width: 900px) { .ha-l1 { grid-template-columns: minmax(0, 1fr); } }
       `}</style>
