@@ -48,7 +48,8 @@ export function ContexteBanc({ erlen, burette, equations }) {
 }
 
 // Le montage : potence, burette graduée avec zoom de lecture, erlenmeyer, agitateur magnétique, repères 1-2-3
-export function SchemaBurette({ V2, ouvert, coul, indicateur, hl = () => false, etiquetteBurette = 'S₂O₃²⁻' }) {
+// etiquetteBurette : texte ou contenu (titrant) ; etiquetteErlen : contenu de l'erlenmeyer (facultatif) ; reperes : repères 1-2-3 à légender ; legendeCouleur : encadré « couleur de la solution »
+export function SchemaBurette({ V2, ouvert, coul, indicateur, hl = () => false, etiquetteBurette = 'S₂O₃²⁻', etiquetteErlen = null, reperes = true, legendeCouleur = true }) {
   const yB0 = 30, yB1 = 230;                       // burette : 0 mL en haut, 25 mL en bas
   const yNivB = yB0 + V2 / V_BURETTE * (yB1 - yB0);
   const coule = ouvert;
@@ -70,7 +71,10 @@ export function SchemaBurette({ V2, ouvert, coul, indicateur, hl = () => false, 
       <rect x="240" y={yB1 + 22} width="16" height="8" rx="2" fill={ouvert ? '#16a34a' : '#dc2626'}/>
       <line x1="248" y1={yB1 + 30} x2="248" y2={yB1 + 44} stroke={KIT.txt} strokeWidth="3"/>
       {coule && [0, 1, 2].map(k => <circle key={k} cx="248" cy={yB1 + 48} r="2.5" fill="#7dd3fc"><animate attributeName="cy" from={yB1 + 46} to={yB1 + 78} dur="0.45s" begin={`${k * 0.15}s`} repeatCount="indefinite"/></circle>)}
-      <text x="214" y={yB0 - 18} fontSize="12" fill={KIT.txt2} textAnchor="middle">{etiquetteBurette}</text>
+      {typeof etiquetteBurette === 'string'
+        ? <text x="214" y={yB0 - 18} fontSize="12" fill={KIT.txt2} textAnchor="middle">{etiquetteBurette}</text>
+        : <foreignObject x="350" y="22" width="286" height="62"><div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.45 }}>{etiquetteBurette}</div></foreignObject>}
+      {etiquetteErlen && <foreignObject x="350" y="262" width="286" height="62"><div style={{ fontSize: 13, color: KIT.txt, lineHeight: 1.4 }}>{etiquetteErlen}</div></foreignObject>}
       {/* zoom de lecture */}
       {(() => {
         const z0 = 110, zy = 40, zh = 130, zw = 56, mlParPx = 2 / zh, Yz = v => zy + zh / 2 + (v - V2) / mlParPx;
@@ -97,14 +101,16 @@ export function SchemaBurette({ V2, ouvert, coul, indicateur, hl = () => false, 
         <animateTransform attributeName="transform" type="rotate" from="0 248 313" to="360 248 313" dur="0.6s" repeatCount="indefinite"/>
       </rect>
       {/* repères à légender */}
-      {[[290, 80, '1'], [300, 300, '2'], [312, 335, '3']].map(([x, y, n]) => (
+      {reperes && [[290, 80, '1'], [300, 300, '2'], [312, 335, '3']].map(([x, y, n]) => (
         <g key={n}><line x1={x - 22} y1={y} x2={x + 16} y2={y} stroke={KIT.txt2} strokeDasharray="4 3"/>
           <circle cx={x + 28} cy={y} r="11" fill="white" stroke={ORANGE_GUIDE} strokeWidth="2"/><text x={x + 28} y={y + 4.5} fontSize="13" fontWeight="800" fill={KIT.txt} textAnchor="middle">{n}</text></g>
       ))}
       {/* légende de couleur */}
-      <text x="470" y="290" fontSize="13" fontWeight="700" fill={KIT.txt} textAnchor="middle">couleur de la solution</text>
-      <rect x="430" y="298" width="80" height="34" rx="6" fill={coul} stroke={KIT.txt}/>
-      <text x="470" y="352" fontSize="12" fill={KIT.txt2} textAnchor="middle">{indicateur || 'sans indicateur'}</text>
+      {legendeCouleur && <>
+        <text x="470" y="290" fontSize="13" fontWeight="700" fill={KIT.txt} textAnchor="middle">couleur de la solution</text>
+        <rect x="430" y="298" width="80" height="34" rx="6" fill={coul} stroke={KIT.txt}/>
+        <text x="470" y="352" fontSize="12" fill={KIT.txt2} textAnchor="middle">{indicateur || 'sans indicateur'}</text>
+      </>}
       <Cadre actif={hl('burette')} x={204} y={8} w={90} h={270}/>
       <Cadre actif={hl('erlen')} x={198} y={260} w={100} h={60}/>
       <Cadre actif={hl('agitateur')} x={190} y={318} w={116} h={36}/>
@@ -133,6 +139,12 @@ export function OutilTitrageGeneral() {
   const inp = { fontSize: 14, padding: '4px 6px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6 };
   const num = (val, set, label, w = 80) => <input value={val} aria-label={label} onChange={e => { const x = lireNombre(e.target.value); if (isFinite(x) && x >= 0) set(x); }} style={{ ...inp, width: w }}/>;
   const coef = a => (a === 1 ? '' : `${a} `);
+  const V25 = Math.min(VB, V_BURETTE);
+  const etiqBur = <><div><strong>Burette :</strong> <Formule texte={titrant.f}/></div><div>c = {sci(titrant.c, 3)} mol/L</div></>;
+  const etiqErl = <>
+    <div><strong>Erlenmeyer :</strong> <Formule texte={titre.f}/></div>
+    <div>{titre.mode === 'cV' ? <>c = {sci(titre.c, 3)} mol/L ; V = {fmt(titre.V, 1)} mL</> : titre.mode === 'n' ? <>n = {sci(titre.n, 3)} mol</> : <>m = {fmt(titre.m, 3)} g ; M = {fmt(titre.M, 1)} g/mol</>}</div>
+  </>;
   // graphique n = f(V)
   const W = 520, H = 240, g = 56, d = 14, h = 14, b = 40;
   const X = v => g + v / VBmax * (W - g - d), Y = n => H - b - Math.max(0, n) / nMax * (H - b - h);
@@ -182,10 +194,19 @@ export function OutilTitrageGeneral() {
         </div>
       </div>
       <div style={styleBoite}>
+        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: 10 }}>
+          <div style={{ flex: '1 1 340px', maxWidth: 560 }}>
+            <SchemaBurette V2={V25} ouvert={false} coul="#dbeafe" indicateur={null} etiquetteBurette={etiqBur} etiquetteErlen={etiqErl} reperes={false} legendeCouleur={false}/>
+            <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Le schéma suit vos réglages : contenu de la burette, de l’erlenmeyer et volume versé. La couleur de la solution n’est pas modélisée pour une réaction quelconque.</div>
+            {(Veq > V_BURETTE || VB > V_BURETTE) && <div style={{ fontSize: 13, color: '#b91c1c', marginTop: 4 }}>La burette ne contient que {V_BURETTE} mL : au-delà, il faudrait la remplir à nouveau (ou prendre un titrant plus concentré, ou moins de titré).</div>}
+          </div>
+          <div style={{ flex: '1 1 260px' }}>
         <Curseur nom="Volume de titrant versé V" valeur={VB} onChange={setVB} min={0} max={VBmax} pas={VBmax / 200} unite="mL" decimales={2} couleur="#e63946"/>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8 }}>
           Volume équivalent : <strong>V<sub>éq</sub> = {fmt(Veq, 2)} mL</strong> ; relation à l'équivalence : n(<Formule texte={titre.f}/>)<sub>initial</sub> / {titre.a} = n(<Formule texte={titrant.f}/>)<sub>versé</sub> / {titrant.b}.
           {' '}{VB < Veq ? 'Avant l’équivalence : le titrant est le réactif limitant.' : VB > Veq ? 'Après l’équivalence : le titré est épuisé, le titrant s’accumule.' : 'À l’équivalence.'}
+        </div>
+          </div>
         </div>
         <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
           <svg viewBox="0 0 520 220" role="img" aria-label="Quantités de matière" style={{ width: '100%', height: 'auto', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
