@@ -156,7 +156,7 @@ function Cibles() {
 
 // ════════════════ SIMULATION ════════════════
 export function SimulationMetrologie() {
-  const [mode, setMode] = useState('guide');
+  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
   const [onglet, setOnglet] = useState('classe');
   const [guide, setGuide] = useEtatPersistant('metro-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [graine] = useEtatPersistant('metro-graine-v1', Math.floor(Math.random() * 1e6));

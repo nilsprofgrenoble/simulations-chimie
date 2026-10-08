@@ -70,10 +70,10 @@ export function categorie(z) {
 // ── Les jeux de données ──
 // Campagne du parcours : 10 laboratoires dosent les ions nitrate d'une eau ; un matériau de référence certifié donne x_pt = 24,0 mg/L
 const PARCOURS = { v: [24.3, 23.8, 24.6, 25.1, 23.6, 24.0, 24.4, 23.9, 24.2, 30.5], unite: 'mg/L', xpt: 24.0, sigmaPt: 1.2, dec: 1,
-  nom: 'Dosage des ions nitrate d’une eau (10 laboratoires)' };
+  nom: 'Un laboratoire nettement aberrant : dosage des ions nitrate d’une eau (10 laboratoires)' };
 // Exemple des « Repères pour la formation » (BTS) : teneur en soufre de feuilles de frêne, 14 laboratoires, moyenne de 4 essais chacun
 const REPERES = { v: [1.345, 2.1025, 2.1325, 2.2125, 2.2175, 2.365, 2.4275, 2.4725, 2.55, 2.555, 2.8075, 2.81, 2.815, 2.8275], unite: 'u.a.', dec: 3,
-  nom: 'Exemple des Repères : soufre de feuilles de frêne (14 laboratoires)' };
+  nom: 'Des laboratoires très dispersés : soufre de feuilles de frêne (14 laboratoires), d’après un exemple des « Repères pour la formation » (BTS)' };
 function tirerCampagne(graine, { p = 15, s = 0.8, biais = true, deux = false }) {
   const r = rng(graine), v = [];
   for (let k = 0; k < p; k++) v.push(Math.round((24 + (deux && k % 3 === 0 ? 3.2 : 0) + s * gauss(r)) * 10) / 10);
@@ -203,12 +203,12 @@ function Hypotheses() {
 
 // ════════════════ SIMULATION ════════════════
 export function SimulationAptitude() {
-  const [mode, setMode] = useState('guide');
+  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
   const [guide, setGuide] = useEtatPersistant('aptitude-guide-v2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [graine] = useEtatPersistant('aptitude-graine-v2', Math.floor(Math.random() * 1e6));
   const [ouverts, setOuverts] = useState({ hypo: true, alertes: true, reglages: true, comparer: true });
   const [formule, setFormule] = useState('ref');
-  const [jeu, setJeu] = useState('parcours');                 // parcours | reperes | simulee | mes
+  const [jeu, setJeu] = useState('mes');                      // mes | parcours | reperes | simulee (l'exploration commence par « Mes résultats »)
   const [vue, setVue] = useState('resultats');
   const [arrives, setArrives] = useState(0), [enArrivee, setEnArrivee] = useState(false);
   const [classes, setClasses] = useState({}), [classesVerif, setClassesVerif] = useState(false);
@@ -229,7 +229,7 @@ export function SimulationAptitude() {
   const vMes = texte.split(/[;\s\n\t]+/).map(lireNombre).filter(x => isFinite(x));
   const jeuActif = enGuide && !['reperes'].includes(jeu) ? 'parcours' : jeu;
   const D = jeuActif === 'reperes' ? { ...REPERES, xpt: mediane(REPERES.v), sigmaPt: sigmaReperes, consensus: true }
-    : jeuActif === 'simulee' ? { v: vSim, unite: 'mg/L', dec: 1, nom: `Campagne simulée : ions nitrate (${vSim.length} laboratoires)`, xpt: xptMode === 'reference' ? 24.0 : mediane(vSim), sigmaPt: sigmaPtExp, consensus: xptMode !== 'reference' }
+    : jeuActif === 'simulee' ? { v: vSim, unite: 'mg/L', dec: 1, nom: `Une campagne simulée, réglable : ions nitrate (${vSim.length} laboratoires)`, xpt: xptMode === 'reference' ? 24.0 : mediane(vSim), sigmaPt: sigmaPtExp, consensus: xptMode !== 'reference' }
       : jeuActif === 'mes' ? { v: vMes, unite: '', dec: 2, nom: `Mes résultats (${vMes.length} laboratoires)`, xpt: xptSaisi.trim() ? lireNombre(xptSaisi) : (vMes.length ? mediane(vMes) : NaN), sigmaPt: lireNombre(sigmaSaisi), consensus: !xptSaisi.trim() }
         : { ...PARCOURS, consensus: false };
   const v = D.v;
@@ -320,14 +320,14 @@ export function SimulationAptitude() {
         un écart-type robuste des participants.</>,
       tache: { type: 'qcm', q: 'Quel est l’avantage d’un σ_pt fixé à l’avance, d’après l’exigence de la méthode ?',
         options: ['Il ne dépend pas des résultats évalués : ni un laboratoire aberrant, ni une campagne où tous travaillent mal ne peuvent le modifier', 'Il est toujours plus petit que s', 'Il rend tous les laboratoires satisfaisants'], bonne: 0 } },
-    { id: 'reperes', titre: 'L’exemple des Repères', focus: ['jeu'],
-      texte: <>Choisissez le jeu de données « Exemple des Repères » (14 laboratoires, teneur en soufre de feuilles de frêne), avec la formule du référentiel.
+    { id: 'reperes', titre: 'Des laboratoires très dispersés', focus: ['jeu'],
+      texte: <>Choisissez le jeu de données « Des laboratoires très dispersés » (14 laboratoires, teneur en soufre de feuilles de frêne, d'après un exemple des « Repères pour la formation »), avec la formule du référentiel.
         Le laboratoire 1 trouve {fmt(R[0], 2)} quand les autres trouvent entre 2,10 et 2,83 ; son z vaut {fmt(zR1, 2)}. Essayez aussi la formule robuste : {fmt(zR1rob, 2)}.</>,
       tache: { type: 'qcm', q: 'Pourquoi la formule robuste ne change-t-elle presque rien ici ?',
         options: ['Les 13 autres laboratoires sont eux-mêmes très dispersés : leur dispersion devient la référence, et le laboratoire 1 paraît moins anormal', 'Le laboratoire 1 n’est pas aberrant', 'La médiane est mal calculée'], bonne: 0,
         expl: 'Toute formule qui tire sa dispersion des participants hérite de leur dispersion. Seul un σ_pt fixé d’après l’exigence de la méthode dirait si cette dispersion est acceptable. Essayez la formule ISO en réglant σ_pt.' } },
     { id: 'signe', titre: 'Le signe du z-score', focus: [],
-      texte: <>Dans les Repères, le tableau ne donne que des valeurs positives. Pourtant, le z du laboratoire 1 est négatif.</>,
+      texte: <>Dans le document d'où vient cet exemple, le tableau ne donne que des valeurs positives. Pourtant, le z du laboratoire 1 est négatif.</>,
       tache: { type: 'qcm', q: 'Que signifie un z-score négatif ?', options: ['Le laboratoire trouve moins que la référence : il sous-estime', 'Le laboratoire est meilleur que les autres', 'Rien : seule la valeur absolue compte'], bonne: 0,
         expl: 'On classe avec |z|, mais le signe dit dans quel sens chercher l’erreur. Il faut toujours l’écrire.' } },
     { id: 'suivi', titre: 'Le suivi dans le temps', focus: ['suivi'],
@@ -337,7 +337,7 @@ export function SimulationAptitude() {
     { id: 'bravo', titre: 'Bravo !', focus: [],
       texte: <>Vous savez appliquer la formule du référentiel, et surtout dans quelles conditions elle a un sens : un laboratoire aberrant peut s'y cacher,
         le seuil 3 peut être inatteignable, et toute interprétation suppose une loi normale à vérifier. En exploration libre, comparez les formules sur
-        d'autres campagnes, sur l'exemple des Repères, ou sur les résultats de vos apprentis.</>, tache: null },
+        d'autres campagnes, ou sur les résultats de vos apprentis.</>, tache: null },
   ];
   const idx = id => ETAPES.findIndex(e => e.id === id);
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
@@ -363,7 +363,7 @@ export function SimulationAptitude() {
   const selecteurJeu = (!enGuide || vu('reperes')) && (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10, ...cadre('jeu') }} data-apparait={`${idx('reperes')}`}>
       <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Jeu de données :</span>
-      {[['parcours', 'Nitrates (10 laboratoires)'], ['reperes', 'Exemple des Repères (14 laboratoires)'], ...(enGuide ? [] : [['simulee', 'Campagne simulée'], ['mes', 'Mes résultats']])].map(([k, n]) =>
+      {(enGuide ? [['parcours', JEUX.parcours], ['reperes', JEUX.reperes]] : [['mes', JEUX.mes], ['parcours', JEUX.parcours], ['reperes', JEUX.reperes], ['simulee', JEUX.simulee]]).map(([k, n]) =>
         <button key={k} onClick={() => setJeu(k)} style={stylePetitBouton(jeuActif === k, '#334155')}>{n}</button>)}
     </div>
   );
@@ -420,7 +420,7 @@ export function SimulationAptitude() {
         <button onClick={() => setClassesVerif(true)} style={stylePetitBouton(true, '#16a34a')}>Vérifier le classement</button>
         {classesVerif && <span style={{ marginLeft: 8 }}>{classesOk ? '✅ Classement juste' : '❌ Au moins un laboratoire est mal classé'}</span>}
       </div>}
-      {montrerComparaison && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>⚠ : le classement change avec cette formule. Seuils de la norme ISO : |z| ≤ 2 satisfaisant (les Repères classent z = 2 exactement en « discutable »).</div>}
+      {montrerComparaison && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>⚠ : le classement change avec cette formule. Seuils de la norme ISO : |z| ≤ 2 satisfaisant (le document « Repères pour la formation » classe z = 2 exactement en « discutable »).</div>}
     </div>
   );
   const panneauAlertes = vu('henry') && tous && (
@@ -521,7 +521,7 @@ export function SimulationAptitude() {
   })();
 
   // ════════════════ MISE EN PAGE ════════════════
-  function changerMode(m) { setMode(m); if (m === 'defi' && !defi) nouveauDefi(); if (m !== 'guide' && jeu === 'parcours') setJeu('parcours'); }
+  function changerMode(m) { setMode(m); if (m === 'defi' && !defi) nouveauDefi(); if (m === 'explore') setJeu('mes'); if (m === 'guide') setJeu('parcours'); }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
@@ -566,4 +566,6 @@ export function SimulationAptitude() {
 
 // Numéro de l'étape où le sélecteur de formule apparaît (la formule du référentiel est imposée avant)
 const IDX = { choisirExclu: 10 };
+// Les jeux de données : leur nom dit ce qu'on y trouve
+const JEUX = { mes: 'Mes résultats', parcours: 'Un laboratoire nettement aberrant (10 labos)', reperes: 'Des laboratoires très dispersés (14 labos)', simulee: 'Une campagne simulée, réglable' };
 const cellule = { padding: '4px 6px', border: `1px solid ${KIT.bord}`, textAlign: 'center', fontSize: 13.5 };

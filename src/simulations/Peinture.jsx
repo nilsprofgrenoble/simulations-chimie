@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from "react";
+import { PeintureExploration } from "./PeintureExploration";
+import { AnimationSechage } from "./peintureFilm";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE } from "../commun";
 
 // ====================================================
-// FORMULATION ET SÉCHAGE D'UNE PEINTURE (BTS Métiers de la chimie)
+// PEINTURE À L'EAU (BTS Métiers de la chimie) — parcours guidé et défi ; l'exploration libre est la simulation d'origine (PeintureExploration)
 // D'après le sujet de CCF « changement de la résine Vinnapas » : une base blanche mate, que l'on reformule avec la résine
 // Orgal PST 50A en gardant le même extrait sec, la même CPV et la même CPVC ; correction du dosage du dispersant ;
 // prises d'huile des fiches techniques et prises d'huile mesurées ; TMFF, agent de coalescence et COV.
@@ -62,42 +64,6 @@ export function aspect(l) {
   return { nom: 'mat, poreux (liant insuffisant)', color: '#b91c1c' };
 }
 
-// ════════════════ ANIMATION DU SÉCHAGE ════════════════
-// Trois temps : évaporation de l'eau ; rapprochement et contact des particules ; déformation et coalescence (si T ≥ TMFF)
-function AnimationSechage({ progres, T, tmff, lambda }) {
-  const W = 560, H = 210, base = 180;
-  const filme = T >= tmff;
-  const r = rngFixe(5);
-  const latex = Array.from({ length: 26 }, (_, k) => ({ x: 30 + (k % 13) * 40 + (k > 12 ? 20 : 0), y0: 40 + r() * 100, y1: base - 14 - (k > 12 ? 24 : 0) }));
-  const pig = Array.from({ length: Math.round(6 + 10 * Math.min(1.2, lambda)) }, () => ({ x: 20 + r() * 520, y0: 50 + r() * 100, y1: base - 10 - r() * 34 }));
-  const e1 = Math.min(1, progres / 0.45), e2 = Math.max(0, Math.min(1, (progres - 0.45) / 0.3)), e3 = Math.max(0, Math.min(1, (progres - 0.75) / 0.25));
-  const niveauEau = 30 + e1 * (base - 30 - 50);
-  const poreux = lambda > 1;
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Séchage du film de peinture" style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
-      <rect x="0" y={base} width={W} height={H - base} fill="#cbd5e1"/>
-      <text x={W - 10} y={base + 20} fontSize="12" fill={KIT.txt2} textAnchor="end">support</text>
-      {e1 < 1 && <rect x="0" y={niveauEau} width={W} height={base - niveauEau} fill="#dbeafe" opacity={0.85 * (1 - e2)}/>}
-      {e3 > 0 && filme && <rect x="0" y={base - 48} width={W} height="48" fill="#e2e8f0" opacity={e3 * (poreux ? 0.6 : 0.95)}/>}
-      {latex.map((p, k) => {
-        const y = p.y0 + (p.y1 - p.y0) * Math.min(1, e1 * 1.1);
-        const rx = 15 + (filme ? 6 * e2 : 0), ry = 15 - (filme ? 6 * e2 : 0);
-        return <ellipse key={k} cx={p.x} cy={y} rx={rx} ry={ry} fill="#bfdbfe" stroke="#1e3a8a" strokeWidth="1.2" opacity={filme ? 1 - 0.75 * e3 : 1}/>;
-      })}
-      {pig.map((p, k) => <circle key={k} cx={p.x} cy={p.y0 + (p.y1 - p.y0) * Math.min(1, e1 * 1.1)} r="4.5" fill="#f8fafc" stroke="#475569" strokeWidth="1"/>)}
-      {!filme && e2 > 0.6 && [80, 210, 330, 460].map((x, k) => <polyline key={k} points={`${x},${base - 50} ${x + 8},${base - 30} ${x - 4},${base - 15} ${x + 5},${base}`} fill="none" stroke="#b91c1c" strokeWidth="2.5" opacity={(e2 - 0.6) / 0.4}/>)}
-      {poreux && e3 > 0.5 && [60, 150, 260, 380, 490].map((x, k) => <circle key={k} cx={x} cy={base - 26} r="5" fill="white" stroke="#b91c1c" strokeDasharray="2 2"/>)}
-      <text x="10" y="18" fontSize="13" fontWeight="700" fill={KIT.txt}>
-        {progres < 0.45 ? '1. L’eau s’évapore' : progres < 0.75 ? '2. Les particules se touchent' : filme ? '3. Elles se déforment et fusionnent : film continu' : '3. Trop froid (T < TMFF) : elles ne fusionnent pas, le film se fissure'}
-      </text>
-      <text x={W - 10} y="36" fontSize="12" fill={KIT.txt2} textAnchor="end">T = {fmt(T, 0)} °C ; TMFF = {tmff < 0 ? '< 0' : fmt(tmff, 0)} °C</text>
-      <g transform={`translate(10, ${H - 6})`}><circle cx="4" cy="-4" r="4" fill="#bfdbfe" stroke="#1e3a8a"/><text x="12" y="0" fontSize="11" fill={KIT.txt2}>particule de liant (latex)</text>
-        <circle cx="170" cy="-4" r="4" fill="#f8fafc" stroke="#475569"/><text x="178" y="0" fontSize="11" fill={KIT.txt2}>pigment ou charge</text></g>
-    </svg>
-  );
-}
-function rngFixe(g) { let a = g >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-
 // ════════════════ MESURE DE LA PRISE D'HUILE (méthode à la spatule, ISO 787-5) ════════════════
 function MesurePriseHuile({ poudre, onResultat }) {
   const P = POUDRES[poudre], mPoudre = 10;
@@ -149,8 +115,8 @@ function Hypotheses() {
 }
 
 // ════════════════ SIMULATION ════════════════
-export function SimulationPeinture() {
-  const [mode, setMode] = useState('guide');
+export function SimulationPeinture({ plotlyReady }) {
+  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
   // Trois parcours distincts, chacun avec sa progression mémorisée
   const [parc, setParc] = useEtatPersistant('peinture-parcours-choix', 1);
   const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
@@ -164,7 +130,7 @@ export function SimulationPeinture() {
   const [efficacite, setEfficacite] = useState(3);
   const [progres, setProgres] = useState(0), [anime, setAnime] = useState(false);
   const [vuAnimation, setVuAnimation] = useState({});
-  const [ouverts, setOuverts] = useState({ formule: true, resultats: true, hypo: true, sechage: true });
+  const [ouverts, setOuverts] = useState({ formule: true, resultats: true, hypo: true, sechage: true, mesure: true, mesureExplo: false });
   const [defi, setDefi] = useState(null);
   const refA = useRef(null);
 
@@ -370,17 +336,21 @@ export function SimulationPeinture() {
   );
   const blocMesure = (enGuide ? parc === 1 && vu('mesureTio2') && etape <= idx('cpvcReelle') : true) && (
     <div style={{ ...styleBoite, ...cadre('mesure') }} data-apparait={`${idx('mesureTio2')}`}>
-      <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Mesure de la prise d'huile</div>
+      <Section titre="Mesurer une prise d'huile (méthode à la spatule)" ouvert={ouverts.mesure} onBascule={() => setOuverts(o => ({ ...o, mesure: !o.mesure }))}>
       <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
         {Object.entries(POUDRES).map(([k, q]) => <button key={k} onClick={() => setPoudreMesure(k)} style={stylePetitBouton(poudreMesure === k, '#334155')}>{q.nom}</button>)}
       </div>
       <MesurePriseHuile poudre={poudreMesure} onResultat={ph => setMesPH(m => ({ ...m, [poudreMesure]: Math.round(ph * 10) / 10 }))}/>
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>Résultats : TiO₂ {mesPH.tio2 != null ? fmt(mesPH.tio2, 1) : '—'} ; CaCO₃ {mesPH.caco3 != null ? fmt(mesPH.caco3, 1) : '—'} g d'huile pour 100 g (fiches : {POUDRES.tio2.phFiche} et {POUDRES.caco3.phFiche}).</div>
+      </Section>
     </div>
   );
   const blocSechage = vu('tmff') && (
     <div style={{ ...styleBoite, ...cadre('sechage') }} data-apparait={`${idx('tmff')}`}>
       <Section titre="Séchage du film" ouvert={ouverts.sechage} onBascule={() => setOuverts(o => ({ ...o, sechage: !o.sechage }))}>
+        <div style={{ fontSize: 13, color: T >= pSech.tmff ? KIT.txt2 : '#b91c1c', marginBottom: 4 }}>{T >= pSech.tmff
+          ? 'T ≥ TMFF : l’eau s’évapore, les particules de liant se touchent, se déforment puis fusionnent (coalescence) : le film est continu.'
+          : 'T < TMFF : les particules de liant ne se déforment pas et ne fusionnent pas, le film ne se forme pas.'}</div>
         <AnimationSechage progres={progres} T={T} tmff={pSech.tmff} lambda={pSech.lambda}/>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
           <button onClick={lancerSechage} style={styleBouton(true, '#2563eb')}>▶ Lancer le séchage</button>
@@ -440,7 +410,7 @@ export function SimulationPeinture() {
         @media (max-width: 900px) { .pe-l1 { grid-template-columns: minmax(0, 1fr); } }
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt }}>Formulation et séchage d'une peinture</h2>
+        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt }}>Peinture à l'eau : formulation et séchage</h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
           <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
@@ -452,6 +422,18 @@ export function SimulationPeinture() {
         {[[1, '1. Prévoir l’aspect'], [2, '2. Changer de résine'], [3, '3. Former le film']].map(([k, n]) =>
           <button key={k} onClick={() => setParc(k)} style={styleBouton(parc === k, ORANGE_GUIDE)}>{n}{[g1, g2, g3][k - 1].etape > 0 ? ` (étape ${[g1, g2, g3][k - 1].etape + 1})` : ''}</button>)}
       </div>}
+      {mode === 'explore' ? <>
+        <PeintureExploration plotlyReady={plotlyReady}/>
+        <div style={{ ...styleBoite, marginTop: 12 }}>
+          <Section titre="Mesurer une prise d'huile (méthode à la spatule)" ouvert={ouverts.mesureExplo} onBascule={() => setOuverts(o => ({ ...o, mesureExplo: !o.mesureExplo }))}>
+            <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
+              {Object.entries(POUDRES).map(([k, q]) => <button key={k} onClick={() => setPoudreMesure(k)} style={stylePetitBouton(poudreMesure === k, '#334155')}>{q.nom}</button>)}
+            </div>
+            <MesurePriseHuile poudre={poudreMesure} onResultat={ph => setMesPH(m => ({ ...m, [poudreMesure]: Math.round(ph * 10) / 10 }))}/>
+            <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>Les prises d'huile des fiches techniques ({POUDRES.tio2.phFiche} et {POUDRES.caco3.phFiche} g pour 100 g) sont bien plus faibles que celles mesurées sur nos poudres : reportez vos valeurs dans la formule ci-dessus.</div>
+          </Section>
+        </div>
+      </> : <>
       <div className="pe-l1">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{blocFormule}{blocMesure}</div>
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
@@ -462,6 +444,7 @@ export function SimulationPeinture() {
         {blocSechage}
         {blocHypo}
       </div>
+      </>}
     </div>
   );
 }

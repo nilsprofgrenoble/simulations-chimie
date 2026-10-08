@@ -202,7 +202,7 @@ function OutilEtalonnage() {
 
 // ════════════════ SIMULATION ════════════════
 export function BeerLambert1G() {
-  const [mode, setMode] = useState('guide');
+  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
   const [onglet, setOnglet] = useState('spectro');
   const [guide, setGuide] = useEtatPersistant('beer1g-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   // L'échantillon de l'élève : bouillie bordelaise un peu différente de 15 g/L, et une pureté du solide du lycée

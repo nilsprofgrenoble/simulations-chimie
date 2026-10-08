@@ -230,7 +230,7 @@ function OutilGeneral() {
 
 // ════════════════ SIMULATION ════════════════
 export function Simulation1() {
-  const [mode, setMode] = useState('guide');
+  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
   const [onglet, setOnglet] = useState('manip');          // exploration : manip | tableau | metro
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true });
   // L'échantillon de magnésium de l'élève (prépesé, différent pour chacun), gardé sur l'appareil

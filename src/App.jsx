@@ -31,7 +31,7 @@ const SIMULATIONS = [
   { id: 2, label: "Titrage direct",             icon: "🧪", color: "#e63946", component: Simulation2, niveau: "1G" },
   { id: 25, label: "Titrage en retour", icon: "💊", color: "#be123c", component: SimulationTitrageIndirect, niveau: "1G" },
   { id: 3, label: "Titrages électrochimiques",  icon: "⚡", color: "#e9a824", component: Simulation3, niveau: "BTS" },
-  { id: 4, label: "Paramètres de Hansen : vernis à ongle",         icon: "🔵", color: "#6a4c93", component: Simulation4, niveau: "BTS" },
+  { id: 4, label: "Paramètres de solubilité de Hansen",         icon: "🔵", color: "#6a4c93", component: Simulation4, niveau: "BTS" },
   { id: 5, label: "Régulation de niveau",        icon: "⚙️", color: "#2a6099", component: Simulation5, niveau: "TSTL" },
   { id: 6, label: "Point de fonctionnement", icon: "📈", color: "#e76f51", component: Simulation6, niveau: "TSTL" },
   { id: 7, label: "Cristallisation", icon: "❄️", color: "#0096c7", component: Simulation7, niveau: "TSTL" },
@@ -41,7 +41,7 @@ const SIMULATIONS = [
   { id: 11, label: "Dosage par étalonnage", icon: "📐", color: "#7b2d8b", component: SimulationDosageEtalonnage, niveau: "BTS" },
   { id: 12, label: "Simulation CLHP", icon: "💉", color: "#0d6e6e", component: SimulationCLHP, niveau: "BTS" },
   { id: 13, label: "Étalon interne / Normalisation interne", icon: "📐", color: "#c0392b", component: SimulationEtalonnageInterne, niveau: "BTS" },
-  { id:14, label:"Formulation et séchage d'une peinture", icon:"🎨", color:"#e76f51", component:SimulationPeinture, niveau:"BTS" },
+  { id:14, label:"Peinture à l'eau", icon:"🎨", color:"#e76f51", component:SimulationPeinture, niveau:"BTS" },
   { id:15, label:"Quantum du CAN", niveau:"TSTL", icon:"📡", color:"#0ea5e9",
     component: SimulationCAN },
   { id:16, label:"Essais d'aptitude : comparaison interlaboratoire", niveau:"BTS", icon:"🎯", color:"#dc2626",
@@ -94,8 +94,8 @@ function PageAccueil({ onStart }) {
         { icon:"🎯", label:"Essais d'aptitude : comparaison interlaboratoire", desc:"Plusieurs laboratoires analysent le même échantillon pour évaluer la compétence de chacun : le z-score, ses différentes formules et ses hypothèses." },
       ]},
       { label:"🧪 Formulation", sims:[
-        { icon:"🔵", label:"Paramètres de Hansen : vernis à ongle", desc:"Sphère de solubilité de la nitrocellulose, RED, optimisation d'un mélange de solvants, et séchage d'un vernis : rester dans la sphère jusqu'au bout." },
-        { icon:"🎨", label:"Formulation et séchage d'une peinture", desc:"Reformuler une base blanche mate avec une nouvelle résine : extrait sec, CPV, CPVC (prises d'huile des fiches ou mesurées), dispersant, TMFF, coalescent et COV." },
+        { icon:"🔵", label:"Paramètres de solubilité de Hansen", desc:"Sphère de solubilité, distance et RED, mélanges de solvants. Exemple guidé : la nitrocellulose d'un vernis à ongle." },
+        { icon:"🎨", label:"Peinture à l'eau", desc:"Formulation (extrait sec, CPV, CPVC, prises d'huile), aspect mat, satiné ou brillant, et séchage du film (coalescence, TMFF). Parcours guidé : le changement de résine d'une base blanche mate." },
       ]},
     ]},
   ];

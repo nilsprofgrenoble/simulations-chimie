@@ -1,11 +1,13 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
+import { HansenExploration } from "./HansenExploration";
 import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE } from "../commun";
 
 // ====================================================
-// PARAMÈTRES DE HANSEN : LA NITROCELLULOSE D'UN VERNIS À ONGLE (BTS Métiers de la chimie)
+// PARAMÈTRES DE SOLUBILITÉ DE HANSEN (BTS Métiers de la chimie)
+// Parcours guidé et défi sur un exemple : la nitrocellulose d'un vernis à ongle. Exploration libre : la simulation d'origine (HansenExploration).
 // Sphère de solubilité, distance Ra et RED ; mélanges de solvants (moyenne pondérée par les volumes) ;
-// séchage : la composition du mélange change, et sa trajectoire peut sortir de la sphère (blanchiment).
+// séchage : le solvant de loin le moins volatil reste en dernier dans le film ; il doit être un vrai solvant.
 // ====================================================
 
 // Solvants : δd, δp, δh (MPa½), pression de vapeur saturante à 20 °C (Pa), volume molaire (cm³/mol)
@@ -29,35 +31,23 @@ export function melange(vol) {
   Object.entries(vol).forEach(([k, v]) => { const s = SOLVANTS[k]; m.d += v / tot * s.d; m.p += v / tot * s.p; m.h += v / tot * s.h; });
   return m;
 }
-// Séchage : évaporation idéale (loi de Raoult), vitesse molaire de chaque solvant ∝ x_i × Psat_i (hypothèse).
-// On suit la composition du solvant restant ; le film est considéré comme figé quand il reste moins de 15 % du solvant.
-export function secher(vol, P) {
-  const n = {}; Object.entries(vol).forEach(([k, v]) => { if (v > 0) n[k] = v / SOLVANTS[k].vm; });
-  const V0 = Object.entries(n).reduce((s, [k, x]) => s + x * SOLVANTS[k].vm, 0);
-  const traj = []; let t = 0, dt = 0.0005, redMax = 0, tFige = null, tSec = null, rFige = null;
-  for (let it = 0; it < 200000; it++) {
-    const N = Object.values(n).reduce((a, b) => a + b, 0), V = Object.entries(n).reduce((s, [k, x]) => s + x * SOLVANTS[k].vm, 0);
-    const reste = V / V0;
-    const volAct = Object.fromEntries(Object.entries(n).map(([k, x]) => [k, x * SOLVANTS[k].vm]));
-    const m = melange(volAct), r = ra(P, m) / P.R0;
-    if (it % 20 === 0) traj.push({ t, reste, ...m, red: r });
-    if (reste >= 0.15) redMax = Math.max(redMax, r); else if (tFige == null) { tFige = t; rFige = r; }
-    if (reste < 0.05) { tSec = t; break; }
-    Object.keys(n).forEach(k => { n[k] = Math.max(0, n[k] - dt * (n[k] / N) * SOLVANTS[k].psat / 1000); });
-    t += dt;
-  }
-  return { traj, redMax, tFige, tSec, rFige };
+// Le solvant qui reste en dernier pendant le séchage : celui dont la pression de vapeur est la plus faible, parmi ceux présents
+export function dernierSolvant(vol) {
+  const tot = Object.values(vol).reduce((a, b) => a + b, 0) || 1;
+  const presents = Object.keys(vol).filter(k => vol[k] / tot >= 0.05).sort((a, b) => SOLVANTS[a].psat - SOLVANTS[b].psat);
+  if (!presents.length) return null;
+  const k = presents[0], suivant = presents[1];
+  return { k, ecart: suivant ? SOLVANTS[suivant].psat / SOLVANTS[k].psat : Infinity };
 }
-const T_REF = secher({ ba: 100 }, POLYMERES.tp).tSec;    // temps de séchage de l'acétate de butyle pur = 100
 
 // ════════════════ GRAPHIQUES ════════════════
 // Coupe de la sphère dans le plan δp–δh, au δd des solvants (tous à 15,8) : cercle de rayon √(R0² − 4 Δδd²)
-function Carte({ P, points, mel, traj, progres }) {
-  const W = 520, H = 400, g = 50, d = 14, t = 14, b = 40, pMax = 22, hMax = 24;
+function Carte({ P, points, mel, dernier }) {
+  // axes orthonormés : même échelle en δp et en δh, pour que la coupe de la sphère soit un vrai cercle
+  const W = 520, g = 50, d = 14, t = 14, b = 40, pMax = 22, hMax = 24, u = (W - g - d) / pMax, H = t + b + hMax * u;
   const X = v => g + v / pMax * (W - g - d), Y = v => H - b - v / hMax * (H - b - t);
   const dd = 15.8 - P.d, rCoupe = Math.sqrt(Math.max(0, P.R0 ** 2 - 4 * dd * dd));
-  const kx = (W - g - d) / pMax, ky = (H - b - t) / hMax;
-  const visible = traj ? traj.slice(0, Math.max(1, Math.round(traj.length * progres))) : null;
+  const kx = u, ky = u;
   return (
     <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Carte de Hansen δp–δh" style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
       {[0, 5, 10, 15, 20].map(v => <g key={`p${v}`}><line x1={X(v)} y1={t} x2={X(v)} y2={H - b} stroke="#eef2f7"/><text x={X(v)} y={H - b + 15} fontSize="12" fill={KIT.txt2} textAnchor="middle">{v}</text></g>)}
@@ -66,9 +56,8 @@ function Carte({ P, points, mel, traj, progres }) {
       <circle cx={X(P.p)} cy={Y(P.h)} r="5" fill="#15803d"/><text x={X(P.p) + 7} y={Y(P.h) - 7} fontSize="12.5" fontWeight="700" fill="#15803d">nitrocellulose</text>
       {points.map(s => <g key={s.k}><circle cx={X(s.p)} cy={Y(s.h)} r="6" fill={s.color} stroke={KIT.txt}/>
         <text x={X(s.p) + 8} y={Y(s.h) + 4} fontSize="12.5" fontWeight="700" fill={s.color}>{s.court}</text></g>)}
-      {visible && visible.length > 1 && <polyline points={visible.map(q => `${X(q.p).toFixed(1)},${Y(q.h).toFixed(1)}`).join(' ')} fill="none" stroke="#0f172a" strokeWidth="2" strokeDasharray="4 3"/>}
-      {visible && visible.length > 0 && (() => { const q = visible[visible.length - 1]; return <circle cx={X(q.p)} cy={Y(q.h)} r="6" fill={q.red > 1 ? '#dc2626' : '#fde047'} stroke={KIT.txt} strokeWidth="2"/>; })()}
-      {mel && !visible && <g><rect x={X(mel.p) - 6} y={Y(mel.h) - 6} width="12" height="12" fill="#fde047" stroke={KIT.txt} strokeWidth="2" transform={`rotate(45 ${X(mel.p)} ${Y(mel.h)})`}/>
+      {mel && dernier && <line x1={X(mel.p)} y1={Y(mel.h)} x2={X(SOLVANTS[dernier].p)} y2={Y(SOLVANTS[dernier].h)} stroke="#0f172a" strokeWidth="2" strokeDasharray="4 3"/>}
+      {mel && <g><rect x={X(mel.p) - 6} y={Y(mel.h) - 6} width="12" height="12" fill="#fde047" stroke={KIT.txt} strokeWidth="2" transform={`rotate(45 ${X(mel.p)} ${Y(mel.h)})`}/>
         <text x={X(mel.p) + 9} y={Y(mel.h) + 16} fontSize="12" fontWeight="700" fill={KIT.txt}>mélange</text></g>}
       <line x1={g} y1={H - b} x2={W - d} y2={H - b} stroke={KIT.txt}/><line x1={g} y1={t} x2={g} y2={H - b} stroke={KIT.txt}/>
       <text x={(g + W - d) / 2} y={H - 8} fontSize="13" fontWeight="700" fill={KIT.txt} textAnchor="middle">δp (MPa½)</text>
@@ -98,25 +87,6 @@ function Sphere3D({ P, points, mel, angle }) {
     </svg>
   );
 }
-function CourbeRed({ traj, progres }) {
-  if (!traj || traj.length < 2) return null;
-  const W = 520, H = 190, g = 46, d = 14, t = 12, b = 36, rMax = Math.max(1.3, ...traj.map(q => q.red)) * 1.05;
-  const X = reste => g + (1 - reste) * (W - g - d), Y = r => H - b - r / rMax * (H - b - t);
-  const vis = traj.slice(0, Math.max(1, Math.round(traj.length * progres)));
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="RED pendant le séchage" style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
-      <rect x={X(0.15)} y={t} width={X(0) - X(0.15)} height={H - b - t} fill="#f1f5f9"/>
-      <text x={(X(0.15) + X(0)) / 2} y={t + 14} fontSize="11" fill={KIT.txt2} textAnchor="middle">film figé</text>
-      <line x1={g} y1={Y(1)} x2={W - d} y2={Y(1)} stroke="#dc2626" strokeDasharray="6 4"/><text x={W - d - 2} y={Y(1) - 4} fontSize="11.5" fill="#dc2626" textAnchor="end">RED = 1</text>
-      <polyline points={vis.map(q => `${X(q.reste).toFixed(1)},${Y(q.red).toFixed(1)}`).join(' ')} fill="none" stroke="#0f172a" strokeWidth="2.5"/>
-      <line x1={g} y1={H - b} x2={W - d} y2={H - b} stroke={KIT.txt}/><line x1={g} y1={t} x2={g} y2={H - b} stroke={KIT.txt}/>
-      {[0, 0.25, 0.5, 0.75, 1].map(f => <text key={f} x={X(1 - f)} y={H - b + 15} fontSize="11.5" fill={KIT.txt2} textAnchor="middle">{fmt(f * 100, 0)} %</text>)}
-      {[0, 0.5, 1].map(r => <text key={r} x={g - 5} y={Y(r) + 4} fontSize="11.5" fill={KIT.txt2} textAnchor="end">{fmt(r, 1)}</text>)}
-      <text x={(g + W - d) / 2} y={H - 4} fontSize="12.5" fontWeight="700" fill={KIT.txt} textAnchor="middle">part du solvant évaporée</text>
-      <text x="12" y={(t + H - b) / 2} fontSize="12" fontWeight="700" fill={KIT.txt} textAnchor="middle" transform={`rotate(-90 12 ${(t + H - b) / 2})`}>RED</text>
-    </svg>
-  );
-}
 function Hypotheses() {
   return (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
@@ -125,17 +95,18 @@ function Hypotheses() {
       <li><strong>Les paramètres de la nitrocellulose dépendent de la source et du grade</strong> (teneur en azote) : deux jeux de valeurs sont proposés, et ils ne donnent pas
         les mêmes prévisions.</li>
       <li><strong>Mélanges</strong> : les paramètres d'un mélange sont la moyenne de ceux des solvants, pondérée par leurs fractions <em>volumiques</em>.</li>
-      <li><strong>Séchage</strong> : évaporation idéale (loi de Raoult), chaque solvant s'évaporant à une vitesse proportionnelle à sa fraction molaire et à sa pression de
-        vapeur. On néglige les écarts à l'idéalité (les mélanges ester-alcool en présentent), l'effet du polymère dissous, la température, la ventilation et l'humidité
-        (l'évaporation refroidit le film, et l'eau de l'air peut s'y condenser : c'est une autre cause fréquente de blanchiment).</li>
-      <li><strong>Figeage</strong> : on considère que le film est figé quand il reste moins de 15 % du solvant ; seul ce qui se passe avant compte pour le blanchiment.</li>
+      <li><strong>Volatilité</strong> : on compare les pressions de vapeur des solvants <em>purs</em>. Dans un mélange réel, les interactions modifient la vitesse d'évaporation
+        de chacun (l'acétate d'éthyle et l'éthanol forment même un azéotrope). On n'en tire donc qu'une conclusion qualitative : le solvant <em>de loin</em> le moins volatil
+        reste en dernier dans le film.</li>
+      <li><strong>Ce que la simulation ne modélise pas</strong> : la cinétique du séchage, et le blanchiment dû à l'humidité (l'évaporation refroidit le film, l'eau de l'air
+        s'y condense, et l'eau est un non-solvant de la nitrocellulose). C'est la cause la plus fréquente de blanchiment des vernis à la nitrocellulose.</li>
     </ul>
   );
 }
 
 // ════════════════ SIMULATION ════════════════
-export function Simulation4() {
-  const [mode, setMode] = useState('guide');
+export function Simulation4({ plotlyReady }) {
+  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
   const [parc, setParc] = useEtatPersistant('hansen-parcours-choix', 1);
   const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
   const [g1, setG1] = useEtatPersistant('hansen-guide-p1', VIDE), [g2, setG2] = useEtatPersistant('hansen-guide-p2', VIDE), [g3, setG3] = useEtatPersistant('hansen-guide-p3', VIDE);
@@ -145,7 +116,6 @@ export function Simulation4() {
   const [testes, setTestes] = useState({});
   const [vue, setVue] = useState('carte');
   const [angle, setAngle] = useState(35);
-  const [progres, setProgres] = useState(1), [anime, setAnime] = useState(false), [seche, setSeche] = useState(null);
   const [vuHansen, setVuHansen] = useState(false);
   const [ouverts, setOuverts] = useState({ mel: true, hypo: true, sech: true });
   const [defi, setDefi] = useState(null);
@@ -155,16 +125,7 @@ export function Simulation4() {
   const P = POLYMERES[polyId];
   const tot = Object.values(vol).reduce((a, b) => a + b, 0);
   const mel = melange(vol), redMel = ra(P, mel) / P.R0;
-  const sech = useMemo(() => (seche ? secher(seche.vol, P) : null), [seche, P]);
-
-  useEffect(() => {
-    if (!anime) return;
-    const t0 = performance.now(); let id;
-    const pas = now => { const x = Math.min(1, (now - t0) / 4000); setProgres(x); if (x < 1) id = requestAnimationFrame(pas); else setAnime(false); };
-    id = requestAnimationFrame(pas); return () => cancelAnimationFrame(id);
-  }, [anime]);
-  function lancerSechage() { if (tot <= 0) return; setSeche({ vol: { ...vol } }); setProgres(0); setAnime(true); }
-  useEffect(() => { setSeche(null); }, [vol, polyId]);
+  const dernier = tot > 0 ? dernierSolvant(vol) : null;
 
   // ── Valeurs du parcours (données du TP) ──
   const PT = POLYMERES.tp;
@@ -172,7 +133,6 @@ export function Simulation4() {
   const m5050 = melange({ ea: 50, etoh: 50 });
   // fraction d'éthanol maximale dans l'acétate d'éthyle, pour RED = 1 (résolution numérique)
   const fMax = (() => { let lo = 0, hi = 1; for (let i = 0; i < 60; i++) { const f = (lo + hi) / 2; if (ra(PT, melange({ ea: 1 - f, etoh: f })) / PT.R0 < 1) lo = f; else hi = f; } return lo; })();
-  const sechEco = secher({ ea: 30, etoh: 70 }, PT);
 
   // ════════════════ LES TROIS PARCOURS ════════════════
   const TOUTES = [
@@ -242,34 +202,37 @@ export function Simulation4() {
       texte: <>Vous savez calculer le point d'un mélange et l'optimiser. Parcours suivant : « Le séchage du vernis », où la composition du mélange change.</>, tache: null },
     // ── 3. Le séchage ──
     { id: 'intro3', titre: 'Le séchage du vernis', focus: ['sech'],
-      texte: <>Une fois le vernis appliqué, les solvants s'évaporent, mais pas tous à la même vitesse. La composition du solvant restant change donc, et son point se déplace
-        dans l'espace de Hansen.</>, tache: null },
+      texte: <>Une fois le vernis appliqué, les solvants s'évaporent, mais pas tous à la même vitesse : la composition du solvant restant change. La question est simple :
+        quel solvant reste en dernier dans le film, et dissout-il encore la nitrocellulose ?</>, tache: null },
     { id: 'volatil', titre: 'Qui s’évapore le plus vite ?', focus: ['solvants'],
-      texte: <>Pressions de vapeur saturante à 20 °C : acétate d'éthyle 10 000 Pa ; éthanol 5 800 Pa ; isopropanol 4 400 Pa ; acétate de butyle 1 070 Pa.</>,
+      texte: <>Pressions de vapeur saturante à 20 °C : acétate d'éthyle 10 000 Pa ; éthanol 5 800 Pa ; isopropanol 4 400 Pa ; acétate de butyle 1 070 Pa. Plus la pression
+        de vapeur est grande, plus le solvant est volatil.</>,
       tache: { type: 'qcm', q: 'Lequel s’évapore le plus vite ?', options: ['l’acétate d’éthyle', 'l’acétate de butyle', 'l’éthanol'], bonne: 0 } },
-    { id: 'eco', titre: 'Un vernis économique', focus: ['sech'],
-      texte: <>Formulation « économique » : 30 % d'acétate d'éthyle et 70 % d'éthanol (RED = {fmt(ra(PT, melange({ ea: 30, etoh: 70 })) / PT.R0, 2)} au départ, dans la sphère).
-        Réglez ce mélange, puis lancez le séchage.</>,
-      tache: { type: 'action', ok: !!sech && Math.abs((seche?.vol.ea || 0) / tot - 0.3) < 0.03 && Math.abs((seche?.vol.etoh || 0) / tot - 0.7) < 0.03 && progres >= 1,
-        consigne: sech ? 'Regardez la trajectoire et la courbe du RED.' : 'Réglez AE 30 % et EtOH 70 %, puis « Lancer le séchage ».' } },
-    { id: 'blanchiment', titre: 'Que s’est-il passé ?', focus: ['sech'],
-      texte: <>Pendant le séchage, le RED du solvant restant monte jusqu'à {fmt(sechEco.redMax, 2)}.</>,
-      tache: { type: 'qcm', q: 'Pourquoi ?', options: ['L’acétate d’éthyle part plus vite : le solvant restant s’enrichit en éthanol, sort de la sphère, et la nitrocellulose précipite (le vernis blanchit)', 'L’éthanol devient un solvant', 'La nitrocellulose s’évapore'], bonne: 0 } },
+    { id: 'dernier', titre: 'Qui reste en dernier ?', focus: ['sech'],
+      texte: <>Réglez un mélange d'acétate d'éthyle, d'éthanol et d'acétate de butyle. Le cadre « Ce qui reste en dernier » indique le solvant le moins volatil du mélange.</>,
+      tache: { type: 'qcm', q: 'Dans un mélange de ces trois solvants, lequel reste en dernier dans le film ?', options: ['l’acétate de butyle : sa pression de vapeur est 5 à 10 fois plus faible que celle des deux autres', 'l’acétate d’éthyle', 'l’éthanol'], bonne: 0,
+        expl: 'L’écart est grand : même si le mélange n’est pas idéal, l’acétate de butyle reste nettement le moins volatil.' } },
+    { id: 'eco', titre: 'Un vernis sans solvant lent', focus: ['sech'],
+      texte: <>Formulation « économique » : 30 % d'acétate d'éthyle et 70 % d'éthanol. Au départ, son RED vaut {fmt(ra(PT, melange({ ea: 30, etoh: 70 })) / PT.R0, 2)} : il dissout
+        la nitrocellulose. Réglez ce mélange, et regardez le cadre « Ce qui reste en dernier ».</>,
+      tache: { type: 'qcm', q: 'Que peut-on craindre en fin de séchage ?', options: ['Le dernier solvant est l’éthanol, un non-solvant (RED = 1,15) : la nitrocellulose risque de précipiter avant que le film soit formé', 'Rien : le mélange est dans la sphère au départ', 'Que le vernis sèche trop lentement'], bonne: 0,
+        expl: 'Avec deux solvants de volatilités proches et un azéotrope, on ne peut pas prévoir sans mesure le moment exact où cela arrive ; mais le risque est réel, puisque le dernier liquide présent ne dissout pas le polymère.' } },
     { id: 'lent', titre: 'Le rôle du solvant lent', focus: ['sech'],
-      texte: <>Remplacez une partie de l'acétate d'éthyle par de l'<strong>acétate de butyle</strong>, en gardant 70 % d'éthanol, et relancez le séchage jusqu'à ce que le RED reste
-        sous 1 avant le figeage.</>,
-      tache: { type: 'action', ok: !!sech && progres >= 1 && (seche?.vol.ba || 0) > 0 && (seche?.vol.etoh || 0) / tot >= 0.68 && sech.redMax < 1,
-        consigne: sech ? `RED maximal avant figeage : ${fmt(sech.redMax, 2)}` : 'Ajoutez de l’acétate de butyle, puis lancez le séchage.' } },
+      texte: <>Ajoutez de l'acétate de butyle au mélange (au moins 10 % du volume).</>,
+      tache: { type: 'action', ok: !!dernier && dernier.k === 'ba' && vol.ba / tot >= 0.1 && redMel < 1,
+        consigne: dernier ? `Dernier solvant : ${SOLVANTS[dernier.k].nom} (RED = ${fmt(ra(P, SOLVANTS[dernier.k]) / P.R0, 2)})` : 'Réglez un mélange.' } },
     { id: 'regle', titre: 'La règle de formulation', focus: [],
-      texte: <>Le solvant le plus lent est celui qui reste en dernier : c'est lui qui doit garder la nitrocellulose dissoute jusqu'au bout.</>,
-      tache: { type: 'qcm', q: 'Que doit être le solvant le plus lent du mélange ?', options: ['Un vrai solvant du polymère (ici l’acétate de butyle)', 'Un diluant bon marché', 'Le plus volatil possible'], bonne: 0,
-        expl: 'C’est une règle classique des vernis à la nitrocellulose. Mais un solvant lent allonge aussi le séchage : tout est affaire de compromis.' } },
-    { id: 'hypotheses', titre: 'Les hypothèses du modèle', focus: ['hypo'],
-      texte: <>Lisez l'encadré « Hypothèses de travail ».</>,
-      tache: { type: 'qcm', q: 'Laquelle de ces causes de blanchiment le modèle ignore-t-il ?', options: ['L’eau de l’air qui se condense sur le film refroidi par l’évaporation', 'Le changement de composition du solvant', 'La sortie de la sphère de solubilité'], bonne: 0 } },
+      texte: <>Le solvant le plus lent est celui qui reste en dernier : c'est lui qui doit garder la nitrocellulose dissoute jusqu'à la formation du film.</>,
+      tache: { type: 'qcm', q: 'Que doit être le solvant le moins volatil du mélange ?', options: ['Un vrai solvant du polymère (ici l’acétate de butyle)', 'Un diluant bon marché', 'Le plus volatil possible'], bonne: 0,
+        expl: 'Mais un solvant lent allonge le séchage : il en faut juste assez. On ajuste les proportions au laboratoire.' } },
+    { id: 'blanchiment', titre: 'Et le blanchiment ?', focus: ['hypo'],
+      texte: <>Les vernis à la nitrocellulose connaissent un défaut classique : le <strong>blanchiment</strong> (le film devient laiteux). Sa cause la plus fréquente n'est pas le
+        mélange de solvants, mais l'humidité : l'évaporation refroidit le film, l'eau de l'air s'y condense, et l'eau est un non-solvant de la nitrocellulose.</>,
+      tache: { type: 'qcm', q: 'La simulation peut-elle prévoir ce blanchiment ?', options: ['Non : elle ne modélise ni l’humidité ni la cinétique du séchage', 'Oui, avec le RED', 'Oui, avec les pressions de vapeur'], bonne: 0,
+        expl: 'Un modèle ne répond qu’aux questions pour lesquelles il est construit : celui-ci ne dit que si un liquide dissout le polymère.' } },
     { id: 'bravo3', titre: 'Bravo !', focus: [],
-      texte: <>Vous savez qu'un bon mélange de solvants doit dissoudre le polymère au départ, mais aussi pendant tout le séchage. En exploration libre, testez vos propres
-        mélanges ; le défi vous demande un vernis rapide, économique et sans blanchiment.</>, tache: null },
+      texte: <>Un bon mélange de solvants doit dissoudre le polymère au départ, mais aussi en fin de séchage : son solvant le moins volatil doit être un vrai solvant. En exploration
+        libre, testez vos propres mélanges ; le défi vous demande un vernis économique qui respecte ces deux conditions.</>, tache: null },
   ];
   const ORDRE = [P1, P2, P3];
   const ETAPES = ORDRE[parc - 1].map(id => TOUTES.find(e => e.id === id));
@@ -296,11 +259,11 @@ export function Simulation4() {
           <button onClick={() => setVue('3d')} style={stylePetitBouton(vue === '3d', '#334155')}>Sphère 3D</button>
         </div>
       </div>
-      {vue === 'carte' ? <Carte P={P} points={points} mel={montrerMel && tot > 0 ? mel : null} traj={sech ? sech.traj : null} progres={progres}/>
+      {vue === 'carte' ? <Carte P={P} points={points} mel={montrerMel && tot > 0 ? mel : null} dernier={(!enGuide || parc === 3) && dernier ? dernier.k : null}/>
         : <><Sphere3D P={P} points={points} mel={montrerMel && tot > 0 ? mel : null} angle={angle}/><Curseur nom="Angle de vue" valeur={angle} onChange={setAngle} min={-90} max={90} pas={5} unite="°" couleur="#334155"/></>}
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.45 }}>
         {vue === 'carte' ? <>La carte est une coupe de la sphère au δd des solvants (tous à 15,8) : le cercle a pour rayon √(R0² − 4 Δδd²) = {fmt(Math.sqrt(Math.max(0, P.R0 ** 2 - 4 * (15.8 - P.d) ** 2)), 2)} MPa½.
-          Un point dans le cercle vert a un RED inférieur à 1. (Le cercle apparaît ici comme une ellipse, car les deux axes n'ont pas la même échelle.)</> : <>Axes 2δd, δp et δh : avec le facteur 2 sur δd, le domaine de solubilité est une vraie sphère.</>}
+          Un point dans le cercle vert a un RED inférieur à 1.</> : <>Axes 2δd, δp et δh : avec le facteur 2 sur δd, le domaine de solubilité est une vraie sphère.</>}
       </div>
     </div>
   );
@@ -344,18 +307,23 @@ export function Simulation4() {
       </Section>
     </div>
   );
+  // Ce qui reste en dernier : le moins volatil des solvants présents (raisonnement qualitatif, sans modèle d'évaporation)
   const blocSech = (!enGuide || parc === 3) && (
     <div style={{ ...styleBoite, ...cadre('sech') }}>
-      <Section titre="Le séchage" ouvert={ouverts.sech} onBascule={() => setOuverts(o => ({ ...o, sech: !o.sech }))}>
-        <button onClick={lancerSechage} style={styleBouton(true, '#2563eb')}>▶ Lancer le séchage du mélange</button>
-        {sech && <>
-          <div style={{ marginTop: 8 }}><CourbeRed traj={sech.traj} progres={progres}/></div>
-          {progres >= 1 && <>
-            <LigneMesure nom="RED maximal avant figeage" valeur={`${fmt(sech.redMax, 2)} : ${sech.redMax < 1 ? 'film transparent' : 'la nitrocellulose précipite : le vernis blanchit'}`} couleur={sech.redMax < 1 ? '#15803d' : '#b91c1c'}/>
-            <LigneMesure nom="Temps de séchage (acétate de butyle pur = 100)" valeur={fmt(sech.tSec / T_REF * 100, 0)}/>
-          </>}
-          <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Sur la coupe δp–δh, la trajectoire en pointillés suit le point du solvant restant.</div>
-        </>}
+      <Section titre="Ce qui reste en dernier" ouvert={ouverts.sech} onBascule={() => setOuverts(o => ({ ...o, sech: !o.sech }))}>
+        {!dernier ? <div style={{ fontSize: 13.5, color: KIT.txt2 }}>Réglez un mélange.</div> : (() => {
+          const s0 = SOLVANTS[dernier.k], r = ra(P, s0) / P.R0;
+          return <>
+            <div style={{ fontSize: 13.5, color: KIT.txt, marginBottom: 6 }}>Solvants du mélange, du plus volatil au moins volatil :{' '}
+              {Object.keys(vol).filter(k => vol[k] / tot >= 0.05).sort((x, y) => SOLVANTS[y].psat - SOLVANTS[x].psat).map(k => `${SOLVANTS[k].court} (${SOLVANTS[k].psat} Pa)`).join(' → ')}</div>
+            <LigneMesure nom="Dernier solvant présent dans le film" valeur={s0.nom} couleur={s0.color}/>
+            <LigneMesure nom="Son RED vis-à-vis de la nitrocellulose" valeur={`${fmt(r, 2)} : ${r < 1 ? 'vrai solvant' : 'non-solvant'}`} couleur={r < 1 ? '#15803d' : '#b91c1c'}/>
+            <div style={{ fontSize: 13.5, fontWeight: 700, marginTop: 6, color: r < 1 ? '#15803d' : '#b91c1c' }}>
+              {r < 1 ? '✅ La nitrocellulose reste dissoute jusqu’à la fin du séchage.' : '⚠️ En fin de séchage, il ne reste qu’un non-solvant : la nitrocellulose risque de précipiter avant que le film soit formé.'}</div>
+            {dernier.ecart < 2 && <div style={{ fontSize: 12.5, color: '#b45309', marginTop: 4 }}>Le solvant suivant n'est que {fmt(dernier.ecart, 1)} fois plus volatil : dans un mélange réel, l'ordre d'évaporation de deux solvants aussi proches n'est pas certain.</div>}
+            <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Sur la coupe δp–δh, les pointillés relient le mélange de départ au dernier solvant : pendant le séchage, la composition évolue vers lui.</div>
+          </>;
+        })()}
       </Section>
     </div>
   );
@@ -366,20 +334,20 @@ export function Simulation4() {
   );
 
   // ════════════════ DÉFI ════════════════
-  function nouveauDefi() { setDefi({ tMax: [35, 40, 45][Math.floor(Math.random() * 3)], alcoolMin: [40, 45, 50][Math.floor(Math.random() * 3)] }); setPolyId('tp'); setVol({ ea: 50, ba: 0, etoh: 50, ipa: 0 }); }
+  function nouveauDefi() { setDefi({ alcoolMin: [40, 50, 60][Math.floor(Math.random() * 3)] }); setPolyId('tp'); setVol({ ea: 50, ba: 0, etoh: 50, ipa: 0 }); }
   const voletDefi = defi && (() => {
     const alc = tot > 0 ? (vol.etoh + vol.ipa) / tot * 100 : 0;
+    const rDernier = dernier ? ra(P, SOLVANTS[dernier.k]) / P.R0 : Infinity;
     const C = [
-      { ok: redMel < 0.9, t: `Dissout la nitrocellulose, avec une marge : RED au départ < 0,9 (${fmt(redMel, 2)})` },
-      { ok: sech ? sech.redMax < 1 : null, t: `Pas de blanchiment : RED < 1 jusqu'au figeage${sech ? ` (max ${fmt(sech.redMax, 2)})` : ' (lancez le séchage)'}` },
-      { ok: sech ? sech.tSec / T_REF * 100 <= defi.tMax : null, t: `Séchage rapide : temps ≤ ${defi.tMax}${sech ? ` (${fmt(sech.tSec / T_REF * 100, 0)})` : ''}` },
+      { ok: redMel < 0.9, t: `Dissout la nitrocellulose, avec une marge : RED du mélange < 0,9 (${fmt(redMel, 2)})` },
+      { ok: rDernier < 1, t: `Le solvant le moins volatil est un vrai solvant${dernier ? ` (${SOLVANTS[dernier.k].nom}, RED = ${fmt(rDernier, 2)})` : ''}` },
       { ok: alc >= defi.alcoolMin, t: `Économique : au moins ${defi.alcoolMin} % d'alcool (${fmt(alc, 0)} %)` },
     ];
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.55 }}>Formulez le mélange de solvants d'un vernis à la nitrocellulose (données du TP) qui respecte les quatre critères ci-dessous. Réglez le mélange, puis lancez le séchage.</div>
-        {C.map((c, k) => <div key={k} style={{ fontSize: 14, color: KIT.txt }}>{c.ok === true ? '✅' : c.ok === false ? '❌' : '⏳'} {c.t}</div>)}
-        {C.every(c => c.ok === true) && <div style={{ fontSize: 14, fontWeight: 700, color: '#15803d' }}>Bravo ! Pouvez-vous mettre encore plus d'alcool ?</div>}
+        <div style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.55 }}>Formulez le mélange de solvants d'un vernis à la nitrocellulose (données du TP) qui respecte les trois critères ci-dessous.</div>
+        {C.map((c, k) => <div key={k} style={{ fontSize: 14, color: KIT.txt }}>{c.ok ? '✅' : '❌'} {c.t}</div>)}
+        {C.every(c => c.ok) && <div style={{ fontSize: 14, fontWeight: 700, color: '#15803d' }}>Bravo ! Il resterait à vérifier au laboratoire la dissolution, le temps de séchage et l'aspect du film.</div>}
         {tot > 0 && vol.ipa / tot > 0.5 && <div style={{ fontSize: 13.5, color: '#b45309', lineHeight: 1.5 }}>⚠️ Le modèle accepte ce mélange parce qu'il place l'isopropanol juste dans la sphère (RED = 0,88).
           En pratique, l'isopropanol ne dissout pas seul la plupart des nitrocelluloses : un mélange aussi riche en isopropanol est à vérifier au laboratoire avant d'y croire.</div>}
         <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 D'autres critères</button>
@@ -403,13 +371,14 @@ export function Simulation4() {
         @media (max-width: 900px) { .ha-l1 { grid-template-columns: minmax(0, 1fr); } }
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt }}>Paramètres de Hansen : la nitrocellulose d'un vernis à ongle</h2>
+        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt }}>Paramètres de solubilité de Hansen{mode !== 'explore' ? <span style={{ fontWeight: 400, color: KIT.txt2 }}> — exemple : la nitrocellulose d'un vernis à ongle</span> : null}</h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
           <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
           <button onClick={() => changerMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
         </div>
       </div>
+      {mode === 'explore' ? <HansenExploration plotlyReady={plotlyReady}/> : <>
       {enGuide && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
         <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Parcours :</span>
         {[[1, '1. La sphère de solubilité'], [2, '2. Les mélanges'], [3, '3. Le séchage du vernis']].map(([k, n]) =>
@@ -426,6 +395,7 @@ export function Simulation4() {
         {blocPoly}
         {blocHypo}
       </div>
+      </>}
     </div>
   );
 }
@@ -433,4 +403,4 @@ export function Simulation4() {
 const cell = { padding: '4px 6px', border: `1px solid ${KIT.bord}`, textAlign: 'center', fontSize: 13.5 };
 const P1 = ['contexte', 'parametres', 'ra', 'facteur4', 'red', 'tester', 'classer', 'ipa', 'source', 'bravo1'];
 const P2 = ['intro2', 'moyenne', 'red5050', 'optimum', 'diluer', 'marge', 'bravo2'];
-const P3 = ['intro3', 'volatil', 'eco', 'blanchiment', 'lent', 'regle', 'hypotheses', 'bravo3'];
+const P3 = ['intro3', 'volatil', 'dernier', 'eco', 'lent', 'regle', 'blanchiment', 'bravo3'];

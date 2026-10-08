@@ -23,7 +23,7 @@ function erlenLugol(mod, VB) {
 }
 
 export function Simulation2() {
-  const [mode, setMode] = useState('guide');
+  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
   const [onglet, setOnglet] = useState('general');
   const [guide, setGuide] = useEtatPersistant('titrage-direct-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [mes, setMes] = useEtatPersistant('titrage-direct-mesures-v1', { Vrapide: null, Ve: null });

@@ -86,7 +86,7 @@ function simuler(p) {
 const COUL = { eau: '#2563eb', pompe: '#16a34a', puisage: '#dc2626', consigne: '#ea580c', seuil: '#7c3aed' };
 
 export function Simulation5() {
-  const [mode, setMode] = useState('guide');                // guide | explore | defi
+  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre                // guide | explore | defi
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true });
   const [regul, setRegul] = useState('tor');                // tor | p | pi
   const [hBas, setHBas] = useState(31);

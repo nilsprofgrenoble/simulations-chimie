@@ -121,7 +121,7 @@ const COUL_R = ['#2563eb', '#ea580c', '#16a34a'];
 
 // ════════════════ SIMULATION ════════════════
 export function SimulationTitrageIndirect() {
-  const [mode, setMode] = useState('guide');
+  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
   const [onglet, setOnglet] = useState('general');
   const [guide, setGuide] = useEtatPersistant('titrage-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [mes, setMes] = useEtatPersistant('titrage-mesures-v1', { Ve: null, VeVieille: null });

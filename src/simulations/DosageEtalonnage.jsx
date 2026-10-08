@@ -145,7 +145,7 @@ function Hypotheses() {
 
 // ════════════════ SIMULATION ════════════════
 export function SimulationDosageEtalonnage() {
-  const [mode, setMode] = useState('guide');
+  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
   const [onglet, setOnglet] = useState('banc');
   const [guide, setGuide] = useEtatPersistant('dosage-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [graine] = useEtatPersistant('dosage-graine-v1', Math.floor(Math.random() * 1e6));
