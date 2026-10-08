@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { Children, Fragment, cloneElement, isValidElement, useState, useEffect, useRef, useMemo } from "react";
 
 // ============================================================
 //  UTILITAIRES PARTAGÉS
@@ -64,7 +64,12 @@ export function sci(x, sig = 3) {
   }
   return fmt(x, Math.max(0, Math.min(4, sig - 1 - e)));
 }
-export const lireNombre = s => parseFloat(String(s ?? '').replace(/\s/g, '').replace(',', '.'));
+// Lit un nombre saisi : « 1,26 », « 1,26e-3 », « 1,26×10⁻³ », « 1,26x10^-3 »
+export const lireNombre = s => {
+  const t = String(s ?? '').replace(/\s/g, '').replace(/[−–]/g, '-').replace(/[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]/g, ch => (ch === '⁻' ? '-' : String('⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(ch))))
+    .replace(',', '.').replace(/(?:×|x|\*)10\^?(-?\d+)/i, 'e$1');
+  return parseFloat(t);
+};
 export const proche = (a, b, tol) => Math.abs(a - b) <= Math.abs(b) * tol;
 
 // ════════════════ PETIT GRAPHIQUE SVG ════════════════
@@ -176,6 +181,15 @@ export function avecIndices(t) {
   return <>{morceaux}</>;
 }
 
+// Applique avecIndices à tous les textes d'un bloc JSX (éléments HTML et fragments seulement).
+export function indicesProfond(n) {
+  if (typeof n === 'string') return avecIndices(n);
+  if (Array.isArray(n)) return Children.map(n, indicesProfond);
+  if (isValidElement(n) && (typeof n.type === 'string' || n.type === Fragment) && n.props.children != null)
+    return cloneElement(n, undefined, ...Children.toArray(n.props.children).map(indicesProfond));
+  return n;
+}
+
 // Ordre d'affichage des choix d'un QCM : mélangé, mais stable pour une étape donnée.
 // Les auteurs écrivent la bonne réponse en premier ; sans mélange, elle serait toujours en tête.
 function ordreOptions(n, graine) {
@@ -250,8 +264,8 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
           Vous reprenez votre parcours là où vous l'aviez laissé. Si une mesure a disparu, revenez à l'étape où elle a été faite.
         </div>
       )}
-      <div style={{ fontSize: 18, fontWeight: 700, color: TXT }}>{et.titre}</div>
-      <div style={{ fontSize: 15, color: TXT, lineHeight: 1.6 }}>{et.texte}</div>
+      <div style={{ fontSize: 18, fontWeight: 700, color: TXT }}>{indicesProfond(et.titre)}</div>
+      <div style={{ fontSize: 15, color: TXT, lineHeight: 1.6 }}>{indicesProfond(et.texte)}</div>
       {tache && tache.type === 'action' && (
         <div>
           {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}</div>
@@ -266,7 +280,8 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
           <div style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{avecIndices(tache.q)}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {ordreOptions(tache.options.length, etape).map(i => <button key={i} data-ok={i === tache.bonne ? 'true' : 'false'} onClick={() => setRep(i)}
-              style={{ ...btn(reps[etape] === i, '#0ea5e9'), padding: '6px 10px', textAlign: 'left' }}>{avecIndices(tache.options[i])}</button>)}
+              style={{ ...btn(reps[etape] === i, '#0ea5e9'), padding: '6px 10px', textAlign: 'left',
+                ...(typeof tache.options[i] !== 'string' ? { background: reps[etape] === i ? '#e0f2fe' : 'white', color: TXT, borderWidth: 2 } : {}) }}>{avecIndices(tache.options[i])}</button>)}
           </div>
         </div>
       )}
@@ -291,7 +306,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
         <div>
           {!reussie && <button onClick={verifier} style={btn(true, '#16a34a')}>✓ Vérifier</button>}
           {verifie && juste && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}>
-            ✅ Bravo ! <span style={{ fontWeight: 400, color: TXT }}>{avecIndices(tache.expl)}</span></div>}
+            ✅ Bravo ! <span style={{ fontWeight: 400, color: TXT }}>{indicesProfond(tache.expl)}</span></div>}
           {verifie && !juste && (
             <div style={{ marginTop: 6 }}>
               <div style={{ fontSize: 14, color: '#b91c1c', fontWeight: 700 }}>❌ Pas encore.</div>

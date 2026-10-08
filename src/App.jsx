@@ -20,6 +20,8 @@ import { Simulation2 } from "./simulations/TitrageDirect";
 import { SimulationTitrageIndirect } from "./simulations/TitrageIndirect";
 import { Simulation3 } from "./simulations/TitragesElectrochimiques";
 import { SimulationStatiqueFluides } from "./simulations/StatiqueFluides";
+import { SimulationDebits } from "./simulations/DebitsFluides";
+import { SimulationVitesseDebit } from "./simulations/VitesseDebit";
 
 // ============================================================
 //  MENU — modifiez les noms et icônes ici
@@ -51,6 +53,10 @@ const SIMULATIONS = [
     component: SimulationBernoulli },
   { id:26, label:"Statique des fluides", niveau:"TSTL", icon:"🌊", color:"#0369a1",
     component: SimulationStatiqueFluides },
+  { id:27, label:"Débits massique et volumique", niveau:"TSTL", icon:"⚖️", color:"#0e7490",
+    component: SimulationDebits },
+  { id:28, label:"Débit et vitesse d'écoulement", niveau:"TSTL", icon:"💦", color:"#0f766e",
+    component: SimulationVitesseDebit },
 ];
 
 const NIVEAUX = [
@@ -86,6 +92,8 @@ function PageAccueil({ onStart }) {
       ]},
       { label:"💧 Transport des fluides", sims:[
         { icon:"🌊", label:"Statique des fluides", desc:"Étalonnage d'un manomètre dans une éprouvette : P = f(h), modèle linéaire, puis mesure de la hauteur d'eau d'un récipient inconnu." },
+        { icon:"⚖️", label:"Débits massique et volumique", desc:"Une cuve se remplit sur une balance : débit massique Q = m/Δt, masse volumique, débit volumique, et conversions d'unités avec les unités écrites dans le calcul." },
+        { icon:"💦", label:"Débit et vitesse d'écoulement", desc:"Un tuyau qui change de section : débit volumique Q = v·S, conservation v₁S₁ = v₂S₂, vitesse du fluide, débit massique, avec les unités écrites dans le calcul." },
         { icon:"🚰", label:"Circuit hydraulique", desc:"Relation de Bernoulli : bilan d'énergie, pertes de charge linéiques et singulières, puissance de la pompe." },
       ]},
       { label:"⚙️ Régulation", sims:[
@@ -365,7 +373,7 @@ export default function App() {
               { label:'🧪 Formulation', ids:[4,14] },
             ] : niv.key === 'TSTL' ? [
               { label:'📡 Transmission de signaux numériques', ids:[8,15] },
-              { label:'💧 Transport des fluides', ids:[26,17] },
+              { label:'💧 Transport des fluides', ids:[26,27,28,17] },
               { label:'⚙️ Régulation', ids:[5,6] },
               { label:'❄️ Évaporation et cristallisation', ids:[7] },
             ] : null;
