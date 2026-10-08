@@ -30,17 +30,6 @@ export const CONTEXTES = {
     ],
     niveau: "Terminale STL",
   },
-  8: {
-    but: "Suivre une chaîne de mesure complète qui allume les phares d'une voiture quand il fait sombre : photorésistance, pont diviseur, convertisseur analogique-numérique (CAN) d'une carte Arduino, algorithme.",
-    apprendre: "Le rôle de chaque maillon d'une chaîne de mesure, la caractéristique d'un capteur et la conversion d'une tension en nombre N.",
-    etapes: [
-      "Faites varier l'éclairement E, de la nuit au plein soleil.",
-      "Suivez la résistance du capteur, la tension Ur du conditionneur et le nombre N donné par le CAN (de 0 à 1023).",
-      "Observez la caractéristique Rp = f(E) du capteur.",
-      "Activez l'algorithme des phares et cherchez à partir de quel éclairement ils s'allument.",
-    ],
-    niveau: "Terminale STL",
-  },
   9: {
     but: "Évaluer la fidélité d'une méthode d'analyse par une étude interlaboratoire (norme ISO 5725) : plusieurs laboratoires analysent le même échantillon, et l'on évalue la méthode, non les laboratoires.",
     apprendre: "Repérer les laboratoires aberrants avec les tests de Cochran (dispersions) et de Grubbs (moyennes), puis calculer la répétabilité sr et la reproductibilité sR.",
