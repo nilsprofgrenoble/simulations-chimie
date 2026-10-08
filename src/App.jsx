@@ -19,6 +19,7 @@ import { Simulation5 } from "./simulations/RegulationNiveau";
 import { Simulation2 } from "./simulations/TitrageDirect";
 import { SimulationTitrageIndirect } from "./simulations/TitrageIndirect";
 import { Simulation3 } from "./simulations/TitragesElectrochimiques";
+import { SimulationStatiqueFluides } from "./simulations/StatiqueFluides";
 
 // ============================================================
 //  MENU — modifiez les noms et icônes ici
@@ -32,9 +33,9 @@ const SIMULATIONS = [
   { id: 25, label: "Titrage en retour", icon: "💊", color: "#be123c", component: SimulationTitrageIndirect, niveau: "1G" },
   { id: 3, label: "Titrages électrochimiques",  icon: "⚡", color: "#e9a824", component: Simulation3, niveau: "BTS" },
   { id: 4, label: "Paramètres de solubilité de Hansen",         icon: "🔵", color: "#6a4c93", component: Simulation4, niveau: "BTS" },
-  { id: 5, label: "Régulation de niveau",        icon: "⚙️", color: "#2a6099", component: Simulation5, niveau: "TSTL" },
-  { id: 6, label: "Point de fonctionnement", icon: "📈", color: "#e76f51", component: Simulation6, niveau: "TSTL" },
-  { id: 7, label: "Cristallisation", icon: "❄️", color: "#0096c7", component: Simulation7, niveau: "TSTL" },
+  { id: 5, label: "Régulation TOR, P et PI",        icon: "⚙️", color: "#2a6099", component: Simulation5, niveau: "TSTL" },
+  { id: 6, label: "Point de fonctionnement d'une régulation P", icon: "📈", color: "#e76f51", component: Simulation6, niveau: "TSTL" },
+  { id: 7, label: "Évaporation et cristallisation", icon: "❄️", color: "#0096c7", component: Simulation7, niveau: "TSTL" },
   { id: 8, label: "Chaîne de mesure", icon: "💡", color: "#f4a261", component: Simulation8, niveau: "TSTL" },
   { id: 9, label: "Fidélité d'une méthode : étude interlaboratoire", icon: "📊", color: "#c0392b", component: Simulation9, niveau: "BTS" },
   { id: 10, label: "Beer-Lambert",  icon: "🌈", color: "#1a7abf", component: BeerLambert1G,  niveau: "1G"  },
@@ -48,6 +49,8 @@ const SIMULATIONS = [
     component: SimulationAptitude },
   { id:17, label:"Circuit hydraulique", niveau:"TSTL", icon:"🚰", color:"#0284c7",
     component: SimulationBernoulli },
+  { id:26, label:"Statique des fluides", niveau:"TSTL", icon:"🌊", color:"#0369a1",
+    component: SimulationStatiqueFluides },
 ];
 
 const NIVEAUX = [
@@ -76,13 +79,22 @@ function PageAccueil({ onStart }) {
       { icon:"💊", label:"Titrage en retour", desc:"On ajoute un excès connu d'un réactif, puis on titre ce qui n'a pas réagi. Exemple : la vitamine C d'une gélule. Et un titrage en retour pour toute réaction." },
       { icon:"🌈", label:"Beer-Lambert", desc:"Schéma animé du spectrophotomètre, spectre UV-visible interactif et courbe d'étalonnage." },
     ]},
-    { niveau:"TSTL", color:"#e9a824", sims:[
-      { icon:"⚙️", label:"Régulation de niveau", desc:"Régulations TOR, P et PI d'un réservoir avec animations en temps réel." },
-      { icon:"📈", label:"Point de fonctionnement", desc:"Caractéristique statique d'un procédé et point de fonctionnement d'une régulation P." },
-      { icon:"❄️", label:"Cristallisation", desc:"Cristallisation par refroidissement ou évaporation avec animation du bécher." },
-      { icon:"💡", label:"Chaîne de mesure", desc:"Capteur de lumière Arduino — photorésistance, conditionneur, CAN et algorithme de contrôle." },
-      { icon:"📡", label:"Quantum du CAN", desc:"Résolution en température d'un CAN : impact de la non-linéarité de la courbe d'étalonnage sur le quantum de mesure." },
-      { icon:"🚰", label:"Circuit hydraulique", desc:"Relation de Bernoulli : bilan d'énergie, pertes de charge linéiques et singulières, puissance de la pompe." },
+    { niveau:"TSTL", color:"#e9a824", sousMenus:[
+      { label:"📡 Transmission de signaux numériques", sims:[
+        { icon:"💡", label:"Chaîne de mesure", desc:"Capteur de lumière Arduino — photorésistance, conditionneur, CAN et algorithme de contrôle." },
+        { icon:"📡", label:"Quantum du CAN", desc:"Résolution en température d'un CAN : impact de la non-linéarité de la courbe d'étalonnage sur le quantum de mesure." },
+      ]},
+      { label:"💧 Transport des fluides", sims:[
+        { icon:"🌊", label:"Statique des fluides", desc:"Étalonnage d'un manomètre dans une éprouvette : P = f(h), modèle linéaire, puis mesure de la hauteur d'eau d'un récipient inconnu." },
+        { icon:"🚰", label:"Circuit hydraulique", desc:"Relation de Bernoulli : bilan d'énergie, pertes de charge linéiques et singulières, puissance de la pompe." },
+      ]},
+      { label:"⚙️ Régulation", sims:[
+        { icon:"⚙️", label:"Régulation TOR, P et PI", desc:"Régulations TOR, P et PI d'un réservoir avec animations en temps réel." },
+        { icon:"📈", label:"Point de fonctionnement d'une régulation P", desc:"Caractéristique statique d'un procédé et point de fonctionnement d'une régulation P." },
+      ]},
+      { label:"❄️ Évaporation et cristallisation", sims:[
+        { icon:"❄️", label:"Évaporation et cristallisation", desc:"Cristallisation par refroidissement ou évaporation : diagramme de solubilité, bilan de matière, rendement." },
+      ]},
     ]},
     { niveau:"BTS", color:"#6a4c93", sousMenus:[
       { label:"🔬 Analyse", sims:[
@@ -251,7 +263,7 @@ export default function App() {
   const active = SIMULATIONS.find(s => s.id === activeId) || SIMULATIONS[0];
   const ActiveComponent = active.component;
   const [expanded, setExpanded] = useState({ "1G": true, "TSTL": true, "BTS": true });
-  // Sous-groupes du menu BTS (Analyse, Formulation) : un seul état pour tous,
+  // Sous-groupes du menu BTS (Analyse, Formulation) et TSTL : un seul état pour tous,
   // déclaré ici car React interdit un useState dans une boucle ou une condition.
   const [sgOuverts, setSgOuverts] = useState({});
   const [plotlyReady, setPlotlyReady] = useState(false);
@@ -351,6 +363,11 @@ export default function App() {
             const sousgroupes = niv.key === 'BTS' ? [
               { label:'🔬 Analyse', ids:[3,9,11,12,13,16] },
               { label:'🧪 Formulation', ids:[4,14] },
+            ] : niv.key === 'TSTL' ? [
+              { label:'📡 Transmission de signaux numériques', ids:[8,15] },
+              { label:'💧 Transport des fluides', ids:[26,17] },
+              { label:'⚙️ Régulation', ids:[5,6] },
+              { label:'❄️ Évaporation et cristallisation', ids:[7] },
             ] : null;
 
             return (
@@ -388,7 +405,7 @@ export default function App() {
                 {isExpanded && sousgroupes && sousgroupes.map(({label, ids}) => {
                   const sgExpanded = sgOuverts[label] ?? true;
                   const setSgExpanded = f => setSgOuverts(prev => ({ ...prev, [label]: f(prev[label] ?? true) }));
-                  const sgSims = simsNiv.filter(s => ids.includes(s.id));
+                  const sgSims = ids.map(id => simsNiv.find(s => s.id === id)).filter(Boolean);
                   return (
                     <div key={label}>
                       <button onClick={() => setSgExpanded(v => !v)}

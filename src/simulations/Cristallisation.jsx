@@ -600,7 +600,7 @@ export function Simulation7({ plotlyReady }) {
         @media (max-width: 960px) { .cr-l1.cote { grid-template-columns: minmax(0, 1fr); } }
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Cristallisation du nitrate de potassium</h2>
+        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Évaporation et cristallisation du nitrate de potassium</h2>
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
       <div className={`cr-l1${mode !== 'explore' ? ' cote' : ''}`}>

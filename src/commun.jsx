@@ -176,6 +176,15 @@ export function avecIndices(t) {
   return <>{morceaux}</>;
 }
 
+// Ordre d'affichage des choix d'un QCM : mélangé, mais stable pour une étape donnée.
+// Les auteurs écrivent la bonne réponse en premier ; sans mélange, elle serait toujours en tête.
+function ordreOptions(n, graine) {
+  let x = (graine + 1) * 2654435761 % 4294967296;
+  const alea = () => { x = (x * 1664525 + 1013904223) % 4294967296; return x / 4294967296; };
+  const ordre = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) { const j = Math.floor(alea() * (i + 1)); [ordre[i], ordre[j]] = [ordre[j], ordre[i]]; }
+  return ordre;
+}
 export function CarteParcours({ etapes, etat, setEtat, fin }) {
   const { etape, reps, verifs } = etat;
   const et = etapes[Math.min(etape, etapes.length - 1)];
@@ -256,8 +265,8 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
         <div>
           <div style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{avecIndices(tache.q)}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            {tache.options.map((o, i) => <button key={i} onClick={() => setRep(i)}
-              style={{ ...btn(reps[etape] === i, '#0ea5e9'), padding: '6px 10px', textAlign: 'left' }}>{avecIndices(o)}</button>)}
+            {ordreOptions(tache.options.length, etape).map(i => <button key={i} data-ok={i === tache.bonne ? 'true' : 'false'} onClick={() => setRep(i)}
+              style={{ ...btn(reps[etape] === i, '#0ea5e9'), padding: '6px 10px', textAlign: 'left' }}>{avecIndices(tache.options[i])}</button>)}
           </div>
         </div>
       )}

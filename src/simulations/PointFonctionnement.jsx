@@ -5,7 +5,7 @@ import { SchemaChateau, COUL, H_FOND, H_TROP, ecrireTransfert, lireTransfert, ef
 
 // ====================================================
 // POINT DE FONCTIONNEMENT D'UNE RÉGULATION PROPORTIONNELLE (Terminale STL)
-// Même maquette que « Régulation de niveau » : le château d'eau (réservoir de 30 à 36 m, pompe, abonnés).
+// Même maquette que « Régulation TOR, P et PI » : le château d'eau (réservoir de 30 à 36 m, pompe, abonnés).
 // Là, on regarde le niveau évoluer dans le temps ; ici, on cherche directement le niveau où il finit par se stabiliser.
 // ====================================================
 
@@ -26,7 +26,7 @@ function equilibre({ consigne, Kp, Qmax, Qp }) {
 function Hypotheses() {
   return (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
-      <li><strong>Régime permanent</strong> : on cherche l'équilibre, où le niveau ne varie plus, donc où le débit de la pompe est égal au débit de puisage (S dH/dt = 0). La façon dont le niveau y arrive, et la stabilité de la boucle, ne sont pas étudiées ici : c'est l'objet de « Régulation de niveau ».</li>
+      <li><strong>Régime permanent</strong> : on cherche l'équilibre, où le niveau ne varie plus, donc où le débit de la pompe est égal au débit de puisage (S dH/dt = 0). La façon dont le niveau y arrive, et la stabilité de la boucle, ne sont pas étudiées ici : c'est l'objet de « Régulation TOR, P et PI ».</li>
       <li><strong>Puisage imposé par les abonnés</strong> : c'est un débit donné (en m³/h), indépendant de la hauteur d'eau.</li>
       <li><strong>Réservoir entre 30 m (fond) et 36 m (trop-plein)</strong>, de section constante. Un équilibre calculé sous 30 m n'existe pas : le réservoir se vide. La consigne est limitée à 36 m, donc le niveau d'équilibre ne peut pas déborder.</li>
       <li><strong>Pompe à vitesse variable idéale, capteur parfait</strong> : le débit est proportionnel à la commande (Q = Q<sub>max</sub> × Y / 100), indépendant du niveau (on ignore la courbe de la pompe), et le capteur mesure H sans erreur ni retard.</li>
@@ -95,7 +95,7 @@ function GraphePF({ c, Kp, Qmax, Qp, eq, showPuisage, showRegul, showPoint, show
 }
 
 export function Simulation6({ naviguer }) {
-  const [tr] = useState(lireTransfert);                       // réglages venus de « Régulation de niveau », s'il y en a
+  const [tr] = useState(lireTransfert);                       // réglages venus de « Régulation TOR, P et PI », s'il y en a
   useEffect(() => { if (tr) effacerTransfert(); }, []);
   const [mode, setMode] = useState("explore");               // on arrive sur l'exploration libre
   const [guide, setGuide] = useEtatPersistant("pf-guide-v2", { etape: 0, reps: {}, verifs: {}, reussies: {} });
@@ -115,7 +115,7 @@ export function Simulation6({ naviguer }) {
   const ES80 = Qp / Qmax * 100 / 80;
   const ETAPES = [
     { id: 'chateau', titre: 'Le château d’eau de la régulation', focus: ['reservoir', 'pompe', 'maison'],
-      texte: <>C'est la maquette de la simulation « Régulation de niveau » : une pompe (B) remplit le réservoir (A), et les abonnés (C) puisent de l'eau. Ici, on ne regarde pas
+      texte: <>C'est la maquette de la simulation « Régulation TOR, P et PI » : une pompe (B) remplit le réservoir (A), et les abonnés (C) puisent de l'eau. Ici, on ne regarde pas
         le niveau évoluer dans le temps : on cherche le <strong>niveau où il finit par se stabiliser</strong>, avec une régulation proportionnelle (P). Le niveau est entre 30 m (fond) et 36 m (trop-plein).</>,
       tache: { type: 'qcm', q: 'Quelle est la grandeur réglée ?', options: ['La hauteur d’eau H du réservoir', 'Le débit de la pompe', 'Le débit de puisage'], bonne: 0,
         expl: 'C’est la grandeur que l’on veut maintenir : la hauteur d’eau.' } },
@@ -168,7 +168,7 @@ export function Simulation6({ naviguer }) {
       texte: <>Observez le point de fonctionnement : il s'est rapproché de la consigne.</>,
       tache: { type: 'num', q: 'Écart statique ES avec K_p = 80 %/m', unite: 'm', vrai: ES80, tol: 0.04, affiche: x => fmt(x, 2),
         bloque: Math.abs(Kp - 80) > 0.5 ? 'Réglez d’abord Kp = 80 %/m à l’étape précédente.' : null,
-        expl: `ES = ${fmt(Qp / Qmax * 100, 1)} / 80 = ${fmt(ES80, 2)} m : il a diminué, mais il n’est pas nul. En revanche, avec un retard de mesure, un gain trop élevé fait osciller le niveau : essayez-le dans « Régulation de niveau ».` } },
+        expl: `ES = ${fmt(Qp / Qmax * 100, 1)} / 80 = ${fmt(ES80, 2)} m : il a diminué, mais il n’est pas nul. En revanche, avec un retard de mesure, un gain trop élevé fait osciller le niveau : essayez-le dans « Régulation TOR, P et PI ».` } },
     { id: 'vide', titre: 'Un puisage trop fort', focus: ['params', 'graph'],
       texte: <>Remettez K<sub>p</sub> = 20 %/m, puis réglez le débit de puisage à <strong>70 m³/h</strong>.</>,
       tache: { type: 'qcm', q: 'Que montre le graphique ?', options: ['Les deux courbes se coupent sous 30 m, hors du réservoir : même à H = 30 m, le régulateur ne demande que 60 m³/h, moins que le puisage, donc le réservoir se vide', 'Le niveau se stabilise un peu plus bas', 'La pompe est trop petite : elle ne peut pas dépasser 70 m³/h'], bonne: 0,
@@ -180,7 +180,7 @@ export function Simulation6({ naviguer }) {
         bloque: !(Math.abs(Kp - 40) < 0.5 && Math.abs(Qp - 70) < 0.5 && Math.abs(consigne - 33) < 0.05) ? 'Réglez Kp = 40 %/m, un puisage de 70 m³/h et une consigne de 33 m.' : null,
         expl: 'ES = 70 / 40 = 1,75 m : le point de fonctionnement est maintenant dans le réservoir (H = 31,25 m).' } },
     { id: 'dynamique', titre: 'Et dans le temps ?', focus: [],
-      texte: <>Dans la simulation « Régulation de niveau », en mode P et avec les mêmes réglages, le niveau finit par se stabiliser exactement au point de fonctionnement. Le point de
+      texte: <>Dans la simulation « Régulation TOR, P et PI », en mode P et avec les mêmes réglages, le niveau finit par se stabiliser exactement au point de fonctionnement. Le point de
         fonctionnement donne le résultat final ; la simulation montre le chemin pour y arriver.
         {naviguer && <div style={{ marginTop: 8 }}><button onClick={() => { ecrireTransfert({ consigne, Kp, Qmax, Qp }); naviguer(5); }} style={stylePetitBouton(true, '#2563eb')}>⏱ Voir la régulation dans le temps</button></div>}</>,
       tache: null },
@@ -194,7 +194,7 @@ export function Simulation6({ naviguer }) {
         expl: 'Le niveau d’équilibre vient donc de la seule pompe : c’est elle qui doit compenser le puisage.' } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       texte: <>Vous savez construire un point de fonctionnement, en déduire le niveau d'équilibre et l'écart statique, et expliquer l'effet de K<sub>p</sub> et du puisage. En exploration libre,
-        changez les réglages, puis comparez avec « Régulation de niveau ».</>, tache: null },
+        changez les réglages, puis comparez avec « Régulation TOR, P et PI ».</>, tache: null },
   ];
   const idx = id => ETAPES.findIndex(e => e.id === id);
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
@@ -402,14 +402,14 @@ export function Simulation6({ naviguer }) {
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       <style>{`
-        .pf-l1 { display: grid; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 2.3fr) minmax(290px, 1fr); }
+        .pf-l1 { display: grid; align-items: start; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 2.3fr) minmax(290px, 1fr); }
         .pf-schema { display: grid; gap: 10px; grid-template-columns: minmax(165px, 210px) minmax(0, 1fr); align-items: start; }
         .pf-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
         @media (max-width: 900px) { .pf-l1 { grid-template-columns: minmax(0, 1fr); } }
         @media (max-width: 560px) { .pf-schema { grid-template-columns: minmax(0, 1fr); } }
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt }}>Point de fonctionnement d'une régulation proportionnelle</h2>
+        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt }}>Point de fonctionnement d'une régulation P</h2>
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
       <div className="pf-l1">
@@ -422,8 +422,8 @@ export function Simulation6({ naviguer }) {
                 <li>Augmentez K<sub>p</sub> : que devient l'écart statique ?</li>
                 <li>Augmentez le débit de puisage : où se déplace le point de fonctionnement ?</li>
                 <li>Cherchez le débit de puisage à partir duquel le réservoir se vide.</li>
-                <li>Passez dans « Régulation de niveau » avec les mêmes réglages : le niveau final est-il celui du point de fonctionnement ?</li>
-                <li>Y a-t-il des oscillations ? Pas ici : on ne regarde que l'équilibre. Elles n'apparaissent que dans « Régulation de niveau », avec un retard de mesure.</li>
+                <li>Passez dans « Régulation TOR, P et PI » avec les mêmes réglages : le niveau final est-il celui du point de fonctionnement ?</li>
+                <li>Y a-t-il des oscillations ? Pas ici : on ne regarde que l'équilibre. Elles n'apparaissent que dans « Régulation TOR, P et PI », avec un retard de mesure.</li>
               </ul>
             </div>}
       </div>
