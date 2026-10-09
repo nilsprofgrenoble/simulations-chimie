@@ -19,17 +19,6 @@ export const CONTEXTES = {
     ],
     niveau: "BTS Métiers de la chimie",
   },
-  9: {
-    but: "Évaluer la fidélité d'une méthode d'analyse par une étude interlaboratoire (norme ISO 5725) : plusieurs laboratoires analysent le même échantillon, et l'on évalue la méthode, non les laboratoires.",
-    apprendre: "Repérer les laboratoires aberrants avec les tests de Cochran (dispersions) et de Grubbs (moyennes), puis calculer la répétabilité sr et la reproductibilité sR.",
-    etapes: [
-      "Choisissez le nombre de laboratoires p, le nombre d'essais par laboratoire n et la valeur cible.",
-      "Générez un jeu de données aléatoire, ou saisissez vos propres résultats.",
-      "Suivez les tests de Cochran puis de Grubbs, et regardez quels laboratoires sont écartés.",
-      "Lisez les valeurs finales de sr et sR.",
-    ],
-    niveau: "BTS Métiers de la chimie",
-  },
   12: {
     but: "Simuler une séparation par chromatographie liquide haute performance (CLHP) en phase inverse C18, avec un éluant acétonitrile / eau (modèle de X. Bataille).",
     apprendre: "L'influence de la colonne, de la composition de l'éluant, du débit et de la température sur les temps de rétention et la qualité de la séparation.",
