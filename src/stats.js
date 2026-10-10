@@ -8,7 +8,7 @@
 // Ce qui n'est PAS fait : aucun cookie, aucun compte, aucun nom, aucun suivi d'un élève en particulier ; GoatCounter ne conserve que des
 // chiffres agrégés (voir https://www.goatcounter.com/help/gdpr). Rien n'est envoyé depuis un ordinateur local (localhost), ni si le
 // navigateur envoie « Do Not Track ».
-export const CODE_GOATCOUNTER = '';
+export const CODE_GOATCOUNTER = 'labochimie';
 
 export const STATS_ACTIVES = CODE_GOATCOUNTER !== '';
 const file = [];
