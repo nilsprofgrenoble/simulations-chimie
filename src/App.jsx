@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { compter, STATS_ACTIVES } from "./stats";
 import { SimulationAptitude } from "./simulations/Aptitude";
 import { Simulation1 } from "./simulations/Avancement";
 import { SimulationDosageEtalonnage } from "./simulations/DosageEtalonnage";
@@ -23,6 +24,10 @@ import { Simulation3 } from "./simulations/TitragesElectrochimiques";
 import { SimulationStatiqueFluides } from "./simulations/StatiqueFluides";
 import { SimulationDebits } from "./simulations/DebitsFluides";
 import { SimulationVitesseDebit } from "./simulations/VitesseDebit";
+import { SimulationEchangeur } from "./simulations/Echangeur";
+import { SimulationParoi } from "./simulations/Paroi";
+import { SimulationBouilloire } from "./simulations/Bouilloire";
+import { SimulationReponse } from "./simulations/Reponse";
 
 // ============================================================
 //  MENU — modifiez les noms et icônes ici
@@ -60,6 +65,14 @@ const SIMULATIONS = [
     component: SimulationVitesseDebit },
   { id:29, label:"Courbes i-E et diagramme E-pH", niveau:"BTS", icon:"🧊", color:"#e9a824",
     component: SimulationIEpH },
+  { id:30, label:"Échangeur thermique : co-courant et contre-courant", niveau:"TSTL", icon:"🔥", color:"#dc2626",
+    component: SimulationEchangeur },
+  { id:31, label:"Paroi multicouche : résistance thermique", niveau:"TSTL", icon:"🧱", color:"#b45309",
+    component: SimulationParoi },
+  { id:32, label:"Bouilloire : conductivité thermique de sa paroi", niveau:"TSTL", icon:"🫖", color:"#be123c",
+    component: SimulationBouilloire },
+  { id:33, label:"Temps de réponse d'un capteur", niveau:"TSTL", icon:"⏱️", color:"#0891b2",
+    component: SimulationReponse },
 ];
 
 const NIVEAUX = [
@@ -105,6 +118,12 @@ function PageAccueil({ onStart }) {
       ]},
       { label:"❄️ Évaporation et cristallisation", sims:[
         { icon:"❄️", label:"Évaporation et cristallisation", desc:"Cristallisation par refroidissement ou évaporation : diagramme de solubilité, bilan de matière, rendement." },
+      ]},
+      { label:"🔥 Transferts thermiques", sims:[
+        { icon:"🧱", label:"Paroi multicouche : résistance thermique", desc:"Conduction à travers une paroi : R = e/(λS), résistances en série, P = ΔT/R, profil de température et part de chaque couche, dimensionnement d'un isolant, simple et double vitrage." },
+        { icon:"🫖", label:"Bouilloire : conductivité thermique de sa paroi", desc:"Le TP de la bouilloire en virtuel : énergie perdue par l'eau (Q = m·C·ΔT), puissance, écart eau–air, λ de la paroi. Puis une bouilloire réaliste pour critiquer chaque hypothèse du modèle." },
+        { icon:"⏱️", label:"Temps de réponse d'un capteur", desc:"Réponse d'une sonde à un échelon : V_ini, V_fin, ΔV, bande à 5 %, t_R = t₁ − t₀, modèle exponentiel et t_R = 3τ. Puis une grandeur qui oscille avant de se stabiliser (dernière sortie de la bande)." },
+        { icon:"🔥", label:"Échangeur thermique : co-courant et contre-courant", desc:"Échangeur coaxial : profils de température, bilan P_C = −P_F, écart moyen logarithmique ΔTm, surface d'échange et coefficient global U. Co-courant, contre-courant, et côté chaud à température constante (bain, vapeur)." },
       ]},
     ]},
     { niveau:"BTS", color:"#6a4c93", sousMenus:[
@@ -293,6 +312,9 @@ export default function App() {
     if (activeId === 0) url.searchParams.delete('sim');
     else url.searchParams.set('sim', activeId);
     window.history.replaceState(null, '', url.toString());
+    // statistiques anonymes : une consultation par simulation (voir stats.js)
+    const s = SIMULATIONS.find(x => x.id === activeId);
+    compter(activeId === 0 ? '/' : `/sim/${activeId}`, s ? s.label : 'Accueil');
   }, [activeId]);
 
   function partager() {
@@ -379,6 +401,7 @@ export default function App() {
               { label:'💧 Transport des fluides', ids:[26,27,28,17] },
               { label:'⚙️ Régulation', ids:[5,6] },
               { label:'❄️ Évaporation et cristallisation', ids:[7] },
+              { label:'🔥 Transferts thermiques', ids:[31,32,33,30] },
             ] : null;
 
             return (
@@ -541,6 +564,7 @@ export default function App() {
             CC BY-NC-ND 4.0
           </a>
           {" "}· libre d'accès, reproduction et modification non autorisées
+          {STATS_ACTIVES && <> · statistiques de fréquentation anonymes, sans cookie ni compte</>}
         </div>
       </main>
     </div>

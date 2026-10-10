@@ -1,4 +1,5 @@
 import { Children, Fragment, cloneElement, isValidElement, useState, useEffect, useRef, useMemo } from "react";
+import { compter } from "./stats";
 
 // ============================================================
 //  UTILITAIRES PARTAGÉS
@@ -447,7 +448,7 @@ export function BoutonsModes({ mode, setMode, modes = ['guide', 'explore', 'defi
   const def = { guide: ['🧭 Parcours guidé', ORANGE_GUIDE], explore: ['🔍 Exploration libre', '#334155'], defi: ['🎯 Défi', '#0ea5e9'] };
   return (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      {modes.map(m => <button key={m} onClick={() => setMode(m)} style={styleBouton(mode === m, def[m][1])}>{def[m][0]}</button>)}
+      {modes.map(m => <button key={m} onClick={() => { setMode(m); compter(`sim${new URLSearchParams(window.location.search).get('sim') || '?'}:${m}`, `Simulation ${new URLSearchParams(window.location.search).get('sim') || '?'} : mode ${m}`, true); }} style={styleBouton(mode === m, def[m][1])}>{def[m][0]}</button>)}
     </div>
   );
 }
