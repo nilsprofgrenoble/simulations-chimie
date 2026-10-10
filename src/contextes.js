@@ -30,15 +30,4 @@ export const CONTEXTES = {
     ],
     niveau: "BTS Métiers de la chimie",
   },
-  13: {
-    but: "Quantifier les constituants d'un mélange en chromatographie par étalonnage interne ou par normalisation interne.",
-    apprendre: "Le principe de chaque méthode, et le calcul des concentrations à partir des rapports d'aires et des coefficients de réponse.",
-    etapes: [
-      "Choisissez la méthode : étalon interne ou normalisation interne, et lisez son principe.",
-      "Suivez le mode opératoire de l'exemple (hydrobenzoïne, benzoïne, benzile), ou saisissez vos propres données.",
-      "Observez les chromatogrammes obtenus.",
-      "Retrouvez les concentrations avec la formule affichée.",
-    ],
-    niveau: "BTS Métiers de la chimie",
-  },
 };

@@ -406,7 +406,10 @@ function ExplorationInterlabo({ plotlyReady, visible = true }) {
             <div style={{fontWeight:600,color:"#445",marginBottom:6}}>
               Distributions gaussiennes des laboratoires
             </div>
-            <div ref={plotRef} style={{height:320}}/>
+            {plotlyReady && window.Plotly
+              ? <div ref={plotRef} style={{height:320}}/>
+              : <GaussiennesSVG data={donnees} cible={cible} unite={unite}
+                  ecartes={[...labosEliminésC, ...labosEliminésG]} isoles={[...labosDouteuxC, ...labosDouteuxG]}/>}
             {etape==="gauss" && (
               <button onClick={()=>{setEtape("cochran"); setQuestionActive(true); setFeedback(null);}}
                 style={{marginTop:12,padding:"6px 16px",borderRadius:6,border:"none",
@@ -1107,10 +1110,47 @@ function NuagePoints({ data, ecartes = [], isoles = [], moyennes = false, cible 
             </g>
           );
         })}
-        <text x={(ml + W - mr) / 2} y={H - 2} textAnchor="middle" fontSize="11.5" fill="#334155">numéro du laboratoire{unite ? `   —   résultats en ${unite}` : ''}{moyennes ? '   —   trait : moyenne du laboratoire' : ''}{cible != null ? `   —   pointillés : valeur de référence ${fmt(cible, 2)}` : ''}</text>
+        <text x={(ml + W - mr) / 2} y={H - 2} textAnchor="middle" fontSize="11.5" fill="#334155">laboratoire{unite ? ` — essais en ${unite}` : ''}{moyennes ? ' — trait : moyenne' : ''}{cible != null ? ` — pointillés : référence ${fmt(cible, 2)}` : ''}</text>
       </svg>
     </div>
   );
+}
+
+// Les lois normales N(ȳ_i ; s_i) de chaque laboratoire, tracées sans dépendance externe
+function GaussiennesSVG({ data, ecartes = [], isoles = [], cible = null, unite = '', surligne = false }) {
+  const p = data.length, W = 620, H = 250, ml = 46, mr = 12, mt = 14, mb = 40;
+  const m = data.map(moy), s = data.map(ect), sMed = [...s].sort((a, b) => a - b)[Math.floor(p / 2)];
+  const lo = Math.min(...m) - 4 * sMed, hi = Math.max(...m) + 4 * sMed;
+  const pdf = (x, i) => Math.exp(-0.5 * ((x - m[i]) / s[i]) ** 2) / (s[i] * Math.sqrt(2 * Math.PI));
+  const yMax = Math.max(...s.map((si, i) => pdf(m[i], i))) * 1.08;
+  const X = x => ml + (x - lo) / (hi - lo) * (W - ml - mr), Y = y => mt + (1 - y / yMax) * (H - mt - mb);
+  const N = 240, xs = Array.from({ length: N + 1 }, (_, k) => lo + (hi - lo) * k / N);
+  const brut = (hi - lo) / 6, pw = Math.pow(10, Math.floor(Math.log10(brut))), pas = [1, 2, 5, 10].map(k => k * pw).find(x => x >= brut);
+  const grad = []; for (let g = Math.ceil(lo / pas) * pas; g <= hi + 1e-9; g += pas) grad.push(parseFloat(g.toFixed(8)));
+  const dec = Math.max(0, -Math.floor(Math.log10(pas) + 1e-9));
+  return (
+    <div style={{ ...styleBoite, ...(surligne ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3 } : {}) }}>
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Lois normales de chaque laboratoire" style={{ width: '100%', height: 'auto', display: 'block' }}>
+        <line x1={ml} x2={W - mr} y1={Y(0)} y2={Y(0)} stroke="#94a3b8"/>
+        {grad.map(g => <g key={g}><line x1={X(g)} x2={X(g)} y1={Y(0)} y2={Y(0) + 4} stroke="#94a3b8"/><text x={X(g)} y={Y(0) + 17} textAnchor="middle" fontSize="11.5" fill="#334155">{fmt(g, dec)}</text></g>)}
+        {cible != null && cible > lo && cible < hi && <line x1={X(cible)} x2={X(cible)} y1={mt} y2={Y(0)} stroke="#334155" strokeDasharray="5 4"/>}
+        {data.map((_, i) => {
+          const ec = ecartes.includes(i), is = isoles.includes(i), col = ec ? '#94a3b8' : is ? '#d97706' : COUL[i % COUL.length];
+          const d = xs.map((x, k) => `${k ? 'L' : 'M'}${X(x).toFixed(1)},${Y(pdf(x, i)).toFixed(1)}`).join(' ');
+          const xp = Math.min(Math.max(X(m[i]), ml + 6), W - mr - 6), yp = Math.max(Y(pdf(m[i], i)) - 5, mt + 8);
+          return <g key={i} opacity={ec ? 0.5 : 1}><path d={d} fill="none" stroke={col} strokeWidth="2" strokeDasharray={is ? '6 3' : undefined}/><text x={xp} y={yp} textAnchor="middle" fontSize="11.5" fontWeight="700" fill={col}>{i + 1}</text></g>;
+        })}
+        <text x={(ml + W - mr) / 2} y={H - 3} textAnchor="middle" fontSize="11.5" fill="#334155">résultat{unite ? ` (${unite})` : ''} — une courbe par laboratoire, N(ȳᵢ ; sᵢ){cible != null ? ' — pointillés : valeur de référence' : ''}</text>
+      </svg>
+    </div>
+  );
+}
+
+// Écriture d'un résultat : U à 2 chiffres significatifs (arrondi par excès), valeur au même rang décimal
+function ecritureResultat(m, U) {
+  const e = Math.floor(Math.log10(U)), d = Math.max(0, 1 - e), f = 10 ** d;
+  const Ur = Math.ceil(U * f - 1e-9) / f;
+  return { d, m: m.toFixed(d).replace('.', ','), U: Ur.toFixed(d).replace('.', ',') };
 }
 
 function TableauEssais({ data, unite, stats, ecartes = [], isoles = [], focus = false }) {
@@ -1146,6 +1186,10 @@ const PG = (() => {
   const c8 = passeCochran(s, tout, 4), c7 = passeCochran(s, sans3, 4), g7 = passeGrubbs(m, sans3), g8 = passeGrubbs(m, tout);
   return { proc, m, s, c8, c7, g7, g8, f: fidelite(m, s, sans3, 4), sPop1: s[0] * Math.sqrt(3 / 4), m8: moy(m) };
 })();
+
+const SRG = { sr: 0.042, sL: 0.074, sR: 0.085 };       // résultats de l'étude du parcours (valeurs fournies, arrondies)
+const Y_G = [10.31, 10.25];                            // les deux essais du laboratoire de l'élève
+const ECR_G = ecritureResultat((Y_G[0] + Y_G[1]) / 2, 2 * SRG.sR);
 
 function ParcoursInterlabo({ changerMode }) {
   const [guide, setGuide] = useEtatPersistant('interlabo-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
@@ -1213,21 +1257,38 @@ function ParcoursInterlabo({ changerMode }) {
       texte: <>Le laboratoire 6 trouve des résultats groupés (bonne répétabilité) mais une moyenne plus haute que les autres.</>,
       tache: { type: 'qcm', q: 'Quelle est la règle de la norme ?', options: ['On le conserve en le signalant, sauf si une cause technique est identifiée', 'On l’écarte toujours', 'On l’ignore sans en parler'], bonne: 0,
         expl: 'Un test statistique suspecte, il ne prouve pas. La cause (étalonnage, préparation, appareil…) se cherche auprès du laboratoire.' } },
-    { id: 'sr', titre: 'La répétabilité', focus: [],
-      texte: <>On conserve donc les 7 laboratoires. La variance de répétabilité est la moyenne des variances : s<sub>r</sub>² = Σ s<sub>i</sub>² / p.</>,
-      tache: { type: 'num', q: 'Écart-type de répétabilité s_r', unite: 'mmol/L', vrai: f.sr, tol: 0.02, affiche: x => fmt(x, 4),
-        pieges: [[moy(PG.proc.s.filter((_, i) => i !== 2)), 'Il faut moyenner les variances (les carrés), puis prendre la racine carrée.']] } },
-    { id: 'sL', titre: 'La part « laboratoire »', focus: [],
-      texte: <>La variance s²(ȳ) des moyennes contient la variance entre laboratoires, mais aussi une part de répétabilité (une moyenne de n essais reste un peu aléatoire) : s<sub>L</sub>² = s²(ȳ) − s<sub>r</sub>² / n. Si ce résultat était négatif, on prendrait s<sub>L</sub> = 0.</>,
-      tache: { type: 'num', q: 'Écart-type interlaboratoires s_L', unite: 'mmol/L', vrai: f.sL, tol: 0.04, affiche: x => fmt(x, 4),
-        pieges: [[g7.sy, 'C’est s(ȳ) : il faut encore retirer la part de répétabilité, s_r² / n.']] } },
-    { id: 'sR', titre: 'La reproductibilité', focus: [],
-      texte: <>Les deux sources de dispersion s’ajoutent par leurs variances : s<sub>R</sub>² = s<sub>L</sub>² + s<sub>r</sub>².</>,
-      tache: { type: 'num', q: 'Écart-type de reproductibilité s_R', unite: 'mmol/L', vrai: f.sR, tol: 0.03, affiche: x => fmt(x, 4),
-        pieges: [[f.sL, 'C’est s_L seul : ajoutez s_r² avant de prendre la racine.'], [f.sr + f.sL, 'On ajoute les variances (carrés), pas les écarts-types.']] } },
-    { id: 'interpretation', titre: 'Interpréter', focus: [],
-      texte: <>Vous obtenez s<sub>r</sub> ≈ {fmt(f.sr, 3)} mmol/L et s<sub>R</sub> ≈ {fmt(f.sR, 3)} mmol/L.</>,
+    { id: 'resultatEtude', titre: 'Les résultats de l’étude', focus: [],
+      texte: <>Avec les 7 laboratoires conservés, la norme donne : s<sub>r</sub>² = Σ s<sub>i</sub>² / p (répétabilité) ; s<sub>L</sub>² = s²(ȳ) − s<sub>r</sub>² / n (effet laboratoire) ; s<sub>R</sub>² = s<sub>L</sub>² + s<sub>r</sub>² (reproductibilité). On obtient s<sub>r</sub> = {fmt(SRG.sr, 3)} ; s<sub>L</sub> = {fmt(SRG.sL, 3)} ; s<sub>R</sub> = {fmt(SRG.sR, 3)} mmol/L.</>,
       tache: { type: 'qcm', q: 'Pourquoi s_R est-il supérieur à s_r ?', options: ['Entre laboratoires, s’ajoute à la dispersion des essais d’un même laboratoire un effet propre à chaque laboratoire', 'Parce que le laboratoire 3 a été écarté', 'Parce que la méthode est fausse'], bonne: 0 } },
+    { id: 'limiteR', titre: 'Utiliser la méthode : deux essais', focus: ['mesurage'],
+      texte: <>Votre laboratoire applique maintenant la méthode à un échantillon de teneur voisine : <strong>2 essais</strong>, en conditions de répétabilité, donnent y<sub>1</sub> = {fmt(Y_G[0], 2)} et y<sub>2</sub> = {fmt(Y_G[1], 2)} mmol/L. Avant de les moyenner, on vérifie qu’ils sont compatibles : leur écart ne doit pas dépasser la <strong>limite de répétabilité</strong> r = 2,8 × s<sub>r</sub>. (2,8 ≈ 1,96 × √2 : seuil à 95 %, si les essais suivent une loi normale d’écart-type s<sub>r</sub>.)</>,
+      tache: { type: 'num', q: 'Limite de répétabilité r', unite: 'mmol/L', vrai: 2.8 * SRG.sr, tol: 0.03, affiche: x => fmt(x, 3),
+        pieges: [[SRG.sr, 'C’est s_r : il faut le multiplier par 2,8.'], [2.8 * SRG.sR, 'Vous avez pris s_R : pour des essais en conditions de répétabilité, c’est s_r.']] } },
+    { id: 'compat', titre: 'Les essais sont-ils compatibles ?', focus: ['mesurage'],
+      texte: <>Comparez |y<sub>1</sub> − y<sub>2</sub>| à r = {fmt(2.8 * SRG.sr, 3)} mmol/L.</>,
+      tache: { type: 'qcm', q: 'Peut-on faire la moyenne des deux essais ?', options: [`Oui : |y₁ − y₂| = ${fmt(Math.abs(Y_G[0] - Y_G[1]), 2)} est inférieur à r`, 'Non : il faut refaire des essais', 'On ne peut pas savoir sans connaître s_R'], bonne: 0 } },
+    { id: 'moyenneRes', titre: 'Le résultat du mesurage', focus: ['mesurage'],
+      texte: <>Les essais sont compatibles : le résultat du mesurage est leur moyenne.</>,
+      tache: { type: 'num', q: 'Moyenne ȳ des deux essais', unite: 'mmol/L', vrai: (Y_G[0] + Y_G[1]) / 2, tol: 0.0007, affiche: x => fmt(x, 2) } },
+    { id: 'quelSigma', titre: 'Quelle incertitude associer ?', focus: [],
+      texte: <>Il reste à exprimer l’incertitude sur ce résultat. L’étude interlaboratoire en fournit une estimation.</>,
+      tache: { type: 'qcm', q: 'Quel écart-type prendre comme incertitude-type ?', options: ['s_R : il contient la dispersion entre laboratoires, donc l’effet laboratoire que s_r seul ignore', 's_r : c’est la dispersion de mes propres essais', 's_L : c’est l’effet laboratoire seul'], bonne: 0,
+        expl: `C’est un majorant prudent : pour la moyenne de 2 essais, la variance vaut s_L² + s_r²/2, soit un écart-type d’environ ${fmt(Math.sqrt(SRG.sL ** 2 + SRG.sr ** 2 / 2), 3)} mmol/L, un peu moins que s_R.` } },
+    { id: 'U', titre: 'L’incertitude élargie', focus: [],
+      texte: <>On prend u = s<sub>R</sub> = {fmt(SRG.sR, 3)} mmol/L, et on l’élargit avec un facteur k = 2 (environ 95 % de confiance, sous l’hypothèse d’une loi normale) : U = k × u.</>,
+      tache: { type: 'num', q: 'Incertitude élargie U', unite: 'mmol/L', vrai: 2 * SRG.sR, tol: 0.02, affiche: x => fmt(x, 3),
+        pieges: [[SRG.sR, 'C’est l’incertitude-type u ; il faut multiplier par k = 2.'], [2 * SRG.sr, 'Vous avez pris s_r : il faut s_R, qui contient l’effet laboratoire.']] } },
+    { id: 'ecriture', titre: 'Écrire le résultat', focus: [],
+      texte: <>Règle d’écriture : on donne U avec 2 chiffres significatifs au plus (arrondi par excès), et le résultat avec le même nombre de décimales. On précise k et l’unité.</>,
+      tache: { type: 'qcm', q: 'Quelle écriture est correcte ?', options: [`${ECR_G.m} ± ${ECR_G.U} mmol/L (k = 2)`, '10,275 ± 0,1700 mmol/L (k = 2)', `${ECR_G.m} ± ${fmt(2 * SRG.sr, 3)} mmol/L (k = 2)`], bonne: 0,
+        expl: 'La deuxième écriture annonce des chiffres que l’incertitude ne permet pas de garantir ; la troisième utilise s_r à la place de s_R.' } },
+    { id: 'usage', titre: 'Cette incertitude vaut pour qui ?', focus: ['hypo'],
+      texte: <>On a attribué à votre laboratoire une incertitude calculée sur d’autres laboratoires.</>,
+      tache: { type: 'qcm', q: 'Que suppose-t-on pour le faire ?', options: ['Que votre laboratoire est représentatif de ceux de l’étude : même méthode appliquée de la même façon, échantillon de même nature et de teneur voisine, biais du même ordre', 'Que votre laboratoire est le meilleur de l’étude', 'Rien : s_R est une constante de la méthode, valable partout'], bonne: 0 } },
+    { id: 'incompat', titre: 'Et si les essais ne sont pas compatibles ?', focus: [],
+      texte: <>Supposons que les deux essais aient donné 10,31 et 10,05 mmol/L : l’écart (0,26) dépasse r.</>,
+      tache: { type: 'qcm', q: 'Que faire ?', options: ['Ne pas moyenner : chercher la cause de l’écart et refaire des essais', 'Moyenner quand même, l’écart est faible', 'Garder le résultat le plus proche de la valeur attendue'], bonne: 0,
+        expl: 'Un écart supérieur à r survient par hasard environ 5 fois sur 100 : la norme (ISO 5725-6) demande des essais supplémentaires avant de conclure.' } },
     { id: 'limites', titre: 'Ce que l’étude ne dit pas', focus: ['hypo'],
       texte: <>Les 7 moyennes tournent autour de {fmt(f.ybar, 3)} mmol/L, pour une valeur de référence de 10,00 mmol/L.</>,
       tache: { type: 'qcm', q: 'Cette étude prouve-t-elle que la méthode est juste ?', options: ['Non : elle mesure la fidélité (la dispersion). La justesse demande de comparer à une valeur de référence, avec son incertitude', 'Oui, car s_R est petit', 'Oui, car on a écarté le laboratoire 3'], bonne: 0 } },
@@ -1256,6 +1317,13 @@ function ParcoursInterlabo({ changerMode }) {
           <TableauEssais data={DG} unite={UNITE_G} stats={vu('apercu')} ecartes={ecartes} isoles={isoles} focus={hl('donnees')}/>
         </div>
         {vu('apercu') && <NuagePoints data={DG} ecartes={ecartes} isoles={isoles} moyennes cible={REF_G} unite={UNITE_G} surligne={hl('graphe')}/>}
+        {vu('apercu') && <GaussiennesSVG data={DG} ecartes={ecartes} isoles={isoles} cible={REF_G} unite={UNITE_G} surligne={hl('graphe')}/>}
+        {vu('resultatEtude') && <div style={{ ...styleBoite, ...(hl('mesurage') ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3 } : {}) }}>
+          <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
+            <strong>Résultats de l’étude (7 laboratoires conservés) :</strong> s<sub>r</sub> = {fmt(SRG.sr, 3)} ; s<sub>L</sub> = {fmt(SRG.sL, 3)} ; s<sub>R</sub> = {fmt(SRG.sR, 3)} mmol/L.
+            {vu('limiteR') && <div><strong>Votre laboratoire :</strong> y<sub>1</sub> = {fmt(Y_G[0], 2)} mmol/L ; y<sub>2</sub> = {fmt(Y_G[1], 2)} mmol/L (conditions de répétabilité).</div>}
+          </div>
+        </div>}
         {(vu('cochranT')) && <TablesCritiques pMin={5} pMax={10} nMin={2} nMax={6} surligne={hl('tables')}/>}
         <HypothesesInterlabo defaut={hl('hypo')} focus={hl('hypo')} key={hl('hypo') ? 'h1' : 'h0'}/>
       </div>
@@ -1285,7 +1353,12 @@ function nouvelleCampagne() {
     const c1 = proc.journal.find(j => j.test === 'C'), g1 = proc.journal.find(j => j.test === 'G');
     if (ab < 1 || ab > 2 || ab > 2 * p / 9 || !c1 || !g1) continue;
     if (!c1.crit || !g1.crit) continue;
-    return { data, p, n, cible, k: Math.floor(Math.random() * p), reps: {}, choix: {}, verifie: false };
+    // Deux essais d'un laboratoire qui applique la méthode (compatibles dans 70 % des cas)
+    const srD = parseFloat(proc.res.sr.toFixed(3)), sRD = parseFloat(proc.res.sR.toFixed(3)), r = 2.8 * srD;
+    const y1 = parseFloat((proc.res.ybar + gauss() * sRD * 0.4).toFixed(2));
+    const ecart = r * (Math.random() < 0.7 ? alea(0.3, 0.8) : alea(1.3, 1.8)), signe = Math.random() < 0.5 ? -1 : 1;
+    const y2 = parseFloat((y1 + signe * ecart).toFixed(2));
+    return { data, p, n, cible, k: Math.floor(Math.random() * p), y: [y1, y2], srD, sRD, ordre: Math.floor(Math.random() * 3), reps: {}, choix: {}, verifie: false };
   }
   return null;
 }
@@ -1302,7 +1375,24 @@ function DefiInterlabo() {
     { id: 'vc', q: 'Au premier passage, le laboratoire le plus dispersé est…', choix: true, vrai: c1.verdict },
     { id: 'g', q: 'Statistique de Grubbs G (premier passage, une fois les laboratoires aberrants de Cochran écartés)', vrai: g1.val, tol: 0.015, aff: fmt(g1.val, 3) },
     { id: 'vg', q: 'Au premier passage, la moyenne la plus éloignée est…', choix: true, vrai: g1.verdict },
-    { id: 'sR', q: 'Écart-type de reproductibilité s_R (laboratoires aberrants écartés, laboratoires isolés conservés)', vrai: proc.res.sR, tol: 0.03, aff: fmt(proc.res.sR, 3) },
+    ...(() => {
+      const { y, srD, sRD } = defi, r = 2.8 * srD, ec = Math.abs(y[0] - y[1]), ok = ec <= r + 1e-9, mm = (y[0] + y[1]) / 2, U = 2 * sRD;
+      const E = ecritureResultat(mm, U), Ebad1 = ecritureResultat(mm, 2 * srD);
+      const bonne = `${E.m} ± ${E.U} mmol/L (k = 2)`;
+      const mal = [`${Ebad1.m} ± ${Ebad1.U} mmol/L (k = 2)`, `${mm.toFixed(E.d + 2).replace('.', ',')} ± ${(U).toFixed(E.d + 2).replace('.', ',')} mmol/L (k = 2)`];
+      const opts = defi.ordre === 1 ? [mal[0], bonne, mal[1]] : defi.ordre === 2 ? [mal[1], mal[0], bonne] : [bonne, mal[0], mal[1]];
+      return [
+        { id: 'r', q: 'Limite de répétabilité r = 2,8 × s_r', vrai: r, tol: 0.03, aff: fmt(r, 3), u: 'mmol/L' },
+        { id: 'cp', q: `Les deux essais (${fmt(y[0], 2)} et ${fmt(y[1], 2)} mmol/L) sont-ils compatibles ?`, choix: ['Oui', 'Non'], vrai: ok ? 0 : 1 },
+        ...(ok ? [
+          { id: 'mm', q: 'Résultat du mesurage : moyenne des deux essais', vrai: mm, tol: 0.0007, aff: fmt(mm, 2), u: 'mmol/L' },
+          { id: 'U', q: 'Incertitude élargie U = 2 × s_R', vrai: U, tol: 0.02, aff: fmt(U, 3), u: 'mmol/L' },
+          { id: 'ec', q: 'Quelle écriture du résultat est correcte ?', choix: opts, vrai: opts.indexOf(bonne) },
+        ] : [
+          { id: 'que', q: 'Que faire ?', choix: ['Moyenner quand même', 'Ne pas moyenner : chercher la cause de l’écart et refaire des essais', 'Garder le plus proche de la valeur de référence'], vrai: 1 },
+        ]),
+      ];
+    })(),
   ];
   const juste = q => q.choix ? defi.choix[q.id] === q.vrai : proche(lireNombre(defi.reps[q.id] || ''), q.vrai, q.tol);
   const ecartes = proc.journal.filter(j => j.verdict === 'aberrant').map(j => j.lab);
@@ -1312,11 +1402,16 @@ function DefiInterlabo() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }}>
         <div style={styleBoite}>
           <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, marginBottom: 8 }}>
-            Une étude interlaboratoire : {p} laboratoires, {n} essais chacun, résultats en mmol/L. Appliquez la procédure de la norme : Cochran (répété si un laboratoire est aberrant), puis Grubbs (idem), puis la fidélité.
+            Une étude interlaboratoire : {p} laboratoires, {n} essais chacun, résultats en mmol/L. Appliquez la procédure de la norme : Cochran (répété si un laboratoire est aberrant), puis Grubbs (idem).
+          </div>
+          <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.55, marginBottom: 8, background: 'white', border: `1px solid ${KIT.bord}`, borderRadius: 6, padding: '6px 8px' }}>
+            <strong>Résultats de l’étude</strong> (calculés par la norme, une fois les laboratoires aberrants écartés) : s<sub>r</sub> = {fmt(defi.srD, 3)} mmol/L ; s<sub>R</sub> = {fmt(defi.sRD, 3)} mmol/L.<br/>
+            <strong>Votre laboratoire</strong> applique la méthode à un échantillon de teneur voisine : deux essais, en conditions de répétabilité, donnent {fmt(defi.y[0], 2)} et {fmt(defi.y[1], 2)} mmol/L.
           </div>
           <TableauEssais data={data} unite="mmol/L" stats={false}/>
         </div>
         <NuagePoints data={data} unite="mmol/L"/>
+        <GaussiennesSVG data={data} unite="mmol/L"/>
         <TablesCritiques pMin={5} pMax={12} nMin={2} nMax={6}/>
       </div>
       <div style={{ ...styleBoite, display: 'flex', flexDirection: 'column', gap: 10, alignSelf: 'start' }}>
@@ -1328,8 +1423,8 @@ function DefiInterlabo() {
               <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{i + 1}. {avecIndices(q.q)}</div>
               {q.choix ? (
                 <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-                  {Object.entries(NOM_VERDICT).map(([cle, nom]) => <button key={cle} onClick={() => setDefi(d => ({ ...d, verifie: false, choix: { ...d.choix, [q.id]: cle } }))}
-                    style={{ ...styleBouton(defi.choix[q.id] === cle, '#0ea5e9'), padding: '4px 9px', fontSize: 13 }}>{nom}</button>)}
+                  {(Array.isArray(q.choix) ? q.choix.map((c, k) => [k, c]) : Object.entries(NOM_VERDICT)).map(([cle, nom]) => <button key={cle} onClick={() => setDefi(d => ({ ...d, verifie: false, choix: { ...d.choix, [q.id]: cle } }))}
+                    style={{ ...styleBouton(defi.choix[q.id] === cle, '#0ea5e9'), padding: '4px 9px', fontSize: 13, textAlign: 'left' }}>{nom}</button>)}
                   {defi.verifie && <span>{ok ? '✅' : '❌'}</span>}
                 </div>
               ) : (
@@ -1340,7 +1435,7 @@ function DefiInterlabo() {
                   {defi.verifie && <span>{ok ? '✅' : '❌'}</span>}
                 </div>
               )}
-              {defi.verifie && !ok && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 3 }}>Réponse attendue : {q.choix ? NOM_VERDICT[q.vrai] : q.aff}</div>}
+              {defi.verifie && !ok && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 3 }}>Réponse attendue : {q.choix ? (Array.isArray(q.choix) ? q.choix[q.vrai] : NOM_VERDICT[q.vrai]) : q.aff}</div>}
             </div>
           );
         })}
@@ -1352,7 +1447,7 @@ function DefiInterlabo() {
           <div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.5, background: 'white', border: `1px solid ${KIT.bord}`, borderRadius: 6, padding: '6px 8px' }}>
             <strong>Bilan.</strong>
             <ul style={{ margin: '4px 0', paddingLeft: 18 }}>{proc.journal.map((j, i) => <li key={i}>{phrase(j)}</li>)}</ul>
-            Laboratoires écartés : {ecartes.length ? ecartes.map(i => i + 1).join(', ') : 'aucun'}. Résultat : s<sub>r</sub> = {fmt(proc.res.sr, 3)} ; s<sub>L</sub> = {fmt(proc.res.sL, 3)} ; s<sub>R</sub> = {fmt(proc.res.sR, 3)} mmol/L.
+            Laboratoires écartés : {ecartes.length ? ecartes.map(i => i + 1).join(', ') : 'aucun'}. Fidélité : s<sub>r</sub> = {fmt(proc.res.sr, 3)} ; s<sub>L</sub> = {fmt(proc.res.sL, 3)} ; s<sub>R</sub> = {fmt(proc.res.sR, 3)} mmol/L.
           </div>
         )}
         <HypothesesInterlabo defaut={false}/>

@@ -2,29 +2,26 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { TabBtn, cardStyle } from "../commun";
 
 export function SchemaElectro({ mode, x }) {
-  const undef = x <= 0.02 || Math.abs(x - 1) <= 0.02;
-  const apresEq = x > 1.02;
+  // Le modèle est maintenant continu : seuls l'instant exact de l'équivalence et l'absence de Fe³⁺ restent « mal définis »
+  const undef = x <= 0.001 || Math.abs(x - 1) <= 0.001;
+  const apresEq = x > 1.001;
+  const fx = v => v.toFixed(Math.abs(v - 1) < 0.01 ? 4 : 2);
 
-  const couleurSolution = x < 0.98 ? "#a8d8ff" : x < 1.02 ? "#e6f0ff" : "#fff0c0";
+  const couleurSolution = x < 0.999 ? "#a8d8ff" : x < 1.001 ? "#e6f0ff" : "#fff0c0";
 
-  const nernstFer = () => {
-    const cFe3 = x * 1, cFe2 = (1 - x) * 1;
-    return (0.68 + 0.06 * Math.log10(cFe3 / cFe2)).toFixed(3);
-  };
-  const nernstCer = () => {
-    const cCe4 = (x - 1) * 1, cCe3 = 1;
-    return (1.44 + 0.06 * Math.log10(cCe4 / cCe3)).toFixed(3);
-  };
+  // Potentiel d'équilibre exact (le même que celui du graphique i = f(E))
+  const Eexact = () => { const q = concEquilibre(x); return q.E === null ? "—" : q.E.toFixed(3); };
+  const nernstFer = Eexact, nernstCer = Eexact;
 
   const labelPotentiel = () => {
     if (undef) return { ligne1: "⚠ Potentiel E mal défini !", ligne2: "" };
     if (!apresEq) return {
       ligne1: "E°(Fe³⁺/Fe²⁺) + 0,06·log([Fe³⁺]/[Fe²⁺])",
-      ligne2: `E = ${nernstFer()} V`
+      ligne2: `E = ${nernstFer()} V/ESH`
     };
     return {
       ligne1: "E°(Ce⁴⁺/Ce³⁺) + 0,06·log([Ce⁴⁺]/[Ce³⁺])",
-      ligne2: `E = ${nernstCer()} V`
+      ligne2: `E = ${nernstCer()} V/ESH`
     };
   };
 
@@ -53,9 +50,9 @@ export function SchemaElectro({ mode, x }) {
 
         {/* Contenu bécher */}
         <text x="160" y="205" textAnchor="middle" fontSize="15" fill="#334" fontWeight="bold">
-          {x <= 0.02 ? "Fe²⁺" : x < 0.98 ? "Fe²⁺ + Fe³⁺" : x < 1.02 ? "Fe³⁺ + Ce³⁺" : "Fe³⁺ + Ce³⁺ + Ce⁴⁺"}
+          {x <= 0.001 ? "Fe²⁺" : x < 0.999 ? "Fe²⁺ + Fe³⁺" : x < 1.001 ? "Fe³⁺ + Ce³⁺" : "Fe³⁺ + Ce³⁺ + Ce⁴⁺"}
         </text>
-        <text x="160" y="223" textAnchor="middle" fontSize="13" fill="#555">{`x = ${x.toFixed(2)}`}</text>
+        <text x="160" y="223" textAnchor="middle" fontSize="13" fill="#555">{`x = ${fx(x)}`}</text>
 
         {/* Potentiel de Nernst sous le bécher */}
         <text x="160" y="295" textAnchor="middle" fontSize="12"
@@ -145,9 +142,9 @@ export function SchemaElectro({ mode, x }) {
 
         {/* Contenu bécher */}
         <text x="159" y="248" textAnchor="middle" fontSize="15" fill="#334" fontWeight="bold">
-          {x <= 0.02 ? "Fe²⁺" : x < 0.98 ? "Fe²⁺ + Fe³⁺" : x < 1.02 ? "Fe³⁺ + Ce³⁺" : "Fe³⁺ + Ce³⁺ + Ce⁴⁺"}
+          {x <= 0.001 ? "Fe²⁺" : x < 0.999 ? "Fe²⁺ + Fe³⁺" : x < 1.001 ? "Fe³⁺ + Ce³⁺" : "Fe³⁺ + Ce³⁺ + Ce⁴⁺"}
         </text>
-        <text x="159" y="266" textAnchor="middle" fontSize="13" fill="#555">{`x = ${x.toFixed(2)}`}</text>
+        <text x="159" y="266" textAnchor="middle" fontSize="13" fill="#555">{`x = ${fx(x)}`}</text>
 
         {/* ── Voltmètre ΔE centré entre EI1 et EI2 ── */}
         <circle cx="159" cy="130" r="24" fill="white" stroke="#333" strokeWidth="2"/>
@@ -237,9 +234,9 @@ export function SchemaElectro({ mode, x }) {
 
         {/* Contenu bécher */}
         <text x="159" y="248" textAnchor="middle" fontSize="15" fill="#334" fontWeight="bold">
-          {x <= 0.02 ? "Fe²⁺" : x < 0.98 ? "Fe²⁺ + Fe³⁺" : x < 1.02 ? "Fe³⁺ + Ce³⁺" : "Fe³⁺ + Ce³⁺ + Ce⁴⁺"}
+          {x <= 0.001 ? "Fe²⁺" : x < 0.999 ? "Fe²⁺ + Fe³⁺" : x < 1.001 ? "Fe³⁺ + Ce³⁺" : "Fe³⁺ + Ce³⁺ + Ce⁴⁺"}
         </text>
-        <text x="159" y="266" textAnchor="middle" fontSize="13" fill="#555">{`x = ${x.toFixed(2)}`}</text>
+        <text x="159" y="266" textAnchor="middle" fontSize="13" fill="#555">{`x = ${fx(x)}`}</text>
 
         {/* ── Réactions aux électrodes ── */}
         {/* EI1 anode (oxydation, rouge) */}
@@ -273,6 +270,28 @@ export function SchemaElectro({ mode, x }) {
 //  SIMULATION 3 — Titrages électrochimiques
 // ============================================================
 
+// Concentrations (en unités de c) des quatre espèces pour un avancement x quelconque.
+// Au lieu de poser à zéro les espèces « absentes » (ce qui rend le saut de potentiel à l'équivalence
+// impossible à représenter), on écrit l'équilibre rédox : Fe³⁺ + Ce³⁺ ⇌ Fe²⁺ + Ce⁴⁺.
+// Bilan d'électrons : (Fe³⁺ formé) = (Ce⁴⁺ consommé), soit  x = α(E) / β(E)
+//   α(E) : fraction de Fe en Fe³⁺ ;  β(E) : fraction de Ce en Ce³⁺ ;  fonction croissante de E → inversion par dichotomie.
+const FT = 8.314 * 298.15 / 96485;
+let _cacheConc = { x: null, v: null };
+function concEquilibre(x) {
+  if (_cacheConc.x === x) return _cacheConc.v;
+  let v;
+  if (x <= 0) v = { Fe2: 1, Fe3: 0, Ce3: 0, Ce4: 0, E: null };
+  else {
+    const alpha = E => 1 / (1 + Math.exp(-(E - 0.68) / FT)), beta = E => 1 / (1 + Math.exp((E - 1.44) / FT));
+    let lo = -0.6, hi = 2.1;
+    for (let k = 0; k < 90; k++) { const m = (lo + hi) / 2; if (alpha(m) / beta(m) < x) lo = m; else hi = m; }
+    const E = (lo + hi) / 2, a = alpha(E), b = beta(E);
+    v = { Fe2: 1 - a, Fe3: a, Ce3: b * x, Ce4: (1 - b) * x, E };
+  }
+  _cacheConc = { x, v };
+  return v;
+}
+
 export function Simulation3({ plotlyReady }) {
   const [x, setX] = useState(0.0);
   const [mode, setMode] = useState("pot0");
@@ -294,39 +313,29 @@ export function Simulation3({ plotlyReady }) {
   const ia_slvt = E => { const v=Math.exp(2*(E-1.23-0.5)/(R*T/F)); return ilim_slvt*v/(5000+v); };
   const ic_slvt = E => { const v=Math.exp(-2*E/(R*T/F)); return -ilim_slvt*v/(5000+v); };
 
-  const Fe_a = (E,xv) => xv<1 ? ia(E,1,1,0.68,(1-xv)*c) : 0;
-  const Fe_c = (E,xv) => xv<1 ? ic(E,1,1,0.68,xv*c)     : ic(E,1,1,0.68,c);
-  const Ce_a = (E,xv) => xv<1 ? ia(E,1,1,1.44,xv*c)     : ia(E,1,1,1.44,c);
-  const Ce_c = (E,xv) => xv>1 ? ic(E,1,1,1.44,(xv-1)*c) : 0;
+  const Fe_a = (E,xv) => ia(E,1,1,0.68,concEquilibre(xv).Fe2*c);
+  const Fe_c = (E,xv) => ic(E,1,1,0.68,concEquilibre(xv).Fe3*c);
+  const Ce_a = (E,xv) => ia(E,1,1,1.44,concEquilibre(xv).Ce3*c);
+  const Ce_c = (E,xv) => ic(E,1,1,1.44,concEquilibre(xv).Ce4*c);
 
   const signal = (E,xv) => Fe_a(E,xv)+Fe_c(E,xv)+Ce_a(E,xv)+Ce_c(E,xv)+ia_slvt(E)+ic_slvt(E);
 
+  // Le courant total i(E) est une fonction croissante de E : la racine de i(E) = cible est unique, trouvée par dichotomie.
   const findEforI = (xv, target) => {
-    const step=0.001;
-    for(let E=-0.2; E<=1.6; E+=step){
-      if((signal(E,xv)-target)*(signal(E+step,xv)-target)<0) return E;
-    }
-    return null;
+    let lo=-0.2, hi=1.8;
+    if((signal(lo,xv)-target)*(signal(hi,xv)-target)>0) return null;
+    for(let k=0;k<60;k++){ const mid=(lo+hi)/2; if(signal(mid,xv)-target<0) lo=mid; else hi=mid; }
+    return (lo+hi)/2;
   };
 
+  // Deux électrodes : i(Ea) + i(Ec) = 0 avec Ea − Ec = ΔE (la somme est croissante en Ec : racine unique)
   const findIforDeltaE = (xv, dE) => {
-    const step=0.001;
-    let best=null;
-    for(let Ec=-0.2; Ec<=1.6-dE; Ec+=step){
-      const f1=signal(Ec+dE,xv)+signal(Ec,xv);
-      const f2=signal(Ec+dE+step,xv)+signal(Ec+step,xv);
-      if(f1*f2<0){
-        let lo=Ec, hi=Ec+step;
-        for(let k=0;k<20;k++){
-          const mid=(lo+hi)/2;
-          if((signal(lo+dE,xv)+signal(lo,xv))*(signal(mid+dE,xv)+signal(mid,xv))<0) hi=mid; else lo=mid;
-        }
-        const Ec_f=(lo+hi)/2, Ea_f=Ec_f+dE;
-        const iVal=Math.abs(signal(Ea_f,xv));
-        if(best===null||iVal>best.ia) best={Ea:Ea_f,Ec:Ec_f,ia:iVal,ic:-iVal};
-      }
-    }
-    return best;
+    let lo=-0.2, hi=1.8-dE;
+    const g = Ec => signal(Ec+dE,xv)+signal(Ec,xv);
+    if(g(lo)*g(hi)>0) return null;
+    for(let k=0;k<60;k++){ const mid=(lo+hi)/2; if(g(mid)<0) lo=mid; else hi=mid; }
+    const Ec_f=(lo+hi)/2, Ea_f=Ec_f+dE, iVal=Math.abs(signal(Ea_f,xv));
+    return {Ea:Ea_f,Ec:Ec_f,ia:iVal,ic:-iVal};
   };
 
   const moyenne = (f, Emin, Emax, step=0.02) => {
@@ -336,8 +345,8 @@ export function Simulation3({ plotlyReady }) {
 
   const buildAnnotations = (xv) => {
     const anns=[], seuil=0.03;
-    const cFe2=xv<1?(1-xv)*c:0, cFe3=xv<1?xv*c:c;
-    const cCe3=xv<1?xv*c:c,   cCe4=xv>1?(xv-1)*c:0;
+    const q=concEquilibre(xv);
+    const cFe2=q.Fe2*c, cFe3=q.Fe3*c, cCe3=q.Ce3*c, cCe4=q.Ce4*c;
 
     const y_H2c=moyenne(E=>ic_slvt(E),-0.18,-0.10);
     if(Math.abs(y_H2c)>seuil) anns.push({E:-0.05,y:y_H2c/2,text:'H₂ ← H⁺',color:'#1a6eb5'});
@@ -413,7 +422,7 @@ export function Simulation3({ plotlyReady }) {
 
     if(plotIERef.current)
       window.Plotly.react(plotIERef.current, dataIE, {
-        xaxis:{title:'E (V)',range:[-0.2,1.8]},
+        xaxis:{title:'E (V/ESH)',range:[-0.2,1.8]},
         yaxis:{title:'i (u.a.)',range:[-1.5,1.5]},
         shapes, annotations,
         margin:{t:20,b:50,l:60,r:20},
@@ -422,7 +431,12 @@ export function Simulation3({ plotlyReady }) {
 
     // Courbe de suivi
     const Xfine=[], Yfine=[];
-    for(let xv=0; xv<=2; xv+=0.01){
+    // x de 0 à 2 par pas de 0,01, resserrés autour de l'équivalence (le saut de potentiel y est très raide)
+    const grille=new Set();
+    for(let k=0;k<=200;k++) grille.add(parseFloat((k*0.01).toFixed(6)));
+    for(let k=2;k<=6;k++){ const d=Math.pow(10,-k); [1-d,1+d,1-d*3,1+d*3].forEach(v=>grille.add(parseFloat(v.toFixed(8)))); }
+    grille.add(1);
+    for(const xv of [...grille].sort((a,b)=>a-b)){
       if(mode==="pot0"){
         const E=findEforI(xv,0); if(E!==null){Xfine.push(xv);Yfine.push(E);}
       } else if(mode==="courant"){
@@ -442,7 +456,7 @@ export function Simulation3({ plotlyReady }) {
     const dataRight=[{x:Xfine,y:Yfine,mode:'lines',line:{color:'steelblue'},showlegend:false}];
     if(yPoint!==null) dataRight.push({x:[x],y:[yPoint],mode:'markers',marker:{size:10,color:'black'},showlegend:false});
 
-    const yLabel = mode==="pot0"?'E (V)':mode==="courant"?'ΔE (V)':'i (u.a.)';
+    const yLabel = mode==="pot0"?'E (V/ESH)':mode==="courant"?'ΔE (V)':'i (u.a.)';
     if(plotRightRef.current)
       window.Plotly.react(plotRightRef.current, dataRight, {
         xaxis:{title:'x (avancement)'},
@@ -464,10 +478,13 @@ export function Simulation3({ plotlyReady }) {
           <span style={{fontWeight:600,color:"#445"}}>i = f(E) — dosage Fe²⁺ par Ce⁴⁺</span>
           <span style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:8}}>
             <span style={{fontSize:13}}>x =</span>
-            <input type="range" min="0" max="2" step="0.2" value={x}
+            <input type="range" min="0" max="2" step="0.001" value={x}
               onChange={e=>setX(parseFloat(e.target.value))}
               style={{width:180, accentColor:"#e9a824"}}/>
-            <strong style={{minWidth:36}}>{x.toFixed(2)}</strong>
+            <input type="number" min="0" max="2" step="0.0001" value={x}
+              aria-label="Avancement x"
+              onChange={e=>{ const v=parseFloat(e.target.value); if(isFinite(v)) setX(Math.min(2,Math.max(0,v))); }}
+              style={{width:84,padding:"3px 6px",borderRadius:4,border:"1px solid #ccc",fontSize:13,fontWeight:700}}/>
           </span>
           <button onClick={()=>setShowReactions(v=>!v)}
             style={{padding:"4px 10px", borderRadius:6, border:"1px solid #aaa",
@@ -478,6 +495,10 @@ export function Simulation3({ plotlyReady }) {
           </button>
         </div>
         <div ref={plotIERef} style={{height:300}}/>
+        <div style={{fontSize:12.5,color:"#334155",marginTop:4,lineHeight:1.5}}>
+          <strong>Axe E :</strong> potentiels exprimés par rapport à l’électrode standard à hydrogène (ESH), avec E°′(Fe³⁺/Fe²⁺) = 0,68 V/ESH et E°′(Ce⁴⁺/Ce³⁺) = 1,44 V/ESH (milieu acide sulfurique).
+          Avec une électrode de référence réelle, on lit E<sub>mesuré</sub> = E<sub>ESH</sub> − E<sub>réf</sub> : E<sub>réf</sub> ≈ +0,24 V/ESH pour l’ECS, ≈ +0,20 V/ESH pour Ag/AgCl saturée. Le courant i est en unités arbitraires (i &gt; 0 : oxydation à l’électrode ; i &lt; 0 : réduction).
+        </div>
       </div>
 
       {/* LIGNE 2 : suivi + schéma */}

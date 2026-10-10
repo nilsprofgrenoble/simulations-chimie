@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Field, TabBtn, cardStyle } from "../commun";
+import { Field, TabBtn, cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices } from "../commun";
 
 // ====================================================
 // SIM 13 — ÉTALON INTERNE / NORMALISATION INTERNE (BTS)
@@ -175,7 +175,10 @@ export function SectionEtalonInterne({plotlyReady}) {
 
   const CmEch = Array(n).fill(null).map((_,i) => {
     if(!airesEt[i]||!areEI_et||!airesEch[i]||!areEI_ech) return null;
-    return CmEt[i] * (areEI_et/airesEt[i]) * (airesEch[i]/areEI_ech);
+    // Si l'EI n'a pas la même concentration dans les deux solutions, on corrige (facteur 1 dans l'exemple)
+    const cEIet = isEx ? ex.etalon.CmEI : CmEI_calc_F3, cEIech = isEx ? ex.echantillon.CmEI : CmEI_calc_F5;
+    const corrEI = cEIet > 0 && cEIech > 0 ? cEIech / cEIet : 1;
+    return CmEt[i] * (areEI_et/airesEt[i]) * (airesEch[i]/areEI_ech) * corrEI;
   });
   const masseAnalyte = CmEch.map(cm => {
     if(cm===null) return null;
@@ -325,7 +328,7 @@ export function SectionEtalonInterne({plotlyReady}) {
       {/* Onglets */}
       <div style={{display:'flex',gap:6,marginBottom:14,flexWrap:'wrap'}}>
         {[['exemple','Exemple — hydrobenzoïne / benzoïne / benzile'],['manuel','Saisie manuelle']].map(([k,l])=>(
-          <TabBtn key={k} active={tab===k} onClick={()=>setTab(k)}>{l}</TabBtn>
+          <TabBtn key={k} active={tab===k} color="#6a4c93" onClick={()=>setTab(k)}>{l}</TabBtn>
         ))}
       </div>
 
@@ -724,7 +727,7 @@ export function SectionNormalisationInterne({plotlyReady}) {
       {/* Onglets */}
       <div style={{display:'flex',gap:6,marginBottom:14,flexWrap:'wrap'}}>
         {[['exemple','Exemple — éthanol / toluène / acétate de butyle (BTS 2018)'],['manuel','Saisie manuelle']].map(([k,l])=>(
-          <TabBtn key={k} active={tab===k} onClick={()=>setTab(k)}>{l}</TabBtn>
+          <TabBtn key={k} active={tab===k} color="#6a4c93" onClick={()=>setTab(k)}>{l}</TabBtn>
         ))}
       </div>
 
@@ -985,13 +988,10 @@ export function SectionNormalisationInterne({plotlyReady}) {
 // COMPOSANT PRINCIPAL
 // ============================================================
 
-export function SimulationEtalonnageInterne({ plotlyReady }) {
+function ExplorationEtalonnage({ plotlyReady }) {
   const [methode, setMethode] = useState('ei');
   return (
-    <div style={cardStyle}>
-      <h2 style={{marginTop:0,fontSize:18,color:'var(--color-text-primary)'}}>
-        Méthodes d'étalonnage interne — Niveau BTS
-      </h2>
+    <div>
       <div style={{display:'flex',gap:10,marginBottom:20,flexWrap:'wrap'}}>
         {[
           ['ei','📌 Étalon interne (EI)','Ajout d\'un composé étalon à concentration connue dans chaque solution','#2a9d8f','#e8f8f5','#1a7a6e'],
@@ -1010,9 +1010,375 @@ export function SimulationEtalonnageInterne({ plotlyReady }) {
         ))}
       </div>
       <hr style={{margin:'0 0 20px',borderColor:'var(--color-border-tertiary)'}}/>
+      <HypothesesEtalon methode={methode} defaut={false}/>
       {methode==='ei' && <SectionEtalonInterne plotlyReady={plotlyReady}/>}
       {methode==='ni' && <SectionNormalisationInterne plotlyReady={plotlyReady}/>}
     </div>
   );
 }
 
+
+
+// ════════════════════════════════════════════════════════════════
+//  HYPOTHÈSES DE TRAVAIL (communes à l'exploration, au parcours et au défi)
+// ════════════════════════════════════════════════════════════════
+function HypothesesEtalon({ methode, defaut = true, focus = false }) {
+  const [ouvert, setOuvert] = useState(defaut);
+  const li = (t, d) => <li style={{ marginBottom: 4 }}><strong>{t}</strong> {d}</li>;
+  const commun = <>
+    {li('La réponse du détecteur est proportionnelle à la quantité de composé injectée', '(l’aire d’un pic est proportionnelle à sa concentration) dans le domaine utilisé, pour chaque composé : la droite d’étalonnage passe par l’origine.')}
+    {li('Les pics sont résolus et bien intégrés :', 'une aire mal séparée ou mal intégrée fausse directement le rapport des aires.')}
+    {li('Les conditions d’analyse sont les mêmes', 'pour la solution étalon et pour la solution échantillon (même colonne, même programme, même détecteur), donc les coefficients de réponse ne changent pas d’une injection à l’autre.')}
+  </>;
+  return (
+    <div style={focus ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10, marginBottom: 8 } : { marginBottom: 8 }}>
+      <Section titre={`Hypothèses de travail : ${methode === 'ni' ? 'normalisation interne' : 'étalon interne'}`} ouvert={ouvert} onBascule={() => setOuvert(o => !o)}>
+        <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
+          {methode === 'ni' ? <>
+            {li('Tous les constituants de l’échantillon sont élués et détectés.', 'Les pourcentages sont calculés sur la somme des aires corrigées : ils valent toujours 100 %. Un constituant non détecté (eau avec un FID, par exemple) fausse tous les autres résultats, par excès.')}
+            {li('La composition de l’étalon est connue précisément', '(pourcentages massiques) : c’est elle qui donne les coefficients de réponse K.')}
+            {commun}
+            {li('Aucune information sur la masse injectée n’est nécessaire :', 'on travaille sur des rapports d’aires au sein d’un même chromatogramme. Le résultat est une composition (en %), pas une quantité.')}
+          </> : <>
+            {li('L’étalon interne (EI) n’est pas présent dans l’échantillon', 'et il est pur, stable, chimiquement inerte vis-à-vis de l’échantillon, avec un temps de rétention proche de ceux des analytes mais bien séparé.')}
+            {li('L’EI est introduit en même quantité et dans le même volume final', 'dans la solution étalon et dans la solution échantillon. Sinon, il faut corriger du rapport des concentrations en EI (le calcul proposé ici le fait).')}
+            {li('Les variations de volume injecté se compensent :', 'l’analyte et l’EI sont dans la même solution, donc leurs aires varient dans les mêmes proportions ; seul leur rapport est utilisé.')}
+            {li('Un étalonnage à un seul point suppose', 'que la concentration de l’échantillon est proche de celle de l’étalon. Sinon, on vérifie la linéarité avec plusieurs étalons.')}
+            {commun}
+            {li('Les incertitudes ne sont pas calculées ici :', 'pesées, prélèvements, répétabilité de l’intégration s’ajoutent, et peuvent suffire à expliquer, par exemple, une somme de masses un peu supérieure à la prise d’essai.')}
+          </>}
+        </ul>
+      </Section>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+//  CALCULS DES EXEMPLES (pour le parcours guidé)
+// ════════════════════════════════════════════════════════════════
+const PEI = (() => {
+  const E = EX_EI, ds = E.echantillon;
+  const df = ds.volPrelevement / ds.volFioleInjectee, V = ds.volFiole / 1000, m0 = ds.masseEch;
+  const r = E.analytes.map((_, i) => {
+    const ret = E.etalon.airesAnalytes[i] / E.etalon.aireEI, rech = ds.airesAnalytes[i] / ds.aireEI;
+    const C = E.etalon.CmAnalytes[i] * rech / ret, m = C * V / df;
+    return { ret, rech, C, m, pct: m / m0 * 100 };
+  });
+  return { r, df, V, m0, somme: r.reduce((a, x) => a + x.m, 0) };
+})();
+const PNI = (() => {
+  const E = EX_NI, K = E.composesEtalon.map((c, i) => (c.pctMasse / E.composesEtalon[0].pctMasse) * (E.composesEtalon[0].aire / c.aire));
+  const KA = K.map((k, i) => k * E.composesEch[i].aire), den = KA.reduce((a, b) => a + b, 0);
+  return { K, den, pct: KA.map(x => x / den * 100) };
+})();
+
+const tdG = { padding: '3px 8px', border: `1px solid ${KIT.bord}`, textAlign: 'center', fontSize: 13.5 };
+const thG = { ...tdG, background: '#f1f5f9', fontWeight: 700 };
+
+function TableauEI({ aires, cm }) {
+  const E = EX_EI;
+  return (
+    <div style={{ overflowX: 'auto' }}>
+      <table style={{ borderCollapse: 'collapse', minWidth: '100%' }}>
+        <thead><tr><th style={thG}>Composé</th>{cm && <th style={thG}>C<sub>m</sub> dans F3 (mg/L)</th>}{aires && <><th style={thG}>Aire, étalon (F3)</th><th style={thG}>Aire, échantillon (F5)</th></>}</tr></thead>
+        <tbody>
+          {E.analytes.map((a, i) => <tr key={i}>
+            <td style={{ ...tdG, color: a.couleur, fontWeight: 700 }}>{a.nom}</td>
+            {cm && <td style={tdG}>{fmt(E.etalon.CmAnalytes[i], 2)}</td>}
+            {aires && <><td style={tdG}>{fmt(E.etalon.airesAnalytes[i], 2)}</td><td style={tdG}>{fmt(E.echantillon.airesAnalytes[i], 1)}</td></>}
+          </tr>)}
+          <tr style={{ background: '#fffbe6' }}>
+            <td style={{ ...tdG, fontWeight: 700, color: '#b45309' }}>{E.eiNom} (EI)</td>
+            {cm && <td style={tdG}>{fmt(E.etalon.CmEI, 2)}</td>}
+            {aires && <><td style={tdG}>{fmt(E.etalon.aireEI, 2)}</td><td style={tdG}>{fmt(E.echantillon.aireEI, 1)}</td></>}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+}
+function TableauNI({ avecK }) {
+  const E = EX_NI;
+  return (
+    <div style={{ overflowX: 'auto' }}>
+      <table style={{ borderCollapse: 'collapse', minWidth: '100%' }}>
+        <thead><tr><th style={thG}>Composé</th><th style={thG}>% massique, étalon</th><th style={thG}>Aire, étalon</th><th style={thG}>Aire, échantillon</th>{avecK && <th style={thG}>K<sub>i/1</sub></th>}</tr></thead>
+        <tbody>{E.composesEtalon.map((c, i) => <tr key={i}>
+          <td style={{ ...tdG, color: c.couleur, fontWeight: 700 }}>{c.nom}{i === 0 ? ' (réf.)' : ''}</td>
+          <td style={tdG}>{fmt(c.pctMasse, 1)}</td><td style={tdG}>{c.aire.toLocaleString('fr-FR')}</td><td style={tdG}>{E.composesEch[i].aire.toLocaleString('fr-FR')}</td>
+          {avecK && <td style={tdG}>{i === 0 ? '1' : fmt(PNI.K[i], 4)}</td>}
+        </tr>)}</tbody>
+      </table>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+//  PARCOURS GUIDÉ : l'étalon interne, puis la normalisation interne
+// ════════════════════════════════════════════════════════════════
+function ParcoursEtalon({ plotlyReady, changerMode }) {
+  const [guide, setGuide] = useEtatPersistant('etalon-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const etape = guide.etape, E = EX_EI, r0 = PEI.r[0];
+  const ETAPES = [
+    { id: 'principe', titre: 'Pourquoi un étalon interne ?', focus: [],
+      texte: <>On veut doser trois composés (hydrobenzoïne, benzoïne, benzile) dans un solide de synthèse, par chromatographie. L’aire d’un pic dépend de la concentration, mais aussi du <strong>volume réellement injecté</strong>, qui varie un peu d’une injection à l’autre. L’<strong>étalon interne</strong> (EI), le paracétamol, est ajouté à chaque solution.</>,
+      tache: { type: 'qcm', q: 'Que permet l’EI ?', options: ['Compenser les variations de volume injecté : on utilise le rapport des aires analyte / EI', 'Augmenter la hauteur des pics', 'Éviter de préparer une solution étalon'], bonne: 0 } },
+    { id: 'choixEI', titre: 'Choisir l’étalon interne', focus: [],
+      texte: <>Le paracétamol a un temps de rétention proche de ceux des analytes, mais séparé de leurs pics.</>,
+      tache: { type: 'qcm', q: 'Lequel de ces composés ne pourrait pas servir d’EI ?', options: ['Un composé déjà présent dans l’échantillon à analyser', 'Un composé pur et stable', 'Un composé dont le pic est bien séparé des autres'], bonne: 0,
+        expl: 'Son aire contiendrait la contribution de l’échantillon : le rapport des aires n’aurait plus de sens.' } },
+    { id: 'hypotheses', titre: 'Sur quoi repose la méthode ?', focus: ['hypo'],
+      texte: <>Lisez l’encadré « Hypothèses de travail ». Ici, un seul étalon est préparé : la méthode suppose donc que la réponse est proportionnelle à la concentration.</>,
+      tache: { type: 'qcm', q: 'Pourquoi un seul point d’étalonnage suffit-il ?', options: ['On suppose la droite d’étalonnage linéaire et passant par l’origine, avec une concentration d’échantillon proche de celle de l’étalon', 'Parce que les erreurs se compensent toujours', 'Parce que l’EI est présent'], bonne: 0 } },
+    { id: 'cmEtalon', titre: 'La solution étalon (fiole 3)', focus: [],
+      texte: <>On dissout 102,0 mg d’hydrobenzoïne dans une fiole 1 de 20 mL. On prélève 40 µL de cette solution, que l’on introduit dans la fiole 3 de 20 mL, avec 40 µL de la solution d’EI (fiole 2), puis on complète au trait.</>,
+      tache: { type: 'num', q: 'Concentration massique C_m de l’hydrobenzoïne dans la fiole 3', unite: 'mg/L', vrai: E.etalon.CmAnalytes[0], tol: 0.002, affiche: x => fmt(x, 2),
+        aide: <>C<sub>m</sub> = (m / V<sub>F1</sub>) × V<sub>prélevé</sub> / V<sub>F3</sub>, avec les volumes dans la même unité</>,
+        pieges: [[102 / 20, 'Il manque la dilution de la fiole 1 vers la fiole 3 (prélèvement de 40 µL dans 20 mL).']] } },
+    { id: 'cmEI', titre: 'L’EI dans les deux solutions', focus: [],
+      texte: <>La solution échantillon (fiole 5) est préparée de la même façon : 40 µL de la solution du solide (fiole 4) et 40 µL de la <strong>même</strong> solution d’EI (fiole 2), dans une fiole de 20 mL. Dans la fiole 3 (étalon), l’EI est à {fmt(E.etalon.CmEI, 2)} mg/L.</>,
+      tache: { type: 'qcm', q: 'Dans la fiole 5, la concentration en EI est…', options: [`la même : ${fmt(E.etalon.CmEI, 2)} mg/L`, 'nulle, puisque l’EI est dans l’étalon', 'inconnue : elle dépend de l’échantillon'], bonne: 0,
+        expl: 'C’est ce qui permet de se servir de l’EI comme repère commun aux deux solutions.' } },
+    { id: 'rapportEt', titre: 'Les chromatogrammes', focus: ['tableau'],
+      texte: <>Les aires des pics sont maintenant dans le tableau, pour la solution étalon et pour la solution échantillon. Pour chaque solution, on forme le <strong>rapport des aires</strong> A<sub>analyte</sub> / A<sub>EI</sub>. Commencez par l’étalon, pour l’hydrobenzoïne.</>,
+      tache: { type: 'num', q: 'Rapport A_hydrobenzoïne / A_EI dans la solution étalon', unite: '', vrai: r0.ret, tol: 0.004, affiche: x => fmt(x, 4) } },
+    { id: 'rapportEch', titre: 'Dans l’échantillon', focus: ['tableau'],
+      texte: <>Même calcul sur le chromatogramme de la solution échantillon.</>,
+      tache: { type: 'num', q: 'Rapport A_hydrobenzoïne / A_EI dans la solution échantillon', unite: '', vrai: r0.rech, tol: 0.004, affiche: x => fmt(x, 4) } },
+    { id: 'cEch', titre: 'La concentration dans la solution injectée', focus: [],
+      texte: <>Comme l’EI est à la même concentration dans les deux solutions, le rapport des aires est proportionnel à C<sub>m</sub> de l’analyte : C<sub>éch</sub> / C<sub>ét</sub> = (A<sub>an</sub> / A<sub>EI</sub>)<sub>éch</sub> / (A<sub>an</sub> / A<sub>EI</sub>)<sub>ét</sub>.</>,
+      tache: { type: 'num', q: 'C_m de l’hydrobenzoïne dans la fiole 5', unite: 'mg/L', vrai: r0.C, tol: 0.004, affiche: x => fmt(x, 3),
+        pieges: [[E.etalon.CmAnalytes[0] * r0.ret / r0.rech, 'Les deux rapports sont inversés : le rapport de l’échantillon est au numérateur.'], [E.etalon.CmAnalytes[0] * r0.rech, 'Il faut aussi diviser par le rapport des aires de l’étalon.']] } },
+    { id: 'masse', titre: 'La masse dans la prise d’essai', focus: [],
+      texte: <>La fiole 5 est une dilution de la fiole 4 (101,7 mg de solide dans 20 mL) : on a prélevé 40 µL de la fiole 4 pour faire 20 mL, soit un facteur de dilution de 40 / 20 000 = 0,002. Remontez d’abord à la concentration dans la fiole 4, puis à la masse d’hydrobenzoïne dans les 20 mL.</>,
+      tache: { type: 'num', q: 'Masse d’hydrobenzoïne dans la prise d’essai', unite: 'mg', vrai: r0.m, tol: 0.004, affiche: x => fmt(x, 1),
+        pieges: [[r0.C * 0.020, 'Il manque le facteur de dilution : la fiole 4 est 500 fois plus concentrée que la fiole 5.']] } },
+    { id: 'pct', titre: 'Le pourcentage massique', focus: [],
+      texte: <>La prise d’essai du solide est de 101,7 mg.</>,
+      tache: { type: 'num', q: 'Pourcentage massique d’hydrobenzoïne dans le solide', unite: '%', vrai: r0.pct, tol: 0.004, affiche: x => fmt(x, 1) } },
+    { id: 'somme', titre: 'Une somme supérieure à 100 %', focus: [],
+      texte: <>Les mêmes calculs donnent {fmt(PEI.r[1].m, 2)} mg de benzoïne et {fmt(PEI.r[2].m, 2)} mg de benzile. Au total : {fmt(PEI.somme, 1)} mg d’analytes pour {fmt(PEI.m0, 1)} mg de solide, soit {fmt(PEI.somme / PEI.m0 * 100, 1)} %.</>,
+      tache: { type: 'qcm', q: 'Que peut-on dire de ce résultat ?', options: ['Il est physiquement impossible, mais cet écart de quelques % est de l’ordre des incertitudes (pesées, prélèvements de 40 µL, intégration des aires)', 'La méthode de l’étalon interne est fausse', 'Le solide contient plus que sa masse'], bonne: 0,
+        expl: 'Un écart de 4 % est plausible : prélever 40 µL à la micropipette a déjà une incertitude de l’ordre du pourcent. Cette méthode ne donne pas d’incertitude ici : il faudrait la calculer avant de conclure.' } },
+    { id: 'injection', titre: 'Et si le volume injecté change ?', focus: [],
+      texte: <>On réinjecte la solution échantillon en doublant le volume injecté, par exemple parce que l’échantillonneur automatique est déréglé.</>,
+      tache: { type: 'qcm', q: 'La masse d’hydrobenzoïne calculée sera…', options: ['inchangée : les aires de l’analyte et de l’EI doublent toutes les deux, et leur rapport ne change pas', 'doublée', 'divisée par deux'], bonne: 0 } },
+    { id: 'quantiteEI', titre: 'Et si l’EI n’est pas en même quantité ?', focus: ['hypo'],
+      texte: <>Une erreur de préparation introduit dans la fiole 5 <strong>deux fois plus</strong> d’EI que dans la fiole 3. On applique pourtant la formule de l’étape précédente, sans la corriger.</>,
+      tache: { type: 'qcm', q: 'La concentration en analyte trouvée sera…', options: ['sous-estimée d’un facteur 2', 'correcte, car l’EI compense tout', 'surestimée d’un facteur 2'], bonne: 0,
+        expl: 'L’aire de l’EI double dans l’échantillon, donc le rapport A_analyte / A_EI est divisé par 2. La formule suppose la même concentration en EI ; sinon, il faut multiplier par C_EI,éch / C_EI,ét (ce que fait l’exploration libre).' } },
+    // ── normalisation interne ──
+    { id: 'niPrincipe', titre: 'La normalisation interne', focus: [],
+      texte: <>Autre cas : un mélange éthanol / toluène / acétate de butyle, analysé par CPG. Ici, on n’ajoute rien : on veut la <strong>composition massique</strong> de l’échantillon. On dispose d’un étalon de composition connue, passé dans les mêmes conditions.</>,
+      tache: { type: 'qcm', q: 'Dans quel cas la normalisation interne convient-elle ?', options: ['Tous les constituants de l’échantillon sont élués et détectés, et l’on veut leur pourcentage massique', 'On veut doser un seul constituant, présent à l’état de traces', 'On ne connaît la composition d’aucun étalon'], bonne: 0 } },
+    { id: 'niHypo', titre: 'Une hypothèse forte', focus: ['hypo'],
+      texte: <>Les pourcentages sont calculés à partir de la somme des aires corrigées : par construction, leur somme vaut 100 %.</>,
+      tache: { type: 'qcm', q: 'L’échantillon contient aussi de l’eau, non détectée par le détecteur. Les pourcentages calculés par NI seront…', options: ['surestimés, car on les rapporte à un total qui ne contient pas l’eau', 'sous-estimés', 'corrects : l’eau ne gêne pas'], bonne: 0 } },
+    { id: 'k2', titre: 'Le coefficient de réponse du toluène', focus: ['tableauNI'],
+      texte: <>On prend l’éthanol comme référence (1). Le coefficient de réponse relatif K<sub>i/1</sub> compare la masse et l’aire de chaque composé à celles de la référence : K<sub>i/1</sub> = (%<sub>i</sub> / %<sub>1</sub>) × (A<sub>1</sub> / A<sub>i</sub>), mesurés sur <strong>l’étalon</strong>.</>,
+      tache: { type: 'num', q: 'K du toluène par rapport à l’éthanol', unite: '', vrai: PNI.K[1], tol: 0.005, affiche: x => fmt(x, 4),
+        pieges: [[1 / PNI.K[1], 'Le rapport est inversé : A de la référence au numérateur.']] } },
+    { id: 'k3', titre: 'Le coefficient de l’acétate de butyle', focus: ['tableauNI'],
+      texte: <>Même calcul pour l’acétate de butyle.</>,
+      tache: { type: 'num', q: 'K de l’acétate de butyle par rapport à l’éthanol', unite: '', vrai: PNI.K[2], tol: 0.005, affiche: x => fmt(x, 4) } },
+    { id: 'denom', titre: 'Corriger les aires de l’échantillon', focus: ['tableauNI'],
+      texte: <>Dans l’échantillon, on corrige chaque aire par son coefficient : la quantité K<sub>i/1</sub> × A<sub>i</sub> est proportionnelle à la masse du composé i. Sommez ces trois quantités (la référence a K = 1).</>,
+      tache: { type: 'num', q: 'Σ K_i/1 × A_i, sur l’échantillon', unite: '', vrai: PNI.den, tol: 0.004, affiche: x => Math.round(x).toLocaleString('fr-FR') } },
+    { id: 'pctAc', titre: 'Le pourcentage d’acétate de butyle', focus: [],
+      texte: <>%<sub>i</sub> = K<sub>i/1</sub> × A<sub>i</sub> / Σ(K × A) × 100.</>,
+      tache: { type: 'num', q: 'Pourcentage massique d’acétate de butyle dans l’échantillon', unite: '%', vrai: PNI.pct[2], tol: 0.005, affiche: x => fmt(x, 1) } },
+    { id: 'pctEth', titre: 'Un pourcentage de plus', focus: [],
+      texte: <>Pour terminer, le pourcentage d’éthanol. Vérifiez que les trois pourcentages totalisent 100 %.</>,
+      tache: { type: 'num', q: 'Pourcentage massique d’éthanol dans l’échantillon', unite: '%', vrai: PNI.pct[0], tol: 0.005, affiche: x => fmt(x, 1) } },
+    { id: 'niInjection', titre: 'Pourquoi pas de masse injectée ?', focus: [],
+      texte: <>La normalisation interne ne demande ni la masse de l’échantillon, ni le volume injecté.</>,
+      tache: { type: 'qcm', q: 'Pourquoi ?', options: ['On n’utilise que des rapports d’aires au sein d’un même chromatogramme : l’injection se simplifie, mais on n’obtient qu’une composition, pas une quantité', 'Parce que ces grandeurs sont toujours égales à 1', 'Parce que le détecteur les mesure'], bonne: 0 } },
+    { id: 'bravo', titre: 'Bravo !', focus: [],
+      texte: <>Vous avez mené les deux méthodes en gardant en tête leurs conditions de validité : linéarité, pics bien résolus, même quantité d’EI, tous les constituants détectés. En exploration libre, saisissez vos propres résultats ; dans le défi, un jeu de données inconnu vous attend.</>, tache: null },
+  ];
+  const idx = id => ETAPES.findIndex(e => e.id === id);
+  const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
+  const vu = id => etape >= idx(id), passe = id => etape > idx(id);
+  const hl = id => et.focus.includes(id);
+  const partieNI = vu('niPrincipe');
+  const halo = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 8 } : {};
+  const fin = (
+    <span style={{ display: 'flex', gap: 6 }}>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+    </span>
+  );
+  const picsEt = [...E.analytes.map((a, i) => ({ nom: a.nom, tr: E.etalon.trAnalytes[i], aire: E.etalon.airesAnalytes[i], color: a.couleur })), { nom: E.eiNom, tr: E.etalon.trEI, aire: E.etalon.aireEI, color: '#888' }];
+  const picsEch = [...E.analytes.map((a, i) => ({ nom: a.nom, tr: E.echantillon.trAnalytes[i], aire: E.echantillon.airesAnalytes[i], color: a.couleur })), { nom: E.eiNom, tr: E.echantillon.trEI, aire: E.echantillon.aireEI, color: '#888' }];
+  return (
+    <div className="ei-l1">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }}>
+        {!partieNI ? <>
+          <div style={styleBoite}>
+            <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.55, marginBottom: 8 }}>
+              <strong>Mode opératoire.</strong> F1 : 102,0 mg d’hydrobenzoïne, 105,9 mg de benzoïne, 103,7 mg de benzile (chacun dans une fiole de 20 mL). F2 : 102,5 mg de paracétamol (EI) dans 20 mL.
+              F3 (étalon) : 40 µL de chaque fiole F1 et 40 µL de F2, complétés à 20 mL. F4 : 101,7 mg de solide dans 20 mL. F5 (échantillon) : 40 µL de F4 et 40 µL de F2, complétés à 20 mL.
+            </div>
+            <div style={halo('tableau')}><TableauEI aires={vu('rapportEt')} cm={passe('cmEtalon')}/></div>
+          </div>
+          {vu('rapportEt') && <div className="ei-l2" style={halo('tableau')}>
+            <div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 13, marginBottom: 2 }}>Chromatogramme de la fiole 3 (étalon)</div><ChromatoPlot plotlyReady={plotlyReady} pics={picsEt} title=""/></div>
+            <div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 13, marginBottom: 2 }}>Chromatogramme de la fiole 5 (échantillon)</div><ChromatoPlot plotlyReady={plotlyReady} pics={picsEch} title=""/></div>
+          </div>}
+        </> : (
+          <div style={styleBoite}>
+            <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.55, marginBottom: 8 }}>Mélange éthanol / toluène / acétate de butyle (CPG). Un étalon de composition massique connue et l’échantillon sont injectés dans les mêmes conditions.</div>
+            <div style={halo('tableauNI')}><TableauNI avecK={passe('k3')}/></div>
+          </div>
+        )}
+        <HypothesesEtalon methode={partieNI ? 'ni' : 'ei'} defaut={hl('hypo')} focus={hl('hypo')} key={`${partieNI}-${hl('hypo')}`}/>
+      </div>
+      <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={fin}/>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+//  DÉFI : données inconnues, étalon interne ou normalisation interne
+// ════════════════════════════════════════════════════════════════
+const alea = (a, b) => a + Math.random() * (b - a);
+const arr = (x, d) => parseFloat(x.toFixed(d));
+function campagneEI() {
+  const nom = ['Composé A', 'Composé B'], mF1 = [0, 1].map(() => arr(alea(85, 120), 1)), mEI = arr(alea(90, 115), 1), m0 = arr(alea(90, 115), 1);
+  const K = [alea(0.7, 1.5), alea(0.6, 1.4)], p = [alea(0.35, 0.6), alea(0.05, 0.2)];
+  const Cet = mF1.map(m => m * 40 / (20 * 20)), CEI = mEI * 40 / (20 * 20);
+  const aEIet = arr(alea(22, 36), 2), aEIech = arr(alea(40, 70), 2);
+  const aEt = Cet.map((c, i) => arr(K[i] * (c / CEI) * aEIet, 2));
+  const CF5 = p.map(x => x * m0 / 20 * 40 / 20000 * 1000 / 1);        // mg/L : (p·m0 mg / 20 mL) × dilution
+  const aEch = CF5.map((c, i) => arr(K[i] * (c / CEI) * aEIech * (1 + (Math.random() - 0.5) * 0.02), 1));
+  return { type: 'ei', nom, mF1, mEI, m0, Cet, CEI, aEt, aEIet, aEch, aEIech, reps: {}, choix: {}, verifie: false };
+}
+function campagneNI() {
+  const noms = pick3();
+  const p0 = arr(alea(25, 55), 1), p1 = arr(alea(15, 35), 1), pct = [p0, p1, arr(100 - p0 - p1, 1)];
+  const K = [1, alea(0.5, 1.8), alea(0.5, 1.8)], A1 = Math.round(alea(150000, 450000) / 1000) * 1000;
+  const aEt = pct.map((q, i) => i === 0 ? A1 : Math.round(q / pct[0] * A1 / K[i]));
+  const q = (() => { const a = [alea(15, 50), alea(15, 40), 0]; a[2] = 100 - a[0] - a[1]; return a; })(), s = alea(0.6, 1.6) * A1 / q[0];
+  const aEch = q.map((x, i) => Math.round(x / K[i] * s * (1 + (Math.random() - 0.5) * 0.02)));
+  return { type: 'ni', noms, pct, aEt, aEch, cible: Math.floor(Math.random() * 2) + 1, reps: {}, choix: {}, verifie: false };
+}
+function pick3() {
+  const jeux = [['Éthanol', 'Toluène', 'Acétate de butyle'], ['Hexane', 'Cyclohexane', 'Toluène'], ['Méthanol', 'Éthanol', 'Propan-2-ol'], ['Benzène', 'Xylène', 'Éthylbenzène']];
+  return jeux[Math.floor(Math.random() * jeux.length)];
+}
+function DefiEtalon() {
+  const [defi, setDefi] = useState(() => campagneEI());
+  const maj = f => setDefi(d => ({ ...d, verifie: false, ...f(d) }));
+  let Q = [], enonce = null;
+  if (defi.type === 'ei') {
+    const { Cet, CEI, aEt, aEIet, aEch, aEIech, m0 } = defi, df = 40 / 20000;
+    const ret = aEt[0] / aEIet, rech = aEch[0] / aEIech, C = Cet[0] * rech / ret, m = C * 0.020 / df;
+    Q = [
+      { id: 'cet', q: 'Concentration massique du composé A dans la fiole 3', vrai: Cet[0], tol: 0.003, aff: fmt(Cet[0], 2), u: 'mg/L' },
+      { id: 'ret', q: 'Rapport A_A / A_EI dans la solution étalon', vrai: ret, tol: 0.004, aff: fmt(ret, 4) },
+      { id: 'rech', q: 'Rapport A_A / A_EI dans la solution échantillon', vrai: rech, tol: 0.004, aff: fmt(rech, 4) },
+      { id: 'c', q: 'Concentration massique du composé A dans la fiole 5', vrai: C, tol: 0.005, aff: fmt(C, 3), u: 'mg/L' },
+      { id: 'm', q: 'Masse de composé A dans la prise d’essai', vrai: m, tol: 0.005, aff: fmt(m, 2), u: 'mg' },
+      { id: 'p', q: 'Pourcentage massique de composé A dans le solide', vrai: m / m0 * 100, tol: 0.005, aff: fmt(m / m0 * 100, 1), u: '%' },
+      { id: 'tw', q: 'On réinjecte l’échantillon avec un volume injecté 1,5 fois plus grand : la masse calculée sera…', choix: ['multipliée par 1,5', 'inchangée', 'divisée par 1,5'], vrai: 1 },
+    ];
+    enonce = <>
+      <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.55, marginBottom: 8 }}>
+        Dosage de deux composés (A et B) dans un solide, par étalon interne. F1 : {fmt(defi.mF1[0], 1)} mg de A et {fmt(defi.mF1[1], 1)} mg de B (chacun dans 20 mL). F2 : {fmt(defi.mEI, 1)} mg d’EI dans 20 mL.
+        F3 (étalon) : 40 µL de chaque fiole F1 et 40 µL de F2, complétés à 20 mL. F4 : {fmt(m0, 1)} mg de solide dans 20 mL. F5 (échantillon) : 40 µL de F4 et 40 µL de F2, complétés à 20 mL.
+      </div>
+      <table style={{ borderCollapse: 'collapse' }}>
+        <thead><tr><th style={thG}>Composé</th><th style={thG}>Aire, étalon (F3)</th><th style={thG}>Aire, échantillon (F5)</th></tr></thead>
+        <tbody>
+          {defi.nom.map((n, i) => <tr key={i}><td style={thG}>{n}</td><td style={tdG}>{fmt(aEt[i], 2)}</td><td style={tdG}>{fmt(aEch[i], 1)}</td></tr>)}
+          <tr style={{ background: '#fffbe6' }}><td style={thG}>EI</td><td style={tdG}>{fmt(aEIet, 2)}</td><td style={tdG}>{fmt(aEIech, 2)}</td></tr>
+        </tbody>
+      </table>
+    </>;
+  } else {
+    const { noms, pct, aEt, aEch, cible } = defi, K = pct.map((q, i) => (q / pct[0]) * (aEt[0] / aEt[i]));
+    const KA = K.map((k, i) => k * aEch[i]), den = KA.reduce((a, b) => a + b, 0), c = cible;
+    Q = [
+      { id: 'k2', q: `K de « ${noms[1]} » par rapport à « ${noms[0]} »`, vrai: K[1], tol: 0.005, aff: fmt(K[1], 4) },
+      { id: 'k3', q: `K de « ${noms[2]} » par rapport à « ${noms[0]} »`, vrai: K[2], tol: 0.005, aff: fmt(K[2], 4) },
+      { id: 'den', q: 'Σ K_i/1 × A_i, sur l’échantillon', vrai: den, tol: 0.004, aff: Math.round(den).toLocaleString('fr-FR') },
+      { id: 'pc', q: `Pourcentage massique de « ${noms[c]} » dans l’échantillon`, vrai: KA[c] / den * 100, tol: 0.005, aff: fmt(KA[c] / den * 100, 1), u: '%' },
+      { id: 'p0', q: `Pourcentage massique de « ${noms[0]} » dans l’échantillon`, vrai: KA[0] / den * 100, tol: 0.005, aff: fmt(KA[0] / den * 100, 1), u: '%' },
+      { id: 'tw', q: 'L’échantillon contient en plus un constituant non détecté. Les pourcentages calculés sont…', choix: ['sous-estimés', 'corrects', 'surestimés'], vrai: 2 },
+    ];
+    enonce = <>
+      <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.55, marginBottom: 8 }}>Analyse par normalisation interne d’un mélange de trois composés (référence : « {noms[0]} »). Étalon de composition massique connue et échantillon, passés dans les mêmes conditions.</div>
+      <table style={{ borderCollapse: 'collapse' }}>
+        <thead><tr><th style={thG}>Composé</th><th style={thG}>% massique, étalon</th><th style={thG}>Aire, étalon</th><th style={thG}>Aire, échantillon</th></tr></thead>
+        <tbody>{noms.map((n, i) => <tr key={i}><td style={thG}>{n}</td><td style={tdG}>{fmt(pct[i], 1)}</td><td style={tdG}>{aEt[i].toLocaleString('fr-FR')}</td><td style={tdG}>{aEch[i].toLocaleString('fr-FR')}</td></tr>)}</tbody>
+      </table>
+    </>;
+  }
+  const juste = q => q.choix ? defi.choix[q.id] === q.vrai : proche(lireNombre(defi.reps[q.id] || ''), q.vrai, q.tol);
+  return (
+    <div className="ei-l1">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }}>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <button onClick={() => setDefi(campagneEI())} style={styleBouton(defi.type === 'ei', '#2a9d8f')}>📌 Étalon interne</button>
+          <button onClick={() => setDefi(campagneNI())} style={styleBouton(defi.type === 'ni', '#6a4c93')}>🔄 Normalisation interne</button>
+        </div>
+        <div style={styleBoite}>{enonce}</div>
+        <HypothesesEtalon methode={defi.type} defaut={false} key={defi.type}/>
+      </div>
+      <div style={{ ...styleBoite, display: 'flex', flexDirection: 'column', gap: 10, alignSelf: 'start' }}>
+        <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt }}>Questions</div>
+        {Q.map((q, i) => {
+          const ok = defi.verifie && juste(q);
+          return (
+            <div key={q.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{i + 1}. {avecIndices(q.q)}</div>
+              {q.choix ? (
+                <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                  {q.choix.map((c, k) => <button key={k} onClick={() => maj(d => ({ choix: { ...d.choix, [q.id]: k } }))} style={{ ...styleBouton(defi.choix[q.id] === k, '#0ea5e9'), padding: '4px 9px', fontSize: 13 }}>{c}</button>)}
+                  {defi.verifie && <span>{ok ? '✅' : '❌'}</span>}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <input value={defi.reps[q.id] || ''} placeholder="?" aria-label={`Réponse ${i + 1}`} onChange={e => { const v = e.target.value; maj(d => ({ reps: { ...d.reps, [q.id]: v } })); }}
+                    style={{ fontSize: 14, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 110 }}/>
+                  <span style={{ fontSize: 14, color: KIT.txt2 }}>{q.u}</span>
+                  {defi.verifie && <span>{ok ? '✅' : '❌'}</span>}
+                </div>
+              )}
+              {defi.verifie && !ok && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 3 }}>Réponse attendue : {q.choix ? q.choix[q.vrai] : `${q.aff} ${q.u || ''}`}</div>}
+            </div>
+          );
+        })}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
+          <button onClick={() => setDefi(defi.type === 'ei' ? campagneEI() : campagneNI())} style={styleBouton(false)}>🔄 Nouvelles données</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+//  SIMULATION 13 : trois façons de travailler
+// ════════════════════════════════════════════════════════════════
+export function SimulationEtalonnageInterne({ plotlyReady }) {
+  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
+  useEffect(() => { if (mode === 'explore') { const t = setTimeout(() => window.dispatchEvent(new Event('resize')), 120); return () => clearTimeout(t); } }, [mode]);
+  return (
+    <div style={{ ...cardStyle, textAlign: 'left' }}>
+      <style>{`
+        .ei-l1 { display: grid; align-items: start; gap: 12px; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
+        .ei-l2 { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+        @media (max-width: 900px) { .ei-l1 { grid-template-columns: minmax(0, 1fr); } }
+      `}</style>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end', marginBottom: 10 }}>
+        <button onClick={() => setMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
+        <button onClick={() => setMode('explore')} style={styleBouton(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
+        <button onClick={() => setMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
+      </div>
+      <div style={{ display: mode === 'explore' ? 'block' : 'none' }}><ExplorationEtalonnage plotlyReady={plotlyReady}/></div>
+      {mode === 'guide' && <ParcoursEtalon plotlyReady={plotlyReady} changerMode={setMode}/>}
+      {mode === 'defi' && <DefiEtalon/>}
+    </div>
+  );
+}
