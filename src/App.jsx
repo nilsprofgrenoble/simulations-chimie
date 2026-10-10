@@ -18,6 +18,7 @@ import { SimulationCAN } from "./simulations/QuantumCAN";
 import { Simulation5 } from "./simulations/RegulationNiveau";
 import { Simulation2 } from "./simulations/TitrageDirect";
 import { SimulationTitrageIndirect } from "./simulations/TitrageIndirect";
+import { SimulationIEpH } from "./simulations/IEpH";
 import { Simulation3 } from "./simulations/TitragesElectrochimiques";
 import { SimulationStatiqueFluides } from "./simulations/StatiqueFluides";
 import { SimulationDebits } from "./simulations/DebitsFluides";
@@ -57,6 +58,8 @@ const SIMULATIONS = [
     component: SimulationDebits },
   { id:28, label:"Débit et vitesse d'écoulement", niveau:"TSTL", icon:"💦", color:"#0f766e",
     component: SimulationVitesseDebit },
+  { id:29, label:"Courbes i-E et diagramme E-pH", niveau:"BTS", icon:"🧊", color:"#e9a824",
+    component: SimulationIEpH },
 ];
 
 const NIVEAUX = [
@@ -369,7 +372,7 @@ export default function App() {
             const simsNiv = SIMULATIONS.filter(s => s.niveau === niv.key);
             const isExpanded = expanded[niv.key];
             const sousgroupes = niv.key === 'BTS' ? [
-              { label:'🔬 Analyse', ids:[3,9,11,12,13,16] },
+              { label:'🔬 Analyse', ids:[3,29,9,11,12,13,16] },
               { label:'🧪 Formulation', ids:[4,14] },
             ] : niv.key === 'TSTL' ? [
               { label:'📡 Transmission de signaux numériques', ids:[8,15] },
