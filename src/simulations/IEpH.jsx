@@ -10,10 +10,19 @@ const FT = 8.314 * 298.15 / 96485;      // RT/F à 25 °C
 const NERNST = FT * Math.LN10;          // 0,0592 V
 const E_MIN = -1.2, E_MAX = 2.4, I_CLIP = 1.5;
 const PH_FAISCEAU = [0, 2, 4, 6, 8, 10, 12, 14];
-const SURT_O2 = 0.5;                    // surtension d'oxydation de l'eau sur platine (V)
+const SURT_O2 = 0.8;                    // surtension d'oxydation de l'eau sur platine (V), qualitative
+const LARG = (1.23 + SURT_O2).toFixed(2).replace(".", ",");   // largeur du domaine d'inertie sur Pt (V)
+const SURT_TXT = SURT_O2.toFixed(1).replace(".", ",");
+// Électrodes de travail : surtensions qualitatives (ordres de grandeur, calés sur des relevés de TP à pH ≈ 0)
+const ELECTRODES = {
+  pt: { nom: "Platine", etaH2: 0, etaO2: SURT_O2, couleur: "#475569" },
+  c: { nom: "Graphite", etaH2: 0.4, etaO2: 0, couleur: "#1f2937" },
+};
 
 // Potentiel apparent (V/ESH) des deux couples en fonction du pH
-const E_H2 = pH => -NERNST * pH;                         // 2 H⁺ + 2 e⁻ = H₂   (p(H₂) = 1 bar)
+const E_H2 = pH => -NERNST * pH;
+const murBas = (pH, el = ELECTRODES.pt) => E_H2(pH) - el.etaH2;
+const murHaut = (pH, el = ELECTRODES.pt) => 1.23 - NERNST * pH + el.etaO2;                         // 2 H⁺ + 2 e⁻ = H₂   (p(H₂) = 1 bar)
 const E_O2 = pH => 1.23 - NERNST * pH;                   // O₂ + 4 H⁺ + 4 e⁻ = 2 H₂O  (thermodynamique)
 const FER_PH_MAX = 2;                                    // au-delà, Fe(III) précipite : modèle non valable
 const E_FE = () => 0.77;                                 // Fe³⁺ + e⁻ = Fe²⁺, indépendant du pH tant qu'aucune espèce ne précipite
@@ -24,16 +33,17 @@ const E_Q = pH => { const h = Math.pow(10, -pH), K1 = Math.pow(10, -PKA1), K2 = 
 
 const COUPLES = {
   aucun: { nom: "Aucun (solvant seul)", n: 0 },
-  fe: { nom: "Fe³⁺/Fe²⁺", n: 1, E: E_FE, phMax: FER_PH_MAX, couleur: "#c0392b" },
-  q: { nom: "Benzoquinone / hydroquinone", n: 2, E: E_Q, couleur: "#16a34a" },
+  fe: { nom: "Fe³⁺/Fe²⁺", n: 1, E: E_FE, phMax: FER_PH_MAX, couleur: "#c0392b", ox: "Fe³⁺", red: "Fe²⁺" },
+  q: { nom: "Benzoquinone / hydroquinone", n: 2, E: E_Q, couleur: "#16a34a", ox: "Q", red: "QH₂" },
 };
 
 // Courant total i(E, pH). Les deux formes du couple sont à la même concentration (palier = 1 u.a. de chaque côté).
-function courant(E, pH, couple) {
+function courant(E, pH, couple, elec = "pt") {
+  const el = ELECTRODES[elec];
   let i = 0;
-  const v = Math.exp(2 * (E - 1.23 - SURT_O2 + NERNST * pH) / FT);   // mur d'oxydation de l'eau
+  const v = Math.exp(2 * (E - 1.23 - el.etaO2 + NERNST * pH) / FT);  // mur d'oxydation de l'eau
   i += 100 * v / (5000 + v);
-  const w = Math.exp(-2 * (E - E_H2(pH)) / FT);                      // mur de réduction de l'eau
+  const w = Math.exp(-2 * (E - (E_H2(pH) - el.etaH2)) / FT);          // mur de réduction de l'eau
   i -= 100 * w / (5000 + w);
   const c = typeof couple === "string" ? COUPLES[couple] : couple;
   if (c && c.n > 0 && (c.phMax === undefined || pH <= c.phMax)) {
@@ -42,7 +52,17 @@ function courant(E, pH, couple) {
   }
   return i;
 }
-const clip = v => Math.max(-I_CLIP, Math.min(I_CLIP, v));
+// Au-delà de ± I_CLIP, la courbe est interrompue (pas de prolongement horizontal qui ressemblerait à un palier)
+// Grille de potentiels d'une courbe, de l'endroit où i = −I_CLIP à l'endroit où i = +I_CLIP (i(E) est croissante) :
+// les courbes et la surface s'arrêtent exactement au bord du cadre, sans plateau ni bord irrégulier.
+function grilleCourbe(pH, couple, elec, N = 300) {
+  const f = v => courant(v, pH, couple, elec);
+  const racine = (cible, a, b) => { for (let k = 0; k < 40; k++) { const m = (a + b) / 2; if (f(m) < cible) a = m; else b = m; } return (a + b) / 2; };
+  const lo = f(E_MIN) >= -I_CLIP ? E_MIN : racine(-I_CLIP, E_MIN, E_MAX);
+  const hi = f(E_MAX) <= I_CLIP ? E_MAX : racine(I_CLIP, E_MIN, E_MAX);
+  return Array.from({ length: N + 1 }, (_, k) => lo + (hi - lo) * k / N);
+}
+const clip = v => (Math.abs(v) > I_CLIP ? null : v);
 
 
 const nomCouple = c => c.nom;
@@ -55,10 +75,13 @@ function HypothesesIEpH({ defaut = false, focus = false }) {
         <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
           {li("Systèmes rapides, courants limites de diffusion :", "chaque couple donne une vague de Nernst centrée sur son potentiel, avec un palier proportionnel à la concentration (ici : les deux formes à la même concentration, paliers de ± 1 u.a.). Courant en unités arbitraires.")}
           {li("Les potentiels sont en V/ESH, à 25 °C ;", "activités assimilées aux concentrations, pas de chute ohmique.")}
-          {li("Solvant :", "les murs sont ceux de l’eau, H⁺/H₂ (E = −0,059·pH) et O₂/H₂O (E = 1,23 − 0,059·pH). L’oxydation de l’eau est en réalité lente sur platine : le mur observé est décalé d’environ 0,5 V (surtension choisie, qualitative). Le domaine d’inertie a donc une largeur de 1,73 V, quel que soit le pH.")}
+          {li("Solvant :", `les murs thermodynamiques sont ceux de l’eau, H⁺/H₂ (E = −0,059·pH) et O₂/H₂O (E = 1,23 − 0,059·pH). Sur platine, l’oxydation de l’eau est lente : le mur observé est décalé d’environ ${SURT_TXT} V (surtension choisie, qualitative). Le domaine d’inertie sur platine a donc une largeur de ${LARG} V, quel que soit le pH.`)}
+          {li("Montage à trois électrodes :", "le potentiel de l’électrode de travail est repéré par rapport à une électrode de référence ; le courant passe entre l’électrode de travail et une contre-électrode inerte, de grande surface, qui ne limite pas le courant. Dans ce cas, la courbe ne dépend que de l’électrode de travail.")}
+          {li("Choix de l’électrode de travail (exploration) :", "le platine est la référence. Le graphite a un mur de réduction plus négatif (surtension de H₂ plus grande, +0,4 V) et un mur d’oxydation plus bas (oxydation de l’eau et du carbone lui-même). Ces valeurs ont été calées sur des relevés de TP à pH ≈ 0 : ce sont des ordres de grandeur qualitatifs, qui dépendent du milieu, de l’état de surface et du courant choisi pour définir le « mur ».")}
+          {li("Les courbes réelles", "ne sont pas des exponentielles parfaites : la chute ohmique de la cellule les rend plus linéaires au-delà des murs.")}
           {li("Benzoquinone / hydroquinone :", "Q + 2 H⁺ + 2 e⁻ = QH₂, E° = 0,70 V/ESH ; pente −0,059 V par unité de pH, puis rupture de pente aux pKa de l’hydroquinone (9,9 et 11,6). Tracé thermodynamique : en milieu très basique, la benzoquinone n’est pas stable.")}
           {li("Fe³⁺/Fe²⁺ :", "E° = 0,77 V/ESH, sans H⁺ dans la demi-équation, donc indépendant du pH. Le modèle n’est valable que pour pH ≤ 2 : pour c = 0,01 mol/L et Ks(Fe(OH)₃) ≈ 10⁻³⁸, Fe(III) commence à précipiter vers pH 2 (Fe(II) ne précipiterait que vers pH 7–8 avec Ks(Fe(OH)₂) ≈ 10⁻¹⁵) : au-delà, Fe(III) et Fe(II) précipitent en hydroxydes, la concentration en solution chute et le diagramme E-pH réel est tout autre. La vague n’est donc pas tracée au-delà. (Dans la simulation « Titrages électrochimiques », E°′ = 0,68 V en milieu sulfurique : valeur apparente, à cause de la complexation.)")}
-          {li("La vue 3D est un outil de visualisation :", "les courbes sont écrêtées à ± 1,5 u.a. pour que les murs du solvant n’écrasent pas le reste.")}
+          {li("La vue 3D est un outil de visualisation :", "l’échelle de courant est limitée à ± 1,5 u.a. pour que les murs du solvant n’écrasent pas le reste : les courbes sont interrompues quand elles sortent du cadre (les murs sont en réalité beaucoup plus raides).")}
         </ul>
       </Section>
     </div>
@@ -67,8 +90,8 @@ function HypothesesIEpH({ defaut = false, focus = false }) {
 
 // ── Vue : réglages, 3D, coupe, diagramme E-pH ──
 export function VueIEpH({ plotlyReady, e, set, opts = {}, focus = [] }) {
-  const { pH, couple, vue3d } = e;
-  const o = { reglages: true, choixCouple: true, choixVue: true, g3d: true, coupe: true, diag: true, valeurs: true, couplesDispo: ["aucun", "fe", "q"], ...opts };
+  const { pH, couple, vue3d } = e, elec = e.elec || "pt", el = ELECTRODES[elec];
+  const o = { reglages: true, choixCouple: true, choixVue: true, g3d: true, coupe: true, diag: true, valeurs: true, choixElec: false, couplesDispo: ["aucun", "fe", "q"], ...opts };
   const ref3D = useRef(null), refCoupe = useRef(null), refDiag = useRef(null);
   const cp = typeof couple === "string" ? COUPLES[couple] : couple;
   const coupleActif = cp.n > 0 && (cp.phMax === undefined || pH <= cp.phMax);
@@ -81,20 +104,34 @@ export function VueIEpH({ plotlyReady, e, set, opts = {}, focus = [] }) {
     if (o.g3d && ref3D.current) {
       const traces = [];
       if (vue3d !== "faisceau") {
-        const Es = [], phs = [];
-        for (let v = E_MIN; v <= E_MAX + 1e-9; v += 0.04) Es.push(parseFloat(v.toFixed(3)));
-        for (let q = 0; q <= 14.001; q += 0.5) phs.push(q);
-        traces.push({ type: "surface", x: Es, y: phs, z: phs.map(q => Es.map(v => clip(courant(v, q, okAt(q) ? couple : "aucun")))),
-          surfacecolor: phs.map(q => Es.map(() => q)), colorscale: "Viridis", cmin: 0, cmax: 14, showscale: false, opacity: 0.88,
+        // Pour chaque pH, la surface est tracée seulement là où |i| ≤ 1,5 : la grille en E est propre à chaque ligne (pas de plateau, pas de trous)
+        const X = [], Y = [], Z = [], C = [];
+        for (let q = 0; q <= 14.001; q += 0.5) {
+          const cq = okAt(q) ? couple : "aucun", xs = grilleCourbe(q, cq, elec, 200);
+          X.push(xs); Y.push(xs.map(() => q)); Z.push(xs.map(v => Math.max(-I_CLIP, Math.min(I_CLIP, courant(v, q, cq, elec))))); C.push(xs.map(() => q));
+        }
+        traces.push({ type: "surface", x: X, y: Y, z: Z,
+          surfacecolor: C, colorscale: "Viridis", cmin: 0, cmax: 14, showscale: false, opacity: 0.88,
           contours: { z: { show: true, usecolormap: false, color: "#334155", width: 1, start: -1.5, end: 1.5, size: 0.5 } },
           hoverinfo: "skip", showlegend: false });
       }
       if (vue3d !== "surface") PH_FAISCEAU.forEach(q => {
-        traces.push({ type: "scatter3d", mode: "lines", x: Egrid, y: Egrid.map(() => q), z: Egrid.map(v => clip(courant(v, q, okAt(q) ? couple : "aucun"))),
+        const xs = grilleCourbe(q, okAt(q) ? couple : "aucun", elec);
+        traces.push({ type: "scatter3d", mode: "lines", x: xs, y: xs.map(() => q), z: xs.map(v => courant(v, q, okAt(q) ? couple : "aucun", elec)),
           line: { width: 4, color: `hsl(${Math.round(230 - q * 16)},65%,45%)` }, hoverinfo: "skip", showlegend: false });
       });
-      traces.push({ type: "scatter3d", mode: "lines", x: Egrid, y: Egrid.map(() => pH), z: Egrid.map(v => clip(courant(v, pH, couple))),
+      const xsel = grilleCourbe(pH, couple, elec);
+      traces.push({ type: "scatter3d", mode: "lines", x: xsel, y: xsel.map(() => pH), z: xsel.map(v => courant(v, pH, couple, elec)),
         line: { width: 8, color: "#e63946" }, showlegend: false, hovertemplate: "E = %{x:.2f} V/ESH<br>i = %{z:.2f} u.a.<extra></extra>" });
+      // noms des réactions, au pH choisi
+      const lab = (x, z, text, pos, color) => traces.push({ type: "scatter3d", mode: "text", x: [x], y: [pH], z: [z], text: [text], textposition: pos,
+        textfont: { size: 11, color }, hoverinfo: "skip", showlegend: false });
+      lab(murBas(pH, el), -1.25, "2 H⁺ + 2 e⁻ → H₂", "middle left", "#1a6eb5");
+      lab(murHaut(pH, el) - 0.08, 1.25, "2 H₂O → O₂ + 4 H⁺ + 4 e⁻", "middle left", "#c0392b");
+      if (coupleActif) {
+        lab(cp.E(pH), 0.7, `${cp.red} → ${cp.ox}`, "middle right", "#c0392b");
+        lab(cp.E(pH), -0.7, `${cp.ox} → ${cp.red}`, "middle left", "#1a6eb5");
+      }
       try {
         window.Plotly.react(ref3D.current, traces, {
           scene: { xaxis: { title: "E (V/ESH)", range: [E_MIN, E_MAX] }, yaxis: { title: "pH", range: [0, 14] }, zaxis: { title: "i (u.a.)", range: [-I_CLIP, I_CLIP] },
@@ -104,22 +141,23 @@ export function VueIEpH({ plotlyReady, e, set, opts = {}, focus = [] }) {
       } catch (err) { /* WebGL indisponible */ }
     }
     if (o.coupe && refCoupe.current) {
-      const Ez = Egrid.map(v => courant(v, pH, couple));
+      const xc = grilleCourbe(pH, couple, elec);
       window.Plotly.react(refCoupe.current, [
-        { x: Egrid, y: Ez.map(clip), mode: "lines", line: { color: "#e63946", width: 2.5 }, showlegend: false, hovertemplate: "E = %{x:.2f}<br>i = %{y:.2f}<extra></extra>" },
+        { x: xc, y: xc.map(v => courant(v, pH, couple, elec)), mode: "lines", line: { color: "#e63946", width: 2.5 }, showlegend: false, hovertemplate: "E = %{x:.2f}<br>i = %{y:.2f}<extra></extra>" },
       ], {
         xaxis: { title: "E (V/ESH)", range: [E_MIN, E_MAX], zeroline: false }, yaxis: { title: "i (u.a.)", range: [-I_CLIP, I_CLIP] },
         shapes: [{ type: "line", x0: E_MIN, x1: E_MAX, y0: 0, y1: 0, line: { color: "#999", width: 1 } },
-          { type: "rect", x0: E_H2(pH), x1: E_O2(pH) + SURT_O2, y0: -I_CLIP, y1: I_CLIP, fillcolor: "rgba(34,197,94,0.07)", line: { width: 0 }, layer: "below" }],
+          { type: "rect", x0: murBas(pH, el), x1: murHaut(pH, el), y0: -I_CLIP, y1: I_CLIP, fillcolor: "rgba(34,197,94,0.07)", line: { width: 0 }, layer: "below" }],
         margin: { t: 10, b: 45, l: 55, r: 15 }, paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "#fafcff", autosize: true,
       }, { displayModeBar: false, responsive: true });
     }
     if (o.diag && refDiag.current) {
       const pHs = []; for (let q = 0; q <= 14.001; q += 0.1) pHs.push(parseFloat(q.toFixed(2)));
       const d = [
-        { x: pHs, y: pHs.map(E_H2), mode: "lines", name: "H⁺/H₂", line: { color: "#1a6eb5" } },
+        { x: pHs, y: pHs.map(E_H2), mode: "lines", name: "H⁺/H₂ (thermodynamique)", line: { color: "#1a6eb5", dash: "dash" } },
+        { x: pHs, y: pHs.map(q => murBas(q, el)), mode: "lines", name: `mur observé H₂ (${el.nom})`, line: { color: "#1a6eb5", dash: "dot" } },
         { x: pHs, y: pHs.map(E_O2), mode: "lines", name: "O₂/H₂O (thermodynamique)", line: { color: "#c0392b", dash: "dash" } },
-        { x: pHs, y: pHs.map(q => E_O2(q) + SURT_O2), mode: "lines", name: "mur observé sur Pt (+0,5 V)", line: { color: "#c0392b", dash: "dot" } },
+        { x: pHs, y: pHs.map(q => murHaut(q, el)), mode: "lines", name: `mur observé (${el.nom})`, line: { color: "#c0392b", dash: "dot" } },
       ];
       if (cp.n > 0) {
         const pm = cp.phMax === undefined ? 14 : cp.phMax, ps = pHs.filter(q => q <= pm + 1e-9);
@@ -129,12 +167,20 @@ export function VueIEpH({ plotlyReady, e, set, opts = {}, focus = [] }) {
       window.Plotly.react(refDiag.current, d, {
         xaxis: { title: "pH", range: [0, 14] }, yaxis: { title: "E (V/ESH)", range: [E_MIN, E_MAX] },
         shapes: couple === "fe" ? [{ type: "rect", x0: FER_PH_MAX, x1: 14, y0: E_MIN, y1: E_MAX, fillcolor: "rgba(148,163,184,0.18)", line: { width: 0 }, layer: "below" }] : [],
-        annotations: couple === "fe" ? [{ x: (FER_PH_MAX + 14) / 2, y: 1.9, text: "Fe(III) précipite (Fe(OH)₃) :<br>modèle non valable", showarrow: false, font: { size: 11, color: "#475569" } }] : [],
-        margin: { t: 10, b: 45, l: 55, r: 15 }, legend: { orientation: "h", y: -0.32, font: { size: 11 } },
+        annotations: [
+          { x: 11, y: murBas(11, el) - 0.25, text: "H₂", showarrow: false, font: { size: 12, color: "#1a6eb5" } },
+          { x: 7, y: (murBas(7, el) + murHaut(7, el)) / 2 + 0.55, text: "H₂O (domaine d’inertie)", showarrow: false, font: { size: 11, color: "#15803d" } },
+          { x: 12, y: murHaut(12, el) + 0.25, text: "O₂", showarrow: false, font: { size: 12, color: "#c0392b" } },
+          ...(cp.n > 0 ? (() => { const px = couple === "fe" ? 1 : 6; return [
+            { x: px, y: cp.E(px) + 0.17, text: cp.ox, showarrow: false, font: { size: 12, color: cp.couleur || "#16a34a" } },
+            { x: px, y: cp.E(px) - 0.17, text: cp.red, showarrow: false, font: { size: 12, color: cp.couleur || "#16a34a" } }]; })() : []),
+          ...(couple === "fe" ? [{ x: (FER_PH_MAX + 14) / 2, y: 1.9, text: "Fe(III) précipite (Fe(OH)₃) :<br>modèle non valable", showarrow: false, font: { size: 11, color: "#475569" } }] : []),
+        ],
+        margin: { t: 10, b: 45, l: 55, r: 15 }, legend: { orientation: "h", y: -0.5, font: { size: 11 } },
         paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "#fafcff", autosize: true,
       }, { displayModeBar: false, responsive: true });
     }
-  }, [pH, couple, vue3d, plotlyReady, Egrid, o.g3d, o.coupe, o.diag]);
+  }, [pH, couple, vue3d, elec, plotlyReady, Egrid, o.g3d, o.coupe, o.diag]);
 
   const noms = { aucun: "Aucun (solvant seul)", fe: "Fe³⁺/Fe²⁺", q: "Benzoquinone / hydroquinone" };
   return (
@@ -146,6 +192,10 @@ export function VueIEpH({ plotlyReady, e, set, opts = {}, focus = [] }) {
           <input type="number" min="0" max="14" step="0.1" value={pH} aria-label="pH" onChange={ev => { const v = parseFloat(ev.target.value); if (isFinite(v)) set({ pH: Math.min(14, Math.max(0, v)) }); }}
             style={{ width: 64, padding: "3px 6px", borderRadius: 4, border: "1px solid #ccc", fontWeight: 700 }}/>
         </span>
+        {o.choixElec && <span style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", padding: 3 }}>
+          <strong>Électrode de travail :</strong>
+          {Object.entries(ELECTRODES).map(([k, x]) => <TabBtn key={k} active={elec === k} color={x.couleur} onClick={() => set({ elec: k })}>{x.nom}</TabBtn>)}
+        </span>}
         {o.choixCouple && <span style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", padding: 3, ...halo("couple") }}>
           <strong>Couple :</strong>
           {o.couplesDispo.map(k => <TabBtn key={k} active={couple === k} color={COUPLES[k].couleur || "#475569"} onClick={() => set({ couple: k })}>{noms[k]}</TabBtn>)}
@@ -167,14 +217,14 @@ export function VueIEpH({ plotlyReady, e, set, opts = {}, focus = [] }) {
             <div style={{ fontWeight: 600, color: "#445", marginBottom: 4 }}>Coupe à pH = {pH.toFixed(1)}</div>
             <div ref={refCoupe} style={{ height: 230 }}/>
             <div style={{ fontSize: 12.5, color: "#334155", lineHeight: 1.5 }}>
-              Zone verte : domaine d’inertie du solvant{o.valeurs && <>, de {E_H2(pH).toFixed(2)} à {(E_O2(pH) + SURT_O2).toFixed(2)} V/ESH</>}.
-              {o.valeurs && coupleActif && <> Couple {cp.nom} : E = {cp.E(pH).toFixed(2)} V/ESH.</>}
+              Zone verte : domaine d’inertie du solvant{o.valeurs && <>, de {murBas(pH, el).toFixed(2)} à {murHaut(pH, el).toFixed(2)} V/ESH</>}.
+              {o.valeurs && elec === "pt" && coupleActif && <> Couple {cp.nom} : E = {cp.E(pH).toFixed(2)} V/ESH.</>}
               {cp.n > 0 && !coupleActif && <> <strong style={{ color: "#b91c1c" }}>Fe(III) précipite à ce pH : modèle non valable, vague non tracée.</strong></>}
             </div>
           </div>}
           {o.diag && <div style={{ ...cardStyle, ...halo("diag") }}>
             <div style={{ fontWeight: 600, color: "#445", marginBottom: 4 }}>Diagramme E-pH correspondant</div>
-            <div ref={refDiag} style={{ height: 300 }}/>
+            <div ref={refDiag} style={{ height: 340 }}/>
           </div>}
         </div>
       </div>
@@ -193,7 +243,7 @@ function ExplorationIEpH({ plotlyReady }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <HypothesesIEpH/>
-      <VueIEpH plotlyReady={plotlyReady} e={e} set={set}/>
+      <VueIEpH plotlyReady={plotlyReady} e={e} set={set} opts={{ choixElec: true }}/>
     </div>
   );
 }
@@ -222,16 +272,16 @@ function ParcoursIEpH({ plotlyReady, changerMode }) {
         aide: "E = −0,059 × pH.", pieges: [[0.414, "Le signe : plus le pH augmente, plus le potentiel diminue."]] } },
     { id: "hypo", titre: "Le mur de l’oxydation de l’eau", focus: ["hypo", "coupe"], vue: V,
       texte: <>La limite supérieure correspond à O₂ + 4 H⁺ + 4 e⁻ = 2 H₂O, de potentiel E = 1,23 − 0,059·pH. Lisez l’encadré « Hypothèses de travail » : sur platine, l’oxydation de l’eau est <strong>lente</strong>.</>,
-      tache: { type: "qcm", q: "Pourquoi le mur observé est-il situé environ 0,5 V plus haut que le potentiel thermodynamique ?", options: ["L’oxydation de l’eau est lente sur platine : il faut une surtension pour que le courant apparaisse", "Le platine réagit avec l’eau", "La loi de Nernst n’est pas valable pour l’oxygène"], bonne: 0,
-        expl: "C’est la surtension de l’oxydation de l’eau. Dans ce modèle, elle est choisie de façon qualitative (0,5 V)." } },
+      tache: { type: "qcm", q: "Pourquoi le mur observé est-il situé environ 0,8 V plus haut que le potentiel thermodynamique ?", options: ["L’oxydation de l’eau est lente sur platine : il faut une surtension pour que le courant apparaisse", "Le platine réagit avec l’eau", "La loi de Nernst n’est pas valable pour l’oxygène"], bonne: 0,
+        expl: "C’est la surtension de l’oxydation de l’eau. Dans ce modèle, elle est choisie de façon qualitative (0,8 V)." } },
     { id: "largeur", titre: "La largeur du domaine d’inertie", focus: ["coupe"], vue: V,
-      texte: <>Le mur supérieur observé est à E = 1,23 + 0,5 − 0,059·pH. Calculez la largeur du domaine entre les deux murs.</>,
-      tache: { type: "num", q: "Largeur du domaine d’inertie à pH = 7", unite: "V", vrai: 1.73, tol: 0.02, affiche: v => fmt(v, 2),
-        aide: "Mur supérieur − mur inférieur.", pieges: [[1.23, "Il faut tenir compte de la surtension de 0,5 V."]] } },
+      texte: <>Le mur supérieur observé est à E = 1,23 + 0,8 − 0,059·pH. Calculez la largeur du domaine entre les deux murs.</>,
+      tache: { type: "num", q: "Largeur du domaine d’inertie à pH = 7", unite: "V", vrai: 2.03, tol: 0.02, affiche: v => fmt(v, 2),
+        aide: "Mur supérieur − mur inférieur.", pieges: [[1.23, "Il faut tenir compte de la surtension de 0,8 V."]] } },
     { id: "largeur2", titre: "Et à un autre pH ?", focus: ["coupe", "ph"], vue: V,
       texte: <>Déplacez le curseur de pH et observez la zone verte.</>,
       tache: { type: "qcm", q: "Quand le pH varie, la largeur du domaine d’inertie…", options: ["reste la même : les deux murs se décalent de la même valeur", "augmente avec le pH", "diminue avec le pH"], bonne: 0,
-        expl: "Les deux murs ont la même pente (−0,059 V par unité de pH) : le domaine se translate sans changer de largeur (1,73 V)." } },
+        expl: "Les deux murs ont la même pente (−0,059 V par unité de pH) : le domaine se translate sans changer de largeur (2,03 V)." } },
     { id: "faisceau", titre: "Toutes les courbes à la fois", focus: ["g3d"], vue: { ...V, g3d: true },
       texte: <>Voici maintenant une vue en 3D : chaque courbe i = f(E) correspond à un pH différent (de 0 à 14, couleur selon le pH). Faites tourner la figure avec la souris. La courbe rouge épaisse est celle du pH choisi.</>,
       tache: { type: "qcm", q: "Comment évolue l’ensemble du domaine d’inertie quand le pH augmente ?", options: ["Il se décale en bloc vers les potentiels plus faibles", "Il se décale vers les potentiels plus élevés", "Il ne bouge pas"], bonne: 0 } },
@@ -267,7 +317,7 @@ function ParcoursIEpH({ plotlyReady, changerMode }) {
     { id: "prevoir", titre: "Thermodynamique et cinétique", focus: [], vue: { ...V, g3d: true, diag: true, choixVue: true, choixCouple: true, valeurs: true },
       texte: <>À pH 0, le couple MnO₄⁻/Mn²⁺ a un potentiel de 1,51 V/ESH, supérieur à celui du couple O₂/H₂O (1,23 V à pH 0). Pourtant, les solutions de permanganate acidifiées se conservent plusieurs jours.</>,
       tache: { type: "qcm", q: "Comment l’expliquer ?", options: ["Thermodynamiquement, MnO₄⁻ peut oxyder l’eau, mais la réaction est cinétiquement très lente", "MnO₄⁻ est moins oxydant que O₂", "L’eau ne peut jamais être oxydée"], bonne: 0,
-        expl: "Même raison que le mur de l’eau, décalé de 0,5 V : l’oxydation de l’eau est lente. Un couple situé entre le potentiel thermodynamique et le mur observé ne l’oxyde pas en pratique." } },
+        expl: "Même raison que le mur de l’eau, décalé de 0,8 V : l’oxydation de l’eau est lente. Un couple situé entre le potentiel thermodynamique et le mur observé ne l’oxyde pas en pratique." } },
     { id: "bravo", titre: "Bravo !", focus: [],
       texte: <>Vous savez relier les courbes i = f(E) au diagramme E-pH : les murs de l’eau et les couples avec H⁺ se décalent avec le pH, les couples sans H⁺ non, et une rupture de pente signale un changement d’espèce. En exploration libre, jouez avec la surface ; dans le défi, un couple inconnu vous attend.</>, tache: null },
   ];
@@ -304,7 +354,7 @@ function campagneBrute() {
   const pH = choix([2, 3, 4, 5, 6, 8, 9, 10]);
   const E = q => E0 - NERNST * m / n * q;
   return { m, n, E0, pH, E, reps: {}, choix: {}, verifie: false,
-    couple: { nom: "Couple fictif", n, E, couleur: "#16a34a" } };
+    couple: { nom: "Couple fictif", n, E, couleur: "#16a34a", ox: "Ox", red: "Red" } };
 }
 const noms = (m, n) => `Ox + ${m > 1 ? m + " " : ""}H⁺ + ${n > 1 ? n + " " : ""}e⁻ = Red`;
 
@@ -315,13 +365,13 @@ function DefiIEpH({ plotlyReady }) {
   const nouveau = () => { const d = campagne(); setDefi(d); setE({ ...ETAT0, pH: d.pH, couple: d.couple }); };
   const maj = f => setDefi(d => ({ ...d, verifie: false, ...f(d) }));
   const { m, n, E0, pH, E } = defi;
-  const Ec = E(pH), bas = E_H2(pH), haut = E_O2(pH) + SURT_O2;
+  const Ec = E(pH), bas = murBas(pH), haut = murHaut(pH);
   const pos = Ec < bas ? 1 : Ec > haut ? 2 : 0;
   const Q = [
     { id: "pente", q: "Pente de la droite E = f(pH) de ce couple (en V par unité de pH)", vrai: -NERNST * m / n, tol: 0.03, aff: fmt(-NERNST * m / n, 3), u: "V/pH" },
     { id: "E", q: `Potentiel E du couple à pH = ${pH}`, vrai: Ec, tol: 0.02, aff: fmt(Ec, 2), u: "V/ESH" },
     { id: "bas", q: `Potentiel du mur H⁺/H₂ à pH = ${pH}`, vrai: bas, tol: 0.02, aff: fmt(bas, 2), u: "V/ESH" },
-    { id: "pos", q: `À pH = ${pH}, où se situe ce couple par rapport au domaine d’inertie de l’eau (mur supérieur observé : E = 1,73 − 0,059·pH) ?`,
+    { id: "pos", q: `À pH = ${pH}, où se situe ce couple par rapport au domaine d’inertie de l’eau (mur supérieur observé : E = 2,03 − 0,059·pH) ?`,
       choix: ["Dans le domaine : sa vague est observable", "Au-dessous du mur H⁺/H₂", "Au-dessus du mur supérieur observé"], vrai: pos },
     { id: "dec", q: `De combien le potentiel du couple varie-t-il quand le pH passe de ${pH} à ${pH + 2} ?`, vrai: -2 * NERNST * m / n, tol: 0.03, aff: fmt(-2 * NERNST * m / n, 3), u: "V" },
   ];
