@@ -28,6 +28,9 @@ import { SimulationEchangeur } from "./simulations/Echangeur";
 import { SimulationParoi } from "./simulations/Paroi";
 import { SimulationBouilloire } from "./simulations/Bouilloire";
 import { SimulationReponse } from "./simulations/Reponse";
+import { SimulationAtelierDonnees } from "./simulations/AtelierDonnees";
+import { SimulationAtelierGraphique } from "./simulations/AtelierGraphique";
+import { SimulationAtelierVraisemblable } from "./simulations/AtelierVraisemblable";
 
 // ============================================================
 //  MENU — modifiez les noms et icônes ici
@@ -73,6 +76,12 @@ const SIMULATIONS = [
     component: SimulationBouilloire },
   { id:33, label:"Temps de réponse d'un capteur", niveau:"TSTL", icon:"⏱️", color:"#0891b2",
     component: SimulationReponse },
+  { id:34, label:"Atelier : extraire les données d'un énoncé", niveau:"TSTL", icon:"🎯", color:"#e11d48",
+    component: SimulationAtelierDonnees },
+  { id:35, label:"Atelier : lire un graphique", niveau:"TSTL", icon:"📈", color:"#e11d48",
+    component: SimulationAtelierGraphique },
+  { id:36, label:"Atelier : ce résultat est-il vraisemblable ?", niveau:"TSTL", icon:"🔎", color:"#e11d48",
+    component: SimulationAtelierVraisemblable },
 ];
 
 const NIVEAUX = [
@@ -124,6 +133,11 @@ function PageAccueil({ onStart }) {
         { icon:"🫖", label:"Bouilloire : conductivité thermique de sa paroi", desc:"Le TP de la bouilloire en virtuel : énergie perdue par l'eau (Q = m·C·ΔT), puissance, écart eau–air, λ de la paroi. Puis une bouilloire réaliste pour critiquer chaque hypothèse du modèle." },
         { icon:"⏱️", label:"Temps de réponse d'un capteur", desc:"Réponse d'une sonde à un échelon : V_ini, V_fin, ΔV, bande à 5 %, t_R = t₁ − t₀, modèle exponentiel et t_R = 3τ. Puis une grandeur qui oscille avant de se stabiliser (dernière sortie de la bande)." },
         { icon:"🔥", label:"Échangeur thermique : co-courant et contre-courant", desc:"Échangeur coaxial : profils de température, bilan P_C = −P_F, écart moyen logarithmique ΔTm, surface d'échange et coefficient global U. Co-courant, contre-courant, et côté chaud à température constante (bain, vapeur)." },
+      ]},
+      { label:"🎯 Compétences", sims:[
+        { icon:"🎯", label:"Atelier : extraire les données d'un énoncé", desc:"S'approprier : comprendre la question, repérer les données utiles et les pièges, associer valeur, grandeur et unité, préparer le calcul. Parcours guidé, entraînement sur 7 énoncés, défi avec bilan." },
+        { icon:"📈", label:"Atelier : lire un graphique", desc:"S'approprier : identifier grandeurs, unités et échelles des axes, lire une valeur (directe, inverse, à l'origine), convertir, interpréter l'allure, calculer un coefficient directeur et extrapoler. 8 graphiques tirés de la chimie, la mesure et les transferts." },
+        { icon:"🔎", label:"Atelier : ce résultat est-il vraisemblable ?", desc:"Valider : juger le calcul d'un élève (ordre de grandeur, limites physiques, unités, chiffres significatifs), justifier avec un repère, diagnostiquer l'erreur et corriger. 11 calculs répartis par thème." },
       ]},
     ]},
     { niveau:"BTS", color:"#6a4c93", sousMenus:[
@@ -402,6 +416,7 @@ export default function App() {
               { label:'⚙️ Régulation', ids:[5,6] },
               { label:'❄️ Évaporation et cristallisation', ids:[7] },
               { label:'🔥 Transferts thermiques', ids:[31,32,33,30] },
+              { label:'🎯 Compétences', ids:[34,35,36] },
             ] : null;
 
             return (
