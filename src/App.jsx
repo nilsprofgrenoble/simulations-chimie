@@ -32,6 +32,7 @@ import { SimulationAtelierDonnees } from "./simulations/AtelierDonnees";
 import { SimulationAtelierGraphique } from "./simulations/AtelierGraphique";
 import { SimulationAtelierRealiser } from "./simulations/AtelierRealiser";
 import { SimulationAtelierAnalyser } from "./simulations/AtelierAnalyser";
+import { SimulationEntrainement } from "./simulations/Entrainement";
 
 // ============================================================
 //  MENU — modifiez les noms et icônes ici
@@ -77,20 +78,23 @@ const SIMULATIONS = [
     component: SimulationBouilloire },
   { id:33, label:"Temps de réponse d'un capteur", niveau:"TSTL", icon:"⏱️", color:"#0891b2",
     component: SimulationReponse },
-  { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"TSTL", icon:"🎯", color:"#e11d48",
+  { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"COMP", icon:"🎯", color:"#e11d48",
     component: SimulationAtelierDonnees },
-  { id:35, label:"S'APP : lire un graphique", niveau:"TSTL", icon:"📈", color:"#e11d48",
+  { id:35, label:"S'APP : lire un graphique", niveau:"COMP", icon:"📈", color:"#e11d48",
     component: SimulationAtelierGraphique },
-  { id:36, label:"S'APP : réaliser un calcul", niveau:"TSTL", icon:"🧮", color:"#e11d48",
+  { id:36, label:"REA : réaliser un calcul", niveau:"COMP", icon:"🧮", color:"#e11d48",
     component: SimulationAtelierRealiser },
-  { id:37, label:"S'APP : analyser un problème", niveau:"TSTL", icon:"🧭", color:"#e11d48",
+  { id:37, label:"ANA : analyser un problème", niveau:"COMP", icon:"🧭", color:"#e11d48",
     component: SimulationAtelierAnalyser },
+  { id:38, label:"Je m'entraîne ! Travail par compétence", niveau:"COMP", icon:"🏋️", color:"#e11d48",
+    component: SimulationEntrainement },
 ];
 
 const NIVEAUX = [
   { label: "1G",   key: "1G",   color: "#2a9d8f" },
   { label: "TSTL", key: "TSTL", color: "#2a6099" },
   { label: "BTS",  key: "BTS",  color: "#6a4c93" },
+  { label: "je m'entraîne ! Travail par compétence.", key: "COMP", color: "#e11d48" },
 ];
 
 // ============================================================
@@ -137,12 +141,13 @@ function PageAccueil({ onStart }) {
         { icon:"🫖", label:"Bouilloire : conductivité thermique de sa paroi", desc:"Le TP de la bouilloire en virtuel : énergie perdue par l'eau (Q = m·C·ΔT), puissance, écart eau–air, λ de la paroi. Puis une bouilloire réaliste pour critiquer chaque hypothèse du modèle." },
         { icon:"🔥", label:"Échangeur thermique : co-courant et contre-courant", desc:"Échangeur coaxial : profils de température, bilan P_C = −P_F, écart moyen logarithmique ΔTm, surface d'échange et coefficient global U. Co-courant, contre-courant, et côté chaud à température constante (bain, vapeur)." },
       ]},
-      { label:"🎯 Compétences", sims:[
-        { icon:"🎯", label:"S'APP : extraire les données d'un énoncé", desc:"S'approprier : la formule est donnée ; il faut comprendre la question, repérer les données utiles, associer chaque donnée au symbole de la formule et à la bonne unité. 7 énoncés rangés par thème." },
-        { icon:"📈", label:"S'APP : lire un graphique", desc:"S'approprier : identifier grandeurs, unités et échelles des axes, lire une valeur (directe, inverse, à l'origine, avec une autre unité), interpréter l'allure. 8 graphiques rangés par thème." },
-        { icon:"🧭", label:"S'APP : analyser un problème", desc:"Analyser : construire la démarche d'un problème posé sans questions intermédiaires (ce que l'on cherche, données utiles, relations, hypothèses, ordre des calculs), choisir la bonne relation, reconnaître les hypothèses d'un modèle, prévoir sans calculer. 9 problèmes et 35 exercices courts, rangés par thème." },
-        { icon:"🧮", label:"S'APP : réaliser un calcul", desc:"Réaliser : changements d'unité (simples, préfixes, unités au carré ou au cube, unités composées), conversions cachées dans un calcul, isoler une grandeur, chiffres significatifs, log / exp / racine, saisie à la calculatrice. 9 types d'exercices tirés au hasard." },
-      ]},
+    ]},
+    { niveau:"COMP", titre:"je m'entraîne ! Travail par compétence.", color:"#e11d48", sims:[
+      { icon:"🏋️", label:"Je m'entraîne ! Travail par compétence", desc:"Le point d'entrée : une carte par compétence (S'APP, ANA, REA, VAL), l'ordre conseillé, la liste de tous les exercices filtrable par thème du programme, et ta progression (mémorisée sur cet appareil)." },
+      { icon:"🎯", label:"S'APP : extraire les données d'un énoncé", desc:"S'approprier : la formule est donnée ; il faut comprendre la question, repérer les données utiles, associer chaque donnée au symbole de la formule et à la bonne unité. 7 énoncés rangés par thème." },
+      { icon:"📈", label:"S'APP : lire un graphique", desc:"S'approprier : identifier grandeurs, unités et échelles des axes, lire une valeur (directe, inverse, à l'origine, avec une autre unité), interpréter l'allure. 8 graphiques rangés par thème." },
+      { icon:"🧭", label:"ANA : analyser un problème", desc:"Analyser : construire la démarche d'un problème posé sans questions intermédiaires (ce que l'on cherche, données utiles, relations, hypothèses, ordre des calculs), choisir la bonne relation, reconnaître les hypothèses d'un modèle, prévoir sans calculer. 9 problèmes et 35 exercices courts, rangés par thème." },
+      { icon:"🧮", label:"REA : réaliser un calcul", desc:"Réaliser : changements d'unité (simples, préfixes, unités au carré ou au cube, unités composées), conversions cachées dans un calcul, isoler une grandeur, chiffres significatifs, log / exp / racine, saisie à la calculatrice. 9 types d'exercices tirés au hasard." },
     ]},
     { niveau:"BTS", color:"#6a4c93", sousMenus:[
       { label:"🔬 Analyse", sims:[
@@ -196,13 +201,13 @@ function PageAccueil({ onStart }) {
       </a>
 
       {/* Simulations par niveau */}
-      {simulations.map(({niveau, color, sims, sousMenus}) => (
+      {simulations.map(({niveau, titre, color, sims, sousMenus}) => (
         <div key={niveau}>
           {/* En-tête niveau */}
           <div style={{display:"flex", alignItems:"center", gap:10, marginBottom:12}}>
             <div style={{height:3, width:28, borderRadius:2, background:color}}/>
-            <span style={{fontSize:13, fontWeight:700, color, textTransform:"uppercase",
-              letterSpacing:"0.1em"}}>{`Niveau ${niveau}`}</span>
+            <span style={{fontSize:13, fontWeight:700, color, textTransform: niveau === "COMP" ? "none" : "uppercase",
+              letterSpacing:"0.1em"}}>{titre || `Niveau ${niveau}`}</span>
             <div style={{flex:1, height:1, background:"#eee"}}/>
           </div>
 
@@ -310,7 +315,7 @@ export default function App() {
   const [activeId, setActiveId] = useState(getInitialId);
   const active = SIMULATIONS.find(s => s.id === activeId) || SIMULATIONS[0];
   const ActiveComponent = active.component;
-  const [expanded, setExpanded] = useState({ "1G": true, "TSTL": true, "BTS": true });
+  const [expanded, setExpanded] = useState({ "1G": true, "TSTL": true, "BTS": true, "COMP": true });
   // Sous-groupes du menu BTS (Analyse, Formulation) et TSTL : un seul état pour tous,
   // déclaré ici car React interdit un useState dans une boucle ou une condition.
   const [sgOuverts, setSgOuverts] = useState({});
@@ -363,7 +368,13 @@ export default function App() {
   }
 
   // Ferme le menu et navigue
-  function naviguer(id) {
+  function naviguer(id, ex) {
+    // ex : exercice précis à ouvrir dans un atelier (lu par l'atelier à son ouverture)
+    try {
+      const u = new URL(window.location.href);
+      if (ex) u.searchParams.set('ex', ex); else u.searchParams.delete('ex');
+      window.history.replaceState(null, '', u.toString());
+    } catch { /* adresse non modifiable */ }
     setActiveId(id);
     if (!menuFixe) setMenuOpen(false);
   }
@@ -432,7 +443,7 @@ export default function App() {
 
         <nav style={styles.nav}>
           {NIVEAUX.map(niv => {
-            const simsNiv = SIMULATIONS.filter(s => s.niveau === niv.key);
+            const simsNiv = SIMULATIONS.filter(s => s.niveau === niv.key).sort((a, b) => (niv.key === 'COMP' ? [38,34,35,37,36].indexOf(a.id) - [38,34,35,37,36].indexOf(b.id) : 0));
             const isExpanded = expanded[niv.key];
             const sousgroupes = niv.key === 'BTS' ? [
               { label:'🔬 Analyse', ids:[3,29,9,11,12,13,16] },
@@ -443,7 +454,6 @@ export default function App() {
               { label:'⚙️ Régulation', ids:[5,6] },
               { label:'❄️ Évaporation et cristallisation', ids:[7] },
               { label:'🔥 Transferts thermiques', ids:[31,32,30] },
-              { label:'🎯 Compétences', ids:[34,35,37,36] },
             ] : null;
 
             return (
@@ -454,7 +464,7 @@ export default function App() {
                     background:"transparent", cursor:"pointer",
                     borderRadius:"8px", marginBottom:"0.2rem" }}>
                   <span style={{ fontSize:"0.72rem", fontWeight:"800", letterSpacing:"0.1em",
-                    textTransform:"uppercase", color: niv.color }}>{niv.label}</span>
+                    textTransform: niv.key === 'COMP' ? 'none' : 'uppercase', color: niv.color, textAlign:'left' }}>{niv.label}</span>
                   <span style={{ fontSize:"0.8rem", color:niv.color, transition:"transform 0.2s",
                     display:"inline-block",
                     transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)" }}>›</span>
@@ -589,7 +599,7 @@ export default function App() {
 
         <div style={styles.simContainer}>
           {activeId === 0
-            ? <PageAccueil onStart={(id) => setActiveId(id || 1)} />
+            ? <PageAccueil onStart={(id) => naviguer(id || 1)} />
             : <div style={{ textAlign: "left" }}>
                 {/* Le fichier App.css du modèle Vite centre tout le texte (#root) : on rétablit l'alignement
                     à gauche pour les simulations ; la page d'accueil garde sa mise en page centrée. */}

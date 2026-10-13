@@ -1,6 +1,6 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite,
-  BoutonsModes, ORANGE_GUIDE, lireNombre } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, noterReussite, exParam } from "../commun";
 import { parDomaine } from "./ordreDomaines";
 import { SCENARIOS, COMPETENCES, nouveauGraphique, questions, verifierNum, nb, decimales, fmtAxe } from "./AtelierGraphiqueBanque";
 
@@ -76,8 +76,9 @@ const Correction = ({ children }) => (
 const nouveau = id => nouveauGraphique(id);
 
 export function SimulationAtelierGraphique() {
-  const [choix, setChoix] = useState('manometre');
-  const [g, setG] = useState(() => nouveau('manometre'));
+  const depart = (() => { const p = exParam(); return SCENARIOS.some(s => s.id === p) ? p : 'manometre'; })();
+  const [choix, setChoix] = useState(depart);
+  const [g, setG] = useState(() => nouveau(depart));
   const [rep, setRep] = useState({});
   const [chk, setChk] = useState({});
   const [vu, setVu] = useState({});
@@ -90,6 +91,8 @@ export function SimulationAtelierGraphique() {
 
   const charger = id => { setG(nouveau(id)); setRep({}); setChk({}); setVu({}); setEtp(0); setIndice({}); };
   const ok = q => (q.type === 'qcm' ? rep[q.id] === q.bonne : verifierNum(q, lireNombre(rep[q.id])).ok);
+  const reussi = Q.every(q => chk[q.id] && ok(q));
+  useEffect(() => { if (reussi) noterReussite(`35:${choix}`); }, [reussi, choix]);
   const corriger = id => setChk(c => ({ ...c, [id]: true }));
 
   // ── Carte d'une question (exploration et défi) ──

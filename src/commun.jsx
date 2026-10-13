@@ -500,3 +500,22 @@ export function BoutonsModes({ mode, setMode, modes = ['guide', 'explore', 'defi
     </div>
   );
 }
+
+// ════════════════ PROGRESSION DES ATELIERS « JE M'ENTRAÎNE » ════════════════
+// Mémorisée sur l'appareil de l'élève (localStorage), jamais envoyée : { "36:composees": true, ... }
+const CLE_PROGRESSION = 'progression-ateliers-v1';
+export function lireProgression() {
+  try { return JSON.parse(window.localStorage.getItem(CLE_PROGRESSION) || '{}') || {}; } catch { return {}; }
+}
+export function noterReussite(cle) {
+  try {
+    const p = lireProgression();
+    if (p[cle]) return;
+    p[cle] = true;
+    window.localStorage.setItem(CLE_PROGRESSION, JSON.stringify(p));
+  } catch { /* mémorisation indisponible */ }
+}
+// Exercice demandé dans l'adresse (?ex=...), pour ouvrir un atelier directement sur un exercice
+export function exParam() {
+  try { return new URLSearchParams(window.location.search).get('ex'); } catch { return null; }
+}

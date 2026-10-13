@@ -41,12 +41,19 @@ const G_V_L = G_M / G_RHO * 1000;                // 36,0 L
 // s texte affiché (pour garder les zéros significatifs), u unité (facultative : « d » n'a pas d'unité).
 // div : le facteur est un diviseur (÷) ; compact : écrit « 991 kg·m⁻³ » plutôt qu'en fraction.
 const UNITES = { kg: 'm', g: 'm', t: 'm', s: 't', min: 't', h: 't', 'm³': 'V', L: 'V', mL: 'V', m: 'l', mm: 'l', 'm²': 'l' };
-const COUL = { m: '#7e22ce', t: '#1d4ed8', V: '#047857', l: '#be185d' };
+const COUL = { m: '#7e22ce', t: '#1d4ed8', V: '#047857', l: '#be185d', p: '#0f766e', P: '#4d7c0f', I: '#a21caf', U: '#4338ca', E: '#92400e', T: '#e11d48', f: '#0d9488', R: '#475569' };
 export const COUL_PREF = '#d97706';                          // préfixe d'unité : le « k » de kg, le « m » de mL
-const PREFIXE = { kg: 'k', mL: 'm', mm: 'm' };
-const INV = { s: 's⁻¹', min: 'min⁻¹', h: 'h⁻¹', kg: 'kg⁻¹', g: 'g⁻¹', t: 't⁻¹', 'm³': 'm⁻³', L: 'L⁻¹', mL: 'mL⁻¹', m: 'm⁻¹', mm: 'mm⁻¹', 'm²': 'm⁻²' };
-const NOM_DIM = { m: 'masse', t: 'temps', V: 'volume', l: 'longueur' };
-const coulUnite = u => COUL[UNITES[u]];
+const PREFIXE_EXPLICITE = { kg: 'k', mL: 'm', mm: 'm' };
+// Autres unités : préfixe SI reconnu automatiquement (cm, km, mg, kPa, hPa, mA, kW, kJ, dm³, cm², µA…) ; « min » et « h » seuls n'en ont pas.
+const RE_PREF = /^(G|M|k|h|d|c|m|µ|n|p)(m[²³]?|g|L|Pa|W|A|V|Hz|J|s|F|Ω)$/;
+const PREFIXE = new Proxy({}, { get: (_, u) => PREFIXE_EXPLICITE[u] ?? (RE_PREF.exec(String(u))?.[1] || undefined) });
+const BASE_DIM = { g: 'm', s: 't', min: 't', h: 't', L: 'V', 'm³': 'V', m: 'l', 'm²': 'l', Pa: 'p', bar: 'p', W: 'P', A: 'I', V: 'U', J: 'E', K: 'T', Hz: 'f', Ω: 'R' };
+const dimDe = u => UNITES[u] ?? BASE_DIM[RE_PREF.exec(u)?.[2] ?? u];
+const INV0 = { s: 's⁻¹', min: 'min⁻¹', h: 'h⁻¹', kg: 'kg⁻¹', g: 'g⁻¹', t: 't⁻¹', 'm³': 'm⁻³', L: 'L⁻¹', mL: 'mL⁻¹', m: 'm⁻¹', mm: 'mm⁻¹', 'm²': 'm⁻²' };
+const SUPNEG = { '²': '⁻²', '³': '⁻³' };
+const INV = new Proxy(INV0, { get: (o, u) => o[u] ?? (/[²³]$/.test(String(u)) ? String(u).slice(0, -1) + SUPNEG[String(u).slice(-1)] : `${String(u)}⁻¹`) });
+const NOM_DIM = { m: 'masse', t: 'temps', V: 'volume', l: 'longueur', p: 'pression', P: 'puissance', I: 'courant', U: 'tension', E: 'énergie', T: 'température', f: 'fréquence', R: 'résistance' };
+const coulUnite = u => COUL[dimDe(u)];
 // « 1 grande = k petites »
 const GRAND_PETIT = [['h', 'min', 60], ['min', 's', 60], ['h', 's', 3600], ['t', 'kg', 1000], ['kg', 'g', 1000], ['t', 'g', 1e6],
   ['m³', 'L', 1000], ['L', 'mL', 1000], ['m³', 'mL', 1e6], ['m', 'mm', 1000]];
@@ -71,6 +78,15 @@ export function facteurConv(de, vers, pos) {
   return pos === 'num'
     ? { num: [{ n: nVers, u: vers }], den: [{ n: nDe, u: de }] }
     : { num: [{ n: nDe, u: de }], den: [{ n: nVers, u: vers }] };
+}
+// Facteur de conversion pour une relation quelconque « 1 de = k vers » (k puissance de 10 ou rapport entier : 1 h = 3600 s, 1 s = 1/60 min).
+export function facteurK(de, vers, k, pos) {
+  const e = Math.round(Math.log10(k));
+  const puiss = e !== 0 && Math.abs(k - 10 ** e) < 1e-9 * Math.max(1, Math.abs(k));
+  const it = puiss ? { n: 10 ** e, s: puissance10(e), u: vers } : null;
+  const [nDe, nVers] = k >= 1 ? [1, Math.round(k)] : [Math.round(1 / k), 1];
+  const haut = it || { n: nVers, u: vers }, bas = { n: puiss ? 1 : nDe, u: de };
+  return pos === 'num' ? { num: [haut], den: [bas] } : { num: [{ n: bas.n, u: de }], den: [haut] };
 }
 export const facteurRho = rho => ({ num: [{ n: 1, u: 'm³' }], den: [{ n: rho, u: 'kg' }] });   // × 1/ρ : (1 m³) / (ρ kg), ρ en kg·m⁻³ — jamais de « ÷ »
 function chaineQm(m, uM, dt, uT, cM, cT, sm, sdt) {
@@ -199,7 +215,7 @@ function LegendeUnites({ dims, prefixe }) {
 export function Chaine({ nom, litt, facteurs, cacher = false, nsf = 3, sci = false }) {
   const { barres, restant, valeur, nums, dens, fusion } = analyser(facteurs);
   const unites = facteurs.flatMap(f => [...f.num, ...f.den]).map(it => it.u).filter(Boolean);
-  const dims = [...new Set(unites.map(u => UNITES[u]))];
+  const dims = [...new Set(unites.map(u => dimDe(u)).filter(Boolean))];
   const ligne = { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2, lineHeight: 1.25 };
   return (
     <div style={{ background: 'white', border: `1px solid ${KIT.bord}`, borderRadius: 8, padding: '8px 10px', fontSize: 15.5,
@@ -224,17 +240,17 @@ export function Chaine({ nom, litt, facteurs, cacher = false, nsf = 3, sci = fal
   );
 }
 // Changement de préfixe : D = 80 mm = 80 × 10⁻³ m = 0,080 m (puissance de 10 de la couleur du préfixe)
-export function ConvPrefixe({ nom, n, de, vers, e, nsf = 2 }) {
+export function ConvPrefixe({ nom, n, de, vers, e, nsf = 2, sci = false }) {
   const val = n * 10 ** e, sp = { color: '#64748b' };
   return (
     <div style={{ background: 'white', border: `1px solid ${KIT.bord}`, borderRadius: 8, padding: '8px 10px', fontSize: 15.5, color: KIT.txt, display: 'flex', flexDirection: 'column', gap: 6, overflowX: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6, lineHeight: 1.5 }}>
-        <span style={{ fontWeight: 700 }}>{avecIndices(nom)} =</span>
+        {nom && <span style={{ fontWeight: 700 }}>{avecIndices(nom)} =</span>}
         <span>{nf(n)} <Un u={de}/></span><span style={sp}>=</span>
         <span>{nf(n)} × <span style={{ color: COUL_PREF, fontWeight: 700 }}>{puissance10(e)}</span> <Un u={vers}/></span><span style={sp}>=</span>
-        <span><strong>{sig(val, nsf)}</strong> <Un u={vers}/></span>
+        <span><strong>{sci ? sciTxt(val, nsf) : sig(val, nsf)}</strong> <Un u={vers}/></span>
       </div>
-      <div><LegendeUnites dims={[UNITES[vers]]} prefixe/></div>
+      <div><LegendeUnites dims={[dimDe(vers)].filter(Boolean)} prefixe/></div>
     </div>
   );
 }
@@ -270,7 +286,7 @@ const ETAT0 = { tc: 0, t: 0, V: 0, ouvert: false, plein: false, qref: null, mixt
 const LITT1 = { Q_m: 'm × 1/Δt', Q_v: 'Q_m × 1/ρ', V: 'm × 1/ρ' };
 const Ch1 = props => <Chaine litt={LITT1[props.nom]} {...props}/>;
 
-export function SimulationDebits() {
+export function SimulationDebits({ naviguer }) {
   const [mode, setMode] = useState('explore');                  // on arrive sur l'exploration libre
   const [guide, setGuide] = useEtatPersistant('debits-guide-v2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
@@ -556,9 +572,10 @@ export function SimulationDebits() {
     </div>
   );
   const finParcours = (
-    <span style={{ display: 'flex', gap: 6 }}>
+    <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      {naviguer && <button onClick={() => naviguer(36, 'composees')} style={styleBouton(false, '#e11d48')}>🧮 S’entraîner aux unités (REA)</button>}
     </span>
   );
 

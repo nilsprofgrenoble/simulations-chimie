@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, lireNombre, proche } from "../commun";
+import { useState, useEffect } from "react";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, lireNombre, proche, noterReussite, exParam } from "../commun";
 import { ENONCES, nouvelEnonce, melange, nb } from "./AtelierDonneesBanque";
 import { parDomaine } from "./ordreDomaines";
 
@@ -61,8 +61,9 @@ const Correction = ({ children }) => (
 );
 
 export function SimulationAtelierDonnees() {
-  const [choix, setChoix] = useState({ id: 'reservoir', q: 0 });
-  const [ex, setEx] = useState(() => nouvelEnonce('reservoir', 0));
+  const depart = (() => { const [i, q] = (exParam() || '').split('.'); const d = ENONCES.find(e => e.id === i); return d ? { id: i, q: Math.min(+q || 0, d.noms.length - 1) } : { id: 'reservoir', q: 0 }; })();
+  const [choix, setChoix] = useState(depart);
+  const [ex, setEx] = useState(() => nouvelEnonce(depart.id, depart.q));
   const [rep, setRep] = useState(repVide);
   const [chk, setChk] = useState({});             // étapes corrigées
   const [vu, setVu] = useState({});               // corrections demandées
@@ -81,6 +82,8 @@ export function SimulationAtelierDonnees() {
   };
   const toggle = id => { setChk(c => ({ ...c, sel: false })); setRep(r => ({ ...r, sel: r.sel.includes(id) ? r.sel.filter(x => x !== id) : [...r.sel, id] })); };
   const sb = selBilan(ex, rep.sel);
+  const reussi = stages.every(k => chk[k] && okEtape[k]);
+  useEffect(() => { if (reussi) noterReussite(`34:${choix.id}.${choix.q}`); }, [reussi, choix.id, choix.q]);
   const corriger = k => setChk(c => ({ ...c, [k]: true }));
 
   const barre = (k, i) => (

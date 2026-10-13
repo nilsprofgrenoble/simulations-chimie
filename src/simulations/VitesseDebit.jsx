@@ -146,7 +146,7 @@ function Tuyau({ qv, D1, D2, coul, animer, vit, cmd }) {
 
 const QM_UNITE = 'kg·s⁻¹';
 
-export function SimulationVitesseDebit() {
+export function SimulationVitesseDebit({ naviguer }) {
   const [mode, setMode] = useState('explore');
   const [guide, setGuide] = useEtatPersistant('vitesse-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
@@ -383,9 +383,10 @@ export function SimulationVitesseDebit() {
     </div>
   );
   const finParcours = (
-    <span style={{ display: 'flex', gap: 6 }}>
+    <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      {naviguer && <button onClick={() => naviguer(36, 'puissances')} style={styleBouton(false, '#e11d48')}>🧮 S’entraîner aux unités (REA)</button>}
     </span>
   );
 

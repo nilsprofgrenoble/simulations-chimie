@@ -214,7 +214,7 @@ export const PROBLEMES = [
   },
   {
     id: 'echant', domaine: 'Transmission de signaux numériques', titre: 'Enregistrer des vibrations',
-    enonce: 'On veut enregistrer pendant 10 s les vibrations d’une machine, dont la fréquence la plus élevée vaut 400 Hz. Le module d’acquisition échantillonne à 1,0 kHz avec un CAN de 12 bits, et stocke chaque échantillon sur 2 octets dans une mémoire de 32 ko (1 ko = 1 000 octets). Ce réglage permet-il de bien restituer le signal et de tout enregistrer ?',
+    enonce: 'On veut enregistrer pendant 10 s les vibrations d’une machine, dont la fréquence la plus élevée vaut 400 Hz. Le module d’acquisition échantillonne à 1,0 kHz avec un CAN de 12 bits, et stocke chaque échantillon sur 2 octets dans une mémoire de 32 ko (1 ko = 1 000 octets). Rappel : un signal dont la fréquence maximale vaut f_max est bien restitué si la fréquence d’échantillonnage f_e respecte le critère de Shannon, f_e > 2 × f_max. Ce réglage permet-il de bien restituer le signal et de tout enregistrer ?',
     cherche: { q: 'Que faut-il déterminer pour répondre ?', options: [
       V('Deux choses : si f_e respecte le critère de Shannon, et la taille des données, à comparer à 32 ko', 'La question contient deux critères : restitution du signal et place en mémoire.'),
       F('Le quantum du CAN de 12 bits', 'Le quantum concerne la finesse en amplitude : il n’est pas mis en cause ici.'),

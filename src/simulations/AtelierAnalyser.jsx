@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices } from "../commun";
+import { useState, useMemo, useEffect } from "react";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, noterReussite, exParam } from "../commun";
 import { parDomaine } from "./ordreDomaines";
 import { FAMILLES, METHODE } from "./AtelierAnalyserBanque";
 
@@ -146,7 +146,6 @@ function etapesDe(fam, it) {
     { id: 'relations', type: 'multi', titre: 'Choisir les relations', q: 'Cochez toutes les relations nécessaires, et seulement elles.', o: it.relations.options },
     { id: 'hypotheses', type: 'multi', titre: 'Expliciter les hypothèses', q: 'Cochez les hypothèses nécessaires pour appliquer ces relations, et seulement elles.', o: it.hypotheses.options },
     { id: 'demarche', type: 'ordre', titre: 'Ordonner la démarche', dem: it.demarche },
-    { id: 'conclusion', type: 'qcm', titre: 'Conclure', q: it.conclusion.q, o: it.conclusion.options },
   ];
   if (fam === 'hypothese') return [{ id: 'h', type: 'multi', titre: 'Hypothèses nécessaires', q: 'Cochez toutes les hypothèses nécessaires, et seulement elles.', o: it.options }];
   return [{ id: 'q', type: 'qcm', titre: fam === 'relation' ? 'Choisir la relation' : 'Prévoir', q: it.q, o: it.options }];
@@ -155,9 +154,10 @@ const permsDe = etapes => Object.fromEntries(etapes.map(e => [e.id,
   e.type === 'ordre' ? melange(e.dem.etapes.length + e.dem.pieges.length) : e.o ? melange(e.o.length) : null]));
 
 export function SimulationAtelierAnalyser() {
-  const [fam, setFam] = useState('probleme');
+  const depart = (() => { const [f, i] = (exParam() || '').split('.'); const fa = FAMILLES.find(x => x.id === f); const k = fa ? fa.liste.findIndex(x => x.id === i) : -1; return { f: fa ? f : 'probleme', i: Math.max(0, k) }; })();
+  const [fam, setFam] = useState(depart.f);
   const famille = FAMILLES.find(f => f.id === fam);
-  const [idx, setIdx] = useState(0);
+  const [idx, setIdx] = useState(depart.i);
   const it = famille.liste[Math.min(idx, famille.liste.length - 1)];
   const etapes = useMemo(() => etapesDe(fam, it), [fam, it]);
   const [graine, setGraine] = useState(0);
@@ -187,6 +187,8 @@ export function SimulationAtelierAnalyser() {
     return diagOrdre(e.dem, r || []);
   };
   const fini = etapes.every(e => chk[e.id] && (resultat(e).ok || vu[e.id]));
+  const reussi = etapes.every(e => chk[e.id] && resultat(e).ok);
+  useEffect(() => { if (reussi) noterReussite(`37:${fam}:${it.id}`); }, [reussi, fam, it.id]);
 
   const carte = (e, k) => {
     const r = resultat(e), c = !!chk[e.id], v = !!vu[e.id];
@@ -227,8 +229,8 @@ export function SimulationAtelierAnalyser() {
         .ata-g { position: sticky; top: 8px; display: flex; flex-direction: column; gap: 10px; }
         @media (max-width: 960px) { .ata-l1 { grid-template-columns: minmax(0, 1fr); } .ata-g { position: static; } }
       `}</style>
-      <h2 style={{ margin: '0 0 6px', fontSize: 18, color: KIT.txt, fontWeight: 700 }}>S’APP : analyser un problème</h2>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Compétence travaillée : <b>Analyser</b> — identifier ce que l’on cherche, trier les données, choisir les relations, expliciter les hypothèses, organiser la démarche. Ici, on ne calcule presque pas : on prépare la résolution.</div>
+      <h2 style={{ margin: '0 0 6px', fontSize: 18, color: KIT.txt, fontWeight: 700 }}>ANA : analyser un problème</h2>
+      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Compétence travaillée : <b>Analyser</b> (ANA) — identifier ce que l’on cherche, trier les données, choisir les relations, expliciter les hypothèses, organiser la démarche. Ici, on ne calcule presque pas : on prépare la résolution.</div>
       <div style={{ ...styleBoite, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
         <label style={{ fontSize: 14 }}>Entraînement :{' '}
           <select aria-label="Type d’entraînement" value={fam} onChange={e => charger(e.target.value, 0)}
@@ -247,6 +249,10 @@ export function SimulationAtelierAnalyser() {
         {fam === 'probleme' ? <div className="ata-g">{enonce}{methode}</div> : enonce}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {etapes.slice(0, etp + 1).map((e, k) => carte(e, k))}
+          {fini && fam === 'probleme' && it.conclusion && (
+            <div style={{ ...styleBoite, fontSize: 14, lineHeight: 1.55 }}>
+              <b>Résultat de la démarche (pour vérifier si vous l’avez menée) :</b> {(o => <>{T(o[0])}. {T(o[2])}</>)(it.conclusion.options.find(o => o[1]) || it.conclusion.options[0])}
+            </div>)}
           {fini && fam === 'probleme' && (
             <ARetenir titre="À RETENIR">
               <ol style={{ margin: '0 0 4px', paddingLeft: 20 }}>{METHODE.map((m, i) => <li key={i}>{m}</li>)}</ol>

@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, lireNombre } from "../commun";
+import { useState, useEffect } from "react";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, noterReussite, exParam } from "../commun";
 import { FAMILLES, GROUPES, verifier, reponseAttendue } from "./AtelierRealiserBanque";
 
 // ====================================================
@@ -16,8 +16,9 @@ const Correction = ({ children }) => (
 );
 
 export function SimulationAtelierRealiser() {
-  const [choix, setChoix] = useState('simple');
-  const [exo, setExo] = useState(() => FAMILLES[0].gen());
+  const depart = (() => { const p = exParam(); return FAMILLES.some(f => f.id === p) ? p : 'simple'; })();
+  const [choix, setChoix] = useState(depart);
+  const [exo, setExo] = useState(() => FAMILLES.find(f => f.id === depart).gen());
   const [rep, setRep] = useState({});
   const [chk, setChk] = useState({});
   const [vu, setVu] = useState({});
@@ -29,6 +30,8 @@ export function SimulationAtelierRealiser() {
   const resultat = q => (q.type === 'qcm' ? { ok: rep[q.id] === q.bonne, msg: '' } : verifier(q, rep[q.id] ?? ''));
   const corriger = id => setChk(c => ({ ...c, [id]: true }));
   const fini = Q.every(q => (chk[q.id] && resultat(q).ok) || vu[q.id]) && Q.every(q => chk[q.id]);
+  const reussi = Q.every(q => chk[q.id] && resultat(q).ok);
+  useEffect(() => { if (reussi) noterReussite(`36:${choix}`); }, [reussi, choix]);
 
   const carte = (q, i) => {
     const affichee = !!chk[q.id], r = resultat(q), bon = r.ok;
@@ -66,9 +69,9 @@ export function SimulationAtelierRealiser() {
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>S’APP : réaliser un calcul</h2>
+        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>REA : réaliser un calcul</h2>
       </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Compétence travaillée : <b>Réaliser</b> — mettre en œuvre un calcul sans erreur : unités et conversions, manipulation d’une relation, chiffres significatifs, fonctions de la calculatrice.</div>
+      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Compétence travaillée : <b>Réaliser</b> (REA) — mettre en œuvre un calcul sans erreur : unités et conversions, manipulation d’une relation, chiffres significatifs, fonctions de la calculatrice.</div>
       <div style={{ ...styleBoite, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
         <label style={{ fontSize: 14 }}>Exercice :{' '}
           <select aria-label="Choix de l’exercice" value={choix} onChange={e => { setChoix(e.target.value); charger(e.target.value); }}
