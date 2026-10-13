@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, ORANGE_GUIDE, avecIndices } from "../commun";
@@ -146,6 +147,7 @@ function Hypotheses() {
 // ════════════════ SIMULATION ════════════════
 export function SimulationDosageEtalonnage() {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
+  useSignalerMode(mode);
   const [onglet, setOnglet] = useState('banc');
   const [guide, setGuide] = useEtatPersistant('dosage-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [graine] = useEtatPersistant('dosage-graine-v1', Math.floor(Math.random() * 1e6));

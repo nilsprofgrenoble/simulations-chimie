@@ -7,7 +7,7 @@
 //  Temps actif = onglet visible ET une action de l'élève (clic, frappe, défilement) dans la dernière minute.
 //  Un enseignant ou un visiteur non connecté n'envoie rien.
 // ════════════════════════════════════════════════════════════════════════════
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useSyncExternalStore } from 'react';
 import { noterReussite } from './commun';
 import { getSession, estEleve, rest, restaurer } from './serveur';
 
@@ -103,4 +103,41 @@ export function useSuivi(cle, reussi) {
     essai: useCallback(() => { e.current.essais += 1; e.current.dernier = Date.now(); marquer(); }, [marquer]),
     vue: useCallback(() => { e.current.vues += 1; e.current.dernier = Date.now(); marquer(); }, [marquer]),
   };
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  TEMPS PASSÉ SUR LES SIMULATIONS, par simulation et par mode (guidé / exploration / défi).
+//  Chaque simulation signale son mode avec useSignalerMode(mode) ; <SuiviTemps simId> (dans App)
+//  mesure le temps actif avec les mêmes règles que les exercices et l'enregistre sous la clé
+//  « sim:<id>:<mode> » (durée seulement : ni essais ni réussite).
+// ════════════════════════════════════════════════════════════════════════════
+let modeSim = null;
+const abonnes = new Set();
+const fixerMode = m => { if (m !== modeSim) { modeSim = m; abonnes.forEach(f => f()); } };
+export const nomsSim = {};     // id → titre, rempli par App (pour l'affichage)
+
+export function useSignalerMode(mode) {
+  const m = mode === 'exercice' ? 'defi' : (mode || 'explore');
+  useEffect(() => { fixerMode(m); return () => fixerMode(null); }, [m]);
+}
+
+export function SuiviTemps({ simId }) {
+  const mode = useSyncExternalStore(f => { abonnes.add(f); return () => abonnes.delete(f); }, () => modeSim);
+  useSuivi(`sim:${simId}:${mode || 'libre'}`, false);
+  return null;
+}
+
+export const estSimulation = cle => typeof cle === 'string' && cle.startsWith('sim:');
+export const MODES = [['guide', '🧭 Guidé'], ['explore', '🔍 Exploration libre'], ['defi', '🎯 Défi'], ['libre', 'Sans mode']];
+// lignes de type « sim:… » → [{ id, nom, total, guide, explore, defi, libre }] trié par temps décroissant
+export function tempsParSimulation(lignes) {
+  const m = new Map();
+  for (const l of lignes) {
+    if (!estSimulation(l.cle)) continue;
+    const [, id, mode] = l.cle.split(':');
+    const a = m.get(id) || { id, nom: nomsSim[id] || `Simulation ${id}`, total: 0, guide: 0, explore: 0, defi: 0, libre: 0 };
+    a[mode in a ? mode : 'libre'] += l.duree_s; a.total += l.duree_s;
+    m.set(id, a);
+  }
+  return [...m.values()].sort((x, y) => y.total - x.total);
 }

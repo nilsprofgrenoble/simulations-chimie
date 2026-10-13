@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, Frac, avecIndices, fmt, lireNombre, proche } from "../commun";
@@ -33,6 +34,7 @@ const PRESETS_E = [12, 70, 200, 470, 1050, 1500];
 
 export function Simulation8({ plotlyReady }) {
   const [mode, setMode] = useState('explore');             // on arrive sur l'exploration libre
+  useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('cm-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const enGuide = mode === 'guide';

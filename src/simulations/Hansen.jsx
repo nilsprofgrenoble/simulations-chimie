@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect } from "react";
 import { HansenExploration } from "./HansenExploration";
 import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton,
@@ -107,6 +108,7 @@ function Hypotheses() {
 // ════════════════ SIMULATION ════════════════
 export function Simulation4({ plotlyReady }) {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
+  useSignalerMode(mode);
   const [parc, setParc] = useEtatPersistant('hansen-parcours-choix', 1);
   const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
   const [g1, setG1] = useEtatPersistant('hansen-guide-p1', VIDE), [g2, setG2] = useEtatPersistant('hansen-guide-p2', VIDE), [g3, setG3] = useEtatPersistant('hansen-guide-p3', VIDE);

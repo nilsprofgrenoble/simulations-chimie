@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
@@ -98,6 +99,7 @@ export function Simulation6({ naviguer }) {
   const [tr] = useState(lireTransfert);                       // réglages venus de « Régulation TOR, P et PI », s'il y en a
   useEffect(() => { if (tr) effacerTransfert(); }, []);
   const [mode, setMode] = useState("explore");               // on arrive sur l'exploration libre
+  useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant("pf-guide-v2", { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true, boucle: true, hypo: true });

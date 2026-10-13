@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
@@ -203,6 +204,7 @@ function OutilEtalonnage() {
 // ════════════════ SIMULATION ════════════════
 export function BeerLambert1G() {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
+  useSignalerMode(mode);
   const [onglet, setOnglet] = useState('spectro');
   const [guide, setGuide] = useEtatPersistant('beer1g-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   // L'échantillon de l'élève : bouillie bordelaise un peu différente de 15 g/L, et une pureté du solide du lycée

@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import montageCtn from "./montageCtn";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
@@ -97,6 +98,7 @@ const ORDRES_EX = [1, 2, 3].map(o => {
 });
 export function SimulationCAN({ plotlyReady }) {
   const [mode, setMode] = useState('explore');                 // on arrive sur l'exploration libre
+  useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('can-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);

@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche } from "../commun";
@@ -244,6 +245,7 @@ function questionsDefi(df) {
 // ════════════════ SIMULATION ════════════════
 export function SimulationReponse() {
   const [mode, setMode] = useState('explore');
+  useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('reponse-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [rg, setRg] = useEtatPersistant('reponse-guide-reglage-v1', { tau: 3 });
   const [ck, setCk] = useState('ctn');

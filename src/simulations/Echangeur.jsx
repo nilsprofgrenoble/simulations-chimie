@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche } from "../commun";
@@ -319,6 +320,7 @@ function questionsDefi(df) {
 // ════════════════ SIMULATION ════════════════
 export function SimulationEchangeur() {
   const [mode, setMode] = useState('explore');
+  useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('echangeur-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [rg, setRg] = useEtatPersistant('echangeur-guide-reglage-v1', { go: false, contre: false, cst: false, gm: 'contre' });
   const [r, setR] = useState(() => ({ ...PRESETS.guide }));

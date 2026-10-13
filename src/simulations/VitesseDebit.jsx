@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Frac, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, indicesProfond, lireNombre, proche } from "../commun";
@@ -148,6 +149,7 @@ const QM_UNITE = 'kg·s⁻¹';
 
 export function SimulationVitesseDebit({ naviguer }) {
   const [mode, setMode] = useState('explore');
+  useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('vitesse-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);

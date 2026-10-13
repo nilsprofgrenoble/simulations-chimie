@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
@@ -28,6 +29,7 @@ const affichage = pa => Math.round(pa / 100);
 
 export function SimulationStatiqueFluides({ plotlyReady }) {
   const [mode, setMode] = useState('explore');                  // on arrive sur l'exploration libre
+  useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('fluides-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);

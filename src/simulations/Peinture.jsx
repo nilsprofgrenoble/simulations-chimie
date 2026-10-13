@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { PeintureExploration } from "./PeintureExploration";
 import { AnimationSechage } from "./peintureFilm";
@@ -117,6 +118,7 @@ function Hypotheses() {
 // ════════════════ SIMULATION ════════════════
 export function SimulationPeinture({ plotlyReady }) {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
+  useSignalerMode(mode);
   // Trois parcours distincts, chacun avec sa progression mémorisée
   const [parc, setParc] = useEtatPersistant('peinture-parcours-choix', 1);
   const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };

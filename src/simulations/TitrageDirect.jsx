@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
@@ -24,6 +25,7 @@ function erlenLugol(mod, VB) {
 
 export function Simulation2() {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
+  useSignalerMode(mode);
   const [onglet, setOnglet] = useState('general');
   const [guide, setGuide] = useEtatPersistant('titrage-direct-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [mes, setMes] = useEtatPersistant('titrage-direct-mesures-v1', { Vrapide: null, Ve: null });

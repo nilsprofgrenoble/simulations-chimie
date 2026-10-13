@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton,
   styleBoite, Section, LigneMesure, Curseur, BoutonsModes, lireNombre, proche, sci, avecIndices } from "../commun";
@@ -88,6 +89,7 @@ export function Simulation5({ naviguer }) {
   const [tr] = useState(lireTransfert);                      // réglages venus de « Point de fonctionnement », s'il y en a
   useEffect(() => { if (tr) effacerTransfert(); }, []);
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre                // guide | explore | defi
+  useSignalerMode(mode);
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true });
   const [regul, setRegul] = useState(tr ? 'p' : 'tor');       // tor | p | pi
   const [hBas, setHBas] = useState(31);

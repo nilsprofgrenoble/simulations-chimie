@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche } from "../commun";
@@ -367,6 +368,7 @@ function questionsDefi(df) {
 // ════════════════ SIMULATION ════════════════
 export function SimulationBouilloire() {
   const [mode, setMode] = useState('explore');
+  useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('bouilloire-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [rg, setRg] = useEtatPersistant('bouilloire-guide-reglage-v1', { reel: false });
   const [ux, setUx] = useState({ ...BASE, eff: { ...TOUS } });

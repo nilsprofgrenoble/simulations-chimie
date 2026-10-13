@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect, useMemo } from "react";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
@@ -260,6 +261,7 @@ function Hypotheses({ formules = ['ref'], consensus = false }) {
 // ════════════════ SIMULATION ════════════════
 export function SimulationAptitude() {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
+  useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('aptitude-guide-v2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [graine] = useEtatPersistant('aptitude-graine-v2', Math.floor(Math.random() * 1e6));
   const [ouverts, setOuverts] = useState({ hypo: true, alertes: true, reglages: true, comparer: true });

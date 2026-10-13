@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { TabBtn, cardStyle, KIT, Section, styleBoite, CarteParcours, useEtatPersistant, styleBouton, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
 
@@ -425,6 +426,7 @@ function DefiIEpH({ plotlyReady }) {
 // ════════════════════════════════════════════════════════════════
 export function SimulationIEpH({ plotlyReady }) {
   const [mode, setMode] = useState("explore");
+  useSignalerMode(mode);
   useEffect(() => { if (mode === "explore") { const t = setTimeout(() => window.dispatchEvent(new Event("resize")), 120); return () => clearTimeout(t); } }, [mode]);
   return (
     <div style={{ ...cardStyle, textAlign: "left" }}>

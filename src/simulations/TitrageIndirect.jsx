@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
@@ -122,6 +123,7 @@ const COUL_R = ['#2563eb', '#ea580c', '#16a34a'];
 // ════════════════ SIMULATION ════════════════
 export function SimulationTitrageIndirect() {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
+  useSignalerMode(mode);
   const [onglet, setOnglet] = useState('general');
   const [guide, setGuide] = useEtatPersistant('titrage-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [mes, setMes] = useEtatPersistant('titrage-mesures-v1', { Ve: null, VeVieille: null });

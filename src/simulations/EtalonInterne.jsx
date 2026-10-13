@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Field, TabBtn, cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices } from "../commun";
 
@@ -1363,6 +1364,7 @@ function DefiEtalon() {
 // ════════════════════════════════════════════════════════════════
 export function SimulationEtalonnageInterne({ plotlyReady }) {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
+  useSignalerMode(mode);
   useEffect(() => { if (mode === 'explore') { const t = setTimeout(() => window.dispatchEvent(new Event('resize')), 120); return () => clearTimeout(t); } }, [mode]);
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>

@@ -36,6 +36,7 @@ import { SimulationEntrainement } from "./simulations/Entrainement";
 import { SimulationCompte } from "./simulations/Compte";
 import { SimulationSuiviProf } from "./simulations/SuiviProf";
 import { useSession, restaurer } from "./serveur";
+import { SuiviTemps, nomsSim } from "./suivi";
 
 // ============================================================
 //  MENU — modifiez les noms et icônes ici
@@ -95,6 +96,7 @@ const SIMULATIONS = [
   { id:39, label:"Mon compte", niveau:"COMPTE", icon:"👤", color:"#e11d48", component: SimulationCompte },
   { id:40, label:"Suivi professeur", niveau:"COMPTE", icon:"📊", color:"#e11d48", component: SimulationSuiviProf },
 ];
+SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; });
 
 const NIVEAUX = [
   { label: "1G",   key: "1G",   color: "#2a9d8f" },
@@ -619,6 +621,7 @@ export default function App() {
                 {/* Le fichier App.css du modèle Vite centre tout le texte (#root) : on rétablit l'alignement
                     à gauche pour les simulations ; la page d'accueil garde sa mise en page centrée. */}
                 <BandeauContexte key={`b${activeId}`} id={activeId} contexte={CONTEXTES[activeId]} couleur={active.color} />
+                {activeId > 0 && activeId < 34 && <SuiviTemps simId={activeId} />}
                 <ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} />
               </div>}
         </div>

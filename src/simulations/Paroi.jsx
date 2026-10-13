@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche } from "../commun";
@@ -252,6 +253,7 @@ function questionsDefi(df) {
 // ════════════════ SIMULATION ════════════════
 export function SimulationParoi() {
   const [mode, setMode] = useState('explore');
+  useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('paroi-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [rg, setRg] = useEtatPersistant('paroi-guide-reglage-v1', { ajout: false, inv: false, ep: 100 });
   const [couches, setCouches] = useState(PRESETS.mur.couches.map(c => ({ ...c })));

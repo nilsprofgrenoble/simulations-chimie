@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback, Fragment } from "react";
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite } from "../commun";
 import { useSession, estProf, deconnexion, rest, toutLire, fonctionComptes } from "../serveur";
-import { agreger, etiquettes, formatDuree, formatDate } from "./Compte";
+import { agreger, etiquettes, formatDuree, formatDate, TableauTempsSimulations } from "./Compte";
+import { estSimulation, tempsParSimulation, MODES } from "../suivi";
 import { tousLesExercices } from "./Entrainement";
 
 const ROSE = '#e11d48';
@@ -90,7 +91,7 @@ export function SimulationSuiviProf({ naviguer }) {
   }
 
   const classe = classes.find(c => c.id === classeId);
-  const parEleve = new Map(eleves.map(e => [e.user_id, agreger(lignes.filter(l => l.user_id === e.user_id))]));
+  const parEleve = new Map(eleves.map(e => [e.user_id, agreger(lignes.filter(l => l.user_id === e.user_id && !estSimulation(l.cle)))]));
   const total = exos.length;
 
   const creerClasse = e => {
@@ -121,6 +122,7 @@ export function SimulationSuiviProf({ naviguer }) {
     const en = ['identifiant', 'exercice', 'compétence', 'titre', 'réussi', 'essais', 'corrections vues', 'temps (s)', 'séances', 'dernière activité'];
     const rows = [];
     eleves.forEach(e => parEleve.get(e.user_id).forEach(a => rows.push([e.identifiant, a.cle, etq[a.cle]?.comp || '', etq[a.cle]?.titre || '', a.reussi ? 'oui' : 'non', a.essais, a.vues, a.duree, a.seances, a.derniere])));
+    eleves.forEach(e => tempsParSimulation(lignes.filter(l => l.user_id === e.user_id)).forEach(a => rows.push([e.identifiant, `simulation ${a.id}`, 'simulation', a.nom, '', '', '', a.total, '', `guidé ${a.guide} s ; exploration ${a.explore} s ; défi ${a.defi} s`])));
     telecharger(`suivi-${classe.prefixe}.csv`, [en, ...rows].map(r => r.map(csvCase).join(';')).join('\n'));
   };
 
@@ -176,6 +178,7 @@ export function SimulationSuiviProf({ naviguer }) {
           <div style={{ display: 'flex', gap: 6, margin: '12px 0 8px' }}>
             <button onClick={() => setOnglet('eleves')} style={stylePetitBouton(onglet === 'eleves', ROSE)}>Par élève ({eleves.length})</button>
             <button onClick={() => setOnglet('exos')} style={stylePetitBouton(onglet === 'exos', ROSE)}>Par exercice</button>
+            <button onClick={() => setOnglet('sims')} style={stylePetitBouton(onglet === 'sims', ROSE)}>Simulations</button>
           </div>
 
           {onglet === 'eleves' && (
@@ -210,6 +213,23 @@ export function SimulationSuiviProf({ naviguer }) {
                 })}</tbody>
               </table>
               {!eleves.length && <div style={{ color: KIT.txt2, padding: 8 }}>Aucun élève dans cette classe.</div>}
+            </div>)}
+
+          {onglet === 'sims' && (
+            <div>
+              <p style={{ fontSize: 13.5, color: KIT.txt2, margin: '4px 0 8px' }}>Temps actif cumulé de la classe ({eleves.length} élèves) sur chaque simulation, par mode. Cliquez sur un élève ci-dessous pour son détail.</p>
+              <TableauTempsSimulations lignes={lignes} />
+              <h4 style={{ margin: '14px 0 6px' }}>Par élève</h4>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ borderCollapse: 'collapse', fontSize: 13.5, width: '100%' }}>
+                  <thead><tr><th style={th}>Identifiant</th><th style={th}>Total</th>{MODES.map(([k, l]) => <th key={k} style={th}>{l}</th>)}</tr></thead>
+                  <tbody>{eleves.map(e => {
+                    const t = tempsParSimulation(lignes.filter(l => l.user_id === e.user_id)), som = k => t.reduce((x, a) => x + a[k], 0);
+                    return (<tr key={e.user_id} style={{ borderTop: `1px solid ${KIT.bord}` }}><td style={td}><b>{e.identifiant}</b></td><td style={td}>{formatDuree(som('total'))}</td>
+                      {MODES.map(([k]) => <td key={k} style={td}>{som(k) ? formatDuree(som(k)) : '—'}</td>)}</tr>);
+                  })}</tbody>
+                </table>
+              </div>
             </div>)}
 
           {onglet === 'exos' && (

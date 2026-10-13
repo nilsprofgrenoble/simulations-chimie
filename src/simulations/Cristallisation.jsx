@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { TabBtn, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
@@ -30,6 +31,7 @@ const tempDeSolub = s => {
 
 export function Simulation7({ plotlyReady }) {
   const [mode, setMode]         = useState("explore");              // on arrive sur l'exploration libre
+  useSignalerMode(mode);
   const [guide, setGuide]       = useEtatPersistant('crist-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi]         = useState(null);
   const [hypoOuv, setHypoOuv]   = useState(false);

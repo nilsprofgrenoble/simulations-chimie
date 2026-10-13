@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, Cadre, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
@@ -231,6 +232,7 @@ function OutilGeneral() {
 // ════════════════ SIMULATION ════════════════
 export function Simulation1() {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
+  useSignalerMode(mode);
   const [onglet, setOnglet] = useState('manip');          // exploration : manip | tableau | metro
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true });
   // L'échantillon de magnésium de l'élève (prépesé, différent pour chacun), gardé sur l'appareil

@@ -1,3 +1,4 @@
+import { useSignalerMode } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, ORANGE_GUIDE, lireNombre } from "../commun";
 
@@ -330,6 +331,7 @@ export function bernCorrection(ex) {
 
 export function SimulationBernoulli({ plotlyReady }) {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre   // 'guide' | 'explore' | 'exercice' (le défi)
+  useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('bern-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [termesVus, setTermesVus] = useState({});
   const [coudesDepart, setCoudesDepart] = useState(null);   // nombre de coudes en arrivant sur l'étape des pertes

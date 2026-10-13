@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { cardStyle, KIT, styleBouton, styleBoite } from "../commun";
 import { useSession, estEleve, estProf, connexion, deconnexion, toutLire, changerMotDePasse } from "../serveur";
 import { tousLesExercices } from "./Entrainement";
+import { estSimulation, tempsParSimulation, MODES } from "../suivi";
 
 const ROSE = '#e11d48';
 
@@ -59,7 +60,7 @@ function Connexion() {
       </form>
       <div style={{ ...styleBoite, marginTop: 14, fontSize: 13, color: KIT.txt2, lineHeight: 1.6 }}>
         <b style={{ color: KIT.txt }}>Ce qui est enregistré quand tu es connecté·e</b>, pour chaque exercice : la date, le temps passé actif sur la page,
-        le nombre de fois où tu as cliqué sur « Corriger », le nombre de corrections consultées et si tu as réussi.
+        le nombre de fois où tu as cliqué sur « Corriger », le nombre de corrections consultées et si tu as réussi. Sur les simulations : seulement le temps passé, par simulation et par mode (parcours guidé, exploration libre, défi).
         Rien d’autre : ni ton nom, ni ton adresse, ni ce que tu écris dans les réponses. Ces données sont visibles de toi et de ton professeur,
         servent à t’aider à progresser, ne sont pas notées, et sont supprimées à la fin de l’année scolaire.
       </div>
@@ -93,7 +94,7 @@ function MesResultats() {
   }, []);
   if (erreur) return <div style={{ color: '#b91c1c' }}>❌ {erreur}</div>;
   if (!lignes) return <div style={{ color: KIT.txt2 }}>Chargement…</div>;
-  const ag = [...agreger(lignes).values()], etq = etiquettes();
+  const ag = [...agreger(lignes.filter(l => !estSimulation(l.cle))).values()], etq = etiquettes();
   const nbOk = ag.filter(a => a.reussi).length, total = ag.reduce((t, a) => t + a.duree, 0);
   return (
     <div>
@@ -116,8 +117,27 @@ function MesResultats() {
               </tr>))}</tbody>
           </table>
         </div>)}
+      <h3 style={{ margin: '18px 0 6px' }}>Temps passé sur les simulations</h3>
+      <TableauTempsSimulations lignes={lignes} />
     </div>
   );
+}
+
+// Temps actif par simulation et par mode (tableau commun élève / professeur)
+export function TableauTempsSimulations({ lignes, vide = 'Aucun temps enregistré sur les simulations.' }) {
+  const t = tempsParSimulation(lignes), th = { padding: '4px 8px', textAlign: 'left', color: KIT.txt2 };
+  if (!t.length) return <div style={{ ...styleBoite, fontSize: 14 }}>{vide}</div>;
+  return (
+    <div style={{ overflowX: 'auto' }}>
+      <table data-temps-simulations style={{ borderCollapse: 'collapse', fontSize: 13.5, width: '100%' }}>
+        <thead><tr><th style={th}>Simulation</th><th style={th}>Total</th>{MODES.map(([k, l]) => <th key={k} style={th}>{l}</th>)}</tr></thead>
+        <tbody>{t.map(a => (
+          <tr key={a.id} style={{ borderTop: `1px solid ${KIT.bord}` }}>
+            <td style={{ padding: '4px 8px' }}>{a.nom}</td><td style={{ padding: '4px 8px' }}><b>{formatDuree(a.total)}</b></td>
+            {MODES.map(([k]) => <td key={k} style={{ padding: '4px 8px', color: a[k] ? KIT.txt : KIT.txt2 }}>{a[k] ? formatDuree(a[k]) : '—'}</td>)}
+          </tr>))}</tbody>
+      </table>
+    </div>);
 }
 
 export function SimulationCompte({ naviguer }) {
