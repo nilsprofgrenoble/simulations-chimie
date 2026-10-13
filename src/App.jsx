@@ -185,7 +185,10 @@ function PageAccueil({ onStart }) {
           Labo Chimie & Physique
         </h2>
         <p style={{fontSize:15, color:"#555", lineHeight:1.7, maxWidth:600, margin:"0 auto 20px"}}>
-          Simulations interactives pour les niveaux 1G spé PC, TSTL et BTS Métiers de la Chimie.
+          Simulations interactives de chimie et de physique pour les niveaux 1G spé PC, TSTL et BTS Métiers de la Chimie.
+        </p>
+        <p style={{fontSize:13.5, color:"#666", lineHeight:1.6, maxWidth:600, margin:"0 auto 20px"}}>
+          Conçues par Nils Aronssohn, professeur de physique-chimie au lycée Argouges de Grenoble : parcours guidés, exploration libre, défis et exercices par compétence.
         </p>
         <button onClick={()=>onStart(1)} style={{
           padding:"10px 28px", borderRadius:8, border:"none",
