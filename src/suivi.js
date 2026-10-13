@@ -128,15 +128,16 @@ export function SuiviTemps({ simId }) {
 }
 
 export const estSimulation = cle => typeof cle === 'string' && cle.startsWith('sim:');
-export const MODES = [['guide', '🧭 Guidé'], ['explore', '🔍 Exploration libre'], ['defi', '🎯 Défi'], ['libre', 'Sans mode']];
+export const MODES = [['guide', '🧭 Guidé'], ['explore', '🔍 Exploration libre'], ['defi', '🎯 Défi']];
+// (une simulation sans choix de mode compte comme exploration libre)
 // lignes de type « sim:… » → [{ id, nom, total, guide, explore, defi, libre }] trié par temps décroissant
 export function tempsParSimulation(lignes) {
   const m = new Map();
   for (const l of lignes) {
     if (!estSimulation(l.cle)) continue;
     const [, id, mode] = l.cle.split(':');
-    const a = m.get(id) || { id, nom: nomsSim[id] || `Simulation ${id}`, total: 0, guide: 0, explore: 0, defi: 0, libre: 0 };
-    a[mode in a ? mode : 'libre'] += l.duree_s; a.total += l.duree_s;
+    const a = m.get(id) || { id, nom: nomsSim[id] || `Simulation ${id}`, total: 0, guide: 0, explore: 0, defi: 0 };
+    a[mode === 'libre' || !(mode in a) ? 'explore' : mode] += l.duree_s; a.total += l.duree_s;
     m.set(id, a);
   }
   return [...m.values()].sort((x, y) => y.total - x.total);

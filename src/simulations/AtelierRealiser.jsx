@@ -27,7 +27,7 @@ export function SimulationAtelierRealiser() {
   const [indice, setIndice] = useState({});
   const Q = exo.questions;
 
-  const charger = id => { setExo(FAMILLES.find(f => f.id === id).gen()); setRep({}); setChk({}); setVu({}); setEtp(0); setIndice({}); };
+  const charger = id => { try { document.activeElement?.blur?.(); } catch { /* sans effet */ } setExo(FAMILLES.find(f => f.id === id).gen()); setRep({}); setChk({}); setVu({}); setEtp(0); setIndice({}); };
   const resultat = q => (q.type === 'qcm' ? { ok: rep[q.id] === q.bonne, msg: '' } : verifier(q, rep[q.id] ?? ''));
   const corriger = (id, vue = false) => { (vue ? suivi.vue : suivi.essai)(); setChk(c => ({ ...c, [id]: true })); };
   const fini = Q.every(q => (chk[q.id] && resultat(q).ok) || vu[q.id]) && Q.every(q => chk[q.id]);

@@ -71,7 +71,7 @@ export function SimulationAtelierDonnees() {
   const [etp, setEtp] = useState(0);              // dernière étape ouverte
   const [indice, setIndice] = useState({});
 
-  const charger = (id, q) => { setEx(nouvelEnonce(id, q)); setRep(repVide()); setChk({}); setVu({}); setEtp(0); setIndice({}); };
+  const charger = (id, q) => { try { document.activeElement?.blur?.(); } catch { /* sans effet */ } setEx(nouvelEnonce(id, q)); setRep(repVide()); setChk({}); setVu({}); setEtp(0); setIndice({}); };
   const stages = stagesDe(ex);
 
   const okEtape = {

@@ -150,7 +150,8 @@ export function SimulationCompte({ naviguer }) {
         <>
           <p style={{ fontSize: 15, color: KIT.txt }}>Connecté·e : <b>{sess.profil.identifiant}</b>{sess.profil.classe ? <> — classe <b>{sess.profil.classe}</b></> : null}</p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-            <button onClick={() => naviguer(38)} style={styleBouton(true, ROSE)}>🏋️ Je m’entraîne</button>
+            <button onClick={() => naviguer(38)} style={styleBouton(true, ROSE)}>🎯 Je travaille des COMPÉTENCES spécifiques</button>
+            <button onClick={() => naviguer(0)} style={styleBouton(true, '#2a9d8f')}>📚 Je travaille sur des simulations en lien avec un chapitre du cours</button>
             <button onClick={deconnexion} style={styleBouton(false, '#475569')}>Se déconnecter</button>
           </div>
           <div style={{ marginTop: 10 }}><MotDePasse /></div>

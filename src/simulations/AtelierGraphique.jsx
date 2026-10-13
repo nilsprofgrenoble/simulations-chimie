@@ -90,7 +90,7 @@ export function SimulationAtelierGraphique() {
   const enDefi = false;
   const defiFini = false;
 
-  const charger = id => { setG(nouveau(id)); setRep({}); setChk({}); setVu({}); setEtp(0); setIndice({}); };
+  const charger = id => { try { document.activeElement?.blur?.(); } catch { /* sans effet */ } setG(nouveau(id)); setRep({}); setChk({}); setVu({}); setEtp(0); setIndice({}); };
   const ok = q => (q.type === 'qcm' ? rep[q.id] === q.bonne : verifierNum(q, lireNombre(rep[q.id])).ok);
   const reussi = Q.every(q => chk[q.id] && ok(q));
   const suivi = useSuivi(`35:${choix}`, reussi);

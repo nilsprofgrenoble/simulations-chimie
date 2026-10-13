@@ -58,7 +58,7 @@ function Qcm({ o, perm, val, set, chk, vu }) {
       {perm.map(i => {
         const etat = (chk || vu) && val === i ? (o[i][1] ? 'bon' : 'faux') : vu && o[i][1] ? 'manque' : null;
         return (
-          <div key={i}>
+          <div key={`${i}-${T(o[i][0])}`}>
             <button data-ok={o[i][1] ? 'true' : 'false'} onClick={() => set(i)} style={{ ...choix(val === i && !etat, etat), width: '100%' }}>{T(o[i][0])}</button>
             {((chk && val === i) || vu) && <Expl ok={o[i][1]}>{o[i][1] ? '✔ ' : '✘ '}{T(o[i][2])}</Expl>}
           </div>);
@@ -72,7 +72,7 @@ function Multi({ o, perm, sel, toggle, chk, vu }) {
         const s = !!sel[i], juste = o[i][1];
         const etat = vu ? (juste ? (s ? 'bon' : 'manque') : (s ? 'faux' : null)) : chk && s ? (juste ? 'bon' : 'faux') : null;
         return (
-          <div key={i}>
+          <div key={`${i}-${T(o[i][0])}`}>
             <button data-ok={juste ? 'true' : 'false'} aria-pressed={s} onClick={() => toggle(i)} style={{ ...choix(s && !etat, etat), width: '100%' }}>
               <span style={{ marginRight: 6 }}>{s ? '☑' : '☐'}</span>{T(o[i][0])}</button>
             {((chk && s) || vu) && <Expl ok={juste}>{juste ? '✔ Nécessaire : ' : '✘ Pas nécessaire : '}{T(o[i][2])}</Expl>}
@@ -168,7 +168,7 @@ export function SimulationAtelierAnalyser() {
   const [vu, setVu] = useState({});
   const [etp, setEtp] = useState(0);
 
-  const charger = (f, i) => { setFam(f); setIdx(i); setRep({}); setChk({}); setVu({}); setEtp(0); setGraine(g => g + 1); };
+  const charger = (f, i) => { try { document.activeElement?.blur?.(); } catch { /* sans effet */ } setFam(f); setIdx(i); setRep({}); setChk({}); setVu({}); setEtp(0); setGraine(g => g + 1); };
   const hasard = () => { const n = famille.liste.length; let j = idx; if (n > 1) while (j === idx) j = Math.floor(Math.random() * n); charger(fam, j); };
   const suivant = () => charger(fam, (idx + 1) % famille.liste.length);
   const majRep = (id, v) => { setRep(r => ({ ...r, [id]: v })); setChk(c => ({ ...c, [id]: false })); };
