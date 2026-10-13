@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, lireNombre, proche, noterReussite, exParam } from "../commun";
+import { useState } from "react";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, lireNombre, proche, exParam } from "../commun";
+import { useSuivi } from "../suivi";
 import { ENONCES, nouvelEnonce, melange, nb } from "./AtelierDonneesBanque";
 import { parDomaine } from "./ordreDomaines";
 
@@ -83,13 +84,13 @@ export function SimulationAtelierDonnees() {
   const toggle = id => { setChk(c => ({ ...c, sel: false })); setRep(r => ({ ...r, sel: r.sel.includes(id) ? r.sel.filter(x => x !== id) : [...r.sel, id] })); };
   const sb = selBilan(ex, rep.sel);
   const reussi = stages.every(k => chk[k] && okEtape[k]);
-  useEffect(() => { if (reussi) noterReussite(`34:${choix.id}.${choix.q}`); }, [reussi, choix.id, choix.q]);
-  const corriger = k => setChk(c => ({ ...c, [k]: true }));
+  const suivi = useSuivi(`34:${choix.id}.${choix.q}`, reussi);
+  const corriger = (k, vue = false) => { (vue ? suivi.vue : suivi.essai)(); setChk(c => ({ ...c, [k]: true })); };
 
   const barre = (k, i) => (
     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
       <button onClick={() => corriger(k)} style={styleBouton(true, '#16a34a')}>✓ Corriger</button>
-      {!okEtape[k] && <button onClick={() => { corriger(k); setVu(v => ({ ...v, [k]: true })); }}
+      {!okEtape[k] && <button onClick={() => { corriger(k, true); setVu(v => ({ ...v, [k]: true })); }}
         style={{ fontSize: 12.5, background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer' }}>voir la correction</button>}
       {(k === 'sel' || k === 'tab') && !indice[k] && <button onClick={() => setIndice(x => ({ ...x, [k]: true }))} style={stylePetitBouton(false)}>💡 Indice</button>}
       {(okEtape[k] || vu[k]) && chk[k] && i === etp && i < stages.length - 1 && <button onClick={() => setEtp(e => e + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Étape suivante ▶</button>}

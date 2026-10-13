@@ -33,6 +33,9 @@ import { SimulationAtelierGraphique } from "./simulations/AtelierGraphique";
 import { SimulationAtelierRealiser } from "./simulations/AtelierRealiser";
 import { SimulationAtelierAnalyser } from "./simulations/AtelierAnalyser";
 import { SimulationEntrainement } from "./simulations/Entrainement";
+import { SimulationCompte } from "./simulations/Compte";
+import { SimulationSuiviProf } from "./simulations/SuiviProf";
+import { useSession, restaurer } from "./serveur";
 
 // ============================================================
 //  MENU — modifiez les noms et icônes ici
@@ -88,6 +91,9 @@ const SIMULATIONS = [
     component: SimulationAtelierAnalyser },
   { id:38, label:"Je m'entraîne ! Travail par compétence", niveau:"COMP", icon:"🏋️", color:"#e11d48",
     component: SimulationEntrainement },
+  // Pages hors menu (niveau « COMPTE ») : connexion et suivi, ouvertes par les boutons « Mon compte » et « Suivi professeur »
+  { id:39, label:"Mon compte", niveau:"COMPTE", icon:"👤", color:"#e11d48", component: SimulationCompte },
+  { id:40, label:"Suivi professeur", niveau:"COMPTE", icon:"📊", color:"#e11d48", component: SimulationSuiviProf },
 ];
 
 const NIVEAUX = [
@@ -313,6 +319,8 @@ export default function App() {
   };
 
   const [activeId, setActiveId] = useState(getInitialId);
+  const sessionSb = useSession();
+  useEffect(() => { restaurer(); }, []);
   const active = SIMULATIONS.find(s => s.id === activeId) || SIMULATIONS[0];
   const ActiveComponent = active.component;
   const [expanded, setExpanded] = useState({ "1G": true, "TSTL": true, "BTS": true, "COMP": true });
@@ -582,6 +590,13 @@ export default function App() {
             </span>
           </h1>
 
+          <button onClick={() => naviguer(sessionSb?.profil?.role === 'prof' ? 40 : 39)} data-bouton-compte
+            title={sessionSb?.profil ? 'Mon compte' : 'Se connecter'}
+            style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", borderRadius:8, border: sessionSb?.profil ? "1px solid #e11d48" : "none",
+              background: sessionSb?.profil ? "#fff1f2" : "#f0f0f0", color: sessionSb?.profil ? "#be123c" : "#555",
+              fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"'Nunito', sans-serif", whiteSpace:"nowrap" }}>
+            👤 {sessionSb?.profil ? (sessionSb.profil.identifiant || sessionSb.profil.nom) : 'Se connecter'}
+          </button>
           {activeId > 0 && (
             <button onClick={partager} style={{
               display:"flex", alignItems:"center", gap:6,

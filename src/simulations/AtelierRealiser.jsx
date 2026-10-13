@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, noterReussite, exParam } from "../commun";
+import { useState } from "react";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, exParam } from "../commun";
+import { useSuivi } from "../suivi";
 import { FAMILLES, GROUPES, verifier, reponseAttendue } from "./AtelierRealiserBanque";
 
 // ====================================================
@@ -28,10 +29,10 @@ export function SimulationAtelierRealiser() {
 
   const charger = id => { setExo(FAMILLES.find(f => f.id === id).gen()); setRep({}); setChk({}); setVu({}); setEtp(0); setIndice({}); };
   const resultat = q => (q.type === 'qcm' ? { ok: rep[q.id] === q.bonne, msg: '' } : verifier(q, rep[q.id] ?? ''));
-  const corriger = id => setChk(c => ({ ...c, [id]: true }));
+  const corriger = (id, vue = false) => { (vue ? suivi.vue : suivi.essai)(); setChk(c => ({ ...c, [id]: true })); };
   const fini = Q.every(q => (chk[q.id] && resultat(q).ok) || vu[q.id]) && Q.every(q => chk[q.id]);
   const reussi = Q.every(q => chk[q.id] && resultat(q).ok);
-  useEffect(() => { if (reussi) noterReussite(`36:${choix}`); }, [reussi, choix]);
+  const suivi = useSuivi(`36:${choix}`, reussi);
 
   const carte = (q, i) => {
     const affichee = !!chk[q.id], r = resultat(q), bon = r.ok;
@@ -58,7 +59,7 @@ export function SimulationAtelierRealiser() {
         {((vu[q.id] && !bon) || (affichee && bon)) && <Correction>{q.type === 'num' && !bon ? <>Réponse attendue : <b>{reponseAttendue(q)}</b>. </> : null}{q.expl}</Correction>}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
           <button onClick={() => corriger(q.id)} style={styleBouton(true, '#16a34a')}>✓ Corriger</button>
-          {!bon && <button onClick={() => { corriger(q.id); setVu(x => ({ ...x, [q.id]: true })); }}
+          {!bon && <button onClick={() => { corriger(q.id, true); setVu(x => ({ ...x, [q.id]: true })); }}
             style={{ fontSize: 12.5, background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer' }}>voir la correction</button>}
           {q.aide && !indice[q.id] && <button onClick={() => setIndice(x => ({ ...x, [q.id]: true }))} style={stylePetitBouton(false)}>💡 Indice</button>}
           {(bon || vu[q.id]) && chk[q.id] && i === etp && i < Q.length - 1 && <button onClick={() => setEtp(e => e + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Question suivante ▶</button>}

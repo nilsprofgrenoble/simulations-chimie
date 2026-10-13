@@ -1,10 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, lireProgression } from "../commun";
 import { ENONCES } from "./AtelierDonneesBanque";
 import { SCENARIOS } from "./AtelierGraphiqueBanque";
 import { FAMILLES as FAM_REA } from "./AtelierRealiserBanque";
 import { FAMILLES as FAM_ANA } from "./AtelierAnalyserBanque";
 import { ORDRE_DOMAINES } from "./ordreDomaines";
+import { useSession, estEleve, estProf, toutLire } from "../serveur";
 
 const ROSE = '#e11d48';
 const TRANSVERSAL = 'Tous thèmes (transversal)';
@@ -30,7 +31,7 @@ const COMPETENCES = [
 ];
 
 // Tous les exercices, avec leur clé de progression (voir noterReussite dans les ateliers)
-function tousLesExercices() {
+export function tousLesExercices() {
   const L = [];
   ENONCES.forEach(e => e.noms.forEach((n, q) => L.push({ atelier: 34, comp: "S'APP", cle: `34:${e.id}.${q}`, ex: `${e.id}.${q}`, domaine: e.domaine, titre: `${e.titre} — ${n}` })));
   SCENARIOS.forEach(s => L.push({ atelier: 35, comp: "S'APP", cle: `35:${s.id}`, ex: s.id, domaine: s.domaine, titre: titreGraphique(s) }));
@@ -42,8 +43,18 @@ function tousLesExercices() {
 export function SimulationEntrainement({ naviguer }) {
   const [theme, setTheme] = useState('tous');
   const [comp, setComp] = useState('toutes');
-  const [prog, setProg] = useState(lireProgression);
-  const exos = useMemo(tousLesExercices, []);
+  const [progLocale, setProg] = useState(lireProgression);
+  const sess = useSession();
+  const eleve = estEleve(sess), identifiantUtilisateur = sess?.user?.id;
+  const [serveur, setServeur] = useState({});
+  useEffect(() => {          // un élève connecté retrouve ses réussites, d'où qu'il les ait faites
+    let actif = true;
+    if (!eleve) { setServeur({}); return undefined; }
+    toutLire('activites?select=cle&reussi=eq.true').then(l => { if (actif) setServeur(Object.fromEntries(l.map(x => [x.cle, true]))); }).catch(() => {});
+    return () => { actif = false; };
+  }, [eleve, identifiantUtilisateur]);
+  const prog = { ...progLocale, ...serveur };
+  const exos = useMemo(() => tousLesExercices(), []);
   const themes = [...ORDRE_DOMAINES.filter(d => exos.some(e => e.domaine === d)), TRANSVERSAL];
   const liste = exos.filter(e => (theme === 'tous' || e.domaine === theme) && (comp === 'toutes' || e.comp === comp));
   const nbFaits = l => l.filter(e => prog[e.cle]).length;
@@ -61,6 +72,14 @@ export function SimulationEntrainement({ naviguer }) {
         Chaque exercice travaille <b>une</b> compétence de la démarche scientifique. L’ordre conseillé suit celle d’un problème :
         <b> s’approprier → analyser → réaliser → valider</b>. Tu peux commencer par n’importe quelle compétence, mais si tu hésites, suis cet ordre.
       </p>
+
+      <div data-compte style={{ ...styleBoite, fontSize: 13.5, margin: '8px 0', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+        {eleve ? <>👤 Connecté·e : <b>{sess.profil.identifiant}</b> — ta progression est enregistrée et te suit d’un appareil à l’autre.</>
+          : estProf(sess) ? <>👤 Connecté : <b>{sess.profil.nom}</b> (professeur : rien n’est enregistré quand vous faites les exercices).</>
+            : <>Sans compte, ta progression reste sur cet appareil. Avec le compte donné par ton professeur, elle te suit partout.</>}
+        <button onClick={() => naviguer(39)} style={styleBouton(false, ROSE)}>{sess?.profil ? 'Mon compte' : 'Se connecter'}</button>
+        {estProf(sess) && <button onClick={() => naviguer(40)} style={styleBouton(true, ROSE)}>📊 Suivi professeur</button>}
+      </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12, margin: '14px 0' }}>
         {COMPETENCES.map((c, i) => {
@@ -113,7 +132,8 @@ export function SimulationEntrainement({ naviguer }) {
       </div>
 
       <p style={{ fontSize: 12, color: KIT.txt2, marginTop: 14, lineHeight: 1.5 }}>
-        Ta progression est mémorisée uniquement sur cet appareil et dans ce navigateur : elle n’est envoyée à personne.
+        {eleve ? 'Connecté·e : tes résultats (réussite, essais, temps) sont enregistrés sur le serveur et visibles de toi et de ton professeur. Sur cet appareil, une copie des réussites est gardée.'
+          : 'Ta progression est mémorisée uniquement sur cet appareil et dans ce navigateur : elle n’est envoyée à personne.'}
         {' '}<button onClick={effacer} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', fontSize: 12 }}>Effacer ma progression</button>
       </p>
     </div>

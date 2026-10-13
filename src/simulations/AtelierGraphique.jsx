@@ -1,6 +1,7 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, noterReussite, exParam } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, exParam } from "../commun";
+import { useSuivi } from "../suivi";
 import { parDomaine } from "./ordreDomaines";
 import { SCENARIOS, COMPETENCES, nouveauGraphique, questions, verifierNum, nb, decimales, fmtAxe } from "./AtelierGraphiqueBanque";
 
@@ -92,8 +93,8 @@ export function SimulationAtelierGraphique() {
   const charger = id => { setG(nouveau(id)); setRep({}); setChk({}); setVu({}); setEtp(0); setIndice({}); };
   const ok = q => (q.type === 'qcm' ? rep[q.id] === q.bonne : verifierNum(q, lireNombre(rep[q.id])).ok);
   const reussi = Q.every(q => chk[q.id] && ok(q));
-  useEffect(() => { if (reussi) noterReussite(`35:${choix}`); }, [reussi, choix]);
-  const corriger = id => setChk(c => ({ ...c, [id]: true }));
+  const suivi = useSuivi(`35:${choix}`, reussi);
+  const corriger = (id, vue = false) => { (vue ? suivi.vue : suivi.essai)(); setChk(c => ({ ...c, [id]: true })); };
 
   // ── Carte d'une question (exploration et défi) ──
   const carte = (q, i) => {
@@ -124,7 +125,7 @@ export function SimulationAtelierGraphique() {
         {!enDefi && (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
             <button onClick={() => corriger(q.id)} style={styleBouton(true, '#16a34a')}>✓ Corriger</button>
-            {!bon && <button onClick={() => { corriger(q.id); setVu(x => ({ ...x, [q.id]: true })); }}
+            {!bon && <button onClick={() => { corriger(q.id, true); setVu(x => ({ ...x, [q.id]: true })); }}
               style={{ fontSize: 12.5, background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer' }}>voir la correction</button>}
             {q.aide && !indice[q.id] && <button onClick={() => setIndice(x => ({ ...x, [q.id]: true }))} style={stylePetitBouton(false)}>💡 Indice</button>}
             {(bon || vu[q.id]) && chk[q.id] && i === etp && i < Q.length - 1 && <button onClick={() => setEtp(e => e + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Question suivante ▶</button>}
