@@ -28,14 +28,14 @@ const derivee = (f, x, h) => (f(x + h) - f(x - h)) / (2 * h);
 // ── Scénarios ──
 // ech : couples [grande graduation, nombre de petits carreaux par grande graduation] possibles pour l'axe.
 export const SCENARIOS = [
-  { id: 'manometre', domaine: 'Statique des fluides', type: 'droite', prop: true, tend: 'A',
+  { id: 'manometre', domaine: 'Transport des fluides', type: 'droite', prop: true, tend: 'A',
     gen: () => { const rho = tire([800, 1000, 1260]); return { rho, k: rho * 9.81e-4, liq: { 800: 'éthanol', 1000: 'eau', 1260: 'glycérol' }[rho] }; },
     titre: p => `Étalonnage d’un manomètre (liquide : ${p.liq})`,
     axes: () => ({
       x: { nom: 'Hauteur de liquide', sym: 'h', u: 'cm', min: 0, max: 30, ech: [[5, 5], [10, 5], [10, 2]] },
       y: { nom: 'Pression relative', sym: 'P', u: 'hPa', min: 0, max: 40, ech: [[10, 5], [10, 2], [5, 5]] } }),
     f: p => x => p.k * x, penteU: 'hPa·cm⁻¹', penteConv: { fact: 1e4, unit: 'Pa·m⁻¹' }, conv: { axis: 'y', fact: 100, unit: 'Pa' }, xe: 40 },
-  { id: 'beer', domaine: 'Spectrophotométrie', type: 'droite', prop: true, tend: 'A',
+  { id: 'beer', domaine: 'Chimie', type: 'droite', prop: true, tend: 'A',
     gen: () => { const [eps, l] = tire([[2400, 1], [3000, 1], [1800, 2], [2400, 2]]); return { eps, l, k: eps * l * 1e-6 }; },
     titre: () => 'Droite d’étalonnage de solutions de permanganate',
     axes: p => {
@@ -61,7 +61,7 @@ export const SCENARIOS = [
       y: { nom: 'Température de l’eau', sym: 'θ', u: '°C', min: 10, max: 100, ech: [[10, 5], [10, 2]] } }),
     f: p => x => p.Te + (p.T0 - p.Te) * Math.exp(-x / p.tau), conv: { axis: 'x', fact: 60, unit: 's' },
     origine: p => ({ texte: 'Quelle est la température de l’eau à l’instant initial (t = 0) ?', val: p.T0 }) },
-  { id: 'titrage', domaine: 'Dosage', type: 'courbe', tend: 'D',
+  { id: 'titrage', domaine: 'Chimie', type: 'courbe', tend: 'D',
     gen: () => ({ Ve: tire([10, 12, 15, 18, 20]), w: tire([0.5, 0.8]) }),
     titre: () => 'Titrage d’un acide fort par la soude : suivi pH-métrique',
     axes: () => ({
@@ -69,7 +69,7 @@ export const SCENARIOS = [
       y: { nom: 'Acidité de la solution', sym: 'pH', u: '', min: 0, max: 14, ech: [[2, 4], [2, 2], [1, 2]] } }),
     f: p => x => 7 + 5.8 * Math.tanh((x - p.Ve) / p.w), conv: { axis: 'x', fact: 1e-3, unit: 'L' },
     inverse: p => ({ y: 7, texte: 'Quel volume de soude a-t-on versé à l’équivalence ? (pour cet acide fort, pH = 7 à l’équivalence : milieu du saut de pH)', val: p.Ve }) },
-  { id: 'capteur', domaine: 'Chaîne de mesure', type: 'courbe', tend: 'B',
+  { id: 'capteur', domaine: 'Transmission de signaux numériques', type: 'courbe', tend: 'B',
     gen: () => ({ Ui: tire([0.5, 1]), Uf: tire([3, 4, 4.5]), tau: tire([1, 1.5, 2]), t0: 1 }),
     titre: () => 'Réponse d’un capteur à un échelon',
     axes: () => ({
@@ -84,9 +84,9 @@ export const SCENARIOS = [
     axes: () => ({
       x: { nom: 'Débit volumique', sym: 'Q', u: 'm³·h⁻¹', min: 0, max: 40, ech: [[10, 5], [10, 2], [5, 5]] },
       y: { nom: 'Hauteur manométrique', sym: 'H', u: 'm', min: 0, max: 40, ech: [[10, 5], [10, 2], [5, 5]] } }),
-    f: p => x => p.H0 * (1 - (x / p.Qm) ** 2), conv: { axis: 'x', fact: 1 / 3600, unit: 'm³·s⁻¹' },
+    f: p => x => p.H0 * (1 - (x / p.Qm) ** 2), conv: { axis: 'x', fact: 1000 / 3600, unit: 'L·s⁻¹' },
     origine: p => ({ texte: 'Quelle hauteur manométrique la pompe fournit-elle à débit nul (Q = 0) ?', val: p.H0 }) },
-  { id: 'cinetique', domaine: 'Cinétique chimique', type: 'courbe', tend: 'C',
+  { id: 'cinetique', domaine: 'Chimie', type: 'courbe', tend: 'C',
     gen: () => ({ c0: tire([12, 16, 18]), th: tire([100, 150, 200]) }),
     titre: () => 'Disparition d’un réactif au cours du temps',
     axes: () => ({
@@ -171,28 +171,22 @@ export function questions(g) {
       pieges: sc.id === 'ressort' ? [[y.min, `Attention : l’axe vertical ne commence pas à 0 mais à ${nb(y.min)} ${y.u}. Relisez la graduation de la ligne du bas.`]] : [],
       aide: `Regardez où la courbe coupe l’axe vertical (${x.sym} = 0). Attention à la graduation de départ de cet axe${y.min !== 0 ? ` : elle vaut ${nb(y.min)} et non 0` : ''}.`, marques: [{ x: 0, y: o.val }],
       expl: `En ${x.sym} = 0 la courbe est à ${y.sym} = ${nb(o.val)} ${y.u}${y.min !== 0 ? ` (l’axe vertical commence à ${nb(y.min)} et non à 0)` : ''}.` }); }
-  // 6. conversion d’unité
-  if (sc.conv) { const c = sc.conv, a = c.axis === 'x' ? x : y, m = a.minor;
-    const v = arrondiAu(a.min + (a.max - a.min) * (0.25 + 0.5 * rnd()), m), vr = v * c.fact;
-    Q.push({ id: 'conv', comp: 0, type: 'num', q: `Un point du graphique a pour ${c.axis === 'x' ? 'abscisse' : 'ordonnée'} ${a.sym} = ${nb(v, decimales(m))} ${a.u}. Exprimez cette valeur en ${c.unit}.`, unite: c.unit, vrai: vr, tol: Math.abs(vr) * 0.01,
-      pieges: [[v, `Il faut convertir : ${a.u} → ${c.unit}.`]], aide: `Combien vaut 1 ${a.u} en ${c.unit} ?`, marques: [],
-      expl: `${nb(v, decimales(m))} ${a.u} × ${nb(c.fact)} = ${nb(vr)} ${c.unit}.` }); }
-  // 7. coefficient directeur et extrapolation (droites)
-  if (sc.type === 'droite') {
-    const k = (f(x.max) - f(x.min)) / (x.max - x.min);
-    const xa = x.min + 0.15 * (x.max - x.min), xb = x.min + 0.85 * (x.max - x.min);
-    Q.push({ id: 'pente', comp: 3, type: 'num', q: 'Calculez le coefficient directeur de la droite, en utilisant deux points éloignés l’un de l’autre.', unite: sc.penteU, vrai: k, tol: Math.abs(k) * 0.06,
-      pieges: [[1 / k, 'Vous avez calculé Δx / Δy. Le coefficient directeur est Δy / Δx.'], ...(sc.penteConv ? [[k * sc.penteConv.fact, `Cette valeur est exprimée en ${sc.penteConv.unit}. Ici on la demande dans l’unité des axes : ${sc.penteU}.`]] : [])],
-      aide: 'a = (y_B − y_A) / (x_B − x_A). Choisissez deux points sur la droite (pas sur les points de mesure s’ils s’en écartent), loin l’un de l’autre.', marques: [{ x: xa, y: f(xa) }, { x: xb, y: f(xb) }], dec: 4,
-      expl: `Avec A (${nb(xa)} ; ${aff(f(xa), dy + 1)}) et B (${nb(xb)} ; ${aff(f(xb), dy + 1)}) : a = Δy / Δx ≈ ${nb(k)} ${sc.penteU}.` });
-    if (sc.penteConv) Q.push({ id: 'penteSI', comp: 0, type: 'num', q: `Exprimez ce coefficient directeur en ${sc.penteConv.unit}.`, unite: sc.penteConv.unit, vrai: k * sc.penteConv.fact, tol: Math.abs(k * sc.penteConv.fact) * 0.06,
-      pieges: [[k, 'Vous n’avez pas converti : le coefficient directeur dépend des unités choisies sur les axes.']], aide: `Convertissez chacune des deux unités : ${sc.penteU} → ${sc.penteConv.unit}.`, marques: [],
-      expl: `a = ${nb(k)} ${sc.penteU} = ${nb(k * sc.penteConv.fact)} ${sc.penteConv.unit}.` });
-    const xe = sc.xe, ye = f(xe);
-    Q.push({ id: 'extra', comp: 3, type: 'num', q: `Le graphique s’arrête à ${x.sym} = ${nb(x.max)} ${x.u}. Si la droite se prolongeait, que vaudrait ${y.sym} pour ${x.sym} = ${nb(xe)} ${x.u} ?`, unite: y.u, vrai: ye, tol: Math.abs(ye) * 0.05,
-      pieges: [], aide: 'Prolongez la droite à la règle, ou utilisez son équation (coefficient directeur et ordonnée à l’origine).', marques: [{ x: xe, y: ye, hors: true }], dec: dy + 1,
-      expl: `On extrapole : ${y.sym} = a·${x.sym}${sc.prop ? '' : ' + b'} ≈ ${aff(ye, dy + 1)} ${y.u}. Attention : on suppose que la droite continue au-delà de la zone mesurée, ce qui n’est pas garanti.` });
-  }
+  // 6. lecture avec une grandeur exprimée dans une autre unité que celle de l’axe (seul « calcul » autorisé : une conversion)
+  if (sc.conv) { const c = sc.conv, a = c.axis === 'x' ? x : y;
+    let x0 = bornes(x, 0.2, 0.8);
+    for (let essai = 0; essai < 40 && ((sc.id === 'capteur' && x0 < p.t0 + 1) || tolLecture(g, x0) > 0.12 * (y.max - y.min)); essai++) x0 = bornes(x, 0.15, 0.85);
+    let y0;
+    if (c.axis === 'x') {
+      const xv = Number((x0 * c.fact).toPrecision(2)); x0 = xv / c.fact; y0 = f(x0);   // valeur « ronde » dans l’unité demandée
+      Q.push({ id: 'lectAlt', comp: 1, type: 'num', q: `Quelle est la valeur de ${y.sym} pour ${x.sym} = ${nb(xv)} ${c.unit} ?`, unite: y.u, vrai: y0, tol: tolLecture(g, x0), dec: dy + 1,
+        pieges: [], aide: `L’axe horizontal est gradué en ${x.u}. Convertissez d’abord ${nb(xv)} ${c.unit} en ${x.u} (1 ${x.u} = ${nb(c.fact)} ${c.unit}), puis lisez la courbe.`, marques: [{ x: x0, y: y0 }],
+        expl: `${nb(xv)} ${c.unit} correspond à ${nb(Number(x0.toPrecision(4)))} ${x.u} (car 1 ${x.u} = ${nb(c.fact)} ${c.unit}). On lit ensuite ${y.sym} ≈ ${aff(y0, dy + 1)}${y.u ? ' ' + y.u : ''}.` });
+    } else {
+      y0 = f(x0);
+      Q.push({ id: 'lectAlt', comp: 1, type: 'num', q: `Quelle est la valeur de ${y.sym} pour ${x.sym} = ${nb(x0)}${x.u ? ' ' + x.u : ''} ? Donnez le résultat en ${c.unit}.`, unite: c.unit, vrai: y0 * c.fact, tol: tolLecture(g, x0) * c.fact, dec: dy + 1,
+        pieges: [[y0, `Vous avez lu ${y.sym} en ${y.u}, unité de l’axe. Convertissez-le en ${c.unit} (1 ${y.u} = ${nb(c.fact)} ${c.unit}).`]], aide: `Lisez d’abord ${y.sym} en ${y.u} sur l’axe vertical, puis convertissez en ${c.unit} : 1 ${y.u} = ${nb(c.fact)} ${c.unit}.`, marques: [{ x: x0, y: y0 }],
+        expl: `On lit ${y.sym} ≈ ${aff(y0, dy + 1)} ${y.u}, soit ${aff(y0, dy + 1)} × ${nb(c.fact)} ≈ ${nb(y0 * c.fact)} ${c.unit}.` });
+    } }
   // 8. allure et proportionnalité
   { const bonne = ALLURES[sc.tend], autres = Object.entries(ALLURES).filter(([c]) => c !== sc.tend).map(([, v]) => v);
     const opts = melange([bonne, ...melange(autres, rnd).slice(0, 3)], rnd);

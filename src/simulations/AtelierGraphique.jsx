@@ -76,9 +76,6 @@ const Correction = ({ children }) => (
 const nouveau = id => nouveauGraphique(id);
 
 export function SimulationAtelierGraphique() {
-  const [mode, setMode] = useState('explore');
-  const [guide, setGuide] = useEtatPersistant('atelier-graphique-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
-  const [bilan, setBilan] = useEtatPersistant('atelier-graphique-bilan-v1', { defis: 0, cumul: [0, 0, 0, 0], n: [0, 0, 0, 0] });
   const [choix, setChoix] = useState('manometre');
   const [g, setG] = useState(() => nouveau('manometre'));
   const [rep, setRep] = useState({});
@@ -87,32 +84,13 @@ export function SimulationAtelierGraphique() {
   const [etp, setEtp] = useState(0);
   const [indice, setIndice] = useState({});
   const [reticule, setReticule] = useState(false);
-  const [defiFini, setDefiFini] = useState(false);
-  const gG = useState(() => nouveauGraphique('beer', { eps: 2400, l: 1, k: 0.0024 }, [0, 0]))[0];
   const Q = useMemo(() => questions(g), [g]);
-  const enDefi = mode === 'defi', enGuide = mode === 'guide';
+  const enDefi = false;
+  const defiFini = false;
 
-  const charger = id => { setG(nouveau(id)); setRep({}); setChk({}); setVu({}); setEtp(0); setIndice({}); setDefiFini(false); };
-  const changerMode = m => {
-    setMode(m);
-    if (m === 'defi') { const s = SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)]; setChoix(s.id); charger(s.id); setReticule(false); }
-    else if (m === 'explore') charger(choix);
-  };
-
+  const charger = id => { setG(nouveau(id)); setRep({}); setChk({}); setVu({}); setEtp(0); setIndice({}); };
   const ok = q => (q.type === 'qcm' ? rep[q.id] === q.bonne : verifierNum(q, lireNombre(rep[q.id])).ok);
   const corriger = id => setChk(c => ({ ...c, [id]: true }));
-  const scores = () => {
-    const s = [0, 0, 0, 0], n = [0, 0, 0, 0];
-    Q.forEach(q => { n[q.comp]++; if (ok(q)) s[q.comp]++; });
-    return { s, n };
-  };
-  const verifierDefi = () => {
-    if (defiFini) return;
-    setDefiFini(true);
-    const { s, n } = scores();
-    setBilan(b => ({ defis: b.defis + 1, cumul: b.cumul.map((v, i) => v + s[i]), n: (b.n || [0, 0, 0, 0]).map((v, i) => v + n[i]) }));
-  };
-  const bil = defiFini ? scores() : null;
 
   // ── Carte d'une question (exploration et défi) ──
   const carte = (q, i) => {
@@ -156,41 +134,6 @@ export function SimulationAtelierGraphique() {
     ...(!enDefi ? Q.filter(q => vu[q.id]).flatMap(q => q.marques || []) : []),
   ];
 
-  // ── Parcours guidé : étalonnage par spectrophotométrie ──
-  const gf = gG.f, k = gG.p.k;
-  const O = (txts, bonne) => ({ options: txts, bonne });
-  const ETAPES = [
-    { id: 'intro', titre: 'Avant de lire une valeur…', texte: <>Un graphique n’est pas qu’une courbe : on y lit des <b>grandeurs</b>, des <b>unités</b> et une <b>échelle</b>. Ici : la droite d’étalonnage d’un spectrophotomètre. Le <b>réticule</b> (case « Réticule » sous le graphique) vous aide à lire des coordonnées.</>,
-      tache: { type: 'qcm', q: 'Que regarde-t-on en premier ?', ...O(['Le titre, les grandeurs portées sur les axes et leurs unités', 'La valeur du point le plus haut', 'La couleur de la courbe'], 0), expl: 'Sans savoir ce que représentent les axes (et en quelle unité), une lecture n’a aucun sens.' } },
-    { id: 'axe', titre: 'Les axes', texte: 'Lisez le nom de la grandeur et l’unité, écrits le long de chaque axe.',
-      tache: { type: 'qcm', q: 'Que représente l’axe horizontal ?', ...O(['La concentration c, en µmol·L⁻¹', 'L’absorbance A (sans unité)', 'La concentration c, en mol·L⁻¹', 'L’absorbance A, en µmol·L⁻¹'], 0), expl: 'c, en µmol·L⁻¹ (et non en mol·L⁻¹ : le facteur 10⁶ comptera plus tard).' } },
-    { id: 'echX', titre: 'L’échelle horizontale', texte: 'Les grandes graduations sont numérotées, mais les petits carreaux ne le sont pas : il faut calculer leur valeur.',
-      tache: { type: 'num', q: 'Que vaut un petit carreau sur l’axe horizontal ?', unite: 'µmol·L⁻¹', vrai: gG.x.minor, tol: 0.02, pieges: [[gG.x.major, 'C’est l’écart entre deux grandes graduations (50). Combien de petits carreaux entre elles ?']], affiche: v => nb(v), expl: '50 µmol·L⁻¹ divisés en 5 petits carreaux : 10 µmol·L⁻¹ chacun.' } },
-    { id: 'echY', titre: 'L’échelle verticale', texte: 'Même méthode sur l’axe vertical : l’échelle n’est pas la même.',
-      tache: { type: 'num', q: 'Que vaut un petit carreau sur l’axe vertical ?', unite: '', vrai: gG.y.minor, tol: 0.02, pieges: [[gG.y.major, 'C’est l’écart entre deux grandes graduations (0,2). Combien de petits carreaux entre elles ? (4)']], affiche: v => nb(v), expl: '0,2 divisé en 4 petits carreaux : 0,05 chacun.' } },
-    { id: 'lect', titre: 'Lire une valeur', texte: 'On part de l’axe horizontal, on monte jusqu’à la courbe, puis on lit sur l’axe vertical.',
-      tache: { type: 'num', q: 'Quelle est l’absorbance A pour c = 150 µmol·L⁻¹ ?', unite: '', vrai: gf(150), tol: 0.07, aide: 'Vous pouvez activer le réticule sous le graphique.', affiche: v => nb(v, 2), expl: 'A ≈ 0,36.' } },
-    { id: 'inv', titre: 'Lecture inverse', texte: 'Cette fois on connaît l’ordonnée : on part de l’axe vertical, on va jusqu’à la droite, puis on descend.',
-      tache: { type: 'num', q: 'Pour quelle concentration c l’absorbance vaut-elle A = 0,60 ?', unite: 'µmol·L⁻¹', vrai: 0.6 / k, tol: 0.05, affiche: v => nb(v), expl: 'c ≈ 250 µmol·L⁻¹.' } },
-    { id: 'prop', titre: 'Proportionnalité', texte: 'Regardez où la droite coupe les axes.',
-      tache: { type: 'qcm', q: 'A est-elle proportionnelle à c ?', ...O(['Oui : la droite passe par le point (0 ; 0)', 'Non : la droite ne passe pas par le point (0 ; 0)', 'Oui : toute droite représente une proportionnalité'], 0), expl: 'La droite passe par l’origine : A = k·c. (Une droite qui ne passe pas par l’origine n’est pas une proportionnalité.)' } },
-    { id: 'pente', titre: 'Le coefficient directeur', texte: 'Choisissez deux points éloignés sur la droite (par exemple c = 50 et c = 250 µmol·L⁻¹) et calculez Δy / Δx. L’unité est celle de y divisée par celle de x.',
-      tache: { type: 'num', q: 'Calculez le coefficient directeur de la droite (utilisez l’écriture 0,0024 ou 2,4e-3).', unite: 'L·µmol⁻¹', vrai: k, tol: 0.06, pieges: [[1 / k, 'Vous avez calculé Δx / Δy : le coefficient directeur est Δy / Δx.'], [k * 1e6, 'C’est la valeur en L·mol⁻¹ ; ici on demande l’unité des axes (L·µmol⁻¹).']], affiche: () => '0,0024 (soit 2,4×10⁻³)', expl: 'a = (0,60 − 0,12) / (250 − 50) = 2,4×10⁻³ L·µmol⁻¹.' } },
-    { id: 'penteSI', titre: 'Convertir dans le système international', texte: 'Le coefficient directeur dépend des unités choisies pour les axes. 1 µmol = 10⁻⁶ mol, donc 1 L·µmol⁻¹ = 10⁶ L·mol⁻¹.',
-      tache: { type: 'num', q: 'Exprimez ce coefficient en L·mol⁻¹.', unite: 'L·mol⁻¹', vrai: k * 1e6, tol: 0.06, pieges: [[k, 'Vous n’avez pas converti : c est en µmol·L⁻¹, pas en mol·L⁻¹.']], affiche: v => nb(v), expl: 'a = 2,4×10⁻³ L·µmol⁻¹ = 2,4×10³ L·mol⁻¹ : c’est le produit ε·ℓ de la loi de Beer-Lambert.' } },
-    { id: 'extra', titre: 'Extrapoler', texte: 'Le graphique s’arrête à 300 µmol·L⁻¹. On prolonge la droite (ou on utilise son équation A = a·c).',
-      tache: { type: 'num', q: 'Quelle absorbance attendrait-on pour c = 400 µmol·L⁻¹ ?', unite: '', vrai: gf(400), tol: 0.06, affiche: v => nb(v, 2), expl: 'A = 2,4×10⁻³ × 400 ≈ 0,96.' } },
-    { id: 'meff', titre: 'Les limites d’une extrapolation', texte: 'Un résultat obtenu en dehors du domaine mesuré repose sur une hypothèse.',
-      tache: { type: 'qcm', q: 'Pourquoi faut-il se méfier d’une extrapolation ?', ...O(['On suppose que la droite continue de la même façon, sans l’avoir vérifié', 'Parce que le calcul est plus compliqué', 'Parce que la valeur obtenue est toujours fausse'], 0), expl: 'À forte concentration, la loi de Beer-Lambert cesse d’être linéaire : la droite ne se prolonge pas indéfiniment.' } },
-    { id: 'bravo', titre: 'Bravo !', texte: <>La démarche : <b>1.</b> grandeurs, unités, échelle de chaque axe ; <b>2.</b> lire (directement ou en sens inverse) ; <b>3.</b> repérer l’allure et la proportionnalité ; <b>4.</b> calculer un coefficient directeur dans la bonne unité, extrapoler avec prudence. Entraînez-vous maintenant sur d’autres graphiques.</> },
-  ];
-  const marquesG = [
-    ...(guide.reussies && guide.reussies[4] ? [{ x: 150, y: gf(150) }] : []),
-    ...(guide.reussies && guide.reussies[5] ? [{ x: 0.6 / k, y: 0.6 }] : []),
-    ...(guide.reussies && guide.reussies[7] ? [{ x: 50, y: gf(50) }, { x: 250, y: gf(250) }] : []),
-  ];
-  const finParcours = <button onClick={() => changerMode('explore')} style={styleBouton(true, ORANGE_GUIDE)}>S’entraîner ▶</button>;
-
   const caseReticule = !enDefi && (
     <label style={{ fontSize: 13.5, color: KIT.txt, display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
       <input type="checkbox" checked={reticule} onChange={e => setReticule(e.target.checked)}/> Réticule : afficher les coordonnées du pointeur (aide à la lecture)</label>);
@@ -210,17 +153,10 @@ export function SimulationAtelierGraphique() {
         @media (max-width: 960px) { .atg-l1 { grid-template-columns: minmax(0, 1fr); } .atg-g { position: static; } }
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Atelier : lire un graphique</h2>
-        <BoutonsModes mode={mode} setMode={changerMode}/>
+        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>S’APP : lire un graphique</h2>
       </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Compétence travaillée : <b>S’approprier</b> — identifier grandeurs, unités et échelles, lire des valeurs, interpréter une courbe.</div>
-      {enGuide ? (
-        <div className="atg-l1">
-          <div className="atg-g">{vueGraphe(gG, marquesG)}</div>
-          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
-        </div>
-      ) : (
-        <div className="atg-l1">
+      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Compétence travaillée : <b>S’approprier</b> — identifier grandeurs, unités et échelles, lire des valeurs (parfois dans une autre unité que celle de l’axe), interpréter l’allure d’une courbe.</div>
+      <div className="atg-l1">
           <div className="atg-g">
             {!enDefi && (
               <div style={{ ...styleBoite, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8 }}>
@@ -231,26 +167,12 @@ export function SimulationAtelierGraphique() {
                   </select></label>
                 <button onClick={() => charger(choix)} style={stylePetitBouton(false)}>🎲 Nouveau graphique</button>
               </div>)}
-            {enDefi && <div style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginBottom: 6 }}>{scen.domaine}</div>}
             {vueGraphe(g, marquesExplore)}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {visibles.map((q, i) => carte(q, i))}
-            {enDefi && !defiFini && <div><button onClick={verifierDefi} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button></div>}
-            {enDefi && defiFini && bil && (
-              <div style={styleBoite}>
-                <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>Bilan par compétence</div>
-                {COMPETENCES.map((c, i) => bil.n[i] > 0 && (
-                  <div key={c} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-                    <span style={{ width: 250, fontSize: 14 }}>{c}</span>
-                    <div style={{ width: 120, height: 10, background: '#e2e8f0', borderRadius: 5 }}><div style={{ width: `${bil.s[i] / bil.n[i] * 100}%`, height: '100%', borderRadius: 5, background: bil.s[i] === bil.n[i] ? '#16a34a' : bil.s[i] / bil.n[i] >= 0.5 ? '#f59e0b' : '#dc2626' }}/></div>
-                    <span style={{ fontSize: 13 }}>{bil.s[i]} / {bil.n[i]}</span>
-                  </div>))}
-                <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6 }}>Défis faits sur cet appareil : {bilan.defis}. Les points orange sur le graphique montrent où lire.</div>
-                <button onClick={() => { const s = SCENARIOS[Math.floor(Math.random() * SCENARIOS.length)]; setChoix(s.id); charger(s.id); }} style={{ ...styleBouton(true, '#0ea5e9'), marginTop: 8 }}>Nouveau graphique</button>
-              </div>)}
           </div>
-        </div>)}
+        </div>
     </div>
   );
 }

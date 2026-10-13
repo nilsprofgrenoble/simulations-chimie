@@ -72,6 +72,17 @@ export const lireNombre = s => {
   return parseFloat(t);
 };
 export const proche = (a, b, tol) => Math.abs(a - b) <= Math.abs(b) * tol;
+// Nombre de chiffres significatifs d'une valeur saisie (« 1,26e-3 » → 3 ; « 0,00126 » → 3 ; « 1850 » → 3)
+export const nbCS = s => {
+  const t = String(s ?? '').replace(/\s/g, '').replace(/[−–]/g, '-').replace(',', '.').replace(/(?:×|x|\*)10\^?(-?\d+)/i, 'e$1');
+  const m = t.match(/^[+-]?(\d*\.?\d*)(?:e[+-]?\d+)?$/i);
+  if (!m) return 0;
+  let d = m[1];
+  const aPoint = d.includes('.');
+  d = d.replace('.', '').replace(/^0+/, '');
+  if (!aPoint) d = d.replace(/0+$/, '');
+  return d.length;
+};
 
 // ════════════════ PETIT GRAPHIQUE SVG ════════════════
 function pasJoli(max) {
@@ -267,6 +278,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
       )}
       <div style={{ fontSize: 18, fontWeight: 700, color: TXT }}>{indicesProfond(et.titre)}</div>
       <div style={{ fontSize: 15, color: TXT, lineHeight: 1.6 }}>{indicesProfond(et.texte)}</div>
+      {et.retenir && <ARetenir titre={et.retenirTitre || 'À RETENIR'}>{et.retenir}</ARetenir>}
       {tache && tache.type === 'action' && (
         <div>
           {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}</div>
@@ -297,7 +309,17 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
               <span style={{ fontSize: 14, color: TXT2 }}>{tache.unite}</span>
             </div>
           )}
-          {tache.aide && !verifie && <div style={{ fontSize: 12.5, color: TXT2, marginTop: 4 }}>{tache.aide}</div>}
+          {tache.aide && !verifie && <div style={{ fontSize: 12.5, color: TXT2, marginTop: 4 }}>{avecIndices(tache.aide)}</div>}
+        </div>
+      )}
+      {tache && tache.indice && tache.type !== 'action' && !reussie && (
+        <div>
+          {reps[`ind${etape}`] ? (
+            <div style={{ fontSize: 13.5, color: TXT, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 6, padding: '6px 8px' }}>💡 {indicesProfond(tache.indice)}</div>
+          ) : (
+            <button onClick={() => maj(e => ({ reps: { ...e.reps, [`ind${etape}`]: true } }))} style={{ fontSize: 13, padding: '4px 10px', borderRadius: 8, cursor: 'pointer', fontWeight: 700,
+              border: '1.5px solid #fcd34d', background: '#fffbeb', color: '#92400e' }}>💡 Indice</button>
+          )}
         </div>
       )}
       {dejaReussie && !reussieMaintenant && (
@@ -306,7 +328,11 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
       {tache && tache.type !== 'action' && !tache.bloque && (
         <div>
           {!reussie && <button onClick={verifier} style={btn(true, '#16a34a')}>✓ Vérifier</button>}
-          {verifie && juste && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}>
+          {verifie && juste && tache.type === 'num' && tache.cs && nbCS(reps[etape]) < tache.cs && (
+            <div style={{ fontSize: 14, color: '#b45309', fontWeight: 700, marginTop: 6 }}>
+              ✔ Valeur juste, mais arrondie trop tôt : <span style={{ fontWeight: 400, color: TXT }}>gardez au moins {tache.cs} chiffres significatifs (vous en avez écrit {nbCS(reps[etape])}).
+              {' '}{indicesProfond(tache.expl)}</span></div>)}
+          {verifie && juste && !(tache.type === 'num' && tache.cs && nbCS(reps[etape]) < tache.cs) && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}>
             ✅ Bravo ! <span style={{ fontWeight: 400, color: TXT }}>{indicesProfond(tache.expl)}</span></div>}
           {verifie && !juste && (
             <div style={{ marginTop: 6 }}>
@@ -316,6 +342,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
               {vuRep ? (
                 <div style={{ fontSize: 13.5, color: TXT2, marginTop: 4 }}>
                   {avecIndices(tache.type === 'num' ? `Réponse attendue : ${tache.affiche ? tache.affiche(tache.vrai) : sci(tache.vrai)} ${tache.unite}` : `Réponse : ${tache.options[tache.bonne]}. ${typeof tache.expl === 'string' ? tache.expl : ''}`)}
+                  {tache.detail && tache.type === 'num' && <div style={{ marginTop: 4, color: TXT }}>{indicesProfond(tache.expl)}</div>}
                 </div>
               ) : (
                 <button onClick={() => maj(e => ({ reps: { ...e.reps, [`vu${etape}`]: true } }))} style={{ fontSize: 12.5, marginTop: 4,
@@ -337,6 +364,27 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
   );
 }
 
+
+
+// Encadré « À RETENIR » : ce que l'élève doit mémoriser (formule, schéma, ordres de grandeur), en quelques lignes très courtes.
+export function ARetenir({ titre = 'À RETENIR', children }) {
+  return (
+    <div data-retenir="1" style={{ background: '#fff1f2', border: '2px solid #fb7185', borderRadius: 10, padding: '8px 12px', color: '#0f172a' }}>
+      <div style={{ fontWeight: 800, fontSize: 14, color: '#be123c', letterSpacing: 0.4, marginBottom: 4 }}>{titre} ❤️</div>
+      <div style={{ fontSize: 15, lineHeight: 1.6 }}>{children}</div>
+    </div>
+  );
+}
+
+// Vraie fraction (barre de fraction), à utiliser à la place de « ÷ » dans les calculs détaillés
+export function Frac({ haut, bas }) {
+  return (
+    <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', verticalAlign: 'middle', margin: '0 3px', lineHeight: 1.25 }}>
+      <span style={{ padding: '0 4px', borderBottom: '1.5px solid currentColor' }}>{haut}</span>
+      <span style={{ padding: '0 4px' }}>{bas}</span>
+    </span>
+  );
+}
 
 // ============================================================
 //  KIT COMMUN : mémorisation, bandeau de contexte, briques d'interface

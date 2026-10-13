@@ -17,7 +17,7 @@
 
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
-  color-scheme: light dark;
+  color-scheme: light;   /* le site est clair : sans cela, un navigateur en mode sombre grise les cases de saisie et rend le texte illisible */
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
@@ -110,3 +110,7 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* Cases de saisie : toujours fond blanc et texte foncé, même si le navigateur est en mode sombre */
+input, select, textarea { background-color: #fff; color: #0f172a; }
+input:disabled, select:disabled, textarea:disabled { background-color: #f1f5f9; color: #334155; -webkit-text-fill-color: #334155; opacity: 1; }

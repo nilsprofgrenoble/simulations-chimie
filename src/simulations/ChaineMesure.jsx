@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, ARetenir, Frac, avecIndices, fmt, lireNombre, proche } from "../commun";
 
 // ── Modèle (fonctions pures) ──
 // Caractéristique de la photorésistance : points de mesure (éclairement en lx, résistance en Ω).
@@ -111,21 +111,26 @@ export function Simulation8({ plotlyReady }) {
       tache: { type: 'qcm', q: 'Quand l’éclairement augmente, la résistance de la photorésistance…', options: ['diminue', 'augmente', 'reste constante'], bonne: 0,
         expl: 'La lumière libère des porteurs de charge : la résistance baisse, d’où le nom de photorésistance.' } },
     { id: 'condit', titre: 'Le conditionneur', focus: ['conditionneur', 'graph'], bloc: 'conditionneur',
-      texte: <>La carte Arduino ne sait pas mesurer une résistance. On place la photorésistance dans un <strong>pont diviseur de tension</strong> alimenté en 5 V : Ur = 5 × R / (R<sub>p</sub> + R), avec R = 1000 Ω.</>,
+      retenirTitre: 'À RETENIR : le pont diviseur',
+      retenir: <ul style={{ margin: 0, paddingLeft: 18 }}><li>Ur ={N}5{N}×{N}R{N}/{N}(R<sub>p</sub>{N}+{N}R)</li><li>Rp ↘ quand E ↗, donc Ur ↗</li></ul>,
+      texte: <>La carte Arduino ne sait pas mesurer une résistance. On place la photorésistance dans un <strong>pont diviseur de tension</strong> alimenté en 5 V : Ur = 5 × R / (R<sub>p</sub> + R), avec R = 1000 Ω.</>,
       tache: { type: 'qcm', q: 'À quoi sert le conditionneur ?', options: ['À transformer la variation de résistance en variation de tension, que le CAN sait mesurer', 'À rendre le capteur plus sensible à la lumière', 'À allumer les phares'], bonne: 0,
         expl: 'Le CAN d’une entrée analogique de l’Arduino mesure des tensions entre 0 et 5 V.' } },
     { id: 'ur', titre: 'Calculer la tension', focus: ['conditionneur', 'graph'], bloc: 'conditionneur',
       texte: <>Pour E = 200 lx, vous connaissez Rp. Calculez Ur avec la formule du pont diviseur (R = 1000 Ω).</>,
-      tache: { type: 'num', q: 'Tension Ur', unite: 'V', vrai: Ur200, tol: 0.01, affiche: x => fmt(x, 2),
+      tache: { type: 'num', q: 'Tension Ur', unite: 'V', vrai: Ur200, tol: 0.01, affiche: x => fmt(x, 2), cs: 3, detail: true,
+        indice: 'Remplacez Rp et R par leurs valeurs en Ω : le résultat est en V. Gardez au moins 3 chiffres significatifs.',
         bloque: !(E === 200 && R === R0) ? 'Gardez E = 200 lx et R = 1000 Ω.' : null,
-        expl: `Ur = 5 × 1000 / (${fmt(Rp200, 0)} + 1000) = ${fmt(Ur200, 2)} V.` } },
+        expl: <>Ur = 5 × 1000 × <Frac haut="1" bas={`${fmt(Rp200, 0)} + 1000`}/> = {fmt(Ur200, 3)} V.</> } },
     { id: 'can', titre: 'Le convertisseur analogique-numérique', focus: ['can', 'graph'], bloc: 'can',
       texte: <>Le CAN convertit la tension Ur (de 0 à 5 V) en un <strong>nombre entier N</strong>. Avec n bits, N peut prendre 2<sup>n</sup> valeurs, de 0 à 2<sup>n</sup> − 1. Choisissez 10 bits dans la liste au-dessus du graphique (c'est le CAN d'une carte Arduino Uno).</>,
       tache: { type: 'num', q: 'Combien de valeurs différentes N peut-il prendre avec 10 bits ?', unite: 'valeurs', vrai: 1024, tol: 0.0005, affiche: x => fmt(x, 0),
         bloque: bits !== B0 ? 'Choisissez 10 bits dans la liste.' : null, expl: '2¹⁰ = 1024 valeurs, de 0 à 1023.' } },
     { id: 'quantum', titre: 'Le quantum', focus: ['can', 'graph'], bloc: 'can',
+      retenirTitre: 'À RETENIR : le CAN',
+      retenir: <ul style={{ margin: 0, paddingLeft: 18 }}><li>n bits : N de 0 à 2<sup>n</sup> − 1</li><li>q = (V<sub>max</sub> − V<sub>min</sub>) / (2<sup>n</sup> − 1)</li></ul>,
       texte: <>Le <strong>quantum</strong> q est la variation de tension qui fait changer N d'une unité. Dans ce modèle, N va de 0 à 2<sup>n</sup> − 1 pour une tension de 0 à 5 V, donc <strong>q = 5 / (2<sup>n</sup> − 1)</strong>.</>,
-      tache: { type: 'num', q: 'Quantum q pour 10 bits', unite: 'mV', vrai: q10, tol: 0.01, affiche: x => fmt(x, 2),
+      tache: { type: 'num', q: 'Quantum q pour 10 bits', unite: 'mV', vrai: q10, tol: 0.01, affiche: x => fmt(x, 2), cs: 3,
         bloque: bits !== B0 ? 'Choisissez 10 bits dans la liste.' : null, expl: `q = 5 / 1023 = ${fmt(q10 / 1000, 5)} V = ${fmt(q10, 2)} mV.` } },
     { id: 'n', titre: 'Le nombre N', focus: ['can', 'graph'], bloc: 'can',
       texte: <>Le CAN calcule N = Ur / 5 × (2<sup>n</sup> − 1), tronqué à l'entier inférieur. Reprenez Ur = {fmt(Ur200, 2)} V (E = 200 lx).</>,
@@ -145,6 +150,8 @@ export function Simulation8({ plotlyReady }) {
       tache: { type: 'action', ok: E === 200 && pharesOn && ledOn, label: '☁ Choisir E = 200 lx', faire: () => setE(200),
         consigne: (E === 200 && pharesOn && ledOn) ? null : (!(pharesOn && (ledOn || E === 70)) ? 'Les phares doivent d’abord être allumés : revenez à 70 lx avec les phares activés, puis passez à 200 lx.' : `Éclairement : ${E} lx → 200 lx`) } },
     { id: 'hyst', titre: 'Entre les deux seuils', focus: ['arduino', 'montage'], bloc: 'arduino',
+      retenirTitre: 'À RETENIR : l’hystérésis',
+      retenir: <ul style={{ margin: 0, paddingLeft: 18 }}><li>N &lt; seuil bas : phares allumés</li><li>N &gt; seuil haut : phares éteints</li><li>Entre les deux : état précédent conservé</li></ul>,
       texte: <>N = {fmt(N200, 0)} est compris entre {SEUIL_BAS} et {SEUIL_HAUT} : ni inférieur au seuil bas, ni supérieur au seuil haut.</>,
       tache: { type: 'qcm', q: 'Que deviennent les phares ?', options: ['Ils restent dans l’état précédent (allumés)', 'Ils s’éteignent', 'On ne peut pas savoir'], bonne: 0,
         expl: 'Aucune condition n’est vraie : la sortie garde sa valeur précédente. C’est une hystérésis.' } },
@@ -161,6 +168,8 @@ export function Simulation8({ plotlyReady }) {
       tache: { type: 'qcm', q: 'Quelle hypothèse justifie la formule du pont diviseur Ur = 5 R / (Rp + R) ?', options: ['L’entrée du CAN ne prélève pas de courant sur le pont', 'La photorésistance a une résistance constante', 'La tension d’alimentation est inférieure à 5 V'], bonne: 0,
         expl: 'Si l’entrée du CAN laissait passer un courant non négligeable, il faudrait en tenir compte dans le calcul de Ur.' } },
     { id: 'bravo', titre: 'Bravo !', focus: [], bloc: 'capteur',
+      retenirTitre: 'À RETENIR : la chaîne de mesure',
+      retenir: <ul style={{ margin: 0, paddingLeft: 18 }}><li>E → Rp → Ur → N → décision</li><li>capteur → conditionneur → CAN → traitement</li></ul>,
       texte: <>Vous savez suivre une grandeur à travers une chaîne de mesure : E → Rp → Ur → N, puis décision. En exploration libre, changez R et le nombre de bits : que deviennent le quantum et la
         sensibilité ?</>, tache: null },
   ];
@@ -169,7 +178,7 @@ export function Simulation8({ plotlyReady }) {
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
   useEffect(() => { if (enGuide) setActiveBlock(ETAPES[Math.min(etape, ETAPES.length - 1)].bloc); }, [enGuide, etape]); // eslint-disable-line
-  const vRp = passe('rp') ? `Rp = ${Rp.toLocaleString()} Ω` : 'Rp = ?';
+  const vRp = passe('rp') ? `Rp = ${fmt(Rp, 0)} Ω` : 'Rp = ?';
   const vUr = passe('ur') ? `Ur = ${Ur.toFixed(3)} V` : 'Ur = ?';
   const vN = passe('n') ? `N = ${N}` : 'N = ?';
   const montreQuantum = passe('quantum'), montreN = passe('n');
@@ -236,7 +245,7 @@ export function Simulation8({ plotlyReady }) {
 
   // ── Plotly ──
   useEffect(() => {
-    if (!window.Plotly || !plotRef.current || !plotlyReady) return;
+    if (!window.Plotly || !plotRef.current || !plotlyReady || mode === 'defi') return;
 
     if (activeBlock==="capteur") {
       const Es  = Array.from({length:300},(_,i)=>i*5+5);
@@ -331,7 +340,7 @@ export function Simulation8({ plotlyReady }) {
       }, {displayModeBar:false, responsive:true});
     }
 
-  },[E,R,bits,activeBlock,canInput,plotlyReady,montreN,montreQuantum]);
+  },[E,R,bits,activeBlock,canInput,plotlyReady,montreN,montreQuantum,mode]);
 
   // ── SVG Soleil ──
   const SoleilSVG = (
@@ -527,7 +536,7 @@ export function Simulation8({ plotlyReady }) {
                     Ur = 5 × R / (Rp + R)
                   </span><br/>
                   <span style={{color:"#888", fontSize:12}}>
-                    R={R}Ω, Rp={Rp.toLocaleString()}Ω → <strong>Ur = {passe('ur') ? Ur.toFixed(3) + ' V' : '?'}</strong>
+                    R={R}Ω, Rp={fmt(Rp, 0)}Ω → <strong>Ur = {passe('ur') ? Ur.toFixed(3) + ' V' : '?'}</strong>
                   </span>
                 </div>
               )}
@@ -603,7 +612,8 @@ export function Simulation8({ plotlyReady }) {
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
     </span>
   );
-  const [hypoOuv, setHypoOuv] = useState(true);
+  const [hypoOuv, setHypoOuv] = useState(false);
+  const [hypoDefiOuv, setHypoDefiOuv] = useState(false);
   const panneauHypo = (
     <div style={{ ...styleBoite, ...cadre('hypo') }}>
       <Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section>
@@ -625,7 +635,7 @@ export function Simulation8({ plotlyReady }) {
       <div className={`cm-l1${mode !== 'explore' ? ' cote' : ''}`}>
         {mode === 'defi' ? <div style={styleBoite}>{voletDefi}</div> : exploration}
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
-          : mode === 'defi' ? <div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Hypothèses de travail</div>{hypotheses}</div>
+          : mode === 'defi' ? <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoDefiOuv} onBascule={() => setHypoDefiOuv(o => !o)}>{hypotheses}</Section></div>
             : null}
       </div>
       {mode === 'explore' && (

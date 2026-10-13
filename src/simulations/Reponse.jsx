@@ -79,7 +79,7 @@ const etaler = (ys, ecart) => {                                                 
 
 // ── Situations ──
 export const CTX = {
-  ctn:   { nom: 'Sonde CTN plongée dans l’eau froide (TP bouilloire)', ordre: 1, y: 'V', grand: 'Tension', yU: 'V', tU: 's', ini: 4.38, fin: 2.08, t0: 10, tau: 1.66 },
+  ctn:   { nom: 'Sonde CTN plongée dans l’eau froide', ordre: 1, y: 'V', grand: 'Tension', yU: 'V', tU: 's', ini: 4.38, fin: 2.08, t0: 10, tau: 1.66 },
   pt100: { nom: 'Sonde Pt100 gainée inox plongée dans l’eau chaude', ordre: 1, y: 'θ', grand: 'Température lue', yU: '°C', tU: 's', ini: 20, fin: 90, t0: 5, tau: 5.926 },
   bain:  { nom: 'Bain thermostaté mal réglé : la température oscille (modèle illustratif)', ordre: 2, y: 'θ', grand: 'Température', yU: '°C', tU: 's', ini: 20, fin: 60, t0: 30, zeta: 0.25, w0: 0.05 },
   bainOk: { nom: 'Bain thermostaté bien réglé : pas d’oscillation marquée (modèle illustratif)', ordre: 2, y: 'θ', grand: 'Température', yU: '°C', tU: 's', ini: 20, fin: 60, t0: 30, zeta: 0.7, w0: 0.05 },
@@ -268,7 +268,7 @@ export function SimulationReponse() {
   const dB = BAIN.fin - BAIN.ini;
   const ETAPES = [
     { id: 'intro', titre: 'Un capteur n’est pas instantané', focus: ['graphe'],
-      texte: <>Une sonde de température CTN est en <strong>eau chaude</strong>. À l’instant t<Sub c="0"/>, on la plonge dans de l’<strong>eau froide</strong> (un « échelon » de température). Le graphique montre la tension V aux bornes du conducteur ohmique du montage : elle suit la température de la sonde. Passez la souris sur la courbe pour lire des valeurs.</>,
+      texte: <>Une sonde de température CTN est placée dans l’<strong>eau chaude</strong>. À l’instant t<Sub c="0"/>, on la plonge dans de l’<strong>eau froide</strong> (un « échelon » de température). Le graphique montre la tension V aux bornes du conducteur ohmique placé en série avec la CTN. Quand la sonde se refroidit, la résistance de la CTN augmente, le courant diminue : la tension V aux bornes du conducteur ohmique <strong>diminue</strong>. Passez la souris sur la courbe pour lire des valeurs.</>,
       tache: { type: 'qcm', q: 'Pourquoi la tension ne passe-t-elle pas instantanément de sa valeur initiale à sa valeur finale ?',
         options: ['La sonde a une inertie thermique : elle doit échanger de l’énergie avec l’eau pour changer de température', 'Le générateur met du temps à réagir', 'La sonde est mal branchée'], bonne: 0,
         expl: 'Comme tout corps, la sonde (son enveloppe, son élément sensible) a une capacité thermique : changer de température demande un transfert thermique, donc du temps. Le temps de réponse mesure cette lenteur.' } },
@@ -295,7 +295,7 @@ export function SimulationReponse() {
         pieges: [[CTN.t0 + aC.tR, 't₁ est un instant (≈ 15 s). Le temps de réponse est la durée t₁ − t₀.'], [CTN.t0, 'C’est t₀, l’instant de l’échelon, pas une durée de réponse.']],
         expl: 't₀ = 10 s ; t₁ ≈ 15,0 s ; t_R = t₁ − t₀ ≈ 5,0 s, à la précision de lecture près.' } },
     { id: 'modele', titre: 'Modéliser par une exponentielle', focus: ['graphe', 'modele'],
-      texte: <>La courbe ressemble à une <strong>exponentielle décroissante</strong> (comme le logiciel du TP). Réglez la constante de temps <strong>τ</strong> avec le curseur jusqu’à ce que la courbe orange en pointillés passe au plus près des points.</>,
+      texte: <>La courbe ressemble à une <strong>exponentielle décroissante</strong> : V(t) = V<Sub c="fin"/> + (V<Sub c="ini"/> − V<Sub c="fin"/>)·e<sup>−(t − t₀)/τ</sup> pour t ≥ t₀. Réglez la constante de temps <strong>τ</strong> avec le curseur jusqu’à ce que la courbe orange en pointillés passe au plus près des points.</>,
       tache: { type: 'action', ok: tauOk, consigne: tauOk ? null : 'Réglez τ pour que la courbe orange suive les points' } },
     { id: 'troisTau', titre: 't_R = 3τ', focus: ['modele', 'releve'],
       texte: <>Pour une exponentielle, l’écart à la valeur finale vaut e<sup>−3</sup> ≈ 5 % de ΔV au bout de 3τ (exactement 2,996 τ) : <strong>t<Sub c="R"/> = 3τ</strong>.</>,
@@ -308,12 +308,12 @@ export function SimulationReponse() {
         options: ['Elle utilise tous les points de la courbe, alors que la lecture graphique repose sur un seul croisement avec la ligne, sensible au bruit et à la lecture', 'Parce que 3τ est une valeur exacte et 5 % une approximation', 'Parce qu’elle n’a pas besoin de connaître t₀'], bonne: 0,
         expl: 'L’ajustement exploite des centaines de points et moyenne le bruit ; la lecture graphique dépend d’un seul point d’intersection et de la précision du tracé. Attention : cela suppose que la courbe est vraiment une exponentielle, ce qu’on va remettre en question.' } },
     { id: 'sondes', titre: 'Comparer deux sondes', focus: [],
-      texte: <>La sonde Pt100 gainée en inox de la fiche technique (document 7 du TP) a une constante de temps <strong>τ = 5,926 s</strong>.</>,
+      texte: <>On considère maintenant un autre type de sonde, la <strong>Pt100</strong> gainée en inox, de constante de temps <strong>τ = 5,926 s</strong>.</>,
       tache: { type: 'num', q: 'Temps de réponse à 5 % de la sonde Pt100', unite: 's', vrai: 3 * 5.926, tol: 0.02, affiche: x => nf(x),
         pieges: [[5.926, 'C’est τ ; le temps de réponse à 5 % vaut 3τ.']],
         expl: 't_R = 3τ = 3 × 5,926 ≈ 17,8 s.' } },
     { id: 'choix', titre: 'Choisir la bonne sonde', focus: [],
-      texte: <>Dans la bouilloire, la sonde doit couper le chauffage dès que l’eau bout.</>,
+      texte: <>Dans une bouilloire, la sonde doit couper le chauffage dès que l’eau bout.</>,
       tache: { type: 'qcm', q: 'Quelle sonde choisir pour que l’ébullition ne soit pas prolongée inutilement ?',
         options: ['La sonde CTN (t_R ≈ 5 s) : elle réagit plus vite', 'La Pt100 (t_R ≈ 18 s) : sa constante de temps est plus grande', 'Peu importe'], bonne: 0,
         expl: 'Plus t_R est court, plus tôt le chauffage est coupé. Réserve : t_R dépend aussi des conditions (fluide, agitation, gaine), donc la comparaison n’est rigoureuse que si les deux valeurs sont obtenues dans les mêmes conditions.' } },
@@ -349,6 +349,12 @@ export function SimulationReponse() {
         options: ['celle d’un système du premier ordre : une exponentielle, sans oscillation', 'n’importe quelle courbe qui se stabilise', 'une courbe qui oscille autour de la valeur finale'], bonne: 0,
         expl: 'Hypothèses à retenir : échelon idéal, capteur du premier ordre (une seule constante de temps), tension proportionnelle à la température. Si l’une d’elles est fausse, la méthode graphique reste la référence.' } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
+      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+        <li>t<Sub c="R"/> = t<Sub c="1"/> − t<Sub c="0"/> : durée à partir de l’échelon</li>
+        <li>bande : valeur finale ± 5 % de |Δy|</li>
+        <li>1<sup>er</sup> ordre : t<Sub c="R"/> ≈ 3τ</li>
+        <li>qui oscille : dernière sortie de la bande, pas de 3τ</li>
+        <li>plus t<Sub c="R"/> est petit, plus le capteur est rapide</li></ul>,
       texte: <>Vous savez mesurer un temps de réponse à 5 % : relever V<Sub c="ini"/>, V<Sub c="fin"/>, t<Sub c="0"/>, tracer la bande de ±5 %ΔV et lire t<Sub c="R"/> = t<Sub c="1"/> − t<Sub c="0"/> ; l’obtenir aussi par un modèle exponentiel (t<Sub c="R"/> = 3τ) ; et vous savez que pour une grandeur qui oscille, seule la dernière sortie de la bande compte. En exploration libre, essayez d’autres situations, changez l’amortissement, ajoutez du bruit.</>, tache: null },
   ];
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
@@ -450,7 +456,7 @@ export function SimulationReponse() {
         </div>
         <div style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.6 }}>
           {defi.type === 'ordre1'
-            ? <>Une sonde subit un échelon à t<Sub c="0"/> = {s.t0} s (tension en {ctx.yU}). Voici l’enregistrement. Exploitez-le avec la procédure du TP.</>
+            ? <>Une sonde subit un échelon à t<Sub c="0"/> = {s.t0} s (tension en {ctx.yU}). Voici l’enregistrement. Exploitez-le avec la méthode vue dans le parcours guidé.</>
             : <>{ctx === CTX.bain ? 'Un bain thermostaté (modèle illustratif)' : 'Un circuit RLC série (tension aux bornes du condensateur)'} reçoit un échelon à t<Sub c="0"/> = {s.t0} {ctx.tU}. La grandeur oscille avant de se stabiliser. Exploitez l’enregistrement.</>}
         </div>
         <Graphe s={s} an={an} bruit={BRUIT_GUIDE} c={calD} ctx={ctx}/>
@@ -548,7 +554,7 @@ export function SimulationReponse() {
       <div className={`rep-l1${mode !== 'explore' ? ' cote' : ''}`}>
         {mode === 'defi' ? <div style={styleBoite}>{voletDefi}</div> : enGuide ? vueGuide : vueExplore}
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
-          : mode === 'defi' ? <div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Hypothèses de travail</div>{hypotheses}</div>
+          : mode === 'defi' ? panneauHypo
             : null}
       </div>
       {mode === 'explore' && <>

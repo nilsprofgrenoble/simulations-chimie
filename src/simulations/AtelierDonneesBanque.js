@@ -95,7 +95,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── 3. Dosage d'un comprimé (chimie analytique)
   {
-    id: 'aspirine', domaine: 'Dosage', titre: 'Dosage d’un comprimé d’aspirine', noms: ['Concentration de la solution', 'Masse d’acide dans le comprimé'],
+    id: 'aspirine', domaine: 'Chimie', titre: 'Dosage d’un comprimé d’aspirine', noms: ['Concentration de la solution', 'Masse d’acide dans le comprimé'],
     gen: () => {
       const [VA, cB] = tire([[20, 0.1], [20, 0.05], [10, 0.05]]), m = tire([480, 500, 520]), Vf = 100;
       const VE = Math.round(((m / 180) * (VA / Vf) / cB) * 10) / 10;
@@ -133,7 +133,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── 4. CAN (transmission de signaux numériques)
   {
-    id: 'can', domaine: 'Chaîne de mesure', titre: 'Un capteur et son convertisseur', noms: ['Quantum du CAN', 'Plus petite variation détectable'],
+    id: 'can', domaine: 'Transmission de signaux numériques', titre: 'Un capteur et son convertisseur', noms: ['Quantum du CAN', 'Plus petite variation détectable'],
     gen: () => {
       const [vmin, vmax] = tire([[0, 5], [-5, 5], [0, 3.3], [-10, 10]]);
       return { n: tire([8, 10, 12, 16]), vmin, vmax, fe: tire([1, 10, 48]), sens: tire([10, 20]) };
@@ -203,7 +203,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── 6. Beer-Lambert (spectrophotométrie)
   {
-    id: 'beer', domaine: 'Spectrophotométrie', titre: 'Une solution de permanganate', noms: ['Concentration', 'Transmittance'],
+    id: 'beer', domaine: 'Chimie', titre: 'Une solution de permanganate', noms: ['Concentration', 'Transmittance'],
     gen: () => ({ lam: tire([520, 525, 530]), l: tire([1, 2]), A: tire([0.25, 0.452, 0.6, 0.8]), eps: 2400, theta: tire([20, 25]) }),
     build: (p, q) => {
       const tokens = {
@@ -228,7 +228,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── 7. Réservoir (statique des fluides)
   {
-    id: 'reservoir', domaine: 'Statique des fluides', titre: 'Un réservoir d’eau', noms: ['Pression au fond', 'Masse d’eau contenue'],
+    id: 'reservoir', domaine: 'Transport des fluides', titre: 'Un réservoir d’eau', noms: ['Pression au fond', 'Masse d’eau contenue'],
     gen: () => ({ rho: 1000, h: tire([2, 3, 4, 5]), D: tire([1, 2, 3]), Patm: tire([1010, 1013, 1020]) }),
     build: (p, q) => {
       const tokens = {
@@ -245,7 +245,7 @@ export const ENONCES = [
         cherche: { bonne: 'La pression absolue au fond du réservoir (en Pa)', faux: ['La force exercée par l’eau sur le fond (en N)', 'La masse d’eau contenue dans le réservoir (en kg)', 'La pression relative à la surface libre (en Pa)'] },
         manque: { bonne: 'L’intensité de la pesanteur g (à chercher : 9,81 N·kg⁻¹)', faux: ['La viscosité de l’eau', 'La température de l’eau', 'Rien ne manque'],
           expl: 'La relation fondamentale de l’hydrostatique, P = P_atm + ρ·g·h, fait intervenir g, que l’énoncé ne donne pas.' },
-        solution: { txt: 'P = P_atm + ρ·g·h', val: p.Patm * 100 + p.rho * 9.81 * p.h, u: 'Pa' } };
+        solution: { txt: 'P_fond − P_atm = ρ·g·h  (ΔP = ρ·g·Δz), donc P_fond = P_atm + ρ·g·h', val: p.Patm * 100 + p.rho * 9.81 * p.h, u: 'Pa' } };
       return { tokens, texte: [...debut, 'Quelle est la masse d’eau contenue dans le réservoir ?'], utiles: ['rho', 'h', 'D'],
         derivees: [{ id: 'S', nom: 'Section S du réservoir', expr: 'S = π·D² / 4', val: S, u: 'm²' }, { id: 'V', nom: 'Volume V d’eau', expr: 'V = S × h', val: S * p.h, u: 'm³' }],
         raisons: { Patm: 'La pression atmosphérique ne change pas la masse d’eau contenue.' },
@@ -264,8 +264,20 @@ export function melange(tab, graine) {
   return a;
 }
 
+// Symbole de chaque donnée tel qu'il apparaît dans la formule (affiché à côté du nom de la grandeur)
+const SYMBOLES = {
+  paroi: { an: '', L: 'L', h: 'h', e: 'e', lam: 'λ', Ti: 'T_int', Te: 'T_ext', prix: 'prix', dur: 'durée' },
+  conduite: { Pel: 'P_él', D: 'D', Lc: 'L', Q: 'Q_V', tdur: 'Δt' },
+  aspirine: { mc: 'm_comprimé', M: 'M', Vf: 'V_f', VA: 'V_A', cB: 'c_B', pH: 'pH', VE: 'V_E' },
+  can: { sens: 's', n: 'n', vmin: 'V_min', vmax: 'V_max', fe: 'f_e' },
+  echangeur: { qc: 'q_m,chaud', Tce: 'T_ce', Tcs: 'T_cs', c: 'c', qf: 'q_m,froid', Tfe: 'T_fe' },
+  beer: { lam: 'λ', l: 'ℓ', A: 'A', eps: 'ε', theta: 'θ' },
+  reservoir: { rho: 'ρ', h: 'h', D: 'D', Patm: 'P_atm' },
+};
 export function nouvelEnonce(id, q, forceParams) {
   const def = ENONCES.find(e => e.id === id);
   const p = forceParams || def.gen();
-  return { id, q, p, b: def.build(p, q), graine: 1 + Math.floor(Math.random() * 99999) };
+  const b = def.build(p, q);
+  Object.entries(b.tokens).forEach(([k, t]) => { t.sym = (SYMBOLES[id] || {})[k] || ''; });
+  return { id, q, p, b, graine: 1 + Math.floor(Math.random() * 99999) };
 }

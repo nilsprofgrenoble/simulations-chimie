@@ -99,7 +99,9 @@ export function SimulationCAN({ plotlyReady }) {
   const [mode, setMode] = useState('explore');                 // on arrive sur l'exploration libre
   const [guide, setGuide] = useEtatPersistant('can-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
-  const [hypoOuv, setHypoOuv] = useState(true);
+  const [hypoOuv, setHypoOuv] = useState(false);
+  const [hypoDefiOuv, setHypoDefiOuv] = useState(false);
+  const [zoomOn, setZoomOn] = useState(true);
   const [montageOuv, setMontageOuv] = useState(true);
   const enGuide = mode === 'guide';
   const [source, setSource] = useState(null); // null | 'exemple' | 'perso'
@@ -118,6 +120,8 @@ export function SimulationCAN({ plotlyReady }) {
   const pts = useMemo(() => parseDonnees(texte), [texte]);
   const valide = pts.length >= ordre + 2;
   const quantum = (vmax - vmin) / (Math.pow(2, nbits) - 1);
+  const ETAPE_BITS = 12;                                   // indice de l'étape « bits » : à partir de là, le zoom est masqué
+  const zoomVisible = zoomOn && !(mode === 'guide' && guide.etape >= ETAPE_BITS);
 
   const reg = useMemo(() => {
     if (!valide) return null;
@@ -141,7 +145,7 @@ export function SimulationCAN({ plotlyReady }) {
 
   // Graphe principal — nuage de points (+ modèle si étape suivante active)
   useEffect(() => {
-    if (!plotlyReady || !valide || !etapeDonnees) return;
+    if (!plotlyReady || !valide || !etapeDonnees || mode === 'defi') return;
     const traces = [
       { x: pts.map(p => p.u), y: pts.map(p => p.t), mode: 'markers',
         marker: { color: '#334155', size: 8 }, name: 'Points exp.',
@@ -207,7 +211,7 @@ export function SimulationCAN({ plotlyReady }) {
       showlegend: true,
       shapes,
     }, { displayModeBar: false, responsive: true });
-  }, [plotlyReady, pts, reg, urCur, urMin, urMax, etapeDonnees, etapeModele, etapeZoom, showQuant, quantum, vmin]);
+  }, [plotlyReady, pts, reg, urCur, urMin, urMax, etapeDonnees, etapeModele, etapeZoom, showQuant, quantum, vmin, mode]);
 
   // Graphe zoom
   const dTmax = useMemo(() => {
@@ -222,7 +226,7 @@ export function SimulationCAN({ plotlyReady }) {
   }, [reg, urMin, urMax, quantum]);
 
   useEffect(() => {
-    if (!plotlyReady || !valide || !reg || !etapeZoom) return;
+    if (!plotlyReady || !valide || !reg || !etapeZoom || !zoomVisible || mode === 'defi') return;
     const T0 = evalPoly(reg.coeffs, urCur);
     const T1 = evalPoly(reg.coeffs, urCur + quantum);
     const span = quantum * 5;
@@ -272,23 +276,22 @@ export function SimulationCAN({ plotlyReady }) {
           fillcolor: 'rgba(245,158,11,0.15)', line: { color: '#f59e0b', width: 1 } },
       ],
     }, { displayModeBar: false, responsive: true });
-  }, [plotlyReady, reg, urCur, quantum, etapeZoom, dTmax, showQuant, vmin]);
+  }, [plotlyReady, reg, urCur, quantum, etapeZoom, dTmax, showQuant, vmin, zoomVisible, mode]);
 
   const T0 = reg ? evalPoly(reg.coeffs, urCur) : 0;
   const dT = reg ? Math.abs(evalPoly(reg.coeffs, urCur + quantum) - T0) : 0;
 
   // ════════════════ PARCOURS GUIDÉ ════════════════
   const etape = guide.etape;
-  const Q10 = quantumDe(10), Q3 = quantumDe(3);
+  const Q10 = quantumDe(10), Q4 = quantumDe(3);
   const reglage = source === 'exemple' && ordre === 3 && vmin === 0 && vmax === 5 && nbits === 10;
-  const reglage3 = source === 'exemple' && ordre === 3 && vmin === 0 && vmax === 5 && nbits === 3;
+  const reglage4 = source === 'exemple' && ordre === 3 && vmin === 0 && vmax === 5 && nbits === 4;
   const accroche = u => Math.round(u / Q10) * Q10;           // le curseur ne s'arrête que sur des niveaux du CAN
   const placer = u => setUrVal(accroche(u));
   const pres = u => Math.abs(urCur - u) < 0.01;
   const dT319 = dTDe(accroche(3.19), Q10);
   const [oEx1, oEx2, oEx3] = ORDRES_EX;
-  const pente = (PTS_EX.find(p => p.t === 36).t - PTS_EX.find(p => p.t === 33).t) / (PTS_EX.find(p => p.t === 36).u - PTS_EX.find(p => p.t === 33).u);
-  const U404 = 4.04, N404 = Math.floor(U404 / Q3 + 1e-9), T404 = fEx(N404 * Q3), Tbas = T404, Thaut = fEx((N404 + 1) * Q3), Treel404 = PTS_EX.find(p => p.u === U404).t;
+  const UB = 3.83, NB = Math.floor(UB / Q4 + 1e-9), TB = fEx(NB * Q4), Tbas = TB, Thaut = fEx((NB + 1) * Q4), TreelB = PTS_EX.find(p => p.u === UB).t;
   const ETAPES = [
     { id: 'objectif', titre: 'Que cherche-t-on ?', focus: [],
       texte: <>Un capteur de température (une CTN) donne une tension Ur ; un convertisseur analogique-numérique (CAN) la transforme en un nombre entier N. Mais N ne prend que des valeurs entières : deux tensions très voisines
@@ -296,9 +299,9 @@ export function SimulationCAN({ plotlyReady }) {
       tache: { type: 'qcm', q: 'Que cherche-t-on à déterminer avec cette simulation ?', options: ['La plus petite variation de température détectable : la résolution en température', 'La température exacte du capteur', 'La tension maximale du CAN'], bonne: 0,
         expl: 'La résolution dépend à la fois du CAN (son quantum) et du capteur (sa sensibilité).' } },
     { id: 'montage', titre: 'Le montage du TP', focus: ['montage'],
-      texte: <>La CTN et une résistance de 10 kΩ sont en série sous 5 V ; la carte Arduino mesure la tension Ur aux bornes de la résistance (entrée A0). C'est un pont diviseur : Ur = 5 × R / (R + R<sub>CTN</sub>).</>,
-      tache: { type: 'qcm', q: 'Les mesures montrent que Ur augmente avec la température. Pourquoi ?', options: ['La résistance de la CTN diminue quand T augmente : la tension se reporte davantage aux bornes de la résistance de 10 kΩ', 'La résistance de la CTN augmente quand T augmente', 'La tension d’alimentation augmente avec T'], bonne: 0,
-        expl: 'Une CTN a un coefficient de température négatif : sa résistance baisse quand T monte, donc Ur = 5 R / (R + R_CTN) augmente.' } },
+      texte: <>La CTN et une résistance de 10 kΩ sont en série sous 5 V ; la carte Arduino mesure la tension Ur aux bornes de la résistance (entrée A0). C'est un pont diviseur : Ur = 5 × R / (R + R<sub>CTN</sub>).</>,
+      tache: { type: 'qcm', q: 'Les mesures montrent que Ur augmente avec la température. Pourquoi ?', options: ['La résistance de la CTN diminue quand T augmente : la tension à ses bornes diminue, donc celle aux bornes de R augmente', 'La résistance de la CTN augmente quand T augmente', 'La tension d’alimentation augmente avec T'], bonne: 0,
+        expl: 'Une CTN a un coefficient de température négatif : sa résistance baisse quand T monte, donc Ur = 5 × R / (R + R_CTN) augmente.' } },
     { id: 'donnees', titre: 'Les données du TP', focus: ['donnees'],
       texte: <>Vous avez mesuré la tension Ur pour plusieurs températures T : c'est la <strong>courbe d'étalonnage</strong> du capteur. Chargez les données du TP.</>,
       tache: { type: 'action', ok: source === 'exemple', label: '📊 Charger les données du TP', faire: choisirExemple } },
@@ -318,47 +321,47 @@ export function SimulationCAN({ plotlyReady }) {
         (R² = {fmt(oEx2.r2, 4)}) et <strong>{fmt(oEx3.ecart, 1)} °C</strong> pour l'ordre 3 (R² = {fmt(oEx3.r2, 4)}). Un R² proche de 1 ne suffit pas : on regarde aussi l'écart avec les mesures. Choisissez l'ordre 3.</>,
       tache: { type: 'action', ok: ordre === 3, label: 'Choisir l’ordre 3', faire: () => setOrdre(3), consigne: ordre === 3 ? null : `Ordre du modèle : ${ordre} → 3` } },
     { id: 'zoom', titre: 'Zoomer sur une marche', focus: ['modele'],
-      texte: <>Activez le zoom : il montre, à l'échelle réelle, ce qui se passe entre deux niveaux consécutifs du CAN.</>,
+      texte: <>Activez le zoom : il montre, à l'échelle réelle, ce qui se passe entre deux niveaux consécutifs du CAN. <strong>Faites défiler la page vers le bas</strong> pour voir le graphique.</>,
       tache: { type: 'action', ok: etapeZoom, label: 'Activer le zoom →', faire: () => setEtapeZoom(true) } },
     { id: 'curseur', titre: 'Choisir une tension', focus: ['curseur', 'zoom'],
       texte: <>Le curseur ne peut s'arrêter que sur des niveaux du CAN. Placez-le vers Ur = 3,19 V (point mesuré à 36 °C).</>,
       tache: { type: 'action', ok: pres(accroche(3.19)) && etapeZoom, label: 'Placer le curseur vers 3,19 V', faire: () => placer(3.19),
         consigne: pres(accroche(3.19)) ? null : `Ur : ${fmt(urCur, 2)} V → 3,19 V` } },
     { id: 'dt', titre: 'La résolution en température', focus: ['zoom', 'table'],
-      texte: <>Deux niveaux consécutifs du CAN sont séparés par le quantum q. Les températures correspondantes diffèrent de <strong>ΔT ≈ q × |dT/dUr|</strong> : c'est la plus petite variation de température qui fait changer N.
-        Estimez la pente avec deux points mesurés : (33 °C ; 3,03 V) et (36 °C ; 3,19 V).</>,
-      tache: { type: 'num', q: 'ΔT estimée pour 10 bits', unite: '°C', vrai: dT319, tol: 0.12, affiche: x => fmt(x, 3),
-        aide: `Pente ≈ ΔT / ΔUr, puis ΔT ≈ q × pente.`,
-        expl: `Pente ≈ ${fmt(pente, 1)} °C/V, donc ΔT ≈ ${fmt(Q10, 5)} × ${fmt(pente, 1)} ≈ ${fmt(Q10 * pente, 3)} °C. Le tableau du zoom donne ${fmt(dT319, 3)} °C avec le modèle.` } },
-    { id: 'extremite', titre: 'Partout pareil ?', focus: ['curseur', 'zoom'],
-      texte: <>Déplacez le curseur vers Ur = 4,20 V et comparez ΔT avec sa valeur à 3,19 V (tableau sous le zoom).</>,
+      texte: <>Deux niveaux consécutifs du CAN sont séparés par le quantum q. Les températures correspondantes diffèrent de <strong>ΔT ≈ q × |dT/dUr|</strong> : c'est la plus petite variation de température qui fait changer N. Le tableau gris donne cette valeur pour la tension choisie.</>,
+      tache: { type: 'num', q: 'Lisez ΔT dans le tableau (ligne entourée) pour Ur = 3,19 V', unite: '°C', vrai: dT319, tol: 0.002, affiche: x => fmt(x, 3),
+        bloque: !pres(accroche(3.19)) ? 'Replacez le curseur vers 3,19 V.' : null,
+        aide: `Recopiez la valeur de la ligne « ΔT résultant », entourée en orange.`,
+        expl: `ΔT = ${fmt(dT319, 3)} °C : avec 10 bits, la chaîne distingue des températures qui diffèrent d'environ ${fmt(dT319, 2)} °C autour de 3,19 V.` } },
+    { id: 'extremite', titre: 'Partout pareil ?', focus: ['curseur', 'zoom', 'table'],
+      texte: <>À Ur = 3,19 V, ΔT vaut <strong>{fmt(dT319, 3)} °C</strong>. Déplacez le curseur vers Ur = 4,20 V et comparez avec la valeur entourée dans le tableau gris.</>,
       tache: { type: 'action', ok: pres(accroche(4.2)), label: 'Placer le curseur vers 4,20 V', faire: () => placer(4.2), consigne: pres(accroche(4.2)) ? null : `Ur : ${fmt(urCur, 2)} V → 4,20 V` } },
     { id: 'pente', titre: 'D’où vient la différence ?', focus: ['zoom', 'table'],
       texte: <>Le quantum q est le même partout, mais ΔT n'est pas le même.</>,
       tache: { type: 'qcm', q: 'À 4,20 V, ΔT est plus grand qu’à 3,19 V. Pourquoi ?', options: ['La courbe T = f(Ur) y est plus pentue : un même pas de tension correspond à un plus grand écart de température', 'Le quantum du CAN y est plus grand', 'Le CAN y est moins précis'], bonne: 0,
         expl: 'ΔT ≈ q × |dT/dUr| : à q constant, ΔT est proportionnel à la pente locale de la courbe. La résolution dépend donc de la zone de mesure.' } },
     { id: 'bits3', titre: 'Un CAN à très peu de bits', focus: ['can'],
-      texte: <>Pour voir clairement l'effet de la discrétisation, passez à <strong>3 bits</strong> (N de 0 à 7) dans « Paramètres du CAN ». Le curseur ne peut plus prendre que quelques positions.</>,
-      tache: { type: 'action', ok: nbits === 3, label: 'Passer à 3 bits', faire: () => setNbits(3), consigne: nbits === 3 ? null : `Nombre de bits : ${nbits} → 3` } },
-    { id: 'q3', titre: 'Le quantum à 3 bits', focus: ['can'],
-      texte: <>Le même calcul avec n = 3.</>,
-      tache: { type: 'num', q: 'Quantum q pour 3 bits sur 0–5 V', unite: 'mV', vrai: Q3 * 1000, tol: 0.01, affiche: x => fmt(x, 1),
-        bloque: !(nbits === 3 && vmin === 0 && vmax === 5) ? 'Réglez 0 V, 5 V et 3 bits dans « Paramètres du CAN ».' : null,
-        expl: `q = 5 / 7 ≈ ${fmt(Q3 * 1000, 1)} mV.` } },
+      texte: <>Pour voir clairement l'effet de la discrétisation, passez à <strong>4 bits</strong> (N de 0 à 15) dans « Paramètres du CAN ». Le curseur ne peut plus prendre que quelques positions. Le zoom est masqué à partir de cette étape : il deviendrait illisible.</>,
+      tache: { type: 'action', ok: nbits === 4, label: 'Passer à 4 bits', faire: () => setNbits(4), consigne: nbits === 4 ? null : `Nombre de bits : ${nbits} → 4` } },
+    { id: 'q3', titre: 'Le quantum à 4 bits', focus: ['can'],
+      texte: <>Le même calcul avec n = 4.</>,
+      tache: { type: 'num', q: 'Quantum q pour 4 bits sur 0–5 V', unite: 'mV', vrai: Q4 * 1000, tol: 0.01, affiche: x => fmt(x, 1),
+        bloque: !(nbits === 4 && vmin === 0 && vmax === 5) ? 'Réglez 0 V, 5 V et 4 bits dans « Paramètres du CAN ».' : null,
+        expl: `q = 5 / 15 ≈ ${fmt(Q4 * 1000, 1)} mV.` } },
     { id: 'niveaux', titre: 'Visualiser les niveaux du CAN', focus: ['courbe', 'modele'],
       texte: <>Dans le premier graphique, cochez « Afficher les niveaux de quantification du CAN » (sous le modèle polynomial). Chaque trait vertical est une valeur de Ur que le CAN peut « voir » (N × q) ; le trait horizontal associé donne la température affichée correspondante.</>,
-      tache: { type: 'action', ok: showQuant && reglage3 && etapeModele, label: 'Afficher les niveaux', faire: () => setShowQuant(true),
-        consigne: !(reglage3 && etapeModele) ? 'Gardez le modèle d’ordre 3 et 3 bits.' : showQuant ? null : 'Cochez « Afficher les niveaux de quantification du CAN » (sous le modèle polynomial)' } },
+      tache: { type: 'action', ok: showQuant && reglage4 && etapeModele, label: 'Afficher les niveaux', faire: () => setShowQuant(true),
+        consigne: !(reglage4 && etapeModele) ? 'Gardez le modèle d’ordre 3 et 4 bits.' : showQuant ? null : 'Cochez « Afficher les niveaux de quantification du CAN » (sous le modèle polynomial)' } },
     { id: 'taff', titre: 'Quelle température est affichée ?', focus: ['courbe'],
-      texte: <>Le capteur est à {fmt(Treel404, 0)} °C : on mesure Ur = {fmt(U404, 2).replace('.', ',')} V. Le CAN calcule N = Ur / q = {fmt(U404 / Q3, 2)} et <strong>ne garde que la partie entière</strong> : N = {N404}. Il en déduit la tension N × q = {fmt(N404 * Q3, 3)} V, et la chaîne affiche la température associée à cette tension.
-        <br/>Repérez Ur = {fmt(U404, 2).replace('.', ',')} V sur l'axe horizontal, repérez le niveau du CAN situé juste à sa gauche, puis suivez le trait horizontal jusqu'à l'axe des températures.</>,
-      tache: { type: 'num', q: 'Température affichée par la chaîne pour Ur = 4,04 V', unite: '°C', vrai: T404, tol: 0.03, affiche: x => fmt(x, 1),
-        bloque: !(reglage3 && etapeModele && showQuant) ? 'Gardez le modèle d’ordre 3, 3 bits et affichez les niveaux de quantification.' : null,
-        expl: `La chaîne affiche ${fmt(T404, 1)} °C alors que la température réelle est ${fmt(Treel404, 0)} °C : un écart de ${fmt(Treel404 - T404, 0)} °C dû uniquement à la discrétisation.` } },
+      texte: <>Le capteur est à {fmt(TreelB, 0)} °C : on mesure Ur = {fmt(UB, 2).replace('.', ',')} V. Le CAN calcule N = Ur / q = {fmt(UB / Q4, 2)} et <strong>ne garde que la partie entière</strong> : N = {NB}. Il en déduit la tension N × q = {fmt(NB * Q4, 3)} V, et la chaîne affiche la température associée à cette tension.
+        <br/>Repérez Ur = {fmt(UB, 2).replace('.', ',')} V sur l'axe horizontal, repérez le niveau du CAN situé juste à sa gauche, puis suivez le trait horizontal jusqu'à l'axe des températures.</>,
+      tache: { type: 'num', q: `Température affichée par la chaîne pour Ur = ${fmt(UB, 2).replace('.', ',')} V`, unite: '°C', vrai: TB, tol: 0.03, affiche: x => fmt(x, 1),
+        bloque: !(reglage4 && etapeModele && showQuant) ? 'Gardez le modèle d’ordre 3, 4 bits et affichez les niveaux de quantification.' : null,
+        expl: `La chaîne affiche ${fmt(TB, 1)} °C alors que la température réelle est ${fmt(TreelB, 0)} °C : un écart de ${fmt(TreelB - TB, 0)} °C dû uniquement à la discrétisation.` } },
     { id: 'resolution3', titre: 'Que sait-on de la vraie température ?', focus: ['courbe'],
-      texte: <>La chaîne affiche {fmt(T404, 0)} °C (N = {N404}). Tous les Ur compris entre N × q = {fmt(N404 * Q3, 3)} V et (N + 1) × q = {fmt((N404 + 1) * Q3, 3)} V donnent le même N.</>,
-      tache: { type: 'qcm', q: 'Dans quel intervalle se trouve alors la température réelle ?', options: [`Entre ${fmt(Tbas, 0)} et ${fmt(Thaut, 0)} °C environ`, `Exactement ${fmt(T404, 0)} °C`, `Entre ${fmt(T404 - 1, 0)} et ${fmt(T404 + 1, 0)} °C`], bonne: 0,
-        expl: `Avec 3 bits, la température réelle n'est connue qu'à ${fmt(Thaut - Tbas, 0)} °C près : la chaîne est inutilisable pour un thermomètre. Avec 10 bits, l'intervalle n'est plus que de ${fmt(dT319, 2)} °C.` } },
+      texte: <>La chaîne affiche {fmt(TB, 0)} °C (N = {NB}). Tous les Ur compris entre N × q = {fmt(NB * Q4, 3)} V et (N + 1) × q = {fmt((NB + 1) * Q4, 3)} V donnent le même N.</>,
+      tache: { type: 'qcm', q: 'Dans quel intervalle se trouve alors la température réelle ?', options: [`Entre ${fmt(Tbas, 0)} et ${fmt(Thaut, 0)} °C environ`, `Exactement ${fmt(TB, 0)} °C`, `Entre ${fmt(TB - 1, 0)} et ${fmt(TB + 1, 0)} °C`], bonne: 0,
+        expl: `Avec 4 bits, la température réelle n'est connue qu'à ${fmt(Thaut - Tbas, 0)} °C près : la chaîne est inutilisable pour un thermomètre. Avec 10 bits, l'intervalle n'est plus que de ${fmt(dT319, 2)} °C.` } },
     { id: 'erreur', titre: 'Le CAN est-il le facteur limitant ?', focus: [],
       texte: <>Avec 10 bits, ΔT vaut environ {fmt(dT319, 2)} °C. Mais le modèle s'écarte des mesures de {fmt(oEx3.ecart, 1)} °C au plus, même avec l'ordre 3.</>,
       tache: { type: 'qcm', q: 'Que peut-on conclure pour la mesure de température ?', options: ['Ici, la qualité de l’étalonnage (modèle, capteur) limite l’exactitude bien avant la résolution du CAN', 'La résolution du CAN limite seule l’exactitude de la mesure', 'Le modèle est exact car son R² est proche de 1'], bonne: 0,
@@ -374,7 +377,7 @@ export function SimulationCAN({ plotlyReady }) {
   const idx = id => ETAPES.findIndex(e => e.id === id);
   const passe = id => !enGuide || etape > idx(id);
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
-  const montreQ = passe('quantum') && (nbits !== 3 || passe('q3'));   // à 3 bits, le quantum est la réponse de l'étape « q3 »
+  const montreQ = passe('quantum') && (nbits !== 4 || passe('q3'));   // à 4 bits, le quantum est la réponse de l'étape « q3 »
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
   const cols = mode === 'explore' ? '2fr 1fr' : 'minmax(0, 1fr)';
 
@@ -383,10 +386,11 @@ export function SimulationCAN({ plotlyReady }) {
     const tire = t => t[Math.floor(Math.random() * t.length)];
     let d, k = 0;
     do {
-      d = { bits: tire([3, 4, 5, 6]), u: tire([2.5, 2.7, 2.9, 3.1, 3.3, 3.5, 3.7, 3.9, 4.1]) };
-      const q = quantumDe(d.bits), x = d.u / q, N = Math.floor(x + 1e-9), uq = N * q;
+      const pl = tire([[0, 5], [0, 5], [-5, 5], [0, 10], [-10, 10]]);
+      d = { vmin: pl[0], vmax: pl[1], bits: tire([4, 5, 6, 7, 8]), u: tire([2.5, 2.7, 2.9, 3.1, 3.3, 3.5, 3.7, 3.9, 4.1]) };
+      const q = quantumDe(d.bits, d.vmin, d.vmax), x = (d.u - d.vmin) / q, N = Math.floor(x + 1e-9), uq = d.vmin + N * q;
       var ok = (x - N) > 0.08 && (x - N) < 0.92 && uq > urMinEx && uq + q < urMaxEx;
-    } while (!ok && ++k < 200);
+    } while (!ok && ++k < 400);
     setDefi({ ...d, reps: {}, verifie: false });
   }
   function changerMode(m) {
@@ -398,20 +402,20 @@ export function SimulationCAN({ plotlyReady }) {
     }
   }
   const voletDefi = defi && (() => {
-    const q = quantumDe(defi.bits), N = Math.floor(defi.u / q + 1e-9), uq = N * q, Taf = fEx(uq), largeur = fEx(uq + q) - fEx(uq);
+    const q = quantumDe(defi.bits, defi.vmin, defi.vmax), N = Math.floor((defi.u - defi.vmin) / q + 1e-9), uq = defi.vmin + N * q, Taf = fEx(uq), largeur = fEx(uq + q) - fEx(uq);
     const Q = [
       { id: 'q', q: 'Quantum q du CAN', unite: 'mV', vrai: q * 1000, tol: 0.01, aff: fmt(q * 1000, 1) },
       { id: 'n', q: 'Nombre N affiché par le CAN', unite: '', vrai: N, tol: 0.0001, aff: fmt(N, 0) },
+      { id: 'u', q: 'Tension N × q associée à ce nombre N', unite: 'V', vrai: uq, tol: 0.005, aff: fmt(uq, 3) },
       { id: 't', q: 'Température affichée par la chaîne (modèle d’ordre 3)', unite: '°C', vrai: Taf, tol: 0.01, aff: fmt(Taf, 1) },
       { id: 'l', q: 'Largeur de l’intervalle de températures réelles qui donnent ce même N', unite: '°C', vrai: largeur, tol: 0.15, aff: fmt(largeur, 1) },
-      { id: 'e', q: 'Erreur maximale de quantification sur la tension Ur (la tension réelle est comprise entre N × q et (N + 1) × q)', unite: 'mV', vrai: q * 1000, tol: 0.01, aff: fmt(q * 1000, 1) },
     ];
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.55 }}>
-          Un CAN <strong>{defi.bits} bits</strong> mesure des tensions de 0 à 5 V. Il convertit la tension <strong>Ur = {fmt(defi.u, 2)} V</strong> aux bornes de la résistance du montage du TP (modèle polynomial d'ordre 3).
-          <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 4 }}>Rappels : q = 5 / (2<sup>n</sup> − 1) ; N = Ur / q tronqué à l’entier inférieur ; la température affichée est celle du modèle pour la tension N × q.</div>
-          <button onClick={() => { setSource('exemple'); setTexte(CAN_EXEMPLE); setEtapeDonnees(true); setEtapeModele(true); setEtapeZoom(true); setOrdre(3); setVmin(0); setVmax(5); setNbits(defi.bits);
+          Un CAN <strong>{defi.bits} bits</strong> mesure des tensions de {fmt(defi.vmin, 0)} V à {fmt(defi.vmax, 0)} V. Il convertit la tension <strong>Ur = {fmt(defi.u, 2)} V</strong> aux bornes de la résistance du montage du TP (modèle polynomial d'ordre 3).
+          <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 4 }}>Rappels : q = (V<sub>max</sub> − V<sub>min</sub>) / (2<sup>n</sup> − 1) ; N = (Ur − V<sub>min</sub>) / q tronqué à l’entier inférieur ; la tension convertie est V<sub>min</sub> + N × q, et la température affichée est celle du modèle pour cette tension. Le quantum q est aussi l’erreur maximale de quantification sur Ur.</div>
+          <button onClick={() => { setSource('exemple'); setTexte(CAN_EXEMPLE); setEtapeDonnees(true); setEtapeModele(true); setEtapeZoom(true); setOrdre(3); setVmin(defi.vmin); setVmax(defi.vmax); setNbits(defi.bits);
             setUrVal(uq); setMode('explore'); }}
             style={{ ...stylePetitBouton(false, '#334155'), marginTop: 6 }}>🔍 Régler l’exploration sur ces valeurs</button>
         </div>
@@ -559,6 +563,12 @@ export function SimulationCAN({ plotlyReady }) {
 
           <div style={{ ...boxStyle, ...cadre('can') }}>
             <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 10, color: TXT }}>Paramètres du CAN</div>
+            <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
+              {[[0, 5], [-5, 5], [0, 10]].map(([a, b]) => (
+                <button key={a + '_' + b} onClick={() => { setVmin(a); setVmax(b); }}
+                  style={{ ...stylePetitBouton(vmin === a && vmax === b, '#334155') }}>{String(a).replace('.', ',')} à {String(b).replace('.', ',')} V</button>
+              ))}
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div>
                 <div style={{ fontSize: 12, color: TXT2, marginBottom: 3, fontWeight: 600 }}>Tension min (V)</div>
@@ -691,10 +701,18 @@ export function SimulationCAN({ plotlyReady }) {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ ...boxStyle, ...cadre('zoom') }}>
-              <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, color: TXT }}>
-                Zoom — à l'échelle réelle
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <span style={{ fontWeight: 700, fontSize: 14, color: TXT }}>Zoom — à l'échelle réelle</span>
+                <label style={{ fontSize: 12, color: TXT2, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <input type="checkbox" checked={zoomVisible} disabled={mode === 'guide' && guide.etape >= ETAPE_BITS}
+                    onChange={e => setZoomOn(e.target.checked)}/> Afficher
+                </label>
               </div>
-              <div id="can-zoom" style={{ width: '100%', height: 260 }}/>
+              {zoomVisible
+                ? <div id="can-zoom" style={{ width: '100%', height: 260 }}/>
+                : <div style={{ fontSize: 12.5, color: TXT2, lineHeight: 1.5 }}>
+                    {mode === 'guide' && guide.etape >= ETAPE_BITS ? 'Zoom masqué pour cette étape : avec si peu de bits, un pas du CAN dépasse la fenêtre du zoom.' : 'Zoom masqué.'}
+                  </div>}
             </div>
             <div style={{ ...boxStyle, fontFamily: 'monospace', fontSize: 13, ...cadre('table') }}>
               {urCur + quantum > urMax + 1e-9 && (
@@ -706,10 +724,11 @@ export function SimulationCAN({ plotlyReady }) {
                 ['Ur choisi', `${urCur.toFixed(3)} V`],
                 ['T correspondante', `${T0.toFixed(2)} °C`],
                 ['ΔU (quantum CAN)', montreQ ? `${(quantum * 1000).toFixed(2)} mV` : '?'],
-                ['ΔT résultant', passe('dt') ? `${dT.toFixed(3)} °C` : '?', true],
+                ['ΔT résultant', (!enGuide || etape >= idx('dt')) ? `${dT.toFixed(3)} °C` : '?', true],
               ].map(([k, v, hi]) => (
                 <div key={k} style={{ display: 'flex', justifyContent: 'space-between',
-                  padding: '6px 0', borderBottom: `1px dashed ${BORDER}` }}>
+                  padding: '6px 6px', borderBottom: `1px dashed ${BORDER}`,
+                  ...(hi && enGuide && ['dt', 'extremite'].includes(ETAPES[Math.min(etape, ETAPES.length - 1)].id) ? { outline: `3px solid ${ORANGE_GUIDE}`, borderRadius: 8 } : {}) }}>
                   <span style={{ color: TXT2, fontSize: 12, fontWeight: 600 }}>{k}</span>
                   <span style={{ fontWeight: 700, color: hi ? '#d97706' : TXT }}>{v}</span>
                 </div>
@@ -736,7 +755,7 @@ export function SimulationCAN({ plotlyReady }) {
       <div className={`qc-l1${mode !== 'explore' ? ' cote' : ''}`}>
         {mode === 'defi' ? <div style={styleBoite}>{voletDefi}</div> : exploration}
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
-          : mode === 'defi' ? <div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Hypothèses de travail</div>{hypotheses}</div>
+          : mode === 'defi' ? <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoDefiOuv} onBascule={() => setHypoDefiOuv(o => !o)}>{hypotheses}</Section></div>
             : null}
       </div>
       {mode === 'explore' && (

@@ -16,6 +16,7 @@ const FLUIDES = {
   sel:   { nom: 'Eau saturée en sel (NaCl)', rho: 1200 },
   huile: { nom: 'Huile végétale', rho: 920 },
 };
+const COUL = { eau: 'rgba(56,189,248,0.45)', sel: 'rgba(30,64,175,0.6)', huile: 'rgba(250,204,21,0.65)' };   // eau : bleu ; eau salée : bleu foncé ; huile : jaune
 const HEAU_CM = 40;   // hauteur d'eau dans l'éprouvette : profondeur maximale de l'embout
 const HC_CM = 60;     // hauteur du récipient inconnu
 const H_GUIDE = 0.37; // hauteur d'eau (m) du récipient inconnu dans le parcours guidé
@@ -30,6 +31,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
   const [guide, setGuide] = useEtatPersistant('fluides-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);
+  const [recipOuv, setRecipOuv] = useState(false);
   const [fluide, setFluide] = useState('eau');
   const [patm, setPatm] = useState(1013);
   const [hCm, setHCm] = useState(0);                           // profondeur de l'embout dans l'éprouvette
@@ -49,18 +51,14 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
   const pLueInc = affichage(pressionPa(patm, rho, profondeurInc));
 
   // Régression sur les mesures : P (Pa) en fonction de h (m)
-  const ordre = modele || 1;
-  const fit = useMemo(() => {
-    if (mesures.length < ordre + 2) return null;
-    const xs = mesures.map(m => m.h / 100), ys = mesures.map(m => m.p * 100);
-    const r = polyReg(xs, ys, ordre);
-    return r.coeffs.every(isFinite) ? r : null;
-  }, [mesures, ordre]);
   const fit1 = useMemo(() => {
     if (mesures.length < 3) return null;
     const r = polyReg(mesures.map(m => m.h / 100), mesures.map(m => m.p * 100), 1);
     return r.coeffs.every(isFinite) ? r : null;
   }, [mesures]);
+  const fit = fit1;
+  // En parcours guidé, le modèle linéaire apparaît après l’étape où l’élève choisit le modèle (étape n° 8)
+  const mod = enGuide ? (guide.etape > 7 ? 1 : 0) : modele;
   const a1 = fit1 ? fit1.coeffs[1] : NaN, b1 = fit1 ? fit1.coeffs[0] : NaN;
   const profEstimee = fit1 && pLueInc * 100 > b1 ? (pLueInc * 100 - b1) / a1 * 100 : null;   // cm, par la droite d'étalonnage
 
@@ -77,9 +75,9 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
     const traces = [{ x: mesures.map(m => m.h / 100), y: mesures.map(m => m.p * 100), mode: 'markers', name: 'mesures',
       marker: { color: '#0369a1', size: 9, line: { color: 'white', width: 1.5 } },
       hovertemplate: 'h = %{x:.3f} m<br>P = %{y:.0f} Pa<extra></extra>' }];
-    if (modele && fit) {
+    if (mod && fit) {
       const xs = Array.from({ length: 41 }, (_, i) => i * HEAU_CM / 100 / 40);
-      traces.push({ x: xs, y: xs.map(x => evalPoly(fit.coeffs, x)), mode: 'lines', name: modele === 1 ? 'modèle linéaire' : 'modèle d’ordre 2',
+      traces.push({ x: xs, y: xs.map(x => evalPoly(fit.coeffs, x)), mode: 'lines', name: 'modèle linéaire',
         line: { color: '#e76f51', width: 2.5 }, hoverinfo: 'skip' });
     }
     window.Plotly.react(plotRef.current, traces, {
@@ -90,14 +88,14 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
       margin: { t: 14, b: 50, l: 80, r: 14 }, paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: '#fafcff',
       legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(255,255,255,0.8)' }, showlegend: true, hovermode: 'closest', autosize: true,
     }, { displayModeBar: false, responsive: true });
-  }, [plotlyReady, mode, mesures, modele, fit]); // eslint-disable-line
+  }, [plotlyReady, mode, mesures, mod, fit]); // eslint-disable-line
 
   // ════════════════ PARCOURS GUIDÉ ════════════════
   const etape = guide.etape;
   const eauRef = fluide === 'eau' && patm === 1013;
   const P0 = affichage(pressionPa(1013, 1000, 0)), P15 = affichage(pressionPa(1013, 1000, 0.15));
   const PincGuide = affichage(pressionPa(1013, 1000, H_GUIDE));
-  const HfitGuide = fit1 && modele === 1 ? (PincGuide * 100 - b1) / a1 * 100 : NaN;
+  const HfitGuide = fit1 && mod === 1 ? (PincGuide * 100 - b1) / a1 * 100 : NaN;
   const ETAPES = [
     { id: 'objectif', titre: 'Que cherche-t-on ?', focus: ['manip'],
       texte: <>On plonge l'embout d'un <strong>manomètre</strong> dans une éprouvette d'eau, à des profondeurs h croissantes, pour établir la relation entre la <strong>pression</strong> de l'eau et la <strong>profondeur</strong>. Le manomètre indique la pression <strong>absolue</strong>.</>,
@@ -129,8 +127,9 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
       tache: { type: 'qcm', q: 'Comment se placent les points ?', options: ['Alignés sur une droite qui ne passe pas par l’origine', 'Alignés sur une droite qui passe par l’origine', 'Sur une courbe qui s’aplatit'], bonne: 0,
         expl: 'P augmente proportionnellement à h (relation affine), mais pas de zéro : à h = 0, P vaut la pression atmosphérique.' } },
     { id: 'modele', titre: 'Choisir un modèle', focus: ['courbe'],
-      texte: <>Choisissez le modèle le plus pertinent. Vous pouvez comparer le modèle linéaire (P = a·h + b) et le modèle d'ordre 2 : le second ne s'améliore guère et ajoute un terme inutile.</>,
-      tache: { type: 'action', ok: modele === 1, label: 'Choisir le modèle linéaire', faire: () => setModele(1), consigne: modele === 1 ? null : 'Choisissez « Linéaire » sous le graphique' } },
+      texte: <>Les points sont alignés : on modélise par une droite. Il reste à choisir son équation, avec P en Pa et h en m.</>,
+      tache: { type: 'qcm', q: 'Quel modèle choisir pour P en fonction de h ?', options: ['P = a·h + b (droite qui ne passe pas par l’origine)', 'P = a·h (proportionnalité)', 'P = a·h² + b'], bonne: 0,
+        expl: 'Pour h = 0, P n’est pas nulle (elle vaut la pression atmosphérique) : la droite ne passe pas par l’origine, donc P = a·h + b et non P = a·h. Le modèle linéaire s’affiche alors sur le graphique.' } },
     { id: 'pente', titre: 'Interpréter la pente', focus: ['courbe'],
       texte: <>Le modèle est de la forme P = a·h + b. Comparez avec la loi de la statique des fluides : P = Patm + ρ·g·h.</>,
       tache: { type: 'qcm', q: 'Que représente la pente a de la droite ?', options: ['ρ × g (masse volumique × intensité de la pesanteur)', 'La pression atmosphérique', 'La profondeur maximale'], bonne: 0,
@@ -138,14 +137,14 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
     { id: 'rho', titre: 'Masse volumique du liquide', focus: ['courbe'],
       texte: <>Avec g = 9,81 m/s², déduisez la masse volumique ρ = a / g à partir de la pente de votre droite.</>,
       tache: { type: 'num', q: 'Masse volumique ρ du liquide', unite: 'kg/m³', vrai: a1 / G, tol: 0.02, affiche: x => fmt(x, 0),
-        bloque: !(modele === 1 && fit1) ? 'Affichez le modèle linéaire (étape précédente).' : null,
+        bloque: !(mod === 1 && fit1) ? 'Le modèle linéaire doit être affiché (étape précédente).' : null,
         expl: `ρ = ${fmt(a1, 0)} / 9,81 ≈ ${fmt(a1 / G, 0)} kg/m³ : on retrouve la masse volumique de l'eau (1 000 kg/m³), à l'arrondi du manomètre près.` } },
     { id: 'ordonnee', titre: 'Ordonnée à l’origine', focus: ['courbe'],
-      texte: <>Comparez l'ordonnée à l'origine b du modèle avec la valeur lue au tout début.</>,
+      texte: <>La loi de la statique des fluides s’écrit <strong>P = Patm + ρ·g·h</strong>. Elle a la même forme que votre modèle <strong>P = a·h + b</strong>. Comparez b avec la pression atmosphérique que vous avez relevée au début, à l’étape 2 (embout à h = 0 : {P0} hPa).</>,
       tache: { type: 'qcm', q: 'Que représente l’ordonnée à l’origine b ?', options: ['La pression atmosphérique (pression à h = 0)', 'La pression au fond de l’éprouvette', 'La masse volumique de l’eau'], bonne: 0,
         expl: `b ≈ ${fmt(b1, 0)} Pa, soit ${fmt(b1 / 100, 0)} hPa : c'est la pression atmosphérique relevée à l'étape 2.` } },
     { id: 'inconnu', titre: 'Un récipient inconnu', focus: ['cuve'],
-      texte: <>Voici un récipient <strong>opaque</strong> contenant de l'eau. On ne voit pas le niveau H de l'eau, mais on peut y descendre l'embout du manomètre (maintenant étalonné). Où faut-il le placer pour en déduire H ?</>,
+      texte: <>Voici un récipient <strong>opaque</strong> contenant de l'eau. On ne voit pas le niveau H de l'eau (<strong>faites défiler la page vers le bas</strong> pour voir ce récipient). Mais on peut y descendre l'embout du manomètre (maintenant étalonné). Où faut-il le placer pour en déduire H ?</>,
       tache: { type: 'qcm', q: 'Où placer l’embout du manomètre ?', options: ['Au fond du récipient : sa profondeur sous la surface est alors égale à H', 'À la surface, au niveau du bord supérieur', 'À mi-hauteur du récipient'], bonne: 0,
         expl: 'Au fond, la profondeur de l’embout sous la surface libre est exactement la hauteur d’eau H. Au bord supérieur, on lit seulement Patm. À mi-hauteur, on ne connaît pas la profondeur sous la surface.' } },
     { id: 'placer', titre: 'Placer le manomètre', focus: ['cuve'],
@@ -157,15 +156,30 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
         bloque: !(zCm === HC_CM && eauRef && Hinc === H_GUIDE) ? 'Placez l’embout au fond du récipient (eau, Patm = 1013 hPa).' : null,
         expl: `${PincGuide} hPa : bien plus que la pression atmosphérique, donc l'embout est sous l'eau.` } },
     { id: 'H', titre: 'En déduire la hauteur d’eau', focus: ['cuve', 'courbe'],
-      texte: <>Avec votre modèle linéaire P = a·h + b, calculez la profondeur h qui correspond à la pression lue : h = (P − b) / a. Attention aux unités (P en Pa, h en m). Donnez H en centimètres.</>,
+      texte: <>Rappel de vos résultats : modèle <strong>P = {fmt(a1, 0)}·h + {fmt(b1, 0)}</strong> (P en Pa, h en m), et pression lue au fond du récipient : <strong>{PincGuide} hPa</strong>. Avec votre modèle, trouvez la profondeur h correspondant à cette pression : c’est la hauteur d’eau H. Donnez H en centimètres.</>,
       tache: { type: 'num', q: 'Hauteur d’eau H dans le récipient', unite: 'cm', vrai: HfitGuide, tol: 0.03, affiche: x => fmt(x, 0),
-        bloque: !(modele === 1 && fit1 && zCm === HC_CM) ? 'Gardez le modèle linéaire et l’embout au fond.' : null,
+        indice: 'On isole h dans P = a·h + b : h = (P − b) / a. Attention aux unités : P en Pa (1 hPa = 100 Pa), h en m, puis convertir en cm.',
+        bloque: !(mod === 1 && fit1 && zCm === HC_CM) ? 'Gardez le modèle linéaire et l’embout au fond.' : null,
         expl: `h = (${fmt(PincGuide * 100, 0)} − ${fmt(b1, 0)}) / ${fmt(a1, 0)} ≈ ${fmt(HfitGuide, 1)} cm. Le niveau réel (${fmt(H_GUIDE * 100, 0)} cm) est maintenant révélé sur le schéma : l'écart vient surtout de l'arrondi du manomètre à 1 hPa, soit environ 1 cm d'eau.` } },
     { id: 'hypotheses', titre: 'Sur quoi repose ce modèle ?', focus: ['hypo'],
       texte: <>Lisez l'encadré « Hypothèses de travail ».</>,
       tache: { type: 'qcm', q: 'Quelle hypothèse est faite sur le liquide ?', options: ['Il est incompressible : sa masse volumique est la même à toutes les profondeurs', 'Sa température change avec la profondeur', 'Il est en écoulement vers le fond'], bonne: 0,
         expl: 'Sans cette hypothèse, la pression ne serait plus proportionnelle à la profondeur. Pour un liquide sur quelques dizaines de centimètres, elle est très bien vérifiée.' } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
+      retenir: <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+        <svg viewBox="0 0 150 120" style={{ width: 150, flex: '0 0 auto' }} role="img" aria-label="Profondeur h sous la surface libre">
+          <rect x="30" y="30" width="90" height="80" fill="rgba(56,189,248,0.4)" stroke="#475569" strokeWidth="2"/>
+          <line x1="30" y1="30" x2="120" y2="30" stroke="#0284c7" strokeDasharray="4,3"/>
+          <text x="75" y="22" textAnchor="middle" fontSize="11" fill="#0284c7">surface libre : Patm</text>
+          <line x1="22" y1="30" x2="22" y2="110" stroke="#b45309" strokeWidth="1.5"/><text x="12" y="74" fontSize="12" fontWeight="700" fill="#b45309" textAnchor="middle">h</text>
+          <circle cx="75" cy="110" r="4" fill="#f59e0b"/><text x="75" y="102" textAnchor="middle" fontSize="11" fill="#334155">P</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6, flex: '1 1 220px' }}>
+          <li>ΔP = ρ·g·h (P en Pa, ρ en kg·m⁻³, g = 9,81 N·kg⁻¹, h en m)</li>
+          <li>P = Patm + ρ·g·h (pression absolue à la profondeur h)</li>
+          <li>Eau : environ 1 hPa par centimètre de profondeur</li>
+          <li>10 m d’eau ≈ 1000 hPa = 1 bar</li>
+        </ul></div>,
       texte: <>Vous avez établi la loi de la statique des fluides à partir de mesures, identifié la pente (ρ·g) et l'ordonnée à l'origine (Patm), puis utilisé le modèle pour trouver la hauteur d'eau d'un récipient opaque. En exploration libre, changez de liquide : que deviennent la pente et l'ordonnée à l'origine ?</>, tache: null },
   ];
   const idx = id => ETAPES.findIndex(e => e.id === id);
@@ -267,7 +281,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
   const yEau = 100, yTip = yEau + hCm * PX;
   const schemaEprouvette = (
     <svg viewBox="0 0 330 400" style={{ width: '100%', maxWidth: 330, display: 'block' }} role="img" aria-label="Éprouvette d'eau et embout du manomètre">
-      <rect x="166" y={yEau} width="68" height={380 - yEau} fill="rgba(56,189,248,0.35)"/>
+      <rect x="166" y={yEau} width="68" height={380 - yEau} fill={COUL[fluide]}/>
       <path d="M165,65 V380 H235 V65" fill="none" stroke="#475569" strokeWidth="2.5"/>
       <line x1="165" y1={yEau} x2="235" y2={yEau} stroke="#0284c7" strokeWidth="1.5" strokeDasharray="4,3"/>
       <text x="170" y={yEau + 13} fontSize="9.5" fill="#0284c7">surface</text>
@@ -295,7 +309,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
     <svg viewBox="0 0 330 400" style={{ width: '100%', maxWidth: 330, display: 'block' }} role="img" aria-label="Récipient opaque et embout du manomètre">
       <rect x="150" y={yRim} width="100" height={yFond - yRim} fill={niveauVisible ? '#f8fafc' : '#cbd5e1'}/>
       {niveauVisible && <>
-        <rect x="150" y={yNiveau} width="100" height={yFond - yNiveau} fill="rgba(56,189,248,0.35)"/>
+        <rect x="150" y={yNiveau} width="100" height={yFond - yNiveau} fill={COUL[fluide]}/>
         <line x1="150" y1={yNiveau} x2="250" y2={yNiveau} stroke="#0284c7" strokeWidth="1.5" strokeDasharray="4,3"/>
         <text x="200" y={yNiveau - 5} textAnchor="middle" fontSize="11" fontWeight="700" fill="#0284c7">H = {fmt(Hinc * 100, 0)} cm</text>
       </>}
@@ -319,9 +333,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
   const TXT = KIT.txt, TXT2 = '#475569';
   const inp = { fontSize: 13, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, background: 'white', color: TXT, width: 80 };
   const lab = { fontSize: 12, color: TXT2, fontWeight: 600 };
-  const equation = fit && modele ? (modele === 1
-    ? <>P = <strong>{fmt(fit.coeffs[1], 0)}</strong> × h + <strong>{fmt(fit.coeffs[0], 0)}</strong></>
-    : <>P = {fmt(fit.coeffs[2], 0)} × h² + {fmt(fit.coeffs[1], 0)} × h + {fmt(fit.coeffs[0], 0)}</>) : null;
+  const equation = fit && mod ? <>P = <strong>{fmt(fit.coeffs[1], 0)}</strong> × h + <strong>{fmt(fit.coeffs[0], 0)}</strong></> : null;
 
   const exploration = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -381,8 +393,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
           <div ref={plotRef} style={{ width: '100%', height: 320 }}/>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}>
             <span style={lab}>Modèle :</span>
-            <button onClick={() => setModele(modele === 1 ? 0 : 1)} disabled={!fit1} style={{ ...stylePetitBouton(modele === 1, '#e76f51'), opacity: fit1 ? 1 : 0.5 }}>Linéaire</button>
-            <button onClick={() => setModele(modele === 2 ? 0 : 2)} disabled={mesures.length < 4} style={{ ...stylePetitBouton(modele === 2, '#e76f51'), opacity: mesures.length >= 4 ? 1 : 0.5 }}>Ordre 2</button>
+            <button onClick={() => setModele(modele === 1 ? 0 : 1)} disabled={!fit1} style={{ ...stylePetitBouton(modele === 1, '#e76f51'), opacity: fit1 ? 1 : 0.5 }}>Modèle linéaire : P = a·h + b</button>
             {!fit1 && <span style={{ fontSize: 12, color: TXT2 }}>(au moins 3 mesures)</span>}
           </div>
           {equation && (
@@ -395,7 +406,8 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
 
       {/* ── RÉCIPIENT INCONNU ── */}
       <div style={{ ...styleBoite, ...cadre('cuve') }}>
-        <div style={{ fontWeight: 700, fontSize: 14, color: TXT, marginBottom: 8 }}>Récipient inconnu : quelle est la hauteur d'eau ?</div>
+        <Section titre={<>Récipient inconnu : quelle est la hauteur d'eau ? <span style={{ fontWeight: 400, color: '#b45309' }}>(⚠ à n’ouvrir qu’après le défi : l’ouvrir peut révéler ses réponses)</span></>}
+          ouvert={recipOuv || hl('cuve')} onBascule={() => setRecipOuv(o => !o)}>
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start' }}>
           <div style={{ flex: '1 1 250px', maxWidth: 330 }}>{schemaCuve}</div>
           <div style={{ flex: '1 1 230px', display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -412,7 +424,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
             <div style={{ fontSize: 13.5, color: TXT, lineHeight: 1.6 }}>
               Pression lue : <strong>{pLueInc} hPa</strong>
             </div>
-            {estimationVisible && (modele === 1 && profEstimee != null ? (
+            {estimationVisible && (mod === 1 && profEstimee != null ? (
               <div style={{ ...styleBoite, background: 'white', fontSize: 13.5, color: TXT, lineHeight: 1.6 }}>
                 Profondeur de l'embout sous la surface, d'après votre droite : h = (P − b) / a = <strong>{fmt(profEstimee, 1)} cm</strong>
                 <div style={{ fontSize: 12.5, color: TXT2 }}>C'est la hauteur d'eau H seulement si l'embout est au fond.</div>
@@ -422,6 +434,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
             ))}
           </div>
         </div>
+        </Section>
       </div>
     </div>
   );
@@ -441,7 +454,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
       <div className={`sf-l1${mode !== 'explore' ? ' cote' : ''}`}>
         {mode === 'defi' ? <div style={styleBoite}>{voletDefi}</div> : exploration}
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
-          : mode === 'defi' ? <div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Hypothèses de travail</div>{hypotheses}</div>
+          : mode === 'defi' ? panneauHypo
             : null}
       </div>
       {mode === 'explore' && (

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Frac, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, indicesProfond, fmt, lireNombre, proche } from "../commun";
 
 // ====================================================
@@ -72,7 +72,7 @@ export function facteurConv(de, vers, pos) {
     ? { num: [{ n: nVers, u: vers }], den: [{ n: nDe, u: de }] }
     : { num: [{ n: nDe, u: de }], den: [{ n: nVers, u: vers }] };
 }
-export const facteurRho = rho => ({ div: true, compact: true, num: [{ n: rho, u: 'kg' }], den: [{ u: 'm³' }] });   // ÷ ρ, ρ en kg·m⁻³
+export const facteurRho = rho => ({ num: [{ n: 1, u: 'm³' }], den: [{ n: rho, u: 'kg' }] });   // × 1/ρ : (1 m³) / (ρ kg), ρ en kg·m⁻³ — jamais de « ÷ »
 function chaineQm(m, uM, dt, uT, cM, cT, sm, sdt) {
   const f = [{ num: [{ n: m, s: sm, u: uM }], den: [{ n: dt, s: sdt, u: uT }] }];
   if (uM !== cM) f.push(facteurConv(uM, cM, 'num'));
@@ -176,7 +176,8 @@ function Fraction({ f, fi, barres }) {
 }
 function FractionNombres({ nums, dens }) {
   const lie = t => t.flatMap((x, i) => (i ? [' × ', <Nb key={i} t={x}/>] : [<Nb key={i} t={x}/>]));
-  const haut = nums.length ? lie(nums) : '1';
+  const nn = nums.length > 1 ? nums.filter(t => String(t) !== '1') : nums;      // « × 1 » inutile (facteur 1/S)
+  const haut = nn.length ? lie(nn) : '1';
   if (!dens.length) return <span style={{ margin: '0 3px' }}>{haut}</span>;
   return (
     <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', verticalAlign: 'middle', margin: '0 3px' }}>
@@ -266,7 +267,7 @@ const QM_UNITES = ['kg/s', 'kg/min', 'kg/h', 'g/s', 't/h'];
 const QV_UNITES = ['m³/s', 'm³/h', 'L/s', 'L/min', 'L/h'];
 const ETAT0 = { tc: 0, t: 0, V: 0, ouvert: false, plein: false, qref: null, mixte: false };   // tc : temps continu ; t : temps affiché (secondes entières)
 
-const LITT1 = { Q_m: 'm / Δt', Q_v: 'Q_m / ρ', V: 'm / ρ' };
+const LITT1 = { Q_m: 'm × 1/Δt', Q_v: 'Q_m × 1/ρ', V: 'm × 1/ρ' };
 const Ch1 = props => <Chaine litt={LITT1[props.nom]} {...props}/>;
 
 export function SimulationDebits() {
@@ -375,7 +376,7 @@ export function SimulationDebits() {
         <Ch1 nom="Q_m" facteurs={chGuideQm('kg', 'min')} cacher/>
         <p style={{ margin: '8px 0 0' }}>L’unité du résultat est une masse divisée par une durée : <strong>kg·min⁻¹</strong> (kilogrammes par minute).</p>
       </>,
-      tache: { type: 'num', q: 'Q_m en kg·min⁻¹', unite: 'kg·min⁻¹', vrai: G_QM_MIN, tol: 0.01, affiche: x => sig(x),
+      tache: { type: 'num', q: 'Q_m en kg·min⁻¹', unite: 'kg·min⁻¹', vrai: G_QM_MIN, tol: 0.01, cs: 3, affiche: x => sig(x),
         pieges: [[G_M * G_DT_MIN, 'Vous avez multiplié : un débit est une masse divisée par une durée.'], [G_DT_MIN / G_M, 'Attention à l’ordre : on divise la masse (35,6760) par la durée (5,00).']],
         expl: 'Q_m = 35,6760 / 5,00 ≈ 7,14 kg·min⁻¹ : chaque minute, 7,14 kg de vin s’écoulent.' } },
     { id: 'qmH', titre: 'Passer en kg·h⁻¹', focus: [],
@@ -384,7 +385,7 @@ export function SimulationDebits() {
         <Ch1 nom="Q_m" facteurs={chGuideQm('kg', 'h')} cacher/>
         <p style={{ margin: '8px 0 0' }}>Les « min » se simplifient (barrées) : il reste des kg par heure.</p>
       </>,
-      tache: { type: 'num', q: 'Q_m en kg·h⁻¹', unite: 'kg·h⁻¹', vrai: G_QM_H, tol: 0.01, affiche: x => sig(x),
+      tache: { type: 'num', q: 'Q_m en kg·h⁻¹', unite: 'kg·h⁻¹', vrai: G_QM_H, tol: 0.01, cs: 3, affiche: x => sig(x),
         pieges: [[G_QM_MIN / 60, 'Vous avez divisé par 60. Il y a 60 min dans 1 h : par heure, il passe 60 fois plus de vin que par minute. On multiplie.'], [G_QM_MIN * 3600, '1 h = 60 min (et non 3 600 min).']],
         expl: 'Q_m = 35,6760 × 60 / 5,00 ≈ 428 kg·h⁻¹ : cohérent, car 428 est 60 fois plus grand que 7,14.' } },
     { id: 'qmSChoix', titre: 'Passer en kg·s⁻¹ : quel facteur ?', focus: [],
@@ -393,7 +394,7 @@ export function SimulationDebits() {
         expl: 'La minute est au dénominateur de Q_m : pour qu’elle se simplifie, elle doit être au numérateur du facteur. Et 1 min = 60 s, donc (1 min) / (60 s) = 1. Le facteur 3 600 s / 1 h vaut aussi 1, mais il ne fait pas disparaître les minutes.' } },
     { id: 'qmS', titre: 'Calculer Q_m en kg·s⁻¹', focus: [],
       texte: <><Ch1 nom="Q_m" facteurs={chGuideQm('kg', 's')} cacher/></>,
-      tache: { type: 'num', q: 'Q_m en kg·s⁻¹', unite: 'kg·s⁻¹', vrai: G_QM_S, tol: 0.01, affiche: x => sig(x),
+      tache: { type: 'num', q: 'Q_m en kg·s⁻¹', unite: 'kg·s⁻¹', vrai: G_QM_S, tol: 0.01, cs: 3, affiche: x => sig(x),
         pieges: [[G_QM_MIN * 60, 'Vous avez multiplié par 60. Il y a 60 s dans 1 min : par seconde, il passe 60 fois moins de vin que par minute. On divise.'], [G_QM_MIN, 'C’est le résultat en kg·min⁻¹ : il manque la conversion des minutes en secondes.']],
         expl: 'Q_m = 35,6760 / (5,00 × 60) = 35,6760 / 300 ≈ 0,119 kg·s⁻¹.' } },
     { id: 'chiffres', titre: 'Combien de chiffres significatifs ?', focus: [],
@@ -416,25 +417,25 @@ export function SimulationDebits() {
         expl: 'kg·m⁻³ × m³·s⁻¹ = kg·s⁻¹ : les m³ se simplifient et il reste bien des kg·s⁻¹. Les deux autres relations donnent des unités qui ne correspondent pas à celles du premier membre.' } },
     { id: 'qvH', titre: 'Calculer Q_v en m³·h⁻¹', focus: [],
       texte: <>
-        <p style={{ margin: '0 0 8px' }}>Q_v = Q_m / ρ. Partons de Q_m ≈ 428 kg·h⁻¹ et divisons par ρ = 991 kg·m⁻³ (en SI). Regardez les unités : le kg de Q_m se simplifie avec le kg de ρ, et il reste des m³ par heure.</p>
+        <p style={{ margin: '0 0 8px' }}>Q_m = ρ × Q_v, donc Q_v = Q_m × <Frac haut="1" bas="ρ"/>, avec ρ = 991 kg·m⁻³ (en SI), c’est-à-dire 1 m³ pour 991 kg. Partons de Q_m ≈ 428 kg·h⁻¹. Regardez les unités : le kg de Q_m se simplifie avec le kg du dénominateur, et il reste des m³ par heure.</p>
         <Ch1 nom="Q_v" facteurs={chaineQv(428, 'kg', 'h', 'm³', 'h', G_RHO, '428')} cacher/>
       </>,
-      tache: { type: 'num', q: 'Q_v en m³·h⁻¹', unite: 'm³·h⁻¹', vrai: G_QV_H, tol: 0.01, affiche: x => sig(x),
-        pieges: [[G_QM_H * G_RHO, 'Vous avez multiplié par ρ. Les kg ne se simplifieraient pas : on divise par ρ.']],
-        expl: 'Q_v = 428 / 991 ≈ 0,432 m³·h⁻¹. Garder un chiffre de plus dans les calculs intermédiaires évite les erreurs d’arrondi : on arrondit seulement le résultat final.' } },
+      tache: { type: 'num', q: 'Q_v en m³·h⁻¹', unite: 'm³·h⁻¹', vrai: G_QV_H, tol: 0.01, cs: 3, affiche: x => sig(x),
+        pieges: [[G_QM_H * G_RHO, 'Vous avez multiplié par ρ. Les kg ne se simplifieraient pas : il faut multiplier par 1/ρ, soit 1 m³ pour 991 kg.']],
+        expl: <>Q_v = 428 × <Frac haut="1" bas="991"/> ≈ 0,432 m³·h⁻¹. Garder un chiffre de plus dans les calculs intermédiaires évite les erreurs d’arrondi : on arrondit seulement le résultat final.</> } },
     { id: 'qvL', titre: 'Q_v en litres par seconde', focus: [],
       texte: <>On exprime maintenant Q_v en <strong>L·s⁻¹</strong>, à partir de Q_v ≈ 0,432 m³·h⁻¹. Écrivez vous-même les <strong>deux conversions</strong> (m³ → L et h → s) en vérifiant que les unités se simplifient.</>,
-      tache: { type: 'num', q: 'Q_v en L·s⁻¹', unite: 'L·s⁻¹', vrai: G_QV_LS, tol: 0.01, affiche: x => sig(x),
+      tache: { type: 'num', q: 'Q_v en L·s⁻¹', unite: 'L·s⁻¹', vrai: G_QV_LS, tol: 0.01, cs: 3, affiche: x => sig(x),
         aide: '1 m³ = 1 000 L ; 1 h = 3 600 s. Le m³ est au numérateur, l’heure au dénominateur.',
         pieges: [[G_QV_H * 1000, 'Il manque la conversion des heures en secondes (1 h = 3 600 s).'], [G_QV_H / 3600, 'Il manque la conversion des m³ en litres (1 m³ = 1 000 L).'], [G_QV_H * 3600 * 1000, 'Pour passer de h⁻¹ à s⁻¹, on divise par 3 600 (une heure contient 3 600 s).']],
         expl: <>Le m³ est au numérateur : on multiplie par (1 000 L / 1 m³). L’heure est au dénominateur : on multiplie par (1 h / 3 600 s).
           <Ch1 nom="Q_v" facteurs={[{ num: [{ n: 0.432, s: '0,432', u: 'm³' }], den: [{ u: 'h' }] }, facteurConv('m³', 'L', 'num'), facteurConv('h', 's', 'den')]}/></> } },
     { id: 'voie', titre: 'Une autre voie : mesurer le volume', focus: ['manip'],
-      texte: <>On peut aussi calculer le <strong>volume V</strong> de vin recueilli : V = m / ρ. La cuve est graduée en litres. Calculez V en <strong>litres</strong> à partir de m = 35,6760 kg et ρ = 991 kg·m⁻³.</>,
-      tache: { type: 'num', q: 'Volume V de vin', unite: 'L', vrai: G_V_L, tol: 0.01, affiche: x => sig(x),
-        aide: 'Divisez par ρ (kg·m⁻³) pour obtenir des m³, puis convertissez en L.',
+      texte: <>On peut aussi calculer le <strong>volume V</strong> de vin recueilli. Rappel : Q_m = ρ × Q_v (débit massique = masse volumique × débit volumique) ; de même, la masse et le volume sont liés par m = ρ × V. Calculez V en <strong>litres</strong> à partir de m = 35,6760 kg et ρ = 991 kg·m⁻³.</>,
+      tache: { type: 'num', q: 'Volume V de vin', unite: 'L', vrai: G_V_L, tol: 0.01, cs: 3, affiche: x => sig(x),
+        aide: 'Isolez V dans m = ρ × V : on obtient des m³ (kg ÷ kg·m⁻³), puis on convertit en L.',
         pieges: [[G_M / G_RHO, 'C’est un résultat en m³. Pour l’avoir en litres, multipliez par 1 000.']],
-        expl: <>La graduation de la cuve indique bien environ 36 L. Et V / Δt = 36,0 L / 300 s = 0,120 L·s⁻¹ : on retrouve Q_v.
+        expl: <>La graduation de la cuve indique bien environ 36 L. Et Q_v = <Frac haut="36,0 L" bas="300 s"/> = 0,120 L·s⁻¹ : on retrouve Q_v.
           <Ch1 nom="V" facteurs={[{ num: [{ n: G_M, s: '35,6760', u: 'kg' }], den: [] }, facteurRho(G_RHO), facteurConv('m³', 'L', 'num')]}/></> } },
     { id: 'duree2', titre: 'Et si on change la durée ?', focus: ['manip'],
       texte: <>Refaisons la mesure avec le même robinet, mais seulement pendant <strong>2 min</strong>. Le débit change-t-il ?</>,
@@ -443,7 +444,7 @@ export function SimulationDebits() {
         consigne: mesure2 ? null : (duree === 120 && !run.ouvert ? 'Ouvrez le robinet pour faire la mesure' : 'Puis ouvrez le robinet') } },
     { id: 'constant', titre: 'Un débit constant', focus: ['manip'],
       texte: <>Lisez la nouvelle masse sur la balance et calculez Q_m en kg·s⁻¹ avec <strong>3 chiffres significatifs</strong>.</>,
-      tache: { type: 'num', q: 'Q_m en kg·s⁻¹', unite: 'kg·s⁻¹', vrai: G_QM_S, tol: 0.003, affiche: x => sig(x),
+      tache: { type: 'num', q: 'Q_m en kg·s⁻¹', unite: 'kg·s⁻¹', vrai: G_QM_S, tol: 0.003, cs: 3, affiche: x => sig(x),
         bloque: !mesure2 ? 'Faites d’abord la mesure de 2 min (étape précédente).' : null,
         expl: 'Q_m = 14,2704 / 120 ≈ 0,119 kg·s⁻¹ : la même valeur qu’avec 5 min. Le débit est constant : la masse recueillie est proportionnelle à la durée. Au-delà de 3 chiffres, les arrondis de la balance (0,1 g) et du chronomètre (1 s) rendent les résultats peu fiables.' } },
     { id: 'huile', titre: 'Et avec un autre fluide ?', focus: ['manip'],
@@ -460,6 +461,13 @@ export function SimulationDebits() {
       tache: { type: 'qcm', q: 'Pour que m/Δt représente « le » débit, que suppose-t-on pendant la mesure ?', options: ['Que le débit reste constant (régime permanent)', 'Que le débit augmente régulièrement avec le temps', 'Que la masse volumique varie pendant la mesure'], bonne: 0,
         expl: 'Si le débit variait, m/Δt ne donnerait qu’une valeur moyenne. En régime permanent, le débit est le même à chaque instant et le résultat ne dépend pas de la durée choisie.' } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
+      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
+        <li>Q_m = <Frac haut="m" bas="Δt"/> (kg·s⁻¹)</li>
+        <li>Q_v = <Frac haut="V" bas="Δt"/> (m³·s⁻¹)</li>
+        <li>Q_m = ρ × Q_v</li>
+        <li>ρ en kg·m⁻³ ; eau : 1000 kg·m⁻³ ; d = <Frac haut="ρ" bas="ρ_eau"/></li>
+        <li>1 m³ = 1000 L ; 1 h = 3600 s</li>
+        <li>3 chiffres significatifs</li></ul>,
       texte: <>Vous savez mesurer un débit massique (Q_m = m/Δt), en déduire le débit volumique (Q_m = ρ·Q_v) et, surtout, <strong>écrire les unités dans le calcul</strong> pour convertir sans erreur, en gardant le bon nombre de chiffres significatifs. En exploration libre, changez les unités de sortie et regardez comment les unités se simplifient.</>, tache: null },
   ];
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
@@ -688,7 +696,7 @@ export function SimulationDebits() {
             </div>
             <div style={{ fontSize: 13.5, color: TXT }}>Densité du fluide : <strong>d = {String(d).replace('.', ',')}</strong> <span style={{ color: TXT2 }}>(sans unité)</span></div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <span style={lab}>Ouverture du robinet : <strong style={{ color: '#b45309' }}>{ouv}</strong> / 10</span>
+              <span style={lab}>Ouverture du robinet : <strong style={{ color: '#b45309' }}>{ouv}</strong> / 10 <span style={{ fontWeight: 400, color: TXT2 }}>→ pour modifier le débit</span></span>
               <input type="range" min="1" max="10" step="1" value={ouv} onChange={e => setOuv(parseInt(e.target.value, 10))}
                 aria-label="Ouverture du robinet" style={{ accentColor: '#f59e0b', width: '100%' }}/>
             </div>
@@ -728,7 +736,7 @@ export function SimulationDebits() {
       <div className={`db-l1${mode !== 'explore' ? ' cote' : ''}`}>
         {mode === 'defi' ? <div style={styleBoite}>{voletDefi}</div> : exploration}
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
-          : mode === 'defi' ? <div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Hypothèses de travail</div>{hypotheses}</div>
+          : mode === 'defi' ? panneauHypo
             : null}
       </div>
       {mode === 'explore' && (

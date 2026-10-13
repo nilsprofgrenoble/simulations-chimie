@@ -30,7 +30,8 @@ import { SimulationBouilloire } from "./simulations/Bouilloire";
 import { SimulationReponse } from "./simulations/Reponse";
 import { SimulationAtelierDonnees } from "./simulations/AtelierDonnees";
 import { SimulationAtelierGraphique } from "./simulations/AtelierGraphique";
-import { SimulationAtelierVraisemblable } from "./simulations/AtelierVraisemblable";
+import { SimulationAtelierRealiser } from "./simulations/AtelierRealiser";
+import { SimulationAtelierAnalyser } from "./simulations/AtelierAnalyser";
 
 // ============================================================
 //  MENU — modifiez les noms et icônes ici
@@ -76,12 +77,14 @@ const SIMULATIONS = [
     component: SimulationBouilloire },
   { id:33, label:"Temps de réponse d'un capteur", niveau:"TSTL", icon:"⏱️", color:"#0891b2",
     component: SimulationReponse },
-  { id:34, label:"Atelier : extraire les données d'un énoncé", niveau:"TSTL", icon:"🎯", color:"#e11d48",
+  { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"TSTL", icon:"🎯", color:"#e11d48",
     component: SimulationAtelierDonnees },
-  { id:35, label:"Atelier : lire un graphique", niveau:"TSTL", icon:"📈", color:"#e11d48",
+  { id:35, label:"S'APP : lire un graphique", niveau:"TSTL", icon:"📈", color:"#e11d48",
     component: SimulationAtelierGraphique },
-  { id:36, label:"Atelier : ce résultat est-il vraisemblable ?", niveau:"TSTL", icon:"🔎", color:"#e11d48",
-    component: SimulationAtelierVraisemblable },
+  { id:36, label:"S'APP : réaliser un calcul", niveau:"TSTL", icon:"🧮", color:"#e11d48",
+    component: SimulationAtelierRealiser },
+  { id:37, label:"S'APP : analyser un problème", niveau:"TSTL", icon:"🧭", color:"#e11d48",
+    component: SimulationAtelierAnalyser },
 ];
 
 const NIVEAUX = [
@@ -114,6 +117,7 @@ function PageAccueil({ onStart }) {
       { label:"📡 Transmission de signaux numériques", sims:[
         { icon:"💡", label:"Chaîne de mesure", desc:"Capteur de lumière Arduino — photorésistance, conditionneur, CAN et algorithme de contrôle." },
         { icon:"📡", label:"Quantum du CAN", desc:"Résolution en température d'un CAN : impact de la non-linéarité de la courbe d'étalonnage sur le quantum de mesure." },
+        { icon:"⏱️", label:"Temps de réponse d'un capteur", desc:"Réponse d'une sonde à un échelon : V_ini, V_fin, ΔV, bande à 5 %, t_R = t₁ − t₀, modèle exponentiel et t_R = 3τ. Puis une grandeur qui oscille avant de se stabiliser (dernière sortie de la bande)." },
       ]},
       { label:"💧 Transport des fluides", sims:[
         { icon:"🌊", label:"Statique des fluides", desc:"Étalonnage d'un manomètre dans une éprouvette : P = f(h), modèle linéaire, puis mesure de la hauteur d'eau d'un récipient inconnu." },
@@ -131,13 +135,13 @@ function PageAccueil({ onStart }) {
       { label:"🔥 Transferts thermiques", sims:[
         { icon:"🧱", label:"Paroi multicouche : résistance thermique", desc:"Conduction à travers une paroi : R = e/(λS), résistances en série, P = ΔT/R, profil de température et part de chaque couche, dimensionnement d'un isolant, simple et double vitrage." },
         { icon:"🫖", label:"Bouilloire : conductivité thermique de sa paroi", desc:"Le TP de la bouilloire en virtuel : énergie perdue par l'eau (Q = m·C·ΔT), puissance, écart eau–air, λ de la paroi. Puis une bouilloire réaliste pour critiquer chaque hypothèse du modèle." },
-        { icon:"⏱️", label:"Temps de réponse d'un capteur", desc:"Réponse d'une sonde à un échelon : V_ini, V_fin, ΔV, bande à 5 %, t_R = t₁ − t₀, modèle exponentiel et t_R = 3τ. Puis une grandeur qui oscille avant de se stabiliser (dernière sortie de la bande)." },
         { icon:"🔥", label:"Échangeur thermique : co-courant et contre-courant", desc:"Échangeur coaxial : profils de température, bilan P_C = −P_F, écart moyen logarithmique ΔTm, surface d'échange et coefficient global U. Co-courant, contre-courant, et côté chaud à température constante (bain, vapeur)." },
       ]},
       { label:"🎯 Compétences", sims:[
-        { icon:"🎯", label:"Atelier : extraire les données d'un énoncé", desc:"S'approprier : comprendre la question, repérer les données utiles et les pièges, associer valeur, grandeur et unité, préparer le calcul. Parcours guidé, entraînement sur 7 énoncés, défi avec bilan." },
-        { icon:"📈", label:"Atelier : lire un graphique", desc:"S'approprier : identifier grandeurs, unités et échelles des axes, lire une valeur (directe, inverse, à l'origine), convertir, interpréter l'allure, calculer un coefficient directeur et extrapoler. 8 graphiques tirés de la chimie, la mesure et les transferts." },
-        { icon:"🔎", label:"Atelier : ce résultat est-il vraisemblable ?", desc:"Valider : juger le calcul d'un élève (ordre de grandeur, limites physiques, unités, chiffres significatifs), justifier avec un repère, diagnostiquer l'erreur et corriger. 11 calculs répartis par thème." },
+        { icon:"🎯", label:"S'APP : extraire les données d'un énoncé", desc:"S'approprier : la formule est donnée ; il faut comprendre la question, repérer les données utiles, associer chaque donnée au symbole de la formule et à la bonne unité. 7 énoncés rangés par thème." },
+        { icon:"📈", label:"S'APP : lire un graphique", desc:"S'approprier : identifier grandeurs, unités et échelles des axes, lire une valeur (directe, inverse, à l'origine, avec une autre unité), interpréter l'allure. 8 graphiques rangés par thème." },
+        { icon:"🧭", label:"S'APP : analyser un problème", desc:"Analyser : construire la démarche d'un problème posé sans questions intermédiaires (ce que l'on cherche, données utiles, relations, hypothèses, ordre des calculs), choisir la bonne relation, reconnaître les hypothèses d'un modèle, prévoir sans calculer. 9 problèmes et 35 exercices courts, rangés par thème." },
+        { icon:"🧮", label:"S'APP : réaliser un calcul", desc:"Réaliser : changements d'unité (simples, préfixes, unités au carré ou au cube, unités composées), conversions cachées dans un calcul, isoler une grandeur, chiffres significatifs, log / exp / racine, saisie à la calculatrice. 9 types d'exercices tirés au hasard." },
       ]},
     ]},
     { niveau:"BTS", color:"#6a4c93", sousMenus:[
@@ -312,7 +316,25 @@ export default function App() {
   const [sgOuverts, setSgOuverts] = useState({});
   const [plotlyReady, setPlotlyReady] = useState(false);
   const [copyMsg, setCopyMsg] = useState('');
-  const [menuOpen, setMenuOpen] = useState(false); // fermé par défaut
+  // Menu : fermé par défaut ; on peut l'épingler (reste ouvert à gauche sur écran large). Le choix est mémorisé sur l'appareil.
+  const [epingle, setEpingle] = useState(() => { try { return window.localStorage.getItem('menu-epingle') === '1'; } catch { return false; } });
+  const [large, setLarge] = useState(() => window.innerWidth >= 1000);
+  const [menuOpen, setMenuOpen] = useState(() => { try { return window.localStorage.getItem('menu-epingle') === '1' && window.innerWidth >= 1000; } catch { return false; } });
+  const menuFixe = epingle && large && menuOpen;
+  useEffect(() => {
+    const f = () => setLarge(window.innerWidth >= 1000);
+    window.addEventListener('resize', f);
+    return () => window.removeEventListener('resize', f);
+  }, []);
+  useEffect(() => {
+    document.body.style.paddingLeft = menuFixe ? '230px' : '0';
+    document.body.style.transition = 'padding-left 0.25s';
+  }, [menuFixe]);
+  function changerEpingle(v) {
+    setEpingle(v);
+    try { window.localStorage.setItem('menu-epingle', v ? '1' : '0'); } catch { /* mémorisation indisponible */ }
+    if (v) setMenuOpen(true);
+  }
 
   useEffect(() => {
     const check = setInterval(() => {
@@ -343,7 +365,7 @@ export default function App() {
   // Ferme le menu et navigue
   function naviguer(id) {
     setActiveId(id);
-    setMenuOpen(false);
+    if (!menuFixe) setMenuOpen(false);
   }
 
   const sidebarW = menuOpen ? 230 : 0;
@@ -354,7 +376,7 @@ export default function App() {
       <div style={styles.bgBlob2} />
 
       {/* Overlay sombre quand menu ouvert */}
-      {menuOpen && (
+      {menuOpen && !menuFixe && (
         <div onClick={() => setMenuOpen(false)}
           style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.18)',
             zIndex:9, transition:'opacity 0.2s' }}/>
@@ -370,8 +392,13 @@ export default function App() {
         zIndex: 10, overflowY: 'auto',
       }}>
         {/* Bouton fermer dans le menu */}
-        <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:8 }}>
-          <button onClick={() => setMenuOpen(false)}
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+          {large ? (
+            <button onClick={() => changerEpingle(!epingle)} title={epingle ? 'Le menu reste ouvert : cliquer pour qu’il se referme' : 'Garder le menu ouvert à gauche'}
+              style={{ background: epingle ? '#e0f2fe' : 'none', border: epingle ? '1px solid #7dd3fc' : '1px solid #cbd5e1', borderRadius:6, fontSize:12.5,
+                cursor:'pointer', color:'#334155', padding:'3px 8px' }}>📌 {epingle ? 'Menu fixe' : 'Garder ouvert'}</button>
+          ) : <span/>}
+          <button onClick={() => { setMenuOpen(false); if (epingle) changerEpingle(false); }}
             style={{ background:'none', border:'none', fontSize:22,
               cursor:'pointer', color:'#888', padding:'0 4px' }}>✕</button>
         </div>
@@ -411,12 +438,12 @@ export default function App() {
               { label:'🔬 Analyse', ids:[3,29,9,11,12,13,16] },
               { label:'🧪 Formulation', ids:[4,14] },
             ] : niv.key === 'TSTL' ? [
-              { label:'📡 Transmission de signaux numériques', ids:[8,15] },
+              { label:'📡 Transmission de signaux numériques', ids:[8,15,33] },
               { label:'💧 Transport des fluides', ids:[26,27,28,17] },
               { label:'⚙️ Régulation', ids:[5,6] },
               { label:'❄️ Évaporation et cristallisation', ids:[7] },
-              { label:'🔥 Transferts thermiques', ids:[31,32,33,30] },
-              { label:'🎯 Compétences', ids:[34,35,36] },
+              { label:'🔥 Transferts thermiques', ids:[31,32,30] },
+              { label:'🎯 Compétences', ids:[34,35,37,36] },
             ] : null;
 
             return (
