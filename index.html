@@ -1,16 +1,25 @@
 <!doctype html>
-<html lang="en">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/simulations-chimie/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Labo Chimie & Physique</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Playfair+Display:wght@700&family=Nunito:wght@400;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>Labo Chimie & Physique — simulations interactives (lycée, BTS)</title>
+    <meta name="description" content="Simulations interactives de chimie et de physique pour la Première, la Terminale STL et le BTS Métiers de la chimie : parcours guidés, exploration libre, défis et exercices par compétence." />
+    <meta name="author" content="Nils Aronssohn" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content="Labo Chimie & Physique" />
+    <meta property="og:title" content="Labo Chimie & Physique — simulations interactives" />
+    <meta property="og:description" content="Simulations interactives de chimie et de physique (lycée, BTS) : parcours guidés, exploration libre, défis, exercices par compétence." />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <!-- Bibliothèques hébergées sur le site lui-même (et non chargées depuis un autre site) : voir public/vendor -->
+    <script defer src="%BASE_URL%vendor/plotly-1.58.5.min.js"></script>
+    <script defer src="%BASE_URL%vendor/html2canvas-1.4.1.min.js"></script>
+    <script defer src="%BASE_URL%vendor/jspdf-2.5.1.umd.min.js"></script>
   </head>
   <body>
+    <noscript>Ce site de simulations nécessite JavaScript.</noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

@@ -366,6 +366,19 @@ export default function App() {
     // statistiques anonymes : une consultation par simulation (voir stats.js)
     const s = SIMULATIONS.find(x => x.id === activeId);
     compter(activeId === 0 ? '/' : `/sim/${activeId}`, s ? s.label : 'Accueil');
+    // titre de l'onglet, description et indexation (moteurs de recherche)
+    const NOM_SITE = 'Labo Chimie & Physique';
+    document.title = s && activeId > 0 ? `${s.label} — ${NOM_SITE}` : `${NOM_SITE} — simulations interactives (lycée, BTS)`;
+    const meta = (nom, valeur) => {
+      let m = document.querySelector(`meta[name="${nom}"]`);
+      if (!m) { m = document.createElement('meta'); m.setAttribute('name', nom); document.head.appendChild(m); }
+      m.setAttribute('content', valeur);
+    };
+    const niv = s && { '1G': 'Première', TSTL: 'Terminale STL', BTS: 'BTS Métiers de la chimie' }[s.niveau];
+    meta('description', s && activeId > 0
+      ? `${s.label} : simulation interactive${niv ? ` (${niv})` : ''}, avec parcours guidé, exploration libre et défi.`
+      : 'Simulations interactives de chimie et de physique pour la Première, la Terminale STL et le BTS Métiers de la chimie : parcours guidés, exploration libre, défis et exercices par compétence.');
+    meta('robots', activeId === 39 || activeId === 40 ? 'noindex' : 'index, follow');
   }, [activeId]);
 
   function partager() {

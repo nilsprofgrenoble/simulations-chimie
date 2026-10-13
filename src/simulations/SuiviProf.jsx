@@ -11,7 +11,13 @@ const td = { padding: '5px 8px', verticalAlign: 'top' };
 const champ = { padding: '7px 9px', fontSize: 14, borderRadius: 8, border: `1px solid ${KIT.bord}`, boxSizing: 'border-box' };
 const mediane = t => { if (!t.length) return 0; const s = [...t].sort((a, b) => a - b), m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 const echapperHtml = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const csvCase = v => { const s = String(v ?? ''); return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+// Case de tableur : une valeur qui commence par = + - @ serait exécutée comme une formule par Excel ou LibreOffice
+// (les clés d'exercices sont écrites par le navigateur de l'élève : on ne leur fait pas confiance).
+const csvCase = v => {
+  let s = typeof v === 'number' ? String(v) : String(v ?? '');
+  if (typeof v !== 'number' && /^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+  return /[;"\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
 
 function telecharger(nom, texte) {
   const a = document.createElement('a');
@@ -20,11 +26,11 @@ function telecharger(nom, texte) {
 }
 // Fiches à imprimer : une par élève (identifiant + mot de passe), à découper et distribuer
 function imprimerFiches(classe, comptes) {
-  const adresse = window.location.origin + window.location.pathname;
+  const adresse = window.location.origin + window.location.pathname + '?sim=39';
   const fiches = comptes.filter(c => c.mot_de_passe).map(c => `
     <div class="f"><div class="t">Simulations de chimie — ${echapperHtml(classe)}</div>
     <div>Identifiant : <b>${echapperHtml(c.identifiant)}</b></div><div>Mot de passe : <b>${echapperHtml(c.mot_de_passe)}</b></div>
-    <div class="s">${echapperHtml(adresse)}<br>Menu → « je m’entraîne » → Mon compte. À garder pour toi, ne le donne à personne.</div></div>`).join('');
+    <div class="s">${echapperHtml(adresse)}<br>Bouton « 👤 Se connecter » en haut de la page. À garder pour toi, ne le donne à personne.</div></div>`).join('');
   const w = window.open('', '_blank');
   if (!w) { alert('Le navigateur a bloqué la fenêtre d’impression : autorisez les fenêtres surgissantes pour ce site, puis recommencez.'); return; }
   w.document.write(`<!doctype html><meta charset="utf-8"><title>Identifiants ${echapperHtml(classe)}</title>

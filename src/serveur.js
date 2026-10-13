@@ -27,9 +27,35 @@ let session = lireSession();
 const abonnes = new Set();
 function ecrireSession(s) {
   session = s;
-  for (const p of [false, true]) { try { stockage(p)?.removeItem(CLE_STOCKAGE); } catch { /* indisponible */ } }
-  if (s) { try { stockage(s.persistant)?.setItem(CLE_STOCKAGE, JSON.stringify(s)); } catch { /* indisponible */ } }
+  for (const p of [false, true]) {
+    try {
+      if (s && p === !!s.persistant) stockage(p)?.setItem(CLE_STOCKAGE, JSON.stringify(s));
+      else stockage(p)?.removeItem(CLE_STOCKAGE);
+    } catch { /* indisponible */ }
+  }
   abonnes.forEach(f => f());
+}
+// Plusieurs onglets ouverts avec « rester connecté » partagent la même session. Quand l'un renouvelle le jeton,
+// les autres doivent reprendre le nouveau : réutiliser l'ancien ferait croire à Supabase à un vol de jeton,
+// et il fermerait la session partout. Même chose pour une déconnexion faite dans un autre onglet.
+const jetonsDe = s => ({ access_token: s.access_token, refresh_token: s.refresh_token, expires_at: s.expires_at });
+function relireAutresOnglets() {
+  if (!session?.persistant) return;
+  try {
+    const s = JSON.parse(window.localStorage.getItem(CLE_STOCKAGE) || 'null');
+    if (s?.refresh_token && s.refresh_token !== session.refresh_token) session = { ...session, ...jetonsDe(s) };
+  } catch { /* indisponible */ }
+}
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', e => {
+    if (e.key !== CLE_STOCKAGE) return;
+    try { if (e.storageArea !== window.localStorage) return; } catch { return; }
+    let s = null;
+    try { s = JSON.parse(e.newValue || 'null'); } catch { /* illisible */ }
+    if (!s?.refresh_token) { if (session?.persistant) { session = null; abonnes.forEach(f => f()); } return; }
+    session = session ? { ...session, ...jetonsDe(s), profil: s.profil || session.profil } : { ...s, persistant: true };
+    abonnes.forEach(f => f());
+  });
 }
 export const getSession = () => session;
 const abonner = f => { abonnes.add(f); return () => abonnes.delete(f); };
@@ -44,16 +70,21 @@ const messageDe = async r => {
 
 // ── Jeton d'accès : renouvelé automatiquement quand il approche de son expiration ──
 let renouvellement = null;
-async function renouveler() {
+async function renouveler(force = false) {
   if (renouvellement) return renouvellement;
+  const avant = session?.refresh_token;
+  relireAutresOnglets();
+  // déjà renouvelé par un autre onglet, ou pas encore nécessaire (force : le serveur a refusé le jeton)
+  if (session && (session.refresh_token !== avant || (!force && session.expires_at - Date.now() / 1000 >= 60))) return undefined;
   const s = session;
+  if (!s) throw new ErreurServeur('Non connecté.', 401);
   renouvellement = (async () => {
     try {
       const r = await fetch(`${URL_SB}/auth/v1/token?grant_type=refresh_token`, {
         method: 'POST', headers: { apikey: CLE_PUBLIQUE, 'Content-Type': 'application/json' }, body: JSON.stringify({ refresh_token: s.refresh_token }) });
       if (!r.ok) { if (r.status >= 400 && r.status < 500) ecrireSession(null); throw new ErreurServeur('Session expirée : reconnectez-vous.', r.status); }
       const j = await r.json();
-      ecrireSession({ ...s, access_token: j.access_token, refresh_token: j.refresh_token, expires_at: j.expires_at || Math.floor(Date.now() / 1000) + (j.expires_in || 3600) });
+      if (session) ecrireSession({ ...session, access_token: j.access_token, refresh_token: j.refresh_token, expires_at: j.expires_at || Math.floor(Date.now() / 1000) + (j.expires_in || 3600) });
     } finally { renouvellement = null; }
   })();
   return renouvellement;
@@ -69,7 +100,7 @@ async function appeler(url, { method = 'GET', corps, entetes = {}, keepalive = f
     headers: { apikey: CLE_PUBLIQUE, Authorization: `Bearer ${await jeton()}`, 'Content-Type': 'application/json', ...entetes },
     body: corps === undefined ? undefined : JSON.stringify(corps) });
   let r = await faire();
-  if (r.status === 401 && session) { try { await renouveler(); r = await faire(); } catch { /* on traite la réponse d'origine */ } }
+  if (r.status === 401 && session) { try { await renouveler(true); r = await faire(); } catch { /* on traite la réponse d'origine */ } }
   if (!r.ok) throw new ErreurServeur(await messageDe(r), r.status);
   const t = await r.text();
   return t ? JSON.parse(t) : null;

@@ -11,8 +11,8 @@
 export const CODE_GOATCOUNTER = 'labochimie';
 
 export const STATS_ACTIVES = CODE_GOATCOUNTER !== '';
-const file = [];
-let pret = false, demarre = false;
+// Comptage par « pixel » (une image de 1×1 demandée à GoatCounter) : aucun script extérieur n'est chargé dans le site,
+// ce qui protège les sessions des élèves connectés (un script extérieur aurait accès à la page entière).
 
 function peutCompter() {
   if (!STATS_ACTIVES || typeof window === 'undefined') return false;
@@ -22,24 +22,15 @@ function peutCompter() {
   return true;
 }
 
-function vider() {
-  while (file.length) { try { window.goatcounter.count(file.shift()); } catch (e) { /* les statistiques ne doivent jamais gêner le site */ } }
-}
-
-function demarrer() {
-  if (demarre) return;
-  demarre = true;
-  window.goatcounter = { no_onload: true, endpoint: `https://${CODE_GOATCOUNTER}.goatcounter.com/count` };
-  const s = document.createElement('script');
-  s.async = true; s.src = 'https://gc.zgo.at/count.js';
-  s.onload = () => { pret = true; vider(); };
-  document.head.appendChild(s);
-}
-
 // Compte une page vue (event = false) ou un événement (event = true)
 export function compter(path, title, event = false) {
   if (!peutCompter()) return;
-  file.push({ path, title, event, no_session: event });
-  demarrer();
-  if (pret) vider();
+  try {
+    const q = new URLSearchParams({ p: path, t: title || '', e: event ? 'true' : 'false', rnd: Math.random().toString(36).slice(2) });
+    if (!event) q.set('s', `${window.screen.width},${window.screen.height},${window.devicePixelRatio || 1}`);
+    if (navigator.webdriver) q.set('b', '153');
+    const img = new Image();
+    img.referrerPolicy = 'no-referrer';
+    img.src = `https://${CODE_GOATCOUNTER}.goatcounter.com/count?${q}`;
+  } catch { /* les statistiques ne doivent jamais gêner le site */ }
 }
