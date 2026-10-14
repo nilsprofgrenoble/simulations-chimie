@@ -914,7 +914,7 @@ export function BeerLambertBTS({ plotlyReady }) {
         setDraw([220,220,225]);
         pdf.line(0, pageH-12, W, pageH-12);
         normal(7); setColor(GREY);
-        txt('Labo Chimie & Physique — nilsprofgrenoble.github.io/simulations-chimie/', margin, pageH-5);
+        txt('Labo Chimie & Physique — paillasse-virtuelle.fr', margin, pageH-5);
         txt(`Simulation : Dosage par etalonnage BTS  |  ${new Date().toLocaleDateString('fr-FR')}`, W-margin, pageH-5, {align:'right'});
       }
 
@@ -945,7 +945,7 @@ export function BeerLambertBTS({ plotlyReady }) {
       // Date et URL en haut à droite
       normal(8); setColor([200,240,235]);
       txt(new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}), W-margin, 10, {align:'right'});
-      txt('nilsprofgrenoble.github.io/simulations-chimie/', W-margin, 16, {align:'right'});
+      txt('paillasse-virtuelle.fr', W-margin, 16, {align:'right'});
       txt(`Simulation : Dosage par etalonnage — ?sim=11`, W-margin, 22, {align:'right'});
 
       y = 35;

@@ -389,7 +389,7 @@ export function Simulation8({ plotlyReady }) {
   // ── SVG Montage Arduino (fixe) ──
   const MontageSVG = (
     <div style={{position:"relative"}}>
-      <img src="/simulations-chimie/schemaarduino.PNG"
+      <img src={`${import.meta.env.BASE_URL}schemaarduino.PNG`}
         style={{width:"100%", display:"block"}}
         alt="Schéma montage Arduino"/>
 

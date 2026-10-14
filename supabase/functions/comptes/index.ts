@@ -23,7 +23,7 @@ const MAX_PAR_CLASSE = 60;      // garde-fous si un compte professeur était uti
 const MAX_CLASSES = 30;
 
 // Sites autorisés à appeler la fonction (le contrôle réel est la connexion du professeur)
-const ORIGINES = ['https://nilsprofgrenoble.github.io', 'http://localhost:5173', 'http://localhost:4173', 'http://localhost:4182'];
+const ORIGINES = ['https://paillasse-virtuelle.fr', 'https://www.paillasse-virtuelle.fr', 'https://nilsprofgrenoble.github.io', 'http://localhost:5173', 'http://localhost:4173', 'http://localhost:4182'];
 const entetes = (req: Request) => {
   const o = req.headers.get('Origin') ?? '';
   return {

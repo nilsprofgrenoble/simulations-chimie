@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import { readFileSync } from 'node:fs'
 
 // ── Adresse publique du site (à changer ici le jour où le site a son propre nom de domaine) ──
-const ADRESSE_SITE = 'https://nilsprofgrenoble.github.io/simulations-chimie/'
+const ADRESSE_SITE = 'https://paillasse-virtuelle.fr/'
 const BASE = new URL(ADRESSE_SITE).pathname           // « /simulations-chimie/ » (ou « / » avec un nom de domaine)
 const SUPABASE_DEFAUT = 'https://pqgzlklnynbkgiwmbzdj.supabase.co'
 const GOATCOUNTER = 'https://labochimie.goatcounter.com'
