@@ -1,5 +1,5 @@
 import { useSignalerMode } from "../suivi";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure } from "../commun";
 import { NB } from "./Distillation";
@@ -21,8 +21,8 @@ const ecart = (a, b) => mod(a - b + 180, 360) - 180;
 const Baxe = r => 2 * K / r ** 3;
 
 // Champ en un point (x vers l'est, y vers le nord, en m) : Terre + aimant (dipôle) ; thetaM = direction du pôle N de l'aimant (° depuis le nord, sens horaire)
-function champs(x, y, aimant, thetaM) {
-  const Bt = [0, B_T];
+function champs(x, y, aimant, thetaM, terre = true) {
+  const Bt = terre ? [0, B_T] : [0, 0];
   let Ba = [0, 0];
   if (aimant) {
     const r = Math.max(Math.hypot(x, y), 0.03), ux = x / r, uy = y / r;
@@ -32,6 +32,35 @@ function champs(x, y, aimant, thetaM) {
   }
   const B = [Bt[0] + Ba[0], Bt[1] + Ba[1]];
   return { Bt, Ba, B, nBa: Math.hypot(Ba[0], Ba[1]), nB: Math.hypot(B[0], B[1]), ang: deg(Math.atan2(B[0], B[1])) };
+}
+
+// Lignes de champ (intégration pas à pas dans la direction du champ). Partent du pôle N de l'aimant, et du bas de la scène pour la Terre.
+function lignesDeChamp(aimant, thetaM, terre) {
+  const L = [], H = 0.005, XM = 0.30, YM = 0.20;
+  const suit = (x0, y0) => {
+    const pts = [[x0, y0]]; let x = x0, y = y0, sorti = false;
+    for (let i = 0; i < 700; i++) {
+      const f1 = champs(x, y, aimant, thetaM, terre); if (f1.nB === 0) break;
+      const mx = x + H / 2 * f1.B[0] / f1.nB, my = y + H / 2 * f1.B[1] / f1.nB;
+      const f2 = champs(mx, my, aimant, thetaM, terre); if (f2.nB === 0) break;
+      x += H * f2.B[0] / f2.nB; y += H * f2.B[1] / f2.nB;
+      const r = Math.hypot(x, y);
+      if (Math.abs(x) > XM || Math.abs(y) > YM) { pts.push([x, y]); break; }
+      if (aimant && r < 0.034 && i > 3) { pts.push([x, y]); break; }
+      if (r > 0.04) sorti = true;
+      pts.push([x, y]);
+    }
+    return pts;
+  };
+  if (aimant) {
+    for (let k = 0; k < 28; k++) {
+      const a = k / 28 * 2 * Math.PI, x = 0.036 * Math.cos(a), y = 0.036 * Math.sin(a);
+      const f = champs(x, y, aimant, thetaM, terre);
+      if (f.B[0] * x + f.B[1] * y > 0) L.push(suit(x, y));      // lignes qui sortent de l'aimant
+    }
+  }
+  if (terre) for (let x = -0.28; x <= 0.2801; x += 0.04) L.push(suit(x, -YM + 0.002));
+  return L;
 }
 
 // ---------- Addition vectorielle ----------
@@ -85,7 +114,7 @@ export function SimulationBoussole({ naviguer }) {
   const [pos, setPos] = useState({ x: 0.25, y: 0 });
   const [aimant, setAimant] = useState(true);
   const [thetaM, setThetaM] = useState(90);
-  const [carte, setCarte] = useState(false);
+  const [lignes, setLignes] = useState('total');         // 'total', 'aimant' ou 'aucune'
   const [, setT] = useState(0);
   const enGuide = mode === 'guide', enDefi = mode === 'defi';
   const svgRef = useRef(null), glisse = useRef(false);
@@ -126,6 +155,7 @@ export function SimulationBoussole({ naviguer }) {
   const calme = Math.abs(ecart(psi, ch.ang)) < 2 && Math.abs(N.current.om) < 0.05;
   const surAxe = Math.abs(pos.y) < 0.01 && aimant && Math.abs(ecart(thetaM, 90)) < 1;
   const rEq = (2 * K / B_T) ** (1 / 3);
+  const tracesLignes = useMemo(() => lignes === 'aucune' ? [] : lignesDeChamp(aimant, thetaM, lignes === 'total'), [lignes, aimant, thetaM]);
 
   // ════════════════ PARCOURS GUIDÉ ════════════════
   const etape = guide.etape;
@@ -133,7 +163,7 @@ export function SimulationBoussole({ naviguer }) {
   const aPlace = (x, y) => { setAimant(true); setThetaM(90); setPos({ x, y }); };
   const ETAPES = [
     { id: 'champ', titre: 'Qu’est-ce qu’un champ magnétique ?', focus: ['scene'],
-      texte: <>Un aimant, un courant électrique ou la Terre créent un <strong>champ magnétique</strong>, que l’on représente par un vecteur. Une <strong>boussole</strong> (petit aimant mobile) s’oriente le long de ce champ. Ici, la boussole est la petite rose à droite de l’aimant ; vous pouvez la faire glisser.</>,
+      texte: <>Un aimant, un courant électrique ou la Terre créent un <strong>champ magnétique</strong>, que l’on représente par un vecteur. Une <strong>boussole</strong> (petit aimant mobile) s’oriente le long de ce champ. Ici, la boussole est la petite rose à droite de l’aimant ; vous pouvez la faire glisser. Les lignes grises sont les lignes de champ : près de l’aimant, ce sont celles de l’aimant ; loin de lui, elles se redressent vers le nord.</>,
       tache: { type: 'qcm', q: 'Un champ magnétique est caractérisé par…', options: ['sa direction, son sens et son intensité (en tesla)', 'seulement son intensité', 'sa couleur et sa température'], bonne: 0,
         expl: 'Le champ magnétique est une grandeur vectorielle : direction, sens et intensité (norme), exprimée en tesla (T).' } },
     { id: 'terre', titre: 'Le champ de la Terre', focus: ['scene', 'reglages'],
@@ -253,14 +283,14 @@ export function SimulationBoussole({ naviguer }) {
 
   // ---------- scène ----------
   const cx = 300 + pos.x * PX, cy = 200 - pos.y * PX;
-  const fleches = [];
-  if (carte) for (let i = 0; i < 12; i++) for (let j = 0; j < 8; j++) {
-    const px = 25 + i * 50, py = 25 + j * 50, x = (px - 300) / PX, y = (200 - py) / PX;
-    if (Math.hypot(x, y) < 0.035) continue;
-    const c = champs(x, y, aimant, thetaM);
-    fleches.push(<g key={`${i}-${j}`} transform={`translate(${px} ${py}) rotate(${c.ang})`}>
-      <line y1="9" y2="-6" stroke="#94a3b8" strokeWidth="2"/><path d="M0,-12 L4,-4 L-4,-4 z" fill="#64748b"/></g>);
-  }
+  const fleches = tracesLignes.map((pts, i) => {
+    if (pts.length < 3) return null;
+    const d = pts.map((p, j) => `${j ? 'L' : 'M'}${(300 + p[0] * PX).toFixed(1)},${(200 - p[1] * PX).toFixed(1)}`).join(' ');
+    const m = Math.floor(pts.length / 2), q = pts[m], q2 = pts[Math.min(pts.length - 1, m + 1)];
+    const an = deg(Math.atan2(q2[0] - q[0], q2[1] - q[1]));
+    return <g key={i}><path d={d} fill="none" stroke={lignes === 'aimant' ? '#dc2626' : '#64748b'} strokeWidth="1.4" opacity="0.7"/>
+      <path d="M0,-6 L4,3 L-4,3 z" transform={`translate(${300 + q[0] * PX} ${200 - q[1] * PX}) rotate(${an})`} fill={lignes === 'aimant' ? '#dc2626' : '#64748b'} opacity="0.85"/></g>;
+  });
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
       <svg ref={svgRef} viewBox="0 0 600 400" style={{ width: '100%', display: 'block', touchAction: 'none', background: '#f8fafc', borderRadius: 8 }}
@@ -281,7 +311,7 @@ export function SimulationBoussole({ naviguer }) {
           <g transform={`rotate(${psi})`}><path d="M0,-17 L5,0 L-5,0 z" fill="#dc2626"/><path d="M0,17 L5,0 L-5,0 z" fill="#e2e8f0" stroke="#94a3b8" strokeWidth="0.8"/><circle r="2" fill="#0f172a"/></g>
         </g>
       </svg>
-      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Faites glisser la boussole. Le bout rouge de l’aiguille indique le sens du champ total. {carte ? 'Les petites flèches montrent la direction du champ en chaque point.' : ''}</div>
+      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Faites glisser la boussole. Le bout rouge de l’aiguille indique le sens du champ total. {lignes === 'total' ? 'Lignes grises : lignes du champ total (aimant + Terre).' : lignes === 'aimant' ? 'Lignes rouges : lignes du champ de l’aimant seul.' : ''}</div>
     </div>);
 
   const reglages = (
@@ -289,9 +319,18 @@ export function SimulationBoussole({ naviguer }) {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         <button onClick={() => setAimant(a => !a)} disabled={enDefi} style={stylePetitBouton(aimant, '#dc2626')}>{aimant ? 'Retirer l’aimant' : 'Remettre l’aimant'}</button>
-        <button onClick={() => setCarte(c => !c)} style={stylePetitBouton(carte, '#0891b2')}>Carte du champ</button>
-        <button onClick={() => place(0.25, 0)} style={stylePetitBouton(false)}>Boussole à 25 cm</button>
       </div>
+      <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Lignes de champ</div>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+        {[['total', 'Champ total'], ['aimant', 'Aimant seul'], ['aucune', 'Aucune']].map(([v, l]) => <button key={v} onClick={() => setLignes(v)} style={stylePetitBouton(lignes === v, '#0891b2')}>{l}</button>)}
+      </div>
+      {!enDefi && <><div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Placer la boussole</div>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+        <button onClick={() => place(0.05, 0)} style={stylePetitBouton(false)}>5 cm sur l’axe</button>
+        <button onClick={() => place(0.10, 0)} style={stylePetitBouton(false)}>10 cm sur l’axe</button>
+        <button onClick={() => place(0, 0.10)} style={stylePetitBouton(false)}>10 cm au-dessus</button>
+        <button onClick={() => place(rEq, 0)} style={stylePetitBouton(false)}>{nbf(rEq * 100, 0)} cm : champs égaux</button>
+      </div></>}
       <Curseur nom={<>Direction du pôle N de l’aimant (depuis le nord)</>} valeur={thetaM} onChange={v => !enDefi && setThetaM(v)} min={0} max={360} pas={5} unite="°" decimales={0} couleur="#dc2626"/>
     </div>);
   const mesures = (
@@ -324,7 +363,7 @@ export function SimulationBoussole({ naviguer }) {
         <li>Placez la boussole au-dessus ou en dessous de l’aimant (sur sa médiatrice) : le champ de l’aimant est-il de même sens que sur l’axe ?</li>
         <li>Retournez l’aimant de 180° : que devient la déviation de l’aiguille ?</li>
         <li>Cherchez la distance pour laquelle l’aimant et la Terre créent des champs égaux. Quel angle lit-on ?</li>
-        <li>Activez la carte du champ : où les petites flèches sont-elles toutes parallèles ? Où changent-elles vite de direction ?</li>
+        <li>Comparez « Aimant seul » et « Champ total » : près de l’aimant les lignes sont presque identiques ; à partir de quelle distance la Terre redresse-t-elle les lignes vers le nord ?</li>
       </ul>
     </div>);
   const retenir = (
