@@ -914,7 +914,7 @@ export function BeerLambertBTS({ plotlyReady }) {
         setDraw([220,220,225]);
         pdf.line(0, pageH-12, W, pageH-12);
         normal(7); setColor(GREY);
-        txt('Labo Chimie & Physique — paillasse-virtuelle.fr', margin, pageH-5);
+        txt('Paillasse virtuelle — paillasse-virtuelle.fr', margin, pageH-5);
         txt(`Simulation : Dosage par etalonnage BTS  |  ${new Date().toLocaleDateString('fr-FR')}`, W-margin, pageH-5, {align:'right'});
       }
 

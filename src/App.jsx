@@ -211,7 +211,7 @@ function PageAccueil({ onStart }) {
         borderColor:"#2a9d8f33", textAlign:"center", padding:"32px 24px"}}>
         <div style={{fontSize:48, marginBottom:20}}>⚗️🧪🔬</div>
         <h2 style={{fontSize:24, fontWeight:700, color:"#222", margin:"0 0 12px"}}>
-          Labo Chimie & Physique
+          Paillasse virtuelle
         </h2>
         <p style={{fontSize:15, color:"#555", lineHeight:1.7, maxWidth:600, margin:"0 auto 20px"}}>
           Simulations interactives de chimie et de physique pour les niveaux 1G spé PC, TSTL et BTS Métiers de la Chimie.
@@ -332,7 +332,7 @@ function PageAccueil({ onStart }) {
       </div>
 
       <div style={{textAlign:"center", fontSize:12, color:"#aaa", paddingBottom:16}}>
-        Labo Chimie & Physique — Simulations interactives pédagogiques
+        Paillasse virtuelle — paillasse-virtuelle.fr
       </div>
     </div>
   );
@@ -401,8 +401,8 @@ export default function App() {
     const s = SIMULATIONS.find(x => x.id === activeId);
     compter(activeId === 0 ? '/' : `/sim/${activeId}`, s ? s.label : 'Accueil');
     // titre de l'onglet, description et indexation (moteurs de recherche)
-    const NOM_SITE = 'Labo Chimie & Physique';
-    document.title = s && activeId > 0 ? `${s.label} — ${NOM_SITE}` : `${NOM_SITE} — simulations interactives (lycée, BTS)`;
+    const NOM_SITE = 'Paillasse virtuelle';
+    document.title = s && activeId > 0 ? `${s.label} — ${NOM_SITE}` : `${NOM_SITE} — simulations de chimie et de physique (lycée, BTS)`;
     const meta = (nom, valeur) => {
       let m = document.querySelector(`meta[name="${nom}"]`);
       if (!m) { m = document.createElement('meta'); m.setAttribute('name', nom); document.head.appendChild(m); }
@@ -474,8 +474,8 @@ export default function App() {
         <div style={styles.sidebarHeader}>
           <div style={{ fontSize: "2.2rem" }}>⚛️</div>
           <div>
-            <div style={styles.siteTitle}>Labo Chimie (et un peu Physique!)</div>
-            <div style={styles.siteSub}>Simulations interactives</div>
+            <div style={styles.siteTitle}>Paillasse virtuelle</div>
+            <div style={styles.siteSub}>Chimie et physique : simulations interactives</div>
             <div style={{fontSize:"0.72rem", color:"#aaa", fontStyle:"italic",
               fontFamily:"'Outfit', sans-serif"}}>
               par Nils ARONSSOHN, enseignant au lycée Argouges de Grenoble
