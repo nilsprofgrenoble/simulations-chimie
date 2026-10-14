@@ -31,6 +31,9 @@ import { SimulationReponse } from "./simulations/Reponse";
 import { SimulationDistillation } from "./simulations/Distillation";
 import { SimulationDiagramme } from "./simulations/DiagrammeBinaire";
 import { SimulationRefractometre } from "./simulations/Refractometre";
+import { SimulationMoteurPasAPas } from "./simulations/MoteurPasAPas";
+import { SimulationMoteurCode } from "./simulations/MoteurCode";
+import { SimulationBoussole } from "./simulations/Boussole";
 import { SimulationAtelierDonnees } from "./simulations/AtelierDonnees";
 import { SimulationAtelierGraphique } from "./simulations/AtelierGraphique";
 import { SimulationAtelierRealiser } from "./simulations/AtelierRealiser";
@@ -91,6 +94,12 @@ const SIMULATIONS = [
     component: SimulationDiagramme },
   { id:43, label:"Réfractomètre : indice et composition", niveau:"TSTL", icon:"🔬", color:"#6d28d9",
     component: SimulationRefractometre },
+  { id:44, label:"Moteur pas à pas : du stator à l'axe", niveau:"TSTL", icon:"🧲", color:"#b45309",
+    component: SimulationMoteurPasAPas },
+  { id:45, label:"Piloter le moteur avec le code", niveau:"TSTL", icon:"💻", color:"#b45309",
+    component: SimulationMoteurCode },
+  { id:46, label:"Boussole et champ magnétique", niveau:"TSTL", icon:"🧭", color:"#b45309",
+    component: SimulationBoussole },
   { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"COMP", icon:"🎯", color:"#e11d48",
     component: SimulationAtelierDonnees },
   { id:35, label:"S'APP : lire un graphique", niveau:"COMP", icon:"📈", color:"#e11d48",
@@ -158,6 +167,11 @@ function PageAccueil({ onStart }) {
         { icon:"📉", label:"Diagramme binaire isobare", desc:"Courbes d'ébullition et de rosée, domaines liquide / vapeur, composition du liquide et de la vapeur à une température donnée, fractions molaires et massiques, azéotrope." },
         { icon:"🔬", label:"Réfractomètre : indice et composition", desc:"Lire un indice de réfraction : frontière clair – sombre, compensateur, réticule, échelle, 4 décimales ; puis courbe d'étalonnage eau – éthanol et ambiguïté (deux compositions pour un même indice)." },
         { icon:"🧪", label:"Distillation simple et fractionnée", desc:"Un mélange binaire n'a pas la même composition liquide et vapeur : diagramme isobare, escalier des plateaux, azéotrope, bilan de matière et rendement. Eau – éthanol (le vin), benzène – toluène, chloroforme – acétone." },
+      ]},
+      { label:"🧲 Contrôle des systèmes", sims:[
+        { icon:"🧭", label:"Boussole et champ magnétique", desc:"Direction, sens et intensité du champ magnétique : une boussole près d'un aimant, champ de la Terre (50 µT), addition vectorielle, boussole des tangentes, carte du champ et ordres de grandeur du micro-tesla à 100 T." },
+        { icon:"🧲", label:"Moteur pas à pas : du stator à l'axe", desc:"Champ magnétique, stator à 4 bobines et rotor aimanté : pas complet, demi-pas, force maximale, chronogramme des tensions ; puis réducteur : 4096 demi-pas, 512 tours du rotor pour un tour de l'axe, durée avec delay(5)." },
+        { icon:"💻", label:"Piloter le moteur avec le code", desc:"Construire la séquence des bobines et le délai d'un programme Arduino : oscillations du rotor, pas perdus si le délai est trop court ou la charge trop forte, force maximale, ordre incohérent, boucle ouverte." },
       ]},
       { label:"🔥 Transferts thermiques", sims:[
         { icon:"🧱", label:"Paroi multicouche : résistance thermique", desc:"Conduction à travers une paroi : R = e/(λS), résistances en série, P = ΔT/R, profil de température et part de chaque couche, dimensionnement d'un isolant, simple et double vitrage." },
@@ -498,6 +512,7 @@ export default function App() {
               { label:'❄️ Évaporation et cristallisation', ids:[7] },
               { label:'🧪 Distillation', ids:[42,41,43] },
               { label:'🔥 Transferts thermiques', ids:[31,32,30] },
+              { label:'🧲 Contrôle des systèmes', ids:[46,44,45] },
             ] : null;
 
             return (
