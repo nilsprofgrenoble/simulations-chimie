@@ -28,6 +28,9 @@ import { SimulationEchangeur } from "./simulations/Echangeur";
 import { SimulationParoi } from "./simulations/Paroi";
 import { SimulationBouilloire } from "./simulations/Bouilloire";
 import { SimulationReponse } from "./simulations/Reponse";
+import { SimulationDistillation } from "./simulations/Distillation";
+import { SimulationDiagramme } from "./simulations/DiagrammeBinaire";
+import { SimulationRefractometre } from "./simulations/Refractometre";
 import { SimulationAtelierDonnees } from "./simulations/AtelierDonnees";
 import { SimulationAtelierGraphique } from "./simulations/AtelierGraphique";
 import { SimulationAtelierRealiser } from "./simulations/AtelierRealiser";
@@ -82,6 +85,12 @@ const SIMULATIONS = [
     component: SimulationBouilloire },
   { id:33, label:"Temps de réponse d'un capteur", niveau:"TSTL", icon:"⏱️", color:"#0891b2",
     component: SimulationReponse },
+  { id:41, label:"Distillation simple et fractionnée", niveau:"TSTL", icon:"🧪", color:"#0f766e",
+    component: SimulationDistillation },
+  { id:42, label:"Diagramme binaire isobare", niveau:"TSTL", icon:"📉", color:"#0e7490",
+    component: SimulationDiagramme },
+  { id:43, label:"Réfractomètre : indice et composition", niveau:"TSTL", icon:"🔬", color:"#6d28d9",
+    component: SimulationRefractometre },
   { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"COMP", icon:"🎯", color:"#e11d48",
     component: SimulationAtelierDonnees },
   { id:35, label:"S'APP : lire un graphique", niveau:"COMP", icon:"📈", color:"#e11d48",
@@ -110,6 +119,7 @@ const NIVEAUX = [
 // ============================================================
 
 function PageAccueil({ onStart }) {
+  const [ouvert, setOuvert] = useState(null);   // un seul chapitre déplié à la fois
   const cardA = {
     background: "white",
     borderRadius: 14,
@@ -143,6 +153,11 @@ function PageAccueil({ onStart }) {
       ]},
       { label:"❄️ Évaporation et cristallisation", sims:[
         { icon:"❄️", label:"Évaporation et cristallisation", desc:"Cristallisation par refroidissement ou évaporation : diagramme de solubilité, bilan de matière, rendement." },
+      ]},
+      { label:"🧪 Distillation", sims:[
+        { icon:"📉", label:"Diagramme binaire isobare", desc:"Courbes d'ébullition et de rosée, domaines liquide / vapeur, composition du liquide et de la vapeur à une température donnée, fractions molaires et massiques, azéotrope." },
+        { icon:"🔬", label:"Réfractomètre : indice et composition", desc:"Lire un indice de réfraction : frontière clair – sombre, compensateur, réticule, échelle, 4 décimales ; puis courbe d'étalonnage eau – éthanol et ambiguïté (deux compositions pour un même indice)." },
+        { icon:"🧪", label:"Distillation simple et fractionnée", desc:"Un mélange binaire n'a pas la même composition liquide et vapeur : diagramme isobare, escalier des plateaux, azéotrope, bilan de matière et rendement. Eau – éthanol (le vin), benzène – toluène, chloroforme – acétone." },
       ]},
       { label:"🔥 Transferts thermiques", sims:[
         { icon:"🧱", label:"Paroi multicouche : résistance thermique", desc:"Conduction à travers une paroi : R = e/(λS), résistances en série, P = ΔT/R, profil de température et part de chaque couche, dimensionnement d'un isolant, simple et double vitrage." },
@@ -246,16 +261,18 @@ function PageAccueil({ onStart }) {
           {/* Cas avec sous-menus (BTS) */}
           {sousMenus && sousMenus.map(({label:sLabel, sims:sSims})=>(
             <div key={sLabel} style={{marginBottom:16}}>
-              {/* En-tête sous-menu */}
-              <div style={{display:"flex", alignItems:"center", gap:8, marginBottom:10}}>
+              {/* En-tête sous-menu : cliquer déplie les animations du chapitre */}
+              <button onClick={()=>setOuvert(o=>o===sLabel?null:sLabel)} aria-expanded={ouvert===sLabel}
+                style={{display:"flex", alignItems:"center", gap:8, marginBottom:10, width:"100%", border:"none", background:"transparent", cursor:"pointer", padding:0, textAlign:"left"}}>
                 <div style={{height:2, width:18, borderRadius:2, background:color, opacity:0.5}}/>
-                <span style={{fontSize:12, fontWeight:700, color,
-                  background:color+'18', padding:"3px 12px",
+                <span style={{fontSize:13, fontWeight:700, color,
+                  background:color+'18', padding:"5px 14px",
                   borderRadius:20, border:`1px solid ${color}44`}}>
-                  {sLabel}
+                  {sLabel} · {sSims.length}
                 </span>
-              </div>
-              <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:12, paddingLeft:8}}>
+                <span style={{fontSize:14, color, transform: ouvert===sLabel ? "rotate(90deg)" : "none", transition:"transform 0.2s"}}>›</span>
+              </button>
+              {ouvert===sLabel && <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))", gap:12, paddingLeft:8}}>
                 {sSims.map(({icon, label, desc}) => {
                   const sim=SIMULATIONS.find(s=>s.label===label);
                   return (
@@ -271,7 +288,7 @@ function PageAccueil({ onStart }) {
                     </div>
                   );
                 })}
-              </div>
+              </div>}
             </div>
           ))}
         </div>
@@ -479,6 +496,7 @@ export default function App() {
               { label:'💧 Transport des fluides', ids:[26,27,28,17] },
               { label:'⚙️ Régulation', ids:[5,6] },
               { label:'❄️ Évaporation et cristallisation', ids:[7] },
+              { label:'🧪 Distillation', ids:[42,41,43] },
               { label:'🔥 Transferts thermiques', ids:[31,32,30] },
             ] : null;
 
@@ -515,17 +533,25 @@ export default function App() {
                 })}
 
                 {isExpanded && sousgroupes && sousgroupes.map(({label, ids}) => {
-                  const sgExpanded = sgOuverts[label] ?? true;
-                  const setSgExpanded = f => setSgOuverts(prev => ({ ...prev, [label]: f(prev[label] ?? true) }));
+                  // Fermés par défaut ; celui qui contient la simulation en cours est ouvert ; un seul ouvert à la fois par niveau
+                  const ouvertParDefaut = l => (sousgroupes.find(g => g.label === l)?.ids || []).includes(activeId);
+                  const sgExpanded = sgOuverts[label] ?? ouvertParDefaut(label);
+                  const basculer = () => setSgOuverts(prev => {
+                    const nouveau = { ...prev };
+                    sousgroupes.forEach(g => { nouveau[g.label] = false; });
+                    nouveau[label] = !(prev[label] ?? ouvertParDefaut(label));
+                    return nouveau;
+                  });
                   const sgSims = ids.map(id => simsNiv.find(s => s.id === id)).filter(Boolean);
                   return (
                     <div key={label}>
-                      <button onClick={() => setSgExpanded(v => !v)}
-                        style={{ display:"flex", alignItems:"center", gap:6,
-                          width:"100%", padding:"0.3rem 0.75rem", border:"none",
-                          background:"transparent", cursor:"pointer", marginLeft:"0.25rem" }}>
-                        <span style={{ fontSize:"0.68rem", fontWeight:"700", color:niv.color,
-                          opacity:0.8, letterSpacing:"0.05em" }}>{label}</span>
+                      <button onClick={basculer} aria-expanded={sgExpanded}
+                        style={{ display:"flex", alignItems:"center", gap:6, textAlign:"left",
+                          width:"100%", padding:"0.4rem 0.75rem", border:"none",
+                          background: sgExpanded ? niv.color+'12' : "transparent", borderRadius:8, cursor:"pointer", marginLeft:"0.25rem" }}>
+                        <span style={{ fontSize:"0.74rem", fontWeight:"700", color:niv.color,
+                          letterSpacing:"0.03em", flex:1 }}>{label}</span>
+                        <span style={{ fontSize:"0.65rem", color:niv.color, opacity:0.7 }}>{sgSims.length}</span>
                         <span style={{ fontSize:"0.7rem", color:niv.color, opacity:0.6,
                           transform: sgExpanded ? "rotate(90deg)" : "rotate(0deg)",
                           transition:"transform 0.2s", display:"inline-block" }}>›</span>
@@ -637,7 +663,7 @@ export default function App() {
                 {/* Le fichier App.css du modèle Vite centre tout le texte (#root) : on rétablit l'alignement
                     à gauche pour les simulations ; la page d'accueil garde sa mise en page centrée. */}
                 <BandeauContexte key={`b${activeId}`} id={activeId} contexte={CONTEXTES[activeId]} couleur={active.color} />
-                {activeId > 0 && activeId < 34 && <SuiviTemps simId={activeId} />}
+                {(activeId > 0 && activeId < 34 || activeId >= 41) && <SuiviTemps simId={activeId} />}
                 <ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} />
               </div>}
         </div>
