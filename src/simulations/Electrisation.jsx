@@ -1,5 +1,5 @@
 import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, ARetenir, Curseur, LigneMesure, lireProgression } from "../commun";
 import { NB } from "./Distillation";
@@ -17,6 +17,7 @@ declarerDefis(SIM, [
   ['frottement', 'Frottement : charges de la tige et du tissu'],
   ['interaction', 'Interaction : signe de la charge de la tige'],
   ['influence', 'Influence puis contact d’une boule neutre'],
+  ['electroscope', 'Électroscope : état des feuilles'],
 ]);
 
 // signe = signe de la charge de la tige après frottement avec le tissu (ordre donné par l'expérience, pas calculé)
@@ -28,6 +29,13 @@ const TIGES = {
 const NMAX = 6;           // nombre maximal d'électrons transférés sur le dessin
 const Q_ROD = 3;          // charge dessinée d'une tige frottée (en e)
 const Q_CONTACT = 2;      // charge prise par la boule au contact (en e)
+const Q_ELE = 4;          // charge prise par l'électroscope au contact (en e)
+const K_INF = 3.5;        // charge déplacée vers les feuilles (ou vers la sphère) par une tige à distance minimale
+// Électroscope : charge des feuilles ql (en e) = part de la charge nette + effet d'influence ; ouverture schématique
+function modeleEle(s, Q, d) {
+  const phi = proxim(d, 1), ql = 0.5 * Q + s * phi * K_INF;
+  return { phi, ql, theta: Math.min(40, 11 * Math.max(0, Math.abs(ql) - 0.5)) };
+}
 const sgn = q => (q > 0 ? '+' : q < 0 ? '−' : '');
 const chg = q => (q === 0 ? '0' : `${sgn(q)}${Math.abs(q)}${NB}e`);
 const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -68,12 +76,41 @@ function etiquetteVec(x, y, lettre, indice, col, cle, taille = 14) {
 // ---------- physique qualitative ----------
 // Intensité relative (0 à 1) en fonction de la distance d (cm) : 1 au contact, décroissante
 const proxim = (d, d0) => 1 / (1 + ((d - d0) / 3) ** 2);
-// Interaction boule / tige : { type: 'attr' | 'rep' | 'aucune', amp, phi }
-function interBoule(s, Q, d) {
-  const f = proxim(d, 1);
-  if (s === 0) return { type: 'aucune', amp: 0, phi: 0 };
-  if (Q === 0) return { type: 'attr', amp: 0.6 * f, phi: f, influence: true };
-  return { type: Q * s > 0 ? 'rep' : 'attr', amp: f, phi: f };
+// Intensité relative de l'interaction pour un intervalle de « gap » pixels entre les deux corps (1 au contact)
+const ampl = (gap, pxcm) => proxim(1 + Math.max(0, gap) / pxcm, 1);
+// Coefficient signé de l'interaction boule / tige : > 0 attraction, < 0 répulsion ; 0,6 pour la seule influence
+const coefBoule = (s, Q) => (s === 0 ? 0 : Q === 0 ? 0.6 : Q * s > 0 ? -1 : 1);
+
+// Mouvement d'un corps mobile (boule suspendue, ou paille qui roule) : x en pixels, positif vers la tige.
+// La force dépend de l'écart restant (gap0 − x) ; rappel du pendule (omega2), frottement visqueux (c), adhérence éventuelle.
+function useMobile(par) {
+  const [x, setX] = useState(0);
+  const st = useRef({ x: 0, v: 0, aff: 0 }), p = useRef(par);
+  useEffect(() => { p.current = par; });
+  useEffect(() => {
+    let raf, t0 = performance.now();
+    const tick = t => {
+      const dt = Math.min(0.05, (t - t0) / 1000);
+      t0 = t;
+      const q = p.current, s = st.current, n = Math.max(1, Math.ceil(dt * 200));
+      for (let i = 0; i < n; i++) {
+        const h = dt / n, F = q.coef * q.F0 * ampl(q.gap0 - s.x, q.pxcm);
+        if (q.statique && Math.abs(s.v) < 1e-3 && Math.abs(F) < q.statique) { s.v = 0; }          // la force ne vainc pas l'adhérence
+        else { s.v += (F - q.omega2 * s.x - q.c * s.v) * h; s.x += s.v * h; }
+        if (s.x >= q.gap0) {                                                                       // la tige arrête le corps
+          s.x = q.gap0;
+          if (s.v > 0) { if (q.coef > 0 && q.auto && q.onContact) q.onContact(); s.v = 0; }
+        }
+        if (s.x <= q.xmin) { s.x = q.xmin; if (s.v < 0) s.v = 0; }
+      }
+      if (Math.abs(s.x - s.aff) > 0.05) { s.aff = s.x; setX(s.x); }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  const reset = () => { st.current.x = 0; st.current.v = 0; st.current.aff = 0; setX(0); };
+  return [x, reset];
 }
 
 // ---------- défis ----------
@@ -82,7 +119,7 @@ function nouveauDefi(type) {
   if (type === 'interaction') return { type, tige: tire(['verre', 'ebonite', 'pp']), paille: tire([1, -1]), reps: {}, verifie: false };
   return { type, tige: tire(['verre', 'ebonite']), reps: {}, verifie: false };
 }
-const TITRES_DEFIS = { frottement: 'Frottement', interaction: 'Signe de la tige', influence: 'Influence et contact' };
+const TITRES_DEFIS = { frottement: 'Frottement', interaction: 'Signe de la tige', influence: 'Influence et contact', electroscope: 'Électroscope' };
 
 function evaluer(defi) {
   const r = defi.reps;
@@ -100,6 +137,17 @@ function evaluer(defi) {
     return { ok: okS && okM, lignes: [
       [okS, okS ? 'Signe de la tige correct.' : `Signe : la paille est ${defi.paille > 0 ? 'positive' : 'négative'} et la tige ${attr ? 's’approche d’elle (attraction : charges de signes opposés)' : 'la repousse (répulsion : charges de même signe)'}. Revoyez le sens du déplacement.`],
       [okM, okM ? 'Bilan en électrons correct.' : 'Une tige chargée positivement a perdu des électrons ; une tige chargée négativement en a gagné (seuls les électrons se déplacent).']] };
+  }
+  if (defi.type === 'electroscope') {
+    const s = TIGES[defi.tige].signe;
+    const attendu = { e1: 'ecartent', e2: s > 0 ? '+' : '-', e3: 'restent', e4: 'rapprochent' };
+    const msg = {
+      e1: 'La tige chargée déplace les électrons libres du métal : les feuilles se chargent toutes deux du même signe que la tige et se repoussent.',
+      e2: s > 0 ? 'La tige + attire les électrons vers la sphère : les feuilles, privées d’électrons, sont chargées +.' : 'La tige − repousse les électrons vers les feuilles : elles se chargent −.',
+      e3: 'Au contact, l’électroscope a gagné ou perdu des électrons : il reste chargé, donc les feuilles gardent des charges de même signe et restent écartées.',
+      e4: 'Une tige de signe opposé attire (ou repousse) les électrons dans l’autre sens : les feuilles perdent leur excès de charge et se rapprochent.' };
+    const lignes = ['e1', 'e2', 'e3', 'e4'].map(k => [r[k] === attendu[k], r[k] === attendu[k] ? `Question ${k[1]} : correct.` : `Question ${k[1]} : ${msg[k]}`]);
+    return { ok: lignes.every(l => l[0]), lignes };
   }
   const s = TIGES[defi.tige].signe;
   const attendu = { q1: s > 0 ? '-' : '+', q2: 'attr', q3: s > 0 ? '+' : '-', q4: 'rep' };
@@ -174,6 +222,20 @@ function VoletDefi({ defi, setDefi, changerType }) {
         {q('4. Après le contact, la tige et la boule…')}
         {choix('q4', [['attr', 's’attirent'], ['rep', 'se repoussent'], ['aucune', 'n’interagissent pas']])}
       </>}
+      {defi.type === 'electroscope' && <>
+        {titre('🎯 Défi : les feuilles de l’électroscope')}
+        <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.55 }}>
+          On approche d’un électroscope neutre une tige frottée <strong>chargée {s > 0 ? 'positivement' : 'négativement'}</strong> (sans contact). Puis on touche la sphère avec la tige et on l’éloigne.
+          Enfin, on approche de l’électroscope une tige de <strong>signe opposé</strong>. <em>Prédisez avant de regarder.</em></div>
+        {q('1. Tige approchée sans contact : les feuilles…')}
+        {choix('e1', [['ecartent', 's’écartent'], ['fermees', 'restent fermées']])}
+        {q('2. À ce moment, les feuilles sont chargées…')}
+        {choix('e2', [['+', '+'], ['-', '−'], ['0', 'elles sont neutres']])}
+        {q('3. Après le contact, la tige éloignée : les feuilles…')}
+        {choix('e3', [['restent', 'restent écartées'], ['ferment', 'se referment']])}
+        {q('4. On approche (à quelques cm) une tige de signe opposé : les feuilles…')}
+        {choix('e4', [['rapprochent', 'se rapprochent'], ['ecartent', 's’écartent davantage']])}
+      </>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
         <button onClick={verifier} style={styleBouton(true, VERT)}>✓ Vérifier</button>
         <button onClick={() => changerType(defi.type)} style={styleBouton(false)}>🔄 Nouveau défi</button>
@@ -188,6 +250,9 @@ function VoletDefi({ defi, setDefi, changerType }) {
           La charge totale reste nulle : les électrons ne se créent pas, ils passent d’un corps à l’autre.</>}
         {defi.type === 'interaction' && <>La paille est {defi.paille > 0 ? 'positive' : 'négative'} et elle {s * defi.paille < 0 ? 's’approche de la tige : attraction, donc charges de signes opposés' : 'est repoussée par la tige : répulsion, donc charges de même signe'}.
           La tige est donc {s > 0 ? 'positive : elle a perdu des électrons' : 'négative : elle a gagné des électrons'}.</>}
+        {defi.type === 'electroscope' && <>1. La tige {s > 0 ? '+ attire les électrons vers la sphère : les feuilles perdent des électrons et deviennent +' : '− repousse les électrons vers les feuilles : elles deviennent −'} ; les deux feuilles ont le même signe et se repoussent : elles s’écartent.
+          {' '}3. Au contact, l’électroscope {s > 0 ? 'perd des électrons (passés sur la tige) : il est chargé +' : 'gagne des électrons : il est chargé −'} ; il le reste après l’éloignement de la tige, donc les feuilles restent écartées.
+          {' '}4. La tige de signe opposé fait revenir des électrons vers les feuilles (ou les en chasse) : leur excès de charge disparaît et elles se rapprochent. Si on s’approche encore, elles peuvent se rouvrir avec la charge opposée.</>}
         {defi.type === 'influence' && <>1. {s > 0 ? 'Les électrons libres de la boule sont attirés par la tige + : face proche −, face éloignée +.' : 'Les électrons libres de la boule sont repoussés par la tige − : face proche +, face éloignée −.'}
           {' '}2. Les charges proches (de signe opposé à la tige) l’emportent : la boule est attirée. 3. Au contact, {s > 0 ? 'des électrons passent de la boule à la tige : la boule devient +' : 'des électrons passent de la tige à la boule : la boule devient −'}.
           {' '}4. Boule et tige ont des charges de même signe : elles se repoussent.</>}
@@ -204,6 +269,7 @@ export function SimulationElectrisation() {
   const [frot, setFrot] = useState({ tige: 'verre', n: 0 });
   const [inter, setInter] = useState({ tige: 'ebonite', paille: -1, d: 10 });
   const [infl, setInfl] = useState({ tige: 'verre', d: 12, Q: 0 });
+  const [ele, setEle] = useState({ tige: 'verre', d: 12, Q: 0 });
   const [hypoOuv, setHypoOuv] = useState(false);
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi;
 
@@ -214,10 +280,18 @@ export function SimulationElectrisation() {
   const okB = inter.tige === 'ebonite' && inter.paille < 0 && inter.d <= 6;
   const okC = inter.tige === 'verre' && inter.paille < 0 && inter.d <= 6;
   const okInf1 = infl.tige === 'verre' && infl.Q === 0 && infl.d >= 10;
-  const okInf2 = infl.tige === 'verre' && infl.Q === 0 && infl.d <= 4;
+  const okInf2 = infl.tige === 'verre' && infl.Q === 0 && infl.d <= 5;
   const okContact = infl.tige === 'verre' && infl.Q === Q_CONTACT;
   const okRepouss = okContact && infl.d >= 2;
   const okContactEbo = infl.tige === 'ebonite' && infl.Q === -Q_CONTACT;
+  const sEl = TIGES[ele.tige].signe, EM = modeleEle(sEl, ele.Q, ele.d);
+  const okE1 = ele.tige === 'verre' && ele.Q === 0 && ele.d >= 10;
+  const okE2 = ele.tige === 'verre' && ele.Q === 0 && ele.d <= 4;
+  const okE3 = ele.tige === 'verre' && ele.Q === 0 && ele.d >= 10;
+  const okE4 = ele.tige === 'verre' && ele.Q === Q_ELE;
+  const okE5 = okE4 && ele.d >= 10;
+  const okE6 = ele.tige === 'ebonite' && ele.Q === Q_ELE && EM.theta === 0;
+  const okE7 = ele.tige === 'ebonite' && ele.Q === Q_ELE && EM.ql < -1 && EM.theta > 8;
   const ETAPES = [
     { id: 'neutre', titre: 'Un corps neutre', onglet: 'frottement', focus: ['scene'],
       texte: <>Tous les objets qui nous entourent sont électriquement neutres. Sur le dessin, la tige et le tissu contiennent chacun 8 charges <strong style={{ color: ROUGE }}>+</strong> (protons, fixes dans les noyaux)
@@ -275,8 +349,8 @@ export function SimulationElectrisation() {
       texte: <>Une boule d’aluminium, <strong>neutre</strong>, est suspendue à un fil. Ses électrons sont libres de se déplacer (c’est un métal). Éloignez la tige en verre chargée (10 cm ou plus).</>,
       tache: { type: 'action', ok: okInf1, label: 'Tige en verre loin (≥ 10 cm), boule neutre', faire: () => setInfl({ tige: 'verre', d: 12, Q: 0 }), consigne: 'Tige en verre à 10 cm ou plus, boule neutre' } },
     { id: 'inf2', titre: 'Approcher la tige', onglet: 'influence', focus: ['reglages', 'scene'],
-      texte: <>Approchez la tige en verre (4 cm ou moins), sans toucher la boule. Regardez comment les charges de la boule se déplacent.</>,
-      tache: { type: 'action', ok: okInf2, label: 'Tige en verre à 4 cm ou moins', faire: () => setInfl({ tige: 'verre', d: 3, Q: 0 }), consigne: 'Tige en verre à 4 cm ou moins, boule toujours neutre' } },
+      texte: <>Approchez la tige en verre (5 cm ou moins), sans toucher la boule. Regardez comment les charges se déplacent et comment la boule réagit.</>,
+      tache: { type: 'action', ok: okInf2, label: 'Tige en verre à 5 cm', faire: () => setInfl({ tige: 'verre', d: 5, Q: 0 }), consigne: 'Tige en verre à 5 cm ou moins, boule toujours neutre' } },
     { id: 'face', titre: 'Les électrons libres', onglet: 'influence', focus: ['scene', 'bilan'],
       texte: <>La tige est chargée +.</>,
       tache: { type: 'qcm', q: 'La face de la boule tournée vers la tige est chargée…', options: ['négativement : les électrons libres sont attirés par la tige', 'positivement : les électrons sont repoussés', 'elle reste neutre'], bonne: 0,
@@ -312,13 +386,66 @@ export function SimulationElectrisation() {
       texte: <>Cette fois, le transfert d’électrons se fait de la tige vers la boule.</>,
       tache: { type: 'qcm', q: 'Après contact avec la tige en ébonite, la boule est…', options: ['chargée négativement : elle a gagné des électrons', 'chargée positivement : elle a perdu des électrons', 'neutre'], bonne: 0,
         expl: 'La tige négative a cédé des électrons à la boule : la boule est négative, et se repousse avec la tige.' } },
-    { id: 'bravo', titre: 'Bravo !', onglet: 'influence', focus: [],
+    { id: 'e1', titre: 'L’électroscope neutre', onglet: 'electroscope', focus: ['scene'],
+      texte: <>L’électroscope est un appareil qui révèle la charge électrique : une sphère métallique, une tige métallique et deux fines feuilles métalliques, le tout relié (on les dessine avec leurs charges).
+        Il est <strong>neutre</strong> et la tige en verre frottée est loin.</>,
+      tache: { type: 'action', ok: okE1, label: 'Électroscope neutre, tige en verre loin', faire: () => setEle({ tige: 'verre', d: 12, Q: 0 }), consigne: 'Tige en verre à 10 cm ou plus, électroscope neutre' } },
+    { id: 'e1q', titre: 'Feuilles fermées', onglet: 'electroscope', focus: ['scene', 'bilan'],
+      texte: <>Observez les feuilles.</>,
+      tache: { type: 'qcm', q: 'Pourquoi les feuilles de l’électroscope neutre restent-elles fermées ?', options: ['chaque feuille est neutre : il n’y a aucune charge à repousser', 'les feuilles sont trop lourdes', 'la sphère est chargée négativement'], bonne: 0,
+        expl: 'Le métal contient autant de charges + que de charges − en chaque endroit : aucune force électrostatique n’écarte les feuilles.' } },
+    { id: 'e2', titre: 'Approcher la tige (sans contact)', onglet: 'electroscope', focus: ['reglages', 'scene'],
+      texte: <>Approchez la tige en verre chargée + (4 cm ou moins), sans toucher la sphère.</>,
+      tache: { type: 'action', ok: okE2, label: 'Tige en verre à 4 cm ou moins', faire: () => setEle({ tige: 'verre', d: 3, Q: 0 }), consigne: 'Tige en verre à 4 cm ou moins, sans contact' } },
+    { id: 'e2q', titre: 'Pourquoi les feuilles s’écartent', onglet: 'electroscope', focus: ['scene', 'bilan'],
+      texte: <>Regardez où sont allés les électrons libres du métal.</>,
+      tache: { type: 'qcm', q: 'Les feuilles s’écartent parce que…', options: ['les électrons sont attirés vers la sphère par la tige + ; les deux feuilles, privées d’électrons, sont chargées + et se repoussent', 'la tige a cédé ses électrons aux feuilles', 'la gravitation de la tige attire les feuilles'], bonne: 0,
+        expl: 'C’est l’influence électrostatique. Les deux feuilles portent des charges de même signe : elles se repoussent. La charge totale de l’électroscope reste nulle.' } },
+    { id: 'e3', titre: 'Éloigner la tige', onglet: 'electroscope', focus: ['reglages', 'scene'],
+      texte: <>Éloignez la tige (10 cm ou plus), toujours sans contact.</>,
+      tache: { type: 'action', ok: okE3, label: 'Tige éloignée (≥ 10 cm), sans contact', faire: () => setEle({ tige: 'verre', d: 12, Q: 0 }), consigne: 'Tige en verre éloignée, électroscope toujours neutre' } },
+    { id: 'e3q', titre: 'Sans contact : retour à la normale', onglet: 'electroscope', focus: ['scene'],
+      texte: <>Que deviennent les feuilles ?</>,
+      tache: { type: 'qcm', q: 'Quand on éloigne la tige sans contact, les feuilles…', options: ['se referment : les électrons reviennent et l’électroscope est resté neutre', 'restent écartées : il est maintenant chargé', 'se rapprochent puis s’écartent'], bonne: 0,
+        expl: 'Aucun électron n’a quitté l’électroscope : ils se sont seulement déplacés. Sans la tige, les charges se répartissent à nouveau uniformément.' } },
+    { id: 'e4', titre: 'Toucher la sphère', onglet: 'electroscope', focus: ['reglages', 'scene'],
+      texte: <>Cliquez sur « Toucher la sphère avec la tige ». Observez le sens du transfert d’électrons.</>,
+      tache: { type: 'action', ok: okE4, label: 'Sphère touchée par la tige en verre', faire: () => setEle({ tige: 'verre', d: 1, Q: Q_ELE }), consigne: 'Contact entre la tige en verre et la sphère' } },
+    { id: 'e4q', titre: 'La charge de l’électroscope', onglet: 'electroscope', focus: ['bilan'],
+      texte: <>Lisez le bilan : au contact, des électrons sont passés de l’électroscope à la tige.</>,
+      tache: { type: 'num', q: 'Charge de l’électroscope après le contact', unite: 'e (avec son signe)', vrai: Q_ELE, tol: 0.01, affiche: v => `+${v}`, cs: 1,
+        bloque: okE4 ? null : 'Faites d’abord le contact avec la tige en verre (étape précédente).',
+        pieges: [[-Q_ELE, 'Le signe : l’électroscope a perdu des électrons, il est donc positif.']],
+        expl: `L’électroscope a perdu ${Q_ELE} électrons : q = +${Q_ELE}·e.` } },
+    { id: 'e5', titre: 'Écarter la tige', onglet: 'electroscope', focus: ['reglages', 'scene'],
+      texte: <>Éloignez la tige (10 cm ou plus) : l’électroscope est maintenant chargé.</>,
+      tache: { type: 'action', ok: okE5, label: 'Tige éloignée, électroscope chargé +', faire: () => setEle({ tige: 'verre', d: 12, Q: Q_ELE }), consigne: 'Électroscope chargé +, tige à 10 cm ou plus' } },
+    { id: 'e5q', titre: 'Les feuilles restent écartées', onglet: 'electroscope', focus: ['scene'],
+      texte: <>Contrairement à l’influence seule, les feuilles restent ouvertes.</>,
+      tache: { type: 'qcm', q: 'Pourquoi les feuilles restent-elles écartées, la tige étant loin ?', options: ['l’électroscope est chargé + (il a perdu des électrons) : les deux feuilles portent des charges de même signe', 'les feuilles gardent la mémoire de la tige', 'elles sont attirées par l’air'], bonne: 0,
+        expl: 'L’électroscope porte maintenant un excès de charges + réparti sur sa sphère, sa tige et ses feuilles. Les feuilles, de même signe, se repoussent durablement.' } },
+    { id: 'e6', titre: 'Une tige de signe opposé', onglet: 'electroscope', focus: ['reglages', 'scene'],
+      texte: <>Choisissez la tige <strong>en ébonite</strong> (chargée −) et approchez-la lentement jusqu’à ce que les feuilles se referment (vers 3 à 4 cm).</>,
+      tache: { type: 'action', ok: okE6, label: 'Tige en ébonite à 3 cm', faire: () => setEle({ tige: 'ebonite', d: 3, Q: Q_ELE }), consigne: 'Feuilles refermées, tige en ébonite' } },
+    { id: 'e6q', titre: 'Pourquoi se referment-elles ?', onglet: 'electroscope', focus: ['scene', 'bilan'],
+      texte: <>La tige négative repousse les électrons libres.</>,
+      tache: { type: 'qcm', q: 'Les feuilles se referment parce que…', options: ['les électrons repoussés par la tige − descendent vers les feuilles et compensent leurs charges +', 'la tige en ébonite a neutralisé l’électroscope par contact', 'les feuilles ont perdu leurs protons'], bonne: 0,
+        expl: 'Un électroscope chargé + voit ses feuilles se refermer quand on approche une tige −. Si on la rapproche encore, il arrive trop d’électrons : les feuilles se rouvrent, chargées −.' } },
+    { id: 'e7', titre: 'Encore plus près', onglet: 'electroscope', focus: ['reglages', 'scene'],
+      texte: <>Rapprochez encore la tige en ébonite (2 cm ou moins).</>,
+      tache: { type: 'action', ok: okE7, label: 'Tige en ébonite à 1 cm', faire: () => setEle({ tige: 'ebonite', d: 1, Q: Q_ELE }), consigne: 'Feuilles écartées à nouveau, tige en ébonite très proche' } },
+    { id: 'e7q', titre: 'Les feuilles se rouvrent', onglet: 'electroscope', focus: ['bilan'],
+      texte: <>Lisez le bilan : la charge des feuilles a changé de signe.</>,
+      tache: { type: 'qcm', q: 'Les feuilles sont maintenant chargées…', options: ['négativement : trop d’électrons ont été repoussés vers elles', 'positivement, comme l’électroscope', 'elles sont neutres'], bonne: 0,
+        expl: 'La charge nette de l’électroscope reste +4 e, mais les feuilles portent un excès d’électrons : les charges + ont été attirées vers la sphère par la tige −.' } },
+    { id: 'bravo', titre: 'Bravo !', onglet: 'electroscope', focus: [],
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
         <li>Un corps est neutre quand il contient autant de charges + que de charges −.</li>
         <li>On l’électrise en lui faisant gagner ou perdre des électrons ; seuls les électrons se déplacent, les protons restent fixes.</li>
         <li>Deux corps de même signe se repoussent, de signes opposés s’attirent.</li>
         <li>Un corps neutre conducteur est attiré par un corps chargé : c’est l’influence (charges séparées, charge totale nulle).</li>
-        <li>Au contact, la boule prend la charge de même signe que la tige : elle est ensuite repoussée.</li></ul>,
+        <li>Au contact, la boule prend la charge de même signe que la tige : elle est ensuite repoussée.</li>
+        <li>Les feuilles d’un électroscope s’écartent quand elles portent des charges de même signe. Chargé par contact, il le reste ; une tige de signe opposé les rapproche.</li></ul>,
       texte: <>Vous savez interpréter les expériences d’électrisation. Essayez maintenant les défis.</>, tache: null },
   ];
   const ongletGuide = ETAPES[Math.min(etape, ETAPES.length - 1)].onglet;
@@ -326,17 +453,32 @@ export function SimulationElectrisation() {
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
 
   // ════════════════ MODES ET DÉFIS ════════════════
+  const figee = enDefi && (defi.type === 'influence' || defi.type === 'electroscope') && !defi.reussi && !defi.solution;     // défi 3 : on prédit avant de voir
+  const cache = enDefi ? { bilan: defi.type === 'frottement' || defi.type === 'interaction' || figee, reglages: defi.type === 'frottement', figee } : {};
+
+  // ════════════════ MOUVEMENTS (paille qui roule, boule qui se balance) ════════════════
+  const sIn = inter.tige === 'neutre' ? 0 : TIGES[inter.tige].signe;
+  const forceIn = sIn === 0 ? 0 : sIn * inter.paille < 0 ? 1 : -1;      // +1 attraction, −1 répulsion
+  const gapP0 = 14 + (inter.d - 2) * 14;
+  const [xP, replacerPaille] = useMobile({ gap0: gapP0, coef: forceIn, F0: 600, omega2: 0, c: 6, pxcm: 14, statique: 50, xmin: -90, auto: false });
+  const sBo = TIGES[infl.tige].signe, coefB = coefBoule(sBo, infl.Q), gapB0 = (infl.d - 1) * 12;
+  const contactAuto = !figee && !(enGuide && etape < ETAPES.findIndex(e => e.id === 'contact'));    // pas de contact « surprise » avant l'étape du contact
+  const [xB] = useMobile({ gap0: gapB0, coef: coefB, F0: 500, omega2: 9, c: 2.5, pxcm: 12, xmin: -80, auto: contactAuto,
+    onContact: () => setInfl(i => (i.Q === TIGES[i.tige].signe * Q_CONTACT ? i : { ...i, Q: TIGES[i.tige].signe * Q_CONTACT })) });
+
+
   const ongletDefi = !defi ? 'frottement' : defi.type;
   const ongletAff = enGuide ? ongletGuide : enDefi ? ongletDefi : tab;
   function lancerDefi(type) {
     const dd = nouveauDefi(type);
     setDefi(dd);
     if (type === 'frottement') setFrot({ tige: dd.tige, n: dd.n });
-    else if (type === 'interaction') setInter({ tige: dd.tige, paille: dd.paille, d: 10 });
-    else setInfl({ tige: dd.tige, d: 12, Q: 0 });
+    else if (type === 'interaction') { setInter({ tige: dd.tige, paille: dd.paille, d: 10 }); replacerPaille(); }
+    else if (type === 'influence') setInfl({ tige: dd.tige, d: 12, Q: 0 });
+    else setEle({ tige: dd.tige, d: 12, Q: 0 });
   }
   function changerMode(md) {
-    if (mode === 'defi' && md !== 'defi') { setFrot({ tige: 'verre', n: 0 }); setInter({ tige: 'ebonite', paille: -1, d: 10 }); setInfl({ tige: 'verre', d: 12, Q: 0 }); }
+    if (mode === 'defi' && md !== 'defi') { setFrot({ tige: 'verre', n: 0 }); setInter({ tige: 'ebonite', paille: -1, d: 10 }); setInfl({ tige: 'verre', d: 12, Q: 0 }); setEle({ tige: 'verre', d: 12, Q: 0 }); }
     setMode(md);
     if (md === 'defi') lancerDefi(defi ? defi.type : 'frottement');
   }
@@ -345,9 +487,6 @@ export function SimulationElectrisation() {
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
     </span>);
-  const figee = enDefi && defi.type === 'influence' && !defi.reussi && !defi.solution;     // défi 3 : on prédit avant de voir
-  const cache = enDefi ? { bilan: defi.type === 'frottement' || defi.type === 'interaction' || figee, reglages: defi.type === 'frottement', figee } : {};
-
   // ════════════════ SCÈNE 1 : FROTTEMENT ════════════════
   const FW = 640, FH = 270;
   const sFr = TIGES[frot.tige].signe, nFr = frot.n;
@@ -394,13 +533,9 @@ export function SimulationElectrisation() {
   })();
 
   // ════════════════ SCÈNE 2 : INTERACTION (expériences B et C) ════════════════
-  const sIn = inter.tige === 'neutre' ? 0 : TIGES[inter.tige].signe;
-  const forceIn = sIn === 0 ? 0 : sIn * inter.paille < 0 ? 1 : -1;      // +1 attraction, −1 répulsion
   const scInteraction = (() => {
-    const W = 640, H = 270, xs0 = 150, gap0 = 14 + (inter.d - 2) * 14, f = proxim(inter.d, 2);
-    let dx = forceIn * f * 46;
-    if (dx > 0) dx = Math.min(dx, gap0 - 3);
-    const xs = xs0 + dx, xr = xs0 + 28 + gap0;
+    const W = 640, H = 270, xs0 = 150, gap0 = gapP0, xs = xs0 + xP, xr = xs0 + 28 + gap0;
+    const fort = forceIn !== 0 && ampl(gap0 - xP, 14) > 0.08;
     const paille = grille(3, 7, xs - 16, 78, 16, 26, 8, inter.paille < 0 ? 8 + Q_ROD : 8 - Q_ROD);
     const tige = grille(5, 4, xr + 28, 123, 36, 12.5, 8, sIn > 0 ? 8 - Q_ROD : 8 + Q_ROD);
     return (
@@ -418,7 +553,7 @@ export function SimulationElectrisation() {
           : tige.map((c, i) => <Charge key={`t${i}`} x={c.x} y={c.y} s={c.s} r={5.5}/>))}
         <text x={xr + 100} y="226" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0f172a">
           {inter.tige === 'neutre' ? 'tige non frottée (neutre)' : cache.bilan ? 'tige frottée : charge inconnue' : `tige ${TIGES[inter.tige].nom} frottée (${sIn > 0 ? '+' : '−'})`}</text>
-        {forceIn !== 0 && <g>
+        {fort && <g>
           {fleche(xs - forceIn * 23, 30, forceIn, 46, ROUGE, 3.2, 'f1')}{etiquetteVec(xs, 18, 'F', 'tige/paille', ROUGE, 'e1', 13)}
           {fleche(xr + 100 + forceIn * 23, 30, -forceIn, 46, ORANGE, 3.2, 'f2')}{etiquetteVec(xr + 100, 18, 'F', 'paille/tige', ORANGE, 'e2', 13)}
         </g>}
@@ -427,12 +562,11 @@ export function SimulationElectrisation() {
   })();
 
   // ════════════════ SCÈNE 3 : INFLUENCE ET CONTACT (expérience A) ════════════════
-  const sBo = TIGES[infl.tige].signe;
-  const IB = interBoule(sBo, infl.Q, infl.d);
+  const dEff = 1 + Math.max(0, gapB0 - xB) / 12;                // distance effective boule–tige (cm), au contact : 1
+  const IB = { type: coefB > 0 ? 'attr' : coefB < 0 ? 'rep' : 'aucune', amp: Math.abs(coefB) * proxim(dEff, 1), phi: coefB === 0 ? 0 : proxim(dEff, 1), influence: infl.Q === 0 && coefB > 0 };
   const scInfluence = (() => {
-    const W = 640, H = 312, px = 200, R = 56, L = 168, xrod = 260 + (infl.d - 1) * 12;
-    let dx = (IB.type === 'attr' ? 1 : IB.type === 'rep' ? -1 : 0) * IB.amp * 34;
-    if (dx > 0) dx = Math.min(dx, 2 + (infl.d - 1) * 12);
+    const W = 640, H = 312, px = 200, R = 56, L = 168, xrod = 256 + gapB0;
+    const dx = xB;
     const xb = px + dx, yb = 14 + Math.sqrt(L * L - dx * dx);  // centre de la boule
     // charges de la boule : 6 protons fixes + (6 − Q) électrons, déplacés par influence
     const prot = [], elec = [];
@@ -466,11 +600,62 @@ export function SimulationElectrisation() {
         {prot.map((p, i) => { const q = place(p, false); return <Charge key={`bp${i}`} x={q.x} y={q.y} s={1} r={5}/>; })}
         {elec.map((e, k) => { const vis = visibles.some(o => o.k === k); const q = place(e, true); return vis ? <Charge key={`be${k}`} x={q.x} y={q.y} s={-1} r={5}/> : null; })}
         <text x={xb} y={yb + R + 17} textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0f172a">boule d’aluminium{infl.Q !== 0 ? ` (${sgn(infl.Q)})` : ' (neutre)'}</text>
-        {IB.type !== 'aucune' && infl.d < 11 && <g>
+        {IB.type !== 'aucune' && dEff < 9 && <g>
           {fleche(xb, 294, gaucheAttr ? 1 : -1, 42, ROUGE, 3.2, 'f1')}{etiquetteVec(xb + (gaucheAttr ? 21 : -21), 284, 'F', 'tige/boule', ROUGE, 'e1', 13)}
           {fleche(xrod + 100, 294, gaucheAttr ? -1 : 1, 42, ORANGE, 3.2, 'f2')}{etiquetteVec(xrod + 100 + (gaucheAttr ? -21 : 21), 284, 'F', 'boule/tige', ORANGE, 'e2', 13)}
         </g>}
         {cache.figee && <text x="430" y="60" textAnchor="middle" fontSize="13" fontWeight="700" fill="#64748b">Prédisez avant de regarder (voir le défi).</text>}
+      </svg>);
+  })();
+
+  // ════════════════ SCÈNE 4 : ÉLECTROSCOPE ════════════════
+  const scElectroscope = (() => {
+    const W = 480, H = 335, cx = 150, cy = 84, R = 36, xr = cx + R + 4 + (ele.d - 1) * 8;
+    const NP = 14, PL = 6, total = NP - ele.Q;                       // protons : sphère 5, tige 3, feuilles 6
+    let El = Math.max(0, Math.min(10, 2 * Math.round((PL - EM.ql) / 2)));
+    El = Math.min(El, total - 0);
+    if (El % 2) El -= 1;
+    const reste = total - El, Et = Math.min(8, Math.round(reste * 3 / 8)), Es = reste - Et;
+    // sphère : 5 protons sur un cercle intérieur, électrons à côté (puis sur un cercle extérieur), décalés par l'influence
+    const decal = sEl * EM.phi * 0.3 * R, cote = [];
+    for (let k = 0; k < 5; k++) { const a = (18 + 72 * k) * Math.PI / 180; cote.push({ x: Math.cos(a) * 0.5 * R, y: Math.sin(a) * 0.5 * R, p: true }); }
+    const eS = [];
+    for (let k = 0; k < Es; k++) {
+      const a = k < 5 ? (18 + 72 * k + 40) * Math.PI / 180 : (k * 51 + 10) * Math.PI / 180, r = k < 5 ? 0.62 * R : 0.78 * R;
+      eS.push({ x: Math.cos(a) * r + decal, y: Math.sin(a) * r });
+    }
+    const placeS = q => { let { x, y } = q; const r = Math.hypot(x, y), rm = 0.84 * R; if (r > rm) { x *= rm / r; y *= rm / r; } return { x: cx + x, y: cy + y }; };
+    // feuilles
+    const piv = { x: cx, y: 238 }, Lf = 68, th = EM.theta * Math.PI / 180;
+    const feuille = sg => {
+      const dir = { x: sg * Math.sin(th), y: Math.cos(th) }, perp = { x: dir.y, y: -dir.x };
+      const n = El / 2, pts = [];
+      [0.3, 0.62, 0.94].forEach((f, i) => pts.push(<Charge key={`fp${sg}${i}`} s={1} r={4.4} x={piv.x + dir.x * Lf * f + sg * perp.x * 5.8} y={piv.y + dir.y * Lf * f + sg * perp.y * 5.8}/>));
+      [0.18, 0.4, 0.62, 0.84, 1.0].slice(0, n).forEach((f, i) => pts.push(<Charge key={`fe${sg}${i}`} s={-1} r={4.4} x={piv.x + dir.x * Lf * f - sg * perp.x * 5.8} y={piv.y + dir.y * Lf * f - sg * perp.y * 5.8}/>));
+      return <g key={`feuille${sg}`}><line x1={piv.x} y1={piv.y} x2={piv.x + dir.x * (Lf + 5)} y2={piv.y + dir.y * (Lf + 5)} stroke="#94a3b8" strokeWidth="7" strokeLinecap="round"/>{pts}</g>;
+    };
+    const tigeCh = grille(5, 4, xr + 16, 62, 22, 12.5, 8, sEl > 0 ? 8 - Q_ROD : 8 + Q_ROD);
+    return (
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img"
+        aria-label="Un électroscope à feuilles et une tige chargée que l’on approche de sa sphère">
+        <rect x={cx - 70} y="158" width="140" height="158" rx="12" fill="#f1f5f9" stroke="#0f172a" strokeWidth="1.5"/>
+        <rect x={cx - 20} y="150" width="40" height="12" rx="3" fill="#475569"/>
+        <rect x={cx - 9} y="118" width="18" height="120" rx="4" fill="#d1d5db" stroke="#0f172a" strokeWidth="1.2"/>
+        <rect x={xr} y="55" width="120" height="58" rx="14" fill={TIGES[ele.tige].couleur} stroke="#0f172a" strokeWidth="1.5" opacity="0.65"/>
+        {tigeCh.map((c, i) => <Charge key={`t${i}`} x={c.x} y={c.y} s={c.s} r={5.2}/>)}
+        <text x={xr + 60} y="132" textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f172a">tige {TIGES[ele.tige].court} ({sEl > 0 ? '+' : '−'})</text>
+        <circle cx={cx} cy={cy} r={R} fill="#d1d5db" stroke="#0f172a" strokeWidth="1.8"/>
+        {cote.map((q, i) => { const c = placeS(q); return <Charge key={`sp${i}`} x={c.x} y={c.y} s={1} r={4.8}/>; })}
+        {eS.map((q, i) => { const c = placeS(q); return <Charge key={`se${i}`} x={c.x} y={c.y} s={-1} r={4.8}/>; })}
+        {[0, 1, 2].map(i => <Charge key={`tp${i}`} x={cx - 3.5} y={134 + 34 * i} s={1} r={4.4}/>)}
+        {Array.from({ length: Et }).map((_, j) => <Charge key={`te${j}`} x={cx + 3.5} y={132 + 12.5 * j} s={-1} r={4.4}/>)}
+        {feuille(-1)}{feuille(1)}
+        <circle cx={piv.x} cy={piv.y} r="3.5" fill="#0f172a"/>
+        <text x={cx - R - 6} y={cy + 4} textAnchor="end" fontSize="12" fill="#334155">sphère</text>
+        <text x={cx + 76} y="196" fontSize="12" fill="#334155">tige métallique</text>
+        <text x={cx + 76} y="300" fontSize="12" fill="#334155">feuilles</text>
+        <text x={cx} y="332" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0f172a">électroscope{ele.Q !== 0 ? ` (${sgn(ele.Q)})` : ' (neutre)'}</text>
+        {cache.figee && <text x="340" y="255" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#64748b">Prédisez avant de regarder</text>}
       </svg>);
   })();
 
@@ -480,6 +665,7 @@ export function SimulationElectrisation() {
       {ongletAff === 'frottement' && scFrottement}
       {ongletAff === 'interaction' && scInteraction}
       {ongletAff === 'influence' && scInfluence}
+      {ongletAff === 'electroscope' && scElectroscope}
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>
         <span style={{ color: ROUGE, fontWeight: 700 }}>●+</span> proton (fixe) · <span style={{ color: BLEU, fontWeight: 700 }}>●−</span> électron (mobile).
         {' '}Quelques charges seulement sont dessinées : dans la réalité, il y en a un nombre énorme (une tige frottée porte de l’ordre de 10¹⁰ électrons en excès ou en défaut).
@@ -510,7 +696,8 @@ export function SimulationElectrisation() {
           <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Tige approchée de la paille</div>
           {choixTige(inter, setInter, true, false)}
           <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>La paille en polypropylène, frottée, est chargée négativement.</div></>}
-        <Curseur nom="Distance entre la paille et la tige" valeur={inter.d} onChange={v => setInter(i => ({ ...i, d: v }))} min={2} max={14} pas={1} unite="cm" couleur={VIOLET}/>
+        <Curseur nom="Distance entre la paille et la tige (au départ)" valeur={inter.d} onChange={v => setInter(i => ({ ...i, d: v }))} min={2} max={14} pas={1} unite="cm" couleur={VIOLET}/>
+        <button onClick={replacerPaille} style={styleBouton(false)}>↩ Replacer la paille</button>
       </>}
       {ongletAff === 'influence' && (cache.figee ? <div style={{ fontSize: 13.5, color: KIT.txt2 }}>Répondez aux quatre questions, puis cliquez sur « Vérifier » : l’expérience pourra alors être rejouée ici.</div> : <>
         {!enDefi && <>
@@ -524,6 +711,19 @@ export function SimulationElectrisation() {
           <button onClick={() => setInfl(i => ({ ...i, Q: 0 }))} style={styleBouton(false)}>↺ Décharger la boule</button>
         </div>
         <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>Décharger : on touche la boule avec la main, ses charges en excès s’écoulent vers le sol.</div>
+      </>)}
+      {ongletAff === 'electroscope' && (cache.figee ? <div style={{ fontSize: 13.5, color: KIT.txt2 }}>Répondez aux quatre questions, puis cliquez sur « Vérifier » : l’expérience pourra alors être rejouée ici.</div> : <>
+        {!enDefi && <>
+          <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Tige</div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+            {['verre', 'ebonite'].map(k => <button key={k} onClick={() => setEle(i => ({ ...i, tige: k }))} style={stylePetitBouton(ele.tige === k, VIOLET)}>{TIGES[k].court}</button>)}
+          </div></>}
+        <Curseur nom="Distance entre la sphère et la tige" valeur={ele.d} onChange={v => setEle(i => ({ ...i, d: v }))} min={1} max={12} pas={1} unite="cm" couleur={VIOLET}/>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <button onClick={() => setEle(i => ({ ...i, d: 1, Q: sEl * Q_ELE }))} style={styleBouton(true, VERT)}>✋ Toucher la sphère avec la tige</button>
+          <button onClick={() => setEle(i => ({ ...i, Q: 0 }))} style={styleBouton(false)}>↺ Décharger l’électroscope</button>
+        </div>
+        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>Décharger : on touche la sphère avec la main, les charges en excès s’écoulent vers le sol.</div>
       </>)}
     </div>);
 
@@ -543,16 +743,23 @@ export function SimulationElectrisation() {
         {bilanTxt('Charge de la paille', inter.paille < 0 ? 'négative' : 'positive', inter.paille < 0 ? BLEU : ROUGE)}
         {bilanTxt('Charge de la tige', inter.tige === 'neutre' ? 'nulle' : sIn > 0 ? 'positive' : 'négative', sIn > 0 ? ROUGE : sIn < 0 ? BLEU : undefined)}
         {bilanTxt('Interaction', sIn === 0 ? 'aucune' : forceIn > 0 ? 'attractive' : 'répulsive')}
-        {bilanTxt('Mouvement de la paille', sIn === 0 ? 'immobile' : forceIn > 0 ? 'vers la tige' : 'à l’opposé de la tige')}
-        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Le déplacement dessiné est schématique : seul son sens est à retenir.</div>
+        {bilanTxt('Mouvement de la paille', sIn === 0 ? 'immobile' : forceIn > 0 ? (gapP0 - xP < 1 ? 'collée à la tige' : 600 * ampl(gapP0 - xP, 14) < 50 ? 'immobile (force trop faible)' : 'vers la tige') : (xP <= -89 ? 'au bout des barres' : 600 * ampl(gapP0 - xP, 14) < 50 ? 'immobile' : 'à l’opposé de la tige'))}
+        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Si la tige est assez proche, la paille roule jusqu’à la toucher (ou s’éloigne). Trop loin, la force ne suffit pas à la faire rouler.</div>
       </>}
       {ongletAff === 'influence' && <>
         {bilanTxt('Charge de la tige', sBo > 0 ? 'positive' : 'négative', sBo > 0 ? ROUGE : BLEU)}
         {bilanTxt('Charge totale de la boule', infl.Q === 0 ? '0 (neutre)' : chg(infl.Q), infl.Q > 0 ? ROUGE : infl.Q < 0 ? BLEU : undefined)}
         {bilanTxt('Face proche de la tige', IB.phi > 0.15 ? (sBo > 0 ? 'plutôt −' : 'plutôt +') : 'répartition uniforme')}
         {bilanTxt('Face éloignée', IB.phi > 0.15 ? (sBo > 0 ? 'plutôt +' : 'plutôt −') : 'répartition uniforme')}
-        {bilanTxt('Interaction boule / tige', IB.type === 'aucune' ? 'aucune' : infl.d >= 11 ? 'négligeable' : IB.type === 'attr' ? (IB.influence ? 'attractive (influence)' : 'attractive') : 'répulsive')}
+        {bilanTxt('Interaction boule / tige', IB.type === 'aucune' ? 'aucune' : dEff >= 10 ? 'négligeable' : IB.type === 'attr' ? (IB.influence ? 'attractive (influence)' : 'attractive') : 'répulsive')}
         <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>{infl.Q !== 0 ? `La boule a ${infl.Q > 0 ? 'perdu' : 'gagné'} ${Math.abs(infl.Q)} électrons au contact.` : 'Aucun électron n’a quitté la boule : ils se sont seulement déplacés.'}</div>
+      </>}
+      {ongletAff === 'electroscope' && <>
+        {bilanTxt('Charge de la tige', sEl > 0 ? 'positive' : 'négative', sEl > 0 ? ROUGE : BLEU)}
+        {bilanTxt('Charge totale de l’électroscope', ele.Q === 0 ? '0 (neutre)' : chg(ele.Q), ele.Q > 0 ? ROUGE : ele.Q < 0 ? BLEU : undefined)}
+        {bilanTxt('Charge des feuilles', Math.abs(EM.ql) <= 0.5 ? 'quasi nulle' : EM.ql > 0 ? 'positive' : 'négative', Math.abs(EM.ql) <= 0.5 ? undefined : EM.ql > 0 ? ROUGE : BLEU)}
+        {bilanTxt('Feuilles', EM.theta === 0 ? 'fermées' : EM.theta < 12 ? 'peu écartées' : EM.theta < 25 ? 'écartées' : 'très écartées')}
+        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>{ele.Q !== 0 ? `L’électroscope a ${ele.Q > 0 ? 'perdu' : 'gagné'} ${Math.abs(ele.Q)} électrons au contact.` : 'Aucun électron n’a quitté l’électroscope : ils se sont seulement déplacés.'} Les deux feuilles, de même signe, se repoussent.</div>
       </>}
     </div>);
 
@@ -577,7 +784,9 @@ export function SimulationElectrisation() {
       <li><strong>Isolants et conducteurs</strong> : la tige (verre, ébonite, plastique) est isolante, donc ses charges restent là où le frottement les a déposées. La boule d’aluminium et le métal en général sont conducteurs : leurs électrons libres peuvent se déplacer dans tout le métal.</li>
       <li><strong>Influence</strong> : la répartition des charges dans la boule est schématique. Si on éloigne la tige sans contact, la boule redevient uniformément neutre.</li>
       <li><strong>Contact</strong> : on suppose que la boule prend, au contact, une charge de même signe que la tige (ici 2 charges élémentaires sur le dessin). La tige isolante, très chargée, n’en perd qu’une infime partie.</li>
-      <li><strong>Forces</strong> : seul le <em>sens</em> (attraction ou répulsion) est exact. Les déplacements et les flèches sont schématiques ; la norme de la force suit la loi de Coulomb (voir la simulation « Deux corps en interaction »). Une tige non frottée est supposée sans effet : on néglige la polarisation d’un isolant.</li>
+      <li><strong>Électroscope</strong> : les charges se répartissent entre la sphère, la tige et les feuilles ; le dessin donne aux feuilles environ la moitié de l’excès de charge, ce qui est schématique (en réalité, c’est la forme de l’appareil qui décide). L’angle des feuilles, calculé à partir de leur charge, est qualitatif : l’écart réel résulte d’un équilibre entre le poids des feuilles et leur répulsion. Au contact, l’électroscope prend 4 charges élémentaires sur le dessin.</li>
+      <li><strong>Mouvements</strong> : la boule et la paille bougent selon un modèle simple (force qui diminue quand la distance augmente, rappel du fil pour la boule, frottement pour la paille). Les valeurs sont qualitatives : seuls le sens du mouvement et le fait qu’il y ait contact ou non sont significatifs. Une boule neutre est attirée jusqu’au contact si la tige est assez proche (environ 4 cm ou moins sur le dessin), puis elle prend la charge de la tige et est repoussée. La paille roule jusqu’à la tige si elle est assez proche et s’arrête à son contact (on ne simule pas d’échange de charge à ce moment).</li>
+      <li><strong>Forces</strong> : seul le <em>sens</em> (attraction ou répulsion) est exact ; la norme suit la loi de Coulomb (voir la simulation « Deux corps en interaction »). Une tige non frottée est supposée sans effet : on néglige la polarisation d’un isolant.</li>
     </ul>);
   const panneauHypo = (
     <div style={styleBoite}>
@@ -591,6 +800,7 @@ export function SimulationElectrisation() {
         <li>Interaction : testez les trois tiges (y compris non frottée) avec la paille négative. Dans quels cas la paille est-elle attirée ? repoussée ?</li>
         <li>Influence : approchez la tige sans contact, puis éloignez-la. Que devient la boule ? Pourquoi est-elle attirée alors qu’elle est neutre ?</li>
         <li>Touchez la boule avec la tige en verre, puis approchez la tige en ébonite : que se passe-t-il ? Et avec la tige en verre ?</li>
+        <li>Électroscope : chargez-le par contact avec le verre, puis approchez l’ébonite doucement. À quelle distance les feuilles se referment-elles ? Que se passe-t-il si on s’approche encore ?</li>
         <li>Pourquoi ne peut-on pas électriser une tige en métal tenue à la main ? (Réfléchissez au rôle du conducteur.)</li>
       </ul>
     </div>);
@@ -601,12 +811,13 @@ export function SimulationElectrisation() {
         <li>deux corps de même signe se repoussent, de signes opposés s’attirent</li>
         <li>influence : un corps neutre conducteur est attiré par un corps chargé (charge totale nulle, mais charges séparées)</li>
         <li>au contact avec un corps chargé, il prend une charge de même signe, puis il est repoussé</li>
+        <li>électroscope : les feuilles, chargées du même signe, se repoussent ; une tige de signe opposé les rapproche</li>
       </ul>
     </ARetenir>);
 
   const onglets = (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '4px 0 10px' }}>
-      {[['frottement', '🧤 Frottement'], ['interaction', '↔️ Interaction (exp. B et C)'], ['influence', '⚪ Influence et contact (exp. A)']].map(([k, l]) =>
+      {[['frottement', '🧤 Frottement'], ['interaction', '↔️ Interaction (exp. B et C)'], ['influence', '⚪ Influence et contact (exp. A)'], ['electroscope', '🔬 Électroscope']].map(([k, l]) =>
         <button key={k} onClick={() => setTab(k)} style={stylePetitBouton(tab === k, '#334155')}>{l}</button>)}
     </div>);
 
