@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { cardStyle, KIT, styleBouton, styleBoite } from "../commun";
 import { useSession, estEleve, estProf, connexion, deconnexion, toutLire, changerMotDePasse } from "../serveur";
 import { tousLesExercices } from "./Entrainement";
-import { estSimulation, tempsParSimulation, MODES } from "../suivi";
+import { estSimulation, estDefi, tempsParSimulation, MODES, etiquettesDefis } from "../suivi";
 
 const ROSE = '#e11d48';
 
@@ -26,7 +26,8 @@ export function agreger(lignes) {
   }
   return m;
 }
-export const etiquettes = () => Object.fromEntries(tousLesExercices().map(e => [e.cle, e]));
+// Libellés des exercices « je m'entraîne » et des défis des simulations (« Nom de la simulation — défi »)
+export const etiquettes = () => Object.fromEntries([...tousLesExercices(), ...etiquettesDefis()].map(e => [e.cle, e]));
 
 const champ = { padding: '8px 10px', fontSize: 15, borderRadius: 8, border: `1px solid ${KIT.bord}`, width: '100%', boxSizing: 'border-box' };
 
@@ -60,7 +61,7 @@ function Connexion() {
       </form>
       <div style={{ ...styleBoite, marginTop: 14, fontSize: 13, color: KIT.txt2, lineHeight: 1.6 }}>
         <b style={{ color: KIT.txt }}>Ce qui est enregistré quand tu es connecté·e</b>, pour chaque exercice : la date, le temps passé actif sur la page,
-        le nombre de fois où tu as cliqué sur « Corriger », le nombre de corrections consultées et si tu as réussi. Sur les simulations : seulement le temps passé, par simulation et par mode (parcours guidé, exploration libre, défi).
+        le nombre de fois où tu as cliqué sur « Corriger », le nombre de corrections consultées et si tu as réussi. Pour les défis des simulations : la même chose (essais = clics sur « Vérifier », solutions consultées, réussite). Sur le reste des simulations : seulement le temps passé, par simulation et par mode (parcours guidé, exploration libre, défi).
         Rien d’autre : ni ton nom, ni ton adresse, ni ce que tu écris dans les réponses. Ces données sont visibles de toi et de ton professeur,
         servent à t’aider à progresser, ne sont pas notées, et sont supprimées à la fin de l’année scolaire.
       </div>
@@ -95,14 +96,15 @@ function MesResultats() {
   if (erreur) return <div style={{ color: '#b91c1c' }}>❌ {erreur}</div>;
   if (!lignes) return <div style={{ color: KIT.txt2 }}>Chargement…</div>;
   const ag = [...agreger(lignes.filter(l => !estSimulation(l.cle))).values()], etq = etiquettes();
-  const nbOk = ag.filter(a => a.reussi).length, total = ag.reduce((t, a) => t + a.duree, 0);
+  const nbOk = ag.filter(a => a.reussi && !estDefi(a.cle)).length, nbEx = ag.filter(a => !estDefi(a.cle)).length;
+  const nbDefis = ag.filter(a => a.reussi && estDefi(a.cle)).length, total = ag.reduce((t, a) => t + a.duree, 0);
   return (
     <div>
       <h3 style={{ margin: '14px 0 6px' }}>Mes résultats</h3>
       <div style={{ fontSize: 14, color: KIT.txt2, marginBottom: 8 }}>
-        {nbOk} exercice{nbOk > 1 ? 's' : ''} réussi{nbOk > 1 ? 's' : ''} · {ag.length} travaillé{ag.length > 1 ? 's' : ''} · {formatDuree(total)} au total
+        {nbOk} exercice{nbOk > 1 ? 's' : ''} réussi{nbOk > 1 ? 's' : ''} · {nbEx} travaillé{nbEx > 1 ? 's' : ''} · {nbDefis} défi{nbDefis > 1 ? 's' : ''} de simulation réussi{nbDefis > 1 ? 's' : ''} · {formatDuree(total)} au total
       </div>
-      {!ag.length ? <div style={{ ...styleBoite, fontSize: 14 }}>Rien pour l’instant : fais un exercice depuis « je m’entraîne ».</div> : (
+      {!ag.length ? <div style={{ ...styleBoite, fontSize: 14 }}>Rien pour l’instant : fais un exercice depuis « je m’entraîne », ou un défi d’une simulation.</div> : (
         <div style={{ overflowX: 'auto' }}>
           <table style={{ borderCollapse: 'collapse', fontSize: 13.5, width: '100%' }}>
             <thead><tr style={{ textAlign: 'left', color: KIT.txt2 }}>
