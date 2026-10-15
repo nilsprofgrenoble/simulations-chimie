@@ -612,8 +612,7 @@ export function SimulationElectrisation() {
   // ════════════════ SCÈNE 3 : INFLUENCE ET CONTACT (expérience A) ════════════════
   const dEff = 1 + Math.max(0, gapB0 - xB) / 12;                // distance effective boule–tige (cm), au contact : 1
   const IB = { type: coefB > 0 ? 'attr' : coefB < 0 ? 'rep' : 'aucune', amp: Math.abs(coefB) * proxim(dEff, 1), phi: coefB === 0 ? 0 : proxim(dEff, 1), influence: infl.Q === 0 && coefB > 0 };
-  const decalAff = useLisse(sBo * IB.phi * 0.62 * 56 * (IB.type === 'aucune' ? 0 : 1), 0.12);
-  const scInfluence = (() => {
+  const repInf = (() => {
     const W = 640, H = 312, px = 200, R = 56, L = 168, xrod = 256 + gapB0;
     const dx = xB;
     const xb = px + dx, yb = 14 + Math.sqrt(L * L - dx * dx);  // centre de la boule
@@ -628,13 +627,25 @@ export function SimulationElectrisation() {
     const retirer = [2, 5, 1, 4, 0, 3];
     const visibles = infl.Q >= 0 ? elec.slice(0, 6).map((e, k) => ({ e, k })).filter(o => !retirer.slice(0, infl.Q).includes(o.k))
       : elec.slice(0, 6 - infl.Q).map((e, k) => ({ e, k }));
-    const decal = decalAff;
+    const decal = sBo * IB.phi * 0.62 * R * (IB.type === 'aucune' ? 0 : 1);
     const place = (p, mobile) => {
       let x = p.x + (mobile ? decal : 0), y = p.y;
       const r = Math.hypot(x, y), rm = 0.82 * R;
       if (r > rm) { x *= rm / r; y *= rm / r; }
       return { x: xb + x, y: yb + y };
     };
+    // chaque électron garde son identité (indice k) ; coordonnées relatives au centre de la boule, pour suivre son balancement.
+    // Un électron cédé à la tige (ou pris à la tige) voyage vers/depuis la tige.
+    const cibles = elec.map((e, k) => {
+      const q = place(e, true);
+      if (visibles.some(o => o.k === k)) return { x: q.x - xb, y: q.y - yb, o: 1 };
+      return { x: xrod + 12 - xb, y: 182 + (k % 3) * 8 - yb, o: 0 };
+    });
+    return { W, H, px, R, xrod, xb, yb, prot, place, cibles };
+  })();
+  const ePosI = useTrajets(repInf.cibles);
+  const scInfluence = (() => {
+    const { W, H, R, xrod, xb, yb, prot, place } = repInf;
     const tigeCh = grille(5, 4, xrod + 28, 162, 36, 12.5, 8, sBo > 0 ? 8 - Q_ROD : 8 + Q_ROD);
     const gaucheAttr = IB.type === 'attr';
     return (
@@ -647,7 +658,7 @@ export function SimulationElectrisation() {
         <line x1="200" y1="14" x2={xb} y2={yb - R} stroke="#0f172a" strokeWidth="1.5"/>
         <circle cx={xb} cy={yb} r={R} fill="#d1d5db" stroke="#0f172a" strokeWidth="1.8"/>
         {prot.map((p, i) => { const q = place(p, false); return <Charge key={`bp${i}`} x={q.x} y={q.y} s={1} r={5}/>; })}
-        {elec.map((e, k) => { const vis = visibles.some(o => o.k === k); const q = place(e, true); return <Charge key={`be${k}`} x={q.x} y={q.y} s={-1} r={5} vis={vis}/>; })}
+        {ePosI.map((q, k) => <Charge key={`be${k}`} x={xb + q.x} y={yb + q.y} s={-1} r={5} vis={q.o}/>)}
         <text x={xb} y={yb + R + 17} textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0f172a">boule d’aluminium{infl.Q !== 0 ? ` (${sgn(infl.Q)})` : ' (neutre)'}</text>
         {IB.type !== 'aucune' && dEff < 9 && <g>
           {fleche(xb, 294, gaucheAttr ? 1 : -1, 42, ROUGE, 3.2, 'f1')}{etiquetteVec(xb + (gaucheAttr ? 21 : -21), 284, 'F', 'tige/boule', ROUGE, 'e1', 13)}
