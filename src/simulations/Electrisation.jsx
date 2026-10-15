@@ -1,5 +1,5 @@
 import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, ARetenir, Curseur, LigneMesure, lireProgression } from "../commun";
 import { NB } from "./Distillation";
@@ -76,12 +76,41 @@ function etiquetteVec(x, y, lettre, indice, col, cle, taille = 14) {
 // ---------- physique qualitative ----------
 // Intensité relative (0 à 1) en fonction de la distance d (cm) : 1 au contact, décroissante
 const proxim = (d, d0) => 1 / (1 + ((d - d0) / 3) ** 2);
-// Interaction boule / tige : { type: 'attr' | 'rep' | 'aucune', amp, phi }
-function interBoule(s, Q, d) {
-  const f = proxim(d, 1);
-  if (s === 0) return { type: 'aucune', amp: 0, phi: 0 };
-  if (Q === 0) return { type: 'attr', amp: 0.6 * f, phi: f, influence: true };
-  return { type: Q * s > 0 ? 'rep' : 'attr', amp: f, phi: f };
+// Intensité relative de l'interaction pour un intervalle de « gap » pixels entre les deux corps (1 au contact)
+const ampl = (gap, pxcm) => proxim(1 + Math.max(0, gap) / pxcm, 1);
+// Coefficient signé de l'interaction boule / tige : > 0 attraction, < 0 répulsion ; 0,6 pour la seule influence
+const coefBoule = (s, Q) => (s === 0 ? 0 : Q === 0 ? 0.6 : Q * s > 0 ? -1 : 1);
+
+// Mouvement d'un corps mobile (boule suspendue, ou paille qui roule) : x en pixels, positif vers la tige.
+// La force dépend de l'écart restant (gap0 − x) ; rappel du pendule (omega2), frottement visqueux (c), adhérence éventuelle.
+function useMobile(par) {
+  const [x, setX] = useState(0);
+  const st = useRef({ x: 0, v: 0, aff: 0 }), p = useRef(par);
+  useEffect(() => { p.current = par; });
+  useEffect(() => {
+    let raf, t0 = performance.now();
+    const tick = t => {
+      const dt = Math.min(0.05, (t - t0) / 1000);
+      t0 = t;
+      const q = p.current, s = st.current, n = Math.max(1, Math.ceil(dt * 200));
+      for (let i = 0; i < n; i++) {
+        const h = dt / n, F = q.coef * q.F0 * ampl(q.gap0 - s.x, q.pxcm);
+        if (q.statique && Math.abs(s.v) < 1e-3 && Math.abs(F) < q.statique) { s.v = 0; }          // la force ne vainc pas l'adhérence
+        else { s.v += (F - q.omega2 * s.x - q.c * s.v) * h; s.x += s.v * h; }
+        if (s.x >= q.gap0) {                                                                       // la tige arrête le corps
+          s.x = q.gap0;
+          if (s.v > 0) { if (q.coef > 0 && q.auto && q.onContact) q.onContact(); s.v = 0; }
+        }
+        if (s.x <= q.xmin) { s.x = q.xmin; if (s.v < 0) s.v = 0; }
+      }
+      if (Math.abs(s.x - s.aff) > 0.05) { s.aff = s.x; setX(s.x); }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  const reset = () => { st.current.x = 0; st.current.v = 0; st.current.aff = 0; setX(0); };
+  return [x, reset];
 }
 
 // ---------- défis ----------
@@ -251,7 +280,7 @@ export function SimulationElectrisation() {
   const okB = inter.tige === 'ebonite' && inter.paille < 0 && inter.d <= 6;
   const okC = inter.tige === 'verre' && inter.paille < 0 && inter.d <= 6;
   const okInf1 = infl.tige === 'verre' && infl.Q === 0 && infl.d >= 10;
-  const okInf2 = infl.tige === 'verre' && infl.Q === 0 && infl.d <= 4;
+  const okInf2 = infl.tige === 'verre' && infl.Q === 0 && infl.d <= 5;
   const okContact = infl.tige === 'verre' && infl.Q === Q_CONTACT;
   const okRepouss = okContact && infl.d >= 2;
   const okContactEbo = infl.tige === 'ebonite' && infl.Q === -Q_CONTACT;
@@ -320,8 +349,8 @@ export function SimulationElectrisation() {
       texte: <>Une boule d’aluminium, <strong>neutre</strong>, est suspendue à un fil. Ses électrons sont libres de se déplacer (c’est un métal). Éloignez la tige en verre chargée (10 cm ou plus).</>,
       tache: { type: 'action', ok: okInf1, label: 'Tige en verre loin (≥ 10 cm), boule neutre', faire: () => setInfl({ tige: 'verre', d: 12, Q: 0 }), consigne: 'Tige en verre à 10 cm ou plus, boule neutre' } },
     { id: 'inf2', titre: 'Approcher la tige', onglet: 'influence', focus: ['reglages', 'scene'],
-      texte: <>Approchez la tige en verre (4 cm ou moins), sans toucher la boule. Regardez comment les charges de la boule se déplacent.</>,
-      tache: { type: 'action', ok: okInf2, label: 'Tige en verre à 4 cm ou moins', faire: () => setInfl({ tige: 'verre', d: 3, Q: 0 }), consigne: 'Tige en verre à 4 cm ou moins, boule toujours neutre' } },
+      texte: <>Approchez la tige en verre (5 cm ou moins), sans toucher la boule. Regardez comment les charges se déplacent et comment la boule réagit.</>,
+      tache: { type: 'action', ok: okInf2, label: 'Tige en verre à 5 cm', faire: () => setInfl({ tige: 'verre', d: 5, Q: 0 }), consigne: 'Tige en verre à 5 cm ou moins, boule toujours neutre' } },
     { id: 'face', titre: 'Les électrons libres', onglet: 'influence', focus: ['scene', 'bilan'],
       texte: <>La tige est chargée +.</>,
       tache: { type: 'qcm', q: 'La face de la boule tournée vers la tige est chargée…', options: ['négativement : les électrons libres sont attirés par la tige', 'positivement : les électrons sont repoussés', 'elle reste neutre'], bonne: 0,
@@ -424,13 +453,27 @@ export function SimulationElectrisation() {
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
 
   // ════════════════ MODES ET DÉFIS ════════════════
+  const figee = enDefi && (defi.type === 'influence' || defi.type === 'electroscope') && !defi.reussi && !defi.solution;     // défi 3 : on prédit avant de voir
+  const cache = enDefi ? { bilan: defi.type === 'frottement' || defi.type === 'interaction' || figee, reglages: defi.type === 'frottement', figee } : {};
+
+  // ════════════════ MOUVEMENTS (paille qui roule, boule qui se balance) ════════════════
+  const sIn = inter.tige === 'neutre' ? 0 : TIGES[inter.tige].signe;
+  const forceIn = sIn === 0 ? 0 : sIn * inter.paille < 0 ? 1 : -1;      // +1 attraction, −1 répulsion
+  const gapP0 = 14 + (inter.d - 2) * 14;
+  const [xP, replacerPaille] = useMobile({ gap0: gapP0, coef: forceIn, F0: 600, omega2: 0, c: 6, pxcm: 14, statique: 50, xmin: -90, auto: false });
+  const sBo = TIGES[infl.tige].signe, coefB = coefBoule(sBo, infl.Q), gapB0 = (infl.d - 1) * 12;
+  const contactAuto = !figee && !(enGuide && etape < ETAPES.findIndex(e => e.id === 'contact'));    // pas de contact « surprise » avant l'étape du contact
+  const [xB] = useMobile({ gap0: gapB0, coef: coefB, F0: 500, omega2: 9, c: 2.5, pxcm: 12, xmin: -80, auto: contactAuto,
+    onContact: () => setInfl(i => (i.Q === TIGES[i.tige].signe * Q_CONTACT ? i : { ...i, Q: TIGES[i.tige].signe * Q_CONTACT })) });
+
+
   const ongletDefi = !defi ? 'frottement' : defi.type;
   const ongletAff = enGuide ? ongletGuide : enDefi ? ongletDefi : tab;
   function lancerDefi(type) {
     const dd = nouveauDefi(type);
     setDefi(dd);
     if (type === 'frottement') setFrot({ tige: dd.tige, n: dd.n });
-    else if (type === 'interaction') setInter({ tige: dd.tige, paille: dd.paille, d: 10 });
+    else if (type === 'interaction') { setInter({ tige: dd.tige, paille: dd.paille, d: 10 }); replacerPaille(); }
     else if (type === 'influence') setInfl({ tige: dd.tige, d: 12, Q: 0 });
     else setEle({ tige: dd.tige, d: 12, Q: 0 });
   }
@@ -444,9 +487,6 @@ export function SimulationElectrisation() {
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
     </span>);
-  const figee = enDefi && (defi.type === 'influence' || defi.type === 'electroscope') && !defi.reussi && !defi.solution;     // défi 3 : on prédit avant de voir
-  const cache = enDefi ? { bilan: defi.type === 'frottement' || defi.type === 'interaction' || figee, reglages: defi.type === 'frottement', figee } : {};
-
   // ════════════════ SCÈNE 1 : FROTTEMENT ════════════════
   const FW = 640, FH = 270;
   const sFr = TIGES[frot.tige].signe, nFr = frot.n;
@@ -493,13 +533,9 @@ export function SimulationElectrisation() {
   })();
 
   // ════════════════ SCÈNE 2 : INTERACTION (expériences B et C) ════════════════
-  const sIn = inter.tige === 'neutre' ? 0 : TIGES[inter.tige].signe;
-  const forceIn = sIn === 0 ? 0 : sIn * inter.paille < 0 ? 1 : -1;      // +1 attraction, −1 répulsion
   const scInteraction = (() => {
-    const W = 640, H = 270, xs0 = 150, gap0 = 14 + (inter.d - 2) * 14, f = proxim(inter.d, 2);
-    let dx = forceIn * f * 46;
-    if (dx > 0) dx = Math.min(dx, gap0 - 3);
-    const xs = xs0 + dx, xr = xs0 + 28 + gap0;
+    const W = 640, H = 270, xs0 = 150, gap0 = gapP0, xs = xs0 + xP, xr = xs0 + 28 + gap0;
+    const fort = forceIn !== 0 && ampl(gap0 - xP, 14) > 0.08;
     const paille = grille(3, 7, xs - 16, 78, 16, 26, 8, inter.paille < 0 ? 8 + Q_ROD : 8 - Q_ROD);
     const tige = grille(5, 4, xr + 28, 123, 36, 12.5, 8, sIn > 0 ? 8 - Q_ROD : 8 + Q_ROD);
     return (
@@ -517,7 +553,7 @@ export function SimulationElectrisation() {
           : tige.map((c, i) => <Charge key={`t${i}`} x={c.x} y={c.y} s={c.s} r={5.5}/>))}
         <text x={xr + 100} y="226" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0f172a">
           {inter.tige === 'neutre' ? 'tige non frottée (neutre)' : cache.bilan ? 'tige frottée : charge inconnue' : `tige ${TIGES[inter.tige].nom} frottée (${sIn > 0 ? '+' : '−'})`}</text>
-        {forceIn !== 0 && <g>
+        {fort && <g>
           {fleche(xs - forceIn * 23, 30, forceIn, 46, ROUGE, 3.2, 'f1')}{etiquetteVec(xs, 18, 'F', 'tige/paille', ROUGE, 'e1', 13)}
           {fleche(xr + 100 + forceIn * 23, 30, -forceIn, 46, ORANGE, 3.2, 'f2')}{etiquetteVec(xr + 100, 18, 'F', 'paille/tige', ORANGE, 'e2', 13)}
         </g>}
@@ -526,12 +562,11 @@ export function SimulationElectrisation() {
   })();
 
   // ════════════════ SCÈNE 3 : INFLUENCE ET CONTACT (expérience A) ════════════════
-  const sBo = TIGES[infl.tige].signe;
-  const IB = interBoule(sBo, infl.Q, infl.d);
+  const dEff = 1 + Math.max(0, gapB0 - xB) / 12;                // distance effective boule–tige (cm), au contact : 1
+  const IB = { type: coefB > 0 ? 'attr' : coefB < 0 ? 'rep' : 'aucune', amp: Math.abs(coefB) * proxim(dEff, 1), phi: coefB === 0 ? 0 : proxim(dEff, 1), influence: infl.Q === 0 && coefB > 0 };
   const scInfluence = (() => {
-    const W = 640, H = 312, px = 200, R = 56, L = 168, xrod = 260 + (infl.d - 1) * 12;
-    let dx = (IB.type === 'attr' ? 1 : IB.type === 'rep' ? -1 : 0) * IB.amp * 34;
-    if (dx > 0) dx = Math.min(dx, 2 + (infl.d - 1) * 12);
+    const W = 640, H = 312, px = 200, R = 56, L = 168, xrod = 256 + gapB0;
+    const dx = xB;
     const xb = px + dx, yb = 14 + Math.sqrt(L * L - dx * dx);  // centre de la boule
     // charges de la boule : 6 protons fixes + (6 − Q) électrons, déplacés par influence
     const prot = [], elec = [];
@@ -565,7 +600,7 @@ export function SimulationElectrisation() {
         {prot.map((p, i) => { const q = place(p, false); return <Charge key={`bp${i}`} x={q.x} y={q.y} s={1} r={5}/>; })}
         {elec.map((e, k) => { const vis = visibles.some(o => o.k === k); const q = place(e, true); return vis ? <Charge key={`be${k}`} x={q.x} y={q.y} s={-1} r={5}/> : null; })}
         <text x={xb} y={yb + R + 17} textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0f172a">boule d’aluminium{infl.Q !== 0 ? ` (${sgn(infl.Q)})` : ' (neutre)'}</text>
-        {IB.type !== 'aucune' && infl.d < 11 && <g>
+        {IB.type !== 'aucune' && dEff < 9 && <g>
           {fleche(xb, 294, gaucheAttr ? 1 : -1, 42, ROUGE, 3.2, 'f1')}{etiquetteVec(xb + (gaucheAttr ? 21 : -21), 284, 'F', 'tige/boule', ROUGE, 'e1', 13)}
           {fleche(xrod + 100, 294, gaucheAttr ? -1 : 1, 42, ORANGE, 3.2, 'f2')}{etiquetteVec(xrod + 100 + (gaucheAttr ? -21 : 21), 284, 'F', 'boule/tige', ORANGE, 'e2', 13)}
         </g>}
@@ -661,7 +696,8 @@ export function SimulationElectrisation() {
           <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Tige approchée de la paille</div>
           {choixTige(inter, setInter, true, false)}
           <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>La paille en polypropylène, frottée, est chargée négativement.</div></>}
-        <Curseur nom="Distance entre la paille et la tige" valeur={inter.d} onChange={v => setInter(i => ({ ...i, d: v }))} min={2} max={14} pas={1} unite="cm" couleur={VIOLET}/>
+        <Curseur nom="Distance entre la paille et la tige (au départ)" valeur={inter.d} onChange={v => setInter(i => ({ ...i, d: v }))} min={2} max={14} pas={1} unite="cm" couleur={VIOLET}/>
+        <button onClick={replacerPaille} style={styleBouton(false)}>↩ Replacer la paille</button>
       </>}
       {ongletAff === 'influence' && (cache.figee ? <div style={{ fontSize: 13.5, color: KIT.txt2 }}>Répondez aux quatre questions, puis cliquez sur « Vérifier » : l’expérience pourra alors être rejouée ici.</div> : <>
         {!enDefi && <>
@@ -707,15 +743,15 @@ export function SimulationElectrisation() {
         {bilanTxt('Charge de la paille', inter.paille < 0 ? 'négative' : 'positive', inter.paille < 0 ? BLEU : ROUGE)}
         {bilanTxt('Charge de la tige', inter.tige === 'neutre' ? 'nulle' : sIn > 0 ? 'positive' : 'négative', sIn > 0 ? ROUGE : sIn < 0 ? BLEU : undefined)}
         {bilanTxt('Interaction', sIn === 0 ? 'aucune' : forceIn > 0 ? 'attractive' : 'répulsive')}
-        {bilanTxt('Mouvement de la paille', sIn === 0 ? 'immobile' : forceIn > 0 ? 'vers la tige' : 'à l’opposé de la tige')}
-        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Le déplacement dessiné est schématique : seul son sens est à retenir.</div>
+        {bilanTxt('Mouvement de la paille', sIn === 0 ? 'immobile' : forceIn > 0 ? (gapP0 - xP < 1 ? 'collée à la tige' : 600 * ampl(gapP0 - xP, 14) < 50 ? 'immobile (force trop faible)' : 'vers la tige') : (xP <= -89 ? 'au bout des barres' : 600 * ampl(gapP0 - xP, 14) < 50 ? 'immobile' : 'à l’opposé de la tige'))}
+        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Si la tige est assez proche, la paille roule jusqu’à la toucher (ou s’éloigne). Trop loin, la force ne suffit pas à la faire rouler.</div>
       </>}
       {ongletAff === 'influence' && <>
         {bilanTxt('Charge de la tige', sBo > 0 ? 'positive' : 'négative', sBo > 0 ? ROUGE : BLEU)}
         {bilanTxt('Charge totale de la boule', infl.Q === 0 ? '0 (neutre)' : chg(infl.Q), infl.Q > 0 ? ROUGE : infl.Q < 0 ? BLEU : undefined)}
         {bilanTxt('Face proche de la tige', IB.phi > 0.15 ? (sBo > 0 ? 'plutôt −' : 'plutôt +') : 'répartition uniforme')}
         {bilanTxt('Face éloignée', IB.phi > 0.15 ? (sBo > 0 ? 'plutôt +' : 'plutôt −') : 'répartition uniforme')}
-        {bilanTxt('Interaction boule / tige', IB.type === 'aucune' ? 'aucune' : infl.d >= 11 ? 'négligeable' : IB.type === 'attr' ? (IB.influence ? 'attractive (influence)' : 'attractive') : 'répulsive')}
+        {bilanTxt('Interaction boule / tige', IB.type === 'aucune' ? 'aucune' : dEff >= 10 ? 'négligeable' : IB.type === 'attr' ? (IB.influence ? 'attractive (influence)' : 'attractive') : 'répulsive')}
         <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>{infl.Q !== 0 ? `La boule a ${infl.Q > 0 ? 'perdu' : 'gagné'} ${Math.abs(infl.Q)} électrons au contact.` : 'Aucun électron n’a quitté la boule : ils se sont seulement déplacés.'}</div>
       </>}
       {ongletAff === 'electroscope' && <>
@@ -749,7 +785,8 @@ export function SimulationElectrisation() {
       <li><strong>Influence</strong> : la répartition des charges dans la boule est schématique. Si on éloigne la tige sans contact, la boule redevient uniformément neutre.</li>
       <li><strong>Contact</strong> : on suppose que la boule prend, au contact, une charge de même signe que la tige (ici 2 charges élémentaires sur le dessin). La tige isolante, très chargée, n’en perd qu’une infime partie.</li>
       <li><strong>Électroscope</strong> : les charges se répartissent entre la sphère, la tige et les feuilles ; le dessin donne aux feuilles environ la moitié de l’excès de charge, ce qui est schématique (en réalité, c’est la forme de l’appareil qui décide). L’angle des feuilles, calculé à partir de leur charge, est qualitatif : l’écart réel résulte d’un équilibre entre le poids des feuilles et leur répulsion. Au contact, l’électroscope prend 4 charges élémentaires sur le dessin.</li>
-      <li><strong>Forces</strong> : seul le <em>sens</em> (attraction ou répulsion) est exact. Les déplacements et les flèches sont schématiques ; la norme de la force suit la loi de Coulomb (voir la simulation « Deux corps en interaction »). Une tige non frottée est supposée sans effet : on néglige la polarisation d’un isolant.</li>
+      <li><strong>Mouvements</strong> : la boule et la paille bougent selon un modèle simple (force qui diminue quand la distance augmente, rappel du fil pour la boule, frottement pour la paille). Les valeurs sont qualitatives : seuls le sens du mouvement et le fait qu’il y ait contact ou non sont significatifs. Une boule neutre est attirée jusqu’au contact si la tige est assez proche (environ 4 cm ou moins sur le dessin), puis elle prend la charge de la tige et est repoussée. La paille roule jusqu’à la tige si elle est assez proche et s’arrête à son contact (on ne simule pas d’échange de charge à ce moment).</li>
+      <li><strong>Forces</strong> : seul le <em>sens</em> (attraction ou répulsion) est exact ; la norme suit la loi de Coulomb (voir la simulation « Deux corps en interaction »). Une tige non frottée est supposée sans effet : on néglige la polarisation d’un isolant.</li>
     </ul>);
   const panneauHypo = (
     <div style={styleBoite}>
