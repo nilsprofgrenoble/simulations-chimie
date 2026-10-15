@@ -30,10 +30,12 @@ const NMAX = 6;           // nombre maximal d'électrons transférés sur le des
 const Q_ROD = 3;          // charge dessinée d'une tige frottée (en e)
 const Q_CONTACT = 2;      // charge prise par la boule au contact (en e)
 const Q_ELE = 4;          // charge prise par l'électroscope au contact (en e)
+const QR_ELE = 6;         // charge de la tige neuve utilisée avec l'électroscope (en e) ; au contact elle en cède Q_ELE à l'électroscope (conservation)
 const K_INF = 3.5;        // charge déplacée vers les feuilles (ou vers la sphère) par une tige à distance minimale
 // Électroscope : charge des feuilles ql (en e) = part de la charge nette + effet d'influence ; ouverture schématique
-function modeleEle(s, Q, d) {
-  const phi = proxim(d, 1), ql = 0.5 * Q + s * phi * K_INF;
+// qt : charge (valeur absolue) portée par la tige ; l'influence est proportionnelle à cette charge
+function modeleEle(s, Q, d, qt = QR_ELE) {
+  const phi = proxim(d, 1), ql = 0.5 * Q + s * phi * K_INF * qt / QR_ELE;
   return { phi, ql, theta: Math.min(40, 11 * Math.max(0, Math.abs(ql) - 0.5)) };
 }
 const sgn = q => (q > 0 ? '+' : q < 0 ? '−' : '');
@@ -284,7 +286,7 @@ export function SimulationElectrisation() {
   const okContact = infl.tige === 'verre' && infl.Q === Q_CONTACT;
   const okRepouss = okContact && infl.d >= 2;
   const okContactEbo = infl.tige === 'ebonite' && infl.Q === -Q_CONTACT;
-  const sEl = TIGES[ele.tige].signe, EM = modeleEle(sEl, ele.Q, ele.d);
+  const sEl = TIGES[ele.tige].signe, qTig = ele.Q * sEl > 0 ? QR_ELE - Math.abs(ele.Q) : QR_ELE, EM = modeleEle(sEl, ele.Q, ele.d, qTig);
   const okE1 = ele.tige === 'verre' && ele.Q === 0 && ele.d >= 10;
   const okE2 = ele.tige === 'verre' && ele.Q === 0 && ele.d <= 4;
   const okE3 = ele.tige === 'verre' && ele.Q === 0 && ele.d >= 10;
@@ -409,7 +411,7 @@ export function SimulationElectrisation() {
       tache: { type: 'qcm', q: 'Quand on éloigne la tige sans contact, les feuilles…', options: ['se referment : les électrons reviennent et l’électroscope est resté neutre', 'restent écartées : il est maintenant chargé', 'se rapprochent puis s’écartent'], bonne: 0,
         expl: 'Aucun électron n’a quitté l’électroscope : ils se sont seulement déplacés. Sans la tige, les charges se répartissent à nouveau uniformément.' } },
     { id: 'e4', titre: 'Toucher la sphère', onglet: 'electroscope', focus: ['reglages', 'scene'],
-      texte: <>Cliquez sur « Toucher la sphère avec la tige ». Observez le sens du transfert d’électrons.</>,
+      texte: <>Cliquez sur « Toucher la sphère avec la tige ». Observez le sens du transfert d’électrons : de l’électroscope vers la tige. La tige, déficitaire en électrons, en récupère : elle perd donc une partie de sa charge +.</>,
       tache: { type: 'action', ok: okE4, label: 'Sphère touchée par la tige en verre', faire: () => setEle({ tige: 'verre', d: 1, Q: Q_ELE }), consigne: 'Contact entre la tige en verre et la sphère' } },
     { id: 'e4q', titre: 'La charge de l’électroscope', onglet: 'electroscope', focus: ['bilan'],
       texte: <>Lisez le bilan : au contact, des électrons sont passés de l’électroscope à la tige.</>,
@@ -634,7 +636,7 @@ export function SimulationElectrisation() {
       [0.18, 0.4, 0.62, 0.84, 1.0].slice(0, n).forEach((f, i) => pts.push(<Charge key={`fe${sg}${i}`} s={-1} r={4.4} x={piv.x + dir.x * Lf * f - sg * perp.x * 5.8} y={piv.y + dir.y * Lf * f - sg * perp.y * 5.8}/>));
       return <g key={`feuille${sg}`}><line x1={piv.x} y1={piv.y} x2={piv.x + dir.x * (Lf + 5)} y2={piv.y + dir.y * (Lf + 5)} stroke="#94a3b8" strokeWidth="7" strokeLinecap="round"/>{pts}</g>;
     };
-    const tigeCh = grille(5, 4, xr + 16, 62, 22, 12.5, 8, sEl > 0 ? 8 - Q_ROD : 8 + Q_ROD);
+    const tigeCh = grille(5, 4, xr + 16, 62, 22, 12.5, 8, sEl > 0 ? 8 - qTig : 8 + qTig);
     return (
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img"
         aria-label="Un électroscope à feuilles et une tige chargée que l’on approche de sa sphère">
@@ -755,11 +757,11 @@ export function SimulationElectrisation() {
         <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>{infl.Q !== 0 ? `La boule a ${infl.Q > 0 ? 'perdu' : 'gagné'} ${Math.abs(infl.Q)} électrons au contact.` : 'Aucun électron n’a quitté la boule : ils se sont seulement déplacés.'}</div>
       </>}
       {ongletAff === 'electroscope' && <>
-        {bilanTxt('Charge de la tige', sEl > 0 ? 'positive' : 'négative', sEl > 0 ? ROUGE : BLEU)}
+        {bilanTxt('Charge de la tige', chg(sEl * qTig), sEl > 0 ? ROUGE : BLEU)}
         {bilanTxt('Charge totale de l’électroscope', ele.Q === 0 ? '0 (neutre)' : chg(ele.Q), ele.Q > 0 ? ROUGE : ele.Q < 0 ? BLEU : undefined)}
         {bilanTxt('Charge des feuilles', Math.abs(EM.ql) <= 0.5 ? 'quasi nulle' : EM.ql > 0 ? 'positive' : 'négative', Math.abs(EM.ql) <= 0.5 ? undefined : EM.ql > 0 ? ROUGE : BLEU)}
         {bilanTxt('Feuilles', EM.theta === 0 ? 'fermées' : EM.theta < 12 ? 'peu écartées' : EM.theta < 25 ? 'écartées' : 'très écartées')}
-        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>{ele.Q !== 0 ? `L’électroscope a ${ele.Q > 0 ? 'perdu' : 'gagné'} ${Math.abs(ele.Q)} électrons au contact.` : 'Aucun électron n’a quitté l’électroscope : ils se sont seulement déplacés.'} Les deux feuilles, de même signe, se repoussent.</div>
+        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>{ele.Q !== 0 ? `L’électroscope a ${ele.Q > 0 ? 'perdu' : 'gagné'} ${Math.abs(ele.Q)} électrons au contact ; la tige en a ${ele.Q > 0 ? 'gagné' : 'cédé'} autant : la charge totale est conservée.` : 'Aucun électron n’a quitté l’électroscope : ils se sont seulement déplacés.'} Les deux feuilles, de même signe, se repoussent.</div>
       </>}
     </div>);
 
