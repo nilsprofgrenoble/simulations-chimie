@@ -47,7 +47,7 @@ function Charge({ x, y, s, r = 6, fantome, anim, vis = true }) {
   if (fantome) return <circle cx={x} cy={y} r={r} fill="none" stroke={BLEU} strokeWidth="1.2" strokeDasharray="2.5 2.5" opacity="0.6"/>;
   const col = s > 0 ? ROUGE : BLEU, a = r * 0.5;
   return (
-    <g style={{ transform: `translate(${x}px, ${y}px)`, opacity: vis ? 1 : 0, transition: `${anim ? 'transform 0.8s ease, ' : ''}opacity 0.35s ease` }}>
+    <g style={{ transform: `translate(${x}px, ${y}px)`, opacity: typeof vis === 'number' ? vis : vis ? 1 : 0, transition: typeof vis === 'number' ? 'none' : `${anim ? 'transform 0.8s ease, ' : ''}opacity 0.35s ease` }}>
       <circle r={r} fill={col} stroke="white" strokeWidth="0.8"/>
       <path d={s > 0 ? `M${-a},0H${a}M0,${-a}V${a}` : `M${-a},0H${a}`} stroke="white" strokeWidth="1.7" strokeLinecap="round" fill="none"/>
     </g>);
@@ -103,6 +103,31 @@ function useLisse(cible, tau = 0.14) {
     return () => cancelAnimationFrame(raf);
   }, [cible, tau]);
   return v;
+}
+// Positions animées d'une liste de points {x, y, o} : chacun rejoint sa cible en glissant (lissage exponentiel) ;
+// c'est ce qui fait voyager visiblement chaque électron d'une zone à l'autre.
+function useTrajets(cibles, tau = 0.3) {
+  const [pos, setPos] = useState(cibles), st = useRef({ p: cibles.map(c => ({ ...c })), c: cibles });
+  useEffect(() => {
+    const S = st.current; S.c = cibles;
+    let raf, t0 = performance.now();
+    const tick = t => {
+      const dt = Math.min(0.05, (t - t0) / 1000), k = 1 - Math.exp(-dt / tau);
+      t0 = t;
+      let bouge = false, change = false;
+      S.p = S.p.map((q, i) => {
+        const c = S.c[i], dx = c.x - q.x, dy = c.y - q.y, dof = c.o - q.o;
+        if (Math.abs(dx) < 0.05 && Math.abs(dy) < 0.05 && Math.abs(dof) < 0.01) { if (dx || dy || dof) change = true; return { ...c }; }
+        bouge = true; change = true;
+        return { x: q.x + dx * k, y: q.y + dy * k, o: q.o + dof * k * 1.5 };
+      });
+      if (change) setPos(S.p);
+      if (bouge) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [cibles, tau]);
+  return pos;
 }
 function useMobile(par) {
   const [x, setX] = useState(0);
@@ -633,7 +658,7 @@ export function SimulationElectrisation() {
   })();
 
   // ════════════════ SCÈNE 4 : ÉLECTROSCOPE ════════════════
-  const scElectroscope = (() => {
+  const repEle = (() => {
     const W = 480, H = 335, cx = 150, cy = 84, R = 36, xr = cx + R + 4 + (dAff - 1) * 8;
     const NP = 14, PL = 6, total = NP - ele.Q;                       // protons : sphère 5, tige 3, feuilles 6
     let El = Math.max(0, Math.min(10, 2 * Math.round((PL - EMa.ql) / 2)));
@@ -646,16 +671,31 @@ export function SimulationElectrisation() {
     const eS = [];
     for (let k = 0; k < 10; k++) {
       const a = k < 5 ? (18 + 72 * k + 40) * Math.PI / 180 : (k * 51 + 10) * Math.PI / 180, r = k < 5 ? 0.62 * R : 0.78 * R;
-      eS.push({ x: Math.cos(a) * r + decal, y: Math.sin(a) * r, vis: k < Es });
+      eS.push({ x: Math.cos(a) * r + decal, y: Math.sin(a) * r });
     }
     const placeS = q => { let { x, y } = q; const r = Math.hypot(x, y), rm = 0.84 * R; if (r > rm) { x *= rm / r; y *= rm / r; } return { x: cx + x, y: cy + y }; };
     // feuilles
     const piv = { x: cx, y: 238 }, Lf = 68, th = EMa.theta * Math.PI / 180;
+    // un électron = une identité (indice i) : feuilles d'abord, puis tige, puis sphère ; les derniers sont partis dans la tige (ou en viennent)
+    const folles = sg => ({ x: Math.sin(th) * sg, y: Math.cos(th) });
+    const cibles = Array.from({ length: 18 }, (_, i) => {
+      if (i < El) {
+        const sg = i % 2 ? 1 : -1, j = i >> 1, f = [0.18, 0.4, 0.62, 0.84, 1.0][j], dir = folles(sg), perp = { x: dir.y, y: -dir.x };
+        return { x: piv.x + dir.x * Lf * f - sg * perp.x * 5.8, y: piv.y + dir.y * Lf * f - sg * perp.y * 5.8, o: 1 };
+      }
+      if (i < El + Et) return { x: cx + 3.5, y: 132 + 12.5 * (Et - 1 - (i - El)), o: 1 };
+      if (i < total) { const c = placeS(eS[i - El - Et] || eS[0]); return { x: c.x, y: c.y, o: 1 }; }
+      return { x: xr + 8, y: cy - 8 + (i % 3) * 8, o: 0 };
+    });
+    return { W, H, cx, cy, R, xr, El, piv, Lf, th, cote, placeS, cibles };
+  })();
+  const ePos = useTrajets(repEle.cibles);
+  const scElectroscope = (() => {
+    const { W, H, cx, cy, R, xr, El, piv, Lf, th, cote, placeS } = repEle;
     const feuille = sg => {
       const dir = { x: sg * Math.sin(th), y: Math.cos(th) }, perp = { x: dir.y, y: -dir.x };
-      const n = El / 2, pts = [];
+      const pts = [];
       [0.3, 0.62, 0.94].forEach((f, i) => pts.push(<Charge key={`fp${sg}${i}`} s={1} r={4.4} x={piv.x + dir.x * Lf * f + sg * perp.x * 5.8} y={piv.y + dir.y * Lf * f + sg * perp.y * 5.8}/>));
-      [0.18, 0.4, 0.62, 0.84, 1.0].forEach((f, i) => pts.push(<Charge key={`fe${sg}${i}`} s={-1} r={4.4} vis={i < n} x={piv.x + dir.x * Lf * f - sg * perp.x * 5.8} y={piv.y + dir.y * Lf * f - sg * perp.y * 5.8}/>));
       return <g key={`feuille${sg}`}><line x1={piv.x} y1={piv.y} x2={piv.x + dir.x * (Lf + 5)} y2={piv.y + dir.y * (Lf + 5)} stroke="#94a3b8" strokeWidth="7" strokeLinecap="round"/>{pts}</g>;
     };
     const tigeCh = grille(5, 4, xr + 16, 62, 22, 12.5, 8, sEl > 0 ? 8 - qTig : 8 + qTig);
@@ -670,10 +710,9 @@ export function SimulationElectrisation() {
         <text x={xr + 60} y="132" textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f172a">tige {TIGES[ele.tige].court} ({sEl > 0 ? '+' : '−'})</text>
         <circle cx={cx} cy={cy} r={R} fill="#d1d5db" stroke="#0f172a" strokeWidth="1.8"/>
         {cote.map((q, i) => { const c = placeS(q); return <Charge key={`sp${i}`} x={c.x} y={c.y} s={1} r={4.8}/>; })}
-        {eS.map((q, i) => { const c = placeS(q); return <Charge key={`se${i}`} x={c.x} y={c.y} s={-1} r={4.8} vis={q.vis}/>; })}
         {[0, 1, 2].map(i => <Charge key={`tp${i}`} x={cx - 3.5} y={134 + 34 * i} s={1} r={4.4}/>)}
-        {Array.from({ length: 8 }).map((_, j) => <Charge key={`te${j}`} x={cx + 3.5} y={132 + 12.5 * j} s={-1} r={4.4} vis={j < Et}/>)}
         {feuille(-1)}{feuille(1)}
+        {ePos.map((q, i) => <Charge key={`el${i}`} x={q.x} y={q.y} s={-1} r={4.6} vis={q.o}/>)}
         <circle cx={piv.x} cy={piv.y} r="3.5" fill="#0f172a"/>
         <text x={cx - R - 6} y={cy + 4} textAnchor="end" fontSize="12" fill="#334155">sphère</text>
         <text x={cx + 76} y="196" fontSize="12" fill="#334155">tige métallique</text>
