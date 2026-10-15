@@ -142,3 +142,20 @@ export function tempsParSimulation(lignes) {
   }
   return [...m.values()].sort((x, y) => y.total - x.total);
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+//  DÉFIS DES SIMULATIONS
+//  Une simulation déclare ses défis avec declarerDefis(id, [[nom, titre], …]). Chaque défi est suivi comme un
+//  exercice (useSuivi, clé « <id>:defi.<nom> ») : temps actif, essais (clics sur « Vérifier »), solutions vues, réussite.
+//  Les pages « Mon compte » et « Suivi professeur » les affichent à part des exercices « je m'entraîne ».
+// ════════════════════════════════════════════════════════════════════════════
+export const DEFIS = [];
+export function declarerDefis(simId, liste) {
+  liste.forEach(([nom, titre]) => {
+    const cle = `${simId}:defi.${nom}`;
+    if (!DEFIS.some(d => d.cle === cle)) DEFIS.push({ cle, sim: simId, comp: 'DÉFI', titre });
+  });
+}
+export const estDefi = cle => typeof cle === 'string' && /^[0-9]{1,3}:defi\./.test(cle);
+// Libellés des défis : « Nom de la simulation — défi »
+export const etiquettesDefis = () => DEFIS.map(d => ({ ...d, titre: `${nomsSim[d.sim] || `Simulation ${d.sim}`} — ${d.titre}` }));

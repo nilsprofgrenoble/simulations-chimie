@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback, Fragment } from "react";
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite } from "../commun";
 import { useSession, estProf, deconnexion, rest, toutLire, fonctionComptes } from "../serveur";
 import { agreger, etiquettes, formatDuree, formatDate, TableauTempsSimulations } from "./Compte";
-import { estSimulation, tempsParSimulation, MODES } from "../suivi";
+import { estSimulation, estDefi, etiquettesDefis, tempsParSimulation, MODES } from "../suivi";
 import { tousLesExercices } from "./Entrainement";
 
 const ROSE = '#e11d48';
@@ -69,7 +69,7 @@ export function SimulationSuiviProf({ naviguer }) {
   const [msg, setMsg] = useState(''), [erreur, setErreur] = useState(''), [occupe, setOccupe] = useState(false);
   const [comptes, setComptes] = useState(null), [formClasse, setFormClasse] = useState(false);
   const [nc, setNc] = useState({ nom: '', prefixe: '', nombre: 30 }), [ajout, setAjout] = useState(5);
-  const etq = useMemo(() => etiquettes(), []), exos = useMemo(() => tousLesExercices(), []);
+  const etq = useMemo(() => etiquettes(), []), exos = useMemo(() => tousLesExercices(), []), defis = useMemo(() => etiquettesDefis(), []);
 
   const chargerClasses = useCallback(async (choisir) => {
     const c = await rest('classes?select=id,nom,prefixe&order=cree_le');
@@ -97,7 +97,10 @@ export function SimulationSuiviProf({ naviguer }) {
   }
 
   const classe = classes.find(c => c.id === classeId);
-  const parEleve = new Map(eleves.map(e => [e.user_id, agreger(lignes.filter(l => l.user_id === e.user_id && !estSimulation(l.cle)))]));
+  // exercices « je m'entraîne » seuls (pour les compteurs), et exercices + défis des simulations (pour le détail et l'export)
+  const parEleve = new Map(eleves.map(e => [e.user_id, agreger(lignes.filter(l => l.user_id === e.user_id && !estSimulation(l.cle) && !estDefi(l.cle)))]));
+  const parEleveTout = new Map(eleves.map(e => [e.user_id, agreger(lignes.filter(l => l.user_id === e.user_id && !estSimulation(l.cle)))]));
+  const parEleveDefis = new Map(eleves.map(e => [e.user_id, agreger(lignes.filter(l => l.user_id === e.user_id && estDefi(l.cle)))]));
   const total = exos.length;
 
   const creerClasse = e => {
@@ -127,7 +130,7 @@ export function SimulationSuiviProf({ naviguer }) {
   const exporter = () => {
     const en = ['identifiant', 'exercice', 'compétence', 'titre', 'réussi', 'essais', 'corrections vues', 'temps (s)', 'séances', 'dernière activité'];
     const rows = [];
-    eleves.forEach(e => parEleve.get(e.user_id).forEach(a => rows.push([e.identifiant, a.cle, etq[a.cle]?.comp || '', etq[a.cle]?.titre || '', a.reussi ? 'oui' : 'non', a.essais, a.vues, a.duree, a.seances, a.derniere])));
+    eleves.forEach(e => parEleveTout.get(e.user_id).forEach(a => rows.push([e.identifiant, a.cle, etq[a.cle]?.comp || '', etq[a.cle]?.titre || '', a.reussi ? 'oui' : 'non', a.essais, a.vues, a.duree, a.seances, a.derniere])));
     eleves.forEach(e => tempsParSimulation(lignes.filter(l => l.user_id === e.user_id)).forEach(a => rows.push([e.identifiant, `simulation ${a.id}`, 'simulation', a.nom, '', '', '', a.total, '', `guidé ${a.guide} s ; exploration ${a.explore} s ; défi ${a.defi} s`])));
     telecharger(`suivi-${classe.prefixe}.csv`, [en, ...rows].map(r => r.map(csvCase).join(';')).join('\n'));
   };
@@ -138,6 +141,14 @@ export function SimulationSuiviProf({ naviguer }) {
     return { ...x, travailles: lignesX.length, reussis: lignesX.filter(a => a.reussi).length,
       essaisMoy: lignesX.length ? lignesX.reduce((t, a) => t + a.essais, 0) / lignesX.length : 0,
       vues: lignesX.filter(a => a.vues > 0).length, tempsMed: mediane(lignesX.map(a => a.duree)) };
+  });
+  // Vue par défi de simulation
+  const parDefi = defis.map(x => {
+    const lignesX = eleves.map(e => parEleveDefis.get(e.user_id).get(x.cle)).filter(Boolean);
+    return { ...x, travailles: lignesX.length, reussis: lignesX.filter(a => a.reussi).length,
+      essaisMoy: lignesX.length ? lignesX.reduce((t, a) => t + a.essais, 0) / lignesX.length : 0,
+      vues: lignesX.filter(a => a.vues > 0).length, tempsMed: mediane(lignesX.map(a => a.duree)),
+      qui: eleves.map(e => ({ id: e.identifiant, a: parEleveDefis.get(e.user_id).get(x.cle) })).filter(o => o.a) };
   });
 
   return (
@@ -184,22 +195,24 @@ export function SimulationSuiviProf({ naviguer }) {
           <div style={{ display: 'flex', gap: 6, margin: '12px 0 8px' }}>
             <button onClick={() => setOnglet('eleves')} style={stylePetitBouton(onglet === 'eleves', ROSE)}>Par élève ({eleves.length})</button>
             <button onClick={() => setOnglet('exos')} style={stylePetitBouton(onglet === 'exos', ROSE)}>Par exercice</button>
+            <button onClick={() => setOnglet('defis')} style={stylePetitBouton(onglet === 'defis', ROSE)}>Défis des simulations</button>
             <button onClick={() => setOnglet('sims')} style={stylePetitBouton(onglet === 'sims', ROSE)}>Simulations</button>
           </div>
 
           {onglet === 'eleves' && (
             <div style={{ overflowX: 'auto' }}>
               <table style={{ borderCollapse: 'collapse', fontSize: 13.5, width: '100%' }}>
-                <thead><tr><th style={th}>Identifiant</th><th style={th}>Exercices réussis</th><th style={th}>Travaillés</th><th style={th}>Essais</th><th style={th}>Corrections vues</th><th style={th}>Temps</th><th style={th}>Dernière activité</th><th style={th}></th></tr></thead>
+                <thead><tr><th style={th}>Identifiant</th><th style={th}>Exercices réussis</th><th style={th}>Travaillés</th><th style={th}>Défis réussis</th><th style={th}>Essais</th><th style={th}>Corrections vues</th><th style={th}>Temps</th><th style={th}>Dernière activité</th><th style={th}></th></tr></thead>
                 <tbody>{eleves.map(e => {
-                  const ag = [...parEleve.get(e.user_id).values()];
-                  const der = ag.reduce((m, a) => (a.derniere > m ? a.derniere : m), '');
+                  const ag = [...parEleve.get(e.user_id).values()], agTout = [...parEleveTout.get(e.user_id).values()];
+                  const nDefis = [...parEleveDefis.get(e.user_id).values()].filter(a => a.reussi).length;
+                  const der = agTout.reduce((m, a) => (a.derniere > m ? a.derniere : m), '');
                   return (
                     <Fragment key={e.user_id}>
                       <tr data-eleve={e.identifiant} style={{ borderTop: `1px solid ${KIT.bord}`, cursor: 'pointer', background: ouvert === e.user_id ? '#fff1f2' : 'transparent' }}
                         onClick={() => setOuvert(ouvert === e.user_id ? null : e.user_id)}>
                         <td style={td}><b>{e.identifiant}</b></td>
-                        <td style={td}>{ag.filter(a => a.reussi).length} / {total}</td><td style={td}>{ag.length}</td>
+                        <td style={td}>{ag.filter(a => a.reussi).length} / {total}</td><td style={td}>{ag.length}</td><td style={td}>{nDefis} / {defis.length}</td>
                         <td style={td}>{ag.reduce((t, a) => t + a.essais, 0)}</td><td style={td}>{ag.reduce((t, a) => t + a.vues, 0)}</td>
                         <td style={td}>{formatDuree(ag.reduce((t, a) => t + a.duree, 0))}</td><td style={td}>{formatDate(der)}</td>
                         <td style={{ ...td, whiteSpace: 'nowrap' }} onClick={x => x.stopPropagation()}>
@@ -208,9 +221,9 @@ export function SimulationSuiviProf({ naviguer }) {
                         </td>
                       </tr>
                       {ouvert === e.user_id && (
-                        <tr><td colSpan={8} style={{ padding: '4px 8px 10px 24px', background: '#fff1f2' }}>
-                          {!ag.length ? <i style={{ color: KIT.txt2 }}>Aucune activité.</i> : (
-                            <table style={{ borderCollapse: 'collapse', fontSize: 13 }}><tbody>{ag.sort((a, b) => (b.derniere || '').localeCompare(a.derniere || '')).map(a => (
+                        <tr><td colSpan={9} style={{ padding: '4px 8px 10px 24px', background: '#fff1f2' }}>
+                          {!agTout.length ? <i style={{ color: KIT.txt2 }}>Aucune activité.</i> : (
+                            <table style={{ borderCollapse: 'collapse', fontSize: 13 }}><tbody>{agTout.sort((a, b) => (b.derniere || '').localeCompare(a.derniere || '')).map(a => (
                               <tr key={a.cle}><td style={td}>{a.reussi ? '✅' : '⬜'}</td><td style={td}><b>{etq[a.cle]?.comp}</b> {etq[a.cle]?.titre || a.cle}</td>
                                 <td style={td}>{a.essais} essai{a.essais > 1 ? 's' : ''}</td><td style={td}>{a.vues} correction{a.vues > 1 ? 's' : ''} vue{a.vues > 1 ? 's' : ''}</td>
                                 <td style={td}>{formatDuree(a.duree)}</td><td style={td}>{formatDate(a.derniere)}</td></tr>))}</tbody></table>)}
@@ -236,6 +249,30 @@ export function SimulationSuiviProf({ naviguer }) {
                   })}</tbody>
                 </table>
               </div>
+            </div>)}
+
+          {onglet === 'defis' && (
+            <div style={{ overflowX: 'auto' }}>
+              <p style={{ fontSize: 13.5, color: KIT.txt2, margin: '4px 0 8px' }}>Défis des simulations : essais = clics sur « Vérifier » ; « solution vue » = l’élève a affiché la solution après un échec. Cliquez sur un défi pour voir chaque élève.</p>
+              <table style={{ borderCollapse: 'collapse', fontSize: 13.5, width: '100%' }}>
+                <thead><tr><th style={th}>Défi</th><th style={th}>Réussi par</th><th style={th}>Tenté par</th><th style={th}>Essais (moyenne)</th><th style={th}>Ont vu la solution</th><th style={th}>Temps (médiane)</th></tr></thead>
+                <tbody>{parDefi.map(x => (
+                  <Fragment key={x.cle}>
+                    <tr style={{ borderTop: `1px solid ${KIT.bord}`, opacity: x.travailles ? 1 : 0.5, cursor: x.travailles ? 'pointer' : 'default', background: ouvert === x.cle ? '#fff1f2' : 'transparent' }}
+                      onClick={() => x.travailles && setOuvert(ouvert === x.cle ? null : x.cle)}>
+                      <td style={td}>{x.titre}</td><td style={td}>{x.reussis} / {eleves.length}</td><td style={td}>{x.travailles}</td>
+                      <td style={td}>{x.travailles ? x.essaisMoy.toFixed(1).replace('.', ',') : '—'}</td><td style={td}>{x.travailles ? x.vues : '—'}</td>
+                      <td style={td}>{x.travailles ? formatDuree(x.tempsMed) : '—'}</td></tr>
+                    {ouvert === x.cle && (
+                      <tr><td colSpan={6} style={{ padding: '4px 8px 10px 24px', background: '#fff1f2' }}>
+                        <table style={{ borderCollapse: 'collapse', fontSize: 13 }}><tbody>{x.qui.map(({ id, a }) => (
+                          <tr key={id}><td style={td}>{a.reussi ? '✅' : '⬜'}</td><td style={td}><b>{id}</b></td>
+                            <td style={td}>{a.essais} essai{a.essais > 1 ? 's' : ''}</td><td style={td}>{a.vues ? 'solution vue' : ''}</td>
+                            <td style={td}>{formatDuree(a.duree)}</td><td style={td}>{formatDate(a.derniere)}</td></tr>))}</tbody></table>
+                      </td></tr>)}
+                  </Fragment>))}</tbody>
+              </table>
+              {!defis.length && <div style={{ color: KIT.txt2, padding: 8 }}>Aucune simulation n’a encore de défi suivi.</div>}
             </div>)}
 
           {onglet === 'exos' && (
