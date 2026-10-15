@@ -43,11 +43,11 @@ const chg = q => (q === 0 ? '0' : `${sgn(q)}${Math.abs(q)}${NB}e`);
 const tire = t => t[Math.floor(Math.random() * t.length)];
 
 // ---------- dessin : une charge (disque rouge « + » ou bleu « − »), déplaçable avec transition ----------
-function Charge({ x, y, s, r = 6, fantome, anim }) {
+function Charge({ x, y, s, r = 6, fantome, anim, vis = true }) {
   if (fantome) return <circle cx={x} cy={y} r={r} fill="none" stroke={BLEU} strokeWidth="1.2" strokeDasharray="2.5 2.5" opacity="0.6"/>;
   const col = s > 0 ? ROUGE : BLEU, a = r * 0.5;
   return (
-    <g style={{ transform: `translate(${x}px, ${y}px)`, transition: anim ? 'transform 0.8s ease' : 'none' }}>
+    <g style={{ transform: `translate(${x}px, ${y}px)`, opacity: vis ? 1 : 0, transition: `${anim ? 'transform 0.8s ease, ' : ''}opacity 0.35s ease` }}>
       <circle r={r} fill={col} stroke="white" strokeWidth="0.8"/>
       <path d={s > 0 ? `M${-a},0H${a}M0,${-a}V${a}` : `M${-a},0H${a}`} stroke="white" strokeWidth="1.7" strokeLinecap="round" fill="none"/>
     </g>);
@@ -85,6 +85,25 @@ const coefBoule = (s, Q) => (s === 0 ? 0 : Q === 0 ? 0.6 : Q * s > 0 ? -1 : 1);
 
 // Mouvement d'un corps mobile (boule suspendue, ou paille qui roule) : x en pixels, positif vers la tige.
 // La force dépend de l'écart restant (gap0 − x) ; rappel du pendule (omega2), frottement visqueux (c), adhérence éventuelle.
+// Valeur qui rejoint progressivement sa cible (lissage exponentiel, tau en secondes) : évite les sauts d'une image à l'autre
+function useLisse(cible, tau = 0.14) {
+  const [v, setV] = useState(cible), st = useRef({ v: cible, c: cible });
+  useEffect(() => {
+    st.current.c = cible;
+    let raf, t0 = performance.now();
+    const tick = t => {
+      const s = st.current, dt = Math.min(0.05, (t - t0) / 1000);
+      t0 = t;
+      s.v += (s.c - s.v) * (1 - Math.exp(-dt / tau));
+      if (Math.abs(s.c - s.v) < 0.002) { s.v = s.c; setV(s.v); return; }
+      setV(s.v);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [cible, tau]);
+  return v;
+}
 function useMobile(par) {
   const [x, setX] = useState(0);
   const st = useRef({ x: 0, v: 0, aff: 0 }), p = useRef(par);
@@ -287,6 +306,8 @@ export function SimulationElectrisation() {
   const okRepouss = okContact && infl.d >= 2;
   const okContactEbo = infl.tige === 'ebonite' && infl.Q === -Q_CONTACT;
   const sEl = TIGES[ele.tige].signe, qTig = ele.Q * sEl > 0 ? QR_ELE - Math.abs(ele.Q) : QR_ELE, EM = modeleEle(sEl, ele.Q, ele.d, qTig);
+  const dAff = useLisse(ele.d), QAff = useLisse(ele.Q), qTigAff = useLisse(qTig), sElAff = useLisse(sEl);
+  const EMa = modeleEle(sElAff, QAff, dAff, qTigAff);
   const okE1 = ele.tige === 'verre' && ele.Q === 0 && ele.d >= 10;
   const okE2 = ele.tige === 'verre' && ele.Q === 0 && ele.d <= 4;
   const okE3 = ele.tige === 'verre' && ele.Q === 0 && ele.d >= 10;
@@ -566,6 +587,7 @@ export function SimulationElectrisation() {
   // ════════════════ SCÈNE 3 : INFLUENCE ET CONTACT (expérience A) ════════════════
   const dEff = 1 + Math.max(0, gapB0 - xB) / 12;                // distance effective boule–tige (cm), au contact : 1
   const IB = { type: coefB > 0 ? 'attr' : coefB < 0 ? 'rep' : 'aucune', amp: Math.abs(coefB) * proxim(dEff, 1), phi: coefB === 0 ? 0 : proxim(dEff, 1), influence: infl.Q === 0 && coefB > 0 };
+  const decalAff = useLisse(sBo * IB.phi * 0.62 * 56 * (IB.type === 'aucune' ? 0 : 1), 0.12);
   const scInfluence = (() => {
     const W = 640, H = 312, px = 200, R = 56, L = 168, xrod = 256 + gapB0;
     const dx = xB;
@@ -581,7 +603,7 @@ export function SimulationElectrisation() {
     const retirer = [2, 5, 1, 4, 0, 3];
     const visibles = infl.Q >= 0 ? elec.slice(0, 6).map((e, k) => ({ e, k })).filter(o => !retirer.slice(0, infl.Q).includes(o.k))
       : elec.slice(0, 6 - infl.Q).map((e, k) => ({ e, k }));
-    const decal = sBo * IB.phi * 0.62 * R * (IB.type === 'aucune' ? 0 : 1);
+    const decal = decalAff;
     const place = (p, mobile) => {
       let x = p.x + (mobile ? decal : 0), y = p.y;
       const r = Math.hypot(x, y), rm = 0.82 * R;
@@ -600,7 +622,7 @@ export function SimulationElectrisation() {
         <line x1="200" y1="14" x2={xb} y2={yb - R} stroke="#0f172a" strokeWidth="1.5"/>
         <circle cx={xb} cy={yb} r={R} fill="#d1d5db" stroke="#0f172a" strokeWidth="1.8"/>
         {prot.map((p, i) => { const q = place(p, false); return <Charge key={`bp${i}`} x={q.x} y={q.y} s={1} r={5}/>; })}
-        {elec.map((e, k) => { const vis = visibles.some(o => o.k === k); const q = place(e, true); return vis ? <Charge key={`be${k}`} x={q.x} y={q.y} s={-1} r={5}/> : null; })}
+        {elec.map((e, k) => { const vis = visibles.some(o => o.k === k); const q = place(e, true); return <Charge key={`be${k}`} x={q.x} y={q.y} s={-1} r={5} vis={vis}/>; })}
         <text x={xb} y={yb + R + 17} textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0f172a">boule d’aluminium{infl.Q !== 0 ? ` (${sgn(infl.Q)})` : ' (neutre)'}</text>
         {IB.type !== 'aucune' && dEff < 9 && <g>
           {fleche(xb, 294, gaucheAttr ? 1 : -1, 42, ROUGE, 3.2, 'f1')}{etiquetteVec(xb + (gaucheAttr ? 21 : -21), 284, 'F', 'tige/boule', ROUGE, 'e1', 13)}
@@ -612,28 +634,28 @@ export function SimulationElectrisation() {
 
   // ════════════════ SCÈNE 4 : ÉLECTROSCOPE ════════════════
   const scElectroscope = (() => {
-    const W = 480, H = 335, cx = 150, cy = 84, R = 36, xr = cx + R + 4 + (ele.d - 1) * 8;
+    const W = 480, H = 335, cx = 150, cy = 84, R = 36, xr = cx + R + 4 + (dAff - 1) * 8;
     const NP = 14, PL = 6, total = NP - ele.Q;                       // protons : sphère 5, tige 3, feuilles 6
-    let El = Math.max(0, Math.min(10, 2 * Math.round((PL - EM.ql) / 2)));
+    let El = Math.max(0, Math.min(10, 2 * Math.round((PL - EMa.ql) / 2)));
     El = Math.min(El, total - 0);
     if (El % 2) El -= 1;
     const reste = total - El, Et = Math.min(8, Math.round(reste * 3 / 8)), Es = reste - Et;
     // sphère : 5 protons sur un cercle intérieur, électrons à côté (puis sur un cercle extérieur), décalés par l'influence
-    const decal = sEl * EM.phi * 0.3 * R, cote = [];
+    const decal = sElAff * EMa.phi * 0.3 * R, cote = [];
     for (let k = 0; k < 5; k++) { const a = (18 + 72 * k) * Math.PI / 180; cote.push({ x: Math.cos(a) * 0.5 * R, y: Math.sin(a) * 0.5 * R, p: true }); }
     const eS = [];
-    for (let k = 0; k < Es; k++) {
+    for (let k = 0; k < 10; k++) {
       const a = k < 5 ? (18 + 72 * k + 40) * Math.PI / 180 : (k * 51 + 10) * Math.PI / 180, r = k < 5 ? 0.62 * R : 0.78 * R;
-      eS.push({ x: Math.cos(a) * r + decal, y: Math.sin(a) * r });
+      eS.push({ x: Math.cos(a) * r + decal, y: Math.sin(a) * r, vis: k < Es });
     }
     const placeS = q => { let { x, y } = q; const r = Math.hypot(x, y), rm = 0.84 * R; if (r > rm) { x *= rm / r; y *= rm / r; } return { x: cx + x, y: cy + y }; };
     // feuilles
-    const piv = { x: cx, y: 238 }, Lf = 68, th = EM.theta * Math.PI / 180;
+    const piv = { x: cx, y: 238 }, Lf = 68, th = EMa.theta * Math.PI / 180;
     const feuille = sg => {
       const dir = { x: sg * Math.sin(th), y: Math.cos(th) }, perp = { x: dir.y, y: -dir.x };
       const n = El / 2, pts = [];
       [0.3, 0.62, 0.94].forEach((f, i) => pts.push(<Charge key={`fp${sg}${i}`} s={1} r={4.4} x={piv.x + dir.x * Lf * f + sg * perp.x * 5.8} y={piv.y + dir.y * Lf * f + sg * perp.y * 5.8}/>));
-      [0.18, 0.4, 0.62, 0.84, 1.0].slice(0, n).forEach((f, i) => pts.push(<Charge key={`fe${sg}${i}`} s={-1} r={4.4} x={piv.x + dir.x * Lf * f - sg * perp.x * 5.8} y={piv.y + dir.y * Lf * f - sg * perp.y * 5.8}/>));
+      [0.18, 0.4, 0.62, 0.84, 1.0].forEach((f, i) => pts.push(<Charge key={`fe${sg}${i}`} s={-1} r={4.4} vis={i < n} x={piv.x + dir.x * Lf * f - sg * perp.x * 5.8} y={piv.y + dir.y * Lf * f - sg * perp.y * 5.8}/>));
       return <g key={`feuille${sg}`}><line x1={piv.x} y1={piv.y} x2={piv.x + dir.x * (Lf + 5)} y2={piv.y + dir.y * (Lf + 5)} stroke="#94a3b8" strokeWidth="7" strokeLinecap="round"/>{pts}</g>;
     };
     const tigeCh = grille(5, 4, xr + 16, 62, 22, 12.5, 8, sEl > 0 ? 8 - qTig : 8 + qTig);
@@ -648,9 +670,9 @@ export function SimulationElectrisation() {
         <text x={xr + 60} y="132" textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f172a">tige {TIGES[ele.tige].court} ({sEl > 0 ? '+' : '−'})</text>
         <circle cx={cx} cy={cy} r={R} fill="#d1d5db" stroke="#0f172a" strokeWidth="1.8"/>
         {cote.map((q, i) => { const c = placeS(q); return <Charge key={`sp${i}`} x={c.x} y={c.y} s={1} r={4.8}/>; })}
-        {eS.map((q, i) => { const c = placeS(q); return <Charge key={`se${i}`} x={c.x} y={c.y} s={-1} r={4.8}/>; })}
+        {eS.map((q, i) => { const c = placeS(q); return <Charge key={`se${i}`} x={c.x} y={c.y} s={-1} r={4.8} vis={q.vis}/>; })}
         {[0, 1, 2].map(i => <Charge key={`tp${i}`} x={cx - 3.5} y={134 + 34 * i} s={1} r={4.4}/>)}
-        {Array.from({ length: Et }).map((_, j) => <Charge key={`te${j}`} x={cx + 3.5} y={132 + 12.5 * j} s={-1} r={4.4}/>)}
+        {Array.from({ length: 8 }).map((_, j) => <Charge key={`te${j}`} x={cx + 3.5} y={132 + 12.5 * j} s={-1} r={4.4} vis={j < Et}/>)}
         {feuille(-1)}{feuille(1)}
         <circle cx={piv.x} cy={piv.y} r="3.5" fill="#0f172a"/>
         <text x={cx - R - 6} y={cy + 4} textAnchor="end" fontSize="12" fill="#334155">sphère</text>
