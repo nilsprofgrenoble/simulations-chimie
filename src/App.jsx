@@ -34,6 +34,7 @@ import { SimulationRefractometre } from "./simulations/Refractometre";
 import { SimulationMoteurPasAPas } from "./simulations/MoteurPasAPas";
 import { SimulationMoteurCode } from "./simulations/MoteurCode";
 import { SimulationBoussole } from "./simulations/Boussole";
+import { SimulationAPropos } from "./simulations/APropos";
 import { SimulationAtelierDonnees } from "./simulations/AtelierDonnees";
 import { SimulationAtelierGraphique } from "./simulations/AtelierGraphique";
 import { SimulationAtelierRealiser } from "./simulations/AtelierRealiser";
@@ -113,14 +114,16 @@ const SIMULATIONS = [
   // Pages hors menu (niveau « COMPTE ») : connexion et suivi, ouvertes par les boutons « Mon compte » et « Suivi professeur »
   { id:39, label:"Mon compte", niveau:"COMPTE", icon:"👤", color:"#e11d48", component: SimulationCompte },
   { id:40, label:"Suivi professeur", niveau:"COMPTE", icon:"📊", color:"#e11d48", component: SimulationSuiviProf },
+  // Page hors menu : à propos et contact (ouverte depuis le bas du menu et le pied de page)
+  { id:47, label:"À propos et contact", niveau:"COMPTE", icon:"ℹ️", color:"#475569", component: SimulationAPropos },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; });
 
 const NIVEAUX = [
+  { label: "je m'entraîne ! Travail par compétence.", key: "COMP", color: "#e11d48" },
   { label: "1G",   key: "1G",   color: "#2a9d8f" },
   { label: "TSTL", key: "TSTL", color: "#2a6099" },
   { label: "BTS",  key: "BTS",  color: "#6a4c93" },
-  { label: "je m'entraîne ! Travail par compétence.", key: "COMP", color: "#e11d48" },
 ];
 
 // ============================================================
@@ -138,11 +141,20 @@ function PageAccueil({ onStart }) {
   };
 
   const simulations = [
-    { niveau:"1G", color:"#2a9d8f", sims:[
+    { niveau:"COMP", titre:"je m'entraîne ! Travail par compétence.", color:"#e11d48", sims:[
+      { icon:"🏋️", label:"Je m'entraîne ! Travail par compétence", desc:"Le point d'entrée : une carte par compétence (S'APP, ANA, REA, VAL), l'ordre conseillé, la liste de tous les exercices filtrable par thème du programme, et ta progression (mémorisée sur cet appareil)." },
+      { icon:"🎯", label:"S'APP : extraire les données d'un énoncé", desc:"S'approprier : la formule est donnée ; il faut comprendre la question, repérer les données utiles, associer chaque donnée au symbole de la formule et à la bonne unité. 7 énoncés rangés par thème." },
+      { icon:"📈", label:"S'APP : lire un graphique", desc:"S'approprier : identifier grandeurs, unités et échelles des axes, lire une valeur (directe, inverse, à l'origine, avec une autre unité), interpréter l'allure. 8 graphiques rangés par thème." },
+      { icon:"🧭", label:"ANA : analyser un problème", desc:"Analyser : construire la démarche d'un problème posé sans questions intermédiaires (ce que l'on cherche, données utiles, relations, hypothèses, ordre des calculs), choisir la bonne relation, reconnaître les hypothèses d'un modèle, prévoir sans calculer. 9 problèmes et 35 exercices courts, rangés par thème." },
+      { icon:"🧮", label:"REA : réaliser un calcul", desc:"Réaliser : changements d'unité (simples, préfixes, unités au carré ou au cube, unités composées), conversions cachées dans un calcul, isoler une grandeur, chiffres significatifs, log / exp / racine, saisie à la calculatrice. 9 types d'exercices tirés au hasard." },
+    ]},
+    { niveau:"1G", color:"#2a9d8f", sousMenus:[
+      { label:"⚗️ Suivi de l’évolution d’un système, siège d’une transformation", sims:[
       { icon:"⚗️", label:"Avancement d'une réaction", desc:"Le volume molaire d'un gaz par la réaction du magnésium sur l'acide : tableau d'avancement, réactif limitant. Et un tableau d'avancement pour toute réactions." },
       { icon:"🧪", label:"Titrage direct", desc:"On fait réagir l'espèce à doser avec une solution titrante jusqu'à l'équivalence. Exemple : le diiode du Lugol par le thiosulfate. Et un titrage pour toute réaction." },
       { icon:"💊", label:"Titrage en retour", desc:"On ajoute un excès connu d'un réactif, puis on titre ce qui n'a pas réagi. Exemple : la vitamine C d'une gélule. Et un titrage en retour pour toute réaction." },
       { icon:"🌈", label:"Beer-Lambert", desc:"Schéma animé du spectrophotomètre, spectre UV-visible interactif et courbe d'étalonnage." },
+      ]},
     ]},
     { niveau:"TSTL", color:"#e9a824", sousMenus:[
       { label:"📡 Transmission de signaux numériques", sims:[
@@ -179,13 +191,6 @@ function PageAccueil({ onStart }) {
         { icon:"🔥", label:"Échangeur thermique : co-courant et contre-courant", desc:"Échangeur coaxial : profils de température, bilan P_C = −P_F, écart moyen logarithmique ΔTm, surface d'échange et coefficient global U. Co-courant, contre-courant, et côté chaud à température constante (bain, vapeur)." },
       ]},
     ]},
-    { niveau:"COMP", titre:"je m'entraîne ! Travail par compétence.", color:"#e11d48", sims:[
-      { icon:"🏋️", label:"Je m'entraîne ! Travail par compétence", desc:"Le point d'entrée : une carte par compétence (S'APP, ANA, REA, VAL), l'ordre conseillé, la liste de tous les exercices filtrable par thème du programme, et ta progression (mémorisée sur cet appareil)." },
-      { icon:"🎯", label:"S'APP : extraire les données d'un énoncé", desc:"S'approprier : la formule est donnée ; il faut comprendre la question, repérer les données utiles, associer chaque donnée au symbole de la formule et à la bonne unité. 7 énoncés rangés par thème." },
-      { icon:"📈", label:"S'APP : lire un graphique", desc:"S'approprier : identifier grandeurs, unités et échelles des axes, lire une valeur (directe, inverse, à l'origine, avec une autre unité), interpréter l'allure. 8 graphiques rangés par thème." },
-      { icon:"🧭", label:"ANA : analyser un problème", desc:"Analyser : construire la démarche d'un problème posé sans questions intermédiaires (ce que l'on cherche, données utiles, relations, hypothèses, ordre des calculs), choisir la bonne relation, reconnaître les hypothèses d'un modèle, prévoir sans calculer. 9 problèmes et 35 exercices courts, rangés par thème." },
-      { icon:"🧮", label:"REA : réaliser un calcul", desc:"Réaliser : changements d'unité (simples, préfixes, unités au carré ou au cube, unités composées), conversions cachées dans un calcul, isoler une grandeur, chiffres significatifs, log / exp / racine, saisie à la calculatrice. 9 types d'exercices tirés au hasard." },
-    ]},
     { niveau:"BTS", color:"#6a4c93", sousMenus:[
       { label:"🔬 Analyse", sims:[
         { icon:"⚡", label:"Titrages électrochimiques", desc:"Potentiométrie, ampérométrie — courbes i=f(E) et suivi du titrage." },
@@ -213,11 +218,11 @@ function PageAccueil({ onStart }) {
         <h2 style={{fontSize:24, fontWeight:700, color:"#222", margin:"0 0 12px"}}>
           Paillasse virtuelle
         </h2>
-        <p style={{fontSize:15, color:"#555", lineHeight:1.7, maxWidth:600, margin:"0 auto 20px"}}>
-          Simulations interactives de chimie et de physique pour les niveaux 1G spé PC, TSTL et BTS Métiers de la Chimie.
+        <p style={{fontSize:15, color:"#555", lineHeight:1.7, maxWidth:600, margin:"0 auto 14px"}}>
+          Manipuler, se tromper, recommencer : la paillasse du labo, sans la verrerie.
         </p>
         <p style={{fontSize:13.5, color:"#666", lineHeight:1.6, maxWidth:600, margin:"0 auto 20px"}}>
-          Conçues par Nils Aronssohn, professeur de physique-chimie au lycée Argouges de Grenoble : parcours guidés, exploration libre, défis et exercices par compétence.
+          Des simulations de chimie et de physique pour la Première spé PC, la Terminale STL et le BTS Métiers de la chimie : parcours guidés, exploration libre, défis et exercices par compétence. Site en accès libre.
         </p>
         <button onClick={()=>onStart(1)} style={{
           padding:"10px 28px", borderRadius:8, border:"none",
@@ -307,29 +312,6 @@ function PageAccueil({ onStart }) {
           ))}
         </div>
       ))}
-
-      {/* Sources */}
-      <div style={{...cardA, background:"#f8f8f8", borderColor:"#e0e0e0"}}>
-        <div style={{fontWeight:700, fontSize:15, color:"#333", marginBottom:14}}>📚 Sources & inspirations</div>
-        <div style={{display:"flex", flexDirection:"column", gap:12, fontSize:13, color:"#555", lineHeight:1.7}}>
-          <div style={{display:"flex", gap:12, alignItems:"flex-start"}}>
-            <span style={{fontSize:20, flexShrink:0}}>🎨</span>
-            <div><strong style={{color:"#333"}}>Marc-Olivier REULA</strong> — Enseignant en BTS Métiers de la Chimie à l'ENCPB (Paris). Source d'inspiration pour la conception de ce site.</div>
-          </div>
-          <div style={{display:"flex", gap:12, alignItems:"flex-start"}}>
-            <span style={{fontSize:20, flexShrink:0}}>⚡</span>
-            <div><strong style={{color:"#333"}}>Jean LAMERENX</strong> — Enseignant en CPGE au lycée Louis-le-Grand (Paris). Les courbes i=f(E) ont été codées initialement en Python et partagées lors des JIREC 2024.</div>
-          </div>
-          <div style={{display:"flex", gap:12, alignItems:"flex-start"}}>
-            <span style={{fontSize:20, flexShrink:0}}>💻</span>
-            <div><strong style={{color:"#333"}}>Xavier BATAILLE</strong> — Enseignant en BTS Métiers de la Chimie à l'ENCPB (Paris). Le modèle de simulation CLHP en phase inverse est issu de ses travaux publiés sur RNChimie (2008).</div>
-          </div>
-          <div style={{display:"flex", gap:12, alignItems:"flex-start"}}>
-            <span style={{fontSize:20, flexShrink:0}}>🤖</span>
-            <div><strong style={{color:"#333"}}>Claude (Anthropic)</strong> — L'ensemble des simulations a été développé par itérations successives en collaboration avec Claude, assistant IA d'Anthropic.</div>
-          </div>
-        </div>
-      </div>
 
       <div style={{textAlign:"center", fontSize:12, color:"#aaa", paddingBottom:16}}>
         Paillasse virtuelle — paillasse-virtuelle.fr
@@ -475,11 +457,7 @@ export default function App() {
           <div style={{ fontSize: "2.2rem" }}>⚛️</div>
           <div>
             <div style={styles.siteTitle}>Paillasse virtuelle</div>
-            <div style={styles.siteSub}>Chimie et physique : simulations interactives</div>
-            <div style={{fontSize:"0.72rem", color:"#aaa", fontStyle:"italic",
-              fontFamily:"'Outfit', sans-serif"}}>
-              par Nils ARONSSOHN, enseignant au lycée Argouges de Grenoble
-            </div>
+            <div style={styles.siteSub}>Chimie et physique</div>
           </div>
         </div>
         <div style={styles.divider} />
@@ -502,7 +480,9 @@ export default function App() {
           {NIVEAUX.map(niv => {
             const simsNiv = SIMULATIONS.filter(s => s.niveau === niv.key).sort((a, b) => (niv.key === 'COMP' ? [38,34,35,37,36].indexOf(a.id) - [38,34,35,37,36].indexOf(b.id) : 0));
             const isExpanded = expanded[niv.key];
-            const sousgroupes = niv.key === 'BTS' ? [
+            const sousgroupes = niv.key === '1G' ? [
+              { label:'⚗️ Suivi de l’évolution d’un système, siège d’une transformation', ids:[1,2,25,10] },
+            ] : niv.key === 'BTS' ? [
               { label:'🔬 Analyse', ids:[3,29,9,11,12,13,16] },
               { label:'🧪 Formulation', ids:[4,14] },
             ] : niv.key === 'TSTL' ? [
@@ -608,15 +588,15 @@ export default function App() {
           <div style={{ height:"1px",
             background:"linear-gradient(to right, #e0e0e0, transparent)",
             marginBottom:"0.75rem" }}/>
-          <a href="mailto:nils.aronssohn@ac-grenoble.fr"
-            style={{ display:"flex", alignItems:"center", gap:"0.5rem",
-              fontSize:"0.85rem", color:"#888", textDecoration:"none",
+          <button onClick={() => naviguer(47)}
+            style={{ display:"flex", alignItems:"center", gap:"0.5rem", width:"100%", textAlign:"left", border:"none", background: activeId === 47 ? "#f1f5f9" : "transparent", cursor:"pointer",
+              fontSize:"0.85rem", color: activeId === 47 ? "#334155" : "#888",
               padding:"0.6rem 1rem", borderRadius:"12px", transition:"all 0.2s",
               fontWeight:"600", fontFamily:"'Nunito', sans-serif" }}
-            onMouseEnter={e=>{e.currentTarget.style.color="#e63946";e.currentTarget.style.background="#fff0f0"}}
-            onMouseLeave={e=>{e.currentTarget.style.color="#888";e.currentTarget.style.background="transparent"}}>
-            ✉️ Contact
-          </a>
+            onMouseEnter={e=>{e.currentTarget.style.color="#334155";e.currentTarget.style.background="#f1f5f9"}}
+            onMouseLeave={e=>{e.currentTarget.style.color=activeId === 47 ? "#334155" : "#888";e.currentTarget.style.background=activeId === 47 ? "#f1f5f9" : "transparent"}}>
+            ℹ️ À propos et contact
+          </button>
         </div>
         <div style={styles.sidebarFooter}/>
       </aside>
@@ -678,14 +658,16 @@ export default function App() {
                 {/* Le fichier App.css du modèle Vite centre tout le texte (#root) : on rétablit l'alignement
                     à gauche pour les simulations ; la page d'accueil garde sa mise en page centrée. */}
                 <BandeauContexte key={`b${activeId}`} id={activeId} contexte={CONTEXTES[activeId]} couleur={active.color} />
-                {(activeId > 0 && activeId < 34 || activeId >= 41) && <SuiviTemps simId={activeId} />}
+                {(activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47) && <SuiviTemps simId={activeId} />}
                 <ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} />
               </div>}
         </div>
         <div style={{ textAlign: "center", fontSize: "0.78rem", color: "#94a3b8",
           padding: "18px 12px 8px", borderTop: "1px solid #e2e8f0", marginTop: 24 }}>
-          © {new Date().getFullYear()} Nils Aronssohn — Lycée Argouges, Grenoble ·
+          © {new Date().getFullYear()} Paillasse virtuelle ·
           {" "}
+          <a href="?sim=47" onClick={e => { e.preventDefault(); naviguer(47); }} style={{ color: "inherit" }}>À propos et contact</a>
+          {" "}·{" "}
           <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr" target="_blank"
             rel="noopener noreferrer" style={{ color: "inherit" }}>
             CC BY-NC-ND 4.0
