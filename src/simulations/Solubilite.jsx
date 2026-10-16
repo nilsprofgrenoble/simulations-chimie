@@ -150,6 +150,7 @@ export function SimulationSolubilite() {
   const [sel, setSel] = useState({ solv: 'eau', sol: 'ethanol' });
   const [hypoOuv, setHypoOuv] = useState(false);
   const [limOuv, setLimOuv] = useState(false);
+  const [pt, setPt] = useState(null);                    // point de l'échelle de polarité pointé ou touché
   const [ouv, setOuv] = useState({ cartes: true });      // blocs dépliés au fur et à mesure
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi;
   const choisir = patch => setSel(s => ({ ...s, ...patch }));
@@ -372,14 +373,20 @@ export function SimulationSolubilite() {
         <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block' }} role="img" aria-label="Échelle de polarité">
           <defs><linearGradient id="gradPol" x1="0" x2="1"><stop offset="0" stopColor="#fde68a"/><stop offset="1" stopColor="#93c5fd"/></linearGradient></defs>
           <rect x={x(0)} y="44" width={x(1) - x(0)} height="12" rx="6" fill="url(#gradPol)"/>
-          {ids.map(k => <circle key={k} cx={x(partPolaire(k))} cy="50" r="3.5" fill="#334155" opacity="0.55"><title>{`${nomEsp(k)} : ${Math.round(partPolaire(k) * 100)} %`}</title></circle>)}
+          {ids.map(k => <g key={k} style={{ cursor: 'pointer' }} tabIndex={0} role="button" aria-label={`${nomEsp(k)} : ${Math.round(partPolaire(k) * 100)} % polaire`}
+            onMouseEnter={() => setPt(k)} onFocus={() => setPt(k)} onClick={() => setPt(k)}>
+            <circle cx={x(partPolaire(k))} cy="50" r="10" fill="transparent"/>
+            <circle cx={x(partPolaire(k))} cy="50" r={pt === k ? 7 : 4.5} fill={pt === k ? '#0f172a' : '#334155'} stroke="#fff" strokeWidth="1.5" opacity={pt === k ? 1 : 0.7}/></g>)}
           {ESPECES[solv].famille !== 'ion' && marque(solv, true, '#0284c7')}
           {ESPECES[sol].famille !== 'ion' && marque(sol, false, '#7c3aed')}
           {[0, 25, 50, 75, 100].map(v => <text key={v} x={x(v / 100)} y="104" textAnchor="middle" fontSize="11" fill="#64748b">{v} %</text>)}
           <text x={x(0)} y="120" fontSize="11.5" fontWeight="700" fill="#a16207">◀ lipophile (cohésion par dispersion)</text>
           <text x={x(1)} y="120" textAnchor="end" fontSize="11.5" fontWeight="700" fill="#1d4ed8">hydrophile (dipôles, liaisons H) ▶</text>
         </svg>
-        <div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.5 }}>Une molécule n’est pas « polaire » ou « apolaire » : on la place ici selon la part de sa cohésion due aux dipôles permanents et aux liaisons H. Chaque point est une espèce du catalogue (survolez-les). Deux espèces proches sur l’échelle ont des chances de se mélanger ; mais l’échelle ne suffit pas : le bilan tient aussi compte de la taille des molécules et des partenaires de liaison H.</div>
+        <div style={{ minHeight: 26, margin: '2px 0 6px', padding: '4px 8px', borderRadius: 6, background: pt ? '#f1f5f9' : 'transparent', fontSize: 13.5, color: KIT.txt }}>
+          {pt ? <><strong>{nomEsp(pt).replace(/ \(.*\)/, '')}</strong> : part polaire de la cohésion ≈ <strong>{Math.round(partPolaire(pt) * 100)} %</strong> (dipôles {Math.round(ESPECES[pt].dp ** 2 / (ESPECES[pt].dd ** 2 + ESPECES[pt].dp ** 2 + ESPECES[pt].dh ** 2) * 100)} % + liaisons H {Math.round(ESPECES[pt].dh ** 2 / (ESPECES[pt].dd ** 2 + ESPECES[pt].dp ** 2 + ESPECES[pt].dh ** 2) * 100)} %)</>
+            : <span style={{ color: KIT.txt2 }}>👆 Passez la souris sur un point gris (ou touchez-le) : le nom de l’espèce et sa part polaire s’affichent ici.</span>}</div>
+        <div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.5 }}>Une molécule n’est pas « polaire » ou « apolaire » : on la place ici selon la part de sa cohésion due aux dipôles permanents et aux liaisons H. Deux espèces proches sur l’échelle ont des chances de se mélanger ; mais l’échelle ne suffit pas : le bilan tient aussi compte de la taille des molécules et des partenaires de liaison H.</div>
       </div>);
   })();
 
