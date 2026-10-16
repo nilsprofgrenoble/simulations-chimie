@@ -192,7 +192,25 @@ export function perteCritique(a, b) { return RT * 0.5 * (1 / Math.sqrt(ESPECES[a
 // seuils (repères réglés sur une batterie de cas connus, cf. hypothèses)
 export const SEUIL_LIQ = [1.25, 2];       // rapport perte / perte critique
 export const SEUIL_SOL = [25, 70];        // kJ par mole de soluté (≈ 10 RT et 28 RT)
-export const SEUIL_ION = [3 * RT, 22];    // kJ/mol (attraction résiduelle Na⁺/Cl⁻ dans le solvant)
+// NaCl : seuils sur le solde (kJ/mol) correspondant à 20 g et 0,1 g de sel par kg de solvant : s ≈ 58,44 · exp(−solde / 2RT)
+export const SEUIL_ION = [2 * RT * Math.log(58.44 / 20), 2 * RT * Math.log(58.44 / 0.1)];   // ≈ 5,3 et 31,6
+
+// ---------- solide ionique NaCl : bilan en énergies de Gibbs (« enthalpies libres ») ----------
+// Pour les ions, l'organisation du solvant autour des ions (entropie) compte autant que l'énergie : avec les seules
+// enthalpies, le méthanol semblerait solvater mieux que l'eau, alors que le sel y est 25 fois moins soluble.
+// Valeurs de tables (NBS, arrondies) : ΔG réseau ≈ 718,6 kJ/mol ; ΣΔG hydratation (Na⁺ + Cl⁻) ≈ −727,6 kJ/mol ;
+// solde dans l'eau ≈ −9,0 kJ/mol, cohérent avec la solubilité mesurée (360 g/kg, γ± ≈ 1).
+// Partage entre ions selon les valeurs de Marcus (Na⁺ −365, Cl⁻ −340), ramenées à la somme ci-dessus.
+// Autres solvants : transfert depuis l'eau estimé par la formule de Born (rayons Na⁺ 1,02 Å, Cl⁻ 1,81 Å)
+// + pénalité si le solvant n'a pas de H lié à O ou N (Cl⁻ privé de liaisons H), réglée sur l'acétone.
+export const NACL = { reseau: 718.6, hydNa: 727.6 * 365 / 705, hydCl: 727.6 * 340 / 705, rNa: 1.02, rCl: 1.81, aprotique: 30, M: 58.44 };
+// solubilités mesurées à 25 °C, g de NaCl par kg de solvant (Wikipédia « Sodium chloride », d'après les tables usuelles)
+export const SOL_NACL = { eau: 360, glycerol: 83, methanol: 14, ethanol: 0.65, propanol: 0.124, butanol: 0.05, pentanol: 0.018, acetone: 0.00042 };
+export function solvatationIons(solv) {
+  const S = ESPECES[solv], d = 1 / S.eps - 1 / ESPECES.eau.eps, born = K_COULOMB / 2;
+  const protique = ANA[solv].don.length > 0;
+  return { na: NACL.hydNa - born / NACL.rNa * d, cl: NACL.hydCl - born / NACL.rCl * d - (protique ? 0 : NACL.aprotique), protique };
+}
 
 function classe(val, [s1, s2]) { return val < s1 ? 'ok' : val < s2 ? 'lim' : 'non'; }
 
@@ -200,8 +218,13 @@ function classe(val, [s1, s2]) { return val < s1 ? 'ok' : val < s2 ? 'lim' : 'no
 export function bilan(solv, sol) {
   const S = ESPECES[solv], E = ESPECES[sol];
   if (E.famille === 'ion') {
-    const vide = K_COULOMB / D_NACL, dans = vide / S.eps;
-    return { kind: 'ion', vide, dans, classe: classe(dans, SEUIL_ION), total: dans };
+    const sv = solvatationIons(solv), solde = NACL.reseau - sv.na - sv.cl;
+    const types = [
+      { k: 'res', court: 'cristal : ion–ion', col: '#b45309', ini: NACL.reseau, fin: 0 },
+      { k: 'na', court: 'Na⁺ entouré de solvant', col: '#d97706', ini: 0, fin: sv.na },
+      { k: 'cl', court: 'Cl⁻ entouré de solvant', col: '#15803d', ini: 0, fin: sv.cl },
+    ].map(t => ({ ...t, perte: t.ini - t.fin }));
+    return { kind: 'ion', types, total: solde, sv, classe: classe(solde, SEUIL_ION), sEstime: NACL.M * Math.exp(-solde / (2 * RT)), sMesure: SOL_NACL[solv] };
   }
   const liquide = E.famille === 'liq';
   const types = TYPES.map(t => {
@@ -236,5 +259,7 @@ export const BATTERIE = [
   ['eau', 'pentanol', 'lim'], ['eau', 'octanol', 'non'], ['ethanol', 'octanol', 'ok'], ['hexane', 'octanol', 'ok'], ['acetone', 'octanol', 'ok'],
   ['eau', 'soudan', 'non'], ['ethanol', 'soudan', 'lim'], ['huile', 'soudan', 'ok'], ['hexane', 'soudan', 'ok'], ['cyclohexane', 'soudan', 'ok'],
   ['eau', 'carmin', 'lim'], ['ethanol', 'carmin', 'ok'], ['huile', 'carmin', 'non'], ['hexane', 'carmin', 'non'],
-  ['eau', 'nacl', 'ok'], ['methanol', 'nacl', 'lim'], ['ethanol', 'nacl', 'lim'], ['acetone', 'nacl', 'non'], ['hexane', 'nacl', 'non'], ['toluene', 'nacl', 'non'], ['huile', 'nacl', 'non'],
+  // NaCl : classes tirées des solubilités mesurées (plus de 20 g/kg : 'ok' ; de 0,1 à 20 : 'lim' ; moins de 0,1 : 'non')
+  ['eau', 'nacl', 'ok'], ['glycerol', 'nacl', 'ok'], ['methanol', 'nacl', 'lim'], ['ethanol', 'nacl', 'lim'], ['propanol', 'nacl', 'lim'],
+  ['butanol', 'nacl', 'non'], ['pentanol', 'nacl', 'non'], ['acetone', 'nacl', 'non'], ['hexane', 'nacl', 'non'], ['toluene', 'nacl', 'non'], ['huile', 'nacl', 'non'],
 ];

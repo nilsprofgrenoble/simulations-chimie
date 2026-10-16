@@ -10,8 +10,8 @@
 import { ESPECES, ANA, complementaire } from './solubiliteModele';
 
 const TAU = 2 * Math.PI;
-const COUL_EL = { O: '#dc2626', N: '#2563eb', H: '#475569', Cl: '#16a34a', I: '#7c3aed', R: '#a16207', C: '#0f172a' };
-const COUL_INTER = { h: '#2563eb', p: '#ea580c', d: '#6b7280' };
+const COUL_EL = { O: '#dc2626', N: '#2563eb', H: '#475569', Cl: '#16a34a', I: '#7c3aed', R: '#a16207', C: '#0f172a', 'Na⁺': '#92400e', 'Cl⁻': '#14532d' };
+const COUL_INTER = { h: '#2563eb', p: '#ea580c', d: '#6b7280', i: '#b45309' };
 
 const nbDoublets = el => el === 'O' ? 2 : el === 'N' ? 1 : (el === 'Cl' || el === 'I') ? 3 : 0;
 
@@ -166,6 +166,7 @@ export function Scene({ mols, lignes = [], W, H, smax = 34, doublets = true, hal
     const rl = i => lab(M, i) ? (M.at[i].el.length > 1 ? fs * 0.75 : fs * 0.55) : 0;
     if (halos) M.at.forEach((p, i) => { if (!M.dev && p.el === 'H' && !estPolaireH(M, i)) return; const pol = estPolaireH(M, i);
       elems.push(<circle key={`h${m}-${i}`} cx={X(p.x)} cy={Y(p.y)} r={Math.max(6, s * 0.6)} fill={pol ? '#3b82f6' : '#facc15'} opacity={pol ? 0.22 : 0.28}/>); });
+    M.at.forEach((p, i) => { if (p.ion) elems.push(<circle key={`ion${m}-${i}`} cx={X(p.x)} cy={Y(p.y)} r={s * (p.el === 'Na⁺' ? 0.5 : 0.68)} fill={p.el === 'Na⁺' ? '#fde68a' : '#bbf7d0'} stroke={p.el === 'Na⁺' ? '#b45309' : '#15803d'} strokeWidth="1.5"/>); });
     M.hbi.forEach(([h, a2], k) => elems.push(<line key={`hi${m}-${k}`} x1={X(M.at[h].x)} y1={Y(M.at[h].y)} x2={X(M.at[a2].x)} y2={Y(M.at[a2].y)} stroke={COUL_INTER.h} strokeWidth="1.8" strokeDasharray="3 3"/>));
     M.bonds.forEach(([i, j, o]) => {
       const a = M.at[i], b = M.at[j], L = Math.hypot(b.x - a.x, b.y - a.y) * s || 1;
@@ -188,13 +189,15 @@ export function Scene({ mols, lignes = [], W, H, smax = 34, doublets = true, hal
   if (charges === 'toutes') mols.forEach((M, m) => ANA[M.id].q.forEach((q, i) => { if (q) elems.push(delta(m, i, q, `${m}-${i}`)); }));
   if (charges === 'inter') lignes.filter(l => l.t !== 'd').forEach((l, k) => {
     const p = mols[l.m1].at[l.i1], q = mols[l.m2].at[l.i2], ang = Math.atan2(q.y - p.y, q.x - p.x);
-    elems.push(delta(l.m1, l.i1, 1, `i${k}a`, [ang])); elems.push(delta(l.m2, l.i2, -1, `i${k}b`, [ang + Math.PI])); });
+    const s1 = l.s1 ?? 1, s2 = l.s2 ?? -1;
+    if (s1) elems.push(delta(l.m1, l.i1, s1, `i${k}a`, [ang])); if (s2) elems.push(delta(l.m2, l.i2, s2, `i${k}b`, [ang + Math.PI])); });
   // interactions
   lignes.forEach((l, k) => {
     const p = mols[l.m1].at[l.i1], q = mols[l.m2].at[l.i2];
     let x1 = X(p.x), y1 = Y(p.y), x2 = X(q.x), y2 = Y(q.y); const L = Math.hypot(x2 - x1, y2 - y1) || 1, ux = (x2 - x1) / L, uy = (y2 - y1) / L;
     const r = fs * 0.6; x1 += ux * r; y1 += uy * r; x2 -= ux * r * 1.5; y2 -= uy * r * 1.5;
-    if (l.t === 'd') elems.push(<polyline key={`i${k}`} points={chemin(x1, y1, x2, y2)} fill="none" stroke={COUL_INTER.d} strokeWidth="1.6"/>);
+    if (l.t === 'i') elems.push(<line key={`i${k}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke={COUL_INTER.i} strokeWidth="2.6" strokeDasharray="1 4" strokeLinecap="round"/>);
+    else if (l.t === 'd') elems.push(<polyline key={`i${k}`} points={chemin(x1, y1, x2, y2)} fill="none" stroke={COUL_INTER.d} strokeWidth="1.6"/>);
     else elems.push(<line key={`i${k}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke={COUL_INTER[l.t]} strokeWidth={l.t === 'h' ? 3 : 2.6} strokeDasharray={l.t === 'h' ? '5 3' : '2 4'} strokeLinecap="round"/>);
   });
   return <g>{elems}{legende}</g>;
@@ -221,5 +224,59 @@ export function PaireSVG({ a, b, titre, sous, W = 360, H = 140 }) {
       <g transform="translate(0,0)"><Scene mols={mols} lignes={lignes} W={W} H={H - 18} smax={40} charges="inter"/></g>
       <text x="6" y={H - 4} fontSize="12" fontWeight="700" fill="#0f172a">{titre}</text>
       <text x={W - 6} y={H - 4} textAnchor="end" fontSize="11" fill="#475569">{sous}</text>
+    </svg>);
+}
+
+// ---------- solide ionique : ions entourés de molécules de solvant ----------
+const ionMol = (el, x, y) => ({ id: null, at: [{ el, x, y, ion: true }], bonds: [], lp: [], vois: [[]], dev: true, hbi: [] });
+function centre(M) { const P = M.at.filter(a => a.el !== 'H'); const Q = P.length ? P : M.at; return [Q.reduce((s2, a) => s2 + a.x, 0) / Q.length, Q.reduce((s2, a) => s2 + a.y, 0) / Q.length]; }
+// place n molécules de solvant autour d'un ion situé en (0,0) ; signe = +1 (Na⁺) ou −1 (Cl⁻)
+function coquille(solv, signe, n = 4) {
+  const S = prep(solv), an = ANA[solv], ion = ionMol(signe > 0 ? 'Na⁺' : 'Cl⁻', 0, 0);
+  const mols = [ion], lignes = [], D = signe > 0 ? 1.55 : 1.85;
+  const dip = ESPECES[solv].dp >= 3 && an.plus >= 0 && an.moins >= 0;
+  for (let k = 0; k < n; k++) {
+    const th = Math.PI / 4 + k * 2 * Math.PI / n, ux = Math.cos(th), uy = Math.sin(th);
+    let M, contact = -1, type = 'd';
+    if (signe > 0 && an.acc.length) {                       // Na⁺ : un doublet non liant de O tourné vers l'ion
+      const a = an.acc[0], l = S.lp.find(q => q.i === a);
+      M = tr(S, { rot: th + Math.PI - l.a }); contact = a; type = 'i';
+    } else if (signe < 0 && an.don.length) {                // Cl⁻ : liaison H, O–H pointé vers l'ion
+      const h = an.don[0], x = S.vois[h][0], al = Math.atan2(S.at[h].y - S.at[x].y, S.at[h].x - S.at[x].x);
+      M = tr(S, { rot: th + Math.PI - al }); contact = h; type = 'h';
+    } else if (dip) {                                        // dipôle : extrémité de signe opposé tournée vers l'ion
+      const c = signe > 0 ? an.moins : an.plus, [cx, cy] = centre(S), al = Math.atan2(S.at[c].y - cy, S.at[c].x - cx);
+      M = tr(S, { rot: th + Math.PI - al }); contact = c; type = 'i';
+    } else {                                                 // apolaire : simple contact (dispersion)
+      M = axeHorizontal(S); M = tr(M, { rot: th + Math.PI / 2 });
+      let best = 0, bd = 1e9; M.at.forEach((p, i) => { const d = p.x * ux + p.y * uy; if (d < bd) { bd = d; best = i; } }); contact = best;
+    }
+    const c = M.at[contact]; M = deplace(M, D * ux - c.x, D * uy - c.y);
+    let g = 0; const loin = () => mols.slice(1).some(o => distMin(o, M) < 1.15) || M.at.some((p, i) => i !== contact && Math.hypot(p.x, p.y) < D);
+    while (loin() && g++ < 40) M = deplace(M, 0.1 * ux, 0.1 * uy);
+    mols.push(M);
+    lignes.push({ t: type, m1: mols.length - 1, i1: M.at.indexOf(M.at[contact]), m2: 0, i2: 0, s1: type === 'd' ? 0 : -signe, s2: 0 });
+  }
+  return { mols, lignes };
+}
+export function SolvateSVG({ solv, W = 360, H = 190 }) {
+  const a = coquille(solv, 1), b = coquille(solv, -1), w = W / 2;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label={`Ions Na⁺ et Cl⁻ entourés de ${ESPECES[solv].nom}`}>
+      <Scene mols={a.mols} lignes={a.lignes} W={w} H={H - 18} smax={24} charges="inter"/>
+      <g transform={`translate(${w},0)`}><Scene mols={b.mols} lignes={b.lignes} W={w} H={H - 18} smax={24} charges="inter"/></g>
+      <line x1={w} y1="8" x2={w} y2={H - 22} stroke="#e2e8f0"/>
+      <text x="6" y={H - 4} fontSize="12" fontWeight="700" fill="#0f172a">Na⁺ entouré de solvant</text>
+      <text x={W - 6} y={H - 4} textAnchor="end" fontSize="12" fontWeight="700" fill="#0f172a">Cl⁻ entouré de solvant</text>
+    </svg>);
+}
+export function CristalSVG({ W = 360, H = 150 }) {
+  const ions = [];
+  for (let i = 0; i < 6; i++) for (let j = 0; j < 3; j++) { const na = (i + j) % 2 === 0; ions.push(<g key={`${i}-${j}`}>
+    <circle cx={70 + i * 44} cy={22 + j * 40} r={na ? 13 : 18} fill={na ? '#fde68a' : '#bbf7d0'} stroke={na ? '#b45309' : '#15803d'} strokeWidth="1.5"/>
+    <text x={70 + i * 44} y={26 + j * 40} textAnchor="middle" fontSize="11" fontWeight="800" fill="#0f172a">{na ? 'Na⁺' : 'Cl⁻'}</text></g>); }
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label="Cristal de chlorure de sodium">
+      {ions}<text x="6" y={H - 4} fontSize="12" fontWeight="700" fill="#0f172a">cristal : chaque ion entouré d’ions de signe opposé</text>
     </svg>);
 }
