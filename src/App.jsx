@@ -39,6 +39,7 @@ import { SimulationDeuxCorps } from "./simulations/DeuxCorps";
 import { SimulationCondensateurMillikan } from "./simulations/CondensateurMillikan";
 import { SimulationElectrisation } from "./simulations/Electrisation";
 import { SimulationMouvementSysteme } from "./simulations/MouvementSysteme";
+import { SimulationSolubilite } from "./simulations/Solubilite";
 import { SimulationAPropos } from "./simulations/APropos";
 import { SimulationAtelierDonnees } from "./simulations/AtelierDonnees";
 import { SimulationAtelierGraphique } from "./simulations/AtelierGraphique";
@@ -116,6 +117,8 @@ const SIMULATIONS = [
     component: SimulationElectrisation },
   { id:52, label:"Mouvement d'un système : variation de vitesse et forces", niveau:"1G", icon:"🚀", color:"#3f6212",
     component: SimulationMouvementSysteme },
+  { id:53, label:"Solubilité et miscibilité : le bilan des interactions", niveau:"1G", icon:"🧪", color:"#2a9d8f",
+    component: SimulationSolubilite },
   { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"COMP", icon:"🎯", color:"#e11d48",
     component: SimulationAtelierDonnees },
   { id:35, label:"S'APP : lire un graphique", niveau:"COMP", icon:"📈", color:"#e11d48",
@@ -175,6 +178,9 @@ function PageAccueil({ onStart }) {
       { icon:"🌍", label:"Champ et force : gravitation et électrostatique", desc:"Le champ de gravitation de la Terre et le champ électrostatique d'une charge : vecteurs champ, lignes de champ, zoom de la Terre entière à la salle de classe (champ de pesanteur localement uniforme), F = m·𝒢 et F = q·E. Trois défis." },
       { icon:"🌙", label:"Deux corps en interaction : gravitation et Coulomb", desc:"Les deux forces F_A/B et F_B/A que s'exercent deux corps (Terre–Lune, deux élèves, deux boules chargées, atome d'hydrogène) : loi de Newton, loi de Coulomb, variation en 1/d², comparaison des deux interactions. Parcours guidé et 3 défis." },
       { icon:"⚡", label:"Condensateur plan et gouttelette de Millikan", desc:"Le champ uniforme entre deux plaques chargées (E = U/d), la force F = qE, l'équilibre d'une gouttelette d'huile et la quantification de la charge. Parcours guidé et 3 défis." },
+      ]},
+      { label:"🧪 Cohésion, solubilité et miscibilité", sims:[
+      { icon:"🧪", label:"Solubilité et miscibilité : le bilan des interactions", desc:"Choisir un solvant et un soluté (liquides, solides moléculaires, sel) : formules développées, interactions possibles (liaison H, dipôles, dispersion, ion–ion écrantée) dans l'état initial et dans l'état final, bilan énergétique type par type et verdict. Extraction liquide-liquide. Parcours guidé et 3 défis." },
       ]},
       { label:"🚀 Mouvement d'un système", sims:[
       { icon:"🚀", label:"Mouvement d'un système : variation de vitesse et forces", desc:"Chronophotographies (chute, lancers, mobile, plan incliné, parachutiste, Lune) : construction du vecteur variation de vitesse Δv, relation ΣF ≈ m·Δv/Δt, rôle de la masse, principe d'inertie, puis prédiction du mouvement par la méthode d'Euler. Parcours guidé et 3 défis." },
@@ -507,6 +513,7 @@ export default function App() {
             const sousgroupes = niv.key === '1G' ? [
               { label:'⚗️ Suivi de l’évolution d’un système, siège d’une transformation', ids:[1,2,25,10] },
               { label:'🌍 Interactions fondamentales et notion de champ', ids:[51, 48, 49, 50] },
+              { label:'🧪 Cohésion, solubilité et miscibilité', ids:[53] },
               { label:'🚀 Mouvement d\'un système', ids:[52] },
             ] : niv.key === 'BTS' ? [
               { label:'🔬 Analyse', ids:[3,29,9,11,12,13,16] },
