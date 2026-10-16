@@ -41,6 +41,7 @@ import { SimulationDeuxCorps } from "./simulations/DeuxCorps";
 import { SimulationCondensateurMillikan } from "./simulations/CondensateurMillikan";
 import { SimulationElectrisation } from "./simulations/Electrisation";
 import { SimulationMouvementSysteme } from "./simulations/MouvementSysteme";
+import { SimulationMouvementReferentiel } from "./simulations/MouvementReferentiel";
 import { SimulationSolubilite } from "./simulations/Solubilite";
 import { SimulationAPropos } from "./simulations/APropos";
 import { SimulationAtelierDonnees } from "./simulations/AtelierDonnees";
@@ -121,6 +122,8 @@ const SIMULATIONS = [
     component: SimulationElectrisation },
   { id:52, label:"Mouvement d'un système : variation de vitesse et forces", niveau:"1G", icon:"🚀", color:"#3f6212",
     component: SimulationMouvementSysteme },
+  { id:56, label:"Référentiel et mouvement : décrire un mouvement", niveau:"2GT", icon:"🚃", color:"#4338ca",
+    component: SimulationMouvementReferentiel },
   { id:53, label:"Solubilité et miscibilité : le bilan des interactions", niveau:"1G", icon:"🧪", color:"#2a9d8f",
     component: SimulationSolubilite },
   { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"COMP", icon:"🎯", color:"#e11d48",
@@ -143,6 +146,7 @@ SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; });
 
 const NIVEAUX = [
   { label: "je m'entraîne ! Travail par compétence.", key: "COMP", color: "#e11d48" },
+  { label: "2GT",  key: "2GT",  color: "#4f46e5" },
   { label: "1G",   key: "1G",   color: "#2a9d8f" },
   { label: "TSTL", key: "TSTL", color: "#2a6099" },
   { label: "BTS",  key: "BTS",  color: "#6a4c93" },
@@ -169,6 +173,9 @@ function PageAccueil({ onStart }) {
       { icon:"📈", label:"S'APP : lire un graphique", desc:"S'approprier : identifier grandeurs, unités et échelles des axes, lire une valeur (directe, inverse, à l'origine, avec une autre unité), interpréter l'allure. 8 graphiques rangés par thème." },
       { icon:"🧭", label:"ANA : analyser un problème", desc:"Analyser : construire la démarche d'un problème posé sans questions intermédiaires (ce que l'on cherche, données utiles, relations, hypothèses, ordre des calculs), choisir la bonne relation, reconnaître les hypothèses d'un modèle, prévoir sans calculer. 9 problèmes et 35 exercices courts, rangés par thème." },
       { icon:"🧮", label:"REA : réaliser un calcul", desc:"Réaliser : changements d'unité (simples, préfixes, unités au carré ou au cube, unités composées), conversions cachées dans un calcul, isoler une grandeur, chiffres significatifs, log / exp / racine, saisie à la calculatrice. 9 types d'exercices tirés au hasard." },
+    ]},
+    { niveau:"2GT", color:"#4f46e5", sims:[
+      { icon:"🚃", label:"Référentiel et mouvement : décrire un mouvement", desc:"Chronophotographies vues depuis deux référentiels : trajectoire, vecteur vitesse M M′/Δt, choix de l’intervalle Δt, variation de vitesse et forces, modèle du point. Parcours guidé avec exemples résolus, exploration libre, défis." },
     ]},
     { niveau:"1G", color:"#2a9d8f", sousMenus:[
       { label:"⚗️ Suivi de l’évolution d’un système, siège d’une transformation", sims:[
@@ -256,7 +263,7 @@ function PageAccueil({ onStart }) {
           Manipuler, se tromper, recommencer : la paillasse du labo, sans la verrerie.
         </p>
         <p style={{fontSize:13.5, color:"#666", lineHeight:1.6, maxWidth:600, margin:"0 auto 20px"}}>
-          Des simulations de chimie et de physique pour la Première spé PC, la Terminale STL et le BTS Métiers de la chimie : parcours guidés, exploration libre, défis et exercices par compétence. Site en accès libre.
+          Des simulations de chimie et de physique pour la Seconde, la Première spé PC, la Terminale STL et le BTS Métiers de la chimie : parcours guidés, exploration libre, défis et exercices par compétence. Site en accès libre.
         </p>
         <button onClick={()=>onStart(1)} style={{
           padding:"10px 28px", borderRadius:8, border:"none",
@@ -375,7 +382,7 @@ export default function App() {
   useEffect(() => { restaurer(); }, []);
   const active = SIMULATIONS.find(s => s.id === activeId) || SIMULATIONS[0];
   const ActiveComponent = active.component;
-  const [expanded, setExpanded] = useState({ "1G": true, "TSTL": true, "BTS": true, "COMP": true });
+  const [expanded, setExpanded] = useState({ "2GT": true, "1G": true, "TSTL": true, "BTS": true, "COMP": true });
   // Sous-groupes du menu BTS (Analyse, Formulation) et TSTL : un seul état pour tous,
   // déclaré ici car React interdit un useState dans une boucle ou une condition.
   const [sgOuverts, setSgOuverts] = useState({});
@@ -424,7 +431,7 @@ export default function App() {
       if (!m) { m = document.createElement('meta'); m.setAttribute('name', nom); document.head.appendChild(m); }
       m.setAttribute('content', valeur);
     };
-    const niv = s && { '1G': 'Première', TSTL: 'Terminale STL', BTS: 'BTS Métiers de la chimie' }[s.niveau];
+    const niv = s && { '2GT': 'Seconde', '1G': 'Première', TSTL: 'Terminale STL', BTS: 'BTS Métiers de la chimie' }[s.niveau];
     meta('description', s && activeId > 0
       ? `${s.label} : simulation interactive${niv ? ` (${niv})` : ''}, avec parcours guidé, exploration libre et défi.`
       : 'Simulations interactives de chimie et de physique pour la Première, la Terminale STL et le BTS Métiers de la chimie : parcours guidés, exploration libre, défis et exercices par compétence.');
