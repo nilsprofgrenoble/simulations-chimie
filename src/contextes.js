@@ -52,4 +52,15 @@ export const CONTEXTES = {
     ],
     niveau: "BTS Métiers de la chimie",
   },
+  54: {
+    but: "Simuler une analyse par chromatographie en phase gazeuse (CPG) de solvants courants : colonne capillaire apolaire ou polaire, four isotherme ou programmé, gaz vecteur à débit constant, injecteur split / splitless, détecteur FID. Les temps de rétention sont calculés à partir d'indices de Kováts publiés.",
+    apprendre: "Le rôle de chaque élément de l'appareil ; l'ordre d'élution sur colonne apolaire et polaire ; l'identification par le temps de rétention ; le choix de la colonne et du programme de température ; l'effet du débit et du rapport de division ; le diagnostic des pannes courantes (septum, liner, flamme du FID, ressuage).",
+    etapes: [
+      "Choisissez les composés de l'échantillon, puis cliquez sur « Injecter ».",
+      "Changez de colonne (apolaire ou polaire) et comparez l'ordre de sortie.",
+      "Passez de l'isotherme à la programmation du four, réglez débit et injecteur.",
+      "Simulez un défaut, ou lancez le parcours guidé et les défis.",
+    ],
+    niveau: "BTS Métiers de la chimie",
+  },
 };
