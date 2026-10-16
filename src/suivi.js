@@ -9,6 +9,7 @@
 // ════════════════════════════════════════════════════════════════════════════
 import { useEffect, useRef, useCallback, useSyncExternalStore } from 'react';
 import { noterReussite } from './commun';
+import { annoncerReussite, etoilesReussite } from './carnet';
 import { getSession, estEleve, rest, restaurer } from './serveur';
 
 const INACTIVITE_MS = 60_000;     // au-delà, le temps n'est plus compté
@@ -96,7 +97,7 @@ export function useSuivi(cle, reussi) {
     if (!reussi) return;
     noterReussite(cle);
     const s = e.current;
-    if (s.cle === cle && !s.reussi) { s.reussi = true; marquer(); }
+    if (s.cle === cle && !s.reussi) { s.reussi = true; annoncerReussite({ cle, etoiles: etoilesReussite(s.essais, s.vues) }); marquer(); }
   }, [reussi, cle, marquer]);
 
   return {

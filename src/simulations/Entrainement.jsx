@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
-import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, lireProgression } from "../commun";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, lireProgression, Etoiles } from "../commun";
+import { etoilesSeance } from "../carnet";
 import { ENONCES } from "./AtelierDonneesBanque";
 import { SCENARIOS } from "./AtelierGraphiqueBanque";
 import { FAMILLES as FAM_REA } from "./AtelierRealiserBanque";
@@ -47,10 +48,16 @@ export function SimulationEntrainement({ naviguer }) {
   const sess = useSession();
   const eleve = estEleve(sess), identifiantUtilisateur = sess?.user?.id;
   const [serveur, setServeur] = useState({});
+  const [etoilesSrv, setEtoilesSrv] = useState({});
   useEffect(() => {          // un élève connecté retrouve ses réussites, d'où qu'il les ait faites
     let actif = true;
-    if (!eleve) { setServeur({}); return undefined; }
-    toutLire('activites?select=cle&reussi=eq.true').then(l => { if (actif) setServeur(Object.fromEntries(l.map(x => [x.cle, true]))); }).catch(() => {});
+    if (!eleve) { setServeur({}); setEtoilesSrv({}); return undefined; }
+    toutLire('activites?select=cle,reussi,essais,corrections_vues').then(l => {
+      if (!actif) return;
+      const ok = {}, et = {};
+      l.forEach(x => { const e = etoilesSeance(x); if (e > (et[x.cle] || 0)) et[x.cle] = e; if (x.reussi) ok[x.cle] = true; });
+      setServeur(ok); setEtoilesSrv(et);
+    }).catch(() => {});
     return () => { actif = false; };
   }, [eleve, identifiantUtilisateur]);
   const prog = { ...progLocale, ...serveur };
@@ -122,7 +129,7 @@ export function SimulationEntrainement({ naviguer }) {
           return (
             <button key={e.cle} data-cle={e.cle} onClick={() => ouvrir(e)}
               style={{ display: 'flex', gap: 10, alignItems: 'center', textAlign: 'left', padding: '7px 10px', border: `1px solid ${KIT.bord}`, borderRadius: 8, background: prog[e.cle] ? '#f0fdf4' : 'white', cursor: 'pointer', fontSize: 13.5, color: KIT.txt }}>
-              <span style={{ minWidth: 20 }}>{prog[e.cle] ? '✅' : '⬜'}</span>
+              <span style={{ width: 46, flex: 'none' }}>{etoilesSrv[e.cle] ? <Etoiles n={etoilesSrv[e.cle]} /> : prog[e.cle] ? '✅' : '⬜'}</span>
               <span style={{ fontWeight: 800, color: c.couleur, minWidth: 48 }}>{e.comp}</span>
               <span style={{ flex: 1 }}>{e.titre}</span>
               {theme === 'tous' && <span style={{ fontSize: 11.5, color: KIT.txt2 }}>{e.domaine}</span>}

@@ -50,6 +50,7 @@ import { SimulationAtelierRealiser } from "./simulations/AtelierRealiser";
 import { SimulationAtelierAnalyser } from "./simulations/AtelierAnalyser";
 import { SimulationEntrainement } from "./simulations/Entrainement";
 import { SimulationCompte } from "./simulations/Compte";
+import { ToastRecompense } from "./ToastRecompense";
 import { SimulationSuiviProf } from "./simulations/SuiviProf";
 import { useSession, restaurer } from "./serveur";
 import { SuiviTemps, nomsSim } from "./suivi";
@@ -706,6 +707,7 @@ export default function App() {
                 <ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} />
               </div>}
         </div>
+        <ToastRecompense naviguer={naviguer} />
         <div style={{ textAlign: "center", fontSize: "0.78rem", color: "#94a3b8",
           padding: "18px 12px 8px", borderTop: "1px solid #e2e8f0", marginTop: 24 }}>
           © {new Date().getFullYear()} Paillasse virtuelle ·
