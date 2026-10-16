@@ -2,8 +2,8 @@ import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
 import { useState } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, lireProgression } from "../commun";
-import { ESPECES, ANA, ORDRE_LIQ, ORDRE_SOL, TYPES, bilan, partPolaire, BATTERIE, RT, K_COULOMB, D_NACL, SEUIL_LIQ, SEUIL_SOL, SEUIL_ION } from "./solubiliteModele";
-import { FormuleSVG, PaireSVG } from "./solubiliteDessin";
+import { ESPECES, ANA, ORDRE_LIQ, ORDRE_SOL, TYPES, bilan, partPolaire, BATTERIE, RT, NACL, SEUIL_LIQ, SEUIL_SOL, SEUIL_ION } from "./solubiliteModele";
+import { FormuleSVG, PaireSVG, SolvateSVG, CristalSVG } from "./solubiliteDessin";
 
 const COUL_INTER = { h: '#2563eb', p: '#ea580c', d: '#6b7280' };
 
@@ -34,67 +34,60 @@ const roles = liq => liq ? { A: 'A', B: 'B', nA: 'liquide A', nB: 'liquide B' } 
 
 // ---------- bilan en balance : état initial à gauche (à rompre), état final à droite (retrouvé) ----------
 const arr = v => vir(Number(Math.abs(v).toPrecision(2)));           // 2 chiffres significatifs : on ne prétend pas à plus
-function Barres({ b, masque }) {
-  const liq = b.kind === 'liq', u = liq ? 'kJ/L' : 'kJ/mol';
+const pasJoli = (maxV, n = 4) => { const mag = 10 ** Math.floor(Math.log10(maxV / n)); return [1, 2, 5, 10].map(c => c * mag).find(s => maxV / s <= n + 1); };
+// lignes : [{ court, col, ini, fin }] ; zones : [z1, z2] sur le solde (vert sous z1, orange jusqu'à z2, rouge au-delà)
+function Barres({ lignes, u, uLong, zones, legZones, masque }) {
   const [tip, setTip] = useState(null);
-  const W = 640, x0 = 320, Wh = 262, y0 = 44, hT = 56, yTot = y0 + 3 * hT + 6, hTot = 82, yAx = yTot + hTot + 2, H = yAx + 40;
-  const totIni = b.types.reduce((s, t) => s + t.ini, 0), totFin = b.types.reduce((s, t) => s + t.fin, 0), solde = b.total;
-  const maxV = Math.max(1, totIni, totFin);
-  const mag = 10 ** Math.floor(Math.log10(maxV / 4)), pas = [1, 2, 5, 10].map(c => c * mag).find(s => maxV / s <= 5), M = Math.ceil(maxV / pas) * pas;
+  const n = lignes.length, W = 640, x0 = 320, Wh = 262, y0 = 44, hT = 56, yTot = y0 + n * hT + 6, hTot = 58, yAx = yTot + hTot;
+  const yZ = yAx + 50, H = yZ + 70;
+  const totIni = lignes.reduce((s, t) => s + t.ini, 0), totFin = lignes.reduce((s, t) => s + t.fin, 0), solde = totIni - totFin;
+  const pas = pasJoli(Math.max(1, totIni, totFin)), M = Math.ceil(Math.max(1, totIni, totFin) / pas) * pas;
   const L = v => Math.max(0, v) / M * Wh;
   const ticks = []; for (let v = 0; v <= M + 1e-9; v += pas) ticks.push(v);
-  const [z1, z2] = liq ? [SEUIL_LIQ[0] * b.crit, SEUIL_LIQ[1] * b.crit] : SEUIL_SOL;
+  const [z1, z2] = zones;
+  const pasZ = pasJoli(Math.max(z2 * 1.5, Math.abs(solde) * 1.15), 3), MZ = Math.ceil(Math.max(z2 * 1.5, Math.abs(solde) * 1.15) / pasZ) * pasZ;
+  const LZ = v => Math.min(Math.abs(v), MZ) / MZ * Wh;
+  const ticksZ = []; for (let v = 0; v <= MZ + 1e-9; v += pasZ) ticksZ.push(v);
   const prop = txt => ({ tabIndex: 0, style: { cursor: 'pointer', outline: 'none' }, onMouseEnter: () => setTip(txt), onFocus: () => setTip(txt), onClick: () => setTip(txt) });
-  const ligne = (y, nom, col, ini, fin, perte, h, tH) => <g key={nom}>
+  const pointille = (val, x, y, h, Lf) => { const perte = val > 0; return <rect x={perte ? x0 - Lf(val) : x0} y={y} width={Lf(val)} height={h} fill={perte ? '#fee2e2' : '#dcfce7'} fillOpacity="0.6" stroke={perte ? '#dc2626' : '#16a34a'} strokeWidth="1.6" strokeDasharray="4 3"/>; };
+  const ligne = (y, nom, col, ini, fin, h, tH, total) => { const p = ini - fin; return <g key={nom}>
     <text x="8" y={y + 11} fontSize="12.5" fontWeight="700" fill={col}>{nom}</text>
-    <g {...prop(`${nom} — état initial (A…A et B…B) : ≈ ${arr(ini)} ${u}`)}><rect x={x0 - L(ini)} y={y + 16} width={L(ini)} height={h} rx="3" fill="#94a3b8"/></g>
-    <g {...prop(`${nom} — état final (A…B) : ≈ ${arr(fin)} ${u}`)}><rect x={x0} y={y + 16} width={L(fin)} height={h} rx="3" fill={col}/></g>
-    {perte > 0.005 * M && <g {...prop(`${nom} — solde, ce que l’on perd : ≈ ${arr(perte)} ${u}`)}><rect x={x0 - L(perte)} y={y + 18 + h} width={L(perte)} height={tH} fill="#fee2e2" fillOpacity="0.6" stroke="#dc2626" strokeWidth="1.6" strokeDasharray="4 3"/></g>}
-  </g>;
+    {ini > 0 && <g {...prop(`${nom} — état initial : ≈ ${arr(ini)} ${u}`)}><rect x={x0 - L(ini)} y={y + 16} width={L(ini)} height={h} rx="3" fill="#94a3b8"/></g>}
+    {fin > 0 && <g {...prop(`${nom} — état final : ≈ ${arr(fin)} ${u}`)}><rect x={x0} y={y + 16} width={L(fin)} height={h} rx="3" fill={col}/></g>}
+    {(total || (ini > 0 && fin > 0)) && Math.abs(p) > 0.005 * M && <g {...prop(`${nom} — solde : on ${p > 0 ? 'perd' : 'gagne'} ≈ ${arr(p)} ${u}`)}>{pointille(p, x0, y + 18 + h, tH, L)}</g>}
+  </g>; };
   return (
     <div>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label="Bilan des interactions : état initial à gauche, état final à droite, solde en pointillés">
-        <text x={x0 - 8} y="16" textAnchor="end" fontSize="12.5" fontWeight="700" fill="#475569">◀ état initial : à rompre (A…A, B…B)</text>
-        <text x={x0 + 8} y="16" fontSize="12.5" fontWeight="700" fill="#475569">état final : retrouvé (A…B) ▶</text>
-        <text x={x0} y="32" textAnchor="middle" fontSize="11.5" fill="#64748b">énergies en {liq ? 'kJ pour 1 L de mélange (0,5 L de A + 0,5 L de B)' : 'kJ par mole de soluté B dissous'}</text>
-        {/* zones : ce que l'agitation thermique peut compenser (masquées pendant la prédiction) */}
-        {!masque && <g>
-          <rect x={x0 - Wh} y={yTot + 6} width={Math.max(0, Wh - L(z2))} height={hTot - 14} fill="#fecaca" fillOpacity="0.55"/>
-          <rect x={x0 - Math.min(Wh, L(z2))} y={yTot + 6} width={Math.min(Wh, L(z2)) - Math.min(Wh, L(z1))} height={hTot - 14} fill="#fde68a" fillOpacity="0.6"/>
-          <rect x={x0 - Math.min(Wh, L(z1))} y={yTot + 6} width={Math.min(Wh, L(z1))} height={hTot - 14} fill="#bbf7d0" fillOpacity="0.7"/></g>}
+        <text x={x0 - 8} y="16" textAnchor="end" fontSize="12.5" fontWeight="700" fill="#475569">◀ état initial : à rompre</text>
+        <text x={x0 + 8} y="16" fontSize="12.5" fontWeight="700" fill="#475569">état final : retrouvé ▶</text>
+        <text x={x0} y="32" textAnchor="middle" fontSize="11.5" fill="#64748b">{uLong}</text>
         <line x1={x0} y1={y0 - 4} x2={x0} y2={yAx} stroke="#334155" strokeWidth="1.5"/>
-        {b.types.map((t, i) => ligne(y0 + i * hT, t.court, t.col, t.ini, t.fin, t.perte, 16, 8))}
-        {ligne(yTot, 'Total', '#0f172a', totIni, totFin, solde, 20, 12)}
+        {lignes.map((t, i) => ligne(y0 + i * hT, t.court, t.col, t.ini, t.fin, 16, 8, false))}
+        {ligne(yTot, 'Total', '#0f172a', totIni, totFin, 20, 12, true)}
         <line x1={x0 - Wh} y1={yAx} x2={x0 + Wh} y2={yAx} stroke="#94a3b8"/>
         {ticks.flatMap(v => (v === 0 ? [0] : [-1, 1]).map(sg => <g key={`${v}${sg}`}><line x1={x0 + sg * L(v)} y1={yAx} x2={x0 + sg * L(v)} y2={yAx + 5} stroke="#94a3b8"/>
           <text x={x0 + sg * L(v)} y={yAx + 18} textAnchor="middle" fontSize="11" fill="#64748b">{vir(v)}</text></g>))}
-        <text x={x0} y={yAx + 34} textAnchor="middle" fontSize="11" fill="#64748b">{u}</text>
+        <text x={x0} y={yAx + 32} textAnchor="middle" fontSize="11" fill="#64748b">{u}</text>
+        {/* zoom sur le solde, avec les zones */}
+        <text x="8" y={yZ - 4} fontSize="12.5" fontWeight="700" fill="#0f172a">Solde, vu de plus près</text>
+        {!masque && <g>
+          <rect x={x0 - Wh} y={yZ + 2} width={Math.max(0, Wh - LZ(z2))} height="26" fill="#fecaca" fillOpacity="0.6"/>
+          <rect x={x0 - LZ(z2)} y={yZ + 2} width={LZ(z2) - LZ(z1)} height="26" fill="#fde68a" fillOpacity="0.7"/>
+          <rect x={x0 - LZ(z1)} y={yZ + 2} width={LZ(z1) + Wh} height="26" fill="#bbf7d0" fillOpacity="0.7"/></g>}
+        <line x1={x0} y1={yZ} x2={x0} y2={yZ + 30} stroke="#334155" strokeWidth="1.5"/>
+        <g {...prop(`Solde total : on ${solde > 0 ? 'perd' : 'gagne'} ≈ ${arr(solde)} ${u}`)}>{pointille(solde, x0, yZ + 8, 14, LZ)}</g>
+        <line x1={x0 - Wh} y1={yZ + 30} x2={x0 + Wh} y2={yZ + 30} stroke="#94a3b8"/>
+        {ticksZ.flatMap(v => (v === 0 ? [0] : [-1, 1]).map(sg => <g key={`z${v}${sg}`}><line x1={x0 + sg * LZ(v)} y1={yZ + 30} x2={x0 + sg * LZ(v)} y2={yZ + 35} stroke="#94a3b8"/>
+          <text x={x0 + sg * LZ(v)} y={yZ + 48} textAnchor="middle" fontSize="11" fill="#64748b">{vir(v)}</text></g>))}
+        <text x={x0 - 8} y={yZ + 64} textAnchor="end" fontSize="11" fill="#b91c1c">◀ on perd de la stabilité</text>
+        <text x={x0 + 8} y={yZ + 64} fontSize="11" fill="#15803d">on en gagne ▶</text>
       </svg>
-      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}><span style={{ color: '#dc2626', fontWeight: 700 }}>▭ Pointillés rouges</span> : le solde (initial − final), c’est ce que l’on perd. La balance penche <strong>à gauche</strong> quand le mélange fait perdre de la stabilité.</div>
+      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>Pointillés : le <strong>solde</strong> (initial − final), <span style={{ color: '#dc2626', fontWeight: 700 }}>rouge à gauche</span> quand le mélange fait perdre de la stabilité, <span style={{ color: '#16a34a', fontWeight: 700 }}>vert à droite</span> quand il en fait gagner.</div>
       <div style={{ minHeight: 26, margin: '4px 0 2px', padding: '4px 8px', borderRadius: 6, background: tip ? '#f1f5f9' : 'transparent', fontSize: 13.5, color: KIT.txt }}>
         {tip || <span style={{ color: KIT.txt2 }}>👆 Passez la souris sur une barre (ou touchez-la) pour lire sa valeur, arrondie.</span>}</div>
-      {!masque && <div style={{ fontSize: 12.5, color: KIT.txt2 }}>Zone sous le total : <span style={{ background: '#bbf7d0', padding: '0 4px', borderRadius: 3 }}>verte</span> l’agitation thermique compense la perte (mélange possible) · <span style={{ background: '#fde68a', padding: '0 4px', borderRadius: 3 }}>orange</span> cas limite · <span style={{ background: '#fecaca', padding: '0 4px', borderRadius: 3 }}>rouge</span> perte trop grande.</div>}
+      {!masque && <div style={{ fontSize: 12.5, color: KIT.txt2 }}>Zones du solde : {legZones}</div>}
     </div>);
-}
-
-// ---------- ions : attraction Na⁺ / Cl⁻ écrantée ----------
-function SceneIon({ solv, b }) {
-  const S = ESPECES[solv], W = 640, H = 230;
-  const echelle = v => 60 + Math.log10(Math.max(v, 1)) / Math.log10(600) * 400;
-  const lignes = [['dans le vide (cristal)', b.vide, '#64748b'], [`dans ${S.nom} (ε = ${vir(S.eps)})`, b.dans, COUL[b.classe]]];
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label="Attraction Na+ Cl- dans le solvant">
-      <circle cx="70" cy="46" r="17" fill="#fde68a" stroke="#b45309" strokeWidth="1.5"/><text x="70" y="51" textAnchor="middle" fontSize="13" fontWeight="800">Na⁺</text>
-      <circle cx="120" cy="46" r="22" fill="#bbf7d0" stroke="#15803d" strokeWidth="1.5"/><text x="120" y="51" textAnchor="middle" fontSize="13" fontWeight="800">Cl⁻</text>
-      <text x="160" y="42" fontSize="12.5" fill="#0f172a">au contact (d = {vir(D_NACL.toFixed(2))} Å) : F = k·e² / (ε·d²), énergie = {nb(K_COULOMB / D_NACL)} kJ/mol / ε</text>
-      <text x="160" y="60" fontSize="12" fill="#475569">Le solvant « fait écran » : l’attraction est divisée par ε.</text>
-      {lignes.map(([n, v, c], i) => <g key={i}>
-        <text x="10" y={108 + i * 46} fontSize="12.5" fontWeight="700" fill="#0f172a">{n}</text>
-        <rect x="60" y={114 + i * 46} width={Math.max(2, echelle(v) - 60)} height="20" rx="3" fill={c}/>
-        <text x={echelle(v) + 8} y={129 + i * 46} fontSize="13" fontWeight="800" fill="#0f172a">{nb(v)} kJ/mol</text></g>)}
-      {[[3 * RT, '3RT'], [SEUIL_ION[1], '']].map(([v, l], i) => <g key={i}><line x1={echelle(v)} y1="100" x2={echelle(v)} y2="205" stroke="#0f172a" strokeDasharray="3 3"/><text x={echelle(v) + 3} y={i ? 202 : 214} fontSize="11" fill="#475569">{l ? `${l} ≈ ${nb(v)} : agitation thermique` : `${nb(v)} : au-delà, insoluble`}</text></g>)}
-      <text x="10" y="225" fontSize="10.5" fill="#64748b">échelle logarithmique</text>
-    </svg>);
 }
 
 // ---------- défis ----------
@@ -166,7 +159,7 @@ function VoletDefi({ defi, setDefi, changerType }) {
 export function SimulationSolubilite() {
   const [mode, setMode] = useState('explore');
   useSignalerMode(mode);
-  const [guide, setGuide] = useEtatPersistant('solubilite-guide-v3', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const [guide, setGuide] = useEtatPersistant('solubilite-guide-v4', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [sel, setSel] = useState({ solv: 'eau', sol: 'ethanol' });
   const [hypoOuv, setHypoOuv] = useState(false);
@@ -262,19 +255,25 @@ export function SimulationSolubilite() {
       texte: <>Le modèle répond « peu soluble » dans l’eau. Essayez aussi l’éthanol et l’huile.</>,
       tache: { type: 'qcm', q: 'Que retenir pour l’acide carminique ?', options: ['ses nombreux OH le rendent soluble dans l’éthanol et assez soluble dans l’eau pour la colorer intensément, mais il est insoluble dans l’huile', 'il est soluble dans l’huile car il est aromatique', 'il est insoluble partout'], bonne: 0,
         expl: 'Sa partie aromatique (lipophile) et sa partie sucre + OH (hydrophile) se font concurrence : environ 60 % de sa cohésion est polaire. Sa solubilité dans l’eau est de l’ordre du gramme par litre (valeur de la littérature, à confirmer) : c’est « peu soluble » au sens du chimiste, mais largement assez pour une couleur rouge intense. L’éthanol, intermédiaire, lui convient très bien. Dans l’huile, ses OH ne trouvent pas de partenaires : insoluble.' } },
-    { id: 'nacl', titre: 'Le sel : NaCl dans l’eau', focus: ['choix', 'bilan'],
-      texte: <>Pour un solide ionique, c’est l’interaction ion–ion qui assure la cohésion : <strong>492 kJ/mol</strong> pour une paire Na⁺/Cl⁻ au contact (282 pm). Mais dans un solvant, cette attraction est divisée par la permittivité ε du solvant (« écran »). Choisissez l’<strong>eau</strong> et le <strong>chlorure de sodium</strong>.</>,
+    { id: 'nacl', titre: 'Le sel : NaCl dans l’eau', focus: ['choix', 'paires'],
+      texte: <>Dans un cristal de sel, chaque ion Na⁺ est entouré d’ions Cl⁻ et inversement : l’interaction ion–ion est très forte. Pour dissoudre le sel, il faut défaire le cristal (état initial) ; en échange, chaque ion s’entoure de molécules de solvant (état final). Choisissez l’<strong>eau</strong> et le <strong>chlorure de sodium</strong>, puis regardez le bloc 3.</>,
       tache: { type: 'action', ok: est('eau', 'nacl'), label: 'NaCl dans l’eau', faire: () => setSel({ solv: 'eau', sol: 'nacl' }), consigne: 'Solvant A : eau ; soluté B : chlorure de sodium' } },
-    { id: 'nacln', titre: 'Écran de l’eau', focus: ['bilan'],
-      texte: <>L’eau a une permittivité relative ε = 78,4.</>,
-      tache: { type: 'num', q: 'Attraction Na⁺/Cl⁻ au contact dans l’eau (kJ/mol)', unite: 'kJ/mol', vrai: bw('eau', 'nacl').dans, tol: 0.03, affiche: v => nb(v), cs: 2,
-        bloque: est('eau', 'nacl') ? null : 'Faites d’abord l’étape précédente.',
-        expl: 'On trouve 6,3 kJ/mol, de l’ordre de 2,5 RT (RT = 2,5 kJ/mol à 25 °C) : l’agitation thermique suffit à séparer les ions.' } },
+    { id: 'naclo', titre: 'Comment l’eau entoure les ions', focus: ['paires'],
+      texte: <>Regardez comment les molécules d’eau sont tournées autour de chaque ion.</>,
+      tache: { type: 'qcm', q: 'Autour de l’ion Cl⁻, les molécules d’eau…', options: ['tournent un H (δ+) vers l’ion : ce sont des liaisons hydrogène', 'tournent leur O (δ−) vers l’ion', 'ne sont pas orientées'], bonne: 0,
+        expl: 'Les charges opposées s’attirent : autour de Na⁺, l’eau tourne son O (δ−, avec ses doublets non liants) vers l’ion ; autour de Cl⁻, elle tourne un H (δ+) vers l’ion, par une liaison hydrogène.' } },
+    { id: 'nacln', titre: 'Une balance presque à l’équilibre', focus: ['bilan'],
+      texte: <>Comparez dans le bilan la barre du cristal (à gauche) et les barres des ions entourés d’eau (à droite), puis regardez le solde de plus près.</>,
+      tache: { type: 'qcm', q: 'Pour NaCl dans l’eau, la balance…', options: ['est presque à l’équilibre : défaire le cristal coûte environ 720 kJ/mol, l’eau en rend à peu près autant', 'penche nettement à gauche : le cristal est trop solide', 'penche nettement à droite : on gagne des centaines de kJ/mol'], bonne: 0,
+        expl: 'Les deux énergies sont énormes mais presque égales : le solde ne fait que quelques kJ/mol (ici un petit gain). C’est pour cela que la solubilité du sel est sensible au solvant : il suffit de perdre quelques dizaines de kJ/mol sur la solvatation pour que le sel ne se dissolve plus.' } },
     { id: 'naclq', titre: 'Et dans l’éthanol ?', focus: ['choix', 'bilan'],
-      texte: <>Choisissez maintenant l’<strong>éthanol</strong> comme solvant.</>,
-      tache: { type: 'qcm', q: 'Pourquoi NaCl est-il beaucoup moins soluble dans l’éthanol ?', options: ['ε est plus faible (24,5) : l’attraction Na⁺/Cl⁻ reste forte (20 kJ/mol) et les ions restent associés', 'l’éthanol ne contient pas d’oxygène', 'l’éthanol est apolaire'], bonne: 0,
-        bloque: null,
-        expl: 'L’écran est trois fois moins efficace que dans l’eau. L’attraction résiduelle (≈ 20 kJ/mol, soit 8 RT) dépasse ce que l’agitation thermique peut compenser. À retenir : les solides ioniques ne sont pratiquement solubles que dans l’eau.' } },
+      texte: <>Choisissez maintenant l’<strong>éthanol</strong> comme solvant, puis le méthanol.</>,
+      tache: { type: 'qcm', q: 'Pourquoi NaCl est-il beaucoup moins soluble dans l’éthanol (0,65 g/kg contre 360 g/kg dans l’eau) ?', options: ['les ions y sont moins bien entourés : la solvatation rend une trentaine de kJ/mol de moins, alors que le cristal coûte toujours autant', 'l’éthanol ne contient pas d’oxygène', 'l’éthanol est apolaire'], bonne: 0,
+        expl: 'L’éthanol entoure les ions, mais moins bien que l’eau (permittivité plus faible, molécules plus grosses). Il suffit de perdre une trentaine de kJ/mol sur plus de 700 pour que le solde passe en zone orange.' } },
+    { id: 'naclac', titre: 'Et dans l’acétone ?', focus: ['choix', 'bilan'],
+      texte: <>L’acétone est polaire, avec une permittivité proche de celle de l’éthanol. Mais elle n’a pas de H lié à O. Choisissez l’<strong>acétone</strong> comme solvant.</>,
+      tache: { type: 'qcm', q: 'Pourquoi NaCl est-il pratiquement insoluble dans l’acétone ?', options: ['l’acétone ne peut pas faire de liaison H avec l’ion Cl⁻, qui est mal entouré', 'l’acétone est apolaire', 'l’acétone réagit avec le sel'], bonne: 0,
+        expl: 'Na⁺ est entouré par les O de l’acétone, mais Cl⁻ n’a pas de H (δ+) à attirer : il n’est retenu que par des interactions plus faibles. Le solde passe en zone rouge (mesure : 0,0004 g/kg).' } },
     { id: 'extr', titre: 'Application : l’extraction', focus: [],
       texte: <>Extraire une espèce d’une solution aqueuse, c’est la transférer dans un second solvant. Il faut qu’elle y soit très soluble (bilan faible) et que ce solvant ne se mélange pas à l’eau (grosse perte eau…solvant).</>,
       tache: { type: 'qcm', q: 'Pour extraire le diiode d’une solution aqueuse, on choisit…', options: ['le cyclohexane : non miscible avec l’eau, et dissout bien le diiode', 'l’éthanol : il dissout bien le diiode', 'l’acétone : miscible à l’eau'], bonne: 0,
@@ -290,7 +289,7 @@ export function SimulationSolubilite() {
         <li>Trois interactions de molécules : liaison H (≈ 17 kJ/mol), dipôle–dipôle, dispersion ; entre ions : interaction ion–ion, écrantée par le solvant.</li>
         <li>« Qui se ressemble s’assemble » : c’est quand les interactions A…B ressemblent aux interactions A…A et B…B que la perte est faible.</li>
         <li>Entre « polaire » et « apolaire », il y a un continuum : une molécule est un équilibre entre parties hydrophiles et lipophiles.</li>
-        <li>Les solides ioniques ne sont pratiquement solubles que dans l’eau (ε élevé, solvatation).</li>
+        <li>Solide ionique : défaire le cristal coûte beaucoup, mais l’eau entoure très bien les ions (ion–dipôle, liaisons H avec Cl⁻) : la balance est presque à l’équilibre. Dans les autres solvants, elle penche à gauche.</li>
         <li>Pour une extraction : soluté très soluble dans le solvant extracteur, et solvant non miscible à la phase d’origine.</li></ul>,
       texte: <>Vous savez prévoir solubilité et miscibilité en comparant les interactions avant et après. Passez aux défis !</>, tache: null },
   ];
@@ -328,7 +327,7 @@ export function SimulationSolubilite() {
   // ---------- blocs dépliables, ouverts au fur et à mesure ----------
   const ion = ESPECES[sol].famille === 'ion';
   const BLOCS = [['cartes', '1. Les deux espèces : formules et cohésion'], ['echelle', '2. Une échelle continue : de l’apolaire au polaire'],
-    ...(ion ? [] : [['paires', '3. Interactions possibles : état initial → état final']]), ['bilan', `${ion ? 3 : 4}. Bilan énergétique et verdict`]];
+    ['paires', '3. Interactions possibles : état initial → état final'], ['bilan', '4. Bilan énergétique et verdict']];
   const focusGuide = enGuide ? (ETAPES[Math.min(etape, ETAPES.length - 1)].focus || []) : [];
   const estOuvert = k => enDefi || !!ouv[k] || focusGuide.includes(k);
   const bloc = (k, contenu) => {
@@ -427,9 +426,27 @@ export function SimulationSolubilite() {
       </div>
     </div>);
 
+  const pairesIon = b && ion && (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 10 }}>
+      <div><div style={{ fontSize: 13, fontWeight: 700, color: '#475569', marginBottom: 3 }}>🔹 État initial : le cristal, et le solvant seul</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}><CristalSVG/><PaireSVG a={solv} b={solv} titre="A…A" sous={`${nomEsp(solv).replace(/ \(.*\)/, '')} seul`}/></div></div>
+      <div><div style={{ fontSize: 13, fontWeight: 700, color: '#475569', marginBottom: 3 }}>🔸 État final envisagé : les ions entourés de solvant</div>
+        <SolvateSVG solv={solv}/>
+        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6, lineHeight: 1.55 }}>
+          <span style={{ color: '#b45309', fontWeight: 700 }}>· · ·</span> ion–dipôle : l’ion attire l’extrémité de charge opposée des molécules de solvant (Na⁺ attire un O, δ−, par un de ses doublets non liants).<br/>
+          <span style={{ color: COUL_INTER.h, fontWeight: 700 }}>- - -</span> liaison hydrogène : Cl⁻ attire un H lié à O (δ+) ; seuls les solvants qui ont des H liés à O peuvent le faire.<br/>
+          <span style={{ color: COUL_INTER.d, fontWeight: 700 }}>~~~</span> dispersion seulement : avec un solvant apolaire, rien ne retient vraiment l’ion.<br/>
+          Le dessin, plan, ne montre que 4 voisins ; dans l’eau, un ion Na⁺ en a en réalité environ 6, en trois dimensions.</div></div>
+    </div>);
+  const ordre = x => x < 0.001 ? 'moins de 0,001 g' : `de l’ordre de ${vir(Number(x.toPrecision(1)))} g`;
+  const zonesB = !b ? null : ion ? SEUIL_ION : liquide ? [SEUIL_LIQ[0] * b.crit, SEUIL_LIQ[1] * b.crit] : SEUIL_SOL;
+  const pastille = (c, t) => <span style={{ background: c, padding: '0 4px', borderRadius: 3 }}>{t}</span>;
+  const legZones = ion ? <>{pastille('#bbf7d0', 'verte')} soluble (plus de 20 g de sel par kg de solvant) · {pastille('#fde68a', 'orange')} peu soluble (de 0,1 à 20 g/kg) · {pastille('#fecaca', 'rouge')} pratiquement insoluble.</>
+    : <>{pastille('#bbf7d0', 'verte')} l’agitation thermique compense la perte (mélange possible) · {pastille('#fde68a', 'orange')} cas limite · {pastille('#fecaca', 'rouge')} perte trop grande.</>;
+  const uLong = ion ? 'énergies de Gibbs en kJ par mole de NaCl dissous (elles tiennent compte de l’ordre imposé au solvant)' : liquide ? 'énergies en kJ pour 1 L de mélange (0,5 L de A + 0,5 L de B)' : 'énergies en kJ par mole de soluté B dissous';
   const bilanPanneau = b && (
     <div>
-      {ion ? <SceneIon solv={solv} b={b}/> : <Barres key={`${solv}-${sol}`} b={b} masque={masque}/>}
+      <Barres key={`${solv}-${sol}`} lignes={b.types} u={liquide ? 'kJ/L' : 'kJ/mol'} uLong={uLong} zones={zonesB} legZones={legZones} masque={masque}/>
       {!masque && <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, border: `2px solid ${COUL[b.classe]}`, background: '#fff' }}>
         <div style={{ fontSize: 15.5, fontWeight: 800, color: COUL[b.classe] }}>
           {ion ? (b.classe === 'ok' ? 'Soluble' : b.classe === 'lim' ? 'Peu soluble (cas limite)' : 'Insoluble') : ETIQ[b.classe]} : {liquide ? `${nomEsp(solv)} et ${nomEsp(sol)}` : `${nomEsp(sol)} dans ${nomEsp(solv)}`}</div>
@@ -438,8 +455,11 @@ export function SimulationSolubilite() {
         {!ion && !liquide && <div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 2, lineHeight: 1.55 }}>La balance penche à gauche : on perd environ <strong>{arr(b.total)} kJ par mole</strong> de soluté dissous, soit environ {arr(b.total / RT)} fois RT (RT ≈ 2,5 kJ/mol : l’énergie de l’agitation thermique à 25 °C).
           {b.total < SEUIL_SOL[0] ? ' Zone verte : le soluté se dissout.' : b.total < SEUIL_SOL[1] ? ' Zone orange : peu soluble (cas limite).' : ' Zone rouge : la perte est trop grande, le soluté reste solide.'} Interaction qui décide : <strong>{b.dom.court}</strong>.</div>}
         {!ion && ESPECES[sol].colorant && b.classe !== 'non' && <div style={{ fontSize: 12.5, color: '#7c2d12', marginTop: 4 }}>🎨 Pour un colorant, même une faible solubilité (de l’ordre du gramme par litre, voire moins) suffit à colorer nettement la solution.</div>}
-        {ion && <div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 2 }}>Attraction Na⁺/Cl⁻ restante dans le solvant : environ <strong>{arr(b.dans)} kJ/mol</strong> (≈ {arr(b.dans / RT)} RT).
-          {b.classe === 'ok' ? ' L’agitation thermique suffit à séparer les ions : on peut les solvater.' : ' Les ions restent attirés l’un vers l’autre : le cristal se reforme.'}</div>}
+        {ion && <div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 2, lineHeight: 1.55 }}>Défaire le cristal coûte environ <strong>{arr(NACL.reseau)} kJ/mol</strong> ; les ions entourés de {nomEsp(solv)} en rendent environ <strong>{arr(b.sv.na + b.sv.cl)} kJ/mol</strong>.
+          {' '}{Math.abs(b.total) < 100 ? 'Les deux barres du total sont presque égales : tout se joue sur quelques dizaines de kJ/mol, sur plus de 700 ! Regardez le solde de plus près.' : 'La balance penche nettement à gauche : les ions sont très mal entourés.'}
+          {' '}On {b.total > 0 ? 'perd' : 'gagne'} environ {arr(b.total)} kJ/mol{b.classe === 'ok' ? ' : zone verte.' : b.classe === 'lim' ? ' : zone orange.' : ' : zone rouge.'}
+          {' '}Solubilité estimée par le modèle : {ordre(b.sEstime)} par kg de solvant{solv === 'eau' ? ' (l’eau sert de référence au modèle : mesurée 360 g/kg).' : b.sMesure != null ? ` (mesurée : ${vir(b.sMesure)} g/kg).` : ' (pas de mesure dans nos données).'}
+          {!b.sv.protique && <div style={{ fontSize: 12.5, color: '#92400e', marginTop: 4 }}>Ce solvant n’a pas de H lié à O : il ne peut pas faire de liaison H avec l’ion Cl⁻, qui est mal entouré.</div>}</div>}
         {!ion && b.comp && <div style={{ fontSize: 12.5, color: '#92400e', marginTop: 4 }}>Une liaison H A…B est possible (un H donneur d’un côté, un doublet accepteur de l’autre). {b.w > 0.95 ? 'Elle remplace entièrement les liaisons A…A et B…B : les deux espèces ont beaucoup de sites.' : `Elle ne remplace les liaisons A…A et B…B qu’à ${Math.round(b.w * 100)} % : les sites de l’une des espèces sont dilués dans une partie apolaire (voir la concentration en sites, bloc 1).`}</div>}
       </div>}
       {masque && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt2 }}>Le verdict est masqué : lisez le bilan, répondez, puis vérifiez.</div>}
@@ -460,13 +480,15 @@ export function SimulationSolubilite() {
                 <li>quelle interaction décide (liaison H, dipôles, dispersion) ;</li>
                 <li>des ordres de grandeur d’énergie (dizaines ou centaines de kJ) ;</li>
                 <li>des tendances : allonger une chaîne carbonée, ajouter des groupes OH, changer de solvant ;</li>
-                <li>qu’entre « polaire » et « apolaire », il y a tout un continuum.</li></ul></div>
+                <li>qu’entre « polaire » et « apolaire », il y a tout un continuum ;</li>
+                <li>pour le sel : pourquoi l’eau le dissout, l’éthanol beaucoup moins et l’acétone pas du tout.</li></ul></div>
             <div><div style={{ fontWeight: 700, color: '#b91c1c' }}>❌ Il ne permet pas de dire</div>
               <ul style={{ margin: '2px 0 0', paddingLeft: 18 }}>
                 <li>la valeur d’une solubilité (en g/L) : seulement « soluble / peu soluble / insoluble » ;</li>
                 <li>l’effet du désordre (l’<strong>entropie</strong>), qui favorise le mélange, ni l’organisation de l’eau autour des parties apolaires (effet hydrophobe) : en réalité ils comptent beaucoup ;</li>
                 <li>l’effet de la température, du pH, de la vitesse de dissolution, ou d’un mélange de plus de deux espèces ;</li>
-                <li>des valeurs sûres pour les espèces marquées ★ (huile, diiode, colorants) : elles sont estimées.</li></ul></div>
+                <li>des valeurs sûres pour les espèces marquées ★ (huile, diiode, colorants) : elles sont estimées ;</li>
+                <li>pour le sel, le calcul est d’une autre nature (énergies de Gibbs, qui incluent l’ordre du solvant) et repose sur une formule approchée (Born) : on ne peut pas comparer directement ses nombres à ceux des molécules.</li></ul></div>
           </div>
           <p style={{ margin: '8px 0 4px' }}>Les seuils vert / orange / rouge ont été <strong>réglés sur des cas connus</strong> : ce sont des repères, pas des lois. Sur {BATTERIE.length} couples connus, le modèle donne la réponse attendue pour {BATTERIE.length - erreurs.length} d’entre eux. Il se trompe sur :</p>
           <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13 }}>{erreurs.map(([s2, e, r]) => <li key={s2 + e}>{nomEsp(s2).replace(/ \(.*\)/, '')} et {nomEsp(e).replace(/ \(.*\)/, '')} : en réalité <strong>{ETQ(r)}</strong>, le modèle dit « {ETQ(bilan(s2, e).classe)} »</li>)}</ul>
@@ -487,7 +509,9 @@ export function SimulationSolubilite() {
       <li><strong>Ce que compense l’agitation thermique</strong> : pour deux liquides, on compare la perte à la valeur critique de la théorie de Flory–Huggins, RT·½(1/√V_A + 1/√V_B)², qui dépend de la taille des molécules (de grosses molécules comme l’huile « profitent » moins du mélange). Pour un solide, on compare la perte par mole de soluté à quelques dizaines de RT.</li>
       <li><strong>L’entropie n’est pas calculée en détail</strong>, et l’effet hydrophobe est en réalité en grande partie d’origine entropique à 25 °C (organisation de l’eau autour des parties apolaires). Les « énergies » du modèle sont des énergies de cohésion effectives : elles traduisent bien le sens des phénomènes, pas leur détail.</li>
       <li><strong>Seuils</strong> : 1,25 et 2 pour le rapport des liquides, 25 et 70 kJ/mol pour les solides. Ils ont été réglés sur une batterie de 82 cas connus, sur laquelle le modèle en retrouve 73, sans inversion « miscible ↔ non miscible ». C’est une calibration, pas une validation indépendante.</li>
-      <li><strong>Solide ionique</strong> : on applique la permittivité macroscopique ε du solvant à 282 pm. C’est grossier : les solvatations de Na⁺ et Cl⁻ compensent presque la cohésion du cristal (≈ 790 kJ/mol de part et d’autre).</li>
+      <li><strong>Solide ionique (NaCl)</strong> : bilan en <strong>énergies de Gibbs</strong> (enthalpies libres), qui tiennent compte de l’ordre imposé au solvant autour des ions. Avec les seules énergies (enthalpies), le méthanol semblerait solvater les ions mieux que l’eau, alors que le sel y est 25 fois moins soluble : pour les ions, l’entropie compte autant que l’énergie. Valeurs de tables arrondies : réseau ≈ 719 kJ/mol, hydratation de Na⁺ + Cl⁻ ≈ 728 kJ/mol (partagée entre les ions selon Marcus), solde ≈ −9 kJ/mol, cohérent avec 360 g/kg. (En enthalpies : 787 contre 783 kJ/mol, d’où une dissolution très légèrement endothermique.)</li>
+      <li><strong>NaCl dans les autres solvants</strong> : l’affaiblissement de la solvatation par rapport à l’eau est estimé par la formule de Born, ΔG = (N<sub>A</sub>e²/8πε₀)(1/r)(1/ε − 1/ε<sub>eau</sub>) pour chaque ion (r = 102 pm pour Na⁺, 181 pm pour Cl⁻), plus une pénalité de 30 kJ/mol si le solvant n’a pas de H lié à O (Cl⁻ privé de liaisons H), réglée sur l’acétone. Comparaison aux solubilités mesurées (g/kg) : méthanol 8 (mesure 14), éthanol 0,9 (0,65), propan-1-ol 0,14 (0,12), butan-1-ol 0,03 (0,05), pentan-1-ol 0,001 (0,018), glycérol 35 (83). L’accord est en partie fortuit : la formule de Born surestime beaucoup l’hydratation elle-même et ne marche ici que pour les différences entre solvants protiques. Pour les solvants apolaires, elle donne seulement l’ordre de grandeur (des centaines de kJ/mol : insoluble).</li>
+      <li><strong>Verdict pour NaCl</strong> : solubilité estimée s ≈ 58,44 × exp(−solde / 2RT) g/kg (solution idéale) ; zone verte au-dessus de 20 g/kg, rouge en dessous de 0,1 g/kg. Le bilan des molécules, lui, n’utilise que des énergies de cohésion : les deux bilans ne sont pas directement comparables.</li>
       <li><strong>Acide carminique dans l’eau</strong> : le modèle ne tient pas compte de l’ionisation partielle du groupe COOH dans l’eau, qui augmente encore sa solubilité.</li>
       <li><strong>Température 25 °C, pression atmosphérique</strong>, espèces pures.</li>
       <li><strong>Cas connus mal rendus</strong> : eau–acétone (miscibles, le modèle dit « cas limite »), eau–éther (peu miscibles, le modèle dit « non miscibles »), propan-1-ol ou butan-1-ol avec l’hexane (miscibles, « cas limite »). Une bonne occasion de discuter des limites d’un modèle.</li>
@@ -502,7 +526,7 @@ export function SimulationSolubilite() {
         <li>Éthanol avec hexane, puis avec eau : quel type d’interaction décide dans chaque cas ?</li>
         <li>Huile avec eau, éthanol, hexane : le comportement en TP est-il bien rendu ?</li>
         <li>Diiode dans l’eau, l’éthanol, le cyclohexane : classez par ordre de solubilité décroissante.</li>
-        <li>NaCl dans l’eau, le méthanol, l’éthanol, l’acétone : qu’est-ce qui change ?</li>
+        <li>NaCl dans l’eau, le méthanol, l’éthanol, puis l’acétone : comment les molécules de solvant entourent-elles les ions ? Pourquoi l’acétone, polaire, ne dissout-elle pas le sel ?</li>
         <li>Cherchez un couple pour lequel le modèle donne « cas limite » alors que vous connaissez la réponse. Qu’en conclure ?</li>
       </ul>
     </div>);
@@ -514,7 +538,7 @@ export function SimulationSolubilite() {
         <li>on perd de la stabilité quand une interaction forte (liaison H, ion–ion) n’est pas remplacée</li>
         <li>« qui se ressemble s’assemble » : A…B ≈ A…A ≈ B…B</li>
         <li>polaire / apolaire : un continuum, un équilibre hydrophile / lipophile</li>
-        <li>solide ionique : ε élevé et solvatation, donc surtout l’eau</li>
+        <li>solide ionique : cristal très cohésif, mais l’eau entoure très bien les ions : balance presque à l’équilibre</li>
         <li>extraction : soluté très soluble dans l’extracteur, extracteur non miscible à l’eau</li>
       </ul>
     </ARetenir>);
@@ -549,7 +573,7 @@ export function SimulationSolubilite() {
               <td style={{ padding: '3px 6px' }}>avec {nomEsp(defi.sol)} : <span style={{ color: COUL[bilan(c, defi.sol).classe], fontWeight: 700 }}>{ETIQ_SOL[bilan(c, defi.sol).classe]}</span> ({nb(bilan(c, defi.sol).total)} kJ/mol)</td></tr>)}</tbody></table></div>}
           {choix}
           {!(enDefi && defi.type === 'extraction') && (solv === sol ? <div style={styleBoite}>Choisissez deux espèces différentes.</div> : <>
-            {notion}{bloc('cartes', cartes)}{bloc('echelle', echelle)}{!ion && bloc('paires', paires)}{bloc('bilan', bilanPanneau)}</>)}
+            {notion}{bloc('cartes', cartes)}{bloc('echelle', echelle)}{bloc('paires', ion ? pairesIon : paires)}{bloc('bilan', bilanPanneau)}</>)}
         </div>
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : enDefi ? panneauHypo : null}
       </div>
