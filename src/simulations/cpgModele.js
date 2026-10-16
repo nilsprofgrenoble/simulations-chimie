@@ -13,9 +13,11 @@
 //  prédite à 3 % (5 % phényl) et 4,5 % (WAX) près en moyenne quadratique, sans paramètre ajusté.
 //
 //  GAZ VECTEUR. Débit constant (régulation électronique), écoulement de Poiseuille compressible :
-//  vitesse de sortie u0 = d²·p0·(P² − 1)/(32 η L), vitesse moyenne ū = j·u0, j = 3(P² − 1)/(2(P³ − 1)).
+//  pi² − po² = 64 η L (po·Fo)/(π r² d²) ; t0 = 128 η L² (pi³ − po³) / (3 d² (pi² − po²)²) ; sortie à l'atmosphère (FID)
+//  ou sous vide (spectromètre de masse). Vérifié sur une note Agilent (30 m × 0,25 mm, He, 100 °C, 10 psi : t0 = 2,60 min
+//  sortie atmosphère, 1,38 min sortie vide ; calcul : 2,63 et 1,39 min).
 //  ÉLUTION. Migration de chaque bande intégrée pas à pas : dz/dt = ū(T)/(1 + k(T)) avec T(t) le programme du four.
-//  EFFICACITÉ. Équation de Golay (colonne capillaire) avec la correction de compressibilité de Giddings ;
+//  EFFICACITÉ. Équation de Golay (colonne capillaire), coefficient de diffusion évalué à la pression moyenne ;
 //  largeur temporelle du pic : σ = t0(Te)·(1 + ke)/√N(ke) à la température d'élution Te.
 //  DÉTECTEUR FID. Aire ∝ masse injectée dans la colonne × nombre de carbones effectif / masse molaire.
 //  PANNES. Déformations simples et illustratives du fonctionnement normal.
@@ -79,7 +81,7 @@ const DS = 5e-6;           // cm²/s : diffusion dans la phase stationnaire (ord
 
 export const PARAMS_DEFAUT = {
   phase: 'apolaire', L: 30, dc: 0.25, df: 0.25,         // colonne : m, mm, µm
-  gaz: 'He', debit: 1.2,                                // gaz vecteur : mL/min (25 °C, 1 atm), débit constant
+  gaz: 'He', debit: 1.2, sortie: 'atm',                 // gaz vecteur : mL/min (25 °C, 1 atm), débit constant ; sortie 'atm' (FID) ou 'vide' (SM)
   T0: 40, t1: 2, rampe: 10, Tf: 200, t2: 2,             // four : °C, min, °C/min (0 = isotherme), °C, min
   mode: 'split', split: 100, V: 0.2,                    // injecteur : split / splitless ; rapport de division ; µL
   panne: null,
@@ -127,14 +129,13 @@ export function ecoulement(p, T) {
   const g = GAZ[p.gaz], e = effets(p);
   const Tk = T + 273.15, eta = g.eta300 * (Tk / 300) ** g.x;
   const L = p.L, d = p.dc * 1e-3, r = d / 2;
-  const F = p.debit * (e.debitFac || 1) * 1e-6 / 60 * (Tk / T_REF_DEBIT);   // m³/s à la sortie (T du four, p0)
-  const u0 = F / (Math.PI * r * r);
-  const P2 = 1 + 32 * eta * L * u0 / (d * d * P0);
-  const P = Math.sqrt(P2);
-  const j = 1.5 * (P2 - 1) / (P * P2 - 1);
-  const ub = j * u0, t0 = L / ub / 60;                                     // m/s, min
-  const fGid = 9 * (P2 * P2 - 1) * (P2 - 1) / (8 * (P * P2 - 1) ** 2);     // correction de compressibilité (Giddings)
-  return { P, pEntree: (P - 1) * P0 / 1000, u0, ub, t0, eta, f: fGid };   // pEntree : kPa relatifs (manomètre)
+  const po = p.sortie === 'vide' ? 0 : P0;                                  // FID : atmosphère ; spectromètre de masse : vide
+  // débit massique imposé, exprimé par le produit (pression × débit volumique) à la sortie, à la température du four
+  const pQ = P0 * p.debit * (e.debitFac || 1) * 1e-6 / 60 * (Tk / T_REF_DEBIT);   // Pa·m³/s
+  const pi = Math.sqrt(po * po + 64 * eta * L * pQ / (Math.PI * r * r * d * d));    // Poiseuille compressible
+  const t0 = 128 * eta * L * L * (pi ** 3 - po ** 3) / (3 * d * d * (pi * pi - po * po) ** 2) / 60;   // min
+  const pMoy = (2 / 3) * (pi ** 3 - po ** 3) / (pi * pi - po * po);
+  return { pi, pEntree: (pi - P0) / 1000, ub: L / (t0 * 60), t0, eta, pMoy };   // pEntree : kPa relatifs (manomètre)
 }
 
 // ---------- rétention ----------
@@ -162,12 +163,11 @@ export function lnK(p, c, T) {
 // ---------- efficacité : Golay + compressibilité ----------
 export function hauteurPlateau(p, k, T) {
   const g = GAZ[p.gaz], ec = ecoulement(p, T), Tk = T + 273.15;
-  const Dm0 = g.D0 * 1e-4 * (Tk / 298.15) ** 1.75;                        // m²/s à p0 (sortie de colonne)
+  const Dm = g.D0 * 1e-4 * (Tk / 298.15) ** 1.75 * (P0 / ec.pMoy);        // m²/s à la pression moyenne dans la colonne
   const d = p.dc * 1e-3, df = p.df * 1e-6;
-  const B = 2 * Dm0;
-  const Cm = (1 + 6 * k + 11 * k * k) * d * d / (96 * (1 + k) ** 2 * Dm0);
+  const Cm = (1 + 6 * k + 11 * k * k) * d * d / (96 * (1 + k) ** 2 * Dm);
   const Cs = (2 / 3) * k / (1 + k) ** 2 * df * df / (DS * 1e-4);
-  return ec.f * (B / ec.u0 + Cm * ec.u0) + Cs * ec.ub;                    // m
+  return 2 * Dm / ec.ub + (Cm + Cs) * ec.ub;                              // m
 }
 
 // ---------- élution d'un composé ----------

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { useLargeur, pasTemps, grille } from "./cpgOutils";
 import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, Curseur, lireProgression } from "../commun";
@@ -32,20 +33,6 @@ const TR = <>t<Ind>R</Ind></>;
 const T0 = <>t<Ind>0</Ind></>;
 const FAMILLES = ['alcool', 'cétone', 'ester', 'éther', 'chloré', 'nitrile', 'amide', 'aromatique', 'alcane'];
 
-function useLargeur(ref) {
-  const [w, setW] = useState(640);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const maj = () => setW(Math.max(280, Math.floor(el.getBoundingClientRect().width)));
-    maj();
-    if (typeof ResizeObserver === 'undefined') { window.addEventListener('resize', maj); return () => window.removeEventListener('resize', maj); }
-    const ro = new ResizeObserver(maj);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [ref]);
-  return w;
-}
 function tirages(nMol, n) {
   let s = 4242;
   const alea = () => { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; };
@@ -85,7 +72,7 @@ function dessinerColonne(ctx, dpr, W, { a, p, frac, hover, couleurs }, now) {
   ctx.fillStyle = '#475569'; ctx.font = '11px system-ui, sans-serif'; ctx.textAlign = 'left';
   ctx.fillText(W < 560 ? `t = ${v(t)} min · four ${Math.round(T)} °C` : `t = ${v(t)} min · four à ${Math.round(T)} °C · pression en tête ${Math.round(pr)} kPa`, W < 560 ? 8 : xL, 16);
   ctx.textAlign = 'right'; ctx.fillStyle = '#64748b';
-  if (W >= 640) ctx.fillText('gaz vecteur · film de phase stationnaire (jaune)', xR, 16);
+  if (W >= 780) ctx.fillText('gaz vecteur · film de phase stationnaire (jaune)', xR, 16);
   ctx.textAlign = 'left';
   a.pics.forEach((m, gi) => {
     const pb = positionBande(p, m, t);
@@ -104,7 +91,7 @@ function dessinerColonne(ctx, dpr, W, { a, p, frac, hover, couleurs }, now) {
     ctx.globalAlpha = 1;
   });
 }
-function ColonneAnim({ a, p, frac, couleurs, hover, w }) {
+export function ColonneAnim({ a, p, frac, couleurs, hover, w }) {
   const ref = useRef(null);
   const etat = useRef({ a, p, frac, hover, couleurs });
   useEffect(() => { etat.current = { a, p, frac, hover, couleurs }; });
@@ -129,16 +116,6 @@ function ColonneAnim({ a, p, frac, couleurs, hover, w }) {
 }
 
 // ---------- chromatogramme (SVG) ----------
-function pasTemps(d) { return [0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50].find(s => d / s <= 8) || 100; }
-function grille(a, xa, xb) {
-  const ts = [];
-  for (let i = 0; i <= 500; i++) ts.push(xa + (xb - xa) * i / 500);
-  a.pics.forEach(m => {
-    const g = Math.max(xa, m.tr - 5 * m.sigma - 5 * m.tauF), d = Math.min(xb, m.tr + 5 * m.sigma + 6 * m.tauQ);
-    for (let i = 0; i <= 160 && d > g; i++) ts.push(g + (d - g) * i / 160);
-  });
-  return ts.sort((x, y) => x - y);
-}
 function Chromato({ a, p, frac, w, couleurs, hover, setHover, anonyme }) {
   const [lect, setLect] = useState(null);
   const [zoom, setZoom] = useState(null);       // [t1, t2] ou null

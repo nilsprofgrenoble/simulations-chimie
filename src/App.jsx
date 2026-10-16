@@ -9,6 +9,7 @@ import { BandeauContexte } from "./commun";
 import { CONTEXTES } from "./contextes";
 import { SimulationCLHP } from "./simulations/CLHP";
 import { SimulationCPG } from "./simulations/CPG";
+import { SimulationCPGSM } from "./simulations/CPGSM";
 import { Simulation8 } from "./simulations/ChaineMesure";
 import { Simulation7 } from "./simulations/Cristallisation";
 import { SimulationEtalonnageInterne } from "./simulations/EtalonInterne";
@@ -73,6 +74,7 @@ const SIMULATIONS = [
   { id: 11, label: "Dosage par étalonnage", icon: "📐", color: "#7b2d8b", component: SimulationDosageEtalonnage, niveau: "BTS" },
   { id: 12, label: "Simulation CLHP", icon: "💉", color: "#0d6e6e", component: SimulationCLHP, niveau: "BTS" },
   { id: 54, label: "Simulation CPG", icon: "🔥", color: "#0f766e", component: SimulationCPG, niveau: "BTS" },
+  { id: 55, label: "CPG couplée à la spectrométrie de masse", icon: "🧲", color: "#6d28d9", component: SimulationCPGSM, niveau: "BTS" },
   { id: 13, label: "Étalon interne / Normalisation interne", icon: "📐", color: "#c0392b", component: SimulationEtalonnageInterne, niveau: "BTS" },
   { id:14, label:"Peinture à l'eau", icon:"🎨", color:"#e76f51", component:SimulationPeinture, niveau:"BTS" },
   { id:15, label:"Quantum du CAN", niveau:"TSTL", icon:"📡", color:"#0ea5e9",
@@ -518,7 +520,7 @@ export default function App() {
               { label:'🧪 Cohésion, solubilité et miscibilité', ids:[53] },
               { label:'🚀 Mouvement d\'un système', ids:[52] },
             ] : niv.key === 'BTS' ? [
-              { label:'🔬 Analyse', ids:[3,29,9,11,12,54,13,16] },
+              { label:'🔬 Analyse', ids:[3,29,9,11,12,54,55,13,16] },
               { label:'🧪 Formulation', ids:[4,14] },
             ] : niv.key === 'TSTL' ? [
               { label:'📡 Transmission de signaux numériques', ids:[8,15,33] },

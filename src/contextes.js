@@ -52,6 +52,17 @@ export const CONTEXTES = {
     ],
     niveau: "BTS Métiers de la chimie",
   },
+  55: {
+    but: "Simuler une analyse par chromatographie en phase gazeuse couplée à la spectrométrie de masse (ionisation électronique, quadripôle) : courant ionique total, spectre de masse de chaque pic (spectres réels de la base MassBank), recherche en bibliothèque, chromatogrammes d'ions extraits.",
+    apprendre: "Le rôle de la source, de l'analyseur et du détecteur ; l'ion moléculaire et le pic de base ; les motifs isotopiques du chlore ; l'identification par la bibliothèque et le temps de rétention ; la séparation de pics co-élués par les ions extraits ; le contrôle air / eau et quelques pannes.",
+    etapes: [
+      "Choisissez les composés, puis cliquez sur « Injecter ».",
+      "Cliquez sur un pic pour afficher son spectre et les propositions de la bibliothèque.",
+      "Extrayez un ion caractéristique pour suivre un composé, même s'il co-élue.",
+      "Simulez un défaut, ou lancez le parcours guidé et les défis.",
+    ],
+    niveau: "BTS Métiers de la chimie",
+  },
   54: {
     but: "Simuler une analyse par chromatographie en phase gazeuse (CPG) de solvants courants : colonne capillaire apolaire ou polaire, four isotherme ou programmé, gaz vecteur à débit constant, injecteur split / splitless, détecteur FID. Les temps de rétention sont calculés à partir d'indices de Kováts publiés.",
     apprendre: "Le rôle de chaque élément de l'appareil ; l'ordre d'élution sur colonne apolaire et polaire ; l'identification par le temps de rétention ; le choix de la colonne et du programme de température ; l'effet du débit et du rapport de division ; le diagnostic des pannes courantes (septum, liner, flamme du FID, ressuage).",
