@@ -32,28 +32,49 @@ const cohesion = id => { const m = ESPECES[id]; return m.V * (m.dd ** 2 + m.dp *
 // vocabulaire : deux liquides → A et B (miscibilité) ; liquide + solide → solvant A et soluté B (solubilité)
 const roles = liq => liq ? { A: 'A', B: 'B', nA: 'liquide A', nB: 'liquide B' } : { A: 'A', B: 'B', nA: 'solvant A', nB: 'soluté B' };
 
-// ---------- barres initial / final ----------
-function Barres({ b }) {
-  const liq = b.kind === 'liq';
-  const W = 640, ligne = 64, H = 52 + ligne * 3 + 14, gauche = 190;
-  const mx = Math.max(1, ...b.types.map(t => Math.max(t.ini, t.fin)));
-  const L = v => Math.max(0, v) / mx * (W - gauche - 270);
+// ---------- bilan en balance : état initial à gauche (à rompre), état final à droite (retrouvé) ----------
+const arr = v => vir(Number(Math.abs(v).toPrecision(2)));           // 2 chiffres significatifs : on ne prétend pas à plus
+function Barres({ b, masque }) {
+  const liq = b.kind === 'liq', u = liq ? 'kJ/L' : 'kJ/mol';
+  const [tip, setTip] = useState(null);
+  const W = 640, x0 = 320, Wh = 262, y0 = 44, hT = 56, yTot = y0 + 3 * hT + 6, hTot = 82, yAx = yTot + hTot + 2, H = yAx + 40;
+  const totIni = b.types.reduce((s, t) => s + t.ini, 0), totFin = b.types.reduce((s, t) => s + t.fin, 0), solde = b.total;
+  const maxV = Math.max(1, totIni, totFin);
+  const mag = 10 ** Math.floor(Math.log10(maxV / 4)), pas = [1, 2, 5, 10].map(c => c * mag).find(s => maxV / s <= 5), M = Math.ceil(maxV / pas) * pas;
+  const L = v => Math.max(0, v) / M * Wh;
+  const ticks = []; for (let v = 0; v <= M + 1e-9; v += pas) ticks.push(v);
+  const [z1, z2] = liq ? [SEUIL_LIQ[0] * b.crit, SEUIL_LIQ[1] * b.crit] : SEUIL_SOL;
+  const prop = txt => ({ tabIndex: 0, style: { cursor: 'pointer', outline: 'none' }, onMouseEnter: () => setTip(txt), onFocus: () => setTip(txt), onClick: () => setTip(txt) });
+  const ligne = (y, nom, col, ini, fin, perte, h, tH) => <g key={nom}>
+    <text x="8" y={y + 11} fontSize="12.5" fontWeight="700" fill={col}>{nom}</text>
+    <g {...prop(`${nom} — état initial (A…A et B…B) : ≈ ${arr(ini)} ${u}`)}><rect x={x0 - L(ini)} y={y + 16} width={L(ini)} height={h} rx="3" fill="#94a3b8"/></g>
+    <g {...prop(`${nom} — état final (A…B) : ≈ ${arr(fin)} ${u}`)}><rect x={x0} y={y + 16} width={L(fin)} height={h} rx="3" fill={col}/></g>
+    {perte > 0.005 * M && <g {...prop(`${nom} — solde, ce que l’on perd : ≈ ${arr(perte)} ${u}`)}><rect x={x0 - L(perte)} y={y + 18 + h} width={L(perte)} height={tH} fill="#fee2e2" fillOpacity="0.6" stroke="#dc2626" strokeWidth="1.6" strokeDasharray="4 3"/></g>}
+  </g>;
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label="Bilan des interactions : état initial et état final">
-      <text x={8} y="16" fontSize="12.5" fill="#475569">initial = interactions A…A et B…B ; final = interactions A…B</text>
-      <text x={8} y="32" fontSize="12.5" fill="#475569">énergies en {liq ? 'kJ pour 1 L de mélange (0,5 L de A + 0,5 L de B)' : 'kJ par mole de soluté B dissous'}</text>
-      {b.types.map((t, i) => {
-        const y = 46 + i * ligne;
-        return <g key={t.k}>
-          <text x="8" y={y + 22} fontSize="13" fontWeight="700" fill={t.col}>{t.court}</text>
-          <text x="8" y={y + 38} fontSize="10.5" fill="#64748b">{t.k === 'd' ? 'induits / instantanés' : t.k === 'p' ? 'permanents' : 'donneur H + accepteur'}</text>
-          <rect x={gauche} y={y + 4} width={L(t.ini)} height="20" rx="3" fill="#94a3b8"/><text x={gauche + L(t.ini) + 6} y={y + 19} fontSize="12" fill="#0f172a">{nb(t.ini)} <tspan fill="#64748b">initial</tspan></text>
-          <rect x={gauche} y={y + 28} width={L(t.fin)} height="20" rx="3" fill={t.col}/><text x={gauche + L(t.fin) + 6} y={y + 43} fontSize="12" fill="#0f172a">{nb(t.fin)} <tspan fill="#64748b">final</tspan></text>
-          {t.perte > 0.5 && <text x={W - 8} y={y + 32} textAnchor="end" fontSize="13" fontWeight="800" fill="#dc2626">perte {nb(t.perte)}</text>}
-          {t.perte < -0.5 && <text x={W - 8} y={y + 32} textAnchor="end" fontSize="13" fontWeight="800" fill="#16a34a">gain {nb(-t.perte)}</text>}
-        </g>;
-      })}
-    </svg>);
+    <div>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label="Bilan des interactions : état initial à gauche, état final à droite, solde en pointillés">
+        <text x={x0 - 8} y="16" textAnchor="end" fontSize="12.5" fontWeight="700" fill="#475569">◀ état initial : à rompre (A…A, B…B)</text>
+        <text x={x0 + 8} y="16" fontSize="12.5" fontWeight="700" fill="#475569">état final : retrouvé (A…B) ▶</text>
+        <text x={x0} y="32" textAnchor="middle" fontSize="11.5" fill="#64748b">énergies en {liq ? 'kJ pour 1 L de mélange (0,5 L de A + 0,5 L de B)' : 'kJ par mole de soluté B dissous'}</text>
+        {/* zones : ce que l'agitation thermique peut compenser (masquées pendant la prédiction) */}
+        {!masque && <g>
+          <rect x={x0 - Wh} y={yTot + 6} width={Math.max(0, Wh - L(z2))} height={hTot - 14} fill="#fecaca" fillOpacity="0.55"/>
+          <rect x={x0 - Math.min(Wh, L(z2))} y={yTot + 6} width={Math.min(Wh, L(z2)) - Math.min(Wh, L(z1))} height={hTot - 14} fill="#fde68a" fillOpacity="0.6"/>
+          <rect x={x0 - Math.min(Wh, L(z1))} y={yTot + 6} width={Math.min(Wh, L(z1))} height={hTot - 14} fill="#bbf7d0" fillOpacity="0.7"/></g>}
+        <line x1={x0} y1={y0 - 4} x2={x0} y2={yAx} stroke="#334155" strokeWidth="1.5"/>
+        {b.types.map((t, i) => ligne(y0 + i * hT, t.court, t.col, t.ini, t.fin, t.perte, 16, 8))}
+        {ligne(yTot, 'Total', '#0f172a', totIni, totFin, solde, 20, 12)}
+        <line x1={x0 - Wh} y1={yAx} x2={x0 + Wh} y2={yAx} stroke="#94a3b8"/>
+        {ticks.flatMap(v => (v === 0 ? [0] : [-1, 1]).map(sg => <g key={`${v}${sg}`}><line x1={x0 + sg * L(v)} y1={yAx} x2={x0 + sg * L(v)} y2={yAx + 5} stroke="#94a3b8"/>
+          <text x={x0 + sg * L(v)} y={yAx + 18} textAnchor="middle" fontSize="11" fill="#64748b">{vir(v)}</text></g>))}
+        <text x={x0} y={yAx + 34} textAnchor="middle" fontSize="11" fill="#64748b">{u}</text>
+      </svg>
+      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}><span style={{ color: '#dc2626', fontWeight: 700 }}>▭ Pointillés rouges</span> : le solde (initial − final), c’est ce que l’on perd. La balance penche <strong>à gauche</strong> quand le mélange fait perdre de la stabilité.</div>
+      <div style={{ minHeight: 26, margin: '4px 0 2px', padding: '4px 8px', borderRadius: 6, background: tip ? '#f1f5f9' : 'transparent', fontSize: 13.5, color: KIT.txt }}>
+        {tip || <span style={{ color: KIT.txt2 }}>👆 Passez la souris sur une barre (ou touchez-la) pour lire sa valeur, arrondie.</span>}</div>
+      {!masque && <div style={{ fontSize: 12.5, color: KIT.txt2 }}>Zone sous le total : <span style={{ background: '#bbf7d0', padding: '0 4px', borderRadius: 3 }}>verte</span> l’agitation thermique compense la perte (mélange possible) · <span style={{ background: '#fde68a', padding: '0 4px', borderRadius: 3 }}>orange</span> cas limite · <span style={{ background: '#fecaca', padding: '0 4px', borderRadius: 3 }}>rouge</span> perte trop grande.</div>}
+    </div>);
 }
 
 // ---------- ions : attraction Na⁺ / Cl⁻ écrantée ----------
@@ -97,7 +118,7 @@ const TITRES = { verdict: 'Prédire le verdict', dominant: 'Quelle interaction d
 function evaluer(d) {
   const r = d.reps;
   if (d.type === 'verdict') { const b = bilan(d.a, d.b); const ok = r.v === b.classe; return { ok, lignes: [[ok, ok ? 'Verdict conforme au bilan.' : 'Regardez le bilan : le verdict dépend du total des pertes (dernier cadre).']] }; }
-  if (d.type === 'dominant') { const b = bilan(d.a, d.b); const ok = r.t === b.dom.k; return { ok, lignes: [[ok, ok ? 'Oui : c’est bien l’interaction qui perd le plus.' : 'Non : comparez, type par type, la barre « initial » et la barre « final ».']] }; }
+  if (d.type === 'dominant') { const b = bilan(d.a, d.b); const ok = r.t === b.dom.k; return { ok, lignes: [[ok, ok ? 'Oui : c’est bien l’interaction qui perd le plus.' : 'Non : comparez, type par type, la barre de gauche (initial) et celle de droite (final) : le pointillé rouge le plus long désigne la réponse.']] }; }
   const ok = !!r.c && validExtract(r.c, d.sol);
   return { ok, lignes: [[ok, ok ? 'Bon choix : non miscible avec l’eau et très soluble pour le soluté.' : 'Un bon solvant extracteur est non miscible avec l’eau ET dissout bien le soluté.']] };
 }
@@ -191,8 +212,8 @@ export function SimulationSolubilite() {
       tache: { type: 'qcm', q: 'Quelle interaction est responsable de la grosse perte de stabilité ?', options: ['la liaison hydrogène eau…eau, perdue et non remplacée', 'la dispersion, qui devient plus forte', 'les interactions ioniques'], bonne: 0,
         expl: 'Les liaisons H eau…eau (état initial) ne sont remplacées que par de faibles interactions de Van der Waals eau…hexane. La perte est énorme : l’eau et l’hexane ne sont pas miscibles.' } },
     { id: 'ehn', titre: 'Un ordre de grandeur', focus: ['bilan'],
-      texte: <>Lisez dans le bilan la perte pour la liaison hydrogène. Elle est donnée en kJ pour 1 L de mélange (0,5 L d’eau + 0,5 L d’hexane).</>,
-      tache: { type: 'num', q: 'Perte liée à la liaison hydrogène (kJ par litre)', unite: 'kJ/L', vrai: bw('eau', 'hexane').types[2].perte, tol: 0.05, affiche: v => nb(v), cs: 3,
+      texte: <>Survolez (ou touchez) les deux barres de la liaison hydrogène : celle de gauche (état initial) et celle de droite (état final). Les valeurs sont en kJ pour 1 L de mélange (0,5 L d’eau + 0,5 L d’hexane). La perte est la différence entre les deux : c’est le pointillé rouge.</>,
+      tache: { type: 'num', q: 'Perte liée à la liaison hydrogène (initial − final, en kJ par litre)', unite: 'kJ/L', vrai: bw('eau', 'hexane').types[2].perte, tol: 0.06, affiche: v => nb(v), cs: 2,
         bloque: est('eau', 'hexane') ? null : 'Faites d’abord l’étape précédente (eau + hexane).',
         expl: 'On trouve environ 447 kJ/L pour la seule liaison H, et plus de 500 kJ/L au total : environ quatre fois ce que l’agitation thermique peut compenser pour des molécules de cette taille (≈ 130 kJ/L).' } },
     { id: 'hc', titre: 'Qui se ressemble s’assemble', focus: ['choix', 'bilan'],
@@ -406,30 +427,18 @@ export function SimulationSolubilite() {
       </div>
     </div>);
 
-  const jauge = (val, [s1, s2], max, unite2) => {
-    const W = 560, x = v => 10 + Math.min(v, max) / max * (W - 20);
-    return <svg viewBox={`0 0 ${W} 46`} style={{ width: '100%', display: 'block', marginTop: 6 }} role="img" aria-label="Jauge du verdict">
-      <rect x={x(0)} y="16" width={x(s1) - x(0)} height="12" fill="#bbf7d0"/><rect x={x(s1)} y="16" width={x(s2) - x(s1)} height="12" fill="#fde68a"/><rect x={x(s2)} y="16" width={x(max) - x(s2)} height="12" fill="#fecaca"/>
-      {[s1, s2].map(v => <text key={v} x={x(v)} y="42" textAnchor="middle" fontSize="11" fill="#475569">{vir(v)}{unite2}</text>)}
-      <polygon points={`${x(val) - 6},4 ${x(val) + 6},4 ${x(val)},15`} fill="#0f172a"/>
-      <text x={Math.min(W - 4, Math.max(4, x(val)))} y="11" textAnchor={x(val) > W - 60 ? 'end' : x(val) < 60 ? 'start' : 'middle'} dx={x(val) > W - 60 ? -8 : x(val) < 60 ? 8 : 0} fontSize="11" fontWeight="700" fill="#0f172a">{val > max ? `${nb(val)}${unite2} ▶` : ''}</text>
-    </svg>;
-  };
   const bilanPanneau = b && (
     <div>
-      {ion ? <SceneIon solv={solv} b={b}/> : <Barres b={b}/>}
-      {!ion && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>Pour chaque type d’interaction : barre grise = ce que l’on a <strong>avant</strong> (A…A et B…B), barre colorée = ce que l’on a <strong>après</strong> (A…B). Si la barre « après » est plus courte, le mélange fait <strong>perdre</strong> de la stabilité.</div>}
+      {ion ? <SceneIon solv={solv} b={b}/> : <Barres key={`${solv}-${sol}`} b={b} masque={masque}/>}
       {!masque && <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, border: `2px solid ${COUL[b.classe]}`, background: '#fff' }}>
         <div style={{ fontSize: 15.5, fontWeight: 800, color: COUL[b.classe] }}>
           {ion ? (b.classe === 'ok' ? 'Soluble' : b.classe === 'lim' ? 'Peu soluble (cas limite)' : 'Insoluble') : ETIQ[b.classe]} : {liquide ? `${nomEsp(solv)} et ${nomEsp(sol)}` : `${nomEsp(sol)} dans ${nomEsp(solv)}`}</div>
-        {!ion && liquide && <><div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 2, lineHeight: 1.55 }}>On perd <strong>{nb(b.total)} kJ</strong> pour 1 L de mélange. L’agitation thermique peut compenser environ <strong>{nb(b.crit)} kJ</strong> pour des molécules de cette taille (plus elles sont petites, plus elle compense).
-          La perte vaut donc <strong>{vir(b.rapport.toFixed(2))} fois</strong> ce que l’agitation thermique compense : miscibles en dessous de {vir(SEUIL_LIQ[0])} fois, non miscibles au-delà de {SEUIL_LIQ[1]} fois. Interaction qui décide : <strong>{b.dom.court}</strong>.</div>
-          {jauge(b.rapport, SEUIL_LIQ, 4, ' ×')}</>}
-        {!ion && !liquide && <><div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 2, lineHeight: 1.55 }}>On perd <strong>{nb(b.total)} kJ par mole</strong> de soluté dissous, soit environ {nb(b.total / RT)} fois RT (RT ≈ 2,5 kJ/mol mesure l’énergie de l’agitation thermique à 25 °C).
-          Soluble en dessous de {SEUIL_SOL[0]} kJ/mol, insoluble au-delà de {SEUIL_SOL[1]} kJ/mol. Interaction qui décide : <strong>{b.dom.court}</strong>.</div>
-          {jauge(b.total, SEUIL_SOL, 140, ' kJ/mol')}</>}
+        {!ion && liquide && <div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 2, lineHeight: 1.55 }}>La balance penche à gauche : on perd environ <strong>{arr(b.total)} kJ</strong> pour 1 L de mélange, alors que l’agitation thermique peut en compenser environ <strong>{arr(b.crit)} kJ</strong> pour des molécules de cette taille (plus elles sont petites, plus elle compense).
+          {b.rapport < SEUIL_LIQ[0] ? ' La perte reste dans la zone verte : le mélange est possible.' : b.rapport < SEUIL_LIQ[1] ? ' La perte est dans la zone orange : du même ordre que ce que l’agitation thermique peut compenser, donc cas limite.' : ` La perte dépasse ${b.rapport < 3 ? 'deux fois' : `d’environ ${Math.round(b.rapport)} fois`} ce que l’agitation thermique compense : zone rouge.`} Interaction qui décide : <strong>{b.dom.court}</strong>.</div>}
+        {!ion && !liquide && <div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 2, lineHeight: 1.55 }}>La balance penche à gauche : on perd environ <strong>{arr(b.total)} kJ par mole</strong> de soluté dissous, soit environ {arr(b.total / RT)} fois RT (RT ≈ 2,5 kJ/mol : l’énergie de l’agitation thermique à 25 °C).
+          {b.total < SEUIL_SOL[0] ? ' Zone verte : le soluté se dissout.' : b.total < SEUIL_SOL[1] ? ' Zone orange : peu soluble (cas limite).' : ' Zone rouge : la perte est trop grande, le soluté reste solide.'} Interaction qui décide : <strong>{b.dom.court}</strong>.</div>}
         {!ion && ESPECES[sol].colorant && b.classe !== 'non' && <div style={{ fontSize: 12.5, color: '#7c2d12', marginTop: 4 }}>🎨 Pour un colorant, même une faible solubilité (de l’ordre du gramme par litre, voire moins) suffit à colorer nettement la solution.</div>}
-        {ion && <div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 2 }}>Attraction Na⁺/Cl⁻ restante dans le solvant : <strong>{nb(b.dans)} kJ/mol</strong> (≈ {nb(b.dans / RT)} RT).
+        {ion && <div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 2 }}>Attraction Na⁺/Cl⁻ restante dans le solvant : environ <strong>{arr(b.dans)} kJ/mol</strong> (≈ {arr(b.dans / RT)} RT).
           {b.classe === 'ok' ? ' L’agitation thermique suffit à séparer les ions : on peut les solvater.' : ' Les ions restent attirés l’un vers l’autre : le cristal se reforme.'}</div>}
         {!ion && b.comp && <div style={{ fontSize: 12.5, color: '#92400e', marginTop: 4 }}>Une liaison H A…B est possible (un H donneur d’un côté, un doublet accepteur de l’autre). {b.w > 0.95 ? 'Elle remplace entièrement les liaisons A…A et B…B : les deux espèces ont beaucoup de sites.' : `Elle ne remplace les liaisons A…A et B…B qu’à ${Math.round(b.w * 100)} % : les sites de l’une des espèces sont dilués dans une partie apolaire (voir la concentration en sites, bloc 1).`}</div>}
       </div>}
