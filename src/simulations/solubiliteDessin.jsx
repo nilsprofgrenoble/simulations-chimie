@@ -204,7 +204,7 @@ export function Scene({ mols, lignes = [], W, H, smax = 34, doublets = true, hal
       {on && <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={COUL_INTER[l.t]} strokeWidth="11" opacity="0.22" strokeLinecap="round"/>}
       {trait}
       {onSurvol && <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="transparent" strokeWidth="18" pointerEvents="stroke" style={{ cursor: 'pointer' }}
-        onMouseEnter={() => onSurvol(l.t)} onMouseLeave={() => onSurvol(null)} onClick={() => onSurvol(actif === l.t ? null : l.t)}/>}
+        onMouseEnter={() => onSurvol(l.t)} onMouseLeave={() => onSurvol(null)} onClick={e => { e.stopPropagation(); onSurvol(l.t, true); }}/>}
     </g>);
   });
   return <g>{elems}{legende}</g>;

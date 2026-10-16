@@ -1,5 +1,5 @@
 import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, lireProgression } from "../commun";
 import { ESPECES, ANA, ORDRE_LIQ, ORDRE_SOL, TYPES, bilan, partPolaire, BATTERIE, RT, NACL, SEUIL_LIQ, SEUIL_SOL, SEUIL_ION } from "./solubiliteModele";
@@ -164,7 +164,14 @@ export function SimulationSolubilite() {
   const [sel, setSel] = useState({ solv: 'eau', sol: 'ethanol' });
   const [hypoOuv, setHypoOuv] = useState(false);
   const [limOuv, setLimOuv] = useState(false);
-  const [inter, setInter] = useState(null);                // type d'interaction survolé (dessin ou légende)
+  const [inter, setInter] = useState(null);                // type d'interaction survolé ou épinglé (dessin ou légende)
+  const epingle = useRef(false);                            // un clic / toucher épingle l'interaction : elle reste allumée jusqu'à un nouveau clic
+  const survol = (t, clic) => {
+    if (clic) { if (epingle.current && inter === t) { epingle.current = false; setInter(null); } else { epingle.current = true; setInter(t); } return; }
+    if (t === null && epingle.current) return;
+    setInter(t);
+  };
+  const effacer = () => { epingle.current = false; setInter(null); };
   const [pt, setPt] = useState(null);                    // point de l'échelle de polarité pointé ou touché
   const [ouv, setOuv] = useState({ cartes: true });      // blocs dépliés au fur et à mesure
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi;
@@ -412,9 +419,9 @@ export function SimulationSolubilite() {
   })();
 
   // légende interactive : survoler (ou toucher) une entrée met en évidence les liaisons de ce type dans les dessins, et inversement
-  const legendeInter = (items, presents) => <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }} onMouseLeave={() => setInter(null)}>
+  const legendeInter = (items, presents) => <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }} onMouseLeave={() => survol(null)}>
     {items.map(([t, sym, nom, desc]) => { const actif = inter === t, ici = presents.includes(t), c = COUL_INTER[t];
-      return <div key={t} tabIndex={0} role="button" aria-pressed={actif} onMouseEnter={() => setInter(t)} onFocus={() => setInter(t)} onClick={() => setInter(actif ? null : t)}
+      return <div key={t} tabIndex={0} role="button" aria-pressed={actif} onMouseEnter={() => survol(t)} onFocus={() => survol(t)} onClick={e => { e.stopPropagation(); survol(t, true); }}
         style={{ cursor: 'pointer', padding: '4px 8px', borderRadius: 6, borderLeft: `4px solid ${actif ? c : 'transparent'}`, background: actif ? `${c}1f` : 'transparent', opacity: inter && !actif ? 0.5 : 1,
           fontSize: 12.5, color: KIT.txt, lineHeight: 1.5, outline: 'none', transition: 'background .12s, opacity .12s' }}>
         <span style={{ color: c, fontWeight: 800, fontFamily: 'monospace', marginRight: 6 }}>{sym}</span><strong>{nom}</strong> : {desc}
@@ -422,13 +429,13 @@ export function SimulationSolubilite() {
       </div>; })}
   </div>;
   const paires = b && !ion && (
-    <div>
+    <div onClick={effacer}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 10 }}>
         <div><div style={{ fontSize: 13, fontWeight: 700, color: '#475569', marginBottom: 3 }}>🔹 État initial : A et B séparés</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <PaireSVG a={solv} b={solv} titre="A…A" sous={`${nomEsp(solv).replace(/ \(.*\)/, '')} seul`} actif={inter} onSurvol={setInter}/><PaireSVG a={sol} b={sol} titre="B…B" sous={`${nomEsp(sol).replace(/ \(.*\)/, '')} seul`} actif={inter} onSurvol={setInter}/></div></div>
+            <PaireSVG a={solv} b={solv} titre="A…A" sous={`${nomEsp(solv).replace(/ \(.*\)/, '')} seul`} actif={inter} onSurvol={survol}/><PaireSVG a={sol} b={sol} titre="B…B" sous={`${nomEsp(sol).replace(/ \(.*\)/, '')} seul`} actif={inter} onSurvol={survol}/></div></div>
         <div><div style={{ fontSize: 13, fontWeight: 700, color: '#475569', marginBottom: 3 }}>🔸 État final envisagé : A et B mélangés</div>
-          <PaireSVG a={solv} b={sol} titre="A…B" sous={liquide ? 'les deux liquides mélangés' : 'soluté B entouré de solvant A'} actif={inter} onSurvol={setInter}/>
+          <PaireSVG a={solv} b={sol} titre="A…B" sous={liquide ? 'les deux liquides mélangés' : 'soluté B entouré de solvant A'} actif={inter} onSurvol={survol}/>
           {legendeInter([['h', '- - -', 'liaison hydrogène', 'un H lié à O (ou N), δ+, pointe vers un doublet non liant d’un O (ou N) voisin, δ−, dans l’alignement de la liaison O–H.'],
             ['p', '· · ·', 'dipôle–dipôle', 'la charge partielle δ+ d’une molécule face à la charge δ− de l’autre.'],
             ['d', '~~~', 'dispersion (dipôles instantanés)', 'seule interaction dessinée quand il n’y a ni liaison H ni dipôle, mais toujours présente entre molécules au contact.']],
@@ -438,11 +445,11 @@ export function SimulationSolubilite() {
     </div>);
 
   const pairesIon = b && ion && (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 10 }}>
+    <div onClick={effacer} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 10 }}>
       <div><div style={{ fontSize: 13, fontWeight: 700, color: '#475569', marginBottom: 3 }}>🔹 État initial : le cristal, et le solvant seul</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}><CristalSVG/><PaireSVG a={solv} b={solv} titre="A…A" sous={`${nomEsp(solv).replace(/ \(.*\)/, '')} seul`} actif={inter} onSurvol={setInter}/></div></div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}><CristalSVG/><PaireSVG a={solv} b={solv} titre="A…A" sous={`${nomEsp(solv).replace(/ \(.*\)/, '')} seul`} actif={inter} onSurvol={survol}/></div></div>
       <div><div style={{ fontSize: 13, fontWeight: 700, color: '#475569', marginBottom: 3 }}>🔸 État final envisagé : les ions entourés de solvant</div>
-        <SolvateSVG solv={solv} actif={inter} onSurvol={setInter}/>
+        <SolvateSVG solv={solv} actif={inter} onSurvol={survol}/>
         {legendeInter([['i', '· · ·', 'ion–dipôle', 'l’ion attire l’extrémité de charge opposée des molécules de solvant (Na⁺ attire un O, δ−, par un de ses doublets non liants).'],
           ['h', '- - -', 'liaison hydrogène', 'Cl⁻ attire un H lié à O (δ+) ; seuls les solvants qui ont des H liés à O peuvent le faire.'],
           ['d', '~~~', 'dispersion seulement', 'avec un solvant apolaire, rien ne retient vraiment l’ion.']], typesIon(solv))}
