@@ -24,6 +24,10 @@ export function SimulationAPropos() {
             <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}><span style={{ fontSize: 20, flexShrink: 0 }}>⚡</span><p style={{ ...para, fontSize: 14 }}><strong>Jean LAMERENX</strong> — Enseignant en CPGE au lycée Louis-le-Grand (Paris). Les courbes i=f(E) ont été codées initialement en Python et partagées lors des JIREC 2024.</p></div>
             <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}><span style={{ fontSize: 20, flexShrink: 0 }}>💻</span><p style={{ ...para, fontSize: 14 }}><strong>Xavier BATAILLE</strong> — Enseignant en BTS Métiers de la Chimie à l’ENCPB (Paris). Le modèle de simulation CLHP en phase inverse est issu de ses travaux publiés sur RNChimie (2008).</p></div>
             <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}><span style={{ fontSize: 20, flexShrink: 0 }}>🤖</span><p style={{ ...para, fontSize: 14 }}><strong>Claude (Anthropic)</strong> — L’ensemble des simulations a été développé par itérations successives en collaboration avec Claude, assistant IA d’Anthropic.</p></div>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}><span style={{ fontSize: 20, flexShrink: 0 }}>🧲</span><p style={{ ...para, fontSize: 14 }}><strong>MassBank</strong> — Les spectres de masse (ionisation électronique 70 eV) de la simulation « CPG couplée à la spectrométrie de masse » proviennent de la base ouverte{' '}
+              <a href="https://massbank.eu" target="_blank" rel="noopener noreferrer" style={{ color: '#0284c7' }}>MassBank</a> (enregistrements de la Faculty of Engineering, University of Tokyo, <code>MSBNK-Fac_Eng_Univ_Tokyo-…</code>), diffusés sous licence{' '}
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.fr" target="_blank" rel="noopener noreferrer" style={{ color: '#0284c7' }}>CC BY-NC-SA 4.0</a>. Ils ont été simplifiés (pics principaux conservés). Ces données gardent leur licence d’origine.</p></div>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}><span style={{ fontSize: 20, flexShrink: 0 }}>🔥</span><p style={{ ...para, fontSize: 14 }}><strong>GL Sciences</strong> — Les indices de rétention de Kováts utilisés dans les simulations de CPG sont tirés des notes d’application GL Sciences GT063 (colonne apolaire InertCap 5) et GT065 (colonne polaire InertCap WAX), complétés par un modèle de rétention ajusté sur ces données.</p></div>
           </div>
         </div>
         <div style={styleBoite}>
@@ -35,7 +39,7 @@ export function SimulationAPropos() {
           {titre('Licence et réutilisation')}
           <p style={para}>© {new Date().getFullYear()} Nils Aronssohn. Le site et son contenu sont mis à disposition sous licence{' '}
             <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr" target="_blank" rel="noopener noreferrer" style={{ color: '#0284c7' }}>CC BY-NC-ND 4.0</a> :
-            vous pouvez les consulter, les utiliser et les partager, y compris en classe, à condition de citer l’auteur (Nils Aronssohn, lycée Argouges, Grenoble) et de faire un lien vers paillasse-virtuelle.fr. L’usage commercial, la modification et la republication du code ou des simulations sur un autre site ne sont pas autorisés sans accord de l’auteur.</p>
+            vous pouvez les consulter, les utiliser et les partager, y compris en classe, à condition de citer l’auteur (Nils Aronssohn, lycée Argouges, Grenoble) et de faire un lien vers paillasse-virtuelle.fr. L’usage commercial, la modification et la republication du code ou des simulations sur un autre site ne sont pas autorisés sans accord de l’auteur. Les données de tiers citées ci-dessus (spectres MassBank notamment) restent soumises à leur propre licence.</p>
         </div>
         <div style={styleBoite}>
           {titre('Données personnelles')}
