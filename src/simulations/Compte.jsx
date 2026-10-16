@@ -3,6 +3,7 @@ import { cardStyle, KIT, styleBouton, styleBoite } from "../commun";
 import { useSession, estEleve, estProf, connexion, deconnexion, toutLire, changerMotDePasse } from "../serveur";
 import { tousLesExercices } from "./Entrainement";
 import { estSimulation, estDefi, tempsParSimulation, MODES, etiquettesDefis } from "../suivi";
+import { Carnet } from "./Carnet";
 
 const ROSE = '#e11d48';
 
@@ -45,6 +46,12 @@ function Connexion() {
         Avec un compte, ta progression te suit d’un ordinateur à l’autre (chez toi, au lycée). Tu n’as pas besoin de compte pour t’entraîner :
         sans compte, elle reste seulement sur l’appareil que tu utilises.
       </p>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', margin: '4px 0 14px' }}>
+        {[['★', 'Des étoiles à gagner', 'jusqu’à 3 par exercice'], ['🌳', 'Des paliers par compétence', 'de Découverte à Expert·e'], ['🏅', 'Des badges à débloquer', 'et des niveaux, de Curieux·se à Maître de la paillasse']].map(([i, t, d]) => (
+          <div key={t} style={{ flex: '1 1 180px', borderRadius: 14, padding: '10px 12px', color: '#fff', background: 'linear-gradient(135deg, #4c1d95, #1e1b4b)' }}>
+            <div style={{ fontSize: 22, color: '#fbbf24' }}>{i}</div><div style={{ fontWeight: 800, fontSize: 14 }}>{t}</div><div style={{ fontSize: 12.5, opacity: 0.8 }}>{d}</div>
+          </div>))}
+      </div>
       <form onSubmit={valider} style={{ ...styleBoite, maxWidth: 380, display: 'flex', flexDirection: 'column', gap: 10 }}>
         <label style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt }}>Identifiant (donné par ton professeur)
           <input value={id} onChange={e => setId(e.target.value)} autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="tstl1-07" style={{ ...champ, marginTop: 4 }} aria-label="Identifiant" />
@@ -88,10 +95,10 @@ function MotDePasse() {
   );
 }
 
-function MesResultats() {
+function MesResultats({ naviguer }) {
   const [lignes, setLignes] = useState(null), [erreur, setErreur] = useState('');
   useEffect(() => {
-    toutLire('activites?select=cle,reussi,essais,corrections_vues,duree_s,maj&order=debut.desc').then(setLignes).catch(e => setErreur(e.message));
+    toutLire('activites?select=cle,reussi,essais,corrections_vues,duree_s,debut,maj&order=debut.desc').then(setLignes).catch(e => setErreur(e.message));
   }, []);
   if (erreur) return <div style={{ color: '#b91c1c' }}>❌ {erreur}</div>;
   if (!lignes) return <div style={{ color: KIT.txt2 }}>Chargement…</div>;
@@ -100,6 +107,9 @@ function MesResultats() {
   const nbDefis = ag.filter(a => a.reussi && estDefi(a.cle)).length, total = ag.reduce((t, a) => t + a.duree, 0);
   return (
     <div>
+      <Carnet lignes={lignes} naviguer={naviguer} />
+      <details style={{ marginTop: 22 }}>
+      <summary style={{ cursor: 'pointer', fontSize: 16, fontWeight: 800, color: KIT.txt, padding: '6px 0' }}>📋 Le détail de mes résultats</summary>
       <h3 style={{ margin: '14px 0 6px' }}>Mes résultats</h3>
       <div style={{ fontSize: 14, color: KIT.txt2, marginBottom: 8 }}>
         {nbOk} exercice{nbOk > 1 ? 's' : ''} réussi{nbOk > 1 ? 's' : ''} · {nbEx} travaillé{nbEx > 1 ? 's' : ''} · {nbDefis} défi{nbDefis > 1 ? 's' : ''} de simulation réussi{nbDefis > 1 ? 's' : ''} · {formatDuree(total)} au total
@@ -121,6 +131,7 @@ function MesResultats() {
         </div>)}
       <h3 style={{ margin: '18px 0 6px' }}>Temps passé sur les simulations</h3>
       <TableauTempsSimulations lignes={lignes} />
+      </details>
     </div>
   );
 }
@@ -157,7 +168,7 @@ export function SimulationCompte({ naviguer }) {
             <button onClick={deconnexion} style={styleBouton(false, '#475569')}>Se déconnecter</button>
           </div>
           <div style={{ marginTop: 10 }}><MotDePasse /></div>
-          <MesResultats />
+          <MesResultats naviguer={naviguer} />
         </>)}
       {estProf(sess) && (
         <>

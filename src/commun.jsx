@@ -529,3 +529,12 @@ export function noterReussite(cle) {
 export function exParam() {
   try { return new URLSearchParams(window.location.search).get('ex'); } catch { return null; }
 }
+
+// ════════════════ ÉTOILES (carnet de l'élève) ════════════════
+// Étoiles d'un exercice (n sur 3)
+export function Etoiles({ n, taille = 15 }) {
+  return (
+    <span aria-label={`${n} étoile${n > 1 ? 's' : ''} sur 3`} role="img" style={{ display: 'inline-flex', gap: 1, fontSize: taille, lineHeight: 1 }}>
+      {[1, 2, 3].map(k => <span key={k} style={{ color: k <= n ? '#f59e0b' : '#cbd5e1', textShadow: k <= n ? '0 0 6px rgba(245,158,11,.55)' : 'none' }}>★</span>)}
+    </span>);
+}
