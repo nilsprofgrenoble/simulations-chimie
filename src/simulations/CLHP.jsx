@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
 import { Field, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, ARetenir, Curseur, lireProgression } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, Frac, Curseur, lireProgression } from "../commun";
 import { MOLECULES_CLHP, PARAMS_DEFAUT, SEUIL_RS, P_MAX, PANNES, analyse, colonne, signal, bruitLigne, positionBande, phiEntree } from "./clhpModele";
 
 export { MOLECULES_CLHP };
@@ -466,7 +466,7 @@ const TITRES = { ordre: 'Ordre d’élution', identifier: 'Identifier des pics',
 export function SimulationCLHP() {
   const [mode, setMode] = useState('explore');
   useSignalerMode(mode);
-  const [guide, setGuide] = useEtatPersistant('clhp-guide-v2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const [guide, setGuide] = useEtatPersistant('clhp-guide-v3', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [p, setP] = useState({ ...PARAMS_DEFAUT });
   const maj = (k, x) => setP(q => ({ ...q, [k]: x }));
@@ -514,7 +514,18 @@ export function SimulationCLHP() {
   const mettre = (ids, pct = 50) => { setSelected(ids); setCustomMols([]); setP({ ...PARAMS_DEFAUT, pct }); setLancement(n => n + 1); };
   const situation = (ids, panne) => { setSelected(ids); setCustomMols([]); setP({ ...PARAMS_DEFAUT, panne }); setLancement(n => n + 1); };
   const bouton = (label, faire) => <button onClick={faire} style={{ ...styleBouton(true, '#0d6e6e'), margin: '6px 0' }}>{label}</button>;
-  const CAFEINE = 1, PARACETAMOL = 0, PHENOL = 2, BZP = 7, TPC = 11;   // indices dans MOLECULES_CLHP
+  const CAFEINE = 1, PARACETAMOL = 0, PHENOL = 2, PHENACETINE = 3, AMINO = 5, BZP = 7, TPC = 11, DPA = 12, LIDO = 9;   // indices dans MOLECULES_CLHP
+  const duo = (ids, pct = 50, panne = null) => analyse({ ...PARAMS_DEFAUT, pct, panne }, ids.map(k => ({ ...MOLECULES_CLHP[k], conc: 1, epsilon: 10 })));
+  const r3 = x => Math.round(x * 1000) / 1000;
+  // exemple résolu « résolution » : caféine / paracétamol à 50 % ; exercice : lidocaïne / 1,3-diphénylacétone
+  const [exA, exB] = duo([CAFEINE, PARACETAMOL]).pics;
+  const rsExemple = 1.18 * (r3(exB.tr) - r3(exA.tr)) / (r3(exA.W) + r3(exB.W));
+  const [moA, moB] = duo([LIDO, DPA]).pics;
+  const rsExercice = 1.18 * (r3(moB.tr) - r3(moA.tr)) / (r3(moA.W) + r3(moB.W));
+  const essaisPct = [50, 40, 35, 30].map(pc => ({ pc, r: duo([CAFEINE, PARACETAMOL], pc) }));
+  const pEluant = duo([CAFEINE, PHENOL, BZP], 50, 'eluant').pics, pRef = duo([CAFEINE, PHENOL, BZP]).pics;
+  const cBulle = colonne({ ...PARAMS_DEFAUT, panne: 'bulle' }), cEluant = colonne({ ...PARAMS_DEFAUT, panne: 'eluant' });
+  const th = { padding: '3px 8px', borderBottom: '1px solid #cbd5e1', textAlign: 'left', fontSize: 13 }, td = { padding: '3px 8px', fontSize: 13.5 };
   const TROIS = [CAFEINE, PHENOL, BZP], QUATRE = [CAFEINE, PARACETAMOL, BZP, TPC];
   const ref0 = colonne({ ...PARAMS_DEFAUT }).dP;
   const ETAPES = [
@@ -525,10 +536,50 @@ export function SimulationCLHP() {
     { id: 'inj', titre: 'Injecter et regarder', focus: ['viz'],
       texte: <>On injecte un mélange de <strong>caféine</strong>, de <strong>phénol</strong> et de <strong>benzophénone</strong>, avec un éluant à 50 % d’acétonitrile. Les bandes avancent dans la colonne, passent devant le détecteur, et le chromatogramme se trace. En phase inverse, <strong>plus un composé est apolaire, plus il est retenu</strong> par la phase C18 : il sort plus tard.</>,
       tache: { type: 'action', ok: lancement > 0 && memeMelange(TROIS), label: '▶ Mettre le mélange et injecter', faire: () => mettre(TROIS), consigne: 'Observez l’ordre de sortie des trois pics.' } },
+    { id: 'ordre', titre: 'Prévoir l’ordre de sortie', focus: ['viz'],
+      texte: <>En phase inverse la phase C18 est apolaire : <strong>plus un composé est apolaire (logP élevé), plus il est retenu</strong>. On peut donc prévoir l’ordre de sortie avant de simuler.
+        <ExempleResolu>Le mélange précédent, éluant à 50 % d’acétonitrile.<br/>
+          1. On relève les logP : caféine −0,13 ; phénol 1,48 ; benzophénone 3,18.<br/>
+          2. On les classe du plus petit au plus grand : caféine &lt; phénol &lt; benzophénone.<br/>
+          3. Ordre de sortie prévu : <strong>caféine → phénol → benzophénone</strong>. Le chromatogramme le confirme (t<Ind>R</Ind> = {v(trSeul(CAFEINE))} ; {v(trSeul(PHENOL))} ; {v(trSeul(BZP))} min).</ExempleResolu>
+        À vous, avec un autre mélange : paracétamol (logP 0,34), phénacétine (1,63) et 1,3-diphénylacétone (2,99). {bouton('Mettre ce mélange dans le simulateur', () => mettre([PARACETAMOL, PHENACETINE, DPA]))}</>,
+      tache: { type: 'qcm', q: 'Dans quel ordre ces trois composés sortent-ils ?', options: ['paracétamol → phénacétine → 1,3-diphénylacétone', 'phénacétine → paracétamol → 1,3-diphénylacétone', '1,3-diphénylacétone → phénacétine → paracétamol'], bonne: 0,
+        indice: 'Classez d’abord les trois logP du plus petit au plus grand : le plus petit sort en premier.',
+        expl: 'logP : 0,34 < 1,63 < 2,99, donc paracétamol, puis phénacétine, puis 1,3-diphénylacétone. Dans ce modèle seul le logP compte ; dans la réalité, d’autres interactions (liaisons hydrogène, ionisation) peuvent inverser deux composés aux logP voisins.' } },
     { id: 'ident', titre: 'Identifier un pic par son temps de rétention', focus: ['viz', 'resultats'],
       texte: <>En routine, on <strong>reconnaît</strong> un composé à son temps de rétention t<Ind>R</Ind>, mesuré <strong>dans les mêmes conditions</strong> (même éluant, même débit, même température, même colonne) sur un étalon injecté seul. Étalons purs à 50 % d’acétonitrile : caféine {v(trSeul(CAFEINE))} min, phénol {v(trSeul(PHENOL))} min, benzophénone {v(trSeul(BZP))} min.</>,
       tache: { type: 'qcm', q: `Dans l’échantillon inconnu, un pic sort à ${v(trSeul(BZP))} min (mêmes conditions). De quel composé s’agit-il ?`, options: ['la benzophénone', 'le phénol', 'la caféine'], bonne: 0,
         expl: 'Même t_R que l’étalon dans les mêmes conditions : c’est probablement la benzophénone. Ce n’est qu’un indice : deux composés peuvent avoir le même t_R, d’où l’intérêt de confirmer (autre éluant, détecteur à barrette de diodes ou spectromètre de masse).' } },
+    { id: 'ident3', titre: 'Identifier les pics d’un échantillon', focus: ['viz', 'resultats'],
+      texte: <>On injecte des <strong>étalons</strong> seuls, puis on associe chaque pic de l’échantillon à l’étalon qui a le même t<Ind>R</Ind>, à quelques centièmes de minute près (c’est la répétabilité de l’appareil).
+        <ExempleResolu>Étalons à 50 % d’acétonitrile : caféine {v(trSeul(CAFEINE))} min ; phénol {v(trSeul(PHENOL))} ; benzophénone {v(trSeul(BZP))} ; triphénylcarbinol {v(trSeul(TPC))}.<br/>
+          Échantillon : pic A à {v(trSeul(PHENOL) + 0.01)} min, pic B à {v(trSeul(BZP) - 0.01)} min, pic C à {v(trSeul(TPC) + 0.01)} min.<br/>
+          A ↔ phénol, B ↔ benzophénone, C ↔ triphénylcarbinol. Aucun pic ne correspond à la caféine : <strong>elle est absente de l’échantillon</strong>.<br/>
+          Attention : l’identification n’est solide que si les étalons ont des t<Ind>R</Ind> bien différents. La caféine ({v(trSeul(CAFEINE))} min) et le paracétamol ({v(trSeul(PARACETAMOL))} min) sont trop proches : un pic entre les deux laisserait un doute.</ExempleResolu>
+        À vous : étalons paracétamol {v(trSeul(PARACETAMOL))} min, phénol {v(trSeul(PHENOL))} min, 1,3-diphénylacétone {v(trSeul(DPA))} min, triphénylcarbinol {v(trSeul(TPC))} min.</>,
+      tache: { type: 'qcm', q: `Un échantillon donne trois pics à ${v(trSeul(PARACETAMOL) + 0.01)}, ${v(trSeul(DPA) - 0.01)} et ${v(trSeul(TPC) + 0.01)} min. Quel étalon n’y est pas ?`, options: ['le phénol', 'le paracétamol', 'la 1,3-diphénylacétone', 'le triphénylcarbinol'], bonne: 0,
+        indice: 'Associez chaque pic à l’étalon de même t_R ; celui qui reste sans pic est absent.',
+        expl: `Les pics correspondent au paracétamol (${v(trSeul(PARACETAMOL))} min), à la 1,3-diphénylacétone (${v(trSeul(DPA))} min) et au triphénylcarbinol (${v(trSeul(TPC))} min). Le phénol (${v(trSeul(PHENOL))} min) n’a pas de pic : il est absent. C’est exactement la démarche du défi « Identifier des pics ».` } },
+    { id: 'rs', titre: 'Calculer une résolution', focus: ['resultats'],
+      texte: <>Deux pics sont <strong>séparés</strong> quand leur résolution R<Ind>s</Ind> est au moins égale à 1,5. Le tableau des résultats la donne, mais il faut savoir la retrouver à partir du chromatogramme.
+        <ExempleResolu>Caféine et paracétamol à 50 % d’acétonitrile : t<Ind>R1</Ind> = {v(exA.tr, 3)} min, t<Ind>R2</Ind> = {v(exB.tr, 3)} min, W<Ind>½,1</Ind> = {v(exA.W, 3)} min, W<Ind>½,2</Ind> = {v(exB.W, 3)} min.<br/>
+          Expression littérale : R<Ind>s</Ind> = 1,18 × <Frac haut={<>t<Ind>R2</Ind> − t<Ind>R1</Ind></>} bas={<>W<Ind>½,1</Ind> + W<Ind>½,2</Ind></>}/><br/>
+          Application numérique : R<Ind>s</Ind> = 1,18 × <Frac haut={<>{v(exB.tr, 3)} − {v(exA.tr, 3)}</>} bas={<>{v(exA.W, 3)} + {v(exB.W, 3)}</>}/> ≈ {v(rsExemple)}.<br/>
+          Comme R<Ind>s</Ind> &lt; 1,0, les deux pics se chevauchent largement : il faudra améliorer la séparation.</ExempleResolu>
+        À vous : lidocaïne et 1,3-diphénylacétone, à 50 % d’acétonitrile.</>,
+      tache: { type: 'num', q: <>t<Ind>R1</Ind> = {v(moA.tr, 3)} min, t<Ind>R2</Ind> = {v(moB.tr, 3)} min, W<Ind>½,1</Ind> = {v(moA.W, 3)} min, W<Ind>½,2</Ind> = {v(moB.W, 3)} min. Calculez R<Ind>s</Ind>.</>, unite: '', vrai: rsExercice, tol: 0.03, affiche: x => v(x),
+        aide: 'Utilisez la formule de l’exemple, avec les valeurs ci-dessus (3 décimales).',
+        pieges: [[(r3(moB.tr) - r3(moA.tr)) / (r3(moA.W) + r3(moB.W)), 'Il manque le facteur 1,18 dans la formule.']],
+        expl: `R_s = 1,18 × (${v(moB.tr, 3)} − ${v(moA.tr, 3)}) / (${v(moA.W, 3)} + ${v(moB.W, 3)}) ≈ ${v(rsExercice)}. Comme R_s ≥ 1,5, les deux pics sont séparés. Vérifiez dans le tableau en mettant ces deux composés dans le simulateur.` } },
+    { id: 'separer2', titre: 'Séparer deux composés proches', focus: ['eluant', 'viz', 'resultats'],
+      texte: <>Le réglage le plus efficace est la <strong>composition de l’éluant</strong> : moins il y a d’acétonitrile, plus les composés sont retenus (k’ plus grand) et plus leurs pics s’écartent, mais plus ils sortent tard.
+        <ExempleResolu>Caféine et paracétamol sortent presque ensemble à 50 %. On essaie plusieurs compositions et on relève R<Ind>s</Ind> et le t<Ind>R</Ind> du dernier pic :
+          <table style={{ borderCollapse: 'collapse', margin: '4px 0' }}><thead><tr><th style={th}>% ACN</th><th style={th}>R<Ind>s</Ind></th><th style={th}>dernier t<Ind>R</Ind> (min)</th></tr></thead>
+            <tbody>{essaisPct.map(({ pc, r }) => <tr key={pc}><td style={td}>{pc}</td><td style={{ ...td, fontWeight: 700, color: r.res[0].R >= SEUIL_RS[1] ? '#15803d' : '#b91c1c' }}>{v(r.res[0].R)}</td><td style={td}>{v(r.pics[1].tr)}</td></tr>)}</tbody></table>
+          Dès que R<Ind>s</Ind> ≥ 1,5 (ici vers 35 %), on s’arrête : descendre davantage ne fait que rallonger l’analyse.</ExempleResolu>
+        À vous : acide 2-aminobenzoïque et phénol. Objectif : R<Ind>s</Ind> ≥ 1,5 avec un dernier pic avant {TEMPS_MAX_DEFI} min (c’est le principe du défi « Séparer deux composés »). {bouton('Mettre ces deux composés (50 %)', () => mettre([AMINO, PHENOL]))}</>,
+      tache: { type: 'action', ok: memeMelange([AMINO, PHENOL]) && !p.grad && nbPics === 2 && rsMin >= SEUIL_RS[1] && dernierTr <= TEMPS_MAX_DEFI, label: null,
+        consigne: memeMelange([AMINO, PHENOL]) ? `${p.pct} % d’acétonitrile · R_s = ${v(rsMin ?? 0)} · dernier pic à ${v(dernierTr)} min${p.grad ? ' · repassez en isocratique' : ''}` : 'Mettez les deux composés avec le bouton ci-dessus.' } },
     { id: 'iso', titre: 'Choisir la composition de l’éluant', focus: ['eluant', 'viz', 'resultats'],
       texte: <>Mélange plus difficile : caféine, paracétamol (très proches), benzophénone et triphénylcarbinol (très retenu). {bouton('Mettre ces 4 composés (50 %)', () => mettre(QUATRE))} Faites varier le pourcentage d’acétonitrile : plus l’éluant est riche en acétonitrile, plus tout sort vite… mais moins les pics du début sont séparés. Cherchez Rs ≥ 1,5 pour toutes les paires <strong>et</strong> un dernier pic avant 10 min.</>,
       tache: { type: 'qcm', q: 'En élution isocratique (composition constante), peut-on séparer les 4 pics (Rs ≥ 1,5) en moins de 10 min ?', options: ['non : ce qui sépare les premiers retarde trop les derniers', 'oui, vers 50 % d’acétonitrile', 'oui, en diminuant le débit'], bonne: 0,
@@ -540,6 +591,20 @@ export function SimulationCLHP() {
       texte: <>Retour à l’isocratique. {bouton('Mettre le mélange de 3 composés (50 %, débit habituel)', () => mettre(TROIS))} Le <strong>manomètre</strong> lit la pression nécessaire pour faire passer l’éluant dans la colonne : ici ≈ {Math.round(ref0)} bar. Changez le débit et lisez la pression ; regardez aussi ce qui arrive aux temps de rétention.</>,
       tache: { type: 'qcm', q: 'On double le débit. Que devient la pression lue au manomètre ?', options: ['elle double à peu près', 'elle est divisée par 2', 'elle ne change pas'], bonne: 0,
         expl: 'La pression est proportionnelle au débit (loi de Darcy). C’est pourquoi on note la pression de référence de la méthode : un écart à débit identique signale un problème. Doubler le débit divise aussi les temps de rétention par 2 ; au-delà de la limite de pression de l’appareil, la pompe s’arrête.' } },
+    { id: 'methode', titre: 'Diagnostiquer : la méthode', focus: ['controle'],
+      texte: <>Face à une analyse anormale, on <strong>compare la journée à la méthode validée</strong>, indicateur par indicateur, plutôt que de deviner. Le tableau « Contrôle de routine » du simulateur donne ces écarts.
+        <ExempleResolu titre="Grille de lecture">
+          <ul style={{ margin: '4px 0', paddingLeft: 18 }}>
+            <li><strong>Encrassement</strong> : pression ↑↑ ; le reste est inchangé.</li>
+            <li><strong>Fuite</strong> : pression ↓, t<Ind>R</Ind> ↑ (tous), R<Ind>s</Ind> inchangé.</li>
+            <li><strong>Éluant mal préparé</strong> : pression ≈ ; t<Ind>R</Ind> décalés, surtout les derniers.</li>
+            <li><strong>Colonne vieillie</strong> : pression =, t<Ind>R</Ind> un peu ↓, pics larges et R<Ind>s</Ind> ↓.</li>
+            <li><strong>Bulle d’air</strong> : pression qui oscille, ligne de base ondulée, pics irréguliers.</li>
+            <li><strong>Lampe</strong> : pression et t<Ind>R</Ind> corrects, pics plus petits, bruit ↑.</li></ul>
+          On lit dans cet ordre : <strong>pression</strong>, puis <strong>t<Ind>R</Ind></strong>, puis <strong>forme des pics et R<Ind>s</Ind></strong>, enfin <strong>hauteur et bruit</strong>. Le premier indicateur qui sort de la tolérance oriente vers la cause.</ExempleResolu>
+        Les six pannes qui suivent se règlent avec cette grille.</>,
+      tache: { type: 'qcm', q: 'Les t_R ont tous beaucoup augmenté et les pics sont toujours bien séparés. Quel indicateur fait d’abord la différence entre une fuite et un éluant mal préparé ?', options: ['la pression au manomètre', 'la hauteur des pics', 'la ligne de base'], bonne: 0,
+        expl: 'Avec une fuite, le débit réel est plus faible : la pression baisse. Avec un éluant mal préparé, le débit est le bon : la pression ne bouge presque pas.' } },
     { id: 'bouchee', titre: 'Panne n° 1 : la pression monte', focus: ['appareil', 'controle', 'viz'],
       texte: <>{bouton('Charger la situation', () => situation(TROIS, 'bouchee'))} Le tableau « Contrôle de routine » compare la journée à la méthode validée. Ici la pression est passée de {Math.round(ref0)} à {Math.round(colonne({ ...PARAMS_DEFAUT, panne: 'bouchee' }).dP)} bar alors que les chromatogrammes ont gardé les mêmes temps de rétention, la même résolution et la même hauteur de pic.</>,
       tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.bouchee.nom, PANNES.fuite.nom, PANNES.lampe.nom], bonne: 0,
@@ -556,13 +621,22 @@ export function SimulationCLHP() {
       texte: <>{bouton('Charger la situation', () => situation(TROIS, 'lampe'))} Les temps de rétention, la pression et la résolution sont corrects, mais les pics ont perdu les deux tiers de leur hauteur et la ligne de base est plus bruitée.</>,
       tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.lampe.nom, PANNES.fuite.nom, PANNES.vieille.nom], bonne: 0,
         expl: `Tout ce qui concerne la séparation est normal : c’est le détecteur qui a perdu en sensibilité. Geste : ${PANNES.lampe.geste}` } },
+    { id: 'bulle', titre: 'Panne n° 5 : la pression oscille', focus: ['appareil', 'controle', 'viz'],
+      texte: <>{bouton('Charger la situation', () => situation(TROIS, 'bulle'))} Observez l’aiguille du manomètre : elle oscille entre {Math.round(cBulle.dPmin)} et {Math.round(cBulle.dPmax)} bar. La ligne de base ondule et les pics sont irréguliers, alors que les temps de rétention moyens sont corrects.</>,
+      tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.bulle.nom, PANNES.bouchee.nom, PANNES.lampe.nom], bonne: 0,
+        expl: `Une bulle d’air dans la pompe rend le débit irrégulier : la pression oscille et la ligne de base ondule. Une pression trop haute mais stable serait un encrassement. Geste : ${PANNES.bulle.geste}` } },
+    { id: 'eluant', titre: 'Panne n° 6 : les derniers pics sortent trop tard', focus: ['appareil', 'controle', 'viz'],
+      texte: <>{bouton('Charger la situation', () => situation(TROIS, 'eluant'))} Les t<Ind>R</Ind> ont augmenté, surtout ceux des derniers pics : la benzophénone sort à {v(pEluant[2].tr)} min au lieu de {v(pRef[2].tr)} min, la caféine à peine décalée ({v(pEluant[0].tr)} au lieu de {v(pRef[0].tr)} min). La pression est presque inchangée ({Math.round(cEluant.dP)} bar au lieu de {Math.round(ref0)} bar) et les pics restent bien séparés.</>,
+      tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.eluant.nom, PANNES.fuite.nom, PANNES.vieille.nom], bonne: 0,
+        expl: `Un éluant trop pauvre en acétonitrile retient davantage les composés apolaires, donc les derniers pics sont les plus retardés. Avec une fuite, tous les t_R seraient multipliés par le même facteur et la pression baisserait. Geste : ${PANNES.eluant.geste}` } },
     { id: 'fin', titre: 'À retenir', focus: [],
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18 }}>
         <li>Chaîne : <strong>pompe → injecteur → colonne (four) → détecteur</strong>. Le manomètre donne la santé du circuit.</li>
         <li>On <strong>identifie</strong> par t<Ind>R</Ind> (comparaison à un étalon dans les mêmes conditions) et on vérifie par une autre méthode.</li>
-        <li>Phase inverse : plus un composé est apolaire, plus il est retenu. Plus il y a d’acétonitrile, plus tout sort vite.</li>
+        <li>Phase inverse : plus un composé est apolaire (logP élevé), plus il est retenu. Plus il y a d’acétonitrile, plus tout sort vite.</li>
+        <li>Résolution : R<Ind>s</Ind> = 1,18 (t<Ind>R2</Ind> − t<Ind>R1</Ind>) / (W<Ind>½,1</Ind> + W<Ind>½,2</Ind>) ; séparés si R<Ind>s</Ind> ≥ 1,5. Pour séparer deux composés proches, on diminue le % d’acétonitrile, tant que le dernier pic sort dans un temps raisonnable.</li>
         <li>Un mélange aux polarités très étalées se sépare mieux en <strong>gradient</strong>.</li>
-        <li><strong>Diagnostic</strong> : comparer pression, t<Ind>R</Ind>, forme et hauteur des pics, ligne de base à la méthode validée. Pression ↑ : encrassement. Pression ↓ et t<Ind>R</Ind> ↑ : fuite. Pics larges et Rs ↓ : colonne usée. Pics petits, bruit ↑ : lampe.</li></ul></ARetenir>,
+        <li><strong>Diagnostic</strong> : comparer pression, t<Ind>R</Ind>, forme et hauteur des pics, ligne de base à la méthode validée. Pression ↑ : encrassement. Pression ↓ et t<Ind>R</Ind> ↑ : fuite. Pics larges et Rs ↓ : colonne usée. Pics petits, bruit ↑ : lampe. Pression qui oscille : bulle d’air. t<Ind>R</Ind> décalés (surtout les derniers) avec pression normale : éluant mal préparé.</li></ul></ARetenir>,
       tache: null },
   ];
 

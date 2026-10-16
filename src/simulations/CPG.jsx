@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useLargeur, pasTemps, grille } from "./cpgOutils";
 import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, ARetenir, Curseur, lireProgression } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, Curseur, lireProgression } from "../commun";
 import { COMPOSES, PAR_ID, PHASES, GAZ, PARAMS_DEFAUT, SEUIL_RS, P_MAX, PANNES, FRACTION_VOL,
   analyse, ecoulement, signal, ligneBase, temperature, positionBande } from "./cpgModele";
 
@@ -427,7 +427,7 @@ const TITRES = { ordre: 'Ordre d’élution', identifier: 'Identifier des pics',
 export function SimulationCPG() {
   const [mode, setMode] = useState('explore');
   useSignalerMode(mode);
-  const [guide, setGuide] = useEtatPersistant('cpg-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const [guide, setGuide] = useEtatPersistant('cpg-guide-v2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [p, setP] = useState({ ...PARAMS_DEFAUT });
   const maj = (k, x) => setP(q => ({ ...q, [k]: x }));
@@ -459,6 +459,13 @@ export function SimulationCPG() {
   const bouton = (label, faire) => <button onClick={faire} style={{ ...styleBouton(true, VERT), margin: '6px 0' }}>{label}</button>;
   const CINQ = ['etoh', 'acet', 'aceet', 'tol', 'oxyl'], VOISINS = ['mek', 'c6', 'aceet', 'chcl3'], LARGE = ['etoh', 'acet', 'aceet', 'tol', 'oxyl', 'c10', 'c12'];
   const ref0 = ecoulement(PARAMS_DEFAUT, PARAMS_DEFAUT.T0).pEntree;
+  // exemples résolus : tout est calculé avec le modèle, pour que les textes restent exacts si le modèle évolue
+  const nom = id => PAR_ID[id].nom;
+  const ordreTxt = (ids, extra = {}) => analyse({ ...PARAMS_DEFAUT, ...extra }, ids).pics.map(m => nom(m.id).toLowerCase()).join(' → ');
+  const MEL_POL = ['acet', 'etoh', 'tol', 'oxyl'], EX_POL = ['buoh', 'mek', 'aceet', 'tol'], EX_COEL = ['etoh', 'acn', 'acet', 'ipa'];
+  const rsDe = (ids, extra = {}) => { const r = analyse({ ...PARAMS_DEFAUT, ...extra }, ids); return r.res.length ? Math.min(...r.res.map(x => x.R)) : NaN; };
+  const lent = { rampe: 1, T0: 30 };
+  const t2 = (id, dt = 0) => v(trSeul(PARAMS_DEFAUT, id) + dt, 2);
   const ETAPES = [
     { id: 'appareil', titre: 'Le chemin de l’échantillon', focus: ['appareil'],
       texte: <>Un chromatographe en phase gazeuse est une chaîne : le <strong>gaz vecteur</strong> (hélium) traverse l’<strong>injecteur</strong> chauffé où l’on vaporise l’échantillon, puis la <strong>colonne capillaire</strong> enroulée dans le <strong>four</strong>, et enfin le <strong>détecteur FID</strong>. Cliquez sur chaque élément du schéma pour lire son rôle et ce qu’on y contrôle.</>,
@@ -471,12 +478,41 @@ export function SimulationCPG() {
       texte: <>Le tableau des résultats donne la température d’ébullition de chaque composé. Comparez avec l’ordre de sortie.</>,
       tache: { type: 'qcm', q: 'Sur une colonne apolaire, les composés sortent à peu près…', options: ['dans l’ordre croissant de leur température d’ébullition', 'dans l’ordre décroissant de leur température d’ébullition', 'dans l’ordre de leur masse molaire, quelle que soit leur famille'], bonne: 0,
         expl: 'Sur une phase apolaire, la rétention dépend surtout de la volatilité : plus un composé est volatil, plus il passe de temps dans le gaz et sort tôt. Ce n’est qu’une tendance : l’éthanol (78 °C) sort avant l’acétone (56 °C) car ses liaisons hydrogène ne trouvent pas de partenaire dans la phase apolaire.' } },
+    { id: 'polaire', titre: 'Sur colonne polaire : les liaisons hydrogène', focus: ['colonne', 'viz', 'resultats'],
+      texte: <>Une colonne <strong>polaire</strong> (phase PEG, dite « WAX ») retient surtout les composés capables de <strong>liaisons hydrogène</strong> (les alcools) ou très polaires, quelle que soit leur température d’ébullition.
+        <ExempleResolu>Mélange : acétone (téb 56 °C), éthanol (78 °C), toluène (111 °C), o-xylène (144 °C), même programme.<br/>
+          Colonne apolaire : {ordreTxt(MEL_POL)}.<br/>
+          Colonne polaire : {ordreTxt(MEL_POL, { phase: 'polaire' })}.<br/>
+          L’éthanol est le composé qui change le plus : son t<Ind>R</Ind> passe de {t2('etoh')} à {v(trSeul({ ...PARAMS_DEFAUT, phase: 'polaire' }, 'etoh'), 2)} min, car ses liaisons hydrogène sont retenues par le PEG. Les hydrocarbures aromatiques, eux, bougent peu.</ExempleResolu>
+        À vous : butan-1-ol, butanone, acétate d’éthyle et toluène. {bouton('Mettre ce mélange (colonne apolaire)', () => mettre(EX_POL))} Prévoyez l’ordre sur la colonne polaire, puis vérifiez en changeant de colonne.</>,
+      tache: { type: 'qcm', q: 'Sur la colonne polaire, quel composé sort en dernier ?', options: ['le butan-1-ol (alcool)', 'le toluène (le moins polaire)', 'la butanone', 'l’acétate d’éthyle'], bonne: 0,
+        indice: 'Cherchez le composé qui peut faire des liaisons hydrogène avec la phase PEG.',
+        expl: `Sur colonne apolaire l’ordre est : ${ordreTxt(EX_POL)}. Sur colonne polaire : ${ordreTxt(EX_POL, { phase: 'polaire' })}. Le butan-1-ol, retenu par liaisons hydrogène, passe de la 3e à la dernière place.` } },
     { id: 'ident', titre: 'Identifier un pic par son temps de rétention', focus: ['viz', 'resultats'],
       texte: <>En routine, on identifie un composé en comparant son t<Ind>R</Ind> à celui d’un <strong>étalon injecté dans les mêmes conditions</strong> (même colonne, même programme, même débit). Étalon de toluène seul : t<Ind>R</Ind> = {v(trSeul(PARAMS_DEFAUT, 'tol'), 3)} min ; étalon d’o-xylène seul : {v(trSeul(PARAMS_DEFAUT, 'oxyl'), 3)} min.</>,
       tache: { type: 'qcm', q: `Dans un échantillon analysé avec la même méthode, un pic sort à ${v(trSeul(PARAMS_DEFAUT, 'tol'), 3)} min. Que peut-on conclure ?`, options: ['c’est probablement du toluène : il faut le confirmer (autre colonne ou spectre de masse)', 'c’est certainement du toluène', 'on ne peut rien dire sans calculer k'], bonne: 0,
         expl: 'Un même t_R est un indice fort mais pas une preuve : un autre composé peut sortir au même instant. On confirme en changeant de colonne (polarité différente) ou par CPG couplée à la spectrométrie de masse.' } },
+    { id: 'ident3', titre: 'Identifier les pics d’un échantillon', focus: ['viz', 'resultats'],
+      texte: <>On injecte des <strong>étalons</strong> seuls, puis on associe chaque pic de l’échantillon à l’étalon de même t<Ind>R</Ind>, à quelques centièmes de minute près (répétabilité).
+        <ExempleResolu>Étalons (colonne apolaire, méthode de départ) : éthanol {t2('etoh')} min ; acétate d’éthyle {t2('aceet')} ; toluène {t2('tol')} ; o-xylène {t2('oxyl')}.<br/>
+          Échantillon : pics à {t2('aceet', 0.01)}, {t2('tol', -0.01)} et {t2('oxyl', 0.01)} min.<br/>
+          Ils correspondent à l’acétate d’éthyle, au toluène et à l’o-xylène. Aucun pic ne correspond à l’éthanol : <strong>il est absent de l’échantillon</strong>.<br/>
+          Un seul t<Ind>R</Ind> ne prouve pas l’identité (un autre composé peut sortir au même instant) : on confirme sur une colonne de polarité différente.</ExempleResolu>
+        À vous : étalons acétone {t2('acet')} min, acétate d’éthyle {t2('aceet')} min, toluène {t2('tol')} min, décane {t2('c10')} min.</>,
+      tache: { type: 'qcm', q: `Un échantillon donne trois pics à ${t2('acet', 0.01)}, ${t2('tol', -0.01)} et ${t2('c10', 0.01)} min. Quel étalon n’y est pas ?`, options: ['l’acétate d’éthyle', 'l’acétone', 'le toluène', 'le décane'], bonne: 0,
+        indice: 'Associez chaque pic à l’étalon de même t_R ; celui qui reste sans pic est absent.',
+        expl: `Les pics sont l’acétone (${t2('acet')} min), le toluène (${t2('tol')} min) et le décane (${t2('c10')} min). L’acétate d’éthyle (${t2('aceet')} min) n’a pas de pic : il est absent. C’est la démarche du défi « Identifier des pics ».` } },
+    { id: 'coelution', titre: 'Reconnaître une co-élution', focus: ['colonne', 'viz', 'resultats'],
+      texte: <>Deux composés <strong>co-éluent</strong> quand leur résolution est trop faible : leurs pics se confondent. On le voit à R<Ind>s</Ind> &lt; 1,5 dans le tableau, ou à un pic anormalement large.
+        <ExempleResolu>Éthanol, acétonitrile, acétone et propan-2-ol, méthode de départ.<br/>
+          Colonne apolaire : {ordreTxt(EX_COEL)} ; R<Ind>s</Ind> minimal = {v(rsDe(EX_COEL))}. L’acétonitrile, l’acétone et le propan-2-ol sortent ensemble.<br/>
+          On pourrait ralentir la montée en température : même avec 1 °C/min depuis 30 °C, R<Ind>s</Ind> minimal reste à {v(rsDe(EX_COEL, lent))}. Ces composés ont des <strong>volatilités voisines</strong> : le four ne peut pas les départager.<br/>
+          Colonne polaire : {ordreTxt(EX_COEL, { phase: 'polaire' })} ; R<Ind>s</Ind> minimal = {v(rsDe(EX_COEL, { phase: 'polaire' }))}. Les trois sont séparés parce que le PEG ne les retient pas de la même façon.</ExempleResolu>
+        Pour séparer deux composés co-élués, il faut changer ce qui les distingue : la <strong>polarité de la colonne</strong>.</>,
+      tache: { type: 'qcm', q: 'Sur colonne apolaire, trois composés de volatilités voisines co-éluent. Que faut-il changer en priorité ?', options: ['la colonne, pour une phase de polarité différente', 'le débit du gaz vecteur', 'le rapport de division de l’injecteur'], bonne: 0,
+        expl: 'La séparation de composés de volatilités voisines dépend de la sélectivité de la phase, pas de la température ni du débit. Les réglages du four servent ensuite à ajuster la durée de l’analyse.' } },
     { id: 'colonne', titre: 'Choisir la colonne', focus: ['colonne', 'viz', 'resultats'],
-      texte: <>Mélange difficile : butanone, hexane, acétate d’éthyle et chloroforme, quatre composés de volatilités voisines. {bouton('Mettre ce mélange (colonne apolaire)', () => mettre(VOISINS))} Sur colonne apolaire, deux pics se superposent. Passez sur la colonne <strong>polaire</strong> (PEG) et injectez à nouveau.</>,
+      texte: <>À vous, avec un autre mélange difficile : butanone, hexane, acétate d’éthyle et chloroforme, quatre composés de volatilités voisines. {bouton('Mettre ce mélange (colonne apolaire)', () => mettre(VOISINS))} Sur colonne apolaire, deux pics se superposent. Passez sur la colonne <strong>polaire</strong> (PEG) et injectez à nouveau.</>,
       tache: { type: 'action', ok: memeMelange(VOISINS) && p.phase === 'polaire' && nbPics === 4 && rsMin >= SEUIL_RS[1], label: null,
         consigne: memeMelange(VOISINS) ? `Colonne ${p.phase} · R_s minimal : ${v(rsMin ?? 0)}` : 'Remettez le mélange avec le bouton ci-dessus.' } },
     { id: 'iso', titre: 'Isotherme ou programmation de température ?', focus: ['four', 'viz'],
@@ -495,6 +531,19 @@ export function SimulationCPG() {
       texte: <>En mode <strong>split</strong>, la vanne de fuite évacue la plus grande partie de l’échantillon vaporisé : avec un rapport 1:100, environ 1 % seulement entre dans la colonne. Essayez 1:10, puis le mode <strong>splitless</strong>.</>,
       tache: { type: 'qcm', q: 'On passe du rapport de division 1:100 à 1:10. Les aires des pics…', options: ['sont multipliées par environ 9', 'sont divisées par 10', 'ne changent pas'], bonne: 0,
         expl: 'La fraction qui entre dans la colonne passe de 1/101 à 1/11 : les aires sont multipliées par ≈ 9. En splitless, presque tout l’échantillon entre : les pics d’un échantillon concentré se déforment (colonne saturée). Le splitless est réservé aux traces, avec un four froid au départ pour reconcentrer les composés en tête de colonne.' } },
+    { id: 'methode', titre: 'Diagnostiquer : la méthode', focus: ['controle'],
+      texte: <>Face à une analyse anormale, on <strong>compare la journée à la méthode validée</strong>, indicateur par indicateur. Le « Contrôle de routine » du simulateur donne ces écarts.
+        <ExempleResolu titre="Grille de lecture">
+          <ul style={{ margin: '4px 0', paddingLeft: 18 }}>
+            <li><strong>Septum usé</strong> : pression ↓, t<Ind>R</Ind> ↑, aires ↓ et variables d’une injection à l’autre.</li>
+            <li><strong>Liner encrassé</strong> : pression et t<Ind>R</Ind> corrects ; seuls les alcools traînent et perdent de l’aire.</li>
+            <li><strong>Flamme éteinte</strong> : aucun pic, ligne de base plate à zéro.</li>
+            <li><strong>Dihydrogène déréglé</strong> : pics plus petits, ligne de base plus bruitée, t<Ind>R</Ind> corrects.</li>
+            <li><strong>Colonne usée</strong> : la ligne de base monte avec la température.</li></ul>
+          On lit dans cet ordre : <strong>pression</strong>, puis <strong>t<Ind>R</Ind></strong>, puis <strong>forme et aires des pics</strong>, enfin <strong>ligne de base</strong>.</ExempleResolu>
+        Les cinq pannes qui suivent se règlent avec cette grille.</>,
+      tache: { type: 'qcm', q: 'Les alcools traînent, mais les autres pics sont normaux. Quel indicateur écarte le septum usé ?', options: ['la pression en tête de colonne, restée normale', 'la température d’ébullition des composés', 'le rapport de division'], bonne: 0,
+        expl: 'Un septum usé laisse fuir le gaz : la pression baisse et tous les t_R augmentent. Ici la pression est normale et seuls les composés polaires sont touchés : c’est un liner encrassé.' } },
     { id: 'septum', titre: 'Panne n° 1 : pression basse, pics en retard', focus: ['appareil', 'controle', 'viz'],
       texte: <>{bouton('Charger la situation', () => mettre(CINQ, { panne: 'septum' }))} Comparez le tableau « Contrôle de routine » à la référence. Injectez plusieurs fois et regardez les aires.</>,
       tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.septum.nom, PANNES.flamme.nom, PANNES.ressuage.nom], bonne: 0,
@@ -511,14 +560,19 @@ export function SimulationCPG() {
       texte: <>{bouton('Charger la situation', () => mettre(CINQ, { panne: 'ressuage', Tf: 250 }))} Le programme monte jusqu’à 250 °C. Observez la ligne de base en fin d’analyse.</>,
       tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.ressuage.nom, PANNES.flamme.nom, PANNES.hydrogene.nom], bonne: 0,
         expl: `À haute température, une colonne usée (ou chauffée au-delà de sa limite) perd de la phase stationnaire, qui brûle dans le FID : la ligne de base monte avec la température. Geste : ${PANNES.ressuage.geste}` } },
+    { id: 'hydrogene', titre: 'Panne n° 5 : des pics trop petits', focus: ['controle', 'viz'],
+      texte: <>{bouton('Charger la situation', () => mettre(CINQ, { panne: 'hydrogene' }))} Les pics sont présents, à leur place habituelle, mais leur hauteur est réduite à environ 40 % de la normale et la ligne de base est plus bruitée. La pression est normale.</>,
+      tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.hydrogene.nom, PANNES.flamme.nom, PANNES.septum.nom], bonne: 0,
+        expl: `Avec une flamme éteinte, il n’y aurait aucun pic ; avec un septum usé, la pression baisserait et les t_R augmenteraient. Ici seul le détecteur est affecté. Geste : ${PANNES.hydrogene.geste}` } },
     { id: 'fin', titre: 'À retenir', focus: [],
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18 }}>
         <li>Chaîne : <strong>gaz vecteur → injecteur → colonne (four) → FID</strong>.</li>
-        <li>Colonne <strong>apolaire</strong> : ordre ≈ températures d’ébullition. Colonne <strong>polaire</strong> : les composés polaires sont retardés. On change de colonne quand deux composés co-éluent.</li>
+        <li>Colonne <strong>apolaire</strong> : ordre ≈ températures d’ébullition. Colonne <strong>polaire</strong> : les composés capables de liaisons hydrogène (alcools) sont retardés.</li>
+        <li><strong>Co-élution</strong> (R<Ind>s</Ind> &lt; 1,5) entre composés de volatilités voisines : le four n’y peut rien, on change de colonne.</li>
         <li>On <strong>identifie</strong> par t<Ind>R</Ind> (étalon dans les mêmes conditions) et on confirme par une autre méthode.</li>
         <li>La <strong>programmation</strong> du four sépare les volatils et fait sortir les lourds plus tôt, en pics fins. Le débit raccourcit l’analyse mais augmente la pression.</li>
         <li><strong>Split</strong> pour les échantillons concentrés, <strong>splitless</strong> pour les traces.</li>
-        <li>Diagnostic : pression ↓ et t<Ind>R</Ind> ↑ : fuite (septum). Traînée des polaires : liner. Aucun pic : flamme. Ligne de base qui monte : ressuage.</li></ul></ARetenir>,
+        <li>Diagnostic : pression ↓ et t<Ind>R</Ind> ↑ : fuite (septum). Traînée des polaires : liner. Aucun pic : flamme. Pics petits et bruit ↑ : débit de dihydrogène. Ligne de base qui monte : ressuage.</li></ul></ARetenir>,
       tache: null },
   ];
   const cadre = id => enGuide && (ETAPES[Math.min(etape, ETAPES.length - 1)].focus || []).includes(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};

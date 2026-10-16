@@ -376,6 +376,16 @@ export function ARetenir({ titre = 'À RETENIR', children }) {
   );
 }
 
+// Encadré « exemple résolu » des parcours guidés : le raisonnement est donné en entier, l'élève le refait ensuite sur un autre cas.
+export function ExempleResolu({ titre = 'Exemple résolu', children }) {
+  return (
+    <div data-exemple="1" style={{ background: '#f0f9ff', border: '1.5px solid #7dd3fc', borderRadius: 10, padding: '6px 10px', margin: '8px 0', color: '#0f172a' }}>
+      <div style={{ fontWeight: 800, fontSize: 13, color: '#0369a1', letterSpacing: 0.3, marginBottom: 2 }}>📘 {titre.toUpperCase()}</div>
+      <div style={{ fontSize: 14.5, lineHeight: 1.6 }}>{indicesProfond(children)}</div>
+    </div>
+  );
+}
+
 // Vraie fraction (barre de fraction), à utiliser à la place de « ÷ » dans les calculs détaillés
 export function Frac({ haut, bas }) {
   return (
