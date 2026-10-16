@@ -2,21 +2,23 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
 import { Field, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, Curseur, lireProgression } from "../commun";
-import { MOLECULES_CLHP, PARAMS_DEFAUT, SEUIL_RS, P_MAX, analyse, colonne, signal, courbeVD, positionBande, phiEntree } from "./clhpModele";
+import { MOLECULES_CLHP, PARAMS_DEFAUT, SEUIL_RS, P_MAX, PANNES, analyse, colonne, signal, bruitLigne, positionBande, phiEntree } from "./clhpModele";
 
 export { MOLECULES_CLHP };
 
 // ====================================================
 //  SIM 12 — SIMULATION CLHP (BTS) : chromatographie en phase inverse C18, éluant acétonitrile / eau
 //  Modèle de X. Bataille (ENCPB / RNChimie, 2008) — voir clhpModele.js.
-//  Interface : vue colonne animée + chromatogramme enregistré en direct + grandeurs lues sur le pic.
+//  Interface : schéma de l'appareil (pompe, manomètre, injecteur, colonne, détecteur), vue colonne animée,
+//  chromatogramme enregistré en direct, diagnostic de pannes (contrôle de routine) et défis de pratique.
 // ====================================================
 
 const SIM = 12;
 declarerDefis(SIM, [
   ['ordre', 'Prédire l’ordre d’élution'],
-  ['facteur', 'Calculer un facteur de rétention'],
+  ['identifier', 'Identifier des pics par leur temps de rétention'],
   ['separer', 'Séparer deux composés'],
+  ['panne', 'Diagnostiquer une panne'],
 ]);
 
 const PALETTE = ['#e63946', '#2a9d8f', '#6a4c93', '#d98e04', '#457b9d', '#2d6a4f', '#c2410c', '#9333ea', '#0891b2', '#be185d', '#65a30d', '#475569'];
@@ -25,6 +27,8 @@ const classeRs = R => R >= SEUIL_RS[1] ? 'ok' : R >= SEUIL_RS[0] ? 'lim' : 'non'
 const v = (x, d = 2) => (isFinite(x) ? x.toFixed(d) : '—').replace('.', ',');
 const TEMPS_MAX_DEFI = 8;                       // min : durée maximale d’analyse du défi « séparer »
 const nomsCourts = (m) => m.court || m.nom;
+const LETTRES = 'ABCDEFGHIJKL';
+const trSeul = (i, pct = 50) => analyse({ ...PARAMS_DEFAUT, pct }, [{ ...MOLECULES_CLHP[i], conc: 1, epsilon: 10 }]).pics[0].tr;
 const Ind = ({ children }) => <sub>{children}</sub>;
 const TR = <>t<Ind>R</Ind></>;
 const T0 = <>t<Ind>0</Ind></>;
@@ -141,7 +145,7 @@ function ColonneAnim({ a, p, frac, couleurs, hover, w, nonRetenu }) {
 
 // ---------- chromatogramme (SVG) ----------
 function pasTemps(tMax) { return [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50].find(s => tMax / s <= 8) || 100; }
-function Chromato({ a, p, frac, w, couleurs, hover, setHover, total, indiv, nonRetenu }) {
+function Chromato({ a, p, frac, w, couleurs, hover, setHover, total, indiv, nonRetenu, anonyme }) {
   const [lect, setLect] = useState(null);                    // { x, t, id } : lecture sous le pointeur
   const h = w < 480 ? 230 : 270, mL = 34, mR = p.grad ? 40 : 12, mT = 14, mB = 34;
   const iw = w - mL - mR, ih = h - mT - mB;
@@ -151,20 +155,21 @@ function Chromato({ a, p, frac, w, couleurs, hover, setHover, total, indiv, nonR
     const ts = Array.from({ length: N + 1 }, (_, i) => i * tMax / N);
     const sig = pics.map(m => ts.map(t => signal(m, t)));
     const tot = ts.map((_, i) => sig.reduce((s, c) => s + c[i], 0));
-    const ymax = Math.max(...tot, 1e-9) * 1.22;
-    return { ts, sig, tot, ymax };
-  }, [a, tMax, pics]);   // eslint-disable-line react-hooks/exhaustive-deps
+    const totB = tot.map((s, i) => s + bruitLigne(a.ligneBase, ts[i]));          // signal enregistré : bruit et ondulation éventuels
+    const ymax = Math.max(...tot, a.hRef, 1e-9) * 1.22;                          // échelle de la colonne en bon état : une perte de signal se voit
+    return { ts, sig, tot, totB, ymax };
+  }, [a, tMax, pics]);
   const X = t => mL + t / tMax * iw, Y = s => mT + ih - s / geo.ymax * ih;
   const chemin = (ys, n = ys.length) => ys.slice(0, n).map((s, i) => `${i ? 'L' : 'M'}${X(geo.ts[i]).toFixed(1)},${Y(s).toFixed(1)}`).join('');
   const tCur = frac * tMax, nCur = Math.min(N, Math.floor(frac * N)) + 1;
   const pas = pasTemps(tMax), graduations = [];
   for (let t = 0; t <= tMax + 1e-9; t += pas) graduations.push(Math.round(t * 1000) / 1000);
   // étiquettes des pics, décalées si elles se chevauchent
-  const etiq = pics.map((m, i) => ({ m, i, x: X(m.tr), y: Y(Math.max(geo.tot[Math.round(m.tr / tMax * N)] || 0, signal(m, m.tr))) - 7 }));
+  const etiq = pics.map((m, i) => ({ m, i, lib: anonyme ? LETTRES[i] : nomsCourts(m), x: X(m.tr), y: Y(Math.max(geo.tot[Math.round(m.tr / tMax * N)] || 0, signal(m, m.tr))) - 7 }));
   // placement sans chevauchement : les pics les plus hauts d'abord ; une étiquette qui ne trouve pas de place est omise (le survol la donne)
   const places = [];
   [...etiq].sort((p, q) => q.m.hauteur - p.m.hauteur).forEach(e => {
-    const lg = nomsCourts(e.m).length * 6.6 + 6;
+    const lg = e.lib.length * 6.6 + 6;
     e.x = Math.min(Math.max(e.x, mL + lg / 2), w - mR - lg / 2);
     for (let essai = 0; essai < 5; essai++) {
       const y = Math.max(e.y - essai * 14, mT + 12);
@@ -186,12 +191,14 @@ function Chromato({ a, p, frac, w, couleurs, hover, setHover, total, indiv, nonR
   const mol = lect && lect.id !== 'tm' ? pics.find(m => m.id === lect.id) : null;
   const info = lect && (lect.id === 'tm'
     ? <><strong>{T0} = {v(col.tm)} min</strong><br/>temps mort : un composé non retenu sort à cet instant</>
-    : mol && <><strong style={{ color: couleurs[mol.id] }}>{mol.nom}</strong><br/>{TR} = {v(mol.tr)} min · k’ = {v(mol.k)}<br/>W<Ind>½</Ind> = {v(mol.W, 3)} min</>);
+    : mol && (anonyme ? <><strong>Pic {LETTRES[pics.indexOf(mol)]}</strong><br/>{TR} = {v(mol.tr)} min</>
+      : <><strong style={{ color: couleurs[mol.id] }}>{mol.nom}</strong><br/>{TR} = {v(mol.tr)} min · k’ = {v(mol.k)}<br/>W<Ind>½</Ind> = {v(mol.W, 3)} min</>));
   const posInfo = lect ? Math.min(Math.max(lect.x + 12, 4), w - 190) : 0;
   return (
     <div style={{ position: 'relative' }}>
       <svg width={w} height={h} style={{ display: 'block', touchAction: 'pan-y' }} role="img" aria-label="Chromatogramme : réponse du détecteur en fonction du temps"
         onPointerMove={pointe} onPointerDown={pointe} onPointerLeave={ev => { if (ev.pointerType === 'mouse') { setLect(null); setHover(null); } }}>
+        <defs><clipPath id="cl-clip"><rect x={mL} y={mT} width={iw} height={ih}/></clipPath></defs>
         <rect x={mL} y={mT} width={iw} height={ih} fill="white" stroke="#cbd5e1"/>
         {graduations.map(t => <g key={t}>
           <line x1={X(t)} x2={X(t)} y1={mT} y2={mT + ih} stroke="#e2e8f0"/>
@@ -213,9 +220,9 @@ function Chromato({ a, p, frac, w, couleurs, hover, setHover, total, indiv, nonR
             <path d={`${chemin(geo.sig[i], nCur)}L${X(geo.ts[nCur - 1])},${Y(0)}L${X(0)},${Y(0)}Z`} fill={couleurs[m.id]} opacity="0.16"/>
             <path d={chemin(geo.sig[i], nCur)} fill="none" stroke={couleurs[m.id]} strokeWidth={hover === m.id ? 3 : 1.8}/></g>;
         })}
-        {total && <path d={chemin(geo.tot, nCur)} fill="none" stroke="#0f172a" strokeWidth="1.8" strokeDasharray={indiv ? '5 3' : undefined}/>}
-        {indiv && etiq.filter(e => e.ok && tCur >= e.m.tr).map(e => <text key={e.m.id} x={e.x} y={e.y} textAnchor="middle" fontSize="11.5" fontWeight="700"
-          fill={couleurs[e.m.id]} stroke="white" strokeWidth="3" paintOrder="stroke">{nomsCourts(e.m)}</text>)}
+        {total && <path d={chemin(geo.totB, nCur)} clipPath="url(#cl-clip)" fill="none" stroke="#0f172a" strokeWidth={a.ligneBase.bruit > 0 ? 1.1 : 1.8} strokeDasharray={indiv && !a.ligneBase.bruit ? '5 3' : undefined}/>}
+        {(indiv || anonyme) && etiq.filter(e => e.ok && tCur >= e.m.tr).map(e => <text key={e.m.id} x={e.x} y={e.y} textAnchor="middle" fontSize="11.5" fontWeight="700"
+          fill={anonyme ? '#0f172a' : couleurs[e.m.id]} stroke="white" strokeWidth="3" paintOrder="stroke">{e.lib}</text>)}
         <line x1={X(tCur)} x2={X(tCur)} y1={mT} y2={mT + ih} stroke={ORANGE_GUIDE} strokeWidth="1.6" opacity={frac > 0 && frac < 1 ? 1 : 0}/>
         {lect && <line x1={lect.x} x2={lect.x} y1={mT} y2={mT + ih} stroke="#0f172a" strokeWidth="1" strokeDasharray="2 3"/>}
         {mol && <circle cx={X(mol.tr)} cy={Y(signal(mol, mol.tr))} r="4.5" fill="white" stroke={couleurs[mol.id]} strokeWidth="2"/>}
@@ -226,7 +233,7 @@ function Chromato({ a, p, frac, w, couleurs, hover, setHover, total, indiv, nonR
 }
 
 // ---------- bloc visuel : colonne + chromatogramme + commandes de lecture ----------
-function Visu({ a, p, couleurs, hover, setHover, lancement, onLancer, nonRetenu, setNonRetenu, total, setTotal }) {
+function Visu({ a, p, couleurs, hover, setHover, lancement, onLancer, nonRetenu, setNonRetenu, total, setTotal, anonyme }) {
   const cont = useRef(null);
   const w = useLargeur(cont);
   const [frac, setFrac] = useState(1);
@@ -264,9 +271,9 @@ function Visu({ a, p, couleurs, hover, setHover, lancement, onLancer, nonRetenu,
         <span style={{ display: 'inline-block', width: 9, height: 9, borderRadius: 5, background: '#475569', border: '1.5px solid #0f172a', marginRight: 4 }}/>adsorbé sur un grain.
         La part du temps passée adsorbé est k’/(1 + k’) = 1 − {T0}/{TR}.
       </div>
-      <Chromato a={a} p={p} frac={frac} w={w} couleurs={couleurs} hover={hover} setHover={setHover} total={total} indiv nonRetenu={nonRetenu}/>
+      <Chromato a={a} p={p} frac={frac} w={w} couleurs={couleurs} hover={hover} setHover={setHover} total={total || anonyme || a.ligneBase.bruit > 0} indiv={!anonyme} anonyme={anonyme} nonRetenu={nonRetenu}/>
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 13, color: KIT.txt2, marginTop: 6 }}>
-        <label style={{ cursor: 'pointer' }}><input type="checkbox" checked={total} onChange={e => setTotal(e.target.checked)}/> signal total enregistré (ce que voit le détecteur)</label>
+        {!anonyme && <label style={{ cursor: 'pointer' }}><input type="checkbox" checked={total} onChange={e => setTotal(e.target.checked)}/> signal total enregistré (ce que voit le détecteur)</label>}
         <label style={{ cursor: 'pointer' }}><input type="checkbox" checked={nonRetenu} onChange={e => setNonRetenu(e.target.checked)}/> composé non retenu (repère {T0})</label>
       </div>
     </div>);
@@ -279,31 +286,129 @@ function analyseMemo(p, mols) {
   return CACHE.val;
 }
 
-// ---------- courbe de van Deemter : H en fonction du débit ----------
-function CourbeVD({ p }) {
-  const c = courbeVD(p), W = 340, H = 150, mL = 40, mR = 10, mT = 10, mB = 30, iw = W - mL - mR, ih = H - mT - mB;
-  const hMax = Math.min(Math.max(...c.pts.map(q => q.H)), c.Hopt * 3.2);
-  const X = d => mL + d / c.dMax * iw, Y = hh => mT + ih - Math.min(hh, hMax) / hMax * ih;
-  const ici = c.pts.reduce((b, q) => Math.abs(q.d - p.debit) < Math.abs(b.d - p.debit) ? q : b, c.pts[0]);
-  const Hici = colonneH(p);
-  const pasD = [0.5, 1, 2, 5].find(s => c.dMax / s <= 6), pasH = [2, 5, 10, 20, 50, 100].find(s => hMax / s <= 4);
-  const gx = [], gy = [];
-  for (let d = 0; d <= c.dMax + 1e-9; d += pasD) gx.push(d);
-  for (let hh = 0; hh <= hMax + 1e-9; hh += pasH) gy.push(hh);
+// ---------- schéma de l'appareil : pompe, manomètre, injecteur, colonne, détecteur ----------
+const PIECES = {
+  eluant: { nom: 'Réservoirs d’éluant',
+    role: 'Eau et acétonitrile de qualité CLHP, dans des flacons distincts : la pompe les mélange (gradient) ou on prépare l’éluant à l’avance (isocratique).',
+    ctrl: 'Niveau suffisant, crépines propres. Éluant filtré (0,45 µm) et dégazé. Mesurer chaque volume séparément : 500 mL d’eau + 500 mL d’acétonitrile ne font pas exactement 1 L.' },
+  pompe: { nom: 'Pompe',
+    role: 'Impose un débit constant d’éluant dans le circuit, même quand la pression change.',
+    ctrl: 'Pression stable (une pression qui oscille trahit une bulle d’air). Purger avant utilisation. Joints de piston et clapets : usure à surveiller.' },
+  manometre: { nom: 'Manomètre (pression en sortie de pompe)',
+    role: 'Mesure la pression nécessaire pour faire passer l’éluant à travers la colonne. Elle dépend du débit, de la longueur de la colonne, de la taille des grains et de la viscosité de l’éluant.',
+    ctrl: 'Noter la pression habituelle de la méthode : c’est la référence. Trop haute : filtre ou colonne encrassé(e). Trop basse : fuite. Qui oscille : bulle d’air. Au-delà de la limite, la pompe s’arrête.' },
+  injecteur: { nom: 'Injecteur (vanne à boucle)',
+    role: 'Introduit un volume précis d’échantillon, en un temps très court, dans le flux d’éluant juste avant la colonne.',
+    ctrl: 'Échantillon filtré (0,45 µm) et sans bulle. Seringue à pointe plate. Rincer la boucle entre deux échantillons.' },
+  colonne: { nom: 'Colonne (dans le four)',
+    role: 'Tube en acier rempli de silice greffée C18 : c’est là que les composés se séparent. Le four thermostate la colonne (température constante, temps de rétention reproductibles).',
+    ctrl: 'Sens d’écoulement respecté. Précolonne pour la protéger. Ne jamais dépasser la pression maximale. Après usage, rincer les sels avec de l’eau puis conserver dans un mélange eau / acétonitrile.' },
+  detecteur: { nom: 'Détecteur UV',
+    role: 'Mesure l’absorbance de l’éluant à la sortie de la colonne : le signal augmente quand un composé passe dans la cellule. La hauteur du pic dépend de la quantité injectée et de l’absorbance du composé.',
+    ctrl: 'Longueur d’onde adaptée aux composés. Lampe (deutérium) : noter ses heures de fonctionnement, elle perd de l’intensité avec l’âge. Cellule propre, sans bulle.' },
+};
+
+function Appareil({ a, p, actif, setActif }) {
+  const [ph, setPh] = useState(0);
+  const oscille = a.col.dPmax - a.col.dPmin > 1;
+  useEffect(() => {
+    if (!oscille) return undefined;
+    const id = setInterval(() => setPh(x => x + 0.9), 90);
+    return () => clearInterval(id);
+  }, [oscille]);
+  const pr = oscille ? (a.col.dPmin + a.col.dPmax) / 2 + (a.col.dPmax - a.col.dPmin) / 2 * Math.sin(ph) : a.col.dP;
+  const frac = Math.min(pr / (P_MAX * 1.25), 1), ang = (-120 + 240 * frac) * Math.PI / 180;
+  const nx = 285 + 22 * Math.sin(ang), ny = 82 - 22 * Math.cos(ang);
+  const trop = a.col.dP > P_MAX;
+  const piece = (id, enfants) => (
+    <g role="button" tabIndex={0} aria-label={PIECES[id].nom} aria-pressed={actif === id} style={{ cursor: 'pointer', outline: 'none' }}
+      onClick={() => setActif(actif === id ? null : id)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActif(actif === id ? null : id); } }}>
+      {enfants}
+      {actif === id && <rect x={PIECE_BOITE[id][0]} y={PIECE_BOITE[id][1]} width={PIECE_BOITE[id][2]} height={PIECE_BOITE[id][3]} rx="8" fill="none" stroke={ORANGE_GUIDE} strokeWidth="2.5" strokeDasharray="5 3"/>}
+    </g>);
+  const txt = { fontSize: 11.5, fill: '#334155', textAnchor: 'middle', fontWeight: 600 };
+  const tube = { stroke: '#64748b', strokeWidth: 2.4, fill: 'none' };
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', maxWidth: 420, display: 'block' }} role="img" aria-label="Courbe de van Deemter : hauteur de plateau en fonction du débit">
-      <rect x={mL} y={mT} width={iw} height={ih} fill="white" stroke="#cbd5e1"/>
-      {gx.map(d => <g key={d}><line x1={X(d)} x2={X(d)} y1={mT + ih} y2={mT + ih + 4} stroke="#475569"/><text x={X(d)} y={mT + ih + 15} fontSize="11.5" textAnchor="middle" fill="#334155">{String(d).replace('.', ',')}</text></g>)}
-      {gy.map(hh => <g key={hh}><line x1={mL - 4} x2={mL} y1={Y(hh)} y2={Y(hh)} stroke="#475569"/><text x={mL - 6} y={Y(hh) + 3.5} fontSize="11.5" textAnchor="end" fill="#334155">{hh}</text></g>)}
-      <text x={mL + iw / 2} y={H - 3} fontSize="12" textAnchor="middle" fill="#334155">débit (mL/min)</text>
-      <text transform={`translate(10 ${mT + ih / 2}) rotate(-90)`} fontSize="12" textAnchor="middle" fill="#334155">H (µm)</text>
-      <path d={c.pts.map((q, i) => `${i ? 'L' : 'M'}${X(q.d).toFixed(1)},${Y(q.H).toFixed(1)}`).join('')} fill="none" stroke="#0d6e6e" strokeWidth="2"/>
-      <line x1={X(c.dOpt)} x2={X(c.dOpt)} y1={mT} y2={mT + ih} stroke="#16a34a" strokeDasharray="4 3"/>
-      <text x={X(c.dOpt) + 4} y={mT + 11} fontSize="10" fill="#15803d">optimum</text>
-      <circle cx={X(Math.min(p.debit, c.dMax))} cy={Y(Hici ?? ici.H)} r="5" fill={ORANGE_GUIDE} stroke="white" strokeWidth="1.5"/>
-    </svg>);
+    <div>
+      <div style={{ overflowX: 'auto' }}>
+        <svg viewBox="0 0 780 170" style={{ width: '100%', minWidth: 600, display: 'block' }} role="group" aria-label="Schéma de l’appareil de CLHP">
+          <path d="M92 118 H150 M230 90 H245 M325 90 H345 M405 90 H442 M628 90 H664 M730 90 H775" {...tube}/>
+          <path d="M770 84 L776 90 L770 96" {...tube} strokeWidth="2"/>
+          {piece('eluant', <g>
+            <rect x="12" y="52" width="36" height="66" rx="6" fill="#dbeafe" stroke="#475569" strokeWidth="1.5"/>
+            <rect x="54" y="52" width="36" height="66" rx="6" fill="#ede9fe" stroke="#475569" strokeWidth="1.5"/>
+            <text x="30" y="90" style={txt}>Eau</text><text x="72" y="90" style={txt}>ACN</text>
+            <text x="51" y="140" style={txt}>Éluant</text></g>)}
+          {piece('pompe', <g>
+            <rect x="150" y="50" width="80" height="80" rx="8" fill="#e2e8f0" stroke="#475569" strokeWidth="1.5"/>
+            <text x="190" y="72" style={txt}>Pompe</text>
+            <text x="190" y="92" style={{ ...txt, fontWeight: 400 }}>{v(p.debit, 1)} mL/min</text>
+            <text x="190" y="110" style={{ ...txt, fontWeight: 400 }}>{p.grad ? 'gradient' : `${p.pct} % ACN`}</text></g>)}
+          {piece('manometre', <g>
+            <circle cx="285" cy="82" r="30" fill="white" stroke="#475569" strokeWidth="2"/>
+            <path d={`M${285 + 24 * Math.sin(((-120 + 240 * (P_MAX / (P_MAX * 1.25))) * Math.PI) / 180)} ${82 - 24 * Math.cos(((-120 + 240 * (P_MAX / (P_MAX * 1.25))) * Math.PI) / 180)} A24 24 0 0 1 ${285 + 24 * Math.sin((120 * Math.PI) / 180)} ${82 - 24 * Math.cos((120 * Math.PI) / 180)}`} stroke="#dc2626" strokeWidth="4" fill="none"/>
+            <line x1="285" y1="82" x2={nx} y2={ny} stroke={trop ? '#dc2626' : '#0f172a'} strokeWidth="2.2" strokeLinecap="round"/>
+            <circle cx="285" cy="82" r="3" fill="#0f172a"/>
+            <text x="285" y="128" style={{ ...txt, fill: trop ? '#b91c1c' : '#334155' }}>{Math.round(pr)} bar</text>
+            <text x="285" y="143" style={{ ...txt, fontWeight: 400 }}>manomètre</text></g>)}
+          {piece('injecteur', <g>
+            <rect x="345" y="62" width="60" height="56" rx="8" fill="#e2e8f0" stroke="#475569" strokeWidth="1.5"/>
+            <circle cx="375" cy="90" r="14" fill="white" stroke="#475569"/>
+            <path d="M375 90 L386 82 M375 90 L386 98 M375 90 L364 90" stroke="#475569" strokeWidth="1.6"/>
+            <path d="M375 30 V58 M371 58 L375 64 L379 58" stroke="#475569" strokeWidth="1.8" fill="none"/>
+            <rect x="371" y="20" width="8" height="14" fill="#94a3b8"/>
+            <text x="375" y="138" style={txt}>Injecteur</text></g>)}
+          {piece('colonne', <g>
+            <rect x="436" y="40" width="198" height="100" rx="10" fill="#fff7ed" stroke="#c2410c" strokeWidth="1.3" strokeDasharray="5 3"/>
+            <rect x="452" y="72" width="166" height="36" rx="5" fill="#cbd5e1" stroke="#475569" strokeWidth="1.5"/>
+            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map(i => <circle key={i} cx={462 + i * 11.5} cy={i % 2 ? 84 : 96} r="4.4" fill="#e2e8f0" stroke="#94a3b8" strokeWidth="0.8"/>)}
+            <text x="535" y="58" style={txt}>Four · {p.temperature} °C</text>
+            <text x="535" y="128" style={txt}>Colonne C{p.nC} · {p.longueur} cm</text></g>)}
+          {piece('detecteur', <g>
+            <rect x="664" y="56" width="66" height="68" rx="8" fill="#fef3c7" stroke="#a16207" strokeWidth="1.5"/>
+            <circle cx="697" cy="82" r="9" fill="#fde047" stroke="#a16207"/>
+            <text x="697" y="108" style={txt}>UV</text>
+            <text x="697" y="142" style={txt}>Détecteur</text></g>)}
+        </svg>
+      </div>
+      <div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.55, marginTop: 4, minHeight: 20 }}>
+        {actif ? <><strong>{PIECES[actif].nom}</strong> — {PIECES[actif].role}<div style={{ marginTop: 3, color: KIT.txt2 }}><strong>À contrôler :</strong> {PIECES[actif].ctrl}</div></>
+          : <span style={{ color: KIT.txt2 }}>Cliquez sur un élément de l’appareil pour voir son rôle et ce que l’on contrôle en routine. L’éluant circule de gauche à droite ; l’échantillon est injecté juste avant la colonne.</span>}
+      </div>
+    </div>);
 }
-const colonneH = p => colonne(p).H * 1000;
+const PIECE_BOITE = { eluant: [6, 44, 90, 112], pompe: [144, 44, 92, 92], manometre: [248, 44, 74, 106], injecteur: [339, 14, 72, 134], colonne: [430, 34, 210, 112], detecteur: [658, 50, 78, 98] };
+
+// ---------- contrôle de routine : valeurs de référence (installation conforme) et valeurs actuelles ----------
+function Controle({ a }) {
+  const r = a.ref;
+  const dernier = x => x.pics[x.pics.length - 1];
+  const rsMin = x => x.res.length ? Math.min(...x.res.map(q => q.R)) : null;
+  const lignes = r ? [
+    ['Pression en tête de colonne', `${Math.round(r.col.dP)} bar`, `${Math.round(a.col.dP)} bar${a.col.dPmax - a.col.dPmin > 1 ? ' (oscille)' : ''}`, a.col.dP / r.col.dP],
+    [<>Temps mort {T0}</>, `${v(r.col.tm)} min`, `${v(a.col.tm)} min`, a.col.tm / r.col.tm],
+    [<>{TR} du dernier pic</>, `${v(dernier(r).tr)} min`, `${v(dernier(a).tr)} min`, dernier(a).tr / dernier(r).tr],
+    [<>Largeur W<Ind>½</Ind> du dernier pic</>, `${v(dernier(r).W, 3)} min`, `${v(dernier(a).W, 3)} min`, dernier(a).W / dernier(r).W],
+    ...(rsMin(r) != null ? [[<>R<Ind>s</Ind> minimal</>, v(rsMin(r)), v(rsMin(a)), rsMin(a) / rsMin(r)]] : []),
+    ['Hauteur du plus grand pic', 'référence', `${Math.round(100 * Math.max(...a.pics.map(m => m.hauteur)) / Math.max(...r.pics.map(m => m.hauteur)))} %`,
+      Math.max(...a.pics.map(m => m.hauteur)) / Math.max(...r.pics.map(m => m.hauteur))],
+    ['Ligne de base', 'plate', a.ligneBase.ondulation > 0 ? 'ondule' : a.ligneBase.bruit > 0 ? 'bruitée' : 'plate', a.ligneBase.ondulation > 0 || a.ligneBase.bruit > 0 ? 0 : 1],
+  ] : [];
+  return (
+    <div>
+      {!r ? <div style={{ fontSize: 13.5, color: KIT.txt2 }}>Aucun écart : l’installation est conforme à la référence.</div> : <>
+        <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>On compare les valeurs du jour à celles de la méthode validée (colonne et installation en bon état). Un écart de plus de 10 % est à expliquer.</div>
+        <div style={{ overflowX: 'auto' }}><table style={{ borderCollapse: 'collapse', fontSize: 13, width: '100%' }}>
+          <thead><tr style={{ background: '#eef2f6' }}>{['Grandeur', 'Référence', 'Aujourd’hui', ''].map((h, i) => <th key={i} style={{ padding: '4px 8px', textAlign: 'left', fontSize: 12.5, borderBottom: '1px solid #cbd5e1' }}>{h}</th>)}</tr></thead>
+          <tbody>{lignes.map(([nom, ref, act, rap], i) => {
+            const ecart = Math.abs(rap - 1) > 0.1;
+            return <tr key={i} style={{ background: ecart ? '#fff7ed' : 'transparent' }}>
+              <td style={{ padding: '3px 8px' }}>{nom}</td><td style={{ padding: '3px 8px', color: KIT.txt2 }}>{ref}</td>
+              <td style={{ padding: '3px 8px', fontWeight: ecart ? 700 : 400, color: ecart ? '#b45309' : KIT.txt }}>{act}</td>
+              <td style={{ padding: '3px 8px', color: '#b45309', fontWeight: 700 }}>{ecart ? (rap > 1 ? '↑' : '↓') : ''}</td></tr>;
+          })}</tbody></table></div></>}
+    </div>);
+}
 
 // ====================================================
 //  DÉFIS
@@ -326,19 +431,31 @@ function pairesFaisables() {
   return out;
 }
 let PAIRES = null;
+const MELANGES_PANNE = [[1, 2, 7], [1, 13, 7], [0, 2, 12]];   // mélanges bien séparés quand l’installation est en bon état
 function nouveauDefi(type) {
   if (type === 'ordre') {
     let mols; do { mols = [...MOLECULES_CLHP.keys()].sort(() => Math.random() - 0.5).slice(0, 4); const l = mols.map(i => MOLECULES_CLHP[i].logP).sort((x, y) => x - y); if (l.every((x, k) => !k || x - l[k - 1] >= 0.25)) break; } while (true); // eslint-disable-line no-constant-condition
     return { type, mols, pct: tire([35, 45, 55, 65]), reps: { ordre: [] }, verifie: false };
   }
-  if (type === 'facteur') {
-    const mols = [...MOLECULES_CLHP.keys()].sort(() => Math.random() - 0.5).slice(0, 3);
-    return { type, mols, cible: tire(mols), pct: tire([30, 40, 50, 60]), reps: {}, verifie: false };
+  if (type === 'identifier') {
+    const pct = 40;
+    for (let essai = 0; essai < 600; essai++) {
+      const ids = [...MOLECULES_CLHP.keys()].sort(() => Math.random() - 0.5).slice(0, 4);
+      const r = analyse({ ...PARAMS_DEFAUT, pct }, ids.map(i => ({ ...MOLECULES_CLHP[i], conc: 1, epsilon: 10 })));
+      if (r.pics.length === 4 && r.res.every(x => x.R >= 1.3) && r.pics[3].tr <= 10 && r.pics.every((m, k) => !k || m.tr / r.pics[k - 1].tr >= 1.12)) {
+        const retire = tire(ids);
+        return { type, pct, mols: ids.filter(i => i !== retire), etalons: ids, reps: {}, verifie: false };
+      }
+    }
+    return { type, pct, mols: [1, 2, 7], etalons: [1, 2, 7, 11], reps: {}, verifie: false };
+  }
+  if (type === 'panne') {
+    return { type, pct: 50, mols: tire(MELANGES_PANNE), panne: tire(Object.keys(PANNES)), reps: {}, verifie: false };
   }
   if (!PAIRES) PAIRES = pairesFaisables();
   return { type, mols: tire(PAIRES), pct: 50, reps: {}, verifie: false };
 }
-const TITRES = { ordre: 'Ordre d’élution', facteur: 'Facteur de rétention', separer: 'Séparer deux composés' };
+const TITRES = { ordre: 'Ordre d’élution', identifier: 'Identifier des pics', separer: 'Séparer deux composés', panne: 'Diagnostiquer une panne' };
 
 // ====================================================
 //  SIMULATION
@@ -346,7 +463,7 @@ const TITRES = { ordre: 'Ordre d’élution', facteur: 'Facteur de rétention', 
 export function SimulationCLHP() {
   const [mode, setMode] = useState('explore');
   useSignalerMode(mode);
-  const [guide, setGuide] = useEtatPersistant('clhp-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const [guide, setGuide] = useEtatPersistant('clhp-guide-v2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [p, setP] = useState({ ...PARAMS_DEFAUT });
   const maj = (k, x) => setP(q => ({ ...q, [k]: x }));
@@ -358,7 +475,8 @@ export function SimulationCLHP() {
   const [epsilons, setEpsilons] = useState({});
   const [showExpData, setShowExpData] = useState(false);
   const [expTr, setExpTr] = useState({});
-  const [ouv, setOuv] = useState({ melange: false, eluant: true, tableau: true, hypo: false, plus: false, avance: false });
+  const [ouv, setOuv] = useState({ melange: false, eluant: true, tableau: true, hypo: false, plus: false, avance: false, pannes: false });
+  const [piece, setPiece] = useState(null);
   const bascule = k => setOuv(o => ({ ...o, [k]: !o[k] }));
   const [hover, setHover] = useState(null);
   const [lancement, setLancement] = useState(0);
@@ -375,7 +493,8 @@ export function SimulationCLHP() {
     ...(enDefi ? [] : customMols.map((m, i) => ({ ...m, court: m.nom, id: 'cust_' + i, conc: concs['cust_' + i] ?? 1, epsilon: epsilons['cust_' + i] ?? 10 }))),
   ];
   const couleurs = {}; allMols.forEach((m, i) => { couleurs[m.id] = PALETTE[i % PALETTE.length]; });
-  const pEff = enDefi && defi.type === 'ordre' ? { ...p, pct: defi.pct } : p;
+  const fige = enDefi && ['ordre', 'identifier', 'panne'].includes(defi.type);     // conditions imposées par l’énoncé
+  const pEff = !fige ? p : defi.type === 'panne' ? { ...PARAMS_DEFAUT, pct: defi.pct, panne: defi.panne } : { ...p, pct: defi.pct };
   const a = analyseMemo(pEff, allMols);
   const nbPics = a.pics.length;
   const rsMin = nbPics > 1 ? Math.min(...a.res.map(r => r.R)) : null;
@@ -390,82 +509,80 @@ export function SimulationCLHP() {
   const cadre = id => enGuide && (ETAPES[Math.min(etape, ETAPES.length - 1)].focus || []).includes(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
   const memeMelange = ids => customMols.length === 0 && selected.length === ids.length && ids.every(i => selected.includes(i));
   const mettre = (ids, pct = 50) => { setSelected(ids); setCustomMols([]); setP({ ...PARAMS_DEFAUT, pct }); setLancement(n => n + 1); };
-  const exp = id => a.pics.find(m => m.id === id);
-  const BZP = 7, PHENOL = 2, ONITRO = 4;   // indices dans MOLECULES_CLHP
-  const picBzp = exp('pre_' + BZP);
-  const duoPhOn = exp('pre_' + PHENOL) && exp('pre_' + ONITRO) && nbPics === 2;
+  const situation = (ids, panne) => { setSelected(ids); setCustomMols([]); setP({ ...PARAMS_DEFAUT, panne }); setLancement(n => n + 1); };
+  const bouton = (label, faire) => <button onClick={faire} style={{ ...styleBouton(true, '#0d6e6e'), margin: '6px 0' }}>{label}</button>;
+  const CAFEINE = 1, PARACETAMOL = 0, PHENOL = 2, BZP = 7, TPC = 11;   // indices dans MOLECULES_CLHP
+  const TROIS = [CAFEINE, PHENOL, BZP], QUATRE = [CAFEINE, PARACETAMOL, BZP, TPC];
+  const ref0 = colonne({ ...PARAMS_DEFAUT }).dP;
   const ETAPES = [
-    { id: 'intro', titre: 'Séparer un mélange : le principe', focus: [],
-      texte: <>En CLHP <strong>en phase inverse</strong>, la <strong>phase stationnaire</strong> est de la silice greffée par des chaînes C18 (apolaire) ; la <strong>phase mobile</strong> est un mélange eau / acétonitrile (polaire). Chaque composé du mélange injecté passe son temps à <strong>alterner</strong> entre la phase mobile, qui l’entraîne, et la phase stationnaire, où il est retenu. Plus il est <strong>apolaire</strong> (logP élevé), plus il s’attarde sur les chaînes C18.</>,
-      tache: { type: 'qcm', q: 'On injecte un mélange de phénol (logP = 1,48) et de benzophénone (logP = 3,18). Quel composé sortira en premier de la colonne ?', options: ['le phénol, plus polaire (logP plus faible)', 'la benzophénone, moins polaire (logP plus élevé)', 'les deux sortent en même temps'], bonne: 0,
-        expl: 'Le phénol (logP = 1,48) est moins retenu par la phase stationnaire apolaire que la benzophénone (logP = 3,18) : il est entraîné plus vite par l’éluant polaire.' } },
+    { id: 'appareil', titre: 'Le chemin de l’échantillon', focus: ['appareil'],
+      texte: <>Un chromatographe liquide est une chaîne d’éléments traversés par l’éluant. La <strong>pompe</strong> impose le débit ; le <strong>manomètre</strong> indique la pression ; l’<strong>injecteur</strong> introduit l’échantillon dans le flux ; dans la <strong>colonne</strong> (thermostatée dans un four) les composés se séparent ; le <strong>détecteur UV</strong> les repère à la sortie. Cliquez sur chaque élément du schéma pour lire son rôle et ce qu’on y contrôle.</>,
+      tache: { type: 'qcm', q: 'Dans quel ordre le liquide traverse-t-il ces éléments ?', options: ['pompe → injecteur → colonne → détecteur', 'injecteur → pompe → colonne → détecteur', 'pompe → colonne → injecteur → détecteur', 'pompe → injecteur → détecteur → colonne'], bonne: 0,
+        expl: 'La pompe pousse l’éluant ; l’échantillon est injecté juste avant la colonne (sinon il ne serait pas séparé) ; le détecteur est placé à la sortie de la colonne.' } },
     { id: 'inj', titre: 'Injecter et regarder', focus: ['viz'],
-      texte: <>On <strong>injecte</strong> le mélange à l’instant t = 0 : tous les composés partent ensemble de l’entrée de la colonne. Chaque bande avance à sa vitesse, puis passe devant le <strong>détecteur UV</strong>, qui enregistre le chromatogramme. La molécule alterne entre <strong>libre</strong> (entraînée) et <strong>adsorbée</strong> (immobile).</>,
-      tache: { type: 'action', ok: lancement > 0 && memeMelange([PHENOL, BZP]), label: '▶ Mettre le phénol et la benzophénone, et injecter', faire: () => mettre([PHENOL, BZP]), consigne: 'Observez les deux bandes se séparer, puis le chromatogramme se tracer.' } },
-    { id: 't0', titre: 'Le temps mort t₀', focus: ['eluant', 'viz'],
-      texte: <>Une espèce qui <strong>ne serait pas retenue</strong> (repère gris) sort à l’instant <strong>t₀</strong> : le temps que met l’éluant à traverser le volume de phase mobile de la colonne, <strong>t₀ = (ε · π r² · L) / débit</strong>. Réglez le débit et regardez le repère t₀ bouger.</>,
-      tache: { type: 'qcm', q: 'On double le débit de l’éluant. Le temps mort t₀ est…', options: ['divisé par 2', 'multiplié par 2', 'inchangé'], bonne: 0,
-        expl: 't₀ est inversement proportionnel au débit : l’éluant va deux fois plus vite, donc il traverse la colonne en deux fois moins de temps.' } },
-    { id: 'k', titre: 'Le facteur de rétention k’', focus: ['viz', 'tableau'],
-      texte: <>Le temps de rétention d’un composé est <strong>t<Ind>R</Ind> = t₀ (1 + k’)</strong>, soit <strong>k’ = (t<Ind>R</Ind> − t₀) / t₀</strong>. k’ mesure combien de temps le composé passe sur la phase stationnaire par rapport au temps passé dans l’éluant. Lisez t<Ind>R</Ind> en survolant le pic (ou dans le tableau), et t₀ en survolant le repère gris.</>,
-      tache: { type: 'num', q: 'Calculez k’ pour la benzophénone avec les valeurs lues (réglages actuels).', unite: '', vrai: picBzp ? picBzp.k : 0, tol: 0.05, bloque: picBzp ? null : 'La benzophénone n’est plus dans le mélange : revenez à l’étape précédente pour la remettre.',
-        aide: 'Écrivez d’abord k’ = (t_R − t_0) / t_0 puis remplacez par vos valeurs.', affiche: x => v(x),
-        expl: 'k’ = (t_R − t_0) / t_0 : c’est la grandeur sans dimension qui caractérise la rétention du composé.' } },
-    { id: 'frac', titre: 'Le temps passé sur la phase stationnaire', focus: ['viz'],
-      texte: <>Dans la vue colonne, une molécule est adsorbée une fraction du temps égale à <strong>k’ / (1 + k’)</strong> (c’est aussi 1 − t₀ / t<Ind>R</Ind>). Plus k’ est grand, plus cette fraction se rapproche de 100 % : la molécule est presque toujours immobile, donc elle progresse lentement.</>,
-      tache: { type: 'num', q: 'Quel pourcentage du temps la benzophénone passe-t-elle adsorbée sur la phase stationnaire (réglages actuels) ?', unite: '%', vrai: picBzp ? 100 * picBzp.k / (1 + picBzp.k) : 0, tol: 0.04, bloque: picBzp ? null : 'La benzophénone n’est plus dans le mélange.',
-        aide: 'Fraction = k’ / (1 + k’).', affiche: x => v(x, 0),
-        expl: 'Fraction du temps sur la phase stationnaire = k’ / (1 + k’) : la molécule ne progresse que pendant le reste du temps.' } },
-    { id: 'pct', titre: 'Changer la force de l’éluant', focus: ['eluant'],
-      texte: <>Augmenter le <strong>pourcentage d’acétonitrile</strong> rend l’éluant <strong>moins polaire</strong> : on parle d’éluant plus « fort ». Passez à 70 % et injectez à nouveau.</>,
-      tache: { type: 'action', ok: p.pct >= 70 && lancement > 1, label: '70 % d’acétonitrile et injecter', faire: () => { maj('pct', 70); setLancement(n => n + 1); }, consigne: 'Comparez avec l’injection à 50 %.' } },
-    { id: 'pctq', titre: 'Pourquoi sortent-ils plus vite ?', focus: ['eluant', 'viz'],
-      texte: <>À 70 % d’acétonitrile, les deux pics sont sortis beaucoup plus tôt, mais ils sont aussi plus proches.</>,
-      tache: { type: 'qcm', q: 'Pourquoi les temps de rétention ont-ils diminué ?', options: ['l’éluant, moins polaire, retient moins les composés apolaires sur C18 : k’ diminue', 'l’éluant est plus polaire, donc il pousse plus fort', 'la colonne est devenue plus courte'], bonne: 0,
-        expl: 'Plus d’acétonitrile = éluant plus apolaire : les molécules apolaires se trouvent « bien » dans la phase mobile et s’adsorbent moins sur C18. k’ diminue, donc tR diminue aussi.' } },
-    { id: 'alpha', titre: 'Sélectivité et résolution', focus: ['melange', 'resultats'],
-      texte: <>Deux pics voisins sont séparés si leur <strong>écart</strong> est grand devant leur <strong>largeur</strong>. La <strong>sélectivité</strong> est α = k’<Ind>2</Ind> / k’<Ind>1</Ind>. La <strong>résolution</strong> est R<Ind>s</Ind> = 1,18 (t<Ind>R2</Ind> − t<Ind>R1</Ind>) / (W<Ind>½,1</Ind> + W<Ind>½,2</Ind>) ; on considère les pics séparés pour <strong>R<Ind>s</Ind> ≥ 1,5</strong>. Étudions deux composés très proches : le phénol et l’o-nitrophénol.</>,
-      tache: { type: 'action', ok: memeMelange([PHENOL, ONITRO]), label: 'Phénol + o-nitrophénol (50 %)', faire: () => mettre([PHENOL, ONITRO]), consigne: 'Observez : les deux pics se chevauchent presque.' } },
-    { id: 'alphan', titre: 'Calculer la sélectivité', focus: ['resultats'],
-      texte: <>Les valeurs de k’ de chaque composé sont dans le tableau.</>,
-      tache: { type: 'num', q: 'Calculez α = k’(o-nitrophénol) / k’(phénol).', unite: '', vrai: duoPhOn ? exp('pre_' + ONITRO).k / exp('pre_' + PHENOL).k : 0, tol: 0.03, bloque: duoPhOn ? null : 'Revenez à l’étape précédente pour remettre phénol + o-nitrophénol.',
-        affiche: x => v(x, 3), expl: 'α = k’2 / k’1 est toujours ≥ 1 par convention. Plus α est loin de 1, plus la colonne « distingue » les deux composés.' } },
-    { id: 'sep', titre: 'À vous de séparer !', focus: ['eluant', 'viz', 'resultats'],
-      texte: <>Réglez la colonne ou l’éluant pour obtenir <strong>R<Ind>s</Ind> ≥ 1,5</strong> sans que l’analyse dépasse <strong>10 minutes</strong>. Piste : un éluant plus faible (moins d’acétonitrile) augmente à la fois k’ et α, mais allonge l’analyse.</>,
-      tache: { type: 'action', ok: duoPhOn && rsMin >= SEUIL_RS[1] && dernierTr <= 10, label: null, consigne: duoPhOn ? `R_s actuel : ${v(rsMin ?? 0)} · dernier pic à ${v(dernierTr)} min` : 'Remettez phénol + o-nitrophénol.' } },
-    { id: 'N', titre: 'L’efficacité de la colonne', focus: ['eluant', 'viz'],
-      texte: <>La <strong>largeur</strong> des pics dépend de l’<strong>efficacité</strong> de la colonne : N = 5,54 (t<Ind>R</Ind> / W<Ind>½</Ind>)² plateaux théoriques, hauteur équivalente à un plateau H = L / N. Doubler la longueur L double N, mais n’affine les pics (en valeur relative, t<Ind>R</Ind> / σ = √N) que d’un facteur √2.</>,
-      tache: { type: 'qcm', q: 'On double la longueur de la colonne (même éluant). Que devient la résolution R_s ?', options: ['elle est multipliée par √2 ≈ 1,4', 'elle est multipliée par 2', 'elle ne change pas'], bonne: 0,
-        expl: 'R_s est proportionnelle à √N, et N est proportionnel à L. Doubler L multiplie R_s par √2 mais double aussi le temps d’analyse : c’est un compromis, pas une solution miracle.' } },
-    { id: 'debit', titre: 'Et le débit ?', focus: ['eluant'],
-      texte: <>Dans ce modèle, k’ ne dépend que de la composition de l’éluant, de la température et du composé. Le débit change le temps mort t₀ (donc tous les temps de rétention) mais pas k’.</>,
-      tache: { type: 'qcm', q: 'On augmente le débit. Dans ce modèle, k’ d’un composé…', options: ['ne change pas (seuls t₀ et t_R changent)', 'augmente', 'diminue'], bonne: 0,
-        expl: 'k’ traduit un équilibre entre les deux phases. Attention : dans une vraie colonne, le débit modifie aussi l’efficacité N (courbe de van Deemter) — ce que ce modèle ne représente pas (voir « Hypothèses et limites »).' } },
-    { id: 'T', titre: 'La température', focus: ['eluant'],
-      texte: <>Le terme <strong>b / T</strong> du modèle traduit l’effet de la température sur la rétention.</>,
-      tache: { type: 'qcm', q: 'On chauffe la colonne de 25 °C à 50 °C. Les temps de rétention…', options: ['diminuent : la rétention est moins forte', 'augmentent', 'ne changent pas'], bonne: 0,
-        expl: 'La rétention est un équilibre d’adsorption, favorisé à basse température : en chauffant, k’ diminue. C’est aussi un moyen de diminuer la pression et la durée d’analyse.' } },
+      texte: <>On injecte un mélange de <strong>caféine</strong>, de <strong>phénol</strong> et de <strong>benzophénone</strong>, avec un éluant à 50 % d’acétonitrile. Les bandes avancent dans la colonne, passent devant le détecteur, et le chromatogramme se trace. En phase inverse, <strong>plus un composé est apolaire, plus il est retenu</strong> par la phase C18 : il sort plus tard.</>,
+      tache: { type: 'action', ok: lancement > 0 && memeMelange(TROIS), label: '▶ Mettre le mélange et injecter', faire: () => mettre(TROIS), consigne: 'Observez l’ordre de sortie des trois pics.' } },
+    { id: 'ident', titre: 'Identifier un pic par son temps de rétention', focus: ['viz', 'resultats'],
+      texte: <>En routine, on <strong>reconnaît</strong> un composé à son temps de rétention t<Ind>R</Ind>, mesuré <strong>dans les mêmes conditions</strong> (même éluant, même débit, même température, même colonne) sur un étalon injecté seul. Étalons purs à 50 % d’acétonitrile : caféine {v(trSeul(CAFEINE))} min, phénol {v(trSeul(PHENOL))} min, benzophénone {v(trSeul(BZP))} min.</>,
+      tache: { type: 'qcm', q: `Dans l’échantillon inconnu, un pic sort à ${v(trSeul(BZP))} min (mêmes conditions). De quel composé s’agit-il ?`, options: ['la benzophénone', 'le phénol', 'la caféine'], bonne: 0,
+        expl: 'Même t_R que l’étalon dans les mêmes conditions : c’est probablement la benzophénone. Ce n’est qu’un indice : deux composés peuvent avoir le même t_R, d’où l’intérêt de confirmer (autre éluant, détecteur à barrette de diodes ou spectromètre de masse).' } },
+    { id: 'iso', titre: 'Choisir la composition de l’éluant', focus: ['eluant', 'viz', 'resultats'],
+      texte: <>Mélange plus difficile : caféine, paracétamol (très proches), benzophénone et triphénylcarbinol (très retenu). {bouton('Mettre ces 4 composés (50 %)', () => mettre(QUATRE))} Faites varier le pourcentage d’acétonitrile : plus l’éluant est riche en acétonitrile, plus tout sort vite… mais moins les pics du début sont séparés. Cherchez Rs ≥ 1,5 pour toutes les paires <strong>et</strong> un dernier pic avant 10 min.</>,
+      tache: { type: 'qcm', q: 'En élution isocratique (composition constante), peut-on séparer les 4 pics (Rs ≥ 1,5) en moins de 10 min ?', options: ['non : ce qui sépare les premiers retarde trop les derniers', 'oui, vers 50 % d’acétonitrile', 'oui, en diminuant le débit'], bonne: 0,
+        expl: 'À 36 % d’acétonitrile les deux premiers pics sont tout juste séparés, mais le dernier sort après 13 min ; à 50 % tout sort vite mais caféine et paracétamol se chevauchent. Un compromis unique n’existe pas : c’est le cas typique où l’on passe en gradient.' } },
+    { id: 'grad', titre: 'Passer en gradient', focus: ['eluant', 'viz', 'resultats'],
+      texte: <>En <strong>gradient d’élution</strong>, la pompe augmente progressivement la proportion d’acétonitrile : les premiers composés sont séparés dans un éluant faible, les derniers sont décrochés par un éluant fort. Choisissez « gradient » et réglez le départ, la fin et la durée.</>,
+      tache: { type: 'action', ok: p.grad && memeMelange(QUATRE) && rsMin >= SEUIL_RS[1] && dernierTr <= 10, label: null, consigne: memeMelange(QUATRE) ? `Rs minimal : ${v(rsMin ?? 0)} · dernier pic à ${v(dernierTr)} min${p.grad ? '' : ' · passez en gradient'}` : 'Remettez les 4 composés à l’étape précédente.' } },
+    { id: 'debit', titre: 'Débit et pression', focus: ['appareil', 'eluant'],
+      texte: <>Retour à l’isocratique. {bouton('Mettre le mélange de 3 composés (50 %, débit habituel)', () => mettre(TROIS))} Le <strong>manomètre</strong> lit la pression nécessaire pour faire passer l’éluant dans la colonne : ici ≈ {Math.round(ref0)} bar. Changez le débit et lisez la pression ; regardez aussi ce qui arrive aux temps de rétention.</>,
+      tache: { type: 'qcm', q: 'On double le débit. Que devient la pression lue au manomètre ?', options: ['elle double à peu près', 'elle est divisée par 2', 'elle ne change pas'], bonne: 0,
+        expl: 'La pression est proportionnelle au débit (loi de Darcy). C’est pourquoi on note la pression de référence de la méthode : un écart à débit identique signale un problème. Doubler le débit divise aussi les temps de rétention par 2 ; au-delà de la limite de pression de l’appareil, la pompe s’arrête.' } },
+    { id: 'bouchee', titre: 'Panne n° 1 : la pression monte', focus: ['appareil', 'controle', 'viz'],
+      texte: <>{bouton('Charger la situation', () => situation(TROIS, 'bouchee'))} Le tableau « Contrôle de routine » compare la journée à la méthode validée. Ici la pression est passée de {Math.round(ref0)} à {Math.round(colonne({ ...PARAMS_DEFAUT, panne: 'bouchee' }).dP)} bar alors que les chromatogrammes ont gardé les mêmes temps de rétention, la même résolution et la même hauteur de pic.</>,
+      tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.bouchee.nom, PANNES.fuite.nom, PANNES.lampe.nom], bonne: 0,
+        expl: `Pression ↑ sans autre changement : l’écoulement est gêné (filtre en ligne, frittés ou tête de colonne encrassés par des particules). Geste : ${PANNES.bouchee.geste}` } },
+    { id: 'fuite', titre: 'Panne n° 2 : tout sort trop tard', focus: ['appareil', 'controle', 'viz'],
+      texte: <>{bouton('Charger la situation', () => situation(TROIS, 'fuite'))} Les temps de rétention ont beaucoup augmenté, la pression est plus faible que d’habitude, les pics sont toujours bien séparés (Rs inchangé). Le débit réel dans la colonne est inférieur au débit réglé sur la pompe.</>,
+      tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.fuite.nom, PANNES.bouchee.nom, PANNES.vieille.nom], bonne: 0,
+        expl: `Débit réel plus faible : t₀ augmente, donc tous les t_R aussi, et la pression baisse (elle est proportionnelle au débit). Geste : ${PANNES.fuite.geste}` } },
+    { id: 'vieille', titre: 'Panne n° 3 : les pics s’élargissent', focus: ['appareil', 'controle', 'viz'],
+      texte: <>{bouton('Charger la situation', () => situation(TROIS, 'vieille'))} Les pics sont plus larges et plus bas, la résolution a chuté, les temps de rétention sont un peu plus courts. La pression n’a pas bougé.</>,
+      tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.vieille.nom, PANNES.bulle.nom, PANNES.eluant.nom], bonne: 0,
+        expl: `Une colonne usée (phase greffée dégradée, vide dans le lit) retient moins et élargit les bandes, sans changer la pression. Geste : ${PANNES.vieille.geste}` } },
+    { id: 'lampe', titre: 'Panne n° 4 : des pics trop petits', focus: ['appareil', 'controle', 'viz'],
+      texte: <>{bouton('Charger la situation', () => situation(TROIS, 'lampe'))} Les temps de rétention, la pression et la résolution sont corrects, mais les pics ont perdu les deux tiers de leur hauteur et la ligne de base est plus bruitée.</>,
+      tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.lampe.nom, PANNES.fuite.nom, PANNES.vieille.nom], bonne: 0,
+        expl: `Tout ce qui concerne la séparation est normal : c’est le détecteur qui a perdu en sensibilité. Geste : ${PANNES.lampe.geste}` } },
     { id: 'fin', titre: 'À retenir', focus: [],
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18 }}>
-        <li>En phase inverse, <strong>plus un composé est apolaire, plus il est retenu</strong>.</li>
-        <li>t₀ = temps mort ; t<Ind>R</Ind> = t₀ (1 + k’).</li>
-        <li>Sélectivité α = k’₂ / k’₁ ; résolution R<Ind>s</Ind> = 1,18 Δt<Ind>R</Ind> / (W<Ind>½,1</Ind> + W<Ind>½,2</Ind>) ; séparés si R<Ind>s</Ind> ≥ 1,5.</li>
-        <li>Pour séparer : agir sur <strong>k’ et α</strong> (éluant, température) puis sur <strong>N</strong> (longueur, particules) ; chaque amélioration a un coût en temps.</li></ul></ARetenir>,
+        <li>Chaîne : <strong>pompe → injecteur → colonne (four) → détecteur</strong>. Le manomètre donne la santé du circuit.</li>
+        <li>On <strong>identifie</strong> par t<Ind>R</Ind> (comparaison à un étalon dans les mêmes conditions) et on vérifie par une autre méthode.</li>
+        <li>Phase inverse : plus un composé est apolaire, plus il est retenu. Plus il y a d’acétonitrile, plus tout sort vite.</li>
+        <li>Un mélange aux polarités très étalées se sépare mieux en <strong>gradient</strong>.</li>
+        <li><strong>Diagnostic</strong> : comparer pression, t<Ind>R</Ind>, forme et hauteur des pics, ligne de base à la méthode validée. Pression ↑ : encrassement. Pression ↓ et t<Ind>R</Ind> ↑ : fuite. Pics larges et Rs ↓ : colonne usée. Pics petits, bruit ↑ : lampe.</li></ul></ARetenir>,
       tache: null },
   ];
 
   // ════════════════ DÉFIS ════════════════
   function lancer(type) { const d = nouveauDefi(type); setDefi(d); setP({ ...PARAMS_DEFAUT, pct: d.pct }); setHover(null); }
-  function changerMode(md) { setMode(md); if (md === 'defi') lancer(defi ? defi.type : 'ordre'); }
-  const cible = enDefi && defi.cible != null ? exp('pre_' + defi.cible) : null;
+  function changerMode(md) { setMode(md); if (md === 'defi') lancer(defi ? defi.type : 'ordre'); else setP(q => (q.panne ? { ...q, panne: null } : q)); }
   const ordreVrai = a.pics.map(m => m.id);
   function evaluer(d) {
     if (d.type === 'ordre') { const ok = JSON.stringify(d.reps.ordre) === JSON.stringify(ordreVrai); return { ok, ligne: ok ? 'Bon ordre : plus un composé est apolaire (logP élevé), plus il est retenu.' : 'Pas encore : plus logP est élevé, plus le composé est apolaire donc retenu par les chaînes C18, et sort tard.' }; }
-    if (d.type === 'facteur') { const x = parseFloat(String(d.reps.k ?? '').replace(',', '.')); const ok = cible && isFinite(x) && Math.abs(x - cible.k) <= 0.04 * cible.k; return { ok, ligne: ok ? 'Juste : k’ = (t_R − t_0) / t_0.' : 'Relisez t_R au survol du pic, t_0 au survol du repère gris, puis calculez k’ = (t_R − t_0) / t_0.' }; }
+    if (d.type === 'identifier') {
+      const faux = a.pics.filter((m, i) => d.reps[LETTRES[i]] !== m.id).length;
+      const ok = faux === 0 && a.pics.every((m, i) => d.reps[LETTRES[i]]);
+      return { ok, ligne: ok ? 'Tous les pics sont identifiés : même tR que l’étalon, dans les mêmes conditions.' : 'Comparez le tR de chaque pic (survol) à ceux des étalons. Attention : un étalon de la liste n’est pas dans l’échantillon.' };
+    }
+    if (d.type === 'panne') {
+      const ok = d.reps.cause === d.panne;
+      return { ok, ligne: ok ? `Bien vu : ${PANNES[d.panne].nom}. Geste : ${PANNES[d.panne].geste}` : d.reps.cause ? 'Ce n’est pas la bonne cause : confrontez les écarts du tableau de contrôle (pression, tR, largeur, hauteur, ligne de base) aux symptômes de chaque défaut.' : 'Choisissez d’abord une cause.' };
+    }
     const ok = nbPics === 2 && rsMin >= SEUIL_RS[1] && dernierTr <= TEMPS_MAX_DEFI;
     return { ok, ligne: ok ? 'Séparation obtenue dans le temps imparti.' : `Il faut R_s ≥ 1,5 et un dernier pic avant ${TEMPS_MAX_DEFI} min (actuellement R_s = ${v(rsMin ?? 0)} ; dernier pic à ${v(dernierTr)} min).` };
   }
   const res = enDefi && defi.verifie ? evaluer(defi) : null, reussi = !!res && res.ok;
+  const anonyme = enDefi && defi.type === 'identifier' && !defi.solution && !reussi;
   const suivi = useSuivi(`${SIM}:defi.${enDefi ? defi.type : 'ordre'}`, reussi);
   const prog = lireProgression();
   const rep = (k, x) => setDefi(d => ({ ...d, reps: { ...d.reps, [k]: x }, verifie: false }));
@@ -481,12 +598,18 @@ export function SimulationCLHP() {
           return <button key={m.id} onClick={() => rep('ordre', rang >= 0 ? defi.reps.ordre.filter(x => x !== m.id) : [...defi.reps.ordre, m.id])} style={stylePetitBouton(rang >= 0, couleurs[m.id])}>
             {rang >= 0 ? `${rang + 1}. ` : ''}{m.nom} <span style={{ opacity: 0.75, fontWeight: 400 }}>logP {String(m.logP).replace('.', ',')}</span></button>;
         })}</div></>}
-      {defi.type === 'facteur' && <>
-        <div style={txtD}>🎯 Éluant à <strong>{p.pct} %</strong> d’acétonitrile. Lisez sur le chromatogramme (au survol) {TR} de <strong>{MOLECULES_CLHP[defi.cible].nom}</strong> et {T0}, puis calculez son facteur de rétention k’.</div>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 8 }}>
-          <span style={{ fontSize: 15, fontWeight: 700 }}>k’ =</span>
-          <input value={defi.reps.k ?? ''} onChange={e => rep('k', e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); } }} placeholder="?" aria-label="Votre valeur de k’"
-            style={{ fontSize: 15, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 110, color: KIT.txt }}/></div></>}
+      {defi.type === 'identifier' && <>
+        <div style={txtD}>🎯 Éluant à <strong>{defi.pct} %</strong> d’acétonitrile. On a injecté séparément quatre étalons ; l’échantillon, lui, <strong>n’en contient que trois</strong>. Identifiez chaque pic (A, B, C…) en comparant son t<Ind>R</Ind> (survol du pic) à celui des étalons.</div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
+          {defi.etalons.map(i => <span key={i} style={{ ...styleBoite, padding: '3px 8px' }}>{MOLECULES_CLHP[i].nom} : <strong>{v(trSeul(i, defi.pct))} min</strong></span>)}</div>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}>
+          {a.pics.map((m, i) => <label key={m.id} style={{ fontSize: 14, fontWeight: 700 }}>Pic {LETTRES[i]} {' '}
+            <select value={defi.reps[LETTRES[i]] ?? ''} onChange={e => rep(LETTRES[i], e.target.value)} style={{ fontSize: 14, padding: '3px 6px', borderRadius: 6, border: `1.5px solid ${KIT.bord}`, color: KIT.txt }}>
+              <option value="">?</option>{defi.etalons.map(k => <option key={k} value={'pre_' + k}>{MOLECULES_CLHP[k].nom}</option>)}</select></label>)}</div></>}
+      {defi.type === 'panne' && <>
+        <div style={txtD}>🎯 Une analyse de routine donne ce chromatogramme (mélange {allMols.map(m => nomsCourts(m)).join(', ')} ; méthode validée : 50 % d’acétonitrile, {v(PARAMS_DEFAUT.debit, 1)} mL/min, {PARAMS_DEFAUT.temperature} °C). Observez le manomètre et le contrôle de routine, puis choisissez la <strong>cause la plus probable</strong>.</div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+          {Object.entries(PANNES).map(([k, q]) => <button key={k} onClick={() => rep('cause', k)} style={stylePetitBouton(defi.reps.cause === k, '#0ea5e9')}>{q.nom}</button>)}</div></>}
       {defi.type === 'separer' && <>
         <div style={txtD}>🎯 Mélange de <strong>{allMols[0].nom}</strong> et <strong>{allMols[1].nom}</strong>. Réglez l’éluant (et la colonne si besoin) pour obtenir <strong>R<Ind>s</Ind> ≥ 1,5</strong> avec le dernier pic <strong>avant {TEMPS_MAX_DEFI} min</strong>.</div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
@@ -500,12 +623,13 @@ export function SimulationCLHP() {
       {res && <div style={{ marginTop: 8, fontSize: 14, color: res.ok ? '#15803d' : '#b91c1c', fontWeight: 600 }}>{res.ok ? '✅' : '❌'} {res.ligne}{res.ok && <div style={{ fontWeight: 700, marginTop: 4 }}>🎉 Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'ordre' && <>Ordre de sortie : <strong>{a.pics.map(m => m.nom).join(' → ')}</strong>.</>}
-        {defi.type === 'facteur' && cible && <>t₀ = {v(a.col.tm)} min ; {TR} = {v(cible.tr)} min ; k’ = ({v(cible.tr)} − {v(a.col.tm)}) / {v(a.col.tm)} = <strong>{v(cible.k)}</strong>.</>}
+        {defi.type === 'identifier' && <>{a.pics.map((m, i) => <span key={m.id}>Pic {LETTRES[i]} ({TR} = {v(m.tr)} min) : <strong>{m.nom}</strong>{i < a.pics.length - 1 ? ' ; ' : '.'} </span>)}</>}
+        {defi.type === 'panne' && <><strong>{PANNES[defi.panne].nom}</strong> — {PANNES[defi.panne].symptome}. Geste : {PANNES[defi.panne].geste}</>}
         {defi.type === 'separer' && <>Piste : à 50 % d’acétonitrile, R<Ind>s</Ind> = {v(analyse({ ...PARAMS_DEFAUT }, allMols).res[0].R)}. Diminuez le pourcentage d’acétonitrile pour augmenter k’ et α, en surveillant le temps du dernier pic.</>}</div>}
     </div>);
 
   // ════════════════ PANNEAUX ════════════════
-  const resultats = nbPics === 0 ? null : (
+  const resultats = nbPics === 0 || anonyme ? null : (
     <div style={{ ...styleBoite, ...cadre('resultats') }}>
       <Section titre={`Résultats : ${nbPics} pic${nbPics > 1 ? 's' : ''}`} ouvert={ouv.tableau} onBascule={() => bascule('tableau')}>
         <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>Colonne : {T0} = {v(a.col.tm)} min · N = {Math.round(a.col.N).toLocaleString('fr-FR')} plateaux · H = {v(a.col.H * 1000, 1)} µm · ΔP ≈ {Math.round(a.col.dP)} bar. Concentration et réponse de chaque composé sont modifiables.
@@ -582,22 +706,20 @@ export function SimulationCLHP() {
           <span style={{ display: 'flex', gap: 4, alignItems: 'center' }}>Élution :
             <button onClick={() => maj('grad', false)} style={stylePetitBouton(!p.grad, '#0d6e6e')}>isocratique</button>
             <button onClick={() => maj('grad', true)} style={stylePetitBouton(p.grad, '#7c3aed')}>gradient</button></span>
-          <span style={{ display: 'flex', gap: 4, alignItems: 'center' }}>Efficacité :
-            <button onClick={() => maj('eff', 'bataille')} style={stylePetitBouton(p.eff !== 'vd', '#0d6e6e')} title="N = L / (dp · nC), indépendant du débit">relation simple</button>
-            <button onClick={() => maj('eff', 'vd')} style={stylePetitBouton(p.eff === 'vd', '#0d6e6e')} title="H = A + B/u + C·u : N dépend du débit">van Deemter</button></span>
         </div>}
       </div>
       <div style={{ display: 'grid', gap: '2px 16px', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))' }}>
-        {(enDefi && defi.type === 'ordre') ? <div style={{ fontSize: 13.5, color: KIT.txt2 }}>Éluant fixé : {defi.pct} % d’acétonitrile.</div> :
+        {fige && defi.type !== 'ordre' ? <div style={{ fontSize: 13.5, color: KIT.txt2 }}>Conditions fixées par l’énoncé : {defi.pct} % d’acétonitrile, {v(PARAMS_DEFAUT.debit, 1)} mL/min, {PARAMS_DEFAUT.temperature} °C, colonne C{PARAMS_DEFAUT.nC} de {PARAMS_DEFAUT.longueur} cm.</div> :
+        (enDefi && defi.type === 'ordre') ? <div style={{ fontSize: 13.5, color: KIT.txt2 }}>Éluant fixé : {defi.pct} % d’acétonitrile.</div> :
           <Curseur nom={p.grad ? 'Acétonitrile au départ' : 'Acétonitrile'} valeur={p.pct} onChange={x => maj('pct', x)} min={5} max={95} pas={1} unite="%" couleur={p.grad ? '#7c3aed' : '#0d6e6e'}/>}
-        {p.grad && <Curseur nom="Acétonitrile à la fin" valeur={p.pct1} onChange={x => maj('pct1', x)} min={5} max={95} pas={1} unite="%" couleur="#7c3aed"/>}
-        {p.grad && <Curseur nom="Durée du gradient" valeur={p.tg} onChange={x => maj('tg', x)} min={1} max={60} pas={1} unite="min" couleur="#7c3aed"/>}
-        <Curseur nom="Débit" valeur={p.debit} onChange={x => maj('debit', x)} min={0.1} max={10} pas={0.1} unite="mL/min" decimales={1} couleur="#0d6e6e"/>
-        <Curseur nom="Température" valeur={p.temperature} onChange={x => maj('temperature', x)} min={5} max={80} pas={1} unite="°C" couleur="#0d6e6e"/>
-        <Curseur nom="Longueur L" valeur={p.longueur} onChange={x => maj('longueur', x)} min={1} max={50} pas={1} unite="cm" couleur="#0d6e6e"/>
+        {!(fige && defi.type !== 'ordre') && p.grad && <Curseur nom="Acétonitrile à la fin" valeur={p.pct1} onChange={x => maj('pct1', x)} min={5} max={95} pas={1} unite="%" couleur="#7c3aed"/>}
+        {!(fige && defi.type !== 'ordre') && p.grad && <Curseur nom="Durée du gradient" valeur={p.tg} onChange={x => maj('tg', x)} min={1} max={60} pas={1} unite="min" couleur="#7c3aed"/>}
+        {!(fige && defi.type !== 'ordre') && <Curseur nom="Débit" valeur={p.debit} onChange={x => maj('debit', x)} min={0.1} max={10} pas={0.1} unite="mL/min" decimales={1} couleur="#0d6e6e"/>}
+        {!(fige && defi.type !== 'ordre') && <Curseur nom="Température" valeur={p.temperature} onChange={x => maj('temperature', x)} min={5} max={80} pas={1} unite="°C" couleur="#0d6e6e"/>}
+        {!(fige && defi.type !== 'ordre') && <Curseur nom="Longueur L" valeur={p.longueur} onChange={x => maj('longueur', x)} min={1} max={50} pas={1} unite="cm" couleur="#0d6e6e"/>}
       </div>
-      <button onClick={() => bascule('plus')} aria-expanded={ouv.plus} style={{ ...stylePetitBouton(false), marginTop: 4 }}>{ouv.plus ? '▲ Moins de réglages' : '▼ Autres réglages de la colonne'}</button>
-      {ouv.plus && <div style={{ display: 'grid', gap: '2px 16px', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', marginTop: 8 }}>
+      {!(fige && defi.type !== 'ordre') && <button onClick={() => bascule('plus')} aria-expanded={ouv.plus} style={{ ...stylePetitBouton(false), marginTop: 4 }}>{ouv.plus ? '▲ Moins de réglages' : '▼ Autres réglages de la colonne'}</button>}
+      {ouv.plus && !(fige && defi.type !== 'ordre') && <div style={{ display: 'grid', gap: '2px 16px', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', marginTop: 8 }}>
         <Curseur nom="Diamètre interne" valeur={p.diametre} onChange={x => maj('diametre', x)} min={1} max={10} pas={0.1} unite="mm" decimales={1} couleur="#475569"/>
         <Curseur nom="Taille des particules dp" valeur={p.dp} onChange={x => maj('dp', x)} min={1} max={20} pas={1} unite="µm" couleur="#475569"/>
         <Curseur nom="Greffage nC" valeur={p.nC} onChange={x => maj('nC', x)} min={1} max={30} pas={1} unite="C" couleur="#475569"/>
@@ -605,14 +727,8 @@ export function SimulationCLHP() {
       </div>}
       <div style={{ fontSize: 13.5, marginTop: 4, color: a.col.dP > P_MAX ? '#b91c1c' : KIT.txt2, fontWeight: a.col.dP > P_MAX ? 700 : 400 }}>
         Pression en tête de colonne ≈ {Math.round(a.col.dP)} bar{p.grad ? ' (au maximum pendant le gradient)' : ''}{a.col.dP > P_MAX ? ` : au-delà de ${P_MAX} bar, une CLHP classique se met en sécurité (il faudrait une UHPLC).` : '.'}</div>
-      {p.eff === 'vd' && !enDefi && <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center', marginTop: 8, padding: '8px 10px', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
-        <div style={{ flex: '1 1 260px', maxWidth: 420 }}><CourbeVD p={pEff}/></div>
-        <div style={{ flex: '1 1 200px', fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
-          <strong>van Deemter</strong> : H = A + B/u + C·u. À faible débit, la diffusion longitudinale élargit les bandes (B/u) ; à fort débit, c’est le retard au transfert de masse entre les phases (C·u).
-          <div style={{ marginTop: 4 }}>Ici : H = {v(a.col.H * 1000, 1)} µm, soit N = {Math.round(a.col.N).toLocaleString('fr-FR')} plateaux. Débit optimal ≈ {v(courbeVD(pEff).dOpt, 2)} mL/min.</div></div>
-      </div>}
-      <button onClick={() => bascule('avance')} aria-expanded={ouv.avance} style={{ ...stylePetitBouton(false), marginTop: 6, marginLeft: ouv.plus ? 0 : 6 }}>{ouv.avance ? '▲ Masquer les paramètres du modèle' : '▼ Paramètres du modèle (mp, mo, b, c)'}</button>
-      {ouv.avance && <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 8, padding: '10px 12px', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
+      {!fige && <button onClick={() => bascule('avance')} aria-expanded={ouv.avance} style={{ ...stylePetitBouton(false), marginTop: 6, marginLeft: ouv.plus ? 0 : 6 }}>{ouv.avance ? '▲ Masquer les paramètres du modèle' : '▼ Paramètres du modèle (mp, mo, b, c)'}</button>}
+      {ouv.avance && !fige && <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 8, padding: '10px 12px', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
         <div style={{ fontSize: 13, color: KIT.txt2, width: '100%' }}>ln k’ = (mp · logP + mo) · ln φ + b / T + c — T en °C, φ = fraction volumique d’acétonitrile</div>
         {[['mp', -3, 0, 0.01], ['mo', -3, 1, 0.01], ['b', 0, 50, 0.5], ['c', -5, 0, 0.1]].map(([k, min, max, step]) => (
           <label key={k} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: KIT.txt2 }}>{k} =
@@ -627,8 +743,8 @@ export function SimulationCLHP() {
         <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
           <li><strong>Rétention</strong> : relation empirique ln k’ = (mp·logP + mo)·ln φ + b/T + c, calibrée pour des molécules <strong>neutres</strong> en phase inverse C18 / acétonitrile-eau, pour un pourcentage d’acétonitrile intermédiaire. Le seul descripteur du composé est son logP : ni liaisons hydrogène spécifiques, ni ionisation (pH), ni forme de la molécule.</li>
           <li><strong>Pics gaussiens</strong> : on suppose une distribution normale des temps de passage, de largeur σ = t<Ind>R</Ind> / √N. Pas de traînée, pas de pics asymétriques.</li>
-          <li><strong>Efficacité, « relation simple »</strong> (réglage de départ, celui de X. Bataille) : N = L / (dp · nC), indépendant du débit et du composé. Elle donne une colonne peu efficace (H ≈ 18 dp), proche de colonnes de TP usagées.</li>
-          <li><strong>Efficacité, « van Deemter »</strong> : forme réduite h = A + B/ν + C·ν avec h = H/dp, ν = u·dp/D<Ind>m</Ind> ; A = 1,2, B = 1,5, C = 0,1 (colonne bien remplie, h<Ind>min</Ind> ≈ 2). D<Ind>m</Ind> ≈ 1,0·10⁻⁵ cm²/s dans l’eau à 25 °C, corrigé en T/η. Ce sont des ordres de grandeur de la littérature, pas les valeurs d’une colonne réelle ; le même N est utilisé pour tous les composés.</li>
+          <li><strong>Efficacité</strong> : N = L / (dp · nC), indépendant du débit et du composé (relation de X. Bataille). Elle donne une colonne peu efficace (H ≈ 18 dp), proche de colonnes de TP usagées. La variation réelle de N avec le débit n’est pas représentée.</li>
+          <li><strong>Défauts de fonctionnement</strong> : volontairement simples, pour montrer le <em>sens</em> des écarts et non les valeurs d’un appareil réel. Colonne encrassée : résistance à l’écoulement × 2,6. Colonne vieillie : N × 0,35 et k’ × 0,75. Fuite : débit réel × 0,7. Éluant mal préparé : 8 points d’acétonitrile en moins. Bulle : pression oscillante, N × 0,8 et ligne de base ondulée. Lampe : signal × 0,35 et bruit de ligne de base.</li>
           <li><strong>Pression</strong> : loi de Darcy ΔP = Φ·η·u·L / dp² avec Φ ≈ 1000 ; viscosité du mélange eau / acétonitrile estimée (maximum ≈ 1 mPa·s vers 20 % d’acétonitrile), et décroissante avec la température. Ordre de grandeur, à ± 30 % environ.</li>
           <li><strong>Gradient</strong> : linéaire, puis palier à la composition finale. Volume de délai de la pompe, rééquilibrage et variation de N avec la composition sont négligés. Chaque bande avance à la vitesse u / (1 + k’) avec le k’ de l’éluant qui l’entoure ; la largeur du pic est estimée par σ ≈ t₀ (1 + k’<Ind>sortie</Ind>) / √N (compression de bande négligée).</li>
           <li>Volume mort extra-colonne et volume injecté ne sont pas modélisés.</li>
@@ -647,8 +763,8 @@ export function SimulationCLHP() {
         <li>Séparez le phénol et l’o-nitrophénol avec R<Ind>s</Ind> ≥ 1,5 : quel est le prix en temps d’analyse ?</li>
         <li>Doublez la longueur de colonne : que deviennent R<Ind>s</Ind> et la durée de l’analyse ?</li>
         <li>Ajoutez le triphénylcarbinol (logP 4,59) : voyez comme un pic tardif est large et bas.</li>
-        <li>Augmentez le débit : qu’est-ce qui change, qu’est-ce qui reste identique ? Passez ensuite l’efficacité sur « van Deemter » et cherchez le débit optimal.</li>
-        <li>Avec van Deemter, chauffez la colonne : que deviennent la pression et le débit optimal ?</li>
+        <li>Augmentez le débit : lisez la pression au manomètre et regardez les temps de rétention. Chauffez la colonne : que deviennent la pression et la durée de l’analyse ?</li>
+        <li>Dans « Simuler un défaut », choisissez une panne et repérez ses symptômes dans le tableau de contrôle de routine.</li>
         <li>Mettez les 17 composés et passez en gradient (10 → 90 % en 10 min) : comparez la largeur des derniers pics avec l’isocratique.</li>
       </ul>
     </div>);
@@ -666,6 +782,27 @@ export function SimulationCLHP() {
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button></span>);
 
+  const appareil = (
+    <div style={{ ...styleBoite, background: 'white', ...cadre('appareil') }}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>L’appareil</div>
+      <Appareil a={a} p={pEff} actif={piece} setActif={setPiece}/>
+    </div>);
+  const controle = (pEff.panne || enGuide) && (
+    <div style={{ ...styleBoite, ...cadre('controle') }}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Contrôle de routine</div>
+      <Controle a={a}/>
+    </div>);
+  const defauts = mode === 'explore' && (
+    <div style={styleBoite}>
+      <Section titre={`Simuler un défaut${p.panne ? ` : ${PANNES[p.panne].nom}` : ''}`} ouvert={ouv.pannes} onBascule={() => bascule('pannes')}>
+        <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>Choisissez un défaut, injectez, puis comparez l’appareil, le chromatogramme et le contrôle de routine à la situation normale.</div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
+          <button onClick={() => maj('panne', null)} style={stylePetitBouton(!p.panne, '#16a34a')}>Aucun défaut</button>
+          {Object.entries(PANNES).map(([k, q]) => <button key={k} onClick={() => { maj('panne', k); setLancement(n => n + 1); }} style={stylePetitBouton(p.panne === k, '#c2410c')}>{q.nom}</button>)}</div>
+        {p.panne && <div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}><strong>Symptômes :</strong> {PANNES[p.panne].symptome}.<br/><strong>Geste :</strong> {PANNES[p.panne].geste}</div>}
+      </Section>
+    </div>);
+
   const visuel = (
     <div style={{ ...styleBoite, background: 'white', ...cadre('viz') }}>
       {a.nonElues.length > 0 && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '6px 8px', marginBottom: 8 }}>
@@ -673,7 +810,7 @@ export function SimulationCLHP() {
       {nbPics === 0 ? <div style={{ padding: '2rem', textAlign: 'center', fontSize: 14, color: KIT.txt2 }}>{a.nonElues.length ? 'Aucun composé ne sort de la colonne.' : 'Sélectionnez au moins un composé pour afficher le chromatogramme.'}</div>
         : masque ? <div style={{ padding: '2rem 1rem', textAlign: 'center', fontSize: 14, color: KIT.txt2, lineHeight: 1.6 }}>🔒 Le chromatogramme sera affiché après votre vérification : prédisez d’abord l’ordre de sortie.</div>
         : <Visu a={a} p={pEff} couleurs={couleurs} hover={hover} setHover={setHover} lancement={lancement} onLancer={() => setLancement(n => n + 1)}
-            nonRetenu={nonRetenu} setNonRetenu={setNonRetenu} total={total} setTotal={setTotal}/>}
+            nonRetenu={nonRetenu} setNonRetenu={setNonRetenu} total={total} setTotal={setTotal} anonyme={anonyme}/>}
     </div>);
 
   return (
@@ -693,8 +830,11 @@ export function SimulationCLHP() {
       <div className={`cl-l1${mode !== 'explore' ? ' cote' : ''}`}>
         <div className="cl-col">
           {voletDefi}
+          {appareil}
           {eluant}
           {visuel}
+          {controle}
+          {defauts}
           {melange}
           {resultats}
         </div>

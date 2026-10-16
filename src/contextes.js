@@ -42,12 +42,12 @@ export const CONTEXTES = {
     niveau: "Terminale STL",
   },
   12: {
-    but: "Simuler une séparation par chromatographie liquide haute performance (CLHP) en phase inverse C18, avec un éluant acétonitrile / eau (modèle de X. Bataille) : bandes qui avancent dans la colonne, chromatogramme enregistré en direct, grandeurs lues sur les pics (t0, tR, k', α, Rs).",
-    apprendre: "L'influence de la colonne, de la composition de l'éluant, du débit et de la température sur les temps de rétention et la qualité de la séparation ; l'efficacité selon van Deemter, la pression, l'élution en gradient ; les hypothèses du modèle.",
+    but: "Simuler une séparation par chromatographie liquide haute performance (CLHP) en phase inverse C18, avec un éluant acétonitrile / eau (modèle de X. Bataille) : schéma de l'appareil (pompe, manomètre, injecteur, colonne, détecteur), chromatogramme enregistré en direct, grandeurs lues sur les pics (t0, tR, k', α, Rs), diagnostic de pannes.",
+    apprendre: "L'influence de la colonne, de la composition de l'éluant, du débit et de la température sur les temps de rétention et la qualité de la séparation ; l'identification d'un pic par son temps de rétention, l'élution en gradient, la lecture de la pression et le diagnostic de pannes (colonne encrassée ou vieillie, fuite, bulle, lampe) ; les hypothèses du modèle.",
     etapes: [
       "Choisissez les composés du mélange à séparer, puis cliquez sur « Injecter ».",
       "Faites varier le pourcentage d'acétonitrile et observez à la fois l'écart et la largeur des pics.",
-      "Ajustez la colonne (longueur, taille des particules) et le débit.",
+      "Ajustez la colonne (longueur, taille des particules) et le débit, en surveillant le manomètre.",
       "Cherchez des conditions qui séparent tous les pics (Rs ≥ 1,5) dans un temps d'analyse raisonnable, ou lancez le parcours guidé et les défis.",
     ],
     niveau: "BTS Métiers de la chimie",
