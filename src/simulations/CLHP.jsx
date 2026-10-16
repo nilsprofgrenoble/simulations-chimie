@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
 import { Field, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, Curseur, lireProgression } from "../commun";
-import { MOLECULES_CLHP, PARAMS_DEFAUT, SEUIL_RS, analyse, signal } from "./clhpModele";
+import { MOLECULES_CLHP, PARAMS_DEFAUT, SEUIL_RS, P_MAX, analyse, colonne, signal, courbeVD, positionBande, phiEntree } from "./clhpModele";
 
 export { MOLECULES_CLHP };
 
@@ -56,7 +56,7 @@ const hasard = (a, b, c) => { const x = Math.sin(a * 127.1 + b * 311.7 + c * 74.
 // ---------- vue « colonne » : bandes en marche, molécules libres ou adsorbées ----------
 const H_COL = 128;
 const rr = (ctx, x, y, w, h, r) => { if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); };
-function dessinerColonne(ctx, dpr, W, { a, frac, hover, couleurs, nonRetenu }, now) {
+function dessinerColonne(ctx, dpr, W, { a, p, frac, hover, couleurs, nonRetenu }, now) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, W, H_COL);
   const xL = 74, xR = W - 78, L = xR - xL, y0 = 34, hT = 64, R = 8.6, dy = R * 1.732;
@@ -82,20 +82,22 @@ function dessinerColonne(ctx, dpr, W, { a, frac, hover, couleurs, nonRetenu }, n
   ctx.fillStyle = '#713f12'; ctx.font = '600 9px system-ui, sans-serif'; ctx.fillText('UV', xR + 36, y0 + 37.5);
   ctx.fillStyle = '#475569'; ctx.font = '11px system-ui, sans-serif'; ctx.textAlign = 'left';
   const t = frac * a.tMax;
-  ctx.fillText(`t = ${v(t)} min`, xL, 16);
+  ctx.fillText(p.grad ? (W < 560 ? `t = ${v(t)} min · ${Math.round(phiEntree(p, t) * 100)} % ACN` : `t = ${v(t)} min · éluant entrant : ${Math.round(phiEntree(p, t) * 100)} % d’acétonitrile`) : `t = ${v(t)} min`, W < 560 ? 8 : xL, 16);
   ctx.textAlign = 'right'; ctx.fillStyle = '#64748b';
-  ctx.fillText(W < 560 ? 'éluant · grains C18' : 'éluant (phase mobile) · grains greffés C18 (phase stationnaire)', xR, 16);
+  if (!(p.grad && W < 760)) ctx.fillText(W < 560 ? 'éluant · grains C18' : 'éluant (phase mobile) · grains greffés C18 (phase stationnaire)', xR, 16);
   ctx.textAlign = 'left';
   // bandes
   const N = a.col.N, groupes = [];
-  if (nonRetenu) groupes.push({ id: 'tm', slot: 11, k: 0, tr: a.col.tm, coul: '#64748b' });
-  a.pics.forEach((m, i) => groupes.push({ id: m.id, slot: i % 11, k: m.k, tr: m.tr, coul: couleurs[m.id] }));
+  const u = p.longueur / a.col.tm;
+  if (nonRetenu) groupes.push({ id: 'tm', slot: 11, pos: () => ({ x: u * t, k: 0 }), coul: '#64748b' });
+  a.pics.forEach((m, i) => groupes.push({ id: m.id, slot: i % 11, pos: () => positionBande(p, m, t, a.col), coul: couleurs[m.id] }));
   const bucket = Math.floor(now / 160);
   groupes.forEach((g, gi) => {
     const dim = hover != null && hover !== g.id;
-    const xb = L * t / g.tr, sx = Math.max(1.8, xb / Math.sqrt(N));
+    const pb = g.pos();
+    const xb = pb.x / p.longueur * L, sx = Math.max(1.8, Math.sqrt(Math.max(xb, 0) * L / N));   // variance ∝ distance parcourue : σx² = H·x
     const ps = PARTICULES[g.slot];
-    const pStat = g.k / (1 + g.k);
+    const pStat = pb.k / (1 + pb.k);
     ps.forEach((p, j) => {
       let x = xb + sx * p.z; if (x < 0) x = -x;
       if (x >= L) return;
@@ -113,10 +115,10 @@ function dessinerColonne(ctx, dpr, W, { a, frac, hover, couleurs, nonRetenu }, n
 }
 const PARTICULES = tirages(12, 34);
 
-function ColonneAnim({ a, frac, couleurs, hover, w, nonRetenu }) {
+function ColonneAnim({ a, p, frac, couleurs, hover, w, nonRetenu }) {
   const ref = useRef(null);
-  const etat = useRef({ a, frac, hover, couleurs, nonRetenu });
-  useEffect(() => { etat.current = { a, frac, hover, couleurs, nonRetenu }; });
+  const etat = useRef({ a, p, frac, hover, couleurs, nonRetenu });
+  useEffect(() => { etat.current = { a, p, frac, hover, couleurs, nonRetenu }; });
   useEffect(() => {
     const cv = ref.current;
     if (!cv) return undefined;
@@ -139,9 +141,9 @@ function ColonneAnim({ a, frac, couleurs, hover, w, nonRetenu }) {
 
 // ---------- chromatogramme (SVG) ----------
 function pasTemps(tMax) { return [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50].find(s => tMax / s <= 8) || 100; }
-function Chromato({ a, frac, w, couleurs, hover, setHover, total, indiv, nonRetenu }) {
+function Chromato({ a, p, frac, w, couleurs, hover, setHover, total, indiv, nonRetenu }) {
   const [lect, setLect] = useState(null);                    // { x, t, id } : lecture sous le pointeur
-  const h = w < 480 ? 230 : 270, mL = 34, mR = 12, mT = 14, mB = 34;
+  const h = w < 480 ? 230 : 270, mL = 34, mR = p.grad ? 40 : 12, mT = 14, mB = 34;
   const iw = w - mL - mR, ih = h - mT - mB;
   const { tMax, pics, col } = a;
   const N = 360;
@@ -159,14 +161,24 @@ function Chromato({ a, frac, w, couleurs, hover, setHover, total, indiv, nonRete
   for (let t = 0; t <= tMax + 1e-9; t += pas) graduations.push(Math.round(t * 1000) / 1000);
   // étiquettes des pics, décalées si elles se chevauchent
   const etiq = pics.map((m, i) => ({ m, i, x: X(m.tr), y: Y(Math.max(geo.tot[Math.round(m.tr / tMax * N)] || 0, signal(m, m.tr))) - 7 }));
-  etiq.sort((p, q) => p.x - q.x);
-  etiq.forEach((e, k) => { if (k && Math.abs(e.x - etiq[k - 1].x) < 76) e.y = Math.min(e.y, etiq[k - 1].y - 14); });
+  // placement sans chevauchement : les pics les plus hauts d'abord ; une étiquette qui ne trouve pas de place est omise (le survol la donne)
+  const places = [];
+  [...etiq].sort((p, q) => q.m.hauteur - p.m.hauteur).forEach(e => {
+    const lg = nomsCourts(e.m).length * 6.6 + 6;
+    e.x = Math.min(Math.max(e.x, mL + lg / 2), w - mR - lg / 2);
+    for (let essai = 0; essai < 5; essai++) {
+      const y = Math.max(e.y - essai * 14, mT + 12);
+      const boite = { x1: e.x - lg / 2, x2: e.x + lg / 2, y1: y - 11, y2: y + 2 };
+      if (!places.some(q => boite.x1 < q.x2 && q.x1 < boite.x2 && boite.y1 < q.y2 && q.y1 < boite.y2)) { e.y = y; places.push(boite); e.ok = true; return; }
+      if (y === mT + 12) break;
+    }
+  });
 
   function pointe(ev) {
     const r = ev.currentTarget.getBoundingClientRect();
     const px = ev.clientX - r.left, t = (px - mL) / iw * tMax;
-    if (t < 0 || t > tMax) { setLect(null); setHover(null); return; }
-    if (Math.abs(px - X(col.tm)) < 7) { setLect({ x: X(col.tm), t: col.tm, id: 'tm' }); setHover(null); return; }
+    if (t < 0 || t > tMax || t > tCur) { setLect(null); setHover(null); return; }
+    if (Math.abs(px - X(col.tm)) < 7 && col.tm <= tCur) { setLect({ x: X(col.tm), t: col.tm, id: 'tm' }); setHover(null); return; }
     let best = null, bd = 1e9;
     pics.forEach(m => { const d = Math.abs(t - m.tr) / m.sigma; if (d < bd && signal(m, t) > 0.04 * geo.ymax) { bd = d; best = m; } });
     if (best && bd < 5) { setLect({ x: X(best.tr), t: best.tr, id: best.id }); setHover(best.id); } else { setLect(null); setHover(null); }
@@ -187,19 +199,24 @@ function Chromato({ a, frac, w, couleurs, hover, setHover, total, indiv, nonRete
           <text x={X(t)} y={mT + ih + 18} textAnchor="middle" fontSize="11" fill="#334155">{String(t).replace('.', ',')}</text></g>)}
         <text x={mL + iw / 2} y={h - 4} textAnchor="middle" fontSize="12" fill="#334155" fontWeight="600">temps t (min)</text>
         <text transform={`translate(11 ${mT + ih / 2}) rotate(-90)`} textAnchor="middle" fontSize="11" fill="#334155">réponse du détecteur (u.a.)</text>
+        {p.grad && <g>
+          <path d={geo.ts.map((t, i) => `${i ? 'L' : 'M'}${X(t).toFixed(1)},${(mT + ih - phiEntree(p, t) * ih).toFixed(1)}`).join('')} fill="none" stroke="#7c3aed" strokeWidth="1.6" strokeDasharray="6 3"/>
+          {[0, 50, 100].map(q => <g key={q}><line x1={mL + iw} x2={mL + iw + 4} y1={mT + ih - q / 100 * ih} y2={mT + ih - q / 100 * ih} stroke="#7c3aed"/>
+            <text x={mL + iw + 6} y={mT + ih - q / 100 * ih + 4} fontSize="10.5" fill="#7c3aed">{q}</text></g>)}
+          <text transform={`translate(${w - 6} ${mT + ih / 2}) rotate(90)`} textAnchor="middle" fontSize="11" fill="#7c3aed">% acétonitrile (pompe)</text></g>}
         {nonRetenu && <>
           <line x1={X(col.tm)} x2={X(col.tm)} y1={mT} y2={mT + ih} stroke="#64748b" strokeDasharray="4 3"/>
           <text x={X(col.tm) + 4} y={mT + 11} fontSize="11" fill="#475569">t₀ (composé non retenu)</text></>}
         {indiv && pics.map((m, i) => {
           const dim = hover != null && hover !== m.id;
           return <g key={m.id} opacity={dim ? 0.25 : 1}>
-            <path d={`${chemin(geo.sig[i])}L${X(tMax)},${Y(0)}L${X(0)},${Y(0)}Z`} fill={couleurs[m.id]} opacity="0.16"/>
-            <path d={chemin(geo.sig[i])} fill="none" stroke={couleurs[m.id]} strokeWidth={hover === m.id ? 3 : 1.8}/></g>;
+            <path d={`${chemin(geo.sig[i], nCur)}L${X(geo.ts[nCur - 1])},${Y(0)}L${X(0)},${Y(0)}Z`} fill={couleurs[m.id]} opacity="0.16"/>
+            <path d={chemin(geo.sig[i], nCur)} fill="none" stroke={couleurs[m.id]} strokeWidth={hover === m.id ? 3 : 1.8}/></g>;
         })}
         {total && <path d={chemin(geo.tot, nCur)} fill="none" stroke="#0f172a" strokeWidth="1.8" strokeDasharray={indiv ? '5 3' : undefined}/>}
-        {indiv && etiq.map(e => <text key={e.m.id} x={Math.min(Math.max(e.x, mL + 30), w - mR - 30)} y={Math.max(e.y, mT + 22)} textAnchor="middle" fontSize="11.5" fontWeight="700"
+        {indiv && etiq.filter(e => e.ok && tCur >= e.m.tr).map(e => <text key={e.m.id} x={e.x} y={e.y} textAnchor="middle" fontSize="11.5" fontWeight="700"
           fill={couleurs[e.m.id]} stroke="white" strokeWidth="3" paintOrder="stroke">{nomsCourts(e.m)}</text>)}
-        <line x1={X(tCur)} x2={X(tCur)} y1={mT} y2={mT + ih} stroke={ORANGE_GUIDE} strokeWidth="1.6" opacity={frac > 0 && frac < 1 ? 1 : 0.55}/>
+        <line x1={X(tCur)} x2={X(tCur)} y1={mT} y2={mT + ih} stroke={ORANGE_GUIDE} strokeWidth="1.6" opacity={frac > 0 && frac < 1 ? 1 : 0}/>
         {lect && <line x1={lect.x} x2={lect.x} y1={mT} y2={mT + ih} stroke="#0f172a" strokeWidth="1" strokeDasharray="2 3"/>}
         {mol && <circle cx={X(mol.tr)} cy={Y(signal(mol, mol.tr))} r="4.5" fill="white" stroke={couleurs[mol.id]} strokeWidth="2"/>}
       </svg>
@@ -209,10 +226,10 @@ function Chromato({ a, frac, w, couleurs, hover, setHover, total, indiv, nonRete
 }
 
 // ---------- bloc visuel : colonne + chromatogramme + commandes de lecture ----------
-function Visu({ a, couleurs, hover, setHover, lancement, onLancer, nonRetenu, setNonRetenu, total, setTotal }) {
+function Visu({ a, p, couleurs, hover, setHover, lancement, onLancer, nonRetenu, setNonRetenu, total, setTotal }) {
   const cont = useRef(null);
   const w = useLargeur(cont);
-  const [frac, setFrac] = useState(0);
+  const [frac, setFrac] = useState(1);
   const [lecture, setLecture] = useState(false);
   const [vit, setVit] = useState(1);
   const [vu, setVu] = useState(lancement);
@@ -241,19 +258,52 @@ function Visu({ a, couleurs, hover, setHover, lancement, onLancer, nonRetenu, se
           onChange={e => { setLecture(false); setFrac(parseFloat(e.target.value)); }} style={{ flex: 1, minWidth: 120, accentColor: ORANGE_GUIDE }}/>
         {[0.5, 1, 2].map(x => <button key={x} onClick={() => setVit(x)} style={stylePetitBouton(vit === x, '#334155')}>×{String(x).replace('.', ',')}</button>)}
       </div>
-      <ColonneAnim a={a} frac={frac} couleurs={couleurs} hover={hover} w={w} nonRetenu={nonRetenu}/>
+      <ColonneAnim a={a} p={p} frac={frac} couleurs={couleurs} hover={hover} w={w} nonRetenu={nonRetenu}/>
       <div style={{ fontSize: 12.5, color: KIT.txt2, margin: '4px 0 8px', lineHeight: 1.5 }}>
         <span style={{ display: 'inline-block', width: 9, height: 9, borderRadius: 5, background: '#475569', marginRight: 4 }}/>libre dans l’éluant · {' '}
         <span style={{ display: 'inline-block', width: 9, height: 9, borderRadius: 5, background: '#475569', border: '1.5px solid #0f172a', marginRight: 4 }}/>adsorbé sur un grain.
         La part du temps passée adsorbé est k’/(1 + k’) = 1 − {T0}/{TR}.
       </div>
-      <Chromato a={a} frac={frac} w={w} couleurs={couleurs} hover={hover} setHover={setHover} total={total} indiv nonRetenu={nonRetenu}/>
+      <Chromato a={a} p={p} frac={frac} w={w} couleurs={couleurs} hover={hover} setHover={setHover} total={total} indiv nonRetenu={nonRetenu}/>
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 13, color: KIT.txt2, marginTop: 6 }}>
         <label style={{ cursor: 'pointer' }}><input type="checkbox" checked={total} onChange={e => setTotal(e.target.checked)}/> signal total enregistré (ce que voit le détecteur)</label>
         <label style={{ cursor: 'pointer' }}><input type="checkbox" checked={nonRetenu} onChange={e => setNonRetenu(e.target.checked)}/> composé non retenu (repère {T0})</label>
       </div>
     </div>);
 }
+
+let CACHE = { cle: null, val: null };
+function analyseMemo(p, mols) {
+  const cle = JSON.stringify([p, mols]);
+  if (CACHE.cle !== cle) CACHE = { cle, val: analyse(p, mols) };
+  return CACHE.val;
+}
+
+// ---------- courbe de van Deemter : H en fonction du débit ----------
+function CourbeVD({ p }) {
+  const c = courbeVD(p), W = 340, H = 150, mL = 40, mR = 10, mT = 10, mB = 30, iw = W - mL - mR, ih = H - mT - mB;
+  const hMax = Math.min(Math.max(...c.pts.map(q => q.H)), c.Hopt * 3.2);
+  const X = d => mL + d / c.dMax * iw, Y = hh => mT + ih - Math.min(hh, hMax) / hMax * ih;
+  const ici = c.pts.reduce((b, q) => Math.abs(q.d - p.debit) < Math.abs(b.d - p.debit) ? q : b, c.pts[0]);
+  const Hici = colonneH(p);
+  const pasD = [0.5, 1, 2, 5].find(s => c.dMax / s <= 6), pasH = [2, 5, 10, 20, 50, 100].find(s => hMax / s <= 4);
+  const gx = [], gy = [];
+  for (let d = 0; d <= c.dMax + 1e-9; d += pasD) gx.push(d);
+  for (let hh = 0; hh <= hMax + 1e-9; hh += pasH) gy.push(hh);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', maxWidth: 420, display: 'block' }} role="img" aria-label="Courbe de van Deemter : hauteur de plateau en fonction du débit">
+      <rect x={mL} y={mT} width={iw} height={ih} fill="white" stroke="#cbd5e1"/>
+      {gx.map(d => <g key={d}><line x1={X(d)} x2={X(d)} y1={mT + ih} y2={mT + ih + 4} stroke="#475569"/><text x={X(d)} y={mT + ih + 15} fontSize="11.5" textAnchor="middle" fill="#334155">{String(d).replace('.', ',')}</text></g>)}
+      {gy.map(hh => <g key={hh}><line x1={mL - 4} x2={mL} y1={Y(hh)} y2={Y(hh)} stroke="#475569"/><text x={mL - 6} y={Y(hh) + 3.5} fontSize="11.5" textAnchor="end" fill="#334155">{hh}</text></g>)}
+      <text x={mL + iw / 2} y={H - 3} fontSize="12" textAnchor="middle" fill="#334155">débit (mL/min)</text>
+      <text transform={`translate(10 ${mT + ih / 2}) rotate(-90)`} fontSize="12" textAnchor="middle" fill="#334155">H (µm)</text>
+      <path d={c.pts.map((q, i) => `${i ? 'L' : 'M'}${X(q.d).toFixed(1)},${Y(q.H).toFixed(1)}`).join('')} fill="none" stroke="#0d6e6e" strokeWidth="2"/>
+      <line x1={X(c.dOpt)} x2={X(c.dOpt)} y1={mT} y2={mT + ih} stroke="#16a34a" strokeDasharray="4 3"/>
+      <text x={X(c.dOpt) + 4} y={mT + 11} fontSize="10" fill="#15803d">optimum</text>
+      <circle cx={X(Math.min(p.debit, c.dMax))} cy={Y(Hici ?? ici.H)} r="5" fill={ORANGE_GUIDE} stroke="white" strokeWidth="1.5"/>
+    </svg>);
+}
+const colonneH = p => colonne(p).H * 1000;
 
 // ====================================================
 //  DÉFIS
@@ -326,7 +376,7 @@ export function SimulationCLHP() {
   ];
   const couleurs = {}; allMols.forEach((m, i) => { couleurs[m.id] = PALETTE[i % PALETTE.length]; });
   const pEff = enDefi && defi.type === 'ordre' ? { ...p, pct: defi.pct } : p;
-  const a = analyse(pEff, allMols);
+  const a = analyseMemo(pEff, allMols);
   const nbPics = a.pics.length;
   const rsMin = nbPics > 1 ? Math.min(...a.res.map(r => r.R)) : null;
   const dernierTr = nbPics ? a.pics[nbPics - 1].tr : 0;
@@ -458,7 +508,8 @@ export function SimulationCLHP() {
   const resultats = nbPics === 0 ? null : (
     <div style={{ ...styleBoite, ...cadre('resultats') }}>
       <Section titre={`Résultats : ${nbPics} pic${nbPics > 1 ? 's' : ''}`} ouvert={ouv.tableau} onBascule={() => bascule('tableau')}>
-        <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>Colonne : {T0} = {v(a.col.tm)} min · N = {Math.round(a.col.N).toLocaleString('fr-FR')} plateaux · H = {v(a.col.H)} mm. Concentration et réponse de chaque composé sont modifiables.</div>
+        <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>Colonne : {T0} = {v(a.col.tm)} min · N = {Math.round(a.col.N).toLocaleString('fr-FR')} plateaux · H = {v(a.col.H * 1000, 1)} µm · ΔP ≈ {Math.round(a.col.dP)} bar. Concentration et réponse de chaque composé sont modifiables.
+          {p.grad && <> En gradient, k’ affiché = ({TR} − {T0}) / {T0} : c’est un facteur de rétention <strong>apparent</strong>, car la composition de l’éluant change pendant la migration.</>}</div>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ borderCollapse: 'collapse', fontSize: 13, width: '100%' }}>
             <thead><tr style={{ background: '#eef2f6' }}>
@@ -525,10 +576,22 @@ export function SimulationCLHP() {
 
   const eluant = (
     <div style={{ ...styleBoite, ...cadre('eluant') }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Éluant et colonne</div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt }}>Éluant et colonne</div>
+        {!enDefi && <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', fontSize: 13, color: KIT.txt2 }}>
+          <span style={{ display: 'flex', gap: 4, alignItems: 'center' }}>Élution :
+            <button onClick={() => maj('grad', false)} style={stylePetitBouton(!p.grad, '#0d6e6e')}>isocratique</button>
+            <button onClick={() => maj('grad', true)} style={stylePetitBouton(p.grad, '#7c3aed')}>gradient</button></span>
+          <span style={{ display: 'flex', gap: 4, alignItems: 'center' }}>Efficacité :
+            <button onClick={() => maj('eff', 'bataille')} style={stylePetitBouton(p.eff !== 'vd', '#0d6e6e')} title="N = L / (dp · nC), indépendant du débit">relation simple</button>
+            <button onClick={() => maj('eff', 'vd')} style={stylePetitBouton(p.eff === 'vd', '#0d6e6e')} title="H = A + B/u + C·u : N dépend du débit">van Deemter</button></span>
+        </div>}
+      </div>
       <div style={{ display: 'grid', gap: '2px 16px', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))' }}>
         {(enDefi && defi.type === 'ordre') ? <div style={{ fontSize: 13.5, color: KIT.txt2 }}>Éluant fixé : {defi.pct} % d’acétonitrile.</div> :
-          <Curseur nom="Acétonitrile" valeur={p.pct} onChange={x => maj('pct', x)} min={5} max={95} pas={1} unite="%" couleur="#0d6e6e"/>}
+          <Curseur nom={p.grad ? 'Acétonitrile au départ' : 'Acétonitrile'} valeur={p.pct} onChange={x => maj('pct', x)} min={5} max={95} pas={1} unite="%" couleur={p.grad ? '#7c3aed' : '#0d6e6e'}/>}
+        {p.grad && <Curseur nom="Acétonitrile à la fin" valeur={p.pct1} onChange={x => maj('pct1', x)} min={5} max={95} pas={1} unite="%" couleur="#7c3aed"/>}
+        {p.grad && <Curseur nom="Durée du gradient" valeur={p.tg} onChange={x => maj('tg', x)} min={1} max={60} pas={1} unite="min" couleur="#7c3aed"/>}
         <Curseur nom="Débit" valeur={p.debit} onChange={x => maj('debit', x)} min={0.1} max={10} pas={0.1} unite="mL/min" decimales={1} couleur="#0d6e6e"/>
         <Curseur nom="Température" valeur={p.temperature} onChange={x => maj('temperature', x)} min={5} max={80} pas={1} unite="°C" couleur="#0d6e6e"/>
         <Curseur nom="Longueur L" valeur={p.longueur} onChange={x => maj('longueur', x)} min={1} max={50} pas={1} unite="cm" couleur="#0d6e6e"/>
@@ -539,6 +602,14 @@ export function SimulationCLHP() {
         <Curseur nom="Taille des particules dp" valeur={p.dp} onChange={x => maj('dp', x)} min={1} max={20} pas={1} unite="µm" couleur="#475569"/>
         <Curseur nom="Greffage nC" valeur={p.nC} onChange={x => maj('nC', x)} min={1} max={30} pas={1} unite="C" couleur="#475569"/>
         <Curseur nom="Porosité ε" valeur={p.porosite} onChange={x => maj('porosite', x)} min={0.1} max={1} pas={0.05} unite="" decimales={2} couleur="#475569"/>
+      </div>}
+      <div style={{ fontSize: 13.5, marginTop: 4, color: a.col.dP > P_MAX ? '#b91c1c' : KIT.txt2, fontWeight: a.col.dP > P_MAX ? 700 : 400 }}>
+        Pression en tête de colonne ≈ {Math.round(a.col.dP)} bar{p.grad ? ' (au maximum pendant le gradient)' : ''}{a.col.dP > P_MAX ? ` : au-delà de ${P_MAX} bar, une CLHP classique se met en sécurité (il faudrait une UHPLC).` : '.'}</div>
+      {p.eff === 'vd' && !enDefi && <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center', marginTop: 8, padding: '8px 10px', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
+        <div style={{ flex: '1 1 260px', maxWidth: 420 }}><CourbeVD p={pEff}/></div>
+        <div style={{ flex: '1 1 200px', fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
+          <strong>van Deemter</strong> : H = A + B/u + C·u. À faible débit, la diffusion longitudinale élargit les bandes (B/u) ; à fort débit, c’est le retard au transfert de masse entre les phases (C·u).
+          <div style={{ marginTop: 4 }}>Ici : H = {v(a.col.H * 1000, 1)} µm, soit N = {Math.round(a.col.N).toLocaleString('fr-FR')} plateaux. Débit optimal ≈ {v(courbeVD(pEff).dOpt, 2)} mL/min.</div></div>
       </div>}
       <button onClick={() => bascule('avance')} aria-expanded={ouv.avance} style={{ ...stylePetitBouton(false), marginTop: 6, marginLeft: ouv.plus ? 0 : 6 }}>{ouv.avance ? '▲ Masquer les paramètres du modèle' : '▼ Paramètres du modèle (mp, mo, b, c)'}</button>
       {ouv.avance && <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginTop: 8, padding: '10px 12px', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
@@ -556,8 +627,11 @@ export function SimulationCLHP() {
         <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
           <li><strong>Rétention</strong> : relation empirique ln k’ = (mp·logP + mo)·ln φ + b/T + c, calibrée pour des molécules <strong>neutres</strong> en phase inverse C18 / acétonitrile-eau, pour un pourcentage d’acétonitrile intermédiaire. Le seul descripteur du composé est son logP : ni liaisons hydrogène spécifiques, ni ionisation (pH), ni forme de la molécule.</li>
           <li><strong>Pics gaussiens</strong> : on suppose une distribution normale des temps de passage, de largeur σ = t<Ind>R</Ind> / √N. Pas de traînée, pas de pics asymétriques.</li>
-          <li><strong>Efficacité N constante</strong> : N = L / (dp · nC) ne dépend ni du débit ni du composé. Dans une vraie colonne, N varie avec le débit (courbe de van Deemter) et avec la rétention.</li>
-          <li><strong>Isocratique</strong> : composition de l’éluant constante, pas de gradient. Pression, volume mort extra-colonne et volume injecté ne sont pas modélisés.</li>
+          <li><strong>Efficacité, « relation simple »</strong> (réglage de départ, celui de X. Bataille) : N = L / (dp · nC), indépendant du débit et du composé. Elle donne une colonne peu efficace (H ≈ 18 dp), proche de colonnes de TP usagées.</li>
+          <li><strong>Efficacité, « van Deemter »</strong> : forme réduite h = A + B/ν + C·ν avec h = H/dp, ν = u·dp/D<Ind>m</Ind> ; A = 1,2, B = 1,5, C = 0,1 (colonne bien remplie, h<Ind>min</Ind> ≈ 2). D<Ind>m</Ind> ≈ 1,0·10⁻⁵ cm²/s dans l’eau à 25 °C, corrigé en T/η. Ce sont des ordres de grandeur de la littérature, pas les valeurs d’une colonne réelle ; le même N est utilisé pour tous les composés.</li>
+          <li><strong>Pression</strong> : loi de Darcy ΔP = Φ·η·u·L / dp² avec Φ ≈ 1000 ; viscosité du mélange eau / acétonitrile estimée (maximum ≈ 1 mPa·s vers 20 % d’acétonitrile), et décroissante avec la température. Ordre de grandeur, à ± 30 % environ.</li>
+          <li><strong>Gradient</strong> : linéaire, puis palier à la composition finale. Volume de délai de la pompe, rééquilibrage et variation de N avec la composition sont négligés. Chaque bande avance à la vitesse u / (1 + k’) avec le k’ de l’éluant qui l’entoure ; la largeur du pic est estimée par σ ≈ t₀ (1 + k’<Ind>sortie</Ind>) / √N (compression de bande négligée).</li>
+          <li>Volume mort extra-colonne et volume injecté ne sont pas modélisés.</li>
           <li><strong>Détecteur UV linéaire</strong> : l’aire d’un pic est proportionnelle à C · ε (loi de Beer-Lambert), sans saturation ; la hauteur est donc plus faible pour un pic plus large.</li>
           <li><strong>Vue colonne schématique</strong> : la position moyenne des bandes, leur élargissement et la part du temps adsorbée (k’/(1 + k’)) viennent du modèle ; l’agitation des molécules est tirée au hasard, ce n’est pas une simulation moléculaire.</li>
           <li>Modèle d’origine : X. Bataille (ENCPB, 2008). Il n’a pas été revalidé ici sur des mesures : vous pouvez saisir vos t<Ind>R</Ind> expérimentaux pour le confronter à vos propres chromatogrammes.</li>
@@ -573,7 +647,9 @@ export function SimulationCLHP() {
         <li>Séparez le phénol et l’o-nitrophénol avec R<Ind>s</Ind> ≥ 1,5 : quel est le prix en temps d’analyse ?</li>
         <li>Doublez la longueur de colonne : que deviennent R<Ind>s</Ind> et la durée de l’analyse ?</li>
         <li>Ajoutez le triphénylcarbinol (logP 4,59) : voyez comme un pic tardif est large et bas.</li>
-        <li>Augmentez le débit : qu’est-ce qui change, qu’est-ce qui reste identique, et qu’est-ce que le modèle ne sait pas représenter ?</li>
+        <li>Augmentez le débit : qu’est-ce qui change, qu’est-ce qui reste identique ? Passez ensuite l’efficacité sur « van Deemter » et cherchez le débit optimal.</li>
+        <li>Avec van Deemter, chauffez la colonne : que deviennent la pression et le débit optimal ?</li>
+        <li>Mettez les 17 composés et passez en gradient (10 → 90 % en 10 min) : comparez la largeur des derniers pics avec l’isocratique.</li>
       </ul>
     </div>);
   const retenir = (
@@ -592,9 +668,11 @@ export function SimulationCLHP() {
 
   const visuel = (
     <div style={{ ...styleBoite, background: 'white', ...cadre('viz') }}>
-      {nbPics === 0 ? <div style={{ padding: '2rem', textAlign: 'center', fontSize: 14, color: KIT.txt2 }}>Sélectionnez au moins un composé pour afficher le chromatogramme.</div>
+      {a.nonElues.length > 0 && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '6px 8px', marginBottom: 8 }}>
+        ⚠ {a.nonElues.map(m => m.nom).join(', ')} : ne sort pas de la colonne pendant l’analyse simulée (plus de {Math.round(p.tg + 300 * a.col.tm)} min). Augmentez le pourcentage final d’acétonitrile.</div>}
+      {nbPics === 0 ? <div style={{ padding: '2rem', textAlign: 'center', fontSize: 14, color: KIT.txt2 }}>{a.nonElues.length ? 'Aucun composé ne sort de la colonne.' : 'Sélectionnez au moins un composé pour afficher le chromatogramme.'}</div>
         : masque ? <div style={{ padding: '2rem 1rem', textAlign: 'center', fontSize: 14, color: KIT.txt2, lineHeight: 1.6 }}>🔒 Le chromatogramme sera affiché après votre vérification : prédisez d’abord l’ordre de sortie.</div>
-        : <Visu a={a} couleurs={couleurs} hover={hover} setHover={setHover} lancement={lancement} onLancer={() => setLancement(n => n + 1)}
+        : <Visu a={a} p={pEff} couleurs={couleurs} hover={hover} setHover={setHover} lancement={lancement} onLancer={() => setLancement(n => n + 1)}
             nonRetenu={nonRetenu} setNonRetenu={setNonRetenu} total={total} setTotal={setTotal}/>}
     </div>);
 

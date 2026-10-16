@@ -43,7 +43,7 @@ export const CONTEXTES = {
   },
   12: {
     but: "Simuler une séparation par chromatographie liquide haute performance (CLHP) en phase inverse C18, avec un éluant acétonitrile / eau (modèle de X. Bataille) : bandes qui avancent dans la colonne, chromatogramme enregistré en direct, grandeurs lues sur les pics (t0, tR, k', α, Rs).",
-    apprendre: "L'influence de la colonne, de la composition de l'éluant, du débit et de la température sur les temps de rétention et la qualité de la séparation, et les hypothèses du modèle.",
+    apprendre: "L'influence de la colonne, de la composition de l'éluant, du débit et de la température sur les temps de rétention et la qualité de la séparation ; l'efficacité selon van Deemter, la pression, l'élution en gradient ; les hypothèses du modèle.",
     etapes: [
       "Choisissez les composés du mélange à séparer, puis cliquez sur « Injecter ».",
       "Faites varier le pourcentage d'acétonitrile et observez à la fois l'écart et la largeur des pics.",
