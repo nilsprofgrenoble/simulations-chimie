@@ -313,7 +313,7 @@ export function SimulationElectrisation() {
   const [defi, setDefi] = useState(null);
   const [tab, setTab] = useState('frottement');
   const [frot, setFrot] = useState({ tige: 'verre', n: 0 });
-  const [inter, setInter] = useState({ tige: 'ebonite', paille: -1, d: 10 });
+  const [inter, setInter] = useState({ tige: 'neutre', paille: -1, d: 10 });
   const [infl, setInfl] = useState({ tige: 'verre', d: 12, Q: 0 });
   const [ele, setEle] = useState({ tige: 'verre', d: 12, Q: 0 });
   const [hypoOuv, setHypoOuv] = useState(false);
@@ -325,6 +325,7 @@ export function SimulationElectrisation() {
   const okEbo = frot.tige === 'ebonite' && frot.n >= 4;
   const okB = inter.tige === 'ebonite' && inter.paille < 0 && inter.d <= 6;
   const okC = inter.tige === 'verre' && inter.paille < 0 && inter.d <= 6;
+  const okDech = inter.tige === 'verre' && inter.paille < 0 && !!inter.neut;
   const okInf1 = infl.tige === 'verre' && infl.Q === 0 && infl.d >= 10;
   const okInf2 = infl.tige === 'verre' && infl.Q === 0 && infl.d <= 5;
   const okContact = infl.tige === 'verre' && infl.Q === Q_CONTACT;
@@ -393,6 +394,13 @@ export function SimulationElectrisation() {
       texte: <>Comme pour la gravitation (simulation « Deux corps en interaction »), l’interaction est modélisée par deux forces. Comparez les deux flèches.</>,
       tache: { type: 'qcm', q: 'La force exercée par la tige sur la paille et celle exercée par la paille sur la tige ont…', options: ['la même norme et des sens opposés', 'des normes différentes : la tige est plus grosse', 'le même sens'], bonne: 0,
         expl: 'Principe des actions réciproques : F(tige/paille) = −F(paille/tige). La loi de Coulomb donne leur norme (voir la simulation sur les deux corps).' } },
+    { id: 'dech', titre: 'Le contact : dé-électrisation', onglet: 'interaction', focus: ['reglages', 'scene'],
+      texte: <>Gardez la tige <strong>en verre</strong> à 6 cm ou moins et laissez la paille la toucher (bouton « Replacer la paille » pour recommencer). Regardez les électrons.</>,
+      tache: { type: 'action', ok: okDech, label: 'Paille au contact de la tige en verre', faire: () => { replacerPaille(); setInter({ tige: 'verre', paille: -1, d: 5 }); }, consigne: 'Paille au contact de la tige en verre' } },
+    { id: 'dechq', titre: 'Après le contact', onglet: 'interaction', focus: ['scene', 'bilan'],
+      texte: <>Lisez le bilan : que sont devenues les charges ?</>,
+      tache: { type: 'qcm', q: 'Après le contact, la paille et la tige en verre sont…', options: ['toutes deux neutres : les électrons en excès de la paille sont passés sur la tige, qui en manquait', 'toutes deux encore chargées, la paille toujours −', 'toutes deux chargées +'], bonne: 0,
+        expl: 'La paille avait des électrons en excès, la tige en manquait : au contact, ils passent de la paille à la tige. Les charges opposées se compensent : c’est la dé-électrisation. Plus de charge, plus de force : la paille ne bouge plus.' } },
     { id: 'inf1', titre: 'Expérience A : une boule neutre', onglet: 'influence', focus: ['reglages', 'scene'],
       texte: <>Une boule d’aluminium, <strong>neutre</strong>, est suspendue à un fil. Ses électrons sont libres de se déplacer (c’est un métal). Éloignez la tige en verre chargée (10 cm ou plus).</>,
       tache: { type: 'action', ok: okInf1, label: 'Tige en verre loin (≥ 10 cm), boule neutre', faire: () => setInfl({ tige: 'verre', d: 12, Q: 0 }), consigne: 'Tige en verre à 10 cm ou plus, boule neutre' } },
@@ -506,9 +514,14 @@ export function SimulationElectrisation() {
 
   // ════════════════ MOUVEMENTS (paille qui roule, boule qui se balance) ════════════════
   const sIn = inter.tige === 'neutre' ? 0 : TIGES[inter.tige].signe;
-  const forceIn = sIn === 0 ? 0 : sIn * inter.paille < 0 ? 1 : -1;      // +1 attraction, −1 répulsion
+  const neut = !!inter.neut;                                               // contact réalisé : charges opposées neutralisées (dé-électrisation)
+  const forceBrute = sIn === 0 ? 0 : sIn * inter.paille < 0 ? 1 : -1;      // +1 attraction, −1 répulsion
+  const forceIn = neut ? 0 : forceBrute;
   const gapP0 = 14 + (inter.d - 2) * 14;
-  const [xP, replacerPaille] = useMobile({ gap0: gapP0, coef: forceIn, F0: 600, omega2: 0, c: 6, pxcm: 14, statique: 50, xmin: -90, auto: false });
+  const [xP, replacerPaille] = useMobile({ gap0: gapP0, coef: forceIn, F0: 600, omega2: 0, c: 6, pxcm: 14, statique: 50, xmin: -90,
+    auto: !enDefi && !(enGuide && etape < ETAPES.findIndex(e => e.id === 'dech')),                    // pas de contact « surprise » avant l'étape du contact
+    onContact: () => setInter(i => (i.neut ? i : { ...i, neut: true })) });
+  const progNeut = useLisse(neut ? 1 : 0, 0.4);                                                        // avancement du transfert d'électrons
   const sBo = TIGES[infl.tige].signe, coefB = coefBoule(sBo, infl.Q), gapB0 = (infl.d - 1) * 12;
   const contactAuto = !figee && !(enGuide && etape < ETAPES.findIndex(e => e.id === 'contact'));    // pas de contact « surprise » avant l'étape du contact
   const [xB] = useMobile({ gap0: gapB0, coef: coefB, F0: 500, omega2: 9, c: 2.5, pxcm: 12, xmin: -80, auto: contactAuto,
@@ -526,7 +539,7 @@ export function SimulationElectrisation() {
     else setEle({ tige: dd.tige, d: 12, Q: 0 });
   }
   function changerMode(md) {
-    if (mode === 'defi' && md !== 'defi') { setFrot({ tige: 'verre', n: 0 }); setInter({ tige: 'ebonite', paille: -1, d: 10 }); setInfl({ tige: 'verre', d: 12, Q: 0 }); setEle({ tige: 'verre', d: 12, Q: 0 }); }
+    if (mode === 'defi' && md !== 'defi') { setFrot({ tige: 'verre', n: 0 }); setInter({ tige: 'neutre', paille: -1, d: 10 }); setInfl({ tige: 'verre', d: 12, Q: 0 }); setEle({ tige: 'verre', d: 12, Q: 0 }); }
     setMode(md);
     if (md === 'defi') lancerDefi(defi ? defi.type : 'frottement');
   }
@@ -584,8 +597,19 @@ export function SimulationElectrisation() {
   const scInteraction = (() => {
     const W = 640, H = 270, xs0 = 150, gap0 = gapP0, xs = xs0 + xP, xr = xs0 + 28 + gap0;
     const fort = forceIn !== 0 && ampl(gap0 - xP, 14) > 0.08;
-    const paille = grille(3, 7, xs - 16, 78, 16, 26, 8, inter.paille < 0 ? 8 + Q_ROD : 8 - Q_ROD);
-    const tige = grille(5, 4, xr + 28, 123, 36, 12.5, 8, sIn > 0 ? 8 - Q_ROD : 8 + Q_ROD);
+    // Charges de base (sans les électrons « voyageurs ») : la paille − garde 8 électrons, la tige − en garde 8 ; + : 3 électrons manquent.
+    // Les 3 électrons en excès (paille − ou tige −) sont dessinés à part : au contact avec un corps de charge opposée, ils passent de l'un à l'autre.
+    const pS = nb => grille(3, 7, xs - 16, 78, 16, 26, 8, nb), pT = nb => grille(5, 4, xr + 28, 123, 36, 12.5, 8, nb);
+    const sp = inter.paille, tigeVisible = inter.tige !== 'neutre';
+    const paille = pS(sp < 0 ? 8 : 8 - Q_ROD);
+    const tige = pT(sIn > 0 ? 8 - Q_ROD : 8);
+    const lerp = (a, b, k) => ({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k - Math.sin(Math.PI * k) * 16 });
+    const voyage = (i, de, vers) => lerp(de, vers, Math.max(0, Math.min(1, progNeut * 1.3 - i * 0.12)));
+    const extraP = pS(8 + Q_ROD).slice(8), manqP = pS(8).slice(8 - Q_ROD), extraT = pT(8 + Q_ROD).slice(8), manqT = pT(8).slice(8 - Q_ROD);
+    const voyageurs = [];
+    if (sp < 0) for (let i = 0; i < Q_ROD; i++) voyageurs.push(sIn > 0 && tigeVisible && !cache.bilan ? voyage(i, extraP[i], manqT[i]) : extraP[i]);
+    if (sp > 0 && sIn < 0 && !cache.bilan) for (let i = 0; i < Q_ROD; i++) voyageurs.push(voyage(i, extraT[i], manqP[i]));
+    if (sp < 0 && sIn < 0 && !cache.bilan) for (let i = 0; i < Q_ROD; i++) voyageurs.push(extraT[i]);
     return (
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img"
         aria-label="Une paille chargée posée sur deux barres de verre et une tige frottée que l’on approche">
@@ -593,14 +617,16 @@ export function SimulationElectrisation() {
         <rect x="30" y="196" width="590" height="11" rx="5" fill="#bfdbfe" stroke="#0f172a" strokeWidth="1"/>
         <text x="620" y="90" textAnchor="end" fontSize="11" fill="#475569">barres de verre</text>
         <rect x={xs - 28} y="50" width="56" height="190" rx="18" fill="#fde68a" stroke="#0f172a" strokeWidth="1.5" opacity="0.7"/>
-        <text x={xs} y="256" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0f172a">paille ({inter.paille > 0 ? '+' : '−'})</text>
+        <text x={xs} y="256" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0f172a">paille ({neut ? 'neutre' : inter.paille > 0 ? '+' : '−'})</text>
         {paille.map((c, i) => <Charge key={`p${i}`} x={c.x} y={c.y} s={c.s} r={5.5}/>)}
         <rect x={xr} y="116" width="200" height="58" rx="14" fill={inter.tige === 'neutre' || cache.bilan ? '#e2e8f0' : TIGES[inter.tige].couleur} stroke="#0f172a" strokeWidth="1.5" opacity="0.65"/>
         {inter.tige !== 'neutre' && (cache.bilan
           ? grille(5, 4, xr + 28, 123, 36, 12.5, 8, 6).map((c, i) => <Inconnue key={`h${i}`} x={c.x} y={c.y} r={5.5}/>)
           : tige.map((c, i) => <Charge key={`t${i}`} x={c.x} y={c.y} s={c.s} r={5.5}/>))}
         <text x={xr + 100} y="226" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0f172a">
-          {inter.tige === 'neutre' ? 'tige non frottée (neutre)' : cache.bilan ? 'tige frottée : charge inconnue' : `tige ${TIGES[inter.tige].nom} frottée (${sIn > 0 ? '+' : '−'})`}</text>
+          {inter.tige === 'neutre' ? 'tige non frottée (neutre)' : cache.bilan ? 'tige frottée : charge inconnue' : `tige ${TIGES[inter.tige].nom} frottée (${neut ? 'neutre' : sIn > 0 ? '+' : '−'})`}</text>
+        {voyageurs.map((c, i) => <Charge key={`v${i}`} x={c.x} y={c.y} s={-1} r={5.5}/>)}
+        {neut && <text x="400" y="24" textAnchor="middle" fontSize="13" fontWeight="700" fill="#15803d">Contact : les électrons passent d’un corps à l’autre, les deux deviennent neutres.</text>}
         {fort && <g>
           {fleche(xs - forceIn * 23, 30, forceIn, 46, ROUGE, 3.2, 'f1')}{etiquetteVec(xs, 18, 'F', 'tige/paille', ROUGE, 'e1', 13)}
           {fleche(xr + 100 + forceIn * 23, 30, -forceIn, 46, ORANGE, 3.2, 'f2')}{etiquetteVec(xr + 100, 18, 'F', 'paille/tige', ORANGE, 'e2', 13)}
@@ -749,8 +775,8 @@ export function SimulationElectrisation() {
   const choixTige = (etat, setEtat, avecNeutre, reinit) => (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
       {Object.entries(TIGES).filter(([k]) => reinit || k !== 'pp').map(([k, t]) =>
-        <button key={k} onClick={() => setEtat(e => ({ ...e, tige: k, ...(reinit ? { n: 0 } : {}) }))} style={stylePetitBouton(etat.tige === k, VIOLET)}>{t.court}</button>)}
-      {avecNeutre && <button onClick={() => setEtat(e => ({ ...e, tige: 'neutre' }))} style={stylePetitBouton(etat.tige === 'neutre', VIOLET)}>tige non frottée</button>}
+        <button key={k} onClick={() => setEtat(e => ({ ...e, tige: k, ...(reinit ? { n: 0 } : {}), ...(e.neut !== undefined ? { neut: false } : {}) }))} style={stylePetitBouton(etat.tige === k, VIOLET)}>{t.court}</button>)}
+      {avecNeutre && <button onClick={() => setEtat(e => ({ ...e, tige: 'neutre', ...(e.neut !== undefined ? { neut: false } : {}) }))} style={stylePetitBouton(etat.tige === 'neutre', VIOLET)}>tige non frottée</button>}
     </div>);
 
   const reglages = (
@@ -770,8 +796,8 @@ export function SimulationElectrisation() {
           <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Tige approchée de la paille</div>
           {choixTige(inter, setInter, true, false)}
           <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>La paille en polypropylène, frottée, est chargée négativement.</div></>}
-        <Curseur nom="Distance entre la paille et la tige (au départ)" valeur={inter.d} onChange={v => setInter(i => ({ ...i, d: v }))} min={2} max={14} pas={1} unite="cm" couleur={VIOLET}/>
-        <button onClick={replacerPaille} style={styleBouton(false)}>↩ Replacer la paille</button>
+        <Curseur nom="Distance entre la paille et la tige (au départ)" valeur={inter.d} onChange={v => setInter(i => ({ ...i, d: v, neut: false }))} min={2} max={14} pas={1} unite="cm" couleur={VIOLET}/>
+        <button onClick={() => { replacerPaille(); setInter(i => ({ ...i, neut: false })); }} style={styleBouton(false)}>↩ Replacer la paille</button>
       </>}
       {ongletAff === 'influence' && (cache.figee ? <div style={{ fontSize: 13.5, color: KIT.txt2 }}>Répondez aux quatre questions, puis cliquez sur « Vérifier » : l’expérience pourra alors être rejouée ici.</div> : <>
         {!enDefi && <>
@@ -814,11 +840,11 @@ export function SimulationElectrisation() {
         <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Ordre de grandeur réel : 1 nC correspond à environ 6 × 10⁹ électrons. Une tige frottée porte quelques nC.</div>
       </>}
       {ongletAff === 'interaction' && <>
-        {bilanTxt('Charge de la paille', inter.paille < 0 ? 'négative' : 'positive', inter.paille < 0 ? BLEU : ROUGE)}
-        {bilanTxt('Charge de la tige', inter.tige === 'neutre' ? 'nulle' : sIn > 0 ? 'positive' : 'négative', sIn > 0 ? ROUGE : sIn < 0 ? BLEU : undefined)}
-        {bilanTxt('Interaction', sIn === 0 ? 'aucune' : forceIn > 0 ? 'attractive' : 'répulsive')}
-        {bilanTxt('Mouvement de la paille', sIn === 0 ? 'immobile' : forceIn > 0 ? (gapP0 - xP < 1 ? 'collée à la tige' : 600 * ampl(gapP0 - xP, 14) < 50 ? 'immobile (force trop faible)' : 'vers la tige') : (xP <= -89 ? 'au bout des barres' : 600 * ampl(gapP0 - xP, 14) < 50 ? 'immobile' : 'à l’opposé de la tige'))}
-        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Si la tige est assez proche, la paille roule jusqu’à la toucher (ou s’éloigne). Trop loin, la force ne suffit pas à la faire rouler.</div>
+        {bilanTxt('Charge de la paille', neut ? 'nulle (neutralisée)' : inter.paille < 0 ? 'négative' : 'positive', neut ? undefined : inter.paille < 0 ? BLEU : ROUGE)}
+        {bilanTxt('Charge de la tige', inter.tige === 'neutre' || neut ? 'nulle' : sIn > 0 ? 'positive' : 'négative', neut ? undefined : sIn > 0 ? ROUGE : sIn < 0 ? BLEU : undefined)}
+        {bilanTxt('Interaction', sIn === 0 ? 'aucune' : neut ? 'aucune (plus de charges)' : forceIn > 0 ? 'attractive' : 'répulsive')}
+        {bilanTxt('Mouvement de la paille', sIn === 0 ? 'immobile' : neut ? 'immobile (paille et tige neutres)' : forceIn > 0 ? (gapP0 - xP < 1 ? 'collée à la tige' : 600 * ampl(gapP0 - xP, 14) < 50 ? 'immobile (force trop faible)' : 'vers la tige') : (xP <= -89 ? 'au bout des barres' : 600 * ampl(gapP0 - xP, 14) < 50 ? 'immobile' : 'à l’opposé de la tige'))}
+        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Si la tige est assez proche, la paille roule jusqu’à la toucher (ou s’éloigne). Trop loin, la force ne suffit pas à la faire rouler. Si les charges sont opposées, le contact les neutralise : c’est la dé-électrisation.</div>
       </>}
       {ongletAff === 'influence' && <>
         {bilanTxt('Charge de la tige', sBo > 0 ? 'positive' : 'négative', sBo > 0 ? ROUGE : BLEU)}
@@ -858,6 +884,7 @@ export function SimulationElectrisation() {
       <li><strong>Isolants et conducteurs</strong> : la tige (verre, ébonite, plastique) est isolante, donc ses charges restent là où le frottement les a déposées. La boule d’aluminium et le métal en général sont conducteurs : leurs électrons libres peuvent se déplacer dans tout le métal.</li>
       <li><strong>Influence</strong> : la répartition des charges dans la boule est schématique. Si on éloigne la tige sans contact, la boule redevient uniformément neutre.</li>
       <li><strong>Contact</strong> : on suppose que la boule prend, au contact, une charge de même signe que la tige (ici 2 charges élémentaires sur le dessin). La tige isolante, très chargée, n’en perd qu’une infime partie.</li>
+      <li><strong>Dé-électrisation</strong> : on suppose que la paille et la tige portent des charges opposées égales : au contact, elles se neutralisent complètement. En réalité, ce sont des isolants : le transfert est local et souvent partiel.</li>
       <li><strong>Électroscope</strong> : les charges se répartissent entre la sphère, la tige et les feuilles ; le dessin donne aux feuilles environ la moitié de l’excès de charge, ce qui est schématique (en réalité, c’est la forme de l’appareil qui décide). L’angle des feuilles, calculé à partir de leur charge, est qualitatif : l’écart réel résulte d’un équilibre entre le poids des feuilles et leur répulsion. Au contact, l’électroscope prend 4 charges élémentaires sur le dessin.</li>
       <li><strong>Mouvements</strong> : la boule et la paille bougent selon un modèle simple (force qui diminue quand la distance augmente, rappel du fil pour la boule, frottement pour la paille). Les valeurs sont qualitatives : seuls le sens du mouvement et le fait qu’il y ait contact ou non sont significatifs. Une boule neutre est attirée jusqu’au contact si la tige est assez proche (environ 4 cm ou moins sur le dessin), puis elle prend la charge de la tige et est repoussée. La paille roule jusqu’à la tige si elle est assez proche et s’arrête à son contact (on ne simule pas d’échange de charge à ce moment).</li>
       <li><strong>Forces</strong> : seul le <em>sens</em> (attraction ou répulsion) est exact ; la norme suit la loi de Coulomb (voir la simulation « Deux corps en interaction »). Une tige non frottée est supposée sans effet : on néglige la polarisation d’un isolant.</li>
