@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, Curseur, lireProgression } from "../commun";
@@ -45,6 +45,12 @@ const ICO_OBJ = { bille: '🔵', colis: '📦', avion: '✈️', A: '🚛', B: '
 const ICO_FRAME = { wagon: { mobile: '🚃' }, avion: { mobile: '✈️' }, deux: { A: '🚛', B: '🚗' }, freinage: { mobile: '🚆' } };
 const icoF = (S, fid) => (ICO_FRAME[S.id] || {})[fid] ?? (fid === 'sol' ? '📍' : '');
 const maj1 = t => t.charAt(0).toUpperCase() + t.slice(1);
+const N_CORE = 7;      // les 7 premières étapes du parcours (affichage simple) ; les suivantes : « pour aller plus loin »
+const PLACE = { sol: { wagon: 'sur le quai', avion: 'au sol', deux: 'au bord de la route', baton: 'au sol', freinage: 'sur le quai' },
+  mobile: { wagon: 'dans le wagon', avion: 'dans l’avion', freinage: 'dans le train' }, A: { deux: 'dans le véhicule A' }, B: { deux: 'dans le véhicule B' } };
+const place = (S, fid) => (PLACE[fid] || {})[S.id] || fid;
+const PHR_TRAJ = { rectiligne: 'suit une ligne droite', courbe: 'suit une courbe' };
+const PHR_MVT = { uniforme: 'à vitesse constante', accelere: 'de plus en plus vite', ralenti: 'de plus en plus lentement', quelconque: 'à vitesse variable' };
 
 // ---------- dessin ----------
 function Fleche({ x1, y1, x2, y2, col, w = 2.4, dash, op = 1 }) {
@@ -58,7 +64,7 @@ function Fleche({ x1, y1, x2, y2, col, w = 2.4, dash, op = 1 }) {
 const PW = 520, PH = 300;
 
 // Un référentiel vu de l'intérieur : trajectoires, positions successives, vecteurs vitesse, Δv au point étudié
-function Panneau({ S, fid, data, visObjs, aff, i, sv, sel, titre }) {
+function Panneau({ S, fid, data, visObjs, aff, i, sv, sel, titre, jusqua, simple }) {
   const F = S.frames.find(f => f.id === fid);
   const lanes = S.id === 'deux';
   const autres = S.frames.filter(f => f.id !== fid);
@@ -92,8 +98,8 @@ function Panneau({ S, fid, data, visObjs, aff, i, sv, sel, titre }) {
   return (
     <svg viewBox={`0 0 ${PW} ${PH}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label={`Chronophotographie dans le référentiel ${F.nom}`}>
       <text x="10" y="20" fontSize="14" fontWeight="800" fill={NOIR}>{titre}</text>
-      <text x="10" y="37" fontSize="12" fill={GRIS}>{maj1(F.nom)} est immobile dans ce référentiel.</text>
-      {batons.map((b, j) => { const A = arrondi(b.a), B = arrondi(b.b); return <g key={`b${j}`}>
+      <text x="10" y="37" fontSize="12" fill={GRIS}>Dans ce point de vue, {F.nom} ne bouge pas.</text>
+      {batons.map((b, j) => { if (j > jusqua) return null; const A = arrondi(b.a), B = arrondi(b.b); return <g key={`b${j}`}>
         <line x1={A.x} y1={A.y} x2={B.x} y2={B.y} stroke="#94a3b8" strokeWidth="2.2" strokeLinecap="round"/>
         <circle cx={A.x} cy={A.y} r="2.8" fill="#dc2626"/><circle cx={B.x} cy={B.y} r="2.8" fill="#0369a1"/></g>; })}
       {orig.map((o, ko) => <g key={o.g.id}>
@@ -102,12 +108,12 @@ function Panneau({ S, fid, data, visObjs, aff, i, sv, sel, titre }) {
         {(() => { const P = arrondi(o.pts[i]); const fin = P.x > PW * 0.6; return <text x={fin ? P.x - 14 : P.x + 14} y={Math.max(P.y - 4, 62) - ko * 13} textAnchor={fin ? 'end' : 'start'} fontSize="11.5" fill={VIOLET} fontWeight="700">{o.g.nom} (autre référentiel)</text>; })()}</g>)}
       {visObjs.map(o => { const E = data[o.id];
         return <g key={o.id}>
-          <polyline points={E.pv.map(q => { const P = arrondi(q, o); return `${P.x},${P.y}`; }).join(' ')} fill="none" stroke={o.col} strokeWidth="1" strokeDasharray="3 4" opacity="0.5"/>
-          {E.p.map((q, j) => { const P = arrondi(q, o); const estSel = o.id === sel && j === i;
+          {jusqua >= n && <polyline points={E.pv.map(q => { const P = arrondi(q, o); return `${P.x},${P.y}`; }).join(' ')} fill="none" stroke={o.col} strokeWidth="1" strokeDasharray="3 4" opacity="0.5"/>}
+          {E.p.map((q, j) => { if (j > jusqua) return null; const P = arrondi(q, o); const estSel = !simple && o.id === sel && j === i;
             return <g key={j}>
               {estSel && <circle cx={P.x} cy={P.y} r="9" fill="none" stroke={NOIR} strokeWidth="1.6"/>}
               <circle cx={P.x} cy={P.y} r="3.8" fill={o.col}/>
-              {j === 0 && ICO_OBJ[o.id] && <text x={P.x} y={P.y - 9} textAnchor="middle" fontSize="20">{ICO_OBJ[o.id]}</text>}
+              {j === (jusqua < n ? jusqua : 0) && ICO_OBJ[o.id] && <text x={P.x} y={P.y - 9} textAnchor="middle" fontSize="20">{ICO_OBJ[o.id]}</text>}
               {aff.v && j < E.v.length && (j % pas === 0 || (o.id === sel && (j === i || j === i - 1))) && (() => { const v = E.v[j];
                 return <Fleche x1={P.x} y1={P.y} x2={P.x + v.x * sv} y2={P.y - v.y * sv} col={VERT} w={o.id === sel && j === i ? 3.2 : 2} op={o.id === sel && j === i - 1 ? 0.5 : 1} dash={o.id === sel && j === i - 1 ? '4 3' : undefined}/>; })()}
               {aff.ve && j < E.ve.length - 0 && (j % pas === 0) && (() => { const v = E.ve[j];
@@ -115,7 +121,7 @@ function Panneau({ S, fid, data, visObjs, aff, i, sv, sel, titre }) {
               {o.id === sel && j === i && aff.dv && E.dv[i - 1] && (() => { const d = E.dv[i - 1];
                 return <Fleche x1={P.x} y1={P.y} x2={P.x + d.x * sv} y2={P.y - d.y * sv} col={ROUGE} w={3.6}/>; })()}
             </g>; })}
-          {(() => { const P = arrondi(E.p[i], o); return o.id === sel ? <text x={P.x + 11} y={P.y + 16} fontSize="12.5" fontWeight="800" fill={NOIR}>M<tspan fontSize="9" dy="3">{i}</tspan></text> : null; })()}
+          {(() => { const P = arrondi(E.p[i], o); return !simple && i <= jusqua && o.id === sel ? <text x={P.x + 11} y={P.y + 16} fontSize="12.5" fontWeight="800" fill={NOIR}>M<tspan fontSize="9" dy="3">{i}</tspan></text> : null; })()}
         </g>; })}
       {/* barre d'échelle des longueurs et des vitesses */}
       <g transform={`translate(12,${PH - 28})`}>
@@ -255,13 +261,15 @@ function VoletDefi({ defi, setDefi, changerType, dtChoisi }) {
 export function SimulationMouvementReferentiel() {
   const [mode, setMode] = useState('explore');
   useSignalerMode(mode);
-  const [guide, setGuide] = useEtatPersistant('mvtref-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const [guide, setGuide] = useEtatPersistant('mvtref-guide-v2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [ex, setEx] = useState(() => ({ ...initScene('wagon'), aff: AFF0, bruit: false }));
   const [hypoOuv, setHypoOuv] = useState(false);
+  const [simple, setSimple] = useState(true);       // affichage simple (par défaut) ou complet
+  const [anim, setAnim] = useState(null);           // « revoir le mouvement » : nombre de points déjà montrés
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi;
-  const maj = patch => setEx(e => ({ ...e, ...patch }));
-  const go = (id, extra = {}, over = {}) => setEx(e => ({ ...e, ...initScene(id, extra), aff: AFF0, bruit: false, ...over }));
+  const maj = patch => { setAnim(null); setEx(e => ({ ...e, ...patch })); };
+  const go = (id, extra = {}, over = {}) => { setAnim(null); setEx(e => ({ ...e, ...initScene(id, extra), aff: AFF0, bruit: false, ...over })); };
   const majAff = patch => setEx(e => ({ ...e, aff: { ...e.aff, ...patch } }));
 
   const eff = enDefi ? { ...ex, ...etatDefi(defi), dtIdx: ex.dtIdx, i: ex.i, aff: defi.type === 'dt' ? { ...ex.aff, ve: true } : ex.aff } : ex;
@@ -275,7 +283,14 @@ export function SimulationMouvementReferentiel() {
   const data = frames.map(fid => Object.fromEntries(visObjs.map(o => [o.id, echantillonner(S, fid, o.id, dt, sigma)])));
   const vmax = Math.max(1e-9, ...data.flatMap(d => Object.values(d).flatMap(E => E.v.map(norme))));
   const sv = 55 / vmax;
-  const aff = eff.aff;
+  const compact = mode === 'explore' ? simple : (enGuide && guide.etape < N_CORE);
+  const aff = compact ? { ...AFF0, v: eff.aff.v, sys: eff.aff.sys } : eff.aff;
+  const jusqua = anim === null ? n : Math.min(anim, n);
+  useEffect(() => {
+    if (anim === null) return undefined;
+    const t = setTimeout(() => setAnim(a => (a === null || a >= n ? null : a + 1)), anim >= n ? 1200 : 450);
+    return () => clearTimeout(t);
+  }, [anim, n]);
 
   // ════════════════ PARCOURS GUIDÉ ════════════════
   const etape = guide.etape;
@@ -293,27 +308,69 @@ export function SimulationMouvementReferentiel() {
 
   const okDtAvion = sceneEst('avion', ex.bruit && dt === meilleurA.dt);
   const ETAPES = [
-    { id: 'lire', titre: 'Lire une chronophotographie', focus: ['scene'],
-      texte: <>Une chronophotographie enregistre la position d’un point à des intervalles de temps égaux Δt. On y lit la <strong>forme de la trajectoire</strong> (droite ou courbe), l’<strong>écart entre deux positions successives</strong> (grand : mouvement rapide) et le <strong>sens</strong> du déplacement.
-        <ExempleResolu>Le camion A, vu de la route, Δt = 2 s.<br/>
-          1. Les positions sont alignées : la trajectoire est <strong>rectiligne</strong>.<br/>
-          2. Entre deux images successives, le camion parcourt toujours la même distance ({nb(dEdep, 0)} m) : en des durées égales, distances égales, le mouvement est <strong>uniforme</strong>.<br/>
-          Conclusion : mouvement rectiligne uniforme. {bouton('Voir cet exemple', () => go('deux', { vA: 20, vB: 25 }, { cmp: false, vis: ['A'], obj: 'A', dtIdx: 1 }))}</ExempleResolu>
-        À vous : la bille lâchée dans le wagon, vue du quai. {bouton('Mettre la bille (référentiel du quai)', () => go('wagon', {}, { cmp: false, vis: ['bille'] }))}</>,
-      tache: { type: 'qcm', q: 'Vue du quai, comment décrire le mouvement de la bille ?', options: ['trajectoire courbe, mouvement accéléré', 'trajectoire rectiligne, mouvement uniforme', 'trajectoire courbe, mouvement uniforme', 'trajectoire rectiligne, mouvement accéléré'], bonne: 0,
-        indice: 'Regardez la forme du chemin, puis comparez les écarts entre positions successives : sont-ils tous égaux ?',
-        expl: 'Les positions dessinent une courbe (une parabole) et l’écart entre deux points successifs augmente : la bille va de plus en plus vite. Le mouvement est curviligne et accéléré.' } },
-    { id: 'vitesse', titre: 'Le vecteur vitesse', focus: ['scene', 'mesures'],
-      texte: <>Le vecteur vitesse au point M<Ind>i</Ind> est approché par <strong>v<Ind>i</Ind> ≈ M<Ind>i</Ind>M<Ind>i+1</Ind> / Δt</strong> : même direction et même sens que le déplacement ; sa norme est la distance parcourue divisée par la durée.
-        <ExempleResolu>Le camion A, Δt = 2 s : M<Ind>3</Ind>M<Ind>4</Ind> = {nb(dEdep, 0)} m.<br/>
-          Expression littérale : ‖v‖ = M<Ind>3</Ind>M<Ind>4</Ind> / Δt.<br/>
-          Application numérique : ‖v‖ = {nb(dEdep, 0)} m / 2 s = <strong>{nb(dEdep / 2, 0)} m/s</strong>, soit {nb(dEdep / 2 * 3.6, 0)} km/h, vers la droite.</ExempleResolu>
-        À vous : l’avion, vu du sol. {bouton('Mettre l’avion (référentiel du sol)', () => go('avion', {}, { cmp: false, vis: ['avion'], obj: 'avion', dtIdx: 2, aff: { ...AFF0, v: true } }))} Entre deux images successives (Δt = 2 s), l’avion se déplace de {nb(dAvion, 0)} m.</>,
-      tache: { type: 'num', q: `L’avion se déplace de ${nb(dAvion, 0)} m en Δt = 2 s. Quelle est sa vitesse, en km/h ?`, unite: 'km/h', vrai: dAvion / 2 * 3.6, tol: 0.02, affiche: x => nb(x, 0),
+    { id: 'trajectoire', titre: 'Où passe le mobile ? La trajectoire', focus: ['scene'], depart: () => go('deux', { vA: 20, vB: 25 }, { cmp: false, vis: ['A'], obj: 'A', dtIdx: 1 }),
+      texte: <>Un mobile est photographié à intervalles de temps réguliers : <strong>chaque point est une photo</strong>. Le chemin que suivent les points s’appelle la <strong>trajectoire</strong> : une ligne droite (on dit <em>rectiligne</em>) ou une <em>courbe</em>. Le bouton ▶ « Revoir le mouvement » montre les photos une à une.
+        <ExempleResolu>Le camion, vu de la route : les points sont <strong>alignés</strong>. La trajectoire est donc une ligne droite (rectiligne).
+          {bouton('Voir le camion', () => go('deux', { vA: 20, vB: 25 }, { cmp: false, vis: ['A'], obj: 'A', dtIdx: 1 }))}</ExempleResolu>
+        À vous : une bille est lâchée dans un wagon qui roule ; on la regarde depuis le quai. {bouton('Voir la bille (depuis le quai)', () => go('wagon', {}, { cmp: false, vis: ['bille'] }))}</>,
+      tache: { type: 'qcm', q: 'Vue depuis le quai, la trajectoire de la bille est…', options: ['une ligne droite verticale', 'une courbe', 'une ligne droite horizontale', 'un point : elle ne bouge pas'], bonne: 1,
+        indice: 'La bille tombe, mais le wagon avance pendant ce temps : regardez la forme du chemin des points.',
+        expl: 'La bille tombe et avance en même temps (elle va avec le wagon) : les points dessinent une courbe.' } },
+    { id: 'rapidite', titre: 'Va-t-il de plus en plus vite ?', focus: ['scene'], depart: () => go('deux', { vA: 20, vB: 25 }, { cmp: false, vis: ['A'], obj: 'A', dtIdx: 1 }),
+      texte: <>Les photos sont prises à intervalles réguliers. Si les points sont <strong>tous espacés de la même distance</strong>, le mobile va à <strong>vitesse constante</strong>. S’ils s’écartent de plus en plus, il va <strong>de plus en plus vite</strong> ; s’ils se rapprochent, il ralentit.
+        <ExempleResolu>Le camion : entre deux photos, il parcourt toujours {nb(dEdep, 0)} m. Distances égales en durées égales : sa vitesse est <strong>constante</strong>.
+          {bouton('Voir le camion', () => go('deux', { vA: 20, vB: 25 }, { cmp: false, vis: ['A'], obj: 'A', dtIdx: 1 }))}</ExempleResolu>
+        À vous : un colis est largué d’un avion ; on le regarde depuis le sol. {bouton('Voir le colis (depuis le sol)', () => go('avion', {}, { cmp: false, vis: ['colis'], obj: 'colis' }))}</>,
+      tache: { type: 'qcm', q: 'Les points du colis s’écartent de plus en plus. Que fait le colis ?', options: ['il va de plus en plus vite', 'il va à vitesse constante', 'il ralentit', 'il est immobile'], bonne: 0,
+        expl: 'Entre deux photos, la distance parcourue augmente : le colis va de plus en plus vite (c’est la chute).' } },
+    { id: 'referentiel', titre: 'Le point de vue : le référentiel', focus: ['scene', 'reglages'], depart: () => go('wagon', {}, { cmp: false, vis: ['bille'], obj: 'bille' }),
+      texte: <>Pour décrire un mouvement, il faut dire <strong>par rapport à quoi</strong>. On choisit un point de vue : un objet qui ne bouge pas pour l’observateur. On l’appelle le <strong>référentiel</strong>. Assis dans un train, la personne en face de vous est immobile ; pour quelqu’un sur le quai, elle défile.
+        <ExempleResolu>La bille lâchée dans le wagon.<br/>
+          Vue depuis le quai : elle avance et tombe, la trajectoire est une <strong>courbe</strong>.<br/>
+          Vue depuis le wagon : elle avance avec vous, vous la voyez tomber <strong>tout droit</strong>.
+          {bouton('Voir les deux points de vue', () => go('wagon', {}, { cmp: true, vis: ['bille'], obj: 'bille' }))}</ExempleResolu>
+        À vous : une passagère du wagon regarde tomber la bille.</>,
+      tache: { type: 'qcm', q: 'Pour la passagère du wagon, la bille tombe…', options: ['tout droit vers le bas', 'en suivant une courbe', 'vers l’arrière du wagon', 'elle monte'], bonne: 0,
+        expl: 'La passagère avance avec la bille : elle ne voit pas son avance horizontale, seulement sa chute. Le mouvement dépend du point de vue.' } },
+    { id: 'avion', titre: 'Un point de vue qui avance : l’avion', focus: ['scene'], depart: () => go('avion', {}, { cmp: false, vis: ['colis'], obj: 'colis' }),
+      texte: <>Même idée avec l’avion. Pour le pilote, le colis tombe tout droit, juste sous l’avion. Pour quelqu’un au sol, il décrit une courbe.
+        <ExempleResolu>Le colis largué, vu du sol puis de l’avion : <strong>courbe</strong> pour le sol, <strong>ligne droite verticale</strong> pour le pilote (le colis avance avec l’avion).
+          {bouton('Voir les deux points de vue', () => go('avion', {}, { cmp: true, vis: ['colis'], obj: 'colis' }))}</ExempleResolu>
+        À vous : on regarde maintenant depuis le sol le colis <em>et</em> l’avion. {bouton('Voir colis et avion (depuis le sol)', () => go('avion', {}, { cmp: false, fG: 'sol', vis: ['colis', 'avion'], obj: 'colis' }))}</>,
+      tache: { type: 'qcm', q: 'Vu du sol, au moment où le colis touche le sol, l’avion est…', options: ['juste au-dessus du colis', 'loin derrière le colis', 'loin devant le colis', 'revenu à son point de départ'], bonne: 0,
+        expl: 'Le colis garde la vitesse horizontale de l’avion (100 m/s) pendant toute sa chute : il reste sous l’avion (en négligeant l’air). C’est pour cela que, pour le pilote, il tombe tout droit.' } },
+    { id: 'vitesse', titre: 'La vitesse et le vecteur vitesse', focus: ['scene'], depart: () => go('deux', { vA: 20, vB: 25 }, { cmp: false, vis: ['A'], obj: 'A', dtIdx: 1, aff: { ...AFF0, v: true } }),
+      texte: <>La vitesse dit <strong>de combien le mobile avance pendant une durée</strong> : <strong>vitesse = distance parcourue ÷ durée</strong>. Entre deux photos successives M et M′ séparées de la durée Δt : <strong>v = MM′ / Δt</strong>. On la représente par une flèche, le <strong>vecteur vitesse</strong> : il part du mobile, pointe dans le sens du mouvement et sa longueur est proportionnelle à la vitesse.
+        <ExempleResolu>Le camion : entre deux photos, il parcourt MM′ = {nb(dEdep, 0)} m en Δt = 2 s.<br/>
+          Expression littérale : v = MM′ / Δt.<br/>
+          Application numérique : v = {nb(dEdep, 0)} m / 2 s = <strong>{nb(dEdep / 2, 0)} m/s</strong>, soit {nb(dEdep / 2 * 3.6, 0)} km/h, vers la droite.
+          {bouton('Voir le camion avec ses flèches', () => go('deux', { vA: 20, vB: 25 }, { cmp: false, vis: ['A'], obj: 'A', dtIdx: 1, aff: { ...AFF0, v: true } }))}</ExempleResolu>
+        À vous : l’avion, vu du sol. {bouton('Voir l’avion avec ses flèches', () => go('avion', {}, { cmp: false, vis: ['avion'], obj: 'avion', dtIdx: 2, aff: { ...AFF0, v: true } }))} Entre deux photos (Δt = 2 s), l’avion se déplace de {nb(dAvion, 0)} m.</>,
+      tache: { type: 'num', q: `L’avion se déplace de ${nb(dAvion, 0)} m en 2 s. Quelle est sa vitesse, en km/h ?`, unite: 'km/h', vrai: dAvion / 2 * 3.6, tol: 0.02, affiche: x => nb(x, 0),
         pieges: [[dAvion / 2, 'Vous avez trouvé la vitesse en m/s : pour passer en km/h, multipliez par 3,6.']],
-        expl: `‖v‖ = ${nb(dAvion, 0)} m / 2 s = ${nb(dAvion / 2, 0)} m/s, soit ${nb(dAvion / 2, 0)} × 3,6 = ${nb(dAvion / 2 * 3.6, 0)} km/h.` } },
-    { id: 'dt', titre: 'Le choix de l’intervalle Δt', focus: ['reglages', 'mesures'],
-      texte: <>Choisir Δt, c’est choisir l’<strong>échelle de temps</strong> de la description : trop grand, on ne voit plus la forme du mouvement (peu d’images) ; trop petit, les points se confondent et l’erreur de pointage domine.
+        expl: `v = ${nb(dAvion, 0)} m / 2 s = ${nb(dAvion / 2, 0)} m/s, soit ${nb(dAvion / 2, 0)} × 3,6 = ${nb(dAvion / 2 * 3.6, 0)} km/h.` } },
+    { id: 'vitesserel', titre: 'La vitesse dépend aussi du point de vue', focus: ['scene'], depart: () => go('deux', { vA: 20, vB: 25 }, { cmp: true, fD: 'A', obj: 'B', dtIdx: 1, aff: { ...AFF0, v: true } }),
+      texte: <>Un mobile n’a pas la même vitesse dans tous les référentiels.
+        <ExempleResolu>Vous êtes dans le camion A (20 m/s par rapport à la route). La voiture B vous double à 25 m/s (par rapport à la route).<br/>
+          Pour vous, c’est comme si le camion était immobile : on retranche la vitesse de A.<br/>
+          Expression littérale : v<Ind>B/A</Ind> = v<Ind>B</Ind> − v<Ind>A</Ind>.<br/>
+          Application numérique : v<Ind>B/A</Ind> = 25 − 20 = <strong>5 m/s</strong>, vers l’avant. Vous la voyez avancer lentement.
+          {bouton('Voir le dépassement', () => go('deux', { vA: 20, vB: 25 }, { cmp: true, fD: 'A', obj: 'B', dtIdx: 1, aff: { ...AFF0, v: true } }))}</ExempleResolu>
+        À vous : A roule à 20 m/s vers la droite et B arrive en face, à 25 m/s vers la gauche (vitesse algébrique −25 m/s). {bouton('Voir le croisement', () => go('deux', { vA: 20, vB: -25 }, { cmp: true, fD: 'A', obj: 'B', dtIdx: 1, aff: { ...AFF0, v: true } }))}</>,
+      tache: { type: 'num', q: 'À quelle vitesse, en m/s, B passe-t-elle devant vous dans le camion A ?', unite: 'm/s', vrai: 45, tol: 0.02, affiche: x => nb(x, 0),
+        pieges: [[5, 'Vous avez soustrait les vitesses sans tenir compte du sens. B roule en sens inverse : v_B − v_A = (−25) − 20.']],
+        expl: 'v_B/A = v_B − v_A = (−25) − 20 = −45 m/s : 45 m/s, vers la gauche. En sens inverse, les vitesses s’additionnent (en valeur).' } },
+    { id: 'essentiel', titre: 'À retenir : l’essentiel', focus: [],
+      texte: <><ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+        <li>Une chronophotographie : chaque point est une photo prise à intervalles réguliers.</li>
+        <li>La <strong>trajectoire</strong> est le chemin des points : droite ou courbe.</li>
+        <li>Points toujours espacés pareil : <strong>vitesse constante</strong>. Points qui s’écartent : le mobile accélère.</li>
+        <li>Le <strong>référentiel</strong> est le point de vue de l’observateur. <strong>Trajectoire et vitesse en dépendent.</strong></li>
+        <li><strong>v = MM′ / Δt</strong>, représentée par le vecteur vitesse (une flèche). Et v<Ind>B/A</Ind> = v<Ind>B</Ind> − v<Ind>A</Ind>.</li></ul></ARetenir>
+        <div style={{ marginTop: 8 }}>Les étapes suivantes (marquées ★) vont plus loin : choix de l’intervalle Δt, variation de la vitesse et forces. Elles utilisent l’affichage complet.</div></>,
+      tache: null },
+    { id: 'dt', titre: '★ Pour aller plus loin : le choix de Δt', focus: ['reglages', 'mesures'],
+      texte: <>Ici, l’affichage devient complet (réglages et tableau de mesures). Choisir Δt, c’est choisir l’<strong>échelle de temps</strong> de la description : trop grand, on ne voit plus la forme du mouvement (peu d’images) ; trop petit, les points se confondent et l’erreur de pointage domine.
         <ExempleResolu>La bille lâchée dans le wagon, vue du quai. On compare v<Ind>i</Ind> ≈ M<Ind>i</Ind>M<Ind>i+1</Ind>/Δt à la vitesse réelle du modèle au point t = 0,24 s.
           <table style={{ borderCollapse: 'collapse', margin: '4px 0', fontSize: 13.5 }}><thead><tr><th style={{ textAlign: 'left', paddingRight: 10 }}>Δt (s)</th><th style={{ textAlign: 'left', paddingRight: 10 }}>images</th><th style={{ textAlign: 'left', paddingRight: 10 }}>écart, pointage parfait</th><th style={{ textAlign: 'left' }}>écart moyen, pointage à ±{Sw.uniteSigma}</th></tr></thead>
             <tbody>{tabDt.map(l => <tr key={l.d}><td>{vir(l.d)}</td><td>{l.N}</td><td>{nb(l.e * 100, 0)} %</td><td>{nb(l.m * 100, 0)} %</td></tr>)}</tbody></table>
@@ -321,31 +378,7 @@ export function SimulationMouvementReferentiel() {
         À vous : le colis largué de l’avion, pointé avec une erreur de {Sa.uniteSigma}. {bouton('Mettre le colis (erreur de pointage)', () => go('avion', {}, { cmp: false, vis: ['colis'], obj: 'colis', bruit: true, dtIdx: 0, aff: { ...AFF0, v: true, ve: true } }))}
         Essayez les valeurs de Δt et lisez l’écart moyen dans le tableau.</>,
       tache: { type: 'action', ok: okDtAvion, label: null, consigne: sceneEst('avion', ex.bruit) ? `Δt = ${vir(dt)} s · écart moyen : ${nb(ecartAttendu(Sa, 'sol', 'colis', dt, Sa.sigmaDef) * 100, 0)} %` : 'Mettez le colis avec le bouton ci-dessus, puis cherchez le Δt qui donne l’écart moyen le plus faible.' } },
-    { id: 'ref1', titre: 'Changer de référentiel : la vitesse relative', focus: ['scene', 'mesures'],
-      texte: <>Un <strong>référentiel</strong> est un solide (ou un ensemble de points immobiles entre eux) par rapport auquel on décrit le mouvement. Le même véhicule n’a pas la même vitesse selon le référentiel choisi.
-        <ExempleResolu>Un camion A (20 m/s) est dépassé par une voiture B (25 m/s), vitesses mesurées dans le référentiel de la route.<br/>
-          Dans le référentiel de A, A est immobile. Pour B, on retranche la vitesse de A :<br/>
-          v<Ind>B/A</Ind> = v<Ind>B</Ind> − v<Ind>A</Ind> = 25 − 20 = <strong>5 m/s</strong>, vers la droite (B s’éloigne de A par l’avant).
-          {bouton('Voir le dépassement (route et camion)', () => go('deux', { vA: 20, vB: 25 }, { cmp: true, fD: 'A', obj: 'B', dtIdx: 1, aff: { ...AFF0, v: true } }))}</ExempleResolu>
-        À vous : A roule à 20 m/s vers la droite et B arrive en face, à 25 m/s vers la gauche (vitesse algébrique −25 m/s). {bouton('Voir le croisement', () => go('deux', { vA: 20, vB: -25 }, { cmp: true, fD: 'A', obj: 'B', dtIdx: 1, aff: { ...AFF0, v: true } }))}</>,
-      tache: { type: 'num', q: 'Quelle est la norme de la vitesse de B dans le référentiel de A, en m/s ?', unite: 'm/s', vrai: 45, tol: 0.02, affiche: x => nb(x, 0),
-        pieges: [[5, 'Vous avez soustrait les normes. B roule en sens inverse : v_B − v_A = (−25) − 20, en valeurs algébriques.']],
-        expl: 'v_B/A = v_B − v_A = (−25) − 20 = −45 m/s : la norme est 45 m/s et le sens est vers la gauche. En sens inverse, les vitesses s’ajoutent (en norme).' } },
-    { id: 'ref2', titre: 'La trajectoire dépend du référentiel', focus: ['scene'],
-      texte: <>La forme de la trajectoire aussi dépend du référentiel.
-        <ExempleResolu>La bille lâchée dans le wagon (sans vitesse initiale par rapport au wagon), vue du quai et du wagon.<br/>
-          Vue du quai, elle garde la vitesse horizontale du wagon (8 m/s) et tombe : sa trajectoire est une <strong>courbe</strong> (parabole).<br/>
-          Vue du wagon, sa vitesse horizontale est 8 − 8 = 0 : elle tombe <strong>en ligne droite verticale</strong>.
-          {bouton('Voir les deux référentiels', () => go('wagon', {}, { cmp: true, vis: ['bille'], obj: 'bille' }))}</ExempleResolu>
-        À vous : le colis largué d’un avion, vu du sol et de l’avion. {bouton('Voir le colis dans les deux référentiels', () => go('avion', {}, { cmp: true, vis: ['colis'], obj: 'colis' }))}</>,
-      tache: { type: 'qcm', q: 'Pour le pilote (référentiel de l’avion), le colis largué…', options: ['tombe en ligne droite, à la verticale', 'décrit une parabole', 'reste immobile', 'recule vers l’arrière'], bonne: 0,
-        expl: 'Dans le référentiel de l’avion, la vitesse horizontale du colis est 100 − 100 = 0 : il ne se déplace que verticalement. Pour un observateur au sol, la même chute est une parabole.' } },
-    { id: 'ref3', titre: 'Où est l’avion quand le colis tombe ?', focus: ['scene'],
-      texte: <>Dans le wagon, la bille reste à la verticale de l’endroit où on l’a lâchée : elle a la même vitesse horizontale que le wagon. Utilisons ce raisonnement pour l’avion, vu du sol.
-        {bouton('Voir l’avion et le colis (sol)', () => go('avion', {}, { cmp: false, fG: 'sol', vis: ['colis', 'avion'], obj: 'colis' }))}</>,
-      tache: { type: 'qcm', q: 'Dans le référentiel du sol, à l’instant où le colis arrive au sol, l’avion est…', options: ['à la verticale du colis', 'loin derrière le colis', 'loin devant le colis', 'au-dessus du point de départ du colis'], bonne: 0,
-        expl: 'Le colis et l’avion ont la même vitesse horizontale (100 m/s) pendant toute la chute : le colis reste sous l’avion (en négligeant les frottements de l’air). Les croix à la verticale l’une de l’autre le montrent.' } },
-    { id: 'dv', titre: 'La variation du vecteur vitesse', focus: ['scene', 'mesures'],
+    { id: 'dv', titre: '★ La variation du vecteur vitesse', focus: ['scene', 'mesures'],
       texte: <>La <strong>variation du vecteur vitesse</strong> entre deux instants voisins est Δv<Ind>i</Ind> = v<Ind>i</Ind> − v<Ind>i−1</Ind>. On trace les deux vecteurs depuis un même point : Δv relie leurs extrémités. La vitesse change d’un référentiel à l’autre ; sa <em>variation</em>, elle, ne change pas.
         <ExempleResolu>La bille du wagon, Δt = 0,06 s, au point M<Ind>3</Ind> :<br/>
           vue du quai : v<Ind>2</Ind> = ({nb(Ew.sol.v[Ewj - 1].x)} ; {nb(Ew.sol.v[Ewj - 1].y)}) m/s et v<Ind>3</Ind> = ({nb(Ew.sol.v[Ewj].x)} ; {nb(Ew.sol.v[Ewj].y)}) m/s, donc Δv<Ind>3</Ind> = ({nb(Ew.sol.dv[Ewj - 1].x)} ; {nb(Ew.sol.dv[Ewj - 1].y)}) m/s ;<br/>
@@ -355,7 +388,7 @@ export function SimulationMouvementReferentiel() {
         À vous : la voiture B du dépassement. {bouton('Voir le dépassement', () => go('deux', { vA: 20, vB: 25 }, { cmp: true, fD: 'A', obj: 'B', dtIdx: 1, i: 3, aff: { ...AFF0, dv: true, v: true } }))}</>,
       tache: { type: 'qcm', q: 'La voiture roule en ligne droite à vitesse constante. Que vaut sa variation de vitesse Δv ?', options: ['nulle, dans le référentiel de la route comme dans celui du camion', 'nulle dans la route, mais pas dans le camion', 'égale à 5 m/s dans le référentiel du camion', 'égale à 25 m/s dans le référentiel de la route'], bonne: 0,
         expl: 'Les deux vecteurs v sont identiques en chaque référentiel (25 m/s dans la route, 5 m/s dans le camion) : leur différence est nulle. La variation de vitesse ne dépend pas du référentiel choisi, tant que les référentiels se déplacent l’un par rapport à l’autre à vitesse constante.' } },
-    { id: 'force', titre: 'Variation de vitesse et forces', focus: ['scene'],
+    { id: 'force', titre: '★ Variation de vitesse et forces', focus: ['scene'],
       texte: <>Si Δv = 0 (vitesse constante en direction et en norme), les forces qui s’exercent sur le système <strong>se compensent</strong> : c’est le principe d’inertie. Si Δv n’est pas nul, la somme des forces n’est pas nulle et elle a la <strong>même direction et le même sens que Δv</strong>.
         <ExempleResolu>Le colis largué, vu du sol.<br/>
           Δv est vertical, dirigé vers le bas, et sa norme est la même à chaque instant (≈ g·Δt).<br/>
@@ -365,7 +398,7 @@ export function SimulationMouvementReferentiel() {
       tache: { type: 'qcm', q: 'L’avion vole à vitesse constante, en ligne droite. Que peut-on en conclure ?', options: ['les forces qui s’exercent sur lui se compensent', 'aucune force ne s’exerce sur lui', 'le poids de l’avion est nul', 'les moteurs sont arrêtés'], bonne: 0,
         indice: 'Δv = 0 ne signifie pas « pas de forces » : le poids existe toujours.',
         expl: 'Δv = 0 : la somme des forces est nulle. Le poids (vers le bas) est compensé par la portance des ailes ; la poussée des moteurs compense la traînée de l’air. Les forces existent, mais elles se compensent.' } },
-    { id: 'baton', titre: 'Le modèle du point : ce qu’on perd', focus: ['scene'],
+    { id: 'baton', titre: '★ Le modèle du point : ce qu’on perd', focus: ['scene'],
       texte: <>Pour décrire un mouvement, on remplace souvent le système (ici un bâton) par un <strong>point</strong> : son centre. C’est un modèle : on gagne en simplicité, on perd de l’information.
         <ExempleResolu>Un bâton lancé en l’air en tournant. {bouton('Voir le bâton', () => go('baton', {}, { cmp: false, vis: ['centre'], obj: 'centre', aff: { ...AFF0, sys: false } }))}<br/>
           Le centre décrit une <strong>parabole</strong> : trajectoire simple, facile à décrire et à calculer.<br/>
@@ -374,7 +407,7 @@ export function SimulationMouvementReferentiel() {
         À vous : que ne sait-on pas quand on ne suit que le centre ?</>,
       tache: { type: 'qcm', q: 'Quelle information est perdue quand on décrit le bâton par son centre seulement ?', options: ['le fait que le bâton tourne sur lui-même', 'la trajectoire du centre', 'la durée du vol', 'la hauteur maximale du centre'], bonne: 0,
         expl: 'La trajectoire du centre (parabole), la durée du vol et la hauteur maximale sont des informations du modèle du point. En revanche, ni la rotation, ni l’orientation du bâton n’y figurent.' } },
-    { id: 'freinage', titre: 'Pour aller plus loin : un référentiel qui freine', focus: ['scene', 'mesures'],
+    { id: 'freinage', titre: '★ Un référentiel qui freine', focus: ['scene', 'mesures'],
       texte: <>Jusqu’ici, les référentiels se déplaçaient les uns par rapport aux autres à vitesse <em>constante</em>. Que se passe-t-il quand l’un d’eux freine ? {bouton('Voir la bille dans le train qui freine', () => go('freinage', {}, { cmp: true, vis: ['bille'], obj: 'bille', aff: { ...AFF0, dv: true, v: true } }))}
         <ExempleResolu>Une bille posée sur le plancher lisse d’un train qui freine (pas de frottement, donc aucune force horizontale).<br/>
           Vue du quai : v = {nb(Ef.sol.v[1].x, 1)} m/s à chaque instant, Δv = {nb(norme(Ef.sol.dv[0]), 1)} : mouvement rectiligne uniforme, cohérent avec l’absence de force horizontale.<br/>
@@ -382,7 +415,7 @@ export function SimulationMouvementReferentiel() {
         Le principe d’inertie ne s’applique pas dans tous les référentiels : il s’applique dans celui du quai, pas dans celui d’un train qui freine. (Ce point est abordé plus tard dans la scolarité ; il montre pourquoi on précise toujours le référentiel.)</>,
       tache: { type: 'qcm', q: 'Dans le train qui freine, la bille se met à rouler vers l’avant. Une force horizontale la pousse-t-elle ?', options: ['non : c’est le train qui freine, la bille garde sa vitesse (vue du quai)', 'oui : la bille est attirée vers l’avant', 'oui : le principe d’inertie est faux', 'on ne peut rien dire'], bonne: 0,
         expl: 'Vue du quai, la bille continue en ligne droite à 8 m/s : aucune force horizontale. C’est le plancher qui ralentit sous elle. Dans le référentiel du train, le mouvement de la bille semble accéléré sans cause : le principe d’inertie n’y est pas applicable.' } },
-    { id: 'fin', titre: 'À retenir', focus: [],
+    { id: 'fin', titre: 'À retenir (complet)', focus: [],
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18 }}>
         <li>Décrire un mouvement, c’est choisir un <strong>référentiel</strong>, puis suivre un point (modèle du point matériel : on perd de l’information, par exemple la rotation).</li>
         <li>Une chronophotographie donne la <strong>trajectoire</strong> (droite ou courbe) et la nature du mouvement : écarts égaux = uniforme, écarts croissants = accéléré.</li>
@@ -392,6 +425,12 @@ export function SimulationMouvementReferentiel() {
       tache: null },
   ];
   const cadre = id => enGuide && (ETAPES[Math.min(etape, ETAPES.length - 1)].focus || []).includes(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
+  useEffect(() => {           // à l'arrivée sur une étape, on met en place sa situation de départ
+    if (mode !== 'guide') return;
+    const d = ETAPES[Math.min(guide.etape, ETAPES.length - 1)].depart;
+    if (d) d();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, guide.etape]);
 
   // ════════════════ DÉFIS ════════════════
   function lancer(type) { const d = nouveauDefi(type); setDefi(d); setEx(e => ({ ...e, ...etatDefi(d), aff: { ...AFF0, v: true, ve: type === 'dt' }, bruit: type === 'dt', i: 4 })); }
@@ -407,9 +446,10 @@ export function SimulationMouvementReferentiel() {
         <div style={{ marginTop: 4 }}>On suit : {visObjs.map((o, k) => <span key={o.id} style={{ marginRight: 10, whiteSpace: 'nowrap' }}>{k > 0 && ' '}<span style={{ fontSize: 18, color: o.col }}>{ICO_OBJ[o.id] || '●'}</span> <strong>{o.nom}</strong></span>)}
           {' '}· <span style={{ whiteSpace: 'nowrap' }}>{S.frames.length > 1 ? 'Référentiel affiché : ' : 'Référentiel : '}<strong>{frames.map(f => S.frames.find(x => x.id === f).nom).join(' et ')}</strong></span></div>
       </div>
+      <div style={{ marginBottom: 8 }}><button onClick={() => setAnim(0)} style={styleBouton(true, '#4338ca')}>▶ Revoir le mouvement, photo après photo</button></div>
       <div className="mr-pan">
         {frames.map((fid, k) => <div key={fid + k}>
-          <Panneau S={S} fid={fid} data={data[k]} visObjs={visObjs} aff={aff} i={i} sv={sv} sel={sel} titre={`Vu depuis ${S.frames.find(f => f.id === fid).nom}`}/>
+          <Panneau S={S} fid={fid} data={data[k]} visObjs={visObjs} aff={aff} i={i} sv={sv} sel={sel} jusqua={jusqua} simple={compact} titre={`Vu depuis ${S.frames.find(f => f.id === fid).nom}`}/>
           {aff.dv && <div style={{ marginTop: 6 }}><Construction E={data[k][sel]} i={i} titre={`Δv au point M${i} (${nomF(fid)})`}/></div>}
         </div>)}
       </div>
@@ -417,8 +457,8 @@ export function SimulationMouvementReferentiel() {
         {aff.v && <><span style={{ color: VERT, fontWeight: 700 }}>→</span> vitesse approchée v<Ind>i</Ind> ≈ M<Ind>i</Ind>M<Ind>i+1</Ind>/Δt · </>}
         {aff.dv && <><span style={{ color: ROUGE, fontWeight: 700 }}>→</span> variation Δv<Ind>i</Ind> · </>}
         {aff.org && <><span style={{ color: VIOLET, fontWeight: 700 }}>○</span> positions successives de l’autre référentiel · </>}
-        Positions fournies par un modèle, une image toutes les Δt = {vir(dt)} s ({n + 1} images).
-        {n + 1 < 5 && <strong style={{ color: '#b91c1c' }}> Trop peu d’images pour voir la forme de la trajectoire.</strong>}
+        {compact ? `Une photo toutes les ${vir(dt)} s (${n + 1} photos). Positions calculées par un modèle, pas une vraie vidéo.` : `Positions fournies par un modèle, une image toutes les Δt = ${vir(dt)} s (${n + 1} images).`}
+        {!compact && n + 1 < 5 && <strong style={{ color: '#b91c1c' }}> Trop peu d’images pour voir la forme de la trajectoire.</strong>}
       </div>
     </div>);
 
@@ -490,6 +530,38 @@ export function SimulationMouvementReferentiel() {
       </div>
     </div>);
 
+  // ── affichage simple : peu de choix, des mots du quotidien ──
+  const choixPlace = (cle, courant) => <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
+    {S.frames.map(f => <button key={f.id} onClick={() => maj({ [cle]: f.id })} style={stylePetitBouton(courant === f.id, '#0284c7')}>{icoF(S, f.id)} {maj1(place(S, f.id))}</button>)}</div>;
+  const etiq = t => <div style={{ fontSize: 13.5, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>{t}</div>;
+  const reglagesSimples = (
+    <div style={{ ...styleBoite, ...cadre('reglages') }}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 8 }}>Réglages</div>
+      {etiq('1. Choisissez une situation')}
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+        {ORDRE_SCENES.filter(id => !scene(id).pourAllerPlusLoin).map(id => { const Sc = scene(id); return <button key={id} onClick={() => go(id)} style={stylePetitBouton(ex.scene === id, VIOLET)}>{Sc.icone} {Sc.court}</button>; })}</div>
+      {S.id === 'deux' && <>
+        <Curseur nom="Vitesse du véhicule A" valeur={ex.vA} onChange={x => maj({ vA: x })} min={-30} max={30} pas={5} unite="m/s" couleur="#c2410c"/>
+        <Curseur nom="Vitesse du véhicule B" valeur={ex.vB} onChange={x => maj({ vB: x })} min={-30} max={30} pas={5} unite="m/s" couleur={BLEU}/></>}
+      {S.frames.length > 1 && <>
+        {etiq(`2. D’où regarde-t-on le mouvement ?${eff.cmp ? ' (à gauche)' : ''}`)}
+        {choixPlace('fG', ex.fG)}
+        {eff.cmp && <>{etiq('À droite')}{choixPlace('fD', ex.fD)}</>}
+        <label style={{ fontSize: 14, color: KIT.txt, cursor: 'pointer', display: 'block', marginBottom: 10 }}><input type="checkbox" checked={ex.cmp} onChange={e => maj({ cmp: e.target.checked })} style={{ marginRight: 6 }}/>Comparer deux points de vue côte à côte</label></>}
+      {S.objets.length > 1 && <>
+        {etiq(S.id === 'baton' ? 'Points suivis' : 'Mobiles suivis')}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>{S.objets.map(o => <button key={o.id} onClick={() => setEx(e => { const v = e.vis.includes(o.id) ? e.vis.filter(x => x !== o.id) : [...e.vis, o.id]; return { ...e, vis: v.length ? v : e.vis, obj: v.includes(e.obj) ? e.obj : (v[0] || e.obj) }; })} style={stylePetitBouton(eff.vis.includes(o.id), o.col)}>{ICO_OBJ[o.id] || '●'} {o.court}</button>)}</div></>}
+      <label style={{ fontSize: 14, color: KIT.txt, cursor: 'pointer', display: 'block', marginBottom: 6 }}><input type="checkbox" checked={!!eff.aff.v} onChange={e => majAff({ v: e.target.checked })} style={{ marginRight: 6 }}/>Afficher la vitesse (une flèche verte pour chaque photo)</label>
+      {S.id === 'baton' && <label style={{ fontSize: 14, color: KIT.txt, cursor: 'pointer', display: 'block', marginBottom: 6 }}><input type="checkbox" checked={!!eff.aff.sys} onChange={e => majAff({ sys: e.target.checked })} style={{ marginRight: 6 }}/>Dessiner le bâton entier</label>}
+    </div>);
+  const observation = (
+    <div style={{ ...styleBoite, background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>👀 Ce que l’on observe</div>
+      {frames.map(fid => visObjs.map(o => { const c = caracteriser(S, fid, o.id), nomFr = S.frames.find(f => f.id === fid).nom;
+        return <div key={fid + o.id} style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.55, marginBottom: 4 }}>
+          Vu depuis {nomFr}, {o.nom} {c.traj === 'immobile' ? <strong>ne bouge pas</strong> : <><strong>{PHR_TRAJ[c.traj]}</strong>, <strong>{PHR_MVT[c.mvt]}</strong></>}.</div>; }))}
+    </div>);
+
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
       <li><strong>Positions fournies par un modèle</strong> exact : ce n’est pas une mesure. On peut ainsi comparer les vitesses approchées aux vitesses réelles, ce qui est impossible dans une vraie expérience. Le pointage vidéo reste l’activité expérimentale de référence.</li>
@@ -516,6 +588,22 @@ export function SimulationMouvementReferentiel() {
         <li>Train qui freine : dans quel référentiel la bille a-t-elle une variation de vitesse non nulle ?</li>
       </ul>
     </div>);
+  const aEssayerSimple = (
+    <div style={styleBoite}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
+      <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
+        <li>Bille dans le wagon : appuyez sur ▶, puis choisissez « Dans le wagon ». La bille tombe-t-elle de la même façon ?</li>
+        <li>Colis et avion : regardez depuis le sol, puis depuis l’avion. Où est l’avion quand le colis touche le sol ?</li>
+        <li>Deux véhicules : placez-vous « dans le véhicule A ». Comment B vous semble-t-il se déplacer ?</li>
+        <li>Bâton : suivez un bout, puis le centre. Lequel a la trajectoire la plus simple ?</li>
+      </ul>
+    </div>);
+  const retenirSimple = (
+    <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
+      <li>trajectoire : le chemin des points (droite ou courbe)</li>
+      <li>points espacés pareil : vitesse constante</li>
+      <li>le référentiel est le point de vue de l’observateur</li>
+      <li>trajectoire et vitesse dépendent du référentiel</li></ul></ARetenir>);
   const retenir = (
     <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
       <li>trajectoire et vitesse dépendent du référentiel</li>
@@ -538,28 +626,33 @@ export function SimulationMouvementReferentiel() {
         .mr-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 12px; }
         .mr-pri { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); }
         .mr-pri.pile { grid-template-columns: minmax(0, 1fr); }
-        .mr-pan { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .mr-pan { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
         @media (max-width: 900px) { .mr-l1.cote, .mr-pri { grid-template-columns: minmax(0, 1fr); } }
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 6 }}>
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Référentiel et mouvement : décrire un mouvement</h2>
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Une chronophotographie : la position d’un mobile, relevée à intervalles de temps égaux Δt. Choisissez une situation, puis un référentiel (le point de vue d’un observateur).
-        Ensuite, on peut afficher le vecteur vitesse, sa variation Δv et comparer deux référentiels.</div>
+      <div style={{ fontSize: 14, color: KIT.txt2, marginBottom: 10, lineHeight: 1.55 }}>{compact
+        ? 'Un mobile est photographié à intervalles de temps réguliers : chaque point est une photo. Choisissez une situation et l’endroit d’où on observe, puis appuyez sur ▶ pour voir le mouvement se construire.'
+        : 'Une chronophotographie : la position d’un mobile, relevée à intervalles de temps égaux Δt. Choisissez une situation, puis un référentiel (le point de vue d’un observateur). On peut afficher le vecteur vitesse, sa variation Δv et comparer deux référentiels.'}</div>
+      {mode === 'explore' && <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
+        <span style={{ fontSize: 13.5, color: KIT.txt2, fontWeight: 700 }}>Affichage :</span>
+        <button onClick={() => setSimple(true)} style={stylePetitBouton(simple, '#16a34a')}>🙂 Simple</button>
+        <button onClick={() => setSimple(false)} style={stylePetitBouton(!simple, '#334155')}>🔬 Complet (Δt, mesures, Δv…)</button></div>}
       <div className={`mr-l1${mode !== 'explore' ? ' cote' : ''}`}>
         <div>
           {enDefi && <div style={{ ...styleBoite, marginBottom: 12 }}>
             <VoletDefi defi={defi} setDefi={setDefi} dtChoisi={dt} changerType={t => { const d = nouveauDefi(t); setDefi(d); setEx(e => ({ ...e, ...etatDefi(d), aff: { ...AFF0, v: true, ve: t === 'dt' }, bruit: t === 'dt', i: 4 })); }}/></div>}
           <div className={`mr-pri${mode !== 'explore' ? ' pile' : ''}`}>
             {panneaux}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{reglages}{mesures}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{compact ? <>{reglagesSimples}{observation}</> : <>{reglages}{mesures}</>}</div>
           </div>
         </div>
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : enDefi ? panneauHypo : null}
       </div>
       {!enDefi && <div className="mr-l2">{panneauHypo}</div>}
-      {mode === 'explore' && <div className="mr-l2">{aEssayer}{retenir}</div>}
+      {mode === 'explore' && <div className="mr-l2">{compact ? <>{aEssayerSimple}{retenirSimple}</> : <>{aEssayer}{retenir}</>}</div>}
     </div>
   );
 }
