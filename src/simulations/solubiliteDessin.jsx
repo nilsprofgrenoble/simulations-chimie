@@ -154,7 +154,7 @@ function dirLibre(M, i, extra = []) {
 const estPolaireH = (M, i) => { const a = M.at[i]; if (a.el === 'O' || a.el === 'N') return true; if (a.el !== 'H') return false; const o = M.at[M.vois[i][0]]; return !!o && (o.el === 'O' || o.el === 'N'); };
 
 // mols : molécules disposées ; lignes : interactions ; opts : doublets, halos, charges ('toutes' | 'inter' | null)
-export function Scene({ mols, lignes = [], W, H, smax = 34, doublets = true, halos = false, charges = null, legende = null }) {
+export function Scene({ mols, lignes = [], W, H, smax = 34, doublets = true, halos = false, charges = null, legende = null, actif = null, onSurvol = null }) {
   const bx = boite(mols), s = Math.min(W / (bx.x1 - bx.x0), H / (bx.y1 - bx.y0), smax);
   const ox = (W - (bx.x1 - bx.x0) * s) / 2 - bx.x0 * s, oy = (H - (bx.y1 - bx.y0) * s) / 2 + bx.y1 * s;
   const X = x => ox + x * s, Y = y => oy - y * s;
@@ -192,13 +192,20 @@ export function Scene({ mols, lignes = [], W, H, smax = 34, doublets = true, hal
     const s1 = l.s1 ?? 1, s2 = l.s2 ?? -1;
     if (s1) elems.push(delta(l.m1, l.i1, s1, `i${k}a`, [ang])); if (s2) elems.push(delta(l.m2, l.i2, s2, `i${k}b`, [ang + Math.PI])); });
   // interactions
+  const present = !!actif && lignes.some(l => l.t === actif);       // on n'estompe les autres que si l'interaction survolée est dessinée ici
   lignes.forEach((l, k) => {
     const p = mols[l.m1].at[l.i1], q = mols[l.m2].at[l.i2];
     let x1 = X(p.x), y1 = Y(p.y), x2 = X(q.x), y2 = Y(q.y); const L = Math.hypot(x2 - x1, y2 - y1) || 1, ux = (x2 - x1) / L, uy = (y2 - y1) / L;
     const r = fs * 0.6; x1 += ux * r; y1 += uy * r; x2 -= ux * r * 1.5; y2 -= uy * r * 1.5;
-    if (l.t === 'i') elems.push(<line key={`i${k}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke={COUL_INTER.i} strokeWidth="2.6" strokeDasharray="1 4" strokeLinecap="round"/>);
-    else if (l.t === 'd') elems.push(<polyline key={`i${k}`} points={chemin(x1, y1, x2, y2)} fill="none" stroke={COUL_INTER.d} strokeWidth="1.6"/>);
-    else elems.push(<line key={`i${k}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke={COUL_INTER[l.t]} strokeWidth={l.t === 'h' ? 3 : 2.6} strokeDasharray={l.t === 'h' ? '5 3' : '2 4'} strokeLinecap="round"/>);
+    const on = present && actif === l.t, dim = present && actif !== l.t, f = on ? 1.7 : 1;
+    const trait = l.t === 'd' ? <polyline points={chemin(x1, y1, x2, y2)} fill="none" stroke={COUL_INTER.d} strokeWidth={1.6 * f}/>
+      : <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={COUL_INTER[l.t]} strokeWidth={(l.t === 'h' ? 3 : 2.6) * f} strokeDasharray={l.t === 'i' ? '1 4' : l.t === 'h' ? '5 3' : '2 4'} strokeLinecap="round"/>;
+    elems.push(<g key={`i${k}`} opacity={dim ? 0.18 : 1}>
+      {on && <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={COUL_INTER[l.t]} strokeWidth="11" opacity="0.22" strokeLinecap="round"/>}
+      {trait}
+      {onSurvol && <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="transparent" strokeWidth="18" pointerEvents="stroke" style={{ cursor: 'pointer' }}
+        onMouseEnter={() => onSurvol(l.t)} onMouseLeave={() => onSurvol(null)} onClick={() => onSurvol(actif === l.t ? null : l.t)}/>}
+    </g>);
   });
   return <g>{elems}{legende}</g>;
 }
@@ -217,11 +224,11 @@ export function FormuleSVG({ id, W = 300, charges = true, halos = true }) {
     </svg>);
 }
 
-export function PaireSVG({ a, b, titre, sous, W = 360, H = 140 }) {
+export function PaireSVG({ a, b, titre, sous, W = 360, H = 140, actif = null, onSurvol = null }) {
   const { mols, lignes } = disposerPaire(a, b, W, H - 18);
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label={`${titre} : ${ESPECES[a].nom} et ${ESPECES[b].nom}`}>
-      <g transform="translate(0,0)"><Scene mols={mols} lignes={lignes} W={W} H={H - 18} smax={40} charges="inter"/></g>
+      <g transform="translate(0,0)"><Scene mols={mols} lignes={lignes} W={W} H={H - 18} smax={40} charges="inter" actif={actif} onSurvol={onSurvol}/></g>
       <text x="6" y={H - 4} fontSize="12" fontWeight="700" fill="#0f172a">{titre}</text>
       <text x={W - 6} y={H - 4} textAnchor="end" fontSize="11" fill="#475569">{sous}</text>
     </svg>);
@@ -259,12 +266,12 @@ function coquille(solv, signe, n = 4) {
   }
   return { mols, lignes };
 }
-export function SolvateSVG({ solv, W = 360, H = 190 }) {
+export function SolvateSVG({ solv, W = 360, H = 190, actif = null, onSurvol = null }) {
   const a = coquille(solv, 1), b = coquille(solv, -1), w = W / 2;
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label={`Ions Na⁺ et Cl⁻ entourés de ${ESPECES[solv].nom}`}>
-      <Scene mols={a.mols} lignes={a.lignes} W={w} H={H - 18} smax={24} charges="inter"/>
-      <g transform={`translate(${w},0)`}><Scene mols={b.mols} lignes={b.lignes} W={w} H={H - 18} smax={24} charges="inter"/></g>
+      <Scene mols={a.mols} lignes={a.lignes} W={w} H={H - 18} smax={24} charges="inter" actif={actif} onSurvol={onSurvol}/>
+      <g transform={`translate(${w},0)`}><Scene mols={b.mols} lignes={b.lignes} W={w} H={H - 18} smax={24} charges="inter" actif={actif} onSurvol={onSurvol}/></g>
       <line x1={w} y1="8" x2={w} y2={H - 22} stroke="#e2e8f0"/>
       <text x="6" y={H - 4} fontSize="12" fontWeight="700" fill="#0f172a">Na⁺ entouré de solvant</text>
       <text x={W - 6} y={H - 4} textAnchor="end" fontSize="12" fontWeight="700" fill="#0f172a">Cl⁻ entouré de solvant</text>
@@ -280,3 +287,9 @@ export function CristalSVG({ W = 360, H = 150 }) {
       {ions}<text x="6" y={H - 4} fontSize="12" fontWeight="700" fill="#0f172a">cristal : chaque ion entouré d’ions de signe opposé</text>
     </svg>);
 }
+
+// types d'interactions réellement dessinés (pour griser les entrées de légende qui ne correspondent à rien ici)
+// eslint-disable-next-line react-refresh/only-export-components
+export function typesPaire(a, b) { return [...new Set(disposerPaire(a, b).lignes.map(l => l.t))]; }
+// eslint-disable-next-line react-refresh/only-export-components
+export function typesIon(solv) { return [...new Set([...coquille(solv, 1).lignes, ...coquille(solv, -1).lignes].map(l => l.t))]; }

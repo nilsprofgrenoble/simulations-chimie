@@ -3,7 +3,7 @@ import { useState } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, lireProgression } from "../commun";
 import { ESPECES, ANA, ORDRE_LIQ, ORDRE_SOL, TYPES, bilan, partPolaire, BATTERIE, RT, NACL, SEUIL_LIQ, SEUIL_SOL, SEUIL_ION } from "./solubiliteModele";
-import { FormuleSVG, PaireSVG, SolvateSVG, CristalSVG } from "./solubiliteDessin";
+import { FormuleSVG, PaireSVG, SolvateSVG, CristalSVG, typesPaire, typesIon } from "./solubiliteDessin";
 
 const COUL_INTER = { h: '#2563eb', p: '#ea580c', d: '#6b7280' };
 
@@ -164,6 +164,7 @@ export function SimulationSolubilite() {
   const [sel, setSel] = useState({ solv: 'eau', sol: 'ethanol' });
   const [hypoOuv, setHypoOuv] = useState(false);
   const [limOuv, setLimOuv] = useState(false);
+  const [inter, setInter] = useState(null);                // type d'interaction survolé (dessin ou légende)
   const [pt, setPt] = useState(null);                    // point de l'échelle de polarité pointé ou touché
   const [ouv, setOuv] = useState({ cartes: true });      // blocs dépliés au fur et à mesure
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi;
@@ -410,33 +411,42 @@ export function SimulationSolubilite() {
       </div>);
   })();
 
+  // légende interactive : survoler (ou toucher) une entrée met en évidence les liaisons de ce type dans les dessins, et inversement
+  const legendeInter = (items, presents) => <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 }} onMouseLeave={() => setInter(null)}>
+    {items.map(([t, sym, nom, desc]) => { const actif = inter === t, ici = presents.includes(t), c = COUL_INTER[t];
+      return <div key={t} tabIndex={0} role="button" aria-pressed={actif} onMouseEnter={() => setInter(t)} onFocus={() => setInter(t)} onClick={() => setInter(actif ? null : t)}
+        style={{ cursor: 'pointer', padding: '4px 8px', borderRadius: 6, borderLeft: `4px solid ${actif ? c : 'transparent'}`, background: actif ? `${c}1f` : 'transparent', opacity: inter && !actif ? 0.5 : 1,
+          fontSize: 12.5, color: KIT.txt, lineHeight: 1.5, outline: 'none', transition: 'background .12s, opacity .12s' }}>
+        <span style={{ color: c, fontWeight: 800, fontFamily: 'monospace', marginRight: 6 }}>{sym}</span><strong>{nom}</strong> : {desc}
+        {actif && !ici && <span style={{ color: '#92400e' }}> (non dessinée pour ce couple)</span>}
+      </div>; })}
+  </div>;
   const paires = b && !ion && (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 10 }}>
         <div><div style={{ fontSize: 13, fontWeight: 700, color: '#475569', marginBottom: 3 }}>🔹 État initial : A et B séparés</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <PaireSVG a={solv} b={solv} titre="A…A" sous={`${nomEsp(solv).replace(/ \(.*\)/, '')} seul`}/><PaireSVG a={sol} b={sol} titre="B…B" sous={`${nomEsp(sol).replace(/ \(.*\)/, '')} seul`}/></div></div>
+            <PaireSVG a={solv} b={solv} titre="A…A" sous={`${nomEsp(solv).replace(/ \(.*\)/, '')} seul`} actif={inter} onSurvol={setInter}/><PaireSVG a={sol} b={sol} titre="B…B" sous={`${nomEsp(sol).replace(/ \(.*\)/, '')} seul`} actif={inter} onSurvol={setInter}/></div></div>
         <div><div style={{ fontSize: 13, fontWeight: 700, color: '#475569', marginBottom: 3 }}>🔸 État final envisagé : A et B mélangés</div>
-          <PaireSVG a={solv} b={sol} titre="A…B" sous={liquide ? 'les deux liquides mélangés' : 'soluté B entouré de solvant A'}/>
-          <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6, lineHeight: 1.55 }}>
-            <span style={{ color: COUL_INTER.h, fontWeight: 700 }}>- - -</span> liaison hydrogène : un H lié à O (ou N), δ+, pointe vers un doublet non liant d’un O (ou N) voisin, δ−, dans l’alignement de la liaison O–H.<br/>
-            <span style={{ color: COUL_INTER.p, fontWeight: 700 }}>· · ·</span> dipôle–dipôle : la charge partielle δ+ d’une molécule face à la charge δ− de l’autre.<br/>
-            <span style={{ color: COUL_INTER.d, fontWeight: 700 }}>~~~</span> dispersion (dipôles instantanés) : seule interaction dessinée quand il n’y a ni liaison H ni dipôle, mais <strong>toujours présente</strong> entre molécules au contact.<br/>
-            Chaque dessin montre <em>une</em> disposition possible, figée : dans un liquide, les molécules bougent et changent sans cesse de voisines.</div></div>
+          <PaireSVG a={solv} b={sol} titre="A…B" sous={liquide ? 'les deux liquides mélangés' : 'soluté B entouré de solvant A'} actif={inter} onSurvol={setInter}/>
+          {legendeInter([['h', '- - -', 'liaison hydrogène', 'un H lié à O (ou N), δ+, pointe vers un doublet non liant d’un O (ou N) voisin, δ−, dans l’alignement de la liaison O–H.'],
+            ['p', '· · ·', 'dipôle–dipôle', 'la charge partielle δ+ d’une molécule face à la charge δ− de l’autre.'],
+            ['d', '~~~', 'dispersion (dipôles instantanés)', 'seule interaction dessinée quand il n’y a ni liaison H ni dipôle, mais toujours présente entre molécules au contact.']],
+            [...typesPaire(solv, solv), ...typesPaire(sol, sol), ...typesPaire(solv, sol)])}
+          <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Chaque dessin montre <em>une</em> disposition possible, figée : dans un liquide, les molécules bougent et changent sans cesse de voisines.</div></div>
       </div>
     </div>);
 
   const pairesIon = b && ion && (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 10 }}>
       <div><div style={{ fontSize: 13, fontWeight: 700, color: '#475569', marginBottom: 3 }}>🔹 État initial : le cristal, et le solvant seul</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}><CristalSVG/><PaireSVG a={solv} b={solv} titre="A…A" sous={`${nomEsp(solv).replace(/ \(.*\)/, '')} seul`}/></div></div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}><CristalSVG/><PaireSVG a={solv} b={solv} titre="A…A" sous={`${nomEsp(solv).replace(/ \(.*\)/, '')} seul`} actif={inter} onSurvol={setInter}/></div></div>
       <div><div style={{ fontSize: 13, fontWeight: 700, color: '#475569', marginBottom: 3 }}>🔸 État final envisagé : les ions entourés de solvant</div>
-        <SolvateSVG solv={solv}/>
-        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6, lineHeight: 1.55 }}>
-          <span style={{ color: '#b45309', fontWeight: 700 }}>· · ·</span> ion–dipôle : l’ion attire l’extrémité de charge opposée des molécules de solvant (Na⁺ attire un O, δ−, par un de ses doublets non liants).<br/>
-          <span style={{ color: COUL_INTER.h, fontWeight: 700 }}>- - -</span> liaison hydrogène : Cl⁻ attire un H lié à O (δ+) ; seuls les solvants qui ont des H liés à O peuvent le faire.<br/>
-          <span style={{ color: COUL_INTER.d, fontWeight: 700 }}>~~~</span> dispersion seulement : avec un solvant apolaire, rien ne retient vraiment l’ion.<br/>
-          Le dessin, plan, ne montre que 4 voisins ; dans l’eau, un ion Na⁺ en a en réalité environ 6, en trois dimensions.</div></div>
+        <SolvateSVG solv={solv} actif={inter} onSurvol={setInter}/>
+        {legendeInter([['i', '· · ·', 'ion–dipôle', 'l’ion attire l’extrémité de charge opposée des molécules de solvant (Na⁺ attire un O, δ−, par un de ses doublets non liants).'],
+          ['h', '- - -', 'liaison hydrogène', 'Cl⁻ attire un H lié à O (δ+) ; seuls les solvants qui ont des H liés à O peuvent le faire.'],
+          ['d', '~~~', 'dispersion seulement', 'avec un solvant apolaire, rien ne retient vraiment l’ion.']], typesIon(solv))}
+        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Le dessin, plan, ne montre que 4 voisins ; dans l’eau, un ion Na⁺ en a en réalité environ 6, en trois dimensions.</div></div>
     </div>);
   const ordre = x => x < 0.001 ? 'moins de 0,001 g' : `de l’ordre de ${vir(Number(x.toPrecision(1)))} g`;
   const zonesB = !b ? null : ion ? SEUIL_ION : liquide ? [SEUIL_LIQ[0] * b.crit, SEUIL_LIQ[1] * b.crit] : SEUIL_SOL;
