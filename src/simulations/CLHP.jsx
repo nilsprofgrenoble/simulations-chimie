@@ -332,12 +332,12 @@ function Appareil({ a, p, actif, setActif }) {
     <div>
       <div style={{ overflowX: 'auto' }}>
         <svg viewBox="0 0 780 170" style={{ width: '100%', minWidth: 600, display: 'block' }} role="group" aria-label="Schéma de l’appareil de CLHP">
-          <path d="M92 118 H150 M230 90 H245 M325 90 H345 M405 90 H442 M628 90 H664 M730 90 H775" {...tube}/>
           <path d="M770 84 L776 90 L770 96" {...tube} strokeWidth="2"/>
           {piece('eluant', <g>
             <rect x="12" y="52" width="36" height="66" rx="6" fill="#dbeafe" stroke="#475569" strokeWidth="1.5"/>
             <rect x="54" y="52" width="36" height="66" rx="6" fill="#ede9fe" stroke="#475569" strokeWidth="1.5"/>
-            <text x="30" y="90" style={txt}>Eau</text><text x="72" y="90" style={txt}>ACN</text>
+            <rect x="10" y="48" width="40" height="5" rx="2" fill="#475569"/><rect x="52" y="48" width="40" height="5" rx="2" fill="#475569"/>
+            <text x="30" y="110" style={txt}>Eau</text><text x="72" y="110" style={txt}>ACN</text>
             <text x="51" y="140" style={txt}>Éluant</text></g>)}
           {piece('pompe', <g>
             <rect x="150" y="50" width="80" height="80" rx="8" fill="#e2e8f0" stroke="#475569" strokeWidth="1.5"/>
@@ -364,6 +364,9 @@ function Appareil({ a, p, actif, setActif }) {
             {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map(i => <circle key={i} cx={462 + i * 11.5} cy={i % 2 ? 84 : 96} r="4.4" fill="#e2e8f0" stroke="#94a3b8" strokeWidth="0.8"/>)}
             <text x="535" y="58" style={txt}>Four · {p.temperature} °C</text>
             <text x="535" y="128" style={txt}>Colonne C{p.nC} · {p.longueur} cm</text></g>)}
+          <g fill="none" stroke="#64748b" strokeWidth="2.4" strokeLinejoin="round" pointerEvents="none">
+            <path d="M150 96 H126 V30 H30 V92"/><path d="M150 108 H114 V38 H72 V92"/>
+            <path d="M230 82 H255 M315 82 H345 M405 90 H452 M618 90 H664 M730 90 H775"/></g>
           {piece('detecteur', <g>
             <rect x="664" y="56" width="66" height="68" rx="8" fill="#fef3c7" stroke="#a16207" strokeWidth="1.5"/>
             <circle cx="697" cy="82" r="9" fill="#fde047" stroke="#a16207"/>

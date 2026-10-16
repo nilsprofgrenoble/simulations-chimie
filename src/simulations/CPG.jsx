@@ -318,7 +318,6 @@ function Appareil({ a, p, actif, setActif }) {
     </g>);
   const txt = { fontSize: 11.5, fill: '#334155', textAnchor: 'middle', fontWeight: 600 };
   const fin = { ...txt, fontWeight: 400, fontSize: 10.5 };
-  const tube = { stroke: '#64748b', strokeWidth: 2.2, fill: 'none' };
   const pr = a.pression.debut, frac = Math.min(pr / (P_MAX * 1.2), 1), ang = (-120 + 240 * frac) * Math.PI / 180;
   const trop = pr > P_MAX;
   const prog = p.rampe > 0 ? `${p.T0} → ${p.Tf} °C` : `${p.T0} °C (isotherme)`;
@@ -326,7 +325,6 @@ function Appareil({ a, p, actif, setActif }) {
     <div>
       <div style={{ overflowX: 'auto' }}>
         <svg viewBox="0 0 650 160" style={{ width: '100%', minWidth: 560, display: 'block' }} role="group" aria-label="Schéma de l’appareil de CPG">
-          <path d="M60 120 H86 M136 92 H166 M248 92 H262 L300 92 M512 92 H560" {...tube}/>
           {piece('gaz', <g>
             <rect x="14" y="44" width="42" height="96" rx="14" fill="#e0f2fe" stroke="#475569" strokeWidth="1.5"/>
             <rect x="27" y="36" width="16" height="10" fill="#475569"/>
@@ -354,12 +352,13 @@ function Appareil({ a, p, actif, setActif }) {
             <text x="406" y="136" style={fin}>Colonne {p.phase} · {p.L} m × {String(p.dc).replace('.', ',')} mm</text></g>)}
           {piece('colonne', <g>
             {[0, 1, 2, 3, 4].map(i => <ellipse key={i} cx={406} cy={88} rx={60 - i * 9} ry={30 - i * 4.5} fill="none" stroke="#475569" strokeWidth="1.6"/>)}
-            <path d="M300 92 Q330 92 346 88 M466 88 Q490 92 512 92" {...tube}/></g>, 'four')}
+          </g>, 'four')}
+          <g fill="none" stroke="#64748b" strokeWidth="2.2" strokeLinejoin="round" pointerEvents="none">
+            <path d="M35 36 V20 H70 V92 H87"/><path d="M135 92 H166"/><path d="M248 92 H290 Q325 92 346 88"/><path d="M466 88 Q500 92 530 92 H560"/></g>
           {piece('fid', <g>
             <rect x="560" y="52" width="74" height="76" rx="8" fill="#fef3c7" stroke="#a16207" strokeWidth="1.5"/>
             <path d="M597 98 C588 88 592 76 597 68 C602 76 606 88 597 98 Z" fill="#fb923c" stroke="#c2410c"/>
             <text x="597" y="118" style={txt}>FID</text>
-            <path d="M560 112 H548 M634 112 H644" stroke="#64748b" strokeWidth="1.4"/>
             <text x="597" y="40" style={fin}>H₂ + air</text>
             <text x="597" y="146" style={txt}>Détecteur</text></g>)}
         </svg>
