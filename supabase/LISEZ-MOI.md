@@ -63,3 +63,19 @@ Optionnel : redéployer `functions/comptes/index.ts` (même méthode que la prem
    Et dans Edge Functions → comptes → Details : « Verify JWT with legacy secret » / « Enforce JWT verification » laissé **activé** s'il apparaît.
 4. **Comptes en ligne** : activer la double authentification (2FA) sur votre compte **GitHub** (Settings → Password and authentication) et sur votre compte **Supabase** (Account → Security). Celui qui contrôle le dépôt GitHub contrôle le code du site.
 5. **Fin d'année** : supprimer les classes dans « Suivi professeur » (la note aux élèves annonce la suppression des données en fin d'année).
+
+## Vie de classe (étape 20) : objectif collectif et prouesses de la semaine
+
+À faire **une fois**, avant ou après avoir fusionné la PR (le site n'affiche rien tant que ce n'est pas fait, sans erreur) :
+1. **SQL** : SQL Editor → New snippet → coller `05-vie-de-classe.sql` → Run. Le résultat doit afficher trois lignes : `vie_classe`, `pseudos`, `classe_semaine`. Le script peut être relancé sans risque.
+2. **Activer, classe par classe** : site → Suivi professeur → case « 🏆 Vie de classe ». Éteinte par défaut : une classe où vous ne cochez pas la case ne voit rien.
+
+Ce que les élèves de la classe voient (onglet « Mon compte », sous « Mon carnet ») :
+- **un objectif collectif** : total des exercices réussis par la classe depuis lundi, à comparer à 2 par élève (minimum 4). Chaque élève compte pour 5 au plus, pour que quelques élèves très actifs ne portent pas toute la classe ;
+- **quatre prouesses** : « Série de 5 » (5 exercices réussis), « Sans coup de pouce » (3 sans voir la correction), « Du premier coup » (3 réussis au premier essai), « Régularité » (réussites sur 3 jours). Elles se remettent à zéro chaque lundi (heure de Paris). **Pas de classement** : les pseudos d'une prouesse sont listés dans un ordre sans rapport avec le mérite, et aucun chiffre individuel n'est montré ;
+- **leur pseudo** : choisi parmi des propositions tirées de listes fixes (« Comète brillante », « Neutron malin »…), jamais de texte libre. Chaque élève décide s'il apparaît (**non par défaut**).
+
+Confidentialité : le serveur ne renvoie à un élève que les pseudos des élèves de sa propre classe qui ont accepté d'apparaître. Vous voyez les pseudos de vos élèves comme le reste de leurs données. Un pseudo n'est pas nominatif, mais il n'est pas anonyme pour autant (les camarades peuvent se reconnaître) : pour des mineurs, parlez-en au référent données personnelles de l'établissement avant d'activer (je ne suis pas juriste).
+
+Limites à connaître : les résultats sont enregistrés par le navigateur de l'élève ; un élève motivé peut les truquer. Ici l'enjeu est faible (pas de note, pas de classement), mais ne vous en servez pas pour évaluer.
+Les listes d'adjectifs et de noms sont dans `src/classe.js` : on peut en ajouter à la fin (64 maximum), jamais en retirer ni changer l'ordre.
