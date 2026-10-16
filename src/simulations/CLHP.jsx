@@ -165,8 +165,8 @@ function Chromato({ a, frac, w, couleurs, hover, setHover, total, indiv, nonRete
   function pointe(ev) {
     const r = ev.currentTarget.getBoundingClientRect();
     const px = ev.clientX - r.left, t = (px - mL) / iw * tMax;
-    if (t < 0 || t > tMax) { setLect(null); setHover(null); return; }
-    if (Math.abs(px - X(col.tm)) < 7) { setLect({ x: X(col.tm), t: col.tm, id: 'tm' }); setHover(null); return; }
+    if (t < 0 || t > tMax || t > tCur) { setLect(null); setHover(null); return; }
+    if (Math.abs(px - X(col.tm)) < 7 && col.tm <= tCur) { setLect({ x: X(col.tm), t: col.tm, id: 'tm' }); setHover(null); return; }
     let best = null, bd = 1e9;
     pics.forEach(m => { const d = Math.abs(t - m.tr) / m.sigma; if (d < bd && signal(m, t) > 0.04 * geo.ymax) { bd = d; best = m; } });
     if (best && bd < 5) { setLect({ x: X(best.tr), t: best.tr, id: best.id }); setHover(best.id); } else { setLect(null); setHover(null); }
@@ -193,13 +193,13 @@ function Chromato({ a, frac, w, couleurs, hover, setHover, total, indiv, nonRete
         {indiv && pics.map((m, i) => {
           const dim = hover != null && hover !== m.id;
           return <g key={m.id} opacity={dim ? 0.25 : 1}>
-            <path d={`${chemin(geo.sig[i])}L${X(tMax)},${Y(0)}L${X(0)},${Y(0)}Z`} fill={couleurs[m.id]} opacity="0.16"/>
-            <path d={chemin(geo.sig[i])} fill="none" stroke={couleurs[m.id]} strokeWidth={hover === m.id ? 3 : 1.8}/></g>;
+            <path d={`${chemin(geo.sig[i], nCur)}L${X(geo.ts[nCur - 1])},${Y(0)}L${X(0)},${Y(0)}Z`} fill={couleurs[m.id]} opacity="0.16"/>
+            <path d={chemin(geo.sig[i], nCur)} fill="none" stroke={couleurs[m.id]} strokeWidth={hover === m.id ? 3 : 1.8}/></g>;
         })}
         {total && <path d={chemin(geo.tot, nCur)} fill="none" stroke="#0f172a" strokeWidth="1.8" strokeDasharray={indiv ? '5 3' : undefined}/>}
-        {indiv && etiq.map(e => <text key={e.m.id} x={Math.min(Math.max(e.x, mL + 30), w - mR - 30)} y={Math.max(e.y, mT + 22)} textAnchor="middle" fontSize="11.5" fontWeight="700"
+        {indiv && etiq.filter(e => tCur >= e.m.tr).map(e => <text key={e.m.id} x={Math.min(Math.max(e.x, mL + 30), w - mR - 30)} y={Math.max(e.y, mT + 22)} textAnchor="middle" fontSize="11.5" fontWeight="700"
           fill={couleurs[e.m.id]} stroke="white" strokeWidth="3" paintOrder="stroke">{nomsCourts(e.m)}</text>)}
-        <line x1={X(tCur)} x2={X(tCur)} y1={mT} y2={mT + ih} stroke={ORANGE_GUIDE} strokeWidth="1.6" opacity={frac > 0 && frac < 1 ? 1 : 0.55}/>
+        <line x1={X(tCur)} x2={X(tCur)} y1={mT} y2={mT + ih} stroke={ORANGE_GUIDE} strokeWidth="1.6" opacity={frac > 0 && frac < 1 ? 1 : 0}/>
         {lect && <line x1={lect.x} x2={lect.x} y1={mT} y2={mT + ih} stroke="#0f172a" strokeWidth="1" strokeDasharray="2 3"/>}
         {mol && <circle cx={X(mol.tr)} cy={Y(signal(mol, mol.tr))} r="4.5" fill="white" stroke={couleurs[mol.id]} strokeWidth="2"/>}
       </svg>
@@ -212,7 +212,7 @@ function Chromato({ a, frac, w, couleurs, hover, setHover, total, indiv, nonRete
 function Visu({ a, couleurs, hover, setHover, lancement, onLancer, nonRetenu, setNonRetenu, total, setTotal }) {
   const cont = useRef(null);
   const w = useLargeur(cont);
-  const [frac, setFrac] = useState(0);
+  const [frac, setFrac] = useState(1);
   const [lecture, setLecture] = useState(false);
   const [vit, setVit] = useState(1);
   const [vu, setVu] = useState(lancement);
