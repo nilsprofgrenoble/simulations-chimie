@@ -1,15 +1,21 @@
 import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
-import { useState } from "react";
+import { useState, Children, Fragment, cloneElement, isValidElement } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, lireProgression, fmt, sci } from "../commun";
 
 // ====================================================
 //  SIM 52 — MOUVEMENT D'UN SYSTÈME : VARIATION DU VECTEUR VITESSE ET FORCES (1G, chapitre 10)
-//  Chronophotographies (positions fournies par un modèle), vecteurs vitesse v_i ≈ A(i−1)A(i+1)/2τ,
+//  Chronophotographies (positions fournies par un modèle), vecteurs vitesse v_[i] ≈ A(i−1)A(i+1)/2τ,
 //  variation Δv = v_(i+k) − v_(i−k), relation approchée ΣF ≈ m·Δv/Δt ; méthode d'Euler pour prédire le mouvement.
 // ====================================================
 
 const SIM = 52;
+// indices entre crochets : A_[i−1], v_[i+k] … (avecIndices ne gère pas les indices contenant « + »)
+const idx = t => { if (typeof t !== 'string' || !t.includes('_[')) return t;
+  const r = []; t.split(/(_\[[^\]]*\])/).forEach((m, q) => { const g = /^_\[([^\]]*)\]$/.exec(m); r.push(g ? <sub key={q}>{g[1]}</sub> : m); }); return <>{r}</>; };
+const idxDeep = n => { if (typeof n === 'string') return idx(n); if (Array.isArray(n)) return Children.map(n, idxDeep);
+  if (isValidElement(n) && (typeof n.type === 'string' || n.type === Fragment) && n.props.children != null)
+    return cloneElement(n, undefined, ...Children.toArray(n.props.children).map(idxDeep)); return n; };
 const G0 = 9.8;
 const ROUGE = '#dc2626', VERT = '#16a34a', BLEU = '#2563eb', ORANGE = '#c2410c', VIOLET = '#7c3aed', NOIR = '#0f172a', GRIS = '#64748b';
 
@@ -260,12 +266,12 @@ export function SimulationMouvementSysteme() {
   const okEuler = tab === 'euler' && sc.id === 'lune' && sc.ef >= 3;
   const ETAPES = [
     { id: 'intro', titre: 'Une chute filmée', onglet: 'chrono', focus: ['scene'],
-      texte: <>Une bille de 100 g est lâchée sans vitesse initiale. On la photographie toutes les 0,12 s (chronophotographie). Les croix sont ses positions A_0, A_1, …
-        Les flèches <strong style={{ color: VERT }}>vertes</strong> sont les vecteurs vitesse : v_i ≈ A_i−1 A_i+1 / (2τ).</>,
+      texte: <>Une bille de 100 g est lâchée sans vitesse initiale. On la photographie toutes les 0,12 s (chronophotographie). Les croix sont ses positions A_[0], A_[1], …
+        Les flèches <strong style={{ color: VERT }}>vertes</strong> sont les vecteurs vitesse : v_[i] ≈ A_[i−1]A_[i+1] / (2τ).</>,
       tache: { type: 'qcm', q: 'Au cours de la chute, le vecteur vitesse…', options: ['varie : sa norme augmente (sa direction reste verticale)', 'reste constant', 'change de direction'], bonne: 0,
         expl: 'Les flèches s’allongent d’une image à l’autre : la vitesse augmente. Le vecteur vitesse varie donc, alors que la direction ne change pas.' } },
     { id: 'constr', titre: 'Construire Δv', onglet: 'chrono', focus: ['reglages', 'scene'],
-      texte: <>La variation du vecteur vitesse entre deux dates voisines est Δv_i = v_i+1 − v_i−1. Dans « Construction de Δv », cliquez sur ▶ jusqu’à l’étape 3 : on recopie v_i+1 au point A_i, on lui ajoute − v_i−1,
+      texte: <>La variation du vecteur vitesse entre deux dates voisines est Δv_[i] = v_[i+1] − v_[i−1]. Dans « Construction de Δv », cliquez sur ▶ jusqu’à l’étape 3 : on recopie v_[i+1] au point A_[i], on lui ajoute − v_[i−1],
         et Δv relie l’origine à l’extrémité. C’est la méthode de la fiche.</>,
       tache: { type: 'action', ok: okConstr, label: 'Construire Δv au point A5', faire: () => setSc(s => ({ ...s, ...etatInit('chute'), i: 5, etape: 3, aff: { ...s.aff, dv: true } })), consigne: 'Construction de Δv terminée (étape 3 sur 3)' } },
     { id: 'constrq', titre: 'Direction de Δv', onglet: 'chrono', focus: ['scene'],
@@ -362,7 +368,7 @@ export function SimulationMouvementSysteme() {
         expl: 'Pendant un pas, on suppose la force constante. Si le pas est grand, cette erreur s’accumule à chaque étape : la Lune calculée s’éloigne de la Terre. Avec un petit pas, on retrouve l’orbite.' } },
     { id: 'bravo', titre: 'Bravo !', onglet: 'chrono', focus: [],
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
-        <li>Δv_i = v_i+1 − v_i−1 se construit par une soustraction de vecteurs (v_i+1 + (−v_i−1)), au point A_i.</li>
+        <li>Δv_[i] = v_[i+1] − v_[i−1] se construit par une soustraction de vecteurs (v_[i+1] + (−v_[i−1])), au point A_[i].</li>
         <li>ΣF ≈ m·Δv/Δt : Δv a la direction et le sens de ΣF.</li>
         <li>Δv = 0 si et seulement si ΣF = 0 : principe d’inertie.</li>
         <li>v et ΣF n’ont pas de lien de direction ; Δv et ΣF, si.</li>
@@ -370,6 +376,7 @@ export function SimulationMouvementSysteme() {
         <li>Plus Δt est petit, mieux la relation est vérifiée.</li></ul>,
       texte: <>Vous savez relier le mouvement d’un système et les forces qu’il subit. Essayez maintenant les défis.</>, tache: null },
   ];
+  const ETAPES_I = ETAPES.map(e => ({ ...e, titre: idxDeep(e.titre), texte: idxDeep(e.texte), retenir: idxDeep(e.retenir) }));
   const ongletGuide = ETAPES[Math.min(etape, ETAPES.length - 1)].onglet;
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
@@ -464,14 +471,43 @@ export function SimulationMouvementSysteme() {
   const dEuler = hyp(trajE[trajE.length - 1].x - ex[ex.length - 1].x, trajE[trajE.length - 1].y - ex[ex.length - 1].y);
   const rEuler = S.terre ? hyp(trajE[trajE.length - 1].x, trajE[trajE.length - 1].y) / RL : null;
 
+  // vue zoomée de la construction (espace des vitesses, origine en A_i)
+  const zoom = ongletAff !== 'euler' && !figee && eff.etape > 0 && (() => {
+    const ZW = 640, ZH = 300, Z = 34, pas = eff.etape, V = U.Vf;
+    const tip = { x: vp.x - vm.x, y: vp.y - vm.y };
+    const pts = [{ x: 0, y: 0 }, vp, vm, tip];
+    const xs = pts.map(q => q.x), ys = pts.map(q => q.y), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const sc = Math.min((ZW - 2 * Z - 40) / Math.max(x1 - x0, 1e-12), (ZH - 2 * Z) / Math.max(y1 - y0, 1e-12)), xc = (x0 + x1) / 2, yc = (y0 + y1) / 2;
+    const X = x => ZW / 2 + (x - xc) * sc, Y = y => ZH / 2 - (y - yc) * sc;
+    const o = [X(0), Y(0)], P = [X(vp.x), Y(vp.y)], M = [X(vm.x), Y(vm.y)], T = [X(tip.x), Y(tip.y)];
+    const dx = T[0] - o[0], dy = T[1] - o[1], dl = Math.hypot(dx, dy) || 1, nx = dy / dl * 22, ny = -dx / dl * 22;   // décalage latéral pour que les flèches colinéaires restent lisibles
+    const t = (x, y, txt, col) => <text x={x} y={y} fontSize="14" fontWeight="800" fill={col}>{txt}</text>;
+    return (
+      <svg viewBox={`0 0 ${ZW} ${ZH}`} style={{ width: '100%', display: 'block', background: '#fffbeb', borderRadius: 8, marginTop: 8, border: '1px solid #fde68a' }} role="img" aria-label="Construction de Δv, vue agrandie">
+        <text x="10" y="20" fontSize="12.5" fontWeight="700" fill={NOIR}>Construction de Δv au point A<tspan fontSize="9" dy="3">{i}</tspan><tspan dy="-3"> (vue agrandie, origine en A</tspan><tspan fontSize="9" dy="3">{i}</tspan><tspan dy="-3">)</tspan></text>
+        <circle cx={o[0]} cy={o[1]} r="4.5" fill={NOIR}/>
+        {pas < 2 && <Fleche x1={o[0]} y1={o[1]} x2={M[0]} y2={M[1]} col={VERT} w={2} dash="3 3" op={0.55}/>}
+        {pas < 2 && t(M[0] + 6, M[1] - 6, <>v<tspan fontSize="10" dy="3">i−{k}</tspan></>, VERT)}
+        <Fleche x1={o[0]} y1={o[1]} x2={P[0]} y2={P[1]} col={VERT} w={3.4}/>
+        {t(P[0] + 8, P[1] - 6, <>v<tspan fontSize="10" dy="3">i+{k}</tspan></>, VERT)}
+        {pas >= 2 && <line x1={P[0]} y1={P[1]} x2={P[0] + nx} y2={P[1] + ny} stroke={VERT} strokeWidth="1.4" strokeDasharray="2 3"/>}
+        {pas >= 2 && <Fleche x1={P[0] + nx} y1={P[1] + ny} x2={T[0] + nx} y2={T[1] + ny} col={VERT} w={3.4} dash="7 4"/>}
+        {pas >= 2 && <line x1={T[0] + nx} y1={T[1] + ny} x2={T[0]} y2={T[1]} stroke={VERT} strokeWidth="1.4" strokeDasharray="2 3"/>}
+        {pas >= 2 && t((P[0] + T[0]) / 2 + nx + 8, (P[1] + T[1]) / 2 + ny + 4, <>−v<tspan fontSize="10" dy="3">i−{k}</tspan></>, VERT)}
+        {pas >= 3 && <Fleche x1={o[0]} y1={o[1]} x2={T[0]} y2={T[1]} col={ROUGE} w={4.4}/>}
+        {pas >= 3 && t((o[0] + T[0]) / 2 - 38, (o[1] + T[1]) / 2 - 4, <>Δv<tspan fontSize="10" dy="3">i</tspan></>, ROUGE)}
+        <text x={ZW - 10} y={ZH - 10} textAnchor="end" fontSize="11.5" fill={GRIS}>échelle : la flèche v<tspan fontSize="9" dy="3">i+{k}</tspan><tspan dy="-3"> mesure {nb(hyp(vp.x, vp.y) * V)} {S.U.Vu}</tspan></text>
+      </svg>);
+  })();
   // ════════════════ PANNEAUX ════════════════
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
       {ongletAff === 'euler' ? scEuler : scChrono}
-      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>
-        Système : {S.aff}. Positions A_i obtenues par un modèle (référentiel galiléen), une image toutes les τ.
+      {zoom}
+      {idxDeep(<div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>
+        Système : {S.aff}. Positions A_[i] obtenues par un modèle (référentiel galiléen), une image toutes les τ.
         {' '}<span style={{ color: VERT, fontWeight: 700 }}>→</span> vitesse · <span style={{ color: ROUGE, fontWeight: 700 }}>→</span> variation Δv · <span style={{ color: NOIR, fontWeight: 700 }}>→</span> somme des forces.
-      </div>
+      </div>)}
     </div>);
 
   const paramsUI = SCEN[eff.id].params;
@@ -510,25 +546,25 @@ export function SimulationMouvementSysteme() {
           <label key={c} style={{ fontSize: 14, color: KIT.txt, cursor: 'pointer' }}>
             <input type="checkbox" checked={!!(aff[c])} disabled={c === 'v' && figee} onChange={e => setSc(s => ({ ...s, aff: { ...s.aff, [c]: e.target.checked } }))} style={{ marginRight: 6 }}/>{l}</label>)}
       </div>
-      <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Construction de Δv_i = v_i+k − v_i−k <span style={{ fontWeight: 400 }}>(étape {eff.etape} sur 3)</span></div>
+      {idxDeep(<div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Construction de Δv_[i] = v_[i+k] − v_[i−k] <span style={{ fontWeight: 400 }}>(étape {eff.etape} sur 3)</span></div>)}
       <div style={{ display: 'flex', gap: 6 }}>
         <button onClick={() => maj({ etape: Math.max(0, eff.etape - 1) })} style={stylePetitBouton(false, '#334155')}>◀</button>
         <button onClick={() => maj({ etape: Math.min(3, eff.etape + 1) })} style={stylePetitBouton(true, '#334155')}>▶</button>
         <button onClick={() => maj({ etape: 0 })} style={stylePetitBouton(false, '#334155')}>effacer</button>
       </div>
-      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>1 : on place v_i+k en A_i ; 2 : on ajoute −v_i−k à la suite ; 3 : Δv_i relie A_i à l’extrémité.</div>
+      {idxDeep(<div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>1 : on place v_[i+k] en A_[i] ; 2 : on ajoute −v_[i−k] à la suite ; 3 : Δv_[i] relie A_[i] à l’extrémité.</div>)}
     </div>);
 
-  const ligne = (n, v, c) => <LigneMesure nom={n} valeur={v} couleur={c}/>;
+  const ligne = (n, v, c) => <LigneMesure nom={idx(n)} valeur={v} couleur={c}/>;
   const ang = angleEntre(dv, SF), ecart = nSF > 1e-12 ? Math.abs(nCmp - nSF) / nSF * 100 : NaN;
   const mesures = !figee && ongletAff !== 'euler' && (
     <div style={{ ...styleBoite, ...cadre('bilan') }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures au point A_{i}</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures au point A<sub>{i}</sub></div>
       {ligne('Masse m', `${nb(S.m)} kg`)}
-      {ligne('Dates t_i−k et t_i+k', `${nb(A.pts[i - k].t * S.U.Tf)} et ${nb(A.pts[i + k].t * S.U.Tf)} ${S.U.Tu}`)}
+      {ligne('Dates t_[i−k] et t_[i+k]', `${nb(A.pts[i - k].t * S.U.Tf)} et ${nb(A.pts[i + k].t * S.U.Tf)} ${S.U.Tu}`)}
       {ligne('Durée Δt', `${nb(dv.dt * S.U.Tf)} ${S.U.Tu}`)}
-      {ligne('Vitesse ‖v_i−k‖', `${nb(hyp(vm.x, vm.y) * S.U.Vf)} ${S.U.Vu}`, VERT)}
-      {ligne('Vitesse ‖v_i+k‖', `${nb(hyp(vp.x, vp.y) * S.U.Vf)} ${S.U.Vu}`, VERT)}
+      {ligne('Vitesse ‖v_[i−k]‖', `${nb(hyp(vm.x, vm.y) * S.U.Vf)} ${S.U.Vu}`, VERT)}
+      {ligne('Vitesse ‖v_[i+k]‖', `${nb(hyp(vp.x, vp.y) * S.U.Vf)} ${S.U.Vu}`, VERT)}
       {ligne('Norme ‖Δv‖', `${nb(nDv * S.U.Vf)} ${S.U.Vu}`, ROUGE)}
       {ligne('Direction de Δv', direction(dv.x, dv.y), ROUGE)}
       {!cache.cmp && ligne('m·‖Δv‖ / Δt', `${nb(nCmp)} N`, VIOLET)}
@@ -536,7 +572,7 @@ export function SimulationMouvementSysteme() {
       {!cache.F && ligne('Direction de ΣF', direction(SF.x, SF.y))}
       {!cache.F && !cache.cmp && ligne('Écart relatif m·Δv/Δt par rapport à ΣF', isFinite(ecart) ? `${vir(ecart.toFixed(1))} %` : '—')}
       {!cache.F && !cache.cmp && ligne('Angle entre Δv et ΣF', isFinite(ang) ? `${vir(ang.toFixed(1))}°` : '—')}
-      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Vitesses calculées sur les positions : v_j ≈ A_j−1A_j+1 / (2τ). Le tableau change quand on déplace le point étudié ou la valeur de k.</div>
+      {idxDeep(<div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Vitesses calculées sur les positions : v_[j] ≈ A_[j−1]A_[j+1] / (2τ). Le tableau change quand on déplace le point étudié ou la valeur de k.</div>)}
     </div>);
   const mesuresEuler = ongletAff === 'euler' && (
     <div style={{ ...styleBoite, ...cadre('bilan') }}>
@@ -558,11 +594,11 @@ export function SimulationMouvementSysteme() {
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
       <li><strong>Point matériel</strong> : chaque système est réduit à son centre d’inertie, dont on étudie le mouvement.</li>
       <li><strong>Positions fournies par un modèle</strong> (chute libre, parabole, orbite circulaire…) : ce n’est pas une mesure. Ce choix permet de voir que Δv est constant (ou varie régulièrement) sans être gêné par les erreurs. Une vraie vidéo pointée est bruitée : le curseur « bruit de pointage » le montre, et Δv, qui est une double différence, y est très sensible.</li>
-      <li><strong>Vitesse</strong> : v_i ≈ A_i−1A_i+1 / (2τ) est une vitesse <em>moyenne</em> sur 2τ, pas la vitesse instantanée (valable si τ est petit devant la durée de variation).</li>
+      <li><strong>Vitesse</strong> : v_[i] ≈ A_[i−1]A_[i+1] / (2τ) est une vitesse <em>moyenne</em> sur 2τ, pas la vitesse instantanée (valable si τ est petit devant la durée de variation).</li>
       <li><strong>Relation approchée</strong> : ΣF ≈ m·Δv/Δt avec Δt = 2k·τ. Elle est exacte quand Δt tend vers 0 (deuxième loi de Newton) ; l’écart croît avec Δt si la force varie.</li>
       <li><strong>Référentiel galiléen</strong> : le référentiel terrestre pour les mouvements près du sol ; le référentiel géocentrique pour la Lune. On suppose que ces référentiels sont galiléens (approximation).</li>
       <li><strong>Pesanteur</strong> : g = 9,8 N/kg, uniforme ; frottements de l’air négligés, sauf pour le parachutiste.</li>
-      <li><strong>Parachutiste</strong> : frottement modélisé par f = m·g·(v/v_lim)² avec v_lim = 6 m/s. Ce modèle est simple ; la valeur réelle dépend de la forme du parachute et de l’air.</li>
+      <li><strong>Parachutiste</strong> : frottement modélisé par f = m·g·(v/v_lim)² avec v_[lim] = 6 m/s. Ce modèle est simple ; la valeur réelle dépend de la forme du parachute et de l’air.</li>
       <li><strong>Lune</strong> : orbite circulaire, mouvement uniforme, seule la gravitation de la Terre est prise en compte (on néglige le Soleil).</li>
       <li><strong>Mobile et plan incliné</strong> : frottements négligeables (coussin d’air, plan lisse) ; la réaction du support est normale au support.</li>
       <li><strong>Méthode d’Euler</strong> : pendant un pas, la force est supposée constante ; la position est mise à jour avec la vitesse du <em>début</em> du pas. L’erreur s’accumule quand le pas est grand.</li>
@@ -570,7 +606,7 @@ export function SimulationMouvementSysteme() {
     </ul>);
   const panneauHypo = (
     <div style={styleBoite}>
-      <Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section>
+      <Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{idxDeep(hypotheses)}</Section>
     </div>);
   const aEssayer = (
     <div style={styleBoite}>
@@ -628,7 +664,7 @@ export function SimulationMouvementSysteme() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{reglages}{mesures}{mesuresEuler}</div>
           </div>
         </div>
-        {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
+        {enGuide ? <CarteParcours etapes={ETAPES_I} etat={guide} setEtat={setGuide} fin={finParcours}/>
           : enDefi ? panneauHypo : null}
       </div>
       {!enDefi && <div className="mv-l2">{panneauHypo}</div>}
