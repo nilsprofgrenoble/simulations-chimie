@@ -1,8 +1,11 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, SuiviDefiDirect } from "../suivi";
 import { useState, useEffect } from "react";
 import { HansenExploration } from "./HansenExploration";
 import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE } from "../commun";
+
+const SIM_ID = 4;
+declarerDefis(SIM_ID, [['principal', 'Formuler le mélange de solvants du vernis']]);
 
 // ====================================================
 // PARAMÈTRES DE SOLUBILITÉ DE HANSEN (BTS Métiers de la chimie)
@@ -349,6 +352,7 @@ export function Simulation4({ plotlyReady }) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.55 }}>Formulez le mélange de solvants d'un vernis à la nitrocellulose (données du TP) qui respecte les trois critères ci-dessous.</div>
+        <SuiviDefiDirect cle={`${SIM_ID}:defi.principal`} reussi={C.every(c => c.ok)} />
         {C.map((c, k) => <div key={k} style={{ fontSize: 14, color: KIT.txt }}>{c.ok ? '✅' : '❌'} {c.t}</div>)}
         {C.every(c => c.ok) && <div style={{ fontSize: 14, fontWeight: 700, color: '#15803d' }}>Bravo ! Il resterait à vérifier au laboratoire la dissolution, le temps de séchage et l'aspect du film.</div>}
         {tot > 0 && vol.ipa / tot > 0.5 && <div style={{ fontSize: 13.5, color: '#b45309', lineHeight: 1.5 }}>⚠️ Le modèle accepte ce mélange parce qu'il place l'isopropanol juste dans la sphère (RED = 0,88).

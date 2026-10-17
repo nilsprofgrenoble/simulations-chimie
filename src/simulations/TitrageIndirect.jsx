@@ -1,9 +1,18 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
 import { Formule } from "./Avancement";
 import { V_BURETTE, seuilVisible, couleurSolution, ContexteBanc, SchemaBurette } from "./titrageCommun";
+
+const SIM_ID = 25;
+declarerDefis(SIM_ID, [['principal', 'Doser la vitamine C par titrage en retour']]);
+
+const reussiTitrageIndirect = d => {
+  const vraiM = d.Vmes != null ? (1e-4 - 0.010 * d.Vmes / 1000 / 2) * 4 * M_VITC * 1000 : d.m;
+  const conf = d.type !== 'qualite' || (d.reps.conf || '').trim().toLowerCase() === (Math.abs(d.m - 30) <= 3 ? 'oui' : 'non');
+  return d.Vmes != null && proche(lireNombre(d.reps.m || ''), vraiM, 0.05) && conf;
+};
 
 // ====================================================
 // TITRAGE EN RETOUR (1re spé PC) : on ajoute un excès connu d'un réactif, puis on titre ce qui n'a pas réagi
@@ -124,6 +133,7 @@ const COUL_R = ['#2563eb', '#ea580c', '#16a34a'];
 export function SimulationTitrageIndirect() {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [onglet, setOnglet] = useState('general');
   const [guide, setGuide] = useEtatPersistant('titrage-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [mes, setMes] = useEtatPersistant('titrage-mesures-v1', { Ve: null, VeVieille: null });
@@ -425,7 +435,7 @@ export function SimulationTitrageIndirect() {
             </div>
           );
         })}
-        <div><button onClick={() => setDefi(d => ({ ...d, verifie: true }))} disabled={defi.Vmes == null} style={{ ...styleBouton(defi.Vmes != null, '#16a34a'), opacity: defi.Vmes != null ? 1 : 0.5 }}>✓ Vérifier</button></div>
+        <div><button onClick={() => { noterDefi(reussiTitrageIndirect(defi)); setDefi(d => ({ ...d, verifie: true })); }} disabled={defi.Vmes == null} style={{ ...styleBouton(defi.Vmes != null, '#16a34a'), opacity: defi.Vmes != null ? 1 : 0.5 }}>✓ Vérifier</button></div>
         {defi.verifie && <div style={{ fontSize: 13, color: KIT.txt2 }}>Valeur réelle : {defi.m} mg. Votre résultat dépend de la précision de votre lecture de V₂,ₑ.</div>}
       </>}
     </div>
@@ -481,7 +491,7 @@ export function SimulationTitrageIndirect() {
             </div>
           </div>
           {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
-            : enDefi ? <div style={styleBoite}>{voletDefi}</div>
+            : enDefi ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div>
               : <div style={styleBoite}>
                 <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
                 <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>

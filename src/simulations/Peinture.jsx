@@ -1,9 +1,12 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, SuiviDefiDirect } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { PeintureExploration } from "./PeintureExploration";
 import { AnimationSechage } from "./peintureFilm";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE } from "../commun";
+
+const SIM_ID = 14;
+declarerDefis(SIM_ID, [['principal', 'Formuler une base blanche (cahier des charges)']]);
 
 // ====================================================
 // PEINTURE À L'EAU (BTS Métiers de la chimie) — parcours guidé et défi ; l'exploration libre est la simulation d'origine (PeintureExploration)
@@ -389,6 +392,7 @@ export function SimulationPeinture({ plotlyReady }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.55 }}>Formulez une base blanche avec l'<strong>Orgal PST 50A</strong>, qui respecte tout le cahier des charges, pour une application jusqu'à
           <strong> {defi.tApp} °C</strong>. Bonus : utilisez le moins de coalescent possible (COV minimal). Modifiez les masses dans le cadre « Formule ».</div>
+        <SuiviDefiDirect cle={`${SIM_ID}:defi.principal`} reussi={C.every(c => c.ok)} />
         {C.map((c, k) => <div key={k} style={{ fontSize: 14, color: KIT.txt }}>{c.ok ? '✅' : '❌'} {c.t}</div>)}
         {C.every(c => c.ok) && <div style={{ fontSize: 14, fontWeight: 700, color: '#15803d' }}>Cahier des charges respecté ! Pouvez-vous encore réduire le DPnB ?</div>}
         <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Une autre température d'application</button>

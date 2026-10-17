@@ -1,7 +1,10 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
+
+const SIM_ID = 10;
+declarerDefis(SIM_ID, [['principal', 'Déterminer la concentration d’une solution inconnue']]);
 
 // ====================================================
 // LOI DE BEER-LAMBERT ET DOSAGE PAR ÉTALONNAGE (1re spé PC)
@@ -205,6 +208,7 @@ function OutilEtalonnage() {
 export function BeerLambert1G() {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [onglet, setOnglet] = useState('spectro');
   const [guide, setGuide] = useEtatPersistant('beer1g-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   // L'échantillon de l'élève : bouillie bordelaise un peu différente de 15 g/L, et une pureté du solide du lycée
@@ -469,7 +473,7 @@ export function BeerLambert1G() {
           );
         })}
         <div style={{ display: 'flex', gap: 6 }}>
-          <button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
+          <button onClick={() => { noterDefi(Q.every(q => q.vrai != null && proche(lireNombre(defi.reps[q.id] || ''), q.vrai, 0.03))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
           <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouvelle solution</button>
         </div>
         {defi.verifie && <div style={{ fontSize: 13, color: KIT.txt2 }}>Valeur réelle : c = {fmt(defi.cX, 3)} {E.unite}.</div>}
@@ -530,7 +534,7 @@ export function BeerLambert1G() {
             </div>}
           </div>
           {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
-            : enDefi ? <div style={styleBoite}>{voletDefi}</div>
+            : enDefi ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div>
               : <div style={styleBoite}>
                 <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
                 <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>

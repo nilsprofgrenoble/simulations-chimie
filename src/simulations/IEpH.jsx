@@ -1,6 +1,9 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { TabBtn, cardStyle, KIT, Section, styleBoite, CarteParcours, useEtatPersistant, styleBouton, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
+
+const SIM_ID = 29;
+declarerDefis(SIM_ID, [['principal', 'Lire les courbes i-E']]);
 
 // ════════════════════════════════════════════════════════════════
 //  SIMULATION 29 — Courbes i = f(E) et diagramme E-pH
@@ -360,6 +363,7 @@ function campagneBrute() {
 const noms = (m, n) => `Ox + ${m > 1 ? m + " " : ""}H⁺ + ${n > 1 ? n + " " : ""}e⁻ = Red`;
 
 function DefiIEpH({ plotlyReady }) {
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [defi, setDefi] = useState(() => campagne());
   const [e, setE] = useState(() => ({ ...ETAT0, pH: defi.pH, couple: defi.couple }));
   const set = f => setE(x => ({ ...x, ...f }));
@@ -378,7 +382,7 @@ function DefiIEpH({ plotlyReady }) {
   ];
   const juste = q => q.choix ? defi.choix[q.id] === q.vrai : proche(lireNombre(defi.reps[q.id] || ""), q.vrai, q.tol);
   return (
-    <div className="iep-g">
+    <div className="iep-g"><SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} />
       <div style={{ display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
         <div style={styleBoite}>
           <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.55 }}>
@@ -413,7 +417,7 @@ function DefiIEpH({ plotlyReady }) {
           );
         })}
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          <button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={styleBouton(true, "#16a34a")}>✓ Vérifier</button>
+          <button onClick={() => { noterDefi(Q.every(juste)); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, "#16a34a")}>✓ Vérifier</button>
           <button onClick={nouveau} style={styleBouton(false)}>🔄 Nouvelles données</button>
         </div>
       </div>

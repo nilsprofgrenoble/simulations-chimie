@@ -1,6 +1,9 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Field, TabBtn, cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices } from "../commun";
+
+const SIM_ID = 13;
+declarerDefis(SIM_ID, [['principal', 'Étalon interne et normalisation interne']]);
 
 // ====================================================
 // SIM 13 — ÉTALON INTERNE / NORMALISATION INTERNE (BTS)
@@ -1269,6 +1272,7 @@ function pick3() {
 }
 function DefiEtalon() {
   const [defi, setDefi] = useState(() => campagneEI());
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const maj = f => setDefi(d => ({ ...d, verifie: false, ...f(d) }));
   let Q = [], enonce = null;
   if (defi.type === 'ei') {
@@ -1317,7 +1321,7 @@ function DefiEtalon() {
   }
   const juste = q => q.choix ? defi.choix[q.id] === q.vrai : proche(lireNombre(defi.reps[q.id] || ''), q.vrai, q.tol);
   return (
-    <div className="ei-l1">
+    <div className="ei-l1"><SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }}>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <button onClick={() => setDefi(campagneEI())} style={styleBouton(defi.type === 'ei', '#2a9d8f')}>📌 Étalon interne</button>
@@ -1351,7 +1355,7 @@ function DefiEtalon() {
           );
         })}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
+          <button onClick={() => { noterDefi(Q.every(juste)); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
           <button onClick={() => setDefi(defi.type === 'ei' ? campagneEI() : campagneNI())} style={styleBouton(false)}>🔄 Nouvelles données</button>
         </div>
       </div>

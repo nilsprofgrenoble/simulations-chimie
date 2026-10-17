@@ -1,7 +1,10 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useMemo } from "react";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
+
+const SIM_ID = 16;
+declarerDefis(SIM_ID, [['principal', 'Calculer des z-scores et classer les laboratoires']]);
 
 // ====================================================
 // ESSAIS D'APTITUDE ET Z-SCORE (BTS Métiers de la chimie)
@@ -262,6 +265,7 @@ function Hypotheses({ formules = ['ref'], consensus = false }) {
 export function SimulationAptitude() {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('aptitude-guide-v2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [graine] = useEtatPersistant('aptitude-graine-v2', Math.floor(Math.random() * 1e6));
   const [ouverts, setOuverts] = useState({ hypo: true, alertes: true, reglages: true, comparer: true });
@@ -582,7 +586,7 @@ export function SimulationAptitude() {
           );
         })}
         <div style={{ display: 'flex', gap: 6 }}>
-          <button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
+          <button onClick={() => { noterDefi(Q.every(q => proche(lireNombre(defi.reps[q.id] || ''), q.vrai, q.tol))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
           <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouvelle campagne</button>
         </div>
         {defi.verifie && <div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.5, background: 'white', border: `1px solid ${KIT.bord}`, borderRadius: 6, padding: '6px 8px' }}>
@@ -616,7 +620,7 @@ export function SimulationAptitude() {
           <button onClick={() => changerMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
         </div>
       </div>
-      {enDefi ? <div className="ap-l1"><div style={styleBoite}>{voletDefi}</div><div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Hypothèses de travail</div><Hypotheses formules={['ref', 'iso']}/></div></div> : <>
+      {enDefi ? <div className="ap-l1"><div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div><div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Hypothèses de travail</div><Hypotheses formules={['ref', 'iso']}/></div></div> : <>
         {selecteurJeu}
         {selecteurFormule}
         <div className="ap-l1">
