@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, exParam } from "../commun";
 import { useSuivi } from "../suivi";
+import { txtVec } from "./FigureVecteurs";
 import { FAMILLES, GROUPES, verifier, reponseAttendue } from "./AtelierRealiserBanque";
 
 // ====================================================
@@ -43,7 +44,7 @@ export function SimulationAtelierRealiser() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {q.options.map((o, k) => (
               <button key={k} data-ok={k === q.bonne ? 'true' : 'false'} onClick={() => { setRep(x => ({ ...x, [q.id]: k })); setChk(c => ({ ...c, [q.id]: false })); }}
-                style={{ ...styleBouton(rep[q.id] === k, '#0ea5e9'), textAlign: 'left', padding: '6px 10px' }}>{o}</button>))}
+                style={{ ...styleBouton(rep[q.id] === k, '#0ea5e9'), textAlign: 'left', padding: '6px 10px' }}>{txtVec(o)}</button>))}
           </div>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -53,9 +54,9 @@ export function SimulationAtelierRealiser() {
               style={{ fontSize: 15, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 150, color: KIT.txt, background: 'white' }}/>
             <span style={{ fontSize: 14, color: KIT.txt2 }}>{avecIndices(q.unite || '')}</span>
           </div>)}
-        {indice[q.id] && q.aide && <Correction>💡 {avecIndices(q.aide)}</Correction>}
+        {indice[q.id] && q.aide && <Correction>💡 {txtVec(avecIndices(q.aide))}</Correction>}
         {affichee && <Verdict ok={bon}>{bon ? 'Bravo !' : 'Pas encore.'}</Verdict>}
-        {affichee && !bon && r.msg && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{r.msg}</div>}
+        {affichee && !bon && r.msg && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{txtVec(r.msg)}</div>}
         {((vu[q.id] && !bon) || (affichee && bon)) && <Correction>{q.type === 'num' && !bon ? <>Réponse attendue : <b>{reponseAttendue(q)}</b>. </> : null}{q.expl}</Correction>}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
           <button onClick={() => corriger(q.id)} style={styleBouton(true, '#16a34a')}>✓ Corriger</button>
@@ -82,10 +83,10 @@ export function SimulationAtelierRealiser() {
         <button onClick={() => charger(choix)} style={stylePetitBouton(false)}>🎲 Nouvel exercice</button>
       </div>
       <div style={{ maxWidth: 760, display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div style={{ ...styleBoite, fontSize: 14.5, color: KIT.txt, lineHeight: 1.65 }}>{exo.intro}</div>
+        <div style={{ ...styleBoite, fontSize: 14.5, color: KIT.txt, lineHeight: 1.65 }}>{txtVec(exo.intro)}</div>
         {exo.figure}
         {Q.slice(0, etp + 1).map((q, i) => carte(q, i))}
-        {fini && exo.retenir && <ARetenir titre="À RETENIR"><ul style={{ margin: 0, paddingLeft: 18 }}>{exo.retenir.map((t, i) => <li key={i}>{t}</li>)}</ul></ARetenir>}
+        {fini && exo.retenir && <ARetenir titre="À RETENIR"><ul style={{ margin: 0, paddingLeft: 18 }}>{exo.retenir.map((t, i) => <li key={i}>{txtVec(t)}</li>)}</ul></ARetenir>}
       </div>
     </div>
   );
