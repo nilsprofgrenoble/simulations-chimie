@@ -1,7 +1,10 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, Cadre, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
+
+const SIM_ID = 1;
+declarerDefis(SIM_ID, [['principal', 'Prévoir, ne pas déborder, trouver le limitant']]);
 
 // ====================================================
 // AVANCEMENT D'UNE TRANSFORMATION CHIMIQUE (1re spé PC)
@@ -233,6 +236,7 @@ function OutilGeneral() {
 export function Simulation1() {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [onglet, setOnglet] = useState('manip');          // exploration : manip | tableau | metro
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true });
   // L'échantillon de magnésium de l'élève (prépesé, différent pour chacun), gardé sur l'appareil
@@ -562,7 +566,7 @@ export function Simulation1() {
             </div>
           );
         })}
-        <div><button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button></div>
+        <div><button onClick={() => { noterDefi(questionsDefi.length > 0 && questionsDefi.every(justeD)); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button></div>
         <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>
           {defi.type === 'deborder' ? 'Pour vérifier : passez en exploration libre, réglez la masse que vous avez trouvée, et faites la manip.'
             : 'Puis faites la manip avec les commandes sous le schéma pour vérifier.'}
@@ -618,7 +622,7 @@ export function Simulation1() {
             </>}
           </div>
           {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
-            : enDefi ? <div style={styleBoite}>{voletDefi}</div>
+            : enDefi ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div>
               : <div style={styleBoite}>
                 <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
                 <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>

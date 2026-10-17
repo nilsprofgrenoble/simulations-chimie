@@ -1,8 +1,11 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, ORANGE_GUIDE, avecIndices } from "../commun";
 import { BeerLambertBTS } from "./BeerLambert";
+
+const SIM_ID = 11;
+declarerDefis(SIM_ID, [['principal', 'Doser la caféine d’une crème inconnue']]);
 
 // ====================================================
 // DOSAGE PAR ÉTALONNAGE EXTERNE (BTS Métiers de la chimie)
@@ -148,6 +151,7 @@ function Hypotheses() {
 export function SimulationDosageEtalonnage() {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [onglet, setOnglet] = useState('banc');
   const [guide, setGuide] = useEtatPersistant('dosage-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [graine] = useEtatPersistant('dosage-graine-v1', Math.floor(Math.random() * 1e6));
@@ -398,7 +402,7 @@ export function SimulationDosageEtalonnage() {
         <span style={{ fontSize: 14, fontWeight: 700, color: KIT.txt }}>Teneur trouvée :</span>
         <input value={defi.rep} placeholder="?" aria-label="Teneur trouvée" onChange={e => { const v = e.target.value; setDefi(d => ({ ...d, rep: v, verifie: false })); }}
           style={{ fontSize: 14, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 100 }}/> %
-        <button onClick={() => setDefi(d => ({ ...d, verifie: true }))} disabled={pourcent == null} style={{ ...styleBouton(pourcent != null, '#16a34a'), opacity: pourcent != null ? 1 : 0.5 }}>✓ Vérifier</button>
+        <button onClick={() => { noterDefi(pourcent != null && proche(lireNombre(defi.rep), pourcent, 0.02) && Math.abs(pourcent - defi.teneur) / defi.teneur <= 0.05); setDefi(d => ({ ...d, verifie: true })); }} disabled={pourcent == null} style={{ ...styleBouton(pourcent != null, '#16a34a'), opacity: pourcent != null ? 1 : 0.5 }}>✓ Vérifier</button>
       </div>
       {defi.verifie && pourcent != null && (() => {
         const okCalc = proche(lireNombre(defi.rep), pourcent, 0.02);
@@ -451,7 +455,7 @@ export function SimulationDosageEtalonnage() {
             {blocExploitation}
           </div>
           {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
-            : enDefi ? <div style={styleBoite}>{voletDefi}</div>
+            : enDefi ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div>
               : <div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
                 <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
                   <li>Mesurez la même gamme avec une fiole injectée deux fois, puis avec deux fioles : que devient le test de Fisher ?</li>

@@ -1,6 +1,9 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices } from "../commun";
+
+const SIM_ID = 9;
+declarerDefis(SIM_ID, [['principal', 'Interpréter une étude interlaboratoire (Cochran, Grubbs)']]);
 
 // ============================================================
 //  SIMULATION 9 — Fidélité d'une méthode : étude interlaboratoire (ISO 5725)
@@ -1366,6 +1369,7 @@ function nouvelleCampagne() {
 
 function DefiInterlabo() {
   const [defi, setDefi] = useState(() => nouvelleCampagne());
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   if (!defi) return <div style={styleBoite}>Impossible de générer une campagne : réessayez.</div>;
   const { data, p, n, k } = defi, proc = procedureISO(data);
   const c1 = proc.journal.find(j => j.test === 'C'), g1 = proc.journal.find(j => j.test === 'G');
@@ -1399,7 +1403,7 @@ function DefiInterlabo() {
   const ecartes = proc.journal.filter(j => j.verdict === 'aberrant').map(j => j.lab);
   const phrase = j => `${j.test === 'C' ? 'Cochran' : 'Grubbs'} (p = ${j.p}) : ${j.test === 'C' ? 'C' : 'G'} = ${fmt(j.val, 3)} (seuils ${fmt(j.crit.p5, 3)} et ${fmt(j.crit.p1, 3)}) → laboratoire ${j.lab + 1} ${NOM_VERDICT[j.verdict]}`;
   return (
-    <div className="il-l1">
+    <div className="il-l1"><SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }}>
         <div style={styleBoite}>
           <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, marginBottom: 8 }}>
@@ -1441,7 +1445,7 @@ function DefiInterlabo() {
           );
         })}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
+          <button onClick={() => { noterDefi(Q.every(juste)); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
           <button onClick={() => setDefi(nouvelleCampagne())} style={styleBouton(false)}>🔄 Nouvelle campagne</button>
         </div>
         {defi.verifie && (

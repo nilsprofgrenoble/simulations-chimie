@@ -180,3 +180,6 @@ export function SuiviDefi({ cle, etat }) {
   useEffect(() => { if (etat.essais > deja.current) s.essai(); deja.current = etat.essais; }, [etat.essais, s]);
   return null;
 }
+
+// Défi sans bouton « Vérifier » (critères affichés en direct) : réussi dès que tous les critères sont remplis.
+export function SuiviDefiDirect({ cle, reussi }) { useSuivi(cle, reussi); return null; }

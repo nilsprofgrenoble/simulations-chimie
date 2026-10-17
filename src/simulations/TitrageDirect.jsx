@@ -1,8 +1,17 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
 import { V_BURETTE, seuilVisible, couleurSolution, ContexteBanc, SchemaBurette, OutilTitrageGeneral } from "./titrageCommun";
+
+const SIM_ID = 2;
+declarerDefis(SIM_ID, [['principal', 'Doser le diiode (concentration, masse)']]);
+
+const reussiTitrageDirect = d => {
+  const cVrai = d.Vmes != null ? 0.05 * d.Vmes / 2 / 10 : d.t * 10 / M_I2, mVrai = cVrai * 0.1 * M_I2;
+  const conf = d.type !== 'controle' || (d.reps.conf || '').trim().toLowerCase() === (Math.abs(d.t - 1) <= 0.05 ? 'oui' : 'non');
+  return d.Vmes != null && proche(lireNombre(d.reps.c || ''), cVrai, 0.03) && proche(lireNombre(d.reps.m || ''), mVrai, 0.03) && conf;
+};
 
 // ====================================================
 // TITRAGE DIRECT (1re spé PC) — TP « Titrage du diiode contenu dans le Lugol »
@@ -26,6 +35,7 @@ function erlenLugol(mod, VB) {
 export function Simulation2() {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [onglet, setOnglet] = useState('general');
   const [guide, setGuide] = useEtatPersistant('titrage-direct-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [mes, setMes] = useEtatPersistant('titrage-direct-mesures-v1', { Vrapide: null, Ve: null });
@@ -289,7 +299,7 @@ export function Simulation2() {
             </div>
           );
         })}
-        <div><button onClick={() => setDefi(d => ({ ...d, verifie: true }))} disabled={defi.Vmes == null} style={{ ...styleBouton(defi.Vmes != null, '#16a34a'), opacity: defi.Vmes != null ? 1 : 0.5 }}>✓ Vérifier</button></div>
+        <div><button onClick={() => { noterDefi(reussiTitrageDirect(defi)); setDefi(d => ({ ...d, verifie: true })); }} disabled={defi.Vmes == null} style={{ ...styleBouton(defi.Vmes != null, '#16a34a'), opacity: defi.Vmes != null ? 1 : 0.5 }}>✓ Vérifier</button></div>
         {defi.verifie && <div style={{ fontSize: 13, color: KIT.txt2 }}>Valeur réelle : {fmt(defi.t, 2)} g pour 100 mL. Votre résultat dépend de la précision de votre lecture de V<sub>B,e</sub>.</div>}
       </>}
     </div>
@@ -341,7 +351,7 @@ export function Simulation2() {
             </div>
           </div>
           {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
-            : enDefi ? <div style={styleBoite}>{voletDefi}</div>
+            : enDefi ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div>
               : <div style={styleBoite}>
                 <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
                 <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
