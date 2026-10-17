@@ -901,6 +901,7 @@ export const PREVOIR = [
     ] },
 ];
 
+import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';
 export const FAMILLES = [
   { id: 'probleme', titre: 'Construire une démarche (problème complet)', liste: PROBLEMES,
     aide: 'Un problème posé sans questions intermédiaires : que cherche-t-on, quelles données, quelles relations, quelles hypothèses, dans quel ordre ?' },
@@ -910,6 +911,8 @@ export const FAMILLES = [
     aide: 'Cochez toutes les hypothèses nécessaires, et seulement elles.' },
   { id: 'prevoir', titre: 'Prévoir sans calculer', liste: PREVOIR,
     aide: 'Raisonner sur la relation (proportionnalité, carré, racine) sans faire le calcul.' },
+  { id: 'mouvement', titre: 'Reconnaître un mouvement sur un schéma', liste: MOUVEMENTS,
+    aide: 'Lire une chronophotographie ou des trajectoires dessinées, et choisir la bonne description du mouvement (dans un référentiel donné).' },
 ];
 
 export const METHODE = [
