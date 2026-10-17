@@ -83,6 +83,7 @@ export function SimulationAtelierRealiser() {
       </div>
       <div style={{ maxWidth: 760, display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ ...styleBoite, fontSize: 14.5, color: KIT.txt, lineHeight: 1.65 }}>{exo.intro}</div>
+        {exo.figure}
         {Q.slice(0, etp + 1).map((q, i) => carte(q, i))}
         {fini && exo.retenir && <ARetenir titre="À RETENIR"><ul style={{ margin: 0, paddingLeft: 18 }}>{exo.retenir.map((t, i) => <li key={i}>{t}</li>)}</ul></ARetenir>}
       </div>
