@@ -6,6 +6,7 @@ import { estSimulation, estDefi, etiquettesDefis, tempsParSimulation, MODES } fr
 import { tousLesExercices } from "./Entrainement";
 import { DevoirsProf } from "./DevoirsProf";
 import { AReprendreProf } from "./AReprendreProf";
+import { SyntheseProf } from "./SyntheseProf";
 import { ApercuEleve } from "./ApercuEleve";
 
 const ROSE = '#e11d48';
@@ -68,7 +69,7 @@ export function SimulationSuiviProf({ naviguer }) {
   const prof = estProf(sess);
   const [classes, setClasses] = useState([]), [classeId, setClasseId] = useState('');
   const [eleves, setEleves] = useState([]), [lignes, setLignes] = useState([]);
-  const [onglet, setOnglet] = useState('eleves'), [ouvert, setOuvert] = useState(null);
+  const [onglet, setOnglet] = useState('synthese'), [ouvert, setOuvert] = useState(null);
   const [msg, setMsg] = useState(''), [erreur, setErreur] = useState(''), [occupe, setOccupe] = useState(false);
   const [comptes, setComptes] = useState(null), [formClasse, setFormClasse] = useState(false);
   const [vieDispo, setVieDispo] = useState(true), [apercu, setApercu] = useState(false);
@@ -225,6 +226,7 @@ export function SimulationSuiviProf({ naviguer }) {
       {classe && (
         <>
           <div style={{ display: 'flex', gap: 6, margin: '12px 0 8px' }}>
+            <button onClick={() => setOnglet('synthese')} style={stylePetitBouton(onglet === 'synthese', ROSE)}>🏠 Synthèse</button>
             <button onClick={() => setOnglet('eleves')} style={stylePetitBouton(onglet === 'eleves', ROSE)}>Par élève ({eleves.length})</button>
             <button onClick={() => setOnglet('exos')} style={stylePetitBouton(onglet === 'exos', ROSE)}>Par exercice</button>
             <button onClick={() => setOnglet('defis')} style={stylePetitBouton(onglet === 'defis', ROSE)}>Défis des simulations</button>
@@ -233,6 +235,7 @@ export function SimulationSuiviProf({ naviguer }) {
             <button onClick={() => setOnglet('reprendre')} style={stylePetitBouton(onglet === 'reprendre', ROSE)}>🔁 À reprendre</button>
           </div>
 
+          {onglet === 'synthese' && <SyntheseProf classe={classe} eleves={eleves} lignes={lignes} allerA={setOnglet} />}
           {onglet === 'devoirs' && <DevoirsProf classe={classe} eleves={eleves} lignes={lignes} />}
           {onglet === 'reprendre' && <AReprendreProf eleves={eleves} lignes={lignes} naviguer={naviguer} />}
 

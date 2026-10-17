@@ -78,6 +78,13 @@ export function VieDeClasse({ lignes, apercu }) {
       <style>{`
         .vc { margin-top: 26px; }
         .vc h3 { margin: 0 0 4px; font-size: 18px; font-weight: 800; color: #0f172a; }
+        .vc-repli { margin-top: 22px; }
+        .vc-repli > summary { list-style: none; cursor: pointer; margin: 0 0 10px; padding: 10px 14px; background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; font-size: 17px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .vc-repli > summary::-webkit-details-marker { display: none; }
+        .vc-repli > summary::after { content: '▾'; margin-left: auto; color: #64748b; transition: transform .2s; }
+        .vc-repli[open] > summary::after { transform: rotate(180deg); }
+        .vc-repli > summary:hover { border-color: #cbd5e1; background: #fafcfc; }
+        .vc-repli > summary small { font-size: 13px; font-weight: 600; color: #64748b; }
         .vc-sous { font-size: 13px; color: #64748b; margin: 0 0 12px; }
         .vc-objectif { border-radius: 20px; padding: 18px; color: #1f3b4d; position: relative; overflow: hidden;
           background: linear-gradient(135deg, #ece8f6 0%, #dff1ee 100%); border: 1px solid #d9e2ec; box-shadow: 0 6px 22px rgba(115,87,181,.12); }
@@ -120,7 +127,8 @@ export function VieDeClasse({ lignes, apercu }) {
         </div>
       </div>
 
-      <h3 style={{ marginTop: 22 }}>🏅 Les prouesses de la semaine</h3>
+      <details className="vc-repli" data-repli="prouesses">
+      <summary>🏅 Les prouesses de la semaine <small>{PROUESSES.filter(p => (prog[p.code] || 0) >= p.cible).length} sur {PROUESSES.length} pour toi{monPseudo ? ` · pseudo : ${monPseudo.texte}` : ' · choisis ton pseudo'}</small></summary>
       <p className="vc-sous">Pas de podium : si tu atteins une prouesse, ton pseudo y apparaît (si tu l’as décidé ci-dessous). Tout repart à zéro chaque lundi.</p>
       <div className="vc-grille">
         {PROUESSES.map(p => {
@@ -174,6 +182,7 @@ export function VieDeClasse({ lignes, apercu }) {
           Seuls les élèves de ta classe voient ce pseudo (et ton professeur sait de toute façon qui tu es). Aucun nom, aucune note, aucun chiffre sur toi n’est montré à la classe.
         </div>
       </div>
+      </details>
     </section>
   );
 }
