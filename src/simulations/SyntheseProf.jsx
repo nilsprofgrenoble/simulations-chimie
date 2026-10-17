@@ -62,7 +62,7 @@ export function SyntheseProf({ classe, eleves, lignes, allerA }) {
         <Tuile valeur={S.actifs} sur={S.effectif} libelle="élèves actifs" aide={`au moins une séance en ${JOURS_ACTIF} jours (${pctActifs} %)`} couleur="#2a9d8f" />
         <Tuile valeur={S.reussis} libelle="exercices réussis" aide={`en ${JOURS_ACTIF} jours, un même exercice compté une fois par élève`} couleur="#e9a824" />
         <Tuile valeur={R.aReprendre.length + R.autres} libelle="à reprendre" aide="exercices où plusieurs élèves ont eu du mal" couleur={ROSE} />
-        <Tuile valeur={S.aRelancer.length} libelle="à relancer" aide={`sans séance depuis ${JOURS_RELANCE} jours ou jamais connectés`} couleur="#7357b5" />
+        <Tuile valeur={S.aRelancer.length} libelle="à relancer" aide={`sans séance depuis ${JOURS_RELANCE} jours ou jamais connectés`} couleur="#64748b" />
       </div>
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         {dev?.dispo && (

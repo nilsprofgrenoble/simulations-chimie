@@ -18,16 +18,16 @@ const titreGraphique = s => {
 
 // Les quatre compétences, dans l'ordre conseillé
 const COMPETENCES = [
-  { code: "S'APP", nom: "S’approprier", couleur: '#0ea5e9', dispo: true,
+  { code: "S'APP", nom: "S’approprier", couleur: '#3f78a8', dispo: true,
     but: "Comprendre ce qui est demandé : repérer les données utiles, les associer aux symboles et aux unités, lire un graphique.",
     ateliers: [{ id: 34, nom: 'Extraire les données d’un énoncé' }, { id: 35, nom: 'Lire un graphique' }] },
-  { code: 'ANA', nom: 'Analyser', couleur: '#7c3aed', dispo: true,
+  { code: 'ANA', nom: 'Analyser', couleur: '#1f7a72', dispo: true,
     but: "Construire la démarche : ce que l’on cherche, quelles relations, quelles hypothèses, dans quel ordre calculer, et prévoir sans calculer.",
     ateliers: [{ id: 37, nom: 'Analyser un problème' }] },
-  { code: 'REA', nom: 'Réaliser', couleur: '#16a34a', dispo: true,
+  { code: 'REA', nom: 'Réaliser', couleur: '#357f54', dispo: true,
     but: "Mener le calcul sans se tromper : unités et conversions, isoler une grandeur, chiffres significatifs, calculatrice.",
     ateliers: [{ id: 36, nom: 'Réaliser un calcul' }] },
-  { code: 'VAL', nom: 'Valider', couleur: '#ea580c', dispo: false,
+  { code: 'VAL', nom: 'Valider', couleur: '#b45a1f', dispo: false,
     but: "Juger son résultat : ordre de grandeur, unité, cohérence physique, incertitude.", ateliers: [] },
 ];
 
