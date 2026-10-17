@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, exParam } from "../commun";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, exParam, venantDuDevoir } from "../commun";
 import { useSuivi } from "../suivi";
 import { parDomaine } from "./ordreDomaines";
 import { FAMILLES, METHODE } from "./AtelierAnalyserBanque";
@@ -154,7 +154,8 @@ function etapesDe(fam, it) {
 const permsDe = etapes => Object.fromEntries(etapes.map(e => [e.id,
   e.type === 'ordre' ? melange(e.dem.etapes.length + e.dem.pieges.length) : e.o ? melange(e.o.length) : null]));
 
-export function SimulationAtelierAnalyser() {
+export function SimulationAtelierAnalyser({ naviguer }) {
+  const [duDevoir] = useState(venantDuDevoir);
   const depart = (() => { const [f, i] = (exParam() || '').split('.'); const fa = FAMILLES.find(x => x.id === f); const k = fa ? fa.liste.findIndex(x => x.id === i) : -1; return { f: fa ? f : 'probleme', i: Math.max(0, k) }; })();
   const [fam, setFam] = useState(depart.f);
   const famille = FAMILLES.find(f => f.id === fam);
@@ -259,7 +260,9 @@ export function SimulationAtelierAnalyser() {
               <ol style={{ margin: '0 0 4px', paddingLeft: 20 }}>{METHODE.map((m, i) => <li key={i}>{m}</li>)}</ol>
               <ul style={{ margin: 0, paddingLeft: 20 }}>{it.retenir.map((x, i) => <li key={i}>{T(x)}</li>)}</ul>
             </ARetenir>)}
-          {fini && <button onClick={suivant} style={{ ...styleBouton(true, '#334155'), alignSelf: 'flex-start' }}>Énoncé suivant ▶</button>}
+          {fini && (duDevoir && naviguer
+            ? <button onClick={() => naviguer(39)} style={{ ...styleBouton(true, '#334155'), alignSelf: 'flex-start' }}>↩ Retour à mon devoir</button>
+            : <button onClick={suivant} style={{ ...styleBouton(true, '#334155'), alignSelf: 'flex-start' }}>Énoncé suivant ▶</button>)}
         </div>
       </div>
     </div>

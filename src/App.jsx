@@ -139,7 +139,7 @@ const SIMULATIONS = [
   { id:38, label:"Je m'entraîne ! Travail par compétence", niveau:"COMP", icon:"🏋️", color:"#e11d48",
     component: SimulationEntrainement },
   // Pages hors menu (niveau « COMPTE ») : connexion et suivi, ouvertes par les boutons « Mon compte » et « Suivi professeur »
-  { id:39, label:"Mon compte", niveau:"COMPTE", icon:"🧑‍🔬", color:"#e11d48", component: SimulationCompte },
+  { id:39, label:"Mon compte", niveau:"COMPTE", icon:"👧👦", color:"#e11d48", component: SimulationCompte },
   { id:40, label:"Suivi professeur", niveau:"COMPTE", icon:"📊", color:"#e11d48", component: SimulationSuiviProf },
   // Page hors menu : à propos et contact (ouverte depuis le bas du menu et le pied de page)
   { id:47, label:"À propos et contact", niveau:"COMPTE", icon:"ℹ️", color:"#475569", component: SimulationAPropos },
@@ -450,11 +450,13 @@ export default function App() {
   }
 
   // Ferme le menu et navigue
-  function naviguer(id, ex) {
+  function naviguer(id, ex, duDevoir) {
     // ex : exercice précis à ouvrir dans un atelier (lu par l'atelier à son ouverture)
+    // duDevoir : l'élève vient d'un devoir (l'atelier propose alors « Retour à mon devoir » plutôt que l'exercice suivant)
     try {
       const u = new URL(window.location.href);
       if (ex) u.searchParams.set('ex', ex); else u.searchParams.delete('ex');
+      if (duDevoir) u.searchParams.set('devoir', '1'); else u.searchParams.delete('devoir');
       window.history.replaceState(null, '', u.toString());
     } catch { /* adresse non modifiable */ }
     setActiveId(id);
@@ -665,7 +667,7 @@ export default function App() {
             style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", borderRadius:8, border: sessionSb?.profil ? "1px solid #e11d48" : "none",
               background: sessionSb?.profil ? "#fff1f2" : "#f0f0f0", color: sessionSb?.profil ? "#be123c" : "#555",
               fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"'Nunito', sans-serif", whiteSpace:"nowrap" }}>
-            🧑‍🔬 {sessionSb?.profil ? (sessionSb.profil.identifiant || sessionSb.profil.nom) : 'Se connecter'}
+            👧👦 {sessionSb?.profil ? (sessionSb.profil.identifiant || sessionSb.profil.nom) : 'Se connecter'}
           </button>
           {activeId > 0 && (
             <button onClick={partager} style={{

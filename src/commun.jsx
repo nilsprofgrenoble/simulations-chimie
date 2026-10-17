@@ -529,6 +529,9 @@ export function noterReussite(cle) {
 export function exParam() {
   try { return new URLSearchParams(window.location.search).get('ex'); } catch { return null; }
 }
+// L'élève est-il arrivé depuis un devoir (bouton « Y aller ») ? Lu une fois à l'ouverture de l'atelier.
+export const venantDuDevoir = () => { try { return new URLSearchParams(window.location.search).has('devoir'); } catch { return false; } };
+
 
 // ════════════════ ÉTOILES (carnet de l'élève) ════════════════
 // Étoiles d'un exercice (n sur 3)

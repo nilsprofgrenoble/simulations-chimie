@@ -178,7 +178,7 @@ export function SimulationCompte({ naviguer }) {
   const sess = useSession();
   return (
     <div style={{ ...cardStyle, maxWidth: 900, margin: '0 auto' }}>
-      <h2 style={{ margin: 0, color: ROSE }}>🧑‍🔬 Mon compte</h2>
+      <h2 style={{ margin: 0, color: ROSE }}>👧👦 Mon compte</h2>
       {!sess?.profil && <Connexion />}
       {estEleve(sess) && (
         <>
