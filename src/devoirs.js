@@ -7,6 +7,8 @@
 //     ne compte pas : le devoir demande de le refaire). C'est voulu pour des devoirs de révision ; pour un devoir
 //     « à découvrir », ça ne change rien ;
 //   • la date limite est valable jusqu'à la fin du jour indiqué (heure du navigateur) ;
+//   • un devoir peut viser seulement certains élèves (devoir.eleves = liste d'identifiants, supabase/07) : les autres ne le voient
+//     pas (règle du serveur) et ne comptent pas dans « N élèves ont tout fait » ;
 //   • un devoir est TERMINÉ quand tous ses exercices sont faits, même après la date limite (il est alors « fait en retard »).
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -55,7 +57,11 @@ export function trierPourEleve(devoirs, lignes) {
 }
 
 // Résumé côté professeur : par élève, et combien ont tout fait. eleves : [{ user_id, identifiant }]
-export function suiviClasse(devoir, eleves, lignes) {
+// Un devoir peut viser toute la classe (devoir.eleves absent) ou seulement quelques élèves (liste d'identifiants internes)
+export const estCible = (devoir, userId) => !Array.isArray(devoir.eleves) || devoir.eleves.includes(userId);
+
+export function suiviClasse(devoir, tous, lignes) {
+  const eleves = tous.filter(e => estCible(devoir, e.user_id));
   const lignesDe = new Map();
   for (const l of lignes) { if (!lignesDe.has(l.user_id)) lignesDe.set(l.user_id, []); lignesDe.get(l.user_id).push(l); }
   const parEleve = eleves.map(e => ({ eleve: e, ...avancement(devoir, lignesDe.get(e.user_id) || []) }));

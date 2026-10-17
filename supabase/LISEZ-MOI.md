@@ -94,3 +94,18 @@ Règles à connaître (hypothèses de travail) :
 - « fait » n'est pas enregistré dans le devoir : c'est déduit des séances déjà enregistrées. Aucune donnée d'élève en plus ;
 - seul le professeur de la classe crée et supprime ses devoirs ; les élèves ne voient que ceux de leur classe ; 200 devoirs au maximum par classe. On ne peut modifier ni la liste d'exercices ni la classe d'un devoir (supprimez-le et recréez-le) ;
 - comme pour le reste, les réussites viennent du navigateur de l'élève : un devoir sert à organiser le travail, pas à évaluer.
+
+## Chapitre en cours et devoirs ciblés (étape 22)
+
+À faire **une fois**, après `05` et `06` (sans le SQL, le site continue de fonctionner comme avant et le suivi indique quoi faire) :
+1. **SQL** : SQL Editor → New snippet → coller `07-chapitre-et-ciblage.sql` → Run. Le résultat doit afficher quatre lignes : `chapitres`, `eleves`, `chapitres_valides`, `devoirs_controle`. Relançable sans risque.
+2. **Choisir le chapitre** : Suivi professeur → classe → « ⚙️ Réglages de la classe » → « 📘 Chapitre en cours » : cliquer sur 1 à 3 thèmes (le nombre entre parenthèses est le nombre d'exercices S'APP et ANA du thème ; « Métrologie » est vide pour l'instant et ne peut pas être choisi). Modifiable à tout moment.
+3. **Cibler un devoir** : onglet « 📌 Devoirs » → « Pour qui ? » → « Certains élèves seulement ». Depuis l'onglet « 🔁 À reprendre », le bouton « 📌 Donner cet exercice en devoir à ces N élèves » prépare le devoir avec les élèves en difficulté déjà cochés.
+
+Ce que voient les élèves connectés dans « Je m'entraîne » : en tête, « 📘 Ton chapitre en ce moment », une barre d'étoiles du chapitre, un **exercice conseillé**, puis les exercices S'APP et ANA du thème. Les calculs (REA, sans thème) sont proposés à part, repliés. Tout le reste (compétences, autres thèmes) est dans « 📚 Autres thèmes et toutes les compétences », replié. Sans chapitre choisi, la page est inchangée.
+
+Règles à connaître (hypothèses de travail) :
+- le **niveau** n'est pas une étiquette : l'exercice conseillé est le premier exercice **jamais réussi** de la compétence où l'élève a le **moins d'étoiles dans ce chapitre** ; s'il a tout réussi, celui où il a le moins d'étoiles (pour viser 3). Ce n'est ni une note ni un diagnostic ;
+- les thèmes viennent d'une liste fixe (celle du programme de TSTL, `src/simulations/ordreDomaines.js`), pas de texte libre. Un thème avec peu d'exercices (Mécanique : 1, Régulation : 4) donnera un chapitre vite terminé ;
+- un devoir ciblé n'est visible que des élèves choisis (règle du serveur, pas seulement de l'affichage) ; seuls des élèves de la classe peuvent être visés ; on ne peut pas modifier la liste après création (supprimez et recréez) ; les élèves non visés ne comptent pas dans « N ont tout fait » ;
+- comme pour le reste, ces données viennent du navigateur de l'élève : c'est une aide à l'organisation, pas une évaluation.
