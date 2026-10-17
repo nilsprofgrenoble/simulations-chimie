@@ -23,7 +23,7 @@ export function ToastRecompense({ naviguer }) {
   return (
     <div role="status" aria-live="polite" data-toast-recompense key={info.id}
       style={{ position: 'fixed', left: '50%', bottom: 18, transform: 'translateX(-50%)', zIndex: 1000, width: 'min(420px, calc(100vw - 24px))', boxSizing: 'border-box',
-        color: '#fff', borderRadius: 18, padding: '14px 16px', background: 'linear-gradient(135deg, #4c1d95, #1e1b4b)', boxShadow: '0 14px 40px rgba(30,27,75,.55)',
+        color: '#fff', borderRadius: 18, padding: '14px 16px', background: 'linear-gradient(135deg, #2a9d8f, #1d5f58)', boxShadow: '0 14px 40px rgba(30,27,75,.55)',
         animation: 'toast-entree .45s cubic-bezier(.2,1.2,.3,1) both' }}>
       <style>{`
         @keyframes toast-entree { from { opacity: 0; transform: translate(-50%, 30px) scale(.9); } to { opacity: 1; transform: translate(-50%, 0) scale(1); } }

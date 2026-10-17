@@ -76,7 +76,7 @@ function Connexion() {
           <input type="password" value={mdp} onChange={e => setMdp(e.target.value)} autoComplete="current-password" style={{ ...champ, marginTop: 4 }} aria-label="Mot de passe" />
         </label>
         <label style={{ fontSize: 13, color: KIT.txt2, display: 'flex', gap: 6, alignItems: 'flex-start' }}>
-          <input type="checkbox" checked={garder} onChange={e => setGarder(e.target.checked)} style={{ marginTop: 3 }} />
+          <input type="checkbox" checked={garder} onChange={e => setGarder(e.target.checked)} style={{ marginTop: 3, accentColor: '#e11d48' }} />
           <span>Rester connecté sur cet appareil <b>(appareil personnel uniquement, jamais sur un ordinateur partagé du lycée)</b></span>
         </label>
         {msg && <div role="alert" style={{ color: '#b91c1c', fontSize: 14, fontWeight: 600 }}>❌ {msg}</div>}

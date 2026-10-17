@@ -10,7 +10,6 @@ import { PROUESSES, MAX_PAR_ELEVE, pseudo, pseudoValide, propositions, progressi
 //  Si le serveur n'a pas encore reçu supabase/05-vie-de-classe.sql, ou si la vie de classe est éteinte : rien ne s'affiche.
 // ═══════════════════════════════════════════════════════════════════════════
 
-const NUIT = '#1e1b4b';
 
 // Lit la semaine de la classe et le pseudo de l'élève ; null si la vie de classe est éteinte ou indisponible
 async function lireClasse(classeId) {
@@ -80,10 +79,10 @@ export function VieDeClasse({ lignes, apercu }) {
         .vc { margin-top: 26px; }
         .vc h3 { margin: 0 0 4px; font-size: 18px; font-weight: 800; color: #0f172a; }
         .vc-sous { font-size: 13px; color: #64748b; margin: 0 0 12px; }
-        .vc-objectif { border-radius: 20px; padding: 18px; color: #fff; position: relative; overflow: hidden;
-          background: radial-gradient(120% 140% at 100% 0%, #0e7490 0%, ${NUIT} 60%, #0f172a 100%); box-shadow: 0 10px 28px rgba(14,116,144,.3); }
-        .vc-piste { position: relative; height: 16px; border-radius: 10px; background: rgba(255,255,255,.15); margin: 22px 8px 8px 0; }
-        .vc-piste > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 10px; background: linear-gradient(90deg, #22d3ee, #a78bfa, #f472b6); transition: width 1.4s cubic-bezier(.2,.8,.2,1); }
+        .vc-objectif { border-radius: 20px; padding: 18px; color: #1f3b4d; position: relative; overflow: hidden;
+          background: linear-gradient(135deg, #ece8f6 0%, #dff1ee 100%); border: 1px solid #d9e2ec; box-shadow: 0 6px 22px rgba(115,87,181,.12); }
+        .vc-piste { position: relative; height: 16px; border-radius: 10px; background: rgba(255,255,255,.8); box-shadow: inset 0 0 0 1px #d5dfe6; margin: 22px 8px 8px 0; }
+        .vc-piste > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 10px; background: linear-gradient(90deg, #7fcabf, #b9a6e0, #f2a7c3); transition: width 1.4s cubic-bezier(.2,.8,.2,1); }
         .vc-fusee { position: absolute; top: -17px; font-size: 26px; transition: left 1.4s cubic-bezier(.2,.8,.2,1); transform: translateX(-50%) rotate(45deg); }
         .vc-fin { position: absolute; right: -4px; top: -20px; font-size: 22px; }
         .vc-grille { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); margin-top: 12px; }
@@ -93,7 +92,7 @@ export function VieDeClasse({ lignes, apercu }) {
         .vc-puce { display: inline-flex; align-items: center; gap: 5px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 999px; padding: 3px 10px 3px 6px; font-size: 13px; font-weight: 600; color: #1e293b; animation: vc-pop .5s both; }
         .vc-puce.moi { background: #ede9fe; border-color: #8b5cf6; color: #4c1d95; }
         .vc-mini { height: 7px; border-radius: 5px; background: #e2e8f0; overflow: hidden; margin-top: 8px; }
-        .vc-mini > i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #a78bfa, #ec4899); transition: width 1.1s cubic-bezier(.2,.8,.2,1); }
+        .vc-mini > i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #b9a6e0, #e58fb3); transition: width 1.1s cubic-bezier(.2,.8,.2,1); }
         .vc-idee { cursor: pointer; font: inherit; font-size: 14px; font-weight: 700; background: #fff; border: 1.5px solid #c4b5fd; border-radius: 12px; padding: 7px 12px; color: #4c1d95; display: inline-flex; gap: 6px; align-items: center; transition: transform .15s, background .15s; }
         .vc-idee:hover:not(:disabled) { background: #f5f3ff; transform: translateY(-1px); }
         .vc-idee:disabled { opacity: .55; cursor: default; }
@@ -107,7 +106,7 @@ export function VieDeClasse({ lignes, apercu }) {
       <div className="vc-objectif">
         <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 1.5, opacity: .8 }}>OBJECTIF DE LA CLASSE</div>
         <div style={{ fontSize: 22, fontWeight: 800, margin: '2px 0' }}>
-          {atteint ? '🎉 Objectif atteint !' : <>Encore <span style={{ color: '#fde047' }}>{reste}</span> réussite{reste > 1 ? 's' : ''} à faire ensemble</>}
+          {atteint ? '🎉 Objectif atteint !' : <>Encore <span style={{ color: '#b45309' }}>{reste}</span> réussite{reste > 1 ? 's' : ''} à faire ensemble</>}
         </div>
         <div className="vc-piste" role="progressbar" aria-valuemin={0} aria-valuemax={objectif} aria-valuenow={Math.min(reussites, objectif)} aria-label="Avancée de l’objectif de la classe">
           <i style={{ width: mont ? `${Math.max(3, frac * 100)}%` : '0%' }} />
@@ -156,7 +155,7 @@ export function VieDeClasse({ lignes, apercu }) {
             <div style={{ flex: 1, minWidth: 180 }}>
               <div style={{ fontSize: 18, fontWeight: 800, color: '#4c1d95' }}>{monPseudo.texte}</div>
               <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 14, marginTop: 4, cursor: 'pointer' }}>
-                <input type="checkbox" checked={!!moi.visible} disabled={occupe} onChange={e => montrer(e.target.checked)} />
+                <input type="checkbox" checked={!!moi.visible} disabled={occupe} onChange={e => montrer(e.target.checked)} style={{ accentColor: '#e11d48' }} />
                 Montrer mon pseudo dans les prouesses de ma classe
               </label>
             </div>

@@ -69,7 +69,7 @@ export function DevoirsProf({ classe, eleves, lignes }) {
           {filtres.length === 0 && <div style={{ padding: 10, fontSize: 13.5, color: KIT.txt2 }}>Aucun résultat.</div>}
           {filtres.map(i => { const coche = choix.includes(i.cle); return (
             <label key={i.cle} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '5px 9px', fontSize: 13.5, cursor: 'pointer', background: coche ? '#fff1f2' : 'transparent', borderBottom: `1px solid ${KIT.bord}` }}>
-              <input type="checkbox" checked={coche} disabled={!coche && choix.length >= MAX_EXOS} onChange={() => bascule(i.cle)} style={{ marginTop: 3 }} />
+              <input type="checkbox" checked={coche} disabled={!coche && choix.length >= MAX_EXOS} onChange={() => bascule(i.cle)} style={{ marginTop: 3, accentColor: '#e11d48' }} />
               <span><b style={{ color: ROSE }}>{i.comp === 'DÉFI' ? 'Défi' : i.comp}</b> · {i.titre}</span>
             </label>); })}
         </div>
