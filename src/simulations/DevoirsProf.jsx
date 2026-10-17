@@ -3,8 +3,9 @@ import { KIT, styleBouton, styleBoite } from "../commun";
 import { rest } from "../serveur";
 import { lireDevoirs } from "../devoirsServeur";
 import { ORDRE_DOMAINES } from "./ordreDomaines";
-import { catalogue } from "./catalogue";
-import { MAX_EXOS, suiviClasse, infoEcheance, finEcheance } from "../devoirs";
+import { catalogueDevoirs } from "./catalogue";
+import { NIVEAUX_CHAPITRES, chapitresDuNiveau, chapitreDe } from "../chapitres";
+import { MAX_EXOS, SEUIL_GUIDE_S, suiviClasse, infoEcheance, finEcheance, defisDeSim, nonReussisParAuMoinsUn } from "../devoirs";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  ONGLET « DEVOIRS » du suivi professeur : créer un devoir pour la classe choisie (titre, exercices, date limite),
@@ -15,18 +16,31 @@ const ROSE = '#e11d48';
 const champ = { padding: '7px 9px', fontSize: 14, borderRadius: 8, border: `1px solid ${KIT.bord}`, boxSizing: 'border-box' };
 const COULEURS = { retard: '#b91c1c', urgent: '#c2410c', ok: '#15803d', aucune: '#64748b' };
 
-// Filtres de la liste d'exercices : « tous », un thème du programme, les calculs (REA, sans thème) ou les défis de simulation
-const FILTRES_SPECIAUX = [['reussir', '🧮 Calculs (REA, tous thèmes)'], ['defis', '🎯 Défis des simulations']];
-const garde = (theme, i) => theme === 'tous' || (theme === 'reussir' ? i.comp === 'REA' : theme === 'defis' ? i.comp === 'DÉFI' : i.domaine === theme);
+// Filtres de la liste : « tous », un chapitre du menu (ses simulations, ses défis et les exercices de son thème), un thème
+// d'exercices, les calculs (REA, sans thème), les défis ou les simulations
+const FILTRES_SPECIAUX = [['reussir', '🧮 Calculs (REA, tous thèmes)'], ['defis', '🎯 Défis des simulations'], ['sims', '🧪 Toutes les simulations']];
+const garde = (theme, i) => {
+  if (theme === 'tous') return true;
+  if (theme === 'reussir') return i.comp === 'REA';
+  if (theme === 'defis') return i.comp === 'DÉFI';
+  if (theme === 'sims') return i.comp === 'SIM';
+  if (theme.startsWith('chap:')) {
+    const c = chapitreDe(theme.slice(5));
+    return !!c && ((i.sim != null && c.sims.includes(Number(i.sim))) || (i.comp !== 'REA' && i.domaine != null && c.domaines.includes(i.domaine)));
+  }
+  return i.domaine === theme;
+};
+const nomComp = i => (i.comp === 'DÉFI' ? 'Défi' : i.comp === 'SIM' ? 'Simulation' : i.comp);
+const noteSim = i => (defisDeSim(i.sim).length ? ' (parcours guidé + un défi réussi)' : ' (parcours guidé seulement : pas de défi)');
 
 // preset (facultatif) : { titre, cles, eleves } pour pré-remplir le formulaire, par exemple depuis « À reprendre »
 export function DevoirsProf({ classe, eleves, lignes, preset }) {
   const [devoirs, setDevoirs] = useState(null), [dispo, setDispo] = useState(true), [cible, setCible] = useState(true);
   const [titre, setTitre] = useState(preset?.titre || ''), [echeance, setEcheance] = useState(''), [choix, setChoix] = useState(preset?.cles || []), [recherche, setRecherche] = useState('');
-  const [theme, setTheme] = useState(preset ? 'tous' : classe.chapitres?.[0] || 'tous');
+  const [theme, setTheme] = useState(preset ? 'tous' : classe.chapitres?.[0] && chapitreDe(classe.chapitres[0]) ? `chap:${classe.chapitres[0]}` : 'tous');
   const [certains, setCertains] = useState(!!preset?.eleves?.length), [visés, setVisés] = useState(preset?.eleves || []);
   const [erreur, setErreur] = useState(''), [msg, setMsg] = useState(''), [occupe, setOccupe] = useState(false), [version, setVersion] = useState(0);
-  const items = useMemo(() => catalogue(), []);
+  const items = useMemo(() => catalogueDevoirs(), []);
   const par = useMemo(() => new Map(items.map(i => [i.cle, i])), [items]);
 
   useEffect(() => {
@@ -40,6 +54,10 @@ export function DevoirsProf({ classe, eleves, lignes, preset }) {
     const q = recherche.trim().toLowerCase();
     return items.filter(i => garde(theme, i) && (!q || i.titre.toLowerCase().includes(q) || i.comp.toLowerCase().includes(q)));
   }, [items, recherche, theme]);
+  const cibles = certains && cible ? eleves.filter(e => visés.includes(e.user_id)) : eleves;
+  const ajouter = liste => setChoix(c => [...c, ...liste.map(i => i.cle).filter(k => !c.includes(k))].slice(0, MAX_EXOS));
+  const restants = useMemo(() => filtres.filter(i => i.comp !== 'REA'), [filtres]);
+  const nonReussis = useMemo(() => nonReussisParAuMoinsUn(restants, cibles, lignes), [restants, cibles, lignes]);
   const bascule = cle => setChoix(c => (c.includes(cle) ? c.filter(x => x !== cle) : c.length < MAX_EXOS ? [...c, cle] : c));
   const basculeEleve = id => setVisés(v => (v.includes(id) ? v.filter(x => x !== id) : [...v, id]));
   const creer = e => {
@@ -73,13 +91,27 @@ export function DevoirsProf({ classe, eleves, lignes, preset }) {
           <label style={{ fontSize: 13, fontWeight: 700 }}>Date limite (facultative)<br />
             <input type="date" value={echeance} onChange={e => setEcheance(e.target.value)} style={champ} aria-label="Date limite" /></label>
         </div>
-        <div style={{ fontSize: 13, fontWeight: 700 }}>Exercices et défis ({choix.length} / {MAX_EXOS} choisis)</div>
+        <div style={{ fontSize: 13, fontWeight: 700 }}>Exercices, défis et simulations ({choix.length} / {MAX_EXOS} choisis)</div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <select value={theme} onChange={e => setTheme(e.target.value)} aria-label="Thème" style={{ ...champ, flex: '0 1 300px' }}>
-            <option value="tous">Tous les thèmes</option>
-            {ORDRE_DOMAINES.map(d => <option key={d} value={d}>{classe.chapitres?.includes(d) ? '📘 ' : ''}{d}{classe.chapitres?.includes(d) ? ' (chapitre en cours)' : ''}</option>)}
-            {FILTRES_SPECIAUX.map(([v, n]) => <option key={v} value={v}>{n}</option>)}
+          <select value={theme} onChange={e => setTheme(e.target.value)} aria-label="Thème" style={{ ...champ, flex: '0 1 380px' }}>
+            <option value="tous">Tout le catalogue</option>
+            {NIVEAUX_CHAPITRES.map(n => (
+              <optgroup key={n.key} label={`Chapitres ${n.label}`}>
+                {chapitresDuNiveau(n.key).map(c => <option key={c.id} value={`chap:${c.id}`}>{classe.chapitres?.includes(c.id) ? '📘 ' : ''}{c.label}{classe.chapitres?.includes(c.id) ? ' (chapitre en cours)' : ''}</option>)}
+              </optgroup>))}
+            <optgroup label="Thèmes d’exercices">
+              {ORDRE_DOMAINES.map(d => <option key={d} value={d}>{d}</option>)}
+            </optgroup>
+            <optgroup label="Autres">
+              {FILTRES_SPECIAUX.map(([v, n]) => <option key={v} value={v}>{n}</option>)}
+            </optgroup>
           </select>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          <button type="button" data-ajouter-tout style={styleBouton(false, '#475569')} disabled={restants.length === 0 || choix.length >= MAX_EXOS} onClick={() => ajouter(restants)}>➕ Tout ajouter ({restants.length})</button>
+          <button type="button" data-ajouter-non-reussis style={styleBouton(false, '#475569')} disabled={nonReussis.length === 0 || choix.length >= MAX_EXOS} onClick={() => ajouter(nonReussis)}>➕ Seulement ce qui n’est pas réussi par tous ({nonReussis.length})</button>
+          {choix.length > 0 && <button type="button" style={styleBouton(false, '#b91c1c')} onClick={() => setChoix([])}>Vider la sélection</button>}
+          <span style={{ fontSize: 12.5, color: KIT.txt2 }}>S’applique à la liste affichée (calculs REA exclus), dans la limite de {MAX_EXOS}.</span>
         </div>
         <input value={recherche} onChange={e => setRecherche(e.target.value)} placeholder="Chercher (mot du titre, ANA, REA, S'APP, DÉFI…)" style={champ} aria-label="Chercher un exercice" />
         <div style={{ maxHeight: 250, overflowY: 'auto', border: `1px solid ${KIT.bord}`, borderRadius: 8, background: '#fff' }}>
@@ -87,7 +119,7 @@ export function DevoirsProf({ classe, eleves, lignes, preset }) {
           {filtres.map(i => { const coche = choix.includes(i.cle); return (
             <label key={i.cle} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '5px 9px', fontSize: 13.5, cursor: 'pointer', background: coche ? '#fff1f2' : 'transparent', borderBottom: `1px solid ${KIT.bord}` }}>
               <input type="checkbox" checked={coche} disabled={!coche && choix.length >= MAX_EXOS} onChange={() => bascule(i.cle)} style={{ marginTop: 3, accentColor: '#e11d48' }} />
-              <span><b style={{ color: ROSE }}>{i.comp === 'DÉFI' ? 'Défi' : i.comp}</b> · {i.titre}</span>
+              <span><b style={{ color: ROSE }}>{nomComp(i)}</b> · {i.titre}{i.comp === 'SIM' && <span style={{ color: KIT.txt2 }}>{noteSim(i)}</span>}</span>
             </label>); })}
         </div>
         {choix.length > 0 && <div style={{ fontSize: 13, color: KIT.txt2 }}>Choisis : {choix.map(c => par.get(c)?.titre || c).join(' · ')}</div>}
@@ -104,7 +136,7 @@ export function DevoirsProf({ classe, eleves, lignes, preset }) {
                 <input type="checkbox" checked={on} onChange={() => basculeEleve(e.user_id)} style={{ accentColor: '#e11d48' }} />{e.identifiant}
               </label>); })}
           </div>)}
-        <div style={{ fontSize: 12.5, color: KIT.txt2 }}>Un exercice compte comme <b>fait</b> s’il est <b>réussi après la création du devoir</b> (un exercice réussi avant doit donc être refait : pratique pour des révisions).</div>
+        <div style={{ fontSize: 12.5, color: KIT.txt2 }}>Un exercice compte comme <b>fait</b> s’il est <b>réussi après la création du devoir</b> (un exercice réussi avant doit donc être refait : pratique pour des révisions). Une <b>simulation</b> compte comme <b>faite</b> après au moins {SEUIL_GUIDE_S / 60} minutes en parcours guidé <b>et</b> un défi réussi (si la simulation en propose) : c’est mesuré dans le navigateur de l’élève, donc une aide à l’organisation et non une preuve.</div>
         <div><button type="submit" style={styleBouton(true, '#16a34a')} disabled={occupe || !titre.trim() || choix.length === 0 || (certains && cible && visés.length === 0)}>Créer le devoir</button></div>
       </form>
 
