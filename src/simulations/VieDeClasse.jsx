@@ -22,27 +22,29 @@ async function lireClasse(classeId) {
   } catch { return null; }           // migration non appliquée, réseau coupé… : on n'affiche rien
 }
 
-export function VieDeClasse({ lignes }) {
+// apercu : { semaine, moi } = données fictives (aperçu élève du professeur) : rien n'est lu ni écrit sur le serveur.
+export function VieDeClasse({ lignes, apercu }) {
   const sess = useSession();
   const classeId = sess?.profil?.classe_id, monId = sess?.user?.id;
-  const [semaine, setSemaine] = useState(null);          // null : chargement ou indisponible
-  const [moi, setMoi] = useState(null);                  // null : pas de pseudo
+  const [semaine, setSemaine] = useState(apercu?.semaine ?? null);          // null : chargement ou indisponible
+  const [moi, setMoi] = useState(apercu?.moi ?? null);                  // null : pas de pseudo
   const [idees, setIdees] = useState(() => propositions(4));
   const [msg, setMsg] = useState(''), [occupe, setOccupe] = useState(false), [mont, setMont] = useState(false);
   const [version, setVersion] = useState(0);             // augmente après chaque enregistrement : relit le serveur
 
   useEffect(() => {
-    if (!classeId) return undefined;
+    if (apercu || !classeId) return undefined;
     let vivant = true;
     lireClasse(classeId).then(r => { if (vivant) { setSemaine(r?.semaine || null); setMoi(r?.moi || null); } });
     return () => { vivant = false; };
-  }, [classeId, version]);
+  }, [classeId, version, apercu]);
   useEffect(() => { if (semaine) { const t = setTimeout(() => setMont(true), 80); return () => clearTimeout(t); } return undefined; }, [semaine]);
   const recharger = () => setVersion(v => v + 1);
 
   const prog = useMemo(() => progressionSemaine(lignes || []), [lignes]);
 
   const choisir = async (adj, nom) => {
+    if (apercu) { setMoi(m => ({ adj, nom, visible: m?.visible ?? false })); return; }
     setOccupe(true); setMsg('');
     try {
       if (moi) await rest(`pseudos?user_id=eq.${monId}`, { method: 'PATCH', corps: { adj, nom } });
@@ -55,8 +57,9 @@ export function VieDeClasse({ lignes }) {
     setOccupe(false);
   };
   const montrer = async visible => {
-    setOccupe(true); setMsg('');
     setMoi(m => (m ? { ...m, visible } : m));               // affichage immédiat, annulé si le serveur refuse
+    if (apercu) return;
+    setOccupe(true); setMsg('');
     try { await rest(`pseudos?user_id=eq.${monId}`, { method: 'PATCH', corps: { visible } }); recharger(); }
     catch (e) { setMoi(m => (m ? { ...m, visible: !visible } : m)); setMsg(`Impossible d’enregistrer : ${e.message}`); }
     setOccupe(false);
