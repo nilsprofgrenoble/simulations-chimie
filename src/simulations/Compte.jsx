@@ -4,6 +4,7 @@ import { useSession, estEleve, estProf, connexion, deconnexion, toutLire, change
 import { tousLesExercices } from "./Entrainement";
 import { estSimulation, estDefi, tempsParSimulation, MODES, etiquettesDefis } from "../suivi";
 import { Carnet } from "./Carnet";
+import { VieDeClasse } from "./VieDeClasse";
 
 const ROSE = '#e11d48';
 
@@ -108,6 +109,7 @@ function MesResultats({ naviguer }) {
   return (
     <div>
       <Carnet lignes={lignes} naviguer={naviguer} />
+      <VieDeClasse lignes={lignes} />
       <details style={{ marginTop: 22 }}>
       <summary style={{ cursor: 'pointer', fontSize: 16, fontWeight: 800, color: KIT.txt, padding: '6px 0' }}>📋 Le détail de mes résultats</summary>
       <h3 style={{ margin: '14px 0 6px' }}>Mes résultats</h3>

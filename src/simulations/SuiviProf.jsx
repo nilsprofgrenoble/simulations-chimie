@@ -68,11 +68,14 @@ export function SimulationSuiviProf({ naviguer }) {
   const [onglet, setOnglet] = useState('eleves'), [ouvert, setOuvert] = useState(null);
   const [msg, setMsg] = useState(''), [erreur, setErreur] = useState(''), [occupe, setOccupe] = useState(false);
   const [comptes, setComptes] = useState(null), [formClasse, setFormClasse] = useState(false);
+  const [vieDispo, setVieDispo] = useState(true);
   const [nc, setNc] = useState({ nom: '', prefixe: '', nombre: 30 }), [ajout, setAjout] = useState(5);
   const etq = useMemo(() => etiquettes(), []), exos = useMemo(() => tousLesExercices(), []), defis = useMemo(() => etiquettesDefis(), []);
 
   const chargerClasses = useCallback(async (choisir) => {
-    const c = await rest('classes?select=id,nom,prefixe&order=cree_le');
+    let c;
+    try { c = await rest('classes?select=id,nom,prefixe,vie_classe&order=cree_le'); setVieDispo(true); }
+    catch { c = await rest('classes?select=id,nom,prefixe&order=cree_le'); setVieDispo(false); }   // supabase/05-vie-de-classe.sql pas encore appliqué
     setClasses(c);
     setClasseId(cur => choisir || (c.some(x => x.id === cur) ? cur : c[0]?.id || ''));
   }, []);
@@ -122,6 +125,11 @@ export function SimulationSuiviProf({ naviguer }) {
     if (!window.confirm(`Supprimer le compte ${id} et toutes ses données ? Cette action est définitive.`)) return;
     proteger(async () => { await fonctionComptes('supprimer_eleve', { identifiant: id }); await chargerClasse(classeId); setMsg(`${id} supprimé.`); });
   };
+  const basculerVie = actif => proteger(async () => {
+    await rest(`classes?id=eq.${classeId}`, { method: 'PATCH', corps: { vie_classe: actif } });
+    setClasses(cs => cs.map(c => (c.id === classeId ? { ...c, vie_classe: actif } : c)));
+    setMsg(actif ? 'Vie de classe activée : les élèves voient l’objectif collectif et les prouesses.' : 'Vie de classe désactivée.');
+  });
   const supprimerClasse = () => {
     const saisie = window.prompt(`Supprimer la classe « ${classe.nom} », ses ${eleves.length} comptes et toutes leurs données ? Définitif.\nPour confirmer, tapez le préfixe : ${classe.prefixe}`);
     if (saisie !== classe.prefixe) return;
@@ -176,6 +184,19 @@ export function SimulationSuiviProf({ naviguer }) {
           <button onClick={supprimerClasse} style={{ ...styleBouton(false, '#b91c1c'), marginLeft: 'auto' }} disabled={occupe}>🗑 Supprimer la classe</button>
         </>}
       </div>
+
+      {classe && (
+        <div style={{ ...styleBoite, margin: '0 0 10px', fontSize: 13.5 }}>
+          {vieDispo ? (
+            <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', cursor: 'pointer' }}>
+              <input type="checkbox" checked={!!classe.vie_classe} disabled={occupe} onChange={e => basculerVie(e.target.checked)} style={{ marginTop: 3 }} />
+              <span><b>🏆 Vie de classe</b> (désactivée par défaut) : les élèves de « {classe.nom} » voient un objectif collectif de la semaine et des « prouesses »
+                (pas de classement). Les pseudos sont tirés d’une liste fixe, et chaque élève décide s’il apparaît.</span>
+            </label>
+          ) : (
+            <span>🏆 <b>Vie de classe</b> : disponible après avoir exécuté <code>supabase/05-vie-de-classe.sql</code> dans Supabase (SQL Editor → Run).</span>
+          )}
+        </div>)}
 
       {formClasse && (
         <form onSubmit={creerClasse} style={{ ...styleBoite, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
