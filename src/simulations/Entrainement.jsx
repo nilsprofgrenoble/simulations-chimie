@@ -8,7 +8,7 @@ import { FAMILLES as FAM_ANA } from "./AtelierAnalyserBanque";
 import { ORDRE_DOMAINES } from "./ordreDomaines";
 import { useSession, estEleve, estProf, toutLire, rest } from "../serveur";
 import { exosDuChapitre, exosCalcul, prochainExercice, avancementChapitre } from "../chapitre";
-import { chapitreDe, chapitresDe, domainesDe, simsDe } from "../chapitres";
+import { NIVEAUX_CHAPITRES, chapitresDuNiveau, chapitreDe, chapitresDe, domainesDe, simsDe } from "../chapitres";
 import { nomsSim } from "../suivi";
 
 const ROSE = '#e11d48';
@@ -62,6 +62,7 @@ function LigneExo({ e, prog, etoiles, ouvrir, montrerTheme }) {
 
 export function SimulationEntrainement({ naviguer }) {
   const [theme, setTheme] = useState('tous');
+  const [niveau, setNiveau] = useState('tous');
   const [comp, setComp] = useState('toutes');
   const [progLocale, setProg] = useState(lireProgression);
   const sess = useSession();
@@ -90,8 +91,16 @@ export function SimulationEntrainement({ naviguer }) {
   const chapActifs = useMemo(() => (classeId ? chapitres : []), [classeId, chapitres]);
   const prog = { ...progLocale, ...serveur };
   const exos = useMemo(() => tousLesExercices(), []);
-  const themes = [...ORDRE_DOMAINES.filter(d => exos.some(e => e.domaine === d)), TRANSVERSAL];
-  const liste = exos.filter(e => (theme === 'tous' || e.domaine === theme) && (comp === 'toutes' || e.comp === comp));
+  // Filtre par niveau : les exercices n'ont pas de niveau propre ; on garde les thèmes rattachés à un chapitre du niveau (voir chapitres.js).
+  // Les exercices de calcul (transversaux) servent à tous les niveaux.
+  const exosN = useMemo(() => {
+    if (niveau === 'tous') return exos;
+    const ds = domainesDe(chapitresDuNiveau(niveau));
+    return exos.filter(e => e.domaine === TRANSVERSAL || ds.includes(e.domaine));
+  }, [exos, niveau]);
+  const themes = [...ORDRE_DOMAINES.filter(d => exosN.some(e => e.domaine === d)), TRANSVERSAL];
+  const themeEff = themes.includes(theme) ? theme : 'tous';
+  const liste = exosN.filter(e => (themeEff === 'tous' || e.domaine === themeEff) && (comp === 'toutes' || e.comp === comp));
   const nbFaits = l => l.filter(e => prog[e.cle]).length;
   const ouvrir = e => naviguer(e.atelier, e.ex);
   const etoilesDe = cle => etoilesSrv[cle] ?? (prog[cle] ? 3 : 0);
@@ -172,7 +181,7 @@ export function SimulationEntrainement({ naviguer }) {
         {avecChapitre && <summary style={{ cursor: 'pointer', fontSize: 15.5, fontWeight: 800, color: KIT.txt }}>📚 Autres thèmes et toutes les compétences</summary>}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12, margin: '14px 0' }}>
         {COMPETENCES.map((c, i) => {
-          const mes = exos.filter(e => e.comp === c.code);
+          const mes = exosN.filter(e => e.comp === c.code);
           return (
             <div key={c.code} data-comp={c.code} style={{ ...styleBoite, borderLeft: `5px solid ${c.couleur}`, opacity: c.dispo ? 1 : 0.65 }}>
               <div style={{ fontSize: 12, color: KIT.txt2 }}>Étape {i + 1}</div>
@@ -182,7 +191,7 @@ export function SimulationEntrainement({ naviguer }) {
                 <>
                   <div style={{ fontSize: 12.5, color: KIT.txt2, marginBottom: 6 }}>{nbFaits(mes)} exercice{nbFaits(mes) > 1 ? 's' : ''} réussi{nbFaits(mes) > 1 ? 's' : ''} sur {mes.length}</div>
                   <div style={{ height: 6, borderRadius: 3, background: '#e2e8f0', marginBottom: 8 }}>
-                    <div style={{ height: 6, borderRadius: 3, background: c.couleur, width: `${100 * nbFaits(mes) / mes.length}%` }} />
+                    <div style={{ height: 6, borderRadius: 3, background: c.couleur, width: `${mes.length ? 100 * nbFaits(mes) / mes.length : 0}%` }} />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                     {c.ateliers.map(a => <button key={a.id} onClick={() => naviguer(a.id)} style={styleBouton(true, c.couleur)}>{a.nom} ▶</button>)}
@@ -195,9 +204,14 @@ export function SimulationEntrainement({ naviguer }) {
       </div>
 
       <h3 style={{ marginBottom: 6 }}>Tous les exercices, par thème</h3>
+      <div data-niveaux style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt }}>Mon niveau :</span>
+        <button onClick={() => setNiveau('tous')} style={stylePetitBouton(niveau === 'tous', ROSE)}>Tous</button>
+        {NIVEAUX_CHAPITRES.map(n => <button key={n.key} data-niveau={n.key} onClick={() => setNiveau(n.key)} style={stylePetitBouton(niveau === n.key, ROSE)}>{n.label}</button>)}
+      </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
-        <button onClick={() => setTheme('tous')} style={stylePetitBouton(theme === 'tous', ROSE)}>Tous les thèmes</button>
-        {themes.map(t => <button key={t} onClick={() => setTheme(t)} style={stylePetitBouton(theme === t, ROSE)}>{t}</button>)}
+        <button onClick={() => setTheme('tous')} style={stylePetitBouton(themeEff === 'tous', ROSE)}>Tous les thèmes</button>
+        {themes.map(t => <button key={t} onClick={() => setTheme(t)} style={stylePetitBouton(themeEff === t, ROSE)}>{t}</button>)}
       </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
         <button onClick={() => setComp('toutes')} style={stylePetitBouton(comp === 'toutes', ROSE)}>Toutes les compétences</button>
@@ -206,7 +220,7 @@ export function SimulationEntrainement({ naviguer }) {
 
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginBottom: 6 }}>{liste.length} exercice{liste.length > 1 ? 's' : ''} · {nbFaits(liste)} réussi{nbFaits(liste) > 1 ? 's' : ''}</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {liste.map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} montrerTheme={theme === 'tous'} />)}
+        {liste.map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} montrerTheme={themeEff === 'tous'} />)}
       </div>
       </details>
 
