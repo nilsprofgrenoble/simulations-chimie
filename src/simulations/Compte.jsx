@@ -4,6 +4,7 @@ import { useSession, estEleve, estProf, connexion, deconnexion, toutLire, change
 import { tousLesExercices } from "./Entrainement";
 import { estSimulation, estDefi, tempsParSimulation, MODES, etiquettesDefis } from "../suivi";
 import { Carnet } from "./Carnet";
+import { DevoirsEleve } from "./DevoirsEleve";
 import { VieDeClasse } from "./VieDeClasse";
 import { BoutonMail } from "../contact";
 
@@ -123,6 +124,7 @@ function MesResultats({ naviguer }) {
   const nbDefis = ag.filter(a => a.reussi && estDefi(a.cle)).length, total = ag.reduce((t, a) => t + a.duree, 0);
   return (
     <div>
+      <DevoirsEleve lignes={lignes} naviguer={naviguer} />
       <Carnet lignes={lignes} naviguer={naviguer} />
       <VieDeClasse lignes={lignes} />
       <details style={{ marginTop: 22 }}>
