@@ -51,6 +51,14 @@ export function Carnet({ lignes, naviguer }) {
         .cn-puce { background: rgba(255,255,255,.75); border: 1px solid #cfe6e1; color: #134e4a; border-radius: 999px; padding: 4px 12px; font-size: 13.5px; font-weight: 700; white-space: nowrap; }
         .cn-h { margin: 22px 0 10px; font-size: 18px; font-weight: 800; color: #0f172a; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
         .cn-h small { font-size: 13px; font-weight: 600; color: #64748b; }
+        .cn-repli { margin-top: 22px; }
+        .cn-repli > summary { list-style: none; cursor: pointer; margin: 0 0 10px; padding: 10px 14px; background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; font-size: 17px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .cn-repli > summary::-webkit-details-marker { display: none; }
+        .cn-repli > summary::after { content: '▾'; margin-left: auto; color: #64748b; transition: transform .2s; }
+        .cn-repli[open] > summary::after { transform: rotate(180deg); }
+        .cn-repli > summary:hover { border-color: #cbd5e1; background: #fafcfc; }
+        .cn-repli > summary small { font-size: 13px; font-weight: 600; color: #64748b; }
+        .cn-mini { font-size: 18px; letter-spacing: 1px; }
         .cn-grille { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
         .cn-carte { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 14px; box-shadow: 0 2px 10px rgba(15,23,42,.05); transition: transform .2s, box-shadow .2s; }
         .cn-carte:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15,23,42,.1); }
@@ -130,7 +138,7 @@ export function Carnet({ lignes, naviguer }) {
                     </div>); })}
               </div>
               <div style={{ fontSize: 13, color: '#64748b', marginTop: 8 }}>
-                Pas besoin de tout faire d’un coup : {rev.autres > 0 ? `il en reste ${rev.autres} d’autres pour plus tard. ` : ''}chaque révision réussie t’éloigne de l’oubli, et l’exercice disparaît d’ici jusqu’à sa prochaine date idéale.
+                Pas besoin de tout faire d’un coup : {rev.autres > 0 ? `il en reste ${rev.autres} d’autres pour plus tard. Chaque` : 'chaque'} révision réussie t’éloigne de l’oubli, et l’exercice disparaît d’ici jusqu’à sa prochaine date idéale.
               </div>
             </>)}
         </>)}
@@ -162,9 +170,9 @@ export function Carnet({ lignes, naviguer }) {
           const p = c.palier;
           return (
             <div key={c.code} data-comp-carnet={c.code} className="cn-carte" style={{ opacity: c.bientot ? 0.7 : 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 <div style={{ width: 42, height: 42, borderRadius: 12, background: c.clair, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>{c.icone}</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ flex: '1 1 90px', minWidth: 0 }}>
                   <div style={{ fontWeight: 800, color: c.couleur, fontSize: 15 }}>{c.code === 'DÉFI' ? 'Défis' : c.code}</div>
                   <div style={{ fontSize: 13, color: '#475569' }}>{c.code === 'DÉFI' ? 'simulations' : c.nom}</div>
                 </div>
@@ -188,7 +196,8 @@ export function Carnet({ lignes, naviguer }) {
       </div>
 
       {/* ── Badges ── */}
-      <h3 className="cn-h">🏅 Mes badges <small>{nbBadges} sur {badges.length}</small></h3>
+      <details className="cn-repli" data-repli="badges">
+      <summary>🏅 Mes badges <small>{nbBadges} sur {badges.length}</small><span className="cn-mini" aria-hidden="true">{badges.filter(b => b.ok).map(b => <span key={b.id}>{b.icone}</span>)}</span></summary>
       <div className="cn-grille" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}>
         {badges.map(b => (
           <div key={b.id} data-badge={b.id} data-ok={b.ok} className="cn-carte cn-badge" title={b.desc}>
@@ -202,9 +211,11 @@ export function Carnet({ lignes, naviguer }) {
               </>)}
           </div>))}
       </div>
+      </details>
 
       {/* ── Régularité ── */}
-      <h3 className="cn-h">📅 Ma régularité <small>8 dernières semaines</small></h3>
+      <details className="cn-repli" data-repli="regularite">
+      <summary>📅 Ma régularité <small>{nbSem} semaine{nbSem > 1 ? 's' : ''} active{nbSem > 1 ? 's' : ''} sur 8</small></summary>
       <div className="cn-carte" style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', gap: 6 }} role="img" aria-label={`${nbSem} semaine${nbSem > 1 ? 's' : ''} active${nbSem > 1 ? 's' : ''} sur 8`}>
           {semaines.map((s, k) => <div key={k} className={`cn-sem${s.actif ? ' on' : ''}`} title={`Semaine du ${s.debut.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}${s.actif ? ' : active' : ''}`} />)}
@@ -213,6 +224,7 @@ export function Carnet({ lignes, naviguer }) {
           <b style={{ color: '#0f172a' }}>{nbSem} semaine{nbSem > 1 ? 's' : ''} active{nbSem > 1 ? 's' : ''}</b> sur 8. Pas de série à perdre : chaque semaine où tu travailles compte, même un peu.
         </div>
       </div>
+      </details>
     </div>
   );
 }
