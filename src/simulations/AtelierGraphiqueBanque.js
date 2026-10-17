@@ -95,6 +95,13 @@ export const SCENARIOS = [
     f: p => x => p.c0 * Math.exp(-Math.LN2 * x / p.th), conv: { axis: 'x', fact: 1 / 60, unit: 'min' },
     origine: p => ({ texte: 'Quelle est la concentration du réactif à t = 0 ?', val: p.c0 }),
     inverse: p => ({ y: p.c0 / 2, texte: 'Lisez le temps de demi-réaction t½ : durée au bout de laquelle la concentration est divisée par 2.', val: p.th }) },
+  { id: 'cycliste', domaine: 'Mouvement et vitesse', type: 'droite', prop: true, tend: 'A',
+    gen: () => { const v = tire([12, 15, 18, 24]); return { v, k: v / 60 }; },
+    titre: () => 'Position d’un cycliste au cours de son trajet',
+    axes: () => ({
+      x: { nom: 'Durée écoulée', sym: 't', u: 'min', min: 0, max: 60, ech: [[10, 5], [10, 2], [5, 5]] },
+      y: { nom: 'Distance parcourue', sym: 'd', u: 'km', min: 0, max: 30, ech: [[5, 5], [10, 5], [5, 2]] } }),
+    f: p => x => p.k * x, penteU: 'km·min⁻¹', penteConv: { fact: 60, unit: 'km·h⁻¹' }, conv: { axis: 'y', fact: 1000, unit: 'm' }, xe: 80 },
 ];
 
 export const COMPETENCES = ['Identifier grandeurs, axes et unités', 'Lire sur le graphique (échelle, valeurs)', 'Interpréter l’allure de la courbe', 'Exploiter (pente, extrapolation)'];

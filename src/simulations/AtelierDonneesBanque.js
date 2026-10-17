@@ -255,6 +255,65 @@ export const ENONCES = [
         solution: { txt: 'm = ρ·V = ρ·S·h', val: p.rho * S * p.h, u: 'kg' } };
     },
   },
+  // ───────────────────────────── Mouvement et vitesse (seconde)
+  {
+    id: 'trajet', domaine: 'Mouvement et vitesse', titre: 'Un trajet en train', noms: ['Vitesse moyenne du train', 'Durée d’un autre trajet'],
+    gen: () => { const v = tire([80, 100, 120, 150]), dur = tire([90, 120, 150, 180]), h0 = tire([7, 8, 9, 14]), m0 = tire([0, 15, 30, 45]);
+      return { v, dur, h0, m0, d: v * dur / 60, pass: tire([180, 240, 320, 410]), prix: tire([24, 32, 45]) }; },
+    build: (p, q) => {
+      const hm = min => `${Math.floor(min / 60) % 24} h ${String(min % 60).padStart(2, '0')}`;
+      const dep = p.h0 * 60 + p.m0, arr = dep + p.dur;
+      const tokens = {
+        d: tok(`${p.d} km`, 'Distance parcourue par le train', p.d, 'km'),
+        dep: tok(hm(dep), 'Heure de départ', dep / 60, 'h'),
+        arr: tok(hm(arr), 'Heure d’arrivée', arr / 60, 'h'),
+        pass: tok(`${p.pass} passagers`, 'Nombre de passagers', p.pass, ''),
+        prix: tok(`${p.prix} €`, 'Prix du billet', p.prix, '€'),
+      };
+      if (q === 0) return { tokens,
+        derivees: [{ id: 'dt', nom: 'Durée Δt du trajet', expr: 'Δt = heure d’arrivée − heure de départ', val: p.dur / 60, u: 'h' }],
+        texte: ['Un train part de la gare à ', T('dep'), ' et arrive à destination à ', T('arr'), '. Il transporte ', T('pass'), ' et parcourt ', T('d'), '. Le billet coûte ', T('prix'), '. Quelle est la vitesse moyenne du train ?'],
+        utiles: ['d', 'dep', 'arr'],
+        raisons: { pass: 'Le nombre de passagers ne change pas la vitesse du train dans cet exercice.', prix: 'Le prix du billet n’a aucun rapport avec la vitesse.' },
+        cherche: { bonne: 'La vitesse moyenne v du train (en km·h⁻¹)', faux: ['La distance parcourue par le train (en km)', 'La durée du trajet (en h)', 'L’accélération du train (en m·s⁻²)'] },
+        manque: null, solution: { txt: 'v = d / Δt', val: p.v, u: 'km·h⁻¹' } };
+      tokens.v = tok(`${p.v} km·h⁻¹`, 'Vitesse moyenne d’un autre train', p.v, 'km·h⁻¹');
+      return { tokens, derivees: [],
+        texte: ['Un autre train roule à la vitesse moyenne de ', T('v'), '. Il part à ', T('dep'), ' avec ', T('pass'), ' et doit parcourir ', T('d'), '. Combien de temps dure ce trajet ?'],
+        utiles: ['v', 'd'],
+        raisons: { dep: 'L’heure de départ permettrait de calculer l’heure d’arrivée, mais on demande seulement la durée.', pass: 'Le nombre de passagers ne change pas la durée du trajet.', prix: 'Le prix du billet n’a aucun rapport avec la durée.' },
+        cherche: { bonne: 'La durée Δt du trajet (en h)', faux: ['La vitesse moyenne du train (en km·h⁻¹)', 'L’heure d’arrivée (en h)', 'La distance parcourue (en km)'] },
+        manque: null, solution: { txt: 'Δt = d / v', val: p.dur / 60, u: 'h' } };
+    },
+  },
+  {
+    id: 'course', domaine: 'Mouvement et vitesse', titre: 'Une course à pied', noms: ['Vitesse en m·s⁻¹', 'Distance parcourue en roulant'],
+    gen: () => ({ d: tire([5, 6, 8, 10]), t: tire([25, 30, 40, 50]), v: tire([8, 10, 12, 15]), tv: tire([30, 45, 90]), age: tire([17, 24, 31, 45]), dos: tire([128, 245, 316, 470]) }),
+    build: (p, q) => {
+      const tokens = {
+        age: tok(`${p.age} ans`, 'Âge de la personne', p.age, 'ans'),
+        dos: tok(`n° ${p.dos}`, 'Numéro de dossard', p.dos, ''),
+      };
+      if (q === 0) {
+        tokens.d = tok(`${p.d} km`, 'Distance parcourue', p.d * 1000, 'm');
+        tokens.t = tok(`${p.t} min`, 'Durée de la course', p.t * 60, 's');
+        return { tokens, derivees: [],
+          texte: ['Un coureur de ', T('age'), ' porte le dossard ', T('dos'), '. Il parcourt ', T('d'), ' en ', T('t'), '. Quelle est sa vitesse moyenne, en mètres par seconde ?'],
+          utiles: ['d', 't'],
+          raisons: { age: 'L’âge du coureur ne change pas le calcul de sa vitesse.', dos: 'Le numéro de dossard sert à identifier le coureur, pas à calculer sa vitesse.' },
+          cherche: { bonne: 'La vitesse moyenne v du coureur (en m·s⁻¹)', faux: ['La distance parcourue (en m)', 'La durée de la course (en s)', 'La vitesse du coureur (en km·h⁻¹)'] },
+          manque: null, solution: { txt: 'v = d / Δt, avec d en m et Δt en s', val: p.d * 1000 / (p.t * 60), u: 'm·s⁻¹' } };
+      }
+      tokens.v = tok(`${p.v} km·h⁻¹`, 'Vitesse du cycliste', p.v, 'km·h⁻¹');
+      tokens.tv = tok(`${p.tv} min`, 'Durée du trajet à vélo', p.tv / 60, 'h');
+      return { tokens, derivees: [],
+        texte: ['Un cycliste de ', T('age'), ' roule à la vitesse constante de ', T('v'), ' pendant ', T('tv'), '. Il porte le dossard ', T('dos'), '. Quelle distance parcourt-il, en kilomètres ?'],
+        utiles: ['v', 'tv'],
+        raisons: { age: 'L’âge du cycliste ne change pas la distance parcourue.', dos: 'Le numéro de dossard ne sert pas dans le calcul.' },
+        cherche: { bonne: 'La distance d parcourue par le cycliste (en km)', faux: ['La vitesse du cycliste (en km·h⁻¹)', 'La durée du trajet (en h)', 'Le nombre de tours de roue'] },
+        manque: null, solution: { txt: 'd = v × Δt, avec Δt en h', val: p.v * p.tv / 60, u: 'km' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)

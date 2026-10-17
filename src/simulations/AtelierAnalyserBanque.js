@@ -571,6 +571,30 @@ export const RELATIONS = [
       F('c = k / A', 'Rapport inversé.'),
       F('c = −log A', 'Confusion avec la définition du pH.'),
     ] },
+  { id: 'mvt-vitesse', domaine: 'Mouvement et vitesse', titre: 'Calculer une vitesse',
+    enonce: 'Un cycliste parcourt 36 km en 2 h. On cherche sa vitesse moyenne.',
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('v = d / Δt', 'La vitesse est la distance parcourue divisée par la durée : v = 36 km / 2 h = 18 km·h⁻¹.'),
+      F('v = d × Δt', 'Un produit donnerait des « km·h », qui n’est pas une unité de vitesse. Une vitesse s’exprime en distance PAR durée : on divise.'),
+      F('v = Δt / d', 'Le rapport est inversé : on obtiendrait des h·km⁻¹ (une durée par kilomètre), pas une vitesse.'),
+      F('d = v / Δt', 'C’est une relation fausse : la distance est le produit v × Δt.'),
+    ] },
+  { id: 'mvt-distance', domaine: 'Mouvement et vitesse', titre: 'Calculer une distance',
+    enonce: 'Un train roule à la vitesse constante de 120 km·h⁻¹ pendant 3 h. On cherche la distance parcourue.',
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('d = v × Δt', 'À 120 km·h⁻¹, le train parcourt 120 km chaque heure : en 3 h, d = 120 × 3 = 360 km.'),
+      F('d = v / Δt', 'Une division donnerait des km·h⁻², qui n’est pas une distance.'),
+      F('d = Δt / v', 'Une division de la durée par la vitesse donnerait des h² par km : ce n’est pas une distance.'),
+      F('v = d × Δt', 'Cette relation est fausse : c’est d = v × Δt, et on cherche d.'),
+    ] },
+  { id: 'mvt-duree', domaine: 'Mouvement et vitesse', titre: 'Calculer une durée',
+    enonce: 'Un randonneur marche à 4 km·h⁻¹ et doit parcourir 10 km. On cherche la durée de la marche.',
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('Δt = d / v', 'Δt = 10 km / (4 km·h⁻¹) = 2,5 h : le km se simplifie et il reste des heures.'),
+      F('Δt = d × v', 'Un produit donnerait des km²·h⁻¹ : ce n’est pas une durée.'),
+      F('Δt = v / d', 'Le rapport est inversé : on obtiendrait des h⁻¹, pas une durée.'),
+      F('Δt = v − d', 'On ne peut pas soustraire une vitesse et une distance : elles n’ont pas la même unité.'),
+    ] },
 ];
 
 // ──────────────────────────────── 3. HYPOTHÈSES D'UN MODÈLE ────────────────────────────────
@@ -649,6 +673,15 @@ export const HYPOTHESES = [
       V('La valeur de R est exacte', 'Une résistance a une tolérance (1 %, 5 %…).'),
       F('La CTN est linéaire', 'La formule du pont reste vraie quelle que soit la loi R_CTN(θ).'),
       F('La température est égale à 25 °C', 'La formule est valable à toute température.'),
+    ] },
+  { id: 'mvt-moyenne', domaine: 'Mouvement et vitesse', titre: 'Vitesse moyenne d’un train',
+    enonce: 'Un train parcourt 240 km en 2 h. On calcule v = 240 / 2 = 120 km·h⁻¹ et on dit : « la vitesse moyenne du train est de 120 km·h⁻¹ ».', options: [
+      V('La distance de 240 km est mesurée le long de la trajectoire du train', 'La vitesse se calcule avec la distance réellement parcourue, pas avec la distance « à vol d’oiseau ».'),
+      V('La durée de 2 h couvre tout le trajet, arrêts en gare compris', 'Une vitesse moyenne se calcule avec la distance totale et la durée totale.'),
+      V('Le mouvement est décrit par rapport à un référentiel : ici le sol', 'Par rapport au train lui-même, le train est immobile : « vitesse » n’a de sens que par rapport à un référentiel.'),
+      F('Le train roule à vitesse constante pendant tout le trajet', 'Pas nécessaire : la vitesse moyenne a justement du sens quand la vitesse varie (ralentissements, arrêts).'),
+      F('La trajectoire du train est une ligne droite', 'Pas nécessaire : on mesure la distance le long de la voie, droite ou courbe.'),
+      F('Le train transporte peu de passagers', 'Le nombre de passagers n’intervient pas dans la définition de la vitesse.'),
     ] },
 ];
 
@@ -751,6 +784,27 @@ export const PREVOIR = [
       F('multipliée par 2', 'Sens inversé : moins d’espèce absorbante, moins d’absorbance.'),
       F('divisée par 4', 'A est proportionnelle à c, pas à c².'),
       F('inchangée', 'L’absorbance dépend de la concentration.'),
+    ] },
+  { id: 'mvt-duree-double', domaine: 'Mouvement et vitesse', titre: 'Distance doublée',
+    enonce: 'Un cycliste roule à vitesse constante. Il décide de parcourir une distance deux fois plus grande.', q: 'La durée du trajet est…', options: [
+      V('doublée', 'Δt = d / v : à vitesse constante, la durée est proportionnelle à la distance. Deux fois plus loin, c’est deux fois plus long.'),
+      F('inchangée', 'Si la vitesse ne change pas, parcourir plus de distance demande plus de temps.'),
+      F('divisée par 2', 'Sens inversé : une distance plus grande demande plus de temps, pas moins.'),
+      F('multipliée par 4', 'La durée est proportionnelle à d (pas à d²) : doubler d double Δt.'),
+    ] },
+  { id: 'mvt-vitesse-double', domaine: 'Mouvement et vitesse', titre: 'Vitesse doublée',
+    enonce: 'On parcourt toujours le même trajet, mais en allant deux fois plus vite.', q: 'La durée du trajet est…', options: [
+      V('divisée par 2', 'Δt = d / v : à distance fixée, si v double alors Δt est divisée par 2.'),
+      F('doublée', 'Sens inversé : aller plus vite fait gagner du temps.'),
+      F('inchangée', 'La distance est la même, mais la vitesse a changé : la durée change.'),
+      F('divisée par 4', 'La durée est inversement proportionnelle à v (pas à v²) : doubler v divise Δt par 2.'),
+    ] },
+  { id: 'mvt-referentiel', domaine: 'Mouvement et vitesse', titre: 'Passager dans un train',
+    enonce: 'Un passager est assis dans un train qui roule. Il ne bouge pas de son siège.', q: 'Ce passager est…', options: [
+      V('immobile par rapport au train, mais en mouvement par rapport au quai', 'Le mouvement dépend du référentiel : par rapport au train, la position du passager ne change pas ; par rapport au quai, elle change.'),
+      F('immobile, quel que soit le point de vue', 'Faux : si on se place sur le quai, le passager défile avec le train.'),
+      F('en mouvement, quel que soit le point de vue', 'Faux : par rapport au train, le passager ne bouge pas.'),
+      F('immobile par rapport au quai, mais en mouvement par rapport au train', 'C’est l’inverse de la réalité : le quai est immobile sur le sol, et le passager avance avec le train par rapport au quai.'),
     ] },
 ];
 
