@@ -43,7 +43,7 @@ function CarteDevoir({ d, a, par, naviguer, maintenant, lignes }) {
             <span style={{ flex: 1, textDecoration: fait ? 'line-through' : 'none', color: '#1e293b' }}>
               {it ? <><b style={{ color: '#64748b' }}>{it.comp === 'DÉFI' ? 'Défi' : it.comp === 'SIM' ? 'Simulation' : it.comp} ·</b> {it.titre}</> : <i>Exercice introuvable (retiré du site ?)</i>}
               {it && estCleSim(cle) && !fait && <span data-etat-sim style={{ display: 'block', fontSize: 12.5, color: '#64748b', textDecoration: 'none' }}>{etatSim(lignes, cle, d.cree_le)}</span>}</span>
-            {it && !fait && <button className="dv-btn" onClick={() => (it.atelier ? naviguer(it.atelier, it.ex) : naviguer(it.sim))}>Y aller ▶</button>}
+            {it && !fait && <button className="dv-btn" onClick={() => (it.atelier ? naviguer(it.atelier, it.ex, true) : naviguer(it.sim))}>Y aller ▶</button>}
           </div>); })}
       </div>
     </div>);
