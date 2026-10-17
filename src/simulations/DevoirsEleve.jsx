@@ -37,7 +37,8 @@ function CarteDevoir({ d, a, par, naviguer, maintenant, lignes }) {
       <div style={{ fontSize: 13, color: '#475569', margin: '4px 0 8px' }}>
         {a.termine ? 'Devoir terminé, bravo !' : <><b>{a.nb}</b> sur {a.total} fait{a.nb > 1 ? 's' : ''}{a.nb === 0 ? ' : à toi de jouer' : ''}</>}</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {d.cles.map((cle, i) => { const it = par.get(cle), fait = a.faits[i]; return (
+        {/* Ordre d'affichage : d'abord les simulations (parcours guidé), puis les exercices et les défis, dans l'ordre choisi par le professeur */}
+        {d.cles.map((cle, i) => ({ cle, i })).sort((x, y) => (estCleSim(y.cle) ? 1 : 0) - (estCleSim(x.cle) ? 1 : 0) || x.i - y.i).map(({ cle, i }) => { const it = par.get(cle), fait = a.faits[i]; return (
           <div key={cle} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, opacity: fait ? 0.7 : 1 }}>
             <span aria-label={fait ? 'fait' : 'à faire'} style={{ fontSize: 17 }}>{fait ? '✅' : '⬜'}</span>
             <span style={{ flex: 1, textDecoration: fait ? 'line-through' : 'none', color: '#1e293b' }}>
