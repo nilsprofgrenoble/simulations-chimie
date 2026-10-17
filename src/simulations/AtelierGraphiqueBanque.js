@@ -102,6 +102,20 @@ export const SCENARIOS = [
       x: { nom: 'Durée écoulée', sym: 't', u: 'min', min: 0, max: 60, ech: [[10, 5], [10, 2], [5, 5]] },
       y: { nom: 'Distance parcourue', sym: 'd', u: 'km', min: 0, max: 30, ech: [[5, 5], [10, 5], [5, 2]] } }),
     f: p => x => p.k * x, penteU: 'km·min⁻¹', penteConv: { fact: 60, unit: 'km·h⁻¹' }, conv: { axis: 'y', fact: 1000, unit: 'm' }, xe: 80 },
+  { id: 'poids-planete', domaine: 'Interactions et champs', type: 'droite', prop: true, tend: 'A',
+    gen: () => { const [g, nom] = tire([[1.6, 'la Lune'], [3.7, 'Mars'], [9.8, 'la Terre'], [24.8, 'Jupiter']]); return { g, nom }; },
+    titre: p => `Poids d’objets sur une planète (${p.nom})`,
+    axes: p => ({
+      x: { nom: 'Masse de l’objet', sym: 'm', u: 'kg', min: 0, max: 5, ech: [[1, 5], [1, 2], [0.5, 5]] },
+      y: { nom: 'Poids de l’objet', sym: 'P', u: 'N', min: 0, max: p.g > 20 ? 150 : 50, ech: p.g > 20 ? [[50, 5], [50, 2], [25, 5]] : [[10, 5], [10, 2], [5, 5]] } }),
+    f: p => x => p.g * x, penteU: 'N·kg⁻¹', penteConv: { fact: 1, unit: 'm·s⁻²' }, conv: { axis: 'x', fact: 1000, unit: 'g' }, xe: 7 },
+  { id: 'force-champ', domaine: 'Interactions et champs', type: 'droite', prop: true, tend: 'A',
+    gen: () => { const E = tire([1000, 2000, 3000, 4000]); return { E, k: E / 1000 }; },
+    titre: p => 'Force subie par des charges dans un champ électrique uniforme',
+    axes: p => ({
+      x: { nom: 'Charge de la boule', sym: 'q', u: 'nC', min: 0, max: 100, ech: [[20, 5], [50, 5], [10, 2]] },
+      y: { nom: 'Force électrique', sym: 'F', u: 'µN', min: 0, max: p.k > 2 ? 500 : 200, ech: p.k > 2 ? [[100, 5], [100, 2], [50, 5]] : [[50, 5], [50, 2], [20, 5]] } }),
+    f: p => x => p.k * x, penteU: 'µN·nC⁻¹', penteConv: { fact: 1000, unit: 'N·C⁻¹' }, conv: { axis: 'y', fact: 1e-6, unit: 'N' }, xe: 130 },
 ];
 
 export const COMPETENCES = ['Identifier grandeurs, axes et unités', 'Lire sur le graphique (échelle, valeurs)', 'Interpréter l’allure de la courbe', 'Exploiter (pente, extrapolation)'];

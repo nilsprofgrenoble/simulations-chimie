@@ -149,7 +149,7 @@ function etapesDe(fam, it) {
     { id: 'demarche', type: 'ordre', titre: 'Ordonner la démarche', dem: it.demarche },
   ];
   if (fam === 'hypothese') return [{ id: 'h', type: 'multi', titre: 'Hypothèses nécessaires', q: 'Cochez toutes les hypothèses nécessaires, et seulement elles.', o: it.options }];
-  return [{ id: 'q', type: 'qcm', titre: fam === 'relation' ? 'Choisir la relation' : fam === 'mouvement' ? 'Reconnaître le mouvement' : 'Prévoir', q: it.q, o: it.options }];
+  return [{ id: 'q', type: 'qcm', titre: fam === 'relation' ? 'Choisir la relation' : (fam === 'mouvement' || fam === 'champ') ? 'Reconnaître sur le schéma' : 'Prévoir', q: it.q, o: it.options }];
 }
 const permsDe = etapes => Object.fromEntries(etapes.map(e => [e.id,
   e.type === 'ordre' ? melange(e.dem.etapes.length + e.dem.pieges.length) : e.o ? melange(e.o.length) : null]));

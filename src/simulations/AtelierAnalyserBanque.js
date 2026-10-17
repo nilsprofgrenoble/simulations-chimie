@@ -595,6 +595,34 @@ export const RELATIONS = [
       F('Δt = v / d', 'Le rapport est inversé : on obtiendrait des h⁻¹, pas une durée.'),
       F('Δt = v − d', 'On ne peut pas soustraire une vitesse et une distance : elles n’ont pas la même unité.'),
     ] },
+  { id: 'ch-grav', domaine: 'Interactions et champs', titre: 'Force entre deux corps célestes',
+    enonce: 'On connaît les masses de la Terre et de la Lune et la distance entre leurs centres. On cherche la valeur de la force d’attraction que la Terre exerce sur la Lune.', q: 'Quelle relation permet de répondre ?', options: [
+      V('F = G·m₁·m₂ / d²', 'C’est la loi de la gravitation universelle : la force est proportionnelle au produit des masses et inversement proportionnelle au carré de la distance entre les centres.'),
+      F('F = G·m₁·m₂ / d', 'Le carré de la distance est oublié : la force diminue comme 1/d², pas comme 1/d.'),
+      F('F = G·(m₁ + m₂) / d²', 'Les masses se multiplient, elles ne s’additionnent pas.'),
+      F('F = k·q₁·q₂ / d²', 'C’est la loi de Coulomb (charges électriques). Ici il n’y a que des masses.'),
+    ] },
+  { id: 'ch-coulomb', domaine: 'Interactions et champs', titre: 'Force entre deux charges',
+    enonce: 'Deux petites sphères portent des charges q₁ et q₂ connues, et leurs centres sont séparés d’une distance d connue. On cherche la valeur de la force électrostatique entre elles.', q: 'Quelle relation permet de répondre ?', options: [
+      V('F = k·|q₁·q₂| / d²', 'C’est la loi de Coulomb : la force est proportionnelle au produit des charges et inversement proportionnelle au carré de la distance.'),
+      F('F = G·m₁·m₂ / d²', 'C’est la loi de la gravitation (masses). Ici on connaît des charges, pas des masses.'),
+      F('F = k·|q₁·q₂| / d', 'Le carré de la distance est oublié.'),
+      F('F = k·|q₁ + q₂| / d²', 'Les charges se multiplient dans la loi de Coulomb, elles ne s’additionnent pas.'),
+    ] },
+  { id: 'ch-champ-g', domaine: 'Interactions et champs', titre: 'Champ de gravitation d’une planète',
+    enonce: 'On connaît la masse M d’une planète et la distance d entre son centre et un point de l’espace. On cherche la valeur du champ de gravitation créé par la planète en ce point.', q: 'Quelle relation permet de répondre ?', options: [
+      V('g = G·M / d²', 'Le champ de gravitation est la force par unité de masse : g = F/m = G·M/d². Il ne dépend que de la masse M qui crée le champ et de la distance d.'),
+      F('g = G·M·m / d²', 'C’est la force F qui s’exerce sur un objet de masse m. Le champ est la force par kilogramme : on divise par m.'),
+      F('g = G·M / d', 'Le carré de la distance est oublié.'),
+      F('g = m·G / d²', 'Le champ créé par la planète dépend de la masse de la planète M, pas de la masse d’un objet quelconque.'),
+    ] },
+  { id: 'ch-force-champ', domaine: 'Interactions et champs', titre: 'Force dans un champ électrique',
+    enonce: 'Une charge q est placée dans un champ électrique uniforme de valeur E. On cherche la valeur de la force électrique qu’elle subit.', q: 'Quelle relation permet de répondre ?', options: [
+      V('F = |q|·E', 'Un champ électrique exerce sur une charge q une force proportionnelle à q : F = q·E (en valeur absolue pour la norme).'),
+      F('F = E / q', 'Le sens est inversé : c’est E = F / q qui définit le champ. La force est le produit q·E.'),
+      F('F = q / E', 'La force augmente quand le champ augmente : c’est un produit, pas un quotient.'),
+      F('F = m·E', 'La masse n’intervient pas dans la force électrique : c’est la charge q qui compte.'),
+    ] },
 ];
 
 // ──────────────────────────────── 3. HYPOTHÈSES D'UN MODÈLE ────────────────────────────────
@@ -691,6 +719,15 @@ export const HYPOTHESES = [
       F('Préciser la masse de l’objet', 'La masse ne sert pas à décrire un mouvement (elle servira plus tard à expliquer ses causes).'),
       F('Préciser la couleur de l’objet', 'La couleur n’a aucune influence sur le mouvement.'),
       F('Préciser l’heure à laquelle on observe', 'Seule la façon dont la position change au cours du temps compte, pas l’heure de la journée.'),
+    ] },
+  { id: 'ch-hyp-newton', domaine: 'Interactions et champs', titre: 'Loi de la gravitation universelle',
+    enonce: 'On calcule la force entre la Terre et la Lune avec F = G·m_T·m_L / d², en prenant d = distance entre leurs centres.', options: [
+      V('On assimile chaque astre à un corps à répartition sphérique de masse', 'La loi s’applique exactement à des corps ponctuels ou à des sphères homogènes (ou à répartition sphérique) : la distance est alors celle des centres.'),
+      V('d est la distance entre les centres des deux astres', 'Pour un corps sphérique, tout se passe comme si sa masse était concentrée en son centre.'),
+      V('Seule l’interaction entre ces deux astres est prise en compte', 'On néglige l’action du Soleil et des autres astres pour calculer cette force.'),
+      F('Les deux astres ont la même masse', 'Pas nécessaire : la loi s’applique à deux masses quelconques.'),
+      F('Les deux astres sont immobiles', 'Pas nécessaire : la loi donne la force à un instant, que les astres soient en mouvement ou non.'),
+      F('L’un des deux astres est beaucoup plus petit que l’autre', 'Pas nécessaire : la loi s’applique à deux corps de tailles quelconques, tant que la distance est celle des centres.'),
     ] },
 ];
 
@@ -899,9 +936,59 @@ export const PREVOIR = [
       F('circulaire accéléré', 'Sa vitesse est à peu près constante : on parle de mouvement « uniforme ».'),
       F('immobile', 'La Lune se déplace autour de la Terre dans ce référentiel : elle n’est pas immobile.'),
     ] },
+  { id: 'ch-d-double', domaine: 'Interactions et champs', titre: 'Distance doublée',
+    enonce: 'Deux masses s’attirent. On double la distance qui sépare leurs centres, sans changer les masses.', q: 'La force d’attraction gravitationnelle est…', options: [
+      V('divisée par 4', 'F = G·m₁·m₂/d² : F est inversement proportionnelle à d². Si d double, d² est multipliée par 4 et F est divisée par 4.'),
+      F('divisée par 2', 'Le carré est oublié : la force varie comme 1/d².'),
+      F('doublée', 'Éloigner les masses diminue la force.'),
+      F('inchangée', 'La distance intervient dans la loi : la force change.'),
+    ] },
+  { id: 'ch-m-double', domaine: 'Interactions et champs', titre: 'Masse doublée',
+    enonce: 'Deux masses m₁ et m₂ s’attirent à distance fixée. On double m₁ sans toucher à m₂.', q: 'La force d’attraction gravitationnelle est…', options: [
+      V('doublée', 'F = G·m₁·m₂/d² est proportionnelle à m₁ : si m₁ double, F double.'),
+      F('multipliée par 4', 'Le facteur 4 viendrait du doublement des deux masses, ou du carré. Ici seule m₁ double et F est proportionnelle à m₁.'),
+      F('divisée par 2', 'Une masse plus grande attire plus fort, pas moins.'),
+      F('inchangée', 'La force dépend des deux masses.'),
+    ] },
+  { id: 'ch-q-double', domaine: 'Interactions et champs', titre: 'Deux charges doublées',
+    enonce: 'Deux charges q₁ et q₂ s’exercent une force électrostatique. On double chacune des deux charges, à distance fixée.', q: 'La force électrostatique est…', options: [
+      V('multipliée par 4', 'F = k·|q₁·q₂|/d² : si q₁ et q₂ doublent, le produit q₁·q₂ est multiplié par 2 × 2 = 4.'),
+      F('doublée', 'Chaque charge double : le produit est multiplié par 4, pas par 2.'),
+      F('multipliée par 8', 'La force est proportionnelle à chaque charge (un facteur 2 chacune) : 2 × 2 = 4, pas 8.'),
+      F('inchangée', 'La force dépend des charges.'),
+    ] },
+  { id: 'ch-altitude', domaine: 'Interactions et champs', titre: 'Champ à une altitude égale au rayon',
+    enonce: 'Au niveau du sol, le champ de gravitation d’une planète vaut g₀. On monte à une altitude égale au rayon de la planète (donc à une distance 2R de son centre).', q: 'Le champ de gravitation y vaut…', options: [
+      V('g₀ / 4', 'g = G·M/d² : la distance au centre passe de R à 2R, donc d² est multipliée par 4 et g est divisé par 4. (L’altitude est R, mais la distance au centre est 2R.)'),
+      F('g₀ / 2', 'Le carré est oublié : g varie comme 1/d².'),
+      F('g₀ / 9', 'La distance au centre est 2R (R de rayon + R d’altitude), pas 3R.'),
+      F('g₀', 'Le champ diminue quand on s’éloigne de la planète.'),
+    ] },
+  { id: 'ch-reaction', domaine: 'Interactions et champs', titre: 'Terre et Lune',
+    enonce: 'La Terre attire la Lune. La Lune est environ 81 fois moins massive que la Terre.', q: 'La force exercée par la Lune sur la Terre est…', options: [
+      V('égale à celle exercée par la Terre sur la Lune', 'Troisième loi de Newton (principe des actions réciproques) : les deux forces ont la même valeur, des sens opposés. Seules leurs conséquences diffèrent : la Lune, moins massive, est plus accélérée.'),
+      F('81 fois plus petite', 'La loi de la gravitation est symétrique en m₁ et m₂ : la force a la même valeur dans les deux sens.'),
+      F('81 fois plus grande', 'La loi est symétrique : même valeur dans les deux sens.'),
+      F('nulle, car la Lune est plus légère', 'Toute masse attire toute autre masse : la Lune attire aussi la Terre (c’est ce qui provoque les marées).'),
+    ] },
+  { id: 'ch-masse-poids', domaine: 'Interactions et champs', titre: 'Un astronaute sur la Lune',
+    enonce: 'Un astronaute emporte son équipement sur la Lune, où le champ de gravitation est environ 6 fois plus faible que sur Terre.', q: 'Par rapport à la Terre, sa masse et son poids sont…', options: [
+      V('masse inchangée, poids environ 6 fois plus petit', 'La masse mesure la quantité de matière : elle ne change pas. Le poids P = m·g dépend du champ de gravitation g : il est divisé par 6.'),
+      F('masse et poids inchangés', 'Le poids dépend de g, qui est différent sur la Lune.'),
+      F('masse et poids environ 6 fois plus petits', 'La masse est la même partout : c’est le poids qui change.'),
+      F('masse environ 6 fois plus petite, poids inchangé', 'C’est l’inverse : la masse reste la même, le poids diminue.'),
+    ] },
+  { id: 'ch-signes', domaine: 'Interactions et champs', titre: 'Deux charges de même signe',
+    enonce: 'Deux petites boules portent chacune une charge positive.', q: 'La force électrostatique entre elles est…', options: [
+      V('répulsive', 'Des charges de même signe se repoussent ; des charges de signes opposés s’attirent.'),
+      F('attractive', 'C’est le cas pour deux charges de signes opposés.'),
+      F('nulle', 'Deux charges s’exercent toujours une force : seule l’absence de charge donne une force nulle.'),
+      F('attractive si elles sont proches, répulsive si elles sont éloignées', 'Le sens de la force ne dépend que des signes des charges, pas de la distance.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';
+import { CHAMPS } from './AtelierChampBanque.jsx';
 export const FAMILLES = [
   { id: 'probleme', titre: 'Construire une démarche (problème complet)', liste: PROBLEMES,
     aide: 'Un problème posé sans questions intermédiaires : que cherche-t-on, quelles données, quelles relations, quelles hypothèses, dans quel ordre ?' },
@@ -911,6 +998,8 @@ export const FAMILLES = [
     aide: 'Cochez toutes les hypothèses nécessaires, et seulement elles.' },
   { id: 'prevoir', titre: 'Prévoir sans calculer', liste: PREVOIR,
     aide: 'Raisonner sur la relation (proportionnalité, carré, racine) sans faire le calcul.' },
+  { id: 'champ', titre: 'Reconnaître un champ sur un schéma', liste: CHAMPS,
+    aide: 'Lire des lignes de champ (ou des vecteurs) et en déduire la nature, le sens et l’intensité du champ ou de la force.' },
   { id: 'mouvement', titre: 'Reconnaître un mouvement sur un schéma', liste: MOUVEMENTS,
     aide: 'Lire une chronophotographie ou des trajectoires dessinées, et choisir la bonne description du mouvement (dans un référentiel donné).' },
 ];
