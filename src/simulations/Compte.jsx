@@ -63,9 +63,11 @@ function Connexion() {
         sans compte, elle reste seulement sur l’appareil que tu utilises.
       </p>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', margin: '4px 0 14px' }}>
-        {[['★', 'Des étoiles à gagner', 'jusqu’à 3 par exercice'], ['🌳', 'Des paliers par compétence', 'de Découverte à Expert·e'], ['🏅', 'Des badges à débloquer', 'et des niveaux, de Curieux·se à Maître de la paillasse']].map(([i, t, d]) => (
-          <div key={t} style={{ flex: '1 1 180px', borderRadius: 14, padding: '10px 12px', color: '#fff', background: 'linear-gradient(135deg, #4c1d95, #1e1b4b)' }}>
-            <div style={{ fontSize: 22, color: '#fbbf24' }}>{i}</div><div style={{ fontWeight: 800, fontSize: 14 }}>{t}</div><div style={{ fontSize: 12.5, opacity: 0.8 }}>{d}</div>
+        {[['★', 'Des étoiles à gagner', 'jusqu’à 3 par exercice', '#fff7e0', '#f0dca0', '#d99a0b'],
+          ['🌳', 'Des paliers par compétence', 'de Découverte à Expert·e', '#e3f1ee', '#c4e0da', '#2a9d8f'],
+          ['🏅', 'Des badges à débloquer', 'et des niveaux, de Curieux·se à Maître de la paillasse', '#ece8f6', '#d6cdea', '#7357b5']].map(([i, t, d, fond, bord, c]) => (
+          <div key={t} style={{ flex: '1 1 180px', borderRadius: 14, padding: '10px 12px', color: KIT.txt, background: fond, border: `1px solid ${bord}` }}>
+            <div style={{ fontSize: 22, color: c }}>{i}</div><div style={{ fontWeight: 800, fontSize: 14 }}>{t}</div><div style={{ fontSize: 12.5, color: KIT.txt2 }}>{d}</div>
           </div>))}
       </div>
       <form onSubmit={valider} style={{ ...styleBoite, maxWidth: 380, display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -176,7 +178,7 @@ export function SimulationCompte({ naviguer }) {
   const sess = useSession();
   return (
     <div style={{ ...cardStyle, maxWidth: 900, margin: '0 auto' }}>
-      <h2 style={{ margin: 0, color: ROSE }}>👤 Mon compte</h2>
+      <h2 style={{ margin: 0, color: ROSE }}>🧑‍🔬 Mon compte</h2>
       {!sess?.profil && <Connexion />}
       {estEleve(sess) && (
         <>

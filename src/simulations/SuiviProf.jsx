@@ -34,7 +34,7 @@ function imprimerFiches(classe, comptes) {
   const fiches = comptes.filter(c => c.mot_de_passe).map(c => `
     <div class="f"><div class="t">Simulations de chimie — ${echapperHtml(classe)}</div>
     <div>Identifiant : <b>${echapperHtml(c.identifiant)}</b></div><div>Mot de passe : <b>${echapperHtml(c.mot_de_passe)}</b></div>
-    <div class="s">${echapperHtml(adresse)}<br>Bouton « 👤 Se connecter » en haut de la page. À garder pour toi, ne le donne à personne.</div></div>`).join('');
+    <div class="s">${echapperHtml(adresse)}<br>Bouton « 🧑‍🔬 Se connecter » en haut de la page. À garder pour toi, ne le donne à personne.</div></div>`).join('');
   const w = window.open('', '_blank');
   if (!w) { alert('Le navigateur a bloqué la fenêtre d’impression : autorisez les fenêtres surgissantes pour ce site, puis recommencez.'); return; }
   w.document.write(`<!doctype html><meta charset="utf-8"><title>Identifiants ${echapperHtml(classe)}</title>
