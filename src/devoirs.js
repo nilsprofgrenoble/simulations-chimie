@@ -11,7 +11,8 @@
 //     pas (règle du serveur) et ne comptent pas dans « N élèves ont tout fait » ;
 //   • un devoir peut contenir des SIMULATIONS (clé « sim:<id> »). Une simulation est FAITE quand l'élève a (1) cumulé au moins
 //     SEUIL_GUIDE_S secondes en parcours guidé, avec une séance depuis la création du devoir, et (2) réussi, depuis la création du
-//     devoir, au moins un des défis de cette simulation (si elle en a). Le site ne sait pas « où en est » l'élève dans le parcours
+//     devoir, au moins un des défis de cette simulation SI le site les suit (declarerDefis) : beaucoup de simulations ont un onglet
+//     « défi » dont la réussite n'est pas enregistrée ; pour elles, seul le parcours guidé est vérifié. Le site ne sait pas « où en est » l'élève dans le parcours
 //     guidé : le temps actif en mode guidé est un indicateur, pas une preuve. Mesure faite dans le navigateur de l'élève :
 //     c'est une aide à l'organisation, pas une évaluation ;
 //   • un devoir est TERMINÉ quand tous ses exercices sont faits, même après la date limite (il est alors « fait en retard »).
