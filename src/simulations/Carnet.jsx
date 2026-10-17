@@ -10,18 +10,17 @@ import { Etoiles } from "../commun";
 //  Tout est calculé par ../carnet.js à partir des lignes d'activité de l'élève.
 // ═══════════════════════════════════════════════════════════════════════════
 
-const NUIT = '#1e1b4b';
 
 function Anneau({ frac, n, mont }) {
   const r = 50, c = 2 * Math.PI * r;
   return (
     <svg viewBox="0 0 120 120" width="128" height="128" role="img" aria-label={`Niveau ${n}`} style={{ flex: 'none' }}>
-      <defs><linearGradient id="cn-or" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#fde047" /><stop offset="1" stopColor="#f97316" /></linearGradient></defs>
-      <circle cx="60" cy="60" r={r} fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.2)" strokeWidth="9" />
+      <defs><linearGradient id="cn-or" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#f6cf6b" /><stop offset="1" stopColor="#e9a824" /></linearGradient></defs>
+      <circle cx="60" cy="60" r={r} fill="rgba(255,255,255,.55)" stroke="#cfe0dc" strokeWidth="9" />
       <circle cx="60" cy="60" r={r} fill="none" stroke="url(#cn-or)" strokeWidth="9" strokeLinecap="round" transform="rotate(-90 60 60)"
         strokeDasharray={c} strokeDashoffset={mont ? c * (1 - Math.max(0.04, frac)) : c} style={{ transition: 'stroke-dashoffset 1.3s cubic-bezier(.2,.8,.2,1)' }} />
-      <text x="60" y="44" textAnchor="middle" fontSize="11" fontWeight="700" fill="rgba(255,255,255,.75)" letterSpacing="2">NIVEAU</text>
-      <text x="60" y="80" textAnchor="middle" fontSize="38" fontWeight="800" fill="#fff">{n}</text>
+      <text x="60" y="44" textAnchor="middle" fontSize="11" fontWeight="700" fill="#3a746e" letterSpacing="2">NIVEAU</text>
+      <text x="60" y="80" textAnchor="middle" fontSize="38" fontWeight="800" fill="#134e4a">{n}</text>
     </svg>);
 }
 
@@ -44,12 +43,12 @@ export function Carnet({ lignes, naviguer }) {
     <div data-carnet className="cn">
       <style>{`
         .cn { margin-top: 12px; }
-        .cn-hero { position: relative; overflow: hidden; border-radius: 20px; padding: 20px; color: #fff; display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
-          background: radial-gradient(120% 140% at 0% 0%, #6d28d9 0%, ${NUIT} 55%, #0f172a 100%); box-shadow: 0 10px 30px rgba(76,29,149,.35); }
-        .cn-hero::after { content: ''; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(244,114,182,.45), transparent 70%); }
-        .cn-spark { position: absolute; color: #fde68a; animation: cn-twinkle 3.2s ease-in-out infinite; pointer-events: none; }
+        .cn-hero { position: relative; overflow: hidden; border-radius: 20px; padding: 20px; color: #134e4a; display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
+          background: linear-gradient(135deg, #dff1ee 0%, #f3efe3 100%); border: 1px solid #cfe6e1; box-shadow: 0 6px 22px rgba(42,157,143,.14); }
+        .cn-hero::after { content: ''; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(233,168,36,.28), transparent 70%); }
+        .cn-spark { position: absolute; color: #e9a824; animation: cn-twinkle 3.2s ease-in-out infinite; pointer-events: none; }
         .cn-corps { flex: 1; min-width: 220px; position: relative; z-index: 1; }
-        .cn-puce { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); border-radius: 999px; padding: 4px 12px; font-size: 13.5px; font-weight: 700; white-space: nowrap; }
+        .cn-puce { background: rgba(255,255,255,.75); border: 1px solid #cfe6e1; color: #134e4a; border-radius: 999px; padding: 4px 12px; font-size: 13.5px; font-weight: 700; white-space: nowrap; }
         .cn-h { margin: 22px 0 10px; font-size: 18px; font-weight: 800; color: #0f172a; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
         .cn-h small { font-size: 13px; font-weight: 600; color: #64748b; }
         .cn-grille { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
@@ -77,14 +76,14 @@ export function Carnet({ lignes, naviguer }) {
         <span className="cn-spark" style={{ right: 28, top: 40, fontSize: 22, animationDelay: '2s' }}>✦</span>
         <Anneau frac={niveau.frac} n={niveau.n} mont={mont} />
         <div className="cn-corps">
-          <div style={{ fontSize: 13, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,.7)', fontWeight: 700 }}>Mon carnet</div>
+          <div style={{ fontSize: 13, letterSpacing: 2, textTransform: 'uppercase', color: '#3a746e', fontWeight: 700 }}>Mon carnet</div>
           <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1.15, margin: '2px 0 4px' }}>{niveau.titre}</div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#fde68a', textShadow: '0 0 14px rgba(253,224,71,.5)' }}>★ {A.total} étoile{A.total > 1 ? 's' : ''}</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: '#a16207' }}>★ {A.total} étoile{A.total > 1 ? 's' : ''}</div>
           <div className="cn-barre" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(niveau.frac * 100)} aria-label="Progression vers le niveau suivant"
-            style={{ background: 'rgba(255,255,255,.18)', margin: '10px 0 6px', maxWidth: 380 }}>
-            <i style={{ width: mont ? `${Math.max(3, niveau.frac * 100)}%` : '0%', background: 'linear-gradient(90deg, #fde047, #f97316)' }} />
+            style={{ background: '#cfe0dc', margin: '10px 0 6px', maxWidth: 380 }}>
+            <i style={{ width: mont ? `${Math.max(3, niveau.frac * 100)}%` : '0%', background: 'linear-gradient(90deg, #f6cf6b, #e9a824)' }} />
           </div>
-          <div style={{ fontSize: 13.5, color: 'rgba(255,255,255,.85)' }}>Encore <b>{niveau.reste} ★</b> pour atteindre le niveau {niveau.n + 1} : <b>{suivant}</b></div>
+          <div style={{ fontSize: 13.5, color: '#2f5f59' }}>Encore <b>{niveau.reste} ★</b> pour atteindre le niveau {niveau.n + 1} : <b>{suivant}</b></div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
             <span className="cn-puce">✅ {A.stat.reussisExo} exercice{A.stat.reussisExo > 1 ? 's' : ''}</span>
             <span className="cn-puce">🎯 {A.stat.reussisDefi} défi{A.stat.reussisDefi > 1 ? 's' : ''}</span>

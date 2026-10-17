@@ -15,11 +15,11 @@ export const etoilesSeance = l => (!l.reussi ? 0 : l.corrections_vues > 0 ? 1 : 
 export const etoilesReussite = (essais, vues) => etoilesSeance({ reussi: true, essais, corrections_vues: vues });
 
 export const COMPS = [
-  { code: "S'APP", nom: 'S’approprier', court: 'S’approprier', couleur: '#0ea5e9', clair: '#e0f2fe', icone: '🔎' },
-  { code: 'ANA', nom: 'Analyser', court: 'Analyser', couleur: '#7c3aed', clair: '#ede9fe', icone: '🧭' },
-  { code: 'REA', nom: 'Réaliser', court: 'Réaliser', couleur: '#16a34a', clair: '#dcfce7', icone: '🧮' },
-  { code: 'VAL', nom: 'Valider', court: 'Valider', couleur: '#ea580c', clair: '#ffedd5', icone: '✅', bientot: true },
-  { code: 'DÉFI', nom: 'Défis des simulations', court: 'Défis', couleur: '#db2777', clair: '#fce7f3', icone: '🎯' },
+  { code: "S'APP", nom: 'S’approprier', court: 'S’approprier', couleur: '#3f78a8', clair: '#e4eef6', icone: '🔎' },
+  { code: 'ANA', nom: 'Analyser', court: 'Analyser', couleur: '#7357b5', clair: '#ece8f6', icone: '🧭' },
+  { code: 'REA', nom: 'Réaliser', court: 'Réaliser', couleur: '#357f54', clair: '#e3f1e8', icone: '🧮' },
+  { code: 'VAL', nom: 'Valider', court: 'Valider', couleur: '#b45a1f', clair: '#faebdd', icone: '✅', bientot: true },
+  { code: 'DÉFI', nom: 'Défis des simulations', court: 'Défis', couleur: '#bd4a7a', clair: '#f8e6ee', icone: '🎯' },
 ];
 
 // ── Paliers de compétence : part des étoiles possibles ──

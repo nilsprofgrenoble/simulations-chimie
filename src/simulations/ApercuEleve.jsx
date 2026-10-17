@@ -78,13 +78,13 @@ export function ApercuEleve({ naviguer, onFermer }) {
   const p = PROFILS.find(x => x.id === profil);
   return (
     <div>
-      <div style={{ ...styleBoite, border: '2px solid #8b5cf6', background: '#f5f3ff' }}>
+      <div style={{ ...styleBoite, border: '2px dashed #b9a6e0', background: '#f5f2fb' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <b style={{ color: '#5b21b6', flex: 1, minWidth: 200 }}>👁 Aperçu élève : données fictives, rien n’est enregistré</b>
+          <b style={{ color: '#5a4396', flex: 1, minWidth: 200 }}>👁 Aperçu élève : données fictives, rien n’est enregistré</b>
           <button onClick={onFermer} style={styleBouton(true, ROSE)}>← Retour au suivi</button>
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '8px 0 4px' }}>
-          {PROFILS.map(x => <button key={x.id} onClick={() => setProfil(x.id)} style={stylePetitBouton(profil === x.id, '#7c3aed')}>{x.nom}</button>)}
+          {PROFILS.map(x => <button key={x.id} onClick={() => setProfil(x.id)} style={stylePetitBouton(profil === x.id, '#7357b5')}>{x.nom}</button>)}
         </div>
         <div style={{ fontSize: 13, color: KIT.txt2 }}>{p.aide} La vie de classe est montrée comme si elle était activée ; les boutons « Y aller » ouvrent les vrais exercices (rien n’est enregistré pour vous).</div>
       </div>

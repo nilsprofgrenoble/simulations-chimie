@@ -27,7 +27,7 @@ function CarteDevoir({ d, a, par, naviguer, maintenant }) {
           {fin ? `${fin.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} · ` : ''}{info.texte}</span>
       </div>
       <div className="dv-barre" role="progressbar" aria-valuemin={0} aria-valuemax={a.total} aria-valuenow={a.nb} aria-label="Avancement du devoir">
-        <i style={{ width: `${Math.max(frac * 100, a.nb ? 6 : 0)}%`, background: a.termine ? '#16a34a' : 'linear-gradient(90deg, #38bdf8, #8b5cf6)' }} /></div>
+        <i style={{ width: `${Math.max(frac * 100, a.nb ? 6 : 0)}%`, background: a.termine ? '#3a8a5a' : 'linear-gradient(90deg, #8fd0c6, #2a9d8f)' }} /></div>
       <div style={{ fontSize: 13, color: '#475569', margin: '4px 0 8px' }}>
         {a.termine ? 'Devoir terminé, bravo !' : <><b>{a.nb}</b> sur {a.total} fait{a.nb > 1 ? 's' : ''}{a.nb === 0 ? ' : à toi de jouer' : ''}</>}</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
