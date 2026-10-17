@@ -1,8 +1,11 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure } from "../commun";
 import { NB } from "./Distillation";
+
+const SIM_ID = 46;
+declarerDefis(SIM_ID, [['principal', 'Mesurer un champ avec la boussole']]);
 
 // ====================================================
 //  SIM 46 — BOUSSOLE ET CHAMP MAGNÉTIQUE : direction, sens, intensité ; addition des champs ; ordres de grandeur
@@ -108,6 +111,7 @@ function Echelle({ nB }) {
 export function SimulationBoussole({ naviguer }) {
   const [mode, setMode] = useState('explore');
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('boussole-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);
@@ -253,7 +257,7 @@ export function SimulationBoussole({ naviguer }) {
         <span>µT</span>
       </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        <button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
+        <button onClick={() => { noterDefi(surAxe && calme && Math.abs(Math.abs(dev) - defi.X) <= 3 && proche(lireNombre(defi.reps.b) * 1e-6, defiVrai, 0.05)); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
         <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
       </div>
       {defiRes && <div style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5 }}>
@@ -392,7 +396,7 @@ export function SimulationBoussole({ naviguer }) {
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Un <strong>champ magnétique</strong> a une direction, un sens et une intensité (en tesla). Une <strong>boussole</strong> s’aligne sur le champ <strong>total</strong>, somme des champs de la Terre et d’un aimant : déplacez-la autour de l’aimant et observez.</div>
       <div className={`bs-l1${mode !== 'explore' ? ' cote' : ''}`}>
         <div>
-          {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}</div>}
+          {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div>}
           <div className={`bs-pri${mode !== 'explore' ? ' pile' : ''}`}>
             {scene}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{reglages}{mesures}</div>

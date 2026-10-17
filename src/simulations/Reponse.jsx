@@ -1,7 +1,10 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche } from "../commun";
+
+const SIM_ID = 33;
+declarerDefis(SIM_ID, [['principal', 'Temps de réponse d’un capteur']]);
 
 // ====================================================
 //  SIM 33 — TEMPS DE RÉPONSE D'UN CAPTEUR : ÉCHELON, BANDE À 5 %, t_R = 3τ, SYSTÈME QUI OSCILLE
@@ -246,6 +249,7 @@ function questionsDefi(df) {
 export function SimulationReponse() {
   const [mode, setMode] = useState('explore');
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('reponse-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [rg, setRg] = useEtatPersistant('reponse-guide-reglage-v1', { tau: 3 });
   const [ck, setCk] = useState('ctn');
@@ -479,7 +483,7 @@ export function SimulationReponse() {
             </div>);
         })}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-          <button onClick={() => setDefi(df => ({ ...df, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
+          <button onClick={() => { noterDefi(Q.every(juste)); setDefi(df => ({ ...df, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
           <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}>🔄 Nouvelles données</button>
           {defi.verifie && <span style={{ fontSize: 14, fontWeight: 700, color: KIT.txt }}>{nbJustes} / {Q.length} réponses justes</span>}
         </div>
@@ -554,7 +558,7 @@ export function SimulationReponse() {
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
       <div className={`rep-l1${mode !== 'explore' ? ' cote' : ''}`}>
-        {mode === 'defi' ? <div style={styleBoite}>{voletDefi}</div> : enGuide ? vueGuide : vueExplore}
+        {mode === 'defi' ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div> : enGuide ? vueGuide : vueExplore}
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
           : mode === 'defi' ? panneauHypo
             : null}

@@ -1,7 +1,10 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect } from "react";
 import { Frac, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, indicesProfond, fmt, lireNombre, proche } from "../commun";
+
+const SIM_ID = 27;
+declarerDefis(SIM_ID, [['principal', 'Débits et masse volumique']]);
 
 // ====================================================
 //  SIM 27 — DÉBITS MASSIQUE ET VOLUMIQUE : UNE CUVE QUI SE REMPLIT SUR UNE BALANCE
@@ -290,6 +293,7 @@ const Ch1 = props => <Chaine litt={LITT1[props.nom]} {...props}/>;
 export function SimulationDebits({ naviguer }) {
   const [mode, setMode] = useState('explore');                  // on arrive sur l'exploration libre
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('debits-guide-v2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);
@@ -551,7 +555,7 @@ export function SimulationDebits({ naviguer }) {
           );
         })}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => setDefi(df => ({ ...df, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
+          <button onClick={() => { noterDefi(Q.every(qu => proche(lireNombre(defi.reps[qu.id] || ''), qu.vrai, qu.tol))); setDefi(df => ({ ...df, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
           {defi.verifie && <button onClick={() => setDefi(df => ({ ...df, corr: !df.corr }))} style={styleBouton(defi.corr, '#7e22ce')}>{defi.corr ? 'Masquer' : 'Voir'} les calculs avec les unités</button>}
           <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
         </div>
@@ -753,7 +757,7 @@ export function SimulationDebits({ naviguer }) {
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
       <div className={`db-l1${mode !== 'explore' ? ' cote' : ''}`}>
-        {mode === 'defi' ? <div style={styleBoite}>{voletDefi}</div> : exploration}
+        {mode === 'defi' ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div> : exploration}
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
           : mode === 'defi' ? panneauHypo
             : null}

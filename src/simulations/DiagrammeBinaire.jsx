@@ -1,9 +1,12 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure } from "../commun";
 import { MELANGES, Teb, Tros, yEq, equilibreA, wDe } from "./distillationModele";
 import { Diagramme, Pastilles, nf, pct, NB, Xi, XiS } from "./Distillation";
+
+const SIM_ID = 42;
+declarerDefis(SIM_ID, [['principal', 'Lire un diagramme binaire']]);
 
 // ====================================================
 //  SIM 42 — DIAGRAMME BINAIRE ISOBARE : domaines, courbes d'ébullition et de rosée, azéotrope
@@ -86,6 +89,7 @@ function Analyse({ m, z, T, e }) {
 export function SimulationDiagramme({ naviguer }) {
   const [mode, setMode] = useState('explore');
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('diagramme-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);
@@ -225,7 +229,7 @@ export function SimulationDiagramme({ naviguer }) {
             </div>);
         })}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
+          <button onClick={() => { noterDefi(Q.every(qu => proche(lireNombre(defi.reps[qu.id] || ''), qu.vrai, qu.tol))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
           <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
         </div>
       </div>);
@@ -315,7 +319,7 @@ export function SimulationDiagramme({ naviguer }) {
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>À une température donnée, le liquide et la vapeur d’un mélange ne contiennent pas les mêmes proportions de chaque composé : le diagramme permet de lire ces deux compositions (fractions <strong>molaires</strong> x et y).</div>
       <div className={`db-l1${mode !== 'explore' ? ' cote' : ''}`}>
         <div>
-          {mode === 'defi' && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}</div>}
+          {mode === 'defi' && <div style={{ ...styleBoite, marginBottom: 12 }}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div>}
           {mode !== 'defi' ? (
             <div className={`db-pri${mode !== 'explore' ? ' pile' : ''}`}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

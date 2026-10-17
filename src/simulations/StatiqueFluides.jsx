@@ -1,8 +1,11 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
 import { polyReg, evalPoly } from "./QuantumCAN";
+
+const SIM_ID = 26;
+declarerDefis(SIM_ID, [['principal', 'Étalonner un manomètre et trouver la hauteur']]);
 
 // ====================================================
 //  SIM 26 — STATIQUE DES FLUIDES : P = f(h) ET HAUTEUR D'EAU D'UN RÉCIPIENT INCONNU
@@ -30,6 +33,7 @@ const affichage = pa => Math.round(pa / 100);
 export function SimulationStatiqueFluides({ plotlyReady }) {
   const [mode, setMode] = useState('explore');                  // on arrive sur l'exploration libre
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('fluides-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);
@@ -241,7 +245,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
           );
         })}
         <div style={{ display: 'flex', gap: 6 }}>
-          <button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
+          <button onClick={() => { noterDefi(Q.every(qu => proche(lireNombre(defi.reps[qu.id] || ''), qu.vrai, qu.tol))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
           <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
         </div>
       </div>
@@ -454,7 +458,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
       <div className={`sf-l1${mode !== 'explore' ? ' cote' : ''}`}>
-        {mode === 'defi' ? <div style={styleBoite}>{voletDefi}</div> : exploration}
+        {mode === 'defi' ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div> : exploration}
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
           : mode === 'defi' ? panneauHypo
             : null}

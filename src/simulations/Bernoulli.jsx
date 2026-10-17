@@ -1,6 +1,9 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, ORANGE_GUIDE, lireNombre } from "../commun";
+
+const SIM_ID = 17;
+declarerDefis(SIM_ID, [['principal', 'Résoudre un exercice complet (3 étapes)']]);
 
 // ====================================================
 // SIM 17 — THÉORÈME DE BERNOULLI (TSTL)
@@ -332,6 +335,7 @@ export function bernCorrection(ex) {
 export function SimulationBernoulli({ plotlyReady }) {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre   // 'guide' | 'explore' | 'exercice' (le défi)
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('bern-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [termesVus, setTermesVus] = useState({});
   const [coudesDepart, setCoudesDepart] = useState(null);   // nombre de coudes en arrivant sur l'étape des pertes
@@ -1035,6 +1039,8 @@ export function SimulationBernoulli({ plotlyReady }) {
 
   function verifierEtape(k) {
     setVerifs(v => ({ ...v, [k]: true }));
+    // défi réussi : l'étape 3 est juste, sans avoir affiché aucune correction (ni à cette étape ni aux précédentes)
+    noterDefi(etapeOk(k) && k === 3 && !Object.values(reveles).some(Boolean));
     if (etapeOk(k)) {
       setValides(v => ({ ...v, [k]: true }));
       setOuverts(o => ({ ...o, [`st${k}`]: false, [`st${k + 1}`]: true }));
@@ -1956,7 +1962,7 @@ export function SimulationBernoulli({ plotlyReady }) {
         </div>
 
         <div className="bern-volet" style={{ gridArea: 'volet' }}>
-          <div className="bern-volet-defil">{volet}</div>
+          <div className="bern-volet-defil">{volet}{mode === 'exercice' && <SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} />}</div>
         </div>
 
         <div style={{ gridArea: 'equation' }}>{equation}</div>

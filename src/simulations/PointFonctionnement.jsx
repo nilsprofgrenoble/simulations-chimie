@@ -1,8 +1,11 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
 import { SchemaChateau, COUL, H_FOND, H_TROP, ecrireTransfert, lireTransfert, effacerTransfert } from "./chateauEau";
+
+const SIM_ID = 6;
+declarerDefis(SIM_ID, [['principal', 'Point de fonctionnement']]);
 
 // ====================================================
 // POINT DE FONCTIONNEMENT D'UNE RÉGULATION PROPORTIONNELLE (Terminale STL)
@@ -100,6 +103,7 @@ export function Simulation6({ naviguer }) {
   useEffect(() => { if (tr) effacerTransfert(); }, []);
   const [mode, setMode] = useState("explore");               // on arrive sur l'exploration libre
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant("pf-guide-v2", { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true, boucle: true, hypo: true });
@@ -248,7 +252,7 @@ export function Simulation6({ naviguer }) {
           );
         })}
         <div style={{ display: 'flex', gap: 6 }}>
-          <button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
+          <button onClick={() => { noterDefi(Q.every(q => proche(lireNombre(defi.reps[q.id] || ''), q.vrai, q.tol))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
           <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
         </div>
       </div>
@@ -415,7 +419,7 @@ export function Simulation6({ naviguer }) {
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
       <div className="pf-l1">
-        {mode === 'defi' ? <div style={styleBoite}>{voletDefi}</div> : maquette}
+        {mode === 'defi' ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div> : maquette}
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
           : mode === 'defi' ? <div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Hypothèses de travail</div><Hypotheses/></div>
             : <div style={styleBoite}>
