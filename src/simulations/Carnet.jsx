@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { analyser, objectifs, TITRES } from "../carnet";
+import { aRevoir, raisonRevision, dansJours } from "../revision";
 import { tousLesExercices } from "./Entrainement";
 import { etiquettesDefis } from "../suivi";
 import { Etoiles } from "../commun";
@@ -33,6 +34,7 @@ export function Carnet({ lignes, naviguer }) {
   const items = useMemo(() => [...tousLesExercices(), ...etiquettesDefis().map(d => ({ cle: d.cle, comp: 'DÉFI', titre: d.titre, sim: d.sim }))], []);
   const A = useMemo(() => analyser(items, lignes), [items, lignes]);
   const obj = useMemo(() => objectifs(items, A), [items, A]);
+  const rev = useMemo(() => aRevoir(items, lignes), [items, lignes]);
   const { niveau, comps, badges, semaines } = A;
   const suivant = TITRES[Math.min(niveau.n + 1, TITRES.length) - 1];
   const nbBadges = badges.filter(b => b.ok).length, nbSem = semaines.filter(s => s.actif).length;
@@ -97,6 +99,42 @@ export function Carnet({ lignes, naviguer }) {
           <div style={{ fontSize: 14, color: '#7c2d12', margin: '6px 0 12px' }}>Réussis un exercice pour gagner ta première étoile ★</div>
           <button className="cn-btn" onClick={() => naviguer(38)}>Commencer à m’entraîner ▶</button>
         </div>)}
+
+      {/* ── À revoir aujourd'hui (révision espacée, voir ../revision.js) ── */}
+      {!A.aucun && rev.suivis > 0 && (
+        <>
+          <h3 className="cn-h">🔁 À revoir aujourd’hui <small>revoir au bon moment, c’est ce qui fait retenir longtemps</small></h3>
+          {rev.liste.length === 0 ? (
+            <div className="cn-carte" style={{ fontSize: 15, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: 30 }} aria-hidden="true">🧊</span>
+              <div style={{ flex: 1, minWidth: 200 }}>
+                <b>Rien à revoir aujourd’hui : ta mémoire est au frais !</b>
+                <div style={{ fontSize: 13.5, color: '#475569', marginTop: 2 }}>
+                  {rev.prochaine ? <>Prochaine révision conseillée : <b>{dansJours(rev.prochaine)}</b>. </> : null}
+                  {rev.solides > 0 && <>🧠 {rev.solides} exercice{rev.solides > 1 ? 's' : ''} déjà bien ancré{rev.solides > 1 ? 's' : ''} dans ta mémoire.</>}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="cn-grille">
+                {rev.liste.map(({ item, statut }) => { const comp = A.comps.find(c => c.code === item.comp);
+                  return (
+                    <div key={item.cle} className="cn-carte" style={{ borderTop: `4px solid ${comp.couleur}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 800, color: comp.couleur, textTransform: 'uppercase', letterSpacing: 0.6 }}>🔁 À revoir</div>
+                      <div style={{ fontWeight: 700, fontSize: 14.5, color: '#0f172a', lineHeight: 1.35 }}><span style={{ color: comp.couleur }}>{item.comp === 'DÉFI' ? '' : `${item.comp} · `}</span>{item.titre}</div>
+                      <div style={{ fontSize: 13.5, color: '#475569', flex: 1 }}>{raisonRevision(statut)}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                        <Etoiles n={A.d(item.cle).etoiles} taille={17} />
+                        <button className="cn-btn" onClick={() => ouvrir(item)}>Revoir ▶</button>
+                      </div>
+                    </div>); })}
+              </div>
+              <div style={{ fontSize: 13, color: '#64748b', marginTop: 8 }}>
+                Pas besoin de tout faire d’un coup : {rev.autres > 0 ? `il en reste ${rev.autres} d’autres pour plus tard. ` : ''}chaque révision réussie t’éloigne de l’oubli, et l’exercice disparaît d’ici jusqu’à sa prochaine date idéale.
+              </div>
+            </>)}
+        </>)}
 
       {/* ── Prochains objectifs ── */}
       {!A.aucun && (
