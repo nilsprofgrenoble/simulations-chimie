@@ -87,9 +87,9 @@ export function VieDeClasse({ lignes, apercu }) {
         .vc-repli > summary small { font-size: 13px; font-weight: 600; color: #64748b; }
         .vc-sous { font-size: 13px; color: #64748b; margin: 0 0 12px; }
         .vc-objectif { border-radius: 20px; padding: 18px; color: #1f3b4d; position: relative; overflow: hidden;
-          background: linear-gradient(135deg, #ece8f6 0%, #dff1ee 100%); border: 1px solid #d9e2ec; box-shadow: 0 6px 22px rgba(115,87,181,.12); }
+          background: linear-gradient(135deg, #dff1ee 0%, #f3efe3 100%); border: 1px solid #cfe6e1; box-shadow: 0 6px 22px rgba(42,157,143,.14); }
         .vc-piste { position: relative; height: 16px; border-radius: 10px; background: rgba(255,255,255,.8); box-shadow: inset 0 0 0 1px #d5dfe6; margin: 22px 8px 8px 0; }
-        .vc-piste > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 10px; background: linear-gradient(90deg, #7fcabf, #b9a6e0, #f2a7c3); transition: width 1.4s cubic-bezier(.2,.8,.2,1); }
+        .vc-piste > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 10px; background: linear-gradient(90deg, #7fcabf, #f6cf6b); transition: width 1.4s cubic-bezier(.2,.8,.2,1); }
         .vc-fusee { position: absolute; top: -17px; font-size: 26px; transition: left 1.4s cubic-bezier(.2,.8,.2,1); transform: translateX(-50%) rotate(45deg); }
         .vc-fin { position: absolute; right: -4px; top: -20px; font-size: 22px; }
         .vc-grille { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); margin-top: 12px; }
@@ -97,11 +97,11 @@ export function VieDeClasse({ lignes, apercu }) {
         .vc-carte.or { border-color: #fbbf24; background: linear-gradient(180deg, #fffbeb, #fff 60%); }
         .vc-puces { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; min-height: 28px; }
         .vc-puce { display: inline-flex; align-items: center; gap: 5px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 999px; padding: 3px 10px 3px 6px; font-size: 13px; font-weight: 600; color: #1e293b; animation: vc-pop .5s both; }
-        .vc-puce.moi { background: #ede9fe; border-color: #8b5cf6; color: #4c1d95; }
+        .vc-puce.moi { background: #e3f1ee; border-color: #2a9d8f; color: #134e4a; }
         .vc-mini { height: 7px; border-radius: 5px; background: #e2e8f0; overflow: hidden; margin-top: 8px; }
-        .vc-mini > i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #b9a6e0, #e58fb3); transition: width 1.1s cubic-bezier(.2,.8,.2,1); }
-        .vc-idee { cursor: pointer; font: inherit; font-size: 14px; font-weight: 700; background: #fff; border: 1.5px solid #c4b5fd; border-radius: 12px; padding: 7px 12px; color: #4c1d95; display: inline-flex; gap: 6px; align-items: center; transition: transform .15s, background .15s; }
-        .vc-idee:hover:not(:disabled) { background: #f5f3ff; transform: translateY(-1px); }
+        .vc-mini > i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #8fd0c6, #2a9d8f); transition: width 1.1s cubic-bezier(.2,.8,.2,1); }
+        .vc-idee { cursor: pointer; font: inherit; font-size: 14px; font-weight: 700; background: #fff; border: 1.5px solid #a9d3cc; border-radius: 12px; padding: 7px 12px; color: #134e4a; display: inline-flex; gap: 6px; align-items: center; transition: transform .15s, background .15s; }
+        .vc-idee:hover:not(:disabled) { background: #eef7f5; transform: translateY(-1px); }
         .vc-idee:disabled { opacity: .55; cursor: default; }
         @keyframes vc-pop { 0% { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
         @media (prefers-reduced-motion: reduce) { .vc *, .vc *::before, .vc *::after { animation: none !important; transition: none !important; } }
@@ -161,7 +161,7 @@ export function VieDeClasse({ lignes, apercu }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 34 }} aria-hidden="true">{monPseudo.icone}</span>
             <div style={{ flex: 1, minWidth: 180 }}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: '#4c1d95' }}>{monPseudo.texte}</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: '#134e4a' }}>{monPseudo.texte}</div>
               <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 14, marginTop: 4, cursor: 'pointer' }}>
                 <input type="checkbox" checked={!!moi.visible} disabled={occupe} onChange={e => montrer(e.target.checked)} style={{ accentColor: '#e11d48' }} />
                 Montrer mon pseudo dans les prouesses de ma classe

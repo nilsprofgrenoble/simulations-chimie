@@ -198,7 +198,7 @@ export function SimulationSuiviProf({ naviguer }) {
           {classes.map(c => <option key={c.id} value={c.id}>{c.nom} ({c.prefixe})</option>)}
         </select>
         <button onClick={() => setFormClasse(v => !v)} style={styleBouton(true, ROSE)} disabled={occupe}>＋ Nouvelle classe</button>
-        <button onClick={() => setApercu(true)} style={styleBouton(false, '#7c3aed')}>👁 Aperçu élève</button>
+        <button onClick={() => setApercu(true)} style={styleBouton(false, '#475569')}>👁 Aperçu élève</button>
         {classe && <>
           <span style={{ fontSize: 13, color: KIT.txt2 }}>Ajouter</span>
           <input type="number" min={1} max={40} value={ajout} onChange={e => setAjout(e.target.value)} style={{ ...champ, width: 64 }} aria-label="Nombre d’élèves à ajouter" />

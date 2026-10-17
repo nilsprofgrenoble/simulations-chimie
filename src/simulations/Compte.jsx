@@ -65,7 +65,7 @@ function Connexion() {
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', margin: '4px 0 14px' }}>
         {[['★', 'Des étoiles à gagner', 'jusqu’à 3 par exercice', '#fff7e0', '#f0dca0', '#d99a0b'],
           ['🌳', 'Des paliers par compétence', 'de Découverte à Expert·e', '#e3f1ee', '#c4e0da', '#2a9d8f'],
-          ['🏅', 'Des badges à débloquer', 'et des niveaux, de Curieux·se à Maître de la paillasse', '#ece8f6', '#d6cdea', '#7357b5']].map(([i, t, d, fond, bord, c]) => (
+          ['🏅', 'Des badges à débloquer', 'et des niveaux, de Curieux·se à Maître de la paillasse', '#fdecef', '#f4cdd6', '#c2415f']].map(([i, t, d, fond, bord, c]) => (
           <div key={t} style={{ flex: '1 1 180px', borderRadius: 14, padding: '10px 12px', color: KIT.txt, background: fond, border: `1px solid ${bord}` }}>
             <div style={{ fontSize: 22, color: c }}>{i}</div><div style={{ fontWeight: 800, fontSize: 14 }}>{t}</div><div style={{ fontSize: 12.5, color: KIT.txt2 }}>{d}</div>
           </div>))}
