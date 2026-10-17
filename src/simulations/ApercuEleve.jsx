@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { KIT, styleBouton, stylePetitBouton, styleBoite } from "../commun";
-import { catalogue } from "./catalogue";
+import { catalogueDevoirs as catalogue } from "./catalogue";
 import { Carnet } from "./Carnet";
 import { DevoirsEleve } from "./DevoirsEleve";
 import { VieDeClasse } from "./VieDeClasse";

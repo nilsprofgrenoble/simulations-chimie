@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { KIT } from "../commun";
 import { lireDevoirs } from "../devoirsServeur";
-import { catalogue } from "./catalogue";
+import { catalogueDevoirs as catalogue } from "./catalogue";
 import { aReprendreEnClasse } from "../reprise";
 import { suiviClasse, infoEcheance } from "../devoirs";
 import { syntheseClasse, JOURS_ACTIF, JOURS_RELANCE } from "../synthese";

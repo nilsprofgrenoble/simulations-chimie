@@ -8,6 +8,8 @@ import { FAMILLES as FAM_ANA } from "./AtelierAnalyserBanque";
 import { ORDRE_DOMAINES } from "./ordreDomaines";
 import { useSession, estEleve, estProf, toutLire, rest } from "../serveur";
 import { exosDuChapitre, exosCalcul, prochainExercice, avancementChapitre } from "../chapitre";
+import { chapitreDe, chapitresDe, domainesDe, simsDe } from "../chapitres";
+import { nomsSim } from "../suivi";
 
 const ROSE = '#e11d48';
 const TRANSVERSAL = 'Tous thèmes (transversal)';
@@ -44,7 +46,7 @@ export function tousLesExercices() {
 
 // Chapitre(s) en cours de la classe de l'élève (supabase/07) ; en cas d'erreur ou si le script n'est pas lancé : aucun chapitre
 const lireChapitres = classeId => rest(`classes?select=chapitres&id=eq.${classeId}`)
-  .then(r => (r[0]?.chapitres || []).filter(c => ORDRE_DOMAINES.includes(c))).catch(() => []);
+  .then(r => (r[0]?.chapitres || []).filter(c => chapitreDe(c))).catch(() => []);
 
 function LigneExo({ e, prog, etoiles, ouvrir, montrerTheme }) {
   const c = COMPETENCES.find(x => x.code === e.comp);
@@ -93,9 +95,11 @@ export function SimulationEntrainement({ naviguer }) {
   const nbFaits = l => l.filter(e => prog[e.cle]).length;
   const ouvrir = e => naviguer(e.atelier, e.ex);
   const etoilesDe = cle => etoilesSrv[cle] ?? (prog[cle] ? 3 : 0);
-  const exosChap = useMemo(() => exosDuChapitre(exos, chapActifs), [exos, chapActifs]);
-  const avecChapitre = exosChap.length > 0;      // un chapitre sans aucun exercice est ignoré : liste complète comme avant
-  const conseil = avecChapitre ? prochainExercice(exosChap, etoilesDe) : null;
+  const chaps = useMemo(() => chapitresDe(chapActifs), [chapActifs]);
+  const exosChap = useMemo(() => exosDuChapitre(exos, domainesDe(chaps)), [exos, chaps]);
+  const simsChap = useMemo(() => simsDe(chaps), [chaps]);
+  const avecChapitre = chaps.length > 0;      // un chapitre peut n'avoir que des simulations (pas d'exercice de remédiation)
+  const conseil = exosChap.length ? prochainExercice(exosChap, etoilesDe) : null;
   const av = avancementChapitre(exosChap, etoilesDe);
   const effacer = () => {
     if (!window.confirm('Effacer la progression mémorisée sur cet appareil ?')) return;
@@ -121,14 +125,21 @@ export function SimulationEntrainement({ naviguer }) {
 
       {avecChapitre && (
         <section data-chapitre style={{ margin: '14px 0 18px' }}>
-          <h3 style={{ margin: '0 0 4px', color: KIT.txt }}>📘 Ton chapitre en ce moment : <span style={{ color: ROSE }}>{chapActifs.join(' · ')}</span></h3>
+          <h3 style={{ margin: '0 0 4px', color: KIT.txt }}>📘 Ton chapitre en ce moment : <span style={{ color: ROSE }}>{chaps.map(c => c.label).join(' · ')}</span></h3>
           <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 8 }}>
-            Choisi par ton professeur. {av.reussis} exercice{av.reussis > 1 ? 's' : ''} réussi{av.reussis > 1 ? 's' : ''} sur {av.total} · {av.etoiles} ★ sur {av.max}
+            Choisi par ton professeur.{exosChap.length > 0 ? ` ${av.reussis} exercice${av.reussis > 1 ? 's' : ''} réussi${av.reussis > 1 ? 's' : ''} sur ${av.total} · ${av.etoiles} ★ sur ${av.max}` : ' Pas encore d’exercice de remédiation sur ce chapitre : commence par les simulations.'}
           </div>
-          <div style={{ height: 8, borderRadius: 4, background: '#e2e8f0', marginBottom: 12 }} role="progressbar" aria-valuemin={0} aria-valuemax={av.max} aria-valuenow={av.etoiles} aria-label="Étoiles gagnées dans le chapitre">
+          {simsChap.length > 0 && (
+            <div data-sims-chapitre style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: KIT.txt, margin: '0 0 4px' }}>🧪 Les simulations du chapitre</div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {simsChap.map(id => <button key={id} data-sim={id} onClick={() => naviguer(id)} style={{ ...styleBouton(false, '#475569'), fontSize: 13 }}>{nomsSim[id] || `Simulation ${id}`} ▶</button>)}
+              </div>
+            </div>)}
+          {exosChap.length > 0 && <div style={{ height: 8, borderRadius: 4, background: '#e2e8f0', marginBottom: 12 }} role="progressbar" aria-valuemin={0} aria-valuemax={av.max} aria-valuenow={av.etoiles} aria-label="Étoiles gagnées dans le chapitre">
             <div style={{ height: 8, borderRadius: 4, background: '#2a9d8f', width: `${av.max ? (100 * av.etoiles) / av.max : 0}%` }} />
-          </div>
-          {conseil ? (
+          </div>}
+          {exosChap.length === 0 ? null : conseil ? (
             <div data-conseil style={{ ...styleBoite, border: '2px solid #2a9d8f', background: '#eef7f5', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
               <div style={{ flex: 1, minWidth: 220 }}>
                 <div style={{ fontSize: 12.5, fontWeight: 800, color: '#1f6f66', letterSpacing: 0.5 }}>👉 TON PROCHAIN EXERCICE CONSEILLÉ</div>
@@ -150,11 +161,11 @@ export function SimulationEntrainement({ naviguer }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>{L.map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} />)}</div>
               </div>);
           })}
-          <details style={{ marginTop: 6 }}>
+          {exosChap.length > 0 && <details style={{ marginTop: 6 }}>
             <summary style={{ cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: KIT.txt }}>🧮 Pour t’aider à calculer (REA, valable pour tous les chapitres) <span style={{ fontWeight: 600, color: KIT.txt2 }}>({nbFaits(exosCalcul(exos))} / {exosCalcul(exos).length})</span></summary>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>{exosCalcul(exos).map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} />)}</div>
-          </details>
-          <div style={{ fontSize: 12, color: KIT.txt2, marginTop: 8 }}>Le conseil est calculé à partir de tes résultats ; ce n’est pas une note.</div>
+          </details>}
+          {exosChap.length > 0 && <div style={{ fontSize: 12, color: KIT.txt2, marginTop: 8 }}>Le conseil est calculé à partir de tes résultats ; ce n’est pas une note.</div>}
         </section>)}
 
       <details open={!avecChapitre} data-autres style={avecChapitre ? { ...styleBoite, background: '#fff' } : undefined}>

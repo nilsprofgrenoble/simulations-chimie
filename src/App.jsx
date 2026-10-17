@@ -53,6 +53,7 @@ import { SimulationCompte } from "./simulations/Compte";
 import { ToastRecompense } from "./ToastRecompense";
 import { SimulationSuiviProf } from "./simulations/SuiviProf";
 import { useSession, restaurer } from "./serveur";
+import { chapitresDuNiveau } from "./chapitres";
 import { SuiviTemps, nomsSim } from "./suivi";
 
 // ============================================================
@@ -522,23 +523,8 @@ export default function App() {
           {NIVEAUX.map(niv => {
             const simsNiv = SIMULATIONS.filter(s => s.niveau === niv.key).sort((a, b) => (niv.key === 'COMP' ? [38,34,35,37,36].indexOf(a.id) - [38,34,35,37,36].indexOf(b.id) : 0));
             const isExpanded = expanded[niv.key];
-            const sousgroupes = niv.key === '1G' ? [
-              { label:'⚗️ Suivi de l’évolution d’un système, siège d’une transformation', ids:[1,2,25,10] },
-              { label:'🌍 Interactions fondamentales et notion de champ', ids:[51, 48, 49, 50] },
-              { label:'🧪 Cohésion, solubilité et miscibilité', ids:[53] },
-              { label:'🚀 Mouvement d\'un système', ids:[52] },
-            ] : niv.key === 'BTS' ? [
-              { label:'🔬 Analyse', ids:[3,29,9,11,12,54,55,13,16] },
-              { label:'🧪 Formulation', ids:[4,14] },
-            ] : niv.key === 'TSTL' ? [
-              { label:'📡 Transmission de signaux numériques', ids:[8,15,33] },
-              { label:'💧 Transport des fluides', ids:[26,27,28,17] },
-              { label:'⚙️ Régulation', ids:[5,6] },
-              { label:'❄️ Évaporation et cristallisation', ids:[7] },
-              { label:'🧪 Distillation', ids:[42,41,43] },
-              { label:'🔥 Transferts thermiques', ids:[31,32,30] },
-              { label:'🧲 Contrôle des systèmes', ids:[46,44,45] },
-            ] : null;
+            // Les groupes du menu sont les chapitres de src/chapitres.js (aussi utilisés pour « chapitre en cours » et les devoirs)
+            const sousgroupes = ['1G', 'BTS', 'TSTL'].includes(niv.key) ? chapitresDuNiveau(niv.key).map(c => ({ label: c.label, ids: c.sims })) : null;
 
             return (
               <div key={niv.key}>

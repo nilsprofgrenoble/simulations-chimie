@@ -4,19 +4,22 @@
 --  À lancer APRÈS 05-vie-de-classe.sql et 06-devoirs.sql.
 --
 --  Principes :
---   • le professeur choisit, classe par classe, de 0 à 3 thèmes « en cours » (ex. « Transport des fluides ») ;
---     les élèves de la classe voient ces thèmes en tête de « Je m'entraîne » ; aucune donnée sur les élèves n'est ajoutée ;
---   • les thèmes sont pris dans une liste fixe (la même que dans src/simulations/ordreDomaines.js) : aucun texte libre ;
+--   • le professeur choisit, classe par classe, de 0 à 3 chapitres « en cours » (ex. TSTL : Transport des fluides) ;
+--     les élèves de la classe voient ces chapitres en tête de « Je m'entraîne », avec leurs simulations ; aucune donnée sur les élèves n'est ajoutée ;
+--   • les chapitres sont des identifiants courts de la liste du site (src/chapitres.js) : aucun texte libre ;
+--   • un devoir peut contenir jusqu'à 40 éléments, exercices ou simulations (clé « sim:<numéro> ») ;
 --   • un devoir peut viser seulement certains élèves de la classe (liste d'identifiants internes). Sans liste, il vise toute
 --     la classe, comme avant. Un élève ne voit QUE les devoirs qui visent toute sa classe ou qui le visent lui.
 -- ════════════════════════════════════════════════════════════════════════════
 
 -- ── 1. Chapitre(s) en cours d'une classe ─────────────────────────────────
+--  Un chapitre est un identifiant court du menu du site (« tstl-fluides », « 1g-evolution »…, voir src/chapitres.js) :
+--  de 0 à 3 par classe, sans doublon, jamais de texte libre. La liste précise est tenue par le site, pas par la base :
+--  ajouter un chapitre au site ne demande donc aucun nouveau script SQL.
 create or replace function public.chapitres_valides(c text[])
 returns boolean language sql immutable set search_path = '' as $$
   select coalesce(array_length(c, 1), 0) <= 3
-     and coalesce((select bool_and(k = any (array['Transmission de signaux numériques', 'Transport des fluides', 'Régulation',
-                                                    'Transferts thermiques', 'Chimie', 'Mécanique', 'Métrologie'])) from unnest(c) as k), true)
+     and coalesce((select bool_and(k ~ '^[a-z0-9]+(-[a-z0-9]+)*$' and char_length(k) <= 40) from unnest(c) as k), true)
      and (select count(distinct k) from unnest(c) as k) = coalesce(array_length(c, 1), 0);
 $$;
 revoke all on function public.chapitres_valides(text[]) from public, anon;
@@ -24,8 +27,16 @@ grant execute on function public.chapitres_valides(text[]) to authenticated;
 
 alter table public.classes add column if not exists chapitres text[] not null default '{}';
 alter table public.classes drop constraint if exists classes_chapitres_valides;
+update public.classes set chapitres = '{}' where not public.chapitres_valides(chapitres);   -- anciennes valeurs (noms de thèmes) d'une version précédente de ce script
 alter table public.classes add constraint classes_chapitres_valides check (public.chapitres_valides(chapitres));
 grant update (chapitres) on public.classes to authenticated;      -- la règle « classes_renommage » limite au professeur de la classe
+
+-- ── 1 bis. Un devoir peut contenir jusqu'à 40 éléments : exercices (« 34:aspirine.0 ») et simulations (« sim:42 ») ─────
+create or replace function public.cles_devoir_valides(c text[])
+returns boolean language sql immutable set search_path = '' as $$
+  select coalesce(array_length(c, 1) between 1 and 40, false)
+     and coalesce((select bool_and(k ~ '^([0-9]{1,3}:[A-Za-z0-9._:-]{1,70}|sim:[0-9]{1,3})$') from unnest(c) as k), false);
+$$;
 
 -- ── 2. Devoirs visant certains élèves ───────────────────────────────────
 alter table public.devoirs add column if not exists eleves uuid[];
