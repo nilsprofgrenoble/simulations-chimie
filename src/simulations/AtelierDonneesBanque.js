@@ -314,6 +314,70 @@ export const ENONCES = [
         manque: null, solution: { txt: 'd = v × Δt, avec Δt en h', val: p.v * p.tv / 60, u: 'km' } };
     },
   },
+  // ───────────────────────────── Interactions et champs (1re spécialité)
+  {
+    id: 'gravi', domaine: 'Interactions et champs', titre: 'Interaction gravitationnelle', noms: ['Force entre deux satellites', 'Champ de gravitation d’une planète'],
+    gen: () => { const [M, ex, R] = tire([[6.42, 23, 3390], [4.87, 24, 6052], [5.97, 24, 6371]]); return { M, ex, R, m1: tire([2, 5, 8]), m2: tire([3, 4, 6]), d: tire([10, 20, 50]), an: tire([1999, 2008, 2015]),
+      h: tire([200, 400, 800]), m: tire([50, 70, 90]), G: 6.674e-11 }; },
+    build: (p, q) => {
+      const sci = x => nb(Number((x).toPrecision(3))).replace('.', ',');
+      const tokens = { G: tok('G = 6,674 × 10⁻¹¹ N·m²·kg⁻²', 'Constante de gravitation universelle', p.G, 'N·m²·kg⁻²') };
+      if (q === 0) {
+        tokens.m1 = tok(`${p.m1} tonnes`, 'Masse du satellite 1', p.m1 * 1000, 'kg');
+        tokens.m2 = tok(`${p.m2} tonnes`, 'Masse du satellite 2', p.m2 * 1000, 'kg');
+        tokens.d = tok(`${p.d} m`, 'Distance entre les centres des satellites', p.d, 'm');
+        tokens.an = tok(`${p.an}`, 'Année de lancement', p.an, '');
+        return { tokens, derivees: [],
+          texte: ['Deux satellites, lancés en ', T('an'), ', ont pour masses ', T('m1'), ' et ', T('m2'), '. Leurs centres sont distants de ', T('d'), '. On donne ', T('G'), '. Quelle est la valeur de la force d’attraction gravitationnelle entre eux ?'],
+          utiles: ['G', 'm1', 'm2', 'd'],
+          raisons: { an: 'L’année de lancement n’intervient pas dans la loi de la gravitation.' },
+          cherche: { bonne: 'La force gravitationnelle F entre les deux satellites (en N)', faux: ['Le champ de gravitation créé par un satellite (en N·kg⁻¹)', 'L’énergie des satellites (en J)', 'La vitesse des satellites (en m·s⁻¹)'] },
+          manque: null, solution: { txt: 'F = G·m₁·m₂ / d²', val: p.G * p.m1 * p.m2 * 1e6 / (p.d * p.d), u: 'N' } };
+      }
+      tokens.M = tok(`${sci(p.M)} × 10${p.ex === 23 ? '²³' : '²⁴'} kg`, 'Masse de la planète', p.M * Math.pow(10, p.ex), 'kg');
+      tokens.R = tok(`${p.R} km`, 'Rayon de la planète', p.R * 1000, 'm');
+      tokens.h = tok(`${p.h} km`, 'Altitude du point étudié', p.h * 1000, 'm');
+      tokens.m = tok(`${p.m} kg`, 'Masse d’une sonde posée sur le sol', p.m, 'kg');
+      return { tokens,
+        derivees: [{ id: 'd', nom: 'Distance d au centre de la planète', expr: 'd = rayon + altitude', val: (p.R + p.h) * 1000, u: 'm' }],
+        texte: ['Une planète sphérique de masse ', T('M'), ' a un rayon de ', T('R'), '. Une sonde de ', T('m'), ' est posée sur le sol. On cherche le champ de gravitation créé par la planète en un point situé à l’altitude ', T('h'), '. On donne ', T('G'), '.'],
+        utiles: ['G', 'M', 'R', 'h'],
+        raisons: { m: 'Le champ de gravitation créé par la planète ne dépend pas de la masse de la sonde qui s’y trouve.' },
+        cherche: { bonne: 'Le champ de gravitation g créé par la planète à cette altitude (en N·kg⁻¹)', faux: ['La force subie par la sonde (en N)', 'La masse de la planète (en kg)', 'La vitesse de libération de la sonde (en m·s⁻¹)'] },
+        manque: null, solution: { txt: 'g = G·M / d², avec d = R + h', val: p.G * p.M * Math.pow(10, p.ex) / Math.pow((p.R + p.h) * 1000, 2), u: 'N·kg⁻¹' } };
+    },
+  },
+  {
+    id: 'electro', domaine: 'Interactions et champs', titre: 'Interaction électrostatique', noms: ['Force entre deux charges', 'Force dans un champ uniforme'],
+    gen: () => ({ q1: tire([2, 4, 5]), q2: tire([3, 6, 8]), d: tire([2, 4, 5]), U: tire([100, 200, 300]), e: tire([2, 4, 5]), q: tire([2, 5, 10]), mp: tire([20, 50, 100]) }),
+    build: (p, q) => {
+      const tokens = {};
+      if (q === 0) {
+        tokens.k = tok('k = 9,0 × 10⁹ N·m²·C⁻²', 'Constante de la loi de Coulomb', 9.0e9, 'N·m²·C⁻²');
+        tokens.q1 = tok(`${p.q1} nC`, 'Charge de la bille 1', p.q1 * 1e-9, 'C');
+        tokens.q2 = tok(`${p.q2} nC`, 'Charge de la bille 2', p.q2 * 1e-9, 'C');
+        tokens.d = tok(`${p.d} cm`, 'Distance entre les billes', p.d * 1e-2, 'm');
+        tokens.mp = tok(`${p.mp} g`, 'Masse de chaque bille', p.mp * 1e-3, 'kg');
+        return { tokens, derivees: [],
+          texte: ['Deux petites billes de ', T('mp'), ' portent des charges de ', T('q1'), ' et ', T('q2'), '. Leurs centres sont distants de ', T('d'), '. On donne ', T('k'), '. Quelle est la valeur de la force électrostatique entre les billes ?'],
+          utiles: ['k', 'q1', 'q2', 'd'],
+          raisons: { mp: 'La masse des billes n’intervient pas dans la loi de Coulomb (elle servirait pour calculer leur poids ou leur accélération).' },
+          cherche: { bonne: 'La force électrostatique F entre les deux billes (en N)', faux: ['Le champ électrique créé par une bille (en V·m⁻¹)', 'La charge totale des billes (en C)', 'Le poids des billes (en N)'] },
+          manque: null, solution: { txt: 'F = k·|q₁·q₂| / d²', val: 9.0e9 * p.q1 * 1e-9 * p.q2 * 1e-9 / Math.pow(p.d * 1e-2, 2), u: 'N' } };
+      }
+      tokens.U = tok(`${p.U} V`, 'Tension entre les plaques', p.U, 'V');
+      tokens.e = tok(`${p.e} mm`, 'Distance entre les plaques', p.e * 1e-3, 'm');
+      tokens.q = tok(`${p.q} nC`, 'Charge de la petite boule', p.q * 1e-9, 'C');
+      tokens.mp = tok(`${p.mp} mg`, 'Masse de la petite boule', p.mp * 1e-6, 'kg');
+      return { tokens,
+        derivees: [{ id: 'E', nom: 'Valeur du champ électrique E entre les plaques', expr: 'E = U / distance', val: p.U / (p.e * 1e-3), u: 'V·m⁻¹' }],
+        texte: ['Deux plaques parallèles, distantes de ', T('e'), ', sont reliées à un générateur qui impose une tension de ', T('U'), '. Une petite boule de ', T('mp'), ', portant une charge de ', T('q'), ', est placée entre les plaques. Quelle est la valeur de la force électrique qu’elle subit ?'],
+        utiles: ['U', 'e', 'q'],
+        raisons: { mp: 'La masse de la boule n’intervient pas dans la force électrique F = q·E (elle servirait pour son poids).' },
+        cherche: { bonne: 'La force électrique F subie par la boule (en N)', faux: ['Le champ électrique E entre les plaques (en V·m⁻¹)', 'Le poids de la boule (en N)', 'L’énergie de la boule (en J)'] },
+        manque: null, solution: { txt: 'F = q·E, avec E = U / distance', val: p.q * 1e-9 * p.U / (p.e * 1e-3), u: 'N' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- fichier de données : les composants de dessin ne servent qu’ici */
 // ====================================================
 //  « RECONNAÎTRE UN MOUVEMENT SUR UN SCHÉMA » (seconde, chapitre « Décrire un mouvement »)
 //  Chaque exercice montre une chronophotographie (positions d'un objet à intervalles de temps égaux)
