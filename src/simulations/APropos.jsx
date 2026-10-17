@@ -1,4 +1,5 @@
 import { cardStyle, KIT, styleBoite } from "../commun";
+import { BoutonMail } from "../contact";
 
 // ====================================================
 //  PAGE 47 — À PROPOS ET CONTACT (hors menu : ouverte depuis le bas du menu et le pied de page)
@@ -33,7 +34,7 @@ export function SimulationAPropos() {
         <div style={styleBoite}>
           {titre('Contact')}
           <p style={para}>Une erreur, une remarque, une idée de simulation, une question sur l’utilisation en classe ? Écrivez-moi :<br/>
-            <a href="mailto:nils.aronssohn@ac-grenoble.fr" style={{ color: '#0284c7', fontWeight: 700 }}>✉️ nils.aronssohn@ac-grenoble.fr</a></p>
+            <BoutonMail libelle="✉️ Écrire à l’auteur" sujet="Paillasse virtuelle — message" couleur="#0284c7" /></p>
         </div>
         <div style={styleBoite}>
           {titre('Licence et réutilisation')}

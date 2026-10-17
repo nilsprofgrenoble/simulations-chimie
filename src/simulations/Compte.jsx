@@ -5,6 +5,7 @@ import { tousLesExercices } from "./Entrainement";
 import { estSimulation, estDefi, tempsParSimulation, MODES, etiquettesDefis } from "../suivi";
 import { Carnet } from "./Carnet";
 import { VieDeClasse } from "./VieDeClasse";
+import { BoutonMail } from "../contact";
 
 const ROSE = '#e11d48';
 
@@ -32,6 +33,19 @@ export function agreger(lignes) {
 export const etiquettes = () => Object.fromEntries([...tousLesExercices(), ...etiquettesDefis()].map(e => [e.cle, e]));
 
 const champ = { padding: '8px 10px', fontSize: 15, borderRadius: 8, border: `1px solid ${KIT.bord}`, width: '100%', boxSizing: 'border-box' };
+
+function ContactEnseignant() {
+  return (
+    <div style={{ ...styleBoite, marginTop: 14, fontSize: 13.5, color: KIT.txt2, lineHeight: 1.6 }}>
+      <b style={{ color: KIT.txt }}>👩‍🏫 Vous êtes enseignant·e ?</b> Si vous souhaitez un compte pour vous et vos classes (comptes élèves, suivi de leur progression),
+      écrivez-moi depuis votre adresse académique.
+      <div style={{ marginTop: 8 }}>
+        <BoutonMail libelle="✉️ Demander un compte enseignant" sujet="Demande de compte enseignant — Paillasse virtuelle"
+          corps={'Bonjour,\n\nJe suis enseignant·e (établissement : …, discipline : …) et je souhaite un compte pour moi et mes classes.\n\nMerci !'} />
+      </div>
+    </div>
+  );
+}
 
 function Connexion() {
   const [id, setId] = useState(''), [mdp, setMdp] = useState(''), [garder, setGarder] = useState(false);
@@ -73,6 +87,7 @@ function Connexion() {
         Rien d’autre : ni ton nom, ni ton adresse, ni ce que tu écris dans les réponses. Ces données sont visibles de toi et de ton professeur,
         servent à t’aider à progresser, ne sont pas notées, et sont supprimées à la fin de l’année scolaire.
       </div>
+      <ContactEnseignant />
     </>
   );
 }
