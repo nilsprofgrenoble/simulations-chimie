@@ -10,9 +10,10 @@ import { aReprendreEnClasse, SEUIL_ELEVES, SEUIL_PROPORTION } from "../reprise";
 const ROSE = '#e11d48';
 const PERIODES = [[7, '7 derniers jours'], [30, '30 derniers jours'], [null, 'Toute l’année']];
 
-export function AReprendreProf({ eleves, lignes, naviguer }) {
+export function AReprendreProf({ eleves, lignes, naviguer, onDevoir }) {
   const [jours, setJours] = useState(7);
   const items = useMemo(() => catalogue(), []);
+  const idDe = useMemo(() => new Map(eleves.map(e => [e.identifiant, e.user_id])), [eleves]);
   const R = useMemo(() => aReprendreEnClasse(eleves, lignes, items, jours), [eleves, lignes, items, jours]);
   const puce = (n, fond, texte) => n > 0 && <span style={{ background: fond, color: texte, borderRadius: 999, padding: '2px 10px', fontSize: 12.5, fontWeight: 700 }}>{texte === '#991b1b' ? '🛑' : texte === '#854d0e' ? '👀' : '🔁'} {n}</span>;
   return (
@@ -42,6 +43,11 @@ export function AReprendreProf({ eleves, lignes, naviguer }) {
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '8px 0 4px' }}>
             {puce(qui.bloque.length, '#fee2e2', '#991b1b')}{puce(qui.correction.length, '#fef9c3', '#854d0e')}{puce(qui.essais.length, '#e0e7ff', '#3730a3')}
           </div>
+          {onDevoir && (
+            <button onClick={() => onDevoir({ titre: `À retravailler : ${item.titre}`.slice(0, 80), cles: [item.cle], eleves: [...qui.bloque, ...qui.correction, ...qui.essais].map(x => idDe.get(x)).filter(Boolean) })}
+              style={{ cursor: 'pointer', font: 'inherit', fontSize: 13, fontWeight: 700, padding: '5px 11px', borderRadius: 8, border: `1px solid ${ROSE}`, background: '#fff1f2', color: ROSE, margin: '2px 0 6px' }}>
+              📌 Donner cet exercice en devoir à ces {nbDiff} élèves
+            </button>)}
           <div style={{ fontSize: 13, color: KIT.txt2 }}>
             {qui.bloque.length > 0 && <>🛑 {qui.bloque.join(', ')}. </>}{qui.correction.length > 0 && <>👀 {qui.correction.join(', ')}. </>}{qui.essais.length > 0 && <>🔁 {qui.essais.join(', ')}.</>}
           </div>

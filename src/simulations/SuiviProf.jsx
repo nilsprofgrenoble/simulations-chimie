@@ -7,6 +7,7 @@ import { tousLesExercices } from "./Entrainement";
 import { DevoirsProf } from "./DevoirsProf";
 import { AReprendreProf } from "./AReprendreProf";
 import { SyntheseProf } from "./SyntheseProf";
+import { ChapitreClasse } from "./ChapitreClasse";
 import { ApercuEleve } from "./ApercuEleve";
 
 const ROSE = '#e11d48';
@@ -72,14 +73,18 @@ export function SimulationSuiviProf({ naviguer }) {
   const [onglet, setOnglet] = useState('synthese'), [ouvert, setOuvert] = useState(null);
   const [msg, setMsg] = useState(''), [erreur, setErreur] = useState(''), [occupe, setOccupe] = useState(false);
   const [comptes, setComptes] = useState(null), [formClasse, setFormClasse] = useState(false);
-  const [vieDispo, setVieDispo] = useState(true), [apercu, setApercu] = useState(false);
+  const [vieDispo, setVieDispo] = useState(true), [chapDispo, setChapDispo] = useState(true), [apercu, setApercu] = useState(false), [preset, setPreset] = useState(null);
   const [nc, setNc] = useState({ nom: '', prefixe: '', nombre: 30 }), [ajout, setAjout] = useState(5);
   const etq = useMemo(() => etiquettes(), []), exos = useMemo(() => tousLesExercices(), []), defis = useMemo(() => etiquettesDefis(), []);
 
   const chargerClasses = useCallback(async (choisir) => {
     let c;
-    try { c = await rest('classes?select=id,nom,prefixe,vie_classe&order=cree_le'); setVieDispo(true); }
-    catch { c = await rest('classes?select=id,nom,prefixe&order=cree_le'); setVieDispo(false); }   // supabase/05-vie-de-classe.sql pas encore appliqué
+    try { c = await rest('classes?select=id,nom,prefixe,vie_classe,chapitres&order=cree_le'); setVieDispo(true); setChapDispo(true); }
+    catch {
+      setChapDispo(false);                                                                          // supabase/07-chapitre-et-ciblage.sql pas encore appliqué
+      try { c = await rest('classes?select=id,nom,prefixe,vie_classe&order=cree_le'); setVieDispo(true); }
+      catch { c = await rest('classes?select=id,nom,prefixe&order=cree_le'); setVieDispo(false); }   // supabase/05-vie-de-classe.sql pas encore appliqué
+    }
     setClasses(c);
     setClasseId(cur => choisir || (c.some(x => x.id === cur) ? cur : c[0]?.id || ''));
   }, []);
@@ -141,6 +146,12 @@ export function SimulationSuiviProf({ naviguer }) {
     setClasses(cs => cs.map(c => (c.id === classeId ? { ...c, vie_classe: actif } : c)));
     setMsg(actif ? 'Vie de classe activée : les élèves voient l’objectif collectif et les prouesses.' : 'Vie de classe désactivée.');
   });
+  const choisirChapitres = liste => proteger(async () => {
+    await rest(`classes?id=eq.${classeId}`, { method: 'PATCH', corps: { chapitres: liste } });
+    setClasses(cs => cs.map(c => (c.id === classeId ? { ...c, chapitres: liste } : c)));
+    setMsg(liste.length ? `Chapitre en cours : ${liste.join(', ')}. Les élèves de la classe le voient dans « Je m’entraîne ».` : 'Aucun chapitre en cours : les élèves voient la liste complète.');
+  });
+  const ouvrir = o => { setPreset(null); setOnglet(o); };
   const supprimerClasse = () => {
     const saisie = window.prompt(`Supprimer la classe « ${classe.nom} », ses ${eleves.length} comptes et toutes leurs données ? Définitif.\nPour confirmer, tapez le préfixe : ${classe.prefixe}`);
     if (saisie !== classe.prefixe) return;
@@ -198,7 +209,13 @@ export function SimulationSuiviProf({ naviguer }) {
       </div>
 
       {classe && (
-        <div style={{ ...styleBoite, margin: '0 0 10px', fontSize: 13.5 }}>
+        <details style={{ margin: '0 0 10px' }} data-reglages>
+          <summary style={{ cursor: 'pointer', fontSize: 14, fontWeight: 700, color: KIT.txt, padding: '4px 0' }}>
+            ⚙️ Réglages de la classe <span style={{ fontWeight: 600, color: KIT.txt2 }}>
+              · 📘 {chapDispo ? (classe.chapitres?.length ? classe.chapitres.join(', ') : 'aucun chapitre choisi') : 'chapitre : script SQL 07 à lancer'}{' '}
+              · 🏆 vie de classe {vieDispo ? (classe.vie_classe ? 'activée' : 'désactivée') : 'non disponible'}</span>
+          </summary>
+        <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }}>
           {vieDispo ? (
             <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', cursor: 'pointer' }}>
               <input type="checkbox" checked={!!classe.vie_classe} disabled={occupe} onChange={e => basculerVie(e.target.checked)} style={{ marginTop: 3, accentColor: '#e11d48' }} />
@@ -208,7 +225,9 @@ export function SimulationSuiviProf({ naviguer }) {
           ) : (
             <span>🏆 <b>Vie de classe</b> : disponible après avoir exécuté <code>supabase/05-vie-de-classe.sql</code> dans Supabase (SQL Editor → Run).</span>
           )}
-        </div>)}
+        </div>
+        <ChapitreClasse classe={classe} dispo={chapDispo} occupe={occupe} onChoix={choisirChapitres} />
+        </details>)}
 
       {formClasse && (
         <form onSubmit={creerClasse} style={{ ...styleBoite, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
@@ -226,18 +245,18 @@ export function SimulationSuiviProf({ naviguer }) {
       {classe && (
         <>
           <div style={{ display: 'flex', gap: 6, margin: '12px 0 8px' }}>
-            <button onClick={() => setOnglet('synthese')} style={stylePetitBouton(onglet === 'synthese', ROSE)}>🏠 Synthèse</button>
-            <button onClick={() => setOnglet('eleves')} style={stylePetitBouton(onglet === 'eleves', ROSE)}>Par élève ({eleves.length})</button>
-            <button onClick={() => setOnglet('exos')} style={stylePetitBouton(onglet === 'exos', ROSE)}>Par exercice</button>
-            <button onClick={() => setOnglet('defis')} style={stylePetitBouton(onglet === 'defis', ROSE)}>Défis des simulations</button>
-            <button onClick={() => setOnglet('sims')} style={stylePetitBouton(onglet === 'sims', ROSE)}>Simulations</button>
-            <button onClick={() => setOnglet('devoirs')} style={stylePetitBouton(onglet === 'devoirs', ROSE)}>📌 Devoirs</button>
-            <button onClick={() => setOnglet('reprendre')} style={stylePetitBouton(onglet === 'reprendre', ROSE)}>🔁 À reprendre</button>
+            <button onClick={() => ouvrir('synthese')} style={stylePetitBouton(onglet === 'synthese', ROSE)}>🏠 Synthèse</button>
+            <button onClick={() => ouvrir('eleves')} style={stylePetitBouton(onglet === 'eleves', ROSE)}>Par élève ({eleves.length})</button>
+            <button onClick={() => ouvrir('exos')} style={stylePetitBouton(onglet === 'exos', ROSE)}>Par exercice</button>
+            <button onClick={() => ouvrir('defis')} style={stylePetitBouton(onglet === 'defis', ROSE)}>Défis des simulations</button>
+            <button onClick={() => ouvrir('sims')} style={stylePetitBouton(onglet === 'sims', ROSE)}>Simulations</button>
+            <button onClick={() => ouvrir('devoirs')} style={stylePetitBouton(onglet === 'devoirs', ROSE)}>📌 Devoirs</button>
+            <button onClick={() => ouvrir('reprendre')} style={stylePetitBouton(onglet === 'reprendre', ROSE)}>🔁 À reprendre</button>
           </div>
 
-          {onglet === 'synthese' && <SyntheseProf classe={classe} eleves={eleves} lignes={lignes} allerA={setOnglet} />}
-          {onglet === 'devoirs' && <DevoirsProf classe={classe} eleves={eleves} lignes={lignes} />}
-          {onglet === 'reprendre' && <AReprendreProf eleves={eleves} lignes={lignes} naviguer={naviguer} />}
+          {onglet === 'synthese' && <SyntheseProf classe={classe} eleves={eleves} lignes={lignes} allerA={ouvrir} />}
+          {onglet === 'devoirs' && <DevoirsProf key={`${classe.id}|${(classe.chapitres || []).join()}|${preset ? JSON.stringify(preset) : ''}`} classe={classe} eleves={eleves} lignes={lignes} preset={preset} />}
+          {onglet === 'reprendre' && <AReprendreProf eleves={eleves} lignes={lignes} naviguer={naviguer} onDevoir={p => { setPreset(p); setOnglet('devoirs'); }} />}
 
           {onglet === 'eleves' && (
             <div style={{ overflowX: 'auto' }}>

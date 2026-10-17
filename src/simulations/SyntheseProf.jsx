@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { KIT } from "../commun";
-import { rest } from "../serveur";
+import { lireDevoirs } from "../devoirsServeur";
 import { catalogue } from "./catalogue";
 import { aReprendreEnClasse } from "../reprise";
 import { suiviClasse, infoEcheance } from "../devoirs";
@@ -12,13 +12,6 @@ import { syntheseClasse, JOURS_ACTIF, JOURS_RELANCE } from "../synthese";
 // ═══════════════════════════════════════════════════════════════════════════
 const ROSE = '#e11d48';
 const TONS = { retard: '#b91c1c', urgent: '#b45309', ok: '#2f7a52', aucune: '#64748b' };
-
-// Lecture module-level (les règles react-hooks interdisent de lancer le setState directement dans l'effet)
-function lireDevoirs(classeId) {
-  return rest(`devoirs?select=id,titre,cles,echeance,cree_le&classe_id=eq.${classeId}&order=cree_le.desc&limit=40`)
-    .then(d => ({ liste: d, dispo: true }))
-    .catch(() => ({ liste: [], dispo: false }));      // supabase/06-devoirs.sql pas encore appliqué : on masque simplement le bloc
-}
 
 const Tuile = ({ valeur, sur, libelle, aide, couleur }) => (
   <div style={{ background: '#fff', border: `1px solid ${KIT.bord}`, borderTop: `4px solid ${couleur}`, borderRadius: 12, padding: '10px 14px', flex: '1 1 150px', minWidth: 150 }}>
@@ -40,7 +33,7 @@ export function SyntheseProf({ classe, eleves, lignes, allerA }) {
   const [dev, setDev] = useState(null);
   useEffect(() => {
     let vivant = true;
-    lireDevoirs(classe.id).then(r => { if (vivant) setDev(r); });
+    lireDevoirs(classe.id, 40).then(r => { if (vivant) setDev(r); });
     return () => { vivant = false; };
   }, [classe.id]);
   const items = useMemo(() => catalogue(), []);
