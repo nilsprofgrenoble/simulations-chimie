@@ -4,6 +4,7 @@ import { useSession, estProf, deconnexion, rest, toutLire, fonctionComptes } fro
 import { agreger, etiquettes, formatDuree, formatDate, TableauTempsSimulations } from "./Compte";
 import { estSimulation, estDefi, etiquettesDefis, tempsParSimulation, MODES } from "../suivi";
 import { tousLesExercices } from "./Entrainement";
+import { DevoirsProf } from "./DevoirsProf";
 
 const ROSE = '#e11d48';
 const th = { padding: '5px 8px', textAlign: 'left', color: KIT.txt2, fontWeight: 700, whiteSpace: 'nowrap' };
@@ -218,7 +219,10 @@ export function SimulationSuiviProf({ naviguer }) {
             <button onClick={() => setOnglet('exos')} style={stylePetitBouton(onglet === 'exos', ROSE)}>Par exercice</button>
             <button onClick={() => setOnglet('defis')} style={stylePetitBouton(onglet === 'defis', ROSE)}>Défis des simulations</button>
             <button onClick={() => setOnglet('sims')} style={stylePetitBouton(onglet === 'sims', ROSE)}>Simulations</button>
+            <button onClick={() => setOnglet('devoirs')} style={stylePetitBouton(onglet === 'devoirs', ROSE)}>📌 Devoirs</button>
           </div>
+
+          {onglet === 'devoirs' && <DevoirsProf classe={classe} eleves={eleves} lignes={lignes} />}
 
           {onglet === 'eleves' && (
             <div style={{ overflowX: 'auto' }}>

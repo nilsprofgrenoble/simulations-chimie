@@ -79,3 +79,18 @@ Confidentialité : le serveur ne renvoie à un élève que les pseudos des élè
 
 Limites à connaître : les résultats sont enregistrés par le navigateur de l'élève ; un élève motivé peut les truquer. Ici l'enjeu est faible (pas de note, pas de classement), mais ne vous en servez pas pour évaluer.
 Les listes d'adjectifs et de noms sont dans `src/classe.js` : on peut en ajouter à la fin (64 maximum), jamais en retirer ni changer l'ordre.
+
+## Devoirs assignés (étape 21)
+
+À faire **une fois**, avant ou après avoir fusionné la PR (sans le SQL, le site n'affiche rien côté élève, et l'onglet professeur indique quoi faire) :
+1. **SQL** : SQL Editor → New snippet → coller `06-devoirs.sql` → Run. Le résultat doit afficher trois lignes : `devoirs`, `devoirs_controle`, `cles_devoir_valides`. Relançable sans risque.
+2. **Créer un devoir** : site → Suivi professeur → choisir la classe → onglet « 📌 Devoirs » : titre, date limite (facultative), 1 à 12 exercices ou défis (recherche par mot du titre, ANA, REA, S'APP, DÉFI) → « Créer le devoir ».
+
+Ce que voient les élèves : tout en haut de « Mon compte », « 📌 À faire pour la classe » : une carte par devoir avec la date limite (orange à 1 jour, rouge en retard), une barre d'avancement et un bouton « Y aller » par exercice non fait. Les devoirs terminés se replient. Vous voyez, pour chaque devoir, combien d'élèves ont tout fait et un tableau élève × exercice.
+
+Règles à connaître (hypothèses de travail) :
+- un exercice est **fait** s'il est **réussi après la création du devoir** : un exercice réussi la semaine dernière doit être refait. C'est voulu pour des révisions ; si vous voulez un devoir sur des exercices que les élèves n'ont jamais faits, rien ne change ;
+- la date limite court jusqu'à la fin du jour indiqué ; après, le devoir reste faisable (« en retard de N jours »), il n'est jamais bloqué ;
+- « fait » n'est pas enregistré dans le devoir : c'est déduit des séances déjà enregistrées. Aucune donnée d'élève en plus ;
+- seul le professeur de la classe crée et supprime ses devoirs ; les élèves ne voient que ceux de leur classe ; 200 devoirs au maximum par classe. On ne peut modifier ni la liste d'exercices ni la classe d'un devoir (supprimez-le et recréez-le) ;
+- comme pour le reste, les réussites viennent du navigateur de l'élève : un devoir sert à organiser le travail, pas à évaluer.
