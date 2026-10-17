@@ -429,7 +429,7 @@ function vecAleatoires() {
 }
 function genSomme() {
   let a, b;
-  do { [a, b] = vecAleatoires(); } while ((a[0] + b[0] === 0 && a[1] + b[1] === 0) || (a[0] === b[0] && a[1] === b[1]));
+  do { [a, b] = vecAleatoires(); } while ((a[0] + b[0] === 0 && a[1] + b[1] === 0) || (a[0] === b[0] && a[1] === b[1]) || Math.abs(a[0] + b[0]) > 4 || Math.abs(a[1] + b[1]) > 4);       // la somme reste dans la grille (±4 carreaux)
   const sx = a[0] + b[0], sy = a[1] + b[1], n = Math.hypot(sx, sy), na = Math.hypot(a[0], a[1]), nb2 = Math.hypot(b[0], b[1]);
   const opts = melange(['à l’extrémité de F₁ (les deux flèches bout à bout)', 'au même point O que F₁, puis on additionne les longueurs', 'à l’extrémité de F₁, mais en retournant le sens de F₂', 'n’importe où : seules les longueurs comptent']);
   const q0 = { id: 'v0', type: 'qcm', q: <>Pour construire graphiquement le vecteur somme <b>F₁ + F₂</b>, on place l’origine de F₂…</>, options: opts, bonne: opts.indexOf('à l’extrémité de F₁ (les deux flèches bout à bout)'),
@@ -449,7 +449,7 @@ function genSomme() {
 }
 function genDifference() {
   let a, b;
-  do { [a, b] = vecAleatoires(); } while ((a[0] === b[0] && a[1] === b[1]));
+  do { [a, b] = vecAleatoires(); } while ((a[0] === b[0] && a[1] === b[1]) || Math.abs(b[0] - a[0]) > 4 || Math.abs(b[1] - a[1]) > 4);       // Δv reste dans la grille (±4 carreaux)
   const dx = b[0] - a[0], dy = b[1] - a[1], n = Math.hypot(dx, dy), na = Math.hypot(a[0], a[1]), nb2 = Math.hypot(b[0], b[1]);
   const bon = 'de l’extrémité de v₁ à l’extrémité de v₂';
   const opts = melange([bon, 'de l’extrémité de v₂ à l’extrémité de v₁', 'de O à l’extrémité de v₂', 'de O à l’extrémité de v₁']);
