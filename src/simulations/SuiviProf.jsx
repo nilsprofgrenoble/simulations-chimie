@@ -5,6 +5,8 @@ import { agreger, etiquettes, formatDuree, formatDate, TableauTempsSimulations }
 import { estSimulation, estDefi, etiquettesDefis, tempsParSimulation, MODES } from "../suivi";
 import { tousLesExercices } from "./Entrainement";
 import { DevoirsProf } from "./DevoirsProf";
+import { AReprendreProf } from "./AReprendreProf";
+import { ApercuEleve } from "./ApercuEleve";
 
 const ROSE = '#e11d48';
 const th = { padding: '5px 8px', textAlign: 'left', color: KIT.txt2, fontWeight: 700, whiteSpace: 'nowrap' };
@@ -69,7 +71,7 @@ export function SimulationSuiviProf({ naviguer }) {
   const [onglet, setOnglet] = useState('eleves'), [ouvert, setOuvert] = useState(null);
   const [msg, setMsg] = useState(''), [erreur, setErreur] = useState(''), [occupe, setOccupe] = useState(false);
   const [comptes, setComptes] = useState(null), [formClasse, setFormClasse] = useState(false);
-  const [vieDispo, setVieDispo] = useState(true);
+  const [vieDispo, setVieDispo] = useState(true), [apercu, setApercu] = useState(false);
   const [nc, setNc] = useState({ nom: '', prefixe: '', nombre: 30 }), [ajout, setAjout] = useState(5);
   const etq = useMemo(() => etiquettes(), []), exos = useMemo(() => tousLesExercices(), []), defis = useMemo(() => etiquettesDefis(), []);
 
@@ -97,6 +99,13 @@ export function SimulationSuiviProf({ naviguer }) {
         <h2 style={{ margin: 0, color: ROSE }}>📊 Suivi professeur</h2>
         <p>Cette page est réservée aux professeurs connectés.</p>
         <button onClick={() => naviguer(39)} style={styleBouton(true, ROSE)}>Aller à la connexion</button>
+      </div>);
+  }
+
+  if (apercu) {
+    return (
+      <div style={{ ...cardStyle, maxWidth: 1100, margin: '0 auto' }}>
+        <ApercuEleve naviguer={naviguer} onFermer={() => setApercu(false)} />
       </div>);
   }
 
@@ -177,6 +186,7 @@ export function SimulationSuiviProf({ naviguer }) {
           {classes.map(c => <option key={c.id} value={c.id}>{c.nom} ({c.prefixe})</option>)}
         </select>
         <button onClick={() => setFormClasse(v => !v)} style={styleBouton(true, ROSE)} disabled={occupe}>＋ Nouvelle classe</button>
+        <button onClick={() => setApercu(true)} style={styleBouton(false, '#7c3aed')}>👁 Aperçu élève</button>
         {classe && <>
           <span style={{ fontSize: 13, color: KIT.txt2 }}>Ajouter</span>
           <input type="number" min={1} max={40} value={ajout} onChange={e => setAjout(e.target.value)} style={{ ...champ, width: 64 }} aria-label="Nombre d’élèves à ajouter" />
@@ -220,9 +230,11 @@ export function SimulationSuiviProf({ naviguer }) {
             <button onClick={() => setOnglet('defis')} style={stylePetitBouton(onglet === 'defis', ROSE)}>Défis des simulations</button>
             <button onClick={() => setOnglet('sims')} style={stylePetitBouton(onglet === 'sims', ROSE)}>Simulations</button>
             <button onClick={() => setOnglet('devoirs')} style={stylePetitBouton(onglet === 'devoirs', ROSE)}>📌 Devoirs</button>
+            <button onClick={() => setOnglet('reprendre')} style={stylePetitBouton(onglet === 'reprendre', ROSE)}>🔁 À reprendre</button>
           </div>
 
           {onglet === 'devoirs' && <DevoirsProf classe={classe} eleves={eleves} lignes={lignes} />}
+          {onglet === 'reprendre' && <AReprendreProf eleves={eleves} lignes={lignes} naviguer={naviguer} />}
 
           {onglet === 'eleves' && (
             <div style={{ overflowX: 'auto' }}>

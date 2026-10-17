@@ -42,15 +42,17 @@ function CarteDevoir({ d, a, par, naviguer, maintenant }) {
     </div>);
 }
 
-export function DevoirsEleve({ lignes, naviguer }) {
-  const [devoirs, setDevoirs] = useState(null);
+// devoirsApercu : liste fictive (aperçu élève du professeur) : rien n'est lu sur le serveur.
+export function DevoirsEleve({ lignes, naviguer, devoirsApercu }) {
+  const [devoirs, setDevoirs] = useState(devoirsApercu ?? null);
   useEffect(() => {
+    if (devoirsApercu) return undefined;
     let vivant = true;
     rest('devoirs?select=id,titre,cles,echeance,cree_le&order=cree_le.desc')
       .then(d => { if (vivant) setDevoirs(Array.isArray(d) ? d : []); })
       .catch(() => { if (vivant) setDevoirs([]); });          // SQL pas encore appliqué, réseau coupé… : on n'affiche rien
     return () => { vivant = false; };
-  }, []);
+  }, [devoirsApercu]);
   const par = useMemo(() => new Map(catalogue().map(i => [i.cle, i])), []);
   const maintenant = useMemo(() => new Date(), []);
   const liste = useMemo(() => trierPourEleve(devoirs || [], lignes || []), [devoirs, lignes]);
