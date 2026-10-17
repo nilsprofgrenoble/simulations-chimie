@@ -15,6 +15,13 @@ export const ADJECTIFS = [
   ['Solide', 'Solide'], ['Mystérieux', 'Mystérieuse'], ['Espiègle', 'Espiègle'], ['Vaillant', 'Vaillante'], ['Malicieux', 'Malicieuse'],
   ['Studieux', 'Studieuse'], ['Dynamique', 'Dynamique'], ['Futé', 'Futée'], ['Radieux', 'Radieuse'], ['Agile', 'Agile'],
   ['Persévérant', 'Persévérante'], ['Inventif', 'Inventive'],
+  ['Fougueux', 'Fougueuse'], ['Téméraire', 'Téméraire'], ['Farceur', 'Farceuse'], ['Câlin', 'Câline'], ['Tonitruant', 'Tonitruante'],
+  ['Rêveur', 'Rêveuse'], ['Pressé', 'Pressée'], ['Courageux', 'Courageuse'], ['Intrépide', 'Intrépide'], ['Zen', 'Zen'],
+  ['Flegmatique', 'Flegmatique'], ['Impatient', 'Impatiente'], ['Fantasque', 'Fantasque'], ['Facétieux', 'Facétieuse'], ['Bondissant', 'Bondissante'],
+  ['Surexcité', 'Surexcitée'], ['Fier', 'Fière'], ['Sage', 'Sage'], ['Fidèle', 'Fidèle'], ['Chanceux', 'Chanceuse'],
+  ['Déchaîné', 'Déchaînée'], ['Majestueux', 'Majestueuse'], ['Philosophe', 'Philosophe'], ['Joueur', 'Joueuse'], ['Enjoué', 'Enjouée'],
+  ['Débrouillard', 'Débrouillarde'], ['Fabuleux', 'Fabuleuse'], ['Légendaire', 'Légendaire'], ['Épatant', 'Épatante'], ['Éclatant', 'Éclatante'],
+  ['Savant', 'Savante'], ['Danseur', 'Danseuse'],
 ];
 // [nom, genre, pictogramme]
 export const NOMS = [
@@ -24,6 +31,12 @@ export const NOMS = [
   ['Fusée', 'f', '🚀'], ['Lentille', 'f', '🔍'], ['Bulle', 'f', '🔵'], ['Flamme', 'f', '🔥'], ['Galaxie', 'f', '🌀'], ['Orbite', 'f', '🪐'],
   ['Vague', 'f', '🌊'], ['Bobine', 'f', '🧵'], ['Boussole', 'f', '🧭'], ['Fiole', 'f', '⚗️'], ['Éclipse', 'f', '🌗'], ['Nébuleuse', 'f', '🌠'],
   ['Burette', 'f', '📏'], ['Pile', 'f', '🔋'],
+  ['Bécher', 'm', '🥛'], ['Erlenmeyer', 'm', '🧫'], ['Spatule', 'f', '🥄'], ['Mole', 'f', '🧮'], ['Paillasse', 'f', '🧑‍🔬'], ['Blouse', 'f', '🥼'],
+  ['Sodium', 'm', '🧂'], ['Hélium', 'm', '🎈'], ['Néon', 'm', '🪧'], ['Argon', 'm', '💠'], ['Cation', 'm', '🔴'], ['Anion', 'm', '🔵'],
+  ['Catalyseur', 'm', '⏩'], ['Précipité', 'm', '🌫️'], ['Réactif', 'm', '🧴'], ['Distillat', 'm', '💦'], ['Solvant', 'm', '🫗'], ['Éthanol', 'm', '🔥'],
+  ['Ampoule', 'f', '🧊'], ['Hotte', 'f', '🌬️'], ['Thermomètre', 'm', '🌡️'], ['Ballon', 'm', '🟠'], ['Entonnoir', 'm', '🔻'], ['Pissette', 'f', '🚿'],
+  ['Agitateur', 'm', '🌪️'], ['Mortier', 'm', '🏺'], ['Creuset', 'm', '🫕'], ['Chromatogramme', 'm', '🌈'], ['Bec Bunsen', 'm', '🕯️'], ['Électrode', 'f', '🔌'],
+  ['Cristallisoir', 'm', '❄️'], ['Pipette jaugée', 'f', '📊'],
 ];
 
 export const pseudoValide = (adj, nom) => Number.isInteger(adj) && Number.isInteger(nom) && adj >= 0 && adj < ADJECTIFS.length && nom >= 0 && nom < NOMS.length;
