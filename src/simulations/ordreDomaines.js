@@ -1,7 +1,7 @@
 // Hiérarchie commune des thèmes (programme de TSTL) : sert à classer les listes d'énoncés et de graphiques des ateliers « compétences ».
 export const ORDRE_DOMAINES = [
   'Transmission de signaux numériques', 'Transport des fluides', 'Régulation', 'Transferts thermiques',
-  'Chimie', 'Mécanique', 'Métrologie',
+  'Chimie', 'Mécanique', 'Mouvement et vitesse', 'Métrologie',
 ];
 // Regroupe une liste d'éléments {domaine, ...} par thème, dans l'ordre de la hiérarchie : [[domaine, [éléments]], ...]
 export function parDomaine(liste) {
