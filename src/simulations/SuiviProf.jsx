@@ -6,6 +6,7 @@ import { estSimulation, estDefi, etiquettesDefis, tempsParSimulation, MODES } fr
 import { tousLesExercices } from "./Entrainement";
 import { DevoirsProf } from "./DevoirsProf";
 import { AReprendreProf } from "./AReprendreProf";
+import { chapitresDe } from "../chapitres";
 import { SyntheseProf } from "./SyntheseProf";
 import { ChapitreClasse } from "./ChapitreClasse";
 import { ApercuEleve } from "./ApercuEleve";
@@ -149,7 +150,7 @@ export function SimulationSuiviProf({ naviguer }) {
   const choisirChapitres = liste => proteger(async () => {
     await rest(`classes?id=eq.${classeId}`, { method: 'PATCH', corps: { chapitres: liste } });
     setClasses(cs => cs.map(c => (c.id === classeId ? { ...c, chapitres: liste } : c)));
-    setMsg(liste.length ? `Chapitre en cours : ${liste.join(', ')}. Les élèves de la classe le voient dans « Je m’entraîne ».` : 'Aucun chapitre en cours : les élèves voient la liste complète.');
+    setMsg(liste.length ? `Chapitre en cours : ${chapitresDe(liste).map(c => c.label).join(' · ')}. Les élèves de la classe le voient dans « Je m’entraîne ».` : 'Aucun chapitre en cours : les élèves voient la liste complète.');
   });
   const ouvrir = o => { setPreset(null); setOnglet(o); };
   const supprimerClasse = () => {
@@ -212,7 +213,7 @@ export function SimulationSuiviProf({ naviguer }) {
         <details style={{ margin: '0 0 10px' }} data-reglages>
           <summary style={{ cursor: 'pointer', fontSize: 14, fontWeight: 700, color: KIT.txt, padding: '4px 0' }}>
             ⚙️ Réglages de la classe <span style={{ fontWeight: 600, color: KIT.txt2 }}>
-              · 📘 {chapDispo ? (classe.chapitres?.length ? classe.chapitres.join(', ') : 'aucun chapitre choisi') : 'chapitre : script SQL 07 à lancer'}{' '}
+              · 📘 {chapDispo ? (classe.chapitres?.length ? chapitresDe(classe.chapitres).map(c => c.label).join(' · ') || 'aucun chapitre choisi' : 'aucun chapitre choisi') : 'chapitre : script SQL 07 à lancer'}{' '}
               · 🏆 vie de classe {vieDispo ? (classe.vie_classe ? 'activée' : 'désactivée') : 'non disponible'}</span>
           </summary>
         <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }}>

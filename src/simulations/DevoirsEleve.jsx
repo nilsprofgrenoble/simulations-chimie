@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { rest } from "../serveur";
-import { catalogue } from "./catalogue";
-import { trierPourEleve, infoEcheance, finEcheance } from "../devoirs";
+import { catalogueDevoirs } from "./catalogue";
+import { trierPourEleve, infoEcheance, finEcheance, estCleSim, detailSim, SEUIL_GUIDE_S } from "../devoirs";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  « À FAIRE POUR LA CLASSE » (tout en haut de l'espace élève) : les devoirs assignés par le professeur.
@@ -15,7 +15,13 @@ const TONS = {
   aucune: { fond: '#f1f5f9', bord: '#cbd5e1', texte: '#475569' },
 };
 
-function CarteDevoir({ d, a, par, naviguer, maintenant }) {
+// « Parcours guidé : 3 / 5 min · défi à réussir » : où en est l'élève sur une simulation du devoir
+function etatSim(lignes, cle, depuis) {
+  const x = detailSim(lignes || [], cle, depuis), min = Math.floor(Math.min(x.guideS, SEUIL_GUIDE_S) / 60);
+  return `🧭 parcours guidé : ${x.guideOk ? 'fait' : `${min} / ${SEUIL_GUIDE_S / 60} min`}${x.defis.length ? ` · 🎯 défi : ${x.defiOk ? 'réussi' : 'à réussir'}` : ''}`;
+}
+
+function CarteDevoir({ d, a, par, naviguer, maintenant, lignes }) {
   const info = infoEcheance(d.echeance, maintenant, a.termine), ton = TONS[info.ton];
   const frac = a.total ? a.nb / a.total : 0;
   const fin = finEcheance(d.echeance);
@@ -35,7 +41,8 @@ function CarteDevoir({ d, a, par, naviguer, maintenant }) {
           <div key={cle} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, opacity: fait ? 0.7 : 1 }}>
             <span aria-label={fait ? 'fait' : 'à faire'} style={{ fontSize: 17 }}>{fait ? '✅' : '⬜'}</span>
             <span style={{ flex: 1, textDecoration: fait ? 'line-through' : 'none', color: '#1e293b' }}>
-              {it ? <><b style={{ color: '#64748b' }}>{it.comp === 'DÉFI' ? 'Défi' : it.comp} ·</b> {it.titre}</> : <i>Exercice introuvable (retiré du site ?)</i>}</span>
+              {it ? <><b style={{ color: '#64748b' }}>{it.comp === 'DÉFI' ? 'Défi' : it.comp === 'SIM' ? 'Simulation' : it.comp} ·</b> {it.titre}</> : <i>Exercice introuvable (retiré du site ?)</i>}
+              {it && estCleSim(cle) && !fait && <span data-etat-sim style={{ display: 'block', fontSize: 12.5, color: '#64748b', textDecoration: 'none' }}>{etatSim(lignes, cle, d.cree_le)}</span>}</span>
             {it && !fait && <button className="dv-btn" onClick={() => (it.atelier ? naviguer(it.atelier, it.ex) : naviguer(it.sim))}>Y aller ▶</button>}
           </div>); })}
       </div>
@@ -53,7 +60,7 @@ export function DevoirsEleve({ lignes, naviguer, devoirsApercu }) {
       .catch(() => { if (vivant) setDevoirs([]); });          // SQL pas encore appliqué, réseau coupé… : on n'affiche rien
     return () => { vivant = false; };
   }, [devoirsApercu]);
-  const par = useMemo(() => new Map(catalogue().map(i => [i.cle, i])), []);
+  const par = useMemo(() => new Map(catalogueDevoirs().map(i => [i.cle, i])), []);
   const maintenant = useMemo(() => new Date(), []);
   const liste = useMemo(() => trierPourEleve(devoirs || [], lignes || []), [devoirs, lignes]);
   if (!liste.length) return null;
@@ -72,11 +79,11 @@ export function DevoirsEleve({ lignes, naviguer, devoirsApercu }) {
         @media (prefers-reduced-motion: reduce) { .dv *, .dv *::before, .dv *::after { transition: none !important; } }
       `}</style>
       {ouverts.length > 0 && <h3>📌 À faire pour la classe <small>{ouverts.length} devoir{ouverts.length > 1 ? 's' : ''} de ton professeur</small></h3>}
-      {ouverts.map(({ d, a }) => <CarteDevoir key={d.id} d={d} a={a} par={par} naviguer={naviguer} maintenant={maintenant} />)}
+      {ouverts.map(({ d, a }) => <CarteDevoir key={d.id} d={d} a={a} par={par} naviguer={naviguer} maintenant={maintenant} lignes={lignes} />)}
       {finis.length > 0 && (
         <details style={{ marginBottom: 6 }} open={ouverts.length === 0}>
           <summary style={{ cursor: 'pointer', fontWeight: 700, color: '#166534', fontSize: 14.5 }}>✅ Devoirs terminés ({finis.length})</summary>
-          <div style={{ marginTop: 8 }}>{finis.map(({ d, a }) => <CarteDevoir key={d.id} d={d} a={a} par={par} naviguer={naviguer} maintenant={maintenant} />)}</div>
+          <div style={{ marginTop: 8 }}>{finis.map(({ d, a }) => <CarteDevoir key={d.id} d={d} a={a} par={par} naviguer={naviguer} maintenant={maintenant} lignes={lignes} />)}</div>
         </details>)}
     </section>);
 }
