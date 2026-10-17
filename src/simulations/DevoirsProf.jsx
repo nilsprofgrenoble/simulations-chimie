@@ -31,7 +31,7 @@ const garde = (theme, i) => {
   return i.domaine === theme;
 };
 const nomComp = i => (i.comp === 'DÉFI' ? 'Défi' : i.comp === 'SIM' ? 'Simulation' : i.comp);
-const noteSim = i => (defisDeSim(i.sim).length ? ' (parcours guidé + un défi réussi)' : ' (parcours guidé seulement : pas de défi)');
+const noteSim = i => (defisDeSim(i.sim).length ? ' (parcours guidé + un défi réussi)' : ' (parcours guidé seulement : le site ne suit pas le défi de cette simulation)');
 
 // preset (facultatif) : { titre, cles, eleves } pour pré-remplir le formulaire, par exemple depuis « À reprendre »
 export function DevoirsProf({ classe, eleves, lignes, preset }) {
@@ -136,7 +136,7 @@ export function DevoirsProf({ classe, eleves, lignes, preset }) {
                 <input type="checkbox" checked={on} onChange={() => basculeEleve(e.user_id)} style={{ accentColor: '#e11d48' }} />{e.identifiant}
               </label>); })}
           </div>)}
-        <div style={{ fontSize: 12.5, color: KIT.txt2 }}>Un exercice compte comme <b>fait</b> s’il est <b>réussi après la création du devoir</b> (un exercice réussi avant doit donc être refait : pratique pour des révisions). Une <b>simulation</b> compte comme <b>faite</b> après au moins {SEUIL_GUIDE_S / 60} minutes en parcours guidé <b>et</b> un défi réussi (si la simulation en propose) : c’est mesuré dans le navigateur de l’élève, donc une aide à l’organisation et non une preuve.</div>
+        <div style={{ fontSize: 12.5, color: KIT.txt2 }}>Un exercice compte comme <b>fait</b> s’il est <b>réussi après la création du devoir</b> (un exercice réussi avant doit donc être refait : pratique pour des révisions). Une <b>simulation</b> compte comme <b>faite</b> après au moins {SEUIL_GUIDE_S / 60} minutes en parcours guidé <b>et</b> un défi réussi quand le site suit les défis de la simulation (c’est le cas de certaines seulement ; pour les autres, le parcours guidé seul est vérifié) : c’est mesuré dans le navigateur de l’élève, donc une aide à l’organisation et non une preuve.</div>
         <div><button type="submit" style={styleBouton(true, '#16a34a')} disabled={occupe || !titre.trim() || choix.length === 0 || (certains && cible && visés.length === 0)}>Créer le devoir</button></div>
       </form>
 
