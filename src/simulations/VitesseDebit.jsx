@@ -1,8 +1,11 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Frac, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, indicesProfond, lireNombre, proche } from "../commun";
 import { FLUIDES, rhoDe, facteurConv, sig, sciTxt, nf, analyser, Un, Chaine, ConvPrefixe, RhoLigne, AlerteRho } from "./DebitsFluides";
+
+const SIM_ID = 28;
+declarerDefis(SIM_ID, [['principal', 'Débit, section et vitesse']]);
 
 // ====================================================
 //  SIM 28 — DÉBIT ET VITESSE D'ÉCOULEMENT : Qv = v·S, v₁·S₁ = v₂·S₂
@@ -150,6 +153,7 @@ const QM_UNITE = 'kg·s⁻¹';
 export function SimulationVitesseDebit({ naviguer }) {
   const [mode, setMode] = useState('explore');
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('vitesse-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);
@@ -361,7 +365,7 @@ export function SimulationVitesseDebit({ naviguer }) {
           );
         })}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => setDefi(df => ({ ...df, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
+          <button onClick={() => { noterDefi(Q.every(qu => proche(lireNombre(defi.reps[qu.id] || ''), qu.vrai, qu.tol))); setDefi(df => ({ ...df, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
           {defi.verifie && <button onClick={() => setDefi(df => ({ ...df, corr: !df.corr }))} style={styleBouton(defi.corr, '#7e22ce')}>{defi.corr ? 'Masquer' : 'Voir'} les calculs avec les unités</button>}
           <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
         </div>
@@ -496,7 +500,7 @@ export function SimulationVitesseDebit({ naviguer }) {
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
       <div className={`vd-l1${mode !== 'explore' ? ' cote' : ''}`}>
-        {mode === 'defi' ? <div style={styleBoite}>{voletDefi}</div> : exploration}
+        {mode === 'defi' ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div> : exploration}
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
           : mode === 'defi' ? panneauHypo
             : null}

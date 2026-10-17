@@ -1,8 +1,11 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, indicesProfond, lireNombre, proche, ARetenir, Curseur, LigneMesure } from "../commun";
 import { MELANGES, Teb, yEq, Tros, escalier, tete, trajectoire, pointA, wDe, degre, bilanColonneInfinie } from "./distillationModele";
+
+const SIM_ID = 41;
+declarerDefis(SIM_ID, [['principal', 'Distillation : températures et compositions']]);
 
 // ====================================================
 //  SIM 41 — DISTILLATION SIMPLE ET FRACTIONNÉE d'un mélange binaire
@@ -254,6 +257,7 @@ function Evolution({ titre, traj, pt, series, ymin, ymax, yLabel, unite }) {
 export function SimulationDistillation({ naviguer }) {
   const [mode, setMode] = useState('explore');
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('distillation-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);
@@ -424,7 +428,7 @@ export function SimulationDistillation({ naviguer }) {
         })}
         <div style={{ fontSize: 12.5, color: KIT.txt2 }}>Aide : sans azéotrope, on obtient A pur dans le distillat et B pur dans le bouilleur. Avec un azéotrope, le côté du mélange par rapport à l’azéotrope décide.</div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
+          <button onClick={() => { noterDefi(Q.every(qu => proche(lireNombre(defi.reps[qu.id] || ''), qu.vrai, qu.tol)) && QC.every(qu => defi.reps[qu.id] === qu.bonne)); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
           {defi.verifie && <button onClick={() => setDefi(d => ({ ...d, vu: !d.vu }))} style={styleBouton(defi.vu, '#7e22ce')}>{defi.vu ? 'Masquer' : 'Voir'} la construction</button>}
           <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
         </div>
@@ -540,7 +544,7 @@ export function SimulationDistillation({ naviguer }) {
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Un mélange binaire n’a pas la même composition à l’état liquide et à l’état vapeur : c’est ce qui permet de le séparer. On distingue aussi fraction <strong>molaire</strong> (x, y) et fraction <strong>massique</strong> (w).</div>
       <div className={`dist-l1${mode !== 'explore' ? ' cote' : ''}`}>
         <div>
-          {mode === 'defi' ? <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}</div> : null}
+          {mode === 'defi' ? <div style={{ ...styleBoite, marginBottom: 12 }}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div> : null}
           {mode !== 'defi' ? (
             <div className={`dist-pri${mode !== 'explore' ? ' pile' : ''}`}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

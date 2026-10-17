@@ -1,8 +1,11 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton,
   styleBoite, Section, LigneMesure, Curseur, BoutonsModes, lireNombre, proche, sci, avecIndices } from "../commun";
 import { SchemaChateau, COUL, H_FOND, H_TROP, ecrireTransfert, lireTransfert, effacerTransfert } from "./chateauEau";
+
+const SIM_ID = 5;
+declarerDefis(SIM_ID, [['principal', 'Régler la régulation du château d’eau']]);
 
 // ====================================================
 // RÉGULATION DU NIVEAU D'UN CHÂTEAU D'EAU — TOR, P, PI (Terminale STL)
@@ -90,6 +93,7 @@ export function Simulation5({ naviguer }) {
   useEffect(() => { if (tr) effacerTransfert(); }, []);
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre                // guide | explore | defi
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true });
   const [regul, setRegul] = useState(tr ? 'p' : 'tor');       // tor | p | pi
   const [hBas, setHBas] = useState(31);
@@ -450,7 +454,7 @@ export function Simulation5({ naviguer }) {
             </div>
           );
         })}
-        <div><button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button></div>
+        <div><button onClick={() => { noterDefi(questionsVille.every(justeV)); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button></div>
       </>}
       {defi && defi.type === 'pi' && <>
         <div style={{ fontSize: 15, color: KIT.txt, lineHeight: 1.6 }}>
@@ -462,6 +466,7 @@ export function Simulation5({ naviguer }) {
         <div><button onClick={() => {
           const sain = sim.perdu <= 20 && sim.penurie <= 1, e = sim.ecartMax;
           const medaille = !sain || e == null ? null : e <= 0.2 ? '🥇 or' : e <= 0.3 ? '🥈 argent' : e <= 0.5 ? '🥉 bronze' : null;
+          noterDefi(!!medaille);
           setDefi(d => ({ ...d, valide: { ecart: e, sain, medaille, meilleure: d.valide && d.valide.ecart != null ? Math.min(d.valide.meilleure ?? 9, e) : e } }));
         }} style={styleBouton(true, '#16a34a')}>✓ Valider mon réglage</button></div>
         {defi.valide && <div style={{ fontSize: 14.5, fontWeight: 700, color: defi.valide.medaille ? '#15803d' : '#b91c1c', lineHeight: 1.5 }}>
@@ -512,7 +517,7 @@ export function Simulation5({ naviguer }) {
           </div>
         </div>
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
-          : mode === 'defi' ? <div style={styleBoite}>{voletDefi}</div>
+          : mode === 'defi' ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div>
             : <div style={styleBoite}>
               <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
               <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>

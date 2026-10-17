@@ -7,7 +7,7 @@
 //  Temps actif = onglet visible ET une action de l'élève (clic, frappe, défilement) dans la dernière minute.
 //  Un enseignant ou un visiteur non connecté n'envoie rien.
 // ════════════════════════════════════════════════════════════════════════════
-import { useEffect, useRef, useCallback, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useCallback, useSyncExternalStore } from 'react';
 import { noterReussite } from './commun';
 import { annoncerReussite, etoilesReussite } from './carnet';
 import { getSession, estEleve, rest, restaurer } from './serveur';
@@ -160,3 +160,23 @@ export function declarerDefis(simId, liste) {
 export const estDefi = cle => typeof cle === 'string' && /^[0-9]{1,3}:defi\./.test(cle);
 // Libellés des défis : « Nom de la simulation — défi »
 export const etiquettesDefis = () => DEFIS.map(d => ({ ...d, titre: `${nomsSim[d.sim] || `Simulation ${d.sim}`} — ${d.titre}` }));
+
+// ── Suivi d'un défi « une question, un bouton Vérifier » ────────────────────────────────────────────────
+//  Dans la simulation :  const [sd, noterDefi] = useCompteurDefi();
+//                        au clic sur « Vérifier » :  noterDefi(toutEstJuste)
+//                        dans le rendu, en mode défi :  <SuiviDefi cle={`${SIM}:defi.principal`} etat={sd} />
+//  (et, au niveau du module :  declarerDefis(SIM, [['principal', 'Titre du défi']]) ).
+//  Le défi est « réussi » quand une vérification trouve tout juste. Le composant n'existe qu'en mode défi : le temps compté
+//  est donc celui passé sur le défi, comme pour les exercices.
+export function useCompteurDefi() {
+  const [etat, setEtat] = useState({ essais: 0, reussi: false });
+  const noter = useCallback(ok => setEtat(x => ({ essais: x.essais + 1, reussi: x.reussi || !!ok })), []);
+  return [etat, noter];
+}
+
+export function SuiviDefi({ cle, etat }) {
+  const s = useSuivi(cle, etat.reussi);
+  const deja = useRef(etat.essais);
+  useEffect(() => { if (etat.essais > deja.current) s.essai(); deja.current = etat.essais; }, [etat.essais, s]);
+  return null;
+}

@@ -1,7 +1,10 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche } from "../commun";
+
+const SIM_ID = 32;
+declarerDefis(SIM_ID, [['principal', 'Bouilloire et conductivité']]);
 
 // ====================================================
 //  SIM 32 — REFROIDISSEMENT D'UNE BOUILLOIRE : MESURER λ DE SA PAROI
@@ -369,6 +372,7 @@ function questionsDefi(df) {
 export function SimulationBouilloire() {
   const [mode, setMode] = useState('explore');
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('bouilloire-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [rg, setRg] = useEtatPersistant('bouilloire-guide-reglage-v1', { reel: false });
   const [ux, setUx] = useState({ ...BASE, eff: { ...TOUS } });
@@ -694,7 +698,7 @@ export function SimulationBouilloire() {
             </div>);
         })}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-          <button onClick={() => setDefi(df => ({ ...df, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
+          <button onClick={() => { noterDefi(Q.every(juste)); setDefi(df => ({ ...df, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
           <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}>🔄 Nouvelles données</button>
           {defi.verifie && <span style={{ fontSize: 14, fontWeight: 700, color: KIT.txt }}>{Q.filter(juste).length} / {Q.length} réponses justes</span>}
         </div>
@@ -753,7 +757,7 @@ export function SimulationBouilloire() {
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
       <div className={`bo-l1${mode !== 'explore' ? ' cote' : ''}`}>
-        {mode === 'defi' ? <div style={styleBoite}>{voletDefi}</div> : vue}
+        {mode === 'defi' ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div> : vue}
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
           : mode === 'defi' ? <div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Hypothèses de travail</div>{hypotheses}</div>
             : null}

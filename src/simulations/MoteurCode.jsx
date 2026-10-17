@@ -1,10 +1,13 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, Curseur, LigneMesure } from "../commun";
 import { nf, NB } from "./Distillation";
 import { Moteur, Chrono } from "./MoteurPasAPas";
 import { simuler, delaiMin, N_PAS, F0 } from "./moteurModele";
+
+const SIM_ID = 45;
+declarerDefis(SIM_ID, [['principal', 'Aller le plus vite possible sans perdre de pas']]);
 
 // ====================================================
 //  SIM 45 — PILOTER LE MOTEUR AVEC LE CODE : séquence, délai, charge, pas perdus
@@ -55,6 +58,7 @@ function Courbe({ res, tp, stale }) {
 export function SimulationMoteurCode({ naviguer }) {
   const [mode, setMode] = useState('explore');
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('pilotage-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);
@@ -205,7 +209,7 @@ export function SimulationMoteurCode({ naviguer }) {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>🎯 Défi : aller le plus vite possible</div>
       <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>Le moteur entraîne une charge de <strong>{defi.charge}{NB}%</strong> en <strong>{PRE[defi.m].nom.toLowerCase()}</strong>. Trouvez le <strong>plus petit délai</strong> (à 0,5{NB}ms près) pour lequel le rotor ne perd <strong>aucun pas</strong>, puis vérifiez.</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        <button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier mon réglage</button>
+        <button onClick={() => { noterDefi(!stale && !!res && res.ok && delai <= dMinDefi + 0.5); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier mon réglage</button>
         <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
       </div>
       {verdictDefi && <div style={{ marginTop: 8, fontWeight: 700, color: verdictDefi.c, fontSize: 14 }}>{verdictDefi.t}</div>}
@@ -324,7 +328,7 @@ export function SimulationMoteurCode({ naviguer }) {
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Le microcontrôleur ne voit pas le rotor : il allume les bobines selon une <strong>séquence</strong> et attend un <strong>délai</strong> entre deux pas. Construisez la séquence, réglez le délai et la charge, puis observez si le rotor <strong>suit</strong> la commande ou <strong>perd des pas</strong>.</div>
       <div className={`mc-l1${mode !== 'explore' ? ' cote' : ''}`}>
         <div>
-          {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}</div>}
+          {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div>}
           <div className={`mc-pri${mode !== 'explore' ? ' pile' : ''}`}>
             {figure}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{programme}{mesures}</div>

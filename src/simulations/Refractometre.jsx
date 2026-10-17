@@ -1,9 +1,12 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure } from "../commun";
 import { MELANGES, Teb, yEq, wDe, degre } from "./distillationModele";
 import { Diagramme, nf, NB, Xi } from "./Distillation";
+
+const SIM_ID = 43;
+declarerDefis(SIM_ID, [['principal', 'Indice et composition']]);
 
 // ====================================================
 //  SIM 43 — RÉFRACTOMÈTRE : lire un indice de réfraction, puis en déduire la composition eau – éthanol
@@ -139,6 +142,7 @@ function Etalonnage({ nR, lecture, candidats, xVrai }) {
 export function SimulationRefractometre({ naviguer }) {
   const [mode, setMode] = useState('explore');
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('refracto-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);
@@ -259,7 +263,7 @@ export function SimulationRefractometre({ naviguer }) {
             </div>);
         })}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
+          <button onClick={() => { noterDefi(Q.every(qu => proche(lireNombre(defi.reps[qu.id] || ''), qu.vrai, qu.tol))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
           <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
         </div>
       </div>);
@@ -368,7 +372,7 @@ export function SimulationRefractometre({ naviguer }) {
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Un réfractomètre mesure l’indice de réfraction n d’un liquide ; avec une courbe d’étalonnage, on en déduit la <strong>composition</strong> d’un mélange eau – éthanol (par exemple un distillat).</div>
       <div className={`rf-l1${mode !== 'explore' ? ' cote' : ''}`}>
         <div>
-          {enDefi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}</div>}
+          {enDefi && <div style={{ ...styleBoite, marginBottom: 12 }}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div>}
           <div className={`rf-pri${mode !== 'explore' ? ' pile' : ''}`}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{champ}{mesures}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{reglages}{!enDefi && principe}</div>

@@ -1,8 +1,11 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure } from "../commun";
 import { nf, NB } from "./Distillation";
+
+const SIM_ID = 44;
+declarerDefis(SIM_ID, [['principal', 'Positionner l’axe : pas, tours et durée']]);
 
 // ====================================================
 //  SIM 44 — MOTEUR PAS À PAS : du stator au rotor, puis du rotor à l'axe
@@ -162,6 +165,7 @@ function Reducteur({ n2 }) {
 export function SimulationMoteurPasAPas({ naviguer }) {
   const [mode, setMode] = useState('explore');
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('pap-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);
@@ -361,7 +365,7 @@ export function SimulationMoteurPasAPas({ naviguer }) {
           </div>);
       })}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        <button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
+        <button onClick={() => { noterDefi(sol.every(q => proche(lireNombre(defi.reps[q.id]), q.v, 0.01))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
         <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
       </div>
     </div>);
@@ -513,7 +517,7 @@ export function SimulationMoteurPasAPas({ naviguer }) {
       {onglets}
       <div className={`pap-l1${mode !== 'explore' ? ' cote' : ''}`}>
         <div>
-          {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}</div>}
+          {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div>}
           {vue === 'stator' ? (
             <div className={`pap-pri${mode !== 'explore' ? ' pile' : ''}`}>
               {figure1}

@@ -1,8 +1,11 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import montageCtn from "./montageCtn";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
+
+const SIM_ID = 15;
+declarerDefis(SIM_ID, [['principal', 'Quantum et résolution d’un CAN']]);
 
 // ====================================================
 // SIM 15 — QUANTUM DU CAN → RÉSOLUTION EN TEMPÉRATURE
@@ -99,6 +102,7 @@ const ORDRES_EX = [1, 2, 3].map(o => {
 export function SimulationCAN({ plotlyReady }) {
   const [mode, setMode] = useState('explore');                 // on arrive sur l'exploration libre
   useSignalerMode(mode);
+  const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('can-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);
@@ -437,7 +441,7 @@ export function SimulationCAN({ plotlyReady }) {
           );
         })}
         <div style={{ display: 'flex', gap: 6 }}>
-          <button onClick={() => setDefi(d => ({ ...d, verifie: true }))} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
+          <button onClick={() => { noterDefi(Q.every(qu => proche(lireNombre(defi.reps[qu.id] || ''), qu.vrai, qu.tol))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
           <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
         </div>
       </div>
@@ -755,7 +759,7 @@ export function SimulationCAN({ plotlyReady }) {
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
       <div className={`qc-l1${mode !== 'explore' ? ' cote' : ''}`}>
-        {mode === 'defi' ? <div style={styleBoite}>{voletDefi}</div> : exploration}
+        {mode === 'defi' ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div> : exploration}
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
           : mode === 'defi' ? <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoDefiOuv} onBascule={() => setHypoDefiOuv(o => !o)}>{hypotheses}</Section></div>
             : null}
