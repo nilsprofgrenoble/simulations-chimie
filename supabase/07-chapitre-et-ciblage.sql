@@ -23,7 +23,7 @@ returns boolean language sql immutable set search_path = '' as $$
      and (select count(distinct k) from unnest(c) as k) = coalesce(array_length(c, 1), 0);
 $$;
 revoke all on function public.chapitres_valides(text[]) from public, anon;
-grant execute on function public.chapitres_valides(text[]) to authenticated;
+grant execute on function public.chapitres_valides(text[]) to authenticated, service_role;   -- service_role : la création de classe passe par la fonction « comptes »
 
 alter table public.classes add column if not exists chapitres text[] not null default '{}';
 alter table public.classes drop constraint if exists classes_chapitres_valides;

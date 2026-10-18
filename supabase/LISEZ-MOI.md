@@ -99,6 +99,7 @@ Règles à connaître (hypothèses de travail) :
 
 À faire **une fois**, après `05` et `06` (sans le SQL, le site continue de fonctionner comme avant et le suivi indique quoi faire) :
 1. **SQL** : SQL Editor → New snippet → coller `07-chapitre-et-ciblage.sql` → Run. Le résultat doit afficher quatre lignes (si vous l'aviez déjà lancé dans une version précédente, relancez-le : il met à jour les règles) : `chapitres`, `eleves`, `chapitres_valides`, `devoirs_controle`. Relançable sans risque.
+   - Si « Nouvelle classe » affiche « permission denied for function chapitres_valides » : coller aussi `08-correctif-chapitres-service.sql` → Run (il donne à la fonction « comptes » le droit d'exécuter la règle des chapitres ; le résultat doit afficher deux lignes `t`). Relançable sans risque.
 2. **Choisir le chapitre** : Suivi professeur → classe → « ⚙️ Réglages de la classe » → « 📘 Chapitre en cours » : cliquer sur 1 à 3 chapitres, rangés par niveau (2GT, 1G, TSTL, BTS) comme dans le menu : Distillation, Évaporation, Transport des fluides, etc. Chaque chapitre indique son nombre de simulations et d'exercices de remédiation. Modifiable à tout moment.
 3. **Cibler un devoir** : onglet « 📌 Devoirs » → « Pour qui ? » → « Certains élèves seulement ». Depuis l'onglet « 🔁 À reprendre », le bouton « 📌 Donner cet exercice en devoir à ces N élèves » prépare le devoir avec les élèves en difficulté déjà cochés.
 
