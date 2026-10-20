@@ -30,7 +30,7 @@ const TITRES_OBJECTIF = { terminer: 'À terminer', ameliorer: 'À améliorer', d
 
 // parties : quelles parties afficher (toutes par défaut) ; revoirToujours : montrer « À revoir » même s'il n'y a encore rien à revoir
 export function Carnet({ lignes, naviguer, parties }) {
-  const P = { hero: true, vide: true, revoir: true, revoirToujours: false, objectifs: true, competences: true, badges: true, regularite: true, ...parties };
+  const P = { hero: true, vide: true, revoir: true, revoirToujours: false, revoirMax: Infinity, objectifs: true, competences: true, badges: true, regularite: true, ...parties };
   const [mont, setMont] = useState(false);
   useEffect(() => { const t = setTimeout(() => setMont(true), 80); return () => clearTimeout(t); }, []);
   const items = useMemo(() => [...tousLesExercices(), ...etiquettesDefis().map(d => ({ cle: d.cle, comp: 'DÉFI', titre: d.titre, sim: d.sim }))], []);
@@ -113,12 +113,12 @@ export function Carnet({ lignes, naviguer, parties }) {
       {/* ── À revoir aujourd'hui (révision espacée, voir ../revision.js) ── */}
       {P.revoir && (P.revoirToujours || (!A.aucun && rev.suivis > 0)) && (
         <>
-          <h3 className="cn-h">🔁 À revoir aujourd’hui <small>revoir au bon moment, c’est ce qui fait retenir longtemps</small></h3>
+          <h3 className="cn-h">🔁 À revoir <small>revoir au bon moment, c’est ce qui fait retenir longtemps</small></h3>
           {rev.liste.length === 0 ? (
             <div className="cn-carte" style={{ fontSize: 15, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ fontSize: 30 }} aria-hidden="true">🧊</span>
               <div style={{ flex: 1, minWidth: 200 }}>
-                <b>{rev.suivis > 0 ? 'Rien à revoir aujourd’hui : ta mémoire est au frais !' : 'Rien à revoir : tout va bien !'}</b>
+                <b>{rev.suivis > 0 ? 'Rien à revoir pour le moment : ta mémoire est au frais !' : 'Rien à revoir : tout va bien !'}</b>
                 <div style={{ fontSize: 13.5, color: '#475569', marginTop: 2 }}>
                   {rev.suivis === 0 && <>Les exercices que tu réussis reviendront ici au bon moment, pour que tu les retiennes longtemps.</>}
                   {rev.prochaine ? <>Prochaine révision conseillée : <b>{dansJours(rev.prochaine)}</b>. </> : null}
@@ -129,7 +129,7 @@ export function Carnet({ lignes, naviguer, parties }) {
           ) : (
             <>
               <div className="cn-grille">
-                {rev.liste.map(({ item, statut }) => { const comp = A.comps.find(c => c.code === item.comp);
+                {rev.liste.slice(0, P.revoirMax).map(({ item, statut }) => { const comp = A.comps.find(c => c.code === item.comp);
                   return (
                     <div key={item.cle} className="cn-carte" style={{ borderTop: `4px solid ${comp.couleur}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
                       <div style={{ fontSize: 12.5, fontWeight: 800, color: comp.couleur, textTransform: 'uppercase', letterSpacing: 0.6 }}>🔁 À revoir</div>
@@ -142,7 +142,7 @@ export function Carnet({ lignes, naviguer, parties }) {
                     </div>); })}
               </div>
               <div style={{ fontSize: 13, color: '#64748b', marginTop: 8 }}>
-                Pas besoin de tout faire d’un coup : {rev.autres > 0 ? `il en reste ${rev.autres} d’autres pour plus tard. Chaque` : 'chaque'} révision réussie t’éloigne de l’oubli, et l’exercice disparaît d’ici jusqu’à sa prochaine date idéale.
+                Pas besoin de tout faire d’un coup : {rev.autres + Math.max(0, rev.liste.length - P.revoirMax) > 0 ? `il en reste ${rev.autres + Math.max(0, rev.liste.length - P.revoirMax)} d’autres pour plus tard. Chaque` : 'chaque'} révision réussie t’éloigne de l’oubli, et l’exercice disparaît d’ici jusqu’à sa prochaine date idéale.
               </div>
             </>)}
         </>)}

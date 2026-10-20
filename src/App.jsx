@@ -192,7 +192,9 @@ export default function App() {
   const [activeId, setActiveId] = useState(getInitialId);
   const sessionSb = useSession();
   useEffect(() => { restaurer(); }, []);
-  const active = SIMULATIONS.find(s => s.id === activeId) || SIMULATIONS[0];
+  // Un professeur connecté n'a pas d'écran « Mon compte » intermédiaire : on l'emmène directement au suivi
+  const idAffiche = activeId === 39 && sessionSb?.profil?.role === 'prof' ? 40 : activeId;
+  const active = SIMULATIONS.find(s => s.id === idAffiche) || SIMULATIONS[0];
   const ActiveComponent = active.component;
   const [plotlyReady, setPlotlyReady] = useState(false);
   const [copyMsg, setCopyMsg] = useState('');
@@ -269,7 +271,7 @@ export default function App() {
             <span style={{ fontSize: "2rem" }}>{active.icon}</span>
             <h1 style={{ ...styles.pageTitle, color: active.color, flex: 1 }}>
               <span style={{ fontFamily:"'Outfit', sans-serif", fontWeight:800, letterSpacing:"-0.5px" }}>
-                {activeId === 39 ? (estEleve(sessionSb) ? 'Mon profil' : sessionSb?.profil ? 'Mon compte' : 'Se connecter') : active.label}
+                {idAffiche === 39 ? (estEleve(sessionSb) ? 'Mon profil' : sessionSb?.profil ? 'Mon compte' : 'Se connecter') : active.label}
               </span>
             </h1>
             <button onClick={partager} style={{
@@ -307,14 +309,14 @@ export default function App() {
 const styles = {
   root: { display:"flex", flexDirection:"column", minHeight:"100vh",
     fontFamily:"'Nunito', 'Segoe UI', sans-serif",
-    background:"#f5f7fa", position:"relative", overflow:"clip" },
+    background:"linear-gradient(165deg, #c9d9e8 0%, #e1eaf3 38%, #d3e0ec 70%, #c4d4e4 100%)", position:"relative", overflow:"clip" },
   bgBlob1: { position:"fixed", top:"-120px", right:"-120px", width:"400px", height:"400px",
     borderRadius:"50%",
-    background:"radial-gradient(circle, #e6394622 0%, transparent 70%)",
+    background:"radial-gradient(circle, #25628f40 0%, transparent 70%)",
     pointerEvents:"none", zIndex:0 },
   bgBlob2: { position:"fixed", bottom:"-100px", left:"200px", width:"350px", height:"350px",
     borderRadius:"50%",
-    background:"radial-gradient(circle, #2a9d8f22 0%, transparent 70%)",
+    background:"radial-gradient(circle, #25628f33 0%, transparent 70%)",
     pointerEvents:"none", zIndex:0 },
   main: { flex:1, display:"flex", flexDirection:"column",
     position:"relative", zIndex:1, minWidth:0 },

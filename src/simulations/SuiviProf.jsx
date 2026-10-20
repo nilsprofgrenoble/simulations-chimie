@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback, Fragment } from "react";
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite } from "../commun";
 import { useSession, estProf, deconnexion, rest, toutLire, fonctionComptes } from "../serveur";
-import { agreger, etiquettes, formatDuree, formatDate, TableauTempsSimulations } from "./Compte";
+import { agreger, etiquettes, formatDuree, formatDate, TableauTempsSimulations, MotDePasse } from "./Compte";
+import { ACCENT, ACCENT_CLAIR } from "../theme";
 import { estSimulation, estDefi, etiquettesDefis, tempsParSimulation, MODES } from "../suivi";
 import { tousLesExercices } from "./Entrainement";
 import { DevoirsProf } from "./DevoirsProf";
@@ -11,7 +12,8 @@ import { SyntheseProf } from "./SyntheseProf";
 import { ChapitreClasse } from "./ChapitreClasse";
 import { ApercuEleve } from "./ApercuEleve";
 
-const ROSE = '#e11d48';
+const ROSE = ACCENT;   // une seule couleur d'action sur tout le site (voir ../theme.js)
+const DETAILS = ['exos', 'defis', 'sims'];
 const th = { padding: '5px 8px', textAlign: 'left', color: KIT.txt2, fontWeight: 700, whiteSpace: 'nowrap' };
 const td = { padding: '5px 8px', verticalAlign: 'top' };
 const champ = { padding: '7px 9px', fontSize: 14, borderRadius: 8, border: `1px solid ${KIT.bord}`, boxSizing: 'border-box' };
@@ -103,7 +105,6 @@ export function SimulationSuiviProf({ naviguer }) {
   if (!prof) {
     return (
       <div style={{ ...cardStyle, maxWidth: 700, margin: '0 auto' }}>
-        <h2 style={{ margin: 0, color: ROSE }}>📊 Suivi professeur</h2>
         <p>Cette page est réservée aux professeurs connectés.</p>
         <button onClick={() => naviguer(39)} style={styleBouton(true, ROSE)}>Aller à la connexion</button>
       </div>);
@@ -184,9 +185,9 @@ export function SimulationSuiviProf({ naviguer }) {
 
   return (
     <div style={{ ...cardStyle, maxWidth: 1100, margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-        <h2 style={{ margin: 0, color: ROSE, flex: 1 }}>📊 Suivi professeur</h2>
-        <span style={{ fontSize: 13.5, color: KIT.txt2 }}>{sess.profil.nom}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end', fontSize: 13.5, color: KIT.txt2 }}>
+        <span>Connecté : <b style={{ color: KIT.txt }}>{sess.profil.nom}</b></span>
+        <MotDePasse />
         <button onClick={deconnexion} style={{ ...styleBouton(false, '#475569'), fontSize: 13 }}>Se déconnecter</button>
       </div>
       {erreur && <div role="alert" style={{ color: '#b91c1c', fontWeight: 600, margin: '8px 0' }}>❌ {erreur}</div>}
@@ -194,28 +195,28 @@ export function SimulationSuiviProf({ naviguer }) {
       {comptes && <div style={{ margin: '10px 0' }}><Comptes classe={comptes.classe} comptes={comptes.liste} onFermer={() => setComptes(null)} /></div>}
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', margin: '10px 0' }}>
-        <select aria-label="Classe" value={classeId} onChange={e => { setClasseId(e.target.value); setOuvert(null); setMsg(''); }} style={champ}>
+        <select aria-label="Classe" value={classeId} onChange={e => { setClasseId(e.target.value); setOuvert(null); setMsg(''); }} style={{ ...champ, fontWeight: 700, fontSize: 15 }}>
           {!classes.length && <option value="">Aucune classe</option>}
           {classes.map(c => <option key={c.id} value={c.id}>{c.nom} ({c.prefixe})</option>)}
         </select>
-        <button onClick={() => setFormClasse(v => !v)} style={styleBouton(true, ROSE)} disabled={occupe}>＋ Nouvelle classe</button>
-        <button onClick={() => setApercu(true)} style={styleBouton(false, '#475569')}>👁 Aperçu élève</button>
-        {classe && <>
-          <span style={{ fontSize: 13, color: KIT.txt2 }}>Ajouter</span>
-          <input type="number" min={1} max={40} value={ajout} onChange={e => setAjout(e.target.value)} style={{ ...champ, width: 64 }} aria-label="Nombre d’élèves à ajouter" />
-          <button onClick={ajouter} style={styleBouton(false, '#475569')} disabled={occupe}>élèves</button>
-          <button onClick={exporter} style={styleBouton(false, '#475569')}>⬇️ Export CSV</button>
-          <button onClick={supprimerClasse} style={{ ...styleBouton(false, '#b91c1c'), marginLeft: 'auto' }} disabled={occupe}>🗑 Supprimer la classe</button>
-        </>}
+        <button onClick={() => setFormClasse(v => !v)} style={styleBouton(false, '#475569')} disabled={occupe}>＋ Nouvelle classe</button>
+        <button onClick={() => setApercu(true)} style={{ ...styleBouton(false, '#475569'), marginLeft: 'auto' }}>👁 Aperçu élève</button>
       </div>
 
       {classe && (
         <details style={{ margin: '0 0 10px' }} data-reglages>
           <summary style={{ cursor: 'pointer', fontSize: 14, fontWeight: 700, color: KIT.txt, padding: '4px 0' }}>
-            ⚙️ Réglages de la classe <span style={{ fontWeight: 600, color: KIT.txt2 }}>
+            ⚙️ Gérer la classe <span style={{ fontWeight: 600, color: KIT.txt2 }}>
               · 📘 {chapDispo ? (classe.chapitres?.length ? chapitresDe(classe.chapitres).map(c => c.label).join(' · ') || 'aucun chapitre choisi' : 'aucun chapitre choisi') : 'chapitre : script SQL 07 à lancer'}{' '}
               · 🏆 vie de classe {vieDispo ? (classe.vie_classe ? 'activée' : 'désactivée') : 'non disponible'}</span>
           </summary>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', margin: '6px 0 8px' }}>
+          <span style={{ fontSize: 13, color: KIT.txt2 }}>Ajouter</span>
+          <input type="number" min={1} max={40} value={ajout} onChange={e => setAjout(e.target.value)} style={{ ...champ, width: 64 }} aria-label="Nombre d’élèves à ajouter" />
+          <button onClick={ajouter} style={styleBouton(false, '#475569')} disabled={occupe}>élèves</button>
+          <button onClick={exporter} style={styleBouton(false, '#475569')}>⬇️ Export CSV</button>
+          <button onClick={supprimerClasse} style={{ ...styleBouton(false, '#b91c1c'), marginLeft: 'auto' }} disabled={occupe}>🗑 Supprimer la classe</button>
+        </div>
         <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }}>
           {vieDispo ? (
             <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', cursor: 'pointer' }}>
@@ -245,15 +246,20 @@ export function SimulationSuiviProf({ naviguer }) {
 
       {classe && (
         <>
-          <div style={{ display: 'flex', gap: 6, margin: '12px 0 8px' }}>
+          <div style={{ display: 'flex', gap: 6, margin: '12px 0 8px', flexWrap: 'wrap' }}>
             <button onClick={() => ouvrir('synthese')} style={stylePetitBouton(onglet === 'synthese', ROSE)}>🏠 Synthèse</button>
-            <button onClick={() => ouvrir('eleves')} style={stylePetitBouton(onglet === 'eleves', ROSE)}>Par élève ({eleves.length})</button>
-            <button onClick={() => ouvrir('exos')} style={stylePetitBouton(onglet === 'exos', ROSE)}>Par exercice</button>
-            <button onClick={() => ouvrir('defis')} style={stylePetitBouton(onglet === 'defis', ROSE)}>Défis des simulations</button>
-            <button onClick={() => ouvrir('sims')} style={stylePetitBouton(onglet === 'sims', ROSE)}>Simulations</button>
-            <button onClick={() => ouvrir('devoirs')} style={stylePetitBouton(onglet === 'devoirs', ROSE)}>📌 Devoirs</button>
             <button onClick={() => ouvrir('reprendre')} style={stylePetitBouton(onglet === 'reprendre', ROSE)}>🔁 À reprendre</button>
+            <button onClick={() => ouvrir('devoirs')} style={stylePetitBouton(onglet === 'devoirs', ROSE)}>📌 Devoirs</button>
+            <button onClick={() => ouvrir('eleves')} style={stylePetitBouton(onglet === 'eleves', ROSE)}>👥 Élèves ({eleves.length})</button>
+            <button onClick={() => ouvrir(DETAILS.includes(onglet) ? onglet : 'exos')} style={stylePetitBouton(DETAILS.includes(onglet), ROSE)}>📚 Détail</button>
           </div>
+          {DETAILS.includes(onglet) && (
+            <div style={{ display: 'flex', gap: 6, margin: '0 0 10px 4px', flexWrap: 'wrap', alignItems: 'center', fontSize: 13, color: KIT.txt2 }}>
+              Détail :
+              <button onClick={() => ouvrir('exos')} style={stylePetitBouton(onglet === 'exos', '#475569')}>Par exercice</button>
+              <button onClick={() => ouvrir('defis')} style={stylePetitBouton(onglet === 'defis', '#475569')}>Défis des simulations</button>
+              <button onClick={() => ouvrir('sims')} style={stylePetitBouton(onglet === 'sims', '#475569')}>Temps par simulation</button>
+            </div>)}
 
           {onglet === 'synthese' && <SyntheseProf classe={classe} eleves={eleves} lignes={lignes} allerA={ouvrir} />}
           {onglet === 'devoirs' && <DevoirsProf key={`${classe.id}|${(classe.chapitres || []).join()}|${preset ? JSON.stringify(preset) : ''}`} classe={classe} eleves={eleves} lignes={lignes} preset={preset} />}
@@ -269,7 +275,7 @@ export function SimulationSuiviProf({ naviguer }) {
                   const der = agTout.reduce((m, a) => (a.derniere > m ? a.derniere : m), '');
                   return (
                     <Fragment key={e.user_id}>
-                      <tr data-eleve={e.identifiant} style={{ borderTop: `1px solid ${KIT.bord}`, cursor: 'pointer', background: ouvert === e.user_id ? '#fff1f2' : 'transparent' }}
+                      <tr data-eleve={e.identifiant} style={{ borderTop: `1px solid ${KIT.bord}`, cursor: 'pointer', background: ouvert === e.user_id ? ACCENT_CLAIR : 'transparent' }}
                         onClick={() => setOuvert(ouvert === e.user_id ? null : e.user_id)}>
                         <td style={td}><b>{e.identifiant}</b></td>
                         <td style={td}>{ag.filter(a => a.reussi).length} / {total}</td><td style={td}>{ag.length}</td><td style={td}>{nDefis} / {defis.length}</td>
@@ -281,7 +287,7 @@ export function SimulationSuiviProf({ naviguer }) {
                         </td>
                       </tr>
                       {ouvert === e.user_id && (
-                        <tr><td colSpan={9} style={{ padding: '4px 8px 10px 24px', background: '#fff1f2' }}>
+                        <tr><td colSpan={9} style={{ padding: '4px 8px 10px 24px', background: ACCENT_CLAIR }}>
                           {!agTout.length ? <i style={{ color: KIT.txt2 }}>Aucune activité.</i> : (
                             <table style={{ borderCollapse: 'collapse', fontSize: 13 }}><tbody>{agTout.sort((a, b) => (b.derniere || '').localeCompare(a.derniere || '')).map(a => (
                               <tr key={a.cle}><td style={td}>{a.reussi ? '✅' : '⬜'}</td><td style={td}><b>{etq[a.cle]?.comp}</b> {etq[a.cle]?.titre || a.cle}</td>
@@ -318,13 +324,13 @@ export function SimulationSuiviProf({ naviguer }) {
                 <thead><tr><th style={th}>Défi</th><th style={th}>Réussi par</th><th style={th}>Tenté par</th><th style={th}>Essais (moyenne)</th><th style={th}>Ont vu la solution</th><th style={th}>Temps (médiane)</th></tr></thead>
                 <tbody>{parDefi.map(x => (
                   <Fragment key={x.cle}>
-                    <tr style={{ borderTop: `1px solid ${KIT.bord}`, opacity: x.travailles ? 1 : 0.5, cursor: x.travailles ? 'pointer' : 'default', background: ouvert === x.cle ? '#fff1f2' : 'transparent' }}
+                    <tr style={{ borderTop: `1px solid ${KIT.bord}`, opacity: x.travailles ? 1 : 0.5, cursor: x.travailles ? 'pointer' : 'default', background: ouvert === x.cle ? ACCENT_CLAIR : 'transparent' }}
                       onClick={() => x.travailles && setOuvert(ouvert === x.cle ? null : x.cle)}>
                       <td style={td}>{x.titre}</td><td style={td}>{x.reussis} / {eleves.length}</td><td style={td}>{x.travailles}</td>
                       <td style={td}>{x.travailles ? x.essaisMoy.toFixed(1).replace('.', ',') : '—'}</td><td style={td}>{x.travailles ? x.vues : '—'}</td>
                       <td style={td}>{x.travailles ? formatDuree(x.tempsMed) : '—'}</td></tr>
                     {ouvert === x.cle && (
-                      <tr><td colSpan={6} style={{ padding: '4px 8px 10px 24px', background: '#fff1f2' }}>
+                      <tr><td colSpan={6} style={{ padding: '4px 8px 10px 24px', background: ACCENT_CLAIR }}>
                         <table style={{ borderCollapse: 'collapse', fontSize: 13 }}><tbody>{x.qui.map(({ id, a }) => (
                           <tr key={id}><td style={td}>{a.reussi ? '✅' : '⬜'}</td><td style={td}><b>{id}</b></td>
                             <td style={td}>{a.essais} essai{a.essais > 1 ? 's' : ''}</td><td style={td}>{a.vues ? 'solution vue' : ''}</td>

@@ -88,7 +88,6 @@ function CarteDevoirPasAPas({ d, a, par, naviguer, maintenant, lignes }) {
             <button className="dv-btn" onClick={() => aller(e)}>{e.type === 'guide' ? (e.guideS > 0 ? 'Continuer ▶' : 'Commencer ▶') : 'Y aller ▶'}</button>
           </div>))}
         {verrouillees > 0 && <div data-etapes-verrouillees style={{ fontSize: 13.5, color: '#64748b', padding: '2px 4px' }}>🔒 {verrouillees} étape{verrouillees > 1 ? 's' : ''} à débloquer, une fois celle-ci faite.</div>}
-        {faites.length > 0 && !a.termine && <div style={{ fontSize: 13, color: '#166534', padding: '0 4px' }}>✅ {faites.length} étape{faites.length > 1 ? 's' : ''} déjà faite{faites.length > 1 ? 's' : ''}</div>}
       </div>
     </div>);
 }
@@ -109,7 +108,7 @@ export function useDevoirs(devoirsApercu) {
 }
 
 // devoirsListe : devoirs déjà chargés par le parent (sinon la liste est lue ici) ; pasAPas : affichage par étapes (profil par étapes)
-export function DevoirsEleve({ lignes, naviguer, devoirsApercu, devoirsListe, pasAPas = false }) {
+export function DevoirsEleve({ lignes, naviguer, devoirsApercu, devoirsListe, pasAPas = false, max = Infinity }) {
   const lus = useDevoirs(devoirsListe ? [] : devoirsApercu);
   const devoirs = devoirsListe ?? lus;
   const Carte = pasAPas ? CarteDevoirPasAPas : CarteDevoir;
@@ -132,7 +131,12 @@ export function DevoirsEleve({ lignes, naviguer, devoirsApercu, devoirsListe, pa
         @media (prefers-reduced-motion: reduce) { .dv *, .dv *::before, .dv *::after { transition: none !important; } }
       `}</style>
       {ouverts.length > 0 && <h3>📌 {pasAPas ? 'Ma classe : à faire' : 'À faire pour la classe'} <small>{ouverts.length} devoir{ouverts.length > 1 ? 's' : ''} de ton professeur</small></h3>}
-      {ouverts.map(({ d, a }) => <Carte key={d.id} d={d} a={a} par={par} naviguer={naviguer} maintenant={maintenant} lignes={lignes} />)}
+      {ouverts.slice(0, max).map(({ d, a }) => <Carte key={d.id} d={d} a={a} par={par} naviguer={naviguer} maintenant={maintenant} lignes={lignes} />)}
+      {ouverts.length > max && (
+        <details data-autres-devoirs style={{ marginBottom: 8 }}>
+          <summary style={{ cursor: 'pointer', fontWeight: 700, color: '#334155', fontSize: 14.5 }}>Voir les {ouverts.length - max} autre{ouverts.length - max > 1 ? 's' : ''} devoir{ouverts.length - max > 1 ? 's' : ''}</summary>
+          <div style={{ marginTop: 8 }}>{ouverts.slice(max).map(({ d, a }) => <Carte key={d.id} d={d} a={a} par={par} naviguer={naviguer} maintenant={maintenant} lignes={lignes} />)}</div>
+        </details>)}
       {finis.length > 0 && (
         <details style={{ marginBottom: 6 }} open={ouverts.length === 0}>
           <summary style={{ cursor: 'pointer', fontWeight: 700, color: '#166534', fontSize: 14.5 }}>✅ Devoirs terminés ({finis.length})</summary>
