@@ -416,9 +416,10 @@ export function useEtatPersistant(cle, initial) {
 }
 
 // Bandeau « À propos de cette simulation » : à quoi elle sert, ce qu'on y apprend, par où commencer.
-// Il peut être replié ; ce choix est mémorisé pour chaque simulation.
+// Il est replié par défaut (un clic le déplie) ; ce choix est mémorisé pour chaque simulation.
+// La clé « replie2 » remplace l'ancienne « replie » : les visiteurs déjà venus voient aussi le bandeau replié.
 export function BandeauContexte({ id, contexte, couleur = '#0284c7' }) {
-  const [replie, setReplie] = useEtatPersistant(`bandeau-replie-${id}`, false);
+  const [replie, setReplie] = useEtatPersistant(`bandeau-replie2-${id}`, true);
   if (!contexte) return null;
   const TXT = '#0f172a', TXT2 = '#334155';
   if (replie) return (
