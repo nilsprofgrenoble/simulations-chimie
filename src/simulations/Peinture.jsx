@@ -1,7 +1,6 @@
 import { useSignalerMode, declarerDefis, SuiviDefiDirect } from "../suivi";
 import { useState, useEffect, useRef } from "react";
-import { PeintureExploration } from "./PeintureExploration";
-import { AnimationSechage } from "./peintureFilm";
+import { PeintureExploration, AnimationSechageTest } from "./PeintureExploration";
 import { SchemasFilmSec } from "./peintureSchema";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE } from "../commun";
@@ -357,7 +356,7 @@ export function SimulationPeinture({ plotlyReady }) {
         <div style={{ fontSize: 13, color: T >= pSech.tmff ? KIT.txt2 : '#b91c1c', marginBottom: 4 }}>{T >= pSech.tmff
           ? 'T ≥ TMFF : l’eau s’évapore, les particules de liant se touchent, se déforment puis fusionnent (coalescence) : le film est continu.'
           : 'T < TMFF : les particules de liant ne se déforment pas et ne fusionnent pas, le film ne se forme pas.'}</div>
-        <AnimationSechage progres={progres} T={T} tmff={pSech.tmff} lambda={pSech.lambda}/>
+        <AnimationSechageTest progress={progres} T={T} tmff={pSech.tmff} lambda={pSech.lambda} hasCoalescence={!sansCoalescent}/>
         {progres >= 1 && T >= pSech.tmff && isFinite(pSech.lambda) && <SchemasFilmSec lambda={pSech.lambda}/>}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
           <button onClick={lancerSechage} style={styleBouton(true, '#2563eb')}>▶ Lancer le séchage</button>

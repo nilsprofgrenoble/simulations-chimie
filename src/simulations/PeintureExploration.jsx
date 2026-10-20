@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { fmt, KIT, Section, Curseur, LigneMesure } from "../commun";
-import { AnimationSechage as AnimationLatex } from "./peintureFilm";
 import { SchemasFilmSec } from "./peintureSchema";
 
 // ====================================================
@@ -469,10 +468,12 @@ const CPVC_ANIM = 0.45;   // valeur typique, pour fixer la proportion de grains 
 function rngAnim(g) { let a = g >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 const lisse = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
-export function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCharges=true, hasLiant=true, hasCoalescence=false, showRayons=false }) {
+export function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCharges=true, hasLiant=true, hasCoalescence=false, showRayons=false, T=NaN, tmff=NaN }) {
   const SVG_W = 600, SVG_H = 160, SUPPORT_H = 20, TOTAL_H = SVG_H + SUPPORT_H + 10;
   const yBase = SVG_H, R = 7, PAS = 14, RANGS = 3, FILM_FINAL = 38;
   const lam = Math.max(0, Math.min(1.6, isFinite(lambda) ? lambda : 0));
+  // Température d'application T et TMFF (facultatives) : si T < TMFF, les particules de latex ne se déforment pas et ne fusionnent pas
+  const filme = !(isFinite(T) && isFinite(tmff)) || T >= tmff;
 
   // Hauteur de la couche humide : de toute la hauteur au film sec
   const FIN_EAU = 0.82;                                // l'eau a fini de s'évaporer : les particules sont au contact
@@ -481,8 +482,8 @@ export function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCh
   const alphaEau = Math.max(0, (1 - progress) * 0.5);
   // Les trois temps
   const conc = Math.max(0, Math.min(1, (progress - 0.06) / (FIN_EAU - 0.06)));   // avancement de la concentration des particules
-  const tDeform = lisse(0.8, 0.9, progress);          // déformation des particules de latex, une fois au contact
-  const tCoal = lisse(0.88, 0.99, progress);          // coalescence : frontières qui disparaissent
+  const tDeform = filme ? lisse(0.8, 0.9, progress) : 0;          // déformation des particules de latex, une fois au contact
+  const tCoal = filme ? lisse(0.88, 0.99, progress) : 0;          // coalescence : frontières qui disparaissent
 
   // Les places des grains dans le film sec : empilement compact (3 rangées décalées)
   const grains = useMemo(() => {
@@ -559,6 +560,8 @@ export function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCh
   const etapeTxt = progress <= 0 ? '' : progress < 0.7 ? '1. L’eau s’évapore : les particules se rapprochent (agitation brownienne)'
     : progress < 0.88 ? '2. Les particules se touchent et se déforment, l’eau restant entre elles'
       : progress < 0.99 ? '3. Coalescence : les particules de latex fusionnent' : '';
+  const etapeFroid = progress <= 0 ? '' : progress < 0.7 ? etapeTxt : progress < 0.88 ? '2. Les particules se touchent, mais ne se déforment pas (T < TMFF)'
+    : progress < 0.99 ? '3. Trop froid (T < TMFF) : pas de coalescence, le film se fissure' : '';
   return (
     <svg width="100%" viewBox={`0 0 ${SVG_W} ${TOTAL_H}`} style={{ borderRadius: 12, border: '1.5px solid #e2e8f0', background: '#f8fafc', maxWidth: 760, display: 'block', margin: '0 auto' }}>
       <rect x={0} y={SVG_H} width={SVG_W} height={SUPPORT_H} rx={2} fill="#4b5563"/>
@@ -572,6 +575,9 @@ export function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCh
       {tCoal > 0 && hasLiant && <path d={fillPath} fill="#fed7aa" opacity={tCoal}/>}
       {/* les vides d'air, quand le liant ne suffit pas (λ > 1) */}
       {poreux && tCoal > 0 && vides.map((g, i) => <circle key={'v' + i} cx={g.x} cy={g.y} r={R - 1} fill="white" stroke="#94a3b8" strokeDasharray="2 2" opacity={tCoal}/>)}
+      {/* trop froid : pas de coalescence, le film se fissure */}
+      {!filme && progress > 0.8 && [70, 190, 310, 430, 540].map((x, i) => (
+        <polyline key={'f' + i} points={`${x},${yTop + 2} ${x + 7},${yTop + hFilm * 0.35} ${x - 5},${yTop + hFilm * 0.65} ${x + 4},${yBase}`} fill="none" stroke="#7f1d1d" strokeWidth={2.5} strokeLinecap="round" opacity={lisse(0.8, 0.95, progress)}/>))}
       {/* l'agent de coalescence, qui quitte le film en dernier */}
       {hasCoalescence && [0.12, 0.28, 0.44, 0.6, 0.76, 0.88].map((xRel, i) => {
         const x = xRel * SVG_W, yDepart = yTop + (0.4 + (i % 3) * 0.2) * hFilm;
@@ -606,9 +612,11 @@ export function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCh
         );
       })}
       {/* textes */}
-      {etapeTxt && <text x={10} y={14} fontSize={11} fontWeight="600" fill="#334155">{etapeTxt}</text>}
+      {(filme ? etapeTxt : etapeFroid) && <text x={10} y={14} fontSize={11} fontWeight="600" fill="#334155">{filme ? etapeTxt : etapeFroid}</text>}
       {alphaEau > 0.05 && <text x={SVG_W - 6} y={Math.max(24, yTop - 5)} textAnchor="end" fontSize={9} fill="#3b82f6">{Math.round((1 - progress) * 100)}% eau</text>}
-      {progress >= 0.99 && (
+      {isFinite(T) && isFinite(tmff) && <text x={SVG_W - 8} y={SVG_H + 14} textAnchor="end" fontSize={10} fill="#e5e7eb">T = {fmt(T, 0)} °C ; TMFF {tmff < 0 ? '< 0' : `= ${fmt(tmff, 0)}`} °C</text>}
+      {progress >= 0.99 && !filme && <text x={10} y={14} fontSize={11} fontWeight="600" fill="#b91c1c">Film non formé : fissuré, poudreux (T &lt; TMFF)</text>}
+      {progress >= 0.99 && filme && (
         <text x={10} y={14} fontSize={11} fontWeight="600" fill={lambda < 0.5 ? '#2a9d8f' : lambda > 0.8 ? '#e63946' : '#e9a824'}>
           {lambda < 0.5 ? 'Film brillant — surface lisse' : lambda > 1 ? 'Film mat et poreux — le liant ne remplit pas tous les vides (λ > 1)'
             : lambda > 0.8 ? 'Film mat — les grains affleurent : surface rugueuse' : 'Film satiné — légères irrégularités'}
@@ -1182,7 +1190,7 @@ export function PeintureExploration({ plotlyReady }) {
           hasCharges={mps.some(m=>(m.role==='Charge')&&(m.masse||0)>0)}
           hasLiant={mps.some(m=>m.role==='Liant'&&(m.masse||0)>0)}
           hasCoalescence={mps.some(m=>m.role==='Additif'&&(m.masse||0)>0&&(m.coalescent||m.nom.toLowerCase().includes('coalesc')))}
-          showRayons={showRayons && Math.round(progress*100)===100}/>
+          showRayons={showRayons && Math.round(progress*100)===100} T={T} tmff={tmffPeinture}/>
 
         <div style={{display:'flex',gap:12,flexWrap:'wrap',marginTop:8,fontSize:11,
           color:'var(--color-text-secondary)'}}>
@@ -1207,10 +1215,10 @@ export function PeintureExploration({ plotlyReady }) {
             </div>
           ))}
         </div>
-        {progress >= 0.99 && <SchemasFilmSec lambda={lambda}/>}
+        {progress >= 0.99 && !(T < tmffPeinture) && <SchemasFilmSec lambda={lambda}/>}
         <div style={{marginTop:6,fontSize:10,color:'var(--color-text-secondary)',fontStyle:'italic'}}>
-          Modifiez la formule ci-dessus pour changer λ et l'aspect du film. L'animation suppose que la température est au-dessus de la TMFF :
-          sinon, les particules de latex ne fusionnent pas (voir la section « Formation du film »). Les tailles et les nombres de grains sont schématiques.
+          Modifiez la formule ci-dessus pour changer λ et l'aspect du film. La température d'application (section « Formation du film ») est prise en compte :
+          si elle est inférieure à la TMFF, les particules de latex ne fusionnent pas et le film se fissure. Les tailles et les nombres de grains sont schématiques.
         </div>
         </Section>
       </div>
@@ -1227,7 +1235,12 @@ export function PeintureExploration({ plotlyReady }) {
             <button onClick={() => { setProgFilm(0); setAnimFilm(true); }} style={{padding:'6px 16px',borderRadius:8,border:'none',cursor:'pointer',fontSize:12,fontWeight:600,background:'#2563eb',color:'white'}}>▶ Lancer le séchage</button>
           </div>
           {isFinite(tmffPeinture)
-            ? <AnimationLatex progres={progFilm} T={T} tmff={tmffPeinture} lambda={lambda}/>
+            ? <>
+                <AnimationSechageTest lambda={lambda} progress={progFilm} T={T} tmff={tmffPeinture}
+                  hasPigments={mps.some(m=>m.role==='Pigment'&&(m.masse||0)>0)} hasCharges={mps.some(m=>m.role==='Charge'&&(m.masse||0)>0)}
+                  hasLiant={mps.some(m=>m.role==='Liant'&&(m.masse||0)>0)} hasCoalescence={coalescents.length>0}/>
+                {progFilm >= 1 && T >= tmffPeinture && isFinite(lambda) && <SchemasFilmSec lambda={lambda}/>}
+              </>
             : <div style={{fontSize:13,color:'#b45309'}}>Renseignez la TMFF de la résine dans sa fiche 🔍.</div>}
           <Curseur nom="Température d'application T" valeur={T} onChange={setT} min={0} max={35} pas={1} unite="°C" couleur="#0f766e"/>
           <LigneMesure nom="TMFF de la résine (fiche 🔍 du liant)" valeur={isFinite(tmffResine) ? `${fmt(tmffResine, 0)} °C` : '—'}/>
