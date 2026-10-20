@@ -4,6 +4,7 @@ import { aRevoir, raisonRevision, dansJours } from "../revision";
 import { tousLesExercices } from "./Entrainement";
 import { etiquettesDefis } from "../suivi";
 import { Etoiles } from "../commun";
+import { ACCENT } from "../theme";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  « MON CARNET » : l'espace élève (étoiles, niveau, compétences, badges, prochains objectifs).
@@ -11,7 +12,7 @@ import { Etoiles } from "../commun";
 // ═══════════════════════════════════════════════════════════════════════════
 
 
-function Anneau({ frac, n, mont }) {
+export function Anneau({ frac, n, mont }) {
   const r = 50, c = 2 * Math.PI * r;
   return (
     <svg viewBox="0 0 120 120" width="128" height="128" role="img" aria-label={`Niveau ${n}`} style={{ flex: 'none' }}>
@@ -27,7 +28,9 @@ function Anneau({ frac, n, mont }) {
 const ICONES_OBJECTIF = { terminer: '⏳', ameliorer: '⬆️', decouvrir: '🧭', defi: '🎯' };
 const TITRES_OBJECTIF = { terminer: 'À terminer', ameliorer: 'À améliorer', decouvrir: 'À découvrir', defi: 'Défi à relever' };
 
-export function Carnet({ lignes, naviguer }) {
+// parties : quelles parties afficher (toutes par défaut) ; revoirToujours : montrer « À revoir » même s'il n'y a encore rien à revoir
+export function Carnet({ lignes, naviguer, parties }) {
+  const P = { hero: true, vide: true, revoir: true, revoirToujours: false, objectifs: true, competences: true, badges: true, regularite: true, ...parties };
   const [mont, setMont] = useState(false);
   useEffect(() => { const t = setTimeout(() => setMont(true), 80); return () => clearTimeout(t); }, []);
   const items = useMemo(() => [...tousLesExercices(), ...etiquettesDefis().map(d => ({ cle: d.cle, comp: 'DÉFI', titre: d.titre, sim: d.sim }))], []);
@@ -70,7 +73,7 @@ export function Carnet({ lignes, naviguer }) {
         .cn-badge { text-align: center; padding: 12px 8px; }
         .cn-sem { width: 26px; height: 26px; border-radius: 7px; background: #e2e8f0; }
         .cn-sem.on { background: linear-gradient(135deg, #34d399, #059669); box-shadow: 0 2px 8px rgba(5,150,105,.4); }
-        .cn-btn { border: none; border-radius: 10px; padding: 8px 14px; font-weight: 800; font-size: 14px; cursor: pointer; color: #fff; background: linear-gradient(135deg, #e11d48, #be185d); box-shadow: 0 4px 12px rgba(225,29,72,.3); }
+        .cn-btn { border: none; border-radius: 10px; padding: 8px 14px; font-weight: 800; font-size: 14px; cursor: pointer; color: #fff; background: ${ACCENT}; box-shadow: 0 3px 10px rgba(15,23,42,.18); }
         .cn-btn:hover { filter: brightness(1.08); }
         @keyframes cn-twinkle { 0%, 100% { opacity: .25; transform: scale(.8) rotate(0deg); } 50% { opacity: 1; transform: scale(1.15) rotate(20deg); } }
         @keyframes cn-pop { 0% { transform: scale(.3); opacity: 0; } 70% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
@@ -78,7 +81,7 @@ export function Carnet({ lignes, naviguer }) {
       `}</style>
 
       {/* ── En-tête : niveau et étoiles ── */}
-      <section className="cn-hero" aria-label="Mon niveau">
+      {P.hero && <section className="cn-hero" aria-label="Mon niveau">
         <span className="cn-spark" style={{ left: '46%', top: 14, fontSize: 18, animationDelay: '0s' }}>✦</span>
         <span className="cn-spark" style={{ left: '62%', bottom: 18, fontSize: 13, animationDelay: '1.1s' }}>✦</span>
         <span className="cn-spark" style={{ right: 28, top: 40, fontSize: 22, animationDelay: '2s' }}>✦</span>
@@ -98,9 +101,9 @@ export function Carnet({ lignes, naviguer }) {
             <span className="cn-puce">🏅 {nbBadges} / {badges.length} badges</span>
           </div>
         </div>
-      </section>
+      </section>}
 
-      {A.aucun && (
+      {P.vide && A.aucun && (
         <div style={{ marginTop: 14, padding: 16, borderRadius: 16, background: '#fff7ed', border: '1px solid #fed7aa', textAlign: 'center' }}>
           <div style={{ fontSize: 17, fontWeight: 800, color: '#9a3412' }}>Ton carnet est encore vide. Ça va changer vite !</div>
           <div style={{ fontSize: 14, color: '#7c2d12', margin: '6px 0 12px' }}>Réussis un exercice pour gagner ta première étoile ★</div>
@@ -108,15 +111,16 @@ export function Carnet({ lignes, naviguer }) {
         </div>)}
 
       {/* ── À revoir aujourd'hui (révision espacée, voir ../revision.js) ── */}
-      {!A.aucun && rev.suivis > 0 && (
+      {P.revoir && (P.revoirToujours || (!A.aucun && rev.suivis > 0)) && (
         <>
           <h3 className="cn-h">🔁 À revoir aujourd’hui <small>revoir au bon moment, c’est ce qui fait retenir longtemps</small></h3>
           {rev.liste.length === 0 ? (
             <div className="cn-carte" style={{ fontSize: 15, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ fontSize: 30 }} aria-hidden="true">🧊</span>
               <div style={{ flex: 1, minWidth: 200 }}>
-                <b>Rien à revoir aujourd’hui : ta mémoire est au frais !</b>
+                <b>{rev.suivis > 0 ? 'Rien à revoir aujourd’hui : ta mémoire est au frais !' : 'Rien à revoir : tout va bien !'}</b>
                 <div style={{ fontSize: 13.5, color: '#475569', marginTop: 2 }}>
+                  {rev.suivis === 0 && <>Les exercices que tu réussis reviendront ici au bon moment, pour que tu les retiennes longtemps.</>}
                   {rev.prochaine ? <>Prochaine révision conseillée : <b>{dansJours(rev.prochaine)}</b>. </> : null}
                   {rev.solides > 0 && <>🧠 {rev.solides} exercice{rev.solides > 1 ? 's' : ''} déjà bien ancré{rev.solides > 1 ? 's' : ''} dans ta mémoire.</>}
                 </div>
@@ -144,7 +148,7 @@ export function Carnet({ lignes, naviguer }) {
         </>)}
 
       {/* ── Prochains objectifs ── */}
-      {!A.aucun && (
+      {P.objectifs && !A.aucun && (
         <>
           <h3 className="cn-h">🎯 Mes prochains objectifs</h3>
           {obj.length === 0 ? <div className="cn-carte" style={{ fontSize: 15 }}>🎉 Tu as tout réussi avec toutes les étoiles. Bravo ! D’autres exercices arrivent bientôt.</div> : (
@@ -164,6 +168,7 @@ export function Carnet({ lignes, naviguer }) {
         </>)}
 
       {/* ── Compétences ── */}
+      {P.competences && <>
       <h3 className="cn-h">🧗 Mes compétences <small>le palier dépend des étoiles gagnées</small></h3>
       <div className="cn-grille">
         {comps.map(c => {
@@ -195,8 +200,10 @@ export function Carnet({ lignes, naviguer }) {
             </div>); })}
       </div>
 
+      </>}
+
       {/* ── Badges ── */}
-      <details className="cn-repli" data-repli="badges">
+      {P.badges && <details className="cn-repli" data-repli="badges">
       <summary>🏅 Mes badges <small>{nbBadges} sur {badges.length}</small><span className="cn-mini" aria-hidden="true">{badges.filter(b => b.ok).map(b => <span key={b.id}>{b.icone}</span>)}</span></summary>
       <div className="cn-grille" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}>
         {badges.map(b => (
@@ -211,10 +218,10 @@ export function Carnet({ lignes, naviguer }) {
               </>)}
           </div>))}
       </div>
-      </details>
+      </details>}
 
       {/* ── Régularité ── */}
-      <details className="cn-repli" data-repli="regularite">
+      {P.regularite && <details className="cn-repli" data-repli="regularite">
       <summary>📅 Ma régularité <small>{nbSem} semaine{nbSem > 1 ? 's' : ''} active{nbSem > 1 ? 's' : ''} sur 8</small></summary>
       <div className="cn-carte" style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', gap: 6 }} role="img" aria-label={`${nbSem} semaine${nbSem > 1 ? 's' : ''} active${nbSem > 1 ? 's' : ''} sur 8`}>
@@ -224,7 +231,7 @@ export function Carnet({ lignes, naviguer }) {
           <b style={{ color: '#0f172a' }}>{nbSem} semaine{nbSem > 1 ? 's' : ''} active{nbSem > 1 ? 's' : ''}</b> sur 8. Pas de série à perdre : chaque semaine où tu travailles compte, même un peu.
         </div>
       </div>
-      </details>
+      </details>}
     </div>
   );
 }

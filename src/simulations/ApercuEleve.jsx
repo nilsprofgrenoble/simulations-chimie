@@ -1,9 +1,7 @@
 import { useState, useMemo } from "react";
 import { KIT, styleBouton, stylePetitBouton, styleBoite } from "../commun";
 import { catalogueDevoirs as catalogue } from "./catalogue";
-import { Carnet } from "./Carnet";
-import { DevoirsEleve } from "./DevoirsEleve";
-import { VieDeClasse } from "./VieDeClasse";
+import { EspaceEleve } from "./EspaceEleve";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  APERÇU ÉLÈVE (professeur) : l'espace « Mon compte » d'un élève, avec des données FICTIVES.
@@ -12,8 +10,8 @@ import { VieDeClasse } from "./VieDeClasse";
 // ═══════════════════════════════════════════════════════════════════════════
 const ROSE = '#e11d48';
 const PROFILS = [
-  { id: 'debut', nom: '🌱 Élève qui débute', aide: 'Carnet vide, devoirs pas commencés.' },
-  { id: 'cours', nom: '📈 Élève en cours de route', aide: 'Quelques étoiles, des exercices à revoir, un devoir en retard.' },
+  { id: 'debut', nom: '🌱 Élève qui débute (étape 0)', aide: 'Profil vide : il ne voit que sa première simulation, rien d’autre.' },
+  { id: 'cours', nom: '📈 Élève en cours de route (étape 2)', aide: 'Quelques étoiles, des exercices à revoir, un devoir en retard, devoirs pas à pas.' },
   { id: 'avance', nom: '🚀 Élève très avancé', aide: 'Beaucoup d’étoiles, des badges, tous les devoirs faits.' },
 ];
 
@@ -53,7 +51,7 @@ function fabriquerDevoirs(items, profil, maintenant) {
     { id: 'a', titre: 'Révisions avant l’évaluation', cles: [2, 6, 8].map(cle), echeance: ymd(1), cree_le: d(-5) },
     { id: 'b', titre: 'Pour la rentrée', cles: [3, 4].map(cle), echeance: ymd(-3), cree_le: d(-12) },
     { id: 'c', titre: 'Découverte des ateliers', cles: [7].map(cle), echeance: null, cree_le: d(-10) },
-    ...(profil === 'debut' ? [] : []),
+    { id: 'd', titre: 'Première simulation : décrire un mouvement', cles: ['sim:56', ...[0, 1, 5, 9].map(cle)], echeance: ymd(6), cree_le: d(profil === 'debut' ? -1 : -2) },
   ];
 }
 
@@ -89,9 +87,7 @@ export function ApercuEleve({ naviguer, onFermer }) {
         <div style={{ fontSize: 13, color: KIT.txt2 }}>{p.aide} La vie de classe est montrée comme si elle était activée ; les boutons « Y aller » ouvrent les vrais exercices (rien n’est enregistré pour vous).</div>
       </div>
       <div key={profil}>
-        <DevoirsEleve lignes={lignes} naviguer={naviguer} devoirsApercu={devoirs} />
-        <Carnet lignes={lignes} naviguer={naviguer} />
-        <VieDeClasse lignes={lignes} apercu={classe} />
+        <EspaceEleve lignes={lignes} naviguer={naviguer} apercu={{ devoirs, classe }} />
       </div>
     </div>);
 }
