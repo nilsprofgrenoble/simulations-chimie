@@ -7,3 +7,5 @@ export const TEXTE2 = '#334155';
 export const BORDURE = '#cbd5e1';
 // Fond des blocs : blanc très légèrement dégradé
 export const FOND_BLOC = 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%)';
+// Style d'un bloc (« lame ») : fond clair légèrement dégradé, bordure fine, ombre douce
+export const LAME = { background: FOND_BLOC, borderRadius: 16, padding: '22px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', border: '1px solid #e2e8f0', textAlign: 'left' };

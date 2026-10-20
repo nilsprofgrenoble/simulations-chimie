@@ -269,7 +269,7 @@ export default function App() {
             <span style={{ fontSize: "2rem" }}>{active.icon}</span>
             <h1 style={{ ...styles.pageTitle, color: active.color, flex: 1 }}>
               <span style={{ fontFamily:"'Outfit', sans-serif", fontWeight:800, letterSpacing:"-0.5px" }}>
-                {activeId === 39 && estEleve(sessionSb) ? 'Mon profil' : active.label}
+                {activeId === 39 ? (estEleve(sessionSb) ? 'Mon profil' : sessionSb?.profil ? 'Mon compte' : 'Se connecter') : active.label}
               </span>
             </h1>
             <button onClick={partager} style={{
