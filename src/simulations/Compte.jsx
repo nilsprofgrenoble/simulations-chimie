@@ -104,7 +104,7 @@ function Connexion() {
   );
 }
 
-function MotDePasse() {
+export function MotDePasse() {
   const [ouvert, setOuvert] = useState(false), [a, setA] = useState(''), [b, setB] = useState(''), [msg, setMsg] = useState(null);
   const envoyer = async e => {
     e.preventDefault(); setMsg(null);
@@ -185,7 +185,6 @@ export function SimulationCompte({ naviguer }) {
   const sess = useSession();
   return (
     <div style={{ ...(sess?.profil ? cardStyle : {}), maxWidth: sess?.profil ? 900 : 940, margin: '0 auto' }}>
-      {estProf(sess) && <h2 style={{ margin: 0, color: ROSE }}>👧👦 Mon compte</h2>}
       {!sess?.profil && <Connexion />}
       {estEleve(sess) && (
         <>
