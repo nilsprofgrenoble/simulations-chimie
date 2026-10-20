@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { fmt, KIT, Section, Curseur, LigneMesure } from "../commun";
 import { AnimationSechage as AnimationLatex } from "./peintureFilm";
+import { SchemasFilmSec } from "./peintureSchema";
 
 // ====================================================
 // SIM 14 — SÉCHAGE D'UNE PEINTURE (BTS MDC) v2
@@ -582,7 +583,7 @@ export function AnimationSechageTest({ lambda, progress, hasPigments=true, hasCh
       {/* pigments et charges */}
       {poudres.map((g, i) => { const [x, y] = position(g); return g.type === 'pig'
         ? <circle key={'p' + i} cx={x} cy={y} r={R - 1} fill="#dc2626" fillOpacity={0.92} stroke="#991b1b" strokeWidth={0.8}/>
-        : <circle key={'c' + i} cx={x} cy={y} r={R} fill="white" fillOpacity={0.9} stroke="#9ca3af" strokeWidth={0.8}/>; })}
+        : <circle key={'c' + i} cx={x} cy={y} r={R} fill="#94a3b8" fillOpacity={0.95} stroke="#475569" strokeWidth={0.8}/>; })}
       {/* la surface */}
       {alphaEau > 0.01 && <>
         <path d={segPath} fill="none" stroke="#1d4ed8" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>
@@ -1188,7 +1189,7 @@ export function PeintureExploration({ plotlyReady }) {
           {[
             {label:'Solvant (eau)',bg:'rgba(59,130,246,0.35)',border:'#3b82f6',shape:'rect'},
             {label:'Pigments',bg:'#dc2626',border:'#991b1b',shape:'circle'},
-            {label:'Charges',bg:'#e5e7eb',border:'#9ca3af',shape:'circle'},
+            {label:'Charges',bg:'#94a3b8',border:'#475569',shape:'circle'},
             {label:'Particules de liant (latex)',bg:'#fed7aa',border:'#ea580c',shape:'circle'},
             {label:'Vide d\'air (si λ > 1)',bg:'white',border:'#94a3b8',shape:'circle'},
             {label:'Agent de coalescence',bg:'#fbbf24',border:'#d97706',shape:'losange'},
@@ -1206,6 +1207,7 @@ export function PeintureExploration({ plotlyReady }) {
             </div>
           ))}
         </div>
+        {progress >= 0.99 && <SchemasFilmSec lambda={lambda}/>}
         <div style={{marginTop:6,fontSize:10,color:'var(--color-text-secondary)',fontStyle:'italic'}}>
           Modifiez la formule ci-dessus pour changer λ et l'aspect du film. L'animation suppose que la température est au-dessus de la TMFF :
           sinon, les particules de latex ne fusionnent pas (voir la section « Formation du film »). Les tailles et les nombres de grains sont schématiques.
