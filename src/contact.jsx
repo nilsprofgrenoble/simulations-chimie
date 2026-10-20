@@ -17,7 +17,7 @@ export function ecrireAuAuteur(sujet = '', corps = '') {
   window.location.assign(`mailto:${adresseContact()}${q ? '?' + q : ''}`);
 }
 
-export function BoutonMail({ libelle = '✉️ Écrire un mail', sujet = '', corps = '', couleur = '#475569' }) {
+export function BoutonMail({ libelle = '✉️ Écrire un mail', sujet = '', corps = '', couleur = '#475569', plein = false }) {
   const [adresse, setAdresse] = useState('');
   const ecrire = () => {
     const a = adresseContact();
@@ -27,7 +27,7 @@ export function BoutonMail({ libelle = '✉️ Écrire un mail', sujet = '', cor
   };
   return (
     <span style={{ display: 'inline-flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-      <button type="button" onClick={ecrire} style={styleBouton(false, couleur)}>{libelle}</button>
+      <button type="button" onClick={ecrire} style={styleBouton(plein, couleur)}>{libelle}</button>
       {adresse && <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Votre messagerie ne s’ouvre pas ? Écrivez à <b style={{ color: KIT.txt, userSelect: 'all' }}>{adresse}</b></span>}
     </span>);
 }

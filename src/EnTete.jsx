@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { LogoPaillasse } from "./Logo";
+import { ACCENT, ACCENT_CLAIR, TEXTE, TEXTE2, BORDURE } from "./theme";
 
 // ============================================================
 //  EN-TÊTE DU SITE : toujours visible, même quand on fait défiler la page.
@@ -7,7 +8,7 @@ import { LogoPaillasse } from "./Logo";
 //  Sur écran étroit, les menus se regroupent derrière un bouton « Menu ».
 // ============================================================
 export const HAUTEUR_ENTETE = 60;
-const TXT = '#0f172a', TXT2 = '#334155', BORD = '#cbd5e1', VERT = '#0f766e';
+const TXT = TEXTE, TXT2 = TEXTE2, BORD = BORDURE, VERT = ACCENT;
 
 // menus : [{ key, label, groupes: [{ label?, sims: [{ id, icon, label, desc? }] }] }]
 export function EnTete({ menus, activeId, niveauActif, naviguer, session }) {
@@ -15,6 +16,23 @@ export function EnTete({ menus, activeId, niveauActif, naviguer, session }) {
   const [accordeon, setAccordeon] = useState(null);  // niveau déplié dans le menu mobile
   const [large, setLarge] = useState(() => window.innerWidth >= 1000);
   const ref = useRef(null);
+  const [cache, setCache] = useState(false);   // l'en-tête se range quand on descend dans la page et revient quand on remonte
+  const dernierY = useRef(0);
+  useEffect(() => {
+    const defile = () => {
+      const y = window.scrollY, dy = y - dernierY.current;
+      if (Math.abs(dy) < 8) return;
+      dernierY.current = y;
+      setCache(dy > 0 && y > HAUTEUR_ENTETE);
+    };
+    window.addEventListener('scroll', defile, { passive: true });
+    return () => window.removeEventListener('scroll', defile);
+  }, []);
+  const masque = cache && !ouvert;
+  useEffect(() => {
+    // les panneaux « collants » des simulations se calent sous l'en-tête, ou tout en haut s'il est rangé
+    ref.current?.parentElement?.style.setProperty('--entete-h', masque ? '0px' : `${HAUTEUR_ENTETE}px`);
+  }, [masque]);
 
   useEffect(() => {
     const f = () => setLarge(window.innerWidth >= 1000);
@@ -38,7 +56,7 @@ export function EnTete({ menus, activeId, niveauActif, naviguer, session }) {
     <button key={s.id} onClick={() => aller(s.id)} title={s.desc || undefined} aria-current={s.id === activeId ? 'page' : undefined}
       style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '7px 10px', marginLeft: retrait,
         border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14, color: TXT, fontFamily: 'inherit',
-        background: s.id === activeId ? '#e6f4f1' : 'transparent', fontWeight: s.id === activeId ? 800 : 500 }}
+        background: s.id === activeId ? ACCENT_CLAIR : 'transparent', fontWeight: s.id === activeId ? 800 : 500 }}
       onMouseEnter={e => { if (s.id !== activeId) e.currentTarget.style.background = '#f1f5f9'; }}
       onMouseLeave={e => { if (s.id !== activeId) e.currentTarget.style.background = 'transparent'; }}>
       <span style={{ fontSize: 17, flexShrink: 0 }} aria-hidden="true">{s.icon}</span>
@@ -63,7 +81,7 @@ export function EnTete({ menus, activeId, niveauActif, naviguer, session }) {
     <button onClick={allerCompte} data-bouton-compte aria-label={profil ? `Mon compte (${profil.identifiant || profil.nom})` : 'Se connecter'}
       title={profil ? `Mon compte : ${profil.identifiant || profil.nom}` : 'Se connecter'}
       style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '6px 10px', borderRadius: 999, cursor: 'pointer', fontFamily: 'inherit',
-        border: `2px solid ${profil ? VERT : BORD}`, background: profil ? '#e6f4f1' : 'white', color: TXT, fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
+        border: `2px solid ${profil ? VERT : BORD}`, background: profil ? ACCENT_CLAIR : 'white', color: TXT, fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={TXT} strokeWidth="2" strokeLinecap="round" aria-hidden="true">
         <circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.500 4-6.500 8-6.500s7 2 8 6.500"/>
       </svg>
@@ -77,7 +95,7 @@ export function EnTete({ menus, activeId, niveauActif, naviguer, session }) {
     boxShadow: '0 12px 24px rgba(15,23,42,0.14)', maxHeight: `calc(100vh - ${HAUTEUR_ENTETE}px)`, overflowY: 'auto', textAlign: 'left' };
 
   return (
-    <header ref={ref} style={{ position: 'sticky', top: 0, zIndex: 30, height: HAUTEUR_ENTETE, background: 'white', borderBottom: `1px solid ${BORD}`,
+    <header ref={ref} style={{ position: 'sticky', top: 0, zIndex: 30, height: HAUTEUR_ENTETE, transform: masque ? 'translateY(-110%)' : 'none', transition: 'transform 0.25s ease', background: 'white', borderBottom: `1px solid ${BORD}`,
       boxShadow: '0 2px 8px rgba(15,23,42,0.06)', fontFamily: "'Nunito', 'Segoe UI', sans-serif" }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: '100%', padding: '0 16px', maxWidth: 1280, margin: '0 auto', boxSizing: 'border-box' }}>
         <a href="?" onClick={e => { e.preventDefault(); aller(0); }} aria-label="Paillasse virtuelle : retour à l'accueil" title="Retour à l'accueil"
@@ -120,7 +138,7 @@ export function EnTete({ menus, activeId, niveauActif, naviguer, session }) {
       {!large && ouvert === 'mobile' && (
         <div style={panneau} role="region" aria-label="Menu">
           <div style={{ padding: '8px 12px 14px' }}>
-            <button onClick={() => aller(0)} style={{ display: 'flex', width: '100%', padding: '10px', border: 'none', background: activeId === 0 ? '#e6f4f1' : 'transparent',
+            <button onClick={() => aller(0)} style={{ display: 'flex', width: '100%', padding: '10px', border: 'none', background: activeId === 0 ? ACCENT_CLAIR : 'transparent',
               borderRadius: 8, fontSize: 15, fontWeight: 700, color: TXT, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>🏠 Accueil</button>
             {menus.map(m => (
               <div key={m.key} style={{ borderTop: `1px solid ${BORD}` }}>
