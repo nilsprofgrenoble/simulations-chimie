@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState } from "react";
 import { styleBouton, KIT } from "./commun";
 
@@ -9,6 +10,12 @@ import { styleBouton, KIT } from "./commun";
 // ═══════════════════════════════════════════════════════════════════════════
 const CONTACT_CODE = 'cmYuZWxib25lcmctY2FAbmhvc3Nub3JhLnNsaW4=';
 const adresseContact = () => atob(CONTACT_CODE).split('').reverse().join('');
+
+// Ouvre la messagerie vers l'auteur (même principe : l'adresse n'est reconstituée qu'au clic)
+export function ecrireAuAuteur(sujet = '', corps = '') {
+  const q = [sujet && `subject=${encodeURIComponent(sujet)}`, corps && `body=${encodeURIComponent(corps)}`].filter(Boolean).join('&');
+  window.location.assign(`mailto:${adresseContact()}${q ? '?' + q : ''}`);
+}
 
 export function BoutonMail({ libelle = '✉️ Écrire un mail', sujet = '', corps = '', couleur = '#475569' }) {
   const [adresse, setAdresse] = useState('');

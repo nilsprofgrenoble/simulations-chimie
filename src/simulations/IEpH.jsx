@@ -392,7 +392,7 @@ function DefiIEpH({ plotlyReady }) {
         <VueIEpH key={m + "-" + n + "-" + E0} plotlyReady={plotlyReady} e={e} set={set} opts={{ choixCouple: false, valeurs: false }}/>
         <HypothesesIEpH/>
       </div>
-      <div style={{ ...styleBoite, display: "flex", flexDirection: "column", gap: 10, alignSelf: "start", position: "sticky", top: 8 }}>
+      <div style={{ ...styleBoite, display: "flex", flexDirection: "column", gap: 10, alignSelf: "start", position: "sticky", top: "calc(var(--entete-h, 0px) + 8px)" }}>
         <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt }}>Questions</div>
         {Q.map((q, i) => {
           const ok = defi.verifie && juste(q);
