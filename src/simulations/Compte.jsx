@@ -5,6 +5,7 @@ import { tousLesExercices } from "./Entrainement";
 import { estSimulation, estDefi, tempsParSimulation, MODES, etiquettesDefis } from "../suivi";
 import { EspaceEleve } from "./EspaceEleve";
 import { BoutonMail } from "../contact";
+import { ACCENT, TEXTE, TEXTE2, LAME } from "../theme";
 
 const ROSE = '#e11d48';
 
@@ -35,14 +36,14 @@ const champ = { padding: '8px 10px', fontSize: 15, borderRadius: 8, border: `1px
 
 function ContactEnseignant() {
   return (
-    <div style={{ ...styleBoite, marginTop: 14, fontSize: 13.5, color: KIT.txt2, lineHeight: 1.6 }}>
-      <b style={{ color: KIT.txt }}>👩‍🏫 Vous êtes enseignant·e ?</b> Si vous souhaitez un compte pour vous et vos classes (comptes élèves, suivi de leur progression),
-      écrivez-moi depuis votre adresse académique.
-      <div style={{ marginTop: 8 }}>
-        <BoutonMail libelle="✉️ Demander un compte enseignant" sujet="Demande de compte enseignant — Paillasse virtuelle"
-          corps={'Bonjour,\n\nJe suis enseignant·e (établissement : …, discipline : …) et je souhaite un compte pour moi et mes classes.\n\nMerci !'} />
-      </div>
-    </div>
+    <section style={LAME} aria-labelledby="titre-prof">
+      <h2 id="titre-prof" style={{ margin: '0 0 6px', fontSize: 19, fontWeight: 800, color: TEXTE, fontFamily: "'Outfit', sans-serif" }}>👩‍🏫 Vous êtes enseignant·e ?</h2>
+      <p style={{ margin: '0 0 12px', fontSize: 14.5, color: TEXTE2, lineHeight: 1.6 }}>
+        Un compte pour vous et vos classes : comptes élèves, devoirs, suivi de la progression. Écrivez-moi depuis votre adresse académique.
+      </p>
+      <BoutonMail libelle="✉️ Demander un compte enseignant" sujet="Demande de compte enseignant — Paillasse virtuelle" couleur={ACCENT} plein
+        corps={'Bonjour,\n\nJe suis enseignant·e (établissement : …, discipline : …) et je souhaite un compte pour moi et mes classes.\n\nMerci !'} />
+    </section>
   );
 }
 
@@ -54,42 +55,52 @@ function Connexion() {
     try { await connexion(id, mdp, garder); } catch (err) { setMsg(err.message); }
     setAttente(false);
   };
+  const inactif = attente || !id.trim() || !mdp;
   return (
-    <>
-      <p style={{ color: KIT.txt2, fontSize: 14, lineHeight: 1.55 }}>
-        Avec un compte, ta progression te suit d’un ordinateur à l’autre (chez toi, au lycée). Tu n’as pas besoin de compte pour t’entraîner :
-        sans compte, elle reste seulement sur l’appareil que tu utilises.
-      </p>
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', margin: '4px 0 14px' }}>
-        {[['★', 'Des étoiles à gagner', 'jusqu’à 3 par exercice', '#fff7e0', '#f0dca0', '#d99a0b'],
-          ['🌳', 'Des paliers par compétence', 'de Découverte à Expert·e', '#e3f1ee', '#c4e0da', '#2a9d8f'],
-          ['🏅', 'Des badges à débloquer', 'et des niveaux, de Curieux·se à Maître de la paillasse', '#fdecef', '#f4cdd6', '#c2415f']].map(([i, t, d, fond, bord, c]) => (
-          <div key={t} style={{ flex: '1 1 180px', borderRadius: 14, padding: '10px 12px', color: KIT.txt, background: fond, border: `1px solid ${bord}` }}>
-            <div style={{ fontSize: 22, color: c }}>{i}</div><div style={{ fontWeight: 800, fontSize: 14 }}>{t}</div><div style={{ fontSize: 12.5, color: KIT.txt2 }}>{d}</div>
-          </div>))}
+    <div data-connexion style={{ display: 'flex', flexDirection: 'column', gap: 20, textAlign: 'left' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
+        <section style={LAME} aria-labelledby="titre-connexion">
+          <h2 id="titre-connexion" style={{ margin: '0 0 12px', fontSize: 21, fontWeight: 800, color: TEXTE, fontFamily: "'Outfit', sans-serif" }}>Me connecter</h2>
+          <form onSubmit={valider} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <label style={{ fontSize: 14, fontWeight: 700, color: TEXTE }}>Identifiant <span style={{ fontWeight: 500, color: TEXTE2 }}>(donné par ton professeur)</span>
+              <input value={id} onChange={e => setId(e.target.value)} autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="tstl1-07" style={{ ...champ, marginTop: 4 }} aria-label="Identifiant" />
+            </label>
+            <label style={{ fontSize: 14, fontWeight: 700, color: TEXTE }}>Mot de passe
+              <input type="password" value={mdp} onChange={e => setMdp(e.target.value)} autoComplete="current-password" style={{ ...champ, marginTop: 4 }} aria-label="Mot de passe" />
+            </label>
+            <label style={{ fontSize: 13, color: TEXTE2, display: 'flex', gap: 8, alignItems: 'flex-start', lineHeight: 1.5 }}>
+              <input type="checkbox" checked={garder} onChange={e => setGarder(e.target.checked)} style={{ marginTop: 3, accentColor: ACCENT }} />
+              <span>Rester connecté sur cet appareil <b>(appareil personnel uniquement, jamais sur un ordinateur partagé du lycée)</b></span>
+            </label>
+            {msg && <div role="alert" style={{ color: '#b91c1c', fontSize: 14, fontWeight: 600 }}>❌ {msg}</div>}
+            <button type="submit" disabled={inactif} style={{ padding: '11px 22px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 15.5, fontFamily: 'inherit', color: 'white',
+              background: ACCENT, cursor: inactif ? 'default' : 'pointer', opacity: inactif ? 0.55 : 1 }}>{attente ? 'Connexion…' : 'Me connecter'}</button>
+          </form>
+        </section>
+
+        <section style={LAME} aria-labelledby="titre-pourquoi">
+          <h2 id="titre-pourquoi" style={{ margin: '0 0 6px', fontSize: 21, fontWeight: 800, color: TEXTE, fontFamily: "'Outfit', sans-serif" }}>Gardez la trace de tout ce que vous réussissez</h2>
+          <p style={{ margin: '0 0 10px', fontSize: 14.5, color: TEXTE2, lineHeight: 1.6 }}>
+            Avec un compte, ta progression te suit d’un ordinateur à l’autre (chez toi, au lycée). Tu n’as pas besoin de compte pour t’entraîner :
+            sans compte, elle reste seulement sur l’appareil que tu utilises.
+          </p>
+          <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6, fontSize: 14.5, color: TEXTE }}>
+            <li><span aria-hidden="true">★</span> <b>Des étoiles à gagner</b> : jusqu’à 3 par exercice</li>
+            <li><span aria-hidden="true">🌳</span> <b>Des paliers par compétence</b> : de Découverte à Expert·e</li>
+            <li><span aria-hidden="true">🏅</span> <b>Des niveaux et des badges</b> : de Novice à Légende de la paillasse</li>
+          </ul>
+        </section>
       </div>
-      <form onSubmit={valider} style={{ ...styleBoite, maxWidth: 380, display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <label style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt }}>Identifiant (donné par ton professeur)
-          <input value={id} onChange={e => setId(e.target.value)} autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="tstl1-07" style={{ ...champ, marginTop: 4 }} aria-label="Identifiant" />
-        </label>
-        <label style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt }}>Mot de passe
-          <input type="password" value={mdp} onChange={e => setMdp(e.target.value)} autoComplete="current-password" style={{ ...champ, marginTop: 4 }} aria-label="Mot de passe" />
-        </label>
-        <label style={{ fontSize: 13, color: KIT.txt2, display: 'flex', gap: 6, alignItems: 'flex-start' }}>
-          <input type="checkbox" checked={garder} onChange={e => setGarder(e.target.checked)} style={{ marginTop: 3, accentColor: '#e11d48' }} />
-          <span>Rester connecté sur cet appareil <b>(appareil personnel uniquement, jamais sur un ordinateur partagé du lycée)</b></span>
-        </label>
-        {msg && <div role="alert" style={{ color: '#b91c1c', fontSize: 14, fontWeight: 600 }}>❌ {msg}</div>}
-        <button type="submit" disabled={attente || !id.trim() || !mdp} style={{ ...styleBouton(true, ROSE), opacity: attente || !id.trim() || !mdp ? 0.6 : 1 }}>{attente ? 'Connexion…' : 'Se connecter'}</button>
-      </form>
-      <div style={{ ...styleBoite, marginTop: 14, fontSize: 13, color: KIT.txt2, lineHeight: 1.6 }}>
-        <b style={{ color: KIT.txt }}>Ce qui est enregistré quand tu es connecté·e</b>, pour chaque exercice : la date, le temps passé actif sur la page,
-        le nombre de fois où tu as cliqué sur « Corriger », le nombre de corrections consultées et si tu as réussi. Pour les défis des simulations : la même chose (essais = clics sur « Vérifier », solutions consultées, réussite). Sur le reste des simulations : seulement le temps passé, par simulation et par mode (parcours guidé, exploration libre, défi).
-        Rien d’autre : ni ton nom, ni ton adresse, ni ce que tu écris dans les réponses. Ces données sont visibles de toi et de ton professeur,
-        servent à t’aider à progresser, ne sont pas notées, et sont supprimées à la fin de l’année scolaire.
-      </div>
+
       <ContactEnseignant />
-    </>
+
+      <section style={{ ...LAME, fontSize: 13, color: TEXTE2, lineHeight: 1.65 }} aria-labelledby="titre-donnees">
+        <h2 id="titre-donnees" style={{ margin: '0 0 6px', fontSize: 16, fontWeight: 800, color: TEXTE, fontFamily: "'Outfit', sans-serif" }}>Ce qui est enregistré quand tu es connecté·e</h2>
+        Pour chaque exercice : la date, le temps passé actif sur la page, le nombre de fois où tu as cliqué sur « Corriger », le nombre de corrections consultées et si tu as réussi.
+        Pour les défis des simulations : la même chose (essais = clics sur « Vérifier », solutions consultées, réussite). Sur le reste des simulations : seulement le temps passé, par simulation et par mode (parcours guidé, exploration libre, défi). Rien d’autre : ni ton nom, ni ton adresse, ni ce que tu écris dans les réponses.
+        Ces données sont visibles de toi et de ton professeur, servent à t’aider à progresser, ne sont pas notées, et sont supprimées à la fin de l’année scolaire.
+      </section>
+    </div>
   );
 }
 
@@ -173,8 +184,8 @@ export function TableauTempsSimulations({ lignes, vide = 'Aucun temps enregistr�
 export function SimulationCompte({ naviguer }) {
   const sess = useSession();
   return (
-    <div style={{ ...cardStyle, maxWidth: 900, margin: '0 auto' }}>
-      {!estEleve(sess) && <h2 style={{ margin: 0, color: ROSE }}>👧👦 Mon compte</h2>}
+    <div style={{ ...(sess?.profil ? cardStyle : {}), maxWidth: sess?.profil ? 900 : 940, margin: '0 auto' }}>
+      {estProf(sess) && <h2 style={{ margin: 0, color: ROSE }}>👧👦 Mon compte</h2>}
       {!sess?.profil && <Connexion />}
       {estEleve(sess) && (
         <>
