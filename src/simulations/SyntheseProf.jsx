@@ -30,7 +30,7 @@ const Carte = ({ titre, lien, onLien, children }) => (
     {children}
   </div>);
 
-export function SyntheseProf({ classe, eleves, lignes, allerA }) {
+export function SyntheseProf({ classe, eleves, lignes, allerA, onApercu }) {
   const [dev, setDev] = useState(null);
   useEffect(() => {
     let vivant = true;
@@ -60,7 +60,13 @@ export function SyntheseProf({ classe, eleves, lignes, allerA }) {
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         {dev?.dispo && (
           <Carte titre="📌 Devoirs en cours" lien="Gérer" onLien={() => allerA('devoirs')}>
-            {devoirs.length === 0 ? <div style={{ fontSize: 14, color: KIT.txt2 }}>{dev.liste.length ? '✅ Tous les devoirs sont terminés par toute la classe.' : 'Aucun devoir pour l’instant : crée-en un depuis « Gérer ».'}</div> : devoirs.slice(0, 3).map(({ d, s, e }) => (
+            {devoirs.length === 0 ? <div style={{ fontSize: 14, color: KIT.txt2 }}>{dev.liste.length ? '✅ Tous les devoirs sont terminés par toute la classe.' : (
+              <div>Aucun devoir pour l’instant. Le plus simple : ouvrez une simulation et cliquez sur « 📌 Donner en devoir » (en haut à droite).
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+                  <button onClick={() => allerA('devoirs')} style={{ background: ACCENT, color: '#fff', border: 'none', borderRadius: 8, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>📌 Créer un devoir</button>
+                  {onApercu && <button onClick={onApercu} style={{ background: '#fff', color: ACCENT, border: `2px solid ${ACCENT}`, borderRadius: 8, padding: '4px 10px', fontWeight: 700, cursor: 'pointer' }}>👁 Voir ce que verront vos élèves</button>}
+                </div>
+              </div>)}</div> : devoirs.slice(0, 3).map(({ d, s, e }) => (
               <div key={d.id} style={{ padding: '6px 0', borderTop: `1px dashed ${KIT.bord}`, fontSize: 14 }}>
                 <b style={{ color: KIT.txt }}>{d.titre}</b>
                 <div style={{ fontSize: 13, color: KIT.txt2 }}>{s.termines} / {s.effectif} ont tout fait · <span style={{ color: TONS[e.ton], fontWeight: 700 }}>{e.texte}</span></div>

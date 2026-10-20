@@ -52,9 +52,11 @@ import { SimulationEntrainement } from "./simulations/Entrainement";
 import { SimulationCompte } from "./simulations/Compte";
 import { ToastRecompense } from "./ToastRecompense";
 import { SimulationSuiviProf } from "./simulations/SuiviProf";
-import { useSession, restaurer, estEleve } from "./serveur";
+import { useSession, restaurer, estEleve, estProf } from "./serveur";
 import { chapitresDuNiveau } from "./chapitres";
 import { SuiviTemps, nomsSim } from "./suivi";
+import { ModeParDefaut } from "./ModeParDefaut";
+import { ProchaineEtape } from "./ProchaineEtape";
 import { EnTete } from "./EnTete";
 import { PiedDePage } from "./PiedDePage";
 import { AccueilSite } from "./AccueilSite";
@@ -274,6 +276,13 @@ export default function App() {
                 {idAffiche === 39 ? (estEleve(sessionSb) ? 'Mon profil' : sessionSb?.profil ? 'Mon compte' : 'Se connecter') : active.label}
               </span>
             </h1>
+            {estProf(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47) && (
+              <button data-donner-devoir onClick={() => {
+                try { window.sessionStorage.setItem('devoir-preset', JSON.stringify({ titre: active.label, cles: [`sim:${activeId}`], eleves: [] })); } catch { /* sans mémorisation, le formulaire s'ouvre vide */ }
+                naviguer(40);
+              }} style={{ padding:"6px 14px", borderRadius:8, border:"none", background:"#25628f", color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"'Nunito', sans-serif", whiteSpace:"nowrap" }}>
+                📌 Donner en devoir
+              </button>)}
             <button onClick={partager} style={{
               display:"flex", alignItems:"center", gap:6,
               padding:"6px 14px", borderRadius:8, border:"none",
@@ -296,7 +305,9 @@ export default function App() {
                     à gauche pour les simulations ; la page d'accueil garde sa mise en page centrée. */}
                 <BandeauContexte key={`b${activeId}`} id={activeId} contexte={CONTEXTES[activeId]} couleur={active.color} />
                 {(activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47) && <SuiviTemps simId={activeId} />}
-                <ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} />
+                {estEleve(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47) && <ProchaineEtape key={`pe${activeId}`} simId={activeId} naviguer={naviguer} />}
+                <div id="zone-simulation"><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></div>
+                {activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 ? <ModeParDefaut simId={activeId} cibleId="zone-simulation" /> : null}
               </div>}
         </div>
         <ToastRecompense naviguer={naviguer} />

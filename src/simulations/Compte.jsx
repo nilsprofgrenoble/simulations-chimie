@@ -48,7 +48,9 @@ function ContactEnseignant() {
 }
 
 function Connexion() {
-  const [id, setId] = useState(''), [mdp, setMdp] = useState(''), [garder, setGarder] = useState(false);
+  // Les fiches imprimées ont un QR code qui ouvre cette page avec l'identifiant déjà rempli (?id=…) : il ne reste que le mot de passe
+  const idUrl = (() => { try { const v = new URLSearchParams(window.location.search).get('id') || ''; return /^[A-Za-z0-9._@-]{1,64}$/.test(v) ? v : ''; } catch { return ''; } })();
+  const [id, setId] = useState(idUrl), [mdp, setMdp] = useState(''), [garder, setGarder] = useState(false);
   const [msg, setMsg] = useState(''), [attente, setAttente] = useState(false);
   const valider = async e => {
     e.preventDefault(); setMsg(''); setAttente(true);
@@ -63,16 +65,17 @@ function Connexion() {
           <h2 id="titre-connexion" style={{ margin: '0 0 12px', fontSize: 21, fontWeight: 800, color: TEXTE, fontFamily: "'Outfit', sans-serif" }}>Me connecter</h2>
           <form onSubmit={valider} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <label style={{ fontSize: 14, fontWeight: 700, color: TEXTE }}>Identifiant <span style={{ fontWeight: 500, color: TEXTE2 }}>(donné par ton professeur)</span>
-              <input value={id} onChange={e => setId(e.target.value)} autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="tstl1-07" style={{ ...champ, marginTop: 4 }} aria-label="Identifiant" />
+              <input value={id} onChange={e => setId(e.target.value)} autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="tstl1-07" autoFocus={!idUrl} style={{ ...champ, marginTop: 4 }} aria-label="Identifiant" />
             </label>
             <label style={{ fontSize: 14, fontWeight: 700, color: TEXTE }}>Mot de passe
-              <input type="password" value={mdp} onChange={e => setMdp(e.target.value)} autoComplete="current-password" style={{ ...champ, marginTop: 4 }} aria-label="Mot de passe" />
+              <input type="password" value={mdp} onChange={e => setMdp(e.target.value)} autoComplete="current-password" autoFocus={!!idUrl} style={{ ...champ, marginTop: 4 }} aria-label="Mot de passe" />
             </label>
             <label style={{ fontSize: 13, color: TEXTE2, display: 'flex', gap: 8, alignItems: 'flex-start', lineHeight: 1.5 }}>
               <input type="checkbox" checked={garder} onChange={e => setGarder(e.target.checked)} style={{ marginTop: 3, accentColor: ACCENT }} />
               <span>Rester connecté sur cet appareil <b>(appareil personnel uniquement, jamais sur un ordinateur partagé du lycée)</b></span>
             </label>
             {msg && <div role="alert" style={{ color: '#b91c1c', fontSize: 14, fontWeight: 600 }}>❌ {msg}</div>}
+            <div style={{ fontSize: 13, color: TEXTE2 }}>Mot de passe oublié ? Demande à ton professeur : il peut t’en donner un nouveau en quelques secondes.</div>
             <button type="submit" disabled={inactif} style={{ padding: '11px 22px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 15.5, fontFamily: 'inherit', color: 'white',
               background: ACCENT, cursor: inactif ? 'default' : 'pointer', opacity: inactif ? 0.55 : 1 }}>{attente ? 'Connexion…' : 'Me connecter'}</button>
           </form>
