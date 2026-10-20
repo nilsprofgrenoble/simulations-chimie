@@ -1008,10 +1008,10 @@ export function PeintureExploration({ plotlyReady }) {
       {showFormules && PopupFormules()}
 
       {/* ── LIGNE 1 : Tableau | Résultats ── */}
-      <div style={{display:'grid',gridTemplateColumns:'minmax(0,1.7fr) minmax(260px,1fr)',gap:16,marginBottom:14}}>
+      <div style={{display:'flex',flexWrap:'wrap',gap:16,marginBottom:14}}>
 
-        {/* Colonne gauche : tableau */}
-        <div>
+        {/* Colonne gauche : tableau (défile horizontalement si l'écran est étroit) */}
+        <div style={{flex:'1 1 600px',minWidth:0,overflowX:'auto'}}>
           <div style={{fontWeight:600,fontSize:13,marginBottom:8,color:'var(--color-text-secondary)'}}>
             Formulation
           </div>
@@ -1088,7 +1088,7 @@ export function PeintureExploration({ plotlyReady }) {
         </div>
 
         {/* Colonne droite : résultats */}
-        <div style={{display:'flex',flexDirection:'column',gap:10}}>
+        <div style={{display:'flex',flexDirection:'column',gap:10,flex:'1 1 260px',minWidth:0}}>
           <div style={{fontWeight:600,fontSize:13,color:'var(--color-text-secondary)',
             display:'flex',alignItems:'center',gap:6}}>
             Résultats
