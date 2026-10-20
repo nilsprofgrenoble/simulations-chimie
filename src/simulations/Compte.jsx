@@ -3,9 +3,7 @@ import { cardStyle, KIT, styleBouton, styleBoite } from "../commun";
 import { useSession, estEleve, estProf, connexion, deconnexion, toutLire, changerMotDePasse } from "../serveur";
 import { tousLesExercices } from "./Entrainement";
 import { estSimulation, estDefi, tempsParSimulation, MODES, etiquettesDefis } from "../suivi";
-import { Carnet } from "./Carnet";
-import { DevoirsEleve } from "./DevoirsEleve";
-import { VieDeClasse } from "./VieDeClasse";
+import { EspaceEleve } from "./EspaceEleve";
 import { BoutonMail } from "../contact";
 
 const ROSE = '#e11d48';
@@ -126,9 +124,7 @@ function MesResultats({ naviguer }) {
   const nbDefis = ag.filter(a => a.reussi && estDefi(a.cle)).length, total = ag.reduce((t, a) => t + a.duree, 0);
   return (
     <div>
-      <DevoirsEleve lignes={lignes} naviguer={naviguer} />
-      <Carnet lignes={lignes} naviguer={naviguer} />
-      <VieDeClasse lignes={lignes} />
+      <EspaceEleve lignes={lignes} naviguer={naviguer} pied={etape => etape >= 2 && (
       <details style={{ marginTop: 22 }}>
       <summary style={{ cursor: 'pointer', fontSize: 16, fontWeight: 800, color: KIT.txt, padding: '6px 0' }}>📋 Le détail de mes résultats</summary>
       <h3 style={{ margin: '14px 0 6px' }}>Mes résultats</h3>
@@ -152,7 +148,7 @@ function MesResultats({ naviguer }) {
         </div>)}
       <h3 style={{ margin: '18px 0 6px' }}>Temps passé sur les simulations</h3>
       <TableauTempsSimulations lignes={lignes} />
-      </details>
+      </details>)} />
     </div>
   );
 }
@@ -178,18 +174,16 @@ export function SimulationCompte({ naviguer }) {
   const sess = useSession();
   return (
     <div style={{ ...cardStyle, maxWidth: 900, margin: '0 auto' }}>
-      <h2 style={{ margin: 0, color: ROSE }}>👧👦 Mon compte</h2>
+      {!estEleve(sess) && <h2 style={{ margin: 0, color: ROSE }}>👧👦 Mon compte</h2>}
       {!sess?.profil && <Connexion />}
       {estEleve(sess) && (
         <>
-          <p style={{ fontSize: 15, color: KIT.txt }}>Connecté·e : <b>{sess.profil.identifiant}</b>{sess.profil.classe ? <> — classe <b>{sess.profil.classe}</b></> : null}</p>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-            <button onClick={() => naviguer(38)} style={styleBouton(true, ROSE)}>🎯 Je travaille des COMPÉTENCES spécifiques</button>
-            <button onClick={() => naviguer(0)} style={styleBouton(true, '#2a9d8f')}>📚 Je travaille sur des simulations en lien avec un chapitre du cours</button>
-            <button onClick={deconnexion} style={styleBouton(false, '#475569')}>Se déconnecter</button>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', fontSize: 14, color: KIT.txt2, marginBottom: 6 }}>
+            <span>Connecté·e : <b style={{ color: KIT.txt }}>{sess.profil.identifiant}</b>{sess.profil.classe ? <> — classe <b style={{ color: KIT.txt }}>{sess.profil.classe}</b></> : null}</span>
+            <button onClick={deconnexion} style={{ ...styleBouton(false, '#475569'), fontSize: 13 }}>Se déconnecter</button>
           </div>
-          <div style={{ marginTop: 10 }}><MotDePasse /></div>
           <MesResultats naviguer={naviguer} />
+          <div style={{ marginTop: 22 }}><MotDePasse /></div>
         </>)}
       {estProf(sess) && (
         <>

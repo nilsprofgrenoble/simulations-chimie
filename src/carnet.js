@@ -41,7 +41,8 @@ export function palier(etoiles, max) {
 
 // ── Niveau général : il faut 3·n·(n−1)/2 étoiles pour atteindre le niveau n (3, 9, 18, 30, 45…) ──
 export const seuilNiveau = n => (3 * n * (n - 1)) / 2;
-export const TITRES = ['Curieux·se', 'Apprenti·e', 'Manipulateur·rice', 'Technicien·ne', 'Analyste', 'Expert·e', 'Maître de la paillasse'];
+export const TITRES = ['Novice', 'Apprenti·e pipette', 'Dompteur·se de burette', 'Alchimiste en herbe', 'Chimiste de choc', 'Maître·sse des moles', 'Légende de la paillasse'];
+export const ICONES_NIVEAU = ['🥼', '🧪', '⚗️', '🔬', '⚡', '🧬', '🏆'];
 export function niveau(total) {
   let n = 1;
   while (total >= seuilNiveau(n + 1)) n += 1;

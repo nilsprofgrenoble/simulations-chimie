@@ -52,7 +52,7 @@ import { SimulationEntrainement } from "./simulations/Entrainement";
 import { SimulationCompte } from "./simulations/Compte";
 import { ToastRecompense } from "./ToastRecompense";
 import { SimulationSuiviProf } from "./simulations/SuiviProf";
-import { useSession, restaurer } from "./serveur";
+import { useSession, restaurer, estEleve } from "./serveur";
 import { chapitresDuNiveau } from "./chapitres";
 import { SuiviTemps, nomsSim } from "./suivi";
 import { EnTete } from "./EnTete";
@@ -143,8 +143,8 @@ const SIMULATIONS = [
   { id:38, label:"Je m'entraîne ! Travail par compétence", niveau:"COMP", icon:"🏋️", color:"#e11d48",
     component: SimulationEntrainement },
   // Pages hors menu (niveau « COMPTE ») : connexion et suivi, ouvertes par les boutons « Mon compte » et « Suivi professeur »
-  { id:39, label:"Mon compte", niveau:"COMPTE", icon:"👧👦", color:"#e11d48", component: SimulationCompte },
-  { id:40, label:"Suivi professeur", niveau:"COMPTE", icon:"📊", color:"#e11d48", component: SimulationSuiviProf },
+  { id:39, label:"Mon compte", niveau:"COMPTE", icon:"👧👦", color:"#25628f", component: SimulationCompte },
+  { id:40, label:"Suivi professeur", niveau:"COMPTE", icon:"📊", color:"#25628f", component: SimulationSuiviProf },
   // Page hors menu : à propos et contact (ouverte depuis le bas du menu et le pied de page)
   { id:47, label:"À propos et contact", niveau:"COMPTE", icon:"ℹ️", color:"#475569", component: SimulationAPropos },
 ];
@@ -269,7 +269,7 @@ export default function App() {
             <span style={{ fontSize: "2rem" }}>{active.icon}</span>
             <h1 style={{ ...styles.pageTitle, color: active.color, flex: 1 }}>
               <span style={{ fontFamily:"'Outfit', sans-serif", fontWeight:800, letterSpacing:"-0.5px" }}>
-                {active.label}
+                {activeId === 39 && estEleve(sessionSb) ? 'Mon profil' : active.label}
               </span>
             </h1>
             <button onClick={partager} style={{

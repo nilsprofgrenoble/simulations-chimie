@@ -1,7 +1,10 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect, useMemo } from "react";
 import { rest } from "../serveur";
 import { catalogueDevoirs } from "./catalogue";
 import { trierPourEleve, infoEcheance, finEcheance, estCleSim, detailSim, SEUIL_GUIDE_S } from "../devoirs";
+import { etapesDevoir, fenetreEtapes } from "../profil";
+import { ACCENT } from "../theme";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  « À FAIRE POUR LA CLASSE » (tout en haut de l'espace élève) : les devoirs assignés par le professeur.
@@ -50,8 +53,49 @@ function CarteDevoir({ d, a, par, naviguer, maintenant, lignes }) {
     </div>);
 }
 
+// Version « pas à pas » (profil par étapes) : on ne montre que l'étape en cours ; les suivantes se débloquent une à une.
+function CarteDevoirPasAPas({ d, a, par, naviguer, maintenant, lignes }) {
+  const info = infoEcheance(d.echeance, maintenant, a.termine), ton = TONS[info.ton], fin = finEcheance(d.echeance);
+  const etapes = etapesDevoir(d, lignes || []), { faites, visibles, verrouillees } = fenetreEtapes(etapes);
+  const titreDe = cle => par.get(cle)?.titre;
+  const nomSim = e => par.get(`sim:${e.sim}`)?.titre || `Simulation ${e.sim}`;
+  const aller = e => {
+    if (e.type === 'guide' || (e.type === 'defi' && !e.unique)) return naviguer(Number(e.sim));
+    const it = par.get(e.cle);
+    return it?.atelier ? naviguer(it.atelier, it.ex, true) : naviguer(it?.sim ?? Number(e.sim));
+  };
+  const frac = etapes.length ? faites.length / etapes.length : 0;
+  const libelle = e => (e.type === 'guide' ? <><b>Parcours guidé</b> · {nomSim(e)}<span data-etat-sim style={{ display: 'block', fontSize: 12.5, color: '#64748b' }}>
+        {Math.floor(Math.min(e.guideS, SEUIL_GUIDE_S) / 60)} / {SEUIL_GUIDE_S / 60} min de parcours : suis les étapes de la simulation</span></>
+    : e.type === 'defi' ? <><b>Défi</b> · {e.unique ? titreDe(e.cle) || e.cle : nomSim(e)}<span style={{ display: 'block', fontSize: 12.5, color: '#64748b' }}>Ouvre l’onglet « Défi » de la simulation et réussis-en un.</span></>
+      : <>{par.get(e.cle) ? <><b style={{ color: '#64748b' }}>{par.get(e.cle).comp} ·</b> {par.get(e.cle).titre}</> : <i>Exercice introuvable (retiré du site ?)</i>}</>);
+  return (
+    <div className="dv-carte" data-pas-a-pas style={{ borderLeft: `5px solid ${a.termine ? '#16a34a' : ton.bord}` }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <div style={{ fontWeight: 800, fontSize: 16, color: '#0f172a', flex: 1, minWidth: 160 }}>{a.termine ? '🎉' : '📌'} {d.titre}</div>
+        <span className="dv-puce" style={{ background: ton.fond, border: `1px solid ${ton.bord}`, color: ton.texte }}>
+          {fin ? `${fin.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} · ` : ''}{info.texte}</span>
+      </div>
+      <div className="dv-barre" role="progressbar" aria-valuemin={0} aria-valuemax={etapes.length} aria-valuenow={faites.length} aria-label="Avancement du devoir">
+        <i style={{ width: `${Math.max(frac * 100, faites.length ? 6 : 0)}%`, background: a.termine ? '#3a8a5a' : ACCENT }} /></div>
+      <div style={{ fontSize: 13, color: '#475569', margin: '4px 0 8px' }}>
+        {a.termine ? 'Devoir terminé, bravo !' : <>Étape <b>{Math.min(faites.length + 1, etapes.length)}</b> sur {etapes.length}</>}</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {visibles.map(e => (
+          <div key={e.cle + e.type} data-etape-courante style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14.5, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '10px 12px' }}>
+            <span aria-hidden="true" style={{ fontSize: 20 }}>{e.type === 'guide' ? '🧭' : e.type === 'defi' ? '🎯' : '✏️'}</span>
+            <span style={{ flex: 1, color: '#1e293b' }}>{libelle(e)}</span>
+            <button className="dv-btn" onClick={() => aller(e)}>{e.type === 'guide' ? (e.guideS > 0 ? 'Continuer ▶' : 'Commencer ▶') : 'Y aller ▶'}</button>
+          </div>))}
+        {verrouillees > 0 && <div data-etapes-verrouillees style={{ fontSize: 13.5, color: '#64748b', padding: '2px 4px' }}>🔒 {verrouillees} étape{verrouillees > 1 ? 's' : ''} à débloquer, une fois celle-ci faite.</div>}
+        {faites.length > 0 && !a.termine && <div style={{ fontSize: 13, color: '#166534', padding: '0 4px' }}>✅ {faites.length} étape{faites.length > 1 ? 's' : ''} déjà faite{faites.length > 1 ? 's' : ''}</div>}
+      </div>
+    </div>);
+}
+
 // devoirsApercu : liste fictive (aperçu élève du professeur) : rien n'est lu sur le serveur.
-export function DevoirsEleve({ lignes, naviguer, devoirsApercu }) {
+// Les devoirs de l'élève (null pendant le chargement) ; devoirsApercu : liste fictive, rien n'est lu sur le serveur
+export function useDevoirs(devoirsApercu) {
   const [devoirs, setDevoirs] = useState(devoirsApercu ?? null);
   useEffect(() => {
     if (devoirsApercu) return undefined;
@@ -61,6 +105,14 @@ export function DevoirsEleve({ lignes, naviguer, devoirsApercu }) {
       .catch(() => { if (vivant) setDevoirs([]); });          // SQL pas encore appliqué, réseau coupé… : on n'affiche rien
     return () => { vivant = false; };
   }, [devoirsApercu]);
+  return devoirs;
+}
+
+// devoirsListe : devoirs déjà chargés par le parent (sinon la liste est lue ici) ; pasAPas : affichage par étapes (profil par étapes)
+export function DevoirsEleve({ lignes, naviguer, devoirsApercu, devoirsListe, pasAPas = false }) {
+  const lus = useDevoirs(devoirsListe ? [] : devoirsApercu);
+  const devoirs = devoirsListe ?? lus;
+  const Carte = pasAPas ? CarteDevoirPasAPas : CarteDevoir;
   const par = useMemo(() => new Map(catalogueDevoirs().map(i => [i.cle, i])), []);
   const maintenant = useMemo(() => new Date(), []);
   const liste = useMemo(() => trierPourEleve(devoirs || [], lignes || []), [devoirs, lignes]);
@@ -76,15 +128,15 @@ export function DevoirsEleve({ lignes, naviguer, devoirsApercu }) {
         .dv-puce { border-radius: 999px; padding: 3px 11px; font-size: 13px; font-weight: 700; white-space: nowrap; }
         .dv-barre { height: 9px; border-radius: 6px; background: #e2e8f0; overflow: hidden; margin-top: 10px; }
         .dv-barre > i { display: block; height: 100%; border-radius: 6px; transition: width 1s cubic-bezier(.2,.8,.2,1); }
-        .dv-btn { cursor: pointer; font: inherit; font-size: 13px; font-weight: 800; color: #fff; border: none; border-radius: 10px; padding: 6px 12px; background: linear-gradient(135deg, #e11d48, #be123c); }
+        .dv-btn { cursor: pointer; font: inherit; font-size: 13px; font-weight: 800; color: #fff; border: none; border-radius: 10px; padding: 6px 12px; background: ${ACCENT}; }
         @media (prefers-reduced-motion: reduce) { .dv *, .dv *::before, .dv *::after { transition: none !important; } }
       `}</style>
-      {ouverts.length > 0 && <h3>📌 À faire pour la classe <small>{ouverts.length} devoir{ouverts.length > 1 ? 's' : ''} de ton professeur</small></h3>}
-      {ouverts.map(({ d, a }) => <CarteDevoir key={d.id} d={d} a={a} par={par} naviguer={naviguer} maintenant={maintenant} lignes={lignes} />)}
+      {ouverts.length > 0 && <h3>📌 {pasAPas ? 'Ma classe : à faire' : 'À faire pour la classe'} <small>{ouverts.length} devoir{ouverts.length > 1 ? 's' : ''} de ton professeur</small></h3>}
+      {ouverts.map(({ d, a }) => <Carte key={d.id} d={d} a={a} par={par} naviguer={naviguer} maintenant={maintenant} lignes={lignes} />)}
       {finis.length > 0 && (
         <details style={{ marginBottom: 6 }} open={ouverts.length === 0}>
           <summary style={{ cursor: 'pointer', fontWeight: 700, color: '#166534', fontSize: 14.5 }}>✅ Devoirs terminés ({finis.length})</summary>
-          <div style={{ marginTop: 8 }}>{finis.map(({ d, a }) => <CarteDevoir key={d.id} d={d} a={a} par={par} naviguer={naviguer} maintenant={maintenant} lignes={lignes} />)}</div>
+          <div style={{ marginTop: 8 }}>{finis.map(({ d, a }) => <Carte key={d.id} d={d} a={a} par={par} naviguer={naviguer} maintenant={maintenant} lignes={lignes} />)}</div>
         </details>)}
     </section>);
 }
