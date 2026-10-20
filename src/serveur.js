@@ -123,7 +123,7 @@ export const fonctionComptes = (action, params = {}) =>
 
 // ── Connexion ──
 export const emailDe = identifiant => {
-  const id = identifiant.trim().toLowerCase();
+  const id = identifiant.replace(/\s+/g, '').toLowerCase();     // tolère espaces (« tstl1 - 07 ») et majuscules (clavier de téléphone)
   return id.includes('@') ? id : `${id}@${DOMAINE}`;       // un élève tape « tstl1-07 » ; un professeur, son adresse
 };
 async function chargerProfil() {

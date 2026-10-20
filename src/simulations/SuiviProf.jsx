@@ -11,9 +11,12 @@ import { chapitresDe } from "../chapitres";
 import { SyntheseProf } from "./SyntheseProf";
 import { ChapitreClasse } from "./ChapitreClasse";
 import { ApercuEleve } from "./ApercuEleve";
+import { GuideProf } from "./GuideProf";
 
 const ROSE = ACCENT;   // une seule couleur d'action sur tout le site (voir ../theme.js)
 const DETAILS = ['exos', 'defis', 'sims'];
+// « TSTL 1 » → « tstl1 » (2 à 12 lettres minuscules ou chiffres, sans accent ni espace)
+const prefixeDe = nom => nom.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
 const th = { padding: '5px 8px', textAlign: 'left', color: KIT.txt2, fontWeight: 700, whiteSpace: 'nowrap' };
 const td = { padding: '5px 8px', verticalAlign: 'top' };
 const champ = { padding: '7px 9px', fontSize: 14, borderRadius: 8, border: `1px solid ${KIT.bord}`, boxSizing: 'border-box' };
@@ -32,19 +35,23 @@ function telecharger(nom, texte) {
   a.href = URL.createObjectURL(new Blob(['﻿' + texte], { type: 'text/csv;charset=utf-8' }));
   a.download = nom; document.body.appendChild(a); a.click(); a.remove();
 }
-// Fiches à imprimer : une par élève (identifiant + mot de passe), à découper et distribuer
-function imprimerFiches(classe, comptes) {
-  const adresse = window.location.origin + window.location.pathname + '?sim=39';
-  const fiches = comptes.filter(c => c.mot_de_passe).map(c => `
-    <div class="f"><div class="t">Simulations de chimie — ${echapperHtml(classe)}</div>
-    <div>Identifiant : <b>${echapperHtml(c.identifiant)}</b></div><div>Mot de passe : <b>${echapperHtml(c.mot_de_passe)}</b></div>
-    <div class="s">${echapperHtml(adresse)}<br>Bouton « 👧👦 Se connecter » en haut de la page. À garder pour toi, ne le donne à personne.</div></div>`).join('');
-  const w = window.open('', '_blank');
+// Fiches à imprimer : une par élève (identifiant + mot de passe + QR code qui ouvre la connexion avec l'identifiant rempli), à découper et distribuer
+async function imprimerFiches(classe, comptes) {
+  const w = window.open('', '_blank');        // ouvert tout de suite (avant l'attente) pour ne pas être bloqué par le navigateur
   if (!w) { alert('Le navigateur a bloqué la fenêtre d’impression : autorisez les fenêtres surgissantes pour ce site, puis recommencez.'); return; }
+  const base = window.location.origin + window.location.pathname;
+  let qrcode = null;
+  try { qrcode = (await import('qrcode-generator')).default; } catch { /* sans QR : la fiche reste utilisable */ }
+  const qr = id => { if (!qrcode) return ''; const q = qrcode(0, 'M'); q.addData(`${base}?sim=39&id=${encodeURIComponent(id)}`); q.make(); return q.createSvgTag({ cellSize: 3, margin: 0, scalable: true }); };
+  const fiches = comptes.filter(c => c.mot_de_passe).map(c => `
+    <div class="f"><div class="q">${qr(c.identifiant)}</div><div class="c"><div class="t">Simulations de chimie — ${echapperHtml(classe)}</div>
+    <div>Identifiant : <b>${echapperHtml(c.identifiant)}</b></div><div>Mot de passe : <b>${echapperHtml(c.mot_de_passe)}</b></div>
+    <div class="s">Scanne le QR code (l’identifiant est déjà rempli) ou va sur ${echapperHtml(base)}<br>puis « Se connecter ». À garder pour toi, ne le donne à personne.</div></div></div>`).join('');
   w.document.write(`<!doctype html><meta charset="utf-8"><title>Identifiants ${echapperHtml(classe)}</title>
     <style>body{font-family:Arial,sans-serif;margin:12mm}.g{display:grid;grid-template-columns:1fr 1fr;gap:6mm}
-    .f{border:1px dashed #555;padding:5mm;font-size:13pt;line-height:1.7;break-inside:avoid}.t{font-weight:bold;font-size:11pt;margin-bottom:2mm;color:#333}.s{font-size:9pt;color:#444;margin-top:2mm;line-height:1.4}
-    b{font-family:monospace;font-size:14pt}</style><div class="g">${fiches}</div>`);
+    .f{border:1px dashed #555;padding:5mm;font-size:12pt;line-height:1.6;break-inside:avoid;display:flex;gap:4mm;align-items:center}.q{width:26mm;flex:none}.q svg{width:100%;height:auto;display:block}.c{flex:1}
+    .t{font-weight:bold;font-size:10.5pt;margin-bottom:2mm;color:#333}.s{font-size:8.5pt;color:#444;margin-top:2mm;line-height:1.4}
+    b{font-family:monospace;font-size:13pt}</style><div class="g">${fiches}</div>`);
   w.document.close(); w.focus(); setTimeout(() => w.print(), 300);
 }
 
@@ -73,11 +80,13 @@ export function SimulationSuiviProf({ naviguer }) {
   const prof = estProf(sess);
   const [classes, setClasses] = useState([]), [classeId, setClasseId] = useState('');
   const [eleves, setEleves] = useState([]), [lignes, setLignes] = useState([]);
-  const [onglet, setOnglet] = useState('synthese'), [ouvert, setOuvert] = useState(null);
+  // « Donner en devoir » (bouton en haut d'une simulation) dépose un devoir à pré-remplir : on ouvre directement l'onglet Devoirs
+  const [presetInit] = useState(() => { try { const v = window.sessionStorage.getItem('devoir-preset'); window.sessionStorage.removeItem('devoir-preset'); return v ? JSON.parse(v) : null; } catch { return null; } });
+  const [onglet, setOnglet] = useState(presetInit ? 'devoirs' : 'synthese'), [ouvert, setOuvert] = useState(null);
   const [msg, setMsg] = useState(''), [erreur, setErreur] = useState(''), [occupe, setOccupe] = useState(false);
   const [comptes, setComptes] = useState(null), [formClasse, setFormClasse] = useState(false);
-  const [vieDispo, setVieDispo] = useState(true), [chapDispo, setChapDispo] = useState(true), [apercu, setApercu] = useState(false), [preset, setPreset] = useState(null);
-  const [nc, setNc] = useState({ nom: '', prefixe: '', nombre: 30 }), [ajout, setAjout] = useState(5);
+  const [vieDispo, setVieDispo] = useState(true), [chapDispo, setChapDispo] = useState(true), [apercu, setApercu] = useState(false), [preset, setPreset] = useState(presetInit);
+  const [nc, setNc] = useState({ nom: '', prefixe: '', nombre: 30 }), [prefixeSaisi, setPrefixeSaisi] = useState(false), [ajout, setAjout] = useState(5);
   const etq = useMemo(() => etiquettes(), []), exos = useMemo(() => tousLesExercices(), []), defis = useMemo(() => etiquettesDefis(), []);
 
   const chargerClasses = useCallback(async (choisir) => {
@@ -128,7 +137,7 @@ export function SimulationSuiviProf({ naviguer }) {
     e.preventDefault();
     proteger(async () => {
       const r = await fonctionComptes('creer_classe', { nom: nc.nom, prefixe: nc.prefixe, nombre: Number(nc.nombre) });
-      await chargerClasses(r.classe.id); setComptes({ classe: r.classe.nom, liste: r.comptes }); setFormClasse(false); setNc({ nom: '', prefixe: '', nombre: 30 });
+      await chargerClasses(r.classe.id); setComptes({ classe: r.classe.nom, liste: r.comptes }); setFormClasse(false); setNc({ nom: '', prefixe: '', nombre: 30 }); setPrefixeSaisi(false);
     });
   };
   const ajouter = () => proteger(async () => {
@@ -194,6 +203,9 @@ export function SimulationSuiviProf({ naviguer }) {
       {msg && <div role="status" style={{ color: '#15803d', fontWeight: 600, margin: '8px 0' }}>✅ {msg}</div>}
       {comptes && <div style={{ margin: '10px 0' }}><Comptes classe={comptes.classe} comptes={comptes.liste} onFermer={() => setComptes(null)} /></div>}
 
+      {!classes.length && !occupe && <p data-bienvenue style={{ fontSize: 16, color: KIT.txt, margin: '10px 0 0' }}>👋 <b>Bienvenue !</b> Mettons en route votre première classe : donnez-lui un nom, c’est tout ce qu’il faut pour commencer.</p>}
+      <GuideProf ouvertParDefaut={!classes.length} />
+
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', margin: '10px 0' }}>
         <select aria-label="Classe" value={classeId} onChange={e => { setClasseId(e.target.value); setOuvert(null); setMsg(''); }} style={{ ...champ, fontWeight: 700, fontSize: 15 }}>
           {!classes.length && <option value="">Aucune classe</option>}
@@ -231,12 +243,12 @@ export function SimulationSuiviProf({ naviguer }) {
         <ChapitreClasse classe={classe} dispo={chapDispo} occupe={occupe} onChoix={choisirChapitres} />
         </details>)}
 
-      {formClasse && (
+      {(formClasse || (!classes.length && !occupe)) && (
         <form onSubmit={creerClasse} style={{ ...styleBoite, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <label style={{ fontSize: 13, fontWeight: 700 }}>Nom de la classe<br />
-            <input value={nc.nom} onChange={e => setNc({ ...nc, nom: e.target.value })} placeholder="TSTL 1" style={champ} aria-label="Nom de la classe" /></label>
+            <input value={nc.nom} onChange={e => setNc({ ...nc, nom: e.target.value, prefixe: prefixeSaisi ? nc.prefixe : prefixeDe(e.target.value) })} placeholder="TSTL 1" style={champ} aria-label="Nom de la classe" /></label>
           <label style={{ fontSize: 13, fontWeight: 700 }}>Préfixe des identifiants<br />
-            <input value={nc.prefixe} onChange={e => setNc({ ...nc, prefixe: e.target.value.toLowerCase() })} placeholder="tstl1" style={champ} aria-label="Préfixe" /></label>
+            <input value={nc.prefixe} onChange={e => { setPrefixeSaisi(true); setNc({ ...nc, prefixe: e.target.value.toLowerCase() }); }} placeholder="tstl1" style={champ} aria-label="Préfixe" /></label>
           <label style={{ fontSize: 13, fontWeight: 700 }}>Nombre d’élèves<br />
             <input type="number" min={1} max={40} value={nc.nombre} onChange={e => setNc({ ...nc, nombre: e.target.value })} style={{ ...champ, width: 80 }} aria-label="Nombre d’élèves" /></label>
           <button type="submit" style={styleBouton(true, '#16a34a')} disabled={occupe || !nc.nom.trim() || !nc.prefixe.trim()}>Créer la classe et les comptes</button>
@@ -261,7 +273,7 @@ export function SimulationSuiviProf({ naviguer }) {
               <button onClick={() => ouvrir('sims')} style={stylePetitBouton(onglet === 'sims', '#475569')}>Temps par simulation</button>
             </div>)}
 
-          {onglet === 'synthese' && <SyntheseProf classe={classe} eleves={eleves} lignes={lignes} allerA={ouvrir} />}
+          {onglet === 'synthese' && <SyntheseProf classe={classe} eleves={eleves} lignes={lignes} allerA={ouvrir} onApercu={() => setApercu(true)} />}
           {onglet === 'devoirs' && <DevoirsProf key={`${classe.id}|${(classe.chapitres || []).join()}|${preset ? JSON.stringify(preset) : ''}`} classe={classe} eleves={eleves} lignes={lignes} preset={preset} />}
           {onglet === 'reprendre' && <AReprendreProf eleves={eleves} lignes={lignes} naviguer={naviguer} onDevoir={p => { setPreset(p); setOnglet('devoirs'); }} />}
 
@@ -353,7 +365,7 @@ export function SimulationSuiviProf({ naviguer }) {
               </table>
             </div>)}
         </>)}
-      {!classe && !occupe && <p style={{ color: KIT.txt2 }}>Aucune classe pour l’instant : cliquez sur « Nouvelle classe ».</p>}
+      
     </div>
   );
 }
