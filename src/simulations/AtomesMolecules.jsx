@@ -56,9 +56,36 @@ const molRef = id => { const m = moleculeDe(id), bonds = liaisonsDeRef(m.ref); r
 
 // ---------- dessin d'une planche de Lewis ----------
 const TEINTE = { H: '#f1f5f9', C: '#d6d3d1', N: '#dbeafe', O: '#fee2e2', F: '#ecfccb', Cl: '#ecfccb' };
-function Planche({ mol, atomes, analyse, onAtome, onDeplacer, titre }) {
+const COR_A = '#d55e00', COR_B = '#0072b2', ENCRE = '#0f172a';       // orange / bleu : lisibles par les daltoniens
+const ANGLES = Array.from({ length: 8 }, (_, k) => (k * 45 - 90) * Math.PI / 180);
+const ecart = (a, b) => { let d = Math.abs(a - b) % (2 * Math.PI); return d > Math.PI ? 2 * Math.PI - d : d; };
+function Planche({ mol, atomes, analyse, onAtome, onDeplacer, titre, rendu = 'tirets' }) {
+  const eMode = rendu === 'electrons';
   const svg = useRef(null), drag = useRef(null);
   const pt = e => { const r = svg.current.getBoundingClientRect(); return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height }; };
+  // rendu « électrons » : chaque électron de valence est un point ; les électrons appariés sont entourés d'un ovale
+  const point = (k, x, y, c) => <circle key={k} cx={x} cy={y} r={4.4} fill={c} stroke="#fff" strokeWidth="1"/>;
+  const liaisonsEl = Object.entries(mol.bonds).filter(([, o]) => o > 0).map(([k, o]) => {
+    const [i, j] = k.split('-').map(Number), a = mol.pos[i], b = mol.pos[j], d = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+    const ux = (b.x - a.x) / d, uy = (b.y - a.y) / d, nx = -uy, ny = ux, deg = Math.atan2(uy, ux) * 180 / Math.PI;
+    return <g key={k}>{Array.from({ length: o }, (_, t) => { const off = (t - (o - 1) / 2) * 17, cx = (a.x + b.x) / 2 + nx * off, cy = (a.y + b.y) / 2 + ny * off;
+      return <g key={t}><ellipse cx={cx} cy={cy} rx={16} ry={9} transform={`rotate(${deg} ${cx} ${cy})`} fill="#fff7ed" stroke="#b45309" strokeWidth="2"/>
+        {point('a', cx - ux * 6.5, cy - uy * 6.5, COR_A)}{point('b', cx + ux * 6.5, cy + uy * 6.5, COR_B)}</g>; })}</g>;
+  });
+  const electronsLibres = i => {
+    const P = analyse.par[i], l = mol.lp[i] || 0, s = Math.max(0, P.v - P.b - 2 * l);
+    const placed = voisinsDe(mol.bonds, i).map(j => Math.atan2(mol.pos[j].y - mol.pos[i].y, mol.pos[j].x - mol.pos[i].x)), res = [];
+    [...Array(l).fill('lp'), ...Array(s).fill('s')].forEach(kind => {
+      let best = null;
+      ANGLES.forEach(a => { if (res.some(r => r.a === a)) return; const sc = placed.length ? Math.min(...placed.map(p => ecart(a, p))) : 4; if (!best || sc > best.sc + 1e-9) best = { a, sc }; });
+      if (best) { res.push({ kind, a: best.a }); placed.push(best.a); }
+    });
+    return res.map(({ kind, a }, k) => {
+      const cx = mol.pos[i].x + (R + 12) * Math.cos(a), cy = mol.pos[i].y + (R + 12) * Math.sin(a), tx = -Math.sin(a), ty = Math.cos(a);
+      return kind === 's' ? point(k, cx, cy, ENCRE)
+        : <g key={k}><ellipse cx={cx} cy={cy} rx={11} ry={6.5} transform={`rotate(${a * 180 / Math.PI + 90} ${cx} ${cy})`} fill="#f1f5f9" stroke="#475569" strokeWidth="1.6"/>{point('p', cx - tx * 4.6, cy - ty * 4.6, ENCRE)}{point('q', cx + tx * 4.6, cy + ty * 4.6, ENCRE)}</g>;
+    });
+  };
   const liaisons = Object.entries(mol.bonds).filter(([, o]) => o > 0).map(([k, o]) => {
     const [i, j] = k.split('-').map(Number), a = mol.pos[i], b = mol.pos[j], d = Math.hypot(b.x - a.x, b.y - a.y) || 1;
     const ux = (b.x - a.x) / d, uy = (b.y - a.y) / d, nx = -uy, ny = ux;
@@ -77,7 +104,7 @@ function Planche({ mol, atomes, analyse, onAtome, onDeplacer, titre }) {
   };
   return (
     <svg ref={svg} viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, userSelect: 'none' }} role="group" aria-label={titre}>
-      {liaisons}
+      {eMode ? liaisonsEl : liaisons}
       {atomes.map((sym, i) => {
         const p = mol.pos[i], A = analyse.par[i], choisi = mol.sel === i;
         return (
@@ -86,16 +113,16 @@ function Planche({ mol, atomes, analyse, onAtome, onDeplacer, titre }) {
             onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); drag.current = { i, s: pt(e), moved: false }; }}
             onPointerMove={e => { const d = drag.current; if (!d || d.i !== i) return; const q = pt(e);
               if (!d.moved && Math.hypot(q.x - d.s.x, q.y - d.s.y) > 6) d.moved = true;
-              if (d.moved) onDeplacer(i, { x: clamp(q.x, R + 6, W - R - 6), y: clamp(q.y, R + 6, H - R - 6) }); }}
+              if (d.moved) onDeplacer(i, { x: clamp(q.x, R + 20, W - R - 20), y: clamp(q.y, R + 20, H - R - 20) }); }}
             onPointerUp={() => { const d = drag.current; drag.current = null; if (d && d.i === i && !d.moved) onAtome(i); }}
             onPointerCancel={() => { drag.current = null; }}>
             {choisi && <circle cx={p.x} cy={p.y} r={R + 10} fill="none" stroke={BLEU} strokeWidth="3"/>}
             <circle cx={p.x} cy={p.y} r={R + 4} fill="none" stroke={A.ok ? VERT : ORANGE} strokeWidth="3" strokeDasharray={A.ok ? undefined : '5 3'}/>
             <circle cx={p.x} cy={p.y} r={R} fill={TEINTE[sym] || '#fff'} stroke="#0f172a" strokeWidth="1.8"/>
             <text x={p.x} y={p.y + 6} textAnchor="middle" fontSize="19" fontWeight="800" fill="#0f172a" pointerEvents="none">{sym}</text>
-            <circle cx={p.x + R - 2} cy={p.y - R + 2} r={9} fill={A.ok ? VERT : ORANGE} stroke="#fff" strokeWidth="1.5"/>
-            <text x={p.x + R - 2} y={p.y - R + 6.5} textAnchor="middle" fontSize="12" fontWeight="800" fill="#fff" pointerEvents="none">{A.ok ? '✓' : '!'}</text>
-            {doublets(i)}
+            <circle cx={p.x + (R + 16)} cy={p.y - (R + 16)} r={9} fill={A.ok ? VERT : ORANGE} stroke="#fff" strokeWidth="1.5"/>
+            <text x={p.x + (R + 16)} y={p.y - (R + 16) + 4.5} textAnchor="middle" fontSize="12" fontWeight="800" fill="#fff" pointerEvents="none">{A.ok ? '✓' : '!'}</text>
+            {eMode ? electronsLibres(i) : doublets(i)}
           </g>);
       })}
     </svg>);
@@ -197,6 +224,7 @@ export function SimulationAtomesMolecules() {
   const [ion, setIon] = useState(ION0);
   const [mol, setMol] = useState(() => initMol('H2O'));
   const [hypoOuv, setHypoOuv] = useState(false);
+  const [rendu, setRendu] = useState('tirets');          // 'electrons' (points et ovales) | 'tirets' (notation de Lewis)
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi, enExplore = mode === 'explore';
 
   const atelierEff = enDefi ? (defi.type === 'lewis' ? 'mol' : defi.type === 'ion' ? 'ion' : 'aucun') : atelier;
@@ -227,7 +255,7 @@ export function SimulationAtomesMolecules() {
   // ════════════════ PARCOURS GUIDÉ ════════════════
   const bouton = (label, faire) => <button onClick={faire} style={{ ...styleBouton(true, '#4338ca'), margin: '6px 0' }}>{label}</button>;
   const voirAtome = (Z, n = Z) => { setAtelier('ion'); setIon({ Z, n }); };
-  const voirMol = id => { setAtelier('mol'); setMol(initMol(id)); };
+  const voirMol = (id, r, solution = false) => { setAtelier('mol'); setMol(solution ? molRef(id) : initMol(id)); if (r) setRendu(r); };
   const molOk = id => molEff.id === id && analyse.ok;
   const eOx = etatEntite(8, 8), eF = etatEntite(9, 9), eNa = etatEntite(11, 11);
   const ETAPES = [
@@ -247,7 +275,7 @@ export function SimulationAtomesMolecules() {
         pieges: [[9, 'Ce sont tous les électrons de l’atome. On ne compte que ceux de la dernière couche (n = 2).'], [5, 'Vous n’avez compté que les électrons 2p : n’oubliez pas ceux de 2s (couche n = 2 en entier).']],
         expl: `Fluor : ${eF.config}. Dernière couche (n = 2) : 2 + 5 = ${eF.valence} électrons de valence.` } },
     { id: 'manque', titre: 'Un atome pas stable', depart: () => voirAtome(9),
-      texte: <>Un atome est stable s’il a <strong>8 électrons de valence</strong> (règle de l’<strong>octet</strong>), ou 2 pour les tout petits atomes comme H et He (règle du <strong>duet</strong>). Sinon, il cherche à compléter sa couche.
+      texte: <>Un atome est stable s’il a <strong>8 électrons de valence</strong> (règle de l’<strong>octet</strong>). Une seule exception à connaître : <strong>H et He</strong> (et les ions Li⁺ et Be²⁺), dont la seule couche est la couche <strong>n = 1</strong>. Elle ne peut contenir que 2 électrons : elle est pleine avec <strong>2 électrons</strong> (règle du <strong>duet</strong>). Sinon, un atome cherche à compléter sa couche de valence.
         <ExempleResolu>L’oxygène a 6 électrons de valence : il lui en manque 8 − 6 = <strong>2</strong>. Il n’est pas stable seul.</ExempleResolu>
         À vous : regardez le fluor sur le schéma : les ronds <em>vides</em> sont les places libres de la couche de valence.</>,
       tache: { type: 'num', q: 'Combien d’électrons manque-t-il au fluor pour avoir un octet ?', unite: '', vrai: 1, tol: 0.001, affiche: x => String(x),
@@ -279,24 +307,31 @@ export function SimulationAtomesMolecules() {
         expl: 'Le magnésium a 2 électrons de valence : en perdre 2 est le plus simple. Il reste 10 électrons, comme le néon : Mg²⁺.' } },
     { id: 'essentiel1', titre: 'À retenir : les ions', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>Un atome est <strong>stable</strong> s’il a la configuration d’un gaz noble : 8 électrons de valence (octet), ou 2 (duet).</li>
+        <li>Un atome est <strong>stable</strong> s’il a la configuration d’un gaz noble : 8 électrons de valence (octet). Seule exception : <strong>H, He</strong> (et Li⁺, Be²⁺), dont la couche n = 1 est pleine avec 2 électrons (duet).</li>
         <li>Sinon, il peut <strong>gagner</strong> des électrons (<strong>anion</strong>, charge −) ou en <strong>perdre</strong> (<strong>cation</strong>, charge +).</li>
         <li>Il choisit l’ion qui lui coûte le moins d’électrons : Na⁺, Mg²⁺, Al³⁺, F⁻, Cl⁻, O²⁻…</li></ul></ARetenir>, tache: null },
-    { id: 'h2', titre: 'Autre solution : partager des électrons', depart: () => voirMol('H2'),
-      texte: <>Il y a une autre façon d’être stable : <strong>mettre des électrons en commun</strong> avec un autre atome. Les atomes assemblés forment une <strong>molécule</strong>. Chaque électron partagé forme avec un électron de l’autre atome un <strong>doublet liant</strong>, dessiné par un <strong>trait</strong> entre les atomes : c’est une <strong>liaison covalente</strong>.
-        <ExempleResolu>Un atome d’hydrogène a 1 électron : il lui en manque 1 pour avoir 2 (duet, comme l’hélium). Deux atomes H mettent chacun leur électron en commun : H — H. Chacun « voit » 2 électrons : ils sont stables dans la molécule H₂.</ExempleResolu>
-        <strong>Mode d’emploi</strong> : cliquez sur un atome, puis sur un autre : une liaison apparaît. Un clic de plus : double liaison, puis triple, puis elle disparaît.</>,
-      tache: { type: 'action', ok: molOk('H2'), consigne: 'Reliez les deux atomes d’hydrogène : les deux atomes doivent afficher ✓.' } },
-    { id: 'hcl', titre: 'Les doublets non liants : HCl', depart: () => voirMol('HCl'),
-      texte: <>Dans le chlorure d’hydrogène HCl, H et Cl partagent <strong>un doublet</strong> (une liaison). Mais le chlore a 7 électrons de valence : un seul est partagé. Les 6 autres restent sur lui, en <strong>3 doublets non liants</strong> (dessinés par des petits traits sur l’atome).
-        <ExempleResolu>Chlore : 7 électrons de valence = 1 (dans la liaison) + 3 × 2 (doublets non liants).<br/>Électrons « vus » par Cl : 2 (liaison) + 6 = <strong>8</strong> : octet ✓.<br/>Électrons « vus » par H : 2 (liaison) : duet ✓.</ExempleResolu>
-        À vous : traçons la liaison, puis sélectionnez Cl et ajoutez ses doublets non liants avec le bouton « + doublet non liant ».</>,
-      tache: { type: 'action', ok: molOk('HCl'), consigne: 'Complétez le schéma de HCl jusqu’à ce que les deux atomes affichent ✓.' } },
-    { id: 'o2', titre: 'La liaison double : O₂', depart: () => voirMol('O2'),
-      texte: <>L’oxygène a 6 électrons de valence : il lui en manque 2. Deux atomes d’oxygène mettent en commun <strong>2 électrons chacun</strong> : cela fait <strong>2 doublets liants</strong>, une <strong>liaison double</strong> (deux traits).
-        <ExempleResolu>Chaque oxygène : 6 électrons de valence = 2 (dans les liaisons) + 2 × 2 (2 doublets non liants). Électrons vus : 4 + 4 = <strong>8</strong> : octet ✓.</ExempleResolu>
-        À vous : construisez O₂ (double liaison : cliquez deux fois sur la même paire d’atomes).</>,
-      tache: { type: 'action', ok: molOk('O2'), consigne: 'Construisez O₂ : double liaison et 2 doublets non liants sur chaque atome.' } },
+    { id: 'h2', titre: 'Autre solution : mettre des électrons en commun', depart: () => voirMol('H2', 'electrons'),
+      texte: <>Il y a une autre façon d’être stable : <strong>mettre des électrons en commun</strong> avec un autre atome. Les atomes assemblés forment une <strong>molécule</strong>. Ici, on dessine <strong>chaque électron de valence</strong> par un point autour de son atome.
+        <ExempleResolu>Un atome d’hydrogène a 1 électron, tout seul (« célibataire »). Sa couche n = 1 n’est pleine qu’avec 2 électrons : il lui en manque 1. Deux atomes H mettent chacun leur électron en commun : les deux électrons <strong>s’apparient</strong> en un <strong>doublet liant</strong>, que <em>les deux atomes comptent</em>. Chacun « voit » 2 électrons. <strong>L’union fait la force !</strong> On obtient la molécule H₂.</ExempleResolu>
+        <strong>Mode d’emploi</strong> : cliquez sur un atome, puis sur l’autre : leurs deux électrons s’apparient dans un ovale. Un clic de plus sur la même paire : un deuxième doublet (liaison double), puis un troisième, puis la liaison disparaît.</>,
+      tache: { type: 'action', ok: molOk('H2'), consigne: 'Faites s’apparier les deux électrons des atomes d’hydrogène : les deux atomes doivent afficher ✓.' } },
+    { id: 'hcl', titre: 'Doublets liants et non liants : HCl', depart: () => voirMol('HCl', 'electrons'),
+      texte: <>Dans le chlorure d’hydrogène HCl, le chlore a 7 électrons de valence, dont <strong>un seul est célibataire</strong>. H et Cl mettent en commun leur électron célibataire : un <strong>doublet liant</strong>. Les 6 autres électrons de Cl étaient déjà appariés entre eux : ce sont <strong>3 doublets non liants</strong>, qui restent sur Cl sans être partagés.
+        <ExempleResolu>Chlore : 7 électrons de valence = 1 (dans le doublet liant) + 3 × 2 (doublets non liants).<br/>Électrons « vus » par Cl : 2 (doublet liant) + 6 = <strong>8</strong> : octet ✓.<br/>Électrons « vus » par H : 2 (doublet liant) : couche n = 1 pleine, duet ✓.</ExempleResolu>
+        À vous : reliez H et Cl, puis sélectionnez Cl et cliquez sur « ＋ doublet non liant » : deux électrons célibataires de Cl s’apparient. Recommencez jusqu’à ce qu’il n’en reste plus.</>,
+      tache: { type: 'action', ok: molOk('HCl'), consigne: 'Complétez HCl jusqu’à ce que les deux atomes affichent ✓ (plus aucun électron célibataire).' } },
+    { id: 'o2', titre: 'Deux doublets liants : O₂', depart: () => voirMol('O2', 'electrons'),
+      texte: <>L’oxygène a 6 électrons de valence : <strong>2 sont célibataires</strong> (et 2 doublets déjà formés). Chaque atome O met en commun ses <strong>2 électrons célibataires</strong> avec l’autre : cela fait <strong>2 doublets liants</strong>, une <strong>liaison double</strong>.
+        <ExempleResolu>Chaque oxygène : 6 électrons de valence = 2 (dans les doublets liants) + 2 × 2 (2 doublets non liants). Électrons vus : 4 + 4 = <strong>8</strong> : octet ✓.</ExempleResolu>
+        À vous : construisez O₂ (double liaison : cliquez deux fois sur la même paire d’atomes), puis ajoutez les doublets non liants.</>,
+      tache: { type: 'action', ok: molOk('O2'), consigne: 'Construisez O₂ : 2 doublets liants et 2 doublets non liants sur chaque atome.' } },
+    { id: 'tirets', titre: 'On simplifie : seulement des tirets', depart: () => voirMol('HCl', 'tirets', true),
+      texte: <>Dessiner tous les électrons devient vite long. En chimie, on utilise une notation plus simple, le <strong>schéma de Lewis</strong> : on ne dessine plus les points, mais <strong>un tiret par doublet</strong> d’électrons.
+        <ExempleResolu>HCl : H — Cl avec 3 tirets autour de Cl. Le tiret <em>entre</em> deux atomes est un <strong>doublet liant</strong> (la liaison covalente). Les tirets <em>sur</em> un atome sont des <strong>doublets non liants</strong>.
+          {bouton('Revoir avec les électrons', () => voirMol('HCl', 'electrons', true))}{' '}{bouton('Revenir aux tirets', () => voirMol('HCl', 'tirets', true))}</ExempleResolu>
+        Désormais, à vous de dessiner directement des tirets.</>,
+      tache: { type: 'qcm', q: 'Dans un schéma de Lewis, un tiret placé sur le seul atome de chlore (pas entre deux atomes) représente…', options: ['un doublet non liant (2 électrons)', 'un doublet liant (2 électrons partagés)', 'un électron célibataire', 'une liaison double'], bonne: 0,
+        expl: 'Un tiret entre deux atomes = doublet liant ; un tiret sur un seul atome = doublet non liant. Dans les deux cas, ce sont 2 électrons.' } },
     { id: 'regle', titre: 'Combien de liaisons par atome ?', depart: () => voirAtome(7),
       texte: <>Le nombre de liaisons que fait un atome dépend de ce qui lui manque pour avoir 8 électrons (2 pour H).
         <table style={{ borderCollapse: 'collapse', margin: '6px 0', fontSize: 14 }}><thead><tr><th style={{ textAlign: 'left', padding: '2px 10px 2px 0' }}>Atome</th><th style={{ padding: '2px 10px' }}>électrons de valence</th><th style={{ padding: '2px 10px' }}>liaisons</th><th style={{ padding: '2px 10px' }}>doublets non liants</th></tr></thead>
@@ -306,12 +341,12 @@ export function SimulationAtomesMolecules() {
       tache: { type: 'num', q: 'Combien de liaisons fait un atome d’azote N (Z = 7) ?', unite: '', vrai: 3, tol: 0.001, affiche: x => String(x),
         pieges: [[5, 'C’est le nombre d’électrons de valence de l’azote. Il lui en manque 8 − 5.']],
         expl: 'Azote : 5 électrons de valence, il lui en manque 3 pour l’octet : 3 liaisons, et il garde 1 doublet non liant (5 − 3 = 2 électrons).' } },
-    { id: 'h2o', titre: 'À vous : l’eau H₂O', depart: () => voirMol('H2O'),
+    { id: 'h2o', titre: 'À vous : l’eau H₂O', depart: () => voirMol('H2O', 'tirets'),
       texte: <>Appliquez la règle : l’oxygène fait 2 liaisons (une avec chaque H), et il lui reste 2 doublets non liants. Chaque H fait 1 liaison.
         <ExempleResolu>O : 6 électrons de valence = 2 (liaisons) + 2 × 2 (2 doublets non liants). Chaque H : 1 liaison, duet ✓.</ExempleResolu>
         À vous : tracez les liaisons, puis placez les doublets non liants.</>,
       tache: { type: 'action', ok: molOk('H2O'), consigne: 'Construisez H₂O : les trois atomes doivent afficher ✓.' } },
-    { id: 'co2', titre: 'Un cas plus riche : CO₂', depart: () => voirMol('CO2'),
+    { id: 'co2', titre: 'Un cas plus riche : CO₂', depart: () => voirMol('CO2', 'tirets'),
       texte: <>Le carbone a 4 électrons de valence : il fait <strong>4 liaisons</strong>. Chaque oxygène en fait 2. Comment les relier ? Le carbone est relié aux deux oxygènes : il faut <strong>deux liaisons doubles</strong>.
         <ExempleResolu>C : 2 liaisons doubles = 4 liaisons, aucun doublet non liant (4 électrons de valence ✓). Chaque O : 1 liaison double + 2 doublets non liants (2 + 4 = 6 ✓). Électrons vus : 8 partout.</ExempleResolu>
         À vous : construisez CO₂.</>,
@@ -319,22 +354,22 @@ export function SimulationAtomesMolecules() {
     { id: 'essentiel2', titre: 'À retenir : les molécules', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li>Une <strong>molécule</strong> : des atomes liés par des <strong>liaisons covalentes</strong> (électrons partagés).</li>
-        <li>Chaque atome cherche l’<strong>octet</strong> (8 électrons autour de lui), ou le <strong>duet</strong> pour H (2).</li>
+        <li>Chaque atome cherche l’<strong>octet</strong> (8 électrons autour de lui). Seul H se contente du <strong>duet</strong> (2 électrons) : sa seule couche, n = 1, est alors pleine.</li>
         <li>Pour un atome : <strong>liaisons + doublets non liants = 4</strong> (H : 1 liaison seulement).</li>
         <li>H : 1 liaison · O : 2 · N : 3 · C : 4 · Cl, F : 1.</li></ul></ARetenir>, tache: null },
-    { id: 'nh3', titre: '★ Pour aller plus loin : l’ammoniac NH₃', depart: () => voirMol('NH3'),
+    { id: 'nh3', titre: '★ Pour aller plus loin : l’ammoniac NH₃', depart: () => voirMol('NH3', 'tirets'),
       texte: <>L’azote fait 3 liaisons et garde 1 doublet non liant : N a 5 électrons de valence = 3 + 2 × 1.
         <ExempleResolu>Chaque H se lie à N : 3 liaisons. N : 3 liaisons + 1 doublet non liant → 4 « blocs » = 8 électrons. ✓</ExempleResolu>
         À vous : construisez NH₃.</>,
       tache: { type: 'action', ok: molOk('NH3'), consigne: 'Construisez NH₃ : les quatre atomes doivent afficher ✓.' } },
-    { id: 'isomeres', titre: '★ Mêmes atomes, plusieurs molécules : C₂H₆O', depart: () => voirMol('C2H6O'),
+    { id: 'isomeres', titre: '★ Mêmes atomes, plusieurs molécules : C₂H₆O', depart: () => voirMol('C2H6O', 'tirets'),
       texte: <>Avec 2 C, 6 H et 1 O, on peut assembler <strong>deux molécules différentes</strong> : l’<strong>éthanol</strong> (C — C — O) et l’<strong>éther diméthylique</strong> (C — O — C). Les deux respectent l’octet et le duet ! Vous pouvez <strong>déplacer les atomes</strong> en les faisant glisser.
         <ExempleResolu>Règles de départ : C fait 4 liaisons, O fait 2, H fait 1. Un H ne peut être lié qu’à un seul atome : il ne peut pas faire le pont entre deux atomes.</ExempleResolu>
         À vous : proposez un schéma de Lewis de C₂H₆O (n’importe lequel des deux).</>,
       tache: { type: 'action', ok: molOk('C2H6O'), consigne: 'Construisez une molécule C₂H₆O dont tous les atomes affichent ✓ (et qui est d’un seul tenant).' } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>Un atome « veut » ressembler à un <strong>gaz noble</strong> : couche de valence pleine (octet, ou duet pour H).</li>
+        <li>Un atome « veut » ressembler à un <strong>gaz noble</strong> : couche de valence pleine : octet (8 électrons) ; duet (2) uniquement pour H et He, dont la seule couche est n = 1.</li>
         <li>Pour y arriver : devenir un <strong>ion</strong> (gagner ou perdre des électrons) ou former des <strong>liaisons</strong> (partager des électrons).</li>
         <li>Schéma de Lewis : liaisons (traits entre atomes) et doublets non liants (traits sur l’atome) ; chaque atome voit 8 électrons (2 pour H).</li>
         <li>Le modèle de l’octet est utile pour les petits atomes (Z ≤ 18) ; il a des exceptions, vues plus tard.</li></ul></ARetenir>, tache: null },
@@ -362,12 +397,14 @@ export function SimulationAtomesMolecules() {
   const selA = mol.sel !== null ? analyse.par[mol.sel] : null;
   const plancheDefi = (
     <div>
-      <Planche mol={molEff} atomes={atomes} analyse={analyse} onAtome={cliquerAtome} onDeplacer={deplacer} titre={`Schéma de ${moleculeDe(molEff.id).formule}`}/>
+      <Planche rendu={rendu} mol={molEff} atomes={atomes} analyse={analyse} onAtome={cliquerAtome} onDeplacer={deplacer} titre={`Schéma de ${moleculeDe(molEff.id).formule}`}/>
+      {rendu === 'electrons' && <div style={{ marginTop: 4, fontSize: 12.5, color: KIT.txt2 }}>● Chaque point est un électron de valence. Dans un ovale, deux électrons sont <strong>appariés</strong> en doublet. Dans une liaison, l’électron <span style={{ color: COR_A, fontWeight: 700 }}>orange</span> vient d’un atome et l’électron <span style={{ color: COR_B, fontWeight: 700 }}>bleu</span> de l’autre.</div>}
       <div style={{ marginTop: 6, fontSize: 14, lineHeight: 1.5 }}>{verdictMol}{dernierMsg && !analyse.ok && <div style={{ color: KIT.txt, marginTop: 2 }}>💬 {dernierMsg}</div>}</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8, alignItems: 'center' }}>
         <button onClick={() => changerLP(1)} disabled={mol.sel === null} style={{ ...stylePetitBouton(false, '#334155'), opacity: mol.sel === null ? 0.5 : 1 }}>＋ doublet non liant</button>
         <button onClick={() => changerLP(-1)} disabled={mol.sel === null} style={{ ...stylePetitBouton(false, '#334155'), opacity: mol.sel === null ? 0.5 : 1 }}>− doublet non liant</button>
         <button onClick={effacer} style={stylePetitBouton(false, '#334155')}>🧹 Tout effacer</button>
+        <button onClick={() => setRendu(r => (r === 'electrons' ? 'tirets' : 'electrons'))} style={stylePetitBouton(false, '#475569')} aria-label="Changer de représentation">{rendu === 'electrons' ? '● Électrons → voir les tirets' : '— Tirets → voir les électrons'}</button>
         {enExplore && <button onClick={autoDoublets} style={stylePetitBouton(false, '#4338ca')}>✨ Placer les doublets non liants pour moi</button>}
         <span style={{ fontSize: 13, color: KIT.txt2 }}>{selA ? `Atome sélectionné : ${selA.sym}` : 'Cliquez sur un atome pour le sélectionner (glissez-le pour le déplacer).'}</span>
       </div>
@@ -428,6 +465,7 @@ export function SimulationAtomesMolecules() {
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
       <li><strong>Éléments de Z = 1 à 20</strong> (jusqu’au calcium). Ordre de remplissage des sous-couches : 1s, 2s, 2p, 3s, 3p, 4s. C’est vrai pour ces éléments ; pour les suivants, il y a des exceptions.</li>
+      <li><strong>Duet</strong> : il ne concerne que les atomes (ou ions) dont la seule couche est n = 1 : H, He, Li⁺, Be²⁺. Tous les autres visent l’octet (couche n = 2 ou n = 3 pleine).</li>
       <li><strong>Couche de valence</strong> : la dernière couche occupée (n le plus grand). <strong>Stable</strong> : même nombre d’électrons qu’un gaz noble (2, 10 ou 18). C’est un <em>modèle</em> : il explique bien les ions courants et les petites molécules, pas tous les composés.</li>
       <li><strong>Ion « le plus simple »</strong> : celui qui demande de gagner ou perdre le moins d’électrons. Le carbone et le silicium (4 électrons de valence) ne forment pas d’ions simples : ils forment des liaisons. L’ion H⁺ (plus aucun électron) est un cas à part.</li>
       <li><strong>Liaison covalente</strong> : un doublet d’électrons partagé entre deux atomes. Liaisons simples, doubles ou triples ; <strong>pas de charge formelle</strong> ni d’octet étendu (hors programme de seconde).</li>
@@ -448,7 +486,7 @@ export function SimulationAtomesMolecules() {
       </ul>
     </div>);
   const retenir = <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
-    <li>stable = configuration d’un gaz noble (octet, ou duet pour H)</li>
+    <li>stable = configuration d’un gaz noble : octet (8) ; duet (2) seulement pour H, He (couche n = 1)</li>
     <li>cation : + (perte d’électrons) · anion : − (gain)</li>
     <li>liaisons + doublets non liants = 4 (H : 1 liaison)</li></ul></ARetenir>;
 
