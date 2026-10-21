@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { HansenExploration } from "./HansenExploration";
 import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE } from "../commun";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 4;
 declarerDefis(SIM_ID, [['principal', 'Formuler le mélange de solvants du vernis']]);
@@ -355,9 +356,9 @@ export function Simulation4({ plotlyReady }) {
         <SuiviDefiDirect cle={`${SIM_ID}:defi.principal`} reussi={C.every(c => c.ok)} />
         {C.map((c, k) => <div key={k} style={{ fontSize: 14, color: KIT.txt }}>{c.ok ? '✅' : '❌'} {c.t}</div>)}
         {C.every(c => c.ok) && <div style={{ fontSize: 14, fontWeight: 700, color: '#15803d' }}>Bravo ! Il resterait à vérifier au laboratoire la dissolution, le temps de séchage et l'aspect du film.</div>}
-        {tot > 0 && vol.ipa / tot > 0.5 && <div style={{ fontSize: 13.5, color: '#b45309', lineHeight: 1.5 }}>⚠️ Le modèle accepte ce mélange parce qu'il place l'isopropanol juste dans la sphère (RED = 0,88).
+        {tot > 0 && vol.ipa / tot > 0.5 && <div style={{ fontSize: 13.5, color: '#b45309', lineHeight: 1.5 }}><Pic n="warn"/>Le modèle accepte ce mélange parce qu'il place l'isopropanol juste dans la sphère (RED = 0,88).
           En pratique, l'isopropanol ne dissout pas seul la plupart des nitrocelluloses : un mélange aussi riche en isopropanol est à vérifier au laboratoire avant d'y croire.</div>}
-        <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 D'autres critères</button>
+        <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>D'autres critères</button>
       </div>
     );
   })();
@@ -366,8 +367,8 @@ export function Simulation4({ plotlyReady }) {
   function changerMode(m) { setMode(m); if (m === 'defi') nouveauDefi(); }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );
   return (
@@ -380,9 +381,9 @@ export function Simulation4({ plotlyReady }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt }}>Paramètres de solubilité de Hansen{mode !== 'explore' ? <span style={{ fontWeight: 400, color: KIT.txt2 }}> — exemple : la nitrocellulose d'un vernis à ongle</span> : null}</h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
-          <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
-          <button onClick={() => changerMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
+          <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>
+          <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}><Pic n="search"/>Exploration libre</button>
+          <button onClick={() => changerMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}><Pic n="target"/>Défi</button>
         </div>
       </div>
       {mode === 'explore' ? <HansenExploration plotlyReady={plotlyReady}/> : <>

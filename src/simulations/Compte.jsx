@@ -6,6 +6,7 @@ import { estSimulation, estDefi, tempsParSimulation, MODES, etiquettesDefis } fr
 import { EspaceEleve } from "./EspaceEleve";
 import { BoutonMail } from "../contact";
 import { ACCENT, TEXTE, TEXTE2, LAME } from "../theme";
+import { Pic, Emo } from "../Pictos";
 
 const ROSE = '#e11d48';
 
@@ -37,11 +38,11 @@ const champ = { padding: '8px 10px', fontSize: 15, borderRadius: 8, border: `1px
 function ContactEnseignant() {
   return (
     <section style={LAME} aria-labelledby="titre-prof">
-      <h2 id="titre-prof" style={{ margin: '0 0 6px', fontSize: 19, fontWeight: 800, color: TEXTE, fontFamily: "'Outfit', sans-serif" }}>👩‍🏫 Vous êtes enseignant·e ?</h2>
+      <h2 id="titre-prof" style={{ margin: '0 0 6px', fontSize: 19, fontWeight: 800, color: TEXTE, fontFamily: "'Outfit', sans-serif" }}><Pic n="board"/>Vous êtes enseignant·e ?</h2>
       <p style={{ margin: '0 0 12px', fontSize: 14.5, color: TEXTE2, lineHeight: 1.6 }}>
         Pour les profs : classes, devoirs et suivi de la progression. Demandez un compte enseignant, je vous répondrai rapidement.
       </p>
-      <BoutonMail libelle="✉️ Demander un compte enseignant" sujet="Demande de compte enseignant — Paillasse virtuelle" couleur={ACCENT} plein
+      <BoutonMail libelle={<><Pic n="mail"/>Demander un compte enseignant</>} sujet="Demande de compte enseignant — Paillasse virtuelle" couleur={ACCENT} plein
         corps={'Bonjour,\n\nJe suis enseignant·e (établissement : …, discipline : …) et je souhaite un compte pour moi et mes classes.\n\nMerci !'} />
     </section>
   );
@@ -74,7 +75,7 @@ function Connexion() {
               <input type="checkbox" checked={garder} onChange={e => setGarder(e.target.checked)} style={{ marginTop: 3, accentColor: ACCENT }} />
               <span>Rester connecté sur cet appareil <b>(appareil personnel uniquement, jamais sur un ordinateur partagé du lycée)</b></span>
             </label>
-            {msg && <div role="alert" style={{ color: '#b91c1c', fontSize: 14, fontWeight: 600 }}>❌ {msg}</div>}
+            {msg && <div role="alert" style={{ color: '#b91c1c', fontSize: 14, fontWeight: 600 }}><Pic n="ko"/>{msg}</div>}
             <div style={{ fontSize: 13, color: TEXTE2 }}>Mot de passe oublié ? Demande à ton professeur : il peut t’en donner un nouveau en quelques secondes.</div>
             <button type="submit" disabled={inactif} style={{ padding: '11px 22px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 15.5, fontFamily: 'inherit', color: 'white',
               background: ACCENT, cursor: inactif ? 'default' : 'pointer', opacity: inactif ? 0.55 : 1 }}>{attente ? 'Connexion…' : 'Me connecter'}</button>
@@ -88,9 +89,9 @@ function Connexion() {
             sans compte, elle reste seulement sur l’appareil que tu utilises.
           </p>
           <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6, fontSize: 14.5, color: TEXTE }}>
-            <li><span aria-hidden="true">★</span> <b>Des étoiles à gagner</b> : jusqu’à 3 par exercice</li>
-            <li><span aria-hidden="true">🌳</span> <b>Des paliers par compétence</b> : de Découverte à Expert·e</li>
-            <li><span aria-hidden="true">🏅</span> <b>Des niveaux et des badges</b> : de Novice à Légende de la paillasse</li>
+            <li><span aria-hidden="true"><Pic n="star"/></span> <b>Des étoiles à gagner</b> : jusqu’à 3 par exercice</li>
+            <li><span aria-hidden="true"><Pic n="tree"/></span> <b>Des paliers par compétence</b> : de Découverte à Expert·e</li>
+            <li><span aria-hidden="true"><Pic n="medal"/></span> <b>Des niveaux et des badges</b> : de Novice à Légende de la paillasse</li>
           </ul>
         </section>
       </div>
@@ -115,7 +116,7 @@ export function MotDePasse() {
     if (a !== b) return setMsg({ ok: false, t: 'Les deux saisies sont différentes.' });
     try { await changerMotDePasse(a); setMsg({ ok: true, t: 'Mot de passe modifié.' }); setA(''); setB(''); } catch (err) { setMsg({ ok: false, t: err.message }); }
   };
-  if (!ouvert) return <button onClick={() => setOuvert(true)} style={{ ...styleBouton(false, '#475569'), fontSize: 13 }}>🔑 Changer mon mot de passe</button>;
+  if (!ouvert) return <button onClick={() => setOuvert(true)} style={{ ...styleBouton(false, '#475569'), fontSize: 13 }}><Pic n="key"/>Changer mon mot de passe</button>;
   return (
     <form onSubmit={envoyer} style={{ ...styleBoite, maxWidth: 380, display: 'flex', flexDirection: 'column', gap: 8 }}>
       <input type="password" value={a} onChange={e => setA(e.target.value)} placeholder="Nouveau mot de passe (8 caractères minimum)" autoComplete="new-password" style={champ} aria-label="Nouveau mot de passe" />
@@ -131,7 +132,7 @@ function MesResultats({ naviguer }) {
   useEffect(() => {
     toutLire('activites?select=cle,reussi,essais,corrections_vues,duree_s,debut,maj&order=debut.desc').then(setLignes).catch(e => setErreur(e.message));
   }, []);
-  if (erreur) return <div style={{ color: '#b91c1c' }}>❌ {erreur}</div>;
+  if (erreur) return <div style={{ color: '#b91c1c' }}><Pic n="ko"/>{erreur}</div>;
   if (!lignes) return <div style={{ color: KIT.txt2 }}>Chargement…</div>;
   const ag = [...agreger(lignes.filter(l => !estSimulation(l.cle))).values()], etq = etiquettes();
   const nbOk = ag.filter(a => a.reussi && !estDefi(a.cle)).length, nbEx = ag.filter(a => !estDefi(a.cle)).length;
@@ -140,7 +141,7 @@ function MesResultats({ naviguer }) {
     <div>
       <EspaceEleve lignes={lignes} naviguer={naviguer} pied={etape => etape >= 2 && (
       <details style={{ marginTop: 22 }}>
-      <summary style={{ cursor: 'pointer', fontSize: 16, fontWeight: 800, color: KIT.txt, padding: '6px 0' }}>📋 Le détail de mes résultats</summary>
+      <summary style={{ cursor: 'pointer', fontSize: 16, fontWeight: 800, color: KIT.txt, padding: '6px 0' }}><Pic n="clipboard"/>Le détail de mes résultats</summary>
       <h3 style={{ margin: '14px 0 6px' }}>Mes résultats</h3>
       <div style={{ fontSize: 14, color: KIT.txt2, marginBottom: 8 }}>
         {nbOk} exercice{nbOk > 1 ? 's' : ''} réussi{nbOk > 1 ? 's' : ''} · {nbEx} travaillé{nbEx > 1 ? 's' : ''} · {nbDefis} défi{nbDefis > 1 ? 's' : ''} de simulation réussi{nbDefis > 1 ? 's' : ''} · {formatDuree(total)} au total
@@ -202,7 +203,7 @@ export function SimulationCompte({ naviguer }) {
         <>
           <p style={{ fontSize: 15, color: KIT.txt }}>Connecté : <b>{sess.profil.nom}</b> (professeur)</p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button onClick={() => naviguer(40)} style={styleBouton(true, ROSE)}>📊 Suivi professeur</button>
+            <button onClick={() => naviguer(40)} style={styleBouton(true, ROSE)}><Pic n="bars"/>Suivi professeur</button>
             <button onClick={deconnexion} style={styleBouton(false, '#475569')}>Se déconnecter</button>
           </div>
           <div style={{ marginTop: 10 }}><MotDePasse /></div>

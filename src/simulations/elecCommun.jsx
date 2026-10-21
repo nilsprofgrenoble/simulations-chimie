@@ -2,6 +2,7 @@ import { useId } from "react";
 import { pointsSurFil, VERMILLON, BLEU, GRIS, VERT } from "./elecOutils";
 import { useSuivi } from "../suivi";
 import { KIT, styleBouton, stylePetitBouton, lireProgression, avecIndices } from "../commun";
+import { Pic } from "../Pictos";
 
 // Éléments communs aux simulations d'électricité (68 à 72) : volet de défis générique, curseur, graphe, dessin de circuit.
 
@@ -27,12 +28,12 @@ export function VoletDefiGen({ SIM, titres, defi, setDefi, changerType, evaluer,
       <div style={{ fontSize: 14.5, color: KIT.txt, marginBottom: 8, lineHeight: 1.55 }}>{enonce(defi, { champ, choix })}</div>
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}>🔄 Nouveau tirage</button>
+        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
         {!reussi && !defi.solution && <button onClick={() => { suivi.vue(); setDefi(d => ({ ...d, solution: true })); }} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>
       {res && <div style={{ marginTop: 8, fontSize: 14 }}>
         {res.lignes.map(([ok, t], k) => <div key={k} style={{ color: ok ? VERT : '#b91c1c', fontWeight: 600 }}>{ok ? '✅' : '❌'} {avecIndices(t)}</div>)}
-        {res.ok && <div style={{ color: VERT, fontWeight: 700, marginTop: 4 }}>🎉 Défi réussi !</div>}</div>}
+        {res.ok && <div style={{ color: VERT, fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: 'rgb(240,249,255)', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>{solution(defi)}</div>}
     </div>);
 }

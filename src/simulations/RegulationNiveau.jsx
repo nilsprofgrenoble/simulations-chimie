@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton,
   styleBoite, Section, LigneMesure, Curseur, BoutonsModes, lireNombre, proche, sci, avecIndices } from "../commun";
 import { SchemaChateau, COUL, H_FOND, H_TROP, ecrireTransfert, lireTransfert, effacerTransfert } from "./chateauEau";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 5;
 declarerDefis(SIM_ID, [['principal', 'Régler la régulation du château d’eau']]);
@@ -397,7 +398,7 @@ export function Simulation5({ naviguer }) {
         <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
           Pourquoi le niveau ne rejoint-il pas la consigne ? Le <strong>point de fonctionnement</strong> l'explique à partir de ces mêmes réglages.
           <div style={{ marginTop: 4 }}>
-            <button onClick={() => { ecrireTransfert({ consigne, Kp, Qmax, Qp }); naviguer(6); }} style={stylePetitBouton(true, '#e76f51')}>🎯 Voir le point de fonctionnement</button>
+            <button onClick={() => { ecrireTransfert({ consigne, Kp, Qmax, Qp }); naviguer(6); }} style={stylePetitBouton(true, '#e76f51')}><Pic n="target"/>Voir le point de fonctionnement</button>
           </div>
         </div>
       )}
@@ -487,8 +488,8 @@ export function Simulation5({ naviguer }) {
   }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );
   return (

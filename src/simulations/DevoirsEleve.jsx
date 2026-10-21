@@ -5,6 +5,7 @@ import { catalogueDevoirs } from "./catalogue";
 import { trierPourEleve, infoEcheance, finEcheance, estCleSim, detailSim, SEUIL_GUIDE_S } from "../devoirs";
 import { etapesDevoir, fenetreEtapes } from "../profil";
 import { ACCENT } from "../theme";
+import { Pic } from "../Pictos";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  « À FAIRE POUR LA CLASSE » (tout en haut de l'espace élève) : les devoirs assignés par le professeur.
@@ -88,7 +89,7 @@ function CarteDevoirPasAPas({ d, a, par, naviguer, maintenant, lignes }) {
             <span style={{ flex: 1, color: '#1e293b' }}>{libelle(e)}</span>
             <button className="dv-btn" onClick={() => aller(e)}>{e.type === 'guide' ? (e.guideS > 0 ? 'Continuer ▶' : 'Commencer ▶') : 'Y aller ▶'}</button>
           </div>))}
-        {verrouillees > 0 && <div data-etapes-verrouillees style={{ fontSize: 13.5, color: '#64748b', padding: '2px 4px' }}>🔒 {verrouillees} étape{verrouillees > 1 ? 's' : ''} à débloquer, une fois celle-ci faite.</div>}
+        {verrouillees > 0 && <div data-etapes-verrouillees style={{ fontSize: 13.5, color: '#64748b', padding: '2px 4px' }}><Pic n="lock"/>{verrouillees} étape{verrouillees > 1 ? 's' : ''} à débloquer, une fois celle-ci faite.</div>}
       </div>
     </div>);
 }
@@ -131,7 +132,7 @@ export function DevoirsEleve({ lignes, naviguer, devoirsApercu, devoirsListe, pa
         .dv-btn { cursor: pointer; font: inherit; font-size: 13px; font-weight: 800; color: #fff; border: none; border-radius: 10px; padding: 6px 12px; background: ${ACCENT}; }
         @media (prefers-reduced-motion: reduce) { .dv *, .dv *::before, .dv *::after { transition: none !important; } }
       `}</style>
-      {ouverts.length > 0 && <h3>📌 {pasAPas ? 'Ma classe : à faire' : 'À faire pour la classe'} <small>{ouverts.length} devoir{ouverts.length > 1 ? 's' : ''} de ton professeur</small></h3>}
+      {ouverts.length > 0 && <h3><Pic n="pin"/>{pasAPas ? 'Ma classe : à faire' : 'À faire pour la classe'} <small>{ouverts.length} devoir{ouverts.length > 1 ? 's' : ''} de ton professeur</small></h3>}
       {ouverts.slice(0, max).map(({ d, a }) => <Carte key={d.id} d={d} a={a} par={par} naviguer={naviguer} maintenant={maintenant} lignes={lignes} />)}
       {ouverts.length > max && (
         <details data-autres-devoirs style={{ marginBottom: 8 }}>
@@ -140,7 +141,7 @@ export function DevoirsEleve({ lignes, naviguer, devoirsApercu, devoirsListe, pa
         </details>)}
       {finis.length > 0 && (
         <details style={{ marginBottom: 6 }} open={ouverts.length === 0}>
-          <summary style={{ cursor: 'pointer', fontWeight: 700, color: '#166534', fontSize: 14.5 }}>✅ Devoirs terminés ({finis.length})</summary>
+          <summary style={{ cursor: 'pointer', fontWeight: 700, color: '#166534', fontSize: 14.5 }}><Pic n="ok"/>Devoirs terminés ({finis.length})</summary>
           <div style={{ marginTop: 8 }}>{finis.map(({ d, a }) => <Carte key={d.id} d={d} a={a} par={par} naviguer={naviguer} maintenant={maintenant} lignes={lignes} />)}</div>
         </details>)}
     </section>);

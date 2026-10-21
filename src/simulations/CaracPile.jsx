@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { fr, lampeI, regression } from "./elecModele";
 import { BLEU, VERMILLON, VIOLET, alea, usePhase } from "./elecOutils";
 import { Curseur, VoletDefiGen, Graphe, Fil, Mesure } from "./elecCommun";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 72 — CARACTÉRISTIQUE D'UNE PILE : SOURCE RÉELLE DE TENSION (1G spé PC, « Aspects énergétiques des phénomènes électriques »)
@@ -68,10 +69,10 @@ function evaluer(d) {
   const ok = isFinite(x) && proche(x, d.Q, 0.02); return { ok, lignes: [[ok, ok ? 'Transfert thermique correct.' : 'Revois : Q = r × I² × Δt, avec I en ampères (I est au carré), Δt en secondes.']] };
 }
 const enonce = (d, { champ }) => {
-  if (d.type === 'u0r') return <>🎯 Une pile délivre à vide <strong>U₀ = {fr(d.U0, 1)} V</strong>. Lorsqu’elle débite <strong>I = {d.I2} mA</strong>, un voltmètre indique <strong>U = {fr(d.U2, 3)} V</strong> à ses bornes. Quelle est sa résistance interne r ?<div style={{ marginTop: 6 }}>{champ('v', 'Ω')}</div></>;
-  if (d.type === 'tension') return <>🎯 Une pile de tension à vide <strong>U₀ = {fr(d.U0, 1)} V</strong> et de résistance interne <strong>r = {d.r} Ω</strong> débite un courant <strong>I = {d.I} mA</strong>. Quelle est la tension U entre ses bornes ?<div style={{ marginTop: 6 }}>{champ('v', 'V')}</div></>;
-  if (d.type === 'courant') return <>🎯 Une pile de tension à vide <strong>U₀ = {fr(d.U0, 1)} V</strong> et de résistance interne <strong>r = {d.r} Ω</strong> alimente un conducteur ohmique de résistance <strong>R = {d.R} Ω</strong>. Quelle intensité I débite-t-elle ?<div style={{ marginTop: 6 }}>{champ('v', 'mA')}</div></>;
-  return <>🎯 Une pile de résistance interne <strong>r = {d.r} Ω</strong> débite <strong>I = {d.I} mA</strong> pendant <strong>Δt = {d.dt} s</strong>. Quel transfert thermique Q est produit par effet Joule <strong>dans la pile</strong> ?<div style={{ marginTop: 6 }}>{champ('v', 'J')}</div></>;
+  if (d.type === 'u0r') return <><Pic n="target"/>Une pile délivre à vide <strong>U₀ = {fr(d.U0, 1)} V</strong>. Lorsqu’elle débite <strong>I = {d.I2} mA</strong>, un voltmètre indique <strong>U = {fr(d.U2, 3)} V</strong> à ses bornes. Quelle est sa résistance interne r ?<div style={{ marginTop: 6 }}>{champ('v', 'Ω')}</div></>;
+  if (d.type === 'tension') return <><Pic n="target"/>Une pile de tension à vide <strong>U₀ = {fr(d.U0, 1)} V</strong> et de résistance interne <strong>r = {d.r} Ω</strong> débite un courant <strong>I = {d.I} mA</strong>. Quelle est la tension U entre ses bornes ?<div style={{ marginTop: 6 }}>{champ('v', 'V')}</div></>;
+  if (d.type === 'courant') return <><Pic n="target"/>Une pile de tension à vide <strong>U₀ = {fr(d.U0, 1)} V</strong> et de résistance interne <strong>r = {d.r} Ω</strong> alimente un conducteur ohmique de résistance <strong>R = {d.R} Ω</strong>. Quelle intensité I débite-t-elle ?<div style={{ marginTop: 6 }}>{champ('v', 'mA')}</div></>;
+  return <><Pic n="target"/>Une pile de résistance interne <strong>r = {d.r} Ω</strong> débite <strong>I = {d.I} mA</strong> pendant <strong>Δt = {d.dt} s</strong>. Quel transfert thermique Q est produit par effet Joule <strong>dans la pile</strong> ?<div style={{ marginTop: 6 }}>{champ('v', 'J')}</div></>;
 };
 const solution = d => d.type === 'u0r' ? <>U = U₀ − r × I donc r = (U₀ − U) / I = ({fr(d.U0, 1)} − {fr(d.U2, 3)}) / {fr(d.I2 / 1000, 3)} = <strong>{fr(d.r, 1)} Ω</strong>.</>
   : d.type === 'tension' ? <>U = U₀ − r × I = {fr(d.U0, 1)} − {d.r} × {fr(d.I / 1000, 3)} = <strong>{fr(d.U, 2)} V</strong>.</>
@@ -170,9 +171,9 @@ export function SimulationCaracPile() {
         <label style={{ fontSize: 13.5, fontWeight: 600 }}>Boîte à décades R : <strong>{Rd} Ω</strong>
           <input type="range" min={0} max={DECADES.length - 1} step={1} value={K.d} aria-label="Résistance R de la boîte à décades" onChange={e => setK(k => ({ ...k, d: +e.target.value }))} style={{ width: 200, verticalAlign: 'middle', marginLeft: 6 }}/></label></div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}>
-        <button onClick={noter} style={styleBouton(true, '#16a34a')}>➕ Noter cette mesure</button>
+        <button onClick={noter} style={styleBouton(true, '#16a34a')}><Pic n="plus"/>Noter cette mesure</button>
         <button onClick={() => { setPile('plate'); setPts(TP.map(p => [p[0], p[1]])); }} style={styleBouton(false)}>📂 Charger les mesures du TP (pile plate)</button>
-        <button onClick={() => setPts([])} style={styleBouton(false)}>🗑 Effacer</button></div>
+        <button onClick={() => setPts([])} style={styleBouton(false)}><Pic n="trash"/>Effacer</button></div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, marginTop: 8, alignItems: 'start' }}>
         <div style={{ overflowX: 'auto' }}><table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 13 }}>
           <thead><tr>{['I (mA)', 'U (V)'].map(h => <th key={h} style={{ padding: '3px 5px', color: KIT.txt2, textAlign: 'right', borderBottom: `1px solid ${KIT.bord}` }}>{h}</th>)}</tr></thead>
@@ -200,7 +201,7 @@ export function SimulationCaracPile() {
           <div>Puissance fournie par la source idéale : U₀ × I = <strong>{fr(M.U0 * Im, 3)} W</strong></div>
           <div>dont perdue par effet Joule dans la pile : r × I² = <strong>{fr(M.r * Im * Im, 3)} W</strong></div>
           <div>et utile pour le circuit : U × I = <strong>{fr(Um * Im, 3)} W</strong> (rendement U / U₀ = {fr(Um / M.U0 * 100, 0)} %)</div>
-          {M.R <= 2 && M.r > 0 && <div style={{ color: VERMILLON, fontWeight: 700 }}>⚠ Court-circuit : courant énorme, la pile chauffe beaucoup.</div>}</>)}
+          {M.R <= 2 && M.r > 0 && <div style={{ color: VERMILLON, fontWeight: 700 }}><Pic n="warn"/>Court-circuit : courant énorme, la pile chauffe beaucoup.</div>}</>)}
         <div><Graphe pts={[[Im * 1000, Um]]} courbe={[[0, M.U0], [xmaxM, M.U0 - M.r * xmaxM / 1000]]} series={[]} droite={{ a: M.R / 1000, b: 0 }} xmax={xmaxM} ymax={ymaxM} xlab="I (mA)" ylab="U (V)" couleur="#0f172a" w={400} h={280} rayon={6}/>
           <div style={{ fontSize: 12.5, color: KIT.txt2 }}><span style={{ fontWeight: 700 }}>trait gris</span> : caractéristique de la pile · <span style={{ color: VERMILLON, fontWeight: 700 }}>pointillés orange</span> : résistor R · ● point de fonctionnement</div></div></div>
     </div>);
@@ -238,8 +239,8 @@ export function SimulationCaracPile() {
     <li>U = U₀ − r·I ; r = −(coefficient directeur)</li><li>Source idéale : r = 0, U = U₀</li><li>Pile = source idéale + r en série ; perte P = r·I²</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (

@@ -58,6 +58,7 @@ import { SimulationDebitCharges } from "./simulations/DebitCharges";
 import { SimulationDiffractionRX } from "./simulations/DiffractionRX";
 import { SimulationMailles } from "./simulations/MaillesCristallines";
 import { SimulationRMN } from "./simulations/RMNProton";
+import { Pic, Emo, PictosSprite } from "./Pictos";
 import { SimulationRMNC2D } from "./simulations/RMNCarbone2D";
 import { SimulationPuissanceJoule } from "./simulations/PuissanceJoule";
 import { SimulationCaracPile } from "./simulations/CaracPile";
@@ -315,6 +316,7 @@ export default function App() {
 
   return (
     <div style={{ ...styles.root, '--entete-h': '60px' }}>
+      <PictosSprite/>
       <div style={styles.bgBlob1} />
       <div style={styles.bgBlob2} />
 
@@ -330,7 +332,7 @@ export default function App() {
             background: `linear-gradient(135deg, ${active.color}22, ${active.color}08)`,
             borderBottom: `3px solid ${active.color}`,
           }}>
-            <span style={{ fontSize: "2rem" }}>{active.icon}</span>
+            <span style={{ fontSize: "2rem" }}><Emo e={active.icon} t={34}/></span>
             <h1 style={{ ...styles.pageTitle, color: active.color, flex: 1 }}>
               <span style={{ fontFamily:"'Outfit', sans-serif", fontWeight:800, letterSpacing:"-0.5px" }}>
                 {idAffiche === 39 ? (estEleve(sessionSb) ? 'Mon profil' : sessionSb?.profil ? 'Mon compte' : 'Se connecter') : active.label}
@@ -341,7 +343,7 @@ export default function App() {
                 try { window.sessionStorage.setItem('devoir-preset', JSON.stringify({ titre: active.label, cles: [`sim:${activeId}`], eleves: [] })); } catch { /* sans mémorisation, le formulaire s'ouvre vide */ }
                 naviguer(40);
               }} style={{ padding:"6px 14px", borderRadius:8, border:"none", background:"#25628f", color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"'Nunito', sans-serif", whiteSpace:"nowrap" }}>
-                📌 Donner en devoir
+                <Pic n="pin"/>Donner en devoir
               </button>)}
             <button onClick={partager} style={{
               display:"flex", alignItems:"center", gap:6,
@@ -352,7 +354,7 @@ export default function App() {
               transition:"all 0.2s", fontFamily:"'Nunito', sans-serif",
               whiteSpace:"nowrap",
             }}>
-              {copyMsg ? '✓ ' + copyMsg : '🔗 Partager'}
+              {copyMsg ? '✓ ' + copyMsg : <><Pic n="link"/>Partager</>}
             </button>
           </div>
         )}

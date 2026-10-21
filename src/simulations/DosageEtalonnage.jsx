@@ -4,6 +4,7 @@ import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, K
   stylePetitBouton, styleBoite, Section, LigneMesure, ORANGE_GUIDE } from "../commun";
 import { regression, rng, gauss, RISQUE_FISHER } from "./etalonnageModele";
 import { exporterRapportPDF } from "./etalonnagePDF";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 11;
 declarerDefis(SIM_ID, [['principal', 'Doser la caféine d’une crème inconnue']]);
@@ -380,7 +381,7 @@ export function SimulationDosageEtalonnage() {
           {verif.L.map((l, k) => <div key={k} style={{ fontSize: 13.5, color: KIT.txt, marginBottom: 3 }}>{l.ok === true ? '✅' : l.ok === false ? '❌' : 'ℹ️'} {!passe('cInj') && l.t.startsWith("L'échantillon attendu") ? l.t.replace(/\([^)]*mg\/L\)/, '(? mg/L)') : l.t}</div>)}
         </div>
         {vu('mesurer') && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
-          <button onClick={() => mesurer('injection')} disabled={!verif.valide} style={{ ...styleBouton(verif.valide, '#2563eb'), opacity: verif.valide ? 1 : 0.5 }}>🧪 Préparer et mesurer (même fiole mesurée deux fois)</button>
+          <button onClick={() => mesurer('injection')} disabled={!verif.valide} style={{ ...styleBouton(verif.valide, '#2563eb'), opacity: verif.valide ? 1 : 0.5 }}><Pic n="testtube"/>Préparer et mesurer (même fiole mesurée deux fois)</button>
           {vu('fisher') && <button onClick={() => mesurer('fioles')} disabled={!verif.valide} style={{ ...styleBouton(verif.valide, '#7c3aed'), opacity: verif.valide ? 1 : 0.5 }}>🧪🧪 Préparer et mesurer (deux fioles indépendantes)</button>}
         </div>}
         {!verif.valide && vu('mesurer') && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Corrigez la gamme pour pouvoir la préparer.</div>}
@@ -408,8 +409,8 @@ export function SimulationDosageEtalonnage() {
           <LigneMesure nom="Écart-type des résidus s(y/x)" valeur={fmt(E.reg.syx, E.T.dec + 1)}/>
           {E.reg.fisher ? <LigneMesure nom={`Test de Fisher, risque ${RISQUE_FISHER * 100} % (${E.reg.fisher.d1} ; ${E.reg.fisher.d2} ddl)`} valeur={`F = ${fmt(E.reg.fisher.F, 2)} ; F_crit = ${fmt(E.reg.fisher.Fc, 2)} → ${E.reg.fisher.F > E.reg.fisher.Fc ? 'linéarité rejetée' : 'linéarité acceptée'}`}
             couleur={E.reg.fisher.F > E.reg.fisher.Fc ? '#b91c1c' : '#15803d'}/> : <LigneMesure nom="Test de Fisher" valeur="impossible : il faut au moins 3 niveaux, avec des répétitions"/>}
-          {E.reg.fisher && E.mode === 'injection' && <div style={{ fontSize: 12.5, color: '#b45309', margin: '4px 0' }}>⚠️ Répétitions = deux mesures de la même fiole : l'hypothèse de répétitions indépendantes n'est pas vérifiée, le test n'est pas fiable.</div>}
-          {E.reg.fisher && ext && E.reg.fisher.F > E.reg.fisher.Fc && nUtil > 3 && <div style={{ fontSize: 12.5, color: '#b45309', margin: '4px 0' }}>💡 Regardez les résidus : s'ils dessinent une courbe, réduisez le domaine avec « Niveaux inclus ».</div>}
+          {E.reg.fisher && E.mode === 'injection' && <div style={{ fontSize: 12.5, color: '#b45309', margin: '4px 0' }}><Pic n="warn"/>Répétitions = deux mesures de la même fiole : l'hypothèse de répétitions indépendantes n'est pas vérifiée, le test n'est pas fiable.</div>}
+          {E.reg.fisher && ext && E.reg.fisher.F > E.reg.fisher.Fc && nUtil > 3 && <div style={{ fontSize: 12.5, color: '#b45309', margin: '4px 0' }}><Pic n="bulb"/>Regardez les résidus : s'ils dessinent une courbe, réduisez le domaine avec « Niveaux inclus ».</div>}
           <LigneMesure nom="LD = 3 s(b) / a ; LQ = 10 s(b) / a" valeur={passe('ld') ? `${fmt(E.LD, 3)} ; ${fmt(E.LQ, 3)} ${E.T.uC}` : '? ; ?'}/>
           {ext && <label style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', fontSize: 14, fontWeight: 600, color: KIT.txt, margin: '8px 0 4px' }}>
             Signal de l'échantillon :
@@ -475,7 +476,7 @@ export function SimulationDosageEtalonnage() {
         <label key={k} style={{ display: 'flex', gap: 6, fontSize: 13.5, color: KIT.txt, marginBottom: 4 }}>
           <input type="radio" name="dilution" checked={dilution === k} onChange={() => setDilution(k)}/> <strong>{k}</strong> : {d.nom}</label>
       ))}
-      {vu('echantillon') && <button onClick={mesurerEch} disabled={!reg} style={{ ...styleBouton(!!reg, '#dc2626'), opacity: reg ? 1 : 0.5, marginTop: 6 }}>💉 Préparer et injecter l'échantillon</button>}
+      {vu('echantillon') && <button onClick={mesurerEch} disabled={!reg} style={{ ...styleBouton(!!reg, '#dc2626'), opacity: reg ? 1 : 0.5, marginTop: 6 }}><Pic n="syringe"/>Préparer et injecter l'échantillon</button>}
       {mes.ech && <div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 6 }}>Aires mesurées : {mes.ech.map(v => fmt(v, T.dec)).join(' ; ')} (dilution {mes.dilution}).</div>}
     </div>
   );
@@ -519,7 +520,7 @@ export function SimulationDosageEtalonnage() {
           {mes.actif === 'fioles' ? '✅ Répétitions indépendantes : le test de Fisher est interprétable.' : '⚠️ Répétitions sur la même fiole : le test de Fisher n’est pas fiable.'}
         </div>;
       })()}
-      <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Une autre crème</button>
+      <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Une autre crème</button>
     </div>
   );
 
@@ -527,8 +528,8 @@ export function SimulationDosageEtalonnage() {
   function changerMode(m) { setMode(m); if (m === 'defi') nouveauDefi(); }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );
   return (
@@ -541,9 +542,9 @@ export function SimulationDosageEtalonnage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt }}>Dosage par étalonnage externe</h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
-          <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
-          <button onClick={() => changerMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
+          <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>
+          <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}><Pic n="search"/>Exploration libre</button>
+          <button onClick={() => changerMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}><Pic n="target"/>Défi</button>
         </div>
       </div>
       {mode === 'explore' && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>

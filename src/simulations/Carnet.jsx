@@ -5,6 +5,7 @@ import { tousLesExercices } from "./Entrainement";
 import { etiquettesDefis } from "../suivi";
 import { Etoiles } from "../commun";
 import { ACCENT } from "../theme";
+import { Pic } from "../Pictos";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  « MON CARNET » : l'espace élève (étoiles, niveau, compétences, badges, prochains objectifs).
@@ -89,16 +90,16 @@ export function Carnet({ lignes, naviguer, parties }) {
         <div className="cn-corps">
           <div style={{ fontSize: 13, letterSpacing: 2, textTransform: 'uppercase', color: '#3a746e', fontWeight: 700 }}>Mon carnet</div>
           <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1.15, margin: '2px 0 4px' }}>{niveau.titre}</div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#a16207' }}>★ {A.total} étoile{A.total > 1 ? 's' : ''}</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: '#a16207' }}><Pic n="star"/>{A.total} étoile{A.total > 1 ? 's' : ''}</div>
           <div className="cn-barre" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(niveau.frac * 100)} aria-label="Progression vers le niveau suivant"
             style={{ background: '#cfe0dc', margin: '10px 0 6px', maxWidth: 380 }}>
             <i style={{ width: mont ? `${Math.max(3, niveau.frac * 100)}%` : '0%', background: 'linear-gradient(90deg, #f6cf6b, #e9a824)' }} />
           </div>
           <div style={{ fontSize: 13.5, color: '#2f5f59' }}>Encore <b>{niveau.reste} ★</b> pour atteindre le niveau {niveau.n + 1} : <b>{suivant}</b></div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
-            <span className="cn-puce">✅ {A.stat.reussisExo} exercice{A.stat.reussisExo > 1 ? 's' : ''}</span>
-            <span className="cn-puce">🎯 {A.stat.reussisDefi} défi{A.stat.reussisDefi > 1 ? 's' : ''}</span>
-            <span className="cn-puce">🏅 {nbBadges} / {badges.length} badges</span>
+            <span className="cn-puce"><Pic n="ok"/>{A.stat.reussisExo} exercice{A.stat.reussisExo > 1 ? 's' : ''}</span>
+            <span className="cn-puce"><Pic n="target"/>{A.stat.reussisDefi} défi{A.stat.reussisDefi > 1 ? 's' : ''}</span>
+            <span className="cn-puce"><Pic n="medal"/>{nbBadges} / {badges.length} badges</span>
           </div>
         </div>
       </section>}
@@ -150,8 +151,8 @@ export function Carnet({ lignes, naviguer, parties }) {
       {/* ── Prochains objectifs ── */}
       {P.objectifs && !A.aucun && (
         <>
-          <h3 className="cn-h">🎯 Mes prochains objectifs</h3>
-          {obj.length === 0 ? <div className="cn-carte" style={{ fontSize: 15 }}>🎉 Tu as tout réussi avec toutes les étoiles. Bravo ! D’autres exercices arrivent bientôt.</div> : (
+          <h3 className="cn-h"><Pic n="target"/>Mes prochains objectifs</h3>
+          {obj.length === 0 ? <div className="cn-carte" style={{ fontSize: 15 }}><Pic n="party"/>Tu as tout réussi avec toutes les étoiles. Bravo ! D’autres exercices arrivent bientôt.</div> : (
             <div className="cn-grille">
               {obj.map(o => { const comp = A.comps.find(c => c.code === o.item.comp);
                 return (
@@ -204,7 +205,7 @@ export function Carnet({ lignes, naviguer, parties }) {
 
       {/* ── Badges ── */}
       {P.badges && <details className="cn-repli" data-repli="badges">
-      <summary>🏅 Mes badges <small>{nbBadges} sur {badges.length}</small><span className="cn-mini" aria-hidden="true">{badges.filter(b => b.ok).map(b => <span key={b.id}>{b.icone}</span>)}</span></summary>
+      <summary><Pic n="medal"/>Mes badges <small>{nbBadges} sur {badges.length}</small><span className="cn-mini" aria-hidden="true">{badges.filter(b => b.ok).map(b => <span key={b.id}>{b.icone}</span>)}</span></summary>
       <div className="cn-grille" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}>
         {badges.map(b => (
           <div key={b.id} data-badge={b.id} data-ok={b.ok} className="cn-carte cn-badge" title={b.desc}>

@@ -7,6 +7,7 @@ import { plat } from "./rmnModele";
 import { fr } from "./elecModele";
 import { BLEU, VERMILLON, VIOLET, VERT, alea } from "./elecOutils";
 import { VoletDefiGen } from "./elecCommun";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 76 — RMN ¹³C ET RMN 2D : COSY ET HSQC (BTS Métiers de la chimie, analyse spectroscopique)
@@ -150,16 +151,16 @@ const tableauDonnees = M => (
     <tbody>{M.carbones.map(x => <tr key={x.num}><td style={{ padding: '2px 10px', textAlign: 'right' }}>{nf(x.d, 1)}</td><td style={{ padding: '2px 10px', textAlign: 'right' }}>{typeC(x.nH)}</td><td style={{ padding: '2px 10px', textAlign: 'right' }}>{x.n}</td></tr>)}</tbody></table></div>);
 const enonce = (d, { champ, choix }) => {
   const M = MOLS[d.id], m = M.m;
-  if (d.type === 'signaux') return <>🎯 Prévoyez le spectre RMN ¹³C (découplé du proton) de <strong>{m.nom}</strong> ({m.brute}) : <strong style={{ whiteSpace: 'nowrap' }}>{plat(m)}</strong>.
+  if (d.type === 'signaux') return <><Pic n="target"/>Prévoyez le spectre RMN ¹³C (découplé du proton) de <strong>{m.nom}</strong> ({m.brute}) : <strong style={{ whiteSpace: 'nowrap' }}>{plat(m)}</strong>.
     <div style={{ marginTop: 6 }}><strong>1.</strong> Nombre de signaux : {champ('n', '')}</div>
     <div style={{ marginTop: 6 }}><strong>2.</strong> Nombre de carbones qui ne portent aucun H (sans tache HSQC) : {champ('p', '')}</div></>;
   if (d.type === 'hsqc') { const c = M.carbones.find(x => x.num === d.num);
-    return <>🎯 Carte HSQC d’un composé de formule brute <strong>{m.brute}</strong> (ci-dessous). Quel est le signal ¹H lié au carbone qui résonne à <strong>δC = {nf(c.d, 1)} ppm</strong> ?
+    return <><Pic n="target"/>Carte HSQC d’un composé de formule brute <strong>{m.brute}</strong> (ci-dessous). Quel est le signal ¹H lié au carbone qui résonne à <strong>δC = {nf(c.d, 1)} ppm</strong> ?
       <div style={{ marginTop: 6 }}>{choix('c', M.groupes.map(g => [g.k, `δH = ${nf(g.d)} ppm`]))}</div></>; }
   if (d.type === 'cosy') { const g = M.groupes.find(x => x.k === d.g);
-    return <>🎯 Carte COSY d’un composé de formule brute <strong>{m.brute}</strong> (ci-dessous). Le signal à <strong>δH = {nf(g.d)} ppm</strong> est couplé à un seul autre signal. Lequel ?
+    return <><Pic n="target"/>Carte COSY d’un composé de formule brute <strong>{m.brute}</strong> (ci-dessous). Le signal à <strong>δH = {nf(g.d)} ppm</strong> est couplé à un seul autre signal. Lequel ?
       <div style={{ marginTop: 6 }}>{choix('c', M.groupes.filter(x => x.k !== g.k).map(x => [x.k, `δH = ${nf(x.d)} ppm`]))}</div></>; }
-  return <>🎯 Un composé de formule brute <strong>{m.brute}</strong> donne ce spectre ¹³C (découplé du proton) ; les types de carbone viennent de la carte HSQC. Quelle est cette molécule ?
+  return <><Pic n="target"/>Un composé de formule brute <strong>{m.brute}</strong> donne ce spectre ¹³C (découplé du proton) ; les types de carbone viennent de la carte HSQC. Quelle est cette molécule ?
     {tableauDonnees(M)}{choix('c', d.cands.map(c => [c, `${MOLS[c].m.nom} : ${plat(MOLS[c].m)}`]))}</>;
 };
 const solution = d => {
@@ -283,7 +284,7 @@ export function SimulationRMNC2D() {
           : <> Aucun H : pas de tache HSQC, pas de signal COSY.</>}</div>}
       {!enDefi && !cSel && <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 8 }}>Sélectionnez un carbone (signal, tache ou ligne du tableau) pour le suivre d’une carte à l’autre.</div>}
       {!enDefi && <div style={{ marginTop: 10 }}>
-        {!corrige && <button onClick={() => setCorrige(true)} style={styleBouton(true, '#0ea5e9')}>👁 Afficher le tableau d’analyse</button>}
+        {!corrige && <button onClick={() => setCorrige(true)} style={styleBouton(true, '#0ea5e9')}><Pic n="eye"/>Afficher le tableau d’analyse</button>}
         {corrige && <><div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Tableau d’analyse</div><TableCarbones M={M} sel={sel} onSel={setSel}/></>}
       </div>}
     </div>);
@@ -302,8 +303,8 @@ export function SimulationRMNC2D() {
     <li>¹³C découplé : un singulet par C non équivalent</li><li>pas d’intégration en ¹³C</li><li>HSQC : C ↔ H lié</li><li>COSY : H ↔ H voisin</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
   const planDefi = (
     <div style={styleBoite}>

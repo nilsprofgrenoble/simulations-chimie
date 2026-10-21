@@ -151,7 +151,7 @@ export function SuiviTemps({ simId }) {
 }
 
 export const estSimulation = cle => typeof cle === 'string' && cle.startsWith('sim:');
-export const MODES = [['guide', '🧭 Guidé'], ['explore', '🔍 Exploration libre'], ['defi', '🎯 Défi']];
+export const MODES = [['guide', 'Guidé'], ['explore', 'Exploration libre'], ['defi', 'Défi']];
 // (une simulation sans choix de mode compte comme exploration libre)
 // lignes de type « sim:… » → [{ id, nom, total, guide, explore, defi, libre }] trié par temps décroissant
 export function tempsParSimulation(lignes) {

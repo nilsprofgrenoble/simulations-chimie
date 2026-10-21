@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { KIT, styleBouton, stylePetitBouton, styleBoite } from "../commun";
 import { catalogueDevoirs as catalogue } from "./catalogue";
 import { EspaceEleve } from "./EspaceEleve";
+import { Pic } from "../Pictos";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  APERÇU ÉLÈVE (professeur) : l'espace « Mon compte » d'un élève, avec des données FICTIVES.
@@ -78,7 +79,7 @@ export function ApercuEleve({ naviguer, onFermer }) {
     <div>
       <div style={{ ...styleBoite, border: '2px dashed #8fcfc5', background: '#eef7f5' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <b style={{ color: '#134e4a', flex: 1, minWidth: 200 }}>👁 Aperçu élève : données fictives, rien n’est enregistré</b>
+          <b style={{ color: '#134e4a', flex: 1, minWidth: 200 }}><Pic n="eye"/>Aperçu élève : données fictives, rien n’est enregistré</b>
           <button onClick={onFermer} style={styleBouton(true, ROSE)}>← Retour au suivi</button>
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '8px 0 4px' }}>

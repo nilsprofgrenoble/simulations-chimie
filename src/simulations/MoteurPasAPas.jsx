@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure } from "../commun";
 import { nf, NB } from "./Distillation";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 44;
 declarerDefis(SIM_ID, [['principal', 'Positionner l’axe : pas, tours et durée']]);
@@ -349,7 +350,7 @@ export function SimulationMoteurPasAPas({ naviguer }) {
   })();
   const voletDefi = defi && (
     <div>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>🎯 Défi : positionner l’axe</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : positionner l’axe</div>
       <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>On veut que l’<strong>axe</strong> du moteur tourne de <strong>{nf(defi.theta, defi.theta % 1 ? 1 : 0)}{NB}°</strong>, en <strong>{defi.m === 'demi' ? 'demi-pas' : 'pas complet'}</strong> avec <code>delay(5)</code>. Données : 4096 demi-pas par tour d’axe, 8 demi-pas par tour du rotor.</div>
       {sol.map(q => {
         const x = lireNombre(defi.reps[q.id]);
@@ -366,7 +367,7 @@ export function SimulationMoteurPasAPas({ naviguer }) {
       })}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button onClick={() => { noterDefi(sol.every(q => proche(lireNombre(defi.reps[q.id]), q.v, 0.01))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
+        <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
       </div>
     </div>);
 
@@ -385,8 +386,8 @@ export function SimulationMoteurPasAPas({ naviguer }) {
     </div>);
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>);
 
   const onglets = (

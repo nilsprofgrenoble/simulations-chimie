@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { fr, ctn, ldr, lampeI, fonctionnementLampe, regression } from "./elecModele";
 import { BLEU, VERMILLON, VIOLET, alea, usePhase } from "./elecOutils";
 import { Curseur, VoletDefiGen, Fil, Pile, Mesure, Graphe } from "./elecCommun";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 69 — LOI D'OHM, CARACTÉRISTIQUE ET CAPTEUR RÉSISTIF (2GT, « Signaux et capteurs »)
@@ -69,10 +70,10 @@ function evaluer(d) {
   const ok = isFinite(x) && Math.abs(x - d.th) <= 3; return { ok, lignes: [[ok, ok ? 'Température correcte (à 3 °C près).' : 'Calcule d’abord R = U / I (avec I en A), puis cherche cette valeur de R sur la courbe d’étalonnage pour lire θ.']] };
 }
 const enonce = (d, { champ }) => {
-  if (d.type === 'fonct') return <>🎯 Une lampe est branchée en série avec un résistor de <strong>{d.Rp} Ω</strong> sur un générateur de <strong>E = {d.E} V</strong>. Sur le graphique, la courbe grise est la caractéristique de la lampe et la droite pointillée est U = E − R × I. Quelle est l’intensité I dans le circuit (en mA) ?<div style={{ marginTop: 6 }}>{champ('v', 'mA')}</div></>;
-  if (d.type === 'res') return <>🎯 On applique une tension <strong>U = {fr(d.U, 1)} V</strong> à un conducteur ohmique : l’ampèremètre indique <strong>I = {fr(d.I * 1000, 1)} mA</strong>. Quelle est sa résistance R ?<div style={{ marginTop: 6 }}>{champ('v', 'Ω')}</div></>;
-  if (d.type === 'courant') return <>🎯 On applique une tension <strong>U = {fr(d.U, 1)} V</strong> aux bornes d’un conducteur ohmique de résistance <strong>R = {d.R} Ω</strong>. Quelle intensité I le traverse ?<div style={{ marginTop: 6 }}>{champ('v', 'mA')}</div></>;
-  return <>🎯 Un capteur de température (thermistance) est alimenté sous <strong>5,0 V</strong>. L’ampèremètre indique <strong>I = {fr(d.I * 1000, 2)} mA</strong>. Calculez la résistance du capteur, puis utilisez la <strong>courbe d’étalonnage</strong> pour trouver la température θ.<div style={{ marginTop: 6 }}>{champ('v', '°C')}</div></>;
+  if (d.type === 'fonct') return <><Pic n="target"/>Une lampe est branchée en série avec un résistor de <strong>{d.Rp} Ω</strong> sur un générateur de <strong>E = {d.E} V</strong>. Sur le graphique, la courbe grise est la caractéristique de la lampe et la droite pointillée est U = E − R × I. Quelle est l’intensité I dans le circuit (en mA) ?<div style={{ marginTop: 6 }}>{champ('v', 'mA')}</div></>;
+  if (d.type === 'res') return <><Pic n="target"/>On applique une tension <strong>U = {fr(d.U, 1)} V</strong> à un conducteur ohmique : l’ampèremètre indique <strong>I = {fr(d.I * 1000, 1)} mA</strong>. Quelle est sa résistance R ?<div style={{ marginTop: 6 }}>{champ('v', 'Ω')}</div></>;
+  if (d.type === 'courant') return <><Pic n="target"/>On applique une tension <strong>U = {fr(d.U, 1)} V</strong> aux bornes d’un conducteur ohmique de résistance <strong>R = {d.R} Ω</strong>. Quelle intensité I le traverse ?<div style={{ marginTop: 6 }}>{champ('v', 'mA')}</div></>;
+  return <><Pic n="target"/>Un capteur de température (thermistance) est alimenté sous <strong>5,0 V</strong>. L’ampèremètre indique <strong>I = {fr(d.I * 1000, 2)} mA</strong>. Calculez la résistance du capteur, puis utilisez la <strong>courbe d’étalonnage</strong> pour trouver la température θ.<div style={{ marginTop: 6 }}>{champ('v', '°C')}</div></>;
 };
 const solution = d => d.type === 'fonct' ? <>Le point de fonctionnement est l’intersection de la courbe de la lampe et de la droite : I ≈ <strong>{fr(d.I * 1000, 0)} mA</strong> et U ≈ {fr(d.U, 1)} V aux bornes de la lampe. Vérification (loi des mailles) : E = U + R × I = {fr(d.U, 1)} + {d.Rp} × {fr(d.I, 3)} = {fr(d.U + d.Rp * d.I, 1)} V.</>
   : d.type === 'res' ? <>R = U / I = {fr(d.U, 1)} / {fr(d.I, 4)} = <strong>{fr(d.R, 0)} Ω</strong> (I = {fr(d.I * 1000, 1)} mA = {fr(d.I, 4)} A).</>
@@ -177,8 +178,8 @@ export function SimulationLoiOhm() {
     <thead><tr>{entetes.map(h => <th key={h} style={{ padding: '3px 5px', color: KIT.txt2, textAlign: 'right', borderBottom: `1px solid ${KIT.bord}` }}>{h}</th>)}</tr></thead>
     <tbody>{lignes.length === 0 && <tr><td colSpan={entetes.length} style={{ padding: 6, color: KIT.txt2 }}>Aucune mesure notée.</td></tr>}
       {lignes.map((l, k) => <tr key={k}>{l.map((c, j) => <td key={j} style={{ padding: '2px 5px', textAlign: 'right' }}>{c}</td>)}</tr>)}</tbody></table>
-    <div style={{ marginTop: 4 }}><button onClick={vider} style={styleBouton(false)}>🗑 Effacer</button></div></div>;
-  const btnNoter = f => <button onClick={f} style={{ ...styleBouton(true, '#16a34a'), marginTop: 6 }}>➕ Noter cette mesure</button>;
+    <div style={{ marginTop: 4 }}><button onClick={vider} style={styleBouton(false)}><Pic n="trash"/>Effacer</button></div></div>;
+  const btnNoter = f => <button onClick={f} style={{ ...styleBouton(true, '#16a34a'), marginTop: 6 }}><Pic n="plus"/>Noter cette mesure</button>;
   const choixR = (<div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Résistor :</span>
     {RES.map(r => <button key={r} onClick={() => setO(o => ({ ...o, R: r, inconnu: false }))} style={stylePetitBouton(!O.inconnu && O.R === r, '#0f766e')}>{r} Ω</button>)}
     <button onClick={() => setO(o => ({ ...o, inconnu: true }))} style={stylePetitBouton(O.inconnu, '#7b2d8e')}>R inconnu</button></div>);
@@ -218,7 +219,7 @@ plt.show()`;
           {[['lin', 'proportionnelle : U = k × I'], ['aff', 'affine : U = a × I + b']].map(([k, l]) => <button key={k} onClick={() => setModele(k)} style={stylePetitBouton(modele === k, VERMILLON)}>{l}</button>)}</div>
         <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4 }}>Pour un conducteur ohmique, la droite passe par l’origine : b ≈ 0 et les deux modèles donnent la même résistance.</div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
-          <button onClick={copierMesures} disabled={!ptsO.length} style={styleBouton(false)}>📋 Copier les mesures</button>
+          <button onClick={copierMesures} disabled={!ptsO.length} style={styleBouton(false)}><Pic n="clipboard"/>Copier les mesures</button>
           <button onClick={() => setPyOuv(o => !o)} style={styleBouton(false)}>{pyOuv ? 'Masquer' : 'Voir'} le code Python</button>
           {copie && <span style={{ fontSize: 13, color: KIT.txt2, alignSelf: 'center' }}>{copie}</span>}</div>
         {pyOuv && <pre style={{ margin: '8px 0 0', padding: 8, background: '#f1f5f9', borderRadius: 6, fontSize: 12.5, overflowX: 'auto', lineHeight: 1.5 }}>{codePython}</pre>}</div>
@@ -232,7 +233,7 @@ plt.show()`;
       {btnNoter(() => setPtsD(p => [...p, { dip: D.dip, U: D.U, I: ID }].slice(-30)))}
       <div style={{ fontSize: 14.5, color: KIT.txt, marginTop: 6 }}>U / I = <strong>{D.U > 0 ? `${fr(D.U / ID, 0)} Ω` : '—'}</strong>{D.dip === 'lampe' ? ' (change quand U change !)' : ' (toujours la même)'}</div>
       <div style={{ marginTop: 8, maxWidth: 440 }}><Graphe pts={ptsD.filter(p => p.dip === 'res').map(p => [p.I * 1000, p.U])} series={[{ pts: ptsD.filter(p => p.dip === 'lampe').map(p => [p.I * 1000, p.U]), couleur: VERMILLON }]} xmax={600} ymax={9} xlab="I (mA)" ylab="U (V)" couleur={BLEU} w={440} h={280}/>
-        <div style={{ fontSize: 12.5, color: KIT.txt2 }}><span style={{ color: BLEU, fontWeight: 700 }}>● résistor</span> · <span style={{ color: VERMILLON, fontWeight: 700 }}>● lampe</span> <button onClick={() => setPtsD([])} style={{ ...styleBouton(false), marginLeft: 8 }}>🗑 Effacer</button></div></div>
+        <div style={{ fontSize: 12.5, color: KIT.txt2 }}><span style={{ color: BLEU, fontWeight: 700 }}>● résistor</span> · <span style={{ color: VERMILLON, fontWeight: 700 }}>● lampe</span> <button onClick={() => setPtsD([])} style={{ ...styleBouton(false), marginLeft: 8 }}><Pic n="trash"/>Effacer</button></div></div>
     </div>);
   const courbeLampe = Array.from({ length: 61 }, (_, k) => [lampeI(k * 0.15) * 1000, k * 0.15]);
   const grapheFonct = (E, Rp, dip, p) => <Graphe courbe={dip === 'res' ? [[0, 0], [600, 60]] : courbeLampe} droite={{ a: -Rp / 1000, b: E }} series={p ? [{ pts: [p], couleur: VERMILLON }] : []} xmax={600} ymax={10} xlab="I (mA)" ylab="U (V)" w={420} h={290}/>;
@@ -295,8 +296,8 @@ plt.show()`;
     <li>U = R × I (V, Ω, A)</li><li>Conducteur ohmique : caractéristique = droite passant par l’origine</li><li>Capteur résistif : R dépend de θ → étalonnage</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (

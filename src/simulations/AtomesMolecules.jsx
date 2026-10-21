@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { element, etatEntite, ionProbable, configTxt, valence, ionTxt,
   MOLECULES, MOLECULES_DEFI, moleculeDe, analyserLewis, doubletsAuto, liaisonsDeRef, cleLiaison, voisinsDe, GAZ_NOBLES } from "./atomesModele";
 import { SchemaAtome, TableauPeriodique } from "./atomesVue";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 57 — ATOMES, IONS ET MOLÉCULES : LA QUÊTE DE L'OCTET (2GT, « Modéliser la matière à l'échelle microscopique »)
@@ -184,24 +185,24 @@ function VoletDefi({ defi, setDefi, changerType, ion, analyse, planche }) {
     <div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(TITRES).map(([t, l]) => <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
-      {defi.type === 'ion' && <div style={txt}>🎯 Voici un atome de <strong>{E.nom}</strong> ({E.sym}, Z = {E.Z}). Avec les boutons « + électron » et « − électron », transforme-le en <strong>ion stable</strong> (couche de valence pleine), puis clique sur « Vérifier ».</div>}
+      {defi.type === 'ion' && <div style={txt}><Pic n="target"/>Voici un atome de <strong>{E.nom}</strong> ({E.sym}, Z = {E.Z}). Avec les boutons « + électron » et « − électron », transforme-le en <strong>ion stable</strong> (couche de valence pleine), puis clique sur « Vérifier ».</div>}
       {defi.type === 'config' && <>
-        <div style={txt}>🎯 Soit l’ion <strong>{ionTxt(E.sym, defi.q)}</strong> ({E.nom}, Z = {E.Z}). Utilise le tableau périodique pour t’aider, puis réponds.</div>
+        <div style={txt}><Pic n="target"/>Soit l’ion <strong>{ionTxt(E.sym, defi.q)}</strong> ({E.nom}, Z = {E.Z}). Utilise le tableau périodique pour t’aider, puis réponds.</div>
         {q(`Combien d’électrons possède l’ion ${ionTxt(E.sym, defi.q)} ?`)}
         <input value={defi.reps.n ?? ''} aria-label="Nombre d’électrons de l’ion" onChange={e => rep('n', e.target.value)} onKeyDown={e => { if (e.key === 'Enter') verifier(); }}
           style={{ width: 80, padding: '5px 8px', borderRadius: 6, border: `1.5px solid ${KIT.bord}`, fontSize: 14 }}/>
         {q('Sa configuration électronique est…')}{choix('conf', defi.options.map(o => [o, o]))}
         {q('Il a la même configuration que le gaz noble…')}{choix('gaz', GAZ_NOBLES.map(g => [g.sym, g.sym]))}</>}
-      {defi.type === 'lewis' && <div style={txt}>🎯 Construis le <strong>schéma de Lewis</strong> de la molécule <strong>{m.formule}</strong> ({m.nom}) : trace les liaisons, ajoute les doublets non liants, jusqu’à ce que tous les atomes soient ✓. Puis clique sur « Vérifier ».</div>}
+      {defi.type === 'lewis' && <div style={txt}><Pic n="target"/>Construis le <strong>schéma de Lewis</strong> de la molécule <strong>{m.formule}</strong> ({m.nom}) : trace les liaisons, ajoute les doublets non liants, jusqu’à ce que tous les atomes soient ✓. Puis clique sur « Vérifier ».</div>}
       {defi.type !== 'config' && planche}
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={verifier} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}>🔄 Nouveau tirage</button>
+        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
         {!reussi && !defi.solution && <button onClick={() => { suivi.vue(); setDefi(d => ({ ...d, solution: true })); }} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>
       {res && <div style={{ marginTop: 8, fontSize: 14 }}>
         {res.lignes.map(([ok, t], k) => <div key={k} style={{ color: ok ? '#15803d' : '#b91c1c', fontWeight: 600 }}>{ok ? '✅' : '❌'} {t}</div>)}
-        {res.ok && <div style={{ color: '#15803d', fontWeight: 700, marginTop: 4 }}>🎉 Défi réussi !</div>}</div>}
+        {res.ok && <div style={{ color: '#15803d', fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'ion' && (() => { const p = ionProbable(defi.Z), Ei = etatEntite(defi.Z, defi.Z - p.q);
           return <>{E.nom} (Z = {defi.Z}) : {configTxt(defi.Z)}, soit {valence(defi.Z)} électron{valence(defi.Z) > 1 ? 's' : ''} de valence. Le plus simple est de {p.q > 0 ? `perdre ${pl(p.q, 'électron')}` : `gagner ${pl(-p.q, 'électron')}`} :
@@ -391,8 +392,8 @@ export function SimulationAtomesMolecules() {
 
   // ════════════════ PANNEAUX ════════════════
   const verdictMol = analyse.ok
-    ? <div style={{ color: VERT, fontWeight: 700 }}>✅ Schéma de Lewis correct : chaque atome est stable.</div>
-    : <div style={{ color: ORANGE, fontWeight: 700 }}>⚠️ {analyse.par.filter(a => !a.ok).length} atome{analyse.par.filter(a => !a.ok).length > 1 ? 's' : ''} à compléter{analyse.resume ? ` — ${analyse.resume}` : ''}</div>;
+    ? <div style={{ color: VERT, fontWeight: 700 }}><Pic n="ok"/>Schéma de Lewis correct : chaque atome est stable.</div>
+    : <div style={{ color: ORANGE, fontWeight: 700 }}><Pic n="warn"/>{analyse.par.filter(a => !a.ok).length} atome{analyse.par.filter(a => !a.ok).length > 1 ? 's' : ''} à compléter{analyse.resume ? ` — ${analyse.resume}` : ''}</div>;
   const dernierMsg = mol.sel !== null && !analyse.par[mol.sel].ok ? analyse.par[mol.sel].msg : (analyse.par.find(a => !a.ok) || {}).msg;
   const selA = mol.sel !== null ? analyse.par[mol.sel] : null;
   const plancheDefi = (
@@ -443,9 +444,9 @@ export function SimulationAtomesMolecules() {
               <tr key={l} style={{ borderTop: '1px solid #e2e8f0' }}><td style={{ padding: '3px 6px 3px 0', color: KIT.txt2, fontWeight: 600 }}>{l}</td><td style={{ padding: '3px 0', fontWeight: 700 }}>{v}</td></tr>))}</tbody></table>
           <div style={{ marginTop: 8, padding: '6px 10px', borderRadius: 8, fontSize: 14.5, lineHeight: 1.5,
             background: E.stable ? '#f0fdf4' : '#fffbeb', border: `1.5px ${E.stable ? 'solid' : 'dashed'} ${E.stable ? '#86efac' : '#fcd34d'}`, color: KIT.txt }}>
-            {E.stable ? <>✅ <strong>Stable</strong> : même configuration que le gaz noble <strong>{E.gaz.sym}</strong> ({E.n} électrons).</>
-              : ion.n === 0 ? <>⚠️ Plus aucun électron : c’est l’ion H⁺, un cas particulier (le noyau seul).</>
-                : <>⚠️ <strong>Pas stable</strong> : la couche de valence n’est pas pleine ({E.valence} électron{E.valence > 1 ? 's' : ''}).</>}</div>
+            {E.stable ? <><Pic n="ok"/><strong>Stable</strong> : même configuration que le gaz noble <strong>{E.gaz.sym}</strong> ({E.n} électrons).</>
+              : ion.n === 0 ? <><Pic n="warn"/>Plus aucun électron : c’est l’ion H⁺, un cas particulier (le noyau seul).</>
+                : <><Pic n="warn"/><strong>Pas stable</strong> : la couche de valence n’est pas pleine ({E.valence} électron{E.valence > 1 ? 's' : ''}).</>}</div>
         </div>
       </div>
     </div>);
@@ -492,14 +493,14 @@ export function SimulationAtomesMolecules() {
 
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
   const ateliers = (enExplore || enGuide) && (
     <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
       <span style={{ fontSize: 13.5, color: KIT.txt2, fontWeight: 700 }}>Atelier :</span>
-      <button onClick={() => setAtelier('ion')} style={stylePetitBouton(atelier === 'ion', '#16a34a')}>⚛️ Atomes et ions</button>
-      <button onClick={() => setAtelier('mol')} style={stylePetitBouton(atelier === 'mol', '#16a34a')}>🔗 Molécules</button>
+      <button onClick={() => setAtelier('ion')} style={stylePetitBouton(atelier === 'ion', '#16a34a')}><Pic n="atom"/>Atomes et ions</button>
+      <button onClick={() => setAtelier('mol')} style={stylePetitBouton(atelier === 'mol', '#16a34a')}><Pic n="link"/>Molécules</button>
     </div>);
 
   return (

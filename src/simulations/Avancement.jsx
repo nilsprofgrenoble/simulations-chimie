@@ -2,6 +2,7 @@ import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuvertu
 import { useState, useEffect, useMemo, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, Cadre, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 1;
 declarerDefis(SIM_ID, [['principal', 'Prévoir, ne pas déborder, trouver le limitant']]);
@@ -490,7 +491,7 @@ export function Simulation1() {
   const commandesManip = (
     <>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-        <button onClick={() => setPhase('acide')} disabled={phase !== 'vide'} style={{ ...styleBouton(phase === 'vide', '#ca8a04'), opacity: phase === 'vide' ? 1 : 0.5 }}>🧪 Verser l'acide</button>
+        <button onClick={() => setPhase('acide')} disabled={phase !== 'vide'} style={{ ...styleBouton(phase === 'vide', '#ca8a04'), opacity: phase === 'vide' ? 1 : 0.5 }}><Pic n="testtube"/>Verser l'acide</button>
         <button onClick={() => { setT(0); setPhase('reaction'); }} disabled={phase !== 'acide'} style={{ ...styleBouton(phase === 'acide', '#2563eb'), opacity: phase === 'acide' ? 1 : 0.5 }}>🎗️ Introduire le ruban et reboucher</button>
         {!enGuide && <button onClick={nouvelleManip} style={styleBouton(false)}>↺ Recommencer</button>}
       </div>
@@ -545,8 +546,8 @@ export function Simulation1() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button onClick={() => nouveauDefi('prevoir')} style={styleBouton(defi?.type === 'prevoir', '#0ea5e9')}>🔮 Prévoir le volume</button>
-        <button onClick={() => nouveauDefi('deborder')} style={styleBouton(defi?.type === 'deborder', '#0ea5e9')}>🌊 Ne pas déborder</button>
-        <button onClick={() => nouveauDefi('limitant')} style={styleBouton(defi?.type === 'limitant', '#0ea5e9')}>⚖️ Qui est limitant ?</button>
+        <button onClick={() => nouveauDefi('deborder')} style={styleBouton(defi?.type === 'deborder', '#0ea5e9')}><Pic n="wave"/>Ne pas déborder</button>
+        <button onClick={() => nouveauDefi('limitant')} style={styleBouton(defi?.type === 'limitant', '#0ea5e9')}><Pic n="scale"/>Qui est limitant ?</button>
       </div>
       {!defi && <div style={{ fontSize: 14, color: KIT.txt2 }}>Choisissez un défi.</div>}
       {defi && <>
@@ -579,15 +580,15 @@ export function Simulation1() {
   function changerMode(m) { setMode(m); if (m === 'defi' && !defi) nouveauDefi('prevoir'); }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );
   const boutonsModes = (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
-      <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}><Pic n="search"/>Exploration libre</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}><Pic n="target"/>Défi</button>
     </div>
   );
   const vueManip = mode !== 'explore' || onglet === 'manip';

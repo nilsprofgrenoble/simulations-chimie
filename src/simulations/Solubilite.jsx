@@ -4,6 +4,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
   BoutonsModes, ORANGE_GUIDE, ARetenir, lireProgression } from "../commun";
 import { ESPECES, ANA, ORDRE_LIQ, ORDRE_SOL, TYPES, bilan, partPolaire, BATTERIE, RT, NACL, SEUIL_LIQ, SEUIL_SOL, SEUIL_ION } from "./solubiliteModele";
 import { FormuleSVG, PaireSVG, SolvateSVG, CristalSVG, typesPaire, typesIon } from "./solubiliteDessin";
+import { Pic } from "../Pictos";
 
 const COUL_INTER = { h: '#2563eb', p: '#ea580c', d: '#6b7280' };
 
@@ -130,24 +131,24 @@ function VoletDefi({ defi, setDefi, changerType }) {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(TITRES).map(([t, l]) => <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
       {defi.type === 'verdict' && <>
-        <div style={txt}>🎯 {solide
+        <div style={txt}><Pic n="target"/>{solide
           ? <>On met <strong>{nomEsp(defi.b)}</strong> (soluté B) dans <strong>{nomEsp(defi.a)}</strong> (solvant A). Se dissout-il ?</>
           : <>On verse ensemble <strong>{nomEsp(defi.a)}</strong> (liquide A) et <strong>{nomEsp(defi.b)}</strong> (liquide B). Obtient-on une seule phase ?</>} Prévoyez, <strong>avant de regarder le bilan</strong>, ce qui se passe.
           Le bilan s’affiche ci-dessous : à vous de le lire pour vérifier votre raisonnement.</div>
         {choix('v', solide ? [['ok', 'soluble'], ['lim', 'peu soluble'], ['non', 'insoluble']] : [['ok', 'miscibles'], ['lim', 'cas limite'], ['non', 'non miscibles']])}</>}
       {defi.type === 'dominant' && <>
-        <div style={txt}>🎯 Mélange de <strong>{nomEsp(defi.a)}</strong> et <strong>{nomEsp(defi.b)}</strong>. Quel type d’interaction fait perdre le plus d’énergie entre l’état initial et l’état final ?</div>
+        <div style={txt}><Pic n="target"/>Mélange de <strong>{nomEsp(defi.a)}</strong> et <strong>{nomEsp(defi.b)}</strong>. Quel type d’interaction fait perdre le plus d’énergie entre l’état initial et l’état final ?</div>
         {choix('t', TYPES.map(t => [t.k, t.court]))}</>}
       {defi.type === 'extraction' && <>
-        <div style={txt}>🎯 On veut extraire <strong>{nomEsp(defi.sol)}</strong> d’une solution aqueuse par extraction liquide-liquide. Quel solvant choisir ? (Au moins un des solvants proposés convient ; la sécurité n’est pas considérée ici.) Le dossier des bilans s’affiche après la vérification.</div>
+        <div style={txt}><Pic n="target"/>On veut extraire <strong>{nomEsp(defi.sol)}</strong> d’une solution aqueuse par extraction liquide-liquide. Quel solvant choisir ? (Au moins un des solvants proposés convient ; la sécurité n’est pas considérée ici.) Le dossier des bilans s’affiche après la vérification.</div>
         {choix('c', defi.choix.map(c => [c, nomEsp(c)]))}</>}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={verifier} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}>🔄 Nouveau tirage</button>
+        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
         {!reussi && !defi.solution && <button onClick={() => { suivi.vue(); setDefi(d => ({ ...d, solution: true })); }} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>
       {res && <div style={{ marginTop: 8, fontSize: 14 }}>{res.lignes.map(([ok, t], i) => <div key={i} style={{ color: ok ? '#15803d' : '#b91c1c', fontWeight: 600 }}>{ok ? '✅' : '❌'} {t}</div>)}
-        {res.ok && <div style={{ color: '#15803d', fontWeight: 700, marginTop: 4 }}>🎉 Défi réussi !</div>}</div>}
+        {res.ok && <div style={{ color: '#15803d', fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'verdict' && <>Réponse du modèle : <strong>{(solide ? ETIQ_SOL : ETIQ_LIQ)[bilan(defi.a, defi.b).classe]}</strong> (perte totale : {nb(bilan(defi.a, defi.b).total)} {unite(bilan(defi.a, defi.b))}).</>}
         {defi.type === 'dominant' && <>C’est la <strong>{bilan(defi.a, defi.b).dom.court}</strong> qui perd le plus : {nb(bilan(defi.a, defi.b).dom.perte)} {unite(bilan(defi.a, defi.b))}.</>}
@@ -323,7 +324,7 @@ export function SimulationSolubilite() {
     <div style={{ ...styleBoite, ...cadre('notion'), background: liquide ? '#f0f9ff' : '#fdf4ff', fontSize: 14, color: KIT.txt, lineHeight: 1.55 }}>
       {liquide
         ? <>💧💧 <strong>Deux liquides : question de miscibilité.</strong> Obtient-on une seule phase (liquides <strong>miscibles</strong>) ou deux phases superposées (<strong>non miscibles</strong>) ? A et B jouent le même rôle : aucun n’est « le soluté ».</>
-        : <>🧂 <strong>Un solide dans un liquide : question de solubilité.</strong> Le liquide A est le <strong>solvant</strong>, le solide B est le <strong>soluté</strong>. Le soluté se dissout-il ? Il existe une quantité maximale dissoute par litre de solvant : la <strong>solubilité</strong> (en g/L).</>}
+        : <><Pic n="salt"/><strong>Un solide dans un liquide : question de solubilité.</strong> Le liquide A est le <strong>solvant</strong>, le solide B est le <strong>soluté</strong>. Le soluté se dissout-il ? Il existe une quantité maximale dissoute par litre de solvant : la <strong>solubilité</strong> (en g/L).</>}
       <details style={{ marginTop: 4, fontSize: 13.5 }}><summary style={{ cursor: 'pointer', color: KIT.txt2, fontWeight: 600 }}>Miscibilité ou solubilité : quelle différence ?</summary>
         <ul style={{ margin: '4px 0 0', paddingLeft: 18 }}>
           <li><strong>Miscibilité</strong> (deux liquides) : eau et éthanol sont miscibles en toutes proportions (toujours une seule phase) ; eau et huile sont non miscibles (deux phases). Entre les deux, des liquides <strong>partiellement miscibles</strong> : un peu de butan-1-ol se mélange à l’eau, mais au-delà d’environ 7 % en masse une seconde phase apparaît.</li>
@@ -471,7 +472,7 @@ export function SimulationSolubilite() {
           {b.rapport < SEUIL_LIQ[0] ? ' La perte reste dans la zone verte : le mélange est possible.' : b.rapport < SEUIL_LIQ[1] ? ' La perte est dans la zone orange : du même ordre que ce que l’agitation thermique peut compenser, donc cas limite.' : ` La perte dépasse ${b.rapport < 3 ? 'deux fois' : `d’environ ${Math.round(b.rapport)} fois`} ce que l’agitation thermique compense : zone rouge.`} Interaction qui décide : <strong>{b.dom.court}</strong>.</div>}
         {!ion && !liquide && <div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 2, lineHeight: 1.55 }}>La balance penche à gauche : on perd environ <strong>{arr(b.total)} kJ par mole</strong> de soluté dissous, soit environ {arr(b.total / RT)} fois RT (RT ≈ 2,5 kJ/mol : l’énergie de l’agitation thermique à 25 °C).
           {b.total < SEUIL_SOL[0] ? ' Zone verte : le soluté se dissout.' : b.total < SEUIL_SOL[1] ? ' Zone orange : peu soluble (cas limite).' : ' Zone rouge : la perte est trop grande, le soluté reste solide.'} Interaction qui décide : <strong>{b.dom.court}</strong>.</div>}
-        {!ion && ESPECES[sol].colorant && b.classe !== 'non' && <div style={{ fontSize: 12.5, color: '#7c2d12', marginTop: 4 }}>🎨 Pour un colorant, même une faible solubilité (de l’ordre du gramme par litre, voire moins) suffit à colorer nettement la solution.</div>}
+        {!ion && ESPECES[sol].colorant && b.classe !== 'non' && <div style={{ fontSize: 12.5, color: '#7c2d12', marginTop: 4 }}><Pic n="palette"/>Pour un colorant, même une faible solubilité (de l’ordre du gramme par litre, voire moins) suffit à colorer nettement la solution.</div>}
         {ion && <div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 2, lineHeight: 1.55 }}>Défaire le cristal coûte environ <strong>{arr(NACL.reseau)} kJ/mol</strong> ; les ions entourés de {nomEsp(solv)} en rendent environ <strong>{arr(b.sv.na + b.sv.cl)} kJ/mol</strong>.
           {' '}{Math.abs(b.total) < 100 ? 'Les deux barres du total sont presque égales : tout se joue sur quelques dizaines de kJ/mol, sur plus de 700 ! Regardez le solde de plus près.' : 'La balance penche nettement à gauche : les ions sont très mal entourés.'}
           {' '}On {b.total > 0 ? 'perd' : 'gagne'} environ {arr(b.total)} kJ/mol{b.classe === 'ok' ? ' : zone verte.' : b.classe === 'lim' ? ' : zone orange.' : ' : zone rouge.'}
@@ -491,7 +492,7 @@ export function SimulationSolubilite() {
         <div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
           <p style={{ margin: '0 0 6px' }}><strong>C’est un outil pour raisonner, pas pour calculer.</strong> Il sert à comprendre <em>pourquoi</em> deux espèces se mélangent ou non. Seule l’expérience tranche.</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 }}>
-            <div><div style={{ fontWeight: 700, color: '#15803d' }}>✅ Il permet de dire</div>
+            <div><div style={{ fontWeight: 700, color: '#15803d' }}><Pic n="ok"/>Il permet de dire</div>
               <ul style={{ margin: '2px 0 0', paddingLeft: 18 }}>
                 <li>qu’il faut comparer l’état initial (A…A, B…B) et l’état final (A…B) ;</li>
                 <li>quelle interaction décide (liaison H, dipôles, dispersion) ;</li>
@@ -499,7 +500,7 @@ export function SimulationSolubilite() {
                 <li>des tendances : allonger une chaîne carbonée, ajouter des groupes OH, changer de solvant ;</li>
                 <li>qu’entre « polaire » et « apolaire », il y a tout un continuum ;</li>
                 <li>pour le sel : pourquoi l’eau le dissout, l’éthanol beaucoup moins et l’acétone pas du tout.</li></ul></div>
-            <div><div style={{ fontWeight: 700, color: '#b91c1c' }}>❌ Il ne permet pas de dire</div>
+            <div><div style={{ fontWeight: 700, color: '#b91c1c' }}><Pic n="ko"/>Il ne permet pas de dire</div>
               <ul style={{ margin: '2px 0 0', paddingLeft: 18 }}>
                 <li>la valeur d’une solubilité (en g/L) : seulement « soluble / peu soluble / insoluble » ;</li>
                 <li>l’effet du désordre (l’<strong>entropie</strong>), qui favorise le mélange, ni l’organisation de l’eau autour des parties apolaires (effet hydrophobe) : en réalité ils comptent beaucoup ;</li>
@@ -561,8 +562,8 @@ export function SimulationSolubilite() {
     </ARetenir>);
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button></span>);
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button></span>);
 
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>

@@ -2,6 +2,7 @@ import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuvertu
 import { useState, useEffect } from "react";
 import { Frac, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, indicesProfond, fmt, lireNombre, proche } from "../commun";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 27;
 declarerDefis(SIM_ID, [['principal', 'Débits et masse volumique']]);
@@ -557,7 +558,7 @@ export function SimulationDebits({ naviguer }) {
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <button onClick={() => { noterDefi(Q.every(qu => proche(lireNombre(defi.reps[qu.id] || ''), qu.vrai, qu.tol))); setDefi(df => ({ ...df, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
           {defi.verifie && <button onClick={() => setDefi(df => ({ ...df, corr: !df.corr }))} style={styleBouton(defi.corr, '#7e22ce')}>{defi.corr ? 'Masquer' : 'Voir'} les calculs avec les unités</button>}
-          <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
+          <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
         </div>
       </div>
     );
@@ -579,9 +580,9 @@ export function SimulationDebits({ naviguer }) {
   );
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
-      {naviguer && <button onClick={() => naviguer(36, 'composees')} style={styleBouton(false, '#e11d48')}>🧮 S’entraîner aux unités (REA)</button>}
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
+      {naviguer && <button onClick={() => naviguer(36, 'composees')} style={styleBouton(false, '#e11d48')}><Pic n="abacus"/>S’entraîner aux unités (REA)</button>}
     </span>
   );
 
@@ -652,9 +653,9 @@ export function SimulationDebits({ naviguer }) {
       {!mesureFaite ? <div style={{ fontSize: 13.5, color: TXT2 }}>Faites une mesure : ouvrez le robinet, laissez couler, puis fermez-le (ou programmez une durée).</div> : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ fontSize: 14, color: TXT }}>m = <strong>{dec4(mAff)} kg</strong> (balance) ; Δt = <strong>{dtTxt} {dtUn}</strong> (chronomètre, à 1 s près)</div>
-          {tareOff === 0 && <div style={{ fontSize: 13, color: '#b45309' }}>⚠ La balance n’est pas tarée : m comprend aussi la masse de la cuve vide.</div>}
-          {tareOff !== 0 && !tareFaite && <div style={{ fontSize: 13, color: '#b45309' }}>⚠ La balance n’a pas été tarée cuve vide : m n’est pas la masse de fluide recueillie depuis le début du chronomètre.</div>}
-          {run.mixte && <div style={{ fontSize: 13, color: '#b45309' }}>⚠ L’ouverture a changé pendant la mesure : le débit n’était pas constant, Q<sub>m</sub> = m / Δt est un débit moyen. Videz la cuve pour refaire une mesure propre.</div>}
+          {tareOff === 0 && <div style={{ fontSize: 13, color: '#b45309' }}><Pic n="warn"/>La balance n’est pas tarée : m comprend aussi la masse de la cuve vide.</div>}
+          {tareOff !== 0 && !tareFaite && <div style={{ fontSize: 13, color: '#b45309' }}><Pic n="warn"/>La balance n’a pas été tarée cuve vide : m n’est pas la masse de fluide recueillie depuis le début du chronomètre.</div>}
+          {run.mixte && <div style={{ fontSize: 13, color: '#b45309' }}><Pic n="warn"/>L’ouverture a changé pendant la mesure : le débit n’était pas constant, Q<sub>m</sub> = m / Δt est un débit moyen. Videz la cuve pour refaire une mesure propre.</div>}
           <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={lab}>Exprimer Q<sub>m</sub> en</span>
             <select value={uQm} onChange={e => setUQm(e.target.value)} style={sel} aria-label="Unité du débit massique">
@@ -699,7 +700,7 @@ export function SimulationDebits({ naviguer }) {
               {run.ouvert
                 ? <button onClick={fermer} style={stylePetitBouton(true, '#dc2626')}>⏸ Fermer le robinet</button>
                 : <button onClick={ouvrir} disabled={!peutOuvrir} style={{ ...stylePetitBouton(true, '#16a34a'), opacity: peutOuvrir ? 1 : 0.45 }}>▶ Ouvrir le robinet</button>}
-              <button onClick={tarer} style={stylePetitBouton(false, '#334155')}>⚖ Tarer</button>
+              <button onClick={tarer} style={stylePetitBouton(false, '#334155')}><Pic n="scale"/>Tarer</button>
               <button onClick={vider} style={stylePetitBouton(false, '#64748b')}>↺ Vider la cuve, chrono à zéro</button>
             </div>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>

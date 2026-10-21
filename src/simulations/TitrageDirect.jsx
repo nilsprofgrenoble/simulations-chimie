@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
 import { V_BURETTE, seuilVisible, couleurSolution, ContexteBanc, SchemaBurette, OutilTitrageGeneral } from "./titrageCommun";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 2;
 declarerDefis(SIM_ID, [['principal', 'Doser le diiode (concentration, masse)']]);
@@ -230,12 +231,12 @@ export function Simulation2() {
         <button onClick={() => { setDeclare(null); setOuvert(o => !o); }} style={styleBouton(true, ouvert ? '#dc2626' : '#16a34a')}>{ouvert ? '⏹ Fermer le robinet' : '▶ Ouvrir le robinet'}</button>
         <button onClick={() => verser(1)} style={styleBouton(false)}>+ 1 mL</button>
         <button onClick={() => verser(0.1)} style={styleBouton(false)}>+ 0,1 mL</button>
-        <button onClick={() => verser(0.05)} style={styleBouton(false)}>💧 1 goutte</button>
+        <button onClick={() => verser(0.05)} style={styleBouton(false)}><Pic n="drop"/>1 goutte</button>
       </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {enGuide && etape === idx('rapide')
-          ? <button onClick={decolore} style={styleBouton(true, ORANGE_GUIDE)}>🎯 La solution est décolorée</button>
-          : <button onClick={declarer} style={styleBouton(true, ORANGE_GUIDE)}>🎯 C'est l'équivalence !</button>}
+          ? <button onClick={decolore} style={styleBouton(true, ORANGE_GUIDE)}><Pic n="target"/>La solution est décolorée</button>
+          : <button onClick={declarer} style={styleBouton(true, ORANGE_GUIDE)}><Pic n="target"/>C'est l'équivalence !</button>}
         <button onClick={nouveauTitrage} style={styleBouton(false)}>↺ Nouveau titrage</button>
         {vu('precis') && <button onClick={() => setThiodene(a => !a)} style={styleBouton(thiodene, '#4338ca')}>{thiodene ? 'Thiodène ajouté' : '🧪 Ajouter le thiodène'}</button>}
       </div>
@@ -309,8 +310,8 @@ export function Simulation2() {
   function changerMode(m) { setMode(m); if (m === 'defi' && !defi) nouveauDefi('autre'); }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );
   const vueBanc = mode !== 'explore' || onglet === 'banc';
@@ -324,9 +325,9 @@ export function Simulation2() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt }}>Titrage direct</h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
-          <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
-          <button onClick={() => changerMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
+          <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>
+          <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}><Pic n="search"/>Exploration libre</button>
+          <button onClick={() => changerMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}><Pic n="target"/>Défi</button>
         </div>
       </div>
       {mode === 'explore' && (

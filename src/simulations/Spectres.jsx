@@ -3,6 +3,7 @@ import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suiv
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, avecIndices } from "../commun";
 import { fr, courbeCorps, intensiteCorps, lambdaMax, tempDepuisLmax, rgbLambda, css, couleurCorps, couleurVue, courbeCorpsTerre, ETOILES, GAZ, gaz, couleurLampe, raieProche } from "./spectresModele";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 66 — SPECTRES D'ÉMISSION (2GT, « Ondes et signaux »)
@@ -112,22 +113,22 @@ function VoletDefi({ defi, setDefi, changerType }) {
     <div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(TITRES).map(([t, l]) => <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
-      {defi.type === 'gaz' && <><div style={txt}>🎯 Une lampe à décharge contient un <strong>gaz inconnu</strong>. Observez son spectre (en bas de la page, avec le curseur pour lire les longueurs d’onde), comparez-le au <strong>tableau des spectres</strong> et identifiez le gaz.</div>
+      {defi.type === 'gaz' && <><div style={txt}><Pic n="target"/>Une lampe à décharge contient un <strong>gaz inconnu</strong>. Observez son spectre (en bas de la page, avec le curseur pour lire les longueurs d’onde), comparez-le au <strong>tableau des spectres</strong> et identifiez le gaz.</div>
         {choix(GAZ.map(g => [g.id, g.nom]))}</>}
-      {defi.type === 'comparer' && <><div style={txt}>🎯 Voici les spectres de deux étoiles. Laquelle a la <strong>température de surface la plus élevée</strong> ?</div>
+      {defi.type === 'comparer' && <><div style={txt}><Pic n="target"/>Voici les spectres de deux étoiles. Laquelle a la <strong>température de surface la plus élevée</strong> ?</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 8, marginBottom: 8 }}>
           {[['A', defi.A], ['B', defi.B]].map(([k, T]) => <div key={k}><div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>Étoile {k}</div><Spectro courbe={courbeCorps(T)} compact titre={`étoile ${k}`}/></div>)}</div>
         {choix([['A', 'L’étoile A'], ['B', 'L’étoile B']])}</>}
-      {defi.type === 'temperature' && <><div style={txt}>🎯 Voici le spectre d’une étoile. Avec le curseur, relevez la longueur d’onde du <strong>maximum d’intensité</strong>, puis lisez sur la courbe verte la <strong>température de surface</strong>.</div>
+      {defi.type === 'temperature' && <><div style={txt}><Pic n="target"/>Voici le spectre d’une étoile. Avec le curseur, relevez la longueur d’onde du <strong>maximum d’intensité</strong>, puis lisez sur la courbe verte la <strong>température de surface</strong>.</div>
         <label style={{ fontSize: 14, fontWeight: 600 }}>T = <input value={defi.reps.v || ''} onChange={e => rep('v', e.target.value)} inputMode="decimal" aria-label="Votre réponse" style={{ width: 90, padding: '5px 8px', fontSize: 15, border: `1.5px solid ${KIT.bord}`, borderRadius: 6 }}/> °C</label></>}
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}>🔄 Nouveau tirage</button>
+        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
         {!reussi && !defi.solution && <button onClick={() => { suivi.vue(); setDefi(d => ({ ...d, solution: true })); }} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>
       {res && <div style={{ marginTop: 8, fontSize: 14 }}>
         {res.lignes.map(([ok, t], k) => <div key={k} style={{ color: ok ? VERT : '#b91c1c', fontWeight: 600 }}>{ok ? '✅' : '❌'} {avecIndices(t)}</div>)}
-        {res.ok && <div style={{ color: VERT, fontWeight: 700, marginTop: 4 }}>🎉 Défi réussi !</div>}</div>}
+        {res.ok && <div style={{ color: VERT, fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'gaz' && <>Le gaz est le <strong>{gaz(defi.g).nom.toLowerCase()}</strong> : ses raies sont à {gaz(defi.g).etiq.map(x => nm(x)).join(', ')}.</>}
         {defi.type === 'comparer' && <>L’étoile <strong>{defi.rep}</strong> est la plus chaude : le maximum de son spectre est plus proche du violet (λ plus petite : {nm(lambdaMax(Math.max(defi.A, defi.B)))} contre {nm(lambdaMax(Math.min(defi.A, defi.B)))}).</>}
@@ -298,8 +299,8 @@ export function SimulationSpectres() {
     <li>Visible : 400 à 800 nm</li><li>Corps chaud : spectre continu, plus chaud → plus de violet</li><li>Gaz basse pression : spectre de raies (propre à chaque élément)</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
   const defiZone = enDefi && (defi.type === 'gaz' ? <div style={styleBoite}>{DechargePanel}</div> : defi.type === 'temperature' ? <div style={styleBoite}>{EtoilePanelDefi(defi, cur, setCur)}</div> : null);
 

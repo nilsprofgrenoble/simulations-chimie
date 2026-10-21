@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { Frac, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, indicesProfond, lireNombre, proche } from "../commun";
 import { FLUIDES, rhoDe, facteurConv, sig, sciTxt, nf, analyser, Un, Chaine, ConvPrefixe, RhoLigne, AlerteRho } from "./DebitsFluides";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 28;
 declarerDefis(SIM_ID, [['principal', 'Débit, section et vitesse']]);
@@ -367,7 +368,7 @@ export function SimulationVitesseDebit({ naviguer }) {
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <button onClick={() => { noterDefi(Q.every(qu => proche(lireNombre(defi.reps[qu.id] || ''), qu.vrai, qu.tol))); setDefi(df => ({ ...df, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
           {defi.verifie && <button onClick={() => setDefi(df => ({ ...df, corr: !df.corr }))} style={styleBouton(defi.corr, '#7e22ce')}>{defi.corr ? 'Masquer' : 'Voir'} les calculs avec les unités</button>}
-          <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
+          <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
         </div>
       </div>
     );
@@ -390,9 +391,9 @@ export function SimulationVitesseDebit({ naviguer }) {
   );
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
-      {naviguer && <button onClick={() => naviguer(36, 'puissances')} style={styleBouton(false, '#e11d48')}>🧮 S’entraîner aux unités (REA)</button>}
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
+      {naviguer && <button onClick={() => naviguer(36, 'puissances')} style={styleBouton(false, '#e11d48')}><Pic n="abacus"/>S’entraîner aux unités (REA)</button>}
     </span>
   );
 

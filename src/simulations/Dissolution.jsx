@@ -4,6 +4,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche } from "../commun";
 import { Fiole } from "./solutionsVue";
 import { fr, SOLUTES, soluteDe, concentration, massePeser, dissolution, teinte } from "./solutionsModele";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 61 — DISSOLUTION ET CONCENTRATION EN MASSE (2GT, « Constitution et transformations de la matière »)
@@ -84,8 +85,8 @@ function Protocole({ P, proto, setProto }) {
         {ORDRE_BOUTONS.map(k => { const fait = k <= n; return <button key={k} onClick={() => clic(k)} style={{ ...stylePetitBouton(false, '#0f766e'), textAlign: 'left', background: fait ? '#dcfce7' : 'white', borderColor: fait ? '#16a34a' : KIT.bord, fontWeight: 600 }}>{fait ? '✅ ' : ''}{PROTO[k - 1].txt}</button>; })}
       </div>
       {proto.msg && <div style={{ marginTop: 6, fontSize: 14, fontWeight: 600, color: proto.msg.ok ? VERT : '#b91c1c', lineHeight: 1.5 }}>{proto.msg.ok ? '✅ ' : '❌ '}{proto.msg.t}</div>}
-      {n === 6 && <div style={{ marginTop: 6, fontSize: 14, color: VERT, fontWeight: 700 }}>🎉 Solution prête : {fr(t, 2)} g/L ({P.V} mL).</div>}
-      <button onClick={() => setProto({ n: 0, msg: null, err: 0 })} style={{ ...styleBouton(false), marginTop: 6 }}>🔄 Recommencer</button>
+      {n === 6 && <div style={{ marginTop: 6, fontSize: 14, color: VERT, fontWeight: 700 }}><Pic n="party"/>Solution prête : {fr(t, 2)} g/L ({P.V} mL).</div>}
+      <button onClick={() => setProto({ n: 0, msg: null, err: 0 })} style={{ ...styleBouton(false), marginTop: 6 }}><Pic n="refresh"/>Recommencer</button>
     </div>);
 }
 
@@ -120,20 +121,20 @@ function VoletDefi({ defi, setDefi, changerType }) {
     <div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(TITRES).map(([t, l]) => <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
-      {defi.type === 'masse' && <><div style={txt}>🎯 On veut préparer <strong>{defi.V} mL</strong> d’une solution de {s.nom} ({s.court}) de concentration en masse <strong>{fr(defi.t, defi.t < 1 ? 2 : 0)} g/L</strong>. Quelle masse de soluté faut-il peser ?</div>{champ('g')}</>}
-      {defi.type === 'conc' && <><div style={txt}>🎯 On dissout <strong>{fr(defi.m, 2)} g</strong> de {s.nom} ({s.court}) dans de l’eau, pour obtenir <strong>{defi.V} mL</strong> de solution. Quelle est sa concentration en masse ?</div>{champ('g/L')}</>}
-      {defi.type === 'sature' && <><div style={txt}>🎯 On introduit <strong>{fr(defi.m, 1)} g</strong> de {s.nom} ({s.court}) dans une fiole de <strong>{defi.V} mL</strong> d’eau. Solubilité à 20 °C : environ <strong>{s.sol} g/L</strong>.</div>
+      {defi.type === 'masse' && <><div style={txt}><Pic n="target"/>On veut préparer <strong>{defi.V} mL</strong> d’une solution de {s.nom} ({s.court}) de concentration en masse <strong>{fr(defi.t, defi.t < 1 ? 2 : 0)} g/L</strong>. Quelle masse de soluté faut-il peser ?</div>{champ('g')}</>}
+      {defi.type === 'conc' && <><div style={txt}><Pic n="target"/>On dissout <strong>{fr(defi.m, 2)} g</strong> de {s.nom} ({s.court}) dans de l’eau, pour obtenir <strong>{defi.V} mL</strong> de solution. Quelle est sa concentration en masse ?</div>{champ('g/L')}</>}
+      {defi.type === 'sature' && <><div style={txt}><Pic n="target"/>On introduit <strong>{fr(defi.m, 1)} g</strong> de {s.nom} ({s.court}) dans une fiole de <strong>{defi.V} mL</strong> d’eau. Solubilité à 20 °C : environ <strong>{s.sol} g/L</strong>.</div>
         <div style={{ fontSize: 14, fontWeight: 700, margin: '8px 0 4px' }}>Tout le solide se dissout-il ?</div>
         <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>{[[false, 'Oui, tout se dissout'], [true, 'Non, il reste du solide']].map(([v, l]) => <button key={String(v)} onClick={() => rep('sat', v)} style={stylePetitBouton(defi.reps.sat === v, '#0ea5e9')}>{l}</button>)}</div>
         {defi.reps.sat === true && champ('g de solide restant')}</>}
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}>🔄 Nouveau tirage</button>
+        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
         {!reussi && !defi.solution && <button onClick={() => { suivi.vue(); setDefi(d => ({ ...d, solution: true })); }} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>
       {res && <div style={{ marginTop: 8, fontSize: 14 }}>
         {res.lignes.map(([ok, t], k) => <div key={k} style={{ color: ok ? VERT : '#b91c1c', fontWeight: 600 }}>{ok ? '✅' : '❌'} {t}</div>)}
-        {res.ok && <div style={{ color: VERT, fontWeight: 700, marginTop: 4 }}>🎉 Défi réussi !</div>}</div>}
+        {res.ok && <div style={{ color: VERT, fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'masse' && <>m = t × V = {fr(defi.t, defi.t < 1 ? 2 : 0)} × {fr(defi.V / 1000, 3)} = <strong>{fr(defi.m, 3)} g</strong>.</>}
         {defi.type === 'conc' && <>t = m / V = {fr(defi.m, 2)} / {fr(defi.V / 1000, 3)} = <strong>{fr(defi.t, defi.t < 1 ? 2 : 0)} g/L</strong>.</>}
@@ -254,8 +255,8 @@ export function SimulationDissolution() {
     <li>soluté + solvant = solution</li><li>t = m / V (g/L) ; m = t × V</li><li>au-delà de la solubilité : solution saturée</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (

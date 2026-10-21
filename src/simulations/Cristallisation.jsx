@@ -2,6 +2,7 @@ import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuvertu
 import { useState, useEffect, useRef, useMemo } from "react";
 import { TabBtn, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 7;
 declarerDefis(SIM_ID, [['principal', 'Cristallisation et rendement']]);
@@ -289,7 +290,7 @@ export function Simulation7({ plotlyReady }) {
           {enonce}
           <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 4 }}>Rappel : m(cristaux) = m(sel introduit) − m(sel dissous), la solution restante étant saturée.</div>
           <button onClick={() => { regler(); setMode('explore'); }}
-            style={{ ...stylePetitBouton(false, '#334155'), marginTop: 6 }}>🔍 Régler l’exploration sur ces valeurs</button>
+            style={{ ...stylePetitBouton(false, '#334155'), marginTop: 6 }}><Pic n="search"/>Régler l’exploration sur ces valeurs</button>
         </div>
         {Q.map((qu, k) => {
           const rep = defi.reps[qu.id] || '', ok = proche(lireNombre(rep), qu.vrai, qu.tol);
@@ -308,7 +309,7 @@ export function Simulation7({ plotlyReady }) {
         })}
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={() => { noterDefi(Q.every(qu => proche(lireNombre(defi.reps[qu.id] || ''), qu.vrai, qu.tol))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-          <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
+          <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
         </div>
       </div>
     );
@@ -330,8 +331,8 @@ export function Simulation7({ plotlyReady }) {
   );
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );
 

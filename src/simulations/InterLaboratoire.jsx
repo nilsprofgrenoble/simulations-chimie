@@ -1,6 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices } from "../commun";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 9;
 declarerDefis(SIM_ID, [['principal', 'Interpréter une étude interlaboratoire (Cochran, Grubbs)']]);
@@ -252,13 +253,13 @@ function ExplorationInterlabo({ plotlyReady, visible = true }) {
 
   const StatutBadge = ({labo}) => {
     if (labosEliminésC.includes(labo))
-      return <span style={{fontSize:10,background:"#e63946",color:"white",padding:"1px 5px",borderRadius:4}}>❌ Écarté (C)</span>;
+      return <span style={{fontSize:10,background:"#e63946",color:"white",padding:"1px 5px",borderRadius:4}}><Pic n="ko"/>Écarté (C)</span>;
     if (labosEliminésG.includes(labo))
-      return <span style={{fontSize:10,background:"#e9a824",color:"white",padding:"1px 5px",borderRadius:4}}>❌ Écarté (G)</span>;
+      return <span style={{fontSize:10,background:"#e9a824",color:"white",padding:"1px 5px",borderRadius:4}}><Pic n="ko"/>Écarté (G)</span>;
     if (labosDouteuxC.includes(labo))
-      return <span style={{fontSize:10,background:"#f4a261",color:"white",padding:"1px 5px",borderRadius:4}}>⚠ Isolé (C)</span>;
+      return <span style={{fontSize:10,background:"#f4a261",color:"white",padding:"1px 5px",borderRadius:4}}><Pic n="warn"/>Isolé (C)</span>;
     if (labosDouteuxG.includes(labo))
-      return <span style={{fontSize:10,background:"#f4a261",color:"white",padding:"1px 5px",borderRadius:4}}>⚠ Isolé (G)</span>;
+      return <span style={{fontSize:10,background:"#f4a261",color:"white",padding:"1px 5px",borderRadius:4}}><Pic n="warn"/>Isolé (G)</span>;
     return null;
   };
 
@@ -757,10 +758,10 @@ function ExplorationInterlabo({ plotlyReady, visible = true }) {
               )}
               {/* Résumé labos */}
               <div style={{marginTop:12,fontSize:12,color:"#555"}}>
-                {labosEliminésC.length>0 && <div>❌ Écartés (Cochran) : {labosEliminésC.map(i=>`Labo ${i+1}`).join(", ")}</div>}
-                {labosDouteuxC.length>0 && <div>⚠ Isolés, conservés (Cochran) : {labosDouteuxC.map(i=>`Labo ${i+1}`).join(", ")}</div>}
-                {labosEliminésG.length>0 && <div>❌ Écartés (Grubbs) : {labosEliminésG.map(i=>`Labo ${i+1}`).join(", ")}</div>}
-                {labosDouteuxG.length>0 && <div>⚠ Isolés, conservés (Grubbs) : {labosDouteuxG.map(i=>`Labo ${i+1}`).join(", ")}</div>}
+                {labosEliminésC.length>0 && <div><Pic n="ko"/>Écartés (Cochran) : {labosEliminésC.map(i=>`Labo ${i+1}`).join(", ")}</div>}
+                {labosDouteuxC.length>0 && <div><Pic n="warn"/>Isolés, conservés (Cochran) : {labosDouteuxC.map(i=>`Labo ${i+1}`).join(", ")}</div>}
+                {labosEliminésG.length>0 && <div><Pic n="ko"/>Écartés (Grubbs) : {labosEliminésG.map(i=>`Labo ${i+1}`).join(", ")}</div>}
+                {labosDouteuxG.length>0 && <div><Pic n="warn"/>Isolés, conservés (Grubbs) : {labosDouteuxG.map(i=>`Labo ${i+1}`).join(", ")}</div>}
               </div>
 
               <button onClick={()=>{
@@ -1307,8 +1308,8 @@ function ParcoursInterlabo({ changerMode }) {
   const ecartes = ecarte ? [2] : [], isoles = passe('grubbsV') ? [5] : [];
   const fin = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );
   return (
@@ -1446,7 +1447,7 @@ function DefiInterlabo() {
         })}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <button onClick={() => { noterDefi(Q.every(juste)); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-          <button onClick={() => setDefi(nouvelleCampagne())} style={styleBouton(false)}>🔄 Nouvelle campagne</button>
+          <button onClick={() => setDefi(nouvelleCampagne())} style={styleBouton(false)}><Pic n="refresh"/>Nouvelle campagne</button>
         </div>
         {defi.verifie && (
           <div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.5, background: 'white', border: `1px solid ${KIT.bord}`, borderRadius: 6, padding: '6px 8px' }}>
@@ -1475,9 +1476,9 @@ export function Simulation9({ plotlyReady }) {
         @media (max-width: 900px) { .il-l1 { grid-template-columns: minmax(0, 1fr); } }
       `}</style>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end', marginBottom: 10 }}>
-        <button onClick={() => setMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
-        <button onClick={() => setMode('explore')} style={styleBouton(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
-        <button onClick={() => setMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
+        <button onClick={() => setMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>
+        <button onClick={() => setMode('explore')} style={styleBouton(mode === 'explore', '#334155')}><Pic n="search"/>Exploration libre</button>
+        <button onClick={() => setMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}><Pic n="target"/>Défi</button>
       </div>
       <div style={{ display: mode === 'explore' ? 'block' : 'none' }}>
         <ExplorationInterlabo plotlyReady={plotlyReady} visible={mode === 'explore'}/>

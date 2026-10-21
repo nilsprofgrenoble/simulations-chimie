@@ -6,6 +6,7 @@ import { NU0, MOLECULES, MOL, FAMILLES, NOM_COMPLET, plat, visibles, yRef, spect
 import { fr } from "./elecModele";
 import { BLEU, VERMILLON, VIOLET, GRIS, VERT, alea } from "./elecOutils";
 import { VoletDefiGen } from "./elecCommun";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 75 — RMN DU PROTON (BTS Métiers de la chimie, analyse spectroscopique)
@@ -169,23 +170,23 @@ function evaluer(d) {
 }
 const enonce = (d, { champ, choix }) => {
   if (d.type === 'signaux') { const m = MOL[d.id];
-    return <>🎯 Prévoyez le spectre RMN ¹H de <strong>{m.nom}</strong> ({m.brute}) : <strong style={{ whiteSpace: 'nowrap' }}>{plat(m)}</strong>.
+    return <><Pic n="target"/>Prévoyez le spectre RMN ¹H de <strong>{m.nom}</strong> ({m.brute}) : <strong style={{ whiteSpace: 'nowrap' }}>{plat(m)}</strong>.
       <div style={{ marginTop: 6 }}><strong>1.</strong> Nombre de signaux : {champ('n', '')}</div>
       <div style={{ marginTop: 6 }}><strong>2.</strong> Multiplicité du signal le plus déblindé (δ le plus grand) : {choix('m', [['s', 'singulet'], ['d', 'doublet'], ['t', 'triplet'], ['q', 'quadruplet'], ['quint', 'quintuplet'], ['sext', 'sextuplet'], ['sept', 'septuplet'], ['m', 'multiplet']])}</div></>; }
   if (d.type === 'integration') { const m = MOL[d.id], hs = hauteursDefi(d);
-    return <>🎯 Le composé de formule brute <strong>{m.brute}</strong> ({m.N} protons) donne le spectre ci-dessous. Hauteurs des paliers de la courbe d’intégration, de la gauche vers la droite :
+    return <><Pic n="target"/>Le composé de formule brute <strong>{m.brute}</strong> ({m.N} protons) donne le spectre ci-dessous. Hauteurs des paliers de la courbe d’intégration, de la gauche vers la droite :
       <div style={{ overflowX: 'auto', margin: '6px 0' }}><table style={{ borderCollapse: 'collapse', background: 'white', fontSize: 13.5 }}><tbody>
         <tr><td style={{ padding: '2px 8px', fontWeight: 700 }}>δ (ppm)</td>{m.liste.map(x => <td key={x.k} style={{ padding: '2px 10px', textAlign: 'right' }}>{nf(x.d)}</td>)}</tr>
         <tr><td style={{ padding: '2px 8px', fontWeight: 700 }}>h (mm)</td>{hs.map((h, i) => <td key={i} style={{ padding: '2px 10px', textAlign: 'right' }}>{nf(h, 1)}</td>)}</tr></tbody></table></div>
       {m.liste.map((x, i) => <div key={x.k} style={{ marginTop: 6 }}><strong>{i + 1}.</strong> Nombre de H du signal à {nf(x.d)} ppm : {champ('n' + i, '')}</div>)}</>; }
   if (d.type === 'identifier') { const m = MOL[d.id], cands = FAMILLES[d.fam];
-    return <>🎯 Un composé de formule brute <strong>{m.brute}</strong> donne le spectre RMN ¹H ci-dessous. Quel est cet isomère ?
+    return <><Pic n="target"/>Un composé de formule brute <strong>{m.brute}</strong> donne le spectre RMN ¹H ci-dessous. Quel est cet isomère ?
       <div style={{ overflowX: 'auto', margin: '6px 0' }}><table style={{ borderCollapse: 'collapse', background: 'white', fontSize: 13.5 }}>
         <thead><tr>{['δ (ppm)', 'multiplicité', 'nombre de H'].map(h => <th key={h} style={{ padding: '2px 10px', textAlign: 'right', color: KIT.txt2 }}>{h}</th>)}</tr></thead>
         <tbody>{m.liste.map(x => <tr key={x.k}><td style={{ padding: '2px 10px', textAlign: 'right' }}>{nf(x.d)}</td><td style={{ padding: '2px 10px', textAlign: 'right' }}>{x.mult}</td><td style={{ padding: '2px 10px', textAlign: 'right' }}>{x.n}</td></tr>)}</tbody></table></div>
       {choix('c', cands.map(c => [c, `${MOL[c].nom} : ${plat(MOL[c])}`]))}</>; }
   const f = (v, dd = 1) => fr(v, dd);
-  return <>🎯 Un triplet est enregistré sur un spectromètre de <strong>{d.nu} MHz</strong>. Ses trois raies sont à <strong>{f(d.d * d.nu - d.J, 1)} Hz</strong>, <strong>{f(d.d * d.nu, 1)} Hz</strong> et <strong>{f(d.d * d.nu + d.J, 1)} Hz</strong> du TMS.
+  return <><Pic n="target"/>Un triplet est enregistré sur un spectromètre de <strong>{d.nu} MHz</strong>. Ses trois raies sont à <strong>{f(d.d * d.nu - d.J, 1)} Hz</strong>, <strong>{f(d.d * d.nu, 1)} Hz</strong> et <strong>{f(d.d * d.nu + d.J, 1)} Hz</strong> du TMS.
     <div style={{ marginTop: 6 }}><strong>1.</strong> Constante de couplage J : {champ('j', 'Hz')}</div>
     <div style={{ marginTop: 6 }}><strong>2.</strong> Déplacement chimique du signal : {champ('d', 'ppm')}</div>
     <div style={{ marginTop: 6 }}><strong>3.</strong> On refait l’enregistrement à <strong>{d.nu2} MHz</strong> : écart entre les raies extrêmes du triplet, en ppm : {champ('e', 'ppm')}</div></>;
@@ -317,7 +318,7 @@ export function SimulationRMN() {
         {!defiSpectre && aLabile && <button onClick={() => setD2o(v => !v)} style={stylePetitBouton(d2o, '#334155')}>{d2o ? '✓ ' : ''}Ajouter D₂O</button>}
         {!defiSpectre && <button onClick={() => setMesures(v => !v)} style={stylePetitBouton(mesures, '#334155')}>{mesures ? '✓ ' : ''}Mesurer les paliers</button>}
         {d2o && <span style={{ fontSize: 13, color: KIT.txt2, alignSelf: 'center' }}>Les H labiles ont été échangés avec D₂O : leur signal a disparu.</span>}</div>
-      {limites.length > 0 && !defiSpectre && <div style={{ fontSize: 13, color: '#b45309', marginTop: 6, lineHeight: 1.5 }}>⚠️ À {nu0} MHz, {limites.map(o => `les signaux ${o.a} et ${o.b} (couplés) sont séparés de ${nf(o.dnu, 0)} Hz seulement, soit ${nf(o.r, 1)} J`).join(' ; ')} : la règle des n + 1 n’est plus rigoureuse (intensités déformées, « effet de toit », non représentées ici).</div>}
+      {limites.length > 0 && !defiSpectre && <div style={{ fontSize: 13, color: '#b45309', marginTop: 6, lineHeight: 1.5 }}><Pic n="warn"/>À {nu0} MHz, {limites.map(o => `les signaux ${o.a} et ${o.b} (couplés) sont séparés de ${nf(o.dnu, 0)} Hz seulement, soit ${nf(o.r, 1)} J`).join(' ; ')} : la règle des n + 1 n’est plus rigoureuse (intensités déformées, « effet de toit », non représentées ici).</div>}
       {mesures && !defiSpectre && <div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 6, lineHeight: 1.6 }}><strong>Paliers (échelle fictive : {K_MM} mm par proton)</strong> : {visibles(m, d2o).map(x => `${x.lettre} (${nf(x.d)} ppm) : ${nf(hauteurMm(x.n, K_MM), 1)} mm`).join(' ; ')}. Hauteur totale {nf(hauteurMm(visibles(m, d2o).reduce((s, x) => s + x.n, 0), K_MM), 1)} mm pour N = {visibles(m, d2o).reduce((s, x) => s + x.n, 0)} H.</div>}
       {!defiSpectre && <div style={{ marginTop: 10 }}>
         {gSel ? <div>
@@ -330,7 +331,7 @@ export function SimulationRMN() {
           </div></div> : <div style={{ fontSize: 13.5, color: KIT.txt2 }}>Sélectionnez un signal pour voir son multiplet agrandi, avec l’échelle en Hz.</div>}
       </div>}
       {!defiSpectre && <div style={{ marginTop: 10 }}>
-        {!corrige && <button onClick={() => setCorrige(true)} style={styleBouton(true, '#0ea5e9')}>👁 Afficher le tableau d’analyse</button>}
+        {!corrige && <button onClick={() => setCorrige(true)} style={styleBouton(true, '#0ea5e9')}><Pic n="eye"/>Afficher le tableau d’analyse</button>}
         {corrige && <><div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Tableau d’analyse</div><TableAnalyse m={m} d2o={d2o} mesures={mesures} sel={sel} onSel={setSel} k={K_MM}/></>}
       </div>}
     </div>);
@@ -350,8 +351,8 @@ export function SimulationRMN() {
     <li>signaux = groupes de H équivalents</li><li>δ = (f − f₀) / f₀ ; déblindé → δ grand</li><li>nombre de H = N × h / H</li><li>n voisins → n + 1 raies ; J en Hz, indépendante de B₀</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
   const planDefi = defiSpectre ? (
     <div style={styleBoite}>

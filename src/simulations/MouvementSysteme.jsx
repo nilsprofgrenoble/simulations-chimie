@@ -2,6 +2,7 @@ import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suiv
 import { useState, Children, Fragment, cloneElement, isValidElement } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, lireProgression, fmt, sci } from "../commun";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 52 — MOUVEMENT D'UN SYSTÈME : VARIATION DU VECTEUR VITESSE ET FORCES (1G, chapitre 10)
@@ -210,12 +211,12 @@ function VoletDefi({ defi, setDefi, changerType }) {
       </>}
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={verifier} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}>🔄 Nouveau tirage</button>
+        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
         {!reussi && !solution && <button onClick={voirSolution} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>
       {res && <div style={{ marginTop: 8, fontSize: 14 }}>
         {res.lignes.map(([ok, t], i) => <div key={i} style={{ color: ok ? '#15803d' : '#b91c1c', fontWeight: 600 }}>{ok ? '✅' : '❌'} {t}</div>)}
-        {res.ok && <div style={{ color: '#15803d', fontWeight: 700, marginTop: 4 }}>🎉 Défi réussi !</div>}</div>}
+        {res.ok && <div style={{ color: '#15803d', fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'force' && <>ΣF ≈ m·‖Δv‖/Δt = {vir(defi.m.toFixed(2))} × ‖Δv‖ / Δt = <strong>{vir(Math.abs(defi.F).toFixed(1))} N</strong>, dans le sens de Δv : {defi.F > 0 ? 'vers la droite' : 'vers la gauche'}.</>}
         {defi.type === 'delta' && <>Δv ≈ ΣF·Δt / m = {vir(Math.abs(defi.F).toFixed(1))} × 0,40 / {vir(defi.m.toFixed(2))} = <strong>{vir((Math.abs(defi.F) * 0.4 / defi.m).toFixed(2))} m/s</strong>, dans le sens de la force.</>}
@@ -634,8 +635,8 @@ export function SimulationMouvementSysteme() {
 
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (

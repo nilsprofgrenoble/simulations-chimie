@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { fr, chauffe, C_EAU } from "./elecModele";
 import { BLEU, VERMILLON, alea } from "./elecOutils";
 import { Curseur, VoletDefiGen, Graphe } from "./elecCommun";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 71 — PUISSANCE, EFFET JOULE ET RENDEMENT (1G spé PC, « Aspects énergétiques des phénomènes électriques »)
@@ -68,11 +69,11 @@ function evaluer(d) {
   return { ok, lignes: [[ok, ok ? 'Bonne réponse.' : 'Revois : ρ = puissance utile / puissance consommée (en % : × 100).']] };
 }
 const enonce = (d, { champ }) => {
-  if (d.type === 'cout') return <>🎯 Un appareil de puissance <strong>{d.P} W</strong> fonctionne pendant <strong>{d.dt} min</strong>. Quel est le coût de l’énergie consommée, sachant que le kWh est facturé <strong>0,20 €</strong> ?<div style={{ marginTop: 6 }}>{champ('v', '€')}</div></>;
-  if (d.type === 'joule') return <>🎯 Un conducteur ohmique de résistance <strong>R = {d.R} Ω</strong> est parcouru par un courant d’intensité <strong>I = {fr(d.I, 1)} A</strong> pendant <strong>Δt = {d.dt} s</strong>. Quel transfert thermique Q est produit par effet Joule ?<div style={{ marginTop: 6 }}>{champ('v', 'J')}</div></>;
-  if (d.type === 'ligne') return <>🎯 Une ligne électrique de <strong>{d.L} km</strong> (résistance <strong>0,1 Ω par km</strong>) transporte une puissance <strong>P = {d.P} MW</strong> sous une tension <strong>U = {d.U} kV</strong>. Quelle puissance est perdue par effet Joule dans la ligne ? (en MW)<div style={{ marginTop: 6 }}>{champ('v', 'MW')}</div></>;
-  return d.v === 'rho' ? <>🎯 Un moteur reçoit une puissance électrique de <strong>{d.Pe} W</strong> et fournit une puissance mécanique de <strong>{fr(d.Pu, 0)} W</strong>. Quel est son rendement ρ ? (en %)<div style={{ marginTop: 6 }}>{champ('v', '%')}</div></>
-    : <>🎯 Un moteur de rendement <strong>ρ = {fr(d.rho * 100, 0)} %</strong> reçoit une puissance électrique de <strong>{d.Pe} W</strong>. Quelle puissance mécanique fournit-il ?<div style={{ marginTop: 6 }}>{champ('v', 'W')}</div></>;
+  if (d.type === 'cout') return <><Pic n="target"/>Un appareil de puissance <strong>{d.P} W</strong> fonctionne pendant <strong>{d.dt} min</strong>. Quel est le coût de l’énergie consommée, sachant que le kWh est facturé <strong>0,20 €</strong> ?<div style={{ marginTop: 6 }}>{champ('v', '€')}</div></>;
+  if (d.type === 'joule') return <><Pic n="target"/>Un conducteur ohmique de résistance <strong>R = {d.R} Ω</strong> est parcouru par un courant d’intensité <strong>I = {fr(d.I, 1)} A</strong> pendant <strong>Δt = {d.dt} s</strong>. Quel transfert thermique Q est produit par effet Joule ?<div style={{ marginTop: 6 }}>{champ('v', 'J')}</div></>;
+  if (d.type === 'ligne') return <><Pic n="target"/>Une ligne électrique de <strong>{d.L} km</strong> (résistance <strong>0,1 Ω par km</strong>) transporte une puissance <strong>P = {d.P} MW</strong> sous une tension <strong>U = {d.U} kV</strong>. Quelle puissance est perdue par effet Joule dans la ligne ? (en MW)<div style={{ marginTop: 6 }}>{champ('v', 'MW')}</div></>;
+  return d.v === 'rho' ? <><Pic n="target"/>Un moteur reçoit une puissance électrique de <strong>{d.Pe} W</strong> et fournit une puissance mécanique de <strong>{fr(d.Pu, 0)} W</strong>. Quel est son rendement ρ ? (en %)<div style={{ marginTop: 6 }}>{champ('v', '%')}</div></>
+    : <><Pic n="target"/>Un moteur de rendement <strong>ρ = {fr(d.rho * 100, 0)} %</strong> reçoit une puissance électrique de <strong>{d.Pe} W</strong>. Quelle puissance mécanique fournit-il ?<div style={{ marginTop: 6 }}>{champ('v', 'W')}</div></>;
 };
 const solution = d => d.type === 'cout' ? <>E = P × Δt = {fr(d.P / 1000, 3)} kW × {fr(d.dt / 60, 3)} h = {fr(d.kWh, 3)} kWh ; coût = {fr(d.kWh, 3)} × 0,20 = <strong>{fr(d.cout, 3)} €</strong>.</>
   : d.type === 'joule' ? <>Q = R × I² × Δt = {d.R} × {fr(d.I, 1)}² × {d.dt} = <strong>{fr(d.Q, 0)} J</strong>.</>
@@ -212,7 +213,7 @@ export function SimulationPuissanceJoule() {
       {carte('', <>
         <div>Intensité : I = P / U = {L.P}·10⁶ / {L.U}·10³ = <strong>{fr(IL, 0)} A</strong></div>
         <div>Pertes par effet Joule : P<sub>perdue</sub> = r × I² = {fr(rL, 0)} × {fr(IL, 0)}² = <strong>{fr(PjL, 2)} MW</strong>, soit <strong>{fr(pcL, 1)} %</strong> de la puissance transportée.</div>
-        {PjL >= L.P && <div style={{ color: VERMILLON, fontWeight: 700 }}>⚠ Les pertes dépasseraient la puissance transportée : impossible ! Il faut augmenter la tension.</div>}</>)}
+        {PjL >= L.P && <div style={{ color: VERMILLON, fontWeight: 700 }}><Pic n="warn"/>Les pertes dépasseraient la puissance transportée : impossible ! Il faut augmenter la tension.</div>}</>)}
     </div>);
   const atelierRend = (
     <div>
@@ -265,8 +266,8 @@ export function SimulationPuissanceJoule() {
     <li>P = U·I ; W = P·Δt ; Q = R·I²·Δt</li><li>ρ = P<sub>utile</sub> / P<sub>consommée</sub></li><li>Haute tension → moins de pertes en ligne</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (

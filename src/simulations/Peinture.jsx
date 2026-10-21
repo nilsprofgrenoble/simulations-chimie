@@ -4,6 +4,7 @@ import { PeintureExploration, AnimationSechageTest } from "./PeintureExploration
 import { SchemasFilmSec } from "./peintureSchema";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE } from "../commun";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 14;
 declarerDefis(SIM_ID, [['principal', 'Formuler une base blanche (cahier des charges)']]);
@@ -93,7 +94,7 @@ function MesurePriseHuile({ poudre, onResultat }) {
       <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
         <button onClick={() => ajouter(1)} style={stylePetitBouton(false)}>+ 1 g</button>
         <button onClick={() => ajouter(0.2)} style={stylePetitBouton(false)}>+ 0,2 g</button>
-        <button onClick={() => ajouter(0.03)} style={stylePetitBouton(false)}>💧 1 goutte</button>
+        <button onClick={() => ajouter(0.03)} style={stylePetitBouton(false)}><Pic n="drop"/>1 goutte</button>
         <button onClick={conclure} style={stylePetitBouton(true, ORANGE_GUIDE)}>C'est le point final</button>
         <button onClick={() => { setHuile(0); setMsg(null); }} style={stylePetitBouton(false)}>↺ Recommencer</button>
       </div>
@@ -396,7 +397,7 @@ export function SimulationPeinture({ plotlyReady }) {
         <SuiviDefiDirect cle={`${SIM_ID}:defi.principal`} reussi={C.every(c => c.ok)} />
         {C.map((c, k) => <div key={k} style={{ fontSize: 14, color: KIT.txt }}>{c.ok ? '✅' : '❌'} {c.t}</div>)}
         {C.every(c => c.ok) && <div style={{ fontSize: 14, fontWeight: 700, color: '#15803d' }}>Cahier des charges respecté ! Pouvez-vous encore réduire le DPnB ?</div>}
-        <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Une autre température d'application</button>
+        <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Une autre température d'application</button>
       </div>
     );
   })();
@@ -405,8 +406,8 @@ export function SimulationPeinture({ plotlyReady }) {
   function changerMode(m) { setMode(m); if (m === 'defi') nouveauDefi(); }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );
   return (
@@ -419,9 +420,9 @@ export function SimulationPeinture({ plotlyReady }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt }}>Peinture à l'eau : formulation et séchage</h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
-          <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
-          <button onClick={() => changerMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
+          <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>
+          <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}><Pic n="search"/>Exploration libre</button>
+          <button onClick={() => changerMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}><Pic n="target"/>Défi</button>
         </div>
       </div>
       {enGuide && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>

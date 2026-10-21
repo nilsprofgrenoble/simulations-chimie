@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import montageCtn from "./montageCtn";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 15;
 declarerDefis(SIM_ID, [['principal', 'Quantum et résolution d’un CAN']]);
@@ -423,7 +424,7 @@ export function SimulationCAN({ plotlyReady }) {
           <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 4 }}>Rappels : q = (V<sub>max</sub> − V<sub>min</sub>) / (2<sup>n</sup> − 1) ; N = (Ur − V<sub>min</sub>) / q tronqué à l’entier inférieur ; la tension convertie est V<sub>min</sub> + N × q, et la température affichée est celle du modèle pour cette tension. Le quantum q est aussi l’erreur maximale de quantification sur Ur.</div>
           <button onClick={() => { setSource('exemple'); setTexte(CAN_EXEMPLE); setEtapeDonnees(true); setEtapeModele(true); setEtapeZoom(true); setOrdre(3); setVmin(defi.vmin); setVmax(defi.vmax); setNbits(defi.bits);
             setUrVal(uq); setMode('explore'); }}
-            style={{ ...stylePetitBouton(false, '#334155'), marginTop: 6 }}>🔍 Régler l’exploration sur ces valeurs</button>
+            style={{ ...stylePetitBouton(false, '#334155'), marginTop: 6 }}><Pic n="search"/>Régler l’exploration sur ces valeurs</button>
         </div>
         {Q.map((qu, k) => {
           const rep = defi.reps[qu.id] || '', ok = proche(lireNombre(rep), qu.vrai, qu.tol);
@@ -442,7 +443,7 @@ export function SimulationCAN({ plotlyReady }) {
         })}
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={() => { noterDefi(Q.every(qu => proche(lireNombre(defi.reps[qu.id] || ''), qu.vrai, qu.tol))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-          <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
+          <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
         </div>
       </div>
     );
@@ -464,8 +465,8 @@ export function SimulationCAN({ plotlyReady }) {
   );
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );
 

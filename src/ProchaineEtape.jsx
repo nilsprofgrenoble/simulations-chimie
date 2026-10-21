@@ -4,6 +4,7 @@ import { trierPourEleve, SEUIL_GUIDE_S } from "./devoirs";
 import { etapesDevoir, prochaineSimulation } from "./profil";
 import { nomsSim } from "./suivi";
 import { ACCENT, ACCENT_CLAIR, TEXTE, TEXTE2 } from "./theme";
+import { Pic, Emo } from "./Pictos";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  BANDEAU « OÙ J'EN SUIS » (élève connecté), en haut d'une simulation.
@@ -51,19 +52,19 @@ export function ProchaineEtape({ simId, naviguer }) {
   const btn = { border: 'none', borderRadius: 10, padding: '8px 14px', fontWeight: 800, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', background: ACCENT, color: '#fff' };
   const btn2 = { ...btn, background: '#fff', color: ACCENT, border: `2px solid ${ACCENT}`, padding: '6px 12px' };
   const [icone, texte, action] = info.type === 'guide'
-    ? ['🧭', <><b>Parcours guidé</b> : {info.min} / {SEUIL_GUIDE_S / 60} min. Suis les étapes, ton avancement est enregistré.</>, null]
+    ? [<Pic n="compass" t={24}/>, <><b>Parcours guidé</b> : {info.min} / {SEUIL_GUIDE_S / 60} min. Suis les étapes, ton avancement est enregistré.</>, null]
     : info.type === 'defi'
-      ? ['✅', <><b>Parcours guidé terminé, bravo !</b> Prochaine étape : réussir un défi.</>, <button style={btn} onClick={() => cliquerSur(/🎯\s*Défi/)}>Aller au défi ▶</button>]
+      ? [<Pic n="ok" t={24}/>, <><b>Parcours guidé terminé, bravo !</b> Prochaine étape : réussir un défi.</>, <button style={btn} onClick={() => cliquerSur(/^\s*Défis?\s*$/)}>Aller au défi ▶</button>]
       : info.type === 'fini'
-        ? ['🎉', <><b>Tout est fait ici !</b>{info.prochaine ? <> Prochaine simulation : <b>{nomsSim[info.prochaine.sim] || `n° ${info.prochaine.sim}`}</b>.</> : <> Ton devoir est à jour.</>}</>,
+        ? [<Pic n="party" t={24}/>, <><b>Tout est fait ici !</b>{info.prochaine ? <> Prochaine simulation : <b>{nomsSim[info.prochaine.sim] || `n° ${info.prochaine.sim}`}</b>.</> : <> Ton devoir est à jour.</>}</>,
           info.prochaine ? <button style={btn} onClick={() => naviguer(Number(info.prochaine.sim))}>Y aller ▶</button> : null]
-        : ['✅', <><b>Parcours guidé terminé !</b> Relève un défi, explore librement, ou retourne à ton profil.</>, <button style={btn} onClick={() => cliquerSur(/🎯\s*Défi/)}>Voir les défis ▶</button>];
+        : [<Pic n="ok" t={24}/>, <><b>Parcours guidé terminé !</b> Relève un défi, explore librement, ou retourne à ton profil.</>, <button style={btn} onClick={() => cliquerSur(/^\s*Défis?\s*$/)}>Voir les défis ▶</button>];
   return (
     <div role="status" data-prochaine-etape style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', margin: '0 0 12px', padding: '10px 14px', borderRadius: 14,
       background: ACCENT_CLAIR, border: '1px solid #b9cfe0', color: TEXTE, fontSize: 14.5, textAlign: 'left' }}>
       <span aria-hidden="true" style={{ fontSize: 22 }}>{icone}</span>
       <span style={{ flex: '1 1 260px', lineHeight: 1.45 }}>
-        {info.titre && <span style={{ display: 'block', fontSize: 12.5, color: TEXTE2, fontWeight: 700 }}>📌 {info.titre}</span>}{texte}</span>
+        {info.titre && <span style={{ display: 'block', fontSize: 12.5, color: TEXTE2, fontWeight: 700 }}><Pic n="pin"/>{info.titre}</span>}{texte}</span>
       {action}
       <button style={btn2} onClick={() => naviguer(39)}>Mon profil</button>
       <button aria-label="Masquer" onClick={() => setFerme(true)} style={{ background: 'none', border: 'none', fontSize: 20, color: TEXTE2, cursor: 'pointer', padding: '0 4px' }}>×</button>

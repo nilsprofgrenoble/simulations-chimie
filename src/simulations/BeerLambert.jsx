@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { CoeffInput, Field, TabBtn, cardStyle } from "../commun";
+import { Pic } from "../Pictos";
 
 // ============================================================
 // SIM 10 (1G) — Loi de Beer-Lambert (niveau 1re générale)
@@ -423,7 +424,7 @@ export function CalibrationPlot({ plotlyReady, xs, ys, xsScale, ysScale, mesuran
           </span>
         )}
         {Cech !== null && Cech < 0 && (
-          <span style={{fontSize:13,color:'#dc2626'}}>⚠ Valeur hors domaine d'étalonnage</span>
+          <span style={{fontSize:13,color:'#dc2626'}}><Pic n="warn"/>Valeur hors domaine d'étalonnage</span>
         )}
       </div>
     </div>
@@ -564,7 +565,7 @@ export function BeerLambert1G({ plotlyReady }) {
             <div style={{width:`${pct}%`,height:'100%',background:sensColor,borderRadius:5,transition:'width 0.3s,background 0.3s'}}/>
           </div>
           <span style={{fontSize:13,fontWeight:'500',color:sensColor}}>{pct}%</span>
-          {pct < 50 && <span style={{fontSize:12,color:'#d97706'}}>⚠ Sensibilité faible</span>}
+          {pct < 50 && <span style={{fontSize:12,color:'#d97706'}}><Pic n="warn"/>Sensibilité faible</span>}
         </div>
       )}
 

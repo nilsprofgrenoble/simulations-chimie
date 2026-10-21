@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { element, ELEMENTS, FAMILLES, HORS_LISTE, ionProbable, etatEntite, configTxt, valence, ionTxt, sub,
   REACTIONS, PRECIPITES, bilanEquation, composeIonique, formuleIonique, nomIonique, CATIONS, ANIONS } from "./atomesModele";
 import { SchemaAtome, TableauPeriodique, COULEURS_FAMILLE } from "./atomesVue";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 58 — FAMILLES CHIMIQUES (2GT, « Modéliser la matière à l'échelle microscopique »)
@@ -129,25 +130,25 @@ function VoletDefi({ defi, setDefi, changerType, coefs, setCoefs, xy, setXy }) {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(TITRES).map(([t, l]) => <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
       {defi.type === 'famille' && <>
-        <div style={txt}>🎯 Un élément du tableau a pour numéro atomique <strong>Z = {e.Z}</strong>. Sa configuration est <strong>{configTxt(e.Z)}</strong> : il a <strong>{valence(e.Z)}</strong> électron{valence(e.Z) > 1 ? 's' : ''} de valence et se trouve en période {e.periode}.</div>
+        <div style={txt}><Pic n="target"/>Un élément du tableau a pour numéro atomique <strong>Z = {e.Z}</strong>. Sa configuration est <strong>{configTxt(e.Z)}</strong> : il a <strong>{valence(e.Z)}</strong> électron{valence(e.Z) > 1 ? 's' : ''} de valence et se trouve en période {e.periode}.</div>
         {q('Dans quelle colonne du tableau se trouve-t-il ?')}{choix('col', [[1, 'colonne 1'], [2, 'colonne 2'], [17, 'colonne 17'], [18, 'colonne 18']])}
         {q('Quel ion forme-t-il (X = son symbole) ?')}{choix('ion', Object.values(IONS_FAM).map(v => [v, v]))}</>}
-      {defi.type === 'equation' && <div style={txt}>🎯 {rea.titre} : équilibrez l’équation de la réaction avec les boutons + et − (atomes <strong>et</strong> charge), puis cliquez sur « Vérifier ».
+      {defi.type === 'equation' && <div style={txt}><Pic n="target"/>{rea.titre} : équilibrez l’équation de la réaction avec les boutons + et − (atomes <strong>et</strong> charge), puis cliquez sur « Vérifier ».
         <EquationEditable reaction={rea} coefs={coefs} setCoefs={setCoefs}/></div>}
       {defi.type === 'formule' && <>
-        <div style={txt}>🎯 Un solide ionique est formé d’ions <strong>{ionTxt(cat.sym, cat.q)}</strong> ({cat.nom}) et <strong>{ionTxt(an.sym, an.q)}</strong> ({an.nom}). Combien de chaque ion faut-il pour que le solide soit neutre ?</div>
+        <div style={txt}><Pic n="target"/>Un solide ionique est formé d’ions <strong>{ionTxt(cat.sym, cat.q)}</strong> ({cat.nom}) et <strong>{ionTxt(an.sym, an.q)}</strong> ({an.nom}). Combien de chaque ion faut-il pour que le solide soit neutre ?</div>
         <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
           <span>Nombre de {ionTxt(cat.sym, cat.q)} : <Stepper valeur={xy.x} onChange={v => { setXy(s => ({ ...s, x: v })); setDefi(d => ({ ...d, verifie: false })); }} max={3} label="nombre de cations"/></span>
           <span>Nombre de {ionTxt(an.sym, an.q)} : <Stepper valeur={xy.y} onChange={v => { setXy(s => ({ ...s, y: v })); setDefi(d => ({ ...d, verifie: false })); }} max={3} label="nombre d’anions"/></span></div>
         <div style={{ fontSize: 14, color: KIT.txt2 }}>Formule obtenue : <strong>{cat.sym}{xy.x > 1 ? sub(xy.x) : ''}{an.sym}{xy.y > 1 ? sub(xy.y) : ''}</strong></div></>}
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={verifier} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}>🔄 Nouveau tirage</button>
+        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
         {!reussi && !defi.solution && <button onClick={() => { suivi.vue(); setDefi(d => ({ ...d, solution: true })); }} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>
       {res && <div style={{ marginTop: 8, fontSize: 14 }}>
         {res.lignes.map(([ok, t], k) => <div key={k} style={{ color: ok ? '#15803d' : '#b91c1c', fontWeight: 600 }}>{ok ? '✅' : '❌'} {t}</div>)}
-        {res.ok && <div style={{ color: '#15803d', fontWeight: 700, marginTop: 4 }}>🎉 Défi réussi !</div>}</div>}
+        {res.ok && <div style={{ color: '#15803d', fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'famille' && <>Z = {e.Z} : {configTxt(e.Z)}, {valence(e.Z)} électron{valence(e.Z) > 1 ? 's' : ''} de valence → colonne <strong>{e.colonne}</strong> ({symFam[e.famille]}), il forme {e.colonne === 18 ? 'aucun ion (couche de valence déjà pleine)' : <>l’ion <strong>{IONS_FAM[e.colonne].replace('X', e.sym)}</strong></>}. C’est <strong>{e.nom}</strong>.</>}
         {defi.type === 'equation' && <>Solution : <strong>{eq(rea, rea.coefs)}</strong></>}
@@ -356,8 +357,8 @@ export function SimulationFamillesChimiques() {
     <li>solide ionique : charges + et − se compensent</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (

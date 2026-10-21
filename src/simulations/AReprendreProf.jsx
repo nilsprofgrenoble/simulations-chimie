@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { KIT, styleBoite } from "../commun";
 import { catalogue } from "./catalogue";
 import { aReprendreEnClasse, SEUIL_ELEVES, SEUIL_PROPORTION } from "../reprise";
+import { Pic } from "../Pictos";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  « À REPRENDRE EN CLASSE » (suivi professeur) : les exercices où la classe a le plus buté sur la période choisie.
@@ -31,7 +32,7 @@ export function AReprendreProf({ eleves, lignes, naviguer, onDevoir }) {
       </div>
       {R.aReprendre.length === 0 ? (
         <div style={{ ...styleBoite, fontSize: 14 }}>
-          {R.travailles === 0 ? 'Aucun exercice travaillé sur cette période : rien à analyser pour l’instant.' : <>✅ Aucun exercice ne pose problème à plusieurs élèves sur cette période ({R.travailles} exercice{R.travailles > 1 ? 's' : ''} travaillé{R.travailles > 1 ? 's' : ''}).</>}
+          {R.travailles === 0 ? 'Aucun exercice travaillé sur cette période : rien à analyser pour l’instant.' : <><Pic n="ok"/>Aucun exercice ne pose problème à plusieurs élèves sur cette période ({R.travailles} exercice{R.travailles > 1 ? 's' : ''} travaillé{R.travailles > 1 ? 's' : ''}).</>}
         </div>
       ) : R.aReprendre.map(({ item, travailles, nbDiff, qui }) => (
         <div key={item.cle} style={{ ...styleBoite, marginBottom: 10, borderLeft: `5px solid ${ROSE}` }}>

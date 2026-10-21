@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure } from "../commun";
 import { NB } from "./Distillation";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 46;
 declarerDefis(SIM_ID, [['principal', 'Mesurer un champ avec la boussole']]);
@@ -245,7 +246,7 @@ export function SimulationBoussole({ naviguer }) {
   })();
   const voletDefi = defi && (
     <div>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>🎯 Défi : mesurer un champ avec la boussole</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : mesurer un champ avec la boussole</div>
       <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>
         1. Placez la boussole <strong>sur l’axe de l’aimant</strong> (horizontalement) pour que l’aiguille dévie de <strong>{defi.X}{NB}°</strong> par rapport au nord (±3°).<br/>
         2. Sans lire le champ de l’aimant, <strong>déduisez-le</strong> de l’angle, avec le champ terrestre (50{NB}µT).
@@ -258,7 +259,7 @@ export function SimulationBoussole({ naviguer }) {
       </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button onClick={() => { noterDefi(surAxe && calme && Math.abs(Math.abs(dev) - defi.X) <= 3 && proche(lireNombre(defi.reps.b) * 1e-6, defiVrai, 0.05)); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
+        <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
       </div>
       {defiRes && <div style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5 }}>
         <div style={{ color: defiRes.posOk ? '#16a34a' : '#dc2626' }}>{defiRes.posOk ? '✓ Position correcte.' : '✗ Position : placez la boussole sur l’axe horizontal et attendez que l’aiguille se stabilise à ' + defi.X + '° (±3°).'}</div>
@@ -280,9 +281,9 @@ export function SimulationBoussole({ naviguer }) {
     </div>);
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
-      {naviguer && <button onClick={() => naviguer(44)} style={styleBouton(false, '#b45309')}>🧲 Moteur pas à pas</button>}
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
+      {naviguer && <button onClick={() => naviguer(44)} style={styleBouton(false, '#b45309')}><Pic n="magnet"/>Moteur pas à pas</button>}
     </span>);
 
   // ---------- scène ----------

@@ -8,6 +8,7 @@ import { Carnet, Anneau } from "./Carnet";
 import { DevoirsEleve, useDevoirs } from "./DevoirsEleve";
 import { VieDeClasse } from "./VieDeClasse";
 import { ACCENT, ACCENT_CLAIR, FOND_BLOC, TEXTE, TEXTE2, BORDURE } from "../theme";
+import { Pic } from "../Pictos";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  L'ESPACE ÉLÈVE (« Mon profil »), par étapes : voir ../profil.js pour les règles.
@@ -134,7 +135,7 @@ export function EspaceEleve({ lignes, naviguer, apercu, pied }) {
       {etape === 0
         ? (aDesDevoirs && (
           <section data-ma-classe-attente style={{ marginTop: 22, textAlign: 'left' }}>
-            <h3 className="ee-h" style={{ margin: '0 0 8px' }}>📌 Ma classe</h3>
+            <h3 className="ee-h" style={{ margin: '0 0 8px' }}><Pic n="pin"/>Ma classe</h3>
             <div style={{ border: `1px dashed ${BORDURE}`, borderRadius: 14, padding: '12px 14px', color: TEXTE2, fontSize: 14.5 }}>
               Ton professeur a préparé des activités pour toi. Elles apparaîtront ici, une étape après l’autre, dès que tu auras terminé ta première simulation.
             </div>
@@ -149,12 +150,12 @@ export function EspaceEleve({ lignes, naviguer, apercu, pied }) {
       {/* 3. Le reste : repliable, pour ne pas noyer l'essentiel */}
       {etape > 0 && (
         <div style={{ marginTop: 22, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <details className="ee-repli" data-repli="chiffres"><summary>📊 Mes chiffres</summary><Tuiles A={A} lignes={lignes} /></details>
+          <details className="ee-repli" data-repli="chiffres"><summary><Pic n="bars"/>Mes chiffres</summary><Tuiles A={A} lignes={lignes} /></details>
           {etape >= 2 && (
-            <details className="ee-repli" data-repli="objectifs"><summary>🎯 Objectifs et compétences</summary>
+            <details className="ee-repli" data-repli="objectifs"><summary><Pic n="target"/>Objectifs et compétences</summary>
               <Carnet lignes={lignes} naviguer={naviguer} parties={{ hero: false, vide: false, revoir: false, objectifs: true, competences: true, badges: false, regularite: false }} /></details>)}
           {avecBadges && (
-            <details className="ee-repli" data-repli="badges-regularite"><summary>🏅 Badges et régularité</summary>
+            <details className="ee-repli" data-repli="badges-regularite"><summary><Pic n="medal"/>Badges et régularité</summary>
               <Carnet lignes={lignes} naviguer={naviguer} parties={{ hero: false, vide: false, revoir: false, objectifs: false, competences: false, badges: true, regularite: true }} /></details>)}
         </div>)}
       {pied?.(etape)}

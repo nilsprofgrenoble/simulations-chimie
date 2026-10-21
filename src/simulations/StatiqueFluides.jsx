@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
 import { polyReg, evalPoly } from "./QuantumCAN";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 26;
 declarerDefis(SIM_ID, [['principal', 'Étalonner un manomètre et trouver la hauteur']]);
@@ -227,7 +228,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
           </table>
           <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 4 }}>Rappels : P = Patm + ρ·g·h ; g = 9,81 m/s² ; 1 hPa = 100 Pa.</div>
           <button onClick={() => { setFluide(defi.fluide); setPatm(defi.patm); setMesures(hs.map(h => ({ h, p: L(h / 100) }))); setModele(0); setHCm(0); setHinc(defi.H / 100); setZCm(0); setRevele(false); setMode('explore'); }}
-            style={{ ...stylePetitBouton(false, '#334155'), marginTop: 6 }}>🔍 Reporter ces points dans l’exploration (graphique P = f(h))</button>
+            style={{ ...stylePetitBouton(false, '#334155'), marginTop: 6 }}><Pic n="search"/>Reporter ces points dans l’exploration (graphique P = f(h))</button>
         </div>
         {Q.map((qu, k) => {
           const rep = defi.reps[qu.id] || '', ok = proche(lireNombre(rep), qu.vrai, qu.tol);
@@ -246,7 +247,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
         })}
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={() => { noterDefi(Q.every(qu => proche(lireNombre(defi.reps[qu.id] || ''), qu.vrai, qu.tol))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-          <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
+          <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
         </div>
       </div>
     );
@@ -268,8 +269,8 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
   );
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );
 
@@ -355,9 +356,9 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
                 aria-label="Profondeur de l'embout" style={{ accentColor: '#f59e0b', width: '100%' }}/>
             </div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              <button onClick={releverPoint} style={stylePetitBouton(true, '#0369a1')}>📌 Relever le point</button>
-              <button onClick={mesuresAuto} style={stylePetitBouton(false, '#0369a1')}>⚡ 10 mesures (tous les 3 cm)</button>
-              <button onClick={() => { setMesures([]); setModele(0); }} style={stylePetitBouton(false, '#64748b')}>🗑 Effacer</button>
+              <button onClick={releverPoint} style={stylePetitBouton(true, '#0369a1')}><Pic n="pin"/>Relever le point</button>
+              <button onClick={mesuresAuto} style={stylePetitBouton(false, '#0369a1')}><Pic n="bolt"/>10 mesures (tous les 3 cm)</button>
+              <button onClick={() => { setMesures([]); setModele(0); }} style={stylePetitBouton(false, '#64748b')}><Pic n="trash"/>Effacer</button>
             </div>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -425,7 +426,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               <button onClick={() => setZCm(HC_CM)} style={stylePetitBouton(false, '#0369a1')}>⬇ Placer au fond</button>
               <button onClick={() => setRevele(r => !r)} style={stylePetitBouton(revele, '#64748b')}>{revele ? '🙈 Cacher le niveau' : '👁 Révéler le niveau'}</button>
-              <button onClick={() => { setHinc(Math.round((0.15 + Math.random() * 0.4) * 100) / 100); setRevele(false); setZCm(0); }} style={stylePetitBouton(false, '#64748b')}>🔄 Autre récipient</button>
+              <button onClick={() => { setHinc(Math.round((0.15 + Math.random() * 0.4) * 100) / 100); setRevele(false); setZCm(0); }} style={stylePetitBouton(false, '#64748b')}><Pic n="refresh"/>Autre récipient</button>
             </div>
             <div style={{ fontSize: 13.5, color: TXT, lineHeight: 1.6 }}>
               Pression lue : <strong>{pLueInc} hPa</strong>
