@@ -18,12 +18,14 @@ export const CHAPITRES = [
   { id: '2gt-microscopique', niveau: '2GT', label: '⚛️ Modéliser la matière à l’échelle microscopique', sims: [57, 58], domaines: [] },
   { id: '2gt-solutions', niveau: '2GT', label: '🧂 Solutions, dilution et mélanges', sims: [61, 62, 63], domaines: [] },
   { id: '2gt-lumiere', niveau: '2GT', label: '🔦 Lumière : réfraction, lentilles et spectres', sims: [64, 65, 66], domaines: [] },
+  { id: '2gt-circuits', niveau: '2GT', label: '🔌 Circuits électriques, loi d’Ohm et capteurs', sims: [68, 69], domaines: [] },
   { id: '2gt-forces', niveau: '2GT', label: '➡️ Modéliser une action par une force', sims: [59, 60, 67], domaines: [] },
   { id: '2gt-mouvement', niveau: '2GT', label: '🚃 Décrire un mouvement', sims: [56], domaines: ['Mouvement et vitesse'] },
 
   { id: '1g-evolution', niveau: '1G', label: '⚗️ Suivi de l’évolution d’un système, siège d’une transformation', sims: [1, 2, 25, 10], domaines: ['Chimie'] },
   { id: '1g-champ', niveau: '1G', label: '🌍 Interactions fondamentales et notion de champ', sims: [51, 48, 49, 50], domaines: ['Interactions et champs'] },
   { id: '1g-cohesion', niveau: '1G', label: '🧪 Cohésion, solubilité et miscibilité', sims: [53], domaines: [] },
+  { id: '1g-electricite', niveau: '1G', label: '⚡ Aspects énergétiques des phénomènes électriques', sims: [70, 71, 72], domaines: [] },
   { id: '1g-mouvement', niveau: '1G', label: '🚀 Mouvement d’un système', sims: [52], domaines: ['Mécanique'] },
 
   { id: 'tstl-signaux', niveau: 'TSTL', label: '📡 Transmission de signaux numériques', sims: [8, 15, 33], domaines: ['Transmission de signaux numériques'] },
