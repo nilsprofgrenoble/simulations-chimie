@@ -88,7 +88,7 @@ export function AccueilSite({ onStart, session, simulations, energyUrl }) {
           <div style={{ fontSize: 34 }} aria-hidden="true">🤝</div>
           <h2 id="titre-contact" style={{ margin: 0, fontSize: 19, fontWeight: 800, color: TXT, fontFamily: "'Outfit', sans-serif" }}>Un coup de main pour vos classes ?</h2>
           <p style={{ margin: 0, fontSize: 14.5, color: TXT2, lineHeight: 1.6, flex: 1 }}>
-            Prise en main du site, simulation à adapter à votre séquence, devoir à construire, idée de nouvelle simulation : écrivez-moi, on trouvera ensemble.
+            Prise en main du site, simulation à adapter à votre séquence, idée de nouvelle simulation : n’hésitez pas à me contacter via mon adresse mail académique !
           </p>
           <BoutonMail libelle="✉️ Me contacter" sujet="Besoin d'un coup de main pour ma classe — Paillasse virtuelle" couleur={ACCENT} plein/>
         </section>
