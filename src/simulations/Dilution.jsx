@@ -4,6 +4,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, avecIndices, indicesProfond } from "../commun";
 import { Fiole } from "./solutionsVue";
 import { fr, TM, concFille, volumeMere, ECHELLE, PIPETTES, FIOLES, T_DAKIN, teinte } from "./solutionsModele";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 62 — DILUTION ET ÉCHELLE DE TEINTES (2GT, « Constitution et transformations de la matière »)
@@ -272,7 +273,7 @@ export function SimulationDilution() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (

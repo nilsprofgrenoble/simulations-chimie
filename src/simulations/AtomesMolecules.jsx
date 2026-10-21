@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { element, etatEntite, ionProbable, configTxt, valence, ionTxt,
   MOLECULES, MOLECULES_DEFI, moleculeDe, analyserLewis, doubletsAuto, liaisonsDeRef, cleLiaison, voisinsDe, GAZ_NOBLES } from "./atomesModele";
 import { SchemaAtome, TableauPeriodique } from "./atomesVue";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 57 — ATOMES, IONS ET MOLÉCULES : LA QUÊTE DE L'OCTET (2GT, « Modéliser la matière à l'échelle microscopique »)
@@ -493,7 +494,7 @@ export function SimulationAtomesMolecules() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
   const ateliers = (enExplore || enGuide) && (
     <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>

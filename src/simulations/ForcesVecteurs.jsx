@@ -3,6 +3,7 @@ import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suiv
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche } from "../commun";
 import { G, ASTRES, astre, gravite, forceGrav, fr, sci, PX_CM, ECHELLES, caracteristiques, conforme } from "./forcesModele";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 59 — MODÉLISER UNE ACTION MÉCANIQUE PAR UNE FORCE (2GT, « Mouvement et interactions »)
@@ -421,7 +422,7 @@ export function SimulationForcesVecteurs() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
   const ateliers = (enExplore || enGuide) && (
     <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>

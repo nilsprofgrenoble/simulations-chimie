@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton,
   styleBoite, Section, LigneMesure, Curseur, BoutonsModes, lireNombre, proche, sci, avecIndices } from "../commun";
 import { SchemaChateau, COUL, H_FOND, H_TROP, ecrireTransfert, lireTransfert, effacerTransfert } from "./chateauEau";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 5;
 declarerDefis(SIM_ID, [['principal', 'Régler la régulation du château d’eau']]);
@@ -488,7 +489,7 @@ export function Simulation5({ naviguer }) {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );
   return (

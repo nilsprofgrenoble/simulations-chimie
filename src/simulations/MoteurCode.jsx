@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { nf, NB } from "./Distillation";
 import { Moteur, Chrono } from "./MoteurPasAPas";
 import { simuler, delaiMin, N_PAS, F0 } from "./moteurModele";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 45;
 declarerDefis(SIM_ID, [['principal', 'Aller le plus vite possible sans perdre de pas']]);
@@ -206,7 +207,7 @@ export function SimulationMoteurCode({ naviguer }) {
   })();
   const voletDefi = defi && (
     <div>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>🎯 Défi : aller le plus vite possible</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : aller le plus vite possible</div>
       <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>Le moteur entraîne une charge de <strong>{defi.charge}{NB}%</strong> en <strong>{PRE[defi.m].nom.toLowerCase()}</strong>. Trouvez le <strong>plus petit délai</strong> (à 0,5{NB}ms près) pour lequel le rotor ne perd <strong>aucun pas</strong>, puis vérifiez.</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button onClick={() => { noterDefi(!stale && !!res && res.ok && delai <= dMinDefi + 0.5); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier mon réglage</button>
@@ -231,7 +232,7 @@ export function SimulationMoteurCode({ naviguer }) {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>);
 
   const verrouille = enDefi;               // en défi, la séquence est imposée

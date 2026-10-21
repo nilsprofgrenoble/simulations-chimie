@@ -1,6 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Field, TabBtn, cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices } from "../commun";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 13;
 declarerDefis(SIM_ID, [['principal', 'Étalon interne et normalisation interne']]);
@@ -1209,7 +1210,7 @@ function ParcoursEtalon({ plotlyReady, changerMode }) {
   const fin = (
     <span style={{ display: 'flex', gap: 6 }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );
   const picsEt = [...E.analytes.map((a, i) => ({ nom: a.nom, tr: E.etalon.trAnalytes[i], aire: E.etalon.airesAnalytes[i], color: a.couleur })), { nom: E.eiNom, tr: E.etalon.trEI, aire: E.etalon.aireEI, color: '#888' }];
@@ -1378,9 +1379,9 @@ export function SimulationEtalonnageInterne({ plotlyReady }) {
         @media (max-width: 900px) { .ei-l1 { grid-template-columns: minmax(0, 1fr); } }
       `}</style>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end', marginBottom: 10 }}>
-        <button onClick={() => setMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
-        <button onClick={() => setMode('explore')} style={styleBouton(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
-        <button onClick={() => setMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
+        <button onClick={() => setMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>
+        <button onClick={() => setMode('explore')} style={styleBouton(mode === 'explore', '#334155')}><Pic n="search"/>Exploration libre</button>
+        <button onClick={() => setMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}><Pic n="target"/>Défi</button>
       </div>
       <div style={{ display: mode === 'explore' ? 'block' : 'none' }}><ExplorationEtalonnage plotlyReady={plotlyReady}/></div>
       {mode === 'guide' && <ParcoursEtalon plotlyReady={plotlyReady} changerMode={setMode}/>}

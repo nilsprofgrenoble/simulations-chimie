@@ -3,6 +3,7 @@ import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suiv
 import { Field, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, Frac, Curseur, lireProgression } from "../commun";
 import { MOLECULES_CLHP, PARAMS_DEFAUT, SEUIL_RS, P_MAX, PANNES, analyse, colonne, signal, bruitLigne, positionBande, phiEntree } from "./clhpModele";
+import { Pic } from "../Pictos";
 
 export { MOLECULES_CLHP };
 
@@ -857,7 +858,7 @@ export function SimulationCLHP() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button></span>);
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button></span>);
 
   const appareil = (
     <div style={{ ...styleBoite, background: 'white', ...cadre('appareil') }}>

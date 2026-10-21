@@ -3,6 +3,7 @@ import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suiv
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, Curseur, lireProgression } from "../commun";
 import { scene, ORDRE_SCENES, echantillonner, caracteriser, ecartPoint, ecartAttendu, meilleurDt, norme, angle } from "./mvtRefModele";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 56 — RÉFÉRENTIEL ET MOUVEMENT (2GT, « Décrire un mouvement »)
@@ -615,7 +616,7 @@ export function SimulationMouvementReferentiel() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (

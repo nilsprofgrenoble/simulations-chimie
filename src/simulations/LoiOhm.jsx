@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { fr, ctn, ldr, lampeI, fonctionnementLampe, regression } from "./elecModele";
 import { BLEU, VERMILLON, VIOLET, alea, usePhase } from "./elecOutils";
 import { Curseur, VoletDefiGen, Fil, Pile, Mesure, Graphe } from "./elecCommun";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 69 — LOI D'OHM, CARACTÉRISTIQUE ET CAPTEUR RÉSISTIF (2GT, « Signaux et capteurs »)
@@ -296,7 +297,7 @@ plt.show()`;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (

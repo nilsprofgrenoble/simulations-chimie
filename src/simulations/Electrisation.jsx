@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, ARetenir, Curseur, LigneMesure, lireProgression } from "../commun";
 import { NB } from "./Distillation";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 51 — ÉLECTRISATION ET INFLUENCE ÉLECTROSTATIQUE (1G, chapitre 8B)
@@ -546,7 +547,7 @@ export function SimulationElectrisation() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
   // ════════════════ SCÈNE 1 : FROTTEMENT ════════════════
   const FW = 640, FH = 270;

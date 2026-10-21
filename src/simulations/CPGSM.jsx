@@ -7,6 +7,7 @@ import { useLargeur, pasTemps, grille } from "./cpgOutils";
 import { SPECTRES } from "./cpgsmSpectres";
 import { IDS_SM, PARAMS_DEFAUT, PANNES, PAR_ID, PHASES, analyse, tic, eic, spectreA, rechercheBibliotheque, concordance,
   controleAirEau, ionMoleculaire, picBase, masseNominale, temperature } from "./cpgsmModele";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 55 — CPG COUPLÉE À LA SPECTROMÉTRIE DE MASSE (BTS)
@@ -672,7 +673,7 @@ export function SimulationCPGSM() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button></span>);
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button></span>);
 
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>

@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, Frac, fmt, lireProgression } from "../commun";
 import { NB } from "./Distillation";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 49 — DEUX CORPS EN INTERACTION : loi de la gravitation universelle de Newton et loi de Coulomb (1G, chapitre 8)
@@ -185,7 +186,7 @@ function VoletDefi({ defi, setDefi, changerType, placer }) {
           <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}
       </div>
       {defi.type === 'sens' && <>
-        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>🎯 Défi : deux charges</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : deux charges</div>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.55 }}>
           La boule A porte la charge <strong>q<sub>A</sub> = {nC(defi.qA)}</strong>. Le signe de la charge de la boule B est inconnu (en gris). Les flèches montrent les forces que les deux boules
           exercent l’une sur l’autre. Retrouvez la nature de l’interaction et le signe de q<sub>B</sub>.</div>
@@ -197,7 +198,7 @@ function VoletDefi({ defi, setDefi, changerType, placer }) {
         {choix('fact', [['x9', 'multipliée par 9'], ['x3', 'multipliée par 3'], ['div3', 'divisée par 3'], ['div9', 'divisée par 9']])}
       </>}
       {defi.type === 'gravite' && <>
-        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>🎯 Défi : la Terre et un satellite</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : la Terre et un satellite</div>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.55 }}>
           Un satellite de masse <strong>m = {fmt(defi.m, 0)}{NB}kg</strong> orbite à l’altitude <strong>h = {fmt(defi.h, 0)}{NB}km</strong> au-dessus du sol.
           Calculez la norme de la force exercée par la Terre sur le satellite, puis celle de la force exercée par le satellite sur la Terre.
@@ -208,7 +209,7 @@ function VoletDefi({ defi, setDefi, changerType, placer }) {
         </div>
       </>}
       {defi.type === 'coulomb' && <>
-        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>🎯 Défi : à quelle distance ?</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : à quelle distance ?</div>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.55 }}>
           Les charges des boules sont <strong>q<sub>A</sub> = {nC(defi.qA)}</strong> et <strong>q<sub>B</sub> = {nC(defi.qB)}</strong>. Les boules exercent l’une sur l’autre des forces de norme
           <strong> F = {fmt(defi.Fp, defi.Fp >= 100 ? 0 : defi.Fp >= 10 ? 1 : 2)}{NB}µN</strong>. 1. Quelle est la distance entre les centres des boules ?
@@ -388,7 +389,7 @@ export function SimulationDeuxCorps() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   // ════════════════ SCÈNE ════════════════

@@ -3,6 +3,7 @@ import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suiv
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, avecIndices } from "../commun";
 import { fr, R_KM, gAlt, G0, vOrb, periode, typeOrbite, depart, pas, trajectoire } from "./issModele";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 67 — L'ISS EN CHUTE LIBRE (2GT, « Mouvement et interactions »)
@@ -325,7 +326,7 @@ export function SimulationISS() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (

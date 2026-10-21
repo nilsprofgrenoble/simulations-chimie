@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { element, ELEMENTS, FAMILLES, HORS_LISTE, ionProbable, etatEntite, configTxt, valence, ionTxt, sub,
   REACTIONS, PRECIPITES, bilanEquation, composeIonique, formuleIonique, nomIonique, CATIONS, ANIONS } from "./atomesModele";
 import { SchemaAtome, TableauPeriodique, COULEURS_FAMILLE } from "./atomesVue";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 58 — FAMILLES CHIMIQUES (2GT, « Modéliser la matière à l'échelle microscopique »)
@@ -357,7 +358,7 @@ export function SimulationFamillesChimiques() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (

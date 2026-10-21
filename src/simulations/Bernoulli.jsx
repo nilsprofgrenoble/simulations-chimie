@@ -1,6 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, ORANGE_GUIDE, lireNombre } from "../commun";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 17;
 declarerDefis(SIM_ID, [['principal', 'Résoudre un exercice complet (3 étapes)']]);
@@ -1808,7 +1809,7 @@ export function SimulationBernoulli({ plotlyReady }) {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={btn(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('exercice')} style={btn(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('exercice')} style={btn(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );
   const volet = enGuide
@@ -1850,9 +1851,9 @@ export function SimulationBernoulli({ plotlyReady }) {
           Circuit hydraulique et relation de Bernoulli
         </h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}>🧭 Parcours guidé</button>
-          <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}>🔍 Exploration libre</button>
-          <button onClick={() => changerMode('exercice')} style={btn(mode === 'exercice', '#0ea5e9')}>🎯 Défi (exercices)</button>
+          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>
+          <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}><Pic n="search"/>Exploration libre</button>
+          <button onClick={() => changerMode('exercice')} style={btn(mode === 'exercice', '#0ea5e9')}><Pic n="target"/>Défi (exercices)</button>
         </div>
       </div>
 

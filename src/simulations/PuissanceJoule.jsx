@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { fr, chauffe, C_EAU } from "./elecModele";
 import { BLEU, VERMILLON, alea } from "./elecOutils";
 import { Curseur, VoletDefiGen, Graphe } from "./elecCommun";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 71 — PUISSANCE, EFFET JOULE ET RENDEMENT (1G spé PC, « Aspects énergétiques des phénomènes électriques »)
@@ -266,7 +267,7 @@ export function SimulationPuissanceJoule() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (

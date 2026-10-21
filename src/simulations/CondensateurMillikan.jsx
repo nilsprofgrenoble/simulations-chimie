@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, Frac, fmt, lireProgression } from "../commun";
 import { NB } from "./Distillation";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 50 — CONDENSATEUR PLAN ET GOUTTELETTE DE MILLIKAN : champ uniforme E = U/d, force F = q·E, poids P = m·g,
@@ -146,7 +147,7 @@ function VoletDefi({ defi, setDefi, changerType, appliquer }) {
           <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}
       </div>
       {defi.type === 'champ' && <>
-        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>🎯 Défi : champ et force dans un condensateur</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : champ et force dans un condensateur</div>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.55 }}>
           Entre deux plaques distantes de <strong>{fmt(defi.d, 1)}{NB}cm</strong>, on applique la tension <strong>U = {fmt(defi.U, 0)}{NB}V</strong> ; la plaque du haut est
           {defi.pol === 'haut+' ? ' positive' : ' négative'}. Une gouttelette porte la charge <strong>q = {chargeTxt(defi.n)}</strong> (e = 1,602 × 10⁻¹⁹ C). Donnez la norme du champ E,
@@ -159,7 +160,7 @@ function VoletDefi({ defi, setDefi, changerType, appliquer }) {
         </div>
       </>}
       {defi.type === 'equilibre' && <>
-        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>🎯 Défi : immobiliser la gouttelette</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : immobiliser la gouttelette</div>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.55 }}>
           Une gouttelette d’huile de masse <strong>m = {m15(defi.m)}</strong> porte la charge <strong>q = {chargeTxt(defi.n)}</strong>. Les plaques sont distantes de <strong>{fmt(defi.d, 1)}{NB}cm</strong>.
           Quelle plaque doit être positive, et quelle tension U faut-il appliquer pour que la gouttelette reste immobile ? Données : g = 9,81 N·kg⁻¹, e = 1,602 × 10⁻¹⁹ C.</div>
@@ -170,7 +171,7 @@ function VoletDefi({ defi, setDefi, changerType, appliquer }) {
         </div>
       </>}
       {defi.type === 'millikan' && <>
-        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>🎯 Défi : la charge mesurée</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : la charge mesurée</div>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.55 }}>
           Comme Millikan, on immobilise une gouttelette d’huile de masse <strong>m = {m15(defi.m)}</strong> entre deux plaques distantes de <strong>{fmt(defi.d, 1)}{NB}cm</strong> : elle est immobile pour
           <strong> U = {fmt(defi.U, 0)}{NB}V</strong>. Calculez la valeur absolue de sa charge, puis le nombre n de charges élémentaires qu’elle porte. Données : g = 9,81 N·kg⁻¹, e = 1,602 × 10⁻¹⁹ C.</div>
@@ -351,7 +352,7 @@ export function SimulationCondensateurMillikan() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   // ════════════════ SCÈNE ════════════════

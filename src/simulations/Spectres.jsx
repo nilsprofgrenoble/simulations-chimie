@@ -3,6 +3,7 @@ import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suiv
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, avecIndices } from "../commun";
 import { fr, courbeCorps, intensiteCorps, lambdaMax, tempDepuisLmax, rgbLambda, css, couleurCorps, couleurVue, courbeCorpsTerre, ETOILES, GAZ, gaz, couleurLampe, raieProche } from "./spectresModele";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 66 — SPECTRES D'ÉMISSION (2GT, « Ondes et signaux »)
@@ -299,7 +300,7 @@ export function SimulationSpectres() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
   const defiZone = enDefi && (defi.type === 'gaz' ? <div style={styleBoite}>{DechargePanel}</div> : defi.type === 'temperature' ? <div style={styleBoite}>{EtoilePanelDefi(defi, cur, setCur)}</div> : null);
 

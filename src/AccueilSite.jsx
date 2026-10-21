@@ -1,6 +1,7 @@
 import { BoutonMail } from "./contact";
 import { A_LA_UNE } from "./aLaUne";
 import { ACCENT, TEXTE, TEXTE2, FOND_BLOC } from "./theme";
+import { Pic, Emo } from "./Pictos";
 
 // ============================================================
 //  PAGE D'ACCUEIL : texte de présentation, invitation à se connecter,
@@ -43,10 +44,10 @@ export function AccueilSite({ onStart, session, simulations, energyUrl }) {
                 : 'Avec un compte, votre progression vous suit d’un ordinateur à l’autre et vos exercices comptent. Pas besoin de compte pour essayer : tout reste utilisable sans.'}
             </p>
             <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexWrap: 'wrap', gap: '6px 16px', fontSize: 14, color: TXT, fontWeight: 700 }}>
-              <li><span aria-hidden="true">★</span> Des étoiles à gagner</li>
-              <li><span aria-hidden="true">🌳</span> Des paliers par compétence</li>
-              <li><span aria-hidden="true">🏅</span> Des badges à débloquer</li>
-              <li><span aria-hidden="true">👩‍🏫</span> Pour les profs : classes, devoirs et suivi</li>
+              <li><span aria-hidden="true"><Pic n="star"/></span> Des étoiles à gagner</li>
+              <li><span aria-hidden="true"><Pic n="tree"/></span> Des paliers par compétence</li>
+              <li><span aria-hidden="true"><Pic n="medal"/></span> Des badges à débloquer</li>
+              <li><span aria-hidden="true"><Pic n="board"/></span> Pour les profs : classes, devoirs et suivi</li>
             </ul>
           </div>
           <button onClick={() => onStart(profil?.role === 'prof' ? 40 : 39)} style={gros}>
@@ -59,7 +60,7 @@ export function AccueilSite({ onStart, session, simulations, energyUrl }) {
       {sim && (
         <section style={lame} aria-labelledby="titre-une">
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 18, alignItems: 'center' }}>
-            <div style={{ fontSize: 56, lineHeight: 1, flexShrink: 0 }} aria-hidden="true">{sim.icon}</div>
+            <div style={{ fontSize: 56, lineHeight: 1, flexShrink: 0 }} aria-hidden="true"><Emo e={sim.icon} t={56}/></div>
             <div style={{ flex: '1 1 320px', minWidth: 0 }}>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 4 }}>
                 <span style={{ background: ACCENT, color: 'white', fontWeight: 800, fontSize: 12.5, padding: '3px 10px', borderRadius: 999 }}>{A_LA_UNE.badge}</span>
@@ -76,7 +77,7 @@ export function AccueilSite({ onStart, session, simulations, energyUrl }) {
       {/* Deux modules : Energy@School et contact */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 22 }}>
         <section style={{ ...lame, display: 'flex', flexDirection: 'column', gap: 10 }} aria-labelledby="titre-energy">
-          <div style={{ fontSize: 34 }} aria-hidden="true">⚡</div>
+          <div aria-hidden="true"><Pic n="bolt" t={38}/></div>
           <h2 id="titre-energy" style={{ margin: 0, fontSize: 19, fontWeight: 800, color: TXT, fontFamily: "'Outfit', sans-serif" }}>Energy@School</h2>
           <p style={{ margin: 0, fontSize: 14.5, color: TXT2, lineHeight: 1.6, flex: 1 }}>
             Production, transport, stockage de l’énergie et hydrogène : les simulations pour préparer la journée à Grenoble INP – Ense³.
@@ -85,12 +86,12 @@ export function AccueilSite({ onStart, session, simulations, energyUrl }) {
         </section>
 
         <section style={{ ...lame, display: 'flex', flexDirection: 'column', gap: 10 }} aria-labelledby="titre-contact">
-          <div style={{ fontSize: 34 }} aria-hidden="true">🤝</div>
+          <div aria-hidden="true"><Pic n="users" t={38}/></div>
           <h2 id="titre-contact" style={{ margin: 0, fontSize: 19, fontWeight: 800, color: TXT, fontFamily: "'Outfit', sans-serif" }}>Un coup de main pour vos classes ?</h2>
           <p style={{ margin: 0, fontSize: 14.5, color: TXT2, lineHeight: 1.6, flex: 1 }}>
             Prise en main du site, simulation à adapter à votre séquence, idée de nouvelle simulation : n’hésitez pas à me contacter via mon adresse mail académique !
           </p>
-          <BoutonMail libelle="✉️ Me contacter" sujet="Besoin d'un coup de main pour ma classe — Paillasse virtuelle" couleur={ACCENT} plein/>
+          <BoutonMail libelle={<><Pic n="mail"/>Me contacter</>} sujet="Besoin d'un coup de main pour ma classe — Paillasse virtuelle" couleur={ACCENT} plein/>
         </section>
       </div>
     </div>

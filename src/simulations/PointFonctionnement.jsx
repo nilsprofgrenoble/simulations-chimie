@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
 import { SchemaChateau, COUL, H_FOND, H_TROP, ecrireTransfert, lireTransfert, effacerTransfert } from "./chateauEau";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 6;
 declarerDefis(SIM_ID, [['principal', 'Point de fonctionnement']]);
@@ -401,7 +402,7 @@ export function Simulation6({ naviguer }) {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );
 

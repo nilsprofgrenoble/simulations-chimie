@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { fr, serie, derivation } from "./elecModele";
 import { BLEU, VERMILLON, VIOLET, GRIS, alea, usePhase } from "./elecOutils";
 import { Curseur, VoletDefiGen, Fil, Resistor, Pile, Mesure } from "./elecCommun";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 68 — CIRCUITS ÉLECTRIQUES : INTENSITÉ ET TENSION (2GT, « Signaux et capteurs »)
@@ -190,7 +191,7 @@ export function SimulationCircuits() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { LogoPaillasse } from "./Logo";
 import { ACCENT, ACCENT_CLAIR, TEXTE, TEXTE2, BORDURE } from "./theme";
+import { Pic, Emo, AvecPicto } from "./Pictos";
 
 // ============================================================
 //  EN-TÊTE DU SITE : toujours visible, même quand on fait défiler la page.
@@ -59,14 +60,14 @@ export function EnTete({ menus, activeId, niveauActif, naviguer, session }) {
         background: s.id === activeId ? ACCENT_CLAIR : 'transparent', fontWeight: s.id === activeId ? 800 : 500 }}
       onMouseEnter={e => { if (s.id !== activeId) e.currentTarget.style.background = '#f1f5f9'; }}
       onMouseLeave={e => { if (s.id !== activeId) e.currentTarget.style.background = 'transparent'; }}>
-      <span style={{ fontSize: 17, flexShrink: 0 }} aria-hidden="true">{s.icon}</span>
+      <span style={{ fontSize: 17, flexShrink: 0 }} aria-hidden="true"><Emo e={s.icon} t={18}/></span>
       <span style={{ flex: 1 }}>{s.label}</span>
       {s.id === activeId && <span aria-hidden="true">●</span>}
     </button>
   );
   const groupe = (g, k) => (
     <div key={k} style={{ minWidth: 0 }}>
-      {g.label && <div style={{ fontSize: 14.5, fontWeight: 800, color: TXT, background: ACCENT_CLAIR, borderLeft: `4px solid ${VERT}`, borderRadius: 6, padding: '5px 10px', margin: '6px 0 4px', lineHeight: 1.3 }}>{g.label}</div>}
+      {g.label && <div style={{ fontSize: 14.5, fontWeight: 800, color: TXT, background: ACCENT_CLAIR, borderLeft: `4px solid ${VERT}`, borderRadius: 6, padding: '5px 10px', margin: '6px 0 4px', lineHeight: 1.3 }}><AvecPicto texte={g.label}/></div>}
       <div style={{ display: 'flex', flexDirection: 'column', marginLeft: g.label ? 8 : 0 }}>{g.sims.map(s => lienSim(s))}</div>
     </div>
   );
@@ -139,7 +140,7 @@ export function EnTete({ menus, activeId, niveauActif, naviguer, session }) {
         <div style={panneau} role="region" aria-label="Menu">
           <div style={{ padding: '8px 12px 14px' }}>
             <button onClick={() => aller(0)} style={{ display: 'flex', width: '100%', padding: '10px', border: 'none', background: activeId === 0 ? ACCENT_CLAIR : 'transparent',
-              borderRadius: 8, fontSize: 15, fontWeight: 700, color: TXT, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>🏠 Accueil</button>
+              borderRadius: 8, fontSize: 15, fontWeight: 700, color: TXT, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}><Pic n="home"/>Accueil</button>
             {menus.map(m => (
               <div key={m.key} style={{ borderTop: `1px solid ${BORD}` }}>
                 <button onClick={() => setAccordeon(a => a === m.key ? null : m.key)} aria-expanded={accordeon === m.key}

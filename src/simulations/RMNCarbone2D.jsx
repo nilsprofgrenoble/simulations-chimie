@@ -7,6 +7,7 @@ import { plat } from "./rmnModele";
 import { fr } from "./elecModele";
 import { BLEU, VERMILLON, VIOLET, VERT, alea } from "./elecOutils";
 import { VoletDefiGen } from "./elecCommun";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 76 — RMN ¹³C ET RMN 2D : COSY ET HSQC (BTS Métiers de la chimie, analyse spectroscopique)
@@ -303,7 +304,7 @@ export function SimulationRMNC2D() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
   const planDefi = (
     <div style={styleBoite}>

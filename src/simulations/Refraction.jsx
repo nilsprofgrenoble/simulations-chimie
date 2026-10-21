@@ -3,6 +3,7 @@ import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suiv
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, avecIndices } from "../commun";
 import { fr, MILIEUX, milieu, refraction, angleLimite, mesurerI2, pente, pecheur } from "./optiqueModele";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 64 — RÉFRACTION DE LA LUMIÈRE : LOIS DE SNELL-DESCARTES (2GT, « Ondes et signaux »)
@@ -297,7 +298,7 @@ export function SimulationRefraction() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (

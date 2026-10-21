@@ -1,6 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { TabBtn, cardStyle, KIT, Section, styleBoite, CarteParcours, useEtatPersistant, styleBouton, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 29;
 declarerDefis(SIM_ID, [['principal', 'Lire les courbes i-E']]);
@@ -331,7 +332,7 @@ function ParcoursIEpH({ plotlyReady, changerMode }) {
   const fin = (
     <span style={{ display: "flex", gap: 6 }}>
       <button onClick={() => changerMode("explore")} style={styleBouton(true, "#334155")}>🔍 Explorer</button>
-      <button onClick={() => changerMode("defi")} style={styleBouton(true, "#0ea5e9")}>🎯 Défi</button>
+      <button onClick={() => changerMode("defi")} style={styleBouton(true, "#0ea5e9")}><Pic n="target"/>Défi</button>
     </span>
   );
   return (
@@ -436,9 +437,9 @@ export function SimulationIEpH({ plotlyReady }) {
     <div style={{ ...cardStyle, textAlign: "left" }}>
       <style>{CSS}</style>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end", marginBottom: 10 }}>
-        <button onClick={() => setMode("guide")} style={styleBouton(mode === "guide", ORANGE_GUIDE)}>🧭 Parcours guidé</button>
-        <button onClick={() => setMode("explore")} style={styleBouton(mode === "explore", "#334155")}>🔍 Exploration libre</button>
-        <button onClick={() => setMode("defi")} style={styleBouton(mode === "defi", "#0ea5e9")}>🎯 Défi</button>
+        <button onClick={() => setMode("guide")} style={styleBouton(mode === "guide", ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>
+        <button onClick={() => setMode("explore")} style={styleBouton(mode === "explore", "#334155")}><Pic n="search"/>Exploration libre</button>
+        <button onClick={() => setMode("defi")} style={styleBouton(mode === "defi", "#0ea5e9")}><Pic n="target"/>Défi</button>
       </div>
       <div style={{ display: mode === "explore" ? "block" : "none" }}><ExplorationIEpH plotlyReady={plotlyReady}/></div>
       {mode === "guide" && <ParcoursIEpH plotlyReady={plotlyReady} changerMode={setMode}/>}

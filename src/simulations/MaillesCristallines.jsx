@@ -7,6 +7,7 @@ import { ECHANTILLONS, POS, STRUCT, METAUX_PAR_STRUCT, compacite, masseVol, ferm
 import { fr } from "./elecModele";
 import { BLEU, VERMILLON, VIOLET, GRIS, VERT, alea } from "./elecOutils";
 import { Curseur, VoletDefiGen } from "./elecCommun";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 74 — MAILLES CRISTALLINES : motif, dénombrement, compacité, sites interstitiels, cristaux ioniques
@@ -386,7 +387,7 @@ export function SimulationMailles() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (

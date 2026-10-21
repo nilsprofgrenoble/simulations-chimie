@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, indicesProfond, lireNombre, proche, ARetenir, Curseur, LigneMesure } from "../commun";
 import { MELANGES, Teb, yEq, Tros, escalier, tete, trajectoire, pointA, wDe, degre, bilanColonneInfinie } from "./distillationModele";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 41;
 declarerDefis(SIM_ID, [['principal', 'Distillation : températures et compositions']]);
@@ -454,7 +455,7 @@ export function SimulationDistillation({ naviguer }) {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>);
 
   // ── Mesures affichées ──

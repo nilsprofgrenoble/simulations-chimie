@@ -2,6 +2,7 @@ import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suiv
 import { useState, Children, Fragment, cloneElement, isValidElement } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, lireProgression, fmt, sci } from "../commun";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 52 — MOUVEMENT D'UN SYSTÈME : VARIATION DU VECTEUR VITESSE ET FORCES (1G, chapitre 10)
@@ -635,7 +636,7 @@ export function SimulationMouvementSysteme() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (

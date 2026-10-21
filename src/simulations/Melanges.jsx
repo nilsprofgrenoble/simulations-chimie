@@ -3,6 +3,7 @@ import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suiv
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, avecIndices } from "../commun";
 import { fr, LIQUIDES, COLORANTS, miscible, goutte, D_HUILE, SHA, shaEau, D_EAU } from "./solutionsModele";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 63 — MÉLANGES : MISCIBILITÉ, SOLUBILITÉ ET DENSITÉ (2GT, « Constitution et transformations de la matière »)
@@ -280,7 +281,7 @@ export function SimulationMelanges() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (

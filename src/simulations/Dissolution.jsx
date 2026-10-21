@@ -4,6 +4,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche } from "../commun";
 import { Fiole } from "./solutionsVue";
 import { fr, SOLUTES, soluteDe, concentration, massePeser, dissolution, teinte } from "./solutionsModele";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 61 — DISSOLUTION ET CONCENTRATION EN MASSE (2GT, « Constitution et transformations de la matière »)
@@ -255,7 +256,7 @@ export function SimulationDissolution() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (

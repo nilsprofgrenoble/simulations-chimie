@@ -2,6 +2,7 @@ import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuvertu
 import { useState, useEffect } from "react";
 import { Frac, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, indicesProfond, fmt, lireNombre, proche } from "../commun";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 27;
 declarerDefis(SIM_ID, [['principal', 'Débits et masse volumique']]);
@@ -580,7 +581,7 @@ export function SimulationDebits({ naviguer }) {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
       {naviguer && <button onClick={() => naviguer(36, 'composees')} style={styleBouton(false, '#e11d48')}>🧮 S’entraîner aux unités (REA)</button>}
     </span>
   );

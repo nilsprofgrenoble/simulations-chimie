@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
   BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, Curseur, lireProgression } from "../commun";
 import { COMPOSES, PAR_ID, PHASES, GAZ, PARAMS_DEFAUT, SEUIL_RS, P_MAX, PANNES, FRACTION_VOL,
   analyse, ecoulement, signal, ligneBase, temperature, positionBande } from "./cpgModele";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 54 — CHROMATOGRAPHIE EN PHASE GAZEUSE (BTS)
@@ -805,7 +806,7 @@ export function SimulationCPG() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button></span>);
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button></span>);
 
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>

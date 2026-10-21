@@ -4,6 +4,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
   BoutonsModes, ORANGE_GUIDE, ARetenir, lireProgression } from "../commun";
 import { ESPECES, ANA, ORDRE_LIQ, ORDRE_SOL, TYPES, bilan, partPolaire, BATTERIE, RT, NACL, SEUIL_LIQ, SEUIL_SOL, SEUIL_ION } from "./solubiliteModele";
 import { FormuleSVG, PaireSVG, SolvateSVG, CristalSVG, typesPaire, typesIon } from "./solubiliteDessin";
+import { Pic } from "../Pictos";
 
 const COUL_INTER = { h: '#2563eb', p: '#ea580c', d: '#6b7280' };
 
@@ -562,7 +563,7 @@ export function SimulationSolubilite() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button></span>);
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button></span>);
 
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>

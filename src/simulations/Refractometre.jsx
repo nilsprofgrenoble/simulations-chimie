@@ -4,6 +4,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure } from "../commun";
 import { MELANGES, Teb, yEq, wDe, degre } from "./distillationModele";
 import { Diagramme, nf, NB, Xi } from "./Distillation";
+import { Pic } from "../Pictos";
 
 const SIM_ID = 43;
 declarerDefis(SIM_ID, [['principal', 'Indice et composition']]);
@@ -286,7 +287,7 @@ export function SimulationRefractometre({ naviguer }) {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défi</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
       {naviguer && <button onClick={() => naviguer(41)} style={styleBouton(false, '#0f766e')}>🧪 Distillation</button>}
     </span>);
 

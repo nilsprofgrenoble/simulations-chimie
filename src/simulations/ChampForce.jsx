@@ -3,6 +3,7 @@ import { useState, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, Frac, fmt, lireProgression } from "../commun";
 import { NB } from "./Distillation";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 48 — CHAMP ET FORCE : champ de gravitation de la Terre, champ électrostatique d'une charge ponctuelle,
@@ -195,7 +196,7 @@ function VoletDefi({ defi, setDefi, changerType, placer }) {
           <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}
       </div>
       {defi.type === 'signes' && <>
-        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>🎯 Défi : la charge mystère</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : la charge mystère</div>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.55 }}>
           Une boule porte une charge Q dont on ne connaît pas le signe (au centre, en gris). On place en M une charge test <strong>q = {nC(defi.q)}</strong> :
           la flèche rouge montre la force <Vec>F</Vec> qu’elle subit. Retrouvez le signe de Q, puis le sens du champ <Vec>E</Vec> que Q crée en M.</div>
@@ -205,14 +206,14 @@ function VoletDefi({ defi, setDefi, changerType, placer }) {
         {choix('sensE', [['centrifuge', 'centrifuge (s’éloigne de Q)'], ['centripete', 'centripète (dirigé vers Q)']])}
       </>}
       {defi.type === 'altitude' && <>
-        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>🎯 Défi : à quelle altitude {GRAV} = {defi.X}{NB}N·kg⁻¹ ?</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : à quelle altitude {GRAV} = {defi.X}{NB}N·kg⁻¹ ?</div>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.55 }}>
           Un satellite doit être placé là où le champ de gravitation terrestre vaut <strong>{defi.X}{NB}N·kg⁻¹</strong>. Calculez son <strong>altitude</strong> (comptée depuis le sol) :
           la simulation le placera à l’altitude proposée. Données : G = 6,674 × 10⁻¹¹ N·m²·kg⁻², M<sub>T</sub> = 5,972 × 10²⁴ kg, R<sub>T</sub> = 6 371 km.</div>
         {saisie('h', 'km', 'Altitude h')}
       </>}
       {defi.type === 'coulomb' && <>
-        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>🎯 Défi : champ et force autour d’une charge</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : champ et force autour d’une charge</div>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.55 }}>
           La boule porte la charge <strong>Q = {nC(defi.Q)}</strong>. 1. À quelle distance de son centre le champ vaut-il <strong>E = {fmt(defi.E, 0)}{NB}N·C⁻¹</strong> ?
           2. On place à cet endroit une charge <strong>q = {nC(defi.q)}</strong> : quelle est la norme de la force qu’elle subit, et dans quel sens est-elle dirigée ?
@@ -436,7 +437,7 @@ export function SimulationChampForce() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   // ════════════════ SCÈNE ════════════════

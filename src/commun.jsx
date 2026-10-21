@@ -1,5 +1,6 @@
 import { Children, Fragment, cloneElement, isValidElement, useState, useEffect, useRef, useMemo } from "react";
 import { compter } from "./stats";
+import { Pic, Emo } from "./Pictos";
 
 // ============================================================
 //  UTILITAIRES PARTAGÉS
@@ -288,7 +289,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
             : tache.label && !tache.ok && <button onClick={tache.faire} disabled={!!tache.attente} style={btn(true)}>{tache.label}</button>}
           {tache.consigne && <div style={{ fontSize: 14, fontWeight: 700, color: TXT, marginTop: 6, whiteSpace: 'pre-wrap' }}>{avecIndices(tache.consigne)}</div>}
           {tache.attente && <div style={{ fontSize: 14, color: TXT2, marginTop: 6 }}>{tache.attente}</div>}
-          {tache.ok && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}>✅ C'est fait !</div>}
+          {tache.ok && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}><Pic n="ok"/>C'est fait !</div>}
         </div>
       )}
       {tache && tache.type === 'qcm' && (
@@ -318,15 +319,15 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
       {tache && tache.indice && tache.type !== 'action' && !reussie && (
         <div>
           {reps[`ind${etape}`] ? (
-            <div style={{ fontSize: 13.5, color: TXT, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 6, padding: '6px 8px' }}>💡 {indicesProfond(tache.indice)}</div>
+            <div style={{ fontSize: 13.5, color: TXT, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 6, padding: '6px 8px' }}><Pic n="bulb"/>{indicesProfond(tache.indice)}</div>
           ) : (
             <button onClick={() => maj(e => ({ reps: { ...e.reps, [`ind${etape}`]: true } }))} style={{ fontSize: 13, padding: '4px 10px', borderRadius: 8, cursor: 'pointer', fontWeight: 700,
-              border: '1.5px solid #fcd34d', background: '#fffbeb', color: '#92400e' }}>💡 Indice</button>
+              border: '1.5px solid #fcd34d', background: '#fffbeb', color: '#92400e' }}><Pic n="bulb"/>Indice</button>
           )}
         </div>
       )}
       {dejaReussie && !reussieMaintenant && (
-        <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700 }}>✅ Étape déjà réussie.</div>
+        <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700 }}><Pic n="ok"/>Étape déjà réussie.</div>
       )}
       {tache && tache.type !== 'action' && !tache.bloque && (
         <div>
@@ -336,10 +337,10 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
               ✔ Valeur juste, mais arrondie trop tôt : <span style={{ fontWeight: 400, color: TXT }}>gardez au moins {tache.cs} chiffres significatifs (vous en avez écrit {nbCS(reps[etape])}).
               {' '}{indicesProfond(tache.expl)}</span></div>)}
           {verifie && juste && !(tache.type === 'num' && tache.cs && nbCS(reps[etape]) < tache.cs) && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}>
-            ✅ Bravo ! <span style={{ fontWeight: 400, color: TXT }}>{indicesProfond(tache.expl)}</span></div>}
+            <Pic n="ok"/>Bravo ! <span style={{ fontWeight: 400, color: TXT }}>{indicesProfond(tache.expl)}</span></div>}
           {verifie && !juste && (
             <div style={{ marginTop: 6 }}>
-              <div style={{ fontSize: 14, color: '#b91c1c', fontWeight: 700 }}>❌ Pas encore.</div>
+              <div style={{ fontSize: 14, color: '#b91c1c', fontWeight: 700 }}><Pic n="ko"/>Pas encore.</div>
               {tache.type === 'num' && piege() && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed',
                 border: '1px solid #fdba74', borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{avecIndices(piege())}</div>}
               {vuRep ? (
@@ -383,7 +384,7 @@ export function ARetenir({ titre = 'À RETENIR', children }) {
 export function ExempleResolu({ titre = 'Exemple résolu', children }) {
   return (
     <div data-exemple="1" style={{ background: '#f0f9ff', border: '1.5px solid #7dd3fc', borderRadius: 10, padding: '6px 10px', margin: '8px 0', color: '#0f172a' }}>
-      <div style={{ fontWeight: 800, fontSize: 13, color: '#0369a1', letterSpacing: 0.3, marginBottom: 2 }}>📘 {titre.toUpperCase()}</div>
+      <div style={{ fontWeight: 800, fontSize: 13, color: '#0369a1', letterSpacing: 0.3, marginBottom: 2 }}><Pic n="book"/>{titre.toUpperCase()}</div>
       <div style={{ fontSize: 14.5, lineHeight: 1.6 }}>{indicesProfond(children)}</div>
     </div>
   );
@@ -429,7 +430,7 @@ export function BandeauContexte({ id, contexte, couleur = '#0284c7' }) {
     <button onClick={() => setReplie(false)} style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '0 0 10px',
       padding: '6px 12px', borderRadius: 8, border: `1.5px solid ${couleur}`, background: 'white', color: couleur,
       fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>
-      ℹ️ Mode d'emploi de cette simulation
+      <Pic n="info"/>Mode d'emploi de cette simulation
     </button>
   );
   const ligneB = (emoji, titre, contenu) => (
@@ -445,13 +446,13 @@ export function BandeauContexte({ id, contexte, couleur = '#0284c7' }) {
     <div style={{ textAlign: 'left', background: 'white', border: `1.5px solid ${couleur}`, borderLeft: `6px solid ${couleur}`,
       borderRadius: 10, padding: '12px 14px', margin: '0 0 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontSize: 15.5, fontWeight: 800, color: TXT }}>ℹ️ À propos de cette simulation</span>
+        <span style={{ fontSize: 15.5, fontWeight: 800, color: TXT }}><Pic n="info"/>À propos de cette simulation</span>
         <button onClick={() => setReplie(true)} style={{ background: 'none', border: 'none', color: TXT2, cursor: 'pointer',
           fontSize: 13, textDecoration: 'underline' }}>masquer</button>
       </div>
-      {ligneB('🎯', 'À quoi ça sert', contexte.but)}
-      {ligneB('📚', 'Vous allez apprendre', contexte.apprendre)}
-      {ligneB('👣', 'Par où commencer', (
+      {ligneB(<Pic n="target" t={20}/>, 'À quoi ça sert', contexte.but)}
+      {ligneB(<Pic n="book" t={20}/>, 'Vous allez apprendre', contexte.apprendre)}
+      {ligneB(<Pic n="arrow" t={20}/>, 'Par où commencer', (
         <ol style={{ margin: '2px 0 0', paddingLeft: 20 }}>
           {contexte.etapes.map((e, k) => <li key={k} style={{ marginBottom: 2 }}>{e}</li>)}
         </ol>
@@ -507,7 +508,7 @@ export function Curseur({ nom, valeur, onChange, min, max, pas, unite = '', deci
 
 // Les trois boutons de mode, identiques sur toutes les pages
 export function BoutonsModes({ mode, setMode, modes = ['guide', 'explore', 'defi'] }) {
-  const def = { guide: ['🧭 Parcours guidé', ORANGE_GUIDE], explore: ['🔍 Exploration libre', '#334155'], defi: ['🎯 Défi', '#0ea5e9'] };
+  const def = { guide: [<><Pic n="compass"/>Parcours guidé</>, ORANGE_GUIDE], explore: [<><Pic n="search"/>Exploration libre</>, '#334155'], defi: [<><Pic n="target"/>Défi</>, '#0ea5e9'] };
   return (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       {modes.map(m => <button key={m} onClick={() => { setMode(m); if (!window.__clicAuto) compter(`sim${new URLSearchParams(window.location.search).get('sim') || '?'}:${m}`, `Simulation ${new URLSearchParams(window.location.search).get('sim') || '?'} : mode ${m}`, true); }} style={styleBouton(mode === m, def[m][1])}>{def[m][0]}</button>)}

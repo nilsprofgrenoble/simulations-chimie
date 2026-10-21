@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { fr, E_CHARGE, N_CUIVRE, deriveVitesse } from "./elecModele";
 import { BLEU, VERMILLON, GRIS, alea, usePhase } from "./elecOutils";
 import { Curseur, VoletDefiGen, Fil, Mesure } from "./elecCommun";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 70 — COURANT ÉLECTRIQUE ET DÉBIT DE CHARGES (1G spé PC, « Aspects énergétiques des phénomènes électriques »)
@@ -232,7 +233,7 @@ export function SimulationDebitCharges() {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}>🎯 Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
   return (
