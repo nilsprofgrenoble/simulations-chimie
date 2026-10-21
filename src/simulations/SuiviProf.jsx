@@ -10,6 +10,7 @@ import { AReprendreProf } from "./AReprendreProf";
 import { chapitresDe } from "../chapitres";
 import { SyntheseProf } from "./SyntheseProf";
 import { ChapitreClasse } from "./ChapitreClasse";
+import { PartageClasse } from "./PartageClasse";
 import { ApercuEleve } from "./ApercuEleve";
 import { GuideProf } from "./GuideProf";
 
@@ -91,11 +92,11 @@ export function SimulationSuiviProf({ naviguer }) {
 
   const chargerClasses = useCallback(async (choisir) => {
     let c;
-    try { c = await rest('classes?select=id,nom,prefixe,vie_classe,chapitres&order=cree_le'); setVieDispo(true); setChapDispo(true); }
+    try { c = await rest('classes?select=id,nom,prefixe,prof_id,vie_classe,chapitres&order=cree_le'); setVieDispo(true); setChapDispo(true); }
     catch {
       setChapDispo(false);                                                                          // supabase/07-chapitre-et-ciblage.sql pas encore appliqué
-      try { c = await rest('classes?select=id,nom,prefixe,vie_classe&order=cree_le'); setVieDispo(true); }
-      catch { c = await rest('classes?select=id,nom,prefixe&order=cree_le'); setVieDispo(false); }   // supabase/05-vie-de-classe.sql pas encore appliqué
+      try { c = await rest('classes?select=id,nom,prefixe,prof_id,vie_classe&order=cree_le'); setVieDispo(true); }
+      catch { c = await rest('classes?select=id,nom,prefixe,prof_id&order=cree_le'); setVieDispo(false); }   // supabase/05-vie-de-classe.sql pas encore appliqué
     }
     setClasses(c);
     setClasseId(cur => choisir || (c.some(x => x.id === cur) ? cur : c[0]?.id || ''));
@@ -127,6 +128,7 @@ export function SimulationSuiviProf({ naviguer }) {
   }
 
   const classe = classes.find(c => c.id === classeId);
+  const moiId = sess.user?.id, proprio = !classe?.prof_id || !moiId || classe.prof_id === moiId;   // co-professeur : ni suppression, ni partage (09-partage-classe.sql)
   // exercices « je m'entraîne » seuls (pour les compteurs), et exercices + défis des simulations (pour le détail et l'export)
   const parEleve = new Map(eleves.map(e => [e.user_id, agreger(lignes.filter(l => l.user_id === e.user_id && !estSimulation(l.cle) && !estDefi(l.cle)))]));
   const parEleveTout = new Map(eleves.map(e => [e.user_id, agreger(lignes.filter(l => l.user_id === e.user_id && !estSimulation(l.cle)))]));
@@ -209,7 +211,7 @@ export function SimulationSuiviProf({ naviguer }) {
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', margin: '10px 0' }}>
         <select aria-label="Classe" value={classeId} onChange={e => { setClasseId(e.target.value); setOuvert(null); setMsg(''); }} style={{ ...champ, fontWeight: 700, fontSize: 15 }}>
           {!classes.length && <option value="">Aucune classe</option>}
-          {classes.map(c => <option key={c.id} value={c.id}>{c.nom} ({c.prefixe})</option>)}
+          {classes.map(c => <option key={c.id} value={c.id}>{c.nom} ({c.prefixe}){moiId && c.prof_id && c.prof_id !== moiId ? ' · partagée' : ''}</option>)}
         </select>
         <button onClick={() => setFormClasse(v => !v)} style={styleBouton(false, '#475569')} disabled={occupe}>＋ Nouvelle classe</button>
         <button onClick={() => setApercu(true)} style={{ ...styleBouton(false, '#475569'), marginLeft: 'auto' }}>👁 Aperçu élève</button>
@@ -227,7 +229,7 @@ export function SimulationSuiviProf({ naviguer }) {
           <input type="number" min={1} max={40} value={ajout} onChange={e => setAjout(e.target.value)} style={{ ...champ, width: 64 }} aria-label="Nombre d’élèves à ajouter" />
           <button onClick={ajouter} style={styleBouton(false, '#475569')} disabled={occupe}>élèves</button>
           <button onClick={exporter} style={styleBouton(false, '#475569')}>⬇️ Export CSV</button>
-          <button onClick={supprimerClasse} style={{ ...styleBouton(false, '#b91c1c'), marginLeft: 'auto' }} disabled={occupe}>🗑 Supprimer la classe</button>
+          {proprio && <button onClick={supprimerClasse} style={{ ...styleBouton(false, '#b91c1c'), marginLeft: 'auto' }} disabled={occupe}>🗑 Supprimer la classe</button>}
         </div>
         <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }}>
           {vieDispo ? (
@@ -241,6 +243,7 @@ export function SimulationSuiviProf({ naviguer }) {
           )}
         </div>
         <ChapitreClasse classe={classe} dispo={chapDispo} occupe={occupe} onChoix={choisirChapitres} />
+        <PartageClasse classe={classe} proprio={proprio} occupe={occupe} proteger={proteger} setMsg={setMsg} onQuitte={async () => { setClasseId(''); await chargerClasses(); }} />
         </details>)}
 
       {(formClasse || (!classes.length && !occupe)) && (
@@ -295,7 +298,7 @@ export function SimulationSuiviProf({ naviguer }) {
                         <td style={td}>{formatDuree(ag.reduce((t, a) => t + a.duree, 0))}</td><td style={td}>{formatDate(der)}</td>
                         <td style={{ ...td, whiteSpace: 'nowrap' }} onClick={x => x.stopPropagation()}>
                           <button title="Nouveau mot de passe" aria-label={`Réinitialiser ${e.identifiant}`} onClick={() => reinitialiser(e.identifiant)} style={{ ...stylePetitBouton(false), marginRight: 4 }}>🔑</button>
-                          <button title="Supprimer le compte" aria-label={`Supprimer ${e.identifiant}`} onClick={() => supprimerEleve(e.identifiant)} style={stylePetitBouton(false)}>🗑</button>
+                          {proprio && <button title="Supprimer le compte" aria-label={`Supprimer ${e.identifiant}`} onClick={() => supprimerEleve(e.identifiant)} style={stylePetitBouton(false)}>🗑</button>}
                         </td>
                       </tr>
                       {ouvert === e.user_id && (

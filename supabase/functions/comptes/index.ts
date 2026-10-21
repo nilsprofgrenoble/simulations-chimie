@@ -11,6 +11,12 @@
 //    reinitialiser    { identifiant }           → nouveau mot de passe pour un élève
 //    supprimer_eleve  { identifiant }           → supprime le compte et toutes ses données
 //    supprimer_classe { classe_id }             → supprime la classe, ses comptes et leurs données
+//    partager         { classe_id, email }      → ajoute un co-professeur (déjà professeur sur le site) à la classe
+//    retirer_prof     { classe_id, prof_id }    → retire un co-professeur
+//    quitter_classe   { classe_id }             → un co-professeur quitte la classe
+//  Droits : le propriétaire de la classe peut tout. Un co-professeur peut ajouter des comptes et réinitialiser des mots de passe,
+//  mais NI supprimer un compte, NI supprimer la classe, NI partager, NI retirer un professeur (supprimer_eleve, supprimer_classe,
+//  partager, retirer_prof : propriétaire seulement).
 //  Les mots de passe ne sont renvoyés qu'une fois, au moment de leur création : à imprimer.
 // ════════════════════════════════════════════════════════════════════════════
 import { createClient } from 'npm:@supabase/supabase-js@2.117.3';   // version figée : pas de mise à jour surprise
@@ -68,19 +74,36 @@ Deno.serve(async (req) => {
   let corps: Record<string, unknown>;
   try { corps = await req.json(); } catch { return rep(400, { erreur: 'Requête illisible.' }); }
 
-  // Classe du professeur appelant, ou null
+  // Classe dont le professeur appelant est PROPRIÉTAIRE, ou null
   const maClasse = async (classeId: unknown) => {
     if (typeof classeId !== 'string') return null;
     const { data, error } = await admin.from('classes').select('id, prefixe, nom').eq('id', classeId).eq('prof_id', profId).maybeSingle();
     if (error) throw new Error(error.message);
     return data;
   };
-  // Élève d'une classe du professeur appelant, ou null
+  // Le professeur appelant est-il co-professeur de cette classe ?
+  const estCoProf = async (classeId: string) => {
+    const { data, error } = await admin.from('classes_profs').select('prof_id').eq('classe_id', classeId).eq('prof_id', profId).maybeSingle();
+    if (error) throw new Error(error.message);
+    return !!data;
+  };
+  // Classe dont le professeur appelant est propriétaire OU co-professeur, ou null
+  const maClasseOuPartagee = async (classeId: unknown) => {
+    if (typeof classeId !== 'string') return null;
+    const { data, error } = await admin.from('classes').select('id, prefixe, nom, prof_id').eq('id', classeId).maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) return null;
+    return data.prof_id === profId || (await estCoProf(data.id)) ? data : null;
+  };
+  // Élève d'une classe du professeur appelant (propriétaire ou co-professeur), ou null ; « proprio » : l'appelant possède la classe
   const monEleve = async (identifiant: unknown) => {
     if (typeof identifiant !== 'string') return null;
-    const { data, error } = await admin.from('eleves').select('user_id, identifiant, classes!inner(prof_id)').eq('identifiant', identifiant.trim().toLowerCase()).maybeSingle();
+    const { data, error } = await admin.from('eleves').select('user_id, identifiant, classe_id, classes!inner(prof_id)').eq('identifiant', identifiant.trim().toLowerCase()).maybeSingle();
     if (error) throw new Error(error.message);
-    return data && (data.classes as unknown as { prof_id: string }).prof_id === profId ? data : null;
+    if (!data) return null;
+    const proprio = (data.classes as unknown as { prof_id: string }).prof_id === profId;
+    if (!proprio && !(await estCoProf(data.classe_id))) return null;
+    return { ...data, proprio };
   };
   // Crée « nombre » comptes à la suite des existants
   const creerComptes = async (classe: { id: string; prefixe: string }, nombre: number) => {
@@ -117,7 +140,7 @@ Deno.serve(async (req) => {
       return rep(200, { classe, comptes: await creerComptes(classe, corps.nombre as number) });
     }
     case 'ajouter_eleves': {
-      const classe = await maClasse(corps.classe_id);
+      const classe = await maClasseOuPartagee(corps.classe_id);
       if (!classe) return rep(404, { erreur: 'Classe introuvable.' });
       if (!nombreValide(corps.nombre)) return rep(400, { erreur: `Nombre d’élèves : entre 1 et ${MAX_PAR_APPEL}.` });
       return rep(200, { classe, comptes: await creerComptes(classe, corps.nombre as number) });
@@ -133,13 +156,14 @@ Deno.serve(async (req) => {
     case 'supprimer_eleve': {
       const el = await monEleve(corps.identifiant);
       if (!el) return rep(404, { erreur: 'Élève introuvable dans vos classes.' });
+      if (!el.proprio) return rep(403, { erreur: 'Seul le propriétaire de la classe peut supprimer un compte élève.' });
       const { error } = await admin.auth.admin.deleteUser(el.user_id);     // supprime aussi sa ligne et ses activités
       if (error) return rep(500, { erreur: error.message });
       return rep(200, { supprimes: [el.identifiant] });
     }
     case 'supprimer_classe': {
       const classe = await maClasse(corps.classe_id);
-      if (!classe) return rep(404, { erreur: 'Classe introuvable.' });
+      if (!classe) return rep(403, { erreur: 'Seul le propriétaire de la classe peut la supprimer.' });
       const { data: eleves, error: errEl } = await admin.from('eleves').select('user_id, identifiant').eq('classe_id', classe.id);
       if (errEl) throw new Error(errEl.message);
       const echecs: string[] = [];
@@ -151,6 +175,36 @@ Deno.serve(async (req) => {
       const { error: errDel } = await admin.from('classes').delete().eq('id', classe.id);
       if (errDel) throw new Error(errDel.message);
       return rep(200, { supprimes: (eleves ?? []).map((e) => e.identifiant) });
+    }
+    case 'partager': {
+      const classe = await maClasse(corps.classe_id);
+      if (!classe) return rep(403, { erreur: 'Seul le propriétaire de la classe peut la partager.' });
+      const email = String(corps.email ?? '').trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return rep(400, { erreur: 'Adresse email invalide.' });
+      const { data: coId, error: errPar } = await admin.rpc('prof_par_email', { e: email });
+      if (errPar) throw new Error(errPar.message);
+      if (!coId) return rep(404, { erreur: 'Aucun compte professeur avec cette adresse. Votre collègue doit d’abord avoir un compte professeur sur le site.' });
+      if (coId === profId) return rep(400, { erreur: 'Vous êtes déjà propriétaire de cette classe.' });
+      const { count, error: errNb } = await admin.from('classes_profs').select('prof_id', { count: 'exact', head: true }).eq('classe_id', classe.id);
+      if (errNb) throw new Error(errNb.message);
+      if ((count ?? 0) >= 5) return rep(400, { erreur: 'Une classe peut avoir 5 co-professeurs au plus.' });
+      const { error } = await admin.from('classes_profs').upsert({ classe_id: classe.id, prof_id: coId }, { onConflict: 'classe_id,prof_id', ignoreDuplicates: true });
+      if (error) throw new Error(error.message);
+      return rep(200, { ok: true });
+    }
+    case 'retirer_prof': {
+      const classe = await maClasse(corps.classe_id);
+      if (!classe) return rep(403, { erreur: 'Seul le propriétaire de la classe peut retirer un professeur.' });
+      if (typeof corps.prof_id !== 'string') return rep(400, { erreur: 'Professeur inconnu.' });
+      const { error } = await admin.from('classes_profs').delete().eq('classe_id', classe.id).eq('prof_id', corps.prof_id);
+      if (error) throw new Error(error.message);
+      return rep(200, { ok: true });
+    }
+    case 'quitter_classe': {
+      if (typeof corps.classe_id !== 'string') return rep(400, { erreur: 'Classe inconnue.' });
+      const { error } = await admin.from('classes_profs').delete().eq('classe_id', corps.classe_id).eq('prof_id', profId);
+      if (error) throw new Error(error.message);
+      return rep(200, { ok: true });
     }
     default:
       return rep(400, { erreur: 'Action inconnue.' });
