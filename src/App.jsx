@@ -52,6 +52,11 @@ import { SimulationMelanges } from "./simulations/Melanges";
 import { SimulationRefraction } from "./simulations/Refraction";
 import { SimulationLentille } from "./simulations/Lentille";
 import { SimulationSpectres } from "./simulations/Spectres";
+import { SimulationCircuits } from "./simulations/Circuits";
+import { SimulationLoiOhm } from "./simulations/LoiOhm";
+import { SimulationDebitCharges } from "./simulations/DebitCharges";
+import { SimulationPuissanceJoule } from "./simulations/PuissanceJoule";
+import { SimulationCaracPile } from "./simulations/CaracPile";
 import { SimulationISS } from "./simulations/ISS";
 import { SimulationSolubilite } from "./simulations/Solubilite";
 import { SimulationAPropos } from "./simulations/APropos";
@@ -165,6 +170,16 @@ const SIMULATIONS = [
     component: SimulationSpectres },
   { id:67, label:"L’ISS en chute libre : pourquoi les astronautes flottent", niveau:"2GT", icon:"🛰️", color:"#4338ca",
     component: SimulationISS },
+  { id:68, label:"Circuits électriques : intensité et tension", niveau:"2GT", icon:"🔌", color:"#1d4ed8",
+    component: SimulationCircuits },
+  { id:69, label:"Loi d’Ohm, caractéristique et capteur résistif", niveau:"2GT", icon:"🌡️", color:"#0369a1",
+    component: SimulationLoiOhm },
+  { id:70, label:"Courant électrique et débit de charges", niveau:"1G", icon:"⚡", color:"#0369a1",
+    component: SimulationDebitCharges },
+  { id:71, label:"Puissance, effet Joule et rendement", niveau:"1G", icon:"🔥", color:"#c2410c",
+    component: SimulationPuissanceJoule },
+  { id:72, label:"Caractéristique d’une pile : source réelle de tension", niveau:"1G", icon:"🔋", color:"#15803d",
+    component: SimulationCaracPile },
   { id:53, label:"Solubilité et miscibilité : le bilan des interactions", niveau:"1G", icon:"🧪", color:"#2a9d8f",
     component: SimulationSolubilite },
   { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"COMP", icon:"🎯", color:"#e11d48",
