@@ -54,6 +54,7 @@ export const DESCRIPTIONS = {
   "Titrages électrochimiques": "Potentiométrie, ampérométrie — courbes i=f(E) et suivi du titrage.",
   "Fidélité d'une méthode : étude interlaboratoire": "Plusieurs laboratoires analysent le même échantillon pour évaluer la fidélité de la méthode (ISO 5725) : tests de Cochran et de Grubbs, répétabilité et reproductibilité.",
   "Dosage par étalonnage": "Concevoir une gamme à partir de l'ordre de grandeur attendu, la réaliser, exploiter la droite (résidus, test de Fisher, LD/LQ) et doser l'échantillon. Exemple : la caféine d'une crème en CLHP.",
+  "Diffraction des rayons X : identifier une structure cubique": "Diffractogramme de poudre (W, Cu, Fe, Al, NaCl, Po, KCl) : relever les pics, loi de Bragg, rapports sin²θ / sin²θ₁, indices de Miller et extinctions, choisir entre cubique simple, centré et faces centrées, calculer le paramètre de maille et vérifier par la masse volumique. Parcours guidé et défis.",
   "Simulation CLHP": "Chromatogrammes en phase inverse — influence du logP, de l'éluant et de la colonne sur la séparation.",
   "Étalon interne / Normalisation interne": "Exploitation de chromatogrammes par méthode de l'étalon interne ou de la normalisation interne.",
   "Essais d'aptitude : comparaison interlaboratoire": "Plusieurs laboratoires analysent le même échantillon pour évaluer la compétence de chacun : le z-score, ses différentes formules et ses hypothèses.",

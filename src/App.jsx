@@ -55,6 +55,7 @@ import { SimulationSpectres } from "./simulations/Spectres";
 import { SimulationCircuits } from "./simulations/Circuits";
 import { SimulationLoiOhm } from "./simulations/LoiOhm";
 import { SimulationDebitCharges } from "./simulations/DebitCharges";
+import { SimulationDiffractionRX } from "./simulations/DiffractionRX";
 import { SimulationPuissanceJoule } from "./simulations/PuissanceJoule";
 import { SimulationCaracPile } from "./simulations/CaracPile";
 import { SimulationISS } from "./simulations/ISS";
@@ -180,6 +181,8 @@ const SIMULATIONS = [
     component: SimulationPuissanceJoule },
   { id:72, label:"Caractéristique d’une pile : source réelle de tension", niveau:"1G", icon:"🔋", color:"#15803d",
     component: SimulationCaracPile },
+  { id:73, label:"Diffraction des rayons X : identifier une structure cubique", niveau:"BTS", icon:"🔷", color:"#1d4ed8",
+    component: SimulationDiffractionRX },
   { id:53, label:"Solubilité et miscibilité : le bilan des interactions", niveau:"1G", icon:"🧪", color:"#2a9d8f",
     component: SimulationSolubilite },
   { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"COMP", icon:"🎯", color:"#e11d48",
