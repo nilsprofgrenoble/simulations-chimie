@@ -40,7 +40,7 @@ function Fleche({ x, y, dx, dy, couleur, ep = 4.5, dash }) {
 }
 
 // ---------- scène : caisse, chronophotographie, vecteurs forces ----------
-const W = 560, H = 316, CY = 170, BAS = 200;
+const W = 560, H = 316, CY = 171, BAS = 196;   // la caisse (50 px de haut) repose sur le sol : fond = CY + 25 = BAS
 function Scene({ P, sim, t }) {
   const i = clamp(Math.round(t / 0.1), 0, sim.t.length - 1), x = sim.x[i], v = sim.v[i];
   const xmin = Math.min(...sim.x, 0), xmax = Math.max(...sim.x, 0), k = Math.min(70, 440 / Math.max(1, xmax - xmin)), px = xx => 50 + (xx - xmin) * k + 30;
@@ -56,10 +56,12 @@ function Scene({ P, sim, t }) {
       {ticks.map(m => <g key={m}><line x1={px(m)} y1={BAS} x2={px(m)} y2={BAS + 8} stroke="#64748b" strokeWidth="2"/><text x={px(m)} y={BAS + 22} textAnchor="middle" fontSize="11" fill="#475569">{m} m</text></g>)}
       {points.map(p => <circle key={p.s} cx={px(p.x)} cy={BAS + 84} r={p.s <= t + 1e-9 ? 4.5 : 2.5} fill={p.s <= t + 1e-9 ? '#0f172a' : '#cbd5e1'}/>)}
       <text x="10" y={BAS + 106} fontSize="11.5" fill="#475569">Chronophotographie : une position toutes les 0,5 s</text>
-      <rect x={cx - 36} y={CY - 24} width="72" height="50" fill="#e3c99b" stroke="#7c5a2b" strokeWidth="2.5"/>
+      <rect x={cx - 36} y={CY - 25} width="72" height="50" fill="#e3c99b" stroke="#7c5a2b" strokeWidth="2.5"/>
       <text x={cx - 32} y={CY + 20} fontSize="11.5" fontWeight="700" fill="#5b4220">{P.m} kg</text>
-      {f.liste.filter(e => e.fx === 0).map(e => <g key={e.id}><Fleche x={cx} y={CY} dx={0} dy={-e.fy * pxN} couleur={COUL[e.id]}/>{lab(e.note, cx + 8, CY - e.fy * pxN + (e.fy < 0 ? 4 : 14), COUL[e.id])}</g>)}
-      {horiz.map(e => { const yy = CY + (e.id === 'poussee' ? -8 : 8), c = COUL[e.id]; return <g key={e.id}><Fleche x={cx} y={yy} dx={e.fx * pxN} dy={0} couleur={c}/>{lab(e.note, cx + e.fx * pxN + (e.fx >= 0 ? 8 : -8), yy + 5, c, e.fx >= 0 ? 'start' : 'end')}</g>; })}
+      {/* points d'application : P en G (centre), R au contact caisse/sol, F sur la face poussée, f au contact caisse/sol */}
+      {f.liste.filter(e => e.fx === 0).map(e => { const x0 = e.id === 'poids' ? cx : cx + 9, y0 = e.id === 'poids' ? CY : BAS; return <g key={e.id}><Fleche x={x0} y={y0} dx={0} dy={-e.fy * pxN} couleur={COUL[e.id]}/>{lab(e.note, x0 + 8, y0 - e.fy * pxN + (e.fy < 0 ? 4 : 14), COUL[e.id])}</g>; })}
+      <circle cx={cx} cy={CY} r="3.5" fill="#0f172a"/><text x={cx - 8} y={CY - 6} textAnchor="end" fontSize="11" fontWeight="700" fill="#0f172a">G</text>
+      {horiz.map(e => { const pousse = e.id === 'poussee', x0 = pousse ? (e.fx >= 0 ? cx - 36 : cx + 36) : cx - 9, yy = pousse ? CY : BAS - 4, c = COUL[e.id]; return <g key={e.id}><Fleche x={x0} y={yy} dx={e.fx * pxN} dy={0} couleur={c}/>{lab(e.note, x0 + e.fx * pxN + (e.fx >= 0 ? 8 : -8), yy + (pousse ? 5 : -6), c, e.fx >= 0 ? 'start' : 'end')}</g>; })}
       <g><text x="12" y="22" fontSize="12.5" fontWeight="700" fill="#334155">Échelle des forces : 1 cm ↔ {S} N</text></g>
       <g><line x1="12" y1="32" x2="52" y2="32" stroke="#334155" strokeWidth="2"/><text x="58" y="36" fontSize="11" fill="#334155">1 cm</text></g>
       <text x={W - 12} y="22" textAnchor="end" fontSize="13" fontWeight="700" fill="#334155">t = {fr(t, 1)} s · v = {fr(v, 2)} m/s</text>
@@ -272,7 +274,7 @@ export function SimulationPrincipeInertie() {
     </div>);
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
-      <li><strong>Système = la caisse</strong>, modélisée par un point (ses dimensions n’interviennent pas) ; tous les vecteurs sont tracés depuis son centre.</li>
+      <li><strong>Système = la caisse</strong>, modélisée par un point (ses dimensions n’interviennent pas) ; le poids est tracé depuis son centre G, mais la réaction et le frottement s’appliquent au contact avec le sol, et la poussée sur la face poussée de la caisse.</li>
       <li><strong>Référentiel terrestre</strong>, supposé galiléen : le principe d’inertie s’y applique.</li>
       <li><strong>Frottements solides</strong> de valeur constante f = μ·m·g, opposés au mouvement. On néglige les frottements de l’air (sauf dans les exemples du parcours). Le coefficient μ est supposé le même au repos et en mouvement.</li>
       <li><strong>Calcul du mouvement</strong> : pour animer la caisse, la simulation utilise un calcul numérique de la vitesse, hors programme de seconde. Vous n’avez qu’à observer la vitesse : le programme n’exige que le principe d’inertie.</li>
