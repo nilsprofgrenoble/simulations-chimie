@@ -49,6 +49,8 @@ import { SimulationPrincipeInertie } from "./simulations/PrincipeInertie";
 import { SimulationDissolution } from "./simulations/Dissolution";
 import { SimulationDilution } from "./simulations/Dilution";
 import { SimulationMelanges } from "./simulations/Melanges";
+import { SimulationRefraction } from "./simulations/Refraction";
+import { SimulationLentille } from "./simulations/Lentille";
 import { SimulationSolubilite } from "./simulations/Solubilite";
 import { SimulationAPropos } from "./simulations/APropos";
 import { SimulationAtelierDonnees } from "./simulations/AtelierDonnees";
@@ -153,6 +155,10 @@ const SIMULATIONS = [
     component: SimulationDilution },
   { id:63, label:"Mélanges : miscibilité, solubilité et densité", niveau:"2GT", icon:"🧴", color:"#b45309",
     component: SimulationMelanges },
+  { id:64, label:"Réfraction de la lumière : lois de Snell-Descartes", niveau:"2GT", icon:"🔦", color:"#0369a1",
+    component: SimulationRefraction },
+  { id:65, label:"Lentille convergente : trajet de la lumière et foyer", niveau:"2GT", icon:"🔍", color:"#0e7490",
+    component: SimulationLentille },
   { id:53, label:"Solubilité et miscibilité : le bilan des interactions", niveau:"1G", icon:"🧪", color:"#2a9d8f",
     component: SimulationSolubilite },
   { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"COMP", icon:"🎯", color:"#e11d48",
