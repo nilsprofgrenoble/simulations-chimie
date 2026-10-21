@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, avecIndices } from "../commun";
-import { fr, R_KM, gAlt, G0, vOrb, periode, typeOrbite, depart, pas, trajectoire, CONTEXTES, accRelative, balance } from "./issModele";
+import { fr, R_KM, gAlt, G0, vOrb, periode, typeOrbite, depart, pas, trajectoire } from "./issModele";
 
 // ====================================================
 //  SIM 67 — L'ISS EN CHUTE LIBRE (2GT, « Mouvement et interactions »)
@@ -21,7 +21,6 @@ const TITRES = { poids: 'Poids en altitude', cabine: 'La balle flotte-t-elle ?',
 const VERT = '#15803d', ORANGE = '#b45309', C_P = '#c2410c', C_V = '#0072b2';
 const alea = l => l[Math.floor(Math.random() * l.length)];
 const km = x => `${fr(x, 2)} km/s`;
-const M_BALLE = 0.5, M_ASTRO = 70;
 
 // ---------- atelier orbite ----------
 function Orbite({ h, v, etat, trace, etatAff }) {
@@ -51,38 +50,54 @@ function Orbite({ h, v, etat, trace, etatAff }) {
     </svg>);
 }
 
-// ---------- atelier cabine ----------
-function Cabine({ ctx, g, bal }) {
-  const PX = 80, X0 = 70, Y1 = 270, bx = X0 + bal.x * PX, by = Y1 - bal.y * PX, ar = accRelative(ctx, g);
-  const flotte = ctx !== 'sol', ax = X0 + 3 * PX, astroY = flotte ? 150 : 238;
-  const P_ball = M_BALLE * g, P_astro = M_ASTRO * g, repos = ctx === 'sol' && bal.y <= 0.13 && !bal.vol;
-  const arrow = (x, y, dy, c, label, left) => <g><line x1={x} y1={y} x2={x} y2={y + dy} stroke={c} strokeWidth="3.5"/>
-    <polygon points={`${x},${y + dy} ${x - 5},${y + dy - Math.sign(dy) * 10} ${x + 5},${y + dy - Math.sign(dy) * 10}`} fill={c}/>
-    <text x={x + (left ? -7 : 7)} y={y + dy / 2 + 4} textAnchor={left ? 'end' : 'start'} fontSize="12.5" fontWeight="800" fill={c} stroke="#fff" strokeWidth="3" paintOrder="stroke">{label}</text></g>;
+// ---------- atelier cabine : une cabine qui tombe, avec une personne et une balle ----------
+// Vue depuis le sol : la cabine descend le long d'une règle graduée en mètres ; vue depuis la cabine : la cabine est immobile, c'est le sol qui monte.
+const HAUT_M = 110, PXM = 2, TFALL = Math.sqrt(2 * HAUT_M / 9.8), G_C = 9.8, W_C = 150, H_C = 104, ECH = 0.8;
+function etatCabine(c, t) {
+  const tt = Math.min(t, TFALL), alt = c.tombe ? Math.max(0, HAUT_M - 0.5 * G_C * tt * tt) : HAUT_M;     // altitude du plancher de la cabine (m)
+  const rel = c.tombe ? 0 : 0.5 * G_C * t * t;                                                          // chute de la balle par rapport à la cabine (m)
+  let bx = 1.5 + (c.lance ? 0.8 * t : 0), by = 1.2 - rel;                                                // position de la balle dans la cabine (m)
+  if (by < 0.1) by = 0.1; if (bx > 3.9) bx = 3.9;
+  return { alt, bx, by, v: c.tombe ? G_C * tt : 0, fini: c.tombe && t >= TFALL };
+}
+function Cabine({ c, t, vueCabine }) {
+  const e = etatCabine(c, t), PXC = 36;                          // px par mètre dans la cabine
+  const CX = 350, SOL = 335, haut = h => SOL - h * PXM;           // ordonnée écran de l'altitude h (vue sol)
+  const bas = vueCabine ? 215 : haut(e.alt), fond = vueCabine ? bas + e.alt * PXM : SOL;   // ordonnée du plancher de la cabine / du sol
+  const tombe = c.tombe, flotte = tombe;
+  const fleche = (x, y, dy, col, label, gauche) => <g><line x1={x} y1={y} x2={x} y2={y + dy} stroke={col} strokeWidth="4"/>
+    <polygon points={`${x},${y + dy} ${x - 5},${y + dy - Math.sign(dy) * 9} ${x + 5},${y + dy - Math.sign(dy) * 9}`} fill={col}/>
+    <text x={x + (gauche ? -6 : 6)} y={y + dy / 2 + 4} textAnchor={gauche ? 'end' : 'start'} fontSize="19" fontWeight="800" fill={col} stroke="#fff" strokeWidth="3" paintOrder="stroke">{label}</text></g>;
+  const cab = (dy, op, plein, key) => {
+    const x0 = CX - W_C / 2, y1 = dy;
+    const bxs = x0 + (1.5 + (c.lance ? 0.8 * key : 0)) * PXC, bys = y1 - Math.max(0.1, 1.2 - (tombe ? 0 : 0.5 * G_C * key * key)) * PXC;
+    const ax = x0 + 0.9 * PXC, ay = y1 - (flotte ? 22 : 2);
+    return <g key={key} opacity={op} transform={`translate(${CX} ${y1}) scale(${ECH}) translate(${-CX} ${-y1})`}>
+      <rect x={x0} y={y1 - H_C} width={W_C} height={H_C} fill={plein ? '#f1f5f9' : 'none'} stroke="#0f172a" strokeWidth={plein ? 4 : 2} rx="5"/>
+      <g stroke="#0f172a" strokeWidth={plein ? 4.5 : 3} strokeLinecap="round" fill="none">
+        <circle cx={ax} cy={ay - 62} r="9" fill="#fde68a" strokeWidth="3"/><line x1={ax} y1={ay - 53} x2={ax} y2={ay - 26}/>
+        {flotte ? <><line x1={ax} y1={ay - 46} x2={ax - 17} y2={ay - 32}/><line x1={ax} y1={ay - 46} x2={ax + 17} y2={ay - 32}/><line x1={ax} y1={ay - 26} x2={ax - 11} y2={ay - 4}/><line x1={ax} y1={ay - 26} x2={ax + 11} y2={ay - 4}/></>
+          : <><line x1={ax} y1={ay - 46} x2={ax - 13} y2={ay - 30}/><line x1={ax} y1={ay - 46} x2={ax + 13} y2={ay - 30}/><line x1={ax} y1={ay - 26} x2={ax - 8} y2={ay - 2}/><line x1={ax} y1={ay - 26} x2={ax + 8} y2={ay - 2}/></>}</g>
+      <circle cx={bxs} cy={bys} r="6.5" fill="#dc2626" stroke="#0f172a" strokeWidth={plein ? 2 : 1.2}/>
+      {plein && <>{fleche(ax - 22, ay - 36, 24, C_P, 'P', true)}{fleche(bxs + 12, bys - 2, 22, C_P, 'P', false)}{!tombe && fleche(ax + 22, ay - 2, -24, C_V, 'sol', false)}</>}
+    </g>;
+  };
+  // images successives (chronophotographie) toutes les 0,5 s, vue depuis le sol seulement
+  const images = []; if (!vueCabine && tombe) for (let k = 0.5; k < Math.min(t, TFALL); k += 0.5) images.push(cab(haut(HAUT_M - 0.5 * G_C * k * k), 0.28, false, k));
+  const yc = vueCabine ? bas : haut(e.alt);
+  const reps = []; for (let m = 0; m <= HAUT_M; m += 10) reps.push(m);
   return (
-    <svg viewBox="0 0 700 310" width="100%" role="img" aria-label={`${CONTEXTES[ctx].nom} : une balle et un astronaute`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
-      <rect x={X0} y="30" width={7 * PX} height={240} fill="#f1f5f9" stroke="#0f172a" strokeWidth="4" rx="6"/>
-      <line x1={X0} y1={Y1} x2={X0 + 7 * PX} y2={Y1} stroke="#0f172a" strokeWidth="6"/>
-      <text x={X0 + 8} y="52" fontSize="13.5" fontWeight="800" fill="#0f172a">{CONTEXTES[ctx].nom}</text>
-      {/* balance */}
-      <rect x={ax - 38} y={Y1 - 10} width="76" height="10" fill="#94a3b8" stroke="#0f172a" strokeWidth="2"/>
-      <rect x={ax - 28} y={Y1 + 4} width="56" height="22" rx="3" fill="#0f172a"/><text x={ax} y={Y1 + 20} textAnchor="middle" fontSize="14" fontWeight="800" fill="#4ade80">{fr(bal.lecture, 0)} N</text>
-      <text x={ax + 46} y={Y1 + 20} fontSize="12" fill="#334155">balance</text>
-      {/* astronaute */}
-      <g stroke="#0f172a" strokeWidth="5" strokeLinecap="round" fill="none">
-        <circle cx={ax} cy={astroY - 62} r="12" fill="#fde68a" strokeWidth="3"/>
-        <line x1={ax} y1={astroY - 50} x2={ax} y2={astroY - 8}/>
-        {flotte ? <><line x1={ax} y1={astroY - 40} x2={ax - 24} y2={astroY - 22}/><line x1={ax} y1={astroY - 40} x2={ax + 24} y2={astroY - 22}/><line x1={ax} y1={astroY - 8} x2={ax - 16} y2={astroY + 22}/><line x1={ax} y1={astroY - 8} x2={ax + 16} y2={astroY + 22}/></>
-          : <><line x1={ax} y1={astroY - 40} x2={ax - 18} y2={astroY - 18}/><line x1={ax} y1={astroY - 40} x2={ax + 18} y2={astroY - 18}/><line x1={ax} y1={astroY - 8} x2={ax - 10} y2={Y1 - 11}/><line x1={ax} y1={astroY - 8} x2={ax + 10} y2={Y1 - 11}/></>}</g>
-      {arrow(ax - 34, astroY - 30, P_astro * 0.1, C_P, `P = ${fr(P_astro, 0)} N`, true)}
-      {ctx === 'sol' && arrow(ax + 34, Y1 - 12, -P_astro * 0.1, C_V, 'sol', false)}
-      {/* balle */}
-      <circle cx={bx} cy={by} r="10" fill="#dc2626" stroke="#0f172a" strokeWidth="2.5"/>
-      {arrow(bx + 18, by, P_ball * 10 / 1, C_P, `P = ${fr(P_ball, 1)} N`, false)}
-      {repos && arrow(bx + 18, by + 8, -P_ball * 10, C_V, 'R', false)}
-      <text x="14" y="298" fontSize="11.5" fill="#334155">Astronaute de {M_ASTRO} kg : flèche à l’échelle 0,1 px/N · balle de {fr(M_BALLE * 1000, 0)} g : 10 px/N</text>
-      <text x={X0 + 7 * PX - 8} y="52" textAnchor="end" fontSize="13" fontWeight="700" fill={ar > 0.01 ? ORANGE : VERT}>{ar > 0.01 ? `La balle accélère vers le bas : ${fr(ar, 1)} m/s²` : 'La balle n’accélère pas dans la cabine'}</text>
-      <text x={X0 + 7 * PX - 8} y="72" textAnchor="end" fontSize="12.5" fill="#334155">vitesse de la balle : {fr(Math.hypot(bal.vx, bal.vy), 2)} m/s</text>
+    <svg viewBox="0 0 700 350" width="100%" role="img" aria-label="Une cabine tombe avec une personne et une balle à l’intérieur" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
+      <rect x="0" y="0" width="700" height="350" fill="#eff6ff"/>
+      <rect x="0" y={Math.min(fond, 350)} width="700" height={Math.max(0, 350 - fond)} fill="#a16207" opacity="0.55"/><line x1="0" y1={fond} x2="700" y2={fond} stroke="#422006" strokeWidth="4"/>
+      <text x="600" y={Math.min(fond + 18, 346)} fontSize="13" fontWeight="800" fill="#422006">sol</text>
+      {reps.map(m => { const y = vueCabine ? fond - m * PXM : haut(m); return y > 8 && y < 342 ? <g key={m}><line x1="30" y1={y} x2="50" y2={y} stroke="#475569" strokeWidth="2"/><text x="54" y={y + 4} fontSize="11.5" fill="#475569">{m} m</text></g> : null; })}
+      <line x1="30" y1={Math.max(8, vueCabine ? fond - HAUT_M * PXM : haut(HAUT_M))} x2="30" y2={fond} stroke="#475569" strokeWidth="2"/>
+      {images}
+      <g>{cab(yc, 1, true, t)}</g>
+      <text x={CX} y="22" textAnchor="middle" fontSize="13.5" fontWeight="800" fill="#0f172a">{vueCabine ? 'Vue depuis la cabine (la cabine est immobile : c’est le sol qui monte)' : 'Vue depuis le sol (la cabine est en mouvement)'}</text>
+      <text x="690" y="44" textAnchor="end" fontSize="13" fontWeight="700" fill={tombe ? C_V : '#334155'}>{tombe ? `cabine en chute libre · vitesse : ${fr(e.v, 1)} m/s (${fr(e.v * 3.6, 0)} km/h)` : 'cabine immobile (câble tenu)'}</text>
+      {e.fini && <text x={CX} y="68" textAnchor="middle" fontSize="13" fontWeight="800" fill={ORANGE}>La cabine arrive au sol.</text>}
     </svg>);
 }
 
@@ -141,8 +156,7 @@ export function SimulationISS() {
   const [atelier, setAtelier] = useState('orbite');
   const [h, setH] = useState(400);
   const [v, setV] = useState(7.7);
-  const [ctx, setCtx] = useState('sol');
-  const [fait, setFait] = useState({ sol: false, chute: false, lance: false, orbite: false });
+    const [fait, setFait] = useState({ sol: false, chute: false, lance: false, vue: false, orbite: false });
   const [hypoOuv, setHypoOuv] = useState(false);
   const [, setTick] = useState(0);
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi, enExplore = mode === 'explore';
@@ -173,36 +187,25 @@ export function SimulationISS() {
   const oc = orb.current, tyo = typeOrbite(h, v);
   useEffect(() => { if (oc.etat && oc.enCours === false && oc.etat.t > periode(h) * 0.5 && tyo.type === 'circulaire') marque('orbite'); }, [oc.enCours]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ----- cabine -----
-  const gExt = ctx === 'iss' ? gAlt(h) : G0;
-  const [bal, setBal] = useState({ x: 4.5, y: 1.5, vx: 0, vy: 0, vol: false });
-  const balRef = useRef(bal); balRef.current = bal;
-  const remettre = () => setBal({ x: 4.5, y: 1.5, vx: 0, vy: 0, vol: false });
-  const lacher = () => { setBal({ x: 4.5, y: 1.5, vx: 0, vy: 0, vol: true }); marque(ctx === 'sol' ? 'sol' : 'chute'); };
-  const lancerBalle = () => { setBal({ x: 4.5, y: 1.5, vx: 1, vy: 0, vol: true }); if (ctx !== 'sol') marque('lance'); };
+  // ----- cabine : une cabine qui tombe -----
+  const [cab, setCab] = useState({ tombe: true, lance: false, t: 0, enCours: false });
+  const [vueCabine, setVueCabine] = useState(false);
+  const cabRef = useRef(cab); cabRef.current = cab;
+  const remettre = () => setCab(c => ({ ...c, t: 0, enCours: false }));
+  const experience = () => { setCab(c => ({ ...c, t: 0, enCours: true })); marque(cab.tombe ? (cab.lance ? 'lance' : 'chute') : 'sol'); if (cab.tombe && cab.lance) marque('chute'); };
   useEffect(() => {
-    let raf, dernier = performance.now(); const ar = accRelative(ctx, gExt);
+    let raf, dernier = performance.now();
     const boucle = t => {
-      const b = balRef.current, dt = Math.min(0.05, (t - dernier) / 1000); dernier = t;
-      if (b.vol) {
-        let { x, y, vx, vy } = b; vy -= ar * dt; x += vx * dt; y += vy * dt; let vol = true;
-        if (y <= 0.12) { y = 0.12; vy = 0; vx = 0; vol = false; }
-        if (y >= 2.88) { y = 2.88; vy = 0; vol = false; }
-        if (x >= 6.88) { x = 6.88; vx = 0; vol = ar > 0.01 ? true : false; }
-        if (x <= 0.12) { x = 0.12; vx = 0; }
-        if (!vol && vx === 0 && vy === 0) { /* au repos */ }
-        setBal({ x, y, vx, vy, vol: vol && (Math.abs(vx) > 0 || Math.abs(vy) > 0 || ar > 0.01) });
-      }
+      const c = cabRef.current, dt = Math.min(0.05, (t - dernier) / 1000); dernier = t;
+      if (c.enCours) { const fin = c.tombe ? TFALL : 1.2, nt = Math.min(fin, c.t + dt); setCab({ ...c, t: nt, enCours: nt < fin }); }
       raf = requestAnimationFrame(boucle);
     };
     raf = requestAnimationFrame(boucle);
     return () => cancelAnimationFrame(raf);
-  }, [ctx, gExt]);
-  const lecture = balance(ctx, M_ASTRO, gExt);
-
-  const choisirCtx = c => { setCtx(c); remettre(); };
+  }, []);
+  const choisirTombe = tb => setCab({ tombe: tb, lance: cab.lance, t: 0, enCours: false });
   const voirO = (hh = 400, vv = 7.7) => { setAtelier('orbite'); setH(hh); setV(vv); arreter(); };
-  const voirC = c => { setAtelier('cabine'); choisirCtx(c); };
+  const voirC = (tombe, lance = false) => { setAtelier('cabine'); setCab({ tombe, lance, t: 0, enCours: false }); };
   const ETAPES = [
     { id: 'question', titre: 'Pourquoi les astronautes flottent-ils ?', depart: () => voirO(400, 7.7),
       texte: <>À bord de la Station spatiale internationale (<strong>ISS</strong>), à <strong>400 km</strong> d’altitude, les astronautes <strong>flottent</strong>. On dit qu’ils sont en <strong>apesanteur</strong>. Beaucoup pensent qu’à cette altitude « il n’y a plus de gravité ». Vérifions !</>,
@@ -211,19 +214,22 @@ export function SimulationISS() {
       texte: <>Regardez la flèche rouge : à 400 km, la Terre attire <strong>chaque kilogramme</strong> avec une force de <strong>8,7 N</strong> (g = 8,7 N/kg). Au sol, c’est 9,8 N/kg. La Terre est grande : monter de 400 km, c’est peu par rapport à son rayon de 6 378 km.
         <ExempleResolu>Un objet de <strong>10 kg</strong> : au sol P = 10 × 9,8 = 98 N ; à 400 km P = 10 × 8,7 = <strong>87 N</strong>. Presque pareil !</ExempleResolu></>,
       tache: { type: 'num', q: 'Quel est le poids d’un astronaute de 70 kg à 400 km d’altitude ? (P = m × g)', unite: 'N', vrai: 608, tol: 0.02, affiche: x => String(x), pieges: [[686, 'C’est son poids au sol (70 × 9,8). À 400 km, g vaut 8,7 N/kg.'], [0, 'Le poids n’est pas nul : la Terre attire toujours l’astronaute.']], expl: 'P = 70 × 8,7 ≈ 608 N : environ 89 % de son poids au sol. Il n’a pas du tout « perdu » son poids.' } },
-    { id: 'sol', titre: 'Dans une cabine posée au sol', depart: () => voirC('sol'),
-      texte: <>Voici une <strong>cabine posée au sol</strong> avec un astronaute sur une <strong>balance</strong> et une <strong>balle</strong>. Lâchez la balle avec le bouton. La balle <strong>tombe</strong>. La balance indique la force avec laquelle l’astronaute appuie dessus : <strong>686 N</strong>. Le sol le soutient (réaction du sol).</>,
-      tache: { type: 'action', ok: enGuide && fait.sol, consigne: 'Lâchez la balle dans la cabine posée au sol.' } },
-    { id: 'chute', titre: 'Dans une cabine en chute libre', depart: () => voirC('chute'),
-      texte: <>Maintenant la cabine est <strong>en chute libre</strong> : on a coupé les câbles et elle tombe, avec l’astronaute et la balle à l’intérieur (comme dans une « tour de chute »). Lâchez la balle. Que fait-elle ?
-        <ExempleResolu>La cabine, la balle et l’astronaute <strong>tombent tous ensemble</strong> et à la même vitesse. Par rapport à la cabine, la balle ne bouge pas : elle <strong>flotte</strong>.</ExempleResolu></>,
-      tache: { type: 'action', ok: enGuide && fait.chute && ctx === 'chute', consigne: 'Choisissez « cabine en chute libre » puis lâchez la balle.' } },
-    { id: 'balance', titre: 'La balance indique 0 N', depart: () => voirC('chute'),
-      texte: <>Dans la cabine en chute libre, la <strong>balance indique 0 N</strong>. Pourtant, les flèches rouges (<strong>poids</strong>, force de la Terre) sont toujours là : la Terre attire toujours la balle et l’astronaute. Mais la balance <strong>tombe aussi</strong> : elle ne les soutient plus.</>,
-      tache: { type: 'qcm', q: 'Dans la cabine en chute libre, l’astronaute a-t-il encore un poids ?', options: ['Oui : la Terre l’attire toujours, mais rien ne le soutient', 'Non : il n’y a plus d’attraction', 'Oui, mais la balance est cassée', 'Non, la cabine est trop petite'], bonne: 0, expl: 'La force de la Terre (le poids) existe toujours. C’est la sensation de poids qui disparaît, car l’astronaute et le sol de la cabine tombent ensemble.' } },
-    { id: 'lancer', titre: 'Lançons la balle !', depart: () => voirC('chute'),
-      texte: <>Lancez maintenant la balle <strong>vers la droite</strong> dans la cabine en chute libre. Elle part tout droit, à <strong>vitesse constante</strong>, jusqu’à la paroi. Tout se passe <strong>comme si aucune force ne s’exerçait</strong> sur elle : c’est le <strong>principe d’inertie</strong> vu depuis la cabine.</>,
-      tache: { type: 'action', ok: enGuide && fait.lance, consigne: 'Lancez la balle dans la cabine en chute libre.' } },
+    { id: 'sol', titre: 'Une cabine immobile', depart: () => voirC(false),
+      texte: <>Voici une <strong>cabine</strong> suspendue à un câble, avec une <strong>personne</strong> et une <strong>balle</strong> à l’intérieur. Le câble tient : la cabine est <strong>immobile</strong>. Cliquez sur « Lancer l’expérience » : on lâche la balle. Elle <strong>tombe</strong> vers le plancher (poids <strong>P</strong>). La personne, elle, est soutenue par le plancher (flèche bleue).</>,
+      tache: { type: 'action', ok: enGuide && fait.sol, consigne: 'Lancez l’expérience avec le câble tenu.' } },
+    { id: 'chute', titre: 'On coupe le câble !', depart: () => voirC(true),
+      texte: <>Maintenant, <strong>le câble est coupé</strong> : la cabine tombe, avec la personne et la balle <strong>qui tombent aussi</strong>. Cliquez sur « Lancer l’expérience ». Regardez les images successives (toutes les 0,5 s) : la cabine, la personne et la balle <strong>descendent ensemble</strong>, de plus en plus vite.
+        <ExempleResolu>La Terre attire tout pareil : cabine, personne et balle subissent <strong>la même chute</strong>. Par rapport à la cabine, la balle <strong>ne bouge pas</strong> : elle <strong>flotte</strong>, et la personne aussi !</ExempleResolu></>,
+      tache: { type: 'action', ok: enGuide && fait.chute && cab.tombe, consigne: 'Lancez l’expérience avec le câble coupé.' } },
+    { id: 'ref', titre: 'Se mettre dans la cabine', depart: () => voirC(true),
+      texte: <>Cochez <strong>« vue depuis la cabine »</strong> : on se place dans le <strong>référentiel de la cabine</strong>. La cabine devient immobile sur l’écran, et c’est le <strong>sol qui monte</strong> vers elle. Relancez l’expérience : la personne et la balle <strong>ne bougent pas</strong>, comme s’il n’y avait plus de gravité. C’est ce que ressentent les astronautes.</>,
+      tache: { type: 'action', ok: enGuide && fait.vue, consigne: 'Cochez « vue depuis la cabine ».' } },
+    { id: 'balance', titre: 'La force de la Terre existe toujours', depart: () => voirC(true),
+      texte: <>Regardez les flèches <strong>P</strong> (poids) : elles sont toujours là, sur la personne comme sur la balle. La Terre attire toujours. Mais le plancher de la cabine <strong>tombe aussi</strong> : il ne pousse plus la personne vers le haut (plus de flèche bleue). Elle ne sent plus son poids.</>,
+      tache: { type: 'qcm', q: 'Dans la cabine qui tombe, la personne a-t-elle encore un poids ?', options: ['Oui : la Terre l’attire toujours, mais rien ne la soutient', 'Non : il n’y a plus d’attraction', 'Oui, mais la cabine le supprime', 'Non, la cabine est trop petite'], bonne: 0, expl: 'La force de la Terre (le poids) existe toujours. Ce qui disparaît, c’est la sensation de poids : personne ne pousse l’astronaute, le sol de la cabine tombe avec lui.' } },
+    { id: 'lancer', titre: 'Lançons la balle !', depart: () => voirC(true, true),
+      texte: <>On <strong>lance</strong> maintenant la balle vers la droite, la cabine étant en chute libre. Vue depuis le <strong>sol</strong>, elle décrit une <strong>courbe</strong> (elle tombe en avançant). Cochez « vue depuis la cabine » : elle part <strong>tout droit</strong>, à <strong>vitesse constante</strong>. Tout se passe <strong>comme si aucune force ne s’exerçait</strong> sur elle : c’est le <strong>principe d’inertie</strong>.</>,
+      tache: { type: 'action', ok: enGuide && fait.lance, consigne: 'Lancez la balle (« lancée vers la droite ») avec le câble coupé.' } },
     { id: 'orbite', titre: 'Une chute… sans fin', depart: () => voirO(400, 3),
       texte: <>Comment la station peut-elle « tomber » sans jamais toucher la Terre ? Imaginez un canon qui tire <strong>horizontalement</strong> (idée de Newton). Plus la vitesse est grande, plus l’objet va loin avant de toucher le sol. Avec <strong>assez de vitesse</strong>, la Terre étant ronde, le sol « se dérobe » sous lui : il tombe… sans jamais arriver !
         <ExempleResolu>À <strong>400 km</strong>, la vitesse qu’il faut est d’environ <strong>7,7 km/s</strong> : près de 28 000 km/h. Réglez le curseur « vitesse » sur 7,7 km/s puis cliquez sur « Lancer ».</ExempleResolu></>,
@@ -251,7 +257,7 @@ export function SimulationISS() {
     const d = nouveauDefi(type); setDefi(d); arreter();
     if (type === 'poids') { setAtelier('orbite'); setH(d.h); setV(+vOrb(d.h).toFixed(2)); }
     if (type === 'orbite') { setAtelier('orbite'); setH(d.h); setV(3); }
-    if (type === 'cabine') { setAtelier('cabine'); choisirCtx('sol'); }
+    if (type === 'cabine') { setAtelier('cabine'); setCab({ tombe: false, lance: false, t: 0, enCours: false }); setVueCabine(false); }
   }
   function changerMode(md) { setMode(md); if (md === 'defi') lancerDefi(defi ? defi.type : 'poids'); else if (md === 'explore') { setAtelier('orbite'); } }
 
@@ -260,9 +266,9 @@ export function SimulationISS() {
       <li><strong>Terre sphérique et homogène</strong>, seule la Terre attire (Lune, Soleil négligés), <strong>sans atmosphère</strong> : pas de frottement. L’ISS réelle, à 400 km, en subit un petit : on la « remonte » régulièrement.</li>
       <li><strong>Force de gravitation</strong> de la Terre : g = G·M / (R + h)² avec G = 6,67×10⁻¹¹ N·m²·kg⁻², M = 5,98×10²⁴ kg, R = 6 378 km. La <strong>Terre est dessinée à l’échelle</strong> ; la <strong>station est volontairement dessinée trop grande</strong>.</li>
       <li><strong>Lancement horizontal</strong>, trajectoire dans un <strong>plan</strong>. Le temps est <strong>accéléré</strong> (une orbite en environ 14 s au lieu de 92 min). La vitesse maximale proposée est inférieure à la vitesse de libération.</li>
-      <li><strong>Cabine</strong> : on la suppose rigide, de petite taille devant la Terre. Les très petites différences de gravité entre le haut et le bas de la station (effets de marée) sont <strong>négligées</strong> : l’apesanteur est parfaite dans le modèle (dans la réalité, on parle de microgravité).</li>
-      <li><strong>Tour de chute</strong> : cabine en chute libre sans frottement de l’air (en vrai, on fait le vide dans le tube) ; la balle ne rebondit pas ; la balance affiche la force exercée par l’astronaute sur elle.</li>
-      <li><strong>Vocabulaire</strong> : le <strong>poids</strong> est ici la force exercée par la Terre. La sensation de poids (ce que mesure une balance) est différente : elle disparaît en chute libre.</li>
+      <li><strong>Cabine</strong> : on la suppose rigide, de petite taille devant la Terre ; elle tombe de 110 m (hauteur d’une grande tour de chute) en 4,7 s, <strong>sans frottement</strong>, et son dessin est volontairement très agrandi. Les images successives sont prises toutes les 0,5 s. Les très petites différences de gravité entre le haut et le bas de la station (effets de marée) sont <strong>négligées</strong> : l’apesanteur est parfaite dans le modèle (dans la réalité, on parle de microgravité).</li>
+      <li><strong>Balle et personne</strong> : câble tenu, la balle s’arrête sur le plancher ; la balle lancée va à 0,8 m/s. La personne est rigide et ne bouge pas.</li>
+      <li><strong>Vocabulaire</strong> : le <strong>poids</strong> est ici la force exercée par la Terre. La sensation de poids (le plancher qui pousse sur nos pieds) est différente : elle disparaît en chute libre.</li>
     </ul>);
   const panneauHypo = <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>;
   const verrouH = enDefi && (defi.type === 'poids' || defi.type === 'orbite');
@@ -284,11 +290,18 @@ export function SimulationISS() {
     </div>);
   const CabinePanel = (
     <div>
-      <Cabine ctx={ctx} g={gExt} bal={{ ...bal, lecture }}/>
+      <Cabine c={cab} t={cab.t} vueCabine={vueCabine}/>
+      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Cabine dessinée beaucoup trop grande · <strong style={{ color: C_P }}>P</strong> : poids (force de la Terre) · flèche bleue : force du plancher sur la personne.</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
-        {!(enDefi && defi.type === 'cabine') && <><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Situation :</span>
-          {Object.entries(CONTEXTES).map(([k, c]) => <button key={k} onClick={() => choisirCtx(k)} style={stylePetitBouton(ctx === k, '#0f766e')}>{c.nom}</button>)}</>}
-        <button onClick={lacher} style={styleBouton(true, '#16a34a')}>⬇ Lâcher la balle</button><button onClick={lancerBalle} style={styleBouton(true, '#0369a1')}>➡ Lancer la balle</button><button onClick={remettre} style={styleBouton(false)}>↺ Remettre</button></div>
+        <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Câble :</span>
+        <button onClick={() => choisirTombe(false)} style={stylePetitBouton(!cab.tombe, '#0f766e')}>tenu (cabine immobile)</button>
+        <button onClick={() => choisirTombe(true)} style={stylePetitBouton(cab.tombe, '#0f766e')}>coupé (chute libre)</button>
+        <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginLeft: 6 }}>Balle :</span>
+        <button onClick={() => setCab(c => ({ ...c, lance: false, t: 0, enCours: false }))} style={stylePetitBouton(!cab.lance, '#0369a1')}>lâchée</button>
+        <button onClick={() => setCab(c => ({ ...c, lance: true, t: 0, enCours: false }))} style={stylePetitBouton(cab.lance, '#0369a1')}>lancée vers la droite</button></div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}>
+        <button onClick={experience} style={styleBouton(true, '#16a34a')}>▶ Lancer l’expérience</button><button onClick={remettre} style={styleBouton(false)}>↺ Remettre</button>
+        <button onClick={() => { setVueCabine(v => !v); marque('vue'); }} style={stylePetitBouton(vueCabine, '#7c3aed')}>{vueCabine ? '☑' : '☐'} vue depuis la cabine (référentiel de la cabine)</button></div>
     </div>);
   const planche = (
     <div style={styleBoite}>
@@ -303,8 +316,8 @@ export function SimulationISS() {
       <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
         <li>Lancez avec 5 km/s, puis 7,7 km/s, puis 8 km/s : quelles différences ?</li>
         <li>Montez en altitude : la vitesse de l’orbite circulaire change-t-elle ? Et la durée d’un tour ?</li>
-        <li>Dans la cabine : comparez « posée au sol » et « en chute libre », balle lâchée puis lancée.</li>
-        <li>Que lit-on sur la balance dans chaque situation ? Le poids a-t-il disparu ?</li>
+        <li>Cabine : comparez « câble tenu » et « câble coupé », balle lâchée puis lancée, vue depuis le sol puis depuis la cabine.</li>
+        <li>Dans la cabine qui tombe, que deviennent les flèches P ? Et la flèche bleue ?</li>
       </ul>
     </div>);
   const retenir = <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
