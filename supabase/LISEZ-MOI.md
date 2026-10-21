@@ -112,3 +112,30 @@ Règles à connaître (hypothèses de travail) :
 - une **simulation** d'un devoir est « faite » quand l'élève a cumulé au moins **5 minutes en parcours guidé** (avec une séance depuis la création du devoir) **et** réussi un défi de la simulation, si elle en propose. Le site ne sait pas où en est l'élève dans le parcours guidé : le temps est un indicateur, pas une preuve ;
 - un devoir ciblé n'est visible que des élèves choisis (règle du serveur, pas seulement de l'affichage) ; seuls des élèves de la classe peuvent être visés ; on ne peut pas modifier la liste après création (supprimez et recréez) ; les élèves non visés ne comptent pas dans « N ont tout fait » ;
 - comme pour le reste, ces données viennent du navigateur de l'élève : c'est une aide à l'organisation, pas une évaluation.
+
+## Partager une classe entre professeurs (étape 23)
+
+Un élève n'a qu'un compte, même si deux professeurs le suivent. La classe garde un **propriétaire** (celui qui l'a créée) et peut avoir jusqu'à 5 **co-professeurs**.
+
+| | Propriétaire | Co-professeur |
+|---|---|---|
+| Voir les élèves et leurs résultats, l'export CSV | oui | oui |
+| Créer, modifier, supprimer des devoirs | oui | oui |
+| Chapitre en cours, vie de classe | oui | oui |
+| Ajouter des comptes élèves, réinitialiser un mot de passe | oui | oui |
+| Renommer la classe | oui | non |
+| Supprimer un compte élève | oui | non |
+| Supprimer la classe | oui | non |
+| Partager la classe, retirer un co-professeur | oui | non (il peut **quitter** la classe) |
+
+À faire **une fois** (sans cela, le bloc « Professeurs de la classe » indique quoi faire et le reste fonctionne comme avant) :
+1. **Compte du collègue** : Supabase → Authentication → Users → Add user (son adresse, mot de passe solide, *Auto Confirm User*), puis dans SQL Editor, `02-professeur.sql` avec **son** adresse et **son** nom à la place des vôtres (changer les deux lignes `select id, '…' … where email = '…'`).
+2. **SQL** : SQL Editor → New snippet → coller `09-partage-classe.sql` → Run. Le résultat doit afficher trois lignes : `classes_profs`, `profs_classe`, `prof_par_email`. Relançable sans risque.
+3. **Fonction « comptes »** : Edge Functions → comptes → Code → remplacer tout le contenu par `functions/comptes/index.ts` → Deploy.
+4. **Partager** : site → Suivi professeur → « ⚙️ Gérer la classe » → « 👥 Professeurs de la classe » → adresse du collègue → « Partager la classe ». Il la voit aussitôt dans son sélecteur de classe (marquée « partagée »).
+
+Points à connaître :
+- le collègue voit les identifiants (tstl1-07…) et les résultats de vos élèves, comme vous. Aucun nom ni adresse d'élève n'est sur le serveur ;
+- les devoirs d'une classe partagée sont communs : chacun peut modifier ou supprimer ceux de l'autre ;
+- supprimer la classe (propriétaire) la supprime aussi pour le co-professeur ;
+- si le propriétaire supprime son compte, la classe disparaît avec lui (il n'y a pas de transfert de propriété).
