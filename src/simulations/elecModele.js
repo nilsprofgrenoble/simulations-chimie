@@ -13,8 +13,13 @@ export const R25 = 10000, B_CTN = 3950;
 export const ctn = th => R25 * Math.exp(B_CTN * (1 / (th + 273.15) - 1 / 298.15));
 export const ctnInverse = R => 1 / (1 / 298.15 + Math.log(R / R25) / B_CTN) - 273.15;
 
+// ---------- photorésistance (LDR) : R = 15 kΩ à 10 lux, pente −0,7 en échelle log ----------
+export const ldr = lux => 15000 * Math.pow(lux / 10, -0.7);
+
 // ---------- lampe à incandescence 6 V – 0,30 A : caractéristique non linéaire ----------
 export const lampeI = U => 0.30 * Math.pow(Math.max(U, 0) / 6, 1.72);
+// Point de fonctionnement : lampe en série avec un résistor Rp sur un générateur E (loi des mailles : E = Rp·I + U)
+export function fonctionnementLampe(E, Rp) { let a = 0, b = E; for (let k = 0; k < 60; k++) { const u = (a + b) / 2; if (lampeI(u) > (E - u) / Rp) b = u; else a = u; } const U = (a + b) / 2; return { U, I: lampeI(U) }; }
 export const lampeU = I => 6 * Math.pow(Math.max(I, 0) / 0.30, 1 / 1.72);
 
 // ---------- 1G : porteurs de charge ----------
