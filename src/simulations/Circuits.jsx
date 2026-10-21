@@ -3,35 +3,36 @@ import { useSignalerMode, declarerDefis } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireNombre } from "../commun";
 import { fr, serie, derivation } from "./elecModele";
-import { BLEU, VERMILLON, GRIS, alea, usePhase } from "./elecOutils";
+import { BLEU, VERMILLON, VIOLET, GRIS, alea, usePhase } from "./elecOutils";
 import { Curseur, VoletDefiGen, Fil, Resistor, Pile, Mesure } from "./elecCommun";
 
 // ====================================================
 //  SIM 68 — CIRCUITS ÉLECTRIQUES : INTENSITÉ ET TENSION (2GT, « Signaux et capteurs »)
-//  Circuit en série et circuit en dérivation : sens du courant, intensité (unicité en série, loi des nœuds), tension (additivité, même tension
+//  Circuit en série et circuit en dérivation : sens du courant, intensité (unicité en série, loi des nœuds), tension (loi des mailles, même tension
 //  en dérivation). Hypothèses : générateur idéal (tension constante), fils sans résistance, résistors ohmiques, appareils de mesure parfaits,
 //  régime continu, vitesse des points seulement indicative.
 // ====================================================
 
 const SIM = 68;
 declarerDefis(SIM, [
-  ['tensions', 'Additivité des tensions'],
+  ['tensions', 'Loi des mailles'],
   ['intensites', 'Loi des nœuds'],
   ['prevoir', 'Prévoir l’effet d’un changement'],
 ]);
-const TITRES = { tensions: 'Additivité des tensions', intensites: 'Loi des nœuds', prevoir: 'Prévoir un changement' };
+const TITRES = { tensions: 'Loi des mailles', intensites: 'Loi des nœuds', prevoir: 'Prévoir un changement' };
 const RES = [47, 100, 150, 220, 330, 470, 680, 1000];
 const fI = I => (I < 1 ? `${fr(I * 1000, I * 1000 < 100 ? 1 : 0)} mA` : `${fr(I, 2)} A`);
 const fU = U => `${fr(U, 2)} V`;
 const vit = I => 30 + 500 * I;
 
 // ---------- schéma ----------
-function Schema({ atelier, E, R1, R2, mesures, ph, w = 560 }) {
+function Schema({ atelier, E, R1, R2, mesures, ph, maille = 0, w = 560 }) {
   const ser = atelier === 'serie', m = ser ? serie(E, R1, R2) : derivation(E, R1, R2);
   const fleche = (x1, y1, x2, y2) => { const l = Math.hypot(x2 - x1, y2 - y1), ux = (x2 - x1) / l, uy = (y2 - y1) / l;
     return <g stroke={BLEU} fill={BLEU}><line x1={x1} y1={y1} x2={x2} y2={y2} strokeWidth="2"/><polygon points={`${x2},${y2} ${x2 - ux * 11 - uy * 5},${y2 - uy * 11 + ux * 5} ${x2 - ux * 11 + uy * 5},${y2 - uy * 11 - ux * 5}`}/></g>; };
   return (
     <svg viewBox={`0 0 ${w} 320`} width="100%" role="img" aria-label={ser ? 'Circuit en série : un générateur et deux résistors dans une seule boucle' : 'Circuit en dérivation : un générateur et deux résistors sur deux branches'} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 620 }}>
+      {maille > 0 && (() => { const [x1, x2] = ser ? [102, 458] : maille === 1 ? [92, 248] : [92, 408]; return <g><rect x={x1} y={104} width={x2 - x1} height={124} rx={8} fill="#7b2d8e" opacity="0.07" stroke={VIOLET} strokeWidth="3" strokeDasharray="9 6"/><text x={x1 + 8} y={124} fontSize="13.5" fontWeight="800" fill={VIOLET}>{ser ? 'maille' : `maille ${maille}`}</text></g>; })()}
       {ser ? <>
         <Fil pts={[[80, 250], [80, 80], [480, 80], [480, 250], [80, 250]]} v={vit(m.I)} ph={ph}/>
         <Pile cx={80} cy={165} nom="Pile" lab={mesures ? undefined : undefined}/>
@@ -75,7 +76,7 @@ function nouveauDefi(type) {
   return { ...base, ...alea(S) };
 }
 function evaluer(d) {
-  if (d.type === 'tensions') { const x = lireNombre(d.reps.v), ok = isFinite(x) && Math.abs(x - d.U2) <= 0.06; return { ok, lignes: [[ok, ok ? 'Tension correcte.' : 'Revois : en série, E = U_1 + U_2, donc U_2 = E − U_1.']] }; }
+  if (d.type === 'tensions') { const x = lireNombre(d.reps.v), ok = isFinite(x) && Math.abs(x - d.U2) <= 0.06; return { ok, lignes: [[ok, ok ? 'Tension correcte.' : 'Revois la loi des mailles : E = U_1 + U_2, donc U_2 = E − U_1.']] }; }
   if (d.type === 'intensites') { const x = lireNombre(d.reps.v), ok = isFinite(x) && Math.abs(x - d.I2a) <= 1; return { ok, lignes: [[ok, ok ? 'Intensité correcte.' : 'Revois la loi des nœuds : I = I_1 + I_2, donc I_2 = I − I_1 (attention aux mA).']] }; }
   const ok = d.reps.d === d.rep; return { ok, lignes: [[ok, ok ? 'Bonne réponse.' : d.expl]] };
 }
@@ -84,7 +85,7 @@ const enonce = (d, { champ, choix }) => {
   if (d.type === 'intensites') return <>🎯 Circuit <strong>en dérivation</strong> : l’ampèremètre placé près de la pile indique <strong>I = {d.Ia} mA</strong> ; dans la branche de R₁, il indique <strong>I₁ = {d.I1a} mA</strong>. Quelle est l’intensité I₂ dans la branche de R₂ ?<div style={{ marginTop: 6 }}>{champ('v', 'mA')}</div></>;
   return <>🎯 {d.q}<div style={{ marginTop: 6 }}>{choix('d', [['plus', 'augmente'], ['moins', 'diminue'], ['meme', 'ne change pas'], ['nul', 'devient nulle']])}</div></>;
 };
-const solution = d => d.type === 'tensions' ? <>En série, les tensions s’additionnent : E = U₁ + U₂, donc U₂ = E − U₁ = {fr(d.E, 1)} − {fr(d.U1, 1)} = <strong>{fr(d.U2, 1)} V</strong>.</>
+const solution = d => d.type === 'tensions' ? <>Loi des mailles (une seule maille) : E = U₁ + U₂, donc U₂ = E − U₁ = {fr(d.E, 1)} − {fr(d.U1, 1)} = <strong>{fr(d.U2, 1)} V</strong>.</>
   : d.type === 'intensites' ? <>Loi des nœuds : I = I₁ + I₂, donc I₂ = I − I₁ = {d.Ia} − {d.I1a} = <strong>{d.I2a} mA</strong>.</>
   : <>{d.expl}</>;
 
@@ -100,7 +101,7 @@ export function SimulationCircuits() {
   const [hypoOuv, setHypoOuv] = useState(false);
   const ph = usePhase(anim);
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi, enExplore = mode === 'explore';
-  const voir = (at, p = {}) => { setAtelier(at); setC(c => ({ ...c, mesures: true, ...p })); };
+  const voir = (at, p = {}) => { setAtelier(at); setC(c => ({ ...c, mesures: true, maille: 0, ...p })); };
   const m = atelier === 'serie' ? serie(C.E, C.R1, C.R2) : derivation(C.E, C.R1, C.R2);
 
   const ETAPES = [
@@ -118,12 +119,12 @@ export function SimulationCircuits() {
     { id: 'tension', titre: 'La tension électrique', depart: () => voir('serie'),
       texte: <>La <strong>tension U</strong> mesure la « poussée » qui fait circuler les charges. Elle s’exprime en <strong>volts (V)</strong> et se mesure avec un <strong>voltmètre</strong> branché <strong>aux bornes</strong> du dipôle (en dérivation). On la représente par une <strong>flèche-tension</strong> (en bleu) : ici E aux bornes de la pile, U₁ aux bornes de R₁ et U₂ aux bornes de R₂.</>,
       tache: { type: 'qcm', q: 'Un voltmètre se branche…', options: ['aux bornes du dipôle, en dérivation', 'dans la boucle, en série', 'seulement sur la pile', 'on ne le branche pas'], bonne: 0, expl: 'Le voltmètre compare deux points du circuit : il se place en dérivation, aux bornes du dipôle.' } },
-    { id: 'additivite', titre: 'En série : les tensions s’additionnent', depart: () => voir('serie'),
-      texte: <>Dans un circuit en série, la tension de la pile se « partage » entre les dipôles : <strong>E = U₁ + U₂</strong> (loi d’additivité des tensions). Vérifiez avec les mesures du schéma, pour plusieurs valeurs de R₁ et R₂ : le plus grand résistor reçoit la plus grande tension.
+    { id: 'additivite', titre: 'En série : la loi des mailles', depart: () => voir('serie', { maille: 1 }),
+      texte: <>Une <strong>maille</strong> est une boucle fermée du circuit (en pointillés violets). La <strong>loi des mailles</strong> dit que, le long d’une maille, la tension de la pile se « partage » entre les dipôles : <strong>E = U₁ + U₂</strong>, ou encore E − U₁ − U₂ = 0. Ici il n’y a <strong>qu’une seule maille</strong>. Vérifiez avec les mesures du schéma, pour plusieurs valeurs de R₁ et R₂ : le plus grand résistor reçoit la plus grande tension.
         <ExempleResolu>E = 6 V, U₁ = 1,88 V : U₂ = E − U₁ = 6 − 1,88 = <strong>4,12 V</strong>.</ExempleResolu></>,
       tache: { type: 'num', q: 'E = 9 V et U₁ = 3,5 V (circuit en série). Quelle est la tension U₂ ?', unite: 'V', vrai: 5.5, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[12.5, 'Tu as additionné : les tensions U₁ et U₂ s’additionnent pour donner E, donc U₂ = E − U₁.']], expl: 'U₂ = E − U₁ = 9 − 3,5 = 5,5 V.' } },
-    { id: 'derivation', titre: 'En dérivation : la même tension', depart: () => voir('derivation'),
-      texte: <>Dans un circuit <strong>en dérivation</strong>, il y a <strong>plusieurs chemins</strong> possibles. Les branches sont toutes branchées entre les <strong>mêmes deux points</strong> (les nœuds) : la <strong>tension est la même</strong> aux bornes de chaque branche, égale à E.</>,
+    { id: 'derivation', titre: 'En dérivation : deux mailles', depart: () => voir('derivation', { maille: 1 }),
+      texte: <>Dans un circuit <strong>en dérivation</strong>, il y a <strong>plusieurs chemins</strong> possibles, donc ici <strong>deux mailles</strong> : la maille 1 (pile et R₁) et la maille 2 (pile et R₂). Cliquez sur « maille 1 » puis « maille 2 ». La loi des mailles donne <strong>E = U₁</strong> pour la maille 1 et <strong>E = U₂</strong> pour la maille 2 : <strong>U₁ = U₂ = E</strong>. La tension est la même aux bornes de chaque branche.</>,
       tache: { type: 'qcm', q: 'Deux résistors sont en dérivation sur une pile de 6 V. Quelle est la tension aux bornes de R₂ ?', options: ['6 V', '3 V', '12 V', 'Ça dépend de R₂'], bonne: 0, expl: 'En dérivation, la tension est la même aux bornes de chaque branche : 6 V, quelle que soit la valeur de R₂.' } },
     { id: 'noeud', titre: 'Aux nœuds : l’intensité se partage', depart: () => voir('derivation'),
       texte: <>Au <strong>nœud</strong>, le courant arrivant de la pile se sépare en deux : <strong>I = I₁ + I₂</strong> (loi des nœuds). Le plus petit résistor laisse passer le plus grand courant. Changez R₁ et R₂ et vérifiez.
@@ -134,8 +135,8 @@ export function SimulationCircuits() {
       tache: { type: 'action', ok: enGuide && atelier === 'serie' && C.R2 >= 470, consigne: 'Dans le circuit en série, choisissez R₂ = 470 Ω ou plus et regardez I.' } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li><strong>Série</strong> : une seule boucle, <strong>même intensité</strong> partout ; les <strong>tensions s’additionnent</strong> : E = U₁ + U₂.</li>
-        <li><strong>Dérivation</strong> : plusieurs branches, <strong>même tension</strong> ; les <strong>intensités s’additionnent</strong> au nœud : I = I₁ + I₂.</li>
+        <li><strong>Série</strong> : une seule maille, <strong>même intensité</strong> partout ; loi des mailles : <strong>E = U₁ + U₂</strong>.</li>
+        <li><strong>Dérivation</strong> : deux mailles, <strong>U₁ = U₂ = E</strong> ; loi des nœuds : <strong>I = I₁ + I₂</strong>.</li>
         <li>Ampèremètre en <strong>série</strong> (A), voltmètre en <strong>dérivation</strong> (V).</li></ul></ARetenir>, tache: null },
   ];
   useEffect(() => {
@@ -164,8 +165,9 @@ export function SimulationCircuits() {
         <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Circuit :</span>
         {[['serie', '➿ En série'], ['derivation', '🔀 En dérivation']].map(([k, l]) => <button key={k} onClick={() => setAtelier(k)} style={stylePetitBouton(atelier === k, '#16a34a')}>{l}</button>)}
         <button onClick={() => setAnim(a => !a)} style={stylePetitBouton(!anim, '#334155')}>{anim ? '⏸ Figer les charges' : '▶ Animer'}</button>
+        {(atelier === 'serie' ? [[0, 'aucune maille'], [1, 'maille']] : [[0, 'aucune maille'], [1, 'maille 1'], [2, 'maille 2']]).map(([k, l]) => <button key={k} onClick={() => setC(c => ({ ...c, maille: k }))} style={stylePetitBouton((C.maille || 0) === k, VIOLET)}>{l}</button>)}
         <button onClick={() => setC(c => ({ ...c, mesures: !c.mesures }))} style={stylePetitBouton(C.mesures, '#334155')}>{C.mesures ? 'Cacher' : 'Afficher'} les mesures</button></div>}
-      <Schema atelier={atelier} E={C.E} R1={C.R1} R2={C.R2} mesures={C.mesures} ph={ph}/>
+      <Schema atelier={atelier} E={C.E} R1={C.R1} R2={C.R2} mesures={C.mesures} maille={enDefi ? 0 : (C.maille || 0)} ph={ph}/>
       {!enDefi && <div style={{ marginTop: 8 }}><Curseur nom="Tension de la pile E" val={C.E} min={3} max={12} pas={1} set={v => setC(c => ({ ...c, E: v }))} unite=" V"/></div>}
       {!enDefi && <>{choixR('R1', 'R₁')}{choixR('R2', 'R₂')}</>}
       {!enDefi && C.mesures && <div style={{ marginTop: 8, fontSize: 14.5, color: KIT.txt, lineHeight: 1.6 }}>
@@ -177,14 +179,14 @@ export function SimulationCircuits() {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
       <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
         <li>En série, mettez R₂ très grand devant R₁ : quel résistor reçoit presque toute la tension ?</li>
-        <li>En série, vérifiez que U₁ + U₂ donne toujours E.</li>
+        <li>En série, colorez la maille et vérifiez que U₁ + U₂ donne toujours E (loi des mailles).</li>
         <li>En dérivation, mettez R₁ = R₂ : que valent I₁ et I₂ ? Et I par rapport à I₁ ?</li>
         <li>En dérivation, quel résistor laisse passer le plus de courant : le petit ou le grand ?</li>
         <li>Augmentez E : que deviennent toutes les intensités ?</li>
       </ul>
     </div>);
   const retenir = <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
-    <li>Série : même I ; E = U₁ + U₂</li><li>Dérivation : même U ; I = I₁ + I₂</li><li>Ampèremètre en série, voltmètre en dérivation</li></ul></ARetenir>;
+    <li>Mailles : série E = U₁ + U₂ ; dérivation U₁ = U₂ = E</li><li>Nœuds : I = I₁ + I₂</li><li>Ampèremètre en série, voltmètre en dérivation</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
