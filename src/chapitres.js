@@ -36,7 +36,9 @@ export const CHAPITRES = [
   { id: 'tstl-thermique', niveau: 'TSTL', label: '🔥 Transferts thermiques', sims: [31, 32, 30], domaines: ['Transferts thermiques'] },
   { id: 'tstl-controle', niveau: 'TSTL', label: '🧲 Contrôle des systèmes', sims: [46, 44, 45], domaines: [] },
 
-  { id: 'bts-analyse', niveau: 'BTS', label: '🔬 Analyse', sims: [3, 29, 9, 11, 12, 54, 55, 13, 16], domaines: ['Chimie', 'Métrologie'] },
+  // Analyse : électrochimie, chromatographie, étalonnage et quantification, fiabilité des mesures
+  { id: 'bts-analyse', niveau: 'BTS', label: '🔬 Analyse', sims: [3, 29, 12, 54, 55, 11, 13, 9, 16], domaines: ['Chimie', 'Métrologie'] },
+  { id: 'bts-cristallo', niveau: 'BTS', label: '🔷 Analyse cristallographique', sims: [73], domaines: [] },
   { id: 'bts-formulation', niveau: 'BTS', label: '🧪 Formulation', sims: [4, 14], domaines: [] },
 ];
 
