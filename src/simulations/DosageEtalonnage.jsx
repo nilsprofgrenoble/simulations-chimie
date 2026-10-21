@@ -148,7 +148,7 @@ function Hypotheses() {
 }
 
 // ════════════════ SIMULATION ════════════════
-export function SimulationDosageEtalonnage() {
+export function SimulationDosageEtalonnage({ plotlyReady }) {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
@@ -444,7 +444,7 @@ export function SimulationDosageEtalonnage() {
       {mode === 'explore' && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
         {[['banc', '🧪 Concevoir et réaliser une gamme'], ['donnees', '📊 Exploiter mes données d’étalonnage']].map(([k, n]) => <button key={k} onClick={() => setOnglet(k)} style={stylePetitBouton(onglet === k, '#0f766e')}>{n}</button>)}
       </div>}
-      {mode === 'explore' && onglet === 'donnees' ? <BeerLambertBTS/> : <>
+      {mode === 'explore' && onglet === 'donnees' ? <BeerLambertBTS plotlyReady={plotlyReady}/> : <>
         {mode === 'explore' && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
           <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Technique :</span>
           {Object.entries(TECHNIQUES).map(([k, t]) => <button key={k} onClick={() => { setTechId(k); setVolumes(k === 'clhp' ? [10, 20, 30, 40, 50] : k === 'spectro' ? [3, 6, 9, 12, 15] : [0.5, 1, 1.5, 2, 2.5].map(v => v * 1)); }} style={stylePetitBouton(techId === k, '#0f766e')}>{t.nom}</button>)}
