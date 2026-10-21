@@ -106,7 +106,7 @@ const DEFS = [
       me2: g(3, 1.26, 'CH₃ (éthyle)', '2 H voisins : triplet.'),
       me1: g(3, 0.95, 'CH₃ (butanoyle)', 'Le plus blindé. 2 H voisins : triplet.') }, liens: [['och2', 'me2', 7.1], ['me1', 'mid', 7.4], ['mid', 'alpha', 7.4]] },
   { id: 'dimethylpentanone', nom: '4,4-diméthylpentan-2-one', brute: 'C₇H₁₄O', famille: 'C7H14O',
-    semi: [{ g: 'ac', t: 'CH₃' }, '–', 'CO', '–', { g: 'ch2', t: 'CH₂' }, '–', 'C', '–', { g: 'tbu', t: '(CH₃)₃' }],
+    semi: [{ g: 'ac', t: 'CH₃' }, '–', 'CO', '–', { g: 'ch2', t: 'CH₂' }, '–', 'C', { g: 'tbu', t: '(CH₃)₃' }],
     groupes: { ch2: g(2, 2.33, 'CH₂CO', 'À côté du carbonyle. Voisins : carbone C=O et carbone quaternaire, sans H : singulet.'),
       ac: g(3, 2.13, 'CH₃CO', 'À côté du carbonyle, sans H voisin : singulet.'),
       tbu: g(9, 1.02, '(CH₃)₃', 'Neuf H équivalents, loin du carbonyle : les plus blindés. Singulet.') }, liens: [] },
@@ -166,7 +166,7 @@ export const MOLECULES = DEFS.map(construire);
 export const MOL = Object.fromEntries(MOLECULES.map(m => [m.id, m]));
 export const FAMILLES = {};
 MOLECULES.forEach(m => { (FAMILLES[m.famille] = FAMILLES[m.famille] || []).push(m.id); });
-export const plat = m => m.semi.map(t => (typeof t === 'string' ? t : t.cycle ? 'C₆H₄' : t.t)).join('');
+export const plat = m => m.semi.map(t => (typeof t === 'string' ? t : t.cycle ? `C₆H${'₀₁₂₃₄₅₆'[Object.keys(t.cycle).length]}` : t.t)).join('');
 
 // groupes visibles (D₂O efface les H labiles)
 export const visibles = (m, d2o) => m.liste.filter(x => !(d2o && x.labile));
