@@ -73,3 +73,11 @@ export function couleurLampe(g) {
 export function raieProche(g, nm, tol = 4) {
   let best = null; for (const [x] of g.raies) if (Math.abs(x - nm) <= tol && (best == null || Math.abs(x - nm) < Math.abs(best - nm))) best = x; return best;
 }
+
+// vue depuis la Terre (classes du cours) ou depuis l'espace : l'atmosphère diffuse surtout le bleu, donc elle « rougit » la lumière.
+// Modèle simplifié : depuis l'espace, la couleur correspond à une température apparente plus élevée d'environ 1500 °C (moins pour les étoiles froides).
+export const DECALAGE_ATM = T => 1500 * Math.min(1, T / 5700);
+export function couleurVue(Tc, terre) { const Te = terre ? Tc : Tc + DECALAGE_ATM(Tc); return { rgb: couleurCorps(Te).rgb, nom: nomCouleur(Te) }; }
+// transmission de l'atmosphère (diffusion de Rayleigh, masse d'air 2, soit un astre à 30° au-dessus de l'horizon)
+export const transmission = nm => Math.exp(-2 * 0.0088 * Math.pow(nm / 1000, -4.05));
+export function courbeCorpsTerre(Tc, xmin = 200, xmax = 1000, pas = 5) { return courbeCorps(Tc, xmin, xmax, pas).map(([x, v]) => [x, v * transmission(x)]); }

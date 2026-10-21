@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, avecIndices } from "../commun";
-import { fr, courbeCorps, intensiteCorps, lambdaMax, tempDepuisLmax, rgbLambda, css, couleurCorps, nomCouleur, ETOILES, GAZ, gaz, couleurLampe, raieProche } from "./spectresModele";
+import { fr, courbeCorps, intensiteCorps, lambdaMax, tempDepuisLmax, rgbLambda, css, couleurCorps, couleurVue, courbeCorpsTerre, ETOILES, GAZ, gaz, couleurLampe, raieProche } from "./spectresModele";
 
 // ====================================================
 //  SIM 66 — SPECTRES D'ÉMISSION (2GT, « Ondes et signaux »)
@@ -23,7 +23,7 @@ const alea = l => l[Math.floor(Math.random() * l.length)];
 const nm = x => `${fr(x, Math.abs(x - Math.round(x)) < 0.05 ? 0 : 1)} nm`;
 
 // ---------- spectrogramme (intensité en fonction de la longueur d'onde) ----------
-function Spectro({ xmin = 200, xmax = 1000, courbe, raies, etiq, curseur, compact, titre, w = 700 }) {
+function Spectro({ xmin = 200, xmax = 1000, courbe, courbe2, raies, etiq, curseur, compact, titre, w = 700 }) {
   const H = compact ? 92 : 250, X0 = 46, X1 = w - 14, Y0 = compact ? 8 : 14, Y1 = compact ? 66 : 196;
   const X = x => X0 + (x - xmin) / (xmax - xmin) * (X1 - X0), Y = v => Y1 - v * (Y1 - Y0);
   const graduations = []; for (let x = Math.ceil(xmin / 100) * 100; x <= xmax; x += 100) graduations.push(x);
@@ -41,6 +41,7 @@ function Spectro({ xmin = 200, xmax = 1000, courbe, raies, etiq, curseur, compac
         {bandes.map(x => <rect key={x} x={X(x)} y={Y1 + 8} width={X(x + 5) - X(x) + 0.5} height="10" fill={css(rgbLambda(x + 2.5))}/>)}</>}
       {courbe && <><path d={`M ${X(courbe[0][0])} ${Y1} ` + courbe.map(([x, v]) => `L ${X(x)} ${Y(v)}`).join(' ') + ` L ${X(courbe[courbe.length - 1][0])} ${Y1} Z`} fill="#0072b2" opacity="0.18"/>
         <polyline points={courbe.map(([x, v]) => `${X(x)},${Y(v)}`).join(' ')} fill="none" stroke="#0072b2" strokeWidth="3" strokeLinejoin="round"/></>}
+      {courbe2 && <polyline points={courbe2.map(([x, v]) => `${X(x)},${Y(v)}`).join(' ')} fill="none" stroke="#475569" strokeWidth="2" strokeDasharray="6 5"/>}
       {raies && raies.filter(([x]) => x >= xmin && x <= xmax).map(([x, v]) => <line key={x} x1={X(x)} y1={Y1} x2={X(x)} y2={Y(v)} stroke={css(rgbLambda(x))} strokeWidth={compact ? 3 : 4} strokeLinecap="round"/>)}
       {raies && raies.filter(([x]) => x >= xmin && x <= xmax).map(([x, v]) => <line key={`c${x}`} x1={X(x)} y1={Y1} x2={X(x)} y2={Y(v)} stroke="#0f172a" strokeWidth="0.8" opacity="0.6"/>)}
       {etiq && raies && raies.filter(([x]) => etiq.includes(x)).map(([x, v]) => <text key={`e${x}`} x={X(x)} y={Y(v) - 4} textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#0f172a" stroke="#fff" strokeWidth="3" paintOrder="stroke">{fr(x, 1)}</text>)}
@@ -147,6 +148,7 @@ export function SimulationSpectres() {
   const [T, setT] = useState(3000);
   const [G, setG] = useState('mercure');
   const [Et, setEt] = useState('soleil');
+  const [terre, setTerre] = useState(true);
   const [cur, setCur] = useState(550);
   const [blanche, setBlanche] = useState(false);
   const [hypoOuv, setHypoOuv] = useState(false);
@@ -175,8 +177,12 @@ export function SimulationSpectres() {
       texte: <>À <strong>300 °C</strong>, un objet n’est plus visible dans le noir… pourtant il émet : le maximum de son spectre est dans l’<strong>infrarouge</strong> (au-delà de 800 nm). Une caméra infrarouge le voit. Il faut environ <strong>500 °C</strong> pour que l’œil perçoive une lueur rouge sombre.</>,
       tache: { type: 'qcm', q: 'Pourquoi un objet à 300 °C n’émet-il pas de lumière visible ?', options: ['Ses radiations sont dans l’infrarouge (> 800 nm)', 'Il n’émet rien du tout', 'Ses radiations sont dans l’ultraviolet', 'Il est trop petit'], bonne: 0, expl: 'Il émet, mais dans l’infrarouge, que l’œil ne voit pas.' } },
     { id: 'etoile', titre: 'La couleur d’une étoile', depart: () => voirE('betel'),
-      texte: <>Les étoiles sont des corps très chauds : leur couleur dépend de leur <strong>température de surface</strong>. Sélectionnez les étoiles : <strong>Bételgeuse</strong> (3 000 °C) est rouge, <strong>le Soleil</strong> (5 700 °C) est jaune, <strong>Sirius</strong> (8 000 °C) est blanche, <strong>Rigel</strong> (10 000 °C) est bleue.</>,
+      texte: <>Les étoiles sont des corps très chauds : leur couleur dépend de leur <strong>température de surface</strong>. Sélectionnez les étoiles (couleurs perçues depuis la Terre) : <strong>Bételgeuse</strong> (3 000 °C) est rouge, <strong>le Soleil</strong> (5 700 °C) est jaune, <strong>Sirius</strong> (8 000 °C) est blanche, <strong>Rigel</strong> (10 000 °C) est bleue.</>,
       tache: { type: 'qcm', q: 'Entre Véga (étoile blanche) et Arcturus (étoile rouge), laquelle est la plus chaude ?', options: ['Véga, l’étoile blanche', 'Arcturus, l’étoile rouge', 'Elles ont la même température', 'On ne peut pas savoir'], bonne: 0, expl: 'Rouge → peu chaud ; jaune → plus chaud ; blanc → encore plus chaud ; bleu → le plus chaud.' } },
+    { id: 'atmos', titre: 'Le Soleil est-il jaune ?', depart: () => { voirE('soleil'); setTerre(true); },
+      texte: <>Depuis la <strong>Terre</strong>, le Soleil nous paraît <strong>jaune</strong>. Mais vu depuis l’<strong>espace</strong> (par les astronautes), il est <strong>blanc</strong> ! L’<strong>atmosphère</strong> diffuse surtout les radiations bleues (c’est pour cela que le ciel est bleu) : la lumière du Soleil qui nous arrive a perdu du bleu et paraît plus jaune. Décochez « vue depuis la Terre » pour comparer.
+        <ExempleResolu>Plus le Soleil est bas sur l’horizon, plus il traverse d’atmosphère : il devient orange puis rouge au coucher.</ExempleResolu></>,
+      tache: { type: 'qcm', q: 'Pourquoi le Soleil paraît-il jaune depuis le sol ?', options: ['L’atmosphère diffuse surtout les radiations bleues', 'Le Soleil change de température', 'L’atmosphère émet de la lumière jaune', 'Le Soleil est vraiment jaune'], bonne: 0, expl: 'L’atmosphère retire du bleu à la lumière du Soleil : elle paraît plus jaune. Vu de l’espace, le Soleil est blanc.' } },
     { id: 'lmax', titre: 'Lire la température d’une étoile', depart: () => voirE('soleil', 485),
       texte: <>Le <strong>maximum</strong> du spectre du Soleil est à environ <strong>485 nm</strong> (curseur orange). Sur la <strong>courbe verte</strong> (dessinée dans l’atelier « Étoiles »), on lit la température qui correspond : on part de λ sur l’axe horizontal, on monte jusqu’à la courbe, puis on lit la température sur l’axe vertical.</>,
       tache: { type: 'num', q: 'Pour λ du maximum = 485 nm, quelle est la température de surface (en °C) ?', unite: '°C', vrai: 5700, tol: 0.08, affiche: x => String(x), pieges: [[485, 'C’est la longueur d’onde ! Il faut lire la température sur l’axe vertical.']], expl: 'On lit environ 5 700 °C : c’est bien la température de surface du Soleil.' } },
@@ -221,6 +227,7 @@ export function SimulationSpectres() {
       <li><strong>Courbes normalisées</strong> : chaque courbe est tracée avec son maximum à la même hauteur, pour voir sa <strong>forme</strong>. Un corps plus chaud émet en réalité <strong>beaucoup plus</strong> de lumière : la hauteur absolue n’est pas représentée.</li>
       <li><strong>Températures en °C</strong> (comme dans le cours). Pour trouver le maximum du spectre, on utilise la loi de Wien λ<sub>max</sub> × T = 2,898×10⁶ nm·K avec T en kelvin (T = θ + 273) ; en Seconde, on la remplace par la <strong>courbe verte</strong> à lire.</li>
       <li><strong>Couleurs perçues</strong> : classes simplifiées du cours (rouge, jaune, blanche, bleue). En réalité la couleur varie de façon continue et dépend de l’œil et de l’écran. Les températures des étoiles sont des valeurs <strong>arrondies</strong> du cours.</li>
+      <li><strong>Vue depuis la Terre ou l’espace</strong> : l’atmosphère est modélisée par la seule diffusion de Rayleigh (masse d’air 2, astre à 30° au-dessus de l’horizon) ; la couleur « depuis l’espace » est obtenue avec un décalage empirique d’environ 1 500 °C. Les classes de couleur du cours correspondent à une observation depuis la Terre.</li>
       <li><strong>Visible : 400–800 nm</strong> (valeurs du cours ; l’œil voit un peu moins : environ 380 à 780 nm). À l’écran les couleurs sont approximatives, et une couleur n’est pas une mesure.</li>
       <li><strong>Lampes à décharge</strong> : gaz sous <strong>faible pression</strong>, excité électriquement. Positions des raies = valeurs relevées sur les spectrogrammes du TP ; <strong>intensités relatives approximatives</strong> ; largeur des raies due à l’appareil. Pour le néon, seules les raies principales et quelques raies secondaires sont dessinées.</li>
       <li><strong>Couleur d’une lampe à décharge</strong> : addition des couleurs de ses raies visibles (approximation). Les raies UV (&lt; 400 nm) ne se voient pas.</li>
@@ -240,13 +247,18 @@ export function SimulationSpectres() {
       <label style={{ fontSize: 13.5, fontWeight: 600, display: 'block', marginTop: 8 }}>Température du corps (rhéostat) : <strong>{T} °C</strong>
         <input type="range" min="300" max="10000" step="100" value={T} aria-label="Température du corps" onChange={e => setT(+e.target.value)} style={{ width: '100%' }}/></label>
     </div>);
+  const vue = couleurVue(etoile.T, terre);
   const EtoilePanel = (
     <div>
-      <Spectro courbe={courbeCorps(etoile.T)} curseur={cur}/>
+      <Spectro courbe={terre ? courbeCorpsTerre(etoile.T) : courbeCorps(etoile.T)} courbe2={terre ? courbeCorps(etoile.T) : null} curseur={cur}/>
+      {terre && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 2 }}>Trait plein : lumière reçue au sol. Pointillés : lumière à l’entrée de l’atmosphère. L’atmosphère retire surtout les radiations bleues.</div>}
       <div style={{ marginTop: 6 }}><Bande T={etoile.T} nom={etoile.nom}/></div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Étoile :</span>
-        {ETOILES.map(e => <button key={e.id} onClick={() => setEt(e.id)} style={stylePetitBouton(Et === e.id, '#334155')}>{e.nom}</button>)}</div>
-      <div style={{ marginTop: 4, fontSize: 14.5, color: KIT.txt, lineHeight: 1.6 }}>Température de surface : <strong>{etoile.T} °C</strong> · couleur perçue : <strong>{nomCouleur(etoile.T)}</strong></div>
+        {ETOILES.map(e => <button key={e.id} onClick={() => setEt(e.id)} style={stylePetitBouton(Et === e.id, '#334155')}>{e.nom}</button>)}
+        <button onClick={() => setTerre(t => !t)} style={stylePetitBouton(terre, '#0369a1')}>{terre ? '☑' : '☐'} vue depuis la Terre</button></div>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginTop: 8 }}>
+        <div style={{ width: 52, height: 52, borderRadius: '50%', background: css(vue.rgb), border: '3px solid #0f172a', flexShrink: 0 }} aria-hidden="true"/>
+        <div style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.6 }}>Température de surface : <strong>{etoile.T} °C</strong><br/>Couleur perçue {terre ? 'depuis la Terre' : 'depuis l’espace'} : <strong>{vue.nom}</strong></div></div>
       <div style={{ marginTop: 4 }}>{curseur}</div>
       <div style={{ marginTop: 8 }}><div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>Température en fonction de la longueur d’onde du maximum</div><Wien marque={cur}/></div>
     </div>);
