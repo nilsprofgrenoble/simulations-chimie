@@ -18,7 +18,7 @@ export const CHAPITRES = [
   { id: '2gt-microscopique', niveau: '2GT', label: '⚛️ Modéliser la matière à l’échelle microscopique', sims: [57, 58], domaines: [] },
   { id: '2gt-solutions', niveau: '2GT', label: '🧂 Solutions, dilution et mélanges', sims: [61, 62, 63], domaines: [] },
   { id: '2gt-lumiere', niveau: '2GT', label: '🔦 Lumière : réfraction, lentilles et spectres', sims: [64, 65, 66], domaines: [] },
-  { id: '2gt-forces', niveau: '2GT', label: '➡️ Modéliser une action par une force', sims: [59, 60], domaines: [] },
+  { id: '2gt-forces', niveau: '2GT', label: '➡️ Modéliser une action par une force', sims: [59, 60, 67], domaines: [] },
   { id: '2gt-mouvement', niveau: '2GT', label: '🚃 Décrire un mouvement', sims: [56], domaines: ['Mouvement et vitesse'] },
 
   { id: '1g-evolution', niveau: '1G', label: '⚗️ Suivi de l’évolution d’un système, siège d’une transformation', sims: [1, 2, 25, 10], domaines: ['Chimie'] },
