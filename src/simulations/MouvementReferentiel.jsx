@@ -220,7 +220,7 @@ function VoletDefi({ defi, setDefi, changerType, dtChoisi }) {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(TITRES).map(([t, l]) => <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
       {defi.type === 'vitesse' && <>
-        <div style={txt}>🎯 Deux véhicules, A et B, roulent en ligne droite à vitesse constante dans le référentiel de la route (vitesses inconnues). Dans la chronophotographie, relevez la vitesse de chacun
+        <div style={txt}><Pic n="target"/>Deux véhicules, A et B, roulent en ligne droite à vitesse constante dans le référentiel de la route (vitesses inconnues). Dans la chronophotographie, relevez la vitesse de chacun
           (norme et sens dans le tableau), puis calculez la <strong>vitesse de B dans le référentiel de A</strong>. Le positif est vers la droite.</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontSize: 14 }}>
           <span>Norme de la vitesse de B dans le référentiel de A :</span>
@@ -229,23 +229,23 @@ function VoletDefi({ defi, setDefi, changerType, dtChoisi }) {
         {q('Sens de cette vitesse')}{choix('sens', [['droite', 'vers la droite'], ['gauche', 'vers la gauche']])}
       </>}
       {defi.type === 'trajectoire' && <>
-        <div style={txt}>🎯 Observez {defi.sc === 'wagon' ? 'la bille lâchée dans le wagon' : 'le colis largué de l’avion'} dans les deux référentiels, puis répondez.</div>
+        <div style={txt}><Pic n="target"/>Observez {defi.sc === 'wagon' ? 'la bille lâchée dans le wagon' : 'le colis largué de l’avion'} dans les deux référentiels, puis répondez.</div>
         {q(`Dans le référentiel de ${nomF(defi.f1)}, la trajectoire est…`)}{choix('traj', [['rectiligne', 'rectiligne'], ['courbe', 'courbe']])}
         {q(`Dans le référentiel de ${nomF(defi.f2)}, la vitesse a-t-elle une composante horizontale (non nulle) ?`)}{choix('horiz', [['oui', 'oui'], ['non', 'non']])}
       </>}
       {defi.type === 'dt' && <>
-        <div style={txt}>🎯 {defi.sc === 'wagon' ? 'La bille lâchée dans le wagon' : 'Le colis largué de l’avion'}, pointé avec une erreur de {S.uniteSigma}. La vitesse en chaque point est approchée par M<Ind>i</Ind>M<Ind>i+1</Ind>/Δt.
+        <div style={txt}><Pic n="target"/>{defi.sc === 'wagon' ? 'La bille lâchée dans le wagon' : 'Le colis largué de l’avion'}, pointé avec une erreur de {S.uniteSigma}. La vitesse en chaque point est approchée par M<Ind>i</Ind>M<Ind>i+1</Ind>/Δt.
           Choisissez, avec les boutons de Δt, la valeur pour laquelle l’<strong>écart moyen</strong> du tableau est le plus <strong>faible</strong>, puis cliquez sur « Vérifier ». L’écart moyen mesure la distance entre vitesses approchées et vitesses réelles du modèle.</div>
         <div style={{ ...txt, fontWeight: 700 }}>Δt actuellement choisi : {vir(dtChoisi)} s</div>
       </>}
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={verifier} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}>🔄 Nouveau tirage</button>
+        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
         {!reussi && !solution && <button onClick={() => { suivi.vue(); setDefi(d => ({ ...d, solution: true })); }} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>
       {res && <div style={{ marginTop: 8, fontSize: 14 }}>
         {res.lignes.map(([ok, t], k) => <div key={k} style={{ color: ok ? '#15803d' : '#b91c1c', fontWeight: 600 }}>{ok ? '✅' : '❌'} {t}</div>)}
-        {res.ok && <div style={{ color: '#15803d', fontWeight: 700, marginTop: 4 }}>🎉 Défi réussi !</div>}</div>}
+        {res.ok && <div style={{ color: '#15803d', fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'vitesse' && <>v<Ind>B/A</Ind> = v<Ind>B</Ind> − v<Ind>A</Ind> = ({vir(defi.vB)}) − ({vir(defi.vA)}) = <strong>{vir(defi.vB - defi.vA)} m/s</strong> : norme {vir(Math.abs(defi.vB - defi.vA))} m/s, {defi.vB - defi.vA > 0 ? 'vers la droite' : 'vers la gauche'}.</>}
         {defi.type === 'trajectoire' && (() => { const obj = S.objets[0].id, c1 = caracteriser(S, defi.f1, obj).traj, h2 = Math.abs(S.objets[0].vit(0).x - S.frames.find(f => f.id === defi.f2).V(0).x) > 1e-6;
@@ -615,7 +615,7 @@ export function SimulationMouvementReferentiel() {
 
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
@@ -640,7 +640,7 @@ export function SimulationMouvementReferentiel() {
       {mode === 'explore' && <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
         <span style={{ fontSize: 13.5, color: KIT.txt2, fontWeight: 700 }}>Affichage :</span>
         <button onClick={() => setSimple(true)} style={stylePetitBouton(simple, '#16a34a')}>🙂 Simple</button>
-        <button onClick={() => setSimple(false)} style={stylePetitBouton(!simple, '#334155')}>🔬 Complet (Δt, mesures, Δv…)</button></div>}
+        <button onClick={() => setSimple(false)} style={stylePetitBouton(!simple, '#334155')}><Pic n="microscope"/>Complet (Δt, mesures, Δv…)</button></div>}
       <div className={`mr-l1${mode !== 'explore' ? ' cote' : ''}`}>
         <div>
           {enDefi && <div style={{ ...styleBoite, marginBottom: 12 }}>

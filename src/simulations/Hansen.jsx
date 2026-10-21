@@ -356,9 +356,9 @@ export function Simulation4({ plotlyReady }) {
         <SuiviDefiDirect cle={`${SIM_ID}:defi.principal`} reussi={C.every(c => c.ok)} />
         {C.map((c, k) => <div key={k} style={{ fontSize: 14, color: KIT.txt }}>{c.ok ? '✅' : '❌'} {c.t}</div>)}
         {C.every(c => c.ok) && <div style={{ fontSize: 14, fontWeight: 700, color: '#15803d' }}>Bravo ! Il resterait à vérifier au laboratoire la dissolution, le temps de séchage et l'aspect du film.</div>}
-        {tot > 0 && vol.ipa / tot > 0.5 && <div style={{ fontSize: 13.5, color: '#b45309', lineHeight: 1.5 }}>⚠️ Le modèle accepte ce mélange parce qu'il place l'isopropanol juste dans la sphère (RED = 0,88).
+        {tot > 0 && vol.ipa / tot > 0.5 && <div style={{ fontSize: 13.5, color: '#b45309', lineHeight: 1.5 }}><Pic n="warn"/>Le modèle accepte ce mélange parce qu'il place l'isopropanol juste dans la sphère (RED = 0,88).
           En pratique, l'isopropanol ne dissout pas seul la plupart des nitrocelluloses : un mélange aussi riche en isopropanol est à vérifier au laboratoire avant d'y croire.</div>}
-        <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 D'autres critères</button>
+        <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>D'autres critères</button>
       </div>
     );
   })();
@@ -367,7 +367,7 @@ export function Simulation4({ plotlyReady }) {
   function changerMode(m) { setMode(m); if (m === 'defi') nouveauDefi(); }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );

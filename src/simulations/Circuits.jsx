@@ -82,9 +82,9 @@ function evaluer(d) {
   const ok = d.reps.d === d.rep; return { ok, lignes: [[ok, ok ? 'Bonne réponse.' : d.expl]] };
 }
 const enonce = (d, { champ, choix }) => {
-  if (d.type === 'tensions') return <>🎯 Circuit <strong>en série</strong> : la pile impose E = <strong>{fr(d.E, 1)} V</strong>. Un voltmètre branché aux bornes de R₁ indique <strong>U₁ = {fr(d.U1, 1)} V</strong>. Quelle est la tension U₂ aux bornes de R₂ ?<div style={{ marginTop: 6 }}>{champ('v', 'V')}</div></>;
-  if (d.type === 'intensites') return <>🎯 Circuit <strong>en dérivation</strong> : l’ampèremètre placé près de la pile indique <strong>I = {d.Ia} mA</strong> ; dans la branche de R₁, il indique <strong>I₁ = {d.I1a} mA</strong>. Quelle est l’intensité I₂ dans la branche de R₂ ?<div style={{ marginTop: 6 }}>{champ('v', 'mA')}</div></>;
-  return <>🎯 {d.q}<div style={{ marginTop: 6 }}>{choix('d', [['plus', 'augmente'], ['moins', 'diminue'], ['meme', 'ne change pas'], ['nul', 'devient nulle']])}</div></>;
+  if (d.type === 'tensions') return <><Pic n="target"/>Circuit <strong>en série</strong> : la pile impose E = <strong>{fr(d.E, 1)} V</strong>. Un voltmètre branché aux bornes de R₁ indique <strong>U₁ = {fr(d.U1, 1)} V</strong>. Quelle est la tension U₂ aux bornes de R₂ ?<div style={{ marginTop: 6 }}>{champ('v', 'V')}</div></>;
+  if (d.type === 'intensites') return <><Pic n="target"/>Circuit <strong>en dérivation</strong> : l’ampèremètre placé près de la pile indique <strong>I = {d.Ia} mA</strong> ; dans la branche de R₁, il indique <strong>I₁ = {d.I1a} mA</strong>. Quelle est l’intensité I₂ dans la branche de R₂ ?<div style={{ marginTop: 6 }}>{champ('v', 'mA')}</div></>;
+  return <><Pic n="target"/>{d.q}<div style={{ marginTop: 6 }}>{choix('d', [['plus', 'augmente'], ['moins', 'diminue'], ['meme', 'ne change pas'], ['nul', 'devient nulle']])}</div></>;
 };
 const solution = d => d.type === 'tensions' ? <>Loi des mailles (une seule maille) : E = U₁ + U₂, donc U₂ = E − U₁ = {fr(d.E, 1)} − {fr(d.U1, 1)} = <strong>{fr(d.U2, 1)} V</strong>.</>
   : d.type === 'intensites' ? <>Loi des nœuds : I = I₁ + I₂, donc I₂ = I − I₁ = {d.Ia} − {d.I1a} = <strong>{d.I2a} mA</strong>.</>
@@ -190,7 +190,7 @@ export function SimulationCircuits() {
     <li>Mailles : série E = U₁ + U₂ ; dérivation U₁ = U₂ = E</li><li>Nœuds : I = I₁ + I₂</li><li>Ampèremètre en série, voltmètre en dérivation</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 

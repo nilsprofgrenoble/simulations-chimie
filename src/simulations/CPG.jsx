@@ -605,14 +605,14 @@ export function SimulationCPG() {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(TITRES).map(([t, l]) => <button key={t} onClick={() => lancer(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
       {defi.type === 'ordre' && <>
-        <div style={txtD}>🎯 Méthode : {conditions}. Cliquez les composés <strong>dans l’ordre où ils sortent</strong>. Le chromatogramme apparaît après la vérification.</div>
+        <div style={txtD}><Pic n="target"/>Méthode : {conditions}. Cliquez les composés <strong>dans l’ordre où ils sortent</strong>. Le chromatogramme apparaît après la vérification.</div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>{ids.map(id => {
           const m = PAR_ID[id], rang = defi.reps.ordre.indexOf(id);
           return <button key={id} onClick={() => rep('ordre', rang >= 0 ? defi.reps.ordre.filter(x => x !== id) : [...defi.reps.ordre, id])} style={stylePetitBouton(rang >= 0, couleurs[id])}>
             {rang >= 0 ? `${rang + 1}. ` : ''}{m.nom} <span style={{ opacity: 0.75, fontWeight: 400 }}>{m.famille}, téb {Math.round(m.teb)} °C</span></button>;
         })}</div></>}
       {defi.type === 'identifier' && <>
-        <div style={txtD}>🎯 Méthode : {conditions}. On a injecté séparément quatre étalons ; l’échantillon n’en contient que <strong>trois</strong>. Identifiez chaque pic (survolez-le, zoomez si besoin).</div>
+        <div style={txtD}><Pic n="target"/>Méthode : {conditions}. On a injecté séparément quatre étalons ; l’échantillon n’en contient que <strong>trois</strong>. Identifiez chaque pic (survolez-le, zoomez si besoin).</div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
           {defi.etalons.map(i => <span key={i} style={{ ...styleBoite, padding: '3px 8px' }}>{PAR_ID[i].nom} : <strong>{v(trSeul(pEff, i), 3)} min</strong></span>)}</div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}>
@@ -620,20 +620,20 @@ export function SimulationCPG() {
             <select value={defi.reps[LETTRES[i]] ?? ''} onChange={e => rep(LETTRES[i], e.target.value)} style={{ fontSize: 14, padding: '3px 6px', borderRadius: 6, border: `1.5px solid ${KIT.bord}`, color: KIT.txt }}>
               <option value="">?</option>{defi.etalons.map(k => <option key={k} value={k}>{PAR_ID[k].nom}</option>)}</select></label>)}</div></>}
       {defi.type === 'separer' && <>
-        <div style={txtD}>🎯 Mélange : <strong>{ids.map(i => PAR_ID[i].nom).join(', ')}</strong>. Choisissez la colonne et réglez le four (et le débit si besoin) pour obtenir <strong>R<Ind>s</Ind> ≥ 1,5</strong> pour toutes les paires, dernier pic <strong>avant {TEMPS_MAX_DEFI} min</strong>.</div>
+        <div style={txtD}><Pic n="target"/>Mélange : <strong>{ids.map(i => PAR_ID[i].nom).join(', ')}</strong>. Choisissez la colonne et réglez le four (et le débit si besoin) pour obtenir <strong>R<Ind>s</Ind> ≥ 1,5</strong> pour toutes les paires, dernier pic <strong>avant {TEMPS_MAX_DEFI} min</strong>.</div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
           <span style={{ ...styleBoite, padding: '3px 8px', color: nbPics === ids.length ? COUL_RS[classeRs(rsMin ?? 0)] : KIT.txt2, fontWeight: 700 }}>R<Ind>s</Ind> minimal = {v(rsMin ?? 0)}</span>
           <span style={{ ...styleBoite, padding: '3px 8px', color: dernierTr <= TEMPS_MAX_DEFI ? '#15803d' : '#b91c1c', fontWeight: 700 }}>dernier pic : {v(dernierTr)} min</span></div></>}
       {defi.type === 'panne' && <>
-        <div style={txtD}>🎯 Une analyse de routine (mélange {ids.map(i => PAR_ID[i].nom).join(', ')} ; méthode validée : {conditions}) donne ce chromatogramme. Observez l’appareil et le contrôle de routine (réinjectez si besoin), puis choisissez la <strong>cause la plus probable</strong>.</div>
+        <div style={txtD}><Pic n="target"/>Une analyse de routine (mélange {ids.map(i => PAR_ID[i].nom).join(', ')} ; méthode validée : {conditions}) donne ce chromatogramme. Observez l’appareil et le contrôle de routine (réinjectez si besoin), puis choisissez la <strong>cause la plus probable</strong>.</div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
           {Object.entries(PANNES).map(([k, q]) => <button key={k} onClick={() => rep('cause', k)} style={stylePetitBouton(defi.reps.cause === k, '#0ea5e9')}>{q.nom}</button>)}</div></>}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={() => lancer(defi.type)} style={styleBouton(false)}>🔄 Nouveau tirage</button>
+        <button onClick={() => lancer(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
         {!reussi && !defi.solution && <button onClick={() => { suivi.vue(); setDefi(d => ({ ...d, solution: true })); }} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>
-      {res && <div style={{ marginTop: 8, fontSize: 14, color: res.ok ? '#15803d' : '#b91c1c', fontWeight: 600 }}>{res.ok ? '✅' : '❌'} {res.ligne}{res.ok && <div style={{ fontWeight: 700, marginTop: 4 }}>🎉 Défi réussi !</div>}</div>}
+      {res && <div style={{ marginTop: 8, fontSize: 14, color: res.ok ? '#15803d' : '#b91c1c', fontWeight: 600 }}>{res.ok ? '✅' : '❌'} {res.ligne}{res.ok && <div style={{ fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'ordre' && <>Ordre de sortie : <strong>{a.pics.map(m => m.nom).join(' → ')}</strong>.</>}
         {defi.type === 'identifier' && <>{a.pics.map((m, i) => <span key={m.id}>Pic {LETTRES[i]} ({TR} = {v(m.tr, 3)} min) : <strong>{m.nom}</strong>{i < a.pics.length - 1 ? ' ; ' : '.'} </span>)}</>}
@@ -672,7 +672,7 @@ export function SimulationCPG() {
             <div key={i} style={{ background: 'white', borderRadius: 8, padding: '5px 10px', fontSize: 13, border: `1.5px solid ${COUL_RS[c]}` }}>
               <span style={{ color: KIT.txt2 }}>{r.de.nom} / {r.a.nom} : </span>
               <strong style={{ color: COUL_RS[c] }}>R<Ind>s</Ind> = {r.R > 20 ? '> 20' : v(r.R)} {c === 'ok' ? '✓' : c === 'lim' ? '⚠' : '✗'}</strong></div>); })}</div>}
-        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>R<Ind>s</Ind> = 1,18 (t<Ind>R2</Ind> − t<Ind>R1</Ind>) / (W<Ind>½,1</Ind> + W<Ind>½,2</Ind>) : <span style={{ color: COUL_RS.ok }}>✓ ≥ 1,5</span> séparés · <span style={{ color: COUL_RS.lim }}>⚠ 1,0 à 1,5</span> partiellement · <span style={{ color: COUL_RS.non }}>✗ &lt; 1,0</span> superposés.</div>
+        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>R<Ind>s</Ind> = 1,18 (t<Ind>R2</Ind> − t<Ind>R1</Ind>) / (W<Ind>½,1</Ind> + W<Ind>½,2</Ind>) : <span style={{ color: COUL_RS.ok }}>✓ ≥ 1,5</span> séparés · <span style={{ color: COUL_RS.lim }}><Pic n="warn"/>1,0 à 1,5</span> partiellement · <span style={{ color: COUL_RS.non }}>✗ &lt; 1,0</span> superposés.</div>
       </Section>
     </div>);
 
@@ -705,7 +705,7 @@ export function SimulationCPG() {
             {p.rampe > 0 && <Curseur nom="Température finale" valeur={p.Tf} onChange={x => maj('Tf', Math.max(x, p.T0))} min={50} max={PHASES[p.phase].tmax + 25} pas={5} unite="°C" couleur="#c2410c"/>}
             {p.rampe > 0 && <Curseur nom="Palier final" valeur={p.t2} onChange={x => maj('t2', x)} min={0} max={20} pas={0.5} unite="min" decimales={1} couleur="#c2410c"/>}
           </div>
-          {(p.rampe > 0 ? p.Tf : p.T0) > PHASES[p.phase].tmax && <div style={{ fontSize: 13, color: '#b91c1c', fontWeight: 700 }}>⚠ Au-delà de {PHASES[p.phase].tmax} °C, la phase {p.phase} se dégrade : ressuage et colonne abîmée.</div>}
+          {(p.rampe > 0 ? p.Tf : p.T0) > PHASES[p.phase].tmax && <div style={{ fontSize: 13, color: '#b91c1c', fontWeight: 700 }}><Pic n="warn"/>Au-delà de {PHASES[p.phase].tmax} °C, la phase {p.phase} se dégrade : ressuage et colonne abîmée.</div>}
         </div>
         <div style={{ ...cadre('colonne'), padding: 2, marginTop: 6 }}>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', fontSize: 13, color: KIT.txt2 }}>Colonne :
@@ -763,7 +763,7 @@ export function SimulationCPG() {
       {surcharge && !masque && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '6px 8px', marginBottom: 8 }}>
         ⚠ Colonne saturée : trop de matière est entrée dans la colonne (environ {v(Math.max(...a.pics.map(m => m.masse)), 1)} µg par composé, pour une capacité de l’ordre de {v(a.cap, 1)} µg). Les pics se déforment (front avant étalé). Augmentez le rapport de division ou diminuez le volume injecté.</div>}
       {nbPics === 0 ? <div style={{ padding: '2rem', textAlign: 'center', fontSize: 14, color: KIT.txt2 }}>{a.nonElues.length ? 'Aucun composé ne sort de la colonne.' : 'Choisissez au moins un composé pour l’échantillon.'}</div>
-        : masque ? <div style={{ padding: '2rem 1rem', textAlign: 'center', fontSize: 14, color: KIT.txt2, lineHeight: 1.6 }}>🔒 Le chromatogramme sera affiché après votre vérification : prédisez d’abord l’ordre de sortie.</div>
+        : masque ? <div style={{ padding: '2rem 1rem', textAlign: 'center', fontSize: 14, color: KIT.txt2, lineHeight: 1.6 }}><Pic n="lock"/>Le chromatogramme sera affiché après votre vérification : prédisez d’abord l’ordre de sortie.</div>
         : <Visu a={a} p={pEff} couleurs={couleurs} hover={hover} setHover={setHover} lancement={lancement} onLancer={injecter} anonyme={anonyme}/>}
     </div>);
 
@@ -805,7 +805,7 @@ export function SimulationCPG() {
     </ARetenir>);
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button></span>);
 
   return (

@@ -231,12 +231,12 @@ export function Simulation2() {
         <button onClick={() => { setDeclare(null); setOuvert(o => !o); }} style={styleBouton(true, ouvert ? '#dc2626' : '#16a34a')}>{ouvert ? '⏹ Fermer le robinet' : '▶ Ouvrir le robinet'}</button>
         <button onClick={() => verser(1)} style={styleBouton(false)}>+ 1 mL</button>
         <button onClick={() => verser(0.1)} style={styleBouton(false)}>+ 0,1 mL</button>
-        <button onClick={() => verser(0.05)} style={styleBouton(false)}>💧 1 goutte</button>
+        <button onClick={() => verser(0.05)} style={styleBouton(false)}><Pic n="drop"/>1 goutte</button>
       </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {enGuide && etape === idx('rapide')
-          ? <button onClick={decolore} style={styleBouton(true, ORANGE_GUIDE)}>🎯 La solution est décolorée</button>
-          : <button onClick={declarer} style={styleBouton(true, ORANGE_GUIDE)}>🎯 C'est l'équivalence !</button>}
+          ? <button onClick={decolore} style={styleBouton(true, ORANGE_GUIDE)}><Pic n="target"/>La solution est décolorée</button>
+          : <button onClick={declarer} style={styleBouton(true, ORANGE_GUIDE)}><Pic n="target"/>C'est l'équivalence !</button>}
         <button onClick={nouveauTitrage} style={styleBouton(false)}>↺ Nouveau titrage</button>
         {vu('precis') && <button onClick={() => setThiodene(a => !a)} style={styleBouton(thiodene, '#4338ca')}>{thiodene ? 'Thiodène ajouté' : '🧪 Ajouter le thiodène'}</button>}
       </div>
@@ -310,7 +310,7 @@ export function Simulation2() {
   function changerMode(m) { setMode(m); if (m === 'defi' && !defi) nouveauDefi('autre'); }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );

@@ -126,18 +126,18 @@ function VoletDefi({ defi, setDefi, changerType }) {
     <div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(TITRES).map(([t, l]) => <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
-      {defi.type === 'calcul' && <><div style={txt}>🎯 Un rayon passe de <strong>{nm(defi.a)}</strong> (n₁ = {fr(milieu(defi.a).n, 2)}) à <strong>{nm(defi.b)}</strong> (n₂ = {fr(milieu(defi.b).n, 2)}) avec un angle d’incidence <strong>i₁ = {defi.i1}°</strong>. Calculez l’angle de réfraction i₂.</div>{champ('°')}</>}
-      {defi.type === 'indice' && <><div style={txt}>🎯 Un rayon passe de l’<strong>air</strong> à un <strong>liquide inconnu</strong>. Faites des mesures (atelier ci-dessous) et déterminez son <strong>indice de réfraction</strong> n.</div>{champ('')}</>}
-      {defi.type === 'prevoir' && <><div style={txt}>🎯 Un rayon passe de <strong>{nm(defi.a)}</strong> (n₁ = {fr(milieu(defi.a).n, 2)}) à <strong>{nm(defi.b)}</strong> (n₂ = {fr(milieu(defi.b).n, 2)}) avec un angle d’incidence de <strong>{defi.i1}°</strong>. Le rayon réfracté…</div>
+      {defi.type === 'calcul' && <><div style={txt}><Pic n="target"/>Un rayon passe de <strong>{nm(defi.a)}</strong> (n₁ = {fr(milieu(defi.a).n, 2)}) à <strong>{nm(defi.b)}</strong> (n₂ = {fr(milieu(defi.b).n, 2)}) avec un angle d’incidence <strong>i₁ = {defi.i1}°</strong>. Calculez l’angle de réfraction i₂.</div>{champ('°')}</>}
+      {defi.type === 'indice' && <><div style={txt}><Pic n="target"/>Un rayon passe de l’<strong>air</strong> à un <strong>liquide inconnu</strong>. Faites des mesures (atelier ci-dessous) et déterminez son <strong>indice de réfraction</strong> n.</div>{champ('')}</>}
+      {defi.type === 'prevoir' && <><div style={txt}><Pic n="target"/>Un rayon passe de <strong>{nm(defi.a)}</strong> (n₁ = {fr(milieu(defi.a).n, 2)}) à <strong>{nm(defi.b)}</strong> (n₂ = {fr(milieu(defi.b).n, 2)}) avec un angle d’incidence de <strong>{defi.i1}°</strong>. Le rayon réfracté…</div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{[['rapproche', 'se rapproche de la normale'], ['ecarte', 's’écarte de la normale'], ['zero', 'n’est pas dévié']].map(([v, l]) => <button key={v} onClick={() => rep('d', v)} style={stylePetitBouton(defi.reps.d === v, '#0ea5e9')}>{l}</button>)}</div></>}
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}>🔄 Nouveau tirage</button>
+        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
         {!reussi && !defi.solution && <button onClick={() => { suivi.vue(); setDefi(d => ({ ...d, solution: true })); }} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>
       {res && <div style={{ marginTop: 8, fontSize: 14 }}>
         {res.lignes.map(([ok, t], k) => <div key={k} style={{ color: ok ? VERT : '#b91c1c', fontWeight: 600 }}>{ok ? '✅' : '❌'} {avecIndices(t)}</div>)}
-        {res.ok && <div style={{ color: VERT, fontWeight: 700, marginTop: 4 }}>🎉 Défi réussi !</div>}</div>}
+        {res.ok && <div style={{ color: VERT, fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'calcul' && <>sin i₂ = n₁ × sin i₁ / n₂ = {fr(milieu(defi.a).n, 2)} × sin {defi.i1}° / {fr(milieu(defi.b).n, 2)} = {g3(milieu(defi.a).n * sin(defi.i1) / milieu(defi.b).n)}, donc i₂ = <strong>{fr(defi.i2, 1)}°</strong>.</>}
         {defi.type === 'indice' && <>Pour chaque mesure, n = sin i₁ / sin i₂ (air → liquide) : c’est la pente de la droite. Ici n = <strong>{fr(defi.n, 2)}</strong> (à 0,03 près).</>}
@@ -251,7 +251,7 @@ export function SimulationRefraction() {
       <Interface n1={1} n2={nLiq} i1={Me.i1} nom1="air" nom2={LIQ.find(l => l[0] === Me.liq)[1]} masqueN={!Me.reveler} leg={false}/>
       <div style={{ marginTop: 8 }}>{curs('Angle d’incidence i₁', Me.i1, 0, 85, 5, v => setMe(m => ({ ...m, i1: v })), '°')}</div>
       <div style={{ marginTop: 4, fontSize: 14.5, color: KIT.txt }}>Lecture au rapporteur : i₁ = <strong>{Me.i1}°</strong>, i₂ = <strong>{fr(i2mes, 1)}°</strong>
-        <button onClick={noter} style={{ ...styleBouton(true, '#16a34a'), marginLeft: 8 }}>➕ Noter cette mesure</button></div>
+        <button onClick={noter} style={{ ...styleBouton(true, '#16a34a'), marginLeft: 8 }}><Pic n="plus"/>Noter cette mesure</button></div>
       {!enDefiIndice && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Liquide :</span>
         {LIQ.filter(l => l[0] !== 'inconnu').map(([k, l]) => <button key={k} onClick={() => setMe(m => ({ ...m, liq: k }))} style={stylePetitBouton(Me.liq === k, COUL_LIQ[k])}>{l}</button>)}
         <button onClick={() => setMe(m => ({ ...m, reveler: !m.reveler }))} style={stylePetitBouton(Me.reveler, '#334155')}>{Me.reveler ? 'Cacher' : 'Révéler'} l’indice</button></div>}
@@ -259,7 +259,7 @@ export function SimulationRefraction() {
         <div style={{ overflowX: 'auto' }}><table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 13 }}>
           <thead><tr>{['Liquide', 'i₁ (°)', 'i₂ (°)', 'sin i₁', 'sin i₂'].map(h => <th key={h} style={{ padding: '3px 5px', color: KIT.txt2, textAlign: 'right', borderBottom: `1px solid ${KIT.bord}` }}>{h}</th>)}</tr></thead>
           <tbody>{pts.length === 0 && <tr><td colSpan="5" style={{ padding: 6, color: KIT.txt2 }}>Aucune mesure notée.</td></tr>}{pts.map((p, k) => <tr key={k}><td style={{ padding: '2px 5px', textAlign: 'right', color: COUL_LIQ[p.liq], fontWeight: 700 }}>{LIQ.find(l => l[0] === p.liq)[1]}</td><td style={{ padding: '2px 5px', textAlign: 'right' }}>{p.i1}</td><td style={{ padding: '2px 5px', textAlign: 'right' }}>{fr(p.i2, 1)}</td><td style={{ padding: '2px 5px', textAlign: 'right' }}>{g3(sin(p.i1))}</td><td style={{ padding: '2px 5px', textAlign: 'right' }}>{g3(sin(p.i2))}</td></tr>)}</tbody></table>
-          <div style={{ marginTop: 4, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><button onClick={() => setPts([])} style={styleBouton(false)}>🗑 Effacer</button>
+          <div style={{ marginTop: 4, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}><button onClick={() => setPts([])} style={styleBouton(false)}><Pic n="trash"/>Effacer</button>
             {[...new Set(pts.map(p => p.liq))].map(l => { const k = pente(pts.filter(p => p.liq === l).map(p => [sin(p.i2), sin(p.i1)])); return <span key={l} style={{ fontSize: 13.5, fontWeight: 700, color: COUL_LIQ[l] }}>pente ({LIQ.find(x => x[0] === l)[1]}) = {isFinite(k) ? fr(k, 2) : '—'}</span>; })}</div></div>
         <Graphe pts={pts}/></div>
     </div>);
@@ -297,7 +297,7 @@ export function SimulationRefraction() {
     <li>n₁ sin i₁ = n₂ sin i₂ ; n<sub>air</sub> = 1,00</li><li>n augmente → on se rapproche de la normale</li><li>i₁ = 0° → pas de déviation</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 

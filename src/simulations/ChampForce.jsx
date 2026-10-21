@@ -227,11 +227,11 @@ function VoletDefi({ defi, setDefi, changerType, placer }) {
       </>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
         <button onClick={verifier} style={styleBouton(true, VERT)}>✓ Vérifier</button>
-        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}>🔄 Nouveau défi</button>
+        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
       </div>
       {res && <div style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5 }}>
         {res.lignes.map(([ok, t], i) => <div key={i} style={{ color: ok ? '#15803d' : '#b91c1c' }}>{ok ? '✓' : '✗'} {t}</div>)}
-        {res.ok && <div style={{ color: '#15803d', marginTop: 4 }}>🎉 Défi réussi !</div>}
+        {res.ok && <div style={{ color: '#15803d', marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}
         {!res.ok && !solution && <button onClick={voirSolution} style={{ marginTop: 4, background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>}
       {solution && <div style={{ ...styleBoite, marginTop: 8, fontSize: 13.5, lineHeight: 1.6, background: '#fffbeb', borderColor: '#fcd34d' }}>
@@ -436,7 +436,7 @@ export function SimulationChampForce() {
   }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
@@ -572,8 +572,8 @@ export function SimulationChampForce() {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
       {!enDefi && <><div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Source du champ</div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-          <button onClick={() => choisirSource('terre')} style={stylePetitBouton(src === 'terre', '#3f6212')}>🌍 Terre (masse)</button>
-          <button onClick={() => choisirSource('plus')} style={stylePetitBouton(src === 'plus', ROUGE)}>➕ Charge Q {'>'} 0</button>
+          <button onClick={() => choisirSource('terre')} style={stylePetitBouton(src === 'terre', '#3f6212')}><Pic n="globe"/>Terre (masse)</button>
+          <button onClick={() => choisirSource('plus')} style={stylePetitBouton(src === 'plus', ROUGE)}><Pic n="plus"/>Charge Q {'>'} 0</button>
           <button onClick={() => choisirSource('moins')} style={stylePetitBouton(src === 'moins', BLEU)}>➖ Charge Q {'<'} 0</button>
         </div></>}
       {terre && <>

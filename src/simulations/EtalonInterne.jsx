@@ -1209,7 +1209,7 @@ function ParcoursEtalon({ plotlyReady, changerMode }) {
   const halo = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 8 } : {};
   const fin = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );
@@ -1325,8 +1325,8 @@ function DefiEtalon() {
     <div className="ei-l1"><SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }}>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => setDefi(campagneEI())} style={styleBouton(defi.type === 'ei', '#2a9d8f')}>📌 Étalon interne</button>
-          <button onClick={() => setDefi(campagneNI())} style={styleBouton(defi.type === 'ni', '#6a4c93')}>🔄 Normalisation interne</button>
+          <button onClick={() => setDefi(campagneEI())} style={styleBouton(defi.type === 'ei', '#2a9d8f')}><Pic n="pin"/>Étalon interne</button>
+          <button onClick={() => setDefi(campagneNI())} style={styleBouton(defi.type === 'ni', '#6a4c93')}><Pic n="refresh"/>Normalisation interne</button>
         </div>
         <div style={styleBoite}>{enonce}</div>
         <HypothesesEtalon methode={defi.type} defaut={false} key={defi.type}/>
@@ -1357,7 +1357,7 @@ function DefiEtalon() {
         })}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <button onClick={() => { noterDefi(Q.every(juste)); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-          <button onClick={() => setDefi(defi.type === 'ei' ? campagneEI() : campagneNI())} style={styleBouton(false)}>🔄 Nouvelles données</button>
+          <button onClick={() => setDefi(defi.type === 'ei' ? campagneEI() : campagneNI())} style={styleBouton(false)}><Pic n="refresh"/>Nouvelles données</button>
         </div>
       </div>
     </div>

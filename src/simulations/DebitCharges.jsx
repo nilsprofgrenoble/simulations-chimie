@@ -91,9 +91,9 @@ function evaluer(d) {
   if (d.type === 'electrons') { const ok = isFinite(x) && proche(x, d.N, 0.03); return { ok, lignes: [[ok, ok ? 'Nombre correct.' : 'Revois : Q = I × Δt (en C), puis N = Q / e avec e = 1,602·10⁻¹⁹ C. Écris par exemple 6,2e18.']] }; }
   const ok = isFinite(x) && proche(x, d.T, 0.02); return { ok, lignes: [[ok, ok ? 'Durée correcte.' : 'Revois : Δt = Q / I, avec Q en mA·h et I en mA : la durée sort directement en heures.']] };
 }
-const enonce = (d, { champ }) => d.type === 'charge' ? <>🎯 Un fil est parcouru par un courant d’intensité <strong>I = {fr(d.I, 1)} A</strong> pendant <strong>Δt = {d.dt} s</strong>. Quelle charge électrique Q (valeur absolue) a traversé une section du fil ?<div style={{ marginTop: 6 }}>{champ('v', 'C')}</div></>
-  : d.type === 'electrons' ? <>🎯 Un fil de cuivre est parcouru par <strong>I = {fr(d.I, 1)} A</strong> pendant <strong>Δt = {d.dt} s</strong>. Combien d’électrons ont traversé une section du fil ? (e = 1,602·10⁻¹⁹ C ; écris par exemple 6,2e18)<div style={{ marginTop: 6 }}>{champ('v', 'électrons')}</div></>
-  : <>🎯 La batterie d’un appareil a une capacité de <strong>{d.cap} mA·h</strong>. L’appareil fonctionne avec un courant moyen <strong>I = {d.I} mA</strong>. Pendant combien de temps (en heures) peut-il fonctionner jusqu’à la décharge complète ?<div style={{ marginTop: 6 }}>{champ('v', 'h')}</div></>;
+const enonce = (d, { champ }) => d.type === 'charge' ? <><Pic n="target"/>Un fil est parcouru par un courant d’intensité <strong>I = {fr(d.I, 1)} A</strong> pendant <strong>Δt = {d.dt} s</strong>. Quelle charge électrique Q (valeur absolue) a traversé une section du fil ?<div style={{ marginTop: 6 }}>{champ('v', 'C')}</div></>
+  : d.type === 'electrons' ? <><Pic n="target"/>Un fil de cuivre est parcouru par <strong>I = {fr(d.I, 1)} A</strong> pendant <strong>Δt = {d.dt} s</strong>. Combien d’électrons ont traversé une section du fil ? (e = 1,602·10⁻¹⁹ C ; écris par exemple 6,2e18)<div style={{ marginTop: 6 }}>{champ('v', 'électrons')}</div></>
+  : <><Pic n="target"/>La batterie d’un appareil a une capacité de <strong>{d.cap} mA·h</strong>. L’appareil fonctionne avec un courant moyen <strong>I = {d.I} mA</strong>. Pendant combien de temps (en heures) peut-il fonctionner jusqu’à la décharge complète ?<div style={{ marginTop: 6 }}>{champ('v', 'h')}</div></>;
 const solution = d => d.type === 'charge' ? <>Q = I × Δt = {fr(d.I, 1)} × {d.dt} = <strong>{fr(d.Q, 1)} C</strong>.</>
   : d.type === 'electrons' ? <>Q = I × Δt = {fr(d.I * d.dt, 1)} C ; N = Q / e = {fr(d.I * d.dt, 1)} / 1,602·10⁻¹⁹ = <strong>{sci(d.N)}</strong> électrons (soit {String(d.N.toExponential(2)).replace('.', ',').replace('e+', 'e')}).</>
   : <>Q = I × Δt donc Δt = Q / I = {d.cap} mA·h / {d.I} mA = <strong>{fr(d.T, d.T < 10 ? 1 : 0)} h</strong>.</>;
@@ -182,13 +182,13 @@ export function SimulationDebitCharges() {
         <Curseur nom="Durée Δt" val={F.dt} min={1} max={10} pas={1} set={v => { setF(f => ({ ...f, dt: v })); setChrono(null); }} unite=" s"/>
         <Curseur nom="Section du fil S" val={F.S} min={0.5} max={6} pas={0.5} set={v => setF(f => ({ ...f, S: v }))} unite=" mm²"/></div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
-        <button onClick={() => { setF(f => ({ ...f, sens: -f.sens })); setVu(v => ({ ...v, sens: true })); }} style={styleBouton(false)}>🔄 Inverser le générateur</button>
-        <button onClick={() => setChrono({ start: ph })} style={styleBouton(true, '#16a34a')}>⏱ Lancer le chrono</button>
+        <button onClick={() => { setF(f => ({ ...f, sens: -f.sens })); setVu(v => ({ ...v, sens: true })); }} style={styleBouton(false)}><Pic n="refresh"/>Inverser le générateur</button>
+        <button onClick={() => setChrono({ start: ph })} style={styleBouton(true, '#16a34a')}><Pic n="stopwatch"/>Lancer le chrono</button>
         {chrono && <button onClick={() => setChrono(null)} style={styleBouton(false)}>↺ Remettre à zéro</button>}</div>
       <div style={{ marginTop: 8, fontSize: 14.5, color: KIT.txt, lineHeight: 1.7 }}>
         Chrono : t = <strong>{fr(dtCh, 1)} s</strong> sur {F.dt} s → charge passée Q = I × t = <strong>{fr(Qch, 2)} C</strong><br/>
         Sur Δt = {F.dt} s : Q = {fr(F.I, 1)} × {F.dt} = <strong>{fr(Qtot, 1)} C</strong>, soit N = Q / e = <strong>{sci(N)} électrons</strong>.<br/>
-        <span style={{ color: KIT.txt2 }}>★ Vitesse moyenne des électrons : v = I / (n·S·e) = <strong>{fr(vd * 1000, vd * 1000 < 0.1 ? 3 : 2)} mm/s</strong>, soit {fr(vd * 3600, 2)} m par heure.</span></div>
+        <span style={{ color: KIT.txt2 }}><Pic n="star"/>Vitesse moyenne des électrons : v = I / (n·S·e) = <strong>{fr(vd * 1000, vd * 1000 < 0.1 ? 3 : 2)} mm/s</strong>, soit {fr(vd * 3600, 2)} m par heure.</span></div>
     </div>);
   const atelierSol = (
     <div>
@@ -232,7 +232,7 @@ export function SimulationDebitCharges() {
     <li>I = Q / Δt (A = C·s⁻¹)</li><li>Q = N × e, e = 1,602·10⁻¹⁹ C</li><li>1 mA·h = 3,6 C</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 

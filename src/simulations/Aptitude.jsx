@@ -494,7 +494,7 @@ export function SimulationAptitude() {
         <button onClick={() => setClassesVerif(true)} style={stylePetitBouton(true, '#16a34a')}>Vérifier le classement</button>
         {classesVerif && <span style={{ marginLeft: 8 }}>{classesOk ? '✅ Classement juste' : '❌ Au moins un laboratoire est mal classé'}</span>}
       </div>}
-      {montrerComparaison && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>⚠ : le classement change avec cette formule. Seuils de la norme ISO : |z| ≤ 2 satisfaisant (le document « Repères pour la formation » classe z = 2 exactement en « discutable »).</div>}
+      {montrerComparaison && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}><Pic n="warn"/>: le classement change avec cette formule. Seuils de la norme ISO : |z| ≤ 2 satisfaisant (le document « Repères pour la formation » classe z = 2 exactement en « discutable »).</div>}
     </div>
   );
   const panneauAlertes = vu('henry') && tous && (
@@ -588,7 +588,7 @@ export function SimulationAptitude() {
         })}
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={() => { noterDefi(Q.every(q => proche(lireNombre(defi.reps[q.id] || ''), q.vrai, q.tol))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-          <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouvelle campagne</button>
+          <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouvelle campagne</button>
         </div>
         {defi.verifie && <div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.5, background: 'white', border: `1px solid ${KIT.bord}`, borderRadius: 6, padding: '6px 8px' }}>
           Bilan : le laboratoire {iLoin + 1} est « {categorie(zLoinRef).label} » avec la formule du référentiel (z = {fmt(zLoinRef, 2)}), et « {catIso} » avec la norme ISO (z = {fmt(zLoinIso, 2)}).
@@ -602,7 +602,7 @@ export function SimulationAptitude() {
   function changerMode(m) { setMode(m); if (m === 'defi' && !defi) nouveauDefi(); if (m === 'explore') setJeu('mes'); if (m === 'guide') setJeu('parcours'); }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );

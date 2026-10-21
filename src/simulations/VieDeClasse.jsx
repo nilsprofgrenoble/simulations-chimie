@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { rest, useSession } from "../serveur";
 import { PROUESSES, MAX_PAR_ELEVE, pseudo, pseudoValide, propositions, progressionSemaine, lundiDe } from "../classe";
+import { Pic } from "../Pictos";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  « MA CLASSE CETTE SEMAINE » (sous « Mon carnet »), si le professeur a activé la vie de classe :
@@ -128,7 +129,7 @@ export function VieDeClasse({ lignes, apercu }) {
       </div>
 
       <details className="vc-repli" data-repli="prouesses">
-      <summary>🏅 Les prouesses de la semaine <small>{PROUESSES.filter(p => (prog[p.code] || 0) >= p.cible).length} sur {PROUESSES.length} pour toi{monPseudo ? ` · pseudo : ${monPseudo.texte}` : ' · choisis ton pseudo'}</small></summary>
+      <summary><Pic n="medal"/>Les prouesses de la semaine <small>{PROUESSES.filter(p => (prog[p.code] || 0) >= p.cible).length} sur {PROUESSES.length} pour toi{monPseudo ? ` · pseudo : ${monPseudo.texte}` : ' · choisis ton pseudo'}</small></summary>
       <p className="vc-sous">Pas de podium : si tu atteins une prouesse, ton pseudo y apparaît (si tu l’as décidé ci-dessous). Tout repart à zéro chaque lundi.</p>
       <div className="vc-grille">
         {PROUESSES.map(p => {
@@ -177,7 +178,7 @@ export function VieDeClasse({ lignes, apercu }) {
             <button key={`${a}-${n}`} className="vc-idee" disabled={occupe} onClick={() => choisir(a, n)}><span aria-hidden="true">{ps.icone}</span>{ps.texte}</button>); })}
           <button className="vc-idee" style={{ borderStyle: 'dashed' }} disabled={occupe} onClick={() => setIdees(propositions(4))}>🎲 Autres idées</button>
         </div>
-        {msg && <div role="alert" style={{ color: '#b91c1c', fontWeight: 600, fontSize: 13.5, marginTop: 8 }}>❌ {msg}</div>}
+        {msg && <div role="alert" style={{ color: '#b91c1c', fontWeight: 600, fontSize: 13.5, marginTop: 8 }}><Pic n="ko"/>{msg}</div>}
         <div style={{ fontSize: 12.5, color: '#64748b', marginTop: 10, lineHeight: 1.45 }}>
           Seuls les élèves de ta classe voient ce pseudo (et ton professeur sait de toute façon qui tu es). Aucun nom, aucune note, aucun chiffre sur toi n’est montré à la classe.
         </div>

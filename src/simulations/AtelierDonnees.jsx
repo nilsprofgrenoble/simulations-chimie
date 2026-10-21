@@ -3,6 +3,7 @@ import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE
 import { useSuivi } from "../suivi";
 import { ENONCES, nouvelEnonce, melange, nb } from "./AtelierDonneesBanque";
 import { parDomaine } from "./ordreDomaines";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 34 — S'APP : EXTRAIRE LES DONNÉES D'UN ÉNONCÉ (compétence S'approprier)
@@ -92,7 +93,7 @@ export function SimulationAtelierDonnees() {
       <button onClick={() => corriger(k)} style={styleBouton(true, '#16a34a')}>✓ Corriger</button>
       {!okEtape[k] && <button onClick={() => { corriger(k, true); setVu(v => ({ ...v, [k]: true })); }}
         style={{ fontSize: 12.5, background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer' }}>voir la correction</button>}
-      {(k === 'sel' || k === 'tab') && !indice[k] && <button onClick={() => setIndice(x => ({ ...x, [k]: true }))} style={stylePetitBouton(false)}>💡 Indice</button>}
+      {(k === 'sel' || k === 'tab') && !indice[k] && <button onClick={() => setIndice(x => ({ ...x, [k]: true }))} style={stylePetitBouton(false)}><Pic n="bulb"/>Indice</button>}
       {(okEtape[k] || vu[k]) && chk[k] && i === etp && i < stages.length - 1 && <button onClick={() => setEtp(e => e + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Étape suivante ▶</button>}
     </div>
   );
@@ -120,9 +121,9 @@ export function SimulationAtelierDonnees() {
         {chk.sel && (
           <div>
             <Verdict ok={sb.ok}>{sb.ok ? 'Toutes les données utiles, et seulement elles.' : `${sb.mauvais.length ? `${sb.mauvais.length} donnée(s) inutile(s) choisie(s). ` : ''}${sb.manques.length ? `${sb.manques.length} donnée(s) utile(s) oubliée(s).` : ''}`}</Verdict>
-            {sb.mauvais.map(id => <div key={id} style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}>❌ <b>{ex.b.tokens[id].aff}</b> ({ex.b.tokens[id].quoi}) : {(ex.b.raisons || {})[id] || 'cette donnée n’intervient pas dans le calcul demandé.'}</div>)}
-            {vu.sel && sb.manques.map(id => <div key={id} style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}>⚠ À ne pas oublier : <b>{ex.b.tokens[id].aff}</b> ({ex.b.tokens[id].quoi}).</div>)}
-            {!vu.sel && sb.manques.length > 0 && <div style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}>⚠ Il manque encore {sb.manques.length} donnée(s) utile(s).</div>}
+            {sb.mauvais.map(id => <div key={id} style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}><Pic n="ko"/><b>{ex.b.tokens[id].aff}</b> ({ex.b.tokens[id].quoi}) : {(ex.b.raisons || {})[id] || 'cette donnée n’intervient pas dans le calcul demandé.'}</div>)}
+            {vu.sel && sb.manques.map(id => <div key={id} style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}><Pic n="warn"/>À ne pas oublier : <b>{ex.b.tokens[id].aff}</b> ({ex.b.tokens[id].quoi}).</div>)}
+            {!vu.sel && sb.manques.length > 0 && <div style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}><Pic n="warn"/>Il manque encore {sb.manques.length} donnée(s) utile(s).</div>}
           </div>)}
         {barre('sel', stages.indexOf('sel'))}
       </div>),

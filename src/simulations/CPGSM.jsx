@@ -481,11 +481,11 @@ export function SimulationCPGSM() {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(TITRES).map(([t, l]) => <button key={t} onClick={() => lancer(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
       {defi.type === 'inconnu' && <>
-        <div style={txtD}>🎯 Cliquez sur le pic <strong>{lettreCible}</strong> et lisez son spectre (la bibliothèque est désactivée). De quel composé s’agit-il ?</div>
+        <div style={txtD}><Pic n="target"/>Cliquez sur le pic <strong>{lettreCible}</strong> et lisez son spectre (la bibliothèque est désactivée). De quel composé s’agit-il ?</div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
           {defi.choix.map(id => <button key={id} onClick={() => rep('choix', id)} style={stylePetitBouton(defi.reps.choix === id, '#0ea5e9')}>{PAR_ID[id].nom} <span style={{ opacity: 0.75, fontWeight: 400 }}>M = {masseNominale(id)} g/mol</span></button>)}</div></>}
       {defi.type === 'coelution' && <>
-        <div style={txtD}>🎯 Deux composés co-éluent : <strong>{defi.mols.map(i => PAR_ID[i].nom).join(' et ')}</strong>. Pour chacun, choisissez un ion à extraire qui ne vienne (presque) que de lui. Les spectres de référence sont ci-dessous ; vérifiez avec « Ions extraits ».</div>
+        <div style={txtD}><Pic n="target"/>Deux composés co-éluent : <strong>{defi.mols.map(i => PAR_ID[i].nom).join(' et ')}</strong>. Pour chacun, choisissez un ion à extraire qui ne vienne (presque) que de lui. Les spectres de référence sont ci-dessous ; vérifiez avec « Ions extraits ».</div>
         <div style={{ display: 'grid', gap: 6, gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', marginBottom: 8 }}>
           {defi.mols.map(id => <div key={id}>
             <SpectreAuto pk={SPECTRES[id].pics} titre={`Référence : ${PAR_ID[id].nom}`} mzMin={PARAMS_DEFAUT.mzMin} mzMax={PARAMS_DEFAUT.mzMax}/>
@@ -493,15 +493,15 @@ export function SimulationCPGSM() {
               style={{ fontSize: 14, padding: '2px 6px', borderRadius: 6, border: `1.5px solid ${KIT.bord}` }}><option value="">?</option>{ionsDispo.map(mz => <option key={mz} value={mz}>m/z {mz}</option>)}</select></label></div>)}
         </div></>}
       {defi.type === 'panne' && <>
-        <div style={txtD}>🎯 Une analyse de routine (mélange {ids.map(i => PAR_ID[i].nom).join(', ')}) donne ce résultat. Observez le TIC, le contrôle air / eau et les spectres (pics et fond), puis choisissez la <strong>cause la plus probable</strong>.</div>
+        <div style={txtD}><Pic n="target"/>Une analyse de routine (mélange {ids.map(i => PAR_ID[i].nom).join(', ')}) donne ce résultat. Observez le TIC, le contrôle air / eau et les spectres (pics et fond), puis choisissez la <strong>cause la plus probable</strong>.</div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
           {Object.entries(PANNES).map(([k, q]) => <button key={k} onClick={() => rep('cause', k)} style={stylePetitBouton(defi.reps.cause === k, '#0ea5e9')}>{q.nom}</button>)}</div></>}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={() => lancer(defi.type)} style={styleBouton(false)}>🔄 Nouveau tirage</button>
+        <button onClick={() => lancer(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
         {!reussi && !defi.solution && <button onClick={() => { suivi.vue(); setDefi(d => ({ ...d, solution: true })); }} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>
-      {res && <div style={{ marginTop: 8, fontSize: 14, color: res.ok ? '#15803d' : '#b91c1c', fontWeight: 600 }}>{res.ok ? '✅' : '❌'} {res.ligne}{res.ok && <div style={{ fontWeight: 700, marginTop: 4 }}>🎉 Défi réussi !</div>}</div>}
+      {res && <div style={{ marginTop: 8, fontSize: 14, color: res.ok ? '#15803d' : '#b91c1c', fontWeight: 600 }}>{res.ok ? '✅' : '❌'} {res.ligne}{res.ok && <div style={{ fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'inconnu' && <>Pic {lettreCible} : <strong>{PAR_ID[defi.cible].nom}</strong> — ion moléculaire m/z {ionMoleculaire(defi.cible).mz} ({v(ionMoleculaire(defi.cible).rel, 0)} %), pic de base m/z {picBase(defi.cible)}.</>}
         {defi.type === 'coelution' && <>{defi.mols.map(id => { const inten = mz => (SPECTRES[id].pics.find(q => q[0] === mz) || [0, 0])[1]; const cand = ionsDispo.map(mz => [mz, selectivite(a, mz, id)]); const bons = cand.filter(q => q[1] >= 0.9).sort((x, y) => inten(y[0]) - inten(x[0])); const best = bons[0] || cand.sort((x, y) => y[1] - x[1])[0]; return <div key={id}>{PAR_ID[id].nom} : m/z {best[0]} ({Math.round(100 * best[1])} % de cet ion vient de lui).</div>; })}</>}
@@ -633,8 +633,8 @@ export function SimulationCPGSM() {
 
   const visuel = (
     <div style={{ ...styleBoite, background: 'white', ...cadre('viz') }}>
-      {a.nonElues.length > 0 && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '6px 8px', marginBottom: 8 }}>⚠ {a.nonElues.map(m => m.nom).join(', ')} : ne sort pas de la colonne en moins de 200 min.</div>}
-      {a.pics.some(m => m.tr < pEff.retard) && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '6px 8px', marginBottom: 8 }}>⚠ Retard solvant trop long : {a.pics.filter(m => m.tr < pEff.retard).map(m => m.nom).join(', ')} sort pendant que le filament est éteint et n’est pas enregistré.</div>}
+      {a.nonElues.length > 0 && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '6px 8px', marginBottom: 8 }}><Pic n="warn"/>{a.nonElues.map(m => m.nom).join(', ')} : ne sort pas de la colonne en moins de 200 min.</div>}
+      {a.pics.some(m => m.tr < pEff.retard) && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '6px 8px', marginBottom: 8 }}><Pic n="warn"/>Retard solvant trop long : {a.pics.filter(m => m.tr < pEff.retard).map(m => m.nom).join(', ')} sort pendant que le filament est éteint et n’est pas enregistré.</div>}
       {nbPics === 0 ? <div style={{ padding: '2rem', textAlign: 'center', fontSize: 14, color: KIT.txt2 }}>Choisissez au moins un composé.</div>
         : <Visu a={a} p={pEff} couleurs={couleurs} hover={hover} setHover={setHover} lancement={lancement} onLancer={injecter} anonyme={anonyme} tSel={tSel} setTSel={choisirT} eics={eics} normEic={normEic}/>}
     </div>);
@@ -672,7 +672,7 @@ export function SimulationCPGSM() {
     </ARetenir>);
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button></span>);
 
   return (

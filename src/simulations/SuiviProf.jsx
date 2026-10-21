@@ -13,6 +13,7 @@ import { ChapitreClasse } from "./ChapitreClasse";
 import { PartageClasse } from "./PartageClasse";
 import { ApercuEleve } from "./ApercuEleve";
 import { GuideProf } from "./GuideProf";
+import { Pic } from "../Pictos";
 
 const ROSE = ACCENT;   // une seule couleur d'action sur tout le site (voir ../theme.js)
 const DETAILS = ['exos', 'defis', 'sims'];
@@ -61,15 +62,15 @@ function Comptes({ classe, comptes, onFermer }) {
   const copier = () => navigator.clipboard?.writeText(avecMdp.map(c => `${c.identifiant}\t${c.mot_de_passe}`).join('\n'));
   return (
     <div style={{ ...styleBoite, border: '2px solid #f59e0b', background: '#fffbeb' }}>
-      <div style={{ fontWeight: 800, color: '#92400e', marginBottom: 6 }}>⚠️ Mots de passe affichés une seule fois : imprimez ou copiez-les maintenant.</div>
+      <div style={{ fontWeight: 800, color: '#92400e', marginBottom: 6 }}><Pic n="warn"/>Mots de passe affichés une seule fois : imprimez ou copiez-les maintenant.</div>
       <table style={{ borderCollapse: 'collapse', fontSize: 14, marginBottom: 8 }}><tbody>
         {comptes.map(c => <tr key={c.identifiant}><td style={td}><b>{c.identifiant}</b></td>
-          <td style={{ ...td, fontFamily: 'monospace' }}>{c.mot_de_passe || <span style={{ color: '#b91c1c' }}>❌ {c.erreur}</span>}</td></tr>)}
+          <td style={{ ...td, fontFamily: 'monospace' }}>{c.mot_de_passe || <span style={{ color: '#b91c1c' }}><Pic n="ko"/>{c.erreur}</span>}</td></tr>)}
       </tbody></table>
       {!!echecs.length && <div style={{ color: '#b91c1c', fontSize: 13, marginBottom: 6 }}>Certains comptes n’ont pas pu être créés : relancez « Ajouter des élèves » pour compléter.</div>}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <button onClick={() => imprimerFiches(classe, comptes)} style={styleBouton(true, '#16a34a')}>🖨️ Imprimer les fiches</button>
-        <button onClick={copier} style={styleBouton(false, '#475569')}>📋 Copier (tableur)</button>
+        <button onClick={copier} style={styleBouton(false, '#475569')}><Pic n="clipboard"/>Copier (tableur)</button>
         <button onClick={onFermer} style={styleBouton(false, '#475569')}>J’ai noté les mots de passe, fermer</button>
       </div>
     </div>
@@ -201,8 +202,8 @@ export function SimulationSuiviProf({ naviguer }) {
         <MotDePasse />
         <button onClick={deconnexion} style={{ ...styleBouton(false, '#475569'), fontSize: 13 }}>Se déconnecter</button>
       </div>
-      {erreur && <div role="alert" style={{ color: '#b91c1c', fontWeight: 600, margin: '8px 0' }}>❌ {erreur}</div>}
-      {msg && <div role="status" style={{ color: '#15803d', fontWeight: 600, margin: '8px 0' }}>✅ {msg}</div>}
+      {erreur && <div role="alert" style={{ color: '#b91c1c', fontWeight: 600, margin: '8px 0' }}><Pic n="ko"/>{erreur}</div>}
+      {msg && <div role="status" style={{ color: '#15803d', fontWeight: 600, margin: '8px 0' }}><Pic n="ok"/>{msg}</div>}
       {comptes && <div style={{ margin: '10px 0' }}><Comptes classe={comptes.classe} comptes={comptes.liste} onFermer={() => setComptes(null)} /></div>}
 
       {!classes.length && !occupe && <p data-bienvenue style={{ fontSize: 16, color: KIT.txt, margin: '10px 0 0' }}>👋 <b>Bienvenue !</b> Mettons en route votre première classe : donnez-lui un nom, c’est tout ce qu’il faut pour commencer.</p>}
@@ -214,7 +215,7 @@ export function SimulationSuiviProf({ naviguer }) {
           {classes.map(c => <option key={c.id} value={c.id}>{c.nom} ({c.prefixe}){moiId && c.prof_id && c.prof_id !== moiId ? ' · partagée' : ''}</option>)}
         </select>
         <button onClick={() => setFormClasse(v => !v)} style={styleBouton(false, '#475569')} disabled={occupe}>＋ Nouvelle classe</button>
-        <button onClick={() => setApercu(true)} style={{ ...styleBouton(false, '#475569'), marginLeft: 'auto' }}>👁 Aperçu élève</button>
+        <button onClick={() => setApercu(true)} style={{ ...styleBouton(false, '#475569'), marginLeft: 'auto' }}><Pic n="eye"/>Aperçu élève</button>
       </div>
 
       {classe && (
@@ -229,17 +230,17 @@ export function SimulationSuiviProf({ naviguer }) {
           <input type="number" min={1} max={40} value={ajout} onChange={e => setAjout(e.target.value)} style={{ ...champ, width: 64 }} aria-label="Nombre d’élèves à ajouter" />
           <button onClick={ajouter} style={styleBouton(false, '#475569')} disabled={occupe}>élèves</button>
           <button onClick={exporter} style={styleBouton(false, '#475569')}>⬇️ Export CSV</button>
-          {proprio && <button onClick={supprimerClasse} style={{ ...styleBouton(false, '#b91c1c'), marginLeft: 'auto' }} disabled={occupe}>🗑 Supprimer la classe</button>}
+          {proprio && <button onClick={supprimerClasse} style={{ ...styleBouton(false, '#b91c1c'), marginLeft: 'auto' }} disabled={occupe}><Pic n="trash"/>Supprimer la classe</button>}
         </div>
         <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }}>
           {vieDispo ? (
             <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', cursor: 'pointer' }}>
               <input type="checkbox" checked={!!classe.vie_classe} disabled={occupe} onChange={e => basculerVie(e.target.checked)} style={{ marginTop: 3, accentColor: '#e11d48' }} />
-              <span><b>🏆 Vie de classe</b> (désactivée par défaut) : les élèves de « {classe.nom} » voient un objectif collectif de la semaine et des « prouesses »
+              <span><b><Pic n="trophy"/>Vie de classe</b> (désactivée par défaut) : les élèves de « {classe.nom} » voient un objectif collectif de la semaine et des « prouesses »
                 (pas de classement). Les pseudos sont tirés d’une liste fixe, et chaque élève décide s’il apparaît.</span>
             </label>
           ) : (
-            <span>🏆 <b>Vie de classe</b> : disponible après avoir exécuté <code>supabase/05-vie-de-classe.sql</code> dans Supabase (SQL Editor → Run).</span>
+            <span><Pic n="trophy"/><b>Vie de classe</b> : disponible après avoir exécuté <code>supabase/05-vie-de-classe.sql</code> dans Supabase (SQL Editor → Run).</span>
           )}
         </div>
         <ChapitreClasse classe={classe} dispo={chapDispo} occupe={occupe} onChoix={choisirChapitres} />
@@ -262,11 +263,11 @@ export function SimulationSuiviProf({ naviguer }) {
       {classe && (
         <>
           <div style={{ display: 'flex', gap: 6, margin: '12px 0 8px', flexWrap: 'wrap' }}>
-            <button onClick={() => ouvrir('synthese')} style={stylePetitBouton(onglet === 'synthese', ROSE)}>🏠 Synthèse</button>
+            <button onClick={() => ouvrir('synthese')} style={stylePetitBouton(onglet === 'synthese', ROSE)}><Pic n="home"/>Synthèse</button>
             <button onClick={() => ouvrir('reprendre')} style={stylePetitBouton(onglet === 'reprendre', ROSE)}>🔁 À reprendre</button>
-            <button onClick={() => ouvrir('devoirs')} style={stylePetitBouton(onglet === 'devoirs', ROSE)}>📌 Devoirs</button>
+            <button onClick={() => ouvrir('devoirs')} style={stylePetitBouton(onglet === 'devoirs', ROSE)}><Pic n="pin"/>Devoirs</button>
             <button onClick={() => ouvrir('eleves')} style={stylePetitBouton(onglet === 'eleves', ROSE)}>👥 Élèves ({eleves.length})</button>
-            <button onClick={() => ouvrir(DETAILS.includes(onglet) ? onglet : 'exos')} style={stylePetitBouton(DETAILS.includes(onglet), ROSE)}>📚 Détail</button>
+            <button onClick={() => ouvrir(DETAILS.includes(onglet) ? onglet : 'exos')} style={stylePetitBouton(DETAILS.includes(onglet), ROSE)}><Pic n="book"/>Détail</button>
           </div>
           {DETAILS.includes(onglet) && (
             <div style={{ display: 'flex', gap: 6, margin: '0 0 10px 4px', flexWrap: 'wrap', alignItems: 'center', fontSize: 13, color: KIT.txt2 }}>

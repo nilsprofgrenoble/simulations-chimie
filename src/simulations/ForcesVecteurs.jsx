@@ -216,19 +216,19 @@ function VoletDefi({ defi, setDefi, changerType, vec }) {
     <div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(TITRES).map(([t, l]) => <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{lireProgression()[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
-      {defi.type === 'lire' && <><div style={txt}>🎯 {sc.titre}. Le vecteur représente la force <Fn a={sc.auteur} r={sc.receveur}/>. À l’échelle <strong>1 cm ↔ {defi.echelle} N</strong>, quelle est son intensité ?</div>{saisie}</>}
-      {defi.type === 'tracer' && <div style={txt}>🎯 {sc.titre}. Trace le vecteur de la force <Fn a={sc.auteur} r={sc.receveur}/> : intensité <strong>{fr(defi.F, 0)} N</strong>, direction et sens :{' '}
+      {defi.type === 'lire' && <><div style={txt}><Pic n="target"/>{sc.titre}. Le vecteur représente la force <Fn a={sc.auteur} r={sc.receveur}/>. À l’échelle <strong>1 cm ↔ {defi.echelle} N</strong>, quelle est son intensité ?</div>{saisie}</>}
+      {defi.type === 'tracer' && <div style={txt}><Pic n="target"/>{sc.titre}. Trace le vecteur de la force <Fn a={sc.auteur} r={sc.receveur}/> : intensité <strong>{fr(defi.F, 0)} N</strong>, direction et sens :{' '}
         <strong>{caracteristiques(...Object.values(dxdy(1, defi.ang)), 1).direction}, {caracteristiques(...Object.values(dxdy(1, defi.ang)), 1).sens}</strong>. Échelle : <strong>1 cm ↔ {defi.echelle} N</strong>, point d’application : {sc.pointTxt}.</div>}
-      {defi.type === 'poids' && <><div style={txt}>🎯 Quel est le poids d’un objet de <strong>{fr(defi.m, defi.m < 1 ? 1 : 0)} kg</strong> à la surface de {a.nom} ?{' '}
+      {defi.type === 'poids' && <><div style={txt}><Pic n="target"/>Quel est le poids d’un objet de <strong>{fr(defi.m, defi.m < 1 ? 1 : 0)} kg</strong> à la surface de {a.nom} ?{' '}
         {defi.variante === 'g' ? <>Donnée : à la surface, g = {fr(gravite(a), 1)} N/kg.</> : <>Données : G = {sci(G)} N·m²·kg⁻², M = {sci(a.M)} kg, R = {sci(a.R)} m : calcule la force F = G × M × m / R².</>}</div>{saisie}</>}
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={verifier} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}>🔄 Nouveau tirage</button>
+        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
         {!reussi && !defi.solution && <button onClick={() => { suivi.vue(); setDefi(d => ({ ...d, solution: true })); }} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>
       {res && <div style={{ marginTop: 8, fontSize: 14 }}>
         {res.lignes.map(([ok, t], k) => <div key={k} style={{ color: ok ? '#15803d' : '#b91c1c', fontWeight: 600 }}>{ok ? '✅' : '❌'} {t}</div>)}
-        {res.ok && <div style={{ color: '#15803d', fontWeight: 700, marginTop: 4 }}>🎉 Défi réussi !</div>}</div>}
+        {res.ok && <div style={{ color: '#15803d', fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'lire' && <>La flèche mesure {fr(defi.L, 1)} cm et 1 cm représente {defi.echelle} N : F = {fr(defi.L, 1)} × {defi.echelle} = <strong>{fr(defi.F, 0)} N</strong>.</>}
         {defi.type === 'tracer' && <>Longueur = {fr(defi.F, 0)} / {defi.echelle} = <strong>{fr(defi.F / defi.echelle, 1)} cm</strong>. Direction : {caracteristiques(...Object.values(dxdy(1, defi.ang)), 1).direction}, sens : {caracteristiques(...Object.values(dxdy(1, defi.ang)), 1).sens}. Le vecteur part du point d’application.</>}
@@ -421,7 +421,7 @@ export function SimulationForcesVecteurs() {
     <li>P = m × g, g ≈ 9,8 N/kg sur Terre</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
   const ateliers = (enExplore || enGuide) && (

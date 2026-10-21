@@ -125,19 +125,19 @@ function VoletDefi({ defi, setDefi, changerType, v }) {
     <div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(TITRES).map(([t, l]) => <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
-      {defi.type === 'poids' && <><div style={txt}>🎯 Un astronaute de <strong>{defi.m} kg</strong> est à l’altitude de <strong>{defi.h} km</strong>. Lisez la valeur de <strong>g</strong> à cette altitude dans la simulation, puis calculez son <strong>poids</strong> (la force exercée par la Terre).</div>
+      {defi.type === 'poids' && <><div style={txt}><Pic n="target"/>Un astronaute de <strong>{defi.m} kg</strong> est à l’altitude de <strong>{defi.h} km</strong>. Lisez la valeur de <strong>g</strong> à cette altitude dans la simulation, puis calculez son <strong>poids</strong> (la force exercée par la Terre).</div>
         <label style={{ fontSize: 14, fontWeight: 600 }}>P = <input value={defi.reps.v || ''} onChange={e => rep('v', e.target.value)} inputMode="decimal" aria-label="Votre réponse" style={{ width: 90, padding: '5px 8px', fontSize: 15, border: `1.5px solid ${KIT.bord}`, borderRadius: 6 }}/> N</label></>}
-      {defi.type === 'cabine' && <><div style={txt}>🎯 On lâche une balle, sans lui donner de vitesse, <strong>{TXT_CTX[defi.c]}</strong>. Par rapport à la cabine, la balle…</div>
+      {defi.type === 'cabine' && <><div style={txt}><Pic n="target"/>On lâche une balle, sans lui donner de vitesse, <strong>{TXT_CTX[defi.c]}</strong>. Par rapport à la cabine, la balle…</div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{[['tombe', 'tombe vers le plancher'], ['flotte', 'reste là où on l’a lâchée'], ['monte', 'monte vers le plafond']].map(([k, l]) => <button key={k} onClick={() => rep('d', k)} style={stylePetitBouton(defi.reps.d === k, '#0ea5e9')}>{l}</button>)}</div></>}
-      {defi.type === 'orbite' && <div style={txt}>🎯 La station est lancée <strong>horizontalement</strong> à l’altitude de <strong>{defi.h} km</strong>. Réglez sa <strong>vitesse</strong> (curseur) pour qu’elle reste à <strong>altitude constante</strong> : orbite circulaire. Puis cliquez sur « Vérifier ».</div>}
+      {defi.type === 'orbite' && <div style={txt}><Pic n="target"/>La station est lancée <strong>horizontalement</strong> à l’altitude de <strong>{defi.h} km</strong>. Réglez sa <strong>vitesse</strong> (curseur) pour qu’elle reste à <strong>altitude constante</strong> : orbite circulaire. Puis cliquez sur « Vérifier ».</div>}
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}>🔄 Nouveau tirage</button>
+        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
         {!reussi && !defi.solution && <button onClick={() => { suivi.vue(); setDefi(d => ({ ...d, solution: true })); }} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>
       {res && <div style={{ marginTop: 8, fontSize: 14 }}>
         {res.lignes.map(([ok, t], k) => <div key={k} style={{ color: ok ? VERT : '#b91c1c', fontWeight: 600 }}>{ok ? '✅' : '❌'} {avecIndices(t)}</div>)}
-        {res.ok && <div style={{ color: VERT, fontWeight: 700, marginTop: 4 }}>🎉 Défi réussi !</div>}</div>}
+        {res.ok && <div style={{ color: VERT, fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'poids' && <>g({defi.h} km) ≈ {fr(gAlt(defi.h), 2)} N/kg, donc P = m × g = {defi.m} × {fr(gAlt(defi.h), 2)} = <strong>{fr(defi.m * gAlt(defi.h), 0)} N</strong>.</>}
         {defi.type === 'cabine' && (defi.rep === 'flotte' ? <>Cabine et balle <strong>tombent ensemble</strong> : la balle reste là où on l’a lâchée.</> : <>La cabine ne tombe pas : la balle <strong>tombe</strong> vers le plancher.</>)}
@@ -325,7 +325,7 @@ export function SimulationISS() {
     <li>À 400 km : g ≈ 8,7 N/kg (89 % du sol)</li><li>ISS = chute libre autour de la Terre</li><li>Apesanteur = absence de support, pas de gravité</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 

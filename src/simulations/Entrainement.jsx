@@ -10,6 +10,7 @@ import { useSession, estEleve, estProf, toutLire, rest } from "../serveur";
 import { exosDuChapitre, exosCalcul, prochainExercice, avancementChapitre } from "../chapitre";
 import { NIVEAUX_CHAPITRES, chapitresDuNiveau, chapitreDe, chapitresDe, domainesDe, simsDe } from "../chapitres";
 import { nomsSim } from "../suivi";
+import { Pic } from "../Pictos";
 
 const ROSE = '#e11d48';
 const TRANSVERSAL = 'Tous thèmes (transversal)';
@@ -118,29 +119,29 @@ export function SimulationEntrainement({ naviguer }) {
 
   return (
     <div style={{ ...cardStyle, maxWidth: 1000, margin: '0 auto' }}>
-      <h2 style={{ margin: 0, color: ROSE }}>🏋️ Je m’entraîne ! Travail par compétence.</h2>
+      <h2 style={{ margin: 0, color: ROSE }}><Pic n="dumbbell"/>Je m’entraîne ! Travail par compétence.</h2>
       <p style={{ color: KIT.txt2, fontSize: 14, lineHeight: 1.55 }}>
         Chaque exercice travaille <b>une</b> compétence de la démarche scientifique. L’ordre conseillé suit celle d’un problème :
         <b> s’approprier → analyser → réaliser → valider</b>. Tu peux commencer par n’importe quelle compétence, mais si tu hésites, suis cet ordre.
       </p>
 
       <div data-compte style={{ ...styleBoite, fontSize: 13.5, margin: '8px 0', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-        {eleve ? <>👧👦 Connecté·e : <b>{sess.profil.identifiant}</b> — ta progression est enregistrée et te suit d’un appareil à l’autre.</>
-          : estProf(sess) ? <>👧👦 Connecté : <b>{sess.profil.nom}</b> (professeur : rien n’est enregistré quand vous faites les exercices).</>
+        {eleve ? <><Pic n="users"/>Connecté·e : <b>{sess.profil.identifiant}</b> — ta progression est enregistrée et te suit d’un appareil à l’autre.</>
+          : estProf(sess) ? <><Pic n="users"/>Connecté : <b>{sess.profil.nom}</b> (professeur : rien n’est enregistré quand vous faites les exercices).</>
             : <>Sans compte, ta progression reste sur cet appareil. Avec le compte donné par ton professeur, elle te suit partout.</>}
         <button onClick={() => naviguer(39)} style={styleBouton(false, ROSE)}>{sess?.profil ? 'Mon compte' : 'Se connecter'}</button>
-        {estProf(sess) && <button onClick={() => naviguer(40)} style={styleBouton(true, ROSE)}>📊 Suivi professeur</button>}
+        {estProf(sess) && <button onClick={() => naviguer(40)} style={styleBouton(true, ROSE)}><Pic n="bars"/>Suivi professeur</button>}
       </div>
 
       {avecChapitre && (
         <section data-chapitre style={{ margin: '14px 0 18px' }}>
-          <h3 style={{ margin: '0 0 4px', color: KIT.txt }}>📘 Ton chapitre en ce moment : <span style={{ color: ROSE }}>{chaps.map(c => c.label).join(' · ')}</span></h3>
+          <h3 style={{ margin: '0 0 4px', color: KIT.txt }}><Pic n="book"/>Ton chapitre en ce moment : <span style={{ color: ROSE }}>{chaps.map(c => c.label).join(' · ')}</span></h3>
           <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 8 }}>
             Choisi par ton professeur.{exosChap.length > 0 ? ` ${av.reussis} exercice${av.reussis > 1 ? 's' : ''} réussi${av.reussis > 1 ? 's' : ''} sur ${av.total} · ${av.etoiles} ★ sur ${av.max}` : ' Pas encore d’exercice de remédiation sur ce chapitre : commence par les simulations.'}
           </div>
           {simsChap.length > 0 && (
             <div data-sims-chapitre style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: KIT.txt, margin: '0 0 4px' }}>🧪 Les simulations du chapitre</div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: KIT.txt, margin: '0 0 4px' }}><Pic n="testtube"/>Les simulations du chapitre</div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {simsChap.map(id => <button key={id} data-sim={id} onClick={() => naviguer(id)} style={{ ...styleBouton(false, '#475569'), fontSize: 13 }}>{nomsSim[id] || `Simulation ${id}`} ▶</button>)}
               </div>
@@ -160,7 +161,7 @@ export function SimulationEntrainement({ naviguer }) {
               <button onClick={() => ouvrir(conseil.exo)} style={styleBouton(true, ROSE)}>Y aller ▶</button>
             </div>
           ) : (
-            <div style={{ ...styleBoite, background: '#f0fdf4', marginBottom: 12 }}>🎉 <b>Tout le chapitre est réussi avec 3 étoiles !</b> Passe aux autres thèmes ci-dessous, ou refais un exercice pour t’entraîner.</div>
+            <div style={{ ...styleBoite, background: '#f0fdf4', marginBottom: 12 }}><Pic n="party"/><b>Tout le chapitre est réussi avec 3 étoiles !</b> Passe aux autres thèmes ci-dessous, ou refais un exercice pour t’entraîner.</div>
           )}
           {['S\'APP', 'ANA'].map(code => {
             const L = exosChap.filter(e => e.comp === code);
@@ -171,14 +172,14 @@ export function SimulationEntrainement({ naviguer }) {
               </div>);
           })}
           {exosChap.length > 0 && <details style={{ marginTop: 6 }}>
-            <summary style={{ cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: KIT.txt }}>🧮 Pour t’aider à calculer (REA, valable pour tous les chapitres) <span style={{ fontWeight: 600, color: KIT.txt2 }}>({nbFaits(exosCalcul(exos))} / {exosCalcul(exos).length})</span></summary>
+            <summary style={{ cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: KIT.txt }}><Pic n="abacus"/>Pour t’aider à calculer (REA, valable pour tous les chapitres) <span style={{ fontWeight: 600, color: KIT.txt2 }}>({nbFaits(exosCalcul(exos))} / {exosCalcul(exos).length})</span></summary>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>{exosCalcul(exos).map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} />)}</div>
           </details>}
           {exosChap.length > 0 && <div style={{ fontSize: 12, color: KIT.txt2, marginTop: 8 }}>Le conseil est calculé à partir de tes résultats ; ce n’est pas une note.</div>}
         </section>)}
 
       <details open={!avecChapitre} data-autres style={avecChapitre ? { ...styleBoite, background: '#fff' } : undefined}>
-        {avecChapitre && <summary style={{ cursor: 'pointer', fontSize: 15.5, fontWeight: 800, color: KIT.txt }}>📚 Autres thèmes et toutes les compétences</summary>}
+        {avecChapitre && <summary style={{ cursor: 'pointer', fontSize: 15.5, fontWeight: 800, color: KIT.txt }}><Pic n="book"/>Autres thèmes et toutes les compétences</summary>}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12, margin: '14px 0' }}>
         {COMPETENCES.map((c, i) => {
           const mes = exosN.filter(e => e.comp === c.code);

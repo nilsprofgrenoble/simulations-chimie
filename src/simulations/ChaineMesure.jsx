@@ -215,7 +215,7 @@ export function Simulation8({ plotlyReady }) {
           La photorésistance reçoit un éclairement de <strong>{defi.E} lx</strong>. Elle est montée en pont diviseur avec <strong>R = {fmt(defi.R, 0)} Ω</strong> (alimentation 5 V), et la tension Ur est lue par un CAN <strong>{defi.bits} bits</strong> de référence 5 V.
           <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 4 }}>Rappels : Ur = 5 R / (Rp + R) ; N = Ur / 5 × (2<sup>n</sup> − 1) tronqué ; q = 5 / (2<sup>n</sup> − 1).</div>
           <button onClick={() => { setE(defi.E); setR(defi.R); setBits(defi.bits); setCanInput('Ur'); setActiveBlock('capteur'); setMode('explore'); }}
-            style={{ ...stylePetitBouton(false, '#334155'), marginTop: 6 }}>🔍 Régler l’exploration sur ces valeurs</button>
+            style={{ ...stylePetitBouton(false, '#334155'), marginTop: 6 }}><Pic n="search"/>Régler l’exploration sur ces valeurs</button>
         </div>
         {Q.map((q, k) => {
           const rep = defi.reps[q.id] || '', ok = proche(lireNombre(rep), q.vrai, q.tol);
@@ -234,7 +234,7 @@ export function Simulation8({ plotlyReady }) {
         })}
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={() => { noterDefi(Q.every(qu => proche(lireNombre(defi.reps[qu.id] || ''), qu.vrai, qu.tol))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-          <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
+          <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
         </div>
       </div>
     );
@@ -615,7 +615,7 @@ export function Simulation8({ plotlyReady }) {
 
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );

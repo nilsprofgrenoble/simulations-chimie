@@ -189,7 +189,7 @@ export function Simulation6({ naviguer }) {
     { id: 'dynamique', titre: 'Et dans le temps ?', focus: [],
       texte: <>Dans la simulation « Régulation TOR, P et PI », en mode P et avec les mêmes réglages, le niveau finit par se stabiliser exactement au point de fonctionnement. Le point de
         fonctionnement donne le résultat final ; la simulation montre le chemin pour y arriver.
-        {naviguer && <div style={{ marginTop: 8 }}><button onClick={() => { ecrireTransfert({ consigne, Kp, Qmax, Qp }); naviguer(5); }} style={stylePetitBouton(true, '#2563eb')}>⏱ Voir la régulation dans le temps</button></div>}</>,
+        {naviguer && <div style={{ marginTop: 8 }}><button onClick={() => { ecrireTransfert({ consigne, Kp, Qmax, Qp }); naviguer(5); }} style={stylePetitBouton(true, '#2563eb')}><Pic n="stopwatch"/>Voir la régulation dans le temps</button></div>}</>,
       tache: null },
     { id: 'limite', titre: 'La limite du régulateur P', focus: [],
       texte: <>Un régulateur P seul ne peut pas supprimer l'écart statique, tant que le puisage n'est pas nul.</>,
@@ -235,7 +235,7 @@ export function Simulation6({ naviguer }) {
         <div style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.55 }}>
           Le château d'eau est régulé en P : consigne <strong>{defi.c} m</strong>, gain <strong>K<sub>p</sub> = {defi.Kp} %/m</strong>, pompe de <strong>100 m³/h</strong> au maximum, débit de puisage <strong>{defi.Qp} m³/h</strong>.
           <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 4 }}>Rappels : Q<sub>pompe</sub> = Q<sub>puisage</sub> à l'équilibre ; Q<sub>pompe</sub> = Q<sub>max</sub> × Y / 100 ; Y = K<sub>p</sub> × (consigne − H).</div>
-          <button onClick={() => { setConsigne(defi.c); setKp(defi.Kp); setQmax(100); setQp(defi.Qp); setMode('explore'); }} style={{ ...stylePetitBouton(false, '#334155'), marginTop: 6 }}>🔍 Régler l’exploration sur ces valeurs</button>
+          <button onClick={() => { setConsigne(defi.c); setKp(defi.Kp); setQmax(100); setQp(defi.Qp); setMode('explore'); }} style={{ ...stylePetitBouton(false, '#334155'), marginTop: 6 }}><Pic n="search"/>Régler l’exploration sur ces valeurs</button>
         </div>
         {Q.map((q, k) => {
           const rep = defi.reps[q.id] || '', ok = proche(lireNombre(rep), q.vrai, q.tol);
@@ -254,7 +254,7 @@ export function Simulation6({ naviguer }) {
         })}
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={() => { noterDefi(Q.every(q => proche(lireNombre(defi.reps[q.id] || ''), q.vrai, q.tol))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-          <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
+          <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
         </div>
       </div>
     );
@@ -301,7 +301,7 @@ export function Simulation6({ naviguer }) {
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>Puisage maximal compensable : au fond du réservoir (30 m), le régulateur commande Y = K<sub>p</sub> × (consigne − 30), limité à 100 % ; au-delà de ce débit, le réservoir se vide.</div></>}
       {!enGuide && naviguer && (
         <div style={{ marginTop: 8 }}>
-          <button onClick={() => { ecrireTransfert({ consigne, Kp, Qmax, Qp }); naviguer(5); }} style={stylePetitBouton(true, '#2563eb')}>⏱ Voir la régulation dans le temps</button>
+          <button onClick={() => { ecrireTransfert({ consigne, Kp, Qmax, Qp }); naviguer(5); }} style={stylePetitBouton(true, '#2563eb')}><Pic n="stopwatch"/>Voir la régulation dans le temps</button>
         </div>
       )}
     </>
@@ -401,7 +401,7 @@ export function Simulation6({ naviguer }) {
   );
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );

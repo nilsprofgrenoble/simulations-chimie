@@ -211,7 +211,7 @@ export function SimulationMoteurCode({ naviguer }) {
       <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>Le moteur entraîne une charge de <strong>{defi.charge}{NB}%</strong> en <strong>{PRE[defi.m].nom.toLowerCase()}</strong>. Trouvez le <strong>plus petit délai</strong> (à 0,5{NB}ms près) pour lequel le rotor ne perd <strong>aucun pas</strong>, puis vérifiez.</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button onClick={() => { noterDefi(!stale && !!res && res.ok && delai <= dMinDefi + 0.5); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier mon réglage</button>
-        <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
+        <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
       </div>
       {verdictDefi && <div style={{ marginTop: 8, fontWeight: 700, color: verdictDefi.c, fontSize: 14 }}>{verdictDefi.t}</div>}
     </div>);
@@ -231,7 +231,7 @@ export function SimulationMoteurCode({ naviguer }) {
     </div>);
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>);
 

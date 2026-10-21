@@ -134,22 +134,22 @@ function VoletDefi({ defi, setDefi, changerType, bancS }) {
     <div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(TITRES).map(([t, l]) => <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
-      {defi.type === 'trouver' && <><div style={txt}>🎯 Une lentille convergente est <strong>cachée</strong>. Avec le banc d’optique ci-dessous, déplacez l’écran pour obtenir la tache <strong>la plus petite</strong>, puis donnez la distance focale <strong>f′</strong> (en cm).</div>
+      {defi.type === 'trouver' && <><div style={txt}><Pic n="target"/>Une lentille convergente est <strong>cachée</strong>. Avec le banc d’optique ci-dessous, déplacez l’écran pour obtenir la tache <strong>la plus petite</strong>, puis donnez la distance focale <strong>f′</strong> (en cm).</div>
         <label style={{ fontSize: 14, fontWeight: 600 }}>f′ = <input value={defi.reps.v || ''} onChange={e => rep('v', e.target.value)} inputMode="decimal" aria-label="Votre réponse" style={{ width: 90, padding: '5px 8px', fontSize: 15, border: `1.5px solid ${KIT.bord}`, borderRadius: 6 }}/> cm</label></>}
-      {defi.type === 'comparer' && <><div style={txt}>🎯 Deux lentilles plan-convexes en verre : <strong>A</strong> ({decrire(defi.A)}) et <strong>B</strong> ({decrire(defi.B)}). Laquelle a la distance focale f′ <strong>la plus courte</strong> ?</div>
+      {defi.type === 'comparer' && <><div style={txt}><Pic n="target"/>Deux lentilles plan-convexes en verre : <strong>A</strong> ({decrire(defi.A)}) et <strong>B</strong> ({decrire(defi.B)}). Laquelle a la distance focale f′ <strong>la plus courte</strong> ?</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 8, marginBottom: 8 }}>
           {[['A', defi.A], ['B', defi.B]].map(([k, X]) => <div key={k}><div style={{ fontSize: 13, fontWeight: 700 }}>Lentille {k}</div><Lunette L={lentille('plano', X.n, X.R)} normales={false} foyers={false} ideale legende={false} w={700}/></div>)}</div>
         {choix([['A', 'La lentille A'], ['B', 'La lentille B']])}</>}
-      {defi.type === 'prevoir' && <><div style={txt}>🎯 Un rayon lumineux <strong>{RAYONS[defi.v]}</strong> (lentille mince convergente). Après la lentille, ce rayon…</div>
+      {defi.type === 'prevoir' && <><div style={txt}><Pic n="target"/>Un rayon lumineux <strong>{RAYONS[defi.v]}</strong> (lentille mince convergente). Après la lentille, ce rayon…</div>
         {choix([['pF', 'passe par le foyer image F′'], ['tout', 'n’est pas dévié'], ['para', 'ressort parallèlement à l’axe optique'], ['F', 'passe par le foyer objet F']])}</>}
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}>🔄 Nouveau tirage</button>
+        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
         {!reussi && !defi.solution && <button onClick={() => { suivi.vue(); setDefi(d => ({ ...d, solution: true })); }} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>
       {res && <div style={{ marginTop: 8, fontSize: 14 }}>
         {res.lignes.map(([ok, t], k) => <div key={k} style={{ color: ok ? VERT : '#b91c1c', fontWeight: 600 }}>{ok ? '✅' : '❌'} {avecIndices(t)}</div>)}
-        {res.ok && <div style={{ color: VERT, fontWeight: 700, marginTop: 4 }}>🎉 Défi réussi !</div>}</div>}
+        {res.ok && <div style={{ color: VERT, fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'trouver' && <>La tache est la plus petite quand l’écran est dans le plan du foyer : s = f′. Ici f′ = <strong>{cm(defi.f)} cm</strong> (à 0,8 cm près).</>}
         {defi.type === 'comparer' && <>f′<sub>A</sub> ≈ {cm(defi.fa)} cm et f′<sub>B</sub> ≈ {cm(defi.fb)} cm : la lentille <strong>{defi.rep}</strong> a la plus courte distance focale. Plus n est grand (verre plus réfringent) et plus R est petit (face plus bombée), plus la lentille dévie et plus f′ est court.</>}
@@ -247,7 +247,7 @@ export function SimulationLentille() {
       <Banc f={bancF} s={B.s} reveler={B.reveler && !enDefi}/>
       <div style={{ marginTop: 8 }}>{curs('Position de l’écran s', B.s, 2, 32, 0.1, v => setB(b => ({ ...b, s: Math.round(v * 10) / 10 })), `${cm(B.s)} cm`)}</div>
       {!enDefi && <div style={{ marginTop: 6 }}><button onClick={() => setB(b => ({ ...b, reveler: !b.reveler }))} style={stylePetitBouton(B.reveler, '#334155')}>{B.reveler ? 'Cacher' : 'Révéler'} f′</button>
-        {!enGuide && <button onClick={() => setB({ f: alea(FOCALES.filter(x => x !== B.f)), s: 5, reveler: false })} style={{ ...styleBouton(false), marginLeft: 6 }}>🔄 Autre lentille</button>}</div>}
+        {!enGuide && <button onClick={() => setB({ f: alea(FOCALES.filter(x => x !== B.f)), s: 5, reveler: false })} style={{ ...styleBouton(false), marginLeft: 6 }}><Pic n="refresh"/>Autre lentille</button>}</div>}
     </div>);
   const lentillePanel = (
     <div>
@@ -281,7 +281,7 @@ export function SimulationLentille() {
     <li>Lentille = deux réfractions</li><li>Parallèle à l’axe → F′ ; par O → pas dévié</li><li>n grand ou R petit → f′ courte</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 

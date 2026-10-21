@@ -75,7 +75,7 @@ function Connexion() {
               <input type="checkbox" checked={garder} onChange={e => setGarder(e.target.checked)} style={{ marginTop: 3, accentColor: ACCENT }} />
               <span>Rester connecté sur cet appareil <b>(appareil personnel uniquement, jamais sur un ordinateur partagé du lycée)</b></span>
             </label>
-            {msg && <div role="alert" style={{ color: '#b91c1c', fontSize: 14, fontWeight: 600 }}>❌ {msg}</div>}
+            {msg && <div role="alert" style={{ color: '#b91c1c', fontSize: 14, fontWeight: 600 }}><Pic n="ko"/>{msg}</div>}
             <div style={{ fontSize: 13, color: TEXTE2 }}>Mot de passe oublié ? Demande à ton professeur : il peut t’en donner un nouveau en quelques secondes.</div>
             <button type="submit" disabled={inactif} style={{ padding: '11px 22px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 15.5, fontFamily: 'inherit', color: 'white',
               background: ACCENT, cursor: inactif ? 'default' : 'pointer', opacity: inactif ? 0.55 : 1 }}>{attente ? 'Connexion…' : 'Me connecter'}</button>
@@ -132,7 +132,7 @@ function MesResultats({ naviguer }) {
   useEffect(() => {
     toutLire('activites?select=cle,reussi,essais,corrections_vues,duree_s,debut,maj&order=debut.desc').then(setLignes).catch(e => setErreur(e.message));
   }, []);
-  if (erreur) return <div style={{ color: '#b91c1c' }}>❌ {erreur}</div>;
+  if (erreur) return <div style={{ color: '#b91c1c' }}><Pic n="ko"/>{erreur}</div>;
   if (!lignes) return <div style={{ color: KIT.txt2 }}>Chargement…</div>;
   const ag = [...agreger(lignes.filter(l => !estSimulation(l.cle))).values()], etq = etiquettes();
   const nbOk = ag.filter(a => a.reussi && !estDefi(a.cle)).length, nbEx = ag.filter(a => !estDefi(a.cle)).length;

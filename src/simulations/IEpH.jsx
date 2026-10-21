@@ -331,7 +331,7 @@ function ParcoursIEpH({ plotlyReady, changerMode }) {
   const vue = { ...V, ...(et.vue || {}) };
   const fin = (
     <span style={{ display: "flex", gap: 6 }}>
-      <button onClick={() => changerMode("explore")} style={styleBouton(true, "#334155")}>🔍 Explorer</button>
+      <button onClick={() => changerMode("explore")} style={styleBouton(true, "#334155")}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode("defi")} style={styleBouton(true, "#0ea5e9")}><Pic n="target"/>Défi</button>
     </span>
   );
@@ -419,7 +419,7 @@ function DefiIEpH({ plotlyReady }) {
         })}
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           <button onClick={() => { noterDefi(Q.every(juste)); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, "#16a34a")}>✓ Vérifier</button>
-          <button onClick={nouveau} style={styleBouton(false)}>🔄 Nouvelles données</button>
+          <button onClick={nouveau} style={styleBouton(false)}><Pic n="refresh"/>Nouvelles données</button>
         </div>
       </div>
     </div>

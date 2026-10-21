@@ -131,20 +131,20 @@ function VoletDefi({ defi, setDefi, changerType, G }) {
     <div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(TITRES).map(([t, l]) => <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
-      {defi.type === 'tubes' && <><div style={txt}>🎯 On mélange <strong>{nom(defi.l1)}</strong> et <strong>{nom(defi.l2)}</strong> dans un tube à essais (volumes comparables, huile végétale).</div>
+      {defi.type === 'tubes' && <><div style={txt}><Pic n="target"/>On mélange <strong>{nom(defi.l1)}</strong> et <strong>{nom(defi.l2)}</strong> dans un tube à essais (volumes comparables, huile végétale).</div>
         {q('Le mélange obtenu est…')}{choix('hom', [[true, 'homogène (miscibles)'], [false, 'hétérogène (non miscibles)']])}
         {q(`Le colorant « ${COLORANTS[defi.col].nom} » est-il soluble dans ${defi.solv === 'huile' ? 'l’huile' : defi.solv === 'eau' ? 'l’eau' : 'l’alcool'} ?`)}{choix('sol', [[true, 'oui, soluble'], [false, 'non, insoluble']])}</>}
-      {defi.type === 'superposer' && <><div style={txt}>🎯 On verse <strong>{defi.n}</strong> (densité <strong>{fr(defi.d, 2)}</strong>) dans de l’eau (densité 1,00). Les deux liquides <strong>ne sont pas miscibles</strong>.</div>
+      {defi.type === 'superposer' && <><div style={txt}><Pic n="target"/>On verse <strong>{defi.n}</strong> (densité <strong>{fr(defi.d, 2)}</strong>) dans de l’eau (densité 1,00). Les deux liquides <strong>ne sont pas miscibles</strong>.</div>
         {q(`Où se place ${defi.n} ?`)}{choix('pos', [['haut', 'au-dessus de l’eau'], ['bas', 'au-dessous de l’eau']])}</>}
-      {defi.type === 'goutte' && <div style={txt}>🎯 Dans un bécher, <strong>{defi.Ve} mL d’eau</strong> et 2 mL d’huile colorée (d = 0,9). Réglez le volume d’<strong>alcool</strong> (d = 0,8) pour que la goutte d’huile reste <strong>suspendue au milieu</strong> (curseur ci-dessous), puis cliquez sur « Vérifier ».</div>}
+      {defi.type === 'goutte' && <div style={txt}><Pic n="target"/>Dans un bécher, <strong>{defi.Ve} mL d’eau</strong> et 2 mL d’huile colorée (d = 0,9). Réglez le volume d’<strong>alcool</strong> (d = 0,8) pour que la goutte d’huile reste <strong>suspendue au milieu</strong> (curseur ci-dessous), puis cliquez sur « Vérifier ».</div>}
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}>🔄 Nouveau tirage</button>
+        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
         {!reussi && !defi.solution && <button onClick={() => { suivi.vue(); setDefi(d => ({ ...d, solution: true })); }} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>
       {res && <div style={{ marginTop: 8, fontSize: 14 }}>
         {res.lignes.map(([ok, t], k) => <div key={k} style={{ color: ok ? VERT : '#b91c1c', fontWeight: 600 }}>{ok ? '✅' : '❌'} {avecIndices(t)}</div>)}
-        {res.ok && <div style={{ color: VERT, fontWeight: 700, marginTop: 4 }}>🎉 Défi réussi !</div>}</div>}
+        {res.ok && <div style={{ color: VERT, fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'tubes' && <>{nom(defi.l1)} et {nom(defi.l2)} : {miscible(defi.l1, defi.l2) ? 'miscibles, mélange homogène' : 'non miscibles, mélange hétérogène'}. Le {COLORANTS[defi.col].nom} {COLORANTS[defi.col].soluble[defi.solv] ? 'est soluble' : 'n’est pas soluble'} dans {defi.solv === 'huile' ? 'l’huile' : defi.solv === 'eau' ? 'l’eau' : 'l’alcool'}.</>}
         {defi.type === 'superposer' && <>Le liquide le moins dense flotte. {fr(defi.d, 2)} {defi.d < 1 ? '<' : '>'} 1,00 : {defi.n} se place <strong>{defi.d < 1 ? 'au-dessus' : 'au-dessous'}</strong> de l’eau.</>}
@@ -280,7 +280,7 @@ export function SimulationMelanges() {
     <li>miscibles ⇒ homogène ; non miscibles ⇒ hétérogène</li><li>ρ = m / V ; d = ρ / ρ<sub>eau</sub></li><li>le liquide le moins dense flotte</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 

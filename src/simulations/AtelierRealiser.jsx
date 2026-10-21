@@ -3,6 +3,7 @@ import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE
 import { useSuivi } from "../suivi";
 import { txtVec } from "./FigureVecteurs";
 import { FAMILLES, GROUPES, verifier, reponseAttendue } from "./AtelierRealiserBanque";
+import { Pic } from "../Pictos";
 
 // ====================================================
 //  SIM 36 — ATELIER « RÉALISER » (compétence S'APP : réaliser)
@@ -54,7 +55,7 @@ export function SimulationAtelierRealiser() {
               style={{ fontSize: 15, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 150, color: KIT.txt, background: 'white' }}/>
             <span style={{ fontSize: 14, color: KIT.txt2 }}>{avecIndices(q.unite || '')}</span>
           </div>)}
-        {indice[q.id] && q.aide && <Correction>💡 {txtVec(avecIndices(q.aide))}</Correction>}
+        {indice[q.id] && q.aide && <Correction><Pic n="bulb"/>{txtVec(avecIndices(q.aide))}</Correction>}
         {affichee && <Verdict ok={bon}>{bon ? 'Bravo !' : 'Pas encore.'}</Verdict>}
         {affichee && !bon && r.msg && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{txtVec(r.msg)}</div>}
         {((vu[q.id] && !bon) || (affichee && bon)) && <Correction>{q.type === 'num' && !bon ? <>Réponse attendue : <b>{reponseAttendue(q)}</b>. </> : null}{q.expl}</Correction>}
@@ -62,7 +63,7 @@ export function SimulationAtelierRealiser() {
           <button onClick={() => corriger(q.id)} style={styleBouton(true, '#16a34a')}>✓ Corriger</button>
           {!bon && <button onClick={() => { corriger(q.id, true); setVu(x => ({ ...x, [q.id]: true })); }}
             style={{ fontSize: 12.5, background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer' }}>voir la correction</button>}
-          {q.aide && !indice[q.id] && <button onClick={() => setIndice(x => ({ ...x, [q.id]: true }))} style={stylePetitBouton(false)}>💡 Indice</button>}
+          {q.aide && !indice[q.id] && <button onClick={() => setIndice(x => ({ ...x, [q.id]: true }))} style={stylePetitBouton(false)}><Pic n="bulb"/>Indice</button>}
           {(bon || vu[q.id]) && chk[q.id] && i === etp && i < Q.length - 1 && <button onClick={() => setEtp(e => e + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Question suivante ▶</button>}
         </div>
       </div>);

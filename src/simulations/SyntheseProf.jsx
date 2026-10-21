@@ -6,6 +6,7 @@ import { aReprendreEnClasse } from "../reprise";
 import { suiviClasse, infoEcheance } from "../devoirs";
 import { ACCENT } from "../theme";
 import { syntheseClasse, JOURS_ACTIF, JOURS_RELANCE } from "../synthese";
+import { Pic } from "../Pictos";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  SYNTHÈSE (suivi professeur) : la page d'accueil de la classe choisie. Chiffres de la semaine,
@@ -63,8 +64,8 @@ export function SyntheseProf({ classe, eleves, lignes, allerA, onApercu }) {
             {devoirs.length === 0 ? <div style={{ fontSize: 14, color: KIT.txt2 }}>{dev.liste.length ? '✅ Tous les devoirs sont terminés par toute la classe.' : (
               <div>Aucun devoir pour l’instant. Le plus simple : ouvrez une simulation et cliquez sur « 📌 Donner en devoir » (en haut à droite).
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
-                  <button onClick={() => allerA('devoirs')} style={{ background: ACCENT, color: '#fff', border: 'none', borderRadius: 8, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}>📌 Créer un devoir</button>
-                  {onApercu && <button onClick={onApercu} style={{ background: '#fff', color: ACCENT, border: `2px solid ${ACCENT}`, borderRadius: 8, padding: '4px 10px', fontWeight: 700, cursor: 'pointer' }}>👁 Voir ce que verront vos élèves</button>}
+                  <button onClick={() => allerA('devoirs')} style={{ background: ACCENT, color: '#fff', border: 'none', borderRadius: 8, padding: '6px 12px', fontWeight: 700, cursor: 'pointer' }}><Pic n="pin"/>Créer un devoir</button>
+                  {onApercu && <button onClick={onApercu} style={{ background: '#fff', color: ACCENT, border: `2px solid ${ACCENT}`, borderRadius: 8, padding: '4px 10px', fontWeight: 700, cursor: 'pointer' }}><Pic n="eye"/>Voir ce que verront vos élèves</button>}
                 </div>
               </div>)}</div> : devoirs.slice(0, 3).map(({ d, s, e }) => (
               <div key={d.id} style={{ padding: '6px 0', borderTop: `1px dashed ${KIT.bord}`, fontSize: 14 }}>
@@ -80,7 +81,7 @@ export function SyntheseProf({ classe, eleves, lignes, allerA, onApercu }) {
             </div>))}
         </Carte>
         <Carte titre="💤 À relancer" lien="Par élève" onLien={() => allerA('eleves')}>
-          {S.aRelancer.length === 0 ? <div style={{ fontSize: 14, color: KIT.txt2 }}>✅ Tous les élèves ont travaillé sur le site depuis {JOURS_RELANCE} jours.</div> : (
+          {S.aRelancer.length === 0 ? <div style={{ fontSize: 14, color: KIT.txt2 }}><Pic n="ok"/>Tous les élèves ont travaillé sur le site depuis {JOURS_RELANCE} jours.</div> : (
             <div style={{ fontSize: 14, lineHeight: 1.7 }}>
               {S.aRelancer.slice(0, 8).map(x => (
                 <span key={x.identifiant} style={{ display: 'inline-block', margin: '0 6px 4px 0', padding: '1px 9px', borderRadius: 999, background: '#f1f5f9', border: `1px solid ${KIT.bord}`, color: KIT.txt }}>
@@ -91,7 +92,7 @@ export function SyntheseProf({ classe, eleves, lignes, allerA, onApercu }) {
         </Carte>
       </div>
       <details style={{ marginTop: 10, fontSize: 12.5, color: KIT.txt2 }}>
-        <summary style={{ cursor: 'pointer', fontWeight: 700 }}>ℹ️ Comment lire ces chiffres</summary>
+        <summary style={{ cursor: 'pointer', fontWeight: 700 }}><Pic n="info"/>Comment lire ces chiffres</summary>
         <p style={{ margin: '6px 0 0' }}>« Actifs » : au moins une séance dans les {JOURS_ACTIF} derniers jours ; « réussis » : un même exercice est compté une fois par élève. Ces chiffres viennent des séances enregistrées par le navigateur des élèves : un élève qui travaille hors du site, ou sans être connecté, n’apparaît pas comme actif. C’est une aide pour décider, pas une mesure exacte.</p>
       </details>
     </div>);

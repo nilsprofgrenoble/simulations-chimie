@@ -750,7 +750,7 @@ function ParcoursElectro({ plotlyReady, changerMode }) {
   const vue = { slider: false, reactions: false, suivi: false, modes: false, schema: false, lent: false, points: etape >= idx("pot0"), ...(et.vue || {}) };
   const fin = (
     <span style={{ display: "flex", gap: 6 }}>
-      <button onClick={() => changerMode("explore")} style={styleBouton(true, "#334155")}>🔍 Explorer</button>
+      <button onClick={() => changerMode("explore")} style={styleBouton(true, "#334155")}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode("defi")} style={styleBouton(true, "#0ea5e9")}><Pic n="target"/>Défi</button>
     </span>
   );
@@ -839,7 +839,7 @@ function DefiElectro({ plotlyReady }) {
     <div className="el-l1"><SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} />
       <div style={{ display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          <button onClick={() => nouveau(campagneLecture)} style={styleBouton(defi.type === "lecture", "#2a9d8f")}>📈 Lire les courbes</button>
+          <button onClick={() => nouveau(campagneLecture)} style={styleBouton(defi.type === "lecture", "#2a9d8f")}><Pic n="chartup"/>Lire les courbes</button>
           <button onClick={() => nouveau(campagneProtocole)} style={styleBouton(defi.type === "protocole", "#6a4c93")}>🛠️ Choisir la méthode</button>
         </div>
         <div style={styleBoite}>{enonce}</div>
@@ -872,7 +872,7 @@ function DefiElectro({ plotlyReady }) {
         })}
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           <button onClick={() => { noterDefi(Q.every(juste)); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, "#16a34a")}>✓ Vérifier</button>
-          <button onClick={() => nouveau(defi.type === "lecture" ? campagneLecture : campagneProtocole)} style={styleBouton(false)}>🔄 Nouvelles données</button>
+          <button onClick={() => nouveau(defi.type === "lecture" ? campagneLecture : campagneProtocole)} style={styleBouton(false)}><Pic n="refresh"/>Nouvelles données</button>
         </div>
       </div>
     </div>

@@ -1619,14 +1619,14 @@ export function SimulationBernoulli({ plotlyReady }) {
       {niv === 1 && !valides[1] && ['A', 'B'].map(pt => (
         <div key={pt} style={{ marginTop: 6 }}>
           <button onClick={() => setAides(p => ({ ...p, [`carte${pt}`]: !p[`carte${pt}`] }))}
-            style={{ ...btn(!!aides[`carte${pt}`], '#d97706'), padding: '2px 8px', fontSize: 11 }}>💡 Indice pour le point {pt}</button>
+            style={{ ...btn(!!aides[`carte${pt}`], '#d97706'), padding: '2px 8px', fontSize: 11 }}><Pic n="bulb"/>Indice pour le point {pt}</button>
           {aides[`carte${pt}`] && <div style={aideStyle}>{aidePoint(pt)}</div>}
         </div>
       ))}
       {niv === 2 && !valides[1] && (
         <div style={{ marginTop: 6 }}>
           <button onClick={() => setAides(p => ({ ...p, carte: !p.carte }))}
-            style={{ ...btn(!!aides.carte, '#d97706'), padding: '2px 8px', fontSize: 11 }}>💡 Indice</button>
+            style={{ ...btn(!!aides.carte, '#d97706'), padding: '2px 8px', fontSize: 11 }}><Pic n="bulb"/>Indice</button>
           {aides.carte && <div style={aideStyle}>{aideCarte.general}</div>}
         </div>
       )}
@@ -1644,7 +1644,7 @@ export function SimulationBernoulli({ plotlyReady }) {
               onChange={x => { const v = x.target.value; setReps(p => ({ ...p, [e.id]: v })); setVerifs(p => ({ ...p, [kk]: false })); }}/>
             {niv <= 2 && e.aide && !valides[kk] && (
               <button onClick={() => setAides(p => ({ ...p, [e.id]: !p[e.id] }))}
-                style={{ ...btn(!!aides[e.id], '#d97706'), padding: '2px 8px', fontSize: 11 }}>💡 Indice</button>
+                style={{ ...btn(!!aides[e.id], '#d97706'), padding: '2px 8px', fontSize: 11 }}><Pic n="bulb"/>Indice</button>
             )}
             {verifs[kk] && !reveles[kk] && (
               <span style={{ fontSize: 13, fontWeight: 700 }}>{champOk(e) ? '✅' : '❌'}</span>
@@ -1791,7 +1791,7 @@ export function SimulationBernoulli({ plotlyReady }) {
         </span>
       </div>
       <div style={{ display: 'flex', gap: 5, marginBottom: 8, flexWrap: 'wrap' }}>
-        <button onClick={() => demarrerExo(niv)} style={petitBtn(false)}>🔄 Autre exercice</button>
+        <button onClick={() => demarrerExo(niv)} style={petitBtn(false)}><Pic n="refresh"/>Autre exercice</button>
         <button onClick={() => setExo(null)} style={petitBtn(false)}>Changer de niveau</button>
       </div>
       {termine && (
@@ -1808,7 +1808,7 @@ export function SimulationBernoulli({ plotlyReady }) {
 
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={btn(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={btn(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('exercice')} style={btn(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );

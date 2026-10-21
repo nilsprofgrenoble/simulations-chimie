@@ -393,7 +393,7 @@ export function BeerLambert1G() {
   const commandes = (
     <>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-        {mode !== 'explore' && <button onClick={() => setSpectreVu(s => ({ ...s, [cuve === 'eau' && blanc ? 'eauBlanc' : cuve]: true }))} style={styleBouton(true, '#0284c7')}>📈 Mesurer le spectre</button>}
+        {mode !== 'explore' && <button onClick={() => setSpectreVu(s => ({ ...s, [cuve === 'eau' && blanc ? 'eauBlanc' : cuve]: true }))} style={styleBouton(true, '#0284c7')}><Pic n="chartup"/>Mesurer le spectre</button>}
         <button onClick={() => { if (mode === 'explore' || cuve === 'eau') setBlanc(true); }} disabled={mode !== 'explore' && cuve !== 'eau'}
           style={{ ...styleBouton(blanc, '#334155'), opacity: mode !== 'explore' && cuve !== 'eau' ? 0.5 : 1 }}>{blanc ? '✅ Blanc fait' : '⚪ Calibrer (faire le blanc)'}</button>
         {mode !== 'explore' && vu('mesures') && <button onClick={mesurerA} disabled={!blanc} style={{ ...styleBouton(blanc, '#16a34a'), opacity: blanc ? 1 : 0.5 }}>📏 Mesurer A</button>}
@@ -412,7 +412,7 @@ export function BeerLambert1G() {
         {epsilon(espExp, lambda) * cExpMol > 1.5 && <div style={{ fontSize: 13, color: '#b45309', marginTop: 6 }}>Absorbance élevée : l'appareil sort de son domaine de linéarité, la valeur affichée est trop faible. Diluez la solution.</div>}
         {!blanc && <div style={{ fontSize: 13, color: '#b45309', marginTop: 6 }}>Le blanc n'est pas fait : la ligne de base de la cuve et de l'eau s'ajoute à l'absorbance.</div>}
       </>}
-      {enGuide && vu('purete') && !preparee && <button onClick={() => setPreparee(true)} style={{ ...styleBouton(true, '#7c3aed'), marginTop: 6 }}>⚖️ Préparer la solution P (2,00 g dans 100 mL)</button>}
+      {enGuide && vu('purete') && !preparee && <button onClick={() => setPreparee(true)} style={{ ...styleBouton(true, '#7c3aed'), marginTop: 6 }}><Pic n="scale"/>Préparer la solution P (2,00 g dans 100 mL)</button>}
     </>
   );
   const tableau = (
@@ -434,7 +434,7 @@ export function BeerLambert1G() {
       <CourbeEtalonnage points={ptsGamme} inconnue={modelise && mesures.X != null && (!enGuide || etape > idx('cX')) ? mesures.X : null} modele={modelise ? reg : null}
         unite={enDefi ? E.unite : 'mol/L'} cMax={Math.max(...gammeC) * 1.15}/>
       <div style={{ display: 'flex', gap: 6, marginTop: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-        <button onClick={() => setModelise(true)} disabled={ptsGamme.length < 3} style={{ ...styleBouton(ptsGamme.length >= 3, '#2563eb'), opacity: ptsGamme.length >= 3 ? 1 : 0.5 }}>📐 Modéliser (A = k × c)</button>
+        <button onClick={() => setModelise(true)} disabled={ptsGamme.length < 3} style={{ ...styleBouton(ptsGamme.length >= 3, '#2563eb'), opacity: ptsGamme.length >= 3 ? 1 : 0.5 }}><Pic n="ruler"/>Modéliser (A = k × c)</button>
         {modelise && reg && (!enGuide || etape >= idx('modele')) && <span style={{ fontSize: 14, color: KIT.txt }}>k = <strong>{sci(reg.a, 4)} {uniteInverse(enDefi ? E.unite : 'mol/L')}</strong> ; R² = <strong>{fmt(reg.R2, 4)}</strong></span>}
       </div>
     </div>
@@ -475,7 +475,7 @@ export function BeerLambert1G() {
         })}
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={() => { noterDefi(Q.every(q => q.vrai != null && proche(lireNombre(defi.reps[q.id] || ''), q.vrai, 0.03))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-          <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouvelle solution</button>
+          <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouvelle solution</button>
         </div>
         {defi.verifie && <div style={{ fontSize: 13, color: KIT.txt2 }}>Valeur réelle : c = {fmt(defi.cX, 3)} {E.unite}.</div>}
       </div>
@@ -486,7 +486,7 @@ export function BeerLambert1G() {
   function changerMode(m) { setMode(m); if (m === 'defi' && !defi) nouveauDefi(); }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );

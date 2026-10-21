@@ -259,7 +259,7 @@ export function SimulationBoussole({ naviguer }) {
       </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button onClick={() => { noterDefi(surAxe && calme && Math.abs(Math.abs(dev) - defi.X) <= 3 && proche(lireNombre(defi.reps.b) * 1e-6, defiVrai, 0.05)); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={nouveauDefi} style={styleBouton(false)}>🔄 Nouveau défi</button>
+        <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
       </div>
       {defiRes && <div style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5 }}>
         <div style={{ color: defiRes.posOk ? '#16a34a' : '#dc2626' }}>{defiRes.posOk ? '✓ Position correcte.' : '✗ Position : placez la boussole sur l’axe horizontal et attendez que l’aiguille se stabilise à ' + defi.X + '° (±3°).'}</div>
@@ -281,9 +281,9 @@ export function SimulationBoussole({ naviguer }) {
     </div>);
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
-      {naviguer && <button onClick={() => naviguer(44)} style={styleBouton(false, '#b45309')}>🧲 Moteur pas à pas</button>}
+      {naviguer && <button onClick={() => naviguer(44)} style={styleBouton(false, '#b45309')}><Pic n="magnet"/>Moteur pas à pas</button>}
     </span>);
 
   // ---------- scène ----------

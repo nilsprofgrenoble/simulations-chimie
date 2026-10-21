@@ -368,10 +368,10 @@ export function SimulationTitrageIndirect() {
         <button onClick={() => { setDeclare(null); setOuvert(o => !o); }} style={styleBouton(true, ouvert ? '#dc2626' : '#16a34a')}>{ouvert ? '⏹ Fermer le robinet' : '▶ Ouvrir le robinet'}</button>
         <button onClick={() => verser(1)} style={styleBouton(false)}>+ 1 mL</button>
         <button onClick={() => verser(0.1)} style={styleBouton(false)}>+ 0,1 mL</button>
-        <button onClick={() => verser(0.05)} style={styleBouton(false)}>💧 1 goutte</button>
+        <button onClick={() => verser(0.05)} style={styleBouton(false)}><Pic n="drop"/>1 goutte</button>
       </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-        <button onClick={declarer} style={styleBouton(true, ORANGE_GUIDE)}>🎯 C'est l'équivalence !</button>
+        <button onClick={declarer} style={styleBouton(true, ORANGE_GUIDE)}><Pic n="target"/>C'est l'équivalence !</button>
         <button onClick={nouveauTitrage} style={styleBouton(false)}>↺ Nouveau titrage</button>
         {vu('amidon') && <button onClick={() => setAmidon(a => !a)} style={styleBouton(amidon, '#4338ca')}>{amidon ? 'Empois d’amidon ajouté' : '🧪 Ajouter l’empois d’amidon'}</button>}
       </div>
@@ -446,7 +446,7 @@ export function SimulationTitrageIndirect() {
   function changerMode(m) { setMode(m); if (m === 'defi' && !defi) nouveauDefi('mystere'); }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
   );

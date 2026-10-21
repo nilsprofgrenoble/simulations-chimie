@@ -126,14 +126,14 @@ const TABLE_REF = (
     <thead><tr>{['Cristal', 'Structure', 'a (nm)', 'ρ (g/cm³)'].map(h => <th key={h} style={{ padding: '3px 8px', borderBottom: `1px solid ${KIT.bord}`, textAlign: 'right', color: KIT.txt2 }}>{h}</th>)}</tr></thead>
     <tbody>{CANDIDATS_DEFI.map(k => { const e = ECHANTILLONS[k]; return <tr key={k}><td style={{ padding: '2px 8px', textAlign: 'right' }}>{e.formule}</td><td style={{ padding: '2px 8px', textAlign: 'right' }}>{e.sel ? 'type NaCl (F)' : STRUCTURES[e.type].court}</td><td style={{ padding: '2px 8px', textAlign: 'right' }}>{fr(e.a, 4)}</td><td style={{ padding: '2px 8px', textAlign: 'right' }}>{fr(e.rho, 2)}</td></tr>; })}</tbody></table></div>);
 const enonce = (d, { champ, choix }) => {
-  if (d.type === 'inconnu') return <>🎯 Voici le diffractogramme (λ = 0,1542 nm) d’un cristal cubique inconnu. Relevez ses pics, testez les modèles, puis :
+  if (d.type === 'inconnu') return <><Pic n="target"/>Voici le diffractogramme (λ = 0,1542 nm) d’un cristal cubique inconnu. Relevez ses pics, testez les modèles, puis :
     <div style={{ marginTop: 6 }}><strong>1.</strong> Sa structure : {choix('s', [['P', 'cubique simple'], ['I', 'cubique centré'], ['F', 'faces centrées']])}</div>
     <div style={{ marginTop: 6 }}><strong>2.</strong> Son paramètre de maille a : {champ('a', 'nm')}</div>
     <div style={{ marginTop: 6 }}><strong>3.</strong> Sa nature, à l’aide des tables : {choix('id', CANDIDATS_DEFI.map(k => [k, ECHANTILLONS[k].formule]))}</div>
     {TABLE_REF}</>;
-  if (d.type === 'bragg') return <>🎯 Le diffractogramme d’un métal {STRUCTURES[d.struct].nom} présente le pic ({d.hkl}) à <strong>2θ = {fr(d.dt, 2)}°</strong>, avec λ = 0,1542 nm. Calculez le paramètre de maille a (en nm).<div style={{ marginTop: 6 }}>{champ('v', 'nm')}</div></>;
+  if (d.type === 'bragg') return <><Pic n="target"/>Le diffractogramme d’un métal {STRUCTURES[d.struct].nom} présente le pic ({d.hkl}) à <strong>2θ = {fr(d.dt, 2)}°</strong>, avec λ = 0,1542 nm. Calculez le paramètre de maille a (en nm).<div style={{ marginTop: 6 }}>{champ('v', 'nm')}</div></>;
   const e = ECHANTILLONS[d.cle];
-  return <>🎯 Le {e.nom} ({e.formule}, M = {fr(e.M, 2)} g/mol) cristallise {e.sel ? 'dans une structure de type NaCl (réseau cubique à faces centrées, un motif NaCl par nœud)' : `dans le système ${STRUCTURES[e.type].nom}`}, de paramètre <strong>a = {fr(e.a, 4)} nm</strong>. Calculez sa masse volumique (en g/cm³). N<sub>A</sub> = 6,022 × 10²³ mol⁻¹.<div style={{ marginTop: 6 }}>{champ('v', 'g/cm³')}</div></>;
+  return <><Pic n="target"/>Le {e.nom} ({e.formule}, M = {fr(e.M, 2)} g/mol) cristallise {e.sel ? 'dans une structure de type NaCl (réseau cubique à faces centrées, un motif NaCl par nœud)' : `dans le système ${STRUCTURES[e.type].nom}`}, de paramètre <strong>a = {fr(e.a, 4)} nm</strong>. Calculez sa masse volumique (en g/cm³). N<sub>A</sub> = 6,022 × 10²³ mol⁻¹.<div style={{ marginTop: 6 }}>{champ('v', 'g/cm³')}</div></>;
 };
 const solution = d => {
   if (d.type === 'inconnu') { const e = ECHANTILLONS[d.cle]; return <>Échantillon : <strong>{e.nom} ({e.formule})</strong>, structure {e.sel ? 'de type NaCl (réseau F)' : STRUCTURES[e.type].nom}, a = {fr(e.a, 4)} nm. Avec le bon modèle, les rapports sin²θ / sin²θ₁ suivent la suite {sequence(e.type, 6).map(v => fr(v, 2)).join(' ; ')}… et a est le même pour tous les pics.</>; }
@@ -280,7 +280,7 @@ export function SimulationDiffractionRX() {
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}>
         <span style={{ fontSize: 13, color: KIT.txt2 }}>👆 Cliquez sur un pic pour relever sa position (un second clic l’efface).</span>
         {enExplore && <button onClick={() => setRel(r => ({ ...r, [cleRel]: liste.map(p => r2(p.dt)) }))} style={stylePetitBouton(false, '#334155')}>Relever tous les pics</button>}
-        {releves.length > 0 && <button onClick={() => setRel(r => ({ ...r, [cleRel]: [] }))} style={stylePetitBouton(false, '#334155')}>🗑 Effacer les relevés</button>}</div>
+        {releves.length > 0 && <button onClick={() => setRel(r => ({ ...r, [cleRel]: [] }))} style={stylePetitBouton(false, '#334155')}><Pic n="trash"/>Effacer les relevés</button>}</div>
       <div style={{ marginTop: 10, padding: '8px 10px', border: `1px solid ${KIT.bord}`, borderRadius: 8 }}>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Modèle testé :</span>
           {['P', 'I', 'F'].map(t => <button key={t} onClick={() => setModele(m => (m === t ? null : t))} style={stylePetitBouton(modele === t, VIOLET)}>{STRUCTURES[t].court}</button>)}</div>
@@ -301,12 +301,12 @@ export function SimulationDiffractionRX() {
         const P = Npermis(modele), avant = li ? [...P].reverse().find(n => n < li.Nest) : null, apres = li ? P.find(n => n > li.Nest) : null;
         return <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, fontSize: 14, lineHeight: 1.55,
           background: idx.constant ? '#f0fdf4' : '#fef2f2', border: `1px solid ${idx.constant ? '#86efac' : '#fca5a5'}`, color: idx.constant ? '#14532d' : '#7f1d1d' }}>
-          {idx.constant ? <>✅ Modèle {STRUCTURES[modele].nom} : tous les N estimés sont des valeurs permises et a est le même pour tous les pics (a varie de {fr(idx.disp * 100, 2)} %, moyenne {fr(idx.moy, 4)} nm) : <strong>modèle compatible avec la position des pics</strong>.</>
-            : <>❌ Modèle {STRUCTURES[modele].nom} : <strong>modèle incompatible</strong>.{' '}
+          {idx.constant ? <><Pic n="ok"/>Modèle {STRUCTURES[modele].nom} : tous les N estimés sont des valeurs permises et a est le même pour tous les pics (a varie de {fr(idx.disp * 100, 2)} %, moyenne {fr(idx.moy, 4)} nm) : <strong>modèle compatible avec la position des pics</strong>.</>
+            : <><Pic n="ko"/>Modèle {STRUCTURES[modele].nom} : <strong>modèle incompatible</strong>.{' '}
               {li ? <>Le pic n° {interdit + 1} a un rapport sin²θ / sin²θ₁ = {fr(li.rap, 2)}, soit N estimé = {fr(li.Nest, 2)} : <strong>aucun plan de ce réseau n’a cette valeur de N</strong> (les valeurs permises voisines sont {avant} et {apres}).{' '}
                 Conséquence : a n’est pas constant (il varie de {fr(idx.disp * 100, 2)} % d’un pic à l’autre).</>
                 : <>Le paramètre a n’est pas constant (il varie de {fr(idx.disp * 100, 2)} % d’un pic à l’autre) : vérifiez que vous n’avez pas oublié un pic, en particulier le premier.</>}</>}
-          {idx.constant && idx.lignes.length < 7 && modele !== 'F' && <div style={{ fontSize: 12.5, marginTop: 2 }}>💡 Avec peu de pics, les modèles P et I peuvent donner tous deux un a constant : relevez plus de pics (le 7ᵉ tranche) ou vérifiez avec la masse volumique.</div>}
+          {idx.constant && idx.lignes.length < 7 && modele !== 'F' && <div style={{ fontSize: 12.5, marginTop: 2 }}><Pic n="bulb"/>Avec peu de pics, les modèles P et I peuvent donner tous deux un a constant : relevez plus de pics (le 7ᵉ tranche) ou vérifiez avec la masse volumique.</div>}
         </div>; })()}
       {idx && idx.lignes.length >= 2 && !cacheNom && !etapeDensite && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, lineHeight: 1.6 }}>
         <strong>Contrôle par la masse volumique</strong> : une maille {STRUCTURES[modele].nomF} contient {STRUCTURES[modele].n} motif(s) {ech.formule} (M = {fr(ech.M, 2)} g/mol), donc{' '}
@@ -349,7 +349,7 @@ export function SimulationDiffractionRX() {
     <li>2 d sin θ = n λ</li><li>d<sub>hkl</sub> = a / √(h² + k² + l²)</li><li>sin²θ / sin²θ₁ = N / N₁ → la structure</li><li>ρ = n M / (N<sub>A</sub> a³) pour confirmer</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 
@@ -369,7 +369,7 @@ export function SimulationDiffractionRX() {
         Comment sait-on que le tungstène est cubique centré et le cuivre cubique à faces centrées ? En les éclairant aux <strong>rayons X</strong> : la position des pics du <strong>diffractogramme</strong> révèle la structure et le <strong>paramètre de maille</strong>.</div>
       {enExplore && <div style={{ ...styleBoite, marginBottom: 10, fontSize: 14, color: KIT.txt, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
         <span>👋 <strong>Première fois ici ?</strong> Cette simulation suppose de connaître la méthode (loi de Bragg, indices de Miller, extinctions, rapports). Le parcours guidé la construit pas à pas : commencez par lui.</span>
-        <button onClick={() => changerMode('guide')} style={styleBouton(true, '#1d4ed8')}>🧭 Commencer le parcours guidé</button></div>}
+        <button onClick={() => changerMode('guide')} style={styleBouton(true, '#1d4ed8')}><Pic n="compass"/>Commencer le parcours guidé</button></div>}
       <div className={`drx-l1${mode !== 'explore' ? ' cote' : ''}`}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {enDefi && <div style={styleBoite}><VoletDefiGen SIM={SIM} titres={TITRES} defi={defi} setDefi={setDefi} changerType={lancer} evaluer={evaluer} enonce={enonce} solution={solution}/></div>}

@@ -124,22 +124,22 @@ function VoletDefi({ defi, setDefi, changerType, D }) {
     <div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(TITRES).map(([t, l]) => <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
-      {defi.type === 'volume' && <><div style={txt}>🎯 On dispose de la solution mère à <strong>0,40 g/L</strong>. On veut <strong>{defi.Vf} mL</strong> de solution fille à <strong>{fg(defi.tf)} g/L</strong>. Quel volume de solution mère faut-il prélever ?</div>
+      {defi.type === 'volume' && <><div style={txt}><Pic n="target"/>On dispose de la solution mère à <strong>0,40 g/L</strong>. On veut <strong>{defi.Vf} mL</strong> de solution fille à <strong>{fg(defi.tf)} g/L</strong>. Quel volume de solution mère faut-il prélever ?</div>
         <label style={{ fontSize: 14, fontWeight: 600 }}>Réponse : <input value={defi.reps.v || ''} onChange={e => rep('v', e.target.value)} inputMode="decimal" aria-label="Volume à prélever" style={{ width: 90, padding: '5px 8px', fontSize: 15, border: `1.5px solid ${KIT.bord}`, borderRadius: 6 }}/> mL</label></>}
-      {defi.type === 'regler' && <div style={txt}>🎯 Préparez, à partir de la solution mère à 0,40 g/L, une solution fille à <strong>{fg(defi.tf)} g/L</strong> : choisissez la <strong>fiole</strong> et la <strong>pipette jaugée</strong> (boutons ci-dessous), puis cliquez sur « Vérifier ».</div>}
-      {defi.type === 'encadrer' && <><div style={txt}>🎯 Comparez la solution <strong>inconnue</strong> à l’échelle de teintes (ci-dessous) et encadrez sa concentration entre <strong>deux solutions voisines</strong>.</div>
+      {defi.type === 'regler' && <div style={txt}><Pic n="target"/>Préparez, à partir de la solution mère à 0,40 g/L, une solution fille à <strong>{fg(defi.tf)} g/L</strong> : choisissez la <strong>fiole</strong> et la <strong>pipette jaugée</strong> (boutons ci-dessous), puis cliquez sur « Vérifier ».</div>}
+      {defi.type === 'encadrer' && <><div style={txt}><Pic n="target"/>Comparez la solution <strong>inconnue</strong> à l’échelle de teintes (ci-dessous) et encadrez sa concentration entre <strong>deux solutions voisines</strong>.</div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', fontSize: 14 }}>
           <select value={defi.reps.bas || ''} onChange={e => rep('bas', e.target.value)} aria-label="Borne basse" style={{ padding: '5px 6px', fontSize: 14 }}>{OPTIONS_ENC.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
           <span>{'<'} t {'<'}</span>
           <select value={defi.reps.haut || ''} onChange={e => rep('haut', e.target.value)} aria-label="Borne haute" style={{ padding: '5px 6px', fontSize: 14 }}>{OPTIONS_ENC.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></div></>}
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}>🔄 Nouveau tirage</button>
+        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
         {!reussi && !defi.solution && <button onClick={() => { suivi.vue(); setDefi(d => ({ ...d, solution: true })); }} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>
       {res && <div style={{ marginTop: 8, fontSize: 14 }}>
         {res.lignes.map(([ok, t], k) => <div key={k} style={{ color: ok ? VERT : '#b91c1c', fontWeight: 600 }}>{ok ? '✅' : '❌'} {avecIndices(t)}</div>)}
-        {res.ok && <div style={{ color: VERT, fontWeight: 700, marginTop: 4 }}>🎉 Défi réussi !</div>}</div>}
+        {res.ok && <div style={{ color: VERT, fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'volume' && indicesProfond(<>F = t_m / t_f = 0,40 / {fg(defi.tf)} = {fr(TM / defi.tf, 0)}. V_m = V_f / F = {defi.Vf} / {fr(TM / defi.tf, 0)} = <strong>{fv(defi.Vm)} mL</strong>.</>)}
         {defi.type === 'regler' && indicesProfond(<>Il faut t_m × V_m = t_f × V_f, soit V_m / V_f = {fg(defi.tf)} / 0,40 = {fr(defi.tf / TM, 3)}. Exemple : {defi.tf === 0.01 ? '5 mL dans 200 mL' : defi.tf === 0.02 ? '5 mL dans 100 mL' : defi.tf === 0.04 ? '10 mL dans 100 mL' : '20 mL dans 100 mL'}.</>)}
@@ -251,10 +251,10 @@ export function SimulationDilution() {
       {atelier === 'tableau' && <><Tableau tab={tab} setTab={setTab} verif={tabV} setVerif={setTabV}/>
         <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <button onClick={() => setTabV(true)} style={styleBouton(true, '#16a34a')}>✓ Vérifier le tableau</button>
-          {tabV && juste && <span style={{ color: VERT, fontWeight: 700, fontSize: 14 }}>🎉 Tableau juste !</span>}</div></>}
+          {tabV && juste && <span style={{ color: VERT, fontWeight: 700, fontSize: 14 }}><Pic n="party"/>Tableau juste !</span>}</div></>}
       {atelier === 'echelle' && <><SceneEchelle mystere={mystere} voirT={voirT}/>
         <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          <button onClick={() => { setMystere(alea(MYSTERES)); setVoirT(false); }} style={styleBouton(false)}>🔄 Nouvelle solution inconnue</button>
+          <button onClick={() => { setMystere(alea(MYSTERES)); setVoirT(false); }} style={styleBouton(false)}><Pic n="refresh"/>Nouvelle solution inconnue</button>
           <button onClick={() => setVoirT(v => !v)} style={styleBouton(voirT, '#334155')}>{voirT ? 'Cacher' : 'Révéler'} la concentration</button></div></>}
     </div>);
   const aEssayer = (
@@ -272,7 +272,7 @@ export function SimulationDilution() {
     <li>diluer = ajouter de l’eau : t<sub>m</sub> V<sub>m</sub> = t<sub>f</sub> V<sub>f</sub></li><li>F = t<sub>m</sub> / t<sub>f</sub> = V<sub>f</sub> / V<sub>m</sub></li><li>plus c’est concentré, plus c’est foncé</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 

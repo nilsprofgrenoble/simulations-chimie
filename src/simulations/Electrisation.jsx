@@ -285,11 +285,11 @@ function VoletDefi({ defi, setDefi, changerType }) {
       </>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
         <button onClick={verifier} style={styleBouton(true, VERT)}>✓ Vérifier</button>
-        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}>🔄 Nouveau défi</button>
+        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
       </div>
       {res && <div style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5 }}>
         {res.lignes.map(([ok, t], i) => <div key={i} style={{ color: ok ? '#15803d' : '#b91c1c' }}>{ok ? '✓' : '✗'} {avecIndices(t)}</div>)}
-        {res.ok && <div style={{ color: '#15803d', marginTop: 4 }}>🎉 Défi réussi !</div>}
+        {res.ok && <div style={{ color: '#15803d', marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}
         {!res.ok && !solution && <button onClick={voirSolution} style={{ marginTop: 4, background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>}
       {solution && <div style={{ ...styleBoite, marginTop: 8, fontSize: 13.5, lineHeight: 1.6, background: '#fffbeb', borderColor: '#fcd34d' }}>
@@ -546,7 +546,7 @@ export function SimulationElectrisation() {
   }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
   // ════════════════ SCÈNE 1 : FROTTEMENT ════════════════
@@ -787,7 +787,7 @@ export function SimulationElectrisation() {
         <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Matière de la tige</div>
         {choixTige(frot, setFrot, false, true)}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => setFrot(f => ({ ...f, n: Math.min(NMAX, f.n + 1) }))} disabled={nFr >= NMAX} style={styleBouton(true, VERT)}>🧤 Frotter (+1 passage)</button>
+          <button onClick={() => setFrot(f => ({ ...f, n: Math.min(NMAX, f.n + 1) }))} disabled={nFr >= NMAX} style={styleBouton(true, VERT)}><Pic n="hand"/>Frotter (+1 passage)</button>
           <button onClick={() => setFrot(f => ({ ...f, n: 0 }))} style={styleBouton(false)}>↺ Objets neutres</button>
         </div>
         <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>À chaque passage, un électron change de corps sur le dessin (en réalité, des milliards).</div>

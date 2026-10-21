@@ -141,19 +141,19 @@ function evaluer(d) {
 }
 const enonce = (d, { champ, choix }) => {
   if (d.type === 'rayon') { const e = ECHANTILLONS[d.cle], st = STRUCT[e.type];
-    return <>🎯 Le métal « {e.nom} » cristallise dans le système {st.nom} ; son paramètre de maille est <strong>a = {fr(e.a, 4)} nm</strong>. Les atomes sont assimilés à des sphères dures tangentes.
+    return <><Pic n="target"/>Le métal « {e.nom} » cristallise dans le système {st.nom} ; son paramètre de maille est <strong>a = {fr(e.a, 4)} nm</strong>. Les atomes sont assimilés à des sphères dures tangentes.
       <div style={{ marginTop: 6 }}><strong>1.</strong> Rayon atomique R : {champ('v', 'nm')}</div>
       <div style={{ marginTop: 6 }}><strong>2.</strong> Coordinence : {choix('c', [['6', '6'], ['8', '8'], ['12', '12']])}</div></>; }
   if (d.type === 'compacite') { const e = ECHANTILLONS[d.cle], st = STRUCT[e.type];
-    return <>🎯 Le métal « {e.nom} » cristallise dans le système {st.nom} : a = {fr(e.a, 4)} nm et R = {fr(rMetal(d.cle), 4)} nm.
+    return <><Pic n="target"/>Le métal « {e.nom} » cristallise dans le système {st.nom} : a = {fr(e.a, 4)} nm et R = {fr(rMetal(d.cle), 4)} nm.
       <div style={{ marginTop: 6 }}><strong>1.</strong> Nombre d’atomes par maille : {champ('n', '')}</div>
       <div style={{ marginTop: 6 }}><strong>2.</strong> Compacité (en %) : {champ('v', '%')}</div></>; }
   if (d.type === 'insertion') { const h = HOTES[d.h], st = STRUCT[h.type], i = INSERES[d.ins];
-    return <>🎯 Le {h.nom} est de structure {st.nom} (<strong>a = {fr(h.a, 4)} nm</strong>). On y insère l’élément {i.nom} (rayon atomique {fr(i.r, 3)} nm) dans un site <strong>{NOM_SITE[d.site]}</strong>.
+    return <><Pic n="target"/>Le {h.nom} est de structure {st.nom} (<strong>a = {fr(h.a, 4)} nm</strong>). On y insère l’élément {i.nom} (rayon atomique {fr(i.r, 3)} nm) dans un site <strong>{NOM_SITE[d.site]}</strong>.
       <div style={{ marginTop: 6 }}><strong>1.</strong> Rayon maximal de ce site : {champ('v', 'nm')}</div>
       <div style={{ marginTop: 6 }}><strong>2.</strong> L’atome s’y loge-t-il sans déformer la maille ? {choix('f', [['oui', 'oui'], ['non', 'non']])}</div></>; }
   const c = IONIQUES[d.cle];
-  return <>🎯 Cristal de {c.nom} ({c.formule}, M = {fr(c.M, 2)} g/mol) : {c.desc}. Paramètre de maille : <strong>a = {fr(c.a, 4)} nm</strong>. N<sub>A</sub> = 6,022 × 10²³ mol⁻¹.
+  return <><Pic n="target"/>Cristal de {c.nom} ({c.formule}, M = {fr(c.M, 2)} g/mol) : {c.desc}. Paramètre de maille : <strong>a = {fr(c.a, 4)} nm</strong>. N<sub>A</sub> = 6,022 × 10²³ mol⁻¹.
     <div style={{ marginTop: 6 }}><strong>1.</strong> Nombre Z d’unités formulaires {c.formule} par maille : {champ('z', '')}</div>
     <div style={{ marginTop: 6 }}><strong>2.</strong> Masse volumique : {champ('v', 'g/cm³')}</div></>;
 };
@@ -364,7 +364,7 @@ export function SimulationMailles() {
       {atelier !== 'sites' || ins === null ? null : <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Contour rouge pointillé : l’atome est plus gros que le site.</div>}
       </div>
       <div style={{ marginTop: enExplore ? 0 : 10, minWidth: 0 }}>
-        {!corrige && <button onClick={() => setCorrige(true)} style={styleBouton(true, '#0ea5e9')}>👁 Afficher le dénombrement et les calculs</button>}
+        {!corrige && <button onClick={() => setCorrige(true)} style={styleBouton(true, '#0ea5e9')}><Pic n="eye"/>Afficher le dénombrement et les calculs</button>}
         {corrige && <div>
           <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{atelier === 'sites' ? `Dénombrement des sites ${NOM_SITE[site]}s` : 'Dénombrement par maille'}</div>
           <TableDenombrement lignes={lignesTab} especes={atelier === 'sites' ? [{ nom: 'hôtes' }, { nom: 'sites' }] : sc.especes} noms={sc.noms} surlig={surlig} setSurlig={setSurlig} unite={atelier === 'ionique' ? 'ions' : atelier === 'sites' ? 'sites' : 'atomes'}/>
@@ -386,7 +386,7 @@ export function SimulationMailles() {
     <li>sommet 1/8 ; arête 1/4 ; face 1/2 ; intérieur 1</li><li>CS a = 2R ; CC a√3 = 4R ; CFC a√2 = 4R</li><li>C = n (4/3)πR³ / a³ ; ρ = n M / (N<sub>A</sub> a³)</li><li>CFC : 4 sites octaédriques, 8 tétraédriques</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 

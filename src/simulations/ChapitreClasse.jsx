@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { KIT, styleBoite } from "../commun";
 import { catalogue } from "./catalogue";
 import { NIVEAUX_CHAPITRES, chapitresDuNiveau, MAX_CHAPITRES } from "../chapitres";
+import { Pic } from "../Pictos";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  « CHAPITRE EN COURS » (suivi professeur) : de 0 à 3 chapitres, groupés par niveau (2GT, 1G, TSTL, BTS) comme dans le menu.
@@ -17,13 +18,13 @@ export function ChapitreClasse({ classe, dispo, occupe, onChoix }) {
     return m;
   }, []);
   if (!dispo) {
-    return <div style={{ ...styleBoite, margin: '0 0 10px', fontSize: 13.5 }}>📘 <b>Chapitre en cours</b> : disponible après avoir exécuté <code>supabase/07-chapitre-et-ciblage.sql</code> dans Supabase (SQL Editor → Run).</div>;
+    return <div style={{ ...styleBoite, margin: '0 0 10px', fontSize: 13.5 }}><Pic n="book"/><b>Chapitre en cours</b> : disponible après avoir exécuté <code>supabase/07-chapitre-et-ciblage.sql</code> dans Supabase (SQL Editor → Run).</div>;
   }
   const cur = classe.chapitres || [];
   const bascule = id => onChoix(cur.includes(id) ? cur.filter(x => x !== id) : cur.length < MAX_CHAPITRES ? [...cur, id] : cur);
   return (
     <div style={{ ...styleBoite, margin: '0 0 10px', fontSize: 13.5 }}>
-      <div><b>📘 Chapitre en cours</b> pour « {classe.nom} » : les élèves connectés voient ces chapitres en premier dans « Je m’entraîne », avec leurs simulations et l’exercice conseillé (jusqu’à {MAX_CHAPITRES} chapitres). Le reste reste accessible, replié.</div>
+      <div><b><Pic n="book"/>Chapitre en cours</b> pour « {classe.nom} » : les élèves connectés voient ces chapitres en premier dans « Je m’entraîne », avec leurs simulations et l’exercice conseillé (jusqu’à {MAX_CHAPITRES} chapitres). Le reste reste accessible, replié.</div>
       {NIVEAUX_CHAPITRES.map(n => (
         <div key={n.key} role="group" aria-label={`Chapitres ${n.label}`} data-niveau={n.key} style={{ marginTop: 10 }}>
           <div style={{ fontSize: 12, fontWeight: 800, color: KIT.txt2, letterSpacing: 0.5, marginBottom: 4 }}>{n.label.toUpperCase()}</div>

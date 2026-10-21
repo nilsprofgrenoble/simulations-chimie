@@ -124,23 +124,23 @@ function VoletDefi({ defi, setDefi, changerType, P, planche }) {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(TITRES).map(([t, l]) => <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
       {defi.type === 'bilan' && <>
-        <div style={txt}>🎯 {b.texte} Quelles forces s’exercent sur l’objet ? (cochez toutes les bonnes réponses)</div>
+        <div style={txt}><Pic n="target"/>{b.texte} Quelles forces s’exercent sur l’objet ? (cochez toutes les bonnes réponses)</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>{FORCES_CANDIDATES.map(([id, nom]) => <label key={id} style={{ fontSize: 14, display: 'flex', gap: 6, alignItems: 'center' }}>
           <input type="checkbox" checked={defi.sel.includes(id)} onChange={e => setDefi(d => ({ ...d, sel: e.target.checked ? [...d.sel, id] : d.sel.filter(x => x !== id), verifie: false }))}/> {nom}</label>)}</div>
         {q('Ces forces se compensent-elles ?')}{choix('comp', [[true, 'Oui'], [false, 'Non']])}</>}
-      {defi.type === 'regler' && <><div style={txt}>🎯 Une caisse de <strong>{defi.m} kg</strong> glisse à <strong>{fr(defi.v0, 1)} m/s</strong> sur un sol avec frottements. Réglez la <strong>poussée</strong> (curseur ci-dessous) pour qu’elle garde <strong>exactement cette vitesse</strong>, puis cliquez sur « Vérifier ».</div>{planche}</>}
+      {defi.type === 'regler' && <><div style={txt}><Pic n="target"/>Une caisse de <strong>{defi.m} kg</strong> glisse à <strong>{fr(defi.v0, 1)} m/s</strong> sur un sol avec frottements. Réglez la <strong>poussée</strong> (curseur ci-dessous) pour qu’elle garde <strong>exactement cette vitesse</strong>, puis cliquez sur « Vérifier ».</div>{planche}</>}
       {defi.type === 'prevoir' && <>
-        <div style={txt}>🎯 {p.txt}</div>
+        <div style={txt}><Pic n="target"/>{p.txt}</div>
         {q('Les forces qui s’exercent sur le système se compensent-elles ?')}{choix('comp', [[true, 'Oui'], [false, 'Non']])}
         {q('Sa vitesse (valeur et direction)…')}{choix('mvt', [['constante', 'reste constante (ou nulle)'], ['varie', 'varie']])}</>}
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={verifier} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
-        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}>🔄 Nouveau tirage</button>
+        <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
         {!reussi && !defi.solution && <button onClick={() => { suivi.vue(); setDefi(d => ({ ...d, solution: true })); }} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 13 }}>voir la solution</button>}
       </div>
       {res && <div style={{ marginTop: 8, fontSize: 14 }}>
         {res.lignes.map(([ok, t], k) => <div key={k} style={{ color: ok ? '#15803d' : '#b91c1c', fontWeight: 600 }}>{ok ? '✅' : '❌'} {t}</div>)}
-        {res.ok && <div style={{ color: '#15803d', fontWeight: 700, marginTop: 4 }}>🎉 Défi réussi !</div>}</div>}
+        {res.ok && <div style={{ color: '#15803d', fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'bilan' && <>Forces : {b.vrai.map(id => FORCES_CANDIDATES.find(c => c[0] === id)[1]).join(' ; ')}. {b.compensent ? 'Elles se compensent : la vitesse est constante (ou nulle).' : 'Elles ne se compensent pas : la vitesse varie.'}</>}
         {defi.type === 'regler' && <>Les frottements valent f = μ × m × g = {fr(defi.mu, 1)} × {defi.m} × 9,8 ≈ <strong>{fr(defi.mu * defi.m * g, 0)} N</strong>. Pour que les forces se compensent, la poussée doit valoir la même chose, dans l’autre sens.</>}
@@ -249,8 +249,8 @@ export function SimulationPrincipeInertie() {
 
   // ════════════════ PANNEAUX ════════════════
   const verdict = compense(res)
-    ? <div style={{ color: VERT, fontWeight: 700 }}>✅ Les forces se compensent (<Vec c="ΣF"/> = <Vec c="0"/>) : {Math.abs(vT) < 1e-6 ? 'la caisse est immobile.' : `la vitesse est constante (${fr(vT, 2)} m/s) : mouvement rectiligne uniforme.`}</div>
-    : <div style={{ color: ORANGE, fontWeight: 700 }}>⚠️ Les forces ne se compensent pas (résultante de {fr(Math.abs(res.x), 0)} N) : la vitesse {res.x * (Math.abs(vT) < 1e-6 ? 1 : vT) > 0 ? 'augmente' : 'diminue'}.</div>;
+    ? <div style={{ color: VERT, fontWeight: 700 }}><Pic n="ok"/>Les forces se compensent (<Vec c="ΣF"/> = <Vec c="0"/>) : {Math.abs(vT) < 1e-6 ? 'la caisse est immobile.' : `la vitesse est constante (${fr(vT, 2)} m/s) : mouvement rectiligne uniforme.`}</div>
+    : <div style={{ color: ORANGE, fontWeight: 700 }}><Pic n="warn"/>Les forces ne se compensent pas (résultante de {fr(Math.abs(res.x), 0)} N) : la vitesse {res.x * (Math.abs(vT) < 1e-6 ? 1 : vT) > 0 ? 'augmente' : 'diminue'}.</div>;
   const plancheEtControles = (verrou, tableau = true) => (
     <div style={styleBoite}>
       <Scene P={Peff} sim={sim} t={t}/>
@@ -300,7 +300,7 @@ export function SimulationPrincipeInertie() {
     <li>pas de force nécessaire pour entretenir un mouvement</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}>🔍 Explorer</button>
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
 

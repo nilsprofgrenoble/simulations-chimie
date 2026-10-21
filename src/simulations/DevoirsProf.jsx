@@ -6,6 +6,7 @@ import { ORDRE_DOMAINES } from "./ordreDomaines";
 import { catalogueDevoirs } from "./catalogue";
 import { NIVEAUX_CHAPITRES, chapitresDuNiveau, chapitreDe } from "../chapitres";
 import { MAX_EXOS, SEUIL_GUIDE_S, suiviClasse, infoEcheance, finEcheance, defisDeSim, nonReussisParAuMoinsUn } from "../devoirs";
+import { Pic } from "../Pictos";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  ONGLET « DEVOIRS » du suivi professeur : créer un devoir pour la classe choisie (titre, exercices, date limite),
@@ -75,16 +76,16 @@ export function DevoirsProf({ classe, eleves, lignes, preset }) {
   };
 
   if (!dispo) {
-    return <div style={{ ...styleBoite, fontSize: 14 }}>📌 <b>Devoirs</b> : disponibles après avoir exécuté <code>supabase/06-devoirs.sql</code> dans Supabase (SQL Editor → Run). Mode d’emploi dans <code>supabase/LISEZ-MOI.md</code>.</div>;
+    return <div style={{ ...styleBoite, fontSize: 14 }}><Pic n="pin"/><b>Devoirs</b> : disponibles après avoir exécuté <code>supabase/06-devoirs.sql</code> dans Supabase (SQL Editor → Run). Mode d’emploi dans <code>supabase/LISEZ-MOI.md</code>.</div>;
   }
   const maintenant = new Date();
   return (
     <div>
-      {erreur && <div role="alert" style={{ color: '#b91c1c', fontWeight: 600, margin: '6px 0' }}>❌ {erreur}</div>}
-      {msg && <div role="status" style={{ color: '#15803d', fontWeight: 600, margin: '6px 0' }}>✅ {msg}</div>}
+      {erreur && <div role="alert" style={{ color: '#b91c1c', fontWeight: 600, margin: '6px 0' }}><Pic n="ko"/>{erreur}</div>}
+      {msg && <div role="status" style={{ color: '#15803d', fontWeight: 600, margin: '6px 0' }}><Pic n="ok"/>{msg}</div>}
 
       <form onSubmit={creer} style={{ ...styleBoite, display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div style={{ fontWeight: 800, color: KIT.txt }}>➕ Nouveau devoir pour « {classe.nom} »</div>
+        <div style={{ fontWeight: 800, color: KIT.txt }}><Pic n="plus"/>Nouveau devoir pour « {classe.nom} »</div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <label style={{ fontSize: 13, fontWeight: 700, flex: '1 1 240px' }}>Titre<br />
             <input value={titre} maxLength={80} onChange={e => setTitre(e.target.value)} placeholder="Révisions avant l’évaluation" style={{ ...champ, width: '100%' }} aria-label="Titre du devoir" /></label>
@@ -108,8 +109,8 @@ export function DevoirsProf({ classe, eleves, lignes, preset }) {
           </select>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-          <button type="button" data-ajouter-tout style={styleBouton(false, '#475569')} disabled={restants.length === 0 || choix.length >= MAX_EXOS} onClick={() => ajouter(restants)}>➕ Tout ajouter ({restants.length})</button>
-          <button type="button" data-ajouter-non-reussis style={styleBouton(false, '#475569')} disabled={nonReussis.length === 0 || choix.length >= MAX_EXOS} onClick={() => ajouter(nonReussis)}>➕ Seulement ce qui n’est pas réussi par tous ({nonReussis.length})</button>
+          <button type="button" data-ajouter-tout style={styleBouton(false, '#475569')} disabled={restants.length === 0 || choix.length >= MAX_EXOS} onClick={() => ajouter(restants)}><Pic n="plus"/>Tout ajouter ({restants.length})</button>
+          <button type="button" data-ajouter-non-reussis style={styleBouton(false, '#475569')} disabled={nonReussis.length === 0 || choix.length >= MAX_EXOS} onClick={() => ajouter(nonReussis)}><Pic n="plus"/>Seulement ce qui n’est pas réussi par tous ({nonReussis.length})</button>
           {choix.length > 0 && <button type="button" style={styleBouton(false, '#b91c1c')} onClick={() => setChoix([])}>Vider la sélection</button>}
           <span style={{ fontSize: 12.5, color: KIT.txt2 }}>S’applique à la liste affichée (calculs REA exclus), dans la limite de {MAX_EXOS}.</span>
         </div>
@@ -148,10 +149,10 @@ export function DevoirsProf({ classe, eleves, lignes, preset }) {
         return (
           <div key={d.id} style={{ ...styleBoite, marginBottom: 10 }}>
             <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-              <b style={{ flex: 1, minWidth: 160, color: KIT.txt }}>📌 {d.titre}{Array.isArray(d.eleves) && <span style={{ fontSize: 12.5, fontWeight: 700, color: KIT.txt2 }}> · 👥 ciblé : {d.eleves.length} élève{d.eleves.length > 1 ? 's' : ''}</span>}</b>
+              <b style={{ flex: 1, minWidth: 160, color: KIT.txt }}><Pic n="pin"/>{d.titre}{Array.isArray(d.eleves) && <span style={{ fontSize: 12.5, fontWeight: 700, color: KIT.txt2 }}> · 👥 ciblé : {d.eleves.length} élève{d.eleves.length > 1 ? 's' : ''}</span>}</b>
               <span style={{ fontSize: 13, fontWeight: 700, color: COULEURS[info.ton] }}>{fin ? `${fin.toLocaleDateString('fr-FR')} · ` : ''}{info.texte}</span>
               <span style={{ fontSize: 13.5 }}><b>{s.termines}</b> / {s.effectif} élève{s.effectif > 1 ? 's' : ''} ont tout fait</span>
-              <button onClick={() => supprimer(d)} disabled={occupe} style={{ ...styleBouton(false, '#b91c1c'), fontSize: 12.5 }}>🗑 Supprimer</button>
+              <button onClick={() => supprimer(d)} disabled={occupe} style={{ ...styleBouton(false, '#b91c1c'), fontSize: 12.5 }}><Pic n="trash"/>Supprimer</button>
             </div>
             <details style={{ marginTop: 8 }}>
               <summary style={{ cursor: 'pointer', fontSize: 13.5, fontWeight: 700 }}>Voir qui a fait quoi</summary>
