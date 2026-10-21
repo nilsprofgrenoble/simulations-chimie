@@ -1,8 +1,9 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, ORANGE_GUIDE, avecIndices } from "../commun";
-import { BeerLambertBTS } from "./BeerLambert";
+  stylePetitBouton, styleBoite, Section, LigneMesure, ORANGE_GUIDE } from "../commun";
+import { regression, rng, gauss, RISQUE_FISHER } from "./etalonnageModele";
+import { exporterRapportPDF } from "./etalonnagePDF";
 
 const SIM_ID = 11;
 declarerDefis(SIM_ID, [['principal', 'Doser la caféine d’une crème inconnue']]);
@@ -14,33 +15,6 @@ declarerDefis(SIM_ID, [['principal', 'Doser la caféine d’une crème inconnue'
 // On ne simule pas l'appareil : il renvoie un signal (aire de pic, absorbance…) proportionnel à la concentration, avec des
 // erreurs réalistes de préparation (prélèvements) et de mesure (injection, lecture).
 // ====================================================
-
-// ── Loi de Fisher : fonction bêta incomplète régularisée et quantile ──
-function lnGamma(x) { const c = [76.18009172947146, -86.50532032941677, 24.01409824083091, -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5]; let y = x, t = x + 5.5; t -= (x + 0.5) * Math.log(t); let s = 1.000000000190015; for (const ci of c) s += ci / ++y; return -t + Math.log(2.5066282746310005 * s / x); }
-function betacf(a, b, x) { const qab = a + b, qap = a + 1, qam = a - 1; let c = 1, d = 1 - qab * x / qap; if (Math.abs(d) < 1e-30) d = 1e-30; d = 1 / d; let h = d; for (let m = 1; m <= 200; m++) { const m2 = 2 * m; let aa = m * (b - m) * x / ((qam + m2) * (a + m2)); d = 1 + aa * d; if (Math.abs(d) < 1e-30) d = 1e-30; c = 1 + aa / c; if (Math.abs(c) < 1e-30) c = 1e-30; d = 1 / d; h *= d * c; aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2)); d = 1 + aa * d; if (Math.abs(d) < 1e-30) d = 1e-30; c = 1 + aa / c; if (Math.abs(c) < 1e-30) c = 1e-30; d = 1 / d; const del = d * c; h *= del; if (Math.abs(del - 1) < 3e-12) break; } return h; }
-function betai(a, b, x) { if (x <= 0) return 0; if (x >= 1) return 1; const bt = Math.exp(lnGamma(a + b) - lnGamma(a) - lnGamma(b) + a * Math.log(x) + b * Math.log(1 - x)); return x < (a + 1) / (a + b + 2) ? bt * betacf(a, b, x) / a : 1 - bt * betacf(b, a, 1 - x) / b; }
-const fCdf = (F, d1, d2) => (F <= 0 ? 0 : betai(d1 / 2, d2 / 2, d1 * F / (d1 * F + d2)));
-function fQuantile(p, d1, d2) { let lo = 0, hi = 1000; for (let k = 0; k < 200; k++) { const m = (lo + hi) / 2; if (fCdf(m, d1, d2) < p) lo = m; else hi = m; } return (lo + hi) / 2; }
-
-function rng(graine) { let a = graine >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-const gauss = r => Math.sqrt(-2 * Math.log(1 - r())) * Math.cos(2 * Math.PI * r());
-
-// ── Régression linéaire y = a x + b, avec résidus, écarts-types et test de Fisher sur les répétitions ──
-export function regression(x, y) {
-  const n = x.length; if (n < 3) return null;
-  const mx = x.reduce((s, v) => s + v, 0) / n, my = y.reduce((s, v) => s + v, 0) / n;
-  const Sxx = x.reduce((s, v) => s + (v - mx) ** 2, 0), Sxy = x.reduce((s, v, i) => s + (v - mx) * (y[i] - my), 0), Syy = y.reduce((s, v) => s + (v - my) ** 2, 0);
-  if (Sxx === 0) return null;
-  const a = Sxy / Sxx, b = my - a * mx;
-  const res = y.map((v, i) => v - (a * x[i] + b)), SSres = res.reduce((s, e) => s + e * e, 0);
-  const syx = Math.sqrt(SSres / (n - 2)), sa = syx / Math.sqrt(Sxx), sb = syx * Math.sqrt(1 / n + mx * mx / Sxx);
-  // test de Fisher : défaut d'ajustement comparé à l'erreur pure (dispersion des répétitions)
-  const niveaux = [...new Set(x)]; let SSpe = 0;
-  niveaux.forEach(c => { const ys = y.filter((_, i) => x[i] === c), m = ys.reduce((s, v) => s + v, 0) / ys.length; SSpe += ys.reduce((s, v) => s + (v - m) ** 2, 0); });
-  const d1 = niveaux.length - 2, d2 = n - niveaux.length;
-  const fisher = d1 >= 1 && d2 >= 1 && SSpe > 0 ? (() => { const F = ((SSres - SSpe) / d1) / (SSpe / d2); return { F, d1, d2, Fc: fQuantile(0.95, d1, d2), p: 1 - fCdf(F, d1, d2) }; })() : null;
-  return { a, b, R2: 1 - SSres / Syy, res, syx, sa, sb, mx, my, Sxx, n, fisher };
-}
 
 // ── Les techniques : seuls changent le signal, les ordres de grandeur et la verrerie ──
 const TECHNIQUES = {
@@ -97,15 +71,37 @@ function verifierGamme(T, volumes, cAttendue) {
   return { c, cMin, cMax, L, valide: L.every(l => l.ok !== false) };
 }
 
+// ── Exemples de données réelles d'étalonnage (une ligne par niveau : C ; y₁ ; y₂ ; …) ──
+const EXEMPLES = {
+  kmno4: { nom: 'Permanganate de potassium, spectrophotométrie à 525 nm', court: 'KMnO₄ (spectrophotométrie)', grandeur: 'absorbance', unite: 'mg/L', yEch: '0,262',
+    texte: '0;0,002;0,001;0,003;0,002;0,001\n2;0,118;0,120;0,119;0,121;0,117\n4;0,241;0,238;0,240;0,239;0,242\n6;0,359;0,361;0,358;0,360;0,362\n8;0,480;0,478;0,482;0,479;0,481' },
+  potassium: { nom: 'Ions potassium, photométrie de flamme (émission)', court: 'K⁺ (photométrie de flamme)', grandeur: 'intensité (u.a.)', unite: 'mg/L', yEch: '75',
+    texte: '0;0;-2;1\n2;20;21;19\n4;38;41;40\n6;59;62;57\n8;78;81;80\n10;98;99;99\n12;114;115;117\n14;131;133;132\n16;149;147;148\n18;166;165;164\n20;180;181;182' },
+};
+// Lecture d'un tableau collé : séparateurs tabulation ou point-virgule, virgule décimale acceptée ; les lignes d'en-tête sont ignorées
+function lireTableau(texte) {
+  let dec = 0;
+  const niveaux = texte.split('\n').map(l => l.trim().split(/\t|;/).map(s => s.trim()).filter(s => s !== '')).map(cells => {
+    const v = cells.map(lireNombre);
+    if (cells.length < 2 || !isFinite(v[0])) return null;
+    const ys = v.slice(1).filter(isFinite); if (!ys.length) return null;
+    cells.slice(1).forEach(s => { const m = s.match(/[.,](\d+)/); if (m) dec = Math.max(dec, Math.min(4, m[1].length)); });
+    return { c: v[0], ys };
+  }).filter(Boolean).sort((p, q) => p.c - q.c);
+  return { niveaux, dec };
+}
+
 // ════════════════ GRAPHIQUES ════════════════
+const graduations = m => { const p = pasJoli(m), L = []; for (let v = p; v <= m * 1.0001; v += p) L.push(Math.round(v / p) * p); return L; };
+const fmtGrad = (v, m) => { const p = pasJoli(m); return fmt(v, Math.max(0, -Math.floor(Math.log10(p) + 1e-9))); };
 function GrapheEtalonnage({ x, y, reg, T, ech }) {
   const W = 540, H = 280, g = 58, d = 16, h = 14, b = 42;
   const xMax = Math.max(...x, ech ? ech.c : 0) * 1.08 || 1, yMax = Math.max(...y, ech ? ech.s : 0) * 1.1 || 1;
   const X = v => g + v / xMax * (W - g - d), Y = v => H - b - v / yMax * (H - b - h);
   return (
     <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Droite d'étalonnage" style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
-      {[0.25, 0.5, 0.75, 1].map(f => <g key={f}><line x1={g} y1={Y(f * yMax)} x2={W - d} y2={Y(f * yMax)} stroke="#e2e8f0"/><text x={g - 5} y={Y(f * yMax) + 4} fontSize="11.5" fill={KIT.txt2} textAnchor="end">{fmt(f * yMax, yMax < 2 ? 2 : yMax < 20 ? 1 : 0)}</text></g>)}
-      {[0.25, 0.5, 0.75, 1].map(f => <text key={f} x={X(f * xMax)} y={H - b + 15} fontSize="11.5" fill={KIT.txt2} textAnchor="middle">{fmt(f * xMax, xMax < 5 ? 2 : 1)}</text>)}
+      {graduations(yMax).map(v => <g key={v}><line x1={g} y1={Y(v)} x2={W - d} y2={Y(v)} stroke="#e2e8f0"/><text x={g - 5} y={Y(v) + 4} fontSize="11.5" fill={KIT.txt2} textAnchor="end">{fmtGrad(v, yMax)}</text></g>)}
+      {graduations(xMax).map(v => <text key={v} x={X(v)} y={H - b + 15} fontSize="11.5" fill={KIT.txt2} textAnchor="middle">{fmtGrad(v, xMax)}</text>)}
       {reg && <line x1={X(0)} y1={Y(reg.b)} x2={X(xMax)} y2={Y(reg.a * xMax + reg.b)} stroke="#2563eb" strokeWidth="2"/>}
       {x.map((v, i) => <circle key={i} cx={X(v)} cy={Y(y[i])} r="4.5" fill="#1e3a8a"/>)}
       {ech && reg && <g>
@@ -134,6 +130,23 @@ function GrapheResidus({ x, reg, T }) {
     </svg>
   );
 }
+// Valeur ± incertitude, arrondies au même rang (2 chiffres significatifs pour l'incertitude) ; pas de « −0 »
+const sansMoinsZero = s => (/^-0(,0+)?$/.test(s) ? s.slice(1) : s);
+function avecU(v, u) {
+  if (!(u > 0)) return fmt(v, 3);
+  const d = Math.min(6, Math.max(0, 1 - Math.floor(Math.log10(u))));
+  return `${sansMoinsZero(fmt(v, d))} ± ${fmt(u, d)}`;
+}
+const pasJoli = m => { const b = 10 ** Math.floor(Math.log10(m / 4)), r = m / 4 / b; return (r < 1.5 ? 1 : r < 3.5 ? 2 : r < 7.5 ? 5 : 10) * b; };
+// Tableau d'analyse de variance du test de linéarité
+const sci4 = v => (Math.abs(v) >= 0.01 && Math.abs(v) < 1e4 ? fmt(v, 4) : v.toExponential(3).replace('.', ','));
+function lignesAnova(r) {
+  const f = r.fisher, lin = r.SSres - r.SSpe;
+  return [['Régression', sci4(r.SSreg), '1', '—', '—', '—'],
+    ['Écart à la linéarité', sci4(lin), String(f.d1), sci4(lin / f.d1), fmt(f.F, 2), fmt(f.Fc, 2)],
+    ['Erreur pure (répétitions)', sci4(r.SSpe), String(f.d2), sci4(r.SSpe / f.d2), '—', '—']];
+}
+
 function Hypotheses() {
   return (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
@@ -142,27 +155,33 @@ function Hypotheses() {
       <li><strong>Même dispersion sur toute la gamme</strong> (homoscédasticité) : sinon, il faudrait une régression pondérée.</li>
       <li><strong>Erreurs indépendantes, de loi normale</strong> : c'est ce qui justifie les incertitudes calculées et le seuil du test de Fisher.</li>
       <li><strong>Pour le test de Fisher</strong> : des répétitions <em>indépendantes</em>, qui contiennent toutes les sources de variabilité (préparation et mesure). Deux injections d'une même fiole ne suffisent pas.</li>
+      <li><strong>Risque du test de Fisher : 5 %</strong> (le seuil le plus courant, celui de l'activité CLHP). Avec 1 %, on rejetterait moins souvent la linéarité.</li>
+      <li><strong>Données importées</strong> : le simulateur ne peut pas savoir si vos répétitions sont indépendantes ; c'est à vous de le vérifier avant de conclure.</li>
       <li><strong>Pas d'extrapolation</strong> : l'échantillon doit tomber dans la gamme, et se comporter comme les étalons (pas d'effet de matrice).</li>
     </ul>
   );
 }
 
 // ════════════════ SIMULATION ════════════════
-export function SimulationDosageEtalonnage({ plotlyReady }) {
+export function SimulationDosageEtalonnage() {
   const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
-  const [onglet, setOnglet] = useState('banc');
   const [guide, setGuide] = useEtatPersistant('dosage-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
-  const [graine] = useEtatPersistant('dosage-graine-v1', Math.floor(Math.random() * 1e6));
+  const [graine] = useEtatPersistant('dosage-graine-v1', () => Math.floor(Math.random() * 1e6));
   const [techId, setTechId] = useState('clhp');
   const [volumes, setVolumes] = useEtatPersistant('dosage-volumes-v1', [10, 20, 30, 40, 50]);
-  const [modeRep, setModeRep] = useState('injection');
   const [mes, setMes] = useEtatPersistant('dosage-mesures-v1', { injection: null, fioles: null, actif: null, ech: null, dilution: 'B' });
   const [dilution, setDilution] = useState('B');
   const [tirage, setTirage] = useState(1);
   const [ouverts, setOuverts] = useState({ gamme: true, hypo: true, stats: true });
   const [defi, setDefi] = useState(null);
+  const [source, setSource] = useState('simu');          // simu : gamme simulée ; exemple ; mes : données de l'élève
+  const [exId, setExId] = useState('kmno4');
+  const [saisie, setSaisie] = useState(''), [etiq, setEtiq] = useState({ grandeur: 'absorbance', unite: 'mg/L' });
+  const [nInclus, setNInclus] = useState(null), [yEchTxt, setYEchTxt] = useState(EXEMPLES.kmno4.yEch);
+  const [detail, setDetail] = useState(false), [pdfEnCours, setPdfEnCours] = useState(false), [pdfErreur, setPdfErreur] = useState('');
+  const refExploit = useRef(null);
 
   const enGuide = mode === 'guide', enDefi = mode === 'defi';
   const etape = guide.etape;
@@ -180,6 +199,45 @@ export function SimulationDosageEtalonnage({ plotlyReady }) {
   const pourcent = cInj != null && T === TECHNIQUES.clhp ? cInj * facteur * CREME.vFiole / 1000 / (CREME.m * 1000) * 100 : null;
   const uC = reg && echMoy != null ? reg.syx / reg.a * Math.sqrt(1 / 2 + 1 / reg.n + (echMoy - reg.my) ** 2 / (reg.a ** 2 * reg.Sxx)) : null;
   const LD = reg ? 3 * reg.sb / reg.a : null, LQ = reg ? 10 * reg.sb / reg.a : null;
+
+  // ── Exploitation commune : gamme simulée, exemple ou données de l'élève ──
+  const ext = mode === 'explore' && source !== 'simu';
+  const tab = ext ? lireTableau(source === 'exemple' ? EXEMPLES[exId].texte : saisie) : { niveaux: [], dec: 3 };
+  const nTot = tab.niveaux.length, nUtil = nInclus == null ? nTot : Math.min(nInclus, nTot);
+  const inclus = tab.niveaux.slice(0, nUtil);
+  const xExt = inclus.flatMap(l => l.ys.map(() => l.c)), yExt = inclus.flatMap(l => l.ys);
+  const lab = source === 'exemple' ? EXEMPLES[exId] : etiq;
+  const yEchVals = yEchTxt.split(/[;\s]+/).map(lireNombre).filter(isFinite);
+  const E = ext ? (() => {
+    const r = regression(xExt, yExt), m = yEchVals.length, ym = m ? yEchVals.reduce((s, v) => s + v, 0) / m : null;
+    const c = r && ym != null ? (ym - r.b) / r.a : null;
+    return { x: xExt, y: yExt, reg: r, T: { uC: lab.unite, signal: lab.grandeur, dec: tab.dec }, echMoy: ym, m, cInj: c,
+      uC: c != null ? r.syx / r.a * Math.sqrt(1 / m + 1 / r.n + (ym - r.my) ** 2 / (r.a ** 2 * r.Sxx)) : null,
+      LD: r ? 3 * r.sb / r.a : null, LQ: r ? 10 * r.sb / r.a : null, mode: null };
+  })() : { x: donnees?.x, y: donnees?.y, reg, T, echMoy, m: 2, cInj, uC, LD, LQ, mode: donnees?.mode };
+  function choisirSource(s, ex) {
+    setSource(s); setNInclus(null); setDetail(false);
+    if (s === 'exemple') { const k = ex || exId; setExId(k); setYEchTxt(EXEMPLES[k].yEch); } else if (s === 'mes') setYEchTxt('');
+  }
+  async function exporterPDF() {
+    const r = E.reg; if (!r) return;
+    setPdfEnCours(true); setPdfErreur('');
+    const svgs = refExploit.current ? refExploit.current.querySelectorAll('svg[role=img]') : [];
+    const f = r.fisher, d = E.T.dec + 1, u = E.T.uC;
+    try {
+      await exporterRapportPDF({
+        meta: [['Données', source === 'simu' || !ext ? `gamme simulée : ${T.nom}` : source === 'exemple' ? EXEMPLES[exId].nom : 'données saisies'],
+          ['Grandeur mesurée', E.T.signal], ['Niveaux (blanc compris)', String(r.p)], ['Nombre de points', String(r.n)]],
+        stats: [['Pente a ± s(a)', avecU(r.a, r.sa)], ["Ordonnée à l'origine b ± s(b)", avecU(r.b, r.sb)],
+          ['R²', fmt(r.R2, 5)], ['s(y/x)', fmt(r.syx, d)], ['LD = 3 s(b) / a', `${fmt(E.LD, 3)} ${u}`], ['LQ = 10 s(b) / a', `${fmt(E.LQ, 3)} ${u}`]],
+        resultat: E.cInj != null ? `Échantillon : signal moyen ${fmt(E.echMoy, E.T.dec)} (${E.m} mesure(s)) -> C = ${avecU(E.cInj, E.uC)} ${u}` : null,
+        graphes: [{ titre: "Droite d'étalonnage", svg: svgs[0] }, { titre: 'Graphique des résidus', svg: svgs[1] }],
+        fisher: f ? { ok: f.F <= f.Fc, lignes: lignesAnova(r).map(l => l.map(String)),
+          conclusion: `F = ${fmt(f.F, 2)} ${f.F > f.Fc ? '>' : '<='} F critique = ${fmt(f.Fc, 2)} -> linéarité ${f.F > f.Fc ? 'rejetée' : 'acceptée'} (risque 5 %)` } : null,
+      });
+    } catch (e) { setPdfErreur(`Le PDF n'a pas pu être créé (${e.message}).`); }
+    setPdfEnCours(false);
+  }
 
   function mesurer(m) {
     const g = graine * 31 + tirage * 7 + (m === 'fioles' ? 1 : 0) + (enDefi ? 999 : 0);
@@ -336,30 +394,77 @@ export function SimulationDosageEtalonnage({ plotlyReady }) {
       {mes.fioles && <button onClick={() => setMes(x => ({ ...x, actif: 'fioles' }))} style={stylePetitBouton(mes.actif === 'fioles', '#7c3aed')}>deux fioles indépendantes</button>}
     </div>
   );
-  const blocExploitation = donnees && reg && (
-    <div style={{ ...styleBoite, ...cadre('stats') }}>
+  const thA = { padding: '4px 6px', borderBottom: `1px solid ${KIT.bord}`, textAlign: 'right', fontSize: 12.5, color: KIT.txt2 };
+  const blocExploitation = E.reg && (
+    <div style={{ ...styleBoite, ...cadre('stats') }} ref={refExploit}>
       <Section titre="Exploitation" ouvert={ouverts.stats} onBascule={() => setOuverts(o => ({ ...o, stats: !o.stats }))}>
-        {choixDonnees}
-        <GrapheEtalonnage x={donnees.x} y={donnees.y} reg={reg} T={T} ech={cInj != null ? { c: cInj, s: echMoy } : null}/>
-        <div style={{ marginTop: 8 }}><GrapheResidus x={donnees.x} reg={reg} T={T}/></div>
+        {!ext && choixDonnees}
+        <GrapheEtalonnage x={E.x} y={E.y} reg={E.reg} T={E.T} ech={E.cInj != null ? { c: E.cInj, s: E.echMoy } : null}/>
+        <div style={{ marginTop: 8 }}><GrapheResidus x={E.x} reg={E.reg} T={E.T}/></div>
         <div style={{ marginTop: 8 }}>
-          <LigneMesure nom="Pente a ± s(a)" valeur={`${fmt(reg.a, T.dec + 1)} ± ${fmt(reg.sa, T.dec + 1)}`} couleur="#2563eb"/>
-          <LigneMesure nom="Ordonnée à l'origine b ± s(b)" valeur={`${fmt(reg.b, T.dec + 1)} ± ${fmt(reg.sb, T.dec + 1)}`}/>
-          <LigneMesure nom="R²" valeur={fmt(reg.R2, 4)}/>
-          <LigneMesure nom="Écart-type des résidus s(y/x)" valeur={fmt(reg.syx, T.dec + 1)}/>
-          {reg.fisher ? <LigneMesure nom={`Test de Fisher (${reg.fisher.d1} ; ${reg.fisher.d2} ddl)`} valeur={`F = ${fmt(reg.fisher.F, 2)} ; F_crit = ${fmt(reg.fisher.Fc, 2)} → ${reg.fisher.F > reg.fisher.Fc ? 'linéarité rejetée' : 'linéarité acceptée'}`}
-            couleur={reg.fisher.F > reg.fisher.Fc ? '#b91c1c' : '#15803d'}/> : <LigneMesure nom="Test de Fisher" valeur="impossible (pas de répétitions)"/>}
-          {reg.fisher && donnees.mode === 'injection' && <div style={{ fontSize: 12.5, color: '#b45309', margin: '4px 0' }}>⚠️ Répétitions = deux mesures de la même fiole : l'hypothèse de répétitions indépendantes n'est pas vérifiée, le test n'est pas fiable.</div>}
-          <LigneMesure nom="LD = 3 s(b) / a ; LQ = 10 s(b) / a" valeur={passe('ld') ? `${fmt(LD, 3)} ; ${fmt(LQ, 3)} ${T.uC}` : '? ; ?'}/>
-          {cInj != null && <>
-            <LigneMesure nom="Échantillon : signal moyen (2 mesures)" valeur={fmt(echMoy, T.dec)}/>
-            <LigneMesure nom="C injectée = (A − b) / a" valeur={passe('cEch') ? `${fmt(cInj, 3)} ± ${fmt(uC, 3)} ${T.uC} (incertitude-type due à l'étalonnage)` : '?'} couleur="#dc2626"/>
-            {pourcent != null && vu('pourcent') && etape > idx('pourcent') || (pourcent != null && !enGuide) ? <LigneMesure nom="Teneur en caféine de la crème" valeur={`${fmt(pourcent, 2)} %`} couleur="#dc2626"/> : null}
-            {cInj < LQ && <div style={{ fontSize: 12.5, color: '#b91c1c' }}>L'échantillon est sous la limite de quantification.</div>}
-            {(cInj < Math.min(...donnees.x.filter(x => x > 0)) || cInj > Math.max(...donnees.x)) && <div style={{ fontSize: 12.5, color: '#b91c1c' }}>L'échantillon est hors de la gamme : le résultat est extrapolé.</div>}
+          <LigneMesure nom="Pente a ± s(a)" valeur={avecU(E.reg.a, E.reg.sa)} couleur="#2563eb"/>
+          <LigneMesure nom="Ordonnée à l'origine b ± s(b)" valeur={avecU(E.reg.b, E.reg.sb)}/>
+          <LigneMesure nom="R²" valeur={fmt(E.reg.R2, 4)}/>
+          <LigneMesure nom="Écart-type des résidus s(y/x)" valeur={fmt(E.reg.syx, E.T.dec + 1)}/>
+          {E.reg.fisher ? <LigneMesure nom={`Test de Fisher, risque ${RISQUE_FISHER * 100} % (${E.reg.fisher.d1} ; ${E.reg.fisher.d2} ddl)`} valeur={`F = ${fmt(E.reg.fisher.F, 2)} ; F_crit = ${fmt(E.reg.fisher.Fc, 2)} → ${E.reg.fisher.F > E.reg.fisher.Fc ? 'linéarité rejetée' : 'linéarité acceptée'}`}
+            couleur={E.reg.fisher.F > E.reg.fisher.Fc ? '#b91c1c' : '#15803d'}/> : <LigneMesure nom="Test de Fisher" valeur="impossible : il faut au moins 3 niveaux, avec des répétitions"/>}
+          {E.reg.fisher && E.mode === 'injection' && <div style={{ fontSize: 12.5, color: '#b45309', margin: '4px 0' }}>⚠️ Répétitions = deux mesures de la même fiole : l'hypothèse de répétitions indépendantes n'est pas vérifiée, le test n'est pas fiable.</div>}
+          {E.reg.fisher && ext && E.reg.fisher.F > E.reg.fisher.Fc && nUtil > 3 && <div style={{ fontSize: 12.5, color: '#b45309', margin: '4px 0' }}>💡 Regardez les résidus : s'ils dessinent une courbe, réduisez le domaine avec « Niveaux inclus ».</div>}
+          <LigneMesure nom="LD = 3 s(b) / a ; LQ = 10 s(b) / a" valeur={passe('ld') ? `${fmt(E.LD, 3)} ; ${fmt(E.LQ, 3)} ${E.T.uC}` : '? ; ?'}/>
+          {ext && <label style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', fontSize: 14, fontWeight: 600, color: KIT.txt, margin: '8px 0 4px' }}>
+            Signal de l'échantillon :
+            <input value={yEchTxt} onChange={e => setYEchTxt(e.target.value)} placeholder="ex. 0,262 ; 0,265" aria-label="Signal de l'échantillon"
+              style={{ width: 150, fontSize: 14, padding: '3px 6px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6 }}/>
+            <span style={{ fontSize: 12.5, color: KIT.txt2, fontWeight: 500 }}>une ou plusieurs valeurs, séparées par « ; »</span></label>}
+          {E.cInj != null && <>
+            {!ext && <LigneMesure nom="Échantillon : signal moyen (2 mesures)" valeur={fmt(E.echMoy, E.T.dec)}/>}
+            <LigneMesure nom={ext ? 'C(échantillon) = (y − b) / a' : 'C injectée = (A − b) / a'} valeur={passe('cEch') ? `${avecU(E.cInj, E.uC)} ${E.T.uC} (incertitude-type due à l'étalonnage)` : '?'} couleur="#dc2626"/>
+            {!ext && ((pourcent != null && vu('pourcent') && etape > idx('pourcent')) || (pourcent != null && !enGuide)) ? <LigneMesure nom="Teneur en caféine de la crème" valeur={`${fmt(pourcent, 2)} %`} couleur="#dc2626"/> : null}
+            {E.cInj < E.LQ && <div style={{ fontSize: 12.5, color: '#b91c1c' }}>L'échantillon est sous la limite de quantification.</div>}
+            {(E.cInj < Math.min(...E.x.filter(x => x > 0)) || E.cInj > Math.max(...E.x)) && <div style={{ fontSize: 12.5, color: '#b91c1c' }}>L'échantillon est hors de la gamme : le résultat est extrapolé.</div>}
           </>}
         </div>
+        {E.reg.fisher && passe('fisherSens') && <div style={{ marginTop: 8 }}>
+          <button onClick={() => setDetail(v => !v)} style={stylePetitBouton(detail, '#334155')}>{detail ? '▲ Masquer' : '▼ Voir'} le détail des calculs</button>
+          {detail && <div style={{ marginTop: 6, fontSize: 13, color: KIT.txt, lineHeight: 1.6 }}>
+            <div style={{ overflowX: 'auto' }}><table style={{ borderCollapse: 'collapse', width: '100%', background: 'white' }}>
+              <thead><tr>{['Source', 'SCE', 'ddl', 'Variance', 'F', 'F crit (5 %)'].map(h => <th key={h} style={thA}>{h}</th>)}</tr></thead>
+              <tbody>{lignesAnova(E.reg).map(l => <tr key={l[0]}>{l.map((v, j) => <td key={j} style={{ padding: '3px 6px', textAlign: j ? 'right' : 'left', fontSize: 12.5 }}>{v}</td>)}</tr>)}</tbody></table></div>
+            <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+              <li>n = {E.reg.n} points, p = {E.reg.p} niveaux. Résidus : e<sub>i</sub> = y<sub>i</sub> − (a x<sub>i</sub> + b) ; s(y/x) = √[Σ e<sub>i</sub>² / (n − 2)].</li>
+              <li>s(a) = s(y/x) / √S<sub>xx</sub> ; s(b) = s(y/x) · √(1/n + x̄² / S<sub>xx</sub>), avec S<sub>xx</sub> = Σ (x<sub>i</sub> − x̄)².</li>
+              <li>Erreur pure : SCE<sub>pure</sub> = Σ (y<sub>jk</sub> − ȳ<sub>j</sub>)², écarts de chaque répétition à la moyenne de son niveau (n − p ddl).</li>
+              <li>Écart à la linéarité : SCE<sub>lin</sub> = Σ e<sub>i</sub>² − SCE<sub>pure</sub> (p − 2 ddl).</li>
+              <li>F = [SCE<sub>lin</sub> / (p − 2)] / [SCE<sub>pure</sub> / (n − p)] ; si F &gt; F<sub>crit</sub>, les écarts à la droite sont trop grands pour être dus au hasard.</li>
+              <li>C = (ȳ<sub>éch</sub> − b) / a ; u(C) = [s(y/x) / a] · √[1/m + 1/n + (ȳ<sub>éch</sub> − ȳ)² / (a² S<sub>xx</sub>)], m = nombre de mesures de l'échantillon.</li>
+            </ul></div>}
+        </div>}
+        {!enGuide && !enDefi && <div style={{ marginTop: 10, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <button onClick={exporterPDF} disabled={pdfEnCours} style={styleBouton(true, '#0f766e')}>{pdfEnCours ? '⏳ Création du PDF…' : '📄 Exporter le rapport (PDF)'}</button>
+          {pdfErreur && <span style={{ fontSize: 12.5, color: '#b91c1c' }}>{pdfErreur}</span>}</div>}
       </Section>
+    </div>
+  );
+  const blocDonnees = ext && (
+    <div style={styleBoite}>
+      {source === 'exemple' ? <>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
+          <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Exemple :</span>
+          {Object.entries(EXEMPLES).map(([k, ex]) => <button key={k} onClick={() => choisirSource('exemple', k)} style={stylePetitBouton(exId === k, '#0f766e')}>{ex.court}</button>)}</div>
+        <div style={{ fontSize: 13.5, color: KIT.txt }}>{EXEMPLES[exId].nom} : {nTot} niveaux, {tab.niveaux[0]?.ys.length} répétitions par niveau. Grandeur mesurée : {EXEMPLES[exId].grandeur}.</div>
+      </> : <>
+        <div style={{ fontSize: 13.5, color: KIT.txt, marginBottom: 6, lineHeight: 1.5 }}>Tapez ou collez vos mesures depuis le tableur : <strong>une ligne par niveau</strong>, la concentration puis les répétitions, séparées par une tabulation ou un « ; ». Exemple : <code>2 ; 0,118 ; 0,120 ; 0,119</code>.</div>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
+          {[['grandeur', 'Grandeur mesurée', 150], ['unite', 'Unité de concentration', 90]].map(([k, l, w]) => <label key={k} style={{ fontSize: 13, fontWeight: 600, color: KIT.txt2 }}>{l} :{' '}
+            <input value={etiq[k]} onChange={e => { const v = e.target.value; setEtiq(o => ({ ...o, [k]: v })); }} style={{ width: w, fontSize: 13.5, padding: '2px 6px', border: `1.5px solid ${KIT.bord}`, borderRadius: 5 }}/></label>)}</div>
+        <textarea value={saisie} onChange={e => { setSaisie(e.target.value); setNInclus(null); }} aria-label="Mesures d'étalonnage" placeholder={'0 ; 0,002 ; 0,001\n2 ; 0,118 ; 0,120\n4 ; 0,241 ; 0,238'}
+          style={{ width: '100%', height: 130, fontFamily: 'monospace', fontSize: 13, padding: 8, boxSizing: 'border-box', border: `1.5px solid ${KIT.bord}`, borderRadius: 6 }}/>
+        <div style={{ fontSize: 12.5, color: KIT.txt2 }}>{nTot} niveau(x) lu(s){nTot > 0 && nTot < 3 ? ' : il en faut au moins 3.' : '.'} Pour le test de Fisher, il faut au moins 2 répétitions indépendantes par niveau.</div>
+      </>}
+      {nTot > 3 && <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 8 }}>
+        <label style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Niveaux inclus : <input type="range" min={3} max={nTot} value={nUtil} onChange={e => setNInclus(+e.target.value)} aria-label="Niveaux inclus" style={{ verticalAlign: 'middle', width: 160 }}/> <strong style={{ color: KIT.txt }}>{nUtil} / {nTot}</strong></label>
+        {nUtil < nTot && <span style={{ fontSize: 12.5, color: '#b45309' }}>domaine restreint à C ≤ {fmt(inclus[nUtil - 1].c, 2)} {lab.unite}</span>}</div>}
+      {!E.reg && nTot >= 1 && <div style={{ fontSize: 13, color: '#b45309', marginTop: 6 }}>Pas encore assez de points pour tracer la droite.</div>}
     </div>
   );
   const blocEch = vu('dilution') && (T === TECHNIQUES.clhp) && (
@@ -441,10 +546,23 @@ export function SimulationDosageEtalonnage({ plotlyReady }) {
           <button onClick={() => changerMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}>🎯 Défi</button>
         </div>
       </div>
-      {mode === 'explore' && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-        {[['banc', '🧪 Concevoir et réaliser une gamme'], ['donnees', '📊 Exploiter mes données d’étalonnage']].map(([k, n]) => <button key={k} onClick={() => setOnglet(k)} style={stylePetitBouton(onglet === k, '#0f766e')}>{n}</button>)}
+      {mode === 'explore' && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
+        <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Données :</span>
+        {[['simu', '🧪 Simuler une gamme'], ['exemple', '📋 Exemples réels'], ['mes', '✏️ Mes données de TP']].map(([k, n]) => <button key={k} onClick={() => choisirSource(k)} style={stylePetitBouton(source === k, '#0f766e')}>{n}</button>)}
       </div>}
-      {mode === 'explore' && onglet === 'donnees' ? <BeerLambertBTS plotlyReady={plotlyReady}/> : <>
+      {ext ? <>
+        <div className="de-l1">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{blocDonnees}{blocExploitation}</div>
+          <div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
+            <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
+              <li>Exemple K⁺ : la linéarité est-elle acceptée sur toute la gamme ? Réduisez les niveaux inclus jusqu'à ce qu'elle le soit.</li>
+              <li>Comparez R² et le test de Fisher : un R² de 0,999 garantit-il la linéarité ?</li>
+              <li>Ajoutez une deuxième, puis une troisième mesure de l'échantillon : que devient u(C) ?</li>
+              <li>Collez les mesures de votre TP et exportez le rapport en PDF.</li>
+            </ul></div>
+        </div>
+        <div className="de-l2">{blocHypo}</div>
+      </> : <>
         {mode === 'explore' && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
           <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Technique :</span>
           {Object.entries(TECHNIQUES).map(([k, t]) => <button key={k} onClick={() => { setTechId(k); setVolumes(k === 'clhp' ? [10, 20, 30, 40, 50] : k === 'spectro' ? [3, 6, 9, 12, 15] : [0.5, 1, 1.5, 2, 2.5].map(v => v * 1)); }} style={stylePetitBouton(techId === k, '#0f766e')}>{t.nom}</button>)}
