@@ -29,17 +29,23 @@ const Fn = ({ a, r, vec = false }) => <span style={{ fontStyle: 'italic' }}>{vec
 
 // ---------- scènes du vecteur force ----------
 const SCENES = {
-  caisse: { titre: 'Un homme pousse une caisse', auteur: 'homme', receveur: 'caisse', point: { x: 240, y: 205 }, pointTxt: 'le point de contact des mains sur la caisse' },
-  ballon: { titre: 'Un footballeur tire au but', auteur: 'pied', receveur: 'ballon', point: { x: 190, y: 232 }, pointTxt: 'le point de contact du pied sur le ballon' },
-  clou: { titre: 'Un marteau frappe un clou', auteur: 'marteau', receveur: 'clou', point: { x: 300, y: 62 }, pointTxt: 'le dessus du clou' },
+  caisse: { titre: 'Un homme pousse une caisse', auteur: 'homme', receveur: 'caisse', point: { x: 270, y: 203 }, pointTxt: 'le point de contact des mains sur la face gauche de la caisse' },
+  ballon: { titre: 'Un footballeur tire au but', auteur: 'pied', receveur: 'ballon', point: { x: 206, y: 238 }, pointTxt: 'le point de contact du pied sur le ballon' },
+  clou: { titre: 'Un marteau frappe un clou', auteur: 'marteau', receveur: 'clou', point: { x: 300, y: 58 }, pointTxt: 'le point de contact du marteau sur la tête du clou' },
 };
+const TRAIT = { stroke: '#0f172a', strokeWidth: 4, strokeLinecap: 'round', fill: 'none' };
+// Les schémas sont dessinés pour que l'auteur touche réellement le receveur au point d'application.
 function Decor({ id }) {
   if (id === 'caisse') return <g><line x1="20" y1="262" x2="540" y2="262" stroke="#64748b" strokeWidth="3"/>
-    <rect x="240" y="150" width="110" height="112" fill="#e3c99b" stroke="#7c5a2b" strokeWidth="3"/><text x="150" y="252" fontSize="78" textAnchor="middle">🚶</text></g>;
+    <rect x="270" y="150" width="110" height="112" fill="#e3c99b" stroke="#7c5a2b" strokeWidth="3"/>
+    <g {...TRAIT}><circle cx="207" cy="126" r="14" fill="#fde68a"/><line x1="205" y1="142" x2="188" y2="205"/><line x1="188" y1="205" x2="212" y2="262"/><line x1="188" y1="205" x2="160" y2="262"/>
+      <line x1="203" y1="152" x2="270" y2="198"/><line x1="200" y1="160" x2="270" y2="208"/></g></g>;
   if (id === 'ballon') return <g><line x1="20" y1="262" x2="540" y2="262" stroke="#64748b" strokeWidth="3"/>
-    <circle cx="200" cy="238" r="24" fill="#fff" stroke="#0f172a" strokeWidth="2.5"/><text x="200" y="251" fontSize="38" textAnchor="middle">⚽</text><text x="120" y="262" fontSize="40" textAnchor="middle">🦶</text></g>;
+    <circle cx="230" cy="238" r="24" fill="#fff" stroke="#0f172a" strokeWidth="2.5"/><polygon points="230,228 238,234 235,244 225,244 222,234" fill="#0f172a"/>
+    <path d="M122 262 L206 262 L206 238 L176 226 L156 226 L152 110 L124 110 L128 226 L122 234 Z" fill="#e2e8f0" stroke="#0f172a" strokeWidth="3" strokeLinejoin="round"/></g>;
   return <g><rect x="150" y="262" width="300" height="24" fill="#c9a36a" stroke="#7c5a2b" strokeWidth="2"/><rect x="295" y="70" width="10" height="192" fill="#94a3b8" stroke="#475569" strokeWidth="2"/>
-    <rect x="285" y="58" width="30" height="12" fill="#94a3b8" stroke="#475569" strokeWidth="2"/><text x="360" y="60" fontSize="46" textAnchor="middle">🔨</text></g>;
+    <rect x="285" y="58" width="30" height="12" fill="#94a3b8" stroke="#475569" strokeWidth="2"/>
+    <line x1="300" y1="30" x2="470" y2="30" stroke="#7c5a2b" strokeWidth="10" strokeLinecap="round"/><rect x="282" y="12" width="36" height="46" rx="3" fill="#64748b" stroke="#334155" strokeWidth="2.5"/></g>;
 }
 const maxLongueur = (pt, ang) => { const a = ang * Math.PI / 180; let L = 6.5;
   while (L > 0 && (pt.x + L * PX_CM * Math.cos(a) < 10 || pt.x + L * PX_CM * Math.cos(a) > W - 10 || pt.y - L * PX_CM * Math.sin(a) < 10 || pt.y - L * PX_CM * Math.sin(a) > H - 10)) L -= 0.25;
@@ -87,34 +93,44 @@ function PlancheForce({ scene, vec, setVec, editable, echelle, fantome }) {
 }
 
 // ---------- actions réciproques ----------
+// Les deux forces ont le même point de contact (le crochet entre A et B, ou les mains des patineurs) et des sens opposés.
 function Reciproques({ scene, F, mA, mB, montrer }) {
   if (scene === 'dyno') {
-    const L = F / 2;
+    const L = F * 10, cx = 193, cy = 100;
     return (
       <svg viewBox={`0 0 ${W} 220`} width="100%" role="img" aria-label={`Deux dynamomètres accrochés, tirés avec ${F} N`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
-        <rect x="10" y="60" width="16" height="80" fill="#94a3b8" stroke="#475569" strokeWidth="2"/><text x="8" y="160" fontSize="12" fill="#334155">support fixe</text>
-        {[['A', 26], ['B', 226]].map(([n, x0]) => <g key={n}><rect x={x0} y="75" width="160" height="50" rx="8" fill="#f1f5f9" stroke="#334155" strokeWidth="2.5"/>
-          <text x={x0 + 80} y="104" textAnchor="middle" fontSize="20" fontWeight="800" fill="#0f172a">{n}</text>
-          <rect x={x0 + 100} y="85" width="52" height="28" rx="4" fill="#fff" stroke="#334155" strokeWidth="1.5"/><text x={x0 + 126} y="106" textAnchor="middle" fontSize="15" fontWeight="800" fill="#0f172a">{fr(F, 1)} N</text></g>)}
-        <line x1="386" y1="100" x2="440" y2="100" stroke="#334155" strokeWidth="3"/><text x="500" y="112" fontSize="42" textAnchor="middle">🖐️</text>
+        <rect x="10" y="50" width="16" height="100" fill="#94a3b8" stroke="#475569" strokeWidth="2"/><text x="8" y="168" fontSize="12" fill="#334155">support fixe</text>
+        {[['A', 26], ['B', 200]].map(([n, x0]) => <g key={n}>
+          <rect x={x0} y="88" width="160" height="24" rx="6" fill="#f1f5f9" stroke="#334155" strokeWidth="2.5"/>
+          <rect x={x0 + 96} y="56" width="56" height="26" rx="4" fill="#fff" stroke="#334155" strokeWidth="1.5"/><text x={x0 + 124} y="75" textAnchor="middle" fontSize="14" fontWeight="800" fill="#0f172a">{fr(F, 1)} N</text>
+          <text x={x0 + 30} y="75" textAnchor="middle" fontSize="20" fontWeight="800" fill="#0f172a">{n}</text></g>)}
+        <circle cx={cx} cy={cy} r="7" fill="#fff" stroke="#334155" strokeWidth="2.5"/>
+        <line x1="360" y1="100" x2="420" y2="100" stroke="#334155" strokeWidth="3"/><circle cx="436" cy="100" r="16" fill="#fde2d4" stroke="#334155" strokeWidth="2"/><text x="436" y="105" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">main</text>
         {montrer && <g>
-          <Fleche x={226} y={62} dx={Math.max(0, L * PX_CM * 0.5)} dy={0} couleur={FORCE} ep={4.5}/>
-          <text x={226 + Math.max(0, L * PX_CM * 0.5) + 6} y="50" fontSize="14" fontWeight="800" fill={FORCE}>F<tspan dx="-9" dy="-9" fontSize="10">→</tspan><tspan dx="0" dy="13" fontSize="10">B/A</tspan></text>
-          <Fleche x={226} y={140} dx={-Math.max(0, L * PX_CM * 0.5)} dy={0} couleur={FORCE2} ep={4.5}/>
-          <text x={226 - Math.max(0, L * PX_CM * 0.5) - 6} y="168" textAnchor="end" fontSize="14" fontWeight="800" fill={FORCE2}>F<tspan dx="-9" dy="-9" fontSize="10">→</tspan><tspan dx="0" dy="13" fontSize="10">A/B</tspan></text>
-          <text x="10" y="205" fontSize="12.5" fill="#334155">Échelle : 1 cm ↔ 4 N. Les deux forces s’appliquent au point de contact de A et de B.</text></g>}
+          <Fleche x={cx} y={cy} dx={L} dy={0} couleur={FORCE} ep={4.5}/>
+          <text x={cx + L + 8} y={cy - 12} fontSize="14" fontWeight="800" fill={FORCE}>F<tspan dx="-9" dy="-9" fontSize="10">→</tspan><tspan dx="0" dy="13" fontSize="10">B/A</tspan></text>
+          <Fleche x={cx} y={cy} dx={-L} dy={0} couleur={FORCE2} ep={4.5}/>
+          <text x={cx - L - 8} y={cy + 30} textAnchor="end" fontSize="14" fontWeight="800" fill={FORCE2}>F<tspan dx="-9" dy="-9" fontSize="10">→</tspan><tspan dx="0" dy="13" fontSize="10">A/B</tspan></text>
+          <text x="10" y="205" fontSize="12.5" fill="#334155">Échelle : 1 cm ↔ 4 N. F<tspan fontSize="9" dy="3">B/A</tspan><tspan dy="-3"> s’applique sur A, F</tspan><tspan fontSize="9" dy="3">A/B</tspan><tspan dy="-3"> sur B : au crochet qui les relie.</tspan></text></g>}
       </svg>);
   }
-  const L = F / 40 * PX_CM * 0.5;
+  const C = { x: 280, y: 112 }, L = F / 80 * PX_CM;
+  const sA = 0.85 + (mA - 40) / 200, sB = 0.85 + (mB - 40) / 200;
+  const bonhomme = (x, s, nom, m) => {            
+    const sol = 190, ph = sol - 50 * s, ts = sol - 95 * s;   // hanches, épaules
+    return <g {...TRAIT}><circle cx={x} cy={ts - 16 * s} r={13 * s} fill="#fde68a"/><line x1={x} y1={ts - 3 * s} x2={x} y2={ph}/>
+      <line x1={x} y1={ph} x2={x - 16 * s} y2={sol}/><line x1={x} y1={ph} x2={x + 16 * s} y2={sol}/><line x1={x} y1={ts + 2} x2={C.x} y2={C.y}/>
+      <text x={x} y={sol + 18} textAnchor="middle" fontSize="13" fontWeight="700" fill="#0f172a" stroke="none">{nom} ({m} kg)</text></g>;
+  };
   return (
-    <svg viewBox={`0 0 ${W} 220`} width="100%" role="img" aria-label="Deux patineurs : A pousse B" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
+    <svg viewBox={`0 0 ${W} 220`} width="100%" role="img" aria-label="Deux patineurs en contact : A pousse B" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
       <line x1="10" y1="190" x2="550" y2="190" stroke="#94a3b8" strokeWidth="3"/>
-      <text x="200" y="185" fontSize={50 + (mA - 40) * 0.5} textAnchor="middle">🧍</text><text x="200" y="208" textAnchor="middle" fontSize="13" fontWeight="700">A ({mA} kg)</text>
-      <text x="340" y="185" fontSize={50 + (mB - 40) * 0.5} textAnchor="middle">🧍</text><text x="340" y="208" textAnchor="middle" fontSize="13" fontWeight="700">B ({mB} kg)</text>
+      {bonhomme(205, sA, "A", mA)}{bonhomme(355, sB, "B", mB)}
+      <circle cx={C.x} cy={C.y} r="5" fill="#0f172a"/>
       {montrer && <g>
-        <Fleche x={270} y={80} dx={L} dy={0} couleur={FORCE} ep={4.5}/><text x={270 + L + 6} y="75" fontSize="14" fontWeight="800" fill={FORCE}>F<tspan dx="-9" dy="-9" fontSize="10">→</tspan><tspan dx="0" dy="13" fontSize="10">A/B</tspan> = {fr(F, 0)} N</text>
-        <Fleche x={270} y={120} dx={-L} dy={0} couleur={FORCE2} ep={4.5}/><text x={270 - L - 6} y="140" textAnchor="end" fontSize="14" fontWeight="800" fill={FORCE2}><tspan>{fr(F, 0)} N = </tspan>F<tspan dx="-9" dy="-9" fontSize="10">→</tspan><tspan dx="0" dy="13" fontSize="10">B/A</tspan></text></g>}
-      <text x="10" y="18" fontSize="12.5" fill="#334155">A pousse B. Échelle : 1 cm ↔ 80 N.</text>
+        <Fleche x={C.x} y={C.y} dx={L} dy={0} couleur={FORCE} ep={4.5}/><text x={C.x + 8} y={52} fontSize="14" fontWeight="800" fill={FORCE}>F<tspan dx="-9" dy="-9" fontSize="10">→</tspan><tspan dx="0" dy="13" fontSize="10">A/B</tspan> = {fr(F, 0)} N</text>
+        <Fleche x={C.x} y={C.y} dx={-L} dy={0} couleur={FORCE2} ep={4.5}/><text x={C.x - 8} y={52} textAnchor="end" fontSize="14" fontWeight="800" fill={FORCE2}>{fr(F, 0)} N = F<tspan dx="-9" dy="-9" fontSize="10">→</tspan><tspan dx="0" dy="13" fontSize="10">B/A</tspan></text></g>}
+      <text x="10" y="18" fontSize="12.5" fill="#334155">A pousse B : leurs mains se touchent au point noir. Échelle : 1 cm ↔ 80 N.</text>
     </svg>);
 }
 
