@@ -33,7 +33,7 @@ function contourVerre(L) {
   for (let k = 30; k >= 0; k--) { const y = -H + 2 * H * k / 30; pts.push([L.type === 'plano' ? G.x1 : G.c2[0] + Math.sqrt(L.R * L.R - y * y), AXE - y]); }
   return pts.map(p => p.join(',')).join(' ');
 }
-function Lunette({ L, normales, mince, foyers, w = 700, hauteurs = [-60, -45, -30, -15, 15, 30, 45, 60], legende = true }) {
+function Lunette({ L, normales, mince, foyers, ideale = false, w = 700, hauteurs = [-60, -45, -30, -15, 15, 30, 45, 60], legende = true }) {
   const G = geometrie(L), fo = foyer(L);
   const rayons = hauteurs.map(h => { const r = tracer(L, Math.abs(h)); return r && r.fin ? { h, r, s: Math.sign(h) } : null; }).filter(Boolean);
   const flecheD = (x, y, c) => <polygon points={`${x},${y} ${x - 11},${y - 5} ${x - 11},${y + 5}`} fill={c}/>;
@@ -46,7 +46,7 @@ function Lunette({ L, normales, mince, foyers, w = 700, hauteurs = [-60, -45, -3
       <polygon points={contourVerre(L)} fill="#7dd3fc" fillOpacity="0.45" stroke="#0369a1" strokeWidth="2.5"/>
       <g opacity={op}>
         {rayons.map(({ h, r, s }) => {
-          const [p0, q1, q2] = r.pts, d = r.fin, t = (w - 10 - q2[0]) / d[0], fin = [q2[0] + t * d[0], q2[1] + t * d[1]];
+          const [p0, q1, q2] = r.pts, d = ideale && fo ? (() => { const vx = fo.xF - q2[0], vy = -q2[1], l = Math.hypot(vx, vy); return [vx / l, vy / l]; })() : r.fin, t = (w - 10 - q2[0]) / d[0], fin = [q2[0] + t * d[0], q2[1] + t * d[1]];
           const P = ([x, y]) => `${x},${AXE - s * y}`;
           return <g key={h}><polyline points={[p0, q1, q2, fin].map(P).join(' ')} fill="none" stroke={C_RAY} strokeWidth="2.6" strokeLinejoin="round"/>
             {flecheD(40, AXE - h, C_RAY)}</g>;
@@ -54,10 +54,10 @@ function Lunette({ L, normales, mince, foyers, w = 700, hauteurs = [-60, -45, -3
         {normales && rayons.map(({ h, r, s }) => { const [a, b] = [r.q1, r.q2], n1 = r.nrm1, n2 = r.nrm2, e = 34;
           return <g key={h} stroke={C_NRM} strokeWidth="1.4" strokeDasharray="4 3">
             <line x1={a[0] - n1[0] * e} y1={AXE - s * a[1] + s * n1[1] * e} x2={a[0] + n1[0] * e} y2={AXE - s * a[1] - s * n1[1] * e}/>
-            <line x1={b[0] - n2[0] * e} y1={AXE - s * b[1] + s * n2[1] * e} x2={b[0] + n2[0] * e} y2={AXE - s * b[1] - s * n2[1] * e}/></g>; })}
+            {!ideale && <line x1={b[0] - n2[0] * e} y1={AXE - s * b[1] + s * n2[1] * e} x2={b[0] + n2[0] * e} y2={AXE - s * b[1] - s * n2[1] * e}/>}</g>; })}
       </g>
       {normales && !mince && hl && legende && <g fontSize="12.5" fontWeight="700" fill={C_NRM}>
-        <text x={hl.r.q1[0] - 120} y={AXE - hl.r.q1[1] - 30}>normale (entrée)</text><text x={hl.r.q2[0] + 20} y={AXE - hl.r.q2[1] - 30}>normale (sortie)</text></g>}
+        <text x={hl.r.q1[0] - 120} y={AXE - hl.r.q1[1] - 30}>normale (entrée)</text>{!ideale && <text x={hl.r.q2[0] + 20} y={AXE - hl.r.q2[1] - 30}>normale (sortie)</text>}</g>}
       {mince && fo && <g>
         <line x1={G.xO} y1={AXE - H - 14} x2={G.xO} y2={AXE + H + 14} stroke={C_SCH} strokeWidth="4"/>
         <polygon points={`${G.xO},${AXE - H - 20} ${G.xO - 7},${AXE - H - 6} ${G.xO + 7},${AXE - H - 6}`} fill={C_SCH}/><polygon points={`${G.xO},${AXE + H + 20} ${G.xO - 7},${AXE + H + 6} ${G.xO + 7},${AXE + H + 6}`} fill={C_SCH}/>
@@ -137,7 +137,7 @@ function VoletDefi({ defi, setDefi, changerType, bancS }) {
         <label style={{ fontSize: 14, fontWeight: 600 }}>f′ = <input value={defi.reps.v || ''} onChange={e => rep('v', e.target.value)} inputMode="decimal" aria-label="Votre réponse" style={{ width: 90, padding: '5px 8px', fontSize: 15, border: `1.5px solid ${KIT.bord}`, borderRadius: 6 }}/> cm</label></>}
       {defi.type === 'comparer' && <><div style={txt}>🎯 Deux lentilles plan-convexes en verre : <strong>A</strong> ({decrire(defi.A)}) et <strong>B</strong> ({decrire(defi.B)}). Laquelle a la distance focale f′ <strong>la plus courte</strong> ?</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 8, marginBottom: 8 }}>
-          {[['A', defi.A], ['B', defi.B]].map(([k, X]) => <div key={k}><div style={{ fontSize: 13, fontWeight: 700 }}>Lentille {k}</div><Lunette L={lentille('plano', X.n, X.R)} normales={false} foyers={false} legende={false} w={700}/></div>)}</div>
+          {[['A', defi.A], ['B', defi.B]].map(([k, X]) => <div key={k}><div style={{ fontSize: 13, fontWeight: 700 }}>Lentille {k}</div><Lunette L={lentille('plano', X.n, X.R)} normales={false} foyers={false} ideale legende={false} w={700}/></div>)}</div>
         {choix([['A', 'La lentille A'], ['B', 'La lentille B']])}</>}
       {defi.type === 'prevoir' && <><div style={txt}>🎯 Un rayon lumineux <strong>{RAYONS[defi.v]}</strong> (lentille mince convergente). Après la lentille, ce rayon…</div>
         {choix([['pF', 'passe par le foyer image F′'], ['tout', 'n’est pas dévié'], ['para', 'ressort parallèlement à l’axe optique'], ['F', 'passe par le foyer objet F']])}</>}
@@ -166,7 +166,7 @@ export function SimulationLentille() {
   const [guide, setGuide] = useEtatPersistant('lentille-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [atelier, setAtelier] = useState('lentille');
-  const [Le, setLe] = useState({ type: 'plano', n: 1.5, R: 100, normales: true, mince: false, foyers: true });
+  const [Le, setLe] = useState({ type: 'plano', n: 1.5, R: 100, normales: true, mince: false, foyers: true, ideale: true });
   const [B, setB] = useState({ f: 12, s: 5, reveler: false });
   const [hypoOuv, setHypoOuv] = useState(false);
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi, enExplore = mode === 'explore';
@@ -188,7 +188,7 @@ export function SimulationLentille() {
       tache: { type: 'qcm', q: 'Le rayon sort du verre vers l’air. Par rapport à la normale, il…', options: ['s’écarte de la normale', 'se rapproche de la normale', 'reste sur la normale', 'revient dans le verre'], bonne: 0, expl: 'n diminue (1,50 → 1,00) : le rayon s’écarte de la normale.' } },
     { id: 'foyer', titre: 'Les rayons se rejoignent : le foyer', depart: () => voirL({ normales: false, foyers: true }),
       texte: <>Après la lentille, tous les rayons <strong>convergent</strong> (presque) en un même point de l’axe : c’est le <strong>foyer image F′</strong>. La lentille est dite <strong>convergente</strong>. Le <strong>centre optique O</strong> est le milieu de la lentille. La distance <strong>f′ = OF′</strong> est la <strong>distance focale</strong>.
-        <ExempleResolu>Ici f′ ≈ {cm(foyer(lentille('plano', 1.5, 100)).f)} cm. Le <strong>foyer objet F</strong> est le symétrique de F′ par rapport à la lentille. On remarque que les rayons éloignés de l’axe croisent l’axe un peu plus tôt : c’est un défaut réel des lentilles simples (aberration sphérique).</ExempleResolu></>,
+        <ExempleResolu>Ici f′ ≈ {cm(foyer(lentille('plano', 1.5, 100)).f)} cm. Le <strong>foyer objet F</strong> est le symétrique de F′ par rapport à la lentille.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Des rayons parallèles à l’axe optique traversent une lentille convergente. Ils se rejoignent au…', options: ['foyer image F′', 'centre optique O', 'foyer objet F', 'bord de la lentille'], bonne: 0, expl: 'Les rayons parallèles à l’axe convergent au foyer image F′.' } },
     { id: 'schema', titre: 'Le schéma de la lentille mince', depart: () => voirL({ normales: false, foyers: true, mince: true }),
       texte: <>Dessiner toute la forme du verre est long. Pour les schémas on utilise le modèle de la <strong>lentille mince</strong> : un trait vertical avec deux <strong>flèches vers l’extérieur</strong> (symbole d’une lentille convergente). En vert : un rayon <strong>parallèle à l’axe</strong> est dévié au centre O de la lentille et passe par F′.
@@ -233,7 +233,7 @@ export function SimulationLentille() {
       <li><strong>Lentille de verre</strong> aux faces <strong>sphériques parfaites</strong> (plan-convexe ou biconvexe), sans défaut. À chaque face, on applique la loi de <strong>Snell-Descartes</strong> avec la normale réelle (le rayon est tracé par le calcul, pas dessiné à la main).</li>
       <li><strong>Lumière monochromatique</strong> et indice à 589 nm : la dispersion (l’indice change un peu avec la couleur) n’est pas modélisée. Indices proposés : 1,40 à 2,00.</li>
       <li><strong>Rayons dans un plan</strong> contenant l’axe optique, faisceau parallèle à l’axe. Pas de lumière réfléchie par les faces du verre.</li>
-      <li><strong>Aberration sphérique</strong> : les rayons loin de l’axe croisent l’axe avant F′ (c’est réel). Le foyer F′ est défini avec les rayons <strong>proches de l’axe</strong> (approximation de Gauss) ; f′ est mesurée depuis le milieu O de la lentille.</li>
+      <li><strong>Lentille idéale</strong> (réglage par défaut) : on suppose que tous les rayons parallèles à l’axe passent exactement par F′. Dans une vraie lentille simple, les rayons loin de l’axe croisent l’axe un peu avant F′ (aberration sphérique) : décochez « lentille idéale » pour le voir. Le foyer F′ est défini avec les rayons <strong>proches de l’axe</strong> (approximation de Gauss) ; f′ est mesurée depuis le milieu O de la lentille.</li>
       <li><strong>Lentille mince (schéma et banc)</strong> : modèle où toute la déviation se fait dans un plan. Une lentille épaisse (biconvexe très bombée) s’en écarte un peu.</li>
       <li><strong>Banc d’optique</strong> : taille de la tache = modèle géométrique (la diffraction est ignorée) ; position de l’écran lue à 0,1 cm près ; la tache est considérée « minimale » à ±0,4 cm.</li>
     </ul>);
@@ -250,10 +250,10 @@ export function SimulationLentille() {
     </div>);
   const lentillePanel = (
     <div>
-      <Lunette L={L} normales={Le.normales} mince={Le.mince} foyers={Le.foyers}/>
+      <Lunette L={L} normales={Le.normales} mince={Le.mince} foyers={Le.foyers} ideale={Le.ideale}/>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Lentille :</span>
         {[['plano', 'plan-convexe'], ['bi', 'biconvexe']].map(([k, l]) => <button key={k} onClick={() => setLe(x => ({ ...x, type: k }))} style={stylePetitBouton(Le.type === k, '#0f766e')}>{l}</button>)}
-        {bascule('normales', 'normales')}{bascule('foyers F, F′', 'foyers')}{bascule('schéma lentille mince', 'mince')}</div>
+        {bascule('normales', 'normales')}{bascule('foyers F, F′', 'foyers')}{bascule('schéma lentille mince', 'mince')}{bascule('lentille idéale (tous les rayons au foyer)', 'ideale')}</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, marginTop: 6 }}>
         {curs('Indice du verre n', Le.n, 1.4, 2.0, 0.05, v => setLe(l => ({ ...l, n: Math.round(v * 100) / 100 })), fr(Le.n, 2))}
         {curs('Rayon de courbure R', Le.R, 100, 160, 5, v => setLe(l => ({ ...l, R: v })), `${fr(Le.R / PX_CM, 2)} cm`)}</div>
