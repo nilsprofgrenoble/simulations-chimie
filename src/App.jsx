@@ -44,6 +44,8 @@ import { SimulationMouvementSysteme } from "./simulations/MouvementSysteme";
 import { SimulationMouvementReferentiel } from "./simulations/MouvementReferentiel";
 import { SimulationAtomesMolecules } from "./simulations/AtomesMolecules";
 import { SimulationFamillesChimiques } from "./simulations/FamillesChimiques";
+import { SimulationForcesVecteurs } from "./simulations/ForcesVecteurs";
+import { SimulationPrincipeInertie } from "./simulations/PrincipeInertie";
 import { SimulationSolubilite } from "./simulations/Solubilite";
 import { SimulationAPropos } from "./simulations/APropos";
 import { SimulationAtelierDonnees } from "./simulations/AtelierDonnees";
@@ -138,6 +140,10 @@ const SIMULATIONS = [
     component: SimulationAtomesMolecules },
   { id:58, label:"Familles chimiques : même colonne, mêmes comportements", niveau:"2GT", icon:"🧩", color:"#b45309",
     component: SimulationFamillesChimiques },
+  { id:59, label:"Les forces : modéliser une action mécanique", niveau:"2GT", icon:"➡️", color:"#0f766e",
+    component: SimulationForcesVecteurs },
+  { id:60, label:"Principe d’inertie : forces et mouvement", niveau:"2GT", icon:"⚖️", color:"#7c3aed",
+    component: SimulationPrincipeInertie },
   { id:53, label:"Solubilité et miscibilité : le bilan des interactions", niveau:"1G", icon:"🧪", color:"#2a9d8f",
     component: SimulationSolubilite },
   { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"COMP", icon:"🎯", color:"#e11d48",
