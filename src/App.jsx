@@ -42,6 +42,8 @@ import { SimulationCondensateurMillikan } from "./simulations/CondensateurMillik
 import { SimulationElectrisation } from "./simulations/Electrisation";
 import { SimulationMouvementSysteme } from "./simulations/MouvementSysteme";
 import { SimulationMouvementReferentiel } from "./simulations/MouvementReferentiel";
+import { SimulationAtomesMolecules } from "./simulations/AtomesMolecules";
+import { SimulationFamillesChimiques } from "./simulations/FamillesChimiques";
 import { SimulationSolubilite } from "./simulations/Solubilite";
 import { SimulationAPropos } from "./simulations/APropos";
 import { SimulationAtelierDonnees } from "./simulations/AtelierDonnees";
@@ -132,6 +134,10 @@ const SIMULATIONS = [
     component: SimulationMouvementSysteme },
   { id:56, label:"Référentiel et mouvement : décrire un mouvement", niveau:"2GT", icon:"🚃", color:"#4338ca",
     component: SimulationMouvementReferentiel },
+  { id:57, label:"Atomes, ions et molécules : la quête de l’octet", niveau:"2GT", icon:"⚛️", color:"#16a34a",
+    component: SimulationAtomesMolecules },
+  { id:58, label:"Familles chimiques : même colonne, mêmes comportements", niveau:"2GT", icon:"🧩", color:"#b45309",
+    component: SimulationFamillesChimiques },
   { id:53, label:"Solubilité et miscibilité : le bilan des interactions", niveau:"1G", icon:"🧪", color:"#2a9d8f",
     component: SimulationSolubilite },
   { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"COMP", icon:"🎯", color:"#e11d48",
