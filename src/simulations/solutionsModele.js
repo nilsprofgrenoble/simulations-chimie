@@ -6,9 +6,9 @@
 export { fr } from './forcesModele.js';
 
 export const SOLUTES = [
-  { id: 'KMnO4', nom: 'permanganate de potassium', court: 'KMnO₄', couleur: '#7b2d8e', sol: 64, dak: true },
-  { id: 'CuSO4', nom: 'sulfate de cuivre (II)', court: 'CuSO₄', couleur: '#0072b2', sol: 200 },
-  { id: 'NaCl', nom: 'chlorure de sodium (sel)', court: 'NaCl', couleur: null, sol: 360 },
+  { id: 'KMnO4', nom: 'permanganate de potassium', court: 'KMnO₄', couleur: '#7b2d8e', point: '#3b0764', sol: 64, dak: true },
+  { id: 'CuSO4', nom: 'sulfate de cuivre (II)', court: 'CuSO₄', couleur: '#0072b2', point: '#00345c', sol: 200 },
+  { id: 'NaCl', nom: 'chlorure de sodium (sel)', court: 'NaCl', couleur: null, point: '#334155', sol: 360 },
 ];
 export const soluteDe = id => SOLUTES.find(s => s.id === id);
 
