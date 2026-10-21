@@ -58,6 +58,7 @@ import { SimulationDebitCharges } from "./simulations/DebitCharges";
 import { SimulationDiffractionRX } from "./simulations/DiffractionRX";
 import { SimulationMailles } from "./simulations/MaillesCristallines";
 import { SimulationRMN } from "./simulations/RMNProton";
+import { SimulationRMNC2D } from "./simulations/RMNCarbone2D";
 import { SimulationPuissanceJoule } from "./simulations/PuissanceJoule";
 import { SimulationCaracPile } from "./simulations/CaracPile";
 import { SimulationISS } from "./simulations/ISS";
@@ -189,6 +190,8 @@ const SIMULATIONS = [
     component: SimulationMailles },
   { id:75, label:"RMN du proton : du spectre à la structure", niveau:"BTS", icon:"🧲", color:"#0f766e",
     component: SimulationRMN },
+  { id:76, label:"RMN ¹³C et 2D : COSY et HSQC", niveau:"BTS", icon:"🧬", color:"#0f766e",
+    component: SimulationRMNC2D },
   { id:53, label:"Solubilité et miscibilité : le bilan des interactions", niveau:"1G", icon:"🧪", color:"#2a9d8f",
     component: SimulationSolubilite },
   { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"COMP", icon:"🎯", color:"#e11d48",
