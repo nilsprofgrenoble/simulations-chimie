@@ -46,6 +46,9 @@ import { SimulationAtomesMolecules } from "./simulations/AtomesMolecules";
 import { SimulationFamillesChimiques } from "./simulations/FamillesChimiques";
 import { SimulationForcesVecteurs } from "./simulations/ForcesVecteurs";
 import { SimulationPrincipeInertie } from "./simulations/PrincipeInertie";
+import { SimulationDissolution } from "./simulations/Dissolution";
+import { SimulationDilution } from "./simulations/Dilution";
+import { SimulationMelanges } from "./simulations/Melanges";
 import { SimulationSolubilite } from "./simulations/Solubilite";
 import { SimulationAPropos } from "./simulations/APropos";
 import { SimulationAtelierDonnees } from "./simulations/AtelierDonnees";
@@ -144,6 +147,12 @@ const SIMULATIONS = [
     component: SimulationForcesVecteurs },
   { id:60, label:"Principe d’inertie : forces et mouvement", niveau:"2GT", icon:"⚖️", color:"#7c3aed",
     component: SimulationPrincipeInertie },
+  { id:61, label:"Dissolution et concentration en masse", niveau:"2GT", icon:"🧂", color:"#0f766e",
+    component: SimulationDissolution },
+  { id:62, label:"Dilution et échelle de teintes", niveau:"2GT", icon:"💧", color:"#7b2d8e",
+    component: SimulationDilution },
+  { id:63, label:"Mélanges : miscibilité, solubilité et densité", niveau:"2GT", icon:"🧴", color:"#b45309",
+    component: SimulationMelanges },
   { id:53, label:"Solubilité et miscibilité : le bilan des interactions", niveau:"1G", icon:"🧪", color:"#2a9d8f",
     component: SimulationSolubilite },
   { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"COMP", icon:"🎯", color:"#e11d48",
