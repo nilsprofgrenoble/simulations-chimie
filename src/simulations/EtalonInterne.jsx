@@ -1,4 +1,4 @@
-import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Field, TabBtn, cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices } from "../commun";
 
@@ -1367,7 +1367,7 @@ function DefiEtalon() {
 //  SIMULATION 13 : trois façons de travailler
 // ════════════════════════════════════════════════════════════════
 export function SimulationEtalonnageInterne({ plotlyReady }) {
-  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
+  const [mode, setMode] = useState(() => modeOuverture('etalon-guide-v1'));
   useSignalerMode(mode);
   useEffect(() => { if (mode === 'explore') { const t = setTimeout(() => window.dispatchEvent(new Event('resize')), 120); return () => clearTimeout(t); } }, [mode]);
   return (

@@ -1,4 +1,4 @@
-import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
+import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { useState, Children, Fragment, cloneElement, isValidElement } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, lireProgression, fmt, sci } from "../commun";
@@ -226,7 +226,7 @@ function VoletDefi({ defi, setDefi, changerType }) {
 
 // =====================================================================================================
 export function SimulationMouvementSysteme() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('mouvement-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('mouvement-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

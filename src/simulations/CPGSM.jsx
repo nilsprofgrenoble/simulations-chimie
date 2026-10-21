@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
+import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, Curseur, lireProgression } from "../commun";
 import { ColonneAnim } from "./CPG";
@@ -359,7 +359,7 @@ const TITRES = { inconnu: 'Identifier un composé', coelution: 'Pics co-élués'
 //  SIMULATION
 // ====================================================
 export function SimulationCPGSM() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('cpgsm-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('cpgsm-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

@@ -1,4 +1,4 @@
-import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
@@ -31,7 +31,7 @@ const pressionPa = (patmHpa, rho, d) => patmHpa * 100 + rho * G * Math.max(0, d)
 const affichage = pa => Math.round(pa / 100);
 
 export function SimulationStatiqueFluides({ plotlyReady }) {
-  const [mode, setMode] = useState('explore');                  // on arrive sur l'exploration libre
+  const [mode, setMode] = useState(() => modeOuverture('fluides-guide-v1'));
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('fluides-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });

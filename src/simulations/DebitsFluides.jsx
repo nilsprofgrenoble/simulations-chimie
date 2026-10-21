@@ -1,4 +1,4 @@
-import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
 import { Frac, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, indicesProfond, fmt, lireNombre, proche } from "../commun";
@@ -291,7 +291,7 @@ const LITT1 = { Q_m: 'm × 1/Δt', Q_v: 'Q_m × 1/ρ', V: 'm × 1/ρ' };
 const Ch1 = props => <Chaine litt={LITT1[props.nom]} {...props}/>;
 
 export function SimulationDebits({ naviguer }) {
-  const [mode, setMode] = useState('explore');                  // on arrive sur l'exploration libre
+  const [mode, setMode] = useState(() => modeOuverture('debits-guide-v2'));
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('debits-guide-v2', { etape: 0, reps: {}, verifs: {}, reussies: {} });

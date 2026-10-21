@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
+import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, avecIndices, indicesProfond } from "../commun";
 import { Fiole } from "./solutionsVue";
@@ -151,7 +151,7 @@ function VoletDefi({ defi, setDefi, changerType, D }) {
 //  SIMULATION
 // ====================================================
 export function SimulationDilution() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('dilution-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('dilution-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

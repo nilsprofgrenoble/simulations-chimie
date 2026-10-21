@@ -1,4 +1,4 @@
-import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, Frac, avecIndices, fmt, lireNombre, proche } from "../commun";
@@ -36,7 +36,7 @@ const PRESETS_E = [12, 70, 200, 470, 1050, 1500];
 // ============================================================
 
 export function Simulation8({ plotlyReady }) {
-  const [mode, setMode] = useState('explore');             // on arrive sur l'exploration libre
+  const [mode, setMode] = useState(() => modeOuverture('cm-guide-v1'));
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('cm-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });

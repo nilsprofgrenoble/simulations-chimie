@@ -1,4 +1,4 @@
-import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
+import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { useState, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, lireProgression } from "../commun";
@@ -157,7 +157,7 @@ function VoletDefi({ defi, setDefi, changerType }) {
 
 // =====================================================================================================
 export function SimulationSolubilite() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('solubilite-guide-v4'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('solubilite-guide-v4', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

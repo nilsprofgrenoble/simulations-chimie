@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
+import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, avecIndices } from "../commun";
 import { fr, R_KM, gAlt, G0, vOrb, periode, typeOrbite, depart, pas, trajectoire } from "./issModele";
@@ -149,7 +149,7 @@ function VoletDefi({ defi, setDefi, changerType, v }) {
 //  SIMULATION
 // ====================================================
 export function SimulationISS() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('iss-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('iss-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

@@ -1,4 +1,4 @@
-import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, ORANGE_GUIDE, lireNombre } from "../commun";
 
@@ -333,7 +333,7 @@ export function bernCorrection(ex) {
 }
 
 export function SimulationBernoulli({ plotlyReady }) {
-  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre   // 'guide' | 'explore' | 'exercice' (le défi)
+  const [mode, setMode] = useState(() => modeOuverture('bern-guide-v1'));
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('bern-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });

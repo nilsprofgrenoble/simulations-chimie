@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
+import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression } from "../commun";
 import { element, ELEMENTS, FAMILLES, HORS_LISTE, ionProbable, etatEntite, configTxt, valence, ionTxt, sub,
@@ -160,7 +160,7 @@ function VoletDefi({ defi, setDefi, changerType, coefs, setCoefs, xy, setXy }) {
 //  SIMULATION
 // ====================================================
 export function SimulationFamillesChimiques() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('familles-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('familles-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

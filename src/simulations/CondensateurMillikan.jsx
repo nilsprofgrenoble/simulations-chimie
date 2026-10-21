@@ -1,4 +1,4 @@
-import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
+import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { useState, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, Frac, fmt, lireProgression } from "../commun";
@@ -203,7 +203,7 @@ function VoletDefi({ defi, setDefi, changerType, appliquer }) {
 }
 
 export function SimulationCondensateurMillikan() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('condensateur-millikan-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('condensateur-millikan-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

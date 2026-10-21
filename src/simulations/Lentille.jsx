@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
+import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, avecIndices } from "../commun";
 import { fr, tracer, foyer, geometrie, PX_CM } from "./optiqueModele";
@@ -161,7 +161,7 @@ function VoletDefi({ defi, setDefi, changerType, bancS }) {
 //  SIMULATION
 // ====================================================
 export function SimulationLentille() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('lentille-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('lentille-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

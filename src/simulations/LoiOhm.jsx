@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSignalerMode, declarerDefis } from "../suivi";
+import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche } from "../commun";
 import { fr, ctn, ldr, lampeI, fonctionnementLampe, regression } from "./elecModele";
@@ -81,7 +81,7 @@ const solution = d => d.type === 'fonct' ? <>Le point de fonctionnement est l’
 
 // ====================================================
 export function SimulationLoiOhm() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('ohm-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('ohm-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
