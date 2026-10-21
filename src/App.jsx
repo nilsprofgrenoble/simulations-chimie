@@ -56,6 +56,7 @@ import { SimulationCircuits } from "./simulations/Circuits";
 import { SimulationLoiOhm } from "./simulations/LoiOhm";
 import { SimulationDebitCharges } from "./simulations/DebitCharges";
 import { SimulationDiffractionRX } from "./simulations/DiffractionRX";
+import { SimulationMailles } from "./simulations/MaillesCristallines";
 import { SimulationPuissanceJoule } from "./simulations/PuissanceJoule";
 import { SimulationCaracPile } from "./simulations/CaracPile";
 import { SimulationISS } from "./simulations/ISS";
@@ -183,6 +184,8 @@ const SIMULATIONS = [
     component: SimulationCaracPile },
   { id:73, label:"Diffraction des rayons X : identifier une structure cubique", niveau:"BTS", icon:"🔷", color:"#1d4ed8",
     component: SimulationDiffractionRX },
+  { id:74, label:"Mailles cristallines : motif, compacité et sites", niveau:"BTS", icon:"🧊", color:"#7c3aed",
+    component: SimulationMailles },
   { id:53, label:"Solubilité et miscibilité : le bilan des interactions", niveau:"1G", icon:"🧪", color:"#2a9d8f",
     component: SimulationSolubilite },
   { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"COMP", icon:"🎯", color:"#e11d48",
