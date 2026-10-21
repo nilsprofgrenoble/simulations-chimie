@@ -1,4 +1,4 @@
-import { useSignalerMode } from "../suivi";
+import { useSignalerMode, modeOuverture } from "../suivi";
 import { useState, useEffect, useMemo } from "react";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
@@ -157,7 +157,7 @@ function Cibles() {
 
 // ════════════════ SIMULATION ════════════════
 export function SimulationMetrologie() {
-  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
+  const [mode, setMode] = useState(() => modeOuverture('metro-guide-v1'));
   useSignalerMode(mode);
   const [onglet, setOnglet] = useState('classe');
   const [guide, setGuide] = useEtatPersistant('metro-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });

@@ -1,4 +1,4 @@
-import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton,
   styleBoite, Section, LigneMesure, Curseur, BoutonsModes, lireNombre, proche, sci, avecIndices } from "../commun";
@@ -91,7 +91,7 @@ function simuler(p) {
 export function Simulation5({ naviguer }) {
   const [tr] = useState(lireTransfert);                      // réglages venus de « Point de fonctionnement », s'il y en a
   useEffect(() => { if (tr) effacerTransfert(); }, []);
-  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre                // guide | explore | defi
+  const [mode, setMode] = useState(() => modeOuverture('reg-niveau-v1'));
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
   const [ouverts, setOuverts] = useState({ commandes: true, mesures: true });

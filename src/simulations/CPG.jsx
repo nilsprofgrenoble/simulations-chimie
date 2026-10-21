@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useLargeur, pasTemps, grille } from "./cpgOutils";
-import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
+import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, Curseur, lireProgression } from "../commun";
 import { COMPOSES, PAR_ID, PHASES, GAZ, PARAMS_DEFAUT, SEUIL_RS, P_MAX, PANNES, FRACTION_VOL,
@@ -425,7 +425,7 @@ const TITRES = { ordre: 'Ordre d’élution', identifier: 'Identifier des pics',
 //  SIMULATION
 // ====================================================
 export function SimulationCPG() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('cpg-guide-v2'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('cpg-guide-v2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

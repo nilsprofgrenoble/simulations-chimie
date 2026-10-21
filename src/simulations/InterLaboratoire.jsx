@@ -1,4 +1,4 @@
-import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices } from "../commun";
 
@@ -1465,7 +1465,7 @@ function DefiInterlabo() {
 //  SIMULATION 9 : trois façons de travailler
 // ════════════════════════════════════════════════════════════════
 export function Simulation9({ plotlyReady }) {
-  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
+  const [mode, setMode] = useState(() => modeOuverture('interlabo-guide-v1'));
   useSignalerMode(mode);
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>

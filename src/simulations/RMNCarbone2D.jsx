@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSignalerMode, declarerDefis } from "../suivi";
+import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu } from "../commun";
 import { LISTE, MOLS, IDS, DOMAINES, domaine, intensite, typeC, courbeC } from "./rmn2dModele";
@@ -174,7 +174,7 @@ const solution = d => {
 
 // ====================================================
 export function SimulationRMNC2D() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('rmnc-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('rmnc-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

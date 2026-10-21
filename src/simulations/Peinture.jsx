@@ -1,4 +1,4 @@
-import { useSignalerMode, declarerDefis, SuiviDefiDirect } from "../suivi";
+import { useSignalerMode, declarerDefis, SuiviDefiDirect, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { PeintureExploration, AnimationSechageTest } from "./PeintureExploration";
 import { SchemasFilmSec } from "./peintureSchema";
@@ -120,7 +120,7 @@ function Hypotheses() {
 
 // ════════════════ SIMULATION ════════════════
 export function SimulationPeinture({ plotlyReady }) {
-  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
+  const [mode, setMode] = useState(() => modeOuverture('peinture-guide-p1'));
   useSignalerMode(mode);
   // Trois parcours distincts, chacun avec sa progression mémorisée
   const [parc, setParc] = useEtatPersistant('peinture-parcours-choix', 1);

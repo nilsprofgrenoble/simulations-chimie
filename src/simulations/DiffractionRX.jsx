@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useSignalerMode, declarerDefis } from "../suivi";
+import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche } from "../commun";
 import { LAMBDA, DT_MIN, DT_MAX, STRUCTURES, ECHANTILLONS, ORDRE_EXPLO, CANDIDATS_DEFI, pics, courbe, indexer,
@@ -143,7 +143,7 @@ const solution = d => {
 
 // ====================================================
 export function SimulationDiffractionRX() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('drx-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('drx-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

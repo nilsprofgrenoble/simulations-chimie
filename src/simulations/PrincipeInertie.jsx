@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
+import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression } from "../commun";
 import { fr, simuler, forcesSurCaisse, FORCES_CANDIDATES, BILANS, PREVOIR } from "./forcesModele";
@@ -152,7 +152,7 @@ function VoletDefi({ defi, setDefi, changerType, P, planche }) {
 //  SIMULATION
 // ====================================================
 export function SimulationPrincipeInertie() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('inertie-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('inertie-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

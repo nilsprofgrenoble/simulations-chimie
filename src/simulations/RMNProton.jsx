@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useSignalerMode, declarerDefis } from "../suivi";
+import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche } from "../commun";
 import { NU0, MOLECULES, MOL, FAMILLES, NOM_COMPLET, plat, visibles, yRef, spectre, courbeGroupe, courbeZoom, limitesPremierOrdre, hauteurMm } from "./rmnModele";
@@ -202,7 +202,7 @@ const solution = d => {
 
 // ====================================================
 export function SimulationRMN() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('rmn-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('rmn-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

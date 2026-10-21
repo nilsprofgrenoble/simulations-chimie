@@ -1,4 +1,4 @@
-import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
+import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { useState, useRef, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, ARetenir, Curseur, LigneMesure, lireProgression } from "../commun";
@@ -307,7 +307,7 @@ function VoletDefi({ defi, setDefi, changerType }) {
 }
 
 export function SimulationElectrisation() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('electrisation-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('electrisation-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

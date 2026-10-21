@@ -246,6 +246,9 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
   useEffect(() => {
     if (reussieMaintenant && !dejaReussie) setEtat(e => ({ ...e, reussies: { ...(e.reussies || {}), [etape]: true } }));
   }, [reussieMaintenant, dejaReussie, etape, setEtat]);
+  // Arrivé à la dernière étape (le bilan) : le parcours est terminé ; la simulation s'ouvrira désormais sur l'exploration libre
+  const derniere = etape >= etapes.length - 1;
+  useEffect(() => { if (derniere && !etat.fini) setEtat(e => (e.fini ? e : { ...e, fini: true })); }, [derniere, etat.fini, setEtat]);
   // Message de reprise, affiché une seule fois quand on retrouve un parcours commencé
   const [reprise] = useState(() => etape > 0);
   const piege = () => {

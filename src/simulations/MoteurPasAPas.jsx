@@ -1,4 +1,4 @@
-import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure } from "../commun";
@@ -163,7 +163,7 @@ function Reducteur({ n2 }) {
 }
 
 export function SimulationMoteurPasAPas({ naviguer }) {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('pap-guide-v1'));
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('pap-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });

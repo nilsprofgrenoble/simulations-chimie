@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
+import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, avecIndices } from "../commun";
 import { fr, courbeCorps, intensiteCorps, lambdaMax, tempDepuisLmax, rgbLambda, css, couleurCorps, couleurVue, courbeCorpsTerre, ETOILES, GAZ, gaz, couleurLampe, raieProche } from "./spectresModele";
@@ -140,7 +140,7 @@ function VoletDefi({ defi, setDefi, changerType }) {
 //  SIMULATION
 // ====================================================
 export function SimulationSpectres() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('spectres-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('spectres-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

@@ -60,6 +60,7 @@ function CarteDevoirPasAPas({ d, a, par, naviguer, maintenant, lignes }) {
   const titreDe = cle => par.get(cle)?.titre;
   const nomSim = e => par.get(`sim:${e.sim}`)?.titre || `Simulation ${e.sim}`;
   const aller = e => {
+    if (e.type === 'defi' && !e.unique) { try { window.sessionStorage.setItem('mode-demande', JSON.stringify({ mode: 'explore', t: Date.now() })); } catch { /* sans mémorisation, la simulation s'ouvre comme d'habitude */ } }   // le défi se lance depuis la simulation : on évite le parcours guidé
     if (e.type === 'guide' || (e.type === 'defi' && !e.unique)) return naviguer(Number(e.sim));
     const it = par.get(e.cle);
     return it?.atelier ? naviguer(it.atelier, it.ex, true) : naviguer(it?.sim ?? Number(e.sim));

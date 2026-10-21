@@ -1,4 +1,4 @@
-import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
@@ -101,7 +101,7 @@ function GraphePF({ c, Kp, Qmax, Qp, eq, showPuisage, showRegul, showPoint, show
 export function Simulation6({ naviguer }) {
   const [tr] = useState(lireTransfert);                       // réglages venus de « Régulation TOR, P et PI », s'il y en a
   useEffect(() => { if (tr) effacerTransfert(); }, []);
-  const [mode, setMode] = useState("explore");               // on arrive sur l'exploration libre
+  const [mode, setMode] = useState(() => modeOuverture('pf-guide-v2'));
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant("pf-guide-v2", { etape: 0, reps: {}, verifs: {}, reussies: {} });

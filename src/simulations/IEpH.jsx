@@ -1,4 +1,4 @@
-import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { TabBtn, cardStyle, KIT, Section, styleBoite, CarteParcours, useEtatPersistant, styleBouton, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
 
@@ -429,7 +429,7 @@ function DefiIEpH({ plotlyReady }) {
 //  SIMULATION 29 : trois façons de travailler
 // ════════════════════════════════════════════════════════════════
 export function SimulationIEpH({ plotlyReady }) {
-  const [mode, setMode] = useState("explore");
+  const [mode, setMode] = useState(() => modeOuverture('iepH-guide-v1'));
   useSignalerMode(mode);
   useEffect(() => { if (mode === "explore") { const t = setTimeout(() => window.dispatchEvent(new Event("resize")), 120); return () => clearTimeout(t); } }, [mode]);
   return (

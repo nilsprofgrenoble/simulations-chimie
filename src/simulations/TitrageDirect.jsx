@@ -1,4 +1,4 @@
-import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
@@ -33,7 +33,7 @@ function erlenLugol(mod, VB) {
 }
 
 export function Simulation2() {
-  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
+  const [mode, setMode] = useState(() => modeOuverture('titrage-direct-guide-v1'));
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
   const [onglet, setOnglet] = useState('general');

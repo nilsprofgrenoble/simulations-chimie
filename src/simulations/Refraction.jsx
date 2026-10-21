@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
+import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, avecIndices } from "../commun";
 import { fr, MILIEUX, milieu, refraction, angleLimite, mesurerI2, pente, pecheur } from "./optiqueModele";
@@ -149,7 +149,7 @@ function VoletDefi({ defi, setDefi, changerType }) {
 //  SIMULATION
 // ====================================================
 export function SimulationRefraction() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('refraction-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('refraction-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

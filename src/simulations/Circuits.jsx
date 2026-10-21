@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSignalerMode, declarerDefis } from "../suivi";
+import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireNombre } from "../commun";
 import { fr, serie, derivation } from "./elecModele";
@@ -91,7 +91,7 @@ const solution = d => d.type === 'tensions' ? <>Loi des mailles (une seule maill
 
 // ====================================================
 export function SimulationCircuits() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('circuits-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('circuits-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useSignalerMode, declarerDefis } from "../suivi";
+import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche } from "../commun";
 import { ECHANTILLONS, POS, STRUCT, METAUX_PAR_STRUCT, compacite, masseVol, fermer, denombrer, cleLigne, FR, SITES, formSite, rSite,
@@ -169,7 +169,7 @@ const solution = d => {
 
 // ====================================================
 export function SimulationMailles() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('mail-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('mail-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

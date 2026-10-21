@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSignalerMode, useSuivi, declarerDefis } from "../suivi";
+import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, Curseur, lireProgression } from "../commun";
 import { scene, ORDRE_SCENES, echantillonner, caracteriser, ecartPoint, ecartAttendu, meilleurDt, norme, angle } from "./mvtRefModele";
@@ -259,7 +259,7 @@ function VoletDefi({ defi, setDefi, changerType, dtChoisi }) {
 //  SIMULATION
 // ====================================================
 export function SimulationMouvementReferentiel() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('mvtref-guide-v2'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('mvtref-guide-v2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

@@ -1,4 +1,4 @@
-import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useMemo } from "react";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
@@ -263,7 +263,7 @@ function Hypotheses({ formules = ['ref'], consensus = false }) {
 
 // ════════════════ SIMULATION ════════════════
 export function SimulationAptitude() {
-  const [mode, setMode] = useState('explore');   // on arrive sur l'exploration libre
+  const [mode, setMode] = useState(() => modeOuverture('aptitude-guide-v2'));
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('aptitude-guide-v2', { etape: 0, reps: {}, verifs: {}, reussies: {} });

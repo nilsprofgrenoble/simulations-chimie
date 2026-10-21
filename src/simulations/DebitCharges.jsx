@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSignalerMode, declarerDefis } from "../suivi";
+import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche } from "../commun";
 import { fr, E_CHARGE, N_CUIVRE, deriveVitesse } from "./elecModele";
@@ -99,7 +99,7 @@ const solution = d => d.type === 'charge' ? <>Q = I × Δt = {fr(d.I, 1)} × {d.
 
 // ====================================================
 export function SimulationDebitCharges() {
-  const [mode, setMode] = useState('explore');
+  const [mode, setMode] = useState(() => modeOuverture('debit-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('debit-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);

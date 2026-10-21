@@ -117,6 +117,28 @@ const abonnes = new Set();
 const fixerMode = m => { if (m !== modeSim) { modeSim = m; abonnes.forEach(f => f()); } };
 export const nomsSim = {};     // id → titre, rempli par App (pour l'affichage)
 
+// ── Mode d'ouverture d'une simulation (selon l'historique de l'élève dans ce navigateur) ──
+//  • première visite, ou parcours guidé commencé mais pas terminé → parcours guidé (on reprend à l'étape où l'élève s'était arrêté) ;
+//  • parcours guidé terminé (drapeau « fini » posé par CarteParcours à la dernière étape) → exploration libre ;
+//  • un lien de devoir vers un défi demande explicitement l'exploration (« mode-demande », valable 5 secondes) → exploration libre.
+//  L'état du parcours est celui que la simulation sauvegarde déjà (useEtatPersistant, clé « …-guide-… »).
+export function modeOuverture(cleGuide) {
+  const r = choisirMode(cleGuide);
+  window.__modeOuverture = r;   // lu par ModeParDefaut : si la simulation s'ouvre déjà sur l'exploration, on ne la bascule pas sur le parcours guidé
+  return r;
+}
+function choisirMode(cleGuide) {
+  try {
+    const d = JSON.parse(window.sessionStorage.getItem('mode-demande') || 'null');
+    if (d && d.mode === 'explore' && Date.now() - d.t < 5000) return 'explore';
+  } catch { /* pas de demande */ }
+  try {
+    const brut = window.localStorage.getItem(cleGuide);
+    if (brut && JSON.parse(brut)?.fini) return 'explore';
+  } catch { /* état illisible : on ouvre le parcours */ }
+  return 'guide';
+}
+
 export function useSignalerMode(mode) {
   const m = mode === 'exercice' ? 'defi' : (mode || 'explore');
   useEffect(() => { fixerMode(m); return () => fixerMode(null); }, [m]);

@@ -1,4 +1,4 @@
-import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { TabBtn, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
 
@@ -882,7 +882,7 @@ function DefiElectro({ plotlyReady }) {
 //  SIMULATION 3 : trois façons de travailler
 // ════════════════════════════════════════════════════════════════
 export function Simulation3({ plotlyReady }) {
-  const [mode, setMode] = useState("explore");   // on arrive sur l'exploration libre
+  const [mode, setMode] = useState(() => modeOuverture('electro-guide-v1'));
   useSignalerMode(mode);
   useEffect(() => { if (mode === "explore") { const t = setTimeout(() => window.dispatchEvent(new Event("resize")), 120); return () => clearTimeout(t); } }, [mode]);
   return (
