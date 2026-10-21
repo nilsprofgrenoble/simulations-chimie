@@ -39,7 +39,7 @@ function ContactEnseignant() {
     <section style={LAME} aria-labelledby="titre-prof">
       <h2 id="titre-prof" style={{ margin: '0 0 6px', fontSize: 19, fontWeight: 800, color: TEXTE, fontFamily: "'Outfit', sans-serif" }}>👩‍🏫 Vous êtes enseignant·e ?</h2>
       <p style={{ margin: '0 0 12px', fontSize: 14.5, color: TEXTE2, lineHeight: 1.6 }}>
-        Un compte pour vous et vos classes : comptes élèves, devoirs, suivi de la progression. Écrivez-moi depuis votre adresse académique.
+        Pour les profs : classes, devoirs et suivi de la progression. Demandez un compte enseignant, je vous répondrai rapidement.
       </p>
       <BoutonMail libelle="✉️ Demander un compte enseignant" sujet="Demande de compte enseignant — Paillasse virtuelle" couleur={ACCENT} plein
         corps={'Bonjour,\n\nJe suis enseignant·e (établissement : …, discipline : …) et je souhaite un compte pour moi et mes classes.\n\nMerci !'} />
