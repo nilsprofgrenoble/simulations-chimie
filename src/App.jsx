@@ -51,6 +51,7 @@ import { SimulationDilution } from "./simulations/Dilution";
 import { SimulationMelanges } from "./simulations/Melanges";
 import { SimulationRefraction } from "./simulations/Refraction";
 import { SimulationLentille } from "./simulations/Lentille";
+import { SimulationSpectres } from "./simulations/Spectres";
 import { SimulationSolubilite } from "./simulations/Solubilite";
 import { SimulationAPropos } from "./simulations/APropos";
 import { SimulationAtelierDonnees } from "./simulations/AtelierDonnees";
@@ -159,6 +160,8 @@ const SIMULATIONS = [
     component: SimulationRefraction },
   { id:65, label:"Lentille convergente : trajet de la lumière et foyer", niveau:"2GT", icon:"🔍", color:"#0e7490",
     component: SimulationLentille },
+  { id:66, label:"Spectres d’émission : corps chauds et lampes à décharge", niveau:"2GT", icon:"🌈", color:"#b45309",
+    component: SimulationSpectres },
   { id:53, label:"Solubilité et miscibilité : le bilan des interactions", niveau:"1G", icon:"🧪", color:"#2a9d8f",
     component: SimulationSolubilite },
   { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"COMP", icon:"🎯", color:"#e11d48",
