@@ -26,10 +26,10 @@ const DEFAUT = { sol: 'KMnO4', V: 250, m: 0.1 };
 
 function Dissolution({ P }) {
   const s = soluteDe(P.sol), d = dissolution(P.m, P.V, s.sol), t = d.t;
-  const pts = P.m <= 0 ? 0 : Math.max(2, Math.round(60 * Math.sqrt(d.dissous / d.max)));
+  const pts = P.m <= 0 ? 0 : Math.round(60 + 160 * Math.pow(d.dissous / d.max, 0.3));
   return (
     <svg viewBox="0 0 560 300" width="100%" role="img" aria-label={`Fiole de ${P.V} mL contenant ${fr(P.m, 2)} g de ${s.nom}`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
-      <Fiole cx={122} niveau={1} couleur={s.couleur} alpha={teinte(s.id === 'KMnO4' ? t : t / 40)} pts={pts} solide={d.sature ? Math.min(1, 0.3 + d.solide / d.max) : 0} volume={P.V} id="d"/>
+      <Fiole cx={122} niveau={1} couleur={s.couleur} alpha={teinte(s.id === 'KMnO4' ? t : t / 40)} pts={pts} solide={d.sature ? Math.min(1, 0.3 + d.solide / d.max) : 0} volume={P.V} id="d" pale couleurPts={s.point}/>
       <g fontSize="14" fill="#0f172a">
         <text x="248" y="36" fontWeight="800">Soluté : {s.court}</text><text x="248" y="54" fontSize="12.5" fill={KIT.txt2}>{s.nom}</text>
         <text x="248" y="76">Solvant : eau</text>
@@ -68,7 +68,7 @@ function Protocole({ P, proto, setProto }) {
   return (
     <div>
       <svg viewBox="0 0 560 300" width="100%" role="img" aria-label="Fiole jaugée et balance" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
-        <Fiole cx={122} niveau={niveau} couleur={s.couleur} alpha={teinte(s.id === 'KMnO4' ? t : t / 40)} pts={dissous ? Math.max(2, Math.round(60 * Math.sqrt(d.dissous / d.max))) : 0} solide={n >= 2 && !dissous ? 0.6 : 0} bouchon={n >= 6} volume={P.V} id="p"/>
+        <Fiole cx={122} niveau={niveau} couleur={s.couleur} alpha={teinte(s.id === 'KMnO4' ? t : t / 40)} pts={dissous ? Math.round(60 + 160 * Math.pow(d.dissous / d.max, 0.3)) : 0} solide={n >= 2 && !dissous ? 0.6 : 0} bouchon={n >= 6} volume={P.V} id="p" pale couleurPts={s.point}/>
         <g>
           <rect x="340" y="226" width="170" height="44" rx="6" fill="#e2e8f0" stroke="#0f172a" strokeWidth="2.5"/>
           <rect x="356" y="236" width="76" height="22" rx="3" fill="#0f172a"/>
