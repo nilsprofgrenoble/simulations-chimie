@@ -95,6 +95,24 @@ export const SCENARIOS = [
     f: p => x => p.c0 * Math.exp(-Math.LN2 * x / p.th), conv: { axis: 'x', fact: 1 / 60, unit: 'min' },
     origine: p => ({ texte: 'Quelle est la concentration du réactif à t = 0 ?', val: p.c0 }),
     inverse: p => ({ y: p.c0 / 2, texte: 'Lisez le temps de demi-réaction t½ : durée au bout de laquelle la concentration est divisée par 2.', val: p.th }) },
+  { id: 'solubilite', domaine: 'Évaporation et cristallisation', type: 'courbe', tend: 'G',
+    gen: () => ({ s0: tire([10, 13, 15]), k: tire([0.032, 0.035, 0.038]) }),
+    titre: () => 'Solubilité d’un sel dans l’eau en fonction de la température',
+    axes: () => ({
+      x: { nom: 'Température de l’eau', sym: 'θ', u: '°C', min: 0, max: 70, ech: [[10, 5], [10, 2], [5, 5]] },
+      y: { nom: 'Masse de sel dissoute au maximum pour 100 g d’eau', sym: 's', u: 'g', min: 0, max: 250, ech: [[50, 5], [50, 2], [25, 5]] } }),
+    f: p => x => p.s0 * Math.exp(p.k * x), conv: { axis: 'y', fact: 10, unit: 'g·kg⁻¹' },
+    origine: p => ({ texte: 'Quelle masse de sel peut-on dissoudre au maximum dans 100 g d’eau à 0 °C ?', val: p.s0 }),
+    inverse: p => ({ y: 60, texte: 'À partir de quelle température peut-on dissoudre 60 g de sel dans 100 g d’eau ?', val: Math.log(60 / p.s0) / p.k }) },
+  { id: 'tete-colonne', domaine: 'Distillation', type: 'courbe', tend: 'B',
+    gen: () => ({ T0: tire([20, 22, 25]), Teb: tire([77, 78, 79]), tau: tire([4, 6, 8]) }),
+    titre: () => 'Température en tête de colonne pendant une distillation',
+    axes: () => ({
+      x: { nom: 'Durée de chauffage', sym: 't', u: 'min', min: 0, max: 40, ech: [[10, 5], [10, 2], [5, 5]] },
+      y: { nom: 'Température en tête de colonne', sym: 'θ', u: '°C', min: 0, max: 100, ech: [[20, 4], [10, 5], [10, 2]] } }),
+    f: p => x => p.Teb - (p.Teb - p.T0) * Math.exp(-x / p.tau), conv: { axis: 'x', fact: 60, unit: 's' },
+    origine: p => ({ texte: 'Quelle est la température en tête de colonne au début du chauffage (t = 0) ?', val: p.T0 }),
+    inverse: p => ({ y: p.T0 + 0.95 * (p.Teb - p.T0), texte: 'À quel instant la température a-t-elle atteint 95 % de sa variation totale (de la valeur initiale à la valeur finale) ?', val: p.tau * Math.log(20) }) },
   { id: 'cycliste', domaine: 'Mouvement et vitesse', type: 'droite', prop: true, tend: 'A',
     gen: () => { const v = tire([12, 15, 18, 24]); return { v, k: v / 60 }; },
     titre: () => 'Position d’un cycliste au cours de son trajet',
@@ -127,6 +145,7 @@ const ALLURES = {
   D: 'y varie peu, puis très brusquement (saut), puis de nouveau peu',
   E: 'y augmente linéairement, mais ne vaut pas 0 quand x vaut 0',
   F: 'y diminue de plus en plus vite',
+  G: 'y augmente de plus en plus vite',
 };
 const melange = (a, rnd) => { const t = a.slice(); for (let i = t.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [t[i], t[j]] = [t[j], t[i]]; } return t; };
 
