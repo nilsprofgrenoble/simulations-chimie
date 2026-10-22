@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NIVEAUX_ETALON, ETAL_MAX, ECH_MAX, T_PREP, T_INJ, C_IS, TR, M_POUDRE, POUDRES_HUILE, HUILE_MAX_ESSAIS, HUILE_DUREE, etatPate, rapportPate, DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI, DOSES_COURBE, COURBE_MAX, COURBE_DUREE, masseCoadis } from "./stationsModele";
-import { essaiBanc, indiceBanc, INDICES_BANC, essaiCourbe, indiceCourbe, INDICES_COURBE, conclureHuile, huileRetenue, phVrai, cpgDe, injecterEtalon, preparerEchantillon, injecterEchantillon, choisirModeCpg, resultatCpg, TMFF_MAX, COV_MAX, nf } from "./laboJournee";
+import { essaiBanc, indiceBanc, INDICES_BANC, essaiCourbe, indiceCourbe, INDICES_COURBE, conclureHuile, huileRetenue, phVrai, cpgDe, injecterEtalon, preparerEchantillon, injecterEchantillon, choisirModeCpg, resultatCpg, injecterControle, recuperation, C_CTRL, TMFF_MAX, COV_MAX, nf } from "./laboJournee";
 
 // ====================================================
 //  Stations immersives de la journée au labo (écrans dédiés, paramètres cachés).
@@ -191,6 +191,7 @@ export function StationCpg({ e, onEtat, onValider, choixConcl }) {
   const g = cpgDe(e), R = resultatCpg(e), niv = new Set(g.etal.map(p => p.c)).size;
   const fr = v => String(v).replace('.', ',');
   const bouton = (actif) => ({ padding: '8px 12px', borderRadius: 8, border: `2px solid ${ENCRE}`, background: actif ? '#fff' : '#eef0f4', color: actif ? ENCRE : '#9aa3b2', fontWeight: 700, cursor: actif ? 'pointer' : 'default', fontFamily: 'inherit', fontSize: 15 });
+  const rec = recuperation(e);
   const dern = g.ech.length ? g.ech[g.ech.length - 1] : g.etal.length ? g.etal[g.etal.length - 1] : null;
   const choixValides = choixConcl.filter(c => c.concl);
   return (
@@ -205,6 +206,10 @@ export function StationCpg({ e, onEtat, onValider, choixConcl }) {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
         <button type="button" data-prep disabled={g.prep} onClick={() => onEtat(preparerEchantillon(e))} style={bouton(!g.prep)}>{g.prep ? '✓ Échantillon préparé' : `Préparer l'échantillon (${T_PREP} min)`}</button>
         <button type="button" data-injech disabled={!g.prep || g.ech.length >= ECH_MAX} onClick={() => onEtat(injecterEchantillon(e))} style={bouton(g.prep && g.ech.length < ECH_MAX)}>Injecter l'échantillon ({g.ech.length}/{ECH_MAX})</button>
+      </div>
+      <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        <button type="button" data-ctrl disabled={g.ctrl.length >= 2} onClick={() => onEtat(injecterControle(e))} style={bouton(g.ctrl.length < 2)}>Injecter une solution de contrôle ({fr(C_CTRL)} mg/mL)</button>
+        {rec && <span data-recup style={{ fontSize: 14 }}>récupération : <b>{fr(rec.taux.toFixed(0))} %</b></span>}
       </div>
       {dern && <Chromato inj={dern} />}
       <div style={{ fontWeight: 700, margin: '12px 0 4px' }}>3. Quantification</div>

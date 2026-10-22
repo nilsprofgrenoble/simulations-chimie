@@ -209,7 +209,7 @@ add('dispersion', { lieu: 'Paillasse de formulation', pnj: 'karim', titre: 'Les 
   texte: e => `« Voilà le défaut dont se plaignent les opérateurs : quand on verse le TiO₂ et le CaCO₃ dans l'eau, ça fait des amas durs, et ils passent vingt minutes à les casser. Qu'est-ce que tu corriges dans la formule ? »${e.f.disp1 || e.f.disp2 ? '\n(Karim te rappelle que le dispersant est la matière qui aide à mouiller et séparer les grains.)' : ''}`,
   choix: [
     { t: 'La dose de dispersant (Coadis BR3 : 0,2 g pour 120 g de poudres)', vers: 'calcCoadis' },
-    { t: 'Tracer d\'abord la courbe de défloculation du dispersant au viscosimètre', d: '5 min de préparation, puis 3 min par point', duree: 5, note: 'Courbe de défloculation du Coadis BR3 (mélange 50/50 TiO₂ / CaCO₃) demandée à la paillasse.', vers: 'stationCourbe' },
+    { t: 'Tracer d\'abord la courbe de défloculation du dispersant au viscosimètre', d: '5 min de préparation, puis 2 min par point', duree: 5, note: 'Courbe de défloculation du Coadis BR3 (mélange 50/50 TiO₂ / CaCO₃) demandée à la paillasse.', vers: 'stationCourbe' },
     { t: 'La vitesse d\'agitation', si: e => !e.f.disp1, duree: 10, f: { disp1: true }, note: 'Idée écartée : augmenter la vitesse (déjà au maximum dans la fiche).', vers: 'dispRep1' },
     { t: 'La quantité d\'eau de départ', si: e => !e.f.disp2, duree: 10, f: { disp2: true }, note: 'Idée écartée : plus d\'eau au départ (change l\'ES et la rhéologie).', vers: 'dispRep2' },
   ] });
@@ -410,7 +410,8 @@ add('stationHuile', { lieu: 'Paillasse', pnj: 'moi', titre: 'Prises d\'huile à 
 // ───────────── Dosage du DPnB dans la peinture (contrôle du COV) : choix de la technique, puis station CPG-FID ─────────────
 // Besoin du scénario : le cahier des charges impose COV < 30 g/L ; jusqu'ici, le COV est CALCULÉ d'après la formule. Le contrôle qualité le vérifie sur la peinture fabriquée.
 export const cEch = e => cEchantillon(covDe(e), prop(e).densite, e.f.graine ?? 1);
-const cpgInit = { etal: [], ech: [], prep: false, mode: 'interne' };
+export const C_CTRL = 1.2;   // mg/mL : solution de contrôle préparée indépendamment des étalons (vérification de la justesse)
+const cpgInit = { etal: [], ech: [], ctrl: [], prep: false, mode: 'interne' };
 export const cpgDe = e => ({ ...cpgInit, ...(e.f.cpg || {}) });
 const avecCpg = (e, c, dt = 0) => ({ ...e, t: e.t + dt, f: { ...e.f, cpg: { ...cpgDe(e), ...c } } });
 export function injecterEtalon(e, c) {
@@ -425,6 +426,19 @@ export function injecterEchantillon(e) {
   if (!g.prep || g.ech.length >= ECH_MAX) return e;
   const inj = injection(e.f.graine ?? 1, g.etal.length + g.ech.length + 1, cEch(e), e.f.rf ?? 1);
   return avecCpg(e, { ech: [...g.ech, inj] }, T_INJ);
+}
+export function injecterControle(e) {
+  const g = cpgDe(e);
+  if (g.ctrl.length >= 2) return e;
+  const inj = injection(e.f.graine ?? 1, 100 + g.ctrl.length, C_CTRL, e.f.rf ?? 1);
+  return avecCpg(e, { ctrl: [...g.ctrl, inj] }, T_INJ);
+}
+// Justesse : taux de récupération de la solution de contrôle quantifiée avec la droite courante (100 % = juste)
+export function recuperation(e) {
+  const g = cpgDe(e), D = new Set(g.etal.map(p => p.c)).size >= 3 ? etalonnage(g.etal, g.mode) : null;
+  if (!D || !g.ctrl.length) return null;
+  const d = dosage(D, g.ctrl, g.mode);
+  return d ? { taux: d.x0 / C_CTRL * 100, n: g.ctrl.length } : null;
 }
 export const choisirModeCpg = (e, mode) => avecCpg(e, { mode });
 export const verdictCov = (cov, U) => cov + U < COV_MAX ? 'conforme' : cov - U > COV_MAX ? 'non conforme' : 'indéterminé (la limite est dans l\'incertitude)';
@@ -480,6 +494,8 @@ add('debriefCpg', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Ce que
     L.push((e.f.impasses || 0) === 0 ? { ok: true, t: 'Technique : tu as d\'emblée choisi la CPG-FID. Le DPnB est volatil, sans chromophore : c\'est la bonne technique.' } : { ok: null, t: `Technique : ${e.f.impasses} essai${e.f.impasses > 1 ? 's' : ''} écarté${e.f.impasses > 1 ? 's' : ''} avant la CPG-FID. Bien choisir la technique en fonction des propriétés de la molécule (volatilité, chromophore) évite de perdre du temps.` });
     L.push(niv >= 5 ? { ok: true, t: `Étalonnage : ${niv} niveaux de concentration (${g.etal.length} injections), de quoi vérifier la linéarité.` } : { ok: niv >= 3 ? null : false, t: `Étalonnage : ${niv} niveau${niv > 1 ? 'x' : ''}. ${niv >= 3 ? 'C\'est le minimum : avec 3 niveaux, tu ne peux pas vraiment contrôler la linéarité.' : 'Trop peu pour une droite.'} Vise au moins 5 niveaux, qui encadrent la concentration attendue.` });
     if (Di && De) L.push({ ok: g.mode === 'interne' ? true : null, t: `Étalon interne ou non : écart-type résiduel relatif de la droite ${nf(Di.residRel, 1)} % avec l'étalon interne, contre ${nf(De.residRel, 1)} % en aire seule. ${g.mode === 'interne' ? 'Tu as quantifié avec l\'étalon interne : il compense les fluctuations du volume injecté.' : 'Tu as quantifié en aire seule : l\'erreur de volume injecté (variable d\'une injection à l\'autre) est directement reportée sur ton résultat. Avec l\'étalon interne, cette erreur disparaît dans le rapport des aires.'}` });
+    const rec = recuperation(e);
+    L.push(rec ? { ok: Math.abs(rec.taux - 100) <= 5, t: `Justesse : la solution de contrôle (préparée indépendamment des étalons, ${nf(C_CTRL, 1)} mg/mL) est retrouvée à ${nf(rec.taux, 0)} %. ${Math.abs(rec.taux - 100) <= 5 ? 'Un écart de moins de 5 % est compatible avec la dispersion du dosage : pas de biais décelé.' : 'Écart supérieur à 5 % : un biais est probable (pureté ou préparation des étalons). À corriger avant de rendre un résultat.'}` } : { ok: null, t: 'Justesse non vérifiée : une solution de contrôle, préparée indépendamment des étalons, permet de contrôler que la droite donne la bonne valeur (fidélité ≠ justesse : la droite peut être très bien alignée et fausse).' });
     if (R.dos) {
       L.push(R.dos.dansDomaine ? { ok: true, t: `Le dosage est dans le domaine d'étalonnage (${nf(Math.min(...R.D.xs), 2)} à ${nf(Math.max(...R.D.xs), 2)} ${g.mode === 'interne' ? 'en rapport c/c_IS' : 'mg/mL'}) : pas d'extrapolation.` } : { ok: false, t: 'Le dosage tombe hors du domaine d\'étalonnage : c\'est une extrapolation, le résultat n\'est pas fiable. Cause : étalons mal choisis. Remède : ajouter un étalon qui encadre la concentration.' });
       L.push(g.ech.length >= 2 ? { ok: true, t: `${g.ech.length} injections de l'échantillon : la moyenne réduit la part de l'incertitude due à la répétabilité.` } : { ok: null, t: 'Une seule injection de l\'échantillon : aucune idée de la répétabilité. Deux ou trois injections améliorent le résultat.' });
