@@ -3,7 +3,7 @@ import "@fontsource/kalam/latin-400.css";
 import "@fontsource/kalam/latin-700.css";
 import { useEtatPersistant } from "../commun";
 import { CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_CLIENT, T_RAPPORT, T_FIN, etatInitial, texteDe, choixDe, choisir, valider, hhmm, bilan, statutCmd, estFin, visuelDe, equipe } from "./laboJournee";
-import { ScenePlanche, Affiche, Equipe, Instrument, STYLE_VISUELS } from "./LaboVisuels";
+import { ScenePlanche, Affiche, Equipe, Instrument, Avatar, STYLE_VISUELS } from "./LaboVisuels";
 
 // ====================================================
 //  SIM 81 : UNE JOURNÉE AU LABO (BTS Métiers de la Chimie), histoire à choix d'après le sujet de CCF4. Hors menu : ?sim=81.
@@ -55,15 +55,53 @@ function BarreHeure({ t }) {
     </div>);
 }
 
-// Le texte d'une scène : les répliques (lignes avec « ») deviennent des bulles de dialogue, le reste est de la narration
-function Dialogue({ texte, pnj }) {
+// Vitesse de lecture : caractères affichés par tick de 30 ms ; « fixe » = tout est affiché d'un coup, sans animation
+const LECTURES = [['lente', 'Lente', 1.2], ['normale', 'Normale', 2.4], ['rapide', 'Rapide', 6], ['fixe', 'Écran fixe', 0]];
+const PAUSE = 10;   // pause (en caractères) entre deux répliques
+
+// Le texte d'une scène : chaque réplique (ligne avec « ») apparaît « comme si la personne parlait », avec son portrait ;
+// la narration s'écrit au crayon. Les enfants (choix, calcul, instrument) s'activent quand tout est affiché.
+function Dialogue({ texte, pnj, lecture, children }) {
   const lignes = String(texte).split('\n').filter(l => l.trim());
   const p = PNJ[pnj];
+  const pas = (LECTURES.find(l => l[0] === lecture) || LECTURES[1])[2], instant = pas === 0;
+  const debuts = []; let total = 0;
+  lignes.forEach(l => { debuts.push(total); total += l.length + PAUSE; });
+  const [avance, setAvance] = useState(0), [prec, setPrec] = useState(texte);
+  if (prec !== texte) { setPrec(texte); setAvance(0); }        // nouveau texte : on repart du début
+  const fini = instant || avance >= total;
+  useEffect(() => {
+    if (fini) return undefined;
+    const id = setInterval(() => setAvance(a => Math.min(total, a + pas)), 30);
+    return () => clearInterval(id);
+  }, [fini, pas, total]);
+  return (<>
+    <span data-texte style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>{texte}</span>
+    <div aria-hidden="true" onClick={() => setAvance(total)} title={fini ? undefined : 'Cliquer pour tout afficher'} style={{ display: 'flex', flexDirection: 'column', gap: 11, cursor: fini ? 'default' : 'pointer' }}>
+      {lignes.map((l, i) => {
+        const n = instant ? l.length : Math.max(0, Math.min(l.length, Math.floor(avance - debuts[i])));
+        const commence = instant || avance >= debuts[i], enCours = commence && n < l.length;
+        const typed = <>{l.slice(0, n)}<span style={{ visibility: 'hidden' }}>{l.slice(n)}</span></>;
+        if (!l.includes('«')) return <div key={i} style={{ fontSize: 16.5, lineHeight: 1.6, color: '#4b5563', opacity: commence ? 1 : 0 }}>{typed}</div>;
+        return (
+          <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', opacity: commence ? 1 : 0, transition: 'opacity .2s' }}>
+            <Avatar id={pnj} parle={enCours} />
+            <div className="lab-postit" style={{ flex: 1, minWidth: 0, '--pc': `color-mix(in srgb, ${p.couleur} 14%, #fffbe0)`, '--rot': `${i % 2 ? 0.4 : -0.3}deg`, padding: '10px 16px', fontSize: 17, lineHeight: 1.55, borderLeft: `5px solid ${p.couleur}` }}>{typed}</div>
+          </div>);
+      })}
+    </div>
+    {!fini && <button type="button" onClick={() => setAvance(total)} style={{ display: 'block', marginLeft: 'auto', marginTop: 6, background: 'none', border: 'none', color: ENCRE, textDecoration: 'underline', cursor: 'pointer', font: 'inherit', fontSize: 14 }}>Tout afficher ⏭</button>}
+    <div inert={!fini} style={{ opacity: fini ? 1 : 0, transition: 'opacity .3s' }}>{children}</div>
+  </>);
+}
+
+function ChoixLecture({ lecture, onChange }) {
   return (
-    <div aria-live="polite" data-texte style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
-      {lignes.map((l, i) => l.includes('«')
-        ? <div key={i} className="lab-bulle lab-postit" style={{ animationDelay: `${i * 0.3}s`, '--pc': `color-mix(in srgb, ${p.couleur} 14%, #fffbe0)`, '--rot': `${i % 2 ? 0.5 : -0.4}deg`, padding: '10px 16px', fontSize: 17, lineHeight: 1.55, borderLeft: `5px solid ${p.couleur}` }}>{l}</div>
-        : <div key={i} className="lab-ligne" style={{ animationDelay: `${i * 0.3}s`, fontSize: 16.5, lineHeight: 1.6, color: '#4b5563' }}>{l}</div>)}
+    <div role="group" aria-label="Vitesse de lecture" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', fontSize: 13.5, margin: '0 0 12px', color: C.doux }}>
+      <span>📖 Lecture :</span>
+      {LECTURES.map(([id, nom]) => (
+        <button key={id} type="button" data-lecture={id} aria-pressed={lecture === id} onClick={() => onChange(id)}
+          style={{ padding: '2px 10px', borderRadius: 99, border: `1.5px solid ${lecture === id ? ENCRE : '#b8c4d6'}`, background: lecture === id ? ENCRE : '#fff', color: lecture === id ? '#fff' : ENCRE, cursor: 'pointer', font: 'inherit', fontSize: 13.5 }}>{nom}</button>))}
     </div>);
 }
 
@@ -88,6 +126,7 @@ function Calcul({ e, sc, onEtat }) {
 export function SimulationHistoireLabo() {
   const [etat, setEtat] = useEtatPersistant(CLE_ETAT, null);
   const [fins, setFins] = useEtatPersistant(CLE_FINS, []);
+  const [lecture, setLecture] = useEtatPersistant('labo-lecture-v1', () => (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'fixe' : 'normale'));
   const [carnetOuvert, setCarnetOuvert] = useState(false);
   const [saut, setSaut] = useState(null);   // voile « quelques minutes plus tard » quand une action fait avancer l'horloge
   const refTitre = useRef(null);
@@ -127,7 +166,6 @@ export function SimulationHistoireLabo() {
 
   const sc = SCENES[e.scene], choix = choixDe(e), st = statutCmd(e).filter(x => x.etat !== 'lu'), vis = visuelDe(e);
   const hub = e.scene === 'labo';
-  const nbLignes = String(texteDe(e)).split('\n').filter(l => l.trim()).length;
   const avancer = c => {
     const n = choisir(e, c);
     if (n.t - e.t >= 20 && n.t < T_FIN) setSaut(s0 => ({ id: (s0?.id ?? 0) + 1, de: e.t, a: n.t })); else setSaut(null);
@@ -145,6 +183,7 @@ export function SimulationHistoireLabo() {
     <div className="lab-cahier" style={cadre} data-labo={fin ? 'fin' : 'jeu'}><style>{STYLE}</style><div className="lab-spirale" aria-hidden="true" />
       {saut && <div key={saut.id} className="lab-saut" aria-hidden="true"><div style={{ fontSize: 13, letterSpacing: 2, opacity: .7 }}>{saut.a - saut.de >= 60 ? 'PLUS TARD…' : 'QUELQUES MINUTES PLUS TARD…'}</div><div style={{ fontSize: 'clamp(34px,9vw,56px)', fontWeight: 800 }}>{hhmm(saut.a)}</div></div>}
       <BarreHeure t={Math.min(e.t, T_FIN)} />
+      <ChoixLecture lecture={lecture} onChange={setLecture} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div key={e.scene} className="lab-scene">
           <div className="lab-photo" style={{ '--rot': `${(e.scene.length % 3 - 1) * 0.5}deg` }}><ScenePlanche lieu={sc.lieu} pnj={hub ? 'moi' : sc.pnj} t={Math.min(e.t, T_FIN)} ton={fin ? sc.fin.ton : undefined} equipe={hub} /></div>
@@ -152,13 +191,13 @@ export function SimulationHistoireLabo() {
         {hub && <Equipe occup={equipe(e)} />}
         <div className="lab-scene" key={`c-${e.scene}`} style={{ minWidth: 0, padding: '4px 0' }}>
           <h3 ref={refTitre} tabIndex={-1} className="lab-titre" style={{ margin: '0 0 12px', fontSize: 25, fontWeight: 700, outline: 'none', color: fin ? TONS[sc.fin.ton] : C.encre }} data-titre>{sc.titre}</h3>
-          <Dialogue texte={texteDe(e)} pnj={sc.pnj} />
+          <Dialogue texte={texteDe(e)} pnj={sc.pnj} lecture={lecture}>
           {vis && <div className="lab-instr" style={{ margin: '16px auto 6px', maxWidth: 460 }}><div className="lab-photo" style={{ '--rot': '0.8deg' }}><Instrument v={vis} /></div></div>}
 
           {sc.calcul && <Calcul key={e.scene} e={e} sc={sc} onEtat={setEtat} />}
 
           {!sc.calcul && choix.map((c, i) => (
-            <button key={i} type="button" className="lab-choix lab-ligne" style={{ animationDelay: `${nbLignes * 0.3 + i * 0.1}s` }} data-choix={i} onClick={() => avancer(c)}>
+            <button key={i} type="button" className="lab-choix lab-ligne" style={{ animationDelay: `${i * 0.1}s` }} data-choix={i} onClick={() => avancer(c)}>
               {c.t}{c.d && <div style={{ fontSize: 12.5, color: C.doux, marginTop: 2 }}>{c.d}</div>}
             </button>))}
 
@@ -172,6 +211,7 @@ export function SimulationHistoireLabo() {
             <button type="button" data-rejouer onClick={recommencer} style={{ marginTop: 14, padding: '10px 18px', borderRadius: 10, border: `2px solid ${C.accent}`, background: C.accentFond, color: C.accent, fontWeight: 800, cursor: 'pointer', font: 'inherit' }}>↺ Rejouer une journée (autre stratégie ?)</button>
             {boiteFins}
           </>)}
+          </Dialogue>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 12 }}>
