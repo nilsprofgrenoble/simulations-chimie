@@ -1,31 +1,29 @@
 import { useState, useEffect, useRef } from "react";
 import { useEtatPersistant } from "../commun";
-import { CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_CLIENT, T_RAPPORT, T_FIN, etatInitial, texteDe, choixDe, choisir, valider, hhmm, bilan, statutCmd, estFin } from "./laboJournee";
+import { CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_CLIENT, T_RAPPORT, T_FIN, etatInitial, texteDe, choixDe, choisir, valider, hhmm, bilan, statutCmd, estFin, visuelDe, equipe } from "./laboJournee";
+import { ScenePlanche, Affiche, Equipe, Instrument, STYLE_VISUELS } from "./LaboVisuels";
 
 // ====================================================
 //  SIM 81 : UNE JOURNÉE AU LABO (BTS Métiers de la Chimie), histoire à choix d'après le sujet de CCF4. Hors menu : ?sim=81.
-//  Toute la logique est dans laboJournee.js ; ce composant ne fait que l'affichage.
+//  Toute la logique est dans laboJournee.js, les dessins dans LaboVisuels.jsx ; ce composant assemble l'affichage.
 // ====================================================
 const C = { papier: '#fbf8f1', encre: '#1f2937', doux: '#5b6472', bord: '#d9d2c3', accent: '#0f766e', accentFond: '#e6f4f1', ambre: '#b45309', rouge: '#b91c1c', vert: '#15803d', carte: '#ffffff' };
 const NIVEAUX = { ok: ['✅', C.vert, 'Maîtrisé'], moyen: ['🟡', C.ambre, 'À consolider'], ko: ['❌', C.rouge, 'À retravailler'], nd: ['⚪', C.doux, 'Non évalué'] };
 const TONS = { ok: C.vert, moyen: C.ambre, ko: C.rouge };
 
-const STYLE = `
+const STYLE = `${STYLE_VISUELS}
 @keyframes lab-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.lab-scene{animation:lab-in .28s ease-out}
-.lab-choix{display:block;width:100%;text-align:left;padding:11px 14px;margin:8px 0;border:1.5px solid ${C.bord};border-radius:10px;background:${C.carte};color:${C.encre};font:inherit;font-size:15px;line-height:1.45;cursor:pointer}
-.lab-choix:hover,.lab-choix:focus-visible{border-color:${C.accent};background:${C.accentFond};outline:none}
-.lab-bulle{white-space:pre-line}
-@media (prefers-reduced-motion:reduce){.lab-scene{animation:none}}
+.lab-scene{animation:lab-in .3s ease-out}
+.lab-choix{display:block;width:100%;text-align:left;padding:11px 14px;margin:8px 0;border:1.5px solid ${C.bord};border-radius:10px;background:${C.carte};color:${C.encre};font:inherit;font-size:15px;line-height:1.45;cursor:pointer;transition:transform .12s,border-color .12s,background .12s}
+.lab-choix:hover,.lab-choix:focus-visible{border-color:${C.accent};background:${C.accentFond};outline:none;transform:translateX(3px)}
+@media (prefers-reduced-motion:reduce){.lab-scene{animation:none}.lab-choix:hover{transform:none}}
 `;
 
-const Avatar = ({ id, taille = 46 }) => { const p = PNJ[id]; return <div aria-hidden="true" style={{ width: taille, height: taille, borderRadius: '50%', background: p.couleur + '22', border: `2px solid ${p.couleur}`, display: 'grid', placeItems: 'center', fontSize: taille * 0.55, flex: 'none' }}>{p.emoji}</div>; };
-
-function Horloge({ t }) {
+function BarreHeure({ t }) {
   const pct = x => `${Math.min(100, x / T_FIN * 100)}%`, retard = t >= T_RAPPORT;
   return (
     <div style={{ marginBottom: 12 }} aria-label={`Il est ${hhmm(t)}`}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4, gap: 8, flexWrap: 'wrap' }}>
         <span style={{ fontFamily: 'ui-monospace,monospace', fontWeight: 800, fontSize: 22, whiteSpace: 'nowrap', color: retard ? C.rouge : C.accent }} data-heure>🕗 {hhmm(t)}</span>
         <span style={{ fontSize: 12.5, color: C.doux }}>Appel client 15 h · Rapport avant 16 h 30</span>
       </div>
@@ -37,26 +35,25 @@ function Horloge({ t }) {
     </div>);
 }
 
-// Bandeau décoratif : paillasse avec fioles, balance et bécher
-const Bandeau = () => (
-  <svg viewBox="0 0 800 74" aria-hidden="true" style={{ width: '100%', display: 'block', borderRadius: 12, marginBottom: 12 }}>
-    <rect width="800" height="74" fill="#e6f4f1" /><rect y="58" width="800" height="16" fill="#c9bfa8" />
-    <g fill="#fff" stroke="#0f766e" strokeWidth="2.2" strokeLinejoin="round">
-      <path d="M70 58 V30 L58 14 H92 L80 30 V58 Z" /><path d="M120 58 V36 H150 V58 Z" /><path d="M190 58 L205 22 H215 L230 58 Z" />
-      <rect x="520" y="44" width="70" height="14" rx="3" /><path d="M535 44 V30 H575 V44" />
-    </g>
-    <path d="M73 52 H77 V40 L73 40 Z" fill="#38bdf8" opacity=".7" /><rect x="122" y="46" width="26" height="10" fill="#f59e0b" opacity=".7" /><path d="M196 52 H224 L218 36 H202 Z" fill="#a78bfa" opacity=".75" />
-    <rect x="262" y="12" width="150" height="14" rx="7" fill="#fff" stroke="#0f766e" strokeWidth="2" /><text x="337" y="23" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#0f766e" fontFamily="ui-monospace,monospace">LABORATOIRE R&amp;D · PEINTURES</text>
-    <circle cx="690" cy="34" r="15" fill="#fff" stroke="#0f766e" strokeWidth="2.2" /><path d="M690 34 L698 26" stroke="#0f766e" strokeWidth="2.2" /><path d="M672 58 H708" stroke="#0f766e" strokeWidth="2.4" />
-  </svg>);
+// Le texte d'une scène : les répliques (lignes avec « ») deviennent des bulles de dialogue, le reste est de la narration
+function Dialogue({ texte, pnj }) {
+  const lignes = String(texte).split('\n').filter(l => l.trim());
+  const p = PNJ[pnj];
+  return (
+    <div aria-live="polite" data-texte style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {lignes.map((l, i) => l.includes('«')
+        ? <div key={i} style={{ position: 'relative', background: p.couleur + '14', border: `1.5px solid ${p.couleur}55`, borderRadius: '4px 16px 16px 16px', padding: '9px 14px', fontSize: 15.5, lineHeight: 1.6 }}>{l}</div>
+        : <div key={i} style={{ fontSize: 15, lineHeight: 1.6, color: C.doux, fontStyle: 'italic' }}>{l}</div>)}
+    </div>);
+}
 
 function Calcul({ e, sc, onEtat }) {
   const [saisie, setSaisie] = useState('');
   const [message, setMessage] = useState('');
   const soumettre = ev => { ev.preventDefault(); const r = valider(e, saisie); onEtat(r.etat); if (!r.juste) setMessage(r.message || ''); };
   return (
-    <form onSubmit={soumettre} style={{ marginTop: 12 }} data-calcul>
-      <div style={{ fontWeight: 700, marginBottom: 6 }}>{sc.calcul.q}</div>
+    <form onSubmit={soumettre} style={{ marginTop: 12, background: '#f5f1e6', border: `1.5px dashed ${C.bord}`, borderRadius: 12, padding: '12px 14px' }} data-calcul>
+      <div style={{ fontWeight: 700, marginBottom: 6 }}>🧮 {sc.calcul.q}</div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <input value={saisie} onChange={ev => setSaisie(ev.target.value)} inputMode="decimal" autoComplete="off" aria-label="Ta réponse" placeholder="?"
           style={{ width: 130, fontSize: 18, padding: '6px 10px', border: `2px solid ${C.bord}`, borderRadius: 8, fontFamily: 'ui-monospace,monospace' }} />
@@ -90,11 +87,11 @@ export function SimulationHistoireLabo() {
 
   if (!e) return (
     <div style={cadre} data-labo="intro"><style>{STYLE}</style>
-      <Bandeau />
-      <div style={{ fontSize: 12.5, letterSpacing: 2, color: C.accent, fontFamily: 'ui-monospace,monospace' }}>BTS MÉTIERS DE LA CHIMIE · HISTOIRE À CHOIX</div>
+      <Affiche />
+      <div style={{ fontSize: 12.5, letterSpacing: 2, color: C.accent, fontFamily: 'ui-monospace,monospace', marginTop: 14 }}>BTS MÉTIERS DE LA CHIMIE · HISTOIRE À CHOIX</div>
       <h2 style={{ margin: '6px 0 10px', fontSize: 'clamp(24px,5vw,32px)', color: C.encre }}>🧪 Une journée au laboratoire</h2>
       <p style={{ lineHeight: 1.65, fontSize: 15.5, maxWidth: 740 }}>
-        Tu es technicien·ne dans un laboratoire de R&amp;D de peintures. Aujourd'hui, de 8 h à 17 h : remplacer la résine d'une base de peinture blanche, corriger un défaut de fabrication, synthétiser un pigment et préparer une gamme colorée, avec des collègues à qui déléguer les analyses, une responsable à prévenir quand il le faut et une cliente au téléphone à 15 h.
+        Tu es technicien·ne dans un laboratoire de R&amp;D de peintures. Aujourd'hui, de 8 h à 17 h : remplacer la résine d'une base de peinture blanche, corriger un défaut de fabrication et contrôler la qualité de la nouvelle formule, avec des collègues à qui déléguer les analyses, une responsable à prévenir quand il le faut et une cliente au téléphone à 15 h.
       </p>
       <ul style={{ lineHeight: 1.7, color: C.doux, fontSize: 14.5, paddingLeft: 20 }}>
         <li>Tu joues <b style={{ color: C.encre }}>seul·e</b>, en <b style={{ color: C.encre }}>moins d'une heure</b> de temps réel.</li>
@@ -107,7 +104,8 @@ export function SimulationHistoireLabo() {
       <div style={{ fontSize: 12.5, color: C.doux, marginTop: 14 }}>Scénario fictif d'après le sujet de CCF4 (Lycée Argouges, 2025). Les mesures déléguées aux collègues sont des données de scénario.</div>
     </div>);
 
-  const sc = SCENES[e.scene], p = PNJ[sc.pnj], choix = choixDe(e), st = statutCmd(e).filter(x => x.etat !== 'lu');
+  const sc = SCENES[e.scene], choix = choixDe(e), st = statutCmd(e).filter(x => x.etat !== 'lu'), vis = visuelDe(e);
+  const hub = e.scene === 'labo';
   const avancer = c => setEtat(choisir(e, c));
   const recommencer = () => { setEtat(null); setCarnetOuvert(false); };
 
@@ -119,18 +117,16 @@ export function SimulationHistoireLabo() {
 
   return (
     <div style={cadre} data-labo={fin ? 'fin' : 'jeu'}><style>{STYLE}</style>
-      <Horloge t={Math.min(e.t, T_FIN)} />
+      <BarreHeure t={Math.min(e.t, T_FIN)} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div className="lab-scene" key={e.scene} style={{ minWidth: 0, background: C.carte, border: `1.5px solid ${fin ? TONS[sc.fin.ton] : C.bord}`, borderRadius: 14, padding: '14px 16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
-            <Avatar id={sc.pnj} />
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 12, color: C.doux, letterSpacing: 1 }}>📍 {sc.lieu}</div>
-              <div style={{ fontWeight: 800, color: p.couleur }}>{p.nom} <span style={{ fontWeight: 500, color: C.doux, fontSize: 13 }}>· {p.role}</span></div>
-            </div>
-          </div>
-          <h3 ref={refTitre} tabIndex={-1} style={{ margin: '0 0 8px', fontSize: 20, outline: 'none', color: fin ? TONS[sc.fin.ton] : C.encre }} data-titre>{sc.titre}</h3>
-          <div className="lab-bulle" style={{ fontSize: 15.5, lineHeight: 1.65 }} aria-live="polite" data-texte>{texteDe(e)}</div>
+        <div key={e.scene} className="lab-scene">
+          <ScenePlanche lieu={sc.lieu} pnj={hub ? 'moi' : sc.pnj} t={Math.min(e.t, T_FIN)} ton={fin ? sc.fin.ton : undefined} equipe={hub} />
+        </div>
+        {hub && <Equipe occup={equipe(e)} />}
+        <div className="lab-scene" key={`c-${e.scene}`} style={{ minWidth: 0, background: C.carte, border: `1.5px solid ${fin ? TONS[sc.fin.ton] : C.bord}`, borderRadius: 14, padding: '14px 16px' }}>
+          <h3 ref={refTitre} tabIndex={-1} style={{ margin: '0 0 10px', fontSize: 21, outline: 'none', color: fin ? TONS[sc.fin.ton] : C.encre }} data-titre>{sc.titre}</h3>
+          <Dialogue texte={texteDe(e)} pnj={sc.pnj} />
+          {vis && <Instrument v={vis} />}
 
           {sc.calcul && <Calcul key={e.scene} e={e} sc={sc} onEtat={setEtat} />}
 
