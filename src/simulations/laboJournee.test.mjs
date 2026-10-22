@@ -162,4 +162,26 @@ for (let g0 = 1; g0 <= 300; g0++) {
 }
 // parcours scripté passant par le banc
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3, banc: true }); const fin = travaille(g, {}); assert(['fin_excellent', 'fin_bon'].includes(fin.scene), 'parcours par le banc : ' + fin.scene); assert(fin.f.preEssai && fin.f.banc.length === 2); }
+
+// 4. Station courbe de défloculation
+for (let g0 = 1; g0 <= 300; g0++) { const sec = S.secretsDe(g0); assert(sec.dem >= S.DEM_MIN && sec.dem <= S.DEM_MAX); assert(J.dispOk({ coadis: 0.525, dem: sec.dem }), 'la dose de la fiche (0,175 %) suffit pour tout lot : ' + sec.dem); assert(!J.dispOk({ coadis: 0.2, dem: sec.dem }), 'la dose de départ (0,067 %) est insuffisante'); }
+{
+  const ref = S.COURBE_REF;
+  for (const [x, a, b] of ref) { const v = S.viscoVraie(x, 1); assert(Math.abs(v[0] - a) < 1e-6 && Math.abs(v[1] - b) < 1e-6, 'la courbe passe par les points de référence'); }
+  assert.strictEqual(S.viscoVraie(0.06, 1), null, 'hors gamme sous 0,094 %');
+  let prec = Infinity; for (let x = 0.095; x < 0.7; x += 0.01) { const v = S.viscoVraie(x, 1)[0]; assert(v <= prec + 1e-9, 'décroissante'); prec = v; }
+  const sec = S.secretsDe(7);
+  let e = { ...J.etatInitial(), scene: 'stationCourbe', f: { regle: 'ok', graine: sec.graine, dem: sec.dem } };
+  for (const x of [0.06, 0.11, 0.15, 0.19, 0.25, 0.30, 0.40, 0.55, 0.21]) e = J.essaiCourbe(e, x);
+  assert.strictEqual(e.f.courbe.length, 8, 'plafond de points'); assert.strictEqual(e.t, 24);
+  assert.strictEqual(e.f.courbe[0].v258, null);
+  const bon = J.choisir(e, J.choixDe(e).find(c => c.x === 0.21));
+  assert.strictEqual(bon.scene, 'debriefCourbe'); assert(Math.abs(bon.f.coadis - 0.63) < 1e-9);
+  const d = J.SCENES.debriefCourbe.debrief(bon); assert.strictEqual(d[0].ok, true); assert(d.every(l => l.t && l.t.length > 10));
+  const bas = J.SCENES.debriefCourbe.debrief(J.choisir({ ...e, f: { ...e.f, courbe: [] } }, J.choixDe(e).find(c => c.x === 0.06)));
+  assert.strictEqual(bas[0].ok, false); assert(/Remède/.test(bas[0].t)); assert(bas.some(l => /aucun point/.test(l.t)));
+  assert.strictEqual(J.choisir(e, J.choixDe(e).find(c => c.x === 0.55)).f.dispPct, 0.55);
+  assert.strictEqual(J.SCENES.debriefCourbe.debrief(J.choisir(e, J.choixDe(e).find(c => c.x === 0.55)))[0].ok, null, 'surdosage : à nuancer');
+}
+{ const g = jouer(); debut(g, { alerte: 'tot' }); g.go('La masse de polymère'); g.calc(); g.calc(); g.go('courbe de défloculation'); g.e = J.essaiCourbe(J.essaiCourbe(J.essaiCourbe(g.e, 0.15), 0.19), 0.30); g.go('Retenir 0,19'); assert.strictEqual(g.e.scene, 'debriefCourbe'); g.go('Passer'); assert.strictEqual(g.e.scene, 'coalescent'); assert(J.dispOk(g.e.f)); }
 console.log('OK : une journée au labo');

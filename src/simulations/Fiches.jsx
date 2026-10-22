@@ -2,18 +2,15 @@
 // Reproductions simplifiées sur le modèle des vraies fiches ; les valeurs servent le scénario (données fictives).
 const SANS = "Arial,'Helvetica Neue',Helvetica,sans-serif";
 
-const FICHES = {
-  coadis: { ref: 'Fiche technique', titre: 'COADIS BR3', sous: 'Dispersant polyacrylate de sodium pour pigments et charges', edition: 'Édition 01/2022',
-    lignes: [['Aspect', 'Liquide limpide, jaune pâle'], ['Extrait sec', '40 %'], ['pH', '7,5 – 9,5'], ['Masse volumique', '1,22 g/cm³'], ['Nature ionique', 'Anionique']],
-    textes: [['Dosage', '0,15 à 0,20 % de matière active par rapport à la masse de pigments et de charges.'],
-      ['Remarque', 'Les groupes carboxylate sont ionisés en milieu neutre ou basique : l\'efficacité diminue lorsque le pH de la formule descend sous 6. Un surdosage rend le film sensible à l\'eau.']] },
-};
+const FICHES = {};
 
 // Fiches techniques réelles des fabricants (pages du PDF, dans public/fiches/), reproduites à des fins pédagogiques
 const REELLES = {
   orgal: { titre: 'ORGAL PST 50 A', source: 'Organik Kimya', pages: ['orgal-1'] },
   vinnapas: { titre: 'VINNAPAS EP 3360 (BGH)', source: 'Wacker Chemie', pages: ['vinnapas-1', 'vinnapas-2', 'vinnapas-3'] },
   dpnb: { titre: 'Poly-Solv DPnB', source: 'Monument Chemical', pages: ['dpnb-1', 'dpnb-2'] },
+  coadis: { titre: 'COADIS BR 3', source: 'Coatex', pages: ['coadis-1', 'coadis-2'] },
+  durcal: { titre: 'DURCAL 10', source: 'Omya', pages: ['durcal-1'] },
 };
 const url = nom => `${import.meta.env.BASE_URL}fiches/${nom}.jpg`;
 

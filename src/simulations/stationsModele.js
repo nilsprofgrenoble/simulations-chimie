@@ -9,6 +9,7 @@ import { rng, gauss } from "./etalonnageModele";
 export const EFF_MIN = 2.6, EFF_MAX = 3.6;          // °C par % de coalescent sur polymère sec (secret)
 export const SIGMA_BANC = 0.4;                       // °C : dispersion de lecture du banc (écart-type, hypothèse)
 export const DOSES_BANC = [0, 1, 2, 3, 4, 5, 6, 8, 10];   // g de DPnB proposés
+export const DEM_MIN = 0.9, DEM_MAX = 1.05;          // facteur caché sur la dose de dispersant nécessaire
 export const ESSAIS_MAX = 6;                         // essais maximum au banc (chacun coûte du temps)
 export const DUREE_ESSAI = 5;                        // min par essai
 
@@ -19,7 +20,9 @@ export function secretsAleatoires() {
 }
 export function secretsDe(graine) {
   const r = rng(graine);
-  return { graine, eff: Math.round((EFF_MIN + r() * (EFF_MAX - EFF_MIN)) * 100) / 100 };
+  const eff = Math.round((EFF_MIN + r() * (EFF_MAX - EFF_MIN)) * 100) / 100;
+  const dem = Math.round((DEM_MIN + r() * (DEM_MAX - DEM_MIN)) * 100) / 100;   // décalage de la demande en dispersant de ce lot de poudres
+  return { graine, eff, dem };
 }
 
 // Lecture au banc : TMFF vraie + bruit reproductible (même graine et même numéro d'essai = même lecture), lue au 0,5 °C près ; le banc s'arrête à 0 °C
@@ -40,4 +43,34 @@ export function penteMesuree(essais) {
   const SSres = pts.reduce((s, p) => s + (p.tmff - (a * p.pct + b)) ** 2, 0);
   const sa = n > 2 ? Math.sqrt(SSres / (n - 2) / Sxx) : null;
   return { efficacite: -a, incertitude: sa, tmff0: b, n };
+}
+
+// ───────────── Station « courbe de défloculation » (TP de dosologie du Coadis BR3, mélange 50/50 TiO₂ / CaCO₃, 250 g de poudres) ─────────────
+// Points RÉELS (sujet de TP, viscosimètre à haut gradient) de 0,094 à 0,21 % puis 0,566 % ; les points de 0,25 à 0,50 % sont INVENTÉS (plateau plausible).
+// [ % de dispersant sec / poudres, viscosité à 258 s⁻¹, viscosité à 129 s⁻¹ (mPa·s) ]
+export const COURBE_REF = [
+  [0.09392, 2947, 4877], [0.12688, 1287, 2220], [0.14656, 556, 937], [0.16048, 403, 719], [0.17776, 151, 251], [0.2096, 83, 158],
+  [0.25, 65, 118], [0.30, 58, 98], [0.35, 54, 86], [0.40, 52, 78], [0.45, 51, 73], [0.50, 50, 70], [0.56576, 50, 68],
+];
+export const X_HORS_GAMME = 0.0939;                    // en dessous : viscosité trop élevée pour le viscosimètre (> 5000 mPa·s)
+export const DOSES_COURBE = [0.06, 0.09, 0.11, 0.13, 0.15, 0.17, 0.19, 0.21, 0.25, 0.30, 0.40, 0.55];   // % de matière active sur les poudres
+export const COURBE_MAX = 8, COURBE_DUREE = 3, COURBE_PREP = 5;
+export const BORNE_BASSE = 0.133, BORNE_SEUIL = 0.165, BORNE_HAUTE = 0.35;   // % « effectifs » : en dessous de 0,133, les amas restent ; au-dessus de 0,165 on est sur le plateau ; au-delà de 0,35 : surdosage inutile
+export const masseCoadis = (pct, mPoudres = 250) => pct / 100 * mPoudres / 0.4;   // g de Coadis BR3 (ES 40 %) pour pct % de matière active
+
+// Viscosité vraie à la dose x (interpolation log-linéaire entre les points ; la demande du lot décale l'axe des doses). null = hors gamme.
+export function viscoVraie(x, dem = 1) {
+  const xe = x / dem;
+  if (xe < X_HORS_GAMME) return null;
+  const T = COURBE_REF;
+  if (xe >= T.at(-1)[0]) return [T.at(-1)[1], T.at(-1)[2]];
+  const i = T.findIndex((p, k) => xe >= p[0] && xe < T[k + 1][0]), a = T[i], b = T[i + 1], u = (xe - a[0]) / (b[0] - a[0]);
+  const L = (ya, yb) => Math.exp(Math.log(ya) + u * (Math.log(yb) - Math.log(ya)));
+  return [L(a[1], b[1]), L(a[2], b[2])];
+}
+// Lecture : bruit relatif de 4 % (hypothèse), arrondi à l'unité
+export function lectureVisco(x, dem, graine, n) {
+  const v = viscoVraie(x, dem); if (!v) return null;
+  const r = rng((graine ^ (n * 40503) ^ 0x9e3779b9) >>> 0);
+  return v.map(y => Math.round(y * (1 + 0.04 * gauss(r))));
 }

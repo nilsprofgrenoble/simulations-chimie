@@ -9,7 +9,7 @@
 //  Chaque scène de résultat porte un champ « visuel » (données) que l'interface dessine sous forme d'instrument.
 // ====================================================
 import { proprietes } from "./Peinture";
-import { secretsAleatoires, lectureBanc, penteMesuree, DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI } from "./stationsModele";
+import { secretsAleatoires, lectureBanc, penteMesuree, DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI, DOSES_COURBE, COURBE_MAX, COURBE_DUREE, BORNE_BASSE, BORNE_SEUIL, BORNE_HAUTE, masseCoadis, lectureVisco } from "./stationsModele";
 
 export const ID_LABO = 81;
 export const CLE_ETAT = 'labo-histoire-v3';
@@ -130,7 +130,10 @@ const effacerMesures = (e, garder = []) => ({ ...e, libre: { ines: 0, lucas: 0, 
   cmd: Object.fromEntries(Object.entries(e.cmd).filter(([k]) => k === 'huile' || garder.includes(k))),
   f: { ...e.f, fabrique: false, ...Object.fromEntries(MESURES.filter(k => !garder.includes(k)).map(k => ['mes_' + k, false])) } });
 const refaireCoalescent = (note) => ({ t: 'Corriger la dose de coalescent et refaire la peinture', d: '15 min de calcul puis fabrication ; pouvoir masquant, brillance et pH restent valables', duree: 15, f: { refaitCoal: true }, note, run: e => effacerMesures(e, ['masq', 'brill', 'ph']), vers: 'coalescent' });
-const mauvaisRheo = e => e.f.coadis < 0.4 || !!e.f.phAjuste;
+// Dispersant : % de matière active sur les 120 g de poudres de la formule ; la demande réelle du lot (paramètre caché dem) décale le seuil
+export const pctActif = f => (f.coadis ?? 0.2) * 0.4 / 120 * 100;
+export const dispOk = f => pctActif(f) / (f.dem ?? 1) >= BORNE_BASSE;
+const mauvaisRheo = e => !dispOk(e.f) || !!e.f.phAjuste;
 
 add('intro', { lieu: 'Bureau de la responsable', pnj: 'dubreuil', titre: 'Lundi, 8 h 00',
   texte: `Mme Dubreuil t'accueille avec un café et un dossier.\n« Notre fournisseur est en rupture de Vinnapas EP 3360, la résine de notre base de peinture blanche intérieure. Il faut pouvoir la remplacer par l'Orgal PST 50A sans dégrader la base : mate (λ = CPV/CPVC ≥ 0,8), extrait sec supérieur à 50 %, pouvoir masquant supérieur à 7,0 m²/L, COV inférieurs à 30 g/L, matières premières à moins de 4,5 €/kg, et film qui se forme dès 5 °C. »\n« On en profite pour corriger un défaut : les opérateurs trouvent des gros amas de poudres à la dispersion. Je veux une formule, une peinture fabriquée et un dossier de contrôle qualité. »\n« Appel avec notre cliente, Mme Aubry, à 15 h. Rapport pour 16 h 30. Karim, Inès et Lucas t'aident, mais chacun ne fait qu'une chose à la fois. »`,
@@ -207,6 +210,7 @@ add('dispersion', { lieu: 'Paillasse de formulation', pnj: 'karim', titre: 'Les 
   texte: e => `« Voilà le défaut dont se plaignent les opérateurs : quand on verse le TiO₂ et le CaCO₃ dans l'eau, ça fait des amas durs, et ils passent vingt minutes à les casser. Qu'est-ce que tu corriges dans la formule ? »${e.f.disp1 || e.f.disp2 ? '\n(Karim te rappelle que le dispersant est la matière qui aide à mouiller et séparer les grains.)' : ''}`,
   choix: [
     { t: 'La dose de dispersant (Coadis BR3 : 0,2 g pour 120 g de poudres)', vers: 'calcCoadis' },
+    { t: 'Tracer d\'abord la courbe de défloculation du dispersant au viscosimètre', d: '5 min de préparation, puis 3 min par point', duree: 5, note: 'Courbe de défloculation du Coadis BR3 (mélange 50/50 TiO₂ / CaCO₃) demandée à la paillasse.', vers: 'stationCourbe' },
     { t: 'La vitesse d\'agitation', si: e => !e.f.disp1, duree: 10, f: { disp1: true }, note: 'Idée écartée : augmenter la vitesse (déjà au maximum dans la fiche).', vers: 'dispRep1' },
     { t: 'La quantité d\'eau de départ', si: e => !e.f.disp2, duree: 10, f: { disp2: true }, note: 'Idée écartée : plus d\'eau au départ (change l\'ES et la rhéologie).', vers: 'dispRep2' },
   ] });
@@ -219,6 +223,45 @@ add('calcCoadis', { lieu: 'Paillasse', pnj: 'moi', titre: 'Calcul : dose de disp
     retour: v => v >= 1 ? 'Attention : à cette dose, le dispersant est très en excès (surdosage : film sensible à l\'eau, mousse, coût). Revois le calcul.' : null,
     ok: { f: { coadis: 0.525 }, vers: 'coalescent', note: 'Dispersant relevé à 0,525 g de Coadis BR3 (0,175 % de matière active sur les poudres) pour supprimer les amas.' },
     ko: { f: { coadis: 0.5 }, vers: 'coalescent', duree: 10, note: 'Dispersant relevé à 0,5 g de Coadis BR3 (valeur donnée par Karim).' } } });
+
+// ───────────── Station : courbe de défloculation du dispersant ─────────────
+export const INDICES_COURBE = [
+  'Karim : « La fiche du Coadis BR3 donne 0,15 à 0,20 % de matière active sur les poudres. Commence autour de cette plage, et vérifie-la plutôt que de la croire. »',
+  'Karim : « Trace la viscosité en fonction du % de dispersant. Cherche où la courbe cesse de baisser : c\'est le point d\'écoulement, la dose optimale. Au-delà, tu ajoutes du produit pour rien. »',
+  'Karim : « Avec une lecture à ± 4 %, deux points qui diffèrent de moins de 10 % sur le plateau sont indiscernables. Pas la peine d\'aller chercher plus loin. »',
+];
+export function essaiCourbe(e, x) {
+  const c = e.f.courbe || [];
+  if (c.length >= COURBE_MAX || !DOSES_COURBE.includes(x)) return e;
+  const v = lectureVisco(x, e.f.dem ?? 1, e.f.graine ?? 1, c.length + 1);
+  return { ...e, t: e.t + COURBE_DUREE, f: { ...e.f, courbe: [...c, { x, g: masseCoadis(x), v258: v ? v[0] : null, v129: v ? v[1] : null }] } };
+}
+export const indiceCourbe = e => (e.f.indC || 0) >= INDICES_COURBE.length ? e : { ...e, t: e.t + 5, f: { ...e.f, indC: (e.f.indC || 0) + 1 } };
+
+add('stationCourbe', { lieu: 'Paillasse', pnj: 'karim', titre: 'Courbe de défloculation', station: 'courbe',
+  texte: 'Karim sort le disperseur et le viscosimètre à haut gradient. « Même protocole que pour le TP : 250 g de poudres, moitié TiO₂ moitié CaCO₃ léger, l\'eau juste nécessaire pour mouiller, et on ajoute le Coadis BR3 par petites quantités. Après chaque ajout : 2 minutes de dispersion, puis la viscosité à deux gradients. Quand la viscosité ne baisse plus, on a la dose optimale. »\n« Trop peu de dispersant et la pâte est trop épaisse pour être mesurée. »',
+  choix: e => DOSES_COURBE.map(x => ({ x, t: `Retenir ${String(x).replace(".", ",")} % de dispersant`, f: { coadis: Math.round(masseCoadis(x, 120) * 100) / 100, dispPct: x, dispCourbe: true }, note: `Dose de Coadis BR3 retenue après ${(e.f.courbe || []).length} point(s) de courbe : ${String(x).replace('.', ',')} % de matière active (${nf(masseCoadis(x, 120), 2)} g pour 120 g de poudres).`, vers: 'debriefCourbe' })) });
+
+add('debriefCourbe', { lieu: 'Paillasse', pnj: 'karim', titre: 'Ce que dit la courbe',
+  texte: e => `Tu retiens ${nf(e.f.dispPct ?? 0, 2)} % de matière active, soit ${nf(e.f.coadis ?? 0, 2)} g de Coadis BR3 pour 120 g de poudres (extrait sec 40 %).`,
+  debrief: e => {
+    const x = e.f.dispPct ?? 0, dem = e.f.dem ?? 1, xe = x / dem, c = e.f.courbe || [], L = [];
+    const lis = c.filter(p => p.v258 != null), hors = c.filter(p => p.v258 == null);
+    if (xe >= BORNE_SEUIL && x <= BORNE_HAUTE) L.push({ ok: true, t: `${nf(x, 2)} % est sur le plateau de la courbe : les poudres sont défloculées, la viscosité ne baisse presque plus. Dose conforme à la fiche (0,15 à 0,20 %).` });
+    else if (xe >= BORNE_BASSE && xe < BORNE_SEUIL) L.push({ ok: null, t: `${nf(x, 2)} % est encore sur la pente de la courbe : ça passe, mais une petite erreur de pesée ferait remonter la viscosité. Il vaut mieux se placer au début du plateau.` });
+    else if (x > BORNE_HAUTE) L.push({ ok: null, t: `${nf(x, 2)} % est loin sur le plateau : la viscosité n'a presque plus changé depuis 0,2 %. La fiche précise qu'une légère surdose est sans effet, mais tu paies du dispersant inutile (et un excès rend le film plus sensible à l'eau).` });
+    else L.push({ ok: false, t: `${nf(x, 2)} % est trop bas : les poudres ne sont pas assez défloculées. Cause : pas assez de dispersant pour couvrir les grains. Effet : amas, viscosité élevée à bas gradient, thixotropie. Remède : monter jusqu'au début du plateau (autour de 0,17 à 0,20 %).` });
+    if (!lis.length) L.push({ ok: false, t: 'Tu n\'as obtenu aucun point mesurable : la dose a été choisie sans courbe. La dose optimale se mesure sur la courbe de défloculation, elle ne se devine pas.' });
+    else {
+      L.push({ ok: lis.length >= 4, t: `${c.length} ajout${c.length > 1 ? 's' : ''}, ${lis.length} point${lis.length > 1 ? 's' : ''} mesurable${lis.length > 1 ? 's' : ''}${hors.length ? `, ${hors.length} hors gamme (viscosité trop élevée pour le viscosimètre)` : ''}.${lis.length < 4 ? ' Pour repérer le point d\'écoulement, il faut des points de part et d\'autre : au moins 4.' : ''}` });
+      L.push({ ok: null, t: `Seuil de défloculation de ce lot de poudres : environ ${nf(0.19 * dem, 2)} % (la fiche annonce 0,15 à 0,20 %). Les deux gradients donnent le même seuil ; la viscosité est plus forte à 129 s⁻¹ qu'à 258 s⁻¹ : la peinture est rhéofluidifiante.` });
+    }
+    const plat = lis.filter(p => p.x / dem >= BORNE_SEUIL).length;
+    L.push(plat >= 2 ? { ok: true, t: 'Tu as vérifié que la viscosité ne baisse plus sur le plateau. Avec une lecture à ± 4 % (hypothèse du scénario), des écarts de moins de 10 % entre deux points voisins ne sont pas significatifs.' } : { ok: null, t: 'Métrologie : sans au moins deux points sur le plateau, tu ne sais pas si la baisse est vraiment terminée (la lecture a une dispersion d\'environ 4 %).' });
+    if ((e.f.indC || 0) > 0) L.push({ ok: null, t: `Tu as demandé ${e.f.indC} coup(s) de pouce à Karim (5 min chacun).` });
+    return L;
+  },
+  choix: () => [{ t: 'Passer à la suite', vers: 'coalescent' }] });
 
 add('coalescent', { lieu: 'Paillasse', pnj: 'karim', titre: 'Et le coalescent ?', fiches: ['dpnb'],
   texte: e => `« La Vinnapas filmifiait toute seule : sa MFFT est de 2 °C, donc la référence n'a pas d'agent de coalescence. L'Orgal, lui, a une MFFT de 20 °C. Notre cahier des charges veut un film continu dès 5 °C. Qu'est-ce qu'on met dans la formule ? »\n${e.f.fiche ? 'Tu te souviens de la fiche : MFFT de 2 °C pour la Vinnapas, 20 °C pour l\'Orgal.' : 'Tu n\'as pas lu la fiche de la résine : Karim te la tend. « MFFT de la Vinnapas : 2 °C ; celle de l\'Orgal : 20 °C. »'}\nKarim ajoute : « La fiche du DPnB ne donne aucun dosage. Chez nous, la règle d'atelier est de 4 à 8 % du polymère sec, à confirmer par un essai. »`,
@@ -342,7 +385,7 @@ add('res_ph', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Résultat 
   ] });
 add('res_rheo', { lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Résultat : rhéologie',
   texte: e => e.f.phAjuste ? 'Lucas : « Viscosité élevée à bas gradient et nette thixotropie. Le dispersant polyacrylate est protoné à pH 5 : il ne tient plus les poudres, qui refloculent. »\nCe pH acide a défait l\'effet du dispersant.'
-    : e.f.coadis < 0.4 ? 'Lucas : « Viscosité élevée à bas gradient et nette thixotropie : il reste des amas mal dispersés. On est loin du comportement rhéofluidifiant à faible thixotropie demandé. »\nLe dispersant n\'a pas été corrigé : la cause des amas est restée.'
+    : !dispOk(e.f) ? 'Lucas : « Viscosité élevée à bas gradient et nette thixotropie : il reste des amas mal dispersés. On est loin du comportement rhéofluidifiant à faible thixotropie demandé. »\nLe dispersant n\'a pas été corrigé : la cause des amas est restée.'
     : 'Lucas : « Courbes de viscosité en fonction du gradient de cisaillement : comportement rhéofluidifiant, boucle de thixotropie très faible. Proche de la référence Vinnapas. »',
   visuel: e => ({ type: 'rheo', mauvais: mauvaisRheo(e) }),
   choix: [{ ...retourLabo, run: e => ({ ...e, f: { ...e.f, mes_rheo: true, rheoKo: mauvaisRheo(e) } }), note: 'Rhéologie mesurée.' }] });
@@ -431,8 +474,8 @@ export function bilan(e) {
   pr.push({ comp: 'C2.1', titre: 'Préparer produits et matériel', niveau: !f.fabrique && !f.rate ? 'nd' : f.rate ? 'moyen' : 'ok', texte: f.rate ? 'Première fabrication ratée : l\'ordre d\'introduction de la fiche n\'avait pas été respecté.' : f.fabrique ? 'Fabrication conforme à la fiche, finesse correcte.' : 'Pas de fabrication réalisée.' });
   const c32 = n(f.alerte === true) * (f.alerteTardive ? 0.5 : 1) + n(f.stockCtrl) * (f.stockAlerte ? 0.5 : 1) + n(f.stab === 'honnete');
   pr.push({ comp: 'C3.2', titre: 'Détecter les non-conformités et alerter', niveau: niv(c32, 3), texte: `Promesse « COV nuls » incompatible avec l'Orgal ${f.alerte === true ? (f.alerteTardive ? 'signalée tardivement' : 'signalée tout de suite') : 'non signalée'} ; fût d'Orgal gelé ${f.stockCtrl ? (f.stockAlerte ? 'contrôlé après rappel de Karim' : 'contrôlé de ta propre initiative') : 'non contrôlé'} ; stabilité ${f.stab === 'honnete' ? 'annoncée honnêtement comme non démontrée' : f.stab === 'promis' ? 'garantie sans l\'avoir démontrée' : 'omise'}.` });
-  const c41 = n(f.coadis >= 0.4 && f.coadis <= 0.7) + n(dOk) + n(f.phSignale);
-  pr.push({ comp: 'C4.1', titre: 'Modifier, améliorer le protocole', niveau: niv(c41, 3), texte: `Dispersant ${f.coadis >= 0.4 && f.coadis <= 0.7 ? 'corrigé (amas supprimés)' : 'non corrigé'} ; coalescent ${dOk ? 'ajouté et dosé' : (f.dpnb ?? 0) < 2.5 ? 'absent ou trop faible' : 'surdosé'} ; pH ${f.phSignale ? 'mesuré, écart consigné' : f.phAjuste ? 'abaissé inutilement (le dispersant en a perdu son efficacité)' : f.mes_ph ? 'mesuré mais ignoré' : 'non mesuré (l\'Orgal est basique, la Vinnapas acide)'}.` });
+  const c41 = n(dispOk(f)) + n(dOk) + n(f.phSignale);
+  pr.push({ comp: 'C4.1', titre: 'Modifier, améliorer le protocole', niveau: niv(c41, 3), texte: `Dispersant ${dispOk(f) ? `corrigé (amas supprimés${f.dispCourbe ? ', dose trouvée par la courbe de défloculation' : ''})` : 'non corrigé'} ; coalescent ${dOk ? 'ajouté et dosé' : (f.dpnb ?? 0) < 2.5 ? 'absent ou trop faible' : 'surdosé'} ; pH ${f.phSignale ? 'mesuré, écart consigné' : f.phAjuste ? 'abaissé inutilement (le dispersant en a perdu son efficacité)' : f.mes_ph ? 'mesuré mais ignoré' : 'non mesuré (l\'Orgal est basique, la Vinnapas acide)'}.` });
   const c61 = n(f.plan !== 'solo') + n(e.t <= T_RAPPORT) + n(nbOpt >= 3);
   pr.push({ comp: 'C6.1', titre: 'Organiser le travail, tenir les délais', niveau: niv(c61, 3), texte: `${f.plan === 'solo' ? 'Tout fait seul·e : trop séquentiel. ' : f.plan === 'mp' ? 'Analyses des matières premières lancées dès le début, en parallèle. ' : 'Tâches déléguées en parallèle. '}Rapport ${e.t <= T_RAPPORT ? 'rendu dans les temps' : 'rendu après 16 h 30'} ; ${nbOpt} analyse(s) complémentaire(s) sur 4 (prises d'huile, pH, brillance, TMFF).` });
   pr.push({ comp: 'C6.3', titre: 'Gérer les produits selon la réglementation', niveau: niv(n(f.stock === 'neuf') + n(f.stock === 'tamise') * 0.5 + n(f.coutOk), 2), texte: `${f.stock === 'neuf' ? 'Lot gelé écarté, fût neuf commandé. ' : f.stock === 'tamise' ? 'Lot gelé tamisé et utilisé : acceptable seulement avec réserve. ' : 'Aucun problème de stockage détecté. '}${f.coutOk ? 'Coût matières contrôlé (< 4,5 €/kg).' : 'Coût matières non vérifié.'}` });
@@ -446,7 +489,7 @@ export function resume(e) {
   const f = e.f, L = [];
   L.push(`Remplacement de la résine : ${f.regle === 'naif' ? 'masse pour masse (erreur, extrait sec faux)' : f.regle === 'ok' ? `règle de l'extrait sec appliquée${f.refait ? ' après correction' : ''}` : 'non traité'}.`);
   L.push(`Coalescent : ${nf(f.dpnb ?? 0, 0)} g de DPnB${f.preEssai ? ', choisi après un pré-essai au banc TMFF' : ', choisi sans pré-essai au banc'}${(f.banc || []).length ? ` (${f.banc.length} essai${f.banc.length > 1 ? 's' : ''})` : ''}.`);
-  L.push(`Dispersant : ${f.coadis != null ? `${nf(f.coadis, 2)} g de Coadis BR3` : 'dose de départ conservée'}.`);
+  L.push(`Dispersant : ${f.coadis != null ? `${nf(f.coadis, 2)} g de Coadis BR3${f.dispCourbe ? ' (trouvés par une courbe de défloculation)' : ''}` : 'dose de départ conservée'}.`);
   L.push(`Organisation : ${f.plan === 'solo' ? 'tout fait seul·e' : `${Object.keys(e.cmd).length} analyses déléguées`}.`);
   L.push(`Client : ${f.clientFait ? (f.clientOk ? 'informé de la mention « COV nuls »' : 'mal renseigné') : 'pas rappelé'}.`);
   return L;
