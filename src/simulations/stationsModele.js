@@ -22,7 +22,9 @@ export function secretsDe(graine) {
   const r = rng(graine);
   const eff = Math.round((EFF_MIN + r() * (EFF_MAX - EFF_MIN)) * 100) / 100;
   const dem = Math.round((DEM_MIN + r() * (DEM_MAX - DEM_MIN)) * 100) / 100;   // décalage de la demande en dispersant de ce lot de poudres
-  return { graine, eff, dem };
+  const f = () => 0.96 + r() * 0.08;   // prises d'huile du lot de poudres : valeurs de référence × (0,96 à 1,04), à découvrir par la mesure
+  const ph = { tio2: Math.round(25 * f() * 10) / 10, caco3: Math.round(30 * f() * 10) / 10 };
+  return { graine, eff, dem, ph };
 }
 
 // Lecture au banc : TMFF vraie + bruit reproductible (même graine et même numéro d'essai = même lecture), lue au 0,5 °C près ; le banc s'arrête à 0 °C
@@ -74,3 +76,16 @@ export function lectureVisco(x, dem, graine, n) {
   const r = rng((graine ^ (n * 40503) ^ 0x9e3779b9) >>> 0);
   return v.map(y => Math.round(y * (1 + 0.04 * gauss(r))));
 }
+
+// ───────────── Station « prise d'huile » (méthode à la spatule, 10 g de poudre, huile de lin) ─────────────
+// Valeurs de référence (poudres du lycée, d'après le professeur) : TiO₂ ≈ 25, CaCO₃ ≈ 30 g/100 g ; le lot tiré en diffère de ± 4 % (caché).
+export const M_POUDRE = 10, HUILE_MAX_ESSAIS = 6, HUILE_DUREE = 8;
+export const POUDRES_HUILE = { tio2: 'TiO₂', caco3: 'CaCO₃ léger' };
+// Rapport (huile ajoutée / huile nécessaire) → état de la pâte. Point final : pâte lisse et cohérente, 0,96 à 1,04 (appréciation de l'opérateur ≈ ± 4 %, hypothèse)
+export function etatPate(rapport) {
+  if (rapport < 0.75) return { cle: 'seche', t: 'poudre encore sèche', c: '#e5e7eb' };
+  if (rapport < 0.96) return { cle: 'grumeaux', t: 'grumeaux humides, qui ne se tiennent pas', c: '#fef3c7' };
+  if (rapport <= 1.04) return { cle: 'fin', t: 'pâte lisse et cohérente, qui ne se brise pas', c: '#fde68a' };
+  return { cle: 'fluide', t: 'pâte trop fluide : le point final est dépassé', c: '#fca5a5' };
+}
+export const rapportPate = (huile, phVrai) => huile / M_POUDRE * 100 / phVrai;

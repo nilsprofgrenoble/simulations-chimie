@@ -9,7 +9,7 @@
 //  Chaque scène de résultat porte un champ « visuel » (données) que l'interface dessine sous forme d'instrument.
 // ====================================================
 import { proprietes } from "./Peinture";
-import { secretsAleatoires, lectureBanc, penteMesuree, DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI, DOSES_COURBE, COURBE_MAX, COURBE_DUREE, BORNE_BASSE, BORNE_SEUIL, BORNE_HAUTE, masseCoadis, lectureVisco } from "./stationsModele";
+import { secretsAleatoires, lectureBanc, penteMesuree, DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI, DOSES_COURBE, COURBE_MAX, COURBE_DUREE, HUILE_MAX_ESSAIS, HUILE_DUREE, M_POUDRE, etatPate, rapportPate, BORNE_BASSE, BORNE_SEUIL, BORNE_HAUTE, masseCoadis, lectureVisco } from "./stationsModele";
 
 export const ID_LABO = 81;
 export const CLE_ETAT = 'labo-histoire-v3';
@@ -41,7 +41,7 @@ export const formule = e => {
   return { resine: 'orgal', eau: (naif ? 121.7 : 105) - dpnb, tio2: 60, caco3: 60, liant: naif ? 83.3 : 100, foamex: 1.5,
     coadis: e.f.coadis ?? 0.2, dpnb, thixol: 1.5, coapur: 3 };
 };
-export const prop = (e, opts) => proprietes(formule(e), { efficacite: e.f.eff ?? 3, ...opts });   // l'efficacité du coalescent est un paramètre caché (station banc TMFF)
+export const prop = (e, opts) => proprietes(formule(e), { efficacite: e.f.eff ?? 3, ...(opts?.ph === 'mesuree' && e.f.phMes ? { phPerso: e.f.phMes } : {}), ...opts });   // l'efficacité du coalescent est un paramètre caché (station banc TMFF)
 export const tmffMesuree = e => Math.max(0, prop(e).tmff);          // le banc s'arrête à 0 °C
 export const covDe = e => prop(e).COV;
 export const tmffOk = e => prop(e).tmff <= TMFF_MAX;
@@ -359,13 +359,54 @@ add('cahier', { lieu: 'Paillasse', pnj: 'moi', titre: 'Le cahier de laboratoire'
 
 // ───────────── Résultats d'analyses ─────────────
 add('res_huile', { lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Résultat : prises d\'huile des poudres',
-  texte: e => { const pm = prop(e, { ph: 'mesuree' }), pf = prop(e, { ph: 'fiche' });
-    return `Lucas, méthode à la spatule (ISO 787-5) : « TiO₂ : 25 g d'huile pour 100 g (la fiche annonçait 20). CaCO₃ léger : 30 g pour 100 g (la fiche annonçait 14). Nos poudres absorbent bien plus d'huile que sur les fiches. »\nAvec les valeurs des fiches, λ valait ${nf(pf.lambda, 2)} (CPVC = ${nf(pf.CPVC)} %). Avec les valeurs mesurées, le tableur donne CPVC = ${nf(pm.CPVC)} %.`; },
-  visuel: () => ({ type: 'huile', fiche: [20, 14], mesure: [25, 30] }),
+  texte: e => { const pm = prop(e, { ph: 'mesuree' }), pf = prop(e, { ph: 'fiche' }), m = e.f.phMes || { tio2: 25, caco3: 30 };
+    const lis = e.f.huileMoi ? `Tu as mesuré toi-même, à la spatule (ISO 787-5) : TiO₂ ${nf(m.tio2, 1)} g d'huile pour 100 g (la fiche annonçait 20), CaCO₃ léger ${nf(m.caco3, 1)} g pour 100 g (la fiche annonçait 14). Tes poudres absorbent bien plus d'huile que sur les fiches.`
+      : `Lucas, méthode à la spatule (ISO 787-5) : « TiO₂ : 25 g d'huile pour 100 g (la fiche annonçait 20). CaCO₃ léger : 30 g pour 100 g (la fiche annonçait 14). Nos poudres absorbent bien plus d'huile que sur les fiches. »`;
+    return `${lis}\nAvec les valeurs des fiches, λ valait ${nf(pf.lambda, 2)} (CPVC = ${nf(pf.CPVC)} %). Avec les valeurs mesurées, le tableur donne CPVC = ${nf(pm.CPVC)} %.`; },
+  visuel: e => ({ type: 'huile', fiche: [20, 14], mesure: e.f.phMes ? [Math.round(e.f.phMes.tio2), Math.round(e.f.phMes.caco3)] : [25, 30] }),
+  debrief: e => {
+    if (!e.f.huileMoi) return [];
+    const L = [], ess = e.f.huileEssais || [];
+    for (const k of ['tio2', 'caco3']) {
+      const r = huileRetenue(e, k), nom = k === 'tio2' ? 'TiO₂' : 'CaCO₃', vrai = phVrai(e, k);
+      if (!r) { L.push({ ok: false, t: `${nom} : aucune détermination valide, valeur par défaut utilisée.` }); continue; }
+      const bon = Math.abs(r.ph - vrai) <= 0.06 * vrai;
+      L.push({ ok: bon, t: `${nom} : ${nf(r.ph, 1)} g/100 g (${r.n} détermination${r.n > 1 ? 's' : ''}${r.ecart != null ? `, écart ${nf(r.ecart, 1)}` : ''}). Valeur réelle du lot : ${nf(vrai, 1)} g/100 g.${bon ? '' : ' Écart important : le point final a probablement été jugé trop tôt ou trop tard.'}` });
+    }
+    const rate = ess.filter(m => !m.ok).length;
+    L.push(rate ? { ok: null, t: `${rate} détermination${rate > 1 ? 's' : ''} ratée${rate > 1 ? 's' : ''} (point final dépassé) : chacune a coûté ${HUILE_DUREE} min et une prise de poudre. Finir goutte à goutte évite de tout refaire.` } : { ok: true, t: 'Aucun point final dépassé : tu as fini goutte à goutte.' });
+    const rep = ['tio2', 'caco3'].some(k => (huileRetenue(e, k)?.n || 0) >= 2);
+    L.push(rep ? { ok: true, t: 'Tu as répété une détermination : l\'écart entre deux mesures donne une idée de la dispersion de la méthode (jugement du point final, hypothèse d\'environ ± 4 %).' } : { ok: null, t: 'Métrologie : une seule détermination par poudre ne donne aucune idée de la dispersion de la méthode, qui dépend du jugement de l\'opérateur (environ ± 4 % dans ce scénario).' });
+    return L;
+  },
   calcul: { q: 'Quelle est la valeur de λ = CPV / CPVC de ta formule avec les prises d\'huile mesurées ?', unite: '', vrai: e => prop(e, { ph: 'mesuree' }).lambda, tol: 0.03,
     indice: 'CPV vaut environ 42 % pour ta formule. Utilise la CPVC calculée avec les prises d\'huile mesurées (affichée plus haut) : λ = CPV ÷ CPVC.',
     ok: { f: { mes_huile: true }, vers: 'labo', note: 'Prises d\'huile mesurées : TiO₂ 25, CaCO₃ 30 g/100 g (fiches : 20 et 14). Avec ces valeurs, λ ≈ 0,85 : peinture mate, comme observé.' },
     ko: { f: { mes_huile: true }, vers: 'labo', duree: 10, note: 'Prises d\'huile mesurées ; λ recalculé avec l\'aide de Lucas (≈ 1).' } } });
+// ───────────── Station : prises d'huile à la spatule (faites soi-même) ─────────────
+// Paramètre caché : e.f.ph = prises d'huile réelles du lot de poudres. L'élève les mesure ; son résultat alimente le calcul de λ.
+export const phVrai = (e, poudre) => e.f.ph?.[poudre] ?? (poudre === 'tio2' ? 25 : 30);
+export function conclureHuile(e, poudre, huile) {
+  const essais = (e.f.huileEssais || []).length;
+  if (essais >= HUILE_MAX_ESSAIS) return { etat: e, ok: false, message: 'Tu as épuisé tes essais : la poudre et l\'huile de ce lot sont terminées.' };
+  const rap = rapportPate(huile, phVrai(e, poudre)), ep = etatPate(rap), ok = ep.cle === 'fin', ph = Math.round(huile / M_POUDRE * 1000) / 10;
+  const message = ok ? `Prise d'huile = ${nf(huile, 2)} g ÷ ${M_POUDRE} g × 100 = ${nf(ph, 1)} g pour 100 g.`
+    : ep.cle === 'fluide' ? 'Le point final est dépassé : la pâte est trop fluide. Cause : trop d\'huile ajoutée d\'un coup. Effet : la prise d\'huile serait surestimée. Remède : recommencer avec une poudre neuve, en finissant goutte à goutte.'
+    : 'Pas de pâte cohérente : le point final n\'est pas atteint, la valeur serait sous-estimée. Continue d\'ajouter de l\'huile, de plus en plus lentement.';
+  const t = ok || ep.cle === 'fluide' ? HUILE_DUREE : 0;
+  const mesure = { poudre, huile, ph: ok ? ph : null, ok };
+  return { ok, message, etat: ok || ep.cle === 'fluide' ? { ...e, t: e.t + t, f: { ...e.f, huileEssais: [...(e.f.huileEssais || []), mesure] } } : e };
+}
+// Résultat retenu pour une poudre : moyenne des déterminations valides (null s'il n'y en a pas)
+export function huileRetenue(e, poudre) {
+  const v = (e.f.huileEssais || []).filter(m => m.poudre === poudre && m.ok).map(m => m.ph);
+  return v.length ? { ph: v.reduce((a, b) => a + b, 0) / v.length, n: v.length, ecart: v.length > 1 ? Math.max(...v) - Math.min(...v) : null } : null;
+}
+add('stationHuile', { lieu: 'Paillasse', pnj: 'moi', titre: 'Prises d\'huile à la spatule', station: 'huile',
+  texte: 'Tu prépares la plaque de verre, la spatule et l\'huile de lin. Pour chaque poudre : 10 g, on ajoute l\'huile par petites quantités en malaxant, jusqu\'à une pâte lisse et cohérente qui ne se brise pas. Ce point final se détecte à l\'œil et à la spatule : il demande un peu de doigté.',
+  choix: () => [{ t: 'Consigner les prises d\'huile et calculer λ', f: { huileMoi: true }, note: 'Prises d\'huile mesurées moi-même à la spatule (ISO 787-5).',
+    run: n => { const T = huileRetenue(n, 'tio2'), C = huileRetenue(n, 'caco3'); return { ...n, f: { ...n.f, phMes: { tio2: T ? T.ph : 25, caco3: C ? C.ph : 30 } }, cmd: { ...n.cmd, huile: { pret: n.t, lu: true } } }; }, vers: 'res_huile' }] });
+
 add('res_es', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Résultat : extrait sec et densité',
   texte: e => { const p = prop(e), ok = e.f.regle === 'ok', es = p.ES - (e.f.lotDouteux ? 1.2 : 0), r = proprietes(FORMULE_REF);
     return `Inès : « Extrait sec ${nf(es)} %, densité ${nf(p.densite, 3)}. »\nD'après la formule : CPV = ${nf(p.CPV)} %, CPVC = ${nf(p.CPVC)} %, λ = ${nf(p.lambda, 2)}, COV = ${nf(p.COV)} g/L.\n${ok ? `Même extrait sec que la référence (${nf(r.ES)} %)${e.f.lotDouteux ? ', un peu plus bas qu\'attendu : le coagulum retiré du lot gelé a emporté du polymère' : ''}. ${covOk(e) ? 'Le cahier des charges (ES > 50 %, λ ≥ 0,8, COV < 30 g/L) est respecté.' : `Mais les COV (${nf(p.COV)} g/L) dépassent la limite de 30 g/L : il y a trop de coalescent.`}` : `Attention : ES = ${nf(p.ES)} % et CPV = ${nf(p.CPV)} % ne correspondent pas à la référence (ES ${nf(r.ES)} %, CPV ${nf(r.CPV)} %). En remplaçant simplement 83,3 g par 83,3 g, tu as changé la quantité de polymère : la formule ne respecte pas la contrainte « mêmes ES, CPV, CPVC ».`}`; },
@@ -415,6 +456,7 @@ add('labo', { lieu: 'Paillasse et laboratoire', pnj: 'moi', titre: 'La journée 
       else if (!c && (e.f.fabrique || A.avant)) { const occ = e.libre[A.tech] > e.t && e.f.plan !== 'solo';
         L.push({ t: `Demander à ${PNJ[A.tech].nom} : ${A.label}`, d: e.f.plan === 'solo' ? `${A.duree} min de ton temps` : `${A.perso} min pour toi, résultat ${occ ? 'après ' + hhmm(e.libre[A.tech]) + ' (' + PNJ[A.tech].nom + ' est occupé·e)' : 'dans ' + A.duree + ' min'}`, run: n => deleguer(n, A), vers: 'labo' }); }
     }
+    if (!e.cmd.huile) L.push({ t: 'Mesurer moi-même les prises d\'huile à la spatule', d: `${HUILE_DUREE} min par détermination, sans attendre personne`, note: 'Prises d\'huile des poudres : mesure faite moi-même.', vers: 'stationHuile' });
     if (e.f.fabrique && !e.f.etuve) L.push({ t: 'Mettre un échantillon à l\'étuve à 50 °C (vieillissement accéléré)', d: '10 min ; résultat dans 7 jours', duree: 10, f: { etuve: true }, note: 'Échantillon mis à l\'étuve à 50 °C pour le test de stabilité (résultat dans 7 jours).', vers: 'labo' });
     L.push({ t: 'Attendre 30 minutes (café, rangement, bibliographie)', duree: 30, vers: 'labo' });
     L.push({ t: 'Rédiger le rapport maintenant', d: '45 min ; la journée se termine avec le rapport', duree: 45, vers: 'rapport' });

@@ -183,4 +183,26 @@ for (let g0 = 1; g0 <= 300; g0++) { const sec = S.secretsDe(g0); assert(sec.dem 
   assert.strictEqual(J.SCENES.debriefCourbe.debrief(J.choisir(e, J.choixDe(e).find(c => c.x === 0.55)))[0].ok, null, 'surdosage : à nuancer');
 }
 { const g = jouer(); debut(g, { alerte: 'tot' }); g.go('La masse de polymère'); g.calc(); g.calc(); g.go('courbe de défloculation'); g.e = J.essaiCourbe(J.essaiCourbe(J.essaiCourbe(g.e, 0.15), 0.19), 0.30); g.go('Retenir 0,19'); assert.strictEqual(g.e.scene, 'debriefCourbe'); g.go('Passer'); assert.strictEqual(g.e.scene, 'coalescent'); assert(J.dispOk(g.e.f)); }
+
+// 5. Station prises d'huile
+for (let g0 = 1; g0 <= 300; g0++) { const sec = S.secretsDe(g0); assert(sec.ph.tio2 >= 24 && sec.ph.tio2 <= 26 && sec.ph.caco3 >= 28.8 && sec.ph.caco3 <= 31.2, 'prises d\'huile du lot dans ± 4 %'); }
+{
+  const sec = S.secretsDe(11);
+  let e = { ...J.etatInitial(), scene: 'stationHuile', f: { regle: 'ok', ph: sec.ph, graine: sec.graine } };
+  const vrai = J.phVrai(e, 'tio2'), huileFin = vrai / 100 * 10;
+  assert.strictEqual(S.etatPate(S.rapportPate(huileFin, vrai)).cle, 'fin');
+  let r = J.conclureHuile(e, 'tio2', huileFin * 0.5); assert(!r.ok && r.etat === e, 'trop tôt : rien n\'est consommé');
+  r = J.conclureHuile(e, 'tio2', huileFin * 1.2); assert(!r.ok && r.etat.t === 8 && /Remède/.test(r.message), 'trop tard : 8 min perdues');
+  e = r.etat;
+  r = J.conclureHuile(e, 'tio2', huileFin); assert(r.ok); e = r.etat;
+  r = J.conclureHuile(e, 'tio2', huileFin * 1.02); assert(r.ok); e = r.etat;
+  r = J.conclureHuile(e, 'caco3', J.phVrai(e, 'caco3') / 10); assert(r.ok); e = r.etat;
+  const T = J.huileRetenue(e, 'tio2'); assert.strictEqual(T.n, 2); assert(Math.abs(T.ph - vrai) < 0.06 * vrai);
+  const n = J.choisir(e, J.choixDe(e)[0]);
+  assert.strictEqual(n.scene, 'res_huile'); assert(n.cmd.huile.lu); assert(n.f.huileMoi);
+  assert(Math.abs(J.prop(n, { ph: 'mesuree' }).lambda - 0.85) < 0.08, 'λ avec les mesures de l\'élève ≈ 0,85');
+  const d = J.SCENES.res_huile.debrief(n); assert(d.length >= 4 && d[0].ok === true);
+  assert.deepStrictEqual(J.SCENES.res_huile.debrief({ f: {} }), [], 'pas de débrief pour la mesure déléguée');
+  assert(typeof J.texteDe(n) === 'string' && /toi-même/.test(J.texteDe(n)));
+}
 console.log('OK : une journée au labo');

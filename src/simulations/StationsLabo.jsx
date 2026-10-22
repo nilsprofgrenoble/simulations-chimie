@@ -1,5 +1,6 @@
-import { DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI, DOSES_COURBE, COURBE_MAX, COURBE_DUREE, masseCoadis } from "./stationsModele";
-import { essaiBanc, indiceBanc, INDICES_BANC, essaiCourbe, indiceCourbe, INDICES_COURBE, TMFF_MAX, COV_MAX, nf } from "./laboJournee";
+import { useState } from "react";
+import { M_POUDRE, POUDRES_HUILE, HUILE_MAX_ESSAIS, HUILE_DUREE, etatPate, rapportPate, DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI, DOSES_COURBE, COURBE_MAX, COURBE_DUREE, masseCoadis } from "./stationsModele";
+import { essaiBanc, indiceBanc, INDICES_BANC, essaiCourbe, indiceCourbe, INDICES_COURBE, conclureHuile, huileRetenue, phVrai, TMFF_MAX, COV_MAX, nf } from "./laboJournee";
 
 // ====================================================
 //  Stations immersives de la journée au labo (écrans dédiés, paramètres cachés).
@@ -114,5 +115,47 @@ export function StationCourbe({ e, onEtat, onValider, choixDose }) {
           {DOSES_COURBE.map(x => <button key={x} type="button" data-retenirc={x} onClick={() => onValider(choixDose(x))} style={bouton(true)}>{fr(x)} %</button>)}
         </div>
       </div>
+    </div>);
+}
+
+// Station « prises d'huile » : méthode à la spatule, la pâte est décrite par son aspect (le rapport huile / huile nécessaire reste caché)
+export function StationHuile({ e, onEtat, onValider, choixFin }) {
+  const [poudre, setPoudre] = useState('tio2');
+  const [huile, setHuile] = useState({ tio2: 0, caco3: 0 });
+  const [msg, setMsg] = useState(null);
+  const ess = e.f.huileEssais || [], restant = HUILE_MAX_ESSAIS - ess.length;
+  const m = huile[poudre], pate = etatPate(rapportPate(m, phVrai(e, poudre)));
+  const ajouter = x => { setHuile(h => ({ ...h, [poudre]: Math.round((h[poudre] + x) * 100) / 100 })); setMsg(null); };
+  const vider = () => { setHuile(h => ({ ...h, [poudre]: 0 })); setMsg(null); };
+  const conclure = () => { const r = conclureHuile(e, poudre, m); setMsg({ ok: r.ok, t: r.message }); if (r.etat !== e) { onEtat(r.etat); setHuile(h => ({ ...h, [poudre]: 0 })); } };
+  const T = huileRetenue(e, 'tio2'), C = huileRetenue(e, 'caco3');
+  const bouton = (actif) => ({ padding: '8px 12px', borderRadius: 8, border: `2px solid ${ENCRE}`, background: actif ? '#fff' : '#eef0f4', color: actif ? ENCRE : '#9aa3b2', fontWeight: 700, cursor: actif ? 'pointer' : 'default', fontFamily: 'inherit', fontSize: 15 });
+  return (
+    <div data-station="huile" style={{ marginTop: 14, background: '#f1f5f9', border: '2px solid #94a3b8', borderRadius: 10, padding: '12px 14px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, fontWeight: 800, color: '#0f172a' }}>
+        <span>🥄 Prise d'huile à la spatule</span><span style={{ fontWeight: 600, color: DOUX, fontSize: 14 }}>{restant} détermination{restant > 1 ? 's' : ''} possible{restant > 1 ? 's' : ''} · {HUILE_DUREE} min chacune</span>
+      </div>
+      <div role="group" aria-label="Poudre" style={{ display: 'flex', gap: 6, margin: '10px 0' }}>
+        {Object.entries(POUDRES_HUILE).map(([k, nom]) => <button key={k} type="button" data-poudre={k} aria-pressed={poudre === k} onClick={() => { setPoudre(k); setMsg(null); }} style={{ ...bouton(true), background: poudre === k ? ENCRE : '#fff', color: poudre === k ? '#fff' : ENCRE }}>{nom}</button>)}
+      </div>
+      <div style={{ fontSize: 14, color: '#0f172a' }}>{M_POUDRE} g de {POUDRES_HUILE[poudre]} sur la plaque de verre ; tu ajoutes de l'huile de lin et tu malaxes à la spatule.</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '10px 0' }}>
+        <svg width="96" height="60" viewBox="0 0 96 60" aria-hidden="true"><rect x="2" y="48" width="92" height="8" rx="2" fill="#cbd5e1" /><ellipse cx="48" cy="40" rx="40" ry={pate.cle === 'fluide' ? 8 : 14} fill={pate.c} stroke="#64748b" strokeWidth="2" /></svg>
+        <div><div data-pate style={{ fontWeight: 700 }}>{pate.t}</div><div style={{ fontSize: 13.5, color: DOUX }}>huile ajoutée : {nf(m, 2)} g</div></div>
+      </div>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <button type="button" data-ajout="1" onClick={() => ajouter(1)} style={bouton(true)}>+ 1 g</button>
+        <button type="button" data-ajout="0.2" onClick={() => ajouter(0.2)} style={bouton(true)}>+ 0,2 g</button>
+        <button type="button" data-ajout="0.03" onClick={() => ajouter(0.03)} style={bouton(true)}>1 goutte</button>
+        <button type="button" data-final onClick={conclure} disabled={restant <= 0} style={{ ...bouton(restant > 0), background: restant > 0 ? '#fef3c7' : '#eef0f4' }}>C'est le point final</button>
+        <button type="button" onClick={vider} style={bouton(true)}>↺ Poudre neuve</button>
+      </div>
+      {msg && <div role="status" data-msg style={{ marginTop: 8, fontWeight: 700, color: msg.ok ? VERT : ROUGE, lineHeight: 1.5 }}>{msg.ok ? '✅ ' : '❌ '}{msg.t}</div>}
+      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12, fontSize: 14 }}>
+        <thead><tr style={{ textAlign: 'left', color: DOUX }}><th>Poudre</th><th>Déterminations valides</th><th>Prise d'huile retenue</th></tr></thead>
+        <tbody>{[['TiO₂', T], ['CaCO₃ léger', C]].map(([nom, r]) => <tr key={nom} style={{ borderTop: '1px solid #cbd5e1' }}><td>{nom}</td><td>{r ? r.n : 0}</td><td data-retenue>{r ? `${nf(r.ph, 1)} g/100 g` : '—'}</td></tr>)}</tbody>
+      </table>
+      <button type="button" data-consigner disabled={!T || !C} onClick={() => onValider(choixFin)} style={{ ...bouton(!!T && !!C), marginTop: 12 }}>Consigner les résultats et calculer λ</button>
+      {(!T || !C) && <span style={{ fontSize: 12.5, color: DOUX, marginLeft: 8 }}>Il faut au moins une détermination valide pour chaque poudre.</span>}
     </div>);
 }
