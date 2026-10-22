@@ -144,7 +144,7 @@ add('docs', { lieu: 'Bureau', pnj: 'moi', titre: 'Étude du dossier',
   ] });
 
 add('docRes', { lieu: 'Bureau', pnj: 'moi', titre: 'Document 8 : les deux résines', fiches: ['vinnapas', 'orgal'],
-  texte: `Tu lis les deux fiches techniques côte à côte.\nLa Vinnapas : MFFT de 2 °C, ES 60 %, très faible teneur en COV, usage intérieur. L'Orgal : ES 50 %, pH 7,5 à 9, mais MFFT de 20 °C et Tg de 20 °C.\nDeux choses te chagrinent : la commande de la cliente promet une peinture « sans solvant, COV nuls » alors qu'une résine à MFFT de 20 °C ne filmifie pas à température ambiante sans agent de coalescence ; et le pH de l'Orgal est bien plus basique que celui de la Vinnapas.`,
+  texte: `Tu lis les deux fiches techniques côte à côte.\nLa Vinnapas : MFFT de 2 °C, ES 60 %, COV inférieurs à 1 g/L, et la fiche précise qu'elle « n'a besoin d'aucun agent de coalescence ». L'Orgal : ES 50 %, pH 7,5 à 9, mais MFFT de 20 °C et Tg de 20 °C : il forme un film « au-dessus de 20 °C ».\nDeux choses te chagrinent : la commande de la cliente promet une peinture « sans solvant, COV nuls » alors qu'une résine à MFFT de 20 °C ne filmifie pas à température ambiante sans agent de coalescence ; et le pH de l'Orgal est bien plus basique que celui de la Vinnapas.`,
   choix: [{ t: 'Continuer', vers: 'incoherence' }] });
 
 add('incoherence', { lieu: 'Bureau', pnj: 'moi', titre: 'Une incohérence dans le dossier',
@@ -220,15 +220,15 @@ add('calcCoadis', { lieu: 'Paillasse', pnj: 'moi', titre: 'Calcul : dose de disp
     ko: { f: { coadis: 0.5 }, vers: 'coalescent', duree: 10, note: 'Dispersant relevé à 0,5 g de Coadis BR3 (valeur donnée par Karim).' } } });
 
 add('coalescent', { lieu: 'Paillasse', pnj: 'karim', titre: 'Et le coalescent ?', fiches: ['dpnb'],
-  texte: e => `« La Vinnapas filmifiait toute seule : sa MFFT est de 2 °C, donc la référence n'a pas d'agent de coalescence. L'Orgal, lui, a une MFFT de 20 °C. Notre cahier des charges veut un film continu dès 5 °C. Qu'est-ce qu'on met dans la formule ? »\n${e.f.fiche ? 'Tu te souviens de la fiche : MFFT de 2 °C pour la Vinnapas, 20 °C pour l\'Orgal.' : 'Tu n\'as pas lu la fiche de la résine : Karim te la tend. « MFFT de la Vinnapas : 2 °C ; celle de l\'Orgal : 20 °C. »'}\nSur la fiche du DPnB (le coalescent du labo), le fournisseur conseille 4 à 8 % de la masse de polymère sec.`,
+  texte: e => `« La Vinnapas filmifiait toute seule : sa MFFT est de 2 °C, donc la référence n'a pas d'agent de coalescence. L'Orgal, lui, a une MFFT de 20 °C. Notre cahier des charges veut un film continu dès 5 °C. Qu'est-ce qu'on met dans la formule ? »\n${e.f.fiche ? 'Tu te souviens de la fiche : MFFT de 2 °C pour la Vinnapas, 20 °C pour l\'Orgal.' : 'Tu n\'as pas lu la fiche de la résine : Karim te la tend. « MFFT de la Vinnapas : 2 °C ; celle de l\'Orgal : 20 °C. »'}\nKarim ajoute : « La fiche du DPnB ne donne aucun dosage. Chez nous, la règle d'atelier est de 4 à 8 % du polymère sec, à confirmer par un essai. »`,
   choix: e => { const v = e.f.refaitCoal ? 'fabrication' : 'stock'; return [
     { t: 'Rien : la référence n\'en avait pas, et ça garde les COV à zéro', f: { dpnb: 0 }, note: 'Pas de coalescent ajouté (la référence Vinnapas n\'en avait pas).', vers: v },
     { t: 'Ajouter 1 g par précaution, sans calcul', f: { dpnb: 1 }, note: 'Coalescent (DPnB) ajouté à 1 g, sans calcul.', vers: v },
-    { t: 'Calculer la dose à partir de la fiche du DPnB (4 à 8 % du polymère sec)', vers: 'calcDpnb' },
+    { t: 'Calculer la dose avec la règle d\'atelier de Karim (4 à 8 % du polymère sec)', vers: 'calcDpnb' },
     { t: 'Mettre 10 g : on sera tranquille pour la filmification', f: { dpnb: 10 }, note: 'Coalescent (DPnB) mis à 10 g « par sécurité ».', vers: v },
   ]; } });
 add('calcDpnb', { lieu: 'Paillasse', pnj: 'moi', titre: 'Calcul : dose de coalescent',
-  texte: 'Les 100 g d\'Orgal apportent 50 g de polymère sec. Le fournisseur du DPnB conseille 4 à 8 % de la masse de polymère sec ; tu vises le milieu de la plage, 6 %.',
+  texte: 'Les 100 g d\'Orgal apportent 50 g de polymère sec. La règle d\'atelier de Karim est de 4 à 8 % de la masse de polymère sec ; tu vises le milieu de la plage, 6 %.',
   calcul: { q: 'Quelle masse de DPnB pèses-tu ?', unite: 'g', vrai: () => 0.06 * 50, tol: 0.17,
     indice: 'Masse de DPnB = 6 % × masse de polymère sec (50 g, pas 100 g de dispersion).',
     retour: v => v >= 6 ? 'Attention : ce n\'est pas 6 % de la dispersion mais du polymère sec (50 g). Une telle dose ferait monter les COV.' : null,

@@ -3,29 +3,19 @@
 const SANS = "Arial,'Helvetica Neue',Helvetica,sans-serif";
 
 const FICHES = {
-  orgal: { ref: 'Fiche technique', titre: 'ORGAL PST 50A', sous: 'Dispersion aqueuse de copolymère styrène-acrylique', edition: 'Édition 03/2024',
-    lignes: [['Aspect', 'Liquide blanc laiteux'], ['Extrait sec', '50 ± 1 %'], ['pH', '7,5 – 9,0'], ['Viscosité Brookfield (20 tr/min, 23 °C)', '200 – 800 mPa·s'], ['Masse volumique', '1,03 g/cm³'],
-      ['Température de transition vitreuse (Tg)', '≈ 20 °C'], ['Température minimale de formation de film (MFFT)', '≈ 20 °C'], ['Taille moyenne des particules', '≈ 120 nm'], ['Stabilisation', 'Anionique et non ionique']],
-    textes: [['Applications', 'Peintures mates à semi-brillantes, intérieur et extérieur ; enduits décoratifs.'],
-      ['Mise en œuvre', 'Sa MFFT de 20 °C impose un agent de coalescence pour former un film continu à température ambiante ou plus basse. Dosage conseillé : 4 à 8 % du polymère sec, à ajuster par essais.'],
-      ['Stockage', 'De 5 à 35 °C, à l\'abri du gel, en emballage d\'origine fermé : 12 mois. En cas de gel, tamiser et contrôler avant emploi.'],
-      ['Conditionnement', 'Fût de 200 kg, conteneur de 1 000 kg. Prix de référence du laboratoire : 25 € les 5 L.']] },
-  vinnapas: { ref: 'Fiche technique', titre: 'VINNAPAS EP 3360', sous: 'Dispersion aqueuse de copolymère acétate de vinyle – éthylène', edition: 'Édition 06/2023',
-    lignes: [['Aspect', 'Liquide blanc'], ['Extrait sec', '60 ± 1 %'], ['pH', '4,0 – 6,0'], ['Viscosité Brookfield (20 tr/min, 23 °C)', '≈ 3 000 mPa·s'], ['Masse volumique', '1,07 g/cm³'],
-      ['Température de transition vitreuse (Tg)', '≈ 10 °C'], ['Température minimale de formation de film (MFFT)', '≈ 2 °C'], ['Stabilisation', 'Colloïde protecteur']],
-    textes: [['Applications', 'Peintures mates à semi-mates pour l\'intérieur. Très faible teneur en composés organiques volatils.'],
-      ['Mise en œuvre', 'Filmifie sans agent de coalescence à température ambiante. Usage extérieur non recommandé.'],
-      ['Stockage', 'De 5 à 30 °C, protégée du gel. Durée de conservation : 6 mois en emballage d\'origine.']] },
   coadis: { ref: 'Fiche technique', titre: 'COADIS BR3', sous: 'Dispersant polyacrylate de sodium pour pigments et charges', edition: 'Édition 01/2022',
     lignes: [['Aspect', 'Liquide limpide, jaune pâle'], ['Extrait sec', '40 %'], ['pH', '7,5 – 9,5'], ['Masse volumique', '1,22 g/cm³'], ['Nature ionique', 'Anionique']],
     textes: [['Dosage', '0,15 à 0,20 % de matière active par rapport à la masse de pigments et de charges.'],
       ['Remarque', 'Les groupes carboxylate sont ionisés en milieu neutre ou basique : l\'efficacité diminue lorsque le pH de la formule descend sous 6. Un surdosage rend le film sensible à l\'eau.']] },
-  dpnb: { ref: 'Fiche technique', titre: 'DPnB', sous: 'Éther n-butylique du dipropylène glycol : agent de coalescence', edition: 'Édition 09/2021',
-    lignes: [['Aspect', 'Liquide incolore'], ['Masse volumique', '0,91 g/cm³'], ['Point d\'ébullition', '≈ 230 °C'], ['Point éclair', '≈ 100 °C'], ['Solubilité dans l\'eau', '≈ 4,5 % à 20 °C'], ['Classement COV (point d\'ébullition < 250 °C)', 'Oui : compte dans les COV']],
-    textes: [['Rôle', 'Plastifie temporairement les particules de polymère, abaisse la MFFT puis s\'évapore lentement.'],
-      ['Dosage', 'De 4 à 8 % de la masse de polymère sec, selon la MFFT du liant et la température d\'application visée.'],
-      ['Attention', 'Contribue à la teneur en COV de la peinture (limite du cahier des charges : 30 g/L).']] },
 };
+
+// Fiches techniques réelles des fabricants (pages du PDF, dans public/fiches/), reproduites à des fins pédagogiques
+const REELLES = {
+  orgal: { titre: 'ORGAL PST 50 A', source: 'Organik Kimya', pages: ['orgal-1'] },
+  vinnapas: { titre: 'VINNAPAS EP 3360 (BGH)', source: 'Wacker Chemie', pages: ['vinnapas-1', 'vinnapas-2', 'vinnapas-3'] },
+  dpnb: { titre: 'Poly-Solv DPnB', source: 'Monument Chemical', pages: ['dpnb-1', 'dpnb-2'] },
+};
+const url = nom => `${import.meta.env.BASE_URL}fiches/${nom}.jpg`;
 
 const PRIX_LIGNES = [['Eau', 'Diluant', '121,7', '3,7 € / m³'], ['TiO₂ (rutile)', 'Pigment blanc', '60,0', '10 € / kg'], ['CaCO₃ léger', 'Charge', '60,0', '3 € / kg'],
   ['Vinnapas EP 3360', 'Liant', '83,3', '3,60 € / kg'], ['Foamex', 'Antimousse', '1,5', '6 € les 200 g'], ['Coadis BR3', 'Dispersant', '0,2', '7 € / L (d = 1,22)'],
@@ -45,7 +35,7 @@ function Feuille({ entete, titre, sous, edition, children }) {
           {sous && <div style={{ color: '#475569' }}>{sous}</div>}
         </div>
         {children}
-        <div style={{ marginTop: 10, paddingTop: 6, borderTop: '1px dashed #cbd5e1', fontSize: 10.5, color: '#94a3b8' }}>Reproduction simplifiée pour le scénario : les valeurs sont des données d'exercice.</div>
+        <div style={{ marginTop: 10, paddingTop: 6, borderTop: '1px dashed #cbd5e1', fontSize: 10.5, color: '#94a3b8' }}>Fiche interne simplifiée pour le scénario : les valeurs sont des données d'exercice.</div>
       </div>
     </details>);
 }
@@ -72,6 +62,18 @@ export default function Fiches({ ids }) {
         <Tableau tetes={['N°', 'Opération', 'Conditions']} lignes={FAB} />
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', fontSize: 12.5, color: '#475569' }}><span>Lot : ______________</span><span>Opérateur : ______________</span><span>Date : ______________</span></div>
       </Feuille>);
+    const r = REELLES[id];
+    if (r) return (
+      <details key={id} open className="fiche-doc" style={{ background: '#fff', color: '#1f2937', fontFamily: SANS, border: '1px solid #cfd6df', boxShadow: '0 2px 8px rgba(0,0,0,.18)', margin: '14px 0', borderRadius: 2 }}>
+        <summary style={{ cursor: 'pointer', padding: '8px 12px', background: '#eef2f6', fontWeight: 700, fontSize: 13, color: '#334155' }}>📄 Fiche technique · {r.titre} <span style={{ fontWeight: 400, color: '#64748b' }}>({r.source})</span></summary>
+        <div style={{ padding: 8, display: 'grid', gap: 8 }}>
+          {r.pages.map((pg, i) => (
+            <a key={pg} href={url(pg)} target="_blank" rel="noreferrer" title="Ouvrir la page en grand" style={{ display: 'block' }}>
+              <img src={url(pg)} alt={`${r.titre}, page ${i + 1} sur ${r.pages.length}`} loading="lazy" style={{ width: '100%', display: 'block', border: '1px solid #e2e8f0' }} />
+            </a>))}
+          <div style={{ fontSize: 11, color: '#94a3b8' }}>Document du fabricant ({r.source}), reproduit à des fins pédagogiques. Touche une page pour l'ouvrir en grand.</div>
+        </div>
+      </details>);
     const f = FICHES[id]; if (!f) return null;
     return (
       <Feuille key={id} entete={f.ref} titre={f.titre} sous={f.sous} edition={f.edition}>
