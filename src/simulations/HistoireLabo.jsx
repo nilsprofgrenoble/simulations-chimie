@@ -13,10 +13,17 @@ const TONS = { ok: C.vert, moyen: C.ambre, ko: C.rouge };
 
 const STYLE = `${STYLE_VISUELS}
 @keyframes lab-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.lab-scene{animation:lab-in .3s ease-out}
+.lab-scene{animation:lab-in .35s ease-out}
+.lab-ligne{animation:lab-in .4s ease-out both}
+.lab-bulle{animation:lab-bulle .45s cubic-bezier(.2,.9,.3,1.2) both;transform-origin:0 0}
+@keyframes lab-bulle{from{opacity:0;transform:scale(.92) translateY(6px)}to{opacity:1;transform:none}}
+.lab-saut{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:rgba(15,23,32,.92);color:#fff;pointer-events:none;animation:lab-voile 1.1s ease-in-out both;font-family:ui-monospace,monospace}
+@keyframes lab-voile{0%{opacity:0}22%{opacity:1}68%{opacity:1}100%{opacity:0}}
+.lab-instr{animation:lab-allume .6s ease-out .15s both}
+@keyframes lab-allume{from{opacity:0;filter:brightness(2.2) blur(2px);transform:scale(.97)}to{opacity:1;filter:none;transform:none}}
 .lab-choix{display:block;width:100%;text-align:left;padding:11px 14px;margin:8px 0;border:1.5px solid ${C.bord};border-radius:10px;background:${C.carte};color:${C.encre};font:inherit;font-size:15px;line-height:1.45;cursor:pointer;transition:transform .12s,border-color .12s,background .12s}
 .lab-choix:hover,.lab-choix:focus-visible{border-color:${C.accent};background:${C.accentFond};outline:none;transform:translateX(3px)}
-@media (prefers-reduced-motion:reduce){.lab-scene{animation:none}.lab-choix:hover{transform:none}}
+@media (prefers-reduced-motion:reduce){.lab-scene,.lab-ligne,.lab-bulle,.lab-instr{animation:none!important}.lab-saut{animation-duration:.01s!important;display:none}.lab-choix:hover{transform:none}}
 `;
 
 function BarreHeure({ t }) {
@@ -42,8 +49,8 @@ function Dialogue({ texte, pnj }) {
   return (
     <div aria-live="polite" data-texte style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {lignes.map((l, i) => l.includes('«')
-        ? <div key={i} style={{ position: 'relative', background: p.couleur + '14', border: `1.5px solid ${p.couleur}55`, borderRadius: '4px 16px 16px 16px', padding: '9px 14px', fontSize: 15.5, lineHeight: 1.6 }}>{l}</div>
-        : <div key={i} style={{ fontSize: 15, lineHeight: 1.6, color: C.doux, fontStyle: 'italic' }}>{l}</div>)}
+        ? <div key={i} className="lab-bulle" style={{ animationDelay: `${i * 0.3}s`, position: 'relative', background: p.couleur + '14', border: `1.5px solid ${p.couleur}55`, borderRadius: '4px 16px 16px 16px', padding: '9px 14px', fontSize: 15.5, lineHeight: 1.6 }}>{l}</div>
+        : <div key={i} className="lab-ligne" style={{ animationDelay: `${i * 0.3}s`, fontSize: 15, lineHeight: 1.6, color: C.doux, fontStyle: 'italic' }}>{l}</div>)}
     </div>);
 }
 
@@ -69,6 +76,7 @@ export function SimulationHistoireLabo() {
   const [etat, setEtat] = useEtatPersistant(CLE_ETAT, null);
   const [fins, setFins] = useEtatPersistant(CLE_FINS, []);
   const [carnetOuvert, setCarnetOuvert] = useState(false);
+  const [saut, setSaut] = useState(null);   // voile « quelques minutes plus tard » quand une action fait avancer l'horloge
   const refTitre = useRef(null);
   const e = etat && SCENES[etat.scene] ? etat : null;
   const fin = !!e && estFin(e.scene);
@@ -106,7 +114,12 @@ export function SimulationHistoireLabo() {
 
   const sc = SCENES[e.scene], choix = choixDe(e), st = statutCmd(e).filter(x => x.etat !== 'lu'), vis = visuelDe(e);
   const hub = e.scene === 'labo';
-  const avancer = c => setEtat(choisir(e, c));
+  const nbLignes = String(texteDe(e)).split('\n').filter(l => l.trim()).length;
+  const avancer = c => {
+    const n = choisir(e, c);
+    if (n.t - e.t >= 20 && n.t < T_FIN) setSaut(s0 => ({ id: (s0?.id ?? 0) + 1, de: e.t, a: n.t })); else setSaut(null);
+    setEtat(n);
+  };
   const recommencer = () => { setEtat(null); setCarnetOuvert(false); };
 
   const carnet = (
@@ -117,6 +130,7 @@ export function SimulationHistoireLabo() {
 
   return (
     <div style={cadre} data-labo={fin ? 'fin' : 'jeu'}><style>{STYLE}</style>
+      {saut && <div key={saut.id} className="lab-saut" aria-hidden="true"><div style={{ fontSize: 13, letterSpacing: 2, opacity: .7 }}>{saut.a - saut.de >= 60 ? 'PLUS TARD…' : 'QUELQUES MINUTES PLUS TARD…'}</div><div style={{ fontSize: 'clamp(34px,9vw,56px)', fontWeight: 800 }}>{hhmm(saut.a)}</div></div>}
       <BarreHeure t={Math.min(e.t, T_FIN)} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div key={e.scene} className="lab-scene">
@@ -126,12 +140,12 @@ export function SimulationHistoireLabo() {
         <div className="lab-scene" key={`c-${e.scene}`} style={{ minWidth: 0, background: C.carte, border: `1.5px solid ${fin ? TONS[sc.fin.ton] : C.bord}`, borderRadius: 14, padding: '14px 16px' }}>
           <h3 ref={refTitre} tabIndex={-1} style={{ margin: '0 0 10px', fontSize: 21, outline: 'none', color: fin ? TONS[sc.fin.ton] : C.encre }} data-titre>{sc.titre}</h3>
           <Dialogue texte={texteDe(e)} pnj={sc.pnj} />
-          {vis && <Instrument v={vis} />}
+          {vis && <div className="lab-instr"><Instrument v={vis} /></div>}
 
           {sc.calcul && <Calcul key={e.scene} e={e} sc={sc} onEtat={setEtat} />}
 
           {!sc.calcul && choix.map((c, i) => (
-            <button key={i} type="button" className="lab-choix" data-choix={i} onClick={() => avancer(c)}>
+            <button key={i} type="button" className="lab-choix lab-ligne" style={{ animationDelay: `${nbLignes * 0.3 + i * 0.1}s` }} data-choix={i} onClick={() => avancer(c)}>
               {c.t}{c.d && <div style={{ fontSize: 12.5, color: C.doux, marginTop: 2 }}>{c.d}</div>}
             </button>))}
 
