@@ -68,7 +68,7 @@ export function EnTete({ menus, activeId, niveauActif, naviguer, session }) {
   const groupe = (g, k) => (
     <div key={k} style={{ minWidth: 0 }}>
       {g.label && <div style={{ fontSize: 14.5, fontWeight: 800, color: TXT, background: ACCENT_CLAIR, borderLeft: `4px solid ${VERT}`, borderRadius: 6, padding: '5px 10px', margin: '6px 0 4px', lineHeight: 1.3 }}><AvecPicto texte={g.label}/></div>}
-      <div style={{ display: 'flex', flexDirection: 'column', marginLeft: g.label ? 8 : 0 }}>{g.sims.map(s => lienSim(s))}</div>
+      {g.contenu ? <div style={{ marginLeft: g.label ? 8 : 0 }}>{g.contenu({ aller })}</div> : <div style={{ display: 'flex', flexDirection: 'column', marginLeft: g.label ? 8 : 0 }}>{g.sims.map(s => lienSim(s))}</div>}
     </div>
   );
 

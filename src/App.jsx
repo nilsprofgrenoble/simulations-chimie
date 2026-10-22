@@ -72,6 +72,7 @@ import { SimulationAtelierAnalyser } from "./simulations/AtelierAnalyser";
 import { SimulationAtelierValider } from "./simulations/AtelierValider";
 import { SimulationIncertitudeType } from "./simulations/IncertitudeType";
 import { SimulationEntrainement } from "./simulations/Entrainement";
+import { JeuxMenu } from "./simulations/JeuxEscape";
 import { SimulationCompte } from "./simulations/Compte";
 import { ToastRecompense } from "./ToastRecompense";
 import { SimulationSuiviProf } from "./simulations/SuiviProf";
@@ -236,11 +237,19 @@ const MENUS_ENTETE = [
   { key: "TSTL", label: "TSTL" },
   { key: "BTS", label: "BTS MDC" },
   { key: "COMP", label: "Travail par compétence" },
+  { key: "JEUX", label: "🎮 Jeux" },
 ];
+const JEUX_IDS = [79, 80, 81];   // jeux : affichage immersif (sans en-tête ni pied de page)
+const FONDS_JEUX = {
+  79: "radial-gradient(ellipse at 50% 0%, #1b2a5c 0%, #070d24 55%, #03060f 100%)",
+  80: "linear-gradient(180deg, #0b3b5e 0%, #082a45 50%, #04182a 100%)",
+  81: "radial-gradient(ellipse at 50% 0%, #3a3a46 0%, #23232c 60%, #17171d 100%)",
+};
 const ORDRE_COMP = [38, 34, 35, 37, 36, 77];
 function construireMenus() {
   const fiche = s => ({ id: s.id, icon: s.icon, label: s.label, desc: DESCRIPTIONS[s.label] });
   return MENUS_ENTETE.map(m => {
+    if (m.key === "JEUX") return { ...m, groupes: [{ sims: [], contenu: ({ aller }) => <JeuxMenu aller={aller} /> }] };
     if (m.key === "COMP") {
       const sims = SIMULATIONS.filter(s => s.niveau === "COMP").sort((a, b) => ORDRE_COMP.indexOf(a.id) - ORDRE_COMP.indexOf(b.id)).map(fiche);
       return { ...m, groupes: [{ sims }] };
@@ -329,6 +338,24 @@ export default function App() {
     } catch { /* adresse non modifiable */ }
     setActiveId(id);
   }
+
+  if (JEUX_IDS.includes(activeId)) return (
+    <div style={{ ...styles.root, '--entete-h': '0px', background: FONDS_JEUX[activeId], color: '#e5e7eb' }} data-jeu-immersif>
+      <PictosSprite/>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px clamp(12px, 3vw, 24px)', background: 'rgba(0,0,0,0.35)', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
+        <button onClick={() => naviguer(estProf(sessionSb) ? 40 : 38)} aria-label="Quitter le jeu"
+          style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5 }}>← Quitter</button>
+        <span style={{ flex: 1, textAlign: 'center', fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: '0.5px', color: '#fff', fontSize: 'clamp(14px, 3.5vw, 18px)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <Emo e={active.icon} t={22}/> {active.label}
+        </span>
+        <span style={{ width: 72 }} aria-hidden="true" />
+      </div>
+      <main style={{ ...styles.main, padding: 'clamp(8px, 2vw, 20px)' }}>
+        <div id="zone-simulation" style={{ textAlign: 'left', flex: 1 }}><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></div>
+        <ToastRecompense naviguer={naviguer} />
+        <RetourMission activeId={activeId} naviguer={naviguer} />
+      </main>
+    </div>);
 
   return (
     <div style={{ ...styles.root, '--entete-h': '60px' }}>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { KIT, styleBouton, styleBoite } from "../commun";
+import { useSession, estProf } from "../serveur";
 
 // Les trois jeux « hors menu » : escape games TSTL et histoire à choix BTS.
 // Côté professeur : cartes avec lien direct. Côté élève : champ « code du jeu » (le code est donné par le professeur).
@@ -53,4 +54,18 @@ export function JeuxCode({ naviguer }) {
       <button type="submit" disabled={!saisie.trim()} style={styleBouton(false, '#0f766e')}>Jouer ▶</button>
       {rate && <span role="alert" style={{ color: '#b45309' }}>Code inconnu.</span>}
     </form>);
+}
+
+// Contenu du menu « Jeux » de l'en-tête : le professeur voit les trois jeux, l'élève un champ pour son code.
+export function JeuxMenu({ aller }) {
+  const sess = useSession();
+  if (estProf(sess)) return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {JEUX.map(j => (
+        <button key={j.id} onClick={() => aller(j.id)} style={{ display: 'block', textAlign: 'left', padding: '8px 10px', border: 'none', borderRadius: 8, background: 'transparent', cursor: 'pointer', font: 'inherit', fontSize: 14 }}>
+          <b>{j.icone} {j.nom}</b> <span style={{ color: KIT.txt2, fontSize: 12 }}>· {j.niveau} · code {j.code}</span>
+          <div style={{ color: KIT.txt2, fontSize: 12.5, lineHeight: 1.4 }}>{j.texte}</div>
+        </button>))}
+    </div>);
+  return <JeuxCode naviguer={aller} />;
 }
