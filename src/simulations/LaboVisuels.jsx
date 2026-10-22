@@ -98,6 +98,15 @@ export function Personnage({ id, x = 0, y = 0, taille = 120, parle = false }) {
     </svg>);
 }
 
+// Portrait rond (visage seulement) pour les bulles de dialogue
+export function Avatar({ id, taille = 52, parle = false }) {
+  const c = PNJ[id]?.couleur || '#64748b';
+  return (
+    <span style={{ display: 'inline-block', width: taille, height: taille, borderRadius: '50%', overflow: 'hidden', background: c + '33', border: `2.5px solid ${c}`, flexShrink: 0, boxShadow: '1px 2px 4px rgba(0,0,0,.2)' }}>
+      <svg viewBox="14 12 72 72" width="100%" height="100%" aria-hidden="true"><Personnage id={id} taille={130} parle={parle} /></svg>
+    </span>);
+}
+
 // ───────────── Décors ─────────────
 const Mur = ({ t, fenetre = true }) => (
   <g>
