@@ -540,6 +540,8 @@ export function SimulationEchangeur() {
     if (m === 'defi' && !defi) nouveauDefi();
     setTimeout(() => window.dispatchEvent(new Event('resize')), 0);
   }
+  // Ouverture directe en mode défi (mission d'un escape game) : le défi doit être tiré comme au clic sur l'onglet « Défi »
+  useEffect(() => { if (mode === 'defi' && !defi) changerMode('defi'); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const voletDefi = defi && (() => {
     const Q = questionsDefi(defi), { p } = defi;
     const s = modele(p);

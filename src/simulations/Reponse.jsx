@@ -1,5 +1,5 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche } from "../commun";
 import { Pic } from "../Pictos";
@@ -449,6 +449,8 @@ export function SimulationReponse() {
   // ════════════════ DÉFI ════════════════
   function nouveauDefi(t = typeDefi) { setDefi(tirageDefi(t)); }
   function changerMode(m) { setMode(m); if (m === 'defi' && !defi) nouveauDefi(); }
+  // Ouverture directe en mode défi (mission d'un escape game) : le défi doit être tiré comme au clic sur l'onglet « Défi »
+  useEffect(() => { if (mode === 'defi' && !defi) changerMode('defi'); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const voletDefi = defi && (() => {
     const Q = questionsDefi(defi), s = defi.sys, an = analyse(s), ctx = defi.ctx;
     const juste = q => proche(lireNombre(defi.reps[q.id]), q.vrai, q.tol);

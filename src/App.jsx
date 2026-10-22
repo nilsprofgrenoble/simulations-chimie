@@ -80,7 +80,8 @@ import { useSession, restaurer, estEleve, estProf } from "./serveur";
 import { chapitresDuNiveau } from "./chapitres";
 import { SuiviTemps, nomsSim } from "./suivi";
 import { ModeParDefaut } from "./ModeParDefaut";
-import RetourMission from "./RetourMission";
+import CadreMission from "./CadreMission";
+import { missionEnCours } from "./mission";
 import { SimulationEscapeKepler } from "./simulations/EscapeKepler";
 import { SimulationEscapeAqua } from "./simulations/EscapeAqua";
 import { SimulationHistoireLabo } from "./simulations/HistoireLabo";
@@ -339,6 +340,17 @@ export default function App() {
     setActiveId(id);
   }
 
+  const mission = activeId > 0 ? missionEnCours(activeId) : null;
+  if (mission) return (
+    <>
+      <PictosSprite/>
+      <CadreMission mission={mission} naviguer={naviguer}>
+        <SuiviTemps simId={activeId} />
+        <div id="zone-simulation"><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></div>
+      </CadreMission>
+      <ToastRecompense naviguer={naviguer} />
+    </>);
+
   if (JEUX_IDS.includes(activeId)) return (
     <div style={{ ...styles.root, '--entete-h': '0px', background: FONDS_JEUX[activeId], color: '#e5e7eb' }} data-jeu-immersif>
       <PictosSprite/>
@@ -354,7 +366,6 @@ export default function App() {
       <main style={{ ...styles.main, padding: 'clamp(8px, 2vw, 20px)', animation: 'jeu-entree .7s ease-out .1s both' }}>
         <div id="zone-simulation" style={{ textAlign: 'left', flex: 1 }}><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></div>
         <ToastRecompense naviguer={naviguer} />
-        <RetourMission activeId={activeId} naviguer={naviguer} />
       </main>
     </div>);
 
@@ -417,7 +428,6 @@ export default function App() {
               </div>}
         </div>
         <ToastRecompense naviguer={naviguer} />
-        <RetourMission activeId={activeId} naviguer={naviguer} />
         <PiedDePage naviguer={naviguer} energyUrl={ENERGY_URL} />
       </main>
     </div>

@@ -486,6 +486,8 @@ export function Simulation5({ naviguer }) {
     if (m === 'defi' && !defi) nouveauDefi('ville');
     if (m === 'guide') { setProfil('constant'); setQmax(100); setRetard(0); setDuree(1000); setHInit(H0); }
   }
+  // Ouverture directe en mode défi (mission d'un escape game) : le défi doit être tiré comme au clic sur l'onglet « Défi »
+  useEffect(() => { if (mode === 'defi' && !defi) changerMode('defi'); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const finParcours = (
     <span style={{ display: 'flex', gap: 6 }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>

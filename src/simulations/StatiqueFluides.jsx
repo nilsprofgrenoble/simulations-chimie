@@ -207,6 +207,8 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
     if (m === 'defi' && !defi) nouveauDefi();
     if (m === 'guide') { setFluide('eau'); setPatm(1013); setHCm(0); setMesures([]); setModele(0); setZCm(0); setHinc(H_GUIDE); setRevele(false); }
   }
+  // Ouverture directe en mode défi (mission d'un escape game) : le défi doit être tiré comme au clic sur l'onglet « Défi »
+  useEffect(() => { if (mode === 'defi' && !defi) changerMode('defi'); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const voletDefi = defi && (() => {
     const rh = FLUIDES[defi.fluide].rho, H = defi.H / 100;
     const L = d => affichage(pressionPa(defi.patm, rh, d));
