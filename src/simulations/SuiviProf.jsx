@@ -11,6 +11,7 @@ import { chapitresDe } from "../chapitres";
 import { SyntheseProf } from "./SyntheseProf";
 import { ChapitreClasse } from "./ChapitreClasse";
 import { PartageClasse } from "./PartageClasse";
+import { ComptesProf } from "./ComptesProf";
 import { ApercuEleve } from "./ApercuEleve";
 import { GuideProf } from "./GuideProf";
 import { Pic } from "../Pictos";
@@ -204,6 +205,7 @@ export function SimulationSuiviProf({ naviguer }) {
       </div>
       {erreur && <div role="alert" style={{ color: '#b91c1c', fontWeight: 600, margin: '8px 0' }}><Pic n="ko"/>{erreur}</div>}
       {msg && <div role="status" style={{ color: '#15803d', fontWeight: 600, margin: '8px 0' }}><Pic n="ok"/>{msg}</div>}
+      {sess.profil.admin && <ComptesProf occupe={occupe} proteger={proteger} setMsg={setMsg} />}
       {comptes && <div style={{ margin: '10px 0' }}><Comptes classe={comptes.classe} comptes={comptes.liste} onFermer={() => setComptes(null)} /></div>}
 
       {!classes.length && !occupe && <p data-bienvenue style={{ fontSize: 16, color: KIT.txt, margin: '10px 0 0' }}>👋 <b>Bienvenue !</b> Mettons en route votre première classe : donnez-lui un nom, c’est tout ce qu’il faut pour commencer.</p>}

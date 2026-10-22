@@ -139,3 +139,13 @@ Points à connaître :
 - les devoirs d'une classe partagée sont communs : chacun peut modifier ou supprimer ceux de l'autre ;
 - supprimer la classe (propriétaire) la supprime aussi pour le co-professeur ;
 - si le propriétaire supprime son compte, la classe disparaît avec lui (il n'y a pas de transfert de propriété).
+
+## Créer des comptes professeur depuis le site (étape 24)
+Seul l'**administrateur** (vous) voit, dans *Suivi professeur*, le bloc « 👩‍🏫 Ajouter un professeur » : adresse + nom → le compte est créé, le mot de passe s'affiche **une seule fois** (à transmettre vous-même ; aucun email n'est envoyé). Le collègue peut ensuite le changer (« Changer mon mot de passe »), et vous pouvez lui partager une classe.
+
+À faire **une fois**, après avoir fusionné la PR (sans cela, le bloc n'apparaît pas et tout fonctionne comme avant) :
+1. **SQL** : SQL Editor → New query → coller `10-administrateur.sql` (vérifier l'adresse de votre compte professeur) → Run. Le résultat doit montrer `admin = true` pour vous.
+2. **Fonction serveur** : Supabase → Edge Functions → `comptes` → remplacer le code par celui de `functions/comptes/index.ts` → Deploy (garder le réglage JWT déjà fait).
+3. **Tester** : recharger le site, vous connecter, Suivi professeur → ouvrir « Ajouter un professeur ».
+
+Sécurité : seul un professeur marqué `admin` peut créer un compte (contrôlé côté serveur, pas seulement par le bouton) ; un professeur ne peut pas se donner ce droit (la colonne est en lecture seule pour lui) ; 40 professeurs au maximum ; chaque professeur ne voit que ses propres classes. La suppression d'un compte professeur reste à faire dans Supabase (elle supprimerait aussi ses classes).

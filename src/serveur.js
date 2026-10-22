@@ -127,8 +127,10 @@ export const emailDe = identifiant => {
   return id.includes('@') ? id : `${id}@${DOMAINE}`;       // un élève tape « tstl1-07 » ; un professeur, son adresse
 };
 async function chargerProfil() {
-  const prof = await rest('professeurs?select=nom');
-  if (prof.length) return { role: 'prof', nom: prof[0].nom };
+  // « admin » existe après supabase/10-administrateur.sql ; sans ce script, on retombe sur la lecture d'avant (pas d'administrateur)
+  let prof;
+  try { prof = await rest('professeurs?select=nom,admin'); } catch { prof = await rest('professeurs?select=nom'); }
+  if (prof.length) return { role: 'prof', nom: prof[0].nom, admin: !!prof[0].admin };
   const el = await rest('eleves?select=identifiant,classe_id,classes(nom)');
   if (el.length) return { role: 'eleve', identifiant: el[0].identifiant, classe_id: el[0].classe_id, classe: el[0].classes?.nom || '' };
   return null;

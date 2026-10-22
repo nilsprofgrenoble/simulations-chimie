@@ -14,6 +14,8 @@
 //    partager         { classe_id, email }      → ajoute un co-professeur (déjà professeur sur le site) à la classe
 //    retirer_prof     { classe_id, prof_id }    → retire un co-professeur
 //    quitter_classe   { classe_id }             → un co-professeur quitte la classe
+//    creer_prof       { email, nom }            → ADMINISTRATEUR seul : crée un compte professeur (mot de passe affiché une seule fois)
+//    lister_profs     {}                        → ADMINISTRATEUR seul : liste des professeurs (nom, email, admin)
 //  Droits : le propriétaire de la classe peut tout. Un co-professeur peut ajouter des comptes et réinitialiser des mots de passe,
 //  mais NI supprimer un compte, NI supprimer la classe, NI partager, NI retirer un professeur (supprimer_eleve, supprimer_classe,
 //  partager, retirer_prof : propriétaire seulement).
@@ -27,6 +29,14 @@ const DOMAINE = 'eleves.example.com';
 const MAX_PAR_APPEL = 40;
 const MAX_PAR_CLASSE = 60;      // garde-fous si un compte professeur était utilisé par quelqu'un d'autre
 const MAX_CLASSES = 30;
+const MAX_PROFS = 40;           // garde-fou sur le nombre de comptes professeur
+// Mot de passe fort (16 caractères, sans caractères ambigus) pour un compte professeur
+const ALPHA = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function motDePasseProf(): string {
+  const r = new Uint32Array(16);
+  crypto.getRandomValues(r);
+  return Array.from(r, (x) => ALPHA[x % ALPHA.length]).join('');
+}
 
 // Sites autorisés à appeler la fonction (le contrôle réel est la connexion du professeur)
 const ORIGINES = ['https://paillasse-virtuelle.fr', 'https://www.paillasse-virtuelle.fr', 'https://nilsprofgrenoble.github.io', 'http://localhost:5173', 'http://localhost:4173', 'http://localhost:4182'];
@@ -67,7 +77,7 @@ Deno.serve(async (req) => {
   const { data: qui, error: errQui } = await admin.auth.getUser(jeton);
   if (errQui || !qui?.user) return rep(401, { erreur: 'Connexion requise.' });
   const profId = qui.user.id;
-  const { data: prof, error: errProf } = await admin.from('professeurs').select('user_id').eq('user_id', profId).maybeSingle();
+  const { data: prof, error: errProf } = await admin.from('professeurs').select('user_id, admin').eq('user_id', profId).maybeSingle();
   if (errProf) return rep(500, { erreur: `Erreur du serveur (base de données) : ${errProf.message}` });
   if (!prof) return rep(403, { erreur: 'Action réservée aux professeurs.' });
 
@@ -199,6 +209,30 @@ Deno.serve(async (req) => {
       const { error } = await admin.from('classes_profs').delete().eq('classe_id', classe.id).eq('prof_id', corps.prof_id);
       if (error) throw new Error(error.message);
       return rep(200, { ok: true });
+    }
+    case 'creer_prof': {
+      if (!prof.admin) return rep(403, { erreur: 'Seul l’administrateur peut créer un compte professeur.' });
+      const email = String(corps.email ?? '').trim().toLowerCase(), nom = String(corps.nom ?? '').trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return rep(400, { erreur: 'Adresse email invalide.' });
+      if (nom.length < 1 || nom.length > 60) return rep(400, { erreur: 'Nom : 1 à 60 caractères.' });
+      const { count, error: errNb } = await admin.from('professeurs').select('user_id', { count: 'exact', head: true });
+      if (errNb) throw new Error(errNb.message);
+      if ((count ?? 0) >= MAX_PROFS) return rep(400, { erreur: `Limite de ${MAX_PROFS} professeurs atteinte.` });
+      const mot_de_passe = motDePasseProf();
+      const { data: cree, error } = await admin.auth.admin.createUser({ email, password: mot_de_passe, email_confirm: true });
+      if (error || !cree?.user) return rep(409, { erreur: /already|registered|exists/i.test(error?.message ?? '') ? 'Un compte existe déjà avec cette adresse.' : (error?.message ?? 'Création impossible.') });
+      const { error: errIns } = await admin.from('professeurs').insert({ user_id: cree.user.id, nom, admin: false });
+      if (errIns) { await admin.auth.admin.deleteUser(cree.user.id); throw new Error(errIns.message); }
+      return rep(200, { email, nom, mot_de_passe });
+    }
+    case 'lister_profs': {
+      if (!prof.admin) return rep(403, { erreur: 'Réservé à l’administrateur.' });
+      const { data, error } = await admin.from('professeurs').select('user_id, nom, admin');
+      if (error) throw new Error(error.message);
+      const { data: liste, error: errU } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
+      if (errU) throw new Error(errU.message);
+      const emails = new Map((liste?.users ?? []).map((u) => [u.id, u.email]));
+      return rep(200, { profs: (data ?? []).map((p) => ({ nom: p.nom, admin: p.admin, email: emails.get(p.user_id) ?? '' })) });
     }
     case 'quitter_classe': {
       if (typeof corps.classe_id !== 'string') return rep(400, { erreur: 'Classe inconnue.' });
