@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import "@fontsource/kalam/latin-400.css";
+import "@fontsource/kalam/latin-700.css";
 import { useEtatPersistant } from "../commun";
 import { CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_CLIENT, T_RAPPORT, T_FIN, etatInitial, texteDe, choixDe, choisir, valider, hhmm, bilan, statutCmd, estFin, visuelDe, equipe } from "./laboJournee";
 import { ScenePlanche, Affiche, Equipe, Instrument, STYLE_VISUELS } from "./LaboVisuels";
@@ -8,6 +10,7 @@ import { ScenePlanche, Affiche, Equipe, Instrument, STYLE_VISUELS } from "./Labo
 //  Toute la logique est dans laboJournee.js, les dessins dans LaboVisuels.jsx ; ce composant assemble l'affichage.
 // ====================================================
 const C = { papier: '#fbf8f1', encre: '#1f2937', doux: '#5b6472', bord: '#d9d2c3', accent: '#0f766e', accentFond: '#e6f4f1', ambre: '#b45309', rouge: '#b91c1c', vert: '#15803d', carte: '#ffffff' };
+const ENCRE = '#1e3a8a', HAND = "'Kalam','Segoe Print','Comic Sans MS',cursive";
 const NIVEAUX = { ok: ['✅', C.vert, 'Maîtrisé'], moyen: ['🟡', C.ambre, 'À consolider'], ko: ['❌', C.rouge, 'À retravailler'], nd: ['⚪', C.doux, 'Non évalué'] };
 const TONS = { ok: C.vert, moyen: C.ambre, ko: C.rouge };
 
@@ -21,9 +24,19 @@ const STYLE = `${STYLE_VISUELS}
 @keyframes lab-voile{0%{opacity:0}22%{opacity:1}68%{opacity:1}100%{opacity:0}}
 .lab-instr{animation:lab-allume .6s ease-out .15s both}
 @keyframes lab-allume{from{opacity:0;filter:brightness(2.2) blur(2px);transform:scale(.97)}to{opacity:1;filter:none;transform:none}}
-.lab-choix{display:block;width:100%;text-align:left;padding:11px 14px;margin:8px 0;border:1.5px solid ${C.bord};border-radius:10px;background:${C.carte};color:${C.encre};font:inherit;font-size:15px;line-height:1.45;cursor:pointer;transition:transform .12s,border-color .12s,background .12s}
-.lab-choix:hover,.lab-choix:focus-visible{border-color:${C.accent};background:${C.accentFond};outline:none;transform:translateX(3px)}
-@media (prefers-reduced-motion:reduce){.lab-scene,.lab-ligne,.lab-bulle,.lab-instr{animation:none!important}.lab-saut{animation-duration:.01s!important;display:none}.lab-choix:hover{transform:none}}
+.lab-cahier{position:relative;font-family:${HAND};font-size:17px;background-color:#fffef9;background-image:linear-gradient(#dfe9f5 1px,transparent 1px),linear-gradient(90deg,#dfe9f5 1px,transparent 1px);background-size:22px 22px;border-radius:6px 16px 16px 6px;box-shadow:0 2px 0 #e5e0d0,0 16px 34px rgba(0,0,0,.4)}
+.lab-cahier::before{content:"";position:absolute;left:clamp(30px,6vw,60px);top:0;bottom:0;width:2px;background:#f2a1a1;pointer-events:none}
+.lab-spirale{position:absolute;left:-9px;top:10px;bottom:10px;width:30px;pointer-events:none;background:radial-gradient(circle at 21px 13px,#3a3d46 0 4px,transparent 5px) 0 0/30px 26px repeat-y,repeating-linear-gradient(180deg,transparent 0 9px,#8f96a3 9px 11px,#e9ecf2 11px 14px,#8f96a3 14px 16px,transparent 16px 26px);-webkit-mask:linear-gradient(90deg,transparent 0,#000 6px);mask:linear-gradient(90deg,transparent 0,#000 6px)}
+.lab-photo{position:relative;background:#fff;padding:8px;box-shadow:0 3px 12px rgba(0,0,0,.28);transform:rotate(var(--rot,-.5deg))}
+.lab-photo::before,.lab-photo::after{content:"";position:absolute;top:-10px;width:68px;height:20px;background:rgba(250,222,120,.78);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.lab-photo::before{left:-16px;transform:rotate(-34deg)}.lab-photo::after{right:-16px;transform:rotate(34deg)}
+.lab-postit{background:var(--pc,#fff3a8);box-shadow:2px 4px 8px rgba(0,0,0,.2);transform:rotate(var(--rot,0deg));border-bottom-right-radius:22px 5px}
+.lab-choix{display:block;width:100%;text-align:left;padding:7px 10px 7px 36px;margin:5px 0;border:none;border-bottom:1.5px dashed #9bb0c9;background:transparent;color:${ENCRE};font:inherit;font-size:17px;line-height:1.4;position:relative;cursor:pointer;transition:background .15s,transform .12s}
+.lab-choix::before{content:"";position:absolute;left:7px;top:11px;width:15px;height:15px;border:2px solid ${ENCRE};border-radius:3px;background:#fff;color:#b91c1c;font-size:17px;line-height:11px;text-align:center;font-weight:700}
+.lab-choix:hover,.lab-choix:focus-visible{background:linear-gradient(transparent 45%,#fde68a 45%);outline:none;transform:translateX(3px)}
+.lab-choix:hover::before,.lab-choix:focus-visible::before{content:"✗"}
+.lab-titre{text-decoration:underline double;text-decoration-thickness:2px;text-underline-offset:7px}
+@media (prefers-reduced-motion:reduce){.lab-scene,.lab-ligne,.lab-bulle,.lab-instr{animation:none!important}.lab-photo,.lab-postit{transform:none}.lab-saut{animation-duration:.01s!important;display:none}.lab-choix:hover{transform:none}}
 `;
 
 function BarreHeure({ t }) {
@@ -31,11 +44,11 @@ function BarreHeure({ t }) {
   return (
     <div style={{ marginBottom: 12 }} aria-label={`Il est ${hhmm(t)}`}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4, gap: 8, flexWrap: 'wrap' }}>
-        <span style={{ fontFamily: 'ui-monospace,monospace', fontWeight: 800, fontSize: 22, whiteSpace: 'nowrap', color: retard ? C.rouge : C.accent }} data-heure>🕗 {hhmm(t)}</span>
+        <span style={{ display: 'inline-block', transform: 'rotate(-2deg)', border: `2.5px solid ${retard ? C.rouge : ENCRE}`, borderRadius: 6, padding: '0 10px', fontWeight: 700, fontSize: 22, whiteSpace: 'nowrap', color: retard ? C.rouge : ENCRE, letterSpacing: 1 }} data-heure>🕗 {hhmm(t)}</span>
         <span style={{ fontSize: 12.5, color: C.doux }}>Appel client 15 h · Rapport avant 16 h 30</span>
       </div>
-      <div style={{ position: 'relative', height: 12, background: '#ece7da', borderRadius: 6 }}>
-        <div style={{ width: pct(t), height: '100%', background: retard ? C.rouge : C.accent, borderRadius: 6, transition: 'width .4s' }} />
+      <div style={{ position: 'relative', height: 12, background: '#e8e2d2', borderRadius: 6, border: '1px solid #cfc6b0' }}>
+        <div style={{ width: pct(t), height: '100%', background: retard ? C.rouge : ENCRE, borderRadius: 6, transition: 'width .4s' }} />
         {[T_CLIENT, T_RAPPORT].map(x => <div key={x} style={{ position: 'absolute', left: pct(x), top: -3, width: 2, height: 18, background: C.ambre }} />)}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, color: C.doux, marginTop: 3 }}>{['8 h', '10 h', '12 h', '14 h', '16 h', '17 h'].map(h => <span key={h}>{h}</span>)}</div>
@@ -47,10 +60,10 @@ function Dialogue({ texte, pnj }) {
   const lignes = String(texte).split('\n').filter(l => l.trim());
   const p = PNJ[pnj];
   return (
-    <div aria-live="polite" data-texte style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div aria-live="polite" data-texte style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
       {lignes.map((l, i) => l.includes('«')
-        ? <div key={i} className="lab-bulle" style={{ animationDelay: `${i * 0.3}s`, position: 'relative', background: p.couleur + '14', border: `1.5px solid ${p.couleur}55`, borderRadius: '4px 16px 16px 16px', padding: '9px 14px', fontSize: 15.5, lineHeight: 1.6 }}>{l}</div>
-        : <div key={i} className="lab-ligne" style={{ animationDelay: `${i * 0.3}s`, fontSize: 15, lineHeight: 1.6, color: C.doux, fontStyle: 'italic' }}>{l}</div>)}
+        ? <div key={i} className="lab-bulle lab-postit" style={{ animationDelay: `${i * 0.3}s`, '--pc': `color-mix(in srgb, ${p.couleur} 14%, #fffbe0)`, '--rot': `${i % 2 ? 0.5 : -0.4}deg`, padding: '10px 16px', fontSize: 17, lineHeight: 1.55, borderLeft: `5px solid ${p.couleur}` }}>{l}</div>
+        : <div key={i} className="lab-ligne" style={{ animationDelay: `${i * 0.3}s`, fontSize: 16.5, lineHeight: 1.6, color: '#4b5563' }}>{l}</div>)}
     </div>);
 }
 
@@ -59,13 +72,13 @@ function Calcul({ e, sc, onEtat }) {
   const [message, setMessage] = useState('');
   const soumettre = ev => { ev.preventDefault(); const r = valider(e, saisie); onEtat(r.etat); if (!r.juste) setMessage(r.message || ''); };
   return (
-    <form onSubmit={soumettre} style={{ marginTop: 12, background: '#f5f1e6', border: `1.5px dashed ${C.bord}`, borderRadius: 12, padding: '12px 14px' }} data-calcul>
+    <form onSubmit={soumettre} style={{ marginTop: 14, background: '#fff9d6', border: '1.5px dashed #c9b86a', borderRadius: 6, padding: '12px 14px' }} data-calcul>
       <div style={{ fontWeight: 700, marginBottom: 6 }}>🧮 {sc.calcul.q}</div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <input value={saisie} onChange={ev => setSaisie(ev.target.value)} inputMode="decimal" autoComplete="off" aria-label="Ta réponse" placeholder="?"
-          style={{ width: 130, fontSize: 18, padding: '6px 10px', border: `2px solid ${C.bord}`, borderRadius: 8, fontFamily: 'ui-monospace,monospace' }} />
+          style={{ width: 130, fontSize: 18, padding: '6px 10px', border: 'none', borderBottom: `2px solid ${ENCRE}`, background: 'transparent', color: ENCRE, borderRadius: 0, fontFamily: 'inherit' }} />
         <span style={{ color: C.doux }}>{sc.calcul.unite}</span>
-        <button type="submit" disabled={!saisie.trim()} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: C.accent, color: '#fff', fontWeight: 800, cursor: saisie.trim() ? 'pointer' : 'default', opacity: saisie.trim() ? 1 : 0.5, font: 'inherit' }}>Valider</button>
+        <button type="submit" disabled={!saisie.trim()} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: ENCRE, color: '#fff', fontWeight: 700, cursor: saisie.trim() ? 'pointer' : 'default', opacity: saisie.trim() ? 1 : 0.5, font: 'inherit' }}>Valider</button>
       </div>
       {message && <div role="alert" style={{ marginTop: 8, color: C.ambre, fontSize: 14, lineHeight: 1.5 }}>❌ Pas tout à fait. {message}<br /><span style={{ color: C.doux }}>(Chaque erreur te coûte 5 minutes.)</span></div>}
       <div style={{ fontSize: 12.5, marginTop: 8 }}><a href="?sim=14" target="_blank" rel="noopener noreferrer" style={{ color: C.accent }}>Ouvrir la simulation « Peinture à l'eau » (outil de calcul) ↗</a></div>
@@ -84,7 +97,7 @@ export function SimulationHistoireLabo() {
   useEffect(() => { if (e) refTitre.current?.focus({ preventScroll: true }); }, [e?.scene]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (fin && !fins.includes(e.scene)) setFins([...fins, e.scene]); }, [fin, e?.scene]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const cadre = { background: C.papier, color: C.encre, borderRadius: 16, padding: 'clamp(12px, 3vw, 22px)', maxWidth: 1000, margin: '0 auto', border: `1px solid ${C.bord}` };
+  const cadre = { color: C.encre, padding: 'clamp(14px, 3vw, 24px) clamp(14px, 3vw, 24px) clamp(14px, 3vw, 24px) clamp(40px, 8vw, 84px)', maxWidth: 1000, margin: '0 auto' };
   const boiteFins = (
     <div style={{ fontSize: 13.5, color: C.doux, marginTop: 12 }} data-fins>
       <b style={{ color: C.encre }}>Fins découvertes : {fins.length} / {FINS.length}</b>
@@ -94,20 +107,20 @@ export function SimulationHistoireLabo() {
     </div>);
 
   if (!e) return (
-    <div style={cadre} data-labo="intro"><style>{STYLE}</style>
-      <Affiche />
+    <div className="lab-cahier" style={cadre} data-labo="intro"><style>{STYLE}</style><div className="lab-spirale" aria-hidden="true" />
+      <div className="lab-photo" style={{ '--rot': '-0.7deg', marginTop: 6 }}><Affiche /></div>
       <div style={{ fontSize: 12.5, letterSpacing: 2, color: C.accent, fontFamily: 'ui-monospace,monospace', marginTop: 14 }}>BTS MÉTIERS DE LA CHIMIE · HISTOIRE À CHOIX</div>
-      <h2 style={{ margin: '6px 0 10px', fontSize: 'clamp(24px,5vw,32px)', color: C.encre }}>🧪 Une journée au laboratoire</h2>
-      <p style={{ lineHeight: 1.65, fontSize: 15.5, maxWidth: 740 }}>
+      <h2 className="lab-titre" style={{ margin: '8px 0 14px', fontSize: 'clamp(26px,5.5vw,36px)', color: '#b91c1c' }}>🧪 Une journée au laboratoire</h2>
+      <p style={{ lineHeight: 1.65, fontSize: 17, maxWidth: 740 }}>
         Tu es technicien·ne dans un laboratoire de R&amp;D de peintures. Aujourd'hui, de 8 h à 17 h : remplacer la résine d'une base de peinture blanche, corriger un défaut de fabrication et contrôler la qualité de la nouvelle formule, avec des collègues à qui déléguer les analyses, une responsable à prévenir quand il le faut et une cliente au téléphone à 15 h.
       </p>
-      <ul style={{ lineHeight: 1.7, color: C.doux, fontSize: 14.5, paddingLeft: 20 }}>
+      <ul style={{ lineHeight: 1.7, color: '#4b5563', fontSize: 16, paddingLeft: 20 }}>
         <li>Tu joues <b style={{ color: C.encre }}>seul·e</b>, en <b style={{ color: C.encre }}>moins d'une heure</b> de temps réel.</li>
         <li>Tes choix ont des <b style={{ color: C.encre }}>conséquences</b> : <b style={{ color: C.encre }}>{FINS.length} fins</b> possibles. Tu peux rejouer pour explorer les autres.</li>
         <li>Les calculs sont à faire (calculatrice autorisée) ; la simulation « Peinture à l'eau » peut t'aider.</li>
         <li>En fin de partie, un bilan relie ta journée aux compétences du référentiel.</li>
       </ul>
-      <button type="button" data-commencer onClick={() => setEtat(etatInitial())} style={{ padding: '11px 22px', borderRadius: 10, border: 'none', background: C.accent, color: '#fff', fontWeight: 800, fontSize: 16, cursor: 'pointer', font: 'inherit' }}>▶ Commencer la journée</button>
+      <button type="button" data-commencer onClick={() => setEtat(etatInitial())} style={{ padding: '10px 22px', borderRadius: 4, border: `2px solid ${ENCRE}`, background: '#fff', color: ENCRE, fontWeight: 700, fontSize: 18, boxShadow: '3px 3px 0 ' + ENCRE, cursor: 'pointer', font: 'inherit' }}>▶ Commencer la journée</button>
       {boiteFins}
       <div style={{ fontSize: 12.5, color: C.doux, marginTop: 14 }}>Scénario fictif d'après le sujet de CCF4 (Lycée Argouges, 2025). Les mesures déléguées aux collègues sont des données de scénario.</div>
     </div>);
@@ -123,24 +136,24 @@ export function SimulationHistoireLabo() {
   const recommencer = () => { setEtat(null); setCarnetOuvert(false); };
 
   const carnet = (
-    <div style={{ background: C.carte, border: `1px solid ${C.bord}`, borderRadius: 12, padding: '10px 14px' }} data-carnet>
+    <div style={{ background: 'rgba(255,255,255,.85)', border: '1.5px dashed #9bb0c9', borderRadius: 6, padding: '10px 14px' }} data-carnet>
       <button type="button" onClick={() => setCarnetOuvert(o => !o)} aria-expanded={carnetOuvert} style={{ background: 'none', border: 'none', font: 'inherit', fontWeight: 800, cursor: 'pointer', padding: 0, color: C.encre }}>📒 Cahier de laboratoire ({e.carnet.length}) {carnetOuvert ? '▾' : '▸'}</button>
       {carnetOuvert && (e.carnet.length ? <ul style={{ margin: '8px 0 0', paddingLeft: 18, fontSize: 13.5, lineHeight: 1.55, color: C.doux }}>{e.carnet.map((l, i) => <li key={i}>{l}</li>)}</ul> : <div style={{ fontSize: 13.5, color: C.doux, marginTop: 6 }}>Rien de noté pour l'instant.</div>)}
     </div>);
 
   return (
-    <div style={cadre} data-labo={fin ? 'fin' : 'jeu'}><style>{STYLE}</style>
+    <div className="lab-cahier" style={cadre} data-labo={fin ? 'fin' : 'jeu'}><style>{STYLE}</style><div className="lab-spirale" aria-hidden="true" />
       {saut && <div key={saut.id} className="lab-saut" aria-hidden="true"><div style={{ fontSize: 13, letterSpacing: 2, opacity: .7 }}>{saut.a - saut.de >= 60 ? 'PLUS TARD…' : 'QUELQUES MINUTES PLUS TARD…'}</div><div style={{ fontSize: 'clamp(34px,9vw,56px)', fontWeight: 800 }}>{hhmm(saut.a)}</div></div>}
       <BarreHeure t={Math.min(e.t, T_FIN)} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div key={e.scene} className="lab-scene">
-          <ScenePlanche lieu={sc.lieu} pnj={hub ? 'moi' : sc.pnj} t={Math.min(e.t, T_FIN)} ton={fin ? sc.fin.ton : undefined} equipe={hub} />
+          <div className="lab-photo" style={{ '--rot': `${(e.scene.length % 3 - 1) * 0.5}deg` }}><ScenePlanche lieu={sc.lieu} pnj={hub ? 'moi' : sc.pnj} t={Math.min(e.t, T_FIN)} ton={fin ? sc.fin.ton : undefined} equipe={hub} /></div>
         </div>
         {hub && <Equipe occup={equipe(e)} />}
-        <div className="lab-scene" key={`c-${e.scene}`} style={{ minWidth: 0, background: C.carte, border: `1.5px solid ${fin ? TONS[sc.fin.ton] : C.bord}`, borderRadius: 14, padding: '14px 16px' }}>
-          <h3 ref={refTitre} tabIndex={-1} style={{ margin: '0 0 10px', fontSize: 21, outline: 'none', color: fin ? TONS[sc.fin.ton] : C.encre }} data-titre>{sc.titre}</h3>
+        <div className="lab-scene" key={`c-${e.scene}`} style={{ minWidth: 0, padding: '4px 0' }}>
+          <h3 ref={refTitre} tabIndex={-1} className="lab-titre" style={{ margin: '0 0 12px', fontSize: 25, fontWeight: 700, outline: 'none', color: fin ? TONS[sc.fin.ton] : C.encre }} data-titre>{sc.titre}</h3>
           <Dialogue texte={texteDe(e)} pnj={sc.pnj} />
-          {vis && <div className="lab-instr"><Instrument v={vis} /></div>}
+          {vis && <div className="lab-instr" style={{ margin: '16px auto 6px', maxWidth: 460 }}><div className="lab-photo" style={{ '--rot': '0.8deg' }}><Instrument v={vis} /></div></div>}
 
           {sc.calcul && <Calcul key={e.scene} e={e} sc={sc} onEtat={setEtat} />}
 
@@ -163,7 +176,7 @@ export function SimulationHistoireLabo() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 12 }}>
           {!fin && st.length > 0 && (
-            <div style={{ background: C.carte, border: `1px solid ${C.bord}`, borderRadius: 12, padding: '10px 14px' }} data-attentes>
+            <div className="lab-postit" style={{ '--pc': '#fff3a8', '--rot': '1deg', padding: '10px 16px' }} data-attentes>
               <div style={{ fontWeight: 800, marginBottom: 4 }}>En cours</div>
               {st.map(x => <div key={x.cle} style={{ fontSize: 13.5, color: x.etat === 'pret' ? C.vert : C.doux, lineHeight: 1.6 }}>{x.etat === 'pret' ? '📄 Résultat prêt : ' : '⏳ '}{x.label}{x.etat === 'cours' ? ` (vers ${hhmm(x.pret)})` : ''}</div>)}
             </div>)}
