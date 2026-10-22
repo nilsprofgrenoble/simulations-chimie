@@ -2,15 +2,20 @@
 import assert from 'node:assert';
 import * as J from './laboJournee.js';
 
-// 1. Données de référence cohérentes avec le sujet
-const pO = J.prop({ f: { regle: 'ok', coadis: 0.525, dpnb: 0 } });
-const pFiche = J.prop({ f: { regle: 'ok', coadis: 0.525, dpnb: 0 } }, { ph: 'fiche' });
+// 1. Données de référence cohérentes avec le sujet (référence Vinnapas, remplacement par l'Orgal)
+const eOk = d => ({ f: { regle: 'ok', coadis: 0.525, dpnb: d } });
+const pO = J.prop(eOk(3));
+const pFiche = J.prop(eOk(3), { ph: 'fiche' });
 assert(pFiche.lambda < 0.8 && pO.lambda >= 0.8, 'les prises d\'huile des fiches donnent une peinture non mate, les mesurées une mate');
 assert(pO.ES > 50 && pO.lambda >= 0.8 && pO.COV < 30, 'la formule juste respecte le cahier des charges');
-assert(Math.abs(J.coutKg(J.FORMULE_ORGAL) - 4.1) < 0.2, 'coût de la référence ≈ 4,1 €/kg');
-assert(J.coutKg(J.formule({ f: { regle: 'ok', coadis: 0.525, dpnb: 0 } })) < 4.5, 'coût Vinnapas < 4,5 €/kg');
+assert(J.tmffOk(eOk(3)) && !J.tmffOk(eOk(0)) && !J.tmffOk(eOk(1)), 'sans (ou presque) coalescent, la TMFF de l\'Orgal dépasse 5 °C');
+assert(!J.covOk(eOk(10)) && J.covOk(eOk(3)), '10 g de coalescent font dépasser 30 g/L');
+assert(J.dpnbOk(3) && !J.dpnbOk(0) && !J.dpnbOk(10));
+assert(J.coutKg(J.formule(eOk(3))) < 4.5, 'coût Orgal < 4,5 €/kg');
+assert(Math.abs(J.prop(eOk(3)).ES - J.prop({ f: {} }, {}).ES) < 5);
+const refP = J.prop({ f: {} }); void refP;
 const pN = J.prop({ f: { regle: 'naif' } });
-assert(Math.abs(pN.ES - 51.8) > 2, 'la formule naïve change l\'extrait sec');
+assert(Math.abs(pN.ES - pO.ES) > 2, 'la formule naïve change l\'extrait sec');
 
 // 2. Intégrité du graphe : parcours aléatoires (réponses justes ou fausses aux calculs)
 let graine = 12345; const rnd = () => { graine = (graine * 1103515245 + 12345) % 2147483648; return graine / 2147483648; };
@@ -57,9 +62,10 @@ function debut(g, o = {}) {
   if (o.plan === 'solo') g.go('Je me mets');
 }
 function formulation(g, o = {}) {
-  if (o.naif) { g.go('La masse de dispersion'); g.go('Je teste quand même'); }
+  if (o.naif) { g.go('La masse de dispersion de résine'); g.go('Je teste quand même'); }
   else { g.go('La masse de polymère'); g.calc(); g.calc(); }
-  g.go('La dose de dispersant'); g.calc(); g.go(o.dpnb === 5 ? 'Garder 5 g' : o.dpnb === 2 ? 'réduire à 2 g' : 'Le supprimer');
+  g.go('La dose de dispersant'); g.calc();
+  const d = o.dpnb ?? 3; if (d === 3) { g.go('Calculer la dose'); g.calc(); } else g.go(d === 0 ? 'Rien :' : d === 1 ? 'Ajouter 1 g' : 'Mettre 10 g');
   if (o.stock === 'ignore') { g.go('On l\'utilise comme ça'); g.go(o.insiste ? 'Je n\'ai pas le temps' : 'Tu as raison'); if (o.insiste) return; g.go('fût neuf'); }
   else if (o.stock === 'tamise') { g.go('Je contrôle le fût'); g.go('Tamiser'); }
   else { g.go('Je contrôle le fût'); g.go('fût neuf'); }
@@ -75,14 +81,20 @@ function travaille(g, o = {}) {
     const e = g.e; if (J.estFin(e.scene)) return e;
     if (e.scene === 'client') { const ch = J.choixDe(e); g.go(o.mens ? 'devrait aller' : ch[0].t.slice(0, 20)); continue; }
     if (e.scene === 'res_cout' || e.scene === 'res_huile') { g.calc(); continue; }
-    if (e.scene === 'res_ph') { g.go('Remonter le pH'); continue; }
-    if (e.scene === 'res_es') { g.go(e.f.regle === 'ok' ? 'Retourner' : 'garde cette formule'); continue; }
+    if (e.scene === 'res_ph') { g.go('Consigner'); continue; }
+    if (e.scene === 'coalescent') { g.go('Calculer la dose'); continue; }
+    if (e.scene === 'calcDpnb') { g.calc(); continue; }
+    if (e.scene === 'fabrication') { g.go('Je suis la fiche'); continue; }
+    if (e.scene === 'cahier') { g.go('Je note maintenant'); continue; }
+    if (e.scene === 'res_tmff') { g.go(J.tmffOk(e) ? 'Retourner' : o.corrige ? 'Corriger la dose' : 'Je garde'); continue; }
+    if (e.scene === 'res_es') { g.go(e.f.regle === 'ok' && J.covOk(e) ? 'Retourner' : 'garde cette formule'.length && (e.f.regle === 'ok' ? 'Je garde' : 'garde cette formule')); continue; }
     if (e.scene.startsWith('res_')) { g.e = J.choisir(e, J.choixDe(e)[0]); continue; }
     if (e.scene === 'labo') {
       const ch = J.choixDe(e), lire = ch.find(c => c.t.startsWith('📄'));
-      const fini = ['es', 'rheo', 'masq', 'tmff', 'cout', 'huile', 'ph', 'brill'].every(k => e.f['mes_' + k]) && e.f.clientFait;
+      const fini = (o.corrige ? ['es', 'rheo', 'masq', 'tmff'] : ['es', 'rheo', 'masq', 'tmff', 'cout', 'huile', 'ph', 'brill']).every(k => e.f['mes_' + k]) && e.f.clientFait;
       if (fini || e.t > (o.stop ?? 9999)) { g.go('Rédiger le rapport'); break; }
       if (lire) { g.e = J.choisir(e, lire); continue; }
+      const dem2 = ['Température', 'Extrait', 'Profil', 'Pouvoir'].map(k => ch.find(c => c.t.startsWith('Demander à') && c.t.includes(k))).find(Boolean); if (dem2 && o.corrige && !fini) { g.e = J.choisir(e, dem2); continue; }
       g.go('Attendre'); continue;
     }
     throw new Error('scène inattendue ' + e.scene);
@@ -92,17 +104,20 @@ function travaille(g, o = {}) {
   return g.e;
 }
 const cas = {};
-{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 0 }); cas.fin_excellent = travaille(g, {}); }
-{ const g = jouer(); debut(g, { alerte: 'tot', plan: 'mp' }); formulation(g, { dpnb: 0 }); cas.plan_mp = travaille(g, {}); }
-{ const g = jouer(); debut(g, { alerte: 'tard' }); formulation(g, { dpnb: 5, trace: false, rate: true, stock: 'tamise' }); cas.fin_bon = travaille(g, { stop: 380 }); }
-{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 0 }); cas.fin_promesse = travaille(g, { stab: 'Stable 30 mois' }); }
-{ const g = jouer(); debut(g, { alerte: 'nul' }); formulation(g, { dpnb: 0 }); cas.fin_cloque = travaille(g, { mens: true }); }
-{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { naif: true, dpnb: 0 }); g.go('Rédiger le rapport'); g.go('Non démontrable'); g.go('Écouter'); cas.fin_naif = g.e; }
-{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 0 }); g.go('Demander à Inès : Extrait'); g.go('Rédiger le rapport'); g.go('Non démontrable'); g.go('Écouter'); cas.fin_incomplet = g.e; }
-{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 0, stock: 'ignore', insiste: true }); cas.fin_matiere = g.e; }
-{ const g = jouer(); debut(g, { alerte: 'tot', plan: 'solo' }); formulation(g, { dpnb: 0 }); cas.solo = travaille(g, { stop: 400 }); }
-{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 0 }); for (let i = 0; i < 40 && g.e.scene !== 'fin_perdue'; i++) g.go(g.e.scene === 'client' ? 'Je confirme' : 'Attendre'); cas.fin_perdue = g.e; }
-{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 0 });
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); cas.fin_excellent = travaille(g, {}); }
+{ const g = jouer(); debut(g, { alerte: 'tot', plan: 'mp' }); formulation(g, { dpnb: 3 }); cas.plan_mp = travaille(g, {}); }
+{ const g = jouer(); debut(g, { alerte: 'tard' }); formulation(g, { dpnb: 3, trace: false, rate: true, stock: 'tamise' }); cas.fin_bon = travaille(g, { stop: 380 }); }
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); cas.fin_promesse = travaille(g, { stab: 'Stable 30 mois' }); }
+{ const g = jouer(); debut(g, { alerte: 'nul' }); formulation(g, { dpnb: 3 }); cas.fin_cloque = travaille(g, { mens: true }); }
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { naif: true }); g.go('Rédiger le rapport'); g.go('Non démontrable'); g.go('Écouter'); cas.fin_naif = g.e; }
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); g.go('Demander à Inès : Extrait'); g.go('Rédiger le rapport'); g.go('Non démontrable'); g.go('Écouter'); cas.fin_incomplet = g.e; }
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3, stock: 'ignore', insiste: true }); cas.fin_matiere = g.e; }
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 0 }); cas.fin_ecart = travaille(g, {}); }
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 10 }); cas.fin_ecart_cov = travaille(g, {}); }
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 1 }); cas.corrige = travaille(g, { corrige: true, dem: ['Lucas : Température', 'Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'M. Perrin'] }); }
+{ const g = jouer(); debut(g, { alerte: 'tot', plan: 'solo' }); formulation(g, { dpnb: 3 }); cas.solo = travaille(g, { stop: 400 }); }
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); for (let i = 0; i < 40 && g.e.scene !== 'fin_perdue'; i++) g.go(g.e.scene === 'client' ? 'Je confirme' : 'Attendre'); cas.fin_perdue = g.e; }
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 });
   for (const k of ['Demander à Inès : Extrait', 'Demander à Lucas : Profil', 'Demander à Lucas : Pouvoir']) g.go(k);
   for (let i = 0; i < 80 && !(g.e.t >= 470 && g.e.f.mes_es && g.e.f.mes_rheo && g.e.f.mes_masq && g.e.f.clientFait); i++) {
     const e = g.e, l = J.choixDe(e).find(c => c.t.startsWith('📄'));
@@ -113,6 +128,9 @@ const lis = {}; for (const [k, e] of Object.entries(cas)) lis[k] = `${e.scene} �
 assert.strictEqual(cas.fin_excellent.scene, 'fin_excellent', 'parcours idéal → excellent');
 assert.strictEqual(cas.plan_mp.scene, 'fin_excellent', 'plan matières premières → excellent');
 assert.strictEqual(cas.fin_bon.scene, 'fin_bon');
+assert.strictEqual(cas.fin_ecart.scene, 'fin_ecart'); assert.strictEqual(cas.fin_ecart_cov.scene, 'fin_ecart');
+assert(['fin_excellent', 'fin_bon', 'fin_retard'].includes(cas.corrige.scene), 'corriger le coalescent après la TMFF permet de finir : ' + cas.corrige.scene);
+assert(J.dpnbOk(cas.corrige.f.dpnb), 'la dose corrigée est bonne');
 for (const k of ['fin_promesse', 'fin_cloque', 'fin_naif', 'fin_incomplet', 'fin_matiere', 'fin_perdue']) assert.strictEqual(cas[k].scene, k);
 assert.strictEqual(cas.retard_ou_autre.scene, 'fin_retard');
 console.log('OK : une journée au labo');

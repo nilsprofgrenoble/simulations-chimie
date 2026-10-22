@@ -285,8 +285,8 @@ export function Instrument({ v }) {
       <text x="22" y="58" fontSize="30" fontWeight="700" {...txt}>pH {fr(v.ph)}</text>
       <defs><linearGradient id="lv-phg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#ef4444" /><stop offset=".3" stopColor="#f59e0b" /><stop offset=".5" stopColor="#22c55e" /><stop offset=".75" stopColor="#3b82f6" /><stop offset="1" stopColor="#7c3aed" /></linearGradient></defs>
       <rect x="22" y="92" width="316" height="14" rx="7" fill="url(#lv-phg)" />
-      <path d={`M${px(v.ph)} 84 L${px(v.ph) - 6} 74 H${px(v.ph) + 6}Z`} fill="#fff" /><text x={px(v.ph)} y="73" textAnchor="middle" fontSize="10" fill="#fff" fontFamily="ui-monospace,monospace" transform="translate(0 0)">Vinnapas</text>
-      <path d={`M${px(v.ref)} 114 L${px(v.ref) - 6} 124 H${px(v.ref) + 6}Z`} fill="#fde68a" /><text x={px(v.ref)} y="138" textAnchor="middle" fontSize="10" fill="#fde68a" fontFamily="ui-monospace,monospace">référence Orgal</text>
+      <path d={`M${px(v.ph)} 84 L${px(v.ph) - 6} 74 H${px(v.ph) + 6}Z`} fill="#fff" /><text x={px(v.ph)} y="73" textAnchor="middle" fontSize="10" fill="#fff" fontFamily="ui-monospace,monospace" transform="translate(0 0)">{v.lab || 'ta peinture'}</text>
+      <path d={`M${px(v.ref)} 114 L${px(v.ref) - 6} 124 H${px(v.ref) + 6}Z`} fill="#fde68a" /><text x={px(v.ref)} y="138" textAnchor="middle" fontSize="10" fill="#fde68a" fontFamily="ui-monospace,monospace">{v.refLab || 'référence'}</text>
       {[0, 7, 14].map(n => <text key={n} x={px(n)} y="158" textAnchor="middle" fontSize="10" fill="#9fb3c8" fontFamily="ui-monospace,monospace">{n}</text>)}</Cadre>);
   }
   if (v.type === 'gloss') {
@@ -302,7 +302,7 @@ export function Instrument({ v }) {
     return (<Cadre titre="BANC À GRADIENT DE TEMPÉRATURE · TMFF" hauteur={175}>
       <rect x={x0} y="58" width={px(lim) - x0} height="56" fill="#1e3a5f" /><rect x={px(lim)} y="58" width={w - (px(lim) - x0)} height="56" fill="#e8eef2" />
       {[0, 1, 2, 3, 4, 5, 6, 7].map(i => <path key={i} d={`M${x0 + 4 + i * 6} ${64 + (i % 3) * 14} l5 6 l-3 7 l5 7`} stroke="#9fb3c8" strokeWidth="1.3" fill="none" opacity={px(lim) - x0 > 30 + i * 6 ? 1 : 0} />)}
-      <path d={`M${px(lim)} 50 V122`} stroke="#fde68a" strokeWidth="3" /><text x={px(lim)} y="46" textAnchor="middle" fontSize="12" fontWeight="700" fill="#fde68a" fontFamily="ui-monospace,monospace">{v.tmff == null ? 'TMFF < 0 °C' : `TMFF ≈ ${v.tmff} °C`}</text>
+      <path d={`M${px(lim)} 50 V122`} stroke="#fde68a" strokeWidth="3" /><text x={px(lim)} y="46" textAnchor={px(lim) > 270 ? "end" : "middle"} fontSize="12" fontWeight="700" fill="#fde68a" fontFamily="ui-monospace,monospace">{v.tmff == null ? 'TMFF < 0 °C' : `TMFF ≈ ${v.tmff} °C`}</text>
       <text x={x0 + 8} y="136" fontSize="10.5" fill="#9fb3c8" fontFamily="ui-monospace,monospace">film craquelé</text><text x={x0 + w - 8} y="136" textAnchor="end" fontSize="10.5" fill="#9fb3c8" fontFamily="ui-monospace,monospace">film continu</text>
       {[0, 5, 10, 15, 20].map(T => <text key={T} x={px(T)} y="158" textAnchor="middle" fontSize="10" fill="#9fb3c8" fontFamily="ui-monospace,monospace">{T} °C</text>)}</Cadre>);
   }
@@ -323,7 +323,7 @@ export function Instrument({ v }) {
       <polyline points={v.mauvais ? courbe(14, 0.3) : courbe(3.4, 0.4)} fill="none" stroke="#38bdf8" strokeWidth="3" />
       {v.mauvais && <polyline points={courbe(8, 0.3)} fill="none" stroke="#f87171" strokeWidth="2" strokeDasharray="3 3" />}
       <text x={X0 + W} y={Y0 + 16} textAnchor="end" fontSize="10" fill="#9fb3c8" fontFamily="ui-monospace,monospace">gradient de cisaillement (s⁻¹)</text><text x="14" y="46" fontSize="10" fill="#9fb3c8" fontFamily="ui-monospace,monospace">η</text>
-      <text x={X0 + 4} y="44" fontSize="10.5" fill="#94a3b8" fontFamily="ui-monospace,monospace" transform="translate(70 0)">- - référence Orgal</text><text x={X0 + 4} y="58" fontSize="10.5" fill="#38bdf8" fontFamily="ui-monospace,monospace" transform="translate(70 0)">— ta peinture</text>
+      <text x={X0 + 4} y="44" fontSize="10.5" fill="#94a3b8" fontFamily="ui-monospace,monospace" transform="translate(70 0)">- - référence Vinnapas</text><text x={X0 + 4} y="58" fontSize="10.5" fill="#38bdf8" fontFamily="ui-monospace,monospace" transform="translate(70 0)">— ta peinture</text>
       {v.mauvais && <text x={X0 + 4} y="72" fontSize="10.5" fill="#f87171" fontFamily="ui-monospace,monospace" transform="translate(70 0)">⋯ retour : thixotropie</text>}</Cadre>);
   }
   if (v.type === 'masq') {

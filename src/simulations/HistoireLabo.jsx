@@ -3,6 +3,7 @@ import "@fontsource/kalam/latin-400.css";
 import "@fontsource/kalam/latin-700.css";
 import { useEtatPersistant } from "../commun";
 import { CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_CLIENT, T_RAPPORT, T_FIN, etatInitial, texteDe, choixDe, choisir, valider, hhmm, bilan, statutCmd, estFin, visuelDe, equipe } from "./laboJournee";
+import Fiches from "./Fiches";
 import { ScenePlanche, Affiche, Equipe, Instrument, Avatar, STYLE_VISUELS } from "./LaboVisuels";
 
 // ====================================================
@@ -193,6 +194,8 @@ export function SimulationHistoireLabo() {
           <h3 ref={refTitre} tabIndex={-1} className="lab-titre" style={{ margin: '0 0 12px', fontSize: 25, fontWeight: 700, outline: 'none', color: fin ? TONS[sc.fin.ton] : C.encre }} data-titre>{sc.titre}</h3>
           <Dialogue texte={texteDe(e)} pnj={sc.pnj} lecture={lecture}>
           {vis && <div className="lab-instr" style={{ margin: '16px auto 6px', maxWidth: 460 }}><div className="lab-photo" style={{ '--rot': '0.8deg' }}><Instrument v={vis} /></div></div>}
+
+          {sc.fiches && <Fiches ids={sc.fiches} />}
 
           {sc.calcul && <Calcul key={e.scene} e={e} sc={sc} onEtat={setEtat} />}
 
