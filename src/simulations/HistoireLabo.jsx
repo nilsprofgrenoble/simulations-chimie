@@ -4,7 +4,7 @@ import "@fontsource/kalam/latin-700.css";
 import { useEtatPersistant } from "../commun";
 import { CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_CLIENT, T_RAPPORT, T_FIN, etatInitial, texteDe, choixDe, choisir, valider, hhmm, bilan, resume, statutCmd, estFin, visuelDe, equipe } from "./laboJournee";
 import Fiches from "./Fiches";
-import { StationBanc, StationCourbe, StationHuile } from "./StationsLabo";
+import { StationBanc, StationCourbe, StationHuile, StationCpg } from "./StationsLabo";
 import { ScenePlanche, Affiche, Equipe, Instrument, Avatar, STYLE_VISUELS } from "./LaboVisuels";
 
 // ====================================================
@@ -199,6 +199,8 @@ export function SimulationHistoireLabo() {
           {sc.fiches && <Fiches ids={sc.fiches} />}
 
           {sc.station === 'banc' && <StationBanc e={e} onEtat={setEtat} onValider={avancer} choixDose={g => choix.find(c => c.g === g)} />}
+
+          {sc.station === 'cpg' && <StationCpg e={e} onEtat={setEtat} onValider={avancer} choixConcl={choix} />}
 
           {sc.station === 'huile' && <StationHuile e={e} onEtat={setEtat} onValider={avancer} choixFin={choix[0]} />}
 
