@@ -255,6 +255,79 @@ export const ENONCES = [
         solution: { txt: 'm = ρ·V = ρ·S·h', val: p.rho * S * p.h, u: 'kg' } };
     },
   },
+  // ───────────────────────────── Régulation
+  {
+    id: 'regulP', domaine: 'Régulation', titre: 'Régulation proportionnelle du niveau d’un réservoir', noms: ['Commande nécessaire', 'Écart statique', 'Niveau en régime permanent'],
+    gen: () => ({ hc: tire([3, 4, 5]), Kp: tire([50, 80, 100, 150]), Qmax: tire([100, 120, 150]), Qp: tire([30, 36, 45, 60]), S: tire([2, 3, 4]), Ti: tire([20, 50, 100]) }),
+    build: (p, q) => {
+      const Y = p.Qp / p.Qmax * 100, e = Y / p.Kp;
+      const tokens = {
+        S: tok(`${p.S} m²`, 'Section du réservoir', p.S, 'm²'),
+        Qmax: tok(`${p.Qmax} m³·h⁻¹`, 'Débit maximal de la pompe (commande de 100 %)', p.Qmax, 'm³·h⁻¹'),
+        Qp: tok(`${p.Qp} m³·h⁻¹`, 'Débit de soutirage', p.Qp, 'm³·h⁻¹'),
+        hc: tok(`${p.hc} m`, 'Consigne de niveau', p.hc, 'm'),
+        Kp: tok(`${p.Kp} %·m⁻¹`, 'Gain proportionnel du régulateur', p.Kp, '%·m⁻¹'),
+        Ti: tok(`${p.Ti} h`, 'Temps intégral (réglage d’un régulateur PI)', p.Ti, 'h'),
+      };
+      const debut = ['Un réservoir de section ', T('S'), ' est rempli par une pompe dont le débit est proportionnel à la commande Y (100 % ↔ ', T('Qmax'), '). Un soutirage constant de ', T('Qp'),
+        ' vide le réservoir. Le régulateur proportionnel calcule Y = K_p × (consigne − H) avec K_p = ', T('Kp'), ' ; la consigne est de ', T('hc'), '. Le régulateur dispose aussi d’un réglage de temps intégral de ', T('Ti'), ' (inutilisé en régulation P). '];
+      const rS = 'La section règle la vitesse d’évolution du niveau, pas sa valeur en régime permanent.', rTi = 'Le temps intégral ne sert qu’en régulation PI : ici le régulateur est proportionnel.';
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'En régime permanent, quelle commande Y le régulateur doit-il envoyer à la pompe ?'], utiles: ['Qmax', 'Qp'],
+        raisons: { S: rS, hc: 'La consigne intervient dans le calcul de l’écart, pas dans la commande nécessaire pour compenser le soutirage.', Kp: 'Le gain relie la commande à l’écart de niveau, mais ne dit pas quelle commande est nécessaire.', Ti: rTi },
+        cherche: { bonne: 'La commande Y qui compense exactement le soutirage (en %)', faux: ['Le niveau de liquide en régime permanent (en m)', 'L’écart entre la consigne et le niveau (en m)', 'Le débit de la pompe (en m³·h⁻¹)'] },
+        manque: { bonne: 'Rien ne manque : le débit de la pompe est proportionnel à Y', faux: ['La masse volumique du liquide', 'La hauteur du réservoir', 'Le temps de réponse du capteur'],
+          expl: 'En régime permanent, le niveau est stable : le débit de la pompe est égal au soutirage, donc Y/100 × Q_max = Q_p.' },
+        solution: { txt: 'Y = Q_p / Q_max × 100', val: Y, u: '%' } };
+      if (q === 1) return { tokens, texte: [...debut, 'Quel est l’écart statique (consigne − niveau) en régime permanent ?'], utiles: ['Qmax', 'Qp', 'Kp'],
+        derivees: [{ id: 'Y', nom: 'Commande nécessaire', expr: 'Y = Q_p / Q_max × 100', val: Y, u: '%' }],
+        raisons: { S: rS, hc: 'L’écart ne dépend pas de la valeur de la consigne, seulement de la commande à fournir et du gain.', Ti: rTi },
+        cherche: { bonne: 'L’écart statique entre la consigne et le niveau (en m)', faux: ['La commande Y (en %)', 'Le niveau de liquide (en m)', 'Le temps pour atteindre le régime permanent (en h)'] },
+        manque: { bonne: 'Rien ne manque : la commande s’écrit Y = K_p × écart', faux: ['La hauteur du réservoir', 'La masse volumique du liquide', 'Le temps de réponse de la pompe'],
+          expl: 'Le régulateur ne fournit Y que s’il y a un écart : écart = Y / K_p.' },
+        solution: { txt: 'écart = Y / K_p', val: e, u: 'm' } };
+      return { tokens, texte: [...debut, 'Quel est le niveau du liquide en régime permanent ?'], utiles: ['Qmax', 'Qp', 'Kp', 'hc'],
+        derivees: [{ id: 'Y', nom: 'Commande nécessaire', expr: 'Y = Q_p / Q_max × 100', val: Y, u: '%' }, { id: 'e', nom: 'Écart statique', expr: 'écart = Y / K_p', val: e, u: 'm' }],
+        raisons: { S: rS, Ti: rTi },
+        cherche: { bonne: 'Le niveau H en régime permanent (en m)', faux: ['L’écart statique (en m)', 'La commande Y (en %)', 'La consigne de niveau (en m)'] },
+        manque: { bonne: 'Rien ne manque : le niveau se déduit de la consigne et de l’écart', faux: ['La hauteur du réservoir', 'La masse volumique du liquide', 'La vitesse de remplissage'],
+          expl: 'Un régulateur proportionnel laisse le niveau sous la consigne (le soutirage demande une commande non nulle) : H = consigne − écart.' },
+        solution: { txt: 'H = consigne − écart', val: p.hc - e, u: 'm' } };
+    },
+  },
+  {
+    id: 'premord', domaine: 'Régulation', titre: 'Réponse d’un capteur de température (1er ordre)', noms: ['Temps de réponse à 5 %', 'Température lue après une durée t'],
+    gen: () => {
+      const tau = tire([15, 20, 30, 40]), k = tire([1, 2, 3]);
+      return { tau, T0: tire([15, 20, 25]), Tf: tire([60, 80, 100]), t: tau * k, res: tire([0.1, 0.5]), m: tire([12, 15, 20]) };
+    },
+    build: (p, q) => {
+      const tokens = {
+        tau: tok(`${p.tau} s`, 'Constante de temps du capteur', p.tau, 's'),
+        T0: tok(`${p.T0} °C`, 'Température initiale du capteur', p.T0, '°C'),
+        Tf: tok(`${p.Tf} °C`, 'Température du bain', p.Tf, '°C'),
+        t: tok(`${p.t} s`, 'Durée écoulée depuis l’immersion', p.t, 's'),
+        res: tok(`${nb(p.res, 1)} °C`, 'Résolution de l’afficheur', p.res, '°C'),
+        m: tok(`${p.m} g`, 'Masse du capteur', p.m, 'g'),
+      };
+      const debut = ['Un capteur de température se comporte comme un système du 1er ordre de constante de temps ', T('tau'), '. À l’instant initial, il est à ', T('T0'), ' et on le plonge dans un bain à ', T('Tf'),
+        '. L’afficheur a une résolution de ', T('res'), ' et le capteur a une masse de ', T('m'), '. '];
+      const rRes = 'La résolution de l’afficheur ne change pas la réponse du capteur.', rM = 'La masse est déjà prise en compte dans la constante de temps donnée.';
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le temps de réponse du capteur à 5 % ?'], utiles: ['tau'],
+        raisons: { T0: 'Un temps de réponse à 5 % ne dépend pas des températures de départ et d’arrivée.', Tf: 'Un temps de réponse à 5 % ne dépend pas des températures de départ et d’arrivée.', t: 'Cette durée est celle d’une lecture, pas le temps de réponse du capteur.', res: rRes, m: rM },
+        cherche: { bonne: 'Le temps de réponse à 5 % : durée au bout de laquelle le capteur est à 5 % de sa valeur finale (en s)', faux: ['La température du capteur à l’instant t (en °C)', 'La constante de temps τ (en s)', 'La durée pour atteindre exactement la température du bain (en s)'] },
+        manque: { bonne: 'Le lien entre temps de réponse à 5 % et τ (t₅ % = 3·τ, à connaître)', faux: ['La capacité thermique du capteur', 'La conductivité thermique du bain', 'Rien ne manque'],
+          expl: 'Pour un système du 1er ordre, la sortie atteint 95 % de sa valeur finale à t ≈ 3·τ : cette relation n’est pas dans l’énoncé.' },
+        solution: { txt: 't₅ % ≈ 3 × τ', val: 3 * p.tau, u: 's' } };
+      const f = 1 - Math.exp(-p.t / p.tau), dT = p.Tf - p.T0;
+      return { tokens, texte: [...debut, 'Quelle température le capteur indique-t-il ', T('t'), ' après l’immersion ?'], utiles: ['tau', 'T0', 'Tf', 't'],
+        derivees: [{ id: 'dT', nom: 'Écart total à parcourir', expr: 'ΔT = T_f − T_0', val: dT, u: '°C' }, { id: 'f', nom: 'Fraction de l’écart atteinte', expr: 'f = 1 − e^(−t/τ)', val: f, u: '' }],
+        raisons: { res: rRes, m: rM },
+        cherche: { bonne: 'La température indiquée par le capteur à l’instant t (en °C)', faux: ['Le temps de réponse à 5 % (en s)', 'La température du bain (en °C)', 'La constante de temps τ (en s)'] },
+        manque: { bonne: 'La relation de la réponse d’un 1er ordre : T = T_f − (T_f − T_0)·e^(−t/τ)', faux: ['La capacité thermique du capteur', 'La conductivité thermique du bain', 'Rien ne manque'],
+          expl: 'La réponse d’un système du 1er ordre à un échelon suit une exponentielle : cette relation n’est pas dans l’énoncé.' },
+        solution: { txt: 'T = T_0 + (T_f − T_0)·(1 − e^(−t/τ))', val: p.T0 + dT * f, u: '°C' } };
+    },
+  },
   // ───────────────────────────── Distillation
   {
     id: 'distil', domaine: 'Distillation', titre: 'Distillation d’un mélange eau–éthanol', noms: ['Volume d’éthanol présent', 'Rendement de la distillation'],
@@ -464,6 +537,8 @@ const SYMBOLES = {
   echangeur: { qc: 'q_m,chaud', Tce: 'T_ce', Tcs: 'T_cs', c: 'c', qf: 'q_m,froid', Tfe: 'T_fe' },
   beer: { lam: 'λ', l: 'ℓ', A: 'A', eps: 'ε', theta: 'θ' },
   reservoir: { rho: 'ρ', h: 'h', D: 'D', Patm: 'P_atm' },
+  regulP: { hc: 'consigne', Kp: 'K_p', Qmax: 'Q_max', Qp: 'Q_p', S: 'S', Ti: 'T_i' },
+  premord: { tau: 'τ', T0: 'T₀', Tf: 'T_f', t: 't', res: '', m: 'm' },
   distil: { V: 'V', x: 'x', y: 'y', Vd: 'V_distillat', Te: 'θ_éb', P: 'P' },
   cristal: { me: 'm_eau', mb: 'm_bécher', s60: 's₆₀', s20: 's₂₀', dur: 'Δt' },
 };
