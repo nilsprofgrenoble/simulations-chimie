@@ -158,8 +158,9 @@ export function SimulationHistoireLabo() {
       <ul style={{ lineHeight: 1.7, color: '#4b5563', fontSize: 16, paddingLeft: 20 }}>
         <li>Tu joues <b style={{ color: C.encre }}>seul·e</b>, en <b style={{ color: C.encre }}>moins d'une heure</b> de temps réel.</li>
         <li>Tes choix ont des <b style={{ color: C.encre }}>conséquences</b> : <b style={{ color: C.encre }}>{FINS.length} fins</b> possibles. Tu peux rejouer pour explorer les autres.</li>
+        <li>Certaines étapes se font <b style={{ color: C.encre }}>au banc</b> : courbe de défloculation, pré-essai de TMFF, prises d'huile, dosage par CPG. Les paramètres cachés sont à trouver par la mesure, et chaque erreur est expliquée.</li>
         <li>Les calculs sont à faire (calculatrice autorisée) ; la simulation « Peinture à l'eau » peut t'aider.</li>
-        <li>En fin de partie, un bilan relie ta journée aux compétences du référentiel.</li>
+        <li>En fin de partie, un résumé de tes choix et un bilan relient ta journée aux compétences du référentiel. Rien n'est transmis à ton enseignant.</li>
       </ul>
       <button type="button" data-commencer onClick={() => setEtat(etatInitial())} style={{ padding: '10px 22px', borderRadius: 4, border: `2px solid ${ENCRE}`, background: '#fff', color: ENCRE, fontWeight: 700, fontSize: 18, boxShadow: '3px 3px 0 ' + ENCRE, cursor: 'pointer', font: 'inherit' }}>▶ Commencer la journée</button>
       {boiteFins}
