@@ -21,9 +21,9 @@ const FAB = [['1', 'Dans la cuve, introduire 70 % de l\'eau, le Foamex et le Coa
   ['3', 'Disperser à vitesse maximale. Contrôle : finesse au grindomètre ≥ 7 Hegman.', '15 min'], ['4', 'Ajouter la résine, puis le coalescent éventuel, le Thixol et le Coapur.', 'Agitation lente, 200 tr/min'],
   ['5', 'Ajuster avec le reste de l\'eau. Contrôler l\'aspect, le pH et l\'extrait sec.', '5 min'], ['6', 'Noter le lot, les masses réellement pesées et les observations.', '']];
 
-function Feuille({ entete, titre, sous, edition, children }) {
+function Feuille({ entete, titre, sous, edition, ouvert = true, children }) {
   return (
-    <details open className="fiche-doc" style={{ background: '#fff', color: '#1f2937', fontFamily: SANS, fontSize: 13.5, lineHeight: 1.45, border: '1px solid #cfd6df', boxShadow: '0 2px 8px rgba(0,0,0,.18)', margin: '14px 0', borderRadius: 2 }}>
+    <details open={ouvert} className="fiche-doc" style={{ background: '#fff', color: '#1f2937', fontFamily: SANS, fontSize: 13.5, lineHeight: 1.45, border: '1px solid #cfd6df', boxShadow: '0 2px 8px rgba(0,0,0,.18)', margin: '14px 0', borderRadius: 2 }}>
       <summary style={{ cursor: 'pointer', padding: '8px 12px', background: '#eef2f6', fontWeight: 700, fontSize: 13, color: '#334155' }}>📄 {entete} · {titre}</summary>
       <div style={{ padding: '14px 16px 12px', overflowX: 'auto' }}>
         <div style={{ borderBottom: '3px solid #1e3a8a', paddingBottom: 6, marginBottom: 10 }}>
@@ -47,21 +47,25 @@ function Tableau({ tetes, lignes }) {
     </table>);
 }
 
-export default function Fiches({ ids }) {
+export default function Fiches({ ids, ouvert = true }) {
   return (<div data-fiches>{ids.map(id => {
+    if (id === 'cdc') return (
+      <Feuille key={id} ouvert={ouvert} entete="Cahier des charges" titre="Nouvelle base de peinture blanche mate" sous="Résine de remplacement : Orgal PST 50A" edition="exigences du client">
+        <Tableau tetes={['Critère', 'Exigence']} lignes={[['Extrait sec', '> 50 %'], ['λ = CPV / CPVC', '≥ 0,8'], ['Pouvoir masquant', '> 7,0 m²/L'], ['COV', '< 30 g/L'], ['Matières premières', '< 4,5 €/kg'], ['Film continu', 'dès 5 °C'], ['Stabilité', '30 mois']]} />
+      </Feuille>);
     if (id === 'formule') return (
-      <Feuille key={id} entete="Document 1" titre="Formule de référence : base de peinture blanche mate" sous="Résine Vinnapas EP 3360, sans agent de coalescence" edition="331,2 g pour 100 %">
+      <Feuille key={id} ouvert={ouvert} entete="Document 1" titre="Formule de référence : base de peinture blanche mate" sous="Résine Vinnapas EP 3360, sans agent de coalescence" edition="331,2 g pour 100 %">
         <Tableau tetes={['Matière première', 'Fonction', 'Masse (g)', 'Prix']} lignes={PRIX_LIGNES} />
         <div style={{ fontSize: 12.5, color: '#475569' }}>Prix de l'Orgal PST 50A (densité 1,03) : 25 € les 5 L. Prix du DPnB (densité 0,91) : 3 € le litre. Cahier des charges : extrait sec &gt; 50 %, λ = CPV/CPVC ≥ 0,8, pouvoir masquant &gt; 7,0 m²/L, COV &lt; 30 g/L, matières premières &lt; 4,5 €/kg, film continu dès 5 °C, stabilité 30 mois.</div>
       </Feuille>);
     if (id === 'fabrication') return (
-      <Feuille key={id} entete="Document 2" titre="Fiche de fabrication" sous="Base de peinture blanche, essai de 300 g" edition="Défloculeuse de laboratoire">
+      <Feuille key={id} ouvert={ouvert} entete="Document 2" titre="Fiche de fabrication" sous="Base de peinture blanche, essai de 300 g" edition="Défloculeuse de laboratoire">
         <Tableau tetes={['N°', 'Opération', 'Conditions']} lignes={FAB} />
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', fontSize: 12.5, color: '#475569' }}><span>Lot : ______________</span><span>Opérateur : ______________</span><span>Date : ______________</span></div>
       </Feuille>);
     const r = REELLES[id];
     if (r) return (
-      <details key={id} open className="fiche-doc" style={{ background: '#fff', color: '#1f2937', fontFamily: SANS, border: '1px solid #cfd6df', boxShadow: '0 2px 8px rgba(0,0,0,.18)', margin: '14px 0', borderRadius: 2 }}>
+      <details key={id} open={ouvert} className="fiche-doc" style={{ background: '#fff', color: '#1f2937', fontFamily: SANS, border: '1px solid #cfd6df', boxShadow: '0 2px 8px rgba(0,0,0,.18)', margin: '14px 0', borderRadius: 2 }}>
         <summary style={{ cursor: 'pointer', padding: '8px 12px', background: '#eef2f6', fontWeight: 700, fontSize: 13, color: '#334155' }}>📄 Fiche technique · {r.titre} <span style={{ fontWeight: 400, color: '#64748b' }}>({r.source})</span></summary>
         <div style={{ padding: 8, display: 'grid', gap: 8 }}>
           {r.pages.map((pg, i) => (
@@ -73,7 +77,7 @@ export default function Fiches({ ids }) {
       </details>);
     const f = FICHES[id]; if (!f) return null;
     return (
-      <Feuille key={id} entete={f.ref} titre={f.titre} sous={f.sous} edition={f.edition}>
+      <Feuille key={id} ouvert={ouvert} entete={f.ref} titre={f.titre} sous={f.sous} edition={f.edition}>
         <Tableau lignes={f.lignes} />
         {f.textes.map(([k, v]) => <p key={k} style={{ margin: '6px 0' }}><b>{k}.</b> {v}</p>)}
       </Feuille>);

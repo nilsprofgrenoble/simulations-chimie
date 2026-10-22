@@ -155,7 +155,7 @@ for (let g0 = 1; g0 <= 300; g0++) {
   const deb = J.SCENES.debriefBanc.debrief(n);
   assert(deb.length >= 4 && deb[0].ok === true && deb[1].ok === true, 'débrief : TMFF et COV conformes');
   const mauvais = J.SCENES.debriefBanc.debrief(J.choisir({ ...e, f: { ...e.f, banc: [] } }, J.choixDe(e).find(x => x.g === 0)));
-  assert(mauvais[0].ok === false && /Remède/.test(mauvais[0].t) && mauvais.some(l => /aucun essai/.test(l.t)), 'débrief d\'une erreur : cause, effet, remède');
+  assert(mauvais[0].ok === false && /Remède|Pour corriger|À faire|Pour rattraper/.test(mauvais[0].t) && mauvais.some(l => /aucun essai/.test(l.t)), 'débrief d\'une erreur : cause, effet, remède');
   assert.strictEqual(J.SCENES.debriefBanc.choix(n)[0].vers, 'stock');
   assert(J.resume(n).length === 6);
 }
@@ -178,7 +178,7 @@ for (let g0 = 1; g0 <= 300; g0++) { const sec = S.secretsDe(g0); assert(sec.dem 
   assert.strictEqual(bon.scene, 'debriefCourbe'); assert(Math.abs(bon.f.coadis - 0.63) < 1e-9);
   const d = J.SCENES.debriefCourbe.debrief(bon); assert.strictEqual(d[0].ok, true); assert(d.every(l => l.t && l.t.length > 10));
   const bas = J.SCENES.debriefCourbe.debrief(J.choisir({ ...e, f: { ...e.f, courbe: [] } }, J.choixDe(e).find(c => c.x === 0.06)));
-  assert.strictEqual(bas[0].ok, false); assert(/Remède/.test(bas[0].t)); assert(bas.some(l => /aucun point/.test(l.t)));
+  assert.strictEqual(bas[0].ok, false); assert(/Remède|Pour corriger|À faire|Pour rattraper/.test(bas[0].t)); assert(bas.some(l => /aucun point/.test(l.t)));
   assert.strictEqual(J.choisir(e, J.choixDe(e).find(c => c.x === 0.55)).f.dispPct, 0.55);
   assert.strictEqual(J.SCENES.debriefCourbe.debrief(J.choisir(e, J.choixDe(e).find(c => c.x === 0.55)))[0].ok, null, 'surdosage : à nuancer');
 }
@@ -192,7 +192,7 @@ for (let g0 = 1; g0 <= 300; g0++) { const sec = S.secretsDe(g0); assert(sec.ph.t
   const vrai = J.phVrai(e, 'tio2'), huileFin = vrai / 100 * 10;
   assert.strictEqual(S.etatPate(S.rapportPate(huileFin, vrai)).cle, 'fin');
   let r = J.conclureHuile(e, 'tio2', huileFin * 0.5); assert(!r.ok && r.etat === e, 'trop tôt : rien n\'est consommé');
-  r = J.conclureHuile(e, 'tio2', huileFin * 1.2); assert(!r.ok && r.etat.t === 6 && /Remède/.test(r.message), 'trop tard : 8 min perdues');
+  r = J.conclureHuile(e, 'tio2', huileFin * 1.2); assert(!r.ok && r.etat.t === 6 && /Remède|Pour corriger|À faire|Pour rattraper/.test(r.message), 'trop tard : 8 min perdues');
   e = r.etat;
   r = J.conclureHuile(e, 'tio2', huileFin); assert(r.ok); e = r.etat;
   r = J.conclureHuile(e, 'tio2', huileFin * 1.02); assert(r.ok); e = r.etat;
@@ -256,3 +256,14 @@ for (let g0 = 1; g0 <= 200; g0++) { const sec = S.secretsDe(g0); assert(sec.rf >
   assert(['fin_excellent', 'fin_bon'].includes(fin.scene), 'le parcours complet doit aboutir à une bonne fin : ' + fin.scene);
 }
 console.log('OK : une journée au labo');
+
+// 8. Dossier : documents vus + variation des formulations
+{
+  let e = J.etatInitial(); assert.deepStrictEqual(J.docsVus(e), ['cdc']);
+  e = J.aller(e, 'docRef'); assert(J.docsVus(e).includes('formule') && J.docsVus(e).includes('fabrication') && J.docsVus(e).includes('cdc'));
+  assert.deepStrictEqual(J.docsVus({ f: {} }), ['cdc'], 'ancienne sauvegarde sans vus');
+  const L = ['a', 'b', 'c'], vus = new Set(Array.from({ length: 30 }, (_, g) => J.vari({ f: { graine: g } }, 'x', L)));
+  assert(vus.size > 1, 'les formulations varient selon la partie');
+  assert.strictEqual(J.vari({ f: { graine: 5 } }, 'x', L), J.vari({ f: { graine: 5 } }, 'x', L), 'stable pour une même partie');
+}
+console.log('OK : dossier et variations');
