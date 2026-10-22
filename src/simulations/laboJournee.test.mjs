@@ -65,7 +65,7 @@ function formulation(g, o = {}) {
   if (o.naif) { g.go('La masse de dispersion de résine'); g.go('Je teste quand même'); }
   else { g.go('La masse de polymère'); g.calc(); g.calc(); }
   g.go('La dose de dispersant'); g.calc();
-  const d = o.dpnb ?? 3; if (d === 3) { g.go('Calculer la dose'); g.calc(); } else g.go(d === 0 ? 'Rien :' : d === 1 ? 'Ajouter 1 g' : 'Mettre 10 g');
+  const d = o.dpnb ?? 3; if (o.banc) { g.go('pré-essai'); g.e = J.essaiBanc(J.essaiBanc(g.e, 0), 3); g.go('Retenir ' + d + ' g'); g.go('Passer à la suite'); } else if (d === 3) { g.go('Calculer la dose'); g.calc(); } else g.go(d === 0 ? 'Rien :' : d === 1 ? 'Ajouter 1 g' : 'Mettre 10 g');
   if (o.stock === 'ignore') { g.go('On l\'utilise comme ça'); g.go(o.insiste ? 'Je n\'ai pas le temps' : 'Tu as raison'); if (o.insiste) return; g.go('fût neuf'); }
   else if (o.stock === 'tamise') { g.go('Je contrôle le fût'); g.go('Tamiser'); }
   else { g.go('Je contrôle le fût'); g.go('fût neuf'); }
@@ -133,4 +133,33 @@ assert(['fin_excellent', 'fin_bon', 'fin_retard'].includes(cas.corrige.scene), '
 assert(J.dpnbOk(cas.corrige.f.dpnb), 'la dose corrigée est bonne');
 for (const k of ['fin_promesse', 'fin_cloque', 'fin_naif', 'fin_incomplet', 'fin_matiere', 'fin_perdue']) assert.strictEqual(cas[k].scene, k);
 assert.strictEqual(cas.retard_ou_autre.scene, 'fin_retard');
+
+// 3. Station banc TMFF : paramètre caché, essais, débrief
+import * as S from './stationsModele.js';
+for (let g0 = 1; g0 <= 300; g0++) {
+  const sec = S.secretsDe(g0);
+  assert(sec.eff >= S.EFF_MIN && sec.eff <= S.EFF_MAX, 'efficacité cachée dans la plage');
+  assert(J.dpnbOk(3, sec.eff), '3 g (6 % du polymère sec) restent dans la fenêtre quelle que soit l\'efficacité du lot : ' + sec.eff);
+}
+{
+  const sec = S.secretsDe(42);
+  let e = { ...J.etatInitial(), scene: 'stationBanc', f: { regle: 'ok', coadis: 0.525, graine: sec.graine, eff: sec.eff } };
+  assert.deepStrictEqual(J.essaiBanc(e, 3).f.banc, J.essaiBanc(e, 3).f.banc, 'lecture reproductible');
+  for (const g of [0, 2, 4, 6, 3, 3]) e = J.essaiBanc(e, g);
+  assert.strictEqual(e.f.banc.length, 6); assert.strictEqual(J.essaiBanc(e, 5).f.banc.length, 6, 'plafond d\'essais');
+  assert.strictEqual(e.t, 30, '5 min par essai');
+  const pente = S.penteMesuree(e.f.banc);
+  assert(pente && Math.abs(pente.efficacite - sec.eff) < 1, 'la régression retrouve l\'efficacité cachée : ' + JSON.stringify(pente) + ' vs ' + sec.eff);
+  assert(J.indiceBanc(J.indiceBanc(e)).f.indB === 2);
+  const c = J.choixDe(e).find(x => x.g === 3), n = J.choisir(e, c);
+  assert.strictEqual(n.scene, 'debriefBanc'); assert.strictEqual(n.f.dpnb, 3);
+  const deb = J.SCENES.debriefBanc.debrief(n);
+  assert(deb.length >= 4 && deb[0].ok === true && deb[1].ok === true, 'débrief : TMFF et COV conformes');
+  const mauvais = J.SCENES.debriefBanc.debrief(J.choisir({ ...e, f: { ...e.f, banc: [] } }, J.choixDe(e).find(x => x.g === 0)));
+  assert(mauvais[0].ok === false && /Remède/.test(mauvais[0].t) && mauvais.some(l => /aucun essai/.test(l.t)), 'débrief d\'une erreur : cause, effet, remède');
+  assert.strictEqual(J.SCENES.debriefBanc.choix(n)[0].vers, 'stock');
+  assert(J.resume(n).length === 5);
+}
+// parcours scripté passant par le banc
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3, banc: true }); const fin = travaille(g, {}); assert(['fin_excellent', 'fin_bon'].includes(fin.scene), 'parcours par le banc : ' + fin.scene); assert(fin.f.preEssai && fin.f.banc.length === 2); }
 console.log('OK : une journée au labo');

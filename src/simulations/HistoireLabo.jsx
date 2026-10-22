@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import "@fontsource/kalam/latin-400.css";
 import "@fontsource/kalam/latin-700.css";
 import { useEtatPersistant } from "../commun";
-import { CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_CLIENT, T_RAPPORT, T_FIN, etatInitial, texteDe, choixDe, choisir, valider, hhmm, bilan, statutCmd, estFin, visuelDe, equipe } from "./laboJournee";
+import { CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_CLIENT, T_RAPPORT, T_FIN, etatInitial, texteDe, choixDe, choisir, valider, hhmm, bilan, resume, statutCmd, estFin, visuelDe, equipe } from "./laboJournee";
 import Fiches from "./Fiches";
+import { StationBanc } from "./StationsLabo";
 import { ScenePlanche, Affiche, Equipe, Instrument, Avatar, STYLE_VISUELS } from "./LaboVisuels";
 
 // ====================================================
@@ -197,14 +198,22 @@ export function SimulationHistoireLabo() {
 
           {sc.fiches && <Fiches ids={sc.fiches} />}
 
+          {sc.station === 'banc' && <StationBanc e={e} onEtat={setEtat} onValider={avancer} choixDose={g => choix.find(c => c.g === g)} />}
+
+          {sc.debrief && <div data-debrief style={{ margin: '14px 0', background: '#fff', border: '1.5px solid #cbd5e1', borderRadius: 8, padding: '10px 14px' }}>
+            {sc.debrief(e).map((l, i) => <div key={i} style={{ display: 'flex', gap: 8, padding: '5px 0', fontSize: 15, lineHeight: 1.5, borderTop: i ? `1px solid ${C.bord}` : 'none' }}><b style={{ color: l.ok === true ? C.vert : l.ok === false ? C.rouge : C.ambre }}>{l.ok === true ? '✔' : l.ok === false ? '✖' : '➜'}</b><span>{l.t}</span></div>)}
+          </div>}
+
           {sc.calcul && <Calcul key={e.scene} e={e} sc={sc} onEtat={setEtat} />}
 
-          {!sc.calcul && choix.map((c, i) => (
+          {!sc.calcul && !sc.station && choix.map((c, i) => (
             <button key={i} type="button" className="lab-choix lab-ligne" style={{ animationDelay: `${i * 0.1}s` }} data-choix={i} onClick={() => avancer(c)}>
               {c.t}{c.d && <div style={{ fontSize: 12.5, color: C.doux, marginTop: 2 }}>{c.d}</div>}
             </button>))}
 
           {fin && (<>
+            <h4 style={{ margin: '18px 0 6px' }}>Résumé de tes choix</h4>
+            <ul data-resume style={{ margin: 0, paddingLeft: 20, fontSize: 14.5, lineHeight: 1.55 }}>{resume(e).map((t, i) => <li key={i}>{t}</li>)}</ul>
             <h4 style={{ margin: '18px 0 6px' }}>Bilan de ta journée par compétence</h4>
             <div data-bilan>{bilan(e).map(b => { const [ic, col, lib] = NIVEAUX[b.niveau]; return (
               <div key={b.comp} style={{ display: 'flex', gap: 10, padding: '7px 0', borderTop: `1px solid ${C.bord}`, fontSize: 14, lineHeight: 1.5 }}>
