@@ -57,7 +57,7 @@ export const COURBE_REF = [
 ];
 export const X_HORS_GAMME = 0.0939;                    // en dessous : viscosité trop élevée pour le viscosimètre (> 5000 mPa·s)
 export const DOSES_COURBE = [0.06, 0.09, 0.11, 0.13, 0.15, 0.17, 0.19, 0.21, 0.25, 0.30, 0.40, 0.55];   // % de matière active sur les poudres
-export const COURBE_MAX = 8, COURBE_DUREE = 3, COURBE_PREP = 5;
+export const COURBE_MAX = 8, COURBE_DUREE = 2, COURBE_PREP = 5;
 export const BORNE_BASSE = 0.133, BORNE_SEUIL = 0.165, BORNE_HAUTE = 0.35;   // % « effectifs » : en dessous de 0,133, les amas restent ; au-dessus de 0,165 on est sur le plateau ; au-delà de 0,35 : surdosage inutile
 export const masseCoadis = (pct, mPoudres = 250) => pct / 100 * mPoudres / 0.4;   // g de Coadis BR3 (ES 40 %) pour pct % de matière active
 
@@ -80,7 +80,7 @@ export function lectureVisco(x, dem, graine, n) {
 
 // ───────────── Station « prise d'huile » (méthode à la spatule, 10 g de poudre, huile de lin) ─────────────
 // Valeurs de référence (poudres du lycée, d'après le professeur) : TiO₂ ≈ 25, CaCO₃ ≈ 30 g/100 g ; le lot tiré en diffère de ± 4 % (caché).
-export const M_POUDRE = 10, HUILE_MAX_ESSAIS = 6, HUILE_DUREE = 8;
+export const M_POUDRE = 10, HUILE_MAX_ESSAIS = 6, HUILE_DUREE = 6;
 export const POUDRES_HUILE = { tio2: 'TiO₂', caco3: 'CaCO₃ léger' };
 // Rapport (huile ajoutée / huile nécessaire) → état de la pâte. Point final : pâte lisse et cohérente, 0,96 à 1,04 (appréciation de l'opérateur ≈ ± 4 %, hypothèse)
 export function etatPate(rapport) {
@@ -99,7 +99,7 @@ import { regression } from "./etalonnageModele";
 export const NIVEAUX_ETALON = [0.25, 0.5, 1, 1.5, 2, 3];   // mg/mL de DPnB
 export const C_IS = 1.0;                                    // mg/mL d'étalon interne dans toutes les solutions
 export const M_ECH = 1.00, V_ECH = 10;                      // g de peinture, mL de volume final
-export const T_PREP = 5, T_INJ = 3, ETAL_MAX = 10, ECH_MAX = 4;
+export const T_PREP = 4, T_INJ = 2, ETAL_MAX = 10, ECH_MAX = 4;
 export const SIGMA_VOL = 0.06, SIGMA_AIRE = 0.015, SIGMA_PREP = 0.01, K_AIRE = 10000;
 export const TR = { is: 6.2, dpnb: 8.1 };                   // min (données de scénario)
 

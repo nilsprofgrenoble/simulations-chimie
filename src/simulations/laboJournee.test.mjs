@@ -64,7 +64,7 @@ function debut(g, o = {}) {
 function formulation(g, o = {}) {
   if (o.naif) { g.go('La masse de dispersion de résine'); g.go('Je teste quand même'); }
   else { g.go('La masse de polymère'); g.calc(); g.calc(); }
-  g.go('La dose de dispersant'); g.calc();
+  if (o.courbe) { g.go('courbe de défloculation'); g.e = J.essaiCourbe(J.essaiCourbe(J.essaiCourbe(J.essaiCourbe(g.e, 0.13), 0.17), 0.21), 0.30); g.go('Retenir 0,19'); g.go('Passer'); } else { g.go('La dose de dispersant'); g.calc(); }
   const d = o.dpnb ?? 3; if (o.banc) { g.go('pré-essai'); g.e = J.essaiBanc(J.essaiBanc(g.e, 0), 3); g.go('Retenir ' + d + ' g'); g.go('Passer à la suite'); } else if (d === 3) { g.go('Calculer la dose'); g.calc(); } else g.go(d === 0 ? 'Rien :' : d === 1 ? 'Ajouter 1 g' : 'Mettre 10 g');
   if (o.stock === 'ignore') { g.go('On l\'utilise comme ça'); g.go(o.insiste ? 'Je n\'ai pas le temps' : 'Tu as raison'); if (o.insiste) return; g.go('fût neuf'); }
   else if (o.stock === 'tamise') { g.go('Je contrôle le fût'); g.go('Tamiser'); }
@@ -172,7 +172,7 @@ for (let g0 = 1; g0 <= 300; g0++) { const sec = S.secretsDe(g0); assert(sec.dem 
   const sec = S.secretsDe(7);
   let e = { ...J.etatInitial(), scene: 'stationCourbe', f: { regle: 'ok', graine: sec.graine, dem: sec.dem } };
   for (const x of [0.06, 0.11, 0.15, 0.19, 0.25, 0.30, 0.40, 0.55, 0.21]) e = J.essaiCourbe(e, x);
-  assert.strictEqual(e.f.courbe.length, 8, 'plafond de points'); assert.strictEqual(e.t, 24);
+  assert.strictEqual(e.f.courbe.length, 8, 'plafond de points'); assert.strictEqual(e.t, 16);
   assert.strictEqual(e.f.courbe[0].v258, null);
   const bon = J.choisir(e, J.choixDe(e).find(c => c.x === 0.21));
   assert.strictEqual(bon.scene, 'debriefCourbe'); assert(Math.abs(bon.f.coadis - 0.63) < 1e-9);
@@ -192,7 +192,7 @@ for (let g0 = 1; g0 <= 300; g0++) { const sec = S.secretsDe(g0); assert(sec.ph.t
   const vrai = J.phVrai(e, 'tio2'), huileFin = vrai / 100 * 10;
   assert.strictEqual(S.etatPate(S.rapportPate(huileFin, vrai)).cle, 'fin');
   let r = J.conclureHuile(e, 'tio2', huileFin * 0.5); assert(!r.ok && r.etat === e, 'trop tôt : rien n\'est consommé');
-  r = J.conclureHuile(e, 'tio2', huileFin * 1.2); assert(!r.ok && r.etat.t === 8 && /Remède/.test(r.message), 'trop tard : 8 min perdues');
+  r = J.conclureHuile(e, 'tio2', huileFin * 1.2); assert(!r.ok && r.etat.t === 6 && /Remède/.test(r.message), 'trop tard : 8 min perdues');
   e = r.etat;
   r = J.conclureHuile(e, 'tio2', huileFin); assert(r.ok); e = r.etat;
   r = J.conclureHuile(e, 'tio2', huileFin * 1.02); assert(r.ok); e = r.etat;
@@ -219,16 +219,40 @@ for (let g0 = 1; g0 <= 200; g0++) { const sec = S.secretsDe(g0); assert(sec.rf >
   assert.strictEqual(J.injecterEchantillon(x), x, 'pas d\'injection sans préparation');
   for (const c of [0.25, 0.5, 1, 1.5, 2, 3]) x = J.injecterEtalon(x, c);
   x = J.preparerEchantillon(x); x = J.injecterEchantillon(x); x = J.injecterEchantillon(x);
-  assert.strictEqual(x.t, imp.t + 6 * 3 + 5 + 2 * 3);
+  assert.strictEqual(x.t, imp.t + 6 * 2 + 4 + 2 * 2);
   const cov = J.covDe(x);
   const R = J.resultatCpg(x); assert(R.dos && R.dos.dansDomaine, 'dosage dans le domaine');
   assert(Math.abs(R.cov - cov) < 3 * R.U && R.U < 0.4 * cov, 'COV mesuré compatible avec la valeur calculée, incertitude raisonnable : ' + R.cov + ' ± ' + R.U + ' vs ' + cov);
   const sans = J.resultatCpg(J.choisirModeCpg(x, 'externe'));
   assert(sans.D.residRel > R.D.residRel, 'l\'étalon interne réduit la dispersion des résidus');
+  assert.strictEqual(J.recuperation(x), null);
+  let xc = J.injecterControle(J.injecterControle(x)); assert.strictEqual(J.injecterControle(xc), xc, 'plafond');
+  const rc = J.recuperation(xc); assert(rc && Math.abs(rc.taux - 100) < 8, 'la solution de contrôle est retrouvée à ± 8 % : ' + (rc && rc.taux));
+  assert(J.SCENES.debriefCpg.debrief(J.choisir(xc, J.choixDe(xc)[0])).some(l => /Justesse : la solution/.test(l.t)));
+  assert(J.SCENES.debriefCpg.debrief(J.choisir(x, J.choixDe(x)[0])).some(l => /Justesse non vérifiée/.test(l.t)));
   const ch = J.choixDe(x); assert.strictEqual(ch.length, 3);
   for (const c of ch) { const n = J.choisir(x, c); assert.strictEqual(n.scene, 'debriefCpg'); assert(J.SCENES.debriefCpg.debrief(n).every(l => l.t.length > 10)); }
   const u = J.SCENES.debriefCpg.debrief(J.choisir(x, ch.find(c => c.concl === 'u'))); assert(u.some(l => /expression complète/.test(l.t)));
   const f = J.SCENES.debriefCpg.debrief(J.choisir(x, ch.find(c => c.concl === 'faux'))); assert(f.some(l => l.ok === false && /contredit/.test(l.t)));
   assert.strictEqual(J.choixDe({ ...e, scene: 'stationCpg' })[0].vers, 'labo', 'sans résultat : abandon possible');
+}
+
+// 7. Parcours « tout faire » : les quatre stations, puis rapport : la journée doit rester jouable
+{
+  const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3, banc: true, courbe: true });
+  const t1 = g.e.t;
+  g.go('Mesurer moi-même'); let e = g.e;
+  for (const [k, m] of [['tio2', 2.5], ['caco3', 3.0]]) { const r = J.conclureHuile(e, k, J.phVrai(e, k) / 10); assert(r.ok); e = r.etat; void m; }
+  g.e = e; g.go('Consigner'); g.calc();
+  g.go('Doser le DPnB'); g.go('phase gazeuse'); e = g.e;
+  for (const c of [0.25, 0.5, 1, 2, 3]) e = J.injecterEtalon(e, c);
+  e = J.injecterEchantillon(J.preparerEchantillon(e)); e = J.injecterEchantillon(e); g.e = e;
+  g.go('± '); g.go('Retourner');
+  g.e = { ...g.e, cmd: { ...g.e.cmd } };
+  console.log('Tout faire : fabriqué vers', J.hhmm(t1), '; après stations', J.hhmm(g.e.t));
+  assert(g.e.f.mes_huile && g.e.f.mes_dpnb && g.e.f.preEssai && g.e.f.dispCourbe);
+  const fin = travaille(g, { dem: ['Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'Lucas : Brillance', 'Lucas : Température', 'M. Perrin'] });
+  console.log('Tout faire : fin', fin.scene, J.hhmm(fin.t), J.bilan(fin).map(b => b.niveau[0]).join(''));
+  assert(['fin_excellent', 'fin_bon'].includes(fin.scene), 'le parcours complet doit aboutir à une bonne fin : ' + fin.scene);
 }
 console.log('OK : une journée au labo');
