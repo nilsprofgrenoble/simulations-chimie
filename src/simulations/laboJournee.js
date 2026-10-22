@@ -175,7 +175,7 @@ add('appel', { lieu: 'Téléphone', pnj: 'dubreuil', titre: 'L\'appel d\'organis
     { t: 'Je fais tout moi-même, je ne veux déranger personne', f: { plan: 'solo' }, note: 'Plan : tout réalisé seul·e.', vers: 'solo' },
   ] });
 add('solo', { lieu: 'Téléphone', pnj: 'dubreuil', titre: 'Mme Dubreuil sourit',
-  texte: '« Comme tu veux. Mais tu n\'as que neuf heures, pas vingt-quatre. Et l\'esprit d\'équipe fait partie de ce qu\'on attend. »',
+  texte: '« Comme tu veux. Mais tu n\'as qu\'une journée, pas une semaine. Et l\'esprit d\'équipe fait partie de ce qu\'on attend. »',
   choix: [{ t: 'Je me mets au travail', vers: 'regle' }] });
 
 // ───────────── Formulation ─────────────
@@ -238,7 +238,7 @@ export function essaiCourbe(e, x) {
 export const indiceCourbe = e => (e.f.indC || 0) >= INDICES_COURBE.length ? e : { ...e, t: e.t + 5, f: { ...e.f, indC: (e.f.indC || 0) + 1 } };
 
 add('stationCourbe', { lieu: 'Paillasse', pnj: 'karim', titre: 'Courbe de défloculation', station: 'courbe',
-  texte: 'Karim sort le disperseur et le viscosimètre à haut gradient. « Même protocole que pour le TP : 250 g de poudres, moitié TiO₂ moitié CaCO₃ léger, l\'eau juste nécessaire pour mouiller, et on ajoute le Coadis BR3 par petites quantités. Après chaque ajout : 2 minutes de dispersion, puis la viscosité à deux gradients. Quand la viscosité ne baisse plus, on a la dose optimale. »\n« Trop peu de dispersant et la pâte est trop épaisse pour être mesurée. »',
+  texte: 'Karim sort le disperseur et le viscosimètre à haut gradient. « Même protocole que pour nos essais de dosologie : 250 g de poudres, moitié TiO₂ moitié CaCO₃ léger, l\'eau juste nécessaire pour mouiller, et on ajoute le Coadis BR3 par petites quantités. Après chaque ajout : 2 minutes de dispersion, puis la viscosité à deux gradients. Quand la viscosité ne baisse plus, on a la dose optimale. »\n« Trop peu de dispersant et la pâte est trop épaisse pour être mesurée. »',
   choix: e => DOSES_COURBE.map(x => ({ x, t: `Retenir ${String(x).replace(".", ",")} % de dispersant`, f: { coadis: Math.round(masseCoadis(x, 120) * 100) / 100, dispPct: x, dispCourbe: true }, note: `Dose de Coadis BR3 retenue après ${(e.f.courbe || []).length} point(s) de courbe : ${String(x).replace('.', ',')} % de matière active (${nf(masseCoadis(x, 120), 2)} g pour 120 g de poudres).`, vers: 'debriefCourbe' })) });
 
 add('debriefCourbe', { lieu: 'Paillasse', pnj: 'karim', titre: 'Ce que dit la courbe',
@@ -297,7 +297,7 @@ export const indiceBanc = e => (e.f.indB || 0) >= INDICES_BANC.length ? e : { ..
 const apresCoal = e => e.f.refaitCoal ? 'fabrication' : 'stock';
 
 add('stationBanc', { lieu: 'Paillasse', pnj: 'lucas', titre: 'Banc à gradient de température', station: 'banc',
-  texte: 'Lucas t\'a installé le banc : une plaque métallique chauffée à une extrémité et refroidie à l\'autre. Tu étales la peinture en bande, tu la laisses sécher, puis tu lis la température où le film devient continu : au-dessus, il est lisse ; au-dessous, il craquelle et poudre.\n« Chaque essai prend 5 minutes. Choisis la dose de DPnB, lis la TMFF, et décide. »',
+  texte: 'Lucas t\'a installé le banc : une plaque métallique chauffée à une extrémité et refroidie à l\'autre. Tu prépares un petit essai de peinture pour chaque dose, tu l\'étales en bande sur la plaque, tu la laisses sécher, puis tu lis la température où le film devient continu : au-dessus, il est lisse ; au-dessous, il craquelle et poudre.\n« Chaque essai prend 5 minutes. Choisis la dose de DPnB, lis la TMFF, et décide. »',
   choix: e => DOSES_BANC.map(g => ({ g, t: `Retenir ${g} g de DPnB`, f: { dpnb: g, preEssai: true }, note: `Dose retenue après ${(e.f.banc || []).length} essai(s) au banc : ${nf(g, 0)} g de DPnB.`, vers: 'debriefBanc' })) });
 
 // Débrief : ce qui est juste, ce qui ne l'est pas, ce qu'il faut en retenir (cause → effet → remède)
@@ -513,7 +513,7 @@ add('debriefCpg', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Ce que
 
 add('res_es', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Résultat : extrait sec et densité',
   texte: e => { const p = prop(e), ok = e.f.regle === 'ok', es = p.ES - (e.f.lotDouteux ? 1.2 : 0), r = proprietes(FORMULE_REF);
-    return `Inès : « Extrait sec ${nf(es)} %, densité ${nf(p.densite, 3)}. »\nD'après la formule : CPV = ${nf(p.CPV)} %, CPVC = ${nf(p.CPVC)} %, λ = ${nf(p.lambda, 2)}, COV = ${nf(p.COV)} g/L.\n${ok ? `Même extrait sec que la référence (${nf(r.ES)} %)${e.f.lotDouteux ? ', un peu plus bas qu\'attendu : le coagulum retiré du lot gelé a emporté du polymère' : ''}. ${covOk(e) ? 'Le cahier des charges (ES > 50 %, λ ≥ 0,8, COV < 30 g/L) est respecté.' : `Mais les COV (${nf(p.COV)} g/L) dépassent la limite de 30 g/L : il y a trop de coalescent.`}` : `Attention : ES = ${nf(p.ES)} % et CPV = ${nf(p.CPV)} % ne correspondent pas à la référence (ES ${nf(r.ES)} %, CPV ${nf(r.CPV)} %). En remplaçant simplement 83,3 g par 83,3 g, tu as changé la quantité de polymère : la formule ne respecte pas la contrainte « mêmes ES, CPV, CPVC ».`}`; },
+    return `Inès : « Extrait sec ${nf(es)} %, densité ${nf(p.densite, 3)}. »\nD'après la formule : CPV = ${nf(p.CPV)} %, CPVC = ${nf(p.CPVC)} %, λ = ${nf(p.lambda, 2)}, COV calculé = ${nf(p.COV)} g/L (à vérifier par un dosage).\n${ok ? `Même extrait sec que la référence (${nf(r.ES)} %)${e.f.lotDouteux ? ', un peu plus bas qu\'attendu : le coagulum retiré du lot gelé a emporté du polymère' : ''}. ${covOk(e) ? 'Sur ces critères calculés (ES > 50 %, λ ≥ 0,8, COV < 30 g/L), le cahier des charges est respecté ; le COV reste à vérifier sur la peinture fabriquée.' : `Mais les COV calculés (${nf(p.COV)} g/L) dépassent la limite de 30 g/L : il y a trop de coalescent.`}` : `Attention : ES = ${nf(p.ES)} % et CPV = ${nf(p.CPV)} % ne correspondent pas à la référence (ES ${nf(r.ES)} %, CPV ${nf(r.CPV)} %). En remplaçant simplement 83,3 g par 83,3 g, tu as changé la quantité de polymère : la formule ne respecte pas la contrainte « mêmes ES, CPV, CPVC ».`}`; },
   visuel: e => ({ type: 'balance', es: prop(e).ES - (e.f.lotDouteux ? 1.2 : 0), dens: prop(e).densite }),
   choix: e => e.f.regle !== 'ok' ? [{ t: 'Reprendre le calcul et refaire la peinture (la fabrication ne vaut plus rien)', f: { refait: true, mes_es: false }, duree: 15, note: 'Formule corrigée : la première version (83,3 g d\'Orgal) avait un ES et une CPV différents de la référence.', run: e2 => effacerMesures(e2), vers: 'calcMasse' },
       { t: 'Je garde cette formule telle quelle', f: { mes_es: true }, note: 'ES mesuré différent de la référence : formule conservée en l\'état.', vers: 'labo' }]
@@ -570,7 +570,7 @@ add('labo', { lieu: 'Paillasse et laboratoire', pnj: 'moi', titre: 'La journée 
 
 // ───────────── Appel client ─────────────
 add('client', { lieu: 'Salle de réunion (visio)', pnj: 'aubry', titre: 'Appel avec la cliente, 15 h',
-  texte: e => `Il est ${hhmm(e.t)}. Mme Aubry : « Alors, la nouvelle base à l'Orgal garde bien notre promesse « sans solvant, COV nuls » ? On imprime les étiquettes des pots cette semaine. »\n${e.f.alerte === true ? 'Mme Dubreuil lui a déjà expliqué que l\'Orgal exige un agent de coalescence. Mme Aubry semble ennuyée mais ouverte.' : ''}`,
+  texte: e => `Il est ${hhmm(e.t)}. Mme Aubry : « Alors, la nouvelle base à l'Orgal garde bien notre promesse « sans solvant, COV nuls » ? On imprime les étiquettes des pots cette semaine. »\n${e.f.alerte === true ? 'Mme Dubreuil lui a déjà expliqué que l\'Orgal exige un agent de coalescence. Mme Aubry semble ennuyée mais ouverte.' : ''}${e.f.mes_dpnb ? `\nTu peux lui donner un chiffre : le dosage du DPnB a donné COV = ${nf(e.f.covMes ?? 0, 1)} ± ${nf(e.f.uMes ?? 0, 1)} g/L (k = 2).` : ''}`,
   choix: e => e.f.alerte === true ? [{ t: 'Je confirme : COV inférieurs à 30 g/L mais non nuls, la mention « COV nuls » doit disparaître de l\'étiquette', duree: 20, f: { clientFait: true, clientOk: true }, note: 'Appel client : COV faibles mais non nuls avec l\'Orgal (coalescent), mention « COV nuls » à retirer de l\'étiquette.', vers: 'labo' }]
     : [{ t: 'Je lui précise que l\'Orgal exige un coalescent : les COV seront faibles mais pas nuls', duree: 20, f: { clientFait: true, clientOk: true, alerte: true, alerteTardive: true }, note: 'Appel client : j\'ai précisé que l\'Orgal exige un coalescent (COV non nuls).', vers: 'labo' },
       { t: 'Je réponds que oui, ça devrait aller', duree: 20, f: { clientFait: true, mensonge: true }, note: 'Appel client : réponse positive sans réserve sur la mention « COV nuls ».', vers: 'labo' }],
@@ -578,7 +578,7 @@ add('client', { lieu: 'Salle de réunion (visio)', pnj: 'aubry', titre: 'Appel a
 
 // ───────────── Rapport et fins ─────────────
 add('rapport', { lieu: 'Bureau', pnj: 'moi', titre: 'Le rapport',
-  texte: e => `Tu t'installes pour rédiger. Il est ${hhmm(e.t)}. Le cahier des charges demande une peinture stable 30 mois. Que écris-tu ?`,
+  texte: e => `Tu t'installes pour rédiger. Il est ${hhmm(e.t)}. Le cahier des charges demande une peinture stable 30 mois. Qu'écris-tu ?`,
   choix: [
     { t: 'Stable 30 mois : tout est conforme', f: { stab: 'promis' }, vers: 'verdict' },
     { t: 'Non démontrable en une journée : un vieillissement accéléré est à suivre', f: { stab: 'honnete' }, vers: 'verdict' },
@@ -635,7 +635,7 @@ export function resume(e) {
 
 // ───────────── Les fins ─────────────
 const fin = (id, ton, titre, texte) => add(id, { lieu: 'Fin de journée', pnj: 'dubreuil', titre, fin: { ton, titre }, texte, choix: [] });
-fin('fin_excellent', 'ok', 'Une journée exemplaire', e => `Il est ${hhmm(e.t)}. Le dossier est complet : formule conforme, coalescent dosé, contrôles faits, prises d'huile, brillance et TMFF mesurés, traçabilité soignée, alertes données au bon moment. Mme Dubreuil sourit : « Voilà comment je veux voir travailler une équipe. On valide le remplacement de la Vinnapas par l'Orgal, et la cliente retire la mention « COV nuls » de ses étiquettes. »`);
+fin('fin_excellent', 'ok', 'Une journée exemplaire', e => `Il est ${hhmm(e.t)}. Le dossier est complet : formule conforme, coalescent dosé, contrôles faits, prises d'huile, brillance et TMFF mesurés,${e.f.mes_dpnb ? ' COV vérifiés par un dosage du DPnB,' : ''} traçabilité soignée, alertes données au bon moment. Mme Dubreuil sourit : « Voilà comment je veux voir travailler une équipe. On valide le remplacement de la Vinnapas par l'Orgal, et la cliente retire la mention « COV nuls » de ses étiquettes. »`);
 fin('fin_bon', 'ok', 'Mission remplie, avec des progrès à faire', e => `Il est ${hhmm(e.t)}. La nouvelle base respecte l'essentiel du cahier des charges et le rapport est rendu dans les temps. Quelques points auraient pu être mieux conduits (voir le bilan ci-dessous). « C'est solide, dit Mme Dubreuil. Pour la prochaine fois, regarde bien les remarques : elles feront la différence. »`);
 fin('fin_retard', 'moyen', 'Rapport remis en retard', e => `Il est ${hhmm(e.t)}. Le travail est bon, mais le rapport arrive après 17 h : la cliente a été rappelée sans les résultats. « Sur le fond, c'est bien, mais en entreprise le délai fait partie du cahier des charges. »`);
 fin('fin_incomplet', 'moyen', 'Dossier incomplet', e => `Il est ${hhmm(e.t)}. Il manque des contrôles essentiels (extrait sec, rhéologie, pouvoir masquant) : le rapport ne permet pas de dire si la peinture respecte le cahier des charges. « On ne valide pas une formule sans ces mesures. Il va falloir tout recommencer demain. »`);
