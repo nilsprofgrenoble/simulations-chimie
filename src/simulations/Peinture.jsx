@@ -23,8 +23,8 @@ const RESINES = {
 };
 // Prises d'huile (g d'huile pour 100 g de poudre) : annoncées par les fiches techniques, et mesurées sur nos poudres
 const POUDRES = {
-  tio2: { nom: 'TiO₂', role: 'pigment', rho: 4.1, phFiche: 19, phMesuree: 26 },
-  caco3: { nom: 'CaCO₃ léger', role: 'charge', rho: 2.75, phFiche: 18, phMesuree: 49 },
+  tio2: { nom: 'TiO₂', role: 'pigment', rho: 4.1, phFiche: 20, phMesuree: 26 },
+  caco3: { nom: 'CaCO₃ léger', role: 'charge', rho: 2.75, phFiche: 14, phMesuree: 49 },
 };
 // Additifs : extrait sec (%), densité ; le DPnB est un volatil (composé organique volatil)
 const ADDITIFS = {
