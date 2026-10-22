@@ -70,6 +70,7 @@ import { SimulationAtelierGraphique } from "./simulations/AtelierGraphique";
 import { SimulationAtelierRealiser } from "./simulations/AtelierRealiser";
 import { SimulationAtelierAnalyser } from "./simulations/AtelierAnalyser";
 import { SimulationAtelierValider } from "./simulations/AtelierValider";
+import { SimulationIncertitudeType } from "./simulations/IncertitudeType";
 import { SimulationEntrainement } from "./simulations/Entrainement";
 import { SimulationCompte } from "./simulations/Compte";
 import { ToastRecompense } from "./ToastRecompense";
@@ -130,6 +131,8 @@ const SIMULATIONS = [
     component: SimulationBouilloire },
   { id:33, label:"Temps de réponse d'un capteur", niveau:"TSTL", icon:"⏱️", color:"#0891b2",
     component: SimulationReponse },
+  { id:78, label:"Écrire un résultat avec son incertitude-type", niveau:"TSTL", icon:"📏", color:"#0f766e",
+    component: SimulationIncertitudeType },
   { id:41, label:"Distillation simple et fractionnée", niveau:"TSTL", icon:"🧪", color:"#0f766e",
     component: SimulationDistillation },
   { id:42, label:"Diagramme binaire isobare", niveau:"TSTL", icon:"📉", color:"#0e7490",
@@ -224,7 +227,7 @@ const MENUS_ENTETE = [
   { key: "BTS", label: "BTS MDC" },
   { key: "COMP", label: "Travail par compétence" },
 ];
-const ORDRE_COMP = [38, 34, 35, 37, 36];
+const ORDRE_COMP = [38, 34, 35, 37, 36, 77];
 function construireMenus() {
   const fiche = s => ({ id: s.id, icon: s.icon, label: s.label, desc: DESCRIPTIONS[s.label] });
   return MENUS_ENTETE.map(m => {
