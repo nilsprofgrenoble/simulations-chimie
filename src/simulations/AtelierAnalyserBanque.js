@@ -760,6 +760,98 @@ export const PROBLEMES = [
     ] },
     retenir: ['Pour diviser u par 2, il faut 4 fois plus de mesures (u varie en 1/√n).', 'n minimal = (s / u visé)².'],
   },
+  {
+    id: 'vitesse-moteur', domaine: 'Contrôle des systèmes', titre: 'Un moteur assez rapide ?',
+    enonce: 'Un moteur pas à pas fait 200 pas par tour. Le constructeur indique une fréquence maximale de 250 pas par seconde, au-delà de laquelle le rotor perd des pas. Un programme doit le faire tourner à 90 tr/min. L’alimentation est de 12 V et la longueur de câble de 40 cm. Cet objectif est-il réalisable avec ce moteur ?',
+    cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
+      V('La fréquence de pas nécessaire pour 90 tr/min, pour la comparer à 250 pas/s', 'Le constructeur donne une limite en pas par seconde : il faut convertir la vitesse demandée en la même grandeur.'),
+      F('L’angle d’un pas en degrés', 'Il vaut 1,8° mais ne permet pas de conclure sur la vitesse.'),
+      F('Le couple du moteur', 'Aucune donnée sur le couple dans l’énoncé.'),
+    ] },
+    donnees: [
+      ['200 pas par tour', true, 'Il permet de passer des tours aux pas.'],
+      ['250 pas/s maximum', true, 'C’est la limite à ne pas dépasser.'],
+      ['90 tr/min', true, 'C’est l’objectif.'],
+      ['alimentation 12 V', false, 'La tension fixe le couple disponible, mais l’énoncé donne la limite de fréquence directement.'],
+      ['câble de 40 cm', false, 'La longueur du câble n’intervient pas.'],
+    ],
+    relations: { options: [
+      V('f = n / 60 × N : pas par seconde = (tours par seconde) × (pas par tour)', 'n/60 donne les tours par seconde, qu’on multiplie par le nombre de pas d’un tour.'),
+      V('f doit rester inférieure ou égale à la fréquence maximale', 'Au-delà, le rotor n’a pas le temps de suivre le champ et perd des pas.'),
+      F('f = n × 60 / N', 'On a converti les tr/min dans le mauvais sens (× 60 au lieu de ÷ 60).'),
+      F('f = n / N', 'Il manque la conversion des minutes en secondes.'),
+      F('f = 360 / N', 'Cela donne l’angle d’un pas, pas une fréquence.'),
+    ] },
+    hypotheses: { options: [
+      V('Le moteur fonctionne en pas complet : un pas fait 1/200 de tour', 'Avec des micro-pas, le nombre de pas par tour serait plus grand.'),
+      V('La limite de 250 pas/s est valable dans les conditions de l’utilisation (charge comprise)', 'Avec une charge plus importante, la fréquence maximale baisse.'),
+      V('Le rotor suit chaque pas, tant que la limite n’est pas dépassée', 'Sinon la vitesse réelle serait inférieure à la vitesse programmée.'),
+      F('La tension d’alimentation fixe la vitesse', 'La vitesse est fixée par le rythme des pas, pas par la tension.'),
+      F('La longueur du câble limite la fréquence', 'Elle n’est pas en cause à cette échelle.'),
+    ] },
+    demarche: {
+      etapes: [
+        { id: 'tps', t: 'Convertir 90 tr/min en tours par seconde : 90 / 60', dep: [], e: '1,5 tour par seconde.' },
+        { id: 'f', t: 'Calculer la fréquence de pas : 1,5 × 200', dep: ['tps'], e: 'f = 300 pas/s.' },
+        { id: 'c', t: 'Comparer 300 pas/s à la limite de 250 pas/s et conclure', dep: ['f'], e: '300 > 250.' },
+      ],
+      pieges: [
+        ['Utiliser la tension de 12 V', 'Elle n’intervient pas dans la comparaison de fréquences.'],
+        ['Calculer l’angle d’un pas', 'Utile à autre chose, pas pour décider ici.'],
+      ],
+    },
+    conclusion: { q: 'Quelle conclusion obtient-on en suivant la démarche ?', options: [
+      V('Non : il faudrait 300 pas/s, plus que les 250 pas/s permis ; le maximum est 250 / 200 × 60 = 75 tr/min', 'Au-delà de 250 pas/s, le rotor perd des pas : 90 tr/min n’est pas réalisable.'),
+      F('Oui : il faut seulement 1,5 pas par seconde', '1,5 est le nombre de tours par seconde, pas de pas : il faut le multiplier par 200.'),
+      F('Oui : il faut 90 / 200 = 0,45 pas par seconde', 'On a divisé au lieu de convertir : la vitesse en tr/min se transforme en pas par seconde en multipliant par N/60.'),
+    ] },
+    retenir: ['Vitesse et fréquence de pas : f = n/60 × N (n en tr/min).', 'On vérifie toujours que f reste sous la fréquence maximale du moteur.'],
+  },
+  {
+    id: 'boussole-aimant', domaine: 'Contrôle des systèmes', titre: 'Où pointe la boussole près d’un aimant ?',
+    enonce: 'Un aimant droit est orienté perpendiculairement au nord. À 10 cm de son centre, sur son axe, son champ vaut 400 µT. Le champ de la Terre vaut 50 µT. On éloigne la boussole à 20 cm de l’aimant, toujours sur l’axe. Le champ de l’aimant décroît comme 1/r³. La masse de l’aimant est de 40 g. De quel angle l’aiguille dévie-t-elle alors par rapport au nord ?',
+    cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
+      V('Le champ de l’aimant à 20 cm, puis l’angle de déviation de l’aiguille', 'L’énoncé donne le champ à 10 cm seulement : il faut l’adapter à la nouvelle distance avant de comparer à la Terre.'),
+      F('Le champ de l’aimant à 10 cm', 'Il est donné.'),
+      F('La masse de l’aimant', 'Elle est donnée et n’intervient pas.'),
+    ] },
+    donnees: [
+      ['aimant : 400 µT à 10 cm', true, 'C’est le champ de départ, à adapter à 20 cm.'],
+      ['champ de la Terre 50 µT', true, 'C’est le champ de référence vers le nord.'],
+      ['distance finale 20 cm', true, 'Elle détermine le champ de l’aimant au nouvel endroit.'],
+      ['décroissance en 1/r³', true, 'C’est la loi à appliquer.'],
+      ['masse 40 g', false, 'La masse de l’aimant est contenue dans la valeur de son champ.'],
+    ],
+    relations: { options: [
+      V('B(r₂) = B(r₁) × (r₁ / r₂)³', 'Le champ décroît en 1/r³ : distance × 2, champ ÷ 8.'),
+      V('tan α = B_aimant / B_Terre (champs perpendiculaires)', 'L’aiguille se place selon le champ total ; sa déviation par rapport au nord suit la boussole des tangentes.'),
+      F('B(r₂) = B(r₁) × (r₁ / r₂)²', 'C’est une loi en 1/r² (champ d’une charge ponctuelle), pas celle d’un aimant.'),
+      F('B(r₂) = B(r₁) × r₁ / r₂', 'Cela supposerait une décroissance en 1/r.'),
+    ] },
+    hypotheses: { options: [
+      V('L’aimant est orienté perpendiculairement au nord : les deux champs sont perpendiculaires', 'Sinon la somme vectorielle est plus compliquée.'),
+      V('Le champ de la Terre est le même aux deux endroits', 'Il varie à l’échelle de centaines de km, pas de 10 cm.'),
+      V('L’aimant se comporte comme un dipôle (champ en 1/r³ loin de l’aimant)', 'C’est le modèle utilisé : valable quand la distance est grande devant la taille de l’aimant.'),
+      F('Le champ de l’aimant est uniforme', 'Il décroît fortement avec la distance.'),
+      F('Le champ de la Terre diminue quand on s’éloigne de l’aimant', 'Le champ terrestre n’est pas modifié par la présence de l’aimant.'),
+    ] },
+    demarche: {
+      etapes: [
+        { id: 'B2', t: 'Calculer le champ de l’aimant à 20 cm : 400 × (10/20)³', dep: [], e: 'B = 400 / 8 = 50 µT.' },
+        { id: 'a', t: 'Calculer la déviation : α = arctan(50 / 50)', dep: ['B2'], e: 'α = 45°.' },
+      ],
+      pieges: [
+        ['Utiliser directement 400 µT à 20 cm', 'On oublie que l’aimant est moins intense plus loin.'],
+        ['Utiliser la masse de l’aimant', 'Inutile : elle est contenue dans son champ.'],
+      ],
+    },
+    conclusion: { q: 'Quelle conclusion obtient-on en suivant la démarche ?', options: [
+      V('α = 45°', 'À 20 cm, les deux champs valent 50 µT : l’aiguille se place à mi-chemin entre le nord et la direction de l’aimant.'),
+      F('α ≈ 63°', 'On a utilisé une décroissance en 1/r² (100 µT) au lieu de 1/r³ (50 µT).'),
+      F('α ≈ 83°', 'On a gardé le champ de l’aimant à 10 cm (400 µT) : il faut le réduire pour 20 cm.'),
+    ] },
+    retenir: ['Champ d’un aimant : décroissance en 1/r³ (distance × 2 ⇒ champ ÷ 8).', 'Deux champs perpendiculaires : tan α = B_aimant / B_Terre.'],
+  },
 ];
 
 // ──────────────────────────────── 2. CHOISIR LA BONNE RELATION ────────────────────────────────
@@ -976,6 +1068,22 @@ export const RELATIONS = [
       F('|x − x_ref| ≤ u', 'Ce critère serait trop sévère : avec k = 1, environ un tiers des mesures correctes seraient rejetées.'),
       F('|x − x_ref| / x_ref ≤ 5 %', 'Une tolérance arbitraire en % ne tient pas compte de l’incertitude de la mesure.'),
     ] },
+  { id: 'frequence-pas', domaine: 'Contrôle des systèmes', titre: 'Vitesse et fréquence de pas',
+    enonce: 'Un moteur de N = 200 pas par tour reçoit f pas par seconde. On cherche sa vitesse n en tours par minute.',
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('n = 60 × f / N', 'f/N donne des tours par seconde ; × 60 pour passer en tours par minute.'),
+      F('n = f × N / 60', 'Cette relation donne des pas par seconde à partir de la vitesse, pas l’inverse.'),
+      F('n = f / N', 'Il manque la conversion des secondes en minutes.'),
+      F('n = 360 × f', 'Cela donnerait des degrés par seconde pour un moteur d’un pas de 1°, pas des tr/min.'),
+    ] },
+  { id: 'champ-aimant-distance', domaine: 'Contrôle des systèmes', titre: 'Champ d’un aimant et distance',
+    enonce: 'Le champ d’un aimant vaut 800 µT à 5 cm. On cherche son champ à 10 cm (modèle du dipôle).',
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('B(r₂) = B(r₁) × (r₁ / r₂)³', 'Un aimant se comporte comme un dipôle : champ en 1/r³. Ici 800 / 8 = 100 µT.'),
+      F('B(r₂) = B(r₁) × (r₁ / r₂)²', 'Décroissance en 1/r² : c’est celle d’une charge ponctuelle, pas d’un aimant.'),
+      F('B(r₂) = B(r₁) × r₁ / r₂', 'Décroissance en 1/r : trop lente pour un aimant.'),
+      F('B(r₂) = B(r₁)', 'Le champ d’un aimant dépend fortement de la distance.'),
+    ] },
 ];
 
 // ──────────────────────────────── 3. HYPOTHÈSES D'UN MODÈLE ────────────────────────────────
@@ -1131,6 +1239,22 @@ export const HYPOTHESES = [
       V('Les valeurs suivent à peu près une loi normale', 'C’est ce qui donne à 2·u un niveau de confiance d’environ 95 % ; sans cela, le facteur 2 n’a plus ce sens.'),
       F('La mesure est exacte', 'Si elle l’était, on n’aurait pas besoin d’incertitude.'),
       F('Le résultat est écrit avec le bon nombre de chiffres', 'L’écriture du résultat ne change pas la décision.'),
+    ] },
+  { id: 'pas-complet', domaine: 'Contrôle des systèmes', titre: 'Vitesse d’un moteur pas à pas',
+    enonce: 'On calcule la vitesse d’un moteur pas à pas avec n = 60 × f / N à partir de la fréquence de pas f programmée.', options: [
+      V('Le rotor suit chaque pas : aucun pas n’est perdu', 'Si des pas sont perdus, la vitesse réelle est plus faible que celle calculée.'),
+      V('Tous les pas ont le même angle (pas complet, ou micro-pas réguliers)', 'Sinon le nombre N de pas par tour n’est pas constant.'),
+      V('La fréquence de pas est constante', 'Sinon on calcule une vitesse moyenne seulement.'),
+      F('La tension d’alimentation est de 12 V', 'La valeur précise de la tension n’intervient pas dans le calcul.'),
+      F('Le moteur tourne à vide', 'Une charge modérée ne change pas le calcul tant qu’aucun pas n’est perdu.'),
+    ] },
+  { id: 'dipole', domaine: 'Contrôle des systèmes', titre: 'Champ d’un aimant en 1/r³',
+    enonce: 'On suppose que le champ d’un aimant décroît comme 1/r³ pour comparer ses valeurs à deux distances.', options: [
+      V('La distance est grande devant la taille de l’aimant', 'Près de l’aimant, sa forme compte : le modèle du dipôle ne s’applique plus.'),
+      V('On reste sur l’axe de l’aimant, ou on se place toujours dans la même direction', 'Le champ dépend de la direction autour de l’aimant, pas seulement de la distance.'),
+      V('Aucun autre aimant ni objet en fer n’est à proximité', 'Ils déformeraient le champ.'),
+      F('Le champ de l’aimant est uniforme', 'Il décroît fortement avec la distance.'),
+      F('L’aimant est très petit, de masse négligeable', 'Seule compte la comparaison entre la taille de l’aimant et la distance.'),
     ] },
 ];
 
@@ -1442,6 +1566,27 @@ export const PREVOIR = [
       F('u et l’écart à la référence diminuent tous les deux', 'Un décalage constant ne diminue pas avec le nombre de mesures.'),
       F('L’écart disparaît car la moyenne annule les erreurs', 'Seules les erreurs aléatoires (positives ou négatives) s’annulent en moyenne, pas un décalage systématique.'),
       F('u augmente car il y a plus de mesures', 'u = s/√n diminue quand n augmente.'),
+    ] },
+  { id: 'distance-double', domaine: 'Contrôle des systèmes', titre: 'Boussole deux fois plus loin',
+    enonce: 'On éloigne la boussole d’un aimant en doublant la distance (champ de l’aimant en 1/r³).', q: 'Le champ de l’aimant est…', options: [
+      V('divisé par 8', '2³ = 8 : le champ décroît très vite avec la distance.'),
+      F('divisé par 2', 'Ce serait une décroissance en 1/r.'),
+      F('divisé par 4', 'Ce serait une décroissance en 1/r², pas celle d’un aimant.'),
+      F('inchangé', 'Le champ d’un aimant dépend de la distance.'),
+    ] },
+  { id: 'delai-double', domaine: 'Contrôle des systèmes', titre: 'Délai doublé',
+    enonce: 'Dans un programme de moteur pas à pas, on double le délai entre deux pas (même moteur, même séquence).', q: 'La vitesse de rotation est…', options: [
+      V('divisée par 2', 'Un pas dure deux fois plus longtemps : la fréquence de pas est divisée par 2, donc la vitesse aussi.'),
+      F('doublée', 'Sens inversé : un délai plus long ralentit le moteur.'),
+      F('inchangée', 'Le délai fixe le rythme des pas, donc la vitesse.'),
+      F('divisée par 4', 'La vitesse est inversement proportionnelle au délai, pas à son carré.'),
+    ] },
+  { id: 'charge-pas-perdus', domaine: 'Contrôle des systèmes', titre: 'Moteur chargé',
+    enonce: 'Un moteur tourne sans erreur avec delay(5). On lui fait entraîner une charge importante, sans rien changer au programme.', q: 'Que risque-t-il de se passer ?', options: [
+      V('Le rotor peut perdre des pas : il faut un délai plus long, ou plus de couple', 'Avec une charge, le rotor accélère moins vite et peut être « dépassé » par le champ tournant.'),
+      F('Le moteur tourne plus vite car il a plus à entraîner', 'Une charge freine le rotor, elle ne l’accélère pas.'),
+      F('Rien ne change : le programme impose la vitesse', 'Le programme impose le rythme du champ, mais le rotor ne le suit que s’il a assez de couple.'),
+      F('Le moteur change de sens de rotation', 'Perdre des pas ne change pas le sens de façon prévisible : la rotation réelle est simplement en retard.'),
     ] },
 ];
 

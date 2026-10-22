@@ -459,6 +459,81 @@ export const ENONCES = [
     },
   },
 
+  // ───────────────────────────── Contrôle des systèmes (TSTL) : moteur pas à pas et champ magnétique
+  {
+    id: 'moteurPas', domaine: 'Contrôle des systèmes', titre: 'Un moteur pas à pas piloté par un programme', noms: ['Angle d’un pas', 'Fréquence des pas', 'Vitesse de rotation', 'Rotation obtenue'],
+    gen: () => ({ N: tire([20, 48, 200]), D: tire([4, 5, 8, 10]), Np: tire([100, 200, 400, 600]), U: tire([12, 24]), R: tire([5, 10, 20]) }),
+    build: (p, q) => {
+      const f = 1000 / p.D;
+      const tokens = {
+        N: tok(`${p.N} pas par tour`, 'Nombre de pas pour faire un tour complet', p.N, 'pas/tour'),
+        D: tok(`${p.D} ms`, 'Délai entre deux pas (instruction delay du programme)', p.D, 'ms'),
+        Np: tok(`${p.Np} pas`, 'Nombre de pas commandés par le programme', p.Np, 'pas'),
+        U: tok(`${p.U} V`, 'Tension d’alimentation', p.U, 'V'),
+        R: tok(`${p.R} Ω`, 'Résistance d’une bobine', p.R, 'Ω'),
+      };
+      const debut = ['Un moteur pas à pas fait ', T('N'), '. Un programme allume les bobines pas après pas, en attendant ', T('D'), ' entre deux pas, et commande ', T('Np'),
+        ' au total. Le moteur est alimenté sous ', T('U'), ' et chaque bobine a une résistance de ', T('R'), '. '];
+      const rU = 'La tension d’alimentation fixe le couple disponible, pas l’angle ni la fréquence des pas.', rR = 'La résistance des bobines fixe le courant, pas l’angle ni la fréquence des pas.';
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'De quel angle tourne le rotor à chaque pas ?'], utiles: ['N'],
+        raisons: { D: 'Le délai fixe la vitesse, pas l’angle d’un pas.', Np: 'Le nombre de pas commandés dit combien de pas on fait, pas de quel angle chacun tourne.', U: rU, R: rR },
+        cherche: { bonne: 'L’angle d’un pas (en °)', faux: ['La vitesse de rotation (en tr/min)', 'La fréquence des pas (en Hz)', 'Le nombre de tours effectués'] },
+        manque: { bonne: 'Rien ne manque : un tour complet vaut 360°', faux: ['La masse du rotor', 'Le couple maximal du moteur', 'Le sens de rotation'], expl: 'Un tour complet fait 360° et se décompose en N pas égaux.' },
+        solution: { txt: 'α = 360° / N', val: 360 / p.N, u: '°' } };
+      if (q === 1) return { tokens, derivees: [], texte: [...debut, 'Combien de pas le moteur fait-il par seconde ?'], utiles: ['D'],
+        raisons: { N: 'Le nombre de pas par tour ne change pas le nombre de pas par seconde.', Np: 'Le nombre total de pas ne donne pas le rythme auquel ils s’enchaînent.', U: rU, R: rR },
+        cherche: { bonne: 'La fréquence des pas (en pas par seconde, soit en Hz)', faux: ['La vitesse de rotation (en tr/min)', 'La durée totale du programme (en s)', 'L’angle d’un pas (en °)'] },
+        manque: { bonne: 'Rien ne manque : 1 s = 1 000 ms', faux: ['L’angle d’un pas', 'Le couple résistant', 'La tension de chaque bobine'], expl: 'Un pas dure D millisecondes : en 1 000 ms, on fait 1 000 / D pas.' },
+        solution: { txt: 'f = 1 000 / D (D en ms)', val: f, u: 'pas/s' } };
+      if (q === 2) return { tokens, texte: [...debut, 'Quelle est la vitesse de rotation du moteur, en tours par minute ?'], utiles: ['N', 'D'],
+        derivees: [{ id: 'f', nom: 'Fréquence des pas', expr: 'f = 1 000 / D', val: f, u: 'pas/s' }],
+        raisons: { Np: 'Le nombre total de pas ne change pas la vitesse, seulement la durée de la rotation.', U: rU, R: rR },
+        cherche: { bonne: 'La vitesse de rotation n (en tr/min)', faux: ['La fréquence des pas (en Hz)', 'Le nombre de tours effectués', 'L’angle tourné en un pas (en °)'] },
+        manque: { bonne: 'Rien ne manque : 1 min = 60 s', faux: ['La masse du rotor', 'Le couple maximal', 'Le courant dans les bobines'], expl: 'f pas par seconde ÷ N pas par tour = f/N tours par seconde ; × 60 pour passer en tours par minute.' },
+        solution: { txt: 'n = 60 × f / N', val: 60 * f / p.N, u: 'tr/min' } };
+      return { tokens, derivees: [], texte: [...debut, 'Combien de tours le rotor fait-il au total ?'], utiles: ['N', 'Np'],
+        raisons: { D: 'Le délai fixe la vitesse, pas le nombre de tours : il change seulement la durée.', U: rU, R: rR },
+        cherche: { bonne: 'Le nombre de tours effectués', faux: ['La vitesse de rotation (en tr/min)', 'La durée du programme (en s)', 'L’angle d’un pas (en °)'] },
+        manque: null, solution: { txt: 'tours = N_p / N', val: p.Np / p.N, u: 'tours' } };
+    },
+  },
+  {
+    id: 'champB', domaine: 'Contrôle des systèmes', titre: 'Une boussole près d’un aimant', noms: ['Champ total', 'Déviation de l’aiguille', 'Champ de l’aimant plus loin'],
+    gen: () => {
+      const Ba = tire([30, 50, 100, 150, 400]), r1 = tire([8, 10, 12]);
+      return { BT: 50, Ba, mT: tire([true, false]), r1, r2: r1 * tire([2, 3]), m: tire([20, 25, 40]), T: tire([19, 21, 23]) };
+    },
+    build: (p, q) => {
+      const tokens = {
+        BT: tok('50 µT', 'Champ magnétique terrestre', p.BT, 'µT'),
+        Ba: tok(p.mT ? `${nb(p.Ba / 1000, 3)} mT` : `${p.Ba} µT`, 'Champ de l’aimant à la distance r₁', p.Ba, 'µT'),
+        r1: tok(`${p.r1} cm`, 'Distance boussole – aimant', p.r1, 'cm'),
+        r2: tok(`${p.r2} cm`, 'Nouvelle distance boussole – aimant', p.r2, 'cm'),
+        m: tok(`${p.m} g`, 'Masse de l’aimant', p.m, 'g'),
+        T: tok(`${p.T} °C`, 'Température de la salle', p.T, '°C'),
+      };
+      const debut = ['Une boussole est placée à ', T('r1'), ' du centre d’un aimant droit (masse ', T('m'), '), sur son axe, l’aimant étant orienté perpendiculairement à la direction du nord. À cet endroit, le champ de l’aimant vaut ',
+        T('Ba'), ' et le champ de la Terre vaut ', T('BT'), '. La salle est à ', T('T'), '. On pourra éloigner la boussole à ', T('r2'), ' ; le champ de l’aimant décroît alors comme 1/r³. '];
+      const rm = 'La masse de l’aimant est déjà contenue dans la valeur de son champ.', rT = 'La température n’intervient pas ici.';
+      const rr1 = 'La distance est déjà contenue dans la valeur du champ de l’aimant donnée à cet endroit.', rr2 = 'Cette distance ne concerne pas cette question : le champ utilisé est celui donné à r₁.';
+      const Bt = Math.hypot(p.BT, p.Ba);
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le champ magnétique total à l’endroit de la boussole (placée à r₁) ?'], utiles: ['BT', 'Ba'],
+        raisons: { r1: rr1, r2: rr2, m: rm, T: rT },
+        cherche: { bonne: 'L’intensité du champ total (en µT)', faux: ['L’angle de déviation de l’aiguille (en °)', 'Le champ de l’aimant seul (en µT)', 'La distance boussole – aimant'] },
+        manque: { bonne: 'Rien ne manque : les deux champs sont perpendiculaires', faux: ['La longueur de l’aimant', 'Le sens du courant', 'L’altitude du lieu'], expl: 'Deux champs perpendiculaires s’ajoutent comme les côtés d’un triangle rectangle : B² = B_T² + B_a².' },
+        solution: { txt: 'B = √(B_T² + B_a²)', val: Bt, u: 'µT' } };
+      if (q === 1) return { tokens, derivees: [], texte: [...debut, 'De quel angle l’aiguille de la boussole dévie-t-elle par rapport au nord ?'], utiles: ['BT', 'Ba'],
+        raisons: { r1: rr1, r2: rr2, m: rm, T: rT },
+        cherche: { bonne: 'L’angle de déviation α de l’aiguille (en °)', faux: ['L’intensité du champ total (en µT)', 'Le rapport des deux champs', 'La direction du champ de la Terre'] },
+        manque: { bonne: 'Rien ne manque : tan α = B_a / B_T', faux: ['La longueur de l’aiguille', 'La masse de l’aiguille', 'Le champ à une autre distance'], expl: 'L’aiguille se place selon le champ total : sa déviation est donnée par tan α = B_a / B_T (boussole des tangentes).' },
+        solution: { txt: 'α = arctan(B_a / B_T)', val: Math.atan(p.Ba / p.BT) * 180 / Math.PI, u: '°' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quel est le champ de l’aimant lorsque la boussole est à la distance r₂ ?'], utiles: ['Ba', 'r1', 'r2'],
+        raisons: { BT: 'Le champ de la Terre ne dépend pas de la distance à l’aimant, et on cherche le champ de l’aimant seul.', m: rm, T: rT },
+        cherche: { bonne: 'Le champ de l’aimant seul à la distance r₂ (en µT)', faux: ['Le champ total à r₂ (en µT)', 'La déviation de l’aiguille à r₂ (en °)', 'Le champ de la Terre à r₂'] },
+        manque: null, solution: { txt: 'B₂ = B_a × (r₁ / r₂)³', val: p.Ba * (p.r1 / p.r2) ** 3, u: 'µT' } };
+    },
+  },
+
   // ───────────────────────────── Mouvement et vitesse (seconde)
   {
     id: 'trajet', domaine: 'Mouvement et vitesse', titre: 'Un trajet en train', noms: ['Vitesse moyenne du train', 'Durée d’un autre trajet'],
@@ -604,6 +679,8 @@ const SYMBOLES = {
   premord: { tau: 'τ', T0: 'T₀', Tf: 'T_f', t: 't', res: '', m: 'm' },
   incertA: { n: 'n', xm: 'x̄', s: 's', k: 'k', res: '', dur: '' },
   compatS: { x: 'x', u: 'u', cref: 'x_ref', n: '', theta: '' },
+  moteurPas: { N: 'N', D: 'D', Np: 'N_p', U: 'U', R: 'R' },
+  champB: { BT: 'B_T', Ba: 'B_a', r1: 'r₁', r2: 'r₂', m: 'm', T: 'θ' },
   distil: { V: 'V', x: 'x', y: 'y', Vd: 'V_distillat', Te: 'θ_éb', P: 'P' },
   cristal: { me: 'm_eau', mb: 'm_bécher', s60: 's₆₀', s20: 's₂₀', dur: 'Δt' },
 };

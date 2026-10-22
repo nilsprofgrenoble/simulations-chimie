@@ -2,7 +2,7 @@
 export const ORDRE_DOMAINES = [
   'Transmission de signaux numériques', 'Transport des fluides', 'Régulation', 'Transferts thermiques',
   'Évaporation et cristallisation', 'Distillation',
-  'Mesure et incertitudes', 'Chimie', 'Mécanique', 'Interactions et champs', 'Mouvement et vitesse', 'Métrologie',
+  'Mesure et incertitudes', 'Contrôle des systèmes', 'Chimie', 'Mécanique', 'Interactions et champs', 'Mouvement et vitesse', 'Métrologie',
 ];
 // Regroupe une liste d'éléments {domaine, ...} par thème, dans l'ordre de la hiérarchie : [[domaine, [éléments]], ...]
 export function parDomaine(liste) {
