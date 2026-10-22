@@ -1,15 +1,14 @@
 import { useState, useMemo, useEffect } from "react";
-import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, lireProgression, Etoiles } from "../commun";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, lireProgression, Etoiles, useEtatPersistant } from "../commun";
 import { etoilesSeance } from "../carnet";
 import { ENONCES } from "./AtelierDonneesBanque";
 import { SCENARIOS } from "./AtelierGraphiqueBanque";
 import { FAMILLES as FAM_REA } from "./AtelierRealiserBanque";
 import { FAMILLES as FAM_ANA } from "./AtelierAnalyserBanque";
 import { FAMILLES as FAM_VAL } from "./AtelierValiderBanque";
-import { ORDRE_DOMAINES } from "./ordreDomaines";
 import { useSession, estEleve, estProf, toutLire, rest } from "../serveur";
 import { exosDuChapitre, exosCalcul, prochainExercice, avancementChapitre } from "../chapitre";
-import { NIVEAUX_CHAPITRES, chapitresDuNiveau, chapitreDe, chapitresDe, domainesDe, simsDe } from "../chapitres";
+import { NIVEAUX_CHAPITRES, CHAPITRES, chapitresDuNiveau, chapitreDe, chapitresDe, domainesDe } from "../chapitres";
 import { nomsSim } from "../suivi";
 import { Pic } from "../Pictos";
 
@@ -63,9 +62,24 @@ function LigneExo({ e, prog, etoiles, ouvrir, montrerTheme }) {
     </button>);
 }
 
+// Carte d'un chapitre : titre, avancement en étoiles, badge « chapitre en cours » si le professeur l'a choisi
+function CarteChapitre({ c, ouvert, enCours, av, onClick }) {
+  const pct = av.max ? (100 * av.etoiles) / av.max : 0;
+  return (
+    <button type="button" data-chapitre-id={c.id} aria-expanded={ouvert} onClick={onClick}
+      style={{ textAlign: 'left', padding: '10px 12px', borderRadius: 10, cursor: 'pointer', background: ouvert ? '#fff1f2' : 'white', border: `2px solid ${ouvert ? ROSE : enCours ? '#2a9d8f' : KIT.bord}`, display: 'flex', flexDirection: 'column', gap: 5, font: 'inherit' }}>
+      {enCours && <span style={{ fontSize: 11, fontWeight: 800, color: '#1f6f66', letterSpacing: 0.4 }}>👉 CHAPITRE EN COURS</span>}
+      <span style={{ fontWeight: 800, color: KIT.txt, fontSize: 14.5, lineHeight: 1.35 }}>{c.label}</span>
+      <span style={{ fontSize: 12.5, color: KIT.txt2 }}>
+        {av.total > 0 ? `${av.reussis} / ${av.total} exercices réussis · ${av.etoiles} ★ sur ${av.max}` : 'Simulations seulement (pas encore d’exercice)'}
+      </span>
+      {av.total > 0 && <span style={{ height: 6, borderRadius: 3, background: '#e2e8f0', display: 'block' }}><span style={{ display: 'block', height: 6, borderRadius: 3, background: '#2a9d8f', width: `${pct}%` }} /></span>}
+    </button>);
+}
+
 export function SimulationEntrainement({ naviguer }) {
-  const [theme, setTheme] = useState('tous');
-  const [niveau, setNiveau] = useState('tous');
+  const [niveauChoisi, setNiveauChoisi] = useEtatPersistant('entrainement-niveau-v1', null);
+  const [chapChoisi, setChapChoisi] = useState(undefined);      // undefined : pas de choix de l'élève (on ouvre le chapitre en cours) ; null : tout replié
   const [comp, setComp] = useState('toutes');
   const [progLocale, setProg] = useState(lireProgression);
   const sess = useSession();
@@ -92,32 +106,89 @@ export function SimulationEntrainement({ naviguer }) {
     return () => { actif = false; };
   }, [classeId]);
   const chapActifs = useMemo(() => (classeId ? chapitres : []), [classeId, chapitres]);
+  const chapsEnCours = useMemo(() => chapitresDe(chapActifs), [chapActifs]);
   const prog = { ...progLocale, ...serveur };
   const exos = useMemo(() => tousLesExercices(), []);
-  // Filtre par niveau : les exercices n'ont pas de niveau propre ; on garde les thèmes rattachés à un chapitre du niveau (voir chapitres.js).
-  // Les exercices de calcul (transversaux) servent à tous les niveaux.
-  const exosN = useMemo(() => {
-    if (niveau === 'tous') return exos;
-    const ds = domainesDe(chapitresDuNiveau(niveau));
-    return exos.filter(e => e.domaine === TRANSVERSAL || ds.includes(e.domaine));
-  }, [exos, niveau]);
-  const themes = [...ORDRE_DOMAINES.filter(d => exosN.some(e => e.domaine === d)), TRANSVERSAL];
-  const themeEff = themes.includes(theme) ? theme : 'tous';
-  const liste = exosN.filter(e => (themeEff === 'tous' || e.domaine === themeEff) && (comp === 'toutes' || e.comp === comp));
   const nbFaits = l => l.filter(e => prog[e.cle]).length;
   const ouvrir = e => naviguer(e.atelier, e.ex);
   const etoilesDe = cle => etoilesSrv[cle] ?? (prog[cle] ? 3 : 0);
-  const chaps = useMemo(() => chapitresDe(chapActifs), [chapActifs]);
-  const exosChap = useMemo(() => exosDuChapitre(exos, domainesDe(chaps)), [exos, chaps]);
-  const simsChap = useMemo(() => simsDe(chaps), [chaps]);
-  const avecChapitre = chaps.length > 0;      // un chapitre peut n'avoir que des simulations (pas d'exercice de remédiation)
-  const conseil = exosChap.length ? prochainExercice(exosChap, etoilesDe) : null;
-  const av = avancementChapitre(exosChap, etoilesDe);
   const effacer = () => {
     if (!window.confirm('Effacer la progression mémorisée sur cet appareil ?')) return;
     try { window.localStorage.removeItem('progression-ateliers-v1'); } catch { /* indisponible */ }
     setProg({});
   };
+
+  // Niveau : le choix de l'élève, sinon celui du chapitre en cours de sa classe, sinon rien (on lui demande)
+  const niveauValide = NIVEAUX_CHAPITRES.some(n => n.key === niveauChoisi) || niveauChoisi === 'tous';
+  const niveau = (niveauValide && niveauChoisi) || chapsEnCours[0]?.niveau || null;
+  const chapsNiveau = niveau === 'tous' ? CHAPITRES : niveau ? chapitresDuNiveau(niveau) : [];
+  const idsEnCours = chapsEnCours.map(c => c.id);
+  const ouvertId = chapChoisi !== undefined ? chapChoisi : (chapsNiveau.find(c => idsEnCours.includes(c.id))?.id ?? null);
+  const chapOuvert = chapsNiveau.find(c => c.id === ouvertId) || null;
+  const exosDe = c => exosDuChapitre(exos, c.domaines);
+
+  // Exercices du niveau (pour la partie « par compétence ») : thèmes des chapitres du niveau + calcul transversal
+  const exosN = (() => {
+    if (!niveau || niveau === 'tous') return exos;
+    const ds = domainesDe(chapitresDuNiveau(niveau));
+    return exos.filter(e => e.domaine === TRANSVERSAL || ds.includes(e.domaine));
+  })();
+  const liste = exosN.filter(e => comp === 'toutes' || e.comp === comp);
+
+  const detail = c => {
+    const exosChap = exosDe(c), av = avancementChapitre(exosChap, etoilesDe), conseil = exosChap.length ? prochainExercice(exosChap, etoilesDe) : null;
+    const enCours = idsEnCours.includes(c.id);
+    return (
+      <section data-chapitre style={{ margin: '14px 0 18px', padding: '12px 14px', border: `2px solid ${ROSE}`, borderRadius: 12, background: 'white' }}>
+        <h3 style={{ margin: '0 0 4px', color: KIT.txt }}><Pic n="book"/>{c.label}</h3>
+        <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 8 }}>
+          {enCours ? 'Chapitre choisi par ton professeur. ' : ''}{exosChap.length > 0 ? `${av.reussis} exercice${av.reussis > 1 ? 's' : ''} réussi${av.reussis > 1 ? 's' : ''} sur ${av.total} · ${av.etoiles} ★ sur ${av.max}` : 'Pas encore d’exercice de remédiation sur ce chapitre : commence par les simulations.'}
+        </div>
+        {c.sims.length > 0 && (
+          <div data-sims-chapitre style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: KIT.txt, margin: '0 0 4px' }}><Pic n="testtube"/>Les simulations du chapitre</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {c.sims.map(id => <button key={id} data-sim={id} onClick={() => naviguer(id)} style={{ ...styleBouton(false, '#475569'), fontSize: 13 }}>{nomsSim[id] || `Simulation ${id}`} ▶</button>)}
+            </div>
+          </div>)}
+        {exosChap.length > 0 && <div style={{ height: 8, borderRadius: 4, background: '#e2e8f0', marginBottom: 12 }} role="progressbar" aria-valuemin={0} aria-valuemax={av.max} aria-valuenow={av.etoiles} aria-label="Étoiles gagnées dans le chapitre">
+          <div style={{ height: 8, borderRadius: 4, background: '#2a9d8f', width: `${av.max ? (100 * av.etoiles) / av.max : 0}%` }} />
+        </div>}
+        {exosChap.length === 0 ? null : conseil ? (
+          <div data-conseil style={{ ...styleBoite, border: '2px solid #2a9d8f', background: '#eef7f5', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
+            <div style={{ flex: 1, minWidth: 220 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 800, color: '#1f6f66', letterSpacing: 0.5 }}>👉 TON PROCHAIN EXERCICE CONSEILLÉ</div>
+              <div style={{ fontWeight: 800, color: KIT.txt, margin: '2px 0' }}>{conseil.exo.comp} · {conseil.exo.titre}</div>
+              <div style={{ fontSize: 12.5, color: KIT.txt2 }}>
+                {conseil.raison === 'nouveau' ? 'Tu ne l’as pas encore réussi : on commence par la compétence où tu as le moins avancé dans ce chapitre.' : `Tu l’as réussi avec ${conseil.etoiles} étoile${conseil.etoiles > 1 ? 's' : ''} : vise les 3 étoiles.`}
+              </div>
+            </div>
+            <button onClick={() => ouvrir(conseil.exo)} style={styleBouton(true, ROSE)}>Y aller ▶</button>
+          </div>
+        ) : (
+          <div style={{ ...styleBoite, background: '#f0fdf4', marginBottom: 12 }}><Pic n="party"/><b>Tout le chapitre est réussi avec 3 étoiles !</b> Passe à un autre chapitre, ou refais un exercice pour t’entraîner.</div>
+        )}
+        {['S\'APP', 'ANA', 'VAL'].map(code => {
+          const L = exosChap.filter(e => e.comp === code);
+          const cc = COMPETENCES.find(x => x.code === code);
+          return L.length === 0 ? null : (
+            <div key={code} style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: cc.couleur, margin: '6px 0 4px' }}>{code} · {cc.nom} <span style={{ fontWeight: 600, color: KIT.txt2 }}>({nbFaits(L)} / {L.length} réussis)</span></div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>{L.map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} />)}</div>
+            </div>);
+        })}
+        {exosChap.length > 0 && <details style={{ marginTop: 6 }}>
+          <summary style={{ cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: KIT.txt }}><Pic n="abacus"/>Pour t’aider à calculer (REA, valable pour tous les chapitres) <span style={{ fontWeight: 600, color: KIT.txt2 }}>({nbFaits(exosCalcul(exos))} / {exosCalcul(exos).length} réussis)</span></summary>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>{exosCalcul(exos).map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} />)}</div>
+        </details>}
+        {exosChap.length > 0 && <div style={{ fontSize: 12, color: KIT.txt2, marginTop: 8 }}>Le conseil est calculé à partir de tes résultats ; ce n’est pas une note.</div>}
+      </section>);
+  };
+  const cartes = l => (
+    <div data-chapitres style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 10, margin: '8px 0' }}>
+      {l.map(c => <CarteChapitre key={c.id} c={c} ouvert={ouvertId === c.id} enCours={idsEnCours.includes(c.id)} av={avancementChapitre(exosDe(c), etoilesDe)}
+        onClick={() => setChapChoisi(ouvertId === c.id ? null : c.id)} />)}
+    </div>);
 
   return (
     <div style={{ ...cardStyle, maxWidth: 1000, margin: '0 auto' }}>
@@ -135,53 +206,30 @@ export function SimulationEntrainement({ naviguer }) {
         {estProf(sess) && <button onClick={() => naviguer(40)} style={styleBouton(true, ROSE)}><Pic n="bars"/>Suivi professeur</button>}
       </div>
 
-      {avecChapitre && (
-        <section data-chapitre style={{ margin: '14px 0 18px' }}>
-          <h3 style={{ margin: '0 0 4px', color: KIT.txt }}><Pic n="book"/>Ton chapitre en ce moment : <span style={{ color: ROSE }}>{chaps.map(c => c.label).join(' · ')}</span></h3>
-          <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 8 }}>
-            Choisi par ton professeur.{exosChap.length > 0 ? ` ${av.reussis} exercice${av.reussis > 1 ? 's' : ''} réussi${av.reussis > 1 ? 's' : ''} sur ${av.total} · ${av.etoiles} ★ sur ${av.max}` : ' Pas encore d’exercice de remédiation sur ce chapitre : commence par les simulations.'}
-          </div>
-          {simsChap.length > 0 && (
-            <div data-sims-chapitre style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: KIT.txt, margin: '0 0 4px' }}><Pic n="testtube"/>Les simulations du chapitre</div>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {simsChap.map(id => <button key={id} data-sim={id} onClick={() => naviguer(id)} style={{ ...styleBouton(false, '#475569'), fontSize: 13 }}>{nomsSim[id] || `Simulation ${id}`} ▶</button>)}
-              </div>
-            </div>)}
-          {exosChap.length > 0 && <div style={{ height: 8, borderRadius: 4, background: '#e2e8f0', marginBottom: 12 }} role="progressbar" aria-valuemin={0} aria-valuemax={av.max} aria-valuenow={av.etoiles} aria-label="Étoiles gagnées dans le chapitre">
-            <div style={{ height: 8, borderRadius: 4, background: '#2a9d8f', width: `${av.max ? (100 * av.etoiles) / av.max : 0}%` }} />
-          </div>}
-          {exosChap.length === 0 ? null : conseil ? (
-            <div data-conseil style={{ ...styleBoite, border: '2px solid #2a9d8f', background: '#eef7f5', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
-              <div style={{ flex: 1, minWidth: 220 }}>
-                <div style={{ fontSize: 12.5, fontWeight: 800, color: '#1f6f66', letterSpacing: 0.5 }}>👉 TON PROCHAIN EXERCICE CONSEILLÉ</div>
-                <div style={{ fontWeight: 800, color: KIT.txt, margin: '2px 0' }}>{conseil.exo.comp} · {conseil.exo.titre}</div>
-                <div style={{ fontSize: 12.5, color: KIT.txt2 }}>
-                  {conseil.raison === 'nouveau' ? 'Tu ne l’as pas encore réussi : on commence par la compétence où tu as le moins avancé dans ce chapitre.' : `Tu l’as réussi avec ${conseil.etoiles} étoile${conseil.etoiles > 1 ? 's' : ''} : vise les 3 étoiles.`}
-                </div>
-              </div>
-              <button onClick={() => ouvrir(conseil.exo)} style={styleBouton(true, ROSE)}>Y aller ▶</button>
-            </div>
-          ) : (
-            <div style={{ ...styleBoite, background: '#f0fdf4', marginBottom: 12 }}><Pic n="party"/><b>Tout le chapitre est réussi avec 3 étoiles !</b> Passe aux autres thèmes ci-dessous, ou refais un exercice pour t’entraîner.</div>
-          )}
-          {['S\'APP', 'ANA', 'VAL'].map(code => {
-            const L = exosChap.filter(e => e.comp === code);
-            return L.length === 0 ? null : (
-              <div key={code} style={{ marginBottom: 10 }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: COMPETENCES.find(x => x.code === code).couleur, margin: '6px 0 4px' }}>{code} · {COMPETENCES.find(x => x.code === code).nom} <span style={{ fontWeight: 600, color: KIT.txt2 }}>({nbFaits(L)} / {L.length})</span></div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>{L.map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} />)}</div>
-              </div>);
-          })}
-          {exosChap.length > 0 && <details style={{ marginTop: 6 }}>
-            <summary style={{ cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: KIT.txt }}><Pic n="abacus"/>Pour t’aider à calculer (REA, valable pour tous les chapitres) <span style={{ fontWeight: 600, color: KIT.txt2 }}>({nbFaits(exosCalcul(exos))} / {exosCalcul(exos).length})</span></summary>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>{exosCalcul(exos).map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} />)}</div>
-          </details>}
-          {exosChap.length > 0 && <div style={{ fontSize: 12, color: KIT.txt2, marginTop: 8 }}>Le conseil est calculé à partir de tes résultats ; ce n’est pas une note.</div>}
+      <section data-niveaux style={{ margin: '14px 0 6px' }}>
+        <h3 style={{ margin: '0 0 6px', color: KIT.txt }}>1. Je suis en…</h3>
+        <div role="group" aria-label="Mon niveau" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          {NIVEAUX_CHAPITRES.map(n => <button key={n.key} data-niveau={n.key} aria-pressed={niveau === n.key} onClick={() => { setNiveauChoisi(n.key); setChapChoisi(undefined); }}
+            style={{ ...styleBouton(niveau === n.key, ROSE), fontSize: 15, padding: '9px 18px' }}>{n.label}</button>)}
+          <button data-niveau="tous" aria-pressed={niveau === 'tous'} onClick={() => { setNiveauChoisi('tous'); setChapChoisi(undefined); }}
+            style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', fontSize: 13 }}>Voir tous les niveaux</button>
+        </div>
+      </section>
+
+      {!niveau && <div data-choix-niveau style={{ ...styleBoite, margin: '10px 0', fontSize: 14 }}>👆 Choisis ton niveau : tu verras les chapitres de ton année et les exercices qui vont avec.</div>}
+
+      {niveau && (
+        <section data-chapitres-niveau style={{ margin: '14px 0 6px' }}>
+          <h3 style={{ margin: '0 0 2px', color: KIT.txt }}>2. Je choisis mon chapitre</h3>
+          <div style={{ fontSize: 13, color: KIT.txt2 }}>Clique sur un chapitre : tu y trouves ses simulations et ses exercices, rangés par compétence.</div>
+          {niveau === 'tous'
+            ? NIVEAUX_CHAPITRES.map(n => <div key={n.key}><div style={{ fontSize: 13, fontWeight: 800, color: KIT.txt, margin: '10px 0 0' }}>{n.label}</div>{cartes(chapitresDuNiveau(n.key))}</div>)
+            : cartes(chapsNiveau)}
+          {chapOuvert && detail(chapOuvert)}
         </section>)}
 
-      <details open={!avecChapitre} data-autres style={avecChapitre ? { ...styleBoite, background: '#fff' } : undefined}>
-        {avecChapitre && <summary style={{ cursor: 'pointer', fontSize: 15.5, fontWeight: 800, color: KIT.txt }}><Pic n="book"/>Autres thèmes et toutes les compétences</summary>}
+      <details data-autres style={{ ...styleBoite, background: '#fff', marginTop: 12 }}>
+        <summary style={{ cursor: 'pointer', fontSize: 15.5, fontWeight: 800, color: KIT.txt }}><Pic n="target"/>Travailler une compétence précise{niveau && niveau !== 'tous' ? ` (niveau ${NIVEAUX_CHAPITRES.find(n => n.key === niveau)?.label})` : ''}</summary>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12, margin: '14px 0' }}>
         {COMPETENCES.map((c, i) => {
           const mes = exosN.filter(e => e.comp === c.code);
@@ -206,24 +254,14 @@ export function SimulationEntrainement({ naviguer }) {
         })}
       </div>
 
-      <h3 style={{ marginBottom: 6 }}>Tous les exercices, par thème</h3>
-      <div data-niveaux style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt }}>Mon niveau :</span>
-        <button onClick={() => setNiveau('tous')} style={stylePetitBouton(niveau === 'tous', ROSE)}>Tous</button>
-        {NIVEAUX_CHAPITRES.map(n => <button key={n.key} data-niveau={n.key} onClick={() => setNiveau(n.key)} style={stylePetitBouton(niveau === n.key, ROSE)}>{n.label}</button>)}
-      </div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
-        <button onClick={() => setTheme('tous')} style={stylePetitBouton(themeEff === 'tous', ROSE)}>Tous les thèmes</button>
-        {themes.map(t => <button key={t} onClick={() => setTheme(t)} style={stylePetitBouton(themeEff === t, ROSE)}>{t}</button>)}
-      </div>
+      <h3 style={{ marginBottom: 6 }}>Tous les exercices{niveau && niveau !== 'tous' ? ' de mon niveau' : ''}</h3>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
         <button onClick={() => setComp('toutes')} style={stylePetitBouton(comp === 'toutes', ROSE)}>Toutes les compétences</button>
         {COMPETENCES.filter(c => c.dispo).map(c => <button key={c.code} onClick={() => setComp(c.code)} style={stylePetitBouton(comp === c.code, c.couleur)}>{c.code}</button>)}
       </div>
-
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginBottom: 6 }}>{liste.length} exercice{liste.length > 1 ? 's' : ''} · {nbFaits(liste)} réussi{nbFaits(liste) > 1 ? 's' : ''}</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {liste.map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} montrerTheme={themeEff === 'tous'} />)}
+        {liste.map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} montrerTheme />)}
       </div>
       </details>
 
