@@ -342,7 +342,8 @@ export default function App() {
   if (JEUX_IDS.includes(activeId)) return (
     <div style={{ ...styles.root, '--entete-h': '0px', background: FONDS_JEUX[activeId], color: '#e5e7eb' }} data-jeu-immersif>
       <PictosSprite/>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px clamp(12px, 3vw, 24px)', background: 'rgba(0,0,0,0.35)', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
+      <style>{`@keyframes jeu-entree{from{opacity:0;transform:scale(1.015)}to{opacity:1;transform:none}}@keyframes jeu-barre{from{transform:translateY(-100%)}to{transform:none}}@media (prefers-reduced-motion:reduce){[data-jeu-immersif] *{animation:none!important}}`}</style>
+      <div style={{ animation: 'jeu-barre .5s ease-out both', display: 'flex', alignItems: 'center', gap: 12, padding: '10px clamp(12px, 3vw, 24px)', background: 'rgba(0,0,0,0.35)', borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
         <button onClick={() => naviguer(estProf(sessionSb) ? 40 : 38)} aria-label="Quitter le jeu"
           style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 13.5 }}>← Quitter</button>
         <span style={{ flex: 1, textAlign: 'center', fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: '0.5px', color: '#fff', fontSize: 'clamp(14px, 3.5vw, 18px)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -350,7 +351,7 @@ export default function App() {
         </span>
         <span style={{ width: 72 }} aria-hidden="true" />
       </div>
-      <main style={{ ...styles.main, padding: 'clamp(8px, 2vw, 20px)' }}>
+      <main style={{ ...styles.main, padding: 'clamp(8px, 2vw, 20px)', animation: 'jeu-entree .7s ease-out .1s both' }}>
         <div id="zone-simulation" style={{ textAlign: 'left', flex: 1 }}><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></div>
         <ToastRecompense naviguer={naviguer} />
         <RetourMission activeId={activeId} naviguer={naviguer} />
