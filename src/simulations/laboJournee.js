@@ -9,6 +9,7 @@
 //  Chaque scène de résultat porte un champ « visuel » (données) que l'interface dessine sous forme d'instrument.
 // ====================================================
 import { proprietes } from "./Peinture";
+import { secretsAleatoires, lectureBanc, penteMesuree, DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI } from "./stationsModele";
 
 export const ID_LABO = 81;
 export const CLE_ETAT = 'labo-histoire-v3';
@@ -40,12 +41,12 @@ export const formule = e => {
   return { resine: 'orgal', eau: (naif ? 121.7 : 105) - dpnb, tio2: 60, caco3: 60, liant: naif ? 83.3 : 100, foamex: 1.5,
     coadis: e.f.coadis ?? 0.2, dpnb, thixol: 1.5, coapur: 3 };
 };
-export const prop = (e, opts) => proprietes(formule(e), opts);
+export const prop = (e, opts) => proprietes(formule(e), { efficacite: e.f.eff ?? 3, ...opts });   // l'efficacité du coalescent est un paramètre caché (station banc TMFF)
 export const tmffMesuree = e => Math.max(0, prop(e).tmff);          // le banc s'arrête à 0 °C
 export const covDe = e => prop(e).COV;
 export const tmffOk = e => prop(e).tmff <= TMFF_MAX;
 export const covOk = e => covDe(e) < COV_MAX;
-export const dpnbOk = d => d != null && tmffOk({ f: { regle: 'ok', dpnb: d } }) && covOk({ f: { regle: 'ok', dpnb: d } });   // fenêtre : TMFF ≤ 5 °C (≥ 2,5 g) et COV < 30 g/L
+export const dpnbOk = (d, eff) => d != null && tmffOk({ f: { regle: 'ok', dpnb: d, eff } }) && covOk({ f: { regle: 'ok', dpnb: d, eff } });   // fenêtre : TMFF ≤ 5 °C (≥ 2,5 g) et COV < 30 g/L
 
 // Prix (€/g). Orgal : 25 € / 5 L (Document 1) ; Vinnapas : 3,60 €/kg (référence) ; autres : Document 1
 const PRIX = { eau: 3.7 / 1000 / 1000, tio2: 0.010, caco3: 0.003, orgal: 5 / 1.03 / 1000, vinnapas: 0.0036, foamex: 6 / 200, coadis: 7 / 1000 / 1.22, dpnb: 3 / 1000 / 0.91, thixol: 7 / 1000 / 1.06, coapur: 8 / 1000 / 1.04 };
@@ -57,7 +58,7 @@ export const coutKg = f => {
 };
 
 // ───────────── Moteur ─────────────
-export const etatInitial = () => ({ scene: 'intro', t: 0, f: {}, carnet: [], cmd: {}, libre: { ines: 0, lucas: 0, perrin: 0 }, essais: 0 });
+export const etatInitial = () => ({ scene: 'intro', t: 0, f: secretsAleatoires(), carnet: [], cmd: {}, libre: { ines: 0, lucas: 0, perrin: 0 }, essais: 0 });
 const nota = (e, texte) => texte ? { ...e, carnet: [...e.carnet, `${hhmm(e.t)} : ${texte}`] } : e;
 
 export const SCENES = {};
@@ -225,6 +226,7 @@ add('coalescent', { lieu: 'Paillasse', pnj: 'karim', titre: 'Et le coalescent ?'
     { t: 'Rien : la référence n\'en avait pas, et ça garde les COV à zéro', f: { dpnb: 0 }, note: 'Pas de coalescent ajouté (la référence Vinnapas n\'en avait pas).', vers: v },
     { t: 'Ajouter 1 g par précaution, sans calcul', f: { dpnb: 1 }, note: 'Coalescent (DPnB) ajouté à 1 g, sans calcul.', vers: v },
     { t: 'Calculer la dose avec la règle d\'atelier de Karim (4 à 8 % du polymère sec)', vers: 'calcDpnb' },
+    { t: 'Faire d\'abord un pré-essai au banc TMFF avec Lucas', d: '5 min de préparation, puis 5 min par essai', duree: 5, note: 'Pré-essai au banc TMFF demandé à Lucas.', vers: 'stationBanc' },
     { t: 'Mettre 10 g : on sera tranquille pour la filmification', f: { dpnb: 10 }, note: 'Coalescent (DPnB) mis à 10 g « par sécurité ».', vers: v },
   ]; } });
 add('calcDpnb', { lieu: 'Paillasse', pnj: 'moi', titre: 'Calcul : dose de coalescent',
@@ -234,6 +236,45 @@ add('calcDpnb', { lieu: 'Paillasse', pnj: 'moi', titre: 'Calcul : dose de coales
     retour: v => v >= 6 ? 'Attention : ce n\'est pas 6 % de la dispersion mais du polymère sec (50 g). Une telle dose ferait monter les COV.' : null,
     ok: { f: { dpnb: 3 }, vers: e => e.f.refaitCoal ? 'fabrication' : 'stock', note: 'Coalescent : 3 g de DPnB (6 % du polymère sec), retirés de l\'eau (102 g).' },
     ko: { f: { dpnb: 3 }, vers: e => e.f.refaitCoal ? 'fabrication' : 'stock', duree: 10, note: 'Coalescent : 3 g de DPnB (valeur donnée par Karim), retirés de l\'eau.' } } });
+
+// ───────────── Station : le banc à gradient de température (TMFF) ─────────────
+// Paramètre caché : l'efficacité du coalescent (e.f.eff, °C par %), tirée au début de la partie. L'élève la déduit de ses essais.
+export const INDICES_BANC = [
+  'Karim : « Rappelle-toi la règle d\'atelier : entre 4 et 8 % du polymère sec. Commence par une dose dans cette plage, puis encadre-la. »',
+  'Karim : « Une seule mesure ne dit rien : trace la TMFF en fonction du % de coalescent. Si les points sont alignés, la pente te donne l\'efficacité du coalescent. »',
+  'Karim : « Il faut TMFF ≤ 5 °C ET COV < 30 g/L. Avec 3 g, tu es dans la fenêtre pour ce lot, mais vérifie-le au banc, la lecture a une dispersion. »',
+];
+export function essaiBanc(e, g) {
+  const banc = e.f.banc || [];
+  if (banc.length >= ESSAIS_MAX || !DOSES_BANC.includes(g)) return e;
+  const p = prop({ ...e, f: { ...e.f, dpnb: g } });
+  const m = { g, pct: p.pctCoalescent, tmff: lectureBanc(p.tmff, e.f.graine ?? 1, banc.length + 1), cov: p.COV };
+  return { ...e, t: e.t + DUREE_ESSAI, f: { ...e.f, banc: [...banc, m] } };
+}
+export const indiceBanc = e => (e.f.indB || 0) >= INDICES_BANC.length ? e : { ...e, t: e.t + 5, f: { ...e.f, indB: (e.f.indB || 0) + 1 } };
+const apresCoal = e => e.f.refaitCoal ? 'fabrication' : 'stock';
+
+add('stationBanc', { lieu: 'Paillasse', pnj: 'lucas', titre: 'Banc à gradient de température', station: 'banc',
+  texte: 'Lucas t\'a installé le banc : une plaque métallique chauffée à une extrémité et refroidie à l\'autre. Tu étales la peinture en bande, tu la laisses sécher, puis tu lis la température où le film devient continu : au-dessus, il est lisse ; au-dessous, il craquelle et poudre.\n« Chaque essai prend 5 minutes. Choisis la dose de DPnB, lis la TMFF, et décide. »',
+  choix: e => DOSES_BANC.map(g => ({ g, t: `Retenir ${g} g de DPnB`, f: { dpnb: g, preEssai: true }, note: `Dose retenue après ${(e.f.banc || []).length} essai(s) au banc : ${nf(g, 0)} g de DPnB.`, vers: 'debriefBanc' })) });
+
+// Débrief : ce qui est juste, ce qui ne l'est pas, ce qu'il faut en retenir (cause → effet → remède)
+add('debriefBanc', { lieu: 'Paillasse', pnj: 'lucas', titre: 'Ce que dit le banc',
+  texte: e => { const g = e.f.dpnb ?? 0; return `Tu retiens ${nf(g, 0)} g de DPnB. Lucas range le banc et regarde tes feuilles de mesures.`; },
+  debrief: e => {
+    const g = e.f.dpnb ?? 0, p = prop(e), banc = e.f.banc || [], pts = penteMesuree(banc), vraie = e.f.eff ?? 3, L = [];
+    L.push(tmffOk(e) ? { ok: true, t: `TMFF de la formule retenue : environ ${nf(Math.max(0, p.tmff), 0)} °C, sous la limite de ${TMFF_MAX} °C.` } : { ok: false, t: `TMFF de la formule retenue : environ ${nf(Math.max(0, p.tmff), 0)} °C, au-dessus de ${TMFF_MAX} °C. Cause : trop peu de coalescent pour l'Orgal (MFFT 20 °C). Effet : la peinture craquellerait sur un mur froid. Remède : relever la dose.` });
+    L.push(covOk(e) ? { ok: true, t: `COV : ${nf(p.COV, 0)} g/L, sous la limite de ${COV_MAX} g/L.` } : { ok: false, t: `COV : ${nf(p.COV, 0)} g/L, au-dessus de ${COV_MAX} g/L. Cause : trop de coalescent (le DPnB est le seul composé volatil de la formule). Effet : l'étiquette environnementale est hors cahier des charges. Remède : redescendre la dose.` });
+    if (!banc.length) L.push({ ok: false, t: 'Tu n\'as fait aucun essai : la dose a été choisie sans mesure. Au banc, l\'efficacité du coalescent se mesure ; elle ne se devine pas.' });
+    else if (pts) L.push({ ok: Math.abs(pts.efficacite - vraie) < 0.5, t: `Pente mesurée : ${nf(pts.efficacite, 1)}${pts.incertitude != null ? ` ± ${nf(pts.incertitude, 1)}` : ''} °C par % de coalescent (${pts.n} points). Valeur réelle du lot : ${nf(vraie, 1)} °C/%. ${Math.abs(pts.efficacite - vraie) < 0.5 ? 'La régression retrouve la bonne efficacité.' : 'L\'écart vient de la dispersion de lecture du banc (± 0,4 °C) : plus de points et des doses plus écartées réduisent l\'incertitude.'}` });
+    else L.push({ ok: null, t: `Pour estimer la pente (efficacité du coalescent), il faut au moins 3 points exploitables sur 2 doses différentes.${banc.some(x => x.tmff == null) ? ' Les doses fortes donnent un film continu sur toute la plaque (< 0 °C) : le banc ne peut pas les lire, ces points ne servent pas à la pente. Choisis des doses qui restent dans la plage du banc (0 à 25 °C).' : ' Avec trop peu de points, tu ne connais pas la tendance.'}` });
+    const rep = banc.some((x, i) => banc.findIndex(y => y.g === x.g) !== i);
+    L.push(rep ? { ok: true, t: 'Tu as répété une dose : tu as vu que deux lectures de la même peinture ne sont pas identiques. C\'est la répétabilité du banc.' } : { ok: null, t: 'Métrologie : tu n\'as testé chaque dose qu\'une fois, sans voir la dispersion des lectures. Une répétition d\'une même dose l\'aurait montrée.' });
+    if ((e.f.indB || 0) > 0) L.push({ ok: null, t: `Tu as demandé ${e.f.indB} coup(s) de pouce à Karim (5 min chacun).` });
+    L.push({ ok: null, t: `Pour mémoire, la dose retenue (${nf(g, 0)} g) représente ${nf(p.pctCoalescent, 1)} % du polymère sec.` });
+    return L;
+  },
+  choix: e => [{ t: 'Passer à la suite', vers: apresCoal(e) }] });
 
 // ───────────── Matière première : le fût d'Orgal a-t-il gelé ? ─────────────
 add('stock', { lieu: 'Local de stockage', pnj: 'karim', titre: 'Le fût d\'Orgal',
@@ -382,7 +423,7 @@ export function bilan(e) {
   const niv = (pts, max) => pts >= max ? 'ok' : pts > 0 ? 'moyen' : 'ko';
   const nbDeleg = Object.keys(e.cmd).length;
   const nbOpt = ['huile', 'ph', 'brill', 'tmff'].filter(k => f['mes_' + k]).length;
-  const dOk = dpnbOk(f.dpnb ?? 0);
+  const dOk = dpnbOk(f.dpnb ?? 0, f.eff);
   const dTxt = dOk ? 'dosé à bon escient (TMFF et COV conformes)' : (f.dpnb ?? 0) < 2.5 ? 'insuffisant (la MFFT de l\'Orgal est de 20 °C)' : 'en excès (COV trop élevés)';
   const pr = [];
   const c14 = n(f.regle === 'ok' && !f.refait) + n(dOk) + n(f.mes_huile);
@@ -398,6 +439,17 @@ export function bilan(e) {
   pr.push({ comp: 'C6.4', titre: 'Assurer la traçabilité', niveau: f.trace ? 'ok' : 'ko', texte: f.trace ? 'Lot, pesées et observations consignés au fur et à mesure.' : 'Pesées réelles et observations reconstituées de mémoire : traçabilité faible.' });
   pr.push({ comp: 'C7.3', titre: 'Travailler en équipe', niveau: f.plan === 'solo' ? 'ko' : niv(n(nbDeleg >= 3) + n(f.alerte === true), 2), texte: f.plan === 'solo' ? 'Aucune délégation : l\'équipe n\'a pas été sollicitée.' : `${nbDeleg} analyse(s) confiée(s) aux collègues ; ${f.alerte === true ? 'information remontée à la responsable' : 'communication à améliorer'}.` });
   return pr;
+}
+
+// ───────────── Résumé des choix de l'élève (affiché à la fin, pas de suivi pour l'enseignant) ─────────────
+export function resume(e) {
+  const f = e.f, L = [];
+  L.push(`Remplacement de la résine : ${f.regle === 'naif' ? 'masse pour masse (erreur, extrait sec faux)' : f.regle === 'ok' ? `règle de l'extrait sec appliquée${f.refait ? ' après correction' : ''}` : 'non traité'}.`);
+  L.push(`Coalescent : ${nf(f.dpnb ?? 0, 0)} g de DPnB${f.preEssai ? ', choisi après un pré-essai au banc TMFF' : ', choisi sans pré-essai au banc'}${(f.banc || []).length ? ` (${f.banc.length} essai${f.banc.length > 1 ? 's' : ''})` : ''}.`);
+  L.push(`Dispersant : ${f.coadis != null ? `${nf(f.coadis, 2)} g de Coadis BR3` : 'dose de départ conservée'}.`);
+  L.push(`Organisation : ${f.plan === 'solo' ? 'tout fait seul·e' : `${Object.keys(e.cmd).length} analyses déléguées`}.`);
+  L.push(`Client : ${f.clientFait ? (f.clientOk ? 'informé de la mention « COV nuls »' : 'mal renseigné') : 'pas rappelé'}.`);
+  return L;
 }
 
 // ───────────── Les fins ─────────────
