@@ -69,6 +69,7 @@ import { SimulationAtelierDonnees } from "./simulations/AtelierDonnees";
 import { SimulationAtelierGraphique } from "./simulations/AtelierGraphique";
 import { SimulationAtelierRealiser } from "./simulations/AtelierRealiser";
 import { SimulationAtelierAnalyser } from "./simulations/AtelierAnalyser";
+import { SimulationAtelierValider } from "./simulations/AtelierValider";
 import { SimulationEntrainement } from "./simulations/Entrainement";
 import { SimulationCompte } from "./simulations/Compte";
 import { ToastRecompense } from "./ToastRecompense";
@@ -203,6 +204,8 @@ const SIMULATIONS = [
     component: SimulationAtelierRealiser },
   { id:37, label:"ANA : analyser un problème", niveau:"COMP", icon:"🧭", color:"#e11d48",
     component: SimulationAtelierAnalyser },
+  { id:77, label:"VAL : valider un résultat", niveau:"COMP", icon:"✅", color:"#e11d48",
+    component: SimulationAtelierValider },
   { id:38, label:"Je m'entraîne ! Travail par compétence", niveau:"COMP", icon:"🏋️", color:"#e11d48",
     component: SimulationEntrainement },
   // Pages hors menu (niveau « COMPTE ») : connexion et suivi, ouvertes par les boutons « Mon compte » et « Suivi professeur »

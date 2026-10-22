@@ -5,6 +5,7 @@ import { ENONCES } from "./AtelierDonneesBanque";
 import { SCENARIOS } from "./AtelierGraphiqueBanque";
 import { FAMILLES as FAM_REA } from "./AtelierRealiserBanque";
 import { FAMILLES as FAM_ANA } from "./AtelierAnalyserBanque";
+import { FAMILLES as FAM_VAL } from "./AtelierValiderBanque";
 import { ORDRE_DOMAINES } from "./ordreDomaines";
 import { useSession, estEleve, estProf, toutLire, rest } from "../serveur";
 import { exosDuChapitre, exosCalcul, prochainExercice, avancementChapitre } from "../chapitre";
@@ -31,8 +32,8 @@ const COMPETENCES = [
   { code: 'REA', nom: 'Réaliser', couleur: '#357f54', dispo: true,
     but: "Mener le calcul sans se tromper : unités et conversions, isoler une grandeur, chiffres significatifs, calculatrice.",
     ateliers: [{ id: 36, nom: 'Réaliser un calcul' }] },
-  { code: 'VAL', nom: 'Valider', couleur: '#b45a1f', dispo: false,
-    but: "Juger son résultat : ordre de grandeur, unité, cohérence physique, incertitude.", ateliers: [] },
+  { code: 'VAL', nom: 'Valider', couleur: '#b45a1f', dispo: true,
+    but: "Juger son résultat : ordre de grandeur, unité, cohérence physique, incertitude.", ateliers: [{ id: 77, nom: 'Valider un résultat' }] },
 ];
 
 // Tous les exercices, avec leur clé de progression (voir noterReussite dans les ateliers)
@@ -41,6 +42,7 @@ export function tousLesExercices() {
   ENONCES.forEach(e => e.noms.forEach((n, q) => L.push({ atelier: 34, comp: "S'APP", cle: `34:${e.id}.${q}`, ex: `${e.id}.${q}`, domaine: e.domaine, titre: `${e.titre} — ${n}` })));
   SCENARIOS.forEach(s => L.push({ atelier: 35, comp: "S'APP", cle: `35:${s.id}`, ex: s.id, domaine: s.domaine, titre: titreGraphique(s) }));
   FAM_ANA.forEach(f => f.liste.forEach(it => L.push({ atelier: 37, comp: 'ANA', cle: `37:${f.id}:${it.id}`, ex: `${f.id}.${it.id}`, domaine: it.domaine, titre: `${f.titre} — ${it.titre}` })));
+  FAM_VAL.forEach(f => f.liste.forEach(it => L.push({ atelier: 77, comp: 'VAL', cle: `77:${f.id}:${it.id}`, ex: `${f.id}.${it.id}`, domaine: it.domaine, niveau: it.niveau, titre: `${f.titre} — ${it.titre}` })));
   FAM_REA.forEach(f => L.push({ atelier: 36, comp: 'REA', cle: `36:${f.id}`, ex: f.id, domaine: f.domaine || TRANSVERSAL, titre: f.titre }));
   return L;
 }
@@ -163,7 +165,7 @@ export function SimulationEntrainement({ naviguer }) {
           ) : (
             <div style={{ ...styleBoite, background: '#f0fdf4', marginBottom: 12 }}><Pic n="party"/><b>Tout le chapitre est réussi avec 3 étoiles !</b> Passe aux autres thèmes ci-dessous, ou refais un exercice pour t’entraîner.</div>
           )}
-          {['S\'APP', 'ANA'].map(code => {
+          {['S\'APP', 'ANA', 'VAL'].map(code => {
             const L = exosChap.filter(e => e.comp === code);
             return L.length === 0 ? null : (
               <div key={code} style={{ marginBottom: 10 }}>

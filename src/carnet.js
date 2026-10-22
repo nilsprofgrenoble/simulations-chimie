@@ -18,7 +18,7 @@ export const COMPS = [
   { code: "S'APP", nom: 'S’approprier', court: 'S’approprier', couleur: '#3f78a8', clair: '#e4eef6', icone: '🔎' },
   { code: 'ANA', nom: 'Analyser', court: 'Analyser', couleur: '#1f7a72', clair: '#dff1ee', icone: '🧭' },
   { code: 'REA', nom: 'Réaliser', court: 'Réaliser', couleur: '#357f54', clair: '#e3f1e8', icone: '🧮' },
-  { code: 'VAL', nom: 'Valider', court: 'Valider', couleur: '#b45a1f', clair: '#faebdd', icone: '✅', bientot: true },
+  { code: 'VAL', nom: 'Valider', court: 'Valider', couleur: '#b45a1f', clair: '#faebdd', icone: '✅' },
   { code: 'DÉFI', nom: 'Défis des simulations', court: 'Défis', couleur: '#bd4a7a', clair: '#f8e6ee', icone: '🎯' },
 ];
 
@@ -102,7 +102,7 @@ export function analyser(items, lignes, maintenant = new Date()) {
   const nb = f => connus.filter(i => f(d(i.cle))).length;
   const reussisExo = items.filter(i => i.comp !== 'DÉFI' && d(i.cle).reussi).length;
   const reussisDefi = items.filter(i => i.comp === 'DÉFI' && d(i.cle).reussi).length;
-  const compsTouchees = comps.filter(c => ["S'APP", 'ANA', 'REA'].includes(c.code) && c.reussis > 0).length;
+  const compsTouchees = comps.filter(c => ["S'APP", 'ANA', 'REA', 'VAL'].includes(c.code) && c.reussis > 0).length;
   const stat = {
     reussis: reussisExo + reussisDefi, reussisExo, reussisDefi, triples: nb(x => x.etoiles === 3), sansIndice: nb(x => x.sansIndice && x.reussi),
     perseverants: nb(x => x.persevere), ameliores: nb(x => x.ameliore), compsTouchees, nbSims, nbSemaines,

@@ -31,8 +31,8 @@ export const CHAPITRES = [
   { id: 'tstl-signaux', niveau: 'TSTL', label: '📡 Transmission de signaux numériques', sims: [8, 15, 33], domaines: ['Transmission de signaux numériques'] },
   { id: 'tstl-fluides', niveau: 'TSTL', label: '💧 Transport des fluides', sims: [26, 27, 28, 17], domaines: ['Transport des fluides'] },
   { id: 'tstl-regulation', niveau: 'TSTL', label: '⚙️ Régulation', sims: [5, 6], domaines: ['Régulation'] },
-  { id: 'tstl-cristallisation', niveau: 'TSTL', label: '❄️ Évaporation et cristallisation', sims: [7], domaines: [] },
-  { id: 'tstl-distillation', niveau: 'TSTL', label: '🧪 Distillation', sims: [42, 41, 43], domaines: [] },
+  { id: 'tstl-cristallisation', niveau: 'TSTL', label: '❄️ Évaporation et cristallisation', sims: [7], domaines: ['Évaporation et cristallisation'] },
+  { id: 'tstl-distillation', niveau: 'TSTL', label: '🧪 Distillation', sims: [42, 41, 43], domaines: ['Distillation'] },
   { id: 'tstl-thermique', niveau: 'TSTL', label: '🔥 Transferts thermiques', sims: [31, 32, 30], domaines: ['Transferts thermiques'] },
   { id: 'tstl-controle', niveau: 'TSTL', label: '🧲 Contrôle des systèmes', sims: [46, 44, 45], domaines: [] },
 
