@@ -4,7 +4,7 @@ import "@fontsource/kalam/latin-700.css";
 import { useEtatPersistant } from "../commun";
 import { CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_CLIENT, T_RAPPORT, T_FIN, etatInitial, texteDe, choixDe, choisir, valider, hhmm, bilan, resume, statutCmd, estFin, visuelDe, equipe } from "./laboJournee";
 import Fiches from "./Fiches";
-import { StationBanc, StationCourbe } from "./StationsLabo";
+import { StationBanc, StationCourbe, StationHuile } from "./StationsLabo";
 import { ScenePlanche, Affiche, Equipe, Instrument, Avatar, STYLE_VISUELS } from "./LaboVisuels";
 
 // ====================================================
@@ -200,9 +200,11 @@ export function SimulationHistoireLabo() {
 
           {sc.station === 'banc' && <StationBanc e={e} onEtat={setEtat} onValider={avancer} choixDose={g => choix.find(c => c.g === g)} />}
 
+          {sc.station === 'huile' && <StationHuile e={e} onEtat={setEtat} onValider={avancer} choixFin={choix[0]} />}
+
           {sc.station === 'courbe' && <StationCourbe e={e} onEtat={setEtat} onValider={avancer} choixDose={x => choix.find(c => c.x === x)} />}
 
-          {sc.debrief && <div data-debrief style={{ margin: '14px 0', background: '#fff', border: '1.5px solid #cbd5e1', borderRadius: 8, padding: '10px 14px' }}>
+          {sc.debrief && sc.debrief(e).length > 0 && <div data-debrief style={{ margin: '14px 0', background: '#fff', border: '1.5px solid #cbd5e1', borderRadius: 8, padding: '10px 14px' }}>
             {sc.debrief(e).map((l, i) => <div key={i} style={{ display: 'flex', gap: 8, padding: '5px 0', fontSize: 15, lineHeight: 1.5, borderTop: i ? `1px solid ${C.bord}` : 'none' }}><b style={{ color: l.ok === true ? C.vert : l.ok === false ? C.rouge : C.ambre }}>{l.ok === true ? '✔' : l.ok === false ? '✖' : '➜'}</b><span>{l.t}</span></div>)}
           </div>}
 
