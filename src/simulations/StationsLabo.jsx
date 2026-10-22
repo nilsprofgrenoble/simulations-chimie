@@ -1,5 +1,5 @@
-import { DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI } from "./stationsModele";
-import { essaiBanc, indiceBanc, INDICES_BANC, TMFF_MAX, COV_MAX, nf } from "./laboJournee";
+import { DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI, DOSES_COURBE, COURBE_MAX, COURBE_DUREE, masseCoadis } from "./stationsModele";
+import { essaiBanc, indiceBanc, INDICES_BANC, essaiCourbe, indiceCourbe, INDICES_COURBE, TMFF_MAX, COV_MAX, nf } from "./laboJournee";
 
 // ====================================================
 //  Stations immersives de la journée au labo (écrans dédiés, paramètres cachés).
@@ -62,6 +62,56 @@ export function StationBanc({ e, onEtat, onValider, choixDose }) {
         <div style={{ fontWeight: 700, marginBottom: 6 }}>Quelle dose retiens-tu pour la fabrication ?</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {DOSES_BANC.map(g => <button key={g} type="button" data-retenir={g} onClick={() => onValider(choixDose(g))} style={bouton(true)}>{g} g</button>)}
+        </div>
+      </div>
+    </div>);
+}
+
+// Graphique viscosité = f(% de dispersant) : points seulement (pas de courbe tracée : à l'élève de la voir)
+function Graphique({ pts }) {
+  const W = 420, H = 230, mx = 44, my = 14, X = x => mx + x / 0.6 * (W - mx - 12), vmax = 5000, Y = v => H - 34 - Math.log10(Math.max(v, 10) / 10) / Math.log10(vmax / 10) * (H - 34 - my);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Viscosité en fonction du pourcentage de dispersant (échelle logarithmique)" style={{ width: '100%', maxWidth: 480, display: 'block', margin: '8px auto 0', background: '#fff', border: '1px solid #cbd5e1', borderRadius: 6 }}>
+      {[10, 100, 1000].map(v => <g key={v}><line x1={mx} x2={W - 12} y1={Y(v)} y2={Y(v)} stroke="#e2e8f0" /><text x={mx - 4} y={Y(v) + 4} textAnchor="end" fontSize="10" fill="#475569">{v}</text></g>)}
+      {[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6].map(x => <g key={x}><line x1={X(x)} x2={X(x)} y1={my} y2={H - 34} stroke="#f1f5f9" /><text x={X(x)} y={H - 20} textAnchor="middle" fontSize="10" fill="#475569">{String(x).replace('.', ',')}</text></g>)}
+      <text x={(W + mx) / 2} y={H - 5} textAnchor="middle" fontSize="11" fill="#334155">% de dispersant sec / poudres</text>
+      <text x="10" y={H / 2} fontSize="11" fill="#334155" transform={`rotate(-90 10 ${H / 2})`} textAnchor="middle">viscosité (mPa·s, log)</text>
+      {pts.map((p, i) => p.v258 == null
+        ? <text key={i} x={X(p.x)} y={my + 12} textAnchor="middle" fontSize="12" fill={ROUGE}>✕</text>
+        : <g key={i}><circle cx={X(p.x)} cy={Y(p.v258)} r="4.5" fill="#dc2626" /><circle cx={X(p.x)} cy={Y(p.v129)} r="4.5" fill="#3b82f6" /></g>)}
+      <circle cx={W - 150} cy={my + 8} r="4" fill="#dc2626" /><text x={W - 142} y={my + 12} fontSize="10" fill="#334155">258 s⁻¹</text>
+      <circle cx={W - 85} cy={my + 8} r="4" fill="#3b82f6" /><text x={W - 77} y={my + 12} fontSize="10" fill="#334155">129 s⁻¹</text>
+    </svg>);
+}
+
+export function StationCourbe({ e, onEtat, onValider, choixDose }) {
+  const c = e.f.courbe || [], restant = COURBE_MAX - c.length, indices = e.f.indC || 0, testees = new Set(c.map(p => p.x));
+  const fr = (x) => String(x).replace('.', ',');
+  const bouton = (actif) => ({ padding: '8px 12px', borderRadius: 8, border: `2px solid ${ENCRE}`, background: actif ? '#fff' : '#eef0f4', color: actif ? ENCRE : '#9aa3b2', fontWeight: 700, cursor: actif ? 'pointer' : 'default', fontFamily: 'inherit', fontSize: 15 });
+  return (
+    <div data-station="courbe" style={{ marginTop: 14, background: '#f1f5f9', border: '2px solid #94a3b8', borderRadius: 10, padding: '12px 14px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, fontWeight: 800, color: '#0f172a' }}>
+        <span>🧪 Courbe de défloculation du Coadis BR3</span><span style={{ fontWeight: 600, color: DOUX, fontSize: 14 }}>{restant} ajout{restant > 1 ? 's' : ''} possible{restant > 1 ? 's' : ''} · {COURBE_DUREE} min chacun</span>
+      </div>
+      <div style={{ fontSize: 13.5, color: DOUX, margin: '4px 0 8px' }}>250 g de poudres (50 % TiO₂, 50 % CaCO₃). Dose de matière active en % de la masse de poudres, et masse de Coadis BR3 à peser (extrait sec 40 %).</div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {DOSES_COURBE.map(x => <button key={x} type="button" data-dosec={x} disabled={restant <= 0} onClick={() => onEtat(essaiCourbe(e, x))} style={bouton(restant > 0)}>{fr(x)} %{testees.has(x) ? ' ✓' : ''}<div style={{ fontSize: 11, fontWeight: 400 }}>{fr(masseCoadis(x).toFixed(3))} g</div></button>)}
+      </div>
+      {c.length > 0 && <>
+        <Graphique pts={c} />
+        <table data-courbe-table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 10, fontSize: 14 }}>
+          <thead><tr style={{ textAlign: 'left', color: DOUX }}><th>N°</th><th>% disp.</th><th>Coadis (g)</th><th>η 258 s⁻¹</th><th>η 129 s⁻¹</th></tr></thead>
+          <tbody>{c.map((p, i) => (<tr key={i} style={{ borderTop: '1px solid #cbd5e1' }}><td>{i + 1}</td><td>{fr(p.x)}</td><td>{fr(p.g.toFixed(3))}</td>
+            {p.v258 == null ? <td colSpan={2} style={{ color: ROUGE }}>hors gamme : trop visqueux pour être mesuré</td> : <><td>{p.v258}</td><td>{p.v129}</td></>}</tr>))}</tbody>
+        </table></>}
+      <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <button type="button" data-indice disabled={indices >= INDICES_COURBE.length} onClick={() => onEtat(indiceCourbe(e))} style={bouton(indices < INDICES_COURBE.length)}>💡 Demander conseil à Karim (+5 min)</button>
+      </div>
+      {indices > 0 && <div data-conseils style={{ marginTop: 8, fontSize: 14.5, lineHeight: 1.5 }}>{INDICES_COURBE.slice(0, indices).map((t, i) => <div key={i} style={{ marginTop: 4 }}>{t}</div>)}</div>}
+      <div style={{ marginTop: 14, borderTop: '1.5px dashed #94a3b8', paddingTop: 10 }}>
+        <div style={{ fontWeight: 700, marginBottom: 6 }}>Quelle dose retiens-tu pour la peinture ?</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {DOSES_COURBE.map(x => <button key={x} type="button" data-retenirc={x} onClick={() => onValider(choixDose(x))} style={bouton(true)}>{fr(x)} %</button>)}
         </div>
       </div>
     </div>);
