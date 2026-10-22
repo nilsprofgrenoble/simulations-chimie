@@ -157,7 +157,7 @@ for (let g0 = 1; g0 <= 300; g0++) {
   const mauvais = J.SCENES.debriefBanc.debrief(J.choisir({ ...e, f: { ...e.f, banc: [] } }, J.choixDe(e).find(x => x.g === 0)));
   assert(mauvais[0].ok === false && /Remède/.test(mauvais[0].t) && mauvais.some(l => /aucun essai/.test(l.t)), 'débrief d\'une erreur : cause, effet, remède');
   assert.strictEqual(J.SCENES.debriefBanc.choix(n)[0].vers, 'stock');
-  assert(J.resume(n).length === 5);
+  assert(J.resume(n).length === 6);
 }
 // parcours scripté passant par le banc
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3, banc: true }); const fin = travaille(g, {}); assert(['fin_excellent', 'fin_bon'].includes(fin.scene), 'parcours par le banc : ' + fin.scene); assert(fin.f.preEssai && fin.f.banc.length === 2); }
@@ -204,5 +204,31 @@ for (let g0 = 1; g0 <= 300; g0++) { const sec = S.secretsDe(g0); assert(sec.ph.t
   const d = J.SCENES.res_huile.debrief(n); assert(d.length >= 4 && d[0].ok === true);
   assert.deepStrictEqual(J.SCENES.res_huile.debrief({ f: {} }), [], 'pas de débrief pour la mesure déléguée');
   assert(typeof J.texteDe(n) === 'string' && /toi-même/.test(J.texteDe(n)));
+}
+
+// 6. Station CPG : technique, étalonnage, dosage, conclusion
+for (let g0 = 1; g0 <= 200; g0++) { const sec = S.secretsDe(g0); assert(sec.rf >= 0.85 && sec.rf <= 1.15); }
+{
+  const sec = S.secretsDe(5);
+  let e = { ...J.etatInitial(), scene: 'dpnbTech', f: { regle: 'ok', coadis: 0.525, dpnb: 3, fabrique: true, graine: sec.graine, rf: sec.rf, ph: sec.ph, eff: 3 } };
+  const imp = J.choisir(e, J.choixDe(e).find(c => /CLHP/.test(c.t)));
+  assert.strictEqual(imp.scene, 'dpnbImpasse'); assert.strictEqual(imp.t, 5); assert(/chromophore/.test(J.texteDe(imp)));
+  const ok = J.choisir(imp, J.choixDe(imp)[0]); const cpg = J.choisir(ok, J.choixDe(ok).find(c => /CPG|phase gazeuse/.test(c.t)));
+  assert.strictEqual(cpg.scene, 'stationCpg'); assert.strictEqual(cpg.f.impasses, 1);
+  let x = cpg;
+  assert.strictEqual(J.injecterEchantillon(x), x, 'pas d\'injection sans préparation');
+  for (const c of [0.25, 0.5, 1, 1.5, 2, 3]) x = J.injecterEtalon(x, c);
+  x = J.preparerEchantillon(x); x = J.injecterEchantillon(x); x = J.injecterEchantillon(x);
+  assert.strictEqual(x.t, imp.t + 6 * 3 + 5 + 2 * 3);
+  const cov = J.covDe(x);
+  const R = J.resultatCpg(x); assert(R.dos && R.dos.dansDomaine, 'dosage dans le domaine');
+  assert(Math.abs(R.cov - cov) < 3 * R.U && R.U < 0.4 * cov, 'COV mesuré compatible avec la valeur calculée, incertitude raisonnable : ' + R.cov + ' ± ' + R.U + ' vs ' + cov);
+  const sans = J.resultatCpg(J.choisirModeCpg(x, 'externe'));
+  assert(sans.D.residRel > R.D.residRel, 'l\'étalon interne réduit la dispersion des résidus');
+  const ch = J.choixDe(x); assert.strictEqual(ch.length, 3);
+  for (const c of ch) { const n = J.choisir(x, c); assert.strictEqual(n.scene, 'debriefCpg'); assert(J.SCENES.debriefCpg.debrief(n).every(l => l.t.length > 10)); }
+  const u = J.SCENES.debriefCpg.debrief(J.choisir(x, ch.find(c => c.concl === 'u'))); assert(u.some(l => /expression complète/.test(l.t)));
+  const f = J.SCENES.debriefCpg.debrief(J.choisir(x, ch.find(c => c.concl === 'faux'))); assert(f.some(l => l.ok === false && /contredit/.test(l.t)));
+  assert.strictEqual(J.choixDe({ ...e, scene: 'stationCpg' })[0].vers, 'labo', 'sans résultat : abandon possible');
 }
 console.log('OK : une journée au labo');

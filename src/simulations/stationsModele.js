@@ -24,7 +24,8 @@ export function secretsDe(graine) {
   const dem = Math.round((DEM_MIN + r() * (DEM_MAX - DEM_MIN)) * 100) / 100;   // décalage de la demande en dispersant de ce lot de poudres
   const f = () => 0.96 + r() * 0.08;   // prises d'huile du lot de poudres : valeurs de référence × (0,96 à 1,04), à découvrir par la mesure
   const ph = { tio2: Math.round(25 * f() * 10) / 10, caco3: Math.round(30 * f() * 10) / 10 };
-  return { graine, eff, dem, ph };
+  const rf = Math.round((0.85 + r() * 0.30) * 100) / 100;   // facteur de réponse du DPnB par rapport à l'étalon interne (caché)
+  return { graine, eff, dem, ph, rf };
 }
 
 // Lecture au banc : TMFF vraie + bruit reproductible (même graine et même numéro d'essai = même lecture), lue au 0,5 °C près ; le banc s'arrête à 0 °C
@@ -89,3 +90,40 @@ export function etatPate(rapport) {
   return { cle: 'fluide', t: 'pâte trop fluide : le point final est dépassé', c: '#fca5a5' };
 }
 export const rapportPate = (huile, phVrai) => huile / M_POUDRE * 100 / phVrai;
+
+// ───────────── Station « dosage du DPnB par CPG-FID » (contrôle du COV) — DONNÉES DE SCÉNARIO, pas de chromatogramme réel ─────────────
+// Échantillon : 1,00 g de peinture + étalon interne, complété à 10,0 mL au solvant (éthanol) ; étalons : DPnB de 0,25 à 3 mg/mL dans le même solvant.
+// Hypothèses du modèle (explicitées dans le débrief) : réponse du FID linéaire sur la plage ; erreur de volume injecté commune aux deux pics (6 %, écart-type) ;
+// bruit propre à chaque aire 1,5 % ; erreurs normales, de variance constante ; préparation de l'échantillon ± 1 % (pesée et dilution).
+import { regression } from "./etalonnageModele";
+export const NIVEAUX_ETALON = [0.25, 0.5, 1, 1.5, 2, 3];   // mg/mL de DPnB
+export const C_IS = 1.0;                                    // mg/mL d'étalon interne dans toutes les solutions
+export const M_ECH = 1.00, V_ECH = 10;                      // g de peinture, mL de volume final
+export const T_PREP = 5, T_INJ = 3, ETAL_MAX = 10, ECH_MAX = 4;
+export const SIGMA_VOL = 0.06, SIGMA_AIRE = 0.015, SIGMA_PREP = 0.01, K_AIRE = 10000;
+export const TR = { is: 6.2, dpnb: 8.1 };                   // min (données de scénario)
+
+// Une injection : aires du DPnB et de l'étalon interne (même graine et même n° = mêmes aires)
+export function injection(graine, n, cDpnb, rf) {
+  const r = rng((graine ^ (n * 69069) ^ 0x1234567) >>> 0);
+  const vol = 1 + SIGMA_VOL * gauss(r);
+  return { aD: Math.round(K_AIRE * rf * cDpnb * vol * (1 + SIGMA_AIRE * gauss(r))), aI: Math.round(K_AIRE * C_IS * vol * (1 + SIGMA_AIRE * gauss(r))) };
+}
+// Concentration réelle de l'échantillon préparé (mg/mL), avec son erreur de préparation (tirée une fois par partie)
+export const cEchantillon = (cov, densite, graine) => cov / (densite * V_ECH) * M_ECH * (1 + SIGMA_PREP * gauss(rng((graine ^ 0x5bd1e995) >>> 0)));
+// Droite d'étalonnage : mode 'interne' (aD/aI en fonction de c/C_IS) ou 'externe' (aD en fonction de c)
+export function etalonnage(etal, mode) {
+  const x = etal.map(p => mode === 'interne' ? p.c / C_IS : p.c), y = etal.map(p => mode === 'interne' ? p.aD / p.aI : p.aD);
+  const R = regression(x, y); if (!R) return null;
+  return { ...R, mode, xs: x, ys: y, residRel: Math.sqrt(R.SSres / (etal.length - 2)) / (R.my || 1) * 100 };   // écart-type résiduel relatif (%)
+}
+// Dosage de l'échantillon : concentration x0 (mg/mL), incertitude-type de la droite, moyenne des m injections
+export function dosage(D, ech, mode) {
+  if (!D || !ech.length) return null;
+  const y = ech.map(p => mode === 'interne' ? p.aD / p.aI : p.aD), m = y.length, y0 = y.reduce((a, b) => a + b, 0) / m;
+  const x0 = (y0 - D.b) / D.a, ux = D.syx / Math.abs(D.a) * Math.sqrt(1 / m + 1 / D.n + (y0 - D.my) ** 2 / (D.a ** 2 * D.Sxx));
+  const u = Math.sqrt(ux ** 2 + (SIGMA_PREP * x0) ** 2);   // composition avec l'erreur de préparation
+  return { x0, ux, u, m, y0, dansDomaine: x0 >= Math.min(...D.xs) * (mode === 'interne' ? 1 : 1) && x0 <= Math.max(...D.xs) };
+}
+// Passage de la concentration de la solution (mg/mL) au COV de la peinture (g/L) : COV = c × V / m × ρ
+export const covDepuisC = (c, densite) => c * V_ECH / M_ECH * densite;

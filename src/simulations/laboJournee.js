@@ -9,7 +9,7 @@
 //  Chaque scène de résultat porte un champ « visuel » (données) que l'interface dessine sous forme d'instrument.
 // ====================================================
 import { proprietes } from "./Peinture";
-import { secretsAleatoires, lectureBanc, penteMesuree, DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI, DOSES_COURBE, COURBE_MAX, COURBE_DUREE, HUILE_MAX_ESSAIS, HUILE_DUREE, M_POUDRE, etatPate, rapportPate, BORNE_BASSE, BORNE_SEUIL, BORNE_HAUTE, masseCoadis, lectureVisco } from "./stationsModele";
+import { secretsAleatoires, lectureBanc, penteMesuree, DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI, DOSES_COURBE, COURBE_MAX, COURBE_DUREE, HUILE_MAX_ESSAIS, HUILE_DUREE, M_POUDRE, etatPate, rapportPate, injection, cEchantillon, etalonnage, dosage, covDepuisC, T_PREP, T_INJ, ETAL_MAX, ECH_MAX, NIVEAUX_ETALON, BORNE_BASSE, BORNE_SEUIL, BORNE_HAUTE, masseCoadis, lectureVisco } from "./stationsModele";
 
 export const ID_LABO = 81;
 export const CLE_ETAT = 'labo-histoire-v3';
@@ -407,6 +407,94 @@ add('stationHuile', { lieu: 'Paillasse', pnj: 'moi', titre: 'Prises d\'huile à 
   choix: () => [{ t: 'Consigner les prises d\'huile et calculer λ', f: { huileMoi: true }, note: 'Prises d\'huile mesurées moi-même à la spatule (ISO 787-5).',
     run: n => { const T = huileRetenue(n, 'tio2'), C = huileRetenue(n, 'caco3'); return { ...n, f: { ...n.f, phMes: { tio2: T ? T.ph : 25, caco3: C ? C.ph : 30 } }, cmd: { ...n.cmd, huile: { pret: n.t, lu: true } } }; }, vers: 'res_huile' }] });
 
+// ───────────── Dosage du DPnB dans la peinture (contrôle du COV) : choix de la technique, puis station CPG-FID ─────────────
+// Besoin du scénario : le cahier des charges impose COV < 30 g/L ; jusqu'ici, le COV est CALCULÉ d'après la formule. Le contrôle qualité le vérifie sur la peinture fabriquée.
+export const cEch = e => cEchantillon(covDe(e), prop(e).densite, e.f.graine ?? 1);
+const cpgInit = { etal: [], ech: [], prep: false, mode: 'interne' };
+export const cpgDe = e => ({ ...cpgInit, ...(e.f.cpg || {}) });
+const avecCpg = (e, c, dt = 0) => ({ ...e, t: e.t + dt, f: { ...e.f, cpg: { ...cpgDe(e), ...c } } });
+export function injecterEtalon(e, c) {
+  const g = cpgDe(e);
+  if (g.etal.length >= ETAL_MAX || !NIVEAUX_ETALON.includes(c)) return e;
+  const inj = injection(e.f.graine ?? 1, g.etal.length + g.ech.length + 1, c, e.f.rf ?? 1);
+  return avecCpg(e, { etal: [...g.etal, { c, ...inj }] }, T_INJ);
+}
+export const preparerEchantillon = e => cpgDe(e).prep ? e : avecCpg(e, { prep: true }, T_PREP);
+export function injecterEchantillon(e) {
+  const g = cpgDe(e);
+  if (!g.prep || g.ech.length >= ECH_MAX) return e;
+  const inj = injection(e.f.graine ?? 1, g.etal.length + g.ech.length + 1, cEch(e), e.f.rf ?? 1);
+  return avecCpg(e, { ech: [...g.ech, inj] }, T_INJ);
+}
+export const choisirModeCpg = (e, mode) => avecCpg(e, { mode });
+export const verdictCov = (cov, U) => cov + U < COV_MAX ? 'conforme' : cov - U > COV_MAX ? 'non conforme' : 'indéterminé (la limite est dans l\'incertitude)';
+export function resultatCpg(e) {
+  const g = cpgDe(e), niveaux = new Set(g.etal.map(p => p.c)), D = niveaux.size >= 3 ? etalonnage(g.etal, g.mode) : null;
+  const dos = D && g.ech.length ? dosage(D, g.ech, g.mode) : null;
+  if (!dos) return { D, dos: null };
+  const rho = prop(e).densite, cov = covDepuisC(dos.x0, rho), U = 2 * covDepuisC(dos.u, rho);
+  return { D, dos, cov, U, rho };
+}
+
+const TECHNIQUES = [
+  { cle: 'cpg', t: 'Chromatographie en phase gazeuse avec détecteur FID, avec un étalon interne' },
+  { cle: 'clhp', t: 'Chromatographie liquide (CLHP) avec détecteur UV' },
+  { cle: 'uv', t: 'Spectrophotométrie UV-visible directe sur la peinture diluée' },
+  { cle: 'masse', t: 'Dosage par différence de pesée : on sèche un échantillon à l\'étuve et on regarde la perte de masse' },
+];
+const IMPASSES = {
+  clhp: 'Le DPnB est un éther de glycol : aucune double liaison conjuguée, donc pas de chromophore. À 254 nm, il est invisible ; en dessous de 210 nm, la peinture diluée (tensioactifs, additifs) absorbe bien plus que lui. Cause : détecteur UV inadapté à la molécule. Effet : aucun pic exploitable. Remède : choisir une technique où le DPnB répond, par exemple un détecteur universel ou, mieux ici, la CPG (le DPnB est volatil : téb. ≈ 230 °C) avec un FID.',
+  uv: 'Sans chromophore, le DPnB n\'absorbe pas dans l\'UV-visible, et la peinture diluée, turbide et chargée en pigments, diffuse et absorbe de partout. Cause : technique non sélective. Effet : le signal mesuré est celui de la matrice, pas celui du DPnB. Remède : séparer avant de détecter, donc une chromatographie.',
+  masse: 'Une perte de masse à l\'étuve compte tout ce qui s\'évapore : l\'eau (de loin le plus abondant), le DPnB, les autres volatils. Cause : technique non sélective. Effet : tu ne peux pas isoler les quelques grammes de DPnB parmi plus de 150 g d\'eau. Remède : une technique qui sépare les composés, la chromatographie.',
+};
+add('dpnbTech', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Doser le DPnB : quelle technique ?',
+  texte: 'Inès : « Le cahier des charges impose COV < 30 g/L, et jusqu\'ici ce chiffre est seulement calculé d\'après la formule. Le contrôle qualité, c\'est de le vérifier sur la peinture fabriquée : combien de DPnB y reste-t-il vraiment ? Comment tu t\'y prends ? »\nLe DPnB : éther de glycol, liquide, miscible à l\'eau, température d\'ébullition d\'environ 230 °C. Il est présent à moins de 1 % dans une émulsion aqueuse chargée de pigments.',
+  choix: () => TECHNIQUES.map(T => ({ t: T.t, f: { techCle: T.cle }, note: `Technique envisagée pour le dosage du DPnB : ${T.t}.`, duree: T.cle === 'cpg' ? 0 : 5, vers: T.cle === 'cpg' ? 'stationCpg' : 'dpnbImpasse',
+    run: n => T.cle === 'cpg' ? { ...n, f: { ...n.f, impasses: n.f.impasses || 0 } } : { ...n, f: { ...n.f, impasses: (n.f.impasses || 0) + 1 } } })) });
+add('dpnbImpasse', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Cette technique ne marchera pas',
+  texte: e => `Inès réfléchit une minute (5 min), puis secoue la tête.\n« ${IMPASSES[e.f.techCle] || ''} »`,
+  choix: () => [{ t: 'Reprendre : choisir une autre technique', vers: 'dpnbTech' }] });
+
+const CONCL = ['simple', 'faux', 'u'];
+add('stationCpg', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Dosage du DPnB par CPG-FID', station: 'cpg',
+  texte: 'Inès te prête le chromatographe. « Comme le DPnB sort sous forme d\'un pic au FID et que les volumes injectés fluctuent, on ajoute un étalon interne à concentration fixe dans toutes les solutions : étalons et échantillon. L\'échantillon : 1,00 g de peinture complété à 10,0 mL au solvant. À toi : fais une droite d\'étalonnage, dose l\'échantillon, et conclus pour le COV. »',
+  choix: e => {
+    const R = resultatCpg(e);
+    if (!R.dos) return [{ t: 'Abandonner le dosage et retourner à la paillasse', vers: 'labo' }];
+    const cov = R.cov, U = R.U, v = verdictCov(cov, U), simple = cov < COV_MAX ? 'conforme' : 'non conforme', faux = cov < COV_MAX ? 'non conforme' : 'conforme';
+    const base = { f: { mes_dpnb: true, covMes: cov, uMes: U }, vers: 'debriefCpg' };
+    const L = {
+      simple: { ...base, concl: 'simple', t: `Je conclus : COV = ${nf(cov, 1)} g/L, donc ${simple}`, f: { ...base.f, cpgConcl: 'simple' }, note: `Dosage du DPnB par CPG-FID : COV mesuré ${nf(cov, 1)} g/L (${simple}), sans incertitude.` },
+      faux: { ...base, concl: 'faux', t: `Je conclus : COV = ${nf(cov, 1)} g/L, donc ${faux}`, f: { ...base.f, cpgConcl: 'faux' }, note: `Dosage du DPnB par CPG-FID : COV mesuré ${nf(cov, 1)} g/L, conclusion « ${faux} ».` },
+      u: { ...base, concl: 'u', t: `Je conclus : COV = ${nf(cov, 1)} ± ${nf(U, 1)} g/L (k = 2) : ${v}`, f: { ...base.f, cpgConcl: 'u' }, note: `Dosage du DPnB par CPG-FID : COV = ${nf(cov, 1)} ± ${nf(U, 1)} g/L (k = 2), ${v}.` },
+    };
+    const o = (e.f.graine ?? 1) % 3;
+    return CONCL.map((_, i) => L[CONCL[(i + o) % 3]]);
+  } });
+
+add('debriefCpg', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Ce que dit le chromatographe',
+  texte: e => `Tu as retenu : COV = ${nf(e.f.covMes ?? 0, 1)} ± ${nf(e.f.uMes ?? 0, 1)} g/L (k = 2). Inès relit tes feuilles de mesures.`,
+  debrief: e => {
+    const g = cpgDe(e), R = resultatCpg(e), L = [], niv = new Set(g.etal.map(p => p.c)).size, vrai = covDe(e);
+    const Di = niv >= 3 ? etalonnage(g.etal, 'interne') : null, De = niv >= 3 ? etalonnage(g.etal, 'externe') : null;
+    L.push((e.f.impasses || 0) === 0 ? { ok: true, t: 'Technique : tu as d\'emblée choisi la CPG-FID. Le DPnB est volatil, sans chromophore : c\'est la bonne technique.' } : { ok: null, t: `Technique : ${e.f.impasses} essai${e.f.impasses > 1 ? 's' : ''} écarté${e.f.impasses > 1 ? 's' : ''} avant la CPG-FID. Bien choisir la technique en fonction des propriétés de la molécule (volatilité, chromophore) évite de perdre du temps.` });
+    L.push(niv >= 5 ? { ok: true, t: `Étalonnage : ${niv} niveaux de concentration (${g.etal.length} injections), de quoi vérifier la linéarité.` } : { ok: niv >= 3 ? null : false, t: `Étalonnage : ${niv} niveau${niv > 1 ? 'x' : ''}. ${niv >= 3 ? 'C\'est le minimum : avec 3 niveaux, tu ne peux pas vraiment contrôler la linéarité.' : 'Trop peu pour une droite.'} Vise au moins 5 niveaux, qui encadrent la concentration attendue.` });
+    if (Di && De) L.push({ ok: g.mode === 'interne' ? true : null, t: `Étalon interne ou non : écart-type résiduel relatif de la droite ${nf(Di.residRel, 1)} % avec l'étalon interne, contre ${nf(De.residRel, 1)} % en aire seule. ${g.mode === 'interne' ? 'Tu as quantifié avec l\'étalon interne : il compense les fluctuations du volume injecté.' : 'Tu as quantifié en aire seule : l\'erreur de volume injecté (variable d\'une injection à l\'autre) est directement reportée sur ton résultat. Avec l\'étalon interne, cette erreur disparaît dans le rapport des aires.'}` });
+    if (R.dos) {
+      L.push(R.dos.dansDomaine ? { ok: true, t: `Le dosage est dans le domaine d'étalonnage (${nf(Math.min(...R.D.xs), 2)} à ${nf(Math.max(...R.D.xs), 2)} ${g.mode === 'interne' ? 'en rapport c/c_IS' : 'mg/mL'}) : pas d'extrapolation.` } : { ok: false, t: 'Le dosage tombe hors du domaine d\'étalonnage : c\'est une extrapolation, le résultat n\'est pas fiable. Cause : étalons mal choisis. Remède : ajouter un étalon qui encadre la concentration.' });
+      L.push(g.ech.length >= 2 ? { ok: true, t: `${g.ech.length} injections de l'échantillon : la moyenne réduit la part de l'incertitude due à la répétabilité.` } : { ok: null, t: 'Une seule injection de l\'échantillon : aucune idée de la répétabilité. Deux ou trois injections améliorent le résultat.' });
+      const ecart = Math.abs(e.f.covMes - vrai), ok = ecart <= e.f.uMes;
+      L.push({ ok, t: `COV mesuré : ${nf(e.f.covMes, 1)} ± ${nf(e.f.uMes, 1)} g/L. Valeur calculée d'après la formule : ${nf(vrai, 1)} g/L. ${ok ? 'La mesure confirme le calcul, dans son incertitude.' : 'L\'écart dépasse l\'incertitude annoncée : un biais n\'est pas pris en compte (étalonnage, préparation).'}` });
+      const v = verdictCov(e.f.covMes, e.f.uMes), simple = e.f.covMes < COV_MAX ? 'conforme' : 'non conforme';
+      if (e.f.cpgConcl === 'u') L.push({ ok: true, t: `Expression du résultat : valeur, incertitude élargie (k = 2) et décision tenant compte de l'incertitude : ${v}. C'est l'expression complète attendue.` });
+      else if (e.f.cpgConcl === 'simple') L.push({ ok: null, t: `Expression du résultat : « ${simple} » est juste, mais sans incertitude un résultat de mesure est incomplet. Avec U = ${nf(e.f.uMes, 1)} g/L, la décision est : ${v}.` });
+      else L.push({ ok: false, t: 'Décision : ta conclusion contredit ta propre mesure. Cause : comparaison à la limite dans le mauvais sens. Effet : tu laisserais passer une peinture hors cahier des charges, ou tu bloquerais une peinture conforme. Remède : comparer la valeur mesurée (et son incertitude) à la limite de 30 g/L.' });
+    }
+    L.push({ ok: null, t: 'Hypothèses du modèle : réponse du FID linéaire sur la plage ; résidus normaux, de variance constante ; erreur de volume injecté commune aux deux pics (≈ 6 %) ; préparation de l\'échantillon ± 1 %. Les données chromatographiques sont de scénario, pas réelles.' });
+    return L;
+  },
+  choix: () => [{ t: 'Retourner à la paillasse', vers: 'labo' }] });
+
 add('res_es', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Résultat : extrait sec et densité',
   texte: e => { const p = prop(e), ok = e.f.regle === 'ok', es = p.ES - (e.f.lotDouteux ? 1.2 : 0), r = proprietes(FORMULE_REF);
     return `Inès : « Extrait sec ${nf(es)} %, densité ${nf(p.densite, 3)}. »\nD'après la formule : CPV = ${nf(p.CPV)} %, CPVC = ${nf(p.CPVC)} %, λ = ${nf(p.lambda, 2)}, COV = ${nf(p.COV)} g/L.\n${ok ? `Même extrait sec que la référence (${nf(r.ES)} %)${e.f.lotDouteux ? ', un peu plus bas qu\'attendu : le coagulum retiré du lot gelé a emporté du polymère' : ''}. ${covOk(e) ? 'Le cahier des charges (ES > 50 %, λ ≥ 0,8, COV < 30 g/L) est respecté.' : `Mais les COV (${nf(p.COV)} g/L) dépassent la limite de 30 g/L : il y a trop de coalescent.`}` : `Attention : ES = ${nf(p.ES)} % et CPV = ${nf(p.CPV)} % ne correspondent pas à la référence (ES ${nf(r.ES)} %, CPV ${nf(r.CPV)} %). En remplaçant simplement 83,3 g par 83,3 g, tu as changé la quantité de polymère : la formule ne respecte pas la contrainte « mêmes ES, CPV, CPVC ».`}`; },
@@ -456,6 +544,7 @@ add('labo', { lieu: 'Paillasse et laboratoire', pnj: 'moi', titre: 'La journée 
       else if (!c && (e.f.fabrique || A.avant)) { const occ = e.libre[A.tech] > e.t && e.f.plan !== 'solo';
         L.push({ t: `Demander à ${PNJ[A.tech].nom} : ${A.label}`, d: e.f.plan === 'solo' ? `${A.duree} min de ton temps` : `${A.perso} min pour toi, résultat ${occ ? 'après ' + hhmm(e.libre[A.tech]) + ' (' + PNJ[A.tech].nom + ' est occupé·e)' : 'dans ' + A.duree + ' min'}`, run: n => deleguer(n, A), vers: 'labo' }); }
     }
+    if (e.f.fabrique && !e.f.mes_dpnb) L.push({ t: 'Doser le DPnB dans la peinture fabriquée (contrôle du COV)', d: 'Choix de la technique, puis dosage : une vingtaine de minutes de ton temps', note: 'Contrôle qualité : dosage du DPnB dans la peinture (COV mesurés et non plus calculés).', vers: 'dpnbTech' });
     if (!e.cmd.huile) L.push({ t: 'Mesurer moi-même les prises d\'huile à la spatule', d: `${HUILE_DUREE} min par détermination, sans attendre personne`, note: 'Prises d\'huile des poudres : mesure faite moi-même.', vers: 'stationHuile' });
     if (e.f.fabrique && !e.f.etuve) L.push({ t: 'Mettre un échantillon à l\'étuve à 50 °C (vieillissement accéléré)', d: '10 min ; résultat dans 7 jours', duree: 10, f: { etuve: true }, note: 'Échantillon mis à l\'étuve à 50 °C pour le test de stabilité (résultat dans 7 jours).', vers: 'labo' });
     L.push({ t: 'Attendre 30 minutes (café, rangement, bibliographie)', duree: 30, vers: 'labo' });
@@ -497,19 +586,19 @@ export function bilan(e) {
   const f = e.f, n = x => x ? 1 : 0;
   const niv = (pts, max) => pts >= max ? 'ok' : pts > 0 ? 'moyen' : 'ko';
   const nbDeleg = Object.keys(e.cmd).length;
-  const nbOpt = ['huile', 'brill', 'tmff'].filter(k => f['mes_' + k]).length;
+  const nbOpt = ['huile', 'brill', 'tmff', 'dpnb'].filter(k => f['mes_' + k]).length;
   const dOk = dpnbOk(f.dpnb ?? 0, f.eff);
   const dTxt = dOk ? 'dosé à bon escient (TMFF et COV conformes)' : (f.dpnb ?? 0) < 2.5 ? 'insuffisant (la MFFT de l\'Orgal est de 20 °C)' : 'en excès (COV trop élevés)';
   const pr = [];
-  const c14 = n(f.regle === 'ok' && !f.refait) + n(dOk) + n(f.mes_huile);
-  pr.push({ comp: 'C1.4', titre: 'Choisir méthodes et techniques', niveau: niv(c14, 3), texte: `Règle de remplacement de la résine ${f.regle === 'ok' && !f.refait ? 'juste dès le départ' : 'à corriger'} ; coalescent ${dTxt} ; prises d'huile ${f.mes_huile ? 'mesurées pour lever le doute sur la CPVC' : 'non mesurées (le tableur avec les valeurs des fiches donnait une peinture non mate)'}.` });
+  const c14 = n(f.regle === 'ok' && !f.refait) + n(dOk) + n(f.mes_huile) + n(f.mes_dpnb && !f.impasses);
+  pr.push({ comp: 'C1.4', titre: 'Choisir méthodes et techniques', niveau: niv(c14, f.mes_dpnb ? 4 : 3), texte: `Règle de remplacement de la résine ${f.regle === 'ok' && !f.refait ? 'juste dès le départ' : 'à corriger'} ; coalescent ${dTxt} ; prises d'huile ${f.mes_huile ? 'mesurées pour lever le doute sur la CPVC' : 'non mesurées (le tableur avec les valeurs des fiches donnait une peinture non mate)'}.` });
   pr.push({ comp: 'C2.1', titre: 'Préparer produits et matériel', niveau: !f.fabrique && !f.rate ? 'nd' : f.rate ? 'moyen' : 'ok', texte: f.rate ? 'Première fabrication ratée : l\'ordre d\'introduction de la fiche n\'avait pas été respecté.' : f.fabrique ? 'Fabrication conforme à la fiche, finesse correcte.' : 'Pas de fabrication réalisée.' });
   const c32 = n(f.alerte === true) * (f.alerteTardive ? 0.5 : 1) + n(f.stockCtrl) * (f.stockAlerte ? 0.5 : 1) + n(f.stab === 'honnete');
   pr.push({ comp: 'C3.2', titre: 'Détecter les non-conformités et alerter', niveau: niv(c32, 3), texte: `Promesse « COV nuls » incompatible avec l'Orgal ${f.alerte === true ? (f.alerteTardive ? 'signalée tardivement' : 'signalée tout de suite') : 'non signalée'} ; fût d'Orgal gelé ${f.stockCtrl ? (f.stockAlerte ? 'contrôlé après rappel de Karim' : 'contrôlé de ta propre initiative') : 'non contrôlé'} ; stabilité ${f.stab === 'honnete' ? 'annoncée honnêtement comme non démontrée' : f.stab === 'promis' ? 'garantie sans l\'avoir démontrée' : 'omise'}.` });
   const c41 = n(dispOk(f)) + n(dOk);
   pr.push({ comp: 'C4.1', titre: 'Modifier, améliorer le protocole', niveau: niv(c41, 2), texte: `Dispersant ${dispOk(f) ? `corrigé (amas supprimés${f.dispCourbe ? ', dose trouvée par la courbe de défloculation' : ''})` : 'non corrigé'} ; coalescent ${dOk ? 'ajouté et dosé' : (f.dpnb ?? 0) < 2.5 ? 'absent ou trop faible' : 'surdosé'}.` });
   const c61 = n(f.plan !== 'solo') + n(e.t <= T_RAPPORT) + n(nbOpt >= 2);
-  pr.push({ comp: 'C6.1', titre: 'Organiser le travail, tenir les délais', niveau: niv(c61, 3), texte: `${f.plan === 'solo' ? 'Tout fait seul·e : trop séquentiel. ' : f.plan === 'mp' ? 'Analyses des matières premières lancées dès le début, en parallèle. ' : 'Tâches déléguées en parallèle. '}Rapport ${e.t <= T_RAPPORT ? 'rendu dans les temps' : 'rendu après 17 h'} ; ${nbOpt} analyse(s) complémentaire(s) sur 3 (prises d'huile, brillance, TMFF).` });
+  pr.push({ comp: 'C6.1', titre: 'Organiser le travail, tenir les délais', niveau: niv(c61, 3), texte: `${f.plan === 'solo' ? 'Tout fait seul·e : trop séquentiel. ' : f.plan === 'mp' ? 'Analyses des matières premières lancées dès le début, en parallèle. ' : 'Tâches déléguées en parallèle. '}Rapport ${e.t <= T_RAPPORT ? 'rendu dans les temps' : 'rendu après 17 h'} ; ${nbOpt} analyse(s) complémentaire(s) sur 4 (prises d'huile, brillance, TMFF, dosage du DPnB).` });
   pr.push({ comp: 'C6.3', titre: 'Gérer les produits selon la réglementation', niveau: niv(n(f.stock === 'neuf') + n(f.stock === 'tamise') * 0.5 + n(f.coutOk), 2), texte: `${f.stock === 'neuf' ? 'Lot gelé écarté, fût neuf commandé. ' : f.stock === 'tamise' ? 'Lot gelé tamisé et utilisé : acceptable seulement avec réserve. ' : 'Aucun problème de stockage détecté. '}${f.coutOk ? 'Coût matières contrôlé (< 4,5 €/kg).' : 'Coût matières non vérifié.'}` });
   pr.push({ comp: 'C6.4', titre: 'Assurer la traçabilité', niveau: f.trace ? 'ok' : 'ko', texte: f.trace ? 'Lot, pesées et observations consignés au fur et à mesure.' : 'Pesées réelles et observations reconstituées de mémoire : traçabilité faible.' });
   pr.push({ comp: 'C7.3', titre: 'Travailler en équipe', niveau: f.plan === 'solo' ? 'ko' : niv(n(nbDeleg >= 3) + n(f.alerte === true), 2), texte: f.plan === 'solo' ? 'Aucune délégation : l\'équipe n\'a pas été sollicitée.' : `${nbDeleg} analyse(s) confiée(s) aux collègues ; ${f.alerte === true ? 'information remontée à la responsable' : 'communication à améliorer'}.` });
@@ -523,6 +612,7 @@ export function resume(e) {
   L.push(`Coalescent : ${nf(f.dpnb ?? 0, 0)} g de DPnB${f.preEssai ? ', choisi après un pré-essai au banc TMFF' : ', choisi sans pré-essai au banc'}${(f.banc || []).length ? ` (${f.banc.length} essai${f.banc.length > 1 ? 's' : ''})` : ''}.`);
   L.push(`Dispersant : ${f.coadis != null ? `${nf(f.coadis, 2)} g de Coadis BR3${f.dispCourbe ? ' (trouvés par une courbe de défloculation)' : ''}` : 'dose de départ conservée'}.`);
   L.push(`Organisation : ${f.plan === 'solo' ? 'tout fait seul·e' : `${Object.keys(e.cmd).length} analyses déléguées`}.`);
+  L.push(`Contrôle du COV : ${f.mes_dpnb ? `dosage du DPnB par CPG-FID (${nf(f.covMes ?? 0, 1)} ± ${nf(f.uMes ?? 0, 1)} g/L)` : 'non fait (COV seulement calculés)'}.`);
   L.push(`Client : ${f.clientFait ? (f.clientOk ? 'informé de la mention « COV nuls »' : 'mal renseigné') : 'pas rappelé'}.`);
   return L;
 }
