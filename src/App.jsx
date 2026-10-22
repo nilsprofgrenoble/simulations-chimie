@@ -243,7 +243,7 @@ const JEUX_IDS = [79, 80, 81];   // jeux : affichage immersif (sans en-tête ni 
 const FONDS_JEUX = {
   79: "radial-gradient(ellipse at 50% 0%, #1b2a5c 0%, #070d24 55%, #03060f 100%)",
   80: "linear-gradient(180deg, #0b3b5e 0%, #082a45 50%, #04182a 100%)",
-  81: "radial-gradient(ellipse at 50% 0%, #3a3a46 0%, #23232c 60%, #17171d 100%)",
+  81: "radial-gradient(ellipse at 50% 20%, rgba(255,255,255,.12), rgba(0,0,0,.45) 85%), repeating-linear-gradient(90deg, #7a5a40 0 7px, #6f5037 7px 10px, #7f5f45 10px 19px, #694c34 19px 21px)",
 };
 const ORDRE_COMP = [38, 34, 35, 37, 36, 77];
 function construireMenus() {
