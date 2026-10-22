@@ -18,6 +18,16 @@ const SEUIL_CREATION_S = 10;      // une ligne n'est créée qu'après une actio
 const nouvelEtat = cle => ({ cle, id: null, creation: null, duree: 0, essais: 0, vues: 0, reussi: false, sale: false, dernier: Date.now(), echec: 0 });
 const pret = s => s.id != null || s.essais || s.vues || s.reussi || s.duree >= SEUIL_CREATION_S;
 
+// Date de la dernière réussite de chaque exercice ou défi (sur l'appareil) : la mission Kepler s'en sert pour ne compter que les réussites obtenues pendant la partie.
+export const CLE_HORODATAGE = 'defi-horodatage-v1';
+function horodaterReussite(cle) {
+  try {
+    const t = JSON.parse(window.localStorage.getItem(CLE_HORODATAGE) || '{}');
+    t[cle] = Date.now();
+    window.localStorage.setItem(CLE_HORODATAGE, JSON.stringify(t));
+  } catch { /* stockage indisponible : la mission ne pourra pas voir la réussite */ }
+}
+
 export function useSuivi(cle, reussi) {
   const e = useRef(null);                      // état de l'exercice courant ; remplacé (et non modifié) quand on change d'exercice
   if (e.current == null) e.current = nouvelEtat(cle);
@@ -97,7 +107,7 @@ export function useSuivi(cle, reussi) {
     if (!reussi) return;
     noterReussite(cle);
     const s = e.current;
-    if (s.cle === cle && !s.reussi) { s.reussi = true; annoncerReussite({ cle, etoiles: etoilesReussite(s.essais, s.vues) }); marquer(); }
+    if (s.cle === cle && !s.reussi) { s.reussi = true; horodaterReussite(cle); annoncerReussite({ cle, etoiles: etoilesReussite(s.essais, s.vues) }); marquer(); }
   }, [reussi, cle, marquer]);
 
   return {
@@ -130,7 +140,7 @@ export function modeOuverture(cleGuide) {
 function choisirMode(cleGuide) {
   try {
     const d = JSON.parse(window.sessionStorage.getItem('mode-demande') || 'null');
-    if (d && d.mode === 'explore' && Date.now() - d.t < 5000) return 'explore';
+    if (d && (d.mode === 'explore' || d.mode === 'defi') && Date.now() - d.t < 5000) return d.mode;   // « defi » : demandé par la mission Kepler (EscapeKepler)
   } catch { /* pas de demande */ }
   try {
     const brut = window.localStorage.getItem(cleGuide);
