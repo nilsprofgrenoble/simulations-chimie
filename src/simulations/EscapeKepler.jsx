@@ -182,7 +182,7 @@ export function SimulationEscapeKepler({ naviguer }) {
   if (finie) return (
     <div style={cadre} data-escape="fin"><style>{STYLE}</style>
       <div style={{ fontFamily: 'ui-monospace,monospace', color: C.vert, fontSize: 12.5, letterSpacing: 2 }}>MISSION ACCOMPLIE</div>
-      <h2 style={{ margin: '6px 0 10px', fontSize: 'clamp(24px,5vw,34px)' }}>🎉 Kepler est sauvée !</h2>
+      <h2 style={{ margin: '6px 0 10px', color: C.texte, fontSize: 'clamp(24px,5vw,34px)' }}>🎉 Kepler est sauvée !</h2>
       <Station etat={etat} chiffres={chiffres} sel={null} onSel={() => {}} hub="repare" ariaLabel="Station Kepler, tous les modules réparés" />
       <div style={{ ...panneau, marginTop: 14, lineHeight: 1.7 }}>
         <p style={{ margin: 0, fontSize: 16 }}>Les cinq systèmes sont rétablis : l’antenne s’oriente, les batteries sont refroidies, l’eau est recyclée, le réservoir est régulé et la télémesure est validée. Le contact radio est maintenu.</p>
