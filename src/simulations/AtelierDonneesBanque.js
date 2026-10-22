@@ -396,6 +396,69 @@ export const ENONCES = [
         solution: { txt: 'm_cristaux = m₆₀ − m₂₀', val: m60 - m20, u: 'g' } };
     },
   },
+  // ───────────────────────────── Mesure et incertitudes (TSTL)
+  {
+    id: 'incertA', domaine: 'Mesure et incertitudes', titre: 'Incertitude d’une série de mesures répétées', noms: ['Incertitude-type de la moyenne', 'Incertitude élargie', 'Borne haute de l’intervalle'],
+    gen: () => { const n = tire([4, 9, 16, 25]), u0 = tire([0.05, 0.1, 0.12, 0.2]); return { n, s: Math.round(u0 * Math.sqrt(n) * 100) / 100, xm: tire([12.4, 15.2, 18.6, 20.3]), k: 2, res: tire([0.05, 0.1]), dur: tire([10, 15, 20]) }; },
+    build: (p, q) => {
+      const u = p.s / Math.sqrt(p.n), U = p.k * u;
+      const tokens = {
+        n: tok(`${p.n} mesures`, 'Nombre de mesures de la série', p.n, ''),
+        xm: tok(`${nb(p.xm, 1)} mL`, 'Moyenne des mesures', p.xm, 'mL'),
+        s: tok(`${nb(p.s, 2)} mL`, 'Écart-type expérimental de la série', p.s, 'mL'),
+        k: tok('k = 2', 'Facteur d’élargissement', p.k, ''),
+        res: tok(`${nb(p.res, 2)} mL`, 'Résolution de la burette', p.res, 'mL'),
+        dur: tok(`${p.dur} min`, 'Durée de la série', p.dur, 'min'),
+      };
+      const debut = ['On répète ', T('n'), ' fois le titrage d’une même solution, dans les mêmes conditions. Le volume équivalent moyen est ', T('xm'), ' et l’écart-type expérimental de la série vaut ', T('s'),
+        '. La burette a une résolution de ', T('res'), ' ; la série a duré ', T('dur'), '. On élargit l’incertitude avec ', T('k'), '. '];
+      const rRes = 'On ne demande ici que l’incertitude liée à la dispersion des mesures répétées (type A) ; la résolution de la burette est une autre source, qu’on traite à part.';
+      const rDur = 'La durée de la série n’intervient pas dans le calcul de l’incertitude.';
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est l’incertitude-type u de la moyenne ?'], utiles: ['s', 'n'],
+        raisons: { xm: 'La valeur de la moyenne ne change pas l’incertitude : elle dépend de la dispersion et du nombre de mesures.', k: 'Le facteur d’élargissement sert pour l’incertitude élargie, pas pour l’incertitude-type.', res: rRes, dur: rDur },
+        cherche: { bonne: 'L’incertitude-type u de la moyenne (en mL)', faux: ['L’incertitude élargie U (en mL)', 'La moyenne des volumes (en mL)', 'L’écart-type s de la série (en mL)'] },
+        manque: null, solution: { txt: 'u = s / √n', val: u, u: 'mL' } };
+      if (q === 1) return { tokens, texte: [...debut, 'Quelle est l’incertitude élargie U (avec le facteur d’élargissement donné) ?'], utiles: ['s', 'n', 'k'],
+        derivees: [{ id: 'u', nom: 'Incertitude-type de la moyenne', expr: 'u = s / √n', val: u, u: 'mL' }],
+        raisons: { xm: 'La moyenne ne sert pas à calculer l’incertitude.', res: rRes, dur: rDur },
+        cherche: { bonne: 'L’incertitude élargie U (en mL)', faux: ['L’incertitude-type u de la moyenne (en mL)', 'Le volume équivalent moyen (en mL)', 'Le nombre de mesures nécessaire'] },
+        manque: null, solution: { txt: 'U = k × u', val: U, u: 'mL' } };
+      return { tokens, texte: [...debut, 'Quelle est la borne haute de l’intervalle x̄ ± U ?'], utiles: ['xm', 's', 'n', 'k'],
+        derivees: [{ id: 'u', nom: 'Incertitude-type de la moyenne', expr: 'u = s / √n', val: u, u: 'mL' }, { id: 'U', nom: 'Incertitude élargie', expr: 'U = k × u', val: U, u: 'mL' }],
+        raisons: { res: rRes, dur: rDur },
+        cherche: { bonne: 'La borne haute x̄ + U de l’intervalle (en mL)', faux: ['L’incertitude élargie U (en mL)', 'La largeur totale de l’intervalle (en mL)', 'La moyenne x̄ (en mL)'] },
+        manque: null, solution: { txt: 'x̄ + U', val: p.xm + U, u: 'mL' } };
+    },
+  },
+  {
+    id: 'compatS', domaine: 'Mesure et incertitudes', titre: 'Une mesure et sa valeur de référence', noms: ['Écart à la référence', 'Écart rapporté à l’incertitude-type'],
+    gen: () => {
+      const cref = tire([0.05, 0.1, 0.2]), d = tire([0.002, 0.003, 0.004, 0.006]), sg_ = tire([-1, 1]);
+      return { cref, x: Math.round((cref + sg_ * d) * 1000) / 1000, d, u: tire([0.001, 0.002]), n: tire([6, 8, 10]), theta: tire([20, 22, 25]) };
+    },
+    build: (p, q) => {
+      const tokens = {
+        x: tok(`${nb(p.x, 3)} mol·L⁻¹`, 'Concentration mesurée', p.x, 'mol·L⁻¹'),
+        u: tok(`${nb(p.u, 3)} mol·L⁻¹`, 'Incertitude-type de la mesure', p.u, 'mol·L⁻¹'),
+        cref: tok(`${nb(p.cref, 3)} mol·L⁻¹`, 'Valeur de référence (solution étalon)', p.cref, 'mol·L⁻¹'),
+        n: tok(`${p.n} dosages`, 'Nombre de dosages de la série', p.n, ''),
+        theta: tok(`${p.theta} °C`, 'Température du laboratoire', p.theta, '°C'),
+      };
+      const debut = ['On dose une solution étalon et on trouve ', T('x'), ', avec une incertitude-type ', T('u'), ' (déjà calculée à partir de ', T('n'), '). La valeur de référence de l’étalon est ', T('cref'),
+        '. Le laboratoire est à ', T('theta'), '. '];
+      const rN = 'Le nombre de dosages a déjà servi à calculer l’incertitude-type, qui est donnée.', rT = 'La température n’intervient pas dans la comparaison.';
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est l’écart entre la mesure et la référence ?'], utiles: ['x', 'cref'],
+        raisons: { u: 'L’incertitude-type sert à juger l’écart, pas à le calculer.', n: rN, theta: rT },
+        cherche: { bonne: 'L’écart |x − x_ref| (en mol·L⁻¹)', faux: ['L’incertitude-type de la mesure (en mol·L⁻¹)', 'La concentration de la solution étalon', 'Le rapport entre la mesure et la référence'] },
+        manque: null, solution: { txt: '|x − x_ref|', val: p.d, u: 'mol·L⁻¹' } };
+      return { tokens, texte: [...debut, 'Combien vaut l’écart exprimé en nombre d’incertitudes-types ? (La mesure est compatible avec la référence si ce nombre est au plus 2.)'], utiles: ['x', 'cref', 'u'],
+        derivees: [{ id: 'e', nom: 'Écart à la référence', expr: '|x − x_ref|', val: p.d, u: 'mol·L⁻¹' }],
+        raisons: { n: rN, theta: rT },
+        cherche: { bonne: 'Le rapport écart / u (sans unité)', faux: ['L’écart |x − x_ref| (en mol·L⁻¹)', 'L’incertitude élargie U (en mol·L⁻¹)', 'Le pourcentage d’erreur par rapport à la référence'] },
+        manque: null, solution: { txt: '|x − x_ref| / u', val: p.d / p.u, u: '' } };
+    },
+  },
+
   // ───────────────────────────── Mouvement et vitesse (seconde)
   {
     id: 'trajet', domaine: 'Mouvement et vitesse', titre: 'Un trajet en train', noms: ['Vitesse moyenne du train', 'Durée d’un autre trajet'],
@@ -539,6 +602,8 @@ const SYMBOLES = {
   reservoir: { rho: 'ρ', h: 'h', D: 'D', Patm: 'P_atm' },
   regulP: { hc: 'consigne', Kp: 'K_p', Qmax: 'Q_max', Qp: 'Q_p', S: 'S', Ti: 'T_i' },
   premord: { tau: 'τ', T0: 'T₀', Tf: 'T_f', t: 't', res: '', m: 'm' },
+  incertA: { n: 'n', xm: 'x̄', s: 's', k: 'k', res: '', dur: '' },
+  compatS: { x: 'x', u: 'u', cref: 'x_ref', n: '', theta: '' },
   distil: { V: 'V', x: 'x', y: 'y', Vd: 'V_distillat', Te: 'θ_éb', P: 'P' },
   cristal: { me: 'm_eau', mb: 'm_bécher', s60: 's₆₀', s20: 's₂₀', dur: 'Δt' },
 };

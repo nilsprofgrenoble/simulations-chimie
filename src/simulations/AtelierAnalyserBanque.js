@@ -665,6 +665,101 @@ export const PROBLEMES = [
     ] },
     retenir: ['Système du 1er ordre : à t = τ, 63 % de la valeur finale ; à t = 3τ, 95 % : t₅ % ≈ 3·τ.'],
   },
+  {
+    id: 'pompe-doseuse', domaine: 'Mesure et incertitudes', titre: 'Une pompe doseuse bien réglée ?',
+    enonce: 'Pour contrôler une pompe doseuse réglée sur 50,0 mL, un technicien recueille 10 fois le volume délivré, dans les mêmes conditions. Il obtient une moyenne de 50,8 mL et un écart-type expérimental s = 0,9 mL. La série a duré 15 min, à 22 °C. On considère que la pompe est compatible avec son réglage si l’écart entre la moyenne et 50,0 mL est inférieur ou égal à 2·u, où u est l’incertitude-type de la moyenne. La pompe est-elle compatible avec son réglage ?',
+    cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
+      V('L’écart entre la moyenne et 50,0 mL, pour le comparer à 2·u', 'C’est exactement le critère de l’énoncé : il faut donc l’écart et l’incertitude-type u de la moyenne.'),
+      F('L’écart-type s de la série', 'Il est donné ; il décrit la dispersion des mesures individuelles, pas l’incertitude de la moyenne.'),
+      F('Le volume moyen délivré en 15 min', 'La durée de la série n’est pas en jeu.'),
+    ] },
+    donnees: [
+      ['moyenne 50,8 mL', true, 'C’est la valeur à comparer au réglage.'],
+      ['s = 0,9 mL', true, 'Il permet de calculer l’incertitude-type de la moyenne.'],
+      ['10 mesures', true, 'Le nombre de mesures intervient dans u = s/√n.'],
+      ['réglage 50,0 mL', true, 'C’est la valeur de référence.'],
+      ['critère : écart ≤ 2·u', true, 'C’est la règle de décision.'],
+      ['durée 15 min', false, 'La durée de la série n’intervient pas.'],
+      ['température 22 °C', false, 'Elle ne change ni l’écart ni l’incertitude-type dans cet exercice.'],
+    ],
+    relations: { options: [
+      V('u = s / √n : l’incertitude-type de la moyenne', 'La moyenne de n mesures est plus précise qu’une mesure seule, d’un facteur √n.'),
+      V('compatible si |moyenne − référence| ≤ 2·u', 'C’est le critère de l’énoncé.'),
+      F('u = s', 's décrit la dispersion d’une mesure isolée, pas la précision de la moyenne.'),
+      F('u = s × √n', 'Ce serait plus grand que s : répéter les mesures dégraderait la précision, ce qui est absurde.'),
+      F('u = s / n', 'Le facteur de réduction est √n, pas n.'),
+    ] },
+    hypotheses: { options: [
+      V('Les 10 mesures sont indépendantes et faites dans les mêmes conditions', 'C’est ce qui autorise à utiliser u = s/√n.'),
+      V('Les valeurs se répartissent à peu près selon une loi normale', 'C’est ce qui donne un sens à « 2·u ≈ 95 % de confiance » ; avec seulement 10 mesures, c’est une approximation.'),
+      V('Le réglage de 50,0 mL est supposé exact (sans incertitude)', 'Sinon il faudrait composer son incertitude avec celle de la mesure.'),
+      F('La pompe est parfaitement fidèle (s = 0)', 'Au contraire : s = 0,9 mL, c’est ce qui crée l’incertitude.'),
+      F('Les mesures ont été faites à 22 °C exactement', 'La température n’intervient pas ici.'),
+    ] },
+    demarche: {
+      etapes: [
+        { id: 'u', t: 'Calculer l’incertitude-type de la moyenne : u = 0,9 / √10', dep: [], e: 'u ≈ 0,28 mL.' },
+        { id: 'e', t: 'Calculer l’écart à la référence : 50,8 − 50,0', dep: [], e: 'écart = 0,8 mL.' },
+        { id: 'seuil', t: 'Calculer le seuil de décision : 2·u', dep: ['u'], e: '2·u ≈ 0,57 mL.' },
+        { id: 'c', t: 'Comparer l’écart au seuil et conclure', dep: ['e', 'seuil'], e: '0,8 > 0,57.' },
+      ],
+      pieges: [
+        ['Comparer l’écart à l’écart-type s', 's décrit les mesures individuelles ; on teste ici la moyenne, dont l’incertitude est s/√n.'],
+        ['Tenir compte de la durée de la série ou de la température', 'Ces données ne servent pas à la décision.'],
+      ],
+    },
+    conclusion: { q: 'Quelle conclusion obtient-on en suivant la démarche ?', options: [
+      V('Non : l’écart (0,8 mL) dépasse 2·u ≈ 0,57 mL, la pompe délivre en moyenne trop de liquide', 'u = 0,9/√10 ≈ 0,28 mL, donc 2·u ≈ 0,57 mL < 0,8 mL : l’écart n’est pas expliqué par l’incertitude.'),
+      F('Oui : 0,8 mL est inférieur à 2·s = 1,8 mL', 'On a comparé à 2·s au lieu de 2·u : s est la dispersion d’une mesure isolée, pas l’incertitude de la moyenne.'),
+      F('Oui : 0,8 mL est inférieur à s = 0,9 mL', 'Le critère utilise l’incertitude-type de la moyenne u, pas l’écart-type s.'),
+    ] },
+    retenir: ['Incertitude-type de la moyenne : u = s / √n.', 'Compatibilité avec une référence : |x̄ − x_ref| ≤ 2·u, sinon chercher une cause d’écart.'],
+  },
+  {
+    id: 'nombre-mesures', domaine: 'Mesure et incertitudes', titre: 'Combien de mesures répéter ?',
+    enonce: 'Un essai préalable de 6 mesures d’un volume donne une moyenne de 25,3 mL et un écart-type expérimental s = 0,40 mL. Chaque mesure demande environ 3 min. On souhaite que l’incertitude-type de la moyenne soit d’au plus 0,10 mL. Combien de mesures faut-il, au minimum, dans la série finale ?',
+    cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
+      V('Le nombre minimal de mesures n pour que u ≤ 0,10 mL', 'C’est ce que demande l’énoncé.'),
+      F('La durée totale de la série', 'On ne demande pas la durée, seulement le nombre de mesures.'),
+      F('La moyenne attendue de la série finale', 'Elle n’intervient pas dans l’incertitude-type.'),
+    ] },
+    donnees: [
+      ['s = 0,40 mL', true, 'C’est la dispersion à utiliser pour estimer u.'],
+      ['u ≤ 0,10 mL', true, 'C’est l’objectif à atteindre.'],
+      ['moyenne 25,3 mL', false, 'La valeur de la moyenne n’influence pas l’incertitude-type.'],
+      ['3 min par mesure', false, 'Utile pour planifier, mais pas pour calculer n.'],
+      ['6 mesures préalables', false, 'Elles ont servi à estimer s ; la série finale aura un autre nombre de mesures.'],
+    ],
+    relations: { options: [
+      V('u = s / √n, donc n = (s / u)²', 'On isole n : √n = s/u, puis on élève au carré.'),
+      F('u = s / n, donc n = s / u', 'Le facteur de réduction est √n, pas n : il faudrait beaucoup moins de mesures que nécessaire.'),
+      F('u = s × √n', 'Répéter les mesures augmenterait u : absurde.'),
+      F('n = s / u²', 'Erreur d’isolation : u = s/√n donne n = s²/u².'),
+    ] },
+    hypotheses: { options: [
+      V('La dispersion de la série finale sera la même que dans l’essai (s = 0,40 mL)', 'On utilise s de l’essai préalable comme estimation ; avec 6 mesures, elle est assez approximative.'),
+      V('Les mesures seront indépendantes et faites dans les mêmes conditions', 'Condition d’emploi de u = s/√n.'),
+      V('Seule l’incertitude de répétabilité (type A) est considérée', 'D’autres sources (résolution, étalonnage) existent et limiteraient u même avec beaucoup de mesures.'),
+      F('La moyenne est égale à la valeur vraie', 'On ne connaît jamais la valeur vraie ; l’incertitude décrit justement ce doute.'),
+      F('Une mesure de plus divise toujours u par 2', 'u diminue en 1/√n : le gain est de plus en plus faible.'),
+    ] },
+    demarche: {
+      etapes: [
+        { id: 'r', t: 'Calculer le rapport s / u visé : 0,40 / 0,10', dep: [], e: 's/u = 4.' },
+        { id: 'n', t: 'Élever au carré : n = (s / u)²', dep: ['r'], e: 'n = 16.' },
+      ],
+      pieges: [
+        ['Calculer la durée totale ou se servir de la moyenne', 'Ces données ne servent pas pour n.'],
+        ['Oublier d’élever au carré (s/u = 4)', 'On trouverait 4 mesures : avec 4 mesures, u = 0,40/2 = 0,20 mL, encore trop grand.'],
+      ],
+    },
+    conclusion: { q: 'Quelle conclusion obtient-on en suivant la démarche ?', options: [
+      V('n = 16 mesures au minimum', 'Avec n = 16, u = 0,40/√16 = 0,10 mL : l’objectif est atteint.'),
+      F('n = 4 mesures', 'On a oublié d’élever au carré : pour n = 4, u = 0,20 mL.'),
+      F('n = 40 mesures', 'On a calculé s/u² au lieu de (s/u)². Ce serait suffisant, mais pas minimal.'),
+    ] },
+    retenir: ['Pour diviser u par 2, il faut 4 fois plus de mesures (u varie en 1/√n).', 'n minimal = (s / u visé)².'],
+  },
 ];
 
 // ──────────────────────────────── 2. CHOISIR LA BONNE RELATION ────────────────────────────────
@@ -865,6 +960,22 @@ export const RELATIONS = [
       F('t₅ % = τ / 3', 'Ce serait plus court que τ : le capteur n’aurait pas encore atteint 63 %.'),
       F('t₅ % = 3 / τ', 'Pas homogène : l’unité serait des s⁻¹ au lieu de s.'),
     ] },
+  { id: 'incertitude-type-A', domaine: 'Mesure et incertitudes', titre: 'Incertitude-type d’une moyenne',
+    enonce: 'On a mesuré 9 fois la même grandeur : écart-type expérimental s = 0,6 g. On cherche l’incertitude-type u de la moyenne.',
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('u = s / √n', 'La moyenne de n mesures est plus précise qu’une seule d’un facteur √n : ici u = 0,6/3 = 0,2 g.'),
+      F('u = s', 's est la dispersion d’une mesure isolée, pas l’incertitude de la moyenne.'),
+      F('u = s × √n', 'Cela donnerait une incertitude plus grande que s : répéter les mesures la dégraderait.'),
+      F('u = s / n', 'Le facteur est √n, pas n.'),
+    ] },
+  { id: 'compatibilite', domaine: 'Mesure et incertitudes', titre: 'Compatibilité avec une valeur de référence',
+    enonce: 'Une mesure x = 4,93 g·L⁻¹ avec une incertitude-type u = 0,04 g·L⁻¹ est comparée à une référence x_ref = 5,00 g·L⁻¹.',
+    q: 'Quelle relation permet de décider si la mesure est compatible ?', options: [
+      V('|x − x_ref| ≤ 2·u', 'On compare l’écart à l’incertitude élargie (k = 2) : ici 0,07 ≤ 0,08, donc compatible.'),
+      F('x = x_ref', 'Deux valeurs mesurées sont presque jamais identiques : on teste la compatibilité, pas l’égalité.'),
+      F('|x − x_ref| ≤ u', 'Ce critère serait trop sévère : avec k = 1, environ un tiers des mesures correctes seraient rejetées.'),
+      F('|x − x_ref| / x_ref ≤ 5 %', 'Une tolérance arbitraire en % ne tient pas compte de l’incertitude de la mesure.'),
+    ] },
 ];
 
 // ──────────────────────────────── 3. HYPOTHÈSES D'UN MODÈLE ────────────────────────────────
@@ -1004,6 +1115,22 @@ export const HYPOTHESES = [
       V('Les conditions de la mesure restent constantes (température du bain, agitation)', 'Sinon la constante de temps change pendant la mesure.'),
       F('Le capteur est parfaitement précis', 'La précision n’intervient pas dans la rapidité du capteur.'),
       F('La température initiale vaut 20 °C', 'Le temps de réponse à 5 % ne dépend pas des températures de départ et d’arrivée.'),
+    ] },
+  { id: 'type-A', domaine: 'Mesure et incertitudes', titre: 'Incertitude-type d’une série de mesures',
+    enonce: 'On estime l’incertitude-type de la moyenne de n mesures répétées par u = s / √n.', options: [
+      V('Les mesures sont indépendantes et faites dans les mêmes conditions', 'Sinon la dispersion observée ne reflète pas l’incertitude de la moyenne.'),
+      V('Il n’y a pas d’erreur systématique non corrigée', 'u ne décrit que le hasard : un décalage constant n’est pas détecté par la dispersion.'),
+      V('n est assez grand pour que s soit une bonne estimation de la dispersion', 'Avec 3 ou 4 mesures, s est très imprécis.'),
+      F('La valeur vraie est connue', 'Au contraire : on ne la connaît pas, c’est pour cela qu’on estime une incertitude.'),
+      F('Toutes les mesures sont identiques', 'Alors s = 0 et u = 0 : c’est le signe d’une résolution trop grossière, pas d’une mesure parfaite.'),
+    ] },
+  { id: 'compatibilite-hyp', domaine: 'Mesure et incertitudes', titre: 'Décider qu’une mesure est compatible',
+    enonce: 'On conclut « compatible » lorsque |x − x_ref| ≤ 2·u.', options: [
+      V('L’incertitude-type u est correctement estimée', 'Si u est sous-estimée, on rejette à tort ; si elle est surestimée, on accepte tout.'),
+      V('La référence est connue avec une incertitude négligeable devant u', 'Sinon, il faut composer les deux incertitudes.'),
+      V('Les valeurs suivent à peu près une loi normale', 'C’est ce qui donne à 2·u un niveau de confiance d’environ 95 % ; sans cela, le facteur 2 n’a plus ce sens.'),
+      F('La mesure est exacte', 'Si elle l’était, on n’aurait pas besoin d’incertitude.'),
+      F('Le résultat est écrit avec le bon nombre de chiffres', 'L’écriture du résultat ne change pas la décision.'),
     ] },
 ];
 
@@ -1294,6 +1421,27 @@ export const PREVOIR = [
       F('doublé', 'Sens inversé : un gain plus grand réduit l’écart.'),
       F('annulé', 'Seule une action intégrale annule l’écart statique : un gain, même grand, ne l’annule pas.'),
       F('inchangé', 'Il dépend du gain.'),
+    ] },
+  { id: 'quatre-fois-plus', domaine: 'Mesure et incertitudes', titre: 'Quatre fois plus de mesures',
+    enonce: 'On passe de n mesures à 4·n mesures, avec la même dispersion s.', q: 'L’incertitude-type u de la moyenne est…', options: [
+      V('divisée par 2', 'u = s/√n : en multipliant n par 4, √n est multiplié par 2.'),
+      F('divisée par 4', 'u varie en 1/√n, pas en 1/n.'),
+      F('inchangée', 'u dépend de n : plus de mesures donnent une moyenne plus précise.'),
+      F('divisée par 16', 'On a élevé au carré au lieu de prendre la racine.'),
+    ] },
+  { id: 'dispersion-double', domaine: 'Mesure et incertitudes', titre: 'Dispersion doublée',
+    enonce: 'À nombre de mesures n égal, les mesures sont deux fois plus dispersées (s double).', q: 'L’incertitude-type u de la moyenne est…', options: [
+      V('doublée', 'u = s/√n est proportionnelle à s.'),
+      F('inchangée', 'u dépend de s.'),
+      F('multipliée par 4', 'u est proportionnelle à s, pas à s².'),
+      F('divisée par 2', 'Sens inversé : plus de dispersion, plus d’incertitude.'),
+    ] },
+  { id: 'decalage-constant', domaine: 'Mesure et incertitudes', titre: 'Un instrument mal réglé',
+    enonce: 'Un instrument indique toujours 0,5 unité de trop. On passe de 10 à 100 mesures.', q: 'Que se passe-t-il ?', options: [
+      V('u diminue, mais l’écart à la valeur de référence reste d’environ 0,5 : la mesure peut devenir incompatible', 'Répéter les mesures réduit le hasard (u), pas un décalage constant : l’écart reste, alors que le seuil 2·u se resserre.'),
+      F('u et l’écart à la référence diminuent tous les deux', 'Un décalage constant ne diminue pas avec le nombre de mesures.'),
+      F('L’écart disparaît car la moyenne annule les erreurs', 'Seules les erreurs aléatoires (positives ou négatives) s’annulent en moyenne, pas un décalage systématique.'),
+      F('u augmente car il y a plus de mesures', 'u = s/√n diminue quand n augmente.'),
     ] },
 ];
 
