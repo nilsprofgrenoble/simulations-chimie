@@ -329,6 +329,8 @@ export function SimulationVitesseDebit({ naviguer }) {
     if (m === 'defi' && !defi) nouveauDefi();
     if (m === 'guide') { setFluide('eau'); setD1(40); setD2(20); setUQ('L/s'); setQ(0.5); setCmd({ n: 0, eff: 0 }); }
   }
+  // Ouverture directe en mode défi (mission d'un escape game) : le défi doit être tiré comme au clic sur l'onglet « Défi »
+  useEffect(() => { if (mode === 'defi' && !defi) changerMode('defi'); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const voletDefi = defi && (() => {
     const d0 = FLUIDES[defi.fl].d, r0 = rhoDe(d0), qs = qSI(defi.q, defi.u);
     const sA = surface(defi.a), sB = surface(defi.b), vA = qs / sA, vB = qs / sB;

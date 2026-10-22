@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, lireNombre } from "../commun";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
@@ -96,6 +96,8 @@ export function SimulationIncertitudeType() {
     setDefi({ v, s: stats(v), x: '', u: '', verifie: false });
   }
   function changerMode(m) { setMode(m); if (m === 'defi' && !defi) nouveauDefi(); }
+  // Ouverture directe en mode défi (mission d'un escape game) : le défi doit être tiré comme au clic sur l'onglet « Défi »
+  useEffect(() => { if (mode === 'defi' && !defi) changerMode('defi'); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const verifDefi = () => {
     const w = ecriture(defi.s), x = lireNombre(defi.x), u = lireNombre(defi.u);
     const ok = Math.abs(x - lireNombre(w.x)) < 1e-9 && Math.abs(u - lireNombre(w.u)) < 1e-9 && nbDec(defi.x) === w.d && nbDec(defi.u) === w.d;

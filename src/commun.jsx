@@ -1,6 +1,7 @@
 import { Children, Fragment, cloneElement, isValidElement, useState, useEffect, useRef, useMemo } from "react";
 import { compter } from "./stats";
 import { Pic, Emo } from "./Pictos";
+import { missionEnCours } from "./mission";
 
 // ============================================================
 //  UTILITAIRES PARTAGÉS
@@ -508,10 +509,13 @@ export function Curseur({ nom, valeur, onChange, min, max, pas, unite = '', deci
 
 // Les trois boutons de mode, identiques sur toutes les pages
 export function BoutonsModes({ mode, setMode, modes = ['guide', 'explore', 'defi'] }) {
+  const enMission = !!missionEnCours(parseInt(new URLSearchParams(window.location.search).get('sim')));   // pendant une mission, le parcours guidé est verrouillé
   const def = { guide: [<><Pic n="compass"/>Parcours guidé</>, ORANGE_GUIDE], explore: [<><Pic n="search"/>Exploration libre</>, '#334155'], defi: [<><Pic n="target"/>Défi</>, '#0ea5e9'] };
   return (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      {modes.map(m => <button key={m} onClick={() => { setMode(m); if (!window.__clicAuto) compter(`sim${new URLSearchParams(window.location.search).get('sim') || '?'}:${m}`, `Simulation ${new URLSearchParams(window.location.search).get('sim') || '?'} : mode ${m}`, true); }} style={styleBouton(mode === m, def[m][1])}>{def[m][0]}</button>)}
+      {modes.map(m => m === 'guide' && enMission
+        ? <button key={m} disabled title="Verrouillé pendant la mission : va directement au défi" style={{ ...styleBouton(false, '#94a3b8'), opacity: 0.55, cursor: 'not-allowed' }}>🔒 Parcours guidé</button>
+        : <button key={m} onClick={() => { setMode(m); if (!window.__clicAuto) compter(`sim${new URLSearchParams(window.location.search).get('sim') || '?'}:${m}`, `Simulation ${new URLSearchParams(window.location.search).get('sim') || '?'} : mode ${m}`, true); }} style={styleBouton(mode === m, def[m][1])}>{def[m][0]}</button>)}
     </div>
   );
 }

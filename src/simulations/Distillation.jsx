@@ -384,6 +384,8 @@ export function SimulationDistillation({ naviguer }) {
     if (md === 'defi' && !defi) nouveauDefi();
     if (md === 'guide') { setMel('ew'); setX0(0.04); setN(0); setF(0); }
   }
+  // Ouverture directe en mode défi (mission d'un escape game) : le défi doit être tiré comme au clic sur l'onglet « Défi »
+  useEffect(() => { if (mode === 'defi' && !defi) changerMode('defi'); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const voletDefi = defi && (() => {
     const mm = MELANGES[defi.k], bil = bilanColonneInfinie(mm, defi.x);
     const noms = { A: `${mm.A} pur`, B: `${mm.B} pur`, az: 'le mélange azéotropique' };

@@ -1,3 +1,4 @@
+import { missionEnCours } from "../mission";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, ORANGE_GUIDE, lireNombre } from "../commun";
@@ -334,7 +335,7 @@ export function bernCorrection(ex) {
 }
 
 export function SimulationBernoulli({ plotlyReady }) {
-  const [mode, setMode] = useState(() => modeOuverture('bern-guide-v1'));
+  const [mode, setMode] = useState(() => { const m = modeOuverture('bern-guide-v1'); return m === 'defi' ? 'exercice' : m; });   // « defi » demandé par une mission = ici l'onglet « Défi (exercices) »
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('bern-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
@@ -1851,7 +1852,9 @@ export function SimulationBernoulli({ plotlyReady }) {
           Circuit hydraulique et relation de Bernoulli
         </h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>
+          {missionEnCours(SIM_ID)
+            ? <button disabled title="Verrouillé pendant la mission : va directement au défi" style={{ ...btn(false, '#94a3b8'), opacity: 0.55, cursor: 'not-allowed' }}>🔒 Parcours guidé</button>
+            : <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>}
           <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}><Pic n="search"/>Exploration libre</button>
           <button onClick={() => changerMode('exercice')} style={btn(mode === 'exercice', '#0ea5e9')}><Pic n="target"/>Défi (exercices)</button>
         </div>

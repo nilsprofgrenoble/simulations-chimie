@@ -197,6 +197,8 @@ export function SimulationMoteurCode({ naviguer }) {
     if (md === 'defi') { if (!defi) nouveauDefi(); else { setGrille(grilleDe(defi.m)); setLongueur(PRE[defi.m].L); } }
     if (md === 'guide') { charger('complet'); setDelai(5); setCharge(0); setRes(null); }
   }
+  // Ouverture directe en mode défi (mission d'un escape game) : le défi doit être tiré comme au clic sur l'onglet « Défi »
+  useEffect(() => { if (mode === 'defi' && !defi) changerMode('defi'); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (enDefi && defi) setCharge(defi.charge); }, [enDefi, defi]);
   const verdictDefi = (() => {
     if (!defi || !defi.verifie) return null;
