@@ -35,7 +35,7 @@ export const CHAPITRES = [
   { id: 'tstl-distillation', niveau: 'TSTL', label: '🧪 Distillation', sims: [42, 41, 43], domaines: ['Distillation'] },
   { id: 'tstl-thermique', niveau: 'TSTL', label: '🔥 Transferts thermiques', sims: [31, 32, 30], domaines: ['Transferts thermiques'] },
   { id: 'tstl-mesure', niveau: 'TSTL', label: '📏 Mesure et incertitudes', sims: [78], domaines: ['Mesure et incertitudes'] },
-  { id: 'tstl-controle', niveau: 'TSTL', label: '🧲 Contrôle des systèmes', sims: [46, 44, 45], domaines: [] },
+  { id: 'tstl-controle', niveau: 'TSTL', label: '🧲 Contrôle des systèmes', sims: [46, 44, 45], domaines: ['Contrôle des systèmes'] },
 
   // Analyse : électrochimie, chromatographie, étalonnage et quantification, fiabilité des mesures
   { id: 'bts-analyse', niveau: 'BTS', label: '🔬 Analyse', sims: [3, 29, 12, 54, 55, 11, 13, 9, 16], domaines: ['Chimie', 'Métrologie'] },
