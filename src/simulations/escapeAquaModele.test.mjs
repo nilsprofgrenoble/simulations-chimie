@@ -1,0 +1,12 @@
+import assert from 'node:assert';
+import * as M from './escapeAquaModele.js';
+assert.strictEqual(M.codeAttendu(0), '265');
+assert.notStrictEqual(M.codeAttendu(1), M.codeAttendu(2));
+const p = M.nouvellePartie('classe', 1, 1000);
+assert.strictEqual(M.nbReparees(p, { '26:defi.principal': 999 }), 0);
+assert.strictEqual(M.nbReparees(p, { '26:defi.principal': 1000, '27:defi.principal': 5000 }), 2);
+assert.strictEqual(M.controleReussi(p, { '17:defi.principal': 9000 }), false);
+assert.strictEqual(M.controleReussi({ ...p, codeOkAt: 2000 }, { '17:defi.principal': 1500 }), false);
+assert.strictEqual(M.controleReussi({ ...p, codeOkAt: 2000 }, { '17:defi.principal': 2500 }), true);
+assert.strictEqual(M.restant({ ...p, indices: { a: 1 }, codeEssais: 1 }, 1000 + 60000), 35 * 60 - 60 - 120 - 60);
+console.log('OK : mission Aqua');
