@@ -164,10 +164,10 @@ export function SimulationIncertitudeType() {
       </div>
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>en mol/L</div>
     </div>);
-  const resume = (s, e) => (
+  const resume = (s, e, montreU = true) => (
     <div style={{ ...styleBoite, fontSize: 14, color: KIT.txt, lineHeight: 1.7 }}>
       <div>n = {s.n} · x̄ = {s.m.toFixed(6).replace('.', ',')} mol/L · s = {s.s.toFixed(6).replace('.', ',')} mol/L</div>
-      <div>u = s / √n = <b>{s.u.toFixed(6).replace('.', ',')}</b> mol/L {e && <>→ <b>{e.u}</b> mol/L ({e.cs} chiffre{e.cs > 1 ? 's' : ''} significatif{e.cs > 1 ? 's' : ''}) ; x̄ → <b>{e.x}</b> mol/L</>}</div>
+      {montreU && <div>u = s / √n = <b>{s.u.toFixed(6).replace('.', ',')}</b> mol/L {e && <>→ <b>{e.u}</b> mol/L ({e.cs} chiffre{e.cs > 1 ? 's' : ''} significatif{e.cs > 1 ? 's' : ''}) ; x̄ → <b>{e.x}</b> mol/L</>}</div>}
     </div>);
   const graphique = (
     <div style={styleBoite}>
@@ -219,7 +219,7 @@ export function SimulationIncertitudeType() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {mode === 'explore' && <div style={{ fontSize: 14, color: KIT.txt2 }}>Une série de {N0} dosages (en mol/L), puis 100 « élèves » qui refont l’expérience : l’intervalle [x̄ − u ; x̄ + u] contient-il la valeur vraie ?</div>}
       {montreSerie && tableau(mesures, `${N0} mesures de concentration`)}
-      {montreResume && resume(st, enGuide && e0 < 3 ? null : ec)}
+      {montreResume && resume(st, enGuide && e0 < 6 ? null : ec, !enGuide || e0 >= 3)}
       {mode === 'explore' && reglages}
       {montreGraphe && graphique}
     </div>);
