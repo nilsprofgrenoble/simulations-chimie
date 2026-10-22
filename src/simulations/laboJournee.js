@@ -3,7 +3,7 @@
 //  Support : sujet de CCF4 (base de peinture blanche), lu à l'envers : la Vinnapas EP 3360 de la référence est en rupture, il faut la remplacer par l'Orgal PST 50A.
 //  (Dans cette version, la référence se passe de coalescent ; l'Orgal, de MFFT 20 °C, en exige un : c'est tout l'intérêt du scénario.)
 //  Le joueur est un technicien de R&D ; il délègue des analyses à des collègues fictifs (chacun ne fait qu'une chose à la fois),
-//  la journée va de 8 h à 17 h (appel client à 15 h, rapport avant 16 h 30) et les décisions ont des conséquences : neuf fins possibles.
+//  la journée va de 8 h à 17 h 30 (appel client à 15 h, rapport avant 17 h) et les décisions ont des conséquences : neuf fins possibles.
 //  Les calculs de formulation reposent sur le modèle de la simulation « Peinture à l'eau » (proprietes), pour rester cohérent avec elle.
 //  Les valeurs rendues par les analyses déléguées sont FICTIVES (elles servent le scénario).
 //  Chaque scène de résultat porte un champ « visuel » (données) que l'interface dessine sous forme d'instrument.
@@ -17,8 +17,8 @@ export const CLE_FINS = 'labo-histoire-fins-v3';
 export const TMFF_MAX = 5;       // le film doit se former dès 5 °C (cahier des charges du scénario)
 export const COV_MAX = 30;       // g/L
 export const T_CLIENT = 420;     // 15 h 00 (minutes depuis 8 h 00)
-export const T_RAPPORT = 510;    // 16 h 30
-export const T_FIN = 540;        // 17 h 00
+export const T_RAPPORT = 540;    // 17 h 00
+export const T_FIN = 570;        // 17 h 30
 
 export const hhmm = t => { const m = 480 + Math.round(t); return `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}`; };
 export const nf = (x, d = 1) => Number(x).toFixed(d).replace('.', ',');
@@ -110,7 +110,6 @@ function deleguer(e, A) {
 export const ANALYSES = [
   { cle: 'huile', tech: 'lucas', label: 'Prises d\'huile des poudres (TiO₂, CaCO₃)', duree: 40, perso: 10, avant: true },
   { cle: 'es', tech: 'ines', label: 'Extrait sec et densité de la peinture', duree: 40, perso: 5 },
-  { cle: 'ph', tech: 'ines', label: 'pH de la peinture', duree: 20, perso: 5 },
   { cle: 'rheo', tech: 'lucas', label: 'Profil rhéologique (viscosimètre)', duree: 45, perso: 10 },
   { cle: 'masq', tech: 'lucas', label: 'Pouvoir masquant (4 épaisseurs, contraste)', duree: 90, perso: 20 },
   { cle: 'brill', tech: 'lucas', label: 'Brillance du film (glossmètre 60° et 85°)', duree: 30, perso: 5 },
@@ -125,18 +124,18 @@ export const equipe = e => ({ karim: 0, ines: Math.max(0, (e.libre.ines || 0) - 
 // ═══════════════ LES SCÈNES ═══════════════
 const retourLabo = { t: 'Retourner à la paillasse', vers: 'labo' };
 // Recommencer la fabrication : on ne garde que les résultats qui ne dépendent pas de ce qui change (prises d'huile des poudres, etc.)
-const MESURES = ['es', 'rheo', 'masq', 'tmff', 'cout', 'ph', 'brill'];
+const MESURES = ['es', 'rheo', 'masq', 'tmff', 'cout', 'brill'];
 const effacerMesures = (e, garder = []) => ({ ...e, libre: { ines: 0, lucas: 0, perrin: 0 },
   cmd: Object.fromEntries(Object.entries(e.cmd).filter(([k]) => k === 'huile' || garder.includes(k))),
   f: { ...e.f, fabrique: false, ...Object.fromEntries(MESURES.filter(k => !garder.includes(k)).map(k => ['mes_' + k, false])) } });
-const refaireCoalescent = (note) => ({ t: 'Corriger la dose de coalescent et refaire la peinture', d: '15 min de calcul puis fabrication ; pouvoir masquant, brillance et pH restent valables', duree: 15, f: { refaitCoal: true }, note, run: e => effacerMesures(e, ['masq', 'brill', 'ph']), vers: 'coalescent' });
+const refaireCoalescent = (note) => ({ t: 'Corriger la dose de coalescent et refaire la peinture', d: '15 min de calcul puis fabrication ; pouvoir masquant et brillance restent valables', duree: 15, f: { refaitCoal: true }, note, run: e => effacerMesures(e, ['masq', 'brill']), vers: 'coalescent' });
 // Dispersant : % de matière active sur les 120 g de poudres de la formule ; la demande réelle du lot (paramètre caché dem) décale le seuil
 export const pctActif = f => (f.coadis ?? 0.2) * 0.4 / 120 * 100;
 export const dispOk = f => pctActif(f) / (f.dem ?? 1) >= BORNE_BASSE;
-const mauvaisRheo = e => !dispOk(e.f) || !!e.f.phAjuste;
+const mauvaisRheo = e => !dispOk(e.f);
 
 add('intro', { lieu: 'Bureau de la responsable', pnj: 'dubreuil', titre: 'Lundi, 8 h 00',
-  texte: `Mme Dubreuil t'accueille avec un café et un dossier.\n« Notre fournisseur est en rupture de Vinnapas EP 3360, la résine de notre base de peinture blanche intérieure. Il faut pouvoir la remplacer par l'Orgal PST 50A sans dégrader la base : mate (λ = CPV/CPVC ≥ 0,8), extrait sec supérieur à 50 %, pouvoir masquant supérieur à 7,0 m²/L, COV inférieurs à 30 g/L, matières premières à moins de 4,5 €/kg, et film qui se forme dès 5 °C. »\n« On en profite pour corriger un défaut : les opérateurs trouvent des gros amas de poudres à la dispersion. Je veux une formule, une peinture fabriquée et un dossier de contrôle qualité. »\n« Appel avec notre cliente, Mme Aubry, à 15 h. Rapport pour 16 h 30. Karim, Inès et Lucas t'aident, mais chacun ne fait qu'une chose à la fois. »`,
+  texte: `Mme Dubreuil t'accueille avec un café et un dossier.\n« Notre fournisseur est en rupture de Vinnapas EP 3360, la résine de notre base de peinture blanche intérieure. Il faut pouvoir la remplacer par l'Orgal PST 50A sans dégrader la base : mate (λ = CPV/CPVC ≥ 0,8), extrait sec supérieur à 50 %, pouvoir masquant supérieur à 7,0 m²/L, COV inférieurs à 30 g/L, matières premières à moins de 4,5 €/kg, et film qui se forme dès 5 °C. »\n« On en profite pour corriger un défaut : les opérateurs trouvent des gros amas de poudres à la dispersion. Je veux une formule, une peinture fabriquée et un dossier de contrôle qualité. »\n« Appel avec notre cliente, Mme Aubry, à 15 h. Rapport pour 17 h. Karim, Inès et Lucas t'aident, mais chacun ne fait qu'une chose à la fois. »`,
   choix: [{ t: 'Parcourir le dossier', vers: 'docs' }] });
 
 add('docs', { lieu: 'Bureau', pnj: 'moi', titre: 'Étude du dossier',
@@ -148,7 +147,7 @@ add('docs', { lieu: 'Bureau', pnj: 'moi', titre: 'Étude du dossier',
   ] });
 
 add('docRes', { lieu: 'Bureau', pnj: 'moi', titre: 'Document 8 : les deux résines', fiches: ['vinnapas', 'orgal'],
-  texte: `Tu lis les deux fiches techniques côte à côte.\nLa Vinnapas : MFFT de 2 °C, ES 60 %, COV inférieurs à 1 g/L, et la fiche précise qu'elle « n'a besoin d'aucun agent de coalescence ». L'Orgal : ES 50 %, pH 7,5 à 9, mais MFFT de 20 °C et Tg de 20 °C : il forme un film « au-dessus de 20 °C ».\nDeux choses te chagrinent : la commande de la cliente promet une peinture « sans solvant, COV nuls » alors qu'une résine à MFFT de 20 °C ne filmifie pas à température ambiante sans agent de coalescence ; et le pH de l'Orgal est bien plus basique que celui de la Vinnapas.`,
+  texte: `Tu lis les deux fiches techniques côte à côte.\nLa Vinnapas : MFFT de 2 °C, ES 60 %, COV inférieurs à 1 g/L, et la fiche précise qu'elle « n'a besoin d'aucun agent de coalescence ». L'Orgal : ES 50 %, mais MFFT de 20 °C et Tg de 20 °C : il forme un film « au-dessus de 20 °C ».\nUne chose te chagrine : la commande de la cliente promet une peinture « sans solvant, COV nuls » alors qu'une résine à MFFT de 20 °C ne filmifie pas à température ambiante sans agent de coalescence.`,
   choix: [{ t: 'Continuer', vers: 'incoherence' }] });
 
 add('incoherence', { lieu: 'Bureau', pnj: 'moi', titre: 'Une incohérence dans le dossier',
@@ -164,7 +163,7 @@ add('alerteRep', { lieu: 'Bureau', pnj: 'dubreuil', titre: 'Réponse de Mme Dubr
 
 add('docRef', { lieu: 'Bureau', pnj: 'moi', titre: 'Documents 1, 2, 4 et 5 : la référence Vinnapas', fiches: ['formule', 'fabrication'],
   texte: () => { const pf = proprietes(FORMULE_REF, { ph: 'fiche' });
-    return `Formule de référence (331 g) : eau 121,7 g, TiO₂ 60 g, CaCO₃ léger 60 g, Vinnapas 83,3 g, Foamex 1,5 g, Coadis BR3 0,2 g, Thixol 1,5 g, Coapur 3 g. Pas de coalescent.\nTableur avec les prises d'huile des fiches (19 et 18 g pour 100 g) : ES = ${nf(pf.ES)} %, CPV = ${nf(pf.CPV)} %, CPVC = ${nf(pf.CPVC)} %, donc λ = ${nf(pf.lambda, 2)}. COV = ${nf(pf.COV)} g/L. Coût matières premières ≈ ${nf(coutKg(FORMULE_REF))} €/kg.\nAnalyses du responsable : pouvoir masquant 7,4 m²/L ; comportement rhéofluidifiant, faible thixotropie ; pH 5,4 ; film continu dès 3 °C.\nÉtonnant : avec λ = ${nf(pf.lambda, 2)} < 0,8, cette peinture ne devrait pas être mate, or elle l'est. Les prises d'huile des fiches sont-elles fiables ?\nFiche de fabrication : 70 % de l'eau, Foamex, Coadis, puis TiO₂ et CaCO₃ en pluie fine à 300 tr/min, dispersion 15 min à vitesse maximale (finesse 7 Hegman) ; ensuite la résine, le Thixol et le Coapur sous agitation lente (200 tr/min), enfin le reste de l'eau.`; },
+    return `Formule de référence (331 g) : eau 121,7 g, TiO₂ 60 g, CaCO₃ léger 60 g, Vinnapas 83,3 g, Foamex 1,5 g, Coadis BR3 0,2 g, Thixol 1,5 g, Coapur 3 g. Pas de coalescent.\nTableur avec les prises d'huile des fiches (20 et 14 g pour 100 g) : ES = ${nf(pf.ES)} %, CPV = ${nf(pf.CPV)} %, CPVC = ${nf(pf.CPVC)} %, donc λ = ${nf(pf.lambda, 2)}. COV = ${nf(pf.COV)} g/L. Coût matières premières ≈ ${nf(coutKg(FORMULE_REF))} €/kg.\nAnalyses du responsable : pouvoir masquant 7,4 m²/L ; comportement rhéofluidifiant, faible thixotropie ; film continu dès 3 °C.\nÉtonnant : avec λ = ${nf(pf.lambda, 2)} < 0,8, cette peinture ne devrait pas être mate, or elle l'est. Les prises d'huile des fiches sont-elles fiables ?\nFiche de fabrication : 70 % de l'eau, Foamex, Coadis, puis TiO₂ et CaCO₃ en pluie fine à 300 tr/min, dispersion 15 min à vitesse maximale (finesse 7 Hegman) ; ensuite la résine, le Thixol et le Coapur sous agitation lente (200 tr/min), enfin le reste de l'eau.`; },
   choix: [{ t: 'Revenir au dossier', vers: 'docs' }] });
 
 add('appel', { lieu: 'Téléphone', pnj: 'dubreuil', titre: 'L\'appel d\'organisation obligatoire',
@@ -323,7 +322,7 @@ add('debriefBanc', { lieu: 'Paillasse', pnj: 'lucas', titre: 'Ce que dit le banc
 add('stock', { lieu: 'Local de stockage', pnj: 'karim', titre: 'Le fût d\'Orgal',
   texte: 'Karim revient du local de stockage, un peu gêné.\n« Au fait, le fût d\'Orgal est resté dans le local non chauffé ce week-end. Il a fait −5 °C cette nuit. Je ne sais pas si ça compte… »',
   choix: [
-    { t: 'Je contrôle le fût : aspect, tamisage sur 100 µm, pH (15 min)', duree: 15, f: { stockCtrl: true }, note: 'Contrôle du fût d\'Orgal (stocké dans un local non chauffé, −5 °C).', vers: 'stockRes' },
+    { t: 'Je contrôle le fût : aspect et tamisage sur 100 µm (15 min)', duree: 15, f: { stockCtrl: true }, note: 'Contrôle du fût d\'Orgal (stocké dans un local non chauffé, −5 °C).', vers: 'stockRes' },
     { t: 'On l\'utilise comme ça : on gagne du temps', vers: 'stockAlerte' },
   ] });
 add('stockAlerte', { lieu: 'Local de stockage', pnj: 'karim', titre: 'Karim insiste',
@@ -361,11 +360,11 @@ add('cahier', { lieu: 'Paillasse', pnj: 'moi', titre: 'Le cahier de laboratoire'
 // ───────────── Résultats d'analyses ─────────────
 add('res_huile', { lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Résultat : prises d\'huile des poudres',
   texte: e => { const pm = prop(e, { ph: 'mesuree' }), pf = prop(e, { ph: 'fiche' });
-    return `Lucas, méthode à la spatule (ISO 787-5) : « TiO₂ : 26 g d'huile pour 100 g (la fiche annonçait 19). CaCO₃ léger : 49 g pour 100 g (la fiche annonçait 18). Nos poudres absorbent bien plus d'huile que sur les fiches. »\nAvec les valeurs des fiches, λ valait ${nf(pf.lambda, 2)} (CPVC = ${nf(pf.CPVC)} %). Avec les valeurs mesurées, le tableur donne CPVC = ${nf(pm.CPVC)} %.`; },
-  visuel: () => ({ type: 'huile', fiche: [19, 18], mesure: [26, 49] }),
+    return `Lucas, méthode à la spatule (ISO 787-5) : « TiO₂ : 25 g d'huile pour 100 g (la fiche annonçait 20). CaCO₃ léger : 30 g pour 100 g (la fiche annonçait 14). Nos poudres absorbent bien plus d'huile que sur les fiches. »\nAvec les valeurs des fiches, λ valait ${nf(pf.lambda, 2)} (CPVC = ${nf(pf.CPVC)} %). Avec les valeurs mesurées, le tableur donne CPVC = ${nf(pm.CPVC)} %.`; },
+  visuel: () => ({ type: 'huile', fiche: [20, 14], mesure: [25, 30] }),
   calcul: { q: 'Quelle est la valeur de λ = CPV / CPVC de ta formule avec les prises d\'huile mesurées ?', unite: '', vrai: e => prop(e, { ph: 'mesuree' }).lambda, tol: 0.03,
     indice: 'CPV vaut environ 42 % pour ta formule. Utilise la CPVC calculée avec les prises d\'huile mesurées (affichée plus haut) : λ = CPV ÷ CPVC.',
-    ok: { f: { mes_huile: true }, vers: 'labo', note: 'Prises d\'huile mesurées : TiO₂ 26, CaCO₃ 49 g/100 g (fiches : 19 et 18). Avec ces valeurs, λ ≈ 1 : peinture mate, comme observé.' },
+    ok: { f: { mes_huile: true }, vers: 'labo', note: 'Prises d\'huile mesurées : TiO₂ 25, CaCO₃ 30 g/100 g (fiches : 20 et 14). Avec ces valeurs, λ ≈ 0,85 : peinture mate, comme observé.' },
     ko: { f: { mes_huile: true }, vers: 'labo', duree: 10, note: 'Prises d\'huile mesurées ; λ recalculé avec l\'aide de Lucas (≈ 1).' } } });
 add('res_es', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Résultat : extrait sec et densité',
   texte: e => { const p = prop(e), ok = e.f.regle === 'ok', es = p.ES - (e.f.lotDouteux ? 1.2 : 0), r = proprietes(FORMULE_REF);
@@ -375,17 +374,8 @@ add('res_es', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Résultat 
       { t: 'Je garde cette formule telle quelle', f: { mes_es: true }, note: 'ES mesuré différent de la référence : formule conservée en l\'état.', vers: 'labo' }]
     : !covOk(e) ? [refaireCoalescent('COV mesurés au-dessus de 30 g/L : dose de coalescent à revoir.'), { t: 'Je garde cette formule et je le signale', f: { mes_es: true }, note: 'COV supérieurs à 30 g/L : formule conservée, écart signalé.', vers: 'labo' }]
     : [{ ...retourLabo, f: { mes_es: true }, note: 'ES et densité mesurées : conformes.' }] });
-add('res_ph', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Résultat : pH de la peinture',
-  texte: 'Inès : « pH = 8,3. La référence Vinnapas était à 5,4. »\nL\'Orgal est une dispersion basique (pH 7,5 à 9). Le Coadis BR3 est un dispersant polyacrylate : ses groupes carboxylate sont ionisés à ce pH, il agit pleinement. C\'est même l\'une des raisons pour lesquelles les amas disparaissent. Il vaut mieux garder ce pH que de chercher à retrouver celui de la référence.',
-  visuel: () => ({ type: 'ph', ph: 8.3, ref: 5.4, lab: 'Orgal', refLab: 'référence Vinnapas' }),
-  choix: [
-    { t: 'Consigner l\'écart de pH et son effet favorable sur le dispersant dans le rapport', f: { mes_ph: true, phSignale: true }, note: 'pH mesuré à 8,3 (référence Vinnapas : 5,4) : écart consigné, favorable au dispersant polyacrylate.', vers: 'labo' },
-    { t: 'Abaisser le pH vers 5,4 avec un acide pour retrouver la référence (25 min)', duree: 25, f: { mes_ph: true, phAjuste: true }, note: 'pH abaissé vers 5,4 pour imiter la référence Vinnapas.', vers: 'labo' },
-    { t: 'Ça ne change rien à la peinture : j\'ignore', f: { mes_ph: true }, vers: 'labo' },
-  ] });
 add('res_rheo', { lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Résultat : rhéologie',
-  texte: e => e.f.phAjuste ? 'Lucas : « Viscosité élevée à bas gradient et nette thixotropie. Le dispersant polyacrylate est protoné à pH 5 : il ne tient plus les poudres, qui refloculent. »\nCe pH acide a défait l\'effet du dispersant.'
-    : !dispOk(e.f) ? 'Lucas : « Viscosité élevée à bas gradient et nette thixotropie : il reste des amas mal dispersés. On est loin du comportement rhéofluidifiant à faible thixotropie demandé. »\nLe dispersant n\'a pas été corrigé : la cause des amas est restée.'
+  texte: e => !dispOk(e.f) ? 'Lucas : « Viscosité élevée à bas gradient et nette thixotropie : il reste des amas mal dispersés. On est loin du comportement rhéofluidifiant à faible thixotropie demandé. »\nLe dispersant n\'a pas été corrigé : la cause des amas est restée.'
     : 'Lucas : « Courbes de viscosité en fonction du gradient de cisaillement : comportement rhéofluidifiant, boucle de thixotropie très faible. Proche de la référence Vinnapas. »',
   visuel: e => ({ type: 'rheo', mauvais: mauvaisRheo(e) }),
   choix: [{ ...retourLabo, run: e => ({ ...e, f: { ...e.f, mes_rheo: true, rheoKo: mauvaisRheo(e) } }), note: 'Rhéologie mesurée.' }] });
@@ -395,7 +385,7 @@ add('res_masq', { lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Résulta
   visuel: e => ({ type: 'masq', pm: mauvaisRheo(e) ? 6.8 : 7.6 }),
   choix: [{ ...retourLabo, run: e => ({ ...e, f: { ...e.f, mes_masq: true } }), note: 'Pouvoir masquant mesuré.' }] });
 add('res_brill', { lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Résultat : brillance',
-  texte: 'Lucas : « Film de 100 µm sec sur carte contraste. À 60° : 2,8 unités de brillance. À 85° : 6,5. C\'est une peinture mate (moins de 10 UB à 60°). »\nC\'est cohérent avec λ ≈ 1 : quand CPV = CPVC, la surface du film est rugueuse à l\'échelle de la lumière et diffuse, au lieu de refléter.',
+  texte: 'Lucas : « Film de 100 µm sec sur carte contraste. À 60° : 2,8 unités de brillance. À 85° : 6,5. C\'est une peinture mate (moins de 10 UB à 60°). »\nC\'est cohérent avec λ proche de 1 : quand CPV approche CPVC, la surface du film est rugueuse à l\'échelle de la lumière et diffuse, au lieu de refléter.',
   visuel: () => ({ type: 'gloss', g60: 2.8, g85: 6.5 }),
   choix: [{ ...retourLabo, f: { mes_brill: true }, note: 'Brillance mesurée : 2,8 UB à 60° (mat).' }] });
 add('res_tmff', { lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Résultat : TMFF',
@@ -465,7 +455,7 @@ export function bilan(e) {
   const f = e.f, n = x => x ? 1 : 0;
   const niv = (pts, max) => pts >= max ? 'ok' : pts > 0 ? 'moyen' : 'ko';
   const nbDeleg = Object.keys(e.cmd).length;
-  const nbOpt = ['huile', 'ph', 'brill', 'tmff'].filter(k => f['mes_' + k]).length;
+  const nbOpt = ['huile', 'brill', 'tmff'].filter(k => f['mes_' + k]).length;
   const dOk = dpnbOk(f.dpnb ?? 0, f.eff);
   const dTxt = dOk ? 'dosé à bon escient (TMFF et COV conformes)' : (f.dpnb ?? 0) < 2.5 ? 'insuffisant (la MFFT de l\'Orgal est de 20 °C)' : 'en excès (COV trop élevés)';
   const pr = [];
@@ -474,10 +464,10 @@ export function bilan(e) {
   pr.push({ comp: 'C2.1', titre: 'Préparer produits et matériel', niveau: !f.fabrique && !f.rate ? 'nd' : f.rate ? 'moyen' : 'ok', texte: f.rate ? 'Première fabrication ratée : l\'ordre d\'introduction de la fiche n\'avait pas été respecté.' : f.fabrique ? 'Fabrication conforme à la fiche, finesse correcte.' : 'Pas de fabrication réalisée.' });
   const c32 = n(f.alerte === true) * (f.alerteTardive ? 0.5 : 1) + n(f.stockCtrl) * (f.stockAlerte ? 0.5 : 1) + n(f.stab === 'honnete');
   pr.push({ comp: 'C3.2', titre: 'Détecter les non-conformités et alerter', niveau: niv(c32, 3), texte: `Promesse « COV nuls » incompatible avec l'Orgal ${f.alerte === true ? (f.alerteTardive ? 'signalée tardivement' : 'signalée tout de suite') : 'non signalée'} ; fût d'Orgal gelé ${f.stockCtrl ? (f.stockAlerte ? 'contrôlé après rappel de Karim' : 'contrôlé de ta propre initiative') : 'non contrôlé'} ; stabilité ${f.stab === 'honnete' ? 'annoncée honnêtement comme non démontrée' : f.stab === 'promis' ? 'garantie sans l\'avoir démontrée' : 'omise'}.` });
-  const c41 = n(dispOk(f)) + n(dOk) + n(f.phSignale);
-  pr.push({ comp: 'C4.1', titre: 'Modifier, améliorer le protocole', niveau: niv(c41, 3), texte: `Dispersant ${dispOk(f) ? `corrigé (amas supprimés${f.dispCourbe ? ', dose trouvée par la courbe de défloculation' : ''})` : 'non corrigé'} ; coalescent ${dOk ? 'ajouté et dosé' : (f.dpnb ?? 0) < 2.5 ? 'absent ou trop faible' : 'surdosé'} ; pH ${f.phSignale ? 'mesuré, écart consigné' : f.phAjuste ? 'abaissé inutilement (le dispersant en a perdu son efficacité)' : f.mes_ph ? 'mesuré mais ignoré' : 'non mesuré (l\'Orgal est basique, la Vinnapas acide)'}.` });
-  const c61 = n(f.plan !== 'solo') + n(e.t <= T_RAPPORT) + n(nbOpt >= 3);
-  pr.push({ comp: 'C6.1', titre: 'Organiser le travail, tenir les délais', niveau: niv(c61, 3), texte: `${f.plan === 'solo' ? 'Tout fait seul·e : trop séquentiel. ' : f.plan === 'mp' ? 'Analyses des matières premières lancées dès le début, en parallèle. ' : 'Tâches déléguées en parallèle. '}Rapport ${e.t <= T_RAPPORT ? 'rendu dans les temps' : 'rendu après 16 h 30'} ; ${nbOpt} analyse(s) complémentaire(s) sur 4 (prises d'huile, pH, brillance, TMFF).` });
+  const c41 = n(dispOk(f)) + n(dOk);
+  pr.push({ comp: 'C4.1', titre: 'Modifier, améliorer le protocole', niveau: niv(c41, 2), texte: `Dispersant ${dispOk(f) ? `corrigé (amas supprimés${f.dispCourbe ? ', dose trouvée par la courbe de défloculation' : ''})` : 'non corrigé'} ; coalescent ${dOk ? 'ajouté et dosé' : (f.dpnb ?? 0) < 2.5 ? 'absent ou trop faible' : 'surdosé'}.` });
+  const c61 = n(f.plan !== 'solo') + n(e.t <= T_RAPPORT) + n(nbOpt >= 2);
+  pr.push({ comp: 'C6.1', titre: 'Organiser le travail, tenir les délais', niveau: niv(c61, 3), texte: `${f.plan === 'solo' ? 'Tout fait seul·e : trop séquentiel. ' : f.plan === 'mp' ? 'Analyses des matières premières lancées dès le début, en parallèle. ' : 'Tâches déléguées en parallèle. '}Rapport ${e.t <= T_RAPPORT ? 'rendu dans les temps' : 'rendu après 17 h'} ; ${nbOpt} analyse(s) complémentaire(s) sur 3 (prises d'huile, brillance, TMFF).` });
   pr.push({ comp: 'C6.3', titre: 'Gérer les produits selon la réglementation', niveau: niv(n(f.stock === 'neuf') + n(f.stock === 'tamise') * 0.5 + n(f.coutOk), 2), texte: `${f.stock === 'neuf' ? 'Lot gelé écarté, fût neuf commandé. ' : f.stock === 'tamise' ? 'Lot gelé tamisé et utilisé : acceptable seulement avec réserve. ' : 'Aucun problème de stockage détecté. '}${f.coutOk ? 'Coût matières contrôlé (< 4,5 €/kg).' : 'Coût matières non vérifié.'}` });
   pr.push({ comp: 'C6.4', titre: 'Assurer la traçabilité', niveau: f.trace ? 'ok' : 'ko', texte: f.trace ? 'Lot, pesées et observations consignés au fur et à mesure.' : 'Pesées réelles et observations reconstituées de mémoire : traçabilité faible.' });
   pr.push({ comp: 'C7.3', titre: 'Travailler en équipe', niveau: f.plan === 'solo' ? 'ko' : niv(n(nbDeleg >= 3) + n(f.alerte === true), 2), texte: f.plan === 'solo' ? 'Aucune délégation : l\'équipe n\'a pas été sollicitée.' : `${nbDeleg} analyse(s) confiée(s) aux collègues ; ${f.alerte === true ? 'information remontée à la responsable' : 'communication à améliorer'}.` });
@@ -497,9 +487,9 @@ export function resume(e) {
 
 // ───────────── Les fins ─────────────
 const fin = (id, ton, titre, texte) => add(id, { lieu: 'Fin de journée', pnj: 'dubreuil', titre, fin: { ton, titre }, texte, choix: [] });
-fin('fin_excellent', 'ok', 'Une journée exemplaire', e => `Il est ${hhmm(e.t)}. Le dossier est complet : formule conforme, coalescent dosé, contrôles faits, prises d'huile, pH, brillance et TMFF mesurés, traçabilité soignée, alertes données au bon moment. Mme Dubreuil sourit : « Voilà comment je veux voir travailler une équipe. On valide le remplacement de la Vinnapas par l'Orgal, et la cliente retire la mention « COV nuls » de ses étiquettes. »`);
+fin('fin_excellent', 'ok', 'Une journée exemplaire', e => `Il est ${hhmm(e.t)}. Le dossier est complet : formule conforme, coalescent dosé, contrôles faits, prises d'huile, brillance et TMFF mesurés, traçabilité soignée, alertes données au bon moment. Mme Dubreuil sourit : « Voilà comment je veux voir travailler une équipe. On valide le remplacement de la Vinnapas par l'Orgal, et la cliente retire la mention « COV nuls » de ses étiquettes. »`);
 fin('fin_bon', 'ok', 'Mission remplie, avec des progrès à faire', e => `Il est ${hhmm(e.t)}. La nouvelle base respecte l'essentiel du cahier des charges et le rapport est rendu dans les temps. Quelques points auraient pu être mieux conduits (voir le bilan ci-dessous). « C'est solide, dit Mme Dubreuil. Pour la prochaine fois, regarde bien les remarques : elles feront la différence. »`);
-fin('fin_retard', 'moyen', 'Rapport remis en retard', e => `Il est ${hhmm(e.t)}. Le travail est bon, mais le rapport arrive après 16 h 30 : la cliente a été rappelée sans les résultats. « Sur le fond, c'est bien, mais en entreprise le délai fait partie du cahier des charges. »`);
+fin('fin_retard', 'moyen', 'Rapport remis en retard', e => `Il est ${hhmm(e.t)}. Le travail est bon, mais le rapport arrive après 17 h : la cliente a été rappelée sans les résultats. « Sur le fond, c'est bien, mais en entreprise le délai fait partie du cahier des charges. »`);
 fin('fin_incomplet', 'moyen', 'Dossier incomplet', e => `Il est ${hhmm(e.t)}. Il manque des contrôles essentiels (extrait sec, rhéologie, pouvoir masquant) : le rapport ne permet pas de dire si la peinture respecte le cahier des charges. « On ne valide pas une formule sans ces mesures. Il va falloir tout recommencer demain. »`);
 fin('fin_ecart', 'moyen', 'Une formule hors cahier des charges', e => !tmffOk(e)
   ? `Il est ${hhmm(e.t)}. Ta peinture ne forme un film continu qu'à partir de ${nf(prop(e).tmff, 0)} °C environ, alors que le cahier des charges demande 5 °C. Posée en automne sur un mur froid, elle craquellerait et poudrerait. « La Vinnapas n'avait pas besoin de coalescent, l'Orgal si : la fiche le disait. Calcule la dose et mesure la TMFF avant de conclure. »`
