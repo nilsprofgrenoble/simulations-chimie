@@ -225,7 +225,7 @@ const SIMULATIONS = [
   { id:79, label:"Mission Kepler (escape game)", niveau:"COMPTE", icon:"🛰️", color:"#0a1530", component: SimulationEscapeKepler },
   // Mini escape game « Mission Aqua » (chapitre Transport des fluides) : hors menu, ?sim=80
   { id:80, label:"Mission Aqua (escape game)", niveau:"COMPTE", icon:"💧", color:"#0b2540", component: SimulationEscapeAqua },
-  // Histoire à choix « Une journée au labo » (BTS, d'après le CCF4 Orgal → Vinnapas) : hors menu, ?sim=81
+  // Histoire à choix « Une journée au labo » (BTS, d'après le CCF4 : Vinnapas → Orgal) : hors menu, ?sim=81
   { id:81, label:"Une journée au labo (histoire à choix, BTS)", niveau:"COMPTE", icon:"🧪", color:"#0f766e", component: SimulationHistoireLabo },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; });
