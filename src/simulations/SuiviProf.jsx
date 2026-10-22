@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, Fragment } from "react";
+import { JeuxProf } from "./JeuxEscape";
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite } from "../commun";
 import { useSession, estProf, deconnexion, rest, toutLire, fonctionComptes } from "../serveur";
 import { agreger, etiquettes, formatDuree, formatDate, TableauTempsSimulations, MotDePasse } from "./Compte";
@@ -261,6 +262,8 @@ export function SimulationSuiviProf({ naviguer }) {
           <div style={{ fontSize: 12.5, color: KIT.txt2, flexBasis: '100%' }}>Les identifiants seront <b>{nc.prefixe || 'tstl1'}-01, {nc.prefixe || 'tstl1'}-02…</b> (préfixe : 2 à 12 lettres minuscules ou chiffres, sans espace ni accent).
             Aucun nom d’élève n’est saisi ici : gardez vous-même la correspondance identifiant ↔ élève.</div>
         </form>)}
+
+      <JeuxProf naviguer={naviguer} />
 
       {classe && (
         <>

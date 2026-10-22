@@ -11,6 +11,7 @@ import { exosDuChapitre, exosCalcul, prochainExercice, avancementChapitre } from
 import { NIVEAUX_CHAPITRES, CHAPITRES, chapitresDuNiveau, chapitreDe, chapitresDe, domainesDe } from "../chapitres";
 import { nomsSim } from "../suivi";
 import { Pic } from "../Pictos";
+import { JeuxCode } from "./JeuxEscape";
 
 const ROSE = '#e11d48';
 const TRANSVERSAL = 'Tous thèmes (transversal)';
@@ -205,6 +206,8 @@ export function SimulationEntrainement({ naviguer }) {
         <button onClick={() => naviguer(39)} style={styleBouton(false, ROSE)}>{sess?.profil ? 'Mon compte' : 'Se connecter'}</button>
         {estProf(sess) && <button onClick={() => naviguer(40)} style={styleBouton(true, ROSE)}><Pic n="bars"/>Suivi professeur</button>}
       </div>
+
+      <JeuxCode naviguer={naviguer} />
 
       <section data-niveaux style={{ margin: '14px 0 6px' }}>
         <h3 style={{ margin: '0 0 6px', color: KIT.txt }}>1. Je suis en…</h3>
