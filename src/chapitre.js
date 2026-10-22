@@ -10,7 +10,7 @@
 //     réussi, on conseille celui où il a le moins d'étoiles (pour viser les 3 étoiles).
 // ═══════════════════════════════════════════════════════════════════════════
 export const MAX_CHAPITRES = 3;
-export const ORDRE_COMP = ["S'APP", 'ANA', 'REA'];
+export const ORDRE_COMP = ["S'APP", 'ANA', 'REA', 'VAL'];
 
 // Exercices à thème du chapitre (hors calcul REA, transversal)
 export const exosDuChapitre = (exos, chapitres) => (chapitres?.length ? exos.filter(e => e.comp !== 'REA' && chapitres.includes(e.domaine)) : []);
@@ -24,7 +24,7 @@ export function prochainExercice(exosChap, etoilesDe) {
   for (const e of exosChap) { if (!parComp.has(e.comp)) parComp.set(e.comp, []); parComp.get(e.comp).push(e); }
   const rang = c => { const i = ORDRE_COMP.indexOf(c); return i < 0 ? 99 : i; };
   const bilan = [...parComp.entries()].map(([comp, L]) => ({
-    comp, L, ratio: L.reduce((s, e) => s + etoilesDe(e.cle), 0) / (3 * L.length), restants: L.filter(e => etoilesDe(e.cle) === 0),
+    comp, L, ratio: L.reduce((s, e) => s + etoilesDe(e.cle), 0) / (3 * L.length), restants: L.filter(e => etoilesDe(e.cle) === 0).sort((a, b) => (a.niveau || 0) - (b.niveau || 0)),
   })).sort((a, b) => a.ratio - b.ratio || rang(a.comp) - rang(b.comp));
   const aFaire = bilan.find(b => b.restants.length);
   if (aFaire) return { exo: aFaire.restants[0], raison: 'nouveau', etoiles: 0 };
