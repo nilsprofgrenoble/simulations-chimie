@@ -569,6 +569,102 @@ export const PROBLEMES = [
     ] },
     retenir: ['Masse dissoute au maximum : m = s × m_eau / 100 (s en g pour 100 g d’eau).', 'Masse de cristaux = masse dissoute avant − masse encore dissoute après.'],
   },
+  {
+    id: 'ecart-acceptable', domaine: 'Régulation', titre: 'Un niveau assez proche de la consigne ?',
+    enonce: 'Un réservoir de section 3 m² est régulé en niveau par un régulateur proportionnel de gain K_p = 80 %·m⁻¹ (Y = K_p × (consigne − H)). La pompe débite au maximum 120 m³·h⁻¹ (pour Y = 100 %), et un soutirage constant de 36 m³·h⁻¹ vide le réservoir. La consigne est de 4,0 m. Le réglage de temps intégral du régulateur (50 h) n’est pas utilisé. Le cahier des charges exige un niveau d’au moins 3,6 m en régime permanent. Est-il respecté ?',
+    cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
+      V('Le niveau H en régime permanent, pour le comparer à 3,6 m', 'Le critère porte sur le niveau atteint, qui n’est pas la consigne : un régulateur P laisse un écart statique.'),
+      F('La durée pour atteindre la consigne', 'Aucun critère de durée dans l’énoncé.'),
+      F('Le volume d’eau dans le réservoir', 'Le critère est un niveau, pas un volume.'),
+    ] },
+    donnees: [
+      ['gain K_p = 80 %·m⁻¹', true, 'Il relie l’écart à la commande : écart = Y / K_p.'],
+      ['débit maximal 120 m³·h⁻¹', true, 'Avec le soutirage, il donne la commande nécessaire en pourcentage.'],
+      ['soutirage 36 m³·h⁻¹', true, 'En régime permanent, la pompe doit le compenser exactement.'],
+      ['consigne 4,0 m', true, 'Le niveau atteint est la consigne diminuée de l’écart statique.'],
+      ['au moins 3,6 m', true, 'C’est le critère auquel comparer le résultat.'],
+      ['section 3 m²', false, 'Elle règle la vitesse d’évolution du niveau, pas sa valeur en régime permanent.'],
+      ['temps intégral 50 h', false, 'Il ne sert qu’en régulation PI : ici le régulateur est proportionnel.'],
+    ],
+    relations: { options: [
+      V('Y = Q_p / Q_max × 100 : en régime permanent, la commande compense exactement le soutirage', 'Le niveau est stable : le débit de la pompe est égal au soutirage.'),
+      V('Y = K_p × (consigne − H), donc écart = Y / K_p', 'C’est la loi du régulateur proportionnel.'),
+      F('Y = K_p × consigne', 'La commande dépend de l’écart, pas de la consigne seule : sans écart, la commande serait nulle.'),
+      F('V = S × h', 'Le volume n’est pas demandé.'),
+      F('Q_V = v × S', 'Relation débit–vitesse : aucune vitesse n’intervient ici.'),
+    ] },
+    hypotheses: { options: [
+      V('Le régime permanent est atteint : le niveau ne varie plus', 'Sinon le débit de la pompe n’est pas égal au soutirage.'),
+      V('Le débit de la pompe est proportionnel à la commande Y', 'C’est ce qui permet de convertir le soutirage en pourcentage de commande.'),
+      V('Le soutirage reste constant', 'Sinon la commande nécessaire change et l’écart aussi.'),
+      F('Le régulateur a une action intégrale', 'Au contraire : avec une action intégrale, l’écart statique s’annulerait. Ici le régulateur est proportionnel.'),
+      F('La section du réservoir est connue précisément', 'Elle n’intervient pas dans l’écart statique.'),
+    ] },
+    demarche: {
+      etapes: [
+        { id: 'Y', t: 'Calculer la commande nécessaire : Y = 36 / 120 × 100', dep: [], e: 'Y = 30 %.' },
+        { id: 'e', t: 'Calculer l’écart statique : écart = Y / K_p = 30 / 80', dep: ['Y'], e: 'écart = 0,375 m.' },
+        { id: 'H', t: 'Calculer le niveau : H = 4,0 − écart', dep: ['e'], e: 'H ≈ 3,63 m.' },
+        { id: 'c', t: 'Comparer H à 3,6 m et conclure', dep: ['H'], e: '3,63 m ≥ 3,6 m.' },
+      ],
+      pieges: [
+        ['Calculer le volume du réservoir avec V = S × h', 'Inutile : le critère porte sur un niveau.'],
+        ['Chercher le temps intégral qui annule l’écart', 'Inutile : le régulateur est proportionnel, l’énoncé demande seulement de juger l’écart statique.'],
+      ],
+    },
+    conclusion: { q: 'Quelle conclusion obtient-on en suivant la démarche ?', options: [
+      V('Oui : H ≈ 3,63 m, au-dessus de 3,6 m (de peu)', 'Y = 30 %, écart = 30 / 80 = 0,375 m, H = 4,0 − 0,375 ≈ 3,63 m.'),
+      F('Non : H ≈ 3,55 m', 'C’est 4,0 − 36 / 80 : on a utilisé le soutirage (36 m³·h⁻¹) à la place de la commande Y en % (30 %).'),
+      F('Oui : H ≈ 4,4 m', 'L’écart a été ajouté à la consigne : un régulateur proportionnel laisse le niveau sous la consigne, pas au-dessus.'),
+    ] },
+    retenir: ['Régulation P, régime permanent : Y = Q_p / Q_max × 100, puis écart statique = Y / K_p.', 'Le niveau atteint est la consigne moins l’écart statique.'],
+  },
+  {
+    id: 'capteur-assez-rapide', domaine: 'Régulation', titre: 'Un capteur assez rapide ?',
+    enonce: 'Un capteur de température se comporte comme un système du 1er ordre de constante de temps τ = 12 s. On le plonge de 20 °C dans un bain à 80 °C. Pour un contrôle qualité, on lit la mesure 30 s après l’immersion, et elle doit être à moins de 5 % de la valeur finale de l’échelon. L’afficheur a une résolution de 0,1 °C et le capteur pèse 15 g. L’attente de 30 s est-elle suffisante ?',
+    cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
+      V('Le temps de réponse à 5 % du capteur, pour le comparer à 30 s', 'Le critère « à 5 % de la valeur finale » est exactement la définition du temps de réponse à 5 %.'),
+      F('La température lue après 30 s en °C', 'On peut la calculer, mais le critère est exprimé en pourcentage de la valeur finale : le temps de réponse à 5 % suffit.'),
+      F('La capacité thermique du capteur', 'Elle est déjà contenue dans la constante de temps donnée.'),
+    ] },
+    donnees: [
+      ['τ = 12 s', true, 'Le temps de réponse à 5 % se déduit de la constante de temps.'],
+      ['attente de 30 s', true, 'C’est la durée à comparer au temps de réponse.'],
+      ['« à moins de 5 % »', true, 'Il indique qu’il faut le temps de réponse à 5 %.'],
+      ['de 20 °C à 80 °C', false, 'Le critère est en pourcentage de l’échelon : sa valeur n’est pas nécessaire.'],
+      ['résolution 0,1 °C', false, 'La résolution de l’afficheur ne change pas la rapidité du capteur.'],
+      ['masse 15 g', false, 'La masse est déjà contenue dans la constante de temps.'],
+    ],
+    relations: { options: [
+      V('t₅ % ≈ 3·τ', 'À t = 3·τ, la réponse d’un système du 1er ordre atteint 95 % de sa valeur finale.'),
+      F('t₅ % = τ', 'À t = τ, la sortie n’a atteint que 63 % de sa valeur finale.'),
+      F('t₅ % = τ / 3', 'Le temps de réponse est plus grand que τ, pas plus petit.'),
+      F('Q = m·c·ΔT', 'Énergie échangée : aucun critère sur une énergie ici.'),
+    ] },
+    hypotheses: { options: [
+      V('Le capteur se comporte comme un système du 1er ordre', 'C’est ce qui permet d’écrire t₅ % ≈ 3·τ.'),
+      V('L’entrée est un échelon : le capteur passe brusquement dans le bain et y reste', 'La relation t₅ % = 3·τ est celle de la réponse à un échelon.'),
+      V('La température du bain reste constante pendant la mesure', 'Sinon la valeur finale change et l’échelon aussi.'),
+      F('Le capteur est parfaitement étalonné', 'Une erreur d’étalonnage ne change pas la rapidité du capteur.'),
+      F('La température initiale vaut 20 °C exactement', 'Le temps de réponse à 5 % ne dépend pas de la température de départ.'),
+    ] },
+    demarche: {
+      etapes: [
+        { id: 't5', t: 'Calculer le temps de réponse à 5 % : t₅ % = 3 × 12', dep: [], e: 't₅ % = 36 s.' },
+        { id: 'c', t: 'Comparer 36 s à l’attente de 30 s et conclure', dep: ['t5'], e: '36 s > 30 s.' },
+      ],
+      pieges: [
+        ['Calculer l’échelon 80 − 20 = 60 °C', 'Inutile : le critère est en pourcentage de l’échelon.'],
+        ['Calculer la capacité thermique du capteur', 'Inutile : elle est contenue dans τ.'],
+      ],
+    },
+    conclusion: { q: 'Quelle conclusion obtient-on en suivant la démarche ?', options: [
+      V('Non : t₅ % = 36 s, plus long que les 30 s d’attente', '3 × 12 = 36 s : à 30 s, le capteur n’a pas encore atteint 95 % de la valeur finale.'),
+      F('Oui : t₅ % = 12 s', 'τ n’est pas le temps de réponse à 5 % : à t = τ, le capteur n’en est qu’à 63 %.'),
+      F('Oui : t₅ % = 4 s', 'On a divisé τ par 3 au lieu de le multiplier par 3.'),
+    ] },
+    retenir: ['Système du 1er ordre : à t = τ, 63 % de la valeur finale ; à t = 3τ, 95 % : t₅ % ≈ 3·τ.'],
+  },
 ];
 
 // ──────────────────────────────── 2. CHOISIR LA BONNE RELATION ────────────────────────────────
@@ -753,6 +849,22 @@ export const RELATIONS = [
       F('η = (m_maximale − m_obtenue) / m_maximale', 'C’est la part perdue (25 %), pas le rendement.'),
       F('η = m_obtenue × m_maximale', 'Ce produit n’est pas un rapport : il n’a pas de sens pour un rendement.'),
     ] },
+  { id: 'commande-P', domaine: 'Régulation', titre: 'La loi d’un régulateur proportionnel',
+    enonce: 'Dans une régulation de niveau proportionnelle, on cherche la commande Y (en %) envoyée à la pompe à partir du niveau mesuré H, de la consigne et du gain K_p.',
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('Y = K_p × (consigne − H)', 'La commande est proportionnelle à l’écart entre la consigne et la mesure : c’est la définition d’un régulateur P.'),
+      F('Y = K_p × H', 'Elle ne compare pas le niveau à la consigne : ce serait une commande sans rétroaction.'),
+      F('Y = consigne − H', 'Il manque le gain K_p : c’est lui qui règle la commande pour un écart donné.'),
+      F('Y = K_p × consigne', 'La commande dépend de l’écart, pas de la consigne seule : sans écart, elle serait nulle.'),
+    ] },
+  { id: 'temps-reponse', domaine: 'Régulation', titre: 'Temps de réponse d’un 1er ordre',
+    enonce: 'Un capteur du 1er ordre a une constante de temps τ = 20 s. On cherche son temps de réponse à 5 %.',
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('t₅ % ≈ 3·τ', 'À 3·τ, la sortie atteint 95 % de sa valeur finale : ici 60 s.'),
+      F('t₅ % = τ', 'À t = τ, la sortie n’a atteint que 63 % de sa valeur finale.'),
+      F('t₅ % = τ / 3', 'Ce serait plus court que τ : le capteur n’aurait pas encore atteint 63 %.'),
+      F('t₅ % = 3 / τ', 'Pas homogène : l’unité serait des s⁻¹ au lieu de s.'),
+    ] },
 ];
 
 // ──────────────────────────────── 3. HYPOTHÈSES D'UN MODÈLE ────────────────────────────────
@@ -875,6 +987,23 @@ export const HYPOTHESES = [
       F('Les cristaux ont la même masse volumique que la solution', 'Elle n’intervient pas dans un calcul de masses.'),
       F('Le refroidissement est instantané', 'Au contraire, on suppose assez de temps pour atteindre l’équilibre ; la vitesse n’entre pas dans le calcul.'),
       F('La solubilité est la même à 20 °C et à 60 °C', 'Au contraire : c’est la baisse de solubilité qui fait cristalliser.'),
+    ] },
+  { id: 'regulation-P', domaine: 'Régulation', titre: 'Écart statique d’une régulation proportionnelle',
+    enonce: 'On calcule l’écart statique d’un réservoir régulé en P avec écart = (Q_p / Q_max × 100) / K_p.', options: [
+      V('Le régime permanent est atteint : le niveau ne varie plus', 'Sinon la pompe ne compense pas exactement le soutirage.'),
+      V('Le débit de la pompe est proportionnel à la commande Y', 'C’est ce qui permet de passer d’un débit à un pourcentage de commande.'),
+      V('Le soutirage Q_p est constant', 'Sinon la commande nécessaire change au cours du temps.'),
+      F('Le régulateur a une action intégrale', 'Au contraire : avec une action intégrale, l’écart statique s’annule.'),
+      F('La section du réservoir est connue', 'Elle règle la vitesse d’évolution du niveau, pas l’écart statique.'),
+      F('Le niveau initial est égal à la consigne', 'En régime permanent, le niveau initial n’a plus d’influence.'),
+    ] },
+  { id: 'premier-ordre', domaine: 'Régulation', titre: 'Temps de réponse à 5 % d’un capteur',
+    enonce: 'On utilise t₅ % = 3·τ pour le temps de réponse d’un capteur de température.', options: [
+      V('Le capteur se comporte comme un système du 1er ordre', 'La relation t₅ % = 3·τ n’est vraie que pour un 1er ordre.'),
+      V('L’entrée est un échelon : la grandeur change brusquement puis reste constante', 'C’est la situation pour laquelle on définit le temps de réponse.'),
+      V('Les conditions de la mesure restent constantes (température du bain, agitation)', 'Sinon la constante de temps change pendant la mesure.'),
+      F('Le capteur est parfaitement précis', 'La précision n’intervient pas dans la rapidité du capteur.'),
+      F('La température initiale vaut 20 °C', 'Le temps de réponse à 5 % ne dépend pas des températures de départ et d’arrivée.'),
     ] },
 ];
 
@@ -1151,6 +1280,20 @@ export const PREVOIR = [
       V('plus grande', 'Moins de soluté reste dissous à 0 °C (13 g au lieu de 32 g pour 100 g d’eau) : il en cristallise davantage.'),
       F('plus petite', 'Sens inversé : la solubilité plus faible laisse moins de soluté en solution.'),
       F('inchangée', 'La solubilité à 0 °C n’est pas la même : la masse de cristaux change.'),
+    ] },
+  { id: 'soutirage-double', domaine: 'Régulation', titre: 'Soutirage doublé',
+    enonce: 'Dans une régulation de niveau proportionnelle, le soutirage Q_p double (même gain K_p, même pompe).', q: 'L’écart statique est…', options: [
+      V('doublé', 'écart = (Q_p / Q_max × 100) / K_p est proportionnel à Q_p.'),
+      F('inchangé', 'Il dépend de la commande nécessaire, donc du soutirage.'),
+      F('divisé par 2', 'Sens inversé : un soutirage plus important demande plus de commande, donc plus d’écart.'),
+      F('multiplié par 4', 'Il est proportionnel à Q_p, pas à Q_p².'),
+    ] },
+  { id: 'gain-double', domaine: 'Régulation', titre: 'Gain doublé',
+    enonce: 'On double le gain K_p d’un régulateur proportionnel (même soutirage, même pompe).', q: 'L’écart statique est…', options: [
+      V('divisé par 2', 'écart = Y / K_p : à commande égale, un gain deux fois plus grand donne un écart deux fois plus petit.'),
+      F('doublé', 'Sens inversé : un gain plus grand réduit l’écart.'),
+      F('annulé', 'Seule une action intégrale annule l’écart statique : un gain, même grand, ne l’annule pas.'),
+      F('inchangé', 'Il dépend du gain.'),
     ] },
 ];
 
