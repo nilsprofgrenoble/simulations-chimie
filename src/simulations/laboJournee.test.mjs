@@ -73,7 +73,7 @@ function formulation(g, o = {}) {
   g.go(o.trace === false ? 'noterai ça' : 'Je note maintenant');
 }
 function travaille(g, o = {}) {
-  const dem = o.dem || ['Lucas : Prises', 'Inès : Extrait', 'Inès : pH', 'Lucas : Profil', 'Lucas : Pouvoir', 'Lucas : Brillance', 'Lucas : Température', 'M. Perrin'];
+  const dem = o.dem || ['Lucas : Prises', 'Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'Lucas : Brillance', 'Lucas : Température', 'M. Perrin'];
   const client = () => { if (g.e.scene === 'client') { const ch = J.choixDe(g.e); g.go(o.mens ? 'devrait aller' : ch[0].t.slice(0, 20)); } };
   for (const k of dem) { client(); if (g.e.scene === 'fin_perdue') break; if (g.e.cmd.huile && k.includes('Prises')) continue; g.go('Demander à ' + k); }
   client(); if (!J.estFin(g.e.scene) && g.e.scene === 'labo') g.go('Mettre un échantillon');
@@ -81,7 +81,6 @@ function travaille(g, o = {}) {
     const e = g.e; if (J.estFin(e.scene)) return e;
     if (e.scene === 'client') { const ch = J.choixDe(e); g.go(o.mens ? 'devrait aller' : ch[0].t.slice(0, 20)); continue; }
     if (e.scene === 'res_cout' || e.scene === 'res_huile') { g.calc(); continue; }
-    if (e.scene === 'res_ph') { g.go('Consigner'); continue; }
     if (e.scene === 'coalescent') { g.go('Calculer la dose'); continue; }
     if (e.scene === 'calcDpnb') { g.calc(); continue; }
     if (e.scene === 'fabrication') { g.go('Je suis la fiche'); continue; }
@@ -91,7 +90,7 @@ function travaille(g, o = {}) {
     if (e.scene.startsWith('res_')) { g.e = J.choisir(e, J.choixDe(e)[0]); continue; }
     if (e.scene === 'labo') {
       const ch = J.choixDe(e), lire = ch.find(c => c.t.startsWith('📄'));
-      const fini = (o.corrige ? ['es', 'rheo', 'masq', 'tmff'] : ['es', 'rheo', 'masq', 'tmff', 'cout', 'huile', 'ph', 'brill']).every(k => e.f['mes_' + k]) && e.f.clientFait;
+      const fini = (o.corrige ? ['es', 'rheo', 'masq', 'tmff'] : ['es', 'rheo', 'masq', 'tmff', 'cout', 'huile', 'brill']).every(k => e.f['mes_' + k]) && e.f.clientFait;
       if (fini || e.t > (o.stop ?? 9999)) { g.go('Rédiger le rapport'); break; }
       if (lire) { g.e = J.choisir(e, lire); continue; }
       const dem2 = ['Température', 'Extrait', 'Profil', 'Pouvoir'].map(k => ch.find(c => c.t.startsWith('Demander à') && c.t.includes(k))).find(Boolean); if (dem2 && o.corrige && !fini) { g.e = J.choisir(e, dem2); continue; }
@@ -119,7 +118,7 @@ const cas = {};
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); for (let i = 0; i < 40 && g.e.scene !== 'fin_perdue'; i++) g.go(g.e.scene === 'client' ? 'Je confirme' : 'Attendre'); cas.fin_perdue = g.e; }
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 });
   for (const k of ['Demander à Inès : Extrait', 'Demander à Lucas : Profil', 'Demander à Lucas : Pouvoir']) g.go(k);
-  for (let i = 0; i < 80 && !(g.e.t >= 470 && g.e.f.mes_es && g.e.f.mes_rheo && g.e.f.mes_masq && g.e.f.clientFait); i++) {
+  for (let i = 0; i < 80 && !(g.e.t >= 515 && g.e.f.mes_es && g.e.f.mes_rheo && g.e.f.mes_masq && g.e.f.clientFait); i++) {
     const e = g.e, l = J.choixDe(e).find(c => c.t.startsWith('📄'));
     if (e.scene === 'client') g.go('Je confirme'); else if (e.scene.startsWith('res_')) g.e = J.choisir(e, J.choixDe(e)[0]); else if (l) g.e = J.choisir(e, l); else g.go('Attendre');
   }

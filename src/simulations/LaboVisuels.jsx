@@ -28,7 +28,7 @@ export const STYLE_VISUELS = `
 // ───────────── Ciel et horloge murale selon l'heure du jeu ─────────────
 const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
 const lerpC = (a, b, k) => '#' + hex(a).map((v, i) => Math.round(v + (hex(b)[i] - v) * k).toString(16).padStart(2, '0')).join('');
-const CIEL = [[0, '#bcd9f2', '#e8f3fb'], [120, '#8fc4ee', '#dbeefb'], [270, '#78b6ec', '#cfe7fa'], [420, '#f0c987', '#fbe8c4'], [510, '#ee9a62', '#f8cfa0'], [540, '#6f5a8c', '#c99aa6']];
+const CIEL = [[0, '#bcd9f2', '#e8f3fb'], [120, '#8fc4ee', '#dbeefb'], [270, '#78b6ec', '#cfe7fa'], [420, '#f0c987', '#fbe8c4'], [540, '#ee9a62', '#f8cfa0'], [570, '#6f5a8c', '#c99aa6']];
 function couleursCiel(t) {
   const x = Math.max(0, Math.min(540, t));
   for (let i = 0; i < CIEL.length - 1; i++) if (x <= CIEL[i + 1][0]) { const k = (x - CIEL[i][0]) / (CIEL[i + 1][0] - CIEL[i][0]); return [lerpC(CIEL[i][1], CIEL[i + 1][1], k), lerpC(CIEL[i][2], CIEL[i + 1][2], k)]; }

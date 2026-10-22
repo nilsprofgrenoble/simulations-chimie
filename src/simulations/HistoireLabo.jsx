@@ -47,13 +47,13 @@ function BarreHeure({ t }) {
     <div style={{ marginBottom: 12 }} aria-label={`Il est ${hhmm(t)}`}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4, gap: 8, flexWrap: 'wrap' }}>
         <span style={{ display: 'inline-block', transform: 'rotate(-2deg)', border: `2.5px solid ${retard ? C.rouge : ENCRE}`, borderRadius: 6, padding: '0 10px', fontWeight: 700, fontSize: 22, whiteSpace: 'nowrap', color: retard ? C.rouge : ENCRE, letterSpacing: 1 }} data-heure>🕗 {hhmm(t)}</span>
-        <span style={{ fontSize: 12.5, color: C.doux }}>Appel client 15 h · Rapport avant 16 h 30</span>
+        <span style={{ fontSize: 12.5, color: C.doux }}>Appel client 15 h · Rapport avant 17 h</span>
       </div>
       <div style={{ position: 'relative', height: 12, background: '#e8e2d2', borderRadius: 6, border: '1px solid #cfc6b0' }}>
         <div style={{ width: pct(t), height: '100%', background: retard ? C.rouge : ENCRE, borderRadius: 6, transition: 'width .4s' }} />
         {[T_CLIENT, T_RAPPORT].map(x => <div key={x} style={{ position: 'absolute', left: pct(x), top: -3, width: 2, height: 18, background: C.ambre }} />)}
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, color: C.doux, marginTop: 3 }}>{['8 h', '10 h', '12 h', '14 h', '16 h', '17 h'].map(h => <span key={h}>{h}</span>)}</div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, color: C.doux, marginTop: 3 }}>{['8 h', '10 h', '12 h', '14 h', '16 h', '17 h 30'].map(h => <span key={h}>{h}</span>)}</div>
     </div>);
 }
 
@@ -153,7 +153,7 @@ export function SimulationHistoireLabo() {
       <div style={{ fontSize: 12.5, letterSpacing: 2, color: C.accent, fontFamily: 'ui-monospace,monospace', marginTop: 14 }}>BTS MÉTIERS DE LA CHIMIE · HISTOIRE À CHOIX</div>
       <h2 className="lab-titre" style={{ margin: '8px 0 14px', fontSize: 'clamp(26px,5.5vw,36px)', color: '#b91c1c' }}>🧪 Une journée au laboratoire</h2>
       <p style={{ lineHeight: 1.65, fontSize: 17, maxWidth: 740 }}>
-        Tu es technicien·ne dans un laboratoire de R&amp;D de peintures. Aujourd'hui, de 8 h à 17 h : remplacer la résine d'une base de peinture blanche, corriger un défaut de fabrication et contrôler la qualité de la nouvelle formule, avec des collègues à qui déléguer les analyses, une responsable à prévenir quand il le faut et une cliente au téléphone à 15 h.
+        Tu es technicien·ne dans un laboratoire de R&amp;D de peintures. Aujourd'hui, de 8 h à 17 h 30 : remplacer la résine d'une base de peinture blanche, corriger un défaut de fabrication et contrôler la qualité de la nouvelle formule, avec des collègues à qui déléguer les analyses, une responsable à prévenir quand il le faut et une cliente au téléphone à 15 h.
       </p>
       <ul style={{ lineHeight: 1.7, color: '#4b5563', fontSize: 16, paddingLeft: 20 }}>
         <li>Tu joues <b style={{ color: C.encre }}>seul·e</b>, en <b style={{ color: C.encre }}>moins d'une heure</b> de temps réel.</li>
