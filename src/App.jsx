@@ -79,6 +79,8 @@ import { useSession, restaurer, estEleve, estProf } from "./serveur";
 import { chapitresDuNiveau } from "./chapitres";
 import { SuiviTemps, nomsSim } from "./suivi";
 import { ModeParDefaut } from "./ModeParDefaut";
+import RetourMission from "./RetourMission";
+import { SimulationEscapeKepler } from "./simulations/EscapeKepler";
 import { ProchaineEtape } from "./ProchaineEtape";
 import { EnTete } from "./EnTete";
 import { PiedDePage } from "./PiedDePage";
@@ -216,6 +218,8 @@ const SIMULATIONS = [
   { id:40, label:"Suivi professeur", niveau:"COMPTE", icon:"📊", color:"#25628f", component: SimulationSuiviProf },
   // Page hors menu : à propos et contact (ouverte depuis le bas du menu et le pied de page)
   { id:47, label:"À propos et contact", niveau:"COMPTE", icon:"ℹ️", color:"#475569", component: SimulationAPropos },
+  // Escape game « Mission Kepler » : hors menu, ouvert par son lien (?sim=79)
+  { id:79, label:"Mission Kepler (escape game)", niveau:"COMPTE", icon:"🛰️", color:"#0a1530", component: SimulationEscapeKepler },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; });
 
@@ -344,7 +348,7 @@ export default function App() {
                 {idAffiche === 39 ? (estEleve(sessionSb) ? 'Mon profil' : sessionSb?.profil ? 'Mon compte' : 'Se connecter') : active.label}
               </span>
             </h1>
-            {estProf(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47) && (
+            {estProf(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79) && (
               <button data-donner-devoir onClick={() => {
                 try { window.sessionStorage.setItem('devoir-preset', JSON.stringify({ titre: active.label, cles: [`sim:${activeId}`], eleves: [] })); } catch { /* sans mémorisation, le formulaire s'ouvre vide */ }
                 naviguer(40);
@@ -372,13 +376,14 @@ export default function App() {
                 {/* Le fichier App.css du modèle Vite centre tout le texte (#root) : on rétablit l'alignement
                     à gauche pour les simulations ; la page d'accueil garde sa mise en page centrée. */}
                 <BandeauContexte key={`b${activeId}`} id={activeId} contexte={CONTEXTES[activeId]} couleur={active.color} />
-                {(activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47) && <SuiviTemps simId={activeId} />}
-                {estEleve(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47) && <ProchaineEtape key={`pe${activeId}`} simId={activeId} naviguer={naviguer} />}
+                {(activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79) && <SuiviTemps simId={activeId} />}
+                {estEleve(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79) && <ProchaineEtape key={`pe${activeId}`} simId={activeId} naviguer={naviguer} />}
                 <div id="zone-simulation"><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></div>
-                {activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 ? <ModeParDefaut simId={activeId} cibleId="zone-simulation" /> : null}
+                {activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 ? <ModeParDefaut simId={activeId} cibleId="zone-simulation" /> : null}
               </div>}
         </div>
         <ToastRecompense naviguer={naviguer} />
+        <RetourMission activeId={activeId} naviguer={naviguer} />
         <PiedDePage naviguer={naviguer} energyUrl={ENERGY_URL} />
       </main>
     </div>

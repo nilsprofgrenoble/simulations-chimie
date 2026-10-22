@@ -18,7 +18,7 @@ export function ModeParDefaut({ simId, cibleId }) {
   useLayoutEffect(() => {
     if (!PARCOURS_GUIDE_PAR_DEFAUT || estProf(getSession())) return;
     const ouverture = window.__modeOuverture; window.__modeOuverture = undefined;   // lu une seule fois, pour ne pas servir à la simulation suivante
-    if (ouverture === 'explore') return;   // parcours déjà terminé (ou lien de devoir vers un défi) : on reste sur l'exploration
+    if (ouverture === 'explore' || ouverture === 'defi') return;   // parcours déjà terminé (ou lien de devoir vers un défi) : on reste sur l'exploration
     const zone = document.getElementById(cibleId);
     const bouton = zone && [...zone.querySelectorAll('button')].find(b => b.textContent.includes('Parcours guidé'));
     if (!bouton) return;
