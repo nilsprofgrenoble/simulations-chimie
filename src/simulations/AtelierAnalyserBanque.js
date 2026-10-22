@@ -471,6 +471,104 @@ export const PROBLEMES = [
     ] },
     retenir: ['Titrage : à l’équivalence, réactifs dans les proportions stœchiométriques.', 'Ne pas oublier le facteur de dilution.'],
   },
+  {
+    id: 'alambic', domaine: 'Distillation', titre: 'Récupérer 50 mL d’éthanol',
+    enonce: 'On dispose de 400 mL d’un mélange eau–éthanol contenant 15 % d’éthanol en volume. On veut récupérer au moins 50 mL d’éthanol par distillation fractionnée. Cette distillation a un rendement de 80 % (80 % de l’éthanol présent est récupéré). Le chauffe-ballon a une puissance de 500 W et l’éthanol bout à 78 °C. L’objectif est-il réalisable avec ce mélange ?',
+    cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
+      V('Le volume d’éthanol récupérable, pour le comparer à 50 mL', 'Le critère porte sur un volume d’éthanol : on le calcule, puis on le compare à 50 mL.'),
+      F('La durée de la distillation', 'Aucun critère de durée dans l’énoncé : la puissance du chauffe-ballon ne sert pas ici.'),
+      F('La température en tête de colonne', 'Elle explique la séparation, mais ne permet pas de savoir combien d’éthanol on récupère.'),
+    ] },
+    donnees: [
+      ['400 mL de mélange', true, 'C’est le volume sur lequel s’applique le pourcentage.'],
+      ['15 % d’éthanol en volume', true, 'Il donne le volume d’éthanol présent : 15 % de 400 mL.'],
+      ['rendement de 80 %', true, 'Il donne la part de l’éthanol présent que l’on récupère.'],
+      ['au moins 50 mL', true, 'C’est le critère auquel comparer le résultat.'],
+      ['puissance de 500 W', false, 'La puissance fixe la durée de la distillation, pas les volumes.'],
+      ['éthanol : 78 °C', false, 'La température d’ébullition explique la séparation, mais n’entre pas dans le calcul d’un volume.'],
+    ],
+    relations: { options: [
+      V('V_éthanol = x × V_mélange (x en proportion : 15 % = 0,15)', 'Un pourcentage en volume s’applique à un volume.'),
+      V('V_récupéré = η × V_éthanol', 'Le rendement est la part récupérée de ce qui était présent.'),
+      F('Q = P × Δt', 'Elle relie énergie, puissance et durée : aucun critère de durée ici.'),
+      F('m = ρ × V', 'Elle donne une masse : on raisonne en volumes, aucune masse n’est demandée.'),
+      F('Q = m·c·ΔT', 'Elle donne l’énergie pour chauffer : le critère ne porte pas sur l’énergie.'),
+    ] },
+    hypotheses: { options: [
+      V('Le pourcentage en volume s’applique au mélange initial : 15 % de 400 mL', 'C’est la définition d’une composition « en volume » du mélange de départ.'),
+      V('Le rendement de 80 % vaut pour tout le volume traité', 'Sinon V_récupéré ne serait pas simplement 0,80 × V_éthanol.'),
+      V('Le volume récupéré est compté en éthanol (et non en volume de distillat)', 'Le critère porte sur 50 mL d’éthanol.'),
+      F('Les pertes thermiques du chauffe-ballon sont nulles', 'La puissance n’intervient pas dans ce raisonnement.'),
+      F('La température est constante pendant toute la distillation', 'Elle varie, mais ce n’est pas nécessaire pour calculer un volume avec un rendement donné.'),
+    ] },
+    demarche: {
+      etapes: [
+        { id: 'Ve', t: 'Calculer le volume d’éthanol présent : V_éthanol = 0,15 × 400', dep: [], e: 'V_éthanol = 60 mL.' },
+        { id: 'Vr', t: 'Calculer le volume récupéré : V_récupéré = 0,80 × V_éthanol', dep: ['Ve'], e: 'V_récupéré = 48 mL.' },
+        { id: 'c', t: 'Comparer V_récupéré à 50 mL et conclure', dep: ['Vr'], e: '48 mL < 50 mL.' },
+      ],
+      pieges: [
+        ['Calculer l’énergie nécessaire pour chauffer le mélange', 'Inutile : le critère porte sur un volume, pas sur une énergie.'],
+        ['Convertir les volumes en masses avec ρ', 'Inutile : tout se calcule en volumes.'],
+      ],
+    },
+    conclusion: { q: 'Quelle conclusion obtient-on en suivant la démarche ?', options: [
+      V('Non : on récupère 48 mL d’éthanol, moins que 50 mL', 'V_éthanol = 0,15 × 400 = 60 mL, puis 0,80 × 60 = 48 mL.'),
+      F('Oui : on récupère 60 mL', 'Résultat obtenu en oubliant le rendement : 60 mL est tout l’éthanol présent.'),
+      F('Oui : on récupère 75 mL', 'C’est 60 / 0,80 : le rendement s’applique en multipliant, pas en divisant.'),
+    ] },
+    retenir: ['Volume d’un constituant : V_constituant = x × V_mélange (x en proportion, pas en %).', 'Rendement : quantité récupérée = η × quantité présente.'],
+  },
+  {
+    id: 'cristaux-masse', domaine: 'Évaporation et cristallisation', titre: 'Obtenir 200 g de cristaux',
+    enonce: 'On prépare à 60 °C une solution saturée de nitrate de potassium dans 300 g d’eau. À 60 °C, la solubilité du nitrate de potassium est de 110 g pour 100 g d’eau ; à 20 °C, elle est de 32 g pour 100 g d’eau. On refroidit la solution de 60 °C à 20 °C, en une heure, dans un bécher de 500 mL. On veut obtenir au moins 200 g de cristaux. Est-ce possible ?',
+    cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
+      V('La masse de cristaux formés, pour la comparer à 200 g', 'Le critère porte sur la masse de cristaux obtenus.'),
+      F('La masse de nitrate de potassium dissoute à 60 °C', 'Elle sert dans le calcul, mais ce n’est pas la masse de cristaux.'),
+      F('La durée du refroidissement', 'Aucun critère de durée : seule la masse finale compte.'),
+    ] },
+    donnees: [
+      ['300 g d’eau', true, 'La solubilité est donnée pour 100 g d’eau : on en déduit les masses pour 300 g.'],
+      ['110 g pour 100 g d’eau (60 °C)', true, 'Elle donne la masse dissoute au départ.'],
+      ['32 g pour 100 g d’eau (20 °C)', true, 'Elle donne la masse qui reste dissoute après refroidissement.'],
+      ['de 60 °C à 20 °C', true, 'Les deux températures indiquent quelles solubilités utiliser.'],
+      ['au moins 200 g', true, 'C’est le critère auquel comparer le résultat.'],
+      ['en une heure', false, 'La vitesse de refroidissement ne change pas les masses à l’équilibre.'],
+      ['bécher de 500 mL', false, 'Le récipient n’intervient pas dans les masses dissoutes.'],
+    ],
+    relations: { options: [
+      V('m_dissoute = s × m_eau / 100, à chaque température', 'La solubilité est donnée pour 100 g d’eau : on la multiplie par m_eau / 100.'),
+      V('m_cristaux = m_dissoute(60 °C) − m_dissoute(20 °C)', 'Ce qui cristallise est ce qui ne peut plus rester dissous.'),
+      F('m_cristaux = (s₆₀ − s₂₀) × m_eau', 'On oublie de diviser par 100 : le résultat serait 100 fois trop grand.'),
+      F('m_cristaux = s₂₀ × m_eau / 100', 'C’est la masse qui reste dissoute à 20 °C, pas celle qui cristallise.'),
+      F('ρ = m / V', 'Aucune masse volumique n’est utile ici.'),
+    ] },
+    hypotheses: { options: [
+      V('La solution est saturée à 60 °C au départ', 'Sinon la masse dissoute serait plus faible que s₆₀ × m_eau / 100.'),
+      V('À 20 °C, la solution est de nouveau saturée : l’équilibre est atteint', 'On suppose que tout l’excès a cristallisé.'),
+      V('La masse d’eau ne change pas (pas d’évaporation)', 'Les solubilités sont données pour 100 g d’eau : si l’eau s’évapore, les masses changent.'),
+      F('Le refroidissement doit être très lent', 'La vitesse change la taille des cristaux, pas la masse totale à l’équilibre.'),
+      F('La solubilité est proportionnelle à la température', 'Inutile : on a les deux valeurs de solubilité dont on a besoin.'),
+    ] },
+    demarche: {
+      etapes: [
+        { id: 'm60', t: 'Calculer la masse dissoute à 60 °C : m₆₀ = 110 × 300 / 100', dep: [], e: 'm₆₀ = 330 g.' },
+        { id: 'm20', t: 'Calculer la masse encore dissoute à 20 °C : m₂₀ = 32 × 300 / 100', dep: [], e: 'm₂₀ = 96 g.' },
+        { id: 'mc', t: 'Calculer la masse de cristaux : m₆₀ − m₂₀', dep: ['m60', 'm20'], e: 'm_cristaux = 234 g.' },
+        { id: 'c', t: 'Comparer à 200 g et conclure', dep: ['mc'], e: '234 g > 200 g.' },
+      ],
+      pieges: [
+        ['Calculer la masse totale de solution (300 + 330)', 'Inutile : la question porte sur les cristaux.'],
+        ['Calculer la quantité de matière de nitrate de potassium avec n = m / M', 'Inutile : tout se calcule en masses.'],
+      ],
+    },
+    conclusion: { q: 'Quelle conclusion obtient-on en suivant la démarche ?', options: [
+      V('Oui : on obtient environ 234 g de cristaux, plus que 200 g', 'm₆₀ = 330 g, m₂₀ = 96 g, donc 330 − 96 = 234 g.'),
+      F('Non : seulement 96 g', 'C’est la masse qui reste dissoute à 20 °C, pas celle qui cristallise.'),
+      F('Oui : 330 g', 'C’est la masse dissoute à 60 °C, avant refroidissement : une partie reste dissoute.'),
+    ] },
+    retenir: ['Masse dissoute au maximum : m = s × m_eau / 100 (s en g pour 100 g d’eau).', 'Masse de cristaux = masse dissoute avant − masse encore dissoute après.'],
+  },
 ];
 
 // ──────────────────────────────── 2. CHOISIR LA BONNE RELATION ────────────────────────────────
@@ -623,6 +721,38 @@ export const RELATIONS = [
       F('F = q / E', 'La force augmente quand le champ augmente : c’est un produit, pas un quotient.'),
       F('F = m·E', 'La masse n’intervient pas dans la force électrique : c’est la charge q qui compte.'),
     ] },
+  { id: 'rendement-dist', domaine: 'Distillation', titre: 'Le rendement d’une distillation',
+    enonce: 'On distille 250 mL d’un mélange eau–éthanol contenant 20 % d’éthanol en volume, et on recueille 40 mL d’éthanol pur. On cherche le rendement de la distillation.',
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('η = V_récupéré / (x × V_mélange)', 'On compare ce que l’on récupère (40 mL) à l’éthanol présent (0,20 × 250 = 50 mL) : η = 40 / 50 = 80 %.'),
+      F('η = V_récupéré / V_mélange', 'Elle compare à tout le mélange, pas à l’éthanol seul (40 / 250 = 16 %).'),
+      F('η = x × V_récupéré / V_mélange', 'Le pourcentage x est utilisé deux fois : il ne doit intervenir que pour calculer l’éthanol présent.'),
+      F('η = (x × V_mélange) / V_récupéré', 'Rapport inversé : on trouverait 125 %, un rendement supérieur à 100 % est impossible.'),
+    ] },
+  { id: 'enrichissement', domaine: 'Distillation', titre: 'Qui s’enrichit dans la vapeur ?',
+    enonce: 'Dans un mélange eau–éthanol chauffé à pression atmosphérique, on veut prévoir quel constituant est plus abondant dans la vapeur que dans le liquide (éthanol : 78 °C ; eau : 100 °C).',
+    q: 'Quelle idée permet de répondre ?', options: [
+      V('Le constituant le plus volatil (température d’ébullition la plus basse) s’enrichit dans la vapeur', 'C’est le principe de la distillation : la vapeur est plus riche en éthanol que le liquide.'),
+      F('Le constituant le plus abondant dans le liquide est le plus abondant dans la vapeur', 'Ce n’est pas le critère : c’est la volatilité qui décide de l’enrichissement.'),
+      F('Le constituant dont la masse molaire est la plus grande s’enrichit dans la vapeur', 'La masse molaire n’est pas le critère de volatilité utilisé ici.'),
+      F('La vapeur a toujours la même composition que le liquide', 'Ce n’est vrai qu’à l’azéotrope (environ 96 % d’éthanol en masse) ; sinon la vapeur est enrichie en constituant volatil.'),
+    ] },
+  { id: 'solubilite-masse', domaine: 'Évaporation et cristallisation', titre: 'Masse maximale dissoute',
+    enonce: 'À 20 °C, la solubilité du nitrate de potassium est de 32 g pour 100 g d’eau. On dispose de 250 g d’eau. On cherche la masse maximale de nitrate de potassium que l’on peut dissoudre.',
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('m = s × m_eau / 100', 'La solubilité est donnée pour 100 g d’eau : pour 250 g d’eau, m = 32 × 250 / 100 = 80 g.'),
+      F('m = s × m_eau', 'On oublie de diviser par 100 : on trouverait 8 000 g, plus que la masse d’eau !'),
+      F('m = s / m_eau', 'Elle ne tient pas compte de la proportionnalité à la masse d’eau.'),
+      F('m = s × 100 / m_eau', 'Rapport inversé : plus d’eau devrait permettre de dissoudre plus de soluté, pas moins.'),
+    ] },
+  { id: 'rendement-crist', domaine: 'Évaporation et cristallisation', titre: 'Le rendement d’une cristallisation',
+    enonce: 'On a obtenu 18,0 g de cristaux purs alors que le calcul prévoit au maximum 24,0 g. On cherche le rendement de la cristallisation.',
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('η = m_obtenue / m_maximale', 'Le rendement compare ce que l’on a obtenu à ce que l’on pouvait obtenir au plus : 18,0 / 24,0 = 75 %.'),
+      F('η = m_maximale / m_obtenue', 'Rapport inversé : on trouverait 133 %, un rendement supérieur à 100 % est impossible ici.'),
+      F('η = (m_maximale − m_obtenue) / m_maximale', 'C’est la part perdue (25 %), pas le rendement.'),
+      F('η = m_obtenue × m_maximale', 'Ce produit n’est pas un rapport : il n’a pas de sens pour un rendement.'),
+    ] },
 ];
 
 // ──────────────────────────────── 3. HYPOTHÈSES D'UN MODÈLE ────────────────────────────────
@@ -728,6 +858,23 @@ export const HYPOTHESES = [
       F('Les deux astres ont la même masse', 'Pas nécessaire : la loi s’applique à deux masses quelconques.'),
       F('Les deux astres sont immobiles', 'Pas nécessaire : la loi donne la force à un instant, que les astres soient en mouvement ou non.'),
       F('L’un des deux astres est beaucoup plus petit que l’autre', 'Pas nécessaire : la loi s’applique à deux corps de tailles quelconques, tant que la distance est celle des centres.'),
+    ] },
+  { id: 'distil-pur', domaine: 'Distillation', titre: 'Un distillat d’éthanol pur',
+    enonce: 'On utilise une distillation fractionnée pour récupérer de l’éthanol d’un mélange eau–éthanol, et on suppose que le distillat est de l’éthanol pur.', options: [
+      V('La colonne a assez de plateaux pour obtenir un distillat très riche en éthanol', 'Avec une colonne trop peu efficace, le distillat contient encore beaucoup d’eau.'),
+      V('On reste en dessous de la composition azéotropique (environ 96 % d’éthanol en masse)', 'Au-delà, la distillation ne permet plus d’enrichir : on n’obtient pas d’éthanol pur.'),
+      F('Le chauffage se fait à puissance constante', 'La puissance règle la vitesse de distillation, pas la composition du distillat.'),
+      F('L’éthanol et l’eau ont la même température d’ébullition', 'C’est l’inverse : c’est la différence entre leurs températures d’ébullition qui permet de les séparer.'),
+      F('La pression diminue pendant la distillation', 'Ce n’est pas nécessaire à la séparation (et si elle variait, les températures d’ébullition changeraient).'),
+    ] },
+  { id: 'crist-bilan', domaine: 'Évaporation et cristallisation', titre: 'Masse de cristaux par refroidissement',
+    enonce: 'On calcule la masse de cristaux obtenus par refroidissement d’une solution saturée avec m = m_dissoute(60 °C) − m_dissoute(20 °C).', options: [
+      V('La solution est saturée à 60 °C avant le refroidissement', 'Sinon la masse dissoute au départ serait plus faible que celle donnée par la solubilité.'),
+      V('À 20 °C, la solution est saturée à l’équilibre : tout l’excès a cristallisé', 'Sinon il resterait plus de soluté dissous et moins de cristaux.'),
+      V('La masse d’eau ne change pas (pas d’évaporation)', 'Les solubilités sont données pour 100 g d’eau : si l’eau s’évapore, les masses changent.'),
+      F('Les cristaux ont la même masse volumique que la solution', 'Elle n’intervient pas dans un calcul de masses.'),
+      F('Le refroidissement est instantané', 'Au contraire, on suppose assez de temps pour atteindre l’équilibre ; la vitesse n’entre pas dans le calcul.'),
+      F('La solubilité est la même à 20 °C et à 60 °C', 'Au contraire : c’est la baisse de solubilité qui fait cristalliser.'),
     ] },
 ];
 
@@ -984,6 +1131,26 @@ export const PREVOIR = [
       F('attractive', 'C’est le cas pour deux charges de signes opposés.'),
       F('nulle', 'Deux charges s’exercent toujours une force : seule l’absence de charge donne une force nulle.'),
       F('attractive si elles sont proches, répulsive si elles sont éloignées', 'Le sens de la force ne dépend que des signes des charges, pas de la distance.'),
+    ] },
+  { id: 'dist-volume', domaine: 'Distillation', titre: 'Un mélange plus riche en éthanol',
+    enonce: 'On distille deux mélanges de même volume, l’un à 10 % et l’autre à 20 % d’éthanol en volume, avec le même rendement.', q: 'Le volume d’éthanol récupéré avec le second mélange est…', options: [
+      V('doublé', 'V_récupéré = η × x × V est proportionnel à x : x double, donc V_récupéré double.'),
+      F('multiplié par 4', 'Il est proportionnel à x, pas à x².'),
+      F('inchangé', 'Il dépend de la quantité d’éthanol présente au départ.'),
+      F('divisé par 2', 'Sens inversé : un mélange plus riche donne plus d’éthanol.'),
+    ] },
+  { id: 'crist-eau', domaine: 'Évaporation et cristallisation', titre: 'Deux fois plus d’eau',
+    enonce: 'On double la masse d’eau de la solution saturée à 60 °C, puis on la refroidit à 20 °C comme avant.', q: 'La masse de cristaux obtenus est…', options: [
+      V('doublée', 'm_cristaux = (s₆₀ − s₂₀) × m_eau / 100 est proportionnelle à m_eau.'),
+      F('inchangée', 'Elle dépend de la masse d’eau, donc de la quantité de soluté dissous au départ.'),
+      F('multipliée par 4', 'La proportionnalité est simple : pas de carré dans la relation.'),
+      F('divisée par 2', 'Sens inversé : plus d’eau dissout plus de soluté, donc cristallise plus.'),
+    ] },
+  { id: 'crist-froid', domaine: 'Évaporation et cristallisation', titre: 'Refroidir plus bas',
+    enonce: 'On refroidit la même solution saturée jusqu’à 0 °C au lieu de 20 °C (la solubilité à 0 °C est de 13 g pour 100 g d’eau, contre 32 g à 20 °C).', q: 'La masse de cristaux est…', options: [
+      V('plus grande', 'Moins de soluté reste dissous à 0 °C (13 g au lieu de 32 g pour 100 g d’eau) : il en cristallise davantage.'),
+      F('plus petite', 'Sens inversé : la solubilité plus faible laisse moins de soluté en solution.'),
+      F('inchangée', 'La solubilité à 0 °C n’est pas la même : la masse de cristaux change.'),
     ] },
 ];
 

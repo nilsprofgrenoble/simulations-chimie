@@ -255,6 +255,74 @@ export const ENONCES = [
         solution: { txt: 'm = ρ·V = ρ·S·h', val: p.rho * S * p.h, u: 'kg' } };
     },
   },
+  // ───────────────────────────── Distillation
+  {
+    id: 'distil', domaine: 'Distillation', titre: 'Distillation d’un mélange eau–éthanol', noms: ['Volume d’éthanol présent', 'Rendement de la distillation'],
+    gen: () => {
+      const V = tire([200, 250, 300, 400, 500]), x = tire([10, 12, 15, 20]), y = tire([80, 85, 90]), P = tire([400, 500, 600]);
+      const Vd = Math.round(V * x / 100 * tire([0.6, 0.7, 0.75, 0.8]) / (y / 100));
+      return { V, x, y, P, Vd, Te: 78.4 };
+    },
+    build: (p, q) => {
+      const tokens = {
+        V: tok(`${p.V} mL`, 'Volume du mélange initial', p.V, 'mL'),
+        x: tok(`${p.x} %`, 'Proportion d’éthanol dans le mélange (en volume)', p.x, '%'),
+        P: tok(`${p.P} W`, 'Puissance du chauffe-ballon', p.P, 'W'),
+        Te: tok(`${nb(p.Te, 1)} °C`, 'Température d’ébullition de l’éthanol', p.Te, '°C'),
+        Vd: tok(`${p.Vd} mL`, 'Volume de distillat recueilli', p.Vd, 'mL'),
+        y: tok(`${p.y} %`, 'Proportion d’éthanol dans le distillat (en volume)', p.y, '%'),
+      };
+      const debut = ['On distille ', T('V'), ' d’un mélange eau–éthanol qui contient ', T('x'), ' d’éthanol en volume. Le chauffe-ballon a une puissance de ', T('P'),
+        '. L’éthanol bout à ', T('Te'), ' (l’eau à 100 °C). On recueille ', T('Vd'), ' d’un distillat qui contient ', T('y'), ' d’éthanol en volume. '];
+      const Vi = p.V * p.x / 100, Vr = p.Vd * p.y / 100;
+      const rTemp = 'La température d’ébullition explique la séparation, mais n’entre pas dans le calcul d’un volume ou d’un rendement.';
+      const rPuis = 'La puissance de chauffe fixe la durée de la distillation, pas les volumes.';
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel volume d’éthanol contenait le mélange initial ?'], utiles: ['V', 'x'],
+        raisons: { P: rPuis, Te: rTemp, Vd: 'Le distillat est ce que l’on récupère après la distillation : il ne dit pas ce qu’il y avait au départ.', y: 'La pureté du distillat concerne ce que l’on récupère, pas le mélange initial.' },
+        cherche: { bonne: 'Le volume d’éthanol présent dans le mélange initial (en mL)', faux: ['Le volume d’éthanol récupéré dans le distillat (en mL)', 'Le rendement de la distillation (en %)', 'La masse d’éthanol présente (en g)'] },
+        manque: { bonne: 'Rien ne manque : un pourcentage en volume suffit', faux: ['La masse volumique de l’éthanol', 'La pression atmosphérique', 'La température du mélange'],
+          expl: 'Un pourcentage en volume s’applique à un volume : V_éthanol = x × V. Aucune masse volumique n’est nécessaire.' },
+        solution: { txt: 'V_éthanol = (x / 100) × V', val: Vi, u: 'mL' } };
+      return { tokens, texte: [...debut, 'Quel est le rendement de la distillation (volume d’éthanol récupéré par rapport au volume d’éthanol présent) ?'], utiles: ['V', 'x', 'Vd', 'y'],
+        derivees: [{ id: 'Vi', nom: 'Volume d’éthanol présent au départ', expr: 'V_i = V × x / 100', val: Vi, u: 'mL' }, { id: 'Vr', nom: 'Volume d’éthanol dans le distillat', expr: 'V_r = V_distillat × y / 100', val: Vr, u: 'mL' }],
+        raisons: { P: rPuis, Te: rTemp },
+        cherche: { bonne: 'Le rendement : volume d’éthanol récupéré divisé par volume d’éthanol présent (en %)', faux: ['Le volume total de distillat (en mL)', 'La pureté du distillat (en %)', 'Le volume d’éthanol perdu (en mL)'] },
+        manque: { bonne: 'Rien ne manque : tout est dans l’énoncé', faux: ['La masse volumique de l’éthanol', 'La durée de la distillation', 'La pression atmosphérique'],
+          expl: 'Les deux quantités d’éthanol se calculent à partir de volumes et de pourcentages en volume ; le rendement est leur rapport.' },
+        solution: { txt: 'η = V_r / V_i × 100', val: Vr / Vi * 100, u: '%' } };
+    },
+  },
+  // ───────────────────────────── Évaporation et cristallisation
+  {
+    id: 'cristal', domaine: 'Évaporation et cristallisation', titre: 'Refroidir une solution saturée de nitrate de potassium', noms: ['Masse dissoute à 60 °C', 'Masse de cristaux obtenue'],
+    gen: () => ({ me: tire([100, 150, 200, 250, 500]), s60: 110, s20: 32, dur: tire([30, 45, 60]), mb: tire([80, 120, 150]) }),
+    build: (p, q) => {
+      const tokens = {
+        me: tok(`${p.me} g`, 'Masse d’eau', p.me, 'g'),
+        mb: tok(`${p.mb} g`, 'Masse du bécher vide', p.mb, 'g'),
+        s60: tok(`${p.s60} g pour 100 g d’eau`, 'Solubilité du nitrate de potassium à 60 °C', p.s60, 'g pour 100 g d’eau'),
+        s20: tok(`${p.s20} g pour 100 g d’eau`, 'Solubilité du nitrate de potassium à 20 °C', p.s20, 'g pour 100 g d’eau'),
+        dur: tok(`${p.dur} minutes`, 'Durée du refroidissement', p.dur, 'min'),
+      };
+      const debut = ['On prépare à 60 °C une solution saturée de nitrate de potassium dans ', T('me'), ' d’eau, dans un bécher de masse ', T('mb'), ' (vide). À 60 °C, la solubilité du nitrate de potassium est de ',
+        T('s60'), ' ; à 20 °C, elle est de ', T('s20'), '. On refroidit la solution lentement jusqu’à 20 °C en ', T('dur'), '. '];
+      const m60 = p.s60 * p.me / 100, m20 = p.s20 * p.me / 100;
+      const rB = 'Le bécher n’intervient pas dans la quantité de soluté dissous.', rD = 'La durée du refroidissement ne change pas les masses à l’équilibre.';
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle masse de nitrate de potassium est dissoute dans la solution à 60 °C ?'], utiles: ['me', 's60'],
+        raisons: { mb: rB, dur: rD, s20: 'Cette solubilité concerne 20 °C : la solution de départ est à 60 °C.' },
+        cherche: { bonne: 'La masse de nitrate de potassium dissoute à 60 °C (en g)', faux: ['La masse de cristaux formés au refroidissement (en g)', 'La masse de nitrate de potassium encore dissoute à 20 °C (en g)', 'La masse totale de solution (en g)'] },
+        manque: { bonne: 'Rien ne manque : la solubilité est donnée pour 100 g d’eau et la masse d’eau est connue', faux: ['La masse volumique de la solution', 'La masse molaire du nitrate de potassium', 'La température de cristallisation'],
+          expl: 'La solubilité est proportionnelle à la masse d’eau : on ramène la valeur donnée « pour 100 g d’eau » à la masse d’eau de l’énoncé.' },
+        solution: { txt: 'm_dissoute(60 °C) = s₆₀ × m_eau / 100', val: m60, u: 'g' } };
+      return { tokens, texte: [...debut, 'Quelle masse de cristaux obtient-on à 20 °C ?'], utiles: ['me', 's60', 's20'],
+        derivees: [{ id: 'm60', nom: 'Masse dissoute à 60 °C', expr: 'm₆₀ = s₆₀ × m_eau / 100', val: m60, u: 'g' }, { id: 'm20', nom: 'Masse encore dissoute à 20 °C', expr: 'm₂₀ = s₂₀ × m_eau / 100', val: m20, u: 'g' }],
+        raisons: { mb: rB, dur: rD },
+        cherche: { bonne: 'La masse de cristaux formés au refroidissement (en g)', faux: ['La masse de nitrate de potassium dissoute à 60 °C (en g)', 'La masse de nitrate de potassium encore dissoute à 20 °C (en g)', 'La masse totale de solution à 60 °C (en g)'] },
+        manque: { bonne: 'Rien ne manque : les deux solubilités et la masse d’eau suffisent', faux: ['La masse volumique de la solution', 'La masse molaire du nitrate de potassium', 'La vitesse de refroidissement'],
+          expl: 'Ce qui cristallise est la différence entre la masse dissoute à 60 °C et celle qui peut encore l’être à 20 °C.' },
+        solution: { txt: 'm_cristaux = m₆₀ − m₂₀', val: m60 - m20, u: 'g' } };
+    },
+  },
   // ───────────────────────────── Mouvement et vitesse (seconde)
   {
     id: 'trajet', domaine: 'Mouvement et vitesse', titre: 'Un trajet en train', noms: ['Vitesse moyenne du train', 'Durée d’un autre trajet'],
@@ -396,6 +464,8 @@ const SYMBOLES = {
   echangeur: { qc: 'q_m,chaud', Tce: 'T_ce', Tcs: 'T_cs', c: 'c', qf: 'q_m,froid', Tfe: 'T_fe' },
   beer: { lam: 'λ', l: 'ℓ', A: 'A', eps: 'ε', theta: 'θ' },
   reservoir: { rho: 'ρ', h: 'h', D: 'D', Patm: 'P_atm' },
+  distil: { V: 'V', x: 'x', y: 'y', Vd: 'V_distillat', Te: 'θ_éb', P: 'P' },
+  cristal: { me: 'm_eau', mb: 'm_bécher', s60: 's₆₀', s20: 's₂₀', dur: 'Δt' },
 };
 export function nouvelEnonce(id, q, forceParams) {
   const def = ENONCES.find(e => e.id === id);
