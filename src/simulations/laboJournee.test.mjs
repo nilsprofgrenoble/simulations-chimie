@@ -547,3 +547,14 @@ console.log('OK : méthode CPG');
   assert(['fin_excellent', 'fin_bon', 'fin_retard'].includes(fin.scene), 'dossier rendu : ' + fin.scene);
 }
 console.log('OK : tout déléguer');
+
+// 21. Extrait sec : données de la feuille d'Inès visibles au calcul ; s_r = 0,5 % et U = 0,8 % ; résultat lu pendant la pause
+{
+  const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 });
+  const e = { ...g.e, scene: 'calcEs' }, tx = J.texteDe(e);
+  assert(/m₀ \(capsule vide\)/.test(tx) && /Essai 2/.test(tx) && /s_r = 0,5 %/.test(tx) && /U = 0,8 %/.test(tx), 'données expérimentales et caractéristiques visibles à l\'écran de calcul');
+  const c = J.esCalc(e); assert.strictEqual(c.U, 0.8); assert(Math.abs(c.r - 1.4) < 1e-9 && c.ecart < c.r, 'essais concordants (écart ' + c.ecart + ' < r)');
+  assert(/U\(ES\) = 0,8 %/.test(J.choixDe({ ...e, scene: 'esConcl' }).map(x => x.t).join('|')));
+  assert(/pause déjeuner/.test(J.texteDe({ ...e, scene: 'res_es', t: 270 })) && !/pause déjeuner/.test(J.texteDe({ ...e, scene: 'res_es', t: 200 })));
+}
+console.log('OK : extrait sec (feuille, sr, U)');
