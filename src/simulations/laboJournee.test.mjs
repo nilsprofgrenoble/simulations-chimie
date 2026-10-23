@@ -558,3 +558,11 @@ console.log('OK : tout déléguer');
   assert(/pause déjeuner/.test(J.texteDe({ ...e, scene: 'res_es', t: 270 })) && !/pause déjeuner/.test(J.texteDe({ ...e, scene: 'res_es', t: 200 })));
 }
 console.log('OK : extrait sec (feuille, sr, U)');
+
+// 22. Un ordre libre ne devient « je le fais moi-même » que si l'élève le dit explicitement
+{
+  const e = { ...J.etatInitial(), scene: 'labo', t: 200, f: { fabrique: true, graine: 3, rf: 1, ph: 1, regle: 'ok' } };
+  for (const t of ['je demande à Lucas seulement la viscosité', 'je demande la viscosité à Lucas', 'Lucas mesure la viscosité']) assert.strictEqual(J.agirLibre(e, t).etat.t, 210, t);
+  for (const t of ['je mesure la viscosité moi-même', 'je fais moi la tmff', 'je lance la viscosité seul']) assert(J.agirLibre(e, t).etat.t >= 240, t);
+}
+console.log('OK : ordre libre');
