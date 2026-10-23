@@ -3,7 +3,7 @@
 //  Support : sujet de CCF4 (base de peinture blanche), lu à l'envers : la Vinnapas EP 3360 de la référence est en rupture, il faut la remplacer par l'Orgal PST 50A.
 //  (Dans cette version, la référence se passe de coalescent ; l'Orgal, de MFFT 20 °C, en exige un : c'est tout l'intérêt du scénario.)
 //  Le joueur est un technicien de R&D ; il délègue des analyses à des collègues fictifs (chacun ne fait qu'une chose à la fois),
-//  la journée va de 8 h à 17 h 30 (appel client à 15 h, rapport avant 17 h) et les décisions ont des conséquences : dix fins possibles.
+//  la journée va de 8 h à 18 h (appel client à 15 h, rapport avant 17 h 30) et les décisions ont des conséquences : dix fins possibles.
 //  Les calculs de formulation reposent sur le modèle de la simulation « Peinture à l'eau » (proprietes), pour rester cohérent avec elle.
 //  Les valeurs rendues par les analyses déléguées sont FICTIVES (elles servent le scénario).
 //  Chaque scène de résultat porte un champ « visuel » (données) que l'interface dessine sous forme d'instrument.
@@ -17,8 +17,8 @@ export const CLE_FINS = 'labo-histoire-fins-v3';
 export const TMFF_MAX = 5;       // le film doit se former dès 5 °C (cahier des charges du scénario)
 export const COV_MAX = 30;       // g/L
 export const T_CLIENT = 420;     // 15 h 00 (minutes depuis 8 h 00)
-export const T_RAPPORT = 540;    // 17 h 00
-export const T_FIN = 570;        // 17 h 30
+export const T_RAPPORT = 570;    // 17 h 30
+export const T_FIN = 600;        // 18 h 00
 
 export const hhmm = t => { const m = 480 + Math.round(t); return `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}`; };
 export const nf = (x, d = 1) => Number(x).toFixed(d).replace('.', ',');
@@ -203,10 +203,10 @@ export const demanderIdees = e => e.f.idees ? e : nota({ ...e, t: e.t + 5, f: { 
 export const ANALYSES = [
   { cle: 'huile', tech: 'lucas', label: 'Prises d\'huile des poudres (TiO₂, CaCO₃)', duree: 40, perso: 10, avant: true },
   { cle: 'es', tech: 'ines', label: 'Extrait sec et densité de la peinture', duree: 40, perso: 5 },
-  { cle: 'rheo', tech: 'lucas', label: 'Profil rhéologique (viscosimètre)', duree: 45, perso: 10 },
+  { cle: 'rheo', tech: 'lucas', label: 'Profil rhéologique (viscosimètre)', duree: 40, perso: 10 },
   { cle: 'masq', tech: 'lucas', label: 'Pouvoir masquant (4 épaisseurs, contraste)', duree: 60, perso: 20 },
   { cle: 'brill', tech: 'lucas', label: 'Brillance du film (glossmètre 60° et 85°)', duree: 30, perso: 5 },
-  { cle: 'tmff', tech: 'lucas', label: 'Température minimale de formation de film (TMFF)', duree: 60, perso: 10 },
+  { cle: 'tmff', tech: 'lucas', label: 'Température minimale de formation de film (TMFF)', duree: 45, perso: 10 },
   { cle: 'cout', tech: 'perrin', label: 'Devis de l\'Orgal et coût matières premières', duree: 20, perso: 5 },
 ];
 // Pause déjeuner de l'équipe : de 12 h 00 à 13 h 00, les techniciens ne travaillent pas (une analyse en cours est suspendue)
@@ -268,7 +268,7 @@ export const lambdaVrai = e => prop(e, { phPerso: { tio2: phVrai(e, 'tio2'), cac
 export const brillance = e => { const l = lambdaVrai(e), g60 = 2.8 + 70 * Math.pow(Math.max(0, 0.85 - l), 1.3); return { g60, g85: g60 * 2.3, l }; };
 
 add('intro', { lieu: 'Bureau de la responsable', pnj: 'dubreuil', titre: 'Lundi, 8 h 00',
-  texte: e => `Mme Dubreuil t'accueille avec un café et un dossier.\n« ${pn(e) ? 'Bonjour ' + pn(e) + '. ' : ''}Notre fournisseur est en rupture de Vinnapas EP 3360, la résine de notre base de peinture blanche intérieure. Il faut pouvoir la remplacer par l'Orgal PST 50A sans dégrader la base : mate (λ = CPV/CPVC ≥ 0,8), extrait sec supérieur à 50 %, pouvoir masquant supérieur à 7,0 m²/L, COV inférieurs à 30 g/L, matières premières à moins de 4,5 €/kg, et film qui se forme dès 5 °C. »\n« On en profite pour corriger un défaut : les opérateurs trouvent des gros amas de poudres à la dispersion. Je veux une formule, une peinture fabriquée et un dossier de contrôle qualité. »\n« Appel avec notre cliente, Mme Aubry, à 15 h. Rapport pour 17 h. Karim, Inès et Lucas t'aident, mais chacun ne fait qu'une chose à la fois. »`,
+  texte: e => `Mme Dubreuil t'accueille avec un café et un dossier.\n« ${pn(e) ? 'Bonjour ' + pn(e) + '. ' : ''}Notre fournisseur est en rupture de Vinnapas EP 3360, la résine de notre base de peinture blanche intérieure. Il faut pouvoir la remplacer par l'Orgal PST 50A sans dégrader la base : mate (λ = CPV/CPVC ≥ 0,8), extrait sec supérieur à 50 %, pouvoir masquant supérieur à 7,0 m²/L, COV inférieurs à 30 g/L, matières premières à moins de 4,5 €/kg, et film qui se forme dès 5 °C. »\n« On en profite pour corriger un défaut : les opérateurs trouvent des gros amas de poudres à la dispersion. Je veux une formule, une peinture fabriquée et un dossier de contrôle qualité. »\n« Appel avec notre cliente, Mme Aubry, à 15 h. Rapport pour 17 h 30. Karim, Inès et Lucas t'aident, mais chacun ne fait qu'une chose à la fois. »`,
   choix: [{ t: 'Parcourir le dossier', vers: 'docs' }] });
 
 add('docs', { lieu: 'Bureau', pnj: 'moi', titre: 'Étude du dossier',
@@ -1028,7 +1028,7 @@ export function resume(e) {
 const fin = (id, ton, titre, texte) => add(id, { lieu: 'Fin de journée', pnj: 'dubreuil', titre, fin: { ton, titre }, texte, choix: [] });
 fin('fin_excellent', 'ok', 'Une journée exemplaire', e => `Il est ${hhmm(e.t)}. Le dossier est complet : formule conforme, coalescent dosé, contrôles faits, prises d'huile, brillance et TMFF mesurés,${e.f.mes_dpnb ? ' COV vérifiés par un dosage du DPnB,' : ''} traçabilité soignée, alertes données au bon moment. Mme Dubreuil sourit : « Voilà comment je veux voir travailler une équipe. On valide le remplacement de la Vinnapas par l'Orgal, et la cliente retire la mention « COV nuls » de ses étiquettes. »`);
 fin('fin_bon', 'ok', 'Mission remplie, avec des progrès à faire', e => `Il est ${hhmm(e.t)}. La nouvelle base respecte l'essentiel du cahier des charges et le rapport est rendu dans les temps. Quelques points auraient pu être mieux conduits (voir le bilan ci-dessous). « C'est solide, dit Mme Dubreuil. Pour la prochaine fois, regarde bien les remarques : elles feront la différence. »`);
-fin('fin_retard', 'moyen', 'Rapport remis en retard', e => `Il est ${hhmm(e.t)}. Le travail est bon, mais le rapport arrive après 17 h : la cliente a été rappelée sans les résultats. « Sur le fond, c'est bien, mais en entreprise le délai fait partie du cahier des charges. »`);
+fin('fin_retard', 'moyen', 'Rapport remis en retard', e => `Il est ${hhmm(e.t)}. Le travail est bon, mais le rapport arrive après 17 h 30 : la cliente a été rappelée sans les résultats. « Sur le fond, c'est bien, mais en entreprise le délai fait partie du cahier des charges. »`);
 fin('fin_incomplet', 'moyen', 'Dossier incomplet', e => { const NOM = { es: 'l\'extrait sec', rheo: 'la rhéologie', masq: 'le pouvoir masquant' }, manque = QC.filter(k => !e.f['mes_' + k]).map(k => NOM[k]), solides = bilan(e).filter(b => b.niveau === 'ok').map(b => b.titre.toLowerCase());
   return `Il est ${hhmm(e.t)}. Il manque des contrôles essentiels : ${manque.join(', ')}. Sans eux, le rapport ne permet pas de dire si la peinture respecte le cahier des charges.${solides.length ? `\nTon travail est pourtant solide sur plusieurs points (${solides.join(' ; ')}).` : ''}\n« On ne valide pas une formule sans ces mesures. Pas besoin de tout recommencer : demain, on refait les contrôles manquants sur ta peinture. Et il faut les lancer plus tôt : l'équipe déjeune, elle aussi, et chacun ne fait qu'une chose à la fois. »`; });
 const MOT_ECART = {
