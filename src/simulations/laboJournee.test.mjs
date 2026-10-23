@@ -91,9 +91,9 @@ function formulation(g, o = {}) {
   g.go(o.trace === false ? 'noterai ça' : 'Je note maintenant');
 }
 function travaille(g, o = {}) {
-  const dem = o.dem || ['Lucas : Prises', 'Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'Lucas : Brillance', 'Lucas : Température', 'M. Perrin'];
+  const dem = o.dem || ['Lucas : Prises', 'Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'moi : Brillance', 'Lucas : Température', 'M. Perrin'];
   const client = () => { if (g.e.scene === 'client') { const ch = J.choixDe(g.e); g.go(o.mens ? 'devrait aller' : ch[0].t.slice(0, 20)); comm(g); } };
-  for (const k of dem) { client(); if (g.e.scene === 'fin_perdue') break; if (g.e.cmd.huile && k.includes('Prises')) continue; g.go('Demander à ' + k); }
+  for (const k of dem) { client(); if (g.e.scene === 'fin_perdue') break; if (g.e.cmd.huile && k.includes('Prises')) continue; if (k.startsWith('moi')) { const c = J.choixDe(g.e).find(x => x.t.startsWith('Le faire moi-même') && x.t.includes(k.split(': ')[1].slice(0, 6))); if (c) { g.e = J.choisir(g.e, c); continue; } } g.go('Demander à ' + k.replace('moi :', 'Lucas :')); }
   client(); if (!J.estFin(g.e.scene) && g.e.scene === 'labo') g.go('Mettre un échantillon');
   for (let i = 0; i < 90; i++) {
     const e = g.e; if (J.estFin(e.scene)) return e;
@@ -126,9 +126,9 @@ function travaille(g, o = {}) {
   return g.e;
 }
 const cas = {};
-{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); cas.fin_excellent = travaille(g, {}); }
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); cas.fin_excellent = travaille(g, {}); if (process.env.DBG2) console.log('CMD', JSON.stringify(g.e.cmd), g.e.libre); }
 { const g = jouer(); debut(g, { alerte: 'tot', plan: 'mp' }); formulation(g, { dpnb: 3 }); cas.plan_mp = travaille(g, {}); }
-{ const g = jouer(); debut(g, { alerte: 'tard' }); formulation(g, { dpnb: 3, trace: false, rate: true, stock: 'tamise' }); cas.fin_bon = travaille(g, { stop: 380 }); }
+{ const g = jouer(); debut(g, { alerte: 'tard' }); formulation(g, { dpnb: 3, trace: false, rate: true, stock: 'tamise' }); cas.fin_bon = travaille(g, { stop: 480, dem: ['Lucas : Prises', 'Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir'] }); }
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); cas.fin_promesse = travaille(g, { stab: 'Stable 30 mois' }); }
 { const g = jouer(); debut(g, { alerte: 'nul' }); formulation(g, { dpnb: 3 }); cas.fin_cloque = travaille(g, { mens: true }); }
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { naif: true, tio2: false }); g.go('Rédiger le rapport'); g.go('Non démontrable'); g.go('Écouter'); cas.fin_naif = g.e; }
@@ -187,7 +187,7 @@ for (let g0 = 1; g0 <= 300; g0++) {
   assert(J.resume(n).length === 9);
 }
 // parcours scripté passant par le banc
-{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3, banc: true }); const fin = travaille(g, {}); assert(['fin_excellent', 'fin_bon'].includes(fin.scene), 'parcours par le banc : ' + fin.scene); assert(fin.f.preEssai && fin.f.banc.length === 2); }
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3, banc: true }); const fin = travaille(g, { dem: ['Lucas : Prises', 'Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'moi : Brillance', 'moi : Température', 'M. Perrin'] }); assert(['fin_excellent', 'fin_bon'].includes(fin.scene), 'parcours par le banc : ' + fin.scene); assert(fin.f.preEssai && fin.f.banc.length === 2); }
 
 // 4. Station courbe de défloculation
 for (let g0 = 1; g0 <= 300; g0++) { const sec = S.secretsDe(g0); assert(sec.dem >= S.DEM_MIN && sec.dem <= S.DEM_MAX); assert(J.dispOk({ coadis: 0.525, dem: sec.dem }), 'la dose de la fiche (0,175 %) suffit pour tout lot : ' + sec.dem); assert(!J.dispOk({ coadis: 0.2, dem: sec.dem }), 'la dose de départ (0,067 %) est insuffisante'); }
@@ -278,7 +278,7 @@ for (let g0 = 1; g0 <= 200; g0++) { const sec = S.secretsDe(g0); assert(sec.rf >
   g.e = { ...g.e, cmd: { ...g.e.cmd } };
   console.log('Tout faire : fabriqué vers', J.hhmm(t1), '; après stations', J.hhmm(g.e.t));
   assert(g.e.f.mes_huile && g.e.f.mes_dpnb && g.e.f.preEssai && g.e.f.dispCourbe);
-  const fin = travaille(g, { dem: ['Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'Lucas : Brillance', 'Lucas : Température', 'M. Perrin'] });
+  const fin = travaille(g, { dem: ['Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'moi : Brillance', 'moi : Température', 'M. Perrin'] });
   console.log('Tout faire : fin', fin.scene, J.hhmm(fin.t), J.bilan(fin).map(b => b.niveau[0]).join(''));
   assert(['fin_excellent', 'fin_bon'].includes(fin.scene), 'le parcours complet doit aboutir à une bonne fin : ' + fin.scene);
 }
@@ -473,3 +473,24 @@ console.log('OK : communication adaptée (C7.3)');
   for (let i = 0; i < 12; i++) { const L = J.optionsPlan({ f: { graine: i } }); assert(L[0][0] !== 'coal', 'coalescent pas en tête'); assert.strictEqual(L[L.length - 1][0], 'rien'); }
 }
 console.log('OK : lot 18');
+
+// 18. Pause déjeuner et charge de l'équipe (lot 19)
+{
+  const A = { cle: 'rheo', tech: 'lucas', duree: 45 };
+  const e = (t, lucas = 0) => ({ t, libre: { lucas } });
+  assert.strictEqual(J.planTech(e(100), A).pret, 145, 'avant midi : pas de pause');
+  assert.strictEqual(J.planTech(e(225), A).pret, 225 + 45 + 90, 'une analyse à cheval sur la pause est suspendue jusqu\'à 13 h 30');
+  assert.strictEqual(J.planTech(e(250), A).pret, J.PAUSE_FIN + 45, 'demandée pendant la pause : démarre à 13 h 30');
+  assert.strictEqual(J.planTech(e(100, 340), A).pret, 340 + 45, 'file d\'attente derrière une analyse qui finit après la pause');
+  // Hub : à 12 h 15, le technicien est en pause ; on peut faire l'analyse soi-même ou prendre sa pause
+  const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 });
+  g.e = { ...g.e, scene: 'labo', t: 255 };
+  const ch = J.choixDe(g.e);
+  assert(ch.some(c => /pause déjeuner/i.test(c.t)), 'pause déjeuner proposée');
+  assert(ch.some(c => c.t.startsWith('Le faire moi-même')), 'faire soi-même proposé quand l\'équipe est en pause');
+  assert(/pause déjeuner/.test(ch.find(c => c.t.startsWith('Demander à Lucas'))?.d || ''), 'la description annonce la pause');
+  const r = J.agirLibre(g.e, 'je vais manger'); assert(r.ok && r.etat.f.dejeune && r.etat.t === 255 + 45);
+  assert(J.agirLibre(r.etat, 'je mange').ok === false, 'une seule pause');
+  const m = J.agirLibre(g.e, 'je mesure moi-même la viscosité'); assert(m.ok && m.etat.cmd.rheo.pret === 255 + 45, 'self : le temps est pour l\'élève, sans pause');
+}
+console.log('OK : lot 19 (pause déjeuner)');

@@ -134,10 +134,10 @@ export function valider(e, saisie) {
 }
 
 // Délégation d'une analyse à un technicien : il travaille en parallèle (une chose à la fois) ; seul·e en mode « solo », tout le temps est pour toi
-function deleguer(e, A) {
-  const solo = e.f.plan === 'solo';
+function deleguer(e, A, moi = false) {
+  const solo = e.f.plan === 'solo' || moi;
   if (solo) { const t = e.t + A.duree; return nota({ ...e, t, cmd: { ...e.cmd, [A.cle]: { pret: t, lu: false } } }, `Je réalise moi-même : ${A.label}.`); }
-  const debut = Math.max(e.t, e.libre[A.tech] || 0), pret = debut + A.duree;
+  const { pret } = planTech(e, A);
   return nota({ ...e, t: e.t + A.perso, libre: { ...e.libre, [A.tech]: pret }, cmd: { ...e.cmd, [A.cle]: { pret, lu: false } } },
     `Demande à ${PNJ[A.tech].nom} : ${A.label} (résultat vers ${hhmm(pret)}).`);
 }
@@ -183,11 +183,14 @@ export function agirLibre(e, texte) {
   if (t.length < 3) return { ok: false, etat: e, message: 'Écris ce que tu veux faire : une analyse, un contrôle, un appel…' };
   let cle = (MOTS.find(([, re]) => re.test(t)) || [])[0];
   if (cle === 'huile' && /moi.?meme|spatule|je mesure|je fais moi|seul/.test(t)) cle = 'huile-moi';
+  else if (cle && cle !== 'huile' && ANALYSES.some(a => a.cle === cle && a.tech !== 'perrin') && /moi.?meme|je (le )?fais moi|je (le )?mesure moi|seul/.test(t)) cle += '-moi';
+  if (!cle && /dejeuner|manger|pause|midi|repas|cantine/.test(t)) cle = 'pause';
   if (!cle) return { ok: false, etat: e, message: 'Je ne vois pas quelle mesure ou quelle action ça recouvre. Reformule avec le nom de la mesure ou du contrôle (par exemple « mesurer la viscosité »), ou demande des idées.' };
   const c = choixDe(e).find(x => x.cle === cle);
   if (c) return { ok: true, etat: choisir(e, c) };
-  const A = ANALYSES.find(a => a.cle === cle);
-  if (e.cmd[cle === 'huile-moi' ? 'huile' : cle]) return { ok: false, etat: e, message: 'Tu l\'as déjà demandé : regarde « En cours » ou lis le résultat.' };
+  const A = ANALYSES.find(a => a.cle === cle.replace('-moi', ''));
+  if (cle === 'pause') return { ok: false, etat: e, message: e.f.dejeune ? 'Tu as déjà déjeuné.' : 'La pause déjeuner est possible entre 11 h 30 et 14 h.' };
+  if (e.cmd[cle === 'huile-moi' ? 'huile' : cle.replace('-moi', '')]) return { ok: false, etat: e, message: 'Tu l\'as déjà demandé : regarde « En cours » ou lis le résultat.' };
   if (cle === 'dpnb' && e.f.mes_dpnb) return { ok: false, etat: e, message: 'Le DPnB a déjà été dosé dans cette peinture.' };
   if (cle === 'etuve' && e.f.etuve) return { ok: false, etat: e, message: 'Un échantillon est déjà à l\'étuve.' };
   if (!e.f.fabrique && cle !== 'huile' && !A?.avant) return { ok: false, etat: e, message: 'Il n\'y a pas de peinture à analyser pour l\'instant : il faut d\'abord en fabriquer.' };
@@ -206,6 +209,15 @@ export const ANALYSES = [
   { cle: 'tmff', tech: 'lucas', label: 'Température minimale de formation de film (TMFF)', duree: 60, perso: 10 },
   { cle: 'cout', tech: 'perrin', label: 'Devis de l\'Orgal et coût matières premières', duree: 20, perso: 5 },
 ];
+// Pause déjeuner de l'équipe : de 12 h 00 à 13 h 30, les techniciens ne travaillent pas (une analyse en cours est suspendue)
+export const PAUSE_DEB = 240, PAUSE_FIN = 330;
+export const planTech = (e, A) => {
+  let debut = Math.max(e.t, e.libre[A.tech] || 0), pret;
+  if (debut >= PAUSE_DEB && debut < PAUSE_FIN) debut = PAUSE_FIN;
+  pret = debut + A.duree;
+  if (debut < PAUSE_DEB && pret > PAUSE_DEB) pret += PAUSE_FIN - PAUSE_DEB;
+  return { debut, pret };
+};
 const labelDe = cle => ANALYSES.find(a => a.cle === cle)?.label;
 export const statutCmd = e => Object.entries(e.cmd).map(([k, c]) => ({ cle: k, label: labelDe(k) || k, tech: ANALYSES.find(a => a.cle === k)?.tech, pret: c.pret, etat: c.lu ? 'lu' : c.pret > e.t ? 'cours' : 'pret' }));
 // Disponibilité de l'équipe à l'instant t : { karim, ines, lucas } → minute où la personne se libère (0 = libre)
@@ -768,7 +780,7 @@ add('commAchats', { melange: true, lieu: 'Service achats', pnj: 'perrin', titre:
   ] });
 
 // ───────────── Le hub : la paillasse ─────────────
-const ligneAttente = e => Object.entries(e.cmd).filter(([, c]) => !c.lu && c.pret > e.t).map(([k, c]) => `⏳ ${labelDe(k)} : prêt vers ${hhmm(c.pret)}`);
+const ligneAttente = e => Object.entries(e.cmd).filter(([, c]) => !c.lu && c.pret > e.t).map(([k, c]) => `⏳ ${labelDe(k)} : prêt vers ${hhmm(c.pret)}`).concat(e.t >= PAUSE_DEB && e.t < PAUSE_FIN ? ['🍽 C\'est la pause déjeuner : Karim, Inès et Lucas ne reprendront qu\'à ' + hhmm(PAUSE_FIN) + '.'] : []);
 add('labo', { lieu: 'Paillasse et laboratoire', pnj: 'moi', titre: 'La journée avance',
   texte: e => `Il est ${hhmm(e.t)}.${e.t >= T_RAPPORT ? '\nMme Dubreuil passe la tête : « J\'attends ton rapport, le délai est dépassé. »' : e.t >= T_CLIENT - 45 && !e.f.clientFait ? '\nL\'appel client approche (15 h).' : ''}${e.f.fabrique ? '\nTa peinture est fabriquée : elle est prête pour les contrôles.' : ''}\n${ligneAttente(e).join('\n')}`.trim(),
   choix: e => {
@@ -776,9 +788,11 @@ add('labo', { lieu: 'Paillasse et laboratoire', pnj: 'moi', titre: 'La journée 
     for (const A of ANALYSES) {
       const c = e.cmd[A.cle];
       if (c && !c.lu && c.pret <= e.t) L.push({ t: `📄 Lire le résultat : ${A.label}`, run: n => ({ ...n, cmd: { ...n.cmd, [A.cle]: { ...c, lu: true } } }), vers: `res_${A.cle}` });
-      else if (!c && (e.f.fabrique || A.avant)) { const occ = e.libre[A.tech] > e.t && e.f.plan !== 'solo';
-        L.push({ t: `Demander à ${PNJ[A.tech].nom} : ${A.label}`, d: e.f.plan === 'solo' ? `${A.duree} min de ton temps` : `${A.perso} min pour toi, résultat ${occ ? 'après ' + hhmm(e.libre[A.tech]) + ' (' + PNJ[A.tech].nom + ' est occupé·e)' : 'dans ' + A.duree + ' min'}`, run: n => deleguer(n, A), vers: 'labo', cle: A.cle, masque: true }); }
+      else if (!c && (e.f.fabrique || A.avant)) { const P = planTech(e, A), occ = e.libre[A.tech] > e.t && e.f.plan !== 'solo', enPause = e.t >= PAUSE_DEB && e.t < PAUSE_FIN;
+        L.push({ t: `Demander à ${PNJ[A.tech].nom} : ${A.label}`, d: e.f.plan === 'solo' ? `${A.duree} min de ton temps` : `${A.perso} min pour toi, résultat vers ${hhmm(P.pret)}${enPause ? ` (${PNJ[A.tech].nom} est en pause déjeuner jusqu'à ${hhmm(PAUSE_FIN)})` : occ ? ` (${PNJ[A.tech].nom} est occupé·e jusqu'à ${hhmm(e.libre[A.tech])})` : ''}`, run: n => deleguer(n, A), vers: 'labo', cle: A.cle, masque: true });
+        if (e.f.plan !== 'solo' && A.tech !== 'perrin' && (occ || enPause || P.pret - e.t > A.duree + 20)) L.push({ t: `Le faire moi-même : ${A.label}`, d: `${A.duree} min de ton temps, sans attendre personne`, run: n => deleguer(n, A, true), vers: 'labo', cle: A.cle + '-moi', masque: true }); }
     }
+    if (e.t >= PAUSE_DEB - 30 && e.t < PAUSE_FIN + 30 && !e.f.dejeune) L.push({ t: 'Prendre ma pause déjeuner (45 min)', d: 'l\'équipe aussi mange entre 12 h et 13 h 30', duree: 45, f: { dejeune: true }, note: 'Pause déjeuner prise.', vers: 'labo', cle: 'pause', masque: true });
     if (e.f.fabrique && !e.f.mes_dpnb) L.push({ t: 'Doser le DPnB dans la peinture fabriquée (contrôle du COV)', d: 'Choix de la technique, puis dosage : une vingtaine de minutes de ton temps', note: 'Contrôle qualité : dosage du DPnB dans la peinture (COV mesurés et non plus calculés).', vers: 'dpnbTech', cle: 'dpnb', masque: true });
     if (!e.cmd.huile) L.push({ t: 'Mesurer moi-même les prises d\'huile à la spatule', d: `${HUILE_DUREE} min par détermination, sans attendre personne`, note: 'Prises d\'huile des poudres : mesure faite moi-même.', vers: 'stationHuile', cle: 'huile-moi', masque: true });
     if (e.f.fabrique && !e.f.etuve) L.push({ t: 'Mettre un échantillon à l\'étuve à 50 °C (vieillissement accéléré)', d: '10 min ; résultat dans 7 jours', duree: 10, f: { etuve: true }, note: 'Échantillon mis à l\'étuve à 50 °C pour le test de stabilité (résultat dans 7 jours).', vers: 'labo', cle: 'etuve', masque: true });

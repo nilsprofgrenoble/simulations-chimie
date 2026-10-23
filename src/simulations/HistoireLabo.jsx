@@ -117,7 +117,7 @@ function ActionLibre({ e, onAgir, onIdees }) {
     <form onSubmit={soumettre} data-action-libre style={{ margin: '14px 0 6px', background: '#fff9d6', border: '1.5px dashed #c9b86a', borderRadius: 6, padding: '12px 14px' }}>
       <label style={{ fontWeight: 700, display: 'block', marginBottom: 6 }}>🗣 Que fais-tu maintenant ?</label>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <input data-libre value={txt} onChange={ev => setTxt(ev.target.value)} autoComplete="off" placeholder="Ex. : je fais mesurer la viscosité…" style={{ flex: '1 1 220px', fontSize: 16, padding: '7px 10px', border: `1.5px solid ${ENCRE}`, borderRadius: 6, background: '#fff', fontFamily: 'inherit' }} />
+        <input data-libre value={txt} onChange={ev => setTxt(ev.target.value)} autoComplete="off" placeholder="Écris ce que tu fais, avec tes mots…" style={{ flex: '1 1 220px', fontSize: 16, padding: '7px 10px', border: `1.5px solid ${ENCRE}`, borderRadius: 6, background: '#fff', fontFamily: 'inherit' }} />
         <button type="submit" data-libre-ok disabled={!txt.trim()} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: ENCRE, color: '#fff', fontWeight: 700, cursor: txt.trim() ? 'pointer' : 'default', opacity: txt.trim() ? 1 : 0.5, font: 'inherit' }}>Faire</button>
       </div>
       {msg && <div role="alert" data-libre-msg style={{ marginTop: 8, color: C.ambre, fontSize: 14, lineHeight: 1.5 }}>{msg}</div>}
