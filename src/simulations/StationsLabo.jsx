@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NIVEAUX_ETALON, ETAL_MAX, ECH_MAX, T_PREP, T_INJ, C_IS, TR, M_POUDRE, POUDRES_HUILE, HUILE_MAX_ESSAIS, HUILE_DUREE, etatPate, rapportPate, DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI, DOSES_COURBE, COURBE_MAX, COURBE_DUREE, masseCoadis } from "./stationsModele";
-import { essaiBanc, indiceBanc, INDICES_BANC, essaiCourbe, indiceCourbe, INDICES_COURBE, conclureHuile, huileRetenue, phVrai, cpgDe, injecterEtalon, preparerEchantillon, injecterEchantillon, choisirModeCpg, resultatCpg, injecterControle, recuperation, C_CTRL, TMFF_MAX, COV_MAX, nf, fmDepuisFlags, FM_CHAMPS, validerFormule, controlesFormule } from "./laboJournee";
+import { essaiBanc, indiceBanc, INDICES_BANC, essaiCourbe, indiceCourbe, INDICES_COURBE, conclureHuile, huileRetenue, phVrai, cpgDe, injecterEtalon, preparerEchantillon, injecterEchantillon, choisirModeCpg, resultatCpg, injecterControle, recuperation, C_CTRL, TMFF_MAX, COV_MAX, nf, fmDepuisFlags, FM_CHAMPS, validerFormule, controlesFormule, optionsPlan, choixPlan } from "./laboJournee";
 import { proprietes } from "./Peinture";
 
 // ====================================================
@@ -241,7 +241,9 @@ const LIGNES_FORMULE = [['liant', 'Dispersion d\'Orgal PST 50A', 'g'], ['eau', '
 export function StationFormule({ e, onValider }) {
   const base = fmDepuisFlags(e);
   const [v, setV] = useState(() => Object.fromEntries(FM_CHAMPS.map(k => [k, String(base[k]).replace('.', ',')])));
-  const fm = Object.fromEntries(FM_CHAMPS.map(k => [k, parseFloat(String(v[k]).replace(',', '.'))]));
+  const [dpnbVisible, setDpnbVisible] = useState(() => !!(e.f.coalPense || e.f.refaitCoal || (base.dpnb ?? 0) > 0)), [msgAjout, setMsgAjout] = useState('');
+  const fm = Object.fromEntries(FM_CHAMPS.map(k => [k, k === 'dpnb' && !dpnbVisible ? 0 : parseFloat(String(v[k]).replace(',', '.'))]));
+  const ajouter = ev => { const x = ev.target.value; if (x === 'dpnb') { setDpnbVisible(true); setMsgAjout(''); } else if (x) setMsgAjout('Cette matière première n\'a pas d\'effet dans le scénario de la journée : elle n\'est pas retenue dans la formule.'); };
   const val = validerFormule(e, fm);
   const controles = val.ok ? controlesFormule(e, fm) : [];
   const total = val.ok ? proprietes({ resine: 'orgal', foamex: 1.5, thixol: 1.5, coapur: 3, ...fm }).mTot : null;
@@ -250,13 +252,20 @@ export function StationFormule({ e, onValider }) {
     <div data-formule style={{ margin: '14px 0', background: '#fff', border: '1.5px solid #cbd5e1', borderRadius: 8, padding: '12px 14px' }}>
       <div style={{ fontWeight: 800, marginBottom: 8 }}>📝 Feuille de pesée</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 10 }}>
-        {LIGNES_FORMULE.map(([k, nom, u]) => (
+        {LIGNES_FORMULE.filter(([k]) => k !== 'dpnb' || dpnbVisible).map(([k, nom, u]) => (
           <label key={k} style={{ fontSize: 13.5 }}>{nom}
             <span style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
               <input data-fm={k} value={v[k]} inputMode="decimal" autoComplete="off" onChange={ev => setV(o => ({ ...o, [k]: ev.target.value }))} style={{ width: '100%', padding: '6px 8px', fontSize: 16, boxSizing: 'border-box', border: `1.5px solid ${ENCRE}`, borderRadius: 6 }} />{u}
             </span>
           </label>))}
       </div>
+      {!dpnbVisible && <div style={{ marginTop: 10, fontSize: 13.5 }}>
+        <label>Ajouter une matière première du catalogue{' '}
+          <select data-catalogue value="" onChange={ajouter} style={{ padding: '5px 8px', fontSize: 14 }}>
+            <option value="">Choisir…</option><option value="dpnb">DPnB (éther de glycol)</option><option value="ammo">Ammoniaque 25 %</option><option value="biocide">Biocide (isothiazolinone)</option>
+          </select></label>
+        {msgAjout && <div data-catalogue-msg style={{ color: AMBRE, marginTop: 4 }}>{msgAjout}</div>}
+      </div>}
       <div style={{ fontSize: 12.5, color: DOUX, margin: '8px 0' }}>Fixes : Foamex 1,5 g · Thixol 1,5 g · Coapur 3 g.{total != null && ` Masse totale : ${nf(total)} g.`}</div>
       {!val.ok && <div role="alert" data-fm-erreur style={{ color: ROUGE, fontSize: 14, margin: '6px 0' }}>{val.message}</div>}
       {controles.length > 0 && <div data-controles style={{ borderTop: '1px solid #e5e7eb', marginTop: 6 }}>
@@ -267,5 +276,20 @@ export function StationFormule({ e, onValider }) {
         <button type="button" data-valider-formule disabled={!val.ok} onClick={() => onValider(val.choix)} style={{ padding: '9px 18px', borderRadius: 8, border: 'none', background: ENCRE, color: '#fff', fontWeight: 700, cursor: val.ok ? 'pointer' : 'default', opacity: val.ok ? 1 : 0.5, font: 'inherit' }}>Valider ma formule et fabriquer</button>
         <button type="button" onClick={() => setV(Object.fromEntries(FM_CHAMPS.map(k => [k, String(base[k]).replace('.', ',')])))} style={{ padding: '9px 14px', borderRadius: 8, border: `1.5px solid ${ENCRE}`, background: '#fff', color: ENCRE, fontWeight: 700, cursor: 'pointer', font: 'inherit' }}>↺ Revenir à ma formule de départ</button>
       </div>
+    </div>);
+}
+
+
+// ───────────── Plan de départ : « qu'est-ce que tu changes dans la formule ? » (question ouverte sous forme de liste d'idées) ─────────────
+export function StationPlan({ e, onValider }) {
+  const [sel, setSel] = useState([]);
+  const bascule = k => setSel(L => k === 'rien' ? (L.includes('rien') ? [] : ['rien']) : (L.includes(k) ? L.filter(x => x !== k) : [...L.filter(x => x !== 'rien'), k]));
+  return (
+    <div data-plan style={{ margin: '14px 0', background: '#fff', border: '1.5px solid #cbd5e1', borderRadius: 8, padding: '12px 14px' }}>
+      {optionsPlan(e).map(([k, nom]) => (
+        <label key={k} style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '6px 0', fontSize: 15.5, cursor: 'pointer' }}>
+          <input type="checkbox" data-plan-opt={k} checked={sel.includes(k)} onChange={() => bascule(k)} style={{ width: 18, height: 18 }} />{nom}
+        </label>))}
+      <button type="button" data-valider-plan onClick={() => onValider(choixPlan(e, sel))} style={{ marginTop: 10, padding: '9px 18px', borderRadius: 8, border: 'none', background: ENCRE, color: '#fff', fontWeight: 700, cursor: 'pointer', font: 'inherit' }}>Valider mon plan</button>
     </div>);
 }
