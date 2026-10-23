@@ -65,7 +65,7 @@ const visco = (g, m = 1.0) => {
 // Communication : choisit l'option de qualité voulue (adapte par défaut), puis lit le retour
 const comm = (g, q = 'adapte') => {
   const re = q === 'adapte' ? /: adaptée/ : q === 'partiel' ? /à ajuster/ : /inadaptée/;
-  while (['commEquipe', 'commResp', 'commRetour'].includes(g.e.scene)) {
+  while (['commEquipe', 'commResp', 'commAchats', 'commRetour'].includes(g.e.scene)) {
     if (g.e.scene === 'commRetour') { g.go('Continuer'); continue; }
     g.e = J.choisir(g.e, J.choixDe(g.e).find(c => re.test(c.note)));
   }
@@ -103,7 +103,7 @@ function travaille(g, o = {}) {
     if (e.scene === 'calcDpnb') { g.calc(); continue; }
     if (visco(g)) continue;
     if (e.scene === 'incoherence') { g.go("J'en parle"); continue; }
-    if (['commEquipe', 'commResp', 'commRetour'].includes(e.scene)) { comm(g); continue; }
+    if (['commEquipe', 'commResp', 'commAchats', 'commRetour'].includes(e.scene)) { comm(g); continue; }
     if (e.scene === 'alerteRep') { g.go('Reprendre la formulation'); continue; }
     if (e.scene === 'formuleFinale') { if (o.tio2 === false) g.go('Valider ma formule'); else tio2Plus(g, o.tio2); continue; }
     if (e.scene === 'fabrication') { g.go('Je suis la fiche'); continue; }
@@ -138,13 +138,13 @@ const cas = {};
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 10 }); cas.fin_ecart_cov = travaille(g, {}); }
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 1 }); cas.corrige = travaille(g, { corrige: true, dem: ['Lucas : Température', 'Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'M. Perrin'] }); }
 { const g = jouer(); debut(g, { alerte: 'tot', plan: 'solo' }); formulation(g, { dpnb: 3 }); cas.solo = travaille(g, { stop: 400 }); }
-{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); for (let i = 0; i < 40 && g.e.scene !== 'fin_perdue'; i++) g.go(g.e.scene === 'client' ? 'Je lui donne' : g.e.scene === 'commRetour' ? 'Continuer' : 'Attendre'); cas.fin_perdue = g.e; }
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); for (let i = 0; i < 40 && g.e.scene !== 'fin_perdue'; i++) g.go(g.e.scene === 'client' ? 'Je lui donne' : g.e.scene === 'commRetour' ? 'Continuer' : g.e.scene === 'commAchats' ? 'Bonjour M. Perrin' : 'Attendre'); cas.fin_perdue = g.e; }
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 });
   for (const k of ['Demander à Inès : Extrait', 'Demander à Lucas : Profil', 'Demander à Lucas : Pouvoir']) g.go(k);
   for (let i = 0; i < 80 && !(g.e.t >= 490 && g.e.f.mes_es && g.e.f.mes_rheo && g.e.f.mes_masq && g.e.f.clientFait); i++) {
     const e = g.e, l = J.choixDe(e).find(c => c.t.startsWith('📄'));
     if (visco(g)) continue;
-    if (e.scene === 'client') g.go('Je lui donne'); else if (e.scene === 'commRetour') g.go('Continuer'); else if (['commEquipe', 'commResp'].includes(e.scene)) comm(g); else if (e.scene.startsWith('res_')) g.e = J.choisir(e, choixRes(e)); else if (l) g.e = J.choisir(e, l); else g.go('Attendre');
+    if (e.scene === 'client') g.go('Je lui donne'); else if (e.scene === 'commRetour') g.go('Continuer'); else if (['commEquipe', 'commResp', 'commAchats'].includes(e.scene)) comm(g); else if (e.scene.startsWith('res_')) g.e = J.choisir(e, choixRes(e)); else if (l) g.e = J.choisir(e, l); else g.go('Attendre');
   }
   comm(g);
   if (process.env.DBG) console.log('DBG', g.e.scene, g.e.t, JSON.stringify(Object.keys(g.e.f).filter(k => k.startsWith('mes_') && g.e.f[k])), g.e.f.clientFait, g.e.f.coapurAdd);
@@ -452,7 +452,7 @@ console.log('OK : C2.1 gestes');
   const c73 = e => J.bilan(e).find(b => b.comp === 'C7.3');
   const joue = o => { const g = jouer(); debut(g, o); formulation(g, o); return travaille(g, o); };
   const bon = joue({}), moyen = joue({ commEquipe: 'partiel', commResp: 'partiel' }), mauvais = joue({ commEquipe: 'mauvais', commResp: 'mauvais' });
-  assert.deepStrictEqual(bon.f.comm && Object.keys(bon.f.comm).sort(), ['client', 'equipe', 'resp']);
+  assert.deepStrictEqual(bon.f.comm && Object.keys(bon.f.comm).sort(), ['achats', 'client', 'equipe', 'resp']);
   assert(Object.values(bon.f.comm).every(q => q === 'adapte'), 'tout adapté');
   assert.strictEqual(moyen.f.comm.equipe, 'partiel'); assert.strictEqual(mauvais.f.comm.resp, 'mauvais');
   assert(c73(bon).ratio > c73(moyen).ratio && c73(moyen).ratio > c73(mauvais).ratio, 'ratio C7.3 : adapté > à ajuster > inadapté');
