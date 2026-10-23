@@ -25,7 +25,7 @@ function Calculette({ e }) {
         {CHAMPS.map(([k, nom]) => <label key={k} style={{ fontSize: 13 }}>{nom}<input value={v[k]} inputMode="decimal" onChange={ev => setV(o => ({ ...o, [k]: ev.target.value }))} style={{ display: 'block', width: '100%', padding: 6, fontSize: 15, boxSizing: 'border-box' }} /></label>)}
         <label style={{ fontSize: 13 }}>Prises d'huile utilisées<select value={ph} onChange={ev => setPh(ev.target.value)} style={{ display: 'block', width: '100%', padding: 6, fontSize: 15 }}><option value="fiche">Fiches techniques (TiO₂ 20, CaCO₃ 14)</option>{mesure && <option value="mesuree">Mes mesures (TiO₂ {nf(mesure.tio2, 0)}, CaCO₃ {nf(mesure.caco3, 0)})</option>}</select></label>
       </div>
-      <div style={{ fontSize: 12.5, color: C.doux, margin: '8px 0' }}>Fixes : Foamex 1,5 g · Thixol 1,5 g · Coapur 3 g. Masse totale : {nf(p.mTot)} g.</div>
+      <div style={{ fontSize: 12.5, color: C.doux, margin: '8px 0' }}>Fixes : Foamex 1,5 g · Thixol 1,5 g · Coapur 6,7 g. Masse totale : {nf(p.mTot)} g.</div>
       <table style={{ borderCollapse: 'collapse', fontSize: 15 }}><tbody>
         {ligne('Extrait sec', `${nf(p.ES)} %`, 'masse de matières sèches ÷ masse totale')}
         {ligne('CPV', `${nf(p.CPV)} %`, 'volume de pulvérulents ÷ (pulvérulents + liant sec)')}

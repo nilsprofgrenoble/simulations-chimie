@@ -317,10 +317,13 @@ export function Instrument({ v }) {
     const X0 = 40, Y0 = 150, W = 300, H = 100, g = [0.1, 0.3, 1, 3, 10, 30, 100, 300, 1000];
     const px = x => X0 + (Math.log10(x) + 1) / 4 * W, py = e => Y0 - (e + 0.3) / 3.2 * H;   // log10(η) entre −0,3 et 2,9
     const courbe = (K, n) => pts(g, x => [px(x), py(Math.log10(K) + (n - 1) * Math.log10(x))]);
+    // Haut gradient : viscosité ICI relative à la référence (1,0 P) ; bas gradient relevé si Thixol ajouté
+    const r = v.ici ?? 1, fact = x => Math.max(0.2, 1 - (1 - r) * 1.4 * x / (x + 60)) * (v.thix ? 1 + 1.2 / (1 + x / 3) : 1);
+    const courbeIci = pts(g, x => [px(x), py(Math.log10(3.2 * Math.pow(x, -0.58) * fact(x)))]);
     return (<Cadre titre="VISCOSIMÈTRE · η en fonction du gradient" hauteur={190}>
       <path d={`M${X0} ${Y0} H${X0 + W} M${X0} ${Y0} V${Y0 - H - 4}`} stroke="#52606d" fill="none" />
       <polyline points={courbe(3.2, 0.42)} fill="none" stroke="#94a3b8" strokeWidth="2" strokeDasharray="5 4" />
-      <polyline points={v.mauvais ? courbe(14, 0.3) : courbe(3.4, 0.4)} fill="none" stroke="#38bdf8" strokeWidth="3" />
+      <polyline points={v.mauvais ? courbe(14, 0.3) : courbeIci} fill="none" stroke="#38bdf8" strokeWidth="3" />
       {v.mauvais && <polyline points={courbe(8, 0.3)} fill="none" stroke="#f87171" strokeWidth="2" strokeDasharray="3 3" />}
       <text x={X0 + W} y={Y0 + 16} textAnchor="end" fontSize="10" fill="#9fb3c8" fontFamily="ui-monospace,monospace">gradient de cisaillement (s⁻¹)</text><text x="14" y="46" fontSize="10" fill="#9fb3c8" fontFamily="ui-monospace,monospace">η</text>
       <text x={X0 + 4} y="44" fontSize="10.5" fill="#94a3b8" fontFamily="ui-monospace,monospace" transform="translate(70 0)">- - référence Vinnapas</text><text x={X0 + 4} y="58" fontSize="10.5" fill="#38bdf8" fontFamily="ui-monospace,monospace" transform="translate(70 0)">— ta peinture</text>

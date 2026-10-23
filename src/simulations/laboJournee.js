@@ -34,16 +34,16 @@ export const PNJ = {
 };
 
 // ───────────── Formule, propriétés et coût (modèle de la simulation Peinture) ─────────────
-// Référence (Vinnapas, sans coalescent) : 331,2 g au total. La nouvelle formule (Orgal) garde la même masse totale : l'eau compense.
-export const FORMULE_REF = { resine: 'vinnapas', eau: 121.7, tio2: 60, caco3: 60, liant: 83.3, foamex: 1.5, coadis: 0.2, dpnb: 0, thixol: 1.5, coapur: 3 };
+// Référence (Vinnapas, sans coalescent) : 331,2 g au total (Coapur à 0,5 % de matière sèche, soit 6,7 g de produit : bas de la plage de la fiche, 0,5 à 1,5 %). La nouvelle formule (Orgal) garde la même masse totale : l'eau compense.
+export const FORMULE_REF = { resine: 'vinnapas', eau: 118.0, tio2: 60, caco3: 60, liant: 83.3, foamex: 1.5, coadis: 0.2, dpnb: 0, thixol: 1.5, coapur: 6.7 };
 // Formule proposée par l'élève (e.f.fm), posée à l'étape « formule finale » ; sinon formule déduite de ses choix successifs
 export const FM_CHAMPS = ['liant', 'eau', 'tio2', 'caco3', 'coadis', 'dpnb'];
-export const formule = e => e.f.fm ? { resine: 'orgal', foamex: 1.5, thixol: 1.5, coapur: 3, ...e.f.fm } : formuleFlags(e);
+export const formule = e => e.f.fm ? { resine: 'orgal', foamex: 1.5, thixol: 1.5 + (e.f.thixolAdd || 0), coapur: 6.7 + (e.f.coapurAdd || 0), ...e.f.fm } : formuleFlags(e);
 export const fmDepuisFlags = e => { const f = formuleFlags(e); return Object.fromEntries(FM_CHAMPS.map(k => [k, f[k]])); };
 const formuleFlags = e => {
   const naif = e.f.regle === 'naif', dpnb = e.f.dpnb ?? 0;
-  return { resine: 'orgal', eau: (naif ? 121.7 : 105) - dpnb, tio2: 60, caco3: 60, liant: naif ? 83.3 : 100, foamex: 1.5,
-    coadis: e.f.coadis ?? 0.2, dpnb, thixol: 1.5, coapur: 3 };
+  return { resine: 'orgal', eau: (naif ? 118.0 : 101.3) - dpnb, tio2: 60, caco3: 60, liant: naif ? 83.3 : 100, foamex: 1.5,
+    coadis: e.f.coadis ?? 0.2, dpnb, thixol: 1.5 + (e.f.thixolAdd || 0), coapur: 6.7 + (e.f.coapurAdd || 0) };
 };
 export const prop = (e, opts) => proprietes(formule(e), { efficacite: e.f.eff ?? 3, ...(opts?.ph === 'mesuree' && e.f.phMes ? { phPerso: e.f.phMes } : {}), ...opts });   // l'efficacité du coalescent est un paramètre caché (station banc TMFF)
 export const tmffMesuree = e => Math.max(0, prop(e).tmff);          // le banc s'arrête à 0 °C
@@ -81,7 +81,7 @@ export function aller(e, id) {
   return SCENES[cible].entree ? SCENES[cible].entree(n) : n;
 }
 // Documents déjà consultés (le cahier des charges est donné dès le départ) : accessibles à tout moment dans le Dossier
-export const NOMS_DOCS = { cdc: 'Cahier des charges', formule: 'Document 1 · Formule de référence', fabrication: 'Document 2 · Fiche de fabrication', vinnapas: 'Fiche Vinnapas', orgal: 'Fiche Orgal', dpnb: 'Fiche DPnB', coadis: 'Fiche Coadis', durcal: 'Fiche Durcal (CaCO₃)' };
+export const NOMS_DOCS = { cdc: 'Cahier des charges', formule: 'Document 1 · Formule de référence', fabrication: 'Document 2 · Fiche de fabrication', vinnapas: 'Fiche Vinnapas', orgal: 'Fiche Orgal', dpnb: 'Fiche DPnB', coadis: 'Fiche Coadis', durcal: 'Fiche Durcal (CaCO₃)', coapur: 'Fiche Coapur', thixol: 'Fiche Thixol' };
 // Variation des formulations : choix déterministe (même partie = mêmes mots, parties différentes = formulations différentes)
 const hash = c => [...c].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) | 0, 7);
 export const vari = (e, cle, L) => L[Math.abs(((e.f?.graine ?? 1) | 0) + hash(cle)) % L.length];
@@ -128,7 +128,7 @@ function deleguer(e, A) {
 
 // ───────────── Formule finale : l'élève pose sa propre formule, confrontée au cahier des charges ─────────────
 export const MASSE_MIN = 250, MASSE_MAX = 400;   // capacité de la cuve de la défloculeuse (g)
-const fmComplet = fm => ({ resine: 'orgal', foamex: 1.5, thixol: 1.5, coapur: 3, ...fm });
+const fmComplet = fm => ({ resine: 'orgal', foamex: 1.5, thixol: 1.5, coapur: 6.7, ...fm });
 // Contrôles « sur papier » : seulement ce qui se calcule avec ce que l'élève sait (fiches, ou ses propres mesures)
 export function controlesFormule(e, fm) {
   const f = fmComplet(fm), mes = e.f.phMes, p = proprietes(f, mes ? { phPerso: mes } : { ph: 'fiche' }), act = pctActif(f), cout = coutKg(f);
@@ -208,8 +208,15 @@ const refaireCoalescent = (note) => ({ t: 'Corriger la dose de coalescent et ref
 export const pctActif = f => (f.coadis ?? 0.2) * 0.4 / 120 * 100;
 export const dispOk = f => pctActif(f) / (f.dem ?? 1) >= BORNE_BASSE;
 const mauvaisRheo = e => !dispOk(e.f);
-// Pouvoir masquant (m²/L) : modèle de scénario, croît avec la concentration en TiO₂ (g/L de peinture) ; amas mal dispersés : −10 %
-export const pouvoirMasquant = e => { const p = prop(e), c = formule(e).tio2 / (p.mTot / p.densite) * 1000; return 7.6 * Math.pow(c / 244.9, 0.6) * (mauvaisRheo(e) ? 6.8 / 7.6 : 1); };
+// Pouvoir masquant (m²/L) : modèle de scénario, croît avec la concentration en TiO₂ (g/L de peinture) ; réf. Vinnapas ≈ 8,0 ; l'Orgal donne un film un peu moins efficace
+// pour répartir le TiO₂ (≈ 6,6 avec 60 g de TiO₂) ; amas mal dispersés : −10 %
+const KPM = 6.6, PM_C0 = 244.9;
+export const pouvoirMasquant = e => { const p = prop(e), c = formule(e).tio2 / (p.mTot / p.densite) * 1000; return KPM * Math.pow(c / PM_C0, 0.6) * (mauvaisRheo(e) ? 6.8 / 7.6 : 1); };
+// Rhéologie à haut gradient : viscosité ICI (cône-plan, 10 000 s⁻¹, en poises). Référence Vinnapas 1,0 ; l'Orgal (50 % d'ES contre 60 %) donne une peinture plus fluide à haut gradient.
+// Le Coapur (newtonien) relève la viscosité à haut gradient sans toucher le bas gradient ; le Thixol (pseudoplastique) agit à bas gradient.
+export const ICI_MIN = 0.9, ICI_MAX = 1.3, ICI_BASE = 0.65, ICI_PAR_G = 0.1;
+export const iciVrai = e => ICI_BASE + ICI_PAR_G * (e.f.coapurAdd || 0);
+export const iciOk = e => { const v = iciVrai(e); return v >= ICI_MIN - 1e-9 && v <= ICI_MAX + 1e-9; };
 // λ réel : avec les prises d'huile (cachées) du lot de poudres
 export const lambdaVrai = e => prop(e, { phPerso: { tio2: phVrai(e, 'tio2'), caco3: phVrai(e, 'caco3') } }).lambda;
 // Brillance à 60° (UB) : mate quand λ ≥ 0,85, de plus en plus brillante quand λ baisse (modèle de scénario)
@@ -248,7 +255,7 @@ add('alerteRep', { lieu: 'Bureau', pnj: 'dubreuil', titre: 'Réponse de Mme Dubr
 
 add('docRef', { lieu: 'Bureau', pnj: 'moi', titre: 'Documents 1, 2, 4 et 5 : la référence Vinnapas', fiches: ['formule', 'fabrication'],
   texte: () => { const pf = proprietes(FORMULE_REF, { ph: 'fiche' });
-    return `Formule de référence (331 g) : eau 121,7 g, TiO₂ 60 g, CaCO₃ léger 60 g, Vinnapas 83,3 g, Foamex 1,5 g, Coadis BR3 0,2 g, Thixol 1,5 g, Coapur 3 g. Pas de coalescent.\nTableur avec les prises d'huile des fiches (20 et 14 g pour 100 g) : ES = ${nf(pf.ES)} %, CPV = ${nf(pf.CPV)} %, CPVC = ${nf(pf.CPVC)} %, donc λ = ${nf(pf.lambda, 2)}. COV = ${nf(pf.COV)} g/L. Coût matières premières ≈ ${nf(coutKg(FORMULE_REF))} €/kg.\nAnalyses du responsable : pouvoir masquant 7,4 m²/L ; comportement rhéofluidifiant, faible thixotropie ; film continu dès 3 °C.\nÉtonnant : avec λ = ${nf(pf.lambda, 2)} < 0,8, cette peinture ne devrait pas être mate, or elle l'est. Les prises d'huile des fiches sont-elles fiables ?\nFiche de fabrication : 70 % de l'eau, Foamex, Coadis, puis TiO₂ et CaCO₃ en pluie fine à 300 tr/min, dispersion 15 min à vitesse maximale (finesse 7 Hegman) ; ensuite la résine, le Thixol et le Coapur sous agitation lente (200 tr/min), enfin le reste de l'eau.`; },
+    return `Formule de référence (331 g) : eau 118,0 g, TiO₂ 60 g, CaCO₃ léger 60 g, Vinnapas 83,3 g, Foamex 1,5 g, Coadis BR3 0,2 g, Thixol 1,5 g, Coapur 6,7 g. Pas de coalescent.\nTableur avec les prises d'huile des fiches (20 et 14 g pour 100 g) : ES = ${nf(pf.ES)} %, CPV = ${nf(pf.CPV)} %, CPVC = ${nf(pf.CPVC)} %, donc λ = ${nf(pf.lambda, 2)}. COV = ${nf(pf.COV)} g/L. Coût matières premières ≈ ${nf(coutKg(FORMULE_REF))} €/kg.\nAnalyses du responsable : pouvoir masquant 8,0 m²/L ; comportement rhéofluidifiant, faible thixotropie, viscosité ICI 1,0 P ; film continu dès 3 °C.\nÉtonnant : avec λ = ${nf(pf.lambda, 2)} < 0,8, cette peinture ne devrait pas être mate, or elle l'est. Les prises d'huile des fiches sont-elles fiables ?\nFiche de fabrication : 70 % de l'eau, Foamex, Coadis, puis TiO₂ et CaCO₃ en pluie fine à 300 tr/min, dispersion 15 min à vitesse maximale (finesse 7 Hegman) ; ensuite la résine, le Thixol et le Coapur sous agitation lente (200 tr/min), enfin le reste de l'eau.`; },
   choix: [{ t: 'Revenir au dossier', vers: 'docs' }] });
 
 add('appel', { melange: true, lieu: 'Téléphone', pnj: 'dubreuil', titre: 'L\'appel d\'organisation obligatoire',
@@ -294,11 +301,11 @@ add('calcMasse', { lieu: 'Paillasse de formulation', pnj: 'moi', titre: 'Calcul 
     ok: { vers: 'calcEau', note: 'Orgal à peser : 100 g (apporte 50 g de polymère sec).' },
     ko: { vers: 'calcEau', duree: 15, f: { aideCalcul: true }, note: 'Calcul de la masse d\'Orgal fait avec l\'aide de Karim : 100 g.' } } });
 add('calcEau', { lieu: 'Paillasse de formulation', pnj: 'moi', titre: 'Calcul : eau à ajuster',
-  texte: 'Pour garder le même extrait sec, la masse totale (331,2 g) et celle des autres matières restent les mêmes : l\'Orgal pèse 100 g au lieu de 83,3 g, l\'eau (121,7 g dans la référence) diminue d\'autant. (Le coalescent, s\'il y en a, sera retiré de cette eau.)',
-  calcul: { q: 'Quelle masse d\'eau faut-il, avant tout ajout de coalescent ?', unite: 'g', vrai: () => 121.7 - (100 - 83.3), tol: 0.02,
+  texte: 'Pour garder le même extrait sec, la masse totale (331,2 g) et celle des autres matières restent les mêmes : l\'Orgal pèse 100 g au lieu de 83,3 g, l\'eau (118,0 g dans la référence) diminue d\'autant. (Le coalescent, s\'il y en a, sera retiré de cette eau.)',
+  calcul: { q: 'Quelle masse d\'eau faut-il, avant tout ajout de coalescent ?', unite: 'g', vrai: () => 118.0 - (100 - 83.3), tol: 0.02,
     indice: 'On ajoute 16,7 g de résine en plus ; l\'eau doit diminuer de cette masse pour garder 331,2 g.',
-    ok: { f: { regle: 'ok' }, vers: e => e.f.refait ? 'formuleFinale' : 'dispersion', note: 'Eau : 105 g avant coalescent (formule : Orgal 100 g, eau 105 g).' },
-    ko: { f: { regle: 'ok' }, duree: 10, vers: e => e.f.refait ? 'formuleFinale' : 'dispersion', note: 'Eau : 105 g avant coalescent (calculée avec l\'aide de Karim).' } } });
+    ok: { f: { regle: 'ok' }, vers: e => e.f.refait ? 'formuleFinale' : 'dispersion', note: 'Eau : 101,3 g avant coalescent (formule : Orgal 100 g, eau 101,3 g).' },
+    ko: { f: { regle: 'ok' }, duree: 10, vers: e => e.f.refait ? 'formuleFinale' : 'dispersion', note: 'Eau : 101,3 g avant coalescent (calculée avec l\'aide de Karim).' } } });
 
 add('dispersion', { melange: true, lieu: 'Paillasse de formulation', pnj: 'karim', titre: 'Les amas de poudres',
   texte: e => `« Voilà le défaut dont se plaignent les opérateurs : quand on verse le TiO₂ et le CaCO₃ dans l'eau, ça fait des amas durs, et ils passent vingt minutes à les casser. Qu'est-ce que tu corriges dans la formule ? »${e.f.disp1 || e.f.disp2 ? '\n(Karim te rappelle que le dispersant est la matière qui aide à mouiller et séparer les grains.)' : ''}`,
@@ -621,16 +628,25 @@ add('res_es', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Résultat 
       { t: 'Je garde cette formule telle quelle', f: { mes_es: true }, note: 'ES mesuré différent de la référence : formule conservée en l\'état.', vers: 'labo' }]
     : !covOk(e) ? [refaireCoalescent('COV mesurés au-dessus de 30 g/L : dose de coalescent à revoir.'), { t: 'Je garde cette formule et je le signale', f: { mes_es: true }, note: 'COV supérieurs à 30 g/L : formule conservée, écart signalé.', vers: 'labo' }]
     : [{ ...retourLabo, f: { mes_es: true }, note: 'ES et densité mesurées : conformes.' }] });
-add('res_rheo', { lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Résultat : rhéologie',
-  texte: e => !dispOk(e.f) ? 'Lucas : « Viscosité élevée à bas gradient et nette thixotropie : il reste des amas mal dispersés. On est loin du comportement rhéofluidifiant à faible thixotropie demandé. »\nLe dispersant n\'a pas été corrigé : la cause des amas est restée.'
-    : 'Lucas : « Courbes de viscosité en fonction du gradient de cisaillement : comportement rhéofluidifiant, boucle de thixotropie très faible. Proche de la référence Vinnapas. »',
-  visuel: e => ({ type: 'rheo', mauvais: mauvaisRheo(e) }),
-  choix: [{ ...retourLabo, run: e => ({ ...e, f: { ...e.f, mes_rheo: true, rheoKo: mauvaisRheo(e) } }), note: 'Rhéologie mesurée.' }] });
+const mauvaiseVisc = e => mauvaisRheo(e) || !iciOk(e);
+const gCoapur = g => ({ t: `Ajouter ${nf(g, 0)} g de Coapur`, d: `${nf(g * 0.25, 2)} g de matière sèche ; 15 min (mélange, remesure)`, duree: 15, note: `Coapur ajouté : ${nf(g, 0)} g.`, run: e => ({ ...e, f: { ...e.f, coapurAdd: (e.f.coapurAdd || 0) + g } }), vers: 'res_rheo' });
+add('res_rheo', { melange: true, lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Résultat : rhéologie', fiches: ['coapur', 'thixol'],
+  texte: e => {
+    if (!dispOk(e.f)) return 'Lucas : « Viscosité élevée à bas gradient et nette thixotropie : il reste des amas mal dispersés. On est loin du comportement rhéofluidifiant à faible thixotropie demandé. »\nLe dispersant n\'a pas été corrigé : la cause des amas est restée.';
+    const v = iciVrai(e), th = (e.f.thixolAdd || 0) > 0, tete = `Lucas : « Courbes de viscosité en fonction du gradient de cisaillement : comportement rhéofluidifiant, boucle de thixotropie très faible${th ? ', mais la viscosité à bas gradient est montée avec le Thixol' : ''}. Au cône-plan (10 000 s⁻¹) : ${nf(v, 2)} P.`;
+    if (iciOk(e)) return `${tete} C'est dans la plage de 0,9 à 1,3 P, proche de la référence Vinnapas (1,0 P). »`;
+    return `${tete} On attendait 0,9 à 1,3 P (référence Vinnapas : 1,0 P). »\n${v < ICI_MIN ? 'Au rouleau, la peinture est trop fluide à haut gradient : film mince peu garnissant, éclaboussures, étalement médiocre.' : 'Au pinceau, la peinture tire : trop visqueuse à haut gradient.'}${th ? ' Le Thixol n\'a rien changé à cette valeur : il agit à bas gradient.' : ''}`; },
+  visuel: e => ({ type: 'rheo', mauvais: mauvaisRheo(e), ici: iciVrai(e), thix: (e.f.thixolAdd || 0) > 0 }),
+  choix: e => mauvaiseVisc(e) && dispOk(e.f)
+    ? [gCoapur(2), gCoapur(4), gCoapur(15),
+      { t: 'Ajouter 3 g de Thixol', d: '15 min (mélange, remesure)', duree: 15, note: 'Thixol ajouté : 3 g.', run: n => ({ ...n, f: { ...n.f, thixolAdd: (n.f.thixolAdd || 0) + 3 } }), vers: 'res_rheo' },
+      { ...retourLabo, t: 'Je garde la formule et je signale l\'écart', run: n => ({ ...n, f: { ...n.f, mes_rheo: true, rheoKo: true } }), note: `Viscosité à haut gradient de ${nf(iciVrai(e), 2)} P hors de la plage 0,9–1,3 P : formule conservée, écart signalé.` }]
+    : [{ ...retourLabo, run: n => ({ ...n, f: { ...n.f, mes_rheo: true, rheoKo: mauvaisRheo(n) } }), note: 'Rhéologie mesurée.' }] });
 add('res_masq', { lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Résultat : pouvoir masquant',
   texte: e => { const pm = pouvoirMasquant(e), v = nf(pm, 1);
-    if (pm >= 7) return `Lucas : « Rapport de contraste à 98 % pour un rendement de ${v} m²/L : pouvoir masquant de ${v} m²/L, au-dessus du minimum de 7,0 (référence Vinnapas : 7,4). »`;
+    if (pm >= 7) return `Lucas : « Rapport de contraste à 98 % pour un rendement de ${v} m²/L : pouvoir masquant de ${v} m²/L, au-dessus du minimum de 7,0 (référence Vinnapas : 8,0). »`;
     return mauvaisRheo(e) ? `Lucas : « Pouvoir masquant ${v} m²/L, en dessous des 7,0 attendus. Les amas de TiO₂ mal dispersés diffusent moins bien la lumière. »`
-      : `Lucas : « Pouvoir masquant ${v} m²/L, en dessous des 7,0 attendus. Il y a trop peu de TiO₂ par litre de peinture : c'est lui qui masque. »`; },
+      : `Lucas : « Pouvoir masquant ${v} m²/L, en dessous des 7,0 attendus. Avec la même masse de TiO₂, l'Orgal masque moins bien que la Vinnapas (8,0) : il faut plus de TiO₂ par litre de peinture, c'est lui qui masque. »`; },
   visuel: e => ({ type: 'masq', pm: Math.round(pouvoirMasquant(e) * 10) / 10 }),
   choix: e => { const pm = pouvoirMasquant(e), run = n => ({ ...n, f: { ...n.f, mes_masq: true } });
     return pm >= 7 ? [{ ...retourLabo, run, note: 'Pouvoir masquant mesuré : conforme.' }]
@@ -705,6 +721,7 @@ export function ecartsCdc(e) {
   if (!covOk(e)) L.push({ cle: 'cov', t: `COV de ${nf(p.COV, 0)} g/L (limite de ${COV_MAX} g/L)` });
   if (mauvaisRheo(e)) L.push({ cle: 'disp', t: 'amas mal dispersés (rhéologie non conforme)' });
   else if (pm < 7) L.push({ cle: 'masq', t: `pouvoir masquant de ${nf(pm, 1)} m²/L (> 7,0 demandé)` });
+  if (!mauvaisRheo(e) && !iciOk(e)) L.push({ cle: 'ici', t: `viscosité à haut gradient de ${nf(iciVrai(e), 2)} P (0,9 à 1,3 P demandé)` });
   if (coutKg(formule(e)) >= 4.5) L.push({ cle: 'cout', t: `coût de ${nf(coutKg(formule(e)), 2)} €/kg (< 4,5 €/kg demandé)` });
   return L;
 }
@@ -734,8 +751,8 @@ export function bilan(e) {
   pr.push({ comp: 'C2.1', titre: 'Préparer produits et matériel', niveau: !f.fabrique && !f.rate ? 'nd' : f.rate ? 'moyen' : 'ok', texte: f.rate ? 'Première fabrication ratée : l\'ordre d\'introduction de la fiche n\'avait pas été respecté.' : f.fabrique ? 'Fabrication conforme à la fiche, finesse correcte.' : 'Pas de fabrication réalisée.' });
   const c32 = n(f.alerte === true) * (f.alerteTardive ? 0.5 : 1) + n(f.stockCtrl) * (f.stockAlerte ? 0.5 : 1) + n(f.stab === 'honnete');
   pr.push({ comp: 'C3.2', titre: 'Détecter les non-conformités et alerter', niveau: niv(c32, 3), texte: `Promesse « COV nuls » incompatible avec l'Orgal ${f.alerte === true ? (f.alerteTardive ? 'signalée tardivement' : 'signalée tout de suite') : 'non signalée'} ; fût d'Orgal gelé ${f.stockCtrl ? (f.stockAlerte ? 'contrôlé après rappel de Karim' : 'contrôlé de ta propre initiative') : 'non contrôlé'} ; stabilité ${f.stab === 'honnete' ? 'annoncée honnêtement comme non démontrée' : f.stab === 'promis' ? 'garantie sans l\'avoir démontrée' : 'omise'}.` });
-  const c41 = n(dispOk(f)) + n(dOk);
-  pr.push({ comp: 'C4.1', titre: 'Modifier, améliorer le protocole', niveau: niv(c41, 2), texte: `Dispersant ${dispOk(f) ? `corrigé (amas supprimés${f.dispCourbe ? ', dose trouvée par la courbe de défloculation' : ''})` : 'non corrigé'} ; coalescent ${dOk ? (f.coalPense ? 'prévu dès le départ et dosé' : 'ajouté après la mesure de la TMFF, et dosé') : (f.dpnb ?? 0) < 2.5 ? 'absent ou trop faible' : 'surdosé'}.` });
+  const c41 = n(dispOk(f)) + n(dOk) + n(iciOk(e));
+  pr.push({ comp: 'C4.1', titre: 'Modifier, améliorer le protocole', niveau: niv(c41, 3), texte: `Dispersant ${dispOk(f) ? `corrigé (amas supprimés${f.dispCourbe ? ', dose trouvée par la courbe de défloculation' : ''})` : 'non corrigé'} ; coalescent ${dOk ? (f.coalPense ? 'prévu dès le départ et dosé' : 'ajouté après la mesure de la TMFF, et dosé') : (f.dpnb ?? 0) < 2.5 ? 'absent ou trop faible' : 'surdosé'}.` });
   const c61 = n(f.plan !== 'solo') + n(e.t <= T_RAPPORT) + n(nbOpt >= 2);
   pr.push({ comp: 'C6.1', titre: 'Organiser le travail, tenir les délais', niveau: niv(c61, 3), texte: `${f.plan === 'solo' ? 'Tout fait seul·e : trop séquentiel. ' : f.plan === 'mp' ? 'Analyses des matières premières lancées dès le début, en parallèle. ' : 'Tâches déléguées en parallèle. '}Rapport ${e.t <= T_RAPPORT ? 'rendu dans les temps' : 'rendu après 17 h'} ; ${nbOpt} analyse(s) complémentaire(s) sur 4 (prises d'huile, brillance, TMFF, dosage du DPnB).` });
   pr.push({ comp: 'C6.3', titre: 'Gérer les produits selon la réglementation', niveau: niv(n(f.stock === 'neuf') + n(f.stock === 'tamise') * 0.5 + n(f.coutOk), 2), texte: `${f.stock === 'neuf' ? 'Lot gelé écarté, fût neuf commandé. ' : f.stock === 'tamise' ? 'Lot gelé tamisé et utilisé : acceptable seulement avec réserve. ' : 'Aucun problème de stockage détecté. '}${f.coutOk ? 'Coût matières contrôlé (< 4,5 €/kg).' : 'Coût matières non vérifié.'}` });
@@ -771,6 +788,7 @@ const MOT_ECART = {
   lambda: '« Une base mate se juge sur λ = CPV/CPVC : vérifie-le avec les prises d\'huile de NOS poudres avant de valider une formule. »',
   masq: '« Le TiO₂ coûte cher, mais c\'est lui qui masque : on n\'économise pas sur le pigment sans mesurer le pouvoir masquant. »',
   cout: '« Une bonne formule, c\'est aussi une formule qui se vend : 4,5 €/kg, c\'est écrit dans le cahier des charges. »',
+  ici: '« À haut gradient, c\'est le Coapur qui règle la viscosité, pas le Thixol : relis les deux fiches avant de choisir l\'épaississant. »',
   disp: '« Des amas dans la peinture, ça se corrige à la source : par la dose de dispersant, trouvée sur la courbe de défloculation. »',
   es: '« Le polymère sec, c\'est lui qui fait le film : on ne change pas sa quantité à la légère. »',
 };
