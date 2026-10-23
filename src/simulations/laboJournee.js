@@ -501,7 +501,7 @@ add('debriefBanc', { lieu: 'Paillasse', pnj: 'lucas', titre: 'Ce que dit le banc
 add('stock', { melange: true, lieu: 'Local de stockage', pnj: 'karim', titre: 'Le fût d\'Orgal',
   texte: 'Karim revient du local de stockage, un peu gêné.\n« Au fait, le fût d\'Orgal est resté dans le local non chauffé ce week-end. Il a fait −5 °C cette nuit. Je ne sais pas si ça compte… »',
   choix: [
-    { t: 'Je contrôle le fût : aspect et tamisage sur 100 µm (15 min)', duree: 15, f: { stockCtrl: true }, note: 'Contrôle du fût d\'Orgal (stocké dans un local non chauffé, −5 °C).', vers: 'stockRes' },
+    { t: 'Je contrôle le fût : aspect et filtration sur toile de 100 µm (15 min)', duree: 15, f: { stockCtrl: true }, note: 'Contrôle du fût d\'Orgal (stocké dans un local non chauffé, −5 °C).', vers: 'stockRes' },
     { t: 'On l\'utilise comme ça : on gagne du temps', vers: 'stockAlerte' },
   ] });
 add('stockAlerte', { melange: true, lieu: 'Local de stockage', pnj: 'karim', titre: 'Karim insiste',
@@ -511,10 +511,10 @@ add('stockAlerte', { melange: true, lieu: 'Local de stockage', pnj: 'karim', tit
     { t: 'Je n\'ai pas le temps, on l\'utilise', vers: 'fin_matiere' },
   ] });
 add('stockRes', { lieu: 'Local de stockage', pnj: 'karim', titre: 'Résultat du contrôle',
-  texte: 'Au tamisage sur 100 µm, il reste des grumeaux de coagulum : une partie de la dispersion a gelé.\n« Voilà. C\'est écrit sur la fiche : à protéger du gel. »',
+  texte: 'Sur la toile de filtration de 100 µm, il reste des grumeaux de coagulum : une partie de la dispersion a gelé.\n« Voilà. C\'est écrit sur la fiche : à protéger du gel. »',
   choix: e => [
     { t: `Demander un fût neuf à M. Perrin (livré vers ${hhmm(e.t + 40)} : 40 min d'attente avant de fabriquer)`, duree: 40, f: { stock: 'neuf' }, note: 'Fût d\'Orgal gelé écarté ; fût neuf commandé à M. Perrin.', vers: 'formuleFinale' },
-    { t: 'Tamiser la dispersion et l\'utiliser quand même', duree: 10, f: { stock: 'tamise', lotDouteux: true }, note: 'Dispersion d\'Orgal tamisée (coagulum retiré) et utilisée malgré le gel.', vers: 'formuleFinale' },
+    { t: 'Filtrer la dispersion sur toile de 100 µm et l\'utiliser quand même', duree: 10, f: { stock: 'tamise', lotDouteux: true }, note: 'Dispersion d\'Orgal filtrée sur toile (coagulum retiré) et utilisée malgré le gel.', vers: 'formuleFinale' },
   ] });
 add('fin_matiere', { lieu: 'Local de stockage', pnj: 'karim', titre: 'Une peinture bâtie sur un lot dégradé', fin: { ton: 'ko', titre: 'Lot douteux utilisé' },
   texte: e => `Il est ${hhmm(e.t)}. Tu as utilisé la dispersion d'Orgal sans contrôler qu'elle avait gelé. La peinture est pleine de grains, la finesse est mauvaise, les mesures sont aberrantes et les résultats du rapport ne veulent rien dire. Mme Dubreuil : « Contrôler une matière première avant de s'en servir, c'est le B.A.-BA. On refait tout demain avec un fût neuf. »`,
@@ -850,7 +850,8 @@ add('labo', { lieu: 'Paillasse et laboratoire', pnj: 'moi', titre: 'La journée 
     if (!e.cmd.huile) L.push({ t: 'Mesurer moi-même les prises d\'huile à la spatule', d: `${HUILE_DUREE} min par détermination, sans attendre personne`, note: 'Prises d\'huile des poudres : mesure faite moi-même.', vers: 'stationHuile', cle: 'huile-moi', masque: true });
     if (e.f.fabrique && !e.f.etuve) L.push({ t: 'Mettre un échantillon à l\'étuve à 50 °C (vieillissement accéléré)', d: '10 min ; résultat dans 7 jours', duree: 10, f: { etuve: true }, note: 'Échantillon mis à l\'étuve à 50 °C pour le test de stabilité (résultat dans 7 jours).', vers: 'labo', cle: 'etuve', masque: true });
     L.push({ t: 'Attendre 30 minutes (café, rangement, bibliographie)', duree: 30, vers: 'labo' });
-    L.push({ t: 'Rédiger le rapport maintenant', d: '45 min ; la journée se termine avec le rapport', duree: 45, vers: 'rapport' });
+    const manquants = [['es', 'extrait sec'], ['rheo', 'rhéologie'], ['masq', 'pouvoir masquant'], ['tmff', 'TMFF'], ['brill', 'brillance']].filter(([k]) => !e.f['mes_' + k]).map(x => x[1]);
+    L.push({ t: 'Rédiger le rapport maintenant', d: `45 min ; la journée se termine avec le rapport${manquants.length ? ` (il manque encore : ${manquants.join(', ')})` : ''}`, duree: 45, vers: 'rapport' });
     return L;
   } });
 
@@ -997,7 +998,8 @@ const fin = (id, ton, titre, texte) => add(id, { lieu: 'Fin de journée', pnj: '
 fin('fin_excellent', 'ok', 'Une journée exemplaire', e => `Il est ${hhmm(e.t)}. Le dossier est complet : formule conforme, coalescent dosé, contrôles faits, prises d'huile, brillance et TMFF mesurés,${e.f.mes_dpnb ? ' COV vérifiés par un dosage du DPnB,' : ''} traçabilité soignée, alertes données au bon moment. Mme Dubreuil sourit : « Voilà comment je veux voir travailler une équipe. On valide le remplacement de la Vinnapas par l'Orgal, et la cliente retire la mention « COV nuls » de ses étiquettes. »`);
 fin('fin_bon', 'ok', 'Mission remplie, avec des progrès à faire', e => `Il est ${hhmm(e.t)}. La nouvelle base respecte l'essentiel du cahier des charges et le rapport est rendu dans les temps. Quelques points auraient pu être mieux conduits (voir le bilan ci-dessous). « C'est solide, dit Mme Dubreuil. Pour la prochaine fois, regarde bien les remarques : elles feront la différence. »`);
 fin('fin_retard', 'moyen', 'Rapport remis en retard', e => `Il est ${hhmm(e.t)}. Le travail est bon, mais le rapport arrive après 17 h : la cliente a été rappelée sans les résultats. « Sur le fond, c'est bien, mais en entreprise le délai fait partie du cahier des charges. »`);
-fin('fin_incomplet', 'moyen', 'Dossier incomplet', e => `Il est ${hhmm(e.t)}. Il manque des contrôles essentiels (extrait sec, rhéologie, pouvoir masquant) : le rapport ne permet pas de dire si la peinture respecte le cahier des charges. « On ne valide pas une formule sans ces mesures. Il va falloir tout recommencer demain. »`);
+fin('fin_incomplet', 'moyen', 'Dossier incomplet', e => { const NOM = { es: 'l\'extrait sec', rheo: 'la rhéologie', masq: 'le pouvoir masquant' }, manque = QC.filter(k => !e.f['mes_' + k]).map(k => NOM[k]), solides = bilan(e).filter(b => b.niveau === 'ok').map(b => b.titre.toLowerCase());
+  return `Il est ${hhmm(e.t)}. Il manque des contrôles essentiels : ${manque.join(', ')}. Sans eux, le rapport ne permet pas de dire si la peinture respecte le cahier des charges.${solides.length ? `\nTon travail est pourtant solide sur plusieurs points (${solides.join(' ; ')}).` : ''}\n« On ne valide pas une formule sans ces mesures. Pas besoin de tout recommencer : demain, on refait les contrôles manquants sur ta peinture. Et il faut les lancer plus tôt : l'équipe déjeune, elle aussi, et chacun ne fait qu'une chose à la fois. »`; });
 const MOT_ECART = {
   tmff: '« La Vinnapas n\'avait pas besoin de coalescent, l\'Orgal si : la fiche le disait. Calcule la dose et mesure la TMFF avant de conclure. »',
   cov: '« Un peu de coalescent, oui ; trop, ça ne répond plus au cahier des charges. On dose à partir du polymère sec, pas à l\'œil. »',

@@ -86,7 +86,7 @@ function formulation(g, o = {}) {
   const d = o.dpnb ?? 3; if (g.e.scene !== 'coalescent') throw new Error('coalescent attendu, scène ' + g.e.scene); if (o.banc) { g.go('pré-essai'); g.e = J.essaiBanc(J.essaiBanc(g.e, 0), 3); g.go('Retenir ' + d + ' g'); g.go('Passer à la suite'); } else if (d === 3) { g.go('Calculer la dose'); g.calc(); } else g.go(d === 1 ? 'Ajouter 1 g' : 'Mettre 10 g');
   if (g.e.scene === 'incoherence') { g.go(o.alerte === 'tard' ? 'Je la note' : o.alerte === 'nul' ? 'Je ne dis rien' : "J'en parle"); comm(g, o.commResp); if (g.e.scene === 'alerteRep') g.go('Reprendre la formulation'); }
   if (o.stock === 'ignore') { g.go('On l\'utilise comme ça'); g.go(o.insiste ? 'Je n\'ai pas le temps' : 'Tu as raison'); if (o.insiste) return; g.go('fût neuf'); }
-  else if (o.stock === 'tamise') { g.go('Je contrôle le fût'); g.go('Tamiser'); }
+  else if (o.stock === 'tamise') { g.go('Je contrôle le fût'); g.go('Filtrer la dispersion'); }
   else { g.go('Je contrôle le fût'); g.go('fût neuf'); }
   if (o.tio2 === false) g.go('Valider ma formule'); else tio2Plus(g, o.tio2);
   if (o.rate) { g.go('Je mets tout'); g.go('Tout refaire'); } else g.go('Je suis la fiche');
