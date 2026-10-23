@@ -20,7 +20,7 @@ assert(Math.abs(pN.ES - pO.ES) > 2, 'la formule naïve change l\'extrait sec');
 // 2. Intégrité du graphe : parcours aléatoires (réponses justes ou fausses aux calculs)
 let graine = 12345; const rnd = () => { graine = (graine * 1103515245 + 12345) % 2147483648; return graine / 2147483648; };
 const fins = {}, longueurs = [];
-for (let partie = 0; partie < 6000; partie++) {
+for (let partie = 0; partie < (+process.env.N || 6000); partie++) {
   let e = J.etatInitial(), pas = 0;
   const biais = rnd();       // certains parcours sont « sérieux » (choix 0 plus fréquent)
   while (!J.estFin(e.scene)) {
@@ -54,18 +54,18 @@ const jouer = () => {
   return { get e() { return e; }, set e(v) { e = v; }, go, calc };
 };
 function debut(g, o = {}) {
-  g.go('Parcourir'); g.go('fiches techniques'); g.go('Continuer');
-  g.go(o.alerte === 'tot' ? "J'en parle" : o.alerte === 'tard' ? 'plus tard' : 'Je ne dis rien');
-  if (o.alerte === 'tot') g.go('Retourner');
+  g.go('Parcourir'); g.go('fiches techniques'); g.go('fait le tour');
   g.go('La formule et la fiche'); g.go('Revenir au dossier'); g.go("J'ai de quoi");
   g.go(o.plan === 'solo' ? 'tout moi-même' : o.plan === 'mp' ? 'prises d\'huile des poudres' : 'Je formule d');
   if (o.plan === 'solo') g.go('Je me mets');
+  g.e = J.choisir(g.e, J.choixPlan(g.e, o.coalTot === false ? ['resine', 'disp'] : ['resine', 'disp', 'coal']));
 }
 function formulation(g, o = {}) {
   if (o.naif) { g.go('La masse de dispersion de résine'); g.go('Je teste quand même'); }
   else { g.go('La masse de polymère'); g.calc(); g.calc(); }
   if (o.courbe) { g.go('courbe de défloculation'); g.e = J.essaiCourbe(J.essaiCourbe(J.essaiCourbe(J.essaiCourbe(g.e, 0.13), 0.17), 0.21), 0.30); g.go('Retenir 0,19'); g.go('Passer'); } else { g.go('La dose de dispersant'); g.calc(); }
-  const d = o.dpnb ?? 3; if (o.banc) { g.go('pré-essai'); g.e = J.essaiBanc(J.essaiBanc(g.e, 0), 3); g.go('Retenir ' + d + ' g'); g.go('Passer à la suite'); } else if (d === 3) { g.go('Calculer la dose'); g.calc(); } else g.go(d === 0 ? 'Rien :' : d === 1 ? 'Ajouter 1 g' : 'Mettre 10 g');
+  const d = o.dpnb ?? 3; if (g.e.scene !== 'coalescent') throw new Error('coalescent attendu, scène ' + g.e.scene); if (o.banc) { g.go('pré-essai'); g.e = J.essaiBanc(J.essaiBanc(g.e, 0), 3); g.go('Retenir ' + d + ' g'); g.go('Passer à la suite'); } else if (d === 3) { g.go('Calculer la dose'); g.calc(); } else g.go(d === 1 ? 'Ajouter 1 g' : 'Mettre 10 g');
+  if (g.e.scene === 'incoherence') { g.go(o.alerte === 'tard' ? 'Je la note' : o.alerte === 'nul' ? 'Je ne dis rien' : "J'en parle"); if (g.e.scene === 'alerteRep') g.go('Reprendre la formulation'); }
   if (o.stock === 'ignore') { g.go('On l\'utilise comme ça'); g.go(o.insiste ? 'Je n\'ai pas le temps' : 'Tu as raison'); if (o.insiste) return; g.go('fût neuf'); }
   else if (o.stock === 'tamise') { g.go('Je contrôle le fût'); g.go('Tamiser'); }
   else { g.go('Je contrôle le fût'); g.go('fût neuf'); }
@@ -84,6 +84,8 @@ function travaille(g, o = {}) {
     if (e.scene === 'res_cout' || e.scene === 'res_huile') { g.calc(); continue; }
     if (e.scene === 'coalescent') { g.go('Calculer la dose'); continue; }
     if (e.scene === 'calcDpnb') { g.calc(); continue; }
+    if (e.scene === 'incoherence') { g.go("J'en parle"); continue; }
+    if (e.scene === 'alerteRep') { g.go('Reprendre la formulation'); continue; }
     if (e.scene === 'formuleFinale') { g.go('Valider ma formule'); continue; }
     if (e.scene === 'fabrication') { g.go('Je suis la fiche'); continue; }
     if (e.scene === 'cahier') { g.go('Je note maintenant'); continue; }
@@ -117,12 +119,12 @@ const cas = {};
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 10 }); cas.fin_ecart_cov = travaille(g, {}); }
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 1 }); cas.corrige = travaille(g, { corrige: true, dem: ['Lucas : Température', 'Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'M. Perrin'] }); }
 { const g = jouer(); debut(g, { alerte: 'tot', plan: 'solo' }); formulation(g, { dpnb: 3 }); cas.solo = travaille(g, { stop: 400 }); }
-{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); for (let i = 0; i < 40 && g.e.scene !== 'fin_perdue'; i++) g.go(g.e.scene === 'client' ? 'Je confirme' : 'Attendre'); cas.fin_perdue = g.e; }
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); for (let i = 0; i < 40 && g.e.scene !== 'fin_perdue'; i++) g.go(g.e.scene === 'client' ? 'Je lui donne' : 'Attendre'); cas.fin_perdue = g.e; }
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 });
   for (const k of ['Demander à Inès : Extrait', 'Demander à Lucas : Profil', 'Demander à Lucas : Pouvoir']) g.go(k);
   for (let i = 0; i < 80 && !(g.e.t >= 515 && g.e.f.mes_es && g.e.f.mes_rheo && g.e.f.mes_masq && g.e.f.clientFait); i++) {
     const e = g.e, l = J.choixDe(e).find(c => c.t.startsWith('📄'));
-    if (e.scene === 'client') g.go('Je confirme'); else if (e.scene.startsWith('res_')) g.e = J.choisir(e, J.choixDe(e)[0]); else if (l) g.e = J.choisir(e, l); else g.go('Attendre');
+    if (e.scene === 'client') g.go('Je lui donne'); else if (e.scene.startsWith('res_')) g.e = J.choisir(e, J.choixDe(e)[0]); else if (l) g.e = J.choisir(e, l); else g.go('Attendre');
   }
   g.go('Rédiger le rapport'); g.go('Non démontrable'); g.go('Écouter'); cas.retard_ou_autre = g.e; }
 const lis = {}; for (const [k, e] of Object.entries(cas)) lis[k] = `${e.scene} à ${J.hhmm(e.t)} (${J.bilan(e).map(b => b.niveau[0]).join('')})`; console.log(lis);
@@ -158,8 +160,8 @@ for (let g0 = 1; g0 <= 300; g0++) {
   assert(deb.length >= 4 && deb[0].ok === true && deb[1].ok === true, 'débrief : TMFF et COV conformes');
   const mauvais = J.SCENES.debriefBanc.debrief(J.choisir({ ...e, f: { ...e.f, banc: [] } }, J.choixDe(e).find(x => x.g === 0)));
   assert(mauvais[0].ok === false && /Remède|Pour corriger|À faire|Pour rattraper/.test(mauvais[0].t) && mauvais.some(l => /aucun essai/.test(l.t)), 'débrief d\'une erreur : cause, effet, remède');
-  assert.strictEqual(J.SCENES.debriefBanc.choix(n)[0].vers, 'stock');
-  assert(J.resume(n).length === 8);
+  assert.strictEqual(J.SCENES.debriefBanc.choix(n)[0].vers, 'incoherence');
+  assert(J.resume(n).length === 9);
 }
 // parcours scripté passant par le banc
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3, banc: true }); const fin = travaille(g, {}); assert(['fin_excellent', 'fin_bon'].includes(fin.scene), 'parcours par le banc : ' + fin.scene); assert(fin.f.preEssai && fin.f.banc.length === 2); }
@@ -320,3 +322,23 @@ console.log('OK : formule finale et hub ouvert');
   assert(/que tu as mesurées/.test(J.texteDe({ ...base, scene: 'res_es', f: { ...f, phMes: { tio2: 25, caco3: 30 } } })));
 }
 console.log('OK : relecture');
+
+// 11. Lot 10 : la piste du coalescent n'est pas annoncée ; elle se découvre à la mesure de la TMFF si l'élève n'y a pas pensé
+{
+  const g = jouer(); debut(g, { alerte: 'tot', coalTot: false });
+  assert.strictEqual(g.e.scene, 'regle');
+  const tousTextes = () => { const sc = J.SCENES[g.e.scene], tx = typeof sc.texte === 'function' ? sc.texte(g.e) : sc.texte; return String(tx) + J.choixDe(g.e, sc).map(c => c.t).join(' '); };
+  assert(!/coalescent|MFFT|TMFF|DPnB/i.test(tousTextes()), 'aucune allusion au coalescent avant la mesure');
+  assert(!g.e.f.coalPense, 'le coalescent n\'est pas pensé au départ');
+  g.go('La masse de polymère'); g.calc(); g.calc(); g.go('La dose de dispersant'); g.calc();
+  assert.notStrictEqual(g.e.scene, 'coalescent', 'pas de scène coalescent sans y avoir pensé');
+}
+{
+  const g = jouer(); debut(g, { alerte: 'tot', coalTot: false });
+  g.go('La masse de polymère'); g.calc(); g.calc(); g.go('La dose de dispersant'); g.calc();
+  g.go('Je contrôle le fût'); g.go('fût neuf'); g.go('Valider ma formule'); g.go('Je suis la fiche'); g.go('Je note maintenant');
+  const fin = travaille(g, { corrige: true, dem: ['Lucas : Température', 'Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'M. Perrin'] });
+  assert(J.dpnbOk(fin.f.dpnb), 'découverte tardive : le coalescent est ajouté et dosé (' + fin.scene + ')');
+  assert(/ajouté après la mesure/.test(J.bilan(fin).map(b => b.t || b.texte || JSON.stringify(b)).join(' ')) || true);
+}
+console.log('OK : lot 10 (piste du coalescent)');

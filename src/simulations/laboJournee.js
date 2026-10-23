@@ -138,7 +138,7 @@ export function controlesFormule(e, fm) {
     { cle: 'cov', ok: p.COV < COV_MAX, t: `COV calculé ${nf(p.COV, 0)} g/L (< ${COV_MAX} g/L demandé).` },
     { cle: 'cout', ok: cout < 4.5, t: `Coût matières premières ${nf(cout, 2)} €/kg (< 4,5 €/kg demandé).` },
     { cle: 'disp', ok: act >= 0.15 && act <= 0.30 ? true : null, t: `Dispersant : ${nf(act, 2)} % de matière active sur les poudres, ${act >= 0.15 && act <= 0.30 ? 'dans' : 'hors de'} la plage recommandée par la fiche technique.` },
-    { cle: 'coal', ok: p.pctCoalescent >= 4 && p.pctCoalescent <= 8 ? true : null, t: `Coalescent : ${nf(p.pctCoalescent, 1)} % du polymère sec (règle d'atelier : 4 à 8 %).` },
+    ...(f.dpnb > 0 || e.f.coalPense || e.f.refaitCoal ? [{ cle: 'coal', ok: p.pctCoalescent >= 4 && p.pctCoalescent <= 8 ? true : null, t: `Coalescent : ${nf(p.pctCoalescent, 1)} % du polymère sec (règle d'atelier : 4 à 8 %).` }] : []),
     { cle: 'mes', ok: null, t: 'TMFF, rhéologie, pouvoir masquant, brillance : ça ne se calcule pas, il faudra les mesurer sur la peinture fabriquée.' },
   ];
 }
@@ -228,19 +228,23 @@ add('docs', { lieu: 'Bureau', pnj: 'moi', titre: 'Étude du dossier',
   ] });
 
 add('docRes', { lieu: 'Bureau', pnj: 'moi', titre: 'Document 8 : les deux résines', fiches: ['vinnapas', 'orgal'],
-  texte: `Tu lis les deux fiches techniques côte à côte.\nLa Vinnapas : MFFT de 2 °C, ES 60 %, COV inférieurs à 1 g/L, et la fiche précise qu'elle « n'a besoin d'aucun agent de coalescence ». L'Orgal : ES 50 %, mais MFFT de 20 °C et Tg de 20 °C : il forme un film « au-dessus de 20 °C ».\nUne chose te chagrine : la commande de la cliente promet une peinture « sans solvant, COV nuls » alors qu'une résine à MFFT de 20 °C ne filmifie pas à température ambiante sans agent de coalescence.`,
-  choix: [{ t: 'Continuer', vers: 'incoherence' }] });
+  texte: 'Tu lis les deux fiches techniques côte à côte (elles sont affichées ci-dessous). Qu\'est-ce qui change pour la formule quand on passe de l\'une à l\'autre ?',
+  choix: [{ t: 'J\'ai fait le tour des deux fiches', vers: 'docs' }] });
 
-add('incoherence', { melange: true, lieu: 'Bureau', pnj: 'moi', titre: 'Une incohérence dans le dossier',
-  texte: 'Que fais-tu de cette incohérence entre la promesse « COV nuls » de la cliente et la MFFT de 20 °C de l\'Orgal ?',
+// Après avoir décidé d'ajouter du coalescent (par anticipation, ou après une mesure de TMFF) : la promesse faite à la cliente est-elle encore tenable ?
+const suiteCoal = e => e.f.refaitCoal ? 'formuleFinale' : 'stock';
+// Dose de coalescent décidée : si c'est la première fois, la promesse « COV nuls » faite à la cliente est à reconsidérer
+const apresDose = e => (e.f.dpnb ?? 0) > 0 && e.f.alerte === undefined ? 'incoherence' : suiteCoal(e);
+add('incoherence', { lieu: 'Paillasse', pnj: 'moi', titre: 'La promesse faite à la cliente',
+  texte: e => `Tu viens de décider d'ajouter ${nf(e.f.dpnb ?? 0, 0)} g de DPnB, un solvant. Or la commande de la cliente promet une peinture « sans solvant, COV nuls ». Le cahier des charges interne, lui, dit COV inférieurs à 30 g/L.\nQue fais-tu de cette incohérence ?`,
   choix: [
     { t: 'J\'en parle tout de suite à Mme Dubreuil (5 min)', duree: 5, f: { alerte: true }, note: 'Alerte : la promesse « sans solvant, COV nuls » est incompatible avec l\'Orgal (MFFT 20 °C : coalescent nécessaire). Signalé à Mme Dubreuil.', vers: 'alerteRep' },
-    { t: 'Je la note dans mon cahier pour en parler plus tard', f: { alerte: 'plustard' }, note: 'À clarifier : promesse « COV nuls » de la cliente vs coalescent nécessaire avec l\'Orgal.', vers: 'docs' },
-    { t: 'Je ne dis rien : on m\'a demandé de changer la résine, pas de discuter la commande', f: { alerte: false }, vers: 'docs' },
+    { t: 'Je la note dans mon cahier pour en parler plus tard', f: { alerte: 'plustard' }, note: 'À clarifier : promesse « COV nuls » de la cliente vs coalescent nécessaire avec l\'Orgal.', vers: suiteCoal },
+    { t: 'Je ne dis rien : on m\'a demandé de changer la résine, pas de discuter la commande', f: { alerte: false }, vers: suiteCoal },
   ] });
 add('alerteRep', { lieu: 'Bureau', pnj: 'dubreuil', titre: 'Réponse de Mme Dubreuil',
   texte: '« Bien vu. Notre cahier des charges dit COV inférieurs à 30 g/L, pas zéro : ce n\'est pas la même promesse. Je préviendrai la cliente à l\'appel de 15 h, et note-le dans ton rapport. Merci de me prévenir plutôt que de découvrir ça au dernier moment. »',
-  choix: [{ t: 'Retourner au dossier', vers: 'docs' }] });
+  choix: [{ t: 'Reprendre la formulation', vers: suiteCoal }] });
 
 add('docRef', { lieu: 'Bureau', pnj: 'moi', titre: 'Documents 1, 2, 4 et 5 : la référence Vinnapas', fiches: ['formule', 'fabrication'],
   texte: () => { const pf = proprietes(FORMULE_REF, { ph: 'fiche' });
@@ -250,16 +254,26 @@ add('docRef', { lieu: 'Bureau', pnj: 'moi', titre: 'Documents 1, 2, 4 et 5 : la 
 add('appel', { melange: true, lieu: 'Téléphone', pnj: 'dubreuil', titre: 'L\'appel d\'organisation obligatoire',
   texte: e => `Il est ${hhmm(e.t)}. Mme Dubreuil décroche : « Dis-moi comment tu organises ta journée. Rappel : les analyses se délèguent, mais Karim, Inès et Lucas ne peuvent pas tout faire en même temps, et Lucas est très demandé. »`,
   choix: [
-    { t: 'Je formule d\'abord, puis je délègue les analyses dès que la peinture est prête', f: { plan: 'seq' }, note: 'Plan : formulation, puis analyses déléguées.', vers: 'regle' },
+    { t: 'Je formule d\'abord, puis je délègue les analyses dès que la peinture est prête', f: { plan: 'seq' }, note: 'Plan : formulation, puis analyses déléguées.', vers: 'planFormule' },
     { t: 'Je fais d\'abord mesurer les prises d\'huile des poudres par Lucas (la référence « mate » m\'intrigue), pendant que je formule', f: { plan: 'mp' }, note: 'Plan : prises d\'huile des poudres demandées tout de suite à Lucas, formulation en parallèle.',
-      run: e => deleguer(e, ANALYSES[0]), vers: 'regle' },
+      run: e => deleguer(e, ANALYSES[0]), vers: 'planFormule' },
     { t: 'Je fais tout moi-même, je ne veux déranger personne', f: { plan: 'solo' }, note: 'Plan : tout réalisé seul·e.', vers: 'solo' },
   ] });
 add('solo', { lieu: 'Téléphone', pnj: 'dubreuil', titre: 'Mme Dubreuil sourit',
   texte: '« Comme tu veux. Mais tu n\'as qu\'une journée, pas une semaine. Et l\'esprit d\'équipe fait partie de ce qu\'on attend. »',
-  choix: [{ t: 'Je me mets au travail', vers: 'regle' }] });
+  choix: [{ t: 'Je me mets au travail', vers: 'planFormule' }] });
 
 // ───────────── Formulation ─────────────
+// Question ouverte de départ : que modifie-t-on dans la formule ? (liste d'options dont certaines ne servent à rien)
+export const PLAN_OPTIONS = [
+  ['resine', 'Recalculer la quantité de résine'], ['disp', 'Revoir le dispersant (les amas de poudres)'], ['coal', 'Ajouter un agent de coalescence (solvant filmifiant)'],
+  ['epais', 'Ajouter un épaississant supplémentaire'], ['tio2', 'Augmenter la quantité de TiO₂'], ['biocide', 'Ajouter un biocide'], ['ammo', 'Ajouter de l\'ammoniaque pour neutraliser'], ['rien', 'Rien d\'autre'],
+];
+export const choixPlan = (e, sel) => ({ t: 'Valider mon plan', f: { planForm: sel, coalPense: sel.includes('coal') }, note: `Modifications envisagées : ${sel.length ? sel.map(k => PLAN_OPTIONS.find(o => o[0] === k)?.[1]).join(' ; ') : 'aucune de plus que le changement de résine'}.`, vers: 'regle' });
+export const optionsPlan = e => melanger(e, 'plan', PLAN_OPTIONS.filter(o => o[0] !== 'rien')).concat([PLAN_OPTIONS.find(o => o[0] === 'rien')]);
+add('planFormule', { lieu: 'Paillasse de formulation', pnj: 'karim', titre: 'Que change-t-on dans la formule ?', station: 'plan',
+  texte: e => `Il est ${hhmm(e.t)}. Karim t'attend à la paillasse avec la formule de référence.\n« Avant de peser quoi que ce soit : pour remplacer la Vinnapas par l'Orgal, qu'est-ce que tu changes ou que tu ajoutes dans la formule ? Coche ce que tu envisages. Tout ajout coûte de la matière, du temps ou des conséquences. »`,
+  choix: e => [choixPlan(e, [])] });
 add('regle', { melange: true, lieu: 'Paillasse de formulation', pnj: 'karim', titre: 'Que garder constant ?',
   texte: e => `Il est ${hhmm(e.t)}. Karim prépare la balance. « Pour que la nouvelle base ait le même extrait sec, la même CPV et la même CPVC, tu gardes constant quoi, au juste ? »`,
   choix: [
@@ -296,13 +310,14 @@ add('dispersion', { melange: true, lieu: 'Paillasse de formulation', pnj: 'karim
   ] });
 add('dispRep1', { lieu: 'Paillasse', pnj: 'karim', titre: 'Karim', texte: '« La fiche prévoit déjà la vitesse maximale pendant 15 minutes. On ne peut pas aller plus vite que la machine. Cherche du côté de la formule. »', choix: [{ t: 'Reprendre', vers: 'dispersion' }] });
 add('dispRep2', { lieu: 'Paillasse', pnj: 'karim', titre: 'Karim', texte: '« Plus d\'eau, c\'est changer l\'extrait sec et la viscosité, et ça ne s\'attaque pas à la cause : les grains ne sont pas assez mouillés et séparés. Cherche du côté de l\'additif qui sert à ça. »', choix: [{ t: 'Reprendre', vers: 'dispersion' }] });
+const versCoal = e => e.f.coalPense ? 'coalescent' : 'stock';
 add('calcCoadis', { lieu: 'Paillasse', pnj: 'moi', titre: 'Calcul : dose de dispersant', fiches: ['coadis'],
   texte: 'Karim : « Les amas viennent d\'un manque de dispersant. Lis la fiche technique du Coadis BR3 : elle dit quelle quantité mettre. »\nDans la formule, les poudres pèsent 60 g de TiO₂ et 60 g de CaCO₃ ; la dose actuelle est de 0,2 g de Coadis BR3.',
   calcul: { q: 'Quelle masse de Coadis BR3 (produit tel que fourni) pèses-tu pour les poudres de la formule ? Vise le milieu de la plage recommandée par la fiche.', unite: 'g', vrai: () => 0.00175 * 120 / 0.4, tol: 0.15,
     indice: 'Le dosage est une masse de matière active (extrait sec du produit) rapportée à la masse de poudres (pigments et charges). Exemple avec un autre produit : pour 100 g de poudres, 1 g d\'un dispersant à 30 % d\'extrait sec apporte 0,3 g de matière active, soit un dosage de 0,3 %. Applique la même idée avec la fiche du Coadis BR3 et nos 120 g de poudres.',
     retour: v => v >= 1 ? 'Attention : à cette dose, le dispersant est très en excès (surdosage : film sensible à l\'eau, mousse, coût). Revois le calcul.' : null,
-    ok: { f: { coadis: 0.525 }, vers: 'coalescent', note: 'Dispersant relevé à 0,525 g de Coadis BR3 (0,175 % de matière active sur les poudres) pour supprimer les amas.' },
-    ko: { f: { coadis: 0.5 }, vers: 'coalescent', duree: 10, note: 'Dispersant relevé à 0,5 g de Coadis BR3 (valeur donnée par Karim).' } } });
+    ok: { f: { coadis: 0.525 }, vers: versCoal, note: 'Dispersant relevé à 0,525 g de Coadis BR3 (0,175 % de matière active sur les poudres) pour supprimer les amas.' },
+    ko: { f: { coadis: 0.5 }, vers: versCoal, duree: 10, note: 'Dispersant relevé à 0,5 g de Coadis BR3 (valeur donnée par Karim).' } } });
 
 // ───────────── Station : courbe de défloculation du dispersant ─────────────
 export const INDICES_COURBE = [
@@ -341,24 +356,26 @@ add('debriefCourbe', { lieu: 'Paillasse', pnj: 'karim', titre: 'Ce que dit la co
     if ((e.f.indC || 0) > 0) L.push({ ok: null, t: `Tu as demandé ${e.f.indC} coup(s) de pouce à Karim (5 min chacun).` });
     return L;
   },
-  choix: () => [{ t: 'Passer à la suite', vers: 'coalescent' }] });
+  choix: () => [{ t: 'Passer à la suite', vers: versCoal }] });
 
-add('coalescent', { melange: true, lieu: 'Paillasse', pnj: 'karim', titre: 'Et le coalescent ?', fiches: ['dpnb'],
-  texte: e => `« La Vinnapas filmifiait toute seule : sa MFFT est de 2 °C, donc la référence n'a pas d'agent de coalescence. L'Orgal, lui, a une MFFT de 20 °C. Notre cahier des charges veut un film continu dès 5 °C. Qu'est-ce qu'on met dans la formule ? »\n${e.f.fiche ? 'Tu te souviens de la fiche : MFFT de 2 °C pour la Vinnapas, 20 °C pour l\'Orgal.' : 'Tu n\'as pas lu la fiche de la résine : Karim te la tend. « MFFT de la Vinnapas : 2 °C ; celle de l\'Orgal : 20 °C. »'}\nKarim ajoute : « La fiche du DPnB ne donne aucun dosage. Chez nous, la règle d'atelier est de 4 à 8 % du polymère sec, à confirmer par un essai. »`,
-  choix: e => { const v = e.f.refaitCoal ? 'formuleFinale' : 'stock'; return [
-    { t: 'Rien : la référence n\'en avait pas, et ça garde les COV à zéro', f: { dpnb: 0 }, note: 'Pas de coalescent ajouté (la référence Vinnapas n\'en avait pas).', vers: v },
-    { t: 'Ajouter 1 g par précaution, sans calcul', f: { dpnb: 1 }, note: 'Coalescent (DPnB) ajouté à 1 g, sans calcul.', vers: v },
+add('coalescent', { melange: true, lieu: 'Paillasse', pnj: 'karim', titre: 'Le coalescent', fiches: ['dpnb'],
+  texte: e => !e.f.refaitCoal
+    ? 'Tu as prévu un agent de coalescence.\nKarim : « Pourquoi pas, mais il faut le doser. La fiche du DPnB ne donne aucun dosage. Chez nous, la règle d\'atelier est de 4 à 8 % du polymère sec, à confirmer par un essai. »'
+    : e.f.coalPense ? `Ta mesure est tombée : TMFF ${nf(Math.max(0, prop(e).tmff), 0)} °C, COV calculés ${nf(prop(e).COV, 0)} g/L. La dose de coalescent n'est pas la bonne.\nKarim : « On la reprend. La règle d'atelier est de 4 à 8 % du polymère sec, à confirmer par un essai. »`
+    : `Karim relit ta mesure : la TMFF de ta peinture est de ${nf(Math.max(0, prop(e).tmff), 0)} °C, bien au-dessus des 5 °C du cahier des charges. Elle craquellerait sur un mur froid.\n« Regarde la fiche de l'Orgal : MFFT de 20 °C. La Vinnapas filmifiait toute seule (2 °C), pas cette résine : il lui faut un agent de coalescence. La fiche du DPnB ne donne aucun dosage ; chez nous la règle d'atelier est de 4 à 8 % du polymère sec, à confirmer par un essai. »`,
+  choix: [
+    { t: 'Ajouter 1 g par précaution, sans calcul', f: { dpnb: 1 }, note: 'Coalescent (DPnB) ajouté à 1 g, sans calcul.', vers: e => apresDose(e) },
     { t: 'Calculer la dose avec la règle d\'atelier de Karim (4 à 8 % du polymère sec)', vers: 'calcDpnb' },
     { t: 'Faire d\'abord un pré-essai au banc TMFF avec Lucas', d: '5 min de préparation, puis 5 min par essai', duree: 5, note: 'Pré-essai au banc TMFF demandé à Lucas.', vers: 'stationBanc' },
-    { t: 'Mettre 10 g : on sera tranquille pour la filmification', f: { dpnb: 10 }, note: 'Coalescent (DPnB) mis à 10 g « par sécurité ».', vers: v },
-  ]; } });
+    { t: 'Mettre 10 g : on sera tranquille pour la filmification', f: { dpnb: 10 }, note: 'Coalescent (DPnB) mis à 10 g « par sécurité ».', vers: e => apresDose(e) },
+  ] });
 add('calcDpnb', { lieu: 'Paillasse', pnj: 'moi', titre: 'Calcul : dose de coalescent',
   texte: 'Les 100 g d\'Orgal apportent 50 g de polymère sec. La règle d\'atelier de Karim est de 4 à 8 % de la masse de polymère sec ; tu vises le milieu de la plage, 6 %.',
   calcul: { q: 'Quelle masse de DPnB pèses-tu ?', unite: 'g', vrai: () => 0.06 * 50, tol: 0.17,
     indice: 'Masse de DPnB = 6 % × masse de polymère sec (50 g, pas 100 g de dispersion).',
     retour: v => v >= 6 ? 'Attention : ce n\'est pas 6 % de la dispersion mais du polymère sec (50 g). Une telle dose ferait monter les COV.' : null,
-    ok: { f: { dpnb: 3 }, vers: e => e.f.refaitCoal ? 'formuleFinale' : 'stock', note: 'Coalescent : 3 g de DPnB (6 % du polymère sec), retirés de l\'eau (102 g).' },
-    ko: { f: { dpnb: 3 }, vers: e => e.f.refaitCoal ? 'formuleFinale' : 'stock', duree: 10, note: 'Coalescent : 3 g de DPnB (valeur donnée par Karim), retirés de l\'eau.' } } });
+    ok: { f: { dpnb: 3 }, vers: e => apresDose(e), note: 'Coalescent : 3 g de DPnB (6 % du polymère sec), retirés de l\'eau (102 g).' },
+    ko: { f: { dpnb: 3 }, vers: e => apresDose(e), duree: 10, note: 'Coalescent : 3 g de DPnB (valeur donnée par Karim), retirés de l\'eau.' } } });
 
 // ───────────── Station : le banc à gradient de température (TMFF) ─────────────
 // Paramètre caché : l'efficacité du coalescent (e.f.eff, °C par %), tirée au début de la partie. L'élève la déduit de ses essais.
@@ -375,7 +392,7 @@ export function essaiBanc(e, g) {
   return { ...e, t: e.t + DUREE_ESSAI, f: { ...e.f, banc: [...banc, m] } };
 }
 export const indiceBanc = e => (e.f.indB || 0) >= INDICES_BANC.length ? e : { ...e, t: e.t + 5, f: { ...e.f, indB: (e.f.indB || 0) + 1 } };
-const apresCoal = e => e.f.refaitCoal ? 'formuleFinale' : 'stock';
+const apresCoal = e => apresDose(e);
 
 add('stationBanc', { lieu: 'Paillasse', pnj: 'lucas', titre: 'Banc à gradient de température', station: 'banc',
   texte: 'Lucas t\'a installé le banc : une plaque métallique chauffée à une extrémité et refroidie à l\'autre. Tu prépares un petit essai de peinture pour chaque dose, tu l\'étales en bande sur la plaque, tu la laisses sécher, puis tu lis la température où le film devient continu : au-dessus, il est lisse ; au-dessous, il craquelle et poudre.\n« Chaque essai prend 5 minutes. Choisis la dose de DPnB, lis la TMFF, et décide. »',
@@ -663,10 +680,12 @@ add('labo', { lieu: 'Paillasse et laboratoire', pnj: 'moi', titre: 'La journée 
 // ───────────── Appel client ─────────────
 add('client', { lieu: 'Salle de réunion (visio)', pnj: 'aubry', titre: 'Appel avec la cliente, 15 h',
   texte: e => `Il est ${hhmm(e.t)}. Mme Aubry : « Alors, la nouvelle base à l'Orgal garde bien notre promesse « sans solvant, COV nuls » ? On imprime les étiquettes des pots cette semaine. »\n${e.f.alerte === true ? 'Mme Dubreuil lui a déjà expliqué que l\'Orgal exige un agent de coalescence. Mme Aubry semble ennuyée mais ouverte.' : ''}${e.f.mes_dpnb ? `\nTu peux lui donner un chiffre : le dosage du DPnB a donné COV = ${nf(e.f.covMes ?? 0, 1)} ± ${nf(e.f.uMes ?? 0, 1)} g/L (k = 2).` : ''}`,
-  choix: e => e.f.alerte === true ? [{ t: 'Je confirme : COV inférieurs à 30 g/L mais non nuls, la mention « COV nuls » doit disparaître de l\'étiquette', duree: 20, f: { clientFait: true, clientOk: true }, note: 'Appel client : COV faibles mais non nuls avec l\'Orgal (coalescent), mention « COV nuls » à retirer de l\'étiquette.', vers: 'labo' }]
-    : [{ t: 'Je lui précise que l\'Orgal exige un coalescent : les COV seront faibles mais pas nuls', duree: 20, f: { clientFait: true, clientOk: true, alerte: true, alerteTardive: true }, note: 'Appel client : j\'ai précisé que l\'Orgal exige un coalescent (COV non nuls).', vers: 'labo' },
-      { t: 'Je réponds que oui, ça devrait aller', duree: 20, f: { clientFait: true, mensonge: true }, note: 'Appel client : réponse positive sans réserve sur la mention « COV nuls ».', vers: 'labo' }],
-});
+  choix: e => { const cov = (e.f.dpnb ?? 0) > 0;
+    return [
+      { t: 'Je lui donne les COV de ma formule et ce que cela implique pour son étiquette', duree: 20, f: { clientFait: true, clientOk: true, ...(cov && e.f.alerte !== true ? { alerte: true, alerteTardive: true } : {}) },
+        note: cov ? 'Appel client : COV faibles mais non nuls (coalescent), mention « COV nuls » à retirer de l\'étiquette.' : 'Appel client : COV nuls dans ma formule, mention possible sur l\'étiquette.', vers: 'labo' },
+      { t: 'Je réponds que oui, ça devrait aller', duree: 20, f: { clientFait: true, ...(cov ? { mensonge: true } : { clientOk: true }) }, note: 'Appel client : réponse positive sans réserve sur la mention « COV nuls ».', vers: 'labo' },
+    ]; } });
 
 // ───────────── Rapport et fins ─────────────
 add('rapport', { melange: true, lieu: 'Bureau', pnj: 'moi', titre: 'Le rapport',
@@ -716,7 +735,7 @@ export function bilan(e) {
   const c32 = n(f.alerte === true) * (f.alerteTardive ? 0.5 : 1) + n(f.stockCtrl) * (f.stockAlerte ? 0.5 : 1) + n(f.stab === 'honnete');
   pr.push({ comp: 'C3.2', titre: 'Détecter les non-conformités et alerter', niveau: niv(c32, 3), texte: `Promesse « COV nuls » incompatible avec l'Orgal ${f.alerte === true ? (f.alerteTardive ? 'signalée tardivement' : 'signalée tout de suite') : 'non signalée'} ; fût d'Orgal gelé ${f.stockCtrl ? (f.stockAlerte ? 'contrôlé après rappel de Karim' : 'contrôlé de ta propre initiative') : 'non contrôlé'} ; stabilité ${f.stab === 'honnete' ? 'annoncée honnêtement comme non démontrée' : f.stab === 'promis' ? 'garantie sans l\'avoir démontrée' : 'omise'}.` });
   const c41 = n(dispOk(f)) + n(dOk);
-  pr.push({ comp: 'C4.1', titre: 'Modifier, améliorer le protocole', niveau: niv(c41, 2), texte: `Dispersant ${dispOk(f) ? `corrigé (amas supprimés${f.dispCourbe ? ', dose trouvée par la courbe de défloculation' : ''})` : 'non corrigé'} ; coalescent ${dOk ? 'ajouté et dosé' : (f.dpnb ?? 0) < 2.5 ? 'absent ou trop faible' : 'surdosé'}.` });
+  pr.push({ comp: 'C4.1', titre: 'Modifier, améliorer le protocole', niveau: niv(c41, 2), texte: `Dispersant ${dispOk(f) ? `corrigé (amas supprimés${f.dispCourbe ? ', dose trouvée par la courbe de défloculation' : ''})` : 'non corrigé'} ; coalescent ${dOk ? (f.coalPense ? 'prévu dès le départ et dosé' : 'ajouté après la mesure de la TMFF, et dosé') : (f.dpnb ?? 0) < 2.5 ? 'absent ou trop faible' : 'surdosé'}.` });
   const c61 = n(f.plan !== 'solo') + n(e.t <= T_RAPPORT) + n(nbOpt >= 2);
   pr.push({ comp: 'C6.1', titre: 'Organiser le travail, tenir les délais', niveau: niv(c61, 3), texte: `${f.plan === 'solo' ? 'Tout fait seul·e : trop séquentiel. ' : f.plan === 'mp' ? 'Analyses des matières premières lancées dès le début, en parallèle. ' : 'Tâches déléguées en parallèle. '}Rapport ${e.t <= T_RAPPORT ? 'rendu dans les temps' : 'rendu après 17 h'} ; ${nbOpt} analyse(s) complémentaire(s) sur 4 (prises d'huile, brillance, TMFF, dosage du DPnB).` });
   pr.push({ comp: 'C6.3', titre: 'Gérer les produits selon la réglementation', niveau: niv(n(f.stock === 'neuf') + n(f.stock === 'tamise') * 0.5 + n(f.coutOk), 2), texte: `${f.stock === 'neuf' ? 'Lot gelé écarté, fût neuf commandé. ' : f.stock === 'tamise' ? 'Lot gelé tamisé et utilisé : acceptable seulement avec réserve. ' : 'Aucun problème de stockage détecté. '}${f.coutOk ? 'Coût matières contrôlé (< 4,5 €/kg).' : 'Coût matières non vérifié.'}` });
@@ -734,6 +753,7 @@ export function resume(e) {
   L.push(`Dispersant : ${f.coadis != null ? `${nf(f.coadis, 2)} g de Coadis BR3${f.dispCourbe ? ' (trouvés par une courbe de défloculation)' : ''}` : 'dose de départ conservée'}.`);
   L.push(`Organisation : ${f.plan === 'solo' ? 'tout fait seul·e' : `${Object.keys(e.cmd).length} analyses déléguées`}.`);
   L.push(`Contrôle du COV : ${f.mes_dpnb ? `dosage du DPnB par CPG-FID (${nf(f.covMes ?? 0, 1)} ± ${nf(f.uMes ?? 0, 1)} g/L)` : 'non fait (COV seulement calculés)'}.`);
+  L.push(`Modifications envisagées au départ : ${(f.planForm || []).length ? f.planForm.map(k => PLAN_OPTIONS.find(o => o[0] === k)?.[1]).join(' ; ') : 'aucune de plus que le changement de résine'}.`);
   L.push(`Initiative : ${f.idees ? 'tu as demandé de l\'aide pour savoir quoi lancer (5 min)' : 'tu as décidé seul·e des analyses à lancer'}.`);
   L.push(`Client : ${f.clientFait ? (f.clientOk ? 'informé de la mention « COV nuls »' : 'mal renseigné') : 'pas rappelé'}.`);
   return L;
