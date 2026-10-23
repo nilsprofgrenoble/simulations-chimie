@@ -278,7 +278,7 @@ const apresDose = e => (e.f.dpnb ?? 0) > 0 && e.f.alerte === undefined ? 'incohe
 add('incoherence', { lieu: 'Paillasse', pnj: 'moi', titre: 'La promesse faite à la cliente',
   texte: e => `Tu viens de décider d'ajouter ${nf(e.f.dpnb ?? 0, 0)} g de DPnB, un solvant. Or la commande de la cliente promet une peinture « sans solvant, COV nuls ». Le cahier des charges interne, lui, dit COV inférieurs à 30 g/L.\nQue fais-tu de cette incohérence ?`,
   choix: [
-    { t: 'J\'en parle tout de suite à Mme Dubreuil (5 min)', duree: 5, f: { alerte: true }, note: 'Alerte : la promesse « sans solvant, COV nuls » est incompatible avec l\'Orgal (MFFT 20 °C : coalescent nécessaire). Signalé à Mme Dubreuil.', vers: 'alerteRep' },
+    { t: 'J\'en parle tout de suite à Mme Dubreuil (5 min)', duree: 5, f: { alerte: true }, note: 'Alerte : la promesse « sans solvant, COV nuls » est incompatible avec l\'Orgal (MFFT 20 °C : coalescent nécessaire). Signalé à Mme Dubreuil.', vers: 'commResp' },
     { t: 'Je la note dans mon cahier pour en parler plus tard', f: { alerte: 'plustard' }, note: 'À clarifier : promesse « COV nuls » de la cliente vs coalescent nécessaire avec l\'Orgal.', vers: suiteCoal },
     { t: 'Je ne dis rien : on m\'a demandé de changer la résine, pas de discuter la commande', f: { alerte: false }, vers: suiteCoal },
   ] });
@@ -291,12 +291,39 @@ add('docRef', { lieu: 'Bureau', pnj: 'moi', titre: 'Documents 1, 2, 4 et 5 : la 
     return `Formule de référence (331 g) : eau 118,0 g, TiO₂ 60 g, CaCO₃ léger 60 g, Vinnapas 83,3 g, Foamex 1,5 g, Coadis BR3 0,2 g, Thixol 1,5 g, Coapur 6,7 g. Pas de coalescent.\nTableur avec les prises d'huile des fiches (20 et 14 g pour 100 g) : ES = ${nf(pf.ES)} %, CPV = ${nf(pf.CPV)} %, CPVC = ${nf(pf.CPVC)} %, donc λ = ${nf(pf.lambda, 2)}. COV = ${nf(pf.COV)} g/L. Coût matières premières ≈ ${nf(coutKg(FORMULE_REF))} €/kg.\nAnalyses du responsable : pouvoir masquant 8,0 m²/L ; comportement rhéofluidifiant, faible thixotropie, viscosité à 1 000 s⁻¹ de 330 mPa·s ; film continu dès 3 °C.\nÉtonnant : avec λ = ${nf(pf.lambda, 2)} < 0,8, cette peinture ne devrait pas être mate, or elle l'est. Les prises d'huile des fiches sont-elles fiables ?\nFiche de fabrication : 70 % de l'eau, Foamex, Coadis, puis TiO₂ et CaCO₃ en pluie fine à 300 tr/min, dispersion 15 min à vitesse maximale (finesse 7 Hegman) ; ensuite la résine, le Thixol et le Coapur sous agitation lente (200 tr/min), enfin le reste de l'eau.`; },
   choix: [{ t: 'Revenir au dossier', vers: 'docs' }] });
 
+// ───────────── Communication adaptée à l'interlocuteur (C7.3) : technicien·nes, responsable, cliente ─────────────
+// Chaque choix a une qualité : 'adapte' (1), 'partiel' (0,5) ou 'mauvais' (0) ; elle est mémorisée dans f.comm et relue par la fiche d'auto-évaluation.
+export const QUALITE_COMM = { adapte: 1, partiel: 0.5, mauvais: 0 };
+const msg = (interl, qualite, t, retour, duree, vers) => ({ t, duree, note: `Communication (${interl}) : ${qualite === 'adapte' ? 'adaptée' : qualite === 'partiel' ? 'à ajuster' : 'inadaptée'}.`,
+  run: e => ({ ...e, f: { ...e.f, comm: { ...(e.f.comm || {}), [interl]: qualite }, commRetour: retour, commVers: typeof vers === 'function' ? vers(e) : vers } }), vers: 'commRetour' });
+add('commRetour', { lieu: 'Sur place', pnj: 'moi', titre: 'Ce que ça a donné', texte: e => e.f.commRetour || '', choix: e => [{ t: 'Continuer', vers: e.f.commVers || 'labo' }] });
+add('commEquipe', { melange: true, lieu: 'Paillasse', pnj: 'moi', titre: 'Briefer l\'équipe',
+  texte: 'Karim, Inès et Lucas sont autour de la paillasse, chacun avec sa propre charge de travail. Tu leur annonces comment la journée va se passer. Comment le leur dis-tu ?',
+  choix: () => [
+    msg('equipe', 'adapte', '« Bonjour tous. Aujourd\'hui, on remplace la Vinnapas par l\'Orgal. Je vous donnerai chaque échantillon avec la mesure voulue, la plage de gradients ou de températures et l\'heure à laquelle j\'en ai besoin. Si c\'est trop chargé, dites-le-moi et je réordonne. Merci ! »',
+      'Karim, Inès et Lucas notent. Chacun sait ce que tu attends et pour quand, et peut s\'organiser : les demandes iront vite, sans allers-retours.', 0, 'planFormule'),
+    msg('equipe', 'partiel', '« Salut la bande ! J\'aurai des trucs à vous faire mesurer, je vous dis ça au fur et à mesure, vous voyez. »',
+      'Lucas fronce les sourcils : « Quels trucs ? Pour quand ? » Chaque demande demandera des précisions : cinq minutes perdues, et des allers-retours à venir.\nÀ retenir : pour un collègue technicien, un message précis (l\'échantillon, la mesure, le délai), poli et sans jargon inutile, fait gagner du temps à tout le monde.', 5, 'planFormule'),
+    msg('equipe', 'mauvais', '« Il me faut vos résultats vite. Pas de retard, c\'est prioritaire sur tout le reste, compris ? »',
+      'Le ton est sec. Personne ne répond, mais Karim glisse : « On est tous débordés aujourd\'hui, tu sais. » Tu obtiendras tes résultats, avec moins de bonne volonté la prochaine fois.\nÀ retenir : on demande plutôt qu\'on n\'exige, en donnant le contexte et l\'échéance. L\'équipe est une ressource, pas un exécutant.', 0, 'planFormule'),
+  ] });
+add('commResp', { melange: true, lieu: 'Couloir', pnj: 'moi', titre: 'Prévenir la responsable',
+  texte: e => `Mme Dubreuil sort de réunion, elle a cinq minutes. Tu as décidé d'ajouter ${nf(e.f.dpnb ?? 0, 0)} g de DPnB et la cliente a été promise une peinture sans solvant. Comment lui présentes-tu l'incohérence ?`,
+  choix: () => [
+    msg('resp', 'adapte', '« Madame Dubreuil, un point important avant l\'appel de 15 h : la cliente attend une peinture « COV nuls ». Or l\'Orgal a une MFFT de 20 °C : il lui faut un peu de coalescent, donc des COV faibles mais non nuls, sous 30 g/L. Je propose que vous le lui annonciez, et je vous donne le chiffre dès que je l\'ai mesuré. »',
+      'Mme Dubreuil a tout de suite compris l\'enjeu : constat, cause, conséquence pour la cliente, proposition chiffrée. Elle peut décider en deux minutes.', 0, 'alerteRep'),
+    msg('resp', 'partiel', '« Patronne, y a un petit souci avec les COV de la cliente, ça va pas trop le faire avec l\'Orgal, je crois. »',
+      'Mme Dubreuil lève un sourcil : « Je ne sais pas de quel souci tu parles ni quelle en est la conséquence. Reprends : le constat, la cause, ce que tu proposes. » Tu reformules posément, ce qui coûte cinq minutes.\nÀ retenir : avec une responsable, ton professionnel et structuré : le constat, la conséquence, la proposition.', 10, 'alerteRep'),
+    msg('resp', 'mauvais', '« La dispersion styrène-acrylique d\'Orgal a une Tg et une MFFT de 20 °C, donc le film ne coalesce pas sans plastifiant temporaire, et le DPnB est un éther de glycol dipropylénique de faible volatilité… »',
+      'Mme Dubreuil t\'interrompt : « Je n\'ai pas le temps de décrypter la MFFT. Qu\'est-ce que ça change pour la cliente ? » Il faut tout reformuler en conséquences (COV non nuls, mention à retirer) : dix minutes.\nÀ retenir : une responsable qui doit décider veut la conséquence et une proposition, pas le mécanisme.', 10, 'alerteRep'),
+  ] });
+
 add('appel', { melange: true, lieu: 'Téléphone', pnj: 'dubreuil', titre: 'L\'appel d\'organisation obligatoire',
   texte: e => `Il est ${hhmm(e.t)}. Mme Dubreuil décroche : « Dis-moi comment tu organises ta journée. Rappel : les analyses se délèguent, mais Karim, Inès et Lucas ne peuvent pas tout faire en même temps, et Lucas est très demandé. »`,
   choix: [
-    { t: 'Je formule d\'abord, puis je délègue les analyses dès que la peinture est prête', f: { plan: 'seq' }, note: 'Plan : formulation, puis analyses déléguées.', vers: 'planFormule' },
+    { t: 'Je formule d\'abord, puis je délègue les analyses dès que la peinture est prête', f: { plan: 'seq' }, note: 'Plan : formulation, puis analyses déléguées.', vers: 'commEquipe' },
     { t: 'Je fais d\'abord mesurer les prises d\'huile des poudres par Lucas (la référence « mate » m\'intrigue), pendant que je formule', f: { plan: 'mp' }, note: 'Plan : prises d\'huile des poudres demandées tout de suite à Lucas, formulation en parallèle.',
-      run: e => deleguer(e, ANALYSES[0]), vers: 'planFormule' },
+      run: e => deleguer(e, ANALYSES[0]), vers: 'commEquipe' },
     { t: 'Je fais tout moi-même, je ne veux déranger personne', f: { plan: 'solo' }, note: 'Plan : tout réalisé seul·e.', vers: 'solo' },
   ] });
 add('solo', { lieu: 'Téléphone', pnj: 'dubreuil', titre: 'Mme Dubreuil sourit',
@@ -752,8 +779,12 @@ add('client', { lieu: 'Salle de réunion (visio)', pnj: 'aubry', titre: 'Appel a
   texte: e => `Il est ${hhmm(e.t)}. Mme Aubry : « Alors, la nouvelle base à l'Orgal garde bien notre promesse « sans solvant, COV nuls » ? On imprime les étiquettes des pots cette semaine. »\n${e.f.alerte === true ? 'Mme Dubreuil lui a déjà expliqué que l\'Orgal exige un agent de coalescence. Mme Aubry semble ennuyée mais ouverte.' : ''}${e.f.mes_dpnb ? `\nTu peux lui donner un chiffre : le dosage du DPnB a donné COV = ${nf(e.f.covMes ?? 0, 1)} ± ${nf(e.f.uMes ?? 0, 1)} g/L (k = 2).` : ''}`,
   choix: e => { const cov = (e.f.dpnb ?? 0) > 0;
     return [
-      { t: 'Je lui donne les COV de ma formule et ce que cela implique pour son étiquette', duree: 20, f: { clientFait: true, clientOk: true, ...(cov && e.f.alerte !== true ? { alerte: true, alerteTardive: true } : {}) },
-        note: cov ? 'Appel client : COV faibles mais non nuls (coalescent), mention « COV nuls » à retirer de l\'étiquette.' : 'Appel client : COV nuls dans ma formule, mention possible sur l\'étiquette.', vers: 'labo' },
+      { t: 'Je lui donne les COV de ma formule en mots simples, et ce que cela implique pour son étiquette', duree: 20, f: { clientFait: true, clientOk: true, ...(cov && e.f.alerte !== true ? { alerte: true, alerteTardive: true } : {}) },
+        note: cov ? 'Appel client : COV faibles mais non nuls (coalescent), mention « COV nuls » à retirer de l\'étiquette.' : 'Appel client : COV nuls dans ma formule, mention possible sur l\'étiquette.',
+        run: n => ({ ...n, f: { ...n.f, comm: { ...(n.f.comm || {}), client: 'adapte' }, commRetour: cov ? 'Mme Aubry : « D\'accord : un peu de solvant, mais peu, et c\'est ce qui permet à la peinture de bien former son film. Je retire la mention de l\'étiquette. Merci pour la clarté. »' : 'Mme Aubry : « Parfait, je garde ma mention. Merci pour la clarté. »', commVers: 'labo' } }), vers: 'commRetour' },
+      { t: 'Je lui récite mes résultats : COV en g/L par CPG-FID, incertitude élargie, MFFT du polymère, dose de coalescent', duree: 20, f: { clientFait: true, clientOk: true, ...(cov && e.f.alerte !== true ? { alerte: true, alerteTardive: true } : {}) },
+        note: 'Appel client : résultats donnés avec un vocabulaire trop technique.',
+        run: n => ({ ...n, t: n.t + 10, f: { ...n.f, comm: { ...(n.f.comm || {}), client: 'partiel' }, commRetour: 'Mme Aubry : « Je n\'ai pas compris vos g/L ni votre MFFT. En clair : je peux garder ma mention, oui ou non ? » Tu dois tout reprendre en mots simples : dix minutes de plus.\nÀ retenir : avec une cliente, on parle de ce que cela change pour elle (ici l\'étiquette), avec un seul chiffre si besoin et sans jargon.', commVers: 'labo' } }), vers: 'commRetour' },
       { t: 'Je réponds que oui, ça devrait aller', duree: 20, f: { clientFait: true, ...(cov ? { mensonge: true } : { clientOk: true }) }, note: 'Appel client : réponse positive sans réserve sur la mention « COV nuls ».', vers: 'labo' },
     ]; } });
 
@@ -833,7 +864,9 @@ export function bilan(e) {
   ajoute({ comp: 'C6.1', titre: 'Organiser le travail, tenir les délais', niveau: niv(c61, 3), texte: `${f.plan === 'solo' ? 'Tout fait seul·e : trop séquentiel. ' : f.plan === 'mp' ? 'Analyses des matières premières lancées dès le début, en parallèle. ' : 'Tâches déléguées en parallèle. '}Rapport ${e.t <= T_RAPPORT ? 'rendu dans les temps' : 'rendu après 17 h'} ; ${nbOpt} analyse(s) complémentaire(s) sur 4 (prises d'huile, brillance, TMFF, dosage du DPnB).` });
   ajoute({ comp: 'C6.3', titre: 'Gérer les produits selon la réglementation', niveau: niv(n(f.stock === 'neuf') + n(f.stock === 'tamise') * 0.5 + n(f.coutOk), 2), texte: `${f.stock === 'neuf' ? 'Lot gelé écarté, fût neuf commandé. ' : f.stock === 'tamise' ? 'Lot gelé tamisé et utilisé : acceptable seulement avec réserve. ' : 'Aucun problème de stockage détecté. '}${f.coutOk ? 'Coût matières contrôlé (< 4,5 €/kg).' : 'Coût matières non vérifié.'}` });
   ajoute({ comp: 'C6.4', titre: 'Assurer la traçabilité', niveau: f.trace ? 'ok' : 'ko', texte: f.trace ? 'Lot, pesées et observations consignés au fur et à mesure.' : 'Pesées réelles et observations reconstituées de mémoire : traçabilité faible.' });
-  ajoute({ comp: 'C7.3', titre: 'Travailler en équipe', niveau: f.plan === 'solo' ? 'ko' : niv(n(nbDeleg >= 3) + n(f.alerte === true), 2), texte: f.plan === 'solo' ? 'Aucune délégation : l\'équipe n\'a pas été sollicitée.' : `${nbDeleg} analyse(s) confiée(s) aux collègues ; ${f.alerte === true ? 'information remontée à la responsable' : 'communication à améliorer'}.` });
+  const COMM = f.comm || {}, nomsComm = { equipe: 'message à l\'équipe', resp: 'message à la responsable', client: 'échange avec la cliente' }, qual = { adapte: 'adapté à l\'interlocuteur', partiel: 'à ajuster (trop vague, trop familier ou trop technique)', mauvais: 'inadapté (ton ou contenu)' };
+  const nbComm = Object.keys(COMM).length, ptsComm = Object.values(COMM).reduce((a, q) => a + QUALITE_COMM[q], 0);
+  ajoute({ comp: 'C7.3', titre: 'Travailler en équipe', niveau: f.plan === 'solo' ? 'ko' : niv(n(nbDeleg >= 3) + n(f.alerte === true) + ptsComm, 2 + nbComm), texte: (f.plan === 'solo' ? 'Aucune délégation : l\'équipe n\'a pas été sollicitée.' : `${nbDeleg} analyse(s) confiée(s) aux collègues ; ${f.alerte === true ? 'information remontée à la responsable' : 'communication à améliorer'}.`) + (nbComm ? ` Communication : ${Object.entries(COMM).map(([k, q]) => `${nomsComm[k]} ${qual[q]}`).join(' ; ')}.` : '') });
   return pr;
 }
 

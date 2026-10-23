@@ -62,11 +62,19 @@ const visco = (g, m = 1.0) => {
   if (g.e.scene === 'viscoDose') { if (!(g.e.f.visco.essais || []).length) g.e = J.essaiVisco(g.e, m); g.go('Retenir cette dose'); return true; }
   return false;
 };
+// Communication : choisit l'option de qualité voulue (adapte par défaut), puis lit le retour
+const comm = (g, q = 'adapte') => {
+  const re = q === 'adapte' ? /: adaptée/ : q === 'partiel' ? /à ajuster/ : /inadaptée/;
+  while (['commEquipe', 'commResp', 'commRetour'].includes(g.e.scene)) {
+    if (g.e.scene === 'commRetour') { g.go('Continuer'); continue; }
+    g.e = J.choisir(g.e, J.choixDe(g.e).find(c => re.test(c.note)));
+  }
+};
 function debut(g, o = {}) {
   g.go('Parcourir'); g.go('fiches techniques'); g.go('fait le tour');
   g.go('La formule et la fiche'); g.go('Revenir au dossier'); g.go("J'ai de quoi");
   g.go(o.plan === 'solo' ? 'tout moi-même' : o.plan === 'mp' ? 'prises d\'huile des poudres' : 'Je formule d');
-  if (o.plan === 'solo') g.go('Je me mets');
+  if (o.plan === 'solo') g.go('Je me mets'); else comm(g, o.commEquipe);
   g.e = J.choisir(g.e, J.choixPlan(g.e, o.coalTot === false ? ['resine', 'disp'] : ['resine', 'disp', 'coal']));
 }
 function formulation(g, o = {}) {
@@ -74,7 +82,7 @@ function formulation(g, o = {}) {
   else { g.go('La masse de polymère'); g.calc(); g.calc(); }
   if (o.courbe) { g.go('courbe de défloculation'); g.e = J.essaiCourbe(J.essaiCourbe(J.essaiCourbe(J.essaiCourbe(g.e, 0.13), 0.17), 0.21), 0.30); g.go('Retenir 0,19'); g.go('Passer'); } else { g.go('La dose de dispersant'); g.calc(); }
   const d = o.dpnb ?? 3; if (g.e.scene !== 'coalescent') throw new Error('coalescent attendu, scène ' + g.e.scene); if (o.banc) { g.go('pré-essai'); g.e = J.essaiBanc(J.essaiBanc(g.e, 0), 3); g.go('Retenir ' + d + ' g'); g.go('Passer à la suite'); } else if (d === 3) { g.go('Calculer la dose'); g.calc(); } else g.go(d === 1 ? 'Ajouter 1 g' : 'Mettre 10 g');
-  if (g.e.scene === 'incoherence') { g.go(o.alerte === 'tard' ? 'Je la note' : o.alerte === 'nul' ? 'Je ne dis rien' : "J'en parle"); if (g.e.scene === 'alerteRep') g.go('Reprendre la formulation'); }
+  if (g.e.scene === 'incoherence') { g.go(o.alerte === 'tard' ? 'Je la note' : o.alerte === 'nul' ? 'Je ne dis rien' : "J'en parle"); comm(g, o.commResp); if (g.e.scene === 'alerteRep') g.go('Reprendre la formulation'); }
   if (o.stock === 'ignore') { g.go('On l\'utilise comme ça'); g.go(o.insiste ? 'Je n\'ai pas le temps' : 'Tu as raison'); if (o.insiste) return; g.go('fût neuf'); }
   else if (o.stock === 'tamise') { g.go('Je contrôle le fût'); g.go('Tamiser'); }
   else { g.go('Je contrôle le fût'); g.go('fût neuf'); }
@@ -84,17 +92,18 @@ function formulation(g, o = {}) {
 }
 function travaille(g, o = {}) {
   const dem = o.dem || ['Lucas : Prises', 'Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'Lucas : Brillance', 'Lucas : Température', 'M. Perrin'];
-  const client = () => { if (g.e.scene === 'client') { const ch = J.choixDe(g.e); g.go(o.mens ? 'devrait aller' : ch[0].t.slice(0, 20)); } };
+  const client = () => { if (g.e.scene === 'client') { const ch = J.choixDe(g.e); g.go(o.mens ? 'devrait aller' : ch[0].t.slice(0, 20)); comm(g); } };
   for (const k of dem) { client(); if (g.e.scene === 'fin_perdue') break; if (g.e.cmd.huile && k.includes('Prises')) continue; g.go('Demander à ' + k); }
   client(); if (!J.estFin(g.e.scene) && g.e.scene === 'labo') g.go('Mettre un échantillon');
   for (let i = 0; i < 90; i++) {
     const e = g.e; if (J.estFin(e.scene)) return e;
-    if (e.scene === 'client') { const ch = J.choixDe(e); g.go(o.mens ? 'devrait aller' : ch[0].t.slice(0, 20)); continue; }
+    if (e.scene === 'client') { const ch = J.choixDe(e); g.go(o.mens ? 'devrait aller' : ch[0].t.slice(0, 20)); comm(g); continue; }
     if (e.scene === 'res_cout' || e.scene === 'res_huile') { g.calc(); continue; }
     if (e.scene === 'coalescent') { g.go('Calculer la dose'); continue; }
     if (e.scene === 'calcDpnb') { g.calc(); continue; }
     if (visco(g)) continue;
     if (e.scene === 'incoherence') { g.go("J'en parle"); continue; }
+    if (['commEquipe', 'commResp', 'commRetour'].includes(e.scene)) { comm(g); continue; }
     if (e.scene === 'alerteRep') { g.go('Reprendre la formulation'); continue; }
     if (e.scene === 'formuleFinale') { if (o.tio2 === false) g.go('Valider ma formule'); else tio2Plus(g, o.tio2); continue; }
     if (e.scene === 'fabrication') { g.go('Je suis la fiche'); continue; }
@@ -129,14 +138,15 @@ const cas = {};
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 10 }); cas.fin_ecart_cov = travaille(g, {}); }
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 1 }); cas.corrige = travaille(g, { corrige: true, dem: ['Lucas : Température', 'Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'M. Perrin'] }); }
 { const g = jouer(); debut(g, { alerte: 'tot', plan: 'solo' }); formulation(g, { dpnb: 3 }); cas.solo = travaille(g, { stop: 400 }); }
-{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); for (let i = 0; i < 40 && g.e.scene !== 'fin_perdue'; i++) g.go(g.e.scene === 'client' ? 'Je lui donne' : 'Attendre'); cas.fin_perdue = g.e; }
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); for (let i = 0; i < 40 && g.e.scene !== 'fin_perdue'; i++) g.go(g.e.scene === 'client' ? 'Je lui donne' : g.e.scene === 'commRetour' ? 'Continuer' : 'Attendre'); cas.fin_perdue = g.e; }
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 });
   for (const k of ['Demander à Inès : Extrait', 'Demander à Lucas : Profil', 'Demander à Lucas : Pouvoir']) g.go(k);
   for (let i = 0; i < 80 && !(g.e.t >= 490 && g.e.f.mes_es && g.e.f.mes_rheo && g.e.f.mes_masq && g.e.f.clientFait); i++) {
     const e = g.e, l = J.choixDe(e).find(c => c.t.startsWith('📄'));
     if (visco(g)) continue;
-    if (e.scene === 'client') g.go('Je lui donne'); else if (e.scene.startsWith('res_')) g.e = J.choisir(e, choixRes(e)); else if (l) g.e = J.choisir(e, l); else g.go('Attendre');
+    if (e.scene === 'client') g.go('Je lui donne'); else if (e.scene === 'commRetour') g.go('Continuer'); else if (['commEquipe', 'commResp'].includes(e.scene)) comm(g); else if (e.scene.startsWith('res_')) g.e = J.choisir(e, choixRes(e)); else if (l) g.e = J.choisir(e, l); else g.go('Attendre');
   }
+  comm(g);
   if (process.env.DBG) console.log('DBG', g.e.scene, g.e.t, JSON.stringify(Object.keys(g.e.f).filter(k => k.startsWith('mes_') && g.e.f[k])), g.e.f.clientFait, g.e.f.coapurAdd);
   g.go('Rédiger le rapport'); g.go('Non démontrable'); g.go('Écouter'); cas.retard_ou_autre = g.e; }
 const lis = {}; for (const [k, e] of Object.entries(cas)) lis[k] = `${e.scene} à ${J.hhmm(e.t)} (${J.bilan(e).map(b => b.niveau[0]).join('')})`; console.log(lis);
@@ -436,3 +446,20 @@ console.log('OK : fiche CCF4');
   assert.strictEqual(J.ficheCcf(base).groupes.find(g => g.code === 'C2').niveau, 'A');
 }
 console.log('OK : C2.1 gestes');
+
+// 16. Communication adaptée à l'interlocuteur (C7.3)
+{
+  const c73 = e => J.bilan(e).find(b => b.comp === 'C7.3');
+  const joue = o => { const g = jouer(); debut(g, o); formulation(g, o); return travaille(g, o); };
+  const bon = joue({}), moyen = joue({ commEquipe: 'partiel', commResp: 'partiel' }), mauvais = joue({ commEquipe: 'mauvais', commResp: 'mauvais' });
+  assert.deepStrictEqual(bon.f.comm && Object.keys(bon.f.comm).sort(), ['client', 'equipe', 'resp']);
+  assert(Object.values(bon.f.comm).every(q => q === 'adapte'), 'tout adapté');
+  assert.strictEqual(moyen.f.comm.equipe, 'partiel'); assert.strictEqual(mauvais.f.comm.resp, 'mauvais');
+  assert(c73(bon).ratio > c73(moyen).ratio && c73(moyen).ratio > c73(mauvais).ratio, 'ratio C7.3 : adapté > à ajuster > inadapté');
+  assert(/message à l'équipe adapté/i.test(c73(bon).texte) && /inadapté/.test(c73(mauvais).texte));
+  // Les trois registres de chaque moment sont proposés, dans un ordre mélangé, sans fuite de la qualité
+  const e0 = { ...J.etatInitial(), scene: 'commEquipe' };
+  const ch = J.choixDe(e0); assert.strictEqual(ch.length, 3);
+  assert(ch.every(c => !/adapt|ajuster|inadapt/i.test(c.t)), 'la qualité n\'apparaît pas dans le libellé');
+}
+console.log('OK : communication adaptée (C7.3)');
