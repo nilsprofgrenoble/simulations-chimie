@@ -204,13 +204,13 @@ export const ANALYSES = [
   { cle: 'huile', tech: 'lucas', label: 'Prises d\'huile des poudres (TiO₂, CaCO₃)', duree: 40, perso: 10, avant: true },
   { cle: 'es', tech: 'ines', label: 'Extrait sec et densité de la peinture', duree: 40, perso: 5 },
   { cle: 'rheo', tech: 'lucas', label: 'Profil rhéologique (viscosimètre)', duree: 45, perso: 10 },
-  { cle: 'masq', tech: 'lucas', label: 'Pouvoir masquant (4 épaisseurs, contraste)', duree: 90, perso: 20 },
+  { cle: 'masq', tech: 'lucas', label: 'Pouvoir masquant (4 épaisseurs, contraste)', duree: 60, perso: 20 },
   { cle: 'brill', tech: 'lucas', label: 'Brillance du film (glossmètre 60° et 85°)', duree: 30, perso: 5 },
   { cle: 'tmff', tech: 'lucas', label: 'Température minimale de formation de film (TMFF)', duree: 60, perso: 10 },
   { cle: 'cout', tech: 'perrin', label: 'Devis de l\'Orgal et coût matières premières', duree: 20, perso: 5 },
 ];
-// Pause déjeuner de l'équipe : de 12 h 00 à 13 h 30, les techniciens ne travaillent pas (une analyse en cours est suspendue)
-export const PAUSE_DEB = 240, PAUSE_FIN = 330;
+// Pause déjeuner de l'équipe : de 12 h 00 à 13 h 00, les techniciens ne travaillent pas (une analyse en cours est suspendue)
+export const PAUSE_DEB = 240, PAUSE_FIN = 300;
 export const planTech = (e, A) => {
   let debut = Math.max(e.t, e.libre[A.tech] || 0), pret;
   if (debut >= PAUSE_DEB && debut < PAUSE_FIN) debut = PAUSE_FIN;
@@ -601,24 +601,54 @@ export const C_CTRL = 1.2;   // mg/mL : solution de contrôle préparée indépe
 const cpgInit = { etal: [], ech: [], ctrl: [], prep: false, mode: 'interne' };
 export const cpgDe = e => ({ ...cpgInit, ...(e.f.cpg || {}) });
 const avecCpg = (e, c, dt = 0) => ({ ...e, t: e.t + dt, f: { ...e.f, cpg: { ...cpgDe(e), ...c } } });
+// ───────────── Méthode CPG : étalon interne, températures d'injecteur / four / détecteur (choix de l'élève) ─────────────
+export const IS_OPTIONS = [
+  { cle: 'c14', t: 'n-Tétradécane', d: 'alcane, éb. 253 °C, absent des peintures, bonne réponse au FID' },
+  { cle: 'tol', t: 'Toluène', d: 'solvant courant, éb. 111 °C' },
+  { cle: 'bg', t: '2-Butoxyéthanol (butylglycol)', d: 'éther de glycol voisin du DPnB, éb. 171 °C' },
+  { cle: 'tpnb', t: 'Tripropylène glycol butyl éther', d: 'éther de glycol très proche du DPnB, éb. 274 °C' },
+];
+export const T_INJECTEUR = [200, 250, 300], T_DETECTEUR = [200, 250, 300];
+export const FOURS = [{ cle: 'iso60', t: 'Isotherme à 60 °C' }, { cle: 'iso130', t: 'Isotherme à 130 °C' }, { cle: 'grad', t: 'Gradient : 60 °C puis 20 °C/min jusqu\'à 240 °C' }];
+export const METHODE_DEFAUT = { is: 'c14', inj: 250, four: 'grad', det: 250 };
+export const methodeCpg = e => ({ ...METHODE_DEFAUT, ...(e.f.cpgMeth || {}) });
+export const methodeChoisie = e => !!e.f.cpgMeth;
+export const qualiteMethode = m => {
+  const L = []; let bruit = 1, tRun = 2;
+  const o = {};
+  if (m.is === 'tol') { o.isIndep = true; L.push({ ok: false, t: 'Étalon interne toluène : trop volatil (éb. 111 °C), il sort avec le solvant et s\'évapore du flacon. Son aire ne suit plus le volume injecté : il ne corrige plus rien.' }); }
+  else if (m.is === 'bg') { o.aIPlus = 0.18; L.push({ ok: false, t: 'Étalon interne butylglycol : il est déjà présent dans de nombreuses peintures à l\'eau. L\'échantillon apporte son propre pic : l\'aire de l\'étalon est faussée et le COV est sous-estimé.' }); }
+  else if (m.is === 'tpnb') { bruit *= 3; L.push({ ok: false, t: 'Étalon interne tripropylène glycol butyl éther : structure presque identique au DPnB, les pics se chevauchent. Intégration moins répétable.' }); }
+  else L.push({ ok: true, t: 'Étalon interne n-tétradécane : absent des peintures, éluant après le DPnB sans chevauchement, réponse stable au FID.' });
+  if (m.inj < 250) { bruit *= 2; L.push({ ok: false, t: `Injecteur à ${m.inj} °C : vaporisation incomplète du DPnB (éb. 230 °C) et de l'étalon. Pics qui traînent, discrimination, résultats moins répétables.` }); }
+  else L.push({ ok: true, t: `Injecteur à ${m.inj} °C : au-dessus des points d'ébullition, vaporisation complète.` });
+  if (m.det < 250) { bruit *= 2; L.push({ ok: false, t: `Détecteur à ${m.det} °C : en dessous de la température finale de colonne ou de l'injecteur, les composés peu volatils condensent. Perte de signal et bruit.` }); }
+  else L.push({ ok: true, t: `Détecteur à ${m.det} °C : au moins aussi chaud que la colonne, pas de condensation.` });
+  if (m.four === 'iso60') { bruit *= 1.5; tRun = 8; L.push({ ok: false, t: 'Four isotherme à 60 °C : le DPnB (éb. 230 °C) sort très tard avec un pic large. Analyse longue (8 min par injection), pics étalés.' }); }
+  else if (m.four === 'iso130') { tRun = 3; L.push({ ok: true, t: 'Four isotherme à 130 °C : les deux composés sortent avec des pics fins, 3 min par injection.' }); }
+  else L.push({ ok: true, t: 'Gradient de température : séparation rapide et pics fins, 2 min par injection (refroidissement compris).' });
+  return { opts: { ...o, bruit }, tRun, lignes: L, ok: L.every(x => x.ok) };
+};
+export const qm = e => qualiteMethode(methodeCpg(e));
+export const choisirMethode = (e, m) => e.f.cpgMeth ? e : nota({ ...e, t: e.t + 10, f: { ...e.f, cpgMeth: { ...METHODE_DEFAUT, ...m } } }, 'Méthode CPG choisie (étalon interne, températures d\'injecteur, de four et de détecteur) ; mise en équilibre 10 min.');
 export function injecterEtalon(e, c) {
   const g = cpgDe(e);
   if (g.etal.length >= ETAL_MAX || !NIVEAUX_ETALON.includes(c)) return e;
-  const inj = injection(e.f.graine ?? 1, g.etal.length + g.ech.length + 1, c, e.f.rf ?? 1);
-  return avecCpg(e, { etal: [...g.etal, { c, ...inj }] }, T_INJ);
+  const Q = qm(e), inj = injection(e.f.graine ?? 1, g.etal.length + g.ech.length + 1, c, e.f.rf ?? 1, { ...Q.opts, aIPlus: 0 });
+  return avecCpg(e, { etal: [...g.etal, { c, ...inj }] }, Q.tRun);
 }
 export const preparerEchantillon = e => cpgDe(e).prep ? e : avecCpg(e, { prep: true }, T_PREP);
 export function injecterEchantillon(e) {
   const g = cpgDe(e);
   if (!g.prep || g.ech.length >= ECH_MAX) return e;
-  const inj = injection(e.f.graine ?? 1, g.etal.length + g.ech.length + 1, cEch(e), e.f.rf ?? 1);
-  return avecCpg(e, { ech: [...g.ech, inj] }, T_INJ);
+  const Q = qm(e), inj = injection(e.f.graine ?? 1, g.etal.length + g.ech.length + 1, cEch(e), e.f.rf ?? 1, Q.opts);
+  return avecCpg(e, { ech: [...g.ech, inj] }, Q.tRun);
 }
 export function injecterControle(e) {
   const g = cpgDe(e);
   if (g.ctrl.length >= 2) return e;
-  const inj = injection(e.f.graine ?? 1, 100 + g.ctrl.length, C_CTRL, e.f.rf ?? 1);
-  return avecCpg(e, { ctrl: [...g.ctrl, inj] }, T_INJ);
+  const Q = qm(e), inj = injection(e.f.graine ?? 1, 100 + g.ctrl.length, C_CTRL, e.f.rf ?? 1, { ...Q.opts, aIPlus: 0 });
+  return avecCpg(e, { ctrl: [...g.ctrl, inj] }, Q.tRun);
 }
 // Justesse : taux de récupération de la solution de contrôle quantifiée avec la droite courante (100 % = juste)
 export function recuperation(e) {
@@ -696,6 +726,7 @@ add('debriefCpg', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Ce que
     const g = cpgDe(e), R = resultatCpg(e), L = [], niv = new Set(g.etal.map(p => p.c)).size, vrai = covDe(e);
     const Di = niv >= 3 ? etalonnage(g.etal, 'interne') : null, De = niv >= 3 ? etalonnage(g.etal, 'externe') : null;
     L.push((e.f.impasses || 0) === 0 ? { ok: true, t: 'Technique : tu as d\'emblée choisi la CPG-FID. Le DPnB est volatil, sans chromophore : c\'est la bonne technique.' } : { ok: null, t: `Technique : ${e.f.impasses} essai${e.f.impasses > 1 ? 's' : ''} écarté${e.f.impasses > 1 ? 's' : ''} avant la CPG-FID. Bien choisir la technique en fonction des propriétés de la molécule (volatilité, chromophore) évite de perdre du temps.` });
+    if (e.f.cpgMeth) for (const l of qm(e).lignes) L.push(l);
     L.push(niv >= 5 ? { ok: true, t: `Étalonnage : ${niv} niveaux de concentration (${g.etal.length} injections), de quoi vérifier la linéarité.` } : { ok: niv >= 3 ? null : false, t: `Étalonnage : ${niv} niveau${niv > 1 ? 'x' : ''}. ${niv >= 3 ? 'C\'est le minimum : avec 3 niveaux, tu ne peux pas vraiment contrôler la linéarité.' : 'Trop peu pour une droite.'} Vise au moins 5 niveaux, qui encadrent la concentration attendue.` });
     if (Di && De) L.push({ ok: g.mode === 'interne' ? true : null, t: `Étalon interne ou non : écart-type résiduel relatif de la droite ${nf(Di.residRel, 1)} % avec l'étalon interne, contre ${nf(De.residRel, 1)} % en aire seule. ${g.mode === 'interne' ? 'Tu as quantifié avec l\'étalon interne : il compense les fluctuations du volume injecté.' : 'Tu as quantifié en aire seule : l\'erreur de volume injecté (variable d\'une injection à l\'autre) est directement reportée sur ton résultat. Avec l\'étalon interne, cette erreur disparaît dans le rapport des aires.'}` });
     const rec = recuperation(e);
@@ -845,7 +876,7 @@ add('labo', { lieu: 'Paillasse et laboratoire', pnj: 'moi', titre: 'La journée 
         L.push({ t: `Demander à ${PNJ[A.tech].nom} : ${A.label}`, d: e.f.plan === 'solo' ? `${A.duree} min de ton temps` : `${A.perso} min pour toi, résultat vers ${hhmm(P.pret)}${enPause ? ` (${PNJ[A.tech].nom} est en pause déjeuner jusqu'à ${hhmm(PAUSE_FIN)})` : occ ? ` (${PNJ[A.tech].nom} est occupé·e jusqu'à ${hhmm(e.libre[A.tech])})` : ''}`, run: n => deleguer(n, A), vers: 'labo', cle: A.cle, masque: true });
         if (e.f.plan !== 'solo' && A.tech !== 'perrin' && (occ || enPause || P.pret - e.t > A.duree + 20)) L.push({ t: `Le faire moi-même : ${A.label}`, d: `${A.duree} min de ton temps, sans attendre personne`, run: n => deleguer(n, A, true), vers: 'labo', cle: A.cle + '-moi', masque: true }); }
     }
-    if (e.t >= PAUSE_DEB - 30 && e.t < PAUSE_FIN + 30 && !e.f.dejeune) L.push({ t: 'Prendre ma pause déjeuner (45 min)', d: 'l\'équipe aussi mange entre 12 h et 13 h 30', duree: 45, f: { dejeune: true }, note: 'Pause déjeuner prise.', vers: 'labo', cle: 'pause', masque: true });
+    if (e.t >= PAUSE_DEB - 30 && e.t < PAUSE_FIN + 30 && !e.f.dejeune) L.push({ t: 'Prendre ma pause déjeuner (45 min)', d: 'l\'équipe aussi mange entre 12 h et 13 h', duree: 45, f: { dejeune: true }, note: 'Pause déjeuner prise.', vers: 'labo', cle: 'pause', masque: true });
     if (e.f.fabrique && !e.f.mes_dpnb) L.push({ t: 'Doser le DPnB dans la peinture fabriquée (contrôle du COV)', d: 'Choix de la technique, puis dosage : une vingtaine de minutes de ton temps', note: 'Contrôle qualité : dosage du DPnB dans la peinture (COV mesurés et non plus calculés).', vers: 'dpnbTech', cle: 'dpnb', masque: true });
     if (!e.cmd.huile) L.push({ t: 'Mesurer moi-même les prises d\'huile à la spatule', d: `${HUILE_DUREE} min par détermination, sans attendre personne`, note: 'Prises d\'huile des poudres : mesure faite moi-même.', vers: 'stationHuile', cle: 'huile-moi', masque: true });
     if (e.f.fabrique && !e.f.etuve) L.push({ t: 'Mettre un échantillon à l\'étuve à 50 °C (vieillissement accéléré)', d: '10 min ; résultat dans 7 jours', duree: 10, f: { etuve: true }, note: 'Échantillon mis à l\'étuve à 50 °C pour le test de stabilité (résultat dans 7 jours).', vers: 'labo', cle: 'etuve', masque: true });
@@ -916,8 +947,8 @@ export function bilan(e) {
   const pr = [];
   const RATIO_PAR_NIVEAU = { ok: 1, moyen: 0.55, ko: 0.15, nd: 0 };
   const ajoute = o => { const coherent = dr != null && (o.niveau === 'ok' ? dr >= 1 : o.niveau === 'moyen' ? dr > 0 && dr < 1 : o.niveau === 'ko' ? dr <= 0 : false); pr.push({ ...o, ratio: coherent ? dr : RATIO_PAR_NIVEAU[o.niveau] }); dr = null; };
-  const c14 = n(f.regle === 'ok' && !f.refait) + n(dOk) + n(f.mes_huile) + n(f.mes_dpnb && !f.impasses);
-  ajoute({ comp: 'C1.4', titre: 'Choisir méthodes et techniques', niveau: niv(c14, f.mes_dpnb ? 4 : 3), texte: `Règle de remplacement de la résine ${f.regle === 'ok' && !f.refait ? 'juste dès le départ' : 'à corriger'} ; coalescent ${dTxt} ; prises d'huile ${f.mes_huile ? 'mesurées pour lever le doute sur la CPVC' : 'non mesurées (le tableur avec les valeurs des fiches donnait une peinture non mate)'}.` });
+  const c14 = n(f.regle === 'ok' && !f.refait) + n(dOk) + n(f.mes_huile) + n(f.mes_dpnb && !f.impasses) + n(f.mes_dpnb && f.cpgMeth && qm(e).ok);
+  ajoute({ comp: 'C1.4', titre: 'Choisir méthodes et techniques', niveau: niv(c14, f.mes_dpnb ? 5 : 3), texte: `Règle de remplacement de la résine ${f.regle === 'ok' && !f.refait ? 'juste dès le départ' : 'à corriger'} ; coalescent ${dTxt} ; prises d'huile ${f.mes_huile ? 'mesurées pour lever le doute sur la CPVC' : 'non mesurées (le tableur avec les valeurs des fiches donnait une peinture non mate)'}.` });
   // C2.1 : préparer et réaliser. On ne juge que ce que l'élève a réellement fait (fabrication, prises d'huile à la spatule, dosage CPG, essai d'ajout d'épaississant)
   const gestes = [];
   gestes.push(f.rate ? { r: 0.5, t: 'première fabrication ratée : l\'ordre d\'introduction de la fiche n\'avait pas été respecté' } : f.fabrique ? { r: 1, t: 'fabrication conforme à la fiche, finesse correcte' } : { r: 0, t: 'pas de fabrication réalisée' });

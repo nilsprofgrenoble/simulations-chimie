@@ -104,10 +104,14 @@ export const SIGMA_VOL = 0.06, SIGMA_AIRE = 0.015, SIGMA_PREP = 0.01, K_AIRE = 1
 export const TR = { is: 6.2, dpnb: 8.1 };                   // min (données de scénario)
 
 // Une injection : aires du DPnB et de l'étalon interne (même graine et même n° = mêmes aires)
-export function injection(graine, n, cDpnb, rf) {
+export function injection(graine, n, cDpnb, rf, opts = {}) {
   const r = rng((graine ^ (n * 69069) ^ 0x1234567) >>> 0);
-  const vol = 1 + SIGMA_VOL * gauss(r);
-  return { aD: Math.round(K_AIRE * rf * cDpnb * vol * (1 + SIGMA_AIRE * gauss(r))), aI: Math.round(K_AIRE * C_IS * vol * (1 + SIGMA_AIRE * gauss(r))) };
+  const vol = 1 + SIGMA_VOL * gauss(r), sA = SIGMA_AIRE * (opts.bruit || 1);
+  const aD = Math.round(K_AIRE * rf * cDpnb * vol * (1 + sA * gauss(r)));
+  const gI = gauss(r);
+  // Étalon interne : suit le volume injecté (cas normal) ; un étalon trop volatil fluctue indépendamment ; un étalon déjà présent dans la matrice ajoute une aire parasite
+  const aI0 = opts.isIndep ? K_AIRE * C_IS * (1 + 0.08 * gI) : K_AIRE * C_IS * vol * (1 + sA * gI);
+  return { aD, aI: Math.round(aI0 * (1 + (opts.aIPlus || 0))) };
 }
 // Concentration réelle de l'échantillon préparé (mg/mL), avec son erreur de préparation (tirée une fois par partie)
 export const cEchantillon = (cov, densite, graine, m = M_ECH) => cov / (densite * V_ECH) * m * (1 + SIGMA_PREP * gauss(rng((graine ^ 0x5bd1e995) >>> 0)));

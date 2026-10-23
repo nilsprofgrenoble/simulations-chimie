@@ -503,8 +503,8 @@ console.log('OK : lot 18');
   const A = { cle: 'rheo', tech: 'lucas', duree: 45 };
   const e = (t, lucas = 0) => ({ t, libre: { lucas } });
   assert.strictEqual(J.planTech(e(100), A).pret, 145, 'avant midi : pas de pause');
-  assert.strictEqual(J.planTech(e(225), A).pret, 225 + 45 + 90, 'une analyse à cheval sur la pause est suspendue jusqu\'à 13 h 30');
-  assert.strictEqual(J.planTech(e(250), A).pret, J.PAUSE_FIN + 45, 'demandée pendant la pause : démarre à 13 h 30');
+  assert.strictEqual(J.planTech(e(225), A).pret, 225 + 45 + (J.PAUSE_FIN - J.PAUSE_DEB), 'une analyse à cheval sur la pause est suspendue jusqu\'à 13 h 00');
+  assert.strictEqual(J.planTech(e(250), A).pret, J.PAUSE_FIN + 45, 'demandée pendant la pause : démarre à 13 h 00');
   assert.strictEqual(J.planTech(e(100, 340), A).pret, 340 + 45, 'file d\'attente derrière une analyse qui finit après la pause');
   // Hub : à 12 h 15, le technicien est en pause ; on peut faire l'analyse soi-même ou prendre sa pause
   const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 });
@@ -518,3 +518,32 @@ console.log('OK : lot 18');
   const m = J.agirLibre(g.e, 'je mesure moi-même la viscosité'); assert(m.ok && m.etat.cmd.rheo.pret === 255 + 45, 'self : le temps est pour l\'élève, sans pause');
 }
 console.log('OK : lot 19 (pause déjeuner)');
+
+// 19. Méthode CPG : étalon interne, injecteur, four, détecteur
+{
+  const sec = S.secretsDe(5), base = { ...J.etatInitial(), scene: 'stationCpg', f: { regle: 'ok', coadis: 0.525, dpnb: 3, fabrique: true, densMes: 1.3, graine: sec.graine, rf: sec.rf, ph: sec.ph, eff: 3 } };
+  const joue = m => { let x = m ? J.choisirMethode(base, m) : base; for (const c of [0.25, 0.5, 1, 1.5, 2, 3]) x = J.injecterEtalon(x, c); x = J.injecterEchantillon(J.preparerEchantillon(x)); x = J.injecterEchantillon(x); return x; };
+  assert(!J.methodeChoisie(base)); const bon = J.choisirMethode(base, { is: 'c14', inj: 250, four: 'grad', det: 250 });
+  assert(J.methodeChoisie(bon) && bon.t === base.t + 10 && J.qm(bon).ok);
+  assert.strictEqual(J.choisirMethode(bon, { is: 'tol' }), bon, 'méthode figée une fois lancée');
+  const R0 = J.resultatCpg(joue({ is: 'c14', inj: 250, four: 'grad', det: 250 })), vrai = J.covDe(base);
+  const bg = J.resultatCpg(joue({ is: 'bg', inj: 250, four: 'grad', det: 250 }));
+  assert(bg.cov < R0.cov * 0.92, 'butylglycol déjà présent : COV sous-estimé (' + bg.cov + ' vs ' + R0.cov + ')');
+  const tol = joue({ is: 'tol', inj: 250, four: 'grad', det: 250 }), tpnb = joue({ is: 'tpnb', inj: 250, four: 'grad', det: 250 });
+  assert(S.etalonnage(tol.f.cpg.etal, 'interne').residRel > S.etalonnage(joue({ is: 'c14', inj: 250, four: 'grad', det: 250 }).f.cpg.etal, 'interne').residRel, 'toluène : l\'étalon interne ne corrige plus');
+  assert(S.etalonnage(tpnb.f.cpg.etal, 'interne').residRel > 1.5 * S.etalonnage(joue({ is: 'c14', inj: 250, four: 'grad', det: 250 }).f.cpg.etal, 'interne').residRel, 'coélution : résidus plus grands');
+  assert(!J.qm(joue({ is: 'c14', inj: 200, four: 'grad', det: 250 })).ok && !J.qm(joue({ is: 'c14', inj: 250, four: 'grad', det: 200 })).ok);
+  const lent = joue({ is: 'c14', inj: 250, four: 'iso60', det: 250 }), rapide = joue({ is: 'c14', inj: 250, four: 'grad', det: 250 });
+  assert(lent.t > rapide.t + 20, 'four isotherme à 60 °C : injections beaucoup plus longues');
+  assert(vrai > 0 && R0.dos);
+}
+console.log('OK : méthode CPG');
+
+// 20. Tout déléguer à Lucas dans l'ordre (sans rien faire soi-même) permet encore de rendre un dossier complet
+{
+  const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 });
+  const fin = travaille(g, { dem: ['Lucas : Prises', 'Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'Lucas : Brillance', 'Lucas : Température', 'M. Perrin'] });
+  console.log('Tout déléguer :', fin.scene, J.hhmm(fin.t));
+  assert(['fin_excellent', 'fin_bon', 'fin_retard'].includes(fin.scene), 'dossier rendu : ' + fin.scene);
+}
+console.log('OK : tout déléguer');
