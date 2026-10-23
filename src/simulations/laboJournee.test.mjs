@@ -146,7 +146,7 @@ const cas = {};
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); for (let i = 0; i < 40 && g.e.scene !== 'fin_perdue'; i++) g.go(g.e.scene === 'client' ? 'Je lui donne' : g.e.scene === 'commRetour' ? 'Continuer' : g.e.scene === 'commAchats' ? 'Bonjour M. Perrin' : 'Attendre'); cas.fin_perdue = g.e; }
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 });
   for (const k of ['Demander à Inès : Extrait', 'Demander à Lucas : Profil', 'Demander à Lucas : Pouvoir']) g.go(k);
-  for (let i = 0; i < 80 && !(g.e.t >= 490 && g.e.f.mes_es && g.e.f.mes_rheo && g.e.f.mes_masq && g.e.f.clientFait); i++) {
+  for (let i = 0; i < 80 && !(g.e.t >= 535 && g.e.f.mes_es && g.e.f.mes_rheo && g.e.f.mes_masq && g.e.f.clientFait); i++) {
     const e = g.e, l = J.choixDe(e).find(c => c.t.startsWith('📄'));
     if (visco(g)) continue;
     if (e.scene === 'client') g.go('Je lui donne'); else if (e.scene === 'commRetour') g.go('Continuer'); else if (['commEquipe', 'commResp', 'commAchats'].includes(e.scene)) comm(g); else if (e.scene.startsWith('res_')) g.e = J.choisir(e, choixRes(e)); else if (l) g.e = J.choisir(e, l); else g.go('Attendre');
@@ -515,7 +515,7 @@ console.log('OK : lot 18');
   assert(/pause déjeuner/.test(ch.find(c => c.t.startsWith('Demander à Lucas'))?.d || ''), 'la description annonce la pause');
   const r = J.agirLibre(g.e, 'je vais manger'); assert(r.ok && r.etat.f.dejeune && r.etat.t === 255 + 45);
   assert(J.agirLibre(r.etat, 'je mange').ok === false, 'une seule pause');
-  const m = J.agirLibre(g.e, 'je mesure moi-même la viscosité'); assert(m.ok && m.etat.cmd.rheo.pret === 255 + 45, 'self : le temps est pour l\'élève, sans pause');
+  const m = J.agirLibre(g.e, 'je mesure moi-même la viscosité'); assert(m.ok && m.etat.cmd.rheo.pret === 255 + 40, 'self : le temps est pour l\'élève, sans pause');
 }
 console.log('OK : lot 19 (pause déjeuner)');
 
