@@ -3,7 +3,7 @@
 //  Support : sujet de CCF4 (base de peinture blanche), lu à l'envers : la Vinnapas EP 3360 de la référence est en rupture, il faut la remplacer par l'Orgal PST 50A.
 //  (Dans cette version, la référence se passe de coalescent ; l'Orgal, de MFFT 20 °C, en exige un : c'est tout l'intérêt du scénario.)
 //  Le joueur est un technicien de R&D ; il délègue des analyses à des collègues fictifs (chacun ne fait qu'une chose à la fois),
-//  la journée va de 8 h à 17 h 30 (appel client à 15 h, rapport avant 17 h) et les décisions ont des conséquences : neuf fins possibles.
+//  la journée va de 8 h à 17 h 30 (appel client à 15 h, rapport avant 17 h) et les décisions ont des conséquences : dix fins possibles.
 //  Les calculs de formulation reposent sur le modèle de la simulation « Peinture à l'eau » (proprietes), pour rester cohérent avec elle.
 //  Les valeurs rendues par les analyses déléguées sont FICTIVES (elles servent le scénario).
 //  Chaque scène de résultat porte un champ « visuel » (données) que l'interface dessine sous forme d'instrument.
@@ -93,7 +93,10 @@ export const cer = (e, cle, cause, effet, remede) => vari(e, cle, [
   `${effet} L'origine : ${cause} Pour rattraper : ${remede}`]);
 export const docsVus = e => e.vus || ['cdc'];
 export const texteDe = (e, sc = SCENES[e.scene]) => typeof sc.texte === 'function' ? sc.texte(e) : sc.texte;
-export const choixDe = (e, sc = SCENES[e.scene]) => (typeof sc.choix === 'function' ? sc.choix(e) : sc.choix || []).filter(c => !c.si || c.si(e));
+// Les scènes marquées « melange » présentent leurs choix dans un ordre propre à la partie (la bonne réponse n'est pas toujours la première)
+const brasser = c => { let h = hash(c) | 0; h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); return (h ^ (h >>> 16)) >>> 0; };
+const melanger = (e, cle, L) => L.map((c, i) => [brasser(`${e.f?.graine ?? 1}|${cle}|${i}`), c]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+export const choixDe = (e, sc = SCENES[e.scene]) => { const L = (typeof sc.choix === 'function' ? sc.choix(e) : sc.choix || []).filter(c => !c.si || c.si(e)); return sc.melange ? melanger(e, sc.id, L) : L; };
 export const visuelDe = (e, sc = SCENES[e.scene]) => sc.visuel ? sc.visuel(e) : null;
 
 // Applique un choix : durée, drapeaux, note de carnet, action particulière, puis changement de scène
@@ -228,7 +231,7 @@ add('docRes', { lieu: 'Bureau', pnj: 'moi', titre: 'Document 8 : les deux résin
   texte: `Tu lis les deux fiches techniques côte à côte.\nLa Vinnapas : MFFT de 2 °C, ES 60 %, COV inférieurs à 1 g/L, et la fiche précise qu'elle « n'a besoin d'aucun agent de coalescence ». L'Orgal : ES 50 %, mais MFFT de 20 °C et Tg de 20 °C : il forme un film « au-dessus de 20 °C ».\nUne chose te chagrine : la commande de la cliente promet une peinture « sans solvant, COV nuls » alors qu'une résine à MFFT de 20 °C ne filmifie pas à température ambiante sans agent de coalescence.`,
   choix: [{ t: 'Continuer', vers: 'incoherence' }] });
 
-add('incoherence', { lieu: 'Bureau', pnj: 'moi', titre: 'Une incohérence dans le dossier',
+add('incoherence', { melange: true, lieu: 'Bureau', pnj: 'moi', titre: 'Une incohérence dans le dossier',
   texte: 'Que fais-tu de cette incohérence entre la promesse « COV nuls » de la cliente et la MFFT de 20 °C de l\'Orgal ?',
   choix: [
     { t: 'J\'en parle tout de suite à Mme Dubreuil (5 min)', duree: 5, f: { alerte: true }, note: 'Alerte : la promesse « sans solvant, COV nuls » est incompatible avec l\'Orgal (MFFT 20 °C : coalescent nécessaire). Signalé à Mme Dubreuil.', vers: 'alerteRep' },
@@ -244,7 +247,7 @@ add('docRef', { lieu: 'Bureau', pnj: 'moi', titre: 'Documents 1, 2, 4 et 5 : la 
     return `Formule de référence (331 g) : eau 121,7 g, TiO₂ 60 g, CaCO₃ léger 60 g, Vinnapas 83,3 g, Foamex 1,5 g, Coadis BR3 0,2 g, Thixol 1,5 g, Coapur 3 g. Pas de coalescent.\nTableur avec les prises d'huile des fiches (20 et 14 g pour 100 g) : ES = ${nf(pf.ES)} %, CPV = ${nf(pf.CPV)} %, CPVC = ${nf(pf.CPVC)} %, donc λ = ${nf(pf.lambda, 2)}. COV = ${nf(pf.COV)} g/L. Coût matières premières ≈ ${nf(coutKg(FORMULE_REF))} €/kg.\nAnalyses du responsable : pouvoir masquant 7,4 m²/L ; comportement rhéofluidifiant, faible thixotropie ; film continu dès 3 °C.\nÉtonnant : avec λ = ${nf(pf.lambda, 2)} < 0,8, cette peinture ne devrait pas être mate, or elle l'est. Les prises d'huile des fiches sont-elles fiables ?\nFiche de fabrication : 70 % de l'eau, Foamex, Coadis, puis TiO₂ et CaCO₃ en pluie fine à 300 tr/min, dispersion 15 min à vitesse maximale (finesse 7 Hegman) ; ensuite la résine, le Thixol et le Coapur sous agitation lente (200 tr/min), enfin le reste de l'eau.`; },
   choix: [{ t: 'Revenir au dossier', vers: 'docs' }] });
 
-add('appel', { lieu: 'Téléphone', pnj: 'dubreuil', titre: 'L\'appel d\'organisation obligatoire',
+add('appel', { melange: true, lieu: 'Téléphone', pnj: 'dubreuil', titre: 'L\'appel d\'organisation obligatoire',
   texte: e => `Il est ${hhmm(e.t)}. Mme Dubreuil décroche : « Dis-moi comment tu organises ta journée. Rappel : les analyses se délèguent, mais Karim, Inès et Lucas ne peuvent pas tout faire en même temps, et Lucas est très demandé. »`,
   choix: [
     { t: 'Je formule d\'abord, puis je délègue les analyses dès que la peinture est prête', f: { plan: 'seq' }, note: 'Plan : formulation, puis analyses déléguées.', vers: 'regle' },
@@ -257,7 +260,7 @@ add('solo', { lieu: 'Téléphone', pnj: 'dubreuil', titre: 'Mme Dubreuil sourit'
   choix: [{ t: 'Je me mets au travail', vers: 'regle' }] });
 
 // ───────────── Formulation ─────────────
-add('regle', { lieu: 'Paillasse de formulation', pnj: 'karim', titre: 'Que garder constant ?',
+add('regle', { melange: true, lieu: 'Paillasse de formulation', pnj: 'karim', titre: 'Que garder constant ?',
   texte: e => `Il est ${hhmm(e.t)}. Karim prépare la balance. « Pour que la nouvelle base ait le même extrait sec, la même CPV et la même CPVC, tu gardes constant quoi, au juste ? »`,
   choix: [
     { t: 'La masse de polymère SEC (50 g) : on ajuste la masse de dispersion et l\'eau', vers: 'calcMasse' },
@@ -283,7 +286,7 @@ add('calcEau', { lieu: 'Paillasse de formulation', pnj: 'moi', titre: 'Calcul : 
     ok: { f: { regle: 'ok' }, vers: e => e.f.refait ? 'formuleFinale' : 'dispersion', note: 'Eau : 105 g avant coalescent (formule : Orgal 100 g, eau 105 g).' },
     ko: { f: { regle: 'ok' }, duree: 10, vers: e => e.f.refait ? 'formuleFinale' : 'dispersion', note: 'Eau : 105 g avant coalescent (calculée avec l\'aide de Karim).' } } });
 
-add('dispersion', { lieu: 'Paillasse de formulation', pnj: 'karim', titre: 'Les amas de poudres',
+add('dispersion', { melange: true, lieu: 'Paillasse de formulation', pnj: 'karim', titre: 'Les amas de poudres',
   texte: e => `« Voilà le défaut dont se plaignent les opérateurs : quand on verse le TiO₂ et le CaCO₃ dans l'eau, ça fait des amas durs, et ils passent vingt minutes à les casser. Qu'est-ce que tu corriges dans la formule ? »${e.f.disp1 || e.f.disp2 ? '\n(Karim te rappelle que le dispersant est la matière qui aide à mouiller et séparer les grains.)' : ''}`,
   choix: [
     { t: 'La dose de dispersant (Coadis BR3 : 0,2 g pour 120 g de poudres)', vers: 'calcCoadis' },
@@ -340,7 +343,7 @@ add('debriefCourbe', { lieu: 'Paillasse', pnj: 'karim', titre: 'Ce que dit la co
   },
   choix: () => [{ t: 'Passer à la suite', vers: 'coalescent' }] });
 
-add('coalescent', { lieu: 'Paillasse', pnj: 'karim', titre: 'Et le coalescent ?', fiches: ['dpnb'],
+add('coalescent', { melange: true, lieu: 'Paillasse', pnj: 'karim', titre: 'Et le coalescent ?', fiches: ['dpnb'],
   texte: e => `« La Vinnapas filmifiait toute seule : sa MFFT est de 2 °C, donc la référence n'a pas d'agent de coalescence. L'Orgal, lui, a une MFFT de 20 °C. Notre cahier des charges veut un film continu dès 5 °C. Qu'est-ce qu'on met dans la formule ? »\n${e.f.fiche ? 'Tu te souviens de la fiche : MFFT de 2 °C pour la Vinnapas, 20 °C pour l\'Orgal.' : 'Tu n\'as pas lu la fiche de la résine : Karim te la tend. « MFFT de la Vinnapas : 2 °C ; celle de l\'Orgal : 20 °C. »'}\nKarim ajoute : « La fiche du DPnB ne donne aucun dosage. Chez nous, la règle d'atelier est de 4 à 8 % du polymère sec, à confirmer par un essai. »`,
   choix: e => { const v = e.f.refaitCoal ? 'formuleFinale' : 'stock'; return [
     { t: 'Rien : la référence n\'en avait pas, et ça garde les COV à zéro', f: { dpnb: 0 }, note: 'Pas de coalescent ajouté (la référence Vinnapas n\'en avait pas).', vers: v },
@@ -397,13 +400,13 @@ add('debriefBanc', { lieu: 'Paillasse', pnj: 'lucas', titre: 'Ce que dit le banc
   choix: e => [{ t: 'Passer à la suite', vers: apresCoal(e) }] });
 
 // ───────────── Matière première : le fût d'Orgal a-t-il gelé ? ─────────────
-add('stock', { lieu: 'Local de stockage', pnj: 'karim', titre: 'Le fût d\'Orgal',
+add('stock', { melange: true, lieu: 'Local de stockage', pnj: 'karim', titre: 'Le fût d\'Orgal',
   texte: 'Karim revient du local de stockage, un peu gêné.\n« Au fait, le fût d\'Orgal est resté dans le local non chauffé ce week-end. Il a fait −5 °C cette nuit. Je ne sais pas si ça compte… »',
   choix: [
     { t: 'Je contrôle le fût : aspect et tamisage sur 100 µm (15 min)', duree: 15, f: { stockCtrl: true }, note: 'Contrôle du fût d\'Orgal (stocké dans un local non chauffé, −5 °C).', vers: 'stockRes' },
     { t: 'On l\'utilise comme ça : on gagne du temps', vers: 'stockAlerte' },
   ] });
-add('stockAlerte', { lieu: 'Local de stockage', pnj: 'karim', titre: 'Karim insiste',
+add('stockAlerte', { melange: true, lieu: 'Local de stockage', pnj: 'karim', titre: 'Karim insiste',
   texte: '« Une dispersion de copolymère styrène-acrylique n\'aime pas le gel : les particules peuvent coaguler. Du coagulum dans la peinture, ça se voit à la jauge Hegman et ça fausse toutes tes mesures. On vérifie, ça prend un quart d\'heure. »',
   choix: [
     { t: 'Tu as raison, je contrôle le fût (15 min)', duree: 15, f: { stockCtrl: true, stockAlerte: true }, note: 'Contrôle du fût d\'Orgal, à la demande de Karim.', vers: 'stockRes' },
@@ -411,8 +414,8 @@ add('stockAlerte', { lieu: 'Local de stockage', pnj: 'karim', titre: 'Karim insi
   ] });
 add('stockRes', { lieu: 'Local de stockage', pnj: 'karim', titre: 'Résultat du contrôle',
   texte: 'Au tamisage sur 100 µm, il reste des grumeaux de coagulum : une partie de la dispersion a gelé.\n« Voilà. C\'est écrit sur la fiche : à protéger du gel. »',
-  choix: [
-    { t: 'Demander un fût neuf à M. Perrin (livré vers 11 h : 40 min d\'attente avant de fabriquer)', duree: 40, f: { stock: 'neuf' }, note: 'Fût d\'Orgal gelé écarté ; fût neuf commandé à M. Perrin.', vers: 'formuleFinale' },
+  choix: e => [
+    { t: `Demander un fût neuf à M. Perrin (livré vers ${hhmm(e.t + 40)} : 40 min d'attente avant de fabriquer)`, duree: 40, f: { stock: 'neuf' }, note: 'Fût d\'Orgal gelé écarté ; fût neuf commandé à M. Perrin.', vers: 'formuleFinale' },
     { t: 'Tamiser la dispersion et l\'utiliser quand même', duree: 10, f: { stock: 'tamise', lotDouteux: true }, note: 'Dispersion d\'Orgal tamisée (coagulum retiré) et utilisée malgré le gel.', vers: 'formuleFinale' },
   ] });
 add('fin_matiere', { lieu: 'Local de stockage', pnj: 'karim', titre: 'Une peinture bâtie sur un lot dégradé', fin: { ton: 'ko', titre: 'Lot douteux utilisé' },
@@ -423,7 +426,7 @@ add('formuleFinale', { lieu: 'Paillasse de formulation', pnj: 'karim', titre: 'T
   entree: e => ({ ...e, f: { ...e.f, fm: undefined } }),
   texte: e => `Il est ${hhmm(e.t)}. Karim te tend la feuille de pesée.\n« Avant de peser, pose ta formule noir sur blanc. Tout ce que tu as décidé jusqu'ici y est reporté, mais c'est toi qui signes : tu peux encore changer une masse. Le cahier des charges ne se discute pas, lui. »${e.f.refaitCoal || e.f.refaitForm || e.f.refait ? '\n(Tu refais la peinture : c\'est le moment de corriger ce qui ne va pas.)' : ''}`,
   choix: e => [validerFormule(e, fmDepuisFlags(e)).choix] });
-add('fabrication', { lieu: 'Paillasse de formulation', pnj: 'karim', titre: 'Fabriquer 300 g de peinture',
+add('fabrication', { melange: true, lieu: 'Paillasse de formulation', pnj: 'karim', titre: 'Fabriquer 300 g de peinture',
   texte: e => `Il est ${hhmm(e.t)}. La défloculeuse est prête, la balance aussi. Comment fabriques-tu la peinture ?`,
   choix: [
     { t: 'Je suis la fiche de fabrication : 70 % de l\'eau, antimousse, dispersant, poudres en pluie fine, dispersion de 15 min, puis résine, coalescent et additifs, puis le reste de l\'eau (75 min)', duree: 75, f: { fabrique: true }, note: 'Peinture fabriquée selon la fiche (dispersion de 15 min à vitesse maximale).', vers: 'cahier' },
@@ -432,7 +435,7 @@ add('fabrication', { lieu: 'Paillasse de formulation', pnj: 'karim', titre: 'Fab
 add('rate', { lieu: 'Paillasse', pnj: 'karim', titre: 'Le résultat n\'est pas beau',
   texte: 'La peinture a mousse, des grumeaux, et la jauge Hegman indique 4 : finesse de 40 µm. « Je t\'avais dit de suivre l\'ordre : sans lui, les poudres ne sont pas mouillées. Il faut tout refaire. »',
   choix: [{ t: 'Tout refaire proprement (75 min)', duree: 75, f: { fabrique: true }, note: 'Première fabrication ratée (ordre d\'introduction non respecté), refaite selon la fiche.', vers: 'cahier' }] });
-add('cahier', { lieu: 'Paillasse', pnj: 'moi', titre: 'Le cahier de laboratoire',
+add('cahier', { melange: true, lieu: 'Paillasse', pnj: 'moi', titre: 'Le cahier de laboratoire',
   texte: 'La peinture est prête dans le bécher. Tu as les mains encore collantes et un carnet ouvert.',
   choix: [
     { t: 'Je note maintenant le lot, les pesées réelles et mes observations (5 min)', duree: 5, f: { trace: true }, note: 'Lot ORG-01 fabriqué : pesées réelles et observations consignées dans le cahier.', vers: 'labo' },
@@ -594,8 +597,8 @@ add('debriefCpg', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Ce que
   choix: () => [{ t: 'Retourner à la paillasse', vers: 'labo' }] });
 
 add('res_es', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Résultat : extrait sec et densité',
-  texte: e => { const p = prop(e), ok = e.f.regle === 'ok', es = p.ES - (e.f.lotDouteux ? 1.2 : 0), r = proprietes(FORMULE_REF);
-    return `Inès : « Extrait sec ${nf(es)} %, densité ${nf(p.densite, 3)}. »\nD'après la formule : CPV = ${nf(p.CPV)} %, CPVC = ${nf(p.CPVC)} %, λ = ${nf(p.lambda, 2)}, COV calculé = ${nf(p.COV)} g/L (à vérifier par un dosage).\n${ok ? `${Math.abs(p.ES - r.ES) < 1.5 ? `Même extrait sec que la référence (${nf(r.ES)} %)` : `Extrait sec différent de la référence (${nf(r.ES)} %), mais conforme (> 50 %)`}${e.f.lotDouteux ? ', un peu plus bas qu\'attendu : le coagulum retiré du lot gelé a emporté du polymère' : ''}. ${covOk(e) ? 'Sur ces critères calculés (ES > 50 %, λ ≥ 0,8, COV < 30 g/L), le cahier des charges est respecté ; le COV reste à vérifier sur la peinture fabriquée.' : `Mais les COV calculés (${nf(p.COV)} g/L) dépassent la limite de 30 g/L : il y a trop de coalescent.`}` : `Attention : ES = ${nf(p.ES)} % et CPV = ${nf(p.CPV)} % ne correspondent pas à la référence (ES ${nf(r.ES)} %, CPV ${nf(r.CPV)} %). En remplaçant simplement 83,3 g par 83,3 g, tu as changé la quantité de polymère : la formule ne respecte pas la contrainte « mêmes ES, CPV, CPVC ».`}`; },
+  texte: e => { const p = prop(e), pc = prop(e, e.f.phMes ? { ph: 'mesuree' } : { ph: 'fiche' }), ok = e.f.regle === 'ok', es = p.ES - (e.f.lotDouteux ? 1.2 : 0), r = proprietes(FORMULE_REF);
+    return `Inès : « Extrait sec ${nf(es)} %, densité ${nf(p.densite, 3)}. »\nD'après la formule (prises d'huile ${e.f.phMes ? 'que tu as mesurées' : 'des fiches, non vérifiées sur nos poudres'}) : CPV = ${nf(pc.CPV)} %, CPVC = ${nf(pc.CPVC)} %, λ = ${nf(pc.lambda, 2)}, COV calculé = ${nf(p.COV)} g/L (à vérifier par un dosage).\n${ok ? `${Math.abs(p.ES - r.ES) < 1.5 ? `Même extrait sec que la référence (${nf(r.ES)} %)` : `Extrait sec différent de la référence (${nf(r.ES)} %), mais conforme (> 50 %)`}${e.f.lotDouteux ? ', un peu plus bas qu\'attendu : le coagulum retiré du lot gelé a emporté du polymère' : ''}. ${covOk(e) ? 'Sur ces critères calculés (ES > 50 %, λ ≥ 0,8, COV < 30 g/L), le cahier des charges est respecté ; le COV reste à vérifier sur la peinture fabriquée.' : `Mais les COV calculés (${nf(p.COV)} g/L) dépassent la limite de 30 g/L : il y a trop de coalescent.`}` : `Attention : ES = ${nf(p.ES)} % et CPV = ${nf(p.CPV)} % ne correspondent pas à la référence (ES ${nf(r.ES)} %, CPV ${nf(r.CPV)} %). En remplaçant simplement 83,3 g par 83,3 g, tu as changé la quantité de polymère : la formule ne respecte pas la contrainte « mêmes ES, CPV, CPVC ».`}`; },
   visuel: e => ({ type: 'balance', es: prop(e).ES - (e.f.lotDouteux ? 1.2 : 0), dens: prop(e).densite }),
   choix: e => e.f.regle !== 'ok' ? [{ t: 'Reprendre le calcul et refaire la peinture (la fabrication ne vaut plus rien)', f: { refait: true, mes_es: false }, duree: 15, note: 'Formule corrigée : la première version (83,3 g d\'Orgal) avait un ES et une CPV différents de la référence.', run: e2 => effacerMesures(e2), vers: 'calcMasse' },
       { t: 'Je garde cette formule telle quelle', f: { mes_es: true }, note: 'ES mesuré différent de la référence : formule conservée en l\'état.', vers: 'labo' }]
@@ -640,7 +643,7 @@ add('res_cout', { lieu: 'Service achats', pnj: 'perrin', titre: 'Devis de l\'Org
 // ───────────── Le hub : la paillasse ─────────────
 const ligneAttente = e => Object.entries(e.cmd).filter(([, c]) => !c.lu && c.pret > e.t).map(([k, c]) => `⏳ ${labelDe(k)} : prêt vers ${hhmm(c.pret)}`);
 add('labo', { lieu: 'Paillasse et laboratoire', pnj: 'moi', titre: 'La journée avance',
-  texte: e => `Il est ${hhmm(e.t)}.${e.t >= T_RAPPORT ? '\nMme Dubreuil passe la tête : « J\'attends ton rapport, le délai est dépassé. »' : e.t >= T_CLIENT - 45 ? '\nL\'appel client approche (15 h).' : ''}\n${ligneAttente(e).join('\n')}\n${e.f.fabrique ? 'Que fais-tu maintenant ? Écris-le (une analyse à demander, un contrôle à faire, un appel…).' : ''}`.trim(),
+  texte: e => `Il est ${hhmm(e.t)}.${e.t >= T_RAPPORT ? '\nMme Dubreuil passe la tête : « J\'attends ton rapport, le délai est dépassé. »' : e.t >= T_CLIENT - 45 ? '\nL\'appel client approche (15 h).' : ''}\n${ligneAttente(e).join('\n')}`.trim(),
   choix: e => {
     const L = [];
     for (const A of ANALYSES) {
@@ -666,7 +669,7 @@ add('client', { lieu: 'Salle de réunion (visio)', pnj: 'aubry', titre: 'Appel a
 });
 
 // ───────────── Rapport et fins ─────────────
-add('rapport', { lieu: 'Bureau', pnj: 'moi', titre: 'Le rapport',
+add('rapport', { melange: true, lieu: 'Bureau', pnj: 'moi', titre: 'Le rapport',
   texte: e => `Tu t'installes pour rédiger. Il est ${hhmm(e.t)}. Le cahier des charges demande une peinture stable 30 mois. Qu'écris-tu ?`,
   choix: [
     { t: 'Stable 30 mois : tout est conforme', f: { stab: 'promis' }, vers: 'verdict' },
