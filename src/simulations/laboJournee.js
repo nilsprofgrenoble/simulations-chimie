@@ -751,8 +751,19 @@ add('res_cout', { lieu: 'Service achats', pnj: 'perrin', titre: 'Devis de l\'Org
   texte: 'M. Perrin : « L\'Orgal PST 50A est à 25 € les 5 litres. Les autres prix sont ceux du Document 1. À toi de calculer le coût matières premières de ta formule. »',
   calcul: { q: 'Coût matières premières de ta formule (€ par kg de peinture)', unite: '€/kg', vrai: e => coutKg(formule(e)), tol: 0.06,
     indice: 'Coût total = Σ (masse × prix par gramme) ; divise par la masse totale en kg. Attention aux unités de prix : €/L et densités pour les additifs liquides.',
-    ok: { f: { mes_cout: true }, run: e => ({ ...e, f: { ...e.f, coutOk: coutKg(formule(e)) < 4.5 } }), vers: 'labo', note: 'Coût matières premières calculé.' },
-    ko: { f: { mes_cout: true }, run: e => ({ ...e, f: { ...e.f, coutOk: coutKg(formule(e)) < 4.5 } }), vers: 'labo', duree: 10, note: 'Coût matières premières calculé avec l\'aide de M. Perrin.' } } });
+    ok: { f: { mes_cout: true }, run: e => ({ ...e, f: { ...e.f, coutOk: coutKg(formule(e)) < 4.5 } }), vers: 'commAchats', note: 'Coût matières premières calculé.' },
+    ko: { f: { mes_cout: true }, run: e => ({ ...e, f: { ...e.f, coutOk: coutKg(formule(e)) < 4.5 } }), vers: 'commAchats', duree: 10, note: 'Coût matières premières calculé avec l\'aide de M. Perrin.' } } });
+
+add('commAchats', { melange: true, lieu: 'Service achats', pnj: 'perrin', titre: 'Rendre compte à M. Perrin',
+  texte: 'M. Perrin n\'est pas chimiste : il gère les commandes et le budget. Il te demande : « Alors, on commande quoi, en quelle quantité, et pourquoi ce n\'est plus la Vinnapas ? » Que lui réponds-tu ?',
+  choix: () => [
+    msg('achats', 'adapte', '« Bonjour M. Perrin. Il faut remplacer la Vinnapas par l\'Orgal PST 50A : c\'est la même famille de liant, au prix de 25 € les 5 litres. Pour un lot d\'essai, un fût de 5 litres suffit ; je vous confirme la quantité dès que la formule est validée. »',
+      'M. Perrin note le produit, le prix, la quantité et la raison du changement. Il lance la commande sans te rappeler.', 0, 'labo'),
+    msg('achats', 'partiel', '« Salut ! Je sais pas trop, mets-moi de l\'Orgal, ça ira, on verra bien pour la quantité. »',
+      'M. Perrin soupire : « Il me faut une référence, une quantité et une date, sinon je ne peux rien commander. » Tu dois tout reprendre : cinq minutes.\nÀ retenir : un acheteur a besoin d\'une référence, d\'une quantité, d\'un prix et d\'un délai.', 5, 'labo'),
+    msg('achats', 'mauvais', '« Il faut une dispersion styrène-acrylique de MFFT 20 °C, de Tg 27 °C et à 50 % d\'extrait sec, avec coalescent à ajuster selon les essais de film. »',
+      'M. Perrin : « Je ne sais pas ce que veulent dire ces sigles. Donne-moi un nom commercial et une quantité. » Il faut tout reformuler en termes de commande : dix minutes.\nÀ retenir : avec un service achats, on parle référence, quantité et prix, pas propriétés physico-chimiques.', 10, 'labo'),
+  ] });
 
 // ───────────── Le hub : la paillasse ─────────────
 const ligneAttente = e => Object.entries(e.cmd).filter(([, c]) => !c.lu && c.pret > e.t).map(([k, c]) => `⏳ ${labelDe(k)} : prêt vers ${hhmm(c.pret)}`);
@@ -864,7 +875,7 @@ export function bilan(e) {
   ajoute({ comp: 'C6.1', titre: 'Organiser le travail, tenir les délais', niveau: niv(c61, 3), texte: `${f.plan === 'solo' ? 'Tout fait seul·e : trop séquentiel. ' : f.plan === 'mp' ? 'Analyses des matières premières lancées dès le début, en parallèle. ' : 'Tâches déléguées en parallèle. '}Rapport ${e.t <= T_RAPPORT ? 'rendu dans les temps' : 'rendu après 17 h'} ; ${nbOpt} analyse(s) complémentaire(s) sur 4 (prises d'huile, brillance, TMFF, dosage du DPnB).` });
   ajoute({ comp: 'C6.3', titre: 'Gérer les produits selon la réglementation', niveau: niv(n(f.stock === 'neuf') + n(f.stock === 'tamise') * 0.5 + n(f.coutOk), 2), texte: `${f.stock === 'neuf' ? 'Lot gelé écarté, fût neuf commandé. ' : f.stock === 'tamise' ? 'Lot gelé tamisé et utilisé : acceptable seulement avec réserve. ' : 'Aucun problème de stockage détecté. '}${f.coutOk ? 'Coût matières contrôlé (< 4,5 €/kg).' : 'Coût matières non vérifié.'}` });
   ajoute({ comp: 'C6.4', titre: 'Assurer la traçabilité', niveau: f.trace ? 'ok' : 'ko', texte: f.trace ? 'Lot, pesées et observations consignés au fur et à mesure.' : 'Pesées réelles et observations reconstituées de mémoire : traçabilité faible.' });
-  const COMM = f.comm || {}, nomsComm = { equipe: 'message à l\'équipe', resp: 'message à la responsable', client: 'échange avec la cliente' }, qual = { adapte: 'adapté à l\'interlocuteur', partiel: 'à ajuster (trop vague, trop familier ou trop technique)', mauvais: 'inadapté (ton ou contenu)' };
+  const COMM = f.comm || {}, nomsComm = { equipe: 'message à l\'équipe', resp: 'message à la responsable', client: 'échange avec la cliente', achats: 'échange avec le service achats' }, qual = { adapte: 'adapté à l\'interlocuteur', partiel: 'à ajuster (trop vague, trop familier ou trop technique)', mauvais: 'inadapté (ton ou contenu)' };
   const nbComm = Object.keys(COMM).length, ptsComm = Object.values(COMM).reduce((a, q) => a + QUALITE_COMM[q], 0);
   ajoute({ comp: 'C7.3', titre: 'Travailler en équipe', niveau: f.plan === 'solo' ? 'ko' : niv(n(nbDeleg >= 3) + n(f.alerte === true) + ptsComm, 2 + nbComm), texte: (f.plan === 'solo' ? 'Aucune délégation : l\'équipe n\'a pas été sollicitée.' : `${nbDeleg} analyse(s) confiée(s) aux collègues ; ${f.alerte === true ? 'information remontée à la responsable' : 'communication à améliorer'}.`) + (nbComm ? ` Communication : ${Object.entries(COMM).map(([k, q]) => `${nomsComm[k]} ${qual[q]}`).join(' ; ')}.` : '') });
   return pr;
