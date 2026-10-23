@@ -187,8 +187,8 @@ export function agirLibre(e, texte) {
   const t = norm(texte).trim();
   if (t.length < 3) return { ok: false, etat: e, message: 'Écris ce que tu veux faire : une analyse, un contrôle, un appel…' };
   let cle = (MOTS.find(([, re]) => re.test(t)) || [])[0];
-  if (cle === 'huile' && /moi.?meme|spatule|je mesure|je fais moi|seul/.test(t)) cle = 'huile-moi';
-  else if (cle && cle !== 'huile' && ANALYSES.some(a => a.cle === cle && a.tech !== 'perrin') && /moi.?meme|je (le )?fais moi|je (le )?mesure moi|seul/.test(t)) cle += '-moi';
+  if (cle === 'huile' && /moi.?meme|spatule|je mesure|je fais moi|\bseule?\b/.test(t)) cle = 'huile-moi';
+  else if (cle && cle !== 'huile' && ANALYSES.some(a => a.cle === cle && a.tech !== 'perrin') && /moi.?meme|je (le |la )?(fais|mesure|lance|realise) moi|\bseule?\b/.test(t)) cle += '-moi';
   if (!cle && /dejeuner|manger|pause|midi|repas|cantine/.test(t)) cle = 'pause';
   if (!cle) return { ok: false, etat: e, message: 'Je ne vois pas quelle mesure ou quelle action ça recouvre. Reformule avec le nom de la mesure ou du contrôle (par exemple « mesurer la viscosité »), ou demande des idées.' };
   const c = choixDe(e).find(x => x.cle === cle);
@@ -198,6 +198,7 @@ export function agirLibre(e, texte) {
   if (e.cmd[cle === 'huile-moi' ? 'huile' : cle.replace('-moi', '')]) return { ok: false, etat: e, message: 'Tu l\'as déjà demandé : regarde « En cours » ou lis le résultat.' };
   if (cle === 'dpnb' && e.f.mes_dpnb) return { ok: false, etat: e, message: 'Le DPnB a déjà été dosé dans cette peinture.' };
   if (cle === 'etuve' && e.f.etuve) return { ok: false, etat: e, message: 'Un échantillon est déjà à l\'étuve.' };
+  if (cle.endsWith('-moi') && cle !== 'huile-moi' && A && (e.f.fabrique || A.avant)) return { ok: true, etat: choisir(e, { run: n => deleguer(n, A, true), vers: 'labo' }) };
   if (!e.f.fabrique && cle !== 'huile' && !A?.avant) return { ok: false, etat: e, message: 'Il n\'y a pas de peinture à analyser pour l\'instant : il faut d\'abord en fabriquer.' };
   return { ok: false, etat: e, message: 'Ça n\'est pas possible maintenant.' };
 }
