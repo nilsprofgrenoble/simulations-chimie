@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { NIVEAUX_ETALON, ETAL_MAX, ECH_MAX, T_PREP, T_INJ, C_IS, TR, M_POUDRE, POUDRES_HUILE, HUILE_MAX_ESSAIS, HUILE_DUREE, etatPate, rapportPate, DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI, DOSES_COURBE, COURBE_MAX, COURBE_DUREE, masseCoadis } from "./stationsModele";
-import { essaiBanc, indiceBanc, INDICES_BANC, essaiCourbe, indiceCourbe, INDICES_COURBE, conclureHuile, huileRetenue, phVrai, cpgDe, injecterEtalon, preparerEchantillon, injecterEchantillon, choisirModeCpg, resultatCpg, injecterControle, recuperation, C_CTRL, TMFF_MAX, COV_MAX, nf } from "./laboJournee";
+import { essaiBanc, indiceBanc, INDICES_BANC, essaiCourbe, indiceCourbe, INDICES_COURBE, conclureHuile, huileRetenue, phVrai, cpgDe, injecterEtalon, preparerEchantillon, injecterEchantillon, choisirModeCpg, resultatCpg, injecterControle, recuperation, C_CTRL, TMFF_MAX, COV_MAX, nf, fmDepuisFlags, FM_CHAMPS, validerFormule, controlesFormule } from "./laboJournee";
+import { proprietes } from "./Peinture";
 
 // ====================================================
 //  Stations immersives de la journée au labo (écrans dédiés, paramètres cachés).
@@ -232,5 +233,39 @@ export function StationCpg({ e, onEtat, onValider, choixConcl }) {
         {choixValides.map((c, i) => <button key={i} type="button" data-concl={c.concl} className="lab-choix" style={{ margin: '4px 0' }} onClick={() => onValider(c)}>{c.t}</button>)}
       </div>}
       <button type="button" data-abandon onClick={() => onValider(choixConcl.find(c => !c.concl) || { vers: 'labo' })} style={{ ...bouton(true), marginTop: 12, fontSize: 13, display: R.dos ? 'none' : 'inline-block' }}>Abandonner le dosage</button>
+    </div>);
+}
+
+// ───────────── Formule finale : l'élève pose ses masses, les contrôles « sur papier » se recalculent ─────────────
+const LIGNES_FORMULE = [['liant', 'Dispersion d\'Orgal PST 50A', 'g'], ['eau', 'Eau', 'g'], ['tio2', 'TiO₂ (rutile)', 'g'], ['caco3', 'CaCO₃ léger', 'g'], ['coadis', 'Coadis BR3 (dispersant)', 'g'], ['dpnb', 'DPnB (coalescent)', 'g']];
+export function StationFormule({ e, onValider }) {
+  const base = fmDepuisFlags(e);
+  const [v, setV] = useState(() => Object.fromEntries(FM_CHAMPS.map(k => [k, String(base[k]).replace('.', ',')])));
+  const fm = Object.fromEntries(FM_CHAMPS.map(k => [k, parseFloat(String(v[k]).replace(',', '.'))]));
+  const val = validerFormule(e, fm);
+  const controles = val.ok ? controlesFormule(e, fm) : [];
+  const total = val.ok ? proprietes({ resine: 'orgal', foamex: 1.5, thixol: 1.5, coapur: 3, ...fm }).mTot : null;
+  const icone = ok => ok === true ? ['✔', VERT] : ok === false ? ['✖', ROUGE] : ['➜', AMBRE];
+  return (
+    <div data-formule style={{ margin: '14px 0', background: '#fff', border: '1.5px solid #cbd5e1', borderRadius: 8, padding: '12px 14px' }}>
+      <div style={{ fontWeight: 800, marginBottom: 8 }}>📝 Feuille de pesée</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 10 }}>
+        {LIGNES_FORMULE.map(([k, nom, u]) => (
+          <label key={k} style={{ fontSize: 13.5 }}>{nom}
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+              <input data-fm={k} value={v[k]} inputMode="decimal" autoComplete="off" onChange={ev => setV(o => ({ ...o, [k]: ev.target.value }))} style={{ width: '100%', padding: '6px 8px', fontSize: 16, boxSizing: 'border-box', border: `1.5px solid ${ENCRE}`, borderRadius: 6 }} />{u}
+            </span>
+          </label>))}
+      </div>
+      <div style={{ fontSize: 12.5, color: DOUX, margin: '8px 0' }}>Fixes : Foamex 1,5 g · Thixol 1,5 g · Coapur 3 g.{total != null && ` Masse totale : ${nf(total)} g.`}</div>
+      {!val.ok && <div role="alert" data-fm-erreur style={{ color: ROUGE, fontSize: 14, margin: '6px 0' }}>{val.message}</div>}
+      {controles.length > 0 && <div data-controles style={{ borderTop: '1px solid #e5e7eb', marginTop: 6 }}>
+        <div style={{ fontWeight: 700, fontSize: 14, margin: '8px 0 2px' }}>Ta formule face au cahier des charges (calculs sur papier)</div>
+        {controles.map(c => { const [ic, col] = icone(c.ok); return <div key={c.cle} data-controle={c.cle} style={{ display: 'flex', gap: 8, padding: '4px 0', fontSize: 14.5, lineHeight: 1.45 }}><b style={{ color: col }}>{ic}</b><span>{c.t}</span></div>; })}
+      </div>}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 12 }}>
+        <button type="button" data-valider-formule disabled={!val.ok} onClick={() => onValider(val.choix)} style={{ padding: '9px 18px', borderRadius: 8, border: 'none', background: ENCRE, color: '#fff', fontWeight: 700, cursor: val.ok ? 'pointer' : 'default', opacity: val.ok ? 1 : 0.5, font: 'inherit' }}>Valider ma formule et fabriquer</button>
+        <button type="button" onClick={() => setV(Object.fromEntries(FM_CHAMPS.map(k => [k, String(base[k]).replace('.', ',')])))} style={{ padding: '9px 14px', borderRadius: 8, border: `1.5px solid ${ENCRE}`, background: '#fff', color: ENCRE, fontWeight: 700, cursor: 'pointer', font: 'inherit' }}>↺ Revenir à ma formule de départ</button>
+      </div>
     </div>);
 }

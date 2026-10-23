@@ -2,10 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import "@fontsource/kalam/latin-400.css";
 import "@fontsource/kalam/latin-700.css";
 import { useEtatPersistant } from "../commun";
-import { CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_CLIENT, T_RAPPORT, T_FIN, etatInitial, texteDe, choixDe, choisir, valider, hhmm, bilan, resume, statutCmd, estFin, visuelDe, equipe } from "./laboJournee";
+import { CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_CLIENT, T_RAPPORT, T_FIN, etatInitial, texteDe, choixDe, choisir, valider, hhmm, bilan, resume, statutCmd, estFin, visuelDe, equipe, agirLibre, demanderIdees } from "./laboJournee";
 import Fiches from "./Fiches";
 import Dossier from "./DossierLabo";
-import { StationBanc, StationCourbe, StationHuile, StationCpg } from "./StationsLabo";
+import { StationBanc, StationCourbe, StationHuile, StationCpg, StationFormule } from "./StationsLabo";
 import { ScenePlanche, Affiche, Equipe, Instrument, Avatar, STYLE_VISUELS } from "./LaboVisuels";
 
 // ====================================================
@@ -108,6 +108,22 @@ function ChoixLecture({ lecture, onChange }) {
     </div>);
 }
 
+// Hub ouvert : l'élève écrit ce qu'il veut faire ; la liste des idées n'apparaît que s'il la demande (5 min)
+function ActionLibre({ e, onAgir, onIdees }) {
+  const [txt, setTxt] = useState(''), [msg, setMsg] = useState('');
+  const soumettre = ev => { ev.preventDefault(); const r = agirLibre(e, txt); if (r.ok) { setTxt(''); setMsg(''); onAgir(r.etat); } else setMsg(r.message); };
+  return (
+    <form onSubmit={soumettre} data-action-libre style={{ margin: '14px 0 6px', background: '#fff9d6', border: '1.5px dashed #c9b86a', borderRadius: 6, padding: '12px 14px' }}>
+      <label style={{ fontWeight: 700, display: 'block', marginBottom: 6 }}>🗣 Que fais-tu maintenant ?</label>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <input data-libre value={txt} onChange={ev => setTxt(ev.target.value)} autoComplete="off" placeholder="Ex. : je fais mesurer la viscosité…" style={{ flex: '1 1 220px', fontSize: 16, padding: '7px 10px', border: `1.5px solid ${ENCRE}`, borderRadius: 6, background: '#fff', fontFamily: 'inherit' }} />
+        <button type="submit" data-libre-ok disabled={!txt.trim()} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: ENCRE, color: '#fff', fontWeight: 700, cursor: txt.trim() ? 'pointer' : 'default', opacity: txt.trim() ? 1 : 0.5, font: 'inherit' }}>Faire</button>
+      </div>
+      {msg && <div role="alert" data-libre-msg style={{ marginTop: 8, color: C.ambre, fontSize: 14, lineHeight: 1.5 }}>{msg}</div>}
+      {!e.f.idees && <div style={{ fontSize: 13, marginTop: 8 }}><button type="button" data-idees onClick={onIdees} style={{ background: 'none', border: 'none', padding: 0, color: C.accent, textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }}>💡 Je ne sais pas quoi lancer : faire le point (5 min)</button></div>}
+    </form>);
+}
+
 function Calcul({ e, sc, onEtat, onCalculette }) {
   const [saisie, setSaisie] = useState('');
   const [message, setMessage] = useState('');
@@ -171,11 +187,11 @@ export function SimulationHistoireLabo() {
 
   const sc = SCENES[e.scene], choix = choixDe(e), st = statutCmd(e).filter(x => x.etat !== 'lu'), vis = visuelDe(e);
   const hub = e.scene === 'labo';
-  const avancer = c => {
-    const n = choisir(e, c);
+  const appliquer = n => {
     if (n.t - e.t >= 20 && n.t < T_FIN) setSaut(s0 => ({ id: (s0?.id ?? 0) + 1, de: e.t, a: n.t })); else setSaut(null);
     setEtat(n);
   };
+  const avancer = c => appliquer(choisir(e, c));
   const recommencer = () => { setEtat(null); setCarnetOuvert(false); };
 
   const carnet = (
@@ -211,6 +227,8 @@ export function SimulationHistoireLabo() {
 
           {sc.station === 'huile' && <StationHuile e={e} onEtat={setEtat} onValider={avancer} choixFin={choix[0]} />}
 
+          {sc.station === 'formule' && <StationFormule key={e.scene + e.t} e={e} onValider={avancer} />}
+
           {sc.station === 'courbe' && <StationCourbe e={e} onEtat={setEtat} onValider={avancer} choixDose={x => choix.find(c => c.x === x)} />}
 
           {sc.debrief && sc.debrief(e).length > 0 && <div data-debrief style={{ margin: '14px 0', background: '#fff', border: '1.5px solid #cbd5e1', borderRadius: 8, padding: '10px 14px' }}>
@@ -219,7 +237,9 @@ export function SimulationHistoireLabo() {
 
           {sc.calcul && <Calcul key={e.scene} e={e} sc={sc} onEtat={setEtat} onCalculette={() => setDossier('calc')} />}
 
-          {!sc.calcul && !sc.station && choix.map((c, i) => (
+          {hub && <ActionLibre e={e} onAgir={appliquer} onIdees={() => setEtat(demanderIdees(e))} />}
+
+          {!sc.calcul && !sc.station && choix.filter(c => !c.masque || e.f.idees).map((c, i) => (
             <button key={i} type="button" className="lab-choix lab-ligne" style={{ animationDelay: `${i * 0.1}s` }} data-choix={i} onClick={() => avancer(c)}>
               {c.t}{c.d && <div style={{ fontSize: 12.5, color: C.doux, marginTop: 2 }}>{c.d}</div>}
             </button>))}

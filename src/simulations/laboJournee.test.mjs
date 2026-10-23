@@ -69,6 +69,7 @@ function formulation(g, o = {}) {
   if (o.stock === 'ignore') { g.go('On l\'utilise comme ça'); g.go(o.insiste ? 'Je n\'ai pas le temps' : 'Tu as raison'); if (o.insiste) return; g.go('fût neuf'); }
   else if (o.stock === 'tamise') { g.go('Je contrôle le fût'); g.go('Tamiser'); }
   else { g.go('Je contrôle le fût'); g.go('fût neuf'); }
+  g.go('Valider ma formule');
   if (o.rate) { g.go('Je mets tout'); g.go('Tout refaire'); } else g.go('Je suis la fiche');
   g.go(o.trace === false ? 'noterai ça' : 'Je note maintenant');
 }
@@ -83,11 +84,12 @@ function travaille(g, o = {}) {
     if (e.scene === 'res_cout' || e.scene === 'res_huile') { g.calc(); continue; }
     if (e.scene === 'coalescent') { g.go('Calculer la dose'); continue; }
     if (e.scene === 'calcDpnb') { g.calc(); continue; }
+    if (e.scene === 'formuleFinale') { g.go('Valider ma formule'); continue; }
     if (e.scene === 'fabrication') { g.go('Je suis la fiche'); continue; }
     if (e.scene === 'cahier') { g.go('Je note maintenant'); continue; }
     if (e.scene === 'res_tmff') { g.go(J.tmffOk(e) ? 'Retourner' : o.corrige ? 'Corriger la dose' : 'Je garde'); continue; }
     if (e.scene === 'res_es') { g.go(e.f.regle === 'ok' && J.covOk(e) ? 'Retourner' : 'garde cette formule'.length && (e.f.regle === 'ok' ? 'Je garde' : 'garde cette formule')); continue; }
-    if (e.scene.startsWith('res_')) { g.e = J.choisir(e, J.choixDe(e)[0]); continue; }
+    if (e.scene.startsWith('res_')) { const ch = J.choixDe(e); g.e = J.choisir(e, ch.find(c => c.t.startsWith('Retourner')) || ch[0]); continue; }
     if (e.scene === 'labo') {
       const ch = J.choixDe(e), lire = ch.find(c => c.t.startsWith('📄'));
       const fini = (o.corrige ? ['es', 'rheo', 'masq', 'tmff'] : ['es', 'rheo', 'masq', 'tmff', 'cout', 'huile', 'brill']).every(k => e.f['mes_' + k]) && e.f.clientFait;
@@ -157,7 +159,7 @@ for (let g0 = 1; g0 <= 300; g0++) {
   const mauvais = J.SCENES.debriefBanc.debrief(J.choisir({ ...e, f: { ...e.f, banc: [] } }, J.choixDe(e).find(x => x.g === 0)));
   assert(mauvais[0].ok === false && /Remède|Pour corriger|À faire|Pour rattraper/.test(mauvais[0].t) && mauvais.some(l => /aucun essai/.test(l.t)), 'débrief d\'une erreur : cause, effet, remède');
   assert.strictEqual(J.SCENES.debriefBanc.choix(n)[0].vers, 'stock');
-  assert(J.resume(n).length === 6);
+  assert(J.resume(n).length === 8);
 }
 // parcours scripté passant par le banc
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3, banc: true }); const fin = travaille(g, {}); assert(['fin_excellent', 'fin_bon'].includes(fin.scene), 'parcours par le banc : ' + fin.scene); assert(fin.f.preEssai && fin.f.banc.length === 2); }
@@ -267,3 +269,42 @@ console.log('OK : une journée au labo');
   assert.strictEqual(J.vari({ f: { graine: 5 } }, 'x', L), J.vari({ f: { graine: 5 } }, 'x', L), 'stable pour une même partie');
 }
 console.log('OK : dossier et variations');
+
+// 9. Formule finale libre, hub ouvert
+{
+  const base = J.etatInitial(), f0 = { ...base.f, regle: 'ok', coadis: 0.525, dpnb: 3 };
+  let e = J.aller({ ...base, f: f0 }, 'formuleFinale');
+  const fm0 = J.fmDepuisFlags(e); assert.strictEqual(fm0.liant, 100); assert.strictEqual(fm0.eau, 102);
+  assert(!J.validerFormule(e, { ...fm0, liant: 0 }).ok && !J.validerFormule(e, { ...fm0, eau: 20 }).ok && !J.validerFormule(e, { ...fm0, tio2: -1 }).ok && !J.validerFormule(e, { ...fm0, tio2: 'x' }).ok, 'formules refusées');
+  // contrôles sur papier : λ calculé avec les fiches tant que les prises d'huile ne sont pas mesurées
+  const cp = J.controlesFormule(e, fm0); assert.strictEqual(cp.find(c => c.cle === 'lambda').ok, false); assert.strictEqual(cp.find(c => c.cle === 'es').ok, true);
+  assert.strictEqual(J.controlesFormule({ ...e, f: { ...e.f, phMes: { tio2: 25, caco3: 30 } } }, fm0).find(c => c.cle === 'lambda').ok, true);
+  // la formule de départ validée donne le même verdict physique que sans formule libre
+  const v0 = J.validerFormule(e, fm0); const e0 = J.choisir(e, v0.choix);
+  assert.strictEqual(e0.scene, 'fabrication'); assert.strictEqual(e0.f.regle, 'ok'); assert(J.ecartsCdc(e0).length === 0, 'formule de départ conforme : ' + JSON.stringify(J.ecartsCdc(e0)));
+  // moins de TiO2 : moins cher mais le pouvoir masquant passe sous 7
+  const pauvre = J.choisir(e, J.validerFormule(e, { ...fm0, tio2: 45, eau: fm0.eau + 15 }).choix);
+  assert(J.pouvoirMasquant(pauvre) < 7 && J.pouvoirMasquant(e0) >= 7 && J.coutKg(J.formule(pauvre)) < J.coutKg(J.formule(e0)), 'compromis coût / masquant');
+  assert(J.ecartsCdc(pauvre).some(x => x.cle === 'masq'));
+  // trop de liant : pas mate
+  const brillante = J.choisir(e, J.validerFormule(e, { ...fm0, liant: 160, eau: 62 }).choix);
+  assert(J.brillance(brillante).g60 > 10 && J.lambdaVrai(brillante) < 0.8 && J.ecartsCdc(brillante).some(x => x.cle === 'lambda'));
+  // ES trop bas → regle naif
+  assert.strictEqual(J.choisir(e, J.validerFormule(e, { ...fm0, liant: 83.3, eau: 118.7 }).choix).f.regle, 'naif');
+  // revenir à la formule : l'entrée dans la scène efface la formule précédente
+  assert.strictEqual(J.aller(e0, 'formuleFinale').f.fm, undefined);
+  // hub ouvert
+  const labo = { ...e0, scene: 'labo', f: { ...e0.f, fabrique: true } };
+  let r = J.agirLibre(labo, 'Je fais mesurer la viscosité'); assert(r.ok && r.etat.cmd.rheo, 'viscosité → rhéologie');
+  r = J.agirLibre(r.etat, "pouvoir masquant s'il vous plaît"); assert(r.ok && r.etat.cmd.masq && r.etat.cmd.rheo);
+  r = J.agirLibre(r.etat, 'viscosité'); assert(!r.ok && /déjà/.test(r.message));
+  r = J.agirLibre(labo, 'le dosage du COV'); assert(r.ok && r.etat.scene === 'dpnbTech');
+  r = J.agirLibre(labo, 'bla bla'); assert(!r.ok && /Reformule/.test(r.message));
+  r = J.agirLibre({ ...labo, f: { ...labo.f, fabrique: false } }, 'viscosité'); assert(!r.ok && /fabriquer/.test(r.message));
+  r = J.agirLibre({ ...labo, f: { ...labo.f, fabrique: false } }, 'je mesure moi-même les prises d\'huile'); assert(r.ok && r.etat.scene === 'stationHuile');
+  r = J.agirLibre({ ...labo, f: { ...labo.f, fabrique: false } }, 'prises d\'huile des poudres'); assert(r.ok && r.etat.cmd.huile, 'sans précision : délégué à Lucas');
+  assert(J.choixDe(labo).filter(c => c.masque).length >= 7, 'les actions explicites sont masquées dans l\'interface');
+  const id = J.demanderIdees(labo); assert.strictEqual(id.t, labo.t + 5); assert(id.f.idees && J.demanderIdees(id) === id, 'une seule fois');
+  assert(/aide/.test(J.resume(id).join(' ')) && /seul·e des analyses/.test(J.resume(labo).join(' ')));
+}
+console.log('OK : formule finale et hub ouvert');
