@@ -58,6 +58,8 @@ const tio2Plus = (g, t = 66) => { const fm = J.fmDepuisFlags(g.e); fm.eau = Math
 const choixRes = e => { const ch = J.choixDe(e); return (e.scene === 'res_rheo' && ch.find(c => c.t === 'Ajouter du Coapur')) || ch.find(c => c.t.startsWith('Retourner')) || ch[0]; };
 // Essai d'ajout de Coapur : prise d'essai de 50 g, 1,0 g de produit humide (+0,5 % de matière sèche), puis on retient la dose pour le lot
 const visco = (g, m = 1.0) => {
+  if (g.e.scene === 'calcEs') { g.calc(); return true; }
+  if (g.e.scene === 'esConcl') { g.go('niveau de confiance'); return true; }
   if (g.e.scene === 'viscoPrise') { g.go('Sur 50 g'); return true; }
   if (g.e.scene === 'viscoDose') { if (!(g.e.f.visco.essais || []).length) g.e = J.essaiVisco(g.e, m); g.go('Retenir cette dose'); return true; }
   return false;
@@ -109,7 +111,10 @@ function travaille(g, o = {}) {
     if (e.scene === 'fabrication') { g.go('Je suis la fiche'); continue; }
     if (e.scene === 'cahier') { g.go('Je note maintenant'); continue; }
     if (e.scene === 'res_tmff') { g.go(J.tmffOk(e) ? 'Retourner' : o.corrige ? 'Corriger la dose' : 'Je garde'); continue; }
-    if (e.scene === 'res_es') { g.go(e.f.regle === 'ok' && J.covOk(e) ? 'Retourner' : 'garde cette formule'.length && (e.f.regle === 'ok' ? 'Je garde' : 'garde cette formule')); continue; }
+    if (e.scene === 'res_es') { g.go('Calculer les extraits'); continue; }
+    if (e.scene === 'calcEs') { g.calc(); continue; }
+    if (e.scene === 'esConcl') { g.go('niveau de confiance'); continue; }
+    if (e.scene === 'res_es2') { g.go(e.f.regle === 'ok' && J.covOk(e) ? 'Retourner' : 'garde cette formule'.length && (e.f.regle === 'ok' ? 'Je garde' : 'garde cette formule')); continue; }
     if (e.scene.startsWith('res_')) { g.e = J.choisir(e, choixRes(e)); continue; }
     if (e.scene === 'labo') {
       const ch = J.choixDe(e), lire = ch.find(c => c.t.startsWith('📄'));
@@ -237,7 +242,7 @@ for (let g0 = 1; g0 <= 300; g0++) { const sec = S.secretsDe(g0); assert(sec.ph.t
 for (let g0 = 1; g0 <= 200; g0++) { const sec = S.secretsDe(g0); assert(sec.rf >= 0.85 && sec.rf <= 1.15); }
 {
   const sec = S.secretsDe(5);
-  let e = { ...J.etatInitial(), scene: 'dpnbTech', f: { regle: 'ok', coadis: 0.525, dpnb: 3, fabrique: true, graine: sec.graine, rf: sec.rf, ph: sec.ph, eff: 3 } };
+  let e = { ...J.etatInitial(), scene: 'dpnbTech', f: { regle: 'ok', coadis: 0.525, dpnb: 3, fabrique: true, densMes: 1.3, graine: sec.graine, rf: sec.rf, ph: sec.ph, eff: 3 } };
   const imp = J.choisir(e, J.choixDe(e).find(c => /CLHP/.test(c.t)));
   assert.strictEqual(imp.scene, 'dpnbImpasse'); assert.strictEqual(imp.t, 5); assert(/chromophore/.test(J.texteDe(imp)));
   const ok = J.choisir(imp, J.choixDe(imp)[0]); const cpg = J.choisir(ok, J.choixDe(ok).find(c => /CPG|phase gazeuse/.test(c.t)));
@@ -246,7 +251,7 @@ for (let g0 = 1; g0 <= 200; g0++) { const sec = S.secretsDe(g0); assert(sec.rf >
   assert.strictEqual(J.injecterEchantillon(x), x, 'pas d\'injection sans préparation');
   for (const c of [0.25, 0.5, 1, 1.5, 2, 3]) x = J.injecterEtalon(x, c);
   x = J.preparerEchantillon(x); x = J.injecterEchantillon(x); x = J.injecterEchantillon(x);
-  assert.strictEqual(x.t, imp.t + 6 * 2 + 4 + 2 * 2);
+  assert.strictEqual(x.t, imp.t + 6 * 2 + 20 + 2 * 2);
   const cov = J.covDe(x);
   const R = J.resultatCpg(x); assert(R.dos && R.dos.dansDomaine, 'dosage dans le domaine');
   assert(Math.abs(R.cov - cov) < 3 * R.U && R.U < 0.4 * cov, 'COV mesuré compatible avec la valeur calculée, incertitude raisonnable : ' + R.cov + ' ± ' + R.U + ' vs ' + cov);
@@ -271,10 +276,11 @@ for (let g0 = 1; g0 <= 200; g0++) { const sec = S.secretsDe(g0); assert(sec.rf >
   g.go('Mesurer moi-même'); let e = g.e;
   for (const [k, m] of [['tio2', 2.5], ['caco3', 3.0]]) { const r = J.conclureHuile(e, k, J.phVrai(e, k) / 10); assert(r.ok); e = r.etat; void m; }
   g.e = e; g.go('Consigner'); g.calc();
+  g.e = { ...g.e, f: { ...g.e.f, densMes: J.prop(g.e).densite } };   // masse volumique déjà obtenue auprès d'Inès
   g.go('Doser le DPnB'); g.go('phase gazeuse'); e = g.e;
   for (const c of [0.25, 0.5, 1, 2, 3]) e = J.injecterEtalon(e, c);
   e = J.injecterEchantillon(J.preparerEchantillon(e)); e = J.injecterEchantillon(e); g.e = e;
-  g.go('± '); g.go('Retourner');
+  g.e = J.verifierCov(g.e, J.resultatCpg(g.e).cov).etat; g.go('U(COV)'); g.go('Retourner');
   g.e = { ...g.e, cmd: { ...g.e.cmd } };
   console.log('Tout faire : fabriqué vers', J.hhmm(t1), '; après stations', J.hhmm(g.e.t));
   assert(g.e.f.mes_huile && g.e.f.mes_dpnb && g.e.f.preEssai && g.e.f.dispCourbe);
@@ -342,8 +348,8 @@ console.log('OK : formule finale et hub ouvert');
   assert.strictEqual(J.choixDe({ ...J.etatInitial(), scene: 'regle', f: { graine: 3 } }).length, 3);
   const e = { ...J.etatInitial(), scene: 'stockRes', t: 90 }; assert(J.choixDe(e)[0].t.includes(J.hhmm(130)) || J.choixDe(e)[1].t.includes(J.hhmm(130)), 'heure de livraison calculée');
   const base = J.etatInitial(), f = { ...base.f, regle: 'ok', coadis: 0.525, dpnb: 3 };
-  const txt = J.texteDe({ ...base, scene: 'res_es', f }); assert(/des fiches, non vérifiées/.test(txt) && !/CPVC = 50/.test(txt), 'pas de fuite des vraies prises d\'huile');
-  assert(/que tu as mesurées/.test(J.texteDe({ ...base, scene: 'res_es', f: { ...f, phMes: { tio2: 25, caco3: 30 } } })));
+  const txt = J.texteDe({ ...base, scene: 'res_es2', f }); assert(/des fiches, non vérifiées/.test(txt) && !/CPVC = 50/.test(txt), 'pas de fuite des vraies prises d\'huile');
+  assert(/que tu as mesurées/.test(J.texteDe({ ...base, scene: 'res_es2', f: { ...f, phMes: { tio2: 25, caco3: 30 } } })));
 }
 console.log('OK : relecture');
 
@@ -471,6 +477,24 @@ console.log('OK : communication adaptée (C7.3)');
   const r = J.valider(e0, '0,45'); assert(r.juste && r.etat.f.coadis === 0.45, 'Coadis retenu = valeur saisie : ' + r.etat.f.coadis);
   assert(!/solvant filmifiant.*tête/.test(''), 'ok');
   for (let i = 0; i < 12; i++) { const L = J.optionsPlan({ f: { graine: i } }); assert(L[0][0] !== 'coal', 'coalescent pas en tête'); assert.strictEqual(L[L.length - 1][0], 'rien'); }
+}
+{
+  // CPG : masse pesée réaliste, masse volumique à aller chercher auprès d'Inès, calcul du COV par l'élève
+  const sec = S.secretsDe(7), base = { ...J.etatInitial(), scene: 'dpnbTech', f: { regle: 'ok', coadis: 0.525, dpnb: 3, fabrique: true, graine: sec.graine, rf: sec.rf, ph: sec.ph, eff: 3 } };
+  const vers = J.choisir(base, J.choixDe(base).find(c => /phase gazeuse/.test(c.t)));
+  assert.strictEqual(vers.scene, 'cpgDens', 'sans masse volumique : détour par Inès');
+  assert(J.mEch(vers) !== 1 && Math.abs(J.mEch(vers) - 1) >= 0.02 && Math.abs(J.mEch(vers) - 1) <= 0.07, 'masse pesée ≠ 1,000 g : ' + J.mEch(vers));
+  const chD = J.choixDe(vers); assert(chD.some(c => /Demander l'extrait sec/.test(c.t)) && chD.some(c => /ρ ≈ 1,0/.test(c.t)));
+  let x = J.choisir(vers, chD.find(c => /ρ ≈ 1,0/.test(c.t))); assert.strictEqual(x.scene, 'stationCpg');
+  for (const c of [0.25, 0.5, 1, 1.5, 2, 3]) x = J.injecterEtalon(x, c);
+  x = J.injecterEchantillon(J.preparerEchantillon(x)); x = J.injecterEchantillon(x);
+  const R = J.resultatCpg(x); assert(R.dos && R.m === J.mEch(x) && R.rho === 1);
+  assert(Math.abs(R.cov - J.covDe(x)) > 0.1 * J.covDe(x), 'ρ estimé à 1,0 : le COV est faussé');
+  const faux = J.verifierCov(x, R.cov * 1.4); assert(!faux.juste && !faux.etat.f.covCalc);
+  let y = faux.etat; y = J.verifierCov(y, 1).etat; y = J.verifierCov(y, 2).etat; assert.strictEqual(y.f.covCalc, 'aide', 'après 3 essais la valeur est révélée');
+  const bon = J.verifierCov(x, R.cov * 1.01); assert(bon.juste && bon.etat.f.covCalc === 'ok');
+  const f = J.demanderFormuleCov(x); assert.strictEqual(f.t, x.t + 5); assert.strictEqual(J.verifierCov(f, R.cov).etat.f.covCalc, 'aide', 'avec la formule : calcul aidé');
+  const pause = { ...x, t: 255 }; assert.strictEqual(J.demanderFormuleCov(pause), pause, 'Inès en pause : pas de formule');
 }
 console.log('OK : lot 18');
 
