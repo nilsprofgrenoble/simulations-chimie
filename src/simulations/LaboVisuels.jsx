@@ -68,7 +68,22 @@ const TENUE = {
   karim: { peau: '#d9a37a', coat: '#f8fafc', col: '#d97706' }, ines: { peau: '#8d5a3b', coat: '#f8fafc', col: '#0369a1' },
   lucas: { peau: '#f3d1b0', coat: '#f8fafc', col: '#15803d' }, perrin: { peau: '#e9bf9a', coat: '#6b7280', col: '#ffffff' }, aubry: { peau: '#f5d5bd', coat: '#e0527f', col: '#fff0f5' },
 };
+// Avatars du joueur (moi0 … moi5) : teint, couleur et coiffure
+const MOI = [
+  { peau: '#e8bc96', ch: '#3a2c20', style: 'court' }, { peau: '#8d5a3b', ch: '#17171c', style: 'boucles' }, { peau: '#f3d1b0', ch: '#c9822b', style: 'long' },
+  { peau: '#d9a37a', ch: '#2b2118', style: 'chignon' }, { peau: '#f1c9a5', ch: '#b4442a', style: 'court' }, { peau: '#6b4423', ch: '#111827', style: 'rase' },
+];
+const moiDe = id => /^moi\d$/.test(id) ? MOI[Number(id[3]) % MOI.length] : null;
+function CheveuxMoi({ m, avant }) {
+  const c = m.ch;
+  if (m.style === 'rase') return avant ? <path d="M30 40 Q50 28 70 40 Q50 33 30 40Z" fill={c} opacity=".45" /> : null;
+  if (m.style === 'boucles') return avant ? <>{[[32, 36, 11], [44, 27, 11], [58, 27, 11], [70, 36, 11], [76, 48, 8], [25, 48, 8]].map(([cx, cy, r], i) => <circle key={i} cx={cx} cy={cy} r={r} fill={c} />)}</> : null;
+  if (m.style === 'long') return avant ? <path d="M28 46 Q32 22 50 22 Q68 22 72 46 Q60 34 50 36 Q40 34 28 46Z" fill={c} /> : <path d="M25 52 Q22 20 50 20 Q78 20 75 52 V84 Q70 90 66 82 V54 H34 V82 Q30 90 25 84Z" fill={c} />;
+  if (m.style === 'chignon') return avant ? <path d="M28 44 Q30 22 50 22 Q70 22 72 44 Q62 34 50 36 Q38 34 28 44Z" fill={c} /> : <><circle cx="50" cy="16" r="10" fill={c} /><path d="M29 50 Q30 24 50 22 Q70 24 71 50 Q60 36 50 36 Q40 36 29 50Z" fill={c} /></>;
+  return avant ? <path d="M28 44 Q32 24 50 24 Q68 24 72 44 Q62 34 50 36 Q38 34 28 44Z" fill={c} /> : null;
+}
 function Cheveux({ id, avant }) {
+  const mo = moiDe(id); if (mo) return <CheveuxMoi m={mo} avant={avant} />;
   if (id === 'dubreuil') return avant ? <path d="M27 48 Q26 22 50 22 Q74 22 73 48 Q64 38 50 38 Q36 38 27 48Z" fill="#b9bdc6" /> : <path d="M25 52 Q23 20 50 20 Q77 20 75 52 V66 Q70 70 66 64 V50 H34 V64 Q30 70 25 66Z" fill="#b9bdc6" />;
   if (id === 'karim') return avant ? <path d="M28 44 Q30 22 50 22 Q70 22 72 44 Q62 34 50 36 Q38 34 28 44Z" fill="#2b2118" /> : <path d="M29 52 Q32 76 50 76 Q68 76 71 52 Q60 64 50 64 Q40 64 29 52Z" fill="#2b2118" />;
   if (id === 'ines') return avant ? <><path d="M27 46 Q34 24 52 24 Q70 24 73 46 Q60 34 27 46Z" fill="#17171c" /><rect x="30" y="30" width="40" height="5" rx="2.5" fill="#7dd3fc" opacity=".8" /></> : <path d="M25 50 Q22 20 50 20 Q78 20 75 50 V96 H66 V54 H34 V96 H25Z" fill="#17171c" />;
@@ -78,7 +93,7 @@ function Cheveux({ id, avant }) {
   return avant ? <path d="M28 44 Q32 24 50 24 Q68 24 72 44 Q62 34 50 36 Q38 34 28 44Z" fill="#3a2c20" /> : null;
 }
 export function Personnage({ id, x = 0, y = 0, taille = 120, parle = false }) {
-  const T = TENUE[id] || TENUE.moi, lunettes = id === 'dubreuil' || id === 'perrin';
+  const mo = moiDe(id), T = mo ? { ...TENUE.moi, peau: mo.peau } : TENUE[id] || TENUE.moi, lunettes = id === 'dubreuil' || id === 'perrin';
   return (
     <svg x={x} y={y} width={taille * 100 / 130} height={taille} viewBox="0 0 100 130" overflow="visible" aria-hidden="true">
       <g className="lv-souffle">
@@ -100,7 +115,7 @@ export function Personnage({ id, x = 0, y = 0, taille = 120, parle = false }) {
 
 // Portrait rond (visage seulement) pour les bulles de dialogue
 export function Avatar({ id, taille = 52, parle = false }) {
-  const c = PNJ[id]?.couleur || '#64748b';
+  const c = PNJ[id]?.couleur || (moiDe(id) ? PNJ.moi.couleur : '#64748b');
   return (
     <span style={{ display: 'inline-block', width: taille, height: taille, borderRadius: '50%', overflow: 'hidden', background: c + '33', border: `2.5px solid ${c}`, flexShrink: 0, boxShadow: '1px 2px 4px rgba(0,0,0,.2)' }}>
       <svg viewBox="14 12 72 72" width="100%" height="100%" aria-hidden="true"><Personnage id={id} taille={130} parle={parle} /></svg>
