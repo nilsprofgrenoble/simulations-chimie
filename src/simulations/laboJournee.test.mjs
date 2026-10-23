@@ -412,3 +412,15 @@ console.log('OK : lot 11 (rhéologie Coapur, pouvoir masquant)');
   assert.strictEqual(J.avatarDe({ f: { avatar: 9 } }), 'moi3');
 }
 console.log('OK : prénom et avatar');
+
+// 14. Fiche d'auto-évaluation au format CCF4 (niveaux A à D, sans note ni poids)
+{
+  const F = J.ficheCcf(cas.fin_excellent), F2 = J.ficheCcf(cas.fin_naif), F3 = J.ficheCcf(cas.fin_bon);
+  assert.strictEqual(F.groupes.length, 6); assert.deepStrictEqual(F.groupes.map(g => g.code), ['C1', 'C2', 'C3', 'C4', 'C6', 'C7']);
+  assert(!('note20' in F) && F.groupes.every(g => !('poids' in g) && !('note10' in g)), 'ni note ni pondération');
+  assert(F.groupes.every(g => g.niveau === 'A'), 'parcours exemplaire : A partout');
+  assert(F2.groupes.find(g => g.code === 'C1').niveau === 'D' && F3.groupes.some(g => g.niveau !== 'A'), 'parcours faibles : niveaux plus bas');
+  for (const f of [F, F2, F3]) f.groupes.forEach(g => { assert(['A', 'B', 'C', 'D'].includes(g.niveau) && g.commentaire.length > 5); });
+  assert([J.niveauCcf(1), J.niveauCcf(0.8), J.niveauCcf(0.7), J.niveauCcf(0.6), J.niveauCcf(0.5), J.niveauCcf(0.4), J.niveauCcf(0.1)].join('') === 'AABBCCD');
+}
+console.log('OK : fiche CCF4');

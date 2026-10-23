@@ -795,25 +795,48 @@ add('verdict', { lieu: 'Bureau', pnj: 'dubreuil', titre: 'Mme Dubreuil lit ton r
 // ───────────── Bilan par compétence (référentiel du sujet) ─────────────
 export function bilan(e) {
   const f = e.f, n = x => x ? 1 : 0;
-  const niv = (pts, max) => pts >= max ? 'ok' : pts > 0 ? 'moyen' : 'ko';
+  let dr = null;      // dernier rapport points/max calculé (sert à la fiche d'évaluation)
+  const niv = (pts, max) => { dr = Math.max(0, Math.min(1, pts / max)); return pts >= max ? 'ok' : pts > 0 ? 'moyen' : 'ko'; };
   const nbDeleg = Object.keys(e.cmd).length;
   const nbOpt = ['huile', 'brill', 'tmff', 'dpnb'].filter(k => f['mes_' + k]).length;
   const dOk = tmffOk(e) && covOk(e);
   const dTxt = dOk ? 'dosé à bon escient (TMFF et COV conformes)' : (f.dpnb ?? 0) < 2.5 ? 'insuffisant (la MFFT de l\'Orgal est de 20 °C)' : 'en excès (COV trop élevés)';
   const pr = [];
+  const RATIO_PAR_NIVEAU = { ok: 1, moyen: 0.55, ko: 0.15, nd: 0 };
+  const ajoute = o => { const coherent = dr != null && (o.niveau === 'ok' ? dr >= 1 : o.niveau === 'moyen' ? dr > 0 && dr < 1 : o.niveau === 'ko' ? dr <= 0 : false); pr.push({ ...o, ratio: coherent ? dr : RATIO_PAR_NIVEAU[o.niveau] }); dr = null; };
   const c14 = n(f.regle === 'ok' && !f.refait) + n(dOk) + n(f.mes_huile) + n(f.mes_dpnb && !f.impasses);
-  pr.push({ comp: 'C1.4', titre: 'Choisir méthodes et techniques', niveau: niv(c14, f.mes_dpnb ? 4 : 3), texte: `Règle de remplacement de la résine ${f.regle === 'ok' && !f.refait ? 'juste dès le départ' : 'à corriger'} ; coalescent ${dTxt} ; prises d'huile ${f.mes_huile ? 'mesurées pour lever le doute sur la CPVC' : 'non mesurées (le tableur avec les valeurs des fiches donnait une peinture non mate)'}.` });
-  pr.push({ comp: 'C2.1', titre: 'Préparer produits et matériel', niveau: !f.fabrique && !f.rate ? 'nd' : f.rate ? 'moyen' : 'ok', texte: f.rate ? 'Première fabrication ratée : l\'ordre d\'introduction de la fiche n\'avait pas été respecté.' : f.fabrique ? 'Fabrication conforme à la fiche, finesse correcte.' : 'Pas de fabrication réalisée.' });
+  ajoute({ comp: 'C1.4', titre: 'Choisir méthodes et techniques', niveau: niv(c14, f.mes_dpnb ? 4 : 3), texte: `Règle de remplacement de la résine ${f.regle === 'ok' && !f.refait ? 'juste dès le départ' : 'à corriger'} ; coalescent ${dTxt} ; prises d'huile ${f.mes_huile ? 'mesurées pour lever le doute sur la CPVC' : 'non mesurées (le tableur avec les valeurs des fiches donnait une peinture non mate)'}.` });
+  ajoute({ comp: 'C2.1', titre: 'Préparer produits et matériel', niveau: !f.fabrique && !f.rate ? 'nd' : f.rate ? 'moyen' : 'ok', texte: f.rate ? 'Première fabrication ratée : l\'ordre d\'introduction de la fiche n\'avait pas été respecté.' : f.fabrique ? 'Fabrication conforme à la fiche, finesse correcte.' : 'Pas de fabrication réalisée.' });
   const c32 = n(f.alerte === true) * (f.alerteTardive ? 0.5 : 1) + n(f.stockCtrl) * (f.stockAlerte ? 0.5 : 1) + n(f.stab === 'honnete');
-  pr.push({ comp: 'C3.2', titre: 'Détecter les non-conformités et alerter', niveau: niv(c32, 3), texte: `Promesse « COV nuls » incompatible avec l'Orgal ${f.alerte === true ? (f.alerteTardive ? 'signalée tardivement' : 'signalée tout de suite') : 'non signalée'} ; fût d'Orgal gelé ${f.stockCtrl ? (f.stockAlerte ? 'contrôlé après rappel de Karim' : 'contrôlé de ta propre initiative') : 'non contrôlé'} ; stabilité ${f.stab === 'honnete' ? 'annoncée honnêtement comme non démontrée' : f.stab === 'promis' ? 'garantie sans l\'avoir démontrée' : 'omise'}.` });
+  ajoute({ comp: 'C3.2', titre: 'Détecter les non-conformités et alerter', niveau: niv(c32, 3), texte: `Promesse « COV nuls » incompatible avec l'Orgal ${f.alerte === true ? (f.alerteTardive ? 'signalée tardivement' : 'signalée tout de suite') : 'non signalée'} ; fût d'Orgal gelé ${f.stockCtrl ? (f.stockAlerte ? 'contrôlé après rappel de Karim' : 'contrôlé de ta propre initiative') : 'non contrôlé'} ; stabilité ${f.stab === 'honnete' ? 'annoncée honnêtement comme non démontrée' : f.stab === 'promis' ? 'garantie sans l\'avoir démontrée' : 'omise'}.` });
   const c41 = n(dispOk(f)) + n(dOk) + n(hsOk(e) && basOk(e));
-  pr.push({ comp: 'C4.1', titre: 'Modifier, améliorer le protocole', niveau: niv(c41, 3), texte: `Dispersant ${dispOk(f) ? `corrigé (amas supprimés${f.dispCourbe ? ', dose trouvée par la courbe de défloculation' : ''})` : 'non corrigé'} ; coalescent ${dOk ? (f.coalPense ? 'prévu dès le départ et dosé' : 'ajouté après la mesure de la TMFF, et dosé') : (f.dpnb ?? 0) < 2.5 ? 'absent ou trop faible' : 'surdosé'}.` });
+  ajoute({ comp: 'C4.1', titre: 'Modifier, améliorer le protocole', niveau: niv(c41, 3), texte: `Dispersant ${dispOk(f) ? `corrigé (amas supprimés${f.dispCourbe ? ', dose trouvée par la courbe de défloculation' : ''})` : 'non corrigé'} ; coalescent ${dOk ? (f.coalPense ? 'prévu dès le départ et dosé' : 'ajouté après la mesure de la TMFF, et dosé') : (f.dpnb ?? 0) < 2.5 ? 'absent ou trop faible' : 'surdosé'}.` });
   const c61 = n(f.plan !== 'solo') + n(e.t <= T_RAPPORT) + n(nbOpt >= 2);
-  pr.push({ comp: 'C6.1', titre: 'Organiser le travail, tenir les délais', niveau: niv(c61, 3), texte: `${f.plan === 'solo' ? 'Tout fait seul·e : trop séquentiel. ' : f.plan === 'mp' ? 'Analyses des matières premières lancées dès le début, en parallèle. ' : 'Tâches déléguées en parallèle. '}Rapport ${e.t <= T_RAPPORT ? 'rendu dans les temps' : 'rendu après 17 h'} ; ${nbOpt} analyse(s) complémentaire(s) sur 4 (prises d'huile, brillance, TMFF, dosage du DPnB).` });
-  pr.push({ comp: 'C6.3', titre: 'Gérer les produits selon la réglementation', niveau: niv(n(f.stock === 'neuf') + n(f.stock === 'tamise') * 0.5 + n(f.coutOk), 2), texte: `${f.stock === 'neuf' ? 'Lot gelé écarté, fût neuf commandé. ' : f.stock === 'tamise' ? 'Lot gelé tamisé et utilisé : acceptable seulement avec réserve. ' : 'Aucun problème de stockage détecté. '}${f.coutOk ? 'Coût matières contrôlé (< 4,5 €/kg).' : 'Coût matières non vérifié.'}` });
-  pr.push({ comp: 'C6.4', titre: 'Assurer la traçabilité', niveau: f.trace ? 'ok' : 'ko', texte: f.trace ? 'Lot, pesées et observations consignés au fur et à mesure.' : 'Pesées réelles et observations reconstituées de mémoire : traçabilité faible.' });
-  pr.push({ comp: 'C7.3', titre: 'Travailler en équipe', niveau: f.plan === 'solo' ? 'ko' : niv(n(nbDeleg >= 3) + n(f.alerte === true), 2), texte: f.plan === 'solo' ? 'Aucune délégation : l\'équipe n\'a pas été sollicitée.' : `${nbDeleg} analyse(s) confiée(s) aux collègues ; ${f.alerte === true ? 'information remontée à la responsable' : 'communication à améliorer'}.` });
+  ajoute({ comp: 'C6.1', titre: 'Organiser le travail, tenir les délais', niveau: niv(c61, 3), texte: `${f.plan === 'solo' ? 'Tout fait seul·e : trop séquentiel. ' : f.plan === 'mp' ? 'Analyses des matières premières lancées dès le début, en parallèle. ' : 'Tâches déléguées en parallèle. '}Rapport ${e.t <= T_RAPPORT ? 'rendu dans les temps' : 'rendu après 17 h'} ; ${nbOpt} analyse(s) complémentaire(s) sur 4 (prises d'huile, brillance, TMFF, dosage du DPnB).` });
+  ajoute({ comp: 'C6.3', titre: 'Gérer les produits selon la réglementation', niveau: niv(n(f.stock === 'neuf') + n(f.stock === 'tamise') * 0.5 + n(f.coutOk), 2), texte: `${f.stock === 'neuf' ? 'Lot gelé écarté, fût neuf commandé. ' : f.stock === 'tamise' ? 'Lot gelé tamisé et utilisé : acceptable seulement avec réserve. ' : 'Aucun problème de stockage détecté. '}${f.coutOk ? 'Coût matières contrôlé (< 4,5 €/kg).' : 'Coût matières non vérifié.'}` });
+  ajoute({ comp: 'C6.4', titre: 'Assurer la traçabilité', niveau: f.trace ? 'ok' : 'ko', texte: f.trace ? 'Lot, pesées et observations consignés au fur et à mesure.' : 'Pesées réelles et observations reconstituées de mémoire : traçabilité faible.' });
+  ajoute({ comp: 'C7.3', titre: 'Travailler en équipe', niveau: f.plan === 'solo' ? 'ko' : niv(n(nbDeleg >= 3) + n(f.alerte === true), 2), texte: f.plan === 'solo' ? 'Aucune délégation : l\'équipe n\'a pas été sollicitée.' : `${nbDeleg} analyse(s) confiée(s) aux collègues ; ${f.alerte === true ? 'information remontée à la responsable' : 'communication à améliorer'}.` });
   return pr;
+}
+
+// ───────────── Fiche d'évaluation au format des CCF4 (auto-évaluation indicative, imprimable, rien n'est transmis) ─────────────
+export const GROUPES_CCF = [
+  { code: 'C1', titre: 'RECHERCHER ET ANALYSER', comps: ['C1.4'], capacites: ['C.1.4. Sélectionner les méthodes, techniques et matériels en fonction de l\'expérience à réaliser'] },
+  { code: 'C2', titre: 'RÉALISER', comps: ['C2.1'], capacites: ['C.2.1. Préparer les produits, le matériel et les accessoires sur les équipements de laboratoire les plus courants'] },
+  { code: 'C3', titre: 'INTERPRÉTER ET VALIDER', comps: ['C3.2'], capacites: ['C.3.2. Détecter les non-conformités dans les activités de contrôle qualité et de R&D au regard des exigences de la sécurité, de la protection de l\'environnement et de la qualité et alerter'] },
+  { code: 'C4', titre: 'OPTIMISER ET ADAPTER', comps: ['C4.1'], capacites: ['C.4.1. Modifier, améliorer ou transférer le protocole'] },
+  { code: 'C6', titre: 'ORGANISER', comps: ['C6.1', 'C6.3', 'C6.4'], capacites: ['C.6.1. Organiser le travail et planifier les expériences dans le respect des délais', 'C.6.3. Gérer le stock des produits en appliquant la réglementation', 'C.6.4. Assurer la traçabilité des activités'] },
+  { code: 'C7', titre: 'ADOPTER DES COMPORTEMENTS PROFESSIONNELS', comps: ['C7.3'], capacites: ['C.7.3. Travailler en équipe dans un groupe multiculturel et/ou pluridisciplinaire'] },
+];
+// Niveau d'acquisition (A à D) : lecture qualitative du parcours, sans note chiffrée
+export const niveauCcf = r => r >= 0.8 ? 'A' : r >= 0.6 ? 'B' : r >= 0.4 ? 'C' : 'D';
+export function ficheCcf(e) {
+  const B = bilan(e);
+  const groupes = GROUPES_CCF.map(g => {
+    const items = B.filter(b => g.comps.includes(b.comp)), ratio = items.reduce((a, b) => a + b.ratio, 0) / items.length;
+    return { ...g, niveau: niveauCcf(ratio), commentaire: items.map(b => g.comps.length > 1 ? `${b.comp} : ${b.texte}` : b.texte).join('\n') };
+  });
+  return { groupes };
 }
 
 // ───────────── Résumé des choix de l'élève (affiché à la fin, pas de suivi pour l'enseignant) ─────────────
