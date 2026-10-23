@@ -177,6 +177,7 @@ export function SimulationHistoireLabo() {
         <li>Tu joues <b style={{ color: C.encre }}>seul·e</b>, en <b style={{ color: C.encre }}>moins d'une heure</b> de temps réel.</li>
         <li>Tes choix ont des <b style={{ color: C.encre }}>conséquences</b> : <b style={{ color: C.encre }}>{FINS.length} fins</b> possibles. Tu peux rejouer pour explorer les autres.</li>
         <li>Certaines étapes se font <b style={{ color: C.encre }}>au banc</b> : courbe de défloculation, pré-essai de TMFF, prises d'huile, dosage par CPG. Les paramètres cachés sont à trouver par la mesure, et chaque erreur est expliquée.</li>
+        <li>Tu poses toi-même ta <b style={{ color: C.encre }}>formule finale</b>, et tu décides par écrit des analyses à lancer : personne ne te donne la liste.</li>
         <li>Les calculs sont à faire (calculatrice autorisée) ; le Dossier (documents déjà vus) et la calculette de formulation sont accessibles à tout moment.</li>
         <li>En fin de partie, un résumé de tes choix et un bilan relient ta journée aux compétences du référentiel. Rien n'est transmis à ton enseignant.</li>
       </ul>
