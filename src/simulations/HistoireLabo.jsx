@@ -273,7 +273,7 @@ export function SimulationHistoireLabo() {
                 <span aria-label={lib} title={lib} style={{ fontSize: 18 }}>{ic}</span>
                 <div><b>{b.comp}</b> · {b.titre} <span style={{ color: col, fontWeight: 700 }}>({lib})</span><div style={{ color: C.doux }}>{b.texte}</div></div>
               </div>); })}</div>
-            <button type="button" data-ouvrir-fiche onClick={() => setFicheOuverte(o => !o)} style={{ marginTop: 14, marginRight: 10, padding: '10px 18px', borderRadius: 10, border: `2px solid ${C.encre}`, background: '#fff', color: C.encre, fontWeight: 800, cursor: 'pointer', font: 'inherit' }}>📄 Éditer ma fiche d'évaluation (modèle CCF4)</button>
+            <button type="button" data-ouvrir-fiche onClick={() => setFicheOuverte(o => !o)} style={{ marginTop: 14, marginRight: 10, padding: '10px 18px', borderRadius: 10, border: `2px solid ${C.encre}`, background: '#fff', color: C.encre, fontWeight: 800, cursor: 'pointer', font: 'inherit' }}>📄 Éditer ma fiche d'auto-évaluation (modèle CCF4)</button>
             {ficheOuverte && <FicheCcf e={e} onFermer={() => setFicheOuverte(false)} />}
             <button type="button" data-rejouer onClick={recommencer} style={{ marginTop: 14, padding: '10px 18px', borderRadius: 10, border: `2px solid ${C.accent}`, background: C.accentFond, color: C.accent, fontWeight: 800, cursor: 'pointer', font: 'inherit' }}>↺ Rejouer une journée (autre stratégie ?)</button>
             {boiteFins}

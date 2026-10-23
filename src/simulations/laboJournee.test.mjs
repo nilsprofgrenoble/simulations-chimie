@@ -413,15 +413,14 @@ console.log('OK : lot 11 (rhéologie Coapur, pouvoir masquant)');
 }
 console.log('OK : prénom et avatar');
 
-// 14. Fiche d'évaluation au format CCF4
+// 14. Fiche d'auto-évaluation au format CCF4 (niveaux A à D, sans note ni poids)
 {
   const F = J.ficheCcf(cas.fin_excellent), F2 = J.ficheCcf(cas.fin_naif), F3 = J.ficheCcf(cas.fin_bon);
-  assert.strictEqual(F.groupes.length, 6); assert.deepStrictEqual(F.groupes.map(g => g.poids), [2, 1, 2, 0.5, 1, 1]);
-  assert(F.note20 >= 16 && F.niveau === 'A', 'parcours exemplaire : note élevée (' + F.note20 + ')');
-  assert(F2.note20 < F.note20 - 4 && F3.note20 <= F.note20, 'parcours faible : note plus basse (' + F2.note20 + ' / ' + F3.note20 + ')');
-  for (const f of [F, F2, F3]) { assert(f.note20 >= 0 && f.note20 <= 20 && f.note20 * 2 === Math.round(f.note20 * 2)); f.groupes.forEach(g => { assert(['A', 'B', 'C', 'D'].includes(g.niveau) && g.commentaire.length > 5); assert.strictEqual(g.niveau, J.niveauCcf(g.note10)); }); }
-  assert([J.niveauCcf(10), J.niveauCcf(8), J.niveauCcf(7.5), J.niveauCcf(6), J.niveauCcf(5.9), J.niveauCcf(4), J.niveauCcf(3.5)].join('') === 'AABBCCD');
-  if (process.env.DBG_FICHE) { (await import('node:fs')).writeFileSync('/tmp/claude-0/fin.json', JSON.stringify({ a: cas.fin_excellent, b: cas.fin_bon, c: cas.fin_naif })); }
-  console.log('Fiches CCF4 :', F.note20, F3.note20, F2.note20);
+  assert.strictEqual(F.groupes.length, 6); assert.deepStrictEqual(F.groupes.map(g => g.code), ['C1', 'C2', 'C3', 'C4', 'C6', 'C7']);
+  assert(!('note20' in F) && F.groupes.every(g => !('poids' in g) && !('note10' in g)), 'ni note ni pondération');
+  assert(F.groupes.every(g => g.niveau === 'A'), 'parcours exemplaire : A partout');
+  assert(F2.groupes.find(g => g.code === 'C1').niveau === 'D' && F3.groupes.some(g => g.niveau !== 'A'), 'parcours faibles : niveaux plus bas');
+  for (const f of [F, F2, F3]) f.groupes.forEach(g => { assert(['A', 'B', 'C', 'D'].includes(g.niveau) && g.commentaire.length > 5); });
+  assert([J.niveauCcf(1), J.niveauCcf(0.8), J.niveauCcf(0.7), J.niveauCcf(0.6), J.niveauCcf(0.5), J.niveauCcf(0.4), J.niveauCcf(0.1)].join('') === 'AABBCCD');
 }
 console.log('OK : fiche CCF4');

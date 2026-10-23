@@ -821,22 +821,22 @@ export function bilan(e) {
 
 // ───────────── Fiche d'évaluation au format des CCF4 (auto-évaluation indicative, imprimable, rien n'est transmis) ─────────────
 export const GROUPES_CCF = [
-  { code: 'C1', titre: 'RECHERCHER ET ANALYSER', poids: 2, comps: ['C1.4'], capacites: ['C.1.4. Sélectionner les méthodes, techniques et matériels en fonction de l\'expérience à réaliser'] },
-  { code: 'C2', titre: 'RÉALISER', poids: 1, comps: ['C2.1'], capacites: ['C.2.1. Préparer les produits, le matériel et les accessoires sur les équipements de laboratoire les plus courants'] },
-  { code: 'C3', titre: 'INTERPRÉTER ET VALIDER', poids: 2, comps: ['C3.2'], capacites: ['C.3.2. Détecter les non-conformités dans les activités de contrôle qualité et de R&D au regard des exigences de la sécurité, de la protection de l\'environnement et de la qualité et alerter'] },
-  { code: 'C4', titre: 'OPTIMISER ET ADAPTER', poids: 0.5, comps: ['C4.1'], capacites: ['C.4.1. Modifier, améliorer ou transférer le protocole'] },
-  { code: 'C6', titre: 'ORGANISER', poids: 1, comps: ['C6.1', 'C6.3', 'C6.4'], capacites: ['C.6.1. Organiser le travail et planifier les expériences dans le respect des délais', 'C.6.3. Gérer le stock des produits en appliquant la réglementation', 'C.6.4. Assurer la traçabilité des activités'] },
-  { code: 'C7', titre: 'ADOPTER DES COMPORTEMENTS PROFESSIONNELS', poids: 1, comps: ['C7.3'], capacites: ['C.7.3. Travailler en équipe dans un groupe multiculturel et/ou pluridisciplinaire'] },
+  { code: 'C1', titre: 'RECHERCHER ET ANALYSER', comps: ['C1.4'], capacites: ['C.1.4. Sélectionner les méthodes, techniques et matériels en fonction de l\'expérience à réaliser'] },
+  { code: 'C2', titre: 'RÉALISER', comps: ['C2.1'], capacites: ['C.2.1. Préparer les produits, le matériel et les accessoires sur les équipements de laboratoire les plus courants'] },
+  { code: 'C3', titre: 'INTERPRÉTER ET VALIDER', comps: ['C3.2'], capacites: ['C.3.2. Détecter les non-conformités dans les activités de contrôle qualité et de R&D au regard des exigences de la sécurité, de la protection de l\'environnement et de la qualité et alerter'] },
+  { code: 'C4', titre: 'OPTIMISER ET ADAPTER', comps: ['C4.1'], capacites: ['C.4.1. Modifier, améliorer ou transférer le protocole'] },
+  { code: 'C6', titre: 'ORGANISER', comps: ['C6.1', 'C6.3', 'C6.4'], capacites: ['C.6.1. Organiser le travail et planifier les expériences dans le respect des délais', 'C.6.3. Gérer le stock des produits en appliquant la réglementation', 'C.6.4. Assurer la traçabilité des activités'] },
+  { code: 'C7', titre: 'ADOPTER DES COMPORTEMENTS PROFESSIONNELS', comps: ['C7.3'], capacites: ['C.7.3. Travailler en équipe dans un groupe multiculturel et/ou pluridisciplinaire'] },
 ];
-export const niveauCcf = n10 => n10 >= 8 ? 'A' : n10 >= 6 ? 'B' : n10 >= 4 ? 'C' : 'D';
+// Niveau d'acquisition (A à D) : lecture qualitative du parcours, sans note chiffrée
+export const niveauCcf = r => r >= 0.8 ? 'A' : r >= 0.6 ? 'B' : r >= 0.4 ? 'C' : 'D';
 export function ficheCcf(e) {
-  const B = bilan(e), arrondi = x => Math.round(x * 2) / 2;
+  const B = bilan(e);
   const groupes = GROUPES_CCF.map(g => {
-    const items = B.filter(b => g.comps.includes(b.comp)), ratio = items.reduce((a, b) => a + b.ratio, 0) / items.length, note10 = arrondi(ratio * 10);
-    return { ...g, note10, niveau: niveauCcf(note10), commentaire: items.map(b => g.comps.length > 1 ? `${b.comp} : ${b.texte}` : b.texte).join('\n') };
+    const items = B.filter(b => g.comps.includes(b.comp)), ratio = items.reduce((a, b) => a + b.ratio, 0) / items.length;
+    return { ...g, niveau: niveauCcf(ratio), commentaire: items.map(b => g.comps.length > 1 ? `${b.comp} : ${b.texte}` : b.texte).join('\n') };
   });
-  const somme = groupes.reduce((a, g) => a + g.poids, 0), note20 = arrondi(groupes.reduce((a, g) => a + g.poids * g.note10, 0) / somme * 2);
-  return { groupes, note20, niveau: niveauCcf(note20 / 2) };
+  return { groupes };
 }
 
 // ───────────── Résumé des choix de l'élève (affiché à la fin, pas de suivi pour l'enseignant) ─────────────
