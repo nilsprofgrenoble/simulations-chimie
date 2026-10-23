@@ -53,7 +53,7 @@ export default function Fiches({ ids, ouvert = true }) {
   return (<div data-fiches>{ids.map(id => {
     if (id === 'cdc') return (
       <Feuille key={id} ouvert={ouvert} entete="Cahier des charges" titre="Nouvelle base de peinture blanche mate" sous="Résine de remplacement : Orgal PST 50A" edition="exigences du client">
-        <Tableau tetes={['Critère', 'Exigence']} lignes={[['Extrait sec', '> 50 %'], ['λ = CPV / CPVC', '≥ 0,8'], ['Pouvoir masquant', '> 7,0 m²/L'], ['Viscosité à haut gradient (cône-plan, ICI)', '0,9 à 1,3 P'], ['COV', '< 30 g/L'], ['Matières premières', '< 4,5 €/kg'], ['Film continu', 'dès 5 °C'], ['Stabilité', '30 mois']]} />
+        <Tableau tetes={['Critère', 'Exigence']} lignes={[['Extrait sec', '> 50 %'], ['λ = CPV / CPVC', '≥ 0,8'], ['Pouvoir masquant', '> 7,0 m²/L'], ['Viscosité à 1 000 s⁻¹ (Lamy RM 100 Plus, MS-R3)', '280 à 480 mPa·s'], ['COV', '< 30 g/L'], ['Matières premières', '< 4,5 €/kg'], ['Film continu', 'dès 5 °C'], ['Stabilité', '30 mois']]} />
       </Feuille>);
     if (id === 'formule') return (
       <Feuille key={id} ouvert={ouvert} entete="Document 1" titre="Formule de référence : base de peinture blanche mate" sous="Résine Vinnapas EP 3360, sans agent de coalescence" edition="331,2 g pour 100 %">

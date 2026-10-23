@@ -2,6 +2,8 @@ import { useState } from "react";
 import { NIVEAUX_ETALON, ETAL_MAX, ECH_MAX, T_PREP, T_INJ, C_IS, TR, M_POUDRE, POUDRES_HUILE, HUILE_MAX_ESSAIS, HUILE_DUREE, etatPate, rapportPate, DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI, DOSES_COURBE, COURBE_MAX, COURBE_DUREE, masseCoadis } from "./stationsModele";
 import { essaiBanc, indiceBanc, INDICES_BANC, essaiCourbe, indiceCourbe, INDICES_COURBE, conclureHuile, huileRetenue, phVrai, cpgDe, injecterEtalon, preparerEchantillon, injecterEchantillon, choisirModeCpg, resultatCpg, injecterControle, recuperation, C_CTRL, TMFF_MAX, COV_MAX, nf, fmDepuisFlags, FM_CHAMPS, validerFormule, controlesFormule, optionsPlan, choixPlan } from "./laboJournee";
 import { proprietes } from "./Peinture";
+import { Instrument } from "./LaboVisuels";
+import { essaiVisco, ESSAIS_VISCO, DUREE_VISCO, M_ESSAI, HS_MIN, HS_MAX, BAS_MAX, prop as propLabo } from "./laboJournee";
 
 // ====================================================
 //  Stations immersives de la journée au labo (écrans dédiés, paramètres cachés).
@@ -291,5 +293,41 @@ export function StationPlan({ e, onValider }) {
           <input type="checkbox" data-plan-opt={k} checked={sel.includes(k)} onChange={() => bascule(k)} style={{ width: 18, height: 18 }} />{nom}
         </label>))}
       <button type="button" data-valider-plan onClick={() => onValider(choixPlan(e, sel))} style={{ marginTop: 10, padding: '9px 18px', borderRadius: 8, border: 'none', background: ENCRE, color: '#fff', fontWeight: 700, cursor: 'pointer', font: 'inherit' }}>Valider mon plan</button>
+    </div>);
+}
+
+
+// ───────────── Essai d'ajout au viscosimètre : l'élève choisit la masse d'additif à peser, on mesure ─────────────
+export function StationVisco({ e, onEtat, onValider, choix }) {
+  const v = e.f.visco || {}, es = v.essais || [], d = es[es.length - 1], tout = v.taille === 'tout', max = tout ? 1 : ESSAIS_VISCO;
+  const [txt, setTxt] = useState(''), m = parseFloat(String(txt).replace(',', '.'));
+  const peut = m >= 0 && es.length < max && !isNaN(m);
+  const base = tout ? propLabo(e).mTot : M_ESSAI;
+  return (
+    <div data-station="visco" style={{ marginTop: 14, background: '#f1f5f9', border: '2px solid #94a3b8', borderRadius: 10, padding: '12px 14px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, fontWeight: 800, color: '#0f172a' }}>
+        <span>🧪 Essai d'ajout · {tout ? `tout le lot (${Math.round(base)} g)` : 'prise d\'essai de 50 g'}</span>
+        <span style={{ fontWeight: 600, color: DOUX, fontSize: 14 }}>{max - es.length} essai{max - es.length > 1 ? 's' : ''} possible{max - es.length > 1 ? 's' : ''} · {DUREE_VISCO} min chacun</span>
+      </div>
+      <div style={{ margin: '10px 0 4px', fontSize: 14, color: DOUX }}>Masse de {v.additif === 'coapur' ? 'Coapur' : 'Thixol'} à peser (produit tel que livré), en grammes :</div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <input data-masse-visco inputMode="decimal" value={txt} onChange={ev => setTxt(ev.target.value)} placeholder="ex. 0,50" style={{ width: 110, padding: '8px 10px', fontSize: 16, borderRadius: 8, border: '2px solid #94a3b8' }} />
+        <span>g</span>
+        <button type="button" data-ajouter-mesurer disabled={!peut} onClick={() => { onEtat(essaiVisco(e, m)); setTxt(''); }} style={{ padding: '8px 14px', borderRadius: 8, border: `2px solid ${ENCRE}`, background: peut ? '#fff' : '#eef0f4', color: peut ? ENCRE : '#9aa3b2', fontWeight: 700, cursor: peut ? 'pointer' : 'default' }}>Ajouter, mélanger et mesurer</button>
+      </div>
+      {d && (<div style={{ marginTop: 12 }}>
+        <Instrument v={{ type: 'rheo', hs: d.hs, bas: d.bas }} />
+        <table data-visco-table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 8, fontSize: 14 }}>
+          <thead><tr style={{ textAlign: 'left', color: DOUX }}><th>N°</th><th>Masse ajoutée (g)</th><th>η à 1 s⁻¹ (mPa·s)</th><th>η à 1 000 s⁻¹ (mPa·s)</th></tr></thead>
+          <tbody>{es.map((x, i) => (<tr key={i} style={{ borderTop: '1px solid #cbd5e1' }}>
+            <td>{i + 1}</td><td>{String(Math.round(x.m * 100) / 100).replace('.', ',')}</td>
+            <td style={{ color: x.bas > BAS_MAX ? ROUGE : VERT, fontWeight: 700 }}>{Math.round(x.bas)}</td>
+            <td style={{ color: x.hs >= HS_MIN && x.hs <= HS_MAX ? VERT : ROUGE, fontWeight: 700 }}>{Math.round(x.hs)}</td></tr>))}</tbody>
+        </table>
+        <div style={{ fontSize: 12.5, color: DOUX, marginTop: 4 }}>Cahier des charges : {HS_MIN} à {HS_MAX} mPa·s à 1 000 s⁻¹, bas gradient proche de la référence.</div>
+      </div>)}
+      <div style={{ marginTop: 14, borderTop: '1.5px dashed #94a3b8', paddingTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {choix.map((c, i) => <button key={i} type="button" data-suite-visco onClick={() => onValider(c)} style={{ padding: '8px 14px', borderRadius: 8, border: `2px solid ${ENCRE}`, background: '#fff', color: ENCRE, fontWeight: 700, cursor: 'pointer', font: 'inherit' }}>{c.t}{c.d ? <small style={{ display: 'block', fontWeight: 400, color: DOUX }}>{c.d}</small> : null}</button>)}
+      </div>
     </div>);
 }

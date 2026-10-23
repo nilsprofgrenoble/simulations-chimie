@@ -5,7 +5,7 @@ import { useEtatPersistant } from "../commun";
 import { CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_CLIENT, T_RAPPORT, T_FIN, etatInitial, texteDe, choixDe, choisir, valider, hhmm, bilan, resume, statutCmd, estFin, visuelDe, equipe, agirLibre, demanderIdees } from "./laboJournee";
 import Fiches from "./Fiches";
 import Dossier from "./DossierLabo";
-import { StationBanc, StationCourbe, StationHuile, StationCpg, StationFormule, StationPlan } from "./StationsLabo";
+import { StationBanc, StationCourbe, StationHuile, StationCpg, StationFormule, StationPlan, StationVisco } from "./StationsLabo";
 import { ScenePlanche, Affiche, Equipe, Instrument, Avatar, STYLE_VISUELS } from "./LaboVisuels";
 
 // ====================================================
@@ -227,6 +227,8 @@ export function SimulationHistoireLabo() {
           {sc.station === 'cpg' && <StationCpg e={e} onEtat={setEtat} onValider={avancer} choixConcl={choix} />}
 
           {sc.station === 'huile' && <StationHuile e={e} onEtat={setEtat} onValider={avancer} choixFin={choix[0]} />}
+
+          {sc.station === 'visco' && <StationVisco key={e.scene} e={e} onEtat={setEtat} onValider={avancer} choix={choix} />}
 
           {sc.station === 'plan' && <StationPlan key={e.scene} e={e} onValider={avancer} />}
 

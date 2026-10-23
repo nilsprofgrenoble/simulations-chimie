@@ -211,12 +211,29 @@ const mauvaisRheo = e => !dispOk(e.f);
 // Pouvoir masquant (m²/L) : modèle de scénario, croît avec la concentration en TiO₂ (g/L de peinture) ; réf. Vinnapas ≈ 8,0 ; l'Orgal donne un film un peu moins efficace
 // pour répartir le TiO₂ (≈ 6,6 avec 60 g de TiO₂) ; amas mal dispersés : −10 %
 const KPM = 6.6, PM_C0 = 244.9;
-export const pouvoirMasquant = e => { const p = prop(e), c = formule(e).tio2 / (p.mTot / p.densite) * 1000; return KPM * Math.pow(c / PM_C0, 0.6) * (mauvaisRheo(e) ? 6.8 / 7.6 : 1); };
-// Rhéologie à haut gradient : viscosité ICI (cône-plan, 10 000 s⁻¹, en poises). Référence Vinnapas 1,0 ; l'Orgal (50 % d'ES contre 60 %) donne une peinture plus fluide à haut gradient.
-// Le Coapur (newtonien) relève la viscosité à haut gradient sans toucher le bas gradient ; le Thixol (pseudoplastique) agit à bas gradient.
-export const ICI_MIN = 0.9, ICI_MAX = 1.3, ICI_BASE = 0.65, ICI_PAR_G = 0.1;
-export const iciVrai = e => ICI_BASE + ICI_PAR_G * (e.f.coapurAdd || 0);
-export const iciOk = e => { const v = iciVrai(e); return v >= ICI_MIN - 1e-9 && v <= ICI_MAX + 1e-9; };
+// (les ajouts de correction d'épaississant ne comptent pas : quelques % de dilution)
+export const pouvoirMasquant = e => { const e0 = { ...e, f: { ...e.f, coapurAdd: 0, thixolAdd: 0 } }, p = prop(e0), c = formule(e0).tio2 / (p.mTot / p.densite) * 1000; return KPM * Math.pow(c / PM_C0, 0.6) * (mauvaisRheo(e) ? 6.8 / 7.6 : 1); };
+// Rhéologie à haut gradient (viscosimètre Lamy RM 100 Plus, mobile MS-R3, godet d'environ 30 mL, gradients de 1 à 1 000 s⁻¹).
+// Critère : viscosité à 1 000 s⁻¹ en mPa·s. Référence Vinnapas 330 ; avec l'Orgal, mêmes masses de polymère sec, mais rien ne garantit la même viscosité une fois mélangé au reste :
+// ici plus fluide à haut gradient. Le Coapur (newtonien) relève la viscosité à haut gradient ; le Thixol (pseudoplastique) relève surtout le bas gradient.
+export const HS_MIN = 280, HS_MAX = 480, HS_REF = 330, HS_BASE = 190, BAS_REF = 20250, BAS_MAX = 24000;
+export const K_COAPUR = 156;          // mPa·s à 1 000 s⁻¹ par gramme de Coapur (produit humide) pour 50 g de peinture : 1 g / 50 g = +0,5 % de matière sèche, soit le double de la dose de départ
+export const M_ESSAI = 50;            // g : prise d'essai minimale (le godet contient ≈ 30 mL, soit ≈ 40 g)
+export const ESSAIS_VISCO = 4, DUREE_VISCO = 10;
+const rapport50 = (e, g) => g * M_ESSAI / prop(e).mTot;      // masse ajoutée au lot ramenée à 50 g de peinture
+export const mesureVisco = (D, additif) => ({ hs: HS_BASE + (additif === 'coapur' ? K_COAPUR : 8) * D, bas: BAS_REF * (1 + (additif === 'thixol' ? 0.9 : 0.02) * D) });
+export const hsVrai = e => { const m = mesureVisco(rapport50(e, e.f.coapurAdd || 0), 'coapur'), t = mesureVisco(rapport50(e, e.f.thixolAdd || 0), 'thixol'); return m.hs + t.hs - HS_BASE; };
+export const basVrai = e => mesureVisco(rapport50(e, e.f.coapurAdd || 0), 'coapur').bas + mesureVisco(rapport50(e, e.f.thixolAdd || 0), 'thixol').bas - BAS_REF;
+export const hsOk = e => { const v = hsVrai(e); return v >= HS_MIN && v <= HS_MAX; };
+export const basOk = e => basVrai(e) <= BAS_MAX;
+// Essai d'ajout sur une prise d'essai (50 g) ou sur tout le lot : m = masse de produit humide pesée
+export function essaiVisco(e, m) {
+  const v = e.f.visco || {}, n = (v.essais || []).length;
+  if (!(m >= 0) || !v.taille || n >= (v.taille === 'tout' ? 1 : ESSAIS_VISCO)) return e;
+  const D = m * M_ESSAI / (v.taille === 'tout' ? prop(e).mTot : M_ESSAI), r = mesureVisco(D, v.additif);
+  const essai = { m, D, hs: r.hs, bas: r.bas, ok: r.hs >= HS_MIN && r.hs <= HS_MAX && r.bas <= BAS_MAX };
+  return { ...e, t: e.t + DUREE_VISCO, f: { ...e.f, visco: { ...v, essais: [...(v.essais || []), essai] } } };
+}
 // λ réel : avec les prises d'huile (cachées) du lot de poudres
 export const lambdaVrai = e => prop(e, { phPerso: { tio2: phVrai(e, 'tio2'), caco3: phVrai(e, 'caco3') } }).lambda;
 // Brillance à 60° (UB) : mate quand λ ≥ 0,85, de plus en plus brillante quand λ baisse (modèle de scénario)
@@ -255,7 +272,7 @@ add('alerteRep', { lieu: 'Bureau', pnj: 'dubreuil', titre: 'Réponse de Mme Dubr
 
 add('docRef', { lieu: 'Bureau', pnj: 'moi', titre: 'Documents 1, 2, 4 et 5 : la référence Vinnapas', fiches: ['formule', 'fabrication'],
   texte: () => { const pf = proprietes(FORMULE_REF, { ph: 'fiche' });
-    return `Formule de référence (331 g) : eau 118,0 g, TiO₂ 60 g, CaCO₃ léger 60 g, Vinnapas 83,3 g, Foamex 1,5 g, Coadis BR3 0,2 g, Thixol 1,5 g, Coapur 6,7 g. Pas de coalescent.\nTableur avec les prises d'huile des fiches (20 et 14 g pour 100 g) : ES = ${nf(pf.ES)} %, CPV = ${nf(pf.CPV)} %, CPVC = ${nf(pf.CPVC)} %, donc λ = ${nf(pf.lambda, 2)}. COV = ${nf(pf.COV)} g/L. Coût matières premières ≈ ${nf(coutKg(FORMULE_REF))} €/kg.\nAnalyses du responsable : pouvoir masquant 8,0 m²/L ; comportement rhéofluidifiant, faible thixotropie, viscosité ICI 1,0 P ; film continu dès 3 °C.\nÉtonnant : avec λ = ${nf(pf.lambda, 2)} < 0,8, cette peinture ne devrait pas être mate, or elle l'est. Les prises d'huile des fiches sont-elles fiables ?\nFiche de fabrication : 70 % de l'eau, Foamex, Coadis, puis TiO₂ et CaCO₃ en pluie fine à 300 tr/min, dispersion 15 min à vitesse maximale (finesse 7 Hegman) ; ensuite la résine, le Thixol et le Coapur sous agitation lente (200 tr/min), enfin le reste de l'eau.`; },
+    return `Formule de référence (331 g) : eau 118,0 g, TiO₂ 60 g, CaCO₃ léger 60 g, Vinnapas 83,3 g, Foamex 1,5 g, Coadis BR3 0,2 g, Thixol 1,5 g, Coapur 6,7 g. Pas de coalescent.\nTableur avec les prises d'huile des fiches (20 et 14 g pour 100 g) : ES = ${nf(pf.ES)} %, CPV = ${nf(pf.CPV)} %, CPVC = ${nf(pf.CPVC)} %, donc λ = ${nf(pf.lambda, 2)}. COV = ${nf(pf.COV)} g/L. Coût matières premières ≈ ${nf(coutKg(FORMULE_REF))} €/kg.\nAnalyses du responsable : pouvoir masquant 8,0 m²/L ; comportement rhéofluidifiant, faible thixotropie, viscosité à 1 000 s⁻¹ de 330 mPa·s ; film continu dès 3 °C.\nÉtonnant : avec λ = ${nf(pf.lambda, 2)} < 0,8, cette peinture ne devrait pas être mate, or elle l'est. Les prises d'huile des fiches sont-elles fiables ?\nFiche de fabrication : 70 % de l'eau, Foamex, Coadis, puis TiO₂ et CaCO₃ en pluie fine à 300 tr/min, dispersion 15 min à vitesse maximale (finesse 7 Hegman) ; ensuite la résine, le Thixol et le Coapur sous agitation lente (200 tr/min), enfin le reste de l'eau.`; },
   choix: [{ t: 'Revenir au dossier', vers: 'docs' }] });
 
 add('appel', { melange: true, lieu: 'Téléphone', pnj: 'dubreuil', titre: 'L\'appel d\'organisation obligatoire',
@@ -628,20 +645,41 @@ add('res_es', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Résultat 
       { t: 'Je garde cette formule telle quelle', f: { mes_es: true }, note: 'ES mesuré différent de la référence : formule conservée en l\'état.', vers: 'labo' }]
     : !covOk(e) ? [refaireCoalescent('COV mesurés au-dessus de 30 g/L : dose de coalescent à revoir.'), { t: 'Je garde cette formule et je le signale', f: { mes_es: true }, note: 'COV supérieurs à 30 g/L : formule conservée, écart signalé.', vers: 'labo' }]
     : [{ ...retourLabo, f: { mes_es: true }, note: 'ES et densité mesurées : conformes.' }] });
-const mauvaiseVisc = e => mauvaisRheo(e) || !iciOk(e);
-const gCoapur = g => ({ t: `Ajouter ${nf(g, 0)} g de Coapur`, d: `${nf(g * 0.25, 2)} g de matière sèche ; 15 min (mélange, remesure)`, duree: 15, note: `Coapur ajouté : ${nf(g, 0)} g.`, run: e => ({ ...e, f: { ...e.f, coapurAdd: (e.f.coapurAdd || 0) + g } }), vers: 'res_rheo' });
+const mauvaiseVisc = e => mauvaisRheo(e) || !hsOk(e) || !basOk(e);
+const nomAdd = a => a === 'coapur' ? 'du Coapur' : 'du Thixol';
+const choisirAdd = a => ({ t: `Ajouter ${nomAdd(a)}`, d: 'essai d\'abord sur une petite quantité', duree: 2, note: `Correction envisagée : ajout ${nomAdd(a)}.`, run: e => ({ ...e, f: { ...e.f, msgVisco: undefined, visco: { additif: a, taille: null, essais: [] } } }), vers: 'viscoPrise' });
 add('res_rheo', { melange: true, lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Résultat : rhéologie', fiches: ['coapur', 'thixol'],
   texte: e => {
     if (!dispOk(e.f)) return 'Lucas : « Viscosité élevée à bas gradient et nette thixotropie : il reste des amas mal dispersés. On est loin du comportement rhéofluidifiant à faible thixotropie demandé. »\nLe dispersant n\'a pas été corrigé : la cause des amas est restée.';
-    const v = iciVrai(e), th = (e.f.thixolAdd || 0) > 0, tete = `Lucas : « Courbes de viscosité en fonction du gradient de cisaillement : comportement rhéofluidifiant, boucle de thixotropie très faible${th ? ', mais la viscosité à bas gradient est montée avec le Thixol' : ''}. Au cône-plan (10 000 s⁻¹) : ${nf(v, 2)} P.`;
-    if (iciOk(e)) return `${tete} C'est dans la plage de 0,9 à 1,3 P, proche de la référence Vinnapas (1,0 P). »`;
-    return `${tete} On attendait 0,9 à 1,3 P (référence Vinnapas : 1,0 P). »\n${v < ICI_MIN ? 'Au rouleau, la peinture est trop fluide à haut gradient : film mince peu garnissant, éclaboussures, étalement médiocre.' : 'Au pinceau, la peinture tire : trop visqueuse à haut gradient.'}${th ? ' Le Thixol n\'a rien changé à cette valeur : il agit à bas gradient.' : ''}`; },
-  visuel: e => ({ type: 'rheo', mauvais: mauvaisRheo(e), ici: iciVrai(e), thix: (e.f.thixolAdd || 0) > 0 }),
+    const hs = hsVrai(e), bas = basVrai(e), ajout = (e.f.coapurAdd || 0) > 0 || (e.f.thixolAdd || 0) > 0;
+    const tete = `Lucas : « ${ajout ? 'Nouvelle mesure du lot' : 'Profil mesuré au Lamy RM 100 Plus, mobile MS-R3'}, de 1 à 1 000 s⁻¹ : comportement rhéofluidifiant, boucle de thixotropie faible. À 1 s⁻¹ : ${nf(bas, 0)} mPa·s ; à 1 000 s⁻¹ : ${nf(hs, 0)} mPa·s.`;
+    if (hsOk(e) && basOk(e)) return `${tete} Le cahier des charges demande ${HS_MIN} à ${HS_MAX} mPa·s à 1 000 s⁻¹ (référence Vinnapas : ${HS_REF}) : c'est bon. »`;
+    if (!basOk(e)) return `${tete} Le bas gradient est monté de ${nf((bas / BAS_REF - 1) * 100, 0)} % par rapport à la référence : ça va couler moins bien et marquer les traces de rouleau. Et à 1 000 s⁻¹ on est toujours à ${nf(hs, 0)} mPa·s pour ${HS_MIN} à ${HS_MAX} demandés. »`;
+    return `${tete} On attendait ${HS_MIN} à ${HS_MAX} mPa·s (référence Vinnapas : ${HS_REF}). »\n${hs < HS_MIN ? 'Au rouleau, la peinture est trop fluide à haut gradient : film mince peu garnissant, éclaboussures, étalement médiocre.' : 'Au pinceau, la peinture tire : trop visqueuse à haut gradient.'}\nÀ masse de polymère sec égale, rien ne garantit que deux résines donnent la même viscosité une fois mélangées au reste : il faut la mesurer, puis corriger.`; },
+  visuel: e => ({ type: 'rheo', mauvais: mauvaisRheo(e), hs: hsVrai(e), bas: basVrai(e) }),
   choix: e => mauvaiseVisc(e) && dispOk(e.f)
-    ? [gCoapur(2), gCoapur(4), gCoapur(15),
-      { t: 'Ajouter 3 g de Thixol', d: '15 min (mélange, remesure)', duree: 15, note: 'Thixol ajouté : 3 g.', run: n => ({ ...n, f: { ...n.f, thixolAdd: (n.f.thixolAdd || 0) + 3 } }), vers: 'res_rheo' },
-      { ...retourLabo, t: 'Je garde la formule et je signale l\'écart', run: n => ({ ...n, f: { ...n.f, mes_rheo: true, rheoKo: true } }), note: `Viscosité à haut gradient de ${nf(iciVrai(e), 2)} P hors de la plage 0,9–1,3 P : formule conservée, écart signalé.` }]
-    : [{ ...retourLabo, run: n => ({ ...n, f: { ...n.f, mes_rheo: true, rheoKo: mauvaisRheo(n) } }), note: 'Rhéologie mesurée.' }] });
+    ? [choisirAdd('coapur'), choisirAdd('thixol'),
+      { ...retourLabo, t: 'Je garde la formule et je signale l\'écart', run: n => ({ ...n, f: { ...n.f, mes_rheo: true, rheoKo: true } }), note: `Viscosité à 1 000 s⁻¹ de ${nf(hsVrai(e), 0)} mPa·s (${HS_MIN} à ${HS_MAX} demandés) : formule conservée, écart signalé.` }]
+    : [{ ...retourLabo, run: n => ({ ...n, f: { ...n.f, mes_rheo: true, rheoKo: mauvaisRheo(n) || !hsOk(n) || !basOk(n) } }), note: 'Rhéologie mesurée.' }] });
+// Essai d'ajout : où tester ? (le godet du viscosimètre contient ≈ 30 mL ; si on se rate sur tout le lot, il est perdu)
+const trop_petit = g => ({ t: `Sur ${g} g de peinture`, duree: 3, note: `Essai d'ajout envisagé sur ${g} g : insuffisant pour remplir le godet.`, run: e => ({ ...e, f: { ...e.f, msgVisco: `Lucas : « Avec ${g} g, le godet ne se remplit pas : le mobile ne baigne pas dans la peinture et la mesure n'a aucun sens. Regarde le schéma : il faut de quoi remplir la cuve. »` } }), vers: 'viscoPrise' });
+add('viscoPrise', { melange: true, lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Où tester l\'ajout ?', fiches: ['coapur', 'thixol'],
+  texte: e => `${e.f.msgVisco ? e.f.msgVisco + '\n\n' : ''}Lucas : « Tu veux essayer ${nomAdd(e.f.visco?.additif)}. Sur quelle quantité de peinture fais-tu l'essai ? Voilà la cuve du viscosimètre avec son mobile MS-R3. »`,
+  visuel: () => ({ type: 'godet' }),
+  choix: () => [trop_petit(1), trop_petit(10),
+    { t: 'Sur 50 g de peinture', duree: 5, note: 'Essai d\'ajout sur une prise d\'essai de 50 g.', run: e => ({ ...e, f: { ...e.f, msgVisco: undefined, visco: { ...e.f.visco, taille: M_ESSAI, essais: [] } } }), vers: 'viscoDose' },
+    { t: 'Sur la totalité du lot', d: 'plus rapide, mais irréversible', duree: 0, note: 'Ajout directement sur tout le lot.', run: e => ({ ...e, f: { ...e.f, msgVisco: undefined, visco: { ...e.f.visco, taille: 'tout', essais: [] } } }), vers: 'viscoDose' },
+    { t: 'Finalement, je laisse tomber cet additif', duree: 0, vers: 'res_rheo' }] });
+const appliquerVisco = (e, essai) => { const v = e.f.visco, k = v.taille === 'tout' ? 1 : prop(e).mTot / M_ESSAI, g = Math.round(essai.m * k * 10) / 10, cle = v.additif === 'coapur' ? 'coapurAdd' : 'thixolAdd';
+  return { ...e, t: e.t + (v.taille === 'tout' ? 0 : 10), f: { ...e.f, [cle]: (e.f[cle] || 0) + (v.taille === 'tout' ? essai.m : g), visco: undefined } }; };
+add('viscoDose', { lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Combien d\'additif ?', station: 'visco', fiches: ['coapur', 'thixol'],
+  texte: e => e.f.visco?.taille === 'tout'
+    ? `Lucas : « Tu ajoutes ${nomAdd(e.f.visco.additif)} directement dans le lot de ${nf(prop(e).mTot, 0)} g. Combien en pèses-tu, produit tel que livré ? Après, il n'y a pas de retour en arrière. »`
+    : `Lucas : « Tu pèses ${nomAdd(e.f.visco?.additif)} (produit tel que livré) sur la balance au centigramme, tu l'ajoutes à ta prise d'essai de 50 g, tu mélanges et je mesure. Combien en mets-tu ? Tu peux faire ${ESSAIS_VISCO} essais au plus : chacun consomme une prise d'essai. »`,
+  choix: e => { const v = e.f.visco || {}, es = v.essais || [], d = es[es.length - 1];
+    const retenir = d && d.ok ? [{ t: v.taille === 'tout' ? 'Valider : le lot est bon' : 'Retenir cette dose et l\'ajouter à tout le lot', d: v.taille === 'tout' ? '' : 'mélange et remesure du lot : 10 min', duree: 0, note: `Dose retenue : ${nf(d.m, 2)} g ${nomAdd(v.additif)} ${v.taille === 'tout' ? 'ajoutés au lot' : 'pour 50 g, appliquée au lot'}.`, run: n => appliquerVisco(n, d), vers: 'res_rheo' }] : [];
+    const perdu = v.taille === 'tout' && d && !d.ok ? [{ t: 'Le lot est perdu : refaire la peinture', d: '45 min (fabrication à refaire, toutes les mesures aussi)', duree: 45, f: { lotPerdu: true, coapurAdd: 0, thixolAdd: 0 }, note: 'Ajout hors cible sur tout le lot : peinture perdue, fabrication à refaire.', run: n => ({ ...effacerMesures(n), f: { ...effacerMesures(n).f, visco: undefined } }), vers: 'fabrication' }] : [];
+    return [...retenir, ...perdu, ...(perdu.length ? [] : [{ t: 'Abandonner cet additif', duree: 0, run: n => ({ ...n, f: { ...n.f, visco: undefined } }), vers: 'res_rheo' }])]; } });
 add('res_masq', { lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Résultat : pouvoir masquant',
   texte: e => { const pm = pouvoirMasquant(e), v = nf(pm, 1);
     if (pm >= 7) return `Lucas : « Rapport de contraste à 98 % pour un rendement de ${v} m²/L : pouvoir masquant de ${v} m²/L, au-dessus du minimum de 7,0 (référence Vinnapas : 8,0). »`;
@@ -721,7 +759,8 @@ export function ecartsCdc(e) {
   if (!covOk(e)) L.push({ cle: 'cov', t: `COV de ${nf(p.COV, 0)} g/L (limite de ${COV_MAX} g/L)` });
   if (mauvaisRheo(e)) L.push({ cle: 'disp', t: 'amas mal dispersés (rhéologie non conforme)' });
   else if (pm < 7) L.push({ cle: 'masq', t: `pouvoir masquant de ${nf(pm, 1)} m²/L (> 7,0 demandé)` });
-  if (!mauvaisRheo(e) && !iciOk(e)) L.push({ cle: 'ici', t: `viscosité à haut gradient de ${nf(iciVrai(e), 2)} P (0,9 à 1,3 P demandé)` });
+  if (!mauvaisRheo(e) && !hsOk(e)) L.push({ cle: 'hs', t: `viscosité à haut gradient de ${nf(hsVrai(e), 0)} mPa·s à 1 000 s⁻¹ (${HS_MIN} à ${HS_MAX} demandés)` });
+  if (!mauvaisRheo(e) && !basOk(e)) L.push({ cle: 'bas', t: 'viscosité à bas gradient trop élevée (trop de Thixol)' });
   if (coutKg(formule(e)) >= 4.5) L.push({ cle: 'cout', t: `coût de ${nf(coutKg(formule(e)), 2)} €/kg (< 4,5 €/kg demandé)` });
   return L;
 }
@@ -751,7 +790,7 @@ export function bilan(e) {
   pr.push({ comp: 'C2.1', titre: 'Préparer produits et matériel', niveau: !f.fabrique && !f.rate ? 'nd' : f.rate ? 'moyen' : 'ok', texte: f.rate ? 'Première fabrication ratée : l\'ordre d\'introduction de la fiche n\'avait pas été respecté.' : f.fabrique ? 'Fabrication conforme à la fiche, finesse correcte.' : 'Pas de fabrication réalisée.' });
   const c32 = n(f.alerte === true) * (f.alerteTardive ? 0.5 : 1) + n(f.stockCtrl) * (f.stockAlerte ? 0.5 : 1) + n(f.stab === 'honnete');
   pr.push({ comp: 'C3.2', titre: 'Détecter les non-conformités et alerter', niveau: niv(c32, 3), texte: `Promesse « COV nuls » incompatible avec l'Orgal ${f.alerte === true ? (f.alerteTardive ? 'signalée tardivement' : 'signalée tout de suite') : 'non signalée'} ; fût d'Orgal gelé ${f.stockCtrl ? (f.stockAlerte ? 'contrôlé après rappel de Karim' : 'contrôlé de ta propre initiative') : 'non contrôlé'} ; stabilité ${f.stab === 'honnete' ? 'annoncée honnêtement comme non démontrée' : f.stab === 'promis' ? 'garantie sans l\'avoir démontrée' : 'omise'}.` });
-  const c41 = n(dispOk(f)) + n(dOk) + n(iciOk(e));
+  const c41 = n(dispOk(f)) + n(dOk) + n(hsOk(e) && basOk(e));
   pr.push({ comp: 'C4.1', titre: 'Modifier, améliorer le protocole', niveau: niv(c41, 3), texte: `Dispersant ${dispOk(f) ? `corrigé (amas supprimés${f.dispCourbe ? ', dose trouvée par la courbe de défloculation' : ''})` : 'non corrigé'} ; coalescent ${dOk ? (f.coalPense ? 'prévu dès le départ et dosé' : 'ajouté après la mesure de la TMFF, et dosé') : (f.dpnb ?? 0) < 2.5 ? 'absent ou trop faible' : 'surdosé'}.` });
   const c61 = n(f.plan !== 'solo') + n(e.t <= T_RAPPORT) + n(nbOpt >= 2);
   pr.push({ comp: 'C6.1', titre: 'Organiser le travail, tenir les délais', niveau: niv(c61, 3), texte: `${f.plan === 'solo' ? 'Tout fait seul·e : trop séquentiel. ' : f.plan === 'mp' ? 'Analyses des matières premières lancées dès le début, en parallèle. ' : 'Tâches déléguées en parallèle. '}Rapport ${e.t <= T_RAPPORT ? 'rendu dans les temps' : 'rendu après 17 h'} ; ${nbOpt} analyse(s) complémentaire(s) sur 4 (prises d'huile, brillance, TMFF, dosage du DPnB).` });
@@ -788,7 +827,8 @@ const MOT_ECART = {
   lambda: '« Une base mate se juge sur λ = CPV/CPVC : vérifie-le avec les prises d\'huile de NOS poudres avant de valider une formule. »',
   masq: '« Le TiO₂ coûte cher, mais c\'est lui qui masque : on n\'économise pas sur le pigment sans mesurer le pouvoir masquant. »',
   cout: '« Une bonne formule, c\'est aussi une formule qui se vend : 4,5 €/kg, c\'est écrit dans le cahier des charges. »',
-  ici: '« À haut gradient, c\'est le Coapur qui règle la viscosité, pas le Thixol : relis les deux fiches avant de choisir l\'épaississant. »',
+  bas: '« Le Thixol relève le bas gradient : trop, et la peinture ne s\'étale plus. Pour le haut gradient, c\'est le Coapur. »',
+  hs: '« À haut gradient, c\'est le Coapur qui règle la viscosité, pas le Thixol : relis les deux fiches avant de choisir l\'épaississant. »',
   disp: '« Des amas dans la peinture, ça se corrige à la source : par la dose de dispersant, trouvée sur la courbe de défloculation. »',
   es: '« Le polymère sec, c\'est lui qui fait le film : on ne change pas sa quantité à la légère. »',
 };

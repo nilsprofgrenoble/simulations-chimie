@@ -55,7 +55,13 @@ const jouer = () => {
 };
 // Formule finale du scénario idéal : un peu plus de TiO₂ (l'Orgal masque moins bien que la Vinnapas), l'eau compense la masse
 const tio2Plus = (g, t = 66) => { const fm = J.fmDepuisFlags(g.e); fm.eau = Math.round((fm.eau - (t - fm.tio2)) * 10) / 10; fm.tio2 = t; g.e = J.choisir(g.e, J.validerFormule(g.e, fm).choix); };
-const choixRes = e => { const ch = J.choixDe(e); return (e.scene === 'res_rheo' && ch.find(c => c.t.includes('4 g de Coapur'))) || ch.find(c => c.t.startsWith('Retourner')) || ch[0]; };
+const choixRes = e => { const ch = J.choixDe(e); return (e.scene === 'res_rheo' && ch.find(c => c.t === 'Ajouter du Coapur')) || ch.find(c => c.t.startsWith('Retourner')) || ch[0]; };
+// Essai d'ajout de Coapur : prise d'essai de 50 g, 1,0 g de produit humide (+0,5 % de matière sèche), puis on retient la dose pour le lot
+const visco = (g, m = 1.0) => {
+  if (g.e.scene === 'viscoPrise') { g.go('Sur 50 g'); return true; }
+  if (g.e.scene === 'viscoDose') { if (!(g.e.f.visco.essais || []).length) g.e = J.essaiVisco(g.e, m); g.go('Retenir cette dose'); return true; }
+  return false;
+};
 function debut(g, o = {}) {
   g.go('Parcourir'); g.go('fiches techniques'); g.go('fait le tour');
   g.go('La formule et la fiche'); g.go('Revenir au dossier'); g.go("J'ai de quoi");
@@ -87,6 +93,7 @@ function travaille(g, o = {}) {
     if (e.scene === 'res_cout' || e.scene === 'res_huile') { g.calc(); continue; }
     if (e.scene === 'coalescent') { g.go('Calculer la dose'); continue; }
     if (e.scene === 'calcDpnb') { g.calc(); continue; }
+    if (visco(g)) continue;
     if (e.scene === 'incoherence') { g.go("J'en parle"); continue; }
     if (e.scene === 'alerteRep') { g.go('Reprendre la formulation'); continue; }
     if (e.scene === 'formuleFinale') { if (o.tio2 === false) g.go('Valider ma formule'); else tio2Plus(g, o.tio2); continue; }
@@ -127,11 +134,13 @@ const cas = {};
   for (const k of ['Demander à Inès : Extrait', 'Demander à Lucas : Profil', 'Demander à Lucas : Pouvoir']) g.go(k);
   for (let i = 0; i < 80 && !(g.e.t >= 490 && g.e.f.mes_es && g.e.f.mes_rheo && g.e.f.mes_masq && g.e.f.clientFait); i++) {
     const e = g.e, l = J.choixDe(e).find(c => c.t.startsWith('📄'));
+    if (visco(g)) continue;
     if (e.scene === 'client') g.go('Je lui donne'); else if (e.scene.startsWith('res_')) g.e = J.choisir(e, choixRes(e)); else if (l) g.e = J.choisir(e, l); else g.go('Attendre');
   }
   if (process.env.DBG) console.log('DBG', g.e.scene, g.e.t, JSON.stringify(Object.keys(g.e.f).filter(k => k.startsWith('mes_') && g.e.f[k])), g.e.f.clientFait, g.e.f.coapurAdd);
   g.go('Rédiger le rapport'); g.go('Non démontrable'); g.go('Écouter'); cas.retard_ou_autre = g.e; }
 const lis = {}; for (const [k, e] of Object.entries(cas)) lis[k] = `${e.scene} à ${J.hhmm(e.t)} (${J.bilan(e).map(b => b.niveau[0]).join('')})`; console.log(lis);
+if (process.env.DBG) console.log('ECARTS', JSON.stringify(J.ecartsCdc(cas.fin_excellent)), cas.fin_excellent.f.coapurAdd, cas.fin_excellent.f.mes_rheo);
 assert.strictEqual(cas.fin_excellent.scene, 'fin_excellent', 'parcours idéal → excellent');
 assert.strictEqual(cas.plan_mp.scene, 'fin_excellent', 'plan matières premières → excellent');
 assert.strictEqual(cas.fin_bon.scene, 'fin_bon');
@@ -287,7 +296,7 @@ console.log('OK : dossier et variations');
   assert.strictEqual(J.controlesFormule({ ...e, f: { ...e.f, phMes: { tio2: 25, caco3: 30 } } }, fm0).find(c => c.cle === 'lambda').ok, true);
   // la formule de départ validée donne le même verdict physique que sans formule libre
   const v0 = J.validerFormule(e, fm0); const e0 = J.choisir(e, v0.choix);
-  assert.strictEqual(e0.scene, 'fabrication'); assert.strictEqual(e0.f.regle, 'ok'); assert(J.ecartsCdc(e0).map(x => x.cle).sort().join() === 'ici,masq', 'formule de départ : seuls le pouvoir masquant et la viscosité haut gradient sont à corriger : ' + JSON.stringify(J.ecartsCdc(e0)));
+  assert.strictEqual(e0.scene, 'fabrication'); assert.strictEqual(e0.f.regle, 'ok'); assert(J.ecartsCdc(e0).map(x => x.cle).sort().join() === 'hs,masq', 'formule de départ : seuls le pouvoir masquant et la viscosité haut gradient sont à corriger : ' + JSON.stringify(J.ecartsCdc(e0)));
   // moins de TiO2 : moins cher mais le pouvoir masquant passe sous 7
   const pauvre = J.choisir(e, J.validerFormule(e, { ...fm0, tio2: 45, eau: fm0.eau + 15 }).choix);
   const e66 = J.choisir(e, J.validerFormule(e, { ...fm0, tio2: 66, eau: fm0.eau - 6 }).choix);
@@ -348,19 +357,38 @@ console.log('OK : relecture');
 }
 console.log('OK : lot 10 (piste du coalescent)');
 
-// 12. Lot 11 : rhéologie à haut gradient (Coapur) et pouvoir masquant (TiO₂)
+// 12. Lot 11 : rhéologie à haut gradient (Coapur, essai sur 50 g) et pouvoir masquant (TiO₂)
 {
-  assert(!J.iciOk({ f: {} }) && !J.iciOk({ f: { coapurAdd: 2 } }) && J.iciOk({ f: { coapurAdd: 4 } }) && !J.iciOk({ f: { coapurAdd: 15 } }), 'ICI : trop bas sans Coapur, bon avec 4 g, trop haut avec 15 g');
+  const hs = f => J.hsVrai({ f: { regle: 'ok', dpnb: 3, ...f } });
+  assert(!J.hsOk({ f: { regle: 'ok', dpnb: 3 } }), 'sans correction, la viscosité à 1 000 s⁻¹ est trop basse');
+  assert(hs({ coapurAdd: 6.6 }) >= J.HS_MIN && hs({ coapurAdd: 6.6 }) <= J.HS_MAX, 'doubler la dose de Coapur (1 g pour 50 g) donne une viscosité conforme');
+  assert(hs({ coapurAdd: 1.5 }) < J.HS_MIN, 'trop peu : viscosité encore trop basse');
+  assert(hs({ coapurAdd: 20 }) > J.HS_MAX, 'trop : viscosité trop grande');
+  assert(hs({ thixolAdd: 10 }) < J.HS_MIN && !J.basOk({ f: { regle: 'ok', dpnb: 3, thixolAdd: 10 } }), 'le Thixol ne corrige jamais le haut gradient et relève le bas gradient');
   const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 });
   g.e = { ...g.e, scene: 'res_rheo' };
-  assert(J.dispOk(g.e.f));
-  const ch = J.choixDe(g.e); assert(ch.some(c => /Coapur/.test(c.t)) && ch.some(c => /Thixol/.test(c.t)), 'choix Coapur / Thixol proposés');
-  const th = J.choisir(g.e, ch.find(c => /Thixol/.test(c.t))); assert.strictEqual(th.scene, 'res_rheo'); assert(!J.iciOk(th), 'le Thixol ne corrige pas le haut gradient');
-  assert(/Thixol n'a rien changé/.test(J.texteDe(th)), 'le texte explique pourquoi');
-  const co = J.choisir(g.e, ch.find(c => /4 g de Coapur/.test(c.t))); assert(J.iciOk(co));
-  assert.strictEqual(J.choixDe(co).length, 1, 'une fois conforme : retour à la paillasse');
-  assert(J.formule(co).coapur > 10, 'la formule tient compte du Coapur ajouté');
+  const ch = J.choixDe(g.e); assert.deepStrictEqual(ch.map(c => c.t).sort(), ['Ajouter du Coapur', 'Ajouter du Thixol', 'Je garde la formule et je signale l\'écart'].sort(), 'seuls Thixol ou Coapur sont proposés');
+  assert(!/extrait sec|ES plus bas/i.test(J.texteDe(g.e)), 'pas d\'argument sur l\'extrait sec');
+  // essai sur une petite quantité : refusé, et message sur le godet
+  const e1 = J.choisir(g.e, ch.find(c => c.t === 'Ajouter du Coapur')); assert.strictEqual(e1.scene, 'viscoPrise');
+  const petit = J.choisir(e1, J.choixDe(e1).find(c => c.t === 'Sur 10 g de peinture')); assert.strictEqual(petit.scene, 'viscoPrise'); assert(/godet/.test(J.texteDe(petit)));
+  // 50 g, bonne dose : le lot est conforme après application
+  const e2 = J.choisir(e1, J.choixDe(e1).find(c => c.t === 'Sur 50 g de peinture')); assert.strictEqual(e2.scene, 'viscoDose');
+  assert.strictEqual(J.essaiVisco({ ...e2, f: { ...e2.f, visco: { ...e2.f.visco, taille: 50, essais: [] } } }, 1.0).f.visco.essais[0].ok, true);
+  const mes = J.essaiVisco(e2, 1.0); assert(mes.f.visco.essais[0].ok && mes.t === e2.t + J.DUREE_VISCO);
+  const ret = J.choisir(mes, J.choixDe(mes).find(c => /Retenir/.test(c.t))); assert.strictEqual(ret.scene, 'res_rheo'); assert(J.hsOk(ret) && J.basOk(ret) && ret.f.visco === undefined);
+  assert(J.formule(ret).coapur > 12, 'la formule tient compte du Coapur ajouté');
+  // mauvaise dose sur la prise d'essai : rien n'est retenable, le lot reste intact
+  const peu = J.essaiVisco(e2, 0.2); assert(!peu.f.visco.essais[0].ok && !J.choixDe(peu).some(c => /Retenir/.test(c.t)));
+  // Thixol : jamais bon
+  const eT = J.choisir(J.choisir(g.e, ch.find(c => c.t === 'Ajouter du Thixol')), { ...J.choixDe(J.choisir(g.e, ch.find(c => c.t === 'Ajouter du Thixol'))).find(c => c.t === 'Sur 50 g de peinture') });
+  for (const m of [0.1, 0.5, 1, 3]) assert(!J.essaiVisco(eT, m).f.visco.essais[0].ok, 'Thixol jamais bon');
+  // tout le lot : bonne dose → conforme ; mauvaise dose → lot perdu
+  const eL = J.choisir(e1, J.choixDe(e1).find(c => c.t === 'Sur la totalité du lot'));
+  const bon = J.essaiVisco(eL, 6.6); assert(bon.f.visco.essais[0].ok);
+  const mauvais = J.essaiVisco(eL, 2); assert(!mauvais.f.visco.essais[0].ok);
+  const perdu = J.choisir(mauvais, J.choixDe(mauvais)[0]); assert.strictEqual(perdu.scene, 'fabrication'); assert(perdu.f.lotPerdu && perdu.t >= mauvais.t + 45);
   const garde = J.choisir(g.e, ch.find(c => /signale/.test(c.t))); assert(garde.f.mes_rheo && garde.f.rheoKo);
-  assert(J.ecartsCdc(garde).some(x => x.cle === 'ici'), 'écart signalé');
+  assert(J.ecartsCdc(garde).some(x => x.cle === 'hs'), 'écart signalé');
 }
 console.log('OK : lot 11 (rhéologie Coapur, pouvoir masquant)');

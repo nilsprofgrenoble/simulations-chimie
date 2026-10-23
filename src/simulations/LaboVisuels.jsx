@@ -314,20 +314,34 @@ export function Instrument({ v }) {
       <rect x="20" y="170" width="9" height="9" fill="#64748b" /><text x="33" y="178" fontSize="10" fill="#cbd5e1" fontFamily="ui-monospace,monospace">fiche</text><rect x="86" y="170" width="9" height="9" fill="#38bdf8" /><text x="99" y="178" fontSize="10" fill="#cbd5e1" fontFamily="ui-monospace,monospace">mesuré (spatule)</text></Cadre>);
   }
   if (v.type === 'rheo') {
-    const X0 = 40, Y0 = 150, W = 300, H = 100, g = [0.1, 0.3, 1, 3, 10, 30, 100, 300, 1000];
-    const px = x => X0 + (Math.log10(x) + 1) / 4 * W, py = e => Y0 - (e + 0.3) / 3.2 * H;   // log10(η) entre −0,3 et 2,9
-    const courbe = (K, n) => pts(g, x => [px(x), py(Math.log10(K) + (n - 1) * Math.log10(x))]);
-    // Haut gradient : viscosité ICI relative à la référence (1,0 P) ; bas gradient relevé si Thixol ajouté
-    const r = v.ici ?? 1, fact = x => Math.max(0.2, 1 - (1 - r) * 1.4 * x / (x + 60)) * (v.thix ? 1 + 1.2 / (1 + x / 3) : 1);
-    const courbeIci = pts(g, x => [px(x), py(Math.log10(3.2 * Math.pow(x, -0.58) * fact(x)))]);
-    return (<Cadre titre="VISCOSIMÈTRE · η en fonction du gradient" hauteur={190}>
-      <path d={`M${X0} ${Y0} H${X0 + W} M${X0} ${Y0} V${Y0 - H - 4}`} stroke="#52606d" fill="none" />
-      <polyline points={courbe(3.2, 0.42)} fill="none" stroke="#94a3b8" strokeWidth="2" strokeDasharray="5 4" />
-      <polyline points={v.mauvais ? courbe(14, 0.3) : courbeIci} fill="none" stroke="#38bdf8" strokeWidth="3" />
-      {v.mauvais && <polyline points={courbe(8, 0.3)} fill="none" stroke="#f87171" strokeWidth="2" strokeDasharray="3 3" />}
-      <text x={X0 + W} y={Y0 + 16} textAnchor="end" fontSize="10" fill="#9fb3c8" fontFamily="ui-monospace,monospace">gradient de cisaillement (s⁻¹)</text><text x="14" y="46" fontSize="10" fill="#9fb3c8" fontFamily="ui-monospace,monospace">η</text>
-      <text x={X0 + 4} y="44" fontSize="10.5" fill="#94a3b8" fontFamily="ui-monospace,monospace" transform="translate(70 0)">- - référence Vinnapas</text><text x={X0 + 4} y="58" fontSize="10.5" fill="#38bdf8" fontFamily="ui-monospace,monospace" transform="translate(70 0)">— ta peinture</text>
-      {v.mauvais && <text x={X0 + 4} y="72" fontSize="10.5" fill="#f87171" fontFamily="ui-monospace,monospace" transform="translate(70 0)">⋯ retour : thixotropie</text>}</Cadre>);
+    // η (mPa·s) en fonction du gradient (1 à 1 000 s⁻¹), échelles log ; le Lamy RM 100 Plus balaie 1 → 1 000 s⁻¹
+    const X0 = 50, Y0 = 150, W = 290, H = 96, px = x => X0 + Math.log10(x) / 3 * W, py = eta => Y0 - (Math.log10(Math.max(eta, 50)) - 2) / 2.7 * H;
+    const G = [1, 1.5, 2.5, 4, 6, 10, 16, 25, 40, 63, 100, 160, 250, 400, 630, 1000];
+    const ref = x => 250 + 20000 * Math.pow(x, -0.8), hs = v.hs ?? 190, bas = v.bas ?? 20250;
+    const mes = v.mauvais ? x => 300 + 52000 * Math.pow(x, -0.85) : x => (hs - 79) + 20000 * (bas / 20250) * Math.pow(x, -0.8);
+    const tr = f => pts(G, x => [px(x), py(f(x))]);
+    return (<Cadre titre="VISCOSIMÈTRE LAMY RM 100 PLUS · MS-R3" hauteur={190}>
+      <path d={`M${X0} ${Y0} H${X0 + W} M${X0} ${Y0} V${Y0 - H - 6}`} stroke="#52606d" fill="none" />
+      <rect x={px(1000) - 7} y={py(480)} width="7" height={py(280) - py(480)} fill="#4ade80" opacity="0.55" />
+      <polyline points={tr(ref)} fill="none" stroke="#94a3b8" strokeWidth="2" strokeDasharray="5 4" />
+      <polyline points={tr(mes)} fill="none" stroke="#38bdf8" strokeWidth="3" />
+      {v.mauvais && <polyline points={tr(x => 0.55 * mes(x))} fill="none" stroke="#f87171" strokeWidth="2" strokeDasharray="3 3" />}
+      {[1, 10, 100, 1000].map(x => <text key={x} x={px(x)} y={Y0 + 12} textAnchor="middle" fontSize="10" fill="#9fb3c8" fontFamily="ui-monospace,monospace">{x}</text>)}
+      {[100, 1000, 10000].map(y => <text key={y} x={X0 - 5} y={py(y) + 3} textAnchor="end" fontSize="10" fill="#9fb3c8" fontFamily="ui-monospace,monospace">{y}</text>)}
+      <text x={X0 + W} y={Y0 + 25} textAnchor="end" fontSize="10" fill="#9fb3c8" fontFamily="ui-monospace,monospace">gradient de cisaillement (s⁻¹)</text><text x="12" y="44" fontSize="10" fill="#9fb3c8" fontFamily="ui-monospace,monospace">η (mPa·s)</text>
+      <text x={X0 + W} y="44" textAnchor="end" fontSize="10.5" fill="#94a3b8" fontFamily="ui-monospace,monospace">- - référence Vinnapas</text><text x={X0 + W} y="58" textAnchor="end" fontSize="10.5" fill="#38bdf8" fontFamily="ui-monospace,monospace">— ta peinture{v.hs != null ? ` : ${Math.round(hs)} à 1 000 s⁻¹` : ''}</text>
+      {v.mauvais && <text x={X0 + W} y="72" textAnchor="end" fontSize="10.5" fill="#f87171" fontFamily="ui-monospace,monospace">⋯ retour : thixotropie</text>}</Cadre>);
+  }
+  if (v.type === 'godet') {
+    return (<Cadre titre="VISCOSIMÈTRE · GODET ET MOBILE MS-R3" hauteur={200}>
+      <rect x="150" y="48" width="9" height="56" fill="#cbd5e1" /><rect x="136" y="38" width="37" height="14" rx="3" fill="#64748b" /><text x="182" y="48" fontSize="10.5" fill="#9fb3c8" fontFamily="ui-monospace,monospace">tête de mesure</text>
+      <rect x="140" y="104" width="29" height="50" rx="3" fill="#e2e8f0" stroke="#94a3b8" /><text x="20" y="80" fontSize="10.5" fill="#e2e8f0" fontFamily="ui-monospace,monospace">mobile MS-R3</text><path d="M92 77 H138 L145 108" stroke="#e2e8f0" fill="none" />
+      <path d="M100 90 V168 a8 8 0 0 0 8 8 H200 a8 8 0 0 0 8 -8 V90" fill="none" stroke="#e2e8f0" strokeWidth="3" />
+      <path d="M103 118 H205 V168 a5 5 0 0 1 -5 5 H108 a5 5 0 0 1 -5 -5 Z" fill="#f1f5f9" opacity="0.9" /><path d="M103 118 H205" stroke="#fde68a" strokeWidth="2" strokeDasharray="4 3" />
+      <text x="26" y="123" fontSize="10.5" fill="#fde68a" fontFamily="ui-monospace,monospace">niveau :</text><text x="26" y="136" fontSize="10.5" fill="#fde68a" fontFamily="ui-monospace,monospace">≈ 30 mL</text>
+      <text x="216" y="166" fontSize="10.5" fill="#e2e8f0" fontFamily="ui-monospace,monospace">godet</text><text x="216" y="179" fontSize="10.5" fill="#e2e8f0" fontFamily="ui-monospace,monospace">(≈ 30 mL)</text>
+      <text x="216" y="132" fontSize="10.5" fill="#e2e8f0" fontFamily="ui-monospace,monospace">peinture</text>
+    </Cadre>);
   }
   if (v.type === 'masq') {
     const X0 = 40, Y0 = 150, W = 300, H = 104, px = r => X0 + (r - 3) / 10 * W, py = c => Y0 - (c - 84) / 16 * H;
