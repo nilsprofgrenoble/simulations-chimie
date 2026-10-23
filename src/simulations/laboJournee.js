@@ -267,7 +267,7 @@ add('solo', { lieu: 'Téléphone', pnj: 'dubreuil', titre: 'Mme Dubreuil sourit'
 // Question ouverte de départ : que modifie-t-on dans la formule ? (liste d'options dont certaines ne servent à rien)
 export const PLAN_OPTIONS = [
   ['resine', 'Recalculer la quantité de résine'], ['disp', 'Revoir le dispersant (les amas de poudres)'], ['coal', 'Ajouter un agent de coalescence (solvant filmifiant)'],
-  ['epais', 'Ajouter un épaississant supplémentaire'], ['tio2', 'Augmenter la quantité de TiO₂'], ['biocide', 'Ajouter un biocide'], ['ammo', 'Ajouter de l\'ammoniaque pour neutraliser'], ['rien', 'Rien d\'autre'],
+  ['epais', 'Ajouter un épaississant supplémentaire'], ['tio2', 'Augmenter la quantité de TiO₂'], ['biocide', 'Ajouter un biocide'], ['siccatif', 'Ajouter un siccatif'], ['plastifiant', 'Ajouter un plastifiant'], ['ammo', 'Ajouter de l\'ammoniaque pour neutraliser'], ['rien', 'Rien d\'autre'],
 ];
 export const choixPlan = (e, sel) => ({ t: 'Valider mon plan', f: { planForm: sel, coalPense: sel.includes('coal') }, note: `Modifications envisagées : ${sel.length ? sel.map(k => PLAN_OPTIONS.find(o => o[0] === k)?.[1]).join(' ; ') : 'aucune de plus que le changement de résine'}.`, vers: 'regle' });
 export const optionsPlan = e => melanger(e, 'plan', PLAN_OPTIONS.filter(o => o[0] !== 'rien')).concat([PLAN_OPTIONS.find(o => o[0] === 'rien')]);

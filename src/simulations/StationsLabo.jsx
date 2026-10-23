@@ -238,12 +238,17 @@ export function StationCpg({ e, onEtat, onValider, choixConcl }) {
 
 // ───────────── Formule finale : l'élève pose ses masses, les contrôles « sur papier » se recalculent ─────────────
 const LIGNES_FORMULE = [['liant', 'Dispersion d\'Orgal PST 50A', 'g'], ['eau', 'Eau', 'g'], ['tio2', 'TiO₂ (rutile)', 'g'], ['caco3', 'CaCO₃ léger', 'g'], ['coadis', 'Coadis BR3 (dispersant)', 'g'], ['dpnb', 'DPnB (coalescent)', 'g']];
+const MSG_CATALOGUE = {
+  siccatif: 'Un siccatif catalyse le séchage par oxydation des résines alkydes. Ici le séchage est physique (évaporation de l\'eau puis coalescence des particules) : il n\'aurait aucun effet. Non retenu.',
+  plastifiant: 'Un plastifiant abaisse la Tg du polymère, mais il reste dans le film après séchage : film plus mou, qui retient les salissures et vieillit mal. Un agent de coalescence, lui, s\'évapore peu à peu. Non retenu ici.',
+};
+
 export function StationFormule({ e, onValider }) {
   const base = fmDepuisFlags(e);
   const [v, setV] = useState(() => Object.fromEntries(FM_CHAMPS.map(k => [k, String(base[k]).replace('.', ',')])));
   const [dpnbVisible, setDpnbVisible] = useState(() => !!(e.f.coalPense || e.f.refaitCoal || (base.dpnb ?? 0) > 0)), [msgAjout, setMsgAjout] = useState('');
   const fm = Object.fromEntries(FM_CHAMPS.map(k => [k, k === 'dpnb' && !dpnbVisible ? 0 : parseFloat(String(v[k]).replace(',', '.'))]));
-  const ajouter = ev => { const x = ev.target.value; if (x === 'dpnb') { setDpnbVisible(true); setMsgAjout(''); } else if (x) setMsgAjout('Cette matière première n\'a pas d\'effet dans le scénario de la journée : elle n\'est pas retenue dans la formule.'); };
+  const ajouter = ev => { const x = ev.target.value; if (x === 'dpnb') { setDpnbVisible(true); setMsgAjout(''); } else if (x) setMsgAjout(MSG_CATALOGUE[x] || 'Cette matière première n\'a pas d\'effet dans le scénario de la journée : elle n\'est pas retenue dans la formule.'); };
   const val = validerFormule(e, fm);
   const controles = val.ok ? controlesFormule(e, fm) : [];
   const total = val.ok ? proprietes({ resine: 'orgal', foamex: 1.5, thixol: 1.5, coapur: 3, ...fm }).mTot : null;
@@ -262,7 +267,7 @@ export function StationFormule({ e, onValider }) {
       {!dpnbVisible && <div style={{ marginTop: 10, fontSize: 13.5 }}>
         <label>Ajouter une matière première du catalogue{' '}
           <select data-catalogue value="" onChange={ajouter} style={{ padding: '5px 8px', fontSize: 14 }}>
-            <option value="">Choisir…</option><option value="dpnb">DPnB (éther de glycol)</option><option value="ammo">Ammoniaque 25 %</option><option value="biocide">Biocide (isothiazolinone)</option>
+            <option value="">Choisir…</option><option value="dpnb">DPnB (éther de glycol)</option><option value="ammo">Ammoniaque 25 %</option><option value="biocide">Biocide (isothiazolinone)</option><option value="siccatif">Siccatif (sels de cobalt/manganèse)</option><option value="plastifiant">Plastifiant (phtalate / benzoate)</option>
           </select></label>
         {msgAjout && <div data-catalogue-msg style={{ color: AMBRE, marginTop: 4 }}>{msgAjout}</div>}
       </div>}
