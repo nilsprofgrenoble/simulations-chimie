@@ -137,7 +137,7 @@ export function controlesFormule(e, fm) {
     { cle: 'lambda', ok: p.lambda >= 0.8, t: `λ = CPV / CPVC = ${nf(p.CPV)} / ${nf(p.CPVC)} = ${nf(p.lambda, 2)} (≥ 0,8 demandé), calculé avec les prises d'huile ${mes ? 'que tu as mesurées' : 'des fiches techniques (TiO₂ 20, CaCO₃ 14) : valables pour nos poudres ?'}.` },
     { cle: 'cov', ok: p.COV < COV_MAX, t: `COV calculé ${nf(p.COV, 0)} g/L (< ${COV_MAX} g/L demandé).` },
     { cle: 'cout', ok: cout < 4.5, t: `Coût matières premières ${nf(cout, 2)} €/kg (< 4,5 €/kg demandé).` },
-    { cle: 'disp', ok: act >= 0.15 && act <= 0.30 ? true : null, t: `Dispersant : ${nf(act, 2)} % de matière active sur les poudres (la fiche annonce 0,15 à 0,20 %).` },
+    { cle: 'disp', ok: act >= 0.15 && act <= 0.30 ? true : null, t: `Dispersant : ${nf(act, 2)} % de matière active sur les poudres, ${act >= 0.15 && act <= 0.30 ? 'dans' : 'hors de'} la plage recommandée par la fiche technique.` },
     { cle: 'coal', ok: p.pctCoalescent >= 4 && p.pctCoalescent <= 8 ? true : null, t: `Coalescent : ${nf(p.pctCoalescent, 1)} % du polymère sec (règle d'atelier : 4 à 8 %).` },
     { cle: 'mes', ok: null, t: 'TMFF, rhéologie, pouvoir masquant, brillance : ça ne se calcule pas, il faudra les mesurer sur la peinture fabriquée.' },
   ];
@@ -297,16 +297,16 @@ add('dispersion', { melange: true, lieu: 'Paillasse de formulation', pnj: 'karim
 add('dispRep1', { lieu: 'Paillasse', pnj: 'karim', titre: 'Karim', texte: '« La fiche prévoit déjà la vitesse maximale pendant 15 minutes. On ne peut pas aller plus vite que la machine. Cherche du côté de la formule. »', choix: [{ t: 'Reprendre', vers: 'dispersion' }] });
 add('dispRep2', { lieu: 'Paillasse', pnj: 'karim', titre: 'Karim', texte: '« Plus d\'eau, c\'est changer l\'extrait sec et la viscosité, et ça ne s\'attaque pas à la cause : les grains ne sont pas assez mouillés et séparés. Cherche du côté de l\'additif qui sert à ça. »', choix: [{ t: 'Reprendre', vers: 'dispersion' }] });
 add('calcCoadis', { lieu: 'Paillasse', pnj: 'moi', titre: 'Calcul : dose de dispersant', fiches: ['coadis'],
-  texte: 'Le Coadis BR3 a un extrait sec de 40 %. La fiche technique recommande 0,15 à 0,20 % de matière active par rapport à la masse de poudres (TiO₂ + CaCO₃ = 120 g). Dose actuelle : 0,2 g de Coadis BR3, soit 0,067 %.',
-  calcul: { q: 'Quelle masse de Coadis BR3 pèses-tu (visant le milieu de la plage, 0,175 %) ?', unite: 'g', vrai: () => 0.00175 * 120 / 0.4, tol: 0.15,
-    indice: 'Matière active = masse de Coadis × 0,40. Il faut 0,175 % de 120 g de poudres comme matière active.',
+  texte: 'Karim : « Les amas viennent d\'un manque de dispersant. Lis la fiche technique du Coadis BR3 : elle dit quelle quantité mettre. »\nDans la formule, les poudres pèsent 60 g de TiO₂ et 60 g de CaCO₃ ; la dose actuelle est de 0,2 g de Coadis BR3.',
+  calcul: { q: 'Quelle masse de Coadis BR3 (produit tel que fourni) pèses-tu pour les poudres de la formule ? Vise le milieu de la plage recommandée par la fiche.', unite: 'g', vrai: () => 0.00175 * 120 / 0.4, tol: 0.15,
+    indice: 'Le dosage est une masse de matière active (extrait sec du produit) rapportée à la masse de poudres (pigments et charges). Exemple avec un autre produit : pour 100 g de poudres, 1 g d\'un dispersant à 30 % d\'extrait sec apporte 0,3 g de matière active, soit un dosage de 0,3 %. Applique la même idée avec la fiche du Coadis BR3 et nos 120 g de poudres.',
     retour: v => v >= 1 ? 'Attention : à cette dose, le dispersant est très en excès (surdosage : film sensible à l\'eau, mousse, coût). Revois le calcul.' : null,
     ok: { f: { coadis: 0.525 }, vers: 'coalescent', note: 'Dispersant relevé à 0,525 g de Coadis BR3 (0,175 % de matière active sur les poudres) pour supprimer les amas.' },
     ko: { f: { coadis: 0.5 }, vers: 'coalescent', duree: 10, note: 'Dispersant relevé à 0,5 g de Coadis BR3 (valeur donnée par Karim).' } } });
 
 // ───────────── Station : courbe de défloculation du dispersant ─────────────
 export const INDICES_COURBE = [
-  'Karim : « La fiche du Coadis BR3 donne 0,15 à 0,20 % de matière active sur les poudres. Commence autour de cette plage, et vérifie-la plutôt que de la croire. »',
+  'Karim : « Relis la fiche du Coadis BR3 : elle donne une plage de dosage, en matière active sur les poudres. Commence autour de cette plage, et vérifie-la plutôt que de la croire. »',
   'Karim : « Trace la viscosité en fonction du % de dispersant. Cherche où la courbe cesse de baisser : c\'est le point d\'écoulement, la dose optimale. Au-delà, tu ajoutes du produit pour rien. »',
   'Karim : « Avec une lecture à ± 4 %, deux points qui diffèrent de moins de 10 % sur le plateau sont indiscernables. Pas la peine d\'aller chercher plus loin. »',
 ];
