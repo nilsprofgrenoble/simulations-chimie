@@ -308,3 +308,15 @@ console.log('OK : dossier et variations');
   assert(/aide/.test(J.resume(id).join(' ')) && /seul·e des analyses/.test(J.resume(labo).join(' ')));
 }
 console.log('OK : formule finale et hub ouvert');
+
+// 10. Relecture : ordre des choix mélangé selon la partie, fût neuf daté d'après l'heure, λ d'Inès sans fuite
+{
+  const premiers = new Set(Array.from({ length: 40 }, (_, g) => J.choixDe({ ...J.etatInitial(), scene: 'regle', f: { graine: g } })[0].t.slice(0, 25)));
+  assert(premiers.size > 1, 'la bonne réponse n\'est pas toujours en premier');
+  assert.strictEqual(J.choixDe({ ...J.etatInitial(), scene: 'regle', f: { graine: 3 } }).length, 3);
+  const e = { ...J.etatInitial(), scene: 'stockRes', t: 90 }; assert(J.choixDe(e)[0].t.includes(J.hhmm(130)) || J.choixDe(e)[1].t.includes(J.hhmm(130)), 'heure de livraison calculée');
+  const base = J.etatInitial(), f = { ...base.f, regle: 'ok', coadis: 0.525, dpnb: 3 };
+  const txt = J.texteDe({ ...base, scene: 'res_es', f }); assert(/des fiches, non vérifiées/.test(txt) && !/CPVC = 50/.test(txt), 'pas de fuite des vraies prises d\'huile');
+  assert(/que tu as mesurées/.test(J.texteDe({ ...base, scene: 'res_es', f: { ...f, phMes: { tio2: 25, caco3: 30 } } })));
+}
+console.log('OK : relecture');
