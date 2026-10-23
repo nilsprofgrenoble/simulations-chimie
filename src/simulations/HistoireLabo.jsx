@@ -6,6 +6,7 @@ import { CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_CLIENT, T_RAPPORT, T_FIN, etat
 import Fiches from "./Fiches";
 import Dossier from "./DossierLabo";
 import { StationBanc, StationCourbe, StationHuile, StationCpg, StationFormule, StationPlan, StationVisco } from "./StationsLabo";
+import FicheCcf from "./FicheCcf";
 import { ScenePlanche, Affiche, Equipe, Instrument, Avatar, STYLE_VISUELS } from "./LaboVisuels";
 
 // ====================================================
@@ -148,6 +149,7 @@ export function SimulationHistoireLabo() {
   const [joueur, setJoueur] = useEtatPersistant('labo-joueur-v1', { prenom: '', avatar: 0 });
   const [lecture, setLecture] = useEtatPersistant('labo-lecture-v1', () => (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'fixe' : 'normale'));
   const [carnetOuvert, setCarnetOuvert] = useState(false);
+  const [ficheOuverte, setFicheOuverte] = useState(false);
   const [dossier, setDossier] = useState(null);   // null | 'docs' | 'calc'
   const [saut, setSaut] = useState(null);   // voile « quelques minutes plus tard » quand une action fait avancer l'horloge
   const refTitre = useRef(null);
@@ -205,7 +207,7 @@ export function SimulationHistoireLabo() {
     setEtat(n);
   };
   const avancer = c => appliquer(choisir(e, c));
-  const recommencer = () => { setEtat(null); setCarnetOuvert(false); };
+  const recommencer = () => { setEtat(null); setCarnetOuvert(false); setFicheOuverte(false); };
 
   const carnet = (
     <div style={{ background: 'rgba(255,255,255,.85)', border: '1.5px dashed #9bb0c9', borderRadius: 6, padding: '10px 14px' }} data-carnet>
@@ -271,6 +273,8 @@ export function SimulationHistoireLabo() {
                 <span aria-label={lib} title={lib} style={{ fontSize: 18 }}>{ic}</span>
                 <div><b>{b.comp}</b> · {b.titre} <span style={{ color: col, fontWeight: 700 }}>({lib})</span><div style={{ color: C.doux }}>{b.texte}</div></div>
               </div>); })}</div>
+            <button type="button" data-ouvrir-fiche onClick={() => setFicheOuverte(o => !o)} style={{ marginTop: 14, marginRight: 10, padding: '10px 18px', borderRadius: 10, border: `2px solid ${C.encre}`, background: '#fff', color: C.encre, fontWeight: 800, cursor: 'pointer', font: 'inherit' }}>📄 Éditer ma fiche d'évaluation (modèle CCF4)</button>
+            {ficheOuverte && <FicheCcf e={e} onFermer={() => setFicheOuverte(false)} />}
             <button type="button" data-rejouer onClick={recommencer} style={{ marginTop: 14, padding: '10px 18px', borderRadius: 10, border: `2px solid ${C.accent}`, background: C.accentFond, color: C.accent, fontWeight: 800, cursor: 'pointer', font: 'inherit' }}>↺ Rejouer une journée (autre stratégie ?)</button>
             {boiteFins}
           </>)}
