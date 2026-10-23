@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import "@fontsource/kalam/latin-400.css";
 import "@fontsource/kalam/latin-700.css";
 import { useEtatPersistant } from "../commun";
-import { CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_CLIENT, T_RAPPORT, T_FIN, etatInitial, texteDe, choixDe, choisir, valider, hhmm, bilan, resume, statutCmd, estFin, visuelDe, equipe, agirLibre, demanderIdees } from "./laboJournee";
+import { CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_CLIENT, T_RAPPORT, T_FIN, etatInitial, NB_AVATARS, avatarDe, pn, texteDe, choixDe, choisir, valider, hhmm, bilan, resume, statutCmd, estFin, visuelDe, equipe, agirLibre, demanderIdees } from "./laboJournee";
 import Fiches from "./Fiches";
 import Dossier from "./DossierLabo";
 import { StationBanc, StationCourbe, StationHuile, StationCpg, StationFormule, StationPlan, StationVisco } from "./StationsLabo";
@@ -64,7 +64,7 @@ const PAUSE = 10;   // pause (en caractères) entre deux répliques
 
 // Le texte d'une scène : chaque réplique (ligne avec « ») apparaît « comme si la personne parlait », avec son portrait ;
 // la narration s'écrit au crayon. Les enfants (choix, calcul, instrument) s'activent quand tout est affiché.
-function Dialogue({ texte, pnj, lecture, children }) {
+function Dialogue({ texte, pnj, lecture, moi, children }) {
   const lignes = String(texte).split('\n').filter(l => l.trim());
   const p = PNJ[pnj];
   const pas = (LECTURES.find(l => l[0] === lecture) || LECTURES[1])[2], instant = pas === 0;
@@ -88,7 +88,7 @@ function Dialogue({ texte, pnj, lecture, children }) {
         if (!l.includes('«')) return <div key={i} style={{ fontSize: 16.5, lineHeight: 1.6, color: '#4b5563', opacity: commence ? 1 : 0 }}>{typed}</div>;
         return (
           <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', opacity: commence ? 1 : 0, transition: 'opacity .2s' }}>
-            <Avatar id={pnj} parle={enCours} />
+            <Avatar id={pnj === 'moi' ? moi : pnj} parle={enCours} />
             <div className="lab-postit" style={{ flex: 1, minWidth: 0, '--pc': `color-mix(in srgb, ${p.couleur} 14%, #fffbe0)`, '--rot': `${i % 2 ? 0.4 : -0.3}deg`, padding: '10px 16px', fontFamily: HAND, fontSize: 17, lineHeight: 1.55, borderLeft: `5px solid ${p.couleur}` }}>{typed}</div>
           </div>);
       })}
@@ -145,6 +145,7 @@ function Calcul({ e, sc, onEtat, onCalculette }) {
 export function SimulationHistoireLabo() {
   const [etat, setEtat] = useEtatPersistant(CLE_ETAT, null);
   const [fins, setFins] = useEtatPersistant(CLE_FINS, []);
+  const [joueur, setJoueur] = useEtatPersistant('labo-joueur-v1', { prenom: '', avatar: 0 });
   const [lecture, setLecture] = useEtatPersistant('labo-lecture-v1', () => (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'fixe' : 'normale'));
   const [carnetOuvert, setCarnetOuvert] = useState(false);
   const [dossier, setDossier] = useState(null);   // null | 'docs' | 'calc'
@@ -181,7 +182,18 @@ export function SimulationHistoireLabo() {
         <li>Les calculs sont à faire (calculatrice autorisée) ; le Dossier (documents déjà vus) et la calculette de formulation sont accessibles à tout moment.</li>
         <li>En fin de partie, un résumé de tes choix et un bilan relient ta journée aux compétences du référentiel. Rien n'est transmis à ton enseignant.</li>
       </ul>
-      <button type="button" data-commencer onClick={() => setEtat(etatInitial())} style={{ padding: '10px 22px', borderRadius: 4, border: `2px solid ${ENCRE}`, background: '#fff', color: ENCRE, fontWeight: 700, fontSize: 18, boxShadow: '3px 3px 0 ' + ENCRE, cursor: 'pointer', font: 'inherit' }}>▶ Commencer la journée</button>
+      <fieldset data-joueur style={{ border: '1.5px dashed #9bb0c9', borderRadius: 8, padding: '10px 14px', margin: '14px 0', maxWidth: 560 }}>
+        <legend style={{ fontWeight: 800, padding: '0 6px' }}>Qui es-tu ?</legend>
+        <label style={{ display: 'block', fontSize: 15 }}>Ton prénom (tes collègues t'appelleront ainsi) :{' '}
+          <input data-prenom value={joueur.prenom} maxLength={20} onChange={ev => setJoueur({ ...joueur, prenom: ev.target.value })} placeholder="facultatif" style={{ padding: '6px 10px', fontSize: 16, borderRadius: 8, border: '2px solid #94a3b8', width: 170 }} /></label>
+        <div role="radiogroup" aria-label="Ton avatar" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
+          {Array.from({ length: NB_AVATARS }, (_, i) => (
+            <button key={i} type="button" role="radio" aria-checked={joueur.avatar === i} aria-label={`Avatar ${i + 1}`} data-avatar={i} onClick={() => setJoueur({ ...joueur, avatar: i })} style={{ padding: 3, borderRadius: '50%', border: joueur.avatar === i ? '3px solid #1e3a8a' : '3px solid transparent', background: 'none', cursor: 'pointer' }}>
+              <Avatar id={'moi' + i} taille={52} />
+            </button>))}
+        </div>
+      </fieldset>
+      <button type="button" data-commencer onClick={() => setEtat(etatInitial(joueur.prenom, joueur.avatar))} style={{ padding: '10px 22px', borderRadius: 4, border: `2px solid ${ENCRE}`, background: '#fff', color: ENCRE, fontWeight: 700, fontSize: 18, boxShadow: '3px 3px 0 ' + ENCRE, cursor: 'pointer', font: 'inherit' }}>▶ Commencer la journée</button>
       {boiteFins}
       <div style={{ fontSize: 12.5, color: C.doux, marginTop: 14 }}>Scénario fictif d'après le sujet de CCF4 (Lycée Argouges, 2025). Les mesures déléguées aux collègues sont des données de scénario.</div>
     </div>);
@@ -204,6 +216,7 @@ export function SimulationHistoireLabo() {
   return (
     <div className="lab-cahier" style={cadre} data-labo={fin ? 'fin' : 'jeu'}><style>{STYLE}</style><div className="lab-spirale" aria-hidden="true" />
       {saut && <div key={saut.id} className="lab-saut" aria-hidden="true"><div style={{ fontSize: 13, letterSpacing: 2, opacity: .7 }}>{saut.a - saut.de >= 60 ? 'PLUS TARD…' : 'QUELQUES MINUTES PLUS TARD…'}</div><div style={{ fontSize: 'clamp(34px,9vw,56px)', fontWeight: 800 }}>{hhmm(saut.a)}</div></div>}
+      {pn(e) && <div data-joueur-nom style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 6px', fontWeight: 700, color: C.doux }}><Avatar id={avatarDe(e)} taille={30} /><span>{pn(e)}</span></div>}
       <BarreHeure t={Math.min(e.t, T_FIN)} />
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '0 0 10px' }}>
         {[['docs', '📁 Dossier'], ['calc', '🧮 Calculette']].map(([id, nom]) => <button key={id} type="button" data-dossier-bouton={id} onClick={() => setDossier(id)} style={{ padding: '4px 12px', borderRadius: 8, border: `1.5px solid ${ENCRE}`, background: '#fff', color: ENCRE, fontWeight: 700, cursor: 'pointer', font: 'inherit', fontSize: 14 }}>{nom}</button>)}
@@ -217,7 +230,7 @@ export function SimulationHistoireLabo() {
         {hub && <Equipe occup={equipe(e)} />}
         <div className="lab-scene" key={`c-${e.scene}`} style={{ minWidth: 0, padding: '4px 0' }}>
           <h3 ref={refTitre} tabIndex={-1} className="lab-titre" style={{ margin: '0 0 12px', fontSize: 25, fontWeight: 700, outline: 'none', color: fin ? TONS[sc.fin.ton] : C.encre }} data-titre>{sc.titre}</h3>
-          <Dialogue texte={texteDe(e)} pnj={sc.pnj} lecture={lecture}>
+          <Dialogue texte={texteDe(e)} pnj={sc.pnj} moi={avatarDe(e)} lecture={lecture}>
           {vis && <div className="lab-instr" style={{ margin: '16px auto 6px', maxWidth: 460 }}><div className="lab-photo" style={{ '--rot': '0.8deg' }}><Instrument v={vis} /></div></div>}
 
           {sc.fiches && <Fiches ids={sc.fiches} />}

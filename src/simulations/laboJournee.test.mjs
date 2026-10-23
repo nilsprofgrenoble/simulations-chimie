@@ -392,3 +392,23 @@ console.log('OK : lot 10 (piste du coalescent)');
   assert(J.ecartsCdc(garde).some(x => x.cle === 'hs'), 'écart signalé');
 }
 console.log('OK : lot 11 (rhéologie Coapur, pouvoir masquant)');
+
+// 13. Prénom et avatar du joueur : les collègues l'utilisent dans les dialogues
+{
+  assert.strictEqual(J.nettoyerPrenom('  <b>Zoé</b>\n «x»  '), 'b Zoé /b x', 'prénom nettoyé');
+  assert.strictEqual(J.nettoyerPrenom('A'.repeat(50)).length, 20);
+  const vu = [];
+  const g = jouer(); g.e = J.etatInitial('Camille', 3);
+  assert.strictEqual(J.avatarDe(g.e), 'moi3'); assert(/Bonjour Camille\./.test(J.texteDe(g.e)), 'accueil par le prénom');
+  const suivre = () => vu.push(J.texteDe(g.e));
+  suivre(); debut(g, {}); suivre(); formulation(g, { dpnb: 3 }); suivre();
+  const fin = travaille(g, {}); vu.push(J.texteDe(fin));
+  const avec = vu.filter(t => t.includes('Camille')).length;
+  assert(avec >= 2, 'le prénom est utilisé dans les dialogues (' + avec + ')');
+  const sans = jouer(); debut(sans, {}); formulation(sans, { dpnb: 3 }); const f2 = travaille(sans, {});
+  assert(!J.texteDe(f2).includes('undefined') && !J.texteDe(f2).includes('Camille'), 'sans prénom : textes inchangés');
+  // la réplique ne casse pas la grammaire : « Prénom, mot » (mot en minuscule)
+  for (const t of vu) assert(!/Camille, [A-ZÀ-Ý][a-zà-ÿ]/.test(t), 'minuscule après le prénom : ' + t.slice(0, 80));
+  assert.strictEqual(J.avatarDe({ f: { avatar: 9 } }), 'moi3');
+}
+console.log('OK : prénom et avatar');

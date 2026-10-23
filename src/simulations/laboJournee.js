@@ -62,7 +62,12 @@ export const coutKg = f => {
 };
 
 // ───────────── Moteur ─────────────
-export const etatInitial = () => ({ scene: 'intro', t: 0, f: secretsAleatoires(), carnet: [], cmd: {}, libre: { ines: 0, lucas: 0, perrin: 0 }, essais: 0, vus: ['cdc'] });
+// Le joueur choisit un prénom et un avatar au départ : les collègues l'appellent ensuite par son prénom (voir texteDe)
+export const NB_AVATARS = 6;
+export const nettoyerPrenom = x => String(x ?? '').replace(/[<>«»\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 20);
+export const pn = e => e?.f?.prenom || '';
+export const avatarDe = e => 'moi' + (((e?.f?.avatar ?? 0) % NB_AVATARS + NB_AVATARS) % NB_AVATARS);
+export const etatInitial = (prenom = '', avatar = 0) => ({ scene: 'intro', t: 0, f: { ...secretsAleatoires(), prenom: nettoyerPrenom(prenom), avatar }, carnet: [], cmd: {}, libre: { ines: 0, lucas: 0, perrin: 0 }, essais: 0, vus: ['cdc'] });
 const nota = (e, texte) => texte ? { ...e, carnet: [...e.carnet, `${hhmm(e.t)} : ${texte}`] } : e;
 
 export const SCENES = {};
@@ -92,7 +97,18 @@ export const cer = (e, cle, cause, effet, remede) => vari(e, cle, [
   `Ce qui s'est passé : ${cause} Ce que ça change : ${effet} À faire : ${remede}`,
   `${effet} L'origine : ${cause} Pour rattraper : ${remede}`]);
 export const docsVus = e => e.vus || ['cdc'];
-export const texteDe = (e, sc = SCENES[e.scene]) => typeof sc.texte === 'function' ? sc.texte(e) : sc.texte;
+// Mots sûrs en début de réplique : on peut y glisser « Prénom, » devant et passer le mot en minuscule (« Voilà » → « Camille, voilà »)
+const DEBUTS_SURS = new Set(['avant', 'pour', 'comme', 'alors', 'dis', 'voilà', 'plus', 'au', 'un', 'une', 'le', 'la', 'les', 'tu', 'notre', 'bien', 'même', 'sur', 'quand', 'ton', 'ta', 'tes', 'avec', 'après', 'ce', 'cette', 'ça', 'mon', 'il', 'elle', 'on', 'je', 'nous', 'vous', 'si', 'donc', 'mais', 'et', 'ici', 'là', 'ah', 'oui', 'non', 'c', 'l', 'd', 'j', 't', 'n', 's', 'qu', 'comment', 'combien', 'quel', 'quelle', 'est', 'regarde', 'lis', 'pose', 'note', 'tiens', 'écoute', 'attention', 'ok']);
+const nommer = (e, sc, t) => {
+  const p = pn(e); if (!p || typeof t !== 'string' || sc.pnj === 'moi') return t;
+  const toujours = sc.fin || e.scene === 'intro' || e.scene === 'verdict';
+  if (!toujours && hash(`${e.scene}|${e.f.graine ?? 1}|prenom`) % 100 >= 50) return t;
+  const m = t.match(/«\s*([A-Za-zÀ-ÿ]+)/);
+  if (!m || m[1][0] !== m[1][0].toUpperCase() || !DEBUTS_SURS.has(m[1].toLowerCase())) return t;
+  const i = t.indexOf(m[0]), mot = m[1][0].toLowerCase() + m[1].slice(1);
+  return `${t.slice(0, i)}« ${p}, ${mot}${t.slice(i + m[0].length)}`;
+};
+export const texteDe = (e, sc = SCENES[e.scene]) => nommer(e, sc, typeof sc.texte === 'function' ? sc.texte(e) : sc.texte);
 // Les scènes marquées « melange » présentent leurs choix dans un ordre propre à la partie (la bonne réponse n'est pas toujours la première)
 const brasser = c => { let h = hash(c) | 0; h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); return (h ^ (h >>> 16)) >>> 0; };
 const melanger = (e, cle, L) => L.map((c, i) => [brasser(`${e.f?.graine ?? 1}|${cle}|${i}`), c]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
@@ -240,7 +256,7 @@ export const lambdaVrai = e => prop(e, { phPerso: { tio2: phVrai(e, 'tio2'), cac
 export const brillance = e => { const l = lambdaVrai(e), g60 = 2.8 + 70 * Math.pow(Math.max(0, 0.85 - l), 1.3); return { g60, g85: g60 * 2.3, l }; };
 
 add('intro', { lieu: 'Bureau de la responsable', pnj: 'dubreuil', titre: 'Lundi, 8 h 00',
-  texte: `Mme Dubreuil t'accueille avec un café et un dossier.\n« Notre fournisseur est en rupture de Vinnapas EP 3360, la résine de notre base de peinture blanche intérieure. Il faut pouvoir la remplacer par l'Orgal PST 50A sans dégrader la base : mate (λ = CPV/CPVC ≥ 0,8), extrait sec supérieur à 50 %, pouvoir masquant supérieur à 7,0 m²/L, COV inférieurs à 30 g/L, matières premières à moins de 4,5 €/kg, et film qui se forme dès 5 °C. »\n« On en profite pour corriger un défaut : les opérateurs trouvent des gros amas de poudres à la dispersion. Je veux une formule, une peinture fabriquée et un dossier de contrôle qualité. »\n« Appel avec notre cliente, Mme Aubry, à 15 h. Rapport pour 17 h. Karim, Inès et Lucas t'aident, mais chacun ne fait qu'une chose à la fois. »`,
+  texte: e => `Mme Dubreuil t'accueille avec un café et un dossier.\n« ${pn(e) ? 'Bonjour ' + pn(e) + '. ' : ''}Notre fournisseur est en rupture de Vinnapas EP 3360, la résine de notre base de peinture blanche intérieure. Il faut pouvoir la remplacer par l'Orgal PST 50A sans dégrader la base : mate (λ = CPV/CPVC ≥ 0,8), extrait sec supérieur à 50 %, pouvoir masquant supérieur à 7,0 m²/L, COV inférieurs à 30 g/L, matières premières à moins de 4,5 €/kg, et film qui se forme dès 5 °C. »\n« On en profite pour corriger un défaut : les opérateurs trouvent des gros amas de poudres à la dispersion. Je veux une formule, une peinture fabriquée et un dossier de contrôle qualité. »\n« Appel avec notre cliente, Mme Aubry, à 15 h. Rapport pour 17 h. Karim, Inès et Lucas t'aident, mais chacun ne fait qu'une chose à la fois. »`,
   choix: [{ t: 'Parcourir le dossier', vers: 'docs' }] });
 
 add('docs', { lieu: 'Bureau', pnj: 'moi', titre: 'Étude du dossier',
@@ -774,7 +790,7 @@ export function verdict(e) {
   if (e.t > T_RAPPORT) return 'fin_retard';
   return bilan(e).filter(b => b.niveau === 'ok').length >= 6 ? 'fin_excellent' : 'fin_bon';
 }
-add('verdict', { lieu: 'Bureau', pnj: 'dubreuil', titre: 'Mme Dubreuil lit ton rapport', texte: 'Elle lit en silence, puis lève les yeux.', choix: e => [{ t: 'Écouter son verdict', vers: verdict(e) }] });
+add('verdict', { lieu: 'Bureau', pnj: 'dubreuil', titre: 'Mme Dubreuil lit ton rapport', texte: e => `Elle lit en silence, puis lève les yeux${pn(e) ? ' : « ' + pn(e) + ', j\'ai lu ton rapport. »' : '.'}`, choix: e => [{ t: 'Écouter son verdict', vers: verdict(e) }] });
 
 // ───────────── Bilan par compétence (référentiel du sujet) ─────────────
 export function bilan(e) {
