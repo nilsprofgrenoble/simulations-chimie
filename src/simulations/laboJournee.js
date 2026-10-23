@@ -108,7 +108,12 @@ const nommer = (e, sc, t) => {
   const i = t.indexOf(m[0]), mot = m[1][0].toLowerCase() + m[1].slice(1);
   return `${t.slice(0, i)}« ${p}, ${mot}${t.slice(i + m[0].length)}`;
 };
-export const texteDe = (e, sc = SCENES[e.scene]) => nommer(e, sc, typeof sc.texte === 'function' ? sc.texte(e) : sc.texte);
+const enPause = e => e.t >= PAUSE_DEB && e.t < PAUSE_FIN;
+export const texteDe = (e, sc = SCENES[e.scene]) => {
+  const t = nommer(e, sc, typeof sc.texte === 'function' ? sc.texte(e) : sc.texte);
+  // Résultat lu pendant la pause déjeuner : le technicien l'a laissé sur la paillasse avant de partir
+  return sc.id?.startsWith('res_') && enPause(e) ? `🍽 C'est la pause déjeuner : le résultat a été laissé sur ta paillasse avant le départ de l'équipe.\n${t}` : t;
+};
 // Les scènes marquées « melange » présentent leurs choix dans un ordre propre à la partie (la bonne réponse n'est pas toujours la première)
 const brasser = c => { let h = hash(c) | 0; h = Math.imul(h ^ (h >>> 15), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); return (h ^ (h >>> 16)) >>> 0; };
 const melanger = (e, cle, L) => L.map((c, i) => [brasser(`${e.f?.graine ?? 1}|${cle}|${i}`), c]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
@@ -760,26 +765,29 @@ add('res_es2', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Résultat
     : !covOk(e) ? [refaireCoalescent('COV mesurés au-dessus de 30 g/L : dose de coalescent à revoir.'), { t: 'Je garde cette formule et je le signale', f: { mes_es: true }, note: 'COV supérieurs à 30 g/L : formule conservée, écart signalé.', vers: 'labo' }]
     : [{ ...retourLabo, f: { mes_es: true }, note: 'ES et densité mesurées : conformes.' }] });
 // ───────────── Extrait sec : Inès donne les résultats bruts, l'élève calcule, vérifie la concordance et exprime le résultat ─────────────
-export const ES_SR = 0.25;                          // écart-type de répétabilité de la méthode (% d'extrait sec)
+export const ES_SR = 0.5, ES_U = 0.8;             // écart-type de répétabilité de la méthode (% d'extrait sec) et incertitude élargie (k = 2) donnés par le laboratoire
 const fr3 = x => Math.round(x * 1000) / 1000;
 const alea = (e, cle) => brasser(`${e.f.graine ?? 1}|${cle}`) / 4294967296;
+const pc3 = x => x.toFixed(3).replace('.', ',');
+// Feuille de paillasse d'Inès : pesées brutes, masse volumique et caractéristiques de la méthode (affichée aussi à l'écran de calcul)
+export const esFeuille = e => { const B = esBrut(e); return `Essai 1 : m₀ (capsule vide) = ${pc3(B[0].m0)} g ; m₁ (capsule + peinture) = ${pc3(B[0].m1)} g ; m₂ (après étuve) = ${pc3(B[0].m2)} g\nEssai 2 : m₀ = ${pc3(B[1].m0)} g ; m₁ = ${pc3(B[1].m1)} g ; m₂ = ${pc3(B[1].m2)} g\nMasse volumique (pycnomètre) : ρ = ${nf(prop(e).densite, 3)} g/mL.\nÉcart-type de répétabilité de la méthode : s_r = ${nf(ES_SR, 1)} % d'extrait sec ; limite de répétabilité r = 2,8 × s_r. Incertitude élargie de la méthode (k = 2) : U = ${nf(ES_U, 1)} %.`; };
 export const esBrut = e => {
   const vrai = prop(e).ES - (e.f.lotDouteux ? 1.2 : 0);
-  return [1, 2].map(i => { const m0 = fr3(1.15 + 0.2 * alea(e, 'esm0' + i)), prise = 1.4 + 0.25 * alea(e, 'esp' + i), m1 = fr3(m0 + prise), es = vrai + (alea(e, 'esd' + i) - 0.5) * 0.4, m2 = fr3(m0 + (m1 - m0) * es / 100); return { m0, m1, m2 }; });
+  return [1, 2].map(i => { const m0 = fr3(1.15 + 0.2 * alea(e, 'esm0' + i)), prise = 1.4 + 0.25 * alea(e, 'esp' + i), m1 = fr3(m0 + prise), es = vrai + (alea(e, 'esd' + i) - 0.5) * 0.8, m2 = fr3(m0 + (m1 - m0) * es / 100); return { m0, m1, m2 }; });
 };
-export const esCalc = e => { const B = esBrut(e).map(x => (x.m2 - x.m0) / (x.m1 - x.m0) * 100); return { es1: B[0], es2: B[1], ecart: Math.abs(B[0] - B[1]), r: 2.8 * ES_SR, moy: (B[0] + B[1]) / 2, U: 2 * ES_SR / Math.sqrt(2) }; };
+export const esCalc = e => { const B = esBrut(e).map(x => (x.m2 - x.m0) / (x.m1 - x.m0) * 100); return { es1: B[0], es2: B[1], ecart: Math.abs(B[0] - B[1]), r: 2.8 * ES_SR, moy: (B[0] + B[1]) / 2, U: ES_U }; };
 add('res_es', { lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Résultats bruts : extrait sec et masse volumique',
   entree: e => ({ ...e, f: { ...e.f, densMes: prop(e).densite } }),
-  texte: e => { const B = esBrut(e); return `Inès te tend sa feuille de paillasse : « Étuve à 105 °C pendant 2 h, jusqu'à masse constante, deux essais sur capsules d'aluminium. Je ne te donne que les pesées. »\n\nEssai 1 : m₀ (capsule vide) = ${B[0].m0.toFixed(3).replace('.', ',')} g ; m₁ (capsule + peinture) = ${B[0].m1.toFixed(3).replace('.', ',')} g ; m₂ (après étuve) = ${B[0].m2.toFixed(3).replace('.', ',')} g\nEssai 2 : m₀ = ${B[1].m0.toFixed(3).replace('.', ',')} g ; m₁ = ${B[1].m1.toFixed(3).replace('.', ',')} g ; m₂ = ${B[1].m2.toFixed(3).replace('.', ',')} g\n\nMasse volumique (pycnomètre) : ρ = ${nf(prop(e).densite, 3)} g/mL.\nÉcart-type de répétabilité de la méthode : s_r = ${nf(ES_SR, 2)} % d'extrait sec ; limite de répétabilité r = 2,8 × s_r.`; },
+  texte: e => `Inès te tend sa feuille de paillasse : « Étuve à 105 °C pendant 2 h, jusqu'à masse constante, deux essais sur capsules d'aluminium. Je ne te donne que les pesées. »\n\n${esFeuille(e)}`,
   choix: [{ t: 'Calculer les extraits secs', vers: 'calcEs' }] });
 add('calcEs', { lieu: 'Laboratoire d\'analyses', pnj: 'moi', titre: 'Calcul : extrait sec', fiches: [],
-  texte: 'À partir des pesées d\'Inès, calcule l\'extrait sec de chaque essai (ES = masse de matière sèche ÷ masse de peinture), puis leur moyenne.',
+  texte: e => `À partir des pesées d'Inès, calcule l'extrait sec de chaque essai (ES = masse de matière sèche ÷ masse de peinture), puis leur moyenne.\n\n${esFeuille(e)}`,
   calcul: { q: 'Quel est l\'extrait sec moyen de la peinture (en %) ?', unite: '%', vrai: e => esCalc(e).moy, tol: 0.004,
     indice: 'Pour chaque essai : ES = (m₂ − m₀) ÷ (m₁ − m₀) × 100. Attention : m₀ est la capsule vide, m₁ la capsule avec la peinture humide, m₂ la capsule avec le résidu sec.',
     ok: { vers: 'esConcl', note: 'Extrait sec : calcul fait à partir des pesées brutes.' },
     ko: { vers: 'esConcl', duree: 10, f: { esAide: true }, note: 'Extrait sec calculé avec l\'aide d\'Inès.' } } });
 add('esConcl', { melange: true, lieu: 'Laboratoire d\'analyses', pnj: 'ines', titre: 'Comment rends-tu le résultat ?',
-  texte: e => { const c = esCalc(e); return `Tu trouves ES₁ = ${nf(c.es1, 2)} % et ES₂ = ${nf(c.es2, 2)} %.\nInès : « Avant de moyenner, as-tu regardé si les deux essais sont compatibles ? Et comment écris-tu le résultat dans ton rapport ? »`; },
+  texte: e => { const c = esCalc(e); return `Tu trouves ES₁ = ${nf(c.es1, 2)} % et ES₂ = ${nf(c.es2, 2)} %. Rappel : s_r = ${nf(ES_SR, 1)} %, r = 2,8 × s_r, U de la méthode = ${nf(ES_U, 1)} % (k = 2).\nInès : « Avant de moyenner, as-tu regardé si les deux essais sont compatibles ? Et comment écris-tu le résultat dans ton rapport ? »`; },
   choix: e => { const c = esCalc(e), m = nf(c.moy, 1), U = nf(c.U, 1);
     return [
       { t: `ES = ${m} %`, f: { esConcl: 'simple' }, note: `Extrait sec ${m} % rendu sans vérification de concordance ni incertitude.`, vers: 'res_es2' },
