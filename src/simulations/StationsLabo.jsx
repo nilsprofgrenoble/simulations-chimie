@@ -246,7 +246,7 @@ export function StationFormule({ e, onValider }) {
   const ajouter = ev => { const x = ev.target.value; if (x === 'dpnb') { setDpnbVisible(true); setMsgAjout(''); } else if (x) setMsgAjout('Cette matière première n\'a pas d\'effet dans le scénario de la journée : elle n\'est pas retenue dans la formule.'); };
   const val = validerFormule(e, fm);
   const controles = val.ok ? controlesFormule(e, fm) : [];
-  const total = val.ok ? proprietes({ resine: 'orgal', foamex: 1.5, thixol: 1.5, coapur: 3, ...fm }).mTot : null;
+  const total = val.ok ? proprietes({ resine: 'orgal', foamex: 1.5, thixol: 1.5, coapur: 6.7, ...fm }).mTot : null;
   const icone = ok => ok === true ? ['✔', VERT] : ok === false ? ['✖', ROUGE] : ['➜', AMBRE];
   return (
     <div data-formule style={{ margin: '14px 0', background: '#fff', border: '1.5px solid #cbd5e1', borderRadius: 8, padding: '12px 14px' }}>
@@ -266,7 +266,7 @@ export function StationFormule({ e, onValider }) {
           </select></label>
         {msgAjout && <div data-catalogue-msg style={{ color: AMBRE, marginTop: 4 }}>{msgAjout}</div>}
       </div>}
-      <div style={{ fontSize: 12.5, color: DOUX, margin: '8px 0' }}>Fixes : Foamex 1,5 g · Thixol 1,5 g · Coapur 3 g.{total != null && ` Masse totale : ${nf(total)} g.`}</div>
+      <div style={{ fontSize: 12.5, color: DOUX, margin: '8px 0' }}>Fixes : Foamex 1,5 g · Thixol 1,5 g · Coapur 6,7 g.{total != null && ` Masse totale : ${nf(total)} g.`}</div>
       {!val.ok && <div role="alert" data-fm-erreur style={{ color: ROUGE, fontSize: 14, margin: '6px 0' }}>{val.message}</div>}
       {controles.length > 0 && <div data-controles style={{ borderTop: '1px solid #e5e7eb', marginTop: 6 }}>
         <div style={{ fontWeight: 700, fontSize: 14, margin: '8px 0 2px' }}>Ta formule face au cahier des charges (calculs sur papier)</div>

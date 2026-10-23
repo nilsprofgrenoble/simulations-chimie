@@ -53,6 +53,9 @@ const jouer = () => {
   const calc = () => { e = J.valider(e, J.SCENES[e.scene].calcul.vrai(e)).etat; };
   return { get e() { return e; }, set e(v) { e = v; }, go, calc };
 };
+// Formule finale du scénario idéal : un peu plus de TiO₂ (l'Orgal masque moins bien que la Vinnapas), l'eau compense la masse
+const tio2Plus = (g, t = 66) => { const fm = J.fmDepuisFlags(g.e); fm.eau = Math.round((fm.eau - (t - fm.tio2)) * 10) / 10; fm.tio2 = t; g.e = J.choisir(g.e, J.validerFormule(g.e, fm).choix); };
+const choixRes = e => { const ch = J.choixDe(e); return (e.scene === 'res_rheo' && ch.find(c => c.t.includes('4 g de Coapur'))) || ch.find(c => c.t.startsWith('Retourner')) || ch[0]; };
 function debut(g, o = {}) {
   g.go('Parcourir'); g.go('fiches techniques'); g.go('fait le tour');
   g.go('La formule et la fiche'); g.go('Revenir au dossier'); g.go("J'ai de quoi");
@@ -69,7 +72,7 @@ function formulation(g, o = {}) {
   if (o.stock === 'ignore') { g.go('On l\'utilise comme ça'); g.go(o.insiste ? 'Je n\'ai pas le temps' : 'Tu as raison'); if (o.insiste) return; g.go('fût neuf'); }
   else if (o.stock === 'tamise') { g.go('Je contrôle le fût'); g.go('Tamiser'); }
   else { g.go('Je contrôle le fût'); g.go('fût neuf'); }
-  g.go('Valider ma formule');
+  if (o.tio2 === false) g.go('Valider ma formule'); else tio2Plus(g, o.tio2);
   if (o.rate) { g.go('Je mets tout'); g.go('Tout refaire'); } else g.go('Je suis la fiche');
   g.go(o.trace === false ? 'noterai ça' : 'Je note maintenant');
 }
@@ -86,12 +89,12 @@ function travaille(g, o = {}) {
     if (e.scene === 'calcDpnb') { g.calc(); continue; }
     if (e.scene === 'incoherence') { g.go("J'en parle"); continue; }
     if (e.scene === 'alerteRep') { g.go('Reprendre la formulation'); continue; }
-    if (e.scene === 'formuleFinale') { g.go('Valider ma formule'); continue; }
+    if (e.scene === 'formuleFinale') { if (o.tio2 === false) g.go('Valider ma formule'); else tio2Plus(g, o.tio2); continue; }
     if (e.scene === 'fabrication') { g.go('Je suis la fiche'); continue; }
     if (e.scene === 'cahier') { g.go('Je note maintenant'); continue; }
     if (e.scene === 'res_tmff') { g.go(J.tmffOk(e) ? 'Retourner' : o.corrige ? 'Corriger la dose' : 'Je garde'); continue; }
     if (e.scene === 'res_es') { g.go(e.f.regle === 'ok' && J.covOk(e) ? 'Retourner' : 'garde cette formule'.length && (e.f.regle === 'ok' ? 'Je garde' : 'garde cette formule')); continue; }
-    if (e.scene.startsWith('res_')) { const ch = J.choixDe(e); g.e = J.choisir(e, ch.find(c => c.t.startsWith('Retourner')) || ch[0]); continue; }
+    if (e.scene.startsWith('res_')) { g.e = J.choisir(e, choixRes(e)); continue; }
     if (e.scene === 'labo') {
       const ch = J.choixDe(e), lire = ch.find(c => c.t.startsWith('📄'));
       const fini = (o.corrige ? ['es', 'rheo', 'masq', 'tmff'] : ['es', 'rheo', 'masq', 'tmff', 'cout', 'huile', 'brill']).every(k => e.f['mes_' + k]) && e.f.clientFait;
@@ -112,7 +115,7 @@ const cas = {};
 { const g = jouer(); debut(g, { alerte: 'tard' }); formulation(g, { dpnb: 3, trace: false, rate: true, stock: 'tamise' }); cas.fin_bon = travaille(g, { stop: 380 }); }
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); cas.fin_promesse = travaille(g, { stab: 'Stable 30 mois' }); }
 { const g = jouer(); debut(g, { alerte: 'nul' }); formulation(g, { dpnb: 3 }); cas.fin_cloque = travaille(g, { mens: true }); }
-{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { naif: true }); g.go('Rédiger le rapport'); g.go('Non démontrable'); g.go('Écouter'); cas.fin_naif = g.e; }
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { naif: true, tio2: false }); g.go('Rédiger le rapport'); g.go('Non démontrable'); g.go('Écouter'); cas.fin_naif = g.e; }
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); g.go('Demander à Inès : Extrait'); g.go('Rédiger le rapport'); g.go('Non démontrable'); g.go('Écouter'); cas.fin_incomplet = g.e; }
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3, stock: 'ignore', insiste: true }); cas.fin_matiere = g.e; }
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 0 }); cas.fin_ecart = travaille(g, {}); }
@@ -122,10 +125,11 @@ const cas = {};
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); for (let i = 0; i < 40 && g.e.scene !== 'fin_perdue'; i++) g.go(g.e.scene === 'client' ? 'Je lui donne' : 'Attendre'); cas.fin_perdue = g.e; }
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 });
   for (const k of ['Demander à Inès : Extrait', 'Demander à Lucas : Profil', 'Demander à Lucas : Pouvoir']) g.go(k);
-  for (let i = 0; i < 80 && !(g.e.t >= 515 && g.e.f.mes_es && g.e.f.mes_rheo && g.e.f.mes_masq && g.e.f.clientFait); i++) {
+  for (let i = 0; i < 80 && !(g.e.t >= 490 && g.e.f.mes_es && g.e.f.mes_rheo && g.e.f.mes_masq && g.e.f.clientFait); i++) {
     const e = g.e, l = J.choixDe(e).find(c => c.t.startsWith('📄'));
-    if (e.scene === 'client') g.go('Je lui donne'); else if (e.scene.startsWith('res_')) g.e = J.choisir(e, J.choixDe(e)[0]); else if (l) g.e = J.choisir(e, l); else g.go('Attendre');
+    if (e.scene === 'client') g.go('Je lui donne'); else if (e.scene.startsWith('res_')) g.e = J.choisir(e, choixRes(e)); else if (l) g.e = J.choisir(e, l); else g.go('Attendre');
   }
+  if (process.env.DBG) console.log('DBG', g.e.scene, g.e.t, JSON.stringify(Object.keys(g.e.f).filter(k => k.startsWith('mes_') && g.e.f[k])), g.e.f.clientFait, g.e.f.coapurAdd);
   g.go('Rédiger le rapport'); g.go('Non démontrable'); g.go('Écouter'); cas.retard_ou_autre = g.e; }
 const lis = {}; for (const [k, e] of Object.entries(cas)) lis[k] = `${e.scene} à ${J.hhmm(e.t)} (${J.bilan(e).map(b => b.niveau[0]).join('')})`; console.log(lis);
 assert.strictEqual(cas.fin_excellent.scene, 'fin_excellent', 'parcours idéal → excellent');
@@ -276,23 +280,24 @@ console.log('OK : dossier et variations');
 {
   const base = J.etatInitial(), f0 = { ...base.f, regle: 'ok', coadis: 0.525, dpnb: 3 };
   let e = J.aller({ ...base, f: f0 }, 'formuleFinale');
-  const fm0 = J.fmDepuisFlags(e); assert.strictEqual(fm0.liant, 100); assert.strictEqual(fm0.eau, 102);
-  assert(!J.validerFormule(e, { ...fm0, liant: 0 }).ok && !J.validerFormule(e, { ...fm0, eau: 20 }).ok && !J.validerFormule(e, { ...fm0, tio2: -1 }).ok && !J.validerFormule(e, { ...fm0, tio2: 'x' }).ok, 'formules refusées');
+  const fm0 = J.fmDepuisFlags(e); assert.strictEqual(fm0.liant, 100); assert(Math.abs(fm0.eau - 98.3) < 1e-9);
+  assert(!J.validerFormule(e, { ...fm0, liant: 0 }).ok && !J.validerFormule(e, { ...fm0, eau: 5 }).ok && !J.validerFormule(e, { ...fm0, tio2: -1 }).ok && !J.validerFormule(e, { ...fm0, tio2: 'x' }).ok, 'formules refusées');
   // contrôles sur papier : λ calculé avec les fiches tant que les prises d'huile ne sont pas mesurées
   const cp = J.controlesFormule(e, fm0); assert.strictEqual(cp.find(c => c.cle === 'lambda').ok, false); assert.strictEqual(cp.find(c => c.cle === 'es').ok, true);
   assert.strictEqual(J.controlesFormule({ ...e, f: { ...e.f, phMes: { tio2: 25, caco3: 30 } } }, fm0).find(c => c.cle === 'lambda').ok, true);
   // la formule de départ validée donne le même verdict physique que sans formule libre
   const v0 = J.validerFormule(e, fm0); const e0 = J.choisir(e, v0.choix);
-  assert.strictEqual(e0.scene, 'fabrication'); assert.strictEqual(e0.f.regle, 'ok'); assert(J.ecartsCdc(e0).length === 0, 'formule de départ conforme : ' + JSON.stringify(J.ecartsCdc(e0)));
+  assert.strictEqual(e0.scene, 'fabrication'); assert.strictEqual(e0.f.regle, 'ok'); assert(J.ecartsCdc(e0).map(x => x.cle).sort().join() === 'ici,masq', 'formule de départ : seuls le pouvoir masquant et la viscosité haut gradient sont à corriger : ' + JSON.stringify(J.ecartsCdc(e0)));
   // moins de TiO2 : moins cher mais le pouvoir masquant passe sous 7
   const pauvre = J.choisir(e, J.validerFormule(e, { ...fm0, tio2: 45, eau: fm0.eau + 15 }).choix);
-  assert(J.pouvoirMasquant(pauvre) < 7 && J.pouvoirMasquant(e0) >= 7 && J.coutKg(J.formule(pauvre)) < J.coutKg(J.formule(e0)), 'compromis coût / masquant');
+  const e66 = J.choisir(e, J.validerFormule(e, { ...fm0, tio2: 66, eau: fm0.eau - 6 }).choix);
+  assert(J.pouvoirMasquant(e0) < 7 && J.pouvoirMasquant(pauvre) < J.pouvoirMasquant(e0) && J.pouvoirMasquant(e66) >= 7 && J.coutKg(J.formule(e66)) < 4.5 && J.coutKg(J.formule(pauvre)) < J.coutKg(J.formule(e0)), 'compromis coût / masquant : un peu de TiO₂ en plus');
   assert(J.ecartsCdc(pauvre).some(x => x.cle === 'masq'));
   // trop de liant : pas mate
   const brillante = J.choisir(e, J.validerFormule(e, { ...fm0, liant: 160, eau: 62 }).choix);
   assert(J.brillance(brillante).g60 > 10 && J.lambdaVrai(brillante) < 0.8 && J.ecartsCdc(brillante).some(x => x.cle === 'lambda'));
   // ES trop bas → regle naif
-  assert.strictEqual(J.choisir(e, J.validerFormule(e, { ...fm0, liant: 83.3, eau: 118.7 }).choix).f.regle, 'naif');
+  assert.strictEqual(J.choisir(e, J.validerFormule(e, { ...fm0, liant: 83.3, eau: 115.0 }).choix).f.regle, 'naif');
   // revenir à la formule : l'entrée dans la scène efface la formule précédente
   assert.strictEqual(J.aller(e0, 'formuleFinale').f.fm, undefined);
   // hub ouvert
@@ -342,3 +347,20 @@ console.log('OK : relecture');
   assert(/ajouté après la mesure/.test(J.bilan(fin).map(b => b.t || b.texte || JSON.stringify(b)).join(' ')) || true);
 }
 console.log('OK : lot 10 (piste du coalescent)');
+
+// 12. Lot 11 : rhéologie à haut gradient (Coapur) et pouvoir masquant (TiO₂)
+{
+  assert(!J.iciOk({ f: {} }) && !J.iciOk({ f: { coapurAdd: 2 } }) && J.iciOk({ f: { coapurAdd: 4 } }) && !J.iciOk({ f: { coapurAdd: 15 } }), 'ICI : trop bas sans Coapur, bon avec 4 g, trop haut avec 15 g');
+  const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 });
+  g.e = { ...g.e, scene: 'res_rheo' };
+  assert(J.dispOk(g.e.f));
+  const ch = J.choixDe(g.e); assert(ch.some(c => /Coapur/.test(c.t)) && ch.some(c => /Thixol/.test(c.t)), 'choix Coapur / Thixol proposés');
+  const th = J.choisir(g.e, ch.find(c => /Thixol/.test(c.t))); assert.strictEqual(th.scene, 'res_rheo'); assert(!J.iciOk(th), 'le Thixol ne corrige pas le haut gradient');
+  assert(/Thixol n'a rien changé/.test(J.texteDe(th)), 'le texte explique pourquoi');
+  const co = J.choisir(g.e, ch.find(c => /4 g de Coapur/.test(c.t))); assert(J.iciOk(co));
+  assert.strictEqual(J.choixDe(co).length, 1, 'une fois conforme : retour à la paillasse');
+  assert(J.formule(co).coapur > 10, 'la formule tient compte du Coapur ajouté');
+  const garde = J.choisir(g.e, ch.find(c => /signale/.test(c.t))); assert(garde.f.mes_rheo && garde.f.rheoKo);
+  assert(J.ecartsCdc(garde).some(x => x.cle === 'ici'), 'écart signalé');
+}
+console.log('OK : lot 11 (rhéologie Coapur, pouvoir masquant)');

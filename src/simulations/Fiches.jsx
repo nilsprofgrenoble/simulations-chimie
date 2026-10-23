@@ -11,12 +11,14 @@ const REELLES = {
   dpnb: { titre: 'Poly-Solv DPnB', source: 'Monument Chemical', pages: ['dpnb-1', 'dpnb-2'] },
   coadis: { titre: 'COADIS BR 3', source: 'Coatex', pages: ['coadis-1', 'coadis-2'] },
   durcal: { titre: 'DURCAL 10', source: 'Omya', pages: ['durcal-1'] },
+  coapur: { titre: 'COAPUR 3025', source: 'Coatex', pages: ['coapur-1'] },
+  thixol: { titre: 'THIXOL 53 L', source: 'Coatex', pages: ['thixol-1'] },
 };
 const url = nom => `${import.meta.env.BASE_URL}fiches/${nom}.jpg`;
 
-const PRIX_LIGNES = [['Eau', 'Diluant', '121,7', '3,7 € / m³'], ['TiO₂ (rutile)', 'Pigment blanc', '60,0', '10 € / kg'], ['CaCO₃ léger', 'Charge', '60,0', '3 € / kg'],
+const PRIX_LIGNES = [['Eau', 'Diluant', '118,0', '3,7 € / m³'], ['TiO₂ (rutile)', 'Pigment blanc', '60,0', '10 € / kg'], ['CaCO₃ léger', 'Charge', '60,0', '3 € / kg'],
   ['Vinnapas EP 3360', 'Liant', '83,3', '3,60 € / kg'], ['Foamex', 'Antimousse', '1,5', '6 € les 200 g'], ['Coadis BR3', 'Dispersant', '0,2', '7 € / L (d = 1,22)'],
-  ['Thixol', 'Épaississant', '1,5', '7 € / L (d = 1,06)'], ['Coapur', 'Épaississant associatif', '3,0', '8 € / L (d = 1,04)']];
+  ['Thixol', 'Épaississant', '1,5', '7 € / L (d = 1,06)'], ['Coapur', 'Épaississant associatif', '6,7', '8 € / L (d = 1,04)']];
 const FAB = [['1', 'Dans la cuve, introduire 70 % de l\'eau, le Foamex et le Coadis BR3.', 'Agitation 300 tr/min'], ['2', 'Ajouter TiO₂ puis CaCO₃ en pluie fine.', '300 tr/min'],
   ['3', 'Disperser à vitesse maximale. Contrôle : finesse au grindomètre ≥ 7 Hegman.', '15 min'], ['4', 'Ajouter la résine, puis le coalescent éventuel, le Thixol et le Coapur.', 'Agitation lente, 200 tr/min'],
   ['5', 'Ajuster avec le reste de l\'eau. Contrôler l\'aspect, le pH et l\'extrait sec.', '5 min'], ['6', 'Noter le lot, les masses réellement pesées et les observations.', '']];
@@ -51,7 +53,7 @@ export default function Fiches({ ids, ouvert = true }) {
   return (<div data-fiches>{ids.map(id => {
     if (id === 'cdc') return (
       <Feuille key={id} ouvert={ouvert} entete="Cahier des charges" titre="Nouvelle base de peinture blanche mate" sous="Résine de remplacement : Orgal PST 50A" edition="exigences du client">
-        <Tableau tetes={['Critère', 'Exigence']} lignes={[['Extrait sec', '> 50 %'], ['λ = CPV / CPVC', '≥ 0,8'], ['Pouvoir masquant', '> 7,0 m²/L'], ['COV', '< 30 g/L'], ['Matières premières', '< 4,5 €/kg'], ['Film continu', 'dès 5 °C'], ['Stabilité', '30 mois']]} />
+        <Tableau tetes={['Critère', 'Exigence']} lignes={[['Extrait sec', '> 50 %'], ['λ = CPV / CPVC', '≥ 0,8'], ['Pouvoir masquant', '> 7,0 m²/L'], ['Viscosité à haut gradient (cône-plan, ICI)', '0,9 à 1,3 P'], ['COV', '< 30 g/L'], ['Matières premières', '< 4,5 €/kg'], ['Film continu', 'dès 5 °C'], ['Stabilité', '30 mois']]} />
       </Feuille>);
     if (id === 'formule') return (
       <Feuille key={id} ouvert={ouvert} entete="Document 1" titre="Formule de référence : base de peinture blanche mate" sous="Résine Vinnapas EP 3360, sans agent de coalescence" edition="331,2 g pour 100 %">
