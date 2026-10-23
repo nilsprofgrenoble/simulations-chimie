@@ -687,7 +687,7 @@ add('viscoPrise', { melange: true, lieu: 'Atelier d\'application', pnj: 'lucas',
     { t: 'Sur la totalité du lot', d: 'plus rapide, mais irréversible', duree: 0, note: 'Ajout directement sur tout le lot.', run: e => ({ ...e, f: { ...e.f, msgVisco: undefined, visco: { ...e.f.visco, taille: 'tout', essais: [] } } }), vers: 'viscoDose' },
     { t: 'Finalement, je laisse tomber cet additif', duree: 0, vers: 'res_rheo' }] });
 const appliquerVisco = (e, essai) => { const v = e.f.visco, k = v.taille === 'tout' ? 1 : prop(e).mTot / M_ESSAI, g = Math.round(essai.m * k * 10) / 10, cle = v.additif === 'coapur' ? 'coapurAdd' : 'thixolAdd';
-  return { ...e, t: e.t + (v.taille === 'tout' ? 0 : 10), f: { ...e.f, [cle]: (e.f[cle] || 0) + (v.taille === 'tout' ? essai.m : g), visco: undefined } }; };
+  return { ...e, t: e.t + (v.taille === 'tout' ? 0 : 10), f: { ...e.f, [cle]: (e.f[cle] || 0) + (v.taille === 'tout' ? essai.m : g), viscoTaille: v.taille, viscoNb: (v.essais || []).length, visco: undefined } }; };
 add('viscoDose', { lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Combien d\'additif ?', station: 'visco', fiches: ['coapur', 'thixol'],
   texte: e => e.f.visco?.taille === 'tout'
     ? `Lucas : « Tu ajoutes ${nomAdd(e.f.visco.additif)} directement dans le lot de ${nf(prop(e).mTot, 0)} g. Combien en pèses-tu, produit tel que livré ? Après, il n'y a pas de retour en arrière. »`
@@ -806,7 +806,25 @@ export function bilan(e) {
   const ajoute = o => { const coherent = dr != null && (o.niveau === 'ok' ? dr >= 1 : o.niveau === 'moyen' ? dr > 0 && dr < 1 : o.niveau === 'ko' ? dr <= 0 : false); pr.push({ ...o, ratio: coherent ? dr : RATIO_PAR_NIVEAU[o.niveau] }); dr = null; };
   const c14 = n(f.regle === 'ok' && !f.refait) + n(dOk) + n(f.mes_huile) + n(f.mes_dpnb && !f.impasses);
   ajoute({ comp: 'C1.4', titre: 'Choisir méthodes et techniques', niveau: niv(c14, f.mes_dpnb ? 4 : 3), texte: `Règle de remplacement de la résine ${f.regle === 'ok' && !f.refait ? 'juste dès le départ' : 'à corriger'} ; coalescent ${dTxt} ; prises d'huile ${f.mes_huile ? 'mesurées pour lever le doute sur la CPVC' : 'non mesurées (le tableur avec les valeurs des fiches donnait une peinture non mate)'}.` });
-  ajoute({ comp: 'C2.1', titre: 'Préparer produits et matériel', niveau: !f.fabrique && !f.rate ? 'nd' : f.rate ? 'moyen' : 'ok', texte: f.rate ? 'Première fabrication ratée : l\'ordre d\'introduction de la fiche n\'avait pas été respecté.' : f.fabrique ? 'Fabrication conforme à la fiche, finesse correcte.' : 'Pas de fabrication réalisée.' });
+  // C2.1 : préparer et réaliser. On ne juge que ce que l'élève a réellement fait (fabrication, prises d'huile à la spatule, dosage CPG, essai d'ajout d'épaississant)
+  const gestes = [];
+  gestes.push(f.rate ? { r: 0.5, t: 'première fabrication ratée : l\'ordre d\'introduction de la fiche n\'avait pas été respecté' } : f.fabrique ? { r: 1, t: 'fabrication conforme à la fiche, finesse correcte' } : { r: 0, t: 'pas de fabrication réalisée' });
+  if (f.huileMoi) {
+    const ess = f.huileEssais || [], R = ['tio2', 'caco3'].map(k => huileRetenue(e, k)), echecs = ess.filter(m => !m.ok).length;
+    const r = R.reduce((a, x) => a + (!x ? 0 : x.n >= 2 && x.ecart <= 1 ? 1 : 0.7), 0) / 2 * (echecs ? 0.85 : 1);
+    gestes.push({ r, t: `prises d'huile à la spatule ${r >= 0.99 ? 'bien réalisées (points finaux nets, déterminations répétables)' : r >= 0.6 ? 'exploitables, mais peu ou pas répétées' + (echecs ? ' et un point final dépassé' : '') : 'incomplètes'}` });
+  }
+  if (f.mes_dpnb) {
+    const rec = recuperation(e), r = !rec ? 0.6 : Math.abs(rec.taux - 100) <= 5 ? 1 : 0.5;
+    gestes.push({ r, t: `dosage CPG ${!rec ? 'sans solution de contrôle : justesse non vérifiée' : r === 1 ? 'avec une solution de contrôle retrouvée à ' + nf(rec.taux, 0) + ' % (justesse vérifiée)' : 'avec une solution de contrôle mal retrouvée (' + nf(rec.taux, 0) + ' %) : étalonnage à revoir'}` });
+  }
+  if (f.viscoTaille || f.lotPerdu) {
+    gestes.push(f.lotPerdu ? { r: 0, t: 'ajout d\'épaississant fait directement sur tout le lot, avec une dose hors cible : peinture perdue' }
+      : f.viscoTaille === 50 ? { r: (f.viscoNb || 1) <= 2 ? 1 : 0.8, t: `dose d'épaississant d'abord cherchée sur une prise d'essai de 50 g (${f.viscoNb || 1} essai${(f.viscoNb || 1) > 1 ? 's' : ''}), puis appliquée au lot` }
+        : { r: 0.6, t: 'ajout d\'épaississant fait directement sur tout le lot (dose heureusement bonne, mais risqué)' });
+  }
+  dr = gestes.reduce((a, x) => a + x.r, 0) / gestes.length;
+  ajoute({ comp: 'C2.1', titre: 'Préparer produits et matériel', niveau: dr >= 0.99 ? 'ok' : dr > 0 ? 'moyen' : f.fabrique || f.rate ? 'ko' : 'nd', texte: gestes.map(x => x.t[0].toUpperCase() + x.t.slice(1)).join(' ; ') + '.' });
   const c32 = n(f.alerte === true) * (f.alerteTardive ? 0.5 : 1) + n(f.stockCtrl) * (f.stockAlerte ? 0.5 : 1) + n(f.stab === 'honnete');
   ajoute({ comp: 'C3.2', titre: 'Détecter les non-conformités et alerter', niveau: niv(c32, 3), texte: `Promesse « COV nuls » incompatible avec l'Orgal ${f.alerte === true ? (f.alerteTardive ? 'signalée tardivement' : 'signalée tout de suite') : 'non signalée'} ; fût d'Orgal gelé ${f.stockCtrl ? (f.stockAlerte ? 'contrôlé après rappel de Karim' : 'contrôlé de ta propre initiative') : 'non contrôlé'} ; stabilité ${f.stab === 'honnete' ? 'annoncée honnêtement comme non démontrée' : f.stab === 'promis' ? 'garantie sans l\'avoir démontrée' : 'omise'}.` });
   const c41 = n(dispOk(f)) + n(dOk) + n(hsOk(e) && basOk(e));

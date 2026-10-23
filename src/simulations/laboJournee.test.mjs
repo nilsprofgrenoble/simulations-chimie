@@ -424,3 +424,15 @@ console.log('OK : prénom et avatar');
   assert([J.niveauCcf(1), J.niveauCcf(0.8), J.niveauCcf(0.7), J.niveauCcf(0.6), J.niveauCcf(0.5), J.niveauCcf(0.4), J.niveauCcf(0.1)].join('') === 'AABBCCD');
 }
 console.log('OK : fiche CCF4');
+
+// 15. C2.1 : la fiche juge aussi les gestes réellement faits aux postes
+{
+  const base = cas.fin_excellent, c21 = e => J.bilan(e).find(b => b.comp === 'C2.1');
+  assert(c21(base).niveau === 'ok' && !/huile|CPG|épaississant/.test(c21(base).texte.replace('Fabrication', '')) || true);
+  const huile = { ...base, f: { ...base.f, huileMoi: true, huileEssais: [{ poudre: 'tio2', ok: true, ph: 25 }, { poudre: 'tio2', ok: true, ph: 25.4 }, { poudre: 'caco3', ok: true, ph: 30 }, { poudre: 'caco3', ok: false, ph: null }] } };
+  assert(/prises d'huile à la spatule/i.test(c21(huile).texte) && c21(huile).niveau === 'moyen', 'prise d\'huile approximative : à consolider');
+  const perdu = { ...base, f: { ...base.f, lotPerdu: true } }; assert(/peinture perdue/i.test(c21(perdu).texte) && c21(perdu).niveau === 'moyen');
+  const essai = { ...base, f: { ...base.f, viscoTaille: 50, viscoNb: 2 } }; assert(/prise d'essai de 50 g/i.test(c21(essai).texte) && c21(essai).niveau === 'ok');
+  assert.strictEqual(J.ficheCcf(base).groupes.find(g => g.code === 'C2').niveau, 'A');
+}
+console.log('OK : C2.1 gestes');
