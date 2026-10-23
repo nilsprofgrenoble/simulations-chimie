@@ -58,7 +58,7 @@ export default function Fiches({ ids, ouvert = true }) {
     if (id === 'formule') return (
       <Feuille key={id} ouvert={ouvert} entete="Document 1" titre="Formule de référence : base de peinture blanche mate" sous="Résine Vinnapas EP 3360, sans agent de coalescence" edition="331,2 g pour 100 %">
         <Tableau tetes={['Matière première', 'Fonction', 'Masse (g)', 'Prix']} lignes={PRIX_LIGNES} />
-        <div style={{ fontSize: 12.5, color: '#475569' }}>Prix de l'Orgal PST 50A (densité 1,03) : 25 € les 5 L. Prix du DPnB (densité 0,91) : 3 € le litre. Cahier des charges : extrait sec &gt; 50 %, λ = CPV/CPVC ≥ 0,8, pouvoir masquant &gt; 7,0 m²/L, COV &lt; 30 g/L, matières premières &lt; 4,5 €/kg, film continu dès 5 °C, stabilité 30 mois.</div>
+        <div style={{ fontSize: 12.5, color: '#475569' }}>Cahier des charges : extrait sec &gt; 50 %, λ = CPV/CPVC ≥ 0,8, pouvoir masquant &gt; 7,0 m²/L, COV &lt; 30 g/L, matières premières &lt; 4,5 €/kg, film continu dès 5 °C, stabilité 30 mois.</div>
       </Feuille>);
     if (id === 'fabrication') return (
       <Feuille key={id} ouvert={ouvert} entete="Document 2" titre="Fiche de fabrication" sous="Base de peinture blanche, essai de 300 g" edition="Défloculeuse de laboratoire">

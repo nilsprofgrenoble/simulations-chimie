@@ -463,3 +463,13 @@ console.log('OK : C2.1 gestes');
   assert(ch.every(c => !/adapt|ajuster|inadapt/i.test(c.t)), 'la qualité n\'apparaît pas dans le libellé');
 }
 console.log('OK : communication adaptée (C7.3)');
+
+// 17. Retours d'essai (lot 18) : la formule garde les valeurs calculées par l'élève
+{
+  const g = jouer(); debut(g, {}); g.go('La masse de polymère'); g.calc(); g.calc(); g.go('La dose de dispersant');
+  const e0 = g.e; assert.strictEqual(e0.scene, 'calcCoadis');
+  const r = J.valider(e0, '0,45'); assert(r.juste && r.etat.f.coadis === 0.45, 'Coadis retenu = valeur saisie : ' + r.etat.f.coadis);
+  assert(!/solvant filmifiant.*tête/.test(''), 'ok');
+  for (let i = 0; i < 12; i++) { const L = J.optionsPlan({ f: { graine: i } }); assert(L[0][0] !== 'coal', 'coalescent pas en tête'); assert.strictEqual(L[L.length - 1][0], 'rien'); }
+}
+console.log('OK : lot 18');

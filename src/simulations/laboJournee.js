@@ -127,7 +127,7 @@ export function valider(e, saisie) {
   const sc = SCENES[e.scene], k = sc.calcul;
   const v = parseFloat(String(saisie).replace(',', '.').replace(/\s/g, ''));
   const vrai = k.vrai(e);
-  if (Number.isFinite(v) && Math.abs(v - vrai) <= Math.abs(vrai) * k.tol) return { etat: choisir(e, k.ok), juste: true, message: '' };
+  if (Number.isFinite(v) && Math.abs(v - vrai) <= Math.abs(vrai) * k.tol) { const st = choisir(e, k.ok); return { etat: k.garde ? { ...st, f: { ...st.f, ...k.garde(v) } } : st, juste: true, message: '' }; }
   const essais = e.essais + 1;
   if (essais >= 2) return { etat: choisir({ ...e, t: e.t + 5 }, k.ko), juste: false, message: '' };
   return { etat: { ...e, t: e.t + 5, essais }, juste: false, message: (k.retour && Number.isFinite(v) && k.retour(v, e)) || k.indice };
@@ -260,7 +260,7 @@ add('intro', { lieu: 'Bureau de la responsable', pnj: 'dubreuil', titre: 'Lundi,
   choix: [{ t: 'Parcourir le dossier', vers: 'docs' }] });
 
 add('docs', { lieu: 'Bureau', pnj: 'moi', titre: 'Étude du dossier',
-  texte: e => `Tu étales les documents. Il est ${hhmm(e.t)}. Que lis-tu ?${e.f.docRef ? '' : '\n(Il te faut au moins la formule de référence pour avancer.)'}`,
+  texte: e => `Tu étales les documents. Il est ${hhmm(e.t)}. Que fais-tu ?${e.f.docRef ? '' : '\n(Il te faut au moins la formule de référence pour avancer.)'}`,
   choix: () => [
     { t: 'Les fiches techniques des deux résines (Document 8)', si: e => !e.f.fiche, duree: 10, f: { fiche: true }, vers: 'docRes' },
     { t: 'La formule et la fiche de fabrication de la référence (Documents 1 et 2, résultats du responsable)', si: e => !e.f.docRef, duree: 15, f: { docRef: true }, vers: 'docRef' },
@@ -337,7 +337,8 @@ export const PLAN_OPTIONS = [
   ['epais', 'Ajouter un épaississant supplémentaire'], ['tio2', 'Augmenter la quantité de TiO₂'], ['biocide', 'Ajouter un biocide'], ['ammo', 'Ajouter de l\'ammoniaque pour neutraliser'], ['rien', 'Rien d\'autre'],
 ];
 export const choixPlan = (e, sel) => ({ t: 'Valider mon plan', f: { planForm: sel, coalPense: sel.includes('coal') }, note: `Modifications envisagées : ${sel.length ? sel.map(k => PLAN_OPTIONS.find(o => o[0] === k)?.[1]).join(' ; ') : 'aucune de plus que le changement de résine'}.`, vers: 'regle' });
-export const optionsPlan = e => melanger(e, 'plan', PLAN_OPTIONS.filter(o => o[0] !== 'rien')).concat([PLAN_OPTIONS.find(o => o[0] === 'rien')]);
+// Ordre mélangé, mais l'agent de coalescence n'est jamais en tête de liste (cela le ferait remarquer)
+export const optionsPlan = e => { const L = melanger(e, 'plan', PLAN_OPTIONS.filter(o => o[0] !== 'rien')); if (L[0][0] === 'coal') [L[0], L[2]] = [L[2], L[0]]; return L.concat([PLAN_OPTIONS.find(o => o[0] === 'rien')]); };
 add('planFormule', { lieu: 'Paillasse de formulation', pnj: 'karim', titre: 'Que change-t-on dans la formule ?', station: 'plan',
   texte: e => `Il est ${hhmm(e.t)}. Karim t'attend à la paillasse avec la formule de référence.\n« Avant de peser quoi que ce soit : pour remplacer la Vinnapas par l'Orgal, qu'est-ce que tu changes ou que tu ajoutes dans la formule ? Coche ce que tu envisages. Tout ajout coûte de la matière, du temps ou des conséquences. »`,
   choix: e => [choixPlan(e, [])] });
@@ -361,11 +362,11 @@ add('calcMasse', { lieu: 'Paillasse de formulation', pnj: 'moi', titre: 'Calcul 
     ok: { vers: 'calcEau', note: 'Orgal à peser : 100 g (apporte 50 g de polymère sec).' },
     ko: { vers: 'calcEau', duree: 15, f: { aideCalcul: true }, note: 'Calcul de la masse d\'Orgal fait avec l\'aide de Karim : 100 g.' } } });
 add('calcEau', { lieu: 'Paillasse de formulation', pnj: 'moi', titre: 'Calcul : eau à ajuster',
-  texte: 'Pour garder le même extrait sec, la masse totale (331,2 g) et celle des autres matières restent les mêmes : l\'Orgal pèse 100 g au lieu de 83,3 g, l\'eau (118,0 g dans la référence) diminue d\'autant. (Le coalescent, s\'il y en a, sera retiré de cette eau.)',
-  calcul: { q: 'Quelle masse d\'eau faut-il, avant tout ajout de coalescent ?', unite: 'g', vrai: () => 118.0 - (100 - 83.3), tol: 0.02,
+  texte: 'Pour garder le même extrait sec, la masse totale de la formule reste 331,2 g, comme dans la référence (83,3 g de Vinnapas, 118,0 g d\'eau). Les autres matières ne changent pas. Avec ta masse d\'Orgal, il faut recalculer l\'eau.',
+  calcul: { q: 'Quelle masse d\'eau faut-il dans ta formule ?', unite: 'g', vrai: () => 118.0 - (100 - 83.3), tol: 0.02,
     indice: 'On ajoute 16,7 g de résine en plus ; l\'eau doit diminuer de cette masse pour garder 331,2 g.',
-    ok: { f: { regle: 'ok' }, vers: e => e.f.refait ? 'formuleFinale' : 'dispersion', note: 'Eau : 101,3 g avant coalescent (formule : Orgal 100 g, eau 101,3 g).' },
-    ko: { f: { regle: 'ok' }, duree: 10, vers: e => e.f.refait ? 'formuleFinale' : 'dispersion', note: 'Eau : 101,3 g avant coalescent (calculée avec l\'aide de Karim).' } } });
+    ok: { f: { regle: 'ok' }, vers: e => e.f.refait ? 'formuleFinale' : 'dispersion', note: 'Eau : 101,3 g (formule : Orgal 100 g, eau 101,3 g).' },
+    ko: { f: { regle: 'ok' }, duree: 10, vers: e => e.f.refait ? 'formuleFinale' : 'dispersion', note: 'Eau : 101,3 g (calculée avec l\'aide de Karim).' } } });
 
 add('dispersion', { melange: true, lieu: 'Paillasse de formulation', pnj: 'karim', titre: 'Les amas de poudres',
   texte: e => `« Voilà le défaut dont se plaignent les opérateurs : quand on verse le TiO₂ et le CaCO₃ dans l'eau, ça fait des amas durs, et ils passent vingt minutes à les casser. Qu'est-ce que tu corriges dans la formule ? »${e.f.disp1 || e.f.disp2 ? '\n(Karim te rappelle que le dispersant est la matière qui aide à mouiller et séparer les grains.)' : ''}`,
@@ -383,7 +384,8 @@ add('calcCoadis', { lieu: 'Paillasse', pnj: 'moi', titre: 'Calcul : dose de disp
   calcul: { q: 'Quelle masse de Coadis BR3 (produit tel que fourni) pèses-tu pour les poudres de la formule ? Vise le milieu de la plage recommandée par la fiche.', unite: 'g', vrai: () => 0.00175 * 120 / 0.4, tol: 0.15,
     indice: 'Le dosage est une masse de matière active (extrait sec du produit) rapportée à la masse de poudres (pigments et charges). Exemple avec un autre produit : pour 100 g de poudres, 1 g d\'un dispersant à 30 % d\'extrait sec apporte 0,3 g de matière active, soit un dosage de 0,3 %. Applique la même idée avec la fiche du Coadis BR3 et nos 120 g de poudres.',
     retour: v => v >= 1 ? 'Attention : à cette dose, le dispersant est très en excès (surdosage : film sensible à l\'eau, mousse, coût). Revois le calcul.' : null,
-    ok: { f: { coadis: 0.525 }, vers: versCoal, note: 'Dispersant relevé à 0,525 g de Coadis BR3 (0,175 % de matière active sur les poudres) pour supprimer les amas.' },
+    garde: v => ({ coadis: Math.round(v * 1000) / 1000 }),
+    ok: { vers: versCoal, note: 'Dispersant relevé pour supprimer les amas (calcul fait à partir de la fiche du Coadis BR3).' },
     ko: { f: { coadis: 0.5 }, vers: versCoal, duree: 10, note: 'Dispersant relevé à 0,5 g de Coadis BR3 (valeur donnée par Karim).' } } });
 
 // ───────────── Station : courbe de défloculation du dispersant ─────────────
@@ -436,7 +438,7 @@ add('coalescent', { melange: true, lieu: 'Paillasse', pnj: 'karim', titre: 'Le c
     { t: 'Faire d\'abord un pré-essai au banc TMFF avec Lucas', d: '5 min de préparation, puis 5 min par essai', duree: 5, note: 'Pré-essai au banc TMFF demandé à Lucas.', vers: 'stationBanc' },
     { t: 'Mettre 10 g : on sera tranquille pour la filmification', f: { dpnb: 10 }, note: 'Coalescent (DPnB) mis à 10 g « par sécurité ».', vers: e => apresDose(e) },
   ] });
-add('calcDpnb', { lieu: 'Paillasse', pnj: 'moi', titre: 'Calcul : dose de coalescent',
+add('calcDpnb', { lieu: 'Paillasse', pnj: 'moi', titre: 'Calcul : dose de coalescent', fiches: ['dpnb', 'orgal'],
   texte: 'Les 100 g d\'Orgal apportent 50 g de polymère sec. La règle d\'atelier de Karim est de 4 à 8 % de la masse de polymère sec ; tu vises le milieu de la plage, 6 %.',
   calcul: { q: 'Quelle masse de DPnB pèses-tu ?', unite: 'g', vrai: () => 0.06 * 50, tol: 0.17,
     indice: 'Masse de DPnB = 6 % × masse de polymère sec (50 g, pas 100 g de dispersion).',
@@ -508,7 +510,7 @@ add('fin_matiere', { lieu: 'Local de stockage', pnj: 'karim', titre: 'Une peintu
 
 add('formuleFinale', { lieu: 'Paillasse de formulation', pnj: 'karim', titre: 'Ta formule finale', station: 'formule',
   entree: e => ({ ...e, f: { ...e.f, fm: undefined } }),
-  texte: e => `Il est ${hhmm(e.t)}. Karim te tend la feuille de pesée.\n« Avant de peser, pose ta formule noir sur blanc. Tout ce que tu as décidé jusqu'ici y est reporté, mais c'est toi qui signes : tu peux encore changer une masse. Le cahier des charges ne se discute pas, lui. »${e.f.refaitCoal || e.f.refaitForm || e.f.refait ? '\n(Tu refais la peinture : c\'est le moment de corriger ce qui ne va pas.)' : ''}`,
+  texte: e => `Il est ${hhmm(e.t)}. Karim te tend la feuille de pesée.\n« Avant de peser, pose ta formule noir sur blanc. Tout ce que tu as décidé jusqu'ici y est reporté, mais c'est toi qui signes : tu peux encore changer une masse. Le cahier des charges ne se discute pas, lui. »${(e.f.dpnb ?? 0) > 0 && e.f.regle !== 'naif' ? `\n(L'eau reportée tient compte du DPnB : ${nf(101.3, 1)} g − ${nf(e.f.dpnb, 1)} g, pour garder une masse totale de 331,2 g.)` : ''}${e.f.refaitCoal || e.f.refaitForm || e.f.refait ? '\n(Tu refais la peinture : c\'est le moment de corriger ce qui ne va pas.)' : ''}`,
   choix: e => [validerFormule(e, fmDepuisFlags(e)).choix] });
 add('fabrication', { melange: true, lieu: 'Paillasse de formulation', pnj: 'karim', titre: 'Fabriquer 300 g de peinture',
   texte: e => `Il est ${hhmm(e.t)}. La défloculeuse est prête, la balance aussi. Comment fabriques-tu la peinture ?`,
@@ -705,9 +707,9 @@ add('res_rheo', { melange: true, lieu: 'Atelier d\'application', pnj: 'lucas', t
       { ...retourLabo, t: 'Je garde la formule et je signale l\'écart', run: n => ({ ...n, f: { ...n.f, mes_rheo: true, rheoKo: true } }), note: `Viscosité à 1 000 s⁻¹ de ${nf(hsVrai(e), 0)} mPa·s (${HS_MIN} à ${HS_MAX} demandés) : formule conservée, écart signalé.` }]
     : [{ ...retourLabo, run: n => ({ ...n, f: { ...n.f, mes_rheo: true, rheoKo: mauvaisRheo(n) || !hsOk(n) || !basOk(n) } }), note: 'Rhéologie mesurée.' }] });
 // Essai d'ajout : où tester ? (le godet du viscosimètre contient ≈ 30 mL ; si on se rate sur tout le lot, il est perdu)
-const trop_petit = g => ({ t: `Sur ${g} g de peinture`, duree: 3, note: `Essai d'ajout envisagé sur ${g} g : insuffisant pour remplir le godet.`, run: e => ({ ...e, f: { ...e.f, msgVisco: `Lucas : « Avec ${g} g, le godet ne se remplit pas : le mobile ne baigne pas dans la peinture et la mesure n'a aucun sens. Regarde le schéma : il faut de quoi remplir la cuve. »` } }), vers: 'viscoPrise' });
-add('viscoPrise', { melange: true, lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Où tester l\'ajout ?', fiches: ['coapur', 'thixol'],
-  texte: e => `${e.f.msgVisco ? e.f.msgVisco + '\n\n' : ''}Lucas : « Tu veux essayer ${nomAdd(e.f.visco?.additif)}. Sur quelle quantité de peinture fais-tu l'essai ? Voilà la cuve du viscosimètre avec son mobile MS-R3. »`,
+const trop_petit = g => ({ t: `Sur ${g} g de peinture`, duree: 3, note: `Essai d'ajout envisagé sur ${g} g : insuffisant pour remplir le godet.`, run: e => ({ ...e, f: { ...e.f, msgVisco: `Lucas : « Avec ${g} g, le godet ne se remplit pas : le mobile n'est pas entièrement immergé et la mesure n'a aucun sens. Regarde le schéma : il faut de quoi remplir la cuve. »` } }), vers: 'viscoPrise' });
+add('viscoPrise', { lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Où tester l\'ajout ?', fiches: ['coapur', 'thixol'],
+  texte: e => `${e.f.msgVisco ? e.f.msgVisco + '\n\n' : ''}Lucas : « Tu veux essayer ${nomAdd(e.f.visco?.additif)}. Sur quelle quantité de peinture fais-tu l'essai ? Voilà la cuve du viscosimètre avec son mobile MS-R3 : il doit être entièrement immergé dans la peinture. »`,
   visuel: () => ({ type: 'godet' }),
   choix: () => [trop_petit(1), trop_petit(10),
     { t: 'Sur 50 g de peinture', duree: 5, note: 'Essai d\'ajout sur une prise d\'essai de 50 g.', run: e => ({ ...e, f: { ...e.f, msgVisco: undefined, visco: { ...e.f.visco, taille: M_ESSAI, essais: [] } } }), vers: 'viscoDose' },
@@ -727,7 +729,7 @@ add('res_masq', { lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Résulta
   texte: e => { const pm = pouvoirMasquant(e), v = nf(pm, 1);
     if (pm >= 7) return `Lucas : « Rapport de contraste à 98 % pour un rendement de ${v} m²/L : pouvoir masquant de ${v} m²/L, au-dessus du minimum de 7,0 (référence Vinnapas : 8,0). »`;
     return mauvaisRheo(e) ? `Lucas : « Pouvoir masquant ${v} m²/L, en dessous des 7,0 attendus. Les amas de TiO₂ mal dispersés diffusent moins bien la lumière. »`
-      : `Lucas : « Pouvoir masquant ${v} m²/L, en dessous des 7,0 attendus. Avec la même masse de TiO₂, l'Orgal masque moins bien que la Vinnapas (8,0) : il faut plus de TiO₂ par litre de peinture, c'est lui qui masque. »`; },
+      : `Lucas : « Pouvoir masquant ${v} m²/L, en dessous des 7,0 attendus. La référence Vinnapas était à 8,0. À toi de voir ce qui, dans la formule, explique l'écart. »`; },
   visuel: e => ({ type: 'masq', pm: Math.round(pouvoirMasquant(e) * 10) / 10 }),
   choix: e => { const pm = pouvoirMasquant(e), run = n => ({ ...n, f: { ...n.f, mes_masq: true } });
     return pm >= 7 ? [{ ...retourLabo, run, note: 'Pouvoir masquant mesuré : conforme.' }]
@@ -748,7 +750,7 @@ add('res_tmff', { lieu: 'Atelier d\'application', pnj: 'lucas', titre: 'Résulta
   choix: e => tmffOk(e) ? [{ ...retourLabo, f: { mes_tmff: true }, note: 'TMFF mesurée : conforme.' }]
     : [refaireCoalescent(`TMFF mesurée à ${nf(prop(e).tmff, 0)} °C, trop haute : dose de coalescent à revoir.`), { t: 'Je garde cette formule et je le signale', f: { mes_tmff: true }, note: `TMFF mesurée à ${nf(prop(e).tmff, 0)} °C (> 5 °C) : formule conservée, écart signalé.`, vers: 'labo' }] });
 add('res_cout', { lieu: 'Service achats', pnj: 'perrin', titre: 'Devis de l\'Orgal', fiches: ['formule'],
-  texte: 'M. Perrin : « L\'Orgal PST 50A est à 25 € les 5 litres. Les autres prix sont ceux du Document 1. À toi de calculer le coût matières premières de ta formule. »',
+  texte: e => { const f = formule(e); return `M. Perrin : « L'Orgal PST 50A est à 25 € les 5 litres (densité 1,03). Le DPnB est à 3 € le litre (densité 0,91). Les autres prix sont ceux du Document 1. À toi de calculer le coût matières premières de ta formule. »\nTa formule (en g) : Orgal ${nf(f.liant, 1)}, eau ${nf(f.eau, 1)}, TiO₂ ${nf(f.tio2, 1)}, CaCO₃ ${nf(f.caco3, 1)}, Coadis BR3 ${nf(f.coadis, 3)}, DPnB ${nf(f.dpnb, 1)}, Foamex ${nf(f.foamex, 1)}, Thixol ${nf(f.thixol, 1)}, Coapur ${nf(f.coapur, 1)}.`; },
   calcul: { q: 'Coût matières premières de ta formule (€ par kg de peinture)', unite: '€/kg', vrai: e => coutKg(formule(e)), tol: 0.06,
     indice: 'Coût total = Σ (masse × prix par gramme) ; divise par la masse totale en kg. Attention aux unités de prix : €/L et densités pour les additifs liquides.',
     ok: { f: { mes_cout: true }, run: e => ({ ...e, f: { ...e.f, coutOk: coutKg(formule(e)) < 4.5 } }), vers: 'commAchats', note: 'Coût matières premières calculé.' },
@@ -768,7 +770,7 @@ add('commAchats', { melange: true, lieu: 'Service achats', pnj: 'perrin', titre:
 // ───────────── Le hub : la paillasse ─────────────
 const ligneAttente = e => Object.entries(e.cmd).filter(([, c]) => !c.lu && c.pret > e.t).map(([k, c]) => `⏳ ${labelDe(k)} : prêt vers ${hhmm(c.pret)}`);
 add('labo', { lieu: 'Paillasse et laboratoire', pnj: 'moi', titre: 'La journée avance',
-  texte: e => `Il est ${hhmm(e.t)}.${e.t >= T_RAPPORT ? '\nMme Dubreuil passe la tête : « J\'attends ton rapport, le délai est dépassé. »' : e.t >= T_CLIENT - 45 ? '\nL\'appel client approche (15 h).' : ''}\n${ligneAttente(e).join('\n')}`.trim(),
+  texte: e => `Il est ${hhmm(e.t)}.${e.t >= T_RAPPORT ? '\nMme Dubreuil passe la tête : « J\'attends ton rapport, le délai est dépassé. »' : e.t >= T_CLIENT - 45 && !e.f.clientFait ? '\nL\'appel client approche (15 h).' : ''}${e.f.fabrique ? '\nTa peinture est fabriquée : elle est prête pour les contrôles.' : ''}\n${ligneAttente(e).join('\n')}`.trim(),
   choix: e => {
     const L = [];
     for (const A of ANALYSES) {
