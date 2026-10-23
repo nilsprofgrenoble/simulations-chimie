@@ -117,7 +117,7 @@ function ActionLibre({ e, onAgir, onIdees }) {
     <form onSubmit={soumettre} data-action-libre style={{ margin: '14px 0 6px', background: '#fff9d6', border: '1.5px dashed #c9b86a', borderRadius: 6, padding: '12px 14px' }}>
       <label style={{ fontWeight: 700, display: 'block', marginBottom: 6 }}>🗣 Que fais-tu maintenant ?</label>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <input data-libre value={txt} onChange={ev => setTxt(ev.target.value)} autoComplete="off" placeholder="Ex. : je fais mesurer la viscosité…" style={{ flex: '1 1 220px', fontSize: 16, padding: '7px 10px', border: `1.5px solid ${ENCRE}`, borderRadius: 6, background: '#fff', fontFamily: 'inherit' }} />
+        <input data-libre value={txt} onChange={ev => setTxt(ev.target.value)} autoComplete="off" placeholder="Écris ce que tu fais, avec tes mots…" style={{ flex: '1 1 220px', fontSize: 16, padding: '7px 10px', border: `1.5px solid ${ENCRE}`, borderRadius: 6, background: '#fff', fontFamily: 'inherit' }} />
         <button type="submit" data-libre-ok disabled={!txt.trim()} style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: ENCRE, color: '#fff', fontWeight: 700, cursor: txt.trim() ? 'pointer' : 'default', opacity: txt.trim() ? 1 : 0.5, font: 'inherit' }}>Faire</button>
       </div>
       {msg && <div role="alert" data-libre-msg style={{ marginTop: 8, color: C.ambre, fontSize: 14, lineHeight: 1.5 }}>{msg}</div>}
@@ -156,7 +156,10 @@ export function SimulationHistoireLabo() {
   const e = etat && SCENES[etat.scene] ? etat : null;
   const fin = !!e && estFin(e.scene);
 
+  const refCadre = useRef(null);
   useEffect(() => { if (e) refTitre.current?.focus({ preventScroll: true }); }, [e?.scene]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Chaque réponse ramène en haut de la nouvelle scène
+  useEffect(() => { if (e && typeof window !== 'undefined' && refCadre.current) { try { const y = refCadre.current.getBoundingClientRect().top + window.scrollY - 8; window.scrollTo(0, Math.max(0, y)); } catch { /* sans défilement */ } } }, [e?.scene]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (fin && !fins.includes(e.scene)) setFins([...fins, e.scene]); }, [fin, e?.scene]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const cadre = { color: C.encre, padding: 'clamp(14px, 3vw, 24px) clamp(14px, 3vw, 24px) clamp(14px, 3vw, 24px) clamp(40px, 8vw, 84px)', maxWidth: 1000, margin: '0 auto' };
@@ -216,11 +219,11 @@ export function SimulationHistoireLabo() {
     </div>);
 
   return (
-    <div className="lab-cahier" style={cadre} data-labo={fin ? 'fin' : 'jeu'}><style>{STYLE}</style><div className="lab-spirale" aria-hidden="true" />
+    <div className="lab-cahier" ref={refCadre} style={cadre} data-labo={fin ? 'fin' : 'jeu'}><style>{STYLE}</style><div className="lab-spirale" aria-hidden="true" />
       {saut && <div key={saut.id} className="lab-saut" aria-hidden="true"><div style={{ fontSize: 13, letterSpacing: 2, opacity: .7 }}>{saut.a - saut.de >= 60 ? 'PLUS TARD…' : 'QUELQUES MINUTES PLUS TARD…'}</div><div style={{ fontSize: 'clamp(34px,9vw,56px)', fontWeight: 800 }}>{hhmm(saut.a)}</div></div>}
       {pn(e) && <div data-joueur-nom style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 6px', fontWeight: 700, color: C.doux }}><Avatar id={avatarDe(e)} taille={30} /><span>{pn(e)}</span></div>}
       <BarreHeure t={Math.min(e.t, T_FIN)} />
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '0 0 10px' }}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '0 0 10px' }} data-dossier-boutons>
         {[['docs', '📁 Dossier'], ['calc', '🧮 Calculette']].map(([id, nom]) => <button key={id} type="button" data-dossier-bouton={id} onClick={() => setDossier(id)} style={{ padding: '4px 12px', borderRadius: 8, border: `1.5px solid ${ENCRE}`, background: '#fff', color: ENCRE, fontWeight: 700, cursor: 'pointer', font: 'inherit', fontSize: 14 }}>{nom}</button>)}
       </div>
       {dossier && <Dossier e={e} onglet={dossier} onChange={setDossier} onFermer={() => setDossier(null)} />}
@@ -288,6 +291,9 @@ export function SimulationHistoireLabo() {
               {st.map(x => <div key={x.cle} style={{ fontSize: 13.5, color: x.etat === 'pret' ? C.vert : C.doux, lineHeight: 1.6 }}>{x.etat === 'pret' ? '📄 Résultat prêt : ' : '⏳ '}{x.label}{x.etat === 'cours' ? ` (vers ${hhmm(x.pret)})` : ''}</div>)}
             </div>)}
           {carnet}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '4px 0 0' }} data-dossier-boutons-bas>
+          {[['docs', '📁 Dossier'], ['calc', '🧮 Calculette']].map(([id, nom]) => <button key={id} type="button" data-dossier-bouton-bas={id} onClick={() => setDossier(id)} style={{ padding: '4px 12px', borderRadius: 8, border: `1.5px solid ${ENCRE}`, background: '#fff', color: ENCRE, fontWeight: 700, cursor: 'pointer', font: 'inherit', fontSize: 14 }}>{nom}</button>)}
+      </div>
           {!fin && <div style={{ fontSize: 12.5, color: C.doux }}>Ta partie est enregistrée sur cet appareil. <button type="button" onClick={() => { if (window.confirm('Abandonner cette journée et recommencer ?')) recommencer(); }} style={{ background: 'none', border: 'none', color: C.doux, textDecoration: 'underline', cursor: 'pointer', font: 'inherit', fontSize: 12.5 }}>Recommencer</button></div>}
         </div>
       </div>

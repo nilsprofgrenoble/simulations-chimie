@@ -3,7 +3,7 @@ import { NIVEAUX_ETALON, ETAL_MAX, ECH_MAX, T_PREP, T_INJ, C_IS, TR, M_POUDRE, P
 import { essaiBanc, indiceBanc, INDICES_BANC, essaiCourbe, indiceCourbe, INDICES_COURBE, conclureHuile, huileRetenue, phVrai, cpgDe, injecterEtalon, preparerEchantillon, injecterEchantillon, choisirModeCpg, resultatCpg, injecterControle, recuperation, C_CTRL, TMFF_MAX, COV_MAX, nf, fmDepuisFlags, FM_CHAMPS, validerFormule, controlesFormule, optionsPlan, choixPlan } from "./laboJournee";
 import { proprietes } from "./Peinture";
 import { Instrument } from "./LaboVisuels";
-import { essaiVisco, ESSAIS_VISCO, DUREE_VISCO, M_ESSAI, HS_MIN, HS_MAX, BAS_MAX, prop as propLabo } from "./laboJournee";
+import { essaiVisco, ESSAIS_VISCO, DUREE_VISCO, M_ESSAI, HS_MIN, HS_MAX, BAS_MAX, prop as propLabo, mEch as mEchLabo, verifierCov, demanderFormuleCov, methodeCpg, methodeChoisie, choisirMethode, IS_OPTIONS, T_INJECTEUR, T_DETECTEUR, FOURS, inesEnPause, PAUSE_FIN, hhmm } from "./laboJournee";
 
 // ====================================================
 //  Stations immersives de la journée au labo (écrans dédiés, paramètres cachés).
@@ -197,21 +197,36 @@ export function StationCpg({ e, onEtat, onValider, choixConcl }) {
   const rec = recuperation(e);
   const dern = g.ech.length ? g.ech[g.ech.length - 1] : g.etal.length ? g.etal[g.etal.length - 1] : null;
   const choixValides = choixConcl.filter(c => c.concl);
+  const [saisieCov, setSaisieCov] = useState(''), [msgCov, setMsgCov] = useState('');
+  const [sel, setSel] = useState({ is: '', inj: '', four: '', det: '' }), meth = methodeChoisie(e), M = methodeCpg(e), complet = sel.is && sel.inj && sel.four && sel.det;
+  const liste = { display: 'block', width: '100%', padding: 6, fontSize: 14, marginTop: 2 };
+  const soumettreCov = ev => { ev.preventDefault(); const v = parseFloat(String(saisieCov).replace(',', '.')); const r = verifierCov(e, v); onEtat(r.etat); setMsgCov(r.juste ? '' : (r.etat.f.covCalc ? 'Trois essais : la valeur est affichée ci-dessous, retiens la méthode.' : 'Ce n\'est pas ce que je trouve. Vérifie les unités, la masse réellement pesée, le volume et la masse volumique.')); };
   return (
     <div data-station="cpg" style={{ marginTop: 14, background: '#f1f5f9', border: '2px solid #94a3b8', borderRadius: 10, padding: '12px 14px' }}>
       <div style={{ fontWeight: 800, color: '#0f172a' }}>🧫 Dosage du DPnB par CPG-FID, avec étalon interne</div>
-      <div style={{ fontSize: 13.5, color: DOUX, margin: '4px 0 8px' }}>Étalons : DPnB dans le solvant, avec l'étalon interne à {fr(C_IS)} mg/mL. Échantillon : 1,00 g de peinture complété à 10,0 mL, même étalon interne. Chaque injection : {T_INJ} min.</div>
+      <div style={{ fontSize: 13.5, color: DOUX, margin: '4px 0 8px' }}>Étalons : DPnB dans le solvant, avec l'étalon interne à {fr(C_IS)} mg/mL. Échantillon : environ 1 g de peinture pesé exactement, complété à 10,0 mL au solvant avec le même étalon interne. Durée d'une injection : selon le programme du four (2 à 8 min).</div>
+      <ol data-deroule style={{ fontSize: 13.5, color: DOUX, margin: '0 0 8px', paddingLeft: 20, lineHeight: 1.5 }}><li>Étalonner : injecter plusieurs solutions de concentration connue en DPnB (avec le même étalon interne), pour tracer la droite d'étalonnage.</li><li>Préparer et injecter l'échantillon de peinture.</li><li>Lire sur la droite la concentration c du DPnB dans la solution injectée.</li><li>Calculer le COV de la peinture (g de DPnB par litre de peinture) à partir de c.</li><li>Conclure pour le rapport, avec l'incertitude.</li></ol>
+      <div style={{ fontWeight: 700, margin: '6px 0 4px' }}>0. Méthode <span style={{ fontWeight: 400, color: DOUX }}>(mise en équilibre du chromatographe : 10 min)</span></div>
+      {meth ? <div data-methode-ok style={{ fontSize: 14, background: '#fff', border: '1.5px solid #94a3b8', borderRadius: 8, padding: '6px 10px' }}>Étalon interne : <b>{IS_OPTIONS.find(o => o.cle === M.is)?.t}</b> · injecteur <b>{M.inj} °C</b> · four : <b>{FOURS.find(o => o.cle === M.four)?.t}</b> · détecteur <b>{M.det} °C</b></div>
+        : <div data-methode style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 8 }}>
+          <label style={{ fontSize: 13 }}>Étalon interne<select data-m-is value={sel.is} onChange={ev => setSel(o => ({ ...o, is: ev.target.value }))} style={liste}><option value="">Choisir…</option>{IS_OPTIONS.map(o => <option key={o.cle} value={o.cle}>{o.t} ({o.d})</option>)}</select></label>
+          <label style={{ fontSize: 13 }}>Température de l'injecteur<select data-m-inj value={sel.inj} onChange={ev => setSel(o => ({ ...o, inj: ev.target.value }))} style={liste}><option value="">Choisir…</option>{T_INJECTEUR.map(t => <option key={t} value={t}>{t} °C</option>)}</select></label>
+          <label style={{ fontSize: 13 }}>Programme du four<select data-m-four value={sel.four} onChange={ev => setSel(o => ({ ...o, four: ev.target.value }))} style={liste}><option value="">Choisir…</option>{FOURS.map(o => <option key={o.cle} value={o.cle}>{o.t}</option>)}</select></label>
+          <label style={{ fontSize: 13 }}>Température du détecteur (FID)<select data-m-det value={sel.det} onChange={ev => setSel(o => ({ ...o, det: ev.target.value }))} style={liste}><option value="">Choisir…</option>{T_DETECTEUR.map(t => <option key={t} value={t}>{t} °C</option>)}</select></label>
+          <div style={{ gridColumn: '1 / -1', fontSize: 13, color: DOUX }}>Données utiles : DPnB, éb. ≈ 230 °C, présent à quelques g/kg dans une peinture à l'eau qui contient d'autres additifs. Une fois la méthode lancée, on ne la change plus pour la série d'injections.</div>
+          <button type="button" data-m-ok disabled={!complet} onClick={() => onEtat(choisirMethode(e, { is: sel.is, inj: Number(sel.inj), four: sel.four, det: Number(sel.det) }))} style={bouton(!!complet)}>Lancer cette méthode (10 min)</button>
+        </div>}
       <div style={{ fontWeight: 700, margin: '6px 0 4px' }}>1. Étalonnage <span style={{ fontWeight: 400, color: DOUX }}>({g.etal.length}/{ETAL_MAX} injections)</span></div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-        {NIVEAUX_ETALON.map(c => <button key={c} type="button" data-etalon={c} disabled={g.etal.length >= ETAL_MAX} onClick={() => onEtat(injecterEtalon(e, c))} style={bouton(g.etal.length < ETAL_MAX)}>{fr(c)} mg/mL</button>)}
+        {NIVEAUX_ETALON.map(c => <button key={c} type="button" data-etalon={c} disabled={!meth || g.etal.length >= ETAL_MAX} onClick={() => onEtat(injecterEtalon(e, c))} style={bouton(meth && g.etal.length < ETAL_MAX)}>{fr(c)} mg/mL</button>)}
       </div>
       <div style={{ fontWeight: 700, margin: '12px 0 4px' }}>2. Échantillon</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-        <button type="button" data-prep disabled={g.prep} onClick={() => onEtat(preparerEchantillon(e))} style={bouton(!g.prep)}>{g.prep ? '✓ Échantillon préparé' : `Préparer l'échantillon (${T_PREP} min)`}</button>
+        <button type="button" data-prep disabled={!meth || g.prep} onClick={() => onEtat(preparerEchantillon(e))} style={bouton(meth && !g.prep)}>{g.prep ? '✓ Échantillon préparé' : `Préparer l'échantillon : peser ≈ 1 g, ajouter l'étalon interne, compléter à 10 mL, agiter, centrifuger (${T_PREP} min)`}</button>
         <button type="button" data-injech disabled={!g.prep || g.ech.length >= ECH_MAX} onClick={() => onEtat(injecterEchantillon(e))} style={bouton(g.prep && g.ech.length < ECH_MAX)}>Injecter l'échantillon ({g.ech.length}/{ECH_MAX})</button>
       </div>
       <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-        <button type="button" data-ctrl disabled={g.ctrl.length >= 2} onClick={() => onEtat(injecterControle(e))} style={bouton(g.ctrl.length < 2)}>Injecter une solution de contrôle ({fr(C_CTRL)} mg/mL)</button>
+        <button type="button" data-ctrl disabled={!meth || g.ctrl.length >= 2} onClick={() => onEtat(injecterControle(e))} style={bouton(meth && g.ctrl.length < 2)}>Injecter une solution de contrôle ({fr(C_CTRL)} mg/mL)</button>
         {rec && <span data-recup style={{ fontSize: 14 }}>récupération : <b>{fr(rec.taux.toFixed(0))} %</b></span>}
       </div>
       {dern && <Chromato inj={dern} />}
@@ -226,11 +241,20 @@ export function StationCpg({ e, onEtat, onValider, choixConcl }) {
       {R.D ? <><Droite D={R.D} dos={R.dos} />
         <div data-droite style={{ fontSize: 14, textAlign: 'center', marginTop: 6 }}>y = {fr(R.D.a.toPrecision(4))} x {R.D.b < 0 ? '−' : '+'} {fr(Math.abs(R.D.b).toPrecision(3))} · R² = {fr(R.D.R2.toFixed(4))} · écart-type résiduel relatif : {fr(R.D.residRel.toFixed(1))} %</div></>
         : <div style={{ fontSize: 13.5, color: DOUX, marginTop: 8 }}>La droite apparaît à partir de 3 niveaux de concentration ({niv}/3).</div>}
+      {g.prep && <div data-prep-info style={{ fontSize: 13.5, color: DOUX, marginTop: 6 }}>Pesée de l'échantillon : m = <b>{fr(mEchLabo(e).toFixed(3))} g</b> de peinture, volume final V = 10,0 mL. Après centrifugation, seul le surnageant limpide est injecté : les pigments et le polymère, précipités dans le solvant, boucheraient l'injecteur et la colonne.</div>}
       {R.dos && <div data-resultat style={{ marginTop: 10, background: '#fff', border: '1.5px solid #94a3b8', borderRadius: 8, padding: '8px 12px', fontSize: 14.5, lineHeight: 1.6 }}>
-        Concentration dans la solution : {fr(R.dos.x0.toFixed(3))} {g.mode === 'interne' ? '(c / c_IS, soit mg/mL)' : 'mg/mL'} ± {fr(R.dos.u.toFixed(3))} (incertitude-type)<br />
-        COV = c × V / m × ρ = {fr(R.dos.x0.toFixed(3))} × 10,0 / 1,00 × {fr(R.rho.toFixed(2))} = <b>{fr(R.cov.toFixed(1))} g/L</b> · U (k = 2) = <b>{fr(R.U.toFixed(1))} g/L</b>
+        Lecture sur la droite : concentration dans la solution injectée <b>c = {fr(R.dos.x0.toFixed(3))} mg/mL</b>{g.mode === 'interne' ? ' (c / c_IS, avec c_IS = 1,0 mg/mL)' : ''}, incertitude-type u(c) = {fr(R.dos.u.toFixed(3))} mg/mL (étalonnage + préparation).<br />
+        Données pour le COV : m = {fr(R.m.toFixed(3))} g de peinture pesés ; V = 10,0 mL ; masse volumique de la peinture ρ = {fr(R.rho.toFixed(3))} g/mL {e.f.rhoUtilise != null ? '(estimée par toi)' : '(mesurée par Inès)'}.
+        {e.f.formCov && <div data-formule-cov style={{ margin: '6px 0', padding: '4px 8px', background: '#eef2ff', borderRadius: 6 }}>Inès : « COV (g/L) = c × V ÷ m × ρ. Vérifie les unités : mg/mL × mL ÷ g × g/mL donne des mg/mL, soit des g/L. »</div>}
+        {!e.f.covCalc && <form onSubmit={soumettreCov} data-saisie-cov style={{ marginTop: 6, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <label>COV de la peinture = <input data-cov-input value={saisieCov} inputMode="decimal" onChange={ev => setSaisieCov(ev.target.value)} style={{ width: 90, fontSize: 16, padding: '4px 6px' }} /> g/L</label>
+          <button type="submit" data-cov-ok disabled={!saisieCov.trim()} style={bouton(!!saisieCov.trim())}>Valider</button>
+          <button type="button" data-formule disabled={e.f.formCov || inesEnPause(e)} onClick={() => onEtat(demanderFormuleCov(e))} style={{ ...bouton(!e.f.formCov && !inesEnPause(e)), fontSize: 13 }}>{inesEnPause(e) ? `Inès est en pause déjeuner jusqu'à ${hhmm(PAUSE_FIN)}` : e.f.formCov ? 'Formule déjà donnée' : 'Demander la formule à Inès (5 min)'}</button>
+        </form>}
+        {msgCov && !e.f.covCalc && <div role="alert" data-cov-msg style={{ color: AMBRE, fontSize: 13.5 }}>{msgCov}</div>}
+        {e.f.covCalc && <div data-cov-res>COV = c × V ÷ m × ρ = <b>{fr(R.cov.toFixed(1))} g/L</b> · incertitude élargie U(COV) = k × u(COV) = 2 × {fr((R.U / 2).toFixed(1))} = <b>{fr(R.U.toFixed(1))} g/L</b> (k = 2, niveau de confiance d'environ 95 %).</div>}
       </div>}
-      {R.dos && <div style={{ marginTop: 14, borderTop: '1.5px dashed #94a3b8', paddingTop: 10 }}>
+      {R.dos && e.f.covCalc && <div style={{ marginTop: 14, borderTop: '1.5px dashed #94a3b8', paddingTop: 10 }}>
         <div style={{ fontWeight: 700, marginBottom: 6 }}>Ta conclusion pour le rapport :</div>
         {choixValides.map((c, i) => <button key={i} type="button" data-concl={c.concl} className="lab-choix" style={{ margin: '4px 0' }} onClick={() => onValider(c)}>{c.t}</button>)}
       </div>}

@@ -58,6 +58,8 @@ const tio2Plus = (g, t = 66) => { const fm = J.fmDepuisFlags(g.e); fm.eau = Math
 const choixRes = e => { const ch = J.choixDe(e); return (e.scene === 'res_rheo' && ch.find(c => c.t === 'Ajouter du Coapur')) || ch.find(c => c.t.startsWith('Retourner')) || ch[0]; };
 // Essai d'ajout de Coapur : prise d'essai de 50 g, 1,0 g de produit humide (+0,5 % de matière sèche), puis on retient la dose pour le lot
 const visco = (g, m = 1.0) => {
+  if (g.e.scene === 'calcEs') { g.calc(); return true; }
+  if (g.e.scene === 'esConcl') { g.go('niveau de confiance'); return true; }
   if (g.e.scene === 'viscoPrise') { g.go('Sur 50 g'); return true; }
   if (g.e.scene === 'viscoDose') { if (!(g.e.f.visco.essais || []).length) g.e = J.essaiVisco(g.e, m); g.go('Retenir cette dose'); return true; }
   return false;
@@ -84,16 +86,16 @@ function formulation(g, o = {}) {
   const d = o.dpnb ?? 3; if (g.e.scene !== 'coalescent') throw new Error('coalescent attendu, scène ' + g.e.scene); if (o.banc) { g.go('pré-essai'); g.e = J.essaiBanc(J.essaiBanc(g.e, 0), 3); g.go('Retenir ' + d + ' g'); g.go('Passer à la suite'); } else if (d === 3) { g.go('Calculer la dose'); g.calc(); } else g.go(d === 1 ? 'Ajouter 1 g' : 'Mettre 10 g');
   if (g.e.scene === 'incoherence') { g.go(o.alerte === 'tard' ? 'Je la note' : o.alerte === 'nul' ? 'Je ne dis rien' : "J'en parle"); comm(g, o.commResp); if (g.e.scene === 'alerteRep') g.go('Reprendre la formulation'); }
   if (o.stock === 'ignore') { g.go('On l\'utilise comme ça'); g.go(o.insiste ? 'Je n\'ai pas le temps' : 'Tu as raison'); if (o.insiste) return; g.go('fût neuf'); }
-  else if (o.stock === 'tamise') { g.go('Je contrôle le fût'); g.go('Tamiser'); }
+  else if (o.stock === 'tamise') { g.go('Je contrôle le fût'); g.go('Filtrer la dispersion'); }
   else { g.go('Je contrôle le fût'); g.go('fût neuf'); }
   if (o.tio2 === false) g.go('Valider ma formule'); else tio2Plus(g, o.tio2);
   if (o.rate) { g.go('Je mets tout'); g.go('Tout refaire'); } else g.go('Je suis la fiche');
   g.go(o.trace === false ? 'noterai ça' : 'Je note maintenant');
 }
 function travaille(g, o = {}) {
-  const dem = o.dem || ['Lucas : Prises', 'Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'Lucas : Brillance', 'Lucas : Température', 'M. Perrin'];
+  const dem = o.dem || ['Lucas : Prises', 'Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'moi : Brillance', 'Lucas : Température', 'M. Perrin'];
   const client = () => { if (g.e.scene === 'client') { const ch = J.choixDe(g.e); g.go(o.mens ? 'devrait aller' : ch[0].t.slice(0, 20)); comm(g); } };
-  for (const k of dem) { client(); if (g.e.scene === 'fin_perdue') break; if (g.e.cmd.huile && k.includes('Prises')) continue; g.go('Demander à ' + k); }
+  for (const k of dem) { client(); if (g.e.scene === 'fin_perdue') break; if (g.e.cmd.huile && k.includes('Prises')) continue; if (k.startsWith('moi')) { const c = J.choixDe(g.e).find(x => x.t.startsWith('Le faire moi-même') && x.t.includes(k.split(': ')[1].slice(0, 6))); if (c) { g.e = J.choisir(g.e, c); continue; } } g.go('Demander à ' + k.replace('moi :', 'Lucas :')); }
   client(); if (!J.estFin(g.e.scene) && g.e.scene === 'labo') g.go('Mettre un échantillon');
   for (let i = 0; i < 90; i++) {
     const e = g.e; if (J.estFin(e.scene)) return e;
@@ -109,7 +111,10 @@ function travaille(g, o = {}) {
     if (e.scene === 'fabrication') { g.go('Je suis la fiche'); continue; }
     if (e.scene === 'cahier') { g.go('Je note maintenant'); continue; }
     if (e.scene === 'res_tmff') { g.go(J.tmffOk(e) ? 'Retourner' : o.corrige ? 'Corriger la dose' : 'Je garde'); continue; }
-    if (e.scene === 'res_es') { g.go(e.f.regle === 'ok' && J.covOk(e) ? 'Retourner' : 'garde cette formule'.length && (e.f.regle === 'ok' ? 'Je garde' : 'garde cette formule')); continue; }
+    if (e.scene === 'res_es') { g.go('Calculer les extraits'); continue; }
+    if (e.scene === 'calcEs') { g.calc(); continue; }
+    if (e.scene === 'esConcl') { g.go('niveau de confiance'); continue; }
+    if (e.scene === 'res_es2') { g.go(e.f.regle === 'ok' && J.covOk(e) ? 'Retourner' : 'garde cette formule'.length && (e.f.regle === 'ok' ? 'Je garde' : 'garde cette formule')); continue; }
     if (e.scene.startsWith('res_')) { g.e = J.choisir(e, choixRes(e)); continue; }
     if (e.scene === 'labo') {
       const ch = J.choixDe(e), lire = ch.find(c => c.t.startsWith('📄'));
@@ -126,9 +131,9 @@ function travaille(g, o = {}) {
   return g.e;
 }
 const cas = {};
-{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); cas.fin_excellent = travaille(g, {}); }
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); cas.fin_excellent = travaille(g, {}); if (process.env.DBG2) console.log('CMD', JSON.stringify(g.e.cmd), g.e.libre); }
 { const g = jouer(); debut(g, { alerte: 'tot', plan: 'mp' }); formulation(g, { dpnb: 3 }); cas.plan_mp = travaille(g, {}); }
-{ const g = jouer(); debut(g, { alerte: 'tard' }); formulation(g, { dpnb: 3, trace: false, rate: true, stock: 'tamise' }); cas.fin_bon = travaille(g, { stop: 380 }); }
+{ const g = jouer(); debut(g, { alerte: 'tard' }); formulation(g, { dpnb: 3, trace: false, rate: true, stock: 'tamise' }); cas.fin_bon = travaille(g, { stop: 480, dem: ['Lucas : Prises', 'Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir'] }); }
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 }); cas.fin_promesse = travaille(g, { stab: 'Stable 30 mois' }); }
 { const g = jouer(); debut(g, { alerte: 'nul' }); formulation(g, { dpnb: 3 }); cas.fin_cloque = travaille(g, { mens: true }); }
 { const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { naif: true, tio2: false }); g.go('Rédiger le rapport'); g.go('Non démontrable'); g.go('Écouter'); cas.fin_naif = g.e; }
@@ -187,7 +192,7 @@ for (let g0 = 1; g0 <= 300; g0++) {
   assert(J.resume(n).length === 9);
 }
 // parcours scripté passant par le banc
-{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3, banc: true }); const fin = travaille(g, {}); assert(['fin_excellent', 'fin_bon'].includes(fin.scene), 'parcours par le banc : ' + fin.scene); assert(fin.f.preEssai && fin.f.banc.length === 2); }
+{ const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3, banc: true }); const fin = travaille(g, { dem: ['Lucas : Prises', 'Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'moi : Brillance', 'moi : Température', 'M. Perrin'] }); assert(['fin_excellent', 'fin_bon'].includes(fin.scene), 'parcours par le banc : ' + fin.scene); assert(fin.f.preEssai && fin.f.banc.length === 2); }
 
 // 4. Station courbe de défloculation
 for (let g0 = 1; g0 <= 300; g0++) { const sec = S.secretsDe(g0); assert(sec.dem >= S.DEM_MIN && sec.dem <= S.DEM_MAX); assert(J.dispOk({ coadis: 0.525, dem: sec.dem }), 'la dose de la fiche (0,175 %) suffit pour tout lot : ' + sec.dem); assert(!J.dispOk({ coadis: 0.2, dem: sec.dem }), 'la dose de départ (0,067 %) est insuffisante'); }
@@ -237,7 +242,7 @@ for (let g0 = 1; g0 <= 300; g0++) { const sec = S.secretsDe(g0); assert(sec.ph.t
 for (let g0 = 1; g0 <= 200; g0++) { const sec = S.secretsDe(g0); assert(sec.rf >= 0.85 && sec.rf <= 1.15); }
 {
   const sec = S.secretsDe(5);
-  let e = { ...J.etatInitial(), scene: 'dpnbTech', f: { regle: 'ok', coadis: 0.525, dpnb: 3, fabrique: true, graine: sec.graine, rf: sec.rf, ph: sec.ph, eff: 3 } };
+  let e = { ...J.etatInitial(), scene: 'dpnbTech', f: { regle: 'ok', coadis: 0.525, dpnb: 3, fabrique: true, densMes: 1.3, graine: sec.graine, rf: sec.rf, ph: sec.ph, eff: 3 } };
   const imp = J.choisir(e, J.choixDe(e).find(c => /CLHP/.test(c.t)));
   assert.strictEqual(imp.scene, 'dpnbImpasse'); assert.strictEqual(imp.t, 5); assert(/chromophore/.test(J.texteDe(imp)));
   const ok = J.choisir(imp, J.choixDe(imp)[0]); const cpg = J.choisir(ok, J.choixDe(ok).find(c => /CPG|phase gazeuse/.test(c.t)));
@@ -246,7 +251,7 @@ for (let g0 = 1; g0 <= 200; g0++) { const sec = S.secretsDe(g0); assert(sec.rf >
   assert.strictEqual(J.injecterEchantillon(x), x, 'pas d\'injection sans préparation');
   for (const c of [0.25, 0.5, 1, 1.5, 2, 3]) x = J.injecterEtalon(x, c);
   x = J.preparerEchantillon(x); x = J.injecterEchantillon(x); x = J.injecterEchantillon(x);
-  assert.strictEqual(x.t, imp.t + 6 * 2 + 4 + 2 * 2);
+  assert.strictEqual(x.t, imp.t + 6 * 2 + 20 + 2 * 2);
   const cov = J.covDe(x);
   const R = J.resultatCpg(x); assert(R.dos && R.dos.dansDomaine, 'dosage dans le domaine');
   assert(Math.abs(R.cov - cov) < 3 * R.U && R.U < 0.4 * cov, 'COV mesuré compatible avec la valeur calculée, incertitude raisonnable : ' + R.cov + ' ± ' + R.U + ' vs ' + cov);
@@ -271,14 +276,15 @@ for (let g0 = 1; g0 <= 200; g0++) { const sec = S.secretsDe(g0); assert(sec.rf >
   g.go('Mesurer moi-même'); let e = g.e;
   for (const [k, m] of [['tio2', 2.5], ['caco3', 3.0]]) { const r = J.conclureHuile(e, k, J.phVrai(e, k) / 10); assert(r.ok); e = r.etat; void m; }
   g.e = e; g.go('Consigner'); g.calc();
+  g.e = { ...g.e, f: { ...g.e.f, densMes: J.prop(g.e).densite } };   // masse volumique déjà obtenue auprès d'Inès
   g.go('Doser le DPnB'); g.go('phase gazeuse'); e = g.e;
   for (const c of [0.25, 0.5, 1, 2, 3]) e = J.injecterEtalon(e, c);
   e = J.injecterEchantillon(J.preparerEchantillon(e)); e = J.injecterEchantillon(e); g.e = e;
-  g.go('± '); g.go('Retourner');
+  g.e = J.verifierCov(g.e, J.resultatCpg(g.e).cov).etat; g.go('U(COV)'); g.go('Retourner');
   g.e = { ...g.e, cmd: { ...g.e.cmd } };
   console.log('Tout faire : fabriqué vers', J.hhmm(t1), '; après stations', J.hhmm(g.e.t));
   assert(g.e.f.mes_huile && g.e.f.mes_dpnb && g.e.f.preEssai && g.e.f.dispCourbe);
-  const fin = travaille(g, { dem: ['Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'Lucas : Brillance', 'Lucas : Température', 'M. Perrin'] });
+  const fin = travaille(g, { dem: ['Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'moi : Brillance', 'moi : Température', 'M. Perrin'] });
   console.log('Tout faire : fin', fin.scene, J.hhmm(fin.t), J.bilan(fin).map(b => b.niveau[0]).join(''));
   assert(['fin_excellent', 'fin_bon'].includes(fin.scene), 'le parcours complet doit aboutir à une bonne fin : ' + fin.scene);
 }
@@ -342,8 +348,8 @@ console.log('OK : formule finale et hub ouvert');
   assert.strictEqual(J.choixDe({ ...J.etatInitial(), scene: 'regle', f: { graine: 3 } }).length, 3);
   const e = { ...J.etatInitial(), scene: 'stockRes', t: 90 }; assert(J.choixDe(e)[0].t.includes(J.hhmm(130)) || J.choixDe(e)[1].t.includes(J.hhmm(130)), 'heure de livraison calculée');
   const base = J.etatInitial(), f = { ...base.f, regle: 'ok', coadis: 0.525, dpnb: 3 };
-  const txt = J.texteDe({ ...base, scene: 'res_es', f }); assert(/des fiches, non vérifiées/.test(txt) && !/CPVC = 50/.test(txt), 'pas de fuite des vraies prises d\'huile');
-  assert(/que tu as mesurées/.test(J.texteDe({ ...base, scene: 'res_es', f: { ...f, phMes: { tio2: 25, caco3: 30 } } })));
+  const txt = J.texteDe({ ...base, scene: 'res_es2', f }); assert(/des fiches, non vérifiées/.test(txt) && !/CPVC = 50/.test(txt), 'pas de fuite des vraies prises d\'huile');
+  assert(/que tu as mesurées/.test(J.texteDe({ ...base, scene: 'res_es2', f: { ...f, phMes: { tio2: 25, caco3: 30 } } })));
 }
 console.log('OK : relecture');
 
@@ -463,3 +469,81 @@ console.log('OK : C2.1 gestes');
   assert(ch.every(c => !/adapt|ajuster|inadapt/i.test(c.t)), 'la qualité n\'apparaît pas dans le libellé');
 }
 console.log('OK : communication adaptée (C7.3)');
+
+// 17. Retours d'essai (lot 18) : la formule garde les valeurs calculées par l'élève
+{
+  const g = jouer(); debut(g, {}); g.go('La masse de polymère'); g.calc(); g.calc(); g.go('La dose de dispersant');
+  const e0 = g.e; assert.strictEqual(e0.scene, 'calcCoadis');
+  const r = J.valider(e0, '0,45'); assert(r.juste && r.etat.f.coadis === 0.45, 'Coadis retenu = valeur saisie : ' + r.etat.f.coadis);
+  assert(!/solvant filmifiant.*tête/.test(''), 'ok');
+  for (let i = 0; i < 12; i++) { const L = J.optionsPlan({ f: { graine: i } }); assert(L[0][0] !== 'coal', 'coalescent pas en tête'); assert.strictEqual(L[L.length - 1][0], 'rien'); }
+}
+{
+  // CPG : masse pesée réaliste, masse volumique à aller chercher auprès d'Inès, calcul du COV par l'élève
+  const sec = S.secretsDe(7), base = { ...J.etatInitial(), scene: 'dpnbTech', f: { regle: 'ok', coadis: 0.525, dpnb: 3, fabrique: true, graine: sec.graine, rf: sec.rf, ph: sec.ph, eff: 3 } };
+  const vers = J.choisir(base, J.choixDe(base).find(c => /phase gazeuse/.test(c.t)));
+  assert.strictEqual(vers.scene, 'cpgDens', 'sans masse volumique : détour par Inès');
+  assert(J.mEch(vers) !== 1 && Math.abs(J.mEch(vers) - 1) >= 0.02 && Math.abs(J.mEch(vers) - 1) <= 0.07, 'masse pesée ≠ 1,000 g : ' + J.mEch(vers));
+  const chD = J.choixDe(vers); assert(chD.some(c => /Demander l'extrait sec/.test(c.t)) && chD.some(c => /ρ ≈ 1,0/.test(c.t)));
+  let x = J.choisir(vers, chD.find(c => /ρ ≈ 1,0/.test(c.t))); assert.strictEqual(x.scene, 'stationCpg');
+  for (const c of [0.25, 0.5, 1, 1.5, 2, 3]) x = J.injecterEtalon(x, c);
+  x = J.injecterEchantillon(J.preparerEchantillon(x)); x = J.injecterEchantillon(x);
+  const R = J.resultatCpg(x); assert(R.dos && R.m === J.mEch(x) && R.rho === 1);
+  assert(Math.abs(R.cov - J.covDe(x)) > 0.1 * J.covDe(x), 'ρ estimé à 1,0 : le COV est faussé');
+  const faux = J.verifierCov(x, R.cov * 1.4); assert(!faux.juste && !faux.etat.f.covCalc);
+  let y = faux.etat; y = J.verifierCov(y, 1).etat; y = J.verifierCov(y, 2).etat; assert.strictEqual(y.f.covCalc, 'aide', 'après 3 essais la valeur est révélée');
+  const bon = J.verifierCov(x, R.cov * 1.01); assert(bon.juste && bon.etat.f.covCalc === 'ok');
+  const f = J.demanderFormuleCov(x); assert.strictEqual(f.t, x.t + 5); assert.strictEqual(J.verifierCov(f, R.cov).etat.f.covCalc, 'aide', 'avec la formule : calcul aidé');
+  const pause = { ...x, t: 255 }; assert.strictEqual(J.demanderFormuleCov(pause), pause, 'Inès en pause : pas de formule');
+}
+console.log('OK : lot 18');
+
+// 18. Pause déjeuner et charge de l'équipe (lot 19)
+{
+  const A = { cle: 'rheo', tech: 'lucas', duree: 45 };
+  const e = (t, lucas = 0) => ({ t, libre: { lucas } });
+  assert.strictEqual(J.planTech(e(100), A).pret, 145, 'avant midi : pas de pause');
+  assert.strictEqual(J.planTech(e(225), A).pret, 225 + 45 + (J.PAUSE_FIN - J.PAUSE_DEB), 'une analyse à cheval sur la pause est suspendue jusqu\'à 13 h 00');
+  assert.strictEqual(J.planTech(e(250), A).pret, J.PAUSE_FIN + 45, 'demandée pendant la pause : démarre à 13 h 00');
+  assert.strictEqual(J.planTech(e(100, 340), A).pret, 340 + 45, 'file d\'attente derrière une analyse qui finit après la pause');
+  // Hub : à 12 h 15, le technicien est en pause ; on peut faire l'analyse soi-même ou prendre sa pause
+  const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 });
+  g.e = { ...g.e, scene: 'labo', t: 255 };
+  const ch = J.choixDe(g.e);
+  assert(ch.some(c => /pause déjeuner/i.test(c.t)), 'pause déjeuner proposée');
+  assert(ch.some(c => c.t.startsWith('Le faire moi-même')), 'faire soi-même proposé quand l\'équipe est en pause');
+  assert(/pause déjeuner/.test(ch.find(c => c.t.startsWith('Demander à Lucas'))?.d || ''), 'la description annonce la pause');
+  const r = J.agirLibre(g.e, 'je vais manger'); assert(r.ok && r.etat.f.dejeune && r.etat.t === 255 + 45);
+  assert(J.agirLibre(r.etat, 'je mange').ok === false, 'une seule pause');
+  const m = J.agirLibre(g.e, 'je mesure moi-même la viscosité'); assert(m.ok && m.etat.cmd.rheo.pret === 255 + 45, 'self : le temps est pour l\'élève, sans pause');
+}
+console.log('OK : lot 19 (pause déjeuner)');
+
+// 19. Méthode CPG : étalon interne, injecteur, four, détecteur
+{
+  const sec = S.secretsDe(5), base = { ...J.etatInitial(), scene: 'stationCpg', f: { regle: 'ok', coadis: 0.525, dpnb: 3, fabrique: true, densMes: 1.3, graine: sec.graine, rf: sec.rf, ph: sec.ph, eff: 3 } };
+  const joue = m => { let x = m ? J.choisirMethode(base, m) : base; for (const c of [0.25, 0.5, 1, 1.5, 2, 3]) x = J.injecterEtalon(x, c); x = J.injecterEchantillon(J.preparerEchantillon(x)); x = J.injecterEchantillon(x); return x; };
+  assert(!J.methodeChoisie(base)); const bon = J.choisirMethode(base, { is: 'c14', inj: 250, four: 'grad', det: 250 });
+  assert(J.methodeChoisie(bon) && bon.t === base.t + 10 && J.qm(bon).ok);
+  assert.strictEqual(J.choisirMethode(bon, { is: 'tol' }), bon, 'méthode figée une fois lancée');
+  const R0 = J.resultatCpg(joue({ is: 'c14', inj: 250, four: 'grad', det: 250 })), vrai = J.covDe(base);
+  const bg = J.resultatCpg(joue({ is: 'bg', inj: 250, four: 'grad', det: 250 }));
+  assert(bg.cov < R0.cov * 0.92, 'butylglycol déjà présent : COV sous-estimé (' + bg.cov + ' vs ' + R0.cov + ')');
+  const tol = joue({ is: 'tol', inj: 250, four: 'grad', det: 250 }), tpnb = joue({ is: 'tpnb', inj: 250, four: 'grad', det: 250 });
+  assert(S.etalonnage(tol.f.cpg.etal, 'interne').residRel > S.etalonnage(joue({ is: 'c14', inj: 250, four: 'grad', det: 250 }).f.cpg.etal, 'interne').residRel, 'toluène : l\'étalon interne ne corrige plus');
+  assert(S.etalonnage(tpnb.f.cpg.etal, 'interne').residRel > 1.5 * S.etalonnage(joue({ is: 'c14', inj: 250, four: 'grad', det: 250 }).f.cpg.etal, 'interne').residRel, 'coélution : résidus plus grands');
+  assert(!J.qm(joue({ is: 'c14', inj: 200, four: 'grad', det: 250 })).ok && !J.qm(joue({ is: 'c14', inj: 250, four: 'grad', det: 200 })).ok);
+  const lent = joue({ is: 'c14', inj: 250, four: 'iso60', det: 250 }), rapide = joue({ is: 'c14', inj: 250, four: 'grad', det: 250 });
+  assert(lent.t > rapide.t + 20, 'four isotherme à 60 °C : injections beaucoup plus longues');
+  assert(vrai > 0 && R0.dos);
+}
+console.log('OK : méthode CPG');
+
+// 20. Tout déléguer à Lucas dans l'ordre (sans rien faire soi-même) permet encore de rendre un dossier complet
+{
+  const g = jouer(); debut(g, { alerte: 'tot' }); formulation(g, { dpnb: 3 });
+  const fin = travaille(g, { dem: ['Lucas : Prises', 'Inès : Extrait', 'Lucas : Profil', 'Lucas : Pouvoir', 'Lucas : Brillance', 'Lucas : Température', 'M. Perrin'] });
+  console.log('Tout déléguer :', fin.scene, J.hhmm(fin.t));
+  assert(['fin_excellent', 'fin_bon', 'fin_retard'].includes(fin.scene), 'dossier rendu : ' + fin.scene);
+}
+console.log('OK : tout déléguer');

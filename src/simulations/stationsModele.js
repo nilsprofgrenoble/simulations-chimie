@@ -99,18 +99,22 @@ import { regression } from "./etalonnageModele";
 export const NIVEAUX_ETALON = [0.25, 0.5, 1, 1.5, 2, 3];   // mg/mL de DPnB
 export const C_IS = 1.0;                                    // mg/mL d'étalon interne dans toutes les solutions
 export const M_ECH = 1.00, V_ECH = 10;                      // g de peinture, mL de volume final
-export const T_PREP = 4, T_INJ = 2, ETAL_MAX = 10, ECH_MAX = 4;
+export const T_PREP = 20, T_INJ = 2, ETAL_MAX = 10, ECH_MAX = 4;
 export const SIGMA_VOL = 0.06, SIGMA_AIRE = 0.015, SIGMA_PREP = 0.01, K_AIRE = 10000;
 export const TR = { is: 6.2, dpnb: 8.1 };                   // min (données de scénario)
 
 // Une injection : aires du DPnB et de l'étalon interne (même graine et même n° = mêmes aires)
-export function injection(graine, n, cDpnb, rf) {
+export function injection(graine, n, cDpnb, rf, opts = {}) {
   const r = rng((graine ^ (n * 69069) ^ 0x1234567) >>> 0);
-  const vol = 1 + SIGMA_VOL * gauss(r);
-  return { aD: Math.round(K_AIRE * rf * cDpnb * vol * (1 + SIGMA_AIRE * gauss(r))), aI: Math.round(K_AIRE * C_IS * vol * (1 + SIGMA_AIRE * gauss(r))) };
+  const vol = 1 + SIGMA_VOL * gauss(r), sA = SIGMA_AIRE * (opts.bruit || 1);
+  const aD = Math.round(K_AIRE * rf * cDpnb * vol * (1 + sA * gauss(r)));
+  const gI = gauss(r);
+  // Étalon interne : suit le volume injecté (cas normal) ; un étalon trop volatil fluctue indépendamment ; un étalon déjà présent dans la matrice ajoute une aire parasite
+  const aI0 = opts.isIndep ? K_AIRE * C_IS * (1 + 0.08 * gI) : K_AIRE * C_IS * vol * (1 + sA * gI);
+  return { aD, aI: Math.round(aI0 * (1 + (opts.aIPlus || 0))) };
 }
 // Concentration réelle de l'échantillon préparé (mg/mL), avec son erreur de préparation (tirée une fois par partie)
-export const cEchantillon = (cov, densite, graine) => cov / (densite * V_ECH) * M_ECH * (1 + SIGMA_PREP * gauss(rng((graine ^ 0x5bd1e995) >>> 0)));
+export const cEchantillon = (cov, densite, graine, m = M_ECH) => cov / (densite * V_ECH) * m * (1 + SIGMA_PREP * gauss(rng((graine ^ 0x5bd1e995) >>> 0)));
 // Droite d'étalonnage : mode 'interne' (aD/aI en fonction de c/C_IS) ou 'externe' (aD en fonction de c)
 export function etalonnage(etal, mode) {
   const x = etal.map(p => mode === 'interne' ? p.c / C_IS : p.c), y = etal.map(p => mode === 'interne' ? p.aD / p.aI : p.aD);
@@ -126,4 +130,4 @@ export function dosage(D, ech, mode) {
   return { x0, ux, u, m, y0, dansDomaine: x0 >= Math.min(...D.xs) * (mode === 'interne' ? 1 : 1) && x0 <= Math.max(...D.xs) };
 }
 // Passage de la concentration de la solution (mg/mL) au COV de la peinture (g/L) : COV = c × V / m × ρ
-export const covDepuisC = (c, densite) => c * V_ECH / M_ECH * densite;
+export const covDepuisC = (c, densite, m = M_ECH) => c * V_ECH / m * densite;
