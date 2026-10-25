@@ -19,5 +19,13 @@ try {
       n++
     }
   }
-  console.log(`OK : ${ENONCES.length} énoncés, ${n} tirages vérifiés`)
+  const { PREVOIR } = await vite.ssrLoadModule('/src/simulations/AtelierAnalyserBanque.js')
+  const ids = new Set()
+  for (const it of PREVOIR) {
+    assert.ok(!ids.has(it.id), `PREVOIR : id en double ${it.id}`); ids.add(it.id)
+    assert.ok(domaines.has(it.domaine), `${it.id} : domaine « ${it.domaine} » absent de chapitres.js`)
+    assert.equal(it.options.filter(o => o[1]).length, 1, `${it.id} : une seule bonne réponse attendue`)
+    assert.ok(it.options.length >= 3 && it.options.every(o => o[2]), `${it.id} : options et explications`)
+  }
+  console.log(`OK : ${PREVOIR.length} « prévoir », ${ENONCES.length} énoncés, ${n} tirages vérifiés`)
 } finally { await vite.close() }

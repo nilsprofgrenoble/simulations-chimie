@@ -780,6 +780,75 @@ export const ENONCES = [
         manque: null, solution: { txt: 'I = U / R', val: p.U / p.Rm, u: 'A' } };
     },
   },
+  {
+    id: 'indice2', domaine: 'Lumière', titre: 'Indice de réfraction et vitesse de la lumière', noms: ['Indice de réfraction', 'Vitesse de la lumière dans le milieu'],
+    gen: () => ({ milieu: tire([['du verre', 200000, 1.5], ['de l’eau', 225000, 1.33], ['d’un diamant', 124000, 2.42]]), ep: tire([2, 5, 10]) }),
+    build: (p, q) => {
+      const [nom, vkm, n] = p.milieu;
+      const tokens = { c: tok('c = 3,00 × 10⁸ m·s⁻¹', 'Vitesse de la lumière dans le vide', 3.0e8, 'm·s⁻¹'), ep: tok(`${p.ep} cm`, 'Épaisseur du bloc', p.ep / 100, 'm') };
+      if (q === 0) {
+        tokens.v = tok(`${nb(vkm)} km·s⁻¹`, 'Vitesse de la lumière dans le milieu', vkm * 1000, 'm·s⁻¹');
+        return { tokens, derivees: [],
+          texte: ['Dans un bloc ' + nom + ' de ', T('ep'), ' d’épaisseur, la lumière se propage à la vitesse de ', T('v'), '. On donne ', T('c'), '. Quel est l’indice de réfraction du milieu ?'],
+          utiles: ['c', 'v'],
+          raisons: { ep: 'L’épaisseur du bloc est une longueur : elle ne sert pas à calculer un indice, qui compare deux vitesses.' },
+          cherche: { bonne: 'L’indice de réfraction n du milieu (sans unité)', faux: ['La vitesse de la lumière dans le milieu (en m·s⁻¹)', 'La durée de la traversée du bloc (en s)', 'L’angle de réfraction (en °)'] },
+          manque: null, solution: { txt: 'n = c / v (v convertie en m·s⁻¹)', val: 3.0e8 / (vkm * 1000), u: '' } };
+      }
+      tokens.n = tok(`n = ${nb(n, 2)}`, 'Indice de réfraction du milieu', n, '');
+      return { tokens, derivees: [],
+        texte: ['Un bloc ' + nom + ' de ', T('ep'), ' d’épaisseur a pour ', T('n'), '. On donne ', T('c'), '. Quelle est la vitesse de la lumière dans ce milieu (en m·s⁻¹) ?'],
+        utiles: ['c', 'n'],
+        raisons: { ep: 'L’épaisseur du bloc n’intervient pas : la vitesse dépend seulement de l’indice du milieu.' },
+        cherche: { bonne: 'La vitesse v de la lumière dans le milieu (en m·s⁻¹)', faux: ['L’indice de réfraction du milieu (sans unité)', 'La durée de la traversée du bloc (en s)', 'La distance parcourue dans le bloc (en m)'] },
+        manque: null, solution: { txt: 'v = c / n', val: 3.0e8 / n, u: 'm·s⁻¹' } };
+    },
+  },
+  {
+    id: 'snell2', domaine: 'Lumière', titre: 'Réfraction : loi de Snell-Descartes', noms: ['Angle de réfraction', 'Indice du second milieu'],
+    gen: () => { const m = tire([['l’eau', 1.33], ['le verre', 1.50], ['le plexiglas', 1.49]]); const i1 = tire([20, 30, 45, 60]); const n2 = m[1];
+      return { milieu: m[0], n2, i1, lam: tire([532, 589, 650]), ep: tire([2, 5, 10]), i2: Math.round(Math.asin(Math.sin(i1 * Math.PI / 180) / n2) * 180 / Math.PI * 10) / 10 }; },
+    build: (p, q) => {
+      const tokens = { n1: tok('n₁ = 1,00 (air)', 'Indice de l’air', 1.0, ''), i1: tok(`${p.i1}°`, 'Angle d’incidence', p.i1, '°'), lam: tok(`${p.lam} nm`, 'Longueur d’onde du laser', p.lam, 'nm') };
+      if (q === 0) {
+        tokens.n2 = tok(`n₂ = ${nb(p.n2, 2)}`, 'Indice de ' + p.milieu, p.n2, '');
+        return { tokens, derivees: [],
+          texte: ['Un faisceau laser de longueur d’onde ', T('lam'), ' passe de l’air (', T('n1'), ') vers ' + p.milieu + ' (', T('n2'), ') avec un angle d’incidence de ', T('i1'), '. Quel est l’angle de réfraction ?'],
+          utiles: ['n1', 'n2', 'i1'],
+          raisons: { lam: 'La longueur d’onde est une longueur : elle n’apparaît pas dans la loi n₁ sin i₁ = n₂ sin i₂.' },
+          cherche: { bonne: 'L’angle de réfraction i₂ (en °)', faux: ['L’angle d’incidence i₁ (en °)', 'L’indice de réfraction n₂ du second milieu', 'La vitesse de la lumière dans le second milieu (en m·s⁻¹)'] },
+          manque: null, solution: { txt: 'sin i₂ = n₁ sin i₁ / n₂', val: p.i2, u: '°' } };
+      }
+      tokens.i2 = tok(`${nb(p.i2, 1)}°`, 'Angle de réfraction', p.i2, '°');
+      return { tokens, derivees: [],
+        texte: ['Un faisceau laser de longueur d’onde ', T('lam'), ' passe de l’air (', T('n1'), ') vers un milieu transparent inconnu avec un angle d’incidence de ', T('i1'), '. L’angle de réfraction mesuré vaut ', T('i2'), '. Quel est l’indice de ce milieu ?'],
+        utiles: ['n1', 'i1', 'i2'],
+        raisons: { lam: 'La longueur d’onde n’intervient pas dans la loi de Snell-Descartes.' },
+        cherche: { bonne: 'L’indice de réfraction n₂ du milieu inconnu (sans unité)', faux: ['L’angle d’incidence i₁ (en °)', 'La vitesse de la lumière dans le milieu (en m·s⁻¹)', 'L’épaisseur du milieu traversé (en cm)'] },
+        manque: null, solution: { txt: 'n₂ = n₁ sin i₁ / sin i₂', val: Math.sin(p.i1 * Math.PI / 180) / Math.sin(p.i2 * Math.PI / 180), u: '' } };
+    },
+  },
+  {
+    id: 'noyau2', domaine: 'Matière à l’échelle microscopique', titre: 'Le noyau d’un atome', noms: ['Nombre de neutrons', 'Charge électrique du noyau'],
+    gen: () => ({ at: tire([['carbone', 6, 12], ['sodium', 11, 23], ['chlore', 17, 35], ['calcium', 20, 40], ['fer', 26, 56]]) }),
+    build: (p, q) => {
+      const [nom, Z, A] = p.at;
+      const tokens = { A: tok(`${A}`, 'Nombre de nucléons de l’atome', A, ''), Z: tok(`${Z}`, 'Numéro atomique (nombre de protons)', Z, ''), e: tok('e = 1,6 × 10⁻¹⁹ C', 'Charge élémentaire', 1.6e-19, 'C'), mp: tok('1,67 × 10⁻²⁷ kg', 'Masse d’un nucléon', 1.67e-27, 'kg') };
+      const base = ['Un atome de ' + nom + ' contient ', T('A'), ' nucléons dont ', T('Z'), ' protons. '];
+      if (q === 0) return { tokens, derivees: [],
+        texte: [...base, 'On donne la charge élémentaire (', T('e'), ') et la masse d’un nucléon (', T('mp'), '). Quel est le nombre de neutrons de son noyau ?'],
+        utiles: ['A', 'Z'],
+        raisons: { e: 'La charge élémentaire sert à calculer une charge électrique, pas un nombre de particules.', mp: 'La masse d’un nucléon sert à calculer une masse, pas un nombre de particules.' },
+        cherche: { bonne: 'Le nombre N de neutrons du noyau', faux: ['La charge électrique du noyau (en C)', 'Le nombre d’électrons de l’atome neutre', 'La masse du noyau (en kg)'] },
+        manque: null, solution: { txt: 'N = A − Z', val: A - Z, u: '' } };
+      return { tokens, derivees: [],
+        texte: [...base, 'La charge d’un proton est égale à la charge élémentaire (', T('e'), ') et la masse d’un nucléon vaut ', T('mp'), '. Quelle est la charge électrique du noyau (en C) ?'],
+        utiles: ['Z', 'e'],
+        raisons: { A: 'Le nombre de nucléons compte aussi les neutrons, qui n’ont pas de charge : seul le nombre de protons intervient.', mp: 'La masse d’un nucléon n’intervient pas dans le calcul d’une charge.' },
+        cherche: { bonne: 'La charge électrique Q du noyau (en C)', faux: ['Le nombre de neutrons du noyau', 'La masse du noyau (en kg)', 'La charge électrique de l’atome (en C)'] },
+        manque: null, solution: { txt: 'Q = Z × e', val: Z * 1.6e-19, u: 'C' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
@@ -809,6 +878,9 @@ const SYMBOLES = {
   poids2: { mg: 'm', g: 'g', V: 'V', mk: 'm', ga: 'g' },
   vitesse2: { d: 'd', t: 'Δt', m: 'm', dm: 'd', v: 'v' },
   ohm2: { R: 'R', I: 'I', L: 'ℓ', U: 'U', Rm: 'R' },
+  indice2: { c: 'c', ep: 'e', v: 'v', n: 'n' },
+  snell2: { n1: 'n₁', i1: 'i₁', lam: 'λ', n2: 'n₂', i2: 'i₂' },
+  noyau2: { A: 'A', Z: 'Z', e: 'e', mp: 'm_nucléon' },
   distil: { V: 'V', x: 'x', y: 'y', Vd: 'V_distillat', Te: 'θ_éb', P: 'P' },
   cristal: { me: 'm_eau', mb: 'm_bécher', s60: 's₆₀', s20: 's₂₀', dur: 'Δt' },
 };
