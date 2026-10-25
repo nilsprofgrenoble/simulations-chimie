@@ -17,7 +17,7 @@ try {
 
   const app = readFileSync(new URL('../src/App.jsx', import.meta.url), 'utf8')
   const sims = [...app.matchAll(/\{\s*id:\s*(\d+),\s*label:\s*"([^"]+)"[\s\S]{0,160}?niveau:\s*"([A-Z0-9]+)"/g)]
-    .map(m => ({ id: Number(m[1]), label: m[2], niveau: m[3] })).filter(s => ![39, 40, 47, 79, 80, 81].includes(s.id))  // pages de compte, à propos et jeux : sans intérêt pour la remédiation
+    .map(m => ({ id: Number(m[1]), label: m[2], niveau: m[3] })).filter(s => ![39, 40, 47, 79, 80, 81, 82].includes(s.id))  // pages de compte, à propos et jeux : sans intérêt pour la remédiation
 
   const COMP = { "S'APP": "S'approprier", ANA: 'Analyser', REA: 'Réaliser', VAL: 'Valider' }
   const NOM_NIVEAU = { COMP: 'Compétences' }

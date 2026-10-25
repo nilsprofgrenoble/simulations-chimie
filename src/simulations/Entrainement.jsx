@@ -8,7 +8,7 @@ import { FAMILLES as FAM_ANA } from "./AtelierAnalyserBanque";
 import { FAMILLES as FAM_VAL } from "./AtelierValiderBanque";
 import { useSession, estEleve, estProf, toutLire, rest } from "../serveur";
 import { exosDuChapitre, exosCalcul, prochainExercice, avancementChapitre } from "../chapitre";
-import { NIVEAUX_CHAPITRES, CHAPITRES, chapitresDuNiveau, chapitreDe, chapitresDe, domainesDe } from "../chapitres";
+import { NIVEAUX_CHAPITRES, CHAPITRES, chapitresDuNiveau, chapitreDe, chapitresDe, domainesDe, allerChapitre } from "../chapitres";
 import { nomsSim } from "../suivi";
 import { Pic } from "../Pictos";
 import { JeuxCode } from "./JeuxEscape";
@@ -78,10 +78,8 @@ function CarteChapitre({ c, ouvert, enCours, av, onClick }) {
     </button>);
 }
 
-export function SimulationEntrainement({ naviguer }) {
-  const [niveauChoisi, setNiveauChoisi] = useEtatPersistant('entrainement-niveau-v1', null);
-  const [chapChoisi, setChapChoisi] = useState(undefined);      // undefined : pas de choix de l'élève (on ouvre le chapitre en cours) ; null : tout replié
-  const [comp, setComp] = useState('toutes');
+// Progression de l'élève (appareil + serveur) et chapitres choisis par son professeur : partagé par « Je m'entraîne » et les pages de chapitre
+function useProgressionEleve() {
   const [progLocale, setProg] = useState(lireProgression);
   const sess = useSession();
   const eleve = estEleve(sess), identifiantUtilisateur = sess?.user?.id;
@@ -109,10 +107,114 @@ export function SimulationEntrainement({ naviguer }) {
   const chapActifs = useMemo(() => (classeId ? chapitres : []), [classeId, chapitres]);
   const chapsEnCours = useMemo(() => chapitresDe(chapActifs), [chapActifs]);
   const prog = { ...progLocale, ...serveur };
-  const exos = useMemo(() => tousLesExercices(), []);
-  const nbFaits = l => l.filter(e => prog[e.cle]).length;
-  const ouvrir = e => naviguer(e.atelier, e.ex);
   const etoilesDe = cle => etoilesSrv[cle] ?? (prog[cle] ? 3 : 0);
+  const nbFaits = l => l.filter(e => prog[e.cle]).length;
+  return { sess, eleve, prog, setProg, etoilesSrv, etoilesDe, nbFaits, chapsEnCours, idsEnCours: chapsEnCours.map(c => c.id) };
+}
+
+// Contenu d'un chapitre : ses simulations, l'exercice conseillé et ses exercices rangés par compétence
+function DetailChapitre({ c, exos, ctx, naviguer, sansTitre }) {
+  const { prog, etoilesSrv, etoilesDe, nbFaits, idsEnCours } = ctx;
+  const ouvrir = e => naviguer(e.atelier, e.ex);
+  const exosChap = exosDuChapitre(exos, c.domaines), av = avancementChapitre(exosChap, etoilesDe), conseil = exosChap.length ? prochainExercice(exosChap, etoilesDe) : null;
+  const enCours = idsEnCours.includes(c.id);
+  return (
+    <section data-chapitre style={{ margin: '14px 0 18px', padding: '12px 14px', border: `2px solid ${ROSE}`, borderRadius: 12, background: 'white' }}>
+      {!sansTitre && <h3 style={{ margin: '0 0 4px', color: KIT.txt }}><Pic n="book"/>{c.label}</h3>}
+      <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 8 }}>
+        {enCours ? 'Chapitre choisi par ton professeur. ' : ''}{exosChap.length > 0 ? `${av.reussis} exercice${av.reussis > 1 ? 's' : ''} réussi${av.reussis > 1 ? 's' : ''} sur ${av.total} · ${av.etoiles} ★ sur ${av.max}` : 'Pas encore d’exercice de remédiation sur ce chapitre : commence par les simulations.'}
+      </div>
+      {c.sims.length > 0 && (
+        <div data-sims-chapitre style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: KIT.txt, margin: '0 0 4px' }}><Pic n="testtube"/>Les simulations du chapitre</div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {c.sims.map(id => <button key={id} data-sim={id} onClick={() => naviguer(id)} style={{ ...styleBouton(false, '#475569'), fontSize: 13 }}>{nomsSim[id] || `Simulation ${id}`} ▶</button>)}
+          </div>
+        </div>)}
+      {exosChap.length > 0 && <div style={{ height: 8, borderRadius: 4, background: '#e2e8f0', marginBottom: 12 }} role="progressbar" aria-valuemin={0} aria-valuemax={av.max} aria-valuenow={av.etoiles} aria-label="Étoiles gagnées dans le chapitre">
+        <div style={{ height: 8, borderRadius: 4, background: '#2a9d8f', width: `${av.max ? (100 * av.etoiles) / av.max : 0}%` }} />
+      </div>}
+      {exosChap.length === 0 ? null : conseil ? (
+        <div data-conseil style={{ ...styleBoite, border: '2px solid #2a9d8f', background: '#eef7f5', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
+          <div style={{ flex: 1, minWidth: 220 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: '#1f6f66', letterSpacing: 0.5 }}>👉 TON PROCHAIN EXERCICE CONSEILLÉ</div>
+            <div style={{ fontWeight: 800, color: KIT.txt, margin: '2px 0' }}>{conseil.exo.comp} · {conseil.exo.titre}</div>
+            <div style={{ fontSize: 12.5, color: KIT.txt2 }}>
+              {conseil.raison === 'nouveau' ? 'Tu ne l’as pas encore réussi : on commence par la compétence où tu as le moins avancé dans ce chapitre.' : `Tu l’as réussi avec ${conseil.etoiles} étoile${conseil.etoiles > 1 ? 's' : ''} : vise les 3 étoiles.`}
+            </div>
+          </div>
+          <button onClick={() => ouvrir(conseil.exo)} style={styleBouton(true, ROSE)}>Y aller ▶</button>
+        </div>
+      ) : (
+        <div style={{ ...styleBoite, background: '#f0fdf4', marginBottom: 12 }}><Pic n="party"/><b>Tout le chapitre est réussi avec 3 étoiles !</b> Passe à un autre chapitre, ou refais un exercice pour t’entraîner.</div>
+      )}
+      {['S\'APP', 'ANA', 'VAL'].map(code => {
+        const L = exosChap.filter(e => e.comp === code);
+        const cc = COMPETENCES.find(x => x.code === code);
+        return L.length === 0 ? null : (
+          <div key={code} style={{ marginBottom: 10 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: cc.couleur, margin: '6px 0 4px' }}>{code} · {cc.nom} <span style={{ fontWeight: 600, color: KIT.txt2 }}>({nbFaits(L)} / {L.length} réussis)</span></div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>{L.map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} />)}</div>
+          </div>);
+      })}
+      {exosChap.length > 0 && <details style={{ marginTop: 6 }}>
+        <summary style={{ cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: KIT.txt }}><Pic n="abacus"/>Pour t’aider à calculer (REA, valable pour tous les chapitres) <span style={{ fontWeight: 600, color: KIT.txt2 }}>({nbFaits(exosCalcul(exos))} / {exosCalcul(exos).length} réussis)</span></summary>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>{exosCalcul(exos).map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} />)}</div>
+      </details>}
+      {exosChap.length > 0 && <div style={{ fontSize: 12, color: KIT.txt2, marginTop: 8 }}>Le conseil est calculé à partir de tes résultats ; ce n’est pas une note.</div>}
+    </section>);
+}
+
+// Page d'accueil d'un chapitre (?sim=82&chap=<id>) : ses simulations, puis ses exercices de remédiation rangés par compétence.
+// Sans chapitre dans l'adresse (ou chapitre inconnu) : la liste des chapitres de tous les niveaux.
+export function SimulationChapitre({ naviguer }) {
+  const ctx = useProgressionEleve();
+  const exos = useMemo(() => tousLesExercices(), []);
+  const idChap = (() => { try { return new URLSearchParams(window.location.search).get('chap'); } catch { return null; } })();
+  const c = chapitreDe(idChap);
+  const niveau = c && NIVEAUX_CHAPITRES.find(n => n.key === c.niveau);
+  const autres = c ? chapitresDuNiveau(c.niveau).filter(x => x.id !== c.id) : [];
+  const aller = id => allerChapitre(naviguer, id);
+  const cartes = l => (
+    <div data-chapitres style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 10, margin: '8px 0' }}>
+      {l.map(x => <CarteChapitre key={x.id} c={x} ouvert={false} enCours={ctx.idsEnCours.includes(x.id)} av={avancementChapitre(exosDuChapitre(exos, x.domaines), ctx.etoilesDe)} onClick={() => aller(x.id)} />)}
+    </div>);
+  return (
+    <div style={{ ...cardStyle, maxWidth: 1000, margin: '0 auto' }} data-page-chapitre={c?.id || 'index'}>
+      <div style={{ fontSize: 13, color: KIT.txt2 }}>
+        <button onClick={() => naviguer(38)} style={{ background: 'none', border: 'none', padding: 0, color: ROSE, textDecoration: 'underline', cursor: 'pointer', fontSize: 13 }}>Je m’entraîne</button>
+        {c && <> › {niveau?.label}</>}
+      </div>
+      {c ? (
+        <>
+          <h2 style={{ margin: '4px 0 0', color: ROSE }}>{niveau?.label} · {c.label}</h2>
+          <p style={{ color: KIT.txt2, fontSize: 14, lineHeight: 1.55, margin: '6px 0 0' }}>
+            Tout ce qu’il faut pour ce chapitre : les <b>simulations</b> pour comprendre et expérimenter, puis des <b>exercices</b> pour t’entraîner, rangés par compétence
+            (<b>s’approprier → analyser → valider</b>). Les exercices de calcul (<b>réaliser</b>) sont en bas de page.
+          </p>
+          <DetailChapitre c={c} exos={exos} ctx={ctx} naviguer={naviguer} sansTitre />
+          {autres.length > 0 && <>
+            <h3 style={{ margin: '10px 0 0', color: KIT.txt }}>Les autres chapitres de {niveau?.label}</h3>
+            {cartes(autres)}
+          </>}
+        </>
+      ) : (
+        <>
+          <h2 style={{ margin: '4px 0 0', color: ROSE }}>Choisir un chapitre</h2>
+          <p style={{ color: KIT.txt2, fontSize: 14 }}>Chaque chapitre rassemble ses simulations et ses exercices d’entraînement.</p>
+          {NIVEAUX_CHAPITRES.map(n => <div key={n.key}><div style={{ fontSize: 14, fontWeight: 800, color: KIT.txt, margin: '12px 0 0' }}>{n.label}</div>{cartes(chapitresDuNiveau(n.key))}</div>)}
+        </>)}
+    </div>);
+}
+
+export function SimulationEntrainement({ naviguer }) {
+  const [niveauChoisi, setNiveauChoisi] = useEtatPersistant('entrainement-niveau-v1', null);
+  const [chapChoisi, setChapChoisi] = useState(undefined);      // undefined : pas de choix de l'élève (on ouvre le chapitre en cours) ; null : tout replié
+  const [comp, setComp] = useState('toutes');
+  const ctx = useProgressionEleve();
+  const { sess, eleve, prog, setProg, etoilesSrv, etoilesDe, nbFaits, chapsEnCours, idsEnCours } = ctx;
+  const exos = useMemo(() => tousLesExercices(), []);
+  const ouvrir = e => naviguer(e.atelier, e.ex);
   const effacer = () => {
     if (!window.confirm('Effacer la progression mémorisée sur cet appareil ?')) return;
     try { window.localStorage.removeItem('progression-ateliers-v1'); } catch { /* indisponible */ }
@@ -123,7 +225,6 @@ export function SimulationEntrainement({ naviguer }) {
   const niveauValide = NIVEAUX_CHAPITRES.some(n => n.key === niveauChoisi) || niveauChoisi === 'tous';
   const niveau = (niveauValide && niveauChoisi) || chapsEnCours[0]?.niveau || null;
   const chapsNiveau = niveau === 'tous' ? CHAPITRES : niveau ? chapitresDuNiveau(niveau) : [];
-  const idsEnCours = chapsEnCours.map(c => c.id);
   const ouvertId = chapChoisi !== undefined ? chapChoisi : (chapsNiveau.find(c => idsEnCours.includes(c.id))?.id ?? null);
   const chapOuvert = chapsNiveau.find(c => c.id === ouvertId) || null;
   const exosDe = c => exosDuChapitre(exos, c.domaines);
@@ -136,55 +237,6 @@ export function SimulationEntrainement({ naviguer }) {
   })();
   const liste = exosN.filter(e => comp === 'toutes' || e.comp === comp);
 
-  const detail = c => {
-    const exosChap = exosDe(c), av = avancementChapitre(exosChap, etoilesDe), conseil = exosChap.length ? prochainExercice(exosChap, etoilesDe) : null;
-    const enCours = idsEnCours.includes(c.id);
-    return (
-      <section data-chapitre style={{ margin: '14px 0 18px', padding: '12px 14px', border: `2px solid ${ROSE}`, borderRadius: 12, background: 'white' }}>
-        <h3 style={{ margin: '0 0 4px', color: KIT.txt }}><Pic n="book"/>{c.label}</h3>
-        <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 8 }}>
-          {enCours ? 'Chapitre choisi par ton professeur. ' : ''}{exosChap.length > 0 ? `${av.reussis} exercice${av.reussis > 1 ? 's' : ''} réussi${av.reussis > 1 ? 's' : ''} sur ${av.total} · ${av.etoiles} ★ sur ${av.max}` : 'Pas encore d’exercice de remédiation sur ce chapitre : commence par les simulations.'}
-        </div>
-        {c.sims.length > 0 && (
-          <div data-sims-chapitre style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: KIT.txt, margin: '0 0 4px' }}><Pic n="testtube"/>Les simulations du chapitre</div>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {c.sims.map(id => <button key={id} data-sim={id} onClick={() => naviguer(id)} style={{ ...styleBouton(false, '#475569'), fontSize: 13 }}>{nomsSim[id] || `Simulation ${id}`} ▶</button>)}
-            </div>
-          </div>)}
-        {exosChap.length > 0 && <div style={{ height: 8, borderRadius: 4, background: '#e2e8f0', marginBottom: 12 }} role="progressbar" aria-valuemin={0} aria-valuemax={av.max} aria-valuenow={av.etoiles} aria-label="Étoiles gagnées dans le chapitre">
-          <div style={{ height: 8, borderRadius: 4, background: '#2a9d8f', width: `${av.max ? (100 * av.etoiles) / av.max : 0}%` }} />
-        </div>}
-        {exosChap.length === 0 ? null : conseil ? (
-          <div data-conseil style={{ ...styleBoite, border: '2px solid #2a9d8f', background: '#eef7f5', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
-            <div style={{ flex: 1, minWidth: 220 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 800, color: '#1f6f66', letterSpacing: 0.5 }}>👉 TON PROCHAIN EXERCICE CONSEILLÉ</div>
-              <div style={{ fontWeight: 800, color: KIT.txt, margin: '2px 0' }}>{conseil.exo.comp} · {conseil.exo.titre}</div>
-              <div style={{ fontSize: 12.5, color: KIT.txt2 }}>
-                {conseil.raison === 'nouveau' ? 'Tu ne l’as pas encore réussi : on commence par la compétence où tu as le moins avancé dans ce chapitre.' : `Tu l’as réussi avec ${conseil.etoiles} étoile${conseil.etoiles > 1 ? 's' : ''} : vise les 3 étoiles.`}
-              </div>
-            </div>
-            <button onClick={() => ouvrir(conseil.exo)} style={styleBouton(true, ROSE)}>Y aller ▶</button>
-          </div>
-        ) : (
-          <div style={{ ...styleBoite, background: '#f0fdf4', marginBottom: 12 }}><Pic n="party"/><b>Tout le chapitre est réussi avec 3 étoiles !</b> Passe à un autre chapitre, ou refais un exercice pour t’entraîner.</div>
-        )}
-        {['S\'APP', 'ANA', 'VAL'].map(code => {
-          const L = exosChap.filter(e => e.comp === code);
-          const cc = COMPETENCES.find(x => x.code === code);
-          return L.length === 0 ? null : (
-            <div key={code} style={{ marginBottom: 10 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: cc.couleur, margin: '6px 0 4px' }}>{code} · {cc.nom} <span style={{ fontWeight: 600, color: KIT.txt2 }}>({nbFaits(L)} / {L.length} réussis)</span></div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>{L.map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} />)}</div>
-            </div>);
-        })}
-        {exosChap.length > 0 && <details style={{ marginTop: 6 }}>
-          <summary style={{ cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: KIT.txt }}><Pic n="abacus"/>Pour t’aider à calculer (REA, valable pour tous les chapitres) <span style={{ fontWeight: 600, color: KIT.txt2 }}>({nbFaits(exosCalcul(exos))} / {exosCalcul(exos).length} réussis)</span></summary>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>{exosCalcul(exos).map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} />)}</div>
-        </details>}
-        {exosChap.length > 0 && <div style={{ fontSize: 12, color: KIT.txt2, marginTop: 8 }}>Le conseil est calculé à partir de tes résultats ; ce n’est pas une note.</div>}
-      </section>);
-  };
   const cartes = l => (
     <div data-chapitres style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 10, margin: '8px 0' }}>
       {l.map(c => <CarteChapitre key={c.id} c={c} ouvert={ouvertId === c.id} enCours={idsEnCours.includes(c.id)} av={avancementChapitre(exosDe(c), etoilesDe)}
@@ -228,7 +280,7 @@ export function SimulationEntrainement({ naviguer }) {
           {niveau === 'tous'
             ? NIVEAUX_CHAPITRES.map(n => <div key={n.key}><div style={{ fontSize: 13, fontWeight: 800, color: KIT.txt, margin: '10px 0 0' }}>{n.label}</div>{cartes(chapitresDuNiveau(n.key))}</div>)
             : cartes(chapsNiveau)}
-          {chapOuvert && detail(chapOuvert)}
+          {chapOuvert && <DetailChapitre c={chapOuvert} exos={exos} ctx={ctx} naviguer={naviguer} />}
         </section>)}
 
       <details data-autres style={{ ...styleBoite, background: '#fff', marginTop: 12 }}>

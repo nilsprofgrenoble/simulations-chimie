@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { LogoPaillasse } from "./Logo";
 import { ACCENT, ACCENT_CLAIR, TEXTE, TEXTE2, BORDURE } from "./theme";
 import { Pic, Emo, AvecPicto } from "./Pictos";
+import { allerChapitre } from "./chapitres";
 
 // ============================================================
 //  EN-TÊTE DU SITE : toujours visible, même quand on fait défiler la page.
@@ -52,6 +53,7 @@ export function EnTete({ menus, activeId, niveauActif, naviguer, session }) {
 
   const profil = session?.profil;
   const aller = id => { setOuvert(null); naviguer(id); };
+  const allerChap = id => { setOuvert(null); allerChapitre(naviguer, id); };
   const allerCompte = () => aller(profil?.role === 'prof' ? 40 : 39);
   const lienSim = (s, retrait = 0) => (
     <button key={s.id} onClick={() => aller(s.id)} title={s.desc || undefined} aria-current={s.id === activeId ? 'page' : undefined}
@@ -67,7 +69,7 @@ export function EnTete({ menus, activeId, niveauActif, naviguer, session }) {
   );
   const groupe = (g, k) => (
     <div key={k} style={{ minWidth: 0 }}>
-      {g.label && <div style={{ fontSize: 14.5, fontWeight: 800, color: TXT, background: ACCENT_CLAIR, borderLeft: `4px solid ${VERT}`, borderRadius: 6, padding: '5px 10px', margin: '6px 0 4px', lineHeight: 1.3 }}><AvecPicto texte={g.label}/></div>}
+      {g.label && <div style={{ fontSize: 14.5, fontWeight: 800, color: TXT, background: ACCENT_CLAIR, borderLeft: `4px solid ${VERT}`, borderRadius: 6, padding: '5px 10px', margin: '6px 0 4px', lineHeight: 1.3 }}><AvecPicto texte={g.label}/>{g.chap && <button data-page-chapitre-lien={g.chap} onClick={() => allerChap(g.chap)} title="Simulations et exercices d’entraînement de ce chapitre" style={{ display: 'block', marginTop: 3, padding: 0, border: 'none', background: 'none', cursor: 'pointer', color: VERT, fontWeight: 800, fontSize: 12.5, fontFamily: 'inherit', textDecoration: 'underline' }}>📚 Page du chapitre : simulations + exercices ▶</button>}</div>}
       {g.contenu ? <div style={{ marginLeft: g.label ? 8 : 0 }}>{g.contenu({ aller })}</div> : <div style={{ display: 'flex', flexDirection: 'column', marginLeft: g.label ? 8 : 0 }}>{g.sims.map(s => lienSim(s))}</div>}
     </div>
   );
