@@ -13,8 +13,10 @@
 // Aucune de ces fonctions ne dépend de React : elles sont testables seules.
 
 const tire = t => t[Math.floor(Math.random() * t.length)];
+const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
+const sci3 = x => { const [m, e] = Number(x).toExponential(2).split('e'); return `${Number(m).toLocaleString('fr-FR')} × 10${[...String(Number(e))].map(c => SUP[c]).join('')}`; };
 export const nb = (x, d = null) => (d == null
-  ? Number(x).toLocaleString('fr-FR', { maximumSignificantDigits: 6 })
+  ? (x !== 0 && (Math.abs(x) < 1e-3 || Math.abs(x) >= 1e7) ? sci3(x) : Number(x).toLocaleString('fr-FR', { maximumSignificantDigits: 4 }))
   : Number(x).toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d }));
 const NB = s => s.replace(/ /g, ' ');                       // espace insécable : une donnée ne se coupe pas en fin de ligne
 const sg = x => (x < 0 ? '−' + nb(Math.abs(x)) : nb(x));          // nombre avec « vrai » signe moins
@@ -657,11 +659,11 @@ export const ENONCES = [
         manque: null, solution: { txt: 'F = q·E, avec E = U / distance', val: p.q * 1e-9 * p.U / (p.e * 1e-3), u: 'N' } };
     },
   },
-  // ───────────────────────────── Seconde : « de quelle grandeur s'agit-il ? » (masse ou volume, kg ou g, mL ou L, min ou h…)
+  // ───────────────────────────── Seconde et première : « de quelle grandeur s'agit-il ? » (masse ou volume, kg ou g, mL ou L, min ou h…)
   {
     id: 'rho2', domaine: 'Solutions et concentration', titre: 'La masse volumique d’un liquide', noms: ['Masse volumique du liquide', 'Masse d’un volume de liquide'],
-    gen: () => { const liq = tire([['l’huile', 0.92], ['l’éthanol', 0.79], ['le glycérol', 1.26], ['le sirop', 1.30]]); const V = tire([20, 25, 40, 50]), mv = tire([45, 52, 60]);
-      return { nom: liq[0], rho: liq[1], V, mv, mt: Math.round((mv + liq[1] * V) * 10) / 10, T: tire([18, 20, 22]), VL: tire([0.25, 0.5, 2]) }; },
+    gen: () => { const liq = tire([['de l’huile', 0.92], ['de l’éthanol', 0.79], ['du glycérol', 1.26], ['du sirop', 1.30]]); const V = tire([20, 25, 40, 50]), mv = tire([45, 52, 60]);
+      return { nom: liq[0], rho: liq[1], V, mv, mt: Math.round((mv + liq[1] * V) * 10) / 10, T: tire([18, 20, 22]), VL: tire([0.25, 0.5, 1.5, 2]) }; },
     build: (p, q) => {
       const tokens = { T: tok(`${p.T} °C`, 'Température du laboratoire', p.T, '°C') };
       if (q === 0) {
@@ -669,10 +671,10 @@ export const ENONCES = [
         tokens.mt = tok(`${nb(p.mt, 1)} g`, 'Masse de l’éprouvette contenant le liquide', p.mt, 'g');
         tokens.V = tok(`${p.V} mL`, 'Volume de liquide dans l’éprouvette', p.V, 'mL');
         return { tokens, derivees: [{ id: 'm', nom: 'Masse m du liquide seul', expr: 'm = masse avec le liquide − masse de l’éprouvette vide', val: Math.round((p.mt - p.mv) * 10) / 10, u: 'g' }],
-          texte: ['Pour identifier ' + p.nom + ', on pèse une éprouvette graduée vide : ', T('mv'), '. On y verse du liquide jusqu’à lire ', T('V'), ', et on pèse l’ensemble : ', T('mt'), '. La température du laboratoire est de ', T('T'), '. Quelle est la masse volumique de ce liquide (en g·mL⁻¹) ?'],
+          texte: ['Pour déterminer la masse volumique d’un liquide, on pèse une éprouvette graduée vide : ', T('mv'), '. On y verse du liquide jusqu’à lire ', T('V'), ', et on pèse l’ensemble : ', T('mt'), '. La température du laboratoire est de ', T('T'), '. Quelle est la masse volumique de ce liquide (en g·mL⁻¹) ?'],
           utiles: ['mv', 'mt', 'V'],
-          raisons: { T: 'La température du laboratoire n’est pas une donnée de la formule ρ = m / V (c’est une température, pas une masse ni un volume).' },
-          cherche: { bonne: 'La masse volumique ρ du liquide (en g·mL⁻¹)', faux: ['La masse m du liquide (en g)', 'Le volume V du liquide (en mL)', 'La masse de l’éprouvette vide (en g)'] },
+          raisons: { T: 'On mesure directement m et V : la température du laboratoire ne figure pas dans la formule ρ = m / V (elle est notée seulement parce qu’un volume varie un peu avec la température).' },
+          cherche: { bonne: 'La masse volumique ρ du liquide (en g·mL⁻¹)', faux: ['La masse m du liquide seul (en g)', 'Le poids du liquide (en N)', 'La quantité de matière de liquide (en mol)'] },
           manque: null, solution: { txt: 'ρ = m / V, avec m = m_avec liquide − m_éprouvette', val: (p.mt - p.mv) / p.V, u: 'g·mL⁻¹' } };
       }
       delete tokens.T;
@@ -680,16 +682,16 @@ export const ENONCES = [
       tokens.VL = tok(`${nb(p.VL, 2)} L`, 'Volume de liquide à peser', p.VL * 1000, 'mL');
       tokens.mv = tok(`${nb(p.mv, 1)} g`, 'Masse du flacon vide', p.mv, 'g');
       return { tokens, derivees: [],
-        texte: ['La masse volumique de ' + p.nom + ' vaut ', T('rho'), '. Un technicien en verse ', T('VL'), ' dans un flacon vide de masse ', T('mv'), '. Quelle est la masse de liquide versé (en g) ?'],
+        texte: ['La masse volumique ' + p.nom + ' vaut ', T('rho'), '. Un technicien en verse ', T('VL'), ' dans un flacon vide de masse ', T('mv'), '. Quelle est la masse de liquide versé (en g) ?'],
         utiles: ['rho', 'VL'],
         raisons: { mv: 'La masse du flacon vide ne compte pas : on demande la masse du liquide seul.' },
-        cherche: { bonne: 'La masse m de liquide versé (en g)', faux: ['La masse totale flacon + liquide (en g)', 'La masse volumique du liquide (en g·mL⁻¹)', 'Le volume de liquide (en mL)'] },
+        cherche: { bonne: 'La masse m de liquide versé (en g)', faux: ['La masse totale flacon + liquide (en g)', 'Le poids du liquide (en N)', 'La quantité de matière de liquide (en mol)'] },
         manque: null, solution: { txt: 'm = ρ × V (avec V converti en mL)', val: p.rho * p.VL * 1000, u: 'g' } };
     },
   },
   {
     id: 'conc2', domaine: 'Solutions et concentration', titre: 'Préparer une solution de sel', noms: ['Concentration en masse de la solution', 'Masse de sel à peser'],
-    gen: () => ({ m: tire([2, 5, 10, 20]), Vf: tire([100, 250, 500]), Vi: tire([50, 80, 120]), t: tire([9, 20, 40]), M: 58.5 }),
+    gen: () => ({ m: tire([2, 5, 10, 15]), Vf: tire([100, 250, 500]), Vi: tire([50, 80, 120]), t: tire([9, 20, 40]), M: 58.5 }),
     build: (p, q) => {
       const tokens = { M: tok('58,5 g·mol⁻¹', 'Masse molaire du chlorure de sodium', p.M, 'g·mol⁻¹') };
       if (q === 0) {
@@ -716,121 +718,124 @@ export const ENONCES = [
   },
   {
     id: 'poids2', domaine: 'Forces et principe d’inertie', titre: 'Le poids d’un objet', noms: ['Poids sur la Terre', 'Poids sur un autre astre'],
-    gen: () => { const a = tire([['la Lune', 1.6], ['Mars', 3.7], ['Jupiter', 24.8]]); return { astre: a[0], ga: a[1], mg: tire([250, 500, 750]), mk: tire([2.4, 3.5, 12, 60]), V: tire([2, 8, 15]), t: tire([1, 3]) }; },
+    gen: () => { const a = tire([['la Lune', 1.6], ['Mars', 3.7], ['Vénus', 8.9]]); const mat = tire([['fer', 7.9], ['aluminium', 2.7], ['cuivre', 9.0], ['laiton', 8.5]]); const mg = tire([250, 500, 750]);
+      return { astre: a[0], ga: a[1], mat: mat[0], mg, V: Math.round(mg / mat[1]), mk: tire([2.4, 3.5, 12, 60]) }; },
     build: (p, q) => {
       if (q === 0) {
         const tokens = { mg: tok(`${p.mg} g`, 'Masse de l’objet', p.mg / 1000, 'kg'), g: tok('9,8 N·kg⁻¹', 'Intensité de la pesanteur sur Terre', 9.8, 'N·kg⁻¹'), V: tok(`${p.V} cm³`, 'Volume de l’objet', p.V, 'cm³') };
         return { tokens, derivees: [],
-          texte: ['Un objet de ', T('mg'), ' et de volume ', T('V'), ' est accroché à un dynamomètre sur Terre. Données : ', T('g'), '. Quel est le poids de l’objet (en N) ?'],
+          texte: ['Un objet en ' + p.mat + ' de ', T('mg'), ' et de volume ', T('V'), ' est accroché à un dynamomètre sur Terre. Données : ', T('g'), '. Quel est le poids de l’objet (en N) ?'],
           utiles: ['mg', 'g'],
           raisons: { V: 'Le volume de l’objet n’intervient pas dans le calcul du poids : c’est la masse (en kg) qui compte.' },
-          cherche: { bonne: 'Le poids P de l’objet (en N)', faux: ['La masse m de l’objet (en kg)', 'Le volume de l’objet (en cm³)', 'L’intensité de la pesanteur g (en N·kg⁻¹)'] },
+          cherche: { bonne: 'Le poids P de l’objet (en N)', faux: ['La masse volumique de l’objet (en g·cm⁻³)', 'L’énergie potentielle de pesanteur de l’objet (en J)', 'La pression exercée par l’objet sur la table (en Pa)'] },
           manque: null, solution: { txt: 'P = m × g (avec m convertie en kg)', val: p.mg / 1000 * 9.8, u: 'N' } };
       }
       const tokens = { mk: tok(`${nb(p.mk)} kg`, 'Masse de l’objet', p.mk, 'kg'), ga: tok(`${nb(p.ga, 1)} N·kg⁻¹`, 'Intensité de la pesanteur sur ' + p.astre, p.ga, 'N·kg⁻¹'), g: tok('9,8 N·kg⁻¹', 'Intensité de la pesanteur sur Terre', 9.8, 'N·kg⁻¹') };
+      const sur = p.astre === 'Mars' || p.astre === 'Vénus' ? 'sur ' + p.astre : 'sur la Lune';
       return { tokens, derivees: [],
-        texte: ['Un objet de ', T('mk'), ' est envoyé sur ' + p.astre + ', où l’intensité de la pesanteur vaut ', T('ga'), '. Sur Terre, elle vaut ', T('g'), '. Quel est le poids de l’objet sur ' + p.astre + ' (en N) ?'],
+        texte: ['Un objet de ', T('mk'), ' est envoyé ' + sur + ', où l’intensité de la pesanteur vaut ', T('ga'), '. Sur Terre, elle vaut ', T('g'), '. Quel est le poids de l’objet ' + sur + ' (en N) ?'],
         utiles: ['mk', 'ga'],
-        raisons: { g: 'La valeur de g sur Terre ne sert pas : on cherche le poids sur ' + p.astre + ', où la pesanteur est différente.' },
-        cherche: { bonne: 'Le poids P de l’objet sur ' + p.astre + ' (en N)', faux: ['La masse de l’objet sur ' + p.astre + ' (en kg)', 'Le poids de l’objet sur Terre (en N)', 'L’intensité de la pesanteur sur ' + p.astre + ' (en N·kg⁻¹)'] },
+        raisons: { g: 'La valeur de g sur Terre ne sert pas : on cherche le poids ' + sur + ', où la pesanteur est différente.' },
+        cherche: { bonne: 'Le poids P de l’objet ' + sur + ' (en N)', faux: ['La masse de l’objet ' + sur + ' (en kg)', 'Le poids de l’objet sur Terre (en N)', 'L’énergie potentielle de l’objet à 1 m du sol (en J)'] },
         manque: null, solution: { txt: 'P = m × g (avec g de ' + p.astre + ')', val: p.mk * p.ga, u: 'N' } };
     },
   },
   {
     id: 'vitesse2', domaine: 'Mouvement et vitesse', titre: 'La vitesse d’un cycliste', noms: ['Vitesse moyenne', 'Durée du trajet'],
-    gen: () => ({ d: tire([6, 9, 12, 18]), t: tire([20, 30, 45]), m: tire([65, 72, 80]), dm: tire([1500, 3000, 4500]), v: tire([18, 24, 36]), nb: tire([2, 3]) }),
+    gen: () => { const [d, t] = tire([[6, 20], [9, 20], [9, 25], [3, 10], [4.5, 15], [15, 40], [12, 25]]); const [v, tt] = tire([[18, 200], [21.6, 300], [25.2, 400], [28.8, 600]]);
+      return { d, t, m: tire([65, 72, 80]), v, dm: Math.round(v / 3.6 * tt) }; },
     build: (p, q) => {
       if (q === 0) {
-        const tokens = { d: tok(`${p.d} km`, 'Distance parcourue', p.d * 1000, 'm'), t: tok(`${p.t} min`, 'Durée du trajet', p.t * 60, 's'), m: tok(`${p.m} kg`, 'Masse du cycliste', p.m, 'kg') };
+        const tokens = { d: tok(`${nb(p.d)} km`, 'Distance parcourue', p.d * 1000, 'm'), t: tok(`${p.t} min`, 'Durée du trajet', p.t * 60, 's'), m: tok(`${p.m} kg`, 'Masse du cycliste', p.m, 'kg') };
         return { tokens, derivees: [],
           texte: ['Un cycliste de ', T('m'), ' parcourt ', T('d'), ' en ', T('t'), '. Quelle est sa vitesse moyenne (en m·s⁻¹) ?'],
           utiles: ['d', 't'],
           raisons: { m: 'La masse du cycliste ne sert pas à calculer sa vitesse : c’est une masse, pas une distance ni une durée.' },
-          cherche: { bonne: 'La vitesse moyenne v du cycliste (en m·s⁻¹)', faux: ['La distance parcourue (en m)', 'La durée du trajet (en s)', 'L’accélération du cycliste (en m·s⁻²)'] },
+          cherche: { bonne: 'La vitesse moyenne v du cycliste (en m·s⁻¹)', faux: ['L’accélération moyenne du cycliste (en m·s⁻²)', 'La distance qu’il parcourrait en une heure à cette vitesse (en km)', 'L’énergie cinétique du cycliste (en J)'] },
           manque: null, solution: { txt: 'v = d / Δt (d en m, Δt en s)', val: p.d * 1000 / (p.t * 60), u: 'm·s⁻¹' } };
       }
-      const tokens = { dm: tok(`${p.dm} m`, 'Distance à parcourir', p.dm, 'm'), v: tok(`${p.v} km·h⁻¹`, 'Vitesse moyenne du cycliste', p.v / 3.6, 'm·s⁻¹'), m: tok(`${p.m} kg`, 'Masse du cycliste', p.m, 'kg') };
+      const tokens = { dm: tok(`${p.dm} m`, 'Distance à parcourir', p.dm, 'm'), v: tok(`${nb(p.v)} km·h⁻¹`, 'Vitesse moyenne du cycliste', p.v / 3.6, 'm·s⁻¹'), m: tok(`${p.m} kg`, 'Masse du cycliste', p.m, 'kg') };
       return { tokens, derivees: [],
         texte: ['Un cycliste de ', T('m'), ' doit parcourir ', T('dm'), ' à la vitesse moyenne de ', T('v'), '. Quelle est la durée du trajet (en s) ?'],
         utiles: ['dm', 'v'],
         raisons: { m: 'La masse du cycliste n’intervient pas : on cherche une durée à partir d’une distance et d’une vitesse.' },
-        cherche: { bonne: 'La durée Δt du trajet (en s)', faux: ['La vitesse du cycliste (en m·s⁻¹)', 'La distance parcourue (en m)', 'La masse du cycliste (en kg)'] },
+        cherche: { bonne: 'La durée Δt du trajet (en s)', faux: ['L’accélération moyenne du cycliste (en m·s⁻²)', 'La distance parcourue en une heure à cette vitesse (en km)', 'L’énergie cinétique du cycliste (en J)'] },
         manque: null, solution: { txt: 'Δt = d / v (v convertie en m·s⁻¹)', val: p.dm / (p.v / 3.6), u: 's' } };
     },
   },
   {
     id: 'ohm2', domaine: 'Circuits électriques', titre: 'Un résistor dans un circuit', noms: ['Tension aux bornes du résistor', 'Intensité du courant'],
-    gen: () => ({ R: tire([1.2, 2.2, 4.7]), I: tire([5, 10, 20]), Rm: tire([100, 220, 470]), U: tire([3, 6, 9]), L: tire([20, 40]) }),
+    gen: () => ({ R: tire([1.0, 2.2, 4.7]), I: tire([1, 2]), Rm: tire([470, 1000, 2200]), U: tire([3, 6, 9]), L: tire([20, 40]) }),
     build: (p, q) => {
       if (q === 0) {
         const tokens = { R: tok(`${nb(p.R, 1)} kΩ`, 'Résistance du résistor', p.R * 1000, 'Ω'), I: tok(`${p.I} mA`, 'Intensité du courant', p.I / 1000, 'A'), L: tok(`${p.L} cm`, 'Longueur du fil de connexion', p.L / 100, 'm') };
         return { tokens, derivees: [],
-          texte: ['Un résistor de résistance ', T('R'), ' est traversé par un courant d’intensité ', T('I'), '. Il est relié au circuit par un fil de ', T('L'), '. Quelle est la tension à ses bornes (en V) ?'],
+          texte: ['Un résistor de résistance ', T('R'), ' est traversé par un courant d’intensité ', T('I'), '. Il est relié au circuit par un fil de ', T('L'), ' (dont la résistance est négligeable). Quelle est la tension à ses bornes (en V) ?'],
           utiles: ['R', 'I'],
-          raisons: { L: 'La longueur du fil est une longueur : elle n’apparaît pas dans la loi d’Ohm U = R × I.' },
-          cherche: { bonne: 'La tension U aux bornes du résistor (en V)', faux: ['L’intensité du courant dans le résistor (en A)', 'La résistance du résistor (en Ω)', 'La puissance reçue par le résistor (en W)'] },
+          raisons: { L: 'La longueur du fil est une longueur : elle n’apparaît pas dans la loi d’Ohm U = R × I (et la résistance du fil est négligeable).' },
+          cherche: { bonne: 'La tension U aux bornes du résistor (en V)', faux: ['La puissance reçue par le résistor (en W)', 'L’énergie reçue par le résistor en une minute (en J)', 'La charge électrique qui traverse le résistor en une seconde (en C)'] },
           manque: null, solution: { txt: 'U = R × I (R en Ω, I en A)', val: p.R * 1000 * p.I / 1000, u: 'V' } };
       }
       const tokens = { U: tok(`${p.U} V`, 'Tension aux bornes du résistor', p.U, 'V'), Rm: tok(`${p.Rm} Ω`, 'Résistance du résistor', p.Rm, 'Ω'), L: tok(`${p.L} cm`, 'Longueur du fil de connexion', p.L / 100, 'm') };
       return { tokens, derivees: [],
-        texte: ['Un générateur impose une tension de ', T('U'), ' aux bornes d’un résistor de résistance ', T('Rm'), ', relié par un fil de ', T('L'), '. Quelle est l’intensité du courant qui traverse le résistor (en A) ?'],
+        texte: ['Un générateur impose une tension de ', T('U'), ' aux bornes d’un résistor de résistance ', T('Rm'), ', relié par un fil de ', T('L'), ' (dont la résistance est négligeable). Quelle est l’intensité du courant qui traverse le résistor (en mA) ?'],
         utiles: ['U', 'Rm'],
-        raisons: { L: 'La longueur du fil n’intervient pas dans la loi d’Ohm.' },
-        cherche: { bonne: 'L’intensité I du courant (en A)', faux: ['La tension aux bornes du résistor (en V)', 'La résistance du résistor (en Ω)', 'La puissance reçue par le résistor (en W)'] },
-        manque: null, solution: { txt: 'I = U / R', val: p.U / p.Rm, u: 'A' } };
+        raisons: { L: 'La longueur du fil n’intervient pas dans la loi d’Ohm (et la résistance du fil est négligeable).' },
+        cherche: { bonne: 'L’intensité I du courant (en mA)', faux: ['La puissance reçue par le résistor (en W)', 'L’énergie reçue par le résistor en une minute (en J)', 'La charge électrique qui traverse le résistor en une seconde (en C)'] },
+        manque: null, solution: { txt: 'I = U / R (R en Ω, I d’abord en A puis en mA)', val: p.U / p.Rm * 1000, u: 'mA' } };
     },
   },
   {
     id: 'indice2', domaine: 'Lumière', titre: 'Indice de réfraction et vitesse de la lumière', noms: ['Indice de réfraction', 'Vitesse de la lumière dans le milieu'],
-    gen: () => ({ milieu: tire([['du verre', 200000, 1.5], ['de l’eau', 225000, 1.33], ['d’un diamant', 124000, 2.42]]), ep: tire([2, 5, 10]) }),
+    gen: () => ({ milieu: tire([['un bloc de verre', 200000, 1.5, [2, 5, 10]], ['un bloc de verre crown', 197000, 1.52, [2, 5, 10]], ['une cuve remplie d’eau', 225000, 1.33, [5, 10, 20]], ['un diamant taillé', 124000, 2.42, [0.5, 1]]]) }),
     build: (p, q) => {
-      const [nom, vkm, n] = p.milieu;
-      const tokens = { c: tok('c = 3,00 × 10⁸ m·s⁻¹', 'Vitesse de la lumière dans le vide', 3.0e8, 'm·s⁻¹'), ep: tok(`${p.ep} cm`, 'Épaisseur du bloc', p.ep / 100, 'm') };
+      const [obj, vkm, n, eps] = p.milieu, ep = tire(eps);
+      const tokens = { c: tok('c = 3,00 × 10⁸ m·s⁻¹', 'Vitesse de la lumière dans le vide', 3.0e8, 'm·s⁻¹'), ep: tok(`${nb(ep)} cm`, 'Épaisseur traversée', ep / 100, 'm') };
       if (q === 0) {
         tokens.v = tok(`${nb(vkm)} km·s⁻¹`, 'Vitesse de la lumière dans le milieu', vkm * 1000, 'm·s⁻¹');
         return { tokens, derivees: [],
-          texte: ['Dans un bloc ' + nom + ' de ', T('ep'), ' d’épaisseur, la lumière se propage à la vitesse de ', T('v'), '. On donne ', T('c'), '. Quel est l’indice de réfraction du milieu ?'],
+          texte: ['Un faisceau lumineux traverse ' + obj + ' sur ', T('ep'), '. Dans ce milieu, la lumière se propage à la vitesse de ', T('v'), '. On donne ', T('c'), '. Quel est l’indice de réfraction du milieu ?'],
           utiles: ['c', 'v'],
-          raisons: { ep: 'L’épaisseur du bloc est une longueur : elle ne sert pas à calculer un indice, qui compare deux vitesses.' },
-          cherche: { bonne: 'L’indice de réfraction n du milieu (sans unité)', faux: ['La vitesse de la lumière dans le milieu (en m·s⁻¹)', 'La durée de la traversée du bloc (en s)', 'L’angle de réfraction (en °)'] },
+          raisons: { ep: 'L’épaisseur traversée n’intervient pas dans l’indice (elle servirait à calculer une durée de traversée).' },
+          cherche: { bonne: 'L’indice de réfraction n du milieu (sans unité)', faux: ['La fréquence de la lumière (en Hz)', 'La durée de la traversée du milieu (en s)', 'L’angle de réfraction (en °)'] },
           manque: null, solution: { txt: 'n = c / v (v convertie en m·s⁻¹)', val: 3.0e8 / (vkm * 1000), u: '' } };
       }
       tokens.n = tok(`n = ${nb(n, 2)}`, 'Indice de réfraction du milieu', n, '');
       return { tokens, derivees: [],
-        texte: ['Un bloc ' + nom + ' de ', T('ep'), ' d’épaisseur a pour ', T('n'), '. On donne ', T('c'), '. Quelle est la vitesse de la lumière dans ce milieu (en m·s⁻¹) ?'],
+        texte: ['Un faisceau lumineux traverse ' + obj + ' sur ', T('ep'), '. Le milieu a pour ', T('n'), ' (pour la lumière utilisée). On donne ', T('c'), '. Quelle est la vitesse de la lumière dans ce milieu (en m·s⁻¹) ?'],
         utiles: ['c', 'n'],
-        raisons: { ep: 'L’épaisseur du bloc n’intervient pas : la vitesse dépend seulement de l’indice du milieu.' },
-        cherche: { bonne: 'La vitesse v de la lumière dans le milieu (en m·s⁻¹)', faux: ['L’indice de réfraction du milieu (sans unité)', 'La durée de la traversée du bloc (en s)', 'La distance parcourue dans le bloc (en m)'] },
+        raisons: { ep: 'L’épaisseur traversée n’intervient pas : la vitesse dépend seulement de l’indice du milieu.' },
+        cherche: { bonne: 'La vitesse v de la lumière dans le milieu (en m·s⁻¹)', faux: ['La durée de la traversée du milieu (en s)', 'La longueur d’onde de la lumière dans le milieu (en nm)', 'La fréquence de la lumière (en Hz)'] },
         manque: null, solution: { txt: 'v = c / n', val: 3.0e8 / n, u: 'm·s⁻¹' } };
     },
   },
   {
     id: 'snell2', domaine: 'Lumière', titre: 'Réfraction : loi de Snell-Descartes', noms: ['Angle de réfraction', 'Indice du second milieu'],
     gen: () => { const m = tire([['l’eau', 1.33], ['le verre', 1.50], ['le plexiglas', 1.49]]); const i1 = tire([20, 30, 45, 60]); const n2 = m[1];
-      return { milieu: m[0], n2, i1, lam: tire([532, 589, 650]), ep: tire([2, 5, 10]), i2: Math.round(Math.asin(Math.sin(i1 * Math.PI / 180) / n2) * 180 / Math.PI * 10) / 10 }; },
+      return { milieu: m[0], n2, i1, lam: tire([532, 633, 650]), i2: Math.round(Math.asin(Math.sin(i1 * Math.PI / 180) / n2) * 180 / Math.PI * 10) / 10 }; },
     build: (p, q) => {
-      const tokens = { n1: tok('n₁ = 1,00 (air)', 'Indice de l’air', 1.0, ''), i1: tok(`${p.i1}°`, 'Angle d’incidence', p.i1, '°'), lam: tok(`${p.lam} nm`, 'Longueur d’onde du laser', p.lam, 'nm') };
+      const tokens = { n1: tok('n₁ = 1,00', 'Indice de réfraction de l’air', 1.0, ''), i1: tok(`${p.i1}°`, 'Angle d’incidence', p.i1, '°'), lam: tok(`${p.lam} nm`, 'Longueur d’onde du laser', p.lam, 'nm') };
       if (q === 0) {
-        tokens.n2 = tok(`n₂ = ${nb(p.n2, 2)}`, 'Indice de ' + p.milieu, p.n2, '');
+        tokens.n2 = tok(`n₂ = ${nb(p.n2, 2)}`, 'Indice de réfraction du second milieu', p.n2, '');
         return { tokens, derivees: [],
           texte: ['Un faisceau laser de longueur d’onde ', T('lam'), ' passe de l’air (', T('n1'), ') vers ' + p.milieu + ' (', T('n2'), ') avec un angle d’incidence de ', T('i1'), '. Quel est l’angle de réfraction ?'],
           utiles: ['n1', 'n2', 'i1'],
-          raisons: { lam: 'La longueur d’onde est une longueur : elle n’apparaît pas dans la loi n₁ sin i₁ = n₂ sin i₂.' },
-          cherche: { bonne: 'L’angle de réfraction i₂ (en °)', faux: ['L’angle d’incidence i₁ (en °)', 'L’indice de réfraction n₂ du second milieu', 'La vitesse de la lumière dans le second milieu (en m·s⁻¹)'] },
-          manque: null, solution: { txt: 'sin i₂ = n₁ sin i₁ / n₂', val: p.i2, u: '°' } };
+          raisons: { lam: 'Les indices sont déjà donnés pour cette radiation : la longueur d’onde n’apparaît pas dans la loi n₁ sin i₁ = n₂ sin i₂.' },
+          cherche: { bonne: 'L’angle de réfraction i₂ (en °)', faux: ['L’angle de réflexion (en °)', 'La déviation du rayon, c’est-à-dire l’écart entre i₁ et i₂ (en °)', 'La vitesse de la lumière dans le second milieu (en m·s⁻¹)'] },
+          manque: null, solution: { txt: 'sin i₂ = n₁ × sin i₁ / n₂, puis i₂ = arcsin(sin i₂)', val: p.i2, u: '°' } };
       }
       tokens.i2 = tok(`${nb(p.i2, 1)}°`, 'Angle de réfraction', p.i2, '°');
       return { tokens, derivees: [],
         texte: ['Un faisceau laser de longueur d’onde ', T('lam'), ' passe de l’air (', T('n1'), ') vers un milieu transparent inconnu avec un angle d’incidence de ', T('i1'), '. L’angle de réfraction mesuré vaut ', T('i2'), '. Quel est l’indice de ce milieu ?'],
         utiles: ['n1', 'i1', 'i2'],
         raisons: { lam: 'La longueur d’onde n’intervient pas dans la loi de Snell-Descartes.' },
-        cherche: { bonne: 'L’indice de réfraction n₂ du milieu inconnu (sans unité)', faux: ['L’angle d’incidence i₁ (en °)', 'La vitesse de la lumière dans le milieu (en m·s⁻¹)', 'L’épaisseur du milieu traversé (en cm)'] },
-        manque: null, solution: { txt: 'n₂ = n₁ sin i₁ / sin i₂', val: Math.sin(p.i1 * Math.PI / 180) / Math.sin(p.i2 * Math.PI / 180), u: '' } };
+        cherche: { bonne: 'L’indice de réfraction n₂ du milieu inconnu (sans unité)', faux: ['L’angle de réflexion (en °)', 'La vitesse de la lumière dans le milieu (en m·s⁻¹)', 'La longueur d’onde de la lumière dans le milieu (en nm)'] },
+        manque: null, solution: { txt: 'n₂ = n₁ × sin i₁ / sin i₂', val: Math.sin(p.i1 * Math.PI / 180) / Math.sin(p.i2 * Math.PI / 180), u: '' } };
     },
   },
   {
     id: 'noyau2', domaine: 'Matière à l’échelle microscopique', titre: 'Le noyau d’un atome', noms: ['Nombre de neutrons', 'Charge électrique du noyau'],
-    gen: () => ({ at: tire([['carbone', 6, 12], ['sodium', 11, 23], ['chlore', 17, 35], ['calcium', 20, 40], ['fer', 26, 56]]) }),
+    gen: () => ({ at: tire([['carbone', 6, 12], ['azote', 7, 14], ['oxygène', 8, 16], ['sodium', 11, 23], ['aluminium', 13, 27], ['chlore', 17, 35], ['calcium', 20, 40], ['fer', 26, 56], ['cuivre', 29, 63]]) }),
     build: (p, q) => {
       const [nom, Z, A] = p.at;
       const tokens = { A: tok(`${A}`, 'Nombre de nucléons de l’atome', A, ''), Z: tok(`${Z}`, 'Numéro atomique (nombre de protons)', Z, ''), e: tok('e = 1,6 × 10⁻¹⁹ C', 'Charge élémentaire', 1.6e-19, 'C'), mp: tok('1,67 × 10⁻²⁷ kg', 'Masse d’un nucléon', 1.67e-27, 'kg') };
@@ -868,7 +873,7 @@ export const ENONCES = [
       tokens.c = tok(`${nb(p.c, 2)} mol·L⁻¹`, 'Concentration souhaitée', p.c, 'mol·L⁻¹');
       tokens.Vf = tok(`${p.Vf} mL`, 'Volume de solution à préparer', p.Vf / 1000, 'L');
       return { tokens, derivees: [{ id: 'n', nom: 'Quantité de matière n de soluté à dissoudre', expr: 'n = c × V', val: p.c * p.Vf / 1000, u: 'mol' }],
-        texte: ['On veut préparer une solution de ' + p.nom + ' de concentration ', T('c'), ' dans une fiole jaugée de ', T('Vf'), '. On dissout d’abord le soluté dans environ ', T('Ve'), ' d’eau. Donnée : ', T('M'), '. Quelle masse de soluté faut-il peser (en g) ? La solution est à ', T('T'), '.'],
+        texte: ['On veut préparer une solution de ' + p.nom + ' de concentration ', T('c'), ' dans une fiole jaugée de ', T('Vf'), '. La solution est à ', T('T'), '. On dissout d’abord le soluté dans environ ', T('Ve'), ' d’eau. Donnée : ', T('M'), '. Quelle masse de soluté faut-il peser (en g) ?'],
         utiles: ['c', 'Vf', 'M'],
         raisons: { Ve: 'C’est le volume d’eau versé au début, pas le volume de la solution.', T: 'La température ne joue aucun rôle dans le calcul de la masse à peser.' },
         cherche: { bonne: 'La masse m de soluté à peser (en g)', faux: ['La quantité de matière n de soluté (en mol)', 'La concentration en masse t (en g·L⁻¹)', 'Le volume d’eau à verser (en mL)'] },
@@ -877,12 +882,12 @@ export const ENONCES = [
   },
   {
     id: 'ener2', domaine: 'Énergie électrique', titre: 'Énergie et effet Joule', noms: ['Énergie consommée', 'Puissance dissipée par effet Joule'],
-    gen: () => ({ P: tire([800, 1500, 2000]), dmin: tire([15, 30, 45, 90]), prix: 0.2, R: tire([1.5, 2.2, 4.7]), I: tire([8, 20, 50]), L: tire([2, 5, 10]) }),
+    gen: () => ({ P: tire([800, 1500, 2000]), dmin: tire([15, 30, 45, 90]), prix: 0.25, R: tire([1.0, 2.2, 4.7]), I: tire([1, 2, 5]), L: tire([2, 5, 10]) }),
     build: (p, q) => {
       if (q === 0) {
         const tokens = { P: tok(`${p.P} W`, 'Puissance de l’appareil', p.P / 1000, 'kW'), d: tok(`${p.dmin} min`, 'Durée de fonctionnement', p.dmin / 60, 'h'), prix: tok(`${nb(p.prix, 2)} € par kWh`, 'Prix de l’électricité', p.prix, '€·kWh⁻¹') };
         return { tokens, derivees: [],
-          texte: ['Un four électrique de puissance ', T('P'), ' fonctionne pendant ', T('d'), '. L’électricité coûte ', T('prix'), '. Quelle énergie électrique a-t-il consommée (en kWh) ?'],
+          texte: ['Un four électrique de puissance ', T('P'), ' (supposée constante) fonctionne pendant ', T('d'), '. L’électricité coûte ', T('prix'), '. Quelle énergie électrique a-t-il consommée (en kWh) ?'],
           utiles: ['P', 'd'],
           raisons: { prix: 'Le prix servirait à calculer le coût de l’énergie, pas l’énergie elle-même.' },
           cherche: { bonne: 'L’énergie électrique E consommée (en kWh)', faux: ['La puissance P du four (en kW)', 'Le coût de l’énergie consommée (en €)', 'L’intensité du courant dans le four (en A)'] },
@@ -893,26 +898,26 @@ export const ENONCES = [
         texte: ['Un résistor de résistance ', T('R'), ' et de longueur ', T('L'), ' est traversé par un courant d’intensité ', T('I'), '. Quelle puissance dissipe-t-il par effet Joule (en W) ?'],
         utiles: ['R', 'I'],
         raisons: { L: 'La longueur du résistor est une longueur : elle n’intervient pas dans P = R × I².' },
-        cherche: { bonne: 'La puissance P dissipée par effet Joule (en W)', faux: ['La tension U aux bornes du résistor (en V)', 'L’énergie dissipée en une heure (en kWh)', 'La résistance du résistor (en Ω)'] },
+        cherche: { bonne: 'La puissance P dissipée par effet Joule (en W)', faux: ['La tension U aux bornes du résistor (en V)', 'L’énergie dissipée en une heure (en kWh)', 'La charge électrique qui traverse le résistor en une seconde (en C)'] },
         manque: null, solution: { txt: 'P = R × I² (R en Ω, I en A)', val: p.R * 1000 * Math.pow(p.I / 1000, 2), u: 'W' } };
     },
   },
   {
     id: 'meca2', domaine: 'Mécanique', titre: 'Énergie cinétique et travail', noms: ['Énergie cinétique', 'Travail d’une force'],
-    gen: () => ({ mt: tire([0.8, 1.2, 1.5]), v: tire([36, 54, 72, 90]), F: tire([0.5, 1.2, 2]), d: tire([50, 120, 300]), a: tire([0, 30, 60]), L: tire([2, 4]) }),
+    gen: () => { const [mt, L] = tire([[0.8, 3.6], [1.2, 4.2], [1.5, 4.6]]); return { mt, L, v: tire([36, 54, 72, 90]), F: tire([0.5, 1.2, 2, 3]), d: tire([50, 80, 120, 300]), a: tire([0, 30, 45, 60]) }; },
     build: (p, q) => {
       if (q === 0) {
-        const tokens = { m: tok(`${nb(p.mt)} t`, 'Masse du véhicule', p.mt * 1000, 'kg'), v: tok(`${p.v} km·h⁻¹`, 'Vitesse du véhicule', p.v / 3.6, 'm·s⁻¹'), L: tok(`${p.L} m`, 'Longueur du véhicule', p.L, 'm') };
+        const tokens = { m: tok(`${nb(p.mt)} t`, 'Masse du véhicule', p.mt * 1000, 'kg'), v: tok(`${p.v} km·h⁻¹`, 'Vitesse du véhicule', p.v / 3.6, 'm·s⁻¹'), L: tok(`${nb(p.L)} m`, 'Longueur du véhicule', p.L, 'm') };
         return { tokens, derivees: [],
-          texte: ['Un véhicule de ', T('m'), ' et de ', T('L'), ' de long roule à ', T('v'), '. Quelle est son énergie cinétique (en J) ?'],
+          texte: ['Un véhicule de ', T('m'), ' et de ', T('L'), ' de long roule à ', T('v'), ' (dans le référentiel terrestre). Quelle est son énergie cinétique (en J) ?'],
           utiles: ['m', 'v'],
           raisons: { L: 'La longueur du véhicule n’intervient pas dans Ec = ½ m v².' },
-          cherche: { bonne: 'L’énergie cinétique Ec du véhicule (en J)', faux: ['La quantité de mouvement du véhicule', 'Le travail de la force motrice (en J)', 'L’énergie potentielle de pesanteur du véhicule (en J)'] },
+          cherche: { bonne: 'L’énergie cinétique Ec du véhicule (en J)', faux: ['La puissance du moteur du véhicule (en W)', 'Le travail de la force motrice (en J)', 'L’énergie potentielle de pesanteur du véhicule (en J)'] },
           manque: null, solution: { txt: 'Ec = ½ × m × v² (m en kg, v en m·s⁻¹)', val: 0.5 * p.mt * 1000 * Math.pow(p.v / 3.6, 2), u: 'J' } };
       }
       const tokens = { F: tok(`${nb(p.F)} kN`, 'Valeur de la force', p.F * 1000, 'N'), d: tok(`${p.d} cm`, 'Distance parcourue', p.d / 100, 'm'), a: tok(`${p.a}°`, 'Angle entre la force et le déplacement', p.a, '°'), mt: tok(`${nb(p.mt)} t`, 'Masse de l’objet déplacé', p.mt * 1000, 'kg') };
       return { tokens, derivees: [],
-        texte: ['Une force de valeur ', T('F'), ' agit sur un objet de ', T('mt'), ' qui se déplace de ', T('d'), '. L’angle entre la force et le déplacement est de ', T('a'), '. Quel est le travail de la force (en J) ?'],
+        texte: ['Une force de valeur ', T('F'), ' agit sur un objet de ', T('mt'), ' qui se déplace de ', T('d'), '. L’angle entre la force et le déplacement est de ', T('a'), '. Quel est le travail de la force pendant ce déplacement (en J) ?'],
         utiles: ['F', 'd', 'a'],
         raisons: { mt: 'La masse de l’objet n’intervient pas dans W = F × d × cos α.' },
         cherche: { bonne: 'Le travail W de la force (en J)', faux: ['L’énergie cinétique de l’objet (en J)', 'La puissance de la force (en W)', 'L’énergie potentielle de pesanteur (en J)'] },

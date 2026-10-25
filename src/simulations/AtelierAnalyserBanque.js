@@ -1592,7 +1592,7 @@ export const PREVOIR = [
   { id: 'frc-masse-poids-lune', domaine: 'Forces et principe d’inertie', titre: 'Masse et poids sur la Lune',
     enonce: 'Un astronaute de masse 80 kg (avec son équipement) marche sur la Lune, où l’intensité de la pesanteur g est environ 6 fois plus petite que sur Terre.', q: 'Par rapport à la Terre, sa masse et son poids sont…', options: [
       V('sa masse est inchangée, son poids est environ 6 fois plus petit', 'La masse est une propriété de l’objet : elle ne dépend pas du lieu. Le poids P = m × g dépend de g : il est 6 fois plus petit.'),
-      F('sa masse et son poids sont tous deux environ 6 fois plus petits', 'La masse ne change pas : c’est la quantité de matière de l’astronaute, la même partout.'),
+      F('sa masse et son poids sont tous deux environ 6 fois plus petits', 'La masse ne change pas : c’est la même partout, sur Terre comme sur la Lune.'),
       F('sa masse est environ 6 fois plus petite, son poids est inchangé', 'C’est l’inverse de la réalité : la masse ne change pas, le poids change.'),
       F('sa masse et son poids sont inchangés', 'Le poids P = m × g dépend de g, qui est plus petit sur la Lune.'),
     ] },
@@ -1612,35 +1612,35 @@ export const PREVOIR = [
     ] },
   { id: 'frc-objet-immobile', domaine: 'Forces et principe d’inertie', titre: 'Un livre sur une table',
     enonce: 'Un livre est posé, immobile, sur une table horizontale.', q: 'Que peut-on dire des forces qui s’exercent sur le livre ?', options: [
-      V('le poids (vers le bas) et la réaction de la table (vers le haut) se compensent', 'Le livre est immobile : d’après le principe d’inertie, les forces qui s’exercent sur lui se compensent. La table pousse le livre vers le haut aussi fort que le poids le tire vers le bas.'),
+      V('son poids et la force exercée par la table se compensent', 'Le livre est immobile : d’après le principe d’inertie, les forces qui s’exercent sur lui se compensent. La table le pousse vers le haut aussi fort que le poids le tire vers le bas.'),
       F('aucune force ne s’exerce sur le livre, puisqu’il ne bouge pas', 'Le poids s’exerce toujours. Un objet immobile n’est pas un objet « sans force » : c’est un objet dont les forces se compensent.'),
       F('seul le poids s’exerce : la table ne fait que « soutenir » le livre', 'Si seul le poids s’exerçait, le livre tomberait. La table exerce une vraie force, vers le haut.'),
-      F('le poids est plus grand que la réaction de la table, car le livre appuie sur elle', 'Si le poids était plus grand, le livre s’enfoncerait dans la table : il serait mis en mouvement. Les deux forces ont la même intensité.'),
+      F('le poids du livre est plus grand que la force exercée par la table', 'Si le poids l’emportait, la vitesse du livre changerait : il s’enfoncerait dans la table. Pour un livre immobile, les deux forces ont la même valeur.'),
     ] },
   { id: 'frc-vitesse-constante', domaine: 'Forces et principe d’inertie', titre: 'Une voiture à vitesse constante',
-    enonce: 'Sur une route droite et horizontale, une voiture roule à 90 km·h⁻¹, sans jamais changer de vitesse.', q: 'Que peut-on dire des forces qui s’exercent sur la voiture ?', options: [
+    enonce: 'Sur une route droite et horizontale, une voiture roule à 90 km·h⁻¹, sans jamais changer de vitesse.', q: 'Que peut-on dire des forces horizontales qui s’exercent sur la voiture ?', options: [
       V('elles se compensent : la force motrice vers l’avant est égale aux frottements vers l’arrière', 'Mouvement rectiligne et uniforme : d’après le principe d’inertie, les forces se compensent. La voiture n’accélère pas, elle ne ralentit pas.'),
       F('la force motrice est plus grande que les frottements, sinon la voiture ne pourrait pas avancer', 'Une force motrice plus grande ferait accélérer la voiture. Pour garder la même vitesse, il suffit de compenser les frottements.'),
-      F('plus aucune force ne s’exerce : la voiture avance « sur sa lancée »', 'Sans force motrice, les frottements ralentiraient la voiture jusqu’à l’arrêt.'),
-      F('seul le poids s’exerce sur la voiture', 'Le sol exerce aussi une réaction et des frottements, et le moteur une force motrice. Le poids n’est jamais seul.'),
+      F('plus aucune force horizontale ne s’exerce : la voiture avance « sur sa lancée »', 'Sans force motrice, les frottements ralentiraient la voiture jusqu’à l’arrêt.'),
+      F('seuls les frottements s’exercent horizontalement', 'Les frottements seuls ralentiraient la voiture. Pour que la vitesse reste constante, une force vers l’avant (la poussée du sol sur les roues motrices) les compense.'),
     ] },
   { id: 'frc-cycliste-accelere', domaine: 'Forces et principe d’inertie', titre: 'Un cycliste qui accélère',
     enonce: 'Un cycliste roule en ligne droite à vitesse constante. Il pédale plus fort : sa vitesse augmente.', q: 'Pendant qu’il accélère, les forces horizontales sur le cycliste…', options: [
-      V('ne se compensent pas : la force motrice est plus grande que les frottements', 'La vitesse change : d’après le principe d’inertie, les forces ne se compensent pas. Ici la force motrice l’emporte sur les frottements.'),
+      V('ne se compensent pas : la force vers l’avant est plus grande que les frottements', 'La vitesse change : d’après le principe d’inertie, les forces ne se compensent pas. Ici la force motrice l’emporte sur les frottements.'),
       F('se compensent toujours, comme quand il roulait à vitesse constante', 'Si elles se compensaient, sa vitesse ne changerait pas.'),
-      F('se réduisent aux seuls frottements, qui le poussent vers l’avant', 'Les frottements s’opposent au mouvement : ils ne peuvent pas le faire accélérer.'),
+      F('se compensent : la force motrice égale les frottements, et pourtant sa vitesse augmente', 'Si les forces se compensent, la vitesse reste constante (principe d’inertie). Ici la vitesse augmente : la force motrice est donc plus grande que les frottements.'),
       F('sont nulles, car il avance', 'Une vitesse qui augmente est la preuve qu’une force non compensée s’exerce.'),
     ] },
   { id: 'frc-chute-sans-air', domaine: 'Forces et principe d’inertie', titre: 'Plume et bille dans le vide',
-    enonce: 'Dans une grande cloche où l’on a fait le vide (il n’y a plus d’air), on lâche en même temps une plume et une bille de plomb, de la même hauteur.', q: 'Que se passe-t-il ?', options: [
+    enonce: 'Dans une grande cloche où l’on a fait le vide (il n’y a plus d’air, donc plus de frottements), on lâche en même temps une plume et une bille de plomb, de la même hauteur.', q: 'Que se passe-t-il ?', options: [
       V('elles arrivent au fond en même temps', 'Sans air, il n’y a ni frottements ni poussée de l’air : tous les objets tombent de la même façon, quelle que soit leur masse.'),
-      F('la bille arrive d’abord, car elle est plus lourde', 'La bille a un poids plus grand, mais elle est aussi plus difficile à mettre en mouvement : les deux effets se compensent.'),
+      F('la bille arrive d’abord, car elle est plus lourde', 'La bille a un poids plus grand, mais elle est aussi plus difficile à mettre en mouvement : les deux effets jouent exactement dans la même proportion.'),
       F('la plume arrive d’abord, car elle est plus légère', 'Sans air, la plume n’est pas freinée : elle tombe exactement comme la bille.'),
       F('aucune ne tombe, car il n’y a plus d’air pour les porter', 'L’air ne « porte » pas les objets : le poids s’exerce même sans air.'),
     ] },
   { id: 'frc-iss-flotte', domaine: 'Forces et principe d’inertie', titre: 'Pourquoi les astronautes flottent',
-    enonce: 'La Station spatiale internationale (ISS) orbite à environ 400 km d’altitude. À cette altitude, l’attraction de la Terre vaut encore environ 90 % de sa valeur au sol.', q: 'Pourquoi les astronautes « flottent »-ils dans la station ?', options: [
-      V('ils sont en chute libre autour de la Terre, comme la station : ils tombent en même temps qu’elle', 'Les astronautes et la station subissent la même attraction de la Terre et tombent ensemble : ils ne s’appuient plus sur rien, d’où l’impression d’apesanteur.'),
+    enonce: 'La Station spatiale internationale (ISS) orbite à environ 400 km d’altitude, à environ 7,7 km·s⁻¹. À cette altitude, l’attraction de la Terre vaut encore environ 90 % de sa valeur au sol.', q: 'Pourquoi les astronautes « flottent »-ils dans la station ?', options: [
+      V('ils tombent autour de la Terre en même temps que la station, sans rien pour les soutenir', 'L’attraction de la Terre courbe sans cesse la trajectoire de la station et des astronautes, qui tombent ensemble : ils ne s’appuient plus sur rien, d’où l’impression d’apesanteur.'),
       F('à cette altitude, il n’y a plus de pesanteur du tout', 'L’attraction de la Terre vaut encore environ 90 % de sa valeur au sol : c’est elle qui maintient la station en orbite.'),
       F('ils sont trop loin de la Terre pour être attirés par elle', '400 km, c’est petit devant le rayon de la Terre (6 400 km) : l’attraction est presque aussi forte qu’au sol.'),
       F('l’absence d’air dans l’espace supprime leur poids', 'L’air n’a rien à voir avec le poids : celui-ci vient de l’attraction de la Terre.'),
@@ -1661,8 +1661,8 @@ export const PREVOIR = [
   { id: 'frc-direction-poids', domaine: 'Forces et principe d’inertie', titre: 'Le poids sur un plan incliné',
     enonce: 'Une caisse est posée sur une pente (plan incliné). On cherche la direction de son poids.', q: 'La direction du poids de la caisse est…', options: [
       V('verticale, vers le bas, comme partout', 'Le poids est dû à l’attraction de la Terre : il est toujours vertical, dirigé vers le bas, même sur une pente.'),
-      F('parallèle à la pente, vers le bas de la pente', 'La caisse glisse parallèlement à la pente, mais son poids reste vertical.'),
-      F('perpendiculaire à la pente', 'C’est la direction de la réaction du support, pas celle du poids.'),
+      F('parallèle à la pente, vers le bas de la pente', 'La caisse tend à glisser parallèlement à la pente, mais son poids reste vertical.'),
+      F('perpendiculaire à la pente', 'Le poids ne dépend pas de l’inclinaison. La réaction normale du sol est perpendiculaire à la pente, mais ce n’est pas le poids.'),
     ] },
   // ── Seconde : solutions, circuits, lumière, matière à l’échelle microscopique ──
   { id: 'sol-masse-double', domaine: 'Solutions et concentration', titre: 'Deux fois plus de sel',
@@ -1691,23 +1691,24 @@ export const PREVOIR = [
       F('moins de 110 g, car le sel s’est « fondu » dans l’eau', 'Une dissolution ne détruit pas de matière : la masse se conserve.'),
     ] },
   { id: 'sol-huile-eau', domaine: 'Solutions et concentration', titre: 'L’huile flotte sur l’eau',
-    enonce: 'On verse de l’huile (ρ = 0,92 g·mL⁻¹) dans de l’eau (ρ = 1,00 g·mL⁻¹). L’huile flotte à la surface sans se mélanger.', q: 'On peut en déduire que…', options: [
+    enonce: 'On verse de l’huile dans de l’eau (ρ = 1,00 g·mL⁻¹). L’huile flotte à la surface sans se mélanger.', q: 'On peut en déduire que…', options: [
       V('l’huile a une masse volumique plus petite que celle de l’eau', 'À volume égal, l’huile est moins massive que l’eau : elle flotte.'),
       F('l’huile a une masse volumique plus grande que celle de l’eau', 'Si c’était le cas, l’huile coulerait au fond.'),
       F('l’huile a la même masse volumique que l’eau', 'Avec des masses volumiques égales, l’huile ne se placerait pas au-dessus.'),
       F('l’huile est toujours moins lourde que l’eau, quel que soit le volume', 'Un grand volume d’huile peut avoir une masse plus grande qu’un petit volume d’eau : c’est la masse volumique (masse pour un même volume) qui compte.'),
     ] },
   { id: 'sol-saturation', domaine: 'Solutions et concentration', titre: 'Une solution saturée',
-    enonce: 'À 20 °C, on peut dissoudre au maximum 360 g de sel par litre d’eau. On ajoute 400 g de sel dans 1 L d’eau et on agite longtemps.', q: 'Que voit-on ?', options: [
-      V('environ 40 g de sel restent solides au fond : la solution est saturée', 'Au-delà de 360 g·L⁻¹, le sel ne se dissout plus : 400 − 360 = 40 g restent sous forme de solide.'),
-      F('tout le sel se dissout et la concentration est de 400 g·L⁻¹', 'La solubilité limite la quantité de sel qui peut se dissoudre : 360 g·L⁻¹ à 20 °C.'),
-      F('tout le sel disparaît, mais la solution devient plus salée que 400 g·L⁻¹', 'Une dissolution ne crée pas de sel : il ne peut y en avoir plus que ce qu’on a ajouté.'),
+    enonce: 'À 20 °C, on peut dissoudre au maximum 360 g de sel dans 1 L d’eau. On ajoute 400 g de sel dans 1 L d’eau et on agite longtemps.', q: 'Que voit-on ?', options: [
+      V('environ 40 g de sel restent solides au fond : la solution est saturée', 'Au-delà de 360 g de sel pour 1 L d’eau, le sel ne se dissout plus : 400 − 360 = 40 g restent sous forme de solide.'),
+      F('tout le sel se dissout et la solution contient 400 g de sel pour 1 L d’eau', 'La solubilité limite la quantité de sel qui peut se dissoudre : 360 g pour 1 L d’eau à 20 °C.'),
+      F('tout le sel disparaît, mais la solution contient plus de sel que ce qu’on a ajouté', 'Une dissolution ne crée pas de sel : il ne peut y en avoir plus que ce qu’on a ajouté.'),
+      F('tout le sel reste au fond : il ne se dissout pas du tout dans l’eau', 'Le sel se dissout bien dans l’eau, jusqu’à une limite (la solubilité) : ici 360 g pour 1 L.'),
     ] },
   { id: 'sol-echelle-teintes', domaine: 'Solutions et concentration', titre: 'Échelle de teintes',
-    enonce: 'Deux solutions de permanganate de potassium, de même volume, sont comparées : la solution A est violet foncé, la solution B est rose pâle.', q: 'Que peut-on dire de leurs concentrations ?', options: [
+    enonce: 'Deux solutions de permanganate de potassium sont observées dans des tubes identiques : la solution A est violet foncé, la solution B est rose pâle.', q: 'Que peut-on dire de leurs concentrations ?', options: [
       V('la solution A est plus concentrée que la solution B', 'Plus il y a d’espèce colorée dissoute, plus la solution est foncée : c’est le principe d’une échelle de teintes.'),
       F('la solution B est plus concentrée que la solution A', 'C’est l’inverse : une couleur pâle correspond à peu d’espèce colorée dissoute.'),
-      F('on ne peut rien dire sans mesurer la masse volumique', 'Pour comparer deux concentrations d’une même espèce colorée, la couleur suffit : plus c’est foncé, plus c’est concentré.'),
+      F('elles ont la même concentration : la couleur ne dépend que de la nature de l’espèce', 'La nature de l’espèce fixe la teinte, mais son intensité augmente avec la concentration.'),
     ] },
   { id: 'cir-serie-intensite', domaine: 'Circuits électriques', titre: 'Deux lampes en série',
     enonce: 'Deux lampes sont montées en série avec une pile. Un ampèremètre placé avant la première lampe indique 0,30 A.', q: 'Un second ampèremètre, placé après la deuxième lampe, indiquera…', options: [
@@ -1748,7 +1749,7 @@ export const PREVOIR = [
       F('inchangée, puisque la tension est la même', 'I = U / R : si R change, I change aussi.'),
     ] },
   { id: 'cir-derivation-panne', domaine: 'Circuits électriques', titre: 'Une lampe grille',
-    enonce: 'Deux lampes sont montées en dérivation avec une pile. Le filament de l’une des lampes grille : le courant ne passe plus dans cette branche.', q: 'Que fait l’autre lampe ?', options: [
+    enonce: 'Deux lampes sont montées en dérivation aux bornes d’une pile (dont la tension reste la même : pile idéale). Le filament de l’une des lampes grille : le courant ne passe plus dans cette branche.', q: 'Que fait l’autre lampe ?', options: [
       V('elle continue de briller comme avant', 'Chaque branche en dérivation est indépendante : la tension à ses bornes ne change pas.'),
       F('elle s’éteint aussi', 'Cela se produirait en série, où il n’y a qu’un seul chemin pour le courant. En dérivation, il reste un chemin complet.'),
       F('elle brille plus fort, car elle récupère le courant de l’autre', 'Sa tension n’a pas changé : le courant qui la traverse reste le même.'),
@@ -1786,10 +1787,10 @@ export const PREVOIR = [
       F('ne change pas de direction, car la lumière traverse le verre', 'Un changement d’indice dévie la lumière dès que l’incidence n’est pas nulle.'),
     ] },
   { id: 'lum-lentille-parallele', domaine: 'Lumière', titre: 'Rayons parallèles et lentille convergente',
-    enonce: 'Un faisceau de rayons lumineux parallèles à l’axe optique traverse une lentille mince convergente.', q: 'Après la lentille, les rayons…', options: [
+    enonce: 'Un faisceau de rayons lumineux parallèles à l’axe optique (et proches de l’axe) traverse une lentille mince convergente.', q: 'Après la lentille, les rayons…', options: [
       V('convergent tous en un même point, le foyer image F′', 'C’est la définition du foyer image d’une lentille convergente : rayons parallèles à l’axe → ils passent par F′.'),
       F('divergent, comme s’ils sortaient d’un même point', 'Ce serait le comportement d’une lentille divergente.'),
-      F('restent parallèles à l’axe', 'Une lentille convergente dévie les rayons : sinon elle ne servirait à rien.'),
+      F('restent parallèles à l’axe', 'Une lentille convergente dévie les rayons : ils se rapprochent de l’axe.'),
       F('convergent au centre optique O', 'Le point de convergence est le foyer image F′, situé à la distance focale f′ du centre optique.'),
     ] },
   { id: 'lum-lentille-centre', domaine: 'Lumière', titre: 'Rayon par le centre optique',
@@ -1806,15 +1807,15 @@ export const PREVOIR = [
       F('sur la lentille elle-même', 'L’image se forme à f′ derrière la lentille, pas sur elle.'),
     ] },
   { id: 'lum-spectre-sodium', domaine: 'Lumière', titre: 'Lampe à vapeur de sodium',
-    enonce: 'On observe la lumière d’une lampe à vapeur de sodium à travers un spectroscope.', q: 'Le spectre observé est…', options: [
-      V('un spectre de raies : quelques raies colorées fines sur fond noir', 'Un gaz chaud sous faible pression émet seulement certaines longueurs d’onde : un spectre de raies, propre à l’élément (jaune pour le sodium).'),
-      F('un spectre continu, de toutes les couleurs de l’arc-en-ciel', 'C’est le spectre d’un corps chaud (lampe à incandescence, Soleil), pas d’une lampe à vapeur.'),
-      F('une seule bande jaune uniforme sans raies fines', 'Le spectre d’une lampe à vapeur est formé de raies fines et non d’une large bande uniforme.'),
+    enonce: 'On observe, à travers un spectroscope, la lumière d’une lampe spectrale à vapeur de sodium (basse pression).', q: 'Le spectre observé est…', options: [
+      V('un spectre de raies : une raie jaune très fine sur fond noir', 'Un gaz chaud sous faible pression émet seulement certaines longueurs d’onde : un spectre de raies, propre à l’élément (jaune pour le sodium ; en réalité un doublet de deux raies très proches).'),
+      F('un spectre continu, de toutes les couleurs de l’arc-en-ciel', 'C’est le spectre d’un corps chaud (lampe à incandescence, Soleil), pas d’une lampe spectrale.'),
+      F('un spectre continu, mais seulement dans le jaune', 'Une lampe spectrale n’émet que des longueurs d’onde bien précises : le spectre est formé de raies fines, pas d’une bande continue.'),
     ] },
   { id: 'lum-etoile-temperature', domaine: 'Lumière', titre: 'Deux étoiles de couleurs différentes',
-    enonce: 'On observe deux étoiles : l’une paraît rouge, l’autre paraît bleue. Plus un corps est chaud, plus le maximum de son spectre se déplace vers les courtes longueurs d’onde (le bleu).', q: 'Quelle étoile est la plus chaude ?', options: [
-      V('l’étoile bleue', 'Le maximum d’émission est à une longueur d’onde plus courte pour un corps plus chaud : le bleu correspond à une température plus élevée que le rouge.'),
-      F('l’étoile rouge', 'C’est l’intuition « rouge = chaud » du feu, mais pour les étoiles, c’est l’inverse : le bleu est plus chaud.'),
+    enonce: 'On observe deux étoiles : l’une paraît rouge, l’autre paraît bleue. Pour un corps chaud, le maximum d’émission de son spectre se situe à une longueur d’onde d’autant plus courte que sa température est élevée.', q: 'Quelle étoile est la plus chaude ?', options: [
+      V('l’étoile bleue', 'Le bleu correspond à des longueurs d’onde plus courtes que le rouge : le maximum d’émission de l’étoile bleue est à une longueur d’onde plus courte, donc sa température est plus élevée.'),
+      F('l’étoile rouge', 'On associe souvent « rouge = chaud » (robinet d’eau chaude), mais pour un corps qui émet de la lumière, c’est l’inverse : un métal chauffé passe du rouge au blanc-bleuté quand sa température augmente.'),
       F('elles ont la même température, la couleur n’a rien à voir', 'La couleur d’un corps chaud dépend de sa température : c’est ainsi qu’on estime celle des étoiles.'),
     ] },
   { id: 'mic-electrons-atome', domaine: 'Matière à l’échelle microscopique', titre: 'Électrons d’un atome',
@@ -1838,16 +1839,16 @@ export const PREVOIR = [
       F('17 protons et 16 électrons', 'Gagner un électron en donne un de plus (18), pas un de moins.'),
     ] },
   { id: 'mic-octet-sodium', domaine: 'Matière à l’échelle microscopique', titre: 'L’ion stable du sodium',
-    enonce: 'Le sodium (Z = 11) a pour répartition des électrons : 2 sur la 1re couche, 8 sur la 2e, 1 sur la 3e (K)²(L)⁸(M)¹. Un atome tend à avoir une couche externe pleine (8 électrons, ou 2 pour la 1re couche).', q: 'L’ion le plus stable formé par le sodium est…', options: [
+    enonce: 'Le sodium (Z = 11) a pour répartition des électrons : 2 sur la 1re couche, 8 sur la 2e, 1 sur la 3e (K)²(L)⁸(M)¹. Un atome tend à avoir une couche externe pleine (8 électrons, ou 2 pour la 1re couche), en gagnant ou en perdant le moins d’électrons possible.', q: 'L’ion le plus stable formé par le sodium est…', options: [
       V('Na⁺ : en perdant 1 électron, il a la couche L pleine (8 électrons)', 'Perdre l’unique électron de la couche M laisse la couche L, pleine, comme couche externe : configuration stable.'),
-      F('Na⁻ : en gagnant 1 électron, il a 2 électrons sur sa couche externe', 'Gagner un électron sur la couche M ne la remplirait pas : il en manquerait encore 7.'),
-      F('Na⁷⁺ : en perdant 7 électrons, il n’aurait plus qu’une couche', 'Perdre 7 électrons demanderait beaucoup trop d’énergie : il est bien plus simple de perdre 1 seul électron.'),
+      F('Na⁻ : en gagnant 1 électron, il aurait 2 électrons sur sa couche externe', 'Gagner un électron sur la couche M ne la remplirait pas : il en manquerait encore 6.'),
+      F('Na⁷⁻ : en gagnant 7 électrons, il aurait 8 électrons sur sa couche externe', 'Il est bien plus simple de perdre 1 seul électron que d’en gagner 7.'),
     ] },
   { id: 'mic-octet-chlore', domaine: 'Matière à l’échelle microscopique', titre: 'L’ion stable du chlore',
-    enonce: 'Le chlore (Z = 17) a pour répartition (K)²(L)⁸(M)⁷. Un atome tend à avoir une couche externe pleine (8 électrons).', q: 'L’ion le plus stable formé par le chlore est…', options: [
+    enonce: 'Le chlore (Z = 17) a pour répartition (K)²(L)⁸(M)⁷. Un atome tend à avoir une couche externe pleine (8 électrons), en gagnant ou en perdant le moins d’électrons possible.', q: 'L’ion le plus stable formé par le chlore est…', options: [
       V('Cl⁻ : en gagnant 1 électron, il a 8 électrons sur la couche M', 'Il lui manque un électron pour compléter la couche externe à 8 : il en gagne un et devient Cl⁻.'),
-      F('Cl⁺ : en perdant 1 électron, il a 6 électrons sur la couche M', 'Cela l’éloignerait de la couche pleine (8 électrons).'),
-      F('Cl⁷⁺ : en perdant 7 électrons, il n’aurait plus que 2 couches', 'Il est bien plus simple de gagner 1 électron que d’en perdre 7.'),
+      F('Cl⁺ : en perdant 1 électron, il aurait 6 électrons sur la couche M', 'Cela l’éloignerait de la couche pleine (8 électrons).'),
+      F('Cl⁷⁺ : en perdant 7 électrons, il aurait la couche L pleine', 'Cette couche L est bien pleine, mais il faudrait perdre 7 électrons alors qu’il suffit d’en gagner 1.'),
     ] },
   { id: 'mic-famille-alcalins', domaine: 'Matière à l’échelle microscopique', titre: 'Même colonne, mêmes propriétés',
     enonce: 'Le lithium (Z = 3), le sodium (Z = 11) et le potassium (Z = 19) sont dans la même colonne du tableau périodique.', q: 'Ils ont des propriétés chimiques semblables parce que…', options: [
@@ -1857,9 +1858,9 @@ export const PREVOIR = [
     ] },
   { id: 'mic-gaz-nobles', domaine: 'Matière à l’échelle microscopique', titre: 'Les gaz nobles',
     enonce: 'L’hélium (couche externe à 2 électrons) et le néon (couche externe à 8 électrons) ne réagissent presque pas avec les autres corps.', q: 'Pourquoi ?', options: [
-      V('leur couche externe est pleine : leur configuration électronique est déjà stable', 'Une couche externe pleine (2 électrons pour He, 8 pour Ne) est très stable : ils n’ont aucune raison de gagner ou perdre d’électrons.'),
-      F('ils n’ont pas d’électrons', 'L’hélium a 2 électrons et le néon 10.'),
-      F('ils n’ont pas de noyau', 'Tous les atomes ont un noyau.'),
+      V('leur couche externe est pleine : leur configuration est déjà stable', 'Une couche externe pleine (2 électrons pour He, 8 pour Ne) est très stable : ils n’ont aucune raison de gagner ou perdre d’électrons.'),
+      F('ils n’ont qu’un seul électron sur leur couche externe', 'He en a 2 et Ne en a 8.'),
+      F('ce sont des gaz, et les gaz ne réagissent jamais', 'L’état physique n’explique rien : le dioxygène et le dihydrogène sont des gaz très réactifs.'),
     ] },
   { id: 'mic-masse-noyau', domaine: 'Matière à l’échelle microscopique', titre: 'Où est la masse de l’atome ?',
     enonce: 'Un proton ou un neutron a une masse d’environ 1,7×10⁻²⁷ kg, un électron environ 9,1×10⁻³¹ kg (près de 2 000 fois moins).', q: 'La masse d’un atome est essentiellement concentrée…', options: [
@@ -1891,9 +1892,9 @@ export const PREVOIR = [
   { id: 'coh-liaison-hydrogene', domaine: 'Cohésion et solubilité', titre: 'Éthanol et propane',
     enonce: 'L’éthanol CH₃CH₂OH (46 g·mol⁻¹) bout à 78 °C, alors que le propane CH₃CH₂CH₃ (44 g·mol⁻¹), de masse molaire presque identique, bout à −42 °C.', q: 'Comment expliquer cette grande différence ?', options: [
       V('les molécules d’éthanol, qui portent un groupe –OH, s’associent par liaisons hydrogène ; pas celles du propane', 'Il faut apporter beaucoup d’énergie pour séparer des molécules liées par liaisons hydrogène : la température d’ébullition est plus élevée.'),
-      F('l’éthanol est plus lourd que le propane', 'Les masses molaires sont presque identiques (46 et 44 g·mol⁻¹) : ce n’est pas la masse qui explique la différence.'),
+      F('la masse molaire de l’éthanol est plus grande, donc sa température d’ébullition aussi', 'Les masses molaires sont presque identiques (46 et 44 g·mol⁻¹) : l’écart de 120 °C ne peut pas venir de là.'),
       F('les liaisons covalentes de l’éthanol sont plus fortes', 'Lors de l’ébullition, on ne casse pas les liaisons covalentes : on sépare les molécules les unes des autres.'),
-      F('le propane est un solide ionique', 'Le propane est une molécule apolaire, pas un solide ionique.'),
+      F('les molécules d’éthanol sont plus grosses, donc ont plus d’interactions de van der Waals', 'Les deux molécules ont à peu près la même taille (3 atomes lourds) : ce n’est pas ce qui explique un écart de 120 °C.'),
     ] },
   { id: 'coh-chaine-alcanes', domaine: 'Cohésion et solubilité', titre: 'Alcanes à chaînes de plus en plus longues',
     enonce: 'Les températures d’ébullition de quelques alcanes sont : méthane −162 °C, butane −1 °C, hexane 69 °C, décane 174 °C.', q: 'Pourquoi la température d’ébullition augmente-t-elle avec la longueur de la chaîne ?', options: [
@@ -1905,19 +1906,19 @@ export const PREVOIR = [
     enonce: 'On extrait le diiode d’une solution aqueuse avec du cyclohexane (ρ = 0,78 g·mL⁻¹), non miscible avec l’eau (ρ = 1,00 g·mL⁻¹). On agite dans une ampoule à décanter, puis on laisse reposer.', q: 'Après décantation, la phase contenant le diiode (phase organique) est…', options: [
       V('au-dessus de l’eau, car le cyclohexane est moins dense', 'Le liquide de plus faible masse volumique surnage : le cyclohexane (0,78) flotte sur l’eau (1,00).'),
       F('au-dessous de l’eau, car le cyclohexane est plus dense', 'ρ(cyclohexane) = 0,78 g·mL⁻¹ < ρ(eau) = 1,00 g·mL⁻¹ : il est moins dense.'),
-      F('mélangée à l’eau : les deux phases se mélangent', 'Les liquides sont non miscibles : ils forment deux phases distinctes.'),
+      F('au-dessous de l’eau, car le diiode le rend plus dense', 'Le diiode dissous est présent en petite quantité : la phase organique reste moins dense que l’eau.'),
     ] },
   { id: 'coh-miscibilite-eau-ethanol', domaine: 'Cohésion et solubilité', titre: 'Eau et éthanol',
     enonce: 'L’éthanol et l’eau se mélangent en toutes proportions (ils sont miscibles).', q: 'Pourquoi ?', options: [
-      V('les deux molécules sont polaires et peuvent établir des liaisons hydrogène entre elles', 'Les interactions eau–éthanol sont aussi fortes que celles de chaque liquide pur : le mélange est favorable.'),
+      V('les deux molécules sont polaires et peuvent établir des liaisons hydrogène entre elles', 'Les interactions eau–éthanol sont comparables à celles de chaque liquide pur : le mélange est favorable.'),
       F('ils ont la même masse volumique', 'Leurs masses volumiques sont différentes (1,00 et 0,79 g·mL⁻¹) : ce n’est pas ce qui décide de la miscibilité.'),
-      F('l’éthanol est un solide ionique', 'L’éthanol est un liquide moléculaire.'),
+      F('l’éthanol réagit chimiquement avec l’eau', 'Il n’y a pas de réaction : on peut séparer l’éthanol de l’eau par distillation. Ce sont seulement des interactions entre molécules.'),
     ] },
   { id: 'coh-ebullition-eau', domaine: 'Cohésion et solubilité', titre: 'Faire bouillir de l’eau',
     enonce: 'On chauffe de l’eau jusqu’à ébullition : elle se transforme en vapeur d’eau.', q: 'Que « casse »-t-on lors de cette vaporisation ?', options: [
-      V('des interactions entre molécules (liaisons hydrogène), mais pas les liaisons covalentes O–H : la vapeur est toujours de l’eau H₂O', 'Un changement d’état sépare les molécules ; il ne les transforme pas.'),
-      F('les liaisons covalentes O–H : la vapeur contient de l’hydrogène et de l’oxygène séparés', 'Casser O–H demanderait bien plus d’énergie (> 1 000 °C) : à 100 °C, la vapeur est toujours H₂O.'),
-      F('rien du tout, l’eau change de forme sans changer d’énergie', 'Il faut fournir de l’énergie pour vaporiser (chaleur latente) : on rompt les interactions entre molécules.'),
+      V('des interactions entre molécules (liaisons hydrogène, van der Waals), pas les liaisons O–H : la vapeur est toujours H₂O', 'Un changement d’état sépare les molécules ; il ne les transforme pas.'),
+      F('les liaisons covalentes O–H : la vapeur contient de l’hydrogène et de l’oxygène séparés', 'Casser une liaison O–H demande bien plus d’énergie que de séparer les molécules entre elles : à 100 °C, la vapeur est toujours H₂O.'),
+      F('rien du tout, l’eau change de forme sans changer d’énergie', 'Il faut fournir de l’énergie pour vaporiser (énergie de changement d’état) : on rompt les interactions entre molécules.'),
     ] },
   { id: 'ene-puissance-double', domaine: 'Énergie électrique', titre: 'Puissance doublée',
     enonce: 'Un radiateur de 1 000 W, puis un radiateur de 2 000 W, fonctionnent chacun pendant 2 heures.', q: 'L’énergie électrique consommée par le second est…', options: [
@@ -1938,8 +1939,8 @@ export const PREVOIR = [
       F('inchangée', 'P dépend de I² : si I double, P est multipliée par 4.'),
     ] },
   { id: 'ene-joule-resistance', domaine: 'Énergie électrique', titre: 'Résistance doublée à courant constant',
-    enonce: 'Un fil traversé par un courant d’intensité constante est remplacé par un fil de résistance 2 fois plus grande.', q: 'La puissance dissipée par effet Joule (P = R × I²) est…', options: [
-      V('2 fois plus grande', 'À I constante, P = R × I² est proportionnelle à R.'),
+    enonce: 'Un fil est parcouru par un courant d’intensité constante (le générateur impose le courant). On le remplace par un fil de résistance 2 fois plus grande.', q: 'La puissance dissipée par effet Joule (P = R × I²) est…', options: [
+      V('2 fois plus grande', 'À I constante, P = R × I² est proportionnelle à R. (À tension fixée, ce serait l’inverse : P = U² / R diminuerait.)'),
       F('4 fois plus grande', 'C’est I qui est au carré, pas R.'),
       F('2 fois plus petite', 'Une résistance plus grande dissipe plus de puissance à courant fixé.'),
     ] },
@@ -1960,8 +1961,9 @@ export const PREVOIR = [
   { id: 'ene-kwh', domaine: 'Énergie électrique', titre: 'Énergie en kilowattheures',
     enonce: 'Un appareil de 500 W fonctionne pendant 2 heures.', q: 'L’énergie électrique consommée est…', options: [
       V('1 kWh', '500 W × 2 h = 1 000 Wh = 1 kWh.'),
-      F('1 000 kWh', '1 000 Wh = 1 kWh : le préfixe kilo divise par 1 000.'),
+      F('1 000 kWh', '1 000 Wh = 1 kWh : le préfixe kilo signifie « mille », donc 1 kWh = 1 000 Wh. On a oublié de convertir les Wh en kWh.'),
       F('0,25 kWh', '500 W = 0,5 kW : 0,5 × 2 = 1 kWh (et non 0,5 / 2).'),
+      F('1 000 W', 'Le watt est une unité de puissance ; l’énergie se mesure en Wh, kWh ou en joules.'),
     ] },
   { id: 'ene-loi-mailles', domaine: 'Énergie électrique', titre: 'Loi des mailles',
     enonce: 'Deux résistors sont en série aux bornes d’un générateur de 12 V. La tension aux bornes du premier est de 4 V.', q: 'La tension aux bornes du second est…', options: [
@@ -1970,9 +1972,9 @@ export const PREVOIR = [
       F('12 V', 'En série, la tension du générateur se partage ; elle ne se retrouve pas entièrement aux bornes de chaque résistor.'),
     ] },
   { id: 'ene-pente-caracteristique', domaine: 'Énergie électrique', titre: 'Caractéristique d’un résistor',
-    enonce: 'On trace la caractéristique U = f(I) d’un conducteur ohmique : c’est une droite passant par l’origine.', q: 'La pente de cette droite représente…', options: [
-      V('la résistance R du conducteur (loi d’Ohm U = R × I)', 'U = R × I : le coefficient directeur de U en fonction de I est R.'),
-      F('la puissance P du conducteur', 'La puissance serait U × I, une aire et non une pente.'),
+    enonce: 'On trace la caractéristique U = f(I) d’un conducteur ohmique (U en volts en ordonnée, I en ampères en abscisse) : c’est une droite passant par l’origine.', q: 'La pente de cette droite représente…', options: [
+      V('la résistance R du conducteur (loi d’Ohm U = R × I)', 'U = R × I : le coefficient directeur de U en fonction de I est R, en V·A⁻¹ = Ω.'),
+      F('la puissance P du conducteur', 'La puissance P = U × I est le produit des coordonnées d’un point de la droite, pas sa pente (une pente est un quotient U / I, en Ω).'),
       F('l’inverse de la résistance, 1 / R', '1 / R est la pente de I en fonction de U, pas de U en fonction de I.'),
     ] },
   { id: 'ene-pile-reelle', domaine: 'Énergie électrique', titre: 'Une pile réelle',
@@ -1994,10 +1996,10 @@ export const PREVOIR = [
       F('est nul, puisque le chariot continue d’avancer', 'Δv n’est nul que si la vitesse (valeur et direction) ne change pas.'),
     ] },
   { id: 'mec-force-deltav', domaine: 'Mécanique', titre: 'Force et variation de vitesse',
-    enonce: 'Un palet glisse sans frottement sur une table horizontale. On le pousse avec une force constante dans le sens de son mouvement.', q: 'Le vecteur variation de vitesse Δv est…', options: [
-      V('de même direction et de même sens que la somme des forces', 'Seconde loi de Newton (version 1re) : Δv / Δt a la même direction et le même sens que ΣF.'),
-      F('de sens opposé à la somme des forces', 'Une force dans le sens du mouvement accélère le palet : Δv est dans le sens de la force.'),
-      F('toujours perpendiculaire à la somme des forces', 'Une force perpendiculaire ne change que la direction du mouvement ; ici, la force est dans le sens du mouvement.'),
+    enonce: 'Un palet glisse vers la droite sur une table horizontale. Pour le freiner, on le repousse avec une force constante dirigée vers la gauche (son poids et la réaction de la table se compensent ; on néglige les frottements).', q: 'Le vecteur variation de vitesse Δv pendant ce freinage est…', options: [
+      V('dirigé vers la gauche, comme la somme des forces', 'Δv a la même direction et le même sens que ΣF (seconde loi de Newton, en 1re) : ici vers la gauche, donc opposé au mouvement : le palet ralentit.'),
+      F('dirigé vers la droite, comme le mouvement du palet', 'Δv n’a pas le sens du mouvement mais celui de ΣF. Ici ΣF est vers la gauche : le palet ralentit.'),
+      F('perpendiculaire à la somme des forces', 'Une force perpendiculaire ne change que la direction du mouvement ; ici, la force est dans la direction du mouvement.'),
     ] },
   { id: 'mec-masse-deltav', domaine: 'Mécanique', titre: 'Même force, deux masses',
     enonce: 'On exerce la même force constante pendant la même durée sur deux chariots sans frottement : l’un de masse 1 kg, l’autre de masse 2 kg.', q: 'La variation de vitesse du chariot de 2 kg est…', options: [
@@ -2036,7 +2038,7 @@ export const PREVOIR = [
       F('diminue, car la hauteur diminue', 'Epp diminue, mais Ec augmente d’autant : la somme est constante.'),
     ] },
   { id: 'mec-epp-hauteur', domaine: 'Mécanique', titre: 'Énergie potentielle de pesanteur',
-    enonce: 'Une valise est soulevée de 1 m, puis une autre fois de 2 m (au-dessus du même sol de référence). Epp = m × g × h.', q: 'Son énergie potentielle de pesanteur est…', options: [
+    enonce: 'Une valise est placée à 1 m du sol, puis à 2 m du sol (on prend Epp = 0 au niveau du sol). Epp = m × g × h.', q: 'Son énergie potentielle de pesanteur est…', options: [
       V('2 fois plus grande à 2 m qu’à 1 m', 'Epp est proportionnelle à la hauteur h : h × 2, Epp × 2.'),
       F('4 fois plus grande à 2 m qu’à 1 m', 'Epp est proportionnelle à h (et non à h²).'),
       F('identique, la masse est la même', 'Epp dépend de la hauteur.'),
