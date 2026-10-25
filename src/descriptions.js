@@ -65,4 +65,7 @@ export const DESCRIPTIONS = {
   "Essais d'aptitude : comparaison interlaboratoire": "Plusieurs laboratoires analysent le même échantillon pour évaluer la compétence de chacun : le z-score, ses différentes formules et ses hypothèses.",
   "Paramètres de solubilité de Hansen": "Sphère de solubilité, distance et RED, mélanges de solvants. Exemple guidé : la nitrocellulose d'un vernis à ongle.",
   "Peinture à l'eau": "Formulation (extrait sec, CPV, CPVC, prises d'huile), aspect mat, satiné ou brillant, et séchage du film (coalescence, TMFF). Parcours guidé : le changement de résine d'une base blanche mate.",
+  "Simulation CPG": "Chromatographie en phase gazeuse : indices de Kováts, programmation de température, gaz vecteur, injecteur split ou splitless, détecteur FID. Chromatogramme en direct, pannes, parcours et défis.",
+  "CPG couplée à la spectrométrie de masse": "CPG-SM : chromatogramme (TIC), spectre de masse d'un pic (ion moléculaire, pic de base, isotopes du chlore), recherche en bibliothèque, chromatogrammes d'ions extraits, contrôle air / eau, pannes.",
+  "Courbes i-E et diagramme E-pH": "Faisceau de courbes intensité-potentiel à plusieurs pH, vue 3D (E, pH, i), coupe à un pH donné et diagramme E-pH correspondant.",
 };
