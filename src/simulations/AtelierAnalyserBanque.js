@@ -1395,14 +1395,14 @@ export const PREVOIR = [
       F('circulaire ralenti', 'La route est droite : la trajectoire est une droite, pas un cercle.'),
     ] },
   { id: 'mvt-regulateur', domaine: 'Mouvement et vitesse', titre: 'Régulateur de vitesse',
-    enonce: 'Sur une autoroute en ligne droite, une voiture est équipée d’un régulateur de vitesse réglé sur 110 km·h⁻¹. On relève son compteur toutes les minutes pendant dix minutes. On l’observe depuis le bord de la route.', q: 'Quel est son mouvement dans ce référentiel ?', options: [
+    enonce: 'Sur une autoroute en ligne droite, une voiture est équipée d’un régulateur de vitesse réglé sur 110 km·h⁻¹. On relève son compteur toutes les minutes pendant dix minutes : il indique 110 km·h⁻¹ à chaque relevé. On l’observe depuis le bord de la route.', q: 'Quel est son mouvement dans ce référentiel ?', options: [
       F('rectiligne accéléré', '« Accéléré » signifie que la valeur de la vitesse augmente ; le relevé du compteur montre qu’elle reste à 110 km·h⁻¹.'),
       F('rectiligne ralenti', '« Ralenti » signifie que la valeur de la vitesse diminue ; or le compteur indique 110 km·h⁻¹ à chaque relevé.'),
       F('circulaire uniforme', 'La vitesse est bien constante, mais la route est en ligne droite : la trajectoire n’est pas un cercle.'),
       V('rectiligne uniforme', 'Dans le référentiel de la route, la trajectoire est une droite et la valeur de la vitesse est constante : le mouvement est rectiligne uniforme.'),
     ] },
   { id: 'mvt-manege', domaine: 'Mouvement et vitesse', titre: 'Cheval de manège',
-    enonce: 'Un manège tourne à vitesse constante. Un enfant est assis sur un cheval de bois. On l’observe depuis le sol, à côté du manège.', q: 'Quel est le mouvement de l’enfant dans ce référentiel (trajectoire et valeur de la vitesse) ?', options: [
+    enonce: 'Un manège tourne à vitesse constante. Un enfant est assis sur un cheval de bois (on néglige le mouvement vertical du cheval). On l’observe depuis le sol, à côté du manège.', q: 'Quel est le mouvement de l’enfant dans ce référentiel (trajectoire et valeur de la vitesse) ?', options: [
       F('rectiligne uniforme', 'La trajectoire de l’enfant est un cercle autour de l’axe du manège, pas une droite.'),
       F('circulaire ralenti', 'La valeur de la vitesse est constante : le mouvement n’est pas ralenti.'),
       F('rectiligne accéléré', 'La trajectoire n’est pas une droite et la valeur de la vitesse ne varie pas.'),
@@ -1443,7 +1443,7 @@ export const PREVOIR = [
       F('rectiligne ralenti', 'Dans un mouvement ralenti, les écarts entre positions successives diminueraient. Ici ils sont égaux.'),
       F('circulaire uniforme', 'Les positions sont alignées sur une droite, pas sur un cercle.'),
     ] },
-  { id: 'mvt-chrono-accelere', domaine: 'Mouvement et vitesse', titre: 'Chronophotographie : série B',
+  { id: 'mvt-chrono-accelere', domaine: 'Mouvement et vitesse', titre: 'Chronophotographie : positions 0, 1, 4, 9, 16 m',
     enonce: 'On photographie un objet toutes les secondes : ses positions sont à 0 m, 1 m, 4 m, 9 m, 16 m sur une ligne droite.', q: 'Quel est son mouvement ?', options: [
       F('rectiligne uniforme', 'Un mouvement uniforme a des écarts égaux entre positions ; ici ils grandissent (1 m, 3 m, 5 m, 7 m).'),
       F('rectiligne ralenti', 'Pour un mouvement ralenti, les écarts diminueraient ; ici ils augmentent.'),
@@ -1460,7 +1460,7 @@ export const PREVOIR = [
   { id: 'mvt-lune', domaine: 'Mouvement et vitesse', titre: 'La Lune autour de la Terre',
     enonce: 'On décrit le mouvement de la Lune dans un référentiel lié au centre de la Terre. La Lune effectue un tour complet autour de la Terre en 27,3 jours. Au cours d’un mois, sa distance à la Terre varie entre 363 000 km et 405 000 km, et sa vitesse entre 0,97 km·s⁻¹ et 1,08 km·s⁻¹.', q: 'Quel est son mouvement dans ce référentiel (en première approximation) ?', options: [
       F('rectiligne uniforme', 'Un tour complet autour de la Terre en 27,3 jours exclut une trajectoire droite : la direction du vecteur vitesse change sans cesse.'),
-      V('circulaire uniforme', 'Les variations de distance (± 7 %) et de vitesse (± 6 %) sont faibles : en première approximation, la trajectoire est un cercle parcouru à vitesse de valeur constante.'),
+      V('circulaire uniforme', 'Les variations de distance (environ ± 5 %) et de vitesse (environ ± 5 %) sont faibles : en première approximation, la trajectoire est un cercle parcouru à vitesse de valeur constante.'),
       F('rectiligne accéléré', 'La trajectoire n’est pas une droite (un tour en 27,3 jours) et la valeur de la vitesse ne croît pas indéfiniment : elle oscille entre 0,97 et 1,08 km·s⁻¹.'),
       F('circulaire ralenti', 'La trajectoire est bien quasi circulaire, mais la valeur de la vitesse ne diminue pas au cours du temps : elle oscille autour de 1,0 km·s⁻¹ d’un mois à l’autre.'),
     ] },
@@ -1562,7 +1562,7 @@ export const PREVOIR = [
       F('divisée par 2', 'Sens inversé : plus de dispersion, plus d’incertitude.'),
     ] },
   { id: 'decalage-constant', domaine: 'Mesure et incertitudes', titre: 'Un instrument mal réglé',
-    enonce: 'Un instrument indique toujours 0,5 unité de trop (décalage constant). On calcule la moyenne de n mesures, son incertitude-type u = s/√n et l’écart entre cette moyenne et la valeur de référence. On passe de 10 à 100 mesures.', q: 'Que se passe-t-il ?', options: [
+    enonce: 'Un instrument indique toujours 0,5 unité de trop (décalage constant). On calcule la moyenne de n mesures, son incertitude-type u = s/√n et l’écart entre cette moyenne et la valeur de référence. On suppose les autres erreurs aléatoires, indépendantes et de moyenne nulle, la valeur de référence exacte. On passe de 10 à 100 mesures.', q: 'Que se passe-t-il ?', options: [
       F('u diminue et l’écart à la référence diminue aussi', 'Répéter les mesures n’atténue que les erreurs aléatoires ; un décalage constant (erreur systématique) subsiste dans la moyenne.'),
       F('u diminue et l’écart à la référence disparaît', 'Les erreurs positives et négatives s’annulent seulement pour les erreurs aléatoires ; le décalage de +0,5 est toujours du même signe.'),
       V('u diminue et l’écart à la référence reste voisin de 0,5', 'u = s/√n diminue avec n, mais le décalage constant reste dans la moyenne : l’écart ne diminue pas, d’où un risque d’incompatibilité avec la référence.'),
@@ -1585,7 +1585,7 @@ export const PREVOIR = [
   { id: 'charge-pas-perdus', domaine: 'Contrôle des systèmes', titre: 'Moteur chargé',
     enonce: 'Un moteur tourne sans erreur avec delay(5). On lui fait entraîner une charge importante, sans rien changer au programme.', q: 'Que risque-t-il de se passer ?', options: [
       F('Le moteur peut tourner plus vite, la charge l’entraînant', 'Une charge freine le rotor, elle ne l’accélère pas.'),
-      F('Le moteur peut ralentir progressivement, selon la charge', 'Un moteur pas à pas piloté sans asservissement ne ralentit pas progressivement : la vitesse est imposée par le rythme des impulsions, ou bien le rotor décroche.'),
+      F('Le moteur peut continuer exactement comme avant', 'Une charge importante demande plus de couple ; sans rien changer, le moteur peut ne plus suivre. Sa vitesse ne ralentit pas progressivement : elle est imposée par le rythme des impulsions, ou bien le rotor décroche.'),
       V('Le rotor peut décrocher et perdre des pas', 'Si le couple moteur est insuffisant, le rotor est dépassé par le champ tournant et perd des pas. Remèdes : délai plus long ou plus de couple.'),
       F('Le moteur peut changer de sens de rotation', 'La charge n’inverse pas le champ tournant : le rotor prend du retard sur lui.'),
     ] },
@@ -1594,8 +1594,8 @@ export const PREVOIR = [
     enonce: 'Un astronaute de masse 80 kg (avec son équipement) marche sur la Lune, où l’intensité de la pesanteur g est environ 6 fois plus petite que sur Terre.', q: 'Par rapport à la Terre, sa masse et son poids sont…', options: [
       F('sa masse et son poids sont tous deux environ 6 fois plus petits', 'La masse ne change pas : c’est la même partout. Seul le poids, qui dépend de g, diminue.'),
       F('sa masse est environ 6 fois plus petite, son poids est inchangé', 'C’est l’inverse : la masse ne dépend pas du lieu, le poids oui.'),
-      F('sa masse et son poids sont inchangés', 'Le poids P = m × g dépend de g, qui est plus petit sur Mars.'),
-      V('sa masse est inchangée, son poids est environ 6 fois plus petit', 'La masse est une propriété de l’objet. Le poids P = m × g dépend de g : environ 780 N sur Terre contre 300 N sur Mars.'),
+      F('sa masse et son poids sont inchangés', 'Le poids P = m × g dépend de g, qui est plus petit sur la Lune.'),
+      V('sa masse est inchangée, son poids est environ 6 fois plus petit', 'La masse est une propriété de l’objet. Le poids P = m × g dépend de g : environ 780 N sur Terre contre environ 130 N sur la Lune.'),
     ] },
   { id: 'frc-poids-proportionnel', domaine: 'Forces et principe d’inertie', titre: 'Poids et masse accrochée',
     enonce: 'Au même endroit, on accroche successivement une masse de 200 g puis une masse de 400 g au même dynamomètre.', q: 'Le poids de la masse de 400 g est…', options: [
@@ -1640,9 +1640,9 @@ export const PREVOIR = [
       F('aucune ne tombe, car il n’y a plus d’air pour les porter', 'L’air ne « porte » pas les objets : le poids s’exerce même sans air.'),
     ] },
   { id: 'frc-iss-flotte', domaine: 'Forces et principe d’inertie', titre: 'Pourquoi les astronautes flottent',
-    enonce: 'La Station spatiale internationale (ISS) orbite à environ 400 km d’altitude, à environ 7,7 km·s⁻¹. À cette altitude, l’attraction de la Terre vaut encore environ 90 % de sa valeur au sol.', q: 'Pourquoi les astronautes « flottent »-ils dans la station ?', options: [
+    enonce: 'La Station spatiale internationale (ISS) orbite à environ 400 km d’altitude, à environ 7,7 km·s⁻¹. À cette altitude, l’attraction de la Terre vaut encore environ 90 % de sa valeur au sol.', q: 'Dans le référentiel géocentrique (galiléen), pourquoi les astronautes « flottent »-ils dans la station ?', options: [
       F('la pesanteur est devenue nulle à cette altitude', 'L’attraction de la Terre vaut encore environ 90 % de sa valeur au sol : c’est elle qui maintient la station en orbite.'),
-      F('l’attraction de la Lune compense celle de la Terre', 'L’attraction de la Lune à cet endroit est négligeable devant celle de la Terre (environ 3 · 10⁻⁶ fois plus faible) : elle ne peut rien compenser.'),
+      F('l’attraction de la Lune compense celle de la Terre', 'L’attraction de la Lune à cet endroit est négligeable devant celle de la Terre (de l’ordre de 10⁻⁶ fois plus faible) : elle ne peut rien compenser.'),
       F('l’attraction de la Terre est équilibrée par une force centrifuge', 'Dans un référentiel galiléen, aucune force centrifuge ne s’exerce : l’attraction de la Terre n’est pas équilibrée, elle courbe la trajectoire (c’est elle qui fait tourner la station).'),
       V('ils sont en chute libre avec la station autour de la Terre', 'Seule l’attraction de la Terre agit : station et astronautes tombent ensemble, avec la même accélération, sans cesse déviés par l’attraction. Ils ne s’appuient plus sur rien, d’où l’impression d’apesanteur.'),
     ] },
@@ -1733,8 +1733,8 @@ export const PREVOIR = [
   { id: 'cir-serie-tension', domaine: 'Circuits électriques', titre: 'Deux lampes identiques en série',
     enonce: 'Deux lampes identiques sont montées en série aux bornes d’une pile de 4,5 V (fils de résistance négligeable, tension de la pile supposée constante).', q: 'La tension aux bornes de chaque lampe est…', options: [
       F('4,5 V', 'Ce serait vrai en dérivation. En série, la tension de la pile est partagée entre les deux lampes.'),
-      F('3 V', 'Un partage en parts inégales ne se justifie pas : les lampes sont identiques et traversées par le même courant, elles ont la même tension. De plus, U₁ + U₂ doit valoir 4,5 V.'),
-      F('9 V', 'Les tensions des lampes s’additionnent pour donner celle de la pile (U₁ + U₂ = 4,5 V), et non l’inverse.'),
+      F('1,5 V', 'Les lampes identiques, traversées par le même courant, ont la même tension : U₁ = U₂ = 4,5 / 2, et non un partage inégal 1,5 V / 3 V.'),
+      F('9 V', 'Les tensions des lampes s’additionnent pour donner celle de la pile (U₁ + U₂ = 4,5 V) : la tension de chaque lampe ne peut pas dépasser celle de la pile.'),
       V('2,25 V', 'Additivité des tensions en série : U_pile = U₁ + U₂. Les lampes étant identiques, U₁ = U₂ = 4,5 / 2 = 2,25 V.'),
     ] },
   { id: 'cir-ohm-tension-double', domaine: 'Circuits électriques', titre: 'Doubler la tension sur un résistor',
@@ -1864,7 +1864,7 @@ export const PREVOIR = [
     ] },
   { id: 'mic-gaz-nobles', domaine: 'Matière à l’échelle microscopique', titre: 'Les gaz nobles',
     enonce: 'L’hélium (couche externe à 2 électrons) et le néon (couche externe à 8 électrons) ne réagissent presque pas avec les autres corps.', q: 'Pourquoi ?', options: [
-      F('leur couche externe est incomplète, mais leurs atomes sont trop petits pour réagir', 'Leur couche externe est complète. La taille des atomes n’est pas le critère : l’hydrogène, plus petit que l’hélium, est très réactif.'),
+      F('leurs atomes sont trop petits pour pouvoir réagir', 'La taille des atomes n’est pas le critère : les petites molécules de dihydrogène et de difluor sont très réactives. C’est la couche externe pleine qui explique l’inertie.'),
       F('leur noyau est très stable, il ne peut pas échanger d’électrons', 'Ce sont les électrons de la couche externe qui interviennent dans les réactions, pas la stabilité du noyau.'),
       V('leur couche externe est saturée, leur structure électronique est stable', 'Une couche externe pleine (2 électrons pour He, 8 pour Ne) est très stable : ces atomes n’ont aucune tendance à gagner, perdre ou partager des électrons.'),
       F('leurs atomes sont trop éloignés les uns des autres dans un gaz pour réagir', 'L’état physique n’explique rien : le dioxygène et le dihydrogène sont des gaz très réactifs.'),
@@ -2074,7 +2074,7 @@ export const PREVOIR = [
       F('3 H voisins équivalents', 'Un signal à n+1 pics correspond à n voisins : 3 voisins donneraient un quadruplet.'),
       V('2 H voisins équivalents', 'Règle des n + 1 : n + 1 = 3 pics donne n = 2 H voisins équivalents.'),
       F('1 H voisin', 'Un seul H voisin donnerait un doublet (n + 1 = 2 pics).'),
-      F('3 H dans le groupe', 'Le nombre de pics dépend des H voisins, pas du nombre de H du groupe qui donne le signal.'),
+      F('4 H voisins équivalents', 'Un signal à n+1 pics correspond à n voisins : 4 voisins donneraient un quintuplet.'),
     ] },
   { id: 'rmn-integration', domaine: 'Spectroscopie RMN', titre: 'Intégration des signaux',
     enonce: 'Le spectre RMN du proton de l’éthanoate d’éthyle (C₄H₈O₂) présente trois signaux. Le rapport de leurs intégrations est 3 : 2 : 3.', q: 'Que traduit ce rapport ?', options: [
