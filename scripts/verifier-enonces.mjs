@@ -27,5 +27,13 @@ try {
     assert.equal(it.options.filter(o => o[1]).length, 1, `${it.id} : une seule bonne réponse attendue`)
     assert.ok(it.options.length >= 3 && it.options.every(o => o[2]), `${it.id} : options et explications`)
   }
-  console.log(`OK : ${PREVOIR.length} « prévoir », ${ENONCES.length} énoncés, ${n} tirages vérifiés`)
+  const GB = await vite.ssrLoadModule('/src/simulations/AtelierGraphiqueBanque.js')
+  let ng = 0
+  for (const sc of GB.SCENARIOS) for (let k = 0; k < 40; k++) {
+    const g = GB.nouveauGraphique(sc.id), Q = GB.questions(g)
+    assert.ok(Q.length > 0, `${sc.id} : aucune question`)
+    for (const q of Q) if (q.type === 'num' && q.id === 'lect') assert.ok(Number.isFinite(q.vrai) && q.tol > 0 && q.tol <= 0.15 * (g.y.max - g.y.min), `${sc.id}.${q.id} : tolérance ${q.tol} hors limites`)
+    ng++
+  }
+  console.log(`OK : ${PREVOIR.length} « prévoir », ${ENONCES.length} énoncés, ${n} tirages vérifiés, ${ng} graphiques`)
 } finally { await vite.close() }

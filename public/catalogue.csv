@@ -134,7 +134,7 @@ exercice;34:meca2.0;https://paillasse-virtuelle.fr/?sim=34&ex=meca2.0;1G;Mouveme
 exercice;34:meca2.1;https://paillasse-virtuelle.fr/?sim=34&ex=meca2.1;1G;Mouvement d’un système;S'approprier;;Mécanique;Énergie cinétique et travail — Travail d’une force;
 exercice;35:manometre;https://paillasse-virtuelle.fr/?sim=35&ex=manometre;TSTL;Transport des fluides;S'approprier;;Transport des fluides;Étalonnage d’un manomètre;
 exercice;35:beer;https://paillasse-virtuelle.fr/?sim=35&ex=beer;1G | BTS;Suivi de l’évolution d’un système, siège d’une transformation | Analyse;S'approprier;;Chimie;Droite d’étalonnage de solutions de permanganate;
-exercice;35:ressort;https://paillasse-virtuelle.fr/?sim=35&ex=ressort;1G;Mouvement d’un système;S'approprier;;Mécanique;Allongement d’un ressort;
+exercice;35:ressort;https://paillasse-virtuelle.fr/?sim=35&ex=ressort;1G;Mouvement d’un système;S'approprier;;Mécanique;Longueur d’un ressort en fonction de la masse accrochée;
 exercice;35:bouilloire;https://paillasse-virtuelle.fr/?sim=35&ex=bouilloire;TSTL;Transferts thermiques;S'approprier;;Transferts thermiques;Refroidissement de l’eau d’une bouilloire;
 exercice;35:titrage;https://paillasse-virtuelle.fr/?sim=35&ex=titrage;1G | BTS;Suivi de l’évolution d’un système, siège d’une transformation | Analyse;S'approprier;;Chimie;Titrage d’un acide fort par la soude : suivi pH-métrique;
 exercice;35:capteur;https://paillasse-virtuelle.fr/?sim=35&ex=capteur;TSTL;Transmission de signaux numériques;S'approprier;;Transmission de signaux numériques;Réponse d’un capteur à un échelon;
@@ -143,7 +143,7 @@ exercice;35:cinetique;https://paillasse-virtuelle.fr/?sim=35&ex=cinetique;1G | B
 exercice;35:solubilite;https://paillasse-virtuelle.fr/?sim=35&ex=solubilite;TSTL;Évaporation et cristallisation;S'approprier;;Évaporation et cristallisation;Solubilité d’un sel dans l’eau en fonction de la température;
 exercice;35:tete-colonne;https://paillasse-virtuelle.fr/?sim=35&ex=tete-colonne;TSTL;Distillation;S'approprier;;Distillation;Température en tête de colonne pendant une distillation;
 exercice;35:cycliste;https://paillasse-virtuelle.fr/?sim=35&ex=cycliste;2GT;Décrire un mouvement;S'approprier;;Mouvement et vitesse;Position d’un cycliste au cours de son trajet;
-exercice;35:poids-planete;https://paillasse-virtuelle.fr/?sim=35&ex=poids-planete;1G;Interactions fondamentales et notion de champ;S'approprier;;Interactions et champs;Poids d’objets sur une planète;
+exercice;35:poids-planete;https://paillasse-virtuelle.fr/?sim=35&ex=poids-planete;1G;Interactions fondamentales et notion de champ;S'approprier;;Interactions et champs;Poids d’objets sur un astre;
 exercice;35:force-champ;https://paillasse-virtuelle.fr/?sim=35&ex=force-champ;1G;Interactions fondamentales et notion de champ;S'approprier;;Interactions et champs;Force subie par des charges dans un champ électrique uniforme;
 exercice;37:probleme:cuve;https://paillasse-virtuelle.fr/?sim=37&ex=probleme.cuve;TSTL;Transport des fluides;Analyser;;Transport des fluides;Construire une démarche (problème complet) — Remplir une cuve en moins d’une heure;
 exercice;37:probleme:niveau;https://paillasse-virtuelle.fr/?sim=37&ex=probleme.niveau;TSTL;Transport des fluides;Analyser;;Transport des fluides;Construire une démarche (problème complet) — Mesurer un niveau avec un capteur de pression;

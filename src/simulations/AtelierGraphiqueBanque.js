@@ -47,7 +47,7 @@ export const SCENARIOS = [
     f: p => x => p.k * x, penteU: 'L·µmol⁻¹', penteConv: { fact: 1e6, unit: 'L·mol⁻¹' }, conv: { axis: 'x', fact: 1e-6, unit: 'mol·L⁻¹' }, xe: 400 },
   { id: 'ressort', domaine: 'Mécanique', type: 'droite', prop: false, tend: 'E',
     gen: () => ({ l0: tire([11, 12, 13]), s: tire([0.04, 0.06, 0.08]) }),
-    titre: () => 'Allongement d’un ressort',
+    titre: () => 'Longueur d’un ressort en fonction de la masse accrochée',
     axes: () => ({
       x: { nom: 'Masse accrochée', sym: 'm', u: 'g', min: 0, max: 200, ech: [[50, 5], [50, 2], [20, 4]] },
       y: { nom: 'Longueur du ressort', sym: 'l', u: 'cm', min: 10, max: 30, ech: [[5, 5], [5, 2], [2, 4]] } }),
@@ -122,10 +122,10 @@ export const SCENARIOS = [
     f: p => x => p.k * x, penteU: 'km·min⁻¹', penteConv: { fact: 60, unit: 'km·h⁻¹' }, conv: { axis: 'y', fact: 1000, unit: 'm' }, xe: 80 },
   { id: 'poids-planete', domaine: 'Interactions et champs', type: 'droite', prop: true, tend: 'A',
     gen: () => { const [g, nom] = tire([[1.6, 'la Lune'], [3.7, 'Mars'], [9.8, 'la Terre'], [24.8, 'Jupiter']]); return { g, nom }; },
-    titre: p => `Poids d’objets sur une planète (${p.nom})`,
+    titre: p => `Poids d’objets sur un astre (${p.nom})`,
     axes: p => ({
       x: { nom: 'Masse de l’objet', sym: 'm', u: 'kg', min: 0, max: 5, ech: [[1, 5], [1, 2], [0.5, 5]] },
-      y: { nom: 'Poids de l’objet', sym: 'P', u: 'N', min: 0, max: p.g > 20 ? 150 : 50, ech: p.g > 20 ? [[50, 5], [50, 2], [25, 5]] : [[10, 5], [10, 2], [5, 5]] } }),
+      y: { nom: 'Poids de l’objet', sym: 'P', u: 'N', min: 0, max: p.g > 20 ? 150 : p.g > 9 ? 50 : p.g > 3 ? 20 : 10, ech: p.g > 20 ? [[50, 5], [50, 2], [25, 5]] : p.g > 9 ? [[10, 5], [10, 2], [5, 5]] : p.g > 3 ? [[5, 5], [5, 2], [2, 4]] : [[2, 4], [2, 2], [1, 5]] } }),
     f: p => x => p.g * x, penteU: 'N·kg⁻¹', penteConv: { fact: 1, unit: 'm·s⁻²' }, conv: { axis: 'x', fact: 1000, unit: 'g' }, xe: 7 },
   { id: 'force-champ', domaine: 'Interactions et champs', type: 'droite', prop: true, tend: 'A',
     gen: () => { const E = tire([1000, 2000, 3000, 4000]); return { E, k: E / 1000 }; },
@@ -164,7 +164,7 @@ export function nouveauGraphique(id, forceP = null, forceEch = null) {
 
 const arrondiAu = (v, pas) => Math.round(v / pas) * pas;
 const pasX = g => (g.x.max - g.x.min);
-export const tolLecture = (g, x0) => 0.55 * g.y.minor + 0.25 * Math.abs(derivee(g.f, x0, pasX(g) * 1e-4)) * g.x.minor;
+export const tolLecture = (g, x0) => 0.5 * g.y.minor + 0.1 * Math.abs(derivee(g.f, x0, pasX(g) * 1e-4)) * g.x.minor;
 const aff = (v, ndec) => nb(v, ndec);
 
 export function questions(g) {

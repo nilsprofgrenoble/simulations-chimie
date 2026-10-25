@@ -65,7 +65,7 @@ export const ENONCES = [
   // ───────────────────────────── 2. Conduite (transport des fluides)
   {
     id: 'conduite', domaine: 'Transport des fluides', titre: 'Une pompe et sa conduite', noms: ['Vitesse de l’eau', 'Masse d’eau refoulée'],
-    gen: () => ({ D: tire([40, 50, 63, 80]), Lc: tire([60, 120, 200]), Q: tire([9, 12, 18, 24]), Pel: tire([1.1, 1.5, 2.2]) }),
+    gen: () => ({ D: tire([50, 63, 80, 100]), Lc: tire([60, 120, 200]), Q: tire([6, 9, 12]), Pel: tire([1.1, 1.5, 2.2]) }),
     build: (p, q) => {
       const tokens = {
         Pel: tok(`${nb(p.Pel, 1)} kW`, 'Puissance électrique de la pompe', p.Pel * 1000, 'W'),
@@ -74,7 +74,7 @@ export const ENONCES = [
         Q: tok(`${p.Q} m³·h⁻¹`, 'Débit volumique', p.Q / 3600, 'm³·s⁻¹'),
       };
       const debut = ['Une pompe de puissance électrique ', T('Pel'), ' refoule de l’eau dans une conduite cylindrique de diamètre intérieur ', T('D'),
-        ' et de longueur ', T('Lc'), '. Le débit volumique est de ', T('Q'), '. '];
+        ' et de longueur ', T('Lc'), '. La conduite est pleine et le débit volumique est de ', T('Q'), '. '];
       const S = Math.PI * (p.D / 1000) ** 2 / 4;
       if (q === 0) return { tokens, texte: [...debut, 'Quelle est la vitesse moyenne de l’eau dans la conduite ?'],
         utiles: ['D', 'Q'],
@@ -99,9 +99,9 @@ export const ENONCES = [
   {
     id: 'aspirine', domaine: 'Chimie', titre: 'Dosage d’un comprimé d’aspirine', noms: ['Concentration de la solution', 'Masse d’acide dans le comprimé'],
     gen: () => {
-      const [VA, cB] = tire([[20, 0.1], [20, 0.05], [10, 0.05]]), m = tire([480, 500, 520]), Vf = 100;
+      const [VA, cB] = tire([[20, 0.1], [20, 0.05], [10, 0.05]]), m = tire([480, 500]), Vf = 100;
       const VE = Math.round(((m / 180) * (VA / Vf) / cB) * 10) / 10;
-      return { mc: tire([0.55, 0.6, 0.65]), M: 180, Vf, VA, cB, VE };
+      return { mc: tire([0.6, 0.65, 0.7]), M: 180, Vf, VA, cB, VE };
     },
     build: (p, q) => {
       const tokens = {
@@ -316,7 +316,7 @@ export const ENONCES = [
       const rRes = 'La résolution de l’afficheur ne change pas la réponse du capteur.', rM = 'La masse est déjà prise en compte dans la constante de temps donnée.';
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le temps de réponse du capteur à 5 % ?'], utiles: ['tau'],
         raisons: { T0: 'Un temps de réponse à 5 % ne dépend pas des températures de départ et d’arrivée.', Tf: 'Un temps de réponse à 5 % ne dépend pas des températures de départ et d’arrivée.', t: 'Cette durée est celle d’une lecture, pas le temps de réponse du capteur.', res: rRes, m: rM },
-        cherche: { bonne: 'Le temps de réponse à 5 % : durée au bout de laquelle le capteur est à 5 % de sa valeur finale (en s)', faux: ['La température du capteur à l’instant t (en °C)', 'La constante de temps τ (en s)', 'La durée pour atteindre exactement la température du bain (en s)'] },
+        cherche: { bonne: 'Le temps de réponse à 5 % : durée au bout de laquelle l’écart à la valeur finale devient inférieur à 5 % de l’échelon (en s)', faux: ['La température du capteur à l’instant t (en °C)', 'La fréquence de coupure du capteur (en Hz)', 'La durée pour atteindre exactement la température du bain (en s)'] },
         manque: { bonne: 'Le lien entre temps de réponse à 5 % et τ (t₅ % = 3·τ, à connaître)', faux: ['La capacité thermique du capteur', 'La conductivité thermique du bain', 'Rien ne manque'],
           expl: 'Pour un système du 1er ordre, la sortie atteint 95 % de sa valeur finale à t ≈ 3·τ : cette relation n’est pas dans l’énoncé.' },
         solution: { txt: 't₅ % ≈ 3 × τ', val: 3 * p.tau, u: 's' } };
@@ -324,7 +324,7 @@ export const ENONCES = [
       return { tokens, texte: [...debut, 'Quelle température le capteur indique-t-il ', T('t'), ' après l’immersion ?'], utiles: ['tau', 'T0', 'Tf', 't'],
         derivees: [{ id: 'dT', nom: 'Écart total à parcourir', expr: 'ΔT = T_f − T_0', val: dT, u: '°C' }, { id: 'f', nom: 'Fraction de l’écart atteinte', expr: 'f = 1 − e^(−t/τ)', val: f, u: '' }],
         raisons: { res: rRes, m: rM },
-        cherche: { bonne: 'La température indiquée par le capteur à l’instant t (en °C)', faux: ['Le temps de réponse à 5 % (en s)', 'La température du bain (en °C)', 'La constante de temps τ (en s)'] },
+        cherche: { bonne: 'La température indiquée par le capteur à l’instant t (en °C)', faux: ['Le temps de réponse à 5 % (en s)', 'La vitesse de variation de la température à l’instant t (en °C·s⁻¹)', 'La durée pour atteindre 99 % de la variation (en s)'] },
         manque: { bonne: 'La relation de la réponse d’un 1er ordre : T = T_f − (T_f − T_0)·e^(−t/τ)', faux: ['La capacité thermique du capteur', 'La conductivité thermique du bain', 'Rien ne manque'],
           expl: 'La réponse d’un système du 1er ordre à un échelon suit une exponentielle : cette relation n’est pas dans l’énoncé.' },
         solution: { txt: 'T = T_0 + (T_f − T_0)·(1 − e^(−t/τ))', val: p.T0 + dT * f, u: '°C' } };
@@ -347,7 +347,7 @@ export const ENONCES = [
         Vd: tok(`${p.Vd} mL`, 'Volume de distillat recueilli', p.Vd, 'mL'),
         y: tok(`${p.y} %`, 'Proportion d’éthanol dans le distillat (en volume)', p.y, '%'),
       };
-      const debut = ['On distille ', T('V'), ' d’un mélange eau–éthanol qui contient ', T('x'), ' d’éthanol en volume. Le chauffe-ballon a une puissance de ', T('P'),
+      const debut = ['On distille avec une colonne (distillation fractionnée) ', T('V'), ' d’un mélange eau–éthanol qui contient ', T('x'), ' d’éthanol en volume. Le chauffe-ballon a une puissance de ', T('P'),
         '. L’éthanol bout à ', T('Te'), ' (l’eau à 100 °C). On recueille ', T('Vd'), ' d’un distillat qui contient ', T('y'), ' d’éthanol en volume. '];
       const Vi = p.V * p.x / 100, Vr = p.Vd * p.y / 100;
       const rTemp = 'La température d’ébullition explique la séparation, mais n’entre pas dans le calcul d’un volume ou d’un rendement.';
@@ -370,7 +370,7 @@ export const ENONCES = [
   // ───────────────────────────── Évaporation et cristallisation
   {
     id: 'cristal', domaine: 'Évaporation et cristallisation', titre: 'Refroidir une solution saturée de nitrate de potassium', noms: ['Masse dissoute à 60 °C', 'Masse de cristaux obtenue'],
-    gen: () => ({ me: tire([100, 150, 200, 250, 500]), s60: 110, s20: 32, dur: tire([30, 45, 60]), mb: tire([80, 120, 150]) }),
+    gen: () => ({ me: tire([100, 150, 200, 250]), s60: 110, s20: 32, dur: tire([30, 45, 60]), mb: tire([80, 120, 150]) }),
     build: (p, q) => {
       const tokens = {
         me: tok(`${p.me} g`, 'Masse d’eau', p.me, 'g'),
@@ -401,7 +401,7 @@ export const ENONCES = [
   // ───────────────────────────── Mesure et incertitudes (TSTL)
   {
     id: 'incertA', domaine: 'Mesure et incertitudes', titre: 'Incertitude d’une série de mesures répétées', noms: ['Incertitude-type de la moyenne', 'Incertitude élargie', 'Borne haute de l’intervalle'],
-    gen: () => { const n = tire([4, 9, 16, 25]), u0 = tire([0.05, 0.1, 0.12, 0.2]); return { n, s: Math.round(u0 * Math.sqrt(n) * 100) / 100, xm: tire([12.4, 15.2, 18.6, 20.3]), k: 2, res: tire([0.05, 0.1]), dur: tire([10, 15, 20]) }; },
+    gen: () => { const n = tire([9, 16, 25]), u0 = tire([0.02, 0.03, 0.04]); return { n, s: Math.round(u0 * Math.sqrt(n) * 100) / 100, xm: tire([12.4, 15.2, 18.6, 20.3]), k: 2, res: tire([0.05, 0.1]), dur: tire([10, 15, 20]) }; },
     build: (p, q) => {
       const u = p.s / Math.sqrt(p.n), U = p.k * u;
       const tokens = {
@@ -413,22 +413,22 @@ export const ENONCES = [
         dur: tok(`${p.dur} min`, 'Durée de la série', p.dur, 'min'),
       };
       const debut = ['On répète ', T('n'), ' fois le titrage d’une même solution, dans les mêmes conditions. Le volume équivalent moyen est ', T('xm'), ' et l’écart-type expérimental de la série vaut ', T('s'),
-        '. La burette a une résolution de ', T('res'), ' ; la série a duré ', T('dur'), '. On élargit l’incertitude avec ', T('k'), '. '];
+        '. La burette a une résolution de ', T('res'), ' ; la série a duré ', T('dur'), '. On élargit l’incertitude avec ', T('k'), ' (niveau de confiance d’environ 95 %, loi normale supposée). '];
       const rRes = 'On ne demande ici que l’incertitude liée à la dispersion des mesures répétées (type A) ; la résolution de la burette est une autre source, qu’on traite à part.';
       const rDur = 'La durée de la série n’intervient pas dans le calcul de l’incertitude.';
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est l’incertitude-type u de la moyenne ?'], utiles: ['s', 'n'],
         raisons: { xm: 'La valeur de la moyenne ne change pas l’incertitude : elle dépend de la dispersion et du nombre de mesures.', k: 'Le facteur d’élargissement sert pour l’incertitude élargie, pas pour l’incertitude-type.', res: rRes, dur: rDur },
-        cherche: { bonne: 'L’incertitude-type u de la moyenne (en mL)', faux: ['L’incertitude élargie U (en mL)', 'La moyenne des volumes (en mL)', 'L’écart-type s de la série (en mL)'] },
+        cherche: { bonne: 'L’incertitude-type u de la moyenne (en mL)', faux: ['L’incertitude élargie U (en mL)', 'L’incertitude relative u / x̄ (sans unité)', 'La variance de la série (en mL²)'] },
         manque: null, solution: { txt: 'u = s / √n', val: u, u: 'mL' } };
-      if (q === 1) return { tokens, texte: [...debut, 'Quelle est l’incertitude élargie U (avec le facteur d’élargissement donné) ?'], utiles: ['s', 'n', 'k'],
+      if (q === 1) return { tokens, texte: [...debut, 'Quelle est l’incertitude élargie U, due à la dispersion des mesures répétées (type A seulement), avec le facteur d’élargissement donné ?'], utiles: ['s', 'n', 'k'],
         derivees: [{ id: 'u', nom: 'Incertitude-type de la moyenne', expr: 'u = s / √n', val: u, u: 'mL' }],
         raisons: { xm: 'La moyenne ne sert pas à calculer l’incertitude.', res: rRes, dur: rDur },
-        cherche: { bonne: 'L’incertitude élargie U (en mL)', faux: ['L’incertitude-type u de la moyenne (en mL)', 'Le volume équivalent moyen (en mL)', 'Le nombre de mesures nécessaire'] },
+        cherche: { bonne: 'L’incertitude élargie U (en mL)', faux: ['L’incertitude-type u de la moyenne (en mL)', 'La borne basse x̄ − U de l’intervalle (en mL)', 'Le nombre de mesures nécessaire'] },
         manque: null, solution: { txt: 'U = k × u', val: U, u: 'mL' } };
       return { tokens, texte: [...debut, 'Quelle est la borne haute de l’intervalle x̄ ± U ?'], utiles: ['xm', 's', 'n', 'k'],
         derivees: [{ id: 'u', nom: 'Incertitude-type de la moyenne', expr: 'u = s / √n', val: u, u: 'mL' }, { id: 'U', nom: 'Incertitude élargie', expr: 'U = k × u', val: U, u: 'mL' }],
         raisons: { res: rRes, dur: rDur },
-        cherche: { bonne: 'La borne haute x̄ + U de l’intervalle (en mL)', faux: ['L’incertitude élargie U (en mL)', 'La largeur totale de l’intervalle (en mL)', 'La moyenne x̄ (en mL)'] },
+        cherche: { bonne: 'La borne haute x̄ + U de l’intervalle (en mL)', faux: ['L’incertitude élargie U (en mL)', 'La largeur totale de l’intervalle (en mL)', 'La borne basse x̄ − U de l’intervalle (en mL)'] },
         manque: null, solution: { txt: 'x̄ + U', val: p.xm + U, u: 'mL' } };
     },
   },
@@ -502,12 +502,12 @@ export const ENONCES = [
   {
     id: 'champB', domaine: 'Contrôle des systèmes', titre: 'Une boussole près d’un aimant', noms: ['Champ total', 'Déviation de l’aiguille', 'Champ de l’aimant plus loin'],
     gen: () => {
-      const Ba = tire([30, 50, 100, 150, 400]), r1 = tire([8, 10, 12]);
-      return { BT: 50, Ba, mT: tire([true, false]), r1, r2: r1 * tire([2, 3]), m: tire([20, 25, 40]), T: tire([19, 21, 23]) };
+      const Ba = tire([10, 20, 40, 60, 160]), r1 = tire([8, 10, 12]);
+      return { BT: 20, Ba, mT: tire([true, false]), r1, r2: r1 * tire([2, 3]), m: tire([20, 25, 40]), T: tire([19, 21, 23]) };
     },
     build: (p, q) => {
       const tokens = {
-        BT: tok('50 µT', 'Champ magnétique terrestre', p.BT, 'µT'),
+        BT: tok('20 µT', 'Composante horizontale du champ magnétique terrestre', p.BT, 'µT'),
         Ba: tok(p.mT ? `${nb(p.Ba / 1000, 3)} mT` : `${p.Ba} µT`, 'Champ de l’aimant à la distance r₁', p.Ba, 'µT'),
         r1: tok(`${p.r1} cm`, 'Distance boussole – aimant', p.r1, 'cm'),
         r2: tok(`${p.r2} cm`, 'Nouvelle distance boussole – aimant', p.r2, 'cm'),
@@ -515,7 +515,7 @@ export const ENONCES = [
         T: tok(`${p.T} °C`, 'Température de la salle', p.T, '°C'),
       };
       const debut = ['Une boussole est placée à ', T('r1'), ' du centre d’un aimant droit (masse ', T('m'), '), sur son axe, l’aimant étant orienté perpendiculairement à la direction du nord. À cet endroit, le champ de l’aimant vaut ',
-        T('Ba'), ' et le champ de la Terre vaut ', T('BT'), '. La salle est à ', T('T'), '. On pourra éloigner la boussole à ', T('r2'), ' ; le champ de l’aimant décroît alors comme 1/r³. '];
+        T('Ba'), ' et la composante horizontale du champ de la Terre vaut ', T('BT'), '. La salle est à ', T('T'), '. On pourra éloigner la boussole à ', T('r2'), ' ; le champ de l’aimant décroît alors comme 1/r³. '];
       const rm = 'La masse de l’aimant est déjà contenue dans la valeur de son champ.', rT = 'La température n’intervient pas ici.';
       const rr1 = 'La distance est déjà contenue dans la valeur du champ de l’aimant donnée à cet endroit.', rr2 = 'Cette distance ne concerne pas cette question : le champ utilisé est celui donné à r₁.';
       const Bt = Math.hypot(p.BT, p.Ba);
@@ -569,7 +569,7 @@ export const ENONCES = [
   },
   {
     id: 'course', domaine: 'Mouvement et vitesse', titre: 'Une course à pied', noms: ['Vitesse en m·s⁻¹', 'Distance parcourue en roulant'],
-    gen: () => ({ d: tire([5, 6, 8, 10]), t: tire([25, 30, 40, 50]), v: tire([8, 10, 12, 15]), tv: tire([30, 45, 90]), age: tire([17, 24, 31, 45]), dos: tire([128, 245, 316, 470]) }),
+    gen: () => { const [d, t] = tire([[5, 28], [6, 33], [8, 42], [10, 55]]); return { d, t, v: tire([15, 20, 25, 30]), tv: tire([30, 45, 90]), age: tire([17, 24, 31, 45]), dos: tire([128, 245, 316, 470]) }; },
     build: (p, q) => {
       const tokens = {
         age: tok(`${p.age} ans`, 'Âge de la personne', p.age, 'ans'),
@@ -582,7 +582,7 @@ export const ENONCES = [
           texte: ['Un coureur de ', T('age'), ' porte le dossard ', T('dos'), '. Il parcourt ', T('d'), ' en ', T('t'), '. Quelle est sa vitesse moyenne, en mètres par seconde ?'],
           utiles: ['d', 't'],
           raisons: { age: 'L’âge du coureur ne change pas le calcul de sa vitesse.', dos: 'Le numéro de dossard sert à identifier le coureur, pas à calculer sa vitesse.' },
-          cherche: { bonne: 'La vitesse moyenne v du coureur (en m·s⁻¹)', faux: ['La distance parcourue (en m)', 'La durée de la course (en s)', 'La vitesse du coureur (en km·h⁻¹)'] },
+          cherche: { bonne: 'La vitesse moyenne v du coureur (en m·s⁻¹)', faux: ['L’accélération moyenne du coureur (en m·s⁻²)', 'La durée pour courir 1 km à cette allure (en s)', 'L’énergie dépensée par le coureur (en J)'] },
           manque: null, solution: { txt: 'v = d / Δt, avec d en m et Δt en s', val: p.d * 1000 / (p.t * 60), u: 'm·s⁻¹' } };
       }
       tokens.v = tok(`${p.v} km·h⁻¹`, 'Vitesse du cycliste', p.v, 'km·h⁻¹');
@@ -591,7 +591,7 @@ export const ENONCES = [
         texte: ['Un cycliste de ', T('age'), ' roule à la vitesse constante de ', T('v'), ' pendant ', T('tv'), '. Il porte le dossard ', T('dos'), '. Quelle distance parcourt-il, en kilomètres ?'],
         utiles: ['v', 'tv'],
         raisons: { age: 'L’âge du cycliste ne change pas la distance parcourue.', dos: 'Le numéro de dossard ne sert pas dans le calcul.' },
-        cherche: { bonne: 'La distance d parcourue par le cycliste (en km)', faux: ['La vitesse du cycliste (en km·h⁻¹)', 'La durée du trajet (en h)', 'Le nombre de tours de roue'] },
+        cherche: { bonne: 'La distance d parcourue par le cycliste (en km)', faux: ['L’accélération du cycliste (en m·s⁻²)', 'La durée pour parcourir 1 km à cette vitesse (en min)', 'Le nombre de tours de roue'] },
         manque: null, solution: { txt: 'd = v × Δt, avec Δt en h', val: p.v * p.tv / 60, u: 'km' } };
     },
   },

@@ -158,9 +158,9 @@ export const PROBLEMES = [
       ],
     },
     conclusion: { q: 'Quelle conclusion obtient-on ?', options: [
-      V('Non : v ≈ 2,7 m·s⁻¹ ; il faudrait un diamètre intérieur d’au moins 27 mm environ', 'v = 2,65 m·s⁻¹ > 1,5 m·s⁻¹. Le diamètre minimal vérifie π·d²/4 = Q_V / 1,5, soit d ≈ 26,6 mm.'),
-      F('Oui : v ≈ 0,66 m·s⁻¹', 'Résultat obtenu en prenant 20 mm pour le rayon : S = π·r² avec r = d / 2 = 10 mm.'),
-      F('Non : v ≈ 160 m·s⁻¹', 'Débit divisé par 60 au lieu de 3 600 : une heure compte 3 600 s.'),
+      V('Non : v ≈ 2,7 m·s⁻¹, supérieure à 1,5 m·s⁻¹', 'v = 2,65 m·s⁻¹ > 1,5 m·s⁻¹. (Pour respecter le critère, il faudrait un diamètre intérieur d’au moins 26,6 mm : π·d²/4 = Q_V / 1,5.)'),
+      F('Oui : v ≈ 0,66 m·s⁻¹, inférieure à 1,5 m·s⁻¹', 'Résultat obtenu en prenant le diamètre (20 mm) pour le rayon : S = π·d² au lieu de π·d² / 4.'),
+      F('Non : v ≈ 160 m·s⁻¹, très supérieure à 1,5 m·s⁻¹', 'Débit divisé par 60 au lieu de 3 600 : une heure compte 3 600 s.'),
     ] },
     retenir: ['v = Q_V / S avec S = π·d²/4 : à débit fixé, la vitesse varie comme 1/d².'],
   },
@@ -419,10 +419,10 @@ export const PROBLEMES = [
   },
   {
     id: 'vinaigre', domaine: 'Chimie', titre: 'Le vinaigre est-il bien à 6 % ?',
-    enonce: 'Un vinaigre est vendu comme titrant « 6 % d’acidité » : 6 g d’acide acétique pour 100 g de vinaigre. On dilue ce vinaigre 10 fois, puis on titre 10,0 mL de la solution diluée par une solution d’hydroxyde de sodium à 0,100 mol·L⁻¹, en présence de phénolphtaléine. Le volume à l’équivalence vaut 10,2 mL. Données : M(acide acétique) = 60,0 g·mol⁻¹ ; densité du vinaigre d = 1,01 ; le titrage est fait à 20 °C. L’indication de l’étiquette est-elle vérifiée ?',
+    enonce: 'Un vinaigre est vendu comme titrant « 6 % d’acidité » : 6 g d’acide acétique pour 100 g de vinaigre. On dilue ce vinaigre 10 fois, puis on titre 10,0 mL de la solution diluée par une solution d’hydroxyde de sodium à 0,100 mol·L⁻¹, en présence de phénolphtaléine. Le volume à l’équivalence vaut 10,2 mL. Données : M(acide acétique) = 60,0 g·mol⁻¹ ; densité du vinaigre d = 1,01 ; le titrage est fait à 20 °C. On considère l’indication de l’étiquette comme vérifiée si l’écart relatif avec 6 % ne dépasse pas 5 % (incertitude du dosage). L’indication de l’étiquette est-elle vérifiée ?',
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('Le pourcentage massique d’acide acétique dans le vinaigre, pour le comparer à 6 %', 'L’étiquette donne un pourcentage massique : c’est lui qu’il faut retrouver.'),
-      F('Le pH du vinaigre', 'L’acide acétique est un acide faible : son pH ne donne pas directement sa concentration.'),
+      F('Le pH du vinaigre', 'Le critère porte sur un pourcentage massique : le pH ne le donne pas sans connaître la constante d’acidité et sans hypothèse sur la dissociation.'),
       F('Le volume à l’équivalence', 'Il est déjà mesuré : c’est une donnée.'),
     ] },
     donnees: [
@@ -431,6 +431,7 @@ export const PROBLEMES = [
       ['soude à 0,100 mol·L⁻¹', true, 'Elle donne la quantité de réactif titrant à l’équivalence.'],
       ['phénolphtaléine', false, 'L’indicateur sert à repérer l’équivalence ; il n’intervient pas dans le calcul.'],
       ['V_E = 10,2 mL', true, 'Volume à l’équivalence.'],
+      ['écart relatif d’au plus 5 %', true, 'C’est le critère de décision auquel comparer l’écart trouvé.'],
       ['M = 60,0 g·mol⁻¹', true, 'Elle convertit une quantité de matière en masse.'],
       ['densité 1,01', true, 'Elle donne la masse d’un litre de vinaigre, pour passer à un pourcentage massique.'],
       ['20 °C', false, 'La température n’intervient pas dans les calculs.'],
@@ -440,15 +441,15 @@ export const PROBLEMES = [
       V('c = n / V, et c_vinaigre = 10 × c_diluée', 'Concentration de la solution titrée, puis facteur de dilution.'),
       V('m = n × M', 'Conversion quantité de matière → masse.'),
       V('ρ_vinaigre = d × ρ_eau', 'Masse d’un litre de vinaigre : 1 010 g.'),
-      F('pH = −log [H₃O⁺]', 'Acide faible : le pH ne donne pas la concentration en acide acétique.'),
+      F('pH = −log [H₃O⁺]', 'Pour un acide faible, le pH ne donne pas directement la concentration en acide acétique, et ce n’est pas la méthode du titrage.'),
       F('A = ε × ℓ × c', 'Aucune mesure d’absorbance.'),
     ] },
     hypotheses: { options: [
       V('La réaction de titrage est totale, rapide et unique', 'Conditions de tout titrage.'),
       V('L’acide acétique est le seul acide présent dans le vinaigre', 'Si d’autres acides étaient titrés, on surestimerait l’acide acétique.'),
       V('La dilution au dixième est faite avec précision (verrerie jaugée)', 'Toute erreur sur la dilution se retrouve multipliée dans le résultat.'),
-      F('L’acide acétique est un acide fort', 'Faux (c’est un acide faible), et inutile : le titrage par la soude fonctionne aussi pour un acide faible.'),
-      F('Le vinaigre a la masse volumique de l’eau', 'On utilise justement la densité 1,01 ; l’écart est faible (1 %), mais autant l’utiliser.'),
+      F('L’acide acétique est un acide fort', 'Faux : c’est un acide faible. Cela ne change pas la méthode, car sa réaction avec la soude est totale.'),
+      F('La masse volumique du vinaigre est celle de l’eau, la densité est inutile', 'La densité 1,01 est donnée : l’utiliser évite une approximation de 1 % sans intérêt ici.'),
     ] },
     demarche: {
       etapes: [
@@ -465,15 +466,15 @@ export const PROBLEMES = [
       ],
     },
     conclusion: { q: 'Quelle conclusion obtient-on ?', options: [
-      V('Oui : environ 6,1 %, conforme à l’étiquette', '61,2 g d’acide pour 1 010 g de vinaigre : 6,06 %.'),
-      F('Non : environ 0,61 %', 'Le facteur de dilution a été oublié.'),
-      F('Non : environ 60 %', 'Erreur sur la masse de vinaigre : un litre a une masse de 1 010 g, pas 101 g.'),
+      V('Oui : environ 6,1 %, écart de 1 % avec l’étiquette, inférieur à 5 %', '61,2 g d’acide pour 1 010 g de vinaigre : 6,06 %, soit un écart relatif de 1 % avec 6 %.'),
+      F('Non : environ 0,61 %, bien inférieur à l’étiquette', 'Le facteur de dilution a été oublié.'),
+      F('Non : environ 60 %, bien supérieur à l’étiquette', 'Erreur sur la masse de vinaigre : 101 g au lieu de 1 010 g pour un litre.'),
     ] },
     retenir: ['Titrage : à l’équivalence, réactifs dans les proportions stœchiométriques.', 'Ne pas oublier le facteur de dilution.'],
   },
   {
     id: 'alambic', domaine: 'Distillation', titre: 'Récupérer 50 mL d’éthanol',
-    enonce: 'On dispose de 400 mL d’un mélange eau–éthanol contenant 15 % d’éthanol en volume. On veut récupérer au moins 50 mL d’éthanol par distillation fractionnée. Cette distillation a un rendement de 80 % (80 % de l’éthanol présent est récupéré). Le chauffe-ballon a une puissance de 500 W et l’éthanol bout à 78 °C. L’objectif est-il réalisable avec ce mélange ?',
+    enonce: 'On dispose de 400 mL d’un mélange eau–éthanol contenant 15 % d’éthanol en volume. On veut récupérer au moins 50 mL d’éthanol (volume d’éthanol contenu dans le distillat, qui n’est pas de l’éthanol pur) par distillation fractionnée. Cette distillation a un rendement de 80 % (80 % de l’éthanol présent est récupéré). Le chauffe-ballon a une puissance de 500 W et l’éthanol bout à 78 °C. L’objectif est-il réalisable avec ce mélange ?',
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('Le volume d’éthanol récupérable, pour le comparer à 50 mL', 'Le critère porte sur un volume d’éthanol : on le calcule, puis on le compare à 50 mL.'),
       F('La durée de la distillation', 'Aucun critère de durée dans l’énoncé : la puissance du chauffe-ballon ne sert pas ici.'),
@@ -496,9 +497,9 @@ export const PROBLEMES = [
     ] },
     hypotheses: { options: [
       V('Le pourcentage en volume s’applique au mélange initial : 15 % de 400 mL', 'C’est la définition d’une composition « en volume » du mélange de départ.'),
-      V('Le rendement de 80 % vaut pour tout le volume traité', 'Sinon V_récupéré ne serait pas simplement 0,80 × V_éthanol.'),
+      V('Le rendement de 80 % est constant sur toute la distillation', 'Sinon V_récupéré ne serait pas simplement 0,80 × V_éthanol.'),
       V('Le volume récupéré est compté en éthanol (et non en volume de distillat)', 'Le critère porte sur 50 mL d’éthanol.'),
-      F('Les pertes thermiques du chauffe-ballon sont nulles', 'La puissance n’intervient pas dans ce raisonnement.'),
+      F('Le distillat est de l’éthanol pur à 100 %', 'Impossible : l’azéotrope eau–éthanol limite le distillat à environ 96 % d’éthanol. C’est pourquoi on compte le volume d’éthanol contenu dans le distillat, pas le volume de distillat.'),
       F('La température est constante pendant toute la distillation', 'Elle varie, mais ce n’est pas nécessaire pour calculer un volume avec un rendement donné.'),
     ] },
     demarche: {
@@ -598,14 +599,14 @@ export const PROBLEMES = [
       V('Le débit de la pompe est proportionnel à la commande Y', 'C’est ce qui permet de convertir le soutirage en pourcentage de commande.'),
       V('Le soutirage reste constant', 'Sinon la commande nécessaire change et l’écart aussi.'),
       F('Le régulateur a une action intégrale', 'Au contraire : avec une action intégrale, l’écart statique s’annulerait. Ici le régulateur est proportionnel.'),
-      F('La section du réservoir est connue précisément', 'Elle n’intervient pas dans l’écart statique.'),
+      V('La loi Y = K_p × (consigne − H) s’applique sans biais de commande (Y = 0 quand l’écart est nul)', 'Le calcul de l’écart (écart = Y / K_p) repose sur cette loi, valable sans décalage de commande.'),
     ] },
     demarche: {
       etapes: [
         { id: 'Y', t: 'Calculer la commande nécessaire : Y = 36 / 120 × 100', dep: [], e: 'Y = 30 %.' },
         { id: 'e', t: 'Calculer l’écart statique : écart = Y / K_p = 30 / 80', dep: ['Y'], e: 'écart = 0,375 m.' },
-        { id: 'H', t: 'Calculer le niveau : H = 4,0 − écart', dep: ['e'], e: 'H ≈ 3,63 m.' },
-        { id: 'c', t: 'Comparer H à 3,6 m et conclure', dep: ['H'], e: '3,63 m ≥ 3,6 m.' },
+        { id: 'H', t: 'Calculer le niveau : H = 4,0 − écart', dep: ['e'], e: 'H = 3,625 m.' },
+        { id: 'c', t: 'Comparer H à 3,6 m et conclure', dep: ['H'], e: '3,625 m ≥ 3,6 m, avec une marge de 2,5 cm seulement.' },
       ],
       pieges: [
         ['Calculer le volume du réservoir avec V = S × h', 'Inutile : le critère porte sur un niveau.'],
@@ -613,7 +614,7 @@ export const PROBLEMES = [
       ],
     },
     conclusion: { q: 'Quelle conclusion obtient-on en suivant la démarche ?', options: [
-      V('Oui : H ≈ 3,63 m, au-dessus de 3,6 m (de peu)', 'Y = 30 %, écart = 30 / 80 = 0,375 m, H = 4,0 − 0,375 ≈ 3,63 m.'),
+      V('Oui : H = 3,625 m, au-dessus de 3,6 m (de 2,5 cm seulement)', 'Y = 30 %, écart = 30 / 80 = 0,375 m, H = 4,0 − 0,375 = 3,625 m.'),
       F('Non : H ≈ 3,55 m', 'C’est 4,0 − 36 / 80 : on a utilisé le soutirage (36 m³·h⁻¹) à la place de la commande Y en % (30 %).'),
       F('Oui : H ≈ 4,4 m', 'L’écart a été ajouté à la consigne : un régulateur proportionnel laisse le niveau sous la consigne, pas au-dessus.'),
     ] },
@@ -621,17 +622,17 @@ export const PROBLEMES = [
   },
   {
     id: 'capteur-assez-rapide', domaine: 'Régulation', titre: 'Un capteur assez rapide ?',
-    enonce: 'Un capteur de température se comporte comme un système du 1er ordre de constante de temps τ = 12 s. On le plonge de 20 °C dans un bain à 80 °C. Pour un contrôle qualité, on lit la mesure 30 s après l’immersion, et elle doit être à moins de 5 % de la valeur finale de l’échelon. L’afficheur a une résolution de 0,1 °C et le capteur pèse 15 g. L’attente de 30 s est-elle suffisante ?',
+    enonce: 'Un capteur de température se comporte comme un système du 1er ordre de constante de temps τ = 12 s. On le plonge de 20 °C dans un bain à 80 °C. Pour un contrôle qualité, on lit la mesure 30 s après l’immersion, et l’écart à la valeur finale doit être inférieur à 5 % de l’échelon total (60 °C), soit 3 °C : la mesure doit avoir atteint au moins 95 % de la variation. L’afficheur a une résolution de 0,1 °C et le capteur pèse 15 g. L’attente de 30 s est-elle suffisante ?',
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('Le temps de réponse à 5 % du capteur, pour le comparer à 30 s', 'Le critère « à 5 % de la valeur finale » est exactement la définition du temps de réponse à 5 %.'),
-      F('La température lue après 30 s en °C', 'On peut la calculer, mais le critère est exprimé en pourcentage de la valeur finale : le temps de réponse à 5 % suffit.'),
+      F('La température finale du capteur en °C', 'Elle est connue : c’est la température du bain, 80 °C. Ce n’est pas ce qui permet de répondre.'),
       F('La capacité thermique du capteur', 'Elle est déjà contenue dans la constante de temps donnée.'),
     ] },
     donnees: [
       ['τ = 12 s', true, 'Le temps de réponse à 5 % se déduit de la constante de temps.'],
       ['attente de 30 s', true, 'C’est la durée à comparer au temps de réponse.'],
       ['« à moins de 5 % »', true, 'Il indique qu’il faut le temps de réponse à 5 %.'],
-      ['de 20 °C à 80 °C', false, 'Le critère est en pourcentage de l’échelon : sa valeur n’est pas nécessaire.'],
+      ['de 20 °C à 80 °C', false, 'Le critère est en pourcentage de l’échelon : la méthode par le temps de réponse n’a pas besoin des valeurs de température.'],
       ['résolution 0,1 °C', false, 'La résolution de l’afficheur ne change pas la rapidité du capteur.'],
       ['masse 15 g', false, 'La masse est déjà contenue dans la constante de temps.'],
     ],
@@ -728,7 +729,7 @@ export const PROBLEMES = [
       ['u ≤ 0,10 mL', true, 'C’est l’objectif à atteindre.'],
       ['moyenne 25,3 mL', false, 'La valeur de la moyenne n’influence pas l’incertitude-type.'],
       ['3 min par mesure', false, 'Utile pour planifier, mais pas pour calculer n.'],
-      ['6 mesures préalables', false, 'Elles ont servi à estimer s ; la série finale aura un autre nombre de mesures.'],
+      ['6 mesures préalables', false, 'Elles ont servi à estimer s (avec environ 30 % d’incertitude relative sur s) : n = 16 est donc un ordre de grandeur, à prendre avec une marge. Leur nombre n’entre pas dans le calcul de n.'],
     ],
     relations: { options: [
       V('u = s / √n, donc n = (s / u)²', 'On isole n : √n = s/u, puis on élève au carré.'),
@@ -741,7 +742,7 @@ export const PROBLEMES = [
       V('Les mesures seront indépendantes et faites dans les mêmes conditions', 'Condition d’emploi de u = s/√n.'),
       V('Seule l’incertitude de répétabilité (type A) est considérée', 'D’autres sources (résolution, étalonnage) existent et limiteraient u même avec beaucoup de mesures.'),
       F('La moyenne est égale à la valeur vraie', 'On ne connaît jamais la valeur vraie ; l’incertitude décrit justement ce doute.'),
-      F('Une mesure de plus divise toujours u par 2', 'u diminue en 1/√n : le gain est de plus en plus faible.'),
+      F('L’incertitude u diminue proportionnellement à n', 'u diminue en 1/√n, pas en 1/n : le gain est de plus en plus faible quand n augmente.'),
     ] },
     demarche: {
       etapes: [
@@ -809,15 +810,15 @@ export const PROBLEMES = [
   },
   {
     id: 'boussole-aimant', domaine: 'Contrôle des systèmes', titre: 'Où pointe la boussole près d’un aimant ?',
-    enonce: 'Un aimant droit est orienté perpendiculairement au nord. À 10 cm de son centre, sur son axe, son champ vaut 400 µT. Le champ de la Terre vaut 50 µT. On éloigne la boussole à 20 cm de l’aimant, toujours sur l’axe. Le champ de l’aimant décroît comme 1/r³. La masse de l’aimant est de 40 g. De quel angle l’aiguille dévie-t-elle alors par rapport au nord ?',
+    enonce: 'Un aimant droit est orienté perpendiculairement au nord. À 10 cm de son centre, sur son axe, son champ vaut 160 µT. La composante horizontale du champ de la Terre vaut 20 µT. On éloigne la boussole à 20 cm de l’aimant, toujours sur l’axe. Le champ de l’aimant décroît comme 1/r³. La masse de l’aimant est de 40 g. De quel angle l’aiguille dévie-t-elle alors par rapport au nord ?',
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('Le champ de l’aimant à 20 cm, puis l’angle de déviation de l’aiguille', 'L’énoncé donne le champ à 10 cm seulement : il faut l’adapter à la nouvelle distance avant de comparer à la Terre.'),
       F('Le champ de l’aimant à 10 cm', 'Il est donné.'),
       F('La masse de l’aimant', 'Elle est donnée et n’intervient pas.'),
     ] },
     donnees: [
-      ['aimant : 400 µT à 10 cm', true, 'C’est le champ de départ, à adapter à 20 cm.'],
-      ['champ de la Terre 50 µT', true, 'C’est le champ de référence vers le nord.'],
+      ['aimant : 160 µT à 10 cm', true, 'C’est le champ de départ, à adapter à 20 cm.'],
+      ['composante horizontale du champ de la Terre 20 µT', true, 'C’est le champ de référence vers le nord.'],
       ['distance finale 20 cm', true, 'Elle détermine le champ de l’aimant au nouvel endroit.'],
       ['décroissance en 1/r³', true, 'C’est la loi à appliquer.'],
       ['masse 40 g', false, 'La masse de l’aimant est contenue dans la valeur de son champ.'],
@@ -837,18 +838,18 @@ export const PROBLEMES = [
     ] },
     demarche: {
       etapes: [
-        { id: 'B2', t: 'Calculer le champ de l’aimant à 20 cm : 400 × (10/20)³', dep: [], e: 'B = 400 / 8 = 50 µT.' },
-        { id: 'a', t: 'Calculer la déviation : α = arctan(50 / 50)', dep: ['B2'], e: 'α = 45°.' },
+        { id: 'B2', t: 'Calculer le champ de l’aimant à 20 cm : 160 × (10/20)³', dep: [], e: 'B = 160 / 8 = 20 µT.' },
+        { id: 'a', t: 'Calculer la déviation : α = arctan(20 / 20)', dep: ['B2'], e: 'α = 45°.' },
       ],
       pieges: [
-        ['Utiliser directement 400 µT à 20 cm', 'On oublie que l’aimant est moins intense plus loin.'],
+        ['Utiliser directement 160 µT à 20 cm', 'On oublie que l’aimant est moins intense plus loin.'],
         ['Utiliser la masse de l’aimant', 'Inutile : elle est contenue dans son champ.'],
       ],
     },
     conclusion: { q: 'Quelle conclusion obtient-on en suivant la démarche ?', options: [
-      V('α = 45°', 'À 20 cm, les deux champs valent 50 µT : l’aiguille se place à mi-chemin entre le nord et la direction de l’aimant.'),
-      F('α ≈ 63°', 'On a utilisé une décroissance en 1/r² (100 µT) au lieu de 1/r³ (50 µT).'),
-      F('α ≈ 83°', 'On a gardé le champ de l’aimant à 10 cm (400 µT) : il faut le réduire pour 20 cm.'),
+      V('α = 45°', 'À 20 cm, les deux champs valent 20 µT : l’aiguille se place à mi-chemin entre le nord et la direction de l’aimant.'),
+      F('α ≈ 63°', 'On a utilisé une décroissance en 1/r² (40 µT) au lieu de 1/r³ (20 µT).'),
+      F('α ≈ 83°', 'On a gardé le champ de l’aimant à 10 cm (160 µT) : il faut le réduire pour 20 cm.'),
     ] },
     retenir: ['Champ d’un aimant : décroissance en 1/r³ (distance × 2 ⇒ champ ÷ 8).', 'Deux champs perpendiculaires : tan α = B_aimant / B_Terre.'],
   },
@@ -923,8 +924,8 @@ export const RELATIONS = [
   { id: 'quantum', domaine: 'Transmission de signaux numériques', titre: 'La finesse d’un CAN',
     enonce: 'Un CAN de 12 bits, de plage 0 – 3,3 V, convertit une tension. On cherche le plus petit écart de tension qu’il peut distinguer.',
     q: 'Quelle relation permet de répondre ?', options: [
-      V('q = 3,3 / (2¹² − 1)', 'C’est le quantum : environ 0,81 mV.'),
-      F('q = 3,3 / 12', 'Le CAN a 2¹² = 4 096 niveaux, pas 12.'),
+      V('q = 3,3 / 2¹²', 'Le CAN a 2¹² = 4 096 niveaux : le quantum est la plage divisée par le nombre de niveaux, soit environ 0,81 mV.'),
+      F('q = 3,3 / 12', 'Le CAN a 2¹² = 4 096 niveaux, pas 12 : on divise par le nombre de niveaux.'),
       F('q = 3,3 × 2¹²', 'Le quantum est une petite tension : on divise la plage par le nombre d’intervalles.'),
       F('q = 2¹² / 3,3', 'Inverse : on obtiendrait un nombre de niveaux par volt.'),
     ] },
@@ -1005,11 +1006,11 @@ export const RELATIONS = [
       F('F = m·E', 'La masse n’intervient pas dans la force électrique : c’est la charge q qui compte.'),
     ] },
   { id: 'rendement-dist', domaine: 'Distillation', titre: 'Le rendement d’une distillation',
-    enonce: 'On distille 250 mL d’un mélange eau–éthanol contenant 20 % d’éthanol en volume, et on recueille 40 mL d’éthanol pur. On cherche le rendement de la distillation.',
+    enonce: 'On distille 250 mL d’un mélange eau–éthanol contenant 20 % d’éthanol en volume, et on recueille 40 mL d’éthanol (on raisonne en volumes d’éthanol, sans tenir compte de la légère contraction du mélange). On cherche le rendement de la distillation.',
     q: 'Quelle relation permet de répondre ?', options: [
       V('η = V_récupéré / (x × V_mélange)', 'On compare ce que l’on récupère (40 mL) à l’éthanol présent (0,20 × 250 = 50 mL) : η = 40 / 50 = 80 %.'),
       F('η = V_récupéré / V_mélange', 'Elle compare à tout le mélange, pas à l’éthanol seul (40 / 250 = 16 %).'),
-      F('η = x × V_récupéré / V_mélange', 'Le pourcentage x est utilisé deux fois : il ne doit intervenir que pour calculer l’éthanol présent.'),
+      F('η = x × V_récupéré / V_mélange', 'On a multiplié le volume récupéré par x au lieu de le comparer à x × V_mélange : on trouverait 3,2 %, résultat absurde.'),
       F('η = (x × V_mélange) / V_récupéré', 'Rapport inversé : on trouverait 125 %, un rendement supérieur à 100 % est impossible.'),
     ] },
   { id: 'enrichissement', domaine: 'Distillation', titre: 'Qui s’enrichit dans la vapeur ?',
@@ -1042,7 +1043,7 @@ export const RELATIONS = [
       V('Y = K_p × (consigne − H)', 'La commande est proportionnelle à l’écart entre la consigne et la mesure : c’est la définition d’un régulateur P.'),
       F('Y = K_p × H', 'Elle ne compare pas le niveau à la consigne : ce serait une commande sans rétroaction.'),
       F('Y = consigne − H', 'Il manque le gain K_p : c’est lui qui règle la commande pour un écart donné.'),
-      F('Y = K_p × consigne', 'La commande dépend de l’écart, pas de la consigne seule : sans écart, elle serait nulle.'),
+      F('Y = K_p × consigne', 'La commande doit s’annuler quand la mesure atteint la consigne ; ici elle resterait non nulle et ne dépendrait pas du niveau mesuré.'),
     ] },
   { id: 'temps-reponse', domaine: 'Régulation', titre: 'Temps de réponse d’un 1er ordre',
     enonce: 'Un capteur du 1er ordre a une constante de temps τ = 20 s. On cherche son temps de réponse à 5 %.',
@@ -1072,15 +1073,15 @@ export const RELATIONS = [
     enonce: 'Un moteur de N = 200 pas par tour reçoit f pas par seconde. On cherche sa vitesse n en tours par minute.',
     q: 'Quelle relation permet de répondre ?', options: [
       V('n = 60 × f / N', 'f/N donne des tours par seconde ; × 60 pour passer en tours par minute.'),
-      F('n = f × N / 60', 'Cette relation donne des pas par seconde à partir de la vitesse, pas l’inverse.'),
+      F('n = f × N / 60', 'f × N est un nombre de pas au carré par seconde : on divise f par N, on ne les multiplie pas.'),
       F('n = f / N', 'Il manque la conversion des secondes en minutes.'),
-      F('n = 360 × f', 'Cela donnerait des degrés par seconde pour un moteur d’un pas de 1°, pas des tr/min.'),
+      F('n = 1,8 × f', 'Cela donnerait des degrés par seconde (le pas vaut 1,8° pour 200 pas par tour), pas des tr/min.'),
     ] },
   { id: 'champ-aimant-distance', domaine: 'Contrôle des systèmes', titre: 'Champ d’un aimant et distance',
-    enonce: 'Le champ d’un aimant vaut 800 µT à 5 cm. On cherche son champ à 10 cm (modèle du dipôle).',
+    enonce: 'Le champ d’un aimant vaut 800 µT à 5 cm. On cherche son champ à 10 cm, en restant loin de l’aimant devant sa taille.',
     q: 'Quelle relation permet de répondre ?', options: [
       V('B(r₂) = B(r₁) × (r₁ / r₂)³', 'Un aimant se comporte comme un dipôle : champ en 1/r³. Ici 800 / 8 = 100 µT.'),
-      F('B(r₂) = B(r₁) × (r₁ / r₂)²', 'Décroissance en 1/r² : c’est celle d’une charge ponctuelle, pas d’un aimant.'),
+      F('B(r₂) = B(r₁) × (r₁ / r₂)²', 'Décroissance en 1/r² : c’est celle du champ électrique d’une charge ponctuelle ou de la gravitation, pas celle d’un dipôle magnétique.'),
       F('B(r₂) = B(r₁) × r₁ / r₂', 'Décroissance en 1/r : trop lente pour un aimant.'),
       F('B(r₂) = B(r₁)', 'Le champ d’un aimant dépend fortement de la distance.'),
     ] },
@@ -1099,7 +1100,7 @@ export const HYPOTHESES = [
     ] },
   { id: 'conservation', domaine: 'Transport des fluides', titre: 'Conservation du débit',
     enonce: 'On écrit v₁·S₁ = v₂·S₂ entre deux sections d’une même conduite.', options: [
-      V('Régime permanent (débit constant dans le temps)', 'Sinon la conduite pourrait se remplir ou se vider entre les deux sections.'),
+      V('Conduite rigide, sans accumulation de fluide entre les deux sections', 'Sinon du fluide pourrait s’accumuler ou se vider entre les deux sections. (Le régime permanent est la situation habituelle, mais il n’est pas indispensable pour un fluide incompressible dans une conduite rigide.)'),
       V('Fluide incompressible', 'Pour un gaz comprimé, c’est le débit massique qui se conserve, pas le débit volumique.'),
       V('Aucune fuite ni dérivation entre les deux sections', 'Sinon une partie du débit sortirait entre les deux.'),
       F('Fluide parfait', 'Les frottements créent des pertes de charge, mais ne changent pas le débit qui traverse chaque section.'),
@@ -1110,7 +1111,7 @@ export const HYPOTHESES = [
     enonce: 'On écrit P_A + ρ·g·z_A + ½·ρ·v_A² = P_B + ρ·g·z_B + ½·ρ·v_B² entre deux points A et B d’un circuit.', options: [
       V('Fluide parfait : pas de pertes de charge entre A et B', 'Avec des frottements, il faut ajouter un terme de pertes de charge ΔP_charge.'),
       V('Fluide incompressible', 'ρ doit être la même en A et en B.'),
-      V('Régime permanent', 'Les grandeurs ne doivent pas varier dans le temps.'),
+      V('Régime permanent, A et B sur une même ligne de courant', 'Les grandeurs ne doivent pas varier dans le temps, et la relation s’écrit le long d’une ligne de courant.'),
       V('Aucune pompe ni turbine entre A et B', 'Une pompe apporte de l’énergie : il faudrait ajouter le terme P_hyd / Q_V.'),
       F('Écoulement turbulent', 'Le régime d’écoulement n’est pas une condition de la relation ; il influe sur les pertes de charge.'),
       F('Vitesse nulle en A et en B', 'C’est un cas particulier (la statique), pas une condition de la relation.'),
@@ -1185,15 +1186,14 @@ export const HYPOTHESES = [
     enonce: 'On calcule la force entre la Terre et la Lune avec F = G·m_T·m_L / d², en prenant d = distance entre leurs centres.', options: [
       V('On assimile chaque astre à un corps à répartition sphérique de masse', 'La loi s’applique exactement à des corps ponctuels ou à des sphères homogènes (ou à répartition sphérique) : la distance est alors celle des centres.'),
       V('d est la distance entre les centres des deux astres', 'Pour un corps sphérique, tout se passe comme si sa masse était concentrée en son centre.'),
-      V('Seule l’interaction entre ces deux astres est prise en compte', 'On néglige l’action du Soleil et des autres astres pour calculer cette force.'),
       F('Les deux astres ont la même masse', 'Pas nécessaire : la loi s’applique à deux masses quelconques.'),
       F('Les deux astres sont immobiles', 'Pas nécessaire : la loi donne la force à un instant, que les astres soient en mouvement ou non.'),
       F('L’un des deux astres est beaucoup plus petit que l’autre', 'Pas nécessaire : la loi s’applique à deux corps de tailles quelconques, tant que la distance est celle des centres.'),
     ] },
   { id: 'distil-pur', domaine: 'Distillation', titre: 'Un distillat d’éthanol pur',
-    enonce: 'On utilise une distillation fractionnée pour récupérer de l’éthanol d’un mélange eau–éthanol, et on suppose que le distillat est de l’éthanol pur.', options: [
+    enonce: 'On utilise une distillation fractionnée à pression atmosphérique pour récupérer de l’éthanol d’un mélange eau–éthanol. On suppose que le distillat contient environ 95 % d’éthanol en masse (proche de la composition de l’azéotrope).', options: [
       V('La colonne a assez de plateaux pour obtenir un distillat très riche en éthanol', 'Avec une colonne trop peu efficace, le distillat contient encore beaucoup d’eau.'),
-      V('On reste en dessous de la composition azéotropique (environ 96 % d’éthanol en masse)', 'Au-delà, la distillation ne permet plus d’enrichir : on n’obtient pas d’éthanol pur.'),
+      V('Le distillat ne peut pas dépasser la composition de l’azéotrope (environ 96 % d’éthanol en masse)', 'À l’azéotrope, le distillat et le liquide ont la même composition : la distillation ne permet pas d’aller plus loin, donc pas d’éthanol pur à 100 %.'),
       F('Le chauffage se fait à puissance constante', 'La puissance règle la vitesse de distillation, pas la composition du distillat.'),
       F('L’éthanol et l’eau ont la même température d’ébullition', 'C’est l’inverse : c’est la différence entre leurs températures d’ébullition qui permet de les séparer.'),
       F('La pression diminue pendant la distillation', 'Ce n’est pas nécessaire à la séparation (et si elle variait, les températures d’ébullition changeraient).'),
@@ -1229,6 +1229,7 @@ export const HYPOTHESES = [
       V('Les mesures sont indépendantes et faites dans les mêmes conditions', 'Sinon la dispersion observée ne reflète pas l’incertitude de la moyenne.'),
       V('Il n’y a pas d’erreur systématique non corrigée', 'u ne décrit que le hasard : un décalage constant n’est pas détecté par la dispersion.'),
       V('n est assez grand pour que s soit une bonne estimation de la dispersion', 'Avec 3 ou 4 mesures, s est très imprécis.'),
+      F('Les mesures suivent une loi normale', 'Pas nécessaire pour calculer u = s / √n. La loi normale intervient pour associer un niveau de confiance à u (par exemple 95 % avec k = 2) ; pour un petit n, on utilise plutôt la loi de Student.'),
       F('La valeur vraie est connue', 'Au contraire : on ne la connaît pas, c’est pour cela qu’on estime une incertitude.'),
       F('Toutes les mesures sont identiques', 'Alors s = 0 et u = 0 : c’est le signe d’une résolution trop grossière, pas d’une mesure parfaite.'),
     ] },
@@ -1244,7 +1245,7 @@ export const HYPOTHESES = [
     enonce: 'On calcule la vitesse d’un moteur pas à pas avec n = 60 × f / N à partir de la fréquence de pas f programmée.', options: [
       V('Le rotor suit chaque pas : aucun pas n’est perdu', 'Si des pas sont perdus, la vitesse réelle est plus faible que celle calculée.'),
       V('Tous les pas ont le même angle (pas complet, ou micro-pas réguliers)', 'Sinon le nombre N de pas par tour n’est pas constant.'),
-      V('La fréquence de pas est constante', 'Sinon on calcule une vitesse moyenne seulement.'),
+      V('La fréquence de pas est constante, ou l’on calcule une vitesse moyenne avec la fréquence moyenne', 'La relation donne la vitesse instantanée avec la fréquence instantanée ; si la fréquence varie, on obtient seulement une vitesse moyenne à partir de la fréquence moyenne.'),
       F('La tension d’alimentation est de 12 V', 'La valeur précise de la tension n’intervient pas dans le calcul.'),
       F('Le moteur tourne à vide', 'Une charge modérée ne change pas le calcul tant qu’aucun pas n’est perdu.'),
     ] },
@@ -1297,9 +1298,9 @@ export const PREVOIR = [
     ] },
   { id: 'bits', domaine: 'Transmission de signaux numériques', titre: 'Deux bits de plus',
     enonce: 'On remplace un CAN de 10 bits par un CAN de 12 bits, sur la même plage de tension.', q: 'Le quantum est…', options: [
-      V('divisé par 4 environ', '2¹² − 1 ≈ 4 × (2¹⁰ − 1) : chaque bit supplémentaire divise le quantum par 2 environ.'),
+      V('divisé par 4', 'Le quantum vaut la plage divisée par 2ⁿ : 2¹² = 4 × 2¹⁰, donc le quantum est divisé par 4 (chaque bit supplémentaire le divise par 2).'),
       F('divisé par 2', 'Un bit divise par 2 ; deux bits, par 4.'),
-      F('divisé par 1,2 (12 / 10)', 'Le quantum dépend de 2ⁿ, pas de n.'),
+      F('divisé par 1,2 (12 / 10)', 'Le quantum dépend du nombre de niveaux 2ⁿ, pas du nombre de bits n.'),
       F('multiplié par 4', 'Plus de bits donnent des niveaux plus serrés, donc un quantum plus petit.'),
     ] },
   { id: 'plage', domaine: 'Transmission de signaux numériques', titre: 'Plage doublée',
@@ -1317,7 +1318,7 @@ export const PREVOIR = [
       F('multipliée par 4', 'La taille est proportionnelle à f_e, pas à son carré.'),
     ] },
   { id: 'gain', domaine: 'Régulation', titre: 'Gain proportionnel augmenté',
-    enonce: 'Dans une régulation proportionnelle (P), on augmente le gain K_p.', q: 'L’erreur statique…', options: [
+    enonce: 'Dans une régulation proportionnelle (P) seule, sans action intégrale, d’un procédé soumis à un soutirage constant, on augmente le gain K_p.', q: 'L’erreur statique…', options: [
       V('diminue, sans s’annuler', 'L’erreur statique d’une régulation P est d’autant plus petite que K_p est grand ; elle ne s’annule pas. Un gain trop élevé peut rendre le système instable.'),
       F('s’annule', 'Seule une action intégrale (régulation PI) annule l’erreur statique.'),
       F('augmente', 'Sens inversé.'),
@@ -1352,7 +1353,7 @@ export const PREVOIR = [
       F('multipliée par 4', 'L’énergie est proportionnelle à m, pas à m².'),
     ] },
   { id: 'absorbance', domaine: 'Chimie', titre: 'Solution diluée deux fois',
-    enonce: 'On dilue deux fois une solution colorée ; la loi de Beer-Lambert est vérifiée.', q: 'L’absorbance mesurée (même cuve, même longueur d’onde) est…', options: [
+    enonce: 'On dilue une solution colorée avec un facteur de dilution 2 (sa concentration est divisée par 2) ; la loi de Beer-Lambert est vérifiée.', q: 'L’absorbance mesurée (même cuve, même longueur d’onde) est…', options: [
       V('divisée par 2', 'A = ε·ℓ·c est proportionnelle à c.'),
       F('multipliée par 2', 'Sens inversé : moins d’espèce absorbante, moins d’absorbance.'),
       F('divisée par 4', 'A est proportionnelle à c, pas à c².'),
@@ -1415,7 +1416,7 @@ export const PREVOIR = [
       F('circulaire accéléré', 'Dans le référentiel du manège, il n’y a aucun mouvement à décrire.'),
     ] },
   { id: 'mvt-bagage', domaine: 'Mouvement et vitesse', titre: 'Un objet lâché dans un train',
-    enonce: 'Dans un train qui roule en ligne droite à vitesse constante, un passager lâche une balle sans la lancer : elle tombe verticalement par rapport au train.', q: 'Quelle est la trajectoire de la balle dans le référentiel du train ?', options: [
+    enonce: 'Dans un train qui roule en ligne droite à vitesse constante, un passager lâche une balle sans la lancer (sans lui donner de vitesse par rapport à lui).', q: 'Quelle est la trajectoire de la balle dans le référentiel du train ?', options: [
       V('une droite verticale', 'Dans le référentiel du train, la balle tombe tout droit : trajectoire rectiligne verticale.'),
       F('une courbe', 'Cette courbe est ce que voit quelqu’un sur le quai (référentiel terrestre), pas un passager dans le train.'),
       F('un cercle', 'Rien ne fait tourner la balle : elle tombe tout droit.'),
@@ -1431,9 +1432,9 @@ export const PREVOIR = [
   { id: 'mvt-valve', domaine: 'Mouvement et vitesse', titre: 'Valve de vélo',
     enonce: 'Un vélo roule en ligne droite. On suit la valve d’une roue avec un petit point blanc dessiné dessus.', q: 'Dans le référentiel du vélo (le cadre), la trajectoire de la valve est…', options: [
       V('un cercle', 'Vu depuis le cadre, la roue tourne sur place et la valve décrit un cercle autour de l’axe de la roue.'),
-      F('une droite', 'Vu depuis le sol, la valve avance, mais sa trajectoire n’est pas une droite non plus : elle est plus compliquée. Vu depuis le cadre, c’est un cercle.'),
+      F('une droite', 'Vue depuis le cadre, la valve tourne autour de l’axe de la roue : sa trajectoire n’est pas une droite.'),
       F('un point (la valve est immobile)', 'La roue tourne : la valve n’est pas fixe par rapport au cadre, elle tourne autour de l’axe.'),
-      F('une ligne brisée', 'Le mouvement est régulier et continu, il n’y a pas d’angle : c’est un cercle.'),
+      F('une cycloïde (une succession d’arches)', 'C’est la trajectoire de la valve dans le référentiel du sol. Dans celui du cadre, la roue tourne sur place : c’est un cercle.'),
     ] },
   { id: 'mvt-chrono-uniforme', domaine: 'Mouvement et vitesse', titre: 'Positions régulières',
     enonce: 'On photographie un objet toutes les secondes : ses positions sont à 0 m, 2 m, 4 m, 6 m, 8 m sur une ligne droite.', q: 'Quel est son mouvement ?', options: [
@@ -1540,7 +1541,7 @@ export const PREVOIR = [
       F('multiplié par 4', 'Il est proportionnel à Q_p, pas à Q_p².'),
     ] },
   { id: 'gain-double', domaine: 'Régulation', titre: 'Gain doublé',
-    enonce: 'On double le gain K_p d’un régulateur proportionnel (même soutirage, même pompe).', q: 'L’écart statique est…', options: [
+    enonce: 'On double le gain K_p d’un régulateur proportionnel (régulateur P seul, même soutirage, même pompe).', q: 'L’écart statique est…', options: [
       V('divisé par 2', 'écart = Y / K_p : à commande égale, un gain deux fois plus grand donne un écart deux fois plus petit.'),
       F('doublé', 'Sens inversé : un gain plus grand réduit l’écart.'),
       F('annulé', 'Seule une action intégrale annule l’écart statique : un gain, même grand, ne l’annule pas.'),
