@@ -110,6 +110,16 @@ exercice;34:gravi.0;https://paillasse-virtuelle.fr/?sim=34&ex=gravi.0;1G;Interac
 exercice;34:gravi.1;https://paillasse-virtuelle.fr/?sim=34&ex=gravi.1;1G;Interactions fondamentales et notion de champ;S'approprier;;Interactions et champs;Interaction gravitationnelle — Champ de gravitation d’une planète;
 exercice;34:electro.0;https://paillasse-virtuelle.fr/?sim=34&ex=electro.0;1G;Interactions fondamentales et notion de champ;S'approprier;;Interactions et champs;Interaction électrostatique — Force entre deux charges;
 exercice;34:electro.1;https://paillasse-virtuelle.fr/?sim=34&ex=electro.1;1G;Interactions fondamentales et notion de champ;S'approprier;;Interactions et champs;Interaction électrostatique — Force dans un champ uniforme;
+exercice;34:rho2.0;https://paillasse-virtuelle.fr/?sim=34&ex=rho2.0;2GT;Solutions, dilution et mélanges;S'approprier;;Solutions et concentration;La masse volumique d’un liquide — Masse volumique du liquide;
+exercice;34:rho2.1;https://paillasse-virtuelle.fr/?sim=34&ex=rho2.1;2GT;Solutions, dilution et mélanges;S'approprier;;Solutions et concentration;La masse volumique d’un liquide — Masse d’un volume de liquide;
+exercice;34:conc2.0;https://paillasse-virtuelle.fr/?sim=34&ex=conc2.0;2GT;Solutions, dilution et mélanges;S'approprier;;Solutions et concentration;Préparer une solution de sel — Concentration en masse de la solution;
+exercice;34:conc2.1;https://paillasse-virtuelle.fr/?sim=34&ex=conc2.1;2GT;Solutions, dilution et mélanges;S'approprier;;Solutions et concentration;Préparer une solution de sel — Masse de sel à peser;
+exercice;34:poids2.0;https://paillasse-virtuelle.fr/?sim=34&ex=poids2.0;2GT;Modéliser une action par une force;S'approprier;;Forces et principe d’inertie;Le poids d’un objet — Poids sur la Terre;
+exercice;34:poids2.1;https://paillasse-virtuelle.fr/?sim=34&ex=poids2.1;2GT;Modéliser une action par une force;S'approprier;;Forces et principe d’inertie;Le poids d’un objet — Poids sur un autre astre;
+exercice;34:vitesse2.0;https://paillasse-virtuelle.fr/?sim=34&ex=vitesse2.0;2GT;Décrire un mouvement;S'approprier;;Mouvement et vitesse;La vitesse d’un cycliste — Vitesse moyenne;
+exercice;34:vitesse2.1;https://paillasse-virtuelle.fr/?sim=34&ex=vitesse2.1;2GT;Décrire un mouvement;S'approprier;;Mouvement et vitesse;La vitesse d’un cycliste — Durée du trajet;
+exercice;34:ohm2.0;https://paillasse-virtuelle.fr/?sim=34&ex=ohm2.0;2GT;Circuits électriques, loi d’Ohm et capteurs;S'approprier;;Circuits électriques;Un résistor dans un circuit — Tension aux bornes du résistor;
+exercice;34:ohm2.1;https://paillasse-virtuelle.fr/?sim=34&ex=ohm2.1;2GT;Circuits électriques, loi d’Ohm et capteurs;S'approprier;;Circuits électriques;Un résistor dans un circuit — Intensité du courant;
 exercice;35:manometre;https://paillasse-virtuelle.fr/?sim=35&ex=manometre;TSTL;Transport des fluides;S'approprier;;Transport des fluides;Étalonnage d’un manomètre;
 exercice;35:beer;https://paillasse-virtuelle.fr/?sim=35&ex=beer;1G | BTS;Suivi de l’évolution d’un système, siège d’une transformation | Analyse;S'approprier;;Chimie;Droite d’étalonnage de solutions de permanganate;
 exercice;35:ressort;https://paillasse-virtuelle.fr/?sim=35&ex=ressort;1G;Mouvement d’un système;S'approprier;;Mécanique;Allongement d’un ressort;

@@ -657,6 +657,129 @@ export const ENONCES = [
         manque: null, solution: { txt: 'F = q·E, avec E = U / distance', val: p.q * 1e-9 * p.U / (p.e * 1e-3), u: 'N' } };
     },
   },
+  // ───────────────────────────── Seconde : « de quelle grandeur s'agit-il ? » (masse ou volume, kg ou g, mL ou L, min ou h…)
+  {
+    id: 'rho2', domaine: 'Solutions et concentration', titre: 'La masse volumique d’un liquide', noms: ['Masse volumique du liquide', 'Masse d’un volume de liquide'],
+    gen: () => { const liq = tire([['l’huile', 0.92], ['l’éthanol', 0.79], ['le glycérol', 1.26], ['le sirop', 1.30]]); const V = tire([20, 25, 40, 50]), mv = tire([45, 52, 60]);
+      return { nom: liq[0], rho: liq[1], V, mv, mt: Math.round((mv + liq[1] * V) * 10) / 10, T: tire([18, 20, 22]), VL: tire([0.25, 0.5, 2]) }; },
+    build: (p, q) => {
+      const tokens = { T: tok(`${p.T} °C`, 'Température du laboratoire', p.T, '°C') };
+      if (q === 0) {
+        tokens.mv = tok(`${nb(p.mv, 1)} g`, 'Masse de l’éprouvette vide', p.mv, 'g');
+        tokens.mt = tok(`${nb(p.mt, 1)} g`, 'Masse de l’éprouvette contenant le liquide', p.mt, 'g');
+        tokens.V = tok(`${p.V} mL`, 'Volume de liquide dans l’éprouvette', p.V, 'mL');
+        return { tokens, derivees: [{ id: 'm', nom: 'Masse m du liquide seul', expr: 'm = masse avec le liquide − masse de l’éprouvette vide', val: Math.round((p.mt - p.mv) * 10) / 10, u: 'g' }],
+          texte: ['Pour identifier ' + p.nom + ', on pèse une éprouvette graduée vide : ', T('mv'), '. On y verse du liquide jusqu’à lire ', T('V'), ', et on pèse l’ensemble : ', T('mt'), '. La température du laboratoire est de ', T('T'), '. Quelle est la masse volumique de ce liquide (en g·mL⁻¹) ?'],
+          utiles: ['mv', 'mt', 'V'],
+          raisons: { T: 'La température du laboratoire n’est pas une donnée de la formule ρ = m / V (c’est une température, pas une masse ni un volume).' },
+          cherche: { bonne: 'La masse volumique ρ du liquide (en g·mL⁻¹)', faux: ['La masse m du liquide (en g)', 'Le volume V du liquide (en mL)', 'La masse de l’éprouvette vide (en g)'] },
+          manque: null, solution: { txt: 'ρ = m / V, avec m = m_avec liquide − m_éprouvette', val: (p.mt - p.mv) / p.V, u: 'g·mL⁻¹' } };
+      }
+      delete tokens.T;
+      tokens.rho = tok(`${nb(p.rho, 2)} g·mL⁻¹`, 'Masse volumique du liquide', p.rho, 'g·mL⁻¹');
+      tokens.VL = tok(`${nb(p.VL, 2)} L`, 'Volume de liquide à peser', p.VL * 1000, 'mL');
+      tokens.mv = tok(`${nb(p.mv, 1)} g`, 'Masse du flacon vide', p.mv, 'g');
+      return { tokens, derivees: [],
+        texte: ['La masse volumique de ' + p.nom + ' vaut ', T('rho'), '. Un technicien en verse ', T('VL'), ' dans un flacon vide de masse ', T('mv'), '. Quelle est la masse de liquide versé (en g) ?'],
+        utiles: ['rho', 'VL'],
+        raisons: { mv: 'La masse du flacon vide ne compte pas : on demande la masse du liquide seul.' },
+        cherche: { bonne: 'La masse m de liquide versé (en g)', faux: ['La masse totale flacon + liquide (en g)', 'La masse volumique du liquide (en g·mL⁻¹)', 'Le volume de liquide (en mL)'] },
+        manque: null, solution: { txt: 'm = ρ × V (avec V converti en mL)', val: p.rho * p.VL * 1000, u: 'g' } };
+    },
+  },
+  {
+    id: 'conc2', domaine: 'Solutions et concentration', titre: 'Préparer une solution de sel', noms: ['Concentration en masse de la solution', 'Masse de sel à peser'],
+    gen: () => ({ m: tire([2, 5, 10, 20]), Vf: tire([100, 250, 500]), Vi: tire([50, 80, 120]), t: tire([9, 20, 40]), M: 58.5 }),
+    build: (p, q) => {
+      const tokens = { M: tok('58,5 g·mol⁻¹', 'Masse molaire du chlorure de sodium', p.M, 'g·mol⁻¹') };
+      if (q === 0) {
+        tokens.m = tok(`${p.m} g`, 'Masse de sel pesée', p.m, 'g');
+        tokens.Vi = tok(`${p.Vi} mL`, 'Volume d’eau versé pour dissoudre le sel', p.Vi / 1000, 'L');
+        tokens.Vf = tok(`${p.Vf} mL`, 'Volume de la solution (fiole jaugée)', p.Vf / 1000, 'L');
+        return { tokens, derivees: [],
+          texte: ['Un élève pèse ', T('m'), ' de chlorure de sodium. Il les dissout dans environ ', T('Vi'), ' d’eau distillée dans une fiole jaugée de ', T('Vf'), ', puis complète avec de l’eau jusqu’au trait de jauge. Données : ', T('M'), '. Quelle est la concentration en masse de la solution (en g·L⁻¹) ?'],
+          utiles: ['m', 'Vf'],
+          raisons: { Vi: 'C’est le volume d’eau versé au début, pas le volume de la solution : le volume de la solution, c’est celui de la fiole jaugée (jusqu’au trait de jauge).', M: 'La masse molaire sert à calculer une concentration en quantité de matière (mol·L⁻¹), pas une concentration en masse.' },
+          cherche: { bonne: 'La concentration en masse t de la solution (en g·L⁻¹)', faux: ['La masse de sel dissous (en g)', 'Le volume de la solution (en L)', 'La concentration en quantité de matière (en mol·L⁻¹)'] },
+          manque: null, solution: { txt: 't = m / V (avec V converti en L)', val: p.m / (p.Vf / 1000), u: 'g·L⁻¹' } };
+      }
+      tokens.t = tok(`${p.t} g·L⁻¹`, 'Concentration en masse souhaitée', p.t, 'g·L⁻¹');
+      tokens.Vf = tok(`${p.Vf} mL`, 'Volume de la solution à préparer (fiole jaugée)', p.Vf / 1000, 'L');
+      tokens.Vi = tok(`${p.Vi} mL`, 'Volume d’eau versé pour dissoudre le sel', p.Vi / 1000, 'L');
+      return { tokens, derivees: [],
+        texte: ['On veut préparer une solution de chlorure de sodium de concentration en masse ', T('t'), ', dans une fiole jaugée de ', T('Vf'), '. On dissoudra d’abord le sel dans environ ', T('Vi'), ' d’eau. Données : ', T('M'), '. Quelle masse de sel faut-il peser (en g) ?'],
+        utiles: ['t', 'Vf'],
+        raisons: { Vi: 'C’est le volume d’eau versé au début : la solution finale fait le volume de la fiole jaugée.', M: 'La masse molaire n’intervient pas : la concentration est donnée en masse, pas en quantité de matière.' },
+        cherche: { bonne: 'La masse m de sel à peser (en g)', faux: ['La concentration en masse de la solution (en g·L⁻¹)', 'Le volume d’eau à verser (en mL)', 'La quantité de matière de sel (en mol)'] },
+        manque: null, solution: { txt: 'm = t × V (avec V converti en L)', val: p.t * p.Vf / 1000, u: 'g' } };
+    },
+  },
+  {
+    id: 'poids2', domaine: 'Forces et principe d’inertie', titre: 'Le poids d’un objet', noms: ['Poids sur la Terre', 'Poids sur un autre astre'],
+    gen: () => { const a = tire([['la Lune', 1.6], ['Mars', 3.7], ['Jupiter', 24.8]]); return { astre: a[0], ga: a[1], mg: tire([250, 500, 750]), mk: tire([2.4, 3.5, 12, 60]), V: tire([2, 8, 15]), t: tire([1, 3]) }; },
+    build: (p, q) => {
+      if (q === 0) {
+        const tokens = { mg: tok(`${p.mg} g`, 'Masse de l’objet', p.mg / 1000, 'kg'), g: tok('9,8 N·kg⁻¹', 'Intensité de la pesanteur sur Terre', 9.8, 'N·kg⁻¹'), V: tok(`${p.V} cm³`, 'Volume de l’objet', p.V, 'cm³') };
+        return { tokens, derivees: [],
+          texte: ['Un objet de ', T('mg'), ' et de volume ', T('V'), ' est accroché à un dynamomètre sur Terre. Données : ', T('g'), '. Quel est le poids de l’objet (en N) ?'],
+          utiles: ['mg', 'g'],
+          raisons: { V: 'Le volume de l’objet n’intervient pas dans le calcul du poids : c’est la masse (en kg) qui compte.' },
+          cherche: { bonne: 'Le poids P de l’objet (en N)', faux: ['La masse m de l’objet (en kg)', 'Le volume de l’objet (en cm³)', 'L’intensité de la pesanteur g (en N·kg⁻¹)'] },
+          manque: null, solution: { txt: 'P = m × g (avec m convertie en kg)', val: p.mg / 1000 * 9.8, u: 'N' } };
+      }
+      const tokens = { mk: tok(`${nb(p.mk)} kg`, 'Masse de l’objet', p.mk, 'kg'), ga: tok(`${nb(p.ga, 1)} N·kg⁻¹`, 'Intensité de la pesanteur sur ' + p.astre, p.ga, 'N·kg⁻¹'), g: tok('9,8 N·kg⁻¹', 'Intensité de la pesanteur sur Terre', 9.8, 'N·kg⁻¹') };
+      return { tokens, derivees: [],
+        texte: ['Un objet de ', T('mk'), ' est envoyé sur ' + p.astre + ', où l’intensité de la pesanteur vaut ', T('ga'), '. Sur Terre, elle vaut ', T('g'), '. Quel est le poids de l’objet sur ' + p.astre + ' (en N) ?'],
+        utiles: ['mk', 'ga'],
+        raisons: { g: 'La valeur de g sur Terre ne sert pas : on cherche le poids sur ' + p.astre + ', où la pesanteur est différente.' },
+        cherche: { bonne: 'Le poids P de l’objet sur ' + p.astre + ' (en N)', faux: ['La masse de l’objet sur ' + p.astre + ' (en kg)', 'Le poids de l’objet sur Terre (en N)', 'L’intensité de la pesanteur sur ' + p.astre + ' (en N·kg⁻¹)'] },
+        manque: null, solution: { txt: 'P = m × g (avec g de ' + p.astre + ')', val: p.mk * p.ga, u: 'N' } };
+    },
+  },
+  {
+    id: 'vitesse2', domaine: 'Mouvement et vitesse', titre: 'La vitesse d’un cycliste', noms: ['Vitesse moyenne', 'Durée du trajet'],
+    gen: () => ({ d: tire([6, 9, 12, 18]), t: tire([20, 30, 45]), m: tire([65, 72, 80]), dm: tire([1500, 3000, 4500]), v: tire([18, 24, 36]), nb: tire([2, 3]) }),
+    build: (p, q) => {
+      if (q === 0) {
+        const tokens = { d: tok(`${p.d} km`, 'Distance parcourue', p.d * 1000, 'm'), t: tok(`${p.t} min`, 'Durée du trajet', p.t * 60, 's'), m: tok(`${p.m} kg`, 'Masse du cycliste', p.m, 'kg') };
+        return { tokens, derivees: [],
+          texte: ['Un cycliste de ', T('m'), ' parcourt ', T('d'), ' en ', T('t'), '. Quelle est sa vitesse moyenne (en m·s⁻¹) ?'],
+          utiles: ['d', 't'],
+          raisons: { m: 'La masse du cycliste ne sert pas à calculer sa vitesse : c’est une masse, pas une distance ni une durée.' },
+          cherche: { bonne: 'La vitesse moyenne v du cycliste (en m·s⁻¹)', faux: ['La distance parcourue (en m)', 'La durée du trajet (en s)', 'L’accélération du cycliste (en m·s⁻²)'] },
+          manque: null, solution: { txt: 'v = d / Δt (d en m, Δt en s)', val: p.d * 1000 / (p.t * 60), u: 'm·s⁻¹' } };
+      }
+      const tokens = { dm: tok(`${p.dm} m`, 'Distance à parcourir', p.dm, 'm'), v: tok(`${p.v} km·h⁻¹`, 'Vitesse moyenne du cycliste', p.v / 3.6, 'm·s⁻¹'), m: tok(`${p.m} kg`, 'Masse du cycliste', p.m, 'kg') };
+      return { tokens, derivees: [],
+        texte: ['Un cycliste de ', T('m'), ' doit parcourir ', T('dm'), ' à la vitesse moyenne de ', T('v'), '. Quelle est la durée du trajet (en s) ?'],
+        utiles: ['dm', 'v'],
+        raisons: { m: 'La masse du cycliste n’intervient pas : on cherche une durée à partir d’une distance et d’une vitesse.' },
+        cherche: { bonne: 'La durée Δt du trajet (en s)', faux: ['La vitesse du cycliste (en m·s⁻¹)', 'La distance parcourue (en m)', 'La masse du cycliste (en kg)'] },
+        manque: null, solution: { txt: 'Δt = d / v (v convertie en m·s⁻¹)', val: p.dm / (p.v / 3.6), u: 's' } };
+    },
+  },
+  {
+    id: 'ohm2', domaine: 'Circuits électriques', titre: 'Un résistor dans un circuit', noms: ['Tension aux bornes du résistor', 'Intensité du courant'],
+    gen: () => ({ R: tire([1.2, 2.2, 4.7]), I: tire([5, 10, 20]), Rm: tire([100, 220, 470]), U: tire([3, 6, 9]), L: tire([20, 40]) }),
+    build: (p, q) => {
+      if (q === 0) {
+        const tokens = { R: tok(`${nb(p.R, 1)} kΩ`, 'Résistance du résistor', p.R * 1000, 'Ω'), I: tok(`${p.I} mA`, 'Intensité du courant', p.I / 1000, 'A'), L: tok(`${p.L} cm`, 'Longueur du fil de connexion', p.L / 100, 'm') };
+        return { tokens, derivees: [],
+          texte: ['Un résistor de résistance ', T('R'), ' est traversé par un courant d’intensité ', T('I'), '. Il est relié au circuit par un fil de ', T('L'), '. Quelle est la tension à ses bornes (en V) ?'],
+          utiles: ['R', 'I'],
+          raisons: { L: 'La longueur du fil est une longueur : elle n’apparaît pas dans la loi d’Ohm U = R × I.' },
+          cherche: { bonne: 'La tension U aux bornes du résistor (en V)', faux: ['L’intensité du courant dans le résistor (en A)', 'La résistance du résistor (en Ω)', 'La puissance reçue par le résistor (en W)'] },
+          manque: null, solution: { txt: 'U = R × I (R en Ω, I en A)', val: p.R * 1000 * p.I / 1000, u: 'V' } };
+      }
+      const tokens = { U: tok(`${p.U} V`, 'Tension aux bornes du résistor', p.U, 'V'), Rm: tok(`${p.Rm} Ω`, 'Résistance du résistor', p.Rm, 'Ω'), L: tok(`${p.L} cm`, 'Longueur du fil de connexion', p.L / 100, 'm') };
+      return { tokens, derivees: [],
+        texte: ['Un générateur impose une tension de ', T('U'), ' aux bornes d’un résistor de résistance ', T('Rm'), ', relié par un fil de ', T('L'), '. Quelle est l’intensité du courant qui traverse le résistor (en A) ?'],
+        utiles: ['U', 'Rm'],
+        raisons: { L: 'La longueur du fil n’intervient pas dans la loi d’Ohm.' },
+        cherche: { bonne: 'L’intensité I du courant (en A)', faux: ['La tension aux bornes du résistor (en V)', 'La résistance du résistor (en Ω)', 'La puissance reçue par le résistor (en W)'] },
+        manque: null, solution: { txt: 'I = U / R', val: p.U / p.Rm, u: 'A' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
@@ -681,6 +804,11 @@ const SYMBOLES = {
   compatS: { x: 'x', u: 'u', cref: 'x_ref', n: '', theta: '' },
   moteurPas: { N: 'N', D: 'D', Np: 'N_p', U: 'U', R: 'R' },
   champB: { BT: 'B_T', Ba: 'B_a', r1: 'r₁', r2: 'r₂', m: 'm', T: 'θ' },
+  rho2: { T: '', mv: 'm_vide', mt: 'm_avec liquide', V: 'V', rho: 'ρ', VL: 'V' },
+  conc2: { M: 'M', m: 'm', Vi: 'V_eau', Vf: 'V', t: 't' },
+  poids2: { mg: 'm', g: 'g', V: 'V', mk: 'm', ga: 'g' },
+  vitesse2: { d: 'd', t: 'Δt', m: 'm', dm: 'd', v: 'v' },
+  ohm2: { R: 'R', I: 'I', L: 'ℓ', U: 'U', Rm: 'R' },
   distil: { V: 'V', x: 'x', y: 'y', Vd: 'V_distillat', Te: 'θ_éb', P: 'P' },
   cristal: { me: 'm_eau', mb: 'm_bécher', s60: 's₆₀', s20: 's₂₀', dur: 'Δt' },
 };
