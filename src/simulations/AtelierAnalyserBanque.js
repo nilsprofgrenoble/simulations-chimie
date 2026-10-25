@@ -1588,6 +1588,82 @@ export const PREVOIR = [
       F('Rien ne change : le programme impose la vitesse', 'Le programme impose le rythme du champ, mais le rotor ne le suit que s’il a assez de couple.'),
       F('Le moteur change de sens de rotation', 'Perdre des pas ne change pas le sens de façon prévisible : la rotation réelle est simplement en retard.'),
     ] },
+  // ── Forces et principe d’inertie (2de) ──
+  { id: 'frc-masse-poids-lune', domaine: 'Forces et principe d’inertie', titre: 'Masse et poids sur la Lune',
+    enonce: 'Un astronaute de masse 80 kg (avec son équipement) marche sur la Lune, où l’intensité de la pesanteur g est environ 6 fois plus petite que sur Terre.', q: 'Par rapport à la Terre, sa masse et son poids sont…', options: [
+      V('sa masse est inchangée, son poids est environ 6 fois plus petit', 'La masse est une propriété de l’objet : elle ne dépend pas du lieu. Le poids P = m × g dépend de g : il est 6 fois plus petit.'),
+      F('sa masse et son poids sont tous deux environ 6 fois plus petits', 'La masse ne change pas : c’est la quantité de matière de l’astronaute, la même partout.'),
+      F('sa masse est environ 6 fois plus petite, son poids est inchangé', 'C’est l’inverse de la réalité : la masse ne change pas, le poids change.'),
+      F('sa masse et son poids sont inchangés', 'Le poids P = m × g dépend de g, qui est plus petit sur la Lune.'),
+    ] },
+  { id: 'frc-poids-proportionnel', domaine: 'Forces et principe d’inertie', titre: 'Poids et masse accrochée',
+    enonce: 'Au même endroit, on accroche successivement une masse de 200 g puis une masse de 400 g au même dynamomètre.', q: 'Le poids de la masse de 400 g est…', options: [
+      V('2 fois plus grand que celui de la masse de 200 g', 'P = m × g : à g constant, le poids est proportionnel à la masse. Masse × 2, poids × 2.'),
+      F('4 fois plus grand que celui de la masse de 200 g', 'Ce serait vrai si le poids variait comme le carré de la masse. Ici P = m × g : proportionnalité simple.'),
+      F('identique à celui de la masse de 200 g, puisque g est le même', 'g est le même, mais la masse est différente : P = m × g change avec m.'),
+      F('2 fois plus petit que celui de la masse de 200 g', 'Une masse plus grande a un poids plus grand, pas plus petit.'),
+    ] },
+  { id: 'frc-actions-reciproques', domaine: 'Forces et principe d’inertie', titre: 'Deux patineurs face à face',
+    enonce: 'Sur la glace, le patineur A (80 kg) pousse le patineur B (50 kg). Les deux patineurs partent en glissant, en sens opposés.', q: 'Comparons la force exercée par A sur B et la force exercée par B sur A :', options: [
+      V('elles ont la même intensité et des sens opposés', 'Principe des actions réciproques : si A agit sur B, B agit sur A avec une force de même intensité, de même direction et de sens opposé.'),
+      F('la force de A sur B est plus grande, car c’est A qui pousse', 'Celui qui « pousse » ne fait pas une force plus grande : les deux forces sont toujours égales en intensité.'),
+      F('B n’exerce aucune force sur A, car B ne fait rien', 'B subit la poussée de A, et A subit en retour une force de B. Si B n’exerçait rien sur A, A ne reculerait pas.'),
+      F('elles ont la même intensité et le même sens', 'Les deux forces sont de sens opposés : les patineurs partent chacun de leur côté.'),
+    ] },
+  { id: 'frc-objet-immobile', domaine: 'Forces et principe d’inertie', titre: 'Un livre sur une table',
+    enonce: 'Un livre est posé, immobile, sur une table horizontale.', q: 'Que peut-on dire des forces qui s’exercent sur le livre ?', options: [
+      V('le poids (vers le bas) et la réaction de la table (vers le haut) se compensent', 'Le livre est immobile : d’après le principe d’inertie, les forces qui s’exercent sur lui se compensent. La table pousse le livre vers le haut aussi fort que le poids le tire vers le bas.'),
+      F('aucune force ne s’exerce sur le livre, puisqu’il ne bouge pas', 'Le poids s’exerce toujours. Un objet immobile n’est pas un objet « sans force » : c’est un objet dont les forces se compensent.'),
+      F('seul le poids s’exerce : la table ne fait que « soutenir » le livre', 'Si seul le poids s’exerçait, le livre tomberait. La table exerce une vraie force, vers le haut.'),
+      F('le poids est plus grand que la réaction de la table, car le livre appuie sur elle', 'Si le poids était plus grand, le livre s’enfoncerait dans la table : il serait mis en mouvement. Les deux forces ont la même intensité.'),
+    ] },
+  { id: 'frc-vitesse-constante', domaine: 'Forces et principe d’inertie', titre: 'Une voiture à vitesse constante',
+    enonce: 'Sur une route droite et horizontale, une voiture roule à 90 km·h⁻¹, sans jamais changer de vitesse.', q: 'Que peut-on dire des forces qui s’exercent sur la voiture ?', options: [
+      V('elles se compensent : la force motrice vers l’avant est égale aux frottements vers l’arrière', 'Mouvement rectiligne et uniforme : d’après le principe d’inertie, les forces se compensent. La voiture n’accélère pas, elle ne ralentit pas.'),
+      F('la force motrice est plus grande que les frottements, sinon la voiture ne pourrait pas avancer', 'Une force motrice plus grande ferait accélérer la voiture. Pour garder la même vitesse, il suffit de compenser les frottements.'),
+      F('plus aucune force ne s’exerce : la voiture avance « sur sa lancée »', 'Sans force motrice, les frottements ralentiraient la voiture jusqu’à l’arrêt.'),
+      F('seul le poids s’exerce sur la voiture', 'Le sol exerce aussi une réaction et des frottements, et le moteur une force motrice. Le poids n’est jamais seul.'),
+    ] },
+  { id: 'frc-cycliste-accelere', domaine: 'Forces et principe d’inertie', titre: 'Un cycliste qui accélère',
+    enonce: 'Un cycliste roule en ligne droite à vitesse constante. Il pédale plus fort : sa vitesse augmente.', q: 'Pendant qu’il accélère, les forces horizontales sur le cycliste…', options: [
+      V('ne se compensent pas : la force motrice est plus grande que les frottements', 'La vitesse change : d’après le principe d’inertie, les forces ne se compensent pas. Ici la force motrice l’emporte sur les frottements.'),
+      F('se compensent toujours, comme quand il roulait à vitesse constante', 'Si elles se compensaient, sa vitesse ne changerait pas.'),
+      F('se réduisent aux seuls frottements, qui le poussent vers l’avant', 'Les frottements s’opposent au mouvement : ils ne peuvent pas le faire accélérer.'),
+      F('sont nulles, car il avance', 'Une vitesse qui augmente est la preuve qu’une force non compensée s’exerce.'),
+    ] },
+  { id: 'frc-chute-sans-air', domaine: 'Forces et principe d’inertie', titre: 'Plume et bille dans le vide',
+    enonce: 'Dans une grande cloche où l’on a fait le vide (il n’y a plus d’air), on lâche en même temps une plume et une bille de plomb, de la même hauteur.', q: 'Que se passe-t-il ?', options: [
+      V('elles arrivent au fond en même temps', 'Sans air, il n’y a ni frottements ni poussée de l’air : tous les objets tombent de la même façon, quelle que soit leur masse.'),
+      F('la bille arrive d’abord, car elle est plus lourde', 'La bille a un poids plus grand, mais elle est aussi plus difficile à mettre en mouvement : les deux effets se compensent.'),
+      F('la plume arrive d’abord, car elle est plus légère', 'Sans air, la plume n’est pas freinée : elle tombe exactement comme la bille.'),
+      F('aucune ne tombe, car il n’y a plus d’air pour les porter', 'L’air ne « porte » pas les objets : le poids s’exerce même sans air.'),
+    ] },
+  { id: 'frc-iss-flotte', domaine: 'Forces et principe d’inertie', titre: 'Pourquoi les astronautes flottent',
+    enonce: 'La Station spatiale internationale (ISS) orbite à environ 400 km d’altitude. À cette altitude, l’attraction de la Terre vaut encore environ 90 % de sa valeur au sol.', q: 'Pourquoi les astronautes « flottent »-ils dans la station ?', options: [
+      V('ils sont en chute libre autour de la Terre, comme la station : ils tombent en même temps qu’elle', 'Les astronautes et la station subissent la même attraction de la Terre et tombent ensemble : ils ne s’appuient plus sur rien, d’où l’impression d’apesanteur.'),
+      F('à cette altitude, il n’y a plus de pesanteur du tout', 'L’attraction de la Terre vaut encore environ 90 % de sa valeur au sol : c’est elle qui maintient la station en orbite.'),
+      F('ils sont trop loin de la Terre pour être attirés par elle', '400 km, c’est petit devant le rayon de la Terre (6 400 km) : l’attraction est presque aussi forte qu’au sol.'),
+      F('l’absence d’air dans l’espace supprime leur poids', 'L’air n’a rien à voir avec le poids : celui-ci vient de l’attraction de la Terre.'),
+    ] },
+  { id: 'frc-echelle-vecteur', domaine: 'Forces et principe d’inertie', titre: 'Lire l’échelle d’un vecteur force',
+    enonce: 'Sur un schéma, l’échelle des forces est : 1 cm représente 5 N. Le vecteur qui représente le poids d’un objet mesure 4 cm.', q: 'L’intensité du poids de cet objet est…', options: [
+      V('20 N', '4 cm × 5 N par cm = 20 N : on multiplie la longueur par la valeur de l’échelle.'),
+      F('4 N', 'C’est la longueur en cm : il faut la convertir avec l’échelle (1 cm ↔ 5 N).'),
+      F('0,8 N', 'On a divisé 4 par 5 au lieu de multiplier : 1 cm vaut 5 N, donc 4 cm valent 4 fois plus.'),
+    ] },
+  { id: 'frc-glissement-arret', domaine: 'Forces et principe d’inertie', titre: 'Une caisse qui s’arrête',
+    enonce: 'Une caisse lancée sur un sol horizontal glisse, puis finit par s’arrêter.', q: 'Pourquoi la caisse s’arrête-t-elle ?', options: [
+      V('les frottements du sol, de sens opposé au mouvement, la ralentissent jusqu’à l’arrêt', 'Une force non compensée (les frottements) s’oppose au mouvement : la vitesse diminue jusqu’à zéro. Sans frottements, la caisse garderait sa vitesse.'),
+      F('plus aucune force ne s’exerce sur elle : un objet sans force s’arrête', 'C’est l’inverse : sans force, ou si les forces se compensent, la vitesse resterait constante. C’est justement une force qui arrête la caisse.'),
+      F('son poids diminue peu à peu', 'Le poids de la caisse ne change pas pendant qu’elle glisse.'),
+      F('elle a « épuisé » la force de son lancement', 'Une force n’est pas une réserve qui s’épuise : le lancement est terminé, et seule la force de frottement agit sur le mouvement ensuite.'),
+    ] },
+  { id: 'frc-direction-poids', domaine: 'Forces et principe d’inertie', titre: 'Le poids sur un plan incliné',
+    enonce: 'Une caisse est posée sur une pente (plan incliné). On cherche la direction de son poids.', q: 'La direction du poids de la caisse est…', options: [
+      V('verticale, vers le bas, comme partout', 'Le poids est dû à l’attraction de la Terre : il est toujours vertical, dirigé vers le bas, même sur une pente.'),
+      F('parallèle à la pente, vers le bas de la pente', 'La caisse glisse parallèlement à la pente, mais son poids reste vertical.'),
+      F('perpendiculaire à la pente', 'C’est la direction de la réaction du support, pas celle du poids.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';
