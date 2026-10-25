@@ -71,7 +71,7 @@ import { SimulationAtelierRealiser } from "./simulations/AtelierRealiser";
 import { SimulationAtelierAnalyser } from "./simulations/AtelierAnalyser";
 import { SimulationAtelierValider } from "./simulations/AtelierValider";
 import { SimulationIncertitudeType } from "./simulations/IncertitudeType";
-import { SimulationEntrainement } from "./simulations/Entrainement";
+import { SimulationEntrainement, SimulationChapitre } from "./simulations/Entrainement";
 import { JeuxMenu } from "./simulations/JeuxEscape";
 import { SimulationCompte } from "./simulations/Compte";
 import { ToastRecompense } from "./ToastRecompense";
@@ -227,6 +227,8 @@ const SIMULATIONS = [
   // Mini escape game « Mission Aqua » (chapitre Transport des fluides) : hors menu, ?sim=80
   { id:80, label:"Mission Aqua (escape game)", niveau:"COMPTE", icon:"💧", color:"#0b2540", component: SimulationEscapeAqua },
   // Histoire à choix « Une journée au labo » (BTS, d'après le CCF4 : Vinnapas → Orgal) : hors menu, ?sim=81
+  // Page d'accueil d'un chapitre (simulations + exercices par compétence) : ?sim=82&chap=<id d'un chapitre de chapitres.js>
+  { id:82, label:"Page d'un chapitre", niveau:"COMPTE", icon:"📚", color:"#e11d48", component: SimulationChapitre },
   { id:81, label:"Une journée au labo (histoire à choix, BTS)", niveau:"COMPTE", icon:"🧪", color:"#0f766e", component: SimulationHistoireLabo },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; });
@@ -255,7 +257,7 @@ function construireMenus() {
       const sims = SIMULATIONS.filter(s => s.niveau === "COMP").sort((a, b) => ORDRE_COMP.indexOf(a.id) - ORDRE_COMP.indexOf(b.id)).map(fiche);
       return { ...m, groupes: [{ sims }] };
     }
-    const groupes = chapitresDuNiveau(m.key).map(c => ({ label: c.label, sims: c.sims.map(id => SIMULATIONS.find(s => s.id === id)).filter(Boolean).map(fiche) }));
+    const groupes = chapitresDuNiveau(m.key).map(c => ({ label: c.label, chap: c.id, sims: c.sims.map(id => SIMULATIONS.find(s => s.id === id)).filter(Boolean).map(fiche) }));
     return { ...m, groupes };
   });
 }
@@ -334,6 +336,7 @@ export default function App() {
     try {
       const u = new URL(window.location.href);
       if (ex) u.searchParams.set('ex', ex); else u.searchParams.delete('ex');
+      if (id !== 82) u.searchParams.delete('chap');
       if (duDevoir) u.searchParams.set('devoir', '1'); else u.searchParams.delete('devoir');
       window.history.replaceState(null, '', u.toString());
     } catch { /* adresse non modifiable */ }
@@ -393,7 +396,7 @@ export default function App() {
                 {idAffiche === 39 ? (estEleve(sessionSb) ? 'Mon profil' : sessionSb?.profil ? 'Mon compte' : 'Se connecter') : active.label}
               </span>
             </h1>
-            {estProf(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81) && (
+            {estProf(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 82) && (
               <button data-donner-devoir onClick={() => {
                 try { window.sessionStorage.setItem('devoir-preset', JSON.stringify({ titre: active.label, cles: [`sim:${activeId}`], eleves: [] })); } catch { /* sans mémorisation, le formulaire s'ouvre vide */ }
                 naviguer(40);

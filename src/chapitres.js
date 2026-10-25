@@ -56,3 +56,10 @@ export const simsDe = chapitres => [...new Set(chapitres.flatMap(c => c.sims))];
 // Chapitres qui contiennent une simulation / traitent un thème d'exercices (pour « situer » un élément)
 export const chapitresDeSim = id => CHAPITRES.filter(c => c.sims.includes(id));
 export const chapitresDuDomaine = d => CHAPITRES.filter(c => c.domaines.includes(d));
+
+// Page d'accueil d'un chapitre (simulation 82, cachée du menu) : l'identifiant du chapitre voyage dans l'adresse (?chap=…)
+export const ID_PAGE_CHAPITRE = 82;
+export function allerChapitre(naviguer, id) {
+  try { const u = new URL(window.location.href); u.searchParams.set('chap', id); window.history.replaceState(null, '', u.toString()); } catch { /* adresse non modifiable */ }
+  naviguer(ID_PAGE_CHAPITRE);
+}
