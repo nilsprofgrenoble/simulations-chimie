@@ -377,6 +377,37 @@ export const PLAUSIBLES = [
       F('La solubilité augmente quand on refroidit', 'Pour le KNO₃ c’est l’inverse (110 g → 32 g) : c’est pour cela que des cristaux apparaissent.'),
       F('Il faut ajouter la masse d’eau à celle du soluté', 'L’eau ne cristallise pas.'),
     ] }),
+  // ── Forces et principe d’inertie (2de) ──
+  P({ id: 'frc-poids-pomme', domaine: 'Forces et principe d’inertie', niveau: 1, titre: 'Poids d’une pomme', plausible: false,
+    enonce: 'Un élève calcule le poids d’une pomme de masse m = 150 g avec P = m × g, où g = 9,8 N·kg⁻¹. Il trouve P = 1 470 N.',
+    reperes: [['Poids d’un élève de 60 kg', '≈ 600 N'], ['Poids d’une tablette de chocolat de 100 g', '≈ 1 N'], ['Dynamomètre de classe', 'gradué de 0 à 10 N']],
+    ver: '1 470 N, c’est plus que le poids de deux adultes ! Une pomme de 150 g pèse environ 1,5 N, comme une tablette de chocolat et demie.',
+    q2: 'Quelle erreur explique le mieux ce résultat ?',
+    options: [
+      V('la masse est restée en grammes (150) au lieu d’être convertie en kilogrammes (0,150)', '150 × 9,8 = 1 470 : c’est bien le résultat de l’élève. Avec m = 0,150 kg, on trouve P ≈ 1,5 N.'),
+      F('l’élève a divisé la masse par g au lieu de la multiplier', 'On trouverait 0,15 / 9,8 ≈ 0,015 : un résultat minuscule, pas gigantesque.'),
+      F('l’élève a utilisé la valeur de g de la Lune', 'La valeur de g sur la Lune est plus petite : le résultat serait plus petit, pas des centaines de fois trop grand.'),
+    ] }),
+  P({ id: 'frc-poids-rover', domaine: 'Forces et principe d’inertie', niveau: 2, titre: 'Un robot sur la Lune', plausible: true,
+    enonce: 'Un petit robot d’exploration a une masse de 900 kg. Sur la Lune, où g = 1,6 N·kg⁻¹, un élève calcule son poids : P = 900 × 1,6 = 1,4×10³ N.',
+    reperes: [['Intensité de la pesanteur sur Terre', 'g = 9,8 N·kg⁻¹'], ['Poids de ce robot sur Terre', '≈ 8 800 N'], ['La pesanteur sur la Lune', 'environ 6 fois plus petite que sur Terre']],
+    ver: 'Le poids sur la Lune doit être environ 6 fois plus petit que sur Terre : 8 800 / 6 ≈ 1 470 N. Le résultat de l’élève (1 440 N) est cohérent.',
+    q2: 'Quelle justification est correcte ?',
+    options: [
+      V('le poids sur la Lune est bien environ 6 fois plus petit que sur Terre (1 440 N contre 8 800 N)', 'Le rapport des poids est le rapport des valeurs de g : 9,8 / 1,6 ≈ 6.'),
+      F('le poids ne dépend pas du lieu : il devrait valoir 8 800 N partout', 'C’est la masse qui ne dépend pas du lieu. Le poids P = m × g dépend de g.'),
+      F('le poids devrait être plus grand sur la Lune, car la Lune est plus petite que la Terre', 'Une pesanteur plus faible donne un poids plus faible.'),
+    ] }),
+  P({ id: 'frc-reaction-sol', domaine: 'Forces et principe d’inertie', niveau: 1, titre: 'Réaction du sol sous un élève', plausible: false,
+    enonce: 'Un élève de masse 50 kg se tient debout, immobile, sur le sol. Pour trouver la réaction du sol sur l’élève, un autre élève calcule 50 / 9,8 et trouve R = 5,1 N.',
+    reperes: [['Poids d’un élève de 50 kg', '≈ 490 N'], ['Un objet immobile', 'les forces qui s’exercent sur lui se compensent'], ['Poids d’une tablette de chocolat de 100 g', '≈ 1 N']],
+    ver: 'L’élève est immobile : la réaction du sol compense son poids. Elle doit valoir environ 490 N, pas 5,1 N, qui est le poids d’un petit objet de 500 g.',
+    q2: 'Quelle erreur explique le mieux ce résultat ?',
+    options: [
+      V('il a divisé la masse par g au lieu de la multiplier', 'La réaction est égale au poids : R = P = m × g = 50 × 9,8 ≈ 490 N.'),
+      F('il a utilisé la valeur de g de la Lune (1,6 N·kg⁻¹)', 'On trouverait 50 × 1,6 = 80 N : trop petit, mais pas 5,1 N.'),
+      F('il a converti la masse en grammes', '50 kg = 50 000 g : on trouverait un résultat beaucoup plus grand, pas plus petit.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────
