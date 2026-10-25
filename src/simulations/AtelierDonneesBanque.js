@@ -849,6 +849,76 @@ export const ENONCES = [
         manque: null, solution: { txt: 'Q = Z × e', val: Z * 1.6e-19, u: 'C' } };
     },
   },
+  {
+    id: 'dissol2', domaine: 'Cohésion et solubilité', titre: 'Dissoudre un soluté : quantité de matière et concentration', noms: ['Concentration en quantité de matière', 'Masse de soluté à peser'],
+    gen: () => { const s = tire([['chlorure de sodium', 58.5], ['glucose', 180], ['saccharose', 342], ['sulfate de cuivre anhydre', 159.6]]);
+      return { nom: s[0], M: s[1], m: tire([2, 5, 10, 20]), Vf: tire([100, 250, 500]), c: tire([0.05, 0.1, 0.2]), Ve: tire([40, 60, 80]), T: tire([18, 20, 25]) }; },
+    build: (p, q) => {
+      const tokens = { M: tok(`${nb(p.M)} g·mol⁻¹`, 'Masse molaire du ' + p.nom, p.M, 'g·mol⁻¹'), T: tok(`${p.T} °C`, 'Température de la solution', p.T, '°C'), Ve: tok(`${p.Ve} mL`, 'Volume d’eau versé pour dissoudre', p.Ve / 1000, 'L') };
+      if (q === 0) {
+        tokens.m = tok(`${p.m} g`, 'Masse de soluté pesée', p.m, 'g');
+        tokens.Vf = tok(`${p.Vf} mL`, 'Volume de la solution (fiole jaugée)', p.Vf / 1000, 'L');
+        return { tokens, derivees: [{ id: 'n', nom: 'Quantité de matière n de soluté', expr: 'n = m / M', val: p.m / p.M, u: 'mol' }],
+          texte: ['On dissout ', T('m'), ' de ' + p.nom + ' (', T('M'), ') dans environ ', T('Ve'), ' d’eau, puis on complète à ', T('Vf'), ' avec de l’eau distillée dans une fiole jaugée. La température de la solution est de ', T('T'), '. Quelle est la concentration en quantité de matière du soluté dans la solution (en mol·L⁻¹) ?'],
+          utiles: ['m', 'M', 'Vf'],
+          raisons: { Ve: 'C’est le volume d’eau versé au début : la solution finale a le volume de la fiole jaugée.', T: 'La température n’est pas une donnée de la formule c = n / V.' },
+          cherche: { bonne: 'La concentration c du soluté (en mol·L⁻¹)', faux: ['La quantité de matière n de soluté (en mol)', 'La concentration en masse t du soluté (en g·L⁻¹)', 'La masse molaire du soluté (en g·mol⁻¹)'] },
+          manque: null, solution: { txt: 'c = n / V avec n = m / M (V converti en L)', val: p.m / p.M / (p.Vf / 1000), u: 'mol·L⁻¹' } };
+      }
+      tokens.c = tok(`${nb(p.c, 2)} mol·L⁻¹`, 'Concentration souhaitée', p.c, 'mol·L⁻¹');
+      tokens.Vf = tok(`${p.Vf} mL`, 'Volume de solution à préparer', p.Vf / 1000, 'L');
+      return { tokens, derivees: [{ id: 'n', nom: 'Quantité de matière n de soluté à dissoudre', expr: 'n = c × V', val: p.c * p.Vf / 1000, u: 'mol' }],
+        texte: ['On veut préparer une solution de ' + p.nom + ' de concentration ', T('c'), ' dans une fiole jaugée de ', T('Vf'), '. On dissout d’abord le soluté dans environ ', T('Ve'), ' d’eau. Donnée : ', T('M'), '. Quelle masse de soluté faut-il peser (en g) ? La solution est à ', T('T'), '.'],
+        utiles: ['c', 'Vf', 'M'],
+        raisons: { Ve: 'C’est le volume d’eau versé au début, pas le volume de la solution.', T: 'La température ne joue aucun rôle dans le calcul de la masse à peser.' },
+        cherche: { bonne: 'La masse m de soluté à peser (en g)', faux: ['La quantité de matière n de soluté (en mol)', 'La concentration en masse t (en g·L⁻¹)', 'Le volume d’eau à verser (en mL)'] },
+        manque: null, solution: { txt: 'm = n × M avec n = c × V (V converti en L)', val: p.c * (p.Vf / 1000) * p.M, u: 'g' } };
+    },
+  },
+  {
+    id: 'ener2', domaine: 'Énergie électrique', titre: 'Énergie et effet Joule', noms: ['Énergie consommée', 'Puissance dissipée par effet Joule'],
+    gen: () => ({ P: tire([800, 1500, 2000]), dmin: tire([15, 30, 45, 90]), prix: 0.2, R: tire([1.5, 2.2, 4.7]), I: tire([8, 20, 50]), L: tire([2, 5, 10]) }),
+    build: (p, q) => {
+      if (q === 0) {
+        const tokens = { P: tok(`${p.P} W`, 'Puissance de l’appareil', p.P / 1000, 'kW'), d: tok(`${p.dmin} min`, 'Durée de fonctionnement', p.dmin / 60, 'h'), prix: tok(`${nb(p.prix, 2)} € par kWh`, 'Prix de l’électricité', p.prix, '€·kWh⁻¹') };
+        return { tokens, derivees: [],
+          texte: ['Un four électrique de puissance ', T('P'), ' fonctionne pendant ', T('d'), '. L’électricité coûte ', T('prix'), '. Quelle énergie électrique a-t-il consommée (en kWh) ?'],
+          utiles: ['P', 'd'],
+          raisons: { prix: 'Le prix servirait à calculer le coût de l’énergie, pas l’énergie elle-même.' },
+          cherche: { bonne: 'L’énergie électrique E consommée (en kWh)', faux: ['La puissance P du four (en kW)', 'Le coût de l’énergie consommée (en €)', 'L’intensité du courant dans le four (en A)'] },
+          manque: null, solution: { txt: 'E = P × Δt (P en kW, Δt en h)', val: p.P / 1000 * p.dmin / 60, u: 'kWh' } };
+      }
+      const tokens = { R: tok(`${nb(p.R, 1)} kΩ`, 'Résistance du résistor', p.R * 1000, 'Ω'), I: tok(`${p.I} mA`, 'Intensité du courant', p.I / 1000, 'A'), L: tok(`${p.L} cm`, 'Longueur du résistor', p.L / 100, 'm') };
+      return { tokens, derivees: [],
+        texte: ['Un résistor de résistance ', T('R'), ' et de longueur ', T('L'), ' est traversé par un courant d’intensité ', T('I'), '. Quelle puissance dissipe-t-il par effet Joule (en W) ?'],
+        utiles: ['R', 'I'],
+        raisons: { L: 'La longueur du résistor est une longueur : elle n’intervient pas dans P = R × I².' },
+        cherche: { bonne: 'La puissance P dissipée par effet Joule (en W)', faux: ['La tension U aux bornes du résistor (en V)', 'L’énergie dissipée en une heure (en kWh)', 'La résistance du résistor (en Ω)'] },
+        manque: null, solution: { txt: 'P = R × I² (R en Ω, I en A)', val: p.R * 1000 * Math.pow(p.I / 1000, 2), u: 'W' } };
+    },
+  },
+  {
+    id: 'meca2', domaine: 'Mécanique', titre: 'Énergie cinétique et travail', noms: ['Énergie cinétique', 'Travail d’une force'],
+    gen: () => ({ mt: tire([0.8, 1.2, 1.5]), v: tire([36, 54, 72, 90]), F: tire([0.5, 1.2, 2]), d: tire([50, 120, 300]), a: tire([0, 30, 60]), L: tire([2, 4]) }),
+    build: (p, q) => {
+      if (q === 0) {
+        const tokens = { m: tok(`${nb(p.mt)} t`, 'Masse du véhicule', p.mt * 1000, 'kg'), v: tok(`${p.v} km·h⁻¹`, 'Vitesse du véhicule', p.v / 3.6, 'm·s⁻¹'), L: tok(`${p.L} m`, 'Longueur du véhicule', p.L, 'm') };
+        return { tokens, derivees: [],
+          texte: ['Un véhicule de ', T('m'), ' et de ', T('L'), ' de long roule à ', T('v'), '. Quelle est son énergie cinétique (en J) ?'],
+          utiles: ['m', 'v'],
+          raisons: { L: 'La longueur du véhicule n’intervient pas dans Ec = ½ m v².' },
+          cherche: { bonne: 'L’énergie cinétique Ec du véhicule (en J)', faux: ['La quantité de mouvement du véhicule', 'Le travail de la force motrice (en J)', 'L’énergie potentielle de pesanteur du véhicule (en J)'] },
+          manque: null, solution: { txt: 'Ec = ½ × m × v² (m en kg, v en m·s⁻¹)', val: 0.5 * p.mt * 1000 * Math.pow(p.v / 3.6, 2), u: 'J' } };
+      }
+      const tokens = { F: tok(`${nb(p.F)} kN`, 'Valeur de la force', p.F * 1000, 'N'), d: tok(`${p.d} cm`, 'Distance parcourue', p.d / 100, 'm'), a: tok(`${p.a}°`, 'Angle entre la force et le déplacement', p.a, '°'), mt: tok(`${nb(p.mt)} t`, 'Masse de l’objet déplacé', p.mt * 1000, 'kg') };
+      return { tokens, derivees: [],
+        texte: ['Une force de valeur ', T('F'), ' agit sur un objet de ', T('mt'), ' qui se déplace de ', T('d'), '. L’angle entre la force et le déplacement est de ', T('a'), '. Quel est le travail de la force (en J) ?'],
+        utiles: ['F', 'd', 'a'],
+        raisons: { mt: 'La masse de l’objet n’intervient pas dans W = F × d × cos α.' },
+        cherche: { bonne: 'Le travail W de la force (en J)', faux: ['L’énergie cinétique de l’objet (en J)', 'La puissance de la force (en W)', 'L’énergie potentielle de pesanteur (en J)'] },
+        manque: null, solution: { txt: 'W = F × d × cos α (F en N, d en m)', val: p.F * 1000 * p.d / 100 * Math.cos(p.a * Math.PI / 180), u: 'J' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
@@ -881,6 +951,9 @@ const SYMBOLES = {
   indice2: { c: 'c', ep: 'e', v: 'v', n: 'n' },
   snell2: { n1: 'n₁', i1: 'i₁', lam: 'λ', n2: 'n₂', i2: 'i₂' },
   noyau2: { A: 'A', Z: 'Z', e: 'e', mp: 'm_nucléon' },
+  dissol2: { M: 'M', T: '', Ve: 'V_eau', m: 'm', Vf: 'V', c: 'c' },
+  ener2: { P: 'P', d: 'Δt', prix: 'prix', R: 'R', I: 'I', L: 'ℓ' },
+  meca2: { m: 'm', v: 'v', L: 'ℓ', F: 'F', d: 'd', a: 'α', mt: 'm' },
   distil: { V: 'V', x: 'x', y: 'y', Vd: 'V_distillat', Te: 'θ_éb', P: 'P' },
   cristal: { me: 'm_eau', mb: 'm_bécher', s60: 's₆₀', s20: 's₂₀', dur: 'Δt' },
 };
