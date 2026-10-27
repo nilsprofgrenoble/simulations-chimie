@@ -24,15 +24,15 @@ export function InstallerAppli() {
         : ios
           ? <ol style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: TEXTE2, lineHeight: 1.6 }}>
               <li>Ouvre ce site avec <b>Safari</b>.</li>
-              <li>Touche le bouton <b>Partager</b> (un carré avec une flèche vers le haut).</li>
-              <li>Touche <b>« Sur l’écran d’accueil »</b>, puis <b>Ajouter</b>.</li>
+              <li>Clique sur le bouton <b>Partager</b> (un carré avec une flèche vers le haut).</li>
+              <li>Clique sur <b>« Sur l’écran d’accueil »</b>, puis sur <b>Ajouter</b>.</li>
             </ol>
           : <ol style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: TEXTE2, lineHeight: 1.6 }}>
-              <li>Touche les <b>3 points ⋮</b> du navigateur (en haut à droite).</li>
-              <li>Touche <b>« Installer »</b> (le texte exact change selon le téléphone : « Installer l’application », « Installer et créer un raccourci » ou « Ajouter à l’écran d’accueil »).</li>
+              <li>Clique sur les <b>3 points ⋮</b> du navigateur (en haut à droite).</li>
+              <li>Clique sur <b>« Installer »</b> (le texte exact change selon le téléphone : « Installer l’application », « Installer et créer un raccourci » ou « Ajouter à l’écran d’accueil »).</li>
               <li>L’icône « Paillasse » apparaît sur ton écran d’accueil.</li>
             </ol>}
-      <div style={{ fontSize: 12.5, color: TEXTE2 }}>Rien à télécharger : c’est un raccourci vers le site, gratuit.</div>
+      <div style={{ fontSize: 12.5, color: TEXTE2 }}>Pourquoi le faire ? Tu retrouves la Paillasse en un clic, comme une application, pour t’entraîner où tu veux, même avec un réseau faible. Rien à télécharger : c’est un raccourci gratuit vers le site.</div>
     </div>
   );
 }
