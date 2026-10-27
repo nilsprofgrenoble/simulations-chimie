@@ -893,7 +893,7 @@ export const PLAUSIBLES = [
       F('La conservation de la masse ne s’applique pas lors d’un changement d’état de la matière', 'Elle s’applique toujours : vaporiser puis condenser un liquide ne change pas sa masse.'),
     ] }),
   P({ id: 'dist-simple-titre', domaine: 'Distillation', niveau: 2, titre: 'Titre des premières gouttes en distillation simple', plausible: false,
-    enonce: 'Un élève distille à 1 013 hPa, par distillation simple (sans colonne), un mélange eau–éthanol contenant 20 % d’éthanol en masse. Il mesure le titre des toutes premières gouttes de distillat et annonce 94 % d’éthanol en masse (« presque l’azéotrope »).',
+    enonce: 'Un élève distille à 1 013 hPa un mélange eau–éthanol contenant 20 % d’éthanol en masse, avec un montage qu’il décrit comme une distillation simple (sans colonne). Il mesure le titre des toutes premières gouttes de distillat et annonce 94 % d’éthanol en masse (« presque l’azéotrope »).',
     reperes: [['Titre de la vapeur en équilibre avec un liquide à 20 % d’éthanol en masse (1 013 hPa)', 'environ 65 % d’éthanol en masse'], ['Composition de l’azéotrope eau–éthanol (1 013 hPa)', '95,6 % d’éthanol en masse'], ['Distillation simple', 'une seule vaporisation partielle du liquide, donc un seul équilibre liquide–vapeur']],
     ver: 'Sans colonne, les premières gouttes du distillat sont formées par une seule vaporisation partielle : leur titre est celui de la vapeur en équilibre avec le liquide de départ, soit environ 65 % (et il diminue ensuite, car le ballon s’appauvrit en éthanol). Atteindre 94 % demande de nombreux équilibres successifs, donc une colonne efficace.',
     q2: 'Quelle explication est la plus probable ?',
@@ -904,7 +904,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'dist-pression-reduite-ok', domaine: 'Distillation', niveau: 2, titre: 'Eau sous pression réduite', plausible: true,
     enonce: 'Pour distiller sans chauffer trop fort, un élève réduit la pression dans son montage avec une pompe à vide : le manomètre indique 200 hPa. Il mesure alors la température d’ébullition de l’eau et trouve T = 60 °C. Un camarade s’étonne : « L’eau bout à 100 °C, ta mesure est fausse. »',
-    reperes: [['Température d’ébullition de l’eau à 1 013 hPa', '100 °C'], ['… à 474 hPa', '80 °C'], ['… à 74 hPa', '40 °C'], ['Hypothèses', 'eau pure, thermomètre dans la vapeur, pression lue égale à celle du ballon']],
+    reperes: [['Température d’ébullition de l’eau à 1 013 hPa', '100 °C'], ['… à 474 hPa', '80 °C'], ['… à 74 hPa', '40 °C'], ['Hypothèses', 'eau pure, thermomètre dans la vapeur, pression absolue lue égale à celle du ballon']],
     ver: 'La température d’ébullition diminue quand la pression diminue. Les repères donnent 80 °C à 474 hPa et 40 °C à 74 hPa : à 200 hPa, pression comprise entre ces deux valeurs, on attend une température comprise entre 40 °C et 80 °C. La valeur de 60 °C convient (la valeur tabulée à 200 hPa est d’environ 60 °C) : 100 °C n’est la température d’ébullition de l’eau qu’à 1 013 hPa.',
     q2: 'Quel raisonnement est correct ?',
     options: [
@@ -919,7 +919,7 @@ export const PLAUSIBLES = [
     q2: 'Quel raisonnement est correct ?',
     options: [
       V('Cohérent : 55 + 45 = 100 kPa ≈ 101 kPa, et m_toluène / m_eau = (45 × 92) / (55 × 18) ≈ 4,2 en masse', 'La somme des pressions de vapeur saturantes explique la température de 84 °C ; le rapport des masses, qui tient compte des masses molaires, explique la composition du distillat (environ 81 % de toluène).'),
-      F('Cohérent : le toluène se dissout dans l’eau, ce qui abaisse la température d’ébullition du mélange', 'Le toluène n’est pas miscible à l’eau, et un soluté dissous élèverait la température d’ébullition au lieu de l’abaisser. Le verdict est juste, pas l’argument.'),
+      F('Cohérent : le toluène se dissout dans l’eau, ce qui abaisse la température d’ébullition du mélange', 'Le toluène n’est pas miscible à l’eau, et un soluté non volatil dissous élèverait la température d’ébullition au lieu de l’abaisser. Le verdict est juste, pas l’argument.'),
       F('Pas cohérent : l’eau a la plus forte pression partielle (55 kPa contre 45), donc plus d’eau que de toluène en masse', 'Il y a effectivement plus de molécules d’eau (55 contre 45), mais chacune est cinq fois plus légère : 55 × 18 = 990 contre 45 × 92 = 4 140, d’où environ 81 % de toluène en masse.'),
     ] }),
   P({ id: 'crist-buchner-pression', domaine: 'Évaporation et cristallisation', niveau: 1, titre: 'Pression dans la fiole à vide d’un Büchner', plausible: false,
@@ -1200,7 +1200,7 @@ export const COMPATIBLES = [
     expl: '|10,7 − 10,0| = 0,7 %. u_c = √(0,3² + 0,4²) = √0,25 = 0,5 %, donc 2·u_c = 1,0 %. Comme 0,7 ≤ 1,0, la mesure est compatible avec la référence.',
     q4: 'Que peut-on conclure ?',
     options: [
-      V('Compatible : 0,7 % est inférieur à 2·u_c = 1,0 %, avec u_c = √(0,3² + 0,4²) = 0,5 %', 'Deux incertitudes indépendantes se composent en quadrature. L’écart de 0,7 % s’explique par l’incertitude : rien n’indique d’erreur systématique.'),
+      V('Compatible : 0,7 % est inférieur à 2·u_c = 1,0 %, avec u_c = √(0,3² + 0,4²) = 0,5 %', 'Deux incertitudes indépendantes se composent en quadrature. L’écart de 0,7 % s’explique par l’incertitude : rien ne permet de conclure à une erreur systématique.'),
       F('Compatible : u_c = 0,3 + 0,4 = 0,7 %, donc 2·u_c = 1,4 % et l’écart de 0,7 % est inférieur', 'Le verdict est juste, pas le calcul : des incertitudes indépendantes se composent en quadrature (u_c = 0,5 %) et non par addition (0,7 %). Cette addition surestime l’incertitude et pourrait, dans un autre cas, faire conclure à tort à la compatibilité.'),
       F('Pas compatible : l’écart (0,7 %) est supérieur à l’incertitude de lecture seule (0,4 %)', 'On compare à une seule source d’incertitude, sans facteur d’élargissement. Il faut composer les deux incertitudes (u_c = 0,5 %) et comparer à 2·u_c = 1,0 %.'),
     ] },

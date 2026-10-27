@@ -931,7 +931,10 @@ export const ENONCES = [
     id: 'hydrodist', domaine: 'Distillation', titre: 'Hydrodistillation d’une huile essentielle de lavande', noms: ['Rendement d’extraction', 'Volume d’huile essentielle', 'Énergie dépensée par gramme d’huile'],
     gen: () => {
       const mp = tire([20, 25, 30, 40, 50]), eta = tire([0.6, 0.8, 1.0, 1.2, 1.5]);
-      return { mp, mh: Math.round(mp * 10 * eta), Veau: tire([100, 120, 150]), P: tire(mp <= 25 ? [6, 9] : [9, 12]), t: tire([2, 2.5, 3]), T: tire([98, 99]), rho: tire([0.88, 0.89, 0.90]), Vh: tire([15, 20, 25, 30]) };
+      const P = tire(mp <= 25 ? [9, 12] : [12, 15]), t = tire([2, 2.5, 3]), Veau = tire([60, 80, 100]);
+      // énergie électrique disponible (kWh) ; il faut chauffer l’eau de 20 à 100 °C puis en vaporiser Vh, avec ≥ 30 % de pertes
+      const Vh = tire([4, 6, 8, 10, 12].filter(v => Veau * 0.0929 + v * 0.628 <= 0.7 * P * t));
+      return { mp, mh: Math.round(mp * 10 * eta), Veau, P, t, T: tire([98, 99]), rho: tire([0.88, 0.89, 0.90]), Vh };
     },
     build: (p, q) => {
       const tokens = {
@@ -947,7 +950,7 @@ export const ENONCES = [
       const debut = ['Un producteur extrait l’huile essentielle de lavande par hydrodistillation. Il charge l’alambic avec ', T('mp'), ' de fleurs fraîches et ', T('Veau'), ' d’eau, puis chauffe avec une résistance électrique de puissance ', T('P'),
         ' (supposée constante) pendant ', T('t'), '. La vapeur en tête de colonne est à ', T('T'), '. Dans l’essencier, il recueille ', T('mh'), ' d’huile essentielle, de masse volumique ', T('rho'),
         ', en plus de ', T('Vh'), ' d’hydrolat (l’eau aromatique). '];
-      const rEau = 'Le volume d’eau chargé ne change ni la masse ni le volume d’huile recueillie, et il n’entre pas dans le calcul demandé.';
+      const rEau = 'Le volume d’eau chargé n’entre pas dans le calcul demandé : la masse d’huile recueillie est donnée directement, il n’y a pas à la déduire de l’eau chargée.';
       const rT = 'La température de la vapeur explique le procédé (le mélange eau–huile bout sous 100 °C), mais n’entre pas dans le calcul demandé.';
       const rHyd = 'L’hydrolat est la phase aqueuse du distillat : il ne donne pas la quantité d’huile essentielle, qui est comptée à part.';
       const rMp = 'La masse de fleurs sert à comparer l’huile obtenue à la matière végétale, pas à calculer un volume ni une énergie.';
