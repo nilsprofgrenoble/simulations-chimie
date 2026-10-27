@@ -86,7 +86,7 @@ export function SimulationAtelierDonnees() {
   const sb = selBilan(ex, rep.sel);
   const reussi = stages.every(k => chk[k] && okEtape[k]);
   const suivi = useSuivi(`34:${choix.id}.${choix.q}`, reussi);
-  const corriger = (k, vue = false) => { (vue ? suivi.vue : suivi.essai)(); setChk(c => ({ ...c, [k]: true })); };
+  const corriger = (k, vue = false) => { if (vue) suivi.vue(); else suivi.etape(okEtape[k]); setChk(c => ({ ...c, [k]: true })); };
 
   const barre = (k, i) => (
     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>

@@ -112,6 +112,8 @@ export function useSuivi(cle, reussi) {
 
   return {
     essai: useCallback(() => { e.current.essais += 1; e.current.dernier = Date.now(); marquer(); }, [marquer]),
+    // Exercice à plusieurs étapes : 1 essai de base au premier clic, puis +1 par correction fausse (une étape juste ne coûte rien).
+    etape: useCallback(ok => { const s = e.current; if (s.essais === 0) s.essais = 1; if (!ok) s.essais += 1; s.dernier = Date.now(); marquer(); }, [marquer]),
     vue: useCallback(() => { e.current.vues += 1; e.current.dernier = Date.now(); marquer(); }, [marquer]),
   };
 }

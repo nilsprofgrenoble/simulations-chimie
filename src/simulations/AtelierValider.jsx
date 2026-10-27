@@ -136,7 +136,7 @@ export function SimulationAtelierValider({ naviguer }) {
         {aide[e.id] && <div data-aide style={{ fontSize: 13.5, color: '#92400e', background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 6, padding: '4px 8px', marginTop: 6 }}><Pic n="bulb"/>{T(e.aide)}</div>}
         {c && <Verdict ok={r.ok}>{r.ok ? 'Bravo !' : 'Pas encore.'}{!r.ok && r.msg ? <span style={{ fontWeight: 500, color: KIT.txt }}> {T(r.msg)}</span> : null}</Verdict>}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
-          {!(c && r.ok) && <button onClick={() => { suivi.essai(); setChk(x => ({ ...x, [e.id]: true })); }} style={styleBouton(true, '#16a34a')}>✓ Corriger</button>}
+          {!(c && r.ok) && <button onClick={() => { suivi.etape(r.ok); setChk(x => ({ ...x, [e.id]: true })); }} style={styleBouton(true, '#16a34a')}>✓ Corriger</button>}
           {!aide[e.id] && !(c && r.ok) && <button onClick={() => setAide(x => ({ ...x, [e.id]: true }))} style={stylePetitBouton(false)}><Pic n="bulb"/>Coup de pouce</button>}
           {c && !v && <button onClick={() => { suivi.vue(); setVu(x => ({ ...x, [e.id]: true })); }} style={lien}>{r.ok ? 'voir toutes les explications' : 'voir la correction'}</button>}
           {(r.ok || v) && c && k === etp && k < etapes.length - 1 && <button onClick={() => setEtp(x => x + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Étape suivante ▶</button>}
