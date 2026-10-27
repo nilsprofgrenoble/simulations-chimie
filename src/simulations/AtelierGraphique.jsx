@@ -127,7 +127,7 @@ export function SimulationAtelierGraphique() {
         {!enDefi && (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
             <button onClick={() => corriger(q.id)} style={styleBouton(true, '#16a34a')}>✓ Corriger</button>
-            {!bon && <button onClick={() => { corriger(q.id, true); setVu(x => ({ ...x, [q.id]: true })); }}
+            {!(affichee && bon) && <button onClick={() => { corriger(q.id, true); setVu(x => ({ ...x, [q.id]: true })); }}
               style={{ fontSize: 12.5, background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer' }}>voir la correction</button>}
             {q.aide && !indice[q.id] && <button onClick={() => setIndice(x => ({ ...x, [q.id]: true }))} style={stylePetitBouton(false)}><Pic n="bulb"/>Indice</button>}
             {(bon || vu[q.id]) && chk[q.id] && i === etp && i < Q.length - 1 && <button onClick={() => setEtp(e => e + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Question suivante ▶</button>}
