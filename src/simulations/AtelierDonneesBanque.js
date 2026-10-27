@@ -81,8 +81,7 @@ export const ENONCES = [
         raisons: { Pel: 'La puissance de la pompe n’intervient pas dans la relation entre débit, section et vitesse.', Lc: 'La longueur de la conduite compte pour les pertes de charge (frottements), pas pour la vitesse de l’eau.' },
         derivees: [{ id: 'S', nom: 'Section S de la conduite', expr: 'S = π·D² / 4', val: S, u: 'm²' }],
         cherche: { bonne: 'La vitesse moyenne v de l’eau (en m·s⁻¹)', faux: ['Le débit massique de l’eau (en kg·s⁻¹)', 'La perte de charge dans la conduite (en Pa)', 'La puissance hydraulique de la pompe (en W)'] },
-        manque: { bonne: 'La section de la conduite', faux: ['La masse volumique de l’eau', 'La viscosité de l’eau', 'La rugosité de la conduite'],
-          expl: 'La vitesse se déduit de Q = v·S : il faut S, que l’énoncé ne donne pas mais qu’on calcule avec le diamètre.' },
+        manque: null,
         solution: { txt: 'v = Q / S', val: (p.Q / 3600) / S, u: 'm·s⁻¹' } };
       tokens.tdur = tok('1 heure', 'Durée', 3600, 's');
       return { tokens, texte: [...debut, 'Quelle masse d’eau la pompe refoule-t-elle en ', T('tdur'), ' ?'],
@@ -90,7 +89,7 @@ export const ENONCES = [
         raisons: { Pel: 'La puissance de la pompe ne donne pas la masse d’eau déplacée.', D: 'Le diamètre n’intervient pas : le débit est déjà donné.', Lc: 'La longueur de la conduite n’intervient pas dans la masse d’eau refoulée.' },
         derivees: [{ id: 'V', nom: 'Volume V d’eau refoulé', expr: 'V = Q × durée', val: p.Q, u: 'm³' }],
         cherche: { bonne: 'La masse m d’eau refoulée (en kg)', faux: ['Le débit massique de l’eau (en kg·s⁻¹)', 'La vitesse moyenne de l’eau (en m·s⁻¹)', 'Le volume d’eau contenu dans la conduite (en m³)'] },
-        manque: { bonne: 'La masse volumique de l’eau', faux: ['La section de la conduite', 'La viscosité de l’eau', 'Rien ne manque'],
+        manque: { bonne: 'La masse volumique de l’eau', faux: ['La section de la conduite', 'La viscosité de l’eau', 'La pression de refoulement de la pompe'],
           expl: 'Pour passer d’un volume à une masse, il faut la masse volumique : m = ρ·V, avec ρ = 1000 kg·m⁻³ pour l’eau. L’énoncé ne la donne pas.' },
         solution: { txt: 'm = ρ·Q·durée', val: 1000 * p.Q, u: 'kg' } };
     },
@@ -188,7 +187,7 @@ export const ENONCES = [
       };
       const debut = ['Dans un échangeur thermique, de l’eau chaude, de débit massique ', T('qc'), ', entre à ', T('Tce'), ' et ressort à ', T('Tcs'),
         '. De l’eau froide, de débit massique ', T('qf'), ', entre à ', T('Tfe'), '. La capacité thermique massique de l’eau vaut ', T('c'),
-        '. L’échangeur fonctionne en régime permanent et les pertes thermiques vers l’extérieur sont négligées. '];
+        ' (supposée constante sur la plage de température ; l’eau reste liquide, sans changement d’état). L’échangeur fonctionne en régime permanent et les pertes thermiques vers l’extérieur sont négligées. '];
       const dTc = p.Tce - p.Tcs, P = p.qc * 4180 * dTc;
       const derivees = [{ id: 'dTc', nom: 'Variation de température de l’eau chaude', expr: 'ΔT = T_entrée − T_sortie', val: dTc, u: 'K' }];
       if (q === 0) return { tokens, derivees, texte: [...debut, 'Quelle puissance thermique l’eau chaude cède-t-elle ?'], utiles: ['qc', 'Tce', 'Tcs', 'c'],
@@ -216,7 +215,7 @@ export const ENONCES = [
         theta: tok(`${p.theta} °C`, 'Température de la solution', p.theta, '°C'),
       };
       const debut = ['On mesure l’absorbance d’une solution aqueuse de permanganate de potassium à ', T('lam'), ' avec un spectrophotomètre, dans une cuve de largeur ', T('l'),
-        '. On lit A = ', T('A'), '. À cette longueur d’onde, le coefficient d’absorption molaire des ions permanganate vaut ε = ', T('eps'), '. La solution est à ', T('theta'), '. '];
+        '. On lit A = ', T('A'), '. À cette longueur d’onde, le coefficient d’absorption molaire des ions permanganate vaut ε = ', T('eps'), '. La solution est à ', T('theta'), '. La mesure est faite contre un blanc (solvant seul), avec une lumière monochromatique, et seuls les ions permanganate absorbent à cette longueur d’onde. '];
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la concentration en ions permanganate de la solution (en mol·L⁻¹), en supposant la solution assez diluée pour que la loi de Beer-Lambert soit vérifiée ?'], utiles: ['A', 'l', 'eps'],
         raisons: { lam: 'La longueur d’onde est déjà « contenue » dans la valeur de ε donnée pour cette longueur d’onde.', theta: 'La température n’apparaît pas dans la loi de Beer-Lambert (son effet éventuel sur ε est négligé ici).' },
         cherche: { bonne: 'La concentration c en ions permanganate (en mol·L⁻¹)', faux: ['La transmittance T de la solution (en %)', 'La concentration en masse de permanganate (en g·L⁻¹)', 'La quantité de matière de permanganate dans la cuve (en mol)'] },
@@ -224,7 +223,7 @@ export const ENONCES = [
       return { tokens, derivees: [], texte: [...debut, 'Quelle est la transmittance de la solution, c’est-à-dire la proportion de la lumière incidente qui la traverse (en %) ?'], utiles: ['A'],
         raisons: { lam: 'La longueur d’onde n’intervient pas pour passer de l’absorbance à la transmittance.', l: 'La largeur de la cuve est déjà prise en compte dans l’absorbance mesurée.',
           eps: 'ε et ℓ relient l’absorbance à la concentration ; ici on passe directement de A à T.', theta: 'La température n’intervient pas dans la relation entre absorbance et transmittance.' },
-        cherche: { bonne: 'La transmittance T de la solution étudiée (en %)', faux: ['La concentration c en ions permanganate (en mol·L⁻¹)', 'La proportion de lumière absorbée par la solution (en %)', 'L’intensité lumineuse incidente (en W·m⁻²)'] },
+        cherche: { bonne: 'La transmittance T de la solution (en %)', faux: ['La concentration c en ions permanganate (en mol·L⁻¹)', 'La proportion de lumière absorbée par la solution (en %)', 'L’intensité lumineuse incidente (en W·m⁻²)'] },
         manque: null, solution: { txt: 'T = 10^(−A)', val: 100 * 10 ** (-p.A), u: '%' } };
     },
   },
@@ -269,11 +268,11 @@ export const ENONCES = [
         Qp: tok(`${p.Qp} m³·h⁻¹`, 'Débit de soutirage', p.Qp, 'm³·h⁻¹'),
         hc: tok(`${p.hc} m`, 'Consigne de niveau', p.hc, 'm'),
         Kp: tok(`${p.Kp} %·m⁻¹`, 'Gain proportionnel du régulateur', p.Kp, '%·m⁻¹'),
-        Ti: tok(`${p.Ti} h`, 'Temps intégral (réglage de l’action intégrale, désactivée ici)', p.Ti, 'h'),
+        Ti: tok(`${p.Ti} h`, 'Temps intégral (indiqué sur la fiche du régulateur)', p.Ti, 'h'),
       };
       const debut = ['Un réservoir de section ', T('S'), ' est rempli par une pompe dont le débit est proportionnel à la commande Y (100 % ↔ ', T('Qmax'), '). Un soutirage constant de ', T('Qp'),
-        ' vide le réservoir. Le régulateur proportionnel calcule Y = K_p × (consigne − H), où H est le niveau du liquide dans le réservoir, sans commande de base (Y est limitée entre 0 et 100 %), avec K_p = ', T('Kp'), ' ; la consigne est de ', T('hc'), '. L’action intégrale est désactivée : la fiche du régulateur mentionne un temps intégral de ', T('Ti'), ', réglage disponible mais non utilisé ici. Le capteur de niveau et la pompe sont supposés parfaits (sans retard). '];
-      const rS = 'La section règle la vitesse d’évolution du niveau, pas sa valeur en régime permanent.', rTi = 'L’action intégrale est désactivée : le régulateur est proportionnel seul, son temps intégral ne sert pas dans ce calcul.';
+        ' vide le réservoir. Le régulateur proportionnel calcule Y = K_p × (consigne − H), où H est le niveau du liquide dans le réservoir, sans commande de base (Y est limitée entre 0 et 100 %), avec K_p = ', T('Kp'), ' ; la consigne est de ', T('hc'), '. La fiche du régulateur indique un temps intégral de ', T('Ti'), '. Le capteur de niveau et la pompe sont supposés parfaits (sans retard). On admet que le niveau finit par se stabiliser. '];
+      const rS = 'La section règle la vitesse d’évolution du niveau, pas sa valeur en régime permanent.', rTi = 'Le régulateur est proportionnel seul : sa loi Y = K_p × (consigne − H) ne contient pas de temps intégral, ce réglage ne sert pas dans ce calcul.';
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'En régime permanent, quelle commande Y le régulateur doit-il envoyer à la pompe ?'], utiles: ['Qmax', 'Qp'],
         raisons: { S: rS, hc: 'La consigne intervient dans le calcul de l’écart, pas dans la commande nécessaire pour compenser le soutirage.', Kp: 'Le gain relie la commande à l’écart de niveau, mais ne dit pas quelle commande est nécessaire.', Ti: rTi },
         cherche: { bonne: 'La commande Y envoyée à la pompe (en %)', faux: ['Le niveau de liquide en régime permanent (en m)', 'L’écart entre la consigne et le niveau (en m)', 'La durée de vidange du réservoir sans pompe (en h)'] },
@@ -312,18 +311,18 @@ export const ENONCES = [
       };
       const debut = ['Un capteur de température se comporte comme un système du 1er ordre de constante de temps ', T('tau'), '. À l’instant initial, il est à ', T('T0'), ' et on le plonge dans un bain maintenu à ', T('Tf'),
         '. L’afficheur a une résolution de ', T('res'), ' et le capteur a une masse de ', T('m'), '. '];
-      const rRes = 'La résolution de l’afficheur ne change pas la réponse du capteur.', rM = 'La masse est déjà prise en compte dans la constante de temps donnée.';
+      const rRes = 'La résolution de l’afficheur ne change pas la réponse du capteur : elle limite seulement le nombre de chiffres affichés, pas la température réelle.', rM = 'La masse est déjà prise en compte dans la constante de temps donnée.';
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le temps de réponse à 5 % du capteur, c’est-à-dire la durée au bout de laquelle il a atteint 95 % de la variation totale de température ?'], utiles: ['tau'],
         raisons: { T0: 'Un temps de réponse à 5 % ne dépend pas des températures de départ et d’arrivée.', Tf: 'Un temps de réponse à 5 % ne dépend pas des températures de départ et d’arrivée.', res: rRes, m: rM },
         cherche: { bonne: 'Le temps de réponse à 5 % du capteur (en s)', faux: ['La température du capteur au bout d’une durée τ (en °C)', 'La fréquence de coupure du capteur (en Hz)', 'La durée pour atteindre 99 % de la variation (en s)'] },
         manque: null,
-        solution: { txt: 't₅ % ≈ 3 × τ', val: 3 * p.tau, u: 's' } };
+        solution: { txt: `t₅ % = τ·ln 20 ≈ 3 × τ (valeur exacte ${nb(Math.log(20) * p.tau, 3)} s, arrondie à 3τ = ${3 * p.tau} s)`, val: 3 * p.tau, u: 's' } };
       tokens.t = tok(`${p.t} s`, 'Durée écoulée depuis l’immersion', p.t, 's');
       const f = 1 - Math.exp(-p.t / p.tau), dT = p.Tf - p.T0;
-      return { tokens, texte: [...debut, 'Quelle est la température du capteur ', T('t'), ' après l’immersion ?'], utiles: ['tau', 'T0', 'Tf', 't'],
+      return { tokens, texte: [...debut, 'Quelle est la température réelle du capteur ', T('t'), ' après l’immersion ?'], utiles: ['tau', 'T0', 'Tf', 't'],
         derivees: [{ id: 'dT', nom: 'Écart total à parcourir', expr: 'ΔT = T_f − T_0', val: dT, u: '°C' }, { id: 'f', nom: 'Fraction de l’écart atteinte', expr: 'f = 1 − e^(−t/τ)', val: f, u: '' }],
         raisons: { res: rRes, m: rM },
-        cherche: { bonne: 'La température du capteur à l’instant t (en °C)', faux: ['Le temps de réponse à 5 % (en s)', 'La vitesse de variation de la température à l’instant t (en °C·s⁻¹)', 'La durée pour atteindre 99 % de la variation (en s)'] },
+        cherche: { bonne: 'La température réelle du capteur à l’instant t (en °C)', faux: ['Le temps de réponse à 5 % (en s)', 'La vitesse de variation de la température à l’instant t (en °C·s⁻¹)', 'La durée pour atteindre 99 % de la variation (en s)'] },
         manque: null,
         solution: { txt: 'T = T_0 + (T_f − T_0)·(1 − e^(−t/τ))', val: p.T0 + dT * f, u: '°C' } };
     },
@@ -368,7 +367,7 @@ export const ENONCES = [
   // ───────────────────────────── Évaporation et cristallisation
   {
     id: 'cristal', domaine: 'Évaporation et cristallisation', titre: 'Refroidir une solution saturée de nitrate de potassium', noms: ['Masse dissoute à 60 °C', 'Masse de cristaux obtenue'],
-    gen: () => ({ me: tire([150, 200, 250]), s60: 110, s20: 32, dur: tire([30, 45, 60]), mb: tire([80, 120, 150]) }),
+    gen: () => ({ me: tire([100, 150, 200, 250]), s60: tire([108, 110, 112]), s20: tire([31, 32, 33]), dur: tire([30, 45, 60]), mb: tire([80, 120, 150]) }),
     build: (p, q) => {
       const tokens = {
         me: tok(`${p.me} g`, 'Masse d’eau', p.me, 'g'),
@@ -399,7 +398,7 @@ export const ENONCES = [
   // ───────────────────────────── Mesure et incertitudes (TSTL)
   {
     id: 'incertA', domaine: 'Mesure et incertitudes', titre: 'Incertitude d’une série de mesures répétées', noms: ['Incertitude-type de la moyenne', 'Incertitude élargie', 'Borne haute de l’intervalle'],
-    gen: () => { const n = tire([9, 16, 25]), u0 = tire([0.02, 0.03, 0.04]); return { n, s: Math.round(u0 * Math.sqrt(n) * 100) / 100, xm: tire([12.4, 15.2, 18.6, 20.3]), k: 2, res: tire([0.05, 0.1]), dur: tire([10, 15, 20]) }; },
+    gen: () => { const n = tire([9, 16, 25]), u0 = tire([0.03, 0.04, 0.05]); return { n, s: Math.round(u0 * Math.sqrt(n) * 100) / 100, xm: tire([12.4, 15.2, 18.6, 20.3, 22.7, 24.1]), k: 2, res: tire([0.01, 0.02]), dur: tire([10, 15, 20]) }; },
     build: (p, q) => {
       const u = p.s / Math.sqrt(p.n), U = p.k * u;
       const tokens = {
@@ -411,19 +410,21 @@ export const ENONCES = [
         dur: tok(`${p.dur} min`, 'Durée de la série', p.dur, 'min'),
       };
       const debut = ['On répète ', T('n'), ' fois le titrage d’une même solution, dans les mêmes conditions. Le volume équivalent moyen est ', T('xm'), ' et l’écart-type expérimental de la série vaut ', T('s'),
-        '. La burette a une résolution de ', T('res'), ' ; la série a duré ', T('dur'), '. On élargit l’incertitude avec ', T('k'), ', valeur prise par convention : elle donne un niveau de confiance proche de 95 % si les mesures sont indépendantes et suivent une loi normale (hypothèses faites ici). Pour une série courte, le niveau réel est un peu plus faible et un facteur de Student serait plus rigoureux ; on garde néanmoins cette valeur. '];
-      const rRes = 'L’incertitude de la moyenne d’une série ne traduit que la dispersion des mesures répétées (évaluation de type A). La résolution de la burette est une autre source (type B), qu’un bilan complet ajouterait ; elle n’entre pas dans u = s / √n, et l’intervalle calculé ici n’en tient pas compte.';
+        '. La burette (numérique) a une résolution de ', T('res'), ' ; la série a duré ', T('dur'), '. On élargit l’incertitude avec ', T('k'), ', valeur prise par convention : elle donne un niveau de confiance proche de 95 % si les mesures sont indépendantes et suivent une loi normale (hypothèses faites ici). Pour une série courte, le niveau réel est un peu plus faible et un facteur de Student serait plus rigoureux ; on garde néanmoins cette valeur. '];
+      const ur = p.res / Math.sqrt(6), pc = (Math.sqrt(1 + (ur / u) ** 2) - 1) * 100;   // deux lectures de burette, loi rectangulaire : u_res = r / (2√3) par lecture
+      const rRes0 = `La résolution de la burette est une autre source d’incertitude (type B) : pour deux lectures, u_res = r / √6 ≈ ${nb(ur, 3)} mL. Ajoutée en quadrature à u ≈ ${nb(u, 3)} mL, elle ne la modifierait que d’environ ${nb(pc, 1)} % : négligeable devant la dispersion, donc on se limite ici à l’incertitude de type A, u = s / √n.`;
+      const rRes = q === 0 ? rRes0 : q === 1 ? rRes0.replace('on se limite ici à l’incertitude de type A, u = s / √n.', 'on calcule U = k × u avec l’incertitude de type A seule.') : rRes0.replace('on se limite ici à l’incertitude de type A, u = s / √n.', 'l’intervalle x̄ ± U se calcule avec l’incertitude de type A seule.');
       const rDur = 'La durée de la série n’intervient pas dans le calcul de l’incertitude.';
-      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est l’incertitude-type u de la moyenne de la série ?'], utiles: ['s', 'n'],
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est l’incertitude-type de type A, u, de la moyenne de la série ?'], utiles: ['s', 'n'],
         raisons: { xm: 'La valeur de la moyenne ne change pas l’incertitude : elle dépend de la dispersion et du nombre de mesures.', k: 'Le facteur d’élargissement sert pour l’incertitude élargie, pas pour l’incertitude-type.', res: rRes, dur: rDur },
         cherche: { bonne: 'L’incertitude-type u de la moyenne (en mL)', faux: ['L’incertitude élargie U (en mL)', 'L’incertitude relative u / x̄ (sans unité)', 'La variance de la série (en mL²)'] },
         manque: null, solution: { txt: 'u = s / √n', val: u, u: 'mL' } };
-      if (q === 1) return { tokens, texte: [...debut, 'Quelle est l’incertitude élargie U associée à la moyenne de la série ?'], utiles: ['s', 'n', 'k'],
+      if (q === 1) return { tokens, texte: [...debut, 'Quelle est l’incertitude élargie U associée à la moyenne de la série, obtenue à partir de l’incertitude-type de type A ?'], utiles: ['s', 'n', 'k'],
         derivees: [{ id: 'u', nom: 'Incertitude-type de la moyenne', expr: 'u = s / √n', val: u, u: 'mL' }],
         raisons: { xm: 'La moyenne ne sert pas à calculer l’incertitude.', res: rRes, dur: rDur },
         cherche: { bonne: 'L’incertitude élargie U de la moyenne (en mL)', faux: ['L’incertitude-type u de la moyenne (en mL)', 'La borne basse x̄ − U de l’intervalle (en mL)', 'L’incertitude relative U / x̄ (en %)'] },
         manque: null, solution: { txt: 'U = k × u', val: U, u: 'mL' } };
-      return { tokens, texte: [...debut, 'Quelle est la borne haute de l’intervalle x̄ ± U (x̄ : volume moyen de la série ; U : incertitude élargie associée à cette moyenne) ?'], utiles: ['xm', 's', 'n', 'k'],
+      return { tokens, texte: [...debut, 'Quelle est la borne haute de l’intervalle x̄ ± U (x̄ : volume moyen de la série ; U : incertitude élargie associée à cette moyenne, obtenue à partir de l’incertitude-type de type A) ?'], utiles: ['xm', 's', 'n', 'k'],
         derivees: [{ id: 'u', nom: 'Incertitude-type de la moyenne', expr: 'u = s / √n', val: u, u: 'mL' }, { id: 'U', nom: 'Incertitude élargie', expr: 'U = k × u', val: U, u: 'mL' }],
         raisons: { res: rRes, dur: rDur },
         cherche: { bonne: 'La plus grande valeur de l’intervalle centré sur x̄ (en mL)', faux: ['La plus petite valeur de l’intervalle centré sur x̄ (en mL)', 'La demi-largeur de l’intervalle centré sur x̄ (en mL)', 'La largeur totale de l’intervalle centré sur x̄ (en mL)'] },
@@ -433,8 +434,11 @@ export const ENONCES = [
   {
     id: 'compatS', domaine: 'Mesure et incertitudes', titre: 'Une mesure et sa valeur de référence', noms: ['Écart à la référence', 'Compatibilité avec la référence'],
     gen: () => {
-      const cref = tire([0.05, 0.1, 0.2]), d = tire([0.002, 0.003, 0.004, 0.006]), sg_ = tire([-1, 1]);
-      return { cref, x: Math.round((cref + sg_ * d) * 1000) / 1000, d, u: tire([0.001, 0.002]), n: tire([6, 8, 10]), theta: tire([20, 22, 25]) };
+      const cref = tire([0.05, 0.1, 0.2]), sg_ = tire([-1, 1]), compat = Math.random() < 0.5;   // un tirage sur deux compatible ; jamais proche du seuil 2
+      for (;;) {
+        const d = tire([0.001, 0.002, 0.003, 0.004, 0.006]), u = tire([0.001, 0.002, 0.003]), r = d / u;
+        if (compat ? r <= 1.51 : r >= 2.5) return { cref, x: Math.round((cref + sg_ * d) * 1000) / 1000, d, u, n: tire([20, 25, 30, 40]), theta: tire([20, 22, 25]) };
+      }
     },
     build: (p, q) => {
       const tokens = {
@@ -451,11 +455,11 @@ export const ENONCES = [
         raisons: { u: 'L’incertitude-type sert à juger l’écart, pas à le calculer.', n: rN, theta: rT },
         cherche: { bonne: 'L’écart |x − x_ref| entre mesure et référence (en mol·L⁻¹)', faux: ['L’incertitude élargie U de la mesure (en mol·L⁻¹)', 'Le rapport de l’écart à l’incertitude-type (sans unité)', 'L’erreur relative de la mesure par rapport à la référence (en %)'] },
         manque: null, solution: { txt: '|x − x_ref|', val: p.d, u: 'mol·L⁻¹' } };
-      return { tokens, texte: [...debut, 'La mesure est-elle compatible avec la référence ? (On admet que les résultats suivent une loi normale, que la valeur de référence est connue avec une incertitude négligeable, et que le nombre de dosages est assez grand pour que u soit bien connue et que le facteur 2 convienne : la mesure est alors compatible avec la référence, avec environ 95 % de confiance, si l’écart est au plus égal à 2 incertitudes-types.)'], utiles: ['x', 'cref', 'u'],
+      return { tokens, texte: [...debut, 'La mesure est-elle compatible avec la référence ? (On admet que les résultats suivent une loi normale, que la valeur de référence est connue avec une incertitude négligeable et que le nombre de dosages est assez grand pour que l’incertitude donnée soit bien connue. On applique le critère usuel : la mesure est jugée compatible si l’écart normalisé est au plus égal à 2 ; si la mesure et la référence étaient réellement en accord, un écart normalisé supérieur à 2 apparaîtrait moins d’une fois sur vingt environ.)'], utiles: ['x', 'cref', 'u'],
         derivees: [{ id: 'e', nom: 'Écart à la référence', expr: '|x − x_ref|', val: p.d, u: 'mol·L⁻¹' }, { id: 'r', nom: 'Écart rapporté à l’incertitude-type', expr: '|x − x_ref| / u', val: p.d / p.u, u: '' }],
-        raisons: { n: 'Le nombre de dosages a déjà servi à calculer l’incertitude-type, qui est donnée ; on admet qu’il suffit pour garder le facteur 2 (avec peu de dosages, on prendrait un facteur plus grand).', theta: rT },
+        raisons: { n: 'Le nombre de dosages a déjà servi à calculer l’incertitude-type, qui est donnée ; on le suppose assez grand (20 dosages ou plus) pour que le seuil 2 convienne : avec peu de dosages, le seuil serait plus grand.', theta: rT },
         cherche: { bonne: 'Si la mesure est compatible avec la référence (oui ou non)', faux: ['L’écart |x − x_ref| entre mesure et référence (en mol·L⁻¹)', 'L’incertitude élargie U de la mesure (en mol·L⁻¹)', 'Le pourcentage d’erreur par rapport à la référence (en %)'] },
-        manque: null, solution: { txt: 'rapport |x − x_ref| / u, à comparer à 2 : la mesure est compatible si ce rapport est au plus égal à 2', val: p.d / p.u, u: '' } };
+        manque: null, solution: { txt: `écart normalisé = |x − x_ref| / u = ${nb(p.d / p.u, 2)} ; seuil 2 : ${p.d / p.u <= 2 ? 'rapport au plus égal à 2, la mesure est compatible avec la référence (réponse : oui)' : 'rapport supérieur à 2, la mesure n’est pas compatible avec la référence (réponse : non)'}`, val: p.d / p.u, u: '' } };
     },
   },
 
@@ -501,7 +505,7 @@ export const ENONCES = [
     id: 'champB', domaine: 'Contrôle des systèmes', titre: 'Une boussole près d’un aimant', noms: ['Champ total', 'Déviation de l’aiguille', 'Champ de l’aimant plus loin'],
     gen: () => {
       const Ba = tire([10, 20, 40, 60, 160]), r1 = tire([8, 10, 12]);
-      return { BT: 20, Ba, mT: tire([true, false]), r1, r2: r1 * tire([2, 3]), m: tire([20, 25, 40]), T: tire([19, 21, 23]) };
+      return { BT: 20, Ba, mT: tire([true, false]), r1, r2: r1 * tire([2, 3]), T: tire([19, 21, 23]) };
     },
     build: (p, q) => {
       const tokens = {
@@ -509,26 +513,25 @@ export const ENONCES = [
         Ba: tok(p.mT ? `${nb(p.Ba / 1000, 3)} mT` : `${p.Ba} µT`, 'Champ de l’aimant à la distance r₁', p.Ba, 'µT'),
         r1: tok(`${p.r1} cm`, 'Distance boussole – aimant', p.r1, 'cm'),
         r2: tok(`${p.r2} cm`, 'Nouvelle distance boussole – aimant', p.r2, 'cm'),
-        m: tok(`${p.m} g`, 'Masse de l’aimant', p.m, 'g'),
         T: tok(`${p.T} °C`, 'Température de la salle', p.T, '°C'),
       };
-      const debut = ['Une boussole est placée à ', T('r1'), ' du centre d’un aimant droit (masse ', T('m'), '), sur son axe, l’aimant étant orienté perpendiculairement à la direction du nord. À cet endroit, le champ de l’aimant vaut ',
-        T('Ba'), ' et la composante horizontale du champ de la Terre vaut ', T('BT'), '. On néglige tout autre champ magnétique. La salle est à ', T('T'), '. On pourra éloigner la boussole à ', T('r2'), ' ; tant que la distance reste grande devant la taille de l’aimant, son champ décroît comme 1/r³. '];
-      const rm = 'La masse de l’aimant est déjà contenue dans la valeur de son champ.', rT = 'La température n’intervient pas ici.';
+      const debut = ['Une boussole est placée à une distance r₁ = ', T('r1'), ' du centre d’un aimant droit, sur l’axe de cet aimant, orienté perpendiculairement à la direction du nord. Sur l’axe d’un aimant droit, le champ de l’aimant est dirigé selon cet axe : il est donc perpendiculaire à la composante horizontale du champ de la Terre. À cet endroit, le champ de l’aimant vaut ',
+        T('Ba'), ' et la composante horizontale du champ de la Terre vaut ', T('BT'), '. On néglige tout autre champ magnétique. La salle est à ', T('T'), '. On pourra éloigner la boussole à une distance r₂ = ', T('r2'), ' ; tant que la distance reste grande devant la taille de l’aimant, son champ décroît comme 1/r³. '];
+      const rT = 'La température n’intervient pas ici.';
       const rr1 = 'La distance est déjà contenue dans la valeur du champ de l’aimant donnée à cet endroit.', rr2 = 'Cette distance ne concerne pas cette question : le champ utilisé est celui donné à r₁.';
       const Bt = Math.hypot(p.BT, p.Ba);
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le champ magnétique total à l’endroit de la boussole (placée à r₁) ?'], utiles: ['BT', 'Ba'],
-        raisons: { r1: rr1, r2: rr2, m: rm, T: rT },
+        raisons: { r1: rr1, r2: rr2, T: rT },
         cherche: { bonne: 'L’intensité du champ magnétique total (en µT)', faux: ['L’angle de déviation de l’aiguille (en °)', 'Le champ de l’aimant à la distance r₂ (en µT)', 'Le champ total à la distance r₂ (en µT)'] },
         manque: null,
         solution: { txt: 'B = √(B_T² + B_a²) (les deux champs sont perpendiculaires : côtés d’un triangle rectangle)', val: Bt, u: 'µT' } };
       if (q === 1) return { tokens, derivees: [], texte: [...debut, 'De quel angle l’aiguille de la boussole dévie-t-elle par rapport au nord ?'], utiles: ['BT', 'Ba'],
-        raisons: { r1: rr1, r2: rr2, m: rm, T: rT },
-        cherche: { bonne: 'L’angle de déviation α de l’aiguille (en °)', faux: ['L’intensité du champ total (en µT)', 'Le champ de l’aimant à la distance r₂ (en µT)', 'L’angle entre l’aiguille et l’aimant (en °)'] },
+        raisons: { r1: rr1, r2: rr2, T: rT },
+        cherche: { bonne: 'L’angle de déviation α de l’aiguille (en °)', faux: ['L’intensité du champ total (en µT)', 'Le champ de l’aimant à la distance r₂ (en µT)', 'L’angle entre le champ de l’aimant et le champ de la Terre (en °)'] },
         manque: null,
         solution: { txt: 'α = arctan(B_a / B_T) (l’aiguille se place selon le champ total : tan α = B_a / B_T)', val: Math.atan(p.Ba / p.BT) * 180 / Math.PI, u: '°' } };
       return { tokens, derivees: [], texte: [...debut, 'Quel est le champ de l’aimant lorsque la boussole est à la distance r₂ ?'], utiles: ['Ba', 'r1', 'r2'],
-        raisons: { BT: 'Le champ de la Terre ne dépend pas de la distance à l’aimant, et on cherche le champ de l’aimant seul.', m: rm, T: rT },
+        raisons: { BT: 'Le champ de la Terre ne dépend pas de la distance à l’aimant, et on cherche le champ de l’aimant seul.', T: rT },
         cherche: { bonne: 'Le champ magnétique de l’aimant à la distance r₂ (en µT)', faux: ['Le champ magnétique total à la distance r₂ (en µT)', 'La déviation de l’aiguille de la boussole à r₂ (en °)', 'La variation du champ de l’aimant entre r₁ et r₂ (en µT)'] },
         manque: null, solution: { txt: 'B₂ = B_a × (r₁ / r₂)³', val: p.Ba * (p.r1 / p.r2) ** 3, u: 'µT' } };
     },
@@ -771,7 +774,7 @@ export const ENONCES = [
           texte: ['Un résistor ohmique de résistance ', T('R'), ' est traversé par un courant d’intensité ', T('I'), '. Il est relié au circuit par un fil de ', T('L'), '. Quelle est la tension à ses bornes (en V) ?'],
           utiles: ['R', 'I'],
           raisons: { L: 'La longueur du fil est une longueur : elle n’apparaît pas dans la loi d’Ohm U = R × I (et la résistance de ce fil est négligeable devant celle du résistor).' },
-          cherche: { bonne: 'La différence de potentiel aux bornes du résistor (en V)', faux: ['La puissance reçue par le résistor (en W)', 'L’énergie reçue par le résistor en 1 min (en J)', 'La charge traversant le résistor en 1 s (en C)'] },
+          cherche: { bonne: 'La différence de potentiel aux bornes du résistor (en V)', faux: ['La puissance reçue par le résistor (en W)', 'L’énergie reçue par le résistor en 1 min (en J)', 'La charge traversant le résistor en 1 min (en C)'] },
           manque: null, solution: { txt: 'U = R × I (R en Ω, I en A)', val: p.R * 1000 * p.I / 1000, u: 'V' } };
       }
       const tokens = { U: tok(`${p.U} V`, 'Tension aux bornes du résistor', p.U, 'V'), Rm: tok(`${p.Rm} Ω`, 'Résistance du résistor', p.Rm, 'Ω'), L: tok(`${p.L} cm`, 'Longueur du fil de connexion', p.L / 100, 'm') };
@@ -779,7 +782,7 @@ export const ENONCES = [
         texte: ['Un générateur impose une tension de ', T('U'), ' aux bornes d’un résistor ohmique de résistance ', T('Rm'), ', relié par un fil de ', T('L'), '. Quelle est l’intensité du courant qui traverse le résistor (en mA) ?'],
         utiles: ['U', 'Rm'],
         raisons: { L: 'La longueur du fil n’intervient pas dans la loi d’Ohm (et la résistance de ce fil est négligeable devant celle du résistor).' },
-        cherche: { bonne: 'Le courant électrique dans le résistor (en mA)', faux: ['La puissance reçue par le résistor (en W)', 'L’énergie reçue par le résistor en 1 min (en J)', 'La charge traversant le résistor en 1 s (en C)'] },
+        cherche: { bonne: 'Le courant électrique dans le résistor (en mA)', faux: ['La puissance reçue par le résistor (en W)', 'L’énergie reçue par le résistor en 1 min (en J)', 'La charge traversant le résistor en 1 min (en C)'] },
         manque: null, solution: { txt: 'I = U / R (R en Ω, I d’abord en A puis en mA)', val: p.U / p.Rm * 1000, u: 'mA' } };
     },
   },
@@ -839,13 +842,13 @@ export const ENONCES = [
       const tokens = { A: tok(`${A}`, 'Nombre de nucléons de l’atome', A, ''), Z: tok(`${Z}`, 'Numéro atomique (nombre de protons)', Z, ''), e: tok('e = 1,6 × 10⁻¹⁹ C', 'Charge élémentaire', 1.6e-19, 'C'), mp: tok('1,67 × 10⁻²⁷ kg', 'Masse d’un nucléon', 1.67e-27, 'kg') };
       const base = ['Un atome ' + (/^[aeiouyéèh]/.test(nom) ? 'd’' : 'de ') + nom + ' contient ', T('A'), ' nucléons (les particules du noyau) dont ', T('Z'), ' protons. '];
       if (q === 0) return { tokens, derivees: [],
-        texte: [...base, 'On donne la charge élémentaire (', T('e'), ') et la masse d’un nucléon (', T('mp'), '). Quel est le nombre de neutrons de son noyau ?'],
+        texte: [...base, 'La charge d’un proton est égale à la charge élémentaire (', T('e'), ') et le neutron n’a pas de charge ; la masse d’un nucléon vaut ', T('mp'), '. Quel est le nombre de neutrons de son noyau ?'],
         utiles: ['A', 'Z'],
         raisons: { e: 'La charge élémentaire sert à calculer une charge électrique, pas un nombre de particules.', mp: 'La masse d’un nucléon sert à calculer une masse, pas un nombre de particules.' },
         cherche: { bonne: 'Le nombre N de neutrons du noyau', faux: ['La charge électrique du noyau (en C)', 'Le nombre d’électrons de l’atome neutre', 'La masse du noyau (en kg)'] },
         manque: null, solution: { txt: 'N = A − Z', val: A - Z, u: '' } };
       return { tokens, derivees: [],
-        texte: [...base, 'La charge d’un proton est égale à la charge élémentaire (', T('e'), ') et la masse d’un nucléon vaut ', T('mp'), '. Quelle est la charge électrique du noyau (en C) ?'],
+        texte: [...base, 'La charge d’un proton est égale à la charge élémentaire (', T('e'), ') et le neutron n’a pas de charge ; la masse d’un nucléon vaut ', T('mp'), '. Quelle est la charge électrique du noyau (en C) ?'],
         utiles: ['Z', 'e'],
         raisons: { A: 'Le nombre de nucléons compte aussi les neutrons, qui n’ont pas de charge : seul le nombre de protons intervient.', mp: 'La masse d’un nucléon n’intervient pas dans le calcul d’une charge.' },
         cherche: { bonne: 'La charge électrique Q du noyau (en C)', faux: ['Le nombre de neutrons du noyau', 'La masse du noyau (en kg)', 'La charge électrique de l’atome (en C)'] },
@@ -946,7 +949,7 @@ const SYMBOLES = {
   incertA: { n: 'n', xm: 'x̄', s: 's', k: 'k', res: '', dur: '' },
   compatS: { x: 'x', u: 'u', cref: 'x_ref', n: '', theta: '' },
   moteurPas: { N: 'N', D: 'D', Np: 'N_p', U: 'U', R: 'R' },
-  champB: { BT: 'B_T', Ba: 'B_a', r1: 'r₁', r2: 'r₂', m: 'm', T: 'θ' },
+  champB: { BT: 'B_T', Ba: 'B_a', r1: 'r₁', r2: 'r₂', T: 'θ' },
   rho2: { T: '', mv: 'm_vide', mt: 'm_avec liquide', V: 'V', rho: 'ρ', VL: 'V' },
   conc2: { M: 'M', m: 'm', Vi: 'V_eau', Vf: 'V', t: 't' },
   poids2: { mg: 'm', g: 'g', V: 'V', mk: 'm', ga: 'g' },
