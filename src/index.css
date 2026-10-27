@@ -118,3 +118,14 @@ input:disabled, select:disabled, textarea:disabled { background-color: #f1f5f9; 
 /* Anneau de focus : visible seulement au clavier, et jamais noir (il ressemblait à une « bonne réponse » encadrée) */
 button:focus:not(:focus-visible) { outline: none; }
 button:focus-visible { outline: 2px solid #0ea5e9; outline-offset: 2px; }
+
+/* ───── Smartphone : champs de formulaire et boutons faciles à toucher ───── */
+@media (max-width: 700px) {
+  /* les listes déroulantes prennent la largeur de leur carte (elles débordaient) ; 16 px évite le zoom automatique d'iOS */
+  label:has(> select) { display: block; width: 100%; }
+  select { display: block; width: 100%; max-width: 100% !important; min-height: 44px; font-size: 16px !important; box-sizing: border-box; margin-top: 4px; }
+  input[type="text"], input[type="number"], input:not([type]) { min-height: 40px; font-size: 16px !important; box-sizing: border-box; max-width: 100%; }
+  button { min-height: 40px; }
+  /* tableaux et schémas larges : défilement horizontal dans leur cadre plutôt que débordement de la page */
+  table { display: block; max-width: 100%; overflow-x: auto; }
+}
