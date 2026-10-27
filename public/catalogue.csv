@@ -104,8 +104,8 @@ exercice;34:champB.1;https://paillasse-virtuelle.fr/?sim=34&ex=champB.1;TSTL;Con
 exercice;34:champB.2;https://paillasse-virtuelle.fr/?sim=34&ex=champB.2;TSTL;Contrôle des systèmes;S'approprier;;Contrôle des systèmes;Une boussole près d’un aimant — Champ de l’aimant plus loin;
 exercice;34:trajet.0;https://paillasse-virtuelle.fr/?sim=34&ex=trajet.0;2GT;Décrire un mouvement;S'approprier;;Mouvement et vitesse;Un trajet en train — Vitesse moyenne du train;
 exercice;34:trajet.1;https://paillasse-virtuelle.fr/?sim=34&ex=trajet.1;2GT;Décrire un mouvement;S'approprier;;Mouvement et vitesse;Un trajet en train — Durée d’un autre trajet;
-exercice;34:course.0;https://paillasse-virtuelle.fr/?sim=34&ex=course.0;2GT;Décrire un mouvement;S'approprier;;Mouvement et vitesse;Une course à pied — Vitesse en m·s⁻¹;
-exercice;34:course.1;https://paillasse-virtuelle.fr/?sim=34&ex=course.1;2GT;Décrire un mouvement;S'approprier;;Mouvement et vitesse;Une course à pied — Distance parcourue en roulant;
+exercice;34:course.0;https://paillasse-virtuelle.fr/?sim=34&ex=course.0;2GT;Décrire un mouvement;S'approprier;;Mouvement et vitesse;Une course à pied ou à vélo — Vitesse en m·s⁻¹;
+exercice;34:course.1;https://paillasse-virtuelle.fr/?sim=34&ex=course.1;2GT;Décrire un mouvement;S'approprier;;Mouvement et vitesse;Une course à pied ou à vélo — Distance parcourue en roulant;
 exercice;34:gravi.0;https://paillasse-virtuelle.fr/?sim=34&ex=gravi.0;1G;Interactions fondamentales et notion de champ;S'approprier;;Interactions et champs;Interaction gravitationnelle — Force entre deux satellites;
 exercice;34:gravi.1;https://paillasse-virtuelle.fr/?sim=34&ex=gravi.1;1G;Interactions fondamentales et notion de champ;S'approprier;;Interactions et champs;Interaction gravitationnelle — Champ de gravitation d’une planète;
 exercice;34:electro.0;https://paillasse-virtuelle.fr/?sim=34&ex=electro.0;1G;Interactions fondamentales et notion de champ;S'approprier;;Interactions et champs;Interaction électrostatique — Force entre deux charges;
