@@ -1397,7 +1397,7 @@ export const PREVOIR = [
       F('doublée, de 1,2 bar à 2,4 bar', 'Le terme ρ·g·h double, mais P_atm (1,0 bar) s’y ajoute sans doubler : on ne double que la partie due à l’eau, pas la pression absolue.'),
       F('inchangée, à 1,2 bar', 'P_atm domine, mais ρ·g·h n’est pas négligeable : il passe de 0,2 à 0,4 bar, donc la pression absolue augmente de 0,2 bar.'),
     ] },
-  { id: 'cinetique', domaine: 'Transport des fluides', titre: 'Vitesse doublée',
+  { id: 'cinetique', domaine: 'Transport des fluides', titre: 'Vitesse de l’eau doublée dans la conduite',
     enonce: 'La vitesse de l’eau dans une conduite double.', q: 'Le terme ½·ρ·v² de la relation de Bernoulli est…', options: [
       F('multiplié par 2', 'Erreur courante : le terme est proportionnel à v², pas à v. Le carré a été oublié.'),
       F('multiplié par 8', 'Le facteur 2 n’est pas cumulé avec un facteur 4 : ½·ρ·v² est en v², soit 2² = 4 et non 2³.'),
@@ -1467,7 +1467,7 @@ export const PREVOIR = [
       F('inchangé', 'Le flux total dépend de la surface traversée.'),
       F('multiplié par 4', 'Le flux est proportionnel à S, pas à S².'),
     ] },
-  { id: 'masse', domaine: 'Transferts thermiques', titre: 'Deux fois plus d’eau',
+  { id: 'masse', domaine: 'Transferts thermiques', titre: 'Deux fois plus d’eau à chauffer',
     enonce: 'Avec la même résistance chauffante, on chauffe deux fois plus d’eau, avec la même élévation de température. Les pertes sont négligées.', q: 'La durée de chauffe est…', options: [
       V('doublée', 'Q = m·c·Δθ double, et P ne change pas : Δt = Q / P double.'),
       F('inchangée', 'Il faut deux fois plus d’énergie.'),
@@ -1481,14 +1481,14 @@ export const PREVOIR = [
       F('divisée par 4', 'A est proportionnelle à c, pas à c².'),
       F('inchangée', 'L’absorbance dépend de la concentration.'),
     ] },
-  { id: 'mvt-duree-double', domaine: 'Mouvement et vitesse', titre: 'Distance doublée',
+  { id: 'mvt-duree-double', domaine: 'Mouvement et vitesse', titre: 'Distance doublée à vitesse constante',
     enonce: 'Un cycliste roule à vitesse constante. Il décide de parcourir une distance deux fois plus grande.', q: 'La durée du trajet est…', options: [
       V('doublée', 'Δt = d / v : à vitesse constante, la durée est proportionnelle à la distance. Deux fois plus loin, c’est deux fois plus long.'),
       F('inchangée', 'Si la vitesse ne change pas, parcourir plus de distance demande plus de temps.'),
       F('divisée par 2', 'Sens inversé : une distance plus grande demande plus de temps, pas moins.'),
       F('multipliée par 4', 'La durée est proportionnelle à d (pas à d²) : doubler d double Δt.'),
     ] },
-  { id: 'mvt-vitesse-double', domaine: 'Mouvement et vitesse', titre: 'Vitesse doublée',
+  { id: 'mvt-vitesse-double', domaine: 'Mouvement et vitesse', titre: 'Vitesse doublée sur le même trajet',
     enonce: 'On parcourt toujours le même trajet, mais en allant deux fois plus vite.', q: 'La durée du trajet est…', options: [
       F('multipliée par 2', 'Δt = d / v : à distance fixée, aller plus vite raccourcit la durée.'),
       F('divisée par 4', 'Δt est inversement proportionnelle à v, pas à v² : doubler v divise Δt par 2.'),
@@ -1586,7 +1586,7 @@ export const PREVOIR = [
       F('rectiligne accéléré', 'La trajectoire n’est pas une droite (un tour en 27,3 jours) et la valeur de la vitesse ne croît pas indéfiniment : elle oscille entre 0,97 et 1,08 km·s⁻¹.'),
       F('circulaire ralenti', 'La trajectoire est bien quasi circulaire, mais la valeur de la vitesse ne diminue pas au cours du temps : elle oscille autour de 1,0 km·s⁻¹ d’un mois à l’autre.'),
     ] },
-  { id: 'ch-d-double', domaine: 'Interactions et champs', titre: 'Distance doublée',
+  { id: 'ch-d-double', domaine: 'Interactions et champs', titre: 'Distance doublée entre deux masses',
     enonce: 'Deux masses s’attirent. On double la distance qui sépare leurs centres, sans changer les masses.', q: 'La force d’attraction gravitationnelle est…', options: [
       F('divisée par 2', 'La force varie comme 1/d², pas comme 1/d : doubler d divise F par 4, pas par 2.'),
       F('divisée par 8', 'La force varie comme 1/d², pas 1/d³ : le facteur est 2² = 4.'),
@@ -1642,7 +1642,7 @@ export const PREVOIR = [
       F('inchangé', 'Il dépend de la quantité d’éthanol présente au départ.'),
       F('divisé par 2', 'Sens inversé : un mélange plus riche donne plus d’éthanol.'),
     ] },
-  { id: 'crist-eau', domaine: 'Évaporation et cristallisation', titre: 'Deux fois plus d’eau',
+  { id: 'crist-eau', domaine: 'Évaporation et cristallisation', titre: 'Deux fois plus d’eau avant refroidissement',
     enonce: 'On double la masse d’eau de la solution saturée à 60 °C, puis on la refroidit à 20 °C comme avant.', q: 'La masse de cristaux obtenus est…', options: [
       V('doublée', 'm_cristaux = (s₆₀ − s₂₀) × m_eau / 100 est proportionnelle à m_eau.'),
       F('inchangée', 'Elle dépend de la masse d’eau, donc de la quantité de soluté dissous au départ.'),
