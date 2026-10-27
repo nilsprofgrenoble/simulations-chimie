@@ -1,3 +1,4 @@
+import { ChoixListe } from "../ChoixListe";
 import { useState } from "react";
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, lireNombre, proche, exParam } from "../commun";
 import { useSuivi } from "../suivi";
@@ -209,11 +210,10 @@ export function SimulationAtelierDonnees() {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ ...styleBoite, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-          <label style={{ fontSize: 14 }}>Énoncé :{' '}
-            <select aria-label="Choix de l’énoncé" value={choix.id} onChange={x => { const id = x.target.value; setChoix({ id, q: 0 }); charger(id, 0); }}
-              style={{ fontSize: 14, padding: 4, borderRadius: 6, border: `1.5px solid ${KIT.bord}` }}>
-              {parDomaine(ENONCES).map(([d, l]) => <optgroup key={d} label={d}>{l.map(e => <option key={e.id} value={e.id}>{e.titre}</option>)}</optgroup>)}
-            </select></label>
+          <div style={{ fontSize: 14, flex: '1 1 260px', minWidth: 0 }}>Énoncé :
+            <ChoixListe ariaLabel="Choix de l’énoncé" titre="Choisir un énoncé" valeur={choix.id} onChoisir={id => { setChoix({ id, q: 0 }); charger(id, 0); }}
+              groupes={parDomaine(ENONCES).map(([dm, l]) => ({ label: dm, items: l.map(e => ({ value: e.id, label: e.titre })) }))}/>
+          </div>
           <span style={{ fontSize: 14 }}>Question :</span>
           {defCourant.noms.map((n, q) => <button key={q} onClick={() => { setChoix(c => ({ ...c, q })); charger(choix.id, q); }} style={stylePetitBouton(choix.q === q, '#0ea5e9')}>{n}</button>)}
           <button onClick={() => charger(choix.id, choix.q)} style={stylePetitBouton(false)}>🎲 Nouvelles valeurs</button>

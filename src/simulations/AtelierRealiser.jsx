@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ChoixListe } from "../ChoixListe";
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, exParam } from "../commun";
 import { useSuivi } from "../suivi";
 import { txtVec } from "./FigureVecteurs";
@@ -57,12 +58,13 @@ export function SimulationAtelierRealiser() {
           </div>)}
         {indice[q.id] && q.aide && <Correction><Pic n="bulb"/>{txtVec(avecIndices(q.aide))}</Correction>}
         {affichee && <Verdict ok={bon}>{bon ? 'Bravo !' : 'Pas encore.'}</Verdict>}
+        {affichee && !bon && !r.msg && !vu[q.id] && <div style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}>Pour trouver où ça coince, clique sur « voir le calcul pas à pas ».</div>}
         {affichee && !bon && r.msg && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{txtVec(r.msg)}</div>}
         {((vu[q.id] && !bon) || (affichee && bon)) && <Correction>{q.type === 'num' && !bon ? <>Réponse attendue : <b>{reponseAttendue(q)}</b>. </> : null}{q.expl}</Correction>}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
           <button onClick={() => corriger(q.id)} style={styleBouton(true, '#16a34a')}>✓ Corriger</button>
           {!bon && <button onClick={() => { corriger(q.id, true); setVu(x => ({ ...x, [q.id]: true })); }}
-            style={{ fontSize: 12.5, background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer' }}>voir la correction</button>}
+            style={{ fontSize: 12.5, background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer' }}>voir le calcul pas à pas</button>}
           {q.aide && !indice[q.id] && <button onClick={() => setIndice(x => ({ ...x, [q.id]: true }))} style={stylePetitBouton(false)}><Pic n="bulb"/>Indice</button>}
           {(bon || vu[q.id]) && chk[q.id] && i === etp && i < Q.length - 1 && <button onClick={() => setEtp(e => e + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Question suivante ▶</button>}
         </div>
@@ -76,11 +78,10 @@ export function SimulationAtelierRealiser() {
       </div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Compétence travaillée : <b>Réaliser</b> (REA) — mettre en œuvre un calcul sans erreur : unités et conversions, manipulation d’une relation, chiffres significatifs, fonctions de la calculatrice.</div>
       <div style={{ ...styleBoite, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
-        <label style={{ fontSize: 14 }}>Exercice :{' '}
-          <select aria-label="Choix de l’exercice" value={choix} onChange={e => { setChoix(e.target.value); charger(e.target.value); }}
-            style={{ fontSize: 14, padding: 4, borderRadius: 6, border: `1.5px solid ${KIT.bord}`, color: KIT.txt, background: 'white' }}>
-            {GROUPES.map(g => <optgroup key={g} label={g}>{FAMILLES.filter(f => f.groupe === g).map(f => <option key={f.id} value={f.id}>{f.titre}</option>)}</optgroup>)}
-          </select></label>
+        <div style={{ fontSize: 14, flex: '1 1 260px', minWidth: 0 }}>Exercice :
+          <ChoixListe ariaLabel="Choix de l’exercice" titre="Choisir un exercice" valeur={choix} onChoisir={v => { setChoix(v); charger(v); }}
+            groupes={GROUPES.map(g => ({ label: g, items: FAMILLES.filter(f => f.groupe === g).map(f => ({ value: f.id, label: f.titre })) }))}/>
+        </div>
         <button onClick={() => charger(choix)} style={stylePetitBouton(false)}>🎲 Nouvel exercice</button>
       </div>
       <div style={{ maxWidth: 760, display: 'flex', flexDirection: 'column', gap: 10 }}>

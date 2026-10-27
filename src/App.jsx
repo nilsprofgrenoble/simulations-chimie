@@ -339,8 +339,8 @@ export default function App() {
     try {
       if (!new URLSearchParams(window.location.search).get('ex') || window.innerWidth > 700) return;
       const t = setTimeout(() => {
-        const cible = document.querySelector('select[aria-label]');
-        if (cible) window.scrollTo({ top: Math.max(0, (cible.closest('label').parentElement || cible).getBoundingClientRect().top + window.scrollY - 90), behavior: 'auto' });
+        const cible = document.querySelector('[data-choix-liste]');
+        if (cible) window.scrollTo({ top: Math.max(0, (cible.parentElement?.parentElement || cible).getBoundingClientRect().top + window.scrollY - 90), behavior: 'auto' });
       }, 500);
       return () => clearTimeout(t);
     } catch { /* défilement indisponible */ }
