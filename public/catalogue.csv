@@ -94,7 +94,7 @@ exercice;34:incertA.0;https://paillasse-virtuelle.fr/?sim=34&ex=incertA.0;TSTL;M
 exercice;34:incertA.1;https://paillasse-virtuelle.fr/?sim=34&ex=incertA.1;TSTL;Mesure et incertitudes;S'approprier;;Mesure et incertitudes;Incertitude d’une série de mesures répétées — Incertitude élargie;
 exercice;34:incertA.2;https://paillasse-virtuelle.fr/?sim=34&ex=incertA.2;TSTL;Mesure et incertitudes;S'approprier;;Mesure et incertitudes;Incertitude d’une série de mesures répétées — Borne haute de l’intervalle;
 exercice;34:compatS.0;https://paillasse-virtuelle.fr/?sim=34&ex=compatS.0;TSTL;Mesure et incertitudes;S'approprier;;Mesure et incertitudes;Une mesure et sa valeur de référence — Écart à la référence;
-exercice;34:compatS.1;https://paillasse-virtuelle.fr/?sim=34&ex=compatS.1;TSTL;Mesure et incertitudes;S'approprier;;Mesure et incertitudes;Une mesure et sa valeur de référence — Écart rapporté à l’incertitude-type;
+exercice;34:compatS.1;https://paillasse-virtuelle.fr/?sim=34&ex=compatS.1;TSTL;Mesure et incertitudes;S'approprier;;Mesure et incertitudes;Une mesure et sa valeur de référence — Compatibilité avec la référence;
 exercice;34:moteurPas.0;https://paillasse-virtuelle.fr/?sim=34&ex=moteurPas.0;TSTL;Contrôle des systèmes;S'approprier;;Contrôle des systèmes;Un moteur pas à pas piloté par un programme — Angle d’un pas;
 exercice;34:moteurPas.1;https://paillasse-virtuelle.fr/?sim=34&ex=moteurPas.1;TSTL;Contrôle des systèmes;S'approprier;;Contrôle des systèmes;Un moteur pas à pas piloté par un programme — Fréquence des pas;
 exercice;34:moteurPas.2;https://paillasse-virtuelle.fr/?sim=34&ex=moteurPas.2;TSTL;Contrôle des systèmes;S'approprier;;Contrôle des systèmes;Un moteur pas à pas piloté par un programme — Vitesse de rotation;
