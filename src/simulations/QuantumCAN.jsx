@@ -290,7 +290,7 @@ export function SimulationCAN({ plotlyReady }) {
 
   // ════════════════ PARCOURS GUIDÉ ════════════════
   const etape = guide.etape;
-  const Q10 = quantumDe(10), Q4 = quantumDe(3);
+  const Q10 = quantumDe(10), Q4 = quantumDe(4);
   const reglage = source === 'exemple' && ordre === 3 && vmin === 0 && vmax === 5 && nbits === 10;
   const reglage4 = source === 'exemple' && ordre === 3 && vmin === 0 && vmax === 5 && nbits === 4;
   const accroche = u => Math.round(u / Q10) * Q10;           // le curseur ne s'arrête que sur des niveaux du CAN
@@ -318,6 +318,12 @@ export function SimulationCAN({ plotlyReady }) {
     { id: 'quantum', titre: 'Le quantum', focus: ['can'],
       texte: <>Le CAN a n bits : il fournit un nombre entier N de 0 à 2<sup>n</sup> − 1, pour une tension de 0 à 5 V. Le <strong>quantum</strong> q est la variation de tension qui fait changer N d'une unité : les 5 V sont partagés en 2<sup>n</sup> − 1 intervalles égaux, <strong>q = (V<sub>max</sub> − V<sub>min</sub>) / (2<sup>n</sup> − 1)</strong>. Ici, n = 10 bits (carte Arduino Uno).</>,
       tache: { type: 'num', q: 'Quantum q pour 10 bits sur 0–5 V', unite: 'mV', vrai: Q10 * 1000, tol: 0.01, affiche: x => fmt(x, 2),
+        calcul: () => ['Hypothèse : CAN idéal (sans bruit ni défaut), N de 0 à 2ⁿ − 1 pour une tension de 0 à 5 V.',
+          `Pour n = 10 : 2ⁿ − 1 = ${fmt(Math.pow(2, 10) - 1, 0)} intervalles égaux.`,
+          `q = (V_max − V_min) / (2ⁿ − 1) = (5 − 0) / ${fmt(Math.pow(2, 10) - 1, 0)} = ${fmt(Q10, 5)} V.`,
+          `Conversion : 1 V = 1 000 mV, donc q = ${fmt(Q10, 5)} × 1 000 = ${fmt(Q10 * 1000, 2)} mV.`],
+        pieges: [[Q10, 'Votre résultat est en V : l’unité demandée est le mV, multipliez par 1 000.'],
+          [5000 / 10, 'Vous avez divisé par le nombre de bits (10). Il faut diviser par le nombre d’intervalles, 2ⁿ − 1, avec n = 10.']],
         bloque: !(nbits === 10 && vmin === 0 && vmax === 5) ? 'Réglez 0 V, 5 V et 10 bits dans « Paramètres du CAN ».' : null,
         expl: `q = 5 / 1023 = ${fmt(Q10 * 1000, 2)} mV.` } },
     { id: 'modele', titre: 'Un modèle pour passer de Ur à T', focus: ['modele', 'courbe'],
@@ -336,9 +342,15 @@ export function SimulationCAN({ plotlyReady }) {
         consigne: pres(accroche(3.19)) ? null : `Ur : ${fmt(urCur, 2)} V → 3,19 V` } },
     { id: 'dt', titre: 'La résolution en température', focus: ['zoom', 'table'],
       texte: <>Deux niveaux consécutifs du CAN sont séparés par le quantum q. Les températures correspondantes diffèrent de <strong>ΔT ≈ q × |dT/dUr|</strong> : c'est la plus petite variation de température qui fait changer N. Le tableau gris donne cette valeur pour la tension choisie.</>,
-      tache: { type: 'num', q: 'Lisez ΔT dans le tableau (ligne entourée) pour Ur = 3,19 V', unite: '°C', vrai: dT319, tol: 0.002, affiche: x => fmt(x, 3),
+      tache: { type: 'num', q: 'Lisez ΔT dans le tableau (ligne entourée) pour Ur = 3,19 V', unite: '°C', vrai: dT319, tol: 0.01, affiche: x => fmt(x, 3),
         bloque: !pres(accroche(3.19)) ? 'Replacez le curseur vers 3,19 V.' : null,
         aide: `Recopiez la valeur de la ligne « ΔT résultant », entourée en orange.`,
+        calcul: () => { const u0 = accroche(3.19); return [
+          `Hypothèse : la température se déduit de Ur par le modèle polynomial d’ordre 3 ajusté sur les points du TP, et le CAN est idéal (quantum q = ${fmt(Q10 * 1000, 2)} mV, 10 bits sur 0–5 V).`,
+          `Le curseur est sur le niveau du CAN le plus proche de 3,19 V : Ur = ${fmt(u0, 4)} V. Le niveau suivant est Ur + q = ${fmt(u0 + Q10, 4)} V.`,
+          `Le modèle donne T(Ur) = ${fmt(fEx(u0), 3)} °C et T(Ur + q) = ${fmt(fEx(u0 + Q10), 3)} °C.`,
+          `ΔT = T(Ur + q) − T(Ur) = ${fmt(fEx(u0 + Q10), 3)} − ${fmt(fEx(u0), 3)} ≈ ${fmt(dT319, 3)} °C.`]; },
+        pieges: [[Q10, 'Vous avez recopié le quantum q (en V). ΔT est une variation de température, en °C : lisez la ligne « ΔT résultant » du tableau.']],
         expl: `ΔT = ${fmt(dT319, 3)} °C : avec 10 bits, la chaîne distingue des températures qui diffèrent d'environ ${fmt(dT319, 2)} °C autour de 3,19 V.` } },
     { id: 'extremite', titre: 'Partout pareil ?', focus: ['curseur', 'zoom', 'table'],
       texte: <>À Ur = 3,19 V, ΔT vaut <strong>{fmt(dT319, 3)} °C</strong>. Déplacez le curseur vers Ur = 4,20 V et comparez avec la valeur entourée dans le tableau gris.</>,
@@ -353,6 +365,13 @@ export function SimulationCAN({ plotlyReady }) {
     { id: 'q3', titre: 'Le quantum à 4 bits', focus: ['can'],
       texte: <>Le même calcul avec n = 4.</>,
       tache: { type: 'num', q: 'Quantum q pour 4 bits sur 0–5 V', unite: 'mV', vrai: Q4 * 1000, tol: 0.01, affiche: x => fmt(x, 1),
+        calcul: () => ['Même hypothèse : CAN idéal, N de 0 à 2ⁿ − 1 pour une tension de 0 à 5 V.',
+          `Pour n = 4 : 2ⁿ − 1 = ${fmt(Math.pow(2, 4) - 1, 0)} intervalles égaux.`,
+          `q = (5 − 0) / ${fmt(Math.pow(2, 4) - 1, 0)} = ${fmt(Q4, 4)} V.`,
+          `Conversion : q = ${fmt(Q4, 4)} × 1 000 ≈ ${fmt(Q4 * 1000, 1)} mV.`],
+        pieges: [[Q4, 'Votre résultat est en V : l’unité demandée est le mV, multipliez par 1 000.'],
+          [5000 / 16, 'Vous avez divisé par 2ⁿ = 16. Les 5 V sont partagés en 2ⁿ − 1 = 15 intervalles (N va de 0 à 15).'],
+          [5000 / 4, 'Vous avez divisé par le nombre de bits (4). Il faut diviser par le nombre d’intervalles, 2ⁿ − 1 = 15.']],
         bloque: !(nbits === 4 && vmin === 0 && vmax === 5) ? 'Réglez 0 V, 5 V et 4 bits dans « Paramètres du CAN ».' : null,
         expl: `q = 5 / 15 ≈ ${fmt(Q4 * 1000, 1)} mV.` } },
     { id: 'niveaux', titre: 'Visualiser les niveaux du CAN', focus: ['courbe', 'modele'],
@@ -363,6 +382,12 @@ export function SimulationCAN({ plotlyReady }) {
       texte: <>Le capteur est à {fmt(TreelB, 0)} °C : on mesure Ur = {fmt(UB, 2).replace('.', ',')} V. Le CAN calcule N = Ur / q = {fmt(UB / Q4, 2)} et <strong>ne garde que la partie entière</strong> : N = {NB}. Il en déduit la tension N × q = {fmt(NB * Q4, 3)} V, et la chaîne affiche la température associée à cette tension.
         <br/>Repérez Ur = {fmt(UB, 2).replace('.', ',')} V sur l'axe horizontal, repérez le niveau du CAN situé juste à sa gauche, puis suivez le trait horizontal jusqu'à l'axe des températures.</>,
       tache: { type: 'num', q: `Température affichée par la chaîne pour Ur = ${fmt(UB, 2).replace('.', ',')} V`, unite: '°C', vrai: TB, tol: 0.03, affiche: x => fmt(x, 1),
+        calcul: () => [`Hypothèses : CAN idéal à 4 bits (q = ${fmt(Q4, 4)} V), température déduite de la tension par le modèle polynomial d’ordre 3.`,
+          `N = partie entière de Ur / q = partie entière de ${fmt(UB, 2)} / ${fmt(Q4, 4)} = partie entière de ${fmt(UB / Q4, 2)} = ${NB}.`,
+          `Tension vue par la chaîne : N × q = ${NB} × ${fmt(Q4, 4)} = ${fmt(NB * Q4, 3)} V (le niveau situé juste à gauche de ${fmt(UB, 2)} V).`,
+          `Le modèle donne T(${fmt(NB * Q4, 3)} V) = ${fmt(TB, 1)} °C : c’est la température affichée.`],
+        pieges: [[Thaut, 'Vous avez pris le niveau situé à droite (N + 1). Le CAN garde la partie entière de N : il faut le niveau juste à gauche de Ur.'],
+          [TreelB, 'C’est la température réelle du capteur. La chaîne affiche la température associée au niveau du CAN (N × q), pas à Ur exacte.']],
         bloque: !(reglage4 && etapeModele && showQuant) ? 'Gardez le modèle d’ordre 3, 4 bits et affichez les niveaux de quantification.' : null,
         expl: `La chaîne affiche ${fmt(TB, 1)} °C alors que la température réelle est ${fmt(TreelB, 0)} °C : un écart de ${fmt(TreelB - TB, 0)} °C dû uniquement à la discrétisation.` } },
     { id: 'resolution3', titre: 'Que sait-on de la vraie température ?', focus: ['courbe'],

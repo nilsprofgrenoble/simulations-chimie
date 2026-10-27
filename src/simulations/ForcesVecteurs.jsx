@@ -283,7 +283,11 @@ export function SimulationForcesVecteurs() {
         <ExempleResolu>Avec l’échelle 1 cm ↔ 100 N, une flèche de 3 cm représente 3 × 100 = 300 N.</ExempleResolu>
         À vous : utilisez la grille (1 carreau = 1 cm) pour mesurer la flèche du tir. Échelle : <strong>1 cm ↔ 40 N</strong>.</>,
       tache: { type: 'num', q: 'Quelle est l’intensité de la force exercée par le pied sur le ballon ?', unite: 'N', vrai: 100, tol: 0.03, affiche: x => String(x),
-        pieges: [[2.5, 'C’est la longueur de la flèche en cm. Multipliez-la par 40 N/cm.'], [40, 'C’est l’échelle (N pour 1 cm). Il faut la multiplier par la longueur de la flèche.']],
+        pieges: [[2.5, 'C’est la longueur de la flèche en cm. Multipliez-la par 40 N/cm.'], [40, 'C’est l’échelle (N pour 1 cm). Il faut la multiplier par la longueur de la flèche.'], [40 / 2.5, 'Il ne faut pas diviser : intensité = longueur (en cm) × valeur d’1 cm.']],
+        calcul: () => [
+          'Je mesure la flèche avec la grille (1 carreau = 1 cm) : elle mesure 2,5 cm.',
+          'L’échelle dit : 1 cm de flèche représente 40 N.',
+          'Intensité = longueur × valeur d’1 cm = 2,5 × 40 = 100 N.'],
         expl: 'La flèche mesure 2,5 cm : F = 2,5 × 40 = 100 N.' } },
     { id: 'notation', titre: 'Intensité ou vecteur ?', depart: null,
       texte: <>On distingue la <strong>force</strong> (le vecteur, avec une flèche : <Vec/>) et son <strong>intensité</strong> (un nombre en newtons : F). La force exercée par l’auteur <em>a</em> sur le receveur <em>r</em> se note <Fn a="a" r="r" vec/>, et son intensité <Fn a="a" r="r"/>.
@@ -304,6 +308,10 @@ export function SimulationForcesVecteurs() {
         <ExempleResolu>B tire A vers la droite avec F<sub>B/A</sub>. A tire B vers la gauche avec F<sub>A/B</sub>. Ces deux forces ont même direction, <strong>sens opposés</strong> et <strong>même intensité</strong>.</ExempleResolu>
         À vous : modifiez la force de la main avec le curseur.</>,
       tache: { type: 'num', q: 'Le dynamomètre B indique 4 N. Que lit-on sur le dynamomètre A ?', unite: 'N', vrai: 4, tol: 0.01, affiche: x => String(x), pieges: [[2, 'Pourquoi la moitié ? Les deux dynamomètres subissent des forces de même intensité.'], [8, 'Les forces ne s’additionnent pas : elles ont la même intensité.']],
+        calcul: () => [
+          'Principe des actions réciproques : si B agit sur A, A agit sur B avec une force de même intensité (et de sens opposé).',
+          'Donc F(A/B) = F(B/A). Ici, B indique 4 N : l’intensité de la force est 4 N.',
+          'Le dynamomètre A indique donc aussi 4 N.'],
         expl: 'Les forces réciproques ont la même intensité : A lit aussi 4 N.' } },
     { id: 'recip2', titre: 'Deux patineurs', depart: () => { setAtelier('recip'); setRecip({ scene: 'patin', F: 60, mA: 80, mB: 45, montrer: true }); },
       texte: <>On pourrait croire que le plus lourd pousse plus fort. Faux ! Quand A pousse B, <strong>B pousse A autant</strong>, quelle que soit leur masse. Ce qui change, c’est l’<strong>effet</strong> : le plus léger recule plus vite.
@@ -314,13 +322,22 @@ export function SimulationForcesVecteurs() {
         <ExempleResolu>Un objet de 0,2 kg a un poids P = 0,2 × 9,8 ≈ <strong>1,96 N</strong> (environ 2 N).
           {bouton('Voir sur la Terre', () => voirPoids('terre', 0.2, 0))}</ExempleResolu>
         À vous : un objet de 0,5 kg.</>,
-      tache: { type: 'num', q: 'Quel est le poids d’un objet de 0,5 kg à la surface de la Terre ? (g = 9,8 N/kg)', unite: 'N', vrai: 4.9, tol: 0.04, affiche: x => fr(x, 1), pieges: [[0.5, 'C’est la masse en kg. Multipliez-la par g.'], [49, 'Vérifiez la virgule : 0,5 × 9,8.']],
+      tache: { type: 'num', q: 'Quel est le poids d’un objet de 0,5 kg à la surface de la Terre ? (g = 9,8 N/kg)', unite: 'N', vrai: 4.9, tol: 0.04, affiche: x => fr(x, 1), pieges: [[0.5, 'C’est la masse en kg. Multipliez-la par g.'], [49, 'Vérifiez la virgule : 0,5 × 9,8.'], [0.5 / 9.8, 'On multiplie : P = m × g (et on ne divise pas la masse par g).']],
+        calcul: () => [
+          'Formule du poids : P = m × g.',
+          'Ici, m = 0,5 kg (déjà en kg) et g = 9,8 N/kg.',
+          'P = 0,5 × 9,8 = 4,9 N.'],
         expl: 'P = m × g = 0,5 × 9,8 = 4,9 N.' } },
     { id: 'poids2', titre: 'Le poids dépend de l’astre', depart: () => voirPoids('lune', 1, 0),
       texte: <>La masse (en kg) ne change pas d’un astre à l’autre, mais le <strong>poids</strong> change car g change : sur la Lune g ≈ 1,6 N/kg, sur Mars g ≈ 3,7 N/kg.
         <ExempleResolu>Sur Mars, un objet de 1 kg pèse 1 × 3,7 = 3,7 N.</ExempleResolu>
         À vous : la Lune.</>,
       tache: { type: 'num', q: 'Quel est le poids d’un objet de 1 kg sur la Lune ? (g = 1,6 N/kg)', unite: 'N', vrai: 1.62, tol: 0.05, affiche: x => fr(x, 1),
+        pieges: [[9.8, 'C’est g sur la Terre. Sur la Lune, il faut prendre g = 1,6 N/kg.'], [3.7, 'C’est g sur Mars. Sur la Lune, il faut prendre g = 1,6 N/kg.'], [1 / 1.6, 'On multiplie : P = m × g (et on ne divise pas la masse par g).']],
+        calcul: () => [
+          'Formule du poids : P = m × g.',
+          'Ici, m = 1 kg (la masse ne change pas d’un astre à l’autre) et g = 1,6 N/kg sur la Lune.',
+          'P = 1 × 1,6 = 1,6 N.'],
         expl: 'P = 1 × 1,6 ≈ 1,6 N : six fois moins que sur Terre.' } },
     { id: 'grav', titre: 'L’interaction gravitationnelle', depart: () => voirPoids('terre', 1, 0),
       texte: <>Deux objets de masses m<sub>A</sub> et m<sub>B</sub>, dont les centres sont distants de d, s’attirent avec des forces de même intensité : <strong>F = G × m<sub>A</sub> × m<sub>B</sub> / d²</strong>, avec G = {sci(G)} N·m²·kg⁻². Le poids est cette force pour un objet proche de la surface d’un astre.
@@ -330,6 +347,16 @@ export function SimulationForcesVecteurs() {
       texte: <>La Station spatiale internationale orbite à 400 km d’altitude. Les astronautes « flottent » : a-t-on <em>plus de gravité</em> là-haut ? Regardez avec l’altitude réglée à 400 km…
         <ExempleResolu>À la surface, g = 9,8 N/kg. À 400 km, g = G M / (R + h)² ≈ 8,7 N/kg : la gravité n’a presque pas diminué. Les astronautes flottent parce que la station et eux <strong>tombent ensemble</strong> autour de la Terre (chute libre), pas parce que la gravité a disparu.</ExempleResolu></>,
       tache: { type: 'num', q: 'Quelle est la force exercée par la Terre sur un objet de 1 kg à 400 km d’altitude ? (regardez la simulation)', unite: 'N', vrai: 8.7, tol: 0.03, affiche: x => fr(x, 1),
+        pieges: [[gravite(astre('terre'), 0), 'C’est la valeur au sol (g = 9,8 N/kg). À 400 km, on est plus loin du centre de la Terre : la distance à utiliser est R + h.'],
+          [0, 'La gravité n’a pas disparu à 400 km : elle vaut encore presque autant qu’au sol. Les astronautes flottent parce qu’ils tombent (chute libre).']],
+        calcul: () => {
+          const T = astre('terre'), d = T.R + 4e5, g = gravite(T, 4e5);
+          return [
+            'La force de la Terre sur l’objet est son poids à cette altitude : F = m × g, avec g = G × M / (R + h)² (Terre supposée sphérique).',
+            `Distance au centre de la Terre : R + h = 6 378 km + 400 km = 6 778 km = ${sci(d, 3)} m (on convertit en mètres).`,
+            `g = G × M / (R + h)² = ${sci(G, 2)} × ${sci(T.M, 2)} / (${sci(d, 3)})² = ${fr(g, 1)} N/kg.`,
+            `F = m × g = 1 × ${fr(g, 1)} = ${fr(g, 1)} N.`];
+        },
         expl: 'F = G M m / (R + h)² ≈ 8,7 N : presque autant qu’au sol (9,8 N). L’impesanteur vient de la chute libre.' } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>

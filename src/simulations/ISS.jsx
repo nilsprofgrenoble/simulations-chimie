@@ -214,7 +214,12 @@ export function SimulationISS() {
     { id: 'gravite', titre: 'Y a-t-il encore de la gravité à 400 km ?', depart: () => voirO(400, 7.7),
       texte: <>Regardez la flèche rouge : à 400 km, la Terre attire <strong>chaque kilogramme</strong> avec une force de <strong>8,7 N</strong> (g = 8,7 N/kg). Au sol, c’est 9,8 N/kg. La Terre est grande : monter de 400 km, c’est peu par rapport à son rayon de 6 378 km.
         <ExempleResolu>Un objet de <strong>10 kg</strong> : au sol P = 10 × 9,8 = 98 N ; à 400 km P = 10 × 8,7 = <strong>87 N</strong>. Presque pareil !</ExempleResolu></>,
-      tache: { type: 'num', q: 'Quel est le poids d’un astronaute de 70 kg à 400 km d’altitude ? (P = m × g)', unite: 'N', vrai: 608, tol: 0.02, affiche: x => String(x), pieges: [[686, 'C’est son poids au sol (70 × 9,8). À 400 km, g vaut 8,7 N/kg.'], [0, 'Le poids n’est pas nul : la Terre attire toujours l’astronaute.']], expl: 'P = 70 × 8,7 ≈ 608 N : environ 89 % de son poids au sol. Il n’a pas du tout « perdu » son poids.' } },
+      tache: { type: 'num', q: 'Quel est le poids d’un astronaute de 70 kg à 400 km d’altitude ? (P = m × g)', unite: 'N', vrai: 608, tol: 0.02, affiche: x => String(x), pieges: [[686, 'C’est son poids au sol (70 × 9,8). À 400 km, g vaut 8,7 N/kg.'], [0, 'Le poids n’est pas nul : la Terre attire toujours l’astronaute.'], [8.7, 'C’est g (le poids d’1 kg). Pour 70 kg, multipliez par la masse : P = m × g.'], [70 / 8.7, 'On multiplie : P = m × g (on ne divise pas la masse par g).']],
+        calcul: () => [
+          'Formule du poids : P = m × g.',
+          `La masse de l’astronaute est m = 70 kg (la masse ne change pas avec l’altitude). À 400 km, g = ${fr(gAlt(400), 1)} N/kg (flèche rouge).`,
+          `P = 70 × ${fr(gAlt(400), 1)} = ${fr(70 * Math.round(gAlt(400) * 10) / 10, 0)} N. Avec la valeur plus précise g = ${fr(gAlt(400), 2)} N/kg, on trouve ${fr(70 * gAlt(400), 0)} N : la petite différence vient seulement de l’arrondi de g.`,
+          `P ≈ ${fr(70 * gAlt(400), 0)} N.`], expl: 'P = 70 × 8,7 ≈ 608 N : environ 89 % de son poids au sol. Il n’a pas du tout « perdu » son poids.' } },
     { id: 'sol', titre: 'Une cabine immobile', depart: () => voirC(false),
       texte: <>Voici une <strong>cabine</strong> suspendue à un câble, avec une <strong>personne</strong> et une <strong>balle</strong> à l’intérieur. Le câble tient : la cabine est <strong>immobile</strong>. Cliquez sur « Lancer l’expérience » : on lâche la balle. Elle <strong>tombe</strong> vers le plancher (poids <strong>P</strong>). La personne, elle, est soutenue par le plancher (flèche bleue).</>,
       tache: { type: 'action', ok: enGuide && fait.sol, consigne: 'Lancez l’expérience avec le câble tenu.' } },

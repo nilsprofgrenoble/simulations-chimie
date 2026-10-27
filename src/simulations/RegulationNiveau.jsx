@@ -89,6 +89,9 @@ function simuler(p) {
 
 // Seuils d'alerte : on ignore les dépassements infimes dus au pas de calcul quand un seuil est réglé pile sur 30 ou 36 m
 
+// Garde seulement les pièges dont la fenêtre de détection ne recouvre pas celle de la bonne réponse (±max(tol, 4 %) autour du piège)
+const piegesValides = (vrai, tol, liste) => liste.filter(([v]) => isFinite(v) && Math.abs(v - vrai) > Math.max(tol, 0.04) * Math.abs(v) + tol * Math.abs(vrai));
+
 export function Simulation5({ naviguer }) {
   const [tr] = useState(lireTransfert);                      // réglages venus de « Point de fonctionnement », s'il y en a
   useEffect(() => { if (tr) effacerTransfert(); }, []);
@@ -179,17 +182,21 @@ export function Simulation5({ naviguer }) {
     { titre: 'Les seuils (1/2)', focus: ['reservoir'],
       texte: <>La régulation TOR utilise deux seuils de hauteur.</>,
       tache: { type: 'num', q: 'Hauteur du seuil haut, à ne pas dépasser', unite: 'm', vrai: 36, tol: 0.01,
+        aide: 'Pas de calcul : relisez l’énoncé de l’étape précédente (hauteur du haut du réservoir par rapport au sol).',
         pieges: [[30, 'Ça, c’est le seuil bas.'], [6, 'On demande la hauteur par rapport au sol, pas la hauteur d’eau dans le réservoir.']] } },
     { titre: 'Les seuils (2/2)', focus: ['reservoir'],
       texte: <>Et le niveau ne doit pas descendre sous le fond du réservoir.</>,
-      tache: { type: 'num', q: 'Hauteur du seuil bas', unite: 'm', vrai: 30, tol: 0.01, pieges: [[36, 'Ça, c’est le seuil haut.']] } },
+      tache: { type: 'num', q: 'Hauteur du seuil bas', unite: 'm', vrai: 30, tol: 0.01,
+        aide: 'Pas de calcul : le fond du réservoir est à 30 m du sol (énoncé de l’étape « La régulation tout-ou-rien »).', pieges: [[36, 'Ça, c’est le seuil haut.']] } },
     { titre: 'Régler la simulation', focus: ['reservoir'],
       texte: <>Les réglages des seuils sont apparus sous le schéma. Au départ, ils sont réglés sur 31 et 33 m : le réservoir n'est pas
         bien utilisé. Réglez le seuil bas sur <strong>30 m</strong> et le seuil haut sur <strong>36 m</strong>, et regardez les courbes changer.</>,
       tache: { type: 'action', ok: seuilsOk, consigne: `Seuil bas : ${fmt(hBas, 1)} m ${Math.abs(hBas - 30) < 0.05 ? '✅' : '⬜'}   Seuil haut : ${fmt(hHaut, 1)} m ${Math.abs(hHaut - 36) < 0.05 ? '✅' : '⬜'}` } },
     { titre: 'Le débit de la pompe', focus: ['pompe'],
       texte: <>Lisez la courbe verte du débit de la pompe (en bas) : quand la pompe tourne, elle fonctionne à son débit maximal.</>,
-      tache: { type: 'num', q: <>Débit maximal de la pompe Q<sub>v,pompe,MAX</sub></>, unite: 'm³/h', vrai: Qmax, tol: 0.02 } },
+      tache: { type: 'num', q: <>Débit maximal de la pompe Q<sub>v,pompe,MAX</sub></>, unite: 'm³/h', vrai: Qmax, tol: 0.02,
+        aide: 'Lecture graphique, sans calcul : valeur du palier haut de la courbe verte (pompe en marche).',
+        pieges: piegesValides(Qmax, 0.02, [[Qp, 'C’est le débit de puisage (la consommation des abonnés), pas le débit de la pompe.']]) } },
     { titre: 'Le programme de régulation', focus: [],
       texte: <>Dans le programme Python de la régulation, le débit de la pompe à l'instant suivant s'écrit :{codeTOR}
         Autrement dit : le débit vaut A si H &gt; B, C si H &lt; D, et sinon il ne change pas.</>,
@@ -202,11 +209,14 @@ export function Simulation5({ naviguer }) {
       texte: <>En 2020, en France, la consommation d'eau potable était de l'ordre de <strong>150 L par jour et par personne</strong>
         (notre-environnement.gouv.fr). Le château d'eau alimente une ville de <strong>7200 habitants</strong>.</>,
       tache: { type: 'num', q: 'Consommation de la ville par jour', unite: 'm³', vrai: 7200 * 0.15, tol: 0.01,
+        calcul: () => ['Hypothèse : chaque habitant consomme en moyenne 150 L par jour.', `Volume par jour : 7200 × 150 L = ${fmt(7200 * 150, 0)} L.`, `Conversion : 1 m³ = 1000 L, donc ${fmt(7200 * 150, 0)} L / 1000 = ${fmt(7200 * 0.15, 0)} m³.`],
         pieges: [[7200 * 150, 'Convertissez en m³ : 1 m³ = 1000 L.']] } },
     { titre: 'Le débit de puisage', focus: ['maison'],
       texte: <>On suppose que la consommation est la même à toute heure de la journée.</>,
       tache: { type: 'num', q: <>Débit de puisage Q<sub>v,puisage</sub></>, unite: 'm³/h', vrai: 45, tol: 0.01,
-        pieges: [[1080 * 24, 'Il y a 24 heures dans une journée : on divise.']] } },
+        calcul: () => ['Hypothèse : consommation uniforme sur la journée, donc Q_v,puisage = V / Δt.', `Q_v,puisage = ${fmt(7200 * 0.15, 0)} m³ / 24 h = ${fmt(7200 * 0.15 / 24, 0)} m³/h.`],
+        pieges: [[1080 * 24, 'Il y a 24 heures dans une journée : on divise.'], [7200 * 0.15, 'C’est le volume de la journée entière : divisez-le par la durée (24 h) pour obtenir un débit en m³/h.'],
+          [7200 * 0.15 / 86400, 'La durée doit être en heures (24 h), puisque le débit est demandé en m³/h : ne convertissez pas en secondes.']] } },
     { titre: 'Régler le puisage', focus: ['maison'],
       texte: <>Le réglage du débit de puisage est apparu. Réglez-le sur la valeur que vous venez de calculer.</>,
       tache: { type: 'action', ok: qp45 && seuilsOk, consigne: `Débit de puisage : ${fmt(Qp, 0)} m³/h${seuilsOk ? '' : ' (vérifiez aussi les seuils : 30 et 36 m)'}` } },
@@ -214,7 +224,9 @@ export function Simulation5({ naviguer }) {
       texte: <>Sur un cycle, la pompe tourne pendant une durée t<sub>marche</sub>, puis reste arrêtée. Le taux d'utilisation vaut
         t<sub>marche</sub> / durée d'un cycle. Survolez les courbes pour lire les instants précis.</>,
       tache: { type: 'num', q: 'Taux d’utilisation de la pompe sur un cycle (à 1 % près)', unite: '%', vrai: (sim.utilisation || 0.45) * 100, tol: 0.05,
-        aide: 'Repérez deux démarrages successifs de la pompe, et la durée pendant laquelle elle tourne entre les deux.' } },
+        aide: 'Repérez deux démarrages successifs de la pompe, et la durée pendant laquelle elle tourne entre les deux (mesure sur le graphique, sans formule : taux = t_marche / durée d’un cycle).',
+        pieges: piegesValides((sim.utilisation || 0.45) * 100, 0.05, [[100 - (sim.utilisation || 0.45) * 100, 'Vous avez donné la part du temps où la pompe est à l’arrêt. Le taux d’utilisation est t_marche / durée du cycle.'],
+          [sim.utilisation || 0.45, 'Donnez le taux en pourcentage : multipliez la fraction par 100.']]) } },
     { titre: 'Pourquoi cette valeur ?', focus: ['pompe', 'maison'],
       texte: <>Comparez le taux d'utilisation au rapport Q<sub>v,puisage</sub> / Q<sub>v,pompe,MAX</sub> = 45 / 100.</>,
       tache: { type: 'qcm', q: 'Le taux d’utilisation est égal à ce rapport. Pourquoi ?',
@@ -235,12 +247,16 @@ export function Simulation5({ naviguer }) {
     { titre: 'L’écart statique (1/2)', focus: ['pompe'],
       texte: <>Quand le niveau est stable, le débit de la pompe compense exactement le débit de puisage ({fmt(Qp, 0)} m³/h, sur une
         pompe de {fmt(Qmax, 0)} m³/h au maximum).</>,
-      tache: { type: 'num', q: 'Valeur de la commande Y une fois le niveau stabilisé', unite: '%', vrai: Qp / Qmax * 100, tol: 0.02 } },
+      tache: { type: 'num', q: 'Valeur de la commande Y une fois le niveau stabilisé', unite: '%', vrai: Qp / Qmax * 100, tol: 0.02,
+        calcul: () => ['Niveau stable : Q_pompe = Q_puisage (S · dH/dt = 0).', `Pompe supposée idéale : Q_pompe = Q_max × Y / 100, donc Y = 100 × Q_pompe / Q_max.`, `Y = 100 × ${fmt(Qp, 0)} / ${fmt(Qmax, 0)} = ${fmt(Qp / Qmax * 100, 1)} %.`],
+        pieges: piegesValides(Qp / Qmax * 100, 0.02, [[Qmax / Qp * 100, 'Le rapport est à l’envers : Y = 100 × Q_pompe / Q_max.'], [Qp / Qmax, 'Vous avez donné une fraction : multipliez par 100 pour l’exprimer en %.']]) } },
     { titre: 'L’écart statique (2/2)', focus: ['reservoir'],
       texte: <>On a Y = K<sub>p</sub> × (consigne − H), avec K<sub>p</sub> = {fmt(Kp, 0)} %/m.</>,
       tache: { type: 'num', q: 'Écart statique : consigne − H', unite: 'm', vrai: (Qp / Qmax * 100) / Kp, tol: 0.03,
         bloque: !enP ? 'Restez en régulation P.' : null,
-        pieges: [[(Qp / Qmax * 100) * Kp, 'C’est Y divisé par Kp.']] } },
+        calcul: () => [`Commande stabilisée : Y = 100 × ${fmt(Qp, 0)} / ${fmt(Qmax, 0)} = ${fmt(Qp / Qmax * 100, 1)} %.`, 'Y = K_p × (consigne − H), donc consigne − H = Y / K_p.',
+          `Écart statique = ${fmt(Qp / Qmax * 100, 1)} / ${fmt(Kp, 0)} = ${fmt((Qp / Qmax * 100) / Kp, 2)} m (régulateur P pur, pompe idéale, puisage constant).`],
+        pieges: [[(Qp / Qmax * 100) * Kp, 'Vous avez multiplié par K_p : l’écart statique est Y divisé par K_p.'], [Qp / Qmax * 100, 'C’est la commande Y en %. L’écart statique est Y / K_p, en m.']] } },
     { titre: 'Augmenter le gain', focus: ['reservoir'],
       texte: <>Augmentez K<sub>p</sub>, par exemple à 80 %/m, et observez le niveau.</>,
       tache: { type: 'qcm', q: 'Quand Kp augmente, l’écart statique…', options: ['diminue', 'augmente', 'ne change pas'], bonne: 0,

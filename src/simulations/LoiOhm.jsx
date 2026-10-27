@@ -121,12 +121,22 @@ export function SimulationLoiOhm() {
     { id: 'loi', titre: 'La loi d’Ohm : U = R × I', depart: () => voir('ohm', { inconnu: false, R: 100, U: 6 }),
       texte: <>Le coefficient de proportionnalité est la résistance : <strong>U = R × I</strong> (loi d’Ohm), avec U en <strong>volts</strong>, I en <strong>ampères</strong>, R en <strong>ohms</strong>. Donc R = U / I. ⚠️ Pensez à convertir les mA en A !
         <ExempleResolu>U = 6,0 V et I = 60 mA = 0,060 A : R = U / I = 6,0 / 0,060 = <strong>100 Ω</strong>.</ExempleResolu></>,
-      tache: { type: 'num', q: 'On mesure U = 9,0 V et I = 45 mA. Quelle est la résistance R (en Ω) ?', unite: 'Ω', vrai: 200, tol: 0.02, affiche: x => String(x), pieges: [[0.2, 'Tu as oublié de convertir : I = 45 mA = 0,045 A.']], expl: 'R = U / I = 9,0 / 0,045 = 200 Ω.' } },
+      tache: { type: 'num', q: 'On mesure U = 9,0 V et I = 45 mA. Quelle est la résistance R (en Ω) ?', unite: 'Ω', vrai: 200, tol: 0.02, affiche: x => String(x), pieges: [[0.2, 'Tu as oublié de convertir : I = 45 mA = 0,045 A.'], [5, 'Tu as divisé à l’envers. La résistance est R = U / I : on divise la tension U par l’intensité I.'], [9 * 45, 'Tu as multiplié. La résistance est R = U / I : on divise U par I (avec I en ampères).']],
+        calcul: () => [
+          'La loi d’Ohm donne U = R × I. Donc R = U / I.',
+          'Les unités doivent être des volts (V) et des ampères (A). U = 9,0 V est déjà en volts.',
+          'Conversion : 1 mA = 0,001 A, donc I = 45 mA = 45 × 0,001 = 0,045 A.',
+          'R = U / I = 9,0 / 0,045 = 200 Ω.'], expl: 'R = U / I = 9,0 / 0,045 = 200 Ω.' } },
     { id: 'calcul', titre: 'Prévoir l’intensité', depart: () => voir('ohm', { inconnu: false, R: 330, U: 6 }),
       texte: <>On peut aussi <strong>prévoir</strong> le courant : I = U / R.
         <ExempleResolu>U = 6,0 V et R = 100 Ω : I = 6,0 / 100 = 0,060 A = <strong>60 mA</strong>. {bouton('Voir sur le montage', () => voir('ohm', { inconnu: false, R: 100, U: 6 }))}</ExempleResolu>
         À vous : R = 330 Ω et U = 6,0 V.</>,
-      tache: { type: 'num', q: 'Quelle est l’intensité I (en mA) ?', unite: 'mA', vrai: 18.18, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[1980, 'Tu as multiplié : I = U / R, pas U × R.'], [0.01818, 'Tu as donné l’intensité en ampères : multiplie par 1000 pour l’avoir en mA.']], expl: 'I = 6,0 / 330 = 0,0182 A = 18,2 mA.' } },
+      tache: { type: 'num', q: 'Quelle est l’intensité I (en mA) ?', unite: 'mA', vrai: 18.18, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[1980, 'Tu as multiplié : I = U / R, pas U × R.'], [0.01818, 'Tu as donné l’intensité en ampères : multiplie par 1000 pour l’avoir en mA.'], [330 / 6, 'Tu as divisé à l’envers. L’intensité est I = U / R : on divise la tension U par la résistance R.']],
+        calcul: () => [
+          'La loi d’Ohm donne U = R × I. Donc I = U / R.',
+          'Ici, U = 6,0 V et R = 330 Ω (déjà en volts et en ohms).',
+          'I = U / R = 6,0 / 330 = 0,01818 A.',
+          'Conversion en mA : 1 A = 1000 mA, donc I = 0,01818 × 1000 = 18,18 mA (environ 18 mA).'], expl: 'I = 6,0 / 330 = 0,0182 A = 18,2 mA.' } },
     { id: 'modele', titre: 'Modéliser la caractéristique', depart: () => voir('ohm', { inconnu: false, R: 100 }),
       texte: <>Modéliser, c’est trouver une <strong>relation mathématique</strong> qui décrit les points mesurés. Deux modèles sont possibles : <strong>proportionnel</strong> U = k × I (droite passant par l’origine) ou <strong>affine</strong> U = a × I + b (droite qui ne passe pas forcément par l’origine). Essayez les deux dans l’atelier. Vous pouvez aussi copier vos mesures et utiliser le code <strong>Python</strong> proposé pour tracer le nuage de points et la droite.</>,
       tache: { type: 'qcm', q: 'Pour un conducteur ohmique, on trouve avec le modèle affine…', options: ['b ≈ 0 : le modèle proportionnel convient', 'b très grand', 'a = 0', 'rien : le modèle affine ne marche pas'], bonne: 0, expl: 'La droite passe par l’origine : b est nul (aux incertitudes près). U = k × I convient, et k est la résistance R.' } },
@@ -146,7 +156,8 @@ export function SimulationLoiOhm() {
     { id: 'etalon', titre: 'Utiliser la courbe d’étalonnage', depart: () => { setAtelier('capteur'); setK(k => ({ ...k, ref: true })); },
       texte: <>La courbe d’étalonnage permet l’opération inverse : <strong>mesurer R</strong> (avec U et I), puis <strong>lire la température</strong> correspondante sur la courbe.
         <ExempleResolu>R = 5,3 kΩ : on cherche 5,3 sur l’axe vertical, on suit l’horizontale jusqu’à la courbe, puis on descend sur l’axe horizontal : θ ≈ <strong>40 °C</strong>.</ExempleResolu></>,
-      tache: { type: 'num', q: 'Une mesure donne R = 3,6 kΩ. Quelle est la température (en °C, à 3 °C près) ?', unite: '°C', vrai: 50, tol: 0.06, affiche: x => String(x), pieges: [], expl: 'Sur la courbe, R = 3,6 kΩ correspond à environ 50 °C.' } },
+      tache: { type: 'num', q: 'Une mesure donne R = 3,6 kΩ. Quelle est la température (en °C, à 3 °C près) ?', unite: '°C', vrai: 50, tol: 0.06, affiche: x => String(x), pieges: [[3.6, 'Ce nombre est la résistance (en kΩ), que l’énoncé donne déjà. On cherche la température : lisez-la sur l’axe horizontal de la courbe.']],
+        aide: 'Sur la courbe, repérez 3,6 sur l’axe vertical (résistance en kΩ), suivez l’horizontale jusqu’à la courbe, puis descendez sur l’axe horizontal pour lire θ.', expl: 'Sur la courbe, R = 3,6 kΩ correspond à environ 50 °C.' } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li><strong>Loi d’Ohm</strong> : U = R × I (U en V, I en A, R en Ω) ; valable pour un conducteur ohmique.</li>

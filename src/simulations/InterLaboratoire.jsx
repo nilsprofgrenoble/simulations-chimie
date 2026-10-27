@@ -986,6 +986,8 @@ export function ManualInput({p, n, cible, onValidate}) {
 // ════════════════════════════════════════════════════════════════
 const moy = v => v.reduce((a, b) => a + b, 0) / v.length;
 const ect = v => { const m = moy(v); return Math.sqrt(v.reduce((a, x) => a + (x - m) ** 2, 0) / (v.length - 1)); };
+// Garde seulement les pièges dont la valeur est franchement différente de la bonne réponse (sinon confusion avec la tolérance)
+const piegesLoin = (liste, vrai) => liste.filter(([v]) => isFinite(v) && Math.abs(v - vrai) > 0.09 * Math.abs(vrai));
 const COUL = ['#e63946', '#2a9d8f', '#e9a824', '#2a6099', '#6a4c93', '#f4a261', '#264653', '#457b9d', '#d62828', '#2b9348', '#023e8a', '#7b2d8b'];
 
 // Une passe du test de Cochran sur les laboratoires `actifs` : C = s²max / Σ s²i
@@ -1195,6 +1197,14 @@ const PG = (() => {
 const SRG = { sr: 0.042, sL: 0.074, sR: 0.085 };       // résultats de l'étude du parcours (valeurs fournies, arrondies)
 const Y_G = [10.31, 10.25];                            // les deux essais du laboratoire de l'élève
 const ECR_G = ecritureResultat((Y_G[0] + Y_G[1]) / 2, 2 * SRG.sR);
+// Lignes de calcul pas à pas communes (écart-type expérimental d'une liste de valeurs)
+const lignesEcartType = (vals, nom, nomMoy, dMoy, dS) => {
+  const mm = moy(vals), S = vals.reduce((a, x) => a + (x - mm) ** 2, 0), N = vals.length;
+  return [`${nom} = √[ Σ(x − ${nomMoy})² / (N − 1) ], avec N = ${N} valeurs (écart-type expérimental : on divise par N − 1).`,
+    `Moyenne ${nomMoy} = ${fmt(mm, dMoy)} ; Σ(x − ${nomMoy})² = ${fmt(S, 5)}.`,
+    `Variance = ${fmt(S, 5)} / ${N - 1} = ${fmt(S / (N - 1), 5)}.`,
+    `${nom} = √${fmt(S / (N - 1), 5)} = ${fmt(Math.sqrt(S / (N - 1)), dS)} mmol/L.`];
+};
 
 function ParcoursInterlabo({ changerMode }) {
   const [guide, setGuide] = useEtatPersistant('interlabo-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
@@ -1214,11 +1224,18 @@ function ParcoursInterlabo({ changerMode }) {
         expl: 'Les moyennes, elles, sont contrôlées par le test de Grubbs.' } },
     { id: 'moyenneLab', titre: 'La moyenne d’un laboratoire', focus: ['donnees'],
       texte: <>Voici les 4 essais de chaque laboratoire (en mmol/L). Commencez par le laboratoire 1.</>,
-      tache: { type: 'num', q: 'Moyenne ȳ_1 du laboratoire 1', unite: 'mmol/L', vrai: m[0], tol: 0.0006, affiche: x => fmt(x, 3), aide: <>ȳ_i = (somme des n essais) / n</> } },
+      tache: { type: 'num', q: 'Moyenne ȳ_1 du laboratoire 1', unite: 'mmol/L', vrai: m[0], tol: 0.0006, affiche: x => fmt(x, 3), aide: <>ȳ_i = (somme des n essais) / n</>,
+        calcul: () => ['ȳ_1 = (somme des n essais) / n, avec n = 4 essais du laboratoire 1.',
+          `Somme = ${DG[0].map(x => fmt(x, 2)).join(' + ')} = ${fmt(DG[0].reduce((a, b) => a + b, 0), 2)} mmol/L.`,
+          `ȳ_1 = ${fmt(DG[0].reduce((a, b) => a + b, 0), 2)} / 4 = ${fmt(m[0], 3)} mmol/L.`],
+        pieges: [[DG[0].reduce((a, b) => a + b, 0), 'Vous avez donné la somme des 4 essais : il faut la diviser par n = 4.']] } },
     { id: 'ecartLab', titre: 'L’écart-type d’un laboratoire', focus: ['donnees'],
       texte: <>Toujours pour le laboratoire 1, calculez l’écart-type expérimental (touche σ<sub>n−1</sub> ou s<sub>x</sub> de la calculatrice).</>,
       tache: { type: 'num', q: 'Écart-type s_1 du laboratoire 1', unite: 'mmol/L', vrai: s[0], tol: 0.03, affiche: x => fmt(x, 3),
-        pieges: [[PG.sPop1, 'C’est σ_n (diviseur n) : prenez σ_n−1, qui divise par n − 1.']] } },
+        calcul: () => lignesEcartType(DG[0], 's_1', 'ȳ_1', 3, 3),
+        pieges: [[PG.sPop1, 'C’est σ_n (diviseur n) : prenez σ_n−1, qui divise par n − 1.'],
+          ...piegesLoin([[s[0] ** 2, 'C’est la variance s² : l’écart-type est sa racine carrée.'],
+            [Math.sqrt(DG[0].reduce((a, x) => a + (x - m[0]) ** 2, 0)), 'Il manque la division par n − 1 (= 3) sous la racine.']], s[0])] } },
     { id: 'apercu', titre: 'Les résultats en images', focus: ['graphe'],
       texte: <>Les lignes ȳ_i et s_i du tableau sont maintenant calculées pour tous les laboratoires, et le graphique montre chaque essai. Chaque point est un essai, le trait est la moyenne.</>,
       tache: { type: 'qcm', q: 'Quel laboratoire a les essais les plus dispersés ?', options: ['Le laboratoire 3', 'Le laboratoire 6', 'Le laboratoire 1'], bonne: 0,
@@ -1226,10 +1243,18 @@ function ParcoursInterlabo({ changerMode }) {
     { id: 'cochranF', titre: 'Le test de Cochran', focus: [],
       texte: <>Le test compare la plus grande variance à la somme des variances : C = s<sup>2</sup><sub>max</sub> / Σ s<sub>i</sub><sup>2</sup>, sur les 8 laboratoires. Si un laboratoire est bien plus dispersé que les autres, C est proche de 1 ; si tous se ressemblent, C vaut environ 1 / p.</>,
       tache: { type: 'num', q: 'Statistique de Cochran C (8 laboratoires)', unite: '', vrai: c8.C, tol: 0.01, affiche: x => fmt(x, 3),
-        pieges: [[Math.max(...s) / s.reduce((a, b) => a + b, 0), 'Il faut élever les écarts-types au carré (variances), au numérateur et pour la somme.']] } },
+        calcul: () => { const v = s.map(x => x ** 2), tot = v.reduce((a, b) => a + b, 0), k = v.indexOf(Math.max(...v));
+          return ['C = s²_max / Σ s²_i : on utilise les variances (carrés des écarts-types s_i du tableau), sur les 8 laboratoires. Le test suppose que, sans anomalie, tous les laboratoires ont la même variance de répétabilité.',
+            `Variances s²_i (laboratoires 1 à 8) : ${v.map(x => fmt(x, 5)).join(' ; ')}.`,
+            `La plus grande est celle du laboratoire ${k + 1} : s²_max = ${fmt(v[k], 5)}. Somme : Σ s²_i = ${fmt(tot, 5)}.`,
+            `C = ${fmt(v[k], 5)} / ${fmt(tot, 5)} = ${fmt(c8.C, 3)}.`]; },
+        pieges: [[Math.max(...s) / s.reduce((a, b) => a + b, 0), 'Il faut élever les écarts-types au carré (variances), au numérateur et pour la somme.'],
+          ...piegesLoin([[1 / s.length, 'C’est la valeur que prendrait C si tous les laboratoires avaient la même dispersion (1 / p). Calculez s²_max / Σ s²_i avec les données.']], c8.C)] } },
     { id: 'cochranT', titre: 'Lire la table de Cochran', focus: ['tables'],
       texte: <>La table donne la valeur que C dépasserait rarement si tous les laboratoires avaient la même dispersion : seuil à 5 % et seuil à 1 %. Entrez dans la table avec p = 8 laboratoires et n = 4 essais.</>,
-      tache: { type: 'num', q: 'Valeur critique C₁ % (p = 8, n = 4)', unite: '', vrai: tableCochran[8][4].p1, tol: 0.003, affiche: x => fmt(x, 3) } },
+      tache: { type: 'num', q: 'Valeur critique C₁ % (p = 8, n = 4)', unite: '', vrai: tableCochran[8][4].p1, tol: 0.003, affiche: x => fmt(x, 3),
+        aide: 'Lecture de la table : ligne p = 8 laboratoires, colonne n = 4 essais, et colonne du seuil à 1 % (pas celle de 5 %).',
+        pieges: [[tableCochran[8][4].p5, 'C’est la valeur critique à 5 %. On demande celle à 1 %.']] } },
     { id: 'cochranV', titre: 'Conclure', focus: [],
       texte: <>Comparez C à C₁ % = {fmt(tableCochran[8][4].p1, 3)} et à C₅ % = {fmt(tableCochran[8][4].p5, 3)}. Au-delà de C₁ %, la valeur est <strong>aberrante</strong>. Entre C₅ % et C₁ %, elle est <strong>isolée</strong> (douteuse). En dessous de C₅ %, tout va bien.</>,
       tache: { type: 'qcm', q: 'Que conclure pour le laboratoire de plus grande variance ?', options: ['Il est aberrant : on l’écarte', 'Il est isolé (douteux) : on le signale et on le conserve', 'Il est correct'], bonne: 0 } },
@@ -1239,22 +1264,42 @@ function ParcoursInterlabo({ changerMode }) {
     { id: 'cochran2', titre: 'On recommence avec 7 laboratoires', focus: ['tables'],
       texte: <>La norme demande de répéter le test tant qu’un laboratoire est aberrant. Recalculez C sans le laboratoire écarté (p = 7).</>,
       tache: { type: 'num', q: 'Statistique de Cochran C (7 laboratoires)', unite: '', vrai: c7.C, tol: 0.02, affiche: x => fmt(x, 3),
+        calcul: () => { const act = s.map((_, i) => i).filter(i => i !== 2), v = act.map(i => s[i] ** 2), tot = v.reduce((a, b) => a + b, 0), k = v.indexOf(Math.max(...v));
+          return ['Même formule C = s²_max / Σ s²_i, mais sans le laboratoire 3 (écarté) : p = 7.',
+            `Variances s²_i des laboratoires 1, 2, 4 à 8 : ${v.map(x => fmt(x, 5)).join(' ; ')}.`,
+            `La plus grande est celle du laboratoire ${act[k] + 1} : s²_max = ${fmt(v[k], 5)}. Somme : Σ s²_i = ${fmt(tot, 5)}.`,
+            `C = ${fmt(v[k], 5)} / ${fmt(tot, 5)} = ${fmt(c7.C, 3)}.`]; },
         pieges: [[c8.C, 'Le laboratoire écarté est encore dans votre somme.']],
         expl: `Pour p = 7 et n = 4, C₅ % vaut ${fmt(tableCochran[7][4].p5, 3)} : C est en dessous, il n’y a plus de laboratoire trop dispersé.` } },
     { id: 'grubbsF', titre: 'Le test de Grubbs', focus: [],
       texte: <>Ce test porte sur les <strong>moyennes</strong> des 7 laboratoires restants. G = |ȳ<sub>i</sub> − ȳ| / s(ȳ), pour la moyenne la plus éloignée de ȳ, la moyenne des moyennes. D’abord ȳ.</>,
       tache: { type: 'num', q: 'Moyenne des moyennes ȳ (7 laboratoires)', unite: 'mmol/L', vrai: g7.ybar, tol: 0.0006, affiche: x => fmt(x, 3),
+        calcul: () => { const act = m.map((_, i) => i).filter(i => i !== 2), mm = act.map(i => m[i]);
+          return ['ȳ est la moyenne des moyennes ȳ_i des 7 laboratoires conservés (le laboratoire 3 est écarté). Chaque laboratoire a le même nombre d’essais, donc le même poids.',
+            `Moyennes ȳ_i (laboratoires 1, 2, 4 à 8) : ${mm.map(x => fmt(x, 3)).join(' ; ')} mmol/L.`,
+            `Somme = ${fmt(mm.reduce((a, b) => a + b, 0), 3)} mmol/L.`,
+            `ȳ = ${fmt(mm.reduce((a, b) => a + b, 0), 3)} / 7 = ${fmt(g7.ybar, 3)} mmol/L.`]; },
         pieges: [[PG.m8, 'Vous avez gardé le laboratoire écarté.']] } },
     { id: 'grubbsS', titre: 'La dispersion des moyennes', focus: [],
       texte: <>Calculez maintenant l’écart-type expérimental s(ȳ) des 7 moyennes ȳ<sub>i</sub> (σ<sub>n−1</sub> de la calculatrice).</>,
-      tache: { type: 'num', q: 'Écart-type des moyennes s(ȳ)', unite: 'mmol/L', vrai: g7.sy, tol: 0.03, affiche: x => fmt(x, 4) } },
+      tache: { type: 'num', q: 'Écart-type des moyennes s(ȳ)', unite: 'mmol/L', vrai: g7.sy, tol: 0.03, affiche: x => fmt(x, 4),
+        calcul: () => { const act = m.map((_, i) => i).filter(i => i !== 2), mm = act.map(i => m[i]);
+          return lignesEcartType(mm, 's(ȳ)', 'ȳ', 3, 4); },
+        pieges: piegesLoin([[Math.sqrt(m.filter((_, i) => i !== 2).reduce((a, x) => a + (x - g7.ybar) ** 2, 0) / 7), 'C’est σ_n (diviseur 7) : prenez σ_n−1, qui divise par 7 − 1 = 6.'],
+          [g7.sy ** 2, 'C’est la variance : l’écart-type est sa racine carrée.']], g7.sy) } },
     { id: 'grubbsG', titre: 'La statistique G', focus: [],
       texte: <>Le laboratoire dont la moyenne est la plus éloignée de ȳ est celui du graphique dont le trait est le plus haut.</>,
       tache: { type: 'num', q: 'Statistique de Grubbs G', unite: '', vrai: g7.G, tol: 0.015, affiche: x => fmt(x, 3),
+        calcul: () => ['G = |ȳ_i − ȳ| / s(ȳ), pour la moyenne la plus éloignée de ȳ. Le test suppose que les moyennes des laboratoires suivent une loi normale.',
+          `Moyenne la plus éloignée : laboratoire ${g7.lab + 1}, ȳ_${g7.lab + 1} = ${fmt(m[g7.lab], 3)} mmol/L.`,
+          `|ȳ_${g7.lab + 1} − ȳ| = |${fmt(m[g7.lab], 3)} − ${fmt(g7.ybar, 3)}| = ${fmt(Math.abs(m[g7.lab] - g7.ybar), 3)} mmol/L.`,
+          `G = ${fmt(Math.abs(m[g7.lab] - g7.ybar), 3)} / ${fmt(g7.sy, 4)} = ${fmt(g7.G, 3)}.`],
         pieges: [[g8.G, 'Vous avez gardé le laboratoire écarté par Cochran.']] } },
     { id: 'grubbsT', titre: 'Lire la table de Grubbs', focus: ['tables'],
       texte: <>La table de Grubbs ne dépend que du nombre p de laboratoires (ici p = 7).</>,
-      tache: { type: 'num', q: 'Valeur critique G₅ % (p = 7)', unite: '', vrai: tableGrubbs[7].p5, tol: 0.002, affiche: x => fmt(x, 3) } },
+      tache: { type: 'num', q: 'Valeur critique G₅ % (p = 7)', unite: '', vrai: tableGrubbs[7].p5, tol: 0.002, affiche: x => fmt(x, 3),
+        aide: 'Lecture de la table : ligne p = 7 laboratoires, colonne du seuil à 5 % (pas celle de 1 %).',
+        pieges: [[tableGrubbs[7].p1, 'C’est la valeur critique à 1 %. On demande celle à 5 %.']] } },
     { id: 'grubbsV', titre: 'Conclure', focus: ['tables'],
       texte: <>Comparez G aux deux valeurs critiques de la ligne p = 7.</>,
       tache: { type: 'qcm', q: 'Le laboratoire 6 est…', options: ['isolé (douteux) : G est entre G₅ % et G₁ %', 'aberrant : G dépasse G₁ %', 'correct : G est inférieur à G₅ %'], bonne: 0 } },
@@ -1268,13 +1313,19 @@ function ParcoursInterlabo({ changerMode }) {
     { id: 'limiteR', titre: 'Utiliser la méthode : deux essais', focus: ['mesurage'],
       texte: <>Votre laboratoire applique maintenant la méthode à un échantillon de teneur voisine : <strong>2 essais</strong>, en conditions de répétabilité, donnent y<sub>1</sub> = {fmt(Y_G[0], 2)} et y<sub>2</sub> = {fmt(Y_G[1], 2)} mmol/L. Avant de les moyenner, on vérifie qu’ils sont compatibles : leur écart ne doit pas dépasser la <strong>limite de répétabilité</strong> r = 2,8 × s<sub>r</sub>. (2,8 ≈ 1,96 × √2 : seuil à 95 %, si les essais suivent une loi normale d’écart-type s<sub>r</sub>.)</>,
       tache: { type: 'num', q: 'Limite de répétabilité r', unite: 'mmol/L', vrai: 2.8 * SRG.sr, tol: 0.03, affiche: x => fmt(x, 3),
-        pieges: [[SRG.sr, 'C’est s_r : il faut le multiplier par 2,8.'], [2.8 * SRG.sR, 'Vous avez pris s_R : pour des essais en conditions de répétabilité, c’est s_r.']] } },
+        calcul: () => ['r = 2,8 × s_r, avec s_r = 0,042 mmol/L (écart-type de répétabilité de l’étude). Hypothèse : deux essais en conditions de répétabilité, de loi normale ; 2,8 ≈ 1,96 × √2 donne un seuil à 95 % sur leur écart.',
+          `r = 2,8 × ${fmt(SRG.sr, 3)} = ${fmt(2.8 * SRG.sr, 3)} mmol/L.`],
+        pieges: [[SRG.sr, 'C’est s_r : il faut le multiplier par 2,8.'], [2.8 * SRG.sR, 'Vous avez pris s_R : pour des essais en conditions de répétabilité, c’est s_r.'],
+          [1.96 * SRG.sr, 'Il manque le facteur √2 : l’écart de deux essais a pour écart-type √2 × s_r, d’où 1,96 × √2 ≈ 2,8.']] } },
     { id: 'compat', titre: 'Les essais sont-ils compatibles ?', focus: ['mesurage'],
       texte: <>Comparez |y<sub>1</sub> − y<sub>2</sub>| à r = {fmt(2.8 * SRG.sr, 3)} mmol/L.</>,
       tache: { type: 'qcm', q: 'Peut-on faire la moyenne des deux essais ?', options: [`Oui : |y₁ − y₂| = ${fmt(Math.abs(Y_G[0] - Y_G[1]), 2)} est inférieur à r`, 'Non : il faut refaire des essais', 'On ne peut pas savoir sans connaître s_R'], bonne: 0 } },
     { id: 'moyenneRes', titre: 'Le résultat du mesurage', focus: ['mesurage'],
       texte: <>Les essais sont compatibles : le résultat du mesurage est leur moyenne.</>,
-      tache: { type: 'num', q: 'Moyenne ȳ des deux essais', unite: 'mmol/L', vrai: (Y_G[0] + Y_G[1]) / 2, tol: 0.0007, affiche: x => fmt(x, 2) } },
+      tache: { type: 'num', q: 'Moyenne ȳ des deux essais', unite: 'mmol/L', vrai: (Y_G[0] + Y_G[1]) / 2, tol: 0.0007, affiche: x => fmt(x, 2),
+        calcul: () => [`ȳ = (y_1 + y_2) / 2 = (${fmt(Y_G[0], 2)} + ${fmt(Y_G[1], 2)}) / 2.`,
+          `ȳ = ${fmt(Y_G[0] + Y_G[1], 2)} / 2 = ${fmt((Y_G[0] + Y_G[1]) / 2, 2)} mmol/L.`],
+        pieges: [[Y_G[0] + Y_G[1], 'Vous avez donné la somme des deux essais : il faut la diviser par 2.']] } },
     { id: 'quelSigma', titre: 'Quelle incertitude associer ?', focus: [],
       texte: <>Il reste à exprimer l’incertitude sur ce résultat. L’étude interlaboratoire en fournit une estimation.</>,
       tache: { type: 'qcm', q: 'Quel écart-type prendre comme incertitude-type ?', options: ['s_R : il contient la dispersion entre laboratoires, donc l’effet laboratoire que s_r seul ignore', 's_r : c’est la dispersion de mes propres essais', 's_L : c’est l’effet laboratoire seul'], bonne: 0,
@@ -1282,7 +1333,9 @@ function ParcoursInterlabo({ changerMode }) {
     { id: 'U', titre: 'L’incertitude élargie', focus: [],
       texte: <>On prend u = s<sub>R</sub> = {fmt(SRG.sR, 3)} mmol/L, et on l’élargit avec un facteur k = 2 (environ 95 % de confiance, sous l’hypothèse d’une loi normale) : U = k × u.</>,
       tache: { type: 'num', q: 'Incertitude élargie U', unite: 'mmol/L', vrai: 2 * SRG.sR, tol: 0.02, affiche: x => fmt(x, 3),
-        pieges: [[SRG.sR, 'C’est l’incertitude-type u ; il faut multiplier par k = 2.'], [2 * SRG.sr, 'Vous avez pris s_r : il faut s_R, qui contient l’effet laboratoire.']] } },
+        calcul: () => ['U = k × u, avec u = s_R = 0,085 mmol/L (incertitude-type) et k = 2 (niveau de confiance d’environ 95 %, si la loi est normale).',
+          `U = 2 × ${fmt(SRG.sR, 3)} = ${fmt(2 * SRG.sR, 3)} mmol/L.`],
+        pieges: [[SRG.sR, 'Deux erreurs possibles ici : oublier le facteur k = 2 (U = k × u, avec u = s_R), ou prendre s_r à la place de s_R (seul s_R contient l’effet laboratoire).'], [2 * SRG.sr, 'Vous avez pris s_r : il faut s_R, qui contient l’effet laboratoire.']] } },
     { id: 'ecriture', titre: 'Écrire le résultat', focus: [],
       texte: <>Règle d’écriture : on donne U avec 2 chiffres significatifs au plus (arrondi par excès), et le résultat avec le même nombre de décimales. On précise k et l’unité.</>,
       tache: { type: 'qcm', q: 'Quelle écriture est correcte ?', options: [`${ECR_G.m} ± ${ECR_G.U} mmol/L (k = 2)`, '10,275 ± 0,1700 mmol/L (k = 2)', `${ECR_G.m} ± ${fmt(2 * SRG.sr, 3)} mmol/L (k = 2)`], bonne: 0,

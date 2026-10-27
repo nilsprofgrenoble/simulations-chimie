@@ -283,6 +283,12 @@ export function SimulationMouvementSysteme() {
       texte: <>Lisez dans le tableau la norme ‖Δv‖ au point A5.</>,
       tache: { type: 'num', q: 'Norme ‖Δv‖ (en m/s)', unite: 'm/s', vrai: 2 * G0 * 0.12, tol: 0.03, affiche: v => vir(v.toFixed(2)), cs: 2,
         bloque: okConstr ? null : 'Faites d’abord la construction (étape précédente).',
+        pieges: [[G0 * 0.12, 'Δv relie v_[i−1] et v_[i+1] : ces deux dates sont séparées de 2τ = 0,24 s, pas de τ = 0,12 s.'],
+          [G0, 'Vous avez donné g (la variation de vitesse en 1 s). Ici, la durée entre v_[i−1] et v_[i+1] est Δt = 2τ = 0,24 s : ‖Δv‖ = g × Δt.']],
+        calcul: () => [
+          'Chute libre sans frottement : la vitesse augmente de g = 9,8 m/s à chaque seconde, donc ‖Δv‖ = g × Δt.',
+          'Δv = v_[i+1] − v_[i−1] : les deux vitesses sont séparées de Δt = 2τ = 2 × 0,12 = 0,24 s.',
+          `‖Δv‖ = 9,8 × 0,24 = ${vir((G0 * 0.24).toFixed(2))} m/s.`],
         expl: 'Δv = g·Δt = 9,8 × 0,24 ≈ 2,35 m/s : la vitesse augmente de 2,35 m/s en 0,24 s (Δt = 2τ).' } },
     { id: 'force1', titre: 'Quelle force ?', onglet: 'chrono', focus: ['scene'],
       texte: <>Les frottements de l’air sont négligeables pour cette bille.</>,
@@ -291,6 +297,14 @@ export function SimulationMouvementSysteme() {
     { id: 'loi', titre: 'La relation ΣF ≈ m·Δv/Δt', onglet: 'chrono', focus: ['bilan'],
       texte: <>Le tableau donne la masse (m = 0,100 kg), ‖Δv‖ et Δt = 2τ. Calculez m·‖Δv‖/Δt, puis comparez avec le poids de la bille.</>,
       tache: { type: 'num', q: 'm·‖Δv‖ / Δt (en N)', unite: 'N', vrai: 0.1 * G0, tol: 0.03, affiche: v => vir(v.toFixed(2)), cs: 2,
+        pieges: [[0.1 * 2 * G0 * 0.12, 'Vous avez oublié de diviser par Δt = 2τ = 0,24 s : ΣF ≈ m·‖Δv‖ / Δt.'],
+          [0.1 * 2 * G0 * 0.12 / 0.12, 'Δt n’est pas τ = 0,12 s : c’est la durée entre v_[i−1] et v_[i+1], soit 2τ = 0,24 s.'],
+          [G0, 'Vous avez oublié de multiplier par la masse m = 0,100 kg : 9,8 est une accélération (en m/s²), pas une force en N.']],
+        calcul: () => [
+          'Relation : ΣF ≈ m·‖Δv‖ / Δt (système assimilé à un point, frottements de l’air négligés).',
+          'Données : m = 0,100 kg ; ‖Δv‖ = 2,35 m/s (étape précédente) ; Δt = 2τ = 0,24 s.',
+          `m·‖Δv‖ = 0,100 × ${vir((2 * G0 * 0.12).toFixed(2))} = ${vir((0.2 * G0 * 0.12).toFixed(3))}.`,
+          `m·‖Δv‖ / Δt = ${vir((0.2 * G0 * 0.12).toFixed(3))} / 0,24 = ${vir((0.1 * G0).toFixed(2))} N.`],
         expl: 'On trouve 0,98 N, soit exactement le poids P = m·g = 0,100 × 9,8. Pour un système de masse m : ΣF ≈ m·Δv/Δt.' } },
     { id: 'masseC', titre: 'Et si la bille était plus lourde ?', onglet: 'chrono', focus: ['reglages', 'scene'],
       texte: <>Avec le curseur de masse, prenez une bille de 0,3 kg ou plus et regardez ce que devient Δv.</>,
@@ -352,6 +366,18 @@ export function SimulationMouvementSysteme() {
       texte: <>La masse de la Lune est m = 7,35×10²² kg. Calculez m·‖Δv‖/Δt avec les valeurs du tableau (attention aux unités : km/s et jours ; passez en m/s et en s).</>,
       tache: { type: 'num', q: 'm·‖Δv‖ / Δt (en N)', unite: 'N', vrai: FCIN_LUNE, tol: 0.04, affiche: v => sci(v, 2), cs: 2,
         bloque: okLune ? null : 'Faites d’abord la construction pour la Lune.',
+        pieges: (() => { const S = SCEN.lune.build({}), d = dvEn(analyser(S, 0), S, 5, 1);
+          return [[S.m * hyp(d.x, d.y) / 2, 'Convertissez la durée en secondes : Δt = 2 jours = 2 × 86 400 s = 172 800 s.'],
+            [S.m * hyp(d.x, d.y) * 1e-3 / 2, 'Convertissez ‖Δv‖ en m/s (1 km/s = 1 000 m/s) et Δt en secondes (1 jour = 86 400 s).'],
+            [2 * FCIN_LUNE, 'Δt est la durée entre v_[i−1] et v_[i+1] : 2τ = 2 jours, pas 1 jour.']]; })(),
+        calcul: () => {
+          const S = SCEN.lune.build({}), d = dvEn(analyser(S, 0), S, 5, 1), n = hyp(d.x, d.y);
+          return [
+            'Relation : ΣF ≈ m·‖Δv‖ / Δt (Lune assimilée à un point, orbite circulaire dans le référentiel géocentrique supposé galiléen). On se place au point A5 avec k = 1.',
+            `Conversions : ‖Δv‖ = ${fmt(n / 1000, 3)} km/s = ${fmt(n, 0)} m/s ; Δt = 2τ = 2 jours = 2 × 86 400 = ${fmt(d.dt, 0)} s.`,
+            `m·‖Δv‖ = 7,35 × 10²² × ${fmt(n, 0)} = ${sci(S.m * n, 3)}.`,
+            `m·‖Δv‖ / Δt = ${sci(S.m * n, 3)} / ${fmt(d.dt, 0)} = ${sci(FCIN_LUNE, 3)} N, soit ${sci(FCIN_LUNE, 2)} N.`];
+        },
         expl: `On trouve ≈ 2,0×10²⁰ N. La loi de gravitation donne G·m_L·m_T/R² = ${sci(F_GRAV_LUNE, 2)} N : les deux méthodes sont d’accord, ce qui confirme la relation ΣF ≈ m·Δv/Δt.` } },
     { id: 'dt', titre: 'Et si Δt est grand ?', onglet: 'chrono', focus: ['reglages', 'bilan'],
       texte: <>Avec « Écart entre les dates », prenez k = 3 (Δt = 6 jours) et regardez l’écart relatif entre m·Δv/Δt et ΣF dans le tableau.</>,
@@ -377,7 +403,11 @@ export function SimulationMouvementSysteme() {
         <li>Plus Δt est petit, mieux la relation est vérifiée.</li></ul>,
       texte: <>Vous savez relier le mouvement d’un système et les forces qu’il subit. Essayez maintenant les défis.</>, tache: null },
   ];
-  const ETAPES_I = ETAPES.map(e => ({ ...e, titre: idxDeep(e.titre), texte: idxDeep(e.texte), retenir: idxDeep(e.retenir) }));
+  const ETAPES_I = ETAPES.map(e => ({ ...e, titre: idxDeep(e.titre), texte: idxDeep(e.texte), retenir: idxDeep(e.retenir),
+    // les messages de piège et les lignes du calcul pas à pas contiennent aussi des indices entre crochets (v_[i−1]…)
+    tache: e.tache && (e.tache.pieges || e.tache.calcul) ? { ...e.tache,
+      pieges: e.tache.pieges && e.tache.pieges.map(([v, m, t]) => [v, idx(m), t]),
+      calcul: e.tache.calcul && (() => e.tache.calcul().map(l => idx(l))) } : e.tache }));
   const ongletGuide = ETAPES[Math.min(etape, ETAPES.length - 1)].onglet;
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};

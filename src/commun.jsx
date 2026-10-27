@@ -263,7 +263,9 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
   const piege = () => {
     const x = lireNombre(reps[etape]);
     if (!isFinite(x)) return 'Entrez une valeur numérique (virgule ou point).';
-    const pg = (tache.pieges || []).find(([v]) => proche(x, v, Math.max(tache.tol, 0.04)));
+    // Tolérance de reconnaissance d'un piège (relative) : au moins 4 % pour une tâche ordinaire ; pour une tâche très précise (tol < 0,5 %, lecture d'un indice par exemple), on reste proche de tol ; un piège peut imposer sa propre tolérance en 3e élément
+    const seuil = tache.tol < 0.005 ? Math.max(tache.tol * 2, 0.0003) : Math.max(tache.tol, 0.04);
+    const pg = (tache.pieges || []).find(([v, , t]) => proche(x, v, t ?? seuil));
     if (pg) return pg[1];
     if (tache.vrai && (proche(x, tache.vrai * 1000, 0.05) || proche(x, tache.vrai / 1000, 0.05))) return 'Facteur 1000 : vérifiez les unités.';
     return null;

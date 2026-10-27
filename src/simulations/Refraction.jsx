@@ -195,13 +195,22 @@ export function SimulationRefraction() {
       tache: { type: 'action', ok: enGuide && atelier === 'mesure' && pts.length >= 5, consigne: 'Notez au moins 5 mesures avec des angles d’incidence différents.' } },
     { id: 'indice', titre: 'En déduire l’indice du plexiglas', depart: null,
       texte: <>La pente de la droite sin i₁ = f(sin i₂) est l’<strong>indice de réfraction</strong> n du plexiglas (le milieu 1 est l’air, n₁ = 1,00). C’est la loi de <strong>Snell-Descartes</strong> : <strong>n₁ × sin i₁ = n₂ × sin i₂</strong>.</>,
-      tache: { type: 'num', q: 'Une mesure donne i₁ = 60° et i₂ = 35,0°. Quel est l’indice n du plexiglas ? (n = sin i₁ / sin i₂)', unite: '', vrai: 1.51, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[1.71, 'Tu as divisé les angles. Il faut diviser les <strong>sinus</strong> : sin 60° / sin 35°.'], [0.66, 'Tu as inversé : n = sin i₁ / sin i₂.']], expl: 'n = sin 60° / sin 35,0° = 0,866 / 0,574 ≈ 1,51.' } },
+      tache: { type: 'num', q: 'Une mesure donne i₁ = 60° et i₂ = 35,0°. Quel est l’indice n du plexiglas ? (n = sin i₁ / sin i₂)', unite: '', vrai: 1.51, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[1.71, 'Tu as divisé les angles. Il faut diviser les sinus : sin 60° / sin 35°.'], [0.66, 'Tu as inversé : n = sin i₁ / sin i₂.'], [Math.sin(60) / Math.sin(35), 'Ta calculatrice est en radians : passe-la en mode degrés (DEG).']],
+        calcul: () => [
+          'Loi de Snell-Descartes : n₁ × sin i₁ = n₂ × sin i₂, avec n₁ = 1,00 (air). Donc n = n₂ = sin i₁ / sin i₂.',
+          'Calculatrice en mode degrés : sin 60° = 0,866 et sin 35,0° = 0,574.',
+          'n = 0,866 / 0,574 = 1,51 (l’indice n’a pas d’unité).'], expl: 'n = sin 60° / sin 35,0° = 0,866 / 0,574 ≈ 1,51.' } },
     { id: 'snell', titre: 'Calculer un angle de réfraction', depart: () => voirI('air', 'eau', 40),
       texte: <>Avec n₁ et n₂ connus, on peut <strong>prévoir</strong> i₂ : sin i₂ = n₁ × sin i₁ / n₂, puis on utilise la touche <strong>sin⁻¹</strong> de la calculatrice (mode degrés).
         <ExempleResolu>Air → eau, i₁ = 40° : sin i₂ = 1,00 × sin 40° / 1,33 = 0,643 / 1,33 = 0,483, donc i₂ = <strong>28,9°</strong>.
           {bouton('Vérifier sur le schéma', () => voirI('air', 'eau', 40))}</ExempleResolu>
         À vous : air → verre d’indice 1,50, avec i₁ = 30°.</>,
-      tache: { type: 'num', q: 'Quel est l’angle de réfraction i₂ (en degrés) ?', unite: '°', vrai: 19.47, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[20, 'Ne divise pas directement les angles (30 / 1,5) : ce sont les sinus qui sont reliés.'], [0.33, 'Tu as calculé sin i₂ : il faut ensuite appliquer sin⁻¹ pour obtenir l’angle.']], expl: 'sin i₂ = 1,00 × sin 30° / 1,50 = 0,333 ; i₂ = sin⁻¹(0,333) ≈ 19,5°.' } },
+      tache: { type: 'num', q: 'Quel est l’angle de réfraction i₂ (en degrés) ?', unite: '°', vrai: 19.47, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[20, 'Ne divise pas directement les angles (30 / 1,5) : ce sont les sinus qui sont reliés.'], [0.33, 'Tu as calculé sin i₂ : il faut ensuite appliquer sin⁻¹ pour obtenir l’angle.'], [48.59, 'Tu as inversé les indices : sin i₂ = n₁ × sin i₁ / n₂ (l’indice de l’air, n₁ = 1,00, est au numérateur).']],
+        calcul: () => [
+          'Loi de Snell-Descartes : n₁ × sin i₁ = n₂ × sin i₂, donc sin i₂ = n₁ × sin i₁ / n₂. Données : n₁ = 1,00 (air) ; n₂ = 1,50 (verre) ; i₁ = 30°.',
+          'Avec la calculatrice en mode degrés : sin 30° = 0,500.',
+          'sin i₂ = 1,00 × 0,500 / 1,50 = 0,333.',
+          'On cherche l’angle : i₂ = sin⁻¹(0,333) = 19,5°.'], expl: 'sin i₂ = 1,00 × sin 30° / 1,50 = 0,333 ; i₂ = sin⁻¹(0,333) ≈ 19,5°.' } },
     { id: 'liquides', titre: 'L’eau et l’eau sucrée', depart: () => voirM('eau', 40),
       texte: <>Déterminez l’indice de l’<strong>eau</strong> puis de l’<strong>eau sucrée</strong> : mesurez au moins 3 angles pour chaque liquide (changez de liquide avec les boutons). Chaque liquide donne sa propre droite sur le graphique.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'mesure' && pts.filter(p => p.liq === 'eau').length >= 3 && pts.filter(p => p.liq === 'eausucree').length >= 3, consigne: 'Notez au moins 3 mesures pour l’eau et 3 pour l’eau sucrée.' } },
