@@ -89,6 +89,7 @@ import { ProchaineEtape } from "./ProchaineEtape";
 import { EnTete } from "./EnTete";
 import { PiedDePage } from "./PiedDePage";
 import { AccueilSite } from "./AccueilSite";
+import { resoudreCode } from "./resoudreCode";
 import { DESCRIPTIONS } from "./descriptions";
 
 // ============================================================
@@ -270,6 +271,18 @@ const MENUS = construireMenus();
 export default function App() {
   const getInitialId = () => {
     const params = new URLSearchParams(window.location.search);
+    // lien court d'un exercice : ?c=ANA23 (équivaut à ?sim=…&ex=…)
+    const codeParam = params.get('c');
+    if (codeParam) {
+      const r = resoudreCode(codeParam, SIMULATIONS);
+      try {
+        const u = new URL(window.location.href); u.searchParams.delete('c');
+        if (r) { u.searchParams.set('sim', r.sim); if (r.ex) u.searchParams.set('ex', r.ex); }
+        window.history.replaceState(null, '', u.toString());
+      } catch { /* adresse non modifiable */ }
+      if (r) return r.sim;
+      return 0;
+    }
     const simParam = params.get('sim');
     if (simParam) {
       const id = parseInt(simParam);
@@ -391,7 +404,7 @@ export default function App() {
       <div style={styles.bgBlob1} />
       <div style={styles.bgBlob2} />
 
-      <EnTete menus={MENUS} activeId={activeId} niveauActif={activeId === 0 ? null : active.niveau} naviguer={naviguer} session={sessionSb} />
+      <EnTete menus={MENUS} simulations={SIMULATIONS} activeId={activeId} niveauActif={activeId === 0 ? null : active.niveau} naviguer={naviguer} session={sessionSb} />
 
 
       {/* Zone principale — pleine largeur */}
@@ -432,7 +445,7 @@ export default function App() {
 
         <div style={styles.simContainer}>
           {activeId === 0
-            ? <AccueilSite onStart={(id) => naviguer(id || 1)} session={sessionSb} simulations={SIMULATIONS} energyUrl={ENERGY_URL} />
+            ? <AccueilSite onStart={(id) => naviguer(id || 1)} onCode={naviguer} session={sessionSb} simulations={SIMULATIONS} energyUrl={ENERGY_URL} />
             : <div style={{ textAlign: "left" }}>
                 {/* Le fichier App.css du modèle Vite centre tout le texte (#root) : on rétablit l'alignement
                     à gauche pour les simulations ; la page d'accueil garde sa mise en page centrée. */}

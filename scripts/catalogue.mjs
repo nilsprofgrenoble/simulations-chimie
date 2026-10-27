@@ -2,7 +2,8 @@
 //   node scripts/catalogue.mjs           → écrit public/catalogue.csv (publié sur https://paillasse-virtuelle.fr/catalogue.csv)
 //   node scripts/catalogue.mjs --verifier → ne crée rien ; échoue si le fichier est périmé ou si un exercice n'a pas de chapitre
 // Toutes les données viennent du code du site (App.jsx, chapitres.js, descriptions.js, Entrainement.jsx, banques d'exercices) : rien à tenir à jour à la main.
-// Colonnes : type, id, lien, niveau, chapitre, competence, difficulte, theme, titre, description, simulations_liees.
+// Colonnes : type, id, lien, niveau, chapitre, competence, difficulte, theme, titre, description, simulations_liees, code.
+//   • code : code court à imprimer sur la fiche de l'élève (SAPP/ANA/REA/VAL + numéro pour un exercice, SIM + numéro pour une simulation), saisi sur le site dans « Code ».
 //   • difficulte (1 à 3) : « Valider » = niveau écrit à la main dans la banque ; « Analyser » et « S'approprier » = ESTIMATION déduite de la structure
 //     (Analyser : prévoir = 1, relation/hypothèses/schémas = 2, problème complet = 3 ; énoncé à données : nombre de grandeurs à calculer ; graphique : proportionnelle = 1, affine ou courbe = 2).
 //     « Réaliser » : pas de difficulté. Valeur indicative, à ne pas lire comme une mesure.
@@ -10,6 +11,13 @@
 //   • description : une à deux phrases tirées de l'énoncé ; titre : unique parmi les exercices (le script échoue sinon).
 import { createServer } from 'vite'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+
+// Codes courts des exercices (ex. ANA23, SAPP4, VAL12) imprimés sur les fiches de remédiation et saisis par l'élève sur le site.
+// Attribués UNE SEULE FOIS et jamais modifiés : scripts/codes.json mémorise « clé d'exercice → code ». Un nouvel exercice reçoit le numéro suivant ;
+// un exercice supprimé garde son code réservé (un code imprimé ne doit jamais pointer vers un autre exercice).
+const FICHIER_CODES = new URL('./codes.json', import.meta.url)
+const SORTIE_CODES = new URL('../src/codes.js', import.meta.url)
+const PREFIXE = { "S'APP": 'SAPP', ANA: 'ANA', REA: 'REA', VAL: 'VAL' }
 
 const SITE = 'https://paillasse-virtuelle.fr/'
 const SORTIE = new URL('../public/catalogue.csv', import.meta.url)
@@ -72,25 +80,37 @@ try {
     info[`34:${e.id}.${q}`] = { difficulte, description }
   })
 
+  // Attribution des codes (les exercices déjà codés ne changent jamais)
+  const codes = existsSync(FICHIER_CODES) ? JSON.parse(readFileSync(FICHIER_CODES, 'utf8')) : {}
+  const dernier = {}
+  for (const c of Object.values(codes)) { const m = c.match(/^([A-Z]+)(\d+)$/); if (m) dernier[m[1]] = Math.max(dernier[m[1]] || 0, +m[2]) }
+  const codesAvant = JSON.stringify(codes)
+  const exercices = tousLesExercices()
+  for (const e of exercices) if (!codes[e.cle]) { const pf = PREFIXE[e.comp]; dernier[pf] = (dernier[pf] || 0) + 1; codes[e.cle] = pf + dernier[pf] }
+  const fichierCodes = JSON.stringify(codes, null, 1) + '\n'
+  const tableCodes = '// Fichier généré par « node scripts/catalogue.mjs » à partir de scripts/codes.json : ne pas modifier à la main.\n' +
+    '// Code court d\'un exercice → [atelier, exercice] (voir EnTete.jsx, saisie « J\'ai un code »).\n' +
+    'export const CODES = ' + JSON.stringify(Object.fromEntries(exercices.map(e => [codes[e.cle], [e.atelier, String(e.ex)]]))) + '\n'
+
   const lignes = []
   for (const s of sims) {
     const cs = chapitresDeSim(s.id)
-    lignes.push({ type: 'simulation', id: `sim${s.id}`, lien: `${SITE}?sim=${s.id}`, niveau: cs.length ? niveaux(cs) : (NOM_NIVEAU[s.niveau] || s.niveau), difficulte: '',
+    lignes.push({ type: 'simulation', id: `sim${s.id}`, lien: `${SITE}?sim=${s.id}`, code: `SIM${s.id}`, niveau: cs.length ? niveaux(cs) : (NOM_NIVEAU[s.niveau] || s.niveau), difficulte: '',
       chapitre: noms(cs), competence: '', theme: '', titre: s.label, description: DESCRIPTIONS[s.label] || '' })
   }
-  for (const e of tousLesExercices()) {
+  for (const e of exercices) {
     const cs = chapitresDuDomaine(e.domaine)
     const transversal = /transversal/i.test(e.domaine)
     if (!cs.length && !transversal) probleme.push(`${e.cle} : thème « ${e.domaine} » absent de chapitres.js`)
     const inf = info[e.cle] || {}
     if (!inf.description) probleme.push(`${e.cle} : pas de description`)
     const liees = [...new Set(cs.flatMap(c => c.sims))].filter(i => sims.some(s => s.id === i)).map(i => `sim${i}`)
-    lignes.push({ type: 'exercice', id: e.cle, lien: `${SITE}?sim=${e.atelier}&ex=${e.ex}`,
+    lignes.push({ type: 'exercice', id: e.cle, lien: `${SITE}?sim=${e.atelier}&ex=${e.ex}`, code: codes[e.cle],
       niveau: transversal ? 'tous' : niveaux(cs), difficulte: e.niveau || inf.difficulte || '', chapitre: transversal ? 'tous chapitres' : noms(cs),
       competence: COMP[e.comp], theme: e.domaine, titre: e.titre, description: inf.description || '', simulations_liees: liees.join(' | ') })
   }
 
-  const COLS = ['type', 'id', 'lien', 'niveau', 'chapitre', 'competence', 'difficulte', 'theme', 'titre', 'description', 'simulations_liees']
+  const COLS = ['type', 'id', 'lien', 'niveau', 'chapitre', 'competence', 'difficulte', 'theme', 'titre', 'description', 'simulations_liees', 'code']
   const q = v => /[;"\n]/.test(v) ? `"${String(v).replace(/"/g, '""')}"` : String(v)
   const csv = '﻿' + [COLS.join(';'), ...lignes.map(l => COLS.map(c => q(l[c] ?? '')).join(';'))].join('\n') + '\n'
 
@@ -104,5 +124,6 @@ try {
   if (probleme.length) { console.error('PROBLÈME :\n' + probleme.join('\n')); process.exitCode = 1 }
   if (verifier) {
     if (!existsSync(SORTIE) || readFileSync(SORTIE, 'utf8') !== csv) { console.error('public/catalogue.csv est périmé : lancer « node scripts/catalogue.mjs ».'); process.exitCode = 1 }
-  } else writeFileSync(SORTIE, csv)
+    if (!existsSync(SORTIE_CODES) || readFileSync(SORTIE_CODES, 'utf8') !== tableCodes || JSON.stringify(codes) !== codesAvant) { console.error('Codes d\'exercices à mettre à jour : lancer « node scripts/catalogue.mjs ».'); process.exitCode = 1 }
+  } else { writeFileSync(SORTIE, csv); writeFileSync(FICHIER_CODES, fichierCodes); writeFileSync(SORTIE_CODES, tableCodes) }
 } finally { await vite.close() }

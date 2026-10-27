@@ -15,7 +15,10 @@ const COULEUR_NIVEAU = { '2GT': '#f59e0b', '1G': '#14b8a6', TSTL: '#2563eb', BTS
 const lien = { all: 'unset', cursor: 'pointer', color: ACCENT, fontWeight: 700, textDecoration: 'underline' };
 const gros = { padding: '11px 22px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 15.5, cursor: 'pointer', fontFamily: 'inherit', background: ACCENT, color: 'white', textDecoration: 'none', display: 'inline-block' };
 
-export function AccueilSite({ onStart, session, simulations, energyUrl }) {
+import { SaisieCode } from "./SaisieCode";
+import { InstallerAppli } from "./InstallerAppli";
+
+export function AccueilSite({ onStart, onCode, session, simulations, energyUrl }) {
   const profil = session?.profil;
   const sim = simulations.find(s => s.id === A_LA_UNE.id);
   const niveaux = { '2GT': 'Seconde', '1G': 'Première spé PC', TSTL: 'Terminale STL', BTS: 'BTS Métiers de la chimie' };
@@ -32,6 +35,12 @@ export function AccueilSite({ onStart, session, simulations, energyUrl }) {
           Des simulations de chimie et de physique pour la Seconde, la Première spé PC, la Terminale STL et le BTS Métiers de la chimie :
           parcours guidés, exploration libre, défis et exercices par compétence. Choisissez votre niveau dans le menu en haut de page.
         </p>
+      </section>
+
+      {/* Code d'un exercice de remédiation + installation sur le téléphone */}
+      <section aria-label="Retrouver un exercice" style={{ ...lame, padding: '16px 18px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 18 }}>
+        <SaisieCode onCode={onCode} simulations={simulations} />
+        <InstallerAppli />
       </section>
 
       {/* Les niveaux et leurs chapitres : chaque chapitre ouvre sa première simulation */}

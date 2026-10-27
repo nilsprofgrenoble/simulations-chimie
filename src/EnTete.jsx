@@ -3,6 +3,7 @@ import { LogoPaillasse } from "./Logo";
 import { ACCENT, ACCENT_CLAIR, TEXTE, TEXTE2, BORDURE } from "./theme";
 import { Pic, Emo, AvecPicto } from "./Pictos";
 import { allerChapitre } from "./chapitres";
+import { SaisieCode } from "./SaisieCode";
 
 // ============================================================
 //  EN-TÊTE DU SITE : toujours visible, même quand on fait défiler la page.
@@ -13,7 +14,7 @@ export const HAUTEUR_ENTETE = 60;
 const TXT = TEXTE, TXT2 = TEXTE2, BORD = BORDURE, VERT = ACCENT;
 
 // menus : [{ key, label, groupes: [{ label?, sims: [{ id, icon, label, desc? }] }] }]
-export function EnTete({ menus, activeId, niveauActif, naviguer, session }) {
+export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, session }) {
   const [ouvert, setOuvert] = useState(null);        // clé du menu déroulé (grand écran) ou 'mobile'
   const [accordeon, setAccordeon] = useState(null);  // niveau déplié dans le menu mobile
   const [large, setLarge] = useState(() => window.innerWidth >= 1000);
@@ -117,6 +118,8 @@ export function EnTete({ menus, activeId, niveauActif, naviguer, session }) {
         {!large && <span style={{ flex: 1 }}/>}
 
         <span style={{ alignSelf: 'center', display: 'flex', gap: 8, alignItems: 'center' }}>
+          {large && <button onClick={() => setOuvert(o => o === 'code' ? null : 'code')} aria-expanded={ouvert === 'code'} title="Retrouver un exercice avec son code"
+            style={{ padding: '6px 12px', borderRadius: 999, border: `2px solid ${BORD}`, background: ouvert === 'code' ? '#f1f5f9' : 'white', cursor: 'pointer', fontSize: 14, fontWeight: 700, color: TXT, fontFamily: 'inherit' }}>Code</button>}
           {iconeCompte}
           {!large && (
             <button onClick={() => setOuvert(o => o === 'mobile' ? null : 'mobile')} aria-expanded={ouvert === 'mobile'} aria-label="Menu"
@@ -138,9 +141,18 @@ export function EnTete({ menus, activeId, niveauActif, naviguer, session }) {
         </div>
       )}
 
+      {large && ouvert === 'code' && (
+        <div style={panneau} role="region" aria-label="Code d’un exercice">
+          <div style={{ maxWidth: 420, margin: '0 auto', padding: '14px 16px 18px' }}>
+            <SaisieCode simulations={simulations} onCode={(id, ex) => { setOuvert(null); naviguer(id, ex); }} />
+          </div>
+        </div>
+      )}
+
       {!large && ouvert === 'mobile' && (
         <div style={panneau} role="region" aria-label="Menu">
           <div style={{ padding: '8px 12px 14px' }}>
+            <div style={{ padding: '6px 10px 12px' }}><SaisieCode compact simulations={simulations} onCode={(id, ex) => { setOuvert(null); naviguer(id, ex); }} /></div>
             <button onClick={() => aller(0)} style={{ display: 'flex', width: '100%', padding: '10px', border: 'none', background: activeId === 0 ? ACCENT_CLAIR : 'transparent',
               borderRadius: 8, fontSize: 15, fontWeight: 700, color: TXT, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}><Pic n="home"/>Accueil</button>
             {menus.map(m => (
