@@ -1007,7 +1007,7 @@ export const PLAUSIBLES = [
       F('Pas plausible : 750 W ne peuvent pas élever l’eau de 45 m, il faudrait plusieurs kW', 'La puissance dépend aussi du débit : à 0,67 L·s⁻¹, la puissance hydraulique pour 46 m n’est que d’environ 300 W. Plusieurs kW seraient nécessaires pour un débit beaucoup plus grand.'),
     ] }),
   P({ id: 'reg-ecart-gain', domaine: 'Régulation', niveau: 1, titre: 'Écart statique d’un ballon d’eau chaude', plausible: false,
-    enonce: 'Un ballon d’eau chaude est régulé à 60 °C par un régulateur proportionnel seul : la commande de chauffe est Y = K_p × ε (Y en %, ε en °C), avec K_p = 25 %·°C⁻¹. En régime permanent, il faut Y = 40 % de la puissance maximale pour compenser les pertes. Un élève calcule l’écart statique ε = Y × K_p et trouve ε = 1,0×10³ °C.',
+    enonce: 'Un ballon d’eau chaude est régulé à 60 °C par un régulateur proportionnel seul : la commande de chauffe est Y = K_p × ε (Y en %, ε en °C), avec K_p = 25 %·°C⁻¹. En régime permanent, il faut Y = 40 % de la puissance maximale pour compenser les pertes. Un élève calcule l’écart statique en régime permanent et trouve ε = 1,0×10³ °C.',
     reperes: [['Écart statique ε', 'consigne − mesure en régime permanent'], ['Eau liquide à 1 013 hPa', 'entre 0 °C et 100 °C'], ['Écart statique d’un régulateur P bien réglé sur un ballon', 'quelques °C au plus']],
     ver: '1,0×10³ °C est absurde : l’eau liquide ne dépasse pas 100 °C, et un écart de 1 000 °C n’a aucun sens pour une consigne de 60 °C. De Y = K_p × ε, on tire ε = Y / K_p = 40 / 25 = 1,6 °C.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
@@ -1066,7 +1066,7 @@ export const PLAUSIBLES = [
     options: [
       V('2 000 kg × 45 K × 4 kJ·kg⁻¹·K⁻¹ ≈ 3,6×10⁸ J, ce qui fait environ 33 h à 3 kW', 'C’est une vraie vérification : elle recalcule l’énergie avec le repère, puis la divise par la puissance.'),
       F('35 h est du même ordre que la durée de chauffe d’une bouilloire', 'La bouilloire chauffe 1 L en environ 3 min : 35 h n’est pas du même ordre. C’est la masse d’eau, 2 000 fois plus grande, qui explique la différence.'),
-      F('Une cuve met toujours environ une journée à chauffer, quels que soient sa masse et sa puissance', 'La durée dépend de m, de Δθ et de P : elle serait de 4 min pour 1 L et 2 kW. Aucune durée « typique » ne permet de valider un résultat.'),
+      F('Une cuve met toujours environ une journée à chauffer, quels que soient sa masse et sa puissance', 'La durée dépend de m, de Δθ et de P : elle serait d’environ 1,6 min pour 1 L chauffé de 45 K avec 2 kW. Aucune durée « typique » ne permet de valider un résultat.'),
       F('Le résultat est en heures, unité adaptée à une cuve industrielle', 'L’unité choisie ne valide rien : un résultat de 35 h comme de 35 s serait « en unité adaptée ». Il faut comparer à un ordre de grandeur calculé.'),
     ] }),
   P({ id: 'therm-cocourant-faux', domaine: 'Transferts thermiques', niveau: 3, titre: 'Température de sortie d’un échangeur co-courant', plausible: false,
@@ -1174,7 +1174,7 @@ export const PLAUSIBLES = [
   P({ id: 'ctl-angle-pas-inverse', domaine: 'Contrôle des systèmes', niveau: 1, titre: 'Angle d’un pas de moteur', plausible: false,
     enonce: 'Un moteur pas à pas fait 200 pas par tour (pas complets). Un élève calcule l’angle dont tourne l’axe à chaque pas : 200 / 360 ≈ 0,56° par pas.',
     reperes: [['Un tour complet', '360°'], ['Pas par tour', '200 pas'], ['Angle d’un pas', 'angle total d’un tour divisé par le nombre de pas d’un tour'], ['Ordre de grandeur', 'un pas de moteur est de l’ordre de 1° à quelques degrés']],
-    ver: 'Si chaque pas valait 0,56°, 200 pas ne feraient que 200 × 0,56° ≈ 111° et non un tour. L’angle d’un pas est 360° / 200 = 1,8°.',
+    ver: 'Si chaque pas valait 0,56°, 200 pas ne feraient que 200 × 0,556° ≈ 111° et non un tour. L’angle d’un pas est 360° / 200 = 1,8°.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
       V('Il a divisé 200 par 360 au lieu de diviser 360° par 200', '200 / 360 ≈ 0,56 alors que 360 / 200 = 1,8 : le rapport est inversé.'),
@@ -1480,7 +1480,7 @@ export const COMPATIBLES = [
     expl: '|5,2 − 4,0| = 1,2 °C et 2·u = 1,0 °C. Comme 1,2 > 1,0, la mesure n’est pas compatible avec la prévision du modèle.',
     q4: 'Quelle explication est la plus cohérente avec les données ?',
     options: [
-      V('Les pertes réelles dépassent celles du modèle : il faut Y ≈ 26 % au lieu de 20 %, d’où un écart plus grand', 'ε = Y / K_p : avec ε = 5,2 °C et K_p = 5 %·°C⁻¹, la commande nécessaire vaut 26 %. Le sens de l’écart (mesure supérieure à la prévision) correspond bien à des pertes sous-estimées d’environ 30 %.'),
+      V('Les pertes réelles dépassent celles du modèle, d’où une commande et un écart plus grands', 'ε = Y / K_p : avec ε = 5,2 °C et K_p = 5 %·°C⁻¹, la commande nécessaire vaut 26 %. Le sens de l’écart (mesure supérieure à la prévision) correspond bien à des pertes sous-estimées d’environ 30 %.'),
       F('Le régulateur avait une petite action intégrale, qui a réduit l’écart par rapport au modèle', 'Une action intégrale diminue l’écart statique : on mesurerait moins que 4,0 °C, pas plus.'),
       F('Le gain réel du régulateur est supérieur à 5 %·°C⁻¹, ce qui a fait grandir l’écart statique', 'Un gain plus élevé diminue l’écart (ε = Y / K_p) : on mesurerait moins que 4,0 °C, pas plus.'),
       F('L’incertitude u = 0,5 °C est trop grande pour que la comparaison avec le modèle ait un sens', 'Elle est déjà prise en compte dans la règle 2·u ; elle n’explique pas le sens de l’écart.'),
@@ -1504,7 +1504,7 @@ export const COMPATIBLES = [
     expl: '|2,514 − 2,500| = 0,014 V = 14 mV. u_c = √(3,0² + 4,0²) = √25 = 5,0 mV, donc 2·u_c = 10 mV. Comme 14 > 10, la mesure n’est pas compatible avec la référence.',
     q4: 'Quelle explication est la plus cohérente avec les données ?',
     options: [
-      V('L’alimentation réelle est inférieure à 5,00 V (4,97 V par exemple) : les tensions calculées sont trop grandes', 'Le CAN compare la tension mesurée à son alimentation : N = 1 023 × U / V_alim. Si V_alim = 4,97 V, le calcul avec 5,00 V donne 2,500 × 5,00 / 4,97 ≈ 2,515 V : écart de même sens (mesure supérieure à la référence) et de même ordre de grandeur (+14 mV). C’est une erreur systématique : moyenner davantage ne la réduirait pas.'),
+      V('L’alimentation réelle est inférieure à 5,00 V (4,97 V par exemple) : les tensions calculées sont trop grandes', 'Le CAN compare la tension mesurée à son alimentation : N = 1 023 × U / V_alim. Si V_alim = 4,97 V, le calcul avec 5,00 V donne 2,500 × 5,00 / 4,97 ≈ 2,515 V (+15 mV) : écart de même sens (mesure supérieure à la référence) et pratiquement égal à celui observé (+14 mV). C’est une erreur systématique : moyenner davantage ne la réduirait pas.'),
       F('Le nombre d’acquisitions est trop faible : avec 400 acquisitions au lieu de 16, la mesure deviendrait compatible', 'Avec 400 acquisitions, u_A = 12 / √400 = 0,6 mV et u_c = √(0,6² + 4,0²) ≈ 4,04 mV, donc 2·u_c ≈ 8,1 mV : l’écart de 14 mV resterait supérieur. La composante u_B ne dépend pas du nombre d’acquisitions.'),
       F('Le bruit de 12 mV dépasse largement le quantum : le CAN est inutilisable et la mesure n’a aucune valeur', 'Le bruit est aléatoire et déjà pris en compte dans u_A = 3,0 mV. Il ne peut pas expliquer un écart de 14 mV (près de 5 fois u_A), toujours dans le même sens : cela évoque plutôt une erreur systématique.'),
     ] },
@@ -1512,10 +1512,10 @@ export const COMPATIBLES = [
     contexte: 'Pour contrôler une sonde de température, on la plonge dans un bain thermostaté, agité et stable, en même temps qu’une sonde de référence étalonnée. Chaque sonde donne la moyenne de 20 relevés après stabilisation : sonde testée T₁ = 37,42 °C avec u₁ = 0,12 °C ; sonde de référence T₂ = 37,12 °C avec u₂ = 0,05 °C. On compare T₁ et T₂ dans l’hypothèse H0 : les deux sondes mesurent la même température du bain (bain supposé homogène, incertitudes indépendantes).',
     reperes: [['Sonde testée', 'T₁ = 37,42 ± 0,12 °C'], ['Sonde de référence', 'T₂ = 37,12 ± 0,05 °C'], ['Incertitude composée', 'u_c = √(u₁² + u₂²)'], ['Règle', 'sous H0, compatibles si |T₁ − T₂| ≤ 2·u_c (incertitudes indépendantes ; 2 facteur d’élargissement, loi normale supposée ; sondes à l’équilibre avec le bain)']],
     ecart: 0.3, uEcart: '°C', uc: 0.13, seuil: 0.26, compatible: false,
-    expl: '|37,42 − 37,12| = 0,30 °C. u_c = √(0,12² + 0,05²) = √0,0169 = 0,13 °C, donc 2·u_c = 0,26 °C. Comme 0,30 > 0,26, les deux indications ne sont pas compatibles : l’hypothèse H0 est rejetée.',
+    expl: '|37,42 − 37,12| = 0,30 °C. u_c = √(0,12² + 0,05²) = √0,0169 = 0,13 °C, donc 2·u_c = 0,26 °C. Comme 0,30 > 0,26, les deux indications ne sont pas compatibles : l’hypothèse H0 est rejetée (avec k = 2, soit environ 95 % si la loi est normale, et la marge est faible : 0,30 contre 0,26). Pour attribuer le décalage à la sonde testée, on suppose en plus que la sonde de référence est juste et que le bain est homogène.',
     q4: 'Quelle explication est la plus cohérente ?',
     options: [
-      V('La sonde testée indique environ 0,3 °C de trop : il faut la réétalonner ou la corriger', 'L’écart dépasse 2·u_c. Le bain étant homogène, c’est un décalage de la sonde testée, de signe positif, que la comparaison met en évidence.'),
+      V('La sonde testée indique environ 0,3 °C de trop : il faut la réétalonner ou la corriger', 'L’écart dépasse 2·u_c. Si le bain est homogène et la sonde de référence juste (hypothèses du contrôle), l’explication la plus simple est un décalage de la sonde testée, de signe positif.'),
       F('Les indications sont compatibles : 0,30 °C représente moins de 1 % de 37 °C', 'Un pourcentage de la valeur ne remplace pas la comparaison à 2·u_c = 0,26 °C. Ici 0,30 > 0,26.'),
       F('L’écart est dû au hasard et disparaîtra en moyennant davantage de relevés', 'Les incertitudes u₁ et u₂ contiennent déjà la dispersion des relevés. Une moyenne n’élimine pas un décalage de la sonde testée.'),
       F('La sonde testée est correcte : l’écart vient d’un défaut d’agitation du bain', 'Le bain est supposé homogène et stable, et l’agitation est précisément faite pour cela. Rien ne permet d’expliquer 0,30 °C par le bain.'),
@@ -1524,11 +1524,11 @@ export const COMPATIBLES = [
     contexte: 'La fiche technique d’un moteur pas à pas indique une résistance de 12,5 Ω par bobine à 20 °C. Juste après une longue période de fonctionnement, un élève mesure la résistance d’une bobine par la méthode R = U / I et trouve 13,6 Ω, avec une incertitude-type u = 0,2 Ω. La tension et le courant sont lus correctement.',
     reperes: [['Mesure', 'x = 13,6 Ω'], ['Incertitude-type', 'u = 0,2 Ω'], ['Référence (fiche technique, 20 °C)', 'x_ref = 12,5 Ω'], ['Règle', 'compatible si |x − x_ref| ≤ 2·u (u incertitude-type de la mesure, indépendante de la référence ; 2 facteur d’élargissement, ≈ 95 % si loi normale ; référence supposée sans incertitude)'], ['Résistance du cuivre', 'augmente d’environ 0,39 % par kelvin (α ≈ 3,9 × 10⁻³ K⁻¹)']],
     ecart: 1.1, uEcart: 'Ω', seuil: 0.4, compatible: false,
-    expl: '|13,6 − 12,5| = 1,1 Ω et 2·u = 0,4 Ω. Comme 1,1 > 0,4, la mesure n’est pas compatible avec la fiche technique (écart relatif de 8,8 %).',
+    expl: '|13,6 − 12,5| = 1,1 Ω et 2·u = 0,4 Ω. Comme 1,1 > 0,4, la mesure n’est pas compatible avec la fiche technique (écart relatif de 8,8 %). Cette conclusion suppose la valeur de la fiche exacte : une fiche indique souvent une tolérance (±10 % est courant), qui pourrait à elle seule rendre l’écart acceptable. Ici, l’échauffement est l’explication la plus cohérente, et se vérifie en refaisant la mesure à froid.',
     q4: 'Quelle explication est la plus cohérente ?',
     options: [
       V('Le bobinage s’est échauffé : la résistance du cuivre augmente avec la température', 'Un écart relatif de 8,8 % correspond à 0,088 / 0,0039 ≈ 23 K d’échauffement, soit une bobine vers 43 °C : valeur courante pour un moteur qui vient de fonctionner. Le sens de l’écart (mesure supérieure à la référence) est celui attendu.'),
-      F('Le courant lu est trop élevé, ce qui augmente la valeur de R = U / I', 'Faux : si I est trop élevé, R = U / I est trop petit et non trop grand.'),
+      F('Le courant lu est trop élevé, ce qui augmente la valeur de R = U / I', 'Faux : l’énoncé précise que la tension et le courant sont lus correctement. De plus, un courant lu trop élevé donnerait R = U / I trop petit et non trop grand.'),
       F('L’incertitude est sous-estimée d’un facteur 2 : l’écart est en réalité compatible', 'Même avec u = 0,4 Ω, on aurait 2·u = 0,8 Ω < 1,1 Ω : l’écart resterait incompatible. Il faudrait u ≥ 0,55 Ω, presque trois fois plus.'),
     ] },
 ];

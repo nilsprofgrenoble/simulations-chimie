@@ -1330,7 +1330,7 @@ export const HYPOTHESES = [
       V('Le liquide est au repos', 'Si l’eau circule (remplissage, pompage), la pression dépend aussi de la vitesse et des pertes de charge : les niveaux ne sont plus égaux en général.'),
       V('Le même liquide remplit tout le montage', 'Avec deux liquides non miscibles de masses volumiques différentes (eau et huile), c’est ρ·h qui s’égalise au niveau de la surface de séparation, pas h : les hauteurs diffèrent.'),
       V('Les deux surfaces libres sont à la même pression', 'Si les pressions diffèrent (par exemple un récipient fermé dont le gaz est sous 0,10 bar de plus que l’air ambiant), la surface de ce récipient est plus basse de ΔP / (ρ·g) ≈ 1,0 m.'),
-      V('Les effets de capillarité sont négligeables', 'Dans un tube de 1 mm de diamètre, l’eau monte d’environ 3 cm au-dessus du niveau extérieur (verre propre) : avec des tubes très fins, l’égalité des niveaux est faussée.'),
+      V('Les effets de capillarité sont négligeables', 'Dans un tube de 1 mm de diamètre, l’eau monte d’environ 3 cm au-dessus du niveau extérieur (verre propre) : si l’un des récipients est un tube très fin et l’autre un récipient large, les niveaux diffèrent de plusieurs centimètres.'),
       F('Les deux récipients ont la même section', 'La pression à une profondeur donnée ne dépend ni de la forme ni de la section du récipient : l’égalité des niveaux est indépendante de la forme.'),
       F('Les deux récipients contiennent le même volume d’eau', 'Le volume n’intervient pas : un petit récipient relié à un grand finit au même niveau, avec des volumes très différents.'),
     ] },
@@ -1354,7 +1354,7 @@ export const HYPOTHESES = [
     ] },
   { id: 'sig-hyp-moyennage', domaine: 'Transmission de signaux numériques', titre: 'Moyenner pour réduire le bruit',
     enonce: 'Une carte Arduino (CAN de 10 bits, plage 0 – 5 V) mesure une tension continue stable. À cause du bruit, deux acquisitions successives ne donnent pas toujours le même résultat : l’écart-type d’une acquisition isolée est s = 8 mV. On effectue N = 100 acquisitions et on calcule leur moyenne. On prévoit que l’écart-type de cette moyenne vaut s / √N = 0,8 mV, soit une dispersion divisée par 10.', options: [
-      V('Le bruit est aléatoire et centré, sans tendance particulière', 'Les écarts de signes opposés s’annulent en partie dans la moyenne. Une erreur systématique, toujours dans le même sens, ne se compense pas : elle reste intacte dans la moyenne.'),
+      V('Le bruit a le même écart-type s à chaque acquisition', 'La formule s / √N suppose le même s pour les N acquisitions. Si le bruit changeait au cours du temps (perturbation passagère, parasite intermittent), la dispersion de la moyenne ne vaudrait plus s / √N.'),
       V('Le bruit d’une acquisition est indépendant des précédentes', 'Le facteur √N suppose des erreurs indépendantes. Si le bruit varie lentement (dérive), deux acquisitions voisines se trompent dans le même sens : la moyenne de 100 acquisitions ne vaut alors guère mieux qu’une seule.'),
       V('La tension mesurée reste constante pendant les 100 acquisitions', 'Si la tension variait, la moyenne mélangerait des valeurs différentes : elle ne représenterait aucun instant précis et l’écart-type s ne mesurerait plus seulement le bruit.'),
       F('Les écarts dus au bruit suivent exactement une loi normale', 'Pas nécessaire : pour des erreurs indépendantes de même écart-type s, l’écart-type de la moyenne vaut s / √N quelle que soit la forme de la loi. La loi normale ne sert qu’à interpréter un intervalle (par exemple ± 2 écarts-types ≈ 95 %).'),
@@ -2467,7 +2467,7 @@ export const PREVOIR = [
       F('inchangé', 'La puissance et les pertes sont les mêmes, mais la température doit parcourir un intervalle 2 fois plus large dans chaque phase : le cycle s’allonge.'),
     ] },
   { id: 'reg-bande-proportionnelle', domaine: 'Régulation', titre: 'Élargir la bande proportionnelle',
-    enonce: 'Un four est régulé par un régulateur proportionnel seul (sans action intégrale), avec Y = K_p × écart (Y et écart en % de l’étendue de mesure). Son réglage est donné en bande proportionnelle : BP = 100 / K_p, exprimée en %. Les pertes thermiques à compenser sont constantes. On passe de BP = 10 % à BP = 20 %.', q: 'En régime permanent, l’écart statique est…', options: [
+    enonce: 'Un four est régulé par un régulateur proportionnel seul (sans action intégrale), avec Y = K_p × écart (écart en % de l’étendue de mesure, commande Y en % de la commande maximale). Son réglage est donné en bande proportionnelle : BP = 100 / K_p, exprimée en %. Les pertes thermiques à compenser sont constantes. On passe de BP = 10 % à BP = 20 %.', q: 'En régime permanent, l’écart statique est…', options: [
       F('divisé par 2', 'Une bande plus large ne rend pas le régulateur plus précis : c’est l’inverse.'),
       V('multiplié par 2', 'BP = 100 / K_p : une bande doublée correspond à un gain divisé par 2 (K_p passe de 10 à 5). Les pertes imposent la même commande Y, et écart = Y / K_p : l’écart double. Exemple : pour Y = 20 %, l’écart passe de 2 % à 4 % de l’étendue de mesure (soit 8 °C à 16 °C sur une étendue de 0 à 400 °C).'),
       F('inchangé', 'L’écart statique dépend du gain : pour fournir la même commande avec un gain plus faible, il faut un écart plus grand.'),
@@ -2511,9 +2511,9 @@ export const PREVOIR = [
   { id: 'mes-prevoir-quotient', domaine: 'Mesure et incertitudes', titre: 'Incertitude relative d’un quotient',
     enonce: 'On calcule une concentration massique t = m / V à partir d’une masse m = 2,500 g et d’un volume V = 50,00 mL. Les incertitudes-types relatives valent u(m)/m = 0,4 % et u(V)/V = 0,3 %. On suppose les erreurs sur m et sur V indépendantes, des incertitudes relatives assez petites pour une propagation au premier ordre, et aucune erreur systématique non corrigée.', q: 'Quelle est l’incertitude-type relative u(t)/t ?', options: [
       V('0,5 %', 'Les composantes indépendantes se composent en quadrature : √(0,4² + 0,3²) = √(0,16 + 0,09) = √0,25 = 0,5 %.'),
-      F('0,7 %', 'Elle correspond à la somme 0,4 + 0,3. Additionner surestime l’incertitude : cela ne vaudrait que si les deux erreurs étaient parfaitement liées et de même sens.'),
+      F('0,7 %', 'Elle correspond à la somme 0,4 + 0,3. Additionner surestime l’incertitude : ce serait le cas le plus défavorable, où les deux erreurs seraient parfaitement liées et se renforceraient à chaque fois (m trop grande quand V est trop petit). Pour des erreurs indépendantes, elles se compensent en partie : on compose en quadrature.'),
       F('0,25 %', 'On a oublié la racine : 0,16 + 0,09 = 0,25 est un carré (en %²), pas une incertitude. Il faut en prendre la racine carrée, soit 0,5 %.'),
-      F('0,1 %', 'Elle correspond à la différence 0,4 − 0,3. Diviser par V ne soustrait pas les incertitudes relatives : elles se composent comme pour un produit.'),
+      F('0,1 %', 'Elle correspond à la différence 0,4 − 0,3. Diviser par V ne soustrait pas les incertitudes relatives : pour des erreurs indépendantes, elles se composent comme pour un produit, jamais en se retranchant.'),
     ] },
   { id: 'ctl-prev-pwm-puissance', domaine: 'Contrôle des systèmes', titre: 'Chauffer par PWM',
     enonce: 'Une résistance chauffante de 25 Ω est alimentée en 5,0 V par l’intermédiaire d’un transistor utilisé comme interrupteur (passant ou bloqué, sans chute de tension), que commande un signal PWM de la carte. Le rapport cyclique passe de 20 % à 40 %. La fréquence du PWM est très grande devant la vitesse d’évolution de la température et la résistance reste constante.', q: 'La puissance électrique moyenne dissipée dans la résistance est…', options: [
