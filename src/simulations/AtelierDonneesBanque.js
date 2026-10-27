@@ -927,6 +927,86 @@ export const ENONCES = [
         manque: null, solution: { txt: 'W = F × d × cos α (F en N, d en m)', val: p.F * 1000 * p.d / 100 * Math.cos(p.a * Math.PI / 180), u: 'J' } };
     },
   },
+  {
+    id: 'hydrodist', domaine: 'Distillation', titre: 'Hydrodistillation d’une huile essentielle de lavande', noms: ['Rendement d’extraction', 'Volume d’huile essentielle', 'Énergie dépensée par gramme d’huile'],
+    gen: () => {
+      const mp = tire([20, 25, 30, 40, 50]), eta = tire([0.6, 0.8, 1.0, 1.2, 1.5]);
+      return { mp, mh: Math.round(mp * 10 * eta), Veau: tire([100, 120, 150]), P: tire(mp <= 25 ? [6, 9] : [9, 12]), t: tire([2, 2.5, 3]), T: tire([98, 99]), rho: tire([0.88, 0.89, 0.90]), Vh: tire([15, 20, 25, 30]) };
+    },
+    build: (p, q) => {
+      const tokens = {
+        mp: tok(`${p.mp} kg`, 'Masse de fleurs fraîches', p.mp * 1000, 'g'),
+        Veau: tok(`${p.Veau} L`, 'Volume d’eau chargé dans l’alambic', p.Veau, 'L'),
+        P: tok(`${p.P} kW`, 'Puissance électrique de chauffe', p.P, 'kW'),
+        t: tok(`${nb(p.t, 1)} h`, 'Durée de la distillation', p.t, 'h'),
+        T: tok(`${p.T} °C`, 'Température de la vapeur en tête de colonne', p.T, '°C'),
+        mh: tok(`${p.mh} g`, 'Masse d’huile essentielle recueillie', p.mh, 'g'),
+        rho: tok(`${nb(p.rho, 2)} g·mL⁻¹`, 'Masse volumique de l’huile essentielle', p.rho, 'g·mL⁻¹'),
+        Vh: tok(`${p.Vh} L`, 'Volume d’hydrolat recueilli', p.Vh, 'L'),
+      };
+      const debut = ['Un producteur extrait l’huile essentielle de lavande par hydrodistillation. Il charge l’alambic avec ', T('mp'), ' de fleurs fraîches et ', T('Veau'), ' d’eau, puis chauffe avec une résistance électrique de puissance ', T('P'),
+        ' (supposée constante) pendant ', T('t'), '. La vapeur en tête de colonne est à ', T('T'), '. Dans l’essencier, il recueille ', T('mh'), ' d’huile essentielle, de masse volumique ', T('rho'),
+        ', en plus de ', T('Vh'), ' d’hydrolat (l’eau aromatique). '];
+      const rEau = 'Le volume d’eau chargé ne change ni la masse ni le volume d’huile recueillie, et il n’entre pas dans le calcul demandé.';
+      const rT = 'La température de la vapeur explique le procédé (le mélange eau–huile bout sous 100 °C), mais n’entre pas dans le calcul demandé.';
+      const rHyd = 'L’hydrolat est la phase aqueuse du distillat : il ne donne pas la quantité d’huile essentielle, qui est comptée à part.';
+      const rMp = 'La masse de fleurs sert à comparer l’huile obtenue à la matière végétale, pas à calculer un volume ni une énergie.';
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le rendement massique d’extraction, c’est-à-dire la masse d’huile essentielle recueillie par rapport à la masse de fleurs fraîches ?'], utiles: ['mp', 'mh'],
+        raisons: { Veau: rEau, P: 'La puissance de chauffe détermine l’énergie dépensée, pas la quantité d’huile extraite.', t: 'La durée de distillation n’apparaît pas dans un rapport de masses.', T: rT, rho: 'La masse volumique servirait à passer d’une masse à un volume : ici on compare deux masses.', Vh: rHyd },
+        cherche: { bonne: 'Le rendement massique : masse d’huile / masse de fleurs fraîches (en %)', faux: ['La teneur en huile de l’hydrolat : masse d’huile / volume d’hydrolat (en g·L⁻¹)', 'La masse d’huile obtenue par litre d’eau chargée (en g·L⁻¹)', 'Le volume d’huile essentielle recueillie (en mL)'] },
+        manque: null,
+        solution: { txt: 'η = m_huile / m_fleurs × 100', val: p.mh / (p.mp * 1000) * 100, u: '%' } };
+      if (q === 1) return { tokens, derivees: [], texte: [...debut, 'Quel volume occupe l’huile essentielle recueillie dans l’essencier ?'], utiles: ['mh', 'rho'],
+        raisons: { mp: rMp, Veau: rEau, P: 'La puissance de chauffe n’a aucun lien avec le volume d’huile recueillie.', t: 'La durée de distillation n’intervient pas dans le calcul d’un volume à partir d’une masse.', T: rT, Vh: rHyd },
+        cherche: { bonne: 'Le volume d’huile essentielle recueillie (en mL)', faux: ['La masse d’huile essentielle recueillie (en g)', 'Le volume total du distillat, huile et hydrolat (en L)', 'La masse volumique de l’hydrolat (en g·mL⁻¹)'] },
+        manque: null,
+        solution: { txt: 'V = m_huile / ρ', val: p.mh / p.rho, u: 'mL' } };
+      return { tokens, texte: [...debut, 'Quelle énergie électrique a été dépensée, en moyenne, pour obtenir un gramme d’huile essentielle ?'], utiles: ['P', 't', 'mh'],
+        derivees: [{ id: 'E', nom: 'Énergie électrique dépensée E', expr: 'E = P × Δt', val: p.P * p.t, u: 'kWh' }],
+        raisons: { mp: rMp, Veau: rEau, T: rT, rho: 'La masse volumique de l’huile ne sert pas à calculer une énergie.', Vh: rHyd },
+        cherche: { bonne: 'L’énergie électrique dépensée par gramme d’huile essentielle (en Wh·g⁻¹)', faux: ['L’énergie électrique totale dépensée (en kWh)', 'L’énergie électrique dépensée par kilogramme de fleurs (en kWh·kg⁻¹)', 'La puissance moyenne de chauffe par gramme d’huile (en W·g⁻¹)'] },
+        manque: null,
+        solution: { txt: 'e = P × Δt / m_huile', val: p.P * p.t * 1000 / p.mh, u: 'Wh·g⁻¹' } };
+    },
+  },
+  // ───────────────────────────── Évaporation et cristallisation : évaporateur industriel
+  {
+    id: 'crist-evaporateur', domaine: 'Évaporation et cristallisation', titre: 'Concentrer un jus sucré dans un évaporateur', noms: ['Débit de saccharose entrant', 'Débit d’eau évaporée', 'Masse d’eau évaporée sur une campagne'],
+    gen: () => ({ q1: tire([8, 10, 12, 15, 20]), w1: tire([10, 12, 15, 18]), w2: tire([60, 65]), S: tire([150, 200, 250, 300]), Pv: tire([2, 2.5, 3]), th: tire([75, 85, 95]), dur: tire([8, 12, 24]) }),
+    build: (p, q) => {
+      const tokens = {
+        q1: tok(`${p.q1} t·h⁻¹`, 'Débit massique de jus à l’entrée', p.q1, 't·h⁻¹'),
+        w1: tok(`${p.w1} %`, 'Teneur en saccharose du jus d’entrée (en masse)', p.w1, '%'),
+        w2: tok(`${p.w2} %`, 'Teneur en saccharose du sirop de sortie (en masse)', p.w2, '%'),
+        S: tok(`${p.S} m²`, 'Surface d’échange de l’évaporateur', p.S, 'm²'),
+        Pv: tok(`${nb(p.Pv, 1)} bar`, 'Pression de la vapeur de chauffe', p.Pv, 'bar'),
+        th: tok(`${p.th} °C`, 'Température d’ébullition du jus dans l’évaporateur', p.th, '°C'),
+      };
+      const debut = ['Dans une sucrerie, un évaporateur fonctionne en continu et en régime permanent. Il reçoit un jus sucré (solution aqueuse de saccharose) au débit massique de ', T('q1'), ', qui contient ', T('w1'),
+        ' de saccharose en masse. Il en sort un sirop concentré à ', T('w2'), ' de saccharose en masse, et de la vapeur d’eau pure. L’évaporateur a une surface d’échange de ', T('S'), ' ; il est chauffé par de la vapeur sous ', T('Pv'),
+        ' et le jus y bout à ', T('th'), '. Le saccharose n’est pas entraîné avec la vapeur et ne cristallise pas. '];
+      const qs = p.q1 * p.w1 / 100, q2 = qs / (p.w2 / 100), qe = p.q1 - q2;
+      const rTher = 'Les caractéristiques thermiques de l’évaporateur (surface, pression de chauffe, température) fixent la puissance et la vitesse d’évaporation, pas le bilan de matière.';
+      const rW2 = 'La teneur du sirop de sortie sert à calculer ce qui sort, pas la quantité de saccharose qui entre.';
+      const rThermique = { S: rTher, Pv: rTher, th: rTher };
+      const dQs = { id: 'qs', nom: 'Débit massique de saccharose (le même à l’entrée et à la sortie)', expr: 'q_saccharose = q₁ × w₁ / 100', val: qs, u: 't·h⁻¹' };
+      const dQ2 = { id: 'q2', nom: 'Débit massique de sirop de sortie', expr: 'q₂ = q_saccharose / (w₂ / 100)', val: q2, u: 't·h⁻¹' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le débit massique de saccharose qui entre dans l’évaporateur ?'], utiles: ['q1', 'w1'],
+        raisons: { w2: rW2, ...rThermique },
+        cherche: { bonne: 'Le débit massique de saccharose dans le jus d’entrée (en t·h⁻¹)', faux: ['Le débit massique d’eau dans le jus d’entrée (en t·h⁻¹)', 'Le débit massique de sirop à la sortie (en t·h⁻¹)', 'Le débit massique d’eau évaporée (en t·h⁻¹)'] },
+        manque: null, solution: { txt: 'q_saccharose = q₁ × w₁ / 100', val: qs, u: 't·h⁻¹' } };
+      if (q === 1) return { tokens, derivees: [dQs, dQ2], texte: [...debut, 'Quel est le débit massique d’eau évaporée ?'], utiles: ['q1', 'w1', 'w2'],
+        raisons: rThermique,
+        cherche: { bonne: 'Le débit massique d’eau évaporée (en t·h⁻¹)', faux: ['Le débit massique de sirop à la sortie (en t·h⁻¹)', 'Le débit massique de saccharose dans le jus (en t·h⁻¹)', 'Le débit massique d’eau contenue dans le jus d’entrée (en t·h⁻¹)'] },
+        manque: null, solution: { txt: 'q_évaporée = q₁ − q₂, avec q₂ = q₁ × w₁ / w₂', val: qe, u: 't·h⁻¹' } };
+      tokens.dur = tok(`${p.dur} heures`, 'Durée de fonctionnement de la campagne', p.dur, 'h');
+      return { tokens, derivees: [dQs, dQ2, { id: 'qe', nom: 'Débit massique d’eau évaporée', expr: 'q_évaporée = q₁ − q₂', val: qe, u: 't·h⁻¹' }],
+        texte: [...debut, 'L’évaporateur fonctionne sans interruption pendant ', T('dur'), '. Quelle masse d’eau a-t-il évaporée pendant cette durée ?'], utiles: ['q1', 'w1', 'w2', 'dur'],
+        raisons: rThermique,
+        cherche: { bonne: 'La masse d’eau évaporée pendant la durée de fonctionnement (en t)', faux: ['Le débit massique d’eau évaporée (en t·h⁻¹)', 'La masse de sirop produite pendant la durée de fonctionnement (en t)', 'La masse de jus traitée pendant la durée de fonctionnement (en t)'] },
+        manque: null, solution: { txt: 'm_évaporée = (q₁ − q₁ × w₁ / w₂) × durée', val: qe * p.dur, u: 't' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
@@ -938,6 +1018,8 @@ export function melange(tab, graine) {
 
 // Symbole de chaque donnée tel qu'il apparaît dans la formule (affiché à côté du nom de la grandeur)
 const SYMBOLES = {
+  hydrodist: { mp: 'm_fleurs', Veau: 'V_eau', P: 'P', t: 'Δt', T: 'θ', mh: 'm_huile', rho: 'ρ', Vh: 'V_hydrolat' },
+  'crist-evaporateur': { q1: 'q₁', w1: 'w₁', w2: 'w₂', S: 'S', Pv: 'P', th: 'θ', dur: 'Δt' },
   paroi: { an: '', L: 'L', h: 'h', e: 'e', lam: 'λ', Ti: 'T_int', Te: 'T_ext', prix: 'prix', dur: 'durée' },
   conduite: { Pel: 'P_él', D: 'D', Lc: 'L', Q: 'Q_V', tdur: 'Δt' },
   aspirine: { mc: 'm_comprimé', M: 'M', Vf: 'V_f', VA: 'V_A', cB: 'c_B', pH: 'pH', VE: 'V_E' },
