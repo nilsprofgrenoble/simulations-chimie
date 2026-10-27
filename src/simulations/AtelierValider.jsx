@@ -1,3 +1,4 @@
+import { ChoixListe } from "../ChoixListe";
 import { useState, useMemo } from "react";
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, ExempleResolu, avecIndices, exParam, venantDuDevoir, lireNombre, proche } from "../commun";
 import { useSuivi } from "../suivi";
@@ -150,16 +151,14 @@ export function SimulationAtelierValider({ naviguer }) {
       <h2 style={{ margin: '0 0 6px', fontSize: 18, color: KIT.txt, fontWeight: 700 }}>VAL : valider un résultat</h2>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Compétence travaillée : <b>Valider</b> (VAL) — garder un regard critique sur un résultat : est-il vraisemblable ? est-il compatible avec la référence ? <b>Tu n’as rien à apprendre par cœur : les repères sont donnés.</b></div>
       <div style={{ ...styleBoite, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
-        <label style={{ fontSize: 14 }}>Entraînement :{' '}
-          <select aria-label="Type d’entraînement" value={fam} onChange={e => charger(e.target.value, 0)}
-            style={{ fontSize: 14, padding: 4, borderRadius: 6, border: `1.5px solid ${KIT.bord}`, color: KIT.txt, background: 'white' }}>
-            {FAMILLES.map(f => <option key={f.id} value={f.id}>{f.titre}</option>)}
-          </select></label>
-        <label style={{ fontSize: 14 }}>Exercice :{' '}
-          <select aria-label="Choix de l’exercice" value={it.id} onChange={e => charger(fam, famille.liste.findIndex(x => x.id === e.target.value))}
-            style={{ fontSize: 14, padding: 4, borderRadius: 6, border: `1.5px solid ${KIT.bord}`, color: KIT.txt, background: 'white', maxWidth: 340 }}>
-            {parDomaine(famille.liste).map(([d, l]) => <optgroup key={d} label={d}>{l.map(x => <option key={x.id} value={x.id}>{`${'★'.repeat(x.niveau)} ${x.titre}`}</option>)}</optgroup>)}
-          </select></label>
+        <div style={{ fontSize: 14, flex: '1 1 240px', minWidth: 0 }}>Entraînement :
+          <ChoixListe ariaLabel="Type d’entraînement" titre="Type d’entraînement" valeur={fam} onChoisir={v => charger(v, 0)}
+            groupes={[{ items: FAMILLES.map(f => ({ value: f.id, label: f.titre })) }]}/>
+        </div>
+        <div style={{ fontSize: 14, flex: '1 1 260px', minWidth: 0 }}>Exercice :
+          <ChoixListe ariaLabel="Choix de l’exercice" titre="Choisir un exercice" valeur={it.id} onChoisir={v => charger(fam, famille.liste.findIndex(x => x.id === v))}
+            groupes={parDomaine(famille.liste).map(([d, l]) => ({ label: d, items: l.map(x => ({ value: x.id, label: `${'★'.repeat(x.niveau)} ${x.titre}` })) }))}/>
+        </div>
         <button onClick={hasard} style={stylePetitBouton(false)}>🎲 Au hasard</button>
         <div style={{ flexBasis: '100%', fontSize: 13, color: KIT.txt2 }}>{famille.aide}</div>
       </div>

@@ -1,3 +1,4 @@
+import { ChoixListe } from "../ChoixListe";
 import { useState, useMemo, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite,
   BoutonsModes, ORANGE_GUIDE, lireNombre, exParam } from "../commun";
@@ -165,11 +166,10 @@ export function SimulationAtelierGraphique() {
           <div className="atg-g">
             {!enDefi && (
               <div style={{ ...styleBoite, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8 }}>
-                <label style={{ fontSize: 14 }}>Graphique :{' '}
-                  <select aria-label="Choix du graphique" value={choix} onChange={e => { setChoix(e.target.value); charger(e.target.value); }}
-                    style={{ fontSize: 14, padding: 4, borderRadius: 6, border: `1.5px solid ${KIT.bord}` }}>
-                    {parDomaine(SCENARIOS).map(([d, l]) => <optgroup key={d} label={d}>{l.map(s => <option key={s.id} value={s.id}>{s.titre({ liq: 'eau' })}</option>)}</optgroup>)}
-                  </select></label>
+                <div style={{ fontSize: 14, flex: '1 1 260px', minWidth: 0 }}>Graphique :
+                  <ChoixListe ariaLabel="Choix du graphique" titre="Choisir un graphique" valeur={choix} onChoisir={v => { setChoix(v); charger(v); }}
+                    groupes={parDomaine(SCENARIOS).map(([d, l]) => ({ label: d, items: l.map(sc => ({ value: sc.id, label: sc.titre({ liq: 'eau' }) })) }))}/>
+                </div>
                 <button onClick={() => charger(choix)} style={stylePetitBouton(false)}>🎲 Nouveau graphique</button>
               </div>)}
             {vueGraphe(g, marquesExplore)}
