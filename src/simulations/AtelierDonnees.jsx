@@ -92,7 +92,7 @@ export function SimulationAtelierDonnees() {
   const barre = (k, i) => (
     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
       <button onClick={() => corriger(k)} style={styleBouton(true, '#16a34a')}>✓ Corriger</button>
-      {!okEtape[k] && <button onClick={() => { corriger(k, true); setVu(v => ({ ...v, [k]: true })); }}
+      {!(chk[k] && okEtape[k]) && <button onClick={() => { corriger(k, true); setVu(v => ({ ...v, [k]: true })); }}
         style={{ fontSize: 12.5, background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer' }}>voir la correction</button>}
       {(k === 'sel' || k === 'tab') && !indice[k] && <button onClick={() => setIndice(x => ({ ...x, [k]: true }))} style={stylePetitBouton(false)}><Pic n="bulb"/>Indice</button>}
       {(okEtape[k] || vu[k]) && chk[k] && i === etp && i < stages.length - 1 && <button onClick={() => setEtp(e => e + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Étape suivante ▶</button>}
