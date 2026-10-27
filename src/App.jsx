@@ -320,6 +320,19 @@ export default function App() {
     meta('robots', activeId === 39 || activeId === 40 ? 'noindex' : 'index, follow');
   }, [activeId]);
 
+  // Arrivée par un QR code ou un lien vers un exercice précis (?ex=…) sur un petit écran :
+  // on saute l'en-tête et l'introduction pour montrer directement le choix de l'exercice.
+  useEffect(() => {
+    try {
+      if (!new URLSearchParams(window.location.search).get('ex') || window.innerWidth > 700) return;
+      const t = setTimeout(() => {
+        const cible = document.querySelector('select[aria-label]');
+        if (cible) window.scrollTo({ top: Math.max(0, (cible.closest('label').parentElement || cible).getBoundingClientRect().top + window.scrollY - 90), behavior: 'auto' });
+      }, 500);
+      return () => clearTimeout(t);
+    } catch { /* défilement indisponible */ }
+  }, []);
+
   function partager() {
     const url = new URL(window.location.href);
     if (activeId > 0) url.searchParams.set('sim', activeId);
