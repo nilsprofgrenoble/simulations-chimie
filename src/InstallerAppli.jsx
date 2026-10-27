@@ -22,9 +22,17 @@ export function InstallerAppli() {
         ? <button onClick={async () => { evt.prompt(); try { await evt.userChoice; } catch { /* annulé */ } setEvt(null); }}
             style={{ alignSelf: 'flex-start', padding: '8px 16px', borderRadius: 8, border: 'none', background: ACCENT, color: 'white', fontWeight: 800, fontSize: 15, cursor: 'pointer', fontFamily: 'inherit' }}>Installer sur cet appareil</button>
         : ios
-          ? <div style={{ fontSize: 13.5, color: TEXTE2, lineHeight: 1.5 }}>Sur iPhone, avec Safari : touche le bouton <b>Partager</b> (le carré avec une flèche), puis <b>« Sur l’écran d’accueil »</b>.</div>
-          : <div style={{ fontSize: 13.5, color: TEXTE2, lineHeight: 1.5 }}>Sur Android, avec Chrome : menu <b>⋮</b> puis <b>« Installer l’application »</b> (ou « Ajouter à l’écran d’accueil »).</div>}
-      <div style={{ fontSize: 12.5, color: TEXTE2 }}>Gratuit, sans magasin d’applications : le site s’ouvre comme une application, même avec un réseau faible.</div>
+          ? <ol style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: TEXTE2, lineHeight: 1.6 }}>
+              <li>Ouvre ce site avec <b>Safari</b>.</li>
+              <li>Touche le bouton <b>Partager</b> (un carré avec une flèche vers le haut).</li>
+              <li>Touche <b>« Sur l’écran d’accueil »</b>, puis <b>Ajouter</b>.</li>
+            </ol>
+          : <ol style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: TEXTE2, lineHeight: 1.6 }}>
+              <li>Touche les <b>3 points ⋮</b> du navigateur (en haut à droite).</li>
+              <li>Touche <b>« Installer »</b> (le texte exact change selon le téléphone : « Installer l’application », « Installer et créer un raccourci » ou « Ajouter à l’écran d’accueil »).</li>
+              <li>L’icône « Paillasse » apparaît sur ton écran d’accueil.</li>
+            </ol>}
+      <div style={{ fontSize: 12.5, color: TEXTE2 }}>Rien à télécharger : c’est un raccourci vers le site, gratuit.</div>
     </div>
   );
 }
