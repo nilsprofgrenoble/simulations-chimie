@@ -89,8 +89,8 @@ export const ENONCES = [
         raisons: { Pel: 'La puissance de la pompe ne donne pas la masse d’eau déplacée.', D: 'Le diamètre n’intervient pas : le débit est déjà donné.', Lc: 'La longueur de la conduite n’intervient pas dans la masse d’eau refoulée.' },
         derivees: [{ id: 'V', nom: 'Volume V d’eau refoulé', expr: 'V = Q × durée', val: p.Q, u: 'm³' }],
         cherche: { bonne: 'La masse m d’eau refoulée (en kg)', faux: ['Le débit massique de l’eau (en kg·s⁻¹)', 'La vitesse moyenne de l’eau (en m·s⁻¹)', 'Le volume d’eau contenu dans la conduite (en m³)'] },
-        manque: { bonne: 'La masse volumique de l’eau', faux: ['La section de la conduite', 'La viscosité de l’eau', 'La pression de refoulement de la pompe'],
-          expl: 'Pour passer d’un volume à une masse, il faut la masse volumique : m = ρ·V, avec ρ = 1000 kg·m⁻³ pour l’eau. L’énoncé ne la donne pas.' },
+        manque: { bonne: 'Il manque la masse volumique de l’eau', faux: ['Il manque le débit volumique de l’eau', 'Il ne manque que la durée de refoulement', 'Il ne manque aucune donnée pour ce calcul'],
+          expl: `Pour passer d’un volume à une masse, il faut la masse volumique : m = ρ·V, avec ρ = 1000 kg·m⁻³ pour l’eau. L’énoncé ne la donne pas. En revanche, le débit volumique (${tokens.Q.aff}) et la durée (${tokens.tdur.aff}) y figurent bien : V = Q × durée.` },
         solution: { txt: 'm = ρ·Q·durée', val: 1000 * p.Q, u: 'kg' } };
     },
   },
@@ -117,9 +117,7 @@ export const ENONCES = [
         ' (solution S₀). On prélève ', T('VA'), ' de S₀ que l’on titre avec une solution de soude (Na⁺ + HO⁻) de concentration ', T('cB'),
         ', en présence de phénolphtaléine (zone de virage de pH ', T('pH'), '). L’équivalence est repérée pour un volume de soude versé de ', T('VE'), '. ',
         q === 0 ? 'Quelle est la concentration en acide acétylsalicylique de la solution S₀ ?' : 'Quelle masse d’acide acétylsalicylique contient un comprimé ?'];
-      const manque = { bonne: 'L’équation de la réaction de titrage',
-        faux: ['La constante d’acidité Ka du couple', 'La température du laboratoire', 'Rien ne manque'],
-        expl: 'Pour relier la quantité de soude versée à celle d’acide, il faut l’équation de la réaction (ici 1 AH pour 1 HO⁻). L’énoncé ne la donne pas.' };
+      const manque = null;
       const c0 = p.cB * p.VE / p.VA;
       if (q === 0) return { tokens, texte, utiles: ['VA', 'cB', 'VE'], derivees: [], manque,
         raisons: { mc: 'La masse du comprimé servirait à calculer un pourcentage en masse, pas la concentration de S₀.', M: 'La masse molaire servirait à passer d’une quantité de matière à une masse : ce n’est pas demandé ici.',
@@ -197,8 +195,8 @@ export const ENONCES = [
       return { tokens, derivees: [...derivees, { id: 'P', nom: 'Puissance cédée par l’eau chaude', expr: 'P = q_m · c · ΔT', val: P, u: 'W' }],
         texte: [...debut, 'Quelle est la température de sortie de l’eau froide ?'], utiles: ['qc', 'Tce', 'Tcs', 'c', 'qf', 'Tfe'], raisons: {},
         cherche: { bonne: 'La température de sortie de l’eau froide (en °C)', faux: ['La puissance thermique cédée par l’eau chaude (en W)', 'La variation de température de l’eau chaude (en K)', 'La température moyenne dans l’échangeur (en °C)'] },
-        manque: { bonne: 'Rien ne manque dans l’énoncé', faux: ['Il manque la surface d’échange', 'Il manque le coefficient d’échange U', 'Il manque le sens des écoulements'],
-          expl: 'Surface et coefficient U serviraient à calculer la puissance échangée à partir de l’écart de température, mais ici on la connaît par le circuit chaud. L’énoncé précise que les pertes sont négligées : P_reçue = P_cédée.' },
+        manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque la capacité thermique massique de l’eau', 'Il manque la température d’entrée de l’eau froide', 'Il ne manque que la surface d’échange'],
+          expl: `Tout est dans l’énoncé : la capacité thermique massique de l’eau (${tokens.c.aff}), le débit de l’eau froide (${tokens.qf.aff}) et sa température d’entrée (${tokens.Tfe.aff}). Les pertes étant négligées, la puissance reçue par l’eau froide est celle que cède l’eau chaude (P_reçue = P_cédée) : ni la surface d’échange ni le coefficient U ne sont nécessaires.` },
         solution: { txt: 'T_sortie,froid = T_entrée,froid + P / (q_m,froid · c)', val: p.Tfe + P / (p.qf * 4180), u: '°C' } };
     },
   },
@@ -244,15 +242,15 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la pression absolue au fond du réservoir ?'], utiles: ['rho', 'h', 'Patm'],
         raisons: { D: 'La pression hydrostatique ne dépend que de la hauteur d’eau : le diamètre n’intervient pas.' },
         cherche: { bonne: 'La pression absolue au fond du réservoir (en Pa)', faux: ['La force exercée par l’eau sur le fond (en N)', 'La masse d’eau contenue dans le réservoir (en kg)', 'La pression due uniquement au poids de l’eau, sans la pression atmosphérique (en Pa)'] },
-        manque: { bonne: 'L’intensité de la pesanteur g (à chercher : 9,81 N·kg⁻¹)', faux: ['La viscosité de l’eau (à chercher dans un tableau)', 'La température de l’eau (à mesurer avec un thermomètre)', 'Rien ne manque : toutes les données sont dans l’énoncé'],
-          expl: 'La relation fondamentale de l’hydrostatique, P = P_atm + ρ·g·h, fait intervenir g, que l’énoncé ne donne pas.' },
+        manque: { bonne: 'Il manque l’intensité de la pesanteur g', faux: ['Il manque la masse volumique de l’eau', 'Il ne manque que la viscosité de l’eau', 'Il ne manque aucune donnée pour ce calcul'],
+          expl: `La relation fondamentale de l’hydrostatique, P = P_atm + ρ·g·h, fait intervenir g, que l’énoncé ne donne pas (g = 9,81 N·kg⁻¹ sur Terre). Contrairement à π, g n’est pas une constante mathématique : elle dépend de l’astre, donc l’énoncé doit la préciser. La masse volumique (${tokens.rho.aff}), la hauteur d’eau (${tokens.h.aff}) et la pression atmosphérique (${tokens.Patm.aff}) y figurent bien ; la viscosité n’intervient pas pour un fluide au repos.` },
         solution: { txt: 'P_fond − P_atm = ρ·g·h  (ΔP = ρ·g·Δz), donc P_fond = P_atm + ρ·g·h', val: p.Patm * 100 + p.rho * 9.81 * p.h, u: 'Pa' } };
       return { tokens, texte: [...debut, 'Quelle est la masse d’eau contenue dans le réservoir ?'], utiles: ['rho', 'h', 'D'],
         derivees: [{ id: 'S', nom: 'Section S du réservoir', expr: 'S = π·D² / 4', val: S, u: 'm²' }, { id: 'V', nom: 'Volume V d’eau', expr: 'V = S × h', val: S * p.h, u: 'm³' }],
         raisons: { Patm: 'La pression atmosphérique ne change pas la masse d’eau contenue.' },
         cherche: { bonne: 'La masse m d’eau contenue dans le réservoir (en kg)', faux: ['La pression absolue au fond du réservoir (en Pa)', 'Le poids de l’eau (en N)', 'Le débit d’eau nécessaire pour remplir le réservoir (en m³·s⁻¹)'] },
-        manque: { bonne: 'Rien ne manque (π est une constante mathématique)', faux: ['L’intensité de la pesanteur g (à chercher : 9,81 N·kg⁻¹)', 'La viscosité de l’eau (à chercher dans un tableau)', 'Le volume d’eau, à connaître pour calculer la masse'],
-          expl: 'On cherche une masse, pas un poids : g n’intervient pas (m = ρ·V). Tout ce qu’il faut est dans l’énoncé.' },
+        manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque la masse volumique de l’eau', 'Il manque le diamètre du réservoir', 'Il ne manque que l’intensité de la pesanteur g'],
+          expl: `Tout est dans l’énoncé : la masse volumique (${tokens.rho.aff}), la hauteur d’eau (${tokens.h.aff}) et le diamètre (${tokens.D.aff}) pour calculer le volume V = π·D²/4 × h (π est une constante mathématique). On cherche une masse, pas un poids : g n’intervient pas (m = ρ·V).` },
         solution: { txt: 'm = ρ·V = ρ·S·h', val: p.rho * S * p.h, u: 'kg' } };
     },
   },
@@ -271,27 +269,27 @@ export const ENONCES = [
         Ti: tok(`${p.Ti} h`, 'Temps intégral (indiqué sur la fiche du régulateur)', p.Ti, 'h'),
       };
       const debut = ['Un réservoir de section ', T('S'), ' est rempli par une pompe dont le débit est proportionnel à la commande Y (100 % ↔ ', T('Qmax'), '). Un soutirage constant de ', T('Qp'),
-        ' vide le réservoir. Le régulateur proportionnel calcule Y = K_p × (consigne − H), où H est le niveau du liquide dans le réservoir, sans commande de base (Y est limitée entre 0 et 100 %), avec K_p = ', T('Kp'), ' ; la consigne est de ', T('hc'), '. La fiche du régulateur indique un temps intégral de ', T('Ti'), '. Le capteur de niveau et la pompe sont supposés parfaits (sans retard). On admet que le niveau finit par se stabiliser. '];
+        ' vide le réservoir. Le régulateur proportionnel calcule Y = K_p × (consigne − H), où H est le niveau du liquide dans le réservoir, sans commande de base (Y est limitée entre 0 et 100 %), avec K_p = ', T('Kp'), ' ; la consigne est de ', T('hc'), '. La fiche du régulateur (réglable en PI) indique un temps intégral de ', T('Ti'), ', mais l’action intégrale est désactivée : le régulateur est utilisé en proportionnel seul. Le capteur de niveau et la pompe sont supposés parfaits (sans retard). On admet que le niveau finit par se stabiliser. '];
       const rS = 'La section règle la vitesse d’évolution du niveau, pas sa valeur en régime permanent.', rTi = 'Le régulateur est proportionnel seul : sa loi Y = K_p × (consigne − H) ne contient pas de temps intégral, ce réglage ne sert pas dans ce calcul.';
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'En régime permanent, quelle commande Y le régulateur doit-il envoyer à la pompe ?'], utiles: ['Qmax', 'Qp'],
         raisons: { S: rS, hc: 'La consigne intervient dans le calcul de l’écart, pas dans la commande nécessaire pour compenser le soutirage.', Kp: 'Le gain relie la commande à l’écart de niveau, mais ne dit pas quelle commande est nécessaire.', Ti: rTi },
         cherche: { bonne: 'La commande Y envoyée à la pompe (en %)', faux: ['Le niveau de liquide en régime permanent (en m)', 'L’écart entre la consigne et le niveau (en m)', 'La durée de vidange du réservoir sans pompe (en h)'] },
-        manque: { bonne: 'Rien ne manque pour répondre à la question', faux: ['Il manque la masse volumique du liquide', 'Il manque la hauteur du réservoir', 'Il manque la température du liquide'],
-          expl: 'Rien ne manque : en régime permanent, le niveau est stable, le débit de la pompe est égal au soutirage, donc Y/100 × Q_max = Q_p.' },
+        manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque le débit maximal de la pompe', 'Il manque le débit de soutirage', 'Il ne manque que la masse volumique du liquide'],
+          expl: `Tout est dans l’énoncé : le débit maximal de la pompe (${tokens.Qmax.aff} pour 100 %) et le débit de soutirage (${tokens.Qp.aff}). En régime permanent, le niveau est stable, donc le débit de la pompe est égal au soutirage : Y/100 × Q_max = Q_p. La masse volumique n’intervient pas : les deux débits sont déjà des débits volumiques.` },
         solution: { txt: 'Y = Q_p / Q_max × 100', val: Y, u: '%' } };
       if (q === 1) return { tokens, texte: [...debut, 'Quel est l’écart statique, c’est-à-dire l’écart (consigne − niveau) qui subsiste en régime permanent ?'], utiles: ['Qmax', 'Qp', 'Kp'],
         derivees: [{ id: 'Y', nom: 'Commande nécessaire', expr: 'Y = Q_p / Q_max × 100', val: Y, u: '%' }],
         raisons: { S: rS, hc: 'L’écart ne dépend pas de la valeur de la consigne, seulement de la commande à fournir et du gain.', Ti: rTi },
         cherche: { bonne: 'L’écart statique entre la consigne et le niveau (en m)', faux: ['La commande Y (en %)', 'Le niveau de liquide (en m)', 'Le temps pour atteindre le régime permanent (en h)'] },
-        manque: { bonne: 'Rien ne manque pour répondre à la question', faux: ['Il manque la hauteur du réservoir', 'Il manque la masse volumique du liquide', 'Il manque la pression au fond du réservoir'],
-          expl: 'Rien ne manque : le régulateur ne fournit Y que s’il y a un écart : écart = Y / K_p.' },
+        manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque le gain proportionnel du régulateur', 'Il manque le débit maximal de la pompe', 'Il ne manque que la hauteur du réservoir'],
+          expl: `Tout est dans l’énoncé : le gain K_p (${tokens.Kp.aff}), ainsi que le débit maximal de la pompe (${tokens.Qmax.aff}) et le débit de soutirage (${tokens.Qp.aff}) qui donnent la commande Y. Le régulateur ne fournit Y que s’il y a un écart : écart = Y / K_p. La hauteur du réservoir n’intervient pas.` },
         solution: { txt: 'écart = Y / K_p', val: e, u: 'm' } };
       return { tokens, texte: [...debut, 'Quel est le niveau du liquide en régime permanent ?'], utiles: ['Qmax', 'Qp', 'Kp', 'hc'],
         derivees: [{ id: 'Y', nom: 'Commande nécessaire', expr: 'Y = Q_p / Q_max × 100', val: Y, u: '%' }, { id: 'e', nom: 'Écart statique', expr: 'écart = Y / K_p', val: e, u: 'm' }],
         raisons: { S: rS, Ti: rTi },
         cherche: { bonne: 'Le niveau H en régime permanent (en m)', faux: ['L’écart statique (en m)', 'La commande Y (en %)', 'Le volume de liquide contenu dans le réservoir (en m³)'] },
-        manque: { bonne: 'Rien ne manque pour répondre à la question', faux: ['Il manque la hauteur du réservoir', 'Il manque la masse volumique du liquide', 'Il manque la vitesse de remplissage'],
-          expl: 'Rien ne manque : un régulateur proportionnel (sans action intégrale) laisse le niveau sous la consigne (le soutirage demande une commande non nulle) : H = consigne − écart.' },
+        manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque la consigne de niveau', 'Il manque le gain proportionnel du régulateur', 'Il ne manque que le débit de soutirage'],
+          expl: `Tout est dans l’énoncé : la consigne (${tokens.hc.aff}), le gain K_p (${tokens.Kp.aff}), le débit maximal de la pompe (${tokens.Qmax.aff}) et le débit de soutirage (${tokens.Qp.aff}). Un régulateur proportionnel (sans action intégrale) laisse le niveau sous la consigne (le soutirage demande une commande non nulle) : H = consigne − écart.` },
         solution: { txt: 'H = consigne − écart', val: p.hc - e, u: 'm' } };
     },
   },
@@ -352,15 +350,15 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel volume d’éthanol contenait le mélange initial ?'], utiles: ['V', 'x'],
         raisons: { P: rPuis, Te: rTemp, Vd: 'Le distillat est ce que l’on récupère après la distillation : il ne dit pas ce qu’il y avait au départ.', y: 'La pureté du distillat concerne ce que l’on récupère, pas le mélange initial.' },
         cherche: { bonne: 'Le volume d’éthanol présent dans le mélange initial (en mL)', faux: ['Le volume d’éthanol récupéré dans le distillat (en mL)', 'Le rendement de la distillation, part d’éthanol récupérée (en %)', 'La masse d’éthanol présente dans le mélange initial (en g)'] },
-        manque: { bonne: 'Rien ne manque : un pourcentage en volume suffit', faux: ['La masse volumique de l’éthanol (à chercher dans un tableau)', 'La pression atmosphérique (à relever au baromètre)', 'La température du mélange (à mesurer au thermomètre)'],
-          expl: 'Un pourcentage en volume s’applique à un volume : V_éthanol = x × V. Aucune masse volumique n’est nécessaire.' },
+        manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque le volume du mélange initial', 'Il manque la proportion d’éthanol dans le mélange', 'Il ne manque que la masse volumique de l’éthanol'],
+          expl: `Tout est dans l’énoncé : le volume du mélange (${tokens.V.aff}) et sa proportion d’éthanol en volume (${tokens.x.aff}). Un pourcentage en volume s’applique à un volume : V_éthanol = x × V. Aucune masse volumique n’est nécessaire.` },
         solution: { txt: 'V_éthanol = (x / 100) × V', val: Vi, u: 'mL' } };
       return { tokens, texte: [...debut, 'Quel est le rendement de la distillation (volume d’éthanol récupéré par rapport au volume d’éthanol présent) ?'], utiles: ['V', 'x', 'Vd', 'y'],
         derivees: [{ id: 'Vi', nom: 'Volume d’éthanol présent au départ', expr: 'V_i = V × x / 100', val: Vi, u: 'mL' }, { id: 'Vr', nom: 'Volume d’éthanol dans le distillat', expr: 'V_r = V_distillat × y / 100', val: Vr, u: 'mL' }],
         raisons: { P: rPuis, Te: rTemp },
         cherche: { bonne: 'Le rendement : éthanol récupéré / éthanol présent (en %)', faux: ['Le rendement : volume de distillat / volume de mélange initial (en %)', 'Le volume d’éthanol récupéré dans le distillat (en mL)', 'Le volume d’éthanol non récupéré dans le distillat (en mL)'] },
-        manque: { bonne: 'Rien ne manque : tout est dans l’énoncé', faux: ['La masse volumique de l’éthanol (à chercher dans un tableau)', 'La durée de la distillation (à chronométrer)', 'La pression atmosphérique (à relever au baromètre)'],
-          expl: 'Les deux quantités d’éthanol se calculent à partir de volumes et de pourcentages en volume ; le rendement est leur rapport.' },
+        manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque le volume de distillat recueilli', 'Il manque la proportion d’éthanol dans le distillat', 'Il ne manque que la masse volumique de l’éthanol'],
+          expl: `Tout est dans l’énoncé : pour l’éthanol présent au départ, le volume du mélange (${tokens.V.aff}) et sa proportion d’éthanol (${tokens.x.aff}) ; pour l’éthanol récupéré, le volume de distillat (${tokens.Vd.aff}) et sa proportion d’éthanol (${tokens.y.aff}). Ces quantités d’éthanol se calculent à partir de volumes et de pourcentages en volume (aucune masse volumique n’est nécessaire) ; le rendement est leur rapport.` },
         solution: { txt: 'η = V_r / V_i × 100', val: Vr / Vi * 100, u: '%' } };
     },
   },
@@ -383,15 +381,15 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle masse de nitrate de potassium est dissoute dans la solution à 60 °C ?'], utiles: ['me', 's60'],
         raisons: { mb: rB, dur: rD, s20: 'Cette solubilité concerne 20 °C : la solution de départ est à 60 °C.' },
         cherche: { bonne: 'La masse de nitrate de potassium dissoute à 60 °C (en g)', faux: ['La masse de cristaux formés au refroidissement (en g)', 'La masse de nitrate de potassium encore dissoute à 20 °C (en g)', 'La masse totale de solution (en g)'] },
-        manque: { bonne: 'Rien ne manque pour répondre à la question', faux: ['Il manque la masse volumique de la solution', 'Il manque la masse molaire du nitrate de potassium', 'Il manque la température de cristallisation'],
-          expl: 'Rien ne manque : la solubilité est proportionnelle à la masse d’eau : on ramène la valeur donnée « pour 100 g d’eau » à la masse d’eau de l’énoncé.' },
+        manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque la masse d’eau de la solution', 'Il manque la solubilité du nitrate de potassium à 60 °C', 'Il ne manque que la masse molaire du nitrate de potassium'],
+          expl: `Tout est dans l’énoncé : la masse d’eau (${tokens.me.aff}) et la solubilité à 60 °C (${tokens.s60.aff}). La solubilité est proportionnelle à la masse d’eau : on ramène la valeur donnée « pour 100 g d’eau » à la masse d’eau de l’énoncé. La masse molaire n’intervient pas : on raisonne en masses.` },
         solution: { txt: 'm_dissoute(60 °C) = s₆₀ × m_eau / 100', val: m60, u: 'g' } };
       return { tokens, texte: [...debut, 'On suppose que la solution est de nouveau saturée à 20 °C et qu’il n’y a pas d’évaporation. Quelle masse de cristaux obtient-on à 20 °C ?'], utiles: ['me', 's60', 's20'],
         derivees: [{ id: 'm60', nom: 'Masse dissoute à 60 °C', expr: 'm₆₀ = s₆₀ × m_eau / 100', val: m60, u: 'g' }, { id: 'm20', nom: 'Masse encore dissoute à 20 °C', expr: 'm₂₀ = s₂₀ × m_eau / 100', val: m20, u: 'g' }],
         raisons: { mb: rB, dur: rD },
         cherche: { bonne: 'La masse de cristaux formés au refroidissement (en g)', faux: ['La masse de nitrate de potassium dissoute à 60 °C (en g)', 'La masse de nitrate de potassium encore dissoute à 20 °C (en g)', 'La masse totale de solution à 60 °C (en g)'] },
-        manque: { bonne: 'Rien ne manque pour répondre à la question', faux: ['Il manque la masse volumique de la solution', 'Il manque la masse molaire du nitrate de potassium', 'Il manque la vitesse de refroidissement'],
-          expl: 'Rien ne manque : ce qui cristallise est la différence entre la masse dissoute à 60 °C et celle qui peut encore l’être à 20 °C.' },
+        manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque la solubilité du nitrate de potassium à 20 °C', 'Il manque la masse d’eau de la solution', 'Il ne manque que la masse volumique de la solution'],
+          expl: `Tout est dans l’énoncé : la masse d’eau (${tokens.me.aff}), la solubilité à 60 °C (${tokens.s60.aff}) et la solubilité à 20 °C (${tokens.s20.aff}). Ce qui cristallise est la différence entre la masse dissoute à 60 °C et celle qui peut encore l’être à 20 °C. La masse volumique de la solution n’intervient pas.` },
         solution: { txt: 'm_cristaux = m₆₀ − m₂₀', val: m60 - m20, u: 'g' } };
     },
   },
@@ -482,18 +480,21 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'De quel angle tourne le rotor à chaque pas ?'], utiles: ['N'],
         raisons: { D: 'Le délai fixe la vitesse, pas l’angle d’un pas.', Np: 'Le nombre de pas commandés dit combien de pas on fait, pas de quel angle chacun tourne.', U: rU, R: rR },
         cherche: { bonne: 'L’angle d’un pas (en °)', faux: ['La vitesse de rotation (en tr/min)', 'La fréquence des pas (en Hz)', 'Le nombre de tours effectués'] },
-        manque: { bonne: 'Rien ne manque dans l’énoncé', faux: ['Il manque la masse du rotor', 'Il manque le couple maximal du moteur', 'Il manque le sens de rotation'], expl: 'Rien ne manque : un tour complet fait 360° et se décompose en N pas égaux.' },
+        manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque le nombre de pas pour faire un tour complet', 'Il manque le nombre de pas commandés par le programme', 'Il ne manque que la masse du rotor'],
+          expl: `Tout est dans l’énoncé : le rotor fait ${tokens.N.aff}. Un tour complet fait 360° et se décompose en N pas égaux. Le nombre de pas commandés (${tokens.Np.aff}) est aussi donné, mais il ne sert pas pour l’angle d’un seul pas.` },
         solution: { txt: 'α = 360° / N', val: 360 / p.N, u: '°' } };
       if (q === 1) return { tokens, derivees: [], texte: [...debut, 'Combien de pas le moteur fait-il par seconde ?'], utiles: ['D'],
         raisons: { N: 'Le nombre de pas par tour ne change pas le nombre de pas par seconde.', Np: 'Le nombre total de pas ne donne pas le rythme auquel ils s’enchaînent.', U: rU, R: rR },
         cherche: { bonne: 'La fréquence des pas (en pas par seconde)', faux: ['La vitesse de rotation (en tr/min)', 'La durée totale du programme (en s)', 'L’angle d’un pas (en °)'] },
-        manque: { bonne: 'Rien ne manque dans l’énoncé', faux: ['Il manque la masse du rotor', 'Il manque le couple résistant', 'Il manque le sens de rotation'], expl: 'Rien ne manque (1 s = 1 000 ms) : un pas dure D millisecondes : en 1 000 ms, on fait 1 000 / D pas.' },
+        manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque l’attente entre deux pas dans le programme', 'Il manque le nombre de pas pour faire un tour complet', 'Il ne manque que le couple résistant'],
+          expl: `Tout est dans l’énoncé : l’attente entre deux pas (${tokens.D.aff}). Un pas dure D millisecondes et 1 s = 1 000 ms : en 1 000 ms, on fait 1 000 / D pas. Le nombre de pas par tour (${tokens.N.aff}) est donné, mais il ne sert pas pour compter les pas par seconde.` },
         solution: { txt: 'f = 1 000 / D (D en ms)', val: f, u: 'pas/s' } };
       if (q === 2) return { tokens, texte: [...debut, 'Quelle est la vitesse de rotation du moteur, en tours par minute ?'], utiles: ['N', 'D'],
         derivees: [{ id: 'f', nom: 'Fréquence des pas', expr: 'f = 1 000 / D', val: f, u: 'pas/s' }],
         raisons: { Np: 'Le nombre total de pas ne change pas la vitesse, seulement la durée de la rotation.', U: 'La tension d’alimentation fixe le couple disponible, pas la vitesse de rotation : celle-ci dépend du rythme des pas.', R: 'La résistance des bobines fixe le courant, pas la vitesse de rotation : celle-ci dépend du rythme des pas.' },
         cherche: { bonne: 'La vitesse de rotation n (en tr/min)', faux: ['La fréquence des pas (en Hz)', 'Le nombre de tours effectués', 'L’angle tourné en un pas (en °)'] },
-        manque: { bonne: 'Rien ne manque dans l’énoncé', faux: ['Il manque la masse du rotor', 'Il manque le couple maximal', 'Il manque le courant dans les bobines'], expl: 'Rien ne manque (1 min = 60 s) : f pas par seconde ÷ N pas par tour = f/N tours par seconde ; × 60 pour passer en tours par minute.' },
+        manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque le nombre de pas pour faire un tour complet', 'Il manque l’attente entre deux pas dans le programme', 'Il ne manque que le courant dans les bobines'],
+          expl: `Tout est dans l’énoncé : l’attente entre deux pas (${tokens.D.aff}) et le nombre de pas par tour (${tokens.N.aff}). f = 1 000 / D pas par seconde ; ÷ N pas par tour = f/N tours par seconde ; × 60 (1 min = 60 s) pour passer en tours par minute.` },
         solution: { txt: 'n = 60 × f / N', val: 60 * f / p.N, u: 'tr/min' } };
       return { tokens, derivees: [], texte: [...debut, 'Combien de tours le rotor fait-il au total ?'], utiles: ['N', 'Np'],
         raisons: { D: 'Le délai fixe la vitesse, pas le nombre de tours : il change seulement la durée.', U: 'La tension ne change pas le nombre de tours : il ne dépend que du nombre de pas commandés et du nombre de pas par tour.', R: 'La résistance des bobines ne change pas le nombre de tours : il ne dépend que du nombre de pas commandés et du nombre de pas par tour.' },
