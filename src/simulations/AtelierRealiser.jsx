@@ -31,7 +31,7 @@ export function SimulationAtelierRealiser() {
 
   const charger = id => { try { document.activeElement?.blur?.(); } catch { /* sans effet */ } setExo(FAMILLES.find(f => f.id === id).gen()); setRep({}); setChk({}); setVu({}); setEtp(0); setIndice({}); };
   const resultat = q => (q.type === 'qcm' ? { ok: rep[q.id] === q.bonne, msg: '' } : verifier(q, rep[q.id] ?? ''));
-  const corriger = (id, vue = false) => { (vue ? suivi.vue : suivi.essai)(); setChk(c => ({ ...c, [id]: true })); };
+  const corriger = (id, vue = false) => { if (vue) suivi.vue(); else suivi.etape(resultat(Q.find(q => q.id === id)).ok); setChk(c => ({ ...c, [id]: true })); };
   const fini = Q.every(q => (chk[q.id] && resultat(q).ok) || vu[q.id]) && Q.every(q => chk[q.id]);
   const reussi = Q.every(q => chk[q.id] && resultat(q).ok);
   const suivi = useSuivi(`36:${choix}`, reussi);
