@@ -205,7 +205,7 @@ export function SimulationAtelierAnalyser({ naviguer }) {
         {e.type === 'ordre' && <Ordre dem={e.dem} perm={perms[e.id]} seq={rep[e.id] || []} chk={c} vu={v} setSeq={s => majRep(e.id, s)}/>}
         {c && <Verdict ok={r.ok}>{r.ok ? 'Bravo !' : 'Pas encore.'}{!r.ok && r.msg ? <span style={{ fontWeight: 500, color: KIT.txt }}> {T(r.msg)}</span> : null}</Verdict>}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
-          {!(c && r.ok) && <button onClick={() => { suivi.essai(); setChk(x => ({ ...x, [e.id]: true })); }} style={styleBouton(true, '#16a34a')}>✓ Corriger</button>}
+          {!(c && r.ok) && <button onClick={() => { suivi.etape(r.ok); setChk(x => ({ ...x, [e.id]: true })); }} style={styleBouton(true, '#16a34a')}>✓ Corriger</button>}
           {c && !v && <button onClick={() => { suivi.vue(); setVu(x => ({ ...x, [e.id]: true })); }} style={lien}>{r.ok ? 'voir toutes les explications' : 'voir la correction'}</button>}
           {(r.ok || v) && c && k === etp && k < etapes.length - 1 && <button onClick={() => setEtp(x => x + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Étape suivante ▶</button>}
         </div>
