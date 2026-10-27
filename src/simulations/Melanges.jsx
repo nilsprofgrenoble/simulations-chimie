@@ -189,7 +189,11 @@ export function SimulationMelanges() {
       texte: <>La <strong>masse volumique</strong> d’un liquide est <strong>ρ = m / V</strong> (en g/L). Sa <strong>densité</strong> compare à l’eau : <strong>d = ρ / ρ<sub>eau</sub></strong> (sans unité, avec ρ<sub>eau</sub> = 1000 g/L).
         <ExempleResolu>L’huile : 90 g pour 100 mL = 0,100 L : ρ = 90 / 0,100 = 900 g/L ; d = 900 / 1000 = <strong>0,9</strong>.</ExempleResolu>
         À vous : un alcool de masse 40 g occupe 50 mL.</>,
-      tache: { type: 'num', q: 'Quelle est sa densité ? (convertir 50 mL en 0,050 L)', unite: '', vrai: 0.8, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[800, 'Ça, c’est ρ en g/L : la densité s’obtient en divisant par 1000 g/L.'], [0.0008, 'Convertis d’abord 50 mL en litres.']], expl: 'ρ = 40 / 0,050 = 800 g/L ; d = 800 / 1000 = 0,80.' } },
+      tache: { type: 'num', q: 'Quelle est sa densité ? (convertir 50 mL en 0,050 L)', unite: '', vrai: 0.8, tol: 0.02, affiche: x => String(x).replace('.', ','), calcul: () => ['Première étape : la masse volumique ρ = m / V.',
+          'Le volume doit être en litres : 50 mL = 50 ÷ 1000 = 0,050 L.',
+          'ρ = 40 g / 0,050 L = 800 g/L.',
+          'Deuxième étape : la densité d = ρ / ρ_eau = 800 / 1000 = 0,8 (sans unité).'],
+        pieges: [[800, 'Ça, c’est ρ en g/L : la densité s’obtient en divisant par 1000 g/L.'], [0.0008, 'Convertis d’abord 50 mL en litres.'], [50 / 40, 'Tu as divisé le volume par la masse. Il faut diviser la masse par le volume : ρ = m / V.']], expl: 'ρ = 40 / 0,050 = 800 g/L ; d = 800 / 1000 = 0,80.' } },
     { id: 'superpose', titre: 'Dans quel ordre se superposent-ils ?', depart: () => tube('huile', 'eau'),
       texte: <>Deux liquides <strong>non miscibles</strong> se superposent : le <strong>moins dense flotte</strong> sur le plus dense. Dans le tube huile + eau, l’huile (d = 0,9) est au-dessus de l’eau (d = 1,0).
         <ExempleResolu>L’essence (d = 0,75) et l’eau (d = 1,0), non miscibles : l’essence, moins dense, flotte sur l’eau.</ExempleResolu></>,
@@ -201,7 +205,11 @@ export function SimulationMelanges() {
       tache: { type: 'action', ok: enGuide && atelier === 'goutte' && g.etat === 'suspendue', consigne: 'Réglez le volume d’alcool pour que la goutte d’huile reste suspendue.' } },
     { id: 'calcul', titre: 'Pourquoi cette quantité d’alcool ?', depart: () => goutteVoir(15, 15),
       texte: <>Le mélange eau-alcool a une densité <strong>comprise entre 0,8 et 1,0</strong> : une moyenne pondérée par les volumes, <strong>d = (V<sub>eau</sub> × 1,0 + V<sub>alcool</sub> × 0,8) / (V<sub>eau</sub> + V<sub>alcool</sub>)</strong>. La goutte est suspendue quand d(mélange) = d(huile) = 0,9.</>,
-      tache: { type: 'num', q: 'Quelle est la densité d’un mélange de 15 mL d’eau et de 15 mL d’alcool ?', unite: '', vrai: 0.9, tol: 0.01, affiche: x => String(x).replace('.', ','), pieges: [[1.8, 'Tu as additionné les densités. La densité du mélange est une moyenne pondérée : entre 0,8 et 1,0.']], expl: 'd = (15 × 1,0 + 15 × 0,8) / 30 = 27 / 30 = 0,90 : égale à celle de l’huile, la goutte est suspendue.' } },
+      tache: { type: 'num', q: 'Quelle est la densité d’un mélange de 15 mL d’eau et de 15 mL d’alcool ?', unite: '', vrai: 0.9, tol: 0.01, affiche: x => String(x).replace('.', ','), calcul: () => ['On a 15 mL d’eau (d = 1,0) et 15 mL d’alcool (d = 0,8).',
+          'En haut de la fraction : 15 × 1,0 + 15 × 0,8 = 15 + 12 = 27.',
+          'En bas : le volume total = 15 + 15 = 30 mL.',
+          'd = 27 / 30 = 0,9.'],
+        pieges: [[1.8, 'Tu as additionné les densités. La densité du mélange est une moyenne pondérée : entre 0,8 et 1,0.'], [27, 'Tu as oublié de diviser par le volume total (30 mL). La densité du mélange est entre 0,8 et 1,0.']], expl: 'd = (15 × 1,0 + 15 × 0,8) / 30 = 27 / 30 = 0,90 : égale à celle de l’huile, la goutte est suspendue.' } },
     { id: 'sha', titre: 'Une solution hydro-alcoolique', depart: () => { setAtelier('sha'); setS({ e: 60, h: 2, g: 1 }); },
       texte: <>Pour décrire un mélange de liquides, on donne la <strong>proportion en volume</strong> de chaque constituant : <strong>V(E) / V<sub>tot</sub></strong>, souvent en pourcentage (« pourcentage volumique »). La recette de l’OMS pour 100,0 mL de solution hydro-alcoolique : 85 % d’éthanol, 4 % d’eau oxygénée, 1,5 % de glycérol, le reste en eau distillée.
         <ExempleResolu>Pour 100,0 mL : V(éthanol) = 85 % × 100,0 = <strong>85,0 mL</strong>. L’eau complète : 100,0 − 85,0 − 4,0 − 1,5 = 9,5 mL.</ExempleResolu>
@@ -209,7 +217,11 @@ export function SimulationMelanges() {
       tache: { type: 'action', ok: enGuide && atelier === 'sha' && shaOk(S), consigne: 'Réglez éthanol, eau oxygénée et glycérol pour que la composition soit conforme (colonne OMS).' } },
     { id: 'shamasse', titre: 'Volume ou masse ?', depart: null,
       texte: <>Dans le tableau, la masse d’un constituant se calcule avec sa masse volumique : <strong>m = ρ × V</strong>, soit <strong>m = d × 1000 g/L × V</strong>. Les pourcentages <strong>en masse</strong> ne sont pas les mêmes que ceux <strong>en volume</strong>.</>,
-      tache: { type: 'num', q: 'Quelle masse d’éthanol (d = 0,81) y a-t-il dans 100,0 mL de solution (85,0 mL d’éthanol) ?', unite: 'g', vrai: 68.85, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[85, 'C’est le volume en mL. Pour la masse : m = ρ × V = 0,81 × 85,0.'], [104.9, 'Divise-t-on ? Non : m = ρ × V.']], expl: 'm = 0,81 g/mL × 85,0 mL = 68,9 g.' } },
+      tache: { type: 'num', q: 'Quelle masse d’éthanol (d = 0,81) y a-t-il dans 100,0 mL de solution (85,0 mL d’éthanol) ?', unite: 'g', vrai: 68.85, tol: 0.02, affiche: x => String(x).replace('.', ','), calcul: () => ['m = ρ × V. D’abord la masse volumique : ρ = d × 1000 g/L = 0,81 × 1000 = 810 g/L.',
+          'Le volume d’éthanol (pas celui de toute la solution) en litres : 85,0 mL = 0,0850 L.',
+          'm = 810 g/L × 0,0850 L = 68,85 g.'],
+        pieges: [[85, 'C’est le volume en mL. Pour la masse : m = ρ × V = 0,81 × 85,0.'], [104.9, 'Divise-t-on ? Non : m = ρ × V.'],
+          [0.81 * 100, 'Tu as pris le volume de toute la solution (100,0 mL). Il faut le volume d’éthanol : 85,0 mL.']], expl: 'm = 0,81 g/mL × 85,0 mL = 68,9 g.' } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li>Liquides <strong>miscibles</strong> → mélange <strong>homogène</strong> ; <strong>non miscibles</strong> → <strong>hétérogène</strong>. Un solide est <strong>soluble</strong> (ou non) dans un solvant.</li>

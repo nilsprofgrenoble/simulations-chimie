@@ -188,7 +188,8 @@ export function SimulationRefractometre({ naviguer }) {
       texte: <>Lisez l’échelle <strong>au niveau de l’index rouge</strong>. Les grandes graduations sont espacées de 0,001. Estimez le <strong>dixième de graduation</strong> pour donner 4 décimales (par exemple 1,3640).</>,
       tache: { type: 'num', q: 'Indice de réfraction n lu', unite: '', vrai: G.n, tol: 0.00015, affiche: v => nf(v, 4), cs: 5,
         bloque: aligne && comp ? null : 'Alignez d’abord la frontière sur le réticule (étape 4).',
-        pieges: [[1.364 + 0.001, 'Vous avez lu une graduation voisine : regardez bien quelle graduation est juste sous l’index.'], [1.36, 'Vous avez arrondi à la graduation du dessous : estimez le dixième de graduation pour les 4 décimales.']],
+        aide: 'Lecture : repérez la graduation (tous les 0,001) juste sous l’index rouge, puis estimez à l’œil le dixième de l’intervalle entre deux graduations pour la 4e décimale.',
+        pieges: [[1.364 + 0.001, 'Vous avez lu une graduation voisine : regardez bien quelle graduation est juste sous l’index.'], [1.36, 'Vous n’avez gardé que 2 décimales : la graduation vaut 0,001 et on estime le dixième de graduation, soit 4 décimales.']],
         expl: 'n ≈ 1,3640. L’échelle est graduée tous les 0,001 : on lit la graduation puis on estime le dixième, d’où 4 décimales. L’incertitude de lecture est de l’ordre de 0,0002.' } },
     { id: 'decimales', titre: 'Combien de décimales ?', focus: ['champ'],
       texte: <>La plus petite graduation de l’échelle vaut 0,001, mais on estime le dixième de graduation à l’œil.</>,
@@ -198,6 +199,8 @@ export function SimulationRefractometre({ naviguer }) {
       texte: <>Pour connaître la composition, on utilise la <strong>courbe d’étalonnage</strong> n = f(x) obtenue avec des mélanges eau – éthanol connus. La ligne orange est votre lecture : lisez l’abscisse du premier point d’intersection avec la courbe, <strong>le plus à gauche</strong>.</>,
       tache: { type: 'num', q: 'Fraction molaire x en éthanol (première composition possible)', unite: '', vrai: G.x1, tol: 0.1, affiche: v => nf(v, 2), cs: 2,
         bloque: aligne ? null : 'Alignez d’abord la frontière (étape 4).',
+        aide: 'Lecture : suivez la ligne orange horizontale jusqu’à sa première rencontre avec la courbe (en partant de la gauche), puis lisez l’abscisse sur l’axe horizontal.',
+        pieges: [[G.x2, 'C’est la seconde composition possible (branche descendante de la courbe, à droite du maximum). On demande la première, la plus à gauche.']],
         expl: 'La droite n = 1,364 coupe la branche croissante de la courbe vers x ≈ 0,30.' } },
     { id: 'deux', titre: 'Une seule composition ?', focus: ['courbe'],
       texte: <>Regardez la courbe : elle monte, passe par un maximum, puis redescend. Une même valeur de n peut donc correspondre à <strong>deux</strong> compositions.</>,
@@ -210,6 +213,16 @@ export function SimulationRefractometre({ naviguer }) {
     { id: 'degre', titre: 'En degré alcoolique', focus: ['courbe'],
       texte: <>Convertissez la fraction molaire en fraction massique (M<sub>éthanol</sub> = 46 g·mol⁻¹, M<sub>eau</sub> = 18 g·mol⁻¹) puis en degré alcoolique avec la masse volumique du mélange (le simulateur le fait pour vous ci-dessous).</>,
       tache: { type: 'num', q: 'Fraction massique w en éthanol du distillat (x = 0,90)', unite: '', vrai: wDe(ew, 0.9), tol: 0.03, affiche: v => nf(v, 3), cs: 3,
+        calcul: () => {
+          const nA = 0.9 * ew.MA, nB = 0.1 * ew.MB;
+          return [`On raisonne pour 1 mol de distillat (mélange binaire eau – éthanol) : 0,90 mol d’éthanol (M_A = ${ew.MA} g·mol⁻¹) et 0,10 mol d’eau (M_B = ${ew.MB} g·mol⁻¹).`,
+            `Masse d’éthanol : 0,90 × ${ew.MA} = ${nf(nA, 1)} g. Masse d’eau : 0,10 × ${ew.MB} = ${nf(nB, 1)} g.`,
+            `Masse totale : ${nf(nA, 1)} + ${nf(nB, 1)} = ${nf(nA + nB, 1)} g.`,
+            `w = ${nf(nA, 1)} / ${nf(nA + nB, 1)} = ${nf(wDe(ew, 0.9), 3)}.`];
+        },
+        pieges: [[0.9, 'C’est la fraction molaire. L’éthanol est plus lourd que l’eau : il faut tenir compte des masses molaires.', 0.01],
+          [0.9 * ew.MA, 'Il manque la division : w = (masse d’éthanol) / (masse totale d’éthanol et d’eau), pas seulement la masse d’éthanol.'],
+          [wDe({ MA: ew.MB, MB: ew.MA }, 0.9), 'Masses molaires inversées : M_A = 46 g·mol⁻¹ est celle de l’éthanol, M_B = 18 g·mol⁻¹ celle de l’eau.']],
         expl: 'w = 0,90 × 46 / (0,90 × 46 + 0,10 × 18) ≈ 0,958, soit environ 96° : on retrouve le « 95° » du distillat de la distillation fractionnée.' } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>

@@ -123,14 +123,22 @@ export function SimulationCircuits() {
     { id: 'additivite', titre: 'En série : la loi des mailles', depart: () => voir('serie', { maille: 1 }),
       texte: <>Une <strong>maille</strong> est une boucle fermée du circuit (en pointillés violets). La <strong>loi des mailles</strong> dit que, le long d’une maille, la tension de la pile se « partage » entre les dipôles : <strong>E = U₁ + U₂</strong>, ou encore E − U₁ − U₂ = 0. Ici il n’y a <strong>qu’une seule maille</strong>. Vérifiez avec les mesures du schéma, pour plusieurs valeurs de R₁ et R₂ : le plus grand résistor reçoit la plus grande tension.
         <ExempleResolu>E = 6 V, U₁ = 1,88 V : U₂ = E − U₁ = 6 − 1,88 = <strong>4,12 V</strong>.</ExempleResolu></>,
-      tache: { type: 'num', q: 'E = 9 V et U₁ = 3,5 V (circuit en série). Quelle est la tension U₂ ?', unite: 'V', vrai: 5.5, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[12.5, 'Tu as additionné : les tensions U₁ et U₂ s’additionnent pour donner E, donc U₂ = E − U₁.']], expl: 'U₂ = E − U₁ = 9 − 3,5 = 5,5 V.' } },
+      tache: { type: 'num', q: 'E = 9 V et U₁ = 3,5 V (circuit en série). Quelle est la tension U₂ ?', unite: 'V', vrai: 5.5, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[12.5, 'Tu as additionné : les tensions U₁ et U₂ s’additionnent pour donner E, donc U₂ = E − U₁.'], [3.5, 'C’est U₁, la tension du premier résistor. On cherche U₂, celle du deuxième.'], [9, 'C’est E, la tension de la pile. U₂ n’est qu’une partie de E : on retire U₁.']],
+        calcul: () => [
+          'En série, il n’y a qu’une maille. La loi des mailles dit : E = U₁ + U₂.',
+          'On cherche U₂, donc U₂ = E − U₁.',
+          'U₂ = 9 − 3,5 = 5,5 V.'], expl: 'U₂ = E − U₁ = 9 − 3,5 = 5,5 V.' } },
     { id: 'derivation', titre: 'En dérivation : deux mailles', depart: () => voir('derivation', { maille: 1 }),
       texte: <>Dans un circuit <strong>en dérivation</strong>, il y a <strong>plusieurs chemins</strong> possibles, donc ici <strong>deux mailles</strong> : la maille 1 (pile et R₁) et la maille 2 (pile et R₂). Cliquez sur « maille 1 » puis « maille 2 ». La loi des mailles donne <strong>E = U₁</strong> pour la maille 1 et <strong>E = U₂</strong> pour la maille 2 : <strong>U₁ = U₂ = E</strong>. La tension est la même aux bornes de chaque branche.</>,
       tache: { type: 'qcm', q: 'Deux résistors sont en dérivation sur une pile de 6 V. Quelle est la tension aux bornes de R₂ ?', options: ['6 V', '3 V', '12 V', 'Ça dépend de R₂'], bonne: 0, expl: 'En dérivation, la tension est la même aux bornes de chaque branche : 6 V, quelle que soit la valeur de R₂.' } },
     { id: 'noeud', titre: 'Aux nœuds : l’intensité se partage', depart: () => voir('derivation'),
       texte: <>Au <strong>nœud</strong>, le courant arrivant de la pile se sépare en deux : <strong>I = I₁ + I₂</strong> (loi des nœuds). Le plus petit résistor laisse passer le plus grand courant. Changez R₁ et R₂ et vérifiez.
         <ExempleResolu>I = 87 mA et I₁ = 60 mA : I₂ = I − I₁ = <strong>27 mA</strong>.</ExempleResolu></>,
-      tache: { type: 'num', q: 'I = 120 mA et I₁ = 45 mA. Quelle est l’intensité I₂ (en mA) ?', unite: 'mA', vrai: 75, tol: 0.02, affiche: x => String(x), pieges: [[165, 'Tu as additionné : I est la somme I₁ + I₂, donc I₂ = I − I₁.']], expl: 'I₂ = I − I₁ = 120 − 45 = 75 mA.' } },
+      tache: { type: 'num', q: 'I = 120 mA et I₁ = 45 mA. Quelle est l’intensité I₂ (en mA) ?', unite: 'mA', vrai: 75, tol: 0.02, affiche: x => String(x), pieges: [[165, 'Tu as additionné : I est la somme I₁ + I₂, donc I₂ = I − I₁.'], [120, 'C’est I, le courant total qui arrive au nœud. I₂ est seulement une partie de I.'], [45, 'C’est I₁. On cherche I₂, l’autre partie du courant.']],
+        calcul: () => [
+          'Au nœud, le courant I se sépare en deux : loi des nœuds I = I₁ + I₂.',
+          'On cherche I₂, donc I₂ = I − I₁ (tous les courants sont déjà en mA, pas de conversion).',
+          'I₂ = 120 − 45 = 75 mA.'], expl: 'I₂ = I − I₁ = 120 − 45 = 75 mA.' } },
     { id: 'effet', titre: 'Ajouter ou changer un dipôle', depart: () => voir('serie', { R2: 100 }),
       texte: <>Essayez : en série, augmentez R₂ (de 100 Ω à 1000 Ω) : l’intensité I <strong>diminue</strong>. En dérivation, diminuer R₂ fait <strong>augmenter</strong> I₂, donc le courant total I débité par la pile augmente aussi, mais I₁ ne change pas.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'serie' && C.R2 >= 470, consigne: 'Dans le circuit en série, choisissez R₂ = 470 Ω ou plus et regardez I.' } },

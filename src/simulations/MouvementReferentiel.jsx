@@ -348,7 +348,14 @@ export function SimulationMouvementReferentiel() {
           {bouton('Voir le camion avec ses flèches', () => go('deux', { vA: 20, vB: 25 }, { cmp: false, vis: ['A'], obj: 'A', dtIdx: 1, aff: { ...AFF0, v: true } }))}</ExempleResolu>
         À vous : l’avion, vu du sol. {bouton('Voir l’avion avec ses flèches', () => go('avion', {}, { cmp: false, vis: ['avion'], obj: 'avion', dtIdx: 2, aff: { ...AFF0, v: true } }))} Entre deux photos (Δt = 2 s), l’avion se déplace de {nb(dAvion, 0)} m.</>,
       tache: { type: 'num', q: `L’avion se déplace de ${nb(dAvion, 0)} m en 2 s. Quelle est sa vitesse, en km/h ?`, unite: 'km/h', vrai: dAvion / 2 * 3.6, tol: 0.02, affiche: x => nb(x, 0),
-        pieges: [[dAvion / 2, 'Vous avez trouvé la vitesse en m/s : pour passer en km/h, multipliez par 3,6.']],
+        pieges: [[dAvion / 2, 'Vous avez trouvé la vitesse en m/s : pour passer en km/h, multipliez par 3,6.'],
+          [2 / dAvion, 'Vous avez divisé à l’envers : la vitesse, c’est la distance divisée par la durée (v = MM′ / Δt).'],
+          [dAvion * 3.6, 'Vous avez oublié de diviser par la durée Δt = 2 s : v = MM′ / Δt.']],
+        calcul: () => [
+          'Formule : vitesse = distance parcourue ÷ durée, soit v = MM′ / Δt.',
+          `Données : MM′ = ${nb(dAvion, 0)} m et Δt = 2 s.`,
+          `En m/s : v = ${nb(dAvion, 0)} / 2 = ${nb(dAvion / 2, 0)} m/s.`,
+          `Conversion : 1 m/s = 3,6 km/h, donc v = ${nb(dAvion / 2, 0)} × 3,6 = ${nb(dAvion / 2 * 3.6, 0)} km/h.`],
         expl: `v = ${nb(dAvion, 0)} m / 2 s = ${nb(dAvion / 2, 0)} m/s, soit ${nb(dAvion / 2, 0)} × 3,6 = ${nb(dAvion / 2 * 3.6, 0)} km/h.` } },
     { id: 'vitesserel', titre: 'La vitesse dépend aussi du point de vue', focus: ['scene'], depart: () => go('deux', { vA: 20, vB: 25 }, { cmp: true, fD: 'A', obj: 'B', dtIdx: 1, aff: { ...AFF0, v: true } }),
       texte: <>Un mobile n’a pas la même vitesse dans tous les référentiels.
@@ -359,8 +366,16 @@ export function SimulationMouvementReferentiel() {
           {bouton('Voir le dépassement', () => go('deux', { vA: 20, vB: 25 }, { cmp: true, fD: 'A', obj: 'B', dtIdx: 1, aff: { ...AFF0, v: true } }))}</ExempleResolu>
         À vous : A roule à 20 m/s vers la droite et B arrive en face, à 25 m/s vers la gauche (vitesse algébrique −25 m/s). {bouton('Voir le croisement', () => go('deux', { vA: 20, vB: -25 }, { cmp: true, fD: 'A', obj: 'B', dtIdx: 1, aff: { ...AFF0, v: true } }))}</>,
       tache: { type: 'num', q: 'À quelle vitesse, en m/s, B passe-t-elle devant vous dans le camion A ?', unite: 'm/s', vrai: 45, tol: 0.02, affiche: x => nb(x, 0),
-        pieges: [[5, 'Vous avez soustrait les vitesses sans tenir compte du sens. B roule en sens inverse : v_B − v_A = (−25) − 20.']],
-        expl: 'v_B/A = v_B − v_A = (−25) − 20 = −45 m/s : 45 m/s, vers la gauche. En sens inverse, les vitesses s’additionnent (en valeur).' } },
+        pieges: [[5, 'Vous avez soustrait les vitesses sans tenir compte du sens. B roule en sens inverse : v_B − v_A = (−25) − 20.'],
+          [25, 'C’est la vitesse de B par rapport à la route. Dans le camion A, il faut retrancher la vitesse de A : v(B/A) = v_B − v_A.'],
+          [20, 'C’est la vitesse de A par rapport à la route. Dans le camion A, on cherche la vitesse de B : v(B/A) = v_B − v_A.'],
+          [-45, 'Le signe − indique seulement le sens du mouvement (ici vers la gauche). On demande la valeur de la vitesse : donnez-la sans le signe.']],
+        calcul: () => [
+          'Référentiel du camion A. Formule : v(B/A) = v_B − v_A (vitesses de A et de B mesurées par rapport à la route, sur un axe orienté vers la droite : + vers la droite, − vers la gauche ; mouvements en ligne droite).',
+          'Données : v_A = +20 m/s (vers la droite) et v_B = −25 m/s (vers la gauche).',
+          'v(B/A) = (−25) − (+20) = −45 m/s.',
+          'Le signe − dit que B va vers la gauche. Sa vitesse (valeur positive) est 45 m/s.'],
+        expl: 'v(B/A) = v_B − v_A = (−25) − 20 = −45 m/s : 45 m/s, vers la gauche. En sens inverse, les vitesses s’additionnent (en valeur).' } },
     { id: 'essentiel', titre: 'À retenir : l’essentiel', focus: [],
       texte: <><ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li>Une chronophotographie : chaque point est une photo prise à intervalles réguliers.</li>

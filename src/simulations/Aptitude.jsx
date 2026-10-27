@@ -24,6 +24,8 @@ const gauss = r => Math.sqrt(-2 * Math.log(1 - r())) * Math.cos(2 * Math.PI * r(
 // ── Statistiques ──
 const moyenne = v => v.reduce((a, b) => a + b, 0) / v.length;
 const ecartType = v => { if (v.length < 2) return NaN; const m = moyenne(v); return Math.sqrt(v.reduce((a, b) => a + (b - m) ** 2, 0) / (v.length - 1)); };
+// Garde seulement les pièges dont la valeur est franchement différente de la bonne réponse (sinon confusion avec la tolérance)
+const piegesLoin = (liste, vrai) => liste.filter(([v]) => isFinite(v) && Math.abs(v - vrai) > 0.09 * Math.abs(vrai));
 const ecartTypePop = v => { const m = moyenne(v); return Math.sqrt(v.reduce((a, b) => a + (b - m) ** 2, 0) / v.length); };
 const mediane = v => { const s = [...v].sort((a, b) => a - b), n = s.length; return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2; };
 const ecartRobuste = v => { const m = mediane(v); return 1.483 * mediane(v.map(x => Math.abs(x - m))); };   // s* = 1,483 × MAD
@@ -335,15 +337,34 @@ export function SimulationAptitude() {
     { id: 'moyenne', titre: 'La formule du référentiel', focus: [],
       texte: <>Le référentiel et les « Repères pour la formation » utilisent z<sub>i</sub> = (x<sub>i</sub> − x̄) / s, où x̄ et s sont la moyenne et
         l'écart-type expérimental des résultats de <strong>tous</strong> les laboratoires. Les résultats (mg/L) : {P.map(x => fmt(x, 1)).join(' ; ')}.</>,
-      tache: { type: 'num', q: 'Moyenne x̄', unite: 'mg/L', vrai: mP, tol: 0.002, affiche: x => fmt(x, 2) } },
+      tache: { type: 'num', q: 'Moyenne x̄', unite: 'mg/L', vrai: mP, tol: 0.002, affiche: x => fmt(x, 2),
+        calcul: () => ['Moyenne : x̄ = (somme des résultats) / (nombre de laboratoires N).',
+          `Somme = ${P.map(x => fmt(x, 1)).join(' + ')} = ${fmt(P.reduce((a, b) => a + b, 0), 1)} mg/L ; N = ${P.length}.`,
+          `x̄ = ${fmt(P.reduce((a, b) => a + b, 0), 1)} / ${P.length} = ${fmt(mP, 2)} mg/L.`],
+        pieges: piegesLoin([[P.reduce((a, b) => a + b, 0), 'Vous avez donné la somme : il faut encore la diviser par le nombre de laboratoires (10).'],
+          [P.reduce((a, b) => a + b, 0) / (P.length - 1), 'Pour une moyenne, on divise par N (10 résultats), pas par N − 1.']], mP) } },
     { id: 'ecartType', titre: 'L’écart-type expérimental', focus: [],
       texte: <>Sur la calculatrice : σ<sub>n−1</sub> (ou s<sub>x</sub>).</>,
       tache: { type: 'num', q: 'Écart-type expérimental s', unite: 'mg/L', vrai: sP, tol: 0.02, affiche: x => fmt(x, 2),
-        pieges: [[ecartTypePop(P), 'C’est σ_n : prenez σ_n−1, qui divise par N − 1.']] } },
+        calcul: () => {
+          const S = P.reduce((a, b) => a + (b - mP) ** 2, 0);
+          return [`s = √[ Σ(x_i − x̄)² / (N − 1) ], calculé sur les ${P.length} résultats (le laboratoire aberrant est compris : il gonfle s).`,
+            `Avec x̄ = ${fmt(mP, 2)} mg/L : Σ(x_i − x̄)² = ${fmt(S, 2)} mg²/L².`,
+            `Variance : s² = ${fmt(S, 2)} / (${P.length} − 1) = ${fmt(S / (P.length - 1), 2)}.`,
+            `s = √${fmt(S / (P.length - 1), 2)} = ${fmt(sP, 2)} mg/L.`];
+        },
+        pieges: [[ecartTypePop(P), 'C’est σ_n : prenez σ_n−1, qui divise par N − 1.'],
+          ...piegesLoin([[sP ** 2, 'C’est la variance s² : l’écart-type est sa racine carrée.'],
+            [Math.sqrt(P.reduce((a, b) => a + (b - mP) ** 2, 0)), 'Il manque la division par N − 1 (= 9) sous la racine.']], sP)] } },
     { id: 'z', titre: 'Le z-score d’un laboratoire', focus: [],
       texte: <>Le laboratoire {iLab + 1} (en jaune) a trouvé {fmt(P[iLab], 1)} mg/L.</>,
       tache: { type: 'num', q: `z-score du laboratoire ${iLab + 1}`, unite: '', vrai: zRef[iLab], tol: 0.03, affiche: x => fmt(x, 2),
-        pieges: [[-zRef[iLab], 'Attention au signe : c’est x − x̄. Un z négatif signifie que le laboratoire trouve moins que la moyenne.']] } },
+        calcul: () => ['z = (x − x̄) / s, avec x̄ et s calculés sur tous les laboratoires. Si les laboratoires sont compétents, z suit à peu près une loi normale centrée réduite (hypothèse qui justifie les seuils 2 et 3).',
+          `x − x̄ = ${fmt(P[iLab], 1)} − ${fmt(mP, 2)} = ${fmt(P[iLab] - mP, 2)} mg/L (négatif : le laboratoire trouve moins que la moyenne).`,
+          `z = ${fmt(P[iLab] - mP, 2)} / ${fmt(sP, 2)} = ${fmt(zRef[iLab], 2)} (sans unité).`],
+        pieges: [[-zRef[iLab], 'Attention au signe : c’est x − x̄. Un z négatif signifie que le laboratoire trouve moins que la moyenne.'],
+          ...piegesLoin([[P[iLab] - mP, 'Il manque la division par s : z est un écart exprimé en nombre d’écarts-types.'],
+            [(P[iLab] - mP) / sP ** 2, 'On divise par l’écart-type s, pas par sa variance s².']], zRef[iLab])] } },
     { id: 'classer', titre: 'Classer les laboratoires', focus: [],
       texte: <>Classez chaque laboratoire dans le tableau : |z| ≤ 2 satisfaisant ; 2 &lt; |z| &lt; 3 discutable ; |z| ≥ 3 non satisfaisant.</>,
       tache: { type: 'action', ok: classesVerif && classesOk, consigne: classesVerif && classesOk ? null : 'Classez les 10 laboratoires, puis vérifiez.' } },
@@ -373,11 +394,21 @@ export function SimulationAptitude() {
     { id: 'robuste', titre: 'Des statistiques robustes', focus: ['formule'],
       texte: <>Choisissez « Médiane et MAD (robuste) » : la médiane remplace la moyenne, et s* = 1,483 × MAD remplace s (la MAD est la médiane des écarts absolus à la médiane). Une valeur aberrante les déplace très peu.</>,
       tache: { type: 'num', q: 'Médiane des 10 résultats', unite: 'mg/L', vrai: medP, tol: 0.001, affiche: x => fmt(x, 2),
+        calcul: () => { const t = [...P].sort((a, b) => a - b), n = t.length;
+          return [`On range les ${n} résultats par ordre croissant : ${t.map(x => fmt(x, 1)).join(' ; ')}.`,
+            `N = ${n} est pair : la médiane est la moyenne des deux valeurs centrales (les ${n / 2}e et ${n / 2 + 1}e).`,
+            `Médiane = (${fmt(t[n / 2 - 1], 1)} + ${fmt(t[n / 2], 1)}) / 2 = ${fmt(medP, 2)} mg/L.`]; },
         pieges: [[mP, 'C’est la moyenne : rangez les valeurs et prenez celle du milieu (ici la moyenne des deux du milieu).']] } },
     { id: 'iso', titre: 'La norme ISO 13528', focus: ['formule'],
       texte: <>Les professionnels utilisent z = (x<sub>i</sub> − x<sub>pt</sub>) / σ<sub>pt</sub>. Ici, l'organisateur a utilisé un <strong>matériau de
         référence certifié</strong> : x<sub>pt</sub> = 24,0 mg/L ; et il a fixé, d'après l'exigence de la méthode, σ<sub>pt</sub> = 1,2 mg/L. Choisissez « Norme ISO 13528 ».</>,
-      tache: { type: 'num', q: 'z-score du laboratoire 10 avec cette formule', unite: '', vrai: (P[9] - 24) / 1.2, tol: 0.02, affiche: x => fmt(x, 2) } },
+      tache: { type: 'num', q: 'z-score du laboratoire 10 avec cette formule', unite: '', vrai: (P[9] - 24) / 1.2, tol: 0.02, affiche: x => fmt(x, 2),
+        calcul: () => ['z = (x − x_pt) / σ_pt. Hypothèses : x_pt = 24,0 mg/L (valeur de référence du matériau certifié, supposée exacte) et σ_pt = 1,2 mg/L (fixé à l’avance, indépendant des résultats des laboratoires).',
+          `x − x_pt = ${fmt(P[9], 1)} − ${fmt(24, 1)} = ${fmt(P[9] - 24, 1)} mg/L.`,
+          `z = ${fmt(P[9] - 24, 1)} / ${fmt(1.2, 1)} = ${fmt((P[9] - 24) / 1.2, 2)} (sans unité).`],
+        pieges: piegesLoin([[zRef[9], 'C’est le z avec la formule du référentiel (x̄ et s des participants). Ici, utilisez x_pt = 24,0 et σ_pt = 1,2.'],
+          [P[9] - 24, 'Il manque la division par σ_pt (1,2 mg/L) : z est un écart en nombre d’écarts-types.'],
+          [(P[9] - 24) * 1.2, 'On divise par σ_pt, on ne multiplie pas.']], (P[9] - 24) / 1.2) } },
     { id: 'pourquoiSigma', titre: 'Pourquoi un σ_pt fixé ?', focus: [],
       texte: <>La norme accepte plusieurs façons de fixer σ<sub>pt</sub> : l'exigence de la méthode, les campagnes précédentes, une étude de fidélité, ou
         un écart-type robuste des participants.</>,

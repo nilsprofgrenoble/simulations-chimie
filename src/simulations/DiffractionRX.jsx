@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche } from "../commun";
+  BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche, sci } from "../commun";
 import { LAMBDA, DT_MIN, DT_MAX, STRUCTURES, ECHANTILLONS, ORDRE_EXPLO, CANDIDATS_DEFI, pics, courbe, indexer,
   masseVolumique, sequence, Npermis } from "./drxModele";
 import { fr } from "./elecModele";
@@ -182,7 +182,12 @@ export function SimulationDiffractionRX() {
         <ExempleResolu>Un pic à 2θ = 30,00° : θ = 15,00° ; <F>d = λ / (2 sin θ) = 0,1542 / (2 × 0,2588) = <strong>0,2979 nm</strong></F>.</ExempleResolu>
         À vous : le premier pic du tungstène est à 2θ = {fr(r2(W1), 2)}°.</>,
       tache: { type: 'num', q: 'Distance d entre les plans responsables de ce pic (en nm)', unite: 'nm', vrai: LAMBDA / (2 * Math.sin(rad(r2(W1) / 2))), tol: 0.01, affiche: x => fr(x, 4),
-        pieges: [[LAMBDA / (2 * Math.sin(rad(r2(W1)))), 'Attention : la loi de Bragg utilise θ, pas 2θ. Divisez d’abord l’angle lu par 2.']],
+        calcul: () => { const th = r2(W1) / 2, s = Math.sin(rad(th));
+          return ['Loi de Bragg à l’ordre 1 (n = 1) : 2 d sin θ = λ, donc d = λ / (2 sin θ), avec λ = 0,1542 nm (raie Kα du cuivre).',
+            `L’angle lu est 2θ = ${fr(r2(W1), 2)}° : θ = ${fr(r2(W1), 2)} / 2 = ${fr(th, 3)}°, et sin θ = ${fr(s, 5)}.`,
+            `d = 0,1542 / (2 × ${fr(s, 5)}) = ${fr(LAMBDA / (2 * s), 4)} nm.`]; },
+        pieges: [[LAMBDA / (2 * Math.sin(rad(r2(W1)))), 'Attention : la loi de Bragg utilise θ, pas 2θ. Divisez d’abord l’angle lu par 2.'],
+          [LAMBDA / Math.sin(rad(r2(W1) / 2)), 'Vous avez oublié le facteur 2 : la loi de Bragg est 2 d sin θ = λ, donc d = λ / (2 sin θ).']],
         expl: `θ = ${fr(r2(W1) / 2, 3)}° et d = λ / (2 sin θ).` } },
     { id: 'miller', titre: 'Indices de Miller et distance d_hkl', depart: null,
       texte: <>Chaque famille de plans est repérée par trois entiers, ses <strong>indices de Miller (hkl)</strong>. Dans un cristal cubique de paramètre de maille a, la distance entre les plans (hkl) est :
@@ -212,7 +217,13 @@ export function SimulationDiffractionRX() {
         <Formule>sin²θ / sin²θ₁ = N / N₁</Formule>
         Ces rapports ne dépendent pas de a : ils ne dépendent que de la structure ! La colonne « sin²θ / sin²θ₁ » du tableau les calcule.</>,
       tache: { type: 'num', q: 'Vérifiez à la main : sin²θ / sin²θ₁ pour le 3ᵉ pic', unite: '', vrai: Math.sin(rad(r2(W3) / 2)) ** 2 / Math.sin(rad(r2(W1) / 2)) ** 2, tol: 0.01, affiche: x => fr(x, 2),
-        pieges: [[Math.sin(rad(r2(W3))) ** 2 / Math.sin(rad(r2(W1))) ** 2, 'Utilisez θ (la moitié de 2θ) dans le sinus.']], expl: `sin²(${fr(r2(W3) / 2, 3)}°) / sin²(${fr(r2(W1) / 2, 3)}°).` } },
+        calcul: () => { const t1 = r2(W1) / 2, t3 = r2(W3) / 2, s1 = Math.sin(rad(t1)) ** 2, s3 = Math.sin(rad(t3)) ** 2;
+          return ['On travaille avec θ (la moitié de l’angle 2θ lu), à l’ordre 1.',
+            `Pic 1 : 2θ = ${fr(r2(W1), 2)}°, θ₁ = ${fr(t1, 3)}°, sin²θ₁ = ${fr(s1, 5)}.`, `Pic 3 : 2θ = ${fr(r2(W3), 2)}°, θ₃ = ${fr(t3, 3)}°, sin²θ₃ = ${fr(s3, 5)}.`,
+            `sin²θ₃ / sin²θ₁ = ${fr(s3, 5)} / ${fr(s1, 5)} = ${fr(s3 / s1, 2)}.`]; },
+        pieges: [[Math.sin(rad(r2(W3))) ** 2 / Math.sin(rad(r2(W1))) ** 2, 'Utilisez θ (la moitié de 2θ) dans le sinus.'],
+          [Math.sin(rad(r2(W3) / 2)) / Math.sin(rad(r2(W1) / 2)), 'Vous avez oublié le carré : il faut calculer sin²θ₃ / sin²θ₁, donc élever chaque sinus au carré avant de diviser.'],
+          [Math.sin(rad(r2(W1) / 2)) ** 2 / Math.sin(rad(r2(W3) / 2)) ** 2, 'Rapport à l’envers : c’est sin²θ du 3ᵉ pic divisé par sin²θ du 1ᵉʳ pic.']], expl: `sin²(${fr(r2(W3) / 2, 3)}°) / sin²(${fr(r2(W1) / 2, 3)}°).` } },
     { id: 'modele', titre: 'Tester les trois modèles', depart: () => voir('drx', 'W'),
       texte: <>Choisissez un modèle sous le tableau. Chaque modèle impose une liste de valeurs de N permises. Le simulateur calcule N estimé = (sin²θ / sin²θ₁) × N₁ et le compare aux valeurs permises : <strong>un ⚠️ signale un pic dont le N estimé n’est permis par aucun plan du modèle</strong>. Il calcule ensuite
         <Formule>a = λ √N / (2 sin θ)</Formule>
@@ -228,12 +239,23 @@ export function SimulationDiffractionRX() {
         expl: 'Aucune somme de trois carrés d’entiers ne vaut 7 : en cubique simple il y a un « trou » entre N = 6 et N = 8. En cubique centré, N = 14 (plans 321, h + k + l = 6 pair) existe bien et 14 / 2 = 7.' } },
     { id: 'parametre', titre: 'Le paramètre de maille', depart: () => voir('drx', 'W', 'I'),
       texte: <>Avec le modèle cubique centré, lisez la moyenne de a sous le tableau.</>,
-      tache: { type: 'num', q: 'Paramètre de maille du tungstène (en nm)', unite: 'nm', vrai: ECHANTILLONS.W.a, tol: 0.005, affiche: x => fr(x, 4), pieges: [[ECHANTILLONS.W.a / Math.sqrt(2), 'C’est la valeur du modèle cubique simple : revenez au modèle cubique centré.']], expl: 'Les tables donnent a = 0,3165 nm.' } },
+      tache: { type: 'num', q: 'Paramètre de maille du tungstène (en nm)', unite: 'nm', vrai: ECHANTILLONS.W.a, tol: 0.005, affiche: x => fr(x, 4),
+        calcul: () => { const th = r2(W1) / 2, a1 = LAMBDA * Math.sqrt(2) / (2 * Math.sin(rad(th)));
+          return ['Pour chaque pic, a = λ √N / (2 sin θ). Dans le modèle cubique centré, le 1ᵉʳ pic est (110), donc N = 2 (cubique supposé, ordre 1).',
+            `Pic 1 : θ = ${fr(th, 3)}°, a = 0,1542 × √2 / (2 × ${fr(Math.sin(rad(th)), 5)}) = ${fr(a1, 4)} nm.`,
+            'Chaque pic donne une valeur voisine (écarts de l’ordre de 0,0001 nm, dus à la précision de lecture des angles) : on en fait la moyenne.',
+            `Moyenne sur tous les pics : a ≈ ${fr(ECHANTILLONS.W.a, 4)} nm.`]; },
+        pieges: [[ECHANTILLONS.W.a / Math.sqrt(2), 'C’est la valeur du modèle cubique simple : revenez au modèle cubique centré.']], expl: 'Les tables donnent a = 0,3165 nm.' } },
     { id: 'densite', titre: 'Contrôler par la masse volumique', depart: () => voir('drx', 'W', 'I'),
       texte: <>Une maille cubique centrée contient 1 + 8 × 1/8 = <strong>2 atomes</strong>. Sa masse est 2 M / N<sub>A</sub>, son volume a³ :
         <Formule>ρ = 2 M / (N<sub>A</sub> a³)</Formule>
         Données : M(W) = 183,84 g/mol ; N<sub>A</sub> = 6,022 × 10²³ mol⁻¹ ; a = 0,3165 nm, à convertir en cm (1 nm = 10⁻⁷ cm). Calculez ρ, puis comparez aux tables : ρ = 19,25 g/cm³. (Le contrôle automatique du simulateur est masqué pendant cette étape.)</>,
       tache: { type: 'num', q: 'Masse volumique calculée (en g/cm³)', unite: 'g/cm³', vrai: masseVolumique(2, 183.84, ECHANTILLONS.W.a), tol: 0.02, affiche: x => fr(x, 2),
+        calcul: () => { const a = ECHANTILLONS.W.a, aCm = a * 1e-7, m = 2 * 183.84 / 6.02214076e23;
+          return ['ρ = n M / (N_A a³), avec n = 2 atomes par maille (cubique centré) et a en cm.',
+            `a = ${fr(a, 5)} nm (valeur tabulée) = ${sci(aCm, 4)} cm, donc a³ = ${sci(aCm ** 3, 3)} cm³.`,
+            `Masse de la maille : 2 × 183,84 / ${sci(6.02214076e23, 4)} = ${sci(m, 3)} g.`,
+            `ρ = ${sci(m, 3)} / ${sci(aCm ** 3, 3)} = ${fr(masseVolumique(2, 183.84, a), 2)} g/cm³.`]; },
         pieges: [[masseVolumique(1, 183.84, ECHANTILLONS.W.a), 'Une maille cubique centrée contient 2 atomes, pas 1.'], [masseVolumique(1, 183.84, ECHANTILLONS.W.a / Math.sqrt(2)), 'C’est le résultat du modèle cubique simple : il est incompatible avec la masse volumique mesurée.']], expl: 'ρ = 2 × 183,84 / (6,022 × 10²³ × (0,3165 × 10⁻⁷)³).' } },
     { id: 'nacl', titre: 'Un cristal ionique : NaCl', depart: () => voir('drx', 'NaCl', null),
       texte: <>Dans NaCl, les ions Cl⁻ forment un réseau <strong>cubique à faces centrées</strong> et les ions Na⁺ occupent ses sites octaédriques. Pour les plans aux indices tous impairs (111, 311…), les ondes de Na⁺ et de Cl⁻ sont en opposition : ces pics sont <strong>faibles</strong>, mais présents. Relevez au moins 6 pics (dont le tout premier, à 2θ ≈ 27°) et trouvez la structure.</>,

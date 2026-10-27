@@ -133,19 +133,36 @@ export function SimulationDebitCharges() {
     { id: 'debit', titre: 'L’intensité : un débit de charges', depart: () => voir('fil', { I: 1, dt: 1 }),
       texte: <>L’<strong>intensité I</strong> du courant est le <strong>débit de charges</strong> : la charge Q (en valeur absolue) qui traverse une section du conducteur pendant une durée Δt. <strong>I = Q / Δt</strong>, donc <strong>Q = I × Δt</strong> (I en A, Q en C, Δt en s). 1 A = 1 C·s⁻¹.
         <ExempleResolu>Une charge Q = 3 C traverse une section en Δt = 2 s : I = Q / Δt = 3 / 2 = <strong>1,5 A</strong>.</ExempleResolu></>,
-      tache: { type: 'num', q: 'Un courant de 2,0 A circule pendant 5,0 s. Quelle charge Q (en C) traverse une section du fil ?', unite: 'C', vrai: 10, tol: 0.02, affiche: x => String(x), pieges: [[0.4, 'Tu as divisé : Q = I × Δt (on multiplie l’intensité par la durée).']], expl: 'Q = I × Δt = 2,0 × 5,0 = 10 C.' } },
+      tache: { type: 'num', q: 'Un courant de 2,0 A circule pendant 5,0 s. Quelle charge Q (en C) traverse une section du fil ?', unite: 'C', vrai: 10, tol: 0.02, affiche: x => String(x), pieges: [[0.4, 'Tu as divisé : Q = I × Δt (on multiplie l’intensité par la durée).'], [2.5, 'Tu as divisé la durée par l’intensité. La charge est Q = I × Δt : on multiplie.'], [7, 'Tu as additionné I et Δt. La charge est Q = I × Δt : on multiplie.']],
+        calcul: () => [
+          'L’intensité est un débit de charges : I = Q / Δt, donc Q = I × Δt (I en A, Δt en s, Q en C).',
+          'Données : I = 2,0 A et Δt = 5,0 s (déjà en unités SI, pas de conversion).',
+          'Q = 2,0 × 5,0 = 10 C.'], expl: 'Q = I × Δt = 2,0 × 5,0 = 10 C.' } },
     { id: 'electrons', titre: 'Combien d’électrons ?', depart: () => voir('fil', { I: 1, dt: 1 }),
       texte: <>Chaque électron porte une charge −e, avec <strong>e = 1,602·10⁻¹⁹ C</strong>. Pour une charge Q, il faut donc <strong>N = Q / e</strong> électrons. Lancez le chrono et regardez la charge qui s’accumule. Pour 1 A pendant 1 s : 1 C, soit environ <strong>6,24·10¹⁸ électrons</strong> !
         <ExempleResolu>Q = 3,0 C : N = 3,0 / 1,602·10⁻¹⁹ = <strong>1,9·10¹⁹ électrons</strong>.</ExempleResolu></>,
-      tache: { type: 'num', q: 'Combien d’électrons correspondent à une charge Q = 2,0 C ? (écris par exemple 1,9e19)', unite: '', vrai: 1.248e19, tol: 0.03, affiche: () => '1,25·10¹⁹', pieges: [[3.2e-19, 'Tu as multiplié : N = Q / e (on divise la charge totale par la charge d’un électron).']], expl: 'N = Q / e = 2,0 / 1,602·10⁻¹⁹ = 1,25·10¹⁹.' } },
+      tache: { type: 'num', q: 'Combien d’électrons correspondent à une charge Q = 2,0 C ? (écris par exemple 1,9e19)', unite: '', vrai: 1.248e19, tol: 0.04, affiche: () => '1,25·10¹⁹', pieges: [[3.2e-19, 'Tu as multiplié : N = Q / e (on divise la charge totale par la charge d’un électron).'], [1.602e-19 / 2, 'Tu as inversé : N = Q / e (la charge totale Q au numérateur).']],
+        calcul: () => [
+          'Chaque électron porte la charge e = 1,602·10⁻¹⁹ C (en valeur absolue). Pour la charge totale Q, le nombre d’électrons est N = Q / e.',
+          'Données : Q = 2,0 C ; e = 1,602·10⁻¹⁹ C.',
+          `N = 2,0 / (1,602·10⁻¹⁹) = ${sci(2 / E_CHARGE, 3)} électrons.`,
+          `Arrondi à 3 chiffres significatifs : N ≈ ${sci(2 / E_CHARGE, 2)} électrons.`], expl: 'N = Q / e = 2,0 / 1,602·10⁻¹⁹ = 1,25·10¹⁹.' } },
     { id: 'ah', titre: 'Autre unité : l’ampère-heure', depart: () => setAtelier('batterie'),
       texte: <>Les fabricants indiquent la <strong>capacité</strong> d’une batterie en <strong>mA·h</strong> : c’est une charge ! Comme 1 A·h = 1 A × 3600 s, on a <strong>1 A·h = 3600 C</strong>, soit <strong>1 mA·h = 3,6 C</strong>.
         <ExempleResolu>Une batterie de 2000 mA·h contient Q = 2000 × 3,6 = <strong>7200 C</strong>.</ExempleResolu></>,
-      tache: { type: 'num', q: 'Une batterie a une capacité de 3000 mA·h. Quelle charge (en C) contient-elle ?', unite: 'C', vrai: 10800, tol: 0.02, affiche: x => String(x), pieges: [[3000, 'N’oublie pas de convertir : 1 mA·h = 3,6 C.'], [3, 'Tu as converti en A·h mais pas en coulombs : 1 A·h = 3600 C.']], expl: 'Q = 3000 × 3,6 = 10 800 C.' } },
+      tache: { type: 'num', q: 'Une batterie a une capacité de 3000 mA·h. Quelle charge (en C) contient-elle ?', unite: 'C', vrai: 10800, tol: 0.02, affiche: x => String(x), pieges: [[3000, 'N’oublie pas de convertir : 1 mA·h = 3,6 C.'], [3, 'Tu as converti en A·h mais pas en coulombs : 1 A·h = 3600 C.'], [3000 * 3600, 'C’est 1 A·h qui vaut 3600 C. Ici, l’unité est le mA·h : 1 mA·h = 3,6 C.'], [3000 / 3.6, 'Tu as divisé. Pour passer des mA·h aux coulombs, on multiplie par 3,6.']],
+        calcul: () => [
+          'Une capacité en mA·h est une charge : 1 mA·h = 1 mA × 1 h.',
+          'Conversion : 1 mA = 10⁻³ A et 1 h = 3600 s, donc 1 mA·h = 10⁻³ × 3600 = 3,6 C.',
+          'Q = 3000 × 3,6 = 10 800 C.'], expl: 'Q = 3000 × 3,6 = 10 800 C.' } },
     { id: 'autonomie', titre: 'Autonomie d’une batterie', depart: () => { setAtelier('batterie'); setP({ cap: 2000, I: 20 }); },
       texte: <>Un appareil qui consomme un courant moyen I vide une batterie de capacité Q en <strong>Δt = Q / I</strong>. Avec Q en mA·h et I en mA, la durée sort directement en <strong>heures</strong>.
         <ExempleResolu>Téléphone en veille : 2000 mA·h et I = 20 mA : Δt = 2000 / 20 = <strong>100 h</strong>.</ExempleResolu></>,
-      tache: { type: 'num', q: 'Une batterie de 4000 mA·h alimente un appareil qui consomme 250 mA. Combien de temps tient-elle (en h) ?', unite: 'h', vrai: 16, tol: 0.02, affiche: x => String(x), pieges: [[0.0625, 'Tu as inversé : Δt = Q / I.']], expl: 'Δt = 4000 / 250 = 16 h.' } },
+      tache: { type: 'num', q: 'Une batterie de 4000 mA·h alimente un appareil qui consomme 250 mA. Combien de temps tient-elle (en h) ?', unite: 'h', vrai: 16, tol: 0.02, affiche: x => String(x), pieges: [[0.0625, 'Tu as inversé : Δt = Q / I.'], [4000 / 0.25, 'Les unités ne sont pas cohérentes : Q est en mA·h donc I doit être en mA (250 mA, pas 0,25 A).'], [16 * 3600, 'La durée est demandée en heures, pas en secondes : avec Q en mA·h et I en mA, le résultat est directement en h.']],
+        calcul: () => [
+          'Une batterie de charge Q fournit un courant I pendant Δt = Q / I (courant supposé constant, batterie vidée complètement).',
+          'Unités cohérentes : Q = 4000 mA·h et I = 250 mA (tous deux en « milli »). Le résultat sort alors directement en heures.',
+          'Δt = 4000 / 250 = 16 h.'], expl: 'Δt = 4000 / 250 = 16 h.' } },
     { id: 'vitesse', titre: '★ À quelle vitesse vont les électrons ?', depart: () => voir('fil', { I: 1, dt: 1, S: 1.5 }),
       texte: <>Dans un fil de cuivre de section S = 1,5 mm² parcouru par 1 A, la vitesse moyenne des électrons est de <strong>quelques dixièmes de mm par seconde seulement</strong> (calcul : v = I / (n·S·e), avec n = 8,5·10²⁸ électrons libres par m³). Pourtant la lampe s’allume <strong>tout de suite</strong> : c’est la <strong>perturbation</strong> (le signal) qui se propage à environ 2·10⁸ m/s, pas les électrons. Comme un long tuyau déjà plein d’eau : on ouvre le robinet, l’eau sort aussitôt à l’autre bout.</>,
       tache: { type: 'qcm', q: 'Pourquoi la lampe s’allume-t-elle presque instantanément alors que les électrons avancent très lentement ?', options: ['Les électrons sont déjà présents dans tout le fil : tous se mettent en mouvement presque en même temps', 'Les électrons vont à la vitesse de la lumière', 'Les électrons sont créés par l’interrupteur', 'Les ions du métal transportent le courant'], bonne: 0, expl: 'Les électrons libres occupent tout le circuit : le signal se propage vite, chaque électron avance lentement.' } },

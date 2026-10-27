@@ -273,6 +273,8 @@ export function SimulationAtomesMolecules() {
           {bouton('Voir l’oxygène', () => voirAtome(8))}</ExempleResolu>
         À vous : le fluor. {bouton('Voir le fluor', () => voirAtome(9))}</>,
       tache: { type: 'num', q: 'Combien d’électrons de valence a le fluor (Z = 9) ?', unite: '', vrai: eF.valence, tol: 0.001, affiche: x => String(x),
+        calcul: () => [`Le fluor a Z = 9 : il a 9 électrons. Sa configuration électronique est ${eF.config}.`, 'Les électrons de valence sont ceux de la dernière couche, la couche n = 2 (le plus grand n).',
+          `Sur cette couche : 2 électrons en 2s et 5 en 2p, donc 2 + 5 = ${eF.valence} électrons de valence.`],
         pieges: [[9, 'Ce sont tous les électrons de l’atome. On ne compte que ceux de la dernière couche (n = 2).'], [5, 'Vous n’avez compté que les électrons 2p : n’oubliez pas ceux de 2s (couche n = 2 en entier).']],
         expl: `Fluor : ${eF.config}. Dernière couche (n = 2) : 2 + 5 = ${eF.valence} électrons de valence.` } },
     { id: 'manque', titre: 'Un atome pas stable', depart: () => voirAtome(9),
@@ -280,7 +282,9 @@ export function SimulationAtomesMolecules() {
         <ExempleResolu>L’oxygène a 6 électrons de valence : il lui en manque 8 − 6 = <strong>2</strong>. Il n’est pas stable seul.</ExempleResolu>
         À vous : regardez le fluor sur le schéma : les ronds <em>vides</em> sont les places libres de la couche de valence.</>,
       tache: { type: 'num', q: 'Combien d’électrons manque-t-il au fluor pour avoir un octet ?', unite: '', vrai: 1, tol: 0.001, affiche: x => String(x),
-        pieges: [[7, 'C’est le nombre d’électrons de valence. Il manque 8 − 7.']],
+        calcul: () => [`Un octet, c’est 8 électrons sur la couche de valence.`, `Le fluor en a déjà ${eF.valence}.`, `Il lui manque 8 − ${eF.valence} = ${8 - eF.valence} électron.`],
+        pieges: [[7, 'C’est le nombre d’électrons de valence. Il manque 8 − 7.'], [8, 'C’est le nombre d’électrons d’un octet. Il faut enlever ceux que le fluor a déjà : 8 − 7.'],
+          [15, 'On soustrait : le nombre d’électrons qui manquent est 8 (l’octet) moins 7 (ceux qu’il a déjà).']],
         expl: 'Le fluor a 7 électrons de valence : 8 − 7 = 1 électron manquant.' } },
     { id: 'anion', titre: 'Gagner des électrons : l’anion', depart: () => voirAtome(9),
       texte: <>Une solution : <strong>gagner</strong> des électrons. L’atome devient un <strong>ion négatif</strong>, un <strong>anion</strong>.
@@ -340,7 +344,10 @@ export function SimulationAtomesMolecules() {
         <ExempleResolu>Pour un atome neutre : liaisons = 8 − (électrons de valence). Exemple, l’oxygène : 8 − 6 = <strong>2 liaisons</strong>, et ses 2 autres paires d’électrons sont non liantes.</ExempleResolu>
         À vous : l’azote. {bouton('Voir l’azote', () => voirAtome(7))}</>,
       tache: { type: 'num', q: 'Combien de liaisons fait un atome d’azote N (Z = 7) ?', unite: '', vrai: 3, tol: 0.001, affiche: x => String(x),
-        pieges: [[5, 'C’est le nombre d’électrons de valence de l’azote. Il lui en manque 8 − 5.']],
+        calcul: () => { const eN = etatEntite(7, 7); return [`L’azote a Z = 7 : sa configuration est ${eN.config}. Sa couche de valence (n = 2) a 2 + 3 = ${eN.valence} électrons.`,
+          'Pour un atome neutre, le nombre de liaisons est le nombre d’électrons qui manquent pour avoir un octet : 8 − (électrons de valence).', `Liaisons = 8 − ${eN.valence} = ${8 - eN.valence}.`]; },
+        pieges: [[5, 'C’est le nombre d’électrons de valence de l’azote. Il lui en manque 8 − 5.'], [8, 'C’est le nombre d’électrons d’un octet. Le nombre de liaisons est le nombre d’électrons qui manquent : 8 − 5.'],
+          [1, 'C’est le nombre de doublets non liants de l’azote. Ici on demande le nombre de liaisons : 8 − 5.']],
         expl: 'Azote : 5 électrons de valence, il lui en manque 3 pour l’octet : 3 liaisons, et il garde 1 doublet non liant (5 − 3 = 2 électrons).' } },
     { id: 'h2o', titre: 'À vous : l’eau H₂O', depart: () => voirMol('H2O', 'tirets'),
       texte: <>Appliquez la règle : l’oxygène fait 2 liaisons (une avec chaque H), et il lui reste 2 doublets non liants. Chaque H fait 1 liaison.

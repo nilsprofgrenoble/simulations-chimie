@@ -216,6 +216,13 @@ export function SimulationSolubilite() {
     { id: 'ehn', titre: 'Un ordre de grandeur', focus: ['bilan'],
       texte: <>Survolez (ou touchez) les deux barres de la liaison hydrogène : celle de gauche (état initial) et celle de droite (état final). Les valeurs sont en kJ pour 1 L de mélange (0,5 L d’eau + 0,5 L d’hexane). La perte est la différence entre les deux : c’est le pointillé rouge.</>,
       tache: { type: 'num', q: 'Perte liée à la liaison hydrogène (initial − final, en kJ par litre)', unite: 'kJ/L', vrai: bw('eau', 'hexane').types[2].perte, tol: 0.06, affiche: v => nb(v), cs: 2,
+        calcul: () => { const t = bw('eau', 'hexane').types[2];
+          return ['Modèle : mélange 50/50 en volume (0,5 L d’eau + 0,5 L d’hexane) ; les énergies sont des estimations du modèle, en kJ pour 1 L de mélange.',
+            `Barre de gauche (état initial, liaisons H à rompre) : ${arr(t.ini)} kJ/L. Barre de droite (état final, liaisons H retrouvées) : ${arr(t.fin)} kJ/L.`,
+            `Perte = initial − final = ${arr(t.ini)} − ${arr(t.fin)} = ${nb(Number(arr(t.ini).replace(',', '.')) - Number(arr(t.fin).replace(',', '.')))} kJ/L (les barres sont lues à 2 chiffres significatifs). Positive : on perd de la stabilité.`,
+            `Sans arrondir les barres, le modèle donne ${nb(t.perte)} kJ/L : c’est la valeur attendue (à 6 % près).`]; },
+        pieges: [[-bw('eau', 'hexane').types[2].perte, 'Signe : la perte, c’est initial − final (état de départ moins état d’arrivée). Ici elle est positive.'],
+          [bw('eau', 'hexane').types[2].ini, 'C’est la valeur de la barre de gauche seule. La perte est la différence entre la barre de gauche et la barre de droite.']],
         bloque: est('eau', 'hexane') ? null : 'Faites d’abord l’étape précédente (eau + hexane).',
         expl: 'On trouve environ 447 kJ/L pour la seule liaison H, et plus de 500 kJ/L au total : environ quatre fois ce que l’agitation thermique peut compenser pour des molécules de cette taille (≈ 130 kJ/L).' } },
     { id: 'hc', titre: 'Qui se ressemble s’assemble', focus: ['choix', 'bilan'],
