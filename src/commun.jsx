@@ -161,7 +161,7 @@ export function Graphe({ xMax, yMax, xLabel, yLabel, courbes = [], points = [], 
 //        | { type: 'action', ok, label?, faire?, attente?, consigne?, bloque? }
 //        | { type: 'qcm', q, options, bonne, expl? }
 //        | { type: 'num', q, unite, vrai, tol, pieges?, aide?, expl?, bloque?, calcul? }
-//          calcul : liste d'étapes intermédiaires (texte ou JSX) montrées « pas à pas » après une réponse fausse, avant la valeur attendue
+//          calcul : liste d'étapes intermédiaires (texte ou JSX), ou fonction () => liste (à préférer : évaluée seulement à l'affichage) montrées « pas à pas » après une réponse fausse, avant la valeur attendue
 //          pieges : [[valeur d'une erreur classique, message ciblé], …] — le message s'affiche si la réponse de l'élève est proche de cette valeur
 //  etat = { etape, reps, verifs } est conservé par la page (setEtat).
 // ============================================================
@@ -255,6 +255,11 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
   useEffect(() => { if (derniere && !etat.fini) setEtat(e => (e.fini ? e : { ...e, fini: true })); }, [derniere, etat.fini, setEtat]);
   // Message de reprise, affiché une seule fois quand on retrouve un parcours commencé
   const [reprise] = useState(() => etape > 0);
+  // Étapes du calcul pas à pas : liste, ou fonction qui renvoie la liste (évaluée seulement à l'affichage ; une erreur de calcul masque simplement les étapes)
+  const lignesCalcul = (() => {
+    if (!tache || tache.type !== 'num' || !tache.calcul) return null;
+    try { const l = typeof tache.calcul === 'function' ? tache.calcul() : tache.calcul; return Array.isArray(l) && l.length ? l : null; } catch { return null; }
+  })();
   const piege = () => {
     const x = lireNombre(reps[etape]);
     if (!isFinite(x)) return 'Entrez une valeur numérique (virgule ou point).';
@@ -348,16 +353,16 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
                 border: '1px solid #fdba74', borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{avecIndices(piege())}</div>}
               {vuRep ? (
                 <div style={{ fontSize: 13.5, color: TXT2, marginTop: 4 }}>
-                  {tache.calcul && tache.type === 'num' && (
+                  {lignesCalcul && (
                     <ol data-calcul="1" style={{ margin: '0 0 6px', paddingLeft: 20, color: TXT, lineHeight: 1.55 }}>
-                      {tache.calcul.map((l, i) => <li key={i}>{indicesProfond(l)}</li>)}
+                      {lignesCalcul.map((l, i) => <li key={i}>{indicesProfond(l)}</li>)}
                     </ol>)}
                   {avecIndices(tache.type === 'num' ? `Réponse attendue : ${tache.affiche ? tache.affiche(tache.vrai) : sci(tache.vrai)} ${tache.unite}` : `Réponse : ${tache.options[tache.bonne]}. ${typeof tache.expl === 'string' ? tache.expl : ''}`)}
                   {tache.detail && tache.type === 'num' && <div style={{ marginTop: 4, color: TXT }}>{indicesProfond(tache.expl)}</div>}
                 </div>
               ) : (
                 <button onClick={() => maj(e => ({ reps: { ...e.reps, [`vu${etape}`]: true } }))} style={{ fontSize: 12.5, marginTop: 4,
-                  background: 'none', border: 'none', color: TXT2, textDecoration: 'underline', cursor: 'pointer', padding: 0 }}>{tache.calcul && tache.type === 'num' ? 'voir le calcul pas à pas' : 'voir la réponse'}</button>
+                  background: 'none', border: 'none', color: TXT2, textDecoration: 'underline', cursor: 'pointer', padding: 0 }}>{lignesCalcul ? 'voir le calcul pas à pas' : 'voir la réponse'}</button>
               )}
             </div>
           )}
