@@ -1025,7 +1025,7 @@ export const ENONCES = [
         Patm: tok(`${p.Patm} hPa`, 'Pression atmosphérique', p.Patm * 100, 'Pa'),
       };
       const debut = ['Une cuve cylindrique, ouverte à l’air libre et de volume total ', T('Vc'), ', contient une huile végétale au repos, de masse volumique ', T('rho'), ' à ', T('th'),
-        '. Un capteur de pression relative (il mesure l’écart avec la pression atmosphérique, qui vaut ', T('Patm'), ' ce jour-là) est fixé au fond de la cuve et indique ', T('P'),
+        ' (supposée uniforme dans toute l’huile). Un capteur de pression relative (il mesure l’écart avec la pression atmosphérique, qui vaut ', T('Patm'), ' ce jour-là) est fixé au fond de la cuve et indique ', T('P'),
         '. L’intensité de la pesanteur vaut ', T('g'), '. '];
       const rTh = 'La température intervient seulement par la valeur de la masse volumique, qui est déjà donnée pour cette température.';
       const rVc = 'Le volume total de la cuve ne donne pas la hauteur d’huile : il faudrait aussi connaître la section de la cuve, et elle n’est pas nécessaire ici.';
@@ -1033,7 +1033,7 @@ export const ENONCES = [
       const rRhoG = 'La pression est déjà donnée : ρ et g serviraient à la calculer à partir d’une hauteur, ce qui n’est pas demandé.';
       const Prel = p.P * 1e5;
       if (q === 0) return { tokens, texte: [...debut, 'Quelle est la hauteur d’huile au-dessus du capteur ?'], utiles: ['rho', 'g', 'P'],
-        derivees: [{ id: 'Pa', nom: 'Pression relative en pascals', expr: 'P = P(en bar) × 10⁵   (1 bar = 10⁵ Pa)', val: Prel, u: 'Pa' }],
+        derivees: [{ id: 'Pa', nom: 'Pression relative en pascals', expr: 'P_rel = P(en bar) × 10⁵   (1 bar = 10⁵ Pa)', val: Prel, u: 'Pa' }],
         raisons: { th: rTh, Vc: rVc, Patm: rPatm },
         cherche: { bonne: 'La hauteur h d’huile au-dessus du capteur (en m)', faux: ['La pression absolue au fond de la cuve (en Pa)', 'Le volume d’huile contenu dans la cuve (en m³)', 'La masse d’huile contenue dans la cuve (en kg)'] },
         manque: null, solution: { txt: 'h = P_rel / (ρ·g), avec P_rel en pascals', val: Prel / (p.rho * p.g), u: 'm' } };
@@ -1041,7 +1041,7 @@ export const ENONCES = [
         tokens.d = tok(`${p.d} mm`, 'Diamètre de la trappe de vidange', p.d / 1000, 'm');
         return { tokens, texte: [...debut, 'Une trappe de vidange horizontale, de forme circulaire et de diamètre ', T('d'), ', est située au fond de la cuve, à la hauteur du capteur ; sous la trappe, l’air est à la pression atmosphérique. Le poids de la trappe est négligé. Quelle est la valeur de la force pressante résultante qui s’exerce sur la trappe ?'],
           utiles: ['P', 'd'],
-          derivees: [{ id: 'Pa', nom: 'Pression relative en pascals', expr: 'P = P(en bar) × 10⁵   (1 bar = 10⁵ Pa)', val: Prel, u: 'Pa' }, { id: 'S', nom: 'Section S de la trappe', expr: 'S = π·d² / 4', val: Math.PI * (p.d / 1000) ** 2 / 4, u: 'm²' }],
+          derivees: [{ id: 'Pa', nom: 'Pression relative en pascals', expr: 'P_rel = P(en bar) × 10⁵   (1 bar = 10⁵ Pa)', val: Prel, u: 'Pa' }, { id: 'S', nom: 'Section S de la trappe', expr: 'S = π·d² / 4', val: Math.PI * (p.d / 1000) ** 2 / 4, u: 'm²' }],
           raisons: { rho: rRhoG, g: rRhoG, th: rTh, Vc: 'Le volume de la cuve ne donne pas la force sur la trappe : celle-ci ne dépend que de la pression au fond et de la surface de la trappe.',
             Patm: 'La pression atmosphérique s’exerce aussi sous la trappe : elle se compense, et le capteur la retranche déjà. Seule la pression relative compte.' },
           cherche: { bonne: 'La force pressante résultante F sur la trappe (en N)', faux: ['La pression relative exercée sur la trappe (en Pa)', 'Le poids de l’huile contenue dans la cuve (en N)', 'La force pressante exercée par la seule atmosphère sur la trappe (en N)'] },
@@ -1079,7 +1079,7 @@ export const ENONCES = [
       const rPm = 'La puissance du moteur ne donne pas la quantité de liquide débitée : ici, le débit se déduit directement de la pesée et du chronomètre.';
       const rTh = 'La température n’intervient pas dans un rapport entre masses, volumes et durées déjà mesurés.';
       const mnet = Math.round((p.mt - p.mv) * 10) / 10, Qm = mnet / (p.dt * 60);
-      const dM = { id: 'm', nom: 'Masse m de saumure recueillie', expr: 'm = m_balance − m_fût vide', val: mnet, u: 'kg' };
+      const dM = { id: 'm', nom: 'Masse m de saumure recueillie', expr: 'm = m_balance − m_fût', val: mnet, u: 'kg' };
       if (q === 0) return { tokens, derivees: [dM], texte: [...debut, 'Quel est le débit massique de la pompe ?'], utiles: ['mv', 'mt', 'dt'],
         raisons: { Pm: rPm, Bmax: rB, th: rTh },
         cherche: { bonne: 'Le débit massique q_m de la pompe (en kg·s⁻¹)', faux: ['Le débit volumique de la pompe (en m³·h⁻¹)', 'La masse de saumure recueillie (en kg)', 'La masse volumique de la saumure (en kg·m⁻³)'] },
@@ -1087,13 +1087,13 @@ export const ENONCES = [
       if (q === 1) {
         tokens.V = tok(`${p.V} L`, 'Volume de saumure lu sur le fût gradué', p.V / 1000, 'm³');
         return { tokens, derivees: [dM], texte: [...debut, 'Le niveau de la saumure dans le fût se trouve alors au repère ', T('V'), '. Quelle est la masse volumique de la saumure ?'], utiles: ['mv', 'mt', 'V'],
-          raisons: { Pm: rPm, Bmax: rB, th: rTh, dt: 'La durée de remplissage donne un débit, pas la masse volumique, qui ne relie que la masse et le volume du liquide recueilli.' },
+          raisons: { Pm: 'La puissance du moteur ne renseigne ni sur la masse ni sur le volume de liquide recueilli : la masse volumique se déduit de la pesée et du volume lu sur le fût.', Bmax: rB, th: rTh, dt: 'La durée de remplissage donne un débit, pas la masse volumique, qui ne relie que la masse et le volume du liquide recueilli.' },
           cherche: { bonne: 'La masse volumique ρ de la saumure (en kg·m⁻³)', faux: ['Le débit massique de la pompe (en kg·s⁻¹)', 'La masse de saumure recueillie (en kg)', 'Le volume massique de la saumure (en m³·kg⁻¹)'] },
           manque: null, solution: { txt: 'ρ = m / V, avec m = m_balance − m_fût', val: p.rho, u: 'kg·m⁻³' } };
       }
       return { tokens, derivees: [dM, { id: 'qm', nom: 'Débit massique de la pompe', expr: 'q_m = m / Δt', val: Qm, u: 'kg·s⁻¹' }],
         texte: [...debut, 'Quel est le débit volumique de la pompe ?'], utiles: ['mv', 'mt', 'dt'],
-        raisons: { Pm: rPm, Bmax: rB, th: rTh },
+        raisons: { Pm: rPm, Bmax: rB, th: 'La température ne permettrait de lire la masse volumique d’une saumure dans une table qu’avec sa concentration, qui n’est pas donnée : elle ne remplace pas la donnée manquante.' },
         cherche: { bonne: 'Le débit volumique q_V de la pompe (en m³·h⁻¹)', faux: ['Le débit massique de la pompe (en kg·s⁻¹)', 'La masse volumique de la saumure (en kg·m⁻³)', 'Le volume de saumure recueilli (en m³)'] },
         manque: { bonne: 'Il manque la masse volumique de la saumure', faux: ['Il manque la durée de remplissage', 'Il manque la masse du fût vide', 'Il ne manque aucune donnée pour ce calcul'],
           expl: `Pour passer d’un débit massique à un débit volumique, il faut la masse volumique : q_V = q_m / ρ. L’énoncé ne la donne pas, et ne donne pas non plus le volume recueilli. Elle peut se mesurer en lisant le volume sur le fût et en calculant ρ = m / V. La masse du fût vide (${tokens.mv.aff}), la masse finale (${tokens.mt.aff}) et la durée (${tokens.dt.aff}) y figurent bien : elles donnent le débit massique.` },
@@ -1198,7 +1198,7 @@ export function melange(tab, graine) {
 // Symbole de chaque donnée tel qu'il apparaît dans la formule (affiché à côté du nom de la grandeur)
 const SYMBOLES = {
   'flu-statique': { rho: 'ρ', g: 'g', P: 'P_rel', th: 'θ', Vc: 'V_cuve', Patm: 'P_atm', d: 'd', dh: 'Δh' },
-  'flu-debit': { mv: 'm_fût', mt: 'm_tot', dt: 'Δt', V: 'V', Bmax: 'm_max', Pm: 'P_moteur', th: 'θ' },
+  'flu-debit': { mv: 'm_fût', mt: 'm_balance', dt: 'Δt', V: 'V', Bmax: 'm_max', Pm: 'P_moteur', th: 'θ' },
   'flu-section': { D1: 'D₁', D2: 'D₂', v1: 'v₁', P1: 'P₁', L: 'L', th: 'θ', Vr: 'V_bassin' },
   'flu-pompe': { rho: 'ρ', g: 'g', dz: 'Δz', dp: 'Δp_J', Q: 'Q_V', Pel: 'P_él', L: 'L', th: 'θ', Patm: 'P_atm' },
   hydrodist: { mp: 'm_fleurs', Veau: 'V_eau', P: 'P', t: 'Δt', T: 'θ', mh: 'm_huile', rho: 'ρ', Vh: 'V_hydrolat' },
