@@ -89,7 +89,7 @@ export const ENONCES = [
         raisons: { Pel: 'La puissance de la pompe ne donne pas la masse d’eau déplacée.', D: 'Le diamètre n’intervient pas : le débit est déjà donné.', Lc: 'La longueur de la conduite n’intervient pas dans la masse d’eau refoulée.' },
         derivees: [{ id: 'V', nom: 'Volume V d’eau refoulé', expr: 'V = Q × durée', val: p.Q, u: 'm³' }],
         cherche: { bonne: 'La masse m d’eau refoulée (en kg)', faux: ['Le débit massique de l’eau (en kg·s⁻¹)', 'La vitesse moyenne de l’eau (en m·s⁻¹)', 'Le volume d’eau contenu dans la conduite (en m³)'] },
-        manque: { bonne: 'Il manque la masse volumique de l’eau', faux: ['Il manque le débit volumique de l’eau', 'Il manque la durée de refoulement', 'Il ne manque aucune donnée pour ce calcul'],
+        manque: { bonne: 'Il manque la masse volumique de l’eau', faux: ['Il manque le débit volumique de l’eau', 'Il ne manque que la durée de refoulement', 'Il ne manque aucune donnée pour ce calcul'],
           expl: `Pour passer d’un volume à une masse, il faut la masse volumique : m = ρ·V, avec ρ = 1000 kg·m⁻³ pour l’eau. L’énoncé ne la donne pas. En revanche, le débit volumique (${tokens.Q.aff}) et la durée (${tokens.tdur.aff}) y figurent bien : V = Q × durée.` },
         solution: { txt: 'm = ρ·Q·durée', val: 1000 * p.Q, u: 'kg' } };
     },
@@ -117,8 +117,7 @@ export const ENONCES = [
         ' (solution S₀). On prélève ', T('VA'), ' de S₀ que l’on titre avec une solution de soude (Na⁺ + HO⁻) de concentration ', T('cB'),
         ', en présence de phénolphtaléine (zone de virage de pH ', T('pH'), '). L’équivalence est repérée pour un volume de soude versé de ', T('VE'), '. ',
         q === 0 ? 'Quelle est la concentration en acide acétylsalicylique de la solution S₀ ?' : 'Quelle masse d’acide acétylsalicylique contient un comprimé ?'];
-      const manque = { bonne: 'Il manque l’équation de la réaction de titrage', faux: ['Il manque la constante d’acidité Ka du couple', 'Il manque la concentration de la solution de soude', 'Il ne manque aucune donnée pour ce calcul'],
-          expl: `Pour relier la quantité de soude versée à celle d’acide, il faut l’équation de la réaction (ici 1 AH pour 1 HO⁻). L’énoncé ne la donne pas. La concentration de la soude (${tokens.cB.aff}) y figure bien ; la constante Ka n’est pas nécessaire une fois l’équation connue.` };
+      const manque = null;
       const c0 = p.cB * p.VE / p.VA;
       if (q === 0) return { tokens, texte, utiles: ['VA', 'cB', 'VE'], derivees: [], manque,
         raisons: { mc: 'La masse du comprimé servirait à calculer un pourcentage en masse, pas la concentration de S₀.', M: 'La masse molaire servirait à passer d’une quantité de matière à une masse : ce n’est pas demandé ici.',
@@ -243,8 +242,8 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la pression absolue au fond du réservoir ?'], utiles: ['rho', 'h', 'Patm'],
         raisons: { D: 'La pression hydrostatique ne dépend que de la hauteur d’eau : le diamètre n’intervient pas.' },
         cherche: { bonne: 'La pression absolue au fond du réservoir (en Pa)', faux: ['La force exercée par l’eau sur le fond (en N)', 'La masse d’eau contenue dans le réservoir (en kg)', 'La pression due uniquement au poids de l’eau, sans la pression atmosphérique (en Pa)'] },
-        manque: { bonne: 'Il manque l’intensité de la pesanteur g', faux: ['Il manque la masse volumique de l’eau', 'Il manque la viscosité de l’eau', 'Il ne manque aucune donnée pour ce calcul'],
-          expl: `La relation fondamentale de l’hydrostatique, P = P_atm + ρ·g·h, fait intervenir g, que l’énoncé ne donne pas (g = 9,81 N·kg⁻¹). La masse volumique (${tokens.rho.aff}), la hauteur d’eau (${tokens.h.aff}) et la pression atmosphérique (${tokens.Patm.aff}) y figurent bien ; la viscosité n’intervient pas pour un fluide au repos.` },
+        manque: { bonne: 'Il manque l’intensité de la pesanteur g', faux: ['Il manque la masse volumique de l’eau', 'Il ne manque que la viscosité de l’eau', 'Il ne manque aucune donnée pour ce calcul'],
+          expl: `La relation fondamentale de l’hydrostatique, P = P_atm + ρ·g·h, fait intervenir g, que l’énoncé ne donne pas (g = 9,81 N·kg⁻¹ sur Terre). Contrairement à π, g n’est pas une constante mathématique : elle dépend de l’astre, donc l’énoncé doit la préciser. La masse volumique (${tokens.rho.aff}), la hauteur d’eau (${tokens.h.aff}) et la pression atmosphérique (${tokens.Patm.aff}) y figurent bien ; la viscosité n’intervient pas pour un fluide au repos.` },
         solution: { txt: 'P_fond − P_atm = ρ·g·h  (ΔP = ρ·g·Δz), donc P_fond = P_atm + ρ·g·h', val: p.Patm * 100 + p.rho * 9.81 * p.h, u: 'Pa' } };
       return { tokens, texte: [...debut, 'Quelle est la masse d’eau contenue dans le réservoir ?'], utiles: ['rho', 'h', 'D'],
         derivees: [{ id: 'S', nom: 'Section S du réservoir', expr: 'S = π·D² / 4', val: S, u: 'm²' }, { id: 'V', nom: 'Volume V d’eau', expr: 'V = S × h', val: S * p.h, u: 'm³' }],
@@ -270,7 +269,7 @@ export const ENONCES = [
         Ti: tok(`${p.Ti} h`, 'Temps intégral (indiqué sur la fiche du régulateur)', p.Ti, 'h'),
       };
       const debut = ['Un réservoir de section ', T('S'), ' est rempli par une pompe dont le débit est proportionnel à la commande Y (100 % ↔ ', T('Qmax'), '). Un soutirage constant de ', T('Qp'),
-        ' vide le réservoir. Le régulateur proportionnel calcule Y = K_p × (consigne − H), où H est le niveau du liquide dans le réservoir, sans commande de base (Y est limitée entre 0 et 100 %), avec K_p = ', T('Kp'), ' ; la consigne est de ', T('hc'), '. La fiche du régulateur indique un temps intégral de ', T('Ti'), '. Le capteur de niveau et la pompe sont supposés parfaits (sans retard). On admet que le niveau finit par se stabiliser. '];
+        ' vide le réservoir. Le régulateur proportionnel calcule Y = K_p × (consigne − H), où H est le niveau du liquide dans le réservoir, sans commande de base (Y est limitée entre 0 et 100 %), avec K_p = ', T('Kp'), ' ; la consigne est de ', T('hc'), '. La fiche du régulateur (réglable en PI) indique un temps intégral de ', T('Ti'), ', mais l’action intégrale est désactivée : le régulateur est utilisé en proportionnel seul. Le capteur de niveau et la pompe sont supposés parfaits (sans retard). On admet que le niveau finit par se stabiliser. '];
       const rS = 'La section règle la vitesse d’évolution du niveau, pas sa valeur en régime permanent.', rTi = 'Le régulateur est proportionnel seul : sa loi Y = K_p × (consigne − H) ne contient pas de temps intégral, ce réglage ne sert pas dans ce calcul.';
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'En régime permanent, quelle commande Y le régulateur doit-il envoyer à la pompe ?'], utiles: ['Qmax', 'Qp'],
         raisons: { S: rS, hc: 'La consigne intervient dans le calcul de l’écart, pas dans la commande nécessaire pour compenser le soutirage.', Kp: 'Le gain relie la commande à l’écart de niveau, mais ne dit pas quelle commande est nécessaire.', Ti: rTi },
