@@ -140,6 +140,17 @@ export function Simulation4({ plotlyReady }) {
   // fraction d'éthanol maximale dans l'acétate d'éthyle, pour RED = 1 (résolution numérique)
   const fMax = (() => { let lo = 0, hi = 1; for (let i = 0; i < 60; i++) { const f = (lo + hi) / 2; if (ra(PT, melange({ ea: 1 - f, etoh: f })) / PT.R0 < 1) lo = f; else hi = f; } return lo; })();
 
+  // Calcul pas à pas de la distance Ra (affiché après une réponse fausse) : écarts, carrés, somme, racine
+  const calculRa = (Q, S, nom) => {
+    const g = x => String(+x.toFixed(2)).replace('.', ',').replace('-', '−'), dd = S.d - Q.d, dp = S.p - Q.p, dh = S.h - Q.h, tD = 4 * dd * dd, tP = dp * dp, tH = dh * dh, tot = tD + tP + tH;
+    return [
+      `Écarts avec la nitrocellulose${nom ? ' (' + nom + ')' : ''} : Δδd = ${g(S.d)} − ${g(Q.d)} = ${g(dd)} ; Δδp = ${g(S.p)} − ${g(Q.p)} = ${g(dp)} ; Δδh = ${g(S.h)} − ${g(Q.h)} = ${g(dh)}.`,
+      `Carrés (avec le facteur 4 pour δd) : 4 × (${g(dd)})² = ${g(tD)} ; (${g(dp)})² = ${g(tP)} ; (${g(dh)})² = ${g(tH)}.`,
+      `Somme : ${g(tD)} + ${g(tP)} + ${g(tH)} = ${g(tot)}.`,
+      `Racine carrée : Ra = √${g(tot)} = ${fmt(Math.sqrt(tot), 2)} MPa½.`,
+    ];
+  };
+
   // ════════════════ LES TROIS PARCOURS ════════════════
   const TOUTES = [
     // ── 1. La sphère de solubilité ──
@@ -155,7 +166,9 @@ export function Simulation4({ plotlyReady }) {
       texte: <>La distance entre un solvant (s) et le polymère (P) vaut Ra = √[4(δd,s − δd,P)² + (δp,s − δp,P)² + (δh,s − δh,P)²]. La nitrocellulose : δd = 17 ; δp = 8,7 ;
         δh = 9,3. L'acétate d'éthyle : 15,8 ; 5,3 ; 7,2.</>,
       tache: { type: 'num', q: 'Distance Ra entre l’acétate d’éthyle et la nitrocellulose', unite: 'MPa½', vrai: raEA, tol: 0.02, affiche: x => fmt(x, 2),
-        pieges: [[Math.sqrt((15.8 - 17) ** 2 + 3.4 ** 2 + 2.1 ** 2), 'N’oubliez pas le facteur 4 devant le terme en δd.']] } },
+        calcul: calculRa(PT, SOLVANTS.ea, 'acétate d’éthyle'),
+        pieges: [[Math.sqrt((15.8 - 17) ** 2 + 3.4 ** 2 + 2.1 ** 2), 'N’oubliez pas le facteur 4 devant le terme en δd.'],
+          [4 * 1.2 ** 2 + 3.4 ** 2 + 2.1 ** 2, 'Vous avez oublié la racine carrée à la fin : la somme des carrés vaut Ra², pas Ra.']] } },
     { id: 'facteur4', titre: 'Pourquoi ce facteur 4 ?', focus: [],
       texte: <>Le facteur 4 devant le terme de dispersion n'est pas démontré : Hansen l'a choisi parce qu'avec lui, les domaines de solubilité mesurés deviennent à peu près
         sphériques. C'est pour cela que la vue 3D utilise l'axe 2δd.</>,
@@ -163,7 +176,9 @@ export function Simulation4({ plotlyReady }) {
     { id: 'red', titre: 'La sphère et le RED', focus: ['vue'],
       texte: <>Le polymère est entouré d'une <strong>sphère de solubilité</strong> de rayon R0 (ici 9,0 MPa½). On calcule RED = Ra / R0 : si RED &lt; 1, le solvant est dans la
         sphère, il doit dissoudre le polymère.</>,
-      tache: { type: 'num', q: 'RED de l’acétate d’éthyle', unite: '', vrai: raEA / PT.R0, tol: 0.02, affiche: x => fmt(x, 2) } },
+      tache: { type: 'num', q: 'RED de l’acétate d’éthyle', unite: '', vrai: raEA / PT.R0, tol: 0.02, affiche: x => fmt(x, 2),
+        calcul: [...calculRa(PT, SOLVANTS.ea, 'acétate d’éthyle'), `RED = Ra / R₀ = ${fmt(raEA, 2)} / ${fmt(PT.R0, 1)} = ${fmt(raEA / PT.R0, 2)} (inférieur à 1 : le solvant est dans la sphère).`],
+        pieges: [[raEA, 'C’est la distance Ra. Le RED est Ra divisé par le rayon R₀ de la sphère (9,0).'], [PT.R0 / raEA, 'Rapport à l’envers : le RED est Ra / R₀ (et non R₀ / Ra).']] } },
     { id: 'tester', titre: 'Tester les quatre solvants', focus: ['solvants'],
       texte: <>Cliquez sur chaque solvant dans le cadre « Les solvants » : son RED et sa position sur le diagramme s'affichent.</>,
       tache: { type: 'action', ok: Object.keys(SOLVANTS).every(k => testes[k]), consigne: `Solvants testés : ${Object.keys(SOLVANTS).filter(k => testes[k]).length} / 4` } },
@@ -190,17 +205,33 @@ export function Simulation4({ plotlyReady }) {
         précipite. Les paramètres d'un mélange se calculent comme la moyenne de ceux des solvants, pondérée par leurs fractions volumiques.</>, tache: null },
     { id: 'moyenne', titre: 'Le point d’un mélange', focus: ['mel'],
       texte: <>Mélange à 50 % d'acétate d'éthyle (δh = 7,2) et 50 % d'éthanol (δh = 19,4), en volume.</>,
-      tache: { type: 'num', q: 'δh du mélange', unite: 'MPa½', vrai: m5050.h, tol: 0.005, affiche: x => fmt(x, 1) } },
+      tache: { type: 'num', q: 'δh du mélange', unite: 'MPa½', vrai: m5050.h, tol: 0.005, affiche: x => fmt(x, 1),
+        calcul: [`Fractions volumiques : 50 % = 0,5 de chaque solvant.`, `δh = 0,5 × 7,2 + 0,5 × 19,4 = ${fmt(0.5 * 7.2, 1)} + ${fmt(0.5 * 19.4, 1)} = ${fmt(m5050.h, 1)} MPa½.`],
+        pieges: [[7.2 + 19.4, 'Vous avez additionné les deux δh : il faut les pondérer par les fractions (0,5 chacune), c’est une moyenne.'], [(7.2 + 19.4) / 2 * 0.5, 'La moyenne pondérée, c’est 0,5 × 7,2 + 0,5 × 19,4 : les deux fractions s’additionnent à 1.']] } },
     { id: 'red5050', titre: 'Ce mélange dissout-il la nitrocellulose ?', focus: ['mel'],
       texte: <>Ce mélange : δd = 15,8 ; δp = {fmt(m5050.p, 2)} ; δh = {fmt(m5050.h, 1)}.</>,
-      tache: { type: 'num', q: 'RED du mélange 50/50', unite: '', vrai: ra(PT, m5050) / PT.R0, tol: 0.02, affiche: x => fmt(x, 2) } },
+      tache: { type: 'num', q: 'RED du mélange 50/50', unite: '', vrai: ra(PT, m5050) / PT.R0, tol: 0.02, affiche: x => fmt(x, 2),
+        calcul: [`Paramètres du mélange (moyennes pondérées) : δd = ${fmt(m5050.d, 1)} ; δp = ${fmt(m5050.p, 2)} ; δh = ${fmt(m5050.h, 1)}.`, ...calculRa(PT, m5050, 'mélange 50/50'),
+          `RED = Ra / R₀ = ${fmt(ra(PT, m5050), 2)} / ${fmt(PT.R0, 1)} = ${fmt(ra(PT, m5050) / PT.R0, 2)}.`],
+        pieges: [[ra(PT, m5050), 'C’est la distance Ra. Le RED est Ra divisé par R₀ = 9,0.'], [raEA / PT.R0, 'Vous avez calculé le RED de l’acétate d’éthyle seul : utilisez les paramètres du mélange (δp et δh moyens).']] } },
     { id: 'optimum', titre: 'Le mélange le plus proche du centre', focus: ['mel'],
       texte: <>En formulation, on cherche souvent le mélange le plus proche du point du polymère (le RED le plus petit). Avec l'acétate d'éthyle et l'éthanol, réglez les
         proportions dans le cadre « Mon mélange » pour obtenir RED ≤ 0,41.</>,
       tache: { type: 'action', ok: redMel <= 0.41 && polyId === 'tp', consigne: `RED actuel : ${fmt(redMel, 2)}${polyId !== 'tp' ? ' (revenez aux données du TP)' : ''}` } },
     { id: 'diluer', titre: 'Jusqu’où diluer ?', focus: ['mel'],
       texte: <>Augmentez maintenant la part d'éthanol, jusqu'à ce que le mélange sorte de la sphère.</>,
-      tache: { type: 'num', q: 'Part maximale d’éthanol (en % du volume) pour rester dans la sphère', unite: '%', vrai: fMax * 100, tol: 0.03, affiche: x => fmt(x, 0) } },
+      tache: { type: 'num', q: 'Part maximale d’éthanol (en % du volume) pour rester dans la sphère', unite: '%', vrai: fMax * 100, tol: 0.03, affiche: x => fmt(x, 0),
+        calcul: (() => {
+          const E = SOLVANTS.ea, T = SOLVANTS.etoh, dP = T.p - E.p, dH = T.h - E.h, p0 = E.p - PT.p, h0 = E.h - PT.h, c0 = 4 * (E.d - PT.d) ** 2 + p0 * p0 + h0 * h0;
+          const A = dP * dP + dH * dH, B = 2 * (p0 * dP + h0 * dH), C = c0 - PT.R0 ** 2;
+          return [
+            `Avec une part f d’éthanol : δd = 15,8 (identique) ; δp = ${fmt(E.p, 1)} + ${fmt(dP, 1)} f ; δh = ${fmt(E.h, 1)} + ${fmt(dH, 1)} f.`,
+            `À la limite de la sphère, RED = 1, donc Ra² = R₀² = ${fmt(PT.R0 ** 2, 0)}. On écrit Ra² = 4 Δδd² + (Δδp)² + (Δδh)² avec Δδp = ${fmt(p0, 1)} + ${fmt(dP, 1)} f et Δδh = ${fmt(h0, 1)} + ${fmt(dH, 1)} f : c’est une équation du second degré en f.`,
+            `Après développement : ${fmt(A, 1)} f² + ${fmt(B, 1)} f + ${fmt(C, 1)} = 0 (la racine positive est la seule acceptable).`,
+            `f = ${fmt(fMax, 3)}, soit environ ${fmt(fMax * 100, 0)} % d’éthanol. Autre méthode : dans la simulation, augmentez la part d’éthanol jusqu’à ce que le RED atteigne 1.`,
+          ];
+        })(),
+        pieges: [[50, 'À 50 % le RED vaut seulement 0,55 : on est encore bien dans la sphère. Cherchez la part où le RED atteint 1.']] } },
     { id: 'marge', titre: 'Une marge de sécurité', focus: [],
       texte: <>Le modèle autorise jusqu'à {fmt(fMax * 100, 0)} % d'éthanol. Mais il ne décrit que le vernis au moment où il est dans le flacon.</>,
       tache: { type: 'qcm', q: 'Pourquoi ne pas formuler à la limite ?', options: ['La prévision est incertaine près de RED = 1, et la composition change pendant le séchage', 'Parce que l’éthanol est un ester', 'Il n’y a aucune raison'], bonne: 0 } },
