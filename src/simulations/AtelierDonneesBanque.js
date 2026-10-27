@@ -1010,6 +1010,182 @@ export const ENONCES = [
         manque: null, solution: { txt: 'm_évaporée = (q₁ − q₁ × w₁ / w₂) × durée', val: qe * p.dur, u: 't' } };
     },
   },
+  // ───────────────────────────── Transport des fluides : statique des fluides (capteur de pression, cuve d’huile)
+  {
+    id: 'flu-statique', domaine: 'Transport des fluides', titre: 'Un capteur de pression au fond d’une cuve d’huile', noms: ['Hauteur d’huile dans la cuve', 'Force sur la trappe de vidange', 'Baisse de pression pendant la vidange'],
+    gen: () => ({ rho: tire([910, 915, 920, 925]), g: 9.81, P: tire([0.20, 0.25, 0.30, 0.35, 0.40, 0.45]), th: tire([15, 20, 25]), Vc: tire([10, 15, 20, 30]),
+      Patm: tire([1005, 1013, 1020]), d: tire([100, 150, 200, 250]), dh: tire([0.5, 0.8, 1.0, 1.2, 1.5]) }),
+    build: (p, q) => {
+      const tokens = {
+        rho: tok(`${p.rho} kg·m⁻³`, 'Masse volumique de l’huile', p.rho, 'kg·m⁻³'),
+        g: tok(`${nb(p.g, 2)} N·kg⁻¹`, 'Intensité de la pesanteur', p.g, 'N·kg⁻¹'),
+        P: tok(`${nb(p.P, 2)} bar`, 'Pression relative indiquée par le capteur', p.P * 1e5, 'Pa'),
+        th: tok(`${p.th} °C`, 'Température de l’huile', p.th, '°C'),
+        Vc: tok(`${p.Vc} m³`, 'Volume total de la cuve', p.Vc, 'm³'),
+        Patm: tok(`${p.Patm} hPa`, 'Pression atmosphérique', p.Patm * 100, 'Pa'),
+      };
+      const debut = ['Une cuve cylindrique, ouverte à l’air libre et de volume total ', T('Vc'), ', contient une huile végétale au repos, de masse volumique ', T('rho'), ' à ', T('th'),
+        ' (supposée uniforme dans toute l’huile). Un capteur de pression relative (il mesure l’écart avec la pression atmosphérique, qui vaut ', T('Patm'), ' ce jour-là) est fixé au fond de la cuve et indique ', T('P'),
+        '. L’intensité de la pesanteur vaut ', T('g'), '. '];
+      const rTh = 'La température intervient seulement par la valeur de la masse volumique, qui est déjà donnée pour cette température.';
+      const rVc = 'Le volume total de la cuve ne donne pas la hauteur d’huile : il faudrait aussi connaître la section de la cuve, et elle n’est pas nécessaire ici.';
+      const rPatm = 'Le capteur indique une pression relative : la pression atmosphérique est déjà retranchée, elle n’intervient donc pas.';
+      const rRhoG = 'La pression est déjà donnée : ρ et g serviraient à la calculer à partir d’une hauteur, ce qui n’est pas demandé.';
+      const Prel = p.P * 1e5;
+      if (q === 0) return { tokens, texte: [...debut, 'Quelle est la hauteur d’huile au-dessus du capteur ?'], utiles: ['rho', 'g', 'P'],
+        derivees: [{ id: 'Pa', nom: 'Pression relative en pascals', expr: 'P_rel = P(en bar) × 10⁵   (1 bar = 10⁵ Pa)', val: Prel, u: 'Pa' }],
+        raisons: { th: rTh, Vc: rVc, Patm: rPatm },
+        cherche: { bonne: 'La hauteur h d’huile au-dessus du capteur (en m)', faux: ['La pression absolue au fond de la cuve (en Pa)', 'Le volume d’huile contenu dans la cuve (en m³)', 'La masse d’huile contenue dans la cuve (en kg)'] },
+        manque: null, solution: { txt: 'h = P_rel / (ρ·g), avec P_rel en pascals', val: Prel / (p.rho * p.g), u: 'm' } };
+      if (q === 1) {
+        tokens.d = tok(`${p.d} mm`, 'Diamètre de la trappe de vidange', p.d / 1000, 'm');
+        return { tokens, texte: [...debut, 'Une trappe de vidange horizontale, de forme circulaire et de diamètre ', T('d'), ', est située au fond de la cuve, à la hauteur du capteur ; sous la trappe, l’air est à la pression atmosphérique. Le poids de la trappe est négligé. Quelle est la valeur de la force pressante résultante qui s’exerce sur la trappe ?'],
+          utiles: ['P', 'd'],
+          derivees: [{ id: 'Pa', nom: 'Pression relative en pascals', expr: 'P_rel = P(en bar) × 10⁵   (1 bar = 10⁵ Pa)', val: Prel, u: 'Pa' }, { id: 'S', nom: 'Section S de la trappe', expr: 'S = π·d² / 4', val: Math.PI * (p.d / 1000) ** 2 / 4, u: 'm²' }],
+          raisons: { rho: rRhoG, g: rRhoG, th: rTh, Vc: 'Le volume de la cuve ne donne pas la force sur la trappe : celle-ci ne dépend que de la pression au fond et de la surface de la trappe.',
+            Patm: 'La pression atmosphérique s’exerce aussi sous la trappe : elle se compense, et le capteur la retranche déjà. Seule la pression relative compte.' },
+          cherche: { bonne: 'La force pressante résultante F sur la trappe (en N)', faux: ['La pression relative exercée sur la trappe (en Pa)', 'Le poids de l’huile contenue dans la cuve (en N)', 'La force pressante exercée par la seule atmosphère sur la trappe (en N)'] },
+          manque: null, solution: { txt: 'F = P_rel × S, avec S = π·d² / 4', val: Prel * Math.PI * (p.d / 1000) ** 2 / 4, u: 'N' } };
+      }
+      tokens.dh = tok(`${nb(p.dh, 1)} m`, 'Baisse du niveau d’huile', p.dh, 'm');
+      return { tokens, texte: [...debut, 'Pendant la vidange, le niveau d’huile baisse de ', T('dh'), ' (la masse volumique de l’huile ne change pas). De combien diminue la pression indiquée par le capteur ?'],
+        utiles: ['rho', 'g', 'dh'], derivees: [],
+        raisons: { P: 'La valeur de la pression lue au départ ne sert pas : on cherche une variation, qui ne dépend que de la variation de hauteur.', th: rTh, Vc: 'Le volume total de la cuve n’intervient pas dans la variation de pression due à une variation de hauteur.', Patm: rPatm },
+        cherche: { bonne: 'La diminution ΔP de la pression indiquée par le capteur (en mbar)', faux: ['La nouvelle pression relative indiquée par le capteur (en mbar)', 'La masse d’huile évacuée pendant la vidange (en kg)', 'Le volume d’huile évacué pendant la vidange (en m³)'] },
+        manque: null, solution: { txt: 'ΔP = ρ·g·Δh (en pascals ; 1 mbar = 100 Pa)', val: p.rho * p.g * p.dh / 100, u: 'mbar' } };
+    },
+  },
+  // ───────────────────────────── Transport des fluides : débits massique et volumique (fût sur une balance)
+  {
+    id: 'flu-debit', domaine: 'Transport des fluides', titre: 'Contrôler le débit d’une pompe doseuse avec une balance', noms: ['Débit massique de la pompe', 'Masse volumique du liquide', 'Débit volumique de la pompe'],
+    gen: () => {
+      const rho = tire([1040, 1080, 1100, 1140]), V = tire([20, 25, 30, 40, 50]), mv = tire([1.8, 2.2, 2.5, 3.0]);
+      const mnet = Math.round(rho * V / 100) / 10;                 // masse de liquide (kg), exacte à 0,1 kg près
+      return { rho, V, mv, mt: Math.round((mv + mnet) * 10) / 10, dt: tire([2, 3, 4, 5]), Bmax: tire([100, 150]), Pm: tire([0.25, 0.37, 0.55]), th: tire([15, 20, 25]) };
+    },
+    build: (p, q) => {
+      const tokens = {
+        Pm: tok(`${nb(p.Pm, 2)} kW`, 'Puissance du moteur de la pompe', p.Pm, 'kW'),
+        Bmax: tok(`${p.Bmax} kg`, 'Portée maximale de la balance', p.Bmax, 'kg'),
+        mv: tok(`${nb(p.mv, 1)} kg`, 'Masse du fût vide', p.mv, 'kg'),
+        th: tok(`${p.th} °C`, 'Température de la saumure', p.th, '°C'),
+        dt: tok(`${p.dt} min`, 'Durée de remplissage', p.dt * 60, 's'),
+        mt: tok(`${nb(p.mt, 1)} kg`, 'Masse indiquée par la balance en fin de remplissage (fût compris)', p.mt, 'kg'),
+      };
+      const debut = ['Pour contrôler le débit d’une pompe doseuse (moteur de puissance ', T('Pm'), '), un opérateur la fait remplir un fût posé sur une balance de portée maximale ', T('Bmax'),
+        '. Le fût vide a été pesé : ', T('mv'), '. Le liquide pompé est une saumure (solution aqueuse de chlorure de sodium) à ', T('th'),
+        '. L’opérateur déclenche le chronomètre au démarrage de la pompe et l’arrête au bout de ', T('dt'), ' : la balance indique alors ', T('mt'), ', fût compris. On suppose le débit constant pendant le remplissage. '];
+      const rB = 'La portée maximale indique seulement jusqu’à quelle masse la balance peut mesurer : ce n’est pas une mesure du liquide.';
+      const rPm = 'La puissance du moteur ne donne pas la quantité de liquide débitée : ici, le débit se déduit directement de la pesée et du chronomètre.';
+      const rTh = 'La température n’intervient pas dans un rapport entre masses, volumes et durées déjà mesurés.';
+      const mnet = Math.round((p.mt - p.mv) * 10) / 10, Qm = mnet / (p.dt * 60);
+      const dM = { id: 'm', nom: 'Masse m de saumure recueillie', expr: 'm = m_balance − m_fût', val: mnet, u: 'kg' };
+      if (q === 0) return { tokens, derivees: [dM], texte: [...debut, 'Quel est le débit massique de la pompe ?'], utiles: ['mv', 'mt', 'dt'],
+        raisons: { Pm: rPm, Bmax: rB, th: rTh },
+        cherche: { bonne: 'Le débit massique q_m de la pompe (en kg·s⁻¹)', faux: ['Le débit volumique de la pompe (en m³·h⁻¹)', 'La masse de saumure recueillie (en kg)', 'La masse volumique de la saumure (en kg·m⁻³)'] },
+        manque: null, solution: { txt: 'q_m = (m_balance − m_fût) / Δt', val: Qm, u: 'kg·s⁻¹' } };
+      if (q === 1) {
+        tokens.V = tok(`${p.V} L`, 'Volume de saumure lu sur le fût gradué', p.V / 1000, 'm³');
+        return { tokens, derivees: [dM], texte: [...debut, 'Le niveau de la saumure dans le fût se trouve alors au repère ', T('V'), '. Quelle est la masse volumique de la saumure ?'], utiles: ['mv', 'mt', 'V'],
+          raisons: { Pm: 'La puissance du moteur ne renseigne ni sur la masse ni sur le volume de liquide recueilli : la masse volumique se déduit de la pesée et du volume lu sur le fût.', Bmax: rB, th: rTh, dt: 'La durée de remplissage donne un débit, pas la masse volumique, qui ne relie que la masse et le volume du liquide recueilli.' },
+          cherche: { bonne: 'La masse volumique ρ de la saumure (en kg·m⁻³)', faux: ['Le débit massique de la pompe (en kg·s⁻¹)', 'La masse de saumure recueillie (en kg)', 'Le volume massique de la saumure (en m³·kg⁻¹)'] },
+          manque: null, solution: { txt: 'ρ = m / V, avec m = m_balance − m_fût', val: p.rho, u: 'kg·m⁻³' } };
+      }
+      return { tokens, derivees: [dM, { id: 'qm', nom: 'Débit massique de la pompe', expr: 'q_m = m / Δt', val: Qm, u: 'kg·s⁻¹' }],
+        texte: [...debut, 'Quel est le débit volumique de la pompe ?'], utiles: ['mv', 'mt', 'dt'],
+        raisons: { Pm: rPm, Bmax: rB, th: 'La température ne permettrait de lire la masse volumique d’une saumure dans une table qu’avec sa concentration, qui n’est pas donnée : elle ne remplace pas la donnée manquante.' },
+        cherche: { bonne: 'Le débit volumique q_V de la pompe (en m³·h⁻¹)', faux: ['Le débit massique de la pompe (en kg·s⁻¹)', 'La masse volumique de la saumure (en kg·m⁻³)', 'Le volume de saumure recueilli (en m³)'] },
+        manque: { bonne: 'Il manque la masse volumique de la saumure', faux: ['Il manque la durée de remplissage', 'Il manque la masse du fût vide', 'Il ne manque aucune donnée pour ce calcul'],
+          expl: `Pour passer d’un débit massique à un débit volumique, il faut la masse volumique : q_V = q_m / ρ. L’énoncé ne la donne pas, et ne donne pas non plus le volume recueilli. Elle peut se mesurer en lisant le volume sur le fût et en calculant ρ = m / V. La masse du fût vide (${tokens.mv.aff}), la masse finale (${tokens.mt.aff}) et la durée (${tokens.dt.aff}) y figurent bien : elles donnent le débit massique.` },
+        solution: { txt: `q_V = q_m / ρ (ici ρ = ${nb(p.rho)} kg·m⁻³, valeur à mesurer ; 1 m³·s⁻¹ = 3 600 m³·h⁻¹)`, val: Qm / p.rho * 3600, u: 'm³·h⁻¹' } };
+    },
+  },
+  // ───────────────────────────── Transport des fluides : conservation du débit dans une réduction de section
+  {
+    id: 'flu-section', domaine: 'Transport des fluides', titre: 'Une conduite d’eau qui se rétrécit', noms: ['Débit volumique dans la conduite', 'Vitesse dans la partie étroite', 'Durée de remplissage d’un bassin'],
+    gen: () => {
+      const [D1, D2] = tire([[80, 40], [80, 50], [100, 50], [100, 65], [125, 65], [125, 80], [150, 80], [150, 100]]);
+      const v1 = tire([0.5, 0.8, 1.0, 1.2, 1.5].filter(v => v * (D1 / D2) ** 2 <= 6));
+      return { D1, D2, v1, P1: tire([2, 2.5, 3, 4]), L: tire([30, 50, 80]), th: tire([10, 15, 20]), Vr: tire([30, 60, 100]) };
+    },
+    build: (p, q) => {
+      const tokens = {
+        th: tok(`${p.th} °C`, 'Température de l’eau', p.th, '°C'),
+        D1: tok(`${p.D1} mm`, 'Diamètre intérieur de la conduite amont', p.D1 / 1000, 'm'),
+        L: tok(`${p.L} m`, 'Longueur de la conduite amont', p.L, 'm'),
+        P1: tok(`${nb(p.P1, 1)} bar`, 'Pression de l’eau dans la conduite amont', p.P1 * 1e5, 'Pa'),
+        v1: tok(`${nb(p.v1, 1)} m·s⁻¹`, 'Vitesse moyenne de l’eau dans la conduite amont', p.v1, 'm·s⁻¹'),
+        D2: tok(`${p.D2} mm`, 'Diamètre intérieur de la conduite étroite', p.D2 / 1000, 'm'),
+      };
+      const debut = ['De l’eau, à ', T('th'), ', circule en régime permanent dans une conduite cylindrique pleine, de diamètre intérieur ', T('D1'), ' et de longueur ', T('L'), '. Sa pression y vaut ', T('P1'),
+        ' et sa vitesse moyenne ', T('v1'), '. La conduite se raccorde ensuite, par un convergent, à une conduite plus étroite de diamètre intérieur ', T('D2'),
+        '. L’eau est considérée comme incompressible et sa vitesse comme uniforme sur chaque section. '];
+      const S1 = Math.PI * (p.D1 / 1000) ** 2 / 4, S2 = Math.PI * (p.D2 / 1000) ** 2 / 4, Q = p.v1 * S1;
+      const rP = 'Pour un liquide incompressible en régime permanent, la conservation du débit ne fait pas intervenir la pression (celle-ci intervient dans le bilan d’énergie de Bernoulli).';
+      const rL = 'La longueur de la conduite joue sur les pertes de charge, pas sur le lien entre débit, section et vitesse.';
+      const rTh = 'La température n’intervient pas ici : l’eau est supposée incompressible, sa masse volumique est constante.';
+      const dS1 = { id: 'S1', nom: 'Section S₁ de la conduite amont', expr: 'S₁ = π·D₁² / 4', val: S1, u: 'm²' };
+      const dS2 = { id: 'S2', nom: 'Section S₂ de la conduite étroite', expr: 'S₂ = π·D₂² / 4', val: S2, u: 'm²' };
+      if (q === 0) return { tokens, derivees: [dS1], texte: [...debut, 'Quel est le débit volumique de l’eau dans la conduite ?'], utiles: ['D1', 'v1'],
+        raisons: { th: rTh, L: rL, P1: rP, D2: 'Le diamètre de la conduite plus étroite sert à calculer la vitesse dans cette partie, pas le débit, qui est le même dans toute la conduite.' },
+        cherche: { bonne: 'Le débit volumique Q_V de l’eau (en m³·h⁻¹)', faux: ['La vitesse moyenne de l’eau dans la conduite étroite (en m·s⁻¹)', 'Le débit massique de l’eau (en kg·s⁻¹)', 'La section de la conduite amont (en m²)'] },
+        manque: null, solution: { txt: 'Q_V = v₁ × S₁', val: Q * 3600, u: 'm³·h⁻¹' } };
+      if (q === 1) return { tokens, derivees: [dS1, dS2], texte: [...debut, 'Quelle est la vitesse moyenne de l’eau dans la conduite étroite ?'], utiles: ['D1', 'v1', 'D2'],
+        raisons: { th: rTh, L: rL, P1: rP },
+        cherche: { bonne: 'La vitesse moyenne v₂ de l’eau dans la conduite étroite (en m·s⁻¹)', faux: ['Le débit volumique de l’eau dans la conduite étroite (en m³·h⁻¹)', 'La pression de l’eau dans la conduite étroite (en bar)', 'Le rapport S₁/S₂ des sections (sans unité)'] },
+        manque: null, solution: { txt: 'Q_V = v₁·S₁ = v₂·S₂, donc v₂ = v₁·S₁ / S₂', val: p.v1 * S1 / S2, u: 'm·s⁻¹' } };
+      tokens.Vr = tok(`${p.Vr} m³`, 'Volume du bassin à remplir', p.Vr, 'm³');
+      return { tokens, derivees: [dS1, { id: 'Q', nom: 'Débit volumique de l’eau', expr: 'Q_V = v₁ × S₁', val: Q, u: 'm³·s⁻¹' }],
+        texte: [...debut, 'Toute cette eau est envoyée dans un bassin vide de volume ', T('Vr'), '. Quelle est la durée nécessaire pour le remplir ?'], utiles: ['D1', 'v1', 'Vr'],
+        raisons: { th: rTh, L: rL, P1: rP, D2: 'Le diamètre de la conduite plus étroite n’intervient pas : le débit est le même dans les deux conduites, on le calcule avec la conduite dont on connaît la vitesse.' },
+        cherche: { bonne: 'La durée de remplissage du bassin (en h)', faux: ['Le débit volumique de l’eau (en m³·h⁻¹)', 'La masse d’eau contenue dans le bassin plein (en kg)', 'La vitesse moyenne de l’eau dans la conduite étroite (en m·s⁻¹)'] },
+        manque: null, solution: { txt: 't = V_bassin / Q_V, avec Q_V = v₁ × S₁', val: p.Vr / Q / 3600, u: 'h' } };
+    },
+  },
+  // ───────────────────────────── Transport des fluides : bilan d’énergie, puissance hydraulique et rendement d’une pompe
+  {
+    id: 'flu-pompe', domaine: 'Transport des fluides', titre: 'Une pompe qui alimente un château d’eau', noms: ['Hauteur manométrique totale', 'Puissance hydraulique', 'Rendement du groupe motopompe'],
+    gen: () => {
+      const rho = 1000, g = 9.81, dz = tire([15, 20, 25, 30, 40]), dp = tire([0.5, 0.8, 1.0, 1.5, 2.0]), Q = tire([20, 30, 40, 60]), eta0 = tire([0.5, 0.55, 0.6, 0.65, 0.7, 0.75]);
+      const Ph = rho * g * (Q / 3600) * (dz + dp * 1e5 / (rho * g));
+      return { rho, g, dz, dp, Q, Pel: Math.ceil(Ph / eta0 / 100) / 10, L: tire([50, 100, 200, 400]), th: tire([10, 15, 20]), Patm: tire([1005, 1013, 1020]) };
+    },
+    build: (p, q) => {
+      const tokens = {
+        rho: tok(`${nb(p.rho)} kg·m⁻³`, 'Masse volumique de l’eau', p.rho, 'kg·m⁻³'),
+        th: tok(`${p.th} °C`, 'Température de l’eau', p.th, '°C'),
+        dz: tok(`${p.dz} m`, 'Dénivelé entre les deux surfaces libres', p.dz, 'm'),
+        Patm: tok(`${p.Patm} hPa`, 'Pression atmosphérique', p.Patm * 100, 'Pa'),
+        L: tok(`${p.L} m`, 'Longueur de la conduite', p.L, 'm'),
+        dp: tok(`${nb(p.dp, 1)} bar`, 'Perte de charge totale de la conduite (exprimée en pression)', p.dp * 1e5, 'Pa'),
+        Q: tok(`${p.Q} m³·h⁻¹`, 'Débit volumique', p.Q / 3600, 'm³·s⁻¹'),
+        Pel: tok(`${nb(p.Pel, 1)} kW`, 'Puissance électrique absorbée par le groupe motopompe', p.Pel * 1000, 'W'),
+        g: tok(`${nb(p.g, 2)} N·kg⁻¹`, 'Intensité de la pesanteur', p.g, 'N·kg⁻¹'),
+      };
+      const debut = ['Une pompe aspire de l’eau (masse volumique ', T('rho'), ', température ', T('th'), ') dans un bassin et la refoule dans un château d’eau dont la surface libre est ', T('dz'),
+        ' plus haut que celle du bassin. Les deux surfaces libres sont à l’air libre (pression atmosphérique ', T('Patm'), ') et l’eau y est pratiquement immobile. Les frottements dans la conduite, de longueur ', T('L'),
+        ', provoquent une perte de charge totale de ', T('dp'), ' pour le débit de ', T('Q'), ' choisi. Le groupe motopompe absorbe une puissance électrique de ', T('Pel'), '. On prendra g = ', T('g'), '. '];
+      const J = p.dp * 1e5 / (p.rho * p.g), H = p.dz + J, Ph = p.rho * p.g * (p.Q / 3600) * H;
+      const rL = 'La longueur de la conduite explique l’origine des pertes de charge, mais celles-ci sont déjà données : elle n’intervient pas dans le calcul.';
+      const rTh = 'La température n’intervient pas ici : seule compte la masse volumique de l’eau, qui est donnée.';
+      const rPatm = 'Les deux surfaces libres sont à la même pression atmosphérique : elle s’élimine dans le bilan d’énergie entre les deux surfaces.';
+      const dJ = { id: 'J', nom: 'Perte de charge exprimée en hauteur d’eau', expr: 'J = Δp_J / (ρ·g)', val: J, u: 'm' };
+      const dH = { id: 'H', nom: 'Hauteur manométrique totale H', expr: 'H = Δz + Δp_J / (ρ·g)', val: H, u: 'm' };
+      if (q === 0) return { tokens, derivees: [dJ], texte: [...debut, 'Quelle hauteur manométrique totale H, exprimée en mètres d’eau, la pompe doit-elle fournir ?'], utiles: ['rho', 'g', 'dz', 'dp'],
+        raisons: { th: rTh, Patm: rPatm, L: rL, Q: 'Le débit sert à calculer une puissance ; la perte de charge est déjà donnée pour ce débit.', Pel: 'La puissance électrique sert à calculer un rendement, pas la hauteur que doit fournir la pompe.' },
+        cherche: { bonne: 'La hauteur manométrique totale H que la pompe doit fournir (en m)', faux: ['La hauteur géométrique de refoulement seule, sans les pertes de charge (en m)', 'La puissance hydraulique communiquée à l’eau (en W)', 'Le débit volumique de la pompe (en m³·h⁻¹)'] },
+        manque: null, solution: { txt: 'H = Δz + Δp_J / (ρ·g)  (bilan d’énergie entre les deux surfaces libres)', val: H, u: 'm' } };
+      if (q === 1) return { tokens, derivees: [dJ, dH], texte: [...debut, 'Quelle puissance hydraulique la pompe communique-t-elle à l’eau ?'], utiles: ['rho', 'g', 'dz', 'dp', 'Q'],
+        raisons: { th: rTh, Patm: rPatm, L: rL, Pel: 'La puissance électrique absorbée sert à calculer le rendement ; la puissance communiquée à l’eau se calcule sans elle.' },
+        cherche: { bonne: 'La puissance hydraulique P_h communiquée à l’eau (en W)', faux: ['La puissance électrique absorbée par le groupe (en W)', 'La hauteur manométrique totale de la pompe (en m)', 'L’énergie communiquée à l’eau en une heure (en kWh)'] },
+        manque: null, solution: { txt: 'P_h = ρ·g·Q_V·H, avec H = Δz + Δp_J / (ρ·g)', val: Ph, u: 'W' } };
+      return { tokens, derivees: [dJ, dH, { id: 'Ph', nom: 'Puissance hydraulique communiquée à l’eau', expr: 'P_h = ρ·g·Q_V·H', val: Ph, u: 'W' }],
+        texte: [...debut, 'Quel est le rendement global du groupe motopompe ?'], utiles: ['rho', 'g', 'dz', 'dp', 'Q', 'Pel'],
+        raisons: { th: rTh, Patm: rPatm, L: rL },
+        cherche: { bonne: 'Le rendement global η du groupe motopompe (en %)', faux: ['La puissance hydraulique communiquée à l’eau (en W)', 'La puissance perdue dans le groupe motopompe (en W)', 'La hauteur manométrique totale de la pompe (en m)'] },
+        manque: null, solution: { txt: 'η = P_h / P_él × 100, avec P_h = ρ·g·Q_V·H et H = Δz + Δp_J / (ρ·g)', val: Ph / (p.Pel * 1000) * 100, u: '%' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
@@ -1021,6 +1197,10 @@ export function melange(tab, graine) {
 
 // Symbole de chaque donnée tel qu'il apparaît dans la formule (affiché à côté du nom de la grandeur)
 const SYMBOLES = {
+  'flu-statique': { rho: 'ρ', g: 'g', P: 'P_rel', th: 'θ', Vc: 'V_cuve', Patm: 'P_atm', d: 'd', dh: 'Δh' },
+  'flu-debit': { mv: 'm_fût', mt: 'm_balance', dt: 'Δt', V: 'V', Bmax: 'm_max', Pm: 'P_moteur', th: 'θ' },
+  'flu-section': { D1: 'D₁', D2: 'D₂', v1: 'v₁', P1: 'P₁', L: 'L', th: 'θ', Vr: 'V_bassin' },
+  'flu-pompe': { rho: 'ρ', g: 'g', dz: 'Δz', dp: 'Δp_J', Q: 'Q_V', Pel: 'P_él', L: 'L', th: 'θ', Patm: 'P_atm' },
   hydrodist: { mp: 'm_fleurs', Veau: 'V_eau', P: 'P', t: 'Δt', T: 'θ', mh: 'm_huile', rho: 'ρ', Vh: 'V_hydrolat' },
   'crist-evaporateur': { q1: 'q₁', w1: 'w₁', w2: 'w₂', S: 'S', Pv: 'P', th: 'θ', dur: 'Δt' },
   paroi: { an: '', L: 'L', h: 'h', e: 'e', lam: 'λ', Ti: 'T_int', Te: 'T_ext', prix: 'prix', dur: 'durée' },
