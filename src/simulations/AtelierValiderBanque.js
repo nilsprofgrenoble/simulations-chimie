@@ -58,6 +58,7 @@ export const PLAUSIBLES = [
       F('Le diamètre est resté en millimètres au lieu d’être converti en mètres', 'S serait comptée 1 963 au lieu de 1,96×10⁻³ (m²) : v serait minuscule (≈ 10⁻⁶ m·s⁻¹), pas gigantesque.'),
     ] }),
   P({ id: 'pression-cuve', domaine: 'Transport des fluides', niveau: 1, titre: 'Pression au fond d’une cuve', plausible: false,
+    schema: { type: 'cuve', capteur: false },
     enonce: 'Une cuve ouverte contient de l’eau (ρ = 1 000 kg·m⁻³) sur une hauteur h = 3,0 m ; on prendra g = 9,81 N·kg⁻¹. Un élève calcule la pression due à l’eau au fond, ΔP = ρ·g·h, et trouve ΔP = 2,9×10⁶ Pa.',
     reperes: [['Pression atmosphérique', '1 bar = 10⁵ Pa'], ['Hauteur d’eau qui correspond à 1 bar', '≈ 10 m'], ['Pneu de voiture', '≈ 2 à 3 bar']],
     ver: '2,9×10⁶ Pa = 29 bar, ce qui correspond à environ 290 m d’eau ! Pour 3 m d’eau, on attend environ 0,3 bar, soit 3×10⁴ Pa.',

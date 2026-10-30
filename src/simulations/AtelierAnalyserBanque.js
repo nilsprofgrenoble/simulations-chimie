@@ -965,6 +965,7 @@ export const PROBLEMES = [
 // ──────────────────────────────── 2. CHOISIR LA BONNE RELATION ────────────────────────────────
 export const RELATIONS = [
   { id: 'retrecissement', domaine: 'Transport des fluides', titre: 'Une conduite qui se rétrécit',
+    schema: { type: 'venturi', rapport: 0.5 },
     enonce: 'L’eau circule à 0,80 m·s⁻¹ dans une conduite de diamètre 40 mm, qui se rétrécit ensuite à 20 mm. On cherche la vitesse dans la partie étroite.',
     q: 'Quelle relation permet de répondre ?', options: [
       V('v₂ = v₁ × (d₁ / d₂)²', 'Conservation du débit : v₁·S₁ = v₂·S₂, et la section est proportionnelle à d². Ici v₂ = 4 × 0,80 = 3,2 m·s⁻¹.'),
@@ -973,6 +974,7 @@ export const RELATIONS = [
       F('P₁ + ½·ρ·v₁² = P₂ + ½·ρ·v₂²', 'Bernoulli relie pressions et vitesses : sans les pressions, elle ne donne pas v₂. La conservation du débit suffit.'),
     ] },
   { id: 'reservoir', domaine: 'Transport des fluides', titre: 'Un réservoir sous pression',
+    schema: { type: 'cuve', ferme: true, point: true, capteur: false },
     enonce: 'Un réservoir fermé contient de l’eau ; au-dessus de la surface, un gaz exerce une pression absolue P₀ = 2,0 bar. On cherche la pression absolue à 3,0 m sous la surface.',
     q: 'Quelle relation permet de répondre ?', options: [
       V('P = P₀ + ρ·g·h', 'La surface n’est pas à l’air libre : on ajoute ρ·g·h à la pression P₀ qui s’exerce sur elle.'),
@@ -1248,6 +1250,7 @@ export const RELATIONS = [
 // ──────────────────────────────── 3. HYPOTHÈSES D'UN MODÈLE ────────────────────────────────
 export const HYPOTHESES = [
   { id: 'statique', domaine: 'Transport des fluides', titre: 'Loi de la statique des fluides',
+    schema: { type: 'cuve', capteur: false },
     enonce: 'On utilise ΔP = ρ·g·h pour calculer la surpression au fond d’un réservoir d’eau de 3 m.', options: [
       V('Le fluide est au repos', 'Si le fluide s’écoule, la pression dépend aussi de la vitesse (Bernoulli) et des pertes de charge.'),
       V('Le fluide est incompressible : ρ est la même à toutes les profondeurs', 'Pour un liquide sur quelques mètres, c’est très bien vérifié.'),
@@ -1257,6 +1260,7 @@ export const HYPOTHESES = [
       F('L’écoulement est laminaire', 'Il n’y a pas d’écoulement.'),
     ] },
   { id: 'conservation', domaine: 'Transport des fluides', titre: 'Conservation du débit',
+    schema: { type: 'venturi', rapport: 0.5, simple: true },
     enonce: 'On écrit v₁·S₁ = v₂·S₂ entre deux sections d’une même conduite.', options: [
       V('Conduite rigide, sans accumulation de fluide entre les deux sections', 'Sinon du fluide pourrait s’accumuler ou se vider entre les deux sections. (Le régime permanent est la situation habituelle, mais il n’est pas indispensable pour un fluide incompressible dans une conduite rigide.)'),
       V('Fluide incompressible', 'Pour un gaz comprimé, c’est le débit massique qui se conserve, pas le débit volumique.'),
@@ -1517,6 +1521,7 @@ export const PREVOIR = [
       F('multipliée par 4', 'Sens inversé : une section plus grande ralentit l’écoulement.'),
     ] },
   { id: 'hauteur', domaine: 'Transport des fluides', titre: 'Hauteur d’eau doublée',
+    schema: { type: 'cuve' },
     enonce: 'La hauteur d’eau au-dessus d’un capteur passe de 2 m à 4 m (eau de masse volumique 1000 kg·m⁻³, g ≈ 10 N·kg⁻¹, surface libre à la pression atmosphérique P_atm ≈ 1,0 bar).', q: 'La pression absolue (et non relative) mesurée par le capteur est…', options: [
       F('multipliée par 4, de 1,2 bar à 4,8 bar', 'ρ·g·h est proportionnel à h, pas à h², et P_atm reste constante : ce facteur 4 n’a pas de justification.'),
       V('augmentée de 0,2 bar, de 1,2 bar à 1,4 bar', 'P = P_atm + ρ·g·h. Seul le terme ρ·g·h double (0,2 bar puis 0,4 bar) : P passe de 1,2 à 1,4 bar, elle augmente sans doubler.'),
@@ -1531,6 +1536,7 @@ export const PREVOIR = [
       V('multiplié par 4', '½·ρ·v² est proportionnel au carré de la vitesse : (2v)² = 4v², donc le terme est multiplié par 4.'),
     ] },
   { id: 'torricelli', domaine: 'Transport des fluides', titre: 'Vidange d’un réservoir',
+    schema: { type: 'cuve', orifice: true, capteur: false },
     enonce: 'La profondeur d’un orifice sous la surface libre est multipliée par 4.', q: 'La vitesse d’éjection v = √(2·g·h) est…', options: [
       V('doublée', '√4 = 2.'),
       F('multipliée par 4', 'La vitesse est proportionnelle à √h, pas à h.'),
