@@ -2680,7 +2680,7 @@ export const PREVOIR = [
       F('Les deux tensions diminuent', 'Leur somme vaut U_G, constante : elles ne peuvent pas diminuer toutes les deux.'),
     ] },
   { id: 'r-augmente', domaine: 'Transmission de signaux numériques', titre: 'Augmenter la résistance fixe R',
-    schema: [{ type: 'pont', UG: '5,0 V', mesure: 'R' }, { type: 'essai', seulementApres: true, variable: 'R', R: 1, Rp: 1.5, min: 0.2, max: 5, mesure: 'R', consigne: 'Faites varier R, l’éclairement (donc R_p) restant constant : que fait U_R ?' }],
+    schema: [{ type: 'pont', UG: '5,0 V', mesure: 'R' }, { type: 'essai', seulementApres: true, variable: 'R', R: 1, Rp: 1.5, min: 0.2, max: 5, mesure: 'R', consigne: 'Faites varier R (départ : 1,0 kΩ ; essayez 2,0 kΩ), l’éclairement (donc R_p) restant constant : que fait U_R ?' }],
     enonce: 'Dans un pont diviseur (R en série avec une photorésistance R_p sous U_G = 5,0 V), on mesure U_R aux bornes de R. L’éclairement reste constant. On remplace R par une résistance deux fois plus grande.', q: 'La tension U_R…', options: [
       V('augmente, mais sans doubler', 'U_R = U_G / (1 + R_p / R). Quand R double, R_p / R est divisé par 2 : U_R augmente, mais elle ne peut pas dépasser U_G. Elle n’est pas proportionnelle à R.'),
       F('double', 'U_R n’est pas proportionnelle à R : R figure aussi au dénominateur (R + R_p). Doubler R ne double pas U_R, qui reste de toute façon inférieure à U_G.'),
@@ -2696,7 +2696,7 @@ export const PREVOIR = [
       F('divisée par 2', 'Sens inversé : plus la tension aux bornes du montage est grande, plus chaque tension partielle est grande.'),
     ] },
   { id: 'n-eclairement', domaine: 'Transmission de signaux numériques', titre: 'Le nombre N quand l’éclairement augmente',
-    schema: [{ type: 'chaine', apres: { actif: [0, 1, 2, 3], inconnu: 3, note: 'Chemin de la cause à l’effet : éclairement → R_p → U_R → N.' }, seulementApres: true }, { type: 'essai', seulementApres: true, variable: 'Rp', R: 1, Rp: 2, min: 0.2, max: 5, mesure: 'R', consigne: 'Faites diminuer R_p, comme quand l’éclairement augmente : que fait N ?' }],
+    schema: [{ type: 'chaine', apres: { actif: [0, 1, 2, 3], inconnu: 3, note: 'Chemin de la cause à l’effet : éclairement → R_p → U_R → N.' }, seulementApres: true }, { type: 'essai', seulementApres: true, variable: 'Rp', R: 1, Rp: 2, min: 0.2, max: 5, mesure: 'R', n: true, consigne: 'Faites diminuer R_p, comme quand l’éclairement augmente : que fait N ?' }],
     enonce: 'Une photorésistance est en série avec R ; la tension U_R aux bornes de R est envoyée sur l’entrée d’un CAN 10 bits (N entre 0 et 1 023, avec N proportionnel à la tension). L’éclairement augmente (la résistance de la photorésistance diminue).', q: 'Le nombre N donné par le CAN…', options: [
       V('augmente', 'L’éclairement augmente, R_p diminue, U_R augmente. Le CAN fournit un nombre proportionnel à la tension : N augmente.'),
       F('diminue', 'Il diminuerait si on mesurait la tension aux bornes de la photorésistance. Ici, U_R augmente avec l’éclairement, donc N aussi.'),
