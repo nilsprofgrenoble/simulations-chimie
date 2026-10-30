@@ -65,7 +65,7 @@ export const PROBLEMES = [
   },
   {
     id: 'niveau', domaine: 'Transport des fluides', titre: 'Mesurer un niveau avec un capteur de pression',
-    ...presenter({ contexte: 'Une cuve ouverte contient une solution. Un capteur placé au fond mesure la pression relative (par rapport à la pression atmosphérique). Une alarme doit se déclencher si le niveau dépasse un seuil.', liste: [['Diamètre de la cuve', '2,0 m'], ['Densité de la solution', 'd = 1,20'], ['Pression relative indiquée par le capteur', '0,147 bar'], ['Pression atmosphérique ce jour-là', '1 013 hPa'], ['Niveau d’alarme (hauteur de solution)', '1,30 m']], question: 'L’alarme doit-elle se déclencher ?' }),
+    ...presenter({ schema: { type: 'cuve' }, contexte: 'Une cuve ouverte contient une solution. Un capteur placé au fond mesure la pression relative (par rapport à la pression atmosphérique). Une alarme doit se déclencher si le niveau dépasse un seuil.', liste: [['Diamètre de la cuve', '2,0 m'], ['Densité de la solution', 'd = 1,20'], ['Pression relative indiquée par le capteur', '0,147 bar'], ['Pression atmosphérique ce jour-là', '1 013 hPa'], ['Niveau d’alarme (hauteur de solution)', '1,30 m']], question: 'L’alarme doit-elle se déclencher ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('La hauteur h de solution au-dessus du capteur, pour la comparer à 1,30 m', 'Le critère porte sur un niveau : il faut convertir la pression mesurée en hauteur.'),
       F('La pression absolue au fond de la cuve', 'Le capteur donne déjà une pression ; c’est la hauteur qu’il faut comparer au seuil.'),
