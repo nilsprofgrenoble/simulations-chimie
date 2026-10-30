@@ -21,7 +21,7 @@ const F = props => <marker id={props.id} viewBox="0 0 10 10" refX="9" refY="5" m
 
 // ── Circuit diviseur de tension ──
 //   UG, R, Rp : textes affichés (valeur ou symbole) ; mesure : 'R' | 'Rp' | 'les deux' | null ; can : on montre la liaison vers l'entrée du CAN
-function SchemaPont({ UG = 'U_G', R = 'R', Rp = 'R_p', mesure = 'R', can = true, lumiere = true, capteur = 'p' }) {
+function SchemaPont({ UG = 'U_G', R = 'R', Rp = 'R_p', mesure = 'R', can = true, lumiere = true, capteur = 'p', etiquette = '', titre = '' }) {
   const u = useId().replace(/:/g, '');
   // L'élément dont on mesure la tension est en bas (relié à la masse), l'autre en haut
   const bas = mesure === 'Rp' ? 'Rp' : 'R', haut = bas === 'R' ? 'Rp' : 'R';
@@ -33,12 +33,12 @@ function SchemaPont({ UG = 'U_G', R = 'R', Rp = 'R_p', mesure = 'R', can = true,
         <rect x="252" y={y0} width="20" height="40" fill="white" stroke={TR} strokeWidth="2"/>
         {photo && lumiere && <g stroke="#ca8a04" strokeWidth="2" fill="none" markerEnd={`url(#${u}or)`}><line x1="336" y1={y0 - 4} x2="278" y2={y0 + 12}/><line x1="336" y1={y0 + 8} x2="278" y2={y0 + 24}/></g>}
         <text x="282" y={y0 + 24 + (photo && lumiere ? 14 : 0)} fontSize="13" fill="#0f172a"><Ind b="R" i={photo ? capteur : ''}/></text>
+        {photo && etiquette && <text x="282" y={y0 + 38} fontSize="11.5" fill="#475569">{etiquette}</text>}
         {txt[nom] && !/^R(_p)?$/.test(txt[nom]) && <text x="282" y={y0 + 38 + (photo && lumiere ? 14 : 0)} fontSize="11.5" fill="#475569">{txt[nom]}</text>}
       </g>);
   };
   const surR = mesure === 'R' || mesure === 'les deux', surRp = mesure === 'Rp' || mesure === 'les deux';
   const fleche = (nom, y0, y1) => {
-    const actif = mesure === 'les deux' ? true : mesure === nom;
     if (!(mesure === nom || mesure === 'les deux')) return null;
     const c = nom === bas ? BLEU : '#64748b';
     return (
@@ -49,7 +49,8 @@ function SchemaPont({ UG = 'U_G', R = 'R', Rp = 'R_p', mesure = 'R', can = true,
   };
   return (
     <div style={boite} data-schema="pont">
-      <svg viewBox="0 0 360 240" role="img" aria-label={`Pont diviseur de tension : générateur, résistance R et capteur Rp en série${mesure === 'R' || mesure === 'Rp' ? `, on mesure la tension aux bornes de ${mesure === 'R' ? 'R' : 'la photorésistance'}` : ''}`} style={{ width: '100%', maxWidth: 400, display: 'block', margin: '0 auto' }}>
+      {titre && <div style={{ fontSize: 13, fontWeight: 700, color: '#0f172a', marginBottom: 2 }}>{titre}</div>}
+      <svg viewBox="0 0 360 240" role="img" aria-label={`Pont diviseur de tension : générateur, résistance R et capteur Rp en série${mesure === 'R' || mesure === 'Rp' ? `, on mesure la tension aux bornes de ${mesure === 'R' ? 'R' : 'le capteur'}` : ''}`} style={{ width: '100%', maxWidth: 400, display: 'block', margin: '0 auto' }}>
         <defs><F id={`${u}b`} c={BLEU}/><F id={`${u}g`} c="#64748b"/><F id={`${u}or`} c="#ca8a04"/></defs>
         <g fill="none" stroke={TR} strokeWidth="2">
           <polyline points="95,95 95,30 262,30 262,60"/><line x1="262" y1="100" x2="262" y2="165"/><polyline points="262,205 262,222 95,222 95,125"/>
@@ -57,7 +58,7 @@ function SchemaPont({ UG = 'U_G', R = 'R', Rp = 'R_p', mesure = 'R', can = true,
         <circle cx="95" cy="110" r="15" fill="white" stroke={TR} strokeWidth="2"/>
         <text x="95" y="106" fontSize="16" textAnchor="middle" fill="#0f172a">+</text><text x="95" y="124" fontSize="16" textAnchor="middle" fill="#0f172a">−</text>
         <text x="50" y="108" fontSize="14" textAnchor="end" fill="#0f172a"><Ind b="U" i="G"/></text>
-        {UG && UG !== 'U_G' && <text x="50" y="124" fontSize="11.5" textAnchor="end" fill="#475569">{UG}</text>}
+        {UG && UG !== 'U_G' && UG.split(' → ').map((l, k) => <text key={k} x="50" y={124 + 13 * k} fontSize="11.5" textAnchor="end" fill="#475569">{k ? '→ ' : ''}{l}</text>)}
         <line x1="58" y1="128" x2="58" y2="94" stroke="#64748b" strokeWidth="2" markerEnd={`url(#${u}g)`}/>
         {el(haut, 60)}{el(bas, 165)}
         <circle cx="262" cy="135" r="3.5" fill={TR}/>
@@ -74,25 +75,25 @@ function SchemaPont({ UG = 'U_G', R = 'R', Rp = 'R_p', mesure = 'R', can = true,
 
 // ── Chaîne de mesure ──
 const ETAPES = [['Lumière', 'E (lx)'], ['Capteur', 'Rp (kΩ)'], ['Diviseur', 'UR (V)'], ['CAN', 'N'], ['Programme', 'DEL']];
-function ChaineMesure({ actif = [], inconnu = null, sens = 'direct' }) {
+function ChaineMesure() {
   const u = useId().replace(/:/g, '');
-  const w = 64, g = 8;
-  const cases = sens === 'inverse' ? ETAPES : ETAPES;
+  const w = 62, g = 12;
+  const cases = ETAPES;
   return (
     <div style={boite} data-schema="chaine">
       <svg viewBox="0 0 360 84" role="img" aria-label="Chaîne de mesure : lumière, capteur, pont diviseur, CAN, programme" style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
         <defs><F id={`${u}c`} c={TR}/></defs>
         {cases.map(([nom, gr], i) => {
-          const x = 2 + i * (w + g), on = actif.includes(i), inc = inconnu === i;
+          const x = 1 + i * (w + g), on = false, inc = false;
           return (
             <g key={nom}>
               <rect x={x} y="6" width={w} height="46" rx="6" fill={inc ? '#fef3c7' : on ? '#dbeafe' : '#f8fafc'} stroke={inc ? ORANGE : on ? BLEU : '#cbd5e1'} strokeWidth={on || inc ? 2 : 1.2}/>
-              <text x={x + w / 2} y="25" fontSize="11" fontWeight="700" textAnchor="middle" fill="#0f172a">{nom}</text>
+              <text x={x + w / 2} y="25" fontSize="10.5" fontWeight="700" textAnchor="middle" fill="#0f172a">{nom}</text>
               <text x={x + w / 2} y="42" fontSize="10.5" textAnchor="middle" fill={inc ? ORANGE : '#475569'}>{inc ? '?' : gr.replace('Rp', 'Rₚ').replace('UR', 'Uᵣ')}</text>
               {i < cases.length - 1 && <line x1={x + w + 1} y1="29" x2={x + w + g - 1} y2="29" stroke={TR} strokeWidth="1.6" markerEnd={`url(#${u}c)`}/>}
             </g>);
         })}
-        <text x="180" y="74" fontSize="10.5" fill="#64748b" textAnchor="middle">{sens === 'inverse' ? 'on remonte la chaîne : de N vers l’éclairement' : 'sens de la mesure : de la lumière au programme'}</text>
+        <text x="180" y="74" fontSize="10.5" fill="#64748b" textAnchor="middle">chaîne de mesure (sens de lecture : de la lumière au programme)</text>
       </svg>
     </div>);
 }
@@ -126,7 +127,7 @@ function Courbe({ pts, x: [x0, x1, px], y: [y0, y1, py], xnom = 'E', xu = 'lx', 
             <g key={i}>
               {on && <g stroke={ORANGE} strokeWidth="1.5" strokeDasharray="4 3"><line x1={X(a)} y1={Y(b)} x2={X(a)} y2={T + H}/><line x1={L} y1={Y(b)} x2={X(a)} y2={Y(b)}/></g>}
               <circle cx={X(a)} cy={Y(b)} r={on ? 5 : 3.5} fill={on ? ORANGE : '#475569'} stroke="white" strokeWidth="1.2"/>
-              <text x={X(a) + 7} y={Y(b) - 7} fontSize="11" fill={on ? ORANGE : '#475569'} fontWeight={on ? 700 : 400}>{nbf(b, 2)} {yu}</text>
+              <text x={i === pts.length - 1 ? X(a) - 7 : X(a) + 7} y={Y(b) - 7} textAnchor={i === pts.length - 1 ? 'end' : 'start'} fontSize="11" fill={on ? ORANGE : '#475569'} fontWeight={on ? 700 : 400}>{nbf(b, 2)} {yu}</text>
             </g>);
         })}
       </svg>
@@ -144,31 +145,21 @@ function Retard({ sens = 'baisse', tau = 1.6, rampe = false, grandeur = 'éclair
   let y = reel(0);
   for (let i = 0; i <= N; i++) { const t = i * dt; y += (reel(t) - y) * (dt / tau); mes.push([t, y]); re.push([t, reel(t)]); }
   const X = t => L + (t / TMAX) * W, Y = v => T + H - (v / 1.2) * H;
-  const croise = s => { for (let i = 1; i < s.length; i++) { const a = s[i - 1][1] - seuil, b = s[i][1] - seuil; if (a * b <= 0 && a !== b) return s[i][0]; } return null; };
-  const tR = croise(re), tM = croise(mes);
-  const poly = s => s.map(([t, v]) => `${X(t).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+    const poly = s => s.map(([t, v]) => `${X(t).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
   return (
     <div style={boite} data-schema="retard">
-      <svg viewBox={`0 0 ${L + W + R} ${T + H + B + 40}`} role="img" aria-label={`Un capteur trop lent : la valeur mesurée rejoint le seuil en retard sur la grandeur réelle (${grandeur})`} style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
+      <svg viewBox={`0 0 ${L + W + R} ${T + H + B + 20}`} role="img" aria-label={`Un capteur trop lent : grandeur réelle et valeur mesurée par le capteur, avec le seuil (${grandeur})`} style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
         <defs><F id={`${u}r`} c={TR}/></defs>
-        <line x1={L} y1={T} x2={L} y2={T + H} stroke={TR} strokeWidth="1.5" markerEnd={`url(#${u}r)`}/><line x1={L} y1={T + H} x2={L + W + 4} y2={T + H} stroke={TR} strokeWidth="1.5" markerEnd={`url(#${u}r)`}/>
+        <line x1={L} y1={T + H} x2={L} y2={T} stroke={TR} strokeWidth="1.5" markerEnd={`url(#${u}r)`}/><line x1={L} y1={T + H} x2={L + W + 4} y2={T + H} stroke={TR} strokeWidth="1.5" markerEnd={`url(#${u}r)`}/>
         <text x={L + W} y={T + H + 14} fontSize="11.5" textAnchor="end" fill="#0f172a">temps</text>
         <line x1={L} y1={Y(seuil)} x2={L + W} y2={Y(seuil)} stroke={ORANGE} strokeWidth="1.5" strokeDasharray="6 4"/>
         <text x={rampe ? L + 4 : L + W} y={Y(seuil) - 5} fontSize="11.5" textAnchor={rampe ? 'start' : 'end'} fill={ORANGE} fontWeight="700">{seuilNom}</text>
-        {tR != null && tM != null && (
-          <g>
-            <line x1={X(tR)} y1={Y(seuil)} x2={X(tR)} y2={T + H} stroke={VERT} strokeWidth="1.5" strokeDasharray="3 3"/>
-            <line x1={X(tM)} y1={Y(seuil)} x2={X(tM)} y2={T + H} stroke="#b91c1c" strokeWidth="1.5" strokeDasharray="3 3"/>
-            <line x1={X(tR)} y1={T + H + 8} x2={X(tM)} y2={T + H + 8} stroke="#b91c1c" strokeWidth="2" markerEnd={`url(#${u}r)`}/>
-            <text x={(X(tR) + X(tM)) / 2} y={T + H + 22} fontSize="11.5" textAnchor="middle" fill="#b91c1c" fontWeight="700">retard</text>
-          </g>)}
         <polyline points={poly(re)} fill="none" stroke={VERT} strokeWidth="2.5"/>
         <polyline points={poly(mes)} fill="none" stroke={BLEU} strokeWidth="2.5" strokeDasharray="1 0"/>
         <text x={L + 6} y={T + 12} fontSize="12" fill="#0f172a" fontWeight="700">{grandeur}</text>
         <g fontSize="11.5" fill="#0f172a">
           <line x1={L} y1={T + H + 40} x2={L + 22} y2={T + H + 40} stroke={VERT} strokeWidth="2.5"/><text x={L + 27} y={T + H + 44}>grandeur réelle</text>
           <line x1={L + 120} y1={T + H + 40} x2={L + 142} y2={T + H + 40} stroke={BLEU} strokeWidth="2.5"/><text x={L + 147} y={T + H + 44}>valeur mesurée</text>
-          <text x={L} y={T + H + 64} fontSize="11" fill="#64748b">Le capteur lent atteint le seuil en retard.</text>
         </g>
       </svg>
     </div>);
@@ -181,24 +172,27 @@ function Arduino({ cas = 'led' }) {
       <rect x="8" y="14" width="104" height="112" rx="6" fill="#0e7490" stroke="#164e63" strokeWidth="2"/>
       <text x="60" y="34" fontSize="11" fontWeight="700" textAnchor="middle" fill="white">Carte Arduino</text>
     </g>);
-  const broche = (y, nom) => <g><line x1="112" y1={y} x2="150" y2={y} stroke={TR} strokeWidth="2"/><text x="108" y={y + 4} fontSize="10.5" textAnchor="end" fill="white" fontWeight="700">{nom}</text></g>;
+  const broche = (y, nom) => <g><line x1="112" y1={y} x2="150" y2={y} stroke={TR} strokeWidth="2"/><text x="108" y={y + 4} fontSize="11" textAnchor="end" fill="white" fontWeight="700">{nom}</text></g>;
   const masse = (x, y) => <g stroke={TR} strokeWidth="2"><line x1={x} y1={y} x2={x} y2={y + 8}/><line x1={x - 10} y1={y + 8} x2={x + 10} y2={y + 8}/><line x1={x - 6} y1={y + 12} x2={x + 6} y2={y + 12}/><line x1={x - 2} y1={y + 16} x2={x + 2} y2={y + 16}/></g>;
   let corps = null, legende = '';
   if (cas === 'led') {
-    legende = 'sortie : la carte commande la DEL';
+    legende = 'montage : carte, résistance et DEL';
     corps = <g>{broche(60, '11')}
       <rect x="150" y="52" width="40" height="16" fill="white" stroke={TR} strokeWidth="2"/><line x1="190" y1="60" x2="230" y2="60" stroke={TR} strokeWidth="2"/>
       <polygon points="230,48 230,72 254,60" fill="#fde68a" stroke={TR} strokeWidth="2"/><line x1="254" y1="46" x2="254" y2="74" stroke={TR} strokeWidth="2.5"/><line x1="254" y1="60" x2="290" y2="60" stroke={TR} strokeWidth="2"/>
       <line x1="290" y1="60" x2="290" y2="96" stroke={TR} strokeWidth="2"/>{masse(290, 96)}
       <text x="170" y="86" fontSize="10.5" textAnchor="middle" fill="#334155">résistance</text><text x="242" y="42" fontSize="11" fontWeight="700" textAnchor="middle" fill="#0f172a">DEL</text></g>;
   } else if (cas === 'bouton') {
-    legende = 'entrée : la carte lit l’état du bouton';
+    legende = 'montage : carte et bouton poussoir';
     corps = <g>{broche(60, '2')}
-      <line x1="150" y1="60" x2="205" y2="60" stroke={TR} strokeWidth="2"/><circle cx="205" cy="60" r="3.5" fill={TR}/><line x1="205" y1="60" x2="240" y2="42" stroke={TR} strokeWidth="2"/><circle cx="250" cy="60" r="3.5" fill={TR}/>
+      <line x1="150" y1="60" x2="205" y2="60" stroke={TR} strokeWidth="2"/><circle cx="160" cy="60" r="3.5" fill={TR}/>
+      <line x1="160" y1="14" x2="160" y2="22" stroke={TR} strokeWidth="2"/><rect x="152" y="22" width="16" height="26" fill="white" stroke={TR} strokeWidth="2"/><line x1="160" y1="48" x2="160" y2="60" stroke={TR} strokeWidth="2"/>
+      <text x="172" y="16" fontSize="11" fill="#0f172a">5 V</text><text x="172" y="40" fontSize="11" fill="#334155">résistance</text>
+      <circle cx="205" cy="60" r="3.5" fill={TR}/><line x1="205" y1="60" x2="240" y2="42" stroke={TR} strokeWidth="2"/><circle cx="250" cy="60" r="3.5" fill={TR}/>
       <line x1="250" y1="60" x2="290" y2="60" stroke={TR} strokeWidth="2"/><line x1="290" y1="60" x2="290" y2="96" stroke={TR} strokeWidth="2"/>{masse(290, 96)}
       <text x="228" y="86" fontSize="11" fontWeight="700" textAnchor="middle" fill="#0f172a">bouton poussoir</text></g>;
   } else if (cas === 'analog') {
-    legende = 'entrée analogique : tension convertie en N';
+    legende = 'montage : carte et pont diviseur de tension';
     corps = <g>{broche(80, 'A0')}
       <line x1="150" y1="80" x2="250" y2="80" stroke={TR} strokeWidth="2"/><circle cx="250" cy="80" r="3.5" fill={TR}/>
       <line x1="250" y1="22" x2="250" y2="38" stroke={TR} strokeWidth="2"/><text x="258" y="30" fontSize="10.5" fill="#0f172a">5 V</text>
@@ -207,10 +201,10 @@ function Arduino({ cas = 'led' }) {
       <text x="272" y="57" fontSize="11" fill="#0f172a"><Ind b="R" i="p"/></text><text x="272" y="111" fontSize="11" fill="#0f172a">R</text>
       <text x="228" y="72" fontSize="11" fontWeight="700" fill={BLEU} textAnchor="end"><Ind b="U" i="R"/></text></g>;
   } else {
-    legende = 'la carte envoie un texte à l’ordinateur';
+    legende = 'carte reliée à l’ordinateur par le câble USB';
     corps = <g><line x1="112" y1="70" x2="188" y2="70" stroke={TR} strokeWidth="3" strokeDasharray="2 0"/><text x="150" y="62" fontSize="10.5" textAnchor="middle" fill="#334155">USB</text>
       <rect x="190" y="30" width="150" height="86" rx="6" fill="#0f172a" stroke={TR} strokeWidth="2"/><text x="265" y="48" fontSize="10" textAnchor="middle" fill="#94a3b8">Moniteur série</text>
-      <text x="204" y="72" fontSize="13" fill="#4ade80" fontFamily="monospace">N = 471</text><text x="204" y="92" fontSize="13" fill="#4ade80" fontFamily="monospace">N = 472</text></g>;
+      <rect x="204" y="66" width="90" height="7" rx="3" fill="#4ade80"/><rect x="204" y="86" width="70" height="7" rx="3" fill="#4ade80"/></g>;
   }
   return (
     <div style={boite} data-schema="arduino">

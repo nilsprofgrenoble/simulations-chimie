@@ -211,7 +211,7 @@ export const SITUATIONS = [
           contexte: 'Pour régler le programme d’allumage automatique, on complète un tableau bilan. La photorésistance (caractéristique donnée dans le tableau ci-dessous) est en série avec R ; la tension U_R, mesurée aux bornes de R, est convertie par un CAN 10 bits en un nombre N.',
           liste: [['Résistance R', `${nb(R, 1)} kΩ`], ['Tension d’alimentation U_G', `${nb(UG, 1)} V`], ['CAN 10 bits', 'N = 0 pour 0 V ; N = 1 023 pour 5,0 V (réponse linéaire, courant d’entrée négligeable)'], ['Spécifications', `allumage à ${Ea} lx ; extinction à ${Ee} lx`]],
           question: 'Complétez le bilan en trois étapes : R_p, puis U_R, puis N.',
-          schema: [{ type: 'chaine', actif: [1, 2, 3] }, { type: 'pont', UG: `${nb(UG, 1)} V`, R: `${nb(R, 1)} kΩ`, mesure: 'R' }],
+          schema: [{ type: 'chaine' }, { type: 'pont', UG: `${nb(UG, 1)} V`, R: `${nb(R, 1)} kΩ`, mesure: 'R' }],
         }),
         tableau: { entetes: ['E (lx)', ...Es.map(String)], lignes: [['R_p (kΩ)', ...Es.map(e => nb(Rp(e), 2))]] },
         etapes: [

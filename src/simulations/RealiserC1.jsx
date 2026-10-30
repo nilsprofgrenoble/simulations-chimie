@@ -211,7 +211,7 @@ export function genPont() {
     { t: 'z', j: <>U<sub>G</sub> × {brnJ} / R<sub>p</sub></>, ok: false },
   ]);
   const unG = nb(cas.UG, 2), Rtxt = `${nb(cas.R, 2)}${NB}${cas.unR}`;
-  const figure = <Visuel schema={{ type: 'pont', UG: `${unG} V`, R: Rtxt, mesure: aux === 'R' ? 'R' : 'Rp', can: false, lumiere: cas.nom === 'photorésistance', capteur: cas.nom === 'photorésistance' ? 'p' : 'CTN' }}/>;
+  const figure = <Visuel schema={{ type: 'pont', UG: `${unG} V`, R: Rtxt, mesure: aux === 'R' ? 'R' : 'Rp', can: false, lumiere: cas.nom === 'photorésistance', etiquette: cas.nom === 'photorésistance' ? '' : '(CTN)' }}/>;
   const qs = [
     { id: 'p0', type: 'qcm', q: <>Quelle est l’<b>expression littérale</b> de {UJ} (diviseur de tension) ?</>, options: exprs.map(e => e.j), bonne: exprs.findIndex(e => e.ok),
       aide: 'La tension aux bornes d’une résistance en série vaut la tension totale multipliée par (cette résistance) / (somme des résistances).',

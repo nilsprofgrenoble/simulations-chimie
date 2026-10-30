@@ -861,8 +861,8 @@ export const PROBLEMES = [
       contexte: 'Un lampadaire doit s’allumer quand l’éclairement descend sous 600 lx. Une photorésistance est en série avec une résistance R (pont diviseur) ; la tension U_R, mesurée aux bornes de R, est envoyée sur un CAN 10 bits.',
       liste: [['Résistance R', '2,2 kΩ'], ['Tension d’alimentation U_G', '5,0 V'], ['CAN 10 bits', 'N = 0 pour 0 V ; N = 1 023 pour 5,0 V (réponse linéaire)'], ['Caractéristique de la photorésistance', 'R_p = 2,0 kΩ à 400 lx ; 1,5 kΩ à 600 lx ; 1,2 kΩ à 800 lx']],
       question: 'Quelle valeur de N correspond au seuil d’allumage ?',
-      schema: [{ type: 'chaine', actif: [1, 2, 3], inconnu: 3 }, { type: 'pont', UG: '5,0 V', R: '2,2 kΩ', mesure: 'R' },
-        { type: 'courbe', pts: [[400, 2.0], [600, 1.5], [800, 1.2]], x: [0, 1000, 200], y: [0, 2.5, 0.5], surligne: [1] }],
+      schema: [{ type: 'chaine' }, { type: 'pont', UG: '5,0 V', R: '2,2 kΩ', mesure: 'R' },
+        { type: 'courbe', pts: [[400, 2.0], [600, 1.5], [800, 1.2]], x: [0, 1000, 200], y: [0, 2.5, 0.5] }],
     }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('Le nombre N lu par le CAN quand l’éclairement vaut 600 lx', 'Le seuil d’allumage, exprimé comme le programme le voit : un nombre N à comparer à N_allumage.'),
@@ -915,7 +915,7 @@ export const PROBLEMES = [
       contexte: 'Un conditionneur (pont diviseur) est formé d’une photorésistance en série avec R ; la tension U_R, mesurée aux bornes de R, est envoyée sur un CAN 10 bits. Le programme lit N = 432.',
       liste: [['Résistance R', '1,0 kΩ'], ['Tension d’alimentation U_G', '5,0 V'], ['CAN 10 bits', 'N = 0 pour 0 V ; N = 1 023 pour 5,0 V (réponse linéaire)'], ['Caractéristique de la photorésistance', 'R_p = 1,79 kΩ à 450 lx ; 1,37 kΩ à 720 lx ; 1,13 kΩ à 1 020 lx ; 0,93 kΩ à 1 500 lx']],
       question: 'Quel est l’éclairement ?',
-      schema: [{ type: 'chaine', actif: [3, 2, 1], inconnu: 0, sens: 'inverse' }, { type: 'pont', UG: '5,0 V', R: '1,0 kΩ', mesure: 'R' },
+      schema: [{ type: 'chaine' }, { type: 'pont', UG: '5,0 V', R: '1,0 kΩ', mesure: 'R' },
         { type: 'courbe', pts: [[450, 1.79], [720, 1.37], [1020, 1.13], [1500, 0.93]], x: [0, 1500, 500], y: [0, 2, 0.5] }],
     }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
@@ -1226,7 +1226,6 @@ export const RELATIONS = [
     ] },
 
   { id: 'can-u-vers-n', domaine: 'Transmission de signaux numériques', titre: 'De la tension au nombre N',
-    schema: { type: 'chaine', actif: [2, 3], inconnu: 3 },
     enonce: 'La tension U_R = 2,3 V est envoyée sur l’entrée d’un CAN 10 bits (plage 0 – 5,0 V). On suppose une réponse linéaire : 0 V correspond à N = 0 et 5,0 V à N = 1 023. On cherche le nombre N fourni par le CAN.',
     q: 'Quelle relation permet de répondre ?', options: [
       V('N = U × 1 023 / 5,0', 'Proportionnalité : N / 1 023 = U / 5,0. Ici N = 2,3 × 1 023 / 5,0 ≈ 471 (partie entière : 470 ou 471 selon l’arrondi).'),
@@ -1235,7 +1234,6 @@ export const RELATIONS = [
       F('N = U × 1 024 / 5,0', 'Presque la même chose : avec q = 5,0 / 2¹⁰, N = U / q = U × 1 024 / 5,0 = 471,0 au lieu de 470,6, soit moins de 0,1 % d’écart. Les deux conventions existent ; mais l’énoncé fixe ici N = 1 023 pour 5,0 V, et avec 1 024 on aurait N = 1 024 à 5,0 V, impossible sur 10 bits.'),
     ] },
   { id: 'can-n-vers-u', domaine: 'Transmission de signaux numériques', titre: 'Du nombre N à la tension',
-    schema: { type: 'chaine', actif: [3, 2], inconnu: 2, sens: 'inverse' },
     enonce: 'Un CAN 10 bits (plage 0 – 5,0 V, réponse linéaire : N = 0 pour 0 V, N = 1 023 pour 5,0 V) fournit N = 593 au microcontrôleur. On cherche la tension U appliquée à l’entrée.',
     q: 'Quelle relation permet de répondre ?', options: [
       V('U = N × 5,0 / 1 023', 'Relation inverse de la proportionnalité N / 1 023 = U / 5,0. Ici U = 593 × 5,0 / 1 023 ≈ 2,9 V, valeur comprise entre 0 et 5,0 V.'),
@@ -2672,7 +2670,7 @@ export const PREVOIR = [
       F('devient négative', 'Une tension aux bornes d’une résistance traversée par un courant dans le sens normal reste positive ; elle tend vers 0 si R_p tend vers 0.'),
     ] },
   { id: 'echange-positions', domaine: 'Transmission de signaux numériques', titre: 'Échanger les positions de R et de la CTN',
-    schema: [{ type: 'pont', mesure: 'R', capteur: 'CTN', lumiere: false }, { type: 'pont', mesure: 'Rp', capteur: 'CTN', lumiere: false }],
+    schema: [{ type: 'pont', mesure: 'R', capteur: 'CTN', lumiere: false, titre: 'Montage 1' }, { type: 'pont', mesure: 'Rp', capteur: 'CTN', lumiere: false, titre: 'Montage 2' }],
     enonce: 'Un pont diviseur est formé d’une thermistance CTN (sa résistance diminue quand la température augmente) en série avec une résistance fixe R, sous une tension U_G constante. Dans le montage 1, on mesure la tension aux bornes de R ; dans le montage 2, on mesure la tension aux bornes de la CTN. La température augmente.', q: 'Que deviennent les deux tensions ?', options: [
       V('Montage 1 : la tension augmente ; montage 2 : la tension diminue', 'La résistance de la CTN diminue : la tension à ses bornes diminue (montage 2), donc celle aux bornes de R, qui complète jusqu’à U_G, augmente (montage 1).'),
       F('Montage 1 : la tension diminue ; montage 2 : la tension augmente', 'Sens inversé : la grandeur qui diminue est la résistance de la CTN, donc la tension à ses bornes, pas celle aux bornes de R.'),
@@ -2696,7 +2694,6 @@ export const PREVOIR = [
       F('divisée par 2', 'Sens inversé : plus la tension aux bornes du montage est grande, plus chaque tension partielle est grande.'),
     ] },
   { id: 'n-eclairement', domaine: 'Transmission de signaux numériques', titre: 'Le nombre N quand l’éclairement augmente',
-    schema: { type: 'chaine', actif: [1, 2, 3], inconnu: 3 },
     enonce: 'Une photorésistance est en série avec R ; la tension U_R aux bornes de R est envoyée sur l’entrée d’un CAN 10 bits (N entre 0 et 1 023, avec N proportionnel à la tension). L’éclairement augmente (la résistance de la photorésistance diminue).', q: 'Le nombre N donné par le CAN…', options: [
       V('augmente', 'L’éclairement augmente, R_p diminue, U_R augmente. Le CAN fournit un nombre proportionnel à la tension : N augmente.'),
       F('diminue', 'Il diminuerait si on mesurait la tension aux bornes de la photorésistance. Ici, U_R augmente avec l’éclairement, donc N aussi.'),
