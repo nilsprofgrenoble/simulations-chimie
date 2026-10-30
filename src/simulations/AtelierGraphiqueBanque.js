@@ -247,12 +247,12 @@ export function questions(g) {
     const opts = melange([bonne, ...melange(autres, rnd).slice(0, 3)], rnd);
     Q.push({ id: 'allure', comp: 2, type: 'qcm', q: 'Comment la grandeur y évolue-t-elle quand x augmente ?', options: opts, bonne: opts.indexOf(bonne), expl: `Réponse : ${bonne}.` }); }
   if (sc.decrire) {
-    const xs = x.sym, ys = y.sym, xn = x.nom.toLowerCase();
+    const xs = x.sym, ys = y.sym;
     const bonne = `Plus ${xs} augmente, plus ${ys} diminue ; la diminution est de plus en plus lente (la courbe n’est pas une droite)`;
     const opts = melange([bonne, `Plus ${xs} augmente, plus ${ys} diminue, de façon régulière : la courbe est une droite`, `${ys} est proportionnelle à ${xs} : quand ${xs} double, ${ys} double`,
       `Plus ${xs} augmente, plus ${ys} augmente, de moins en moins vite`], rnd);
     Q.push({ id: 'decrire', comp: 2, type: 'qcm', q: `Quelle phrase décrit correctement l’évolution de ${ys} en fonction de ${xs} ?`, options: opts, bonne: opts.indexOf(bonne),
-      expl: `La courbe descend : plus ${xn} augmente, plus ${ys} diminue. Elle est plus raide pour les faibles valeurs de ${xs} (la grandeur chute vite) puis s’aplatit (elle varie de moins en moins) : ce n’est donc ni une droite, ni une proportionnalité. À retenir pour rédiger : « plus ${xs} augmente, plus ${ys} diminue ».` }); }
+      expl: `La courbe descend : quand ${xs} augmente, ${ys} diminue. Elle est plus raide pour les faibles valeurs de ${xs} (la grandeur chute vite) puis s’aplatit (elle varie de moins en moins) : ce n’est donc ni une droite, ni une proportionnalité. À retenir pour rédiger : « plus ${xs} augmente, plus ${ys} diminue ».` }); }
   if (sc.type === 'droite') {
     const O = ['Oui : c’est une droite qui passe par le point (0 ; 0)', 'Non : la droite ne passe pas par le point (0 ; 0)', 'Oui : toute droite représente une proportionnalité', 'Impossible à dire sans calculer'];
     Q.push({ id: 'prop', comp: 2, type: 'qcm', q: 'La grandeur y est-elle proportionnelle à x ?', options: O, bonne: sc.prop ? 0 : 1,

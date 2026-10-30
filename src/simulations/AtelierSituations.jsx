@@ -36,8 +36,9 @@ export function SituationCarte({ def }) {
   const [indice, setIndice] = useState({});
   const nouveau = () => { try { document.activeElement?.blur?.(); } catch { /* sans effet */ } setGraine(g => g + 1); setRep({}); setChk({}); setVu({}); setEtp(0); setIndice({}); };
 
+  const tous = Object.assign({}, ...Object.values(rep).filter(v => v && typeof v === 'object'));   // toutes les saisies (une étape peut s'appuyer sur la précédente)
   const ok = (e, i) => (e.type === 'saisie'
-    ? e.champs.every(c => champOk(c, rep[e.id] || {}))
+    ? e.champs.every(c => champOk(c, tous))
     : rep[e.id] != null && e.o[rep[e.id]][1]);
   const reussi = ex.etapes.every((e, i) => chk[e.id] && ok(e, i));
   const suivi = useSuivi(`34:${def.id}`, reussi);
@@ -70,7 +71,7 @@ export function SituationCarte({ def }) {
             {e.type === 'saisie' ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {e.champs.map(c => {
-                  const bonChamp = champOk(c, rep[e.id] || {});
+                  const bonChamp = champOk(c, tous);
                   return (
                     <div key={c.id} data-champ={c.id} style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
                       <span style={{ fontSize: 14, minWidth: 200 }}>{T(c.lib)}</span>

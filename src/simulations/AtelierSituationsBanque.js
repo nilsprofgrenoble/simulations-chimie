@@ -17,12 +17,12 @@ export const mel = t => { const a = [...t]; for (let i = a.length - 1; i > 0; i-
 const DOM = 'Transmission de signaux numériques';
 
 // ── S2 : quelle instruction Arduino ? ──
-const arduino = (id, titre, enonce, nature, instr, retenir) => ({
+const arduino = (id, titre, enonce, nature, instr, retenir, q1 = 'Que doit faire la carte avec cette broche ?') => ({
   id, domaine: DOM, niveau: 1, titre,
   construire: () => ({
     enonce,
     etapes: [
-      { id: 'nature', titre: 'La nature de la broche', q: 'Que doit faire la carte avec cette broche ?', aide: 'Entrée ou sortie ? Signal « tout ou rien » (numérique) ou tension qui peut prendre beaucoup de valeurs (analogique) ?', o: nature },
+      { id: 'nature', titre: 'La nature de la broche', q: q1, aide: 'Entrée ou sortie ? Signal « tout ou rien » (numérique) ou tension qui peut prendre beaucoup de valeurs (analogique) ?', o: nature },
       { id: 'instr', titre: 'L’instruction', q: 'Quelle instruction faut-il écrire ?', aide: 'Le nom de l’instruction dit ce qu’elle fait : write = écrire (commander une sortie), read = lire (une entrée), print = afficher.', o: instr },
     ],
     retenir,
@@ -88,7 +88,8 @@ export const SITUATIONS = [
       F('analogRead(N)', 'analogRead mesure une tension sur une entrée : il ne sert pas à afficher.'),
       F('digitalRead(N)', 'digitalRead lit l’état d’une broche : il ne sert pas à afficher.'),
     ],
-    ['Afficher une valeur : Serial.begin(9600) dans setup(), puis Serial.println(valeur) dans loop().']),
+    ['Afficher une valeur : Serial.begin(9600) dans setup(), puis Serial.println(valeur) dans loop().'],
+    'Comment la carte peut-elle communiquer cette valeur à l’ordinateur ?'),
 
   // ── S3 : pourquoi le temps de réponse compte-t-il ? ──
   ...[
@@ -123,7 +124,7 @@ export const SITUATIONS = [
       lent: [
         V('Le signal du capteur reste trop longtemps faible : le système croit qu’il fait encore sombre', 'La valeur mesurée met du temps à rejoindre sa valeur finale, donc elle reste celle d’un faible éclairement.'),
         F('Le signal du capteur dépasse tout de suite le seuil', 'Ce serait un capteur rapide. Avec un temps de réponse trop long, le seuil n’est atteint qu’après un certain délai.'),
-        F('Le signal du capteur devient négatif', 'Un temps de réponse long ralentit la mesure : il ne change pas son signe.'),
+        F('Le signal du capteur oscille autour du seuil sans se stabiliser', 'Un temps de réponse long ralentit l’évolution du signal, mais ne le fait pas osciller : il atteint simplement sa valeur finale plus tard.'),
       ],
       rep: [
         V('Sortie du tunnel : l’éclairement augmente brusquement. Si le capteur est trop lent, il mesure encore un faible éclairement, donc l’extinction des phares est décidée trop tard : ils restent allumés quelques secondes en plein jour. La conséquence est limitée (consommation inutile, pas de danger), contrairement à l’entrée dans le tunnel.', 'La réponse suit la structure attendue et nuance la gravité : l’enjeu de sécurité est surtout à l’entrée du tunnel.'),
@@ -147,7 +148,7 @@ export const SITUATIONS = [
       ],
       rep: [
         V('La concentration en particules augmente brusquement. Si le capteur est trop lent, le signal franchit le seuil trop tard : l’alarme se déclenche en retard et l’évacuation des personnes est retardée, ce qui augmente le risque d’intoxication.', 'Événement brusque, capteur trop lent, décision tardive, conséquence concrète : la structure est complète.'),
-        F('Un détecteur de fumée doit être très sensible : plus il détecte de petites quantités de particules, plus l’alarme se déclenche tôt en cas d’incendie.', 'La sensibilité est une autre qualité : elle concerne la plus petite quantité détectable, pas la rapidité de réponse du capteur dont parle l’énoncé.'),
+        F('Un détecteur de fumée très sensible détecte de petites quantités de particules : cette sensibilité suffit à garantir une alarme rapide, et la rapidité de réponse du capteur est secondaire.', 'La sensibilité (plus petite quantité détectable) et la rapidité de réponse sont deux qualités distinctes : un capteur très sensible mais lent déclenche quand même l’alarme en retard.'),
         F('Lors d’un incendie, la concentration en particules augmente brusquement et le capteur est lent, donc l’alarme est mauvaise.', '« Mauvaise » ne dit pas ce qui arrive : il manque la décision tardive et la conséquence concrète pour les personnes.'),
       ],
       retenir: ['Temps de réponse ≠ sensibilité : le premier concerne la rapidité, la seconde la plus petite variation détectable.'],
@@ -193,14 +194,15 @@ export const SITUATIONS = [
       const Es = [200, 450, 720, 1020, 1500, 2120, 2570, 3110, 3430];
       const Rp = e => Math.round(a * Math.pow(e, -b) * 100) / 100;
       const R = tire([1.0, 2.2]), UG = 5.0;
-      const Ea = tire([450, 720, 1020]), Ee = tire([2120, 2570, 3110]);
+      let Ea, Ee;
+      do { Ea = tire([450, 720, 1020]); Ee = tire([2120, 2570, 3110]); } while ([Ea, Ee].some(e => Math.abs(Rp(e) - R) / R < 0.1));   // pas de R_p ≈ R : les deux tensions seraient confondues
       const lignes = [['allumage', Ea], ['extinction', Ee]].map(([nom, E]) => {
         const rp = Rp(E), ur = UG * R / (R + rp), n = ur * 1023 / UG;
         return { nom, E, rp, ur, n };
       });
       const champs = (cle, lib, u, tol, fonction) => lignes.map((l, i) => ({ id: `${cle}${i}`, lib: `${lib} (${l.nom} à ${l.E} lx)`, u, vrai: fonction(l), tol }));
       return {
-        enonce: `Pour régler le programme d’allumage automatique, on complète un tableau bilan. La photorésistance (caractéristique ci-dessous) est en série avec R = ${nb(R, 1)} kΩ, sous U_G = ${nb(UG, 1)} V ; on mesure la tension U_R aux bornes de R. Cette tension est convertie par un CAN 10 bits en un nombre N. Hypothèse : réponse linéaire du CAN (N = 0 pour 0 V, N = 1 023 pour 5,0 V). Spécifications : allumage à ${Ea} lx, extinction à ${Ee} lx.`,
+        enonce: `Pour régler le programme d’allumage automatique, on complète un tableau bilan. La photorésistance (caractéristique donnée dans le tableau ci-dessous) est en série avec R = ${nb(R, 1)} kΩ, sous U_G = ${nb(UG, 1)} V ; on mesure la tension U_R aux bornes de R. Cette tension est convertie par un CAN 10 bits en un nombre N. Hypothèses : réponse linéaire du CAN (N = 0 pour 0 V, N = 1 023 pour 5,0 V) et courant absorbé par l’entrée du CAN négligeable. Spécifications : allumage à ${Ea} lx, extinction à ${Ee} lx.`,
         tableau: { entetes: ['E (lx)', ...Es.map(String)], lignes: [['R_p (kΩ)', ...Es.map(e => nb(Rp(e), 2))]] },
         etapes: [
           { id: 'rp', titre: 'Lire R_p', q: 'Lisez dans le tableau la résistance R_p aux deux éclairements des spécifications.', aide: 'Cherchez la colonne de l’éclairement (en lx), puis lisez la valeur de R_p juste en dessous.', type: 'saisie', champs: champs('rp', 'R_p', 'kΩ', 0.005, l => l.rp),

@@ -1218,7 +1218,7 @@ export const RELATIONS = [
       V('N = U × 1 023 / 5,0', 'Proportionnalité : N / 1 023 = U / 5,0. Ici N = 2,3 × 1 023 / 5,0 ≈ 471 (partie entière : 470 ou 471 selon l’arrondi).'),
       F('N = U × 5,0 / 1 023', 'Rapport inversé : on obtiendrait N ≈ 0,011, qui n’a rien d’un nombre entre 0 et 1 023. Le résultat doit être un nombre de 0 à 1 023.'),
       F('N = U / 2¹⁰', 'On divise par 1 024 sans tenir compte de la plage 0 – 5,0 V : on obtiendrait N ≈ 0,002. Le quantum q = 5,0 / 1 024 est en volts, il faut diviser la tension par q.'),
-      F('N = U × 1 024 / 5,0', 'Presque la même chose : avec q = 5,0 / 2¹⁰, N = U / q = U × 1 024 / 5,0 ≈ 471 aussi (470,6), l’écart est inférieur à 0,1 %. Mais l’énoncé fixe ici N = 1 023 pour 5,0 V ; avec 1 024, N vaudrait 1 024 à 5,0 V, impossible sur 10 bits.'),
+      F('N = U × 1 024 / 5,0', 'Presque la même chose : avec q = 5,0 / 2¹⁰, N = U / q = U × 1 024 / 5,0 = 471,0 au lieu de 470,6, soit moins de 0,1 % d’écart. Les deux conventions existent ; mais l’énoncé fixe ici N = 1 023 pour 5,0 V, et avec 1 024 on aurait N = 1 024 à 5,0 V, impossible sur 10 bits.'),
     ] },
   { id: 'can-n-vers-u', domaine: 'Transmission de signaux numériques', titre: 'Du nombre N à la tension',
     enonce: 'Un CAN 10 bits (plage 0 – 5,0 V, réponse linéaire : N = 0 pour 0 V, N = 1 023 pour 5,0 V) fournit N = 593 au microcontrôleur. On cherche la tension U appliquée à l’entrée.',
@@ -2676,7 +2676,7 @@ export const PREVOIR = [
       F('divisée par 2', 'Sens inversé : plus la tension aux bornes du montage est grande, plus chaque tension partielle est grande.'),
     ] },
   { id: 'n-eclairement', domaine: 'Transmission de signaux numériques', titre: 'Le nombre N quand l’éclairement augmente',
-    enonce: 'Une photorésistance est en série avec R ; la tension U_R aux bornes de R est envoyée sur l’entrée d’un CAN 10 bits (N entre 0 et 1 023, avec N proportionnel à la tension). L’éclairement augmente.', q: 'Le nombre N donné par le CAN…', options: [
+    enonce: 'Une photorésistance est en série avec R ; la tension U_R aux bornes de R est envoyée sur l’entrée d’un CAN 10 bits (N entre 0 et 1 023, avec N proportionnel à la tension). L’éclairement augmente (la résistance de la photorésistance diminue).', q: 'Le nombre N donné par le CAN…', options: [
       V('augmente', 'L’éclairement augmente, R_p diminue, U_R augmente. Le CAN fournit un nombre proportionnel à la tension : N augmente.'),
       F('diminue', 'Il diminuerait si on mesurait la tension aux bornes de la photorésistance. Ici, U_R augmente avec l’éclairement, donc N aussi.'),
       F('reste constant', 'N est proportionnel à la tension d’entrée : si U_R change, N change.'),
