@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, useState } from "react";
 import { KIT, avecIndices } from "../commun";
 
 // ====================================================
@@ -229,8 +229,49 @@ function Arduino({ cas = 'led' }) {
     </div>);
 }
 
+
+// ── Essai : on fait varier une grandeur du pont diviseur et on lit les tensions (après la prédiction) ──
+// variable : 'Rp' (R_p varie), 'R' (R varie) ou 'UG' (U_G varie) ; les autres grandeurs restent fixes.
+const fr = (v, d = 2) => Number(v).toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d });
+function Essai({ variable = 'Rp', UG = 5, R = 1, Rp = 1.5, min, max, step = 0.05, mesure = 'R', consigne = '', n = false }) {
+  const init = variable === 'Rp' ? Rp : variable === 'R' ? R : UG;
+  const [x, setX] = useState(init);
+  const g = variable === 'UG' ? x : UG, r = variable === 'R' ? x : R, rp = variable === 'Rp' ? x : Rp;
+  const ur = g * r / (r + rp), urp = g * rp / (r + rp);
+  const u = mesure === 'Rp' ? urp : ur, autre = mesure === 'Rp' ? ur : urp;
+  const nom = variable === 'Rp' ? 'R_p' : variable === 'R' ? 'R' : 'U_G', unite = variable === 'UG' ? 'V' : 'kΩ';
+  const nomLong = variable === 'Rp' ? 'résistance de la photorésistance' : variable === 'R' ? 'résistance R' : 'tension d’alimentation';
+  const lib = mesure === 'Rp' ? 'U_Rp' : 'U_R', libAutre = mesure === 'Rp' ? 'U_R' : 'U_Rp';
+  const part = 100 * ur / g;
+  const N = Math.min(1023, Math.max(0, Math.round(u * 1023 / 5)));
+  const txt = `${fr(x, variable === 'UG' ? 1 : 2)} ${unite}`;
+  return (
+    <div style={boite} data-schema="essai">
+      <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a' }}>À vous de tester</div>
+      <div style={{ fontSize: 13, color: '#475569', margin: '2px 0 6px', lineHeight: 1.45 }}>{avecIndices(consigne || `Faites varier ${nom} et comparez avec votre prédiction.`)}</div>
+      <label style={{ display: 'block', fontSize: 14, color: '#0f172a' }}>
+        <span style={{ fontWeight: 700 }}>{avecIndices(nom)} = {txt}</span>
+        <input type="range" min={min} max={max} step={step} value={x} onChange={e => setX(Number(e.target.value))} aria-label={`Valeur de la ${nomLong}`} aria-valuetext={txt}
+          style={{ width: '100%', accentColor: BLEU, margin: '6px 0 2px' }}/>
+      </label>
+      <div style={{ position: 'relative', height: 22, borderRadius: 4, overflow: 'hidden', border: `1px solid ${KIT.bord}`, display: 'flex', margin: '6px 0' }} role="img"
+        aria-label={`Répartition de la tension d’alimentation : ${fr(part, 0)} % aux bornes de R, ${fr(100 - part, 0)} % aux bornes de la photorésistance`}>
+        <div style={{ width: `${part}%`, background: mesure === 'Rp' ? '#cbd5e1' : '#93c5fd', transition: 'width .1s' }}/>
+        <div style={{ flex: 1, background: mesure === 'Rp' ? '#93c5fd' : '#cbd5e1' }}/>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, color: '#64748b' }}><span>{avecIndices('U_R')} (aux bornes de R)</span><span>{avecIndices('U_Rp')}</span></div>
+      <div style={{ fontSize: 14.5, color: '#0f172a', marginTop: 6, lineHeight: 1.6 }}>
+        <div style={{ fontWeight: 700, color: BLEU }}>{avecIndices(lib)} = {fr(u)} V{n ? <> → N = {N}</> : null}</div>
+        <div style={{ color: '#475569' }}>{avecIndices(libAutre)} = {fr(autre)} V{variable === 'UG' ? '' : <> · {avecIndices('U_G')} = {fr(g, 1)} V</>}</div>
+      </div>
+      <Note t={n ? 'Hypothèses : le CAN ne prélève pas de courant (impédance d’entrée très grande) ; N = U × 1 023 / 5,0, arrondi à l’entier.'
+        : variable === 'UG' ? 'La barre ne bouge pas : la part de U_G prise par R ne dépend que de R et de R_p. Seule la tension totale change.'
+        : 'Hypothèse : tout ce qui n’est pas manipulé reste constant, et la mesure ne perturbe pas le montage.'}/>
+    </div>);
+}
+
 // ── Répartition ──
-const DESSINS = { pont: SchemaPont, chaine: ChaineMesure, courbe: Courbe, retard: Retard, arduino: Arduino };
+const DESSINS = { pont: SchemaPont, chaine: ChaineMesure, courbe: Courbe, retard: Retard, arduino: Arduino, essai: Essai };
 export function Visuel({ schema, revele = false }) {
   if (!schema) return null;
   const liste = Array.isArray(schema) ? schema : [schema];
