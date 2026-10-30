@@ -1583,7 +1583,7 @@ const mesuresCTN = [[0, 29.3], [10, 18.6], [20, 12.2], [30, 8.24], [40, 5.70], [
 const mesuresPhoto = [[200, 3.00], [450, 1.79], [720, 1.37], [1020, 1.13], [1500, 0.93], [2120, 0.79], [2570, 0.71], [3110, 0.65], [3430, 0.62]];
 export const DECISIONS = [
   { id: 'modele-ctn', domaine: 'Transmission de signaux numériques', niveau: 2, titre: 'Quel modèle pour une thermistance CTN ?',
-    ...presenter({ contexte: 'On a mesuré la résistance R d’une thermistance CTN. Un tableur a ajusté deux modèles. On veut utiliser le modèle choisi pour convertir une résistance mesurée en température.', liste: [['Mesures', '7 points, de 0 °C à 60 °C'], ['Plage d’utilisation visée', 'de −10 °C à 100 °C']], question: 'Choisissez le modèle le plus pertinent et justifiez-le par deux arguments.' }),
+    ...presenter({ contexte: 'On a mesuré la résistance R d’une thermistance CTN. Un tableur a ajusté deux modèles. On veut utiliser le modèle choisi pour convertir une résistance mesurée en température.', liste: [['Plage mesurée', 'de 0 °C à 60 °C (7 points)'], ['Plage d’utilisation visée', 'de −10 °C à 100 °C']], question: 'Choisissez le modèle le plus pertinent et justifiez-le par deux arguments.' }),
     reperes: [['Mesures (θ en °C ; R en kΩ)', '0 : 29,3 · 10 : 18,6 · 20 : 12,2 · 30 : 8,24 · 40 : 5,70 · 50 : 4,03 · 60 : 2,91'],
       ['Modèle A (exponentiel)', 'R = 27,4 × exp(−0,0384 × θ) ; R² = 0,992'], ['Modèle B (affine)', 'R = 23,9 − 0,410 × θ ; R² = 0,869 (R² calculés sur les valeurs de R)'],
       ['Rappel', 'Une résistance est toujours strictement positive.']],

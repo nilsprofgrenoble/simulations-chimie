@@ -2737,7 +2737,7 @@ export const ALGORITHMES = [
       F('Elle clignote, car les deux tests sont presque vrais', 'Un test est vrai ou faux : ici les deux sont faux, la sortie ne change pas.'),
     ] },
   { id: 'algo-pourquoi-deux', domaine: 'Transmission de signaux numériques', titre: 'Pourquoi deux seuils plutôt qu’un ?',
-    ...presenter({ contexte: 'On aurait pu écrire un seul test : « Si N < 500, HIGH ; sinon LOW ». Le concepteur a préféré deux seuils différents, avec une zone intermédiaire où rien ne change. Le signal mesuré fluctue légèrement (bruit de mesure, passage d’un nuage…).', liste: [['Seuil d’allumage', '470'], ['Seuil d’extinction', '600']] }),
+    ...presenter({ contexte: 'On aurait pu écrire un seul test : « Si N < 500, HIGH ; sinon LOW ». Le concepteur a préféré deux seuils différents, avec une zone intermédiaire où rien ne change. Le signal mesuré fluctue légèrement (bruit de mesure, passage d’un nuage…).', liste: [['Seuil d’allumage', 'N_allumage = 470'], ['Seuil d’extinction', 'N_extinction = 600']] }),
     q: 'Quel est l’intérêt principal des deux seuils ?', options: [
       V('Éviter que les phares clignotent quand l’éclairement est proche du seuil', 'Avec un seul seuil, un N qui oscille autour de 500 changerait l’état à chaque mesure. Deux seuils créent une « zone morte » : il faut une vraie variation de l’éclairement pour changer l’état.'),
       F('Le CAN a deux voies, il faut un seuil par voie', 'Un seul canal analogique (A0) suffit : les deux seuils portent sur le même nombre N.'),
