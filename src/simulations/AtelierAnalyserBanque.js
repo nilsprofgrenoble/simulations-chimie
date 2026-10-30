@@ -65,7 +65,7 @@ export const PROBLEMES = [
   },
   {
     id: 'niveau', domaine: 'Transport des fluides', titre: 'Mesurer un niveau avec un capteur de pression',
-    ...presenter({ contexte: 'Une cuve ouverte contient une solution. Un capteur placé au fond mesure la pression relative (par rapport à la pression atmosphérique). Une alarme doit se déclencher si le niveau dépasse un seuil.', liste: [['Diamètre de la cuve', '2,0 m'], ['Densité de la solution', 'd = 1,20'], ['Pression relative indiquée par le capteur', '0,147 bar'], ['Pression atmosphérique ce jour-là', '1 013 hPa'], ['Seuil d’alarme (niveau)', '1,30 m']], question: 'L’alarme doit-elle se déclencher ?' }),
+    ...presenter({ contexte: 'Une cuve ouverte contient une solution. Un capteur placé au fond mesure la pression relative (par rapport à la pression atmosphérique). Une alarme doit se déclencher si le niveau dépasse un seuil.', liste: [['Diamètre de la cuve', '2,0 m'], ['Densité de la solution', 'd = 1,20'], ['Pression relative indiquée par le capteur', '0,147 bar'], ['Pression atmosphérique ce jour-là', '1 013 hPa'], ['Niveau d’alarme (hauteur de solution)', '1,30 m']], question: 'L’alarme doit-elle se déclencher ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('La hauteur h de solution au-dessus du capteur, pour la comparer à 1,30 m', 'Le critère porte sur un niveau : il faut convertir la pression mesurée en hauteur.'),
       F('La pression absolue au fond de la cuve', 'Le capteur donne déjà une pression ; c’est la hauteur qu’il faut comparer au seuil.'),
@@ -118,7 +118,7 @@ export const PROBLEMES = [
   },
   {
     id: 'tuyau', domaine: 'Transport des fluides', titre: 'Choisir le diamètre d’un tuyau',
-    ...presenter({ contexte: 'On doit alimenter un atelier en eau. Pour limiter le bruit et l’usure, la vitesse moyenne de l’eau est limitée. Le magasin propose un tube en PVC vendu en longueurs de 25 m.', liste: [['Débit à fournir', '3,0 m³·h⁻¹'], ['Vitesse moyenne maximale', '1,5 m·s⁻¹'], ['Diamètre intérieur du tube', '20 mm'], ['Longueur d’une pièce de tube', '25 m']], question: 'Ce tube convient-il ?' }),
+    ...presenter({ contexte: 'On doit alimenter un atelier en eau. Pour limiter le bruit et l’usure, la vitesse moyenne de l’eau est limitée. Le magasin propose un tube en PVC.', liste: [['Débit à fournir', '3,0 m³·h⁻¹'], ['Vitesse moyenne maximale', '1,5 m·s⁻¹'], ['Diamètre intérieur du tube', '20 mm'], ['Longueur d’une pièce de tube', '25 m']], question: 'Ce tube convient-il ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('La vitesse moyenne de l’eau dans le tube, pour la comparer à 1,5 m·s⁻¹', 'Le critère imposé porte sur la vitesse.'),
       F('La perte de charge sur 25 m de tube', 'Elle servirait à choisir la pompe, mais le critère imposé ici porte sur la vitesse.'),
