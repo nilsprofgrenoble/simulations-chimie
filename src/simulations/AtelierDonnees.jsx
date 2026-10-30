@@ -1,3 +1,4 @@
+import CodeExo from '../CodeExo';
 import { ChoixListe } from "../ChoixListe";
 import { useState } from "react";
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, lireNombre, proche, exParam } from "../commun";
@@ -253,7 +254,7 @@ function AtelierEnonces({ idDepart, onSituation }) {
           <button onClick={() => charger(choix.id, choix.q)} style={stylePetitBouton(false)}>🎲 Nouvelles valeurs</button>
         </div>
         <div style={{ ...styleBoite, background: 'white' }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginBottom: 4 }}>{defCourant.domaine} — {defCourant.titre}</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginBottom: 4 }}>{defCourant.domaine} — {defCourant.titre}<CodeExo cle={`34:${choix.id}.${choix.q}`}/></div>
           <Texte ex={ex} sel={rep.sel} onToggle={toggle} marque={marqueSel}/>
           <div data-formule="1" style={{ marginTop: 8, background: '#f1f5f9', border: `1px solid ${KIT.bord}`, borderRadius: 8, padding: '6px 10px', fontSize: 15, color: KIT.txt }}>
             <b>Formule à utiliser :</b> {ex.b.solution.txt}

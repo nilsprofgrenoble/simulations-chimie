@@ -1,3 +1,4 @@
+import CodeExo from '../CodeExo';
 import { ChoixListe } from "../ChoixListe";
 import { useState, useMemo } from "react";
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, ExempleResolu, avecIndices, exParam, venantDuDevoir, lireNombre, proche } from "../commun";
@@ -174,7 +175,7 @@ export function SimulationAtelierValider({ naviguer }) {
         </details>
         <div style={{ ...styleBoite, background: 'white' }}>
           <div style={{ fontSize: 12.5, color: KIT.txt2, fontWeight: 700 }}>{it.domaine} · {NIVEAUX[it.niveau]}</div>
-          <div style={{ fontSize: 16, fontWeight: 800, color: KIT.txt, margin: '2px 0 6px' }}>{it.titre}</div>
+          <div style={{ fontSize: 16, fontWeight: 800, color: KIT.txt, margin: '2px 0 6px' }}>{it.titre}<CodeExo cle={`77:${fam}.${it.id}`}/></div>
           <EnonceLisible it={it} T={T}/>
           <Visuel schema={it.schema} revele={fini}/>
         </div>
