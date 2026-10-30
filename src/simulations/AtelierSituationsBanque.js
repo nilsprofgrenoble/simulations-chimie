@@ -8,6 +8,7 @@
 // construire() renvoie { enonce, tableau?, etapes, retenir } ; les nombres de certains exercices sont tirés au hasard.
 // Aucune dépendance à React : testable seul. Notation : « U_R » s'affiche avec un indice (voir avecIndices dans commun.jsx).
 
+import { presenter } from './presenter.js';
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const V = (t, e) => [t, true, e];
 const F = (t, e) => [t, false, e];
@@ -17,10 +18,10 @@ export const mel = t => { const a = [...t]; for (let i = a.length - 1; i > 0; i-
 const DOM = 'Transmission de signaux numériques';
 
 // ── S2 : quelle instruction Arduino ? ──
-const arduino = (id, titre, enonce, nature, instr, retenir, q1 = 'Que doit faire la carte avec cette broche ?') => ({
+const arduino = (id, titre, enonce, nature, instr, retenir, q1 = 'Que doit faire la carte avec cette broche ?', cas = 'led') => ({
   id, domaine: DOM, niveau: 1, titre,
   construire: () => ({
-    enonce,
+    enonce, schema: { type: 'arduino', cas },
     etapes: [
       { id: 'nature', titre: 'La nature de la broche', q: q1, aide: 'Entrée ou sortie ? Signal « tout ou rien » (numérique) ou tension qui peut prendre beaucoup de valeurs (analogique) ?', o: nature },
       { id: 'instr', titre: 'L’instruction', q: 'Quelle instruction faut-il écrire ?', aide: 'Le nom de l’instruction dit ce qu’elle fait : write = écrire (commander une sortie), read = lire (une entrée), print = afficher.', o: instr },
@@ -61,7 +62,7 @@ export const SITUATIONS = [
       F('Serial.print(11, HIGH)', 'Serial.print affiche une valeur dans le moniteur série de l’ordinateur : elle ne commande pas la broche 11.'),
       F('digitalRead(11)', 'digitalRead lit l’état d’une broche : elle ne la modifie pas, donc elle n’allume pas la DEL.'),
     ],
-    ['Sortie numérique : digitalWrite(broche, HIGH ou LOW). Dans setup(), on déclare la broche en sortie avec pinMode(broche, OUTPUT).']),
+    ['Sortie numérique : digitalWrite(broche, HIGH ou LOW). Dans setup(), on déclare la broche en sortie avec pinMode(broche, OUTPUT).'], undefined, 'led'),
   arduino('arduino-bouton', 'Quelle instruction : lire un bouton',
     'Un bouton poussoir est relié à la broche numérique 2 d’une carte Arduino (déjà configurée en entrée avec pinMode). Le programme doit savoir si le bouton est appuyé.',
     NAT.entreeNum, [
@@ -70,7 +71,7 @@ export const SITUATIONS = [
       F('analogRead(2)', 'analogRead lit les entrées analogiques (A0, A1, …) et renvoie un nombre de 0 à 1 023 : inutile pour un bouton qui n’a que deux états.'),
       F('Serial.println(2)', 'Serial.println affiche la valeur 2 dans le moniteur série : elle ne lit pas le bouton.'),
     ],
-    ['Entrée numérique : digitalRead(broche). Dans setup(), on déclare la broche en entrée avec pinMode(broche, INPUT).']),
+    ['Entrée numérique : digitalRead(broche). Dans setup(), on déclare la broche en entrée avec pinMode(broche, INPUT).'], undefined, 'bouton'),
   arduino('arduino-tension', 'Quelle instruction : mesurer la tension du capteur',
     'La tension U_R du pont diviseur (photorésistance et résistance) est reliée à l’entrée analogique A0 d’une carte Arduino. Le programme doit récupérer le nombre N, entre 0 et 1 023, qui correspond à cette tension.',
     NAT.entreeAna, [
@@ -79,7 +80,7 @@ export const SITUATIONS = [
       F('digitalWrite(A0, HIGH)', 'digitalWrite commande une sortie : elle ne mesure rien.'),
       F('Serial.println(A0)', 'Serial.println affiche la valeur donnée en argument (ici, le numéro de la broche) : elle ne mesure pas la tension.'),
     ],
-    ['Entrée analogique : N = analogRead(A0), nombre de 0 à 1 023 (CAN 10 bits). On affiche ensuite N avec Serial.println(N).']),
+    ['Entrée analogique : N = analogRead(A0), nombre de 0 à 1 023 (CAN 10 bits). On affiche ensuite N avec Serial.println(N).'], undefined, 'analog'),
   arduino('arduino-afficher', 'Quelle instruction : afficher la valeur de N',
     'Un programme Arduino a calculé le nombre N à partir de la tension d’un capteur. Pour vérifier le montage, on veut lire la valeur de N sur l’écran de l’ordinateur, pendant que la carte est reliée en USB.',
     NAT.affichage, [
@@ -89,12 +90,13 @@ export const SITUATIONS = [
       F('digitalRead(N)', 'digitalRead lit l’état d’une broche : il ne sert pas à afficher.'),
     ],
     ['Afficher une valeur : Serial.begin(9600) dans setup(), puis Serial.println(valeur) dans loop().'],
-    'Comment la carte peut-elle communiquer cette valeur à l’ordinateur ?'),
+    'Comment la carte peut-elle communiquer cette valeur à l’ordinateur ?', 'serie'),
 
   // ── S3 : pourquoi le temps de réponse compte-t-il ? ──
   ...[
     {
       id: 'reponse-tunnel-entree', titre: 'Temps de réponse : entrée dans un tunnel',
+      schema: { type: 'retard', sens: 'baisse', grandeur: 'éclairement', seuilNom: 'seuil d’allumage' },
       enonce: 'Les phares d’une voiture s’allument automatiquement quand un capteur de lumière mesure un éclairement trop faible. La voiture entre dans un tunnel : l’éclairement passe très vite de 10 000 lx à 100 lx. Le temps de réponse du capteur est trop long.',
       evt: [
         V('L’éclairement baisse brusquement à l’entrée du tunnel', 'C’est le changement rapide que le capteur doit suivre : l’éclairement passe presque instantanément d’une valeur forte à une valeur faible (« échelon »).'),
@@ -115,6 +117,7 @@ export const SITUATIONS = [
     },
     {
       id: 'reponse-tunnel-sortie', titre: 'Temps de réponse : sortie d’un tunnel',
+      schema: { type: 'retard', sens: 'hausse', grandeur: 'éclairement', seuilNom: 'seuil d’extinction' },
       enonce: 'Les mêmes phares automatiques s’éteignent quand l’éclairement mesuré dépasse un seuil. La voiture sort du tunnel : l’éclairement passe très vite de 100 lx à 10 000 lx. Le temps de réponse du capteur est trop long.',
       evt: [
         V('L’éclairement augmente brusquement à la sortie du tunnel', 'C’est le changement rapide que le capteur doit suivre, cette fois dans l’autre sens : de faible à fort.'),
@@ -135,6 +138,7 @@ export const SITUATIONS = [
     },
     {
       id: 'reponse-fumee', titre: 'Temps de réponse : détecteur de fumée',
+      schema: { type: 'retard', sens: 'hausse', grandeur: 'concentration en particules', seuilNom: 'seuil d’alarme' },
       enonce: 'Un détecteur de fumée déclenche une alarme quand la concentration en particules dépasse un seuil. Un incendie démarre dans une pièce : la concentration en particules augmente brusquement. Le temps de réponse du capteur est trop long.',
       evt: [
         V('La concentration en particules augmente brusquement au début de l’incendie', 'C’est l’événement que le capteur doit suivre sans délai excessif.'),
@@ -155,6 +159,7 @@ export const SITUATIONS = [
     },
     {
       id: 'reponse-regulation', titre: 'Temps de réponse : régulation de température',
+      schema: { type: 'retard', rampe: true, tau: 1.8, grandeur: 'température du four', seuilNom: 'consigne (coupure du chauffage)' },
       enonce: 'Un four de laboratoire est régulé en température : une sonde mesure la température, et le chauffage est coupé quand elle atteint la consigne (80 °C). La température du four monte vite. Le temps de réponse de la sonde est trop long.',
       evt: [
         V('La température du four monte rapidement vers la consigne', 'C’est l’évolution que la sonde doit suivre : si elle va trop vite pour elle, la mesure prend du retard.'),
@@ -176,7 +181,7 @@ export const SITUATIONS = [
   ].map(c => ({
     id: c.id, domaine: DOM, niveau: 1, titre: c.titre,
     construire: () => ({
-      enonce: c.enonce,
+      enonce: c.enonce, schema: c.schema,
       etapes: [
         { id: 'evt', titre: 'L’événement brusque', q: 'Quel est l’événement brusque que le capteur doit suivre ?', aide: 'Cherchez dans l’énoncé ce qui change vite : quelle grandeur, et dans quel sens ?', o: c.evt },
         { id: 'lent', titre: 'Un capteur trop lent', q: 'Que se passe-t-il si le temps de réponse du capteur est trop long ?', aide: 'Après un changement brusque, la valeur mesurée met du temps à atteindre la nouvelle valeur : que vaut-elle pendant ce temps ?', o: c.lent },
@@ -202,7 +207,12 @@ export const SITUATIONS = [
       });
       const champs = (cle, lib, u, tol, fonction) => lignes.map((l, i) => ({ id: `${cle}${i}`, lib: `${lib} (${l.nom} à ${l.E} lx)`, u, vrai: fonction(l), tol }));
       return {
-        enonce: `Pour régler le programme d’allumage automatique, on complète un tableau bilan. La photorésistance (caractéristique donnée dans le tableau ci-dessous) est en série avec R = ${nb(R, 1)} kΩ, sous U_G = ${nb(UG, 1)} V ; on mesure la tension U_R aux bornes de R. Cette tension est convertie par un CAN 10 bits en un nombre N. Hypothèses : réponse linéaire du CAN (N = 0 pour 0 V, N = 1 023 pour 5,0 V) et courant absorbé par l’entrée du CAN négligeable. Spécifications : allumage à ${Ea} lx, extinction à ${Ee} lx.`,
+        ...presenter({
+          contexte: 'Pour régler le programme d’allumage automatique, on complète un tableau bilan. La photorésistance (caractéristique donnée dans le tableau ci-dessous) est en série avec R ; la tension U_R, mesurée aux bornes de R, est convertie par un CAN 10 bits en un nombre N.',
+          liste: [['Résistance R', `${nb(R, 1)} kΩ`], ['Tension d’alimentation U_G', `${nb(UG, 1)} V`], ['CAN 10 bits', 'N = 0 pour 0 V ; N = 1 023 pour 5,0 V (réponse linéaire, courant d’entrée négligeable)'], ['Spécifications', `allumage à ${Ea} lx ; extinction à ${Ee} lx`]],
+          question: 'Complétez le bilan en trois étapes : R_p, puis U_R, puis N.',
+          schema: [{ type: 'chaine' }, { type: 'pont', UG: `${nb(UG, 1)} V`, R: `${nb(R, 1)} kΩ`, mesure: 'R' }],
+        }),
         tableau: { entetes: ['E (lx)', ...Es.map(String)], lignes: [['R_p (kΩ)', ...Es.map(e => nb(Rp(e), 2))]] },
         etapes: [
           { id: 'rp', titre: 'Lire R_p', q: 'Lisez dans le tableau la résistance R_p aux deux éclairements des spécifications.', aide: 'Cherchez la colonne de l’éclairement (en lx), puis lisez la valeur de R_p juste en dessous.', type: 'saisie', champs: champs('rp', 'R_p', 'kΩ', 0.005, l => l.rp),

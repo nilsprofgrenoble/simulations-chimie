@@ -3,6 +3,7 @@ import { KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir,
 import { useSuivi } from "../suivi";
 import { Pic } from "../Pictos";
 import { mel, champOk } from "./AtelierSituationsBanque";
+import { Visuel, EnonceLisible } from "./SchemasC1";
 
 // ====================================================
 //  « COMPRENDRE UNE SITUATION » : exercices à étapes (QCM et saisies), affichés dans l'atelier S'APP (sim 34)
@@ -48,17 +49,18 @@ export function SituationCarte({ def }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ ...styleBoite, background: 'white' }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginBottom: 4 }}>{def.domaine} — {T(def.titre)}</div>
-        <div style={{ fontSize: 16, lineHeight: 1.7, color: KIT.txt }}>{T(ex.enonce)}</div>
+        <EnonceLisible it={ex} T={T}/>
         {ex.tableau && (
           <div style={{ overflowX: 'auto', marginTop: 8 }}>
             <table style={{ borderCollapse: 'collapse', fontSize: 13.5 }}>
               <tbody>
-                <tr>{ex.tableau.entetes.map((h, i) => <th key={i} style={{ border: `1px solid ${KIT.bord}`, padding: '3px 8px', background: '#f1f5f9' }}>{T(h)}</th>)}</tr>
-                {ex.tableau.lignes.map((l, j) => <tr key={j}>{l.map((c, i) => <td key={i} style={{ border: `1px solid ${KIT.bord}`, padding: '3px 8px', textAlign: 'center', fontWeight: i === 0 ? 700 : 400 }}>{T(c)}</td>)}</tr>)}
+                <tr>{ex.tableau.entetes.map((h, i) => <th key={i} style={{ border: `1px solid ${KIT.bord}`, padding: '3px 8px', background: '#f1f5f9', whiteSpace: 'nowrap' }}>{T(h)}</th>)}</tr>
+                {ex.tableau.lignes.map((l, j) => <tr key={j}>{l.map((c, i) => <td key={i} style={{ border: `1px solid ${KIT.bord}`, padding: '3px 8px', textAlign: 'center', whiteSpace: 'nowrap', fontWeight: i === 0 ? 700 : 400 }}>{T(c)}</td>)}</tr>)}
               </tbody>
             </table>
           </div>
         )}
+        <Visuel schema={ex.schema}/>
         <div style={{ marginTop: 8 }}><button onClick={nouveau} style={stylePetitBouton(false)}>🎲 Nouvelle version</button></div>
       </div>
       {ex.etapes.filter((_, i) => i <= etp).map((e, i) => {

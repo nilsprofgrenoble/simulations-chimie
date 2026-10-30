@@ -6,6 +6,7 @@ import { parDomaine } from "./ordreDomaines";
 import { Pic } from "../Pictos";
 import { FAMILLES, NIVEAUX, METHODE_PLAUSIBLE, METHODE_COMPAT, METHODE_DECISION } from "./AtelierValiderBanque";
 import { FigureModeles } from "./FigureModeles";
+import { Visuel, EnonceLisible } from "./SchemasC1";
 
 // ====================================================
 //  SIM 77 — ATELIER « VALIDER » (compétence VAL)
@@ -174,7 +175,8 @@ export function SimulationAtelierValider({ naviguer }) {
         <div style={{ ...styleBoite, background: 'white' }}>
           <div style={{ fontSize: 12.5, color: KIT.txt2, fontWeight: 700 }}>{it.domaine} · {NIVEAUX[it.niveau]}</div>
           <div style={{ fontSize: 16, fontWeight: 800, color: KIT.txt, margin: '2px 0 6px' }}>{it.titre}</div>
-          <div style={{ fontSize: 15, color: KIT.txt, lineHeight: 1.65 }}>{T(it.enonce || it.contexte)}</div>
+          <EnonceLisible it={it} T={T}/>
+          <Visuel schema={it.schema}/>
         </div>
         {it.figure && <FigureModeles fig={it.figure}/>}
         <div data-reperes style={{ ...styleBoite, background: '#fff7ed', border: '1.5px solid #fdba74' }}>

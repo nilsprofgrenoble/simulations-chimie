@@ -4,6 +4,7 @@ import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE
 import { useSuivi } from "../suivi";
 import { parDomaine } from "./ordreDomaines";
 import { FAMILLES, METHODE } from "./AtelierAnalyserBanque";
+import { Visuel, EnonceLisible } from "./SchemasC1";
 
 // ====================================================
 //  SIM 37 — ATELIER « ANALYSER » (compétence S'APP : analyser)
@@ -217,8 +218,8 @@ export function SimulationAtelierAnalyser({ naviguer }) {
     <div style={{ ...styleBoite, background: 'white' }}>
       <div style={{ fontSize: 12.5, color: KIT.txt2, fontWeight: 700 }}>{it.domaine}</div>
       <div style={{ fontSize: 16, fontWeight: 800, color: KIT.txt, margin: '2px 0 6px' }}>{it.titre}</div>
-      <div style={{ fontSize: 15, color: KIT.txt, lineHeight: 1.65 }}>{T(it.enonce)}</div>
-      {it.figure}
+      <EnonceLisible it={it} T={T}/>
+      {it.figure}<Visuel schema={it.schema}/>
     </div>);
   const methode = fam === 'probleme' && (
     <div style={{ ...styleBoite, fontSize: 13.5, color: KIT.txt }}>

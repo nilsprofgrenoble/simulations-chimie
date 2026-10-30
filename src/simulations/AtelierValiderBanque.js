@@ -1220,6 +1220,7 @@ export const PLAUSIBLES = [
     ] }),
 
   P({ id: 'ur-superieure-ug', domaine: 'Transmission de signaux numériques', niveau: 1, titre: 'Une tension supérieure à celle du générateur', plausible: false,
+    schema: { type: 'pont', UG: '5,0 V', R: '1,0 kΩ', mesure: 'R' },
     enonce: 'Un pont diviseur est formé d’une résistance R = 1,0 kΩ en série avec une photorésistance, sous une tension U_G = 5,0 V. Un élève annonce que la tension mesurée aux bornes de R vaut U_R = 7,2 V.',
     reperes: [['Tension du générateur', 'U_G = 5,0 V'], ['Dans un diviseur de tension', 'U_R + U_Rp = U_G'], ['Résultat annoncé', 'U_R = 7,2 V']],
     ver: 'La tension aux bornes d’une des deux résistances est une fraction de U_G : elle est comprise entre 0 et 5,0 V. 7,2 V dépasse la tension du générateur : le résultat est impossible (hypothèse : résistances passives et générateur unique, sans amplificateur).',

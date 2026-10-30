@@ -5,6 +5,7 @@
 // de chaque mauvaise réponse qui comptent. Notation : « Q_V » s'affiche avec un indice ; espaces insécables ajoutés à l'affichage.
 // Option de QCM ou de choix multiple : [texte, juste (booléen), explication].
 
+import { presenter } from './presenter.js';
 const V = (t, e) => [t, true, e];
 const F = (t, e) => [t, false, e];
 
@@ -856,7 +857,13 @@ export const PROBLEMES = [
 
   {
     id: 'seuil-eclairement-n', domaine: 'Transmission de signaux numériques', titre: 'Du seuil d’éclairement au nombre N',
-    enonce: 'Un lampadaire doit s’allumer quand l’éclairement descend sous 600 lx. Une photorésistance est en série avec une résistance R = 2,2 kΩ (pont diviseur), sous U_G = 5,0 V ; on mesure la tension U_R aux bornes de R, envoyée sur un CAN 10 bits (réponse linéaire : N = 0 pour 0 V, N = 1 023 pour 5,0 V). Caractéristique de la photorésistance : R_p = 2,0 kΩ à 400 lx, 1,5 kΩ à 600 lx, 1,2 kΩ à 800 lx. Quelle valeur de N correspond au seuil d’allumage ?',
+    ...presenter({
+      contexte: 'Un lampadaire doit s’allumer quand l’éclairement descend sous 600 lx. Une photorésistance est en série avec une résistance R (pont diviseur) ; la tension U_R, mesurée aux bornes de R, est envoyée sur un CAN 10 bits.',
+      liste: [['Résistance R', '2,2 kΩ'], ['Tension d’alimentation U_G', '5,0 V'], ['CAN 10 bits', 'N = 0 pour 0 V ; N = 1 023 pour 5,0 V (réponse linéaire)'], ['Caractéristique de la photorésistance', 'R_p = 2,0 kΩ à 400 lx ; 1,5 kΩ à 600 lx ; 1,2 kΩ à 800 lx']],
+      question: 'Quelle valeur de N correspond au seuil d’allumage ?',
+      schema: [{ type: 'chaine' }, { type: 'pont', UG: '5,0 V', R: '2,2 kΩ', mesure: 'R' },
+        { type: 'courbe', pts: [[400, 2.0], [600, 1.5], [800, 1.2]], x: [0, 1000, 200], y: [0, 2.5, 0.5] }],
+    }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('Le nombre N lu par le CAN quand l’éclairement vaut 600 lx', 'Le seuil d’allumage, exprimé comme le programme le voit : un nombre N à comparer à N_allumage.'),
       F('La résistance R_p à 600 lx', 'C’est une étape intermédiaire, pas ce que l’on cherche : le programme compare N, pas R_p.'),
@@ -904,7 +911,13 @@ export const PROBLEMES = [
   },
   {
     id: 'n-vers-eclairement', domaine: 'Transmission de signaux numériques', titre: 'Retrouver l’éclairement à partir de N',
-    enonce: 'Un conditionneur (pont diviseur) est formé d’une photorésistance en série avec R = 1,0 kΩ, sous U_G = 5,0 V ; la tension U_R est mesurée aux bornes de R et envoyée sur un CAN 10 bits (réponse linéaire : N = 0 pour 0 V, N = 1 023 pour 5,0 V). Caractéristique : R_p = 1,79 kΩ à 450 lx ; 1,37 kΩ à 720 lx ; 1,13 kΩ à 1 020 lx ; 0,93 kΩ à 1 500 lx. Le programme lit N = 432. Quel est l’éclairement ?',
+    ...presenter({
+      contexte: 'Un conditionneur (pont diviseur) est formé d’une photorésistance en série avec R ; la tension U_R, mesurée aux bornes de R, est envoyée sur un CAN 10 bits. Le programme lit N = 432.',
+      liste: [['Résistance R', '1,0 kΩ'], ['Tension d’alimentation U_G', '5,0 V'], ['CAN 10 bits', 'N = 0 pour 0 V ; N = 1 023 pour 5,0 V (réponse linéaire)'], ['Caractéristique de la photorésistance', 'R_p = 1,79 kΩ à 450 lx ; 1,37 kΩ à 720 lx ; 1,13 kΩ à 1 020 lx ; 0,93 kΩ à 1 500 lx']],
+      question: 'Quel est l’éclairement ?',
+      schema: [{ type: 'chaine' }, { type: 'pont', UG: '5,0 V', R: '1,0 kΩ', mesure: 'R' },
+        { type: 'courbe', pts: [[450, 1.79], [720, 1.37], [1020, 1.13], [1500, 0.93]], x: [0, 1500, 500], y: [0, 2, 0.5] }],
+    }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('L’éclairement E correspondant à N = 432', 'On remonte de N vers E : N → U_R → R_p → E.'),
       F('Le nombre N à 720 lx', 'Ce serait le problème inverse : ici N est donné, E est cherché.'),
@@ -2641,6 +2654,7 @@ export const PREVOIR = [
 
   // ── Transmission de signaux numériques : pont diviseur avec une photorésistance (cahier des charges C1, A2) ──
   { id: 'ur-eclairement', domaine: 'Transmission de signaux numériques', titre: 'Pont diviseur : la tension aux bornes de R',
+    schema: { type: 'pont', UG: '5,0 V', mesure: 'R' },
     enonce: 'Une photorésistance (résistance R_p) est en série avec une résistance fixe R, sous une tension constante U_G. La tension U_R est mesurée aux bornes de R. Quand l’éclairement augmente, la résistance de la photorésistance diminue.', q: 'Quand l’éclairement augmente, la tension U_R…', options: [
       V('augmente', 'U_R = U_G × R / (R + R_p). Si R_p diminue, le dénominateur diminue : le rapport R / (R + R_p) augmente, donc U_R augmente. (Autre point de vue : le courant augmente, et U_R = R × I.)'),
       F('diminue', 'Ce serait vrai pour la tension aux bornes de la photorésistance, pas aux bornes de R. Ici R est au numérateur : si R_p diminue, la part de tension prise par R augmente.'),
@@ -2648,6 +2662,7 @@ export const PREVOIR = [
       F('devient égale à U_G', 'U_R se rapproche de U_G seulement si R_p devient très petit devant R ; elle reste inférieure à U_G tant que R_p n’est pas nulle.'),
     ] },
   { id: 'up-eclairement', domaine: 'Transmission de signaux numériques', titre: 'Pont diviseur : la tension aux bornes de la photorésistance',
+    schema: { type: 'pont', UG: '5,0 V', mesure: 'Rp' },
     enonce: 'Même montage (photorésistance R_p en série avec R, sous U_G constante), mais on mesure maintenant la tension U_Rp aux bornes de la photorésistance. L’éclairement augmente, donc R_p diminue.', q: 'La tension U_Rp aux bornes de la photorésistance…', options: [
       V('diminue', 'U_Rp = U_G × R_p / (R + R_p) : R_p diminue, donc sa part de la tension diminue. On a aussi U_Rp = U_G − U_R, et U_R augmente.'),
       F('augmente', 'C’est la tension aux bornes de R qui augmente. Les deux tensions se partagent U_G : quand l’une augmente, l’autre diminue.'),
@@ -2655,6 +2670,7 @@ export const PREVOIR = [
       F('devient négative', 'Une tension aux bornes d’une résistance traversée par un courant dans le sens normal reste positive ; elle tend vers 0 si R_p tend vers 0.'),
     ] },
   { id: 'echange-positions', domaine: 'Transmission de signaux numériques', titre: 'Échanger les positions de R et de la CTN',
+    schema: [{ type: 'pont', mesure: 'R', capteur: 'CTN', lumiere: false, titre: 'Montage 1' }, { type: 'pont', mesure: 'Rp', capteur: 'CTN', lumiere: false, titre: 'Montage 2' }],
     enonce: 'Un pont diviseur est formé d’une thermistance CTN (sa résistance diminue quand la température augmente) en série avec une résistance fixe R, sous une tension U_G constante. Dans le montage 1, on mesure la tension aux bornes de R ; dans le montage 2, on mesure la tension aux bornes de la CTN. La température augmente.', q: 'Que deviennent les deux tensions ?', options: [
       V('Montage 1 : la tension augmente ; montage 2 : la tension diminue', 'La résistance de la CTN diminue : la tension à ses bornes diminue (montage 2), donc celle aux bornes de R, qui complète jusqu’à U_G, augmente (montage 1).'),
       F('Montage 1 : la tension diminue ; montage 2 : la tension augmente', 'Sens inversé : la grandeur qui diminue est la résistance de la CTN, donc la tension à ses bornes, pas celle aux bornes de R.'),
@@ -2662,6 +2678,7 @@ export const PREVOIR = [
       F('Les deux tensions diminuent', 'Leur somme vaut U_G, constante : elles ne peuvent pas diminuer toutes les deux.'),
     ] },
   { id: 'r-augmente', domaine: 'Transmission de signaux numériques', titre: 'Augmenter la résistance fixe R',
+    schema: { type: 'pont', UG: '5,0 V', mesure: 'R' },
     enonce: 'Dans un pont diviseur (R en série avec une photorésistance R_p sous U_G = 5,0 V), on mesure U_R aux bornes de R. L’éclairement reste constant. On remplace R par une résistance deux fois plus grande.', q: 'La tension U_R…', options: [
       V('augmente, mais sans doubler', 'U_R = U_G / (1 + R_p / R). Quand R double, R_p / R est divisé par 2 : U_R augmente, mais elle ne peut pas dépasser U_G. Elle n’est pas proportionnelle à R.'),
       F('double', 'U_R n’est pas proportionnelle à R : R figure aussi au dénominateur (R + R_p). Doubler R ne double pas U_R, qui reste de toute façon inférieure à U_G.'),
@@ -2669,6 +2686,7 @@ export const PREVOIR = [
       F('reste constante', 'R intervient dans le partage de la tension : changer R change U_R.'),
     ] },
   { id: 'ug-double', domaine: 'Transmission de signaux numériques', titre: 'Doubler la tension d’alimentation',
+    schema: { type: 'pont', UG: '5,0 V → 10,0 V', mesure: 'R' },
     enonce: 'Dans un pont diviseur, R et R_p sont fixes. On double la tension d’alimentation U_G (de 5,0 V à 10,0 V).', q: 'La tension U_R aux bornes de R est…', options: [
       V('doublée', 'U_R = U_G × R / (R + R_p) est proportionnelle à U_G quand R et R_p sont fixes : le rapport R / (R + R_p) ne change pas.'),
       F('inchangée', 'Le rapport R / (R + R_p) est inchangé, mais il multiplie une tension U_G deux fois plus grande.'),
