@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, useState } from "react";
 import { KIT, avecIndices } from "../commun";
 
 // ====================================================
@@ -229,8 +229,45 @@ function Arduino({ cas = 'led' }) {
     </div>);
 }
 
+
+// ── Essai : on fait varier une grandeur du pont diviseur et on lit les tensions (après la prédiction) ──
+// variable : 'Rp' (R_p varie), 'R' (R varie) ou 'UG' (U_G varie) ; les autres grandeurs restent fixes.
+const fr = (v, d = 2) => Number(v).toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d });
+function Essai({ variable = 'Rp', UG = 5, R = 1, Rp = 1.5, min, max, step = 0.05, mesure = 'R', consigne = '' }) {
+  const init = variable === 'Rp' ? Rp : variable === 'R' ? R : UG;
+  const [x, setX] = useState(init);
+  const g = variable === 'UG' ? x : UG, r = variable === 'R' ? x : R, rp = variable === 'Rp' ? x : Rp;
+  const ur = g * r / (r + rp), urp = g * rp / (r + rp);
+  const u = mesure === 'Rp' ? urp : ur;
+  const nom = variable === 'Rp' ? 'R_p' : variable === 'R' ? 'R' : 'U_G', unite = variable === 'UG' ? 'V' : 'kΩ';
+  const lib = mesure === 'Rp' ? 'U_Rp' : 'U_R';
+  const part = 100 * ur / g;
+  return (
+    <div style={boite} data-schema="essai">
+      <div style={{ fontWeight: 700, fontSize: 14, color: '#0f172a' }}>À vous de tester</div>
+      <div style={{ fontSize: 13, color: '#475569', margin: '2px 0 6px', lineHeight: 1.45 }}>{avecIndices(consigne || `Faites varier ${nom} et comparez avec votre prédiction.`)}</div>
+      <label style={{ display: 'block', fontSize: 14, color: '#0f172a' }}>
+        <span style={{ fontWeight: 700 }}>{avecIndices(nom)} = {fr(x, variable === 'UG' ? 1 : 2)} {unite}</span>
+        <input type="range" min={min} max={max} step={step} value={x} onChange={e => setX(Number(e.target.value))} aria-label={`Valeur de ${nom}`}
+          style={{ width: '100%', accentColor: BLEU, margin: '6px 0 2px' }}/>
+      </label>
+      <div style={{ position: 'relative', height: 22, borderRadius: 4, overflow: 'hidden', border: `1px solid ${KIT.bord}`, display: 'flex', margin: '6px 0' }} role="img"
+        aria-label={`U_R représente ${fr(part, 0)} % de U_G`}>
+        <div style={{ width: `${part}%`, background: mesure === 'Rp' ? '#cbd5e1' : '#93c5fd', transition: 'width .1s' }}/>
+        <div style={{ flex: 1, background: mesure === 'Rp' ? '#93c5fd' : '#cbd5e1' }}/>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, color: '#64748b' }}><span>{avecIndices('U_R')}</span><span>{avecIndices('U_Rp')}</span></div>
+      <div style={{ fontSize: 14.5, color: '#0f172a', marginTop: 6, lineHeight: 1.6 }}>
+        <div>{avecIndices(`U_R = ${fr(ur)} V`)} · {avecIndices(`U_Rp = ${fr(urp)} V`)} {variable === 'UG' ? '' : <>· {avecIndices('U_G')} = {fr(g, 1)} V</>}</div>
+        {variable !== 'UG' && <div style={{ fontWeight: 700, color: BLEU }}>{avecIndices(lib)} = {fr(u)} V → N = {Math.round(u * 1023 / 5)}</div>}
+        {variable === 'UG' && <div style={{ fontWeight: 700, color: BLEU }}>{avecIndices(lib)} = {fr(u)} V</div>}
+      </div>
+      <Note t={variable === 'UG' ? 'Rapport U_R / U_G constant : seul U_G change. Au-delà de 5,0 V, le CAN saturerait (hors du programme de cet exercice).' : 'Hypothèse : le CAN ne prélève pas de courant (impédance d’entrée très grande) ; N = U × 1 023 / 5,0.'}/>
+    </div>);
+}
+
 // ── Répartition ──
-const DESSINS = { pont: SchemaPont, chaine: ChaineMesure, courbe: Courbe, retard: Retard, arduino: Arduino };
+const DESSINS = { pont: SchemaPont, chaine: ChaineMesure, courbe: Courbe, retard: Retard, arduino: Arduino, essai: Essai };
 export function Visuel({ schema, revele = false }) {
   if (!schema) return null;
   const liste = Array.isArray(schema) ? schema : [schema];

@@ -2656,7 +2656,7 @@ export const PREVOIR = [
 
   // ── Transmission de signaux numériques : pont diviseur avec une photorésistance (cahier des charges C1, A2) ──
   { id: 'ur-eclairement', domaine: 'Transmission de signaux numériques', titre: 'Pont diviseur : la tension aux bornes de R',
-    schema: { type: 'pont', UG: '5,0 V', mesure: 'R' },
+    schema: [{ type: 'pont', UG: '5,0 V', mesure: 'R' }, { type: 'essai', seulementApres: true, variable: 'Rp', R: 1, Rp: 2, min: 0.2, max: 5, mesure: 'R', consigne: 'Faites diminuer R_p, comme quand l’éclairement augmente : que fait U_R ?' }],
     enonce: 'Une photorésistance (résistance R_p) est en série avec une résistance fixe R, sous une tension constante U_G. La tension U_R est mesurée aux bornes de R. Quand l’éclairement augmente, la résistance de la photorésistance diminue.', q: 'Quand l’éclairement augmente, la tension U_R…', options: [
       V('augmente', 'U_R = U_G × R / (R + R_p). Si R_p diminue, le dénominateur diminue : le rapport R / (R + R_p) augmente, donc U_R augmente. (Autre point de vue : le courant augmente, et U_R = R × I.)'),
       F('diminue', 'Ce serait vrai pour la tension aux bornes de la photorésistance, pas aux bornes de R. Ici R est au numérateur : si R_p diminue, la part de tension prise par R augmente.'),
@@ -2664,7 +2664,7 @@ export const PREVOIR = [
       F('devient égale à U_G', 'U_R se rapproche de U_G seulement si R_p devient très petit devant R ; elle reste inférieure à U_G tant que R_p n’est pas nulle.'),
     ] },
   { id: 'up-eclairement', domaine: 'Transmission de signaux numériques', titre: 'Pont diviseur : la tension aux bornes de la photorésistance',
-    schema: { type: 'pont', UG: '5,0 V', mesure: 'Rp' },
+    schema: [{ type: 'pont', UG: '5,0 V', mesure: 'Rp' }, { type: 'essai', seulementApres: true, variable: 'Rp', R: 1, Rp: 2, min: 0.2, max: 5, mesure: 'Rp', consigne: 'Faites diminuer R_p, comme quand l’éclairement augmente : que fait U_Rp ?' }],
     enonce: 'Même montage (photorésistance R_p en série avec R, sous U_G constante), mais on mesure maintenant la tension U_Rp aux bornes de la photorésistance. L’éclairement augmente, donc R_p diminue.', q: 'La tension U_Rp aux bornes de la photorésistance…', options: [
       V('diminue', 'U_Rp = U_G × R_p / (R + R_p) : R_p diminue, donc sa part de la tension diminue. On a aussi U_Rp = U_G − U_R, et U_R augmente.'),
       F('augmente', 'C’est la tension aux bornes de R qui augmente. Les deux tensions se partagent U_G : quand l’une augmente, l’autre diminue.'),
@@ -2680,7 +2680,7 @@ export const PREVOIR = [
       F('Les deux tensions diminuent', 'Leur somme vaut U_G, constante : elles ne peuvent pas diminuer toutes les deux.'),
     ] },
   { id: 'r-augmente', domaine: 'Transmission de signaux numériques', titre: 'Augmenter la résistance fixe R',
-    schema: { type: 'pont', UG: '5,0 V', mesure: 'R' },
+    schema: [{ type: 'pont', UG: '5,0 V', mesure: 'R' }, { type: 'essai', seulementApres: true, variable: 'R', R: 1, Rp: 1.5, min: 0.2, max: 5, mesure: 'R', consigne: 'Faites varier R, l’éclairement (donc R_p) restant constant : que fait U_R ?' }],
     enonce: 'Dans un pont diviseur (R en série avec une photorésistance R_p sous U_G = 5,0 V), on mesure U_R aux bornes de R. L’éclairement reste constant. On remplace R par une résistance deux fois plus grande.', q: 'La tension U_R…', options: [
       V('augmente, mais sans doubler', 'U_R = U_G / (1 + R_p / R). Quand R double, R_p / R est divisé par 2 : U_R augmente, mais elle ne peut pas dépasser U_G. Elle n’est pas proportionnelle à R.'),
       F('double', 'U_R n’est pas proportionnelle à R : R figure aussi au dénominateur (R + R_p). Doubler R ne double pas U_R, qui reste de toute façon inférieure à U_G.'),
@@ -2688,7 +2688,7 @@ export const PREVOIR = [
       F('reste constante', 'R intervient dans le partage de la tension : changer R change U_R.'),
     ] },
   { id: 'ug-double', domaine: 'Transmission de signaux numériques', titre: 'Doubler la tension d’alimentation',
-    schema: { type: 'pont', UG: '5,0 V → 10,0 V', mesure: 'R' },
+    schema: [{ type: 'pont', UG: '5,0 V → 10,0 V', mesure: 'R' }, { type: 'essai', seulementApres: true, variable: 'UG', UG: 5, R: 1, Rp: 1.5, min: 1, max: 10, step: 0.1, mesure: 'R', consigne: 'Faites passer U_G de 5,0 V à 10,0 V, R et R_p restant fixes : que fait U_R ?' }],
     enonce: 'Dans un pont diviseur, R et R_p sont fixes. On double la tension d’alimentation U_G (de 5,0 V à 10,0 V).', q: 'La tension U_R aux bornes de R est…', options: [
       V('doublée', 'U_R = U_G × R / (R + R_p) est proportionnelle à U_G quand R et R_p sont fixes : le rapport R / (R + R_p) ne change pas.'),
       F('inchangée', 'Le rapport R / (R + R_p) est inchangé, mais il multiplie une tension U_G deux fois plus grande.'),
@@ -2696,7 +2696,7 @@ export const PREVOIR = [
       F('divisée par 2', 'Sens inversé : plus la tension aux bornes du montage est grande, plus chaque tension partielle est grande.'),
     ] },
   { id: 'n-eclairement', domaine: 'Transmission de signaux numériques', titre: 'Le nombre N quand l’éclairement augmente',
-    schema: { type: 'chaine', apres: { actif: [0, 1, 2, 3], inconnu: 3, note: 'Chemin de la cause à l’effet : éclairement → R_p → U_R → N.' }, seulementApres: true },
+    schema: [{ type: 'chaine', apres: { actif: [0, 1, 2, 3], inconnu: 3, note: 'Chemin de la cause à l’effet : éclairement → R_p → U_R → N.' }, seulementApres: true }, { type: 'essai', seulementApres: true, variable: 'Rp', R: 1, Rp: 2, min: 0.2, max: 5, mesure: 'R', consigne: 'Faites diminuer R_p, comme quand l’éclairement augmente : que fait N ?' }],
     enonce: 'Une photorésistance est en série avec R ; la tension U_R aux bornes de R est envoyée sur l’entrée d’un CAN 10 bits (N entre 0 et 1 023, avec N proportionnel à la tension). L’éclairement augmente (la résistance de la photorésistance diminue).', q: 'Le nombre N donné par le CAN…', options: [
       V('augmente', 'L’éclairement augmente, R_p diminue, U_R augmente. Le CAN fournit un nombre proportionnel à la tension : N augmente.'),
       F('diminue', 'Il diminuerait si on mesurait la tension aux bornes de la photorésistance. Ici, U_R augmente avec l’éclairement, donc N aussi.'),
