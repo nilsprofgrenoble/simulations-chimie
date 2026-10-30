@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { Visuel } from "./SchemasC1";
 import { KIT, stylePetitBouton } from "../commun";
 
 // ====================================================
@@ -210,17 +211,7 @@ export function genPont() {
     { t: 'z', j: <>U<sub>G</sub> × {brnJ} / R<sub>p</sub></>, ok: false },
   ]);
   const unG = nb(cas.UG, 2), Rtxt = `${nb(cas.R, 2)}${NB}${cas.unR}`;
-  const figure = (
-    <div style={{ background: 'white', border: `1px solid ${KIT.bord}`, borderRadius: 8, padding: 6 }}>
-      <svg viewBox="0 0 330 150" role="img" aria-label="Pont diviseur : générateur, résistance R et capteur Rp en série" style={{ width: '100%', maxWidth: 360 }}>
-        <rect x="40" y="20" width="250" height="100" fill="none" stroke="#334155" strokeWidth="2" rx="4"/>
-        <rect x="140" y="12" width="70" height="16" fill="white" stroke="#334155" strokeWidth="2"/><text x="175" y="42" fontSize="12" textAnchor="middle" fill="#0f172a">R = {Rtxt}</text>
-        <rect x="278" y="55" width="24" height="40" fill="white" stroke="#334155" strokeWidth="2"/><text x="244" y="78" fontSize="12" textAnchor="end" fill="#0f172a">R</text><text x="249" y="82" fontSize="9" fill="#0f172a">p</text>
-        <circle cx="40" cy="70" r="14" fill="white" stroke="#334155" strokeWidth="2"/><text x="40" y="74" fontSize="11" textAnchor="middle" fill="#0f172a">U</text><text x="47" y="78" fontSize="8" fill="#0f172a">G</text>
-        <text x="62" y="68" fontSize="12" fill="#0f172a">{unG} V</text>
-        <text x="175" y="140" fontSize="12" textAnchor="middle" fill="#2563eb" fontWeight="700">on mesure U<tspan fontSize="9" dy="3">{aux === 'R' ? 'R' : 'Rp'}</tspan><tspan dy="-3"> : tension aux bornes {aux === 'R' ? 'de R' : 'du capteur'}</tspan></text>
-      </svg>
-    </div>);
+  const figure = <Visuel schema={{ type: 'pont', UG: `${unG} V`, R: Rtxt, mesure: aux === 'R' ? 'R' : 'Rp', can: false, lumiere: cas.nom === 'photorésistance', capteur: cas.nom === 'photorésistance' ? 'p' : 'CTN' }}/>;
   const qs = [
     { id: 'p0', type: 'qcm', q: <>Quelle est l’<b>expression littérale</b> de {UJ} (diviseur de tension) ?</>, options: exprs.map(e => e.j), bonne: exprs.findIndex(e => e.ok),
       aide: 'La tension aux bornes d’une résistance en série vaut la tension totale multipliée par (cette résistance) / (somme des résistances).',

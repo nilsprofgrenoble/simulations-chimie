@@ -1220,6 +1220,7 @@ export const PLAUSIBLES = [
     ] }),
 
   P({ id: 'ur-superieure-ug', domaine: 'Transmission de signaux numériques', niveau: 1, titre: 'Une tension supérieure à celle du générateur', plausible: false,
+    schema: { type: 'pont', UG: '5,0 V', R: '1,0 kΩ', mesure: 'R' },
     enonce: 'Un pont diviseur est formé d’une résistance R = 1,0 kΩ en série avec une photorésistance, sous une tension U_G = 5,0 V. Un élève annonce que la tension mesurée aux bornes de R vaut U_R = 7,2 V.',
     reperes: [['Tension du générateur', 'U_G = 5,0 V'], ['Dans un diviseur de tension', 'U_R + U_Rp = U_G'], ['Résultat annoncé', 'U_R = 7,2 V']],
     ver: 'La tension aux bornes d’une des deux résistances est une fraction de U_G : elle est comprise entre 0 et 5,0 V. 7,2 V dépasse la tension du générateur : le résultat est impossible (hypothèse : résistances passives et générateur unique, sans amplificateur).',
@@ -1230,6 +1231,7 @@ export const PLAUSIBLES = [
       F('Le générateur délivre en fait plus de 5,0 V', 'L’énoncé donne U_G = 5,0 V : un résultat ne peut pas contredire les données du problème.'),
     ] }),
   P({ id: 'n-hors-plage', domaine: 'Transmission de signaux numériques', niveau: 1, titre: 'Un nombre qui dépasse la plage du CAN', plausible: false,
+    schema: { type: 'chaine', actif: [3], inconnu: 3 },
     enonce: 'Un microcontrôleur lit une tension avec un CAN 10 bits. Un élève calcule N = 2,3 × 1 023 = 2 353 pour une tension U = 2,3 V (plage 0 – 5,0 V).',
     reperes: [['CAN 10 bits', 'N entre 0 et 1 023'], ['Plage de tension', '0 à 5,0 V'], ['Résultat annoncé', 'N = 2 353']],
     ver: 'Un CAN 10 bits ne fournit que des nombres entre 0 et 1 023 : N = 2 353 est impossible. Estimation : 2,3 V est un peu moins de la moitié de 5,0 V, donc N doit valoir un peu moins de 500 (hypothèse : réponse linéaire entre 0 V et 5,0 V).',
@@ -1240,6 +1242,7 @@ export const PLAUSIBLES = [
       F('Il faut ajouter 5,0 V au résultat', 'Ajouter une tension à un nombre n’a pas de sens : les grandeurs n’ont pas la même nature.'),
     ] }),
   P({ id: 'n-plausible', domaine: 'Transmission de signaux numériques', niveau: 1, titre: 'Un nombre N cohérent avec la tension', plausible: true,
+    schema: { type: 'chaine', actif: [3], inconnu: 3 },
     enonce: 'Avec un CAN 10 bits (plage 0 – 5,0 V, réponse linéaire), un élève annonce N = 471 pour une tension U = 2,3 V.',
     reperes: [['CAN 10 bits', 'N entre 0 et 1 023'], ['Plage de tension', '0 à 5,0 V'], ['Résultat annoncé', 'N = 471 pour 2,3 V']],
     ver: 'N est dans la plage 0 – 1 023. Estimation : 2,3 V représente un peu moins de la moitié de 5,0 V (46 %), donc N doit être un peu inférieur à 512 : 471 convient (471 / 1 023 ≈ 0,46). Hypothèse : réponse linéaire entre 0 V et 5,0 V.',
