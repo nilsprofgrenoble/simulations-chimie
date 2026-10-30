@@ -284,16 +284,17 @@ function Cuve({ capteur = true }) {
   const u = useId().replace(/:/g, '');
   return (
     <div style={boite} data-schema="cuve">
-      <svg viewBox="0 0 360 230" role="img" aria-label={`Cuve ouverte contenant un liquide sur une hauteur h${capteur ? ', capteur de pression au fond' : ''}`} style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
+      <svg viewBox="0 0 360 248" role="img" aria-label={`Cuve ouverte contenant un liquide sur une hauteur h${capteur ? ', capteur de pression au fond' : ''}`} style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
         <defs><F id={`${u}f`} c="#475569"/><F id={`${u}a`} c={TR}/></defs>
         <rect x="100" y="80" width="150" height="120" fill={EAU}/>
         <path d="M100,40 L100,200 L250,200 L250,40" fill="none" stroke={TR} strokeWidth="3"/>
         <path d="M100,80 q18.75,-5 37.5,0 t37.5,0 t37.5,0 t37.5,0" fill="none" stroke="#2563eb" strokeWidth="2"/>
         <text x="175" y="150" fontSize="14" textAnchor="middle" fill="#1e3a8a">liquide</text>
         <line x1="175" y1="14" x2="175" y2="40" stroke={TR} strokeWidth="1.6" markerEnd={`url(#${u}a)`}/>
-        <text x="185" y="26" fontSize="12" fill="#334155">air (pression atmosphérique)</text>
+        <text x="185" y="26" fontSize="12.5" fill="#334155">air (pression atmosphérique)</text>
         <Cote u={u} x1="275" y1="82" x2="275" y2="198" txt={<tspan fontStyle="italic">h</tspan>} tx="285" ty="145"/>
-        {capteur && <g><rect x="160" y="200" width="30" height="12" fill="#e2e8f0" stroke={TR} strokeWidth="2"/><text x="175" y="226" fontSize="12" textAnchor="middle" fill="#0f172a">capteur de pression</text></g>}
+        {capteur && <g><rect x="160" y="200" width="30" height="12" fill="#e2e8f0" stroke={TR} strokeWidth="2"/><text x="175" y="228" fontSize="13" textAnchor="middle" fill="#0f172a">capteur de pression</text></g>}
+        <text x="175" y="245" fontSize="12" textAnchor="middle" fill="#64748b">schéma non à l’échelle</text>
       </svg>
     </div>);
 }
@@ -307,19 +308,17 @@ function TubeU() {
       <svg viewBox="0 0 360 250" role="img" aria-label="Tube en U ouvert aux deux extrémités : huile dans la branche gauche au-dessus de l’eau, surface de séparation huile-eau, hauteurs h_h et h_e au-dessus de cette surface" style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
         <defs><F id={`${u}f`} c="#475569"/></defs>
         <rect x="110" y={yG} width="40" height={yi - yG} fill={HUILE}/>
-        <path d={`M110,${yi} L150,${yi} L150,210 L210,210 L210,${yD} L250,${yD} L250,210 L250,210`} fill="none"/>
-        <rect x="110" y={yi} width="40" height={50} fill={EAU}/><rect x="150" y="190" width="60" height="20" fill={EAU}/>
-        <rect x="210" y={yD} width="40" height={210 - yD} fill={EAU}/>
+        <polygon points={`110,${yi} 150,${yi} 150,190 210,190 210,${yD} 250,${yD} 250,210 110,210`} fill={EAU}/>
         <path d="M110,40 L110,210 L250,210 L250,40 M150,40 L150,190 L210,190 L210,40" fill="none" stroke={TR} strokeWidth="3" strokeLinejoin="round"/>
         <line x1="110" y1={yi} x2="150" y2={yi} stroke="#b45309" strokeWidth="2" strokeDasharray="4 3"/>
-        <line x1="210" y1={yi} x2="262" y2={yi} stroke="#64748b" strokeWidth="1.4" strokeDasharray="4 3"/>
-        <text x="262" y={yi + 14} fontSize="11" fill="#64748b">même altitude que</text><text x="262" y={yi + 27} fontSize="11" fill="#64748b">la séparation</text>
+        <line x1="210" y1={yi} x2="256" y2={yi} stroke="#64748b" strokeWidth="1.4" strokeDasharray="4 3"/>
+        <text x="258" y={yi + 15} fontSize="12.5" fill="#64748b">même altitude</text><text x="258" y={yi + 29} fontSize="12.5" fill="#64748b">que la séparation</text>
         <text x="130" y={(yG + yi) / 2 + 4} fontSize="13" textAnchor="middle" fill="#78350f">huile</text>
         <text x="130" y={yi + 30} fontSize="13" textAnchor="middle" fill="#1e3a8a">eau</text>
         <text x="230" y={yD + 40} fontSize="13" textAnchor="middle" fill="#1e3a8a">eau</text>
         <Cote u={u} x1="92" y1={yG + 1} x2="92" y2={yi - 1} txt={<><tspan fontStyle="italic">h</tspan><tspan fontSize="0.75em" dy="3">h</tspan></>} tx="84" ty={(yG + yi) / 2 + 4} anchor="end"/>
         <Cote u={u} x1="270" y1={yD + 1} x2="270" y2={yi - 1} txt={<><tspan fontStyle="italic">h</tspan><tspan fontSize="0.75em" dy="3">e</tspan></>} tx="280" ty={(yD + yi) / 2 + 4}/>
-        <text x="180" y="236" fontSize="12" textAnchor="middle" fill="#334155">tube ouvert à l’air libre aux deux extrémités</text>
+        <text x="180" y="236" fontSize="12.5" textAnchor="middle" fill="#334155">tube ouvert à l’air libre aux deux extrémités</text>
       </svg>
     </div>);
 }
@@ -327,19 +326,20 @@ function TubeU() {
 // Conduite horizontale à rétrécissement
 function Venturi() {
   const u = useId().replace(/:/g, '');
+  // d₂ / d₁ = 10 / 40 : proportions de l'énoncé (diamètre 100 px en amont, 25 px au col)
   return (
     <div style={boite} data-schema="venturi">
-      <svg viewBox="0 0 360 210" role="img" aria-label="Conduite horizontale dont le diamètre passe de d1 en amont à d2 au col, avec la pression P et la vitesse v de chaque côté" style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
+      <svg viewBox="0 0 360 214" role="img" aria-label="Conduite horizontale dont le diamètre passe de d1 en amont à d2 au col, avec la pression P et la vitesse v de chaque côté" style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
         <defs><F id={`${u}f`} c="#475569"/><F id={`${u}a`} c="#2563eb"/></defs>
-        <path d="M20,50 L140,50 L190,80 L330,80 M20,150 L140,150 L190,120 L330,120" fill="none" stroke={TR} strokeWidth="3" strokeLinejoin="round"/>
-        <path d="M20,50 L140,50 L190,80 L330,80 L330,120 L190,120 L140,150 L20,150 Z" fill={EAU} opacity="0.55"/>
-        <line x1="40" y1="100" x2="100" y2="100" stroke="#2563eb" strokeWidth="2.5" markerEnd={`url(#${u}a)`}/>
-        <line x1="225" y1="100" x2="285" y2="100" stroke="#2563eb" strokeWidth="2.5" markerEnd={`url(#${u}a)`}/>
-        <Cote u={u} x1="75" y1="52" x2="75" y2="148" txt={<><tspan fontStyle="italic">d</tspan><tspan fontSize="0.75em" dy="3">1</tspan></>} tx="83" ty="88" c="#0f172a"/>
-        <Cote u={u} x1="255" y1="82" x2="255" y2="118" txt={<><tspan fontStyle="italic">d</tspan><tspan fontSize="0.75em" dy="3">2</tspan></>} tx="263" ty="74" c="#0f172a"/>
-        <text x="70" y="185" fontSize="13" textAnchor="middle" fill="#0f172a"><Ind b="P" i="1"/> , <Ind b="v" i="1"/></text><text x="70" y="201" fontSize="11" textAnchor="middle" fill="#64748b">en amont</text>
-        <text x="255" y="185" fontSize="13" textAnchor="middle" fill="#0f172a"><Ind b="P" i="2"/> , <Ind b="v" i="2"/></text><text x="255" y="201" fontSize="11" textAnchor="middle" fill="#64748b">au col</text>
-        <text x="330" y="36" fontSize="11" textAnchor="end" fill="#64748b">conduite horizontale</text>
+        <path d="M20,50 L140,50 L190,87.5 L330,87.5 L330,112.5 L190,112.5 L140,150 L20,150 Z" fill={EAU} opacity="0.55"/>
+        <path d="M20,50 L140,50 L190,87.5 L330,87.5 M20,150 L140,150 L190,112.5 L330,112.5" fill="none" stroke={TR} strokeWidth="3" strokeLinejoin="round"/>
+        <line x1="95" y1="100" x2="150" y2="100" stroke="#2563eb" strokeWidth="2.5" markerEnd={`url(#${u}a)`}/>
+        <line x1="205" y1="100" x2="265" y2="100" stroke="#2563eb" strokeWidth="2.5" markerEnd={`url(#${u}a)`}/>
+        <Cote u={u} x1="55" y1="52" x2="55" y2="148" txt={<><tspan fontStyle="italic">d</tspan><tspan fontSize="0.75em" dy="3">1</tspan></>} tx="63" ty="104" c="#0f172a"/>
+        <Cote u={u} x1="300" y1="89" x2="300" y2="111" txt={<><tspan fontStyle="italic">d</tspan><tspan fontSize="0.75em" dy="3">2</tspan></>} tx="300" ty="78" anchor="middle" c="#0f172a"/>
+        <text x="70" y="182" fontSize="14" textAnchor="middle" fill="#0f172a"><Ind b="P" i="1"/> et <Ind b="v" i="1"/></text><text x="70" y="199" fontSize="12.5" textAnchor="middle" fill="#64748b">en amont</text>
+        <text x="255" y="182" fontSize="14" textAnchor="middle" fill="#0f172a"><Ind b="P" i="2"/> et <Ind b="v" i="2"/></text><text x="255" y="199" fontSize="12.5" textAnchor="middle" fill="#64748b">au col</text>
+        <text x="330" y="36" fontSize="12.5" textAnchor="end" fill="#64748b">conduite horizontale</text>
       </svg>
     </div>);
 }
@@ -349,7 +349,7 @@ function PompePuits() {
   const u = useId().replace(/:/g, '');
   return (
     <div style={boite} data-schema="pompe">
-      <svg viewBox="0 0 360 250" role="img" aria-label="Pompe immergée dans un puits, conduite de refoulement qui monte jusqu’à la sortie, hauteur de refoulement h" style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
+      <svg viewBox="0 0 360 262" role="img" aria-label="Pompe immergée dans un puits, conduite de refoulement qui monte jusqu’à la sortie, hauteur de refoulement h" style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
         <defs><F id={`${u}f`} c="#475569"/><F id={`${u}a`} c="#2563eb"/></defs>
         <rect x="60" y="170" width="150" height="70" fill={EAU}/>
         <path d="M60,150 L60,240 L210,240 L210,150" fill="none" stroke={TR} strokeWidth="3"/>
@@ -358,11 +358,12 @@ function PompePuits() {
         <path d="M135,186 L135,40 L260,40" fill="none" stroke={TR} strokeWidth="6" strokeLinejoin="round"/>
         <path d="M135,186 L135,40 L260,40" fill="none" stroke={EAU} strokeWidth="3" strokeLinejoin="round"/>
         <line x1="240" y1="40" x2="262" y2="40" stroke="#2563eb" strokeWidth="2.5" markerEnd={`url(#${u}a)`}/>
-        <text x="262" y="30" fontSize="12" fill="#334155">sortie</text>
+        <text x="262" y="28" fontSize="13" fill="#334155">sortie</text>
         <line x1="60" y1="170" x2="300" y2="170" stroke="#64748b" strokeWidth="1.3" strokeDasharray="4 3"/>
-        <text x="300" y="184" fontSize="11" fill="#64748b" textAnchor="end">surface de l’eau</text>
+        <line x1="262" y1="40" x2="304" y2="40" stroke="#64748b" strokeWidth="1.3" strokeDasharray="4 3"/>
+        <text x="300" y="186" fontSize="12.5" fill="#64748b" textAnchor="end">surface de l’eau</text>
         <Cote u={u} x1="300" y1="42" x2="300" y2="168" txt={<tspan fontStyle="italic">h</tspan>} tx="310" ty="110"/>
-        <text x="148" y="112" fontSize="12" fill="#334155">conduite de refoulement</text><text x="180" y="248" fontSize="11" textAnchor="middle" fill="#64748b">schéma non à l’échelle</text>
+        <text x="148" y="112" fontSize="12.5" fill="#334155">conduite de refoulement</text><text x="180" y="258" fontSize="12" textAnchor="middle" fill="#64748b">schéma non à l’échelle</text>
       </svg>
     </div>);
 }
