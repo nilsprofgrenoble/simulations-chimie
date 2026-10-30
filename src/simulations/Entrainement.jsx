@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, lireProgression, Etoiles, useEtatPersistant } from "../commun";
 import { etoilesSeance } from "../carnet";
 import { ENONCES } from "./AtelierDonneesBanque";
+import { SITUATIONS } from "./AtelierSituationsBanque";
 import { SCENARIOS } from "./AtelierGraphiqueBanque";
 import { FAMILLES as FAM_REA } from "./AtelierRealiserBanque";
 import { FAMILLES as FAM_ANA } from "./AtelierAnalyserBanque";
@@ -40,6 +41,7 @@ const COMPETENCES = [
 export function tousLesExercices() {
   const L = [];
   ENONCES.forEach(e => e.noms.forEach((n, q) => L.push({ atelier: 34, comp: "S'APP", cle: `34:${e.id}.${q}`, ex: `${e.id}.${q}`, domaine: e.domaine, titre: `${e.titre} — ${n}` })));
+  SITUATIONS.forEach(s => L.push({ atelier: 34, comp: "S'APP", cle: `34:${s.id}`, ex: s.id, domaine: s.domaine, titre: `Comprendre une situation — ${s.titre}` }));
   SCENARIOS.forEach(s => L.push({ atelier: 35, comp: "S'APP", cle: `35:${s.id}`, ex: s.id, domaine: s.domaine, titre: titreGraphique(s) }));
   FAM_ANA.forEach(f => f.liste.forEach(it => L.push({ atelier: 37, comp: 'ANA', cle: `37:${f.id}:${it.id}`, ex: `${f.id}.${it.id}`, domaine: it.domaine, titre: `${f.titre} — ${it.titre}` })));
   FAM_VAL.forEach(f => f.liste.forEach(it => L.push({ atelier: 77, comp: 'VAL', cle: `77:${f.id}:${it.id}`, ex: `${f.id}.${it.id}`, domaine: it.domaine, niveau: it.niveau, titre: `${f.titre} — ${it.titre}` })));

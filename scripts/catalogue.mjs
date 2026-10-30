@@ -26,9 +26,10 @@ const PREFIXE = { "S'APP": 'SAPP', ANA: 'ANA', REA: 'REA', VAL: 'VAL' }
 const TACHES_VOC = ['extraire les données', 'lire un graphique', 'tracer une courbe', 'pente et ordonnée à l’origine', 'prévoir sans calculer', 'choisir la relation', 'hypothèses d’un modèle',
   'construire une démarche', 'reconnaître un champ', 'reconnaître un mouvement', 'algorithme à seuils', 'plausibilité', 'compatibilité avec une référence', 'choisir un modèle',
   'conformité cahier des charges', 'somme de vecteurs', 'différence de vecteurs', 'forces et champs', 'conversion d’unités', 'isoler une grandeur', 'chiffres significatifs',
-  'fonctions usuelles', 'saisie calculatrice', 'pont diviseur', 'temps de réponse', 'conversion analogique-numérique', 'instruction Arduino', 'incertitudes', 'bilan et rendement']
+  'fonctions usuelles', 'saisie calculatrice', 'pont diviseur', 'temps de réponse', 'conversion analogique-numérique', 'instruction Arduino', 'incertitudes', 'bilan et rendement', 'décrire une évolution', 'compléter un tableau bilan', 'importance du temps de réponse']
 const TACHES_FAMILLE = {
-  34: () => ['extraire les données'], 35: () => ['lire un graphique'],
+  34: id => (/^arduino/.test(id) ? ['instruction Arduino'] : /^reponse-/.test(id) ? ['temps de réponse', 'importance du temps de réponse'] : /^bilan-/.test(id) ? ['compléter un tableau bilan'] : ['extraire les données']),
+  35: id => (['photoresistance', 'ctn'].includes(id) ? ['lire un graphique', 'décrire une évolution'] : ['lire un graphique']),
   '37:prevoir': () => ['prévoir sans calculer'], '37:relation': () => ['choisir la relation'], '37:hypothese': () => ['hypothèses d’un modèle'], '37:probleme': () => ['construire une démarche'],
   '37:champ': () => ['reconnaître un champ'], '37:mouvement': () => ['reconnaître un mouvement'], '37:algorithme': () => ['algorithme à seuils'],
   '77:plausible': () => ['plausibilité'], '77:compat': () => ['compatibilité avec une référence'],
@@ -39,8 +40,8 @@ const TACHES_FAMILLE = {
   '36:fonctions': () => ['fonctions usuelles'], '36:calculatrice': () => ['saisie calculatrice'], '36:trace-courbe': () => ['tracer une courbe'],
   '36:pont-diviseur': () => ['pont diviseur'], '36:temps-reponse': () => ['temps de réponse'],
 }
-const TACHES_MOTS = [[/pont diviseur|diviseur de tension/i, 'pont diviseur'], [/temps de réponse|échelon/i, 'temps de réponse'], [/quantum|convertisseur|CAN\b|bits?\b|analogique-numérique/i, 'conversion analogique-numérique'],
-  [/arduino|digitalWrite|analogRead/i, 'instruction Arduino'], [/incertitude|écart-type|élargi/i, 'incertitudes'], [/rendement|bilan/i, 'bilan et rendement'],
+const TACHES_MOTS = [[/pont diviseur|diviseur de tension/i, 'pont diviseur'], [/temps de réponse|échelon/i, 'temps de réponse'], [/\bquantum|convertisseur|\bCAN\b|\bbits?\b|analogique-numérique/i, 'conversion analogique-numérique'],
+  [/arduino|digitalWrite|analogRead/i, 'instruction Arduino'], [/incertitude|écart-type|élargi/i, 'incertitudes'], [/rendement|(?<!tableau )bilan/i, 'bilan et rendement'],
   [/pente|coefficient directeur|ordonnée à l’origine/i, 'pente et ordonnée à l’origine'], [/tracer/i, 'tracer une courbe']]
 function tachesDe(e, titre, description) {
   const m = e.cle.split(':'), cle = e.atelier === 34 || e.atelier === 35 ? e.atelier : e.atelier === 36 ? `36:${m[1]}` : `${e.atelier}:${m[1]}`
@@ -64,6 +65,7 @@ try {
   const { tousLesExercices } = await vite.ssrLoadModule('/src/simulations/Entrainement.jsx')
   const { ENONCES } = await vite.ssrLoadModule('/src/simulations/AtelierDonneesBanque.js')
   const { SCENARIOS } = await vite.ssrLoadModule('/src/simulations/AtelierGraphiqueBanque.js')
+  const { SITUATIONS } = await vite.ssrLoadModule('/src/simulations/AtelierSituationsBanque.js')
   const { FAMILLES: FAM_ANA } = await vite.ssrLoadModule('/src/simulations/AtelierAnalyserBanque.js')
   const { FAMILLES: FAM_VAL } = await vite.ssrLoadModule('/src/simulations/AtelierValiderBanque.js')
   const { FAMILLES: FAM_REA } = await vite.ssrLoadModule('/src/simulations/AtelierRealiserBanque.jsx')
@@ -110,6 +112,11 @@ try {
     } catch (err) { probleme.push(`${e.id}.${q} : énoncé non construit (${err.message})`) }
     info[`34:${e.id}.${q}`] = { difficulte, description }
   })
+
+  for (const sit of SITUATIONS) {
+    try { const r = sit.construire(); info[`34:${sit.id}`] = { difficulte: sit.niveau, description: court(`${r.enonce} ${r.etapes[0].q}`) } }
+    catch (err) { probleme.push(`${sit.id} : situation non construite (${err.message})`) }
+  }
 
   // Attribution des codes (les exercices déjà codés ne changent jamais)
   const codes = existsSync(FICHIER_CODES) ? JSON.parse(readFileSync(FICHIER_CODES, 'utf8')) : {}

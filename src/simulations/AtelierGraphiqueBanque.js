@@ -113,6 +113,21 @@ export const SCENARIOS = [
     f: p => x => p.Teb - (p.Teb - p.T0) * Math.exp(-x / p.tau), conv: { axis: 'x', fact: 60, unit: 's' },
     origine: p => ({ texte: 'Quelle est la température en tête de colonne au début du chauffage (t = 0) ?', val: p.T0 }),
     inverse: p => ({ y: p.T0 + 0.95 * (p.Teb - p.T0), texte: 'À quel instant la température a-t-elle atteint 95 % de sa variation totale (de la valeur initiale à la valeur finale) ?', val: p.tau * Math.log(20) }) },
+  { id: 'photoresistance', domaine: 'Transmission de signaux numériques', type: 'courbe', tend: 'C', decrire: true,
+    gen: () => { const [a, b] = tire([[45, 0.55], [50, 0.546], [60, 0.56], [55, 0.52]]); return { a, b }; },
+    titre: () => 'Caractéristique d’une photorésistance',
+    axes: () => ({
+      x: { nom: 'Éclairement', sym: 'E', u: 'lx', min: 500, max: 3500, ech: [[500, 5], [500, 2], [1000, 5]] },
+      y: { nom: 'Résistance de la photorésistance', sym: 'R', u: 'kΩ', min: 0, max: 2.5, ech: [[0.5, 5], [0.5, 2], [0.5, 4]] } }),
+    f: p => x => p.a * Math.pow(x, -p.b) },
+  { id: 'ctn', domaine: 'Transmission de signaux numériques', type: 'courbe', tend: 'C', decrire: true,
+    gen: () => { const [R0, B] = tire([[8, 3300], [10, 3500], [10, 3800], [12, 3400]]); return { R0, B }; },
+    titre: () => 'Caractéristique d’une thermistance CTN',
+    axes: () => ({
+      x: { nom: 'Température', sym: 'θ', u: '°C', min: 0, max: 80, ech: [[10, 5], [20, 4], [10, 2]] },
+      y: { nom: 'Résistance de la CTN', sym: 'R', u: 'kΩ', min: 0, max: 40, ech: [[10, 5], [5, 5], [10, 2]] } }),
+    f: p => x => p.R0 * Math.exp(p.B * (1 / (x + 273.15) - 1 / 298.15)), conv: { axis: 'y', fact: 1000, unit: 'Ω' },
+    origine: p => ({ texte: 'Quelle est la résistance de la CTN à 0 °C ?', val: p.R0 * Math.exp(p.B * (1 / 273.15 - 1 / 298.15)) }) },
   { id: 'cycliste', domaine: 'Mouvement et vitesse', type: 'droite', prop: true, tend: 'A',
     gen: () => { const v = tire([12, 15, 18, 24]); return { v, k: v / 60 }; },
     titre: () => 'Position d’un cycliste au cours de son trajet',
@@ -231,6 +246,13 @@ export function questions(g) {
   { const bonne = ALLURES[sc.tend], autres = Object.entries(ALLURES).filter(([c]) => c !== sc.tend).map(([, v]) => v);
     const opts = melange([bonne, ...melange(autres, rnd).slice(0, 3)], rnd);
     Q.push({ id: 'allure', comp: 2, type: 'qcm', q: 'Comment la grandeur y évolue-t-elle quand x augmente ?', options: opts, bonne: opts.indexOf(bonne), expl: `Réponse : ${bonne}.` }); }
+  if (sc.decrire) {
+    const xs = x.sym, ys = y.sym, xn = x.nom.toLowerCase();
+    const bonne = `Plus ${xs} augmente, plus ${ys} diminue ; la diminution est de plus en plus lente (la courbe n’est pas une droite)`;
+    const opts = melange([bonne, `Plus ${xs} augmente, plus ${ys} diminue, de façon régulière : la courbe est une droite`, `${ys} est proportionnelle à ${xs} : quand ${xs} double, ${ys} double`,
+      `Plus ${xs} augmente, plus ${ys} augmente, de moins en moins vite`], rnd);
+    Q.push({ id: 'decrire', comp: 2, type: 'qcm', q: `Quelle phrase décrit correctement l’évolution de ${ys} en fonction de ${xs} ?`, options: opts, bonne: opts.indexOf(bonne),
+      expl: `La courbe descend : plus ${xn} augmente, plus ${ys} diminue. Elle est plus raide pour les faibles valeurs de ${xs} (la grandeur chute vite) puis s’aplatit (elle varie de moins en moins) : ce n’est donc ni une droite, ni une proportionnalité. À retenir pour rédiger : « plus ${xs} augmente, plus ${ys} diminue ».` }); }
   if (sc.type === 'droite') {
     const O = ['Oui : c’est une droite qui passe par le point (0 ; 0)', 'Non : la droite ne passe pas par le point (0 ; 0)', 'Oui : toute droite représente une proportionnalité', 'Impossible à dire sans calculer'];
     Q.push({ id: 'prop', comp: 2, type: 'qcm', q: 'La grandeur y est-elle proportionnelle à x ?', options: O, bonne: sc.prop ? 0 : 1,
