@@ -134,7 +134,7 @@ function Courbe({ note = '', pts, x: [x0, x1, px], y: [y0, y1, py], xnom = 'E', 
             </g>);
         })}
       </svg>
-      <Note t={note || 'Courbe tracée en reliant les points donnés : entre deux points, c’est une interpolation, pas une mesure.'}/>
+      <Note t={note || 'Courbe lissée passant par les points donnés : entre deux points, la valeur est estimée (interpolation), pas mesurée ; ne pas extrapoler au-delà des points.'}/>
     </div>);
 }
 
@@ -155,7 +155,7 @@ function Retard({ annote = false, note = '', sens = 'baisse', tau = 1.6, rampe =
   return (
     <div style={boite} data-schema="retard">
       <svg viewBox={`0 0 ${L + W + R} ${T + H + B + 20}`} role="img" aria-label={`Un capteur trop lent : grandeur réelle et valeur mesurée par le capteur, avec le seuil (${grandeur})`} style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
-        <defs><F id={`${u}r`} c={TR}/></defs>
+        <defs><F id={`${u}r`} c={TR}/><F id={`${u}rr`} c="#b91c1c"/></defs>
         <line x1={L} y1={T + H} x2={L} y2={T} stroke={TR} strokeWidth="1.5" markerEnd={`url(#${u}r)`}/><line x1={L} y1={T + H} x2={L + W + 4} y2={T + H} stroke={TR} strokeWidth="1.5" markerEnd={`url(#${u}r)`}/>
         <text x={L + W} y={T + H + 14} fontSize="11.5" textAnchor="end" fill="#0f172a">temps</text>
         <line x1={L} y1={Y(seuil)} x2={L + W} y2={Y(seuil)} stroke={ORANGE} strokeWidth="1.5" strokeDasharray="6 4"/>
@@ -164,7 +164,7 @@ function Retard({ annote = false, note = '', sens = 'baisse', tau = 1.6, rampe =
           <g>
             <line x1={X(tR)} y1={Y(seuil)} x2={X(tR)} y2={T + H} stroke={VERT} strokeWidth="1.5" strokeDasharray="3 3"/>
             <line x1={X(tM)} y1={Y(seuil)} x2={X(tM)} y2={T + H} stroke="#b91c1c" strokeWidth="1.5" strokeDasharray="3 3"/>
-            <line x1={X(tR)} y1={T + H + 8} x2={X(tM) - 2} y2={T + H + 8} stroke="#b91c1c" strokeWidth="2" markerEnd={`url(#${u}r)`}/>
+            <line x1={X(tR)} y1={T + H + 8} x2={X(tM) - 2} y2={T + H + 8} stroke="#b91c1c" strokeWidth="2" markerEnd={`url(#${u}rr)`}/>
             <text x={(X(tR) + X(tM)) / 2} y={T + H + 22} fontSize="11.5" textAnchor="middle" fill="#b91c1c" fontWeight="700">retard</text>
           </g>)}
         <polyline points={poly(re)} fill="none" stroke={VERT} strokeWidth="2.5"/>
@@ -175,7 +175,7 @@ function Retard({ annote = false, note = '', sens = 'baisse', tau = 1.6, rampe =
           <line x1={L + 120} y1={T + H + 40} x2={L + 142} y2={T + H + 40} stroke={BLEU} strokeWidth="2.5"/><text x={L + 147} y={T + H + 44}>valeur mesurée</text>
         </g>
       </svg>
-      <Note t={note || 'Modèle simplifié : réponse du capteur de type premier ordre (courbe d’allure exponentielle).'}/>
+      <Note t={note || 'Modèle simplifié : le capteur rattrape la valeur réelle progressivement, comme la charge d’un condensateur. La durée et les échelles sont illustratives.'}/>
     </div>);
 }
 

@@ -861,7 +861,7 @@ export const PROBLEMES = [
       contexte: 'Un lampadaire doit s’allumer quand l’éclairement descend sous 600 lx. Une photorésistance est en série avec une résistance R (pont diviseur) ; la tension U_R, mesurée aux bornes de R, est envoyée sur un CAN 10 bits.',
       liste: [['Résistance R', '2,2 kΩ'], ['Tension d’alimentation U_G', '5,0 V'], ['CAN 10 bits', 'N = 0 pour 0 V ; N = 1 023 pour 5,0 V (réponse linéaire)'], ['Caractéristique de la photorésistance', 'R_p = 2,0 kΩ à 400 lx ; 1,5 kΩ à 600 lx ; 1,2 kΩ à 800 lx']],
       question: 'Quelle valeur de N correspond au seuil d’allumage ?',
-      schema: [{ type: 'chaine', apres: { actif: [1, 2, 3], inconnu: 3, note: 'Ordre de calcul : R_p (lu sur la courbe à 600 lx) → U_R (pont diviseur) → N (CAN).' } }, { type: 'pont', UG: '5,0 V', R: '2,2 kΩ', mesure: 'R' },
+      schema: [{ type: 'chaine', apres: { actif: [0, 1, 2, 3], inconnu: 3, note: 'Ordre de calcul : R_p (lu sur la courbe à 600 lx) → U_R (pont diviseur) → N (CAN).' } }, { type: 'pont', UG: '5,0 V', R: '2,2 kΩ', mesure: 'R' },
         { type: 'courbe', pts: [[400, 2.0], [600, 1.5], [800, 1.2]], x: [0, 1000, 200], y: [0, 2.5, 0.5], apres: { surligne: [1] } }],
     }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
@@ -916,7 +916,7 @@ export const PROBLEMES = [
       liste: [['Résistance R', '1,0 kΩ'], ['Tension d’alimentation U_G', '5,0 V'], ['CAN 10 bits', 'N = 0 pour 0 V ; N = 1 023 pour 5,0 V (réponse linéaire)'], ['Caractéristique de la photorésistance', 'R_p = 1,79 kΩ à 450 lx ; 1,37 kΩ à 720 lx ; 1,13 kΩ à 1 020 lx ; 0,93 kΩ à 1 500 lx']],
       question: 'Quel est l’éclairement ?',
       schema: [{ type: 'chaine', apres: { actif: [3, 2, 1], inconnu: 0, note: 'On remonte la chaîne : N → U_R (CAN) → R_p (pont) → éclairement (courbe).' } }, { type: 'pont', UG: '5,0 V', R: '1,0 kΩ', mesure: 'R' },
-        { type: 'courbe', pts: [[450, 1.79], [720, 1.37], [1020, 1.13], [1500, 0.93]], x: [0, 1500, 500], y: [0, 2, 0.5] }],
+        { type: 'courbe', pts: [[450, 1.79], [720, 1.37], [1020, 1.13], [1500, 0.93]], x: [0, 1500, 500], y: [0, 2, 0.5], apres: { surligne: [1] } }],
     }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('L’éclairement E correspondant à N = 432', 'On remonte de N vers E : N → U_R → R_p → E.'),
@@ -2696,7 +2696,7 @@ export const PREVOIR = [
       F('divisée par 2', 'Sens inversé : plus la tension aux bornes du montage est grande, plus chaque tension partielle est grande.'),
     ] },
   { id: 'n-eclairement', domaine: 'Transmission de signaux numériques', titre: 'Le nombre N quand l’éclairement augmente',
-    schema: { type: 'chaine', apres: { actif: [1, 2, 3], inconnu: 3, note: 'Chemin de la cause à l’effet : éclairement → R_p → U_R → N.' }, seulementApres: true },
+    schema: { type: 'chaine', apres: { actif: [0, 1, 2, 3], inconnu: 3, note: 'Chemin de la cause à l’effet : éclairement → R_p → U_R → N.' }, seulementApres: true },
     enonce: 'Une photorésistance est en série avec R ; la tension U_R aux bornes de R est envoyée sur l’entrée d’un CAN 10 bits (N entre 0 et 1 023, avec N proportionnel à la tension). L’éclairement augmente (la résistance de la photorésistance diminue).', q: 'Le nombre N donné par le CAN…', options: [
       V('augmente', 'L’éclairement augmente, R_p diminue, U_R augmente. Le CAN fournit un nombre proportionnel à la tension : N augmente.'),
       F('diminue', 'Il diminuerait si on mesurait la tension aux bornes de la photorésistance. Ici, U_R augmente avec l’éclairement, donc N aussi.'),
