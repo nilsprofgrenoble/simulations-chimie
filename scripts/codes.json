@@ -515,5 +515,20 @@
  "36:isoler": "REA10",
  "36:cs": "REA11",
  "36:fonctions": "REA12",
- "36:calculatrice": "REA13"
+ "36:calculatrice": "REA13",
+ "37:algorithme:algo-allumage": "ANA267",
+ "37:algorithme:algo-extinction": "ANA268",
+ "37:algorithme:algo-entre-seuils": "ANA269",
+ "37:algorithme:algo-pourquoi-deux": "ANA270",
+ "37:algorithme:algo-sens-inverse": "ANA271",
+ "37:algorithme:algo-seuils-inverses": "ANA272",
+ "77:decision:modele-ctn": "VAL143",
+ "77:decision:modele-photoresistance": "VAL144",
+ "77:decision:conforme-phares": "VAL145",
+ "77:decision:conforme-fumee": "VAL146",
+ "77:decision:conforme-marge": "VAL147",
+ "77:decision:conforme-strict": "VAL148",
+ "36:trace-courbe": "REA14",
+ "36:pont-diviseur": "REA15",
+ "36:temps-reponse": "REA16"
 }

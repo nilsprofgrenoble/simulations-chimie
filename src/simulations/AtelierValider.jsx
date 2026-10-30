@@ -4,7 +4,8 @@ import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE
 import { useSuivi } from "../suivi";
 import { parDomaine } from "./ordreDomaines";
 import { Pic } from "../Pictos";
-import { FAMILLES, NIVEAUX, METHODE_PLAUSIBLE, METHODE_COMPAT } from "./AtelierValiderBanque";
+import { FAMILLES, NIVEAUX, METHODE_PLAUSIBLE, METHODE_COMPAT, METHODE_DECISION } from "./AtelierValiderBanque";
+import { FigureModeles } from "./FigureModeles";
 
 // ====================================================
 //  SIM 77 — ATELIER « VALIDER » (compétence VAL)
@@ -62,6 +63,8 @@ function Saisie({ e, val, set, chk, vu }) {
 
 // ── Étapes d'un exercice ──
 function etapesDe(fam, it) {
+  if (fam === 'decision') return it.etapes.map(e => e.type === 'num'
+    ? { ...e, ok: v => { const x = lireNombre(v); return Number.isFinite(x) && proche(x, e.attendu, e.tol ?? 0.03); } } : { ...e, type: 'qcm' });
   if (fam === 'plausible') return [
     { id: 'verdict', type: 'qcm', fixe: true, titre: 'Ton verdict', q: 'Compare le résultat de l’élève aux repères. Est-il plausible ?', o: it.verdict,
       aide: 'Mets le résultat dans une unité qui te parle (km/h, bar, minutes…) puis compare-le à un repère : est-ce du même ordre de grandeur ?' },
@@ -145,7 +148,7 @@ export function SimulationAtelierValider({ naviguer }) {
       </div>);
   };
 
-  const methode = fam === 'plausible' ? METHODE_PLAUSIBLE : METHODE_COMPAT;
+  const methode = fam === 'plausible' ? METHODE_PLAUSIBLE : fam === 'decision' ? METHODE_DECISION : METHODE_COMPAT;
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       <h2 style={{ margin: '0 0 6px', fontSize: 18, color: KIT.txt, fontWeight: 700 }}>VAL : valider un résultat</h2>
@@ -173,6 +176,7 @@ export function SimulationAtelierValider({ naviguer }) {
           <div style={{ fontSize: 16, fontWeight: 800, color: KIT.txt, margin: '2px 0 6px' }}>{it.titre}</div>
           <div style={{ fontSize: 15, color: KIT.txt, lineHeight: 1.65 }}>{T(it.enonce || it.contexte)}</div>
         </div>
+        {it.figure && <FigureModeles fig={it.figure}/>}
         <div data-reperes style={{ ...styleBoite, background: '#fff7ed', border: '1.5px solid #fdba74' }}>
           <div style={{ fontWeight: 800, fontSize: 13, color: COULEUR, marginBottom: 4 }}><Pic n="book"/>REPÈRES (à ta disposition, inutile de les apprendre)</div>
           <table style={{ borderCollapse: 'collapse', fontSize: 14, color: KIT.txt, width: '100%' }}>

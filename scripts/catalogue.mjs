@@ -2,7 +2,8 @@
 //   node scripts/catalogue.mjs           → écrit public/catalogue.csv (publié sur https://paillasse-virtuelle.fr/catalogue.csv)
 //   node scripts/catalogue.mjs --verifier → ne crée rien ; échoue si le fichier est périmé ou si un exercice n'a pas de chapitre
 // Toutes les données viennent du code du site (App.jsx, chapitres.js, descriptions.js, Entrainement.jsx, banques d'exercices) : rien à tenir à jour à la main.
-// Colonnes : type, id, lien, niveau, chapitre, competence, difficulte, theme, titre, description, simulations_liees, code.
+// Colonnes : type, id, lien, niveau, chapitre, competence, difficulte, theme, titre, description, simulations_liees, code, taches.
+//   • taches : type(s) de tâche travaillé(s), vocabulaire fixe (TACHES_VOC dans ce script), séparés par « | » ; vide pour une simulation.
 //   • code : code court à imprimer sur la fiche de l'élève (SAPP/ANA/REA/VAL + numéro pour un exercice, SIM + numéro pour une simulation), saisi sur le site dans « Code ».
 //   • difficulte (1 à 3) : « Valider » = niveau écrit à la main dans la banque ; « Analyser » et « S'approprier » = ESTIMATION déduite de la structure
 //     (Analyser : prévoir = 1, relation/hypothèses/schémas = 2, problème complet = 3 ; énoncé à données : nombre de grandeurs à calculer ; graphique : proportionnelle = 1, affine ou courbe = 2).
@@ -18,6 +19,36 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 const FICHIER_CODES = new URL('./codes.json', import.meta.url)
 const SORTIE_CODES = new URL('../src/codes.js', import.meta.url)
 const PREFIXE = { "S'APP": 'SAPP', ANA: 'ANA', REA: 'REA', VAL: 'VAL' }
+
+// Mots-clés « type de tâche » (colonne taches) : vocabulaire FIXE, pour que la remédiation choisisse par tâche et non seulement par titre.
+// Règles : (1) une ou deux étiquettes selon la famille d'exercice ; (2) étiquettes ajoutées d'après des mots du titre ou de la description.
+// Toute étiquette hors de ce vocabulaire fait échouer le script ; tout exercice doit en avoir au moins une.
+const TACHES_VOC = ['extraire les données', 'lire un graphique', 'tracer une courbe', 'pente et ordonnée à l’origine', 'prévoir sans calculer', 'choisir la relation', 'hypothèses d’un modèle',
+  'construire une démarche', 'reconnaître un champ', 'reconnaître un mouvement', 'algorithme à seuils', 'plausibilité', 'compatibilité avec une référence', 'choisir un modèle',
+  'conformité cahier des charges', 'somme de vecteurs', 'différence de vecteurs', 'forces et champs', 'conversion d’unités', 'isoler une grandeur', 'chiffres significatifs',
+  'fonctions usuelles', 'saisie calculatrice', 'pont diviseur', 'temps de réponse', 'conversion analogique-numérique', 'instruction Arduino', 'incertitudes', 'bilan et rendement']
+const TACHES_FAMILLE = {
+  34: () => ['extraire les données'], 35: () => ['lire un graphique'],
+  '37:prevoir': () => ['prévoir sans calculer'], '37:relation': () => ['choisir la relation'], '37:hypothese': () => ['hypothèses d’un modèle'], '37:probleme': () => ['construire une démarche'],
+  '37:champ': () => ['reconnaître un champ'], '37:mouvement': () => ['reconnaître un mouvement'], '37:algorithme': () => ['algorithme à seuils'],
+  '77:plausible': () => ['plausibilité'], '77:compat': () => ['compatibilité avec une référence'],
+  '77:decision': id => [/^modele/.test(id) ? 'choisir un modèle' : 'conformité cahier des charges'],
+  '36:vecteur-somme': () => ['somme de vecteurs'], '36:vecteur-difference': () => ['différence de vecteurs'], '36:interactions': () => ['forces et champs'],
+  '36:vitesses': () => ['conversion d’unités'], '36:simple': () => ['conversion d’unités'], '36:prefixes': () => ['conversion d’unités'], '36:puissances': () => ['conversion d’unités'],
+  '36:composees': () => ['conversion d’unités'], '36:mixte': () => ['conversion d’unités'], '36:isoler': () => ['isoler une grandeur'], '36:cs': () => ['chiffres significatifs'],
+  '36:fonctions': () => ['fonctions usuelles'], '36:calculatrice': () => ['saisie calculatrice'], '36:trace-courbe': () => ['tracer une courbe'],
+  '36:pont-diviseur': () => ['pont diviseur'], '36:temps-reponse': () => ['temps de réponse'],
+}
+const TACHES_MOTS = [[/pont diviseur|diviseur de tension/i, 'pont diviseur'], [/temps de réponse|échelon/i, 'temps de réponse'], [/quantum|convertisseur|CAN\b|bits?\b|analogique-numérique/i, 'conversion analogique-numérique'],
+  [/arduino|digitalWrite|analogRead/i, 'instruction Arduino'], [/incertitude|écart-type|élargi/i, 'incertitudes'], [/rendement|bilan/i, 'bilan et rendement'],
+  [/pente|coefficient directeur|ordonnée à l’origine/i, 'pente et ordonnée à l’origine'], [/tracer/i, 'tracer une courbe']]
+function tachesDe(e, titre, description) {
+  const m = e.cle.split(':'), cle = e.atelier === 34 || e.atelier === 35 ? e.atelier : e.atelier === 36 ? `36:${m[1]}` : `${e.atelier}:${m[1]}`
+  const f = TACHES_FAMILLE[cle]
+  const base = f ? f(m[2] || m[1] || '') : []
+  const mots = TACHES_MOTS.filter(([re]) => re.test(`${titre} ${description}`)).map(([, t]) => t)
+  return [...new Set([...base, ...mots])]
+}
 
 const SITE = 'https://paillasse-virtuelle.fr/'
 const SORTIE = new URL('../public/catalogue.csv', import.meta.url)
@@ -57,7 +88,7 @@ try {
   }
   // Données par clé d'exercice (même clés que tousLesExercices)
   const info = {}
-  const DIFF_ANA = { prevoir: 1, relation: 2, hypothese: 2, probleme: 3, champ: 2, mouvement: 2 }
+  const DIFF_ANA = { prevoir: 1, relation: 2, hypothese: 2, probleme: 3, champ: 2, mouvement: 2, algorithme: 2 }
   for (const f of FAM_ANA) for (const it of f.liste) {
     const cherche = it.cherche && it.cherche.q ? ` ${it.cherche.q}` : ''
     info[`37:${f.id}:${it.id}`] = { difficulte: DIFF_ANA[f.id] ?? '', description: court(`${it.enonce || ''}${it.q ? ' ' + it.q : cherche}`) }
@@ -107,10 +138,11 @@ try {
     const liees = [...new Set(cs.flatMap(c => c.sims))].filter(i => sims.some(s => s.id === i)).map(i => `sim${i}`)
     lignes.push({ type: 'exercice', id: e.cle, lien: `${SITE}?sim=${e.atelier}&ex=${e.ex}`, code: codes[e.cle],
       niveau: transversal ? 'tous' : niveaux(cs), difficulte: e.niveau || inf.difficulte || '', chapitre: transversal ? 'tous chapitres' : noms(cs),
-      competence: COMP[e.comp], theme: e.domaine, titre: e.titre, description: inf.description || '', simulations_liees: liees.join(' | ') })
+      competence: COMP[e.comp], theme: e.domaine, titre: e.titre, description: inf.description || '', simulations_liees: liees.join(' | '),
+      taches: (() => { const t = tachesDe(e, e.titre, inf.description || ''); if (!t.length) probleme.push(`${e.cle} : aucune étiquette de tâche`); t.forEach(x => { if (!TACHES_VOC.includes(x)) probleme.push(`${e.cle} : étiquette « ${x} » hors vocabulaire`) }); return t.join(' | ') })() })
   }
 
-  const COLS = ['type', 'id', 'lien', 'niveau', 'chapitre', 'competence', 'difficulte', 'theme', 'titre', 'description', 'simulations_liees', 'code']
+  const COLS = ['type', 'id', 'lien', 'niveau', 'chapitre', 'competence', 'difficulte', 'theme', 'titre', 'description', 'simulations_liees', 'code', 'taches']
   const q = v => /[;"\n]/.test(v) ? `"${String(v).replace(/"/g, '""')}"` : String(v)
   const csv = '﻿' + [COLS.join(';'), ...lignes.map(l => COLS.map(c => q(l[c] ?? '')).join(';'))].join('\n') + '\n'
 
