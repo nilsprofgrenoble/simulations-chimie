@@ -331,6 +331,14 @@ export default function App() {
       ? `${s.label} : simulation interactive${niv ? ` (${niv})` : ''}, avec parcours guidé, exploration libre et défi.`
       : 'Simulations interactives de chimie et de physique pour la Première, la Terminale STL et le BTS Métiers de la chimie : parcours guidés, exploration libre, défis et exercices par compétence.');
     meta('robots', activeId === 39 || activeId === 40 ? 'noindex' : 'index, follow');
+    // adresse canonique : les liens vers un exercice (?sim=…&ex=…) ou un code court (?c=…) affichent la même page que ?sim=… ;
+    // sans cette balise, Google les signale comme « pages en double sans URL canonique ». Pas de canonique pour les pages privées (noindex).
+    let lien = document.querySelector('link[rel="canonical"]');
+    if (activeId === 39 || activeId === 40) { if (lien) lien.remove(); }
+    else {
+      if (!lien) { lien = document.createElement('link'); lien.setAttribute('rel', 'canonical'); document.head.appendChild(lien); }
+      lien.setAttribute('href', activeId > 0 ? `https://paillasse-virtuelle.fr/?sim=${activeId}` : 'https://paillasse-virtuelle.fr/');
+    }
   }, [activeId]);
 
   // Arrivée par un QR code ou un lien vers un exercice précis (?ex=…) sur un petit écran :
