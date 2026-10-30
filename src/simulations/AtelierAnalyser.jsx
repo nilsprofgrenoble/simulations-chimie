@@ -219,7 +219,7 @@ export function SimulationAtelierAnalyser({ naviguer }) {
       <div style={{ fontSize: 12.5, color: KIT.txt2, fontWeight: 700 }}>{it.domaine}</div>
       <div style={{ fontSize: 16, fontWeight: 800, color: KIT.txt, margin: '2px 0 6px' }}>{it.titre}</div>
       <EnonceLisible it={it} T={T}/>
-      {it.figure}<Visuel schema={it.schema}/>
+      {it.figure}<Visuel schema={it.schema} revele={fini}/>
     </div>);
   const methode = fam === 'probleme' && (
     <div style={{ ...styleBoite, fontSize: 13.5, color: KIT.txt }}>

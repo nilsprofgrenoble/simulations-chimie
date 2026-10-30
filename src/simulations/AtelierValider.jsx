@@ -176,7 +176,7 @@ export function SimulationAtelierValider({ naviguer }) {
           <div style={{ fontSize: 12.5, color: KIT.txt2, fontWeight: 700 }}>{it.domaine} · {NIVEAUX[it.niveau]}</div>
           <div style={{ fontSize: 16, fontWeight: 800, color: KIT.txt, margin: '2px 0 6px' }}>{it.titre}</div>
           <EnonceLisible it={it} T={T}/>
-          <Visuel schema={it.schema}/>
+          <Visuel schema={it.schema} revele={fini}/>
         </div>
         {it.figure && <FigureModeles fig={it.figure}/>}
         <div data-reperes style={{ ...styleBoite, background: '#fff7ed', border: '1.5px solid #fdba74' }}>

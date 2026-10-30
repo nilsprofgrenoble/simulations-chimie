@@ -96,7 +96,7 @@ export const SITUATIONS = [
   ...[
     {
       id: 'reponse-tunnel-entree', titre: 'Temps de réponse : entrée dans un tunnel',
-      schema: { type: 'retard', sens: 'baisse', grandeur: 'éclairement', seuilNom: 'seuil d’allumage' },
+      schema: { type: 'retard', sens: 'baisse', grandeur: 'éclairement', seuilNom: 'seuil d’allumage', apres: { annote: true } },
       enonce: 'Les phares d’une voiture s’allument automatiquement quand un capteur de lumière mesure un éclairement trop faible. La voiture entre dans un tunnel : l’éclairement passe très vite de 10 000 lx à 100 lx. Le temps de réponse du capteur est trop long.',
       evt: [
         V('L’éclairement baisse brusquement à l’entrée du tunnel', 'C’est le changement rapide que le capteur doit suivre : l’éclairement passe presque instantanément d’une valeur forte à une valeur faible (« échelon »).'),
@@ -117,7 +117,7 @@ export const SITUATIONS = [
     },
     {
       id: 'reponse-tunnel-sortie', titre: 'Temps de réponse : sortie d’un tunnel',
-      schema: { type: 'retard', sens: 'hausse', grandeur: 'éclairement', seuilNom: 'seuil d’extinction' },
+      schema: { type: 'retard', sens: 'hausse', grandeur: 'éclairement', seuilNom: 'seuil d’extinction', apres: { annote: true } },
       enonce: 'Les mêmes phares automatiques s’éteignent quand l’éclairement mesuré dépasse un seuil. La voiture sort du tunnel : l’éclairement passe très vite de 100 lx à 10 000 lx. Le temps de réponse du capteur est trop long.',
       evt: [
         V('L’éclairement augmente brusquement à la sortie du tunnel', 'C’est le changement rapide que le capteur doit suivre, cette fois dans l’autre sens : de faible à fort.'),
@@ -138,7 +138,7 @@ export const SITUATIONS = [
     },
     {
       id: 'reponse-fumee', titre: 'Temps de réponse : détecteur de fumée',
-      schema: { type: 'retard', sens: 'hausse', grandeur: 'concentration en particules', seuilNom: 'seuil d’alarme' },
+      schema: { type: 'retard', sens: 'hausse', grandeur: 'concentration en particules', seuilNom: 'seuil d’alarme', apres: { annote: true } },
       enonce: 'Un détecteur de fumée déclenche une alarme quand la concentration en particules dépasse un seuil. Un incendie démarre dans une pièce : la concentration en particules augmente brusquement. Le temps de réponse du capteur est trop long.',
       evt: [
         V('La concentration en particules augmente brusquement au début de l’incendie', 'C’est l’événement que le capteur doit suivre sans délai excessif.'),
@@ -159,7 +159,7 @@ export const SITUATIONS = [
     },
     {
       id: 'reponse-regulation', titre: 'Temps de réponse : régulation de température',
-      schema: { type: 'retard', rampe: true, tau: 1.8, grandeur: 'température du four', seuilNom: 'consigne (coupure du chauffage)' },
+      schema: { type: 'retard', rampe: true, tau: 1.8, grandeur: 'température du four', seuilNom: 'consigne (coupure du chauffage)', apres: { annote: true } },
       enonce: 'Un four de laboratoire est régulé en température : une sonde mesure la température, et le chauffage est coupé quand elle atteint la consigne (80 °C). La température du four monte vite. Le temps de réponse de la sonde est trop long.',
       evt: [
         V('La température du four monte rapidement vers la consigne', 'C’est l’évolution que la sonde doit suivre : si elle va trop vite pour elle, la mesure prend du retard.'),

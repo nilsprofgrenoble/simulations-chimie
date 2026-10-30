@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { KIT } from "../commun";
+import { KIT, avecIndices } from "../commun";
 
 // ====================================================
 //  SCHÉMAS ET MISE EN PAGE DES ÉNONCÉS (chapitre « Transmission de signaux numériques »)
@@ -73,9 +73,11 @@ function SchemaPont({ UG = 'U_G', R = 'R', Rp = 'R_p', mesure = 'R', can = true,
     </div>);
 }
 
+const Note = ({ t }) => (t ? <div style={{ fontSize: 12.5, color: '#475569', lineHeight: 1.45, marginTop: 4 }}>{avecIndices(t)}</div> : null);
+
 // ── Chaîne de mesure ──
 const ETAPES = [['Lumière', 'E (lx)'], ['Capteur', 'Rp (kΩ)'], ['Diviseur', 'UR (V)'], ['CAN', 'N'], ['Programme', 'DEL']];
-function ChaineMesure() {
+function ChaineMesure({ actif = [], inconnu = null, note = '' }) {
   const u = useId().replace(/:/g, '');
   const w = 62, g = 12;
   const cases = ETAPES;
@@ -84,7 +86,7 @@ function ChaineMesure() {
       <svg viewBox="0 0 360 84" role="img" aria-label="Chaîne de mesure : lumière, capteur, pont diviseur, CAN, programme" style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
         <defs><F id={`${u}c`} c={TR}/></defs>
         {cases.map(([nom, gr], i) => {
-          const x = 1 + i * (w + g), on = false, inc = false;
+          const x = 1 + i * (w + g), on = actif.includes(i), inc = inconnu === i;
           return (
             <g key={nom}>
               <rect x={x} y="6" width={w} height="46" rx="6" fill={inc ? '#fef3c7' : on ? '#dbeafe' : '#f8fafc'} stroke={inc ? ORANGE : on ? BLEU : '#cbd5e1'} strokeWidth={on || inc ? 2 : 1.2}/>
@@ -95,12 +97,13 @@ function ChaineMesure() {
         })}
         <text x="180" y="74" fontSize="10.5" fill="#64748b" textAnchor="middle">chaîne de mesure (sens de lecture : de la lumière au programme)</text>
       </svg>
+      <Note t={note}/>
     </div>);
 }
 
 // ── Courbe à points ──
 const nbf = (v, d = 1) => Number(v).toLocaleString('fr-FR', { maximumFractionDigits: d });
-function Courbe({ pts, x: [x0, x1, px], y: [y0, y1, py], xnom = 'E', xu = 'lx', ynom = 'Rp', yu = 'kΩ', surligne = [] }) {
+function Courbe({ note = '', pts, x: [x0, x1, px], y: [y0, y1, py], xnom = 'E', xu = 'lx', ynom = 'Rp', yu = 'kΩ', surligne = [] }) {
   const L = 50, B = 38, T = 12, R = 14, W = 296, H = 150;
   const X = v => L + ((v - x0) / (x1 - x0)) * W, Y = v => T + H - ((v - y0) / (y1 - y0)) * H;
   const gx = [], gy = [];
@@ -131,11 +134,12 @@ function Courbe({ pts, x: [x0, x1, px], y: [y0, y1, py], xnom = 'E', xu = 'lx', 
             </g>);
         })}
       </svg>
+      <Note t={note || 'Courbe tracée en reliant les points donnés : entre deux points, c’est une interpolation, pas une mesure.'}/>
     </div>);
 }
 
 // ── Capteur trop lent : grandeur réelle, signal du capteur, seuil ──
-function Retard({ sens = 'baisse', tau = 1.6, rampe = false, grandeur = 'éclairement', seuilNom = 'seuil' }) {
+function Retard({ annote = false, note = '', sens = 'baisse', tau = 1.6, rampe = false, grandeur = 'éclairement', seuilNom = 'seuil' }) {
   const u = useId().replace(/:/g, '');
   const L = 14, B = 34, T = 14, R = 12, W = 320, H = 130, TMAX = 10, t0 = 2;
   const haut = sens === 'hausse';
@@ -145,7 +149,9 @@ function Retard({ sens = 'baisse', tau = 1.6, rampe = false, grandeur = 'éclair
   let y = reel(0);
   for (let i = 0; i <= N; i++) { const t = i * dt; y += (reel(t) - y) * (dt / tau); mes.push([t, y]); re.push([t, reel(t)]); }
   const X = t => L + (t / TMAX) * W, Y = v => T + H - (v / 1.2) * H;
-    const poly = s => s.map(([t, v]) => `${X(t).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+    const croise = s => { for (let i = 1; i < s.length; i++) { const a = s[i - 1][1] - seuil, b = s[i][1] - seuil; if (a * b <= 0 && a !== b) return s[i][0]; } return null; };
+  const tR = croise(re), tM = croise(mes);
+  const poly = s => s.map(([t, v]) => `${X(t).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
   return (
     <div style={boite} data-schema="retard">
       <svg viewBox={`0 0 ${L + W + R} ${T + H + B + 20}`} role="img" aria-label={`Un capteur trop lent : grandeur réelle et valeur mesurée par le capteur, avec le seuil (${grandeur})`} style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
@@ -154,6 +160,13 @@ function Retard({ sens = 'baisse', tau = 1.6, rampe = false, grandeur = 'éclair
         <text x={L + W} y={T + H + 14} fontSize="11.5" textAnchor="end" fill="#0f172a">temps</text>
         <line x1={L} y1={Y(seuil)} x2={L + W} y2={Y(seuil)} stroke={ORANGE} strokeWidth="1.5" strokeDasharray="6 4"/>
         <text x={rampe ? L + 4 : L + W} y={Y(seuil) - 5} fontSize="11.5" textAnchor={rampe ? 'start' : 'end'} fill={ORANGE} fontWeight="700">{seuilNom}</text>
+        {annote && tR != null && tM != null && (
+          <g>
+            <line x1={X(tR)} y1={Y(seuil)} x2={X(tR)} y2={T + H} stroke={VERT} strokeWidth="1.5" strokeDasharray="3 3"/>
+            <line x1={X(tM)} y1={Y(seuil)} x2={X(tM)} y2={T + H} stroke="#b91c1c" strokeWidth="1.5" strokeDasharray="3 3"/>
+            <line x1={X(tR)} y1={T + H + 8} x2={X(tM) - 2} y2={T + H + 8} stroke="#b91c1c" strokeWidth="2" markerEnd={`url(#${u}r)`}/>
+            <text x={(X(tR) + X(tM)) / 2} y={T + H + 22} fontSize="11.5" textAnchor="middle" fill="#b91c1c" fontWeight="700">retard</text>
+          </g>)}
         <polyline points={poly(re)} fill="none" stroke={VERT} strokeWidth="2.5"/>
         <polyline points={poly(mes)} fill="none" stroke={BLEU} strokeWidth="2.5" strokeDasharray="1 0"/>
         <text x={L + 6} y={T + 12} fontSize="12" fill="#0f172a" fontWeight="700">{grandeur}</text>
@@ -162,6 +175,7 @@ function Retard({ sens = 'baisse', tau = 1.6, rampe = false, grandeur = 'éclair
           <line x1={L + 120} y1={T + H + 40} x2={L + 142} y2={T + H + 40} stroke={BLEU} strokeWidth="2.5"/><text x={L + 147} y={T + H + 44}>valeur mesurée</text>
         </g>
       </svg>
+      <Note t={note || 'Modèle simplifié : réponse du capteur de type premier ordre (courbe d’allure exponentielle).'}/>
     </div>);
 }
 
@@ -217,11 +231,11 @@ function Arduino({ cas = 'led' }) {
 
 // ── Répartition ──
 const DESSINS = { pont: SchemaPont, chaine: ChaineMesure, courbe: Courbe, retard: Retard, arduino: Arduino };
-export function Visuel({ schema }) {
+export function Visuel({ schema, revele = false }) {
   if (!schema) return null;
   const liste = Array.isArray(schema) ? schema : [schema];
   return <div data-visuels style={{ display: 'flex', flexDirection: 'column', gap: 8, margin: '10px 0 0' }}>
-    {liste.map((s, i) => { const D = DESSINS[s.type]; return D ? <D key={i} {...s}/> : null; })}
+    {liste.map((s, i) => { const D = DESSINS[s.type]; if (!D || (s.seulementApres && !revele)) return null; const base = { ...s }; delete base.apres; delete base.seulementApres; return <D key={i} {...base} {...(revele ? s.apres : {})}/>; })}
   </div>;
 }
 
