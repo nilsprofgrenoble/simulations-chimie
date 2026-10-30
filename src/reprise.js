@@ -20,10 +20,11 @@ export const SEUIL_PROPORTION = 0.25;
 
 // Difficulté d'UN élève sur UN exercice à partir de ses séances de la période : 'bloque' | 'correction' | 'essais' | null (pas de difficulté)
 export function difficulteEleve(seances) {
-  const etoiles = seances.map(etoilesSeance), best = Math.max(0, ...etoiles);
+  const best = Math.max(0, ...seances.map(etoilesSeance));
   if (best === 0) return 'bloque';
-  if (best === 1) return 'correction';
-  const essaisMin = Math.min(...seances.filter(l => l.reussi && l.corrections_vues === 0).map(l => l.essais));
+  const sansCorrection = seances.filter(l => l.reussi && l.corrections_vues === 0);
+  if (!sansCorrection.length) return 'correction';      // réussi seulement avec la correction
+  const essaisMin = Math.min(...sansCorrection.map(l => l.essais));      // ≥ 3 : au moins deux erreurs avant la bonne réponse (1 étoile)
   return essaisMin >= 3 ? 'essais' : null;
 }
 
