@@ -60,7 +60,7 @@ export function SituationCarte({ def }) {
             </table>
           </div>
         )}
-        <Visuel schema={ex.schema}/>
+        <Visuel schema={ex.schema} revele={reussi || ex.etapes.every(e => chk[e.id] && (ok(e) || vu[e.id]))}/>
         <div style={{ marginTop: 8 }}><button onClick={nouveau} style={stylePetitBouton(false)}>🎲 Nouvelle version</button></div>
       </div>
       {ex.etapes.filter((_, i) => i <= etp).map((e, i) => {
