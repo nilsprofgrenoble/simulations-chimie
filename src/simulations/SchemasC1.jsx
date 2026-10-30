@@ -297,6 +297,7 @@ export function EnonceLisible({ it, T }) {
           <ul data-donnees style={{ margin: '4px 0 6px', padding: '6px 10px 6px 26px', background: '#f1f5f9', borderRadius: 6, ...base, lineHeight: 1.7 }}>
             {p.liste.map(([a, b], i) => <li key={i}>{a ? <span style={{ color: KIT.txt2 }}>{T(a)} : </span> : null}<b>{T(b)}</b></li>)}
           </ul>)}
+        {(Array.isArray(p.suite) ? p.suite : coupe(p.suite || '')).map((t, i) => <p key={'s' + i} style={{ ...base, margin: '0 0 6px' }}>{T(t)}</p>)}
         {p.question && questionBox(p.question)}
       </div>);
   }
