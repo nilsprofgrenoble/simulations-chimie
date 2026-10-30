@@ -298,7 +298,7 @@ function Cuve({ capteur = true, ferme = false, point = false, orifice = false })
           ? <g>
               <line x1="100" y1={yP} x2="250" y2={yP} stroke="#64748b" strokeWidth="1.2" strokeDasharray="4 3"/>
               {point && <circle cx="175" cy={yP} r="4.5" fill={TR}/>}
-              {point && <text x="184" y={yP - 7} fontSize="12.5" fill="#0f172a">point étudié</text>}
+              {point && <text x="166" y={yP - 7} fontSize="12.5" textAnchor="end" fill="#0f172a">point étudié</text>}
               {orifice && <g><rect x="246" y={yP - 4} width="8" height="8" fill="white" stroke={TR} strokeWidth="2"/><path d={`M254,${yP} q50,-6 70,50`} fill="none" stroke="#2563eb" strokeWidth="3" markerEnd={`url(#${u}j)`}/><text x="262" y={yP - 10} fontSize="12.5" fill="#0f172a">orifice</text></g>}
               <Cote u={u} x1="80" y1={yS + 2} x2="80" y2={yP - 2} txt={<tspan fontStyle="italic">h</tspan>} tx="72" ty={(yS + yP) / 2 + 4} anchor="end"/>
             </g>
@@ -334,22 +334,29 @@ function TubeU() {
 }
 
 // Conduite horizontale à rétrécissement
-function Venturi() {
+function Venturi({ rapport = 0.25, simple = false }) {
   const u = useId().replace(/:/g, '');
-  // d₂ / d₁ = 10 / 40 : proportions de l'énoncé (diamètre 100 px en amont, 25 px au col)
+  // rapport = d₂ / d₁ (0,25 : 10 mm / 40 mm ; 0,5 : 20 mm / 40 mm) ; simple : seulement deux sections d'une conduite (ni P, ni v, ni « horizontale »)
+  const h = 50 * rapport, yh = 100 - h, yb = 100 + h;
   return (
     <div style={boite} data-schema="venturi">
-      <svg viewBox="0 0 360 214" role="img" aria-label="Conduite horizontale dont le diamètre passe de d1 en amont à d2 au col, avec la pression P et la vitesse v de chaque côté" style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
+      <svg viewBox="0 0 360 214" role="img" aria-label={simple ? 'Conduite dont la section passe d’une valeur 1 à une valeur 2 plus petite' : 'Conduite horizontale dont le diamètre passe de d1 en amont à d2 au col, avec la pression P et la vitesse v de chaque côté'} style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
         <defs><F id={`${u}f`} c="#475569"/><F id={`${u}a`} c="#2563eb"/></defs>
-        <path d="M20,50 L140,50 L190,87.5 L330,87.5 L330,112.5 L190,112.5 L140,150 L20,150 Z" fill={EAU} opacity="0.55"/>
-        <path d="M20,50 L140,50 L190,87.5 L330,87.5 M20,150 L140,150 L190,112.5 L330,112.5" fill="none" stroke={TR} strokeWidth="3" strokeLinejoin="round"/>
+        <path d={`M20,50 L140,50 L190,${yh} L330,${yh} L330,${yb} L190,${yb} L140,150 L20,150 Z`} fill={EAU} opacity="0.55"/>
+        <path d={`M20,50 L140,50 L190,${yh} L330,${yh} M20,150 L140,150 L190,${yb} L330,${yb}`} fill="none" stroke={TR} strokeWidth="3" strokeLinejoin="round"/>
         <line x1="95" y1="100" x2="150" y2="100" stroke="#2563eb" strokeWidth="2.5" markerEnd={`url(#${u}a)`}/>
         <line x1="205" y1="100" x2="265" y2="100" stroke="#2563eb" strokeWidth="2.5" markerEnd={`url(#${u}a)`}/>
-        <Cote u={u} x1="55" y1="52" x2="55" y2="148" txt={<><tspan fontStyle="italic">d</tspan><tspan fontSize="0.75em" dy="3">1</tspan></>} tx="63" ty="104" c="#0f172a"/>
-        <Cote u={u} x1="300" y1="89" x2="300" y2="111" txt={<><tspan fontStyle="italic">d</tspan><tspan fontSize="0.75em" dy="3">2</tspan></>} tx="300" ty="78" anchor="middle" c="#0f172a"/>
-        <text x="70" y="182" fontSize="14" textAnchor="middle" fill="#0f172a"><Ind b="P" i="1"/> et <Ind b="v" i="1"/></text><text x="70" y="199" fontSize="12.5" textAnchor="middle" fill="#64748b">en amont</text>
-        <text x="255" y="182" fontSize="14" textAnchor="middle" fill="#0f172a"><Ind b="P" i="2"/> et <Ind b="v" i="2"/></text><text x="255" y="199" fontSize="12.5" textAnchor="middle" fill="#64748b">au col</text>
-        <text x="330" y="36" fontSize="12.5" textAnchor="end" fill="#64748b">conduite horizontale</text>
+        {!simple && <Cote u={u} x1="55" y1="52" x2="55" y2="148" txt={<><tspan fontStyle="italic">d</tspan><tspan fontSize="0.75em" dy="3">1</tspan></>} tx="63" ty="104" c="#0f172a"/>}
+        {!simple && <Cote u={u} x1="300" y1={yh + 2} x2="300" y2={yb - 2} txt={<><tspan fontStyle="italic">d</tspan><tspan fontSize="0.75em" dy="3">2</tspan></>} tx="300" ty={yh - 9} anchor="middle" c="#0f172a"/>}
+        {simple ? <>
+          <text x="70" y="182" fontSize="14" textAnchor="middle" fill="#0f172a">section 1</text>
+          <text x="255" y="182" fontSize="14" textAnchor="middle" fill="#0f172a">section 2</text>
+        </> : <>
+          <text x="70" y="182" fontSize="14" textAnchor="middle" fill="#0f172a"><Ind b="P" i="1"/> et <Ind b="v" i="1"/></text><text x="70" y="199" fontSize="12.5" textAnchor="middle" fill="#64748b">en amont</text>
+          <text x="255" y="182" fontSize="14" textAnchor="middle" fill="#0f172a"><Ind b="P" i="2"/> et <Ind b="v" i="2"/></text><text x="255" y="199" fontSize="12.5" textAnchor="middle" fill="#64748b">au col</text>
+          <text x="330" y="36" fontSize="12.5" textAnchor="end" fill="#64748b">conduite horizontale</text></>}
+        {simple && <text x="330" y="36" fontSize="12.5" textAnchor="end" fill="#64748b">conduite</text>}
+        <text x="180" y="212" fontSize="11.5" textAnchor="middle" fill="#64748b">{rapport === 0.25 ? '' : 'schéma non à l’échelle'}</text>
       </svg>
     </div>);
 }

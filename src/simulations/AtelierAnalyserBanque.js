@@ -965,7 +965,7 @@ export const PROBLEMES = [
 // ──────────────────────────────── 2. CHOISIR LA BONNE RELATION ────────────────────────────────
 export const RELATIONS = [
   { id: 'retrecissement', domaine: 'Transport des fluides', titre: 'Une conduite qui se rétrécit',
-    schema: { type: 'venturi' },
+    schema: { type: 'venturi', rapport: 0.5 },
     enonce: 'L’eau circule à 0,80 m·s⁻¹ dans une conduite de diamètre 40 mm, qui se rétrécit ensuite à 20 mm. On cherche la vitesse dans la partie étroite.',
     q: 'Quelle relation permet de répondre ?', options: [
       V('v₂ = v₁ × (d₁ / d₂)²', 'Conservation du débit : v₁·S₁ = v₂·S₂, et la section est proportionnelle à d². Ici v₂ = 4 × 0,80 = 3,2 m·s⁻¹.'),
@@ -1260,7 +1260,7 @@ export const HYPOTHESES = [
       F('L’écoulement est laminaire', 'Il n’y a pas d’écoulement.'),
     ] },
   { id: 'conservation', domaine: 'Transport des fluides', titre: 'Conservation du débit',
-    schema: { type: 'venturi' },
+    schema: { type: 'venturi', rapport: 0.5, simple: true },
     enonce: 'On écrit v₁·S₁ = v₂·S₂ entre deux sections d’une même conduite.', options: [
       V('Conduite rigide, sans accumulation de fluide entre les deux sections', 'Sinon du fluide pourrait s’accumuler ou se vider entre les deux sections. (Le régime permanent est la situation habituelle, mais il n’est pas indispensable pour un fluide incompressible dans une conduite rigide.)'),
       V('Fluide incompressible', 'Pour un gaz comprimé, c’est le débit massique qui se conserve, pas le débit volumique.'),
