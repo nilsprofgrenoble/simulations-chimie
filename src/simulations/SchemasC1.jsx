@@ -279,21 +279,31 @@ const Cote = ({ x1, y1, x2, y2, u, txt, tx, ty, anchor = 'start', c = '#475569' 
     <text x={tx} y={ty} fontSize="13" fill={c} textAnchor={anchor} fontWeight="700">{txt}</text>
   </g>);
 
-// Cuve ouverte : eau sur une hauteur h, capteur de pression au fond
-function Cuve({ capteur = true }) {
+// Cuve : ouverte ou fermée (gaz sous pression P₀), avec capteur au fond, point étudié à une profondeur h, ou orifice latéral
+function Cuve({ capteur = true, ferme = false, point = false, orifice = false }) {
   const u = useId().replace(/:/g, '');
+  const prof = point || orifice, yS = 80, yP = 160;
   return (
     <div style={boite} data-schema="cuve">
-      <svg viewBox="0 0 360 248" role="img" aria-label={`Cuve ouverte contenant un liquide sur une hauteur h${capteur ? ', capteur de pression au fond' : ''}`} style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
-        <defs><F id={`${u}f`} c="#475569"/><F id={`${u}a`} c={TR}/></defs>
-        <rect x="100" y="80" width="150" height="120" fill={EAU}/>
-        <path d="M100,40 L100,200 L250,200 L250,40" fill="none" stroke={TR} strokeWidth="3"/>
-        <path d="M100,80 q18.75,-5 37.5,0 t37.5,0 t37.5,0 t37.5,0" fill="none" stroke="#2563eb" strokeWidth="2"/>
-        <text x="175" y="150" fontSize="14" textAnchor="middle" fill="#1e3a8a">liquide</text>
-        <line x1="175" y1="14" x2="175" y2="40" stroke={TR} strokeWidth="1.6" markerEnd={`url(#${u}a)`}/>
-        <text x="185" y="26" fontSize="12.5" fill="#334155">air (pression atmosphérique)</text>
-        <Cote u={u} x1="275" y1="82" x2="275" y2="198" txt={<tspan fontStyle="italic">h</tspan>} tx="285" ty="145"/>
-        {capteur && <g><rect x="160" y="200" width="30" height="12" fill="#e2e8f0" stroke={TR} strokeWidth="2"/><text x="175" y="228" fontSize="13" textAnchor="middle" fill="#0f172a">capteur de pression</text></g>}
+      <svg viewBox="0 0 360 248" role="img" aria-label={`Cuve ${ferme ? 'fermée, avec un gaz sous pression au-dessus du liquide' : 'ouverte'} contenant un liquide${orifice ? ', avec un orifice latéral à la profondeur h sous la surface libre' : point ? ', point étudié à la profondeur h sous la surface' : ', hauteur h de liquide'}${capteur && !prof ? ', capteur de pression au fond' : ''}`} style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
+        <defs><F id={`${u}f`} c="#475569"/><F id={`${u}a`} c={TR}/><F id={`${u}j`} c="#2563eb"/></defs>
+        <rect x="100" y={yS} width="150" height={200 - yS} fill={EAU}/>
+        <path d={ferme ? 'M100,40 L100,200 L250,200 L250,40 Z' : 'M100,40 L100,200 L250,200 L250,40'} fill="none" stroke={TR} strokeWidth="3"/>
+        <path d={`M100,${yS} q18.75,-5 37.5,0 t37.5,0 t37.5,0 t37.5,0`} fill="none" stroke="#2563eb" strokeWidth="2"/>
+        <text x="175" y={prof ? 190 : 150} fontSize="14" textAnchor="middle" fill="#1e3a8a">liquide</text>
+        {ferme
+          ? <text x="175" y="62" fontSize="13" textAnchor="middle" fill="#334155">gaz sous pression <tspan fontStyle="italic">P</tspan><tspan fontSize="0.75em" dy="3">0</tspan></text>
+          : <g><line x1="175" y1="14" x2="175" y2="40" stroke={TR} strokeWidth="1.6" markerEnd={`url(#${u}a)`}/><text x="185" y="26" fontSize="12.5" fill="#334155">air (pression atmosphérique)</text></g>}
+        {prof
+          ? <g>
+              <line x1="100" y1={yP} x2="250" y2={yP} stroke="#64748b" strokeWidth="1.2" strokeDasharray="4 3"/>
+              {point && <circle cx="175" cy={yP} r="4.5" fill={TR}/>}
+              {point && <text x="184" y={yP - 7} fontSize="12.5" fill="#0f172a">point étudié</text>}
+              {orifice && <g><rect x="246" y={yP - 4} width="8" height="8" fill="white" stroke={TR} strokeWidth="2"/><path d={`M254,${yP} q50,-6 70,50`} fill="none" stroke="#2563eb" strokeWidth="3" markerEnd={`url(#${u}j)`}/><text x="262" y={yP - 10} fontSize="12.5" fill="#0f172a">orifice</text></g>}
+              <Cote u={u} x1="80" y1={yS + 2} x2="80" y2={yP - 2} txt={<tspan fontStyle="italic">h</tspan>} tx="72" ty={(yS + yP) / 2 + 4} anchor="end"/>
+            </g>
+          : <Cote u={u} x1="275" y1="82" x2="275" y2="198" txt={<tspan fontStyle="italic">h</tspan>} tx="285" ty="145"/>}
+        {capteur && !prof && <g><rect x="160" y="200" width="30" height="12" fill="#e2e8f0" stroke={TR} strokeWidth="2"/><text x="175" y="228" fontSize="13" textAnchor="middle" fill="#0f172a">capteur de pression</text></g>}
         <text x="175" y="245" fontSize="12" textAnchor="middle" fill="#64748b">schéma non à l’échelle</text>
       </svg>
     </div>);
