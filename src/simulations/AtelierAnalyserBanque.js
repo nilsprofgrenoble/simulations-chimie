@@ -2721,7 +2721,7 @@ export const ALGORITHMES = [
       F('N = N_allumage : état HIGH', 'Il faut tester le dépassement du seuil, pas l’égalité : N prend rarement exactement la valeur du seuil, les phares ne s’allumeraient presque jamais.'),
     ] },
   { id: 'algo-extinction', domaine: 'Transmission de signaux numériques', titre: 'Condition d’extinction des phares',
-    enonce: 'Même montage : U_R augmente avec l’éclairement. L’algorithme comporte deux tests : l’un pour allumer quand N passe sous N_allumage = 470, l’autre pour éteindre quand il fait suffisamment clair, avec un seuil N_extinction = 600.',
+    ...presenter({ contexte: 'Même montage : U_R augmente avec l’éclairement. L’algorithme comporte deux tests : l’un pour allumer quand N passe sous le seuil d’allumage, l’autre pour éteindre quand il fait suffisamment clair.', liste: [['Seuil d’allumage', 'N_allumage = 470'], ['Seuil d’extinction', 'N_extinction = 600']] }),
     q: 'Complétez le deuxième test : « Si N … N_extinction, alors la sortie des phares passe à l’état … ».', options: [
       V('N > N_extinction : état LOW', 'Il fait clair ⇒ N est grand ⇒ N dépasse le seuil d’extinction ⇒ on éteint (LOW).'),
       F('N < N_extinction : état LOW', 'Avec N < 600, on éteindrait aussi quand il fait sombre : les phares ne pourraient jamais rester allumés.'),
@@ -2737,7 +2737,7 @@ export const ALGORITHMES = [
       F('Elle clignote, car les deux tests sont presque vrais', 'Un test est vrai ou faux : ici les deux sont faux, la sortie ne change pas.'),
     ] },
   { id: 'algo-pourquoi-deux', domaine: 'Transmission de signaux numériques', titre: 'Pourquoi deux seuils plutôt qu’un ?',
-    enonce: 'On aurait pu écrire un seul test : « Si N < 500, HIGH ; sinon LOW ». Le concepteur a préféré deux seuils différents (470 et 600), avec une zone intermédiaire où rien ne change. Le signal mesuré fluctue légèrement (bruit de mesure, passage d’un nuage…).',
+    ...presenter({ contexte: 'On aurait pu écrire un seul test : « Si N < 500, HIGH ; sinon LOW ». Le concepteur a préféré deux seuils différents, avec une zone intermédiaire où rien ne change. Le signal mesuré fluctue légèrement (bruit de mesure, passage d’un nuage…).', liste: [['Seuil d’allumage', '470'], ['Seuil d’extinction', '600']] }),
     q: 'Quel est l’intérêt principal des deux seuils ?', options: [
       V('Éviter que les phares clignotent quand l’éclairement est proche du seuil', 'Avec un seul seuil, un N qui oscille autour de 500 changerait l’état à chaque mesure. Deux seuils créent une « zone morte » : il faut une vraie variation de l’éclairement pour changer l’état.'),
       F('Le CAN a deux voies, il faut un seuil par voie', 'Un seul canal analogique (A0) suffit : les deux seuils portent sur le même nombre N.'),
