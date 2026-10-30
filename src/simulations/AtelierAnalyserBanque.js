@@ -2537,7 +2537,7 @@ import { CHAMPS } from './AtelierChampBanque.jsx';
 // mesure une tension et fournit N (0 → 0 V, 1023 → 5,0 V : réponse supposée linéaire). On suppose ici que U_R, mesurée aux bornes de R, augmente avec l'éclairement.
 export const ALGORITHMES = [
   { id: 'algo-allumage', domaine: 'Transmission de signaux numériques', titre: 'Condition d’allumage des phares',
-    enonce: 'Les phares doivent s’allumer quand il fait sombre. Un capteur de lumière (photorésistance) est monté en série avec une résistance R ; la tension U_R, mesurée aux bornes de R, est convertie en un nombre N par un CAN 10 bits. Quand l’éclairement diminue, la résistance de la photorésistance augmente, donc U_R diminue, et N aussi. N_allumage est le seuil d’allumage.',
+    enonce: 'Les phares doivent s’allumer quand il fait sombre. Un capteur de lumière (photorésistance) est monté en série avec une résistance R ; la tension U_R, mesurée aux bornes de R, est convertie en un nombre N par un CAN 10 bits (hypothèse : réponse linéaire, N = U × 1023 / 5,0 pour U de 0 à 5,0 V). Quand l’éclairement diminue, la résistance de la photorésistance augmente, donc U_R diminue, et N aussi. N_allumage est le seuil d’allumage.',
     q: 'Complétez : « Si N … N_allumage, alors la sortie des phares passe à l’état … » (HIGH = DEL allumée, LOW = éteinte).', options: [
       V('N < N_allumage : état HIGH', 'Il fait sombre ⇒ U_R, donc N, est petit ⇒ N passe sous le seuil ⇒ on allume (HIGH).'),
       F('N > N_allumage : état HIGH', 'Sens inversé : N est grand quand il fait clair. On allumerait les phares en plein jour.'),

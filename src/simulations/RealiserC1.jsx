@@ -131,7 +131,7 @@ function donneesTrace() {
   for (let essai = 0; essai < 60; essai++) {
     let c;
     if (ctx === 'photo') {
-      const a = alea(40, 60, 3), b = alea(0.48, 0.6, 2), E = [200, 450, 720, 1020, 1500, 2120, 2570, 3110, 3430].map(e => Math.round(e * (0.9 + 0.2 * Math.random()) / 10) * 10);
+      const a = alea(40, 60, 3), b = alea(0.48, 0.6, 2), E = [200, 450, 720, 1020, 1500, 2120, 2570, 3110, 3430].map(e => Math.round(e * (0.9 + 0.2 * Math.random()) / 10) * 10).sort((u, v) => u - v);
       c = { xs: E, ys: E.map(e => Number((a * Math.pow(e, -b)).toPrecision(3))), xnom: 'E', xunite: 'lx', ynom: 'Rp', yunite: 'kΩ', ynomJSX: <>R<sub>p</sub></>, xnomJSX: <>E</>,
         sujet: 'photorésistance : sa résistance R_p diminue quand l’éclairement E augmente', var: 'E' };
     } else if (ctx === 'ctn') {
@@ -144,7 +144,7 @@ function donneesTrace() {
         sujet: 'charge d’un condensateur : la tension u à ses bornes augmente avec le temps t', var: 't' };
     }
     const mx = Math.max(...c.xs), my = Math.max(...c.ys);
-    if (bonPas(mx).length === 1 && bonPas(my).length === 1 && new Set(c.xs).size === c.xs.length && c.ys.every(y => y > 0 || ctx === 'charge')) {
+    if (bonPas(mx).length === 1 && bonPas(my).length === 1 && new Set(c.xs).size === c.xs.length && c.xs.every((x, i) => i === 0 || x > c.xs[i - 1]) && c.ys.every(y => y > 0 || ctx === 'charge')) {
       return { ...c, sxOpts: optionsPas(mx), syOpts: optionsPas(my), sxBon: bonPas(mx)[0], syBon: bonPas(my)[0] };
     }
   }
@@ -152,7 +152,7 @@ function donneesTrace() {
 }
 
 export function genTrace() {
-  const d = donneesTrace() || donneesTrace();
+  const d = donneesTrace() || donneesTrace() || donneesTrace();
   const tab = (
     <div style={{ overflowX: 'auto' }}>
       <table style={{ borderCollapse: 'collapse', fontSize: 13.5, margin: '4px 0' }}>
@@ -225,11 +225,11 @@ export function genPont() {
     { id: 'p0', type: 'qcm', q: <>Quelle est l’<b>expression littérale</b> de {UJ} (diviseur de tension) ?</>, options: exprs.map(e => e.j), bonne: exprs.findIndex(e => e.ok),
       aide: 'La tension aux bornes d’une résistance en série vaut la tension totale multipliée par (cette résistance) / (somme des résistances).',
       expl: <>Dans un diviseur de tension, la tension aux bornes d’une résistance est <b>U<sub>G</sub> × (cette résistance) / (somme des résistances)</b> : {UJ} = U<sub>G</sub> × {num} / ({den}).</> },
-    { id: 'p1', type: 'num', q: <>Calculez {UJ} pour R<sub>p</sub> = <b>{nb(Rp, 2)}{NB}kΩ</b>, R = <b>{Rtxt}</b> et U<sub>G</sub> = <b>{unG}{NB}V</b>.</>, unite: 'V', vrai, csMin: 2, tolRel: 0.01,
+    { id: 'p1', type: 'num', q: <>Calculez {UJ} pour R<sub>p</sub> = <b>{nb(Rp, 2)}{NB}kΩ</b>, R = <b>{Rtxt}</b> et U<sub>G</sub> = <b>{unG}{NB}V</b>.</>, unite: 'V', vrai, csMin: 2, tolRel: 0.05,
       pieges: [[faux, 'Vous avez pris la mauvaise résistance au numérateur : le numérateur est la résistance aux bornes de laquelle on mesure la tension.'], ...(cas.unR === 'Ω' ? [[nonConv, 'R et R_p ne sont pas dans la même unité : convertissez (1 kΩ = 10³ Ω) avant de calculer.']] : [])],
       aide: 'Mettez R et R_p dans la même unité (1 kΩ = 10³ Ω), écrivez l’expression littérale, puis remplacez par les valeurs.',
       expl: <>{cas.unR === 'Ω' ? <>D’abord la même unité : R = {nb(cas.R, 2)} Ω = {nb(Rk, 2)} kΩ (1 kΩ = 10³ Ω). </> : null}{UJ} = U<sub>G</sub> × {num} / ({den}) = {unG} × {nb(aux === 'R' ? Rk : Rpk, 2)} / ({nb(Rk, 2)} + {nb(Rpk, 2)}) = <b>{nb(vrai, 3)}{NB}V</b>. Les unités de résistance se simplifient : peu importe laquelle, pourvu que ce soit la même.</> },
-    (() => { const o = melange([`entre 0 et U_G (soit entre 0 et ${unG} V)`, `entre 0 et U_G / 2`, `entre U_G et 2 U_G`, `entre −U_G et +U_G`]);
+    (() => { const o = melange([`entre 0 et U_G (soit entre 0 et ${unG} V)`, `supérieure à U_G`, `entre U_G et 2 U_G`, `négative (inférieure à 0)`]);
       return { id: 'p2', type: 'qcm', q: <>Contrôle de plausibilité : entre quelles valeurs doit se trouver {UJ} ?</>, options: o, bonne: o.findIndex(x => x.startsWith('entre 0 et U_G (')),
         aide: 'Une tension aux bornes d’une partie du circuit ne peut pas dépasser la tension totale appliquée.',
         expl: <>{UJ} est une <b>fraction</b> de U<sub>G</sub> (le rapport {num} / ({den}) est compris entre 0 et 1) : donc 0 &lt; {UJ} &lt; U<sub>G</sub> = {unG} V. Un résultat de {nb(vrai, 3)} V est bien dans cet intervalle.</> }; })(),
@@ -279,13 +279,13 @@ export function genTemps() {
       pieges: [[montant ? Vfin + 0.05 * dV : Vfin - 0.05 * dV, `Mauvais sens : la tension ${sens}, le seuil est ${montant ? 'en dessous' : 'au-dessus'} de V_fin.`], [0.05 * dV, 'Vous avez donné 5 % de ΔV, il faut ensuite le soustraire ou l’ajouter à V_fin pour obtenir le seuil.']],
       aide: `5 % de ΔV = 0,05 × ΔV. Le capteur « a répondu » quand V est entre le seuil et V_fin (la tension ${sens}).`,
       expl: <>5 % de ΔV = 0,05 × {nb(dV, 2)} = {nb(0.05 * dV, 3)} V. Seuil = V<sub>fin</sub> {montant ? '−' : '+'} 0,05 ΔV = {nb(Vfin, 2)} {montant ? '−' : '+'} {nb(0.05 * dV, 3)} = <b>{nb(seuil, 3)}{NB}V</b>.</> },
-    { id: 't2', type: 'num', q: <>Sur le graphique, la variation commence à l’instant <b>t<sub>0</sub> = {t0}{NB}ms</b>. Lisez l’instant <b>t<sub>1</sub></b> où la courbe atteint le seuil ({nb(seuil, 3)} V).</>, unite: 'ms', vrai: t1, tolRel: 0.05, csMin: 2,
+    { id: 't2', type: 'num', q: <>Sur le graphique, la variation commence à l’instant <b>t<sub>0</sub> = {t0}{NB}ms</b>. Lisez l’instant <b>t<sub>1</sub></b> où la courbe atteint le seuil ({nb(seuil, 3)} V) ; interpolez entre les traits de la grille si besoin.</>, unite: 'ms', vrai: t1, tolRel: 0.06, csMin: 2,
       aide: 'Tracez mentalement une ligne horizontale à la valeur du seuil : t₁ est l’abscisse du point où elle coupe la courbe.', expl: <>On lit t<sub>1</sub> ≈ <b>{nb(t1, 3)}{NB}ms</b> (à ± 2 ms près sur le graphique).</> },
-    { id: 't3', type: 'num', q: <>Calculez le <b>temps de réponse à 5 %</b> : t<sub>R</sub> = t<sub>1</sub> − t<sub>0</sub>.</>, unite: 'ms', vrai: tR, tolRel: 0.07, csMin: 2,
+    { id: 't3', type: 'num', q: <>Calculez le <b>temps de réponse à 5 %</b> : t<sub>R</sub> = t<sub>1</sub> − t<sub>0</sub>.</>, unite: 'ms', vrai: tR, tolRel: 0.12, csMin: 2,
       aide: 'Le temps de réponse se compte à partir du début de la variation (t₀), pas à partir de l’instant 0.', pieges: [[t1, 'Vous avez donné t₁ : le temps de réponse se compte depuis t₀, donc t_R = t₁ − t₀.']],
       expl: <>t<sub>R</sub> = t<sub>1</sub> − t<sub>0</sub> ≈ {nb(t1, 3)} − {t0} = <b>{nb(tR, 2)}{NB}ms</b> (à quelques ms près, selon la lecture).</> },
   ];
-  return { intro: `Un conditionneur délivre une tension V proportionnelle à la grandeur mesurée par un capteur (${ctx.nom}). À l’instant t₀, ${ctx.evt} : la tension V change et se stabilise à une valeur finale V_fin. On suppose une réponse de type exponentiel (premier ordre) et on définit le temps de réponse à 5 % : durée au bout de laquelle V est à moins de 5 % de ΔV de sa valeur finale.`,
+  return { intro: `Un conditionneur délivre une tension V qui varie avec la grandeur mesurée par un capteur (${ctx.nom}). À l’instant t₀, ${ctx.evt} : la tension V change et se stabilise à une valeur finale V_fin. On suppose une réponse de type exponentiel (premier ordre) et on définit le temps de réponse à 5 % : durée au bout de laquelle V est à moins de 5 % de ΔV de sa valeur finale.`,
     figure: <FigureEchelon g={g}/>, questions: q,
     retenir: ['Temps de réponse à 5 % : t_R = t₁ − t₀, où t₁ est l’instant où V est à moins de 5 % de ΔV de V_fin (c’est une définition conventionnelle).', 'Seuil : V_fin − 5 % ΔV si V monte, V_fin + 5 % ΔV si V descend.', 'Pour un système du premier ordre, t_R ≈ 3 τ.'] };
 }

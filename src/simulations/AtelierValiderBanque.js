@@ -1561,13 +1561,13 @@ export const DECISIONS = [
         ['Les deux se valent', false, 'Non : leurs écarts aux mesures et leur comportement hors de la plage mesurée sont très différents.'],
       ], aide: 'Regardez la figure : quelle courbe suit le mieux les points ? Que fait chaque courbe à droite de la zone grisée ?' },
       { id: 'arg1', titre: 'Argument 1 : l’accord avec les mesures', q: 'Quel argument, tiré de la figure et des valeurs de R², justifie correctement le choix de A ?', o: [
-        ['A passe au plus près des points, avec de petits écarts sans organisation ; B passe sous les points aux extrémités et au-dessus au milieu (écarts systématiques) ; R² est plus proche de 1 pour A (0,992 contre 0,869)', true, 'Un bon modèle laisse des écarts petits et répartis au hasard de part et d’autre. Des écarts qui suivent un motif (courbe en U) montrent que la forme du modèle n’est pas la bonne.'],
+        ['A passe au plus près des points, avec des écarts bien plus petits et moins organisés que ceux de B ; B passe sous les points aux extrémités et au-dessus au milieu (écarts systématiques) ; R² est plus proche de 1 pour A (0,992 contre 0,869)', true, 'Un bon modèle laisse des écarts petits et répartis au hasard de part et d’autre. Des écarts qui suivent un motif (courbe en U) montrent que la forme du modèle n’est pas la bonne.'],
         ['A a une équation plus compliquée, donc il est plus précis', false, 'Un modèle plus compliqué n’est pas meilleur par nature : ce qui compte, c’est l’accord avec les mesures et la cohérence physique.'],
         ['A passe exactement par tous les points', false, 'Faux : à 0 °C, A donne 27,4 kΩ alors qu’on a mesuré 29,3 kΩ. Un modèle ne passe jamais exactement par tous les points (les mesures ont une incertitude).'],
         ['Une droite ne peut jamais représenter une CTN', false, 'Trop absolu : sur une plage étroite, une droite peut convenir. Ici, l’écart systématique et la suite (étape 3) montrent qu’elle ne convient pas.'],
       ], aide: 'Comparez, pour chaque modèle, la position de la courbe par rapport aux points : écarts petits ? de signe aléatoire ou organisés ?' },
       { id: 'arg2', titre: 'Argument 2 : validité hors de la plage mesurée', q: 'Le modèle servira jusqu’à 100 °C, alors que les mesures s’arrêtent à 60 °C. Que donne le modèle B à 100 °C ?', o: [
-        ['R = 23,9 − 0,410 × 100 ≈ −17 kΩ : une résistance négative est impossible ; B est inutilisable hors de la plage (il devient déjà négatif vers 58 °C)', true, 'B s’annule pour θ = 23,9 / 0,410 ≈ 58 °C, donc devient négatif ensuite. À 100 °C, le modèle A donne 27,4 × exp(−3,84) ≈ 0,59 kΩ : petit mais positif et décroissant, comme une vraie CTN.'],
+        ['R = 23,9 − 0,410 × 100 ≈ −17 kΩ : une résistance négative est impossible ; B s’annule vers 58 °C, c’est-à-dire dès la fin de la plage mesurée, et devient négatif au-delà : il est inutilisable pour θ > 58 °C', true, 'B s’annule pour θ = 23,9 / 0,410 ≈ 58 °C, donc devient négatif ensuite. À 100 °C, le modèle A donne 27,4 × exp(−3,84) ≈ 0,59 kΩ : petit mais positif et décroissant, comme une vraie CTN.'],
         ['R ≈ 6,9 kΩ : B reste raisonnable', false, 'Calcul à refaire : 0,410 × 100 = 41,0 est supérieur à 23,9.'],
         ['R ≈ 0,59 kΩ, comme A', false, 'C’est la valeur de A à 100 °C. B donne 23,9 − 41,0, valeur négative.'],
         ['On ne peut rien dire : on n’a pas mesuré à 100 °C', false, 'Si, on peut au moins refuser un modèle qui donne une valeur physiquement impossible : une résistance ne peut pas être négative.'],
@@ -1582,7 +1582,7 @@ export const DECISIONS = [
   { id: 'modele-photoresistance', domaine: 'Transmission de signaux numériques', niveau: 2, titre: 'Quel modèle pour une photorésistance ?',
     enonce: 'On a mesuré la résistance R_p d’une photorésistance en fonction de l’éclairement E (9 points, de 200 à 3 430 lx). Un tableur a ajusté deux modèles. Le capteur sera utilisé de la nuit au plein jour (jusqu’à 10 000 lx). Choisissez le modèle le plus pertinent et justifiez-le par deux arguments.',
     reperes: [['Mesures (E en lx ; R_p en kΩ)', '200 : 3,00 · 450 : 1,79 · 720 : 1,37 · 1 020 : 1,13 · 1 500 : 0,93 · 2 120 : 0,79 · 2 570 : 0,71 · 3 110 : 0,65 · 3 430 : 0,62'],
-      ['Modèle A (puissance)', 'R_p = 51,3 × E^(−0,546) ; R² = 0,997'], ['Modèle B (logarithme)', 'R_p = 6,66 − 0,765 × ln(E) ; R² = 0,918'], ['Rappel', 'Une résistance est toujours strictement positive.']],
+      ['Modèle A (puissance)', 'R_p = 51,3 × E^(−0,546) ; R² = 0,994'], ['Modèle B (logarithme)', 'R_p = 6,66 − 0,765 × ln(E) ; R² = 0,918'], ['Rappel', 'Une résistance est toujours strictement positive. Les deux R² sont calculés sur R_p.']],
     figure: { xnom: 'E', xunite: 'lx', ynom: 'R_p', yunite: 'kΩ', x: [0, 10000, 2000], y: [-1, 3.5, 0.5], plage: [200, 3430], mesures: mesuresPhoto,
       modeles: [{ nom: 'A', f: e => e > 0 ? 51.3 * Math.pow(e, -0.546) : NaN }, { nom: 'B', f: e => e > 0 ? 6.66 - 0.765 * Math.log(e) : NaN }] },
     etapes: [
@@ -1595,7 +1595,7 @@ export const DECISIONS = [
         ['A passe au plus près des points, avec de très petits écarts ; B s’écarte nettement aux deux extrémités et passe de l’autre côté des points au milieu (écarts systématiques) ; R² est plus proche de 1 pour A', true, 'Les écarts de B suivent un motif (positif aux extrémités, négatif au milieu) : sa forme n’est pas la bonne. Attention, un R² plus proche de 1 seul ne suffit pas (voir l’étape 4).'],
         ['B a moins de paramètres, donc il est plus fiable', false, 'Le nombre de paramètres ne mesure pas la fiabilité : les deux modèles ont deux paramètres, et c’est l’accord avec les mesures qui compte.'],
         ['A passe exactement par tous les points', false, 'Faux : à 200 lx, A donne 2,84 kΩ alors qu’on a mesuré 3,00 kΩ. Aucun modèle ne passe exactement par tous les points.'],
-        ['Les deux modèles ont un R² proche de 1, donc on ne peut pas les départager', false, 'R² = 0,918 reste nettement plus éloigné de 1 que 0,997 ; surtout, les écarts de B sont organisés (motif en creux), ce que R² seul ne montre pas.'],
+        ['Les deux modèles ont un R² proche de 1, donc on ne peut pas les départager', false, 'R² = 0,918 reste nettement plus éloigné de 1 que 0,994 ; surtout, les écarts de B sont organisés (motif en creux), ce que R² seul ne montre pas.'],
       ], aide: 'Comparez, pour chaque modèle, la position de la courbe par rapport aux points : écarts petits ? de signe aléatoire ou organisés ?' },
       { id: 'arg2', titre: 'Argument 2 : validité hors de la plage mesurée', q: 'Le capteur doit fonctionner en plein jour, à 10 000 lx. Que donne le modèle B à cet éclairement ?', o: [
         ['R_p = 6,66 − 0,765 × ln(10 000) ≈ −0,39 kΩ : une résistance négative est impossible ; B devient négatif dès 6 000 lx environ', true, 'ln(10 000) ≈ 9,21 donc 0,765 × 9,21 ≈ 7,05 > 6,66. B s’annule pour E = exp(6,66 / 0,765) ≈ 6 000 lx. Le modèle A donne ≈ 0,34 kΩ à 10 000 lx : petit, positif, qui continue de décroître.'],
@@ -1642,7 +1642,7 @@ export const DECISIONS = [
       ], aide: 'Comparez les bornes de l’intervalle de confiance au critère de 100 ms : l’intervalle est-il entièrement du bon côté ?' },
     ] },
   { id: 'conforme-strict', domaine: 'Transmission de signaux numériques', niveau: 1, titre: 'Strictement inférieur ou inférieur ou égal ?',
-    enonce: 'Un régulateur de température a été testé : son dépassement mesuré est D = 5,0 %. Le cahier des charges impose « D strictement inférieur à 5 % ».',
+    enonce: 'Un régulateur de température a été testé : son dépassement calculé est D = 5,0 % (valeur exacte, sans incertitude). Le cahier des charges impose « D strictement inférieur à 5 % ».',
     reperes: [['Valeur trouvée', 'D = 5,0 %'], ['Critère', 'D < 5 % (strict)'], ['Rappel', '« < » : strictement inférieur ; « ≤ » : inférieur ou égal']],
     etapes: [
       { id: 'verdict', titre: 'Ton verdict', q: 'Le régulateur est-il conforme au critère « D < 5 % » ?', fixe: true, o: [['Non conforme : 5,0 % n’est pas strictement inférieur à 5 %', true, 'Avec une inégalité stricte, la valeur limite elle-même est refusée : 5,0 % n’est pas < 5 %.'], ['Conforme : 5,0 % est égal à la limite', false, 'L’égalité ne suffit que pour un critère « ≤ ». Ici le critère est strict.']], aide: 'Une inégalité stricte (<) exclut la valeur limite elle-même.' },
