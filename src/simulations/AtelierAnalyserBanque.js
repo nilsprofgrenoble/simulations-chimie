@@ -983,7 +983,7 @@ export const RELATIONS = [
       F('P = P₀ − ρ·g·h', 'La pression augmente avec la profondeur.'),
     ] },
   { id: 'pompe', domaine: 'Transport des fluides', titre: 'La puissance absorbée par une pompe',
-    enonce: 'Une pompe de rendement η = 70 % fait circuler 12 m³·h⁻¹ d’eau en augmentant sa pression de 2,5 bar. On cherche la puissance électrique qu’elle absorbe.',
+    ...presenter({ contexte: 'Une pompe fait circuler de l’eau en augmentant sa pression. On cherche la puissance électrique qu’elle absorbe.', liste: [['Rendement', 'η = 70 %'], ['Débit volumique', '12 m³·h⁻¹'], ['Augmentation de pression', '2,5 bar']] }),
     q: 'Quelle relation permet de répondre ?', options: [
       V('P_abs = Q_V × ΔP / η', 'Puissance hydraulique Q_V·ΔP, divisée par le rendement : la pompe absorbe plus qu’elle ne fournit. Ici ≈ 1,2 kW.'),
       F('P_abs = Q_V × ΔP × η', 'Le rendement est inférieur à 1 : la puissance absorbée est plus grande que la puissance utile, il faut diviser.'),
@@ -1270,7 +1270,7 @@ export const HYPOTHESES = [
       F('Vitesse identique en tout point d’une section', 'On raisonne avec la vitesse moyenne : le profil réel n’est pas uniforme, mais Q_V = v_moy × S reste vrai.'),
     ] },
   { id: 'bernoulli', domaine: 'Transport des fluides', titre: 'Relation de Bernoulli',
-    enonce: 'On écrit P_A + ρ·g·z_A + ½·ρ·v_A² = P_B + ρ·g·z_B + ½·ρ·v_B² entre deux points A et B d’un circuit.', options: [
+    ...presenter({ contexte: 'On écrit la relation de Bernoulli entre deux points A et B d’un circuit.', liste: [['Relation écrite', 'P_A + ρ·g·z_A + ½·ρ·v_A² = P_B + ρ·g·z_B + ½·ρ·v_B²']] }), options: [
       V('Fluide parfait : pas de pertes de charge entre A et B', 'Avec des frottements, il faut ajouter un terme de pertes de charge ΔP_charge.'),
       V('Fluide incompressible', 'ρ doit être la même en A et en B.'),
       V('Régime permanent, A et B sur une même ligne de courant', 'Les grandeurs ne doivent pas varier dans le temps, et la relation s’écrit le long d’une ligne de courant.'),
@@ -1456,7 +1456,7 @@ export const HYPOTHESES = [
       F('Le chlorure de potassium forme un hydrate entre 40 °C et 60 °C', 'Dans l’eau, entre 40 °C et 60 °C, le chlorure de potassium cristallise sous forme anhydre : il n’y a pas de changement de solide qui casserait la courbe.'),
     ] },
   { id: 'flu-hyp-vases', domaine: 'Transport des fluides', titre: 'Vases communicants',
-    enonce: 'Deux récipients ouverts, reliés par un tube à leur base, contiennent de l’eau. On prévoit qu’à l’équilibre les deux surfaces libres sont à la même altitude.', options: [
+    ...presenter({ contexte: 'Deux récipients ouverts, reliés par un tube à leur base, contiennent de l’eau.', liste: [['Prévision', 'à l’équilibre, les deux surfaces libres sont à la même altitude']] }), options: [
       V('Le liquide est au repos', 'Si l’eau circule (remplissage, pompage), la pression dépend aussi de la vitesse et des pertes de charge : les niveaux ne sont plus égaux en général.'),
       V('Le même liquide remplit tout le montage', 'Avec deux liquides non miscibles de masses volumiques différentes (eau et huile), c’est ρ·h qui s’égalise au niveau de la surface de séparation, pas h : les hauteurs diffèrent.'),
       V('Les deux surfaces libres sont à la même pression', 'Si les pressions diffèrent (par exemple un récipient fermé dont le gaz est sous 0,10 bar de plus que l’air ambiant), la surface de ce récipient est plus basse de ΔP / (ρ·g) ≈ 1,0 m.'),
@@ -1514,7 +1514,7 @@ export const HYPOTHESES = [
 // ──────────────────────────────── 4. PRÉVOIR SANS CALCULER ────────────────────────────────
 export const PREVOIR = [
   { id: 'diametre', domaine: 'Transport des fluides', titre: 'Diamètre doublé',
-    enonce: 'À débit constant, on remplace un tuyau par un autre de diamètre intérieur double.', q: 'La vitesse moyenne de l’eau est…', options: [
+    ...presenter({ contexte: 'On remplace un tuyau par un autre.', liste: [['Débit volumique', 'constant'], ['Diamètre intérieur du nouveau tuyau', 'double de l’ancien']] }), q: 'La vitesse moyenne de l’eau est…', options: [
       V('divisée par 4', 'v = Q_V / S et S est proportionnelle à d² : la section est multipliée par 4, la vitesse divisée par 4.'),
       F('divisée par 2', 'Le carré est oublié : la section varie comme d².'),
       F('inchangée', 'Le débit est le même, mais il passe par une section plus grande.'),
@@ -1529,7 +1529,7 @@ export const PREVOIR = [
       F('inchangée, à 1,2 bar', 'P_atm domine, mais ρ·g·h n’est pas négligeable : il passe de 0,2 à 0,4 bar, donc la pression absolue augmente de 0,2 bar.'),
     ] },
   { id: 'cinetique', domaine: 'Transport des fluides', titre: 'Vitesse de l’eau doublée dans la conduite',
-    enonce: 'La vitesse de l’eau dans une conduite double.', q: 'Le terme ½·ρ·v² de la relation de Bernoulli est…', options: [
+    ...presenter({ contexte: 'Dans une conduite, la vitesse de l’eau double.', liste: [['Terme étudié', '½·ρ·v² (relation de Bernoulli)']] }), q: 'Le terme ½·ρ·v² de la relation de Bernoulli est…', options: [
       F('multiplié par 2', 'Erreur courante : le terme est proportionnel à v², pas à v. Le carré a été oublié.'),
       F('multiplié par 8', 'Le facteur 2 n’est pas cumulé avec un facteur 4 : ½·ρ·v² est en v², soit 2² = 4 et non 2³.'),
       F('divisé par 2', 'La pression diminue quand la vitesse augmente, mais le terme ½·ρ·v² lui-même augmente avec v.'),
@@ -1544,7 +1544,7 @@ export const PREVOIR = [
       F('inchangée', 'La vitesse dépend de la profondeur.'),
     ] },
   { id: 'pertes', domaine: 'Transport des fluides', titre: 'Débit doublé dans un circuit',
-    enonce: 'Dans un circuit en régime turbulent, les pertes de charge varient environ comme Q_V². On double le débit.', q: 'La puissance hydraulique nécessaire pour compenser ces pertes est…', options: [
+    ...presenter({ contexte: 'On double le débit dans un circuit en régime turbulent.', liste: [['Pertes de charge', 'varient environ comme Q_V²'], ['Débit', 'multiplié par 2']] }), q: 'La puissance hydraulique nécessaire pour compenser ces pertes est…', options: [
       F('multipliée par 2', 'La puissance vaut Q_V × ΔP : le débit double, mais ΔP augmente aussi avec le débit.'),
       F('multipliée par 4', 'ΔP est bien multipliée par 4 (∝ Q_V²), mais il faut encore multiplier par le débit, qui double.'),
       V('multipliée par 8', 'P = Q_V × ΔP avec ΔP ∝ Q_V² : P ∝ Q_V³, soit 2³ = 8.'),
