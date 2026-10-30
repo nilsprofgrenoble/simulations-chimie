@@ -2531,6 +2531,61 @@ export const PREVOIR = [
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';
 import { CHAMPS } from './AtelierChampBanque.jsx';
+
+// ─────────────── Compléter un algorithme (seuils, états) — chapitre « Transmission de signaux numériques » ───────────────
+// Contexte : allumage automatique de phares. Photorésistance en série avec une résistance R, alimentées sous U_G = 5,0 V ; le CAN (10 bits) de l'Arduino
+// mesure une tension et fournit N (0 → 0 V, 1023 → 5,0 V : réponse supposée linéaire). On suppose ici que U_R, mesurée aux bornes de R, augmente avec l'éclairement.
+export const ALGORITHMES = [
+  { id: 'algo-allumage', domaine: 'Transmission de signaux numériques', titre: 'Condition d’allumage des phares',
+    enonce: 'Les phares doivent s’allumer quand il fait sombre. Un capteur de lumière (photorésistance) est monté en série avec une résistance R ; la tension U_R, mesurée aux bornes de R, est convertie en un nombre N par un CAN 10 bits (hypothèse : réponse linéaire, N = U × 1023 / 5,0 pour U de 0 à 5,0 V). Quand l’éclairement diminue, la résistance de la photorésistance augmente, donc U_R diminue, et N aussi. N_allumage est le seuil d’allumage.',
+    q: 'Complétez : « Si N … N_allumage, alors la sortie des phares passe à l’état … » (HIGH = DEL allumée, LOW = éteinte).', options: [
+      V('N < N_allumage : état HIGH', 'Il fait sombre ⇒ U_R, donc N, est petit ⇒ N passe sous le seuil ⇒ on allume (HIGH).'),
+      F('N > N_allumage : état HIGH', 'Sens inversé : N est grand quand il fait clair. On allumerait les phares en plein jour.'),
+      F('N < N_allumage : état LOW', 'Le test est bon, mais l’état est inversé : HIGH allume la DEL, LOW l’éteint.'),
+      F('N = N_allumage : état HIGH', 'Il faut tester le dépassement du seuil, pas l’égalité : N prend rarement exactement la valeur du seuil, les phares ne s’allumeraient presque jamais.'),
+    ] },
+  { id: 'algo-extinction', domaine: 'Transmission de signaux numériques', titre: 'Condition d’extinction des phares',
+    enonce: 'Même montage : U_R augmente avec l’éclairement. L’algorithme comporte deux tests : l’un pour allumer quand N passe sous N_allumage = 470, l’autre pour éteindre quand il fait suffisamment clair, avec un seuil N_extinction = 600.',
+    q: 'Complétez le deuxième test : « Si N … N_extinction, alors la sortie des phares passe à l’état … ».', options: [
+      V('N > N_extinction : état LOW', 'Il fait clair ⇒ N est grand ⇒ N dépasse le seuil d’extinction ⇒ on éteint (LOW).'),
+      F('N < N_extinction : état LOW', 'Avec N < 600, on éteindrait aussi quand il fait sombre : les phares ne pourraient jamais rester allumés.'),
+      F('N > N_extinction : état HIGH', 'État inversé : HIGH allume la DEL, or on veut l’éteindre.'),
+      F('N < N_allumage : état LOW', 'C’est le seuil d’allumage, pas celui d’extinction : ce test éteindrait les phares précisément quand il faut les allumer.'),
+    ] },
+  { id: 'algo-entre-seuils', domaine: 'Transmission de signaux numériques', titre: 'Entre les deux seuils',
+    enonce: 'L’algorithme : « Si N < 470 alors sortie à l’état HIGH. Si N > 600 alors sortie à l’état LOW. » (rien d’autre). Les phares sont allumés, puis la luminosité remonte doucement et N vaut maintenant 520.',
+    q: 'Que fait la sortie des phares quand N = 520 ?', options: [
+      V('Elle reste dans l’état où elle était (ici : allumée)', '520 n’est ni inférieur à 470, ni supérieur à 600 : aucun test n’est vrai, aucune instruction n’est exécutée, la sortie garde son état précédent. On appelle cela une hystérésis.'),
+      F('Elle s’éteint, car N a augmenté', 'L’extinction n’est commandée que si N dépasse 600 : 520 n’y est pas.'),
+      F('Elle s’allume, car N est proche de 470', 'L’allumage n’est commandé que si N est inférieur à 470 : 520 n’y est pas.'),
+      F('Elle clignote, car les deux tests sont presque vrais', 'Un test est vrai ou faux : ici les deux sont faux, la sortie ne change pas.'),
+    ] },
+  { id: 'algo-pourquoi-deux', domaine: 'Transmission de signaux numériques', titre: 'Pourquoi deux seuils plutôt qu’un ?',
+    enonce: 'On aurait pu écrire un seul test : « Si N < 500, HIGH ; sinon LOW ». Le concepteur a préféré deux seuils différents (470 et 600), avec une zone intermédiaire où rien ne change. Le signal mesuré fluctue légèrement (bruit de mesure, passage d’un nuage…).',
+    q: 'Quel est l’intérêt principal des deux seuils ?', options: [
+      V('Éviter que les phares clignotent quand l’éclairement est proche du seuil', 'Avec un seul seuil, un N qui oscille autour de 500 changerait l’état à chaque mesure. Deux seuils créent une « zone morte » : il faut une vraie variation de l’éclairement pour changer l’état.'),
+      F('Le CAN a deux voies, il faut un seuil par voie', 'Un seul canal analogique (A0) suffit : les deux seuils portent sur le même nombre N.'),
+      F('Doubler la précision de la mesure', 'Les seuils ne changent pas la précision de la mesure : ils décident seulement quand on commute.'),
+      F('Économiser la mémoire de l’Arduino', 'Deux tests occupent un peu plus de mémoire qu’un seul, ce n’est pas le but.'),
+    ] },
+  { id: 'algo-sens-inverse', domaine: 'Transmission de signaux numériques', titre: 'U mesurée aux bornes de la photorésistance',
+    enonce: 'Cette fois, la tension est mesurée aux bornes de la photorésistance (et non de R). Quand l’éclairement diminue, la résistance de la photorésistance augmente : la tension à ses bornes, U_Rp = U_G × R_p / (R + R_p), augmente donc, et N aussi. Les phares doivent toujours s’allumer quand il fait sombre.',
+    q: 'Complétez : « Si N … N_allumage, alors la sortie des phares passe à l’état HIGH ».', options: [
+      V('N > N_allumage', 'Dans ce montage, l’obscurité fait monter la tension mesurée : il faut allumer quand N dépasse le seuil. Le sens du test dépend de l’endroit où l’on mesure la tension.'),
+      F('N < N_allumage', 'C’est le test du montage précédent (mesure aux bornes de R). Ici, la tension mesurée augmente avec l’obscurité : ce test allumerait les phares en plein jour.'),
+      F('N = N_allumage', 'On teste un franchissement de seuil, pas une égalité exacte.'),
+      F('Le sens du test n’a pas d’importance', 'Il en a : un test dans le mauvais sens inverse tout le fonctionnement (phares allumés de jour, éteints de nuit).'),
+    ] },
+  { id: 'algo-seuils-inverses', domaine: 'Transmission de signaux numériques', titre: 'Deux seuils dans le mauvais ordre',
+    enonce: 'Montage avec U_R mesurée aux bornes de R (N augmente avec l’éclairement). Un élève écrit : « Si N < 600 alors HIGH ; si N > 470 alors LOW ». Il a donc échangé les deux seuils.',
+    q: 'Que se passe-t-il pour N = 520 ?', options: [
+      V('Les deux tests sont vrais : le résultat dépend de l’ordre dans lequel ils sont écrits, le comportement est incohérent', '520 < 600 (HIGH) et 520 > 470 (LOW). Deux ordres contradictoires : c’est le dernier test exécuté qui l’emporte. Le seuil d’allumage doit être plus petit que le seuil d’extinction.'),
+      F('Aucun test n’est vrai : la sortie ne change pas', 'Ce serait le cas avec les seuils dans le bon ordre (470 puis 600) ; ici 520 vérifie les deux tests.'),
+      F('La DEL est allumée de façon stable', 'Elle ne serait stable que si un seul test était vrai : ici, les deux le sont.'),
+      F('La DEL est éteinte de façon stable', 'Elle ne serait stable que si un seul test était vrai : ici, les deux le sont.'),
+    ] },
+];
+
 export const FAMILLES = [
   { id: 'probleme', titre: 'Construire une démarche (problème complet)', liste: PROBLEMES,
     aide: 'Un problème posé sans questions intermédiaires : que cherche-t-on, quelles données, quelles relations, quelles hypothèses, dans quel ordre ?' },
@@ -2544,6 +2599,8 @@ export const FAMILLES = [
     aide: 'Lire des lignes de champ (ou des vecteurs) et en déduire la nature, le sens et l’intensité du champ ou de la force.' },
   { id: 'mouvement', titre: 'Reconnaître un mouvement sur un schéma', liste: MOUVEMENTS,
     aide: 'Lire une chronophotographie ou des trajectoires dessinées, et choisir la bonne description du mouvement (dans un référentiel donné).' },
+  { id: 'algorithme', titre: 'Compléter un algorithme (seuils, états)', liste: ALGORITHMES,
+    aide: 'Un système automatique compare une mesure à des seuils et commande une sortie : à vous de compléter les tests et de prévoir ce que fait le programme.' },
 ];
 
 export const METHODE = [

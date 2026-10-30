@@ -5,6 +5,7 @@ import { useSuivi } from "../suivi";
 import { txtVec } from "./FigureVecteurs";
 import { FAMILLES, GROUPES, verifier, reponseAttendue } from "./AtelierRealiserBanque";
 import { Pic } from "../Pictos";
+import { TraceCourbe, verifierTrace } from "./RealiserC1";
 
 // ====================================================
 //  SIM 36 — ATELIER « RÉALISER » (compétence S'APP : réaliser)
@@ -31,7 +32,7 @@ export function SimulationAtelierRealiser() {
   const Q = exo.questions;
 
   const charger = id => { try { document.activeElement?.blur?.(); } catch { /* sans effet */ } setExo(FAMILLES.find(f => f.id === id).gen()); setRep({}); setChk({}); setVu({}); setEtp(0); setIndice({}); };
-  const resultat = q => (q.type === 'qcm' ? { ok: rep[q.id] === q.bonne, msg: '' } : verifier(q, rep[q.id] ?? ''));
+  const resultat = q => (q.type === 'qcm' ? { ok: rep[q.id] === q.bonne, msg: '' } : q.type === 'trace' ? verifierTrace(q, rep[q.id]) : verifier(q, rep[q.id] ?? ''));
   const corriger = (id, vue = false) => { if (vue) suivi.vue(); else suivi.etape(resultat(Q.find(q => q.id === id)).ok); setChk(c => ({ ...c, [id]: true })); };
   const fini = Q.every(q => (chk[q.id] && resultat(q).ok) || vu[q.id]) && Q.every(q => chk[q.id]);
   const reussi = Q.every(q => chk[q.id] && resultat(q).ok);
@@ -42,11 +43,14 @@ export function SimulationAtelierRealiser() {
     return (
       <div key={q.id} data-q={q.id} style={styleBoite}>
         <div style={{ fontWeight: 700, fontSize: 14.5, color: KIT.txt, marginBottom: 6, lineHeight: 1.6 }}>{i + 1}. {q.q}</div>
-        {q.type === 'qcm' ? (
+        {q.type === 'trace' ? (
+          <TraceCourbe q={q} val={rep[q.id]} resultat={affichee && !bon ? r : null} solution={!!vu[q.id] && !bon}
+            onChange={v => { setRep(x => ({ ...x, [q.id]: v })); setChk(c => ({ ...c, [q.id]: false })); }}/>
+        ) : q.type === 'qcm' ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {q.options.map((o, k) => (
               <button key={k} data-ok={k === q.bonne ? 'true' : 'false'} onClick={() => { setRep(x => ({ ...x, [q.id]: k })); setChk(c => ({ ...c, [q.id]: false })); }}
-                style={{ ...styleBouton(rep[q.id] === k, '#0ea5e9'), textAlign: 'left', padding: '6px 10px' }}>{txtVec(o)}</button>))}
+                style={{ ...styleBouton(rep[q.id] === k, '#0ea5e9'), textAlign: 'left', padding: '6px 10px' }}>{txtVec(avecIndices(o))}</button>))}
           </div>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -59,12 +63,12 @@ export function SimulationAtelierRealiser() {
         {indice[q.id] && q.aide && <Correction><Pic n="bulb"/>{txtVec(avecIndices(q.aide))}</Correction>}
         {affichee && <Verdict ok={bon}>{bon ? 'Bravo !' : 'Pas encore.'}</Verdict>}
         {affichee && !bon && !r.msg && !vu[q.id] && <div style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}>Pour trouver où ça coince, clique sur « voir le calcul pas à pas ».</div>}
-        {affichee && !bon && r.msg && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{txtVec(r.msg)}</div>}
+        {affichee && !bon && r.msg && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{txtVec(avecIndices(r.msg))}</div>}
         {((vu[q.id] && !bon) || (affichee && bon)) && <Correction>{q.type === 'num' && !bon ? <>Réponse attendue : <b>{reponseAttendue(q)}</b>. </> : null}{q.expl}</Correction>}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
           <button onClick={() => corriger(q.id)} style={styleBouton(true, '#16a34a')}>✓ Corriger</button>
           {!(affichee && bon) && <button onClick={() => { corriger(q.id, true); setVu(x => ({ ...x, [q.id]: true })); }}
-            style={{ fontSize: 12.5, background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer' }}>voir le calcul pas à pas</button>}
+            style={{ fontSize: 12.5, background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer' }}>{q.type === 'trace' ? 'voir la correction' : 'voir le calcul pas à pas'}</button>}
           {q.aide && !indice[q.id] && <button onClick={() => setIndice(x => ({ ...x, [q.id]: true }))} style={stylePetitBouton(false)}><Pic n="bulb"/>Indice</button>}
           {(bon || vu[q.id]) && chk[q.id] && i === etp && i < Q.length - 1 && <button onClick={() => setEtp(e => e + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Question suivante ▶</button>}
         </div>
@@ -85,10 +89,10 @@ export function SimulationAtelierRealiser() {
         <button onClick={() => charger(choix)} style={stylePetitBouton(false)}>🎲 Nouvel exercice</button>
       </div>
       <div style={{ maxWidth: 760, display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div style={{ ...styleBoite, fontSize: 14.5, color: KIT.txt, lineHeight: 1.65 }}>{txtVec(exo.intro)}</div>
+        <div style={{ ...styleBoite, fontSize: 14.5, color: KIT.txt, lineHeight: 1.65 }}>{txtVec(avecIndices(exo.intro))}</div>
         {exo.figure}
         {Q.slice(0, etp + 1).map((q, i) => carte(q, i))}
-        {fini && exo.retenir && <ARetenir titre="À RETENIR"><ul style={{ margin: 0, paddingLeft: 18 }}>{exo.retenir.map((t, i) => <li key={i}>{txtVec(t)}</li>)}</ul></ARetenir>}
+        {fini && exo.retenir && <ARetenir titre="À RETENIR"><ul style={{ margin: 0, paddingLeft: 18 }}>{exo.retenir.map((t, i) => <li key={i}>{txtVec(avecIndices(t))}</li>)}</ul></ARetenir>}
       </div>
     </div>
   );

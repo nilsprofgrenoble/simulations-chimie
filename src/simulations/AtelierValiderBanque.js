@@ -28,6 +28,13 @@ export const METHODE_COMPAT = [
   'Conclure en une phrase ; si ce n’est pas compatible, chercher une source d’erreur qui explique aussi le sens de l’écart.',
 ];
 
+export const METHODE_DECISION = [
+  'Comparer ce qui est demandé aux données : valeur trouvée, critère, plage de validité.',
+  'Choix d’un modèle : regarder l’accord avec les mesures (écarts petits et sans organisation, pas seulement R²) et la cohérence physique, y compris hors de la plage mesurée.',
+  'Conformité : mettre les valeurs dans la même unité, respecter le sens de l’inégalité (strict ou non) et tenir compte de l’incertitude.',
+  'Conclure en une phrase : valeur trouvée / critère / conclusion, en rappelant les hypothèses (loi normale, k = 2…).',
+];
+
 // ─────────────── 1. « Ça paraît plausible ? » ───────────────
 // ver : explication du verdict ; q2/options : « pourquoi ? » ou « quelle erreur ? » (une seule bonne réponse)
 const VERDICT = (ok, ver) => [
@@ -1533,9 +1540,121 @@ export const COMPATIBLES = [
     ] },
 ];
 
+
+// ─────────────── 3. « Décider et argumenter » : choisir un modèle, juger la conformité à un cahier des charges ───────────────
+// Chaque exercice a un énoncé, des repères, des étapes (QCM ou calcul) et, éventuellement, une figure (mesures + modèles).
+// Étape : { id, titre, q, o: [[texte, juste, explication]…], aide } ou { id, type: 'num', titre, q, attendu, unite, tol, expl, aide }.
+const mesuresCTN = [[0, 29.3], [10, 18.6], [20, 12.2], [30, 8.24], [40, 5.70], [50, 4.03], [60, 2.91]];
+const mesuresPhoto = [[200, 3.00], [450, 1.79], [720, 1.37], [1020, 1.13], [1500, 0.93], [2120, 0.79], [2570, 0.71], [3110, 0.65], [3430, 0.62]];
+export const DECISIONS = [
+  { id: 'modele-ctn', domaine: 'Transmission de signaux numériques', niveau: 2, titre: 'Quel modèle pour une thermistance CTN ?',
+    enonce: 'On a mesuré la résistance R d’une thermistance CTN entre 0 °C et 60 °C (7 points). Un tableur a ajusté deux modèles. On veut utiliser le modèle choisi pour convertir une résistance mesurée en température, de −10 °C à 100 °C. Choisissez le modèle le plus pertinent et justifiez-le par deux arguments.',
+    reperes: [['Mesures (θ en °C ; R en kΩ)', '0 : 29,3 · 10 : 18,6 · 20 : 12,2 · 30 : 8,24 · 40 : 5,70 · 50 : 4,03 · 60 : 2,91'],
+      ['Modèle A (exponentiel)', 'R = 27,4 × exp(−0,0384 × θ) ; R² = 0,992'], ['Modèle B (affine)', 'R = 23,9 − 0,410 × θ ; R² = 0,869 (R² calculés sur les valeurs de R)'],
+      ['Rappel', 'Une résistance est toujours strictement positive.']],
+    figure: { xnom: 'θ', xunite: '°C', ynom: 'R', yunite: 'kΩ', x: [-10, 100, 10], y: [-20, 32, 4], plage: [0, 60], mesures: mesuresCTN,
+      modeles: [{ nom: 'A', f: t => 27.4 * Math.exp(-0.0384 * t) }, { nom: 'B', f: t => 23.9 - 0.410 * t }] },
+    etapes: [
+      { id: 'choix', titre: 'Ton choix', q: 'Quel modèle est le plus pertinent pour ces mesures et cet usage ?', fixe: true, o: [
+        ['Le modèle A (exponentiel)', true, 'A décrit mieux les mesures et reste cohérent hors de la plage mesurée (voir les deux arguments suivants).'],
+        ['Le modèle B (droite), car il est plus simple', false, 'La simplicité ne suffit pas : un modèle doit d’abord décrire correctement les mesures et rester physiquement acceptable là où on l’utilise.'],
+        ['Les deux se valent', false, 'Non : leurs écarts aux mesures et leur comportement hors de la plage mesurée sont très différents.'],
+      ], aide: 'Regardez la figure : quelle courbe suit le mieux les points ? Que fait chaque courbe à droite de la zone grisée ?' },
+      { id: 'arg1', titre: 'Argument 1 : l’accord avec les mesures', q: 'Quel argument, tiré de la figure et des valeurs de R², justifie correctement le choix de A ?', o: [
+        ['A passe au plus près des points, avec des écarts bien plus petits et moins organisés que ceux de B ; B passe sous les points aux extrémités et au-dessus au milieu (écarts systématiques) ; R² est plus proche de 1 pour A (0,992 contre 0,869)', true, 'Un bon modèle laisse des écarts petits et répartis au hasard de part et d’autre. Des écarts qui suivent un motif (courbe en U) montrent que la forme du modèle n’est pas la bonne.'],
+        ['A a une équation plus compliquée, donc il est plus précis', false, 'Un modèle plus compliqué n’est pas meilleur par nature : ce qui compte, c’est l’accord avec les mesures et la cohérence physique.'],
+        ['A passe exactement par tous les points', false, 'Faux : à 0 °C, A donne 27,4 kΩ alors qu’on a mesuré 29,3 kΩ. Un modèle ne passe jamais exactement par tous les points (les mesures ont une incertitude).'],
+        ['Une droite ne peut jamais représenter une CTN', false, 'Trop absolu : sur une plage étroite, une droite peut convenir. Ici, l’écart systématique et la suite (étape 3) montrent qu’elle ne convient pas.'],
+      ], aide: 'Comparez, pour chaque modèle, la position de la courbe par rapport aux points : écarts petits ? de signe aléatoire ou organisés ?' },
+      { id: 'arg2', titre: 'Argument 2 : validité hors de la plage mesurée', q: 'Le modèle servira jusqu’à 100 °C, alors que les mesures s’arrêtent à 60 °C. Que donne le modèle B à 100 °C ?', o: [
+        ['R = 23,9 − 0,410 × 100 ≈ −17 kΩ : une résistance négative est impossible ; B s’annule vers 58 °C, c’est-à-dire dès la fin de la plage mesurée, et devient négatif au-delà : il est inutilisable pour θ > 58 °C', true, 'B s’annule pour θ = 23,9 / 0,410 ≈ 58 °C, donc devient négatif ensuite. À 100 °C, le modèle A donne 27,4 × exp(−3,84) ≈ 0,59 kΩ : petit mais positif et décroissant, comme une vraie CTN.'],
+        ['R ≈ 6,9 kΩ : B reste raisonnable', false, 'Calcul à refaire : 0,410 × 100 = 41,0 est supérieur à 23,9.'],
+        ['R ≈ 0,59 kΩ, comme A', false, 'C’est la valeur de A à 100 °C. B donne 23,9 − 41,0, valeur négative.'],
+        ['On ne peut rien dire : on n’a pas mesuré à 100 °C', false, 'Si, on peut au moins refuser un modèle qui donne une valeur physiquement impossible : une résistance ne peut pas être négative.'],
+      ], aide: 'Remplacez θ par 100 dans l’équation du modèle B et regardez le signe du résultat.' },
+      { id: 'hyp', titre: 'Hypothèses et limites', q: 'Que garantit un R² élevé ?', o: [
+        ['Que le modèle reproduit bien les points mesurés, sur la plage mesurée ; cela ne prouve ni qu’il est physiquement juste, ni qu’il reste valable hors de cette plage', true, 'R² mesure seulement la qualité de l’ajustement aux mesures disponibles. Le choix d’un modèle repose aussi sur la forme des écarts et sur la cohérence physique.'],
+        ['Que le modèle est valable pour toutes les températures', false, 'Non : hors de la plage mesurée, le modèle n’est pas contrôlé (extrapolation).'],
+        ['Que les mesures sont exactes', false, 'R² ne dit rien sur l’exactitude des mesures : seulement sur l’accord entre modèle et mesures.'],
+        ['Que le modèle est le seul possible', false, 'Plusieurs modèles peuvent avoir un bon R² ; d’où l’importance des autres arguments.'],
+      ], aide: 'R² ne dépend que des points mesurés. Qu’en déduire pour ce qui se passe ailleurs ?' },
+    ] },
+  { id: 'modele-photoresistance', domaine: 'Transmission de signaux numériques', niveau: 2, titre: 'Quel modèle pour une photorésistance ?',
+    enonce: 'On a mesuré la résistance R_p d’une photorésistance en fonction de l’éclairement E (9 points, de 200 à 3 430 lx). Un tableur a ajusté deux modèles. Le capteur sera utilisé de la nuit au plein jour (jusqu’à 10 000 lx). Choisissez le modèle le plus pertinent et justifiez-le par deux arguments.',
+    reperes: [['Mesures (E en lx ; R_p en kΩ)', '200 : 3,00 · 450 : 1,79 · 720 : 1,37 · 1 020 : 1,13 · 1 500 : 0,93 · 2 120 : 0,79 · 2 570 : 0,71 · 3 110 : 0,65 · 3 430 : 0,62'],
+      ['Modèle A (puissance)', 'R_p = 51,3 × E^(−0,546) ; R² = 0,994'], ['Modèle B (logarithme)', 'R_p = 6,66 − 0,765 × ln(E) ; R² = 0,918'], ['Rappel', 'Une résistance est toujours strictement positive. Les deux R² sont calculés sur R_p.']],
+    figure: { xnom: 'E', xunite: 'lx', ynom: 'R_p', yunite: 'kΩ', x: [0, 10000, 2000], y: [-1, 3.5, 0.5], plage: [200, 3430], mesures: mesuresPhoto,
+      modeles: [{ nom: 'A', f: e => e > 0 ? 51.3 * Math.pow(e, -0.546) : NaN }, { nom: 'B', f: e => e > 0 ? 6.66 - 0.765 * Math.log(e) : NaN }] },
+    etapes: [
+      { id: 'choix', titre: 'Ton choix', q: 'Quel modèle est le plus pertinent pour ces mesures et cet usage ?', fixe: true, o: [
+        ['Le modèle A (puissance)', true, 'A suit mieux les mesures et reste cohérent à fort éclairement (voir les deux arguments suivants).'],
+        ['Le modèle B (logarithme), car son équation est plus simple', false, 'La simplicité ne suffit pas : B s’écarte systématiquement des points et devient impossible à fort éclairement.'],
+        ['Les deux se valent', false, 'Non : leurs écarts aux mesures et leur comportement à fort éclairement sont très différents.'],
+      ], aide: 'Regardez la figure : quelle courbe suit le mieux les points ? Que fait chaque courbe à droite de la zone grisée ?' },
+      { id: 'arg1', titre: 'Argument 1 : l’accord avec les mesures', q: 'Quel argument, tiré de la figure et des valeurs de R², justifie correctement le choix de A ?', o: [
+        ['A passe au plus près des points, avec de très petits écarts ; B s’écarte nettement aux deux extrémités et passe de l’autre côté des points au milieu (écarts systématiques) ; R² est plus proche de 1 pour A', true, 'Les écarts de B suivent un motif (positif aux extrémités, négatif au milieu) : sa forme n’est pas la bonne. Attention, un R² plus proche de 1 seul ne suffit pas (voir l’étape 4).'],
+        ['B a moins de paramètres, donc il est plus fiable', false, 'Le nombre de paramètres ne mesure pas la fiabilité : les deux modèles ont deux paramètres, et c’est l’accord avec les mesures qui compte.'],
+        ['A passe exactement par tous les points', false, 'Faux : à 200 lx, A donne 2,84 kΩ alors qu’on a mesuré 3,00 kΩ. Aucun modèle ne passe exactement par tous les points.'],
+        ['Les deux modèles ont un R² proche de 1, donc on ne peut pas les départager', false, 'R² = 0,918 reste nettement plus éloigné de 1 que 0,994 ; surtout, les écarts de B sont organisés (motif en creux), ce que R² seul ne montre pas.'],
+      ], aide: 'Comparez, pour chaque modèle, la position de la courbe par rapport aux points : écarts petits ? de signe aléatoire ou organisés ?' },
+      { id: 'arg2', titre: 'Argument 2 : validité hors de la plage mesurée', q: 'Le capteur doit fonctionner en plein jour, à 10 000 lx. Que donne le modèle B à cet éclairement ?', o: [
+        ['R_p = 6,66 − 0,765 × ln(10 000) ≈ −0,39 kΩ : une résistance négative est impossible ; B devient négatif dès 6 000 lx environ', true, 'ln(10 000) ≈ 9,21 donc 0,765 × 9,21 ≈ 7,05 > 6,66. B s’annule pour E = exp(6,66 / 0,765) ≈ 6 000 lx. Le modèle A donne ≈ 0,34 kΩ à 10 000 lx : petit, positif, qui continue de décroître.'],
+        ['R_p ≈ 0,34 kΩ, comme A', false, 'C’est la valeur de A. Pour B : 6,66 − 7,05 est une valeur négative.'],
+        ['R_p ≈ 1,2 kΩ : B reste raisonnable', false, 'Calcul à refaire : 0,765 × ln(10 000) ≈ 7,05, supérieur à 6,66.'],
+        ['On ne peut rien dire : on n’a pas mesuré à 10 000 lx', false, 'On peut au moins refuser un modèle qui donne une valeur physiquement impossible.'],
+      ], aide: 'Calculez ln(10 000) avec la calculatrice, multipliez par 0,765 et soustrayez de 6,66 : quel est le signe ?' },
+      { id: 'hyp', titre: 'Hypothèses et limites', q: 'Que garantit un R² élevé, et peut-on comparer sans réserve les R² de deux modèles de nature différente ?', o: [
+        ['R² dit si le modèle reproduit bien les points mesurés, sur la plage mesurée seulement. Pour un modèle puissance ou exponentiel, un tableur calcule souvent R² après passage aux logarithmes : on ne peut donc pas comparer sans réserve des R² de modèles de types différents', true, 'C’est pourquoi on ne choisit jamais un modèle sur le seul R² : on regarde aussi la forme des écarts et la cohérence physique, y compris hors de la plage mesurée.'],
+        ['R² proche de 1 prouve que le modèle est vrai, partout', false, 'R² ne dit rien hors de la plage mesurée, et ne prouve pas que le modèle est physiquement juste.'],
+        ['R² est toujours comparable d’un modèle à l’autre', false, 'Pas toujours : la définition de R² peut dépendre de la transformation utilisée pour l’ajustement.'],
+        ['R² mesure l’incertitude des mesures', false, 'R² mesure l’accord entre modèle et mesures, pas l’incertitude des mesures.'],
+      ], aide: 'R² ne dépend que des points mesurés, et son calcul dépend du type de modèle ajusté.' },
+    ] },
+  { id: 'conforme-phares', domaine: 'Transmission de signaux numériques', niveau: 1, titre: 'Le capteur de phares est-il conforme ?',
+    enonce: 'Un capteur de lumière pour l’allumage automatique de phares doit répondre vite. On mesure son temps de réponse : t_R = 36 ms. Le cahier des charges impose t_R < 100 ms.',
+    reperes: [['Valeur trouvée', 't_R = 36 ms'], ['Critère du cahier des charges', 't_R < 100 ms'], ['Règle', 'Conforme si la valeur respecte le critère']],
+    etapes: [
+      { id: 'verdict', titre: 'Ton verdict', q: 'Le capteur est-il conforme au cahier des charges ?', fixe: true, o: [['Conforme', true, '36 ms < 100 ms : le critère est respecté.'], ['Non conforme', false, '36 est bien inférieur à 100 : le critère « t_R < 100 ms » est respecté.']], aide: 'Comparez la valeur trouvée au critère, en tenant compte du sens de l’inégalité : il faut un temps inférieur à 100 ms.' },
+      { id: 'redaction', titre: 'Rédiger la conclusion', q: 'Quelle conclusion est correctement rédigée (valeur trouvée, critère, conclusion) ?', o: [
+        ['t_R = 36 ms ; critère t_R < 100 ms ; 36 ms < 100 ms, donc le capteur est conforme', true, 'Une bonne conclusion donne les trois éléments : la valeur trouvée, le critère, et le raisonnement qui mène à la conclusion.'],
+        ['Le capteur est rapide, donc il est conforme', false, 'Aucune valeur ni critère n’est cité : « rapide » est un avis, pas une comparaison.'],
+        ['t_R = 36 ms, donc le capteur est conforme', false, 'Il manque le critère : sans lui, la conclusion n’est pas justifiée.'],
+        ['t_R = 36 ms ; critère t_R < 100 ms ; 36 est inférieur à 100, donc le capteur est trop lent', false, 'Le raisonnement contredit la conclusion : un temps inférieur au maximum autorisé est conforme.'],
+      ], aide: 'Une conclusion de validation : valeur trouvée / critère donné / conclusion.' },
+    ] },
+  { id: 'conforme-fumee', domaine: 'Transmission de signaux numériques', niveau: 1, titre: 'Détecteur de fumée : attention aux unités',
+    enonce: 'Un détecteur de fumée doit déclencher l’alarme rapidement. On mesure son délai de détection : 0,12 s. L’exigence est « délai ≤ 100 ms ».',
+    reperes: [['Valeur trouvée', '0,12 s'], ['Critère', 'délai ≤ 100 ms'], ['Rappel', '1 s = 10³ ms']],
+    etapes: [
+      { id: 'unites', titre: 'Mettre dans la même unité', q: 'Que vaut 0,12 s en millisecondes ?', fixe: true, o: [['120 ms', true, '0,12 s × 1 000 ms·s⁻¹ = 120 ms.'], ['0,12 ms', false, 'Le nombre ne change pas : or 1 s vaut 1 000 ms, donc une durée en ms est 1 000 fois plus grande en nombre.'], ['12 ms', false, 'Il manque un facteur 10 : 0,12 × 1 000 = 120.'], ['1 200 ms', false, 'Un facteur 10 de trop : 0,12 × 1 000 = 120.']], aide: '1 s = 1 000 ms : le nombre de millisecondes est 1 000 fois plus grand que le nombre de secondes.' },
+      { id: 'verdict', titre: 'Ton verdict', q: 'Le détecteur est-il conforme à l’exigence « délai ≤ 100 ms » ?', fixe: true, o: [['Non conforme : 120 ms > 100 ms', true, 'Une fois les deux valeurs dans la même unité, 120 ms dépasse 100 ms : l’exigence n’est pas respectée.'], ['Conforme : 0,12 est inférieur à 100', false, 'Cette comparaison mélange des secondes et des millisecondes : 0,12 s n’est pas « inférieur à 100 » ms.'], ['Conforme : 120 ms est proche de 100 ms', false, 'Un critère se respecte ou non : « proche » n’est pas « conforme ».']], aide: 'Comparez 120 ms à 100 ms, dans le sens de l’exigence (au plus 100 ms).' },
+    ] },
+  { id: 'conforme-marge', domaine: 'Transmission de signaux numériques', niveau: 2, titre: 'Valeur proche de la limite',
+    enonce: 'On mesure le temps de réponse d’un capteur : t_R = 96 ms, avec une incertitude-type u = 3 ms. Le cahier des charges impose t_R < 100 ms. On suppose une loi normale et un facteur d’élargissement k = 2 (environ 95 % de confiance).',
+    reperes: [['Valeur trouvée', 't_R = 96 ms ; u = 3 ms'], ['Critère', 't_R < 100 ms'], ['Intervalle élargi', 't_R ± 2·u (k = 2, loi normale supposée)']],
+    etapes: [
+      { id: 'borne', type: 'num', titre: 'Borne haute de l’intervalle', q: 'Calculez la borne haute de l’intervalle élargi : t_R + 2·u.', attendu: 102, unite: 'ms', tol: 0.02, expl: 't_R + 2·u = 96 + 2 × 3 = 102 ms.', aide: 'Ajoutez 2 fois l’incertitude-type à la valeur mesurée.' },
+      { id: 'verdict', titre: 'Ton verdict', q: 'Que peut-on conclure sur la conformité ?', fixe: true, o: [
+        ['On ne peut pas garantir la conformité : la valeur mesurée (96 ms) respecte le critère, mais l’intervalle [90 ; 102] ms dépasse 100 ms', true, 'La valeur vraie peut raisonnablement être supérieure à 100 ms (jusqu’à 102 ms). Pour conclure, il faut réduire l’incertitude ou refaire des mesures. Cette conclusion suppose une loi normale et k = 2.'],
+        ['Conforme : 96 < 100', false, 'La valeur mesurée respecte le critère, mais l’incertitude ne permet pas d’exclure une valeur vraie supérieure à 100 ms.'],
+        ['Non conforme : 96 est trop proche de 100', false, 'Être proche n’est pas dépasser : on ne peut pas non plus affirmer la non-conformité.'],
+        ['Non conforme, car l’incertitude est de 3 ms', false, 'Une incertitude n’est pas un défaut : elle limite ce que la mesure permet de garantir.'],
+      ], aide: 'Comparez les bornes de l’intervalle de confiance au critère de 100 ms : l’intervalle est-il entièrement du bon côté ?' },
+    ] },
+  { id: 'conforme-strict', domaine: 'Transmission de signaux numériques', niveau: 1, titre: 'Strictement inférieur ou inférieur ou égal ?',
+    enonce: 'Un régulateur de température a été testé : son dépassement calculé est D = 5,0 % (valeur exacte, sans incertitude). Le cahier des charges impose « D strictement inférieur à 5 % ».',
+    reperes: [['Valeur trouvée', 'D = 5,0 %'], ['Critère', 'D < 5 % (strict)'], ['Rappel', '« < » : strictement inférieur ; « ≤ » : inférieur ou égal']],
+    etapes: [
+      { id: 'verdict', titre: 'Ton verdict', q: 'Le régulateur est-il conforme au critère « D < 5 % » ?', fixe: true, o: [['Non conforme : 5,0 % n’est pas strictement inférieur à 5 %', true, 'Avec une inégalité stricte, la valeur limite elle-même est refusée : 5,0 % n’est pas < 5 %.'], ['Conforme : 5,0 % est égal à la limite', false, 'L’égalité ne suffit que pour un critère « ≤ ». Ici le critère est strict.']], aide: 'Une inégalité stricte (<) exclut la valeur limite elle-même.' },
+      { id: 'variante', titre: 'Et si le critère changeait ?', q: 'Avec le critère « D ≤ 5 % » (inférieur ou égal), que conclurait-on pour D = 5,0 % ?', fixe: true, o: [['Conforme : 5,0 % ≤ 5 %', true, 'L’égalité est cette fois acceptée : la valeur limite respecte le critère.'], ['Non conforme : on ne peut pas être égal à la limite', false, 'Avec « ≤ », la valeur limite est acceptée.']], aide: 'Quel est le sens du symbole « ≤ » ?' },
+    ] },
+];
+
 export const FAMILLES = [
   { id: 'plausible', titre: 'Ça paraît plausible ?', liste: PLAUSIBLES,
     aide: 'Un élève a obtenu un résultat. À toi de juger s’il est vraisemblable en le comparant aux repères donnés. Tu n’as rien à savoir par cœur : tout est à l’écran.' },
   { id: 'compat', titre: 'Compatible avec la référence ?', liste: COMPATIBLES,
     aide: 'Une mesure est comparée à une valeur de référence ou à un modèle. À toi de décider si l’écart est dû aux incertitudes ou s’il faut chercher une erreur. La règle est rappelée à chaque exercice.' },
+  { id: 'decision', titre: 'Décider et argumenter (modèle, conformité)', liste: DECISIONS,
+    aide: 'Choisir entre deux modèles en justifiant par des arguments, ou décider si une valeur respecte un cahier des charges. Tout ce qu’il faut est à l’écran.' },
 ];
