@@ -6,8 +6,8 @@ import { estDefi } from "./suivi";
 // Petite fenêtre « bravo » à chaque réussite d'un exercice ou d'un défi (pas pour un professeur qui teste).
 const MESSAGES = {
   3: 'Sans aucune aide : du premier coup !',
-  2: 'Réussi sans voir la correction !',
-  1: 'Réussi ! Refais-le sans la correction pour gagner plus d’étoiles.',
+  2: 'Réussi avec une seule erreur : encore un effort pour les 3 étoiles !',
+  1: 'Réussi ! Refais-le sans voir la correction et avec moins d’erreurs pour gagner plus d’étoiles.',
 };
 
 export function ToastRecompense({ naviguer }) {
