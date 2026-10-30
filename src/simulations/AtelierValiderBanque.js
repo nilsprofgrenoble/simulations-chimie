@@ -1,3 +1,4 @@
+import { presenter } from './presenter.js';
 // ====================================================
 //  BANQUE DE L'ATELIER « VALIDER » (compétence VAL : juger la vraisemblance d'un résultat, le comparer à une référence)
 // ====================================================
@@ -67,7 +68,7 @@ export const PLAUSIBLES = [
       F('ρ a été pris en g·cm⁻³ (ρ = 1)', 'On trouverait 29 Pa : beaucoup trop petit, pas trop grand.'),
     ] }),
   P({ id: 'pression-cuve-ok', domaine: 'Transport des fluides', niveau: 1, titre: 'Pression de l’eau au fond d’une cuve', plausible: true,
-    enonce: 'Une cuve ouverte contient de l’eau (ρ = 1 000 kg·m⁻³) sur une hauteur h = 3,0 m ; on prendra g = 9,81 N·kg⁻¹. Un élève calcule la surpression ΔP due à l’eau seule au fond de la cuve (hors pression atmosphérique), ΔP = ρ·g·h, et trouve ΔP = 2,9×10⁴ Pa.',
+    ...presenter({ contexte: 'Une cuve ouverte contient de l’eau.', liste: [['Masse volumique de l’eau', 'ρ = 1 000 kg·m⁻³'], ['Hauteur d’eau', 'h = 3,0 m'], ['Intensité de la pesanteur', 'g = 9,81 N·kg⁻¹']], suite: 'Un élève calcule la surpression ΔP due à l’eau seule au fond de la cuve (hors pression atmosphérique), ΔP = ρ·g·h, et trouve ΔP = 2,9×10⁴ Pa.' }),
     reperes: [['Pression atmosphérique (pression absolue)', '1 bar = 10⁵ Pa'], ['Hauteur d’eau qui correspond à 1 bar', '≈ 10 m'], ['Pneu de voiture (pression relative)', '≈ 2 à 3 bar']],
     ver: '2,9×10⁴ Pa = 0,29 bar. Or 10 m d’eau correspondent à 1 bar : 3 m d’eau donnent environ 0,3 bar. Le résultat est cohérent. (Avec l’atmosphère, la pression absolue au fond serait d’environ 1,3 bar, mais l’énoncé ne demande que la surpression due à l’eau.)',
     q2: 'Quel raisonnement est correct ?',
@@ -77,7 +78,7 @@ export const PLAUSIBLES = [
       F('Pas cohérent : 10 m d’eau font 1 bar, donc 3,0 m font 3,0 bar, soit 3×10⁵ Pa, et 2,9×10⁴ Pa est dix fois trop petit', '1 bar correspond à 10 m d’eau et non à 1 m : 3,0 m font environ 3 fois moins que 10 m, soit 0,3 bar (3×10⁴ Pa), ce qui est la valeur de l’élève.'),
     ] }),
   P({ id: 'p-hydraulique', domaine: 'Transport des fluides', niveau: 2, titre: 'Rendement d’une pompe', plausible: false,
-    enonce: 'Une pompe fournit au fluide la puissance hydraulique P_h = Q_V × ΔP, avec Q_V = 2,0×10⁻³ m³·s⁻¹ et ΔP = 2,5 bar. Un élève trouve P_h = 500 W. En régime permanent, il mesure par ailleurs la puissance électrique absorbée par cette petite pompe centrifuge : P_e = 520 W.',
+    ...presenter({ contexte: 'Une pompe fournit au fluide la puissance hydraulique P_h = Q_V × ΔP. En régime permanent, l’élève mesure par ailleurs la puissance électrique absorbée par cette petite pompe centrifuge.', liste: [['Débit volumique', 'Q_V = 2,0×10⁻³ m³·s⁻¹'], ['Augmentation de pression', 'ΔP = 2,5 bar'], ['Puissance électrique absorbée', 'P_e = 520 W']], suite: 'Un élève trouve P_h = 500 W.' }),
     reperes: [['Rendement d’une pompe', 'η = P_hydraulique / P_électrique'], ['Rendement usuel d’une petite pompe (pertes mécaniques, hydrauliques et électriques comprises)', '40 à 70 %'], ['Hypothèse', 'régime permanent, sans stockage d’énergie']],
     ver: 'η = 500 / 520 ≈ 0,96. Ce n’est pas interdit par la physique (η < 1), mais c’est très au-dessus des 40 à 70 % d’une petite pompe, dont les pertes (frottements, fuites, moteur) sont toujours notables. Avec η ≈ 0,6, on attendrait P_e ≈ 830 W.',
     q2: 'Que faut-il en conclure ?',
@@ -984,7 +985,7 @@ export const PLAUSIBLES = [
       F('Le volume a été converti en m³ (0,015 m³) mais la durée est restée en secondes', 'On obtiendrait 0,015 / 6,0 = 2,5×10⁻³ (en m³·s⁻¹, étiquetés à tort m³·h⁻¹) : un résultat minuscule, pas gigantesque.'),
     ] }),
   P({ id: 'flu-venturi', domaine: 'Transport des fluides', niveau: 2, titre: 'Pression dans le col d’une conduite', plausible: false,
-    enonce: 'De l’eau à 20 °C s’écoule dans une conduite horizontale dont le diamètre passe de d₁ = 40 mm à d₂ = 10 mm. On suppose l’eau incompressible et sans frottements. En amont, la pression absolue vaut P₁ = 2,0 bar et la vitesse v₁ = 1,0 m·s⁻¹. Un élève trouve v₂ = 16 m·s⁻¹, puis calcule P₂ = P₁ − ½·ρ·(v₂² − v₁²) avec ρ = 1 000 kg·m⁻³, et obtient P₂ = −1,3×10⁵ Pa.',
+    ...presenter({ contexte: 'De l’eau à 20 °C s’écoule dans une conduite horizontale dont le diamètre se rétrécit. On suppose l’eau incompressible et sans frottements.', liste: [['Diamètre en amont', 'd₁ = 40 mm'], ['Diamètre au col', 'd₂ = 10 mm'], ['Pression absolue en amont', 'P₁ = 2,0 bar'], ['Vitesse en amont', 'v₁ = 1,0 m·s⁻¹'], ['Masse volumique de l’eau', 'ρ = 1 000 kg·m⁻³']], suite: 'Un élève trouve v₂ = 16 m·s⁻¹, puis calcule, avec ρ = 1 000 kg·m⁻³, P₂ = P₁ − ½·ρ·(v₂² − v₁²) et obtient P₂ = −1,3×10⁵ Pa.' }),
     reperes: [['Pression atmosphérique', '1 bar = 10⁵ Pa'], ['Pression absolue', 'toujours positive (le vide parfait correspond à 0)'], ['Pression de vapeur saturante de l’eau à 20 °C', '≈ 0,02 bar']],
     ver: 'Une pression absolue ne peut pas être négative. Le terme ½·ρ·(v₂² − v₁²) = ½ × 1 000 × (16² − 1,0²) = 1,275×10⁵ Pa ≈ 1,3 bar est correct ; en revanche P₂ = 2,0×10⁵ − 1,275×10⁵ = 7,25×10⁴ Pa ≈ 0,73 bar, positive, et supérieure à la pression de vapeur saturante (pas d’ébullition).',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
@@ -994,7 +995,7 @@ export const PLAUSIBLES = [
       F('La masse volumique a été prise en g·cm⁻³ (ρ = 1) au lieu de kg·m⁻³', 'Le terme vaudrait seulement 128 Pa et P₂ resterait voisine de P₁ (≈ 2,0×10⁵ Pa) : pas de valeur négative.'),
     ] }),
   P({ id: 'flu-tube-u-huile-ok', domaine: 'Transport des fluides', niveau: 2, titre: 'Eau et huile dans un tube en U', plausible: true,
-    enonce: 'Un tube en U, ouvert à ses deux extrémités, contient de l’eau (ρ_e = 1 000 kg·m⁻³). On verse dans la branche gauche de l’huile non miscible (ρ_h = 800 kg·m⁻³). À l’équilibre, la colonne d’huile mesure h_h = 25 cm au-dessus de la surface de séparation huile–eau ; dans la branche droite, la surface libre de l’eau est à h_e = 20 cm au-dessus de l’altitude de cette surface de séparation. L’élève s’étonne : les deux surfaces libres ne sont pas à la même altitude. On prend g = 9,81 N·kg⁻¹.',
+    ...presenter({ contexte: 'Un tube en U, ouvert à ses deux extrémités, contient de l’eau. On verse dans la branche gauche de l’huile non miscible. À l’équilibre, les deux surfaces libres ne sont pas à la même altitude, ce qui étonne un élève.', liste: [['Masse volumique de l’eau', 'ρ_e = 1 000 kg·m⁻³'], ['Masse volumique de l’huile', 'ρ_h = 800 kg·m⁻³'], ['Huile, branche gauche : hauteur au-dessus de la séparation huile–eau', 'h_h = 25 cm'], ['Eau, branche droite : hauteur de la surface libre au-dessus de la séparation huile–eau', 'h_e = 20 cm'], ['Intensité de la pesanteur', 'g = 9,81 N·kg⁻¹']] }),
     reperes: [['Pression sous une surface libre à l’air', 'P = P_atm + ρ·g·h'], ['Un même liquide au repos', 'deux points à la même altitude, reliés par ce liquide, ont la même pression'], ['Hypothèses', 'équilibre atteint, tube assez large pour négliger la capillarité']],
     ver: 'Au niveau de la surface de séparation, la pression côté huile est P_atm + 800 × 9,81 × 0,25 ≈ P_atm + 1,96×10³ Pa. Côté eau, au même niveau et dans la même eau reliée par le bas du tube, elle vaut P_atm + 1 000 × 9,81 × 0,20 ≈ P_atm + 1,96×10³ Pa. Les deux sont égales : les niveaux ne sont égaux que pour un seul liquide ; ici c’est ρ·h qui s’égalise (800 × 0,25 = 1 000 × 0,20 = 200 kg·m⁻²).',
     q2: 'Quel raisonnement est correct ?',
@@ -1004,7 +1005,7 @@ export const PLAUSIBLES = [
       F('Pas plausible : dans des vases communicants, les deux surfaces libres sont toujours à la même altitude', 'L’égalité des niveaux ne vaut que pour un seul liquide au repos. Avec deux liquides de masses volumiques différentes, les hauteurs sont inversement proportionnelles aux masses volumiques.'),
     ] }),
   P({ id: 'flu-pompe-hauteur-ok', domaine: 'Transport des fluides', niveau: 3, titre: 'Hauteur de refoulement d’une pompe de puits', plausible: true,
-    enonce: 'Une pompe immergée de puits, de puissance électrique P_e = 750 W et de rendement global η = 0,40, refoule un débit Q_V = 2,4 m³·h⁻¹. Un élève calcule l’augmentation de pression qu’elle donne à l’eau, ΔP = η·P_e / Q_V, et trouve ΔP = 4,5×10⁵ Pa, soit 4,5 bar. Il s’étonne qu’une pompe de seulement 750 W puisse faire monter l’eau de plus de 45 m (ρ = 1 000 kg·m⁻³, g = 9,81 N·kg⁻¹).',
+    ...presenter({ contexte: 'Une pompe immergée de puits refoule de l’eau.', liste: [['Puissance électrique', 'P_e = 750 W'], ['Rendement global', 'η = 0,40'], ['Débit', 'Q_V = 2,4 m³·h⁻¹'], ['Masse volumique de l’eau', 'ρ = 1 000 kg·m⁻³'], ['Intensité de la pesanteur', 'g = 9,81 N·kg⁻¹']], suite: ['Un élève calcule l’augmentation de pression qu’elle donne à l’eau, ΔP = η·P_e / Q_V, et trouve ΔP = 4,5×10⁵ Pa, soit 4,5 bar.', 'Il s’étonne qu’une pompe de seulement 750 W puisse faire monter l’eau de plus de 45 m.'] }),
     reperes: [['Hauteur d’eau correspondant à 1 bar', '≈ 10 m'], ['Puissance hydraulique utile', 'P_h = Q_V × ΔP = η × P_e'], ['Ordre de grandeur de la pression ajoutée par une pompe domestique de puits ou de surpression', '2 à 6 bar'], ['Hypothèse', 'régime permanent, mêmes vitesse et altitude à l’aspiration et au refoulement (ΔP est alors la différence de pression)']],
     ver: 'La puissance utile est η·P_e = 0,40 × 750 = 300 W. Le débit vaut 2,4 / 3 600 ≈ 6,7×10⁻⁴ m³·s⁻¹ (0,67 L·s⁻¹), donc ΔP = 300 / 6,7×10⁻⁴ ≈ 4,5×10⁵ Pa = 4,5 bar, soit environ 46 m d’eau. Ce débit est faible : la puissance nécessaire pour monter 0,67 kg d’eau par seconde de 46 m est m·g·h ≈ 0,67 × 9,81 × 46 ≈ 300 W. Le résultat est cohérent.',
     q2: 'Quel raisonnement est correct ?',

@@ -14,7 +14,7 @@ const F = (t, e) => [t, false, e];
 export const PROBLEMES = [
   {
     id: 'cuve', domaine: 'Transport des fluides', titre: 'Remplir une cuve en moins d’une heure',
-    enonce: 'Une pompe centrifuge de puissance électrique 750 W remplit une cuve cylindrique vide, de diamètre intérieur 1,20 m, avec de l’eau à 20 °C (ρ = 998 kg·m⁻³). Son débit volumique vaut Q_V = 2,4 m³·h⁻¹. Le technicien veut savoir si la cuve sera remplie jusqu’à une hauteur de 1,50 m en moins d’une heure.',
+    ...presenter({ contexte: 'Une pompe centrifuge remplit une cuve cylindrique vide avec de l’eau à 20 °C. Le technicien veut savoir si la cuve sera remplie jusqu’à la hauteur voulue en moins d’une heure.', liste: [['Puissance électrique de la pompe', '750 W'], ['Diamètre intérieur de la cuve', '1,20 m'], ['Masse volumique de l’eau', 'ρ = 998 kg·m⁻³'], ['Débit volumique', 'Q_V = 2,4 m³·h⁻¹'], ['Hauteur à atteindre', '1,50 m'], ['Durée maximale', '1 h']], question: 'La cuve sera-t-elle remplie jusqu’à 1,50 m en moins d’une heure ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('La durée Δt du remplissage, pour la comparer à 1 h', 'La question porte sur une durée : on la calcule, puis on la compare au critère (1 h).'),
       F('Le débit massique Q_m de la pompe', 'Q_m = ρ·Q_V ne dit rien de la durée : le volume à remplir et le débit volumique suffisent.'),
@@ -65,7 +65,7 @@ export const PROBLEMES = [
   },
   {
     id: 'niveau', domaine: 'Transport des fluides', titre: 'Mesurer un niveau avec un capteur de pression',
-    enonce: 'Une cuve ouverte, de diamètre 2,0 m, contient une solution de densité d = 1,20. Un capteur placé au fond mesure la pression relative (par rapport à la pression atmosphérique) : il indique 0,147 bar. Ce jour-là, la pression atmosphérique vaut 1 013 hPa. Une alarme doit se déclencher si le niveau dépasse 1,30 m. Doit-elle se déclencher ?',
+    ...presenter({ contexte: 'Une cuve ouverte contient une solution. Un capteur placé au fond mesure la pression relative (par rapport à la pression atmosphérique). Une alarme doit se déclencher si le niveau dépasse un seuil.', liste: [['Diamètre de la cuve', '2,0 m'], ['Densité de la solution', 'd = 1,20'], ['Pression relative indiquée par le capteur', '0,147 bar'], ['Pression atmosphérique ce jour-là', '1 013 hPa'], ['Niveau d’alarme (hauteur de solution)', '1,30 m']], question: 'L’alarme doit-elle se déclencher ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('La hauteur h de solution au-dessus du capteur, pour la comparer à 1,30 m', 'Le critère porte sur un niveau : il faut convertir la pression mesurée en hauteur.'),
       F('La pression absolue au fond de la cuve', 'Le capteur donne déjà une pression ; c’est la hauteur qu’il faut comparer au seuil.'),
@@ -118,7 +118,7 @@ export const PROBLEMES = [
   },
   {
     id: 'tuyau', domaine: 'Transport des fluides', titre: 'Choisir le diamètre d’un tuyau',
-    enonce: 'On doit alimenter un atelier en eau avec un débit de 3,0 m³·h⁻¹. Pour limiter le bruit et l’usure, la vitesse moyenne de l’eau ne doit pas dépasser 1,5 m·s⁻¹. Le magasin propose un tube en PVC de diamètre intérieur 20 mm, vendu en longueurs de 25 m. Ce tube convient-il ?',
+    ...presenter({ contexte: 'On doit alimenter un atelier en eau. Pour limiter le bruit et l’usure, la vitesse moyenne de l’eau est limitée. Le magasin propose un tube en PVC.', liste: [['Débit à fournir', '3,0 m³·h⁻¹'], ['Vitesse moyenne maximale', '1,5 m·s⁻¹'], ['Diamètre intérieur du tube', '20 mm'], ['Longueur d’une pièce de tube', '25 m']], question: 'Ce tube convient-il ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('La vitesse moyenne de l’eau dans le tube, pour la comparer à 1,5 m·s⁻¹', 'Le critère imposé porte sur la vitesse.'),
       F('La perte de charge sur 25 m de tube', 'Elle servirait à choisir la pompe, mais le critère imposé ici porte sur la vitesse.'),
@@ -2573,13 +2573,13 @@ export const PREVOIR = [
       F('identique', 'La masse dépend de la solubilité du lavage : l’eau à 60 °C peut dissoudre une masse de cristaux plus de huit fois supérieure à celle que dissout l’eau glacée.'),
     ] },
   { id: 'flu-prev-cavitation', domaine: 'Transport des fluides', titre: 'Eau chaude à l’aspiration d’une pompe',
-    enonce: 'Une pompe centrifuge aspire de l’eau dans un bac ouvert situé plus bas qu’elle ; elle fonctionne sans problème avec de l’eau à 20 °C. On chauffe l’eau du bac à 70 °C, sans rien changer d’autre (même pompe, même circuit, même débit, bac toujours ouvert à la pression atmosphérique).', q: 'À l’entrée de la pompe, le risque de cavitation (apparition de bulles de vapeur) est…', options: [
+    ...presenter({ contexte: 'Une pompe centrifuge aspire de l’eau dans un bac ouvert situé plus bas qu’elle ; elle fonctionne sans problème avec de l’eau à 20 °C. On chauffe l’eau du bac à 70 °C, sans rien changer d’autre.', liste: [['', 'même pompe, même circuit, même débit'], ['', 'bac toujours ouvert, à la pression atmosphérique']] }), q: 'À l’entrée de la pompe, le risque de cavitation (apparition de bulles de vapeur) est…', options: [
       V('augmenté', 'La pression de vapeur saturante de l’eau passe d’environ 2,3 kPa à 20 °C à environ 31 kPa à 70 °C, alors que la pression à l’entrée de la pompe varie très peu. La marge entre ces deux pressions (c’est ce que mesure le NPSH disponible) se réduit : la pression d’aspiration, abaissée par la hauteur d’aspiration et les pertes de charge, atteint plus facilement la pression de vapeur.'),
       F('diminué', 'L’eau chaude est effectivement moins visqueuse (les pertes de charge baissent un peu), mais cet effet est faible devant celui de la pression de vapeur saturante, multipliée par plus de 13 (2,3 kPa à 31 kPa) : la marge avant la formation de bulles diminue.'),
       F('inchangé', 'La cavitation apparaît lorsque la pression locale devient inférieure à la pression de vapeur saturante, qui dépend fortement de la température. Changer la température change donc la marge, même si la pression à l’entrée reste la même.'),
     ] },
   { id: 'flu-prev-viscosite', domaine: 'Transport des fluides', titre: 'Réchauffer une huile avant de la pomper',
-    enonce: 'Une huile s’écoule en régime laminaire dans une conduite (même longueur, même diamètre, même débit volumique). On la réchauffe : sa viscosité dynamique passe de 0,80 Pa·s à 0,10 Pa·s, alors que sa masse volumique varie très peu. L’écoulement reste laminaire.', q: 'La perte de charge dans la conduite est…', options: [
+    ...presenter({ contexte: 'Une huile s’écoule dans une conduite. On la réchauffe : sa viscosité dynamique diminue, alors que sa masse volumique varie très peu.', liste: [['Conduite', 'même longueur, même diamètre, même débit volumique'], ['Régime d’écoulement', 'laminaire, avant et après'], ['Viscosité dynamique avant', '0,80 Pa·s'], ['Viscosité dynamique après', '0,10 Pa·s']] }), q: 'La perte de charge dans la conduite est…', options: [
       V('divisée par 8', 'En régime laminaire (loi de Hagen–Poiseuille), ΔP = 128·μ·L·Q_V / (π·d⁴) : à débit, longueur et diamètre fixés, ΔP est proportionnelle à la viscosité μ. Ici 0,80 / 0,10 = 8, donc ΔP est divisée par 8, et la puissance hydraulique Q_V × ΔP nécessaire pour vaincre les frottements l’est aussi.'),
       F('divisée par 64', 'Aucune loi ne fait intervenir μ au carré : 64 = 8² vient d’une confusion avec les lois en v² ou en d². Ici ΔP est proportionnelle à μ, et non à μ².'),
       F('divisée par 3 environ', 'Diviser par √8 ≈ 2,8 n’a pas de justification : en régime laminaire, ΔP est proportionnelle à μ, pas à √μ.'),
