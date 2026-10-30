@@ -1,3 +1,4 @@
+import CodeExo from '../CodeExo';
 import { useMemo, useState } from "react";
 import { KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices } from "../commun";
 import { useSuivi } from "../suivi";
@@ -48,7 +49,7 @@ export function SituationCarte({ def }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ ...styleBoite, background: 'white' }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginBottom: 4 }}>{def.domaine} — {T(def.titre)}</div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginBottom: 4 }}>{def.domaine} — {T(def.titre)}<CodeExo cle={`34:${def.id}`}/></div>
         <EnonceLisible it={ex} T={T}/>
         {ex.tableau && (
           <div style={{ overflowX: 'auto', marginTop: 8 }}>
