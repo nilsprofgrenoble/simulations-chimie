@@ -48,8 +48,8 @@ export function Carnet({ lignes, naviguer, parties }) {
       <style>{`
         .cn { margin-top: 12px; }
         .cn-hero { position: relative; overflow: hidden; border-radius: 20px; padding: 20px; color: #134e4a; display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
-          background: linear-gradient(135deg, #dff1ee 0%, #f3efe3 100%); border: 1px solid #cfe6e1; box-shadow: 0 6px 22px rgba(42,157,143,.14); }
-        .cn-hero::after { content: ''; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(233,168,36,.28), transparent 70%); }
+          background: #e3f3f0; border: 1px solid #cfe6e1; }
+        .cn-hero::after { content: ''; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 50%; background: rgba(233,168,36,.16); }
         .cn-spark { position: absolute; color: #e9a824; animation: cn-twinkle 3.2s ease-in-out infinite; pointer-events: none; }
         .cn-corps { flex: 1; min-width: 220px; position: relative; z-index: 1; }
         .cn-puce { background: rgba(255,255,255,.75); border: 1px solid #cfe6e1; color: #134e4a; border-radius: 999px; padding: 4px 12px; font-size: 13.5px; font-weight: 700; white-space: nowrap; }
@@ -69,11 +69,11 @@ export function Carnet({ lignes, naviguer, parties }) {
         .cn-barre { height: 10px; border-radius: 6px; background: #e2e8f0; position: relative; overflow: hidden; }
         .cn-barre > i { display: block; height: 100%; border-radius: 6px; transition: width 1.2s cubic-bezier(.2,.8,.2,1); }
         .cn-medaille { width: 68px; height: 68px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 8px; position: relative; }
-        .cn-medaille.ok { background: radial-gradient(circle at 30% 25%, #fef3c7, #fbbf24 60%, #d97706); box-shadow: 0 0 0 3px #fff, 0 0 0 5px #fbbf24, 0 6px 16px rgba(217,119,6,.45); animation: cn-pop .6s both; }
+        .cn-medaille.ok { background: #fbbf24; box-shadow: 0 0 0 3px #fff, 0 0 0 5px #fbbf24; animation: cn-pop .6s both; }
         .cn-medaille.non { background: #e2e8f0; box-shadow: inset 0 0 0 2px #cbd5e1; filter: grayscale(1); opacity: .6; }
         .cn-badge { text-align: center; padding: 12px 8px; }
         .cn-sem { width: 26px; height: 26px; border-radius: 7px; background: #e2e8f0; }
-        .cn-sem.on { background: linear-gradient(135deg, #34d399, #059669); box-shadow: 0 2px 8px rgba(5,150,105,.4); }
+        .cn-sem.on { background: #059669; }
         .cn-btn { border: none; border-radius: 10px; padding: 8px 14px; font-weight: 800; font-size: 14px; cursor: pointer; color: #fff; background: ${ACCENT}; box-shadow: 0 3px 10px rgba(15,23,42,.18); }
         .cn-btn:hover { filter: brightness(1.08); }
         @keyframes cn-twinkle { 0%, 100% { opacity: .25; transform: scale(.8) rotate(0deg); } 50% { opacity: 1; transform: scale(1.15) rotate(20deg); } }
@@ -93,7 +93,7 @@ export function Carnet({ lignes, naviguer, parties }) {
           <div style={{ fontSize: 22, fontWeight: 800, color: '#a16207' }}><Pic n="star"/>{A.total} étoile{A.total > 1 ? 's' : ''}</div>
           <div className="cn-barre" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(niveau.frac * 100)} aria-label="Progression vers le niveau suivant"
             style={{ background: '#cfe0dc', margin: '10px 0 6px', maxWidth: 380 }}>
-            <i style={{ width: mont ? `${Math.max(3, niveau.frac * 100)}%` : '0%', background: 'linear-gradient(90deg, #f6cf6b, #e9a824)' }} />
+            <i style={{ width: mont ? `${Math.max(3, niveau.frac * 100)}%` : '0%', background: '#e9a824' }} />
           </div>
           <div style={{ fontSize: 13.5, color: '#2f5f59' }}>Encore <b>{niveau.reste} ★</b> pour atteindre le niveau {niveau.n + 1} : <b>{suivant}</b></div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
@@ -191,7 +191,7 @@ export function Carnet({ lignes, naviguer, parties }) {
                     <span>{c.reussis} / {c.n} réussis</span>
                   </div>
                   <div className="cn-barre" role="progressbar" aria-valuemin={0} aria-valuemax={c.max} aria-valuenow={c.etoiles} aria-label={`Étoiles en ${c.nom}`}>
-                    <i style={{ width: mont ? `${Math.max(c.etoiles ? 3 : 0, p.frac * 100)}%` : '0%', background: `linear-gradient(90deg, ${c.couleur}, ${c.couleur}aa)` }} />
+                    <i style={{ width: mont ? `${Math.max(c.etoiles ? 3 : 0, p.frac * 100)}%` : '0%', background: c.couleur }} />
                     {[20, 45, 75].map(s => <span key={s} style={{ position: 'absolute', left: `${s}%`, top: 0, bottom: 0, width: 2, background: '#fff' }} />)}
                   </div>
                   <div style={{ fontSize: 12.5, color: '#64748b', marginTop: 6 }}>
