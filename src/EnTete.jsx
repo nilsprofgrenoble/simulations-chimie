@@ -96,11 +96,11 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
 
   const menuOuvert = menus.find(m => m.key === ouvert);
   const panneau = { position: 'absolute', left: 0, right: 0, top: '100%', background: 'white', borderBottom: `1px solid ${BORD}`,
-    boxShadow: '0 12px 24px rgba(15,23,42,0.14)', maxHeight: `calc(100vh - ${HAUTEUR_ENTETE}px)`, overflowY: 'auto', textAlign: 'left' };
+    maxHeight: `calc(100vh - ${HAUTEUR_ENTETE}px)`, overflowY: 'auto', textAlign: 'left' };
 
   return (
     <header ref={ref} style={{ position: 'sticky', top: 0, zIndex: 30, height: HAUTEUR_ENTETE, transform: masque ? 'translateY(-110%)' : 'none', transition: 'transform 0.25s ease', background: 'white', borderBottom: `1px solid ${BORD}`,
-      boxShadow: '0 2px 8px rgba(15,23,42,0.06)', fontFamily: "'Nunito', 'Segoe UI', sans-serif" }}>
+      fontFamily: "'Nunito', 'Segoe UI', sans-serif" }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: '100%', padding: '0 16px', maxWidth: 1280, margin: '0 auto', boxSizing: 'border-box' }}>
         <a href="?" onClick={e => { e.preventDefault(); aller(0); }} aria-label="Paillasse virtuelle : retour à l'accueil" title="Retour à l'accueil"
           style={{ alignSelf: 'center', textDecoration: 'none', marginRight: large ? 14 : 0, flexShrink: 0 }}>

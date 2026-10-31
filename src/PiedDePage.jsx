@@ -8,7 +8,7 @@ const lien = { color: TEXTE2, textDecoration: 'none', background: 'none', border
 export function PiedDePage({ naviguer, energyUrl }) {
   const aller = id => e => { e.preventDefault(); naviguer(id); };
   return (
-    <footer style={{ background: 'linear-gradient(180deg, #f8fafc 0%, #e9eef4 100%)', borderTop: '1px solid #cbd5e1', color: '#475569', padding: '12px 16px 10px',
+    <footer style={{ background: '#ffffff', borderTop: '1px solid #d5dfeb', color: '#475569', padding: '12px 16px 10px',
       marginTop: 24, fontFamily: "'Nunito', 'Segoe UI', sans-serif", textAlign: 'center' }}>
       <nav aria-label="Liens du pied de page" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '4px 20px' }}>
         <a href="?" onClick={aller(0)} style={lien}>Accueil</a>
