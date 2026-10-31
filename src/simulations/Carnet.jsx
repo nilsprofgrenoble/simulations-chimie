@@ -177,7 +177,7 @@ export function Carnet({ lignes, naviguer, parties }) {
           return (
             <div key={c.code} data-comp-carnet={c.code} className="cn-carte" style={{ opacity: c.bientot ? 0.7 : 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <div style={{ width: 42, height: 42, borderRadius: 12, background: c.clair, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>{c.icone}</div>
+                <div style={{ width: 42, height: 42, borderRadius: 16, background: c.clair, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>{c.icone}</div>
                 <div style={{ flex: '1 1 90px', minWidth: 0 }}>
                   <div style={{ fontWeight: 800, color: c.couleur, fontSize: 15 }}>{c.code === 'DÉFI' ? 'Défis' : c.code}</div>
                   <div style={{ fontSize: 13, color: '#475569' }}>{c.code === 'DÉFI' ? 'simulations' : c.nom}</div>

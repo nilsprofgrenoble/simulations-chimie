@@ -16,14 +16,14 @@ const ROSE = ACCENT;
 const TONS = { retard: '#b91c1c', urgent: '#b45309', ok: '#2f7a52', aucune: '#64748b' };
 
 const Tuile = ({ valeur, sur, libelle, aide, couleur }) => (
-  <div style={{ background: '#fff', border: `1px solid ${KIT.bord}`, borderTop: `4px solid ${couleur}`, borderRadius: 12, padding: '10px 14px', flex: '1 1 150px', minWidth: 150 }}>
+  <div style={{ background: '#fff', border: `1px solid ${KIT.bord}`, borderTop: `4px solid ${couleur}`, borderRadius: 16, padding: '10px 14px', flex: '1 1 150px', minWidth: 150 }}>
     <div style={{ fontSize: 28, fontWeight: 800, color: KIT.txt, lineHeight: 1.1 }}>{valeur}{sur !== undefined && <span style={{ fontSize: 16, fontWeight: 600, color: KIT.txt2 }}> / {sur}</span>}</div>
     <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt, marginTop: 2 }}>{libelle}</div>
     <div style={{ fontSize: 12, color: KIT.txt2, marginTop: 2 }}>{aide}</div>
   </div>);
 
 const Carte = ({ titre, lien, onLien, children }) => (
-  <div style={{ background: '#fff', border: `1px solid ${KIT.bord}`, borderRadius: 12, padding: '12px 14px', flex: '1 1 300px', minWidth: 280 }}>
+  <div style={{ background: '#fff', border: `1px solid ${KIT.bord}`, borderRadius: 16, padding: '12px 14px', flex: '1 1 300px', minWidth: 280 }}>
     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
       <b style={{ flex: 1, color: KIT.txt, fontSize: 15 }}>{titre}</b>
       {lien && <button onClick={onLien} style={{ background: 'none', border: 'none', color: ROSE, fontWeight: 700, fontSize: 13, cursor: 'pointer', padding: 0 }}>{lien} →</button>}
