@@ -421,12 +421,11 @@ export default function App() {
         {activeId > 0 && (
           <div style={{
             ...styles.topBar,
-            background: `${active.color}14`,
-            borderBottom: `3px solid ${active.color}`,
+            maxWidth: 1100, margin: "0 auto", width: "100%", boxSizing: "border-box",
           }}>
-            <span style={{ fontSize: "2rem" }}><Emo e={active.icon} t={34}/></span>
-            <h1 style={{ ...styles.pageTitle, color: active.color, flex: 1 }}>
-              <span style={{ fontFamily:"'Outfit', sans-serif", fontWeight:800, letterSpacing:"-0.5px" }}>
+            <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 18, background: `${active.color}22`, display: "grid", placeItems: "center", flexShrink: 0 }}><Emo e={active.icon} t={34}/></span>
+            <h1 style={{ ...styles.pageTitle, fontFamily:"'Outfit', sans-serif", color: "#0c1a2e", flex: 1, textAlign: "left", fontSize: "clamp(24px, 3.8vw, 38px)", lineHeight: 1.1, textWrap: "balance" }}>
+              <span style={{ fontFamily:"'Outfit', sans-serif", fontWeight:800, letterSpacing:"-0.02em" }}>
                 {idAffiche === 39 ? (estEleve(sessionSb) ? 'Mon profil' : sessionSb?.profil ? 'Mon compte' : 'Se connecter') : active.label}
               </span>
             </h1>
@@ -434,15 +433,15 @@ export default function App() {
               <button data-donner-devoir onClick={() => {
                 try { window.sessionStorage.setItem('devoir-preset', JSON.stringify({ titre: active.label, cles: [`sim:${activeId}`], eleves: [] })); } catch { /* sans mémorisation, le formulaire s'ouvre vide */ }
                 naviguer(40);
-              }} style={{ padding:"6px 14px", borderRadius:8, border:"none", background:"#25628f", color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"'Nunito', sans-serif", whiteSpace:"nowrap" }}>
+              }} style={{ padding:"8px 16px", borderRadius:999, border:"none", background:"#0b4f94", color:"#fff", fontSize:13.5, fontWeight:700, cursor:"pointer", fontFamily:"'Nunito', sans-serif", whiteSpace:"nowrap" }}>
                 <Pic n="pin"/>Donner en devoir
               </button>)}
             <button onClick={partager} style={{
               display:"flex", alignItems:"center", gap:6,
-              padding:"6px 14px", borderRadius:8, border:"none",
-              background: copyMsg ? "#2a9d8f" : "#f0f0f0",
-              color: copyMsg ? "white" : "#555",
-              fontSize:13, fontWeight:600, cursor:"pointer",
+              padding:"8px 16px", borderRadius:999, border:"1.5px solid #d5dfeb",
+              background: copyMsg ? "#2a9d8f" : "#ffffff",
+              color: copyMsg ? "white" : "#334155",
+              fontSize:13.5, fontWeight:700, cursor:"pointer",
               transition:"all 0.2s", fontFamily:"'Nunito', sans-serif",
               whiteSpace:"nowrap",
             }}>

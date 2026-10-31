@@ -33,7 +33,7 @@ export function agreger(lignes) {
 // Libellés des exercices « je m'entraîne » et des défis des simulations (« Nom de la simulation — défi »)
 export const etiquettes = () => Object.fromEntries([...tousLesExercices(), ...etiquettesDefis()].map(e => [e.cle, e]));
 
-const champ = { padding: '8px 10px', fontSize: 15, borderRadius: 8, border: `1px solid ${KIT.bord}`, width: '100%', boxSizing: 'border-box' };
+const champ = { padding: '12px 14px', fontSize: 16, borderRadius: 14, border: 'none', background: '#ffffff', color: TEXTE, width: '100%', boxSizing: 'border-box', fontFamily: 'inherit' };
 
 function ContactEnseignant() {
   return (
@@ -62,23 +62,23 @@ function Connexion() {
   return (
     <div data-connexion style={{ display: 'flex', flexDirection: 'column', gap: 20, textAlign: 'left' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
-        <section style={LAME} aria-labelledby="titre-connexion">
-          <h2 id="titre-connexion" style={{ margin: '0 0 12px', fontSize: 21, fontWeight: 800, color: TEXTE, fontFamily: "'Outfit', sans-serif" }}>Me connecter</h2>
+        <section style={{ background: '#0b4f94', borderRadius: 28, padding: 26, textAlign: 'left' }} aria-labelledby="titre-connexion">
+          <h2 id="titre-connexion" style={{ margin: '0 0 14px', fontSize: 26, fontWeight: 800, color: '#ffffff', fontFamily: "'Outfit', sans-serif" }}>Me connecter</h2>
           <form onSubmit={valider} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <label style={{ fontSize: 14, fontWeight: 700, color: TEXTE }}>Identifiant <span style={{ fontWeight: 500, color: TEXTE2 }}>(donné par ton professeur)</span>
+            <label style={{ fontSize: 14, fontWeight: 700, color: '#ffffff' }}>Identifiant <span style={{ fontWeight: 500, color: '#d3e3f6' }}>(donné par ton professeur)</span>
               <input value={id} onChange={e => setId(e.target.value)} autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="tstl1-07" autoFocus={!idUrl} style={{ ...champ, marginTop: 4 }} aria-label="Identifiant" />
             </label>
-            <label style={{ fontSize: 14, fontWeight: 700, color: TEXTE }}>Mot de passe
+            <label style={{ fontSize: 14, fontWeight: 700, color: '#ffffff' }}>Mot de passe
               <input type="password" value={mdp} onChange={e => setMdp(e.target.value)} autoComplete="current-password" autoFocus={!!idUrl} style={{ ...champ, marginTop: 4 }} aria-label="Mot de passe" />
             </label>
-            <label style={{ fontSize: 13, color: TEXTE2, display: 'flex', gap: 8, alignItems: 'flex-start', lineHeight: 1.5 }}>
-              <input type="checkbox" checked={garder} onChange={e => setGarder(e.target.checked)} style={{ marginTop: 3, accentColor: ACCENT }} />
+            <label style={{ fontSize: 13, color: '#d3e3f6', display: 'flex', gap: 8, alignItems: 'flex-start', lineHeight: 1.5 }}>
+              <input type="checkbox" checked={garder} onChange={e => setGarder(e.target.checked)} style={{ marginTop: 3, accentColor: '#f5a31a' }} />
               <span>Rester connecté sur cet appareil <b>(appareil personnel uniquement, jamais sur un ordinateur partagé du lycée)</b></span>
             </label>
-            {msg && <div role="alert" style={{ color: '#b91c1c', fontSize: 14, fontWeight: 600 }}><Pic n="ko"/>{msg}</div>}
-            <div style={{ fontSize: 13, color: TEXTE2 }}>Mot de passe oublié ? Demande à ton professeur : il peut t’en donner un nouveau en quelques secondes.</div>
-            <button type="submit" disabled={inactif} style={{ padding: '11px 22px', borderRadius: 10, border: 'none', fontWeight: 800, fontSize: 15.5, fontFamily: 'inherit', color: 'white',
-              background: ACCENT, cursor: inactif ? 'default' : 'pointer', opacity: inactif ? 0.55 : 1 }}>{attente ? 'Connexion…' : 'Me connecter'}</button>
+            {msg && <div role="alert" style={{ color: '#ffd9d9', fontSize: 14, fontWeight: 700 }}><Pic n="ko"/>{msg}</div>}
+            <div style={{ fontSize: 13, color: '#d3e3f6' }}>Mot de passe oublié ? Demande à ton professeur : il peut t’en donner un nouveau en quelques secondes.</div>
+            <button type="submit" disabled={inactif} style={{ padding: '14px 22px', borderRadius: 14, border: 'none', fontWeight: 800, fontSize: 16, fontFamily: 'inherit', color: inactif ? '#e3edf8' : '#3a2500',
+              background: inactif ? '#5f88b5' : '#f5a31a', cursor: inactif ? 'default' : 'pointer' }}>{attente ? 'Connexion…' : 'Me connecter'}</button>
           </form>
         </section>
 
