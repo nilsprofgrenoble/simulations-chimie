@@ -421,7 +421,7 @@ export default function App() {
         {activeId > 0 && (
           <div style={{
             ...styles.topBar,
-            background: `linear-gradient(135deg, ${active.color}22, ${active.color}08)`,
+            background: `${active.color}14`,
             borderBottom: `3px solid ${active.color}`,
           }}>
             <span style={{ fontSize: "2rem" }}><Emo e={active.icon} t={34}/></span>
@@ -474,14 +474,14 @@ export default function App() {
 const styles = {
   root: { display:"flex", flexDirection:"column", minHeight:"100vh",
     fontFamily:"'Nunito', 'Segoe UI', sans-serif",
-    background:"linear-gradient(165deg, #c9d9e8 0%, #e1eaf3 38%, #d3e0ec 70%, #c4d4e4 100%)", position:"relative", overflow:"clip" },
+    background:"#eef3f9", position:"relative", overflow:"clip" },
   bgBlob1: { position:"fixed", top:"-120px", right:"-120px", width:"400px", height:"400px",
     borderRadius:"50%",
-    background:"radial-gradient(circle, #25628f40 0%, transparent 70%)",
+    background:"none",
     pointerEvents:"none", zIndex:0 },
   bgBlob2: { position:"fixed", bottom:"-100px", left:"200px", width:"350px", height:"350px",
     borderRadius:"50%",
-    background:"radial-gradient(circle, #25628f33 0%, transparent 70%)",
+    background:"none",
     pointerEvents:"none", zIndex:0 },
   main: { flex:1, display:"flex", flexDirection:"column",
     position:"relative", zIndex:1, minWidth:0 },
