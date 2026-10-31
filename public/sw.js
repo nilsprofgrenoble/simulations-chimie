@@ -2,7 +2,7 @@
 // - pages (HTML) : le réseau d'abord (on voit toujours la dernière version), le cache si hors connexion ;
 // - fichiers du site (scripts, styles, polices, bibliothèques) : le cache d'abord, ils portent un nom unique par version ;
 // - tout ce qui vient d'ailleurs (comptes élèves, statistiques) n'est jamais mis en cache.
-const VERSION = 'paillasse-v1';
+const VERSION = 'paillasse-v2';
 // À l'installation : on garde tout de suite la page d'accueil et les fichiers qu'elle charge (hors connexion dès la première visite)
 self.addEventListener('install', e => {
   e.waitUntil((async () => {
