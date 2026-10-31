@@ -84,7 +84,7 @@ function CarteDevoirPasAPas({ d, a, par, naviguer, maintenant, lignes }) {
         {a.termine ? 'Devoir terminé, bravo !' : <>Étape <b>{Math.min(faites.length + 1, etapes.length)}</b> sur {etapes.length}</>}</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {visibles.map(e => (
-          <div key={e.cle + e.type} data-etape-courante style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14.5, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '10px 12px' }}>
+          <div key={e.cle + e.type} data-etape-courante style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14.5, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 16, padding: '10px 12px' }}>
             <span aria-hidden="true" style={{ fontSize: 20 }}>{e.type === 'guide' ? '🧭' : e.type === 'defi' ? '🎯' : '✏️'}</span>
             <span style={{ flex: 1, color: '#1e293b' }}>{libelle(e)}</span>
             <button className="dv-btn" onClick={() => aller(e)}>{e.type === 'guide' ? (e.guideS > 0 ? 'Continuer ▶' : 'Commencer ▶') : 'Y aller ▶'}</button>

@@ -477,16 +477,16 @@ export function BandeauContexte({ id, contexte, couleur = '#0284c7' }) {
 }
 
 // Briques d'interface partagées (mêmes styles que les pages Energy@School)
-export const KIT = { txt: '#0f172a', txt2: '#334155', bord: '#cbd5e1', fond: '#f8fafc' };
-export const styleBouton = (actif, c = '#0284c7') => ({ padding: '7px 14px', borderRadius: 8, cursor: 'pointer',
+export const KIT = { txt: '#0f172a', txt2: '#334155', bord: '#d5dfeb', fond: '#f8fafc' };
+export const styleBouton = (actif, c = '#0284c7') => ({ padding: '8px 16px', borderRadius: 12, cursor: 'pointer',
   fontWeight: 700, fontSize: 14, border: `1.5px solid ${actif ? c : KIT.bord}`,
   background: actif ? c : 'white', color: actif ? 'white' : KIT.txt2 });
 export const stylePetitBouton = (actif, c) => ({ ...styleBouton(actif, c), padding: '5px 10px', fontSize: 13 });
-export const styleBoite = { background: KIT.fond, borderRadius: 10, padding: '10px 12px', border: `1px solid ${KIT.bord}` };
+export const styleBoite = { background: KIT.fond, borderRadius: 16, padding: '14px 16px', border: `1px solid ${KIT.bord}` };
 
 export function Section({ titre, ouvert, onBascule, children }) {
   return (
-    <div style={{ border: `1px solid ${KIT.bord}`, borderRadius: 10, background: KIT.fond, marginBottom: 8 }}>
+    <div style={{ border: `1px solid ${KIT.bord}`, borderRadius: 16, background: KIT.fond, marginBottom: 8 }}>
       <button onClick={onBascule} aria-expanded={!!ouvert}
         style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           padding: '9px 12px', background: 'none', border: 'none', cursor: 'pointer',
