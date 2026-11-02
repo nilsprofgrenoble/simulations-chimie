@@ -15,17 +15,17 @@ import { Pic } from "../Pictos";
 const ROSE = ACCENT;
 const TONS = { retard: '#b91c1c', urgent: '#b45309', ok: '#2f7a52', aucune: '#64748b' };
 
-const Tuile = ({ valeur, sur, libelle, aide, couleur }) => (
-  <div style={{ background: '#fff', border: `1px solid ${KIT.bord}`, borderTop: `4px solid ${couleur}`, borderRadius: 16, padding: '10px 14px', flex: '1 1 150px', minWidth: 150 }}>
-    <div style={{ fontSize: 28, fontWeight: 800, color: KIT.txt, lineHeight: 1.1 }}>{valeur}{sur !== undefined && <span style={{ fontSize: 16, fontWeight: 600, color: KIT.txt2 }}> / {sur}</span>}</div>
-    <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt, marginTop: 2 }}>{libelle}</div>
-    <div style={{ fontSize: 12, color: KIT.txt2, marginTop: 2 }}>{aide}</div>
+const Tuile = ({ valeur, sur, libelle, aide, fond, ink }) => (
+  <div style={{ background: fond, color: ink, borderRadius: 22, padding: '18px 20px', flex: '1 1 150px', minWidth: 150 }}>
+    <div style={{ fontFamily: 'Outfit, Inter, sans-serif', fontSize: 44, fontWeight: 800, lineHeight: 1, letterSpacing: '-.03em' }}>{valeur}{sur !== undefined && <span style={{ fontSize: 22, fontWeight: 700, opacity: .85 }}> / {sur}</span>}</div>
+    <div style={{ fontFamily: 'Outfit, Inter, sans-serif', fontSize: 17, fontWeight: 700, marginTop: 8 }}>{libelle}</div>
+    <div style={{ fontSize: 13, opacity: .88, marginTop: 2 }}>{aide}</div>
   </div>);
 
 const Carte = ({ titre, lien, onLien, children }) => (
-  <div style={{ background: '#fff', border: `1px solid ${KIT.bord}`, borderRadius: 16, padding: '12px 14px', flex: '1 1 300px', minWidth: 280 }}>
+  <div style={{ background: '#fff', border: `1px solid ${KIT.bord}`, borderRadius: 22, padding: '18px 20px', flex: '1 1 300px', minWidth: 280 }}>
     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
-      <b style={{ flex: 1, color: KIT.txt, fontSize: 15 }}>{titre}</b>
+      <b style={{ flex: 1, color: '#0c1a2e', fontSize: 18, fontFamily: 'Outfit, Inter, sans-serif', fontWeight: 800 }}>{titre}</b>
       {lien && <button onClick={onLien} style={{ background: 'none', border: 'none', color: ROSE, fontWeight: 700, fontSize: 13, cursor: 'pointer', padding: 0 }}>{lien} →</button>}
     </div>
     {children}
@@ -52,11 +52,11 @@ export function SyntheseProf({ classe, eleves, lignes, allerA, onApercu }) {
   if (!eleves.length) return <div style={{ fontSize: 14, color: KIT.txt2 }}>Cette classe n’a pas encore d’élèves : ajoute-en avec « Ajouter … élèves » ci-dessus.</div>;
   return (
     <div>
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
-        <Tuile valeur={S.actifs} sur={S.effectif} libelle="élèves actifs" aide={`séance dans les ${JOURS_ACTIF} derniers jours`} couleur={ACCENT} />
-        <Tuile valeur={S.reussis} libelle="exercices réussis" aide={`sur ${JOURS_ACTIF} jours`} couleur={ACCENT} />
-        <Tuile valeur={R.aReprendre.length + R.autres} libelle="à reprendre" aide="où plusieurs élèves bloquent" couleur={ACCENT} />
-        <Tuile valeur={S.aRelancer.length} libelle="à relancer" aide={`inactifs depuis ${JOURS_RELANCE} jours`} couleur={ACCENT} />
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
+        <Tuile valeur={S.actifs} sur={S.effectif} libelle="élèves actifs" aide={`séance dans les ${JOURS_ACTIF} derniers jours`} fond="#0b4f94" ink="#fff" />
+        <Tuile valeur={S.reussis} libelle="exercices réussis" aide={`sur ${JOURS_ACTIF} jours`} fond="#f5a31a" ink="#3a2500" />
+        <Tuile valeur={R.aReprendre.length + R.autres} libelle="à reprendre" aide="où plusieurs élèves bloquent" fond="#2cc4ae" ink="#04352d" />
+        <Tuile valeur={S.aRelancer.length} libelle="à relancer" aide={`inactifs depuis ${JOURS_RELANCE} jours`} fond="#5b4bdb" ink="#fff" />
       </div>
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         {dev?.dispo && (
