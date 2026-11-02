@@ -811,7 +811,7 @@ export const PROBLEMES = [
   },
   {
     id: 'boussole-aimant', domaine: 'Contrôle des systèmes', titre: 'Où pointe la boussole près d’un aimant ?',
-    ...presenter({ contexte: 'Un aimant droit est orienté perpendiculairement au nord. Une boussole est placée sur son axe.', liste: [['Champ de l’aimant à 10 cm de son centre', '160 µT'], ['Composante horizontale du champ de la Terre', '20 µT'], ['Nouvelle distance de la boussole', '20 cm, toujours sur l’axe'], ['Décroissance du champ de l’aimant', 'en 1/r³'], ['Masse de l’aimant', '40 g']], question: 'De quel angle l’aiguille dévie-t-elle alors par rapport au nord ?' }),
+    ...presenter({ contexte: 'Un aimant droit est orienté perpendiculairement au nord. Une boussole est placée sur son axe.', liste: [['Champ de l’aimant à 10 cm de son centre, sur son axe', '160 µT'], ['Composante horizontale du champ de la Terre', '20 µT'], ['Nouvelle distance de la boussole', '20 cm (on l’éloigne, toujours sur l’axe)'], ['Décroissance du champ de l’aimant', 'en 1/r³'], ['Masse de l’aimant', '40 g']], question: 'De quel angle l’aiguille dévie-t-elle alors par rapport au nord ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('Le champ de l’aimant à 20 cm, puis l’angle de déviation de l’aiguille', 'L’énoncé donne le champ à 10 cm seulement : il faut l’adapter à la nouvelle distance avant de comparer à la Terre.'),
       F('Le champ de l’aimant à 10 cm', 'Il est donné.'),
