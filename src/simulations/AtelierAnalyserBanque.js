@@ -264,7 +264,7 @@ export const PROBLEMES = [
   },
   {
     id: 'niveauTOR', domaine: 'Régulation', titre: 'Durée d’un cycle de régulation tout ou rien',
-    enonce: 'Une cuve de section constante 0,80 m² se vide en continu avec un débit de 1,2 m³·h⁻¹. Une pompe de 0,55 kW, commandée en tout ou rien, la remplit avec un débit de 2,0 m³·h⁻¹ : elle démarre quand le niveau descend à 1,00 m et s’arrête quand il atteint 1,10 m. La cuve mesure 2,0 m de haut. Le constructeur de la pompe déconseille les phases de marche de moins de 5 min. Ce réglage convient-il ?',
+    ...presenter({ contexte: 'Une cuve se vide en continu. Une pompe commandée en tout ou rien la remplit : elle démarre quand le niveau descend à un seuil bas et s’arrête quand il atteint un seuil haut.', liste: [['Section de la cuve', '0,80 m²'], ['Débit de soutirage (vidange)', '1,2 m³·h⁻¹'], ['Puissance de la pompe', '0,55 kW'], ['Débit de la pompe', '2,0 m³·h⁻¹'], ['Seuil de démarrage', 'niveau de 1,00 m (en descendant)'], ['Seuil d’arrêt', 'niveau de 1,10 m'], ['Hauteur de la cuve', '2,0 m'], ['Recommandation du constructeur', 'éviter les phases de marche de moins de 5 min']], question: 'Ce réglage convient-il ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('La durée d’une phase de marche de la pompe, pour la comparer à 5 min', 'Le critère du constructeur porte sur cette durée.'),
       F('La durée nécessaire pour remplir toute la cuve', 'La pompe ne remplit que la tranche comprise entre 1,00 m et 1,10 m.'),
@@ -369,7 +369,7 @@ export const PROBLEMES = [
   },
   {
     id: 'chambrefroide', domaine: 'Transferts thermiques', titre: 'Une chambre froide bien dimensionnée ?',
-    enonce: 'Une chambre froide est maintenue à −18 °C quand il fait 25 °C dehors. Ses parois (surface totale 20 m²) sont en mousse de polyuréthane d’épaisseur 10 cm, de conductivité thermique λ = 0,025 W·m⁻¹·K⁻¹. Elle contient 300 kg de denrées déjà congelées. Le groupe frigorifique peut extraire 500 W. Suffit-il à compenser la chaleur qui entre par les parois ?',
+    ...presenter({ contexte: 'Une chambre froide est maintenue à basse température alors qu’il fait chaud dehors. Ses parois sont en mousse de polyuréthane.', liste: [['Température intérieure', '−18 °C'], ['Température extérieure', '25 °C'], ['Surface totale des parois', '20 m²'], ['Épaisseur des parois', '10 cm'], ['Conductivité thermique de la mousse', 'λ = 0,025 W·m⁻¹·K⁻¹'], ['Denrées déjà congelées', '300 kg'], ['Puissance que le groupe frigorifique peut extraire', '500 W']], question: 'Le groupe frigorifique suffit-il à compenser la chaleur qui entre par les parois ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('Le flux thermique Φ qui traverse les parois, pour le comparer à 500 W', 'En régime permanent, le groupe doit extraire autant de chaleur qu’il en entre.'),
       F('L’énergie nécessaire pour congeler les denrées', 'Elles sont déjà congelées : à température constante, elles n’échangent plus d’énergie.'),
@@ -420,7 +420,7 @@ export const PROBLEMES = [
   },
   {
     id: 'vinaigre', domaine: 'Chimie', titre: 'Le vinaigre est-il bien à 6 % ?',
-    enonce: 'Un vinaigre est vendu comme titrant « 6 % d’acidité » : 6 g d’acide acétique pour 100 g de vinaigre. On dilue ce vinaigre 10 fois, puis on titre 10,0 mL de la solution diluée par une solution d’hydroxyde de sodium à 0,100 mol·L⁻¹, en présence de phénolphtaléine. Le volume à l’équivalence vaut 10,2 mL. Données : M(acide acétique) = 60,0 g·mol⁻¹ ; densité du vinaigre d = 1,01 ; le titrage est fait à 20 °C. On considère l’indication de l’étiquette comme vérifiée si l’écart relatif avec 6 % ne dépasse pas 5 % (incertitude du dosage). L’indication de l’étiquette est-elle vérifiée ?',
+    ...presenter({ contexte: 'Un vinaigre est vendu comme titrant « 6 % d’acidité » : 6 g d’acide acétique pour 100 g de vinaigre. On le dilue 10 fois, puis on titre 10,0 mL de la solution diluée par une solution d’hydroxyde de sodium, en présence de phénolphtaléine.', liste: [['Dilution du vinaigre', '10 fois'], ['Prise d’essai de la solution diluée', '10,0 mL'], ['Concentration de la solution d’hydroxyde de sodium', '0,100 mol·L⁻¹'], ['Volume à l’équivalence', '10,2 mL'], ['Masse molaire de l’acide acétique', 'M = 60,0 g·mol⁻¹'], ['Densité du vinaigre', 'd = 1,01'], ['Température du titrage', '20 °C'], ['Critère', 'écart relatif avec 6 % d’au plus 5 % (incertitude du dosage)']], question: 'L’indication de l’étiquette est-elle vérifiée ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('Le pourcentage massique d’acide acétique dans le vinaigre, pour le comparer à 6 %', 'L’étiquette donne un pourcentage massique : c’est lui qu’il faut retrouver.'),
       F('Le pH du vinaigre', 'Le critère porte sur un pourcentage massique : le pH ne le donne pas sans connaître la constante d’acidité et sans hypothèse sur la dissociation.'),
@@ -475,7 +475,7 @@ export const PROBLEMES = [
   },
   {
     id: 'alambic', domaine: 'Distillation', titre: 'Récupérer 50 mL d’éthanol',
-    enonce: 'On dispose de 400 mL d’un mélange eau–éthanol contenant 15 % d’éthanol en volume. On veut récupérer au moins 50 mL d’éthanol (volume d’éthanol contenu dans le distillat, qui n’est pas de l’éthanol pur) par distillation fractionnée. Cette distillation a un rendement de 80 % (80 % de l’éthanol présent est récupéré). Le chauffe-ballon a une puissance de 500 W et l’éthanol bout à 78 °C. L’objectif est-il réalisable avec ce mélange ?',
+    ...presenter({ contexte: 'On veut récupérer de l’éthanol par distillation fractionnée à partir d’un mélange eau–éthanol.', liste: [['Volume du mélange', '400 mL'], ['Teneur en éthanol', '15 % en volume'], ['Objectif', 'au moins 50 mL d’éthanol dans le distillat (le distillat n’est pas de l’éthanol pur)'], ['Rendement de la distillation', '80 % (80 % de l’éthanol présent est récupéré)'], ['Puissance du chauffe-ballon', '500 W'], ['Température d’ébullition de l’éthanol', '78 °C']], question: 'L’objectif est-il réalisable avec ce mélange ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('Le volume d’éthanol récupérable, pour le comparer à 50 mL', 'Le critère porte sur un volume d’éthanol : on le calcule, puis on le compare à 50 mL.'),
       F('La durée de la distillation', 'Aucun critère de durée dans l’énoncé : la puissance du chauffe-ballon ne sert pas ici.'),
@@ -523,7 +523,7 @@ export const PROBLEMES = [
   },
   {
     id: 'cristaux-masse', domaine: 'Évaporation et cristallisation', titre: 'Obtenir 200 g de cristaux',
-    enonce: 'On prépare à 60 °C une solution saturée de nitrate de potassium dans 300 g d’eau. À 60 °C, la solubilité du nitrate de potassium est de 110 g pour 100 g d’eau ; à 20 °C, elle est de 32 g pour 100 g d’eau. On refroidit la solution de 60 °C à 20 °C, en une heure, dans un bécher de 500 mL. On veut obtenir au moins 200 g de cristaux. Est-ce possible ?',
+    ...presenter({ contexte: 'On prépare à 60 °C une solution saturée de nitrate de potassium, puis on la refroidit.', liste: [['Masse d’eau', '300 g'], ['Solubilité à 60 °C', '110 g pour 100 g d’eau'], ['Solubilité à 20 °C', '32 g pour 100 g d’eau'], ['Refroidissement', 'de 60 °C à 20 °C, en une heure'], ['Récipient', 'bécher de 500 mL'], ['Objectif', 'au moins 200 g de cristaux']], question: 'Est-ce possible ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('La masse de cristaux formés, pour la comparer à 200 g', 'Le critère porte sur la masse de cristaux obtenus.'),
       F('La masse de nitrate de potassium dissoute à 60 °C', 'Elle sert dans le calcul, mais ce n’est pas la masse de cristaux.'),
@@ -573,7 +573,7 @@ export const PROBLEMES = [
   },
   {
     id: 'ecart-acceptable', domaine: 'Régulation', titre: 'Un niveau assez proche de la consigne ?',
-    enonce: 'Un réservoir de section 3 m² est régulé en niveau par un régulateur proportionnel de gain K_p = 80 %·m⁻¹ (Y = K_p × (consigne − H)). La pompe débite au maximum 120 m³·h⁻¹ (pour Y = 100 %), et un soutirage constant de 36 m³·h⁻¹ vide le réservoir. La consigne est de 4,0 m. Le réglage de temps intégral du régulateur (50 h) n’est pas utilisé. Le cahier des charges exige un niveau d’au moins 3,6 m en régime permanent. Est-il respecté ?',
+    ...presenter({ contexte: 'Un réservoir est régulé en niveau par un régulateur proportionnel : Y = K_p × (consigne − H). Une pompe l’alimente, et un soutirage constant le vide.', liste: [['Section du réservoir', '3 m²'], ['Gain du régulateur', 'K_p = 80 %·m⁻¹'], ['Débit maximal de la pompe', '120 m³·h⁻¹ (pour Y = 100 %)'], ['Soutirage constant', '36 m³·h⁻¹'], ['Consigne', '4,0 m'], ['Temps intégral du régulateur', '50 h (réglage non utilisé)'], ['Cahier des charges', 'niveau d’au moins 3,6 m en régime permanent']], question: 'Le cahier des charges est-il respecté ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('Le niveau H en régime permanent, pour le comparer à 3,6 m', 'Le critère porte sur le niveau atteint, qui n’est pas la consigne : un régulateur P laisse un écart statique.'),
       F('La durée pour atteindre la consigne', 'Aucun critère de durée dans l’énoncé.'),
@@ -623,7 +623,7 @@ export const PROBLEMES = [
   },
   {
     id: 'capteur-assez-rapide', domaine: 'Régulation', titre: 'Un capteur assez rapide ?',
-    enonce: 'Un capteur de température se comporte comme un système du 1er ordre de constante de temps τ = 12 s. On le plonge de 20 °C dans un bain à 80 °C. Pour un contrôle qualité, on lit la mesure 30 s après l’immersion, et l’écart à la valeur finale doit être inférieur à 5 % de l’échelon total (60 °C), soit 3 °C : la mesure doit avoir atteint au moins 95 % de la variation. L’afficheur a une résolution de 0,1 °C et le capteur pèse 15 g. L’attente de 30 s est-elle suffisante ?',
+    ...presenter({ contexte: 'Un capteur de température se comporte comme un système du 1er ordre. On le plonge dans un bain pour un contrôle qualité.', liste: [['Constante de temps', 'τ = 12 s'], ['Température initiale', '20 °C'], ['Température du bain', '80 °C (échelon de 60 °C)'], ['Instant de lecture', '30 s après l’immersion'], ['Critère', 'écart à la valeur finale inférieur à 5 % de l’échelon, soit 3 °C (au moins 95 % de la variation atteinte)'], ['Résolution de l’afficheur', '0,1 °C'], ['Masse du capteur', '15 g']], question: 'L’attente de 30 s est-elle suffisante ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('Le temps de réponse à 5 % du capteur, pour le comparer à 30 s', 'Le critère « à 5 % de la valeur finale » est exactement la définition du temps de réponse à 5 %.'),
       F('La température finale du capteur en °C', 'Elle est connue : c’est la température du bain, 80 °C. Ce n’est pas ce qui permet de répondre.'),
@@ -669,7 +669,7 @@ export const PROBLEMES = [
   },
   {
     id: 'pompe-doseuse', domaine: 'Mesure et incertitudes', titre: 'Une pompe doseuse bien réglée ?',
-    enonce: 'Pour contrôler une pompe doseuse réglée sur 50,0 mL, un technicien recueille 10 fois le volume délivré, dans les mêmes conditions. Il obtient une moyenne de 50,8 mL et un écart-type expérimental s = 0,9 mL. La série a duré 15 min, à 22 °C. On considère que la pompe est compatible avec son réglage si l’écart entre la moyenne et 50,0 mL est inférieur ou égal à 2·u, où u est l’incertitude-type de la moyenne. La pompe est-elle compatible avec son réglage ?',
+    ...presenter({ contexte: 'Pour contrôler une pompe doseuse, un technicien recueille 10 fois le volume délivré, dans les mêmes conditions.', liste: [['Volume réglé', '50,0 mL'], ['Nombre de mesures', '10'], ['Moyenne', '50,8 mL'], ['Écart-type expérimental', 's = 0,9 mL'], ['Durée de la série', '15 min, à 22 °C'], ['Critère de compatibilité', 'écart entre la moyenne et 50,0 mL inférieur ou égal à 2·u, où u est l’incertitude-type de la moyenne']], question: 'La pompe est-elle compatible avec son réglage ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('L’écart entre la moyenne et 50,0 mL, pour le comparer à 2·u', 'C’est exactement le critère de l’énoncé : il faut donc l’écart et l’incertitude-type u de la moyenne.'),
       F('L’écart-type s de la série', 'Il est donné ; il décrit la dispersion des mesures individuelles, pas l’incertitude de la moyenne.'),
@@ -719,7 +719,7 @@ export const PROBLEMES = [
   },
   {
     id: 'nombre-mesures', domaine: 'Mesure et incertitudes', titre: 'Combien de mesures répéter ?',
-    enonce: 'Un essai préalable de 6 mesures d’un volume donne une moyenne de 25,3 mL et un écart-type expérimental s = 0,40 mL. Chaque mesure demande environ 3 min. On souhaite que l’incertitude-type de la moyenne soit d’au plus 0,10 mL. Combien de mesures faut-il, au minimum, dans la série finale ?',
+    ...presenter({ contexte: 'Un essai préalable de mesures répétées d’un volume sert à préparer la série finale.', liste: [['Essai préalable', '6 mesures'], ['Moyenne', '25,3 mL'], ['Écart-type expérimental', 's = 0,40 mL'], ['Durée d’une mesure', 'environ 3 min'], ['Objectif', 'incertitude-type de la moyenne d’au plus 0,10 mL']], question: 'Combien de mesures faut-il, au minimum, dans la série finale ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('Le nombre minimal de mesures n pour que u ≤ 0,10 mL', 'C’est ce que demande l’énoncé.'),
       F('La durée totale de la série', 'On ne demande pas la durée, seulement le nombre de mesures.'),
@@ -764,7 +764,7 @@ export const PROBLEMES = [
   },
   {
     id: 'vitesse-moteur', domaine: 'Contrôle des systèmes', titre: 'Un moteur assez rapide ?',
-    enonce: 'Un moteur pas à pas fait 200 pas par tour. Le constructeur indique une fréquence maximale de 250 pas par seconde, au-delà de laquelle le rotor perd des pas. Un programme doit le faire tourner à 90 tr/min. L’alimentation est de 12 V et la longueur de câble de 40 cm. Cet objectif est-il réalisable avec ce moteur ?',
+    ...presenter({ contexte: 'Un moteur pas à pas doit être piloté par un programme.', liste: [['Nombre de pas par tour', '200'], ['Fréquence maximale du constructeur', '250 pas par seconde (au-delà, le rotor perd des pas)'], ['Vitesse à obtenir', '90 tr/min'], ['Alimentation', '12 V'], ['Longueur de câble', '40 cm']], question: 'Cet objectif est-il réalisable avec ce moteur ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('La fréquence de pas nécessaire pour 90 tr/min, pour la comparer à 250 pas/s', 'Le constructeur donne une limite en pas par seconde : il faut convertir la vitesse demandée en la même grandeur.'),
       F('L’angle d’un pas en degrés', 'Il vaut 1,8° mais ne permet pas de conclure sur la vitesse.'),
@@ -811,7 +811,7 @@ export const PROBLEMES = [
   },
   {
     id: 'boussole-aimant', domaine: 'Contrôle des systèmes', titre: 'Où pointe la boussole près d’un aimant ?',
-    enonce: 'Un aimant droit est orienté perpendiculairement au nord. À 10 cm de son centre, sur son axe, son champ vaut 160 µT. La composante horizontale du champ de la Terre vaut 20 µT. On éloigne la boussole à 20 cm de l’aimant, toujours sur l’axe. Le champ de l’aimant décroît comme 1/r³. La masse de l’aimant est de 40 g. De quel angle l’aiguille dévie-t-elle alors par rapport au nord ?',
+    ...presenter({ contexte: 'Un aimant droit est orienté perpendiculairement au nord. Une boussole est placée sur son axe.', liste: [['Champ de l’aimant à 10 cm de son centre', '160 µT'], ['Composante horizontale du champ de la Terre', '20 µT'], ['Nouvelle distance de la boussole', '20 cm, toujours sur l’axe'], ['Décroissance du champ de l’aimant', 'en 1/r³'], ['Masse de l’aimant', '40 g']], question: 'De quel angle l’aiguille dévie-t-elle alors par rapport au nord ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('Le champ de l’aimant à 20 cm, puis l’angle de déviation de l’aiguille', 'L’énoncé donne le champ à 10 cm seulement : il faut l’adapter à la nouvelle distance avant de comparer à la Terre.'),
       F('Le champ de l’aimant à 10 cm', 'Il est donné.'),
@@ -1193,7 +1193,7 @@ export const RELATIONS = [
       F('B(r₂) = B(r₁)', 'Le champ d’un aimant dépend fortement de la distance.'),
     ] },
   { id: 'dist-rel-bilan-residu', domaine: 'Distillation', titre: 'Titre du liquide resté dans le ballon',
-    enonce: 'On distille m_i = 400 g d’un mélange eau–éthanol de titre massique en éthanol w_i = 0,20 (le titre massique est la masse d’éthanol divisée par la masse de liquide). On arrête le chauffage après avoir recueilli m_d = 70 g de distillat, de titre w_d = 0,85. Il n’y a aucune perte : tout ce qui n’est pas dans le distillat reste dans le ballon. On cherche le titre massique en éthanol w_r du liquide resté dans le ballon.',
+    ...presenter({ contexte: 'On distille un mélange eau–éthanol. Il n’y a aucune perte : tout ce qui n’est pas dans le distillat reste dans le ballon.', liste: [['Masse initiale du mélange', 'm_i = 400 g'], ['Titre massique en éthanol du mélange', 'w_i = 0,20'], ['Masse de distillat recueilli', 'm_d = 70 g'], ['Titre massique du distillat', 'w_d = 0,85'], ['Rappel', 'titre massique = masse d’éthanol / masse de liquide']], suite: 'On arrête le chauffage après avoir recueilli le distillat. On cherche le titre massique en éthanol w_r du liquide resté dans le ballon.' }),
     q: 'Quelle relation permet de répondre ?', options: [
       V('w_r = (w_i·m_i − w_d·m_d) / (m_i − m_d)', 'On écrit que l’éthanol se conserve : w_i·m_i = w_d·m_d + w_r·m_r, avec m_r = m_i − m_d = 330 g. Ici : (0,20 × 400 − 0,85 × 70) / 330 = (80 − 59,5) / 330 ≈ 0,062, soit 6,2 % d’éthanol dans le ballon.'),
       F('w_r = w_i × (m_i − m_d) / m_i', 'Elle traite le distillat comme s’il avait le titre w_i (le ballon garderait alors w_i·(m_i − m_d) = 66 g d’éthanol), puis divise par m_i au lieu de la masse du ballon m_i − m_d. Or le distillat (0,85) est bien plus riche en éthanol que le mélange initial (0,20) : il emporte une grande part de l’éthanol et appauvrit le ballon. On trouverait 0,165 au lieu de 0,062.'),
@@ -1201,7 +1201,7 @@ export const RELATIONS = [
       F('w_r = (w_i·m_i + w_d·m_d) / (m_i + m_d)', 'C’est la formule d’un mélange de deux liquides qu’on réunit. Ici, au contraire, le mélange initial est séparé en deux parties : on soustrait la part du distillat. On trouverait 0,30, un titre supérieur au titre initial, absurde pour un liquide appauvri en éthanol.'),
     ] },
   { id: 'dist-rel-regle-leviers', domaine: 'Distillation', titre: 'Quelle part du mélange est en phase vapeur ?',
-    enonce: 'À 1 013 hPa et à 85 °C, un mélange eau–éthanol de fraction molaire globale en éthanol z = 0,20 se partage, à l’équilibre, en un liquide et une vapeur. Sur le diagramme binaire isobare, on lit à cette température la fraction molaire en éthanol du liquide, x = 0,12, et celle de la vapeur, y = 0,47 (valeurs arrondies). On cherche la fraction n_vap / n_tot de la quantité de matière totale qui se trouve en phase vapeur.',
+    ...presenter({ contexte: 'À 1 013 hPa et à 85 °C, un mélange eau–éthanol se partage, à l’équilibre, en un liquide et une vapeur.', liste: [['Fraction molaire globale en éthanol', 'z = 0,20'], ['Fraction molaire du liquide (lue sur le diagramme binaire isobare)', 'x = 0,12'], ['Fraction molaire de la vapeur', 'y = 0,47 (valeurs arrondies)']], suite: 'On cherche la fraction n_vap / n_tot de la quantité de matière totale qui se trouve en phase vapeur.' }),
     q: 'Quelle relation permet de répondre ?', options: [
       V('n_vap / n_tot = (z − x) / (y − x)', 'Bilan sur l’éthanol : z·n_tot = x·n_liq + y·n_vap, avec n_liq = n_tot − n_vap. On en tire n_vap / n_tot = (z − x) / (y − x) = (0,20 − 0,12) / (0,47 − 0,12) = 0,08 / 0,35 ≈ 0,23, soit 23 % : le mélange est surtout liquide, ce qui est logique puisque z est proche de x.'),
       F('n_vap / n_tot = (y − z) / (y − x)', 'La lecture est faite du mauvais côté : (y − z) / (y − x) = 0,27 / 0,35 ≈ 77 % est la fraction de liquide. Plus z est proche de x, plus il y a de liquide : ici z = 0,20 est proche de x = 0,12.'),
@@ -1209,7 +1209,7 @@ export const RELATIONS = [
       F('n_vap / n_tot = (y − x) / (z − x)', 'Le rapport est inversé : on trouverait 0,35 / 0,08 ≈ 4,4, soit plus de 400 %. Une fraction de la quantité de matière totale ne peut pas dépasser 1.'),
     ] },
   { id: 'crist-evap-isotherme', domaine: 'Évaporation et cristallisation', titre: 'Évaporer l’eau à température constante',
-    enonce: 'Une solution aqueuse saturée de chlorure de sodium, maintenue à 20 °C, contient 500 g d’eau. On laisse s’évaporer 150 g d’eau, toujours à 20 °C. À 20 °C, la solubilité du chlorure de sodium est de 36 g pour 100 g d’eau. On suppose que l’équilibre est atteint et que la vapeur d’eau n’emporte pas de sel. On cherche la masse de cristaux de chlorure de sodium qui apparaissent.',
+    ...presenter({ contexte: 'Une solution aqueuse saturée de chlorure de sodium est maintenue à 20 °C. On laisse s’évaporer une partie de l’eau, toujours à 20 °C.', liste: [['Masse d’eau initiale', '500 g'], ['Masse d’eau évaporée', '150 g'], ['Solubilité à 20 °C', '36 g pour 100 g d’eau']], suite: 'On suppose que l’équilibre est atteint et que la vapeur d’eau n’emporte pas de sel. On cherche la masse de cristaux de chlorure de sodium qui apparaissent.' }),
     q: 'Quelle relation permet de répondre ?', options: [
       V('m_cristaux = s × m_évaporée / 100', 'Chaque tranche de 100 g d’eau qui s’en va ne peut plus garder 36 g de sel dissous : 36 × 150 / 100 = 54 g de cristaux.'),
       F('m_cristaux = s × m_eau,initiale / 100', 'C’est la masse de sel dissoute au départ (36 × 500 / 100 = 180 g) : l’eau restante en garde encore une grande partie, elle ne cristallise pas.'),
@@ -1217,7 +1217,7 @@ export const RELATIONS = [
       F('m_cristaux = s × m_évaporée', 'On oublie de diviser par 100 : on trouverait 5 400 g, bien plus que tout le sel présent au départ (180 g).'),
     ] },
   { id: 'crist-rendement-max', domaine: 'Évaporation et cristallisation', titre: 'Rendement maximal d’une recristallisation',
-    enonce: 'On purifie du nitrate de potassium par recristallisation dans l’eau : on le dissout à 60 °C dans la plus petite masse d’eau possible (solution saturée à 60 °C), puis on refroidit à 20 °C. À 60 °C, la solubilité du nitrate de potassium est de 110 g pour 100 g d’eau ; à 20 °C, elle est de 32 g pour 100 g d’eau. On suppose qu’il n’y a pas d’évaporation, que l’équilibre est atteint à 20 °C et que les cristaux ne sont pas lavés. On cherche la proportion maximale du nitrate de potassium dissous au départ que l’on peut récupérer sous forme de cristaux.',
+    ...presenter({ contexte: 'On purifie du nitrate de potassium par recristallisation dans l’eau : on le dissout à 60 °C dans la plus petite masse d’eau possible (solution saturée à 60 °C), puis on refroidit à 20 °C.', liste: [['Solubilité à 60 °C', '110 g pour 100 g d’eau'], ['Solubilité à 20 °C', '32 g pour 100 g d’eau'], ['Hypothèses', 'pas d’évaporation ; équilibre atteint à 20 °C ; cristaux non lavés']], suite: 'On cherche la proportion maximale du nitrate de potassium dissous au départ que l’on peut récupérer sous forme de cristaux.' }),
     q: 'Quelle relation permet de répondre ?', options: [
       V('η_max = (s₆₀ − s₂₀) / s₆₀', 'Pour une masse d’eau m : cristaux = (s₆₀ − s₂₀)·m/100 sur sel dissous au départ = s₆₀·m/100. La masse d’eau se simplifie : 78 / 110 ≈ 71 %.'),
       F('η_max = (s₆₀ − s₂₀) / s₂₀', 'On compare les cristaux à ce qui reste dissous à 20 °C et non à ce qui était dissous au départ : on trouverait 244 %, impossible pour un rendement.'),
@@ -1414,7 +1414,7 @@ export const HYPOTHESES = [
       F('L’aimant est très petit, de masse négligeable', 'Seule compte la comparaison entre la taille de l’aimant et la distance.'),
     ] },
   { id: 'dist-hyp-hydrodistillation', domaine: 'Distillation', titre: 'Température d’une hydrodistillation',
-    enonce: 'Lors de l’hydrodistillation d’une huile essentielle (le limonène, qui bout seul à 176 °C), on observe en tête de montage une température inférieure à 100 °C. On l’interprète en écrivant que le mélange bout lorsque P_atm = P*_eau(T) + P*_huile(T), où P* désigne la pression de vapeur saturante du liquide pur à la température T.', options: [
+    ...presenter({ contexte: 'Lors de l’hydrodistillation d’une huile essentielle (le limonène, qui bout seul à 176 °C), on observe en tête de montage une température inférieure à 100 °C.', liste: [['Interprétation', 'le mélange bout lorsque P_atm = P*_eau(T) + P*_huile(T)'], ['Notation', 'P* : pression de vapeur saturante du liquide pur à la température T']] }), options: [
       V('L’huile essentielle est (pratiquement) non miscible à l’eau', 'Les deux liquides forment deux couches distinctes : chacun exerce alors la pression de vapeur saturante du liquide pur, et les deux s’additionnent. Avec un mélange homogène, chaque pression partielle serait diminuée et la relation écrite ne s’appliquerait pas.'),
       V('L’eau et l’huile sont toutes les deux présentes, en équilibre avec la vapeur', 'Si l’un des deux liquides disparaît, il ne reste qu’un seul terme dans la somme : la température remonte vers l’ébullition du liquide restant (100 °C s’il ne reste que de l’eau).'),
       V('La pression au-dessus du liquide est fixée par l’atmosphère (montage ouvert)', 'C’est le membre de gauche de la relation. Dans un montage fermé, la pression changerait au cours de la distillation, et la température d’ébullition avec elle.'),
@@ -1423,7 +1423,7 @@ export const HYPOTHESES = [
       F('L’huile essentielle a une masse volumique égale à celle de l’eau', 'La masse volumique n’intervient pas dans la relation. Au contraire, l’huile est en général moins dense que l’eau : elle surnage dans le distillat, ce qui permet de la décanter.'),
     ] },
   { id: 'dist-hyp-plateaux', domaine: 'Distillation', titre: 'Compter les plateaux théoriques',
-    enonce: 'Pour prévoir l’efficacité d’une colonne, on compte les « marches » tracées sur le diagramme binaire isobare eau–éthanol (à 1 013 hPa) entre la composition du liquide du ballon et celle du distillat visé. Chaque marche représente un plateau théorique.', options: [
+    ...presenter({ contexte: 'Pour prévoir l’efficacité d’une colonne, on compte les « marches » tracées sur le diagramme binaire isobare eau–éthanol (à 1 013 hPa) entre la composition du liquide du ballon et celle du distillat visé.', liste: [['Méthode', 'chaque marche représente un plateau théorique']] }), options: [
       V('À chaque plateau, vapeur et liquide sortants sont en équilibre, à la même température', 'Chaque marche suit la courbe d’équilibre liquide–vapeur du diagramme : un plateau théorique est, par définition, un plateau où l’équilibre est atteint. Une colonne réelle, moins efficace, demande plus de plateaux réels.'),
       V('La pression est la même sur toute la hauteur de la colonne', 'Le diagramme est tracé à pression constante (isobare). Si la pression variait d’un plateau à l’autre, les températures d’ébullition et les courbes changeraient.'),
       V('Le reflux est total : tout le liquide condensé en tête retombe dans la colonne', 'La construction en marches correspond à ce fonctionnement. Avec un soutirage de distillat, il faudrait davantage de plateaux pour obtenir la même composition en tête : le nombre compté est un minimum.'),
@@ -1495,7 +1495,7 @@ export const HYPOTHESES = [
       F('Le volume réel est plus probable près de 100,00 mL que près des bornes', 'Ce serait une loi triangulaire, qui donnerait u = a/√6 ≈ 0,041 mL. Le facteur √3 suppose l’équiprobabilité sur tout l’intervalle.'),
     ] },
   { id: 'ctl-hyp-led-resistance', domaine: 'Contrôle des systèmes', titre: 'Résistance de protection d’une LED',
-    enonce: 'Une LED rouge est branchée en série avec une résistance R entre une broche numérique d’une carte Arduino (état haut, 5,0 V) et la masse. On veut un courant I = 10 mA dans la LED. On calcule R = (5,0 − 2,0) / 0,010 = 300 Ω, en prenant 2,0 V pour la tension aux bornes de la LED allumée.', options: [
+    ...presenter({ contexte: 'Une LED rouge est branchée en série avec une résistance R entre une broche numérique d’une carte Arduino (état haut, 5,0 V) et la masse.', liste: [['Courant voulu dans la LED', 'I = 10 mA'], ['Tension aux bornes de la LED allumée (valeur prise)', '2,0 V'], ['Calcul effectué', 'R = (5,0 − 2,0) / 0,010 = 300 Ω']] }), options: [
       V('La tension aux bornes de la LED allumée reste voisine de 2,0 V quand le courant varie peu', 'La caractéristique d’une LED est un « coude » : une fois la LED passante, une petite variation de tension provoque une grande variation de courant, donc la tension reste à peu près constante (ici 2,0 V). Si l’on faisait varier fortement I, cette valeur changerait de quelques dixièmes de volt.'),
       V('La tension de la broche à l’état haut reste voisine de 5,0 V malgré le courant débité', 'Une broche réelle perd quelques dixièmes de volt lorsqu’elle débite du courant : la tension aux bornes de R est alors un peu plus faible que 3,0 V et le courant réel un peu inférieur à 10 mA. Le calcul donne donc un ordre de grandeur, du côté de la sécurité pour la broche.'),
       V('La LED et la résistance sont traversées par le même courant', 'Elles sont en série, sans dérivation : l’intensité est la même dans les deux dipôles. Sans cela, la tension aux bornes de R ne serait pas égale à R × I avec I le courant de la LED.'),
@@ -1627,7 +1627,7 @@ export const PREVOIR = [
       V('immobile par rapport au train, en mouvement par rapport au quai', 'Le mouvement dépend du référentiel : la position du passager est fixe dans le train, mais change par rapport au quai.'),
     ] },
   { id: 'mvt-pomme', domaine: 'Mouvement et vitesse', titre: 'Une pomme qui tombe',
-    enonce: 'Une pomme se détache d’une branche, sans vitesse initiale, et tombe vers le sol. Une vidéo permet de mesurer sa vitesse : 0 m·s⁻¹ au décrochage, environ 5 m·s⁻¹ une demi-seconde plus tard et environ 10 m·s⁻¹ après une seconde. On l’observe depuis le sol (référentiel terrestre), sa trajectoire suit la verticale.', q: 'Quel est son mouvement dans ce référentiel ?', options: [
+    ...presenter({ contexte: 'Une pomme se détache d’une branche, sans vitesse initiale, et tombe vers le sol. Une vidéo permet de mesurer sa vitesse. On l’observe depuis le sol (référentiel terrestre) : sa trajectoire suit la verticale.', liste: [['Vitesse au décrochage', '0 m·s⁻¹'], ['Vitesse une demi-seconde plus tard', 'environ 5 m·s⁻¹'], ['Vitesse une seconde après le décrochage', 'environ 10 m·s⁻¹']] }), q: 'Quel est son mouvement dans ce référentiel ?', options: [
       V('rectiligne accéléré', 'La trajectoire est une droite (verticale) : « rectiligne ». La vitesse augmente : « accéléré ».'),
       F('rectiligne uniforme', '« Uniforme » signifie que la vitesse reste constante. Or ici elle augmente.'),
       F('rectiligne ralenti', '« Ralenti » signifie que la vitesse diminue. Or ici elle augmente.'),
@@ -1641,7 +1641,7 @@ export const PREVOIR = [
       F('circulaire ralenti', 'La route est droite : la trajectoire est une droite, pas un cercle.'),
     ] },
   { id: 'mvt-regulateur', domaine: 'Mouvement et vitesse', titre: 'Régulateur de vitesse',
-    enonce: 'Sur une autoroute en ligne droite, une voiture est équipée d’un régulateur de vitesse réglé sur 110 km·h⁻¹. On relève son compteur toutes les minutes pendant dix minutes : il indique 110 km·h⁻¹ à chaque relevé. On l’observe depuis le bord de la route.', q: 'Quel est son mouvement dans ce référentiel ?', options: [
+    ...presenter({ contexte: 'Sur une autoroute en ligne droite, une voiture est équipée d’un régulateur de vitesse. On l’observe depuis le bord de la route.', liste: [['Réglage du régulateur', '110 km·h⁻¹'], ['Relevés du compteur', 'toutes les minutes pendant dix minutes'], ['Valeur indiquée à chaque relevé', '110 km·h⁻¹']] }), q: 'Quel est son mouvement dans ce référentiel ?', options: [
       F('rectiligne accéléré', '« Accéléré » signifie que la valeur de la vitesse augmente ; le relevé du compteur montre qu’elle reste à 110 km·h⁻¹.'),
       F('rectiligne ralenti', '« Ralenti » signifie que la valeur de la vitesse diminue ; or le compteur indique 110 km·h⁻¹ à chaque relevé.'),
       F('circulaire uniforme', 'La vitesse est bien constante, mais la route est en ligne droite : la trajectoire n’est pas un cercle.'),
@@ -1704,7 +1704,7 @@ export const PREVOIR = [
       F('circulaire ralenti', 'Les positions sont alignées : la trajectoire est une droite, pas un cercle.'),
     ] },
   { id: 'mvt-lune', domaine: 'Mouvement et vitesse', titre: 'La Lune autour de la Terre',
-    enonce: 'On décrit le mouvement de la Lune dans un référentiel lié au centre de la Terre. La Lune effectue un tour complet autour de la Terre en 27,3 jours. Au cours d’un mois, sa distance à la Terre varie entre 363 000 km et 405 000 km, et sa vitesse entre 0,97 km·s⁻¹ et 1,08 km·s⁻¹.', q: 'Quel est son mouvement dans ce référentiel (en première approximation) ?', options: [
+    ...presenter({ contexte: 'On décrit le mouvement de la Lune dans un référentiel lié au centre de la Terre.', liste: [['Durée d’un tour complet autour de la Terre', '27,3 jours'], ['Distance à la Terre au cours d’un mois', 'entre 363 000 km et 405 000 km'], ['Vitesse au cours d’un mois', 'entre 0,97 km·s⁻¹ et 1,08 km·s⁻¹']] }), q: 'Quel est son mouvement dans ce référentiel (en première approximation) ?', options: [
       F('rectiligne uniforme', 'Un tour complet autour de la Terre en 27,3 jours exclut une trajectoire droite : la direction du vecteur vitesse change sans cesse.'),
       V('circulaire uniforme', 'Les variations de distance (environ ± 5 %) et de vitesse (environ ± 5 %) sont faibles : en première approximation, la trajectoire est un cercle parcouru à vitesse de valeur constante.'),
       F('rectiligne accéléré', 'La trajectoire n’est pas une droite (un tour en 27,3 jours) et la valeur de la vitesse ne croît pas indéfiniment : elle oscille entre 0,97 et 1,08 km·s⁻¹.'),
@@ -1808,7 +1808,7 @@ export const PREVOIR = [
       F('divisée par 2', 'Sens inversé : plus de dispersion, plus d’incertitude.'),
     ] },
   { id: 'decalage-constant', domaine: 'Mesure et incertitudes', titre: 'Un instrument mal réglé',
-    enonce: 'Un instrument indique toujours 0,5 unité de trop (décalage constant). On calcule la moyenne de n mesures, son incertitude-type u = s/√n et l’écart entre cette moyenne et la valeur de référence. On suppose les autres erreurs aléatoires, indépendantes et de moyenne nulle, la valeur de référence exacte. On passe de 10 à 100 mesures.', q: 'Que se passe-t-il ?', options: [
+    ...presenter({ contexte: 'Un instrument indique toujours 0,5 unité de trop (décalage constant). On calcule la moyenne de n mesures, son incertitude-type u = s/√n et l’écart entre cette moyenne et la valeur de référence.', liste: [['Hypothèses', 'les autres erreurs sont aléatoires, indépendantes et de moyenne nulle ; la valeur de référence est exacte'], ['Changement', 'on passe de 10 à 100 mesures']] }), q: 'Que se passe-t-il ?', options: [
       F('u diminue et l’écart à la référence diminue aussi', 'Répéter les mesures n’atténue que les erreurs aléatoires ; un décalage constant (erreur systématique) subsiste dans la moyenne.'),
       F('u diminue et l’écart à la référence disparaît', 'Les erreurs positives et négatives s’annulent seulement pour les erreurs aléatoires ; le décalage de +0,5 est toujours du même signe.'),
       V('u diminue et l’écart à la référence reste voisin de 0,5', 'u = s/√n diminue avec n, mais le décalage constant reste dans la moyenne : l’écart ne diminue pas, d’où un risque d’incompatibilité avec la référence.'),
@@ -2090,7 +2090,7 @@ export const PREVOIR = [
       F('17 protons et 16 électrons', 'Gagner un électron en donne un de plus (18), pas un de moins.'),
     ] },
   { id: 'mic-octet-sodium', domaine: 'Matière à l’échelle microscopique', titre: 'L’ion stable du sodium',
-    enonce: 'Le sodium (Z = 11) a pour répartition des électrons : 2 sur la 1re couche, 8 sur la 2e, 1 sur la 3e (K)²(L)⁸(M)¹. Un atome tend à avoir une couche externe pleine (8 électrons, ou 2 pour la 1re couche), en gagnant ou en perdant le moins d’électrons possible.', q: 'L’ion le plus stable formé par le sodium est…', options: [
+    ...presenter({ contexte: 'Le sodium (Z = 11) a pour répartition des électrons : 2 sur la 1re couche, 8 sur la 2e, 1 sur la 3e, soit (K)²(L)⁸(M)¹.', liste: [['Règle', 'un atome tend à avoir une couche externe pleine (8 électrons, ou 2 pour la 1re couche)'], ['Principe', 'il gagne ou perd le moins d’électrons possible']] }), q: 'L’ion le plus stable formé par le sodium est…', options: [
       V('Na⁺ : en perdant 1 électron, il a la couche L pleine (8 électrons)', 'Perdre l’unique électron de la couche M laisse la couche L, pleine, comme couche externe : configuration stable.'),
       F('Na⁻ : en gagnant 1 électron, il aurait 2 électrons sur sa couche externe', 'Gagner un électron sur la couche M ne la remplirait pas : il en manquerait encore 6.'),
       F('Na⁷⁻ : en gagnant 7 électrons, il aurait 8 électrons sur sa couche externe', 'Il est bien plus simple de perdre 1 seul électron que d’en gagner 7.'),
@@ -2460,7 +2460,7 @@ export const PREVOIR = [
       F('7 : 1 (centre) + 12 × 1/2 (arêtes)', 'Une arête du cube est commune à 4 mailles, pas à 2.'),
     ] },
   { id: 'cri-taille-sites', domaine: 'Analyse cristallographique', titre: 'Quel site pour un atome inséré ?',
-    enonce: 'Dans un empilement CFC d’atomes de rayon R, un atome inséré doit tenir sans écarter les atomes de l’empilement. Un site octaédrique peut accueillir un atome de rayon au plus 0,414 R, un site tétraédrique au plus 0,225 R. On insère un atome de rayon 0,30 R.', q: 'Cet atome peut occuper…', options: [
+    ...presenter({ contexte: 'Dans un empilement CFC d’atomes de rayon R, un atome inséré doit tenir sans écarter les atomes de l’empilement.', liste: [['Site octaédrique', 'rayon de l’atome inséré d’au plus 0,414 R'], ['Site tétraédrique', 'rayon de l’atome inséré d’au plus 0,225 R'], ['Atome à insérer', 'rayon 0,30 R']] }), q: 'Cet atome peut occuper…', options: [
       V('un site octaédrique seulement', '0,30 R est inférieur à 0,414 R mais supérieur à 0,225 R : il est trop gros pour un site tétraédrique.'),
       F('un site tétraédrique seulement', 'Un site tétraédrique accepte au plus 0,225 R : 0,30 R est trop gros.'),
       F('les deux types de sites', 'Il est assez petit pour le site octaédrique, mais trop gros pour le tétraédrique.'),
@@ -2478,7 +2478,7 @@ export const PREVOIR = [
       F('à la limite exacte de la solubilité', 'La limite correspond à RED = 1, soit Ra = R₀.'),
     ] },
   { id: 'for-hansen-melange', domaine: 'Formulation', titre: 'Deux mauvais solvants font-ils un bon solvant ?',
-    enonce: 'Pour un polymère donné, le solvant A et le solvant B sont tous deux hors de la sphère de solubilité, de part et d’autre de celle-ci. On les mélange à 50 % en volume. On admet que les paramètres de Hansen du mélange sont la moyenne des paramètres des deux solvants, pondérée par les fractions volumiques.', q: 'Le mélange…', options: [
+    ...presenter({ contexte: 'Pour un polymère donné, le solvant A et le solvant B sont tous deux hors de la sphère de solubilité, de part et d’autre de celle-ci.', liste: [['Mélange', '50 % en volume de chaque solvant'], ['Hypothèse admise', 'les paramètres de Hansen du mélange sont la moyenne des paramètres des deux solvants, pondérée par les fractions volumiques']] }), q: 'Le mélange…', options: [
       V('peut être un bon solvant, si ses paramètres tombent dans la sphère', 'Les paramètres du mélange se situent entre ceux de A et de B : si la sphère se trouve entre les deux, le mélange est dedans.'),
       F('ne peut pas dissoudre le polymère, car aucun des deux solvants ne le dissout', 'Les propriétés d’un mélange ne se déduisent pas simplement de celles des constituants : seuls comptent les paramètres du mélange.'),
       F('dissout toujours mieux le polymère que chacun des deux solvants', 'Cela dépend de la position du mélange par rapport à la sphère. Il peut aussi rester à l’extérieur.'),
@@ -2533,13 +2533,13 @@ export const PREVOIR = [
       F('les deux, de la même façon, puisque la masse de pigment est la même', 'Le besoin en liant dépend de la surface des particules à mouiller, pas seulement de la masse de pigment.'),
     ] },
   { id: 'dist-prev-reflux', domaine: 'Distillation', titre: 'Augmenter le reflux',
-    enonce: 'On distille à 1 013 hPa un mélange eau–éthanol à 20 % d’éthanol en masse avec une colonne de distillation fractionnée. Deux expériences sont identiques (même colonne, même mélange, régime stationnaire) sauf le taux de reflux : dans la seconde, une plus grande part du liquide condensé en tête retombe dans la colonne et on soutire moins de distillat par minute. Dans les deux cas, le distillat reste moins riche en éthanol que l’azéotrope.', q: 'Le titre en éthanol du distillat de la seconde expérience est…', options: [
+    ...presenter({ contexte: 'On distille à 1 013 hPa un mélange eau–éthanol avec une colonne de distillation fractionnée. Deux expériences sont identiques (même colonne, même mélange, régime stationnaire) sauf le taux de reflux.', liste: [['Mélange', '20 % d’éthanol en masse'], ['Seconde expérience', 'une plus grande part du liquide condensé en tête retombe dans la colonne et on soutire moins de distillat par minute'], ['Dans les deux cas', 'le distillat reste moins riche en éthanol que l’azéotrope']] }), q: 'Le titre en éthanol du distillat de la seconde expérience est…', options: [
       V('plus élevé', 'Davantage de liquide qui redescend, c’est davantage d’échanges liquide–vapeur dans la colonne : la vapeur arrivant en tête est plus enrichie en éthanol. On gagne en pureté mais on perd en débit de distillat (donc en durée).'),
       F('plus faible', 'Sens inversé : le reflux sert précisément à enrichir la vapeur en constituant volatil. Un reflux plus fort ne peut pas appauvrir le distillat en éthanol.'),
       F('identique', 'Le nombre de plateaux est le même, mais le reflux change ce que la colonne en fait : à reflux très faible, elle n’apporte presque aucun enrichissement ; à reflux élevé, elle donne sa meilleure séparation.'),
     ] },
   { id: 'dist-prev-hydro-temperature', domaine: 'Distillation', titre: 'Température d’ébullition avec de l’eau',
-    enonce: 'On chauffe à 1 013 hPa, dans un montage ouvert sur l’atmosphère, un ballon contenant de l’eau et un liquide organique qui n’est pas miscible à l’eau et qui bout seul à 176 °C (c’est le cas du limonène des écorces d’orange). Les deux liquides forment deux couches. On attend l’ébullition franche.', q: 'La température de la vapeur en tête de montage est…', options: [
+    ...presenter({ contexte: 'On chauffe à 1 013 hPa, dans un montage ouvert sur l’atmosphère, un ballon contenant de l’eau et un liquide organique. Les deux liquides forment deux couches. On attend l’ébullition franche.', liste: [['Liquide organique', 'non miscible à l’eau, il bout seul à 176 °C (c’est le cas du limonène des écorces d’orange)'], ['Pression', '1 013 hPa']] }), q: 'La température de la vapeur en tête de montage est…', options: [
       V('inférieure à 100 °C', 'Le mélange bout quand la somme des pressions de vapeur saturante des deux liquides atteint la pression atmosphérique : P*_eau + P*_organique = 1 013 hPa. Chacun des deux termes étant positif, P*_eau doit rester inférieure à 1 013 hPa, ce qui correspond à une température inférieure à 100 °C.'),
       F('comprise entre 100 °C et 176 °C', 'C’est la règle des mélanges miscibles sans azéotrope, qui bouillent entre les températures d’ébullition de leurs constituants. Ici les liquides ne sont pas miscibles : leurs pressions de vapeur s’additionnent et la température passe sous celle de l’eau seule.'),
       F('égale à 100 °C', 'De l’eau pure bout à 100 °C sous 1 013 hPa. Ici la vapeur contient aussi le liquide organique, dont la pression de vapeur s’ajoute à celle de l’eau : l’ébullition est atteinte plus tôt.'),
@@ -2553,7 +2553,7 @@ export const PREVOIR = [
       F('normale, mais avec une vapeur plus chaude en tête', 'La pierre ponce ne change ni la composition du mélange ni la pression : elle ne modifie pas la température de la vapeur en tête. Elle agit seulement sur la régularité de l’ébullition.'),
     ] },
   { id: 'crist-vitesse-taille', domaine: 'Évaporation et cristallisation', titre: 'Refroidir lentement ou brutalement',
-    enonce: 'Deux portions identiques d’une solution saturée de nitrate de potassium à 60 °C sont ramenées à 20 °C. La première refroidit lentement, en deux heures, dans un bain-marie qui se refroidit. La seconde est plongée directement dans un grand bain d’eau à 20 °C.', q: 'Les cristaux de la première portion (refroidissement lent) sont, en moyenne…', options: [
+    ...presenter({ contexte: 'Deux portions identiques d’une solution saturée de nitrate de potassium à 60 °C sont ramenées à 20 °C.', liste: [['Première portion', 'refroidissement lent, en deux heures, dans un bain-marie qui se refroidit'], ['Seconde portion', 'plongée directement dans un grand bain d’eau à 20 °C']] }), q: 'Les cristaux de la première portion (refroidissement lent) sont, en moyenne…', options: [
       V('plus gros', 'Un refroidissement lent maintient une faible sursaturation : peu de germes apparaissent et chacun grossit beaucoup. (La masse totale de cristaux est la même, car l’état final à 20 °C est identique.)'),
       F('plus petits', 'C’est l’inverse : un refroidissement brutal crée une forte sursaturation, donc de très nombreux germes qui se partagent la même matière et restent petits.'),
       F('de même taille', 'La masse totale de cristaux est bien la même (même état final à 20 °C), mais elle se répartit en un nombre de cristaux différent : peu de gros cristaux, ou beaucoup de petits.'),
@@ -2565,34 +2565,34 @@ export const PREVOIR = [
       F('beaucoup plus grande', 'Sens inversé : c’est la baisse de solubilité qui fait cristalliser. Elle est de 1 g pour 100 g d’eau pour NaCl, contre 78 g pour KNO₃.'),
     ] },
   { id: 'crist-lavage-chaud', domaine: 'Évaporation et cristallisation', titre: 'Laver les cristaux sur le Büchner',
-    enonce: 'Sur un Büchner, on lave des cristaux de nitrate de potassium avec 20 mL d’eau (environ 20 g). Dans un premier essai l’eau est glacée (0 °C), dans un second elle est à 60 °C. Les solubilités sont de 13 g (0 °C) et de 110 g (60 °C) pour 100 g d’eau. On dispose de bien plus de cristaux (une quarantaine de grammes) que ce que 20 g d’eau peuvent dissoudre, et l’on suppose que l’eau de lavage est saturée au contact des cristaux. Les cristaux sont ensuite séchés complètement.', q: 'La masse de cristaux sèche obtenue avec l’eau à 60 °C est, par rapport à l’eau glacée…', options: [
+    ...presenter({ contexte: 'Sur un Büchner, on lave des cristaux de nitrate de potassium avec 20 mL d’eau (environ 20 g). Les cristaux sont ensuite séchés complètement.', liste: [['Premier essai', 'eau glacée à 0 °C'], ['Second essai', 'eau à 60 °C'], ['Solubilité à 0 °C', '13 g pour 100 g d’eau'], ['Solubilité à 60 °C', '110 g pour 100 g d’eau'], ['Masse de cristaux disponible', 'une quarantaine de grammes, bien plus que ce que 20 g d’eau peuvent dissoudre'], ['Hypothèse', 'l’eau de lavage est saturée au contact des cristaux']] }), q: 'La masse de cristaux sèche obtenue avec l’eau à 60 °C est, par rapport à l’eau glacée…', options: [
       V('plus petite', 'L’eau chaude peut dissoudre jusqu’à 110 × 20 / 100 = 22 g de nitrate de potassium, contre 13 × 20 / 100 = 2,6 g au plus pour l’eau glacée : une grande partie des cristaux passe dans le filtrat.'),
       F('plus grande', 'Le lavage ne peut qu’enlever de la matière, pas en ajouter. Après séchage complet, l’eau retenue ne compte plus.'),
       F('identique', 'La masse dépend de la solubilité du lavage : l’eau à 60 °C peut dissoudre une masse de cristaux plus de huit fois supérieure à celle que dissout l’eau glacée.'),
     ] },
   { id: 'reg-hysteresis-double', domaine: 'Régulation', titre: 'Élargir l’hystérésis d’un thermostat',
-    enonce: 'Un four de séchage (puissance de chauffe 1,5 kW) est régulé par un thermostat tout ou rien : la résistance se met en marche à 99 °C et se coupe à 101 °C (hystérésis de 2 K). On élargit l’hystérésis : mise en marche à 98 °C, coupure à 102 °C (4 K). On suppose que, sur cette petite plage, la vitesse de montée de la température (résistance en marche) et la vitesse de descente (résistance coupée) sont constantes.', q: 'Le nombre de mises en marche de la résistance par heure est…', options: [
+    ...presenter({ contexte: 'Un four de séchage (puissance de chauffe 1,5 kW) est régulé par un thermostat tout ou rien.', liste: [['Réglage initial', 'mise en marche à 99 °C, coupure à 101 °C (hystérésis de 2 K)'], ['Nouveau réglage', 'mise en marche à 98 °C, coupure à 102 °C (hystérésis de 4 K)'], ['Hypothèse', 'sur cette petite plage, la vitesse de montée de la température (résistance en marche) et la vitesse de descente (résistance coupée) sont constantes']] }), q: 'Le nombre de mises en marche de la résistance par heure est…', options: [
       V('divisé par 2', 'Chaque phase (chauffe, refroidissement) dure le temps de parcourir l’intervalle à vitesse constante : les durées sont proportionnelles à l’hystérésis, donc le cycle dure 2 fois plus longtemps. Exemple : capacité thermique du four 30 kJ·K⁻¹, pertes 0,3 kW, donc chauffe à 1,5 − 0,3 = 1,2 kW net. Avec 2 K : 50 s + 200 s = 250 s par cycle (14,4 par heure) ; avec 4 K : 100 s + 400 s = 500 s (7,2 par heure).'),
       F('divisé par 4', 'Les durées sont proportionnelles à l’hystérésis, pas à son carré : le cycle dure 2 fois plus longtemps, pas 4 fois.'),
       F('multiplié par 2', 'Sens inversé : avec un intervalle plus large, la température met plus de temps à le parcourir, donc il y a moins de commutations.'),
       F('inchangé', 'La puissance et les pertes sont les mêmes, mais la température doit parcourir un intervalle 2 fois plus large dans chaque phase : le cycle s’allonge.'),
     ] },
   { id: 'reg-bande-proportionnelle', domaine: 'Régulation', titre: 'Élargir la bande proportionnelle',
-    enonce: 'Un four est régulé par un régulateur proportionnel seul (sans action intégrale), avec Y = K_p × écart (écart en % de l’étendue de mesure, commande Y en % de la commande maximale). Son réglage est donné en bande proportionnelle : BP = 100 / K_p, exprimée en %. Les pertes thermiques à compenser sont constantes. On passe de BP = 10 % à BP = 20 %.', q: 'En régime permanent, l’écart statique est…', options: [
+    ...presenter({ contexte: 'Un four est régulé par un régulateur proportionnel seul (sans action intégrale). Les pertes thermiques à compenser sont constantes.', liste: [['Loi du régulateur', 'Y = K_p × écart (écart en % de l’étendue de mesure, commande Y en % de la commande maximale)'], ['Réglage donné en bande proportionnelle', 'BP = 100 / K_p, exprimée en %'], ['Changement', 'on passe de BP = 10 % à BP = 20 %']] }), q: 'En régime permanent, l’écart statique est…', options: [
       F('divisé par 2', 'Une bande plus large ne rend pas le régulateur plus précis : c’est l’inverse.'),
       V('multiplié par 2', 'BP = 100 / K_p : une bande doublée correspond à un gain divisé par 2 (K_p passe de 10 à 5). Les pertes imposent la même commande Y, et écart = Y / K_p : l’écart double. Exemple : pour Y = 20 %, l’écart passe de 2 % à 4 % de l’étendue de mesure (soit 8 °C à 16 °C sur une étendue de 0 à 400 °C).'),
       F('inchangé', 'L’écart statique dépend du gain : pour fournir la même commande avec un gain plus faible, il faut un écart plus grand.'),
       F('nul', 'Seule une action intégrale peut annuler l’écart statique : un régulateur proportionnel seul laisse toujours un écart, quelle que soit la bande.'),
     ] },
   { id: 'therm-prev-glace', domaine: 'Transferts thermiques', titre: 'De la glace dans de l’eau tiède',
-    enonce: 'Dans un calorimètre parfaitement isolé (capacité thermique négligée, pression atmosphérique), on plonge 1,0 kg de glace à 0 °C dans 1,0 kg d’eau liquide à 20 °C. Données : chaleur latente de fusion de la glace L_f = 334 kJ·kg⁻¹ ; capacité thermique massique de l’eau liquide c = 4,18 kJ·kg⁻¹·K⁻¹.', q: 'Une fois l’équilibre thermique atteint, le calorimètre contient…', options: [
+    ...presenter({ contexte: 'Dans un calorimètre parfaitement isolé (capacité thermique négligée, pression atmosphérique), on plonge de la glace dans de l’eau liquide.', liste: [['Glace', '1,0 kg à 0 °C'], ['Eau liquide', '1,0 kg à 20 °C'], ['Chaleur latente de fusion de la glace', 'L_f = 334 kJ·kg⁻¹'], ['Capacité thermique massique de l’eau liquide', 'c = 4,18 kJ·kg⁻¹·K⁻¹']] }), q: 'Une fois l’équilibre thermique atteint, le calorimètre contient…', options: [
       V('un mélange d’eau et de glace à 0 °C', 'L’eau ne peut céder que m·c·Δθ = 1,0 × 4,18 × 20 ≈ 84 kJ en se refroidissant jusqu’à 0 °C, alors que fondre toute la glace demande 334 kJ. Il ne fond qu’environ 84 / 334 ≈ 0,25 kg de glace : il reste environ 0,75 kg de glace.'),
       F('de l’eau liquide à 10 °C', 'C’est la moyenne des deux températures, valable pour deux masses d’eau liquide. Ici une partie de l’énergie cédée sert à fondre la glace, sans élever sa température.'),
       F('de l’eau liquide à 0 °C, sans glace', 'Il faudrait 334 kJ pour fondre toute la glace, alors que l’eau tiède ne peut en fournir qu’environ 84 kJ.'),
       F('un mélange d’eau et de glace à 5 °C', 'Tant qu’il reste de la glace, l’équilibre se fait à la température de fusion, 0 °C (sous 1013 hPa) : eau et glace ne coexistent pas à 5 °C.'),
     ] },
   { id: 'therm-prev-serie', domaine: 'Transferts thermiques', titre: 'Ajouter un isolant sur un mur',
-    enonce: 'Un mur de brique a une résistance thermique de 0,020 K·W⁻¹. On colle sur toute sa surface une couche de laine minérale de résistance thermique 0,060 K·W⁻¹. Les températures intérieure et extérieure ne changent pas, le régime est permanent, et on néglige les résistances d’échange avec l’air.', q: 'Le flux thermique à travers le mur est…', options: [
+    ...presenter({ contexte: 'Un mur de brique est recouvert sur toute sa surface d’une couche de laine minérale. Les températures intérieure et extérieure ne changent pas, le régime est permanent, et on néglige les résistances d’échange avec l’air.', liste: [['Résistance thermique du mur de brique', '0,020 K·W⁻¹'], ['Résistance thermique de la couche de laine minérale ajoutée', '0,060 K·W⁻¹']] }), q: 'Le flux thermique à travers le mur est…', options: [
       V('divisé par 4', 'Les couches sont en série : R_tot = 0,020 + 0,060 = 0,080 K·W⁻¹, soit 4 fois la valeur initiale. Φ = Δθ / R_tot est donc divisé par 4 (par exemple de 1 000 W à 250 W pour 20 K d’écart).'),
       F('divisé par 3', 'La résistance de l’isolant vaut 3 fois celle de la brique, mais elle s’ajoute à celle de la brique : la résistance totale est multipliée par 4, pas par 3.'),
       F('divisé par 2', 'Ce serait le cas pour un isolant de même résistance que la brique (R_tot = 2 × 0,020). Ici l’isolant est 3 fois plus résistant.'),
@@ -2613,27 +2613,27 @@ export const PREVOIR = [
       F('1 000 Hz', 'Une sinusoïde de 1 000 Hz échantillonnée à 1 000 Hz donnerait toujours la même valeur à chaque échantillon (une période exacte entre deux points). Or les points d’une vibration à 700 Hz varient d’un échantillon à l’autre.'),
     ] },
   { id: 'mes-prevoir-ecriture', domaine: 'Mesure et incertitudes', titre: 'Écrire un résultat avec son incertitude',
-    enonce: 'Un dosage donne une concentration c = 100,47 mmol·L⁻¹, avec une incertitude-type u = 0,63 mmol·L⁻¹. Convention adoptée : u est arrondie au plus proche, à 1 chiffre significatif si son premier chiffre est 5 ou plus, à 2 chiffres significatifs sinon ; le résultat est ensuite arrondi à la même décimale que u.', q: 'Quelle écriture du résultat est correcte ?', options: [
+    ...presenter({ contexte: 'Un dosage donne un résultat avec son incertitude-type.', liste: [['Concentration', 'c = 100,47 mmol·L⁻¹'], ['Incertitude-type', 'u = 0,63 mmol·L⁻¹'], ['Convention d’arrondi', 'u est arrondie au plus proche, à 1 chiffre significatif si son premier chiffre est 5 ou plus, à 2 chiffres significatifs sinon ; le résultat est ensuite arrondi à la même décimale que u']] }), q: 'Quelle écriture du résultat est correcte ?', options: [
       V('c = 100,5 mmol·L⁻¹ ; u = 0,6 mmol·L⁻¹', 'u = 0,63 commence par 6 : un seul chiffre significatif, soit 0,6 (rang du dixième). On arrondit alors c au dixième : 100,47 devient 100,5.'),
       F('c = 100,47 mmol·L⁻¹ ; u = 0,6 mmol·L⁻¹', 'u est bien arrondie, mais c garde un chiffre au centième alors que l’incertitude porte sur le dixième : le chiffre 7 n’est pas significatif.'),
       F('c = 100,5 mmol·L⁻¹ ; u = 0,63 mmol·L⁻¹', 'u garde 2 chiffres significatifs alors que son premier chiffre est 6 : selon la convention, un seul. De plus, c et u ne s’arrêtent plus à la même décimale.'),
       F('c = 100 mmol·L⁻¹ ; u = 0,6 mmol·L⁻¹', 'c est arrondi trop grossièrement : il faut conserver le dixième, puisque l’incertitude (0,6) est de l’ordre du dixième. On perd de l’information.'),
     ] },
   { id: 'mes-prevoir-quotient', domaine: 'Mesure et incertitudes', titre: 'Incertitude relative d’un quotient',
-    enonce: 'On calcule une concentration massique t = m / V à partir d’une masse m = 2,500 g et d’un volume V = 50,00 mL. Les incertitudes-types relatives valent u(m)/m = 0,4 % et u(V)/V = 0,3 %. On suppose les erreurs sur m et sur V indépendantes, des incertitudes relatives assez petites pour une propagation au premier ordre, et aucune erreur systématique non corrigée.', q: 'Quelle est l’incertitude-type relative u(t)/t ?', options: [
+    ...presenter({ contexte: 'On calcule une concentration massique t = m / V.', liste: [['Masse', 'm = 2,500 g'], ['Volume', 'V = 50,00 mL'], ['Incertitude-type relative sur m', 'u(m)/m = 0,4 %'], ['Incertitude-type relative sur V', 'u(V)/V = 0,3 %'], ['Hypothèses', 'erreurs sur m et sur V indépendantes ; incertitudes relatives assez petites pour une propagation au premier ordre ; aucune erreur systématique non corrigée']] }), q: 'Quelle est l’incertitude-type relative u(t)/t ?', options: [
       V('0,5 %', 'Les composantes indépendantes se composent en quadrature : √(0,4² + 0,3²) = √(0,16 + 0,09) = √0,25 = 0,5 %.'),
       F('0,7 %', 'Elle correspond à la somme 0,4 + 0,3. Additionner surestime l’incertitude : ce serait le cas le plus défavorable, où les deux erreurs seraient parfaitement liées et se renforceraient à chaque fois (m trop grande quand V est trop petit). Pour des erreurs indépendantes, elles se compensent en partie : on compose en quadrature.'),
       F('0,25 %', 'On a oublié la racine : 0,16 + 0,09 = 0,25 est un carré (en %²), pas une incertitude. Il faut en prendre la racine carrée, soit 0,5 %.'),
       F('0,1 %', 'Elle correspond à la différence 0,4 − 0,3. Diviser par V ne soustrait pas les incertitudes relatives : pour des erreurs indépendantes, elles se composent comme pour un produit, jamais en se retranchant.'),
     ] },
   { id: 'ctl-prev-pwm-puissance', domaine: 'Contrôle des systèmes', titre: 'Chauffer par PWM',
-    enonce: 'Une résistance chauffante de 25 Ω est alimentée en 5,0 V par l’intermédiaire d’un transistor utilisé comme interrupteur (passant ou bloqué, sans chute de tension), que commande un signal PWM de la carte. Le rapport cyclique passe de 20 % à 40 %. La fréquence du PWM est très grande devant la vitesse d’évolution de la température et la résistance reste constante.', q: 'La puissance électrique moyenne dissipée dans la résistance est…', options: [
+    ...presenter({ contexte: 'Une résistance chauffante est alimentée par l’intermédiaire d’un transistor utilisé comme interrupteur (passant ou bloqué, sans chute de tension), que commande un signal PWM de la carte.', liste: [['Résistance chauffante', '25 Ω (constante)'], ['Tension d’alimentation', '5,0 V'], ['Rapport cyclique', 'passe de 20 % à 40 %'], ['Fréquence du PWM', 'très grande devant la vitesse d’évolution de la température']] }), q: 'La puissance électrique moyenne dissipée dans la résistance est…', options: [
       F('multipliée par 4', 'Ce résultat vient d’un calcul faux : P = U_moy² / R avec U_moy = 0,2 × 5 = 1 V puis 2 V donne 0,04 W puis 0,16 W. Mais la tension aux bornes de la résistance n’est jamais égale à sa moyenne : elle vaut 5,0 V ou 0 V, et la puissance moyenne est la moyenne de u² / R, pas U_moy² / R.'),
       V('multipliée par 2', 'Quand le transistor est passant, la résistance reçoit 5,0 V : P = 5,0² / 25 = 1,0 W. Elle reçoit cette puissance 20 % du temps, puis 40 % du temps : la puissance moyenne passe de 0,20 W à 0,40 W. Elle est proportionnelle au rapport cyclique.'),
       F('inchangée', 'La tension reste de 5,0 V quand le transistor est passant, mais la résistance est alimentée deux fois plus longtemps : l’énergie reçue par seconde double (0,20 W puis 0,40 W).'),
     ] },
   { id: 'ctl-prev-ultrasons-temperature', domaine: 'Contrôle des systèmes', titre: 'Télémètre à ultrasons par temps chaud',
-    enonce: 'Un télémètre à ultrasons mesure la durée t entre l’émission d’une impulsion sonore et la réception de son écho, puis affiche d = 343 × t / 2 (343 m/s, vitesse du son dans l’air à 20 °C, valeur fixée dans le programme). La vitesse réelle du son dans l’air augmente avec la température. Un obstacle plan est placé à 1,00 m exactement, dans de l’air immobile à 35 °C. On néglige le temps de réponse de l’électronique.', q: 'La distance affichée est…', options: [
+    ...presenter({ contexte: 'Un télémètre à ultrasons mesure la durée t entre l’émission d’une impulsion sonore et la réception de son écho, puis affiche d = 343 × t / 2. La vitesse réelle du son dans l’air augmente avec la température.', liste: [['Vitesse du son utilisée dans le programme', '343 m·s⁻¹ (valeur à 20 °C, fixée dans le programme)'], ['Obstacle', 'plan, placé à 1,00 m exactement'], ['Air', 'immobile, à 35 °C'], ['Hypothèse', 'le temps de réponse de l’électronique est négligé']] }), q: 'La distance affichée est…', options: [
       V('inférieure à 1,00 m', 'À 35 °C, le son va plus vite que ce que suppose le programme (environ 352 m/s au lieu de 343 m/s) : l’aller-retour dure moins longtemps (t ≈ 5,68 ms au lieu de 5,83 ms). Le programme calcule alors 343 × 5,68 × 10⁻³ / 2 ≈ 0,97 m.'),
       F('égale à 1,00 m', 'La durée mesurée dépend de la vitesse réelle du son. Le programme garde 343 m/s : tant que l’air n’est pas à 20 °C, la distance affichée est faussée (ici d’environ 2,5 %).'),
       F('supérieure à 1,00 m', 'Le sens est inversé : un son plus rapide met moins de temps pour revenir, donc t est plus court et la distance calculée avec une vitesse fixe est plus petite, pas plus grande.'),
