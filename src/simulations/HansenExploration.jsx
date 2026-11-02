@@ -88,6 +88,15 @@ export function HansenExploration({ plotlyReady }) {
   function modifierPoly(k, v) { setPolyId('perso'); setPoly(o => ({ ...o, [k]: k === 'nom' ? v : lireNombre(v) })); }
   const centre = [poly.d, poly.p, poly.h];
   const R0 = poly.R0 > 0 ? poly.R0 : NaN;
+  // ── Option « deux sphères » : un 2e polymère, pour comparer sa solubilité dans le même mélange ──
+  const [deux, setDeux] = useState(false);
+  const [poly2Id, setPoly2Id] = useState('pmma');
+  const [poly2, setPoly2] = useState({ ...POLYMERES.find(q => q.id === 'pmma') });
+  function choisirPolymere2(id) { const q = POLYMERES.find(x => x.id === id); setPoly2Id(id); setPoly2({ ...q }); }
+  function modifierPoly2(k, v) { setPoly2Id('perso'); setPoly2(o => ({ ...o, [k]: k === 'nom' ? v : lireNombre(v) })); }
+  const centre2 = [poly2.d, poly2.p, poly2.h];
+  const R02 = poly2.R0 > 0 ? poly2.R0 : NaN;
+  const nomA = poly.nom || 'Polymère 1', nomB = poly2.nom || 'Polymère 2';
 
   // ── La banque de solvants (avec les solvants ajoutés par l'utilisateur) ──
   const [ajoutes, setAjoutes] = useState({});
@@ -107,6 +116,7 @@ export function HansenExploration({ plotlyReady }) {
     setNouveau({ nom: '', d: '', p: '', h: '' });
   }
   const red = s => distance(centre, SOLVANTS[s].d) / R0;
+  const red2 = s => distance(centre2, SOLVANTS[s].d) / R02;
 
   // ── Le mélange : ses solvants sont choisis parmi les solvants cochés ──
   const [mix, setMix] = useState([{ s: 'Acétate d\'éthyle', pct: 50 }, { s: 'Éthanol', pct: 50 }, { s: 'Acétate de butyle', pct: 0 }]);
@@ -128,6 +138,7 @@ export function HansenExploration({ plotlyReady }) {
   const totPct = actifs.reduce((a, x) => a + (x.pct || 0), 0);
   const ptMel = melangePossible && totPct > 0 ? [0, 1, 2].map(k => actifs.reduce((a, x) => a + x.pct / totPct * SOLVANTS[x.s].d[k], 0)) : null;
   const redMel = ptMel ? distance(centre, ptMel) / R0 : null;
+  const redMel2 = deux && ptMel ? distance(centre2, ptMel) / R02 : null;
 
   // Optimiser les proportions des solvants choisis (on minimise la distance de Hansen Ra au polymère)
   function optimiser() {
@@ -149,6 +160,20 @@ export function HansenExploration({ plotlyReady }) {
     const n = best.idx.map((ii, k) => ({ s: L[ii], pct: best.f[k] }));
     setTrois(n.length === 3); setMix(m => [...n, ...m.slice(n.length)].slice(0, 3)); setVoirMel(true);
     setInfoMeilleur(`Meilleur mélange trouvé parmi les ${L.length} solvants cochés : RED = ${fmt(bs / R0, 2)}${n.length === 3 ? ' (un 3e solvant n’est retenu que s’il rapproche nettement du centre)' : ''}.`);
+  }
+
+  // Mélange « sélectif » : dissout un polymère (RED < 1) sans dissoudre l'autre (RED ≥ 1), le plus nettement possible
+  const [infoSel, setInfoSel] = useState(null);
+  function selectif(cible) {
+    const [cc, RR, ca, RA, nc, na] = cible === 'A' ? [centre, R0, centre2, R02, nomA, nomB] : [centre2, R02, centre, R0, nomB, nomA];
+    const L = cochesListe, d = L.map(x => SOLVANTS[x].d); let best = null, bs = -Infinity;
+    for (let a = 0; a < L.length; a++) for (let b = a + 1; b < L.length; b++) for (let i = 5; i <= 95; i++) {
+      const pt = [0, 1, 2].map(k => (i * d[a][k] + (100 - i) * d[b][k]) / 100), rc = distance(cc, pt) / RR, ra = distance(ca, pt) / RA;
+      if (rc < 1 && ra >= 1 && ra - rc > bs) { bs = ra - rc; best = { a, b, i, rc, ra }; }
+    }
+    if (!best) { setInfoSel(`Aucun mélange de 2 solvants cochés ne dissout ${nc} sans dissoudre ${na} : cochez d’autres solvants, ou regardez si les deux sphères se recouvrent trop.`); return; }
+    setTrois(false); setMix(m => [{ s: L[best.a], pct: best.i }, { s: L[best.b], pct: 100 - best.i }, ...m.slice(2)]); setVoirMel(true);
+    setInfoSel(`Mélange sélectif trouvé : RED = ${fmt(best.rc, 2)} pour ${nc} (dissous), ${fmt(best.ra, 2)} pour ${na} (non dissous). C’est le meilleur écart parmi les mélanges de 2 solvants cochés (proportions de 5 à 95 %).`);
   }
 
   const cleCoches = cochesListe.join('|'), cleMel = ptMel ? ptMel.join() : '', cleActifs = JSON.stringify(actifs);
@@ -173,21 +198,35 @@ export function HansenExploration({ plotlyReady }) {
     if (!Plotly || !isFinite(R0)) return;
     const dans = cochesListe.filter(s => red(s) < 1), hors = cochesListe.filter(s => red(s) >= 1);
     const mode = noms ? 'markers+text' : 'markers';
-    const survol = l => l.map(s => `${s}<br>RED = ${fmt(red(s), 2)}`);
+    const survol = l => l.map(s => (deux ? `${s}<br>RED ${nomA} = ${fmt(red(s), 2)}<br>RED ${nomB} = ${fmt(red2(s), 2)}` : `${s}<br>RED = ${fmt(red(s), 2)}`));
+    const C_B = '#1d4ed8', C_2 = '#7e22ce';
+    const cats = deux ? [
+      { l: cochesListe.filter(s => red(s) < 1 && red2(s) < 1), c: C_2, nom: 'Dissout les deux' },
+      { l: cochesListe.filter(s => red(s) < 1 && red2(s) >= 1), c: C_DANS, nom: `Dissout ${nomA} seul` },
+      { l: cochesListe.filter(s => red(s) >= 1 && red2(s) < 1), c: C_B, nom: `Dissout ${nomB} seul` },
+      { l: cochesListe.filter(s => red(s) >= 1 && red2(s) >= 1), c: C_HORS, nom: 'Ne dissout aucun' },
+    ].filter(k => k.l.length) : [{ l: dans, c: C_DANS, nom: 'Dans la sphère (RED < 1)' }, { l: hors, c: C_HORS, nom: 'Hors de la sphère' }];
     // 3D : axes 2δd, δp, δh — avec le facteur 2 sur δd, le domaine de solubilité est une vraie sphère
     if (ref3d.current) {
       const u = [], v = []; for (let i = 0; i < 48; i++) u.push(2 * Math.PI * i / 47); for (let i = 0; i < 24; i++) v.push(Math.PI * i / 23);
-      const X = v.map(a => u.map(b => R0 * Math.sin(a) * Math.cos(b) + 2 * centre[0])), Y = v.map(a => u.map(b => R0 * Math.sin(a) * Math.sin(b) + centre[1])), Z = v.map(a => u.map(() => R0 * Math.cos(a) + centre[2]));
+      const sph = (c, R) => ({ X: v.map(a => u.map(b => R * Math.sin(a) * Math.cos(b) + 2 * c[0])), Y: v.map(a => u.map(b => R * Math.sin(a) * Math.sin(b) + c[1])), Z: v.map(a => u.map(() => R * Math.cos(a) + c[2])) });
+      const { X, Y, Z } = sph(centre, R0);
       const nuage = (l, c, nom) => ({ type: 'scatter3d', mode, name: nom, x: l.map(s => 2 * SOLVANTS[s].d[0]), y: l.map(s => SOLVANTS[s].d[1]), z: l.map(s => SOLVANTS[s].d[2]),
         text: l, hovertext: survol(l), hoverinfo: 'text', textposition: 'top center', textfont: { size: 11, color: c }, marker: { color: c, size: 5 } });
       const data = [
         { type: 'surface', x: X, y: Y, z: Z, opacity: 0.22, colorscale: [[0, '#86efac'], [1, '#86efac']], showscale: false, hoverinfo: 'skip', name: 'Sphère' },
-        nuage(dans, C_DANS, 'Dans la sphère (RED < 1)'), nuage(hors, C_HORS, 'Hors de la sphère'),
+        ...cats.map(k => nuage(k.l, k.c, k.nom)),
         { type: 'scatter3d', mode: 'markers+text', name: poly.nom || 'Polymère', x: [2 * centre[0]], y: [centre[1]], z: [centre[2]], text: [poly.nom], textposition: 'top center',
           textfont: { color: C_POLY, size: 12 }, marker: { color: C_POLY, size: 7, symbol: 'diamond' }, hoverinfo: 'text', hovertext: [poly.nom] },
       ];
+      if (deux && isFinite(R02)) {
+        const S2 = sph(centre2, R02);
+        data.push({ type: 'surface', x: S2.X, y: S2.Y, z: S2.Z, opacity: 0.22, colorscale: [[0, '#93c5fd'], [1, '#93c5fd']], showscale: false, hoverinfo: 'skip', name: 'Sphère 2' },
+          { type: 'scatter3d', mode: 'markers+text', name: nomB, x: [2 * centre2[0]], y: [centre2[1]], z: [centre2[2]], text: [nomB], textposition: 'top center',
+            textfont: { color: C_B, size: 12 }, marker: { color: C_B, size: 7, symbol: 'diamond' }, hoverinfo: 'text', hovertext: [nomB] });
+      }
       if (ptMel && voirMel) data.push({ type: 'scatter3d', mode: 'markers+text', name: 'Mélange', x: [2 * ptMel[0]], y: [ptMel[1]], z: [ptMel[2]], text: ['mélange'], textposition: 'bottom center',
-        marker: { color: C_MEL, size: 7, symbol: 'diamond', line: { color: KIT.txt, width: 2 } }, hoverinfo: 'text', hovertext: [`Mélange<br>RED = ${fmt(redMel, 2)}`] });
+        marker: { color: C_MEL, size: 7, symbol: 'diamond', line: { color: KIT.txt, width: 2 } }, hoverinfo: 'text', hovertext: [deux ? `Mélange<br>RED ${nomA} = ${fmt(redMel, 2)}<br>RED ${nomB} = ${fmt(redMel2, 2)}` : `Mélange<br>RED = ${fmt(redMel, 2)}`] });
       Plotly.react(ref3d.current, data, {
         margin: { l: 0, r: 0, b: 0, t: 0 }, paper_bgcolor: 'white', font: { color: KIT.txt, size: 12 }, showlegend: true, legend: { orientation: 'h', y: 0, font: { size: 11 } },
         scene: { aspectmode: 'data', dragmode: 'orbit', xaxis: { title: '2·δd (MPa½)' }, yaxis: { title: 'δp (MPa½)' }, zaxis: { title: 'δh (MPa½)' } },
@@ -200,9 +239,14 @@ export function HansenExploration({ plotlyReady }) {
         textposition: 'top center', textfont: { size: 11, color: c }, marker: { color: c, size: 8 } });
       const data = [
         { type: 'scatter', mode: 'lines', x: cx, y: cy, fill: 'toself', fillcolor: 'rgba(134,239,172,0.25)', line: { color: '#16a34a', width: 2 }, name: 'Projection de la sphère', hoverinfo: 'skip' },
-        nuage(dans, C_DANS, 'Dans la sphère'), nuage(hors, C_HORS, 'Hors de la sphère'),
+        ...cats.map(k => nuage(k.l, k.c, k.nom)),
         { type: 'scatter', mode: 'markers+text', x: [centre[1]], y: [centre[2]], text: [poly.nom], textposition: 'top center', textfont: { color: C_POLY }, marker: { color: C_POLY, size: 11, symbol: 'diamond' }, name: poly.nom || 'Polymère' },
       ];
+      if (deux && isFinite(R02)) {
+        const bx = [], by = []; for (let t = 0; t <= 2 * Math.PI + 0.01; t += 0.04) { bx.push(centre2[1] + R02 * Math.cos(t)); by.push(centre2[2] + R02 * Math.sin(t)); }
+        data.splice(1, 0, { type: 'scatter', mode: 'lines', x: bx, y: by, fill: 'toself', fillcolor: 'rgba(147,197,253,0.25)', line: { color: C_B, width: 2 }, name: 'Projection de la sphère 2', hoverinfo: 'skip' });
+        data.push({ type: 'scatter', mode: 'markers+text', x: [centre2[1]], y: [centre2[2]], text: [nomB], textposition: 'top center', textfont: { color: C_B }, marker: { color: C_B, size: 11, symbol: 'diamond' }, name: nomB });
+      }
       if (ptMel && voirMel) {
         const sv = actifs.map(x => SOLVANTS[x.s].d), cols = ['#e9a824', '#6a4c93', '#2a9d8f'];
         if (sv.length === 2) data.push({ type: 'scatter', mode: 'lines', x: sv.map(s => s[1]), y: sv.map(s => s[2]), line: { color: '#94a3b8', dash: 'dot', width: 2 }, showlegend: false, hoverinfo: 'skip' });
@@ -217,7 +261,7 @@ export function HansenExploration({ plotlyReady }) {
         legend: { orientation: 'h', y: -0.22, font: { size: 11 } },
       }, { displayModeBar: false, responsive: true });
     }
-  }, [plotlyReady, vue, noms, poly, cleCoches, SOLVANTS, voirMel, cleMel, cleActifs]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [plotlyReady, vue, noms, poly, deux, poly2, cleCoches, SOLVANTS, voirMel, cleMel, cleActifs]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ════════════════ BLOCS ════════════════
   const champ = { fontSize: 14, padding: '4px 6px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 70 };
@@ -257,6 +301,25 @@ export function HansenExploration({ plotlyReady }) {
         ))}
       </div>
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>{polyId === 'perso' ? 'Valeurs personnalisées.' : POLYMERES.find(q => q.id === polyId).source}</div>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, fontWeight: 700, color: KIT.txt, marginTop: 10, cursor: 'pointer' }}>
+        <input type="checkbox" checked={deux} onChange={e => setDeux(e.target.checked)}/> ➕ Comparer avec un 2e polymère (deux sphères)</label>
+    </div>
+  );
+  const blocPoly2 = (
+    <div style={{ ...styleBoite, borderColor: '#93c5fd' }} data-poly2>
+      <div style={{ fontWeight: 700, fontSize: 15, color: '#1d4ed8', marginBottom: 6 }}>Le 2e polymère (sphère bleue)</div>
+      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
+        {POLYMERES.map(q => <button key={q.id} onClick={() => choisirPolymere2(q.id)} style={stylePetitBouton(poly2Id === q.id, '#1d4ed8')}>{q.nom}</button>)}
+      </div>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, color: KIT.txt, marginBottom: 6 }}>Nom
+        <input value={poly2.nom} onChange={e => modifierPoly2('nom', e.target.value)} style={{ ...champ, width: 200 }}/></label>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {[['d', 'δd'], ['p', 'δp'], ['h', 'δh'], ['R0', 'R0']].map(([k, n]) => (
+          <label key={k} style={{ display: 'flex', flexDirection: 'column', fontSize: 12.5, color: KIT.txt2, fontWeight: 700 }}>{n} (MPa½)
+            <input type="number" step="0.1" value={isFinite(poly2[k]) ? poly2[k] : ''} onChange={e => modifierPoly2(k, e.target.value)} style={champ}/></label>
+        ))}
+      </div>
+      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>{poly2Id === 'perso' ? 'Valeurs personnalisées.' : POLYMERES.find(q => q.id === poly2Id).source}</div>
     </div>
   );
   const selectSolvant = (i) => (
@@ -283,14 +346,25 @@ export function HansenExploration({ plotlyReady }) {
         {totPct > 0 && Math.abs(totPct - 100) > 0.5 && <div style={{ fontSize: 12.5, color: '#b45309', marginBottom: 6 }}>Total : {fmt(totPct, 0)} % — les proportions sont ramenées à 100 %.</div>}
         {ptMel && <>
           <LigneMesure nom="Point du mélange (δd ; δp ; δh)" valeur={`${fmt(ptMel[0], 1)} ; ${fmt(ptMel[1], 1)} ; ${fmt(ptMel[2], 1)}`}/>
-          <LigneMesure nom="RED du mélange" valeur={`${fmt(redMel, 2)} : ${redMel < 1 ? 'dissout le polymère' : 'ne le dissout pas'}`} couleur={redMel < 1 ? C_DANS : C_HORS}/>
+          {!deux && <LigneMesure nom="RED du mélange" valeur={`${fmt(redMel, 2)} : ${redMel < 1 ? 'dissout le polymère' : 'ne le dissout pas'}`} couleur={redMel < 1 ? C_DANS : C_HORS}/>}
+          {deux && <>
+            <LigneMesure nom={`RED du mélange — ${nomA}`} valeur={`${fmt(redMel, 2)} : ${redMel < 1 ? 'dissous' : 'non dissous'}`} couleur={redMel < 1 ? C_DANS : C_HORS}/>
+            <LigneMesure nom={`RED du mélange — ${nomB}`} valeur={`${fmt(redMel2, 2)} : ${redMel2 < 1 ? 'dissous' : 'non dissous'}`} couleur={redMel2 < 1 ? C_DANS : C_HORS}/>
+            <div data-verdict-deux style={{ fontWeight: 700, fontSize: 14, color: KIT.txt, margin: '4px 0' }}>{redMel < 1 && redMel2 < 1 ? 'Ce mélange dissout les deux polymères.' : redMel < 1 ? `Ce mélange dissout ${nomA} seulement : il est sélectif.` : redMel2 < 1 ? `Ce mélange dissout ${nomB} seulement : il est sélectif.` : 'Ce mélange ne dissout aucun des deux polymères.'}</div>
+          </>}
         </>}
         <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginTop: 8 }}>
           <button onClick={optimiser} disabled={!melangePossible} style={stylePetitBouton(true, '#6a4c93')} title="Proportions qui rapprochent le plus le mélange du centre de la sphère">Optimiser les proportions</button>
           <button onClick={meilleurParmiCoches} style={stylePetitBouton(false, '#6a4c93')} title="Essaie tous les mélanges de 2 ou 3 solvants cochés">Meilleur mélange parmi les cochés</button>
           <button onClick={() => setVoirMel(v => !v)} style={stylePetitBouton(false)}>{voirMel ? 'Masquer sur le graphique' : 'Visualiser'}</button>
         </div>
+        {deux && <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginTop: 6 }}>
+          <button onClick={() => selectif('A')} style={stylePetitBouton(false, '#15803d')} title="Cherche un mélange de 2 solvants cochés qui dissout le 1er polymère sans dissoudre le 2e">Sélectif : dissoudre {nomA} seul</button>
+          <button onClick={() => selectif('B')} style={stylePetitBouton(false, '#1d4ed8')} title="Cherche un mélange de 2 solvants cochés qui dissout le 2e polymère sans dissoudre le 1er">Sélectif : dissoudre {nomB} seul</button>
+        </div>}
         {infoMeilleur && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>{infoMeilleur}</div>}
+        {deux && infoSel && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>{infoSel}</div>}
+        {deux && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6, lineHeight: 1.45 }}><strong>Hypothèses.</strong> Chaque polymère est représenté par une sphère de rayon R0, ajustée sur des tests de solubilité : la frontière RED = 1 est une convention, pas un seuil net (près de 1, le résultat dépend de la concentration, de la température et de la masse molaire). Les deux sphères peuvent se recouvrir : les solvants de la zone commune dissolvent les deux polymères. Le point du mélange est la moyenne pondérée par les fractions volumiques, ce qui suppose un mélange idéal.</div>}
         <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>« Optimiser » minimise la distance de Hansen Ra entre le mélange et le polymère. Le point d'un mélange est la moyenne des points des solvants, pondérée par leurs fractions volumiques.</div>
       </>}
     </div>
@@ -324,6 +398,7 @@ export function HansenExploration({ plotlyReady }) {
                     <input type="checkbox" checked={c} onChange={() => basculer(s)}/>
                     <span style={{ flex: 1 }}>{s}</span>
                     <span style={{ fontSize: 12, fontWeight: 700, color: r < 1 ? C_DANS : C_HORS, minWidth: 74, textAlign: 'right' }} title="RED = Ra / R0">RED {fmt(r, 2)}</span>
+                    {deux && <span style={{ fontSize: 12, fontWeight: 700, color: red2(s) < 1 ? C_DANS : C_HORS, minWidth: 48, textAlign: 'right' }} title={`RED pour ${nomB}`}>{fmt(red2(s), 2)}</span>}
                   </label>
                 );
               })}
@@ -337,7 +412,7 @@ export function HansenExploration({ plotlyReady }) {
         {['d', 'p', 'h'].map(k => <input key={k} value={nouveau[k]} onChange={e => setNouveau(o => ({ ...o, [k]: e.target.value }))} placeholder={`δ${k}`} aria-label={`δ${k} du nouveau solvant`} style={{ ...champ, width: 60 }}/>)}
         <button onClick={ajouterSolvant} style={stylePetitBouton(true, '#0f766e')}>+ Ajouter</button>
       </div>
-      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>Valeurs de δ : tables usuelles de Hansen. RED = Ra / R0, avec Ra² = 4(Δδd)² + (Δδp)² + (Δδh)² : vert si RED &lt; 1 (le solvant doit dissoudre le polymère), rouge sinon.</div>
+      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>Valeurs de δ : tables usuelles de Hansen. RED = Ra / R0, avec Ra² = 4(Δδd)² + (Δδp)² + (Δδh)² : vert si RED &lt; 1 (le solvant doit dissoudre le polymère), rouge sinon.{deux && ' Avec deux sphères, le 1er RED est celui du 1er polymère, le 2e (à droite) celui du 2e polymère.'}</div>
     </div>
   );
   const blocEvap = (
@@ -351,11 +426,12 @@ export function HansenExploration({ plotlyReady }) {
           </>}
         <div style={{ overflowX: 'auto', marginTop: 8 }}>
           <table style={{ borderCollapse: 'collapse', background: 'white', width: '100%' }}>
-            <thead><tr>{['Solvant coché', 'δd', 'δp', 'δh', 'Pvap 20 °C (hPa)', 'Indice d’évap.', 'RED'].map(h => <th key={h} style={cell}>{h}</th>)}</tr></thead>
+            <thead><tr>{['Solvant coché', 'δd', 'δp', 'δh', 'Pvap 20 °C (hPa)', 'Indice d’évap.', 'RED', ...(deux ? ['RED 2'] : [])].map(h => <th key={h} style={cell}>{h}</th>)}</tr></thead>
             <tbody>{cochesListe.map(s => { const q = SOLVANTS[s], r = red(s); return (
               <tr key={s}><td style={{ ...cell, textAlign: 'left' }}>{s}</td><td style={cell}>{fmt(q.d[0], 1)}</td><td style={cell}>{fmt(q.d[1], 1)}</td><td style={cell}>{fmt(q.d[2], 1)}</td>
                 <td style={cell}>{q.pvap == null ? '—' : fmtPvap(q.pvap)}</td><td style={cell}>{q.ie == null ? '—' : fmt(q.ie, 2)}</td>
-                <td style={{ ...cell, fontWeight: 700, color: r < 1 ? C_DANS : C_HORS }}>{fmt(r, 2)}</td></tr>); })}</tbody>
+                <td style={{ ...cell, fontWeight: 700, color: r < 1 ? C_DANS : C_HORS }}>{fmt(r, 2)}</td>
+                {deux && <td style={{ ...cell, fontWeight: 700, color: red2(s) < 1 ? C_DANS : C_HORS }}>{fmt(red2(s), 2)}</td>}</tr>); })}</tbody>
           </table>
         </div>
         <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 8, lineHeight: 1.5, padding: '6px 10px', background: '#f8f4ff', borderLeft: '3px solid #6a4c93', borderRadius: 6 }}>
@@ -372,7 +448,7 @@ export function HansenExploration({ plotlyReady }) {
     <>
       <div className="ha-l1">
         {blocVue}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{blocPoly}{blocMel}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{blocPoly}{deux && blocPoly2}{blocMel}</div>
       </div>
       <div className="ha-l2">
         {blocBanque}
