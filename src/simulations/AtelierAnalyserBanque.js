@@ -965,8 +965,7 @@ export const PROBLEMES = [
 // ──────────────────────────────── 2. CHOISIR LA BONNE RELATION ────────────────────────────────
 export const RELATIONS = [
   { id: 'retrecissement', domaine: 'Transport des fluides', titre: 'Une conduite qui se rétrécit',
-    schema: { type: 'venturi', rapport: 0.5 },
-    enonce: 'L’eau circule à 0,80 m·s⁻¹ dans une conduite de diamètre 40 mm, qui se rétrécit ensuite à 20 mm. On cherche la vitesse dans la partie étroite.',
+    ...presenter({ schema: { type: 'venturi', rapport: 0.5 }, contexte: 'L’eau circule dans une conduite qui se rétrécit.', liste: [['Vitesse dans la partie large', 'v₁ = 0,80 m·s⁻¹'], ['Diamètre de la partie large', 'd₁ = 40 mm'], ['Diamètre de la partie étroite', 'd₂ = 20 mm']], suite: 'On cherche la vitesse v₂ dans la partie étroite.' }),
     q: 'Quelle relation permet de répondre ?', options: [
       V('v₂ = v₁ × (d₁ / d₂)²', 'Conservation du débit : v₁·S₁ = v₂·S₂, et la section est proportionnelle à d². Ici v₂ = 4 × 0,80 = 3,2 m·s⁻¹.'),
       F('v₂ = v₁ × d₁ / d₂', 'Le carré est oublié : la section varie comme d², pas comme d.'),
@@ -974,8 +973,7 @@ export const RELATIONS = [
       F('P₁ + ½·ρ·v₁² = P₂ + ½·ρ·v₂²', 'Bernoulli relie pressions et vitesses : sans les pressions, elle ne donne pas v₂. La conservation du débit suffit.'),
     ] },
   { id: 'reservoir', domaine: 'Transport des fluides', titre: 'Un réservoir sous pression',
-    schema: { type: 'cuve', ferme: true, point: true, capteur: false },
-    enonce: 'Un réservoir fermé contient de l’eau ; au-dessus de la surface, un gaz exerce une pression absolue P₀ = 2,0 bar. On cherche la pression absolue à 3,0 m sous la surface.',
+    ...presenter({ schema: { type: 'cuve', ferme: true, point: true, capteur: false }, contexte: 'Un réservoir fermé contient de l’eau. Au-dessus de la surface, un gaz exerce une pression.', liste: [['Pression absolue du gaz', 'P₀ = 2,0 bar'], ['Profondeur du point étudié', '3,0 m sous la surface']], suite: 'On cherche la pression absolue en ce point.' }),
     q: 'Quelle relation permet de répondre ?', options: [
       V('P = P₀ + ρ·g·h', 'La surface n’est pas à l’air libre : on ajoute ρ·g·h à la pression P₀ qui s’exerce sur elle.'),
       F('P = P_atm + ρ·g·h', 'La surface n’est pas en contact avec l’atmosphère : c’est P₀ qui s’exerce dessus.'),
@@ -1023,7 +1021,7 @@ export const RELATIONS = [
       F('P = R × I²', 'Juste, mais I n’est pas connue : il faudrait d’abord la calculer.'),
     ] },
   { id: 'pont', domaine: 'Transmission de signaux numériques', titre: 'Un pont diviseur avec une CTN',
-    enonce: 'Une thermistance CTN (résistance R_CTN) est en série avec une résistance fixe R, l’ensemble étant alimenté sous 5 V. On mesure la tension U_R aux bornes de R.',
+    ...presenter({ contexte: 'Une thermistance CTN est en série avec une résistance fixe R.', liste: [['Résistance de la CTN', 'R_CTN'], ['Résistance fixe', 'R'], ['Tension d’alimentation', '5 V'], ['Tension mesurée', 'U_R, aux bornes de R']] }),
     q: 'Quelle relation donne U_R ?', options: [
       V('U_R = 5 × R / (R + R_CTN)', 'Pont diviseur : la tension se partage proportionnellement aux résistances ; U_R correspond à R.'),
       F('U_R = 5 × R_CTN / (R + R_CTN)', 'C’est la tension aux bornes de la CTN.'),
@@ -1031,7 +1029,7 @@ export const RELATIONS = [
       F('U_R = R × I, avec I = 5 / R', 'Le courant est fixé par les deux résistances en série : I = 5 / (R + R_CTN).'),
     ] },
   { id: 'quantum', domaine: 'Transmission de signaux numériques', titre: 'La finesse d’un CAN',
-    enonce: 'Un CAN de 12 bits, de plage 0 – 3,3 V, convertit une tension. On cherche le plus petit écart de tension qu’il peut distinguer.',
+    ...presenter({ contexte: 'Un CAN convertit une tension en un nombre.', liste: [['Nombre de bits', '12'], ['Plage de conversion', '0 – 3,3 V']], suite: 'On cherche le plus petit écart de tension que ce CAN peut distinguer.' }),
     q: 'Quelle relation permet de répondre ?', options: [
       V('q = 3,3 / 2¹²', 'Le CAN a 2¹² = 4 096 niveaux : le quantum est la plage divisée par le nombre de niveaux, soit environ 0,81 mV.'),
       F('q = 3,3 / 12', 'Le CAN a 2¹² = 4 096 niveaux, pas 12 : on divise par le nombre de niveaux.'),
@@ -1228,8 +1226,7 @@ export const RELATIONS = [
     ] },
 
   { id: 'can-u-vers-n', domaine: 'Transmission de signaux numériques', titre: 'De la tension au nombre N',
-    schema: { type: 'chaine', apres: { actif: [2, 3], inconnu: 3, note: 'La tension U_R est connue : on cherche N.' }, seulementApres: true },
-    enonce: 'La tension U_R = 2,3 V est envoyée sur l’entrée d’un CAN 10 bits (plage 0 – 5,0 V). On suppose une réponse linéaire : 0 V correspond à N = 0 et 5,0 V à N = 1 023. On cherche le nombre N fourni par le CAN.',
+    ...presenter({ schema: { type: 'chaine', apres: { actif: [2, 3], inconnu: 3, note: 'La tension U_R est connue : on cherche N.' }, seulementApres: true }, contexte: 'Une tension est envoyée sur l’entrée d’un CAN. On suppose une réponse linéaire : 0 V correspond à N = 0 et 5,0 V à N = 1 023.', liste: [['Tension à l’entrée', 'U_R = 2,3 V'], ['CAN', '10 bits, plage 0 – 5,0 V']], suite: 'On cherche le nombre N fourni par le CAN.' }),
     q: 'Quelle relation permet de répondre ?', options: [
       V('N = U × 1 023 / 5,0', 'Proportionnalité : N / 1 023 = U / 5,0. Ici N = 2,3 × 1 023 / 5,0 ≈ 471 (partie entière : 470 ou 471 selon l’arrondi).'),
       F('N = U × 5,0 / 1 023', 'Rapport inversé : on obtiendrait N ≈ 0,011, qui n’a rien d’un nombre entre 0 et 1 023. Le résultat doit être un nombre de 0 à 1 023.'),
@@ -1237,8 +1234,7 @@ export const RELATIONS = [
       F('N = U × 1 024 / 5,0', 'Presque la même chose : avec q = 5,0 / 2¹⁰, N = U / q = U × 1 024 / 5,0 = 471,0 au lieu de 470,6, soit moins de 0,1 % d’écart. Les deux conventions existent ; mais l’énoncé fixe ici N = 1 023 pour 5,0 V, et avec 1 024 on aurait N = 1 024 à 5,0 V, impossible sur 10 bits.'),
     ] },
   { id: 'can-n-vers-u', domaine: 'Transmission de signaux numériques', titre: 'Du nombre N à la tension',
-    schema: { type: 'chaine', apres: { actif: [3, 2], inconnu: 2, note: 'N est connu : on remonte vers U_R.' }, seulementApres: true },
-    enonce: 'Un CAN 10 bits (plage 0 – 5,0 V, réponse linéaire : N = 0 pour 0 V, N = 1 023 pour 5,0 V) fournit N = 593 au microcontrôleur. On cherche la tension U appliquée à l’entrée.',
+    ...presenter({ schema: { type: 'chaine', apres: { actif: [3, 2], inconnu: 2, note: 'N est connu : on remonte vers U_R.' }, seulementApres: true }, contexte: 'Un CAN fournit un nombre N au microcontrôleur. Sa réponse est linéaire : N = 0 pour 0 V et N = 1 023 pour 5,0 V.', liste: [['CAN', '10 bits, plage 0 – 5,0 V'], ['Nombre fourni', 'N = 593']], suite: 'On cherche la tension U appliquée à l’entrée.' }),
     q: 'Quelle relation permet de répondre ?', options: [
       V('U = N × 5,0 / 1 023', 'Relation inverse de la proportionnalité N / 1 023 = U / 5,0. Ici U = 593 × 5,0 / 1 023 ≈ 2,9 V, valeur comprise entre 0 et 5,0 V.'),
       F('U = N × 1 023 / 5,0', 'Rapport inversé : on trouverait U ≈ 121 000 V. Une tension supérieure à la plage 0 – 5,0 V n’a aucun sens.'),
@@ -1250,8 +1246,7 @@ export const RELATIONS = [
 // ──────────────────────────────── 3. HYPOTHÈSES D'UN MODÈLE ────────────────────────────────
 export const HYPOTHESES = [
   { id: 'statique', domaine: 'Transport des fluides', titre: 'Loi de la statique des fluides',
-    schema: { type: 'cuve', capteur: false },
-    enonce: 'On utilise ΔP = ρ·g·h pour calculer la surpression au fond d’un réservoir d’eau de 3 m.', options: [
+    ...presenter({ schema: { type: 'cuve', capteur: false }, contexte: 'On calcule la surpression au fond d’un réservoir d’eau.', liste: [['Relation utilisée', 'ΔP = ρ·g·h'], ['Profondeur', 'h = 3 m']] }), options: [
       V('Le fluide est au repos', 'Si le fluide s’écoule, la pression dépend aussi de la vitesse (Bernoulli) et des pertes de charge.'),
       V('Le fluide est incompressible : ρ est la même à toutes les profondeurs', 'Pour un liquide sur quelques mètres, c’est très bien vérifié.'),
       V('g a la même valeur sur toute la hauteur', 'Sur quelques mètres, la variation de g est totalement négligeable.'),
@@ -1260,8 +1255,7 @@ export const HYPOTHESES = [
       F('L’écoulement est laminaire', 'Il n’y a pas d’écoulement.'),
     ] },
   { id: 'conservation', domaine: 'Transport des fluides', titre: 'Conservation du débit',
-    schema: { type: 'venturi', rapport: 0.5, simple: true },
-    enonce: 'On écrit v₁·S₁ = v₂·S₂ entre deux sections d’une même conduite.', options: [
+    ...presenter({ schema: { type: 'venturi', rapport: 0.5, simple: true }, contexte: 'On relie les vitesses de l’eau en deux sections d’une même conduite.', liste: [['Relation écrite', 'v₁·S₁ = v₂·S₂']] }), options: [
       V('Conduite rigide, sans accumulation de fluide entre les deux sections', 'Sinon du fluide pourrait s’accumuler ou se vider entre les deux sections. (Le régime permanent est la situation habituelle, mais il n’est pas indispensable pour un fluide incompressible dans une conduite rigide.)'),
       V('Fluide incompressible', 'Pour un gaz comprimé, c’est le débit massique qui se conserve, pas le débit volumique.'),
       V('Aucune fuite ni dérivation entre les deux sections', 'Sinon une partie du débit sortirait entre les deux.'),
@@ -1311,7 +1305,7 @@ export const HYPOTHESES = [
       F('Solution titrante plus concentrée que la solution titrée', 'Pratique pour la précision, mais pas nécessaire.'),
     ] },
   { id: 'can', domaine: 'Transmission de signaux numériques', titre: 'Conversion par un CAN',
-    enonce: 'On calcule le nombre donné par un CAN par N = partie entière de U / q.', options: [
+    ...presenter({ contexte: 'On calcule le nombre donné par un CAN.', liste: [['Relation utilisée', 'N = partie entière de U / q'], ['Où', 'U : tension d’entrée ; q : quantum du CAN']] }), options: [
       V('CAN idéal : pas de bruit, ni d’erreur de gain ou de décalage', 'Un CAN réel peut se tromper d’une ou deux unités.'),
       V('U est comprise dans la plage du CAN', 'Au-delà, N reste bloqué à sa valeur maximale (saturation).'),
       V('U ne varie pas pendant la durée de la conversion', 'Sinon la valeur convertie ne correspond à aucun instant précis.'),
@@ -1319,7 +1313,7 @@ export const HYPOTHESES = [
       F('f_e > 2 × f_max', 'Condition pour restituer un signal variable, pas pour convertir une tension.'),
     ] },
   { id: 'pontdiv', domaine: 'Transmission de signaux numériques', titre: 'Pont diviseur de tension',
-    enonce: 'On calcule U_R = 5 × R / (R + R_CTN) pour un pont formé d’une CTN et d’une résistance R, relié à l’entrée d’un CAN.', options: [
+    ...presenter({ contexte: 'On calcule la tension U_R d’un pont formé d’une CTN et d’une résistance R, relié à l’entrée d’un CAN.', liste: [['Relation utilisée', 'U_R = 5 × R / (R + R_CTN)']] }), options: [
       V('L’entrée du CAN ne prélève pas de courant (pont non chargé)', 'Sinon le courant dans R et celui dans la CTN seraient différents.'),
       V('L’alimentation fournit exactement 5 V', 'Toute erreur sur cette tension se retrouve dans U_R.'),
       V('La valeur de R est exacte', 'Une résistance a une tolérance (1 %, 5 %…).'),
@@ -1521,8 +1515,7 @@ export const PREVOIR = [
       F('multipliée par 4', 'Sens inversé : une section plus grande ralentit l’écoulement.'),
     ] },
   { id: 'hauteur', domaine: 'Transport des fluides', titre: 'Hauteur d’eau doublée',
-    schema: { type: 'cuve' },
-    enonce: 'La hauteur d’eau au-dessus d’un capteur passe de 2 m à 4 m (eau de masse volumique 1000 kg·m⁻³, g ≈ 10 N·kg⁻¹, surface libre à la pression atmosphérique P_atm ≈ 1,0 bar).', q: 'La pression absolue (et non relative) mesurée par le capteur est…', options: [
+    ...presenter({ schema: { type: 'cuve' }, contexte: 'La hauteur d’eau au-dessus d’un capteur de pression change.', liste: [['Hauteur d’eau', 'passe de 2 m à 4 m'], ['Masse volumique de l’eau', 'ρ = 1 000 kg·m⁻³'], ['Intensité de la pesanteur', 'g ≈ 10 N·kg⁻¹'], ['Pression à la surface libre', 'P_atm ≈ 1,0 bar']] }), q: 'La pression absolue (et non relative) mesurée par le capteur est…', options: [
       F('multipliée par 4, de 1,2 bar à 4,8 bar', 'ρ·g·h est proportionnel à h, pas à h², et P_atm reste constante : ce facteur 4 n’a pas de justification.'),
       V('augmentée de 0,2 bar, de 1,2 bar à 1,4 bar', 'P = P_atm + ρ·g·h. Seul le terme ρ·g·h double (0,2 bar puis 0,4 bar) : P passe de 1,2 à 1,4 bar, elle augmente sans doubler.'),
       F('doublée, de 1,2 bar à 2,4 bar', 'Le terme ρ·g·h double, mais P_atm (1,0 bar) s’y ajoute sans doubler : on ne double que la partie due à l’eau, pas la pression absolue.'),
@@ -1536,8 +1529,7 @@ export const PREVOIR = [
       V('multiplié par 4', '½·ρ·v² est proportionnel au carré de la vitesse : (2v)² = 4v², donc le terme est multiplié par 4.'),
     ] },
   { id: 'torricelli', domaine: 'Transport des fluides', titre: 'Vidange d’un réservoir',
-    schema: { type: 'cuve', orifice: true, capteur: false },
-    enonce: 'La profondeur d’un orifice sous la surface libre est multipliée par 4.', q: 'La vitesse d’éjection v = √(2·g·h) est…', options: [
+    ...presenter({ schema: { type: 'cuve', orifice: true, capteur: false }, contexte: 'Un réservoir se vide par un orifice. La profondeur de l’orifice sous la surface libre est multipliée par 4.', liste: [['Vitesse d’éjection', 'v = √(2·g·h)']] }), q: 'La vitesse d’éjection v = √(2·g·h) est…', options: [
       V('doublée', '√4 = 2.'),
       F('multipliée par 4', 'La vitesse est proportionnelle à √h, pas à h.'),
       F('multipliée par 16', 'C’est l’inverse : il faudrait 16 fois plus de profondeur pour une vitesse 4 fois plus grande.'),
@@ -1551,21 +1543,21 @@ export const PREVOIR = [
       F('multipliée par 6', 'Les facteurs se multiplient et ne s’additionnent pas : 2 × 4 = 8, pas 2 + 4.'),
     ] },
   { id: 'bits', domaine: 'Transmission de signaux numériques', titre: 'Deux bits de plus',
-    enonce: 'On remplace un CAN de 10 bits par un CAN de 12 bits, sur la même plage de tension.', q: 'Le quantum est…', options: [
+    ...presenter({ contexte: 'On remplace un CAN par un autre, sur la même plage de tension.', liste: [['Ancien CAN', '10 bits'], ['Nouveau CAN', '12 bits']] }), q: 'Le quantum est…', options: [
       V('divisé par 4', 'Le quantum vaut la plage divisée par 2ⁿ : 2¹² = 4 × 2¹⁰, donc le quantum est divisé par 4 (chaque bit supplémentaire le divise par 2).'),
       F('divisé par 2', 'Un bit divise par 2 ; deux bits, par 4.'),
       F('divisé par 1,2 (12 / 10)', 'Le quantum dépend du nombre de niveaux 2ⁿ, pas du nombre de bits n.'),
       F('multiplié par 4', 'Plus de bits donnent des niveaux plus serrés, donc un quantum plus petit.'),
     ] },
   { id: 'plage', domaine: 'Transmission de signaux numériques', titre: 'Plage doublée',
-    enonce: 'Avec le même CAN de 10 bits, on passe la plage de 0 – 5 V à 0 – 10 V.', q: 'Le quantum est…', options: [
+    ...presenter({ contexte: 'On garde le même CAN de 10 bits, mais on change la plage de tension.', liste: [['Plage avant', '0 – 5 V'], ['Plage après', '0 – 10 V']] }), q: 'Le quantum est…', options: [
       F('divisé par 2 : la résolution est deux fois meilleure', 'Le nombre de niveaux (2¹⁰) ne change pas ; une plage plus large donne des paliers plus grands, donc une résolution moins bonne.'),
       F('inchangé : la résolution reste la même', 'Le nombre de bits est le même, mais q = plage / 2¹⁰ : le quantum dépend aussi de la plage, il double.'),
       V('doublé : la résolution est deux fois moins bonne', 'Les mêmes 2¹⁰ niveaux sont répartis sur une plage deux fois plus large : q passe d’environ 4,9 mV à 9,8 mV.'),
       F('multiplié par 4 : la résolution est quatre fois moins bonne', 'Seule la plage change, d’un facteur 2 ; le nombre de niveaux est fixé par les 10 bits. Le facteur est 2, pas 4.'),
     ] },
   { id: 'fichier', domaine: 'Transmission de signaux numériques', titre: 'Fréquence d’échantillonnage doublée',
-    enonce: 'On double la fréquence d’échantillonnage d’un enregistrement de même durée.', q: 'La taille du fichier est…', options: [
+    ...presenter({ contexte: 'On enregistre un signal, puis on recommence avec une fréquence d’échantillonnage doublée.', liste: [['Durée de l’enregistrement', 'la même'], ['Fréquence d’échantillonnage', 'doublée']] }), q: 'La taille du fichier est…', options: [
       V('doublée', 'Deux fois plus d’échantillons, chacun de même taille.'),
       F('inchangée', 'Le nombre d’échantillons dépend de f_e.'),
       F('divisée par 2', 'Sens inversé : f_e plus grande, plus d’échantillons.'),
@@ -2649,48 +2641,42 @@ export const PREVOIR = [
 
   // ── Transmission de signaux numériques : pont diviseur avec une photorésistance (cahier des charges C1, A2) ──
   { id: 'ur-eclairement', domaine: 'Transmission de signaux numériques', titre: 'Pont diviseur : la tension aux bornes de R',
-    schema: [{ type: 'pont', UG: '5,0 V', mesure: 'R' }, { type: 'essai', seulementApres: true, variable: 'Rp', R: 1, Rp: 2, min: 0.2, max: 5, mesure: 'R', consigne: 'Faites diminuer R_p, comme quand l’éclairement augmente : que fait U_R ?' }],
-    enonce: 'Une photorésistance (résistance R_p) est en série avec une résistance fixe R, sous une tension constante U_G. La tension U_R est mesurée aux bornes de R. Quand l’éclairement augmente, la résistance de la photorésistance diminue.', q: 'Quand l’éclairement augmente, la tension U_R…', options: [
+    ...presenter({ schema: [{ type: 'pont', UG: '5,0 V', mesure: 'R' }, { type: 'essai', seulementApres: true, variable: 'Rp', R: 1, Rp: 2, min: 0.2, max: 5, mesure: 'R', consigne: 'Faites diminuer R_p, comme quand l’éclairement augmente : que fait U_R ?' }], contexte: 'Une photorésistance R_p est en série avec une résistance fixe R, sous une tension constante U_G.', liste: [['Tension mesurée', 'U_R, aux bornes de R'], ['Effet de l’éclairement', 'quand il augmente, R_p diminue']] }), q: 'Quand l’éclairement augmente, la tension U_R…', options: [
       V('augmente', 'U_R = U_G × R / (R + R_p). Si R_p diminue, le dénominateur diminue : le rapport R / (R + R_p) augmente, donc U_R augmente. (Autre point de vue : le courant augmente, et U_R = R × I.)'),
       F('diminue', 'Ce serait vrai pour la tension aux bornes de la photorésistance, pas aux bornes de R. Ici R est au numérateur : si R_p diminue, la part de tension prise par R augmente.'),
       F('reste constante', 'La tension totale U_G est constante, mais elle se partage entre R et R_p : si R_p change, le partage change.'),
       F('devient égale à U_G', 'U_R se rapproche de U_G seulement si R_p devient très petit devant R ; elle reste inférieure à U_G tant que R_p n’est pas nulle.'),
     ] },
   { id: 'up-eclairement', domaine: 'Transmission de signaux numériques', titre: 'Pont diviseur : la tension aux bornes de la photorésistance',
-    schema: [{ type: 'pont', UG: '5,0 V', mesure: 'Rp' }, { type: 'essai', seulementApres: true, variable: 'Rp', R: 1, Rp: 2, min: 0.2, max: 5, mesure: 'Rp', consigne: 'Faites diminuer R_p, comme quand l’éclairement augmente : que fait U_Rp ?' }],
-    enonce: 'Même montage (photorésistance R_p en série avec R, sous U_G constante), mais on mesure maintenant la tension U_Rp aux bornes de la photorésistance. L’éclairement augmente, donc R_p diminue.', q: 'La tension U_Rp aux bornes de la photorésistance…', options: [
+    ...presenter({ schema: [{ type: 'pont', UG: '5,0 V', mesure: 'Rp' }, { type: 'essai', seulementApres: true, variable: 'Rp', R: 1, Rp: 2, min: 0.2, max: 5, mesure: 'Rp', consigne: 'Faites diminuer R_p, comme quand l’éclairement augmente : que fait U_Rp ?' }], contexte: 'Même montage : photorésistance R_p en série avec R, sous une tension constante U_G. On mesure maintenant la tension aux bornes de la photorésistance.', liste: [['Tension mesurée', 'U_Rp, aux bornes de la photorésistance'], ['Éclairement', 'il augmente, donc R_p diminue']] }), q: 'La tension U_Rp aux bornes de la photorésistance…', options: [
       V('diminue', 'U_Rp = U_G × R_p / (R + R_p) : R_p diminue, donc sa part de la tension diminue. On a aussi U_Rp = U_G − U_R, et U_R augmente.'),
       F('augmente', 'C’est la tension aux bornes de R qui augmente. Les deux tensions se partagent U_G : quand l’une augmente, l’autre diminue.'),
       F('reste constante', 'U_Rp + U_R = U_G reste constant, mais chaque tension prise séparément varie.'),
       F('devient négative', 'Une tension aux bornes d’une résistance traversée par un courant dans le sens normal reste positive ; elle tend vers 0 si R_p tend vers 0.'),
     ] },
   { id: 'echange-positions', domaine: 'Transmission de signaux numériques', titre: 'Échanger les positions de R et de la CTN',
-    schema: [{ type: 'pont', mesure: 'R', capteur: 'CTN', lumiere: false, titre: 'Montage 1' }, { type: 'pont', mesure: 'Rp', capteur: 'CTN', lumiere: false, titre: 'Montage 2' }],
-    enonce: 'Un pont diviseur est formé d’une thermistance CTN (sa résistance diminue quand la température augmente) en série avec une résistance fixe R, sous une tension U_G constante. Dans le montage 1, on mesure la tension aux bornes de R ; dans le montage 2, on mesure la tension aux bornes de la CTN. La température augmente.', q: 'Que deviennent les deux tensions ?', options: [
+    ...presenter({ schema: [{ type: 'pont', mesure: 'R', capteur: 'CTN', lumiere: false, titre: 'Montage 1' }, { type: 'pont', mesure: 'Rp', capteur: 'CTN', lumiere: false, titre: 'Montage 2' }], contexte: 'Un pont diviseur est formé d’une thermistance CTN en série avec une résistance fixe R, sous une tension U_G constante. La résistance de la CTN diminue quand la température augmente.', liste: [['Montage 1', 'tension mesurée aux bornes de R'], ['Montage 2', 'tension mesurée aux bornes de la CTN'], ['Température', 'elle augmente']] }), q: 'Que deviennent les deux tensions ?', options: [
       V('Montage 1 : la tension augmente ; montage 2 : la tension diminue', 'La résistance de la CTN diminue : la tension à ses bornes diminue (montage 2), donc celle aux bornes de R, qui complète jusqu’à U_G, augmente (montage 1).'),
       F('Montage 1 : la tension diminue ; montage 2 : la tension augmente', 'Sens inversé : la grandeur qui diminue est la résistance de la CTN, donc la tension à ses bornes, pas celle aux bornes de R.'),
       F('Les deux tensions augmentent', 'Leur somme vaut U_G, constante : elles ne peuvent pas augmenter toutes les deux.'),
       F('Les deux tensions diminuent', 'Leur somme vaut U_G, constante : elles ne peuvent pas diminuer toutes les deux.'),
     ] },
   { id: 'r-augmente', domaine: 'Transmission de signaux numériques', titre: 'Augmenter la résistance fixe R',
-    schema: [{ type: 'pont', UG: '5,0 V', mesure: 'R' }, { type: 'essai', seulementApres: true, variable: 'R', R: 1, Rp: 1.5, min: 0.2, max: 5, mesure: 'R', consigne: 'Faites varier R (départ : 1,0 kΩ ; essayez 2,0 kΩ), l’éclairement (donc R_p) restant constant : que fait U_R ?' }],
-    enonce: 'Dans un pont diviseur (R en série avec une photorésistance R_p sous U_G = 5,0 V), on mesure U_R aux bornes de R. L’éclairement reste constant. On remplace R par une résistance deux fois plus grande.', q: 'La tension U_R…', options: [
+    ...presenter({ schema: [{ type: 'pont', UG: '5,0 V', mesure: 'R' }, { type: 'essai', seulementApres: true, variable: 'R', R: 1, Rp: 1.5, min: 0.2, max: 5, mesure: 'R', consigne: 'Faites varier R (départ : 1,0 kΩ ; essayez 2,0 kΩ), l’éclairement (donc R_p) restant constant : que fait U_R ?' }], contexte: 'Un pont diviseur est formé d’une résistance R en série avec une photorésistance R_p, sous U_G = 5,0 V. L’éclairement reste constant.', liste: [['Tension mesurée', 'U_R, aux bornes de R'], ['Changement', 'R est remplacée par une résistance deux fois plus grande']] }), q: 'La tension U_R…', options: [
       V('augmente, mais sans doubler', 'U_R = U_G / (1 + R_p / R). Quand R double, R_p / R est divisé par 2 : U_R augmente, mais elle ne peut pas dépasser U_G. Elle n’est pas proportionnelle à R.'),
       F('double', 'U_R n’est pas proportionnelle à R : R figure aussi au dénominateur (R + R_p). Doubler R ne double pas U_R, qui reste de toute façon inférieure à U_G.'),
       F('diminue', 'Une plus grande part de la tension se retrouve aux bornes de la plus grande résistance : U_R augmente.'),
       F('reste constante', 'R intervient dans le partage de la tension : changer R change U_R.'),
     ] },
   { id: 'ug-double', domaine: 'Transmission de signaux numériques', titre: 'Doubler la tension d’alimentation',
-    schema: [{ type: 'pont', UG: '5,0 V → 10,0 V', mesure: 'R' }, { type: 'essai', seulementApres: true, variable: 'UG', UG: 5, R: 1, Rp: 1.5, min: 1, max: 10, step: 0.1, mesure: 'R', consigne: 'Faites passer U_G de 5,0 V à 10,0 V, R et R_p restant fixes : que fait U_R ?' }],
-    enonce: 'Dans un pont diviseur, R et R_p sont fixes. On double la tension d’alimentation U_G (de 5,0 V à 10,0 V).', q: 'La tension U_R aux bornes de R est…', options: [
+    ...presenter({ schema: [{ type: 'pont', UG: '5,0 V → 10,0 V', mesure: 'R' }, { type: 'essai', seulementApres: true, variable: 'UG', UG: 5, R: 1, Rp: 1.5, min: 1, max: 10, step: 0.1, mesure: 'R', consigne: 'Faites passer U_G de 5,0 V à 10,0 V, R et R_p restant fixes : que fait U_R ?' }], contexte: 'Dans un pont diviseur, les résistances R et R_p sont fixes.', liste: [['Tension d’alimentation', 'U_G passe de 5,0 V à 10,0 V']] }), q: 'La tension U_R aux bornes de R est…', options: [
       V('doublée', 'U_R = U_G × R / (R + R_p) est proportionnelle à U_G quand R et R_p sont fixes : le rapport R / (R + R_p) ne change pas.'),
       F('inchangée', 'Le rapport R / (R + R_p) est inchangé, mais il multiplie une tension U_G deux fois plus grande.'),
       F('multipliée par 4', 'U_R est proportionnelle à U_G (et non à son carré) : elle double.'),
       F('divisée par 2', 'Sens inversé : plus la tension aux bornes du montage est grande, plus chaque tension partielle est grande.'),
     ] },
   { id: 'n-eclairement', domaine: 'Transmission de signaux numériques', titre: 'Le nombre N quand l’éclairement augmente',
-    schema: [{ type: 'chaine', apres: { actif: [0, 1, 2, 3], inconnu: 3, note: 'Chemin de la cause à l’effet : éclairement → R_p → U_R → N.' }, seulementApres: true }, { type: 'essai', seulementApres: true, variable: 'Rp', R: 1, Rp: 2, min: 0.2, max: 5, mesure: 'R', n: true, consigne: 'Faites diminuer R_p, comme quand l’éclairement augmente : que fait N ?' }],
-    enonce: 'Une photorésistance est en série avec R ; la tension U_R aux bornes de R est envoyée sur l’entrée d’un CAN 10 bits (N entre 0 et 1 023, avec N proportionnel à la tension). L’éclairement augmente (la résistance de la photorésistance diminue).', q: 'Le nombre N donné par le CAN…', options: [
+    ...presenter({ schema: [{ type: 'chaine', apres: { actif: [0, 1, 2, 3], inconnu: 3, note: 'Chemin de la cause à l’effet : éclairement → R_p → U_R → N.' }, seulementApres: true }, { type: 'essai', seulementApres: true, variable: 'Rp', R: 1, Rp: 2, min: 0.2, max: 5, mesure: 'R', n: true, consigne: 'Faites diminuer R_p, comme quand l’éclairement augmente : que fait N ?' }], contexte: 'Une photorésistance est en série avec R. La tension U_R aux bornes de R est envoyée sur l’entrée d’un CAN.', liste: [['CAN', '10 bits : N entre 0 et 1 023, proportionnel à la tension'], ['Éclairement', 'il augmente, donc la résistance de la photorésistance diminue']] }), q: 'Le nombre N donné par le CAN…', options: [
       V('augmente', 'L’éclairement augmente, R_p diminue, U_R augmente. Le CAN fournit un nombre proportionnel à la tension : N augmente.'),
       F('diminue', 'Il diminuerait si on mesurait la tension aux bornes de la photorésistance. Ici, U_R augmente avec l’éclairement, donc N aussi.'),
       F('reste constant', 'N est proportionnel à la tension d’entrée : si U_R change, N change.'),
@@ -2722,7 +2708,7 @@ export const ALGORITHMES = [
       F('N < N_allumage : état LOW', 'C’est le seuil d’allumage, pas celui d’extinction : ce test éteindrait les phares précisément quand il faut les allumer.'),
     ] },
   { id: 'algo-entre-seuils', domaine: 'Transmission de signaux numériques', titre: 'Entre les deux seuils',
-    enonce: 'L’algorithme : « Si N < 470 alors sortie à l’état HIGH. Si N > 600 alors sortie à l’état LOW. » (rien d’autre). Les phares sont allumés, puis la luminosité remonte doucement et N vaut maintenant 520.',
+    ...presenter({ contexte: 'Un algorithme commande la sortie des phares à partir du nombre N lu par le CAN.', liste: [['Algorithme', 'Si N < 470 alors sortie à l’état HIGH. Si N > 600 alors sortie à l’état LOW. (rien d’autre)'], ['Situation', 'les phares sont allumés, puis la luminosité remonte doucement'], ['Valeur de N', 'N = 520']] }),
     q: 'Que fait la sortie des phares quand N = 520 ?', options: [
       V('Elle reste dans l’état où elle était (ici : allumée)', '520 n’est ni inférieur à 470, ni supérieur à 600 : aucun test n’est vrai, aucune instruction n’est exécutée, la sortie garde son état précédent. On appelle cela une hystérésis.'),
       F('Elle s’éteint, car N a augmenté', 'L’extinction n’est commandée que si N dépasse 600 : 520 n’y est pas.'),
@@ -2746,7 +2732,7 @@ export const ALGORITHMES = [
       F('Le sens du test n’a pas d’importance', 'Il en a : un test dans le mauvais sens inverse tout le fonctionnement (phares allumés de jour, éteints de nuit).'),
     ] },
   { id: 'algo-seuils-inverses', domaine: 'Transmission de signaux numériques', titre: 'Deux seuils dans le mauvais ordre',
-    enonce: 'Montage avec U_R mesurée aux bornes de R (N augmente avec l’éclairement). Un élève écrit : « Si N < 600 alors HIGH ; si N > 470 alors LOW ». Il a donc échangé les deux seuils.',
+    ...presenter({ contexte: 'Montage avec U_R mesurée aux bornes de R : N augmente avec l’éclairement.', liste: [['Algorithme écrit par l’élève', 'Si N < 600 alors HIGH ; si N > 470 alors LOW']], suite: 'L’élève a donc échangé les deux seuils.' }),
     q: 'Que se passe-t-il pour N = 520 ?', options: [
       V('Les deux tests sont vrais : le résultat dépend de l’ordre dans lequel ils sont écrits, le comportement est incohérent', '520 < 600 (HIGH) et 520 > 470 (LOW). Deux ordres contradictoires : c’est le dernier test exécuté qui l’emporte. Le seuil d’allumage doit être plus petit que le seuil d’extinction.'),
       F('Aucun test n’est vrai : la sortie ne change pas', 'Ce serait le cas avec les seuils dans le bon ordre (470 puis 600) ; ici 520 vérifie les deux tests.'),
