@@ -125,14 +125,14 @@ export function DevoirsEleve({ lignes, naviguer, devoirsApercu, devoirsListe, pa
         .dv { margin: 12px 0 6px; }
         .dv h3 { margin: 0 0 8px; font-size: 18px; font-weight: 800; color: #0f172a; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
         .dv h3 small { font-size: 13px; font-weight: 600; color: #64748b; }
-        .dv-carte { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 14px; box-shadow: 0 2px 10px rgba(15,23,42,.06); margin-bottom: 10px; }
+        .dv-carte { background: #fff; border: 1px solid #d5dfeb; border-radius: 22px; padding: 18px; margin-bottom: 12px; }
         .dv-puce { border-radius: 999px; padding: 3px 11px; font-size: 13px; font-weight: 700; white-space: nowrap; }
         .dv-barre { height: 9px; border-radius: 6px; background: #e2e8f0; overflow: hidden; margin-top: 10px; }
         .dv-barre > i { display: block; height: 100%; border-radius: 6px; transition: width 1s cubic-bezier(.2,.8,.2,1); }
-        .dv-btn { cursor: pointer; font: inherit; font-size: 13px; font-weight: 800; color: #fff; border: none; border-radius: 10px; padding: 6px 12px; background: ${ACCENT}; }
+        .dv-btn { cursor: pointer; font: inherit; font-size: 13px; font-weight: 800; color: #3a2500; border: none; border-radius: 12px; padding: 8px 14px; background: #f5a31a; }
         @media (prefers-reduced-motion: reduce) { .dv *, .dv *::before, .dv *::after { transition: none !important; } }
       `}</style>
-      {ouverts.length > 0 && <h3><Pic n="pin"/>{pasAPas ? 'Ma classe : à faire' : 'À faire pour la classe'} <small>{ouverts.length} devoir{ouverts.length > 1 ? 's' : ''} de ton professeur</small></h3>}
+      {ouverts.length > 0 && <h3 style={{ font: '800 24px Outfit, Inter, sans-serif', letterSpacing: '-.01em', color: '#0c1a2e', margin: '26px 0 10px' }}><Pic n="pin"/>{pasAPas ? 'Ma classe : à faire' : 'À faire pour la classe'} <small>{ouverts.length} devoir{ouverts.length > 1 ? 's' : ''} de ton professeur</small></h3>}
       {ouverts.slice(0, max).map(({ d, a }) => <Carte key={d.id} d={d} a={a} par={par} naviguer={naviguer} maintenant={maintenant} lignes={lignes} />)}
       {ouverts.length > max && (
         <details data-autres-devoirs style={{ marginBottom: 8 }}>

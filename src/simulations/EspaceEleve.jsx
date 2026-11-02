@@ -16,24 +16,30 @@ import { Pic } from "../Pictos";
 //  pied : fonction (étape) → contenu ajouté tout en bas (détail des résultats).
 // ═══════════════════════════════════════════════════════════════════════════
 const css = `
-  .ee-profil { border-radius: 18px; padding: 18px 20px; background: ${FOND_BLOC}; border: 1px solid ${BORDURE}; box-shadow: 0 2px 12px rgba(15,23,42,.07);
-    display: flex; gap: 18px; align-items: center; flex-wrap: wrap; text-align: left; }
-  .ee-barre { height: 12px; border-radius: 8px; background: #dbe3ec; overflow: hidden; max-width: 420px; }
-  .ee-barre > i { display: block; height: 100%; border-radius: 8px; background: ${ACCENT}; transition: width 1.1s cubic-bezier(.2,.8,.2,1); }
-  .ee-cta { border: none; border-radius: 10px; padding: 11px 20px; font: inherit; font-weight: 800; font-size: 15.5px; cursor: pointer; color: #fff; background: ${ACCENT}; }
-  .ee-cta:hover { filter: brightness(1.1); }
-  .ee-lien { border: 2px solid ${ACCENT}; border-radius: 10px; padding: 8px 16px; font: inherit; font-weight: 800; font-size: 14.5px; cursor: pointer; color: ${ACCENT}; background: #fff; }
-  .ee-tuile { flex: 1 1 120px; border: 1px solid ${BORDURE}; border-radius: 14px; padding: 10px 12px; background: ${FOND_BLOC}; text-align: center; }
-  .ee-tuile b { display: block; font-size: 28px; color: ${TEXTE}; line-height: 1.1; }
-  .ee-tuile span { font-size: 13.5px; color: ${TEXTE2}; font-weight: 700; }
-  .ee-h { margin: 22px 0 8px; font-size: 18px; font-weight: 800; color: ${TEXTE}; text-align: left; }
-  .ee-ruban { margin-bottom: 10px; padding: 10px 14px; border-radius: 12px; background: ${ACCENT_CLAIR}; border: 1px solid #b9cfe0; color: ${TEXTE}; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; text-align: left; }
-  .ee-repli { background: ${FOND_BLOC}; border: 1px solid ${BORDURE}; border-radius: 14px; padding: 0 14px; text-align: left; box-shadow: 0 1px 6px rgba(15,23,42,.05); }
-  .ee-repli > summary { list-style: none; cursor: pointer; padding: 12px 0; font-size: 16px; font-weight: 800; color: ${TEXTE}; display: flex; align-items: center; gap: 10px; }
+  .ee-profil { border-radius: 28px; padding: 26px; background: #0b4f94; color: #fff; display: flex; gap: 22px; align-items: center; flex-wrap: wrap; text-align: left; }
+  .ee-profil .ee-etiq { font: 700 13px Inter, system-ui, sans-serif; letter-spacing: .09em; text-transform: uppercase; color: #cfe3f7; }
+  .ee-profil .ee-nom { font: 800 clamp(28px, 6vw, 40px)/1.1 Outfit, Inter, sans-serif; letter-spacing: -.02em; margin: 4px 0 10px; color: #fff; }
+  .ee-barre { height: 12px; border-radius: 8px; background: rgba(255,255,255,.28); overflow: hidden; max-width: 420px; }
+  .ee-barre > i { display: block; height: 100%; border-radius: 8px; background: #f5a31a; transition: width 1.1s cubic-bezier(.2,.8,.2,1); }
+  .ee-cta { border: none; border-radius: 14px; padding: 13px 22px; font: inherit; font-weight: 800; font-size: 15.5px; cursor: pointer; color: #3a2500; background: #f5a31a; }
+  .ee-cta:hover { background: #ffb83d; }
+  .ee-lien { border: none; border-radius: 14px; padding: 12px 20px; font: inherit; font-weight: 800; font-size: 15px; cursor: pointer; color: #3a2500; background: #f5a31a; }
+  .ee-lien:hover { background: #ffb83d; }
+  .ee-tuile { flex: 1 1 120px; border-radius: 22px; padding: 16px 14px; text-align: left; }
+  .ee-tuile:nth-child(1) { background: #f5a31a; color: #3a2500; }
+  .ee-tuile:nth-child(2) { background: #2cc4ae; color: #04352d; }
+  .ee-tuile:nth-child(3) { background: #5b4bdb; color: #fff; }
+  .ee-tuile b { display: block; font: 800 40px/1 Outfit, Inter, sans-serif; letter-spacing: -.03em; margin-top: 4px; }
+  .ee-tuile span { font-size: 14px; font-weight: 700; }
+  .ee-h { margin: 26px 0 10px; font: 800 24px Outfit, Inter, sans-serif; letter-spacing: -.01em; color: #0c1a2e; text-align: left; }
+  .ee-ruban { margin-bottom: 12px; padding: 14px 18px; border-radius: 22px; background: #f5a31a; color: #3a2500; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; text-align: left; }
+  .ee-ruban .ee-lien { background: #fff; }
+  .ee-repli { background: ${FOND_BLOC}; border: 1px solid #d5dfeb; border-radius: 22px; padding: 0 20px; text-align: left; }
+  .ee-repli > summary { list-style: none; cursor: pointer; padding: 16px 0; font: 800 19px Outfit, Inter, sans-serif; color: #0c1a2e; display: flex; align-items: center; gap: 10px; }
   .ee-repli > summary::-webkit-details-marker { display: none; }
   .ee-repli > summary::after { content: '▾'; margin-left: auto; color: ${TEXTE2}; transition: transform .2s; }
   .ee-repli[open] > summary::after { transform: rotate(180deg); }
-  .ee-repli[open] { padding-bottom: 12px; }
+  .ee-repli[open] { padding-bottom: 16px; }
   @media (prefers-reduced-motion: reduce) { .ee-barre > i { transition: none; } }
 `;
 
@@ -71,16 +77,16 @@ function BlocProfil({ A, etape, naviguer, prochaine, apercu }) {
           <button className="ee-lien" onClick={fermerRuban}>Super</button></div>)}
       <div className="ee-profil">
         {etape === 0
-          ? <div aria-hidden="true" style={{ width: 96, height: 96, borderRadius: '50%', background: ACCENT_CLAIR, border: `2px solid ${ACCENT}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
-              <span style={{ fontSize: 34 }}>🌠</span><span style={{ fontSize: 12, fontWeight: 800, color: ACCENT }}>Bienvenue</span></div>
-          : <Anneau frac={niveau.frac} n={niveau.n} mont={mont} />}
+          ? <div aria-hidden="true" style={{ width: 96, height: 96, borderRadius: '50%', background: 'rgba(255,255,255,.16)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+              <span style={{ fontSize: 34 }}>🌠</span><span style={{ fontSize: 12, fontWeight: 800, color: '#fff' }}>Bienvenue</span></div>
+          : <Anneau frac={niveau.frac} n={niveau.n} mont={mont} sombre />}
         <div style={{ flex: 1, minWidth: 230 }}>
-          <div style={{ fontSize: 13, letterSpacing: 2, textTransform: 'uppercase', color: TEXTE2, fontWeight: 800 }}>Mon profil</div>
-          {etape > 0 && <div data-nom-niveau style={{ fontSize: 28, fontWeight: 800, lineHeight: 1.15, margin: '2px 0 6px', color: TEXTE }}><span aria-hidden="true">{icone}</span> {nom}</div>}
-          {etape === 0 && <div style={{ fontSize: 20, fontWeight: 800, color: TEXTE, margin: '2px 0 6px' }}>Réalise tes exercices, franchis les paliers et augmente ton niveau !</div>}
+          <div className="ee-etiq">Mon profil</div>
+          {etape > 0 && <div data-nom-niveau className="ee-nom"><span aria-hidden="true">{icone}</span> {nom}</div>}
+          {etape === 0 && <div className="ee-nom" style={{ fontSize: 26 }}>Réalise tes exercices, franchis les paliers et augmente ton niveau !</div>}
           <div className="ee-barre" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(frac * 100)} aria-label="Progression vers le niveau suivant">
             <i style={{ width: mont ? `${frac ? Math.max(4, frac * 100) : 0}%` : '0%' }} /></div>
-          <div style={{ fontSize: 14, color: TEXTE2, margin: '6px 0 0' }}>{texte}</div>
+          <div style={{ fontSize: 15, color: '#fff', margin: '10px 0 0', lineHeight: 1.5 }}>{texte}</div>
           {etape === 0 && (
             <div style={{ marginTop: 12 }}>
               <button className="ee-cta" data-cta-premiere onClick={() => (prochaine ? naviguer(Number(prochaine.sim)) : naviguer(38))}>

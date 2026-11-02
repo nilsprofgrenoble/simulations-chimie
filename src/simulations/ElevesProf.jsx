@@ -4,7 +4,7 @@ import { lireDevoirs } from "../devoirsServeur";
 import { suiviClasse } from "../devoirs";
 import { agreger, formatDuree, formatDate } from "./Compte";
 import { ACCENT, ACCENT_CLAIR } from "../theme";
-import { estSimulation, estDefi } from "../suivi";
+import { estSimulation, estDefi, tempsParSimulation } from "../suivi";
 
 // Vue « Élèves » du suivi professeur : une carte par élève, dans l'ordre
 // temps passé sur le site → devoirs faits → dernière activité ; le détail (exercices, défis, essais…) se déplie.
@@ -37,7 +37,8 @@ export function ElevesProf({ classe, eleves, lignes, exos, defis, etq, proprio, 
       const exosL = [...agreger(toutes.filter(l => !estSimulation(l.cle) && !estDefi(l.cle))).values()];
       const defisL = [...agreger(toutes.filter(l => estDefi(l.cle))).values()];
       const mesDevoirs = suivis.map(s => s.parEleve.find(x => x.eleve.user_id === e.user_id)).filter(Boolean);
-      return { e, temps, der: der || null, j: jours(der), exosL, defisL, detail: [...agreger(toutes.filter(l => !estSimulation(l.cle))).values()],
+      const sims = tempsParSimulation(toutes), tExo = exosL.reduce((t, a) => t + a.duree, 0), tDefi = defisL.reduce((t, a) => t + a.duree, 0);
+      return { e, temps, sims, tExo, tDefi, der: der || null, j: jours(der), exosL, defisL, detail: [...agreger(toutes.filter(l => !estSimulation(l.cle))).values()],
         devFaits: mesDevoirs.filter(x => x.termine).length, devTotal: mesDevoirs.length };
     });
   }, [eleves, lignes, devoirs]);
@@ -51,17 +52,17 @@ export function ElevesProf({ classe, eleves, lignes, exos, defis, etq, proprio, 
 
   const actifs = lignes_.filter(x => x.j !== null && x.j <= 7).length, tempsTotal = lignes_.reduce((t, x) => t + x.temps, 0);
   const nbDevoirs = (devoirs || []).length, devEleves = lignes_.filter(x => x.devTotal > 0), toutFait = devEleves.filter(x => x.devFaits === x.devTotal).length;
-  const bloc = { flex: '1 1 130px', background: '#fff', border: `1px solid ${KIT.bord}`, borderRadius: 16, padding: '10px 14px' };
-  const gros = { fontFamily: 'Outfit, Inter, sans-serif', fontWeight: 800, fontSize: 22, color: '#0c1a2e', lineHeight: 1.15 };
-  const etiq = { fontSize: 12.5, color: KIT.txt2, fontWeight: 600 };
+  const bloc = (fond, ink) => ({ flex: '1 1 150px', background: fond, color: ink, borderRadius: 22, padding: '16px 18px' });
+  const gros = { fontFamily: 'Outfit, Inter, sans-serif', fontWeight: 800, fontSize: 30, lineHeight: 1.1, letterSpacing: '-.02em' };
+  const etiq = { fontSize: 12.5, color: KIT.txt2, fontWeight: 600 }, etiqB = { fontSize: 13.5, fontWeight: 600, opacity: .92, marginTop: 2 };
 
   if (!eleves.length) return <div style={{ color: KIT.txt2, padding: 8 }}>Aucun élève dans cette classe.</div>;
   return (
     <div data-vue-eleves>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-        <div style={bloc}><div style={gros}>{actifs} / {eleves.length}</div><div style={etiq}>élèves venus ces 7 derniers jours</div></div>
-        <div style={bloc}><div style={gros}>{formatDuree(tempsTotal)}</div><div style={etiq}>temps passé par la classe</div></div>
-        <div style={bloc}><div style={gros}>{nbDevoirs ? `${toutFait} / ${devEleves.length}` : '—'}</div><div style={etiq}>{nbDevoirs ? 'élèves à jour de leurs devoirs' : 'aucun devoir donné'}</div></div>
+        <div style={bloc('#0b4f94', '#fff')}><div style={gros}>{actifs} / {eleves.length}</div><div style={etiqB}>élèves venus ces 7 derniers jours</div></div>
+        <div style={bloc('#f5a31a', '#3a2500')}><div style={gros}>{formatDuree(tempsTotal)}</div><div style={etiqB}>temps passé par la classe</div></div>
+        <div style={bloc('#2cc4ae', '#04352d')}><div style={gros}>{nbDevoirs ? `${toutFait} / ${devEleves.length}` : '—'}</div><div style={etiqB}>{nbDevoirs ? 'élèves à jour de leurs devoirs' : 'aucun devoir donné'}</div></div>
       </div>
 
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', margin: '0 0 10px', fontSize: 13.5, color: KIT.txt2 }}>
@@ -73,9 +74,9 @@ export function ElevesProf({ classe, eleves, lignes, exos, defis, etq, proprio, 
         {trie.map(x => {
           const s = statut(x.j), ouv = ouvert === x.e.user_id;
           return (
-            <div key={x.e.user_id} data-eleve={x.e.identifiant} style={{ background: ouv ? ACCENT_CLAIR : '#fff', border: `1px solid ${KIT.bord}`, borderRadius: 16, overflow: 'hidden' }}>
+            <div key={x.e.user_id} data-eleve={x.e.identifiant} style={{ background: ouv ? ACCENT_CLAIR : '#fff', border: `1px solid ${KIT.bord}`, borderRadius: 22, overflow: 'hidden' }}>
               <button onClick={() => setOuvert(ouv ? null : x.e.user_id)} aria-expanded={ouv}
-                style={{ all: 'unset', boxSizing: 'border-box', width: '100%', cursor: 'pointer', padding: '10px 14px' }}>
+                style={{ all: 'unset', boxSizing: 'border-box', width: '100%', cursor: 'pointer', padding: '14px 18px' }}>
                 <span style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
                   <span style={{ fontWeight: 800, fontSize: 16, color: '#0c1a2e' }}>{x.e.identifiant}</span>
                   <span style={{ fontSize: 12.5, fontWeight: 700, color: s.c }}>● {s.t}</span>
@@ -89,7 +90,7 @@ export function ElevesProf({ classe, eleves, lignes, exos, defis, etq, proprio, 
               </button>
 
               {ouv && (
-                <div style={{ padding: '2px 14px 12px', borderTop: `1px solid ${KIT.bord}` }}>
+                <div style={{ padding: '2px 18px 14px', borderTop: `1px solid ${KIT.bord}`, color: '#0c1a2e' }}>
                   <div style={{ display: 'flex', gap: '4px 16px', flexWrap: 'wrap', fontSize: 13.5, margin: '8px 0' }}>
                     <span>Dernière activité : <b>{x.der ? formatDate(x.der) : '—'}</b></span>
                     <span>Exercices réussis : <b>{x.exosL.filter(a => a.reussi).length}</b> (sur {exos.length} au catalogue)</span>
@@ -98,11 +99,25 @@ export function ElevesProf({ classe, eleves, lignes, exos, defis, etq, proprio, 
                     <span>Essais : <b>{x.exosL.reduce((t, a) => t + a.essais, 0)}</b></span>
                     <span>Corrections vues : <b>{x.exosL.reduce((t, a) => t + a.vues, 0)}</b></span>
                   </div>
-                  {!x.detail.length ? <i style={{ color: KIT.txt2, fontSize: 13.5 }}>Aucun exercice travaillé.</i> : (
-                    <div style={{ overflowX: 'auto' }}>
-                      <table style={{ borderCollapse: 'collapse', fontSize: 13 }}><tbody>{[...x.detail].sort((a, b) => (b.derniere || '').localeCompare(a.derniere || '')).map(a => (
-                        <tr key={a.cle}><td style={{ padding: '3px 8px 3px 0' }}>{a.reussi ? '✅' : '⬜'}</td><td style={{ padding: '3px 8px' }}><b>{etq[a.cle]?.comp}</b> {etq[a.cle]?.titre || a.cle}</td>
-                          <td style={{ padding: '3px 8px', whiteSpace: 'nowrap' }}>{a.essais} essai{a.essais > 1 ? 's' : ''}</td><td style={{ padding: '3px 8px', whiteSpace: 'nowrap' }}>{formatDuree(a.duree)}</td><td style={{ padding: '3px 8px', whiteSpace: 'nowrap' }}>{formatDate(a.derniere)}</td></tr>))}</tbody></table>
+                  <div style={{ fontWeight: 800, fontFamily: 'Outfit, Inter, sans-serif', fontSize: 16, margin: '10px 0 4px' }}>⏱ Où est passé le temps ({x.temps ? formatDuree(x.temps) : '—'})</div>
+                  {!x.temps ? <i style={{ color: KIT.txt2, fontSize: 13.5 }}>Aucune activité enregistrée.</i> : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      {x.sims.map(m => (
+                        <div key={m.id} style={{ display: 'flex', gap: '2px 10px', flexWrap: 'wrap', alignItems: 'baseline', fontSize: 13.5 }}>
+                          <span style={{ flex: '1 1 200px' }}>🧪 <b>{m.nom}</b></span>
+                          <span style={{ whiteSpace: 'nowrap' }}><b>{formatDuree(m.total)}</b>{[['guidé', m.guide], ['exploration', m.explore], ['défi', m.defi]].filter(([, v]) => v > 0).map(([l, v]) => ` · ${l} ${formatDuree(v)}`).join('')}</span>
+                        </div>))}
+                      {x.tExo > 0 && <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', fontSize: 13.5 }}><span style={{ flex: '1 1 200px' }}>🏋️ <b>Exercices « Je m’entraîne »</b></span><b>{formatDuree(x.tExo)}</b></div>}
+                      {x.tDefi > 0 && <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', fontSize: 13.5 }}><span style={{ flex: '1 1 200px' }}>🎯 <b>Défis des simulations</b></span><b>{formatDuree(x.tDefi)}</b></div>}
+                    </div>)}
+                  <div style={{ fontWeight: 800, fontFamily: 'Outfit, Inter, sans-serif', fontSize: 16, margin: '12px 0 4px' }}>Exercices et défis</div>
+                  {!x.detail.length ? <i style={{ color: KIT.txt2, fontSize: 13.5 }}>Aucun exercice ni défi travaillé.</i> : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      {[...x.detail].sort((a, b) => (b.derniere || '').localeCompare(a.derniere || '')).map(a => (
+                        <div key={a.cle} style={{ display: 'flex', gap: '2px 10px', flexWrap: 'wrap', alignItems: 'baseline', fontSize: 13 }}>
+                          <span style={{ flex: '1 1 220px' }}>{a.reussi ? '✅' : '⬜'} <b>{etq[a.cle]?.comp}</b> {etq[a.cle]?.titre || a.cle}</span>
+                          <span style={{ color: KIT.txt2, whiteSpace: 'nowrap' }}>{a.essais} essai{a.essais > 1 ? 's' : ''} · {formatDuree(a.duree)} · {formatDate(a.derniere)}</span>
+                        </div>))}
                     </div>)}
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
                     <button onClick={() => onReinitialiser(x.e.identifiant)} style={stylePetitBouton(false, '#475569')}>🔑 Nouveau mot de passe</button>
