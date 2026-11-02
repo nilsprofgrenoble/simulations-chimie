@@ -16,6 +16,7 @@ import { ComptesProf } from "./ComptesProf";
 import { ApercuEleve } from "./ApercuEleve";
 import { GuideProf } from "./GuideProf";
 import { Pic } from "../Pictos";
+import { ElevesProf } from "./ElevesProf";
 
 const ROSE = ACCENT;   // une seule couleur d'action sur tout le site (voir ../theme.js)
 const DETAILS = ['exos', 'defis', 'sims'];
@@ -199,18 +200,21 @@ export function SimulationSuiviProf({ naviguer }) {
 
   return (
     <div style={{ ...cardStyle, maxWidth: 1100, margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end', fontSize: 13.5, color: KIT.txt2 }}>
-        <span>Connecté : <b style={{ color: KIT.txt }}>{sess.profil.nom}</b></span>
-        <MotDePasse />
-        <button onClick={deconnexion} style={{ ...styleBouton(false, '#475569'), fontSize: 13 }}>Se déconnecter</button>
-      </div>
+      <details data-compte style={{ margin: '0 0 8px' }}>
+        <summary style={{ cursor: 'pointer', fontSize: 14, fontWeight: 700, color: KIT.txt, padding: '4px 0' }}>👤 Mon compte <span style={{ fontWeight: 600, color: KIT.txt2 }}>· {sess.profil.nom}</span></summary>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', fontSize: 13.5, color: KIT.txt2, margin: '6px 0' }}>
+          <MotDePasse />
+          <button onClick={deconnexion} style={{ ...styleBouton(false, '#475569'), fontSize: 13 }}>Se déconnecter</button>
+        </div>
+        {sess.profil.admin && <ComptesProf occupe={occupe} proteger={proteger} setMsg={setMsg} />}
+        {!!classes.length && <GuideProf ouvertParDefaut={false} />}
+      </details>
       {erreur && <div role="alert" style={{ color: '#b91c1c', fontWeight: 600, margin: '8px 0' }}><Pic n="ko"/>{erreur}</div>}
       {msg && <div role="status" style={{ color: '#15803d', fontWeight: 600, margin: '8px 0' }}><Pic n="ok"/>{msg}</div>}
-      {sess.profil.admin && <ComptesProf occupe={occupe} proteger={proteger} setMsg={setMsg} />}
       {comptes && <div style={{ margin: '10px 0' }}><Comptes classe={comptes.classe} comptes={comptes.liste} onFermer={() => setComptes(null)} /></div>}
 
       {!classes.length && !occupe && <p data-bienvenue style={{ fontSize: 16, color: KIT.txt, margin: '10px 0 0' }}>👋 <b>Bienvenue !</b> Mettons en route votre première classe : donnez-lui un nom, c’est tout ce qu’il faut pour commencer.</p>}
-      <GuideProf ouvertParDefaut={!classes.length} />
+      {!classes.length && <GuideProf ouvertParDefaut />}
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', margin: '10px 0' }}>
         <select aria-label="Classe" value={classeId} onChange={e => { setClasseId(e.target.value); setOuvert(null); setMsg(''); }} style={{ ...champ, fontWeight: 700, fontSize: 15 }}>
@@ -286,40 +290,7 @@ export function SimulationSuiviProf({ naviguer }) {
           {onglet === 'devoirs' && <DevoirsProf key={`${classe.id}|${(classe.chapitres || []).join()}|${preset ? JSON.stringify(preset) : ''}`} classe={classe} eleves={eleves} lignes={lignes} preset={preset} />}
           {onglet === 'reprendre' && <AReprendreProf eleves={eleves} lignes={lignes} naviguer={naviguer} onDevoir={p => { setPreset(p); setOnglet('devoirs'); }} />}
 
-          {onglet === 'eleves' && (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ borderCollapse: 'collapse', fontSize: 13.5, width: '100%' }}>
-                <thead><tr><th style={th}>Identifiant</th><th style={th}>Exercices réussis</th><th style={th}>Travaillés</th><th style={th}>Défis réussis</th><th style={th}>Essais</th><th style={th}>Corrections vues</th><th style={th}>Temps</th><th style={th}>Dernière activité</th><th style={th}></th></tr></thead>
-                <tbody>{eleves.map(e => {
-                  const ag = [...parEleve.get(e.user_id).values()], agTout = [...parEleveTout.get(e.user_id).values()];
-                  const nDefis = [...parEleveDefis.get(e.user_id).values()].filter(a => a.reussi).length;
-                  const der = agTout.reduce((m, a) => (a.derniere > m ? a.derniere : m), '');
-                  return (
-                    <Fragment key={e.user_id}>
-                      <tr data-eleve={e.identifiant} style={{ borderTop: `1px solid ${KIT.bord}`, cursor: 'pointer', background: ouvert === e.user_id ? ACCENT_CLAIR : 'transparent' }}
-                        onClick={() => setOuvert(ouvert === e.user_id ? null : e.user_id)}>
-                        <td style={td}><b>{e.identifiant}</b></td>
-                        <td style={td}>{ag.filter(a => a.reussi).length} / {total}</td><td style={td}>{ag.length}</td><td style={td}>{nDefis} / {defis.length}</td>
-                        <td style={td}>{ag.reduce((t, a) => t + a.essais, 0)}</td><td style={td}>{ag.reduce((t, a) => t + a.vues, 0)}</td>
-                        <td style={td}>{formatDuree(ag.reduce((t, a) => t + a.duree, 0))}</td><td style={td}>{formatDate(der)}</td>
-                        <td style={{ ...td, whiteSpace: 'nowrap' }} onClick={x => x.stopPropagation()}>
-                          <button title="Nouveau mot de passe" aria-label={`Réinitialiser ${e.identifiant}`} onClick={() => reinitialiser(e.identifiant)} style={{ ...stylePetitBouton(false), marginRight: 4 }}>🔑</button>
-                          {proprio && <button title="Supprimer le compte" aria-label={`Supprimer ${e.identifiant}`} onClick={() => supprimerEleve(e.identifiant)} style={stylePetitBouton(false)}>🗑</button>}
-                        </td>
-                      </tr>
-                      {ouvert === e.user_id && (
-                        <tr><td colSpan={9} style={{ padding: '4px 8px 10px 24px', background: ACCENT_CLAIR }}>
-                          {!agTout.length ? <i style={{ color: KIT.txt2 }}>Aucune activité.</i> : (
-                            <table style={{ borderCollapse: 'collapse', fontSize: 13 }}><tbody>{agTout.sort((a, b) => (b.derniere || '').localeCompare(a.derniere || '')).map(a => (
-                              <tr key={a.cle}><td style={td}>{a.reussi ? '✅' : '⬜'}</td><td style={td}><b>{etq[a.cle]?.comp}</b> {etq[a.cle]?.titre || a.cle}</td>
-                                <td style={td}>{a.essais} essai{a.essais > 1 ? 's' : ''}</td><td style={td}>{a.vues} correction{a.vues > 1 ? 's' : ''} vue{a.vues > 1 ? 's' : ''}</td>
-                                <td style={td}>{formatDuree(a.duree)}</td><td style={td}>{formatDate(a.derniere)}</td></tr>))}</tbody></table>)}
-                        </td></tr>)}
-                    </Fragment>);
-                })}</tbody>
-              </table>
-              {!eleves.length && <div style={{ color: KIT.txt2, padding: 8 }}>Aucun élève dans cette classe.</div>}
-            </div>)}
+          {onglet === 'eleves' && <ElevesProf classe={classe} eleves={eleves} lignes={lignes} exos={exos} defis={defis} etq={etq} proprio={proprio} onReinitialiser={reinitialiser} onSupprimer={supprimerEleve} />}
 
           {onglet === 'sims' && (
             <div>

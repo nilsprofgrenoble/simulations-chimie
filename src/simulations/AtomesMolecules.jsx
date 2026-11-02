@@ -52,6 +52,42 @@ function placer(atomes) {
   });
   return pos;
 }
+
+// Range le schéma : angles réguliers autour de chaque atome (méthanal plan à 120°, CO₂ aligné, eau coudée…), sans changer les liaisons.
+function rangerPos(atomes, bonds) {
+  const n = atomes.length, vois = atomes.map((_, i) => voisinsDe(bonds, i)), vu = new Array(n).fill(false), pos = new Array(n);
+  const blocs = [];
+  const poids = i => (atomes[i] === 'H' ? 0 : 1) * 10 + vois[i].length;
+  [...atomes.keys()].sort((a, b) => poids(b) - poids(a)).forEach(r => {
+    if (vu[r]) return;
+    const loc = {}, file = [[r, null, 0]];
+    vu[r] = true; loc[r] = { x: 0, y: 0 };
+    while (file.length) {
+      const [i, parent, base] = file.shift();
+      const enf = vois[i].filter(j => j !== parent && !vu[j]).sort((a, b) => poids(b) - poids(a));
+      const deg = vois[i].length, coude = deg === 2 && (atomes[i] === 'O' || atomes[i] === 'N' || atomes[i] === 'S');
+      const pas = deg === 2 ? (coude ? 105 : 180) : 360 / deg;
+      const ap = parent === null ? base - pas : base + 180;       // direction de la liaison vers le parent (pour la racine : fictive)
+      enf.forEach((j, k) => {
+        const deg2 = ap + pas * (k + 1), a = (deg2 * Math.PI) / 180, L = atomes[i] === 'H' || atomes[j] === 'H' ? 78 : 96;
+        vu[j] = true; loc[j] = { x: loc[i].x + L * Math.cos(a), y: loc[i].y - L * Math.sin(a) };
+        file.push([j, i, deg2]);
+      });
+    }
+    blocs.push(loc);
+  });
+  const boite = loc => { const v = Object.values(loc); return { x0: Math.min(...v.map(q => q.x)), x1: Math.max(...v.map(q => q.x)), y0: Math.min(...v.map(q => q.y)), y1: Math.max(...v.map(q => q.y)) }; };
+  const bs = blocs.map(boite), ecartB = 90;
+  const larg = bs.reduce((t, b) => t + (b.x1 - b.x0), 0) + ecartB * (blocs.length - 1), haut = Math.max(...bs.map(b => b.y1 - b.y0));
+  const mx = R + 34, my = R + 30, k = Math.min(1, (W - 2 * mx) / Math.max(larg, 1), (H - 2 * my) / Math.max(haut, 1));
+  let cur = (W - larg * k) / 2;
+  blocs.forEach((loc, bi) => {
+    const b = bs[bi];
+    Object.entries(loc).forEach(([i, q]) => { pos[i] = { x: cur + (q.x - b.x0) * k, y: H / 2 + (q.y - (b.y0 + b.y1) / 2) * k }; });
+    cur += (b.x1 - b.x0) * k + ecartB * k;
+  });
+  return pos;
+}
 const initMol = id => { const m = moleculeDe(id); return { id, pos: placer(m.atomes), bonds: {}, lp: m.atomes.map(() => 0), sel: null }; };
 const molRef = id => { const m = moleculeDe(id), bonds = liaisonsDeRef(m.ref); return { id, pos: placer(m.atomes), bonds, lp: doubletsAuto(m.atomes, bonds), sel: null }; };
 
@@ -251,6 +287,7 @@ export function SimulationAtomesMolecules() {
   const changerLP = d => gererMol(m => (m.sel === null ? m : { ...m, lp: m.lp.map((x, k) => (k === m.sel ? clamp(x + d, 0, 4) : x)) }));
   const effacer = () => gererMol(m => ({ ...initMol(m.id), pos: m.pos }));
   const choisirMol = id => setMol(initMol(id));
+  const ranger = () => gererMol(m => ({ ...m, pos: rangerPos(atomes, m.bonds) }));
   const autoDoublets = () => gererMol(m => ({ ...m, lp: doubletsAuto(atomes, m.bonds) }));
 
   // ════════════════ PARCOURS GUIDÉ ════════════════
@@ -412,6 +449,7 @@ export function SimulationAtomesMolecules() {
         <button onClick={() => changerLP(1)} disabled={mol.sel === null} style={{ ...stylePetitBouton(false, '#334155'), opacity: mol.sel === null ? 0.5 : 1 }}>＋ doublet non liant</button>
         <button onClick={() => changerLP(-1)} disabled={mol.sel === null} style={{ ...stylePetitBouton(false, '#334155'), opacity: mol.sel === null ? 0.5 : 1 }}>− doublet non liant</button>
         <button onClick={effacer} style={stylePetitBouton(false, '#334155')}>🧹 Tout effacer</button>
+        <button onClick={ranger} style={stylePetitBouton(false, '#334155')}>📐 Ranger le schéma</button>
         <button onClick={() => setRendu(r => (r === 'electrons' ? 'tirets' : 'electrons'))} style={stylePetitBouton(false, '#475569')} aria-label="Changer de représentation">{rendu === 'electrons' ? '● Électrons → voir les tirets' : '— Tirets → voir les électrons'}</button>
         {enExplore && <button onClick={autoDoublets} style={stylePetitBouton(false, '#4338ca')}>✨ Placer les doublets non liants pour moi</button>}
         <span style={{ fontSize: 13, color: KIT.txt2 }}>{selA ? `Atome sélectionné : ${selA.sym}` : 'Cliquez sur un atome pour le sélectionner (glissez-le pour le déplacer).'}</span>
@@ -477,7 +515,7 @@ export function SimulationAtomesMolecules() {
       <li><strong>Couche de valence</strong> : la dernière couche occupée (n le plus grand). <strong>Stable</strong> : même nombre d’électrons qu’un gaz noble (2, 10 ou 18). C’est un <em>modèle</em> : il explique bien les ions courants et les petites molécules, pas tous les composés.</li>
       <li><strong>Ion « le plus simple »</strong> : celui qui demande de gagner ou perdre le moins d’électrons. Le carbone et le silicium (4 électrons de valence) ne forment pas d’ions simples : ils forment des liaisons. L’ion H⁺ (plus aucun électron) est un cas à part.</li>
       <li><strong>Liaison covalente</strong> : un doublet d’électrons partagé entre deux atomes. Liaisons simples, doubles ou triples ; <strong>pas de charge formelle</strong> ni d’octet étendu (hors programme de seconde).</li>
-      <li><strong>Dessin</strong> : les positions des atomes sont libres, ce ne sont pas les vraies positions dans l’espace : la <em>géométrie</em> d’une molécule n’est pas décrite (elle est étudiée plus tard).</li>
+      <li><strong>Dessin</strong> : les positions des atomes sont libres (le bouton « Ranger le schéma » les replace avec des angles réguliers, à plat), ce ne sont pas les vraies positions dans l’espace : la <em>géométrie</em> d’une molécule n’est pas décrite (elle est étudiée plus tard).</li>
       <li><strong>Plusieurs schémas corrects</strong> sont possibles pour une même formule brute (C₂H₆O par exemple). Le défi accepte tout schéma qui respecte l’octet, le duet et la conservation des électrons de valence, avec une molécule d’un seul tenant.</li>
     </ul>);
   const panneauHypo = <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>;
