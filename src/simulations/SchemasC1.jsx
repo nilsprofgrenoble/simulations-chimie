@@ -1,6 +1,7 @@
 import { useId, useState } from "react";
 import { KIT, avecIndices } from "../commun";
 import { DESSINS_SECONDE } from "./SchemasSeconde.jsx";
+import { DESSINS_DONNEES } from "./SchemasDonnees.jsx";
 
 // ====================================================
 //  SCHÉMAS ET MISE EN PAGE DES ÉNONCÉS (chapitre « Transmission de signaux numériques »)
@@ -387,7 +388,7 @@ function PompePuits() {
 }
 
 // ── Répartition ──
-const DESSINS = { ...DESSINS_SECONDE, pont: SchemaPont, chaine: ChaineMesure, courbe: Courbe, retard: Retard, arduino: Arduino, essai: Essai, cuve: Cuve, tubeu: TubeU, venturi: Venturi, pompe: PompePuits };
+const DESSINS = { ...DESSINS_SECONDE, ...DESSINS_DONNEES, pont: SchemaPont, chaine: ChaineMesure, courbe: Courbe, retard: Retard, arduino: Arduino, essai: Essai, cuve: Cuve, tubeu: TubeU, venturi: Venturi, pompe: PompePuits };
 export function Visuel({ schema, revele = false }) {
   if (!schema) return null;
   const liste = Array.isArray(schema) ? schema : [schema];
