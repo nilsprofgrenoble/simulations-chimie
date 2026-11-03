@@ -811,7 +811,7 @@ export const PROBLEMES = [
   },
   {
     id: 'boussole-aimant', domaine: 'Contrôle des systèmes', titre: 'Où pointe la boussole près d’un aimant ?',
-    ...presenter({ contexte: 'Un aimant droit est orienté perpendiculairement au nord. Une boussole est placée sur son axe.', liste: [['Champ de l’aimant à 10 cm de son centre, sur son axe', '160 µT'], ['Composante horizontale du champ de la Terre', '20 µT'], ['Nouvelle distance de la boussole', '20 cm (on l’éloigne, toujours sur l’axe)'], ['Décroissance du champ de l’aimant', 'en 1/r³'], ['Masse de l’aimant', '40 g']], question: 'De quel angle l’aiguille dévie-t-elle alors par rapport au nord ?' }),
+    ...presenter({ schema: { type: 'boussole', r1: '10 cm', Ba: '160 µT', BT: '20 µT' }, contexte: 'Un aimant droit est orienté perpendiculairement au nord. Une boussole est placée sur son axe.', liste: [['Champ de l’aimant à 10 cm de son centre, sur son axe', '160 µT'], ['Composante horizontale du champ de la Terre', '20 µT'], ['Nouvelle distance de la boussole', '20 cm (on l’éloigne, toujours sur l’axe)'], ['Décroissance du champ de l’aimant', 'en 1/r³'], ['Masse de l’aimant', '40 g']], question: 'De quel angle l’aiguille dévie-t-elle alors par rapport au nord ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('Le champ de l’aimant à 20 cm, puis l’angle de déviation de l’aiguille', 'L’énoncé donne le champ à 10 cm seulement : il faut l’adapter à la nouvelle distance avant de comparer à la Terre.'),
       F('Le champ de l’aimant à 10 cm', 'Il est donné.'),
@@ -1021,7 +1021,7 @@ export const RELATIONS = [
       F('P = R × I²', 'Juste, mais I n’est pas connue : il faudrait d’abord la calculer.'),
     ] },
   { id: 'pont', domaine: 'Transmission de signaux numériques', titre: 'Un pont diviseur avec une CTN',
-    ...presenter({ contexte: 'Une thermistance CTN est en série avec une résistance fixe R.', liste: [['Résistance de la CTN', 'R_CTN'], ['Résistance fixe', 'R'], ['Tension d’alimentation', '5 V'], ['Tension mesurée', 'U_R, aux bornes de R']] }),
+    ...presenter({ schema: { type: 'pont', UG: '5 V', R: 'R', Rp: 'R_p', mesure: 'R', can: false, lumiere: false, capteur: 'CTN' }, contexte: 'Une thermistance CTN est en série avec une résistance fixe R.', liste: [['Résistance de la CTN', 'R_CTN'], ['Résistance fixe', 'R'], ['Tension d’alimentation', '5 V'], ['Tension mesurée', 'U_R, aux bornes de R']] }),
     q: 'Quelle relation donne U_R ?', options: [
       V('U_R = 5 × R / (R + R_CTN)', 'Pont diviseur : la tension se partage proportionnellement aux résistances ; U_R correspond à R.'),
       F('U_R = 5 × R_CTN / (R + R_CTN)', 'C’est la tension aux bornes de la CTN.'),
