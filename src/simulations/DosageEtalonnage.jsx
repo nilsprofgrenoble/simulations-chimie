@@ -493,7 +493,7 @@ export function SimulationDosageEtalonnage() {
             </ul></div>}
         </div>}
         {!enGuide && !enDefi && <div style={{ marginTop: 10, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          <button onClick={exporterPDF} disabled={pdfEnCours} style={styleBouton(true, '#0f766e')}>{pdfEnCours ? '⏳ Création du PDF…' : '📄 Exporter le rapport (PDF)'}</button>
+          <button onClick={exporterPDF} disabled={pdfEnCours} style={styleBouton(true, '#0b4f94')}>{pdfEnCours ? '⏳ Création du PDF…' : '📄 Exporter le rapport (PDF)'}</button>
           {pdfErreur && <span style={{ fontSize: 12.5, color: '#b91c1c' }}>{pdfErreur}</span>}</div>}
       </Section>
     </div>
@@ -503,7 +503,7 @@ export function SimulationDosageEtalonnage() {
       {source === 'exemple' ? <>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
           <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Exemple :</span>
-          {Object.entries(EXEMPLES).map(([k, ex]) => <button key={k} onClick={() => choisirSource('exemple', k)} style={stylePetitBouton(exId === k, '#0f766e')}>{ex.court}</button>)}</div>
+          {Object.entries(EXEMPLES).map(([k, ex]) => <button key={k} onClick={() => choisirSource('exemple', k)} style={stylePetitBouton(exId === k, '#0b4f94')}>{ex.court}</button>)}</div>
         <div style={{ fontSize: 13.5, color: KIT.txt }}>{EXEMPLES[exId].nom} : {nTot} niveaux, {tab.niveaux[0]?.ys.length} répétitions par niveau. Grandeur mesurée : {EXEMPLES[exId].grandeur}.</div>
       </> : <>
         <div style={{ fontSize: 13.5, color: KIT.txt, marginBottom: 6, lineHeight: 1.5 }}>Tapez ou collez vos mesures depuis le tableur : <strong>une ligne par niveau</strong>, la concentration puis les répétitions, séparées par une tabulation ou un « ; ». Exemple : <code>2 ; 0,118 ; 0,120 ; 0,119</code>.</div>
@@ -601,7 +601,7 @@ export function SimulationDosageEtalonnage() {
       </div>
       {mode === 'explore' && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
         <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Données :</span>
-        {[['simu', '🧪 Simuler une gamme'], ['exemple', '📋 Exemples réels'], ['mes', '✏️ Mes données de TP']].map(([k, n]) => <button key={k} onClick={() => choisirSource(k)} style={stylePetitBouton(source === k, '#0f766e')}>{n}</button>)}
+        {[['simu', '🧪 Simuler une gamme'], ['exemple', '📋 Exemples réels'], ['mes', '✏️ Mes données de TP']].map(([k, n]) => <button key={k} onClick={() => choisirSource(k)} style={stylePetitBouton(source === k, '#0b4f94')}>{n}</button>)}
       </div>}
       {ext ? <>
         <div className="de-l1">
@@ -618,7 +618,7 @@ export function SimulationDosageEtalonnage() {
       </> : <>
         {mode === 'explore' && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
           <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Technique :</span>
-          {Object.entries(TECHNIQUES).map(([k, t]) => <button key={k} onClick={() => { setTechId(k); setVolumes(k === 'clhp' ? [10, 20, 30, 40, 50] : k === 'spectro' ? [3, 6, 9, 12, 15] : [0.5, 1, 1.5, 2, 2.5].map(v => v * 1)); }} style={stylePetitBouton(techId === k, '#0f766e')}>{t.nom}</button>)}
+          {Object.entries(TECHNIQUES).map(([k, t]) => <button key={k} onClick={() => { setTechId(k); setVolumes(k === 'clhp' ? [10, 20, 30, 40, 50] : k === 'spectro' ? [3, 6, 9, 12, 15] : [0.5, 1, 1.5, 2, 2.5].map(v => v * 1)); }} style={stylePetitBouton(techId === k, '#0b4f94')}>{t.nom}</button>)}
         </div>}
         <div className="de-l1">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

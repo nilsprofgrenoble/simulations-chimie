@@ -357,7 +357,7 @@ export function SimulationPeinture({ plotlyReady }) {
       <Section titre={`Formule (${fmt(p.mTot, 1)} g)`} ouvert={ouverts.formule} onBascule={() => setOuverts(o => ({ ...o, formule: !o.formule }))}>
         {editable && <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
           <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Résine :</span>
-          {Object.entries(RESINES).map(([k, r]) => <button key={k} onClick={() => setF(o => ({ ...o, resine: k }))} style={stylePetitBouton(f.resine === k, '#0f766e')}>{r.nom}</button>)}
+          {Object.entries(RESINES).map(([k, r]) => <button key={k} onClick={() => setF(o => ({ ...o, resine: k }))} style={stylePetitBouton(f.resine === k, '#0b4f94')}>{r.nom}</button>)}
           <button onClick={() => setF({ ...FORMULE_REF })} style={stylePetitBouton(false)}>↺ formule de référence</button>
           <button onClick={() => setF({ ...fOrgal })} style={stylePetitBouton(false)}>formule Orgal corrigée</button>
         </div>}

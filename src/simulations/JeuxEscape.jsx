@@ -27,7 +27,7 @@ export function JeuxProf({ naviguer }) {
             <div style={{ fontWeight: 800 }}>{j.icone} {j.nom} <span style={{ fontWeight: 500, fontSize: 12, color: KIT.txt2 }}>· {j.niveau}</span></div>
             <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.5, margin: '4px 0 8px' }}>{j.texte}</div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-              <button onClick={() => naviguer(j.id)} style={styleBouton(true, '#0f766e')}>Ouvrir ▶</button>
+              <button onClick={() => naviguer(j.id)} style={styleBouton(true, '#0b4f94')}>Ouvrir ▶</button>
               <button onClick={() => copier(j)} style={styleBouton(false, '#475569')}>{copie === j.id ? 'Lien copié ✓' : 'Copier le lien élève'}</button>
             </div>
             <div style={{ fontSize: 12, color: KIT.txt2, marginTop: 6 }}>Code à donner aux élèves : <b style={{ fontFamily: 'ui-monospace,monospace' }}>{j.code}</b></div>
@@ -51,7 +51,7 @@ export function JeuxCode({ naviguer }) {
       <span>🎮 Ton professeur t'a donné un <b>code de jeu</b> ?</span>
       <input value={saisie} onChange={ev => { setSaisie(ev.target.value); setRate(false); }} aria-label="Code du jeu" placeholder="CODE" autoCapitalize="characters" autoComplete="off"
         style={{ width: 110, padding: '5px 8px', border: '1.5px solid #cbd5e1', borderRadius: 8, fontFamily: 'ui-monospace,monospace', textTransform: 'uppercase' }} />
-      <button type="submit" disabled={!saisie.trim()} style={styleBouton(false, '#0f766e')}>Jouer ▶</button>
+      <button type="submit" disabled={!saisie.trim()} style={styleBouton(false, '#0b4f94')}>Jouer ▶</button>
       {rate && <span role="alert" style={{ color: '#b45309' }}>Code inconnu.</span>}
     </form>);
 }

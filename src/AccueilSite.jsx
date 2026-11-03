@@ -75,7 +75,7 @@ export function AccueilSite({ onStart, onCode, session, simulations, energyUrl }
         <section className="ab-carte" aria-label="Installer l’application"><InstallerAppli /></section>
 
         <section className="ab-carte" aria-labelledby="titre-contact">
-          <div className="ab-pic" style={{ background: '#dce9f7' }} aria-hidden="true"><Pic n="users" t={28}/></div>
+          <div className="ab-pic" style={{ background: '#dce9f7', color: '#0b4f94', '--ia': '#f5a31a' }} aria-hidden="true"><Pic n="users" t={28}/></div>
           <h3 id="titre-contact">Un coup de main pour vos classes ?</h3>
           <p>Prise en main du site, simulation à adapter à votre séquence, idée de nouvelle simulation : n’hésitez pas à me contacter via mon adresse mail académique !</p>
           <BoutonMail libelle={<><Pic n="mail"/>Me contacter</>} sujet="Besoin d'un coup de main pour ma classe — Paillasse virtuelle" couleur={ACCENT} plein/>

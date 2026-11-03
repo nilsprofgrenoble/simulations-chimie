@@ -33,6 +33,7 @@
 .ab-carte h3 { font: 800 21px 'Outfit', sans-serif; margin: 0; color: #0c1a2e; }
 .ab-carte > p { margin: 0; color: #3d4d63; font-size: 15px; line-height: 1.6; flex: 1; }
 .ab-pic { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; }
+.ab-pic { color: #14304f; --ia: #ffffff; }
 .ab-bouton { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 14px; padding: 14px 22px; font: 800 15.5px Inter, system-ui, sans-serif; text-decoration: none; cursor: pointer; background: #0b4f94; color: #fff; }
 .ab-bouton:hover { background: #093f78; }
 .ab-compte { text-align: center; color: #3d4d63; font-size: 14.5px; margin: 10px 0 0; }

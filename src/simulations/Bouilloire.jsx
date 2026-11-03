@@ -624,8 +624,8 @@ export function SimulationBouilloire() {
     <div style={styleBoite}>
       {titreBoite('Réglages')}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-        <button onClick={() => maj({ enrichi: false })} style={stylePetitBouton(!ux.enrichi, '#0f766e')}>Modèle du TP (hypothèses des élèves)</button>
-        <button onClick={() => maj({ enrichi: true })} style={stylePetitBouton(ux.enrichi, '#0f766e')}>Bouilloire réaliste (modèle enrichi)</button>
+        <button onClick={() => maj({ enrichi: false })} style={stylePetitBouton(!ux.enrichi, '#0b4f94')}>Modèle du TP (hypothèses des élèves)</button>
+        <button onClick={() => maj({ enrichi: true })} style={stylePetitBouton(ux.enrichi, '#0b4f94')}>Bouilloire réaliste (modèle enrichi)</button>
         <button onClick={() => setUx({ ...BASE, eff: { ...TOUS }, enrichi: ux.enrichi })} style={stylePetitBouton(false, '#334155')}>↺ Valeurs du TP</button>
       </div>
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 8, opacity: ux.enrichi ? 1 : 0.6 }}>

@@ -241,8 +241,8 @@ export function SimulationMelanges() {
 
   const liquidesBtn = (cle, aucun) => <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
     <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>{cle === 'l1' ? 'Liquide 1 :' : 'Liquide 2 :'}</span>
-    {Object.keys(LIQUIDES).map(k => <button key={k} onClick={() => setT(x => ({ ...x, [cle]: k }))} style={stylePetitBouton(T[cle] === k, '#0f766e')}>{nom(k)}</button>)}
-    {aucun && <button onClick={() => setT(x => ({ ...x, l2: null }))} style={stylePetitBouton(!T.l2, '#0f766e')}>aucun</button>}</div>;
+    {Object.keys(LIQUIDES).map(k => <button key={k} onClick={() => setT(x => ({ ...x, [cle]: k }))} style={stylePetitBouton(T[cle] === k, '#0b4f94')}>{nom(k)}</button>)}
+    {aucun && <button onClick={() => setT(x => ({ ...x, l2: null }))} style={stylePetitBouton(!T.l2, '#0b4f94')}>aucun</button>}</div>;
   const preset = (n, a, b) => <button key={n} onClick={() => setT({ l1: a, l2: b, bleu: false, rouge: false })} style={stylePetitBouton(T.l1 === a && T.l2 === b, '#7c3aed')}>{n}</button>;
   const sliderGoutte = (verrou) => (
     <div style={{ marginTop: 8 }}>

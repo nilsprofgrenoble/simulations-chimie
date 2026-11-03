@@ -459,7 +459,7 @@ export function SimulationParoi() {
           </div>))}
       </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '8px 0 10px' }}>
-        <button onClick={() => majPreset(() => setCouches(cs => [...cs, { mat: 'laineBois', e: 100 }]))} disabled={couches.length >= 5} style={{ ...stylePetitBouton(true, '#0f766e'), opacity: couches.length >= 5 ? 0.45 : 1 }}>+ Ajouter une couche</button>
+        <button onClick={() => majPreset(() => setCouches(cs => [...cs, { mat: 'laineBois', e: 100 }]))} disabled={couches.length >= 5} style={{ ...stylePetitBouton(true, '#0b4f94'), opacity: couches.length >= 5 ? 0.45 : 1 }}>+ Ajouter une couche</button>
         <button onClick={() => majPreset(() => setCouches(cs => cs.slice().reverse()))} style={stylePetitBouton(false, '#334155')}>↔ Inverser l’ordre</button>
       </div>
       <div className="par-curseurs">

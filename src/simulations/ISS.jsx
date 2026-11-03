@@ -300,8 +300,8 @@ export function SimulationISS() {
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Cabine dessinée beaucoup trop grande · <strong style={{ color: C_P }}>P</strong> : poids (force de la Terre) · flèche bleue : force du plancher sur la personne.</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Câble :</span>
-        <button onClick={() => choisirTombe(false)} style={stylePetitBouton(!cab.tombe, '#0f766e')}>tenu (cabine immobile)</button>
-        <button onClick={() => choisirTombe(true)} style={stylePetitBouton(cab.tombe, '#0f766e')}>coupé (chute libre)</button>
+        <button onClick={() => choisirTombe(false)} style={stylePetitBouton(!cab.tombe, '#0b4f94')}>tenu (cabine immobile)</button>
+        <button onClick={() => choisirTombe(true)} style={stylePetitBouton(cab.tombe, '#0b4f94')}>coupé (chute libre)</button>
         <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginLeft: 6 }}>Balle :</span>
         <button onClick={() => setCab(c => ({ ...c, lance: false, t: 0, enCours: false }))} style={stylePetitBouton(!cab.lance, '#0369a1')}>lâchée</button>
         <button onClick={() => setCab(c => ({ ...c, lance: true, t: 0, enCours: false }))} style={stylePetitBouton(cab.lance, '#0369a1')}>lancée vers la droite</button></div>

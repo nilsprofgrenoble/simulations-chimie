@@ -280,9 +280,9 @@ export function SimulationRefraction() {
       {atelier === 'interface' && <>
         <Interface n1={n1} n2={n2} i1={A.i1} nom1={milieu(A.m1).nom} nom2={milieu(A.m2).nom} leg={A.leg}/>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Milieu 1 :</span>
-          {MILIEUX.map(m => <button key={m.id} onClick={() => setA(a => ({ ...a, m1: m.id }))} style={stylePetitBouton(A.m1 === m.id, '#0f766e')}>{m.nom}</button>)}</div>
+          {MILIEUX.map(m => <button key={m.id} onClick={() => setA(a => ({ ...a, m1: m.id }))} style={stylePetitBouton(A.m1 === m.id, '#0b4f94')}>{m.nom}</button>)}</div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 4 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Milieu 2 :</span>
-          {MILIEUX.map(m => <button key={m.id} onClick={() => setA(a => ({ ...a, m2: m.id }))} style={stylePetitBouton(A.m2 === m.id, '#0f766e')}>{m.nom}</button>)}</div>
+          {MILIEUX.map(m => <button key={m.id} onClick={() => setA(a => ({ ...a, m2: m.id }))} style={stylePetitBouton(A.m2 === m.id, '#0b4f94')}>{m.nom}</button>)}</div>
         <div style={{ marginTop: 6 }}>{curs('Angle d’incidence i₁', A.i1, 0, 89, 1, v => setA(a => ({ ...a, i1: v })), '°')}</div>
         <div style={{ marginTop: 4, fontSize: 14.5, color: KIT.txt, lineHeight: 1.6 }}>n₁ × sin i₁ = {fr(n1, 2)} × {g3(sin(A.i1))} = <strong>{g3(n1 * sin(A.i1))}</strong>
           {refraction(n1, n2, A.i1) != null ? <> ; n₂ × sin i₂ = {fr(n2, 2)} × {g3(sin(refraction(n1, n2, A.i1)))} = <strong>{g3(n2 * sin(refraction(n1, n2, A.i1)))}</strong> (i₂ = {fr(refraction(n1, n2, A.i1), 1)}°)</> : <span style={{ color: ORANGE, fontWeight: 700 }}> ; pas d’angle i₂ possible (réflexion totale).</span>}</div></>}

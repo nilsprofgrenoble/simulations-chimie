@@ -410,7 +410,7 @@ export function HansenExploration({ plotlyReady }) {
         <strong>Ajouter un solvant :</strong>
         <input value={nouveau.nom} onChange={e => setNouveau(o => ({ ...o, nom: e.target.value }))} placeholder="nom" aria-label="Nom du nouveau solvant" style={{ ...champ, width: 150 }}/>
         {['d', 'p', 'h'].map(k => <input key={k} value={nouveau[k]} onChange={e => setNouveau(o => ({ ...o, [k]: e.target.value }))} placeholder={`δ${k}`} aria-label={`δ${k} du nouveau solvant`} style={{ ...champ, width: 60 }}/>)}
-        <button onClick={ajouterSolvant} style={stylePetitBouton(true, '#0f766e')}>+ Ajouter</button>
+        <button onClick={ajouterSolvant} style={stylePetitBouton(true, '#0b4f94')}>+ Ajouter</button>
       </div>
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>Valeurs de δ : tables usuelles de Hansen. RED = Ra / R0, avec Ra² = 4(Δδd)² + (Δδp)² + (Δδh)² : vert si RED &lt; 1 (le solvant doit dissoudre le polymère), rouge sinon.{deux && ' Avec deux sphères, le 1er RED est celui du 1er polymère, le 2e (à droite) celui du 2e polymère.'}</div>
     </div>

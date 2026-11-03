@@ -277,7 +277,7 @@ export function SimulationSpectres() {
         <div style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.6 }}>Couleur perçue de la lampe (approximative)<br/>{rep != null ? <>Curseur sur une raie : <strong>λ = {fr(rep, 1)} nm</strong></> : <span style={{ color: KIT.txt2 }}>Placez le curseur sur une raie pour lire sa longueur d’onde.</span>}</div></div>
       <div style={{ marginTop: 4 }}>{curseur}</div>
       {!gazCache && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Gaz :</span>
-        {GAZ.map(x => <button key={x.id} onClick={() => setG(x.id)} style={stylePetitBouton(G === x.id, '#0f766e')}>{x.nom}</button>)}
+        {GAZ.map(x => <button key={x.id} onClick={() => setG(x.id)} style={stylePetitBouton(G === x.id, '#0b4f94')}>{x.nom}</button>)}
         <button onClick={() => setBlanche(b => !b)} style={stylePetitBouton(blanche, '#334155')}>{blanche ? '☑' : '☐'} comparer à la lumière blanche</button></div>}
       <div style={{ marginTop: 10 }}><div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>Tableau des spectres (longueurs d’onde en nm)</div><TableauGaz/></div>
     </div>);

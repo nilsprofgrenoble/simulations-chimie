@@ -167,7 +167,7 @@ export function SimulationCircuits() {
     </ul>);
   const panneauHypo = <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>;
   const choixR = (cle, nom) => <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center', marginTop: 4 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>{nom} :</span>
-    {RES.map(r => <button key={r} onClick={() => setC(c => ({ ...c, [cle]: r }))} style={stylePetitBouton(C[cle] === r, '#0f766e')}>{r} Ω</button>)}</div>;
+    {RES.map(r => <button key={r} onClick={() => setC(c => ({ ...c, [cle]: r }))} style={stylePetitBouton(C[cle] === r, '#0b4f94')}>{r} Ω</button>)}</div>;
   const planche = (
     <div style={styleBoite}>
       {!enDefi && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}>
