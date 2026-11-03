@@ -80,6 +80,95 @@ const C_DANS = '#15803d', C_HORS = '#b91c1c', C_POLY = '#166534', C_MEL = '#facc
 const distance = (P, s) => Math.sqrt(4 * (s[0] - P[0]) ** 2 + (s[1] - P[1]) ** 2 + (s[2] - P[2]) ** 2);
 const fmtPvap = v => (v < 0.01 ? '< 0,01' : fmt(v, v < 1 ? 2 : v < 10 ? 1 : 0));
 
+// Les graphiques de Hansen (sphère 3D et projection δp–δh), partagés par l'exploration libre, le parcours guidé et le défi :
+// ils utilisent exactement les mêmes sphères, les mêmes couleurs et les mêmes solvants.
+// poly, poly2 : { nom, d, p, h, R0 } ; SOLVANTS : { nom: { d: [δd, δp, δh], … } } ; cochesListe : noms des solvants à tracer ;
+// actifs : mélange [{ s, pct }] ; ptMel : point du mélange [δd, δp, δh] (ou null) ; totPct : somme des pct.
+export function GraphesHansen({ plotlyReady, vue = 'deux', noms = true, poly, poly2, deux = false, SOLVANTS, cochesListe, actifs = [], totPct = 0, ptMel = null, voirMel = true, hauteur = 430 }) {
+  const centre = [poly.d, poly.p, poly.h], R0 = poly.R0 > 0 ? poly.R0 : NaN;
+  const centre2 = [poly2.d, poly2.p, poly2.h], R02 = poly2.R0 > 0 ? poly2.R0 : NaN;
+  const nomA = poly.nom || 'Polymère 1', nomB = poly2.nom || 'Polymère 2';
+  const red = s => distance(centre, SOLVANTS[s].d) / R0, red2 = s => distance(centre2, SOLVANTS[s].d) / R02;
+  const redMel = ptMel ? distance(centre, ptMel) / R0 : null, redMel2 = deux && ptMel ? distance(centre2, ptMel) / R02 : null;
+  const cleCoches = cochesListe.join('|'), cleMel = ptMel ? ptMel.join() : '', cleActifs = JSON.stringify(actifs);
+  const ref3d = useRef(null), ref2d = useRef(null);
+  useEffect(() => {
+    const Plotly = window.Plotly;
+    if (!Plotly || !isFinite(R0)) return;
+    const dans = cochesListe.filter(s => red(s) < 1), hors = cochesListe.filter(s => red(s) >= 1);
+    const mode = noms ? 'markers+text' : 'markers';
+    const survol = l => l.map(s => (deux ? `${s}<br>RED ${nomA} = ${fmt(red(s), 2)}<br>RED ${nomB} = ${fmt(red2(s), 2)}` : `${s}<br>RED = ${fmt(red(s), 2)}`));
+    const C_B = '#1d4ed8', C_2 = '#7e22ce';
+    const cats = deux ? [
+      { l: cochesListe.filter(s => red(s) < 1 && red2(s) < 1), c: C_2, nom: 'Dissout les deux' },
+      { l: cochesListe.filter(s => red(s) < 1 && red2(s) >= 1), c: C_DANS, nom: `Dissout ${nomA} seul` },
+      { l: cochesListe.filter(s => red(s) >= 1 && red2(s) < 1), c: C_B, nom: `Dissout ${nomB} seul` },
+      { l: cochesListe.filter(s => red(s) >= 1 && red2(s) >= 1), c: C_HORS, nom: 'Ne dissout aucun' },
+    ].filter(k => k.l.length) : [{ l: dans, c: C_DANS, nom: 'Dans la sphère (RED < 1)' }, { l: hors, c: C_HORS, nom: 'Hors de la sphère' }];
+    // 3D : axes 2δd, δp, δh — avec le facteur 2 sur δd, le domaine de solubilité est une vraie sphère
+    if (ref3d.current) {
+      const u = [], v = []; for (let i = 0; i < 48; i++) u.push(2 * Math.PI * i / 47); for (let i = 0; i < 24; i++) v.push(Math.PI * i / 23);
+      const sph = (c, R) => ({ X: v.map(a => u.map(b => R * Math.sin(a) * Math.cos(b) + 2 * c[0])), Y: v.map(a => u.map(b => R * Math.sin(a) * Math.sin(b) + c[1])), Z: v.map(a => u.map(() => R * Math.cos(a) + c[2])) });
+      const { X, Y, Z } = sph(centre, R0);
+      const nuage = (l, c, nom) => ({ type: 'scatter3d', mode, name: nom, x: l.map(s => 2 * SOLVANTS[s].d[0]), y: l.map(s => SOLVANTS[s].d[1]), z: l.map(s => SOLVANTS[s].d[2]),
+        text: l, hovertext: survol(l), hoverinfo: 'text', textposition: 'top center', textfont: { size: 11, color: c }, marker: { color: c, size: 5 } });
+      const data = [
+        { type: 'surface', x: X, y: Y, z: Z, opacity: 0.22, colorscale: [[0, '#86efac'], [1, '#86efac']], showscale: false, hoverinfo: 'skip', name: 'Sphère' },
+        ...cats.map(k => nuage(k.l, k.c, k.nom)),
+        { type: 'scatter3d', mode: 'markers+text', name: poly.nom || 'Polymère', x: [2 * centre[0]], y: [centre[1]], z: [centre[2]], text: [poly.nom], textposition: 'top center',
+          textfont: { color: C_POLY, size: 12 }, marker: { color: C_POLY, size: 7, symbol: 'diamond' }, hoverinfo: 'text', hovertext: [poly.nom] },
+      ];
+      if (deux && isFinite(R02)) {
+        const S2 = sph(centre2, R02);
+        data.push({ type: 'surface', x: S2.X, y: S2.Y, z: S2.Z, opacity: 0.22, colorscale: [[0, '#93c5fd'], [1, '#93c5fd']], showscale: false, hoverinfo: 'skip', name: 'Sphère 2' },
+          { type: 'scatter3d', mode: 'markers+text', name: nomB, x: [2 * centre2[0]], y: [centre2[1]], z: [centre2[2]], text: [nomB], textposition: 'top center',
+            textfont: { color: C_B, size: 12 }, marker: { color: C_B, size: 7, symbol: 'diamond' }, hoverinfo: 'text', hovertext: [nomB] });
+      }
+      if (ptMel && voirMel) data.push({ type: 'scatter3d', mode: 'markers+text', name: 'Mélange', x: [2 * ptMel[0]], y: [ptMel[1]], z: [ptMel[2]], text: ['mélange'], textposition: 'bottom center',
+        marker: { color: C_MEL, size: 7, symbol: 'diamond', line: { color: KIT.txt, width: 2 } }, hoverinfo: 'text', hovertext: [deux ? `Mélange<br>RED ${nomA} = ${fmt(redMel, 2)}<br>RED ${nomB} = ${fmt(redMel2, 2)}` : `Mélange<br>RED = ${fmt(redMel, 2)}`] });
+      Plotly.react(ref3d.current, data, {
+        margin: { l: 0, r: 0, b: 0, t: 0 }, paper_bgcolor: 'white', font: { color: KIT.txt, size: 12 }, showlegend: true, legend: { orientation: 'h', y: 0, font: { size: 11 } },
+        scene: { aspectmode: 'data', dragmode: 'orbit', xaxis: { title: '2·δd (MPa½)' }, yaxis: { title: 'δp (MPa½)' }, zaxis: { title: 'δh (MPa½)' } },
+      }, { displayModeBar: false, responsive: true });
+    }
+    // 2D : projection de la sphère sur le plan δp–δh, axes orthonormés
+    if (ref2d.current) {
+      const cx = [], cy = []; for (let t = 0; t <= 2 * Math.PI + 0.01; t += 0.04) { cx.push(centre[1] + R0 * Math.cos(t)); cy.push(centre[2] + R0 * Math.sin(t)); }
+      const nuage = (l, c, nom) => ({ type: 'scatter', mode, name: nom, x: l.map(s => SOLVANTS[s].d[1]), y: l.map(s => SOLVANTS[s].d[2]), text: l, hovertext: survol(l), hoverinfo: 'text',
+        textposition: 'top center', textfont: { size: 11, color: c }, marker: { color: c, size: 8 } });
+      const data = [
+        { type: 'scatter', mode: 'lines', x: cx, y: cy, fill: 'toself', fillcolor: 'rgba(134,239,172,0.25)', line: { color: '#16a34a', width: 2 }, name: 'Projection de la sphère', hoverinfo: 'skip' },
+        ...cats.map(k => nuage(k.l, k.c, k.nom)),
+        { type: 'scatter', mode: 'markers+text', x: [centre[1]], y: [centre[2]], text: [poly.nom], textposition: 'top center', textfont: { color: C_POLY }, marker: { color: C_POLY, size: 11, symbol: 'diamond' }, name: poly.nom || 'Polymère' },
+      ];
+      if (deux && isFinite(R02)) {
+        const bx = [], by = []; for (let t = 0; t <= 2 * Math.PI + 0.01; t += 0.04) { bx.push(centre2[1] + R02 * Math.cos(t)); by.push(centre2[2] + R02 * Math.sin(t)); }
+        data.splice(1, 0, { type: 'scatter', mode: 'lines', x: bx, y: by, fill: 'toself', fillcolor: 'rgba(147,197,253,0.25)', line: { color: C_B, width: 2 }, name: 'Projection de la sphère 2', hoverinfo: 'skip' });
+        data.push({ type: 'scatter', mode: 'markers+text', x: [centre2[1]], y: [centre2[2]], text: [nomB], textposition: 'top center', textfont: { color: C_B }, marker: { color: C_B, size: 11, symbol: 'diamond' }, name: nomB });
+      }
+      if (ptMel && voirMel) {
+        const sv = actifs.map(x => SOLVANTS[x.s].d), cols = ['#e9a824', '#6a4c93', '#2a9d8f'];
+        if (sv.length === 2) data.push({ type: 'scatter', mode: 'lines', x: sv.map(s => s[1]), y: sv.map(s => s[2]), line: { color: '#94a3b8', dash: 'dot', width: 2 }, showlegend: false, hoverinfo: 'skip' });
+        else data.push({ type: 'scatter', mode: 'lines', x: [...sv, sv[0]].map(s => s[1]), y: [...sv, sv[0]].map(s => s[2]), line: { color: '#94a3b8', dash: 'dot', width: 2 }, showlegend: false, hoverinfo: 'skip' });
+        actifs.forEach((x, i) => data.push({ type: 'scatter', mode: 'lines', x: [ptMel[1], sv[i][1]], y: [ptMel[2], sv[i][2]], line: { color: cols[i], width: 2.5 }, name: `${Math.round(x.pct / totPct * 100)} % ${x.s}`, hoverinfo: 'skip' }));
+        data.push({ type: 'scatter', mode: 'markers', x: [ptMel[1]], y: [ptMel[2]], marker: { color: C_MEL, size: 13, symbol: 'diamond', line: { color: KIT.txt, width: 2 } }, name: 'Mélange', hovertext: [`Mélange<br>RED = ${fmt(redMel, 2)}`], hoverinfo: 'text' });
+      }
+      Plotly.react(ref2d.current, data, {
+        xaxis: { title: { text: 'δp (MPa½)', standoff: 6 }, scaleanchor: 'y', scaleratio: 1, zeroline: false, gridcolor: '#eef2f7' },
+        yaxis: { title: 'δh (MPa½)', zeroline: false, gridcolor: '#eef2f7' },
+        margin: { t: 10, b: 140, l: 50, r: 10 }, paper_bgcolor: 'white', plot_bgcolor: 'white', font: { color: KIT.txt, size: 12 },
+        legend: { orientation: 'h', yanchor: 'top', y: -0.3, x: 0, font: { size: 11 } },
+      }, { displayModeBar: false, responsive: true });
+    }
+  }, [plotlyReady, vue, noms, poly, deux, poly2, cleCoches, SOLVANTS, voirMel, cleMel, cleActifs]); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      {vue !== '2d' && <div ref={ref3d} style={{ flex: '1 1 320px', minWidth: 280, height: hauteur, background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}/>}
+      {vue !== '3d' && <div ref={ref2d} style={{ flex: '1 1 320px', minWidth: 280, height: hauteur, background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}/>}
+    </div>
+  );
+}
+
 // initial : configuration de départ { polyId, deux, poly2Id } (utilisée par le défi) ; onEtat : reçoit l'état courant (polymères, mélange, RED) à chaque changement
 export function HansenExploration({ plotlyReady, initial = {}, onEtat }) {
   // ── Le polymère ──
@@ -185,7 +274,7 @@ export function HansenExploration({ plotlyReady, initial = {}, onEtat }) {
     setInfoSel(`Mélange sélectif trouvé : RED = ${fmt(best.rc, 2)} pour ${nc} (dissous), ${fmt(best.ra, 2)} pour ${na} (non dissous). C’est le meilleur écart parmi les mélanges de 2 solvants cochés (proportions de 5 à 95 %).`);
   }
 
-  const cleCoches = cochesListe.join('|'), cleMel = ptMel ? ptMel.join() : '', cleActifs = JSON.stringify(actifs);
+  const cleMel = ptMel ? ptMel.join() : '', cleActifs = JSON.stringify(actifs);
   // ── Propriétés d'évaporation du mélange (approximations, voir l'encadré) ──
   const [voirEvap, setVoirEvap] = useState(false);
   const evap = useMemo(() => {
@@ -201,76 +290,6 @@ export function HansenExploration({ plotlyReady, initial = {}, onEtat }) {
   // ── Les graphiques (Plotly) ──
   const [vue, setVue] = useState('deux');
   const [noms, setNoms] = useState(true);
-  const ref3d = useRef(null), ref2d = useRef(null);
-  useEffect(() => {
-    const Plotly = window.Plotly;
-    if (!Plotly || !isFinite(R0)) return;
-    const dans = cochesListe.filter(s => red(s) < 1), hors = cochesListe.filter(s => red(s) >= 1);
-    const mode = noms ? 'markers+text' : 'markers';
-    const survol = l => l.map(s => (deux ? `${s}<br>RED ${nomA} = ${fmt(red(s), 2)}<br>RED ${nomB} = ${fmt(red2(s), 2)}` : `${s}<br>RED = ${fmt(red(s), 2)}`));
-    const C_B = '#1d4ed8', C_2 = '#7e22ce';
-    const cats = deux ? [
-      { l: cochesListe.filter(s => red(s) < 1 && red2(s) < 1), c: C_2, nom: 'Dissout les deux' },
-      { l: cochesListe.filter(s => red(s) < 1 && red2(s) >= 1), c: C_DANS, nom: `Dissout ${nomA} seul` },
-      { l: cochesListe.filter(s => red(s) >= 1 && red2(s) < 1), c: C_B, nom: `Dissout ${nomB} seul` },
-      { l: cochesListe.filter(s => red(s) >= 1 && red2(s) >= 1), c: C_HORS, nom: 'Ne dissout aucun' },
-    ].filter(k => k.l.length) : [{ l: dans, c: C_DANS, nom: 'Dans la sphère (RED < 1)' }, { l: hors, c: C_HORS, nom: 'Hors de la sphère' }];
-    // 3D : axes 2δd, δp, δh — avec le facteur 2 sur δd, le domaine de solubilité est une vraie sphère
-    if (ref3d.current) {
-      const u = [], v = []; for (let i = 0; i < 48; i++) u.push(2 * Math.PI * i / 47); for (let i = 0; i < 24; i++) v.push(Math.PI * i / 23);
-      const sph = (c, R) => ({ X: v.map(a => u.map(b => R * Math.sin(a) * Math.cos(b) + 2 * c[0])), Y: v.map(a => u.map(b => R * Math.sin(a) * Math.sin(b) + c[1])), Z: v.map(a => u.map(() => R * Math.cos(a) + c[2])) });
-      const { X, Y, Z } = sph(centre, R0);
-      const nuage = (l, c, nom) => ({ type: 'scatter3d', mode, name: nom, x: l.map(s => 2 * SOLVANTS[s].d[0]), y: l.map(s => SOLVANTS[s].d[1]), z: l.map(s => SOLVANTS[s].d[2]),
-        text: l, hovertext: survol(l), hoverinfo: 'text', textposition: 'top center', textfont: { size: 11, color: c }, marker: { color: c, size: 5 } });
-      const data = [
-        { type: 'surface', x: X, y: Y, z: Z, opacity: 0.22, colorscale: [[0, '#86efac'], [1, '#86efac']], showscale: false, hoverinfo: 'skip', name: 'Sphère' },
-        ...cats.map(k => nuage(k.l, k.c, k.nom)),
-        { type: 'scatter3d', mode: 'markers+text', name: poly.nom || 'Polymère', x: [2 * centre[0]], y: [centre[1]], z: [centre[2]], text: [poly.nom], textposition: 'top center',
-          textfont: { color: C_POLY, size: 12 }, marker: { color: C_POLY, size: 7, symbol: 'diamond' }, hoverinfo: 'text', hovertext: [poly.nom] },
-      ];
-      if (deux && isFinite(R02)) {
-        const S2 = sph(centre2, R02);
-        data.push({ type: 'surface', x: S2.X, y: S2.Y, z: S2.Z, opacity: 0.22, colorscale: [[0, '#93c5fd'], [1, '#93c5fd']], showscale: false, hoverinfo: 'skip', name: 'Sphère 2' },
-          { type: 'scatter3d', mode: 'markers+text', name: nomB, x: [2 * centre2[0]], y: [centre2[1]], z: [centre2[2]], text: [nomB], textposition: 'top center',
-            textfont: { color: C_B, size: 12 }, marker: { color: C_B, size: 7, symbol: 'diamond' }, hoverinfo: 'text', hovertext: [nomB] });
-      }
-      if (ptMel && voirMel) data.push({ type: 'scatter3d', mode: 'markers+text', name: 'Mélange', x: [2 * ptMel[0]], y: [ptMel[1]], z: [ptMel[2]], text: ['mélange'], textposition: 'bottom center',
-        marker: { color: C_MEL, size: 7, symbol: 'diamond', line: { color: KIT.txt, width: 2 } }, hoverinfo: 'text', hovertext: [deux ? `Mélange<br>RED ${nomA} = ${fmt(redMel, 2)}<br>RED ${nomB} = ${fmt(redMel2, 2)}` : `Mélange<br>RED = ${fmt(redMel, 2)}`] });
-      Plotly.react(ref3d.current, data, {
-        margin: { l: 0, r: 0, b: 0, t: 0 }, paper_bgcolor: 'white', font: { color: KIT.txt, size: 12 }, showlegend: true, legend: { orientation: 'h', y: 0, font: { size: 11 } },
-        scene: { aspectmode: 'data', dragmode: 'orbit', xaxis: { title: '2·δd (MPa½)' }, yaxis: { title: 'δp (MPa½)' }, zaxis: { title: 'δh (MPa½)' } },
-      }, { displayModeBar: false, responsive: true });
-    }
-    // 2D : projection de la sphère sur le plan δp–δh, axes orthonormés
-    if (ref2d.current) {
-      const cx = [], cy = []; for (let t = 0; t <= 2 * Math.PI + 0.01; t += 0.04) { cx.push(centre[1] + R0 * Math.cos(t)); cy.push(centre[2] + R0 * Math.sin(t)); }
-      const nuage = (l, c, nom) => ({ type: 'scatter', mode, name: nom, x: l.map(s => SOLVANTS[s].d[1]), y: l.map(s => SOLVANTS[s].d[2]), text: l, hovertext: survol(l), hoverinfo: 'text',
-        textposition: 'top center', textfont: { size: 11, color: c }, marker: { color: c, size: 8 } });
-      const data = [
-        { type: 'scatter', mode: 'lines', x: cx, y: cy, fill: 'toself', fillcolor: 'rgba(134,239,172,0.25)', line: { color: '#16a34a', width: 2 }, name: 'Projection de la sphère', hoverinfo: 'skip' },
-        ...cats.map(k => nuage(k.l, k.c, k.nom)),
-        { type: 'scatter', mode: 'markers+text', x: [centre[1]], y: [centre[2]], text: [poly.nom], textposition: 'top center', textfont: { color: C_POLY }, marker: { color: C_POLY, size: 11, symbol: 'diamond' }, name: poly.nom || 'Polymère' },
-      ];
-      if (deux && isFinite(R02)) {
-        const bx = [], by = []; for (let t = 0; t <= 2 * Math.PI + 0.01; t += 0.04) { bx.push(centre2[1] + R02 * Math.cos(t)); by.push(centre2[2] + R02 * Math.sin(t)); }
-        data.splice(1, 0, { type: 'scatter', mode: 'lines', x: bx, y: by, fill: 'toself', fillcolor: 'rgba(147,197,253,0.25)', line: { color: C_B, width: 2 }, name: 'Projection de la sphère 2', hoverinfo: 'skip' });
-        data.push({ type: 'scatter', mode: 'markers+text', x: [centre2[1]], y: [centre2[2]], text: [nomB], textposition: 'top center', textfont: { color: C_B }, marker: { color: C_B, size: 11, symbol: 'diamond' }, name: nomB });
-      }
-      if (ptMel && voirMel) {
-        const sv = actifs.map(x => SOLVANTS[x.s].d), cols = ['#e9a824', '#6a4c93', '#2a9d8f'];
-        if (sv.length === 2) data.push({ type: 'scatter', mode: 'lines', x: sv.map(s => s[1]), y: sv.map(s => s[2]), line: { color: '#94a3b8', dash: 'dot', width: 2 }, showlegend: false, hoverinfo: 'skip' });
-        else data.push({ type: 'scatter', mode: 'lines', x: [...sv, sv[0]].map(s => s[1]), y: [...sv, sv[0]].map(s => s[2]), line: { color: '#94a3b8', dash: 'dot', width: 2 }, showlegend: false, hoverinfo: 'skip' });
-        actifs.forEach((x, i) => data.push({ type: 'scatter', mode: 'lines', x: [ptMel[1], sv[i][1]], y: [ptMel[2], sv[i][2]], line: { color: cols[i], width: 2.5 }, name: `${Math.round(x.pct / totPct * 100)} % ${x.s}`, hoverinfo: 'skip' }));
-        data.push({ type: 'scatter', mode: 'markers', x: [ptMel[1]], y: [ptMel[2]], marker: { color: C_MEL, size: 13, symbol: 'diamond', line: { color: KIT.txt, width: 2 } }, name: 'Mélange', hovertext: [`Mélange<br>RED = ${fmt(redMel, 2)}`], hoverinfo: 'text' });
-      }
-      Plotly.react(ref2d.current, data, {
-        xaxis: { title: 'δp (MPa½)', scaleanchor: 'y', scaleratio: 1, zeroline: false, gridcolor: '#eef2f7' },
-        yaxis: { title: 'δh (MPa½)', zeroline: false, gridcolor: '#eef2f7' },
-        margin: { t: 10, b: 40, l: 50, r: 10 }, paper_bgcolor: 'white', plot_bgcolor: 'white', font: { color: KIT.txt, size: 12 },
-        legend: { orientation: 'h', y: -0.22, font: { size: 11 } },
-      }, { displayModeBar: false, responsive: true });
-    }
-  }, [plotlyReady, vue, noms, poly, deux, poly2, cleCoches, SOLVANTS, voirMel, cleMel, cleActifs]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ════════════════ BLOCS ════════════════
   const champ = { fontSize: 14, padding: '4px 6px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 70 };
@@ -284,10 +303,7 @@ export function HansenExploration({ plotlyReady, initial = {}, onEtat }) {
         </div>
       </div>
       {!window.Plotly && <div style={{ fontSize: 13.5, color: KIT.txt2, padding: 20, textAlign: 'center' }}>Chargement des graphiques…</div>}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {vue !== '2d' && <div ref={ref3d} style={{ flex: '1 1 320px', minWidth: 280, height: 430, background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}/>}
-        {vue !== '3d' && <div ref={ref2d} style={{ flex: '1 1 320px', minWidth: 280, height: 430, background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}/>}
-      </div>
+      <GraphesHansen plotlyReady={plotlyReady} vue={vue} noms={noms} poly={poly} poly2={poly2} deux={deux} SOLVANTS={SOLVANTS} cochesListe={cochesListe} actifs={actifs} totPct={totPct} ptMel={ptMel} voirMel={voirMel}/>
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6, lineHeight: 1.45 }}>
         Sphère 3D : faites-la tourner dans tous les sens avec la souris ; les axes sont 2δd, δp et δh, pour que le domaine de solubilité soit une vraie sphère.
         Projection : c'est l'« ombre » de la sphère sur le plan δp–δh (axes orthonormés). Un point dans le disque peut être hors de la sphère à cause de son δd : la couleur,
