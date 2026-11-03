@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, SuiviDefi, useCompteurDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
-import { HansenExploration } from "./HansenExploration";
+import { HansenExploration, GraphesHansen } from "./HansenExploration";
 import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE } from "../commun";
 import { Pic } from "../Pictos";
@@ -47,53 +47,6 @@ export function dernierSolvant(vol) {
   return { k, ecart: suivant ? SOLVANTS[suivant].psat / SOLVANTS[k].psat : Infinity };
 }
 
-// ════════════════ GRAPHIQUES ════════════════
-// Coupe de la sphère dans le plan δp–δh, au δd des solvants (tous à 15,8) : cercle de rayon √(R0² − 4 Δδd²)
-function Carte({ P, points, mel, dernier }) {
-  // axes orthonormés : même échelle en δp et en δh, pour que la coupe de la sphère soit un vrai cercle
-  const W = 520, g = 50, d = 14, t = 14, b = 40, pMax = 22, hMax = 24, u = (W - g - d) / pMax, H = t + b + hMax * u;
-  const X = v => g + v / pMax * (W - g - d), Y = v => H - b - v / hMax * (H - b - t);
-  const dd = 15.8 - P.d, rCoupe = Math.sqrt(Math.max(0, P.R0 ** 2 - 4 * dd * dd));
-  const kx = u, ky = u;
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Carte de Hansen δp–δh" style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
-      {[0, 5, 10, 15, 20].map(v => <g key={`p${v}`}><line x1={X(v)} y1={t} x2={X(v)} y2={H - b} stroke="#eef2f7"/><text x={X(v)} y={H - b + 15} fontSize="12" fill={KIT.txt2} textAnchor="middle">{v}</text></g>)}
-      {[0, 5, 10, 15, 20].map(v => <g key={`h${v}`}><line x1={g} y1={Y(v)} x2={W - d} y2={Y(v)} stroke="#eef2f7"/><text x={g - 5} y={Y(v) + 4} fontSize="12" fill={KIT.txt2} textAnchor="end">{v}</text></g>)}
-      <ellipse cx={X(P.p)} cy={Y(P.h)} rx={rCoupe * kx} ry={rCoupe * ky} fill="#dcfce7" stroke="#16a34a" strokeWidth="2"/>
-      <circle cx={X(P.p)} cy={Y(P.h)} r="5" fill="#15803d"/><text x={X(P.p) + 7} y={Y(P.h) - 7} fontSize="12.5" fontWeight="700" fill="#15803d">nitrocellulose</text>
-      {points.map(s => <g key={s.k}><circle cx={X(s.p)} cy={Y(s.h)} r="6" fill={s.color} stroke={KIT.txt}/>
-        <text x={X(s.p) + 8} y={Y(s.h) + 4} fontSize="12.5" fontWeight="700" fill={s.color}>{s.court}</text></g>)}
-      {mel && dernier && <line x1={X(mel.p)} y1={Y(mel.h)} x2={X(SOLVANTS[dernier].p)} y2={Y(SOLVANTS[dernier].h)} stroke="#0f172a" strokeWidth="2" strokeDasharray="4 3"/>}
-      {mel && <g><rect x={X(mel.p) - 6} y={Y(mel.h) - 6} width="12" height="12" fill="#fde047" stroke={KIT.txt} strokeWidth="2" transform={`rotate(45 ${X(mel.p)} ${Y(mel.h)})`}/>
-        <text x={X(mel.p) + 9} y={Y(mel.h) + 16} fontSize="12" fontWeight="700" fill={KIT.txt}>mélange</text></g>}
-      <line x1={g} y1={H - b} x2={W - d} y2={H - b} stroke={KIT.txt}/><line x1={g} y1={t} x2={g} y2={H - b} stroke={KIT.txt}/>
-      <text x={(g + W - d) / 2} y={H - 8} fontSize="13" fontWeight="700" fill={KIT.txt} textAnchor="middle">δp (MPa½)</text>
-      <text x="14" y={(t + H - b) / 2} fontSize="13" fontWeight="700" fill={KIT.txt} textAnchor="middle" transform={`rotate(-90 14 ${(t + H - b) / 2})`}>δh (MPa½)</text>
-    </svg>
-  );
-}
-// La sphère en 3D (axes 2δd, δp, δh, pour qu'elle soit une vraie sphère), vue sous un angle réglable
-function Sphere3D({ P, points, mel, angle }) {
-  const W = 520, H = 380, cx = 260, cy = 210, k = 9;
-  const a = angle * Math.PI / 180, el = 0.45;
-  const proj = (x, y, z) => { const X1 = x * Math.cos(a) - y * Math.sin(a), Y1 = x * Math.sin(a) + y * Math.cos(a);
-    return [cx + k * X1, cy - k * (z * Math.cos(el) - Y1 * Math.sin(el))]; };
-  const c = [2 * P.d, P.p, P.h], o = [2 * 12, 0, 0];
-  const P3 = s => proj(2 * s.d - o[0], s.p, s.h);
-  const [pcx, pcy] = proj(c[0] - o[0], c[1], c[2]);
-  const axes = [[[0, 0, 0], [26, 0, 0], '2δd (à partir de 24)'], [[0, 0, 0], [0, 22, 0], 'δp'], [[0, 0, 0], [0, 0, 24], 'δh']];
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Sphère de Hansen en trois dimensions" style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
-      {axes.map(([p0, p1, n], i) => { const [x0, y0] = proj(...p0), [x1, y1] = proj(...p1); return <g key={i}><line x1={x0} y1={y0} x2={x1} y2={y1} stroke={KIT.txt2} strokeWidth="1.5"/><text x={x1 + 4} y={y1} fontSize="12" fill={KIT.txt2}>{n}</text></g>; })}
-      <circle cx={pcx} cy={pcy} r={P.R0 * k} fill="#16a34a" opacity="0.12" stroke="#16a34a" strokeWidth="2"/>
-      <circle cx={pcx} cy={pcy} r="5" fill="#15803d"/>
-      {points.map(s => { const [x, y] = P3(s); const dans = ra(P, s) < P.R0; return <g key={s.k}><circle cx={x} cy={y} r="6" fill={s.color} stroke={KIT.txt} opacity={dans ? 1 : 0.85}/>
-        <text x={x + 8} y={y + 4} fontSize="12.5" fontWeight="700" fill={s.color}>{s.court}</text></g>; })}
-      {mel && (() => { const [x, y] = P3(mel); return <rect x={x - 6} y={y - 6} width="12" height="12" fill="#fde047" stroke={KIT.txt} strokeWidth="2" transform={`rotate(45 ${x} ${y})`}/>; })()}
-      <text x="10" y="18" fontSize="12" fill={KIT.txt2}>Vue projetée : un point peut paraître dans le disque sans être dans la sphère. Fiez-vous à RED.</text>
-    </svg>
-  );
-}
 function Hypotheses() {
   return (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
@@ -123,7 +76,6 @@ export function Simulation4({ plotlyReady }) {
   const [vol, setVol] = useState({ ea: 50, ba: 0, etoh: 50, ipa: 0 });
   const [testes, setTestes] = useState({});
   const [vue, setVue] = useState('carte');
-  const [angle, setAngle] = useState(35);
   const [vuHansen, setVuHansen] = useState(false);
   const [ouverts, setOuverts] = useState({ mel: true, hypo: true, sech: true });
   const [defi, setDefi] = useState(null);
@@ -290,20 +242,26 @@ export function Simulation4({ plotlyReady }) {
   const montrerMel = !enGuide || parc >= 2;
 
   // ════════════════ BLOCS ════════════════
+  // Les graphiques sont ceux de l'exploration libre (mêmes sphères, mêmes couleurs, mêmes solvants) : seuls les solvants montrés changent
+  const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+  const solvGraphes = Object.fromEntries(Object.entries(SOLVANTS).map(([, s]) => [cap(s.nom), { d: [s.d, s.p, s.h] }]));
+  const melGraphes = montrerMel && tot > 0 ? [mel.d, mel.p, mel.h] : null;
+  const actifsGraphes = Object.entries(vol).filter(([, v]) => v > 0).map(([k, v]) => ({ s: cap(SOLVANTS[k].nom), pct: v }));
   const vueBloc = (
     <div style={{ ...styleBoite, ...cadre('vue') }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginBottom: 6 }}>
         <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt }}>L'espace de Hansen</div>
         <div style={{ display: 'flex', gap: 4 }}>
-          <button onClick={() => setVue('carte')} style={stylePetitBouton(vue === 'carte', '#334155')}>Coupe δp–δh</button>
+          <button onClick={() => setVue('carte')} style={stylePetitBouton(vue === 'carte', '#334155')}>Projection δp–δh</button>
           <button onClick={() => setVue('3d')} style={stylePetitBouton(vue === '3d', '#334155')}>Sphère 3D</button>
         </div>
       </div>
-      {vue === 'carte' ? <Carte P={P} points={points} mel={montrerMel && tot > 0 ? mel : null} dernier={(!enGuide || parc === 3) && dernier ? dernier.k : null}/>
-        : <><Sphere3D P={P} points={points} mel={montrerMel && tot > 0 ? mel : null} angle={angle}/><Curseur nom="Angle de vue" valeur={angle} onChange={setAngle} min={-90} max={90} pas={5} unite="°" couleur="#334155"/></>}
+      {!window.Plotly && <div style={{ fontSize: 13.5, color: KIT.txt2, padding: 20, textAlign: 'center' }}>Chargement des graphiques…</div>}
+      <GraphesHansen plotlyReady={plotlyReady} vue={vue === 'carte' ? '2d' : '3d'} noms poly={{ nom: 'Nitrocellulose', d: P.d, p: P.p, h: P.h, R0: P.R0 }} poly2={{ nom: '', d: 0, p: 0, h: 0, R0: 0 }}
+        SOLVANTS={solvGraphes} cochesListe={points.map(x => cap(x.nom))} actifs={actifsGraphes} totPct={tot} ptMel={melGraphes} hauteur={380}/>
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.45 }}>
-        {vue === 'carte' ? <>La carte est une coupe de la sphère au δd des solvants (tous à 15,8) : le cercle a pour rayon √(R0² − 4 Δδd²) = {fmt(Math.sqrt(Math.max(0, P.R0 ** 2 - 4 * (15.8 - P.d) ** 2)), 2)} MPa½.
-          Un point dans le cercle vert a un RED inférieur à 1.</> : <>Axes 2δd, δp et δh : avec le facteur 2 sur δd, le domaine de solubilité est une vraie sphère.</>}
+        {vue === 'carte' ? <>Projection : c’est l’« ombre » de la sphère sur le plan δp–δh. Un point dans le disque peut être hors de la sphère à cause de son δd : la couleur, elle, tient compte des trois paramètres (vert : RED &lt; 1). Survolez un point pour lire son RED.</>
+          : <>Axes 2δd, δp et δh : avec le facteur 2 sur δd, le domaine de solubilité est une vraie sphère. Faites-la tourner avec la souris.</>}
       </div>
     </div>
   );
@@ -361,7 +319,7 @@ export function Simulation4({ plotlyReady }) {
             <div style={{ fontSize: 13.5, fontWeight: 700, marginTop: 6, color: r < 1 ? '#15803d' : '#b91c1c' }}>
               {r < 1 ? '✅ La nitrocellulose reste dissoute jusqu’à la fin du séchage.' : '⚠️ En fin de séchage, il ne reste qu’un non-solvant : la nitrocellulose risque de précipiter avant que le film soit formé.'}</div>
             {dernier.ecart < 2 && <div style={{ fontSize: 12.5, color: '#b45309', marginTop: 4 }}>Le solvant suivant n'est que {fmt(dernier.ecart, 1)} fois plus volatil : dans un mélange réel, l'ordre d'évaporation de deux solvants aussi proches n'est pas certain.</div>}
-            <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Sur la coupe δp–δh, les pointillés relient le mélange de départ au dernier solvant : pendant le séchage, la composition évolue vers lui.</div>
+            <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Sur la projection δp–δh, chaque trait relie le mélange à l’un de ses solvants : pendant le séchage, la composition évolue vers le moins volatil.</div>
           </>;
         })()}
       </Section>
