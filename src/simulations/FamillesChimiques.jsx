@@ -101,7 +101,7 @@ function evaluerDefi(d, coefs, cat, an, xy) {
     const e = element(d.Z), v = valence(d.Z);
     const o1 = d.reps.col === e.colonne, o2 = d.reps.ion === (IONS_FAM[e.colonne]);
     return { ok: o1 && o2, lignes: [
-      [o1, o1 ? 'Colonne correcte.' : `Colonne : elle se lit avec le nombre d’électrons de valence (${v} ici) ; ${v === 8 ? 'c’est la dernière colonne' : v <= 2 ? `la colonne ${v}` : `la colonne ${10 + v}`}.`],
+      [o1, o1 ? 'Colonne correcte.' : `Colonne : elle se lit avec le nombre d’électrons de valence (${v} ici) ; ${e.colonne === 18 ? 'c’est la dernière colonne (18), celle des gaz nobles, même pour l’hélium qui n’a que 2 électrons de valence' : v <= 2 ? `la colonne ${v}` : `la colonne ${10 + v}`}.`],
       [o2, o2 ? 'Ion correct.' : 'Ion : l’élément cherche la configuration du gaz noble le plus proche (perdre ou gagner des électrons, ou rester tel quel).']] };
   }
   if (d.type === 'equation') {
@@ -150,7 +150,7 @@ function VoletDefi({ defi, setDefi, changerType, coefs, setCoefs, xy, setXy }) {
         {res.lignes.map(([ok, t], k) => <div key={k} style={{ color: ok ? '#15803d' : '#b91c1c', fontWeight: 600 }}>{ok ? '✅' : '❌'} {t}</div>)}
         {res.ok && <div style={{ color: '#15803d', fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
-        {defi.type === 'famille' && <>Z = {e.Z} : {configTxt(e.Z)}, {valence(e.Z)} électron{valence(e.Z) > 1 ? 's' : ''} de valence → colonne <strong>{e.colonne}</strong> ({symFam[e.famille]}), il forme {e.colonne === 18 ? 'aucun ion (couche de valence déjà pleine)' : <>l’ion <strong>{IONS_FAM[e.colonne].replace('X', e.sym)}</strong></>}. C’est <strong>{e.nom}</strong>.</>}
+        {defi.type === 'famille' && <>Z = {e.Z} : {configTxt(e.Z)}, {valence(e.Z)} électron{valence(e.Z) > 1 ? 's' : ''} de valence → colonne <strong>{e.colonne}</strong> ({symFam[e.famille]}), il forme {e.colonne === 18 ? 'aucun ion (couche de valence déjà stable : duet pour l’hélium, octet pour les autres)' : <>l’ion <strong>{IONS_FAM[e.colonne].replace('X', e.sym)}</strong></>}. C’est <strong>{e.nom}</strong>.</>}
         {defi.type === 'equation' && <>Solution : <strong>{eq(rea, rea.coefs)}</strong></>}
         {defi.type === 'formule' && (() => { const r = composeIonique(cat, an); return <>x × (+{cat.q}) + y × (−{-an.q}) = 0 donne x = {r.x} et y = {r.y} : <strong>{formuleIonique(cat, an)}</strong> ({nomIonique(cat, an)}).</>; })()}
       </div>}
@@ -211,8 +211,8 @@ export function SimulationFamillesChimiques() {
         À vous : le fluor.</>,
       tache: { type: 'qcm', q: 'Quel ion forme le fluor F (Z = 9) ?', options: ['F⁻', 'F⁺', 'F²⁻', 'F⁷⁺'], bonne: 0, expl: 'F : 7 électrons de valence, il lui en manque 1 : il le gagne → F⁻ (10 électrons, comme le néon).' } },
     { id: 'nobles', titre: 'Les gaz nobles', depart: () => voirTab(10, 18),
-      texte: <>La colonne 18 : hélium, néon, argon… les <strong>gaz nobles</strong>. Leur couche de valence est déjà pleine : ils sont <strong>stables</strong> et ne forment pas d’ions ni de liaisons dans les conditions habituelles.</>,
-      tache: { type: 'qcm', q: 'Pourquoi le néon ne forme-t-il pas d’ion ?', options: ['Sa couche de valence est déjà pleine (octet)', 'Il a un seul électron de valence', 'Il est trop lourd', 'Il n’a pas de noyau'], bonne: 0, expl: 'Néon : 2 + 6 = 8 électrons de valence, c’est déjà un octet : il est stable tel quel.' } },
+      texte: <>La colonne 18 : hélium, néon, argon… les <strong>gaz nobles</strong>. Leur couche de valence est déjà complète : 2 électrons pour l’hélium (un <strong>duet</strong>), 8 pour les autres (un <strong>octet</strong>). Ils sont <strong>stables</strong> et ne forment pas d’ions ni de liaisons dans les conditions habituelles.</>,
+      tache: { type: 'qcm', q: 'Pourquoi le néon ne forme-t-il pas d’ion ?', options: ['Sa couche de valence est déjà complète (octet)', 'Il a un seul électron de valence', 'Il est trop lourd', 'Il n’a pas de noyau'], bonne: 0, expl: 'Néon : 2 + 6 = 8 électrons de valence, c’est déjà un octet : il est stable tel quel.' } },
     { id: 'retenir1', titre: 'À retenir : les familles', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li>Même <strong>colonne</strong> = même nombre d’électrons de valence = même <strong>famille</strong>.</li>
@@ -226,7 +226,7 @@ export function SimulationFamillesChimiques() {
       texte: <>Le potassium (comme le sodium, colonne 1) réagit de la même façon avec l’eau, plus violemment : K⁺ remplace Na⁺, et l’équation a la <strong>même forme</strong>.</>,
       tache: { type: 'action', ok: atelierEff === 'eau' && cleR === 'K' && bil.equilibree, consigne: 'Équilibrez l’équation du potassium dans l’eau.' } },
     { id: 'reac3', titre: 'Les alcalino-terreux : charge 2+', depart: () => voirEau('Mg'),
-      texte: <>Avec le magnésium (colonne 2), l’ion formé est Mg²⁺ : <strong>deux</strong> charges positives. Pour que la charge se conserve, il faut <strong>deux</strong> ions HO⁻ pour un ion Mg²⁺.
+      texte: <>Avec le magnésium (colonne 2), l’ion formé est Mg²⁺ : <strong>deux</strong> charges positives. Pour que la charge se conserve, il faut <strong>deux</strong> ions HO⁻ pour un ion Mg²⁺. (En réalité, le magnésium réagit très lentement avec l’eau froide, et l’hydroxyde de magnésium est peu soluble : on s’entraîne ici à équilibrer l’équation, pas à prévoir une réaction rapide.)
         <ExempleResolu>Charge à droite : (+2) + 2 × (−1) = 0 : c’est bien la charge de Mg + H₂O (neutres).</ExempleResolu></>,
       tache: { type: 'action', ok: atelierEff === 'eau' && cleR === 'Mg' && bil.equilibree, consigne: 'Équilibrez l’équation du magnésium dans l’eau.' } },
     { id: 'ionique', titre: 'Un solide ionique est neutre', depart: () => voirIon('Na', 'Cl'),
