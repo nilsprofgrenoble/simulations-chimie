@@ -203,7 +203,7 @@ export function SimulationMelanges() {
         <ExempleResolu>Sans alcool, l’huile (d = 0,9) flotte sur l’eau (d = 1,0). Avec beaucoup d’alcool (d = 0,8), elle coule. Entre les deux, le mélange eau-alcool a une densité d’environ 0,9 : celle de l’huile.</ExempleResolu>
         À vous : ajoutez de l’alcool (curseur) jusqu’à ce que la goutte soit suspendue.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'goutte' && g.etat === 'suspendue', consigne: 'Réglez le volume d’alcool pour que la goutte d’huile reste suspendue.' } },
-    { id: 'calcul', titre: 'Pourquoi cette quantité d’alcool ?', depart: () => goutteVoir(15, 15),
+    { id: 'calcul', titre: 'Pourquoi cette quantité d’alcool ?', depart: () => goutteVoir(20, 5),
       texte: <>Le mélange eau-alcool a une densité <strong>comprise entre 0,8 et 1,0</strong> : une moyenne pondérée par les volumes, <strong>d = (V<sub>eau</sub> × 1,0 + V<sub>alcool</sub> × 0,8) / (V<sub>eau</sub> + V<sub>alcool</sub>)</strong>. La goutte est suspendue quand d(mélange) = d(huile) = 0,9.</>,
       tache: { type: 'num', q: 'Quelle est la densité d’un mélange de 15 mL d’eau et de 15 mL d’alcool ?', unite: '', vrai: 0.9, tol: 0.01, affiche: x => String(x).replace('.', ','), calcul: () => ['On a 15 mL d’eau (d = 1,0) et 15 mL d’alcool (d = 0,8).',
           'En haut de la fraction : 15 × 1,0 + 15 × 0,8 = 15 + 12 = 27.',

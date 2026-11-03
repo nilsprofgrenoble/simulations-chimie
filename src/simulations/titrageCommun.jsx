@@ -155,7 +155,7 @@ export function OutilTitrageGeneral() {
         <div style={{ fontSize: 22, fontFamily: 'Georgia, serif', color: KIT.txt, textAlign: 'center', padding: '6px 0', overflowX: 'auto' }}>
           {coef(titre.a)}<Formule texte={titre.f}/> + {coef(titrant.b)}<Formule texte={titrant.f}/> → {produits.map((p, k) => <span key={k}>{k > 0 && ' + '}{coef(p.a)}<Formule texte={p.f}/></span>)}
         </div>
-        <div style={{ fontSize: 12.5, color: KIT.txt2, textAlign: 'center' }}>Formules au clavier : MnO4- → MnO₄⁻, Fe2+ → Fe²⁺, S2O32- → S₂O₃²⁻. Les espèces spectatrices (H⁺, H₂O…) peuvent être omises.</div>
+        <div style={{ fontSize: 12.5, color: KIT.txt2, textAlign: 'center' }}>Formules au clavier : MnO4- → MnO₄⁻, Fe2+ → Fe²⁺, S2O32- → S₂O₃²⁻. Les ions spectateurs (Na⁺, K⁺, SO₄²⁻…) peuvent être omis ; H⁺ et H₂O, eux, sont à écrire.</div>
       </div>
       <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
         <div style={styleBoite}>

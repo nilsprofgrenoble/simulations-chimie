@@ -508,7 +508,7 @@ export function SimulationElectrisation() {
       tache: { type: 'qcm', q: 'Les feuilles se referment parce que…', options: ['les électrons repoussés par la tige − descendent vers les feuilles et compensent leurs charges +', 'la tige en ébonite a neutralisé l’électroscope par contact', 'les feuilles ont perdu leurs protons'], bonne: 0,
         expl: 'Un électroscope chargé + voit ses feuilles se refermer quand on approche une tige −. Si on la rapproche encore, il arrive trop d’électrons : les feuilles se rouvrent, chargées −.' } },
     { id: 'e7', titre: 'Encore plus près', onglet: 'electroscope', focus: ['reglages', 'scene'],
-      texte: <>Rapprochez encore la tige en ébonite (2 cm ou moins).</>,
+      texte: <>Rapprochez encore la tige en ébonite (jusqu’à 1 cm).</>,
       tache: { type: 'action', ok: okE7, label: 'Tige en ébonite à 1 cm', faire: () => setEle({ tige: 'ebonite', d: 1, Q: Q_ELE }), consigne: 'Feuilles écartées à nouveau, tige en ébonite très proche' } },
     { id: 'e7q', titre: 'Les feuilles se rouvrent', onglet: 'electroscope', focus: ['bilan'],
       texte: <>Lisez le bilan : la charge des feuilles a changé de signe.</>,

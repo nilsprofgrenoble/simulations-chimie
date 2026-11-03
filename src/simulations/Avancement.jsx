@@ -552,7 +552,7 @@ export function Simulation1() {
   const questionsDefi = !defi ? [] : defi.type === 'prevoir' ? [
     { id: 'v', q: `Avec ${defi.params.m} mg de magnésium et l'acide en excès, quel volume de gaz attendez-vous ? (V_m = ${fmt(VmDefi, 1)} L/mol dans la salle)`, unite: 'mL', vrai: defi.params.m / 1000 / M_MG * VmDefi * 1000, tol: 0.03 },
   ] : defi.type === 'deborder' ? [
-    { id: 'm', q: `Quelle masse maximale de magnésium peut-on utiliser sans faire déborder l'éprouvette de 100 mL ? (V_m = ${fmt(VmDefi, 1)} L/mol)`, unite: 'mg', vrai: 0.1 / VmDefi * M_MG * 1000, tol: 0.03 },
+    { id: 'm', q: `Quelle masse maximale de magnésium peut-on utiliser sans faire déborder l'éprouvette de 100 mL ? (On suppose le gaz à la température de la salle et V_m = ${fmt(VmDefi, 1)} L/mol, volume molaire apparent du gaz mesuré dans la salle, vapeur d'eau comprise.)`, unite: 'mg', vrai: 0.1 / VmDefi * M_MG * 1000, tol: 0.03 },
   ] : [
     { id: 'l', q: `${defi.params.m} mg de magnésium, ${defi.params.Va} mL d'acide à ${fmt(defi.params.c, 1)} mol/L. Réactif limitant (tapez Mg ou H+)`, unite: '', texte: true, vrai: mod.limitant },
     { id: 'x', q: 'Avancement maximal x_max', unite: 'mol', vrai: mod.xmax, tol: 0.03 },
@@ -589,7 +589,7 @@ export function Simulation1() {
         })}
         <div><button onClick={() => { noterDefi(questionsDefi.length > 0 && questionsDefi.every(justeD)); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button></div>
         <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>
-          {defi.type === 'deborder' ? 'Pour vérifier : passez en exploration libre, réglez la masse que vous avez trouvée, et faites la manip.'
+          {defi.type === 'deborder' ? 'Pour vérifier : passez en exploration libre, réglez la masse que vous avez trouvée, et faites la manip. Dans la manip, la réaction échauffe un peu le gaz pendant quelques secondes : l’éprouvette peut déborder très légèrement avant de revenir (écart du modèle « gaz à température de la salle »).'
             : 'Puis faites la manip avec les commandes sous le schéma pour vérifier.'}
         </div>
       </>}

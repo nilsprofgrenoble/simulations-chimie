@@ -338,7 +338,7 @@ export function SimulationMouvementSysteme() {
       texte: <>On tire le mobile avec le fil. Réglez la force à 0,5 N et la masse à 0,5 kg, notez ‖Δv‖, puis passez à <strong>0,2 kg</strong> (même force).</>,
       tache: { type: 'action', ok: okMasseM, label: 'Mobile de 0,2 kg tiré par 0,5 N', faire: () => setSc(s => ({ ...s, ...etatInit('mobile'), F: 0.5, m: 0.2, aff: { ...s.aff, dv: true } })), consigne: 'Mobile de masse ≤ 0,25 kg, force ≥ 0,4 N' } },
     { id: 'masseMq', titre: 'Plus léger : plus de variation', onglet: 'chrono', focus: ['bilan'],
-      texte: <>Comparez avec le cas 0,5 kg (‖Δv‖ ≈ 0,24 m/s au point A5 pour k = 1).</>,
+      texte: <>Comparez avec le cas 0,5 kg (‖Δv‖ ≈ 0,20 m/s au point A5 pour k = 1).</>,
       tache: { type: 'qcm', q: 'À force et durée identiques, un mobile 2,5 fois plus léger subit une variation de vitesse…', options: ['2,5 fois plus grande', '2,5 fois plus petite', 'identique'], bonne: 0,
         expl: 'Δv ≈ ΣF·Δt / m : Δv est inversement proportionnel à la masse. Le plus léger (le moins inerte) varie le plus.' } },
     { id: 'plan', titre: 'Deux forces non colinéaires', onglet: 'chrono', focus: ['reglages', 'scene'],

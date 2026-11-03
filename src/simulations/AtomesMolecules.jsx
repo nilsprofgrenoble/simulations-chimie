@@ -273,7 +273,7 @@ export function SimulationAtomesMolecules() {
 
   // — actions sur l'atelier « ions » —
   const choisirElement = Z => setIon({ Z, n: Z });
-  const ajouterE = d => setIon(s => ({ ...s, n: clamp(s.n + d, Math.max(0, s.Z - 3), s.Z + 3) }));
+  const ajouterE = d => setIon(s => ({ ...s, n: clamp(s.n + d, Math.max(0, s.Z - 3), Math.min(s.Z + 3, 20)) }));
   // — actions sur la planche de Lewis —
   const gererMol = f => setMol(m => f(m));
   const cliquerAtome = i => gererMol(m => {

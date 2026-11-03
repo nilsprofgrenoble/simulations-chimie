@@ -182,7 +182,7 @@ export function SimulationDilution() {
       tache: { type: 'num', q: 'Quel est le facteur de dilution F ?', unite: '', vrai: 20, tol: 0.02, affiche: x => String(x),
         calcul: () => ['Le facteur de dilution est le volume final divisé par le volume prélevé : F = V_f / V_m.', 'Ici V_f = 100 mL (la fiole) et V_m = 5 mL (ce qu’on prélève).', 'F = 100 / 5 = 20.'],
         pieges: [[0.05, 'F = V_f / V_m (le grand volume divisé par le petit), pas l’inverse.'], [95, 'Tu as soustrait : on divise V_f par V_m.'], [500, 'Tu as multiplié : on divise V_f par V_m.']], expl: 'F = V_f / V_m = 100 / 5 = 20 : la solution fille est 20 fois moins concentrée.' } },
-    { id: 'volume', titre: 'Quel volume prélever ?', depart: () => voir({ Vm: 5, Vf: 100 }),
+    { id: 'volume', titre: 'Quel volume prélever ?', depart: () => voir({ Vm: 10, Vf: 200 }),
       texte: <>On connaît la concentration voulue : on calcule d’abord <strong>F = t<sub>m</sub> / t<sub>f</sub></strong>, puis <strong>V<sub>m</sub> = V<sub>f</sub> / F</strong>.
         <ExempleResolu>Pour 100 mL à 0,040 g/L : F = 0,40 / 0,040 = 10, donc V<sub>m</sub> = 100 / 10 = <strong>10 mL</strong>.</ExempleResolu>
         À vous : 100 mL de solution fille à 0,020 g/L.</>,

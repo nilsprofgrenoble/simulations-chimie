@@ -127,7 +127,7 @@ export function SimulationLoiOhm() {
           'Les unités doivent être des volts (V) et des ampères (A). U = 9,0 V est déjà en volts.',
           'Conversion : 1 mA = 0,001 A, donc I = 45 mA = 45 × 0,001 = 0,045 A.',
           'R = U / I = 9,0 / 0,045 = 200 Ω.'], expl: 'R = U / I = 9,0 / 0,045 = 200 Ω.' } },
-    { id: 'calcul', titre: 'Prévoir l’intensité', depart: () => voir('ohm', { inconnu: false, R: 330, U: 6 }),
+    { id: 'calcul', titre: 'Prévoir l’intensité', depart: () => voir('ohm', { inconnu: false, R: 220, U: 9 }),
       texte: <>On peut aussi <strong>prévoir</strong> le courant : I = U / R.
         <ExempleResolu>U = 6,0 V et R = 100 Ω : I = 6,0 / 100 = 0,060 A = <strong>60 mA</strong>. {bouton('Voir sur le montage', () => voir('ohm', { inconnu: false, R: 100, U: 6 }))}</ExempleResolu>
         À vous : R = 330 Ω et U = 6,0 V.</>,
@@ -178,7 +178,7 @@ export function SimulationLoiOhm() {
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
       <li><strong>Résistor idéal</strong> : sa résistance R est constante (en réalité elle varie un peu quand le résistor chauffe). <strong>Appareils de mesure parfaits</strong> : ils ne modifient pas le circuit.</li>
-      <li><strong>Lampe</strong> à incandescence 6 V – 0,30 A : sa caractéristique est modélisée par une courbe simple (I proportionnelle à U<sup>1,72</sup>) qui reproduit l’allure observée en TP. Ce n’est pas une loi à connaître.</li>
+      <li><strong>Lampe</strong> à incandescence 6 V – 0,30 A : sa caractéristique est modélisée par une courbe simple (U proportionnelle à I<sup>1,72</sup>, donc I croît moins vite que U) qui reproduit l’allure observée en TP. Ce n’est pas une loi à connaître.</li>
       <li><strong>Thermistance CTN</strong> : 10 kΩ à 25 °C, modèle usuel R = R₂₅ · exp[B (1/T − 1/T₂₅)] avec B = 3950 K. Cette formule est <strong>hors programme</strong> : seule la courbe d’étalonnage est à exploiter. Le capteur est alimenté sous <strong>5,0 V</strong>, son auto-échauffement est négligé.</li>
       <li><strong>Photorésistance (LDR)</strong> : modèle simple R = 15 kΩ × (éclairement / 10 lux)<sup>−0,7</sup>, inventé pour reproduire l’allure observée (R diminue quand la lumière augmente). Seule la courbe d’étalonnage est à exploiter.</li>
       <li><strong>Modèle de la caractéristique</strong> : les mesures du simulateur sont sans incertitude ; en TP réel, les points ne sont jamais parfaitement alignés et l’écart au modèle sert à juger sa qualité.</li>

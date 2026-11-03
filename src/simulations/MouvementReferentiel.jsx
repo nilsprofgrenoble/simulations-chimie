@@ -534,6 +534,8 @@ export function SimulationMouvementReferentiel() {
           {visObjs.length > 1 && <><div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Mesures pour</div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>{visObjs.map(o => <button key={o.id} onClick={() => maj({ obj: o.id })} style={stylePetitBouton(sel === o.id, '#334155')}>{o.court}</button>)}</div></>}</>}
       </>}
+      {enDefi && defi && defi.type === 'vitesse' && <><div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Mesures pour</div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>{S.objets.map(o => <button key={o.id} onClick={() => maj({ obj: o.id })} style={stylePetitBouton(sel === o.id, '#334155')}>{o.court}</button>)}</div></>}
       <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Intervalle entre deux images : Δt</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {S.dts.map((d, k) => <button key={d} onClick={() => maj({ dtIdx: k, i: 4 })} style={stylePetitBouton(dtIdx === k, '#0ea5e9')}>{vir(d)} s</button>)}</div>

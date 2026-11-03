@@ -113,7 +113,7 @@ const TXT_CTX = { sol: 'dans une cabine posée sur le sol', chute: 'dans une cab
 function evaluer(d, v) {
   if (d.type === 'poids') { const vrai = d.m * gAlt(d.h), x = lireNombre(d.reps.v), ok = isFinite(x) && Math.abs(x - vrai) <= 0.02 * vrai; return { ok, lignes: [[ok, ok ? 'Poids correct.' : 'Lis g à cette altitude dans la simulation puis calcule P = m × g (en newtons).']] }; }
   if (d.type === 'cabine') { const ok = d.reps.d === d.rep; return { ok, lignes: [[ok, ok ? 'Bonne réponse.' : 'Regarde si la cabine tombe en même temps que la balle : si oui, la balle ne bouge pas par rapport à la cabine.']] }; }
-  const ok = Math.abs(v - vOrb(d.h)) <= 0.12; return { ok, lignes: [[ok, ok ? 'Orbite circulaire : la station reste à la même altitude.' : v < vOrb(d.h) ? 'Trop lent : la station finit par se rapprocher de la Terre.' : 'Trop rapide : la station s’éloigne de la Terre (l’orbite est une ellipse).']] };
+  const ok = typeOrbite(d.h, v).type === 'circulaire'; return { ok, lignes: [[ok, ok ? 'Orbite circulaire : la station reste à la même altitude.' : v < vOrb(d.h) ? 'Trop lent : la station finit par se rapprocher de la Terre.' : 'Trop rapide : la station s’éloigne de la Terre (l’orbite est une ellipse).']] };
 }
 function VoletDefi({ defi, setDefi, changerType, v }) {
   const res = defi.verifie ? evaluer(defi, v) : null, reussi = !!res && res.ok;
@@ -141,7 +141,7 @@ function VoletDefi({ defi, setDefi, changerType, v }) {
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'poids' && <>g({defi.h} km) ≈ {fr(gAlt(defi.h), 2)} N/kg, donc P = m × g = {defi.m} × {fr(gAlt(defi.h), 2)} = <strong>{fr(defi.m * gAlt(defi.h), 0)} N</strong>.</>}
         {defi.type === 'cabine' && (defi.rep === 'flotte' ? <>Cabine et balle <strong>tombent ensemble</strong> : la balle reste là où on l’a lâchée.</> : <>La cabine ne tombe pas : la balle <strong>tombe</strong> vers le plancher.</>)}
-        {defi.type === 'orbite' && <>Vitesse de l’orbite circulaire à {defi.h} km : <strong>{km(vOrb(defi.h))}</strong> (à 0,12 km/s près).</>}
+        {defi.type === 'orbite' && <>Vitesse de l’orbite circulaire à {defi.h} km : <strong>{km(vOrb(defi.h))}</strong> (à 0,03 km/s près).</>}
       </div>}
     </div>);
 }
@@ -228,13 +228,13 @@ export function SimulationISS() {
         <ExempleResolu>La Terre attire tout pareil : cabine, personne et balle subissent <strong>la même chute</strong>. Par rapport à la cabine, la balle <strong>ne bouge pas</strong> : elle <strong>flotte</strong>, et la personne aussi !</ExempleResolu></>,
       tache: { type: 'action', ok: enGuide && fait.chute && cab.tombe, consigne: 'Lancez l’expérience avec le câble coupé.' } },
     { id: 'ref', titre: 'Se mettre dans la cabine', depart: () => voirC(true),
-      texte: <>Cochez <strong>« vue depuis la cabine »</strong> : on se place dans le <strong>référentiel de la cabine</strong>. La cabine devient immobile sur l’écran, et c’est le <strong>sol qui monte</strong> vers elle. Relancez l’expérience : la personne et la balle <strong>ne bougent pas</strong>, comme s’il n’y avait plus de gravité. C’est ce que ressentent les astronautes.</>,
+      texte: <>Cochez <strong>« vue depuis la cabine »</strong> : on se place dans le <strong>référentiel de la cabine</strong>. La cabine devient immobile sur l’écran, et c’est le <strong>sol qui monte</strong> vers elle. Relancez l’expérience : la personne et la balle <strong>ne bougent pas</strong>, comme s’il n’y avait plus de gravité (alors que la gravité est toujours là : la cabine et la personne tombent ensemble). C’est ce que ressentent les astronautes.</>,
       tache: { type: 'action', ok: enGuide && fait.vue, consigne: 'Cochez « vue depuis la cabine ».' } },
     { id: 'balance', titre: 'La force de la Terre existe toujours', depart: () => voirC(true),
       texte: <>Regardez les flèches <strong>P</strong> (poids) : elles sont toujours là, sur la personne comme sur la balle. La Terre attire toujours. Mais le plancher de la cabine <strong>tombe aussi</strong> : il ne pousse plus la personne vers le haut (plus de flèche bleue). Elle ne sent plus son poids.</>,
       tache: { type: 'qcm', q: 'Dans la cabine qui tombe, la personne a-t-elle encore un poids ?', options: ['Oui : la Terre l’attire toujours, mais rien ne la soutient', 'Non : il n’y a plus d’attraction', 'Oui, mais la cabine le supprime', 'Non, la cabine est trop petite'], bonne: 0, expl: 'La force de la Terre (le poids) existe toujours. Ce qui disparaît, c’est la sensation de poids : personne ne pousse l’astronaute, le sol de la cabine tombe avec lui.' } },
     { id: 'lancer', titre: 'Lançons la balle !', depart: () => voirC(true, true),
-      texte: <>On <strong>lance</strong> maintenant la balle vers la droite, la cabine étant en chute libre. Vue depuis le <strong>sol</strong>, elle décrit une <strong>courbe</strong> (elle tombe en avançant). Cochez « vue depuis la cabine » : elle part <strong>tout droit</strong>, à <strong>vitesse constante</strong>. Tout se passe <strong>comme si aucune force ne s’exerçait</strong> sur elle : c’est le <strong>principe d’inertie</strong>.</>,
+      texte: <>On <strong>lance</strong> maintenant la balle vers la droite, la cabine étant en chute libre. Vue depuis le <strong>sol</strong>, elle décrit une <strong>courbe</strong> (elle tombe en avançant). Cochez « vue depuis la cabine » : la balle part <strong>tout droit</strong>, à <strong>vitesse constante</strong>, car la cabine tombe exactement comme elle. Attention : la balle a toujours son <strong>poids</strong>, non compensé (elle accélère vers la Terre, comme on le voit depuis le sol). Dans la cabine, on voit seulement son mouvement <strong>par rapport à la cabine</strong>.</>,
       tache: { type: 'action', ok: enGuide && fait.lance, consigne: 'Lancez la balle (« lancée vers la droite ») avec le câble coupé.' } },
     { id: 'orbite', titre: 'Une chute… sans fin', depart: () => voirO(400, 3),
       texte: <>Comment la station peut-elle « tomber » sans jamais toucher la Terre ? Imaginez un canon qui tire <strong>horizontalement</strong> (idée de Newton). Plus la vitesse est grande, plus l’objet va loin avant de toucher le sol. Avec <strong>assez de vitesse</strong>, la Terre étant ronde, le sol « se dérobe » sous lui : il tombe… sans jamais arriver !
@@ -287,7 +287,7 @@ export function SimulationISS() {
         <label style={{ fontSize: 13.5, fontWeight: 600, display: 'block' }}>Altitude : <strong>{h} km</strong>
           <input type="range" min="200" max="1500" step="50" value={h} disabled={verrouH} aria-label="Altitude" onChange={e => { setH(+e.target.value); arreter(); }} style={{ width: '100%' }}/></label>
         <label style={{ fontSize: 13.5, fontWeight: 600, display: 'block' }}>Vitesse de lancement : <strong>{fr(v, 2)} km/s</strong>
-          <input type="range" min="0" max={vMax} step="0.05" value={Math.min(v, vMax)} aria-label="Vitesse" onChange={e => { setV(+e.target.value); arreter(); }} style={{ width: '100%' }}/></label></div>
+          <input type="range" min="0" max={vMax} step="0.01" value={Math.min(v, vMax)} aria-label="Vitesse" onChange={e => { setV(+e.target.value); arreter(); }} style={{ width: '100%' }}/></label></div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}>
         <button onClick={lancer} style={styleBouton(true, '#16a34a')}>▶ Lancer</button><button onClick={arreter} style={styleBouton(false)}>⏹ Remettre</button>
         <span style={{ fontSize: 14, color: KIT.txt }}>{enDefi && defi.type === 'orbite' ? '' : <>Résultat : <strong>{tyo.type === 'circulaire' ? 'orbite circulaire' : tyo.type === 'impact' ? 'retombe sur la Terre' : tyo.type === 'ellipse' ? 'orbite allongée (ellipse)' : 'quitte la Terre'}</strong></>}</span></div>
