@@ -24,6 +24,7 @@
 .ab-tbts { --ab-fond: #5b4bdb; --ab-ink: #ffffff; grid-column: span 5; }
 .ab-une { grid-column: span 12; background: #fff; border: 1px solid #d5dfeb; border-radius: 28px; padding: 26px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 22px; align-items: center; }
 .ab-une .ab-ico { width: 72px; height: 72px; border-radius: 20px; background: #f5a31a; display: grid; place-items: center; }
+.ab-une .ab-ico { color: #14304f; --ia: #ffffff; }   /* trait bleu nuit + touche blanche sur la pastille orange */
 .ab-pill { display: inline-block; background: #0b4f94; color: #fff; font: 800 12px Inter, system-ui, sans-serif; letter-spacing: .04em; padding: 4px 12px; border-radius: 999px; margin-right: 8px; text-transform: uppercase; }
 .ab-niveau { font-size: 13px; font-weight: 700; color: #3d4d63; }
 .ab-une h3 { font: 800 clamp(21px, 2.6vw, 26px)/1.15 'Outfit', sans-serif; margin: 8px 0 6px; letter-spacing: -.01em; color: #0c1a2e; }
