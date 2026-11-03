@@ -2142,6 +2142,7 @@ export const PREVOIR = [
     ] },
   // ── Première : cohésion et solubilité, énergie électrique, mécanique ──
   { id: 'coh-polarite-eau', domaine: 'Cohésion et solubilité', titre: 'Polarité de la molécule d’eau',
+    schema: { type: 'molecule', apres: { reponse: true } },
     enonce: 'Dans la molécule d’eau H₂O (de forme coudée), l’atome d’oxygène est plus électronégatif que les atomes d’hydrogène.', q: 'Que peut-on dire de la répartition des charges ?', options: [
       F('O porte une charge partielle δ+ et chaque H une charge partielle δ− : molécule polaire', 'L’atome le plus électronégatif attire les électrons : O est δ−, pas δ+.'),
       F('les charges sont réparties uniformément sur la molécule : molécule apolaire', 'Les liaisons O–H sont polarisées et la forme coudée empêche leurs effets de se compenser.'),
@@ -2177,6 +2178,7 @@ export const PREVOIR = [
       V('les interactions de van der Waals entre molécules sont plus intenses quand la chaîne s’allonge', 'Une chaîne plus longue offre une plus grande surface de contact entre molécules : les interactions de van der Waals sont plus intenses et il faut plus d’énergie pour les rompre.'),
     ] },
   { id: 'coh-ampoule', domaine: 'Cohésion et solubilité', titre: 'Extraction du diiode',
+    schema: { type: 'ampoule', apres: { reponse: true } },
     enonce: 'On extrait le diiode d’une solution aqueuse avec du cyclohexane (ρ = 0,78 g·mL⁻¹), non miscible avec l’eau (ρ = 1,00 g·mL⁻¹). On agite dans une ampoule à décanter, puis on laisse reposer.', q: 'Après décantation, la phase contenant le diiode (phase organique) est…', options: [
       V('au-dessus de l’eau, car le cyclohexane est moins dense', 'Le liquide de plus faible masse volumique surnage : le cyclohexane (0,78) flotte sur l’eau (1,00).'),
       F('au-dessous de l’eau, car le cyclohexane est plus dense', 'ρ(cyclohexane) = 0,78 g·mL⁻¹ < ρ(eau) = 1,00 g·mL⁻¹ : il est moins dense.'),
@@ -2243,6 +2245,7 @@ export const PREVOIR = [
       F('1 000 W', 'Le watt est une unité de puissance ; l’énergie se mesure en Wh, kWh ou en joules.'),
     ] },
   { id: 'ene-loi-mailles', domaine: 'Énergie électrique', titre: 'Loi des mailles',
+    schema: { type: 'mailles', apres: { reponse: true } },
     enonce: 'Deux résistors sont en série aux bornes d’un générateur de 12 V. La tension aux bornes du premier est de 4 V.', q: 'La tension aux bornes du second est…', options: [
       V('8 V', 'Loi des mailles : 12 = 4 + U₂, donc U₂ = 8 V.'),
       F('4 V', 'Les tensions ne sont égales que si les deux résistors sont identiques : ce n’est pas le cas ici.'),
@@ -2410,12 +2413,14 @@ export const PREVOIR = [
       F('le carbone à 60 ppm est séparé des H à 4,1 ppm par trois liaisons', 'Les corrélations à longue distance sont observées en HMBC. HSQC ne montre que les liaisons directes C–H.'),
     ] },
   { id: 'cri-motifs-cfc', domaine: 'Analyse cristallographique', titre: 'Atomes en propre dans une maille CFC',
+    schema: { type: 'maille', cas: 'cfc', apres: { reponse: true } },
     enonce: 'Dans la maille cubique à faces centrées (CFC), il y a des atomes aux 8 sommets et au centre des 6 faces.', q: 'Combien d’atomes appartiennent en propre à une maille ?', options: [
       V('4 : 8 × 1/8 (sommets) + 6 × 1/2 (faces)', 'Un sommet est partagé entre 8 mailles, une face entre 2 : 1 + 3 = 4 atomes par maille.'),
       F('14 : 8 atomes aux sommets + 6 atomes sur les faces, comptés en entier', 'Ce serait compter chaque atome en entier, alors qu’ils sont partagés entre mailles voisines.'),
       F('7 : 8 × 1/8 + 6', 'Les atomes des faces sont partagés entre 2 mailles : il faut compter 1/2 chacun.'),
     ] },
   { id: 'cri-motifs-cc', domaine: 'Analyse cristallographique', titre: 'Atomes en propre dans une maille cubique centrée',
+    schema: { type: 'maille', cas: 'cc', apres: { reponse: true } },
     enonce: 'Dans la maille cubique centrée (CC), il y a des atomes aux 8 sommets et un atome au centre du cube.', q: 'Combien d’atomes appartiennent en propre à une maille ?', options: [
       V('2 : 8 × 1/8 (sommets) + 1 (centre)', 'L’atome du centre appartient entièrement à la maille ; les 8 sommets comptent pour 1 atome au total.'),
       F('9 : 8 atomes aux sommets + 1 atome au centre, chacun compté en entier', 'Les atomes des sommets sont partagés entre 8 mailles : ils ne comptent que pour 1/8 chacun.'),
@@ -2435,6 +2440,7 @@ export const PREVOIR = [
       F('occupe autant d’espace dans les trois structures, puisque ce sont des cubes', 'La forme de la maille est la même, mais le nombre d’atomes par maille et leur arrangement changent la fraction occupée.'),
     ] },
   { id: 'cri-contact-cfc', domaine: 'Analyse cristallographique', titre: 'Où les atomes se touchent-ils ?',
+    schema: { type: 'maille', cas: 'contact', apres: { reponse: true } },
     enonce: 'Dans une maille CFC de paramètre a, composée d’atomes de rayon R assimilés à des sphères dures, les atomes sont tangents le long d’une même direction de la maille.', q: 'Cette direction est…', options: [
       V('la diagonale d’une face : a√2 = 4R', 'Sur une face, trois atomes sont alignés (sommet, centre, sommet) : la diagonale a√2 contient 4 rayons.'),
       F('l’arête du cube : a = 2R', 'Cette condition correspond à la structure cubique simple. En CFC, les atomes des sommets ne se touchent pas le long de l’arête.'),
@@ -2474,13 +2480,14 @@ export const PREVOIR = [
       F('(110), (200), (211)', 'Ces raies sont celles d’un réseau cubique centré, où h + k + l doit être pair.'),
     ] },
   { id: 'cri-sites-octaedriques', domaine: 'Analyse cristallographique', titre: 'Sites octaédriques d’une maille CFC',
+    schema: { type: 'maille', cas: 'octa', apres: { reponse: true } },
     enonce: 'Dans la maille CFC, il existe un site octaédrique au centre du cube et un autre au milieu de chacune des 12 arêtes.', q: 'Combien de sites octaédriques appartiennent en propre à une maille ?', options: [
       V('4 : 1 (centre) + 12 × 1/4 (arêtes)', 'Une arête est partagée entre 4 mailles : 12 × 1/4 = 3, plus 1 au centre. Il y a autant de sites octaédriques que d’atomes.'),
       F('13 : 1 (centre) + 12 (arêtes)', 'Les sites des arêtes sont partagés entre 4 mailles voisines : ils comptent pour 1/4 chacun.'),
       F('7 : 1 (centre) + 12 × 1/2 (arêtes)', 'Une arête du cube est commune à 4 mailles, pas à 2.'),
     ] },
   { id: 'cri-taille-sites', domaine: 'Analyse cristallographique', titre: 'Quel site pour un atome inséré ?',
-    ...presenter({ contexte: 'Dans un empilement CFC d’atomes de rayon R, un atome inséré doit tenir sans écarter les atomes de l’empilement.', liste: [['Site octaédrique', 'rayon de l’atome inséré d’au plus 0,414 R'], ['Site tétraédrique', 'rayon de l’atome inséré d’au plus 0,225 R'], ['Atome à insérer', 'rayon 0,30 R']] }), q: 'Cet atome peut occuper…', options: [
+    ...presenter({ schema: { type: 'echelleSites', apres: { reponse: true } }, contexte: 'Dans un empilement CFC d’atomes de rayon R, un atome inséré doit tenir sans écarter les atomes de l’empilement.', liste: [['Site octaédrique', 'rayon de l’atome inséré d’au plus 0,414 R'], ['Site tétraédrique', 'rayon de l’atome inséré d’au plus 0,225 R'], ['Atome à insérer', 'rayon 0,30 R']] }), q: 'Cet atome peut occuper…', options: [
       V('un site octaédrique seulement', '0,30 R est inférieur à 0,414 R mais supérieur à 0,225 R : il est trop gros pour un site tétraédrique.'),
       F('un site tétraédrique seulement', 'Un site tétraédrique accepte au plus 0,225 R : 0,30 R est trop gros.'),
       F('les deux types de sites', 'Il est assez petit pour le site octaédrique, mais trop gros pour le tétraédrique.'),

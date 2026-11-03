@@ -309,4 +309,113 @@ function Mouvement({ cas = 'manege-sol', reponse = false }) {
     </div>);
 }
 
-export const DESSINS_SECONDE = { circuit: Circuit, optique: Optique, mouvement: Mouvement };
+// ── Circuit à deux résistors en série (loi des mailles) ──
+function CircuitMailles({ tension = '12 V', u1 = '4 V', u2 = '?', reponse = false }) {
+  const Res = ({ x, y, nom }) => <g><rect x={x - 22} y={y - 9} width="44" height="18" fill="white" stroke={TR} strokeWidth="2.2"/><text x={x} y={y - 15} fontSize="13" fontWeight="700" fill={TR} textAnchor="middle"><Ind b={nom[0]} i={nom.slice(1)}/></text></g>;
+  return (
+    <div style={boite} data-schema="circuit-mailles">
+      <svg viewBox="0 0 360 200" style={svgStyle} role="img" aria-label="Un générateur de 12 volts et deux résistors R1 et R2 en série ; la tension aux bornes de R2 est à trouver">
+        <Fil pts={[[60, 94], [60, 50], [118, 50]]}/><Fil pts={[[162, 50], [208, 50]]}/><Fil pts={[[252, 50], [320, 50], [320, 160], [60, 160], [60, 114]]}/>
+        <Pile x={60} y={104} v={tension}/>
+        <Res x={140} y={50} nom="R1"/><Res x={230} y={50} nom="R2"/>
+        <text x="140" y="90" fontSize="13" fontWeight="700" fill={BLEU} textAnchor="middle"><Ind b="U" i="1"/> = {u1}</text>
+        <text x="230" y="90" fontSize="13" fontWeight="700" fill={reponse ? VERT : ORANGE} textAnchor="middle"><Ind b="U" i="2"/> = {reponse ? '8 V' : u2}</text>
+        <text x="190" y="186" fontSize="12" fill="#64748b" textAnchor="middle">les deux résistors sont dans la même maille que le générateur</text>
+      </svg>
+    </div>);
+}
+
+// ── Molécule d’eau ──
+function Molecule({ reponse = false }) {
+  const u = useId().replace(/:/g, '');
+  return (
+    <div style={boite} data-schema="molecule-eau">
+      <svg viewBox="0 0 360 190" style={svgStyle} role="img" aria-label="Molécule d’eau coudée : un atome d’oxygène lié à deux atomes d’hydrogène">
+        <defs><Pointe id={`${u}v`} c={VERT}/></defs>
+        <line x1="180" y1="70" x2="125" y2="125" stroke={TR} strokeWidth="3"/><line x1="180" y1="70" x2="235" y2="125" stroke={TR} strokeWidth="3"/>
+        <circle cx="180" cy="70" r="22" fill="#fecaca" stroke={TR} strokeWidth="2.2"/><text x="180" y="76" fontSize="16" fontWeight="800" fill={TR} textAnchor="middle">O</text>
+        {[125, 235].map(x => <g key={x}><circle cx={x} cy="125" r="14" fill="#e2e8f0" stroke={TR} strokeWidth="2.2"/><text x={x} y="130" fontSize="14" fontWeight="800" fill={TR} textAnchor="middle">H</text></g>)}
+        <text x="180" y="22" fontSize="12.5" fill="#475569" textAnchor="middle">O plus électronégatif que H</text>
+        {reponse
+          ? <g><text x="214" y="52" fontSize="15" fontWeight="800" fill={VERT}>δ−</text><text x="86" y="140" fontSize="15" fontWeight="800" fill={VERT}>δ+</text><text x="256" y="140" fontSize="15" fontWeight="800" fill={VERT}>δ+</text>
+            <Rayon x1={180} y1={170} x2={180} y2={108} c={VERT} id={`${u}v`}/><text x="190" y="165" fontSize="12.5" fontWeight="700" fill={VERT}>moment dipolaire</text></g>
+          : <text x="180" y="170" fontSize="13" fontWeight="700" fill="#475569" textAnchor="middle">charges partielles : ?</text>}
+      </svg>
+    </div>);
+}
+
+// ── Ampoule à décanter ──
+function Ampoule({ reponse = false }) {
+  const u = useId().replace(/:/g, '');
+  const corps = 'M172,40 L188,40 L188,52 C240,66 252,110 232,138 C222,152 200,158 188,164 L188,176 L172,176 L172,164 C160,158 138,152 128,138 C108,110 120,66 172,52 Z';
+  return (
+    <div style={boite} data-schema="ampoule">
+      <svg viewBox="0 0 360 190" style={svgStyle} role="img" aria-label="Ampoule à décanter contenant deux phases non miscibles après repos">
+        <defs><clipPath id={`${u}c`}><path d={corps}/></clipPath></defs>
+        <g clipPath={`url(#${u}c)`}><rect x="100" y="40" width="160" height="62" fill={reponse ? '#ddd6fe' : '#f1f5f9'}/><rect x="100" y="102" width="160" height="80" fill={reponse ? '#bfdbfe' : '#e2e8f0'}/></g>
+        <path d={corps} fill="none" stroke={TR} strokeWidth="2.4"/><rect x="170" y="28" width="20" height="12" fill="white" stroke={TR} strokeWidth="2"/><line x1="165" y1="170" x2="195" y2="170" stroke={TR} strokeWidth="3"/>
+        <line x1="120" y1="102" x2="240" y2="102" stroke={TR} strokeWidth="1.4" strokeDasharray="4 3"/>
+        {reponse
+          ? <g><text x="252" y="64" fontSize="12.5" fontWeight="700" fill="#6d28d9">cyclohexane</text><text x="252" y="80" fontSize="12.5" fontWeight="700" fill="#6d28d9">+ diiode</text><text x="252" y="96" fontSize="12.5" fill="#6d28d9">ρ = 0,78 g·mL⁻¹</text><text x="252" y="132" fontSize="12.5" fontWeight="700" fill={BLEU}>eau</text><text x="252" y="148" fontSize="12.5" fill={BLEU}>ρ = 1,00 g·mL⁻¹</text></g>
+          : <g><text x="252" y="78" fontSize="13" fontWeight="700" fill="#475569">phase du haut : ?</text><text x="252" y="132" fontSize="13" fontWeight="700" fill="#475569">phase du bas : ?</text></g>}
+        <text x="100" y="20" fontSize="12.5" fill="#475569" textAnchor="start">après décantation</text>
+      </svg>
+    </div>);
+}
+
+// ── Mailles cristallines (projection oblique) ──
+// cas : 'cfc' | 'cc' | 'contact' (CFC, direction de contact) | 'octa' (sites octaédriques du CFC) ; reponse : ajoute ce qui donne la réponse
+function Maille({ cas = 'cfc', reponse = false }) {
+  const S = 95, ox = 26, oy = 160;
+  const P = ([x, y, z]) => [ox + S * (x + 0.5 * z), oy - S * (y + 0.32 * z)];
+  const som = []; for (const x of [0, 1]) for (const y of [0, 1]) for (const z of [0, 1]) som.push([x, y, z]);
+  const faces = [[.5, .5, 0], [.5, .5, 1], [0, .5, .5], [1, .5, .5], [.5, 0, .5], [.5, 1, .5]];
+  const aretes = []; for (const a of [0, 1]) for (const b of [0, 1]) { aretes.push([.5, a, b], [a, .5, b], [a, b, .5]); }
+  const arr = (...pts) => pts.map(P).map(q => q.join(',')).join(' ');
+  const cube = (
+    <g fill="none" stroke={TR} strokeWidth="1.6">
+      <polyline points={arr([0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1], [0, 0, 1])} strokeDasharray="4 4" stroke={GRIS}/>
+      <polyline points={arr([0, 0, 0], [0, 0, 1])} strokeDasharray="4 4" stroke={GRIS}/><polyline points={arr([1, 0, 0], [1, 0, 1])}/><polyline points={arr([1, 1, 0], [1, 1, 1])}/><polyline points={arr([0, 1, 0], [0, 1, 1])}/>
+      <polyline points={arr([0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 0])} strokeWidth="2.2"/>
+    </g>);
+  const atome = (pt, k, c = BLEU, r = 10) => { const [x, y] = P(pt); return <circle key={k} cx={x} cy={y} r={r} fill={c} fillOpacity="0.75" stroke="white" strokeWidth="1.5"/>; };
+  const site = (pt, k) => { const [x, y] = P(pt); return <rect key={k} x={x - 6} y={y - 6} width="12" height="12" fill={ORANGE} stroke="white" strokeWidth="1.4"/>; };
+  let at = som.map((q, k) => atome(q, 's' + k, BLEU, cas === 'octa' ? 7 : 10)), txt = null, extra = null, label = '';
+  if (cas === 'cfc') { at = at.concat(faces.map((q, k) => atome(q, 'f' + k, '#0ea5e9'))); label = 'Maille cubique à faces centrées : atomes aux sommets et au centre des faces'; if (reponse) txt = ['8 sommets × 1/8 = 1', '6 faces × 1/2 = 3', 'total : 4 atomes par maille']; }
+  if (cas === 'cc') { at.push(atome([.5, .5, .5], 'c', '#0ea5e9')); label = 'Maille cubique centrée : atomes aux sommets et au centre du cube'; if (reponse) txt = ['8 sommets × 1/8 = 1', 'centre : 1 atome entier', 'total : 2 atomes par maille']; }
+  if (cas === 'contact') {
+    at = at.concat(faces.map((q, k) => atome(q, 'f' + k, '#0ea5e9'))); label = 'Maille CFC de paramètre a : trois directions possibles pour le contact entre atomes';
+    const a0 = P([0, 0, 0]), a1 = P([1, 1, 0]), g0 = P([0, 0, 0]), g1 = P([1, 1, 1]), e1 = P([1, 0, 0]);
+    extra = reponse
+      ? <g><line x1={a0[0]} y1={a0[1]} x2={a1[0]} y2={a1[1]} stroke={VERT} strokeWidth="3.4"/><text x="192" y="70" fontSize="12.5" fontWeight="700" fill={VERT}>contact : diagonale</text><text x="192" y="88" fontSize="12.5" fontWeight="700" fill={VERT}>d’une face, a√2 = 4R</text></g>
+      : <g><text x="192" y="70" fontSize="12.5" fill="#475569">contact le long de l’arête,</text><text x="192" y="88" fontSize="12.5" fill="#475569">d’une diagonale de face</text><text x="192" y="106" fontSize="12.5" fill="#475569">ou de la grande diagonale ?</text></g>;
+  }
+  if (cas === 'octa') { at = at.concat(faces.map((q, k) => atome(q, 'f' + k, '#93c5fd', 7))); extra = <g>{site([.5, .5, .5], 'sc')}{aretes.map((q, k) => site(q, 'a' + k))}</g>; label = 'Maille CFC : sites octaédriques (carrés orange) au centre du cube et au milieu des 12 arêtes'; if (reponse) txt = ['centre : 1', '12 arêtes × 1/4 = 3', 'total : 4 sites par maille']; }
+  return (
+    <div style={boite} data-schema={`maille-${cas}`}>
+      <svg viewBox="0 0 360 190" style={svgStyle} role="img" aria-label={label}>
+        {cube}{at}{extra}
+        {txt && <g>{txt.map((t, k) => <text key={k} x="192" y={90 + 18 * k} fontSize="12.5" fontWeight={k === 2 ? 800 : 500} fill={VERT}>{t}</text>)}</g>}
+        {cas === 'cfc' && !reponse && <text x="192" y="90" fontSize="12.5" fill="#475569"><tspan fill={BLEU}>●</tspan> sommets</text>}{cas === 'cfc' && !reponse && <text x="192" y="108" fontSize="12.5" fill="#475569"><tspan fill="#0ea5e9">●</tspan> centres des faces</text>}
+        {cas === 'octa' && !reponse && <text x="192" y="90" fontSize="12.5" fill="#475569"><tspan fill={ORANGE}>■</tspan> sites octaédriques</text>}
+      </svg>
+    </div>);
+}
+
+// ── Taille des sites : droite graduée en rayon de l’atome inséré (en R) ──
+function EchelleSites({ rayon = 0.30, reponse = false }) {
+  const X = v => 30 + v * 600;   // 0 à 0,5 R → 30 à 330
+  return (
+    <div style={boite} data-schema="echelle-sites">
+      <svg viewBox="0 0 360 150" style={svgStyle} role="img" aria-label="Droite graduée du rayon maximal de l’atome inséré : 0,225 R pour un site tétraédrique, 0,414 R pour un site octaédrique">
+        <rect x={X(0)} y="60" width={X(0.225) - X(0)} height="22" fill="#bbf7d0" stroke={TR}/><rect x={X(0.225)} y="60" width={X(0.414) - X(0.225)} height="22" fill="#fed7aa" stroke={TR}/>
+        <text x={(X(0) + X(0.225)) / 2} y="75" fontSize="11.5" textAnchor="middle" fill={TR}>tétraédrique</text><text x={(X(0.225) + X(0.414)) / 2} y="75" fontSize="11.5" textAnchor="middle" fill={TR}>octaédrique</text>
+        <line x1={X(0)} y1="100" x2={X(0.5)} y2="100" stroke={TR} strokeWidth="2"/>
+        {[[0, '0'], [0.225, '0,225 R'], [0.414, '0,414 R']].map(([v, t]) => <g key={v}><line x1={X(v)} y1="94" x2={X(v)} y2="106" stroke={TR} strokeWidth="2"/><text x={X(v)} y="122" fontSize="12.5" fontWeight="700" fill={TR} textAnchor="middle">{t}</text></g>)}
+        <text x="180" y="30" fontSize="12.5" fill="#475569" textAnchor="middle">rayon maximal de l’atome qui peut s’insérer</text>
+        {reponse && <g><line x1={X(rayon)} y1="40" x2={X(rayon)} y2="100" stroke={VERT} strokeWidth="2.6" strokeDasharray="5 3"/><text x={X(rayon)} y="140" fontSize="12.5" fontWeight="800" fill={VERT} textAnchor="middle">atome à insérer : 0,30 R</text></g>}
+      </svg>
+    </div>);
+}
+
+export const DESSINS_SECONDE = { circuit: Circuit, optique: Optique, mouvement: Mouvement, mailles: CircuitMailles, molecule: Molecule, ampoule: Ampoule, maille: Maille, echelleSites: EchelleSites };
