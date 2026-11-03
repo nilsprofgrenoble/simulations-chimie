@@ -105,7 +105,7 @@ function VoletDefi({ defi, setDefi, changerType, appliquer }) {
     }
     if (defi.type === 'equilibre') {
       const Ueq = defi.m * GPES * defi.d * 1e-2 / (Math.abs(defi.n) * E_CH), hautPlus = defi.n < 0;
-      const u = lireNombre(r.U), okU = isFinite(u) && proche(u, Ueq, 0.015), okP = r.pol === (hautPlus ? 'haut+' : 'haut-');
+      const u = lireNombre(r.U), okU = isFinite(u) && proche(u, Ueq, 0.01), okP = r.pol === (hautPlus ? 'haut+' : 'haut-');
       let mU = okU ? 'Tension correcte.' : 'Tension : à l’équilibre F = P, donc |q|·U / d = m·g, d’où U = m·g·d / |q|.';
       if (!okU && isFinite(u) && proche(u, Ueq * 100, 0.03)) mU = 'Convertissez d en mètres : 1 cm = 10⁻² m.';
       return { ok: okU && okP, lignes: [[okU, mU],

@@ -76,7 +76,7 @@ const enonce = (d, { champ }) => {
 };
 const solution = d => d.type === 'u0r' ? <>U = U₀ − r × I donc r = (U₀ − U) / I = ({fr(d.U0, 1)} − {fr(d.U2, 3)}) / {fr(d.I2 / 1000, 3)} = <strong>{fr(d.r, 1)} Ω</strong>.</>
   : d.type === 'tension' ? <>U = U₀ − r × I = {fr(d.U0, 1)} − {d.r} × {fr(d.I / 1000, 3)} = <strong>{fr(d.U, 2)} V</strong>.</>
-  : d.type === 'courant' ? <>Loi d’Ohm dans le circuit : U₀ = (r + R) × I donc I = U₀ / (r + R) = {fr(d.U0, 1)} / {d.r + d.R} = <strong>{fr(d.I, 1)} mA</strong>.</>
+  : d.type === 'courant' ? <>Loi d’Ohm dans le circuit : U₀ = (r + R) × I donc I = U₀ / (r + R) = {fr(d.U0, 1)} / {d.r + d.R} = {fr(d.I / 1000, 4)} A = <strong>{fr(d.I, 1)} mA</strong>.</>
   : <>Q = r × I² × Δt = {d.r} × {fr(d.I / 1000, 3)}² × {d.dt} = <strong>{fr(d.Q, d.Q < 100 ? 2 : 0)} J</strong>.</>;
 
 // ====================================================
@@ -201,7 +201,7 @@ export function SimulationCaracPile() {
           <div>Puissance fournie par la source idéale : U₀ × I = <strong>{fr(M.U0 * Im, 3)} W</strong></div>
           <div>dont perdue par effet Joule dans la pile : r × I² = <strong>{fr(M.r * Im * Im, 3)} W</strong></div>
           <div>et utile pour le circuit : U × I = <strong>{fr(Um * Im, 3)} W</strong> (rendement U / U₀ = {fr(Um / M.U0 * 100, 0)} %)</div>
-          {M.R <= 2 && M.r > 0 && <div style={{ color: VERMILLON, fontWeight: 700 }}><Pic n="warn"/>Court-circuit : courant énorme, la pile chauffe beaucoup.</div>}</>)}
+          {M.R <= 2 && M.r > 0 && M.U0 / (M.r + M.R) > 0.5 && <div style={{ color: VERMILLON, fontWeight: 700 }}><Pic n="warn"/>Court-circuit : courant énorme, la pile chauffe beaucoup.</div>}</>)}
         <div><Graphe pts={[[Im * 1000, Um]]} courbe={[[0, M.U0], [xmaxM, M.U0 - M.r * xmaxM / 1000]]} series={[]} droite={{ a: M.R / 1000, b: 0 }} xmax={xmaxM} ymax={ymaxM} xlab="I (mA)" ylab="U (V)" couleur="#0f172a" w={400} h={280} rayon={6}/>
           <div style={{ fontSize: 12.5, color: KIT.txt2 }}><span style={{ fontWeight: 700 }}>trait gris</span> : caractéristique de la pile · <span style={{ color: VERMILLON, fontWeight: 700 }}>pointillés orange</span> : résistor R · ● point de fonctionnement</div></div></div>
     </div>);

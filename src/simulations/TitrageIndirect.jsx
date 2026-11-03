@@ -402,7 +402,7 @@ export function SimulationTitrageIndirect() {
   // ════════════════ DÉFI ════════════════
   function nouveauDefi(type) {
     const r = Math.random();
-    const m = type === 'mystere' ? 15 + Math.round(r * 25) : [24, 26, 28, 29, 30, 31, 33, 35, 37][Math.floor(r * 9)];
+    const m = type === 'mystere' ? 15 + Math.round(r * 25) : [24, 26, 28, 29, 30, 31, 35, 37][Math.floor(r * 8)];
     setDefi({ type, m, reps: {}, verifie: false, Vmes: null });
   }
   const voletDefi = (
