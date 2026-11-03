@@ -30,7 +30,7 @@ const Fn = ({ a, r, vec = false }) => <span style={{ fontStyle: 'italic' }}>{vec
 
 // ---------- scènes du vecteur force ----------
 const SCENES = {
-  caisse: { titre: 'Un homme pousse une caisse', auteur: 'homme', receveur: 'caisse', point: { x: 270, y: 203 }, pointTxt: 'le point de contact des mains sur la face gauche de la caisse' },
+  caisse: { titre: 'Un homme déplace une caisse', auteur: 'homme', receveur: 'caisse', point: { x: 270, y: 203 }, pointTxt: 'le point de contact des mains sur la face gauche de la caisse' },
   ballon: { titre: 'Un footballeur tire au but', auteur: 'pied', receveur: 'ballon', point: { x: 206, y: 238 }, pointTxt: 'le point de contact du pied sur le ballon' },
   clou: { titre: 'Un marteau frappe un clou', auteur: 'marteau', receveur: 'clou', point: { x: 300, y: 58 }, pointTxt: 'le point de contact du marteau sur la tête du clou' },
 };
@@ -159,7 +159,7 @@ function PanneauPoids({ pw, setPw, verrouAstre }) {
           {!masque && <label style={{ display: 'block', fontWeight: 600 }}>Masse de l’objet : <strong>{fr(pw.m, 1)} kg</strong>
             <input type="range" min="0.1" max="100" step="0.1" value={pw.m} aria-label="Masse de l’objet en kilogrammes" onChange={e => setPw(s => ({ ...s, m: +e.target.value }))} style={{ width: '100%' }}/></label>}
           {!masque && <label style={{ display: 'block', fontWeight: 600 }}>Altitude : <strong>{pw.h} km</strong>
-            <input type="range" min="0" max="2000" step="50" value={pw.h} aria-label="Altitude en kilomètres" onChange={e => setPw(s => ({ ...s, h: +e.target.value }))} style={{ width: '100%' }}/></label>}
+            <input type="range" min="0" max="3000" step="50" value={pw.h} aria-label="Altitude en kilomètres" onChange={e => setPw(s => ({ ...s, h: +e.target.value }))} style={{ width: '100%' }}/></label>}
           <table style={{ borderCollapse: 'collapse', fontSize: 13.5, width: '100%', marginTop: 6 }}><tbody>
             {[[`Masse de ${a.nom}`, `${sci(a.M)} kg`], [`Rayon de ${a.nom}`, `${sci(a.R)} m`], ['Constante de gravitation G', `${sci(G)} N·m²·kg⁻²`],
               ...(masque ? [] : [[`Intensité de la pesanteur à la surface g₀ = G·M/R²`, `${fr(g0, 2)} N/kg`],

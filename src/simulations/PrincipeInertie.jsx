@@ -284,7 +284,7 @@ export function SimulationPrincipeInertie() {
       <li><strong>Référentiel terrestre</strong>, supposé galiléen : le principe d’inertie s’y applique.</li>
       <li><strong>Frottements solides</strong> de valeur constante f = μ·m·g, opposés au mouvement. On néglige les frottements de l’air (sauf dans les exemples du parcours). Le coefficient μ est supposé le même au repos et en mouvement.</li>
       <li><strong>Calcul du mouvement</strong> : pour animer la caisse, la simulation utilise un calcul numérique de la vitesse, hors programme de seconde. Vous n’avez qu’à observer la vitesse : le programme n’exige que le principe d’inertie.</li>
-      <li><strong>Seuil de compensation</strong> : on considère que les forces se compensent si la résultante vaut moins de 1 N en valeur absolue. Une poussée à 1 N près suffit à garder la vitesse sensiblement constante.</li>
+      <li><strong>Seuil de compensation</strong> : on considère que les forces se compensent si la résultante est inférieure à un petit seuil (de 0,05 N à 0,5 N selon la masse du solide) : en dessous, la vitesse varie de moins de 0,05 m/s en 6 s, ce qui est invisible à l’écran.</li>
       <li><strong>g = 9,8 N/kg</strong>. Le poids et la réaction du sol sont toujours égaux (le sol ne s’enfonce pas).</li>
     </ul>);
   const panneauHypo = <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>;

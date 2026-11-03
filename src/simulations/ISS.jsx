@@ -239,7 +239,7 @@ export function SimulationISS() {
     { id: 'orbite', titre: 'Une chute… sans fin', depart: () => voirO(400, 3),
       texte: <>Comment la station peut-elle « tomber » sans jamais toucher la Terre ? Imaginez un canon qui tire <strong>horizontalement</strong> (idée de Newton). Plus la vitesse est grande, plus l’objet va loin avant de toucher le sol. Avec <strong>assez de vitesse</strong>, la Terre étant ronde, le sol « se dérobe » sous lui : il tombe… sans jamais arriver !
         <ExempleResolu>À <strong>400 km</strong>, la vitesse qu’il faut est d’environ <strong>7,7 km/s</strong> : près de 28 000 km/h. Réglez le curseur « vitesse » sur 7,7 km/s puis cliquez sur « Lancer ».</ExempleResolu></>,
-      tache: { type: 'action', ok: enGuide && fait.orbite, consigne: 'Réglez la vitesse à 7,7 km/s (±0,1) puis lancez, et attendez un tour complet.' } },
+      tache: { type: 'action', ok: enGuide && fait.orbite, consigne: 'Réglez la vitesse à 7,7 km/s (entre 7,65 et 7,70) puis lancez, et attendez un tour complet.' } },
     { id: 'pourquoi', titre: 'Pourquoi ne tombe-t-elle pas sur la Terre ?', depart: null,
       texte: <>Essayez aussi une vitesse plus faible (5 km/s) : la station <strong>retombe</strong> sur la Terre. Et plus grande (8 km/s) : l’orbite devient plus allongée.</>,
       tache: { type: 'qcm', q: 'Pourquoi la station ne tombe-t-elle pas sur la Terre ?', options: ['Elle tombe en permanence, mais elle avance assez vite pour que la Terre se dérobe', 'La Terre ne l’attire plus à cette altitude', 'Elle est repoussée par l’espace', 'Elle est trop légère'], bonne: 0, expl: 'La station subit toujours l’attraction de la Terre. Sa vitesse horizontale est telle qu’elle « manque » la Terre : elle tombe en tournant.' } },

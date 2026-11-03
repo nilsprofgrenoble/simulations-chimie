@@ -338,7 +338,7 @@ export function SimulationMouvementReferentiel() {
         <ExempleResolu>Le colis largué, vu du sol puis de l’avion : <strong>courbe</strong> pour le sol, <strong>ligne droite verticale</strong> pour le pilote (le colis avance avec l’avion).
           {bouton('Voir les deux points de vue', () => go('avion', {}, { cmp: true, vis: ['colis'], obj: 'colis' }))}</ExempleResolu>
         À vous : on regarde maintenant depuis le sol le colis <em>et</em> l’avion. {bouton('Voir colis et avion (depuis le sol)', () => go('avion', {}, { cmp: false, fG: 'sol', vis: ['colis', 'avion'], obj: 'colis' }))}</>,
-      tache: { type: 'qcm', q: 'Vu du sol, au moment où le colis touche le sol, l’avion est…', options: ['juste au-dessus du colis', 'loin derrière le colis', 'loin devant le colis', 'revenu à son point de départ'], bonne: 0,
+      tache: { type: 'qcm', q: 'Vu du sol, quand le colis arrive près du sol, l’avion est…', options: ['juste au-dessus du colis', 'loin derrière le colis', 'loin devant le colis', 'revenu à son point de départ'], bonne: 0,
         expl: 'Le colis garde la vitesse horizontale de l’avion (100 m/s) pendant toute sa chute : il reste sous l’avion (en négligeant l’air). C’est pour cela que, pour le pilote, il tombe tout droit.' } },
     { id: 'vitesse', titre: 'La vitesse et le vecteur vitesse', focus: ['scene'], depart: () => go('deux', { vA: 20, vB: 25 }, { cmp: false, vis: ['A'], obj: 'A', dtIdx: 1, aff: { ...AFF0, v: true } }),
       texte: <>La vitesse dit <strong>de combien le mobile avance pendant une durée</strong> : <strong>vitesse = distance parcourue ÷ durée</strong>. Entre deux photos successives M et M′ séparées de la durée Δt : <strong>v = MM′ / Δt</strong>. On la représente par une flèche, le <strong>vecteur vitesse</strong> : il part du mobile, pointe dans le sens du mouvement et sa longueur est proportionnelle à la vitesse.
@@ -587,7 +587,7 @@ export function SimulationMouvementReferentiel() {
       <li><strong>Point matériel</strong> : chaque système est réduit à un point. Pour le bâton, on peut afficher le système réel pour voir ce que le modèle du point ne décrit pas.</li>
       <li><strong>Pesanteur uniforme</strong> g = 9,8 N/kg ; <strong>frottements de l’air négligés</strong> pour la bille, le colis et le bâton (un colis réel, surtout léger, serait ralenti par l’air).</li>
       <li><strong>Vitesse approchée</strong> v<Ind>i</Ind> ≈ M<Ind>i</Ind>M<Ind>i+1</Ind> / Δt : c’est la vitesse <em>moyenne</em> entre deux images, attribuée à M<Ind>i</Ind>. Pour un mouvement accéléré, elle est décalée d’environ a·Δt/2 par rapport à la vitesse au point M<Ind>i</Ind>.</li>
-      <li><strong>Erreur de pointage</strong> (si elle est activée) : erreur gaussienne, indépendante d’un point à l’autre et de même écart-type partout. La vitesse approchée est alors entachée d’une erreur d’environ 2σ/Δt, qui augmente quand Δt diminue. L’« écart moyen » affiché est une moyenne sur 60 séries de pointage indépendantes.</li>
+      <li><strong>Erreur de pointage</strong> (si elle est activée) : erreur gaussienne, indépendante d’un point à l’autre et de même écart-type partout. La vitesse approchée est alors entachée d’une erreur d’environ √2·σ/Δt, qui augmente quand Δt diminue. L’« écart moyen » affiché est une moyenne sur 60 séries de pointage indépendantes.</li>
       <li><strong>Écart moyen</strong> : moyenne des écarts ‖v approchée − v exacte‖, divisée par la moyenne des vitesses exactes.</li>
       <li><strong>Variation de vitesse</strong> Δv<Ind>i</Ind> = v<Ind>i</Ind> − v<Ind>i−1</Ind> : différence de deux vitesses approchées successives ; elle est attribuée au point M<Ind>i</Ind>.</li>
       <li><strong>Échelles</strong> : l’échelle des longueurs diffère d’un panneau à l’autre ; celle des vitesses est commune. Pour les deux véhicules, les voies sont dessinées l’une sous l’autre (les points sont sur la même droite).</li>
@@ -611,7 +611,7 @@ export function SimulationMouvementReferentiel() {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
       <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
         <li>Bille dans le wagon : appuyez sur ▶, puis choisissez « Dans le wagon ». La bille tombe-t-elle de la même façon ?</li>
-        <li>Colis et avion : regardez depuis le sol, puis depuis l’avion. Où est l’avion quand le colis touche le sol ?</li>
+        <li>Colis et avion : regardez depuis le sol, puis depuis l’avion. Où est l’avion quand le colis arrive près du sol ?</li>
         <li>Deux véhicules : placez-vous « dans le véhicule A ». Comment B vous semble-t-il se déplacer ?</li>
         <li>Bâton : suivez un bout, puis le centre. Lequel a la trajectoire la plus simple ?</li>
       </ul>
