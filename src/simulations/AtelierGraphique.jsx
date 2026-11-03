@@ -1,3 +1,4 @@
+import { ChoixListe } from "../ChoixListe";
 import { useState, useMemo, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite,
   BoutonsModes, ORANGE_GUIDE, lireNombre, exParam } from "../commun";
@@ -126,7 +127,7 @@ export function SimulationAtelierGraphique() {
         {!enDefi && (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
             <button onClick={() => corriger(q.id)} style={styleBouton(true, '#16a34a')}>✓ Corriger</button>
-            {!bon && <button onClick={() => { corriger(q.id, true); setVu(x => ({ ...x, [q.id]: true })); }}
+            {!(affichee && bon) && <button onClick={() => { corriger(q.id, true); setVu(x => ({ ...x, [q.id]: true })); }}
               style={{ fontSize: 12.5, background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer' }}>voir la correction</button>}
             {q.aide && !indice[q.id] && <button onClick={() => setIndice(x => ({ ...x, [q.id]: true }))} style={stylePetitBouton(false)}><Pic n="bulb"/>Indice</button>}
             {(bon || vu[q.id]) && chk[q.id] && i === etp && i < Q.length - 1 && <button onClick={() => setEtp(e => e + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Question suivante ▶</button>}
@@ -165,11 +166,10 @@ export function SimulationAtelierGraphique() {
           <div className="atg-g">
             {!enDefi && (
               <div style={{ ...styleBoite, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8 }}>
-                <label style={{ fontSize: 14 }}>Graphique :{' '}
-                  <select aria-label="Choix du graphique" value={choix} onChange={e => { setChoix(e.target.value); charger(e.target.value); }}
-                    style={{ fontSize: 14, padding: 4, borderRadius: 6, border: `1.5px solid ${KIT.bord}` }}>
-                    {parDomaine(SCENARIOS).map(([d, l]) => <optgroup key={d} label={d}>{l.map(s => <option key={s.id} value={s.id}>{s.titre({ liq: 'eau' })}</option>)}</optgroup>)}
-                  </select></label>
+                <div style={{ fontSize: 14, flex: '1 1 260px', minWidth: 0 }}>Graphique :
+                  <ChoixListe ariaLabel="Choix du graphique" titre="Choisir un graphique" valeur={choix} onChoisir={v => { setChoix(v); charger(v); }}
+                    groupes={parDomaine(SCENARIOS).map(([d, l]) => ({ label: d, items: l.map(sc => ({ value: sc.id, label: sc.titre({ liq: 'eau' }) })) }))}/>
+                </div>
                 <button onClick={() => charger(choix)} style={stylePetitBouton(false)}>🎲 Nouveau graphique</button>
               </div>)}
             {vueGraphe(g, marquesExplore)}

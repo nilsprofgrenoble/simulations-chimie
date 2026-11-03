@@ -1,7 +1,11 @@
+import CodeExo from '../CodeExo';
+import { ChoixListe } from "../ChoixListe";
 import { useState } from "react";
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, lireNombre, proche, exParam } from "../commun";
 import { useSuivi } from "../suivi";
 import { ENONCES, nouvelEnonce, melange, nb } from "./AtelierDonneesBanque";
+import { SITUATIONS } from "./AtelierSituationsBanque";
+import { SituationCarte } from "./AtelierSituations";
 import { parDomaine } from "./ordreDomaines";
 import { Pic } from "../Pictos";
 
@@ -62,8 +66,40 @@ const Correction = ({ children }) => (
   <div style={{ fontSize: 13.5, marginTop: 6, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', color: KIT.txt }}>{children}</div>
 );
 
+// Les deux types d'exercices (énoncés à données cliquables, situations à étapes) partagent la même liste de choix
+const groupesChoix = () => [
+  ...parDomaine(ENONCES).map(([dm, l]) => ({ label: dm, items: l.map(e => ({ value: e.id, label: e.titre })) })),
+  { label: 'Comprendre une situation (QCM et saisies)', items: SITUATIONS.map(s => ({ value: s.id, label: s.titre })) },
+];
+
 export function SimulationAtelierDonnees() {
-  const depart = (() => { const [i, q] = (exParam() || '').split('.'); const d = ENONCES.find(e => e.id === i); return d ? { id: i, q: Math.min(+q || 0, d.noms.length - 1) } : { id: 'reservoir', q: 0 }; })();
+  const [i0] = (exParam() || '').split('.');
+  const [sit, setSit] = useState(SITUATIONS.some(s => s.id === i0) ? i0 : null);
+  const [dernier, setDernier] = useState(null);                 // dernier énoncé ouvert, pour y revenir
+  if (sit) return <PageSituation id={sit} onChoisir={v => { if (SITUATIONS.some(s => s.id === v)) setSit(v); else { setDernier(v); setSit(null); } }}/>;
+  return <AtelierEnonces idDepart={dernier} onSituation={setSit}/>;
+}
+
+function PageSituation({ id, onChoisir }) {
+  const def = SITUATIONS.find(s => s.id === id);
+  return (
+    <div style={{ ...cardStyle, textAlign: 'left' }}>
+      <div style={{ marginBottom: 10 }}>
+        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>S’APP : comprendre une situation</h2>
+        <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 4 }}>Compétence <b>S’approprier</b> : comprendre ce que fait le système, repérer l’événement important et choisir la bonne instruction ou la bonne explication.</div>
+      </div>
+      <div style={{ ...styleBoite, marginBottom: 10 }}>
+        <div style={{ fontSize: 14 }}>Exercice :
+          <ChoixListe ariaLabel="Choix de l’énoncé" titre="Choisir un énoncé" valeur={id} onChoisir={onChoisir} groupes={groupesChoix()}/>
+        </div>
+      </div>
+      <SituationCarte key={id} def={def}/>
+    </div>
+  );
+}
+
+function AtelierEnonces({ idDepart, onSituation }) {
+  const depart = (() => { const [i, q] = idDepart ? [idDepart, 0] : (exParam() || '').split('.'); const d = ENONCES.find(e => e.id === i); return d ? { id: i, q: Math.min(+q || 0, d.noms.length - 1) } : { id: 'reservoir', q: 0 }; })();
   const [choix, setChoix] = useState(depart);
   const [ex, setEx] = useState(() => nouvelEnonce(depart.id, depart.q));
   const [rep, setRep] = useState(repVide);
@@ -91,7 +127,7 @@ export function SimulationAtelierDonnees() {
   const barre = (k, i) => (
     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
       <button onClick={() => corriger(k)} style={styleBouton(true, '#16a34a')}>✓ Corriger</button>
-      {!okEtape[k] && <button onClick={() => { corriger(k, true); setVu(v => ({ ...v, [k]: true })); }}
+      {!(chk[k] && okEtape[k]) && <button onClick={() => { corriger(k, true); setVu(v => ({ ...v, [k]: true })); }}
         style={{ fontSize: 12.5, background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer' }}>voir la correction</button>}
       {(k === 'sel' || k === 'tab') && !indice[k] && <button onClick={() => setIndice(x => ({ ...x, [k]: true }))} style={stylePetitBouton(false)}><Pic n="bulb"/>Indice</button>}
       {(okEtape[k] || vu[k]) && chk[k] && i === etp && i < stages.length - 1 && <button onClick={() => setEtp(e => e + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Étape suivante ▶</button>}
@@ -209,17 +245,16 @@ export function SimulationAtelierDonnees() {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ ...styleBoite, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-          <label style={{ fontSize: 14 }}>Énoncé :{' '}
-            <select aria-label="Choix de l’énoncé" value={choix.id} onChange={x => { const id = x.target.value; setChoix({ id, q: 0 }); charger(id, 0); }}
-              style={{ fontSize: 14, padding: 4, borderRadius: 6, border: `1.5px solid ${KIT.bord}` }}>
-              {parDomaine(ENONCES).map(([d, l]) => <optgroup key={d} label={d}>{l.map(e => <option key={e.id} value={e.id}>{e.titre}</option>)}</optgroup>)}
-            </select></label>
+          <div style={{ fontSize: 14, flex: '1 1 260px', minWidth: 0 }}>Énoncé :
+            <ChoixListe ariaLabel="Choix de l’énoncé" titre="Choisir un énoncé" valeur={choix.id} onChoisir={id => { if (SITUATIONS.some(s => s.id === id)) { onSituation(id); return; } setChoix({ id, q: 0 }); charger(id, 0); }}
+              groupes={groupesChoix()}/>
+          </div>
           <span style={{ fontSize: 14 }}>Question :</span>
           {defCourant.noms.map((n, q) => <button key={q} onClick={() => { setChoix(c => ({ ...c, q })); charger(choix.id, q); }} style={stylePetitBouton(choix.q === q, '#0ea5e9')}>{n}</button>)}
           <button onClick={() => charger(choix.id, choix.q)} style={stylePetitBouton(false)}>🎲 Nouvelles valeurs</button>
         </div>
         <div style={{ ...styleBoite, background: 'white' }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginBottom: 4 }}>{defCourant.domaine} — {defCourant.titre}</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginBottom: 4 }}>{defCourant.domaine} — {defCourant.titre}<CodeExo cle={`34:${choix.id}.${choix.q}`}/></div>
           <Texte ex={ex} sel={rep.sel} onToggle={toggle} marque={marqueSel}/>
           <div data-formule="1" style={{ marginTop: 8, background: '#f1f5f9', border: `1px solid ${KIT.bord}`, borderRadius: 8, padding: '6px 10px', fontSize: 15, color: KIT.txt }}>
             <b>Formule à utiliser :</b> {ex.b.solution.txt}

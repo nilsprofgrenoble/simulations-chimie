@@ -1,6 +1,7 @@
 import { Frac, lireNombre, nbCS } from "../commun";
 import { Chaine, ConvPrefixe, facteurK, analyser } from "./DebitsFluides";
 import { FigureVecteurs, Vec } from "./FigureVecteurs";
+import { genTrace, genPont, genTemps } from "./RealiserC1";
 
 // ====================================================
 //  BANQUE DE L'ATELIER « RÉALISER » (compétence S'APP : réaliser)
@@ -502,9 +503,12 @@ export const FAMILLES = [
   { id: 'puissances', groupe: 'Unités', titre: 'Unités au carré, au cube (cm², mm³, L)', gen: genPuissances },
   { id: 'composees', groupe: 'Unités', titre: 'Unités composées (L·h⁻¹, g·cm⁻³…)', gen: genComposees },
   { id: 'mixte', groupe: 'Unités', titre: 'Calcul avec conversions cachées', gen: () => { const e = genMixte(); return { ...e, retenir: RETENIR_MIXTE }; } },
+  { id: 'trace-courbe', groupe: 'Graphiques et capteurs', titre: 'Tracer une courbe à partir d’un tableau', gen: genTrace },
+  { id: 'pont-diviseur', groupe: 'Graphiques et capteurs', titre: 'Application numérique : pont diviseur de tension', gen: genPont, domaine: 'Transmission de signaux numériques' },
+  { id: 'temps-reponse', groupe: 'Graphiques et capteurs', titre: 'Temps de réponse à 5 % d’un capteur', gen: genTemps, domaine: 'Transmission de signaux numériques' },
   { id: 'isoler', groupe: 'Formules', titre: 'Isoler une grandeur', gen: genIsoler },
   { id: 'cs', groupe: 'Résultat numérique', titre: 'Chiffres significatifs et arrondi', gen: genCS },
   { id: 'fonctions', groupe: 'Résultat numérique', titre: 'Fonctions usuelles : log, exp, racine', gen: genFonctions },
   { id: 'calculatrice', groupe: 'Résultat numérique', titre: 'Saisie à la calculatrice', gen: genCalculatrice },
 ];
-export const GROUPES = ['Unités', 'Formules', 'Résultat numérique', 'Vecteurs'];
+export const GROUPES = ['Unités', 'Formules', 'Résultat numérique', 'Graphiques et capteurs', 'Vecteurs'];

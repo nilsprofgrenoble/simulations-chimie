@@ -242,7 +242,11 @@ export function SimulationMetrologie() {
       texte: <>Sans la valeur aberrante, il reste N = {retG.length} résultats (en L/mol) : {retG.map(v => fmt(v, 1)).join(' ; ')}. Utilisez votre
         calculatrice, en mode statistiques.</>,
       tache: { type: 'num', q: 'Moyenne x̄', unite: 'L/mol', vrai: xbG, tol: 0.003, affiche: v => fmt(v, 2),
-        pieges: [[moyenne(G.v), 'Vous avez gardé la valeur aberrante.']] } },
+        calcul: () => { const som = retG.reduce((a, b) => a + b, 0); return [
+          `Les ${retG.length} valeurs retenues (sans la valeur aberrante) ont pour somme Σx = ${fmt(som, 1)} L/mol.`,
+          `Moyenne : x̄ = Σx / N, avec N = ${retG.length}.`,
+          `x̄ = ${fmt(som, 1)} / ${retG.length} = ${fmt(xbG, 2)} L/mol.`]; },
+        pieges: [[moyenne(G.v), 'Vous avez gardé la valeur aberrante.'], [retG.reduce((a, b) => a + b, 0), 'Vous avez oublié de diviser la somme par le nombre N de valeurs.']] } },
     { id: 'ecarts', titre: 'Les écarts à la moyenne', focus: [],
       texte: <>Passez à la vue « Écarts à la moyenne » : chaque trait relie un résultat à la moyenne. L'écart-type est une sorte de
         « moyenne » de ces écarts ; la bande bleue s'étend d'un écart-type de chaque côté.</>,
@@ -250,11 +254,19 @@ export function SimulationMetrologie() {
     { id: 'ecartType', titre: 'L’écart-type expérimental', focus: [],
       texte: <>Sur la calculatrice, l'écart-type expérimental est noté σ<sub>n−1</sub> ou s<sub>x</sub>.</>,
       tache: { type: 'num', q: 'Écart-type expérimental s_x', unite: 'L/mol', vrai: sxG, tol: 0.02, affiche: v => fmt(v, 2),
+        calcul: () => { const ss = retG.reduce((a, x) => a + (x - xbG) ** 2, 0); return [
+          `Formule : s_x = √[ Σ(xᵢ − x̄)² / (N − 1) ], avec x̄ = ${fmt(xbG, 3)} L/mol et N = ${retG.length} (valeur aberrante exclue).`,
+          `Somme des carrés des écarts : Σ(xᵢ − x̄)² ≈ ${fmt(ss, 3)} (L/mol)².`,
+          `Division par N − 1 = ${retG.length - 1} : ${fmt(ss, 3)} / ${retG.length - 1} ≈ ${fmt(ss / (retG.length - 1), 4)} (L/mol)².`,
+          `s_x = √${fmt(ss / (retG.length - 1), 4)} ≈ ${fmt(sxG, 2)} L/mol.`]; },
         pieges: [[ecartTypePop(retG), 'C’est σ_n, qui divise par N : prenez σ_n−1, qui divise par N − 1.'], [ecartType(G.v), 'Vous avez gardé la valeur aberrante.']] } },
     { id: 'u', titre: 'L’incertitude-type', focus: [],
       texte: <>La moyenne est plus fiable qu'un résultat isolé. L'incertitude-type sur la moyenne vaut u = s<sub>x</sub> / √N. On l'arrondit
         <strong> par excès</strong>, avec un seul chiffre significatif.</>,
       tache: { type: 'num', q: 'Incertitude-type u, arrondie par excès à 1 chiffre significatif', unite: 'L/mol', vrai: uG, tol: 0.001, affiche: v => fmt(v, decU),
+        calcul: () => [`Hypothèse : les ${retG.length} résultats sont indépendants (groupes distincts, même protocole) ; u est l’incertitude-type de la moyenne.`,
+          `u = s_x / √N = ${fmt(sxG, 3)} / √${retG.length} = ${fmt(sxG, 3)} / ${fmt(Math.sqrt(retG.length), 3)} ≈ ${fmt(sxG / Math.sqrt(retG.length), 4)} L/mol.`,
+          `Arrondi par excès à 1 chiffre significatif (on ne diminue jamais u) : u = ${fmt(uG, decU)} L/mol.`],
         pieges: [[sxG / Math.sqrt(retG.length), 'C’est la bonne valeur, mais arrondissez-la par excès à un chiffre significatif.'], [sxG, 'Divisez par √N.'], [sxG / retG.length, 'Divisez par la racine de N, pas par N.']] } },
     { id: 'ecriture', titre: 'Écrire le résultat', focus: [],
       texte: <>Le dernier chiffre de la moyenne doit être à la même position que celui de l'incertitude.</>,
@@ -269,7 +281,11 @@ export function SimulationMetrologie() {
       texte: <>La valeur de référence est {SCENARIOS.vm.refTxt}. On calcule le <strong>z-score</strong> : z = |x̄ − V<sub>ref</sub>| / u.
         Si z ≤ 2, le résultat est compatible avec la référence.</>,
       tache: { type: 'num', q: 'z-score', unite: '', vrai: zG, tol: 0.04, affiche: v => fmt(v, 1),
-        pieges: [[Math.abs(xbG - SCENARIOS.vm.ref) / sxG, 'Divisez par u, et non par s_x.']] } },
+        calcul: () => [`Hypothèses : la valeur de référence ${fmt(SCENARIOS.vm.ref, 1)} L/mol est supposée exacte (sans incertitude) ; la moyenne suit à peu près une loi normale, d’où le critère « compatible si z ≤ 2 » (environ 95 % de confiance).`,
+          `|x̄ − V_ref| = |${fmt(xbG, 3)} − ${fmt(SCENARIOS.vm.ref, 1)}| = ${fmt(Math.abs(xbG - SCENARIOS.vm.ref), 3)} L/mol.`,
+          `z = |x̄ − V_ref| / u = ${fmt(Math.abs(xbG - SCENARIOS.vm.ref), 3)} / ${fmt(uG, decU)} ≈ ${fmt(zG, 1)}.`],
+        pieges: [[Math.abs(xbG - SCENARIOS.vm.ref) / sxG, 'Divisez par u, et non par s_x.'],
+          [Math.abs(xbG - SCENARIOS.vm.ref), 'Vous avez donné l’écart |x̄ − V_ref|. Il faut le diviser par u pour obtenir z.']] } },
     { id: 'systematique', titre: 'Erreur aléatoire, erreur systématique', focus: [],
       texte: <>Avec z = {fmt(zG, 1)}, le résultat n'est pas compatible avec la référence. Pourtant, les groupes ont bien travaillé : presque
         tous trouvent un peu trop. Regardez les cibles sous le graphique.</>,

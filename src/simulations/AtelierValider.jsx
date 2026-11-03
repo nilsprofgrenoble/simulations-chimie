@@ -1,9 +1,13 @@
+import CodeExo from '../CodeExo';
+import { ChoixListe } from "../ChoixListe";
 import { useState, useMemo } from "react";
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, ExempleResolu, avecIndices, exParam, venantDuDevoir, lireNombre, proche } from "../commun";
 import { useSuivi } from "../suivi";
 import { parDomaine } from "./ordreDomaines";
 import { Pic } from "../Pictos";
-import { FAMILLES, NIVEAUX, METHODE_PLAUSIBLE, METHODE_COMPAT } from "./AtelierValiderBanque";
+import { FAMILLES, NIVEAUX, METHODE_PLAUSIBLE, METHODE_COMPAT, METHODE_DECISION } from "./AtelierValiderBanque";
+import { FigureModeles } from "./FigureModeles";
+import { Visuel, EnonceLisible } from "./SchemasC1";
 
 // ====================================================
 //  SIM 77 — ATELIER « VALIDER » (compétence VAL)
@@ -61,6 +65,8 @@ function Saisie({ e, val, set, chk, vu }) {
 
 // ── Étapes d'un exercice ──
 function etapesDe(fam, it) {
+  if (fam === 'decision') return it.etapes.map(e => e.type === 'num'
+    ? { ...e, ok: v => { const x = lireNombre(v); return Number.isFinite(x) && proche(x, e.attendu, e.tol ?? 0.03); } } : { ...e, type: 'qcm' });
   if (fam === 'plausible') return [
     { id: 'verdict', type: 'qcm', fixe: true, titre: 'Ton verdict', q: 'Compare le résultat de l’élève aux repères. Est-il plausible ?', o: it.verdict,
       aide: 'Mets le résultat dans une unité qui te parle (km/h, bar, minutes…) puis compare-le à un repère : est-ce du même ordre de grandeur ?' },
@@ -144,22 +150,20 @@ export function SimulationAtelierValider({ naviguer }) {
       </div>);
   };
 
-  const methode = fam === 'plausible' ? METHODE_PLAUSIBLE : METHODE_COMPAT;
+  const methode = fam === 'plausible' ? METHODE_PLAUSIBLE : fam === 'decision' ? METHODE_DECISION : METHODE_COMPAT;
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       <h2 style={{ margin: '0 0 6px', fontSize: 18, color: KIT.txt, fontWeight: 700 }}>VAL : valider un résultat</h2>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Compétence travaillée : <b>Valider</b> (VAL) — garder un regard critique sur un résultat : est-il vraisemblable ? est-il compatible avec la référence ? <b>Tu n’as rien à apprendre par cœur : les repères sont donnés.</b></div>
       <div style={{ ...styleBoite, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
-        <label style={{ fontSize: 14 }}>Entraînement :{' '}
-          <select aria-label="Type d’entraînement" value={fam} onChange={e => charger(e.target.value, 0)}
-            style={{ fontSize: 14, padding: 4, borderRadius: 6, border: `1.5px solid ${KIT.bord}`, color: KIT.txt, background: 'white' }}>
-            {FAMILLES.map(f => <option key={f.id} value={f.id}>{f.titre}</option>)}
-          </select></label>
-        <label style={{ fontSize: 14 }}>Exercice :{' '}
-          <select aria-label="Choix de l’exercice" value={it.id} onChange={e => charger(fam, famille.liste.findIndex(x => x.id === e.target.value))}
-            style={{ fontSize: 14, padding: 4, borderRadius: 6, border: `1.5px solid ${KIT.bord}`, color: KIT.txt, background: 'white', maxWidth: 340 }}>
-            {parDomaine(famille.liste).map(([d, l]) => <optgroup key={d} label={d}>{l.map(x => <option key={x.id} value={x.id}>{`${'★'.repeat(x.niveau)} ${x.titre}`}</option>)}</optgroup>)}
-          </select></label>
+        <div style={{ fontSize: 14, flex: '1 1 240px', minWidth: 0 }}>Entraînement :
+          <ChoixListe ariaLabel="Type d’entraînement" titre="Type d’entraînement" valeur={fam} onChoisir={v => charger(v, 0)}
+            groupes={[{ items: FAMILLES.map(f => ({ value: f.id, label: f.titre })) }]}/>
+        </div>
+        <div style={{ fontSize: 14, flex: '1 1 260px', minWidth: 0 }}>Exercice :
+          <ChoixListe ariaLabel="Choix de l’exercice" titre="Choisir un exercice" valeur={it.id} onChoisir={v => charger(fam, famille.liste.findIndex(x => x.id === v))}
+            groupes={parDomaine(famille.liste).map(([d, l]) => ({ label: d, items: l.map(x => ({ value: x.id, label: `${'★'.repeat(x.niveau)} ${x.titre}` })) }))}/>
+        </div>
         <button onClick={hasard} style={stylePetitBouton(false)}>🎲 Au hasard</button>
         <div style={{ flexBasis: '100%', fontSize: 13, color: KIT.txt2 }}>{famille.aide}</div>
       </div>
@@ -171,9 +175,11 @@ export function SimulationAtelierValider({ naviguer }) {
         </details>
         <div style={{ ...styleBoite, background: 'white' }}>
           <div style={{ fontSize: 12.5, color: KIT.txt2, fontWeight: 700 }}>{it.domaine} · {NIVEAUX[it.niveau]}</div>
-          <div style={{ fontSize: 16, fontWeight: 800, color: KIT.txt, margin: '2px 0 6px' }}>{it.titre}</div>
-          <div style={{ fontSize: 15, color: KIT.txt, lineHeight: 1.65 }}>{T(it.enonce || it.contexte)}</div>
+          <div style={{ fontSize: 16, fontWeight: 800, color: KIT.txt, margin: '2px 0 6px' }}>{it.titre}<CodeExo cle={`77:${fam}.${it.id}`}/></div>
+          <EnonceLisible it={it} T={T}/>
+          <Visuel schema={it.schema} revele={fini}/>
         </div>
+        {it.figure && <FigureModeles fig={it.figure}/>}
         <div data-reperes style={{ ...styleBoite, background: '#fff7ed', border: '1.5px solid #fdba74' }}>
           <div style={{ fontWeight: 800, fontSize: 13, color: COULEUR, marginBottom: 4 }}><Pic n="book"/>REPÈRES (à ta disposition, inutile de les apprendre)</div>
           <table style={{ borderCollapse: 'collapse', fontSize: 14, color: KIT.txt, width: '100%' }}>

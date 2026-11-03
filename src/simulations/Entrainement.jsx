@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, lireProgression, Etoiles, useEtatPersistant } from "../commun";
 import { etoilesSeance } from "../carnet";
 import { ENONCES } from "./AtelierDonneesBanque";
+import { SITUATIONS } from "./AtelierSituationsBanque";
 import { SCENARIOS } from "./AtelierGraphiqueBanque";
 import { FAMILLES as FAM_REA } from "./AtelierRealiserBanque";
 import { FAMILLES as FAM_ANA } from "./AtelierAnalyserBanque";
@@ -40,6 +41,7 @@ const COMPETENCES = [
 export function tousLesExercices() {
   const L = [];
   ENONCES.forEach(e => e.noms.forEach((n, q) => L.push({ atelier: 34, comp: "S'APP", cle: `34:${e.id}.${q}`, ex: `${e.id}.${q}`, domaine: e.domaine, titre: `${e.titre} — ${n}` })));
+  SITUATIONS.forEach(s => L.push({ atelier: 34, comp: "S'APP", cle: `34:${s.id}`, ex: s.id, domaine: s.domaine, titre: `Comprendre une situation — ${s.titre}` }));
   SCENARIOS.forEach(s => L.push({ atelier: 35, comp: "S'APP", cle: `35:${s.id}`, ex: s.id, domaine: s.domaine, titre: titreGraphique(s) }));
   FAM_ANA.forEach(f => f.liste.forEach(it => L.push({ atelier: 37, comp: 'ANA', cle: `37:${f.id}:${it.id}`, ex: `${f.id}.${it.id}`, domaine: it.domaine, titre: `${f.titre} — ${it.titre}` })));
   FAM_VAL.forEach(f => f.liste.forEach(it => L.push({ atelier: 77, comp: 'VAL', cle: `77:${f.id}:${it.id}`, ex: `${f.id}.${it.id}`, domaine: it.domaine, niveau: it.niveau, titre: `${f.titre} — ${it.titre}` })));
@@ -68,7 +70,7 @@ function CarteChapitre({ c, ouvert, enCours, av, onClick }) {
   const pct = av.max ? (100 * av.etoiles) / av.max : 0;
   return (
     <button type="button" data-chapitre-id={c.id} aria-expanded={ouvert} onClick={onClick}
-      style={{ textAlign: 'left', padding: '10px 12px', borderRadius: 10, cursor: 'pointer', background: ouvert ? '#fff1f2' : 'white', border: `2px solid ${ouvert ? ROSE : enCours ? '#2a9d8f' : KIT.bord}`, display: 'flex', flexDirection: 'column', gap: 5, font: 'inherit' }}>
+      style={{ textAlign: 'left', padding: '10px 12px', borderRadius: 14, cursor: 'pointer', background: ouvert ? '#fff1f2' : 'white', border: `2px solid ${ouvert ? ROSE : enCours ? '#2a9d8f' : KIT.bord}`, display: 'flex', flexDirection: 'column', gap: 5, font: 'inherit' }}>
       {enCours && <span style={{ fontSize: 11, fontWeight: 800, color: '#1f6f66', letterSpacing: 0.4 }}>👉 CHAPITRE EN COURS</span>}
       <span style={{ fontWeight: 800, color: KIT.txt, fontSize: 14.5, lineHeight: 1.35 }}>{c.label}</span>
       <span style={{ fontSize: 12.5, color: KIT.txt2 }}>
@@ -119,7 +121,7 @@ function DetailChapitre({ c, exos, ctx, naviguer, sansTitre }) {
   const exosChap = exosDuChapitre(exos, c.domaines), av = avancementChapitre(exosChap, etoilesDe), conseil = exosChap.length ? prochainExercice(exosChap, etoilesDe) : null;
   const enCours = idsEnCours.includes(c.id);
   return (
-    <section data-chapitre style={{ margin: '14px 0 18px', padding: '12px 14px', border: `2px solid ${ROSE}`, borderRadius: 12, background: 'white' }}>
+    <section data-chapitre style={{ margin: '14px 0 18px', padding: '12px 14px', border: `2px solid ${ROSE}`, borderRadius: 16, background: 'white' }}>
       {!sansTitre && <h3 style={{ margin: '0 0 4px', color: KIT.txt }}><Pic n="book"/>{c.label}</h3>}
       <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 8 }}>
         {enCours ? 'Chapitre choisi par ton professeur. ' : ''}{exosChap.length > 0 ? `${av.reussis} exercice${av.reussis > 1 ? 's' : ''} réussi${av.reussis > 1 ? 's' : ''} sur ${av.total} · ${av.etoiles} ★ sur ${av.max}` : 'Pas encore d’exercice de remédiation sur ce chapitre : commence par les simulations.'}
@@ -245,7 +247,7 @@ export function SimulationEntrainement({ naviguer }) {
 
   return (
     <div style={{ ...cardStyle, maxWidth: 1000, margin: '0 auto' }}>
-      <h2 style={{ margin: 0, color: ROSE }}><Pic n="dumbbell"/>Je m’entraîne ! Travail par compétence.</h2>
+      <h2 style={{ margin: 0, color: '#0c1a2e', fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 22, letterSpacing: '-0.01em' }}><Pic n="dumbbell"/>Je m’entraîne ! Travail par compétence.</h2>
       <p style={{ color: KIT.txt2, fontSize: 14, lineHeight: 1.55 }}>
         Chaque exercice travaille <b>une</b> compétence de la démarche scientifique. L’ordre conseillé suit celle d’un problème :
         <b> s’approprier → analyser → réaliser → valider</b>. Tu peux commencer par n’importe quelle compétence, mais si tu hésites, suis cet ordre.

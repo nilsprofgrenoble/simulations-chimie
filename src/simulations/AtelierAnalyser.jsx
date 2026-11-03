@@ -1,8 +1,11 @@
+import CodeExo from '../CodeExo';
+import { ChoixListe } from "../ChoixListe";
 import { useState, useMemo } from "react";
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, exParam, venantDuDevoir } from "../commun";
 import { useSuivi } from "../suivi";
 import { parDomaine } from "./ordreDomaines";
 import { FAMILLES, METHODE } from "./AtelierAnalyserBanque";
+import { Visuel, EnonceLisible } from "./SchemasC1";
 
 // ====================================================
 //  SIM 37 — ATELIER « ANALYSER » (compétence S'APP : analyser)
@@ -149,7 +152,7 @@ function etapesDe(fam, it) {
     { id: 'demarche', type: 'ordre', titre: 'Ordonner la démarche', dem: it.demarche },
   ];
   if (fam === 'hypothese') return [{ id: 'h', type: 'multi', titre: 'Hypothèses nécessaires', q: 'Cochez toutes les hypothèses nécessaires, et seulement elles.', o: it.options }];
-  return [{ id: 'q', type: 'qcm', titre: fam === 'relation' ? 'Choisir la relation' : (fam === 'mouvement' || fam === 'champ') ? 'Reconnaître sur le schéma' : 'Prévoir', q: it.q, o: it.options }];
+  return [{ id: 'q', type: 'qcm', titre: fam === 'relation' ? 'Choisir la relation' : fam === 'algorithme' ? 'Compléter l’algorithme' : (fam === 'mouvement' || fam === 'champ') ? 'Reconnaître sur le schéma' : 'Prévoir', q: it.q, o: it.options }];
 }
 const permsDe = etapes => Object.fromEntries(etapes.map(e => [e.id,
   e.type === 'ordre' ? melange(e.dem.etapes.length + e.dem.pieges.length) : e.o ? melange(e.o.length) : null]));
@@ -215,9 +218,9 @@ export function SimulationAtelierAnalyser({ naviguer }) {
   const enonce = (
     <div style={{ ...styleBoite, background: 'white' }}>
       <div style={{ fontSize: 12.5, color: KIT.txt2, fontWeight: 700 }}>{it.domaine}</div>
-      <div style={{ fontSize: 16, fontWeight: 800, color: KIT.txt, margin: '2px 0 6px' }}>{it.titre}</div>
-      <div style={{ fontSize: 15, color: KIT.txt, lineHeight: 1.65 }}>{T(it.enonce)}</div>
-      {it.figure}
+      <div style={{ fontSize: 16, fontWeight: 800, color: KIT.txt, margin: '2px 0 6px' }}>{it.titre}<CodeExo cle={`37:${fam}.${it.id}`}/></div>
+      <EnonceLisible it={it} T={T}/>
+      {it.figure}<Visuel schema={it.schema} revele={fini}/>
     </div>);
   const methode = fam === 'probleme' && (
     <div style={{ ...styleBoite, fontSize: 13.5, color: KIT.txt }}>
@@ -235,16 +238,14 @@ export function SimulationAtelierAnalyser({ naviguer }) {
       <h2 style={{ margin: '0 0 6px', fontSize: 18, color: KIT.txt, fontWeight: 700 }}>ANA : analyser un problème</h2>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Compétence travaillée : <b>Analyser</b> (ANA) — identifier ce que l’on cherche, trier les données, choisir les relations, expliciter les hypothèses, organiser la démarche. Ici, on ne calcule presque pas : on prépare la résolution.</div>
       <div style={{ ...styleBoite, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
-        <label style={{ fontSize: 14 }}>Entraînement :{' '}
-          <select aria-label="Type d’entraînement" value={fam} onChange={e => charger(e.target.value, 0)}
-            style={{ fontSize: 14, padding: 4, borderRadius: 6, border: `1.5px solid ${KIT.bord}`, color: KIT.txt, background: 'white' }}>
-            {FAMILLES.map(f => <option key={f.id} value={f.id}>{f.titre}</option>)}
-          </select></label>
-        <label style={{ fontSize: 14 }}>Énoncé :{' '}
-          <select aria-label="Choix de l’énoncé" value={it.id} onChange={e => charger(fam, famille.liste.findIndex(x => x.id === e.target.value))}
-            style={{ fontSize: 14, padding: 4, borderRadius: 6, border: `1.5px solid ${KIT.bord}`, color: KIT.txt, background: 'white', maxWidth: 320 }}>
-            {parDomaine(famille.liste).map(([d, l]) => <optgroup key={d} label={d}>{l.map(x => <option key={x.id} value={x.id}>{x.titre}</option>)}</optgroup>)}
-          </select></label>
+        <div style={{ fontSize: 14, flex: '1 1 240px', minWidth: 0 }}>Entraînement :
+          <ChoixListe ariaLabel="Type d’entraînement" titre="Type d’entraînement" valeur={fam} onChoisir={v => charger(v, 0)}
+            groupes={[{ items: FAMILLES.map(f => ({ value: f.id, label: f.titre })) }]}/>
+        </div>
+        <div style={{ fontSize: 14, flex: '1 1 260px', minWidth: 0 }}>Énoncé :
+          <ChoixListe ariaLabel="Choix de l’énoncé" titre="Choisir un énoncé" valeur={it.id} onChoisir={v => charger(fam, famille.liste.findIndex(x => x.id === v))}
+            groupes={parDomaine(famille.liste).map(([d, l]) => ({ label: d, items: l.map(x => ({ value: x.id, label: x.titre })) }))}/>
+        </div>
         <button onClick={hasard} style={stylePetitBouton(false)}>🎲 Au hasard</button>
         <div style={{ flexBasis: '100%', fontSize: 13, color: KIT.txt2 }}>{famille.aide}</div>
       </div>

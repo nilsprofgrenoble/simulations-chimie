@@ -52,6 +52,42 @@ function placer(atomes) {
   });
   return pos;
 }
+
+// Range le schéma : angles réguliers autour de chaque atome (méthanal plan à 120°, CO₂ aligné, eau coudée…), sans changer les liaisons.
+function rangerPos(atomes, bonds) {
+  const n = atomes.length, vois = atomes.map((_, i) => voisinsDe(bonds, i)), vu = new Array(n).fill(false), pos = new Array(n);
+  const blocs = [];
+  const poids = i => (atomes[i] === 'H' ? 0 : 1) * 10 + vois[i].length;
+  [...atomes.keys()].sort((a, b) => poids(b) - poids(a)).forEach(r => {
+    if (vu[r]) return;
+    const loc = {}, file = [[r, null, 0]];
+    vu[r] = true; loc[r] = { x: 0, y: 0 };
+    while (file.length) {
+      const [i, parent, base] = file.shift();
+      const enf = vois[i].filter(j => j !== parent && !vu[j]).sort((a, b) => poids(b) - poids(a));
+      const deg = vois[i].length, coude = deg === 2 && (atomes[i] === 'O' || atomes[i] === 'N' || atomes[i] === 'S');
+      const pas = deg === 2 ? (coude ? 105 : 180) : 360 / deg;
+      const ap = parent === null ? base - pas : base + 180;       // direction de la liaison vers le parent (pour la racine : fictive)
+      enf.forEach((j, k) => {
+        const deg2 = ap + pas * (k + 1), a = (deg2 * Math.PI) / 180, L = atomes[i] === 'H' || atomes[j] === 'H' ? 78 : 96;
+        vu[j] = true; loc[j] = { x: loc[i].x + L * Math.cos(a), y: loc[i].y - L * Math.sin(a) };
+        file.push([j, i, deg2]);
+      });
+    }
+    blocs.push(loc);
+  });
+  const boite = loc => { const v = Object.values(loc); return { x0: Math.min(...v.map(q => q.x)), x1: Math.max(...v.map(q => q.x)), y0: Math.min(...v.map(q => q.y)), y1: Math.max(...v.map(q => q.y)) }; };
+  const bs = blocs.map(boite), ecartB = 90;
+  const larg = bs.reduce((t, b) => t + (b.x1 - b.x0), 0) + ecartB * (blocs.length - 1), haut = Math.max(...bs.map(b => b.y1 - b.y0));
+  const mx = R + 34, my = R + 30, k = Math.min(1, (W - 2 * mx) / Math.max(larg, 1), (H - 2 * my) / Math.max(haut, 1));
+  let cur = (W - larg * k) / 2;
+  blocs.forEach((loc, bi) => {
+    const b = bs[bi];
+    Object.entries(loc).forEach(([i, q]) => { pos[i] = { x: cur + (q.x - b.x0) * k, y: H / 2 + (q.y - (b.y0 + b.y1) / 2) * k }; });
+    cur += (b.x1 - b.x0) * k + ecartB * k;
+  });
+  return pos;
+}
 const initMol = id => { const m = moleculeDe(id); return { id, pos: placer(m.atomes), bonds: {}, lp: m.atomes.map(() => 0), sel: null }; };
 const molRef = id => { const m = moleculeDe(id), bonds = liaisonsDeRef(m.ref); return { id, pos: placer(m.atomes), bonds, lp: doubletsAuto(m.atomes, bonds), sel: null }; };
 
@@ -251,6 +287,7 @@ export function SimulationAtomesMolecules() {
   const changerLP = d => gererMol(m => (m.sel === null ? m : { ...m, lp: m.lp.map((x, k) => (k === m.sel ? clamp(x + d, 0, 4) : x)) }));
   const effacer = () => gererMol(m => ({ ...initMol(m.id), pos: m.pos }));
   const choisirMol = id => setMol(initMol(id));
+  const ranger = () => gererMol(m => ({ ...m, pos: rangerPos(atomes, m.bonds) }));
   const autoDoublets = () => gererMol(m => ({ ...m, lp: doubletsAuto(atomes, m.bonds) }));
 
   // ════════════════ PARCOURS GUIDÉ ════════════════
@@ -273,6 +310,8 @@ export function SimulationAtomesMolecules() {
           {bouton('Voir l’oxygène', () => voirAtome(8))}</ExempleResolu>
         À vous : le fluor. {bouton('Voir le fluor', () => voirAtome(9))}</>,
       tache: { type: 'num', q: 'Combien d’électrons de valence a le fluor (Z = 9) ?', unite: '', vrai: eF.valence, tol: 0.001, affiche: x => String(x),
+        calcul: () => [`Le fluor a Z = 9 : il a 9 électrons. Sa configuration électronique est ${eF.config}.`, 'Les électrons de valence sont ceux de la dernière couche, la couche n = 2 (le plus grand n).',
+          `Sur cette couche : 2 électrons en 2s et 5 en 2p, donc 2 + 5 = ${eF.valence} électrons de valence.`],
         pieges: [[9, 'Ce sont tous les électrons de l’atome. On ne compte que ceux de la dernière couche (n = 2).'], [5, 'Vous n’avez compté que les électrons 2p : n’oubliez pas ceux de 2s (couche n = 2 en entier).']],
         expl: `Fluor : ${eF.config}. Dernière couche (n = 2) : 2 + 5 = ${eF.valence} électrons de valence.` } },
     { id: 'manque', titre: 'Un atome pas stable', depart: () => voirAtome(9),
@@ -280,7 +319,9 @@ export function SimulationAtomesMolecules() {
         <ExempleResolu>L’oxygène a 6 électrons de valence : il lui en manque 8 − 6 = <strong>2</strong>. Il n’est pas stable seul.</ExempleResolu>
         À vous : regardez le fluor sur le schéma : les ronds <em>vides</em> sont les places libres de la couche de valence.</>,
       tache: { type: 'num', q: 'Combien d’électrons manque-t-il au fluor pour avoir un octet ?', unite: '', vrai: 1, tol: 0.001, affiche: x => String(x),
-        pieges: [[7, 'C’est le nombre d’électrons de valence. Il manque 8 − 7.']],
+        calcul: () => [`Un octet, c’est 8 électrons sur la couche de valence.`, `Le fluor en a déjà ${eF.valence}.`, `Il lui manque 8 − ${eF.valence} = ${8 - eF.valence} électron.`],
+        pieges: [[7, 'C’est le nombre d’électrons de valence. Il manque 8 − 7.'], [8, 'C’est le nombre d’électrons d’un octet. Il faut enlever ceux que le fluor a déjà : 8 − 7.'],
+          [15, 'On soustrait : le nombre d’électrons qui manquent est 8 (l’octet) moins 7 (ceux qu’il a déjà).']],
         expl: 'Le fluor a 7 électrons de valence : 8 − 7 = 1 électron manquant.' } },
     { id: 'anion', titre: 'Gagner des électrons : l’anion', depart: () => voirAtome(9),
       texte: <>Une solution : <strong>gagner</strong> des électrons. L’atome devient un <strong>ion négatif</strong>, un <strong>anion</strong>.
@@ -340,7 +381,10 @@ export function SimulationAtomesMolecules() {
         <ExempleResolu>Pour un atome neutre : liaisons = 8 − (électrons de valence). Exemple, l’oxygène : 8 − 6 = <strong>2 liaisons</strong>, et ses 2 autres paires d’électrons sont non liantes.</ExempleResolu>
         À vous : l’azote. {bouton('Voir l’azote', () => voirAtome(7))}</>,
       tache: { type: 'num', q: 'Combien de liaisons fait un atome d’azote N (Z = 7) ?', unite: '', vrai: 3, tol: 0.001, affiche: x => String(x),
-        pieges: [[5, 'C’est le nombre d’électrons de valence de l’azote. Il lui en manque 8 − 5.']],
+        calcul: () => { const eN = etatEntite(7, 7); return [`L’azote a Z = 7 : sa configuration est ${eN.config}. Sa couche de valence (n = 2) a 2 + 3 = ${eN.valence} électrons.`,
+          'Pour un atome neutre, le nombre de liaisons est le nombre d’électrons qui manquent pour avoir un octet : 8 − (électrons de valence).', `Liaisons = 8 − ${eN.valence} = ${8 - eN.valence}.`]; },
+        pieges: [[5, 'C’est le nombre d’électrons de valence de l’azote. Il lui en manque 8 − 5.'], [8, 'C’est le nombre d’électrons d’un octet. Le nombre de liaisons est le nombre d’électrons qui manquent : 8 − 5.'],
+          [1, 'C’est le nombre de doublets non liants de l’azote. Ici on demande le nombre de liaisons : 8 − 5.']],
         expl: 'Azote : 5 électrons de valence, il lui en manque 3 pour l’octet : 3 liaisons, et il garde 1 doublet non liant (5 − 3 = 2 électrons).' } },
     { id: 'h2o', titre: 'À vous : l’eau H₂O', depart: () => voirMol('H2O', 'tirets'),
       texte: <>Appliquez la règle : l’oxygène fait 2 liaisons (une avec chaque H), et il lui reste 2 doublets non liants. Chaque H fait 1 liaison.
@@ -405,6 +449,7 @@ export function SimulationAtomesMolecules() {
         <button onClick={() => changerLP(1)} disabled={mol.sel === null} style={{ ...stylePetitBouton(false, '#334155'), opacity: mol.sel === null ? 0.5 : 1 }}>＋ doublet non liant</button>
         <button onClick={() => changerLP(-1)} disabled={mol.sel === null} style={{ ...stylePetitBouton(false, '#334155'), opacity: mol.sel === null ? 0.5 : 1 }}>− doublet non liant</button>
         <button onClick={effacer} style={stylePetitBouton(false, '#334155')}>🧹 Tout effacer</button>
+        <button onClick={ranger} style={stylePetitBouton(false, '#334155')}>📐 Ranger le schéma</button>
         <button onClick={() => setRendu(r => (r === 'electrons' ? 'tirets' : 'electrons'))} style={stylePetitBouton(false, '#475569')} aria-label="Changer de représentation">{rendu === 'electrons' ? '● Électrons → voir les tirets' : '— Tirets → voir les électrons'}</button>
         {enExplore && <button onClick={autoDoublets} style={stylePetitBouton(false, '#4338ca')}>✨ Placer les doublets non liants pour moi</button>}
         <span style={{ fontSize: 13, color: KIT.txt2 }}>{selA ? `Atome sélectionné : ${selA.sym}` : 'Cliquez sur un atome pour le sélectionner (glissez-le pour le déplacer).'}</span>
@@ -470,7 +515,7 @@ export function SimulationAtomesMolecules() {
       <li><strong>Couche de valence</strong> : la dernière couche occupée (n le plus grand). <strong>Stable</strong> : même nombre d’électrons qu’un gaz noble (2, 10 ou 18). C’est un <em>modèle</em> : il explique bien les ions courants et les petites molécules, pas tous les composés.</li>
       <li><strong>Ion « le plus simple »</strong> : celui qui demande de gagner ou perdre le moins d’électrons. Le carbone et le silicium (4 électrons de valence) ne forment pas d’ions simples : ils forment des liaisons. L’ion H⁺ (plus aucun électron) est un cas à part.</li>
       <li><strong>Liaison covalente</strong> : un doublet d’électrons partagé entre deux atomes. Liaisons simples, doubles ou triples ; <strong>pas de charge formelle</strong> ni d’octet étendu (hors programme de seconde).</li>
-      <li><strong>Dessin</strong> : les positions des atomes sont libres, ce ne sont pas les vraies positions dans l’espace : la <em>géométrie</em> d’une molécule n’est pas décrite (elle est étudiée plus tard).</li>
+      <li><strong>Dessin</strong> : les positions des atomes sont libres (le bouton « Ranger le schéma » les replace avec des angles réguliers, à plat), ce ne sont pas les vraies positions dans l’espace : la <em>géométrie</em> d’une molécule n’est pas décrite (elle est étudiée plus tard).</li>
       <li><strong>Plusieurs schémas corrects</strong> sont possibles pour une même formule brute (C₂H₆O par exemple). Le défi accepte tout schéma qui respecte l’octet, le duet et la conservation des électrons de valence, avec une molécule d’un seul tenant.</li>
     </ul>);
   const panneauHypo = <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>;

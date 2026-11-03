@@ -5,12 +5,13 @@
 //  et rien ne peut être « perdu ».
 //
 //  Principe : on récompense la MAÎTRISE et la persévérance, jamais le temps passé.
-//   • Étoiles d'une séance : 0 si non réussi · 1 si réussi · 2 si réussi sans voir la correction · 3 si en plus au premier essai.
+//   • Étoiles d'une séance : 0 si non réussi · 1 si réussi avec la correction vue, ou après deux erreurs ou plus · 2 si réussi sans voir la correction après une seule erreur · 3 si réussi du premier coup (sans erreur ni correction).
 //   • Étoiles d'un exercice : la meilleure de ses séances (on peut donc refaire un exercice pour améliorer).
 //   • Ces données sont envoyées par le navigateur de l'élève : elles servent à motiver, jamais à noter.
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const etoilesSeance = l => (!l.reussi ? 0 : l.corrections_vues > 0 ? 1 : l.essais <= 1 ? 3 : 2);
+// essais = tentatives jusqu'à la bonne réponse (la dernière, juste, comprise) : essais − 1 = nombre d'erreurs
+export const etoilesSeance = l => (!l.reussi ? 0 : l.corrections_vues > 0 ? 1 : l.essais <= 1 ? 3 : l.essais === 2 ? 2 : 1);
 // à l'instant de la réussite (annonce immédiate) : mêmes règles
 export const etoilesReussite = (essais, vues) => etoilesSeance({ reussi: true, essais, corrections_vues: vues });
 

@@ -187,7 +187,12 @@ export function SimulationPrincipeInertie() {
       texte: <>Le palet n’est pas « sans force » pour autant : la <strong>Terre l’attire</strong> (son <strong>poids</strong> <Vec c="P"/>) et la table le soutient (la <strong>réaction du support</strong> <Vec c="R"/>). Ces deux forces sont verticales.
         <ExempleResolu>Le palet ne s’enfonce pas dans la table et ne s’envole pas : verticalement, <strong>poids et réaction se compensent</strong>. Elles ont même direction, sens opposés et même intensité : R = P = m × g.</ExempleResolu>
         À vous : la caisse de 20 kg (g = 9,8 N/kg).</>,
-      tache: { type: 'num', q: 'Quelle est l’intensité de la réaction du sol sur la caisse de 20 kg ?', unite: 'N', vrai: 196, tol: 0.03, affiche: x => String(x), pieges: [[20, 'C’est la masse en kg. La réaction vaut m × g.'], [19.6, 'Vérifiez l’ordre de grandeur : 20 × 9,8.']], expl: 'R = P = m × g = 20 × 9,8 = 196 N.' } },
+      tache: { type: 'num', q: 'Quelle est l’intensité de la réaction du sol sur la caisse de 20 kg ?', unite: 'N', vrai: 196, tol: 0.03, affiche: x => String(x), pieges: [[20, 'C’est la masse en kg. La réaction vaut m × g.'], [19.6, 'Vérifiez l’ordre de grandeur : 20 × 9,8.'], [20 / 9.8, 'On multiplie : P = m × g (on ne divise pas la masse par g).']],
+        calcul: () => [
+          'Verticalement, la caisse ne monte ni ne descend : le poids P et la réaction R se compensent. Elles ont donc la même intensité : R = P.',
+          'Le poids se calcule avec P = m × g, avec m = 20 kg et g = 9,8 N/kg.',
+          'P = 20 × 9,8 = 196 N.',
+          'Donc R = P = 196 N.'], expl: 'R = P = m × g = 20 × 9,8 = 196 N.' } },
     { id: 'resultante', titre: 'La résultante des forces', depart: () => voir({ m: 25, mu: 0.2, F: 49, v0: 1 }, 3),
       texte: <>Pour savoir si des forces se compensent, on les <strong>additionne</strong> : la <strong>résultante</strong> <Vec c="ΣF"/> est la somme vectorielle de toutes les forces. Si <Vec c="ΣF"/> = <Vec c="0"/>, les forces <strong>se compensent</strong>.
         <ExempleResolu>Sol normal, caisse de 25 kg, glissant à 1 m/s. Les <strong>frottements</strong> f valent 0,2 × 25 × 9,8 = 49 N, vers la gauche. Une poussée F de 49 N vers la droite les compense : <Vec c="ΣF"/> = <Vec c="0"/> (la flèche violette disparaît).

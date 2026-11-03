@@ -89,6 +89,7 @@ import { ProchaineEtape } from "./ProchaineEtape";
 import { EnTete } from "./EnTete";
 import { PiedDePage } from "./PiedDePage";
 import { AccueilSite } from "./AccueilSite";
+import { resoudreCode } from "./resoudreCode";
 import { DESCRIPTIONS } from "./descriptions";
 
 // ============================================================
@@ -270,6 +271,18 @@ const MENUS = construireMenus();
 export default function App() {
   const getInitialId = () => {
     const params = new URLSearchParams(window.location.search);
+    // lien court d'un exercice : ?c=ANA23 (équivaut à ?sim=…&ex=…)
+    const codeParam = params.get('c');
+    if (codeParam) {
+      const r = resoudreCode(codeParam, SIMULATIONS);
+      try {
+        const u = new URL(window.location.href); u.searchParams.delete('c');
+        if (r) { u.searchParams.set('sim', r.sim); if (r.ex) u.searchParams.set('ex', r.ex); }
+        window.history.replaceState(null, '', u.toString());
+      } catch { /* adresse non modifiable */ }
+      if (r) return r.sim;
+      return 0;
+    }
     const simParam = params.get('sim');
     if (simParam) {
       const id = parseInt(simParam);
@@ -318,7 +331,28 @@ export default function App() {
       ? `${s.label} : simulation interactive${niv ? ` (${niv})` : ''}, avec parcours guidé, exploration libre et défi.`
       : 'Simulations interactives de chimie et de physique pour la Première, la Terminale STL et le BTS Métiers de la chimie : parcours guidés, exploration libre, défis et exercices par compétence.');
     meta('robots', activeId === 39 || activeId === 40 ? 'noindex' : 'index, follow');
+    // adresse canonique : les liens vers un exercice (?sim=…&ex=…) ou un code court (?c=…) affichent la même page que ?sim=… ;
+    // sans cette balise, Google les signale comme « pages en double sans URL canonique ». Pas de canonique pour les pages privées (noindex).
+    let lien = document.querySelector('link[rel="canonical"]');
+    if (activeId === 39 || activeId === 40) { if (lien) lien.remove(); }
+    else {
+      if (!lien) { lien = document.createElement('link'); lien.setAttribute('rel', 'canonical'); document.head.appendChild(lien); }
+      lien.setAttribute('href', activeId > 0 ? `https://paillasse-virtuelle.fr/?sim=${activeId}` : 'https://paillasse-virtuelle.fr/');
+    }
   }, [activeId]);
+
+  // Arrivée par un QR code ou un lien vers un exercice précis (?ex=…) sur un petit écran :
+  // on saute l'en-tête et l'introduction pour montrer directement le choix de l'exercice.
+  useEffect(() => {
+    try {
+      if (!new URLSearchParams(window.location.search).get('ex') || window.innerWidth > 700) return;
+      const t = setTimeout(() => {
+        const cible = document.querySelector('[data-choix-liste]');
+        if (cible) window.scrollTo({ top: Math.max(0, (cible.parentElement?.parentElement || cible).getBoundingClientRect().top + window.scrollY - 90), behavior: 'auto' });
+      }, 500);
+      return () => clearTimeout(t);
+    } catch { /* défilement indisponible */ }
+  }, []);
 
   function partager() {
     const url = new URL(window.location.href);
@@ -378,7 +412,7 @@ export default function App() {
       <div style={styles.bgBlob1} />
       <div style={styles.bgBlob2} />
 
-      <EnTete menus={MENUS} activeId={activeId} niveauActif={activeId === 0 ? null : active.niveau} naviguer={naviguer} session={sessionSb} />
+      <EnTete menus={MENUS} simulations={SIMULATIONS} activeId={activeId} niveauActif={activeId === 0 ? null : active.niveau} naviguer={naviguer} session={sessionSb} />
 
 
       {/* Zone principale — pleine largeur */}
@@ -387,12 +421,11 @@ export default function App() {
         {activeId > 0 && (
           <div style={{
             ...styles.topBar,
-            background: `linear-gradient(135deg, ${active.color}22, ${active.color}08)`,
-            borderBottom: `3px solid ${active.color}`,
+            maxWidth: 1100, margin: "0 auto", width: "100%", boxSizing: "border-box",
           }}>
-            <span style={{ fontSize: "2rem" }}><Emo e={active.icon} t={34}/></span>
-            <h1 style={{ ...styles.pageTitle, color: active.color, flex: 1 }}>
-              <span style={{ fontFamily:"'Outfit', sans-serif", fontWeight:800, letterSpacing:"-0.5px" }}>
+            <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 18, background: `${active.color}22`, display: "grid", placeItems: "center", flexShrink: 0 }}><Emo e={active.icon} t={34}/></span>
+            <h1 style={{ ...styles.pageTitle, fontFamily:"'Outfit', sans-serif", color: "#0c1a2e", flex: 1, textAlign: "left", fontSize: "clamp(24px, 3.8vw, 38px)", lineHeight: 1.1, textWrap: "balance" }}>
+              <span style={{ fontFamily:"'Outfit', sans-serif", fontWeight:800, letterSpacing:"-0.02em" }}>
                 {idAffiche === 39 ? (estEleve(sessionSb) ? 'Mon profil' : sessionSb?.profil ? 'Mon compte' : 'Se connecter') : active.label}
               </span>
             </h1>
@@ -400,15 +433,15 @@ export default function App() {
               <button data-donner-devoir onClick={() => {
                 try { window.sessionStorage.setItem('devoir-preset', JSON.stringify({ titre: active.label, cles: [`sim:${activeId}`], eleves: [] })); } catch { /* sans mémorisation, le formulaire s'ouvre vide */ }
                 naviguer(40);
-              }} style={{ padding:"6px 14px", borderRadius:8, border:"none", background:"#25628f", color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"'Nunito', sans-serif", whiteSpace:"nowrap" }}>
+              }} style={{ padding:"8px 16px", borderRadius:999, border:"none", background:"#0b4f94", color:"#fff", fontSize:13.5, fontWeight:700, cursor:"pointer", fontFamily:"'Nunito', sans-serif", whiteSpace:"nowrap" }}>
                 <Pic n="pin"/>Donner en devoir
               </button>)}
             <button onClick={partager} style={{
               display:"flex", alignItems:"center", gap:6,
-              padding:"6px 14px", borderRadius:8, border:"none",
-              background: copyMsg ? "#2a9d8f" : "#f0f0f0",
-              color: copyMsg ? "white" : "#555",
-              fontSize:13, fontWeight:600, cursor:"pointer",
+              padding:"8px 16px", borderRadius:999, border:"1.5px solid #d5dfeb",
+              background: copyMsg ? "#2a9d8f" : "#ffffff",
+              color: copyMsg ? "white" : "#334155",
+              fontSize:13.5, fontWeight:700, cursor:"pointer",
               transition:"all 0.2s", fontFamily:"'Nunito', sans-serif",
               whiteSpace:"nowrap",
             }}>
@@ -419,7 +452,7 @@ export default function App() {
 
         <div style={styles.simContainer}>
           {activeId === 0
-            ? <AccueilSite onStart={(id) => naviguer(id || 1)} session={sessionSb} simulations={SIMULATIONS} energyUrl={ENERGY_URL} />
+            ? <AccueilSite onStart={(id) => naviguer(id || 1)} onCode={naviguer} session={sessionSb} simulations={SIMULATIONS} energyUrl={ENERGY_URL} />
             : <div style={{ textAlign: "left" }}>
                 {/* Le fichier App.css du modèle Vite centre tout le texte (#root) : on rétablit l'alignement
                     à gauche pour les simulations ; la page d'accueil garde sa mise en page centrée. */}
@@ -440,14 +473,14 @@ export default function App() {
 const styles = {
   root: { display:"flex", flexDirection:"column", minHeight:"100vh",
     fontFamily:"'Nunito', 'Segoe UI', sans-serif",
-    background:"linear-gradient(165deg, #c9d9e8 0%, #e1eaf3 38%, #d3e0ec 70%, #c4d4e4 100%)", position:"relative", overflow:"clip" },
+    background:"#eef3f9", position:"relative", overflow:"clip" },
   bgBlob1: { position:"fixed", top:"-120px", right:"-120px", width:"400px", height:"400px",
     borderRadius:"50%",
-    background:"radial-gradient(circle, #25628f40 0%, transparent 70%)",
+    background:"none",
     pointerEvents:"none", zIndex:0 },
   bgBlob2: { position:"fixed", bottom:"-100px", left:"200px", width:"350px", height:"350px",
     borderRadius:"50%",
-    background:"radial-gradient(circle, #25628f33 0%, transparent 70%)",
+    background:"none",
     pointerEvents:"none", zIndex:0 },
   main: { flex:1, display:"flex", flexDirection:"column",
     position:"relative", zIndex:1, minWidth:0 },

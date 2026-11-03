@@ -334,6 +334,9 @@ export function bernCorrection(ex) {
   return L;
 }
 
+// Garde seulement les pièges dont la fenêtre de détection ne recouvre pas celle de la bonne réponse (±max(tol, 4 %) autour du piège)
+const piegesValides = (vrai, tol, liste) => liste.filter(([v]) => isFinite(v) && v !== 0 && Math.abs(v - vrai) > Math.max(tol, 0.04) * Math.abs(v) + tol * Math.abs(vrai));
+
 export function SimulationBernoulli({ plotlyReady }) {
   const [mode, setMode] = useState(() => { const m = modeOuverture('bern-guide-v1'); return m === 'defi' ? 'exercice' : m; });   // « defi » demandé par une mission = ici l'onglet « Défi (exercices) »
   useSignalerMode(mode);
@@ -447,7 +450,9 @@ export function SimulationBernoulli({ plotlyReady }) {
         du tuyau D = <strong>{dMm} mm</strong>. Déterminez la vitesse v de l'eau dans le tuyau, de section S = π·D² / 4. Donnez la réponse avec <strong>2 chiffres significatifs</strong>.</>,
       tache: { type: 'num', q: 'Vitesse de l’eau dans le tuyau', unite: 'm·s⁻¹', vrai: r.v, tol: 0.03, detail: true,
         indice: 'Convertissez d’abord Q_V en m³·s⁻¹ (1 L·h⁻¹ = 1/3 600 000 m³·s⁻¹) et D en m, puis utilisez v = Q_V / S.',
-        pieges: [[r.v * 4, 'S = π·D²/4 : n’oubliez pas le 4.'], [r.v / 4, 'S = π·D²/4, avec D le diamètre (et non le rayon).'], [r.v * 1000, 'Convertissez le débit en m³·s⁻¹.'], [r.v * 3600, 'Convertissez le débit en m³·s⁻¹ : divisez aussi par 3600.']],
+        pieges: [[r.v * 4, 'S = π·D²/4 : n’oubliez pas le 4.'], [r.v / 4, 'S = π·D²/4, avec D le diamètre (et non le rayon).'], [r.v * 1000, 'Convertissez le débit en m³·s⁻¹.'], [r.v * 3600, 'Convertissez le débit en m³·s⁻¹ : divisez aussi par 3600.'],
+          ...piegesValides(r.v, 0.03, [[r.v * 3.6e6, 'Le débit n’a pas été converti : 1 L·h⁻¹ = 1/3 600 000 m³·s⁻¹ (÷ 1000 pour les L, ÷ 3600 pour les h).'],
+            [r.v / 1e6, `Le diamètre doit être en m pour que S soit en m² : D = ${dMm} mm = ${bernFmt(dMm / 1000, 3)} m (et non ${dMm}).`]])],
         expl: <>Q<sub>V</sub> = {bernFmt(qvEff, 0)} L·h⁻¹ = {bernFmt(qvEff, 0)} × 10⁻³ / 3 600 m³·s⁻¹ = {bernSci(r.Q, 2)} m³·s⁻¹ ;
           S = π × ({bernFmt(dMm / 1000, 3)})² / 4 = {bernSci(r.S, 2)} m² ;
           v = Q<sub>V</sub> / S = {bernSci(r.Q, 2)} / {bernSci(r.S, 2)} = <strong>{bernFmt(r.v, 2)} m·s⁻¹</strong>.</> } },
@@ -469,32 +474,37 @@ export function SimulationBernoulli({ plotlyReady }) {
     { titre: 'L’énergie d’altitude', survol: 'zB',
       texte: <>Calculons les termes un par un. ρ = 1000 kg·m⁻³, g = 9,81 m·s⁻² (soit N·kg⁻¹), Δz = {bernFmt(dz, 1)} m.</>,
       tache: { type: 'num', q: 'ρ·g·z_B, en kPa', unite: 'kPa', vrai: kpa(r.Epot), tol: 0.02, detail: true,
-        pieges: [[r.Epot, 'La réponse est demandée en kPa : 1 kPa = 1000 Pa.'], [kpa(r.Epot) / BERN_G, 'N’oubliez pas g = 9,81 m·s⁻².']],
+        pieges: [[r.Epot, 'La réponse est demandée en kPa : 1 kPa = 1000 Pa.'], [kpa(r.Epot) / BERN_G, 'N’oubliez pas g = 9,81 m·s⁻².'],
+          ...piegesValides(kpa(r.Epot), 0.02, [[BERN_G * dz / 1000, 'N’oubliez pas la masse volumique de l’eau : ρ = 1000 kg·m⁻³.']])],
         expl: <>ρ·g·z<sub>B</sub> = 1000 × 9,81 × {bernFmt(dz, 1)} = {bernFmt(r.Epot, 0)} Pa = <strong>{bernFmt(kpa(r.Epot), 2)} kPa</strong> (on divise par 1000 pour passer des Pa aux kPa).</> } },
     { titre: 'L’énergie de vitesse', survol: 'vB',
       texte: <>Avec la vitesse calculée plus tôt (v<sub>B</sub> = {bernFmt(r.v, 2)} m·s⁻¹).</>,
       tache: { type: 'num', q: '½·ρ·v_B², en kPa', unite: 'kPa', vrai: kpa(r.Ecin), tol: 0.03, detail: true,
-        pieges: [[kpa(r.Ecin) * 2, 'N’oubliez pas le ½.'], [r.Ecin, 'La réponse est demandée en kPa.'], [kpa(r.Ecin) / r.v, 'La vitesse est au carré.']],
+        pieges: [[kpa(r.Ecin) * 2, 'N’oubliez pas le ½.'], [r.Ecin, 'La réponse est demandée en kPa.'], [kpa(r.Ecin) / r.v, 'La vitesse est au carré.'],
+          ...piegesValides(kpa(r.Ecin), 0.03, [[0.5 * r.v ** 2 / 1000, 'N’oubliez pas la masse volumique de l’eau : ρ = 1000 kg·m⁻³.']])],
         expl: <>½·ρ·v<sub>B</sub>² = ½ × 1000 × ({bernFmt(r.v, 2)})² = {bernFmt(r.Ecin, 0)} Pa = <strong>{bernFmt(kpa(r.Ecin), 3)} kPa</strong>.</> } },
     { titre: 'Ce que doit apporter la pompe', survol: 'pompe',
       texte: <>Les pressions se compensent, z<sub>A</sub> = 0 et v<sub>A</sub> ≈ 0 : la relation se simplifie en
         P<sub>hyd</sub>/Q<sub>V</sub> = ρ·g·z<sub>B</sub> + ½·ρ·v<sub>B</sub>² + ΔP<sub>charge</sub>, avec ΔP<sub>charge</sub> = {bernFmt(kpa(r.dpCharge), 2)} kPa.
         <strong> Déterminez par le calcul la valeur du terme P<sub>hyd</sub>/Q<sub>V</sub>.</strong></>,
       tache: { type: 'num', q: 'Valeur du terme P_hyd / Q_V, en kPa', unite: 'kPa', vrai: kpa(r.Wp), tol: 0.03, detail: true,
-        pieges: [[kpa(r.Epot + r.Ecin - r.dpCharge), 'Les pertes s’ajoutent : la pompe doit aussi les compenser.'], [kpa(r.Epot + r.dpCharge), 'N’oubliez pas l’énergie de vitesse ½·ρ·v_B².']],
+        pieges: [[kpa(r.Epot + r.Ecin - r.dpCharge), 'Les pertes s’ajoutent : la pompe doit aussi les compenser.'], [kpa(r.Epot + r.dpCharge), 'N’oubliez pas l’énergie de vitesse ½·ρ·v_B².'],
+          ...piegesValides(kpa(r.Wp), 0.03, [[r.Wp, 'Vous avez répondu en Pa : la réponse est demandée en kPa (÷ 1000).'], [kpa(r.Epot + r.Ecin), 'Il manque les pertes de charge ΔP_charge : la pompe doit aussi les compenser.']])],
         expl: <>P<sub>hyd</sub>/Q<sub>V</sub> = {bernFmt(kpa(r.Epot), 2)} + {bernFmt(kpa(r.Ecin), 3)} + {bernFmt(kpa(r.dpCharge), 2)} = <strong>{bernFmt(kpa(r.Wp), 2)} kPa</strong>.</> } },
     { titre: 'La puissance hydraulique', survol: 'pompe',
       texte: <>P<sub>hyd</sub>/Q<sub>V</sub> est une <strong>énergie volumique</strong>. Pour déterminer P<sub>hyd</sub> en W, toutes les grandeurs doivent être dans leur unité SI :
         le terme P<sub>hyd</sub>/Q<sub>V</sub> doit être exprimé en J·m⁻³ = Pa, et Q<sub>V</sub> en m³·s⁻¹. Dans notre cas, Q<sub>V</sub> = {bernFmt(qvEff, 0)} L·h⁻¹.</>,
       tache: { type: 'num', q: 'Puissance hydraulique P_hyd', unite: 'W', vrai: r.Phyd, tol: 0.03, detail: true,
-        pieges: [[kpa(r.Wp) * r.Q, 'P_hyd/Q_V doit être en Pa (et non en kPa).'], [r.Wp * qvEff, 'Le débit doit être en m³·s⁻¹.']],
+        pieges: [[kpa(r.Wp) * r.Q, 'P_hyd/Q_V doit être en Pa (et non en kPa).'], [r.Wp * qvEff, 'Le débit doit être en m³·s⁻¹.'],
+          ...piegesValides(r.Phyd, 0.03, [[r.Phyd * 3600, 'Le débit doit être en m³·s⁻¹, pas en m³·h⁻¹ (÷ 3600).'], [r.Pabs, 'C’est la puissance absorbée : ici on demande la puissance hydraulique, avant d’appliquer le rendement.']])],
         expl: <>P<sub>hyd</sub>/Q<sub>V</sub> = {bernFmt(kpa(r.Wp), 2)} kPa = {bernFmt(r.Wp, 0)} Pa et Q<sub>V</sub> = {bernSci(r.Q, 2)} m³·s⁻¹ ;
           P<sub>hyd</sub> = {bernFmt(r.Wp, 0)} × {bernSci(r.Q, 2)} = <strong>{bernFmt(r.Phyd, 1)} W</strong>.</> } },
     { titre: 'La puissance de la pompe', survol: 'pompe',
       texte: <>Une partie de l'énergie électrique reçue par la pompe ne passe pas dans l'eau. Son <strong>rendement</strong> est η = P<sub>utile</sub> / P<sub>abs</sub>.
         Ici, la puissance utile est la puissance hydraulique : P<sub>utile</sub> = P<sub>hyd</sub> = {bernFmt(r.Phyd, 0)} W, et η = {bernFmt(eta, 0)} %.</>,
       tache: { type: 'num', q: 'Puissance électrique absorbée par la pompe P_abs', unite: 'W', vrai: r.Pabs, tol: 0.03, detail: true,
-        pieges: [[r.Phyd * eta / 100, 'C’est P_hyd × η : la pompe absorbe plus qu’elle ne donne à l’eau.']],
+        pieges: [[r.Phyd * eta / 100, 'C’est P_hyd × η : la pompe absorbe plus qu’elle ne donne à l’eau.'],
+          ...piegesValides(r.Pabs, 0.03, [[r.Phyd, 'Il manque le rendement : P_abs = P_utile / η, avec η < 1, donc P_abs > P_hyd.'], [r.Phyd / eta, `Le rendement doit être une fraction : η = ${eta} % = ${bernFmt(eta / 100, 2)} (et non ${eta}).`]])],
         expl: <>η = P<sub>utile</sub> / P<sub>abs</sub> donc P<sub>abs</sub> = P<sub>utile</sub> / η = {bernFmt(r.Phyd, 1)} / {bernFmt(eta / 100, 2)} = <strong>{bernFmt(r.Pabs, 1)} W</strong>.</> } },
     { titre: 'Et si l’on double le débit ?', survol: 'pertes',
       texte: <>Réglez le débit à Q<sub>V</sub> = 1000 L·h⁻¹ et notez les pertes de charge, puis passez à Q<sub>V</sub> = 2000 L·h⁻¹ (le double).</>,

@@ -3,6 +3,7 @@ import { LogoPaillasse } from "./Logo";
 import { ACCENT, ACCENT_CLAIR, TEXTE, TEXTE2, BORDURE } from "./theme";
 import { Pic, Emo, AvecPicto } from "./Pictos";
 import { allerChapitre } from "./chapitres";
+import { SaisieCode } from "./SaisieCode";
 
 // ============================================================
 //  EN-TÊTE DU SITE : toujours visible, même quand on fait défiler la page.
@@ -13,7 +14,7 @@ export const HAUTEUR_ENTETE = 60;
 const TXT = TEXTE, TXT2 = TEXTE2, BORD = BORDURE, VERT = ACCENT;
 
 // menus : [{ key, label, groupes: [{ label?, sims: [{ id, icon, label, desc? }] }] }]
-export function EnTete({ menus, activeId, niveauActif, naviguer, session }) {
+export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, session }) {
   const [ouvert, setOuvert] = useState(null);        // clé du menu déroulé (grand écran) ou 'mobile'
   const [accordeon, setAccordeon] = useState(null);  // niveau déplié dans le menu mobile
   const [large, setLarge] = useState(() => window.innerWidth >= 1000);
@@ -95,11 +96,11 @@ export function EnTete({ menus, activeId, niveauActif, naviguer, session }) {
 
   const menuOuvert = menus.find(m => m.key === ouvert);
   const panneau = { position: 'absolute', left: 0, right: 0, top: '100%', background: 'white', borderBottom: `1px solid ${BORD}`,
-    boxShadow: '0 12px 24px rgba(15,23,42,0.14)', maxHeight: `calc(100vh - ${HAUTEUR_ENTETE}px)`, overflowY: 'auto', textAlign: 'left' };
+    maxHeight: `calc(100vh - ${HAUTEUR_ENTETE}px)`, overflowY: 'auto', textAlign: 'left' };
 
   return (
     <header ref={ref} style={{ position: 'sticky', top: 0, zIndex: 30, height: HAUTEUR_ENTETE, transform: masque ? 'translateY(-110%)' : 'none', transition: 'transform 0.25s ease', background: 'white', borderBottom: `1px solid ${BORD}`,
-      boxShadow: '0 2px 8px rgba(15,23,42,0.06)', fontFamily: "'Nunito', 'Segoe UI', sans-serif" }}>
+      fontFamily: "'Nunito', 'Segoe UI', sans-serif" }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: '100%', padding: '0 16px', maxWidth: 1280, margin: '0 auto', boxSizing: 'border-box' }}>
         <a href="?" onClick={e => { e.preventDefault(); aller(0); }} aria-label="Paillasse virtuelle : retour à l'accueil" title="Retour à l'accueil"
           style={{ alignSelf: 'center', textDecoration: 'none', marginRight: large ? 14 : 0, flexShrink: 0 }}>
@@ -117,6 +118,8 @@ export function EnTete({ menus, activeId, niveauActif, naviguer, session }) {
         {!large && <span style={{ flex: 1 }}/>}
 
         <span style={{ alignSelf: 'center', display: 'flex', gap: 8, alignItems: 'center' }}>
+          {large && <button onClick={() => setOuvert(o => o === 'code' ? null : 'code')} aria-expanded={ouvert === 'code'} title="Retrouver un exercice avec son code"
+            style={{ padding: '6px 12px', borderRadius: 999, border: `2px solid ${BORD}`, background: ouvert === 'code' ? '#f1f5f9' : 'white', cursor: 'pointer', fontSize: 14, fontWeight: 700, color: TXT, fontFamily: 'inherit' }}>Code</button>}
           {iconeCompte}
           {!large && (
             <button onClick={() => setOuvert(o => o === 'mobile' ? null : 'mobile')} aria-expanded={ouvert === 'mobile'} aria-label="Menu"
@@ -138,9 +141,18 @@ export function EnTete({ menus, activeId, niveauActif, naviguer, session }) {
         </div>
       )}
 
+      {large && ouvert === 'code' && (
+        <div style={panneau} role="region" aria-label="Code d’un exercice">
+          <div style={{ maxWidth: 420, margin: '0 auto', padding: '14px 16px 18px' }}>
+            <SaisieCode simulations={simulations} onCode={(id, ex) => { setOuvert(null); naviguer(id, ex); }} />
+          </div>
+        </div>
+      )}
+
       {!large && ouvert === 'mobile' && (
         <div style={panneau} role="region" aria-label="Menu">
           <div style={{ padding: '8px 12px 14px' }}>
+            <div style={{ padding: '6px 10px 12px' }}><SaisieCode compact simulations={simulations} onCode={(id, ex) => { setOuvert(null); naviguer(id, ex); }} /></div>
             <button onClick={() => aller(0)} style={{ display: 'flex', width: '100%', padding: '10px', border: 'none', background: activeId === 0 ? ACCENT_CLAIR : 'transparent',
               borderRadius: 8, fontSize: 15, fontWeight: 700, color: TXT, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}><Pic n="home"/>Accueil</button>
             {menus.map(m => (

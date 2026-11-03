@@ -1,0 +1,16 @@
+{
+  "name": "Paillasse virtuelle",
+  "short_name": "Paillasse",
+  "description": "Simulations de chimie et de physique : parcours guidés, exercices par compétence (lycée, BTS).",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0b4f94",
+  "icons": [
+    { "src": "icon-192-v2.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512-v2.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512-v2.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

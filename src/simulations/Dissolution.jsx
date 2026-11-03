@@ -174,13 +174,19 @@ export function SimulationDissolution() {
         <ExempleResolu><strong>t = m / V</strong> (m en g, V en L, t en g/L). On dissout 2 g de sel dans une solution de 500 mL = 0,500 L : t = 2 / 0,500 = <strong>4 g/L</strong>. Attention : on convertit les mL en L (÷ 1000).
           {bouton('Voir la fiole', () => voir({ sol: 'NaCl', V: 500, m: 2 }))}</ExempleResolu>
         À vous : on dissout 0,60 g de sulfate de cuivre dans une solution de 200 mL.</>,
-      tache: { type: 'num', q: 'Quelle est la concentration en masse de cette solution ?', unite: 'g/L', vrai: 3, tol: 0.02, affiche: x => String(x), pieges: [[0.003, 'Pense à convertir 200 mL en litres : 200 mL = 0,200 L.'], [0.12, 'Pour t on divise la masse par le volume (t = m / V), on ne multiplie pas.']], expl: 't = 0,60 / 0,200 = 3,0 g/L.' } },
+      tache: { type: 'num', q: 'Quelle est la concentration en masse de cette solution ?', unite: 'g/L', vrai: 3, tol: 0.02, affiche: x => String(x),
+        calcul: () => ['Formule : t = m / V, avec m en g et V en L.', 'Conversion : V = 200 mL = 200 / 1000 = 0,200 L.', 't = 0,60 / 0,200 = 3,0 g/L.'],
+        pieges: [[0.003, 'Pense à convertir 200 mL en litres : 200 mL = 0,200 L.'], [0.12, 'Pour t on divise la masse par le volume (t = m / V), on ne multiplie pas.'],
+          [0.200 / 0.60, 'Formule à l’envers : t = m / V (la masse divisée par le volume), pas V / m.']], expl: 't = 0,60 / 0,200 = 3,0 g/L.' } },
     { id: 'masse', titre: 'Quelle masse faut-il peser ?', depart: () => voir({ sol: 'NaCl', V: 200, m: 1 }),
       texte: <>En pratique, on connaît la concentration voulue et le volume : il faut trouver la <strong>masse à peser</strong>. On inverse la formule : <strong>m = t × V</strong>. On peut aussi raisonner en phrases avec un produit en croix.
         <ExempleResolu>On veut 200 mL de solution de sel à 5 g/L. « 1 L contient 5 g, donc 0,200 L contient 5 × 0,200 = <strong>1,0 g</strong>. » (m = t × V = 5 × 0,200 = 1,0 g)
           {bouton('Voir la fiole', () => voir({ sol: 'NaCl', V: 200, m: 1 }))}</ExempleResolu>
         À vous : la solution (S) du TP, de permanganate de potassium à 0,40 g/L, en fiole de 250 mL.</>,
-      tache: { type: 'num', q: 'Quelle masse de KMnO₄ faut-il peser pour préparer 250 mL de solution à 0,40 g/L ?', unite: 'g', vrai: 0.1, tol: 0.03, affiche: x => String(x), pieges: [[100, 'Tu as multiplié 0,40 par 250 sans convertir : 250 mL = 0,250 L.'], [1.6, 'Pour m on multiplie t par V (0,40 × 0,250), on ne divise pas.']], expl: 'm = t × V = 0,40 × 0,250 = 0,10 g.' } },
+      tache: { type: 'num', q: 'Quelle masse de KMnO₄ faut-il peser pour préparer 250 mL de solution à 0,40 g/L ?', unite: 'g', vrai: 0.1, tol: 0.03, affiche: x => String(x),
+        calcul: () => ['Formule : m = t × V, avec V en L.', 'Conversion : V = 250 mL = 0,250 L.', 'm = 0,40 × 0,250 = 0,10 g.'],
+        pieges: [[100, 'Tu as multiplié 0,40 par 250 sans convertir : 250 mL = 0,250 L.'], [1.6, 'Pour m on multiplie t par V (0,40 × 0,250), on ne divise pas.'],
+          [0.25, 'C’est le volume en litres. Il faut le multiplier par la concentration 0,40 g/L pour obtenir la masse.']], expl: 'm = t × V = 0,40 × 0,250 = 0,10 g.' } },
     { id: 'regler', titre: 'Essayez avec la fiole', depart: () => voir({ sol: 'KMnO4', V: 250, m: 0.5 }),
       texte: <>Réglez la masse pour obtenir exactement la solution du TP. Observez la <strong>couleur</strong> : plus la solution est concentrée, plus elle est foncée.</>,
       tache: { type: 'action', ok: enGuide && P.sol === 'KMnO4' && P.V === 250 && Math.abs(tC - 0.4) < 0.005, consigne: 'Choisissez KMnO₄, fiole de 250 mL, et réglez la masse pour obtenir t = 0,40 g/L.' } },

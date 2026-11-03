@@ -116,28 +116,52 @@ export function SimulationPuissanceJoule() {
     { id: 'ui', titre: 'Puissance d’un dipôle : P = U × I', depart: () => voir('dipole', { k: 0 }),
       texte: <>Pour un dipôle soumis à la tension U et traversé par le courant I : <strong>P<sub>élec</sub> = U × I</strong> (W, V, A), donc <strong>W<sub>élec</sub> = U × I × Δt</strong>. Choisissez une lampe LED de 5 W sous 220 V et lisez l’intensité.
         <ExempleResolu>I = P / U = 5 / 220 = 0,0227 A = <strong>22,7 mA</strong>.</ExempleResolu></>,
-      tache: { type: 'num', q: 'Un aspirateur de 1500 W est alimenté sous 220 V. Quelle intensité (en A) le traverse ?', unite: 'A', vrai: 6.82, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[330000, 'Tu as multiplié : P = U × I donc I = P / U.']], expl: 'I = P / U = 1500 / 220 = 6,8 A.' } },
+      tache: { type: 'num', q: 'Un aspirateur de 1500 W est alimenté sous 220 V. Quelle intensité (en A) le traverse ?', unite: 'A', vrai: 6.82, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[330000, 'Tu as multiplié : P = U × I donc I = P / U.'], [220 / 1500, 'Tu as divisé à l’envers : I = P / U (la puissance au numérateur).']],
+        calcul: () => [
+          'Formule : P = U × I, donc I = P / U (tension du secteur de 220 V, régime continu, comme dans le cours).',
+          'Données : P = 1500 W ; U = 220 V (déjà en W et en V, pas de conversion).',
+          'I = 1500 / 220 = 6,818 A, soit 6,82 A (environ 6,8 A).'], expl: 'I = P / U = 1500 / 220 = 6,8 A.' } },
     { id: 'cout', titre: 'Le kilowattheure et le coût', depart: () => voir('dipole', { k: 3, dt: 10 }),
       texte: <>La facture se calcule en <strong>kWh</strong> : 1 kWh = 1 kW pendant 1 h = <strong>3,6·10⁶ J</strong>. Avec un tarif de 0,20 €/kWh :
         <ExempleResolu>Aspirateur de 1500 W pendant 10 min : W = 1,5 kW × (10/60) h = <strong>0,25 kWh</strong> ; coût = 0,25 × 0,20 = <strong>0,05 €</strong>.</ExempleResolu></>,
-      tache: { type: 'num', q: 'Un radiateur de 500 W fonctionne pendant 24 h. Quel est le coût (en €) à 0,20 €/kWh ?', unite: '€', vrai: 2.4, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[2400, 'Convertis d’abord en kWh : 500 W = 0,5 kW, 0,5 × 24 = 12 kWh.']], expl: 'E = 0,5 kW × 24 h = 12 kWh ; coût = 12 × 0,20 = 2,40 €.' } },
+      tache: { type: 'num', q: 'Un radiateur de 500 W fonctionne pendant 24 h. Quel est le coût (en €) à 0,20 €/kWh ?', unite: '€', vrai: 2.4, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[2400, 'Convertis d’abord en kWh : 500 W = 0,5 kW, 0,5 × 24 = 12 kWh.'], [12, 'Tu as trouvé l’énergie en kWh (12 kWh). Il reste à la multiplier par le tarif : 0,20 €/kWh.'], [12 / 0.2, 'Le coût = énergie (kWh) × tarif (€/kWh) : on multiplie par 0,20, on ne divise pas.']],
+        calcul: () => [
+          'Énergie : W = P × Δt, avec P en kW et Δt en heures pour obtenir des kWh.',
+          'Conversion : P = 500 W = 0,5 kW (1 kW = 1000 W) ; Δt = 24 h.',
+          'W = 0,5 × 24 = 12 kWh.',
+          'Coût = énergie × tarif = 12 × 0,20 = 2,40 € (tarif constant de 0,20 €/kWh).'], expl: 'E = 0,5 kW × 24 h = 12 kWh ; coût = 12 × 0,20 = 2,40 €.' } },
     { id: 'joule', titre: 'L’effet Joule', depart: () => setAtelier('joule'),
       texte: <>Dans un <strong>conducteur ohmique</strong>, tout le travail électrique reçu est converti en <strong>transfert thermique</strong> : c’est l’<strong>effet Joule</strong>. Avec U = R × I : <strong>P = R × I²</strong> et <strong>Q = W<sub>élec</sub> = R × I² × Δt</strong>. L’intensité est <strong>au carré</strong> : doublez I et la puissance est multipliée par 4 !
         <ExempleResolu>R = 47 Ω, I = 1 A, Δt = 60 s : P = 47 × 1² = 47 W ; Q = 47 × 60 = <strong>2820 J</strong>.</ExempleResolu></>,
-      tache: { type: 'num', q: 'Un résistor de 100 Ω est traversé par 0,50 A. Quelle puissance thermique (en W) dissipe-t-il ?', unite: 'W', vrai: 25, tol: 0.02, affiche: x => String(x), pieges: [[50, 'Attention : I est au carré, P = R × I² = 100 × 0,5².']], expl: 'P = R × I² = 100 × 0,50² = 25 W.' } },
+      tache: { type: 'num', q: 'Un résistor de 100 Ω est traversé par 0,50 A. Quelle puissance thermique (en W) dissipe-t-il ?', unite: 'W', vrai: 25, tol: 0.02, affiche: x => String(x), pieges: [[50, 'Attention : I est au carré, P = R × I² = 100 × 0,5².'], [2500, 'Le carré porte seulement sur I, pas sur R : P = R × I² (et non (R × I)²).']],
+        calcul: () => [
+          'Effet Joule dans un conducteur ohmique : P = R × I².',
+          'Données : R = 100 Ω ; I = 0,50 A (déjà en ampères).',
+          'Carré de l’intensité : I² = 0,50² = 0,25 A².',
+          'P = 100 × 0,25 = 25 W.'], expl: 'P = R × I² = 100 × 0,50² = 25 W.' } },
     { id: 'ligne', titre: 'Pertes en ligne : pourquoi la haute tension ?', depart: () => setAtelier('ligne'),
       texte: <>Les câbles ne sont pas parfaits : ils ont une petite résistance (≈ 0,1 Ω/km) et dissipent de l’énergie par <strong>effet Joule</strong> : P<sub>perdue</sub> = r × I². Pour transporter une puissance P = U × I, on peut garder P en <strong>augmentant U</strong> : l’intensité I = P / U <strong>diminue</strong>, et les pertes diminuent comme I². D’où les lignes à <strong>400 000 V</strong> ! Essayez 100 kV puis 400 kV.</>,
       tache: { type: 'qcm', q: 'Pour réduire les pertes par effet Joule dans une ligne, on…', options: ['augmente la tension et diminue l’intensité', 'diminue la tension et augmente l’intensité', 'augmente l’intensité', 'allonge la ligne'], bonne: 0, expl: 'P = U × I fixée : U plus grande → I plus petite → pertes r × I² plus petites.' } },
     { id: 'rendement', titre: 'Le rendement d’un convertisseur', depart: () => voir('rendement', { k: 'moteur' }),
       texte: <>Un <strong>convertisseur</strong> transforme l’énergie reçue en énergie utile, avec des pertes (sous forme de chaleur). Le <strong>rendement</strong> est <strong>ρ = énergie utile / énergie consommée = P<sub>utile</sub> / P<sub>consommée</sub></strong> : un nombre sans unité, toujours ≤ 1 (souvent donné en %).
         <ExempleResolu>Moteur : W<sub>élec</sub> = 100 J reçus, W<sub>méca</sub> = 90 J fournis (10 J dissipés en chaleur) : ρ = 90 / 100 = <strong>0,90 = 90 %</strong>.</ExempleResolu></>,
-      tache: { type: 'num', q: 'Un moteur reçoit 200 W et fournit 150 W de puissance mécanique. Quel est son rendement (en %) ?', unite: '%', vrai: 75, tol: 0.02, affiche: x => String(x), pieges: [[0.75, 'Exprime le rendement en pourcentage : 0,75 = 75 %.'], [133, 'Tu as inversé : ρ = utile / consommée.']], expl: 'ρ = 150 / 200 = 0,75 = 75 %.' } },
+      tache: { type: 'num', q: 'Un moteur reçoit 200 W et fournit 150 W de puissance mécanique. Quel est son rendement (en %) ?', unite: '%', vrai: 75, tol: 0.02, affiche: x => String(x), pieges: [[0.75, 'Exprime le rendement en pourcentage : 0,75 = 75 %.'], [133, 'Tu as inversé : ρ = utile / consommée.'], [25, 'C’est la part de puissance perdue (25 %). Le rendement est la part utile : ρ = P_utile / P_consommée.'], [50, 'C’est la puissance perdue (200 − 150 = 50 W). Le rendement est le rapport utile / consommée.']],
+        calcul: () => [
+          'Rendement : ρ = P_utile / P_consommée (même durée, donc même rapport que les énergies).',
+          'Données : P_consommée = 200 W (reçue du circuit) ; P_utile = 150 W (puissance mécanique).',
+          'ρ = 150 / 200 = 0,75.',
+          'En pourcentage : 0,75 × 100 = 75 %.'], expl: 'ρ = 150 / 200 = 0,75 = 75 %.' } },
     { id: 'calo', titre: 'L’expérience : chauffer de l’eau', depart: () => setAtelier('calo'),
       texte: <>Une résistance chauffante plongée dans <strong>0,2 kg d’eau</strong> reçoit W<sub>élec</sub> = U × I × Δt (courbe bleue). L’eau reçoit Q = m × C × Δθ (courbe orange), avec C = 4180 J·kg⁻¹·K⁻¹. Si tout était transféré à l’eau, les deux courbes seraient confondues. Déplacez le curseur de temps : <strong>Q reste un peu en dessous de W<sub>élec</sub></strong>. Décochez « avec pertes » pour comparer.</>,
       tache: { type: 'qcm', q: 'Pourquoi le transfert thermique Q reçu par l’eau est-il un peu inférieur au travail électrique W_élec ?', options: ['Une partie de la chaleur chauffe le récipient et l’air ambiant (pertes)', 'L’énergie disparaît', 'La résistance consomme de l’eau', 'Q = W_élec exactement, c’est une erreur de mesure'], bonne: 0, expl: 'Le rendement est inférieur à 1 : une partie de l’énergie est perdue vers le récipient, le thermomètre et l’air.' } },
     { id: 'rho_calo', titre: 'Rendement de l’expérience', depart: () => { setAtelier('calo'); setCa(c => ({ ...c, t: 300, pertes: true })); },
       texte: <>À t = 300 s on mesure : Q = 6656 J et W<sub>élec</sub> = 7330 J. Le rendement du dispositif « résistance + eau » vaut ρ = Q / W<sub>élec</sub>.</>,
-      tache: { type: 'num', q: 'Calculez ρ en % (Q = 6656 J ; W_élec = 7330 J).', unite: '%', vrai: 90.8, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[1.1, 'Tu as inversé : ρ = Q / W_élec (utile / consommée).']], expl: 'ρ = 6656 / 7330 = 0,908 = 90,8 %.' } },
+      tache: { type: 'num', q: 'Calculez ρ en % (Q = 6656 J ; W_élec = 7330 J).', unite: '%', vrai: 90.8, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[1.1, 'Tu as inversé : ρ = Q / W_élec (utile / consommée).'], [0.908, 'Exprime le rendement en pourcentage : multiplie le rapport par 100.'], [(7330 - 6656) / 7330 * 100, 'C’est la part d’énergie perdue. Le rendement est la part utile : ρ = Q / W_élec.']],
+        calcul: () => [
+          'Rendement : ρ = énergie utile / énergie consommée = Q / W_élec (ici l’énergie utile est celle reçue par l’eau).',
+          'Données : Q = 6656 J ; W_élec = 7330 J (mêmes unités, des joules).',
+          'ρ = 6656 / 7330 = 0,908.',
+          'En pourcentage : 0,908 × 100 = 90,8 %.'], expl: 'ρ = 6656 / 7330 = 0,908 = 90,8 %.' } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li><strong>P = W / Δt</strong> (W = J·s⁻¹) ; <strong>P<sub>élec</sub> = U × I</strong> ; W<sub>élec</sub> = U × I × Δt ; 1 kWh = 3,6·10⁶ J.</li>

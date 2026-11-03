@@ -6,8 +6,8 @@ import { estDefi } from "./suivi";
 // Petite fenêtre « bravo » à chaque réussite d'un exercice ou d'un défi (pas pour un professeur qui teste).
 const MESSAGES = {
   3: 'Sans aucune aide : du premier coup !',
-  2: 'Réussi sans voir la correction !',
-  1: 'Réussi ! Refais-le sans la correction pour gagner plus d’étoiles.',
+  2: 'Réussi avec une seule erreur : encore un effort pour les 3 étoiles !',
+  1: 'Réussi ! Refais-le sans voir la correction et avec moins d’erreurs pour gagner plus d’étoiles.',
 };
 
 export function ToastRecompense({ naviguer }) {
@@ -23,7 +23,7 @@ export function ToastRecompense({ naviguer }) {
   return (
     <div role="status" aria-live="polite" data-toast-recompense key={info.id}
       style={{ position: 'fixed', left: '50%', bottom: 18, transform: 'translateX(-50%)', zIndex: 1000, width: 'min(420px, calc(100vw - 24px))', boxSizing: 'border-box',
-        color: '#fff', borderRadius: 18, padding: '14px 16px', background: 'linear-gradient(135deg, #2a9d8f, #1d5f58)', boxShadow: '0 14px 40px rgba(30,27,75,.55)',
+        color: '#fff', borderRadius: 18, padding: '14px 16px', background: '#1d6f66', border: '2px solid #0f3f3a',
         animation: 'toast-entree .45s cubic-bezier(.2,1.2,.3,1) both' }}>
       <style>{`
         @keyframes toast-entree { from { opacity: 0; transform: translate(-50%, 30px) scale(.9); } to { opacity: 1; transform: translate(-50%, 0) scale(1); } }
