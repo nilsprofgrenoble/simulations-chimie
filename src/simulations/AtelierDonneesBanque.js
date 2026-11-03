@@ -257,6 +257,7 @@ export const ENONCES = [
   // ───────────────────────────── Régulation
   {
     id: 'regulP', domaine: 'Régulation', titre: 'Régulation proportionnelle du niveau d’un réservoir', noms: ['Commande nécessaire', 'Écart statique', 'Niveau en régime permanent'],
+    schema: (p, b) => ({ type: 'regul', Qmax: b.tokens.Qmax.aff, Qp: b.tokens.Qp.aff, hc: b.tokens.hc.aff, Kp: b.tokens.Kp.aff }),
     gen: () => ({ hc: tire([3, 4, 5]), Kp: tire([50, 80, 100, 150]), Qmax: tire([100, 120, 150]), Qp: tire([30, 36, 45, 60]), S: tire([2, 3, 4]), Ti: tire([20, 50, 100]) }),
     build: (p, q) => {
       const Y = p.Qp / p.Qmax * 100, e = Y / p.Kp;
@@ -269,7 +270,7 @@ export const ENONCES = [
         Ti: tok(`${p.Ti} h`, 'Temps intégral (indiqué sur la fiche du régulateur)', p.Ti, 'h'),
       };
       const debut = ['Un réservoir de section ', T('S'), ' est rempli par une pompe dont le débit est proportionnel à la commande Y (100 % ↔ ', T('Qmax'), '). Un soutirage constant de ', T('Qp'),
-        ' vide le réservoir. Le régulateur proportionnel calcule Y = K_p × (consigne − H), où H est le niveau du liquide dans le réservoir, sans commande de base (Y est limitée entre 0 et 100 %), avec K_p = ', T('Kp'), ' ; la consigne est de ', T('hc'), '. La fiche du régulateur (réglable en PI) indique un temps intégral de ', T('Ti'), ', mais l’action intégrale est désactivée : le régulateur est utilisé en proportionnel seul. Le capteur de niveau et la pompe sont supposés parfaits (sans retard). On admet que le niveau finit par se stabiliser. '];
+        ' vide le réservoir.\n\nLe régulateur proportionnel calcule Y = K_p × (consigne − H), où H est le niveau du liquide dans le réservoir, sans commande de base (Y est limitée entre 0 et 100 %), avec K_p = ', T('Kp'), ' ; la consigne est de ', T('hc'), '.\n\nLa fiche du régulateur (réglable en PI) indique un temps intégral de ', T('Ti'), ', mais l’action intégrale est désactivée : le régulateur est utilisé en proportionnel seul.\n\nLe capteur de niveau et la pompe sont supposés parfaits (sans retard). On admet que le niveau finit par se stabiliser. '];
       const rS = 'La section règle la vitesse d’évolution du niveau, pas sa valeur en régime permanent.', rTi = 'Le régulateur est proportionnel seul : sa loi Y = K_p × (consigne − H) ne contient pas de temps intégral, ce réglage ne sert pas dans ce calcul.';
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'En régime permanent, quelle commande Y le régulateur doit-il envoyer à la pompe ?'], utiles: ['Qmax', 'Qp'],
         raisons: { S: rS, hc: 'La consigne intervient dans le calcul de l’écart, pas dans la commande nécessaire pour compenser le soutirage.', Kp: 'Le gain relie la commande à l’écart de niveau, mais ne dit pas quelle commande est nécessaire.', Ti: rTi },
@@ -407,8 +408,8 @@ export const ENONCES = [
         res: tok(`${nb(p.res, 2)} mL`, 'Résolution de la burette', p.res, 'mL'),
         dur: tok(`${p.dur} min`, 'Durée de la série', p.dur, 'min'),
       };
-      const debut = ['On répète ', T('n'), ' fois le titrage d’une même solution, dans les mêmes conditions. Le volume équivalent moyen est ', T('xm'), ' et l’écart-type expérimental de la série vaut ', T('s'),
-        '. La burette (numérique) a une résolution de ', T('res'), ' ; la série a duré ', T('dur'), '. On élargit l’incertitude avec ', T('k'), ', valeur prise par convention : elle donne un niveau de confiance proche de 95 % si les mesures sont indépendantes et suivent une loi normale (hypothèses faites ici). Pour une série courte, le niveau réel est un peu plus faible et un facteur de Student serait plus rigoureux ; on garde néanmoins cette valeur. '];
+      const debut = ['On répète ', T('n'), ' fois le titrage d’une même solution, dans les mêmes conditions.\n\nLe volume équivalent moyen est ', T('xm'), ' et l’écart-type expérimental de la série vaut ', T('s'),
+        '.\n\nLa burette (numérique) a une résolution de ', T('res'), ' ; la série a duré ', T('dur'), '. On élargit l’incertitude avec ', T('k'), ', valeur prise par convention : elle donne un niveau de confiance proche de 95 % si les mesures sont indépendantes et suivent une loi normale (hypothèses faites ici). Le niveau réel est un peu plus faible pour un petit nombre de mesures (un facteur de Student serait plus rigoureux) ; on garde ici la valeur conventionnelle. '];
       const ur = p.res / Math.sqrt(6), pc = (Math.sqrt(1 + (ur / u) ** 2) - 1) * 100;   // deux lectures de burette, loi rectangulaire : u_res = r / (2√3) par lecture
       const rRes0 = `La résolution de la burette est une autre source d’incertitude (type B) : pour deux lectures, u_res = r / √6 ≈ ${nb(ur, 3)} mL. Ajoutée en quadrature à u ≈ ${nb(u, 3)} mL, elle ne la modifierait que d’environ ${nb(pc, 1)} % : négligeable devant la dispersion, donc on se limite ici à l’incertitude de type A, u = s / √n.`;
       const rRes = q === 0 ? rRes0 : q === 1 ? rRes0.replace('on se limite ici à l’incertitude de type A, u = s / √n.', 'on calcule U = k × u avec l’incertitude de type A seule.') : rRes0.replace('on se limite ici à l’incertitude de type A, u = s / √n.', 'l’intervalle x̄ ± U se calcule avec l’incertitude de type A seule.');
@@ -504,6 +505,7 @@ export const ENONCES = [
   },
   {
     id: 'champB', domaine: 'Contrôle des systèmes', titre: 'Une boussole près d’un aimant', noms: ['Champ total', 'Déviation de l’aiguille', 'Champ de l’aimant plus loin'],
+    schema: (p, b) => ({ type: 'boussole', r1: b.tokens.r1.aff, Ba: b.tokens.Ba.aff, BT: b.tokens.BT.aff }),
     gen: () => {
       const Ba = tire([10, 20, 40, 60, 160]), r1 = tire([8, 10, 12]);
       return { BT: 20, Ba, mT: tire([true, false]), r1, r2: r1 * tire([2, 3]), T: tire([19, 21, 23]) };
@@ -516,8 +518,8 @@ export const ENONCES = [
         r2: tok(`${p.r2} cm`, 'Nouvelle distance boussole – aimant', p.r2, 'cm'),
         T: tok(`${p.T} °C`, 'Température de la salle', p.T, '°C'),
       };
-      const debut = ['Une boussole est placée à une distance r₁ = ', T('r1'), ' du centre d’un aimant droit, sur l’axe de cet aimant, orienté perpendiculairement à la direction du nord. Sur l’axe d’un aimant droit, le champ de l’aimant est dirigé selon cet axe : il est donc perpendiculaire à la composante horizontale du champ de la Terre. À cet endroit, le champ de l’aimant vaut ',
-        T('Ba'), ' et la composante horizontale du champ de la Terre vaut ', T('BT'), '. On néglige tout autre champ magnétique. La salle est à ', T('T'), '. On pourra éloigner la boussole à une distance r₂ = ', T('r2'), ' ; tant que la distance reste grande devant la taille de l’aimant, son champ décroît comme 1/r³. '];
+      const debut = ['Une boussole est placée à une distance r₁ = ', T('r1'), ' du centre d’un aimant droit, sur l’axe de cet aimant, orienté perpendiculairement à la direction du nord.\n\nSur l’axe d’un aimant droit, le champ de l’aimant est dirigé selon cet axe : il est donc perpendiculaire à la composante horizontale du champ de la Terre.\n\nÀ cet endroit, le champ de l’aimant vaut ',
+        T('Ba'), ' et la composante horizontale du champ de la Terre vaut ', T('BT'), '.\n\nOn néglige tout autre champ magnétique. La salle est à ', T('T'), '. On pourra éloigner la boussole à une distance r₂ = ', T('r2'), ' ; tant que la distance reste grande devant la taille de l’aimant, son champ décroît comme 1/r³. '];
       const rT = 'La température n’intervient pas ici.';
       const rr1 = 'La distance est déjà contenue dans la valeur du champ de l’aimant donnée à cet endroit.', rr2 = 'Cette distance ne concerne pas cette question : le champ utilisé est celui donné à r₁.';
       const Bt = Math.hypot(p.BT, p.Ba);
@@ -975,6 +977,7 @@ export const ENONCES = [
   // ───────────────────────────── Évaporation et cristallisation : évaporateur industriel
   {
     id: 'crist-evaporateur', domaine: 'Évaporation et cristallisation', titre: 'Concentrer un jus sucré dans un évaporateur', noms: ['Débit de saccharose entrant', 'Débit d’eau évaporée', 'Masse d’eau évaporée sur une campagne'],
+    schema: (p, b) => ({ type: 'evaporateur', q1: b.tokens.q1.aff, w1: b.tokens.w1.aff, w2: b.tokens.w2.aff, Pv: b.tokens.Pv.aff }),
     gen: () => ({ q1: tire([8, 10, 12, 15, 20]), w1: tire([10, 12, 15, 18]), w2: tire([60, 65]), S: tire([150, 200, 250, 300]), Pv: tire([2, 2.5, 3]), th: tire([75, 85, 95]), dur: tire([8, 12, 24]) }),
     build: (p, q) => {
       const tokens = {
@@ -986,7 +989,7 @@ export const ENONCES = [
         th: tok(`${p.th} °C`, 'Température d’ébullition du jus dans l’évaporateur', p.th, '°C'),
       };
       const debut = ['Dans une sucrerie, un évaporateur fonctionne en continu et en régime permanent. Il reçoit un jus sucré (solution aqueuse de saccharose) au débit massique de ', T('q1'), ', qui contient ', T('w1'),
-        ' de saccharose en masse. Il en sort un sirop concentré à ', T('w2'), ' de saccharose en masse, et de la vapeur d’eau pure. L’évaporateur a une surface d’échange de ', T('S'), ' ; il est chauffé par de la vapeur sous ', T('Pv'),
+        ' de saccharose en masse. Il en sort un sirop concentré à ', T('w2'), ' de saccharose en masse, et de la vapeur d’eau pure.\n\nL’évaporateur a une surface d’échange de ', T('S'), ' ; il est chauffé par de la vapeur sous ', T('Pv'),
         ' et le jus y bout à ', T('th'), '. Le saccharose n’est pas entraîné avec la vapeur et ne cristallise pas. '];
       const qs = p.q1 * p.w1 / 100, q2 = qs / (p.w2 / 100), qe = p.q1 - q2;
       const rTher = 'Les caractéristiques thermiques de l’évaporateur (surface, pression de chauffe, température) fixent la puissance et la vitesse d’évaporation, pas le bilan de matière.';
@@ -1013,6 +1016,7 @@ export const ENONCES = [
   // ───────────────────────────── Transport des fluides : statique des fluides (capteur de pression, cuve d’huile)
   {
     id: 'flu-statique', domaine: 'Transport des fluides', titre: 'Un capteur de pression au fond d’une cuve d’huile', noms: ['Hauteur d’huile dans la cuve', 'Force sur la trappe de vidange', 'Baisse de pression pendant la vidange'],
+    schema: (p, b) => ({ type: 'cuveHuile', P: b.tokens.P.aff, rho: b.tokens.rho.aff, d: b.tokens.d ? b.tokens.d.aff : null }),
     gen: () => ({ rho: tire([910, 915, 920, 925]), g: 9.81, P: tire([0.20, 0.25, 0.30, 0.35, 0.40, 0.45]), th: tire([15, 20, 25]), Vc: tire([10, 15, 20, 30]),
       Patm: tire([1005, 1013, 1020]), d: tire([100, 150, 200, 250]), dh: tire([0.5, 0.8, 1.0, 1.2, 1.5]) }),
     build: (p, q) => {
@@ -1025,7 +1029,7 @@ export const ENONCES = [
         Patm: tok(`${p.Patm} hPa`, 'Pression atmosphérique', p.Patm * 100, 'Pa'),
       };
       const debut = ['Une cuve cylindrique, ouverte à l’air libre et de volume total ', T('Vc'), ', contient une huile végétale au repos, de masse volumique ', T('rho'), ' à ', T('th'),
-        ' (supposée uniforme dans toute l’huile). Un capteur de pression relative (il mesure l’écart avec la pression atmosphérique, qui vaut ', T('Patm'), ' ce jour-là) est fixé au fond de la cuve et indique ', T('P'),
+        ' (supposée uniforme dans toute l’huile).\n\nUn capteur de pression relative (il mesure l’écart avec la pression atmosphérique, qui vaut ', T('Patm'), ' ce jour-là) est fixé au fond de la cuve et indique ', T('P'),
         '. L’intensité de la pesanteur vaut ', T('g'), '. '];
       const rTh = 'La température intervient seulement par la valeur de la masse volumique, qui est déjà donnée pour cette température.';
       const rVc = 'Le volume total de la cuve ne donne pas la hauteur d’huile : il faudrait aussi connaître la section de la cuve, et elle n’est pas nécessaire ici.';
@@ -1145,6 +1149,7 @@ export const ENONCES = [
   // ───────────────────────────── Transport des fluides : bilan d’énergie, puissance hydraulique et rendement d’une pompe
   {
     id: 'flu-pompe', domaine: 'Transport des fluides', titre: 'Une pompe qui alimente un château d’eau', noms: ['Hauteur manométrique totale', 'Puissance hydraulique', 'Rendement du groupe motopompe'],
+    schema: (p, b) => ({ type: 'pompeChateau', dz: b.tokens.dz.aff, L: b.tokens.L.aff, dp: b.tokens.dp.aff, Q: b.tokens.Q.aff }),
     gen: () => {
       const rho = 1000, g = 9.81, dz = tire([15, 20, 25, 30, 40]), dp = tire([0.5, 0.8, 1.0, 1.5, 2.0]), Q = tire([20, 30, 40, 60]), eta0 = tire([0.5, 0.55, 0.6, 0.65, 0.7, 0.75]);
       const Ph = rho * g * (Q / 3600) * (dz + dp * 1e5 / (rho * g));
@@ -1163,8 +1168,8 @@ export const ENONCES = [
         g: tok(`${nb(p.g, 2)} N·kg⁻¹`, 'Intensité de la pesanteur', p.g, 'N·kg⁻¹'),
       };
       const debut = ['Une pompe aspire de l’eau (masse volumique ', T('rho'), ', température ', T('th'), ') dans un bassin et la refoule dans un château d’eau dont la surface libre est ', T('dz'),
-        ' plus haut que celle du bassin. Les deux surfaces libres sont à l’air libre (pression atmosphérique ', T('Patm'), ') et l’eau y est pratiquement immobile. Les frottements dans la conduite, de longueur ', T('L'),
-        ', provoquent une perte de charge totale de ', T('dp'), ' pour le débit de ', T('Q'), ' choisi. Le groupe motopompe absorbe une puissance électrique de ', T('Pel'), '. On prendra g = ', T('g'), '. '];
+        ' plus haut que celle du bassin.\n\nLes deux surfaces libres sont à l’air libre (pression atmosphérique ', T('Patm'), ') et l’eau y est pratiquement immobile.\n\nLes frottements dans la conduite, de longueur ', T('L'),
+        ', provoquent une perte de charge totale de ', T('dp'), ' pour le débit de ', T('Q'), ' choisi.\n\nLe groupe motopompe absorbe une puissance électrique de ', T('Pel'), '. On prendra g = ', T('g'), '. '];
       const J = p.dp * 1e5 / (p.rho * p.g), H = p.dz + J, Ph = p.rho * p.g * (p.Q / 3600) * H;
       const rL = 'La longueur de la conduite explique l’origine des pertes de charge, mais celles-ci sont déjà données : elle n’intervient pas dans le calcul.';
       const rTh = 'La température n’intervient pas ici : seule compte la masse volumique de l’eau, qui est donnée.';
@@ -1234,6 +1239,7 @@ export function nouvelEnonce(id, q, forceParams) {
   const def = ENONCES.find(e => e.id === id);
   const p = forceParams || def.gen();
   const b = def.build(p, q);
+  b.schema = def.schema ? def.schema(p, b) : null;
   Object.entries(b.tokens).forEach(([k, t]) => { t.sym = (SYMBOLES[id] || {})[k] || ''; });
   return { id, q, p, b, graine: 1 + Math.floor(Math.random() * 99999) };
 }

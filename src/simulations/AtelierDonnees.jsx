@@ -8,6 +8,7 @@ import { SITUATIONS } from "./AtelierSituationsBanque";
 import { SituationCarte } from "./AtelierSituations";
 import { parDomaine } from "./ordreDomaines";
 import { Pic } from "../Pictos";
+import { Visuel } from "./SchemasC1";
 
 // ====================================================
 //  SIM 34 — S'APP : EXTRAIRE LES DONNÉES D'UN ÉNONCÉ (compétence S'approprier)
@@ -49,12 +50,31 @@ function Texte({ ex, sel, onToggle, marque }) {
     else if (choisi) { fond = '#fde68a'; bord = `1.5px solid ${ORANGE_GUIDE}`; }
     return { font: 'inherit', color: KIT.txt, padding: '1px 5px', borderRadius: 5, background: fond, border: bord, cursor: 'pointer' };
   };
+  // La question (dernière phrase du texte, finissant par « ? ») est isolée dans un encadré pour qu'on la repère d'un coup d'œil.
+  const morceaux = [...ex.b.texte];
+  let question = null;
+  const dernier = morceaux[morceaux.length - 1];
+  if (typeof dernier === 'string' && dernier.trim().endsWith('?')) {
+    const coupes = [...dernier.matchAll(/(?<=[.!])\s+(?=[A-ZÉÈÀÂÎÔ])/g)];
+    const k = coupes.length ? coupes[coupes.length - 1] : null;
+    if (k) { question = dernier.slice(k.index + k[0].length).trim(); morceaux[morceaux.length - 1] = dernier.slice(0, k.index).trimEnd(); }
+    else { question = dernier.trim(); morceaux.pop(); }
+  }
+  // Les « \n\n » du texte séparent des paragraphes.
+  const paragraphes = [[]];
+  morceaux.forEach(m => { if (typeof m !== 'string') { paragraphes[paragraphes.length - 1].push(m); return; } m.split('\n\n').forEach((t, i) => { if (i > 0) paragraphes.push([]); if (t) paragraphes[paragraphes.length - 1].push(t); }); });
   return (
-    <div style={{ fontSize: 16, lineHeight: 2, color: KIT.txt }}>
-      {ex.b.texte.map((m, i) => typeof m === 'string' ? <span key={i}>{m}</span> : (
-        <button key={i} data-id={m.t} data-utile={ex.b.utiles.includes(m.t) ? 'true' : 'false'} aria-pressed={sel.includes(m.t)}
-          onClick={() => onToggle(m.t)} style={style(m.t)}>{ex.b.tokens[m.t].aff}</button>
+    <div>
+      {paragraphes.map((par, n) => (
+        <p key={n} style={{ fontSize: 16, lineHeight: 2, color: KIT.txt, margin: '0 0 8px' }}>
+          {par.map((m, i) => typeof m === 'string' ? <span key={i}>{m}</span> : (
+            <button key={i} data-id={m.t} data-utile={ex.b.utiles.includes(m.t) ? 'true' : 'false'} aria-pressed={sel.includes(m.t)}
+              onClick={() => onToggle(m.t)} style={style(m.t)}>{ex.b.tokens[m.t].aff}</button>
+          ))}
+        </p>
       ))}
+      {ex.b.schema && <div style={{ margin: '8px 0' }}><Visuel schema={ex.b.schema}/></div>}
+      {question && <div data-question style={{ marginTop: 8, fontSize: 16, fontWeight: 700, lineHeight: 1.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, padding: '8px 12px' }}>{question}</div>}
     </div>
   );
 }
