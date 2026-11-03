@@ -275,7 +275,7 @@ export function SimulationRMNC2D() {
         <select value={molId} onChange={e => { setMolId(e.target.value); setSel(null); }} aria-label="Molécule" style={{ fontSize: 14, padding: '3px 6px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, maxWidth: 280 }}>
           {LISTE.map(x => <option key={x.id} value={x.id}>{x.m.nom} ({x.m.brute})</option>)}</select></label>}
       {enDefi && <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Composé étudié : formule brute {M.m.brute}</span>}
-      {!enDefi && VUES.map(([k, l]) => <button key={k} onClick={() => setVue(k)} style={stylePetitBouton(vue === k, '#0f766e')}>{l}</button>)}
+      {!enDefi && VUES.map(([k, l]) => <button key={k} onClick={() => setVue(k)} style={stylePetitBouton(vue === k, '#0b4f94')}>{l}</button>)}
     </div>);
   const titreFig = vueEff === 'c13' ? `Spectre RMN ¹³C de ${enDefi ? 'du composé inconnu' : M.m.nom}` : vueEff === 'hsqc' ? `Carte HSQC ${enDefi ? 'du composé inconnu' : 'de ' + M.m.nom}` : `Carte COSY ${enDefi ? 'du composé inconnu' : 'de ' + M.m.nom}`;
   const figure = vueEff === 'c13' ? <Spectre13 M={M} sel={sel} onSel={setSel} cacher={enDefi} titre={titreFig}/>

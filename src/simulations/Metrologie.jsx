@@ -368,7 +368,7 @@ export function SimulationMetrologie() {
     <>
       <div style={{ fontSize: 13.5, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Mesure</div>
       <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
-        {Object.entries(SCENARIOS).map(([k, s]) => <button key={k} onClick={() => setScId(k)} style={stylePetitBouton(scId === k, '#0f766e')}>{s.nom}</button>)}
+        {Object.entries(SCENARIOS).map(([k, s]) => <button key={k} onClick={() => setScId(k)} style={stylePetitBouton(scId === k, '#0b4f94')}>{s.nom}</button>)}
       </div>
       <Curseur nom="Nombre de groupes N" valeur={N} onChange={setN} min={4} max={40} pas={1} couleur="#0f766e"/>
       <Curseur nom="Dispersion (× celle d'une vraie classe)" valeur={sdK} onChange={setSdK} min={0.25} max={3} pas={0.25} decimales={2} couleur="#0f766e"/>
@@ -488,7 +488,7 @@ export function SimulationMetrologie() {
       {mode === 'explore' && (
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
           {[['classe', '🎲 Simuler une classe'], ['ma', '📊 Les résultats de ma classe']].map(([k, n]) =>
-            <button key={k} onClick={() => setOnglet(k)} style={stylePetitBouton(onglet === k, '#0f766e')}>{n}</button>)}
+            <button key={k} onClick={() => setOnglet(k)} style={stylePetitBouton(onglet === k, '#0b4f94')}>{n}</button>)}
         </div>
       )}
       {mode === 'explore' && onglet === 'ma' && maClasse}

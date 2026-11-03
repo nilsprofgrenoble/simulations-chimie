@@ -192,7 +192,7 @@ export function SimulationLoiOhm() {
     <div style={{ marginTop: 4 }}><button onClick={vider} style={styleBouton(false)}><Pic n="trash"/>Effacer</button></div></div>;
   const btnNoter = f => <button onClick={f} style={{ ...styleBouton(true, '#16a34a'), marginTop: 6 }}><Pic n="plus"/>Noter cette mesure</button>;
   const choixR = (<div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Résistor :</span>
-    {RES.map(r => <button key={r} onClick={() => setO(o => ({ ...o, R: r, inconnu: false }))} style={stylePetitBouton(!O.inconnu && O.R === r, '#0f766e')}>{r} Ω</button>)}
+    {RES.map(r => <button key={r} onClick={() => setO(o => ({ ...o, R: r, inconnu: false }))} style={stylePetitBouton(!O.inconnu && O.R === r, '#0b4f94')}>{r} Ω</button>)}
     <button onClick={() => setO(o => ({ ...o, inconnu: true }))} style={stylePetitBouton(O.inconnu, '#7b2d8e')}>R inconnu</button></div>);
   const listeI = xyO.map(p => fr(p[0] / 1000, 4).replace(',', '.')).join(', '), listeU = xyO.map(p => fr(p[1], 1).replace(',', '.')).join(', ');
   const codePython = `import numpy as np
@@ -274,9 +274,9 @@ plt.show()`;
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Dipôle :</span>
         {[['lampe', 'lampe 6 V – 0,30 A', VERMILLON], ['res', 'résistor 100 Ω', BLEU]].map(([k, l, c]) => <button key={k} onClick={() => setFo(f => ({ ...f, dip: k }))} style={stylePetitBouton(Fo.dip === k, c)}>{l}</button>)}</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Générateur E :</span>
-        {[3, 6, 9].map(e => <button key={e} onClick={() => setFo(f => ({ ...f, E: e }))} style={stylePetitBouton(Fo.E === e, '#0f766e')}>{e} V</button>)}
+        {[3, 6, 9].map(e => <button key={e} onClick={() => setFo(f => ({ ...f, E: e }))} style={stylePetitBouton(Fo.E === e, '#0b4f94')}>{e} V</button>)}
         <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginLeft: 8 }}>Résistor de protection :</span>
-        {[10, 22, 47, 100].map(r => <button key={r} onClick={() => setFo(f => ({ ...f, Rp: r }))} style={stylePetitBouton(Fo.Rp === r, '#0f766e')}>{r} Ω</button>)}</div>
+        {[10, 22, 47, 100].map(r => <button key={r} onClick={() => setFo(f => ({ ...f, Rp: r }))} style={stylePetitBouton(Fo.Rp === r, '#0b4f94')}>{r} Ω</button>)}</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 10, marginTop: 8, alignItems: 'start' }}>
         <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
           <div>Loi des mailles : <strong>E = U + R × I</strong>, donc <strong>U = E − R × I</strong> : c’est une <span style={{ color: VERMILLON, fontWeight: 700 }}>droite</span> sur le graphique (elle passe par E = {Fo.E} V sur l’axe vertical).</div>

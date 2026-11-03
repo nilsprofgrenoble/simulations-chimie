@@ -166,7 +166,7 @@ export function Graphe({ xMax, yMax, xLabel, yLabel, courbes = [], points = [], 
 //  etat = { etape, reps, verifs } est conservé par la page (setEtat).
 // ============================================================
 
-export const ORANGE_GUIDE = '#f59e0b';
+export const ORANGE_GUIDE = '#f5a31a';
 
 export function Cadre({ actif, x, y, w, h }) {
   if (!actif) return null;
@@ -271,7 +271,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
     return null;
   };
   return (
-    <div style={{ background: 'white', borderRadius: 10, padding: '10px 12px', border: `2px solid ${ORANGE_GUIDE}`,
+    <div style={{ background: 'white', borderRadius: 22, padding: '14px 16px', border: `2px solid ${ORANGE_GUIDE}`,
       display: 'flex', flexDirection: 'column', gap: 10,
       // La carte reste visible quand on fait défiler la page (dans une mise en page à deux colonnes)
       position: 'sticky', top: 'calc(var(--entete-h, 0px) + 8px)', maxHeight: 'calc(100vh - var(--entete-h, 0px) - 24px)', overflowY: 'auto', zIndex: 5 }}>
@@ -397,8 +397,8 @@ export function ARetenir({ titre = 'À RETENIR', children }) {
 // Encadré « exemple résolu » des parcours guidés : le raisonnement est donné en entier, l'élève le refait ensuite sur un autre cas.
 export function ExempleResolu({ titre = 'Exemple résolu', children }) {
   return (
-    <div data-exemple="1" style={{ background: '#f0f9ff', border: '1.5px solid #7dd3fc', borderRadius: 10, padding: '6px 10px', margin: '8px 0', color: '#0f172a' }}>
-      <div style={{ fontWeight: 800, fontSize: 13, color: '#0369a1', letterSpacing: 0.3, marginBottom: 2 }}><Pic n="book"/>{titre.toUpperCase()}</div>
+    <div data-exemple="1" style={{ background: '#eaf2fb', border: '1px solid #c5d9f0', borderRadius: 16, padding: '10px 14px', margin: '10px 0', color: '#0f172a' }}>
+      <div style={{ fontWeight: 800, fontSize: 13, color: '#0b4f94', letterSpacing: 0.3, marginBottom: 2 }}><Pic n="book"/>{titre.toUpperCase()}</div>
       <div style={{ fontSize: 14.5, lineHeight: 1.6 }}>{indicesProfond(children)}</div>
     </div>
   );

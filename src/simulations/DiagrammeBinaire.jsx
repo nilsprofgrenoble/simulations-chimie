@@ -268,7 +268,7 @@ export function SimulationDiagramme({ naviguer }) {
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
-      {naviguer && <button onClick={() => naviguer(41)} style={styleBouton(false, '#0f766e')}><Pic n="testtube"/>Distillation</button>}
+      {naviguer && <button onClick={() => naviguer(41)} style={styleBouton(false, '#0b4f94')}><Pic n="testtube"/>Distillation</button>}
     </span>);
 
   const dMel = defi ? MELANGES[defi.k] : null;

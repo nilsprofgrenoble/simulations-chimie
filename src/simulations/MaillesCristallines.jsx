@@ -363,7 +363,7 @@ export function SimulationMailles() {
           <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Structure :</span>
           {Object.values(STRUCT).map(s => <button key={s.cle} onClick={() => { setMet(METAUX_PAR_STRUCT[s.cle][0]); setSurlig(null); }} style={stylePetitBouton(sc.t === s.cle, '#1d4ed8')}>{s.court}</button>)}
           <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginLeft: 6 }}>Métal :</span>
-          {METAUX_PAR_STRUCT[sc.t].map(k => <button key={k} onClick={() => { setMet(k); setSurlig(null); }} style={stylePetitBouton(met === k, '#0f766e')}>{ECHANTILLONS[k].formule}</button>)}</>}
+          {METAUX_PAR_STRUCT[sc.t].map(k => <button key={k} onClick={() => { setMet(k); setSurlig(null); }} style={stylePetitBouton(met === k, '#0b4f94')}>{ECHANTILLONS[k].formule}</button>)}</>}
         {atelier === 'sites' && <>
           <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Hôte :</span>{selecteur(Object.entries(HOTES).map(([k, h]) => [k, h.nom]), hote, setHote, '#1d4ed8')}
           <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginLeft: 6 }}>Site :</span>{selecteur([['oct', 'octaédrique'], ['tet', 'tétraédrique']], site, setSite, VIOLET)}

@@ -253,7 +253,7 @@ export function SimulationLentille() {
     <div>
       <Lunette L={L} normales={Le.normales} mince={Le.mince} foyers={Le.foyers} ideale={Le.ideale}/>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Lentille :</span>
-        {[['plano', 'plan-convexe'], ['bi', 'biconvexe']].map(([k, l]) => <button key={k} onClick={() => setLe(x => ({ ...x, type: k }))} style={stylePetitBouton(Le.type === k, '#0f766e')}>{l}</button>)}
+        {[['plano', 'plan-convexe'], ['bi', 'biconvexe']].map(([k, l]) => <button key={k} onClick={() => setLe(x => ({ ...x, type: k }))} style={stylePetitBouton(Le.type === k, '#0b4f94')}>{l}</button>)}
         {bascule('normales', 'normales')}{bascule('foyers F, F′', 'foyers')}{bascule('schéma lentille mince', 'mince')}{bascule('lentille idéale (tous les rayons au foyer)', 'ideale')}</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, marginTop: 6 }}>
         {curs('Indice du verre n', Le.n, 1.4, 2.0, 0.05, v => setLe(l => ({ ...l, n: Math.round(v * 100) / 100 })), fr(Le.n, 2))}

@@ -451,7 +451,7 @@ export function SimulationAptitude() {
     <div style={{ ...styleBoite, marginBottom: 10, ...cadre('formule') }} data-apparait={`${idx('choisirExclu')}`}>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
         <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Formule du z-score :</span>
-        {Object.entries(FORMULES).map(([k, f]) => <button key={k} onClick={() => choisirFormule(k)} style={stylePetitBouton(formuleActive === k, '#0f766e')}>{f.nom}</button>)}
+        {Object.entries(FORMULES).map(([k, f]) => <button key={k} onClick={() => choisirFormule(k)} style={stylePetitBouton(formuleActive === k, '#0b4f94')}>{f.nom}</button>)}
       </div>
       <div style={{ background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: 8, padding: '8px 12px', display: 'inline-block', fontFamily: 'Georgia, serif', fontSize: 18, color: KIT.txt }}>{FORMULES[formuleActive].formule}</div>
       <div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 6, lineHeight: 1.5 }}>
@@ -555,8 +555,8 @@ export function SimulationAptitude() {
         <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2, margin: '4px 0' }}>Norme ISO 13528 : x<sub>pt</sub> et σ<sub>pt</sub></div>
         <Curseur nom="σ_pt fixé par l'organisateur" valeur={sigmaPtExp} onChange={setSigmaPtExp} min={0.4} max={2.5} pas={0.1} unite="mg/L" decimales={1} couleur="#0f766e"/>
         <div style={{ display: 'flex', gap: 5, marginBottom: 8, flexWrap: 'wrap' }}>
-          <button onClick={() => setXptMode('reference')} style={stylePetitBouton(xptMode === 'reference', '#0f766e')}>x_pt : référence 24,0</button>
-          <button onClick={() => setXptMode('consensus')} style={stylePetitBouton(xptMode === 'consensus', '#0f766e')}>x_pt : consensus (médiane)</button>
+          <button onClick={() => setXptMode('reference')} style={stylePetitBouton(xptMode === 'reference', '#0b4f94')}>x_pt : référence 24,0</button>
+          <button onClick={() => setXptMode('consensus')} style={stylePetitBouton(xptMode === 'consensus', '#0b4f94')}>x_pt : consensus (médiane)</button>
         </div>
       </>}
       <button onClick={() => setTirage(t => t + 1)} style={styleBouton(false)}>🎲 Une autre campagne</button>

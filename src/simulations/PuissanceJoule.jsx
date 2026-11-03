@@ -193,7 +193,7 @@ export function SimulationPuissanceJoule() {
   const atelierDipole = (
     <div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Appareil :</span>
-        {APPAREILS.map(([n, p], k) => <button key={n} onClick={() => setA(a => ({ ...a, k }))} style={stylePetitBouton(A.k === k, '#0f766e')}>{n} ({p} W)</button>)}</div>
+        {APPAREILS.map(([n, p], k) => <button key={n} onClick={() => setA(a => ({ ...a, k }))} style={stylePetitBouton(A.k === k, '#0b4f94')}>{n} ({p} W)</button>)}</div>
       <div style={{ marginTop: 8 }}><Curseur nom="Durée de fonctionnement Δt" val={A.dt} min={1} max={1440} pas={1} set={v => setA(a => ({ ...a, dt: v }))} unite=" min" fmt={v => `${v} (${fr(v / 60, 2)} h)`}/></div>
       {carte('', <>
         <div>Tension du secteur U = {U_SECTEUR} V ; puissance P = <strong>{PA} W</strong></div>
@@ -242,7 +242,7 @@ export function SimulationPuissanceJoule() {
   const atelierRend = (
     <div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Convertisseur :</span>
-        {CONVERTISSEURS.map(c => <button key={c[0]} onClick={() => setRd(r => ({ ...r, k: c[0] }))} style={stylePetitBouton(Rd.k === c[0], '#0f766e')}>{c[1]}</button>)}
+        {CONVERTISSEURS.map(c => <button key={c[0]} onClick={() => setRd(r => ({ ...r, k: c[0] }))} style={stylePetitBouton(Rd.k === c[0], '#0b4f94')}>{c[1]}</button>)}
         <button onClick={() => setRd(r => ({ ...r, k: 'perso' }))} style={stylePetitBouton(Rd.k === 'perso', '#7b2d8e')}>à régler</button></div>
       <Bilan Pe={Rd.Pe} rho={rho} utile={conv ? conv[3] : 'puissance utile'} pertes={conv ? conv[4] : 'chaleur'}/>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginTop: 8 }}>

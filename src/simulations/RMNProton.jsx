@@ -318,7 +318,7 @@ export function SimulationRMN() {
           {MOLECULES.map(x => <option key={x.id} value={x.id}>{x.nom} ({x.brute})</option>)}</select></label>}
       {defiSpectre && <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Composé étudié : formule brute {m.brute}</span>}
       {!defiSpectre && <><span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Spectromètre :</span>
-        {NU0.map(v => <button key={v} onClick={() => setNu0(v)} style={stylePetitBouton(nu0 === v, '#0f766e')}>{v} MHz</button>)}</>}
+        {NU0.map(v => <button key={v} onClick={() => setNu0(v)} style={stylePetitBouton(nu0 === v, '#0b4f94')}>{v} MHz</button>)}</>}
     </div>);
   const planche = (
     <div style={styleBoite}>

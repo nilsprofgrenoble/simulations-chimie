@@ -483,8 +483,8 @@ export function SimulationEchangeur() {
   const enMarche = enGuide ? gEnMarche : true;
   const boutonsSens = (val, set) => (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => set('co')} style={stylePetitBouton(val === 'co', '#0f766e')}>⇉ Co-courant</button>
-      <button onClick={() => set('contre')} style={stylePetitBouton(val === 'contre', '#0f766e')}>⇄ Contre-courant</button>
+      <button onClick={() => set('co')} style={stylePetitBouton(val === 'co', '#0b4f94')}>⇉ Co-courant</button>
+      <button onClick={() => set('contre')} style={stylePetitBouton(val === 'contre', '#0b4f94')}>⇄ Contre-courant</button>
     </div>);
 
   const vue = (

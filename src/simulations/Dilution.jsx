@@ -231,10 +231,10 @@ export function SimulationDilution() {
     <div style={{ marginTop: 8 }}>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Fiole jaugée :</span>
-        {FIOLES.map(v => <button key={v} onClick={() => setD(x => ({ ...x, Vf: v, Vm: Math.min(x.Vm, v) }))} style={stylePetitBouton(D.Vf === v, '#0f766e')}>{v} mL</button>)}</div>
+        {FIOLES.map(v => <button key={v} onClick={() => setD(x => ({ ...x, Vf: v, Vm: Math.min(x.Vm, v) }))} style={stylePetitBouton(D.Vf === v, '#0b4f94')}>{v} mL</button>)}</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Pipette jaugée :</span>
-        {PIPETTES.map(v => <button key={v} onClick={() => setD(x => ({ ...x, Vm: v }))} disabled={v > D.Vf} style={{ ...stylePetitBouton(D.Vm === v, '#0f766e'), opacity: v > D.Vf ? 0.4 : 1 }}>{v} mL</button>)}</div>
+        {PIPETTES.map(v => <button key={v} onClick={() => setD(x => ({ ...x, Vm: v }))} disabled={v > D.Vf} style={{ ...stylePetitBouton(D.Vm === v, '#0b4f94'), opacity: v > D.Vf ? 0.4 : 1 }}>{v} mL</button>)}</div>
       {!verrou && <label style={{ fontSize: 13.5, fontWeight: 600, display: 'block' }}>ou pipette graduée (volume libre) : <strong>{fr(D.Vm, 1)} mL</strong>
         <input type="range" min="0.5" max={Math.min(D.Vf, 50)} step="0.5" value={Math.min(D.Vm, Math.min(D.Vf, 50))} aria-label="Volume prélevé en millilitres" onChange={e => setD(x => ({ ...x, Vm: +e.target.value }))} style={{ width: '100%' }}/></label>}
       <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 2 }}>Verrerie : {verrerieTxt}</div>

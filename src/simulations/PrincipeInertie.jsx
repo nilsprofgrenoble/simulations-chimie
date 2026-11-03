@@ -260,7 +260,7 @@ export function SimulationPrincipeInertie() {
     <div style={styleBoite}>
       <Scene P={Peff} sim={sim} t={t}/>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
-        <button onClick={() => { if (t >= T_MAX - 1e-9) setT(0); setLecture(l => !l); }} style={styleBouton(true, '#0f766e')}>{lecture ? '⏸ Pause' : '▶ Lecture'}</button>
+        <button onClick={() => { if (t >= T_MAX - 1e-9) setT(0); setLecture(l => !l); }} style={styleBouton(true, '#0b4f94')}>{lecture ? '⏸ Pause' : '▶ Lecture'}</button>
         <label style={{ flex: '1 1 200px', fontSize: 13.5, fontWeight: 600 }}>Date : <strong>{fr(t, 1)} s</strong>
           <input type="range" min="0" max={T_MAX} step="0.1" value={t} aria-label="Date en secondes" onChange={e => { setLecture(false); setT(+e.target.value); }} style={{ width: '100%' }}/></label></div>
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 6 }}>
@@ -273,7 +273,7 @@ export function SimulationPrincipeInertie() {
             <input type="range" min="-2" max="3" step="0.5" value={P.v0} aria-label="Vitesse initiale en mètres par seconde" onChange={e => setP(p => ({ ...p, v0: +e.target.value }))} style={{ width: '100%' }}/></label></>}</div>
       {!verrou && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6, alignItems: 'center' }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Sol :</span>
-        {SOLS.map(([mu, l]) => <button key={mu} onClick={() => setP(p => ({ ...p, mu }))} style={stylePetitBouton(P.mu === mu, '#0f766e')}>{l}</button>)}
+        {SOLS.map(([mu, l]) => <button key={mu} onClick={() => setP(p => ({ ...p, mu }))} style={stylePetitBouton(P.mu === mu, '#0b4f94')}>{l}</button>)}
         <span style={{ fontSize: 13, color: KIT.txt2 }}>Frottements : f = {fr(fk, 0)} N</span></div>}
       <div style={{ marginTop: 8 }}><Graphe sim={sim} t={t}/></div>
       {tableau && <div style={{ marginTop: 8, fontSize: 14.5, lineHeight: 1.5 }}>{verdict}</div>}

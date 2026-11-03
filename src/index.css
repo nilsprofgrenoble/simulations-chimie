@@ -129,3 +129,6 @@ button:focus-visible { outline: 2px solid #0ea5e9; outline-offset: 2px; }
   /* tableaux et schémas larges : défilement horizontal dans leur cadre plutôt que débordement de la page */
   table { display: block; max-width: 100%; overflow-x: auto; }
 }
+
+input[type="range"] { accent-color: #0b4f94; }
+input[type="checkbox"], input[type="radio"] { accent-color: #0b4f94; }

@@ -82,7 +82,7 @@ function Protocole({ P, proto, setProto }) {
       </svg>
       <div style={{ fontSize: 13.5, fontWeight: 700, margin: '8px 0 4px', color: KIT.txt }}>Cliquez sur la <em>prochaine</em> étape du protocole :</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {ORDRE_BOUTONS.map(k => { const fait = k <= n; return <button key={k} onClick={() => clic(k)} style={{ ...stylePetitBouton(false, '#0f766e'), textAlign: 'left', background: fait ? '#dcfce7' : 'white', borderColor: fait ? '#16a34a' : KIT.bord, fontWeight: 600 }}>{fait ? '✅ ' : ''}{PROTO[k - 1].txt}</button>; })}
+        {ORDRE_BOUTONS.map(k => { const fait = k <= n; return <button key={k} onClick={() => clic(k)} style={{ ...stylePetitBouton(false, '#0b4f94'), textAlign: 'left', background: fait ? '#dcfce7' : 'white', borderColor: fait ? '#16a34a' : KIT.bord, fontWeight: 600 }}>{fait ? '✅ ' : ''}{PROTO[k - 1].txt}</button>; })}
       </div>
       {proto.msg && <div style={{ marginTop: 6, fontSize: 14, fontWeight: 600, color: proto.msg.ok ? VERT : '#b91c1c', lineHeight: 1.5 }}>{proto.msg.ok ? '✅ ' : '❌ '}{proto.msg.t}</div>}
       {n === 6 && <div style={{ marginTop: 6, fontSize: 14, color: VERT, fontWeight: 700 }}><Pic n="party"/>Solution prête : {fr(t, 2)} g/L ({P.V} mL).</div>}
@@ -223,9 +223,9 @@ export function SimulationDissolution() {
     <div style={{ marginTop: 8 }}>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Soluté :</span>
-        {SOLUTES.map(x => <button key={x.id} onClick={() => setP(p => ({ ...p, sol: x.id, m: Math.min(p.m, Math.round(x.sol * p.V / 1000 * 1.6 * 100) / 100) }))} style={stylePetitBouton(P.sol === x.id, '#0f766e')}>{x.court}</button>)}
+        {SOLUTES.map(x => <button key={x.id} onClick={() => setP(p => ({ ...p, sol: x.id, m: Math.min(p.m, Math.round(x.sol * p.V / 1000 * 1.6 * 100) / 100) }))} style={stylePetitBouton(P.sol === x.id, '#0b4f94')}>{x.court}</button>)}
         <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginLeft: 8 }}>Fiole :</span>
-        {[50, 100, 250, 500].map(v => <button key={v} onClick={() => setP(p => ({ ...p, V: v }))} style={stylePetitBouton(P.V === v, '#0f766e')}>{v} mL</button>)}</div>
+        {[50, 100, 250, 500].map(v => <button key={v} onClick={() => setP(p => ({ ...p, V: v }))} style={stylePetitBouton(P.V === v, '#0b4f94')}>{v} mL</button>)}</div>
       <label style={{ fontSize: 13.5, fontWeight: 600, display: 'block' }}>Masse pesée : <strong>{fr(P.m, 2)} g</strong>
         <input type="range" min="0" max={maxM} step={pasM} value={Math.min(P.m, maxM)} aria-label="Masse de soluté en grammes" onChange={e => setP(p => ({ ...p, m: +e.target.value }))} style={{ width: '100%' }}/></label>
       <label style={{ fontSize: 13.5, fontWeight: 600 }}>ou tapez la masse : <input type="number" min="0" step="0.01" value={P.m} aria-label="Masse tapée en grammes" onChange={e => setP(p => ({ ...p, m: Math.max(0, +e.target.value || 0) }))} style={{ width: 80, padding: '3px 6px' }}/> g</label>

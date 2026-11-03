@@ -144,7 +144,7 @@ function PanneauPoids({ pw, setPw, verrouAstre }) {
   return (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Poids et attraction gravitationnelle</div>
-      {!verrouAstre && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>{ASTRES.map(x => <button key={x.id} onClick={() => setPw(s => ({ ...s, astre: x.id }))} style={stylePetitBouton(pw.astre === x.id, '#0f766e')}>{x.Nom}</button>)}</div>}
+      {!verrouAstre && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>{ASTRES.map(x => <button key={x.id} onClick={() => setPw(s => ({ ...s, astre: x.id }))} style={stylePetitBouton(pw.astre === x.id, '#0b4f94')}>{x.Nom}</button>)}</div>}
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 220px' }}>
           <svg viewBox="0 0 220 250" width="100%" style={{ maxWidth: 260, display: 'block', margin: '0 auto', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }} role="img" aria-label={`Un objet de ${fr(pw.m, 1)} kg attiré par ${a.nom}`}>
@@ -385,9 +385,9 @@ export function SimulationForcesVecteurs() {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>{sc.titre}</div>
       {!enDefi && !vecEff.verrou && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6, alignItems: 'center' }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Scène :</span>
-        {Object.entries(SCENES).map(([k, s]) => <button key={k} onClick={() => setVec(v => ({ ...v, scene: k, L: Math.min(v.L, maxLongueur(SCENES[k].point, v.ang)), lecture: null }))} style={stylePetitBouton(vec.scene === k, '#0f766e')}>{s.auteur} → {s.receveur}</button>)}
+        {Object.entries(SCENES).map(([k, s]) => <button key={k} onClick={() => setVec(v => ({ ...v, scene: k, L: Math.min(v.L, maxLongueur(SCENES[k].point, v.ang)), lecture: null }))} style={stylePetitBouton(vec.scene === k, '#0b4f94')}>{s.auteur} → {s.receveur}</button>)}
         <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginLeft: 6 }}>Échelle (1 cm ↔) :</span>
-        {ECHELLES.map(e => <button key={e} onClick={() => setVec(v => ({ ...v, echelle: e }))} style={stylePetitBouton(vec.echelle === e, '#0f766e')}>{e} N</button>)}</div>}
+        {ECHELLES.map(e => <button key={e} onClick={() => setVec(v => ({ ...v, echelle: e }))} style={stylePetitBouton(vec.echelle === e, '#0b4f94')}>{e} N</button>)}</div>}
       <PlancheForce scene={vecEff.scene} vec={vecEff} setVec={setVec} editable={!lectureSeule && !enDefi ? true : enDefi && defi.type === 'tracer'} echelle={vecEff.echelle}
         fantome={enDefi && defi.type === 'tracer' && defi.solution ? { L: defi.F / defi.echelle, ang: defi.ang } : null}/>
       {enDefi && defi.type === 'tracer' && defi.solution && <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4 }}>La flèche verte transparente montre la solution : longueur {fr(defi.F / defi.echelle, 1)} cm, angle {defi.ang}°.</div>}
@@ -406,8 +406,8 @@ export function SimulationForcesVecteurs() {
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Actions réciproques</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
-        <button onClick={() => setRecip(r => ({ ...r, scene: 'dyno', F: 4 }))} style={stylePetitBouton(recip.scene === 'dyno', '#0f766e')}>Deux dynamomètres</button>
-        <button onClick={() => setRecip(r => ({ ...r, scene: 'patin', F: 60 }))} style={stylePetitBouton(recip.scene === 'patin', '#0f766e')}>Deux patineurs</button>
+        <button onClick={() => setRecip(r => ({ ...r, scene: 'dyno', F: 4 }))} style={stylePetitBouton(recip.scene === 'dyno', '#0b4f94')}>Deux dynamomètres</button>
+        <button onClick={() => setRecip(r => ({ ...r, scene: 'patin', F: 60 }))} style={stylePetitBouton(recip.scene === 'patin', '#0b4f94')}>Deux patineurs</button>
         <label style={{ fontSize: 13.5, display: 'inline-flex', alignItems: 'center', gap: 4 }}><input type="checkbox" checked={recip.montrer} onChange={e => setRecip(r => ({ ...r, montrer: e.target.checked }))}/> Afficher les deux forces</label></div>
       <Reciproques scene={recip.scene} F={recip.F} mA={recip.mA} mB={recip.mB} montrer={recip.montrer}/>
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8 }}>

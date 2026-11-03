@@ -301,7 +301,7 @@ export function SimulationRefractometre({ naviguer }) {
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
-      {naviguer && <button onClick={() => naviguer(41)} style={styleBouton(false, '#0f766e')}><Pic n="testtube"/>Distillation</button>}
+      {naviguer && <button onClick={() => naviguer(41)} style={styleBouton(false, '#0b4f94')}><Pic n="testtube"/>Distillation</button>}
     </span>);
 
   const presets = [['vin', 0.04], ['1ères gouttes (simple)', 0.29], ['mélange 50 %', 0.5], ['distillat fractionné', 0.9]];

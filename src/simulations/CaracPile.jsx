@@ -173,7 +173,7 @@ export function SimulationCaracPile() {
     <div>
       <SchemaSource U0={U0p} r={rp} R={K.ferme ? Rd : 1e6} I={Itp} ph={ph} modele={false}/>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Source :</span>
-        {Object.entries(PILES).map(([k, [n]]) => <button key={k} onClick={() => { setPile(k); setPts([]); }} style={stylePetitBouton(pile === k, '#0f766e')}>{n}</button>)}</div>
+        {Object.entries(PILES).map(([k, [n]]) => <button key={k} onClick={() => { setPile(k); setPts([]); }} style={stylePetitBouton(pile === k, '#0b4f94')}>{n}</button>)}</div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
         <button onClick={() => setK(k => ({ ...k, ferme: !k.ferme }))} style={styleBouton(true, '#334155')}>{K.ferme ? '🔓 Ouvrir l’interrupteur K' : '🔒 Fermer l’interrupteur K'}</button>
         <label style={{ fontSize: 13.5, fontWeight: 600 }}>Boîte à décades R : <strong>{Rd} Ω</strong>
@@ -219,7 +219,7 @@ export function SimulationCaracPile() {
   const atelierLire = (
     <div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Dipôle :</span>
-        {Object.entries(LEC).map(([k, [n]]) => <button key={k} onClick={() => setLec(l => ({ ...l, dip: k }))} style={stylePetitBouton(Lec.dip === k, '#0f766e')}>{n}</button>)}</div>
+        {Object.entries(LEC).map(([k, [n]]) => <button key={k} onClick={() => setLec(l => ({ ...l, dip: k }))} style={stylePetitBouton(Lec.dip === k, '#0b4f94')}>{n}</button>)}</div>
       <div style={{ marginTop: 8 }}><Curseur nom="Tension appliquée U" val={Lec.U} min={0} max={9} pas={0.5} set={v => setLec(l => ({ ...l, U: v }))} unite=" V"/></div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10, marginTop: 8, alignItems: 'start' }}>
         <Graphe pts={[[ILec * 1000, Lec.U]]} courbe={courbeLec} xmax={Lec.dip === 'res' ? 100 : 600} ymax={9} xlab="I (mA)" ylab="U (V)" couleur={VIOLET} rayon={6} w={420} h={280}/>
