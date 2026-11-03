@@ -397,7 +397,7 @@ export function SimulationMouvementSysteme() {
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
         <li>Δv_[i] = v_[i+1] − v_[i−1] se construit par une soustraction de vecteurs (v_[i+1] + (−v_[i−1])), au point A_[i].</li>
         <li>ΣF ≈ m·Δv/Δt : Δv a la direction et le sens de ΣF.</li>
-        <li>Si ΣF = 0, alors Δv = 0 (principe d’inertie) ; plus ΣF est grande, plus Δv est grande pour une même durée.</li>
+        <li>Si ΣF = 0, alors Δv = 0 (principe d’inertie) ; à masse égale, plus ΣF est grande, plus Δv est grande pour une même durée.</li>
         <li>v et ΣF n’ont pas de lien de direction ; Δv et ΣF, si.</li>
         <li>À même force, le moins massif varie le plus : Δv ∝ 1/m.</li>
         <li>Plus Δt est petit, mieux la relation est vérifiée.</li></ul>,

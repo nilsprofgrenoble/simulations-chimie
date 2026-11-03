@@ -192,7 +192,7 @@ function OutilEtalonnage() {
         {m && <>
           <LigneMesure nom={origine ? 'Coefficient directeur k' : 'Coefficient directeur a'} valeur={`${sci(m.a, 4)} (par ${unite})`} couleur="#2563eb"/>
           {!origine && <LigneMesure nom="Ordonnée à l'origine b" valeur={sci(m.b, 3)}/>}
-          <LigneMesure nom="Coefficient de détermination R²" valeur={fmt(m.R2, 4)} couleur={m.R2 >= 0.999 ? '#15803d' : '#b45309'}/>
+          <LigneMesure nom="Coefficient de détermination R²" valeur={fmt(m.R2, 4)} couleur={KIT.txt}/>
           {isFinite(cX) && <LigneMesure nom="Concentration de l'inconnue c_X" valeur={`${sci(cX, 3)} ${unite}`} couleur="#dc2626"/>}
         </>}
       </div>
@@ -579,7 +579,7 @@ export function BeerLambert1G() {
       </>}
       <PanneauHypotheses>
         <li><strong>Loi de Beer-Lambert</strong> : A = ε × ℓ × c, avec ℓ = 1 cm. Elle suppose une solution diluée, une seule espèce qui absorbe à la longueur d’onde choisie, une lumière monochromatique et une solution limpide (pas de diffusion).</li>
-        <li><strong>Limite de l’appareil</strong> : à forte absorbance (à partir de A ≈ 1,2), le spectrophotomètre s’écarte un peu de la droite. L’étalonnage doit rester dans la zone où A est proportionnelle à c.</li>
+        <li><strong>Limite de l’appareil</strong> : à forte absorbance (au-delà de A ≈ 1), le spectrophotomètre s’écarte un peu de la droite. L’étalonnage doit rester dans la zone où A est proportionnelle à c.</li>
         <li><strong>Blanc</strong> : la cuve remplie d’eau sert de référence (A = 0). Sans ce réglage, la cuve et l’eau ajoutent une absorbance parasite à toutes les mesures.</li>
         <li><strong>Étalons</strong> : les concentrations des solutions étalon sont supposées exactes (fioles jaugées, dilutions soignées). L’incertitude vient surtout de la lecture de A (quelques millièmes d’absorbance).</li>
         <li><strong>Modèle de la courbe</strong> : on ajuste une droite A = k × c. Un coefficient R² proche de 1 ne prouve pas à lui seul que le modèle convient : regardez aussi si les points s’écartent de la droite de façon systématique (par exemple le plus concentré).</li>
