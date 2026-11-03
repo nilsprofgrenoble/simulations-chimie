@@ -123,19 +123,47 @@ function ConduiteConvergent({ D1, L, P1, v1, D2 }) {
     </div>);
 }
 
-// Échangeur eau chaude – eau froide
-function Echangeur({ qc, Tce, Tcs, qf, Tfe, Tfs = '' }) {
+// Échangeur eau chaude – eau froide ; sens : 'co' (co-courant), 'contre' (contre-courant) ou null (non précisé : pas de flèche sur l'eau froide)
+function Echangeur({ qc, Tce, Tcs, qf, Tfe, Tfs = '', sens = null }) {
   const u = useId().replace(/:/g, '');
+  const co = sens === 'co', contre = sens === 'contre';
   return (
     <div style={boite} data-schema="echangeur">
-      <svg viewBox="0 0 360 200" style={svgStyle} role="img" aria-label="Échangeur de chaleur : l’eau chaude cède de la chaleur à l’eau froide à travers une paroi">
+      <svg viewBox="0 0 360 215" style={svgStyle} role="img" aria-label="Échangeur de chaleur : l’eau chaude cède de la chaleur à l’eau froide à travers une paroi">
         <defs><Pointe id={`${u}o`} c={ORANGE}/><Pointe id={`${u}b`} c={BLEU}/></defs>
         <rect x="100" y="50" width="160" height="100" rx="12" fill="#f8fafc" stroke={TR} strokeWidth="3"/><line x1="100" y1="100" x2="260" y2="100" stroke={TR} strokeWidth="2" strokeDasharray="6 4"/>
         <Tx x="180" y="94" t="paroi d’échange" s={11}/>
         <Fl x1={20} y1={75} x2={98} y2={75} c={ORANGE} id={`${u}o`} w={2.8}/><Tx x="58" y="44" t="eau chaude" c={ORANGE} g/><Tx x="58" y="60" t={`${qc}`} c={ORANGE} g s={11.5}/><Tx x="58" y="92" t={`entrée ${Tce}`} c={ORANGE} s={11.5}/>
         <Fl x1={262} y1={75} x2={340} y2={75} c={ORANGE} id={`${u}o`} w={2.8}/><Tx x="302" y="60" t={`sortie ${Tcs}`} c={ORANGE} g s={11.5}/>
-        <Fl x1={20} y1={125} x2={98} y2={125} c={BLEU} id={`${u}b`} w={2.8}/><Tx x="58" y="158" t="eau froide" c={BLEU} g/><Tx x="58" y="174" t={`${qf}`} c={BLEU} g s={11.5}/><Tx x="58" y="116" t={`entrée ${Tfe}`} c={BLEU} s={11.5}/>
-        <Fl x1={262} y1={125} x2={340} y2={125} c={BLEU} id={`${u}b`} w={2.8}/>{Tfs && <Tx x="302" y="116" t={`sortie ${Tfs}`} c={Tfs === '?' ? ORANGE : BLEU} g s={11.5}/>}
+        {sens === null
+          ? <g><line x1="20" y1="125" x2="98" y2="125" stroke={BLEU} strokeWidth="2.8"/><line x1="262" y1="125" x2="340" y2="125" stroke={BLEU} strokeWidth="2.8"/>
+            <Tx x="180" y="176" t={`eau froide : ${qf}`} c={BLEU} g/><Tx x="180" y="194" t={`entrée à ${Tfe}${Tfs ? ', sortie : ' + Tfs : ''}`} c={BLEU} s={11.5}/></g>
+          : <g>
+            <Fl x1={co ? 20 : 340} y1={125} x2={co ? 98 : 262 + 0} y2={125} c={BLEU} id={`${u}b`} w={2.8}/>
+            {co ? <Fl x1={262} y1={125} x2={340} y2={125} c={BLEU} id={`${u}b`} w={2.8}/> : <Fl x1={98} y1={125} x2={20} y2={125} c={BLEU} id={`${u}b`} w={2.8}/>}
+            <Tx x="180" y="176" t={`eau froide : ${qf}`} c={BLEU} g/><Tx x="180" y="194" t={`entrée ${co ? 'à gauche' : 'à droite'} : ${Tfe}${Tfs ? ', sortie : ' + Tfs : ''}`} c={BLEU} s={11.5}/>
+            <Tx x="180" y="30" t={co ? 'les deux fluides circulent dans le même sens' : 'les deux fluides circulent en sens contraires'} s={11.5}/></g>}
+      </svg>
+    </div>);
+}
+
+// Moteur pas à pas : carte Arduino, driver de puissance, bobine, alimentation externe
+function DriverBobine({ reponse = false }) {
+  const u = useId().replace(/:/g, '');
+  return (
+    <div style={boite} data-schema="driver-bobine">
+      <svg viewBox="0 0 360 210" style={svgStyle} role="img" aria-label="Une carte Arduino commande un driver de puissance qui alimente une bobine de moteur pas à pas à partir d’une alimentation externe de 12 volts">
+        <defs><Pointe id={`${u}o`} c={ORANGE}/><Pointe id={`${u}v`} c={VERT}/></defs>
+        <rect x="10" y="60" width="80" height="70" rx="8" fill="#0e7490" stroke="#164e63" strokeWidth="2.6"/><Tx x="50" y="90" t="carte" c="white" g/><Tx x="50" y="108" t="Arduino" c="white" g/>
+        <rect x="140" y="60" width="80" height="70" rx="8" fill="#f1f5f9" stroke={TR} strokeWidth="2.6"/><Tx x="180" y="90" t="driver" g c={TR}/><Tx x="180" y="108" t="de puissance" c={TR} s={11}/>
+        <rect x="270" y="60" width="80" height="70" rx="8" fill="#fef3c7" stroke={TR} strokeWidth="2.6"/><Tx x="310" y="90" t="bobine" g c={TR}/><Tx x="310" y="108" t="R = 30 Ω" c={TR} s={11.5}/>
+        <rect x="140" y="160" width="80" height="34" rx="6" fill="white" stroke={TR} strokeWidth="2.4"/><Tx x="180" y="182" t="alim. 12 V" g c={TR}/>
+        <line x1="90" y1="95" x2="140" y2="95" stroke={TR} strokeWidth="2.4"/><line x1="220" y1="95" x2="270" y2="95" stroke={TR} strokeWidth="2.4"/><line x1="180" y1="130" x2="180" y2="160" stroke={TR} strokeWidth="2.4"/>
+        {reponse
+          ? <g><Fl x1={92} y1={80} x2={138} y2={80} c={ORANGE} id={`${u}o`} w={2}/><Tx x="115" y="72" t="≈ 20 mA" c={ORANGE} g s={11}/>
+            <Fl x1={190} y1={158} x2={190} y2={132} c={VERT} id={`${u}v`} w={4}/><Fl x1={222} y1={110} x2={268} y2={110} c={VERT} id={`${u}v`} w={4}/><Tx x="245" y="128" t="0,40 A" c={VERT} g s={11.5}/>
+            <Tx x="180" y="30" t="le courant fort ne passe pas par la broche" c={VERT} g s={11.5}/></g>
+          : <Tx x="115" y="84" t="broche" s={11}/>}
       </svg>
     </div>);
 }
@@ -208,4 +236,4 @@ function Vases() {
     </div>);
 }
 
-export const DESSINS_DONNEES = { vases: Vases, canEtalon: CanEtalon, jet: Jet, conduiteConvergent: ConduiteConvergent, echangeur: Echangeur, hydrodistillation: Hydrodistillation, regul: Regul, cuveHuile: CuveHuile, pompeChateau: PompeChateau, evaporateur: Evaporateur, boussole: Boussole };
+export const DESSINS_DONNEES = { driverBobine: DriverBobine, vases: Vases, canEtalon: CanEtalon, jet: Jet, conduiteConvergent: ConduiteConvergent, echangeur: Echangeur, hydrodistillation: Hydrodistillation, regul: Regul, cuveHuile: CuveHuile, pompeChateau: PompeChateau, evaporateur: Evaporateur, boussole: Boussole };
