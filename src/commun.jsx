@@ -245,7 +245,8 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
   const dejaReussie = !!(etat.reussies && etat.reussies[etape]);
   const reussie = reussieMaintenant || dejaReussie;
   const vuRep = !!reps[`vu${etape}`];
-  const peutSuivre = !tache || reussie || vuRep;
+  // window.__PARCOURS_TEST__ : utilisé seulement par scripts/controle-parcours.cjs pour passer les étapes manuelles
+  const peutSuivre = !tache || reussie || vuRep || (typeof window !== 'undefined' && !!window.__PARCOURS_TEST__);
   // Une étape réussie le reste, même si la page est rechargée et qu'une mesure a disparu
   useEffect(() => {
     if (reussieMaintenant && !dejaReussie) setEtat(e => ({ ...e, reussies: { ...(e.reussies || {}), [etape]: true } }));
@@ -271,7 +272,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
     return null;
   };
   return (
-    <div style={{ background: 'white', borderRadius: 22, padding: '14px 16px', border: `2px solid ${ORANGE_GUIDE}`,
+    <div data-carte-parcours={etape} data-type-tache={tache ? tache.type : 'aucune'} style={{ background: 'white', borderRadius: 22, padding: '14px 16px', border: `2px solid ${ORANGE_GUIDE}`,
       display: 'flex', flexDirection: 'column', gap: 10,
       // La carte reste visible quand on fait défiler la page (dans une mise en page à deux colonnes)
       position: 'sticky', top: 'calc(var(--entete-h, 0px) + 8px)', maxHeight: 'calc(100vh - var(--entete-h, 0px) - 24px)', overflowY: 'auto', zIndex: 5 }}>
@@ -290,13 +291,13 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
           Vous reprenez votre parcours là où vous l'aviez laissé. Si une mesure a disparu, revenez à l'étape où elle a été faite.
         </div>
       )}
-      <div style={{ fontSize: 18, fontWeight: 700, color: TXT }}>{indicesProfond(et.titre)}</div>
+      <div data-titre-etape="1" style={{ fontSize: 18, fontWeight: 700, color: TXT }}>{indicesProfond(et.titre)}</div>
       <div style={{ fontSize: 15, color: TXT, lineHeight: 1.6 }}>{indicesProfond(et.texte)}</div>
       {et.retenir && <ARetenir titre={et.retenirTitre || 'À RETENIR'}>{et.retenir}</ARetenir>}
       {tache && tache.type === 'action' && (
         <div>
           {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}</div>
-            : tache.label && !tache.ok && <button onClick={tache.faire} disabled={!!tache.attente} style={btn(true)}>{tache.label}</button>}
+            : tache.label && !tache.ok && <button data-faire="1" onClick={tache.faire} disabled={!!tache.attente} style={btn(true)}>{tache.label}</button>}
           {tache.consigne && <div style={{ fontSize: 14, fontWeight: 700, color: TXT, marginTop: 6, whiteSpace: 'pre-wrap' }}>{avecIndices(tache.consigne)}</div>}
           {tache.attente && <div style={{ fontSize: 14, color: TXT2, marginTop: 6 }}>{tache.attente}</div>}
           {tache.ok && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}><Pic n="ok"/>C'est fait !</div>}
@@ -317,7 +318,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
           <div style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{avecIndices(tache.q)}</div>
           {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}</div> : (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <input value={reps[etape] ?? ''} placeholder="?" aria-label="Votre réponse"
+              <input value={reps[etape] ?? ''} placeholder="?" aria-label="Votre réponse" data-vrai={tache.vrai}
                 onChange={x => setRep(x.target.value)} onKeyDown={x => { if (x.key === 'Enter') verifier(); }}
                 style={{ fontSize: 15, padding: '4px 8px', border: `1.5px solid ${BORDER}`, borderRadius: 6, width: 130, color: TXT }}/>
               <span style={{ fontSize: 14, color: TXT2 }}>{tache.unite}</span>
