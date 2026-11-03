@@ -283,9 +283,9 @@ export const PLAUSIBLES = [
     ver: 'G est minuscule et 70 × 70 ≈ 5 000 : F ≈ 7×10⁻¹¹ × 5×10³ ≈ 3,5×10⁻⁷ N, soit quelques 10⁻⁷ N à l’ordre de grandeur (le calcul exact donne 3,3×10⁻⁷ N). Cette force est bien plus faible que le poids d’un grain de poussière : on ne la sent absolument pas. Le résultat est plausible. Le modèle des masses ponctuelles est ici une approximation grossière (deux personnes à 1 m ne sont pas des points, et la formule n’est exacte que pour des corps à symétrie sphérique), mais elle suffit pour un ordre de grandeur.',
     q2: 'Quel raisonnement permet de le vérifier rapidement ?',
     options: [
-      V('G ≈ 7×10⁻¹¹ et m² ≈ 5×10³, avec d² = 1 m² : le produit donne environ 3,5×10⁻⁷ N, du même ordre que 3,3×10⁻⁷ N', 'Un calcul avec des nombres ronds suffit pour l’ordre de grandeur.'),
+      V('Avec G ≈ 7×10⁻¹¹, m² ≈ 5×10³ et d² = 1 : F ≈ 3,5×10⁻⁷ N, du même ordre que 3,3×10⁻⁷ N', 'Un calcul avec des nombres ronds suffit pour l’ordre de grandeur.'),
       F('Une force gravitationnelle entre deux personnes devrait valoir plusieurs newtons', 'Les masses sont très petites devant celle d’un astre : la force est infime.'),
-      F('F devrait être égale au poids de chaque personne', 'Le poids vient de l’attraction de la Terre, pas de l’autre personne.'),
+      F('F devrait être égale au poids de chaque personne, soit environ 700 N', 'Le poids vient de l’attraction de la Terre, pas de l’autre personne.'),
     ] }),
 
   // ── Mesure et incertitudes ──
@@ -433,8 +433,8 @@ export const PLAUSIBLES = [
     ver: 'Sur Terre, le robot pèse 900 × 9,8 ≈ 8,8×10³ N. Sur la Lune, g est 9,8 / 1,6 ≈ 6 fois plus petit, donc le poids aussi : 8,8×10³ / 6 ≈ 1,5×10³ N. Le résultat de l’élève (1,4×10³ N) est du même ordre : il est cohérent.',
     q2: 'Quelle justification est correcte ?',
     options: [
-      V('le poids sur la Lune doit être plus petit que sur Terre (8,8×10³ N), dans le même rapport que g : environ 1,5×10³ N, proche du résultat', 'Le rapport des poids est le rapport des valeurs de g : 9,8 / 1,6 ≈ 6. Sur la Lune, P = 900 × 1,6 ≈ 1,4×10³ N.'),
-      F('le poids ne dépend pas du lieu : il devrait être le même que sur Terre', 'C’est la masse qui ne dépend pas du lieu. Le poids P = m × g dépend de g.'),
+      V('le poids est plus petit que sur Terre (8,8×10³ N), dans le rapport des g : environ 1,5×10³ N', 'Le rapport des poids est le rapport des valeurs de g : 9,8 / 1,6 ≈ 6. Sur la Lune, P = 900 × 1,6 ≈ 1,4×10³ N.'),
+      F('le poids ne dépend pas du lieu : il devrait être le même que sur Terre, soit environ 8,8×10³ N', 'C’est la masse qui ne dépend pas du lieu. Le poids P = m × g dépend de g.'),
       F('le poids devrait être 6 fois plus grand sur la Lune, puisque g y est 6 fois plus petit', 'P = m × g : un g plus petit donne un poids plus petit, pas plus grand.'),
     ] }),
   P({ id: 'frc-reaction-sol', domaine: 'Forces et principe d’inertie', niveau: 1, titre: 'Réaction du sol sous un élève', plausible: false,
@@ -494,9 +494,9 @@ export const PLAUSIBLES = [
     ver: '1,4 W est bien supérieur à un voyant (0,05 W), environ trois fois supérieur à la LED d’une lampe frontale (0,5 W) et bien inférieur à un chargeur de smartphone (10 W) : c’est l’ordre de grandeur d’une petite lampe de poche sur pile (1 à 3 W). Le résultat est plausible. La valeur 4,5 V est la tension nominale de la pile : en charge elle est un peu plus faible, donc P est légèrement surestimée.',
     q2: 'Quelle justification est correcte ?',
     options: [
-      V('1,4 W est plus qu’un voyant (0,05 W) ou qu’une LED frontale (0,5 W), mais bien moins qu’un chargeur de smartphone (10 W) : cela convient à une lampe sur pile', 'Situer le résultat entre des repères proches est la bonne méthode : une lampe de poche éclaire plus qu’un voyant, mais consomme beaucoup moins qu’un appareil de 10 W.'),
-      F('c’est trop faible : une lampe de poche doit consommer plusieurs centaines de watts, comme une bouilloire', 'Cela correspond à une bouilloire ou un radiateur, pas à une lampe de poche sur pile.'),
-      F('c’est trop fort : une lampe de poche consomme moins de 0,05 W, comme un voyant', 'Un voyant (0,05 W) signale, il n’éclaire pas : une lampe d’éclairage consomme beaucoup plus.'),
+      V('1,4 W : plus qu’un voyant (0,05 W) ou qu’une LED frontale (0,5 W), moins qu’un chargeur de smartphone (10 W) : cela convient', 'Situer le résultat entre des repères proches est la bonne méthode : une lampe de poche éclaire plus qu’un voyant, mais consomme beaucoup moins qu’un appareil de 10 W.'),
+      F('c’est trop faible : une lampe de poche doit consommer plusieurs centaines de watts, comme une bouilloire, pour éclairer assez', 'Cela correspond à une bouilloire ou un radiateur, pas à une lampe de poche sur pile.'),
+      F('c’est trop fort : une lampe de poche consomme moins de 0,05 W, comme un voyant ou un petit témoin lumineux', 'Un voyant (0,05 W) signale, il n’éclaire pas : une lampe d’éclairage consomme beaucoup plus.'),
     ] }),
   P({ id: 'cir-tension-serie-val', domaine: 'Circuits électriques', niveau: 2, titre: 'Tension aux bornes d’une lampe', plausible: false,
     enonce: 'Deux lampes identiques sont montées en série aux bornes d’une pile de 4,5 V. Un élève mesure aux bornes de chaque lampe une tension de 9,0 V.',
@@ -1226,9 +1226,9 @@ export const PLAUSIBLES = [
     ver: 'La tension aux bornes d’une des deux résistances est une fraction de U_G : elle est comprise entre 0 et 5,0 V. 7,2 V dépasse la tension du générateur : le résultat est impossible (hypothèse : résistances passives et générateur unique, sans amplificateur).',
     q2: 'Quelle erreur a pu conduire à ce résultat ?',
     options: [
-      V('Un calcul sans le dénominateur R + R_p (par exemple U_G × R / R_p avec R_p petit)', 'En oubliant R_p au dénominateur, le rapport peut dépasser 1 : le facteur R / (R + R_p) est toujours inférieur à 1.'),
-      F('La photorésistance a une résistance trop grande', 'Une grande résistance R_p donne une tension U_R petite, jamais supérieure à U_G.'),
-      F('Le générateur délivre en fait plus de 5,0 V', 'L’énoncé donne U_G = 5,0 V : un résultat ne peut pas contredire les données du problème.'),
+      V('Un calcul sans le dénominateur R + R_p (par exemple U_G × R / R_p)', 'En oubliant R_p au dénominateur, le rapport peut dépasser 1 : le facteur R / (R + R_p) est toujours inférieur à 1.'),
+      F('La photorésistance a une résistance trop grande par rapport à R', 'Une grande résistance R_p donne une tension U_R petite, jamais supérieure à U_G.'),
+      F('Le générateur délivre en fait plus de 5,0 V au moment de la mesure', 'L’énoncé donne U_G = 5,0 V : un résultat ne peut pas contredire les données du problème.'),
     ] }),
   P({ id: 'n-hors-plage', domaine: 'Transmission de signaux numériques', niveau: 1, titre: 'Un nombre qui dépasse la plage du CAN', plausible: false,
     ...presenter({ schema: { type: 'chaine', apres: { actif: [2, 3], note: 'N est annoncé : on vérifie qu’il est cohérent avec la tension U_R du pont diviseur (0 ≤ N ≤ 1 023).' }, seulementApres: true }, contexte: 'Un microcontrôleur lit une tension avec un CAN 10 bits.', liste: [['Tension lue', 'U = 2,3 V'], ['Plage de tension', '0 – 5,0 V']], suite: 'Un élève calcule N = 2,3 × 1 023 = 2 353.' }),
@@ -1236,9 +1236,9 @@ export const PLAUSIBLES = [
     ver: 'Un CAN 10 bits ne fournit que des nombres entre 0 et 1 023 : N = 2 353 est impossible. Estimation : 2,3 V est un peu moins de la moitié de 5,0 V, donc N doit valoir un peu moins de 500 (hypothèse : réponse linéaire entre 0 V et 5,0 V).',
     q2: 'Quelle erreur a été commise ?',
     options: [
-      V('On a oublié de diviser par la tension maximale 5,0 V : N = U × 1 023 / 5,0 ≈ 471', 'Le calcul correct est une proportionnalité : N = U × 1 023 / 5,0.'),
+      V('On a oublié de diviser par 5,0 V : N = U × 1 023 / 5,0 ≈ 471', 'Le calcul correct est une proportionnalité : N = U × 1 023 / 5,0.'),
       F('On aurait dû multiplier par 2¹⁰ = 1 024 au lieu de 1 023', 'La différence entre 1 023 et 1 024 est inférieure à 0,1 % : elle ne peut pas expliquer un facteur 5.'),
-      F('Il faut ajouter 5,0 V au résultat', 'Ajouter une tension à un nombre n’a pas de sens : les grandeurs n’ont pas la même nature.'),
+      F('Il faut ajouter la tension maximale 5,0 V au résultat', 'Ajouter une tension à un nombre n’a pas de sens : les grandeurs n’ont pas la même nature.'),
     ] }),
   P({ id: 'n-plausible', domaine: 'Transmission de signaux numériques', niveau: 1, titre: 'Un nombre N cohérent avec la tension', plausible: true,
     ...presenter({ schema: { type: 'chaine', apres: { actif: [2, 3], note: 'N est annoncé : on vérifie qu’il est cohérent avec la tension U_R du pont diviseur (0 ≤ N ≤ 1 023).' }, seulementApres: true }, contexte: 'Un CAN 10 bits a une réponse linéaire.', liste: [['Plage de tension', '0 – 5,0 V'], ['Tension appliquée', 'U = 2,3 V']], suite: 'Un élève annonce N = 471.' }),
@@ -1246,9 +1246,9 @@ export const PLAUSIBLES = [
     ver: 'N est dans la plage 0 – 1 023. Estimation : 2,3 V représente un peu moins de la moitié de 5,0 V (46 %), donc N doit être un peu inférieur à 512 : 471 convient (471 / 1 023 ≈ 0,46). Hypothèse : réponse linéaire entre 0 V et 5,0 V.',
     q2: 'Quel raisonnement permet de le vérifier rapidement ?',
     options: [
-      V('Comparer 2,3 V à la moitié de la plage : un peu moins de 2,5 V donne un N un peu moins de 512', 'Une estimation par proportion suffit pour juger l’ordre de grandeur.'),
-      F('Vérifier que N est un nombre pair', 'La parité de N ne dit rien sur sa cohérence avec la tension.'),
-      F('Vérifier que N est supérieur à la tension en volts', 'N et U n’ont pas la même unité : cette comparaison n’a pas de sens.'),
+      V('Comparer 2,3 V à la moitié de la plage (2,5 V) : N doit être un peu moins de 512', 'Une estimation par proportion suffit pour juger l’ordre de grandeur.'),
+      F('Vérifier que N est un nombre pair ou un multiple de 10', 'La parité de N ne dit rien sur sa cohérence avec la tension.'),
+      F('Vérifier que N est supérieur à la tension exprimée en volts', 'N et U n’ont pas la même unité : cette comparaison n’a pas de sens.'),
     ] }),
 ];
 
@@ -1274,9 +1274,9 @@ export const COMPATIBLES = [
     expl: '|4 650 − 4 180| = 470 et 2·u = 300. Comme 470 > 300, la mesure n’est pas compatible avec la référence (écart de 11 %).',
     q4: 'Quelle source d’erreur systématique est la plus probable ?',
     options: [
-      V('Des pertes thermiques : ΔT trop petit, donc c = Q / (m·ΔT) trop grand', 'Avec des pertes vers l’extérieur, l’eau chauffe moins que prévu : ΔT est trop petit et c trop grand, ce qui correspond au sens de l’écart (mesure supérieure à la référence).'),
-      F('La résolution du thermomètre est trop faible', 'Une résolution limitée donne une dispersion aléatoire, déjà prise en compte dans u : elle n’explique pas un écart de 11 %.'),
-      F('L’eau n’était pas exactement à 20 °C', 'c varie de moins de 1 % entre 15 et 25 °C.'),
+      V('Des pertes thermiques : ΔT trop petit, donc c trop grand', 'Avec des pertes vers l’extérieur, l’eau chauffe moins que prévu : ΔT est trop petit et c trop grand, ce qui correspond au sens de l’écart (mesure supérieure à la référence).'),
+      F('La résolution du thermomètre est trop faible pour lire ΔT', 'Une résolution limitée donne une dispersion aléatoire, déjà prise en compte dans u : elle n’explique pas un écart de 11 %.'),
+      F('L’eau n’était pas exactement à 20 °C au départ de l’expérience', 'c varie de moins de 1 % entre 15 et 25 °C.'),
     ] },
   { id: 'teb-ethanol', domaine: 'Distillation', niveau: 2, titre: 'Température d’ébullition de l’éthanol',
     contexte: 'Un élève mesure la température d’ébullition de l’éthanol : θ = 77,2 °C avec u = 0,5 °C. La référence à 1 013 hPa est 78,4 °C. Le jour de la mesure, la pression atmosphérique était de 970 hPa.',
@@ -1374,9 +1374,9 @@ export const COMPATIBLES = [
     expl: '|18 − 20| = 2 µT et 2·u = 3 µT. Comme 2 ≤ 3, la mesure est compatible avec la valeur du cours.',
     q4: 'Que peut-on conclure ?',
     options: [
-      V('La mesure est compatible avec la référence : l’écart s’explique par l’incertitude', 'Aucune erreur à chercher.'),
-      F('La mesure est fausse car 18 µT ≠ 20 µT', 'Un écart non nul est normal : il faut le comparer à l’incertitude.'),
-      F('La composante horizontale vaut exactement 18 µT ici', 'Compatible ne veut pas dire identique, et on ne démontre pas une valeur exacte.'),
+      V('Compatible avec la référence : l’écart s’explique par l’incertitude', 'Aucune erreur à chercher.'),
+      F('La mesure est fausse, car 18 µT est différent de 20 µT', 'Un écart non nul est normal : il faut le comparer à l’incertitude.'),
+      F('La composante horizontale du champ vaut exactement 18 µT ici', 'Compatible ne veut pas dire identique, et on ne démontre pas une valeur exacte.'),
     ] },
   { id: 'rotation-16-pas', domaine: 'Contrôle des systèmes', niveau: 2, titre: 'Rotation après 16 pas',
     contexte: 'Un moteur pas à pas fictif, à 4 pas par tour (90° par pas), reçoit 16 pas. On attend 16 × 90° = 1 440° (valeur supposée exacte). Un élève mesure la rotation réelle avec un rapporteur gradué sur l’axe (angle cumulé relevé sur un compteur de tours, lecture supposée correcte) : 1 350°, avec une incertitude-type u = 10°.',
@@ -1407,9 +1407,9 @@ export const COMPATIBLES = [
     expl: '|5,8 − 6,0| = 0,2 % et 2·u = 0,4 %. Comme 0,2 ≤ 0,4, le titrage est compatible avec l’indication de l’étiquette.',
     q4: 'Que peut-on conclure ?',
     options: [
-      V('Le titrage est compatible avec l’étiquette : l’écart s’explique par l’incertitude', 'Aucune raison de remettre en cause le fabricant.'),
-      F('Le fabricant s’est trompé : 5,8 % ≠ 6,0 %', 'Un écart non nul est normal : il faut le comparer à l’incertitude.'),
-      F('Le vinaigre est exactement à 5,8 %', 'La mesure est compatible avec toute valeur de référence comprise entre 5,4 % et 6,2 % : on ne peut pas affirmer que le vinaigre est exactement à 5,8 %.'),
+      V('Titrage compatible avec l’étiquette : écart expliqué par l’incertitude', 'Aucune raison de remettre en cause le fabricant.'),
+      F('Le fabricant s’est trompé sur l’étiquette : 5,8 % ≠ 6,0 %', 'Un écart non nul est normal : il faut le comparer à l’incertitude.'),
+      F('Le vinaigre est exactement à 5,8 % d’acide acétique', 'La mesure est compatible avec toute valeur de référence comprise entre 5,4 % et 6,2 % : on ne peut pas affirmer que le vinaigre est exactement à 5,8 %.'),
     ] },
   { id: 'aspirine-comprime', domaine: 'Chimie', niveau: 2, titre: 'Masse d’acide dans un comprimé d’aspirine',
     contexte: 'Un comprimé d’aspirine « 500 » est dosé : m = 480 mg d’acide acétylsalicylique, avec une incertitude-type u = 12 mg. Le fabricant indique 500 mg par comprimé.',
