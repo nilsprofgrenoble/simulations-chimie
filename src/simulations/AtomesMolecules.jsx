@@ -479,10 +479,11 @@ export function SimulationAtomesMolecules() {
         </div>
         <div style={{ flex: '1 1 250px', minWidth: 230 }}>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-            <button onClick={() => ajouterE(1)} style={styleBouton(true, '#0284c7')}>＋ électron</button>
-            <button onClick={() => ajouterE(-1)} style={styleBouton(true, '#475569')}>− électron</button>
+            <button onClick={() => ajouterE(1)} disabled={ion.n >= Math.min(ion.Z + 3, 20)} style={{ ...styleBouton(true, '#0284c7'), opacity: ion.n >= Math.min(ion.Z + 3, 20) ? 0.45 : 1 }}>＋ électron</button>
+            <button onClick={() => ajouterE(-1)} disabled={ion.n <= Math.max(0, ion.Z - 3)} style={{ ...styleBouton(true, '#475569'), opacity: ion.n <= Math.max(0, ion.Z - 3) ? 0.45 : 1 }}>− électron</button>
             <button onClick={() => setIon(s => ({ ...s, n: s.Z }))} style={styleBouton(false)}>↺ atome neutre</button>
           </div>
+          {(ion.n >= Math.min(ion.Z + 3, 20) || ion.n <= Math.max(0, ion.Z - 3)) && <div style={{ fontSize: 13.5, color: ORANGE, fontWeight: 700, marginBottom: 8 }}>{ion.n >= Math.min(ion.Z + 3, 20) ? (ion.Z + 3 > 20 ? 'On ne peut pas ajouter d’électron : ce modèle s’arrête à 20 électrons (au-delà, il faudrait une sous-couche qui n’est pas au programme).' : 'On ne peut pas ajouter d’autre électron : ce serait un ion qui n’existe pas en pratique.') : 'On ne peut pas retirer d’autre électron : ce serait un ion qui n’existe pas en pratique.'}</div>}
           <table style={{ borderCollapse: 'collapse', fontSize: 14, width: '100%' }}><tbody>
             {[['Numéro atomique Z (protons)', ion.Z], ['Nombre d’électrons', ion.n], ['Charge', E.q === 0 ? '0 (atome neutre)' : `${E.q > 0 ? '+' : '−'}${Math.abs(E.q)}${E.q > 0 ? ' (cation)' : ' (anion)'}`],
               ['Configuration électronique', E.config], ['Couche de valence', E.n ? E.configVal : '—'], ['Électrons de valence', E.valence]].map(([l, v]) => (
