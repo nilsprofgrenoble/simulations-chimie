@@ -33,7 +33,7 @@ const BASE = process.env.BASE || 'http://localhost:4173/';
           etapes++;
           if (type === 'qcm') {
             await carte.locator('button[data-ok="true"]').first().click({ timeout: 3000 });
-            const vb = carte.getByRole('button', { name: /Vérifier/ }).first(); if (await vb.count()) await vb.click({ timeout: 3000 });
+            const vb = carte.getByRole('button', { name: /^\W*Vérifier$/ }).first(); if (await vb.count()) await vb.click({ timeout: 3000 });
             await p.waitForTimeout(120);
             if (!(await carte.getByText('Bravo').count()) && !(await carte.getByText('déjà réussie').count())) resultat = (await vb.count()) ? 'QCM : bonne réponse non acceptée' : 'manuelle';
           } else if (type === 'num') {
@@ -43,7 +43,7 @@ const BASE = process.env.BASE || 'http://localhost:4173/';
               const v = await inp.getAttribute('data-vrai');
               if (v === null || v === '') resultat = 'numérique sans valeur attendue';
               else {
-                await inp.fill(String(Number(v))); const vb = carte.getByRole('button', { name: /Vérifier/ }).first(); if (await vb.count()) await vb.click({ timeout: 3000 }); await p.waitForTimeout(120);
+                await inp.fill(String(Number(v))); const vb = carte.getByRole('button', { name: /^\W*Vérifier$/ }).first(); if (await vb.count()) await vb.click({ timeout: 3000 }); await p.waitForTimeout(120);
                 if (!(await carte.getByText('Bravo').count()) && !(await carte.getByText('Valeur juste').count())) resultat = `numérique : valeur attendue ${v} non acceptée`;
               }
             }
