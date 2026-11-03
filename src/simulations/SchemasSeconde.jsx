@@ -225,4 +225,88 @@ function Optique({ cas = 'miroir', ...p }) {
   return <Lentille cas={cas.replace('lentille-', '')} {...p}/>;
 }
 
-export const DESSINS_SECONDE = { circuit: Circuit, optique: Optique };
+
+// ── Mouvements et forces ──
+// cas : 'manege-sol' | 'manege-ref' | 'train-ref' | 'train-quai' | 'valve' | 'pente' | 'virage'
+// Avant la correction, on montre la situation (objets, observateur) ; après, la trajectoire ou la force.
+function Mouvement({ cas = 'manege-sol', reponse = false }) {
+  const u = useId().replace(/:/g, '');
+  const defs = <defs><Pointe id={`${u}r`} c={ORANGE}/><Pointe id={`${u}v`} c={VERT}/><Pointe id={`${u}t`} c={TR}/></defs>;
+  const Etiq = ({ x, y, t, c = '#475569', a = 'middle', g }) => <text x={x} y={y} fontSize="12.5" fontWeight={g ? 700 : 400} fill={c} textAnchor={a}>{t}</text>;
+  const Bonhomme = ({ x, y, c = TR }) => <g stroke={c} strokeWidth="2" fill="none"><circle cx={x} cy={y - 16} r="5"/><line x1={x} y1={y - 11} x2={x} y2={y + 4}/><line x1={x - 7} y1={y - 5} x2={x + 7} y2={y - 5}/><line x1={x} y1={y + 4} x2={x - 5} y2={y + 14}/><line x1={x} y1={y + 4} x2={x + 5} y2={y + 14}/></g>;
+  let corps = null, label = '';
+  if (cas === 'manege-sol' || cas === 'manege-ref') {
+    const C = [180, 90], R = 58, pos = a => [C[0] + R * Math.sin(a * RAD), C[1] - R * Math.cos(a * RAD)];
+    const [ex, ey] = pos(50);
+    label = 'Vue de dessus d’un manège qui tourne, avec un enfant sur un cheval de bois';
+    corps = (<g>
+      <circle cx={C[0]} cy={C[1]} r={R + 14} fill="#f1f5f9" stroke={TR} strokeWidth="2"/><circle cx={C[0]} cy={C[1]} r="4" fill={TR}/>
+      <Etiq x={C[0]} y={C[1] + 18} t="axe" a="middle"/>
+      <circle cx={ex} cy={ey} r="8" fill={BLEU} stroke="white" strokeWidth="1.5"/><Etiq x={ex + 14} y={ey - 6} t="enfant" c={BLEU} a="start" g/>
+      <path d={`M${C[0] - 40},${C[1] - R - 22} A${R + 22},${R + 22} 0 0 1 ${C[0] + 10},${C[1] - R - 24}`} fill="none" stroke={GRIS} strokeWidth="1.8" markerEnd={`url(#${u}t)`}/>
+      <Etiq x={C[0] - 52} y={C[1] - R - 14} t="le manège tourne" a="end"/>
+      {cas === 'manege-sol'
+        ? <g><Bonhomme x={50} y={150}/><Etiq x={50} y={182} t="observateur au sol" g/>
+          {reponse && <g><circle cx={C[0]} cy={C[1]} r={R} fill="none" stroke={VERT} strokeWidth="2.2" strokeDasharray="6 4"/>
+            {[50, 170, 290].map(a => { const [x, y] = pos(a); const dx = Math.cos(a * RAD), dy = Math.sin(a * RAD); return <Rayon key={a} x1={x} y1={y} x2={x + 26 * dx} y2={y + 26 * dy} c={VERT} id={`${u}v`}/>; })}
+            <Etiq x="354" y="168" t="trajectoire : cercle" c={VERT} g a="end"/><Etiq x="354" y="184" t="vitesse tangente, valeur constante" c={VERT} a="end"/></g>}</g>
+        : <g><rect x={ex + 8} y={ey + 6} width="13" height="13" rx="2" fill="white" stroke={TR} strokeWidth="2"/><Etiq x="354" y="176" t="observateur sur le manège" a="end" g/>
+          {reponse && <Etiq x="8" y="186" a="start" t="l’enfant reste au même endroit : immobile (v = 0)" c={VERT} g/>}</g>}
+    </g>);
+  } else if (cas === 'train-ref' || cas === 'train-quai') {
+    label = 'Un train roule vers la droite ; un passager lâche une balle';
+    const quai = cas === 'train-quai';
+    corps = (<g>
+      <line x1="10" y1="160" x2="350" y2="160" stroke={TR} strokeWidth="3"/>
+      <rect x="90" y="60" width="190" height="85" rx="8" fill="#e0f2fe" stroke={TR} strokeWidth="2.2"/>
+      <rect x="110" y="75" width="40" height="30" fill="white" stroke={TR} strokeWidth="1.6"/><rect x="215" y="75" width="40" height="30" fill="white" stroke={TR} strokeWidth="1.6"/>
+      <circle cx="120" cy="150" r="9" fill={TR}/><circle cx="250" cy="150" r="9" fill={TR}/>
+      <Fleche x1={290} y1={100} x2={335} y2={100} c={GRIS} id={`${u}t`}/><Etiq x="312" y="92" t="train" a="middle"/>
+      <circle cx="172" cy="82" r="6" fill={ORANGE} stroke="white" strokeWidth="1.5"/><Etiq x="172" y="70" t="balle lâchée" c={ORANGE} g/>
+      {quai ? <g><Bonhomme x={40} y={140} /><Etiq x="40" y="178" t="observateur sur le quai" a="start" g/></g> : <g><Bonhomme x={236} y={128}/><Etiq x="180" y="182" t="observateur dans le train" g/></g>}
+      {reponse && (quai
+        ? <g><path d="M172,82 Q235,95 285,145" fill="none" stroke={VERT} strokeWidth="2.6" strokeDasharray="6 4" markerEnd={`url(#${u}v)`}/><Etiq x="296" y="30" t="trajectoire : arc de parabole" c={VERT} g a="end"/></g>
+        : <g><Rayon x1={172} y1={88} x2={172} y2={140} c={VERT} id={`${u}v`} dash="6 4"/><Etiq x="296" y="30" t="trajectoire : droite verticale" c={VERT} g a="end"/></g>)}
+    </g>);
+  } else if (cas === 'valve') {
+    label = 'Un vélo roule vers la droite ; une valve est fixée sur la roue avant';
+    const c = [180, 100], R = 50;
+    corps = (<g>
+      <line x1="10" y1="152" x2="350" y2="152" stroke={TR} strokeWidth="3"/>
+      <circle cx={c[0]} cy={c[1]} r={R} fill="none" stroke={TR} strokeWidth="3"/><circle cx={c[0]} cy={c[1]} r="5" fill={TR}/>
+      <line x1={c[0]} y1={c[1]} x2={c[0] - 20} y2="30" stroke={TR} strokeWidth="3"/><Etiq x={c[0] - 24} y="22" t="cadre" a="end" g/>
+      <circle cx={c[0] + R * 0.7} cy={c[1] - R * 0.7} r="6" fill={ORANGE}/><Etiq x={c[0] + R * 0.7 + 12} y={c[1] - R * 0.7 - 6} t="valve" c={ORANGE} a="start" g/>
+      <Fleche x1={270} y1={60} x2={330} y2={60} c={GRIS} id={`${u}t`}/><Etiq x="300" y="52" t="le vélo avance"/>
+      <Etiq x="180" y="178" t="on se place dans le référentiel du cadre"/>
+      {reponse && <g><circle cx={c[0]} cy={c[1]} r={R} fill="none" stroke={VERT} strokeWidth="2.6" strokeDasharray="6 4"/><Etiq x="8" y="96" t="trajectoire : cercle" c={VERT} g a="start"/><Etiq x="8" y="112" t="centré sur l’axe" c={VERT} a="start"/></g>}
+    </g>);
+  } else if (cas === 'pente') {
+    label = 'Une caisse posée sur un plan incliné';
+    const a = 28 * RAD, x0 = 40, y0 = 150, L = 280, x1 = x0 + L, y1 = y0 - Math.tan(a) * L;
+    const cx = 190, cy = y0 - (cx - x0) * Math.tan(a);
+    corps = (<g>
+      <polygon points={`${x0},${y0} ${x1},${y0} ${x1},${y1}`} fill="#f1f5f9" stroke={TR} strokeWidth="2.2"/>
+      <g transform={`translate(${cx} ${cy}) rotate(${-28})`}><rect x="-26" y="-34" width="52" height="34" fill="#fde68a" stroke={TR} strokeWidth="2.2"/></g>
+      <Etiq x="62" y="143" t="pente" a="start"/><Etiq x="150" y="178" t="sol horizontal" a="middle"/>
+      <circle cx={cx - 8} cy={cy - 24} r="3.5" fill={ORANGE}/><Etiq x={cx - 16} y={cy - 32} t="centre de la caisse" c={ORANGE} a="end" g/>
+      {reponse && <g><Rayon x1={cx - 8} y1={cy - 24} x2={cx - 8} y2={cy + 40} c={VERT} id={`${u}v`}/><Etiq x={cx - 14} y={cy + 52} t="poids P : vertical, vers le bas" c={VERT} g a="end"/></g>}
+    </g>);
+  } else {   // virage
+    label = 'Vue de dessus : une voiture dans un virage circulaire à vitesse constante';
+    const C = [110, 150], R = 100, pos = a => [C[0] + R * Math.cos(a * RAD), C[1] - R * Math.sin(a * RAD)];
+    corps = (<g>
+      <path d={`M${pos(0)[0]},${pos(0)[1]} A${R},${R} 0 0 0 ${pos(90)[0]},${pos(90)[1]}`} fill="none" stroke="#cbd5e1" strokeWidth="26"/>
+      <path d={`M${pos(0)[0]},${pos(0)[1]} A${R},${R} 0 0 0 ${pos(90)[0]},${pos(90)[1]}`} fill="none" stroke={TR} strokeWidth="1.6" strokeDasharray="8 6"/>
+      {[8, 45, 82].map(a => { const [x, y] = pos(a); return <g key={a}><rect x={x - 9} y={y - 9} width="18" height="18" rx="4" fill={BLEU} stroke="white" strokeWidth="1.5" transform={`rotate(${-(90 - a)} ${x} ${y})`}/>
+        {reponse && <Rayon x1={x} y1={y} x2={x - 40 * Math.sin(a * RAD)} y2={y - 40 * Math.cos(a * RAD)} c={VERT} id={`${u}v`}/>}</g>; })}
+      <Etiq x="232" y="40" t="voiture à 3 instants" c={BLEU} g a="start"/><Etiq x="232" y="58" t="50 km·h⁻¹ constants" a="start"/>
+      {reponse && <Etiq x="232" y="90" t="même valeur, mais" c={VERT} g a="start"/>}{reponse && <Etiq x="232" y="106" t="direction qui change" c={VERT} g a="start"/>}
+    </g>);
+  }
+  return (
+    <div style={boite} data-schema={`mouvement-${cas}`}>
+      <svg viewBox="0 0 360 190" style={svgStyle} role="img" aria-label={label}>{defs}{corps}</svg>
+    </div>);
+}
+
+export const DESSINS_SECONDE = { circuit: Circuit, optique: Optique, mouvement: Mouvement };

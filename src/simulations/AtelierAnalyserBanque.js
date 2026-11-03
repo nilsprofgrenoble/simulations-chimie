@@ -1648,6 +1648,7 @@ export const PREVOIR = [
       V('rectiligne uniforme', 'Dans le référentiel de la route, la trajectoire est une droite et la valeur de la vitesse est constante : le mouvement est rectiligne uniforme.'),
     ] },
   { id: 'mvt-manege', domaine: 'Mouvement et vitesse', titre: 'Cheval de manège',
+    schema: { type: 'mouvement', cas: 'manege-sol', apres: { reponse: true } },
     enonce: 'Un manège tourne à vitesse constante. Un enfant est assis sur un cheval de bois (on néglige le mouvement vertical du cheval). On l’observe depuis le sol, à côté du manège.', q: 'Quel est le mouvement de l’enfant dans ce référentiel (trajectoire et valeur de la vitesse) ?', options: [
       F('rectiligne uniforme', 'La trajectoire de l’enfant est un cercle autour de l’axe du manège, pas une droite.'),
       F('circulaire ralenti', 'La valeur de la vitesse est constante : le mouvement n’est pas ralenti.'),
@@ -1655,6 +1656,7 @@ export const PREVOIR = [
       V('circulaire uniforme', 'Trajectoire circulaire autour de l’axe, valeur de la vitesse constante : mouvement circulaire uniforme.'),
     ] },
   { id: 'mvt-manege-ref', domaine: 'Mouvement et vitesse', titre: 'Cheval de manège, autre point de vue',
+    schema: { type: 'mouvement', cas: 'manege-ref', apres: { reponse: true } },
     enonce: 'Un manège tourne à vitesse constante et un enfant est assis sur un cheval de bois. On se place maintenant dans le référentiel du manège lui-même, c’est-à-dire du point de vue d’un observateur assis sur le manège à côté du cheval.', q: 'Quel est le mouvement de l’enfant dans ce nouveau référentiel ?', options: [
       V('immobile', 'Par rapport au manège, la position de l’enfant ne change pas : il est immobile dans ce référentiel.'),
       F('circulaire uniforme', 'C’est le mouvement vu depuis le sol. Dans le référentiel du manège, l’enfant ne bouge pas.'),
@@ -1662,6 +1664,7 @@ export const PREVOIR = [
       F('circulaire accéléré', 'Dans le référentiel du manège, il n’y a aucun mouvement à décrire.'),
     ] },
   { id: 'mvt-bagage', domaine: 'Mouvement et vitesse', titre: 'Un objet lâché dans un train',
+    schema: { type: 'mouvement', cas: 'train-ref', apres: { reponse: true } },
     enonce: 'Dans un train qui roule en ligne droite à vitesse constante, un passager lâche une balle sans la lancer (sans lui donner de vitesse par rapport à lui).', q: 'Quelle est la trajectoire de la balle dans le référentiel du train ?', options: [
       F('une parabole', 'La parabole est la trajectoire vue par quelqu’un sur le quai, qui voit aussi l’avancée du train. Dans le référentiel du train, il n’y a pas de déplacement horizontal.'),
       F('une droite horizontale', 'La vitesse initiale de la balle par rapport au train est nulle : elle ne part pas horizontalement, elle tombe.'),
@@ -1669,6 +1672,7 @@ export const PREVOIR = [
       V('une droite verticale', 'Dans le référentiel du train, la balle part sans vitesse et tombe sous l’effet de son poids : trajectoire rectiligne verticale.'),
     ] },
   { id: 'mvt-bagage-quai', domaine: 'Mouvement et vitesse', titre: 'Le même objet vu du quai',
+    schema: { type: 'mouvement', cas: 'train-quai', apres: { reponse: true } },
     enonce: 'Dans un train qui roule en ligne droite à vitesse constante, un passager lâche une balle : elle tombe verticalement par rapport au train. Une personne sur le quai regarde la scène par la fenêtre.', q: 'Quelle est la trajectoire de la balle pour la personne sur le quai ?', options: [
       V('une courbe', 'Pour le quai, la balle avance avec le train tout en descendant : sa trajectoire est une courbe.'),
       F('une droite verticale', 'C’est la trajectoire vue depuis le train. La trajectoire dépend du référentiel.'),
@@ -1676,6 +1680,7 @@ export const PREVOIR = [
       F('la balle est immobile', 'Elle bouge : par rapport au quai, elle avance avec le train et tombe.'),
     ] },
   { id: 'mvt-valve', domaine: 'Mouvement et vitesse', titre: 'Valve de vélo',
+    schema: { type: 'mouvement', cas: 'valve', apres: { reponse: true } },
     enonce: 'Un vélo roule en ligne droite. On suit la valve d’une roue avec un petit point blanc dessiné dessus.', q: 'Dans le référentiel du vélo (le cadre), la trajectoire de la valve est…', options: [
       V('un cercle', 'Vu depuis le cadre, la roue tourne sur place et la valve décrit un cercle autour de l’axe de la roue.'),
       F('une droite', 'Vue depuis le cadre, la valve tourne autour de l’axe de la roue : sa trajectoire n’est pas une droite.'),
@@ -1906,6 +1911,7 @@ export const PREVOIR = [
       V('Les frottements du sol s’opposent à son mouvement', 'Les frottements sont une force non compensée de sens opposé au mouvement : la vitesse diminue jusqu’à zéro. Sans eux, la caisse garderait sa vitesse.'),
     ] },
   { id: 'frc-direction-poids', domaine: 'Forces et principe d’inertie', titre: 'Le poids sur un plan incliné',
+    schema: { type: 'mouvement', cas: 'pente', apres: { reponse: true } },
     enonce: 'Une caisse est posée sur une pente (plan incliné). On cherche la direction de son poids.', q: 'La direction du poids de la caisse est…', options: [
       V('verticale, vers le bas, comme partout', 'Le poids est dû à l’attraction de la Terre : il est toujours vertical, dirigé vers le bas, même sur une pente.'),
       F('parallèle à la pente, vers le bas de la pente', 'La caisse tend à glisser parallèlement à la pente, mais son poids reste vertical.'),
@@ -2256,6 +2262,7 @@ export const PREVOIR = [
       F('ne change pas', 'Une pile idéale (r = 0) garderait U = E, mais une pile réelle a une résistance interne.'),
     ] },
   { id: 'mec-vitesse-virage', domaine: 'Mécanique', titre: 'Un virage à vitesse constante',
+    schema: { type: 'mouvement', cas: 'virage', apres: { reponse: true } },
     enonce: 'Une voiture aborde un virage circulaire en roulant à une vitesse constante de 50 km·h⁻¹.', q: 'Pendant le virage, le vecteur vitesse de la voiture…', options: [
       F('reste identique en direction et en valeur', 'Un vecteur reste constant seulement si sa direction, son sens et sa valeur le sont tous ; dans un virage, la direction change.'),
       F('change de valeur, sa direction restant constante', 'C’est l’inverse : l’énoncé donne une valeur constante (50 km·h⁻¹), et c’est la direction qui varie dans un virage.'),
