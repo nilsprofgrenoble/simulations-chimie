@@ -1958,6 +1958,7 @@ export const PREVOIR = [
       F('elles ont la même concentration : la couleur ne dépend que de la nature de l’espèce', 'La nature de l’espèce fixe la teinte, mais son intensité augmente avec la concentration.'),
     ] },
   { id: 'cir-serie-intensite', domaine: 'Circuits électriques', titre: 'Deux lampes en série',
+    schema: { type: 'circuit', montage: 'serie', mesure1: '0,30 A', mesure2: '0,30 A', apres: { reponse: true } },
     enonce: 'Deux lampes sont montées en série avec une pile. Un ampèremètre placé avant la première lampe indique 0,30 A.', q: 'Un second ampèremètre, placé après la deuxième lampe, indiquera…', options: [
       F('0,15 A', 'Le courant ne se partage pas entre deux lampes en série ; il se partage seulement en dérivation.'),
       F('0,25 A', 'Le courant n’est pas consommé par la première lampe : la même quantité de charges traverse chaque section du circuit.'),
@@ -1965,18 +1966,21 @@ export const PREVOIR = [
       F('0,60 A', 'Les intensités ne s’additionnent pas en série ; c’est le cas des branches en dérivation.'),
     ] },
   { id: 'cir-derivation-intensite', domaine: 'Circuits électriques', titre: 'Deux branches identiques en dérivation',
+    schema: { type: 'circuit', montage: 'derivation', courant: '0,50 A', i1: '?', i2: '?', apres: { i1: '0,25 A', i2: '0,25 A', reponse: true } },
     enonce: 'Un générateur débite 0,50 A dans le circuit. Ce courant se partage entre deux branches identiques montées en dérivation (loi des nœuds).', q: 'L’intensité dans chacune des deux branches vaut…', options: [
       V('0,25 A', 'Loi des nœuds : le courant total est la somme des courants des branches. Les branches sont identiques : 0,50 / 2 = 0,25 A.'),
       F('0,50 A', 'Ce serait vrai en série. En dérivation, le courant se partage entre les branches.'),
       F('1,0 A', 'Le courant dans une branche ne peut pas dépasser le courant total.'),
     ] },
   { id: 'cir-derivation-tension', domaine: 'Circuits électriques', titre: 'Deux lampes en dérivation',
+    schema: { type: 'circuit', montage: 'derivation', tension: '6 V', tensionLampes: true },
     enonce: 'Deux lampes sont montées en dérivation aux bornes d’un générateur qui impose 6 V.', q: 'La tension aux bornes de chaque lampe est…', options: [
       V('6 V', 'Les branches en dérivation sont soumises à la même tension : celle du générateur.'),
       F('3 V, car les deux lampes se partagent la tension', 'Le partage de la tension concerne les dipôles en série, pas ceux en dérivation.'),
       F('12 V, car il y a deux lampes', 'Les tensions ne s’additionnent pas en dérivation.'),
     ] },
   { id: 'cir-serie-tension', domaine: 'Circuits électriques', titre: 'Deux lampes identiques en série',
+    schema: { type: 'circuit', montage: 'serie', tension: '4,5 V', avecAmperemetres: false },
     enonce: 'Deux lampes identiques sont montées en série aux bornes d’une pile de 4,5 V (fils de résistance négligeable, tension de la pile supposée constante).', q: 'La tension aux bornes de chaque lampe est…', options: [
       F('4,5 V', 'Ce serait vrai en dérivation. En série, la tension de la pile est partagée entre les deux lampes.'),
       F('1,5 V', 'Les lampes identiques, traversées par le même courant, ont la même tension : U₁ = U₂ = 4,5 / 2, et non un partage inégal 1,5 V / 3 V.'),
@@ -1997,12 +2001,14 @@ export const PREVOIR = [
       F('inchangée, puisque la tension est la même', 'I = U / R : si R change, I change aussi.'),
     ] },
   { id: 'cir-derivation-panne', domaine: 'Circuits électriques', titre: 'Une lampe grille',
+    schema: { type: 'circuit', montage: 'derivation', tension: '6 V', panne: true },
     enonce: 'Deux lampes sont montées en dérivation aux bornes d’une pile (dont la tension reste la même : pile idéale). Le filament de l’une des lampes grille : le courant ne passe plus dans cette branche.', q: 'Que fait l’autre lampe ?', options: [
       V('elle continue de briller comme avant', 'Chaque branche en dérivation est indépendante : la tension à ses bornes ne change pas.'),
       F('elle s’éteint aussi', 'Cela se produirait en série, où il n’y a qu’un seul chemin pour le courant. En dérivation, il reste un chemin complet.'),
       F('elle brille plus fort, car elle récupère le courant de l’autre', 'Sa tension n’a pas changé : le courant qui la traverse reste le même.'),
     ] },
   { id: 'cir-voltmetre', domaine: 'Circuits électriques', titre: 'Brancher un voltmètre',
+    schema: { type: 'circuit', montage: 'voltmetre', apres: { reponse: true } },
     enonce: 'On veut mesurer la tension aux bornes d’une lampe d’un circuit.', q: 'Le voltmètre se branche…', options: [
       F('en série, juste avant la lampe', 'C’est l’ampèremètre qui se place en série. Un voltmètre a une très grande résistance : en série, il bloquerait presque tout le courant.'),
       V('en dérivation, aux bornes de la lampe', 'Une tension se mesure entre deux points : le voltmètre est en dérivation sur le dipôle étudié.'),
@@ -2010,6 +2016,7 @@ export const PREVOIR = [
       F('en série avec la pile', 'Un voltmètre en série bloque le courant et ne donne pas la tension de la lampe.'),
     ] },
   { id: 'lum-reflexion', domaine: 'Lumière', titre: 'Réflexion sur un miroir',
+    schema: { type: 'optique', cas: 'miroir', i: 30, apres: { reponse: true } },
     enonce: 'Un rayon lumineux arrive sur un miroir plan avec un angle d’incidence de 30° (angle mesuré avec la normale au miroir).', q: 'L’angle de réflexion vaut…', options: [
       V('30°', 'Loi de la réflexion : l’angle de réflexion est égal à l’angle d’incidence, tous deux mesurés par rapport à la normale.'),
       F('60°', '60° est l’angle entre le rayon et le miroir (90° − 30°). Les angles se mesurent avec la normale.'),
@@ -2017,6 +2024,7 @@ export const PREVOIR = [
       F('15°', 'Il n’y a aucune division par 2 : l’angle de réflexion est égal à l’angle d’incidence.'),
     ] },
   { id: 'lum-air-eau', domaine: 'Lumière', titre: 'De l’air dans l’eau',
+    schema: { type: 'optique', cas: 'dioptre', n1: 1.0, n2: 1.33, i: 45, apres: { reponse: true } },
     enonce: 'Un rayon lumineux passe de l’air (n = 1,00) dans l’eau (n = 1,33) avec un angle d’incidence de 45°.', q: 'Dans l’eau, le rayon…', options: [
       F('s’éloigne de la normale (angle de réfraction supérieur à 45°)', 'L’éloignement a lieu en passant d’un milieu plus réfringent vers un moins réfringent ; ici n augmente de 1,00 à 1,33.'),
       F('ne change pas de direction (angle de réfraction égal à 45°)', 'Il y a déviation dès que les indices diffèrent et que l’incidence n’est pas nulle.'),
@@ -2024,12 +2032,14 @@ export const PREVOIR = [
       V('se rapproche de la normale (angle de réfraction inférieur à 45°)', 'Snell-Descartes : 1,00 × sin 45° = 1,33 × sin r, donc sin r ≈ 0,53 et r ≈ 32° < 45°.'),
     ] },
   { id: 'lum-incidence-normale', domaine: 'Lumière', titre: 'Incidence perpendiculaire',
+    schema: { type: 'optique', cas: 'dioptre', n1: 1.0, n2: 1.5, i: 0, apres: { reponse: true } },
     enonce: 'Un rayon lumineux arrive perpendiculairement sur la surface d’un bloc de verre (angle d’incidence de 0°).', q: 'À l’entrée du verre, le rayon…', options: [
       V('traverse la surface sans être dévié', 'n₁ sin 0° = n₂ sin i₂ donne sin i₂ = 0 : l’angle de réfraction est nul, le rayon ne dévie pas.'),
       F('est dévié vers la normale', 'Il est déjà sur la normale : il ne peut pas s’en rapprocher davantage.'),
       F('est dévié et s’éloigne de la normale', 'La déviation vient de la différence d’indices et de l’angle d’incidence : ici l’angle est nul.'),
     ] },
   { id: 'lum-verre-air', domaine: 'Lumière', titre: 'Du verre vers l’air',
+    schema: { type: 'optique', cas: 'dioptre', n1: 1.5, n2: 1.0, i: 20, apres: { reponse: true } },
     enonce: 'Un rayon lumineux sort d’un bloc de verre (n = 1,50) vers l’air (n = 1,00) avec un angle d’incidence de 20°.', q: 'Dans l’air, le rayon…', options: [
       F('se rapproche de la normale, avec un angle de réfraction inférieur à 20°', 'C’est ce qui se passe en entrant dans un milieu plus réfringent. En sortant du verre vers l’air, le rayon s’éloigne de la normale.'),
       F('traverse la surface sans être dévié, avec un angle de réfraction de 20°', 'Un changement d’indice dévie le rayon dès que l’incidence n’est pas nulle.'),
@@ -2037,6 +2047,7 @@ export const PREVOIR = [
       V('s’éloigne de la normale, avec un angle de réfraction supérieur à 20°', 'n₁ sin i₁ = n₂ sin i₂ donne sin i₂ = 1,50 × sin 20° ≈ 0,51, soit i₂ ≈ 31° > 20° : le rayon s’éloigne de la normale.'),
     ] },
   { id: 'lum-lentille-parallele', domaine: 'Lumière', titre: 'Rayons parallèles et lentille convergente',
+    schema: { type: 'optique', cas: 'lentille-parallele', apres: { reponse: true } },
     enonce: 'Un faisceau de rayons lumineux parallèles à l’axe optique (et proches de l’axe) traverse une lentille mince convergente.', q: 'Après la lentille, les rayons…', options: [
       F('convergent tous au foyer objet F', 'F est le foyer objet, d’où partent les rayons qui ressortent parallèles. Les rayons parallèles à l’axe convergent au foyer image F′.'),
       F('convergent tous au centre optique O', 'Seul le rayon passant par O traverse sans déviation ; le point de convergence est le foyer image F′, à la distance f′ de O.'),
@@ -2044,6 +2055,7 @@ export const PREVOIR = [
       V('convergent tous au foyer image F′', 'Définition du foyer image : des rayons parallèles à l’axe ressortent en passant tous par F′.'),
     ] },
   { id: 'lum-lentille-centre', domaine: 'Lumière', titre: 'Rayon par le centre optique',
+    schema: { type: 'optique', cas: 'lentille-centre', apres: { reponse: true } },
     enonce: 'Un rayon lumineux arrive sur une lentille mince convergente et passe par son centre optique O.', q: 'Ce rayon…', options: [
       F('est dévié vers l’axe optique', 'Un rayon passant par O ne se rapproche pas de l’axe : il garde sa direction.'),
       F('est réfléchi par la lentille', 'Une lentille de verre transparente laisse passer la lumière, y compris en son centre.'),
@@ -2051,6 +2063,7 @@ export const PREVOIR = [
       F('est dévié vers le foyer image F′', 'Seuls les rayons parallèles à l’axe optique sont déviés vers F′ ; le rayon passant par O n’est pas dévié.'),
     ] },
   { id: 'lum-image-infini', domaine: 'Lumière', titre: 'Objet très éloigné',
+    schema: { type: 'optique', cas: 'lentille-infini', f: '10 cm', apres: { reponse: true } },
     enonce: 'Une lentille convergente a une distance focale f′ = 10 cm. Un objet est très éloigné de la lentille (on peut le considérer « à l’infini »).', q: 'L’image de l’objet se forme…', options: [
       F('à 20 cm derrière la lentille, à la distance 2f′', '2f′ correspond à un objet placé à 2f′ devant la lentille, pas à un objet très éloigné.'),
       F('à 10 cm devant la lentille, du côté de l’objet', 'Les rayons convergent après la lentille, du côté opposé à l’objet, et non devant elle.'),
