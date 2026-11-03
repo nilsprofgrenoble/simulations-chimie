@@ -107,4 +107,57 @@ function Boussole({ r1, Ba, BT }) {
     </div>);
 }
 
-export const DESSINS_DONNEES = { regul: Regul, cuveHuile: CuveHuile, pompeChateau: PompeChateau, evaporateur: Evaporateur, boussole: Boussole };
+// Conduite d'eau qui se rétrécit
+function ConduiteConvergent({ D1, L, P1, v1, D2 }) {
+  const u = useId().replace(/:/g, '');
+  return (
+    <div style={boite} data-schema="conduite-convergent">
+      <svg viewBox="0 0 360 190" style={svgStyle} role="img" aria-label="Conduite d’eau qui se rétrécit : un convergent relie une conduite large à une conduite plus étroite">
+        <defs><Pointe id={`${u}b`} c={BLEU}/></defs>
+        <path d="M20,60 L170,60 L220,80 L340,80 L340,110 L220,110 L170,130 L20,130 Z" fill={EAU} stroke={TR} strokeWidth="3"/>
+        <Fl x1={40} y1={95} x2={110} y2={95} c={BLEU} id={`${u}b`} w={2.8}/><Tx x="75" y="86" t={`v₁ = ${v1}`} c={BLEU} g/>
+        <Fl x1={240} y1={95} x2={320} y2={95} c={BLEU} id={`${u}b`} w={2.8}/><Tx x="280" y="70" t="v₂ = ?" c={ORANGE} g/>
+        <Tx x="95" y="40" t="conduite amont" s={11.5}/><Tx x="95" y="54" t={`diamètre ${D1}`} g c={TR}/><Tx x="95" y="148" t={`longueur ${L}`} c={TR}/><Tx x="95" y="166" t={`pression ${P1}`} c={TR}/>
+        <Tx x="280" y="136" t={`diamètre ${D2}`} g c={TR}/><Tx x="195" y="182" t="convergent" s={11.5}/>
+      </svg>
+    </div>);
+}
+
+// Échangeur eau chaude – eau froide
+function Echangeur({ qc, Tce, Tcs, qf, Tfe, Tfs = '' }) {
+  const u = useId().replace(/:/g, '');
+  return (
+    <div style={boite} data-schema="echangeur">
+      <svg viewBox="0 0 360 200" style={svgStyle} role="img" aria-label="Échangeur de chaleur : l’eau chaude cède de la chaleur à l’eau froide à travers une paroi">
+        <defs><Pointe id={`${u}o`} c={ORANGE}/><Pointe id={`${u}b`} c={BLEU}/></defs>
+        <rect x="100" y="50" width="160" height="100" rx="12" fill="#f8fafc" stroke={TR} strokeWidth="3"/><line x1="100" y1="100" x2="260" y2="100" stroke={TR} strokeWidth="2" strokeDasharray="6 4"/>
+        <Tx x="180" y="94" t="paroi d’échange" s={11}/>
+        <Fl x1={20} y1={75} x2={98} y2={75} c={ORANGE} id={`${u}o`} w={2.8}/><Tx x="58" y="44" t="eau chaude" c={ORANGE} g/><Tx x="58" y="60" t={`${qc}`} c={ORANGE} g s={11.5}/><Tx x="58" y="92" t={`entrée ${Tce}`} c={ORANGE} s={11.5}/>
+        <Fl x1={262} y1={75} x2={340} y2={75} c={ORANGE} id={`${u}o`} w={2.8}/><Tx x="302" y="60" t={`sortie ${Tcs}`} c={ORANGE} g s={11.5}/>
+        <Fl x1={20} y1={125} x2={98} y2={125} c={BLEU} id={`${u}b`} w={2.8}/><Tx x="58" y="158" t="eau froide" c={BLEU} g/><Tx x="58" y="174" t={`${qf}`} c={BLEU} g s={11.5}/><Tx x="58" y="116" t={`entrée ${Tfe}`} c={BLEU} s={11.5}/>
+        <Fl x1={262} y1={125} x2={340} y2={125} c={BLEU} id={`${u}b`} w={2.8}/>{Tfs && <Tx x="302" y="116" t={`sortie ${Tfs}`} c={Tfs === '?' ? ORANGE : BLEU} g s={11.5}/>}
+      </svg>
+    </div>);
+}
+
+// Hydrodistillation : alambic, réfrigérant, essencier
+function Hydrodistillation({ mp, Veau, P, T, mh }) {
+  const u = useId().replace(/:/g, '');
+  return (
+    <div style={boite} data-schema="hydrodistillation">
+      <svg viewBox="0 0 360 230" style={svgStyle} role="img" aria-label="Montage d’hydrodistillation : alambic chauffé contenant fleurs et eau, col de cygne, réfrigérant et essencier">
+        <defs><Pointe id={`${u}g`} c={GRIS}/></defs>
+        <path d="M30,80 L30,170 Q30,185 45,185 L115,185 Q130,185 130,170 L130,80 Z" fill="#dcfce7" stroke={TR} strokeWidth="3"/>
+        <rect x="32" y="125" width="96" height="58" fill={EAU}/><Tx x="80" y="115" t={`fleurs : ${mp}`} g c="#166534"/><Tx x="80" y="155" t={`eau : ${Veau}`} g c={BLEU}/>
+        <path d="M130,75 L130,40 Q130,30 150,30 L240,30 L240,60" fill="none" stroke={TR} strokeWidth="3"/><Tx x="136" y="22" t={T ? `vapeur : ${T}` : 'vapeur'} a="start" c={GRIS} g s={11.5}/>
+        <rect x="215" y="60" width="50" height="80" rx="6" fill="#e0f2fe" stroke={TR} strokeWidth="2.4"/><Tx x="290" y="95" t="réfrigérant" a="start" s={11.5}/><Tx x="290" y="110" t="(eau froide)" a="start" s={11}/>
+        <line x1="240" y1="140" x2="240" y2="165" stroke={TR} strokeWidth="2.6"/>
+        <path d="M215,165 L265,165 L255,215 L225,215 Z" fill="white" stroke={TR} strokeWidth="2.4"/><rect x="227" y="196" width="26" height="17" fill={EAU}/><rect x="228" y="188" width="24" height="8" fill="#fde68a"/>
+        <Tx x="276" y="182" t="huile" a="start" c="#92400e" g s={11.5}/><Tx x="276" y="196" t="essentielle" a="start" c="#92400e" g s={11.5}/>{mh && <Tx x="276" y="211" t={`recueillie : ${mh}`} a="start" c="#92400e" s={11}/>}
+        <Tx x="280" y="222" t="essencier" a="start" s={11}/>
+        <path d="M50,200 q10,-14 20,0 q10,14 20,0 q10,-14 20,0" fill="none" stroke={ORANGE} strokeWidth="2.4"/><Tx x="80" y="222" t={`chauffe : ${P}${'' }`} c={ORANGE} g s={11.5}/>
+      </svg>
+    </div>);
+}
+
+export const DESSINS_DONNEES = { conduiteConvergent: ConduiteConvergent, echangeur: Echangeur, hydrodistillation: Hydrodistillation, regul: Regul, cuveHuile: CuveHuile, pompeChateau: PompeChateau, evaporateur: Evaporateur, boussole: Boussole };
