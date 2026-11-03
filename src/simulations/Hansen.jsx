@@ -6,7 +6,7 @@ import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton,
 import { Pic } from "../Pictos";
 
 const SIM_ID = 4;
-declarerDefis(SIM_ID, [['principal', 'Formuler le mélange de solvants du vernis']]);
+declarerDefis(SIM_ID, [['principal', 'Formuler le mélange de solvants du vernis'], ['selectif', 'Un dissolvant qui épargne le PMMA']]);
 
 // ====================================================
 // PARAMÈTRES DE SOLUBILITÉ DE HANSEN (BTS Métiers de la chimie)
@@ -28,6 +28,8 @@ export const POLYMERES = {
   hansen: { nom: 'moyenne citée par Hansen', d: 16.2, p: 14.1, h: 9.5, R0: 10.7, source: 'Moyenne de valeurs citées dans C. M. Hansen, Hansen Solubility Parameters: A User’s Handbook (2e éd., CRC Press, 2007).' },
 };
 
+// Second polymère du défi « sélectif » : le PMMA (verre acrylique), valeurs usuelles des tables de Hansen
+export const PMMA = { nom: 'PMMA', d: 18.6, p: 10.5, h: 5.1, R0: 8.6 };
 export const ra = (P, s) => Math.sqrt(4 * (s.d - P.d) ** 2 + (s.p - P.p) ** 2 + (s.h - P.h) ** 2);
 // Paramètres d'un mélange : moyenne pondérée par les fractions volumiques (hypothèse)
 export function melange(vol) {
@@ -372,24 +374,35 @@ export function Simulation4({ plotlyReady }) {
   );
 
   // ════════════════ DÉFI ════════════════
-  function nouveauDefi() { setDefi({ alcoolMin: [40, 50, 60][Math.floor(Math.random() * 3)] }); setPolyId('tp'); setVol({ ea: 50, ba: 0, etoh: 50, ipa: 0 }); }
+  function nouveauDefi(type = defi ? defi.type : 'form') { setDefi({ type, alcoolMin: [40, 50, 60][Math.floor(Math.random() * 3)] }); setPolyId('tp'); setVol({ ea: 100, ba: 0, etoh: 0, ipa: 0 }); }
   const voletDefi = defi && (() => {
     const alc = tot > 0 ? (vol.etoh + vol.ipa) / tot * 100 : 0;
     const rDernier = dernier ? ra(P, SOLVANTS[dernier.k]) / P.R0 : Infinity;
-    const C = [
+    const sel = defi.type === 'selectif', redPM = ra(PMMA, mel) / PMMA.R0;
+    const C = sel ? [
+      { ok: redMel < 0.9, t: `Dissout le vernis (nitrocellulose, données du TP) avec une marge : RED du mélange < 0,9 (${fmt(redMel, 2)})` },
+      { ok: redPM >= 1.2, t: `N'attaque pas l'objet en PMMA, avec une marge : RED pour le PMMA ≥ 1,2 (${fmt(redPM, 2)})` },
+    ] : [
       { ok: redMel < 0.9, t: `Dissout la nitrocellulose, avec une marge : RED du mélange < 0,9 (${fmt(redMel, 2)})` },
       { ok: rDernier < 1, t: `Le solvant le moins volatil est un vrai solvant${dernier ? ` (${SOLVANTS[dernier.k].nom}, RED = ${fmt(rDernier, 2)})` : ''}` },
       { ok: alc >= defi.alcoolMin, t: `Économique : au moins ${defi.alcoolMin} % d'alcool (${fmt(alc, 0)} %)` },
     ];
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.55 }}>Formulez le mélange de solvants d'un vernis à la nitrocellulose (données du TP) qui respecte les trois critères ci-dessous.</div>
-        <SuiviDefiDirect cle={`${SIM_ID}:defi.principal`} reussi={C.every(c => c.ok)} />
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <button onClick={() => nouveauDefi('form')} style={stylePetitBouton(!sel, '#0b4f94')}>Défi 1 : formuler le vernis</button>
+          <button onClick={() => nouveauDefi('selectif')} style={stylePetitBouton(sel, '#0b4f94')}>Défi 2 : un dissolvant sélectif</button>
+        </div>
+        <div style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.55 }}>{sel
+          ? <>Vous voulez enlever un vernis à la nitrocellulose sur un objet en <strong>PMMA</strong> (verre acrylique, δd = 18,6 ; δp = 10,5 ; δh = 5,1 ; R0 = 8,6) sans abîmer l'objet. Composez, avec les quatre solvants, un mélange qui dissout le vernis mais pas le PMMA : il doit respecter les deux critères ci-dessous.</>
+          : <>Formulez le mélange de solvants d'un vernis à la nitrocellulose (données du TP) qui respecte les trois critères ci-dessous.</>}</div>
+        <SuiviDefiDirect key={sel ? "s" : "p"} cle={`${SIM_ID}:defi.${sel ? "selectif" : "principal"}`} reussi={C.every(c => c.ok)} />
         {C.map((c, k) => <div key={k} style={{ fontSize: 14, color: KIT.txt }}>{c.ok ? '✅' : '❌'} {c.t}</div>)}
-        {C.every(c => c.ok) && <div style={{ fontSize: 14, fontWeight: 700, color: '#15803d' }}>Bravo ! Il resterait à vérifier au laboratoire la dissolution, le temps de séchage et l'aspect du film.</div>}
-        {tot > 0 && vol.ipa / tot > 0.5 && <div style={{ fontSize: 13.5, color: '#b45309', lineHeight: 1.5 }}><Pic n="warn"/>Le modèle accepte ce mélange parce qu'il place l'isopropanol juste dans la sphère (RED = 0,88).
+        {C.every(c => c.ok) && <div style={{ fontSize: 14, fontWeight: 700, color: '#15803d' }}>{sel ? 'Bravo ! Le modèle prévoit que le vernis part sans attaquer le PMMA. Il resterait à le vérifier sur une chute d\u2019objet : le PMMA peut se fissurer ou blanchir sous contrainte même sans se dissoudre.' : 'Bravo ! Il resterait à vérifier au laboratoire la dissolution, le temps de séchage et l\u2019aspect du film.'}</div>}
+        {!sel && tot > 0 && vol.ipa / tot > 0.5 && <div style={{ fontSize: 13.5, color: '#b45309', lineHeight: 1.5 }}><Pic n="warn"/>Le modèle accepte ce mélange parce qu'il place l'isopropanol juste dans la sphère (RED = 0,88).
           En pratique, l'isopropanol ne dissout pas seul la plupart des nitrocelluloses : un mélange aussi riche en isopropanol est à vérifier au laboratoire avant d'y croire.</div>}
-        <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>D'autres critères</button>
+        {sel && <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.5 }}>Pour explorer d'autres polymères et d'autres solvants, l'exploration libre propose l'option « deux sphères ».</div>}
+        <button onClick={() => nouveauDefi()} style={styleBouton(false)}><Pic n="refresh"/>{sel ? 'Recommencer' : "D'autres critères"}</button>
       </div>
     );
   })();

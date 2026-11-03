@@ -317,10 +317,11 @@ export function SimulationSolubilite() {
 
   // ════════════════ PANNEAUX ════════════════
   const R = roles(liquide);
-  const bouton = (id, role) => <button key={id} onClick={() => choisir({ [role]: id })} style={stylePetitBouton(sel[role] === id, role === 'solv' ? '#0284c7' : '#7c3aed')}>{ESPECES[id].nom}</button>;
+  const bouton = (id, role) => <button key={id} onClick={() => choisir({ [role]: id })} style={stylePetitBouton(sel[role] === id, role === 'solv' ? '#0284c7' : '#7c3aed')}>{ESPECES[id].nom}{id === 'ccl4' ? ' ⚠' : ''}</button>;
   const choix = !enDefi && (
     <div style={{ ...styleBoite, ...cadre('choix') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Choisir les deux espèces</div>
+      {(sel.solv === 'ccl4' || sel.sol === 'ccl4') && <div style={{ fontSize: 13, color: '#b45309', lineHeight: 1.45, marginBottom: 6 }}>⚠ Le tétrachlorométhane est toxique (foie, cancérogène suspecté) et destructeur de la couche d’ozone : il est interdit dans les établissements scolaires. Il figure ici seulement parce qu’il est un solvant apolaire de référence dans les tables.</div>}
       <div style={{ fontSize: 13, color: '#0284c7', fontWeight: 700, margin: '2px 0 4px' }}>Espèce A — un liquide</div>
       <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>{ORDRE_LIQ.map(i => bouton(i, 'solv'))}</div>
       <div style={{ fontSize: 13, color: '#7c3aed', fontWeight: 700, margin: '2px 0 4px' }}>Espèce B — un liquide (question de miscibilité) ou un solide (question de solubilité)</div>
