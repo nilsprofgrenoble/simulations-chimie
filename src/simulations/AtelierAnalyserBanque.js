@@ -1450,7 +1450,7 @@ export const HYPOTHESES = [
       F('Le chlorure de potassium forme un hydrate entre 40 °C et 60 °C', 'Dans l’eau, entre 40 °C et 60 °C, le chlorure de potassium cristallise sous forme anhydre : il n’y a pas de changement de solide qui casserait la courbe.'),
     ] },
   { id: 'flu-hyp-vases', domaine: 'Transport des fluides', titre: 'Vases communicants',
-    ...presenter({ contexte: 'Deux récipients ouverts, reliés par un tube à leur base, contiennent de l’eau.', liste: [['Prévision', 'à l’équilibre, les deux surfaces libres sont à la même altitude']] }), options: [
+    ...presenter({ schema: { type: 'vases' }, contexte: 'Deux récipients ouverts, reliés par un tube à leur base, contiennent de l’eau.', liste: [['Prévision', 'à l’équilibre, les deux surfaces libres sont à la même altitude']] }), options: [
       V('Le liquide est au repos', 'Si l’eau circule (remplissage, pompage), la pression dépend aussi de la vitesse et des pertes de charge : les niveaux ne sont plus égaux en général.'),
       V('Le même liquide remplit tout le montage', 'Avec deux liquides non miscibles de masses volumiques différentes (eau et huile), c’est ρ·h qui s’égalise au niveau de la surface de séparation, pas h : les hauteurs diffèrent.'),
       V('Les deux surfaces libres sont à la même pression', 'Si les pressions diffèrent (par exemple un récipient fermé dont le gaz est sous 0,10 bar de plus que l’air ambiant), la surface de ce récipient est plus basse de ΔP / (ρ·g) ≈ 1,0 m.'),
