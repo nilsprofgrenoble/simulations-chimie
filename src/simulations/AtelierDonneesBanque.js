@@ -167,6 +167,7 @@ export const ENONCES = [
   // ───────────────────────────── 5. Échangeur (transferts thermiques)
   {
     id: 'echangeur', domaine: 'Transferts thermiques', titre: 'Un échangeur eau chaude – eau froide', noms: ['Puissance cédée par l’eau chaude', 'Température de sortie de l’eau froide'],
+    schema: (p, b, q) => ({ type: 'echangeur', qc: b.tokens.qc.aff, Tce: b.tokens.Tce.aff, Tcs: b.tokens.Tcs.aff, qf: b.tokens.qf.aff, Tfe: b.tokens.Tfe.aff, Tfs: q === 1 ? '?' : '' }),
     gen: () => {
       for (;;) {
         const p = { qc: tire([0.2, 0.3, 0.4]), Tce: tire([70, 80, 90]), Tcs: tire([50, 55, 60]), qf: tire([0.3, 0.5]), Tfe: tire([10, 15, 20]) };
@@ -815,6 +816,7 @@ export const ENONCES = [
   },
   {
     id: 'snell2', domaine: 'Lumière', titre: 'Réfraction : loi de Snell-Descartes', noms: ['Angle de réfraction', 'Indice du second milieu'],
+    schema: (p, b) => b.dansTexte.has('n2') ? { type: 'optique', cas: 'dioptre', n1: 1.0, n2: p.n2, i: p.i1 } : { type: 'optique', cas: 'dioptre', n1: 1.0, n2: null, inconnu: 'n2', i: p.i1, i2: p.i2 },
     gen: () => { const m = tire([['l’eau', 1.33], ['le verre', 1.50], ['le plexiglas', 1.49]]); const i1 = tire([20, 30, 45, 60]); const n2 = m[1];
       return { milieu: m[0], n2, i1, lam: tire([532, 633, 650]), i2: Math.round(Math.asin(Math.sin(i1 * Math.PI / 180) / n2) * 180 / Math.PI * 10) / 10 }; },
     build: (p, q) => {
@@ -931,6 +933,7 @@ export const ENONCES = [
   },
   {
     id: 'hydrodist', domaine: 'Distillation', titre: 'Hydrodistillation d’une huile essentielle de lavande', noms: ['Rendement d’extraction', 'Volume d’huile essentielle', 'Énergie dépensée par gramme d’huile'],
+    schema: (p, b) => ({ type: 'hydrodistillation', mp: b.tokens.mp.aff, Veau: b.tokens.Veau.aff, P: b.tokens.P.aff, T: b.dansTexte.has('T') ? b.tokens.T.aff : '', mh: b.dansTexte.has('mh') ? b.tokens.mh.aff : '' }),
     gen: () => {
       const mp = tire([20, 25, 30, 40, 50]), eta = tire([0.6, 0.8, 1.0, 1.2, 1.5]);
       const P = tire(mp <= 25 ? [9, 12] : [12, 15]), t = tire([2, 2.5, 3]), Veau = tire([60, 80, 100]);
@@ -1107,6 +1110,7 @@ export const ENONCES = [
   // ───────────────────────────── Transport des fluides : conservation du débit dans une réduction de section
   {
     id: 'flu-section', domaine: 'Transport des fluides', titre: 'Une conduite d’eau qui se rétrécit', noms: ['Débit volumique dans la conduite', 'Vitesse dans la partie étroite', 'Durée de remplissage d’un bassin'],
+    schema: (p, b) => ({ type: 'conduiteConvergent', D1: b.tokens.D1.aff, L: b.tokens.L.aff, P1: b.tokens.P1.aff, v1: b.tokens.v1.aff, D2: b.tokens.D2.aff }),
     gen: () => {
       const [D1, D2] = tire([[80, 40], [80, 50], [100, 50], [100, 65], [125, 65], [125, 80], [150, 80], [150, 100]]);
       const v1 = tire([0.5, 0.8, 1.0, 1.2, 1.5].filter(v => v * (D1 / D2) ** 2 <= 6));
@@ -1239,7 +1243,8 @@ export function nouvelEnonce(id, q, forceParams) {
   const def = ENONCES.find(e => e.id === id);
   const p = forceParams || def.gen();
   const b = def.build(p, q);
-  b.schema = def.schema ? def.schema(p, b) : null;
+  b.dansTexte = new Set(b.texte.filter(m => typeof m !== 'string').map(m => m.t));
+  b.schema = def.schema ? def.schema(p, b, q) : null;
   Object.entries(b.tokens).forEach(([k, t]) => { t.sym = (SYMBOLES[id] || {})[k] || ''; });
   return { id, q, p, b, graine: 1 + Math.floor(Math.random() * 99999) };
 }

@@ -143,13 +143,14 @@ function Miroir({ i = 30, reponse = false, angleReponse }) {
     </div>);
 }
 
-function Dioptre({ n1 = 1.0, n2 = 1.33, i = 45, reponse = false }) {
+function Dioptre({ n1 = 1.0, n2 = 1.33, i = 45, reponse = false, i2 = null, inconnu = null }) {   // inconnu : 'n2' → l'indice du second milieu est à trouver ; i2 : angle de réfraction mesuré, tracé d'emblée
   const u = useId().replace(/:/g, '');
   const x0 = 180, y0 = 100, L = 100;
+  if (n2 == null) n2 = 1.4;
   const s = n1 * Math.sin(i * RAD) / n2, totale = s > 1, r = totale ? null : Math.asin(s) / RAD;
   const xi = x0 - L * Math.sin(i * RAD), yi = y0 - L * Math.cos(i * RAD);
   const dense = n2 > n1 ? 'bas' : 'haut';
-  const fmtn = n => fr(n.toFixed(2));
+  const fmtn = n => (n == null ? '?' : fr(n.toFixed(2)));
   return (
     <div style={boite} data-schema="dioptre">
       <svg viewBox="0 0 360 200" style={svgStyle} role="img" aria-label={`Un rayon passe d’un milieu d’indice ${fmtn(n1)} à un milieu d’indice ${fmtn(n2)} avec un angle d’incidence de ${i} degrés`}>
@@ -158,13 +159,14 @@ function Dioptre({ n1 = 1.0, n2 = 1.33, i = 45, reponse = false }) {
         <rect x="30" y="10" width="300" height={y0 - 10} fill="#dbeafe" opacity={dense === 'haut' ? 0.9 : 0.12}/>
         <line x1="30" y1={y0} x2="330" y2={y0} stroke={TR} strokeWidth="2"/>
         <text x="36" y="26" fontSize="13" fontWeight="700" fill={TR}>milieu 1 : <Ind b="n" i="1"/>= {fmtn(n1)}</text>
-        <text x="36" y="190" fontSize="13" fontWeight="700" fill={TR}>milieu 2 : <Ind b="n" i="2"/>= {fmtn(n2)}</text>
+        <text x="36" y="190" fontSize="13" fontWeight="700" fill={inconnu === 'n2' ? ORANGE : TR}>milieu 2 : <Ind b="n" i="2"/>= {inconnu === 'n2' ? '?' : fmtn(n2)}</text>
         <line x1={x0} y1="30" x2={x0} y2="180" stroke={GRIS} strokeWidth="1.6" strokeDasharray="5 4"/><text x={x0 + 5} y="44" fontSize="12.5" fill="#64748b">normale</text>
         {i === 0
           ? <Rayon x1={x0 - 0.01} y1="40" x2={x0 - 0.01} y2={y0 - 4} id={`${u}r`}/>
           : <><Rayon x1={xi} y1={yi} x2={x0 - 4 * Math.sin(i * RAD)} y2={y0 - 4 * Math.cos(i * RAD)} id={`${u}r`}/>
             <Arc cx={x0} cy={y0} r={40} a0={0} a1={-i} c={ORANGE} txt={`i = ${i}°`} tx={x0 - 100} ty={y0 - 30}/></>}
-        {reponse
+        {i2 != null && <g><Rayon x1={x0} y1={y0} x2={x0 + L * Math.sin(i2 * RAD)} y2={y0 + L * Math.cos(i2 * RAD)} id={`${u}v`}/><Arc cx={x0} cy={y0} r={46} a0={180} a1={180 - i2} c={VERT} txt={`i₂ = ${fr(i2)}°`} tx={x0 + 52} ty={y0 + 64}/></g>}
+        {i2 != null ? null : reponse
           ? (totale
             ? <Rayon x1={x0} y1={y0} x2={x0 + L * Math.sin(i * RAD)} y2={y0 - L * Math.cos(i * RAD)} c={VERT} id={`${u}v`}/>
             : <Rayon x1={x0} y1={y0} x2={x0 + L * Math.sin(r * RAD)} y2={y0 + L * Math.cos(r * RAD)} c={VERT} id={`${u}v`}/>)
