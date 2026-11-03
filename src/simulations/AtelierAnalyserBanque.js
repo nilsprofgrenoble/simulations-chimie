@@ -1113,7 +1113,7 @@ export const RELATIONS = [
       F('F = m·E', 'La masse n’intervient pas dans la force électrique : c’est la charge q qui compte.'),
     ] },
   { id: 'rendement-dist', domaine: 'Distillation', titre: 'Le rendement d’une distillation',
-    enonce: 'On distille 250 mL d’un mélange eau–éthanol contenant 20 % d’éthanol en volume, et on recueille 40 mL d’éthanol (on raisonne en volumes d’éthanol, sans tenir compte de la légère contraction du mélange). On cherche le rendement de la distillation.',
+    enonce: 'On distille 250 mL d’un mélange eau–éthanol contenant 20 % d’éthanol en volume, et on recueille 40 mL d’éthanol (on raisonne en volumes d’éthanol, sans tenir compte de la légère contraction du mélange). On cherche le rendement η de la distillation (x désigne la fraction volumique d’éthanol du mélange, ici 0,20).',
     q: 'Quelle relation permet de répondre ?', options: [
       V('η = V_récupéré / (x × V_mélange)', 'On compare ce que l’on récupère (40 mL) à l’éthanol présent (0,20 × 250 = 50 mL) : η = 40 / 50 = 80 %.'),
       F('η = V_récupéré / V_mélange', 'Elle compare à tout le mélange, pas à l’éthanol seul (40 / 250 = 16 %).'),
@@ -1305,7 +1305,7 @@ export const HYPOTHESES = [
       F('Solution titrante plus concentrée que la solution titrée', 'Pratique pour la précision, mais pas nécessaire.'),
     ] },
   { id: 'can', domaine: 'Transmission de signaux numériques', titre: 'Conversion par un CAN',
-    ...presenter({ contexte: 'On calcule le nombre donné par un CAN.', liste: [['Relation utilisée', 'N = partie entière de U / q'], ['Où', 'U : tension d’entrée ; q : quantum du CAN']] }), options: [
+    ...presenter({ contexte: 'On calcule le nombre donné par un CAN.', liste: [['Relation utilisée', 'N = partie entière de U / q'], ['Où', 'U : tension d’entrée ; q : quantum du CAN (plage / 2ⁿ)'], ['Remarque', 'c’est la relation du cours ; la carte Arduino utilise la proportionnalité N = U × 1 023 / 5, qui donne le même résultat à moins de 0,1 % près']] }), options: [
       V('CAN idéal : pas de bruit, ni d’erreur de gain ou de décalage', 'Un CAN réel peut se tromper d’une ou deux unités.'),
       V('U est comprise dans la plage du CAN', 'Au-delà, N reste bloqué à sa valeur maximale (saturation).'),
       V('U ne varie pas pendant la durée de la conversion', 'Sinon la valeur convertie ne correspond à aucun instant précis.'),

@@ -245,7 +245,7 @@ export function questions(g) {
   // 8. allure et proportionnalité
   { const bonne = ALLURES[sc.tend], autres = Object.entries(ALLURES).filter(([c]) => c !== sc.tend).map(([, v]) => v);
     const opts = melange([bonne, ...melange(autres, rnd).slice(0, 3)], rnd);
-    Q.push({ id: 'allure', comp: 2, type: 'qcm', q: 'Comment la grandeur y évolue-t-elle quand x augmente ?', options: opts, bonne: opts.indexOf(bonne), expl: `Réponse : ${bonne}.` }); }
+    Q.push({ id: 'allure', comp: 2, type: 'qcm', q: `Comment la grandeur ${y.sym} évolue-t-elle quand ${x.sym} augmente ?`, options: opts, bonne: opts.indexOf(bonne), expl: `Réponse : ${bonne}.` }); }
   if (sc.decrire) {
     const xs = x.sym, ys = y.sym;
     const bonne = `Plus ${xs} augmente, plus ${ys} diminue ; la diminution est de plus en plus lente (la courbe n’est pas une droite)`;
@@ -255,9 +255,9 @@ export function questions(g) {
       expl: `La courbe descend : quand ${xs} augmente, ${ys} diminue. Elle est plus raide pour les faibles valeurs de ${xs} (la grandeur chute vite) puis s’aplatit (elle varie de moins en moins) : ce n’est donc ni une droite, ni une proportionnalité. À retenir pour rédiger : « plus ${xs} augmente, plus ${ys} diminue ».` }); }
   if (sc.type === 'droite') {
     const O = ['Oui : c’est une droite qui passe par le point (0 ; 0)', 'Non : la droite ne passe pas par le point (0 ; 0)', 'Oui : toute droite représente une proportionnalité', 'Impossible à dire sans calculer'];
-    Q.push({ id: 'prop', comp: 2, type: 'qcm', q: 'La grandeur y est-elle proportionnelle à x ?', options: O, bonne: sc.prop ? 0 : 1,
+    Q.push({ id: 'prop', comp: 2, type: 'qcm', q: `La grandeur ${y.sym} est-elle proportionnelle à ${x.sym} ?`, options: O, bonne: sc.prop ? 0 : 1,
       expl: sc.prop ? 'Oui : la droite passe par l’origine (0 ; 0). Une droite qui ne passe pas par l’origine n’est pas une proportionnalité.'
-        : `Non : pour x = 0, y ne vaut pas 0 (et l’axe vertical ne commence pas à 0 : regardez la graduation du bas). Une droite qui ne passe pas par l’origine n’est pas une proportionnalité.` }); }
+        : `Non : pour ${x.sym} = 0, ${y.sym} ne vaut pas 0 (et l’axe vertical ne commence pas à 0 : regardez la graduation du bas). Une droite qui ne passe pas par l’origine n’est pas une proportionnalité.` }); }
   return Q;
 }
 
