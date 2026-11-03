@@ -466,7 +466,7 @@ export function SimulationAtomesMolecules() {
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
       <li><strong>Éléments de Z = 1 à 20</strong> (jusqu’au calcium). Ordre de remplissage des sous-couches : 1s, 2s, 2p, 3s, 3p, 4s. C’est vrai pour ces éléments ; pour les suivants, il y a des exceptions.</li>
-      <li><strong>Duet</strong> : il ne concerne que les atomes (ou ions) dont la seule couche est n = 1 : H, He, Li⁺, Be²⁺. Tous les autres visent l’octet (couche n = 2 ou n = 3 pleine).</li>
+      <li><strong>Duet</strong> : il ne concerne que les atomes (ou ions) dont la seule couche est n = 1 : H, He, Li⁺, Be²⁺. Tous les autres visent l’octet (8 électrons de valence). Pour n = 3, la couche pourrait en contenir 18 : l’octet est une règle simplifiée, valable ici pour les éléments de Z ≤ 20.</li>
       <li><strong>Couche de valence</strong> : la dernière couche occupée (n le plus grand). <strong>Stable</strong> : même nombre d’électrons qu’un gaz noble (2, 10 ou 18). C’est un <em>modèle</em> : il explique bien les ions courants et les petites molécules, pas tous les composés.</li>
       <li><strong>Ion « le plus simple »</strong> : celui qui demande de gagner ou perdre le moins d’électrons. Le carbone et le silicium (4 électrons de valence) ne forment pas d’ions simples : ils forment des liaisons. L’ion H⁺ (plus aucun électron) est un cas à part.</li>
       <li><strong>Liaison covalente</strong> : un doublet d’électrons partagé entre deux atomes. Liaisons simples, doubles ou triples ; <strong>pas de charge formelle</strong> ni d’octet étendu (hors programme de seconde).</li>
