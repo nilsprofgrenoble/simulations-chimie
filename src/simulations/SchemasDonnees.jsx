@@ -160,4 +160,37 @@ function Hydrodistillation({ mp, Veau, P, T, mh }) {
     </div>);
 }
 
-export const DESSINS_DONNEES = { conduiteConvergent: ConduiteConvergent, echangeur: Echangeur, hydrodistillation: Hydrodistillation, regul: Regul, cuveHuile: CuveHuile, pompeChateau: PompeChateau, evaporateur: Evaporateur, boussole: Boussole };
+// Jet horizontal sortant d'un réservoir (loi de Torricelli)
+function Jet({ h, v }) {
+  const u = useId().replace(/:/g, '');
+  return (
+    <div style={boite} data-schema="jet-torricelli">
+      <svg viewBox="0 0 360 210" style={svgStyle} role="img" aria-label="Réservoir maintenu plein, avec un petit orifice latéral d’où part un jet horizontal">
+        <defs><Pointe id={`${u}v`} c={VERT}/><Pointe id={`${u}b`} c={BLEU}/></defs>
+        <path d="M30,20 L30,150 L130,150 L130,20" fill="none" stroke={TR} strokeWidth="3"/>
+        <rect x="32" y="50" width="96" height="98" fill={EAU}/><line x1="30" y1="50" x2="130" y2="50" stroke={BLEU} strokeWidth="2"/>
+        <Fl x1={150} y1={50} x2={150} y2={128} c={VERT} id={`${u}v`}/><Fl x1={150} y1={128} x2={150} y2={50} c={VERT} id={`${u}v`}/><Tx x="158" y="94" t={`h = ${h}`} c={VERT} a="start" g/>
+        <circle cx="130" cy="128" r="3.5" fill={TR}/><Tx x="112" y="172" t="petit orifice" a="end" s={11.5}/>
+        <path d="M130,128 Q215,128 270,190" fill="none" stroke={BLEU} strokeWidth="3.2" markerEnd={`url(#${u}b)`}/>
+        <Tx x="350" y="40" t="vitesse mesurée du jet" a="end" c={BLEU} g s={11.5}/><Tx x="350" y="56" t={`v = ${v}`} a="end" c={BLEU} g s={11.5}/>
+        <line x1="10" y1="196" x2="350" y2="196" stroke={TR} strokeWidth="3"/><Tx x="80" y="12" t="réservoir ouvert, maintenu plein" s={11.5}/>
+      </svg>
+    </div>);
+}
+
+// Carte Arduino alimentée par l'USB mesurant une source étalon
+function CanEtalon({ ref: tension = '2,500 V' }) {
+  return (
+    <div style={boite} data-schema="can-etalon">
+      <svg viewBox="0 0 360 190" style={svgStyle} role="img" aria-label="Une source étalon est reliée à l’entrée analogique d’une carte Arduino alimentée par le port USB">
+        <rect x="10" y="60" width="100" height="60" rx="8" fill="#f1f5f9" stroke={TR} strokeWidth="2.6"/><Tx x="60" y="86" t="source étalon" g c={TR}/><Tx x="60" y="106" t={tension} g c={VERT}/>
+        <line x1="110" y1="90" x2="205" y2="90" stroke={TR} strokeWidth="2.4"/><Tx x="158" y="82" t="entrée A0" s={11.5}/>
+        <rect x="205" y="30" width="145" height="120" rx="8" fill="#0e7490" stroke="#164e63" strokeWidth="2.6"/><Tx x="277" y="52" t="Arduino" g c="white"/><Tx x="277" y="94" t="CAN 10 bits" g c="white"/><Tx x="277" y="112" t="N entre 0 et 1 023" c="white" s={11}/>
+        <rect x="215" y="150" width="125" height="26" rx="5" fill="white" stroke={ORANGE} strokeWidth="2"/><Tx x="277" y="168" t="alimentation 5,00 V ?" c={ORANGE} g s={11}/>
+        <line x1="277" y1="150" x2="277" y2="126" stroke={ORANGE} strokeWidth="2" strokeDasharray="4 3"/>
+        <Tx x="60" y="150" t="incertitude négligeable" s={11}/>
+      </svg>
+    </div>);
+}
+
+export const DESSINS_DONNEES = { canEtalon: CanEtalon, jet: Jet, conduiteConvergent: ConduiteConvergent, echangeur: Echangeur, hydrodistillation: Hydrodistillation, regul: Regul, cuveHuile: CuveHuile, pompeChateau: PompeChateau, evaporateur: Evaporateur, boussole: Boussole };
