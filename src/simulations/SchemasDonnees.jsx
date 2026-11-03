@@ -193,4 +193,19 @@ function CanEtalon({ ref: tension = '2,500 V' }) {
     </div>);
 }
 
-export const DESSINS_DONNEES = { canEtalon: CanEtalon, jet: Jet, conduiteConvergent: ConduiteConvergent, echangeur: Echangeur, hydrodistillation: Hydrodistillation, regul: Regul, cuveHuile: CuveHuile, pompeChateau: PompeChateau, evaporateur: Evaporateur, boussole: Boussole };
+// Vases communicants : deux récipients ouverts reliés à leur base
+function Vases() {
+  return (
+    <div style={boite} data-schema="vases-communicants">
+      <svg viewBox="0 0 360 200" style={svgStyle} role="img" aria-label="Deux récipients ouverts de formes différentes, reliés par un tube à leur base, contenant de l’eau">
+        <polygon points="42,70 98,70 98,142 217,142 217,70 328,70 328,168 42,168" fill={EAU}/>
+        <polyline points="40,30 40,170 330,170 330,30" fill="none" stroke={TR} strokeWidth="3"/>
+        <polyline points="100,30 100,142 215,142 215,30" fill="none" stroke={TR} strokeWidth="3"/>
+        <line x1="36" y1="70" x2="324" y2="70" stroke={ORANGE} strokeWidth="2" strokeDasharray="6 4"/>
+        <Tx x="180" y="62" t="prévision : même altitude" c={ORANGE} g/>
+        <Tx x="70" y="20" t="récipient ouvert" s={11.5}/><Tx x="272" y="20" t="récipient ouvert" s={11.5}/><Tx x="158" y="190" t="les deux récipients communiquent par la base" s={11.5}/>
+      </svg>
+    </div>);
+}
+
+export const DESSINS_DONNEES = { vases: Vases, canEtalon: CanEtalon, jet: Jet, conduiteConvergent: ConduiteConvergent, echangeur: Echangeur, hydrodistillation: Hydrodistillation, regul: Regul, cuveHuile: CuveHuile, pompeChateau: PompeChateau, evaporateur: Evaporateur, boussole: Boussole };
