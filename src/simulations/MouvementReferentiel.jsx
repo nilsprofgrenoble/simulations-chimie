@@ -437,7 +437,7 @@ export function SimulationMouvementReferentiel() {
         <li>Une chronophotographie donne la <strong>trajectoire</strong> (droite ou courbe) et la nature du mouvement : écarts égaux = uniforme, écarts croissants = accéléré.</li>
         <li><strong>v<Ind>i</Ind> ≈ M<Ind>i</Ind>M<Ind>i+1</Ind> / Δt</strong> : même direction et même sens que le déplacement, norme = distance / durée. Le choix de Δt compte : ni trop grand, ni trop petit.</li>
         <li>Vitesse et trajectoire <strong>dépendent du référentiel</strong> : v<Ind>B/A</Ind> = v<Ind>B</Ind> − v<Ind>A</Ind>.</li>
-        <li>La <strong>variation de vitesse</strong> Δv est la même dans deux référentiels en <strong>translation rectiligne uniforme</strong> l’un par rapport à l’autre (référentiels galiléens). Δv = 0 : les forces se compensent ; Δv ≠ 0 : la somme des forces a la direction et le sens de Δv.</li></ul></ARetenir>,
+        <li>La <strong>variation de vitesse</strong> Δv est la même dans deux référentiels qui se déplacent l’un par rapport à l’autre <strong>en ligne droite et à vitesse constante</strong> (on dit qu’ils sont « galiléens »). Δv = 0 : les forces se compensent ; Δv ≠ 0 : la somme des forces a la direction et le sens de Δv.</li></ul></ARetenir>,
       tache: null },
   ];
   const cadre = id => enGuide && (ETAPES[Math.min(etape, ETAPES.length - 1)].focus || []).includes(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
@@ -587,7 +587,7 @@ export function SimulationMouvementReferentiel() {
       <li><strong>Point matériel</strong> : chaque système est réduit à un point. Pour le bâton, on peut afficher le système réel pour voir ce que le modèle du point ne décrit pas.</li>
       <li><strong>Pesanteur uniforme</strong> g = 9,8 N/kg ; <strong>frottements de l’air négligés</strong> pour la bille, le colis et le bâton (un colis réel, surtout léger, serait ralenti par l’air).</li>
       <li><strong>Vitesse approchée</strong> v<Ind>i</Ind> ≈ M<Ind>i</Ind>M<Ind>i+1</Ind> / Δt : c’est la vitesse <em>moyenne</em> entre deux images, attribuée à M<Ind>i</Ind>. Pour un mouvement accéléré, elle est décalée d’environ a·Δt/2 par rapport à la vitesse au point M<Ind>i</Ind>.</li>
-      <li><strong>Erreur de pointage</strong> (si elle est activée) : erreur gaussienne, indépendante d’un point à l’autre et de même écart-type partout. La vitesse approchée est alors entachée d’une erreur d’environ √2·σ/Δt, qui augmente quand Δt diminue. L’« écart moyen » affiché est une moyenne sur 60 séries de pointage indépendantes.</li>
+      <li><strong>Erreur de pointage</strong> (si elle est activée) : erreur aléatoire de loi normale (gaussienne), indépendante d’un point à l’autre et de même écart-type σ (dispersion typique de l’erreur) partout. La vitesse approchée est alors entachée d’une erreur d’environ √2·σ/Δt, qui augmente quand Δt diminue. L’« écart moyen » affiché est une moyenne sur 60 séries de pointage indépendantes.</li>
       <li><strong>Écart moyen</strong> : moyenne des écarts ‖v approchée − v exacte‖, divisée par la moyenne des vitesses exactes.</li>
       <li><strong>Variation de vitesse</strong> Δv<Ind>i</Ind> = v<Ind>i</Ind> − v<Ind>i−1</Ind> : différence de deux vitesses approchées successives ; elle est attribuée au point M<Ind>i</Ind>.</li>
       <li><strong>Échelles</strong> : l’échelle des longueurs diffère d’un panneau à l’autre ; celle des vitesses est commune. Pour les deux véhicules, les voies sont dessinées l’une sous l’autre (les points sont sur la même droite).</li>
@@ -627,7 +627,7 @@ export function SimulationMouvementReferentiel() {
       <li>trajectoire et vitesse dépendent du référentiel</li>
       <li>v<Ind>B/A</Ind> = v<Ind>B</Ind> − v<Ind>A</Ind></li>
       <li>v ≈ MM′ / Δt : choisir un Δt adapté</li>
-      <li>Δv ne dépend pas du référentiel, s’ils sont en translation rectiligne uniforme l’un par rapport à l’autre (galiléens)</li>
+      <li>Δv ne dépend pas du référentiel, si les deux référentiels se déplacent l’un par rapport à l’autre en ligne droite et à vitesse constante (« galiléens »)</li>
       <li>Δv = 0 : les forces se compensent</li></ul></ARetenir>);
 
   const finParcours = (

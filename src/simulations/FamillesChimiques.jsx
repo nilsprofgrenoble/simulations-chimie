@@ -352,7 +352,7 @@ export function SimulationFamillesChimiques() {
       </ul>
     </div>);
   const retenir = <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
-    <li>même colonne = même famille = même ion</li>
+    <li>même colonne = même famille = ions de même forme (X⁺, X²⁺ ou X⁻)</li>
     <li>une équation conserve atomes et charge</li>
     <li>solide ionique : charges + et − se compensent</li></ul></ARetenir>;
   const finParcours = (

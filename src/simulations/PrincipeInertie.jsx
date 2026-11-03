@@ -274,7 +274,7 @@ export function SimulationPrincipeInertie() {
       {!verrou && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6, alignItems: 'center' }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Sol :</span>
         {SOLS.map(([mu, l]) => <button key={mu} onClick={() => setP(p => ({ ...p, mu }))} style={stylePetitBouton(P.mu === mu, '#0b4f94')}>{l}</button>)}
-        <span style={{ fontSize: 13, color: KIT.txt2 }}>Frottements : f = {fr(fk, 0)} N</span></div>}
+        <span style={{ fontSize: 13, color: KIT.txt2 }}>Frottement quand la caisse glisse : f = {fr(fk, 0)} N</span></div>}
       <div style={{ marginTop: 8 }}><Graphe sim={sim} t={t}/></div>
       {tableau && <div style={{ marginTop: 8, fontSize: 14.5, lineHeight: 1.5 }}>{verdict}</div>}
     </div>);
@@ -296,7 +296,7 @@ export function SimulationPrincipeInertie() {
         <li>Sol normal : trouvez la poussée qui garde la vitesse constante. Comparez-la à la valeur des frottements.</li>
         <li>Doublez la masse sans changer la poussée : que changent les frottements ? Faut-il pousser plus fort ?</li>
         <li>Mettez une vitesse initiale négative (vers la gauche) et une poussée vers la droite : quel est le sens des frottements ?</li>
-        <li>Poussée de 20 N sur un sol à frottements de 49 N, caisse à l’arrêt : que se passe-t-il ? (frottement statique)</li>
+        <li>Poussée de 20 N sur un sol à frottements de 49 N, caisse à l’arrêt : que se passe-t-il ? Quelle est alors la valeur du frottement ? (il s’adapte à la poussée, sans dépasser 49 N)</li>
       </ul>
     </div>);
   const retenir = <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>

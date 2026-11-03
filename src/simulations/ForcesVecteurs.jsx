@@ -429,6 +429,7 @@ export function SimulationForcesVecteurs() {
       <li><strong>Poids et gravitation</strong> : on confond le poids avec la force d’attraction gravitationnelle de l’astre (rotation de l’astre négligée) ; g = G·M/R² vaut environ 9,8 N/kg sur Terre (souvent arrondi à 10).</li>
       <li><strong>Astres sphériques et homogènes</strong> : on utilise la distance d entre les centres, soit R + h pour un objet à l’altitude h.</li>
       <li><strong>Actions réciproques</strong> : valable à chaque instant, que les objets soient immobiles ou en mouvement. Dans les scènes, le mouvement n’est pas simulé.</li>
+      <li><strong>Deux dynamomètres</strong> : ils indiquent la même valeur parce que le système est à l’équilibre et que la masse des dynamomètres est négligée. Si on les accélère ou si leur masse comptait, les deux lectures différeraient un peu.</li>
     </ul>);
   const panneauHypo = <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>;
   const aEssayer = (
