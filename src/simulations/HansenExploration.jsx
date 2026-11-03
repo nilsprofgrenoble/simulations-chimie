@@ -80,18 +80,19 @@ const C_DANS = '#15803d', C_HORS = '#b91c1c', C_POLY = '#166534', C_MEL = '#facc
 const distance = (P, s) => Math.sqrt(4 * (s[0] - P[0]) ** 2 + (s[1] - P[1]) ** 2 + (s[2] - P[2]) ** 2);
 const fmtPvap = v => (v < 0.01 ? '< 0,01' : fmt(v, v < 1 ? 2 : v < 10 ? 1 : 0));
 
-export function HansenExploration({ plotlyReady }) {
+// initial : configuration de départ { polyId, deux, poly2Id } (utilisée par le défi) ; onEtat : reçoit l'état courant (polymères, mélange, RED) à chaque changement
+export function HansenExploration({ plotlyReady, initial = {}, onEtat }) {
   // ── Le polymère ──
-  const [polyId, setPolyId] = useState('nc-tp');
-  const [poly, setPoly] = useState({ ...POLYMERES[0] });
+  const [polyId, setPolyId] = useState(initial.polyId || 'nc-tp');
+  const [poly, setPoly] = useState(() => ({ ...POLYMERES.find(q => q.id === (initial.polyId || 'nc-tp')) }));
   function choisirPolymere(id) { const q = POLYMERES.find(x => x.id === id); setPolyId(id); setPoly({ ...q }); }
   function modifierPoly(k, v) { setPolyId('perso'); setPoly(o => ({ ...o, [k]: k === 'nom' ? v : lireNombre(v) })); }
   const centre = [poly.d, poly.p, poly.h];
   const R0 = poly.R0 > 0 ? poly.R0 : NaN;
   // ── Option « deux sphères » : un 2e polymère, pour comparer sa solubilité dans le même mélange ──
-  const [deux, setDeux] = useState(false);
-  const [poly2Id, setPoly2Id] = useState('pmma');
-  const [poly2, setPoly2] = useState({ ...POLYMERES.find(q => q.id === 'pmma') });
+  const [deux, setDeux] = useState(!!initial.deux);
+  const [poly2Id, setPoly2Id] = useState(initial.poly2Id || 'pmma');
+  const [poly2, setPoly2] = useState(() => ({ ...POLYMERES.find(q => q.id === (initial.poly2Id || 'pmma')) }));
   function choisirPolymere2(id) { const q = POLYMERES.find(x => x.id === id); setPoly2Id(id); setPoly2({ ...q }); }
   function modifierPoly2(k, v) { setPoly2Id('perso'); setPoly2(o => ({ ...o, [k]: k === 'nom' ? v : lireNombre(v) })); }
   const centre2 = [poly2.d, poly2.p, poly2.h];
@@ -119,7 +120,7 @@ export function HansenExploration({ plotlyReady }) {
   const red2 = s => distance(centre2, SOLVANTS[s].d) / R02;
 
   // ── Le mélange : ses solvants sont choisis parmi les solvants cochés ──
-  const [mix, setMix] = useState([{ s: 'Acétate d\'éthyle', pct: 50 }, { s: 'Éthanol', pct: 50 }, { s: 'Acétate de butyle', pct: 0 }]);
+  const [mix, setMix] = useState(initial.pur ? [{ s: 'Acétate d\'éthyle', pct: 100 }, { s: 'Éthanol', pct: 0 }, { s: 'Acétate de butyle', pct: 0 }] : [{ s: 'Acétate d\'éthyle', pct: 50 }, { s: 'Éthanol', pct: 50 }, { s: 'Acétate de butyle', pct: 0 }]);
   const [trois, setTrois] = useState(false);
   const [voirMel, setVoirMel] = useState(true);
   useEffect(() => {   // si un solvant du mélange est décoché, on le remplace par un solvant coché
@@ -139,6 +140,14 @@ export function HansenExploration({ plotlyReady }) {
   const ptMel = melangePossible && totPct > 0 ? [0, 1, 2].map(k => actifs.reduce((a, x) => a + x.pct / totPct * SOLVANTS[x.s].d[k], 0)) : null;
   const redMel = ptMel ? distance(centre, ptMel) / R0 : null;
   const redMel2 = deux && ptMel ? distance(centre2, ptMel) / R02 : null;
+  // État transmis à la page qui héberge l'exploration (défi : critères évalués sur le mélange composé ici)
+  const etatPourPage = {
+    polyId, poly2Id, deux, possible: !!ptMel, redMel, redMel2,
+    melange: ptMel ? actifs.filter(x => x.pct > 0).map(x => ({ s: x.s, pct: x.pct, part: totPct > 0 ? x.pct / totPct : 0,
+      famille: (familles.find(f => x.s in f.solvants) || {}).nom, pvap: SOLVANTS[x.s].pvap, red: red(x.s) })) : [],
+  };
+  const cleEtat = JSON.stringify(etatPourPage);
+  useEffect(() => { if (onEtat) onEtat(JSON.parse(cleEtat)); }, [cleEtat]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Optimiser les proportions des solvants choisis (on minimise la distance de Hansen Ra au polymère)
   function optimiser() {
