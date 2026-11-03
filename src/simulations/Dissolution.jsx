@@ -122,7 +122,7 @@ function VoletDefi({ defi, setDefi, changerType }) {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(TITRES).map(([t, l]) => <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
       {defi.type === 'masse' && <><div style={txt}><Pic n="target"/>On veut préparer <strong>{defi.V} mL</strong> d’une solution de {s.nom} ({s.court}) de concentration en masse <strong>{fr(defi.t, defi.t < 1 ? 2 : 0)} g/L</strong>. Quelle masse de soluté faut-il peser ?</div>{champ('g')}</>}
-      {defi.type === 'conc' && <><div style={txt}><Pic n="target"/>On dissout <strong>{fr(defi.m, 2)} g</strong> de {s.nom} ({s.court}) dans de l’eau, pour obtenir <strong>{defi.V} mL</strong> de solution. Quelle est sa concentration en masse ?</div>{champ('g/L')}</>}
+      {defi.type === 'conc' && <><div style={txt}><Pic n="target"/>On dissout <strong>{fr(defi.m, 3)} g</strong> de {s.nom} ({s.court}) dans de l’eau, pour obtenir <strong>{defi.V} mL</strong> de solution. Quelle est sa concentration en masse ?</div>{champ('g/L')}</>}
       {defi.type === 'sature' && <><div style={txt}><Pic n="target"/>On introduit <strong>{fr(defi.m, 1)} g</strong> de {s.nom} ({s.court}) dans une fiole de <strong>{defi.V} mL</strong> d’eau. Solubilité à 20 °C : environ <strong>{s.sol} g/L</strong>.</div>
         <div style={{ fontSize: 14, fontWeight: 700, margin: '8px 0 4px' }}>Tout le solide se dissout-il ?</div>
         <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>{[[false, 'Oui, tout se dissout'], [true, 'Non, il reste du solide']].map(([v, l]) => <button key={String(v)} onClick={() => rep('sat', v)} style={stylePetitBouton(defi.reps.sat === v, '#0ea5e9')}>{l}</button>)}</div>
@@ -137,7 +137,7 @@ function VoletDefi({ defi, setDefi, changerType }) {
         {res.ok && <div style={{ color: VERT, fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'masse' && <>m = t × V = {fr(defi.t, defi.t < 1 ? 2 : 0)} × {fr(defi.V / 1000, 3)} = <strong>{fr(defi.m, 3)} g</strong>.</>}
-        {defi.type === 'conc' && <>t = m / V = {fr(defi.m, 2)} / {fr(defi.V / 1000, 3)} = <strong>{fr(defi.t, defi.t < 1 ? 2 : 0)} g/L</strong>.</>}
+        {defi.type === 'conc' && <>t = m / V = {fr(defi.m, 3)} / {fr(defi.V / 1000, 3)} = <strong>{fr(defi.t, defi.t < 1 ? 2 : 0)} g/L</strong>.</>}
         {defi.type === 'sature' && <>Masse maximale dissoute : {s.sol} × {fr(defi.V / 1000, 3)} = {fr(defi.max, 1)} g. {sat ? <>Comme {fr(defi.m, 1)} g {'>'} {fr(defi.max, 1)} g, il reste <strong>{fr(defi.m - defi.max, 1)} g</strong> de solide.</> : <>Comme {fr(defi.m, 1)} g {'<'} {fr(defi.max, 1)} g, tout se dissout.</>}</>}
       </div>}
     </div>);
