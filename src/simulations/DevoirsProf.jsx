@@ -13,8 +13,8 @@ import { Pic } from "../Pictos";
 //  voir qui a fait quoi, supprimer. « Fait » = réussi après la création du devoir (voir ../devoirs.js).
 //  Si le serveur n'a pas encore reçu supabase/06-devoirs.sql, l'onglet l'explique et ne casse rien.
 // ═══════════════════════════════════════════════════════════════════════════
-const ROSE = '#e11d48';
-const champ = { padding: '7px 9px', fontSize: 14, borderRadius: 8, border: `1px solid ${KIT.bord}`, boxSizing: 'border-box' };
+const ROSE = '#0b4f94';
+const champ = { padding: '7px 9px', fontSize: 14, borderRadius: 12, border: `1px solid ${KIT.bord}`, boxSizing: 'border-box' };
 const COULEURS = { retard: '#b91c1c', urgent: '#c2410c', ok: '#15803d', aucune: '#64748b' };
 
 // Filtres de la liste : « tous », un chapitre du menu (ses simulations, ses défis et les exercices de son thème), un thème
@@ -118,23 +118,23 @@ export function DevoirsProf({ classe, eleves, lignes, preset }) {
         <div style={{ maxHeight: 250, overflowY: 'auto', border: `1px solid ${KIT.bord}`, borderRadius: 8, background: '#fff' }}>
           {filtres.length === 0 && <div style={{ padding: 10, fontSize: 13.5, color: KIT.txt2 }}>Aucun résultat.</div>}
           {filtres.map(i => { const coche = choix.includes(i.cle); return (
-            <label key={i.cle} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '5px 9px', fontSize: 13.5, cursor: 'pointer', background: coche ? '#fff1f2' : 'transparent', borderBottom: `1px solid ${KIT.bord}` }}>
-              <input type="checkbox" checked={coche} disabled={!coche && choix.length >= MAX_EXOS} onChange={() => bascule(i.cle)} style={{ marginTop: 3, accentColor: '#e11d48' }} />
+            <label key={i.cle} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '5px 9px', fontSize: 13.5, cursor: 'pointer', background: coche ? '#eaf2fb' : 'transparent', borderBottom: `1px solid ${KIT.bord}` }}>
+              <input type="checkbox" checked={coche} disabled={!coche && choix.length >= MAX_EXOS} onChange={() => bascule(i.cle)} style={{ marginTop: 3, accentColor: '#0b4f94' }} />
               <span><b style={{ color: ROSE }}>{nomComp(i)}</b> · {i.titre}{i.comp === 'SIM' && <span style={{ color: KIT.txt2 }}>{noteSim(i)}</span>}</span>
             </label>); })}
         </div>
         {choix.length > 0 && <div style={{ fontSize: 13, color: KIT.txt2 }}>Choisis : {choix.map(c => par.get(c)?.titre || c).join(' · ')}</div>}
         <div style={{ fontSize: 13, fontWeight: 700 }}>Pour qui ?</div>
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 14 }}>
-          <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}><input type="radio" name="pour-qui" checked={!certains} onChange={() => setCertains(false)} style={{ accentColor: '#e11d48' }} />Toute la classe ({eleves.length})</label>
-          <label style={{ display: 'flex', gap: 6, alignItems: 'center', opacity: cible ? 1 : 0.55 }}><input type="radio" name="pour-qui" checked={certains && cible} disabled={!cible} onChange={() => setCertains(true)} style={{ accentColor: '#e11d48' }} />Certains élèves seulement</label>
+          <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}><input type="radio" name="pour-qui" checked={!certains} onChange={() => setCertains(false)} style={{ accentColor: '#0b4f94' }} />Toute la classe ({eleves.length})</label>
+          <label style={{ display: 'flex', gap: 6, alignItems: 'center', opacity: cible ? 1 : 0.55 }}><input type="radio" name="pour-qui" checked={certains && cible} disabled={!cible} onChange={() => setCertains(true)} style={{ accentColor: '#0b4f94' }} />Certains élèves seulement</label>
         </div>
         {!cible && <div style={{ fontSize: 12.5, color: KIT.txt2 }}>Cibler des élèves : disponible après avoir exécuté <code>supabase/07-chapitre-et-ciblage.sql</code> dans Supabase.</div>}
         {certains && cible && (
           <div role="group" aria-label="Élèves visés" style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {eleves.map(e => { const on = visés.includes(e.user_id); return (
-              <label key={e.user_id} style={{ display: 'inline-flex', gap: 5, alignItems: 'center', padding: '3px 9px', borderRadius: 999, border: `1px solid ${on ? ROSE : KIT.bord}`, background: on ? '#fff1f2' : '#fff', fontSize: 13.5, cursor: 'pointer' }}>
-                <input type="checkbox" checked={on} onChange={() => basculeEleve(e.user_id)} style={{ accentColor: '#e11d48' }} />{e.identifiant}
+              <label key={e.user_id} style={{ display: 'inline-flex', gap: 5, alignItems: 'center', padding: '3px 9px', borderRadius: 999, border: `1px solid ${on ? ROSE : KIT.bord}`, background: on ? '#eaf2fb' : '#fff', fontSize: 13.5, cursor: 'pointer' }}>
+                <input type="checkbox" checked={on} onChange={() => basculeEleve(e.user_id)} style={{ accentColor: '#0b4f94' }} />{e.identifiant}
               </label>); })}
           </div>)}
         <div style={{ fontSize: 12.5, color: KIT.txt2 }}>Un exercice compte comme <b>fait</b> s’il est <b>réussi après la création du devoir</b> (un exercice réussi avant doit donc être refait : pratique pour des révisions). Une <b>simulation</b> compte comme <b>faite</b> après au moins {SEUIL_GUIDE_S / 60} minutes en parcours guidé <b>et</b> un défi réussi quand le site suit les défis de la simulation (c’est le cas de certaines seulement ; pour les autres, le parcours guidé seul est vérifié) : c’est mesuré dans le navigateur de l’élève, donc une aide à l’organisation et non une preuve.</div>

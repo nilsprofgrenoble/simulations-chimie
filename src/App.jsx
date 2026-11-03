@@ -206,17 +206,17 @@ const SIMULATIONS = [
     component: SimulationRMNC2D },
   { id:53, label:"Solubilité et miscibilité : le bilan des interactions", niveau:"1G", icon:"🧪", color:"#2a9d8f",
     component: SimulationSolubilite },
-  { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"COMP", icon:"🎯", color:"#e11d48",
+  { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"COMP", icon:"🎯", color:"#5b4bdb",
     component: SimulationAtelierDonnees },
-  { id:35, label:"S'APP : lire un graphique", niveau:"COMP", icon:"📈", color:"#e11d48",
+  { id:35, label:"S'APP : lire un graphique", niveau:"COMP", icon:"📈", color:"#5b4bdb",
     component: SimulationAtelierGraphique },
-  { id:36, label:"REA : réaliser un calcul", niveau:"COMP", icon:"🧮", color:"#e11d48",
+  { id:36, label:"REA : réaliser un calcul", niveau:"COMP", icon:"🧮", color:"#5b4bdb",
     component: SimulationAtelierRealiser },
-  { id:37, label:"ANA : analyser un problème", niveau:"COMP", icon:"🧭", color:"#e11d48",
+  { id:37, label:"ANA : analyser un problème", niveau:"COMP", icon:"🧭", color:"#5b4bdb",
     component: SimulationAtelierAnalyser },
-  { id:77, label:"VAL : valider un résultat", niveau:"COMP", icon:"✅", color:"#e11d48",
+  { id:77, label:"VAL : valider un résultat", niveau:"COMP", icon:"✅", color:"#5b4bdb",
     component: SimulationAtelierValider },
-  { id:38, label:"Je m'entraîne ! Travail par compétence", niveau:"COMP", icon:"🏋️", color:"#e11d48",
+  { id:38, label:"Je m'entraîne ! Travail par compétence", niveau:"COMP", icon:"🏋️", color:"#5b4bdb",
     component: SimulationEntrainement },
   // Pages hors menu (niveau « COMPTE ») : connexion et suivi, ouvertes par les boutons « Mon compte » et « Suivi professeur »
   { id:39, label:"Mon compte", niveau:"COMPTE", icon:"👧👦", color:"#25628f", component: SimulationCompte },
@@ -229,7 +229,7 @@ const SIMULATIONS = [
   { id:80, label:"Mission Aqua (escape game)", niveau:"COMPTE", icon:"💧", color:"#0b2540", component: SimulationEscapeAqua },
   // Histoire à choix « Une journée au labo » (BTS, d'après le CCF4 : Vinnapas → Orgal) : hors menu, ?sim=81
   // Page d'accueil d'un chapitre (simulations + exercices par compétence) : ?sim=82&chap=<id d'un chapitre de chapitres.js>
-  { id:82, label:"Page d'un chapitre", niveau:"COMPTE", icon:"📚", color:"#e11d48", component: SimulationChapitre },
+  { id:82, label:"Page d'un chapitre", niveau:"COMPTE", icon:"📚", color:"#5b4bdb", component: SimulationChapitre },
   { id:81, label:"Une journée au labo (histoire à choix, BTS)", niveau:"COMPTE", icon:"🧪", color:"#0f766e", component: SimulationHistoireLabo },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; });

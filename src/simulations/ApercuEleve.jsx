@@ -9,7 +9,7 @@ import { Pic } from "../Pictos";
 //  Rien n'est lu ni écrit sur le serveur ; trois profils pour voir ce qu'un élève voit selon son avancée.
 //  Les dates sont calculées par rapport à aujourd'hui, pour que « à revoir », devoirs et prouesses aient du sens.
 // ═══════════════════════════════════════════════════════════════════════════
-const ROSE = '#e11d48';
+const ROSE = '#0b4f94';
 const PROFILS = [
   { id: 'debut', nom: '🌱 Élève qui débute (étape 0)', aide: 'Profil vide : il ne voit que sa première simulation, rien d’autre.' },
   { id: 'cours', nom: '📈 Élève en cours de route (étape 2)', aide: 'Quelques étoiles, des exercices à revoir, un devoir en retard, devoirs pas à pas.' },

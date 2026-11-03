@@ -8,7 +8,7 @@ import { BoutonMail } from "../contact";
 import { ACCENT, TEXTE, TEXTE2, LAME } from "../theme";
 import { Pic, Emo } from "../Pictos";
 
-const ROSE = '#e11d48';
+const ROSE = '#0b4f94';
 
 export const formatDuree = s => {
   s = Math.round(s || 0);

@@ -164,7 +164,7 @@ export function VieDeClasse({ lignes, apercu }) {
             <div style={{ flex: 1, minWidth: 180 }}>
               <div style={{ fontSize: 18, fontWeight: 800, color: '#134e4a' }}>{monPseudo.texte}</div>
               <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 14, marginTop: 4, cursor: 'pointer' }}>
-                <input type="checkbox" checked={!!moi.visible} disabled={occupe} onChange={e => montrer(e.target.checked)} style={{ accentColor: '#e11d48' }} />
+                <input type="checkbox" checked={!!moi.visible} disabled={occupe} onChange={e => montrer(e.target.checked)} style={{ accentColor: '#0b4f94' }} />
                 Montrer mon pseudo dans les prouesses de ma classe
               </label>
             </div>
