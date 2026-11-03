@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, Cadre, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
+  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, PanneauHypotheses } from "../commun";
 import { Pic } from "../Pictos";
 
 const SIM_ID = 1;
@@ -668,6 +668,14 @@ export function Simulation1() {
           </div>}
         </div>
       </>}
+      {vueManip && <PanneauHypotheses>
+        <li><strong>Réaction totale et unique</strong> : Mg + 2 H⁺ → Mg²⁺ + H₂. Le magnésium est supposé pur (pas d’oxyde en surface) et entièrement consommé s’il est limitant.</li>
+        <li><strong>Gaz</strong> : le dihydrogène est supposé parfait, non dissous dans l’eau (très peu soluble), recueilli en totalité (pas de fuite au bouchon).</li>
+        <li><strong>Pression</strong> : le gaz est à la pression atmosphérique, car les niveaux d’eau dans l’éprouvette et dans la cuve sont supposés égaux (la différence de hauteur est négligée).</li>
+        <li><strong>Température</strong> : la réaction chauffe un peu le gaz au début ; on suppose qu’à la lecture finale il est revenu à la température de la salle.</li>
+        <li><strong>V<sub>m</sub> « apparent »</strong> : le gaz recueilli sur l’eau contient aussi de la vapeur d’eau (environ 2 % du volume à 20 °C). Le volume molaire mesuré est donc un peu plus grand que celui du gaz sec (24,1 L·mol⁻¹ à 20 °C et 1013 hPa).</li>
+        <li><strong>Mesures</strong> : volume lu à ±1 mL près au zoom, masse de magnésium à ±0,5 mg près. Aucune erreur systématique n’est corrigée : un écart au résultat attendu peut venir de ces hypothèses autant que de la lecture.</li>
+      </PanneauHypotheses>}
     </div>
   );
 }

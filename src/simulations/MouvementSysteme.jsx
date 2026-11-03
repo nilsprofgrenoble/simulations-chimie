@@ -122,7 +122,7 @@ function Fleche({ x1, y1, x2, y2, col, w = 2.4, dash, op = 1 }) {
   return <g opacity={op}><line x1={x1} y1={y1} x2={bx} y2={by} stroke={col} strokeWidth={w} strokeDasharray={dash} strokeLinecap="round"/>
     <path d={`M${x2},${y2} L${bx - uy * hw},${by + ux * hw} L${bx + uy * hw},${by - ux * hw} z`} fill={col}/></g>;
 }
-const EF = [2, 1, 0.5, 0.25, 0.1];
+const EF = [2, 1, 0.5, 0.25, 0.1, 0.05, 0.02];
 
 // ---------- défis ----------
 const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -264,7 +264,7 @@ export function SimulationMouvementSysteme() {
   const okPara = est('parachute', sc.aff.dv);
   const okLune = est('lune', sc.etape >= 3 && sc.k === 1);
   const okLuneK = est('lune', sc.k === 3);
-  const okEuler = tab === 'euler' && sc.id === 'lune' && sc.ef >= 3;
+  const okEuler = tab === 'euler' && sc.id === 'lune' && sc.ef >= 5;
   const ETAPES = [
     { id: 'intro', titre: 'Une chute filmée', onglet: 'chrono', focus: ['scene'],
       texte: <>Une bille de 100 g est lâchée sans vitesse initiale. On la photographie toutes les 0,12 s (chronophotographie). Les croix sont ses positions A_[0], A_[1], …
@@ -387,17 +387,17 @@ export function SimulationMouvementSysteme() {
       tache: { type: 'qcm', q: 'La relation ΣF ≈ m·Δv/Δt est d’autant mieux vérifiée que…', options: ['Δt est petit', 'Δt est grand', 'la masse est grande'], bonne: 0,
         expl: 'Sur un intervalle long, la force a le temps de changer de direction : on moyenne. Pour Δt infiniment petit, la relation devient exacte : c’est la deuxième loi de Newton.' } },
     { id: 'euler', titre: 'Prédire le mouvement', onglet: 'euler', focus: ['reglages', 'scene'],
-      texte: <>Au lieu d’analyser un mouvement, on peut le <strong>calculer</strong> : v(t+Δt) = v(t) + (ΣF/m)·Δt, puis la position avec v. C’est la méthode d’Euler. Dans l’onglet « Prédire », choisissez la Lune et un pas de calcul petit (au plus un quart de jour).</>,
-      tache: { type: 'action', ok: okEuler, label: 'Calculer l’orbite avec un petit pas', faire: () => { setTab('euler'); setSc(s => ({ ...s, ...etatInit('lune'), ef: 3 })); }, consigne: 'Onglet « Prédire », Lune, pas ≤ 0,25 jour' } },
+      texte: <>Au lieu d’analyser un mouvement, on peut le <strong>calculer</strong> : v(t+Δt) = v(t) + (ΣF/m)·Δt, puis la position avec v. C’est la méthode d’Euler. Dans l’onglet « Prédire », choisissez la Lune et un pas de calcul très petit (0,05 jour ou moins).</>,
+      tache: { type: 'action', ok: okEuler, label: 'Calculer l’orbite avec un petit pas', faire: () => { setTab('euler'); setSc(s => ({ ...s, ...etatInit('lune'), ef: 5 })); }, consigne: 'Onglet « Prédire », Lune, pas ≤ 0,05 jour' } },
     { id: 'eulerq', titre: 'Le pas de calcul', onglet: 'euler', focus: ['scene'],
       texte: <>Essayez aussi le pas d’un jour ou de deux jours : la trajectoire calculée s’écarte de la vraie orbite.</>,
       tache: { type: 'qcm', q: 'Avec un pas de calcul trop grand, la trajectoire calculée…', options: ['s’éloigne de la vraie orbite (l’erreur s’accumule)', 'reste identique', 'devient plus précise'], bonne: 0,
-        expl: 'Pendant un pas, on suppose la force constante. Si le pas est grand, cette erreur s’accumule à chaque étape : la Lune calculée s’éloigne de la Terre. Avec un petit pas, on retrouve l’orbite.' } },
+        expl: 'Pendant un pas, on suppose la force constante. Si le pas est grand, cette erreur s’accumule à chaque étape : la Lune calculée s’éloigne de la Terre. Plus le pas est petit, plus l’orbite calculée se rapproche de l’orbite réelle (avec la méthode d’Euler, un petit écart subsiste quand même : il diminue avec le pas).' } },
     { id: 'bravo', titre: 'Bravo !', onglet: 'chrono', focus: [],
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
         <li>Δv_[i] = v_[i+1] − v_[i−1] se construit par une soustraction de vecteurs (v_[i+1] + (−v_[i−1])), au point A_[i].</li>
         <li>ΣF ≈ m·Δv/Δt : Δv a la direction et le sens de ΣF.</li>
-        <li>Δv = 0 si et seulement si ΣF = 0 : principe d’inertie.</li>
+        <li>Si ΣF = 0, alors Δv = 0 (principe d’inertie) ; à masse égale, plus ΣF est grande, plus Δv est grande pour une même durée.</li>
         <li>v et ΣF n’ont pas de lien de direction ; Δv et ΣF, si.</li>
         <li>À même force, le moins massif varie le plus : Δv ∝ 1/m.</li>
         <li>Plus Δt est petit, mieux la relation est vérifiée.</li></ul>,
@@ -656,7 +656,7 @@ export function SimulationMouvementSysteme() {
     <ARetenir>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>ΣF ≈ m·Δv/Δt : Δv a la direction et le sens de ΣF</li>
-        <li>Δv = 0 si et seulement si ΣF = 0 (principe d’inertie)</li>
+        <li>Si ΣF = 0, alors Δv = 0 (principe d’inertie) ; la réciproque n’est vraie que pour un petit Δt</li>
         <li>v et ΣF n’ont pas de lien de direction ; Δv et ΣF, si</li>
         <li>à même force, le moins massif varie le plus : Δv ∝ 1/m</li>
         <li>plus Δt est petit, mieux la relation est vérifiée</li>

@@ -95,15 +95,18 @@ function Barres({ lignes, u, uLong, zones, legZones, masque }) {
 const tire = t => t[Math.floor(Math.random() * t.length)];
 function nouveauDefi(type) {
   if (type === 'verdict') {
-    let a, b; do { a = tire(ORDRE_LIQ); b = tire([...ORDRE_LIQ, ...ORDRE_SOL]); } while (a === b);
+    // on écarte les couples où le modèle contredit la réalité (cas limites) et le tétrachlorométhane (interdit au lycée)
+    const contredit = (x, y) => BATTERIE.some(([s2, e, r]) => ((s2 === x && e === y) || (s2 === y && e === x)) && bilan(s2, e).classe !== r);
+    const liq = ORDRE_LIQ.filter(l => l !== 'ccl4'), tout = [...liq, ...ORDRE_SOL];
+    let a, b; do { a = tire(liq); b = tire(tout); } while (a === b || contredit(a, b));
     return { type, a, b, reps: {}, verifie: false };
   }
   if (type === 'dominant') {
-    let a, b, bi; do { a = tire(ORDRE_LIQ); b = tire(ORDRE_LIQ); bi = a !== b && bilan(a, b); } while (!bi || bi.total < 60);
+    let a, b, bi; do { a = tire(ORDRE_LIQ.filter(l => l !== 'ccl4')); b = tire(ORDRE_LIQ.filter(l => l !== 'ccl4')); bi = a !== b && bilan(a, b); } while (!bi || bi.total < 60);
     return { type, a, b, reps: {}, verifie: false };
   }
   const sol = tire(['naphtalene', 'diiode', 'soudan']);
-  const cand = ORDRE_LIQ.filter(l => l !== 'eau' && l !== 'huile');
+  const cand = ORDRE_LIQ.filter(l => l !== 'eau' && l !== 'huile' && l !== 'ccl4');
   let ch; do { ch = [...cand].sort(() => Math.random() - 0.5).slice(0, 4); } while (!ch.some(c => validExtract(c, sol)));
   return { type, sol, choix: ch, reps: {}, verifie: false };
 }
@@ -522,8 +525,10 @@ export function SimulationSolubilite() {
       {!limOuv && <div style={{ fontSize: 13, color: KIT.txt2, padding: '0 12px 4px' }}>Un outil pour raisonner (comparer état initial et état final), pas pour calculer une solubilité. Dépliez pour voir ses limites et les cas où il se trompe.</div>}
     </div>);
 
-  const hypotheses = (
-    <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
+  const hypotheses = (<>
+    <p style={{ margin: '0 0 8px', fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>Le simulateur compare l’énergie des interactions entre molécules <strong>avant</strong> et <strong>après</strong> le mélange : plus le bilan est favorable, plus le mélange (ou la dissolution) est facile. C’est un <strong>modèle simplifié</strong> : les seuils vert / orange / rouge sont des repères réglés sur des cas connus, pas des lois, et certains cas réels ne sont pas bien rendus (voir le panneau « Ce que ce modèle permet de dire… et ce qu’il ne dit pas »). On suppose une température de 25 °C, des espèces pures et, pour deux liquides, un mélange 50 / 50 en volume.</p>
+    <details><summary style={{ cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: KIT.txt }}>Pour aller plus loin : le modèle en détail (niveau enseignant)</summary>
+    <ul style={{ margin: '6px 0 0', paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
       <li><strong>Trois familles d’interactions entre molécules</strong> : dispersion, dipôle–dipôle (Van der Waals) et liaison hydrogène. La cohésion de chaque espèce est répartie entre elles par les paramètres de solubilité de Hansen δd, δp, δh (valeurs de tables, arrondies, pour les petites molécules).</li>
       <li><strong>Colorants</strong> (rouge Soudan III, acide carminique) : δ calculés par la méthode des <strong>contributions de groupes</strong> de Hoftyzer–Van Krevelen (δd = ΣFd/V, δp = √ΣFp²/V, δh = √(ΣEh/V)). Les contributions du groupe azo et des OH engagés dans une liaison H interne sont <em>estimées</em>. Les δ du diiode et de l’huile sont aussi estimés.</li>
       <li><strong>Part polaire de la cohésion</strong> : (δp² + δh²)/(δd² + δp² + δh²). C’est l’échelle continue affichée ; elle sert à visualiser, pas à calculer le verdict.</li>
@@ -538,8 +543,8 @@ export function SimulationSolubilite() {
       <li><strong>Verdict pour NaCl</strong> : solubilité estimée s ≈ 58,44 × exp(−solde / 2RT) g/kg (solution idéale) ; zone verte au-dessus de 20 g/kg, rouge en dessous de 0,1 g/kg. Le bilan des molécules, lui, n’utilise que des énergies de cohésion : les deux bilans ne sont pas directement comparables.</li>
       <li><strong>Acide carminique dans l’eau</strong> : le modèle ne tient pas compte de l’ionisation partielle du groupe COOH dans l’eau, qui augmente encore sa solubilité.</li>
       <li><strong>Température 25 °C, pression atmosphérique</strong>, espèces pures.</li>
-      <li><strong>Cas connus mal rendus</strong> : eau–acétone (miscibles, le modèle dit « cas limite »), eau–éther (peu miscibles, le modèle dit « non miscibles »), propan-1-ol ou butan-1-ol avec l’hexane (miscibles, « cas limite »). Une bonne occasion de discuter des limites d’un modèle.</li>
-    </ul>);
+      <li><strong>Cas connus mal rendus</strong> : {erreurs.length === 0 ? 'aucun sur la batterie de cas connus.' : erreurs.map(([s2, e, r]) => `${(ESPECES[s2]?.nom || s2).replace(/ \(.*\)/, '')} + ${(ESPECES[e]?.nom || e).replace(/ \(.*\)/, '')}`).join(' ; ') + '. Pour ces couples, le verdict du modèle diffère de l’expérience : ne le prenez pas pour une loi.'}</li>
+    </ul></details></>);
   const panneauHypo = <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>;
   const aEssayer = (
     <div style={styleBoite}>

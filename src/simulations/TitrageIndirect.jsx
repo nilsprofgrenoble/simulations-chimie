@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
+  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, PanneauHypotheses } from "../commun";
 import { Formule } from "./Avancement";
 import { V_BURETTE, seuilVisible, couleurSolution, ContexteBanc, SchemaBurette } from "./titrageCommun";
 import { Pic } from "../Pictos";
@@ -246,7 +246,7 @@ export function SimulationTitrageIndirect() {
           `n₀ = ${sci(n0, 3)} mol et n₁ = ${sci(n1, 3)} mol : le plus petit est n₀, donc x_max = ${sci(n0, 3)} mol (la transformation est supposée totale).`],
         pieges: [[n1, 'Le diiode n’est pas limitant.'], [n1 - n0, 'C’est la quantité de diiode qui reste à la fin. x_max est la quantité de vitamine C, qui est entièrement consommée.']] } },
     { id: 'tabInit', titre: 'Tableau d’avancement : état initial', focus: ['tableau'],
-      texte: <>Le tableau est apparu sous le montage. Les ions H⁺ sont en large excès (milieu acide) : leur colonne est déjà remplie.</>,
+      texte: <>Le tableau est apparu sous le montage. Les ions H⁺ et I⁻ sont formés par la réaction mais ne servent pas au calcul : on ne remplit donc que les colonnes de C₆H₈O₆ et de I₂ (la colonne H⁺ est notée « non suivi »).</>,
       tache: { type: 'action', ok: initOk, consigne: initOk ? null : 'Remplissez la ligne, puis « Vérifier la ligne ».' } },
     { id: 'tabCours', titre: 'Tableau d’avancement : en cours', focus: ['tableau'],
       texte: <>On note n₀ et n₁ les quantités initiales de vitamine C et de diiode. Pensez au coefficient 2 devant I⁻.</>,
@@ -341,7 +341,7 @@ export function SimulationTitrageIndirect() {
   // ════════════════ TABLEAU ET LÉGENDES ════════════════
   const cell = { padding: '5px 6px', border: `1px solid ${KIT.bord}`, textAlign: 'center', fontSize: 14 };
   const bord = ok => ({ width: 90, fontSize: 14, padding: '3px 5px', border: `1.5px solid ${ok === true ? '#16a34a' : ok === false ? '#dc2626' : KIT.bord}`, borderRadius: 5 });
-  const ligneSaisie = (cle, vrais) => [0, 1, 2, 'H', 3].map(k => k === 'H' ? <td key="h" style={{ ...cell, color: '#2563eb', fontStyle: 'italic' }}>excès</td> : (
+  const ligneSaisie = (cle, vrais) => [0, 1, 2, 'H', 3].map(k => k === 'H' ? <td key="h" style={{ ...cell, color: '#2563eb', fontStyle: 'italic' }}>non suivi</td> : (
     <td key={k} style={cell}><input value={tab[cle][k]} aria-label={`${cle} case ${k + 1}`} onChange={e => { const v = e.target.value; setTab(x => ({ ...x, [cle]: x[cle].map((y, j) => (j === k ? v : y)), verif: { ...x.verif, [cle]: false } })); }}
       style={bord(tab.verif[cle] ? okVal(tab[cle][k], vrais[k]) : undefined)}/></td>));
   const btnVerif = cle => <td style={cell}><button onClick={() => setTab(x => ({ ...x, verif: { ...x.verif, [cle]: true } }))} style={stylePetitBouton(true, '#16a34a')}>Vérifier la ligne</button>
@@ -352,7 +352,7 @@ export function SimulationTitrageIndirect() {
         <thead><tr><th style={cell}/><th style={cell}>C₆H₈O₆</th><th style={cell}>+ I₂</th><th style={cell}>→ C₆H₆O₆</th><th style={cell}>+ 2 H⁺</th><th style={cell}>+ 2 I⁻</th><th style={cell}/></tr></thead>
         <tbody>
           <tr><td style={cell}>état initial : x = 0</td>{ligneSaisie('init', vraiInit)}{btnVerif('init')}</tr>
-          {vu('tabCours') && <tr><td style={cell}>en cours : x</td>{[0, 1, 2, 'H', 3].map(k => k === 'H' ? <td key="h" style={{ ...cell, color: '#2563eb', fontStyle: 'italic' }}>excès</td> : (
+          {vu('tabCours') && <tr><td style={cell}>en cours : x</td>{[0, 1, 2, 'H', 3].map(k => k === 'H' ? <td key="h" style={{ ...cell, color: '#2563eb', fontStyle: 'italic' }}>non suivi</td> : (
             <td key={k} style={cell}><select value={tab.cours[k]} aria-label={`en cours case ${k + 1}`} onChange={e => { const v = e.target.value; setTab(x => ({ ...x, cours: x.cours.map((y, j) => (j === k ? v : y)), verif: { ...x.verif, cours: false } })); }}
               style={{ ...bord(tab.verif.cours ? tab.cours[k] === BON[k] : undefined), width: 92 }}><option value="">?</option>{OPT[k].map(o => <option key={o} value={o}>{o}</option>)}</select></td>))}{btnVerif('cours')}</tr>}
           {vu('tabFin') && <tr><td style={cell}>état final : x<sub>max</sub> = n₀</td>{ligneSaisie('fin', vraiFin)}{btnVerif('fin')}</tr>}
@@ -539,6 +539,13 @@ export function SimulationTitrageIndirect() {
           </div>}
         </div>
       </>}
+      <PanneauHypotheses>
+        <li><strong>Réactions totales et rapides</strong> : la réaction préalable (vitamine C + diiode) est supposée terminée avant le titrage, et la réaction de titrage (diiode + thiosulfate) est supposée totale et instantanée.</li>
+        <li><strong>Solutions étalon</strong> : les concentrations du diiode et du thiosulfate sont supposées exactes. Le prélèvement de la solution est supposé représentatif (solution homogène).</li>
+        <li><strong>Repérage de l’équivalence</strong> : on la repère à la disparition de la couleur du diiode (jaune, ou bleu-noir avec l’empois d’amidon), supposée nette. L’incertitude vient surtout de la lecture de la burette (graduations de 0,1 mL).</li>
+        <li><strong>Dégradation</strong> : la vitamine C se dégrade avec le temps et la lumière. Dans le modèle, une solution gardée plusieurs heures en contient moins, ce qui fausse le résultat si on attend trop avant de titrer.</li>
+        <li><strong>Espèces suivies</strong> : on ne suit que C₆H₈O₆ et I₂ ; H⁺ et I⁻ sont formés mais ne servent pas au calcul de l’avancement.</li>
+      </PanneauHypotheses>
     </div>
   );
 }

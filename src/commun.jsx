@@ -394,6 +394,17 @@ export function ARetenir({ titre = 'À RETENIR', children }) {
   );
 }
 
+// Panneau repliable « Hypothèses de travail » (à placer en bas d'une simulation) : une puce par hypothèse, en <li>.
+export function PanneauHypotheses({ titre = 'Hypothèses de travail', children }) {
+  const [ouvert, setOuvert] = useState(false);
+  return (
+    <div data-hypotheses="1" style={{ ...styleBoite, marginTop: 12 }}>
+      <Section titre={titre} ouvert={ouvert} onBascule={() => setOuvert(o => !o)}>
+        <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>{children}</ul>
+      </Section>
+    </div>);
+}
+
 // Encadré « exemple résolu » des parcours guidés : le raisonnement est donné en entier, l'élève le refait ensuite sur un autre cas.
 export function ExempleResolu({ titre = 'Exemple résolu', children }) {
   return (
