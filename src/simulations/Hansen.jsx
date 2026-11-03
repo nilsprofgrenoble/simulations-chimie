@@ -1,4 +1,4 @@
-import { useSignalerMode, declarerDefis, SuiviDefiDirect, modeOuverture } from "../suivi";
+import { useSignalerMode, declarerDefis, SuiviDefi, useCompteurDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
 import { HansenExploration } from "./HansenExploration";
 import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton,
@@ -374,19 +374,31 @@ export function Simulation4({ plotlyReady }) {
   );
 
   // ════════════════ DÉFI ════════════════
-  function nouveauDefi(type = defi ? defi.type : 'form') { setDefi({ type, alcoolMin: [40, 50, 60][Math.floor(Math.random() * 3)] }); setPolyId('tp'); setVol({ ea: 100, ba: 0, etoh: 0, ipa: 0 }); }
+  const [etatExp, setEtatExp] = useState(null);
+  const [sd, noterDefi] = useCompteurDefi();
+  const [bilanDefi, setBilanDefi] = useState(null);      // critères évalués au moment de « Valider ma réponse »
+  const [cleExp, setCleExp] = useState(0);                // change quand on recommence : l'exploration repart de sa configuration de départ
+  function nouveauDefi(type = defi ? defi.type : 'form') { setDefi({ type, alcoolMin: [40, 50, 60][Math.floor(Math.random() * 3)] }); setBilanDefi(null); setEtatExp(null); setCleExp(k => k + 1); }
+  // Critères du défi, évalués sur le mélange composé dans l'exploration libre
+  const criteresDefi = () => {
+    const E = etatExp, sel = defi.type === 'selectif';
+    if (!E) return [{ ok: false, t: 'Composez un mélange dans l’exploration libre ci-dessous.' }];
+    const bonsPoly = E.polyId === 'nc-tp' && (!sel || (E.deux && E.poly2Id === 'pmma'));
+    const C = [{ ok: bonsPoly, t: sel ? 'Polymères : nitrocellulose (données du TP) et PMMA, option « deux sphères » activée (ne les changez pas)' : 'Polymère : nitrocellulose (données du TP), à ne pas changer' }];
+    if (!E.possible || !E.melange.length) return [...C, { ok: false, t: 'Aucun mélange composé : choisissez au moins deux solvants cochés.' }];
+    C.push({ ok: bonsPoly && E.redMel < 0.9, t: `Dissout la nitrocellulose, avec une marge : RED du mélange < 0,9 (${fmt(E.redMel, 2)})` });
+    if (sel) C.push({ ok: bonsPoly && E.redMel2 >= 1.2, t: `N’attaque pas le PMMA, avec une marge : RED pour le PMMA ≥ 1,2 (${E.redMel2 == null ? '—' : fmt(E.redMel2, 2)})` });
+    else {
+      const present = E.melange.filter(x => x.part >= 0.05 && x.pvap != null).sort((x, y) => x.pvap - y.pvap), dernier = present[0];
+      C.push({ ok: !!dernier && dernier.red < 1, t: dernier ? `Le solvant le moins volatil est un vrai solvant (${dernier.s}, RED = ${fmt(dernier.red, 2)})` : 'Le solvant le moins volatil est un vrai solvant (pression de vapeur inconnue)' });
+      const alc = E.melange.filter(x => x.famille === 'Alcools').reduce((a, x) => a + x.part, 0) * 100;
+      C.push({ ok: alc >= defi.alcoolMin, t: `Économique : au moins ${defi.alcoolMin} % d’alcool (${fmt(alc, 0)} %)` });
+    }
+    return C;
+  };
   const voletDefi = defi && (() => {
-    const alc = tot > 0 ? (vol.etoh + vol.ipa) / tot * 100 : 0;
-    const rDernier = dernier ? ra(P, SOLVANTS[dernier.k]) / P.R0 : Infinity;
-    const sel = defi.type === 'selectif', redPM = ra(PMMA, mel) / PMMA.R0;
-    const C = sel ? [
-      { ok: redMel < 0.9, t: `Dissout le vernis (nitrocellulose, données du TP) avec une marge : RED du mélange < 0,9 (${fmt(redMel, 2)})` },
-      { ok: redPM >= 1.2, t: `N'attaque pas l'objet en PMMA, avec une marge : RED pour le PMMA ≥ 1,2 (${fmt(redPM, 2)})` },
-    ] : [
-      { ok: redMel < 0.9, t: `Dissout la nitrocellulose, avec une marge : RED du mélange < 0,9 (${fmt(redMel, 2)})` },
-      { ok: rDernier < 1, t: `Le solvant le moins volatil est un vrai solvant${dernier ? ` (${SOLVANTS[dernier.k].nom}, RED = ${fmt(rDernier, 2)})` : ''}` },
-      { ok: alc >= defi.alcoolMin, t: `Économique : au moins ${defi.alcoolMin} % d'alcool (${fmt(alc, 0)} %)` },
-    ];
+    const sel = defi.type === 'selectif', E = etatExp;
+    const rep = E && E.possible && E.melange.length ? E.melange.map(x => `${fmt(x.part * 100, 0)} % ${x.s}`).join(' + ') : '—';
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -394,15 +406,17 @@ export function Simulation4({ plotlyReady }) {
           <button onClick={() => nouveauDefi('selectif')} style={stylePetitBouton(sel, '#0b4f94')}>Défi 2 : un dissolvant sélectif</button>
         </div>
         <div style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.55 }}>{sel
-          ? <>Vous voulez enlever un vernis à la nitrocellulose sur un objet en <strong>PMMA</strong> (verre acrylique, δd = 18,6 ; δp = 10,5 ; δh = 5,1 ; R0 = 8,6) sans abîmer l'objet. Composez, avec les quatre solvants, un mélange qui dissout le vernis mais pas le PMMA : il doit respecter les deux critères ci-dessous.</>
-          : <>Formulez le mélange de solvants d'un vernis à la nitrocellulose (données du TP) qui respecte les trois critères ci-dessous.</>}</div>
-        <SuiviDefiDirect key={sel ? "s" : "p"} cle={`${SIM_ID}:defi.${sel ? "selectif" : "principal"}`} reussi={C.every(c => c.ok)} />
-        {C.map((c, k) => <div key={k} style={{ fontSize: 14, color: KIT.txt }}>{c.ok ? '✅' : '❌'} {c.t}</div>)}
-        {C.every(c => c.ok) && <div style={{ fontSize: 14, fontWeight: 700, color: '#15803d' }}>{sel ? 'Bravo ! Le modèle prévoit que le vernis part sans attaquer le PMMA. Il resterait à le vérifier sur une chute d\u2019objet : le PMMA peut se fissurer ou blanchir sous contrainte même sans se dissoudre.' : 'Bravo ! Il resterait à vérifier au laboratoire la dissolution, le temps de séchage et l\u2019aspect du film.'}</div>}
-        {!sel && tot > 0 && vol.ipa / tot > 0.5 && <div style={{ fontSize: 13.5, color: '#b45309', lineHeight: 1.5 }}><Pic n="warn"/>Le modèle accepte ce mélange parce qu'il place l'isopropanol juste dans la sphère (RED = 0,88).
-          En pratique, l'isopropanol ne dissout pas seul la plupart des nitrocelluloses : un mélange aussi riche en isopropanol est à vérifier au laboratoire avant d'y croire.</div>}
-        {sel && <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.5 }}>Pour explorer d'autres polymères et d'autres solvants, l'exploration libre propose l'option « deux sphères ».</div>}
-        <button onClick={() => nouveauDefi()} style={styleBouton(false)}><Pic n="refresh"/>{sel ? 'Recommencer' : "D'autres critères"}</button>
+          ? <>Vous voulez enlever un vernis à la nitrocellulose sur un objet en <strong>PMMA</strong> (verre acrylique) sans abîmer l’objet. Trouvez un mélange de solvants qui dissout le vernis mais pas le PMMA. Les deux polymères sont déjà réglés dans l’exploration libre ci-dessous (option « deux sphères ») : <strong>faites vos essais dans l’exploration</strong>, puis donnez votre réponse ici.</>
+          : <>Formulez le mélange de solvants d’un vernis à la nitrocellulose (données du TP). <strong>Faites vos essais dans l’exploration libre</strong> ci-dessous (cochez des solvants, composez le mélange, regardez les RED), puis donnez votre réponse ici : le mélange doit respecter les critères ci-dessous.</>}</div>
+        <div style={{ fontSize: 14, color: KIT.txt }}>Votre réponse actuelle (mélange composé dans l’exploration) : <strong>{rep}</strong></div>
+        <button onClick={() => { const C = criteresDefi(); setBilanDefi(C); noterDefi(C.every(c => c.ok)); }} style={styleBouton(true, '#16a34a')}>✓ Valider ma réponse</button>
+        <SuiviDefi cle={`${SIM_ID}:defi.${sel ? 'selectif' : 'principal'}`} etat={sd} key={sel ? 's' : 'p'}/>
+        {bilanDefi && <>
+          {bilanDefi.map((c, k) => <div key={k} style={{ fontSize: 14, color: KIT.txt }}>{c.ok ? '✅' : '❌'} {c.t}</div>)}
+          {bilanDefi.every(c => c.ok) && <div style={{ fontSize: 14, fontWeight: 700, color: '#15803d' }}>{sel ? 'Bravo ! Le modèle prévoit que le vernis part sans attaquer le PMMA. Il resterait à le vérifier sur une chute d’objet : le PMMA peut se fissurer ou blanchir sous contrainte même sans se dissoudre.' : 'Bravo ! Il resterait à vérifier au laboratoire la dissolution, le temps de séchage et l’aspect du film.'}</div>}
+          {!sel && bilanDefi.every(c => c.ok) && etatExp && etatExp.melange.some(x => /Isopropanol/.test(x.s) && x.part > 0.5) && <div style={{ fontSize: 13.5, color: '#b45309', lineHeight: 1.5 }}><Pic n="warn"/>Le modèle accepte ce mélange parce qu’il place l’isopropanol juste dans la sphère. En pratique, l’isopropanol ne dissout pas seul la plupart des nitrocelluloses : un mélange aussi riche en isopropanol est à vérifier au laboratoire avant d’y croire.</div>}
+        </>}
+        <button onClick={() => nouveauDefi()} style={styleBouton(false)}><Pic n="refresh"/>{sel ? 'Recommencer' : 'D’autres critères'}</button>
       </div>
     );
   })();
@@ -430,7 +444,10 @@ export function Simulation4({ plotlyReady }) {
           <button onClick={() => changerMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}><Pic n="target"/>Défi</button>
         </div>
       </div>
-      {mode === 'explore' ? <HansenExploration plotlyReady={plotlyReady}/> : <>
+      {enDefi ? <>
+        <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}</div>
+        <HansenExploration key={`${defi.type}-${cleExp}`} plotlyReady={plotlyReady} initial={defi.type === 'selectif' ? { polyId: 'nc-tp', deux: true, poly2Id: 'pmma', pur: true } : { polyId: 'nc-tp', pur: true }} onEtat={setEtatExp}/>
+      </> : mode === 'explore' ? <HansenExploration plotlyReady={plotlyReady}/> : <>
       {enGuide && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
         <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Parcours :</span>
         {[[1, '1. La sphère de solubilité'], [2, '2. Les mélanges'], [3, '3. Le séchage du vernis']].map(([k, n]) =>
@@ -438,11 +455,10 @@ export function Simulation4({ plotlyReady }) {
       </div>}
       <div className="ha-l1">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{vueBloc}{blocSech}</div>
-        {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
-          : enDefi ? <div style={styleBoite}>{voletDefi}</div> : blocMel}
+        {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : blocMel}
       </div>
       <div className="ha-l2">
-        {(enGuide || enDefi) && blocMel}
+        {enGuide && blocMel}
         {blocSolvants}
         {blocPoly}
         {blocHypo}
