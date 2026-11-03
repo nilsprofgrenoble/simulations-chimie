@@ -20,7 +20,7 @@ export function typeOrbite(hKm, v) {
   if (eps >= 0) return { type: 'libération', apogee: Infinity, perigee: r0 };
   const a = -MU / (2 * eps), h = r0 * v, e = Math.sqrt(Math.max(0, 1 + 2 * eps * h * h / (MU * MU)));
   const rp = a * (1 - e), ra = a * (1 + e);
-  if (rp >= R_KM && ra - rp <= 100) return { type: 'circulaire', apogee: ra, perigee: rp };  // écart d'altitude inférieur à 100 km : quasi circulaire
+  if (rp >= R_KM && ra - rp <= 150) return { type: 'circulaire', apogee: ra, perigee: rp };  // écart d’altitude inférieur à 150 km : quasi circulaire
   return { type: rp < R_KM ? 'impact' : 'ellipse', apogee: ra, perigee: rp };
 }
 // intégration (Verlet) : état {x, y, vx, vy} en km et km/s ; départ au sommet (0, R+h), vitesse horizontale vers la droite

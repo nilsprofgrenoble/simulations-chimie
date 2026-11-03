@@ -199,7 +199,7 @@ export function SimulationSolubilite() {
     { id: 'vocab', titre: 'Miscibilité ou solubilité ?', focus: ['notion'],
       texte: <>Deux <strong>liquides</strong> sont <strong>miscibles</strong> s’ils forment une seule phase quelles que soient les proportions (eau et éthanol), <strong>non miscibles</strong> s’ils restent en deux phases (eau et huile). Aucun des deux n’est « le soluté » : ils jouent le même rôle, on les appelle simplement A et B.
         Pour un <strong>solide</strong> dans un liquide, on parle de <strong>solubilité</strong> : le liquide est le <strong>solvant</strong>, le solide est le <strong>soluté</strong>, et il y a une quantité maximale que l’on peut dissoudre (au-delà, le solide reste au fond : la solution est saturée).</>,
-      tache: { type: 'qcm', q: 'On verse de l’huile dans du vinaigre (de l’eau) : deux phases apparaissent. On dit que…', options: ['l’huile et l’eau sont non miscibles', 'l’huile est insoluble dans l’eau, qui est le solvant', 'l’huile est un soluté saturé'], bonne: 0,
+      tache: { type: 'qcm', q: 'On verse de l’huile dans du vinaigre (de l’eau) : deux phases apparaissent. On dit que…', options: ['l’huile et l’eau sont non miscibles', 'l’huile est le soluté et l’eau le solvant, car l’eau est en plus grande quantité', 'l’huile est un soluté saturé'], bonne: 0,
         expl: 'Ce sont deux liquides : on parle de miscibilité. Le même raisonnement (comparer état initial et état final) vaut pour la miscibilité de deux liquides et pour la solubilité d’un solide.' } },
     { id: 'ee', titre: 'Eau et éthanol', focus: ['paires', 'bilan'],
       texte: <>Choisissez l’<strong>eau</strong> (liquide A) et l’<strong>éthanol</strong> (liquide B), puis dépliez « Interactions possibles ». L’eau et l’éthanol ont tous les deux des H liés à O et des O porteurs de doublets non liants : la liaison H se fait entre un H lié à O et un doublet non liant d’un O voisin, dans l’alignement de la liaison O–H.</>,
@@ -249,7 +249,7 @@ export function SimulationSolubilite() {
       texte: <>L’éthanol possède un groupe OH polaire et une chaîne éthyle apolaire : c’est une molécule <strong>amphiphile</strong>. Choisissez l’<strong>éthanol</strong> (A) et l’<strong>hexane</strong> (B).</>,
       tache: { type: 'action', ok: est('ethanol', 'hexane'), label: 'Éthanol + hexane', faire: () => setSel({ solv: 'ethanol', sol: 'hexane' }), consigne: 'A : éthanol ; B : hexane' } },
     { id: 'limq', titre: 'Pas tout noir ni tout blanc', focus: ['bilan'],
-      texte: <>La perte est bien plus faible qu’avec l’eau (une seule liaison H par molécule d’éthanol, et une chaîne carbonée qui interagit bien avec l’hexane).</>,
+      texte: <>La perte est bien plus faible qu’avec l’eau (un seul groupe –OH par molécule d’éthanol (contre deux pour l’eau), et une chaîne carbonée qui interagit bien avec l’hexane).</>,
       tache: { type: 'qcm', q: 'Pour ce couple, le modèle indique…', options: ['un cas limite : la miscibilité dépend de la température et des proportions', 'des liquides parfaitement miscibles', 'des liquides parfaitement non miscibles'], bonne: 0,
         expl: 'L’éthanol et l’hexane sont miscibles à température ambiante mais se séparent si l’on refroidit : la perte d’énergie est du même ordre que ce que l’agitation thermique peut compenser.' } },
     { id: 'i2', titre: 'Un solide : le diiode', focus: ['choix', 'bilan'],
@@ -294,10 +294,10 @@ export function SimulationSolubilite() {
         expl: 'Na⁺ est entouré par les O de l’acétone, mais Cl⁻ n’a pas de H (δ+) à attirer : il n’est retenu que par des interactions plus faibles. Le solde passe en zone rouge (mesure : 0,0004 g/kg).' } },
     { id: 'extr', titre: 'Application : l’extraction', focus: [],
       texte: <>Extraire une espèce d’une solution aqueuse, c’est la transférer dans un second solvant. Il faut qu’elle y soit très soluble (bilan faible) et que ce solvant ne se mélange pas à l’eau (grosse perte eau…solvant).</>,
-      tache: { type: 'qcm', q: 'Pour extraire le diiode d’une solution aqueuse, on choisit…', options: ['le cyclohexane : non miscible avec l’eau, et dissout bien le diiode', 'l’éthanol : il dissout bien le diiode', 'l’acétone : miscible à l’eau'], bonne: 0,
+      tache: { type: 'qcm', q: 'Pour extraire le diiode d’une solution aqueuse, on choisit…', options: ['le cyclohexane : non miscible avec l’eau, et dissout bien le diiode', 'l’éthanol : il dissout le diiode', 'l’acétone : miscible à l’eau'], bonne: 0,
         expl: 'L’éthanol et l’acétone sont miscibles à l’eau : il n’y aurait qu’une seule phase, donc pas d’extraction possible.' } },
     { id: 'limites', titre: 'Les limites du modèle', focus: [],
-      texte: <>Le bilan d’énergie est un outil puissant, mais il ne dit pas tout. Il ne tient pas compte de l’<strong>entropie</strong> : l’agitation thermique favorise le mélange, d’environ RT·ln 2 ≈ 1,7 kJ/mol à 25 °C. Il se trompe aussi sur certains couples : par exemple il annonce un « cas limite » pour l’eau et l’acétone, qui sont miscibles. Les seuils utilisés ici sont réglés sur des cas connus : ce sont des repères, pas des lois.</>,
+      texte: <>Le bilan d’énergie est un outil puissant, mais il ne dit pas tout. Il ne traite l’<strong>entropie</strong> que très grossièrement : l’agitation thermique favorise le mélange, d’environ RT·ln 2 ≈ 1,7 kJ/mol à 25 °C. Il se trompe aussi sur certains couples : par exemple il annonce un « cas limite » pour l’eau et l’acétone, qui sont miscibles. Les seuils utilisés ici sont réglés sur des cas connus : ce sont des repères, pas des lois.</>,
       tache: { type: 'qcm', q: 'Un résultat « cas limite » signifie…', options: ['que le mélange peut se produire ou non selon la température et les proportions', 'que le modèle a fait une erreur de calcul', 'que les liquides sont non miscibles'], bonne: 0,
         expl: 'Quand la perte est de l’ordre de grandeur de l’énergie thermique disponible, les deux issues sont possibles : seule l’expérience (ou un calcul plus complet) tranche.' } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
@@ -307,7 +307,7 @@ export function SimulationSolubilite() {
         <li>Trois interactions de molécules : liaison H (≈ 17 kJ/mol), dipôle–dipôle, dispersion ; entre ions : interaction ion–ion, écrantée par le solvant.</li>
         <li>« Qui se ressemble s’assemble » : c’est quand les interactions A…B ressemblent aux interactions A…A et B…B que la perte est faible.</li>
         <li>Entre « polaire » et « apolaire », il y a un continuum : une molécule est un équilibre entre parties hydrophiles et lipophiles.</li>
-        <li>Solide ionique : défaire le cristal coûte beaucoup, mais l’eau entoure très bien les ions (ion–dipôle, liaisons H avec Cl⁻) : la balance est presque à l’équilibre. Dans les autres solvants, elle penche à gauche.</li>
+        <li>Solide ionique : défaire le cristal coûte beaucoup, mais l’eau entoure très bien les ions (ion–dipôle, liaisons H avec Cl⁻) : la balance est presque à l’équilibre. Dans la plupart des autres solvants, elle penche à gauche.</li>
         <li>Pour une extraction : soluté très soluble dans le solvant extracteur, et solvant non miscible à la phase d’origine.</li></ul>,
       texte: <>Vous savez prévoir solubilité et miscibilité en comparant les interactions avant et après. Passez aux défis !</>, tache: null },
   ];

@@ -461,7 +461,7 @@ export function SimulationElectrisation() {
       tache: { type: 'action', ok: okE1, label: 'Électroscope neutre, tige en verre loin', faire: () => setEle({ tige: 'verre', d: 12, Q: 0 }), consigne: 'Tige en verre à 10 cm ou plus, électroscope neutre' } },
     { id: 'e1q', titre: 'Feuilles fermées', onglet: 'electroscope', focus: ['scene', 'bilan'],
       texte: <>Observez les feuilles.</>,
-      tache: { type: 'qcm', q: 'Pourquoi les feuilles de l’électroscope neutre restent-elles fermées ?', options: ['chaque feuille est neutre : il n’y a aucune charge à repousser', 'les feuilles sont trop lourdes', 'la sphère est chargée négativement'], bonne: 0,
+      tache: { type: 'qcm', q: 'Pourquoi les feuilles de l’électroscope neutre restent-elles fermées ?', options: ['chaque feuille est neutre : les charges + et − se compensent, il n’y a aucune charge nette à repousser', 'les feuilles sont trop lourdes', 'la sphère est chargée négativement'], bonne: 0,
         expl: 'Le métal contient autant de charges + que de charges − en chaque endroit : aucune force électrostatique n’écarte les feuilles.' } },
     { id: 'e2', titre: 'Approcher la tige (sans contact)', onglet: 'electroscope', focus: ['reglages', 'scene'],
       texte: <>Approchez la tige en verre chargée + (4 cm ou moins), sans toucher la sphère.</>,
@@ -603,7 +603,7 @@ export function SimulationElectrisation() {
         <rect x="50" y="30" width="540" height="84" rx="22" fill={TIGES[frot.tige].couleur} stroke="#0f172a" strokeWidth="1.5" opacity="0.55"/>
         <rect x="50" y="150" width="540" height="84" rx="10" fill="#fef3c7" stroke="#0f172a" strokeWidth="1.5" strokeDasharray="6 3" opacity="0.8"/>
         <text x="58" y="24" fontSize="13.5" fontWeight="700" fill="#0f172a">Tige {TIGES[frot.tige].nom}</text>
-        <text x="58" y="145" fontSize="13.5" fontWeight="700" fill="#0f172a">Tissu (peau de chat)</text>
+        <text x="58" y="145" fontSize="13.5" fontWeight="700" fill="#0f172a">Tissu (laine)</text>
         <text x="582" y="24" textAnchor="end" fontSize="14" fontWeight="800" fill={cache.bilan ? '#64748b' : tf > 0 ? ROUGE : tf < 0 ? BLEU : '#0f172a'}>{cache.bilan ? 'q = ?' : `q = ${chg(tf)}`}</text>
         <text x="582" y="145" textAnchor="end" fontSize="14" fontWeight="800" fill={cache.bilan ? '#64748b' : tf < 0 ? ROUGE : tf > 0 ? BLEU : '#0f172a'}>{cache.bilan ? 'q = ?' : `q = ${chg(-tf)}`}</text>
         {el}
@@ -889,7 +889,7 @@ export function SimulationElectrisation() {
       <div style={{ display: 'flex', gap: 10, alignItems: 'stretch' }}>
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', fontWeight: 800, fontSize: 18, color: ROUGE }}><span>+</span><span style={{ color: BLEU }}>−</span></div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, fontSize: 14 }}>
-          {[['verre', 'verre'], ['tissu', 'tissu (peau de chat)'], ['ebonite', 'ébonite'], ['pp', 'polypropylène']].map(([k, l]) => (
+          {[['verre', 'verre'], ['tissu', 'tissu (laine)'], ['ebonite', 'ébonite'], ['pp', 'polypropylène']].map(([k, l]) => (
             <div key={k} style={{ padding: '3px 8px', borderRadius: 6, border: `1.5px solid ${frot.tige === k ? VIOLET : KIT.bord}`, background: frot.tige === k ? '#f5f3ff' : 'white', fontWeight: frot.tige === k || k === 'tissu' ? 700 : 500 }}>{l}</div>))}
         </div>
       </div>
@@ -903,7 +903,7 @@ export function SimulationElectrisation() {
       <li><strong>Un petit nombre de charges</strong> est dessiné (8 de chaque signe, quelques électrons transférés) pour qu’on puisse les voir. Dans la réalité, une tige frottée porte de l’ordre de 10¹⁰ électrons en excès ou en défaut, soit quelques nanocoulombs.</li>
       <li><strong>Isolants et conducteurs</strong> : la tige (verre, ébonite, plastique) est isolante, donc ses charges restent là où le frottement les a déposées. La boule d’aluminium et le métal en général sont conducteurs : leurs électrons libres peuvent se déplacer dans tout le métal.</li>
       <li><strong>Influence</strong> : la répartition des charges dans la boule est schématique. Si on éloigne la tige sans contact, la boule redevient uniformément neutre.</li>
-      <li><strong>Contact</strong> : on suppose que la boule prend, au contact, une charge de même signe que la tige (ici 2 charges élémentaires sur le dessin). La tige isolante, très chargée, n’en perd qu’une infime partie.</li>
+      <li><strong>Contact</strong> : on suppose que la boule prend, au contact, une charge de même signe que la tige (ici 2 charges élémentaires sur le dessin). Dans la réalité, la tige isolante, très chargée, n’en perd qu’une petite partie ; le dessin en montre une fraction plus grande pour qu’on la voie.</li>
       <li><strong>Dé-électrisation</strong> : on suppose que la paille et la tige portent des charges opposées égales : au contact, elles se neutralisent complètement. En réalité, ce sont des isolants : le transfert est local et souvent partiel.</li>
       <li><strong>Électroscope</strong> : les charges se répartissent entre la sphère, la tige et les feuilles ; le dessin donne aux feuilles environ la moitié de l’excès de charge, ce qui est schématique (en réalité, c’est la forme de l’appareil qui décide). L’angle des feuilles, calculé à partir de leur charge, est qualitatif : l’écart réel résulte d’un équilibre entre le poids des feuilles et leur répulsion. Au contact, l’électroscope prend 4 charges élémentaires sur le dessin.</li>
       <li><strong>Mouvements</strong> : la boule et la paille bougent selon un modèle simple (force qui diminue quand la distance augmente, rappel du fil pour la boule, frottement pour la paille). Les valeurs sont qualitatives : seuls le sens du mouvement et le fait qu’il y ait contact ou non sont significatifs. Une boule neutre est attirée jusqu’au contact si la tige est assez proche (environ 4 cm ou moins sur le dessin), puis elle prend la charge de la tige et est repoussée. La paille roule jusqu’à la tige si elle est assez proche et s’arrête à son contact (on ne simule pas d’échange de charge à ce moment).</li>
