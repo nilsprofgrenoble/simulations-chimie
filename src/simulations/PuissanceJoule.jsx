@@ -152,8 +152,8 @@ export function SimulationPuissanceJoule() {
           'ρ = 150 / 200 = 0,75.',
           'En pourcentage : 0,75 × 100 = 75 %.'], expl: 'ρ = 150 / 200 = 0,75 = 75 %.' } },
     { id: 'calo', titre: 'L’expérience : chauffer de l’eau', depart: () => setAtelier('calo'),
-      texte: <>Une résistance chauffante plongée dans <strong>0,2 kg d’eau</strong> reçoit W<sub>élec</sub> = U × I × Δt (courbe bleue). L’eau reçoit Q = m × C × Δθ (courbe orange), avec C = 4180 J·kg⁻¹·K⁻¹. Si tout était transféré à l’eau, les deux courbes seraient confondues. Déplacez le curseur de temps : <strong>Q reste un peu en dessous de W<sub>élec</sub></strong>. Décochez « avec pertes » pour comparer.</>,
-      tache: { type: 'qcm', q: 'Pourquoi le transfert thermique Q reçu par l’eau est-il un peu inférieur au travail électrique W_élec ?', options: ['Une partie de la chaleur chauffe le récipient et l’air ambiant (pertes)', 'L’énergie disparaît', 'La résistance consomme de l’eau', 'Q = W_élec exactement, c’est une erreur de mesure'], bonne: 0, expl: 'Le rendement est inférieur à 1 : une partie de l’énergie est perdue vers le récipient, le thermomètre et l’air.' } },
+      texte: <>Une résistance chauffante plongée dans <strong>0,2 kg d’eau</strong> reçoit W<sub>élec</sub> = U × I × Δt (courbe bleue). L’eau reçoit Q = m × C × Δθ (courbe orange), avec C = 4180 J·kg⁻¹·K⁻¹. Si tout était transféré à l’eau, les deux courbes seraient confondues. Déplacez le curseur de temps : <strong>Q reste un peu en dessous de W<sub>élec</sub></strong>. Décochez « avec pertes » pour comparer : les deux courbes se rapprochent, mais restent distinctes, car la cuve, la résistance et le thermomètre (40 J·K⁻¹) absorbent aussi de l’énergie.</>,
+      tache: { type: 'qcm', q: 'Pourquoi le transfert thermique Q reçu par l’eau est-il un peu inférieur au travail électrique W_élec ?', options: ['Une partie de la chaleur chauffe le récipient et l’air ambiant (pertes)', 'L’énergie disparaît', 'La résistance consomme de l’eau', 'Q = W_élec exactement, c’est une erreur de mesure'], bonne: 0, expl: 'Le rendement est inférieur à 1 : une partie de l’énergie chauffe le récipient et le thermomètre, et une autre est perdue vers l’air.' } },
     { id: 'rho_calo', titre: 'Rendement de l’expérience', depart: () => { setAtelier('calo'); setCa(c => ({ ...c, t: 300, pertes: true })); },
       texte: <>À t = 300 s on mesure : Q = 6656 J et W<sub>élec</sub> = 7330 J. Le rendement du dispositif « résistance + eau » vaut ρ = Q / W<sub>élec</sub>.</>,
       tache: { type: 'num', q: 'Calculez ρ en % (Q = 6656 J ; W_élec = 7330 J).', unite: '%', vrai: 90.8, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[1.1, 'Tu as inversé : ρ = Q / W_élec (utile / consommée).'], [0.908, 'Exprime le rendement en pourcentage : multiplie le rapport par 100.'], [(7330 - 6656) / 7330 * 100, 'C’est la part d’énergie perdue. Le rendement est la part utile : ρ = Q / W_élec.']],
@@ -283,7 +283,7 @@ export function SimulationPuissanceJoule() {
         <li>Effet Joule : doublez I. Par combien la puissance est-elle multipliée ? Et si vous doublez R ?</li>
         <li>Pertes en ligne : à 100 kV puis 400 kV, comparez les pertes. Par combien sont-elles divisées ?</li>
         <li>Rendement : quel convertisseur est le plus efficace ? Où va la puissance perdue ?</li>
-        <li>Calorimètre : décochez « avec pertes » : que deviennent les deux courbes ?</li>
+        <li>Calorimètre : décochez « avec pertes » : que deviennent les deux courbes ? Se confondent-elles ? Pourquoi (pensez aux accessoires de 40 J·K⁻¹) ?</li>
       </ul>
     </div>);
   const retenir = <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
