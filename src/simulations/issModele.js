@@ -17,10 +17,10 @@ export const periode = hKm => 2 * Math.PI * Math.sqrt((R_KM + hKm) ** 3 / MU);  
 // type de trajectoire pour un lancement horizontal à l'altitude h (km) avec la vitesse v (km/s)
 export function typeOrbite(hKm, v) {
   const r0 = R_KM + hKm, eps = v * v / 2 - MU / r0, vo = vOrb(hKm);
-  if (Math.abs(v - vo) <= 0.1) return { type: 'circulaire', apogee: r0, perigee: r0 };
   if (eps >= 0) return { type: 'libération', apogee: Infinity, perigee: r0 };
   const a = -MU / (2 * eps), h = r0 * v, e = Math.sqrt(Math.max(0, 1 + 2 * eps * h * h / (MU * MU)));
   const rp = a * (1 - e), ra = a * (1 + e);
+  if (rp >= R_KM && ra - rp <= 100) return { type: 'circulaire', apogee: ra, perigee: rp };  // écart d'altitude inférieur à 100 km : quasi circulaire
   return { type: rp < R_KM ? 'impact' : 'ellipse', apogee: ra, perigee: rp };
 }
 // intégration (Verlet) : état {x, y, vx, vy} en km et km/s ; départ au sommet (0, R+h), vitesse horizontale vers la droite

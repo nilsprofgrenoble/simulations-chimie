@@ -23,13 +23,13 @@ const VERT = '#15803d', ORANGE = '#b45309', VIOLET = '#7c3aed';
 const COUL = { poids: '#c2410c', reaction: '#0072b2', poussee: '#15803d', frottement: '#a16207' };
 const alea = l => l[Math.floor(Math.random() * l.length)];
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
-const EPS = 1;                                  // newtons : en dessous, on considère que les forces se compensent
+const tolF = m => Math.max(0.05, 0.0083 * m);   // newtons : en dessous, la vitesse varie de moins de 0,05 m/s en 6 s
 const T_MAX = 6;
 const SOLS = [[0, 'Sans frottement (coussin d’air)'], [0.1, 'Sol glissant'], [0.2, 'Sol normal'], [0.3, 'Sol rugueux']];
 const DEFAUT = { m: 25, F: 0, mu: 0.2, v0: 1 };
 const g = 9.8;
 const Vec = ({ c = 'F' }) => <span style={{ position: 'relative', display: 'inline-block', fontStyle: 'italic' }}>{c}<span aria-hidden="true" style={{ position: 'absolute', left: '0.1em', top: '-0.5em', fontSize: '0.8em', fontStyle: 'normal', lineHeight: 1 }}>→</span></span>;
-const compense = res => Math.abs(res.x) < EPS && Math.abs(res.y) < EPS;
+const compense = (res, m = 25) => Math.abs(res.x) < tolF(m) && Math.abs(res.y) < tolF(m);
 
 // échelle « ronde » (N pour 1 cm) pour que le plus grand vecteur mesure au plus 2,5 cm
 const nice = F => [10, 20, 50, 100, 200, 500, 1000].find(s => F / s <= 2.5) || 1000;
@@ -66,7 +66,7 @@ function Scene({ P, sim, t }) {
       <g><text x="12" y="22" fontSize="12.5" fontWeight="700" fill="#334155">Échelle des forces : 1 cm ↔ {S} N</text></g>
       <g><line x1="12" y1="32" x2="52" y2="32" stroke="#334155" strokeWidth="2"/><text x="58" y="36" fontSize="11" fill="#334155">1 cm</text></g>
       <text x={W - 12} y="22" textAnchor="end" fontSize="13" fontWeight="700" fill="#334155">t = {fr(t, 1)} s · v = {fr(v, 2)} m/s</text>
-      {compense(res)
+      {compense(res, P.m)
         ? <text x={cx} y="70" textAnchor="middle" fontSize="15" fontWeight="800" fill={VERT}>ΣF = 0 : les forces se compensent</text>
         : <g><Fleche x={cx} y={72} dx={res.x * pxN} dy={-res.y * pxN} couleur={VIOLET} ep={6} dash="7 4"/>
           <text x={cx + res.x * pxN / 2} y="56" textAnchor="middle" fontSize="13" fontWeight="800" fill={VIOLET}>résultante ΣF = {fr(Math.hypot(res.x, res.y), 0)} N</text></g>}
@@ -104,8 +104,8 @@ function evaluerDefi(d, P) {
       [o2, o2 ? 'Bonne réponse sur la compensation.' : b.compensent ? 'Ici les forces se compensent : la vitesse est constante (ou nulle).' : 'Ici les forces ne se compensent pas : la vitesse varie.']] };
   }
   if (d.type === 'regler') {
-    const fk = d.mu * d.m * g, ok = Math.abs(P.F - fk) <= Math.max(1.5, 0.03 * fk);
-    return { ok, lignes: [[ok, ok ? 'La poussée compense exactement les frottements : la vitesse reste constante.' : P.F < fk ? 'La poussée est trop faible : les frottements l’emportent, la caisse ralentit.' : 'La poussée est trop forte : la caisse accélère.']] };
+    const fk = d.mu * d.m * g, ok = Math.abs(P.F - fk) <= tolF(d.m);
+    return { ok, lignes: [[ok, ok ? 'La poussée compense les frottements : la vitesse reste constante.' : P.F < fk ? 'La poussée est trop faible : les frottements l’emportent, la caisse ralentit.' : 'La poussée est trop forte : la caisse accélère.']] };
   }
   const p = PREVOIR[d.k], o1 = d.reps.comp === p.compensent, o2 = d.reps.mvt === p.mvt;
   return { ok: o1 && o2, lignes: [[o1, o1 ? 'Bonne réponse sur la compensation.' : 'Revois : les forces se compensent seulement si la vitesse reste constante.'], [o2, o2 ? 'Bonne réponse sur la vitesse.' : 'Revois : si les forces se compensent, la vitesse est constante (ou nulle).']] };
@@ -193,13 +193,13 @@ export function SimulationPrincipeInertie() {
         <ExempleResolu>Sol normal, caisse de 25 kg, glissant à 1 m/s. Les <strong>frottements</strong> f valent 0,2 × 25 × 9,8 = 49 N, vers la gauche. Une poussée F de 49 N vers la droite les compense : <Vec c="ΣF"/> = <Vec c="0"/> (la flèche violette disparaît).
           {bouton('Voir cette situation', () => voir({ m: 25, mu: 0.2, F: 49, v0: 1 }, 3))}</ExempleResolu>
         À vous : coupez la poussée (F = 0) en réglant le curseur.</>,
-      tache: { type: 'action', ok: enGuide && P.m === 25 && P.mu === 0.2 && P.F === 0 && Math.abs(r0.x) > EPS, consigne: 'Mettez la poussée à 0 : qu’arrive-t-il à la résultante et à la vitesse ?' } },
+      tache: { type: 'action', ok: enGuide && P.m === 25 && P.mu === 0.2 && P.F === 0 && Math.abs(r0.x) > tolF(P.m), consigne: 'Mettez la poussée à 0 : qu’arrive-t-il à la résultante et à la vitesse ?' } },
     { id: 'constante', titre: 'Avancer à vitesse constante', depart: () => voir({ m: 25, mu: 0.2, F: 0, v0: 1 }, 0.3),
       texte: <>Sur un sol avec frottements, il faut pousser pour que la caisse garde sa vitesse. Pourquoi ? Pour <strong>compenser</strong> les frottements. Ici, la poussée ne sert pas à « faire avancer » mais à annuler les frottements.
         <ExempleResolu>La caisse part à 1 m/s. Sans poussée, les frottements (49 N) la freinent jusqu’à l’arrêt.</ExempleResolu>
         À vous : réglez la poussée pour que la caisse garde une vitesse constante de 1 m/s.</>,
-      tache: { type: 'action', ok: enGuide && P.mu > 0 && P.v0 >= 0.5 && P.F > 5 && Math.abs(r0.x) < EPS, consigne: 'Réglez la poussée F pour que la résultante soit nulle et que la vitesse reste constante.' } },
-    { id: 'accelere', titre: 'Quand les forces ne se compensent pas', depart: () => voir({ m: 25, mu: 0.2, F: 49, v0: 1 }, 6),
+      tache: { type: 'action', ok: enGuide && P.mu > 0 && P.v0 >= 0.5 && P.F > 5 && Math.abs(r0.x) < tolF(P.m), consigne: 'Réglez la poussée F pour que la résultante soit nulle et que la vitesse reste constante.' } },
+    { id: 'accelere', titre: 'Quand les forces ne se compensent pas', depart: () => voir({ m: 25, mu: 0.2, F: 100, v0: 1 }, 6),
       texte: <>Si la poussée est <strong>plus grande</strong> que les frottements, la résultante n’est plus nulle : elle est dirigée vers l’avant et la <strong>vitesse augmente</strong>.
         <ExempleResolu>Avec F = 100 N et f = 49 N, la résultante vaut 51 N vers la droite : la vitesse augmente. Plus la résultante est grande, plus la vitesse varie vite.</ExempleResolu>
         À vous : faites <strong>accélérer</strong> la caisse.</>,
@@ -211,13 +211,13 @@ export function SimulationPrincipeInertie() {
     { id: 'principe', titre: 'Le principe d’inertie', depart: null,
       texte: <ARetenir titre="LE PRINCIPE D’INERTIE"><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li>Si les forces qui s’exercent sur un système <strong>se compensent</strong> (<Vec c="ΣF"/> = <Vec c="0"/>), alors il est <strong>immobile</strong> ou en <strong>mouvement rectiligne uniforme</strong> (vitesse constante en ligne droite).</li>
-        <li>Réciproquement, si la <strong>vitesse varie</strong> (valeur ou direction), les forces <strong>ne se compensent pas</strong>.</li>
+        <li>Autre façon de le dire : si la <strong>vitesse varie</strong> (valeur ou direction), les forces <strong>ne se compensent pas</strong>.</li>
         <li>Il n’est donc <strong>pas nécessaire</strong> d’avoir une force pour entretenir un mouvement.</li></ul></ARetenir>, tache: null },
     { id: 'voiture', titre: 'Une voiture sur l’autoroute', depart: null,
       texte: <>Appliquons le principe d’inertie. Une voiture roule à 90 km/h en ligne droite sur une route horizontale.
         <ExempleResolu>Vitesse constante en ligne droite : les forces se compensent. Verticalement, poids et réaction. Horizontalement, la force motrice compense les frottements (air et route).</ExempleResolu></>,
       tache: { type: 'qcm', q: 'La même voiture roule à 90 km/h en ligne droite. Que peut-on dire de la force motrice et des frottements ?', options: ['Ils ont la même intensité et des sens opposés', 'La force motrice est la plus grande', 'Les frottements sont la plus grande des forces', 'Il n’y a ni force motrice ni frottements'], bonne: 0, expl: 'Vitesse constante : ΣF = 0, donc la force motrice compense exactement les frottements.' } },
-    { id: 'virage', titre: 'Un virage à vitesse constante', depart: null,
+    { id: 'virage', titre: 'Un virage à valeur de vitesse constante', depart: null,
       texte: <>Attention : la vitesse est un <strong>vecteur</strong> (valeur, direction, sens). Elle est constante seulement si sa valeur <em>et</em> sa direction ne changent pas.
         <ExempleResolu>Une voiture roule à 50 km/h (valeur constante) dans un virage : la <strong>direction</strong> de sa vitesse change, donc le vecteur vitesse varie. Les forces ne se compensent pas.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Dans un virage à valeur de vitesse constante, les forces sur la voiture…', options: ['ne se compensent pas', 'se compensent', 'sont nulles', 'ont une résultante dirigée vers l’arrière'], bonne: 0, expl: 'La direction de la vitesse change : le vecteur vitesse varie, donc les forces ne se compensent pas.' } },
@@ -243,12 +243,12 @@ export function SimulationPrincipeInertie() {
 
   function lancer(type, prec) {
     const d = nouveauDefi(type, prec); setDefi(d); setLecture(false);
-    if (type === 'regler') { setP(p => ({ ...p, F: 0, m: d.m, mu: d.mu, v0: d.v0 })); setT(6); }
+    if (type === 'regler') { setP(p => ({ ...p, F: 0, m: d.m, mu: d.mu, v0: d.v0 })); setT(0.3); }
   }
   function changerMode(md) { setMode(md); if (md === 'defi') lancer(defi ? defi.type : 'bilan', null); }
 
   // ════════════════ PANNEAUX ════════════════
-  const verdict = compense(res)
+  const verdict = compense(res, P.m)
     ? <div style={{ color: VERT, fontWeight: 700 }}><Pic n="ok"/>Les forces se compensent (<Vec c="ΣF"/> = <Vec c="0"/>) : {Math.abs(vT) < 1e-6 ? 'la caisse est immobile.' : `la vitesse est constante (${fr(vT, 2)} m/s) : mouvement rectiligne uniforme.`}</div>
     : <div style={{ color: ORANGE, fontWeight: 700 }}><Pic n="warn"/>Les forces ne se compensent pas (résultante de {fr(Math.abs(res.x), 0)} N) : la vitesse {res.x * (Math.abs(vT) < 1e-6 ? 1 : vT) > 0 ? 'augmente' : 'diminue'}.</div>;
   const plancheEtControles = (verrou, tableau = true) => (
@@ -260,7 +260,7 @@ export function SimulationPrincipeInertie() {
           <input type="range" min="0" max={T_MAX} step="0.1" value={t} aria-label="Date en secondes" onChange={e => { setLecture(false); setT(+e.target.value); }} style={{ width: '100%' }}/></label></div>
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 6 }}>
         <label style={{ flex: '1 1 220px', fontSize: 13.5, fontWeight: 600 }}>Poussée F : <strong>{P.F} N</strong> <span style={{ fontWeight: 400, color: KIT.txt2 }}>(+ vers la droite)</span>
-          <input type="range" min="-150" max="150" step="1" value={P.F} aria-label="Poussée en newtons" onChange={e => setP(p => ({ ...p, F: +e.target.value }))} style={{ width: '100%' }}/></label>
+          <input type="range" min="-150" max="150" step="0.1" value={P.F} aria-label="Poussée en newtons" onChange={e => setP(p => ({ ...p, F: +e.target.value }))} style={{ width: '100%' }}/></label>
         {!verrou && <>
           <label style={{ flex: '1 1 160px', fontSize: 13.5, fontWeight: 600 }}>Masse : <strong>{P.m} kg</strong>
             <input type="range" min="5" max="60" step="5" value={P.m} aria-label="Masse en kilogrammes" onChange={e => setP(p => ({ ...p, m: +e.target.value }))} style={{ width: '100%' }}/></label>

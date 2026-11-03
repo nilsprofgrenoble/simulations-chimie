@@ -232,7 +232,7 @@ function VoletDefi({ defi, setDefi, changerType, vec }) {
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'lire' && <>La flèche mesure {fr(defi.L, 1)} cm et 1 cm représente {defi.echelle} N : F = {fr(defi.L, 1)} × {defi.echelle} = <strong>{fr(defi.F, 0)} N</strong>.</>}
         {defi.type === 'tracer' && <>Longueur = {fr(defi.F, 0)} / {defi.echelle} = <strong>{fr(defi.F / defi.echelle, 1)} cm</strong>. Direction : {caracteristiques(...Object.values(dxdy(1, defi.ang)), 1).direction}, sens : {caracteristiques(...Object.values(dxdy(1, defi.ang)), 1).sens}. Le vecteur part du point d’application.</>}
-        {defi.type === 'poids' && (defi.variante === 'g' ? <>P = m × g = {fr(defi.m, 1)} × {fr(gravite(a), 1)} = <strong>{fr(attendu(defi), 2)} N</strong>.</> : <>F = G × M × m / R² = {sci(G)} × {sci(a.M)} × {fr(defi.m, 1)} / ({sci(a.R)})² = <strong>{fr(attendu(defi), 2)} N</strong> (c’est le poids).</>)}
+        {defi.type === 'poids' && (defi.variante === 'g' ? <>P = m × g = {fr(defi.m, 1)} × {fr(gravite(a), 1)} = <strong>{fr(defi.m * Math.round(gravite(a) * 10) / 10, 1)} N</strong>.</> : <>F = G × M × m / R² = {sci(G)} × {sci(a.M)} × {fr(defi.m, 1)} / ({sci(a.R)})² = <strong>{fr(attendu(defi), 2)} N</strong> (c’est le poids).</>)}
       </div>}
     </div>);
 }
