@@ -36,6 +36,7 @@ import { SimulationRefractometre } from "./simulations/Refractometre";
 import { SimulationMoteurPasAPas } from "./simulations/MoteurPasAPas";
 import { SimulationMoteurCode } from "./simulations/MoteurCode";
 import { SimulationBoussole } from "./simulations/Boussole";
+import { SimulationDiffraction } from "./simulations/Diffraction";
 import { SimulationChampForce } from "./simulations/ChampForce";
 import { SimulationDeuxCorps } from "./simulations/DeuxCorps";
 import { SimulationCondensateurMillikan } from "./simulations/CondensateurMillikan";
@@ -152,6 +153,8 @@ const SIMULATIONS = [
     component: SimulationMoteurCode },
   { id:46, label:"Boussole et champ magnétique", niveau:"TSTL", icon:"🧭", color:"#b45309",
     component: SimulationBoussole },
+  { id:83, label:"Diffraction des ondes", niveau:"TSTL", icon:"🌊", color:"#0891b2",
+    component: SimulationDiffraction },
   { id:48, label:"Champ et force : gravitation et électrostatique", niveau:"1G", icon:"🌍", color:"#3f6212",
     component: SimulationChampForce },
   { id:49, label:"Deux corps en interaction : gravitation et Coulomb", niveau:"1G", icon:"🌙", color:"#3f6212",
