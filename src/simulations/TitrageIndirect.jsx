@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
+  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, PanneauHypotheses } from "../commun";
 import { Formule } from "./Avancement";
 import { V_BURETTE, seuilVisible, couleurSolution, ContexteBanc, SchemaBurette } from "./titrageCommun";
 import { Pic } from "../Pictos";
@@ -246,7 +246,7 @@ export function SimulationTitrageIndirect() {
           `n₀ = ${sci(n0, 3)} mol et n₁ = ${sci(n1, 3)} mol : le plus petit est n₀, donc x_max = ${sci(n0, 3)} mol (la transformation est supposée totale).`],
         pieges: [[n1, 'Le diiode n’est pas limitant.'], [n1 - n0, 'C’est la quantité de diiode qui reste à la fin. x_max est la quantité de vitamine C, qui est entièrement consommée.']] } },
     { id: 'tabInit', titre: 'Tableau d’avancement : état initial', focus: ['tableau'],
-      texte: <>Le tableau est apparu sous le montage. Les ions H⁺ sont en large excès (milieu acide) : leur colonne est déjà remplie.</>,
+      texte: <>Le tableau est apparu sous le montage. Le milieu est acide : les ions H⁺ présents au départ sont en excès, et la petite quantité formée ne change pas leur quantité de façon significative. On ne suit donc pas leur colonne (« excès »).</>,
       tache: { type: 'action', ok: initOk, consigne: initOk ? null : 'Remplissez la ligne, puis « Vérifier la ligne ».' } },
     { id: 'tabCours', titre: 'Tableau d’avancement : en cours', focus: ['tableau'],
       texte: <>On note n₀ et n₁ les quantités initiales de vitamine C et de diiode. Pensez au coefficient 2 devant I⁻.</>,
@@ -539,6 +539,13 @@ export function SimulationTitrageIndirect() {
           </div>}
         </div>
       </>}
+      <PanneauHypotheses>
+        <li><strong>Réactions totales et rapides</strong> : la réaction préalable (vitamine C + diiode) est supposée terminée avant le titrage, et la réaction de titrage (diiode + thiosulfate) est supposée totale et instantanée.</li>
+        <li><strong>Solutions étalon</strong> : les concentrations du diiode et du thiosulfate sont supposées exactes. Le prélèvement de la solution est supposé représentatif (solution homogène).</li>
+        <li><strong>Repérage de l’équivalence</strong> : on la repère à la décoloration de l’empois d’amidon, supposée nette. L’incertitude vient surtout de la lecture de la burette (graduations de 0,1 mL).</li>
+        <li><strong>Dégradation</strong> : la vitamine C se dégrade avec le temps et la lumière. Dans le modèle, une solution gardée plusieurs heures en contient moins, ce qui fausse le résultat si on attend trop avant de titrer.</li>
+        <li><strong>Milieu acide</strong> : les ions H⁺ déjà présents sont supposés en excès, donc la petite quantité formée par la réaction ne change pas leur quantité de façon significative (colonne « excès » du tableau).</li>
+      </PanneauHypotheses>
     </div>
   );
 }

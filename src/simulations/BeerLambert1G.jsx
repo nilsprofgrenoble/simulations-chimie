@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
+  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, PanneauHypotheses } from "../commun";
 import { Pic } from "../Pictos";
 
 const SIM_ID = 10;
@@ -269,6 +269,7 @@ export function BeerLambert1G() {
   const ptsGamme = ['eau', 'S1', 'S2', 'S3', 'S4', 'S5'].filter(n => mesures[n] != null).map(n => [cAff(n), mesures[n]]);
   const toutesMesurees = ['eau', 'S1', 'S2', 'S3', 'S4', 'S5', 'X'].every(n => mesures[n] != null);
   const reg = ptsGamme.length >= 3 ? regression(ptsGamme.map(p => p[0]), ptsGamme.map(p => p[1]), true) : null;
+  const ecartsTxt = reg ? ptsGamme.map((p, i) => ({ n: ['eau', 'S1', 'S2', 'S3', 'S4', 'S5'].filter(n => mesures[n] != null)[i], c: p[0], A: p[1] })).filter(q => q.c > 0 && q.A !== 0).map(q => `${q.n} : ${((q.A - reg.a * q.c) / q.A * 100 > 0 ? '+' : '−')}${fmt(Math.abs((q.A - reg.a * q.c) / q.A * 100), 1)} %`).join(' ; ') : '';
   const k = reg ? reg.a : epsilon('cuivre', 810);
   const AX = mesures.X ?? Acuve('X');
   const cXcalc = AX / k, cmX = cXcalc * M_CUSO4;
@@ -321,12 +322,12 @@ export function BeerLambert1G() {
       tache: { type: 'qcm', q: 'Comment sont disposés les points ?', options: ['Ils sont presque alignés sur une droite passant par l’origine : A est proportionnelle à c', 'Ils forment une courbe qui monte de plus en plus vite', 'Ils sont dispersés au hasard'], bonne: 0 } },
     { id: 'modele', titre: 'La modélisation', focus: [],
       texte: <>Cliquez sur « Modéliser » sous la courbe : le logiciel trace la droite A = k × c qui passe au plus près des points, et donne R².
-        On considère que R² ≥ 0,999 est la marque d'un très bon alignement.</>,
+        Un R² proche de 1 indique un bon alignement, mais il ne suffit pas : à l’étape suivante, on regardera aussi l’écart de chaque point à la droite.</>,
       tache: { type: 'action', ok: modelise, consigne: modelise ? `k = ${fmt(k, 2)} L/mol ; R² = ${fmt(reg?.R2 ?? 1, 4)}` : 'Cliquez sur « Modéliser ».' } },
     { id: 'R2', titre: 'Un bon alignement ?', focus: [],
-      texte: <>Vous obtenez R² = {fmt(reg?.R2 ?? 1, 4)}. Regardez le dernier point, S5, le plus concentré.</>,
-      tache: { type: 'qcm', q: 'Que penser de l’alignement ?', options: (reg?.R2 ?? 1) >= 0.999 ? ['Très bon : R² ≥ 0,999', 'Mauvais : il faut tout refaire'] : ['Assez bon, mais S5 s’écarte un peu de la droite : aux fortes absorbances, l’appareil sort de son domaine de linéarité', 'Très bon : R² ≥ 0,999'], bonne: 0,
-        expl: 'La loi de Beer-Lambert n’est vérifiée que pour des absorbances pas trop grandes (en pratique, A < 1,5 environ avec ce type d’appareil).' } },
+      texte: <>Vous obtenez R² = {fmt(reg?.R2 ?? 1, 4)}, une valeur très proche de 1. Regardez maintenant l’écart de chaque point à la droite (en % de la valeur mesurée) : {ecartsTxt}. Que remarquez-vous pour le point le plus concentré, S5 ?</>,
+      tache: { type: 'qcm', q: 'Que penser de l’alignement ?', options: ['R² est excellent, mais S5 est un peu sous la droite : aux fortes absorbances, l’appareil sort de son domaine de linéarité et la pente est légèrement sous-estimée', 'La droite convient parfaitement : R² est proche de 1, donc tous les points sont sur la droite', 'Les points sont dispersés au hasard : il faut tout refaire'], bonne: 0,
+        expl: 'Un R² proche de 1 ne garantit pas que le modèle convient : ici S5 s’écarte systématiquement de la droite. La loi de Beer-Lambert n’est vérifiée que pour des absorbances pas trop grandes. On peut retirer S5 de l’ajustement ou diluer pour rester dans le domaine de linéarité ; sinon la concentration de X est un peu surestimée (la pente est un peu trop petite).' } },
     { id: 'epsilon', titre: 'La loi de Beer-Lambert', focus: [],
       texte: <>La loi s'écrit A = ε × L × c : k = ε × L, où ε est le coefficient d'absorption molaire de l'espèce (il dépend de λ) et L = 1 cm la
         largeur de la cuve.</>,
@@ -576,6 +577,13 @@ export function BeerLambert1G() {
           </div>}
         </div>
       </>}
+      <PanneauHypotheses>
+        <li><strong>Loi de Beer-Lambert</strong> : A = ε × ℓ × c, avec ℓ = 1 cm. Elle suppose une solution diluée, une seule espèce qui absorbe à la longueur d’onde choisie, une lumière monochromatique et une solution limpide (pas de diffusion).</li>
+        <li><strong>Limite de l’appareil</strong> : à forte absorbance (à partir de A ≈ 1,2), le spectrophotomètre s’écarte un peu de la droite. L’étalonnage doit rester dans la zone où A est proportionnelle à c.</li>
+        <li><strong>Blanc</strong> : la cuve remplie d’eau sert de référence (A = 0). Sans ce réglage, la cuve et l’eau ajoutent une absorbance parasite à toutes les mesures.</li>
+        <li><strong>Étalons</strong> : les concentrations des solutions étalon sont supposées exactes (fioles jaugées, dilutions soignées). L’incertitude vient surtout de la lecture de A (quelques millièmes d’absorbance).</li>
+        <li><strong>Modèle de la courbe</strong> : on ajuste une droite A = k × c. Un coefficient R² proche de 1 ne prouve pas à lui seul que le modèle convient : regardez aussi si les points s’écartent de la droite de façon systématique (par exemple le plus concentré).</li>
+      </PanneauHypotheses>
     </div>
   );
 }
