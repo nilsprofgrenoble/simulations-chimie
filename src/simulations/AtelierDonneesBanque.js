@@ -1019,7 +1019,7 @@ export const ENONCES = [
   // ───────────────────────────── Transport des fluides : statique des fluides (capteur de pression, cuve d’huile)
   {
     id: 'flu-statique', domaine: 'Transport des fluides', titre: 'Un capteur de pression au fond d’une cuve d’huile', noms: ['Hauteur d’huile dans la cuve', 'Force sur la trappe de vidange', 'Baisse de pression pendant la vidange'],
-    schema: (p, b) => ({ type: 'cuveHuile', P: b.tokens.P.aff, rho: b.tokens.rho.aff, d: b.tokens.d ? b.tokens.d.aff : null }),
+    schema: (p, b, q) => ({ type: 'cuveHuile', hInconnue: q === 0, P: b.tokens.P.aff, rho: b.tokens.rho.aff, d: b.tokens.d ? b.tokens.d.aff : null }),
     gen: () => ({ rho: tire([910, 915, 920, 925]), g: 9.81, P: tire([0.20, 0.25, 0.30, 0.35, 0.40, 0.45]), th: tire([15, 20, 25]), Vc: tire([10, 15, 20, 30]),
       Patm: tire([1005, 1013, 1020]), d: tire([100, 150, 200, 250]), dh: tire([0.5, 0.8, 1.0, 1.2, 1.5]) }),
     build: (p, q) => {

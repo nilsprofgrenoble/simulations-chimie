@@ -32,7 +32,7 @@ function Regul({ Qmax, Qp, hc, Kp }) {
 }
 
 // Cuve d'huile ouverte, capteur de pression au fond, trappe de vidange (facultative)
-function CuveHuile({ P, rho, d }) {
+function CuveHuile({ P, rho, d, hInconnue = true }) {
   const u = useId().replace(/:/g, '');
   return (
     <div style={boite} data-schema="cuve-huile">
@@ -41,7 +41,7 @@ function CuveHuile({ P, rho, d }) {
         <path d="M110,30 L110,180 L250,180 L250,30" fill="none" stroke={TR} strokeWidth="3"/>
         <rect x="112" y="80" width="136" height="98" fill="#fde68a"/><line x1="112" y1="80" x2="248" y2="80" stroke="#b45309" strokeWidth="2"/>
         <Tx x="180" y="125" t={`huile  ρ = ${rho}`} c="#92400e" g/>
-        <Fl x1={310} y1={80} x2={310} y2={178} c={VERT} id={`${u}v`}/><Fl x1={310} y1={178} x2={310} y2={80} c={VERT} id={`${u}v`}/><Tx x="304" y="132" t="h ?" c={VERT} a="end" g/>
+        <Fl x1={310} y1={80} x2={310} y2={178} c={VERT} id={`${u}v`}/><Fl x1={310} y1={178} x2={310} y2={80} c={VERT} id={`${u}v`}/>{hInconnue && <Tx x="304" y="132" t="h ?" c={VERT} a="end" g/>}
         <circle cx="180" cy="172" r="9" fill="white" stroke={TR} strokeWidth="2.2"/><Tx x="180" y="176" t="P" g s={11} c={TR}/>
         <Tx x="180" y="199" t={`capteur : P relative = ${P}`} g c={TR}/>
         {d && <g><line x1="215" y1="181" x2="245" y2="181" stroke={ORANGE} strokeWidth="5"/><Tx x="250" y="216" t={`trappe de vidange : d = ${d}`} c={ORANGE} a="end" g/></g>}
@@ -99,7 +99,7 @@ function Boussole({ r1, Ba, BT }) {
         <Tx x="50" y="112" t="N" g c={TR}/><Tx x="110" y="112" t="S" g c={TR}/><Tx x="80" y="136" t="aimant" g/>
         <line x1="140" y1="107" x2="310" y2="107" stroke={GRIS} strokeWidth="1.4" strokeDasharray="5 4"/>
         <circle cx="260" cy="107" r="22" fill="white" stroke={TR} strokeWidth="2.4"/><Tx x="260" y="146" t="boussole" g s={11.5} c={TR}/>
-        <line x1="140" y1="170" x2="260" y2="170" stroke={TR} strokeWidth="1.4"/><Tx x="200" y="186" t={`r₁ = ${r1}`} g c={TR}/>
+        <line x1="80" y1="170" x2="260" y2="170" stroke={TR} strokeWidth="1.4"/><line x1="80" y1="164" x2="80" y2="176" stroke={TR}/><line x1="260" y1="164" x2="260" y2="176" stroke={TR}/><Tx x="170" y="186" t={`r₁ = ${r1} (depuis le centre de l’aimant)`} g c={TR}/><Tx x="330" y="20" t="schéma non à l’échelle" a="end" s={11}/>
         <Fl x1={260} y1={104} x2={260} y2={30} c={BLEU} id={`${u}b`} w={2.8}/><Tx x="270" y="50" t="B Terre" a="start" c={BLEU} g s={11.5}/><Tx x="270" y="65" t={`= ${BT}`} a="start" c={BLEU} g s={11.5}/>
         <Fl x1={236} y1={107} x2={170} y2={107} c={ORANGE} id={`${u}o`} w={2.8}/><Tx x="203" y="80" t="B aimant" c={ORANGE} g s={11.5}/><Tx x="203" y="95" t={`= ${Ba}`} c={ORANGE} g s={11.5}/>
         <Tx x="40" y="30" t="nord" g c={TR}/><Fl x1={40} y1={70} x2={40} y2={38} c={TR} id={`${u}b`} w={2}/>
@@ -186,8 +186,8 @@ function CanEtalon({ ref: tension = '2,500 V' }) {
         <rect x="10" y="60" width="100" height="60" rx="8" fill="#f1f5f9" stroke={TR} strokeWidth="2.6"/><Tx x="60" y="86" t="source étalon" g c={TR}/><Tx x="60" y="106" t={tension} g c={VERT}/>
         <line x1="110" y1="90" x2="205" y2="90" stroke={TR} strokeWidth="2.4"/><Tx x="158" y="82" t="entrée A0" s={11.5}/>
         <rect x="205" y="30" width="145" height="120" rx="8" fill="#0e7490" stroke="#164e63" strokeWidth="2.6"/><Tx x="277" y="52" t="Arduino" g c="white"/><Tx x="277" y="94" t="CAN 10 bits" g c="white"/><Tx x="277" y="112" t="N entre 0 et 1 023" c="white" s={11}/>
-        <rect x="215" y="150" width="125" height="26" rx="5" fill="white" stroke={ORANGE} strokeWidth="2"/><Tx x="277" y="168" t="alimentation 5,00 V ?" c={ORANGE} g s={11}/>
-        <line x1="277" y1="150" x2="277" y2="126" stroke={ORANGE} strokeWidth="2" strokeDasharray="4 3"/>
+        <rect x="215" y="150" width="125" height="26" rx="5" fill="white" stroke={TR} strokeWidth="2"/><Tx x="277" y="168" t="alimentation USB 5,00 V" c={TR} g s={11}/>
+        <line x1="277" y1="150" x2="277" y2="126" stroke={TR} strokeWidth="2" strokeDasharray="4 3"/>
         <Tx x="60" y="150" t="incertitude négligeable" s={11}/>
       </svg>
     </div>);
