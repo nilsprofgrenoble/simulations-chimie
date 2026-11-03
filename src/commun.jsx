@@ -387,7 +387,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
 // Encadré « À RETENIR » : ce que l'élève doit mémoriser (formule, schéma, ordres de grandeur), en quelques lignes très courtes.
 export function ARetenir({ titre = 'À RETENIR', children }) {
   return (
-    <div data-retenir="1" style={{ background: '#fff1f2', border: '2px solid #fb7185', borderRadius: 10, padding: '8px 12px', color: '#0f172a' }}>
+    <div data-retenir="1" style={{ background: '#eaf2fb', border: '2px solid #7aa6d6', borderRadius: 10, padding: '8px 12px', color: '#0f172a' }}>
       <div style={{ fontWeight: 800, fontSize: 14, color: '#be123c', letterSpacing: 0.4, marginBottom: 4 }}>{titre} ❤️</div>
       <div style={{ fontSize: 15, lineHeight: 1.6 }}>{children}</div>
     </div>
@@ -478,11 +478,11 @@ export function BandeauContexte({ id, contexte, couleur = '#0284c7' }) {
 
 // Briques d'interface partagées (mêmes styles que les pages Energy@School)
 export const KIT = { txt: '#0f172a', txt2: '#334155', bord: '#d5dfeb', fond: '#f8fafc' };
-export const styleBouton = (actif, c = '#0284c7') => ({ padding: '8px 16px', borderRadius: 12, cursor: 'pointer',
+export const styleBouton = (actif, c = '#0284c7') => ({ padding: '8px 16px', borderRadius: 14, cursor: 'pointer',
   fontWeight: 700, fontSize: 14, border: `1.5px solid ${actif ? c : KIT.bord}`,
   background: actif ? c : 'white', color: actif ? 'white' : KIT.txt2 });
 export const stylePetitBouton = (actif, c) => ({ ...styleBouton(actif, c), padding: '5px 10px', fontSize: 13 });
-export const styleBoite = { background: KIT.fond, borderRadius: 16, padding: '14px 16px', border: `1px solid ${KIT.bord}` };
+export const styleBoite = { background: KIT.fond, borderRadius: 20, padding: '14px 16px', border: `1px solid ${KIT.bord}` };
 
 export function Section({ titre, ouvert, onBascule, children }) {
   return (

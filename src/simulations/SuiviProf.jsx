@@ -24,7 +24,7 @@ const DETAILS = ['exos', 'defis', 'sims'];
 const prefixeDe = nom => nom.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
 const th = { padding: '5px 8px', textAlign: 'left', color: KIT.txt2, fontWeight: 700, whiteSpace: 'nowrap' };
 const td = { padding: '5px 8px', verticalAlign: 'top' };
-const champ = { padding: '7px 9px', fontSize: 14, borderRadius: 8, border: `1px solid ${KIT.bord}`, boxSizing: 'border-box' };
+const champ = { padding: '7px 9px', fontSize: 14, borderRadius: 12, border: `1px solid ${KIT.bord}`, boxSizing: 'border-box' };
 const mediane = t => { if (!t.length) return 0; const s = [...t].sort((a, b) => a - b), m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 const echapperHtml = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 // Case de tableur : une valeur qui commence par = + - @ serait exécutée comme une formule par Excel ou LibreOffice
@@ -242,7 +242,7 @@ export function SimulationSuiviProf({ naviguer }) {
         <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }}>
           {vieDispo ? (
             <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', cursor: 'pointer' }}>
-              <input type="checkbox" checked={!!classe.vie_classe} disabled={occupe} onChange={e => basculerVie(e.target.checked)} style={{ marginTop: 3, accentColor: '#e11d48' }} />
+              <input type="checkbox" checked={!!classe.vie_classe} disabled={occupe} onChange={e => basculerVie(e.target.checked)} style={{ marginTop: 3, accentColor: '#0b4f94' }} />
               <span><b><Pic n="trophy"/>Vie de classe</b> (désactivée par défaut) : les élèves de « {classe.nom} » voient un objectif collectif de la semaine et des « prouesses »
                 (pas de classement). Les pseudos sont tirés d’une liste fixe, et chaque élève décide s’il apparaît.</span>
             </label>

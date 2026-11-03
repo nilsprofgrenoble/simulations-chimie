@@ -9,7 +9,7 @@ import { Pic } from "../Pictos";
 //  Les élèves de la classe les voient en tête de « Je m'entraîne », avec leurs simulations et les exercices du thème correspondant.
 //  Réglage enregistré sur la classe (supabase/07-chapitre-et-ciblage.sql). Modifiable à tout moment, sans effet sur les résultats.
 // ═══════════════════════════════════════════════════════════════════════════
-const ROSE = '#e11d48';
+const ROSE = '#0b4f94';
 
 export function ChapitreClasse({ classe, dispo, occupe, onChoix }) {
   const nbExos = useMemo(() => {

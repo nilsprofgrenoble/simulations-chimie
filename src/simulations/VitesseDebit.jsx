@@ -411,7 +411,7 @@ export function SimulationVitesseDebit({ naviguer }) {
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
-      {naviguer && <button onClick={() => naviguer(36, 'puissances')} style={styleBouton(false, '#e11d48')}><Pic n="abacus"/>S’entraîner aux unités (REA)</button>}
+      {naviguer && <button onClick={() => naviguer(36, 'puissances')} style={styleBouton(false, '#0b4f94')}><Pic n="abacus"/>S’entraîner aux unités (REA)</button>}
     </span>
   );
 

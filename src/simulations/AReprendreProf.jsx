@@ -8,7 +8,7 @@ import { Pic } from "../Pictos";
 //  « À REPRENDRE EN CLASSE » (suivi professeur) : les exercices où la classe a le plus buté sur la période choisie.
 //  Règles et hypothèses : voir ../reprise.js.
 // ═══════════════════════════════════════════════════════════════════════════
-const ROSE = '#e11d48';
+const ROSE = '#0b4f94';
 const PERIODES = [[7, '7 derniers jours'], [30, '30 derniers jours'], [null, 'Toute l’année']];
 
 export function AReprendreProf({ eleves, lignes, naviguer, onDevoir }) {
@@ -22,7 +22,7 @@ export function AReprendreProf({ eleves, lignes, naviguer, onDevoir }) {
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
         <b style={{ color: KIT.txt }}>🔁 Les exercices à reprendre en début de séance</b>
         <select value={jours ?? ''} onChange={e => setJours(e.target.value === '' ? null : Number(e.target.value))} aria-label="Période"
-          style={{ padding: '6px 9px', fontSize: 14, borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
+          style={{ padding: '6px 9px', fontSize: 14, borderRadius: 12, border: `1px solid ${KIT.bord}` }}>
           {PERIODES.map(([v, n]) => <option key={n} value={v ?? ''}>{n}</option>)}
         </select>
       </div>
@@ -39,14 +39,14 @@ export function AReprendreProf({ eleves, lignes, naviguer, onDevoir }) {
           <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
             <b style={{ flex: 1, minWidth: 200, color: KIT.txt }}><span style={{ color: ROSE }}>{item.comp === 'DÉFI' ? 'Défi' : item.comp}</span> · {item.titre}</b>
             <span style={{ fontSize: 14 }}><b>{nbDiff}</b> élève{nbDiff > 1 ? 's' : ''} sur {travailles} {nbDiff > 1 ? 'ont' : 'a'} eu du mal</span>
-            <button onClick={() => (item.atelier ? naviguer(item.atelier, item.ex) : naviguer(item.sim))} style={{ cursor: 'pointer', font: 'inherit', fontSize: 13, fontWeight: 700, padding: '5px 11px', borderRadius: 8, border: `1px solid ${KIT.bord}`, background: '#fff' }}>Ouvrir l’exercice ▶</button>
+            <button onClick={() => (item.atelier ? naviguer(item.atelier, item.ex) : naviguer(item.sim))} style={{ cursor: 'pointer', font: 'inherit', fontSize: 13, fontWeight: 700, padding: '5px 11px', borderRadius: 12, border: `1px solid ${KIT.bord}`, background: '#fff' }}>Ouvrir l’exercice ▶</button>
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '8px 0 4px' }}>
             {puce(qui.bloque.length, '#fee2e2', '#991b1b')}{puce(qui.correction.length, '#fef9c3', '#854d0e')}{puce(qui.essais.length, '#e0e7ff', '#3730a3')}
           </div>
           {onDevoir && (
             <button onClick={() => onDevoir({ titre: `À retravailler : ${item.titre}`.slice(0, 80), cles: [item.cle], eleves: [...qui.bloque, ...qui.correction, ...qui.essais].map(x => idDe.get(x)).filter(Boolean) })}
-              style={{ cursor: 'pointer', font: 'inherit', fontSize: 13, fontWeight: 700, padding: '5px 11px', borderRadius: 8, border: `1px solid ${ROSE}`, background: '#fff1f2', color: ROSE, margin: '2px 0 6px' }}>
+              style={{ cursor: 'pointer', font: 'inherit', fontSize: 13, fontWeight: 700, padding: '5px 11px', borderRadius: 8, border: `1px solid ${ROSE}`, background: '#eaf2fb', color: ROSE, margin: '2px 0 6px' }}>
               📌 Donner cet exercice en devoir à ces {nbDiff} élèves
             </button>)}
           <div style={{ fontSize: 13, color: KIT.txt2 }}>
