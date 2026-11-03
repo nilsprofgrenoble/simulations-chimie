@@ -54,10 +54,10 @@ function CircuitSerie({ mesure1 = '', mesure2 = '', tension = '', reponse = fals
         <Lampe x={155} y={50} nom="L1"/><Lampe x={230} y={50} nom="L2"/>
         {avecAmperemetres && <Metre x={305} y={50} lettre="A" couleur={reponse ? VERT : BLEU}/>}
         {avecAmperemetres && <>
-          <text x="97" y="90" fontSize="13" fontWeight="700" fill={BLEU} textAnchor="middle"><Ind b="A" i="1"/>{mesure1 ? `= ${mesure1}` : ''}</text>
+          <text x="120" y="84" fontSize="13" fontWeight="700" fill={BLEU} textAnchor="middle"><Ind b="A" i="1"/>{mesure1 ? `= ${mesure1}` : ''}</text>
           <text x="305" y="90" fontSize="13" fontWeight="700" fill={reponse ? VERT : ORANGE} textAnchor="middle"><Ind b="A" i="2"/>{reponse ? `= ${mesure2}` : '= ?'}</text>
         </>}
-        <Fleche x1={150} y1={150} x2={230} y2={150} c={GRIS} id={`${u}p`}/><text x="190" y="142" fontSize="12" fill="#64748b" textAnchor="middle">sens du courant</text>
+        <Fleche x1={230} y1={150} x2={150} y2={150} c={ORANGE} id={`${u}p`}/><text x="190" y="142" fontSize="12" fill="#64748b" textAnchor="middle">sens du courant</text>
         <text x="200" y="196" fontSize="12" fill="#64748b" textAnchor="middle">un seul chemin pour le courant</text>
       </svg>
     </div>);
@@ -83,7 +83,7 @@ function CircuitDerivation({ tension = '', courant = '', i1 = '', i2 = '', panne
         {i1 && <><Fleche x1={178} y1={124} x2={178} y2={146} c={VERT} id={`${u}v`}/><text x="186" y="140" fontSize="13" fontWeight="700" fill={VERT}><Ind b="I" i="1"/>{i1 === '?' && !reponse ? '= ?' : `= ${i1}`}</text></>}
         {i2 && <><Fleche x1={278} y1={124} x2={278} y2={146} c={VERT} id={`${u}v`}/><text x="286" y="140" fontSize="13" fontWeight="700" fill={VERT}><Ind b="I" i="2"/>{i2 === '?' && !reponse ? '= ?' : `= ${i2}`}</text></>}
         {tensionLampes && <text x="210" y="192" fontSize="13" fontWeight="700" fill={ORANGE} textAnchor="middle"><Ind b="U" i="1"/> = ?   <Ind b="U" i="2"/> = ?</text>}
-        {panne && <text x="260" y="140" fontSize="12.5" fill={ORANGE} textAnchor="middle">filament grillé</text>}
+        {panne && <text x="270" y="140" fontSize="12.5" fill={ORANGE} textAnchor="start">filament grillé</text>}
       </svg>
     </div>);
 }
@@ -138,7 +138,7 @@ function Miroir({ i = 30, reponse = false, angleReponse }) {
         <Arc cx={x0} cy={y0} r={42} a0={0} a1={-i} c={ORANGE} txt={`i = ${i}°`} tx={x0 - 78} ty={y0 - 52}/>
         {reponse
           ? <g><Rayon x1={x0} y1={y0} x2={xr} y2={yr} c={VERT} id={`${u}v`}/><Arc cx={x0} cy={y0} r={56} a0={0} a1={i} c={VERT} txt={`r = ${angleReponse ?? i}°`} tx={x0 + 62} ty={y0 - 62}/></g>
-          : <g><Rayon x1={x0} y1={y0} x2={xr} y2={yr} c={GRIS} dash="6 5"/><text x={x0 + 62} y={y0 - 62} fontSize="13" fontWeight="700" fill={GRIS}>r = ?</text></g>}
+          : <g><text x={x0 + 62} y={y0 - 62} fontSize="13" fontWeight="700" fill={GRIS}>r = ?</text></g>}
       </svg>
     </div>);
 }
@@ -195,21 +195,21 @@ function Lentille({ cas = 'parallele', f = '', reponse = false }) {
         {ys.map(y => <Rayon key={y} x1={30} y1={y} x2={O[0] - 4} y2={y} id={`${u}r`}/>)}
         {reponse && ys.map(y => <Rayon key={'a' + y} x1={O[0] + 4} y1={y} x2={O[0] + 1.45 * F} y2={y + (O[1] - y) * 1.45} c={VERT} id={`${u}v`}/>)}
       </g>);
-    note = reponse ? null : <text x="250" y="60" fontSize="13" fontWeight="700" fill="#475569">après la lentille : ?</text>;
+    note = reponse ? null : <text x="350" y="40" fontSize="13" fontWeight="700" fill="#475569" textAnchor="end">après la lentille : ?</text>;
   } else if (cas === 'centre') {
     const a = 22 * RAD, dx = 130, dy = Math.tan(a) * dx;
     rayons = (
       <g>
         <Rayon x1={O[0] - dx} y1={O[1] + dy} x2={O[0] - 3} y2={O[1] + 1} id={`${u}r`}/>
-        {reponse ? <Rayon x1={O[0] + 3} y1={O[1] - 1} x2={O[0] + dx} y2={O[1] - dy} c={VERT} id={`${u}v`}/> : <text x="250" y="60" fontSize="13" fontWeight="700" fill="#475569">après la lentille : ?</text>}
+        {reponse ? <Rayon x1={O[0] + 3} y1={O[1] - 1} x2={O[0] + dx} y2={O[1] - dy} c={VERT} id={`${u}v`}/> : <text x="350" y="40" fontSize="13" fontWeight="700" fill="#475569" textAnchor="end">après la lentille : ?</text>}
       </g>);
   } else {   // infini : objet très éloigné
     rayons = (
       <g>
         <text x="26" y="40" fontSize="12.5" fill="#475569">objet très éloigné</text>
-        {[70, 100, 130].map((y, k) => <Rayon key={y} x1={30} y1={y - (k - 1) * 8} x2={O[0] - 4} y2={y - (k - 1) * 4} id={`${u}r`}/>)}
-        <line x1={O[0] + F} y1="40" x2={O[0] + F} y2="165" stroke={reponse ? VERT : GRIS} strokeWidth="1.8" strokeDasharray="5 4"/>
-        {reponse ? <text x={O[0] + F - 40} y="34" fontSize="12.5" fontWeight="700" fill={VERT}>plan focal image</text> : <text x={O[0] + F + 6} y="34" fontSize="13" fontWeight="700" fill="#475569">image : ?</text>}
+        {[70, 100, 130].map(y => <Rayon key={y} x1={30} y1={y} x2={O[0] - 4} y2={y} id={`${u}r`}/>)}
+        {reponse && <line x1={O[0] + F} y1="40" x2={O[0] + F} y2="165" stroke={VERT} strokeWidth="1.8" strokeDasharray="5 4"/>}
+        {reponse ? <text x={O[0] + F - 40} y="34" fontSize="12.5" fontWeight="700" fill={VERT}>plan focal image</text> : <text x={O[0] + F - 20} y="34" fontSize="13" fontWeight="700" fill="#475569">image : ?</text>}
       </g>);
   }
   return (
@@ -248,12 +248,12 @@ function Mouvement({ cas = 'manege-sol', reponse = false }) {
       <path d={`M${C[0] - 40},${C[1] - R - 22} A${R + 22},${R + 22} 0 0 1 ${C[0] + 10},${C[1] - R - 24}`} fill="none" stroke={GRIS} strokeWidth="1.8" markerEnd={`url(#${u}t)`}/>
       <Etiq x={C[0] - 52} y={C[1] - R - 14} t="le manège tourne" a="end"/>
       {cas === 'manege-sol'
-        ? <g><Bonhomme x={50} y={150}/><Etiq x={50} y={182} t="observateur au sol" g/>
+        ? <g><Bonhomme x={50} y={150}/><Etiq x={8} y={182} t="observateur au sol" a="start" g/>
           {reponse && <g><circle cx={C[0]} cy={C[1]} r={R} fill="none" stroke={VERT} strokeWidth="2.2" strokeDasharray="6 4"/>
             {[50, 170, 290].map(a => { const [x, y] = pos(a); const dx = Math.cos(a * RAD), dy = Math.sin(a * RAD); return <Rayon key={a} x1={x} y1={y} x2={x + 26 * dx} y2={y + 26 * dy} c={VERT} id={`${u}v`}/>; })}
             <Etiq x="354" y="168" t="trajectoire : cercle" c={VERT} g a="end"/><Etiq x="354" y="184" t="vitesse tangente, valeur constante" c={VERT} a="end"/></g>}</g>
         : <g><rect x={ex + 8} y={ey + 6} width="13" height="13" rx="2" fill="white" stroke={TR} strokeWidth="2"/><Etiq x="354" y="176" t="observateur sur le manège" a="end" g/>
-          {reponse && <Etiq x="8" y="186" a="start" t="l’enfant reste au même endroit : immobile (v = 0)" c={VERT} g/>}</g>}
+          {reponse && <Etiq x="8" y="186" a="start" t="enfant immobile (v = 0)" c={VERT} g/>}</g>}
     </g>);
   } else if (cas === 'train-ref' || cas === 'train-quai') {
     label = 'Un train roule vers la droite ; un passager lâche une balle';
@@ -267,7 +267,7 @@ function Mouvement({ cas = 'manege-sol', reponse = false }) {
       <circle cx="172" cy="82" r="6" fill={ORANGE} stroke="white" strokeWidth="1.5"/><Etiq x="172" y="70" t="balle lâchée" c={ORANGE} g/>
       {quai ? <g><Bonhomme x={40} y={140} /><Etiq x="40" y="178" t="observateur sur le quai" a="start" g/></g> : <g><Bonhomme x={236} y={128}/><Etiq x="180" y="182" t="observateur dans le train" g/></g>}
       {reponse && (quai
-        ? <g><path d="M172,82 Q235,95 285,145" fill="none" stroke={VERT} strokeWidth="2.6" strokeDasharray="6 4" markerEnd={`url(#${u}v)`}/><Etiq x="296" y="30" t="trajectoire : arc de parabole" c={VERT} g a="end"/></g>
+        ? <g><path d="M172,82 Q228,82 285,145" fill="none" stroke={VERT} strokeWidth="2.6" strokeDasharray="6 4" markerEnd={`url(#${u}v)`}/><Etiq x="296" y="30" t="trajectoire : courbe" c={VERT} g a="end"/></g>
         : <g><Rayon x1={172} y1={88} x2={172} y2={140} c={VERT} id={`${u}v`} dash="6 4"/><Etiq x="296" y="30" t="trajectoire : droite verticale" c={VERT} g a="end"/></g>)}
     </g>);
   } else if (cas === 'valve') {
@@ -284,7 +284,7 @@ function Mouvement({ cas = 'manege-sol', reponse = false }) {
     </g>);
   } else if (cas === 'pente') {
     label = 'Une caisse posée sur un plan incliné';
-    const a = 28 * RAD, x0 = 40, y0 = 150, L = 280, x1 = x0 + L, y1 = y0 - Math.tan(a) * L;
+    const a = 28 * RAD, x0 = 40, y0 = 150, L = 260, x1 = x0 + L, y1 = y0 - Math.tan(a) * L;
     const cx = 190, cy = y0 - (cx - x0) * Math.tan(a);
     corps = (<g>
       <polygon points={`${x0},${y0} ${x1},${y0} ${x1},${y1}`} fill="#f1f5f9" stroke={TR} strokeWidth="2.2"/>
@@ -359,7 +359,7 @@ function Ampoule({ reponse = false }) {
         <line x1="120" y1="102" x2="240" y2="102" stroke={TR} strokeWidth="1.4" strokeDasharray="4 3"/>
         {reponse
           ? <g><text x="252" y="64" fontSize="12.5" fontWeight="700" fill="#6d28d9">cyclohexane</text><text x="252" y="80" fontSize="12.5" fontWeight="700" fill="#6d28d9">+ diiode</text><text x="252" y="96" fontSize="12.5" fill="#6d28d9">ρ = 0,78 g·mL⁻¹</text><text x="252" y="132" fontSize="12.5" fontWeight="700" fill={BLEU}>eau</text><text x="252" y="148" fontSize="12.5" fill={BLEU}>ρ = 1,00 g·mL⁻¹</text></g>
-          : <g><text x="252" y="78" fontSize="13" fontWeight="700" fill="#475569">phase du haut : ?</text><text x="252" y="132" fontSize="13" fontWeight="700" fill="#475569">phase du bas : ?</text></g>}
+          : <g><text x="246" y="78" fontSize="13" fontWeight="700" fill="#475569">phase du haut : ?</text><text x="252" y="132" fontSize="13" fontWeight="700" fill="#475569">phase du bas : ?</text></g>}
         <text x="100" y="20" fontSize="12.5" fill="#475569" textAnchor="start">après décantation</text>
       </svg>
     </div>);
@@ -376,7 +376,7 @@ function Maille({ cas = 'cfc', reponse = false }) {
   const arr = (...pts) => pts.map(P).map(q => q.join(',')).join(' ');
   const cube = (
     <g fill="none" stroke={TR} strokeWidth="1.6">
-      <polyline points={arr([0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1], [0, 0, 1])} strokeDasharray="4 4" stroke={GRIS}/>
+      <polyline points={arr([1, 0, 1], [0, 0, 1], [0, 1, 1])} strokeDasharray="4 4" stroke={GRIS}/><polyline points={arr([1, 0, 1], [1, 1, 1], [0, 1, 1])}/>
       <polyline points={arr([0, 0, 0], [0, 0, 1])} strokeDasharray="4 4" stroke={GRIS}/><polyline points={arr([1, 0, 0], [1, 0, 1])}/><polyline points={arr([1, 1, 0], [1, 1, 1])}/><polyline points={arr([0, 1, 0], [0, 1, 1])}/>
       <polyline points={arr([0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 0])} strokeWidth="2.2"/>
     </g>);
@@ -411,7 +411,7 @@ function EchelleSites({ rayon = 0.30, reponse = false }) {
     <div style={boite} data-schema="echelle-sites">
       <svg viewBox="0 0 360 150" style={svgStyle} role="img" aria-label="Droite graduée du rayon maximal de l’atome inséré : 0,225 R pour un site tétraédrique, 0,414 R pour un site octaédrique">
         <rect x={X(0)} y="60" width={X(0.225) - X(0)} height="22" fill="#bbf7d0" stroke={TR}/><rect x={X(0.225)} y="60" width={X(0.414) - X(0.225)} height="22" fill="#fed7aa" stroke={TR}/>
-        <text x={(X(0) + X(0.225)) / 2} y="75" fontSize="11.5" textAnchor="middle" fill={TR}>tétraédrique</text><text x={(X(0.225) + X(0.414)) / 2} y="75" fontSize="11.5" textAnchor="middle" fill={TR}>octaédrique</text>
+        <text x={(X(0) + X(0.225)) / 2} y="75" fontSize="11.5" textAnchor="middle" fill={TR}>les deux sites</text><text x={(X(0.225) + X(0.414)) / 2} y="75" fontSize="11.5" textAnchor="middle" fill={TR}>octa. seul</text>
         <line x1={X(0)} y1="100" x2={X(0.5)} y2="100" stroke={TR} strokeWidth="2"/>
         {[[0, '0'], [0.225, '0,225 R'], [0.414, '0,414 R']].map(([v, t]) => <g key={v}><line x1={X(v)} y1="94" x2={X(v)} y2="106" stroke={TR} strokeWidth="2"/><text x={X(v)} y="122" fontSize="12.5" fontWeight="700" fill={TR} textAnchor="middle">{t}</text></g>)}
         <text x="180" y="30" fontSize="12.5" fill="#475569" textAnchor="middle">rayon maximal de l’atome qui peut s’insérer</text>
