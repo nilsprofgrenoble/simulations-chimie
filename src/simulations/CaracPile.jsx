@@ -69,12 +69,12 @@ function evaluer(d) {
   const ok = isFinite(x) && proche(x, d.Q, 0.02); return { ok, lignes: [[ok, ok ? 'Transfert thermique correct.' : 'Revois : Q = r × I² × Δt, avec I en ampères (I est au carré), Δt en secondes.']] };
 }
 const enonce = (d, { champ }) => {
-  if (d.type === 'u0r') return <><Pic n="target"/>Une pile délivre à vide <strong>U₀ = {fr(d.U0, 1)} V</strong>. Lorsqu’elle débite <strong>I = {d.I2} mA</strong>, un voltmètre indique <strong>U = {fr(d.U2, 3)} V</strong> à ses bornes. Quelle est sa résistance interne r ?<div style={{ marginTop: 6 }}>{champ('v', 'Ω')}</div></>;
+  if (d.type === 'u0r') return <><Pic n="target"/>Une pile délivre à vide <strong>U₀ = {fr(d.U0, 3)} V</strong>. Lorsqu’elle débite <strong>I = {d.I2} mA</strong>, un voltmètre indique <strong>U = {fr(d.U2, 3)} V</strong> à ses bornes. Quelle est sa résistance interne r ?<div style={{ marginTop: 6 }}>{champ('v', 'Ω')}</div></>;
   if (d.type === 'tension') return <><Pic n="target"/>Une pile de tension à vide <strong>U₀ = {fr(d.U0, 1)} V</strong> et de résistance interne <strong>r = {d.r} Ω</strong> débite un courant <strong>I = {d.I} mA</strong>. Quelle est la tension U entre ses bornes ?<div style={{ marginTop: 6 }}>{champ('v', 'V')}</div></>;
   if (d.type === 'courant') return <><Pic n="target"/>Une pile de tension à vide <strong>U₀ = {fr(d.U0, 1)} V</strong> et de résistance interne <strong>r = {d.r} Ω</strong> alimente un conducteur ohmique de résistance <strong>R = {d.R} Ω</strong>. Quelle intensité I débite-t-elle ?<div style={{ marginTop: 6 }}>{champ('v', 'mA')}</div></>;
   return <><Pic n="target"/>Une pile de résistance interne <strong>r = {d.r} Ω</strong> débite <strong>I = {d.I} mA</strong> pendant <strong>Δt = {d.dt} s</strong>. Quel transfert thermique Q est produit par effet Joule <strong>dans la pile</strong> ?<div style={{ marginTop: 6 }}>{champ('v', 'J')}</div></>;
 };
-const solution = d => d.type === 'u0r' ? <>U = U₀ − r × I donc r = (U₀ − U) / I = ({fr(d.U0, 1)} − {fr(d.U2, 3)}) / {fr(d.I2 / 1000, 3)} = <strong>{fr(d.r, 1)} Ω</strong>.</>
+const solution = d => d.type === 'u0r' ? <>U = U₀ − r × I donc r = (U₀ − U) / I = ({fr(d.U0, 3)} − {fr(d.U2, 3)}) / {fr(d.I2 / 1000, 3)} = <strong>{fr(d.r, 1)} Ω</strong>.</>
   : d.type === 'tension' ? <>U = U₀ − r × I = {fr(d.U0, 1)} − {d.r} × {fr(d.I / 1000, 3)} = <strong>{fr(d.U, 2)} V</strong>.</>
   : d.type === 'courant' ? <>Loi d’Ohm dans le circuit : U₀ = (r + R) × I donc I = U₀ / (r + R) = {fr(d.U0, 1)} / {d.r + d.R} = {fr(d.I / 1000, 4)} A = <strong>{fr(d.I, 1)} mA</strong>.</>
   : <>Q = r × I² × Δt = {d.r} × {fr(d.I / 1000, 3)}² × {d.dt} = <strong>{fr(d.Q, d.Q < 100 ? 2 : 0)} J</strong>.</>;
