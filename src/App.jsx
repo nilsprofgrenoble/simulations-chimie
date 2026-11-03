@@ -423,7 +423,7 @@ export default function App() {
             ...styles.topBar,
             maxWidth: 1100, margin: "0 auto", width: "100%", boxSizing: "border-box",
           }}>
-            <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 18, background: `${active.color}22`, display: "grid", placeItems: "center", flexShrink: 0 }}><Emo e={active.icon} t={34}/></span>
+            <span aria-hidden="true" style={{ width: 56, height: 56, borderRadius: 18, background: `${active.color}22`, color: active.color, "--ia": `${active.color}55`, display: "grid", placeItems: "center", flexShrink: 0 }}><Emo e={active.icon} t={34}/></span>
             <h1 style={{ ...styles.pageTitle, fontFamily:"'Outfit', sans-serif", color: "#0c1a2e", flex: 1, textAlign: "left", fontSize: "clamp(24px, 3.8vw, 38px)", lineHeight: 1.1, textWrap: "balance" }}>
               <span style={{ fontFamily:"'Outfit', sans-serif", fontWeight:800, letterSpacing:"-0.02em" }}>
                 {idAffiche === 39 ? (estEleve(sessionSb) ? 'Mon profil' : sessionSb?.profil ? 'Mon compte' : 'Se connecter') : active.label}
