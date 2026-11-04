@@ -60,4 +60,12 @@ pr(M.logK(3.8, 4.8) , 1, 1e-12, 'logK');
 // 18 incertitude
 const u = M.incertitudeTitrage({ Cb: 0.1, Veq: 0.0125, V0: 0.02, uCb: 0.0005 / Math.sqrt(3), uVeq: 0.00005 / Math.sqrt(3), uV0: 0.00003 / Math.sqrt(3) });
 pr(u.Ca, 0.0625, 1e-9, 'Ca'); ok(u.rel > 0.003 && u.rel < 0.01, 'rel ' + u.rel);
+// convientDansSaut : acide méthanoïque 0,050 mol/L titré par NaOH 0,100 mol/L (pH_eq = 8,14, hors des zones du BBT et de la phénolphtaléine)
+{
+  const p = { C0: 0.05, V0: 0.02, pKas: [3.75], Cb: 0.1 }, I = id => M.INDICATEURS.find(i => i.id === id);
+  ok(!M.convient(I('bbt'), M.phEquivalence(p)) && !M.convient(I('php'), M.phEquivalence(p)), 'form : critère strict');
+  ok(M.convientDansSaut(I('bbt'), p) && M.convientDansSaut(I('php'), p) && !M.convientDansSaut(I('jm'), p), 'form : dans le saut');
+  const pe = { C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 };
+  ok(!M.convientDansSaut(I('bbt'), pe) && M.convientDansSaut(I('php'), pe), 'etha : BBT hors du saut');
+}
 console.log(`${n} tests, ${ko} échec(s)`); process.exit(ko ? 1 : 0);
