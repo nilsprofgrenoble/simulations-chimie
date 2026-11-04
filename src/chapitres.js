@@ -2,6 +2,7 @@
 //  CHAPITRES PAR NIVEAU : source unique du menu, du « chapitre en cours » d'une classe et des devoirs.
 //
 //  Un chapitre = un groupe du menu (2GT, 1G, TSTL, BTS) avec :
+//   • (facultatif) une « rubrique » : intitulé qui regroupe plusieurs chapitres dans le menu (ex. TSTL : « Systèmes et procédés », « Ondes ») ;
 //   • ses simulations (identifiants de src/App.jsx) ;
 //   • les thèmes de la banque d'exercices « Je m'entraîne » qui s'y rattachent (champ « domaine » des exercices).
 //  Hypothèses (discutables, modifiables ici) : la banque d'exercices n'a pas de niveau ; on rattache chaque thème au chapitre
@@ -28,15 +29,15 @@ export const CHAPITRES = [
   { id: '1g-electricite', niveau: '1G', label: '⚡ Aspects énergétiques des phénomènes électriques', sims: [70, 71, 72], domaines: ['Énergie électrique'] },
   { id: '1g-mouvement', niveau: '1G', label: '🚀 Mouvement d’un système', sims: [52], domaines: ['Mécanique'] },
 
-  { id: 'tstl-signaux', niveau: 'TSTL', label: '📡 Transmission de signaux numériques', sims: [8, 15, 33], domaines: ['Transmission de signaux numériques'] },
-  { id: 'tstl-fluides', niveau: 'TSTL', label: '💧 Transport des fluides', sims: [26, 27, 28, 17], domaines: ['Transport des fluides'] },
-  { id: 'tstl-regulation', niveau: 'TSTL', label: '⚙️ Régulation', sims: [5, 6], domaines: ['Régulation'] },
-  { id: 'tstl-cristallisation', niveau: 'TSTL', label: '❄️ Évaporation et cristallisation', sims: [7], domaines: ['Évaporation et cristallisation'] },
-  { id: 'tstl-distillation', niveau: 'TSTL', label: '🧪 Distillation', sims: [42, 41, 43], domaines: ['Distillation'] },
-  { id: 'tstl-thermique', niveau: 'TSTL', label: '🔥 Transferts thermiques', sims: [31, 32, 30], domaines: ['Transferts thermiques'] },
-  { id: 'tstl-mesure', niveau: 'TSTL', label: '📏 Mesure et incertitudes', sims: [78], domaines: ['Mesure et incertitudes'] },
-  { id: 'tstl-ondes', niveau: 'TSTL', label: '🌊 Ondes', sims: [83], domaines: ['Ondes'] },
-  { id: 'tstl-controle', niveau: 'TSTL', label: '🧲 Contrôle des systèmes', sims: [46, 44, 45], domaines: ['Contrôle des systèmes'] },
+  { id: 'tstl-signaux', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '📡 Transmission de signaux numériques', sims: [8, 15, 33], domaines: ['Transmission de signaux numériques'] },
+  { id: 'tstl-fluides', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '💧 Transport des fluides', sims: [26, 27, 28, 17], domaines: ['Transport des fluides'] },
+  { id: 'tstl-regulation', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '⚙️ Régulation', sims: [5, 6], domaines: ['Régulation'] },
+  { id: 'tstl-cristallisation', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '❄️ Évaporation et cristallisation', sims: [7], domaines: ['Évaporation et cristallisation'] },
+  { id: 'tstl-distillation', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '🧪 Distillation', sims: [42, 41, 43], domaines: ['Distillation'] },
+  { id: 'tstl-thermique', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '🔥 Transferts thermiques', sims: [31, 32, 30], domaines: ['Transferts thermiques'] },
+  { id: 'tstl-mesure', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '📏 Mesure et incertitudes', sims: [78], domaines: ['Mesure et incertitudes'] },
+  { id: 'tstl-controle', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '🧲 Contrôle des systèmes', sims: [46, 44, 45], domaines: ['Contrôle des systèmes'] },
+  { id: 'tstl-ondes', niveau: 'TSTL', rubrique: 'Ondes', label: '🌊 Ondes', sims: [83], domaines: ['Ondes'] },
 
   // Analyse : électrochimie, chromatographie, étalonnage et quantification, fiabilité des mesures
   { id: 'bts-analyse', niveau: 'BTS', label: '🔬 Analyse', sims: [3, 29, 12, 54, 55, 11, 13, 9, 16], domaines: ['Chimie', 'Métrologie'] },

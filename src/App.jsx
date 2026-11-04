@@ -261,7 +261,13 @@ function construireMenus() {
       const sims = SIMULATIONS.filter(s => s.niveau === "COMP").sort((a, b) => ORDRE_COMP.indexOf(a.id) - ORDRE_COMP.indexOf(b.id)).map(fiche);
       return { ...m, groupes: [{ sims }] };
     }
-    const groupes = chapitresDuNiveau(m.key).map(c => ({ label: c.label, chap: c.id, sims: c.sims.map(id => SIMULATIONS.find(s => s.id === id)).filter(Boolean).map(fiche) }));
+    const groupes = [];
+    let rubrique = null;
+    chapitresDuNiveau(m.key).forEach(c => {
+      if (c.rubrique && c.rubrique !== rubrique) groupes.push({ entete: c.rubrique, sims: [] });   // intitulé de rubrique, sur toute la largeur du menu
+      rubrique = c.rubrique || rubrique;
+      groupes.push({ label: c.label, chap: c.id, sims: c.sims.map(id => SIMULATIONS.find(s => s.id === id)).filter(Boolean).map(fiche) });
+    });
     return { ...m, groupes };
   });
 }
