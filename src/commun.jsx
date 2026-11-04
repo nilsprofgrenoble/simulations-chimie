@@ -249,8 +249,12 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
   const peutSuivre = !tache || reussie || vuRep || (typeof window !== 'undefined' && !!window.__PARCOURS_TEST__);
   // Une étape réussie le reste, même si la page est rechargée et qu'une mesure a disparu
   useEffect(() => {
-    if (reussieMaintenant && !dejaReussie) setEtat(e => ({ ...e, reussies: { ...(e.reussies || {}), [etape]: true } }));
+    if (reussieMaintenant && !dejaReussie) setEtat(e => ({ ...e, reussies: { ...(e.reussies || {}), [etape]: true },
+      // Carnet de valeurs : le résultat d'une étape numérique réussie est gardé pour être rappelé aux étapes suivantes (tache.carnet === false pour ne pas le garder)
+      ...(tache && tache.type === 'num' && tache.carnet !== false && tache.vrai != null && isFinite(tache.vrai)
+        ? { carnet: { ...(e.carnet || {}), [etape]: { n: String(tache.carnet || (typeof tache.q === 'string' && tache.q.length <= 42 ? tache.q.replace(/, en [^,]*$/, '') : et.titre)).replace(/^[★\s]+/, ''), v: `${tache.affiche ? tache.affiche(tache.vrai) : sci(tache.vrai)} ${tache.unite || ''}`.trim() } } } : {}) }));
   }, [reussieMaintenant, dejaReussie, etape, setEtat]);
+  const valeursGardees = Object.entries(etat.carnet || {}).filter(([k]) => +k < etape).sort((x, y) => x[0] - y[0]).map(([, v]) => v);
   // Arrivé à la dernière étape (le bilan) : le parcours est terminé ; la simulation s'ouvrira désormais sur l'exploration libre
   const derniere = etape >= etapes.length - 1;
   useEffect(() => { if (derniere && !etat.fini) setEtat(e => (e.fini ? e : { ...e, fini: true })); }, [derniere, etat.fini, setEtat]);
@@ -279,7 +283,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, color: TXT2, fontWeight: 700 }}>
           <span>Étape {etape + 1} / {etapes.length}</span>
-          {etape > 0 && <button onClick={() => setEtat({ etape: 0, reps: {}, verifs: {}, reussies: {} })} style={{ background: 'none', border: 'none', color: TXT2,
+          {etape > 0 && <button onClick={() => setEtat({ etape: 0, reps: {}, verifs: {}, reussies: {}, carnet: {} })} style={{ background: 'none', border: 'none', color: TXT2,
             cursor: 'pointer', textDecoration: 'underline', fontSize: 12 }}>revenir au début</button>}
         </div>
         <div style={{ height: 6, background: '#e2e8f0', borderRadius: 3, marginTop: 4 }}>
@@ -293,6 +297,13 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
       )}
       <div data-titre-etape="1" style={{ fontSize: 18, fontWeight: 700, color: TXT }}>{indicesProfond(et.titre)}</div>
       <div style={{ fontSize: 15, color: TXT, lineHeight: 1.6 }}>{indicesProfond(et.texte)}</div>
+      {valeursGardees.length > 0 && !derniere && (
+        <details open data-carnet="1" style={{ fontSize: 13.5, color: TXT, background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 8, padding: '4px 8px' }}>
+          <summary style={{ cursor: 'pointer', fontWeight: 700, color: TXT2 }}>Valeurs trouvées aux étapes précédentes ({valeursGardees.length})</summary>
+          <ul style={{ margin: '4px 0 2px', paddingLeft: 18, lineHeight: 1.5 }}>
+            {valeursGardees.slice(-8).map((v, i) => <li key={i}>{avecIndices(v.n)} : <strong>{avecIndices(v.v)}</strong></li>)}
+          </ul>
+        </details>)}
       {et.retenir && <ARetenir titre={et.retenirTitre || 'À RETENIR'}>{et.retenir}</ARetenir>}
       {tache && tache.type === 'action' && (
         <div>
