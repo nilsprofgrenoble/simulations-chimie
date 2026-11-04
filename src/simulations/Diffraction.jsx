@@ -125,8 +125,11 @@ function Ecran({ L }) {
     return dd;
   }, [objet, a, lam, D, mmpx]);
   const mk = (xm, col, i) => (
-    <g key={i} style={{ cursor: 'ew-resize' }} onPointerDown={e => { glisse.current = i; e.currentTarget.ownerSVGElement.setPointerCapture?.(e.pointerId); }}>
-      <line x1={px(xm)} y1="0" x2={px(xm)} y2={IMG.H} stroke={col} strokeWidth="2"/><rect x={px(xm) - 9} y="0" width="18" height={IMG.H} fill="transparent"/>
+    <g key={i} className="df-rep" style={{ cursor: 'ew-resize' }} role="slider" tabIndex={0} aria-label={`Repère ${i} (${i === 1 ? 'orange' : 'bleu'}), flèches gauche et droite pour le déplacer`}
+      aria-valuemin={-W} aria-valuemax={W} aria-valuenow={Number(xm.toFixed(2))} aria-valuetext={`${nbf(xm, 2)} millimètres`}
+      onKeyDown={e => { const d = e.key === 'ArrowRight' || e.key === 'ArrowUp' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? -1 : 0; if (d) { e.preventDefault(); setX(i, Math.max(-W, Math.min(W, xm + d * (e.shiftKey ? 5 : 1) * W / 300))); } }}
+      onPointerDown={e => { glisse.current = i; e.currentTarget.ownerSVGElement.setPointerCapture?.(e.pointerId); }}>
+      <line x1={px(xm)} y1="0" x2={px(xm)} y2={IMG.H} stroke={col} strokeWidth="2"/><rect x={px(xm) - 16} y="0" width="32" height={IMG.H} fill="transparent"/>
       <path d={`M${px(xm) - 6},0 L${px(xm) + 6},0 L${px(xm)},9 z`} fill={col}/></g>);
   return (
     <div>
@@ -169,7 +172,7 @@ function Montage({ objet, a, lam, D, gris }) {
       <g stroke="#dc2626" strokeWidth="2"><line x1={ex - 12} y1="48" x2={ex - 12} y2="82"/><line x1={ex - 18} y1="48" x2={ex - 6} y2="48"/><line x1={ex - 18} y1="82" x2={ex - 6} y2="82"/></g>
       <text x={ex - 24} y="69" fontSize="13" fontWeight="700" fill="#dc2626" textAnchor="end">L</text>
       <text x={ox + 10} y="96" fontSize="13" fontWeight="700" fill="#0f172a">{objet === 'trou' ? 'd' : 'a'}</text>
-      <text x="4" y="12" fontSize="10" fill="#94a3b8">schéma non à l’échelle</text>
+      <text x="4" y="12" fontSize="11" fill="#64748b">schéma non à l’échelle</text>
     </svg>);
 }
 
@@ -191,7 +194,7 @@ export function SimulationDiffraction({ naviguer }) {
   const [hypoOuv, setHypoOuv] = useState(false);
   const [scene, setScene] = useState('cuve');
   const [cuve, setCuve] = useState(() => mode === 'guide' && guide.etape === 0 ? { a: 10, lam: 1 } : PRESETS_CUVE);
-  const [vue, setVue] = useState('ondes'), [anim, setAnim] = useState(true), [angle, setAngle] = useState(false);
+  const [vue, setVue] = useState('ondes'), [anim, setAnim] = useState(() => { try { return !window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return true; } }), [angle, setAngle] = useState(false);
   const [lz, setLz] = useState({ objet: 'fente', a: 100, lam: 532, D: 2, expo: 2, zoom: 0, x1: -6, x2: 6 });
   const enGuide = mode === 'guide', enDefi = mode === 'defi';
   const setL = f => setLz(l => ({ ...l, ...f }));
@@ -385,12 +388,12 @@ export function SimulationDiffraction({ naviguer }) {
           else noterLaser(isFinite(lm) && proche(lm, defi.lam, 0.04) && (v === M.nomCouleur(lm) || v === M.nomCouleur(defi.lam))); }} style={styleBouton(true, '#16a34a')}>Vérifier</button>
         <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
       </div>
-      {dres && defi.type === 'fil' && <div style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5 }}>
+      {dres && defi.type === 'fil' && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5 }}>
         <div style={{ color: dres.aOk ? '#16a34a' : '#dc2626' }}>{dres.aOk ? '✓ Diamètre mesuré correct.' : '✗ Diamètre : revoyez le pointé de L (centres des extinctions) et la relation a = 2λD / L. Vérifiez les unités.'}</div>
         {dres.aOk && <div style={{ color: dres.vOk ? '#16a34a' : '#dc2626' }}>{dres.vOk ? '✓ Conclusion cohérente avec le critère 2 u(a).' : `✗ Conclusion : comparez |a mesuré − ${defi.nom}| à 2 u(a) = ${dres.u != null ? nbf(2 * dres.u * 1e6, 1) : '?'} µm (panneau « Incertitude »).`}</div>}
         {dres.ok && <div style={{ color: KIT.txt2, fontWeight: 400 }}>Diamètre réel du fil dans la simulation : {nbf(defi.a, 1)} µm (annonce : {defi.nom} µm). {Math.abs(defi.a - defi.nom) < 0.2 ? 'Le fil est conforme à l’annonce.' : (dres.attendu ? 'Avec votre protocole, cet écart ne peut pas être distingué de l’incertitude de mesure : un écran plus éloigné (D plus grand) permettrait de le détecter.' : 'Cet écart est nettement supérieur à l’incertitude de mesure : le fil n’est pas conforme.')}</div>}
       </div>}
-      {dres && defi.type === 'laser' && <div style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5 }}>
+      {dres && defi.type === 'laser' && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5 }}>
         <div style={{ color: dres.lOk ? '#16a34a' : '#dc2626' }}>{dres.lOk ? '✓ Longueur d’onde correcte.' : '✗ Longueur d’onde : λ = a L / (2 D). Attention aux unités (L en mm, a en µm, résultat en nm).'}</div>
         <div style={{ color: dres.cOk ? '#16a34a' : '#dc2626' }}>{dres.cOk ? '✓ Couleur correcte.' : '✗ Couleur : le visible va du violet (≈ 400 nm) au rouge (≈ 700 nm).'}</div>
         {dres.ok && <div style={{ color: KIT.txt2, fontWeight: 400 }}>Le laser émettait à {defi.lam}{NB}nm.</div>}
@@ -486,6 +489,8 @@ export function SimulationDiffraction({ naviguer }) {
       <LigneMesure nom="Repère 2 (bleu)" valeur={`${nbf(lz.x2, W >= 20 ? 1 : 2)}${NB}mm`} couleur="#0891b2"/>
       <LigneMesure nom="Largeur L entre les repères" valeur={`${nbf(Lmes, W >= 20 ? 1 : 2)}${NB}mm`}/>
       {!enDefi && <LigneMesure nom={objetEff === 'trou' ? 'd calculé = 2,44 λ D / L' : 'a calculé = 2 λ D / L'} valeur={isFinite(aCalc) ? `${nbf(aCalc, 1)}${NB}µm` : '–'} couleur="#16a34a"/>}
+      <div style={{ fontSize: 12.5, color: KIT.txt2, margin: '6px 0 2px' }}>Placer les repères au curseur (ou au clavier avec les flèches sur l’image) :</div>
+      {[[1, 'Repère 1 (orange)', lz.x1], [2, 'Repère 2 (bleu)', lz.x2]].map(([i, n, v]) => <input key={i} type="range" aria-label={n} aria-valuetext={`${nbf(v, 2)} millimètres`} min={-W} max={W} step={W / 300} value={v} onChange={e => setX(i, parseFloat(e.target.value))} style={{ width: '100%', accentColor: i === 1 ? '#d97706' : '#0891b2' }}/>)}
       {mode === 'explore' && <LigneMesure nom="L prévu par la formule" valeur={`${nbf(Lp, 2)}${NB}mm`} couleur="#16a34a"/>}
     </div>
   );
@@ -538,6 +543,7 @@ export function SimulationDiffraction({ naviguer }) {
         .df-l1 { display: grid; align-items: start; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 1fr); }
         .df-l1.cote { grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
         .df-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 12px; }
+        .df-rep:focus { outline: none; } .df-rep:focus-visible line { stroke-width: 5; } .df-rep:focus-visible path { transform-box: fill-box; transform-origin: center; transform: scale(1.8); }
         .df-pri { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr); }
         .df-pri.pile { grid-template-columns: minmax(0, 1fr); }
         @media (max-width: 900px) { .df-l1.cote, .df-pri { grid-template-columns: minmax(0, 1fr); } }
