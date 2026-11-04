@@ -94,7 +94,7 @@ const dD = 2e-3;                        // mètre ruban : ± 2 mm
 const dLaser = lam => 0.01 * lam;       // notice : ± 1 % (nm)
 
 function Ecran({ cfg }) {
-  const { W, rgbAt, profil, enveloppe, x1, x2, setX, couleurCourbe, aria } = cfg;
+  const { W, rgbAt, profil, enveloppe, x1, x2, setX, couleurCourbe, aria, legende } = cfg;
   const mmpx = W / (IMG.W / 2), ref = useRef(null), glisse = useRef(null);
   useEffect(() => {
     const cv = ref.current; if (!cv) return;
@@ -109,7 +109,7 @@ function Ecran({ cfg }) {
   const versMm = e => { const r = ref.current.getBoundingClientRect(); return Math.max(-W, Math.min(W, ((e.clientX - r.left) / r.width * IMG.W - IMG.W / 2) * mmpx)); };
   const grand = W >= 200, pas = grand ? 20 : 2, etiq = grand ? 100 : 10;
   const ticks = []; for (let m = -Math.floor(W / pas) * pas; m <= W + 1e-9; m += pas) ticks.push(Math.round(m / pas) * pas);
-  const courbe = useMemo(() => { if (!profil) return null; let dd = '', de = ''; for (let x = 0; x <= IMG.W; x += 2) { const mm = (x - IMG.W / 2) * mmpx; dd += `${x ? 'L' : 'M'}${x},${(58 - 54 * Math.min(1, profil(mm))).toFixed(1)} `; if (enveloppe) de += `${x ? 'L' : 'M'}${x},${(58 - 54 * Math.min(1, enveloppe(mm))).toFixed(1)} `; } return { dd, de }; }, [profil, enveloppe, mmpx]);
+  const courbe = useMemo(() => { if (!profil) return null; let dd = '', de = ''; for (let x = 0; x <= IMG.W; x += W >= 200 ? 1 : 2) { const mm = (x - IMG.W / 2) * mmpx; dd += `${x ? 'L' : 'M'}${x},${(58 - 54 * Math.min(1, profil(mm))).toFixed(1)} `; if (enveloppe) de += `${x ? 'L' : 'M'}${x},${(58 - 54 * Math.min(1, enveloppe(mm))).toFixed(1)} `; } return { dd, de }; }, [profil, enveloppe, mmpx]);
   const mk = (xm, col, i) => (
     <g key={i} style={{ cursor: 'ew-resize', touchAction: 'none' }} onPointerDown={e => { glisse.current = i; e.currentTarget.ownerSVGElement.setPointerCapture?.(e.pointerId); }}>
       <line x1={px(xm)} y1="0" x2={px(xm)} y2={IMG.H} stroke="#fff" strokeWidth="5"/><line x1={px(xm)} y1="0" x2={px(xm)} y2={IMG.H} stroke={col} strokeWidth="2.5"/>
@@ -132,7 +132,7 @@ function Ecran({ cfg }) {
       {courbe && <svg viewBox={`0 0 ${IMG.W} 64`} style={{ width: '100%', display: 'block', background: 'white', borderRadius: '0 0 8px 8px', borderTop: '1px solid #e2e8f0' }} role="img" aria-label="Profil d’intensité lumineuse le long de l’écran">
         {enveloppe && <path d={courbe.de} fill="none" stroke="#64748b" strokeWidth="1.5" strokeDasharray="5 4"/>}
         <path d={courbe.dd} fill="none" stroke={couleurCourbe} strokeWidth="2"/>
-        <line x1="0" y1="58" x2={IMG.W} y2="58" stroke="#94a3b8" strokeWidth="0.8"/><text x="6" y="14" fontSize="11" fill="#475569">intensité{enveloppe ? ' (tirets : enveloppe de diffraction)' : ''}</text>
+        <line x1="0" y1="58" x2={IMG.W} y2="58" stroke="#94a3b8" strokeWidth="0.8"/><text x="6" y="14" fontSize="11" fill="#475569" stroke="white" strokeWidth="3" paintOrder="stroke">{legende || 'intensité'}{enveloppe ? ' (tirets : enveloppe de diffraction)' : ''}</text>
       </svg>}
     </div>);
 }
@@ -456,7 +456,7 @@ export function SimulationInterferences({ naviguer }) {
     </span>);
 
   // ---------- scène ----------
-  const colCourbe = sceneEff === 'young' ? `rgb(${M.rgbLambda(Y.lam).map(c => Math.round(c * 200)).join(',')})` : '#334155';
+  const colCourbe = sceneEff === 'young' ? `rgb(${M.rgbLambda(Y.lam).map(c => Math.round(c * 200)).join(',')})` : (sceneEff === 'reseau' && R.source === 'laser') ? `rgb(${M.rgbLambda(R.lam).map(c => Math.round(c * 200)).join(',')})` : '#334155';
   const cfgEcran = useMemo(() => {
     if (sceneEff === 'young') {
       const A = Y.a * 1e-6, L = Y.l * 1e-6, la = Y.lam * 1e-9, rgb = M.rgbLambda(Y.lam);
@@ -465,8 +465,11 @@ export function SimulationInterferences({ naviguer }) {
         profil: xmm => M.intensiteEcranYoung(A, L, la, Y.D, xmm * 1e-3), enveloppe: xmm => M.intFente(A, la, xmm * 1e-3 / Math.hypot(xmm * 1e-3, Y.D)) };
     }
     const pas = R.pas * 1e-6, raies = R.source === 'laser' ? [R.lam] : R.source === 'mercure' ? M.RAIES_MERCURE : Array.from({ length: 31 }, (_, i) => 400 + 10 * i);
-    return { W: WR, couleurCourbe: '#334155', aria: R.source === 'laser' ? 'Figure donnée par un réseau : taches fines régulièrement réparties de part et d’autre de la tache centrale' : R.source === 'mercure' ? 'Spectre de raies du mercure donné par un réseau : quatre raies colorées dans chaque ordre' : 'Spectres de la lumière blanche donnés par un réseau : tache centrale blanche et spectres colorés de part et d’autre',
-      rgbAt: xmm => { const c = M.couleurReseau(raies, pas, 30, R.D, xmm * 1e-3, R.source === 'blanche' ? rz.expo / 8 : rz.expo / (R.source === 'mercure' ? 2 : 1)); return c; }, profil: null, enveloppe: null };
+    return { W: WR, couleurCourbe: colCourbe, aria: R.source === 'laser' ? 'Figure donnée par un réseau : taches fines régulièrement réparties de part et d’autre de la tache centrale' : R.source === 'mercure' ? 'Spectre de raies du mercure donné par un réseau : quatre raies colorées dans chaque ordre' : 'Spectres de la lumière blanche donnés par un réseau : tache centrale blanche et spectres colorés de part et d’autre',
+      rgbAt: xmm => { const c = M.couleurReseau(raies, pas, 30, R.D, xmm * 1e-3, R.source === 'blanche' ? rz.expo / 8 : rz.expo / (R.source === 'mercure' ? 2 : 1)); return c; },
+      profil: R.source === 'blanche' ? null : xmm => raies.reduce((s, nm) => s + M.intensiteEcranReseau(pas, 30, M.LARGEUR_TRAIT * pas, nm * 1e-9, R.D, xmm * 1e-3), 0) / raies.length,
+      enveloppe: R.source === 'laser' ? xmm => M.intFente(M.LARGEUR_TRAIT * pas, R.lam * 1e-9, xmm * 1e-3 / Math.hypot(xmm * 1e-3, R.D)) : null,
+      legende: R.source === 'mercure' ? 'intensité (moyenne des quatre raies)' : null };
   }, [sceneEff, Y.a, Y.l, Y.lam, Y.D, Y.expo, R.pas, R.source, R.lam, R.D, rz.expo, colCourbe, iY, dd]);
   const cfgFinal = { ...cfgEcran, x1, x2, setX };
   const lienBase = (
