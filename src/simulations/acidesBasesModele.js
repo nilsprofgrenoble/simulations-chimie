@@ -113,9 +113,10 @@ export const INDICATEURS = [
 ];
 // Fraction de forme basique de l'indicateur à un pH donné (modèle d'un couple HIn/In⁻ de pKa au milieu de la zone de virage)
 export const fractionBasiqueIndicateur = (ind, ph) => 1 / (1 + 10 ** (ind.pKa - ph));
-// Un indicateur convient à un titrage si sa zone de virage est entièrement contenue dans le saut de pH (autour de l'équivalence)
-export function convient(ind, pHavant, pHapres) { return ind.zone[0] >= pHavant && ind.zone[1] <= pHapres; }
-// Saut de pH : pH à Veq − 0,1·Veq et à Veq + 0,1·Veq (écart de 10 %), pour juger du choix de l'indicateur
+// Critère du programme : un indicateur convient si sa zone de virage contient le pH à l'équivalence
+export const convient = (ind, pHeq) => ind.zone[0] <= pHeq && pHeq <= ind.zone[1];
+export const phEquivalence = (p, i = 1) => pHTitrage({ ...p, Vb: volumeEquivalent(p.C0, p.V0, p.Cb, i) });
+// Saut de pH : pH à 0,99·Veq et à 1,01·Veq (écart de 1 %), pour visualiser la brusque variation autour de l'équivalence
 export function sautPH(p, i = 1) {
   const Ve = volumeEquivalent(p.C0, p.V0, p.Cb, i);
   return [pHTitrage({ ...p, Vb: 0.99 * Ve }), pHTitrage({ ...p, Vb: 1.01 * Ve })];

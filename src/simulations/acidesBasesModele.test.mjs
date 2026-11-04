@@ -51,8 +51,9 @@ pr(M.pHTitrageBase({ C0: 0.05, V0: 0.02, pKa: 9.25, Ca: 0.1, Va: 0.005 }), 9.25,
 // 16 indicateurs
 const I = id => M.INDICATEURS.find(i => i.id === id);
 const s1 = M.sautPH(T), sf = M.sautPH(F);
-ok(M.convient(I('bbt'), ...s1) && !M.convient(I('jm'), ...s1) || !M.convient(I('jm'), ...s1), 'BBT convient acide fort');
-ok(M.convient(I('php'), ...sf) && !M.convient(I('bbt'), ...sf), 'phénolphtaléine pour acide faible, pas BBT ' + sf);
+ok(M.convient(I('bbt'), M.phEquivalence(T)) && !M.convient(I('jm'), M.phEquivalence(T)), 'BBT seul convient acide fort');
+ok(M.convient(I('php'), M.phEquivalence(F)) && !M.convient(I('bbt'), M.phEquivalence(F)), 'phénolphtaléine pour acide faible, pas BBT ' + sf);
+for (const pKa of [3.75, 4.2, 4.8, 4.9]) { const q = { C0: 0.05, V0: 0.02, pKas: [pKa], Cb: 0.1, Vb: 0 }, Ve = M.volumeEquivalent(0.05, 0.02, 0.1); const e = M.equivalenceDerivee(M.courbeTitrage(q, 0.025, 500)); pr(e, Ve, 1e-4, 'dérivée pKa ' + pKa); }
 pr(M.fractionBasiqueIndicateur(I('bbt'), 6.8), 0.5, 1e-9, 'indicateur mi-teinte');
 // 17 constante K
 pr(M.logK(3.8, 4.8) , 1, 1e-12, 'logK'); 

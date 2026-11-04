@@ -26,6 +26,7 @@ const ACIDES = {
   form:  { nom: 'acide méthanoïque', formule: 'HCOOH', base: 'HCOO⁻', pKas: [3.75] },
   benz:  { nom: 'acide benzoïque', formule: 'C₆H₅COOH', base: 'C₆H₅COO⁻', pKas: [4.2] },
   etha:  { nom: 'acide éthanoïque', formule: 'CH₃COOH', base: 'CH₃COO⁻', pKas: [4.8] },
+  prop:  { nom: 'acide propanoïque', formule: 'C₂H₅COOH', base: 'C₂H₅COO⁻', pKas: [4.9] },
   amm:   { nom: 'ion ammonium', formule: 'NH₄⁺', base: 'NH₃', pKas: [9.25] },
 };
 const POLY = {
@@ -35,8 +36,8 @@ const POLY = {
   phos: { nom: 'acide phosphorique', formule: 'H₃PO₄', especes: ['H₃PO₄', 'H₂PO₄⁻', 'HPO₄²⁻', 'PO₄³⁻'], pKas: [2.1, 7.2, 12.4] },
 };
 const COUL_ESP = ['#dc2626', '#d97706', '#0e7490', '#6d28d9'];
-const POUR_DEFI = [3.75, 4.2, 4.8, 9.25];                            // pKa possibles de l'acide inconnu
-const ID_PAR_PKA = { 3.75: 'form', 4.2: 'benz', 4.8: 'etha', 9.25: 'amm' };
+const POUR_DEFI = [3.75, 4.2, 4.8, 4.9];                            // pKa possibles de l'acide inconnu
+const ID_PAR_PKA = { 3.75: 'form', 4.2: 'benz', 4.8: 'etha', 4.9: 'prop' };
 
 const VMAX = 25;                                                    // volume de la burette (mL)
 const U_CB = 0.005, U_V0 = 0.03, U_VEQ = 0.1;                       // demi-étendues : Cb ± 0,5 %, prise d'essai (pipette) ± 0,03 mL, repérage de Veq ± 0,1 mL
@@ -142,7 +143,7 @@ export function SimulationAcidesBases({ naviguer }) {
       tache: { type: 'qcm', q: 'À pH = pKa, on a…', options: ['[AH] = [A⁻]', '[AH] = 0', '[A⁻] = 10 [AH]'], bonne: 0,
         expl: 'De Ka = [A⁻][H₃O⁺]/[AH], on tire pH = pKa + log([A⁻]/[AH]). Si pH = pKa, alors log([A⁻]/[AH]) = 0 : les deux formes sont en concentrations égales.' } },
     { id: 'predom', titre: 'Domaines de prédominance', focus: ['scene'],
-      texte: <>Placez le pH à 6,5 : vous êtes plus de une unité au-dessus du pKa.</>,
+      texte: <>Placez le pH à 6,5 : vous êtes plus d’une unité au-dessus du pKa.</>,
       tache: { type: 'qcm', q: 'À pH = 6,5, quelle espèce prédomine pour le couple CH₃COOH / CH₃COO⁻ (pKa = 4,8) ?', options: ['CH₃COO⁻ (la base)', 'CH₃COOH (l’acide)', 'aucune : elles sont à égalité'], bonne: 0,
         expl: 'Pour pH > pKa, la base prédomine ; pour pH < pKa, c’est l’acide. À pH = 6,5, [A⁻]/[AH] = 10^(6,5 − 4,8) ≈ 50 : la base est largement majoritaire.' } },
     { id: 'citrique', titre: 'Un polyacide', focus: ['scene'],
@@ -166,7 +167,7 @@ export function SimulationAcidesBases({ naviguer }) {
       tache: { type: 'action', ok: tpBase && Math.abs(tp.ajout + 1) < 0.05, label: 'Ajouter 1,0 mmol d’acide', faire: () => { setScene('tampon'); setTp({ ...PRESET_TP, ajout: -1 }); }, consigne: 'Réglez l’ajout à −1,0 mmol (acide fort)' } },
     { id: 'delta', titre: 'La variation de pH', focus: ['mesures'],
       texte: <>Le pH du tampon passe de 4,80 à une nouvelle valeur ; l’eau pure, elle, passe de 7 à une valeur très différente.</>,
-      tache: { type: 'num', q: 'Variation de pH du tampon (valeur absolue)', unite: '', vrai: Math.abs(dTamp), tol: 0.1, affiche: v => nbf(v, 2), cs: 2,
+      tache: { type: 'num', q: 'Variation de pH du tampon (valeur absolue)', unite: '', vrai: Math.abs(dTamp), tol: 0.1, affiche: v => nbf(v, 2), cs: 1,
         bloque: tpBase && Math.abs(tp.ajout + 1) < 0.05 ? null : 'Ajoutez d’abord 1,0 mmol d’acide fort au tampon.',
         calcul: () => [`Après l’ajout : pH = ${nbf(phAjout1, 2)}.`, `ΔpH = ${nbf(phAjout1, 2)} − 4,80 = ${nbf(dTamp, 2)}, soit ${nbf(Math.abs(dTamp), 2)} en valeur absolue.`],
         expl: `Le pH ne varie que de ${nbf(Math.abs(dTamp), 2)} unité, alors que dans l’eau pure il chute de ${nbf(Math.abs(dEau), 0)} unités.` } },
@@ -179,7 +180,7 @@ export function SimulationAcidesBases({ naviguer }) {
       tache: { type: 'qcm', q: 'Un tampon est efficace lorsque le pH est…', options: ['dans l’intervalle pKa ± 1', 'toujours compris entre 6 et 8', 'très supérieur au pKa'], bonne: 0,
         expl: 'La résistance aux ajouts est maximale quand [AH] = [A⁻] (pH = pKa) et reste correcte tant que 0,1 < [A⁻]/[AH] < 10, c’est-à-dire pour pH compris entre pKa − 1 et pKa + 1.' } },
     { id: 'titrage', titre: 'Titrer un acide', focus: ['scene', 'reglages'],
-      texte: <>On dose 20,0{NB}mL d’une solution d’acide éthanoïque de concentration inconnue par de la soude à 0,100{NB}mol·L⁻¹. Ouvrez le titrage préréglé ; on supposera la solution d’acide à 0,050{NB}mol·L⁻¹ pour l’instant.</>,
+      texte: <>On dose 20,0{NB}mL d’une solution d’acide éthanoïque de concentration inconnue par de la soude à 0,100{NB}mol·L⁻¹. Ouvrez le titrage préréglé ; sa concentration est à déterminer.</>,
       tache: { type: 'action', ok: tiBase, label: 'Ouvrir le titrage', faire: () => { setScene('titrage'); setTi(PRESET_TI); }, consigne: 'Choisissez l’onglet « Titrage » et réglez acide éthanoïque, C = 0,050 mol/L' } },
     { id: 'equiv', titre: 'L’équivalence', focus: ['scene', 'mesures'],
       texte: <>À l’<strong>équivalence</strong>, les réactifs ont été introduits dans les proportions stœchiométriques : <em>n</em>(HO⁻ versé) = <em>n</em>(acide initial). On la repère au maximum de la dérivée dpH/dV : affichez-la et déplacez le curseur de volume jusqu’à ce maximum.</>,
@@ -198,21 +199,21 @@ export function SimulationAcidesBases({ naviguer }) {
       tache: { type: 'qcm', q: 'Pourquoi le pH à l’équivalence est-il supérieur à 7 ?', options: ['l’ion éthanoate CH₃COO⁻ est une base faible qui réagit avec l’eau', 'il reste de la soude en excès', 'l’acide éthanoïque est une base'], bonne: 0,
         expl: 'Seule l’espèce CH₃COO⁻ (base faible) est présente à l’équivalence : CH₃COO⁻ + H₂O ⇌ CH₃COOH + HO⁻. La solution est donc basique, au contraire d’un titrage acide fort / base forte pour lequel pH = 7.' } },
     { id: 'indic', titre: 'Choisir un indicateur coloré', focus: ['reglages', 'scene'],
-      texte: <>Sans pH-mètre, on repère l’équivalence par le changement de couleur d’un <strong>indicateur coloré</strong>. Il convient si sa zone de virage est contenue dans le saut de pH (ici d’environ pH {nbf(M.sautPH({ C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 })[0], 1)} à {nbf(M.sautPH({ C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 })[1], 1)} autour de l’équivalence). Choisissez celui qui convient.</>,
-      tache: { type: 'action', ok: tiBase && ti.ind === 'php', label: 'Choisir la phénolphtaléine', faire: () => { setScene('titrage'); setTi(t => ({ ...PRESET_TI, ind: 'php', Vb: t.Vb })); }, consigne: 'Choisissez l’indicateur dont la zone de virage (8,2 – 10,0) est dans le saut de pH' } },
+      texte: <>Sans pH-mètre, on repère l’équivalence par le changement de couleur d’un <strong>indicateur coloré</strong>. Il convient si sa zone de virage <strong>contient le pH à l’équivalence</strong> (ici pH<sub>éq</sub> ≈ {nbf(M.phEquivalence({ C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 }), 1)} ; le saut de pH va d’environ pH {nbf(M.sautPH({ C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 })[0], 1)} à {nbf(M.sautPH({ C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 })[1], 1)} autour de l’équivalence). Choisissez celui qui convient.</>,
+      tache: { type: 'action', ok: tiBase && ti.ind === 'php', label: 'Choisir la phénolphtaléine', faire: () => { setScene('titrage'); setTi(t => ({ ...PRESET_TI, ind: 'php', Vb: t.Vb })); }, consigne: 'Choisissez l’indicateur dont la zone de virage contient le pH à l’équivalence' } },
     { id: 'conc', titre: 'Calculer la concentration', focus: ['mesures'],
-      texte: <>La relation à l’équivalence est <em>C</em>ₐ·<em>V</em>₀ = <em>C</em>ᵦ·<em>V</em>eq. Exprimez <em>C</em>ₐ pour une prise d’essai <em>V</em>₀ = 20,0{NB}mL.</>,
+      texte: <>La relation à l’équivalence est <em>C</em><sub>a</sub>·<em>V</em><sub>0</sub> = <em>C</em><sub>b</sub>·<em>V</em><sub>eq</sub>. Exprimez <em>C</em><sub>a</sub> pour une prise d’essai <em>V</em>₀ = 20,0{NB}mL.</>,
       tache: { type: 'num', q: 'Concentration Cₐ de la solution d’acide', unite: 'mol/L', vrai: 0.050, tol: 0.02, affiche: v => nbf(v, 3), cs: 3,
         bloque: tiBase ? null : 'Ouvrez d’abord le titrage préréglé.',
         calcul: () => ['Cₐ = C_b × Veq / V₀ = 0,100 × 10,0 / 20,0.', 'Cₐ = 0,0500 mol·L⁻¹.'], pieges: [[0.1 * 20 / 10, 'Vous avez inversé Veq et V₀.']],
-        expl: 'Cₐ = 5,00 × 10⁻² mol·L⁻¹, valeur qu’on avait supposée au départ.' } },
+        expl: 'Cₐ = 5,00 × 10⁻² mol·L⁻¹ : c’est la concentration de la solution d’acide dosée.' } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
-        <li>pH = −log [H₃O⁺] ; un acide fort réagit totalement (τ = 100 %), un acide faible partiellement (τ &lt; 1)</li>
+        <li>pH = −log [H₃O⁺] ; un acide fort réagit totalement (τ = 100 %), un acide faible partiellement (τ &lt; 100 %)</li>
         <li>pH = pKa + log([A⁻]/[AH]) ; la forme acide prédomine pour pH &lt; pKa, la forme basique pour pH &gt; pKa</li>
         <li>une solution tampon contient AH et A⁻ en quantités comparables ; elle limite les variations de pH (pH = pKa ± 1)</li>
         <li>à l’équivalence d’un titrage : n(titrant versé) = n(espèce titrée) ; à la demi-équivalence, pH = pKa</li>
-        <li>l’indicateur coloré convient si sa zone de virage est contenue dans le saut de pH</li></ul>,
+        <li>l’indicateur coloré convient si sa zone de virage contient le pH à l’équivalence</li></ul>,
       texte: <>Vous savez relier pH, pKa et prédominance, expliquer le rôle d’un tampon et exploiter un titrage pH-métrique. Essayez maintenant les défis.</>, tache: null },
   ];
   // la bonne réponse des QCM est répartie entre les positions (pas toujours la première)
@@ -232,13 +233,13 @@ export function SimulationAcidesBases({ naviguer }) {
     const base = { type, reps: {}, verifie: false };
     if (type === 'pka') { const pKa = tire(POUR_DEFI); setDefi({ ...base, pKa, id: ID_PAR_PKA[pKa], C0: tire([0.040, 0.050, 0.060, 0.080]) }); setTi(t => ({ ...t, Vb: 0, ind: null, deriv: true })); }
     else if (type === 'conc') {
-      const C0 = tire([0.040, 0.045, 0.055, 0.065, 0.075, 0.085]), pKa = tire(POUR_DEFI), Ceti = Math.round(C0 * (1 + tire([-0.06, -0.03, 0.0, 0.03, 0.06])) * 1000) / 1000;
+      const C0 = tire([0.040, 0.045, 0.055, 0.065, 0.075, 0.085]), pKa = tire(POUR_DEFI), Ceti = Math.round(C0 * (1 + tire([-0.03, -0.015, 0.0, 0.015, 0.03])) * 1000) / 1000;
       setDefi({ ...base, pKa, id: ID_PAR_PKA[pKa], C0, Ceti }); setTi(t => ({ ...t, Vb: 0, ind: null, deriv: true }));
     } else { const pKa = tire([4.2, 4.8, 6.4, 7.2]); setDefi({ ...base, pKa, cible: Math.round((pKa + tire([-0.8, -0.5, -0.3, 0.3, 0.5, 0.8])) * 10) / 10 }); setTp({ nAH: 10, nA: 10, V: 100, ajout: 0 }); }
   }
   function changerMode(md) {
     setMode(md);
-    if (md === 'defi' && !defi) nouveauDefi(typeDefi);
+    if (md === 'defi') { if (!defi) nouveauDefi(typeDefi); else { setTi(t => ({ ...t, Vb: 0, ind: null, deriv: true })); setTp(PRESET_TP); } }
     if (md === 'guide') { setScene('acide'); setAc(PRESET_AC); setTi(PRESET_TI); setTp(PRESET_TP); setDs({ id: 'etha', ph: 4.8 }); }
   }
   function choisirDefi(t) { setTypeDefi(t); nouveauDefi(t); }
@@ -251,7 +252,7 @@ export function SimulationAcidesBases({ naviguer }) {
       const vrai = defi.C0, tol = Math.max(0.03, 2 * incTi.rel); ok = isFinite(x) && proche(x, vrai, tol);
       const uEt = 0.02 * defi.Ceti / R3, uMes = x * incTi.rel;
       compat = isFinite(x) ? { z: Math.abs(x - defi.Ceti) / Math.hypot(uMes, uEt), ok: Math.abs(x - defi.Ceti) / Math.hypot(uMes, uEt) <= 2 } : null;
-    } else ok = Math.abs(phTp0 - defi.cible) <= 0.1 && Math.abs(tp.V - 100) < 1 && tp.nAH + tp.nA > 0;
+    } else ok = Math.abs(phTp0 - defi.cible) <= 0.1 && Math.abs(tp.V - 100) < 1 && tp.nAH >= 1 && tp.nA >= 1 && tp.nAH + tp.nA >= 10;
     setDefi(d => ({ ...d, verifie: true, ok, imprecis, compat }));
     (defi.type === 'pka' ? noterPka : defi.type === 'conc' ? noterConc : noterTampon)(ok);
   };
@@ -270,7 +271,7 @@ export function SimulationAcidesBases({ naviguer }) {
       <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>
         {defi.type === 'pka' && <>On titre 20,0{NB}mL d’une solution (<em>C</em> = {nbf(defi.C0, 3)}{NB}mol·L⁻¹) d’un acide faible inconnu par de la soude à 0,100{NB}mol·L⁻¹. Repérez l’équivalence, puis lisez le pH à la demi-équivalence : il donne le pKa du couple.</>}
         {defi.type === 'conc' && <>On titre 20,0{NB}mL d’une solution d’acide dont l’étiquette indique <strong>{nbf(defi.Ceti, 3)}{NB}mol·L⁻¹</strong> (± 2 %) par de la soude à 0,100{NB}mol·L⁻¹. Repérez le volume équivalent, calculez la concentration, puis jugez si votre résultat est <strong>compatible</strong> avec l’étiquette.</>}
-        {defi.type === 'tampon' && <>On dispose d’un couple acide/base de pKa = <strong>{nbf(defi.pKa, 1)}</strong> et on veut 100{NB}mL de solution de pH = <strong>{nbf(defi.cible, 1)}</strong> (± 0,1). Réglez les quantités d’acide et de base conjuguée avec les curseurs, sans ajout, puis vérifiez.</>}
+        {defi.type === 'tampon' && <>On dispose d’un couple acide/base de pKa = <strong>{nbf(defi.pKa, 1)}</strong> et on veut 100{NB}mL de solution de pH = <strong>{nbf(defi.cible, 1)}</strong> (± 0,1). Réglez les quantités d’acide et de base conjuguée (au moins 10 mmol au total, pour que le tampon ait une capacité suffisante), sans ajout, puis vérifiez.</>}
       </div>
       {defi.type === 'pka' && champReponse('v', '', 'pKa de l’acide')}
       {defi.type === 'conc' && champReponse('v', 'mol/L', 'Concentration trouvée')}
@@ -294,9 +295,9 @@ export function SimulationAcidesBases({ naviguer }) {
       <li><strong>Température 25 °C</strong> : K<sub>e</sub> = 1,0 × 10⁻¹⁴. Les pKa sont les valeurs de la simulation, proches de celles des tables.</li>
       <li><strong>Activités = concentrations</strong> : solutions diluées (C ≤ 0,1 mol·L⁻¹), sans effet de force ionique.</li>
       <li><strong>pH calculé exactement</strong> par la conservation de la charge (autoprotolyse de l’eau et polyacides compris), pas par les formules approchées. Les formules du cours (pH = ½(pKa − log C), pH = pKa + log([A⁻]/[AH])) sont affichées pour comparaison.</li>
-      <li><strong>Acides forts et bases fortes</strong> : totalement dissociés. Pas de CO₂ dissous dans les solutions, volumes additifs.</li>
-      <li><strong>Titrage</strong> : le pH-mètre est supposé parfaitement étalonné. Incertitudes (type B, loi rectangulaire, u = demi-étendue / √3, sources indépendantes) : concentration de la soude ± 0,5 %, prise d’essai à la pipette ± 0,03 mL, repérage du volume équivalent ± 0,1 mL. Compatibilité : |écart| / u ≤ 2.</li>
-      <li><strong>Indicateurs</strong> : la couleur est un mélange des teintes acide et basique selon le pH ; les zones de virage sont celles des tables ({M.INDICATEURS.map(i => `${i.nom} ${nbf(i.zone[0], 1)}–${nbf(i.zone[1], 1)}`).join(' ; ')}).</li>
+      <li><strong>Acides forts et bases fortes</strong> : totalement dissociés. Pas de CO₂ dissous dans les solutions. Titrage : volumes additifs ; tampon : l’ajout ne change pas le volume de la solution.</li>
+      <li><strong>Titrage</strong> : le pH-mètre est supposé parfaitement étalonné. Incertitudes (type B, loi rectangulaire, u = demi-étendue / √3, sources indépendantes) : concentration de la soude ± 0,5 %, prise d’essai à la pipette ± 0,03 mL, repérage du volume équivalent ± 0,1 mL. Compatibilité avec l’étiquette (± 2 %, loi rectangulaire) : |écart| / √(u² + u_étiq²) ≤ 2.</li>
+      <li><strong>Indicateurs</strong> : un indicateur convient si sa zone de virage contient le pH à l’équivalence ; la couleur est un mélange des teintes acide et basique selon le pH ; les zones de virage sont celles des tables ({M.INDICATEURS.map(i => `${i.nom} ${nbf(i.zone[0], 1)}–${nbf(i.zone[1], 1)}`).join(' ; ')}).</li>
       <li><strong>Pouvoir tampon</strong> : β = variation de quantité de base forte ajoutée par litre et par unité de pH, calculée autour de l’état courant.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>);
@@ -385,7 +386,7 @@ export function SimulationAcidesBases({ naviguer }) {
             <path d="M28,140 L122,140 L112,218 L38,218 Z" fill={coulSol} stroke="#475569" strokeWidth="2"/><ellipse cx="75" cy="140" rx="47" ry="5" fill="none" stroke="#475569"/>
             <circle cx="75" cy="205" r="5" fill="white" stroke="#475569"/>
           </svg>
-          <div style={{ flex: '1 1 300px', minWidth: 0 }}>
+          <div style={{ flex: '1 1 300px', minWidth: 280 }}>
             <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }} role="img"
               aria-label={`Courbe de titrage pH en fonction du volume de soude versé. Curseur à ${nbf(Ti.Vb, 1)} mL, pH ${nbf(phTi, 2)}${Ti.deriv ? ' ; dérivée du pH affichée en vert' : ''}`}>
               <line x1={mx} y1={Y(0)} x2={W - 12} y2={Y(0)} stroke="#94a3b8"/><line x1={mx} y1={Y(0)} x2={mx} y2={Y(14)} stroke="#94a3b8"/>
@@ -441,8 +442,8 @@ export function SimulationAcidesBases({ naviguer }) {
           <Curseur nom="Ajout (− acide fort / + base forte)" valeur={tp.ajout} onChange={v => setTp(s => ({ ...s, ajout: v }))} min={-5} max={5} pas={0.5} unite="mmol" decimales={1} couleur="#b45309"/></>}
       </>}
       {sceneEff === 'titrage' && <>
-        {!enDefi && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>{Object.entries(ACIDES).map(([k, a]) => <button key={k} onClick={() => setTi(s => ({ ...s, id: k }))} aria-pressed={ti.id === k} style={stylePetitBouton(ti.id === k, '#0f766e')}>{a.nom}</button>)}</div>}
-        {enDefi ? <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6 }}>20,0 mL d’acide inconnu titrés par la soude (0,100 mol·L⁻¹).</div> : <>
+        {!enDefi && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>{Object.entries(ACIDES).filter(([k]) => k !== 'amm').map(([k, a]) => <button key={k} onClick={() => setTi(s => ({ ...s, id: k }))} aria-pressed={ti.id === k} style={stylePetitBouton(ti.id === k, '#0f766e')}>{a.nom}</button>)}</div>}
+        {enDefi ? <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6 }}>20,0 mL d’acide inconnu titrés par la soude (0,100 mol·L⁻¹).</div> : enGuide ? <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>Prise d’essai 20,0 mL d’acide de concentration inconnue ; soude à 0,100 mol/L.</div> : <>
           <Curseur nom="Concentration de l’acide C" valeur={ti.C0} onChange={v => setTi(s => ({ ...s, C0: v }))} min={0.02} max={0.1} pas={0.005} unite="mol/L" decimales={3} couleur="#475569"/>
           <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>Prise d’essai 20,0 mL ; soude à 0,100 mol/L.</div></>}
         <Curseur nom="Volume de soude versé V" valeur={ti.Vb} onChange={v => setTi(s => ({ ...s, Vb: v }))} min={0} max={VMAX} pas={0.1} unite="mL" decimales={1} couleur="#b45309"/>
@@ -479,32 +480,32 @@ export function SimulationAcidesBases({ naviguer }) {
         <LigneMesure nom="pH de la solution" valeur={nbf(phTp, 2)} couleur="#b45309"/>
         {!enDefi && <LigneMesure nom={`pH de ${tp.V} mL d’eau pure, même ajout`} valeur={nbf(phEau, 2)}/>}
         {!enDefi && <LigneMesure nom="Variation de pH du tampon" valeur={nbf(phTp - phTp0, 2)} couleur="#15803d"/>}
-        {!enDefi && !enGuide && <LigneMesure nom="Rapport [A⁻] / [AH]" valeur={tp.nAH > 0 ? nbf(tp.nA / tp.nAH, 2) : '–'}/>}
-        {!enDefi && !enGuide && <LigneMesure nom="Pouvoir tampon β" valeur={isFinite(betaTp) ? `${nbf(betaTp, 3)}${NB}mol·L⁻¹` : '–'}/>}
-        {!enDefi && !enGuide && tp.nAH > 0 && tp.nA > 0 && <LigneMesure nom="pH dans l’intervalle pKa ± 1 ?" valeur={Math.abs(phTp0 - 4.8) <= 1 ? 'oui : tampon efficace' : 'non : peu efficace'} couleur={Math.abs(phTp0 - 4.8) <= 1 ? '#15803d' : '#b91c1c'}/>}
+        {!enDefi && (!enGuide || apres('ajout')) && <LigneMesure nom="Rapport [A⁻] / [AH]" valeur={tp.nAH > 0 ? nbf(tp.nA / tp.nAH, 2) : '–'}/>}
+        {!enDefi && (!enGuide || apres('ajout')) && <LigneMesure nom="Pouvoir tampon β" valeur={isFinite(betaTp) ? `${nbf(betaTp, 3)}${NB}mol·L⁻¹ par unité de pH` : '–'}/>}
+        {!enDefi && (!enGuide || apres('ajout')) && tp.nAH > 0 && tp.nA > 0 && <LigneMesure nom="pH dans l’intervalle pKa ± 1 ?" valeur={Math.abs(phTp0 - 4.8) <= 1 ? 'oui : tampon efficace' : 'non : peu efficace'} couleur={Math.abs(phTp0 - 4.8) <= 1 ? '#15803d' : '#b91c1c'}/>}
         {enDefi && <LigneMesure nom="pH préparé (sans ajout)" valeur={nbf(phTp0, 2)}/>}
       </>}
       {sceneEff === 'titrage' && <>
         <LigneMesure nom="Volume versé V" valeur={`${nbf(Ti.Vb, 1)}${NB}mL`}/>
         <LigneMesure nom="pH (pH-mètre)" valeur={nbf(phTi, 2)} couleur="#b45309"/>
-        {Ti.deriv && <LigneMesure nom="Dérivée dpH/dV (± 0,1 mL)" valeur={`${nbf(derTi, 2)}${NB}/mL`} couleur="#15803d"/>}
+        {Ti.deriv && <LigneMesure nom="Dérivée dpH/dV (± 0,1 mL)" valeur={`${nbf(derTi, 2)}${NB}pH/mL`} couleur="#15803d"/>}
         {!enGuide && !enDefi && <LigneMesure nom="Volume équivalent (maximum de la dérivée)" valeur={`${nbf(equivDer, 1)}${NB}mL`} couleur="#15803d"/>}
         {!enGuide && !enDefi && pKaT != null && <LigneMesure nom={`pH à Veq / 2 (pKa du couple = ${nbf(pKaT, 2)})`} valeur={nbf(phDemi, 2)}/>}
         {!enGuide && !enDefi && <LigneMesure nom="Concentration Cb × Veq / V₀" valeur={`${nbf(Ti.Cb * equivDer / Ti.V0, 4)}${NB}mol/L`}/>}
-        {Ti.ind && (() => { const indo = M.INDICATEURS.find(i => i.id === Ti.ind), [a, b] = M.sautPH({ ...pT, Vb: 0 }); return <LigneMesure nom={`Indicateur ${indo.nom} adapté à ce titrage ?`} valeur={M.convient(indo, a, b) ? 'oui' : 'non'} couleur={M.convient(indo, a, b) ? '#15803d' : '#b91c1c'}/>; })()}
+        {Ti.ind && !enDefi && (() => { const indo = M.INDICATEURS.find(i => i.id === Ti.ind), peq = M.phEquivalence(pT), cv = M.convient(indo, peq); return <><LigneMesure nom="pH à l’équivalence" valeur={nbf(peq, 2)}/><LigneMesure nom={`Indicateur ${indo.nom} adapté à ce titrage ?`} valeur={cv ? 'oui' : 'non'} couleur={cv ? '#15803d' : '#b91c1c'}/></>; })()}
       </>}
     </div>);
 
   const incertBox = enDefi && defi?.type === 'conc' && (
     <div style={{ ...styleBoite }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Incertitude sur la concentration (relative)</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Sources d’incertitude sur la concentration</div>
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginBottom: 6 }}>Type B : u = demi-étendue / √3 ; sources indépendantes.</div>
       <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
-        <thead><tr style={{ textAlign: 'left', color: KIT.txt2 }}><th style={{ padding: '2px 4px' }}>Source</th><th style={{ padding: '2px 4px' }}>± demi-étendue</th><th style={{ padding: '2px 4px' }}>u / valeur</th></tr></thead>
+        <thead><tr style={{ textAlign: 'left', color: KIT.txt2 }}><th style={{ padding: '2px 4px' }}>Source</th><th style={{ padding: '2px 4px' }}>± demi-étendue</th></tr></thead>
         <tbody>{[['Cb (soude)', '0,5 %', U_CB / R3], ['Veq (repérage)', `${nbf(U_VEQ, 1)} mL`, U_VEQ / R3 / Math.max(equivDer, 1e-3)], ['V₀ (pipette)', `${nbf(U_V0, 2)} mL`, U_V0 / R3 / Ti.V0]].map(([n, dem, r]) => (
-          <tr key={n} style={{ borderTop: `1px dashed ${KIT.bord}` }}><td style={{ padding: '3px 4px', fontWeight: 600 }}>{n}</td><td style={{ padding: '3px 4px' }}>{dem}</td><td style={{ padding: '3px 4px', fontFamily: 'monospace' }}>{nbf(r * 100, 2)} %</td></tr>))}</tbody>
+          <tr key={n} style={{ borderTop: `1px dashed ${KIT.bord}` }}><td style={{ padding: '3px 4px', fontWeight: 600 }}>{n}</td><td style={{ padding: '3px 4px' }}>{dem}</td></tr>))}</tbody>
       </table>
-      <LigneMesure nom="u(Cₐ) / Cₐ" valeur={`${nbf(incTi.rel * 100, 2)} %`}/>
+      {defi.verifie && <LigneMesure nom="u(Cₐ) / Cₐ" valeur={`${nbf(incTi.rel * 100, 2)} %`}/>}
     </div>);
 
   const aEssayer = (
@@ -513,11 +514,11 @@ export function SimulationAcidesBases({ naviguer }) {
       <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
         <li>pH d’un acide : diluez l’acide éthanoïque de 10⁻² à 10⁻⁶ mol/L. Le pH approché reste-t-il proche du pH exact ? Pourquoi décroche-t-il ?</li>
         <li>pH d’un acide : comparez l’ion ammonium et l’acide méthanoïque à la même concentration. Lequel est le plus dissocié ?</li>
-        <li>Distribution : dans l’acide citrique, quel est le seul pH où H₂A⁻ représente plus de 90 % ? L’acide phosphorique a-t-il une espèce prédominante pour tout pH ?</li>
+        <li>Distribution : dans l’acide citrique, pour quel pH H₂A⁻ est-elle maximale, et quelle fraction atteint-elle ? Pour l’acide phosphorique, existe-t-il une espèce prédominante à tout pH, sauf aux valeurs pH = pKa ?</li>
         <li>Tampon : gardez 20 mmol au total mais changez le rapport A⁻/AH de 1 à 10 puis à 0,1. Que devient le pouvoir tampon ?</li>
         <li>Tampon : ajoutez 5 mmol d’acide fort à un tampon à 5 mmol d’AH et 5 mmol d’A⁻. Que se passe-t-il ? Pourquoi dit-on que la capacité du tampon est limitée ?</li>
         <li>Titrage : comparez l’acide chlorhydrique et l’acide éthanoïque à la même concentration. Le saut de pH est-il le même ? Quels indicateurs conviennent à chaque cas ?</li>
-        <li>Titrage : titrez l’ion ammonium (pKa 9,25). Quel indicateur choisir ? Pourquoi le bleu de bromothymol ne convient-il pas ?</li>
+        <li>Titrage : titrez l’acide benzoïque. Quel indicateur choisir ? Pourquoi le bleu de bromothymol ne convient-il pas ?</li>
       </ul>
     </div>);
   const retenir = (
