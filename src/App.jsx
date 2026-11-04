@@ -36,6 +36,7 @@ import { SimulationRefractometre } from "./simulations/Refractometre";
 import { SimulationMoteurPasAPas } from "./simulations/MoteurPasAPas";
 import { SimulationMoteurCode } from "./simulations/MoteurCode";
 import { SimulationBoussole } from "./simulations/Boussole";
+import { SimulationDiffraction } from "./simulations/Diffraction";
 import { SimulationChampForce } from "./simulations/ChampForce";
 import { SimulationDeuxCorps } from "./simulations/DeuxCorps";
 import { SimulationCondensateurMillikan } from "./simulations/CondensateurMillikan";
@@ -152,6 +153,8 @@ const SIMULATIONS = [
     component: SimulationMoteurCode },
   { id:46, label:"Boussole et champ magnétique", niveau:"TSTL", icon:"🧭", color:"#b45309",
     component: SimulationBoussole },
+  { id:83, label:"Diffraction des ondes", niveau:"TSTL", icon:"🌊", color:"#0891b2",
+    component: SimulationDiffraction },
   { id:48, label:"Champ et force : gravitation et électrostatique", niveau:"1G", icon:"🌍", color:"#3f6212",
     component: SimulationChampForce },
   { id:49, label:"Deux corps en interaction : gravitation et Coulomb", niveau:"1G", icon:"🌙", color:"#3f6212",
@@ -258,7 +261,13 @@ function construireMenus() {
       const sims = SIMULATIONS.filter(s => s.niveau === "COMP").sort((a, b) => ORDRE_COMP.indexOf(a.id) - ORDRE_COMP.indexOf(b.id)).map(fiche);
       return { ...m, groupes: [{ sims }] };
     }
-    const groupes = chapitresDuNiveau(m.key).map(c => ({ label: c.label, chap: c.id, sims: c.sims.map(id => SIMULATIONS.find(s => s.id === id)).filter(Boolean).map(fiche) }));
+    const groupes = [];
+    let rubrique = null;
+    chapitresDuNiveau(m.key).forEach(c => {
+      if (c.rubrique && c.rubrique !== rubrique) groupes.push({ entete: c.rubrique, sims: [] });   // intitulé de rubrique, sur toute la largeur du menu
+      rubrique = c.rubrique || rubrique;
+      groupes.push({ label: c.label, chap: c.id, sims: c.sims.map(id => SIMULATIONS.find(s => s.id === id)).filter(Boolean).map(fiche) });
+    });
     return { ...m, groupes };
   });
 }
