@@ -3,6 +3,7 @@ import { useState, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure } from "../commun";
 import { NB } from "./Distillation";
+import { SchemaBurette } from "./titrageCommun";
 import { Pic } from "../Pictos";
 import * as M from "./acidesBasesModele";
 
@@ -46,6 +47,17 @@ const R3 = Math.sqrt(3);
 const PRESET_TI = { id: 'etha', C0: 0.050, V0: 20, Cb: 0.100, Vb: 0, ind: null, deriv: false };
 const PRESET_TP = { nAH: 10, nA: 10, V: 100, ajout: 0 };
 const PRESET_AC = { id: 'etha', logC: -2 };
+
+// Liste déroulante étiquetée (réglage à choix multiples)
+function Liste({ nom, valeur, onChange, options }) {
+  return (
+    <label style={{ display: 'block', fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 8 }}>{nom}
+      <select value={valeur} onChange={e => onChange(e.target.value)} aria-label={nom}
+        style={{ display: 'block', width: '100%', marginTop: 4, padding: '7px 8px', fontSize: 14, borderRadius: 8, border: `1.5px solid ${KIT.bord}`, background: 'white', color: KIT.txt }}>
+        {options.map(([v, t]) => <option key={v} value={v}>{t}</option>)}
+      </select>
+    </label>);
+}
 
 export function SimulationAcidesBases({ naviguer }) {
   const [mode, setMode] = useState(() => modeOuverture('acides-bases-guide-v1'));
@@ -297,7 +309,7 @@ export function SimulationAcidesBases({ naviguer }) {
       <li><strong>pH calculé exactement</strong> par la conservation de la charge (autoprotolyse de l’eau et polyacides compris), pas par les formules approchées. Les formules du cours (pH = ½(pKa − log C), pH = pKa + log([A⁻]/[AH])) sont affichées pour comparaison.</li>
       <li><strong>Acides forts et bases fortes</strong> : totalement dissociés. Pas de CO₂ dissous dans les solutions. Titrage : volumes additifs ; tampon : l’ajout ne change pas le volume de la solution.</li>
       <li><strong>Titrage</strong> : le pH-mètre est supposé parfaitement étalonné. Incertitudes (type B, loi rectangulaire, u = demi-étendue / √3, sources indépendantes) : concentration de la soude ± 0,5 %, prise d’essai à la pipette ± 0,03 mL, repérage du volume équivalent ± 0,1 mL. Compatibilité avec l’étiquette (± 2 %, loi rectangulaire) : |écart| / √(u² + u_étiq²) ≤ 2.</li>
-      <li><strong>Indicateurs</strong> : un indicateur convient si sa zone de virage contient le pH à l’équivalence ; la couleur est un mélange des teintes acide et basique selon le pH ; les zones de virage sont celles des tables ({M.INDICATEURS.map(i => `${i.nom} ${nbf(i.zone[0], 1)}–${nbf(i.zone[1], 1)}`).join(' ; ')}).</li>
+      <li><strong>Indicateurs</strong> : un indicateur convient (critère du programme) si sa zone de virage contient le pH à l’équivalence ; il est dit « acceptable » si elle ne le contient pas mais se trouve entièrement dans le saut de pH, c’est-à-dire entre les pH à 0,99 et 1,01 Veq (virage repéré à 1 % près) ; la couleur est un mélange des teintes acide et basique selon le pH ; les zones de virage sont celles des tables ({M.INDICATEURS.map(i => `${i.nom} ${nbf(i.zone[0], 1)}–${nbf(i.zone[1], 1)}`).join(' ; ')}).</li>
       <li><strong>Pouvoir tampon</strong> : β = variation de quantité de base forte ajoutée par litre et par unité de pH, calculée autour de l’état courant.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>);
@@ -368,7 +380,7 @@ export function SimulationAcidesBases({ naviguer }) {
   };
 
   const SceneTitrage = () => {
-    const W = 600, H = 280, mx = 44, X = v => mx + (W - mx - 12) * v / VMAX, Y = p => 14 + (H - 46) * (1 - p / 14);
+    const W = 600, H = 430, mx = 44, X = v => mx + (W - mx - 12) * v / VMAX, Y = p => 14 + (H - 46) * (1 - p / 14);
     const tr = ptsTi.map((p, i) => `${i ? 'L' : 'M'}${X(p.V).toFixed(1)},${Y(p.pH).toFixed(1)}`).join('');
     const dmax = Math.max(...ptsTi.map(p => p.d));
     const Yd = d => (H - 32) - (H - 60) * 0.5 * d / dmax;
@@ -377,16 +389,13 @@ export function SimulationAcidesBases({ naviguer }) {
     const coulSol = indo ? M.couleurIndicateur(indo, phTi) : '#e0f2fe';
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'stretch' }}>
-          <svg viewBox="0 0 150 230" style={{ width: 110, flex: '0 0 auto', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }} role="img"
-            aria-label={`Montage : burette de soude (volume versé ${nbf(Ti.Vb, 1)} mL) et bécher contenant la solution${indo ? `, de couleur ${phTi < indo.zone[0] ? 'acide' : phTi > indo.zone[1] ? 'basique' : 'intermédiaire'} de l’indicateur` : ''}`}>
-            <rect x="66" y="8" width="18" height="100" fill="#f1f5f9" stroke="#64748b"/><rect x="67" y={8 + 100 * Ti.Vb / VMAX} width="16" height={100 - 100 * Ti.Vb / VMAX} fill="#cbd5e1"/>
-            <text x="92" y="22" fontSize="10" fill="#475569">0</text><text x="92" y="108" fontSize="10" fill="#475569">25</text>
-            <line x1="75" y1="108" x2="75" y2="128" stroke="#64748b" strokeWidth="2"/>
-            <path d="M28,140 L122,140 L112,218 L38,218 Z" fill={coulSol} stroke="#475569" strokeWidth="2"/><ellipse cx="75" cy="140" rx="47" ry="5" fill="none" stroke="#475569"/>
-            <circle cx="75" cy="205" r="5" fill="white" stroke="#475569"/>
-          </svg>
-          <div style={{ flex: '1 1 300px', minWidth: 280 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ maxWidth: 560 }}>
+            <SchemaBurette V2={Ti.Vb} ouvert={false} coul={coulSol} indicateur={indo ? indo.nom : null} reperes={false} legendeCouleur={false} sonde={{ valeur: nbf(phTi, 2) }}
+              etiquetteBurette={<><strong>Burette : solution titrante</strong><br/>soude, C<sub>b</sub> = {nbf(Ti.Cb, 3)} mol/L</>}
+              etiquetteErlen={<><strong>Erlenmeyer : solution titrée</strong><br/>{nbf(Ti.V0, 1)} mL d’{acT.nom}{indo ? <> + indicateur coloré</> : null}</>}/>
+          </div>
+          <div>
             <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }} role="img"
               aria-label={`Courbe de titrage pH en fonction du volume de soude versé. Curseur à ${nbf(Ti.Vb, 1)} mL, pH ${nbf(phTi, 2)}${Ti.deriv ? ' ; dérivée du pH affichée en vert' : ''}`}>
               <line x1={mx} y1={Y(0)} x2={W - 12} y2={Y(0)} stroke="#94a3b8"/><line x1={mx} y1={Y(0)} x2={mx} y2={Y(14)} stroke="#94a3b8"/>
@@ -442,19 +451,19 @@ export function SimulationAcidesBases({ naviguer }) {
           <Curseur nom="Ajout (− acide fort / + base forte)" valeur={tp.ajout} onChange={v => setTp(s => ({ ...s, ajout: v }))} min={-5} max={5} pas={0.5} unite="mmol" decimales={1} couleur="#b45309"/></>}
       </>}
       {sceneEff === 'titrage' && <>
-        {!enDefi && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>{Object.entries(ACIDES).filter(([k]) => k !== 'amm').map(([k, a]) => <button key={k} onClick={() => setTi(s => ({ ...s, id: k }))} aria-pressed={ti.id === k} style={stylePetitBouton(ti.id === k, '#0f766e')}>{a.nom}</button>)}</div>}
+        {!enDefi && <Liste nom="Acide titré (solution de l’erlenmeyer)" valeur={ti.id} onChange={v => setTi(sx => ({ ...sx, id: v }))}
+          options={Object.entries(ACIDES).filter(([k]) => k !== 'amm').map(([k, a]) => [k, `${a.nom} (${a.formule})`])}/>}
         {enDefi ? <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6 }}>20,0 mL d’acide inconnu titrés par la soude (0,100 mol·L⁻¹).</div> : enGuide ? <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>Prise d’essai 20,0 mL d’acide de concentration inconnue ; soude à 0,100 mol/L.</div> : <>
-          <Curseur nom="Concentration de l’acide C" valeur={ti.C0} onChange={v => setTi(s => ({ ...s, C0: v }))} min={0.02} max={0.1} pas={0.005} unite="mol/L" decimales={3} couleur="#475569"/>
-          <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>Prise d’essai 20,0 mL ; soude à 0,100 mol/L.</div></>}
+          <Curseur nom="Concentration de l’acide C" valeur={ti.C0} onChange={v => setTi(sx => ({ ...sx, C0: v }))} min={0.02} max={0.1} pas={0.005} unite="mol/L" decimales={3} couleur="#475569"/>
+          <Curseur nom="Prise d’essai V₀ (pipette)" valeur={ti.V0} onChange={v => setTi(sx => ({ ...sx, V0: v }))} min={10} max={25} pas={5} unite="mL" decimales={1} couleur="#475569"/>
+          <Curseur nom="Concentration de la soude Cb" valeur={ti.Cb} onChange={v => setTi(sx => ({ ...sx, Cb: v }))} min={0.05} max={0.2} pas={0.01} unite="mol/L" decimales={3} couleur="#475569"/>
+          {Veq > VMAX && <div role="alert" style={{ fontSize: 13, color: '#b91c1c', marginBottom: 6 }}>Le volume équivalent ({nbf(Veq, 1)} mL) dépasse la burette de {VMAX} mL : prélevez moins d’acide ou prenez une soude plus concentrée.</div>}</>}
         <Curseur nom="Volume de soude versé V" valeur={ti.Vb} onChange={v => setTi(s => ({ ...s, Vb: v }))} min={0} max={VMAX} pas={0.1} unite="mL" decimales={1} couleur="#b45309"/>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
           <button onClick={() => setTi(s => ({ ...s, deriv: !s.deriv }))} aria-pressed={ti.deriv} style={stylePetitBouton(ti.deriv, '#15803d')}>Afficher la dérivée</button>
         </div>
-        {!enDefi && <><div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, margin: '8px 0 4px' }}>Indicateur coloré</div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <button onClick={() => setTi(s => ({ ...s, ind: null }))} aria-pressed={!ti.ind} style={stylePetitBouton(!ti.ind, '#475569')}>aucun</button>
-            {M.INDICATEURS.map(i => <button key={i.id} onClick={() => setTi(s => ({ ...s, ind: i.id }))} aria-pressed={ti.ind === i.id} style={stylePetitBouton(ti.ind === i.id, '#475569')}>{i.nom}</button>)}
-          </div></>}
+        {!enDefi && <div style={{ marginTop: 8 }}><Liste nom="Indicateur coloré" valeur={ti.ind || ''} onChange={v => setTi(sx => ({ ...sx, ind: v || null }))}
+          options={[['', 'aucun'], ...M.INDICATEURS.map(i => [i.id, `${i.nom} (zone de virage ${nbf(i.zone[0], 1)} – ${nbf(i.zone[1], 1)})`])]}/></div>}
       </>}
     </div>);
 
@@ -492,7 +501,10 @@ export function SimulationAcidesBases({ naviguer }) {
         {!enGuide && !enDefi && <LigneMesure nom="Volume équivalent (maximum de la dérivée)" valeur={`${nbf(equivDer, 1)}${NB}mL`} couleur="#15803d"/>}
         {!enGuide && !enDefi && pKaT != null && <LigneMesure nom={`pH à Veq / 2 (pKa du couple = ${nbf(pKaT, 2)})`} valeur={nbf(phDemi, 2)}/>}
         {!enGuide && !enDefi && <LigneMesure nom="Concentration Cb × Veq / V₀" valeur={`${nbf(Ti.Cb * equivDer / Ti.V0, 4)}${NB}mol/L`}/>}
-        {Ti.ind && !enDefi && (() => { const indo = M.INDICATEURS.find(i => i.id === Ti.ind), peq = M.phEquivalence(pT), cv = M.convient(indo, peq); return <><LigneMesure nom="pH à l’équivalence" valeur={nbf(peq, 2)}/><LigneMesure nom={`Indicateur ${indo.nom} adapté à ce titrage ?`} valeur={cv ? 'oui' : 'non'} couleur={cv ? '#15803d' : '#b91c1c'}/></>; })()}
+        {Ti.ind && !enDefi && (() => { const indo = M.INDICATEURS.find(i => i.id === Ti.ind), peq = M.phEquivalence(pT), [s1, s2] = M.sautPH(pT), cv = M.convient(indo, peq), ok2 = !cv && M.convientDansSaut(indo, pT);
+          return <><LigneMesure nom="pH à l’équivalence" valeur={nbf(peq, 2)}/><LigneMesure nom="Saut de pH (à ± 1 % de Veq)" valeur={`${nbf(s1, 1)} → ${nbf(s2, 1)}`}/>
+            <LigneMesure nom={`Indicateur ${indo.nom} adapté à ce titrage ?`} valeur={cv ? 'oui' : ok2 ? 'acceptable' : 'non'} couleur={cv ? '#15803d' : ok2 ? '#b45309' : '#b91c1c'}/>
+            <div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.45, padding: '2px 0 4px' }}>{cv ? 'La zone de virage contient le pH à l’équivalence.' : ok2 ? 'La zone de virage ne contient pas le pH à l’équivalence, mais elle est entièrement dans le saut de pH : le virage se produit à moins de 1 % de Veq.' : 'La zone de virage n’est pas dans le saut de pH : le virage a lieu trop tôt ou trop tard.'}</div></>; })()}
       </>}
     </div>);
 

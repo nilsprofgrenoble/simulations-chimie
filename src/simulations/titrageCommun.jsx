@@ -49,7 +49,7 @@ export function ContexteBanc({ erlen, burette, equations }) {
 
 // Le montage : potence, burette graduée avec zoom de lecture, erlenmeyer, agitateur magnétique, repères 1-2-3
 // etiquetteBurette : texte ou contenu (titrant) ; etiquetteErlen : contenu de l'erlenmeyer (facultatif) ; reperes : repères 1-2-3 à légender ; legendeCouleur : encadré « couleur de la solution »
-export function SchemaBurette({ V2, ouvert, coul, indicateur, hl = () => false, etiquetteBurette = 'S₂O₃²⁻', etiquetteErlen = null, reperes = true, legendeCouleur = true }) {
+export function SchemaBurette({ V2, ouvert, coul, indicateur, hl = () => false, etiquetteBurette = 'S₂O₃²⁻', etiquetteErlen = null, reperes = true, legendeCouleur = true, sonde = null }) {
   const yB0 = 30, yB1 = 230;                       // burette : 0 mL en haut, 25 mL en bas
   const yNivB = yB0 + V2 / V_BURETTE * (yB1 - yB0);
   const coule = ouvert;
@@ -105,6 +105,14 @@ export function SchemaBurette({ V2, ouvert, coul, indicateur, hl = () => false, 
         <g key={n}><line x1={x - 22} y1={y} x2={x + 16} y2={y} stroke={KIT.txt2} strokeDasharray="4 3"/>
           <circle cx={x + 28} cy={y} r="11" fill="white" stroke={ORANGE_GUIDE} strokeWidth="2"/><text x={x + 28} y={y + 4.5} fontSize="13" fontWeight="800" fill={KIT.txt} textAnchor="middle">{n}</text></g>
       ))}
+      {/* sonde d'un pH-mètre (titrage pH-métrique) : sonde plongée dans la solution, câble et afficheur */}
+      {sonde && <g>
+        <path d="M 350 190 Q 330 232 276 262 L 270 302" fill="none" stroke={KIT.txt2} strokeWidth="2.5" strokeLinecap="round"/>
+        <rect x="266" y="296" width="8" height="16" rx="3" fill="#fde68a" stroke={KIT.txt}/>
+        <rect x="350" y="168" width="150" height="46" rx="6" fill="#0f172a"/>
+        <text x="425" y="188" fontSize="11" textAnchor="middle" fill="#94a3b8">pH-mètre</text>
+        <text x="425" y="207" fontSize="18" fontWeight="700" textAnchor="middle" fill="#86efac" fontFamily="ui-monospace, monospace">{sonde.valeur}</text>
+      </g>}
       {/* légende de couleur */}
       {legendeCouleur && <>
         <text x="470" y="290" fontSize="13" fontWeight="700" fill={KIT.txt} textAnchor="middle">couleur de la solution</text>

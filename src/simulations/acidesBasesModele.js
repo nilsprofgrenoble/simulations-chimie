@@ -115,6 +115,8 @@ export const INDICATEURS = [
 export const fractionBasiqueIndicateur = (ind, ph) => 1 / (1 + 10 ** (ind.pKa - ph));
 // Critère du programme : un indicateur convient si sa zone de virage contient le pH à l'équivalence
 export const convient = (ind, pHeq) => ind.zone[0] <= pHeq && pHeq <= ind.zone[1];
+// Variante plus souple : la zone de virage est entièrement dans le saut de pH (écart de 1 % autour de l'équivalence) ; le virage est alors repéré à 1 % près
+export const convientDansSaut = (ind, p, i = 1) => { const [a, b] = sautPH(p, i); return ind.zone[0] >= a && ind.zone[1] <= b; };
 export const phEquivalence = (p, i = 1) => pHTitrage({ ...p, Vb: volumeEquivalent(p.C0, p.V0, p.Cb, i) });
 // Saut de pH : pH à 0,99·Veq et à 1,01·Veq (écart de 1 %), pour visualiser la brusque variation autour de l'équivalence
 export function sautPH(p, i = 1) {
