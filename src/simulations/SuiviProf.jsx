@@ -90,7 +90,7 @@ export function SimulationSuiviProf({ naviguer }) {
   const [onglet, setOnglet] = useState(presetInit ? 'devoirs' : 'synthese'), [ouvert, setOuvert] = useState(null);
   const [msg, setMsg] = useState(''), [erreur, setErreur] = useState(''), [occupe, setOccupe] = useState(false);
   const [comptes, setComptes] = useState(null), [formClasse, setFormClasse] = useState(false);
-  const [vieDispo, setVieDispo] = useState(true), [chapDispo, setChapDispo] = useState(true), [apercu, setApercu] = useState(false), [preset, setPreset] = useState(presetInit);
+  const [siteDispo, setSiteDispo] = useState(false), [vieDispo, setVieDispo] = useState(true), [chapDispo, setChapDispo] = useState(true), [apercu, setApercu] = useState(false), [preset, setPreset] = useState(presetInit);
   const [nc, setNc] = useState({ nom: '', prefixe: '', nombre: 30 }), [prefixeSaisi, setPrefixeSaisi] = useState(false), [ajout, setAjout] = useState(5);
   const etq = useMemo(() => etiquettes(), []), exos = useMemo(() => tousLesExercices(), []), defis = useMemo(() => etiquettesDefis(), []);
 
@@ -102,6 +102,8 @@ export function SimulationSuiviProf({ naviguer }) {
       try { c = await rest('classes?select=id,nom,prefixe,prof_id,vie_classe&order=cree_le'); setVieDispo(true); }
       catch { c = await rest('classes?select=id,nom,prefixe,prof_id&order=cree_le'); setVieDispo(false); }   // supabase/05-vie-de-classe.sql pas encore appliqué
     }
+    // « site » de la classe (supabase/11-energy-at-school.sql) : lecture facultative, sans ce script on garde « paillasse »
+    try { const sites = await rest('classes?select=id,site'); c = c.map(x => ({ ...x, site: sites.find(t => t.id === x.id)?.site || 'paillasse' })); setSiteDispo(true); } catch { setSiteDispo(false); }
     setClasses(c);
     setClasseId(cur => choisir || (c.some(x => x.id === cur) ? cur : c[0]?.id || ''));
   }, []);
@@ -162,6 +164,11 @@ export function SimulationSuiviProf({ naviguer }) {
     await rest(`classes?id=eq.${classeId}`, { method: 'PATCH', corps: { vie_classe: actif } });
     setClasses(cs => cs.map(c => (c.id === classeId ? { ...c, vie_classe: actif } : c)));
     setMsg(actif ? 'Vie de classe activée : les élèves voient l’objectif collectif et les prouesses.' : 'Vie de classe désactivée.');
+  });
+  const choisirSite = site => proteger(async () => {
+    await rest(`classes?id=eq.${classeId}`, { method: 'PATCH', corps: { site } });
+    setClasses(cs => cs.map(c => (c.id === classeId ? { ...c, site } : c)));
+    setMsg(site === 'energy' ? 'Classe réservée à Energy@School : ses élèves se connectent sur le site Energy@School.' : 'Classe de la Paillasse virtuelle.');
   });
   const choisirChapitres = liste => proteger(async () => {
     await rest(`classes?id=eq.${classeId}`, { method: 'PATCH', corps: { chapitres: liste } });
@@ -250,6 +257,13 @@ export function SimulationSuiviProf({ naviguer }) {
             <span><Pic n="trophy"/><b>Vie de classe</b> : disponible après avoir exécuté <code>supabase/05-vie-de-classe.sql</code> dans Supabase (SQL Editor → Run).</span>
           )}
         </div>
+        {siteDispo && (
+          <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }}>
+            <b>🌐 Site des élèves</b> : les élèves de « {classe.nom} » se connectent sur
+            <label style={{ margin: '0 10px 0 8px', cursor: 'pointer' }}><input type="radio" name="site-classe" checked={classe.site !== 'energy'} disabled={occupe} onChange={() => choisirSite('paillasse')} style={{ accentColor: '#0b4f94' }} /> la Paillasse virtuelle</label>
+            <label style={{ cursor: 'pointer' }}><input type="radio" name="site-classe" checked={classe.site === 'energy'} disabled={occupe} onChange={() => choisirSite('energy')} style={{ accentColor: '#ea580c' }} /> Energy@School</label>
+            <div style={{ color: KIT.txt2, marginTop: 3 }}>Les comptes sont les mêmes ; ce réglage sépare les deux sites. Le suivi de l’avancement Energy@School se consulte sur le site Energy@School (avec votre compte professeur).</div>
+          </div>)}
         <ChapitreClasse classe={classe} dispo={chapDispo} occupe={occupe} onChoix={choisirChapitres} />
         <PartageClasse classe={classe} proprio={proprio} occupe={occupe} proteger={proteger} setMsg={setMsg} onQuitte={async () => { setClasseId(''); await chargerClasses(); }} />
         </details>)}
