@@ -362,14 +362,25 @@ export function SimulationAcidesBases({ naviguer }) {
   };
 
   const SceneTampon = () => {
-    const gauge = (titre, ph, col) => (<div style={{ flex: 1, minWidth: 220 }}><div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt, marginBottom: 2 }}>{titre} : pH = {nbf(ph, 2)}</div>{Echelle(ph)}</div>);
+    // Une seule échelle de pH : en haut le pH de la solution tampon, en bas celui de l'eau pure ayant reçu le même ajout
+    const xp = ph => 20 + 560 * Math.max(0, Math.min(14, ph)) / 14;
+    const etiq = (ph, y, txt, col) => <text x={xp(ph)} y={y} fontSize="13" fontWeight="700" fill={col} textAnchor={xp(ph) < 190 ? 'start' : xp(ph) > 410 ? 'end' : 'middle'}>{txt}</text>;
+    const echelleDouble = (
+      <svg viewBox={`0 0 600 ${enDefi ? 74 : 118}`} style={{ width: '100%', display: 'block' }} role="img"
+        aria-label={`Échelle de pH. Solution tampon de ${tp.V} mL : pH ${nbf(phTp, 2)}${enDefi ? '' : `. ${tp.V} mL d’eau pure, même ajout : pH ${nbf(phEau, 2)}`}`}>
+        <defs><linearGradient id="ab-ech2" x1="0" x2="1"><stop offset="0" stopColor="#dc2626"/><stop offset="0.25" stopColor="#f59e0b"/><stop offset="0.5" stopColor="#22c55e"/><stop offset="0.75" stopColor="#3b82f6"/><stop offset="1" stopColor="#6d28d9"/></linearGradient></defs>
+        {etiq(phTp, 14, `${tp.V} mL de solution tampon : pH = ${nbf(phTp, 2)}`, '#0e7490')}
+        <polygon points={`${xp(phTp) - 8},22 ${xp(phTp) + 8},22 ${xp(phTp)},38`} fill="#0e7490"/>
+        <rect x="20" y="40" width="560" height="16" rx="8" fill="url(#ab-ech2)"/>
+        {[0, 2, 4, 6, 8, 10, 12, 14].map(k => <text key={k} x={20 + 560 * k / 14} y="72" fontSize="11" textAnchor="middle" fill="#334155">{k}</text>)}
+        {!enDefi && <>
+          <polygon points={`${xp(phEau) - 8},96 ${xp(phEau) + 8},96 ${xp(phEau)},80`} fill="#b45309"/>
+          {etiq(phEau, 112, `${tp.V} mL d’eau pure, même ajout : pH = ${nbf(phEau, 2)}`, '#b45309')}</>}
+      </svg>);
     const nIni = tp.nAH + tp.nA;
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          {gauge(`Solution tampon (${tp.nAH} mmol AH / ${tp.nA} mmol A⁻)`, phTp)}
-          {!enDefi && gauge(`${tp.V} mL d’eau pure, même ajout`, phEau)}
-        </div>
+        {echelleDouble}
         <svg viewBox="0 0 600 70" style={{ width: '100%', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }} role="img" aria-label={`Quantités dans la solution : ${nbf(tp.nAH, 0)} millimoles d’acide et ${nbf(tp.nA, 0)} millimoles de base conjuguée`}>
           <rect x="20" y="14" width={Math.max(2, 560 * tp.nAH / 40)} height="20" fill="#6d28d9" opacity="0.85" rx="3"/><text x="24" y="28" fontSize="12" fill="white" fontWeight="700">AH</text>
           <rect x="20" y="40" width={Math.max(2, 560 * tp.nA / 40)} height="20" fill="#0e7490" opacity="0.85" rx="3"/><text x="24" y="54" fontSize="12" fill="white" fontWeight="700">A⁻</text>
