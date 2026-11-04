@@ -38,6 +38,7 @@ import { SimulationMoteurCode } from "./simulations/MoteurCode";
 import { SimulationBoussole } from "./simulations/Boussole";
 import { SimulationDiffraction } from "./simulations/Diffraction";
 import { SimulationInterferences } from "./simulations/Interferences";
+import { SimulationAcidesBases } from "./simulations/AcidesBases";
 import { SimulationChampForce } from "./simulations/ChampForce";
 import { SimulationDeuxCorps } from "./simulations/DeuxCorps";
 import { SimulationCondensateurMillikan } from "./simulations/CondensateurMillikan";
@@ -158,6 +159,8 @@ const SIMULATIONS = [
     component: SimulationDiffraction },
   { id:84, label:"Interférences et réseaux", niveau:"TSTL", icon:"🌊", color:"#0e7490",
     component: SimulationInterferences },
+  { id:85, label:"Acides et bases : pH, pKa, tampon et titrage", niveau:"TSTL", icon:"🧪", color:"#0f766e",
+    component: SimulationAcidesBases },
   { id:48, label:"Champ et force : gravitation et électrostatique", niveau:"1G", icon:"🌍", color:"#3f6212",
     component: SimulationChampForce },
   { id:49, label:"Deux corps en interaction : gravitation et Coulomb", niveau:"1G", icon:"🌙", color:"#3f6212",
