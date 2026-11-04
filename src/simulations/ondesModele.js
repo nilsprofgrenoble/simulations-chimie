@@ -106,3 +106,93 @@ export function champCuve({ a, lambda, xs, ys, N = 40 }) {
 }
 // Demi-ouverture de la zone éclairée (rad), pour l’affichage : θ = asin(λ/a) si λ < a
 export const demiOuvertureCuve = (a, lambda) => thetaExact(a, lambda);
+
+// ====================================================
+//  Interférences à deux ondes et réseaux (sim 84)
+//  Hypothèses : ondes monochromatiques synchrones (même source divisée) ; sources secondaires ponctuelles (cuve) ou fentes fines (Young) ;
+//  figure à l’infini (Fraunhofer) ; petits angles pour l’interfrange i = λD/l ; réseau idéal de N traits identiques, équidistants ;
+//  formule des réseaux sin θk = kλ/a (valable sans approximation des petits angles).
+// ====================================================
+
+// ---------- cuve à deux sources ponctuelles synchrones, en phase ----------
+export const F_CUVE = 20;                    // Hz : fréquence du vibreur (valeur fixée, notée dans l’énoncé)
+export const T_CUVE = 1 / F_CUVE;            // s
+export const celeriteCuve = lambdaCm => lambdaCm * 1e-2 * F_CUVE;     // m/s
+// Distances aux deux sources S1 (0, +s/2) et S2 (0, −s/2) du point (x, y) (cm)
+export const distancesSources = (s, x, y) => [Math.hypot(x, y - s / 2), Math.hypot(x, y + s / 2)];
+// Retard de l’onde la plus lointaine : τ = δ / v (s) ; δ = |r2 − r1| (cm)
+export const retardCuve = (lambdaCm, r1, r2) => Math.abs(r2 - r1) / lambdaCm * T_CUVE;
+// Nature de l’interférence d’après τ/T : constructive (τ = kT), destructive (τ = kT + T/2), sinon intermédiaire (tolérance 0,1 T)
+export function natureInterference(tauSurT, tol = 0.1) {
+  const f = tauSurT - Math.floor(tauSurT);
+  if (f < tol || f > 1 - tol) return 'constructive';
+  if (Math.abs(f - 0.5) < tol) return 'destructive';
+  return 'intermédiaire';
+}
+// Ordonnée y > 0 du point d’abscisse x tel que r2 − r1 = d (cm), sur la branche haute de l’hyperbole de foyers S1, S2 ; null si hors domaine
+export function yPourDelta(s, d, x) {
+  if (d >= s) return null;
+  if (d === 0) return 0;
+  return (d / 2) * Math.sqrt(1 + x * x / ((s / 2) ** 2 - (d / 2) ** 2));
+}
+// Champ complexe de deux sources circulaires : A = Σ e^{i k r} / √(1 + r / 2λ) (amortissement géométrique 1/√r, borné près des sources)
+export function champCuveDeux({ s, lambda, xs, ys }) {
+  const k = 2 * Math.PI / lambda, re = new Float32Array(xs.length * ys.length), im = new Float32Array(re.length), wsum = new Float32Array(re.length);
+  let idx = 0;
+  for (let jy = 0; jy < ys.length; jy++) for (let jx = 0; jx < xs.length; jx++, idx++) {
+    const [r1, r2] = distancesSources(s, xs[jx], ys[jy]);
+    for (const r of [r1, r2]) { const w = 1 / Math.sqrt(1 + r / (2 * lambda)); re[idx] += w * Math.cos(k * r); im[idx] += w * Math.sin(k * r); wsum[idx] += w; }
+  }
+  return { re, im, w: wsum };      // w : somme des poids = amplitude maximale possible en ce point (interférence parfaitement constructive)
+}
+
+// ---------- deux fentes de Young (largeur a, distance l entre les centres) ----------
+export const intYoung = (a, l, lambda, sinT) => sinc(Math.PI * a * sinT / lambda) ** 2 * Math.cos(Math.PI * l * sinT / lambda) ** 2;
+export const interfrange = (l, lambda, D) => lambda * D / l;
+export const distanceFentes = (i, lambda, D) => lambda * D / i;
+export const lambdaDepuisInterfrange = (i, l, D) => i * l / D;
+export const intensiteEcranYoung = (a, l, lambda, D, x) => intYoung(a, l, lambda, x / Math.hypot(x, D));
+// Nombre de franges brillantes dans la tache centrale de diffraction : ≈ 2 l / a (l/a franges de chaque côté de l’axe)
+export const frangesDansTache = (a, l) => 2 * l / a;
+
+// ---------- réseau : pas a, N traits éclairés, fentes de largeur w ----------
+export function intReseau(pas, N, w, lambda, sinT) {
+  const env = sinc(Math.PI * w * sinT / lambda) ** 2, phi = Math.PI * pas * sinT / lambda, s = Math.sin(phi);
+  if (Math.abs(s) < 1e-9) return env;
+  const r = Math.sin(N * phi) / (N * s);
+  return env * r * r;
+}
+export const sinOrdre = (k, lambda, pas) => k * lambda / pas;
+export const thetaOrdre = (k, lambda, pas) => Math.asin(sinOrdre(k, lambda, pas));           // rad ; défini si kλ/a ≤ 1
+export const ordreMax = (lambda, pas) => { const r = pas / lambda; return Math.ceil(r) - 1; };   // plus grand k entier avec kλ/a < 1
+export const positionOrdre = (k, lambda, pas, D) => D * Math.tan(thetaOrdre(k, lambda, pas));      // m
+export const pasDepuisOrdre = (k, lambda, theta) => k * lambda / Math.sin(theta);
+export const lambdaDepuisOrdre = (k, pas, theta) => pas * Math.sin(theta) / k;
+export const thetaDepuisPosition = (x, D) => Math.atan2(x, D);
+export const intensiteEcranReseau = (pas, N, w, lambda, D, x) => intReseau(pas, N, w, lambda, x / Math.hypot(x, D));
+// Raies de la lampe à vapeur de mercure (nm) : le doublet jaune (577,0 et 579,1) est représenté par sa valeur moyenne
+export const RAIES_MERCURE = [404.7, 435.8, 546.1, 578.0];
+// Incertitudes de type B (rectangulaire, u = δ/√3, sources indépendantes) sur le pas a = kλ / sinθ, sinθ = x / √(x² + D²)
+export function incertitudePas({ k, lambda, x, D, dx, dD, dLambda }) {
+  const rho = Math.hypot(x, D), sinT = x / rho, a = k * lambda / sinT;
+  const ux = uB(dx), uD = uB(dD), uLa = uB(dLambda);
+  const dsx = D * D / rho ** 3, dsD = -x * D / rho ** 3;
+  const uSin = Math.hypot(dsx * ux, dsD * uD);
+  const r = [uLa / lambda, uSin / sinT];
+  const rel = Math.hypot(...r);
+  const part = [r[0] ** 2, (dsx * ux / sinT) ** 2, (dsD * uD / sinT) ** 2].map(v => v / (rel ** 2 || 1));      // λ, x, D
+  return { a, u: a * rel, rel, part };
+}
+// Incertitude relative sur l’interfrange ou la distance l entre fentes : l = n λ D / d (d : distance mesurée sur n interfranges)
+export function incertitudeFentes({ l, d, D, lambda, dd, dD, dLambda }) { return incertitudeTaille({ a: l, L: d, D, lambda, dL: dd, dD, dLambda }); }
+// Largeur des traits du réseau utilisée dans les simulations : 0,3 × pas (un rapport entier 1/2, 1/3… ferait disparaître des ordres)
+export const LARGEUR_TRAIT = 0.3;
+// Rendu d’une lumière polychromatique : somme des couleurs, pondérée par l’intensité de chaque longueur d’onde (réseau)
+export function couleurReseau(raies, pas, N, D, x, gain = 1) {
+  let r = 0, g = 0, b = 0;
+  for (const nm of raies) {
+    const la = nm * 1e-9, I = intensiteEcranReseau(pas, N, LARGEUR_TRAIT * pas, la, D, x), c = rgbLambda(nm);
+    r += I * c[0]; g += I * c[1]; b += I * c[2];
+  }
+  return [r, g, b].map(v => 1 - Math.exp(-gain * 4 * v));
+}
