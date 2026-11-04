@@ -267,28 +267,67 @@ export function SimulationEsterification({ naviguer }) {
 
   // ---------- scènes ----------
   const Montage = () => {
-    const volEau = M.volumeEau_mL(nWd), niveau = Math.min(1, volEau / 12);
-    const bouil = rx.T >= 80;
+    const volEau = M.volumeEau_mL(nWd), hEau = Math.min(12, volEau) * 7;                       // 7 px par mL
+    const chaud = rx.T >= 80, ds = rx.ds;
+    const yBas = 296, yDeb = 206;                                                          // fond du tube gradué ; niveau du trop-plein
+    const verre = (x1, y1, x2, y2, k) => <g key={k}><line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#475569" strokeWidth="11" strokeLinecap="butt"/><line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#f8fafc" strokeWidth="7.5" strokeLinecap="butt"/></g>;
+    const fleche = (x, y, c = '#94a3b8') => <polygon points={`${x},${y - 9} ${x + 7},${y + 3} ${x - 7},${y + 3}`} fill={c}/>;
+    const lbl = (x, y, t, o = {}) => <text x={x} y={y} fontSize="13" fill={o.c || '#0f172a'} fontWeight={o.b ? 700 : 400} textAnchor={o.a || 'start'}>{t}</text>;
     return (
-      <svg viewBox="0 0 600 330" style={{ width: '100%', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }} role="img"
-        aria-label={`Montage à reflux${rx.ds ? ' avec Dean-Stark (tube gradué)' : ''} : ballon contenant ${nbf(nE * 1000, 0)} millimoles d’ester${rx.ds ? `, décanteur contenant ${nbf(volEau, 1)} millilitres d’eau` : ''}`}>
-        <rect x="40" y="30" width="12" height="290" fill="#cbd5e1"/><text x="20" y="22" fontSize="11" fill="#475569">potence</text>
-        <rect x="270" y="10" width="44" height="120" rx="6" fill="#dbeafe" stroke="#475569" strokeWidth="2"/><text x="330" y="24" fontSize="12" fill="#334155">réfrigérant</text>
-        {[0, 1, 2, 3, 4].map(k => <path key={k} d={`M278,${28 + k * 20} Q292,${36 + k * 20} 306,${28 + k * 20}`} fill="none" stroke="#2563eb" strokeWidth="1.5"/>)}
-        {rx.ds ? <g>
-          <rect x="278" y="130" width="28" height="75" fill="#f8fafc" stroke="#475569" strokeWidth="2"/>
-          <path d="M306,150 L380,150" stroke="#64748b" strokeWidth="6" fill="none"/>
-          <rect x="360" y="150" width="46" height="145" rx="4" fill="#f8fafc" stroke="#475569" strokeWidth="2"/>
-          <rect x="361" y={295 - 130 * niveau} width="44" height={130 * niveau} fill="#60a5fa" opacity="0.85"/>
-          <rect x="361" y="151" width="44" height={144 - 130 * niveau} fill="#fef9c3" opacity="0.8"/>
-          {[0, 4, 8, 12].map(v => <g key={v}><line x1="406" y1={295 - 130 * v / 12} x2="414" y2={295 - 130 * v / 12} stroke="#475569"/><text x="418" y={299 - 130 * v / 12} fontSize="10.5" fill="#334155">{v}</text></g>)}
-          <text x="383" y="316" fontSize="11" textAnchor="middle" fill="#334155">tube gradué (mL)</text>
-          <text x="440" y="190" fontSize="10.5" fill="#475569">cyclohexane (haut)</text><text x="440" y="270" fontSize="10.5" fill="#2563eb">eau (bas)</text>
-        </g> : <rect x="280" y="130" width="24" height="85" fill="#f8fafc" stroke="#475569" strokeWidth="2"/>}
-        <circle cx="292" cy="268" r="55" fill="#fef3c7" stroke="#475569" strokeWidth="2.5"/><rect x="280" y="205" width="24" height="25" fill="#f8fafc" stroke="#475569" strokeWidth="2"/>
-        <circle cx="292" cy="268" r="42" fill="#fde68a" opacity="0.6"/>
-        {bouil && [0, 1, 2, 3].map(k => <circle key={k} cx={270 + k * 14} cy={285 - (k % 2) * 14} r="3" fill="white" opacity="0.9"/>)}
-        <rect x="230" y="324" width="124" height="6" fill="#475569"/><text x="150" y="318" fontSize="11.5" textAnchor="middle" fill="#334155">bain à {rx.T} °C</text>
+      <svg viewBox="0 0 570 420" style={{ width: '100%', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }} role="img"
+        aria-label={`Schéma du montage de chauffage à reflux${ds ? ' avec Dean-Stark' : ''} : ballon dans un chauffe-ballon, ${ds ? 'tube de Dean-Stark gradué, ' : ''}réfrigérant à eau.${ds ? ` Le tube gradué contient ${nbf(volEau, 1)} millilitres d’eau.` : ''}`}>
+        <defs><clipPath id="es-ballon"><circle cx="300" cy="300" r="60"/></clipPath></defs>
+        {/* potence et pinces */}
+        <rect x="30" y="402" width="150" height="10" rx="3" fill="#64748b"/><rect x="74" y="22" width="12" height="382" fill="#94a3b8"/>
+        <line x1="86" y1="96" x2="272" y2="96" stroke="#64748b" strokeWidth="5"/><rect x="266" y="88" width="12" height="16" rx="2" fill="#475569"/>
+        <line x1="86" y1="236" x2="288" y2="236" stroke="#64748b" strokeWidth="5"/><rect x="284" y="228" width="12" height="16" rx="2" fill="#475569"/>
+        {lbl(96, 90, 'potence et pinces', { c: '#64748b' })}
+        {/* support élévateur et chauffe-ballon */}
+        <rect x="236" y="384" width="128" height="18" rx="3" fill="#64748b"/>
+        {/* ballon */}
+        <circle cx="300" cy="300" r="60" fill="#f8fafc"/>
+        <rect x="236" y="288" width="128" height="80" fill="#fde68a" opacity="0.85" clipPath="url(#es-ballon)"/>
+        <path d="M240,288 Q270,282 300,288 T360,288" fill="none" stroke="#d97706" strokeWidth="1.5" clipPath="url(#es-ballon)"/>
+        <circle cx="300" cy="300" r="60" fill="none" stroke="#475569" strokeWidth="2.5"/>
+        {chaud && [[272, 330], [292, 320], [316, 334], [334, 322], [304, 346]].map(([x, y], k) => <circle key={k} cx={x} cy={y} r="3.2" fill="white" stroke="#d97706" strokeWidth="1"/>)}
+        <circle cx="318" cy="352" r="3" fill="#a16207"/><circle cx="276" cy="350" r="3" fill="#a16207"/>
+        <path d="M232,318 A68,68 0 0 0 368,318 L368,384 L232,384 Z" fill="#cbd5e1" stroke="#475569" strokeWidth="2"/>
+        {chaud && <g stroke="#ea580c" strokeWidth="2.2" strokeLinecap="round"><path d="M262,372 q4,-6 0,-12"/><path d="M300,374 q4,-6 0,-12"/><path d="M338,372 q4,-6 0,-12"/></g>}
+        {/* corps vertical sur le ballon */}
+        <rect x="287" y="150" width="26" height="92" fill="#f8fafc" stroke="#475569" strokeWidth="2.5"/>
+        <rect x="290" y="240" width="20" height="6" fill="#f8fafc"/>
+        {/* réfrigérant à eau */}
+        <rect x="292" y="14" width="16" height="146" fill="#f8fafc" stroke="#475569" strokeWidth="2"/>
+        <rect x="270" y="22" width="60" height="128" rx="5" fill="#dbeafe" stroke="#475569" strokeWidth="2.5"/>
+        <rect x="292" y="14" width="16" height="140" fill="#f8fafc" stroke="#475569" strokeWidth="2"/>
+        {verre(330, 134, 360, 134, 'in')}{verre(270, 38, 244, 38, 'out')}
+        {fleche(283, 100, '#2563eb')}{fleche(317, 100, '#2563eb')}
+        {lbl(366, 130, 'arrivée d’eau froide', { c: '#2563eb', b: true })}{lbl(366, 146, '(par le bas)', { c: '#2563eb' })}
+        {lbl(240, 34, 'sortie d’eau', { c: '#2563eb', a: 'end', b: true })}{lbl(240, 50, '(par le haut)', { c: '#2563eb', a: 'end' })}
+        {lbl(336, 64, 'réfrigérant', { b: true })}{lbl(336, 80, 'à eau', {})}
+        {/* vapeurs et condensat */}
+        {chaud && <g>{fleche(300, 230)}{fleche(300, 205)}{fleche(300, 180)}</g>}
+        {chaud && !ds && [[300, 168], [300, 196]].map(([x, y], k) => <circle key={k} cx={x} cy={y} r="3.5" fill="#60a5fa"/>)}
+        {/* Dean-Stark */}
+        {ds ? <g>
+          {verre(313, 180, 373, 192, 'a1')}{verre(373, 211, 313, 220, 'a2')}
+          <rect x="372" y="170" width="32" height="128" fill="#f8fafc" stroke="#475569" strokeWidth="2.5"/>
+          <rect x="373.5" y={yDeb} width="29" height={yBas - yDeb} fill="#fef9c3"/>
+          <rect x="373.5" y={yBas - hEau} width="29" height={hEau} fill="#3b82f6" opacity="0.9"/>
+          <rect x="382" y="298" width="12" height="14" fill="#94a3b8" stroke="#475569"/><line x1="376" y1="308" x2="400" y2="308" stroke="#475569" strokeWidth="3"/>
+          {[0, 4, 8, 12].map(v => <g key={v}><line x1="404" y1={yBas - 7 * v} x2="414" y2={yBas - 7 * v} stroke="#0f172a" strokeWidth="1.4"/>{lbl(418, yBas - 7 * v + 4, `${v} mL`, { c: '#334155' })}</g>)}
+          {chaud && <g><circle cx="390" cy="198" r="3.2" fill="#60a5fa"/><circle cx="390" cy="212" r="3.2" fill="#60a5fa" opacity="0.6"/></g>}
+          {lbl(412, 178, 'tube de', { b: true })}{lbl(412, 194, 'Dean-Stark', { b: true })}
+          {lbl(462, 236, 'cyclohexane', { c: '#854d0e' })}{lbl(462, 252, '(au-dessus)', { c: '#854d0e' })}
+          {lbl(462, 280, 'eau', { c: '#1d4ed8', b: true })}{lbl(462, 296, '(en dessous)', { c: '#1d4ed8' })}
+          {lbl(388, 330, 'robinet', { c: '#334155' })}
+          <g stroke="#2563eb" strokeWidth="0"><polygon points="334,212 344,206 344,218" fill="#854d0e"/></g>
+        </g> : null}
+        {/* étiquettes */}
+        {lbl(226, 282, 'ballon', { a: 'end', b: true })}{lbl(226, 298, 'mélange réactionnel', { a: 'end' })}
+        {lbl(226, 356, 'chauffe-ballon', { a: 'end', b: true })}{lbl(226, 372, `(bain à ${rx.T} °C)`, { a: 'end' })}
+        {lbl(226, 200, chaud ? 'vapeurs ↑' : 'pas de reflux', { a: 'end', c: '#64748b' })}
+        {lbl(300, 414, 'support élévateur', { a: 'middle', c: '#64748b' })}
       </svg>);
   };
   const Courbes = () => {
@@ -309,7 +348,10 @@ export function SimulationEsterification({ naviguer }) {
         <g fontSize="11.5" fontWeight="700" transform={`translate(0 ${H - 90})`}><text x={W - 14} y="22" textAnchor="end" fill={COUL.A}>acide</text><text x={W - 14} y="36" textAnchor="end" fill={COUL.B}>{alc.nom}</text><text x={W - 14} y="50" textAnchor="end" fill={COUL.E}>ester</text>{rx.ds && <text x={W - 14} y="64" textAnchor="end" fill={COUL.W}>eau du décanteur</text>}</g>
       </svg>);
   };
-  const SceneReaction = () => <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{Montage()}{Courbes()}</div>;
+  const SceneReaction = () => <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{Montage()}
+    <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.5 }}>{rx.ds
+      ? <>Le mélange bout : les vapeurs (eau et cyclohexane) montent dans le réfrigérant, se condensent, et les gouttes tombent dans le <strong>tube gradué</strong>. L’<strong>eau</strong>, plus dense, se dépose en bas ; le <strong>cyclohexane</strong>, au-dessus, déborde par le tube de retour et revient dans le ballon.</>
+      : <>Chauffage à <strong>reflux</strong> : les vapeurs se condensent dans le réfrigérant et retombent dans le ballon, sans perte de matière.</>}</div>{Courbes()}</div>;
 
   const SceneCcm = () => {
     const W = 360, H = 330, y0 = 270, pxmm = 4, xs = [60, 130, 200, 270], yf = y0 - FRONT * pxmm;
