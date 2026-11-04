@@ -960,6 +960,54 @@ export const PROBLEMES = [
     ] },
     retenir: ['Problème inverse : N → U_R (proportionnalité) → R_p (pont diviseur isolé) → E (caractéristique). Même chaîne que dans le sens direct, parcourue à l’envers.'],
   },
+  {
+    id: 'ond-fil-diametre', domaine: 'Ondes', titre: 'Un fil respecte-t-il le diamètre annoncé ?',
+    ...presenter({ contexte: 'Un laser rouge éclaire un fil de cuivre tendu verticalement. On mesure la tache centrale de la figure de diffraction sur un écran, entre les deux premières extinctions. L’angle d’ouverture de la figure (angle entre le centre de la figure et la première extinction) vaut θ = λ / a (θ en radian, petit).', liste: [['Longueur d’onde du laser', 'λ = 650 nm'], ['Puissance du laser', '5 mW'], ['Distance fil-écran', 'D = 3,00 m'], ['Largeur de la tache centrale', 'L = 5,2 cm'], ['Longueur du fil', '15 cm'], ['Diamètre annoncé par le fabricant', '75 µm ± 5 µm']], question: 'Le diamètre du fil est-il conforme à l’annonce du fabricant ?' }),
+    cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
+      V('Le diamètre a du fil, pour le comparer à l’intervalle 70 – 80 µm', 'Le critère porte sur le diamètre : il faut le déduire de la figure de diffraction.'),
+      F('La fréquence du laser', 'La fréquence ne dit rien du diamètre du fil : seule la longueur d’onde intervient.'),
+      F('L’angle d’ouverture θ seul', 'θ est une étape utile, mais la question porte sur le diamètre, à comparer à l’annonce.'),
+    ] },
+    donnees: [
+      ['λ = 650 nm', true, 'Elle intervient dans θ = λ / a : sans elle on ne peut pas passer de l’angle au diamètre.'],
+      ['puissance 5 mW', false, 'La puissance règle l’éclat de la figure, pas ses dimensions.'],
+      ['D = 3,00 m', true, 'Avec L, elle donne l’angle d’ouverture : θ = L / (2D).'],
+      ['L = 5,2 cm', true, 'Largeur de la tache centrale : elle donne θ.'],
+      ['longueur du fil 15 cm', false, 'La figure dépend du diamètre du fil, pas de sa longueur.'],
+      ['diamètre annoncé 75 µm ± 5 µm', true, 'C’est le critère de conformité auquel comparer a.'],
+    ],
+    relations: { options: [
+      V('θ = L / (2D)', 'La tache centrale a pour demi-largeur L / 2 : pour un petit angle, θ ≈ (L / 2) / D.'),
+      V('θ = λ / a', 'Relation fournie entre l’angle d’ouverture, la longueur d’onde et le diamètre du fil.'),
+      F('c = λ·f', 'Elle relie fréquence et longueur d’onde : la fréquence n’est pas demandée.'),
+      F('sin θ = k·λ / a', 'C’est la formule des réseaux (maxima d’un réseau de pas a), pas celle d’un fil.'),
+      F('i = λ·D / l', 'C’est l’interfrange de Young, qui décrit deux fentes et non un fil.'),
+    ] },
+    hypotheses: { options: [
+      V('L’angle θ est petit, de sorte que θ ≈ tan θ', 'Ici θ ≈ 8,7×10⁻³ rad (moins de 0,5°) : l’approximation est excellente.'),
+      V('Le laser est monochromatique et éclaire le fil perpendiculairement', 'Condition pour que θ = λ / a décrive la figure observée.'),
+      V('L est bien la largeur entre les deux premières extinctions', 'C’est la définition de L dans θ = L / (2D) ; avec une autre définition, il faudrait un autre facteur.'),
+      F('Le fil est éclairé en lumière blanche', 'Une seule longueur d’onde est nécessaire : le laser la fournit.'),
+      F('La puissance du laser est connue avec précision', 'Elle n’intervient pas dans le calcul du diamètre.'),
+    ] },
+    demarche: {
+      etapes: [
+        { id: 'theta', t: 'Calculer l’angle d’ouverture : θ = L / (2D)', dep: [], e: 'θ = 0,052 / (2 × 3,00) = 8,7×10⁻³ rad.' },
+        { id: 'a', t: 'Calculer le diamètre : a = λ / θ', dep: ['theta'], e: 'a = 650×10⁻⁹ / 8,67×10⁻³ = 7,5×10⁻⁵ m = 75 µm.' },
+        { id: 'c', t: 'Comparer a à l’intervalle annoncé (70 µm à 80 µm) et conclure', dep: ['a'], e: '75 µm appartient à l’intervalle [70 µm ; 80 µm].' },
+      ],
+      pieges: [
+        ['Calculer la fréquence du laser à partir de λ', 'Inutile : la fréquence n’intervient pas dans la détermination du diamètre.'],
+        ['Convertir la puissance en watts', 'La puissance n’intervient pas dans le calcul.'],
+      ],
+    },
+    conclusion: { q: 'Quelle conclusion obtient-on en suivant la démarche ?', options: [
+      V('Oui : a ≈ 75 µm, dans l’intervalle annoncé (70 µm à 80 µm)', 'θ = 8,7×10⁻³ rad puis a = λ / θ = 75 µm. Sur ces données, le fil est conforme.'),
+      F('Non : a ≈ 37,5 µm, deux fois trop fin', 'Résultat obtenu avec θ = L / D, c’est-à-dire en prenant la largeur totale pour la demi-largeur. Il faut diviser L par 2 pour obtenir l’angle.'),
+      F('Non : a ≈ 150 µm, deux fois trop épais', 'Résultat obtenu en divisant L par 2 deux fois, c’est-à-dire avec θ = L / (4D). L’angle d’ouverture est L / (2D).'),
+    ] },
+    retenir: ['Diffraction par un fil ou une fente : θ = λ / a, avec θ = L / (2D) pour une tache centrale de largeur L à la distance D. D’où a = 2·λ·D / L.'],
+  },
 ];
 
 // ──────────────────────────────── 2. CHOISIR LA BONNE RELATION ────────────────────────────────
@@ -1241,6 +1289,30 @@ export const RELATIONS = [
       F('U = N / 5,0', 'Il manque le facteur 1 023 : on trouverait U ≈ 119 V, hors de la plage 0 – 5,0 V.'),
       F('U = 5,0 − N / 1 023', 'On retranche au lieu de multiplier : la tension doit être proportionnelle à N (0 V pour N = 0).'),
     ] },
+  { id: 'ond-rel-diffraction-fil', domaine: 'Ondes', titre: 'Diamètre d’un fil par diffraction',
+    ...presenter({ contexte: 'On éclaire un fil fin avec un laser. La figure de diffraction est observée sur un écran ; l’angle d’ouverture θ = λ / a (angle entre le centre de la figure et la première extinction) est petit.', liste: [['Longueur d’onde du laser', 'λ = 650 nm'], ['Distance fil-écran', 'D = 2,0 m'], ['Largeur de la tache centrale', 'L = 4,0 cm']], question: 'Quel est le diamètre a du fil ?' }),
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('a = 2·λ·D / L', 'La tache centrale a pour demi-largeur L / 2, vue sous l’angle θ : θ = L / (2D) = λ / a, d’où a = 2·λ·D / L. Ici a = 2 × 650×10⁻⁹ × 2,0 / 0,040 = 65 µm.'),
+      F('a = λ·D / L', 'Cette relation oublie le facteur 2 : elle conviendrait si L était la demi-largeur de la tache. Ici L est la largeur totale. On trouverait 32,5 µm, deux fois trop petit.'),
+      F('a = L·D / λ', 'Un fil plus fin donne une figure plus large : a doit diminuer quand L augmente, et non l’inverse. Ce calcul donnerait une valeur absurde (1,2×10⁵ m).'),
+      F('a = 2·L / (λ·D)', 'La dimension est fausse : le résultat serait en m⁻¹ et non en mètres.'),
+    ] },
+  { id: 'ond-rel-young-fentes', domaine: 'Ondes', titre: 'Distance entre les fentes de Young',
+    ...presenter({ contexte: 'Deux fentes sont éclairées par un laser vert. On observe des franges rectilignes équidistantes sur un écran.', liste: [['Longueur d’onde du laser', 'λ = 532 nm'], ['Distance fentes-écran', 'D = 2,50 m'], ['Interfrange mesuré', 'i = 4,4 mm']], question: 'Quelle est la distance l entre les deux fentes ?' }),
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('l = λ·D / i', 'L’interfrange s’écrit i = λ·D / l, donc l = λ·D / i. Ici l = 532×10⁻⁹ × 2,50 / 4,4×10⁻³ ≈ 3,0×10⁻⁴ m = 0,30 mm.'),
+      F('l = i·D / λ', 'Cette relation inverse le rôle de l et de λ : elle donnerait une distance d’environ 20 km, absurde pour deux fentes.'),
+      F('l = λ·i / D', 'La dimension est correcte (une longueur) mais le résultat est absurde (≈ 10⁻⁹ m, de l’ordre de la longueur d’onde ou moins) : D doit être au numérateur.'),
+      F('l = 2·λ·D / i', 'Le facteur 2 appartient à la diffraction par une fente (largeur totale de la tache centrale), pas à l’interfrange de Young.'),
+    ] },
+  { id: 'ond-rel-reseau-lambda', domaine: 'Ondes', titre: 'Longueur d’onde mesurée avec un réseau',
+    ...presenter({ contexte: 'Un laser de longueur d’onde inconnue éclaire sous incidence normale un réseau de pas a = 2,0 µm. L’ordre 1 est dévié d’un angle θ₁ = 15,4° par rapport à la direction du faisceau non dévié.', question: 'Quelle est la longueur d’onde λ du laser ?' }),
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('λ = a·sin θ₁', 'Formule des réseaux pour l’ordre 1 : sin θ₁ = λ / a. Ici λ = 2,0×10⁻⁶ × sin 15,4° ≈ 5,3×10⁻⁷ m = 530 nm (un laser vert).'),
+      F('λ = a·tan θ₁', 'tan θ₁ = x₁ / D est utile pour trouver l’angle à partir des distances sur l’écran, mais la formule des réseaux fait intervenir le sinus de l’angle. Avec la tangente, on trouverait 551 nm : un résultat proche mais inexact.'),
+      F('λ = a / sin θ₁', 'Le rapport est inversé : on trouverait 7,5 µm, une longueur d’onde plus grande que le pas, ce qui est impossible puisque sin θ₁ = λ / a ne peut dépasser 1.'),
+      F('λ = a·cos θ₁', 'Le cosinus ne figure pas dans la formule des réseaux ; il donnerait 1,9 µm, une valeur hors du domaine visible.'),
+    ] },
 ];
 
 // ──────────────────────────────── 3. HYPOTHÈSES D'UN MODÈLE ────────────────────────────────
@@ -1502,6 +1574,26 @@ export const HYPOTHESES = [
       F('La LED se comporte comme un conducteur ohmique, de résistance constante quel que soit le courant', 'Faux : une LED n’obéit pas à la loi d’Ohm. Sa tension varie peu avec le courant, alors qu’un conducteur ohmique verrait sa tension multipliée par 10 si l’on multipliait le courant par 10.'),
       F('La tension aux bornes de la résistance est égale à celle de la broche, soit 5,0 V', 'Faux : la tension de la broche se partage entre la LED et la résistance (loi des mailles). La résistance reçoit 5,0 − 2,0 = 3,0 V, et c’est ce qui impose R = 3,0 / 0,010 = 300 Ω.'),
       F('La broche peut fournir un courant aussi grand qu’on le souhaite sans risque pour la carte', 'Faux : une broche numérique d’une carte de type Uno est limitée à environ 20 mA en usage normal (40 mA est un maximum absolu à ne pas viser). Au-delà, on risque de l’endommager : il faut alors un transistor ou un circuit de puissance.'),
+    ] },
+  { id: 'ond-hyp-diffraction-fente', domaine: 'Ondes', titre: 'Mesurer une fente par diffraction : hypothèses',
+    ...presenter({ contexte: 'On détermine la largeur a d’une fente à partir de la largeur L de la tache centrale de diffraction, observée sur un écran à la distance D, avec la relation a = 2·λ·D / L.' }), options: [
+      V('La lumière est monochromatique (laser) : une seule longueur d’onde λ', 'Avec plusieurs longueurs d’onde, chacune donnerait une tache de largeur différente (L est proportionnelle à λ) : les figures se superposeraient et L n’aurait plus de sens précis.'),
+      V('Le faisceau arrive perpendiculairement à la fente', 'La relation θ = λ / a décrit une figure symétrique par rapport à l’axe, ce qui suppose une incidence normale.'),
+      V('L’angle θ est petit, de sorte que tan θ ≈ θ ≈ sin θ', 'C’est ce qui permet d’écrire θ = L / (2D) en radian : la relation a = 2·λ·D / L est une approximation valable pour des angles de quelques degrés au plus.'),
+      F('La lumière du laser est polarisée verticalement', 'La polarisation n’intervient pas dans l’expression de la largeur de la tache centrale : cette hypothèse n’est pas nécessaire.'),
+      F('Le faisceau est de la lumière blanche, pour que toutes les longueurs d’onde contribuent', 'C’est le contraire : la relation suppose une seule longueur d’onde. En lumière blanche, la figure est irisée et L n’est plus définie par un seul λ.'),
+      F('La puissance du laser est connue avec précision', 'La puissance change l’éclat de la figure, pas ses dimensions : elle n’intervient pas dans a = 2·λ·D / L.'),
+      F('La fente doit être verticale pour que la relation s’applique', 'L’orientation de la fente fait seulement tourner la figure d’autant : la tache centrale reste perpendiculaire à la fente, avec la même largeur L = 2·λ·D / a.'),
+    ] },
+  { id: 'ond-hyp-reseau-formule', domaine: 'Ondes', titre: 'Formule des réseaux : hypothèses',
+    ...presenter({ contexte: 'Pour déterminer une longueur d’onde avec un réseau, on repère l’ordre 1 à l’angle θ₁ et on calcule λ = a·sin θ₁, où a est le pas du réseau.' }), options: [
+      V('Le faisceau arrive perpendiculairement au réseau (incidence normale)', 'La formule sin θₖ = k·λ / a suppose une incidence normale ; sinon, le retard entre deux traits voisins contient aussi un terme dû à l’incidence.'),
+      V('Les traits sont régulièrement espacés : le pas a est le même d’un trait à l’autre', 'Un pas constant garantit que les contributions de tous les traits se renforcent dans les mêmes directions.'),
+      V('La lumière est monochromatique, pour que l’ordre 1 n’ait qu’un seul angle θ₁ à repérer', 'Avec plusieurs longueurs d’onde, chaque couleur a son propre angle θ₁ : la formule s’appliquerait à chacune séparément, mais la relation λ = a·sin θ₁ ne permet plus de dire de quelle longueur d’onde on parle.'),
+      V('L’angle θ₁ est mesuré à partir de la direction du faisceau non dévié (ordre 0)', 'Dans la formule, θₖ est l’écart angulaire entre l’ordre k et l’ordre 0. Une origine différente fausserait l’angle.'),
+      F('L’angle θ₁ doit être petit pour que la formule s’applique', 'La formule des réseaux est exacte pour tout angle : elle ne contient pas d’approximation des petits angles (contrairement à l’expression de l’angle d’ouverture en diffraction).'),
+      F('Le réseau doit comporter exactement deux traits éclairés', 'Ce serait un dispositif de Young. L’intérêt du réseau est justement d’en éclairer un grand nombre, ce qui affine les maxima.'),
+      F('La largeur de chaque trait doit être égale au pas', 'La position des ordres ne dépend que du pas a ; la largeur des traits agit sur l’éclat de chaque ordre, pas sur sa direction.'),
     ] },
 ];
 
@@ -2708,6 +2800,91 @@ export const PREVOIR = [
       F('diminue', 'Il diminuerait si on mesurait la tension aux bornes de la photorésistance. Ici, U_R augmente avec l’éclairement, donc N aussi.'),
       F('reste constant', 'N est proportionnel à la tension d’entrée : si U_R change, N change.'),
       F('dépasse 1 023', 'Un CAN 10 bits ne donne jamais plus de 1 023 : N se rapproche de cette valeur si U_R tend vers la tension maximale, sans la dépasser.'),
+    ] },
+  // ── Ondes (TSTL) : diffraction, interférences, réseaux ──
+  { id: 'ond-diffraction-fente', domaine: 'Ondes', titre: 'Fente deux fois plus étroite',
+    ...presenter({ contexte: 'Un faisceau laser traverse une fente fine et verticale, puis forme une figure de diffraction sur un écran.', liste: [['Largeur de la fente', 'divisée par 2'], ['Longueur d’onde et distance fente-écran', 'inchangées']] }), q: 'La largeur L de la tache centrale sur l’écran (entre ses deux premières extinctions) est…', options: [
+      V('multipliée par 2', 'La largeur de la tache centrale vaut L = 2·λ·D / a : elle est inversement proportionnelle à la largeur a de la fente. Fente 2 fois plus étroite, figure 2 fois plus étalée.'),
+      F('divisée par 2', 'Sens inversé : plus la fente est étroite, plus la lumière s’étale. La figure s’élargit quand l’ouverture diminue.'),
+      F('inchangée', 'La largeur de la tache dépend de la largeur de la fente : L = 2·λ·D / a.'),
+      F('multipliée par 4', 'L varie comme 1/a et non comme 1/a² : diviser a par 2 multiplie L par 2.'),
+    ] },
+  { id: 'ond-diffraction-longueur-onde', domaine: 'Ondes', titre: 'Laser rouge remplacé par un laser violet',
+    ...presenter({ contexte: 'On éclaire la même fente, avec le même écran à la même distance, d’abord avec un laser rouge (λ = 650 nm), puis avec un laser violet (λ = 405 nm).' }), q: 'La tache centrale de diffraction obtenue avec le laser violet est…', options: [
+      V('plus étroite, environ 0,6 fois la largeur obtenue en rouge', 'L = 2·λ·D / a est proportionnelle à λ : 405 / 650 ≈ 0,62. La figure est plus resserrée dans le violet.'),
+      F('plus large, environ 1,6 fois la largeur obtenue en rouge', 'Sens inversé : c’est la lumière de plus grande longueur d’onde (le rouge) qui s’étale le plus. 1,6 ≈ 650 / 405 est l’inverse du bon rapport.'),
+      F('plus étroite, environ 0,4 fois la largeur obtenue en rouge', 'Le sens est bon, mais L est proportionnelle à λ et non à λ² : le rapport est 405 / 650 ≈ 0,6 et non (405 / 650)² ≈ 0,4.'),
+      F('de même largeur : seule la couleur change', 'La largeur dépend de la longueur d’onde (L = 2·λ·D / a) : la couleur n’est pas la seule chose qui change.'),
+    ] },
+  { id: 'ond-diffraction-ecran-recule', domaine: 'Ondes', titre: 'Écran reculé derrière une fente',
+    ...presenter({ contexte: 'Un laser éclaire une fente. La figure de diffraction est observée sur un écran placé d’abord à 1,0 m puis reculé à 3,0 m de la fente. Le laser et la fente ne changent pas. L désigne la largeur de la tache centrale, entre ses deux premières extinctions ; θ = λ / a est l’angle entre le centre de la figure et la première extinction.' }), q: 'L’angle d’ouverture θ et la largeur L de la tache centrale sont…', options: [
+      V('θ inchangé et L multipliée par 3', 'θ = λ / a ne dépend que de la longueur d’onde et de la fente. La largeur sur l’écran vaut L = 2·θ·D : elle est proportionnelle à la distance D.'),
+      F('θ multiplié par 3 et L multipliée par 3', 'L’angle d’ouverture est une propriété de la lumière et de la fente : reculer l’écran ne le change pas. C’est la largeur L, projetée plus loin, qui augmente.'),
+      F('θ et L inchangés', 'θ est bien inchangé, mais la tache est projetée plus loin : L = 2·θ·D augmente avec D.'),
+      F('θ divisé par 3 et L inchangée', 'Ni l’un ni l’autre : θ ne dépend pas de D, et L = 2·θ·D est proportionnelle à D.'),
+    ] },
+  { id: 'ond-diffraction-situation', domaine: 'Ondes', titre: 'Quand la diffraction se voit-elle ?',
+    ...presenter({ contexte: 'Dans une cuve à ondes, l’onde plane a une longueur d’onde λ = 2 cm. On place successivement deux barrières percées d’une ouverture : la première de largeur a₁ = 30 cm, la seconde de largeur a₂ = 1 cm.' }), q: 'Dans quel cas l’onde est-elle fortement étalée derrière l’ouverture ?', options: [
+      V('Avec l’ouverture de 1 cm seulement', 'La diffraction est marquée quand a est voisine de λ ou plus petite. Ici a₂ = 1 cm est inférieur à λ = 2 cm : la relation θ = λ / a ne s’applique plus (λ / a₂ = 2, plus grand que 1) et l’onde repart dans presque toutes les directions. Pour a₁, λ / a₁ ≈ 0,07 rad, soit environ 4° : l’onde continue presque tout droit.'),
+      F('Avec l’ouverture de 30 cm seulement, car elle laisse passer plus d’onde', 'La quantité d’onde transmise n’est pas ce qui décide de l’étalement : c’est le rapport λ / a. Avec 30 cm, ce rapport est faible (≈ 0,07), l’étalement est de l’ordre de 4°.'),
+      F('Dans les deux cas, de la même façon', 'L’étalement dépend de λ / a, qui vaut ≈ 0,07 pour 30 cm et 2 pour 1 cm : très différent.'),
+      F('Dans aucun cas : la diffraction ne concerne que la lumière et pas l’eau', 'La diffraction concerne tous les types d’ondes (ondes à la surface de l’eau, sons, lumière…). La cuve à ondes sert justement à la mettre en évidence.'),
+    ] },
+  { id: 'ond-young-ecart-fentes', domaine: 'Ondes', titre: 'Fentes de Young rapprochées',
+    ...presenter({ contexte: 'Dans un montage de Young, on rapproche les deux fentes : la distance l qui les sépare est divisée par 2. La longueur d’onde et la distance fentes-écran sont inchangées.' }), q: 'L’interfrange i sur l’écran est…', options: [
+      V('multiplié par 2', 'i = λ·D / l est inversement proportionnelle à l : fentes 2 fois plus proches, franges 2 fois plus espacées.'),
+      F('divisé par 2', 'Sens inversé : plus les fentes sont proches, plus les franges sont larges.'),
+      F('inchangé', 'L’interfrange dépend de la distance entre les fentes : i = λ·D / l.'),
+      F('multiplié par 4', 'i varie comme 1/l et non comme 1/l² : diviser l par 2 multiplie i par 2.'),
+    ] },
+  { id: 'ond-young-couleur', domaine: 'Ondes', titre: 'Franges de Young : vert puis rouge',
+    ...presenter({ contexte: 'Dans un même montage de Young, on remplace un laser vert (λ = 532 nm) par un laser rouge (λ = 650 nm).' }), q: 'Les franges brillantes sont…', options: [
+      V('plus espacées : l’interfrange est multiplié par 650 / 532 ≈ 1,2', 'i = λ·D / l est proportionnelle à λ. Le rouge a la plus grande longueur d’onde : ses franges sont les plus larges.'),
+      F('plus resserrées : l’interfrange est divisé par 1,2', 'Sens inversé : plus λ est grande, plus l’interfrange est grand.'),
+      F('aussi espacées : seule la couleur des franges change', 'L’interfrange dépend de λ (i = λ·D / l) : la couleur n’est pas la seule chose qui change.'),
+      F('plus espacées : l’interfrange est multiplié par (650 / 532)² ≈ 1,5', 'Le sens est bon, mais i est proportionnelle à λ et non à λ² : le facteur est 650 / 532 ≈ 1,2.'),
+    ] },
+  { id: 'ond-interferences-retard-entier', domaine: 'Ondes', titre: 'Retard de trois périodes entre deux ondes',
+    ...presenter({ contexte: 'Deux sources ponctuelles émettent en phase des ondes de même période T et de même amplitude. En un point M, l’onde venant de S₂ arrive avec un retard τ = 3·T par rapport à celle venant de S₁.' }), q: 'En M, les deux ondes…', options: [
+      V('sont en phase : les interférences sont constructives', 'Un retard égal à un nombre entier de périodes laisse la vibration identique à elle-même : les deux ondes arrivent « au même moment du cycle » et s’additionnent. Condition d’interférences constructives : τ = k·T, avec k entier.'),
+      F('sont en opposition de phase : les interférences sont destructives', 'Les interférences destructives demandent un retard égal à un nombre demi-entier de périodes (0,5 T ; 1,5 T ; 2,5 T…), pas à un nombre entier.'),
+      F('se renforcent partiellement : l’amplitude est comprise entre 0 et le double de celle d’une onde seule', 'Cela arrive pour un retard qui n’est ni entier ni demi-entier. Ici, τ = 3·T est un nombre entier de périodes : le renforcement est maximal.'),
+      F('n’interfèrent pas, car les deux trajets ont des longueurs différentes', 'Deux ondes synchrones interfèrent dès qu’elles se superposent. Les longueurs des trajets différentes créent justement le retard τ qui détermine le résultat.'),
+    ] },
+  { id: 'ond-interferences-retard-demi', domaine: 'Ondes', titre: 'Retard de deux périodes et demie',
+    ...presenter({ contexte: 'Deux sources ponctuelles émettent en phase des ondes de même période T et de même amplitude. En un point M, l’onde venant de S₂ arrive avec un retard τ = 2,5·T par rapport à celle venant de S₁.' }), q: 'En M, l’amplitude de la vibration est…', options: [
+      V('nulle : les interférences sont destructives', 'Un retard égal à un nombre demi-entier de périodes décale les ondes de « la moitié d’un cycle » : quand l’une est à son maximum, l’autre est à son minimum, et elles s’annulent (à amplitudes égales). Condition : τ = (k + ½)·T.'),
+      F('maximale (le double de celle d’une onde seule), car 2,5 est proche de 3', 'Seuls les retards exactement égaux à un nombre entier de périodes donnent un renforcement maximal. 2,5 T est exactement à mi-chemin entre 2 T et 3 T : c’est le cas le plus destructif.'),
+      F('égale à celle d’une onde seule', 'Les deux ondes se superposent : l’amplitude résultante n’est pas celle d’une seule onde. Ici, elle est nulle.'),
+      F('la moitié de celle d’une onde seule', 'Pour des ondes de même amplitude en opposition de phase, la somme est exactement nulle, pas réduite de moitié.'),
+    ] },
+  { id: 'ond-reseau-pas-divise', domaine: 'Ondes', titre: 'Un réseau plus serré',
+    ...presenter({ contexte: 'On éclaire sous incidence normale, avec le même laser, d’abord un réseau de 100 traits par millimètre (pas a = 10 µm), puis un réseau de 400 traits par millimètre (pas a = 2,5 µm).' }), q: 'Pour l’ordre 1, sin θ₁ = λ / a est…', options: [
+      V('multiplié par 4', 'Le pas est divisé par 4 (10 µm → 2,5 µm) : λ / a est multiplié par 4. Plus le réseau est serré, plus la lumière est déviée.'),
+      F('divisé par 4', 'Sens inversé : un réseau plus serré (pas plus petit) dévie davantage la lumière.'),
+      F('multiplié par 2', 'Le nombre de traits est multiplié par 4 (100 → 400) : le pas est divisé par 4, pas par 2.'),
+      F('inchangé', 'Le pas du réseau intervient directement : sin θ₁ = λ / a.'),
+    ] },
+  { id: 'ond-reseau-lumiere-blanche', domaine: 'Ondes', titre: 'Lumière blanche sur un réseau : l’ordre 1',
+    ...presenter({ contexte: 'On éclaire un réseau avec de la lumière blanche, sous incidence normale, et on observe sur un écran la lumière de l’ordre 1 : une bande colorée de part et d’autre de la tache centrale blanche.' }), q: 'Dans cette bande, la couleur la plus proche de la tache centrale est…', options: [
+      V('le violet', 'sin θ₁ = λ / a : l’angle de déviation augmente avec la longueur d’onde. Le violet (λ ≈ 400 nm) est le moins dévié, donc le plus proche du centre ; le rouge (λ ≈ 750 nm) est le plus éloigné.'),
+      F('le rouge', 'Le rouge a la plus grande longueur d’onde, donc le plus grand angle : il est le plus éloigné du centre. (C’est l’inverse d’un prisme, où le violet est le plus dévié.)'),
+      F('le vert', 'Le vert est au milieu du spectre : ni le plus proche, ni le plus éloigné.'),
+      F('aucune couleur en particulier : toutes les couleurs sont au même endroit', 'Les couleurs sont déviées d’angles différents puisque sin θ₁ = λ / a dépend de λ. C’est ce qui permet de séparer les couleurs.'),
+    ] },
+  { id: 'ond-reseau-nombre-taches', domaine: 'Ondes', titre: 'Combien de taches un réseau peut-il produire ?',
+    ...presenter({ contexte: 'Un laser rouge (λ = 650 nm) éclaire sous incidence normale un réseau de 500 traits par millimètre (pas a = 2,0 µm). Un ordre k existe seulement si sin θₖ = k·λ / a est inférieur à 1.' }), q: 'Combien de taches brillantes (ordre 0 compris) peut-on théoriquement observer, en plaçant un grand écran tout autour du réseau ?', options: [
+      V('7 (ordres de −3 à +3)', 'a / λ = 2,0 / 0,65 ≈ 3,1 : les ordres k = 1, 2, 3 vérifient sin θₖ < 1 (pour k = 3, sin θ₃ = 0,975, soit θ₃ ≈ 77°) ; k = 4 donnerait 1,3, impossible. Avec l’ordre 0 et les ordres négatifs : 3 + 1 + 3 = 7.'),
+      F('3 (ordres de −1 à +1)', 'Les ordres 2 et 3 existent aussi : 2 × 0,65 / 2,0 = 0,65 et 3 × 0,65 / 2,0 = 0,975 sont tous deux inférieurs à 1.'),
+      F('9 (ordres de −4 à +4)', 'L’ordre 4 donnerait sin θ₄ = 4 × 0,65 / 2,0 = 1,3 : impossible, un sinus ne dépasse pas 1.'),
+      F('4 (ordres de 0 à 3)', 'Les ordres négatifs existent aussi, symétriques des ordres positifs de part et d’autre de la tache centrale.'),
+    ] },
+  { id: 'ond-reseau-interet', domaine: 'Ondes', titre: 'Pourquoi un réseau plutôt que deux fentes ?',
+    ...presenter({ contexte: 'Pour mesurer une longueur d’onde à partir des positions des maxima de lumière, on hésite entre deux fentes de Young et un réseau de même pas. Les directions des maxima sont les mêmes (sin θₖ = k·λ / a pour le réseau, avec a le pas).' }), q: 'Quel est l’intérêt du réseau ?', options: [
+      V('Les maxima sont plus fins et plus lumineux, donc plus faciles à repérer', 'Avec un grand nombre de traits éclairés, la lumière n’est renforcée que dans des directions très précises : les maxima deviennent des taches étroites, séparées par du noir, et leurs positions se mesurent avec une meilleure précision. Avec deux fentes, les franges sont larges et leurs centres difficiles à situer.'),
+      F('Les maxima sont plus espacés, ce qui permet de mesurer des angles beaucoup plus grands', 'Les directions des maxima sont les mêmes que pour deux fentes de même pas : le réseau ne les déplace pas.'),
+      F('Il supprime l’influence de la longueur d’onde sur la position de tous les maxima', 'Au contraire : la position de chaque ordre dépend de λ (sin θₖ = k·λ / a), et c’est ce qui permet de séparer les couleurs et de mesurer λ.'),
+      F('Il ne produit qu’un seul ordre, ce qui est plus facile à étudier', 'Un réseau produit plusieurs ordres (tant que sin θₖ < 1), de part et d’autre de la tache centrale.'),
     ] },
 ];
 
