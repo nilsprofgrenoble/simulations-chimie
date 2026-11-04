@@ -556,31 +556,31 @@ export function SimulationAcidesBases({ naviguer }) {
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       <style>{`
-        .ab-l1 { display: grid; align-items: start; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 1fr); }
-        .ab-l1.cote { grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
-        .ab-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 12px; }
-        .ab-pri { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr); }
-        .ab-pri.pile { grid-template-columns: minmax(0, 1fr); }
-        @media (min-width: 901px) { .ab-l1.cote .ab-carte { order: 2; } .ab-l1.cote .ab-main { order: 1; } }
-        @media (max-width: 900px) { .ab-l1.cote, .ab-pri { grid-template-columns: minmax(0, 1fr); } }
+        .acb-l1 { display: grid; align-items: start; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 1fr); }
+        .acb-l1.cote { grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
+        .acb-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 12px; }
+        .acb-pri { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr); }
+        .acb-pri.pile { grid-template-columns: minmax(0, 1fr); }
+        @media (min-width: 901px) { .acb-l1.cote .acb-carte { order: 2; } .acb-l1.cote .acb-main { order: 1; } }
+        @media (max-width: 900px) { .acb-l1.cote, .acb-pri { grid-template-columns: minmax(0, 1fr); } }
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 6 }}>
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Acides et bases</h2>
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Le <strong>pH</strong> mesure l’acidité d’une solution. Un acide <strong>fort</strong> réagit totalement avec l’eau, un acide <strong>faible</strong> partiellement : son pKa dit quelle forme, acide ou basique, <strong>prédomine</strong> à un pH donné. On en tire les solutions <strong>tampons</strong> et le <strong>titrage</strong> pH-métrique.</div>
-      <div className={`ab-l1${mode !== 'explore' ? ' cote' : ''}`}>
-        {enGuide ? <div className="ab-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="ab-carte">{panneauHypo}</div> : null}
-        <div className="ab-main">
+      <div className={`acb-l1${mode !== 'explore' ? ' cote' : ''}`}>
+        {enGuide ? <div className="acb-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="acb-carte">{panneauHypo}</div> : null}
+        <div className="acb-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'pka' ? suiviPka : defi.type === 'conc' ? suiviConc : suiviTampon}/></div>}
-          <div className={`ab-pri${mode !== 'explore' ? ' pile' : ''}`}>
+          <div className={`acb-pri${mode !== 'explore' ? ' pile' : ''}`}>
             {sceneBox}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{reglages}{mesures}{incertBox}</div>
           </div>
         </div>
       </div>
-      {!enDefi && <div className="ab-l2">{panneauHypo}</div>}
-      {mode === 'explore' && <div className="ab-l2">{aEssayer}{retenir}</div>}
+      {!enDefi && <div className="acb-l2">{panneauHypo}</div>}
+      {mode === 'explore' && <div className="acb-l2">{aEssayer}{retenir}</div>}
     </div>
   );
 }
