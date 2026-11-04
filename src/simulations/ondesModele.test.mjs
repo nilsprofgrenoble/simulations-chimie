@@ -117,3 +117,18 @@ assert.strictEqual(M.yPourDelta(4, 5, 10), null, 'pas de point avec δ > s');
   proche(r.part.reduce((p, q) => p + q, 0), 1, 1e-9, 'poids de somme 1'); }
 
 console.log('ondesModele : tous les tests passent (extinction cuve à', tmin, '° ; attendu', (Math.asin(0.25) / M.RAD).toFixed(1), '°)');
+
+// 12. Young avec fentes de 40 µm : biais des maxima dus à l’enveloppe de diffraction (≤ 1,5 % dans la moitié centrale du lobe)
+{
+  const lam = 532e-9, D = 2.5, a = 40e-6; let pire = 0;
+  for (const l of [200e-6, 300e-6, 400e-6, 500e-6]) {
+    const i = lam * D / l;
+    for (let n = 1; n * i <= 0.5 * lam * D / a; n++) {      // moitié centrale du lobe de diffraction
+      let best = n * i, bv = -1;
+      for (let x = n * i - 0.4 * i; x <= n * i + 0.4 * i; x += i / 2000) { const v = M.intYoung(a, l, lam, x / Math.hypot(x, D)); if (v > bv) { bv = v; best = x; } }
+      pire = Math.max(pire, Math.abs(best - n * i) / (n * i));
+    }
+  }
+  if (pire > 0.015) throw new Error('biais des maxima de Young trop grand : ' + (pire * 100).toFixed(2) + ' %');
+  console.log('biais maxima Young (a = 40 µm) :', (pire * 100).toFixed(2), '%');
+}

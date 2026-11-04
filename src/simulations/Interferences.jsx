@@ -74,13 +74,13 @@ function CuveDeux({ s, lam, vue, anim, lignes, P, setP }) {
     <div style={{ position: 'relative', lineHeight: 0 }}>
       <canvas ref={ref} width={CUVE.W} height={CUVE.H} style={{ width: '100%', borderRadius: 8, display: 'block', background: '#e0e8f0' }}
         role="img" aria-label={`Cuve à ondes vue de dessus : deux vibreurs S1 et S2, distants de ${nbf(s, 1)} cm, émettent des ondes de longueur d’onde ${nbf(lam, 2)} cm`}/>
-      <svg aria-hidden="true" viewBox={`0 0 ${CUVE.W} ${CUVE.H}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', touchAction: 'none' }}
+      <svg aria-hidden="true" viewBox={`0 0 ${CUVE.W} ${CUVE.H}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
         onPointerMove={e => { if (glisse.current) setP(versCm(e)); }} onPointerUp={() => { glisse.current = false; }} onPointerLeave={() => { glisse.current = false; }}>
         {lignes && hyper.map((h, i) => <polyline key={i} points={h.d} fill="none" stroke={h.dest ? '#b91c1c' : '#0f172a'} strokeWidth="1.6" strokeDasharray={h.dest ? '6 4' : undefined} opacity="0.85"/>)}
         <line x1={x1} y1={y1} x2={mx} y2={my} stroke="#7c2d12" strokeWidth="1.6" strokeDasharray="3 3"/><line x1={x2} y1={y2} x2={mx} y2={my} stroke="#7c2d12" strokeWidth="1.6" strokeDasharray="3 3"/>
         <g fill="#0f172a"><circle cx={x1} cy={y1} r="7"/><circle cx={x2} cy={y2} r="7"/></g>
         <g fontSize="15" fontWeight="700" fill="#0f172a" stroke="#fff" strokeWidth="3" paintOrder="stroke"><text x={x1 - 34} y={y1 + 5}>S₁</text><text x={x2 - 34} y={y2 + 5}>S₂</text></g>
-        <g style={{ cursor: 'grab' }} onPointerDown={e => { glisse.current = true; e.currentTarget.ownerSVGElement.setPointerCapture?.(e.pointerId); }}>
+        <g style={{ cursor: 'grab', touchAction: 'none' }} onPointerDown={e => { glisse.current = true; e.currentTarget.ownerSVGElement.setPointerCapture?.(e.pointerId); }}>
           <circle cx={mx} cy={my} r="22" fill="transparent"/><circle cx={mx} cy={my} r="9" fill="#fef08a" stroke="#0f172a" strokeWidth="2.5"/>
           <text x={mx + 13} y={my - 11} fontSize="16" fontWeight="700" fill="#0f172a" stroke="#fff" strokeWidth="3" paintOrder="stroke">M</text></g>
       </svg>
@@ -98,10 +98,12 @@ function Ecran({ cfg }) {
   const mmpx = W / (IMG.W / 2), ref = useRef(null), glisse = useRef(null);
   useEffect(() => {
     const cv = ref.current; if (!cv) return;
-    const ctx = cv.getContext('2d'), img = ctx.createImageData(IMG.W, 1), d = img.data;
-    for (let x = 0; x < IMG.W; x++) { const c = rgbAt((x - IMG.W / 2 + 0.5) * mmpx), o = x * 4; d[o] = 255 * c[0]; d[o + 1] = 255 * c[1]; d[o + 2] = 255 * c[2]; d[o + 3] = 255; }
+    const ctx = cv.getContext('2d'), img = ctx.createImageData(IMG.W, IMG.H), d = img.data;
+    for (let x = 0; x < IMG.W; x++) {
+      const c = rgbAt((x - IMG.W / 2 + 0.5) * mmpx);
+      for (let y = 0; y < IMG.H; y++) { const o = (y * IMG.W + x) * 4; d[o] = 255 * c[0]; d[o + 1] = 255 * c[1]; d[o + 2] = 255 * c[2]; d[o + 3] = 255; }     // la même colonne de couleur sur toute la hauteur
+    }
     ctx.putImageData(img, 0, 0);
-    ctx.drawImage(cv, 0, 0, IMG.W, 1, 0, 0, IMG.W, IMG.H);       // la même ligne répétée sur toute la hauteur de l’image
   }, [rgbAt, mmpx]);
   const px = mm => IMG.W / 2 + mm / mmpx;
   const versMm = e => { const r = ref.current.getBoundingClientRect(); return Math.max(-W, Math.min(W, ((e.clientX - r.left) / r.width * IMG.W - IMG.W / 2) * mmpx)); };
@@ -109,7 +111,7 @@ function Ecran({ cfg }) {
   const ticks = []; for (let m = -Math.floor(W / pas) * pas; m <= W + 1e-9; m += pas) ticks.push(Math.round(m / pas) * pas);
   const courbe = useMemo(() => { if (!profil) return null; let dd = '', de = ''; for (let x = 0; x <= IMG.W; x += 2) { const mm = (x - IMG.W / 2) * mmpx; dd += `${x ? 'L' : 'M'}${x},${(58 - 54 * Math.min(1, profil(mm))).toFixed(1)} `; if (enveloppe) de += `${x ? 'L' : 'M'}${x},${(58 - 54 * Math.min(1, enveloppe(mm))).toFixed(1)} `; } return { dd, de }; }, [profil, enveloppe, mmpx]);
   const mk = (xm, col, i) => (
-    <g key={i} style={{ cursor: 'ew-resize' }} onPointerDown={e => { glisse.current = i; e.currentTarget.ownerSVGElement.setPointerCapture?.(e.pointerId); }}>
+    <g key={i} style={{ cursor: 'ew-resize', touchAction: 'none' }} onPointerDown={e => { glisse.current = i; e.currentTarget.ownerSVGElement.setPointerCapture?.(e.pointerId); }}>
       <line x1={px(xm)} y1="0" x2={px(xm)} y2={IMG.H} stroke="#fff" strokeWidth="5"/><line x1={px(xm)} y1="0" x2={px(xm)} y2={IMG.H} stroke={col} strokeWidth="2.5"/>
       <rect x={px(xm) - 30} y="0" width="60" height={IMG.H} fill="transparent"/>
       <text x={px(xm) + 9} y="22" fontSize="15" fontWeight="700" fill="#fff" stroke="#000" strokeWidth="3" paintOrder="stroke">{i}</text></g>);
@@ -117,12 +119,12 @@ function Ecran({ cfg }) {
     <div>
       <div style={{ position: 'relative', lineHeight: 0 }}>
         <canvas ref={ref} width={IMG.W} height={IMG.H} style={{ width: '100%', display: 'block', borderRadius: '8px 8px 0 0', background: '#000' }} role="img" aria-label={aria}/>
-        <svg aria-hidden="true" viewBox={`0 0 ${IMG.W} ${IMG.H}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', touchAction: 'none' }}
+        <svg aria-hidden="true" viewBox={`0 0 ${IMG.W} ${IMG.H}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
           onPointerMove={e => { if (glisse.current != null) setX(glisse.current, versMm(e)); }} onPointerUp={() => { glisse.current = null; }} onPointerLeave={() => { glisse.current = null; }}>
           {[mk(x1, '#f59e0b', 1), mk(x2, '#22d3ee', 2)]}
         </svg>
       </div>
-      <svg viewBox={`0 0 ${IMG.W} 34`} style={{ width: '100%', display: 'block', background: '#f1f5f9' }} aria-label="Règle graduée en millimètres">
+      <svg viewBox={`0 0 ${IMG.W} 34`} style={{ width: '100%', display: 'block', background: '#f1f5f9' }} role="img" aria-label="Règle graduée en millimètres">
         {ticks.map(m => { const big = Math.abs(m / etiq - Math.round(m / etiq)) < 1e-6; return <g key={m}><line x1={px(m)} y1="0" x2={px(m)} y2={big ? 12 : 6} stroke="#475569" strokeWidth="1"/>
           {big && px(m) > 14 && px(m) < IMG.W - 22 && <text x={px(m)} y="26" fontSize="11" textAnchor="middle" fill="#334155">{String(m).replace('.', ',')}</text>}</g>; })}
         <text x={IMG.W - 4} y="10" fontSize="11" textAnchor="end" fill="#334155">mm</text>
@@ -140,8 +142,8 @@ function Montage({ scene, source, lam, D }) {
   const ox = 230, ex = 510;
   return (
     <svg viewBox="0 0 600 130" style={{ width: '100%', display: 'block', background: '#f8fafc', borderRadius: 8 }} role="img" aria-label={scene === 'young' ? 'Schéma du montage : laser, deux fentes, écran' : 'Schéma du montage : source de lumière, réseau, écran'}>
-      <rect x="20" y="52" width="76" height="26" rx="4" fill="#1e293b"/><text x="58" y="70" fontSize="12" fontWeight="700" fill="white" textAnchor="middle">{source === 'mercure' ? 'lampe Hg' : source === 'blanche' ? 'lumière blanche' : 'laser'}</text>
-      <line x1="96" y1="65" x2={ox} y2="65" stroke={col} strokeWidth="3"/>
+      <rect x="12" y="52" width="104" height="26" rx="4" fill="#1e293b"/><text x="64" y="70" fontSize="12" fontWeight="700" fill="white" textAnchor="middle">{source === 'mercure' ? 'lampe Hg' : source === 'blanche' ? 'lumière blanche' : 'laser'}</text>
+      <line x1="116" y1="65" x2={ox} y2="65" stroke={col} strokeWidth="3"/>
       {scene === 'young' ? <g fill="#475569"><rect x={ox - 4} y="10" width="8" height="42"/><rect x={ox - 4} y="58" width="8" height="14"/><rect x={ox - 4} y="78" width="8" height="42"/></g>
         : <g fill="#475569"><rect x={ox - 4} y="10" width="8" height="110"/>{[...Array(9)].map((_, i) => <rect key={i} x={ox - 7} y={30 + i * 8} width="14" height="3" fill="#cbd5e1"/>)}</g>}
       <path d={`M${ox},65 L${ex},20 L${ex},110 Z`} fill={col} opacity="0.2"/>
@@ -172,7 +174,7 @@ export function SimulationInterferences({ naviguer }) {
   const [cuve, setCuve] = useState(PRESET_CUVE), [P, setP] = useState(M_DEPART);
   const [vue, setVue] = useState('ondes'), [lignes, setLignes] = useState(false);
   const [anim, setAnim] = useState(() => { try { return !window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return true; } });
-  const [yz, setYz] = useState({ a: 80, l: 300, lam: 532, D: 2.5, expo: 2, x1: -10, x2: 10 });
+  const [yz, setYz] = useState({ a: 40, l: 300, lam: 532, D: 2.5, expo: 2, x1: -10, x2: 10 });
   const [rz, setRz] = useState({ pas: 3.3, source: 'laser', lam: 532, D: 1, expo: 2, x1: -100, x2: 100 });
   const enGuide = mode === 'guide', enDefi = mode === 'defi';
   const setY = f => setYz(z => ({ ...z, ...f })), setR = f => setRz(z => ({ ...z, ...f }));
@@ -180,7 +182,7 @@ export function SimulationInterferences({ naviguer }) {
   const sceneEff = dd ? (dd.type === 'fentes' ? 'young' : 'reseau') : scene;
 
   // ---------- grandeurs effectives (le défi impose certaines valeurs cachées) ----------
-  const Y = dd?.type === 'fentes' ? { ...yz, a: 80, l: dd.l * 1e3, lam: dd.lam } : yz;
+  const Y = dd?.type === 'fentes' ? { ...yz, a: 40, l: dd.l * 1e3, lam: dd.lam } : yz;
   const R = dd?.type === 'pas' ? { ...rz, pas: dd.pas, source: 'laser', lam: dd.lam } : dd?.type === 'raie' ? { ...rz, pas: 2.0, source: 'mercure' } : rz;
   const x1 = sceneEff === 'young' ? yz.x1 : rz.x1, x2 = sceneEff === 'young' ? yz.x2 : rz.x2;
   const W = sceneEff === 'young' ? WY : WR;
@@ -199,7 +201,6 @@ export function SimulationInterferences({ naviguer }) {
   const lamMes = R.source === 'mercure' ? 546.1 : R.lam;
   const xMes = Lmes / 2;
   const thMes = Math.atan2(xMes, R.D * 1e3);
-  const kEst = (() => { let kb = 1, eb = Infinity; for (let k = 1; k <= kMax; k++) { const e = Math.abs(xk(k, lamMes) - xMes); if (e < eb) { eb = e; kb = k; } } return kb; })();
   const aMes = Lmes > 0 ? M.pasDepuisOrdre(1, R.lam * 1e-9, thMes) * 1e6 : NaN;               // µm, ordre 1
   const lamRaieMes = Lmes > 0 ? M.lambdaDepuisOrdre(1, R.pas * 1e-6, thMes) * 1e9 : NaN;           // nm, ordre 1
   const incR = Lmes > 0 ? M.incertitudePas({ k: 1, lambda: 1e-6, x: xMes * 1e-3, D: R.D, dx: Math.SQRT2 * dx * 1e-3 / 2, dD, dLambda: 0.01e-6 }) : null;
@@ -210,7 +211,7 @@ export function SimulationInterferences({ naviguer }) {
   const [r1, r2] = M.distancesSources(cuve.s, P.x, P.y), delta = Math.abs(r2 - r1);
   const v = M.celeriteCuve(cuve.lam), tauMs = M.retardCuve(cuve.lam, r1, r2) * 1e3, tauT = delta / cuve.lam, nature = M.natureInterference(tauT);
   const cuveBase = scene === 'cuve' && cuve.s === 6 && cuve.lam === 2;
-  const youngBase = scene === 'young' && yz.a === 80 && yz.l === 300 && yz.lam === 532 && yz.D === 2.5;
+  const youngBase = scene === 'young' && yz.a === 40 && yz.l === 300 && yz.lam === 532 && yz.D === 2.5;
   const reseauBase = scene === 'reseau' && rz.pas === 3.3 && rz.lam === 532 && rz.D === 1 && rz.source === 'laser';
   const tolPt = 1.2 * dx;
   const pointeYoung = (() => { if (!youngBase) return false; const near = x => Math.abs(x / iY - Math.round(x / iY)) * iY <= tolPt; return near(yz.x1) && near(yz.x2) && Math.abs(Lmes / iY - nY) < 0.25; })();
@@ -221,7 +222,6 @@ export function SimulationInterferences({ naviguer }) {
   const pointeVert = reseauHg && Math.abs(rz.x1 + xVert) <= tolPt && Math.abs(rz.x2 - xVert) <= tolPt;
   const lamVertMes = Lmes > 0 ? M.lambdaDepuisOrdre(1, 3.3e-6, Math.atan2(Lmes / 2, 1000)) * 1e9 : NaN;
   const aMesG = Lmes > 0 ? M.pasDepuisOrdre(1, 532e-9, Math.atan2(Lmes / 2, 1000)) * 1e6 : NaN;
-  const placeCuve = (dTarget) => { setScene('cuve'); setP({ x: 20, y: M.yPourDelta(cuve.s, dTarget, 20) ?? 0 }); };
   const ETAPES = [
     { id: 'sources', titre: 'Deux sources, une seule fréquence', focus: ['scene'],
       texte: <>Dans cette <strong>cuve à ondes</strong> (vue de dessus), deux vibreurs <strong>S₁</strong> et <strong>S₂</strong> frappent l’eau, reliés au <strong>même générateur</strong> : ils vibrent à 20{NB}Hz, en même temps. Les cercles qui s’étalent sont les crêtes des deux ondes.</>,
@@ -236,25 +236,25 @@ export function SimulationInterferences({ naviguer }) {
         expl: 'Quand deux ondes arrivent en opposition de phase (une crête sur un creux), elles se compensent : l’interférence est destructive. Quand elles arrivent en phase, elles s’ajoutent : l’interférence est constructive.' } },
     { id: 'axe', titre: 'Un point sur l’axe de symétrie', focus: ['scene', 'sonde'],
       texte: <>Le point <strong>M</strong> (jaune) est le point d’observation. Faites-le glisser, ou utilisez les curseurs de position. Placez-le <strong>sur l’axe de symétrie</strong> des deux sources (<em>y</em> = 0).</>,
-      tache: { type: 'action', ok: cuveBase && Math.abs(P.y) < 0.4, bloque: cuveBase ? null : 'Remettez d’abord s = 6 cm et λ = 2 cm avec le bouton ci-dessous.', label: 'Placer M sur l’axe', faire: () => { setScene('cuve'); setCuve(PRESET_CUVE); setVue('amplitude'); setP({ x: 20, y: 0 }); }, consigne: 'Placez M sur l’axe (y = 0)' } },
+      tache: { type: 'action', ok: cuveBase && Math.abs(P.y) < 0.4, bloque: cuveBase ? null : 'Remettez d’abord s = 6 cm et λ = 2 cm avec le bouton « Rétablir » au-dessus de la cuve.', label: 'Placer M sur l’axe', faire: () => { setScene('cuve'); setCuve(PRESET_CUVE); setVue('amplitude'); setP({ x: 14, y: 0 }); }, consigne: 'Placez M sur l’axe (y = 0)' } },
     { id: 'axeretard', titre: 'Le retard sur l’axe', focus: ['sonde'],
       texte: <>Les distances <em>r</em>₁ = S₁M et <em>r</em>₂ = S₂M sont affichées dans « Mesures ». Le <strong>retard</strong> τ de l’onde la plus lointaine est le temps qu’elle met à parcourir la distance supplémentaire |<em>r</em>₂ − <em>r</em>₁|.</>,
       tache: { type: 'qcm', q: 'Sur l’axe de symétrie, le retard entre les deux ondes est…', options: ['nul : les deux ondes arrivent en phase', 'égal à une demi-période', 'égal à une période, ce qui donne une interférence destructive'], bonne: 0,
         expl: 'Sur l’axe, r₁ = r₂ : les deux ondes parcourent la même distance et arrivent en même temps. Le retard est nul, donc l’interférence est constructive (τ = 0 est un multiple de la période).' } },
     { id: 'placer', titre: 'Un autre point', focus: ['scene', 'sonde'],
       texte: <>Placez maintenant M sur un point où la différence de distances est de <strong>3{NB}cm</strong> environ (r₂ − r₁ = 3{NB}cm). Le bouton le fait pour vous.</>,
-      tache: { type: 'action', ok: cuveBase && Math.abs(delta - 3) < 0.3, bloque: cuveBase ? null : 'Remettez d’abord s = 6 cm et λ = 2 cm.', label: 'Placer M (δ = 3 cm)', faire: () => { placeCuve(3); setCuve(PRESET_CUVE); setP({ x: 20, y: M.yPourDelta(6, 3, 20) }); }, consigne: 'Placez M pour que |r₂ − r₁| ≈ 3 cm' } },
+      tache: { type: 'action', ok: cuveBase && Math.abs(delta - 3) < 0.3, bloque: cuveBase ? null : 'Remettez d’abord s = 6 cm et λ = 2 cm.', label: 'Placer M (δ = 3 cm)', faire: () => { setScene('cuve'); setCuve(PRESET_CUVE); setP({ x: 14, y: M.yPourDelta(6, 3, 14) }); }, consigne: 'Placez M pour que |r₂ − r₁| ≈ 3 cm' } },
     { id: 'delta', titre: 'Différence de distances', focus: ['sonde'],
       texte: <>Lisez <em>r</em>₁ et <em>r</em>₂ dans « Mesures » et calculez la <strong>différence de distances</strong> δ = |<em>r</em>₂ − <em>r</em>₁|.</>,
       tache: { type: 'num', q: 'Différence de distances δ', unite: 'cm', vrai: delta, tol: 0.06, affiche: v => nbf(v, 1), cs: 2,
-        bloque: cuveBase && Math.abs(delta - 3) < 0.3 ? null : 'Placez d’abord M à l’étape précédente.',
-        calcul: () => [`r₁ = ${nbf(r1, 1)} cm ; r₂ = ${nbf(r2, 1)} cm.`, `δ = ${nbf(r2, 1)} − ${nbf(r1, 1)} = ${nbf(delta, 1)} cm.`],
+        bloque: cuveBase && Math.abs(delta - 3) < 0.3 ? null : 'Placez d’abord M avec le bouton « Rétablir le point M » au-dessus de la cuve.',
+        calcul: () => [`r₁ = ${nbf(r1, 2)} cm ; r₂ = ${nbf(r2, 2)} cm.`, `δ = ${nbf(r2, 2)} − ${nbf(r1, 2)} = ${nbf(delta, 2)} cm.`],
         pieges: [[r1 + r2, 'Vous avez additionné les deux distances. La différence de distances est r₂ − r₁.']],
         expl: `δ = |r₂ − r₁| ≈ ${nbf(delta, 1)} cm.` } },
     { id: 'tau', titre: 'Le retard τ', focus: ['sonde'],
       texte: <>Les ondes se propagent à la célérité <em>v</em> = <em>λ</em> × <em>f</em> = 2{NB}cm × 20{NB}Hz = 0,40{NB}m/s. Calculez le retard τ = δ / <em>v</em>, en millisecondes.</>,
       tache: { type: 'num', q: 'Retard τ', unite: 'ms', vrai: delta * 1e-2 / 0.4 * 1e3, tol: 0.05, affiche: v => nbf(v, 0), cs: 2,
-        bloque: cuveBase && Math.abs(delta - 3) < 0.3 ? null : 'Placez d’abord M (étape « Un autre point »).',
+        bloque: cuveBase && Math.abs(delta - 3) < 0.3 ? null : 'Placez d’abord M avec le bouton « Rétablir le point M » au-dessus de la cuve.',
         calcul: () => ['Hypothèse : la célérité est la même dans toute la cuve (eau de profondeur constante).', `Unités SI : δ = ${nbf(delta, 1)} cm = ${nbf(delta * 1e-2, 3)} m ; v = 0,40 m/s.`, `τ = ${nbf(delta * 1e-2, 3)} / 0,40 = ${nbf(delta * 1e-2 / 0.4, 3)} s = ${nbf(delta * 1e-2 / 0.4 * 1e3, 0)} ms.`],
         pieges: [[delta * 1e-2 / 0.4, 'Vous avez donné τ en secondes. L’unité demandée est la milliseconde.'], [delta / 0.4 * 1e3, 'Convertissez δ en mètres avant de diviser par v (en m/s).']],
         expl: 'τ = δ / v = 0,030 / 0,40 = 0,075 s = 75 ms (valeurs pour δ = 3,0 cm).' } },
@@ -264,7 +264,7 @@ export function SimulationInterferences({ naviguer }) {
         expl: '75 ms = 50 ms + 25 ms = 1 × T + T/2 : le retard vaut une période plus une demi-période, donc l’interférence est destructive. On le vérifie sur la vue « amplitude » : M est dans une zone claire (calme).' } },
     { id: 'constructive', titre: 'Chercher une frange agitée', focus: ['scene', 'sonde'],
       texte: <>Placez M sur une autre <strong>frange agitée</strong> que celle de l’axe : un point où le retard est une période (τ = <em>T</em>), c’est-à-dire δ = <em>λ</em> = 2{NB}cm.</>,
-      tache: { type: 'action', ok: cuveBase && nature === 'constructive' && Math.abs(P.y) > 1, bloque: cuveBase ? null : 'Remettez d’abord s = 6 cm et λ = 2 cm.', label: 'Placer M (δ = λ)', faire: () => { setCuve(PRESET_CUVE); setScene('cuve'); setP({ x: 20, y: M.yPourDelta(6, 2, 20) }); }, consigne: 'Placez M sur une frange agitée, hors de l’axe' } },
+      tache: { type: 'action', ok: cuveBase && nature === 'constructive' && Math.abs(P.y) > 1, bloque: cuveBase ? null : 'Remettez d’abord s = 6 cm et λ = 2 cm.', label: 'Placer M (δ = λ)', faire: () => { setCuve(PRESET_CUVE); setScene('cuve'); setP({ x: 14, y: M.yPourDelta(6, 2, 14) }); }, consigne: 'Placez M sur une frange agitée, hors de l’axe' } },
     { id: 'lignes', titre: 'Les lignes d’interférence', focus: ['reglages', 'scene'],
       texte: <>Affichez les <strong>lignes d’interférence</strong> : en trait plein, les franges constructives (δ = 0, <em>λ</em>, 2<em>λ</em>…) ; en tirets, les destructives (δ = <em>λ</em>/2, 3<em>λ</em>/2…).</>,
       tache: { type: 'action', ok: lignes, label: 'Afficher les lignes', faire: () => { setLignes(true); setScene('cuve'); }, consigne: 'Affichez les lignes d’interférence' } },
@@ -277,7 +277,7 @@ export function SimulationInterferences({ naviguer }) {
         expl: 'Plus les sources sont éloignées, plus la différence de distances varie vite quand M se déplace : on passe plus vite d’une frange à l’autre. L’interfrange diminue.' } },
     { id: 'young', titre: 'La lumière aussi interfère', focus: ['scene', 'reglages'],
       texte: <>Un <strong>laser</strong> (<em>λ</em> = 532{NB}nm) éclaire deux fentes très fines, séparées de <em>l</em> = 300{NB}µm. Chaque fente est une source secondaire : les deux ondes sont synchrones, car elles viennent du même laser. L’écran est à <em>D</em> = 2,50{NB}m.</>,
-      tache: { type: 'action', ok: youngBase, label: 'Passer aux fentes de Young', faire: () => { setScene('young'); setYz({ a: 80, l: 300, lam: 532, D: 2.5, expo: 2, x1: -10, x2: 10 }); }, consigne: 'Fentes de Young : l = 300 µm, λ = 532 nm, D = 2,50 m' } },
+      tache: { type: 'action', ok: youngBase, label: 'Passer aux fentes de Young', faire: () => { setScene('young'); setYz({ a: 40, l: 300, lam: 532, D: 2.5, expo: 2, x1: -10, x2: 10 }); }, consigne: 'Fentes de Young : l = 300 µm, λ = 532 nm, D = 2,50 m' } },
     { id: 'figure', titre: 'Lire la figure', focus: ['ecran'],
       texte: <>On voit des <strong>franges brillantes</strong> régulièrement espacées. Leur éclat diminue de part et d’autre du centre : c’est l’<strong>enveloppe de diffraction</strong> (tirets sur la courbe).</>,
       tache: { type: 'qcm', q: 'Pourquoi les franges sont-elles de moins en moins brillantes quand on s’éloigne du centre ?', options: ['parce que chaque fente diffracte la lumière : l’éclairement décroît selon la figure de diffraction d’une fente', 'parce que le laser s’affaiblit', 'parce que les deux ondes ne sont plus synchrones'], bonne: 0,
@@ -330,14 +330,14 @@ export function SimulationInterferences({ naviguer }) {
       tache: { type: 'num', q: 'Pas a du réseau', unite: 'µm', vrai: aMesG, tol: 0.03, affiche: v => nbf(v, 2), cs: 3,
         bloque: pointeReseau ? null : 'Placez d’abord les repères (étape « Les ordres de diffraction »).',
         calcul: () => ['Hypothèse : formule des réseaux, valable sans approximation des petits angles.', `a = kλ / sin θ₁ = 1 × 532 × 10⁻⁹ / sin(${nbf(deg(Math.atan2(Lmes / 2, 1000)), 1)}°) = ${nbf(aMesG * 1e-6 * 1e6, 2)} × 10⁻⁶ m = ${nbf(aMesG, 2)} µm.`],
-        pieges: [[aMesG * 1e-6, 'Le résultat est à donner en micromètres.'], [532e-9 * Math.cos(Math.atan2(Lmes / 2, 1000)) * 1e6, 'Utilisez le sinus de θ₁ (formule des réseaux), pas son cosinus.'], [aMesG / 1000, 'Vérifiez l’unité : le résultat est à donner en micromètres.']],
+        pieges: [[aMesG * 1e-6, 'Le résultat est à donner en micromètres.'], [532e-9 * Math.sin(Math.atan2(Lmes / 2, 1000)) * 1e6, 'Vous avez multiplié λ par sin θ₁ : la formule des réseaux est sin θ₁ = λ / a, donc a = λ / sin θ₁.'], [532e-9 / Math.cos(Math.atan2(Lmes / 2, 1000)) * 1e6, 'Utilisez le sinus de θ₁ (formule des réseaux), pas son cosinus.'], [aMesG / 1000, 'Vérifiez l’unité : le résultat est à donner en micromètres.']],
         expl: `a = λ / sin θ₁ ≈ ${nbf(aMesG, 1)} µm (valeur exacte de la simulation : 3,3 µm), soit environ 300 traits par millimètre.` } },
     { id: 'ordremax', titre: 'Combien d’ordres ?', focus: ['ecran'],
-      texte: <>Un ordre n’existe que si sin θ<sub>k</sub> = k·λ / a est inférieur à 1. Comptez les ordres visibles de chaque côté du centre, ou calculez l’ordre maximal <em>k</em> avec <em>λ</em> = 532{NB}nm et <em>a</em> = 3,3{NB}µm.</>,
+      texte: <>Un ordre n’existe que si sin θ<sub>k</sub> = k·λ / a est inférieur à 1. Calculez l’ordre maximal <em>k</em> théorique avec <em>λ</em> = 532{NB}nm et <em>a</em> = 3,3{NB}µm.</>,
       tache: { type: 'num', q: 'Ordre maximal observable', unite: '', vrai: 6, tol: 0.001, affiche: v => nbf(v, 0), cs: 1,
         calcul: () => ['Condition : k λ / a < 1, donc k < a / λ.', 'a / λ = 3,3 × 10⁻⁶ / 532 × 10⁻⁹ ≈ 6,2 : le plus grand entier strictement inférieur est k = 6.'],
         pieges: [[6.2, 'Un ordre est un nombre entier : prenez la partie entière.']],
-        expl: 'k < a/λ ≈ 6,2 : on observe les ordres de −6 à +6, soit 13 taches. Sur l’écran, les ordres élevés sont très écartés et peuvent sortir de l’image.' } },
+        expl: 'k < a/λ ≈ 6,2 : les ordres vont théoriquement de −6 à +6. En pratique, les ordres élevés sont très écartés, presque rasants, peu lumineux, et sortent de l’image (écran plan) : on n’en voit ici que quelques-uns.' } },
     { id: 'blanche', titre: 'Et en lumière blanche ?', focus: ['reglages', 'ecran'],
       texte: <>Remplacez le laser par une <strong>lumière blanche</strong> (toutes les couleurs). Observez la tache centrale et les ordres 1 et 2.</>,
       tache: { type: 'action', ok: scene === 'reseau' && rz.source === 'blanche', label: 'Lumière blanche', faire: () => { setScene('reseau'); setR({ source: 'blanche' }); }, consigne: 'Choisissez « Lumière blanche »' } },
@@ -351,14 +351,14 @@ export function SimulationInterferences({ naviguer }) {
     { id: 'raie', titre: 'Mesurer une longueur d’onde', focus: ['ecran', 'mesures'],
       texte: <>Placez les repères sur la raie <strong>verte</strong> d’ordre −1 et d’ordre +1, puis calculez sa longueur d’onde avec <em>a</em> = 3,3{NB}µm : <em>λ</em> = <em>a</em>·sin θ₁ (<em>k</em> = 1).</>,
       tache: { type: 'num', q: 'Longueur d’onde λ de la raie verte', unite: 'nm', vrai: lamVertMes, tol: 0.03, affiche: v => nbf(v, 0), cs: 3,
-        bloque: reseauHg ? (pointeVert ? null : 'Placez d’abord les repères sur la raie verte d’ordre ±1 : bouton ci-dessous.') : 'Choisissez d’abord la lampe à mercure (étape précédente).',
+        bloque: reseauHg ? (pointeVert ? null : 'Placez d’abord les repères sur la raie verte d’ordre ±1 avec le bouton « Rétablir le réglage » au-dessus de l’image.') : 'Choisissez d’abord la lampe à mercure (étape précédente).',
         calcul: () => [`Distance entre les repères : ${nbf(Lmes, 1)} mm donc x₁ = ${nbf(Lmes / 2, 1)} mm ; D = 1,00 m ; θ₁ = ${nbf(deg(Math.atan2(Lmes / 2, 1000)), 1)}°.`, `λ = a sin θ₁ = 3,3 × 10⁻⁶ × sin(${nbf(deg(Math.atan2(Lmes / 2, 1000)), 1)}°) = ${nbf(lamVertMes, 0)} × 10⁻⁹ m = ${nbf(lamVertMes, 0)} nm.`],
-        pieges: [[lamVertMes * 1e-9, 'Le résultat est à donner en nanomètres.'], [lamVertMes * 2, 'Vous avez utilisé la distance entre les deux repères au lieu de x₁ (sa moitié).']],
+        pieges: [[lamVertMes * 1e-9, 'Le résultat est à donner en nanomètres.'], [3.3e-6 * Math.sin(Math.atan2(Lmes, 1000)) * 1e9, 'Vous avez utilisé la distance entre les deux repères au lieu de x₁ (sa moitié) pour calculer l’angle.']],
         expl: `λ ≈ ${nbf(lamVertMes, 0)} nm : c’est bien une raie verte (valeur exacte de la raie du mercure : 546 nm).` } },
     { id: 'spectro', titre: 'Le spectrophotomètre à réseau', focus: [],
-      texte: <>Dans un spectrophotomètre, la lumière traverse l’échantillon avant d’atteindre un <strong>réseau</strong> qui l’étale en spectre. On ne laisse passer qu’une petite plage de longueurs d’onde à la fois, en tournant le réseau.</>,
+      texte: <>Dans un spectrophotomètre, la lumière de la lampe est d’abord étalée en spectre par un <strong>réseau</strong>. Une fente ne laisse passer qu’une petite plage de longueurs d’onde à la fois (on tourne le réseau pour choisir laquelle) ; cette lumière traverse ensuite l’échantillon, puis arrive sur le détecteur.</>,
       tache: { type: 'qcm', q: 'Quel est le rôle du réseau dans un spectrophotomètre ?', options: ['séparer les longueurs d’onde de la lumière blanche pour choisir celle qui traverse l’échantillon', 'absorber la lumière que l’échantillon n’absorbe pas', 'augmenter l’intensité de la lumière'], bonne: 0,
-        expl: 'Le réseau disperse la lumière : à chaque longueur d’onde correspond une direction. En tournant le réseau, on envoie la longueur d’onde choisie vers la fente de sortie, puis vers l’échantillon et le détecteur.' } },
+        expl: 'Le réseau disperse la lumière : à chaque longueur d’onde correspond une direction. En tournant le réseau, on envoie la longueur d’onde choisie vers la fente de sortie, puis vers l’échantillon et enfin vers le détecteur.' } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
         <li>des ondes synchrones (même fréquence, déphasage constant) qui se superposent <strong>interfèrent</strong></li>
@@ -370,15 +370,16 @@ export function SimulationInterferences({ naviguer }) {
       texte: <>Vous savez interpréter une figure d’interférences, relier retard et distance, et mesurer une distance entre fentes, un pas de réseau ou une longueur d’onde. Essayez maintenant les défis.</>, tache: null },
   ];
   const idE = ETAPES[Math.min(etape, ETAPES.length - 1)].id;
+  const IDS = ETAPES.map(e => e.id), apres = id => !enGuide || etape > IDS.indexOf(id);      // en parcours guidé, une grandeur n’est affichée qu’après l’étape où l’élève la calcule
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
   const rendreBase = () => {
     if (idE === 'axe' || idE === 'placer' || idE === 'constructive') setCuve(PRESET_CUVE);
-    if (['pointer', 'interfrange', 'calcl', 'pourquoi6'].includes(idE)) { setScene('young'); setYz({ a: 80, l: 300, lam: 532, D: 2.5, expo: 2, x1: -3 * iY, x2: 3 * iY }); }
+    if (['pointer', 'interfrange', 'calcl', 'pourquoi6'].includes(idE)) { setScene('young'); setYz({ a: 40, l: 300, lam: 532, D: 2.5, expo: 2, x1: -3 * iY, x2: 3 * iY }); }
     if (['ordres', 'theta', 'pas'].includes(idE)) { setScene('reseau'); setRz({ pas: 3.3, source: 'laser', lam: 532, D: 1, expo: 2, x1: -x1k, x2: x1k }); }
     if (idE === 'raie') { setScene('reseau'); setRz({ pas: 3.3, source: 'mercure', lam: 532, D: 1, expo: 2, x1: -xVert, x2: xVert }); }
   };
-  const etapeARetablir = ['pointer', 'interfrange', 'calcl', 'pourquoi6', 'ordres', 'theta', 'pas', 'raie'].includes(idE);
+  const etapeARetablir = enGuide && ['pointer', 'interfrange', 'calcl', 'pourquoi6', 'ordres', 'theta', 'pas', 'raie'].includes(idE);
   const retabliOk = idE === 'raie' ? pointeVert : ['ordres', 'theta', 'pas'].includes(idE) ? pointeReseau : pointeYoung;
 
   // ════════════════ DÉFIS ════════════════
@@ -395,13 +396,13 @@ export function SimulationInterferences({ naviguer }) {
     if (md === 'guide') { setScene('cuve'); setCuve(PRESET_CUVE); setP(M_DEPART); setVue('ondes'); setLignes(false); }
   }
   function choisirDefi(t) { setTypeDefi(t); nouveauDefi(t); }
-  const tolDefi = rel => Math.max(0.04, 2 * rel);
+  const tolDefi = rel => Math.min(0.1, Math.max(0.04, 2 * rel));
   const reponseDefi = defi && (defi.type === 'fentes' ? defi.l * 1e3 : defi.type === 'pas' ? defi.pas : defi.lam);
   const verifier = () => {
     const x = lireNombre(defi.type === 'raie' ? defi.reps.l : defi.reps.a);
     const rel = defi.type === 'fentes' ? relY : relR;
-    const ok = isFinite(x) && proche(x, reponseDefi, tolDefi(rel));
-    setDefi(d => ({ ...d, verifie: true, snapRel: rel, ok }));
+    const imprecis = rel > 0.08, ok = !imprecis && isFinite(x) && proche(x, reponseDefi, tolDefi(rel));
+    setDefi(d => ({ ...d, verifie: true, snapRel: rel, ok, imprecis }));
     (defi.type === 'fentes' ? noterFentes : defi.type === 'pas' ? noterPas : noterRaie)(ok);
   };
   const champReponse = (cle, unite, label) => (
@@ -417,9 +418,9 @@ export function SimulationInterferences({ naviguer }) {
       </div>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>{defi.type === 'fentes' ? 'Défi : quelle est la distance entre les deux fentes ?' : defi.type === 'pas' ? 'Défi : quel est le pas du réseau ?' : `Défi : quelle est la longueur d’onde de la raie ${nomRaie(defi.lam)} ?`}</div>
       <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>
-        {defi.type === 'fentes' && <>Un laser (<em>λ</em> = {defi.lam}{NB}nm) éclaire deux fentes fines de largeur 80{NB}µm dont on ignore l’écartement <em>l</em>. Choisissez <em>D</em>, mesurez plusieurs interfranges, puis déduisez <em>l</em> avec <em>i</em> = <em>λ</em>·<em>D</em> / <em>l</em>.</>}
-        {defi.type === 'pas' && <>Un laser (<em>λ</em> = {defi.lam}{NB}nm) éclaire un réseau dont on ignore le pas <em>a</em>. Choisissez <em>D</em>, repérez deux ordres symétriques (comptez les ordres depuis le centre), mesurez l’angle de déviation et déduisez <em>a</em> avec sin <em>θ</em><sub>k</sub> = <em>k</em>·<em>λ</em> / <em>a</em>.</>}
-        {defi.type === 'raie' && <>Une lampe à vapeur de mercure éclaire un réseau de pas <em>a</em> = 2,0{NB}µm (500 traits par mm). Mesurez l’angle de déviation de la raie <strong>{nomRaie(defi.lam)}</strong> (ordre 1 ou 2, comptez les ordres depuis le centre) et déduisez sa longueur d’onde avec <em>λ</em> = <em>a</em>·sin <em>θ</em><sub>k</sub> / <em>k</em>.</>}
+        {defi.type === 'fentes' && <>Un laser (<em>λ</em> = {defi.lam}{NB}nm) éclaire deux fentes fines de largeur 40{NB}µm dont on ignore l’écartement <em>l</em>. Choisissez <em>D</em>, mesurez plusieurs interfranges, puis déduisez <em>l</em> avec <em>i</em> = <em>λ</em>·<em>D</em> / <em>l</em>.</>}
+        {defi.type === 'pas' && <>Un laser (<em>λ</em> = {defi.lam}{NB}nm) éclaire un réseau dont on ignore le pas <em>a</em>. Choisissez <em>D</em>, repérez deux ordres symétriques, de préférence les ordres 1 ou 2 (les plus lumineux, comptés depuis le centre), mesurez l’angle de déviation et déduisez <em>a</em> avec sin <em>θ</em><sub>k</sub> = <em>k</em>·<em>λ</em> / <em>a</em>.</>}
+        {defi.type === 'raie' && <>Une lampe à vapeur de mercure éclaire un réseau de pas <em>a</em> = 2,0{NB}µm (500 traits par mm). Mesurez l’angle de déviation de la raie <strong>{nomRaie(defi.lam)}</strong> (dans chaque ordre, de la plus proche du centre à la plus éloignée : violette, bleue, verte, jaune) (ordre 1 ou 2, les plus lumineux, comptés depuis le centre) et déduisez sa longueur d’onde avec <em>λ</em> = <em>a</em>·sin <em>θ</em><sub>k</sub> / <em>k</em>.</>}
       </div>
       {defi.type === 'fentes' && champReponse('a', 'µm', 'Distance l entre les fentes')}
       {defi.type === 'pas' && champReponse('a', 'µm', 'Pas a du réseau')}
@@ -429,7 +430,7 @@ export function SimulationInterferences({ naviguer }) {
         <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
       </div>
       {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>
-        {defi.ok ? `✓ Correct. Valeur de la simulation : ${defi.type === 'fentes' ? nbf(defi.l * 1e3, 0) + ' µm' : defi.type === 'pas' ? nbf(defi.pas, 1) + ' µm' : nbf(defi.lam, 1) + ' nm'}.`
+        {defi.imprecis ? '✗ Votre mesure est trop imprécise (incertitude relative supérieure à 8 %) : éloignez l’écran, mesurez plus d’interfranges ou un ordre plus élevé, puis recommencez.' : defi.ok ? `✓ Correct. Valeur de la simulation : ${defi.type === 'fentes' ? nbf(defi.l * 1e3, 0) + ' µm' : defi.type === 'pas' ? nbf(defi.pas, 1) + ' µm' : nbf(defi.lam, 1) + ' nm'}.`
           : (defi.type === 'fentes' ? '✗ Vérifiez : l = λ·D / i, avec i = d / n (n = nombre d’interfranges comptés entre les repères), les repères sur les centres de franges brillantes, et les unités (µm).'
             : defi.type === 'pas' ? '✗ Vérifiez : θ = arctan(x/D) avec x la distance du centre à la tache (la moitié de la distance entre les repères), l’ordre k de la tache (comptez depuis le centre), a = kλ / sin θ, en µm.'
               : '✗ Vérifiez : θ = arctan(x/D), l’ordre k de la raie (comptez depuis le centre), λ = a·sin θ / k, en nm. La raie demandée est la ' + nomRaie(defi.lam) + '.')}
@@ -441,10 +442,11 @@ export function SimulationInterferences({ naviguer }) {
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Ondes synchrones, monochromatiques</strong> : même fréquence, déphasage constant (une seule source divisée en deux). Les deux vibreurs sont supposés <strong>en phase</strong>.</li>
       <li><strong>Cuve</strong> : deux sources ponctuelles, ondes circulaires dont l’amplitude décroît en 1/√r, célérité uniforme (profondeur constante), sans réflexion sur les bords. Fréquence 20 Hz (affichage ralenti). La nature « constructive » ou « destructive » est affichée avec une tolérance de 0,1 T sur le retard.</li>
-      <li><strong>Fentes de Young</strong> : deux fentes fines identiques (largeur 80 µm), écran loin (D ≫ l²/λ), petits angles : i = λD/l (erreur négligeable ici, θ ≈ 10⁻³ rad). Chaque fente diffracte la lumière : la figure est le produit d’une enveloppe de diffraction et de franges d’interférences.</li>
+      <li><strong>Fentes de Young</strong> : deux fentes fines identiques (largeur 40 µm), écran loin (D ≫ l²/λ), petits angles : i = λD/l (erreur négligeable ici, θ ≈ 10⁻³ rad). Chaque fente diffracte la lumière : la figure est le produit d’une enveloppe de diffraction et de franges d’interférences.</li>
       <li><strong>Réseau</strong> : N = 30 traits éclairés (un vrai réseau en éclaire des milliers, les taches seraient bien plus fines), traits identiques, équidistants, de largeur 0,3 a. La formule des réseaux sin θ<sub>k</sub> = kλ/a est exacte, sans approximation des petits angles.</li>
-      <li><strong>Lampe à mercure</strong> : quatre raies (404,7 ; 435,8 ; 546,1 et 578,0 nm) ; le doublet jaune (577,0 et 579,1 nm) est représenté par sa valeur moyenne.</li>
-      <li><strong>Incertitudes</strong> : pointé de chaque repère à ± 3 pixels de l’image (hypothèse de la simulation), D au mètre ruban à ± 2 mm, longueur d’onde du laser à ± 1 % (notice), pas du réseau annoncé à ± 1 %. Type B : loi rectangulaire (u = demi-étendue / √3), sources indépendantes, les deux pointés indépendants. Le critère de compatibilité 2u suppose un coefficient d’élargissement k = 2 (environ 95 % de confiance si la loi est proche d’une loi normale).</li>
+      <li><strong>Lampe à mercure</strong> : quatre raies de longueurs d’onde connues {enDefi ? '(à déterminer par la mesure dans le défi)' : '(404,7 ; 435,8 ; 546,1 et 578,0 nm)'} ; le doublet jaune est représenté par une seule raie, à sa valeur moyenne.</li>
+      <li><strong>Incertitudes</strong> : pointé de chaque repère à ± 3 pixels de l’image (hypothèse de la simulation), D au mètre ruban à ± 2 mm, longueur d’onde du laser à ± 1 % (notice), pas du réseau annoncé à ± 1 %. Type B : loi rectangulaire (u = demi-étendue / √3), sources indépendantes, les deux pointés indépendants. Le critère de compatibilité 2u suppose un coefficient d’élargissement k = 2 (environ 95 % de confiance pour une loi normale ; davantage pour une loi rectangulaire).</li>
+      <li><strong>Affichages</strong> : la vue « amplitude » de la cuve est normalisée localement (elle montre le contraste des franges, pas la décroissance de l’onde avec la distance). Faire varier λ à fréquence fixe revient à changer la célérité des ondes (par exemple la profondeur de l’eau). Dans le montage de Young, les maxima des franges les plus éloignées sont légèrement décalés vers le centre par l’enveloppe de diffraction : l’effet est faible avec des fentes de 40 µm.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>);
   const finParcours = (
@@ -458,18 +460,21 @@ export function SimulationInterferences({ naviguer }) {
   const cfgEcran = useMemo(() => {
     if (sceneEff === 'young') {
       const A = Y.a * 1e-6, L = Y.l * 1e-6, la = Y.lam * 1e-9, rgb = M.rgbLambda(Y.lam);
-      return { W: WY, couleurCourbe: colCourbe, aria: `Figure d’interférences : franges brillantes régulièrement espacées de ${nbf(iY, 1)} millimètres environ`,
+      return { W: WY, couleurCourbe: colCourbe, aria: dd ? 'Figure d’interférences : franges brillantes régulièrement espacées' : `Figure d’interférences : franges brillantes régulièrement espacées de ${nbf(iY, 1)} millimètres environ`,
         rgbAt: xmm => { const I = M.intensiteEcranYoung(A, L, la, Y.D, xmm * 1e-3), vv = 1 - Math.exp(-Y.expo * 4 * I); return [rgb[0] * vv, rgb[1] * vv, rgb[2] * vv]; },
         profil: xmm => M.intensiteEcranYoung(A, L, la, Y.D, xmm * 1e-3), enveloppe: xmm => M.intFente(A, la, xmm * 1e-3 / Math.hypot(xmm * 1e-3, Y.D)) };
     }
     const pas = R.pas * 1e-6, raies = R.source === 'laser' ? [R.lam] : R.source === 'mercure' ? M.RAIES_MERCURE : Array.from({ length: 31 }, (_, i) => 400 + 10 * i);
     return { W: WR, couleurCourbe: '#334155', aria: R.source === 'laser' ? 'Figure donnée par un réseau : taches fines régulièrement réparties de part et d’autre de la tache centrale' : R.source === 'mercure' ? 'Spectre de raies du mercure donné par un réseau : quatre raies colorées dans chaque ordre' : 'Spectres de la lumière blanche donnés par un réseau : tache centrale blanche et spectres colorés de part et d’autre',
       rgbAt: xmm => { const c = M.couleurReseau(raies, pas, 30, R.D, xmm * 1e-3, R.source === 'blanche' ? rz.expo / 8 : rz.expo / (R.source === 'mercure' ? 2 : 1)); return c; }, profil: null, enveloppe: null };
-  }, [sceneEff, Y.a, Y.l, Y.lam, Y.D, Y.expo, R.pas, R.source, R.lam, R.D, rz.expo, colCourbe, iY]);
+  }, [sceneEff, Y.a, Y.l, Y.lam, Y.D, Y.expo, R.pas, R.source, R.lam, R.D, rz.expo, colCourbe, iY, dd]);
   const cfgFinal = { ...cfgEcran, x1, x2, setX };
   const lienBase = (
     etapeARetablir && !retabliOk && <button onClick={rendreBase} style={{ ...styleBouton(true, '#b45309'), marginBottom: 8 }}>Rétablir le réglage{idE === 'raie' ? ' (lampe à mercure, repères sur la raie verte)' : ' (repères placés)'}</button>);
-  const reglesCuve = enGuide && ['axe', 'placer', 'constructive'].includes(idE) && !cuveBase && <button onClick={() => { setScene('cuve'); setCuve(PRESET_CUVE); }} style={{ ...styleBouton(true, '#b45309'), marginBottom: 8 }}>Rétablir s = 6 cm et λ = 2 cm</button>;
+  const mDelta3 = cuveBase && Math.abs(delta - 3) < 0.3;
+  const reglesCuve = enGuide && (['axe', 'placer', 'constructive'].includes(idE) && !cuveBase
+    ? <button onClick={() => { setScene('cuve'); setCuve(PRESET_CUVE); }} style={{ ...styleBouton(true, '#b45309'), marginBottom: 8 }}>Rétablir s = 6 cm et λ = 2 cm</button>
+    : ['delta', 'tau'].includes(idE) && !mDelta3 && <button onClick={() => { setScene('cuve'); setCuve(PRESET_CUVE); setP({ x: 14, y: M.yPourDelta(6, 3, 14) }); }} style={{ ...styleBouton(true, '#b45309'), marginBottom: 8 }}>Rétablir le point M (δ = 3 cm)</button>);
   const zoneScene = sceneEff === 'cuve' ? (
     <CuveDeux s={cuve.s} lam={cuve.lam} vue={vue} anim={anim} lignes={lignes} P={P} setP={setP}/>
   ) : (
@@ -478,8 +483,8 @@ export function SimulationInterferences({ naviguer }) {
       <div style={cadre('ecran')}><Ecran cfg={cfgFinal}/></div>
       <div role="group" aria-label="Placer les repères" style={{ background: '#f1f5f9', borderRadius: 10, padding: '6px 10px' }}>
         <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700 }}>Placer les repères (curseurs, ou flèches du clavier)</div>
-        {[[1, 'Repère 1 (orange)', x1, '#b45309'], [2, 'Repère 2 (bleu)', x2, '#0e7490']].map(([i, n, vv, c]) => <label key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: KIT.txt }}><span style={{ minWidth: 112, fontWeight: 700 }}>{n}</span>
-          <input type="range" aria-label={n} aria-valuetext={`${nbf(vv, 1)} millimètres`} min={-W} max={W} step={W / 300} value={vv} onChange={e => setX(i, parseFloat(e.target.value))} style={{ flex: 1, minHeight: 32, accentColor: c }}/></label>)}
+        {[[1, 'Repère 1 (orange)', x1, '#b45309'], [2, 'Repère 2 (bleu)', x2, '#0e7490']].map(([i, n, vv, c]) => <label key={i} style={{ display: 'block', fontSize: 13.5, color: KIT.txt, marginTop: 4 }}><span style={{ fontWeight: 700 }}>{n} : {nbf(vv, 1)}{NB}mm</span>
+          <input type="range" aria-label={n} aria-valuetext={`${nbf(vv, 1)} millimètres`} min={-W} max={W} step={W / 200} value={vv} onChange={e => setX(i, parseFloat(e.target.value))} style={{ display: 'block', width: '100%', minHeight: 32, accentColor: c }}/></label>)}
       </div>
     </div>);
   const sceneBox = (
@@ -505,9 +510,9 @@ export function SimulationInterferences({ naviguer }) {
       <Curseur nom="Distance s entre les sources" valeur={cuve.s} onChange={v => setCuve(c => ({ ...c, s: v }))} min={2} max={10} pas={0.5} unite="cm" decimales={1} couleur="#475569"/>
       <Curseur nom="Longueur d’onde λ" valeur={cuve.lam} onChange={v => setCuve(c => ({ ...c, lam: v }))} min={0.8} max={3} pas={0.1} unite="cm" decimales={1} couleur="#0e7490"/>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
-        <button onClick={() => setVue(x => x === 'ondes' ? 'amplitude' : 'ondes')} aria-pressed={vue === 'amplitude'} style={stylePetitBouton(vue === 'amplitude', '#0e7490')}>{vue === 'amplitude' ? 'Voir les ondes' : 'Voir l’amplitude'}</button>
-        <button onClick={() => setLignes(x => !x)} aria-pressed={lignes} style={stylePetitBouton(lignes, '#0f172a')}>{lignes ? 'Masquer les lignes' : 'Afficher les lignes d’interférence'}</button>
-        <button onClick={() => setAnim(x => !x)} disabled={vue === 'amplitude'} aria-pressed={!anim} style={stylePetitBouton(!anim, '#475569')}>{anim ? 'Figer' : 'Animer'}</button>
+        <button onClick={() => setVue(x => x === 'ondes' ? 'amplitude' : 'ondes')} title="Basculer entre les ondes et l’amplitude" aria-pressed={vue === 'amplitude'} style={stylePetitBouton(vue === 'amplitude', '#0e7490')}>Voir l’amplitude</button>
+        <button onClick={() => setLignes(x => !x)} aria-pressed={lignes} style={stylePetitBouton(lignes, '#0f172a')}>Lignes d’interférence</button>
+        <button onClick={() => setAnim(x => !x)} disabled={vue === 'amplitude'} aria-pressed={!anim} style={stylePetitBouton(!anim, '#475569')}>Figer l’animation</button>
       </div>
     </div>
   ) : sceneEff === 'young' ? (
@@ -515,10 +520,10 @@ export function SimulationInterferences({ naviguer }) {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
       {!enDefi && <>
         <Curseur nom="Distance l entre les fentes" valeur={yz.l} onChange={v => setY({ l: v })} min={100} max={600} pas={10} unite="µm" decimales={0} couleur="#475569"/>
-        <Curseur nom="Largeur a de chaque fente" valeur={yz.a} onChange={v => setY({ a: v })} min={30} max={150} pas={5} unite="µm" decimales={0} couleur="#475569"/>
+        <Curseur nom="Largeur de chaque fente" valeur={yz.a} onChange={v => setY({ a: v })} min={30} max={150} pas={5} unite="µm" decimales={0} couleur="#475569"/>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>{[[405, 'violet'], [532, 'vert'], [650, 'rouge']].map(([nm, n]) => <button key={nm} onClick={() => setY({ lam: nm })} aria-pressed={yz.lam === nm} style={stylePetitBouton(yz.lam === nm, '#0e7490')}>{n} {nm}{NB}nm</button>)}</div>
       </>}
-      {enDefi && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6 }}>Laser de longueur d’onde <em>λ</em> = {Y.lam}{NB}nm (notice : ± 1 %). Fentes de largeur 80 µm. Écartement <em>l</em> inconnu.</div>}
+      {enDefi && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6 }}>Laser de longueur d’onde <em>λ</em> = {Y.lam}{NB}nm (notice : ± 1 %). Fentes de largeur 40 µm. Écartement <em>l</em> inconnu.</div>}
       <Curseur nom="Distance fentes – écran D" valeur={yz.D} onChange={v => setY({ D: v })} min={1} max={5} pas={0.25} unite="m" decimales={2} couleur="#b45309"/>
       <Curseur nom="Exposition" valeur={yz.expo} onChange={v => setY({ expo: v })} min={0.5} max={6} pas={0.5} unite="" decimales={1} couleur="#475569"/>
     </div>
@@ -535,21 +540,19 @@ export function SimulationInterferences({ naviguer }) {
       {enDefi && defi?.type === 'raie' && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6 }}>Lampe à mercure ; réseau de pas <em>a</em> = 2,0 µm (étiquette : ± 1 %).</div>}
       <Curseur nom="Distance réseau – écran D" valeur={rz.D} onChange={v => setR({ D: v })} min={0.3} max={1.5} pas={0.05} unite="m" decimales={2} couleur="#b45309"/>
       <Curseur nom="Exposition" valeur={rz.expo} onChange={v => setR({ expo: v })} min={0.5} max={6} pas={0.5} unite="" decimales={1} couleur="#475569"/>
-      {R.source !== 'laser' || true ? null : null}
     </div>
   );
 
-  const masqueDelta = idE === 'delta', masqueTau = ['delta', 'tau'].includes(idE), masqueNat = ['delta', 'tau', 'nature'].includes(idE);
   const mesures = sceneEff === 'cuve' ? (
     <div style={{ ...styleBoite, ...cadre('sonde'), ...cadre('mesures') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures au point M</div>
-      <LigneMesure nom="Distance r₁ = S₁M" valeur={`${nbf(r1, 1)}${NB}cm`}/>
-      <LigneMesure nom="Distance r₂ = S₂M" valeur={`${nbf(r2, 1)}${NB}cm`}/>
-      {!(enGuide && masqueDelta) && <LigneMesure nom="Différence δ = |r₂ − r₁|" valeur={`${nbf(delta, 1)}${NB}cm`} couleur="#b45309"/>}
+      <LigneMesure nom="Distance r₁ = S₁M" valeur={`${nbf(r1, 2)}${NB}cm`}/>
+      <LigneMesure nom="Distance r₂ = S₂M" valeur={`${nbf(r2, 2)}${NB}cm`}/>
+      {apres('delta') && <LigneMesure nom="Différence δ = |r₂ − r₁|" valeur={`${nbf(delta, 2)}${NB}cm`} couleur="#b45309"/>}
       <LigneMesure nom="Célérité v = λ × f (f = 20 Hz)" valeur={`${nbf(v, 2)}${NB}m/s`}/>
-      {!(enGuide && masqueTau) && <LigneMesure nom="Retard τ = δ / v" valeur={`${nbf(tauMs, 0)}${NB}ms`} couleur="#b45309"/>}
+      {apres('tau') && <LigneMesure nom="Retard τ = δ / v" valeur={`${nbf(tauMs, 0)}${NB}ms`} couleur="#b45309"/>}
       <LigneMesure nom="Période T = 1 / f" valeur={`${nbf(M.T_CUVE * 1e3, 0)}${NB}ms`}/>
-      {!(enGuide && masqueNat) && <><LigneMesure nom="Rapport τ / T" valeur={nbf(tauT, 2)}/>
+      {apres('nature') && <><LigneMesure nom="Rapport τ / T" valeur={nbf(tauT, 2)}/>
         <LigneMesure nom="Interférence en M" valeur={nature} couleur={nature === 'constructive' ? '#15803d' : nature === 'destructive' ? '#b91c1c' : KIT.txt}/></>}
     </div>
   ) : (
@@ -558,24 +561,23 @@ export function SimulationInterferences({ naviguer }) {
       <LigneMesure nom="Repère 1 (orange)" valeur={`${nbf(x1, 1)}${NB}mm`} couleur="#b45309"/>
       <LigneMesure nom="Repère 2 (bleu)" valeur={`${nbf(x2, 1)}${NB}mm`} couleur="#0e7490"/>
       <LigneMesure nom="Distance d entre les repères" valeur={`${nbf(Lmes, 1)}${NB}mm`}/>
-      {sceneEff === 'young' && !enDefi && !(enGuide && ['interfrange', 'calcl'].includes(idE)) && <LigneMesure nom="Interfrange i = d / 6 (6 interfranges)" valeur={`${nbf(Lmes / nY, 2)}${NB}mm`} couleur="#15803d"/>}
-      {sceneEff === 'young' && !enDefi && !(enGuide && idE === 'calcl') && <LigneMesure nom="l calculé = λ D / i" valeur={isFinite(lCalc) ? `${nbf(lCalc, 0)}${NB}µm` : '–'} couleur="#15803d"/>}
-      {sceneEff === 'reseau' && !enDefi && !(enGuide && ['theta', 'pas', 'raie'].includes(idE)) && <LigneMesure nom="θ₁ = arctan(d / 2D)" valeur={`${nbf(deg(thMes), 1)}${NB}°`} couleur="#15803d"/>}
-      {sceneEff === 'reseau' && !enDefi && rz.source === 'laser' && !(enGuide && idE === 'pas') && <LigneMesure nom="a = λ / sin θ₁ (ordre 1)" valeur={isFinite(aMes) ? `${nbf(aMes, 2)}${NB}µm` : '–'} couleur="#15803d"/>}
-      {sceneEff === 'reseau' && !enDefi && rz.source === 'mercure' && !(enGuide && idE === 'raie') && <LigneMesure nom="λ = a sin θ₁ (ordre 1)" valeur={isFinite(lamRaieMes) ? `${nbf(lamRaieMes, 0)}${NB}nm` : '–'} couleur="#15803d"/>}
+      {sceneEff === 'young' && !enDefi && apres('interfrange') && <LigneMesure nom="Interfrange i = d / 6 (6 interfranges)" valeur={`${nbf(Lmes / nY, 2)}${NB}mm`} couleur="#15803d"/>}
+      {sceneEff === 'young' && !enDefi && apres('calcl') && <LigneMesure nom="l calculé = λ D / i" valeur={isFinite(lCalc) ? `${nbf(lCalc, 0)}${NB}µm` : '–'} couleur="#15803d"/>}
+      {sceneEff === 'reseau' && !enDefi && apres('theta') && <LigneMesure nom="θ₁ = arctan(d / 2D)" valeur={`${nbf(deg(thMes), 1)}${NB}°`} couleur="#15803d"/>}
+      {sceneEff === 'reseau' && !enDefi && rz.source === 'laser' && apres('pas') && <LigneMesure nom="a = λ / sin θ₁ (ordre 1)" valeur={isFinite(aMes) ? `${nbf(aMes, 2)}${NB}µm` : '–'} couleur="#15803d"/>}
+      {sceneEff === 'reseau' && !enDefi && rz.source === 'mercure' && apres('raie') && <LigneMesure nom="λ = a sin θ₁ (ordre 1)" valeur={isFinite(lamRaieMes) ? `${nbf(lamRaieMes, 0)}${NB}nm` : '–'} couleur="#15803d"/>}
       {mode === 'explore' && sceneEff === 'young' && <LigneMesure nom="i prévu par la formule" valeur={`${nbf(iY, 2)}${NB}mm`} couleur="#15803d"/>}
       {mode === 'explore' && sceneEff === 'reseau' && rz.source === 'laser' && <LigneMesure nom="Ordre maximal (k λ / a < 1)" valeur={`${kMax}`}/>}
     </div>
   );
-  const incertBox = sceneEff !== 'cuve' && (sceneEff === 'young' ? incY : incR) && (() => {
+  const incertBox = sceneEff !== 'cuve' && !(sceneEff === 'reseau' && R.source === 'blanche') && (sceneEff === 'young' ? incY : incR) && (() => {
     const young = sceneEff === 'young', inc = young ? incY : incR, nom = young ? 'l' : (dd?.type === 'raie' || rz.source === 'mercure' ? 'λ' : 'a');
     const lignesInc = young
       ? [['d (2 pointés)', `${nbf(Math.SQRT2 * dx, 2)} mm`, inc.uL / (Lmes * 1e-3), inc.part[0], '#b45309'], ['D (ruban)', `${nbf(dD * 1e3, 0)} mm`, inc.uD / Y.D, inc.part[1], '#b45309'], ['λ (notice)', `${nbf(dLaser(Y.lam), 1)} nm`, inc.uLa / (Y.lam * 1e-9), inc.part[2], '#0e7490']]
       : [[R.source === 'mercure' ? 'pas a (étiquette)' : 'λ (notice)', R.source === 'mercure' ? '± 1 %' : `${nbf(dLaser(R.lam), 1)} nm`, 0.01 / Math.sqrt(3), inc.part[0], '#0e7490'],
         ['x (2 pointés)', `${nbf(Math.SQRT2 * dx / 2, 2)} mm`, Math.sqrt(inc.part[1] * inc.rel ** 2), inc.part[1], '#b45309'], ['D (ruban)', `${nbf(dD * 1e3, 0)} mm`, Math.sqrt(inc.part[2] * inc.rel ** 2), inc.part[2], '#b45309']];
     const absolu = young ? lCalc : (R.source === 'mercure' ? lamRaieMes : aMes), unite = young ? 'µm' : (R.source === 'mercure' ? 'nm' : 'µm');
-    const masque = enDefi || (enGuide && idE === 'pourquoi6' && false);
-    return (
+        return (
       <div style={{ ...styleBoite, ...cadre('incert') }}>
         <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Incertitude sur {nom}{enDefi ? ' (relative)' : ''}</div>
         <div style={{ fontSize: 12.5, color: KIT.txt2, marginBottom: 6 }}>Type B : u = demi-étendue / √3. Sources supposées indépendantes.</div>
@@ -587,7 +589,7 @@ export function SimulationInterferences({ naviguer }) {
         </table>
         <div style={{ marginTop: 6 }}>
           <LigneMesure nom={`u(${nom}) / ${nom}`} valeur={`${nbf(inc.rel * 100, 2)} %`}/>
-          {!enDefi && !(enGuide && idE === 'ua') && <LigneMesure nom={`u(${nom})`} valeur={isFinite(absolu) ? `${nbf(absolu * inc.rel, nom === 'λ' ? 0 : 1)}${NB}${unite}` : '–'} couleur="#15803d"/>}
+          {!enDefi && !enGuide && <LigneMesure nom={`u(${nom})`} valeur={isFinite(absolu) ? `${nbf(absolu * inc.rel, absolu * inc.rel < 1 ? 2 : absolu * inc.rel < 10 ? 1 : 0)}${NB}${unite}` : '–'} couleur="#15803d"/>}
           {enDefi && <LigneMesure nom="Intervalle ± 2 u / valeur" valeur={`${nbf(2 * inc.rel * 100, 1)} %`}/>}
         </div>
       </div>);
@@ -623,7 +625,8 @@ export function SimulationInterferences({ naviguer }) {
         .it-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 12px; }
         .it-pri { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr); }
         .it-pri.pile { grid-template-columns: minmax(0, 1fr); }
-        @media (max-width: 900px) { .it-l1.cote, .it-pri { grid-template-columns: minmax(0, 1fr); } .it-l1 .it-carte { order: -1; } }
+        @media (min-width: 901px) { .it-l1.cote .it-carte { order: 2; } .it-l1.cote .it-main { order: 1; } }
+        @media (max-width: 900px) { .it-l1.cote, .it-pri { grid-template-columns: minmax(0, 1fr); } }
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 6 }}>
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Interférences et réseaux</h2>
@@ -631,14 +634,14 @@ export function SimulationInterferences({ naviguer }) {
       </div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Deux ondes <strong>synchrones</strong> qui se superposent <strong>interfèrent</strong> : l’amplitude est maximale là où elles arrivent en phase, minimale là où elles arrivent en opposition de phase. On l’observe avec des ondes à la surface de l’eau comme avec la lumière (fentes de Young, réseau).</div>
       <div className={`it-l1${mode !== 'explore' ? ' cote' : ''}`}>
-        <div>
+        {enGuide ? <div className="it-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="it-carte">{panneauHypo}</div> : null}
+        <div className="it-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'fentes' ? suiviFentes : defi.type === 'pas' ? suiviPas : suiviRaie}/></div>}
           <div className={`it-pri${mode !== 'explore' ? ' pile' : ''}`}>
             {sceneBox}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{reglages}{mesures}{incertBox}</div>
           </div>
         </div>
-        {enGuide ? <div className="it-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? panneauHypo : null}
       </div>
       {!enDefi && <div className="it-l2">{panneauHypo}</div>}
       {mode === 'explore' && <div className="it-l2">{aEssayer}{retenir}</div>}
