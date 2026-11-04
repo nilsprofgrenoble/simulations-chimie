@@ -330,7 +330,7 @@ export function BeerLambert1G() {
         expl: 'Un R² proche de 1 ne garantit pas que le modèle convient : ici S5 s’écarte systématiquement de la droite. La loi de Beer-Lambert n’est vérifiée que pour des absorbances pas trop grandes. On peut retirer S5 de l’ajustement ou diluer pour rester dans le domaine de linéarité ; sinon la concentration de X est un peu surestimée (la pente est un peu trop petite).' } },
     { id: 'epsilon', titre: 'La loi de Beer-Lambert', focus: [],
       texte: <>La loi s'écrit A = ε × L × c : k = ε × L, où ε est le coefficient d'absorption molaire de l'espèce (il dépend de λ) et L = 1 cm la
-        largeur de la cuve.</>,
+        largeur de la cuve. Ici, k = {fmt(k, 2)} L/mol (droite modélisée à l’étape précédente).</>,
       tache: { type: 'num', q: 'Coefficient d’absorption molaire ε à cette longueur d’onde', unite: 'L·mol⁻¹·cm⁻¹', vrai: k / L_CUVE, tol: 0.02, affiche: v => fmt(v, 1),
         calcul: () => [`Beer-Lambert : A = ε × L × c. La droite modélisée est A = k × c (elle passe par l’origine, grâce au blanc), donc k = ε × L.`,
           `ε = k / L, avec k = ${fmt(k, 2)} L/mol et L = ${L_CUVE} cm (largeur de la cuve).`,
@@ -347,7 +347,7 @@ export function BeerLambert1G() {
           `c_X = ${fmt(AX, 3)} / ${fmt(k, 2)} = ${fmt(Number(AX.toFixed(3)) / Number(k.toFixed(2)), 4)} mol/L.`],
         pieges: [[AX * k, 'C’est A_X / k, et non A_X × k.'], [k / AX, 'Formule à l’envers : A = k × c donne c = A_X / k (et non k / A_X).']] } },
     { id: 'cm', titre: 'La concentration en masse', focus: [],
-      texte: <>On a c<sub>m</sub> = c × M, avec M(CuSO₄, 5 H₂O) = 249,68 g/mol.</>,
+      texte: <>On a c<sub>m</sub> = c × M, avec c = c<sub>X</sub> (concentration trouvée à l’étape précédente) et M(CuSO₄, 5 H₂O) = 249,68 g/mol.</>,
       tache: { type: 'num', q: 'Concentration en masse c_m de la bouillie', unite: 'g/L', vrai: cmX, tol: 0.02, affiche: v => fmt(v, 1),
         calcul: () => [`Formule : c_m = c × M. Le solide est du sulfate de cuivre pentahydraté, donc M = ${fmt(M_CUSO4, 2)} g/mol, et on suppose c(CuSO₄, 5 H₂O) = c_X (une mole de solide libère une mole d’ions Cu²⁺).`,
           `c_m = ${fmt(Number((Number(AX.toFixed(3)) / Number(k.toFixed(2))).toFixed(4)), 4)} × ${fmt(M_CUSO4, 2)} = ${fmt(Number((Number(AX.toFixed(3)) / Number(k.toFixed(2))).toFixed(4)) * M_CUSO4, 1)} g/L.`],

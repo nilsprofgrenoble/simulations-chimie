@@ -124,7 +124,7 @@ export function Simulation8({ plotlyReady }) {
       tache: { type: 'qcm', q: 'À quoi sert le conditionneur ?', options: ['À transformer la variation de résistance en variation de tension, que le CAN sait mesurer', 'À rendre le capteur plus sensible à la lumière', 'À allumer les phares'], bonne: 0,
         expl: 'Le CAN d’une entrée analogique de l’Arduino mesure des tensions entre 0 et 5 V.' } },
     { id: 'ur', titre: 'Calculer la tension', focus: ['conditionneur', 'graph'], bloc: 'conditionneur',
-      texte: <>Pour E = 200 lx, vous connaissez Rp. Calculez Ur avec la formule du pont diviseur (R = 1000 Ω).</>,
+      texte: <>Pour E = 200 lx, vous connaissez Rp ({fmt(Rp200, 0)} Ω, lue à l’étape précédente). Calculez Ur avec la formule du pont diviseur (R = 1000 Ω).</>,
       tache: { type: 'num', q: 'Tension Ur', unite: 'V', vrai: Ur200, tol: 0.01, affiche: x => fmt(x, 2), cs: 3, detail: true,
         indice: 'Remplacez Rp et R par leurs valeurs en Ω : le résultat est en V. Gardez au moins 3 chiffres significatifs.',
         bloque: !(E === 200 && R === R0) ? 'Gardez E = 200 lx et R = 1000 Ω.' : null,

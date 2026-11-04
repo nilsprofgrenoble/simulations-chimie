@@ -375,7 +375,7 @@ export function SimulationChampForce() {
           `g = ${puiss(G * MT, 4)} / ${puiss(RT ** 2, 4)} = ${val(gSol)} N·kg⁻¹.`],
         expl: 'g = G·M_T / R_T² ≈ 9,82 N·kg⁻¹. La valeur mesurée à Paris (9,81) est un peu plus faible : le modèle néglige la rotation de la Terre et sa forme aplatie.' } },
     { id: 'poids', titre: 'Le poids', focus: ['reglages', 'mesures'],
-      texte: <>Un objet de masse m placé dans ce champ subit la force <Vec>F</Vec> = m·<Vec>g</Vec> : c’est son <strong>poids</strong> <Vec>P</Vec>. Réglez la masse sur 60 kg.</>,
+      texte: <>Un objet de masse m placé dans ce champ subit la force <Vec>F</Vec> = m·<Vec>g</Vec> : c’est son <strong>poids</strong> <Vec>P</Vec>. Réglez la masse sur 60 kg ; au sol, g = {val(gSol)} N·kg⁻¹ (étape précédente).</>,
       tache: { type: 'num', q: 'Poids d’un élève de 60 kg', unite: 'N', vrai: 60 * gSol, tol: 0.02, affiche: v => fmt(v, 0), cs: 3,
         pieges: [[60, 'Le poids est une force, en newton : P = m × g.'], [60 / gSol, 'On multiplie : P = m × g.']],
         calcul: () => [
@@ -422,7 +422,7 @@ export function SimulationChampForce() {
       tache: { type: 'qcm', q: 'Pour q < 0, la force F = q·E est…', options: ['de sens opposé à E', 'de même sens que E', 'perpendiculaire à E'], bonne: 0,
         expl: 'q < 0 : F = q·E est colinéaire à E mais de sens opposé. Si q > 0, F et E ont le même sens.' } },
     { id: 'normeF', titre: 'Norme de la force', focus: ['calcul'],
-      texte: <>Calculez la norme de la force : <strong>F = |q|·E</strong>.</>,
+      texte: <>Calculez la norme de la force : <strong>F = |q|·E</strong>, avec |q| = 2 nC et E = {fmt(E10, 0)} N·C⁻¹ (champ calculé à l’étape précédente).</>,
       tache: { type: 'num', q: 'Norme de la force sur q = −2 nC à 10 cm de Q = +10 nC', unite: 'N', vrai: 2e-9 * E10, tol: 0.03, affiche: v => puiss(v, 2), cs: 2,
         bloque: a10 && q === -2 ? null : 'Il faut Q = +10 nC, la charge test à 10 cm et q = −2 nC (étapes précédentes).',
         pieges: [[-2e-9 * E10, 'La norme d’une force est positive : F = |q| × E.'], [2 * E10, 'Convertissez q en coulombs : 2 nC = 2 × 10⁻⁹ C.'],

@@ -201,7 +201,7 @@ export function Simulation7({ plotlyReady }) {
         bloque: !(modeRef && T === 40) ? 'Gardez le mode « Par refroidissement », 100 g de soluté et T = 40 °C.' : null,
         expl: `m(cristaux) = 100 − ${fmt(s40, 1)} = ${fmt(c40, 1)} g. Vérifiez dans le bilan de matière.` } },
     { id: 'tsat', titre: 'Où apparaissent les premiers cristaux ?', focus: ['diagramme', 'params', 'bilan'],
-      texte: <>En partant de 80 °C, la solution est insaturée. Refroidissez-la progressivement : la composition globale (losange) se déplace sur l'horizontale en pointillés. Les premiers cristaux apparaissent quand ce point <strong>rejoint la courbe</strong>.</>,
+      texte: <>On part de 100 g de KNO₃ dans 100 g d'eau, à 80 °C : la solution est insaturée. Refroidissez-la progressivement : la composition globale (losange) se déplace sur l'horizontale en pointillés. Les premiers cristaux apparaissent quand ce point <strong>rejoint la courbe</strong>.</>,
       tache: { type: 'num', q: 'Température à laquelle les premiers cristaux apparaissent', unite: '°C', vrai: tSat100, tol: 0.03, affiche: x => fmt(x, 0),
         calcul: () => {
           const i = SOLUB.findIndex((q, k) => k < SOLUB.length - 1 && ref.m >= q[1] && ref.m <= SOLUB[k + 1][1]);
@@ -215,7 +215,7 @@ export function Simulation7({ plotlyReady }) {
         bloque: !modeRef ? 'Gardez le mode « Par refroidissement » et 100 g de soluté.' : null,
         expl: `La solution devient saturée quand sa solubilité vaut 100 g / 100 g d'eau, soit vers ${fmt(tSat100, 0)} °C.` } },
     { id: 'rendement', titre: 'Quel rendement de cristallisation ?', focus: ['params', 'bilan'],
-      texte: <>On refroidit maintenant jusqu'à <strong>20 °C</strong>. Le rendement est la proportion du KNO₃ introduit que l'on récupère sous forme de cristaux.</>,
+      texte: <>On refroidit maintenant jusqu'à <strong>20 °C</strong> la solution de 100 g de KNO₃ dans 100 g d'eau. Le rendement est la proportion du KNO₃ introduit que l'on récupère sous forme de cristaux.</>,
       tache: { type: 'num', q: 'Rendement de la cristallisation à 20 °C', unite: '%', vrai: c20 / ref.m * 100, tol: 0.02, affiche: x => fmt(x, 0),
         calcul: () => [`À 20 °C, la solubilité est ${fmt(s20, 1)} g pour 100 g d’eau : il reste ${fmt(s20, 1)} g de KNO₃ dissous (hypothèse : équilibre atteint, 100 g d’eau).`,
           `m(cristaux) = ${fmt(ref.m, 0)} − ${fmt(s20, 1)} = ${fmt(c20, 1)} g.`,
@@ -238,7 +238,7 @@ export function Simulation7({ plotlyReady }) {
         bloque: !modeEv ? 'Gardez le mode « Par évaporation », T = 60 °C et 50 g de soluté.' : null,
         expl: `${fmt(sEv, 0)} g de sel pour 100 g d'eau, donc 50 g de sel pour m(eau) : m(eau) = 50 × 100 / ${fmt(sEv, 0)} ≈ ${fmt(eauSat, 1)} g.` } },
     { id: 'eau20', titre: 'Évaporer davantage', focus: ['params', 'bilan'],
-      texte: <>On continue d'évaporer jusqu'à ce qu'il ne reste que <strong>20 g d'eau</strong>, toujours à 60 °C. Réglez 20 g avec le curseur et lisez la masse de cristaux dans le bilan de matière.</>,
+      texte: <>On continue d'évaporer jusqu'à ce qu'il ne reste que <strong>20 g d'eau</strong>, toujours à 60 °C. Les 50 g de KNO₃ sont toujours là, et 100 g d'eau n'en dissolvent que {fmt(sEv, 0)} g à cette température. Réglez 20 g avec le curseur et lisez la masse de cristaux dans le bilan de matière.</>,
       tache: { type: 'num', q: 'Masse de cristaux obtenue avec 20 g d’eau restants', unite: 'g', vrai: cEv20, tol: 0.03, affiche: x => fmt(x, 1),
         calcul: () => [`Avec 20 g d’eau à 60 °C, la solution saturée dissout au maximum ${fmt(sEv, 0)} × 20 / 100 = ${fmt(sEv * 0.2, 1)} g de KNO₃ (hypothèse : équilibre atteint).`,
           `m(cristaux) = m(KNO₃ introduit) − m(KNO₃ dissous) = 50 − ${fmt(sEv * 0.2, 1)} = ${fmt(cEv20, 1)} g.`],

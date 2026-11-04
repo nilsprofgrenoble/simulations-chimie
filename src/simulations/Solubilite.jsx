@@ -216,7 +216,7 @@ export function SimulationSolubilite() {
       tache: { type: 'qcm', q: 'Quelle interaction est responsable de la grosse perte de stabilité ?', options: ['la liaison hydrogène eau…eau, perdue et non remplacée', 'la dispersion, qui devient plus forte', 'les interactions ioniques'], bonne: 0,
         expl: 'Les liaisons H eau…eau (état initial) ne sont remplacées que par de faibles interactions de Van der Waals eau…hexane. La perte est énorme : l’eau et l’hexane ne sont pas miscibles.' } },
     { id: 'ehn', titre: 'Un ordre de grandeur', focus: ['bilan'],
-      texte: <>Survolez (ou touchez) les deux barres de la liaison hydrogène : celle de gauche (état initial) et celle de droite (état final). Les valeurs sont en kJ pour 1 L de mélange (0,5 L d’eau + 0,5 L d’hexane). La perte est la différence entre les deux : c’est le pointillé rouge.</>,
+      texte: <>Gardez le couple eau–hexane de l’étape précédente. Survolez (ou touchez) les deux barres de la liaison hydrogène : celle de gauche (état initial) et celle de droite (état final). Les valeurs sont en kJ pour 1 L de mélange (0,5 L d’eau + 0,5 L d’hexane). La perte est la différence entre les deux : c’est le pointillé rouge.</>,
       tache: { type: 'num', q: 'Perte liée à la liaison hydrogène (initial − final, en kJ par litre)', unite: 'kJ/L', vrai: bw('eau', 'hexane').types[2].perte, tol: 0.06, affiche: v => nb(v), cs: 2,
         calcul: () => { const t = bw('eau', 'hexane').types[2];
           return ['Modèle : mélange 50/50 en volume (0,5 L d’eau + 0,5 L d’hexane) ; les énergies sont des estimations du modèle, en kJ pour 1 L de mélange.',
@@ -250,7 +250,7 @@ export function SimulationSolubilite() {
       tache: { type: 'action', ok: est('ethanol', 'hexane'), label: 'Éthanol + hexane', faire: () => setSel({ solv: 'ethanol', sol: 'hexane' }), consigne: 'A : éthanol ; B : hexane' } },
     { id: 'limq', titre: 'Pas tout noir ni tout blanc', focus: ['bilan'],
       texte: <>La perte est bien plus faible qu’avec l’eau (un seul groupe –OH par molécule d’éthanol (contre deux pour l’eau), et une chaîne carbonée qui interagit bien avec l’hexane).</>,
-      tache: { type: 'qcm', q: 'Pour ce couple, le modèle indique…', options: ['un cas limite : la miscibilité dépend de la température et des proportions', 'des liquides parfaitement miscibles', 'des liquides parfaitement non miscibles'], bonne: 0,
+      tache: { type: 'qcm', q: 'Pour le couple éthanol–hexane, le modèle indique…', options: ['un cas limite : la miscibilité dépend de la température et des proportions', 'des liquides parfaitement miscibles', 'des liquides parfaitement non miscibles'], bonne: 0,
         expl: 'L’éthanol et l’hexane sont miscibles à température ambiante mais se séparent si l’on refroidit : la perte d’énergie est du même ordre que ce que l’agitation thermique peut compenser.' } },
     { id: 'i2', titre: 'Un solide : le diiode', focus: ['choix', 'bilan'],
       texte: <>Avec un solide, on parle maintenant de <strong>solubilité</strong> : A est le solvant, B le soluté. Le soluté doit d’abord « sortir » de son cristal. Choisissez le <strong>cyclohexane</strong> comme solvant et le <strong>diiode</strong> comme soluté, puis passez à l’<strong>eau</strong>.</>,

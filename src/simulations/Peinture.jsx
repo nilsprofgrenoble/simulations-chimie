@@ -223,7 +223,7 @@ export function SimulationPeinture({ plotlyReady }) {
           [refMes.vPulv / (refMes.vPulv + FORMULE_REF.liant / RESINES.vinnapas.rhoHumide) * 100, 'Le liant compte par sa partie sèche (60 % de 74,7 g), pas par sa masse humide.']], refMes.CPV) } },
     { id: 'cpvcFiche', titre: 'La CPVC d’après les fiches techniques', focus: ['formule'],
       texte: <>La CPV critique s'estime avec la prise d'huile : CPVC = V(pulvérulents) / [V(pulvérulents) + V(huile)], avec V(huile) = m × prise d'huile / 100 / 0,93.
-        Les fiches techniques annoncent : TiO₂ {POUDRES.tio2.phFiche} g et CaCO₃ {POUDRES.caco3.phFiche} g d'huile pour 100 g.</>,
+        Les fiches techniques annoncent : TiO₂ {POUDRES.tio2.phFiche} g et CaCO₃ {POUDRES.caco3.phFiche} g d'huile pour 100 g. Volume des pulvérulents de la formule : V(pulvérulents) = {fmt(refMes.vPulv, 2)} mL (calculé à l'étape précédente).</>,
       tache: { type: 'num', q: 'CPVC d’après les fiches techniques', unite: '%', vrai: refFiche.CPVC, tol: 0.01, affiche: x => fmt(x, 1),
         calcul: () => calculCPVC(refFiche),
         pieges: piegesLoin([[refMes.CPVC, 'Ce sont les prises d’huile mesurées. Ici, utilisez celles des fiches techniques (20 g et 14 g pour 100 g).']], refFiche.CPVC) } },
@@ -247,7 +247,7 @@ export function SimulationPeinture({ plotlyReady }) {
         calcul: () => calculCPVC(refEleve),
         pieges: piegesLoin([[refFiche.CPVC, 'C’est la CPVC calculée avec les prises d’huile des fiches techniques. Utilisez vos prises d’huile mesurées.']], refEleve.CPVC) } },
     { id: 'lambdaReel', titre: 'L’aspect réel', focus: ['resultats'],
-      texte: <>Avec la vraie CPVC.</>,
+      texte: <>Avec la vraie CPVC (étape précédente) et la CPV de la formule de référence ({fmt(refEleve.CPV, 1)} %, étape « La CPV »).</>,
       tache: { type: 'num', q: 'λ = CPV / CPVC', unite: '', vrai: refEleve.lambda, tol: 0.02, affiche: x => fmt(x, 2),
         calcul: () => [`λ = CPV / CPVC, avec CPV = ${fmt(refEleve.CPV, 1)} % (calculée à l’étape précédente) et CPVC = ${fmt(refEleve.CPVC, 1)} % (prises d’huile mesurées).`,
           `λ = ${fmt(refEleve.CPV, 1)} / ${fmt(refEleve.CPVC, 1)} = ${fmt(refEleve.lambda, 2)} (sans unité).`],
@@ -264,7 +264,7 @@ export function SimulationPeinture({ plotlyReady }) {
         pieges: [[mSecV / 0.5, 'C’est le volume de liant sec qu’il faut conserver, pas sa masse : tenez compte de la densité sèche 1,03.'], [74.7 * 60 / 50, 'Même raisonnement : c’est le volume sec qui compte, avec la densité sèche.']] } },
     { id: 'eau', titre: 'L’eau à ajuster', focus: ['formule'],
       texte: <>L'Orgal apporte plus d'eau que la Vinnapas. Pour garder le même extrait sec ({fmt(refMes.ES, 1)} %), la masse totale doit valoir
-        m(sèche) / ES, et l'eau ajoutée complète.</>,
+        m(sèche) / ES, et l'eau ajoutée complète. La nouvelle formule contient {fmt(mOrgal, 1)} g d'Orgal (étape précédente).</>,
       tache: { type: 'num', q: 'Masse d’eau à ajouter dans la nouvelle formule', unite: 'g', vrai: eauOrgal, tol: 0.015, affiche: x => fmt(x, 1),
         calcul: () => { const sansEau = proprietes({ ...fOrgalSansEau, eau: 0 }).mTot;
           return ['ES doit rester égal à celui de la référence : ES = m(sèche) / m(totale), donc m(totale) = m(sèche) / ES. L’eau ajoutée complète jusqu’à cette masse totale.',
@@ -285,7 +285,7 @@ export function SimulationPeinture({ plotlyReady }) {
         pieges: [[0.18 / 108 * 100, 'Seule la matière active compte : 40 % de 0,18 g.'], [0.18 * 0.4 / 108, 'Le résultat est demandé en % : multipliez la fraction par 100.']],
         expl: 'C’est 2 à 3 fois moins que le minimum recommandé : les poudres sont mal défloculées, d’où les amas.' } },
     { id: 'coadisNouveau', titre: 'Corriger le dosage', focus: ['formule'],
-      texte: <>Visez le milieu de la fourchette, 0,175 % de matière active.</>,
+      texte: <>Visez le milieu de la fourchette, 0,175 % de matière active, rapportée aux 108 g de pulvérulents (le Coadis est actif à 40 %).</>,
       tache: { type: 'num', q: 'Masse de Coadis BR3 à introduire', unite: 'g', vrai: coadisCible, tol: 0.03, affiche: x => fmt(x, 2),
         calcul: () => { const mA = 0.00175 * (FORMULE_REF.tio2 + FORMULE_REF.caco3);
           return ['On vise 0,175 % = 0,00175 de matière active, rapportée à la masse des pulvérulents (108 g). Le Coadis n’est actif qu’à 40 % (son extrait sec).',

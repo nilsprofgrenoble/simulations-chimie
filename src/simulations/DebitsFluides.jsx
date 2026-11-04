@@ -479,7 +479,7 @@ export function SimulationDebits({ naviguer }) {
         attente: run.ouvert ? 'Le vin coule…' : null,
         consigne: mesure2 ? null : (duree === 120 && !run.ouvert ? 'Ouvrez le robinet pour faire la mesure' : 'Puis ouvrez le robinet') } },
     { id: 'constant', titre: 'Un débit constant', focus: ['manip'],
-      texte: <>Lisez la nouvelle masse sur la balance et calculez Q_m en kg·s⁻¹ avec <strong>3 chiffres significatifs</strong>.</>,
+      texte: <>Lisez la nouvelle masse sur la balance (mesure de Δt = 2 min = 120 s) et calculez Q_m en kg·s⁻¹ avec <strong>3 chiffres significatifs</strong>.</>,
       tache: { type: 'num', q: 'Q_m en kg·s⁻¹', unite: 'kg·s⁻¹', vrai: G_QM_S, tol: 0.003, cs: 3, affiche: x => sig(x),
         bloque: !mesure2 ? 'Faites d’abord la mesure de 2 min (étape précédente).' : null,
         calcul: () => ['Q_m = m / Δt, avec Δt = 2 min = 2 × 60 s = 120 s (débit supposé constant : régime permanent).',
