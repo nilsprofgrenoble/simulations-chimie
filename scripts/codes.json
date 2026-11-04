@@ -590,5 +590,8 @@
  "77:plausible:ond-cuve-ouverture-ok": "VAL159",
  "77:compat:ond-fil-fabricant": "VAL160",
  "77:compat:ond-reseau-laser-vert": "VAL161",
- "77:compat:ond-young-deux-methodes": "VAL162"
+ "77:compat:ond-young-deux-methodes": "VAL162",
+ "37:prevoir:ond-spectro-principe": "ANA301",
+ "37:prevoir:ond-spectro-recouvrement": "ANA302",
+ "77:plausible:ond-spectro-angle-ok": "VAL163"
 }
