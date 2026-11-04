@@ -46,16 +46,12 @@ export function SimulationEsterification({ naviguer }) {
   const nE = sim.E[iT], nAt = sim.A[iT], nBt = sim.B[iT], nW = sim.W[iT], nWd = sim.Wd[iT];
   const nLim = Math.min(nA, nB), rend = nE / nLim, rendEq = M.rendementEq(nA, nB);
   const Qr = nAt * nBt > 1e-12 ? (nE * nW) / (nAt * nBt) : NaN;
-  const tpsAction = M.COUPLES.butyle;                                   // pour les textes du parcours (couple par défaut)
-
+  
   // ---------- CCM ----------
   const simC = useMemo(() => M.simuler({ nA: M.molesDepuisVolume(M.ACIDE, 15), nB: M.molesDepuisVolume(M.COUPLES.butyle.alcool, 24), T: 100, cat: true, ds: false, tmax: TMAX }), []);
   const iC = M.indiceTemps(simC, cc.t);
   const pC = dd?.type === 'ccm' ? dd.p : cc.p;
   const HPLAQUE = 60, FRONT = 50;                                      // mm : hauteur de la plaque, distance ligne de dépôt – front
-  const taches = [
-    { nom: 'acide', esp: 'acide', int: 0.85, col: '#7c2d12' }, { nom: 'alcool', esp: 'alcool', int: 0.85, col: '#7c2d12' }, { nom: 'ester', esp: 'ester', int: 0.85, col: '#7c2d12' },
-  ];
   const melange = [['acide', simC.A[iC]], ['alcool', simC.B[iC]], ['ester', simC.E[iC]]].map(([esp, n]) => ({ esp, int: M.intensiteTache(n, 0.08) }));
 
   // ---------- bilan ----------
@@ -70,6 +66,7 @@ export function SimulationEsterification({ naviguer }) {
   const simBase = M.simuler({ nA: nA0, nB: nB0, T: 100, cat: true, ds: false, tmax: TMAX });
   const simExc = M.simuler({ nA: nA0, nB: M.molesDepuisVolume(M.COUPLES.butyle.alcool, 72), T: 100, cat: true, ds: false, tmax: TMAX });
   const simDS = M.simuler({ nA: nA0, nB: nB0, T: 100, cat: true, ds: true, tmax: TMAX });
+  const rxDSbase = rx.couple === 'butyle' && rx.vA === 15 && rx.vB === 24 && rx.cat && rx.T === 100 && rx.ds;
   const rxExc = scene === 'reaction' && rx.couple === 'butyle' && rx.vA === 15 && rx.vB === 72 && rx.cat && rx.T === 100 && !rx.ds;
   const rxDS = scene === 'reaction' && rx.couple === 'butyle' && rx.vA === 15 && rx.vB === 24 && rx.cat && rx.T === 100 && rx.ds;
   const ccmBase = scene === 'ccm' && Math.abs(cc.p - 0.3) < 0.01 && cc.t === 30;
@@ -83,7 +80,7 @@ export function SimulationEsterification({ naviguer }) {
       tache: { type: 'action', ok: rxBase && rx.t === 0, label: 'Préparer le mélange', faire: () => { setScene('reaction'); setRx(PRESET_RX); }, consigne: 'Réglez 15 mL d’acide, 24 mL de butan-1-ol, catalyseur, 100 °C, sans Dean-Stark, t = 0' } },
     { id: 'quantites', titre: 'Quantités de matière initiales', focus: ['mesures'],
       texte: <>La quantité de matière se calcule par <em>n</em> = <em>ρ</em>·<em>V</em> / <em>M</em>. Pour l’acide éthanoïque : <em>M</em> = 60,05{NB}g·mol⁻¹.</>,
-      tache: { type: 'num', q: 'Quantité d’acide éthanoïque introduit', unite: 'mol', vrai: nA0, tol: 0.02, affiche: v => nbf(v, 3), cs: 3,
+      tache: { type: 'num', q: 'Quantité d’acide éthanoïque introduit', unite: 'mol', vrai: nA0, tol: 0.02, affiche: v => nbf(v, 3), cs: 2,
         bloque: rxBase ? null : 'Préparez d’abord le mélange (étape précédente).',
         calcul: () => ['m = ρ·V = 1,05 × 15 = 15,75 g.', `n = m / M = 15,75 / 60,05 = ${nbf(nA0, 3)} mol.`], pieges: [[1.05 * 15, 'Vous avez donné la masse : il faut diviser par la masse molaire.']],
         expl: `n(acide) = ${nbf(nA0, 3)} mol ; le butan-1-ol est introduit en quantité quasi identique (${nbf(nB0, 3)} mol).` } },
@@ -107,24 +104,24 @@ export function SimulationEsterification({ naviguer }) {
         calcul: () => ['n(H₂O) = n(ester) car l’eau est formée avec l’ester.', `Qr = n(E)² / (n(A)·n(B)) = ${nbf(simBase.E[M.indiceTemps(simBase, 120)], 3)}² / (${nbf(simBase.A[M.indiceTemps(simBase, 120)], 3)} × ${nbf(simBase.B[M.indiceTemps(simBase, 120)], 3)}) ≈ 4,0.`],
         expl: 'Qr,éq ≈ 4,0 : c’est la constante d’équilibre K de l’estérification d’un alcool primaire.' } },
     { id: 'exces', titre: 'Un excès d’alcool', focus: ['reglages', 'mesures'],
-      texte: <>Pour déplacer l’équilibre dans le sens direct, on peut utiliser un <strong>excès d’un réactif</strong>. Prenez 72{NB}mL de butan-1-ol (environ 3 fois plus que l’acide) et placez t = 120{NB}min.</>,
+      texte: <>Pour déplacer l’équilibre dans le sens direct, on peut utiliser un <strong>excès d’un réactif</strong>. Prenez 72{NB}mL de butan-1-ol (environ 3 fois plus de moles que d’acide) et placez t = 120{NB}min.</>,
       tache: { type: 'action', ok: rxExc && rx.t === 120, label: 'Excès de butan-1-ol', faire: () => { setScene('reaction'); setRx({ ...PRESET_RX, vB: 72, t: 120 }); }, consigne: 'Réglez 72 mL de butan-1-ol et t = 120 min' } },
     { id: 'rexc', titre: 'Le rendement augmente', focus: ['mesures'],
       texte: <>Le réactif limitant est maintenant l’acide éthanoïque.</>,
-      tache: { type: 'num', q: 'Rendement par rapport à l’acide (réactif limitant)', unite: '%', vrai: simExc.E[M.indiceTemps(simExc, 120)] / nA0 * 100, tol: 0.03, affiche: v => nbf(v, 0), cs: 2,
+      tache: { type: 'num', q: 'Rendement par rapport à l’acide (réactif limitant)', unite: '%', vrai: simExc.E[M.indiceTemps(simExc, 120)] / nA0 * 100, tol: 0.03, affiche: v => nbf(v, 0), cs: 1,
         bloque: rxExc && rx.t === 120 ? null : 'Réglez d’abord 72 mL de butan-1-ol et t = 120 min.',
         calcul: () => [`n(ester) = ${nbf(simExc.E[M.indiceTemps(simExc, 120)], 3)} mol ; n(acide) = ${nbf(nA0, 3)} mol (limitant).`, `η = ${nbf(simExc.E[M.indiceTemps(simExc, 120)] / nA0 * 100, 0)} %.`],
-        expl: 'η ≈ 90 % au lieu de 67 % : l’excès d’alcool fait baisser le quotient de réaction, donc le système évolue dans le sens direct.' } },
+        expl: 'η ≈ 90 % au lieu de 67 % : à avancement donné, le quotient de réaction est plus petit quand l’alcool est en excès : le système évolue dans le sens direct plus loin avant d’atteindre K.' } },
     { id: 'ds', titre: 'Éliminer l’eau : le Dean-Stark', focus: ['scene', 'reglages'],
       texte: <>Autre moyen de déplacer l’équilibre : retirer un produit. Avec le <strong>Dean-Stark</strong>, le cyclohexane entraîne l’eau sous forme d’<strong>hétéroazéotrope</strong> (il bout vers 70{NB}°C) ; les vapeurs se condensent et l’eau, non miscible et plus dense, se sépare en bas du décanteur. Revenez au mélange équimolaire, activez le Dean-Stark et placez t = 180{NB}min.</>,
       tache: { type: 'action', ok: rxDS && rx.t === 180, label: 'Activer le Dean-Stark', faire: () => { setScene('reaction'); setRx({ ...PRESET_RX, ds: true, t: 180 }); }, consigne: 'Mélange équimolaire, Dean-Stark activé, t = 180 min' } },
     { id: 'dsq', titre: 'Pourquoi le rendement monte', focus: ['mesures'],
       texte: <>Le rendement dépasse nettement les 67 % du mélange sans Dean-Stark.</>,
-      tache: { type: 'qcm', q: 'Pourquoi l’élimination de l’eau augmente-t-elle le rendement ?', options: ['le quotient Qr devient inférieur à K : le système évolue dans le sens direct', 'l’eau est un catalyseur qui ralentit la réaction', 'K augmente quand on retire de l’eau'], bonne: 0,
-        expl: 'Retirer l’eau diminue Qr = [E][W]/([A][B]) : Qr < K, donc la transformation se poursuit dans le sens direct. K, lui, ne dépend que de la température (ici pratiquement pas).' } },
+      tache: { type: 'qcm', q: 'Pourquoi l’élimination de l’eau augmente-t-elle le rendement ?', options: ['le quotient Qr devient inférieur à K : le système évolue dans le sens direct', 'l’eau retirée rend la réaction plus rapide, ce qui augmente le rendement', 'K augmente quand on retire de l’eau'], bonne: 0,
+        expl: 'Retirer l’eau diminue Qr = [E][H₂O]/([A][B]) : Qr < K, donc la transformation se poursuit dans le sens direct. K, lui, ne dépend que de la température (ici pratiquement pas).' } },
     { id: 'eaud', titre: 'L’eau recueillie', focus: ['scene', 'mesures'],
       texte: <>Le décanteur est gradué : l’eau recueillie provient uniquement de la réaction. Chaque mole d’ester formée libère <strong>une mole d’eau</strong> (M = 18,0{NB}g·mol⁻¹, ρ = 1,00{NB}g·mL⁻¹). Lisez le volume d’eau recueilli et déduisez la quantité d’ester formée.</>,
-      tache: { type: 'num', q: 'Quantité d’ester formée (déduite du volume d’eau)', unite: 'mol', vrai: simDS.Wd[M.indiceTemps(simDS, 180)], tol: 0.03, affiche: v => nbf(v, 3), cs: 3,
+      tache: { type: 'num', q: 'Quantité d’ester formée (déduite du volume d’eau)', unite: 'mol', vrai: simDS.Wd[M.indiceTemps(simDS, 180)], tol: 0.03, affiche: v => nbf(v, 3), cs: 2,
         bloque: rxDS && rx.t === 180 ? null : 'Activez d’abord le Dean-Stark (étape précédente) et placez t = 180 min.',
         calcul: () => [`Volume d’eau lu : ${nbf(M.volumeEau_mL(simDS.Wd[M.indiceTemps(simDS, 180)]), 1)} mL, donc m = ρ·V = ${nbf(M.volumeEau_mL(simDS.Wd[M.indiceTemps(simDS, 180)]), 1)} g.`, `n(H₂O) = m / M = ${nbf(M.volumeEau_mL(simDS.Wd[M.indiceTemps(simDS, 180)]), 1)} / 18,0 = ${nbf(simDS.Wd[M.indiceTemps(simDS, 180)], 3)} mol = n(ester) (l’eau restant dans le ballon est négligeable).`],
         pieges: [[M.volumeEau_mL(simDS.Wd[M.indiceTemps(simDS, 180)]), 'Vous avez donné le volume ; il faut le convertir en quantité de matière.']],
@@ -137,15 +134,15 @@ export function SimulationEsterification({ naviguer }) {
       tache: { type: 'num', q: 'Rapport frontal de l’ester', unite: '', vrai: M.rf('ester', 0.3), tol: 0.03, affiche: v => nbf(v, 2), cs: 2,
         bloque: ccmBase ? null : 'Ouvrez d’abord la CCM préréglée.',
         calcul: () => [`d = ${nbf(M.rf('ester', 0.3) * FRONT, 1)} mm ; L = ${FRONT} mm.`, `Rf = d / L = ${nbf(M.rf('ester', 0.3), 2)}.`], pieges: [[FRONT / (M.rf('ester', 0.3) * FRONT), 'Rf = d / L : la distance du front est au dénominateur (le Rf est inférieur à 1).']],
-        expl: 'Rf ≈ 0,75 : l’ester, peu polaire, est très peu retenu par la silice et monte presque avec le front.' } },
+        expl: 'Rf ≈ 0,74 : l’ester, peu polaire, est très peu retenu par la silice et monte presque avec le front.' } },
     { id: 'polarite', titre: 'Qui est le plus retenu ?', focus: ['scene'],
       texte: <>Regardez la position des trois témoins : la plaque de silice est très polaire.</>,
-      tache: { type: 'qcm', q: 'Quelle espèce est la plus retenue par la silice (Rf le plus faible) ?', options: ['l’acide éthanoïque, très polaire (liaisons hydrogène fortes avec la silice)', 'l’ester, car il est le plus volumineux', 'l’alcool, car il bout à plus haute température que l’ester'], bonne: 0,
+      tache: { type: 'qcm', q: 'Quelle espèce est la plus retenue par la silice (Rf le plus faible) ?', options: ['l’acide éthanoïque, très polaire (liaisons hydrogène fortes avec la silice)', 'l’ester, car il est le plus volumineux', 'l’alcool, car c’est le plus petit des trois'], bonne: 0,
         expl: 'La silice retient les espèces polaires qui forment des liaisons hydrogène : l’acide carboxylique est le plus retenu, puis l’alcool ; l’ester, moins polaire, est le moins retenu (Rf le plus grand).' } },
     { id: 'fin', titre: 'Quand s’arrêter ?', focus: ['scene'],
       texte: <>Faites varier l’instant du prélèvement (curseur « prélèvement ») : la tache de l’ester grossit, celle du réactif limitant s’affaiblit.</>,
       tache: { type: 'qcm', q: 'La réaction est considérée comme terminée lorsque…', options: ['les taches du mélange ne changent plus d’un prélèvement à l’autre (l’équilibre est atteint)', 'la tache de l’acide a totalement disparu, même sans Dean-Stark', 'la tache de l’ester a la même intensité que celle du témoin'], bonne: 0,
-        expl: 'Sans élimination de l’eau, aucun réactif ne disparaît complètement : la réaction est limitée. On arrête quand le mélange ne change plus. Avec un Dean-Stark, on peut s’arrêter quand la tache du réactif limitant a disparu.' } },
+        expl: 'Sans élimination de l’eau, aucun réactif ne disparaît complètement : la réaction est limitée. On arrête quand le mélange ne change plus d’un prélèvement à l’autre. (Avec un Dean-Stark, on peut aussi s’arrêter quand le volume d’eau recueillie n’augmente plus.)' } },
     { id: 'eluant', titre: 'Choisir l’éluant', focus: ['scene', 'reglages'],
       texte: <>Diminuez la proportion d’éthanoate d’éthyle (solvant polaire) à 5{NB}% environ.</>,
       tache: { type: 'action', ok: scene === 'ccm' && cc.p <= 0.06, label: 'Éluant à 5 %', faire: () => { setScene('ccm'); setCc(c => ({ ...c, p: 0.05 })); }, consigne: 'Réglez l’éluant à 5 % d’éthanoate d’éthyle' } },
@@ -155,15 +152,15 @@ export function SimulationEsterification({ naviguer }) {
         expl: 'Un éluant moins polaire entraîne moins bien les espèces polaires : elles restent plus longtemps adsorbées sur la silice et leur Rf diminue. Il faut choisir un éluant qui sépare bien les trois taches (Rf entre 0,2 et 0,8).' } },
     { id: 'traitement', titre: 'Traitement du mélange', focus: ['scene', 'reglages'],
       texte: <>Après la réaction, on lave la phase organique à l’aide d’une solution d’<strong>hydrogénocarbonate de sodium</strong>, puis on distille. Ouvrez l’onglet « Traitement » : 2 lavages et distillation, après une réaction avec Dean-Stark de 180{NB}min.</>,
-      tache: { type: 'action', ok: scene === 'bilan' && rxDS && rx.t === 180 && bl.nLav === 2 && bl.dist, label: 'Ouvrir le traitement', faire: () => { setScene('bilan'); setRx({ ...PRESET_RX, ds: true, t: 180 }); setBl(PRESET_BL); }, consigne: 'Onglet « Traitement » : Dean-Stark, t = 180 min, 2 lavages, distillation' } },
+      tache: { type: 'action', ok: scene === 'bilan' && rxDSbase && rx.t === 180 && bl.nLav === 2 && bl.dist, label: 'Ouvrir le traitement', faire: () => { setScene('bilan'); setRx({ ...PRESET_RX, ds: true, t: 180 }); setBl(PRESET_BL); }, consigne: 'Onglet « Traitement » : Dean-Stark, t = 180 min, 2 lavages, distillation' } },
     { id: 'lavage', titre: 'Rôle du lavage basique', focus: ['mesures'],
-      texte: <>L’acide éthanoïque restant a des propriétés voisines de celles de l’ester dans le cyclohexane. Le lavage convertit CH₃COOH en ion éthanoate, soluble dans l’eau, avec un dégagement gazeux.</>,
+      texte: <>L’acide éthanoïque restant bout à une température voisine de celle de l’ester (118 °C contre 126 °C) : la distillation seule ne l’élimine pas. Le lavage convertit CH₃COOH en ion éthanoate, soluble dans l’eau, avec un dégagement gazeux.</>,
       tache: { type: 'qcm', q: 'Quelle équation modélise le lavage par l’hydrogénocarbonate de sodium ?', options: ['CH₃COOH + HCO₃⁻ → CH₃COO⁻ + CO₂ + H₂O', 'CH₃COOH + Na⁺ → CH₃COONa + H⁺', 'CH₃COOCH₂R + HCO₃⁻ → CH₃COOH + RO⁻'], bonne: 0,
         expl: 'L’ion hydrogénocarbonate est une base : il réagit avec l’acide carboxylique pour donner l’ion éthanoate (dans la phase aqueuse), du dioxyde de carbone (d’où l’effervescence : il faut dégazer l’ampoule à décanter) et de l’eau.' } },
     { id: 'rendfin', titre: 'Le rendement de la synthèse', focus: ['mesures'],
       texte: <>On obtient la masse d’ester indiquée dans « Mesures » après lavages et distillation. Calculez le rendement global de la synthèse (quantité de matière d’ester obtenue / quantité maximale).</>,
       tache: { type: 'num', q: 'Rendement de la synthèse', unite: '%', vrai: (() => { const n = M.bilanMasse({ nEster: simDS.E[M.indiceTemps(simDS, 180)], nLavages: 2, distille: true }); return M.rendement(n, nA0, nB0) * 100; })(), tol: 0.03, affiche: v => nbf(v, 0), cs: 2,
-        bloque: scene === 'bilan' && rxDS && rx.t === 180 && bl.nLav === 2 && bl.dist ? null : 'Ouvrez d’abord le traitement préréglé (étape précédente).',
+        bloque: scene === 'bilan' && rxDSbase && rx.t === 180 && bl.nLav === 2 && bl.dist ? null : 'Ouvrez d’abord le traitement préréglé (étape précédente).',
         calcul: () => { const n = M.bilanMasse({ nEster: simDS.E[M.indiceTemps(simDS, 180)], nLavages: 2, distille: true }); return [`m(ester) = ${nbf(n * M.COUPLES.butyle.ester.M, 1)} g ; n = m / M = ${nbf(n * M.COUPLES.butyle.ester.M, 1)} / ${nbf(M.COUPLES.butyle.ester.M, 2)} = ${nbf(n, 3)} mol.`, `n maximale = ${nbf(Math.min(nA0, nB0), 3)} mol, donc η = ${nbf(M.rendement(n, nA0, nB0) * 100, 0)} %.`]; },
         expl: 'Le rendement global est inférieur au rendement de la réaction : on perd un peu d’ester à chaque lavage (échange avec la phase aqueuse) et à la distillation.' } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
@@ -174,7 +171,7 @@ export function SimulationEsterification({ naviguer }) {
         <li>CCM : R<sub>f</sub> = d / L ; plus l’espèce est polaire, plus elle est retenue par la silice (R<sub>f</sub> petit)</li>
         <li>rendement η = n(obtenu) / n(maximal, réactif limitant)</li></ul>,
       texte: <>Vous savez contrôler l’avancement d’une estérification, déplacer son équilibre, la suivre par CCM et calculer un rendement. Essayez maintenant les défis.</>, tache: null },
-  ].map((e, i) => e);
+  ];
   // la bonne réponse des QCM est répartie entre les positions
   const ETAPES_F = ETAPES.map((e, i) => {
     if (e.tache?.type !== 'qcm') return e;
@@ -192,7 +189,7 @@ export function SimulationEsterification({ naviguer }) {
     const base = { type, reps: {}, verifie: false };
     if (type === 'rendement') {
       const couple = tire(['butyle', 'propyle']), Cc = M.COUPLES[couple], vA = tire([12, 15, 18, 20]), vB = tire([20, 25, 30, 40]);
-      const n = M.molesDepuisVolume(M.ACIDE, vA), nb = M.molesDepuisVolume(Cc.alcool, vB), eta = tire([0.55, 0.62, 0.70, 0.78, 0.83]);
+      const n = M.molesDepuisVolume(M.ACIDE, vA), nb = M.molesDepuisVolume(Cc.alcool, vB), eta = M.rendementEq(n, nb) * 0.92 * tire([0.6, 0.7, 0.8, 0.9, 1.0]);   // rendement réalisable sans Dean-Stark, pertes comprises
       const m = Math.round(eta * Math.min(n, nb) * Cc.ester.M * 10) / 10;
       setDefi({ ...base, couple, vA, vB, m });
     } else if (type === 'ccm') { setDefi({ ...base, esp: tire(['acide', 'alcool', 'ester']), p: tire([0.2, 0.3, 0.4, 0.5]) }); }
@@ -200,7 +197,7 @@ export function SimulationEsterification({ naviguer }) {
   }
   function changerMode(md) {
     setMode(md);
-    if (md === 'defi' && !defi) nouveauDefi(typeDefi);
+    if (md === 'defi') { if (!defi) nouveauDefi(typeDefi); else if (defi.type === 'equilibre') setRx({ couple: 'butyle', vA: 15, vB: 24, cat: false, T: 60, ds: false, t: 120 }); }
     if (md === 'guide') { setScene('reaction'); setRx(PRESET_RX); setCc(PRESET_CCM); setBl(PRESET_BL); }
   }
   function choisirDefi(t) { setTypeDefi(t); nouveauDefi(t); }
@@ -231,13 +228,13 @@ export function SimulationEsterification({ naviguer }) {
       <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>
         {defi.type === 'rendement' && (() => { const Cc = M.COUPLES[defi.couple]; return <>On chauffe à reflux, avec catalyseur, {defi.vA}{NB}mL d’acide éthanoïque (<em>ρ</em> = 1,05{NB}g·mL⁻¹, <em>M</em> = 60,05{NB}g·mol⁻¹) et {defi.vB}{NB}mL de {Cc.alcool.nom} (<em>ρ</em> = {nbf(Cc.alcool.rho, 2)}{NB}g·mL⁻¹, <em>M</em> = {nbf(Cc.alcool.M, 2)}{NB}g·mol⁻¹). Après lavages et distillation, on recueille <strong>{nbf(defi.m, 1)}{NB}g</strong> de {Cc.ester.nom} pur (<em>M</em> = {nbf(Cc.ester.M, 2)}{NB}g·mol⁻¹). Déterminez le réactif limitant puis calculez le rendement.</>; })()}
         {defi.type === 'ccm' && <>Sur la plaque, trois témoins (acide, alcool, ester) et une tache <strong>X</strong> d’une espèce inconnue, avec un éluant à {nbf(defi.p * 100, 0)}{NB}% d’éthanoate d’éthyle. Mesurez la distance parcourue par X et celle du front (règle graduée) pour calculer son R<sub>f</sub>, puis identifiez-la en comparant aux témoins.</>}
-        {defi.type === 'equilibre' && <>On dispose de 15{NB}mL d’acide éthanoïque et d’au plus 90{NB}mL de butan-1-ol (pas de Dean-Stark). Réglez le volume d’alcool, la température et le catalyseur pour que le rendement par rapport à l’acide, <strong>mesuré à t = 120{NB}min</strong>, atteigne la cible, puis vérifiez.</>}
+        {defi.type === 'equilibre' && <>On dispose de 15{NB}mL d’acide éthanoïque et d’au plus 90{NB}mL de butan-1-ol (pas de Dean-Stark). Réglez le volume d’alcool, la température et le catalyseur pour que le rendement par rapport au réactif limitant, <strong>mesuré à t = 120{NB}min</strong>, atteigne la cible, puis vérifiez.</>}
       </div>
       {defi.type === 'rendement' && champReponse('v', '%', 'Rendement')}
       {defi.type === 'ccm' && <>{champReponse('v', '', 'Rf de la tache X')}
         <div role="group" aria-label="Espèce de la tache X" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center', fontSize: 14 }}><span>Espèce :</span>
           {['acide', 'alcool', 'ester'].map(e => <button key={e} onClick={() => setDefi(d => ({ ...d, reps: { ...d.reps, esp: e }, verifie: false }))} aria-pressed={defi.reps.esp === e} style={stylePetitBouton(defi.reps.esp === e, '#9a3412')}>{e}</button>)}</div></>}
-      {defi.type === 'equilibre' && <div style={{ fontSize: 14, marginBottom: 8, color: KIT.txt2 }}>Rendement actuel à t = 120 min : <strong>{nbf(rendEqDefi * 100, 0)} %</strong> (cible : {nbf(defi.cible * 100, 0)} %).</div>}
+      {defi.type === 'equilibre' && <div style={{ fontSize: 14, marginBottom: 8, color: KIT.txt2 }}>Rendement actuel à t = 120 min : <strong>{nbf(Math.floor(rendEqDefi * 1000) / 10, 1)} %</strong> (cible : {nbf(defi.cible * 100, 0)} %).</div>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="es-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
         <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
@@ -246,15 +243,16 @@ export function SimulationEsterification({ naviguer }) {
         {defi.ok ? `✓ Correct.${defi.type === 'rendement' ? ` Rendement : ${nbf(rendDefi(defi), 1)} %.` : defi.type === 'ccm' ? ` Rf = ${nbf(M.rf(defi.esp, defi.p), 2)} : c’est l’${defi.esp === 'ester' ? 'ester' : defi.esp === 'acide' ? 'acide' : 'alcool'}.` : ''}`
           : defi.type === 'rendement' ? '✗ Vérifiez : n = ρ·V / M pour chaque réactif ; le réactif limitant est celui de plus petite quantité (coefficients stœchiométriques égaux à 1) ; n(ester) = m / M ; η = n(ester) / n(limitant).'
             : defi.type === 'ccm' ? '✗ Vérifiez : Rf = d / L (d : du dépôt au centre de la tache ; L : du dépôt au front), puis comparez au Rf du témoin placé dans le même éluant (l’acide est le plus retenu, l’ester le moins).'
-              : '✗ Les facteurs cinétiques (température, catalyseur) ne suffisent pas : il faut déplacer l’équilibre avec un excès d’alcool (volume d’alcool plus grand), et laisser le temps d’y arriver (catalyseur, chauffage).'}
+              : (!rx.cat || rx.T < 80) ? '✗ Sans catalyseur, ou à trop basse température, l’équilibre n’est pas atteint en 120 min : le rendement mesuré reste faible.'
+                : '✗ Le rendement visé n’est pas atteint : la composition à l’équilibre dépend du mélange initial. Pensez à déplacer l’équilibre avec un excès de réactif (un volume d’alcool plus grand).'}
       </div>}
     </div>);
 
   // ---------- hypothèses ----------
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
-      <li><strong>Équilibre</strong> : K = 4,0, quel que soit le mélange (alcool primaire) et la température (réaction athermique). Volume réactionnel constant, solvant non compté, activités = concentrations.</li>
-      <li><strong>Cinétique</strong> (modèle de la simulation, pas une mesure) : vitesse v = k<sub>f</sub>[A][B] − k<sub>b</sub>[E][H₂O], k<sub>b</sub> = k<sub>f</sub>/K ; k<sub>f</sub> suit la loi d’Arrhenius (E<sub>a</sub> = 60 kJ·mol⁻¹) et est 100 fois plus petit sans catalyseur acide. Le catalyseur n’est pas consommé.</li>
+      <li><strong>Équilibre</strong> : K = 4,0, quel que soit le mélange (alcool primaire) ; K varie très peu avec la température (réaction quasi athermique), on le prend constant. Volume réactionnel constant, solvant non compté, activités = concentrations.</li>
+      <li><strong>Cinétique</strong> (modèle de la simulation, pas une mesure ; le volume du milieu est fixé à 60 mL, quelles que soient les quantités introduites) : vitesse v = k<sub>f</sub>[A][B] − k<sub>b</sub>[E][H₂O], k<sub>b</sub> = k<sub>f</sub>/K ; k<sub>f</sub> suit la loi d’Arrhenius (E<sub>a</sub> = 60 kJ·mol⁻¹) et est 100 fois plus petit sans catalyseur acide. Le catalyseur n’est pas consommé.</li>
       <li><strong>Dean-Stark</strong> : l’eau est entraînée avec le cyclohexane tant que la température du bain est d’au moins 80 °C ; elle est retirée à une vitesse proportionnelle à sa quantité dans le ballon. L’eau recueillie est celle de la réaction, mesurée sans erreur.</li>
       <li><strong>CCM</strong> : rapports frontaux calculés par un modèle simple (R<sub>f</sub> = x/(x + k), x = 0,05 + fraction d’éthanoate d’éthyle) qui respecte l’ordre de polarité ester &gt; alcool &gt; acide ; ce ne sont pas des valeurs expérimentales. Intensité des taches saturante avec la quantité déposée.</li>
       <li><strong>Traitement</strong> : on perd {nbf(M.PERTE_LAVAGE * 100, 0)} % de l’ester à chaque lavage et {nbf(M.PERTE_DISTILLATION * 100, 0)} % à la distillation (valeurs de la simulation). Le lavage à l’hydrogénocarbonate élimine tout l’acide restant tant que l’on emploie assez d’ions HCO₃⁻.</li>
@@ -273,25 +271,24 @@ export function SimulationEsterification({ naviguer }) {
     const bouil = rx.T >= 80;
     return (
       <svg viewBox="0 0 600 330" style={{ width: '100%', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }} role="img"
-        aria-label={`Montage à reflux${rx.ds ? ' avec Dean-Stark' : ''} : ballon contenant ${nbf(nE * 1000, 0)} millimoles d’ester${rx.ds ? `, décanteur contenant ${nbf(volEau, 1)} millilitres d’eau` : ''}`}>
-        <rect x="60" y="30" width="14" height="290" fill="#cbd5e1"/>
-        <rect x="270" y="20" width="44" height="130" rx="6" fill="#dbeafe" stroke="#475569" strokeWidth="2"/><text x="292" y="12" fontSize="12" textAnchor="middle" fill="#334155">réfrigérant</text>
-        {[0, 1, 2, 3, 4].map(k => <path key={k} d={`M278,${40 + k * 22} Q292,${48 + k * 22} 306,${40 + k * 22}`} fill="none" stroke="#2563eb" strokeWidth="1.5"/>)}
-        {rx.ds && <g>
-          <path d="M292,150 L292,200 L380,200 L380,140" fill="none" stroke="#64748b" strokeWidth="5"/>
-          <rect x="360" y="170" width="46" height="130" rx="4" fill="#f8fafc" stroke="#475569" strokeWidth="2"/>
-          <rect x="361" y={300 - 120 * niveau} width="44" height={120 * niveau} fill="#60a5fa" opacity="0.85"/>
-          <rect x="361" y="171" width="44" height={129 - 120 * niveau} fill="#fef9c3" opacity="0.8"/>
-          {[0, 4, 8, 12].map(v => <g key={v}><line x1="406" y1={300 - 120 * v / 12} x2="414" y2={300 - 120 * v / 12} stroke="#475569"/><text x="418" y={304 - 120 * v / 12} fontSize="10.5" fill="#334155">{v}</text></g>)}
-          <text x="383" y="320" fontSize="11" textAnchor="middle" fill="#334155">décanteur (mL)</text>
-          <path d="M360,200 L330,200 L330,150" fill="none" stroke="#64748b" strokeWidth="3" strokeDasharray="4 3"/>
-        </g>}
-        <path d="M292,150 L292,215" stroke="#94a3b8" strokeWidth="6"/>
-        <circle cx="292" cy="268" r="55" fill="#fef3c7" stroke="#475569" strokeWidth="2.5"/><rect x="278" y="215" width="28" height="25" fill="white" stroke="#475569" strokeWidth="2"/>
+        aria-label={`Montage à reflux${rx.ds ? ' avec Dean-Stark (tube gradué)' : ''} : ballon contenant ${nbf(nE * 1000, 0)} millimoles d’ester${rx.ds ? `, décanteur contenant ${nbf(volEau, 1)} millilitres d’eau` : ''}`}>
+        <rect x="40" y="30" width="12" height="290" fill="#cbd5e1"/><text x="20" y="22" fontSize="11" fill="#475569">potence</text>
+        <rect x="270" y="10" width="44" height="120" rx="6" fill="#dbeafe" stroke="#475569" strokeWidth="2"/><text x="330" y="24" fontSize="12" fill="#334155">réfrigérant</text>
+        {[0, 1, 2, 3, 4].map(k => <path key={k} d={`M278,${28 + k * 20} Q292,${36 + k * 20} 306,${28 + k * 20}`} fill="none" stroke="#2563eb" strokeWidth="1.5"/>)}
+        {rx.ds ? <g>
+          <rect x="278" y="130" width="28" height="75" fill="#f8fafc" stroke="#475569" strokeWidth="2"/>
+          <path d="M306,150 L380,150" stroke="#64748b" strokeWidth="6" fill="none"/>
+          <rect x="360" y="150" width="46" height="145" rx="4" fill="#f8fafc" stroke="#475569" strokeWidth="2"/>
+          <rect x="361" y={295 - 130 * niveau} width="44" height={130 * niveau} fill="#60a5fa" opacity="0.85"/>
+          <rect x="361" y="151" width="44" height={144 - 130 * niveau} fill="#fef9c3" opacity="0.8"/>
+          {[0, 4, 8, 12].map(v => <g key={v}><line x1="406" y1={295 - 130 * v / 12} x2="414" y2={295 - 130 * v / 12} stroke="#475569"/><text x="418" y={299 - 130 * v / 12} fontSize="10.5" fill="#334155">{v}</text></g>)}
+          <text x="383" y="316" fontSize="11" textAnchor="middle" fill="#334155">tube gradué (mL)</text>
+          <text x="440" y="190" fontSize="10.5" fill="#475569">cyclohexane (haut)</text><text x="440" y="270" fontSize="10.5" fill="#2563eb">eau (bas)</text>
+        </g> : <rect x="280" y="130" width="24" height="85" fill="#f8fafc" stroke="#475569" strokeWidth="2"/>}
+        <circle cx="292" cy="268" r="55" fill="#fef3c7" stroke="#475569" strokeWidth="2.5"/><rect x="280" y="205" width="24" height="25" fill="#f8fafc" stroke="#475569" strokeWidth="2"/>
         <circle cx="292" cy="268" r="42" fill="#fde68a" opacity="0.6"/>
         {bouil && [0, 1, 2, 3].map(k => <circle key={k} cx={270 + k * 14} cy={285 - (k % 2) * 14} r="3" fill="white" opacity="0.9"/>)}
-        <rect x="230" y="318" width="124" height="10" fill="#475569"/><text x="140" y="324" fontSize="11.5" fill="#334155">{bouil ? 'chauffage à reflux' : 'chauffage doux'} ({rx.T} °C)</text>
-        <text x="60" y="22" fontSize="11" fill="#475569">potence</text>
+        <rect x="230" y="324" width="124" height="6" fill="#475569"/><text x="150" y="318" fontSize="11.5" textAnchor="middle" fill="#334155">bain à {rx.T} °C</text>
       </svg>);
   };
   const Courbes = () => {
@@ -316,7 +313,7 @@ export function SimulationEsterification({ naviguer }) {
 
   const SceneCcm = () => {
     const W = 360, H = 330, y0 = 270, pxmm = 4, xs = [60, 130, 200, 270], yf = y0 - FRONT * pxmm;
-    const sp = (x, esp, int, lbl) => { const d = M.rf(esp, pC) * FRONT, y = y0 - d * pxmm; return <ellipse key={lbl + esp} cx={x} cy={y} rx={13} ry={esp === 'acide' ? 11 : 8} fill="#7c2d12" opacity={Math.min(0.9, int * 0.9)}/>; };
+    const sp = (x, esp, int, lbl) => { const d = M.rf(esp, pC) * FRONT, y = y0 - d * pxmm; return <ellipse key={lbl + esp} cx={x} cy={y} rx={13} ry={9} fill="#7c2d12" opacity={Math.min(0.9, int * 0.9)}/>; };
     const inconnu = dd?.type === 'ccm' ? dd.esp : null;
     return (
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-start' }}>
@@ -415,7 +412,7 @@ export function SimulationEsterification({ naviguer }) {
         {!enGuide && !enDefi && <LigneMesure nom="Rendement à l’équilibre (sans élimination d’eau)" valeur={`${nbf(rendEq * 100, 0)}${NB}%`}/>}
         {!enGuide && !enDefi && isFinite(Qr) && !rx.ds && <LigneMesure nom="Quotient Qr = n(E)·n(H₂O) / (n(A)·n(B))" valeur={nbf(Qr, 2)} couleur={Math.abs(Qr - M.K_EST) < 0.2 ? '#15803d' : KIT.txt}/>}
         {!enGuide && !enDefi && <LigneMesure nom="Constante d’équilibre K" valeur="4,0"/>}
-        {enDefi && dd?.type === 'equilibre' && <LigneMesure nom="Rendement à 120 min" valeur={`${nbf(rendEqDefi * 100, 0)}${NB}%`} couleur="#15803d"/>}
+        {enDefi && dd?.type === 'equilibre' && <LigneMesure nom="Rendement à 120 min" valeur={`${nbf(Math.floor(rendEqDefi * 1000) / 10, 1)}${NB}%`} couleur="#15803d"/>}
       </>}
       {sceneEff === 'ccm' && (() => {
         const lignes = dd?.type === 'ccm' ? [['X', dd.esp]] : [['ester', 'ester'], ['alcool', 'alcool'], ['acide', 'acide']];
@@ -443,7 +440,7 @@ export function SimulationEsterification({ naviguer }) {
         <li>Supprimez le catalyseur, puis baissez la température à 40 °C. Le rendement à l’équilibre change-t-il ? Et le temps pour l’atteindre ?</li>
         <li>Prenez un excès d’acide plutôt que d’alcool. Le rendement par rapport à l’alcool est-il comparable ?</li>
         <li>Avec le Dean-Stark, descendez à 60 °C : pourquoi l’eau n’est-elle plus entraînée ?</li>
-        <li>CCM : cherchez l’éluant pour lequel les trois témoins sont bien séparés (taches espacées, Rf entre 0,1 et 0,9).</li>
+        <li>CCM : cherchez l’éluant pour lequel les trois témoins sont bien séparés (taches espacées, Rf entre 0,2 et 0,8).</li>
         <li>Traitement : comparez le rendement avec 0 puis 4 lavages. Que perd-on, que gagne-t-on ?</li>
       </ul>
     </div>);
