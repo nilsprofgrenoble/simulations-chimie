@@ -72,7 +72,7 @@ function CuveOndes({ a, lam, vue, anim, angle }) {
   return (
     <div style={{ position: 'relative', lineHeight: 0 }}>
       <canvas ref={ref} width={CUVE.W} height={CUVE.H} style={{ width: '100%', borderRadius: 8, display: 'block', background: '#e0e8f0' }}
-        role="img" aria-label="Cuve à ondes vue de dessus : une onde plane arrive de la gauche sur un mur percé d’une ouverture"/>
+        role="img" aria-label={`Cuve à ondes vue de dessus : une onde plane arrive de la gauche sur un mur percé d’une ouverture de ${nbf(a, 1)} cm ; longueur d’onde ${nbf(lam, 2)} cm`}/>
       <svg viewBox={`0 0 ${CUVE.W} ${CUVE.H}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
         {angle && lam < a && <g stroke="#dc2626" strokeWidth="2" strokeDasharray="6 4" fill="none">
           <line x1={cx} y1={cy} x2={cx + 300 * Math.cos(th)} y2={cy - 300 * Math.sin(th)}/><line x1={cx} y1={cy} x2={cx + 300 * Math.cos(th)} y2={cy + 300 * Math.sin(th)}/>
@@ -125,18 +125,15 @@ function Ecran({ L }) {
     return dd;
   }, [objet, a, lam, D, mmpx]);
   const mk = (xm, col, i) => (
-    <g key={i} className="df-rep" style={{ cursor: 'ew-resize' }} role="slider" tabIndex={0} aria-label={`Repère ${i} (${i === 1 ? 'orange' : 'bleu'}), flèches gauche et droite pour le déplacer`}
-      aria-valuemin={-W} aria-valuemax={W} aria-valuenow={Number(xm.toFixed(2))} aria-valuetext={`${nbf(xm, 2)} millimètres`}
-      onKeyDown={e => { const d = e.key === 'ArrowRight' || e.key === 'ArrowUp' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? -1 : 0; if (d) { e.preventDefault(); setX(i, Math.max(-W, Math.min(W, xm + d * (e.shiftKey ? 5 : 1) * W / 300))); } }}
-      onPointerDown={e => { glisse.current = i; e.currentTarget.ownerSVGElement.setPointerCapture?.(e.pointerId); }}>
-      <line x1={px(xm)} y1="0" x2={px(xm)} y2={IMG.H} stroke={col} strokeWidth="2"/><rect x={px(xm) - 16} y="0" width="32" height={IMG.H} fill="transparent"/>
+    <g key={i} className="df-rep" style={{ cursor: 'ew-resize' }} onPointerDown={e => { glisse.current = i; e.currentTarget.ownerSVGElement.setPointerCapture?.(e.pointerId); }}>
+      <line x1={px(xm)} y1="0" x2={px(xm)} y2={IMG.H} stroke="#fff" strokeWidth="5"/><line x1={px(xm)} y1="0" x2={px(xm)} y2={IMG.H} stroke={col} strokeWidth="2.5"/><text x={px(xm) + 9} y="22" fontSize="15" fontWeight="700" fill="#fff" stroke="#000" strokeWidth="3" paintOrder="stroke">{i}</text><rect x={px(xm) - 30} y="0" width="60" height={IMG.H} fill="transparent"/>
       <path d={`M${px(xm) - 6},0 L${px(xm) + 6},0 L${px(xm)},9 z`} fill={col}/></g>);
   return (
     <div>
       <div style={{ position: 'relative', lineHeight: 0 }}>
         <canvas ref={ref} width={IMG.W} height={IMG.H} style={{ width: '100%', display: 'block', borderRadius: '8px 8px 0 0', background: '#000' }}
           role="img" aria-label={`Figure de diffraction d’un laser ${noms.laser} par ${noms.objet}, sur un écran`}/>
-        <svg viewBox={`0 0 ${IMG.W} ${IMG.H}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', touchAction: 'none' }}
+        <svg aria-hidden="true" viewBox={`0 0 ${IMG.W} ${IMG.H}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', touchAction: 'none' }}
           onPointerMove={e => { if (glisse.current != null) setX(glisse.current, versMm(e)); }} onPointerUp={() => { glisse.current = null; }} onPointerLeave={() => { glisse.current = null; }}>
           {mesure && [mk(x1, '#f59e0b', 1), mk(x2, '#22d3ee', 2)]}
         </svg>
@@ -150,7 +147,7 @@ function Ecran({ L }) {
         <path d={courbe} fill="none" stroke={`rgb(${rgb.map(c => Math.round(c * 200)).join(',')})`} strokeWidth="2"/>
         <line x1="0" y1="58" x2={IMG.W} y2="58" stroke="#94a3b8" strokeWidth="0.8"/>
         <text x="6" y="14" fontSize="11" fill="#475569">intensité</text>
-        {montrerPrevu && <g stroke="#16a34a" strokeDasharray="4 3" strokeWidth="1.5"><line x1={px(-Lp / 2)} y1="4" x2={px(-Lp / 2)} y2="58"/><line x1={px(Lp / 2)} y1="4" x2={px(Lp / 2)} y2="58"/></g>}
+        {montrerPrevu && <g stroke="#15803d" strokeDasharray="4 3" strokeWidth="1.5"><line x1={px(-Lp / 2)} y1="4" x2={px(-Lp / 2)} y2="58"/><line x1={px(Lp / 2)} y1="4" x2={px(Lp / 2)} y2="58"/></g>}
       </svg>
     </div>);
 }
@@ -180,10 +177,10 @@ function Montage({ objet, a, lam, D, gris }) {
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const NOMINAUX = [150, 200, 250, 300];                    // µm : diamètres annoncés par le fabricant (fil)
 const nouveauFil = () => {
-  const nom = tire(NOMINAUX), ecart = tire([0.0, 0.01, -0.01, 0.07, -0.07, 0.1]);
+  const nom = tire(NOMINAUX), ecart = tire([0.0, 0.0, 0.07, -0.07, 0.1, -0.1]);       // écarts nuls ou détectables : un écart de 1 % serait inférieur à la résolution du protocole
   return { nom, vrai: nom * (1 + ecart) };
 };
-const nouveauLaser = () => tire([405, 473, 532, 610, 635, 650]);
+const nouveauLaser = () => tire([405, 473, 532, 594, 635, 650]);
 
 export function SimulationDiffraction({ naviguer }) {
   const [mode, setMode] = useState(() => modeOuverture('diffraction-guide-v1'));
@@ -209,7 +206,7 @@ export function SimulationDiffraction({ naviguer }) {
   const Lmes = Math.abs(lz.x2 - lz.x1);                                              // mm (lue par l’élève)
   const dx = dPointe(W), dLm = Math.SQRT2 * dx;                                        // demi-étendue sur L : deux pointés indépendants
   const aCalc = Lmes > 0 ? M.tailleDepuisL(objetEff, Lmes * 1e-3, la, lz.D) * 1e6 : NaN;     // µm, avec les données de l’énoncé (λ, D)
-  const inc = Lmes > 0 ? M.incertitudeTaille({ a: aCalc * 1e-6, L: Lmes * 1e-3, D: lz.D, lambda: la, dL: dLm * 1e-3, dD, dLambda: dLambda(lamEff) * 1e-9 }) : null;
+  const inc = Lmes > 0 ? M.incertitudeTaille({ a: aCalc * 1e-6, L: Lmes * 1e-3, D: lz.D, lambda: la, dL: dLm * 1e-3, dD, dLambda: (enDefi && defi?.type === 'laser' ? 0.005 * lamEff : dLambda(lamEff)) * 1e-9 }) : null;
   const horsCadre = Lp / 2 > W;
   const noms = { laser: M.nomCouleur(lamEff), objet: objetEff === 'fente' ? 'une fente' : objetEff === 'fil' ? 'un fil' : 'un trou circulaire' };
 
@@ -238,12 +235,12 @@ export function SimulationDiffraction({ naviguer }) {
       tache: { type: 'qcm', q: 'Pour une ouverture donnée, plus la longueur d’onde est grande…', options: ['plus la diffraction est importante', 'moins la diffraction est importante', 'la diffraction ne dépend pas de λ'], bonne: 0,
         expl: 'La diffraction dépend du rapport entre la longueur d’onde λ et la taille a de l’ouverture. Elle est d’autant plus marquée que λ est grande ou que a est petite.' } },
     { id: 'regler', titre: 'Afficher l’ouverture angulaire', focus: ['scene', 'reglages'],
-      texte: <>Réglez <em>a</em> = 4{NB}cm et <em>λ</em> = 1{NB}cm, puis affichez la <strong>demi-ouverture θ</strong> (traits rouges) : c’est l’écart angulaire qui limite la zone où l’onde est intense.</>,
+      texte: <>Réglez <em>a</em> = 4{NB}cm et <em>λ</em> = 1{NB}cm, puis affichez la <strong>écart angulaire θ</strong> (traits rouges) : c’est l’écart angulaire qui limite la zone où l’onde est intense.</>,
       tache: { type: 'action', ok: scene === 'cuve' && Math.abs(cuve.a - 4) < 0.15 && Math.abs(cuve.lam - 1) < 0.1 && angle && vue === 'intensite', label: 'Régler et afficher θ',
-        faire: () => { setScene('cuve'); setCuve({ a: 4, lam: 1 }); setAngle(true); setVue('intensite'); }, consigne: 'a = 4 cm, λ = 1 cm, vue « Intensité », demi-ouverture affichée' } },
+        faire: () => { setScene('cuve'); setCuve({ a: 4, lam: 1 }); setAngle(true); setVue('intensite'); }, consigne: 'a = 4 cm, λ = 1 cm, vue « Amplitude », écart angulaire affichée' } },
     { id: 'theta', titre: 'L’angle d’ouverture', focus: ['mesures'],
-      texte: <>Pour les petits angles, la demi-ouverture est donnée par <strong>θ = λ / a</strong> (en radians, <em>λ</em> et <em>a</em> dans la même unité). Calculez-la pour ce réglage.</>,
-      tache: { type: 'num', q: 'Demi-ouverture θ', unite: 'rad', vrai: 0.25, tol: 0.05, affiche: v => nbf(v, 2), cs: 2,
+      texte: <>Pour les petits angles, l’écart angulaire est donné par <strong>θ = λ / a</strong> (en radians, <em>λ</em> et <em>a</em> dans la même unité). Calculez-la pour ce réglage.</>,
+      tache: { type: 'num', q: 'Écart angulaire θ', unite: 'rad', vrai: 0.25, tol: 0.05, affiche: v => nbf(v, 2), cs: 2,
         bloque: scene === 'cuve' && Math.abs(cuve.a - 4) < 0.15 && Math.abs(cuve.lam - 1) < 0.1 ? null : 'Réglez d’abord a = 4 cm et λ = 1 cm (étape précédente).',
         calcul: () => ['Hypothèse : petits angles, donc θ ≈ λ / a.', 'λ et a sont déjà dans la même unité (le centimètre), le rapport n’a pas d’unité.', 'θ = 1 / 4 = 0,25 rad.'],
         pieges: [[14.3, 'Vous avez donné l’angle en degrés. La relation θ = λ/a donne des radians : θ = 0,25 rad (≈ 14°).'], [4, 'Division à l’envers : θ = λ / a, pas a / λ.']],
@@ -260,7 +257,7 @@ export function SimulationDiffraction({ naviguer }) {
       tache: { type: 'qcm', q: 'La largeur L de la tache centrale se mesure…', options: ['entre les deux extinctions qui l’encadrent', 'entre les deux taches secondaires les plus lumineuses', 'du bord de l’écran à la tache'], bonne: 0,
         expl: 'La tache centrale est limitée par les deux premières extinctions : L est la distance entre leurs centres. On pointe les minima, pas les bords flous de la tache.' } },
     { id: 'pointer', titre: 'Pointer les extinctions', focus: ['ecran', 'mesures'],
-      texte: <>Faites glisser les deux repères (orange et bleu) sur le <strong>centre</strong> des deux premières extinctions, de part et d’autre de la tache centrale. La courbe d’intensité sous l’image vous aide.</>,
+      texte: <>Faites glisser les deux repères (orange et bleu) sur le <strong>centre</strong> des deux premières extinctions, de part et d’autre de la tache centrale. Pointez les minima de la courbe d’intensité sous l’image (les creux), et non le bord de la tache lumineuse, qui paraît plus étroite à cause de la saturation.</>,
       tache: { type: 'action', ok: laserDeBase && pointe, bloque: laserDeBase ? null : 'Revenez au réglage de base avec le bouton « Rétablir le réglage » sous les onglets.', consigne: 'Placez les deux repères sur les centres des deux premières extinctions', label: 'Placer pour moi', faire: () => setLz(l => ({ ...l, x1: -Lp / 2, x2: Lp / 2 })) } },
     { id: 'lireL', titre: 'La largeur de la tache centrale', focus: ['mesures'],
       texte: <>Lisez dans « Mesures » la largeur <em>L</em> entre vos deux repères.</>,
@@ -275,7 +272,7 @@ export function SimulationDiffraction({ naviguer }) {
         calcul: () => ['Hypothèses : petits angles et écran loin de la fente. La relation L = 2λD/a donne a = 2λD / L.',
           `Unités SI : λ = 532 nm = 532 × 10⁻⁹ m ; D = 2,00 m ; L = ${nbf(Lmes, 1)} mm = ${nbf(Lmes, 1)} × 10⁻³ m.`,
           `a = 2 × 532 × 10⁻⁹ × 2,00 / (${nbf(Lmes, 1)} × 10⁻³) = ${nbf(aCalc * 1e-6 * 1e4, 2)} × 10⁻⁴ m = ${nbf(aCalc, 0)} µm.`],
-        pieges: [[aCalc / 2, 'Il manque le facteur 2 : L = 2λD/a, donc a = 2λD/L.'], [aCalc * 1e-6, 'Vérifiez l’unité : le résultat est à donner en micromètres (10⁻⁴ m = 100 µm).'], [aCalc * 2, 'Un facteur 2 en trop : a = 2λD/L.']],
+        pieges: [[aCalc / 2, 'Il manque le facteur 2 : L = 2λD/a, donc a = 2λD/L.'], [aCalc * 1e-6, 'Vérifiez l’unité : le résultat est à donner en micromètres (1 µm = 10⁻⁶ m).'], [aCalc * 2, 'Un facteur 2 en trop : a = 2λD/L.']],
         expl: 'a = 2λD/L : la fente mesure environ un dixième de millimètre (valeur exacte : 100 µm ; l’écart vient du pointé).' } },
     { id: 'fil', titre: 'Et si c’était un fil ?', focus: ['reglages', 'ecran'],
       texte: <>Remplacez la fente par un <strong>fil</strong> de même diamètre (100{NB}µm) et comparez les deux figures.</>,
@@ -293,7 +290,7 @@ export function SimulationDiffraction({ naviguer }) {
         calcul: () => ['Hypothèses : petits angles, écran loin du trou. Relation donnée : L = 2,44 λ D / d.', 'Unités SI : λ = 532 × 10⁻⁹ m ; D = 2,00 m ; d = 100 × 10⁻⁶ m.',
           'L = 2,44 × 532 × 10⁻⁹ × 2,00 / (100 × 10⁻⁶) = 2,60 × 10⁻² m = 26,0 mm.'],
         pieges: [[21.3, 'Ici l’objet est un trou circulaire : le coefficient est 2,44 et non 2.'], [26000, 'Vérifiez les unités : le résultat est à donner en millimètres.']],
-        expl: 'L = 2,44 × 532 × 10⁻⁹ × 2,00 / 100 × 10⁻⁶ ≈ 26,0 mm : plus large qu’avec une fente de même dimension (21,3 mm).' } },
+        expl: 'L = 2,44 × 532 × 10⁻⁹ × 2,00 / (100 × 10⁻⁶) ≈ 26,0 mm : plus large qu’avec une fente de même dimension (21,3 mm).' } },
     { id: 'poids', titre: 'D’où vient l’incertitude ?', focus: ['incert'],
       texte: <>Revenez à la fente de 100{NB}µm (bouton ci-dessous). Le panneau « Incertitude » donne le poids de chaque source (pointé de <em>L</em>, mesure de <em>D</em>, longueur d’onde du laser) dans l’incertitude-type sur <em>a</em>.</>,
       tache: { type: 'action', ok: laserDeBase && pointe, label: 'Revenir à la fente et pointer', faire: () => { setScene('laser'); { const Lf = M.largeurFente(100e-6, 532e-9, 2) * 1e3; setL({ objet: 'fente', a: 100, lam: 532, D: 2, zoom: 0, x1: -Lf / 2, x2: Lf / 2 }); }; }, consigne: 'Fente de 100 µm, repères sur les extinctions' } },
@@ -302,7 +299,7 @@ export function SimulationDiffraction({ naviguer }) {
       tache: { type: 'qcm', q: 'Quelle modification diminue le plus l’incertitude relative sur a ?', options: ['rapprocher l’écran de la fente, pour que la figure soit plus lumineuse', 'éloigner l’écran de la fente, pour que L augmente', 'prendre un laser de longueur d’onde plus petite, pour que λ soit plus précise'], bonne: 1,
         expl: 'L est proportionnel à D : en éloignant l’écran, L augmente alors que l’incertitude de pointé reste la même, donc l’incertitude relative u(L)/L diminue. Vous pouvez le vérifier avec le curseur de D, en vérifiant que les extinctions restent dans l’image.' } },
     { id: 'ua', titre: 'L’incertitude-type sur a', focus: ['incert', 'mesures'],
-      texte: <>Les incertitudes relatives de <em>L</em>, <em>D</em> et <em>λ</em> sont indépendantes : <strong>u(a)/a = √[ (u(L)/L)² + (u(D)/D)² + (u(λ)/λ)² ]</strong>. Calculez u(a) à partir des trois « u / valeur » du panneau « Incertitude ».</>,
+      texte: <>Les sources d’erreur sur <em>L</em>, <em>D</em> et <em>λ</em> sont indépendantes : <strong>u(a)/a = √[ (u(L)/L)² + (u(D)/D)² + (u(λ)/λ)² ]</strong>. Calculez u(a) à partir des trois « u / valeur » du panneau « Incertitude ».</>,
       tache: { type: 'num', q: 'Incertitude-type u(a)', unite: 'µm', vrai: inc ? inc.u * 1e6 : 1, tol: 0.1, affiche: v => nbf(v, 1), cs: 2,
         bloque: laserDeBase && pointe ? null : 'Placez d’abord les repères sur les extinctions (fente de 100 µm, D = 2,00 m, zoom × 1).',
         calcul: () => inc ? ['Hypothèses : sources d’erreur indépendantes, lois rectangulaires (u = demi-étendue / √3).',
@@ -339,19 +336,19 @@ export function SimulationDiffraction({ naviguer }) {
     if (!defi || !defi.verifie) return null;
     const x = lireNombre(defi.reps.a), v = defi.reps.v;
     if (defi.type === 'fil') {
-      const u = defi.snapU, aOk = isFinite(x) && proche(x, defi.a, 0.04);
+      const u = defi.snapU, aOk = isFinite(x) && proche(x, defi.a, Math.max(0.04, 2 * (defi.snapRel || 0)));
       const attendu = aOk && u != null ? M.compatible(x * 1e-6, defi.nom * 1e-6, u) : null;     // verdict tiré de la mesure de l’élève et de l’incertitude affichée
       const vOk = attendu != null && ((v === 'oui') === attendu);
       return { aOk, vOk, ok: aOk && vOk, attendu, u };
     }
-    const lm = lireNombre(defi.reps.l), lOk = isFinite(lm) && proche(lm, defi.lam, 0.04), cOk = lOk && (v === M.nomCouleur(lm) || v === M.nomCouleur(defi.lam));
+    const lm = lireNombre(defi.reps.l), lOk = isFinite(lm) && proche(lm, defi.lam, Math.max(0.04, 2 * (defi.snapRel || 0))), cOk = lOk && (v === M.nomCouleur(lm) || v === M.nomCouleur(defi.lam));
     return { lOk, cOk, ok: lOk && cOk };
   })();
   const voletDefi = defi && (
     <div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-        <button onClick={() => choisirDefi('fil')} style={stylePetitBouton(defi.type === 'fil', '#0ea5e9')}>Le fil et l’annonce</button>
-        <button onClick={() => choisirDefi('laser')} style={stylePetitBouton(defi.type === 'laser', '#0ea5e9')}>La couleur du laser</button>
+        <button onClick={() => choisirDefi('fil')} aria-pressed={!!(defi.type === 'fil')} style={stylePetitBouton(defi.type === 'fil', '#0369a1')}>Le fil et l’annonce</button>
+        <button onClick={() => choisirDefi('laser')} aria-pressed={!!(defi.type === 'laser')} style={stylePetitBouton(defi.type === 'laser', '#0369a1')}>La couleur du laser</button>
       </div>
       {defi.type === 'fil' ? <>
         <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : le fil est-il conforme à l’annonce ?</div>
@@ -360,12 +357,12 @@ export function SimulationDiffraction({ naviguer }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 14 }}>
           <span>Diamètre mesuré</span>
-          <input value={defi.reps.a ?? ''} aria-label="Diamètre mesuré" onChange={e => setDefi(d => ({ ...d, reps: { ...d.reps, a: e.target.value }, verifie: false }))}
-            style={{ width: 80, padding: '5px 8px', borderRadius: 6, border: `1.5px solid ${dres ? (dres.aOk ? '#16a34a' : '#dc2626') : KIT.bord}`, fontSize: 14 }}/><span>µm</span>
+          <input value={defi.reps.a ?? ''} aria-label="Diamètre mesuré" onKeyDown={e => e.key === 'Enter' && document.getElementById('df-verif')?.click()} onChange={e => setDefi(d => ({ ...d, reps: { ...d.reps, a: e.target.value }, verifie: false }))}
+            style={{ width: 80, padding: '5px 8px', borderRadius: 6, border: `1.5px solid ${dres ? (dres.aOk ? '#15803d' : '#dc2626') : KIT.bord}`, fontSize: 14 }}/><span>µm</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 14 }}>
           <span>Mesure compatible avec l’annonce ?</span>
-          {[['oui', 'Oui'], ['non', 'Non']].map(([v, l]) => <button key={v} onClick={() => setDefi(d => ({ ...d, reps: { ...d.reps, v }, verifie: false }))} style={stylePetitBouton(defi.reps.v === v, '#0ea5e9')}>{l}</button>)}
+          {[['oui', 'Oui'], ['non', 'Non']].map(([v, l]) => <button key={v} onClick={() => setDefi(d => ({ ...d, reps: { ...d.reps, v }, verifie: false }))} aria-pressed={!!(defi.reps.v === v)} style={stylePetitBouton(defi.reps.v === v, '#0369a1')}>{l}</button>)}
         </div>
       </> : <>
         <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : quelle est la couleur du laser ?</div>
@@ -374,28 +371,30 @@ export function SimulationDiffraction({ naviguer }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 14 }}>
           <span>Longueur d’onde</span>
-          <input value={defi.reps.l ?? ''} aria-label="Longueur d’onde" onChange={e => setDefi(d => ({ ...d, reps: { ...d.reps, l: e.target.value }, verifie: false }))}
-            style={{ width: 80, padding: '5px 8px', borderRadius: 6, border: `1.5px solid ${dres ? (dres.lOk ? '#16a34a' : '#dc2626') : KIT.bord}`, fontSize: 14 }}/><span>nm</span>
+          <input value={defi.reps.l ?? ''} aria-label="Longueur d’onde" onKeyDown={e => e.key === 'Enter' && document.getElementById('df-verif')?.click()} onChange={e => setDefi(d => ({ ...d, reps: { ...d.reps, l: e.target.value }, verifie: false }))}
+            style={{ width: 80, padding: '5px 8px', borderRadius: 6, border: `1.5px solid ${dres ? (dres.lOk ? '#15803d' : '#dc2626') : KIT.bord}`, fontSize: 14 }}/><span>nm</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginBottom: 8, fontSize: 14 }}>
           <span>Couleur</span>
-          {['violet', 'bleu', 'vert', 'jaune', 'orange', 'rouge'].map(c => <button key={c} onClick={() => setDefi(d => ({ ...d, reps: { ...d.reps, v: c }, verifie: false }))} style={stylePetitBouton(defi.reps.v === c, '#0ea5e9')}>{c}</button>)}
+          {['violet', 'bleu', 'vert', 'jaune', 'orange', 'rouge'].map(c => <button key={c} onClick={() => setDefi(d => ({ ...d, reps: { ...d.reps, v: c }, verifie: false }))} aria-pressed={!!(defi.reps.v === c)} style={stylePetitBouton(defi.reps.v === c, '#0369a1')}>{c}</button>)}
         </div>
       </>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        <button onClick={() => { setDefi(d => ({ ...d, verifie: true, snapU: inc ? inc.u : null })); const x = lireNombre(defi.reps.a), lm = lireNombre(defi.reps.l), v = defi.reps.v;
-          if (defi.type === 'fil') noterFil(isFinite(x) && proche(x, defi.a, 0.04) && inc != null && (v === 'oui') === M.compatible(x * 1e-6, defi.nom * 1e-6, inc.u));
-          else noterLaser(isFinite(lm) && proche(lm, defi.lam, 0.04) && (v === M.nomCouleur(lm) || v === M.nomCouleur(defi.lam))); }} style={styleBouton(true, '#16a34a')}>Vérifier</button>
+        <button id="df-verif" onClick={() => { setDefi(d => ({ ...d, verifie: true, snapU: inc ? inc.u : null, snapRel: inc ? inc.rel : 0 })); const x = lireNombre(defi.reps.a), lm = lireNombre(defi.reps.l), v = defi.reps.v;
+          if (defi.type === 'fil') noterFil(isFinite(x) && proche(x, defi.a, Math.max(0.04, 2 * (inc ? inc.rel : 0))) && inc != null && (v === 'oui') === M.compatible(x * 1e-6, defi.nom * 1e-6, inc.u));
+          else noterLaser(isFinite(lm) && proche(lm, defi.lam, Math.max(0.04, 2 * (inc ? inc.rel : 0))) && (v === M.nomCouleur(lm) || v === M.nomCouleur(defi.lam))); }} style={styleBouton(true, '#15803d')}>Vérifier</button>
         <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
       </div>
       {dres && defi.type === 'fil' && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5 }}>
-        <div style={{ color: dres.aOk ? '#16a34a' : '#dc2626' }}>{dres.aOk ? '✓ Diamètre mesuré correct.' : '✗ Diamètre : revoyez le pointé de L (centres des extinctions) et la relation a = 2λD / L. Vérifiez les unités.'}</div>
-        {dres.aOk && <div style={{ color: dres.vOk ? '#16a34a' : '#dc2626' }}>{dres.vOk ? '✓ Conclusion cohérente avec le critère 2 u(a).' : `✗ Conclusion : comparez |a mesuré − ${defi.nom}| à 2 u(a) = ${dres.u != null ? nbf(2 * dres.u * 1e6, 1) : '?'} µm (panneau « Incertitude »).`}</div>}
-        {dres.ok && <div style={{ color: KIT.txt2, fontWeight: 400 }}>Diamètre réel du fil dans la simulation : {nbf(defi.a, 1)} µm (annonce : {defi.nom} µm). {Math.abs(defi.a - defi.nom) < 0.2 ? 'Le fil est conforme à l’annonce.' : (dres.attendu ? 'Avec votre protocole, cet écart ne peut pas être distingué de l’incertitude de mesure : un écran plus éloigné (D plus grand) permettrait de le détecter.' : 'Cet écart est nettement supérieur à l’incertitude de mesure : le fil n’est pas conforme.')}</div>}
+        <div style={{ color: dres.aOk ? '#15803d' : '#dc2626' }}>{dres.aOk ? '✓ Diamètre mesuré correct.' : '✗ Diamètre : revoyez le pointé de L (centres des extinctions) et la relation a = 2λD / L. Vérifiez les unités.'}</div>
+        {dres.aOk && <div style={{ color: dres.vOk ? '#15803d' : '#dc2626' }}>{dres.vOk ? '✓ Conclusion cohérente avec le critère 2 u(a).' : `✗ Conclusion : comparez |a mesuré − ${defi.nom}| à 2 u(a) = ${dres.u != null ? nbf(2 * dres.u * 1e6, 1) : '?'} µm (panneau « Incertitude »).`}</div>}
+        {dres.ok && <div style={{ color: KIT.txt2, fontWeight: 400 }}>Diamètre réel du fil dans la simulation : {nbf(defi.a, 1)} µm (annonce : {defi.nom} µm). {Math.abs(defi.a - defi.nom) < 0.2
+          ? (dres.attendu ? 'Le fil est conforme à l’annonce.' : 'Le fil est en réalité conforme à l’annonce : l’écart que vous avez trouvé vient d’un pointé imprécis.')
+          : (dres.attendu ? `Votre pointé était trop imprécis pour voir l’écart réel (${nbf(Math.abs(defi.a - defi.nom), 0)} µm, soit ${nbf(Math.abs(defi.a - defi.nom) / defi.nom * 100, 0)} %) : un zoom plus fort ou un écran plus éloigné diminue l’incertitude.` : 'Votre mesure n’est pas compatible avec l’annonce : l’écart est supérieur à 2 u(a).')}</div>}
       </div>}
       {dres && defi.type === 'laser' && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5 }}>
-        <div style={{ color: dres.lOk ? '#16a34a' : '#dc2626' }}>{dres.lOk ? '✓ Longueur d’onde correcte.' : '✗ Longueur d’onde : λ = a L / (2 D). Attention aux unités (L en mm, a en µm, résultat en nm).'}</div>
-        <div style={{ color: dres.cOk ? '#16a34a' : '#dc2626' }}>{dres.cOk ? '✓ Couleur correcte.' : '✗ Couleur : le visible va du violet (≈ 400 nm) au rouge (≈ 700 nm).'}</div>
+        <div style={{ color: dres.lOk ? '#15803d' : '#dc2626' }}>{dres.lOk ? '✓ Longueur d’onde correcte.' : '✗ Longueur d’onde : λ = a L / (2 D). Attention aux unités (L en mm, a en µm, résultat en nm).'}</div>
+        <div style={{ color: dres.cOk ? '#15803d' : '#dc2626' }}>{dres.cOk ? '✓ Couleur correcte.' : '✗ Couleur : le visible va du violet (≈ 400 nm) au rouge (≈ 700 nm).'}</div>
         {dres.ok && <div style={{ color: KIT.txt2, fontWeight: 400 }}>Le laser émettait à {defi.lam}{NB}nm.</div>}
       </div>}
     </div>);
@@ -404,10 +403,11 @@ export function SimulationDiffraction({ naviguer }) {
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Onde monochromatique et cohérente</strong> : un laser, ou un seul générateur dans la cuve. Une lumière blanche donnerait des figures colorées et plus confuses.</li>
       <li><strong>Figure à l’infini</strong> (Fraunhofer) : l’écran est loin de l’objet, D ≫ a²/λ. Pour a = 0,1 mm et λ = 532 nm, a²/λ ≈ 2 cm : très bien vérifié avec un écran à 1 – 4 m ; moins bien pour a = 0,4 mm avec D = 0,5 m.</li>
-      <li><strong>Petits angles</strong> : θ ≈ λ/a et L = 2λD/a. L’approximation devient mauvaise si a n’est pas grand devant λ (pour a = 2λ, L est sous-estimé d’environ 15 %). Avec un laser et a ≥ 20 µm, λ/a est inférieur à 0,03 : l’approximation est excellente.</li>
+      <li><strong>Petits angles</strong> : θ ≈ λ/a et L = 2λD/a. L’approximation devient mauvaise si a n’est pas grand devant λ (pour a = 2λ, L est sous-estimé d’environ 13 %). Avec un laser et a ≥ 20 µm, λ/a est inférieur à 0,04 : l’approximation est excellente.</li>
       <li><strong>Objets idéaux</strong> : fente infiniment haute, fil parfaitement cylindrique, trou parfaitement circulaire, bords nets. Un fil réel n’a pas un diamètre rigoureusement constant.</li>
-      <li><strong>Cuve à ondes</strong> : modèle de Huygens-Fresnel à deux dimensions (chaque point de l’ouverture émet une ondelette), sans amortissement ni réflexion sur les bords.</li>
-      <li><strong>Incertitudes</strong> : pointé de chaque extinction à ± 3 pixels de l’image, D au mètre ruban à ± 2 mm, longueur d’onde du laser à ± 1 % d’après la notice. Chaque grandeur est supposée uniformément répartie dans son intervalle (u = demi-étendue / √3) et les trois sources sont supposées indépendantes. L’incertitude due au modèle lui-même (petits angles) est négligée.</li>
+      <li><strong>Cuve à ondes</strong> : modèle de Huygens-Fresnel à deux dimensions (chaque point de l’ouverture émet une ondelette), sans amortissement ni réflexion sur les bords, et sans facteur d’inclinaison. L’ouverture est observée de près (champ proche) : θ = arcsin(λ/a) ne décrit que le champ lointain, d’où le passage au laser.</li>
+      <li><strong>Incertitudes</strong> : pointé de chaque extinction à ± 3 pixels de l’image, D au mètre ruban à ± 2 mm, longueur d’onde du laser à ± 1 % d’après la notice. Chaque grandeur est supposée uniformément répartie dans son intervalle (u = demi-étendue / √3) et les trois sources sont supposées indépendantes. L’incertitude due au modèle lui-même (petits angles) est négligée. Les deux pointés sont indépendants : u(L) = √2 × u(pointé).</li>
+      <li><strong>Comparaison à l’annonce</strong> : la valeur du fabricant est traitée comme exacte (aucune tolérance donnée). Le critère |écart| ≤ 2 u(a) correspond à un coefficient d’élargissement k = 2, soit environ 95 % de confiance si la loi de la grandeur combinée est proche d’une loi normale. Les ± 3 px de pointé sont une hypothèse de la simulation. Dans le défi « couleur », la fente est supposée connue à ± 0,5 µm.</li>
     </ul>);
   const panneauHypo = (
     <div style={styleBoite}>
@@ -416,7 +416,7 @@ export function SimulationDiffraction({ naviguer }) {
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
-      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0369a1')}><Pic n="target"/>Défis</button>
     </span>);
 
   // ---------- panneaux ----------
@@ -428,29 +428,35 @@ export function SimulationDiffraction({ naviguer }) {
       <div style={cadre('ecran')}>
         <Ecran L={{ ...lz, objet: objetEff, a: aEff, lam: lamEff, setX, mesure: true, gris: enDefi && defi?.type === 'laser', montrerPrevu: mode === 'explore', noms: { laser: enDefi && defi?.type === 'laser' ? 'monochrome' : noms.laser, objet: noms.objet } }}/>
       </div>
+      <div role="group" aria-label="Placer les repères" style={{ background: '#f1f5f9', borderRadius: 10, padding: '6px 10px' }}>
+        <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700 }}>Placer les repères (curseurs, ou flèches du clavier)</div>
+        {[[1, 'Repère 1 (orange)', lz.x1, '#b45309'], [2, 'Repère 2 (bleu)', lz.x2, '#0e7490']].map(([i, n, v, c]) => <label key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: KIT.txt }}><span style={{ minWidth: 112, fontWeight: 700 }}>{n}</span>
+          <input type="range" aria-label={n} aria-valuetext={`${nbf(v, 2)} millimètres`} min={-W} max={W} step={W / 300} value={v} onChange={e => setX(i, parseFloat(e.target.value))} style={{ flex: 1, minHeight: 32, accentColor: c }}/></label>)}
+      </div>
+      {!horsCadre && lz.D < 5 * A * A / la && <div style={{ fontSize: 13, color: '#9a3412', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 6, padding: '5px 8px' }}>L’écran est assez proche de l’objet : la figure n’est plus tout à fait « à l’infini » (il faudrait D ≫ a²/λ). Éloignez l’écran.</div>}
       {horsCadre && <div style={{ fontSize: 13, color: '#9a3412', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 6, padding: '5px 8px' }}>Les premières extinctions sortent de l’image : diminuez le zoom ou rapprochez l’écran.</div>}
       {Lp < 6 * dx && !horsCadre && <div style={{ fontSize: 13, color: '#9a3412', background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 6, padding: '5px 8px' }}>La tache est très étroite par rapport à l’image : augmentez le zoom ou éloignez l’écran pour la pointer précisément.</div>}
     </div>);
   const sceneBox = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
       {!enDefi && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-        <button onClick={() => setScene('cuve')} style={stylePetitBouton(scene === 'cuve', '#0891b2')}>Cuve à ondes</button>
-        <button onClick={() => setScene('laser')} style={stylePetitBouton(scene === 'laser', '#0891b2')}>Laser et écran</button>
+        <button onClick={() => setScene('cuve')} aria-pressed={!!(scene === 'cuve')} style={stylePetitBouton(scene === 'cuve', '#0e7490')}>Cuve à ondes</button>
+        <button onClick={() => setScene('laser')} aria-pressed={!!(scene === 'laser')} style={stylePetitBouton(scene === 'laser', '#0e7490')}>Laser et écran</button>
       </div>}
       {enGuide && [9, 10, 11, 16, 17, 18].includes(etape) && !(laserDeBase && (etape === 9 || pointe)) && <button onClick={() => { const Lf = M.largeurFente(100e-6, 532e-9, 2) * 1e3; setScene('laser'); setLz(l => ({ ...l, objet: 'fente', a: 100, lam: 532, D: 2, zoom: 0, expo: 2, x1: etape === 9 ? -6 : -Lf / 2, x2: etape === 9 ? 6 : Lf / 2 })); }} style={{ ...styleBouton(true, '#f59e0b'), marginBottom: 8 }}>Rétablir le réglage (fente 100 µm, D = 2,00 m{etape === 9 ? '' : ', repères placés'})</button>}
       {zoneScene}
-      {scene === 'cuve' && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Vue de dessus : l’onde plane arrive de la gauche. Clair : crête ; sombre : creux. « Intensité » : plus c’est foncé, plus l’amplitude de l’onde est grande.</div>}
-      {scene === 'laser' && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Faites glisser les repères sur l’image pour pointer les extinctions. Les graduations de la règle sont en millimètres.</div>}
+      {scene === 'cuve' && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Vue de dessus : l’onde plane arrive de la gauche. Clair : crête ; sombre : creux. « Amplitude » : plus c’est foncé, plus l’onde est ample en ce point.</div>}
+      {scene === 'laser' && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Pointez les extinctions avec les curseurs sous l’image (ou en faisant glisser les repères). Les graduations de la règle sont en millimètres.</div>}
     </div>);
   const reglages = scene === 'cuve' ? (
     <div style={{ ...styleBoite, ...cadre('reglages') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
       <Curseur nom={'Largeur de l’ouverture a'} valeur={cuve.a} onChange={v => setCuve(c => ({ ...c, a: v }))} min={1} max={14} pas={0.5} unite="cm" decimales={1} couleur="#475569"/>
-      <Curseur nom={'Longueur d’onde λ'} valeur={cuve.lam} onChange={v => setCuve(c => ({ ...c, lam: v }))} min={0.5} max={4} pas={0.25} unite="cm" decimales={2} couleur="#0891b2"/>
+      <Curseur nom={'Longueur d’onde λ'} valeur={cuve.lam} onChange={v => setCuve(c => ({ ...c, lam: v }))} min={0.5} max={4} pas={0.25} unite="cm" decimales={2} couleur="#0e7490"/>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
-        <button onClick={() => setVue(v => v === 'ondes' ? 'intensite' : 'ondes')} style={stylePetitBouton(vue === 'intensite', '#0891b2')}>{vue === 'intensite' ? 'Voir les ondes' : 'Voir l’intensité'}</button>
-        <button onClick={() => setAngle(x => !x)} style={stylePetitBouton(angle, '#dc2626')}>{angle ? 'Masquer θ' : 'Afficher la demi-ouverture θ'}</button>
-        <button onClick={() => setAnim(x => !x)} disabled={vue === 'intensite'} style={stylePetitBouton(!anim, '#475569')}>{anim ? 'Figer' : 'Animer'}</button>
+        <button onClick={() => setVue(v => v === 'ondes' ? 'intensite' : 'ondes')} aria-pressed={!!(vue === 'intensite')} style={stylePetitBouton(vue === 'intensite', '#0e7490')}>{vue === 'intensite' ? 'Voir les ondes' : 'Voir l’amplitude'}</button>
+        <button onClick={() => setAngle(x => !x)} aria-pressed={!!(angle)} style={stylePetitBouton(angle, '#dc2626')}>{angle ? 'Masquer θ' : 'Afficher l’écart angulaire θ'}</button>
+        <button onClick={() => setAnim(x => !x)} disabled={vue === 'intensite'} aria-pressed={!!(!anim)} style={stylePetitBouton(!anim, '#475569')}>{anim ? 'Figer' : 'Animer'}</button>
       </div>
     </div>
   ) : (
@@ -458,17 +464,17 @@ export function SimulationDiffraction({ naviguer }) {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
       {!enDefi && <>
         <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Objet diffractant</div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>{OBJETS.map(([v, l]) => <button key={v} onClick={() => setL({ objet: v })} style={stylePetitBouton(lz.objet === v, '#475569')}>{l}</button>)}</div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>{OBJETS.map(([v, l]) => <button key={v} onClick={() => setL({ objet: v })} aria-pressed={!!(lz.objet === v)} style={stylePetitBouton(lz.objet === v, '#475569')}>{l}</button>)}</div>
         <Curseur nom={lz.objet === 'trou' ? 'Diamètre d' : lz.objet === 'fil' ? 'Diamètre a du fil' : 'Largeur a de la fente'} valeur={lz.a} onChange={v => setL({ a: v })} min={20} max={400} pas={5} unite="µm" decimales={0} couleur="#475569"/>
         <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Laser</div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>{LASERS.map(l => <button key={l.nm} onClick={() => setL({ lam: l.nm })} style={stylePetitBouton(lz.lam === l.nm, '#0891b2')}>{l.nom} {l.nm}{NB}nm</button>)}</div>
-        <Curseur nom={'Longueur d’onde λ'} valeur={lz.lam} onChange={v => setL({ lam: v })} min={400} max={700} pas={1} unite="nm" decimales={0} couleur="#0891b2"/>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>{LASERS.map(l => <button key={l.nm} onClick={() => setL({ lam: l.nm })} aria-pressed={!!(lz.lam === l.nm)} style={stylePetitBouton(lz.lam === l.nm, '#0e7490')}>{l.nom} {l.nm}{NB}nm</button>)}</div>
+        <Curseur nom={'Longueur d’onde λ'} valeur={lz.lam} onChange={v => setL({ lam: v })} min={400} max={700} pas={1} unite="nm" decimales={0} couleur="#0e7490"/>
       </>}
       {enDefi && defi?.type === 'fil' && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6 }}>Laser rouge, <em>λ</em> = {defi.lam}{NB}nm (notice : ± 1 %).</div>}
-      {enDefi && defi?.type === 'laser' && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6 }}>Longueur d’onde inconnue (notice : ± 1 %).</div>}
-      <Curseur nom={'Distance fente – écran D'} valeur={lz.D} onChange={v => setL({ D: v })} min={0.5} max={5} pas={0.25} unite="m" decimales={2} couleur="#b45309"/>
+      {enDefi && defi?.type === 'laser' && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6 }}>Longueur d’onde inconnue ; fente de 100 µm à ± 0,5 µm près.</div>}
+      <Curseur nom={'Distance objet – écran D'} valeur={lz.D} onChange={v => setL({ D: v })} min={0.5} max={5} pas={0.25} unite="m" decimales={2} couleur="#b45309"/>
       <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Cadrage de l’image (zoom)</div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>{ZOOMS.map((z, i) => <button key={z.W} onClick={() => setL({ zoom: i })} style={stylePetitBouton(lz.zoom === i, '#475569')}>{z.nom} (± {z.W}{NB}mm)</button>)}</div>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>{ZOOMS.map((z, i) => <button key={z.W} onClick={() => setL({ zoom: i })} aria-pressed={!!(lz.zoom === i)} style={stylePetitBouton(lz.zoom === i, '#475569')}>{z.nom} (± {z.W}{NB}mm)</button>)}</div>
       <Curseur nom={'Exposition'} valeur={lz.expo} onChange={v => setL({ expo: v })} min={0.5} max={10} pas={0.5} unite="" decimales={1} couleur="#475569"/>
     </div>
   );
@@ -477,33 +483,33 @@ export function SimulationDiffraction({ naviguer }) {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
       <LigneMesure nom="Longueur d’onde λ" valeur={`${nbf(cuve.lam, 2)}${NB}cm`}/>
       <LigneMesure nom="Largeur a de l’ouverture" valeur={`${nbf(cuve.a, 1)}${NB}cm`}/>
-      <LigneMesure nom="Rapport λ / a" valeur={nbf(cuve.lam / cuve.a, 2)} couleur="#dc2626"/>
-      <LigneMesure nom="Demi-ouverture θ ≈ λ / a" valeur={cuve.lam <= cuve.a ? `${nbf(cuve.lam / cuve.a, 2)}${NB}rad` : '–'}/>
-      <LigneMesure nom="θ en degrés (exacte : arcsin λ/a)" valeur={cuve.lam < cuve.a ? `${nbf(deg(M.thetaExact(cuve.a, cuve.lam)), 0)}${NB}°` : '90 °'}/>
+      {!(enGuide && etape === 5) && <LigneMesure nom="Rapport λ / a" valeur={nbf(cuve.lam / cuve.a, 2)} couleur="#dc2626"/>}
+      {!(enGuide && etape === 5) && <>
+      <LigneMesure nom="Écart angulaire θ ≈ λ / a" valeur={cuve.lam <= cuve.a ? `${nbf(cuve.lam / cuve.a, 2)}${NB}rad` : '–'}/>
+      <LigneMesure nom="θ en degrés (exacte : arcsin λ/a)" valeur={cuve.lam < cuve.a ? `${nbf(deg(M.thetaExact(cuve.a, cuve.lam)), 0)}${NB}°` : '– (aucune extinction)'}/>
+      </>}
       {cuve.lam / cuve.a > 0.5 && <div style={{ fontSize: 12.5, color: '#9a3412', marginTop: 4 }}>Quand λ n’est plus petite devant a, l’approximation θ ≈ λ / a n’est plus bonne.</div>}
     </div>
   ) : (
     <div style={{ ...styleBoite, ...cadre('mesures') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
-      <LigneMesure nom="Repère 1 (orange)" valeur={`${nbf(lz.x1, W >= 20 ? 1 : 2)}${NB}mm`} couleur="#f59e0b"/>
-      <LigneMesure nom="Repère 2 (bleu)" valeur={`${nbf(lz.x2, W >= 20 ? 1 : 2)}${NB}mm`} couleur="#0891b2"/>
+      <LigneMesure nom="Repère 1 (orange)" valeur={`${nbf(lz.x1, W >= 20 ? 1 : 2)}${NB}mm`} couleur="#b45309"/>
+      <LigneMesure nom="Repère 2 (bleu)" valeur={`${nbf(lz.x2, W >= 20 ? 1 : 2)}${NB}mm`} couleur="#0e7490"/>
       <LigneMesure nom="Largeur L entre les repères" valeur={`${nbf(Lmes, W >= 20 ? 1 : 2)}${NB}mm`}/>
-      {!enDefi && <LigneMesure nom={objetEff === 'trou' ? 'd calculé = 2,44 λ D / L' : 'a calculé = 2 λ D / L'} valeur={isFinite(aCalc) ? `${nbf(aCalc, 1)}${NB}µm` : '–'} couleur="#16a34a"/>}
-      <div style={{ fontSize: 12.5, color: KIT.txt2, margin: '6px 0 2px' }}>Placer les repères au curseur (ou au clavier avec les flèches sur l’image) :</div>
-      {[[1, 'Repère 1 (orange)', lz.x1], [2, 'Repère 2 (bleu)', lz.x2]].map(([i, n, v]) => <input key={i} type="range" aria-label={n} aria-valuetext={`${nbf(v, 2)} millimètres`} min={-W} max={W} step={W / 300} value={v} onChange={e => setX(i, parseFloat(e.target.value))} style={{ width: '100%', accentColor: i === 1 ? '#d97706' : '#0891b2' }}/>)}
-      {mode === 'explore' && <LigneMesure nom="L prévu par la formule" valeur={`${nbf(Lp, 2)}${NB}mm`} couleur="#16a34a"/>}
+      {!enDefi && !(enGuide && etape === 11) && <LigneMesure nom={objetEff === 'trou' ? 'd calculé = 2,44 λ D / L' : 'a calculé = 2 λ D / L'} valeur={isFinite(aCalc) ? `${nbf(aCalc, 1)}${NB}µm` : '–'} couleur="#15803d"/>}
+      {mode === 'explore' && <LigneMesure nom="L prévu par la formule" valeur={`${nbf(Lp, 2)}${NB}mm`} couleur="#15803d"/>}
     </div>
   );
   const incertBox = scene === 'laser' && inc && (
     <div style={{ ...styleBoite, ...cadre('incert') }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{enDefi && defi?.type === 'laser' ? 'Incertitude relative sur λ' : `Incertitude sur ${objetEff === 'trou' ? 'd' : 'a'}`}</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{enDefi && defi?.type === 'laser' ? 'Incertitude relative sur λ (due à L, D et a)' : `Incertitude sur ${objetEff === 'trou' ? 'd' : 'a'}`}</div>
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginBottom: 6 }}>Type B : u = demi-étendue / √3. Sources supposées indépendantes.</div>
       <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
         <thead><tr style={{ textAlign: 'left', color: KIT.txt2 }}><th style={{ padding: '2px 4px' }}>Source</th><th style={{ padding: '2px 4px' }}>± demi-étendue</th><th style={{ padding: '2px 4px' }}>u / valeur</th><th style={{ padding: '2px 4px' }}>poids</th></tr></thead>
         <tbody>
           {[['L (2 pointés)', `${nbf(dLm, 2)} mm`, inc.uL / (Lmes * 1e-3), inc.part[0], '#f59e0b'],
             ['D (ruban)', `${nbf(dD * 1e3, 0)} mm`, inc.uD / lz.D, inc.part[1], '#b45309'],
-            ['λ (notice)', enDefi && defi?.type === 'laser' ? '± 1 %' : `${nbf(dLambda(lamEff), 1)} nm`, inc.uLa / la, inc.part[2], '#0891b2']].map(([n, d, r, p, c]) => (
+            [enDefi && defi?.type === 'laser' ? 'a (fente)' : 'λ (notice)', enDefi && defi?.type === 'laser' ? '± 0,5 µm' : `${nbf(dLambda(lamEff), 1)} nm`, inc.uLa / la, inc.part[2], '#0e7490']].map(([n, d, r, p, c]) => (
             <tr key={n} style={{ borderTop: `1px dashed ${KIT.bord}` }}><td style={{ padding: '3px 4px', fontWeight: 600 }}>{n}</td><td style={{ padding: '3px 4px' }}>{d}</td><td style={{ padding: '3px 4px', fontFamily: 'monospace' }}>{nbf(r * 100, 2)} %</td>
               <td style={{ padding: '3px 4px', minWidth: 90 }}><div style={{ background: '#e2e8f0', borderRadius: 4, height: 10 }}><div style={{ width: `${Math.round(p * 100)}%`, background: c, height: '100%', borderRadius: 4 }}/></div><span style={{ fontSize: 11.5 }}>{Math.round(p * 100)} %</span></td></tr>))}
         </tbody>
@@ -511,7 +517,7 @@ export function SimulationDiffraction({ naviguer }) {
       <div style={{ marginTop: 6 }}>
         {enDefi && defi?.type === 'laser' && <LigneMesure nom="u(λ) / λ" valeur={`${nbf(inc.rel * 100, 2)} %`}/>}
         {!(enDefi && defi?.type === 'laser') && !(enGuide && etape === 18) && <><LigneMesure nom={`u(${objetEff === 'trou' ? 'd' : 'a'}) / ${objetEff === 'trou' ? 'd' : 'a'}`} valeur={`${nbf(inc.rel * 100, 2)} %`}/>
-        <LigneMesure nom={`u(${objetEff === 'trou' ? 'd' : 'a'})`} valeur={`${nbf(inc.u * 1e6, 1)}${NB}µm`} couleur="#16a34a"/></>}
+        <LigneMesure nom={`u(${objetEff === 'trou' ? 'd' : 'a'})`} valeur={`${nbf(inc.u * 1e6, 1)}${NB}µm`} couleur="#15803d"/></>}
         {enDefi && defi?.type === 'fil' && <LigneMesure nom="Intervalle ± 2 u" valeur={`${nbf(2 * inc.u * 1e6, 1)}${NB}µm`}/>}
       </div>
     </div>);
@@ -546,7 +552,7 @@ export function SimulationDiffraction({ naviguer }) {
         .df-rep:focus { outline: none; } .df-rep:focus-visible line { stroke-width: 5; } .df-rep:focus-visible path { transform-box: fill-box; transform-origin: center; transform: scale(1.8); }
         .df-pri { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr); }
         .df-pri.pile { grid-template-columns: minmax(0, 1fr); }
-        @media (max-width: 900px) { .df-l1.cote, .df-pri { grid-template-columns: minmax(0, 1fr); } }
+        @media (max-width: 900px) { .df-l1.cote, .df-pri { grid-template-columns: minmax(0, 1fr); } .df-l1 .df-carte { order: -1; } }
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 6 }}>
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Diffraction des ondes</h2>
@@ -561,7 +567,7 @@ export function SimulationDiffraction({ naviguer }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{reglages}{mesures}{incertBox}</div>
           </div>
         </div>
-        {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
+        {enGuide ? <div className="df-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div>
           : enDefi ? panneauHypo : null}
       </div>
       {!enDefi && <div className="df-l2">{panneauHypo}</div>}
