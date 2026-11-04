@@ -131,7 +131,9 @@ async function chargerProfil() {
   let prof;
   try { prof = await rest('professeurs?select=nom,admin'); } catch { prof = await rest('professeurs?select=nom'); }
   if (prof.length) return { role: 'prof', nom: prof[0].nom, admin: !!prof[0].admin };
-  const el = await rest('eleves?select=identifiant,classe_id,classes(nom)');
+  let el;
+  try { el = await rest('eleves?select=identifiant,classe_id,classes(nom,site)'); } catch { el = await rest('eleves?select=identifiant,classe_id,classes(nom)'); }   // « site » : supabase/11-energy-at-school.sql
+  if (el.length && el[0].classes?.site === 'energy') throw new ErreurServeur('Ce compte est réservé au site Energy@School.', 403);
   if (el.length) return { role: 'eleve', identifiant: el[0].identifiant, classe_id: el[0].classe_id, classe: el[0].classes?.nom || '' };
   return null;
 }
