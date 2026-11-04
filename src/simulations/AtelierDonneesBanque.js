@@ -1195,6 +1195,98 @@ export const ENONCES = [
         manque: null, solution: { txt: 'η = P_h / P_él × 100, avec P_h = ρ·g·Q_V·H et H = Δz + Δp_J / (ρ·g)', val: Ph / (p.Pel * 1000) * 100, u: '%' } };
     },
   },
+  // ───────────────────────────── Ondes (TSTL) : diffraction, interférences, réseaux
+  {
+    id: 'ondDiffraction', domaine: 'Ondes', titre: 'Largeur d’une fente par diffraction', noms: ['Angle d’ouverture', 'Largeur de la fente'],
+    gen: () => { const lam = tire([532, 633, 650]), a = tire([40, 50, 60, 80, 100]), D = tire([1.5, 2.0, 2.5, 3.0]); return { lam, a, D, L: Math.round(2 * lam * 1e-9 * D / (a * 1e-6) * 1e4) / 10, P: tire([1, 5]) }; },
+    build: (p, q) => {
+      const tokens = {
+        lam: tok(`${p.lam} nm`, 'Longueur d’onde du laser', p.lam, 'nm'),
+        P: tok(`${p.P} mW`, 'Puissance du laser', p.P, 'mW'),
+        D: tok(`${nb(p.D, 1)} m`, 'Distance entre la fente et l’écran', p.D, 'm'),
+        L: tok(`${nb(p.L, 1)} mm`, 'Largeur de la tache centrale', p.L, 'mm'),
+      };
+      const theta = p.L * 1e-3 / (2 * p.D);
+      const debut = ['Un laser de longueur d’onde ', T('lam'), ' et de puissance ', T('P'), ' éclaire une fente fine et verticale. Sur un écran placé à ', T('D'), ' de la fente, la tache centrale de diffraction, mesurée entre ses deux premières extinctions, a une largeur ', T('L'),
+        '. Les angles sont petits : on prend tan θ ≈ θ, avec θ en radian ; l’angle d’ouverture θ est la demi-largeur angulaire de la tache centrale, vue depuis la fente, et on admet θ = λ / a pour une fente de largeur a. '];
+      const rP = 'La puissance du laser change l’éclat de la figure, pas ses dimensions.';
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est l’angle d’ouverture θ de la figure ?'], utiles: ['L', 'D'],
+        raisons: { lam: 'La longueur d’onde servira ensuite à relier θ à la largeur de la fente, mais elle n’intervient pas pour obtenir θ à partir de la géométrie.', P: rP },
+        cherche: { bonne: 'L’angle d’ouverture θ de la figure (en rad)', faux: ['La largeur a de la fente (en µm)', 'La largeur L de la tache centrale (en mm)', 'La longueur d’onde λ du laser (en nm)'] },
+        manque: null, solution: { txt: 'θ = L / (2D)', val: theta, u: 'rad' } };
+      return { tokens, texte: [...debut, 'Quelle est la largeur a de la fente ?'], utiles: ['lam', 'L', 'D'],
+        derivees: [{ id: 'theta', nom: 'Angle d’ouverture', expr: 'θ = L / (2D)', val: theta, u: 'rad' }],
+        raisons: { P: rP },
+        cherche: { bonne: 'La largeur a de la fente (en µm)', faux: ['L’angle d’ouverture θ de la figure (en rad)', 'La largeur L de la tache centrale (en mm)', 'La longueur d’onde λ du laser (en nm)'] },
+        manque: null, solution: { txt: 'a = λ / θ = 2λD / L', val: p.lam * 1e-9 / theta * 1e6, u: 'µm' } };
+    },
+  },
+  {
+    id: 'ondYoung', domaine: 'Ondes', titre: 'Franges de Young : interfrange et distance entre les fentes', noms: ['Interfrange', 'Distance entre les fentes'],
+    gen: () => {
+      for (;;) {
+        const lam = tire([532, 633, 650]), l = tire([200, 250, 300, 400, 500]), a = tire([30, 40, 50]), D = tire([1.5, 2.0, 2.5, 3.0]), N = tire([7, 9, 11]);
+        if ((N - 1) / 2 > 0.6 * l / a) continue;                       // les franges comptées restent bien lumineuses, dans la tache centrale de diffraction
+        const i = lam * 1e-9 * D / (l * 1e-6) * 1e3;                   // mm
+        return { lam, l, a, D, N, X: Math.round((N - 1) * i * 10) / 10 };
+      }
+    },
+    build: (p, q) => {
+      const tokens = {
+        lam: tok(`${p.lam} nm`, 'Longueur d’onde du laser', p.lam, 'nm'),
+        a: tok(`${p.a} µm`, 'Largeur de chaque fente', p.a, 'µm'),
+        D: tok(`${nb(p.D, 1)} m`, 'Distance entre les fentes et l’écran', p.D, 'm'),
+        N: tok(`${p.N} franges brillantes`, 'Nombre de franges brillantes comptées', p.N, ''),
+        X: tok(`${nb(p.X, 1)} mm`, 'Distance entre le centre de la première et celui de la dernière frange comptée', p.X, 'mm'),
+      };
+      const i = p.X / (p.N - 1);
+      const debut = ['Un laser de longueur d’onde ', T('lam'), ' éclaire deux fentes identiques, de largeur ', T('a'), ' chacune, séparées par une distance l. L’écran est à ', T('D'), ' des fentes. On compte ', T('N'), ' consécutives, régulièrement espacées (la lumière diffractée par chaque fente étale la figure, mais on n’en tient pas compte ici) ; la distance entre le centre de la première et celui de la dernière vaut ', T('X'), '. '];
+      const rA = 'La largeur de chaque fente règle l’étendue de la zone éclairée (diffraction par chaque fente), pas l’écart entre deux franges voisines.';
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est l’interfrange i (distance entre deux franges brillantes consécutives) ?'], utiles: ['X', 'N'],
+        raisons: { lam: 'La longueur d’onde permettrait de calculer l’interfrange si l était connue ; ici l’interfrange est mesurée directement sur l’écran.', a: rA, D: 'La distance fentes-écran ne sert pas à mesurer une distance déjà relevée sur l’écran.' },
+        cherche: { bonne: 'L’interfrange i (en mm)', faux: ['La distance l entre les deux fentes (en µm)', 'La distance X divisée par le nombre N de franges (en mm)', 'La longueur d’onde λ du laser (en nm)'] },
+        manque: null, solution: { txt: 'i = X / (N − 1) : N franges délimitent N − 1 interfranges', val: i, u: 'mm' } };
+      return { tokens, texte: [...debut, 'Quelle est la distance l entre les deux fentes ?'], utiles: ['lam', 'D', 'X', 'N'],
+        derivees: [{ id: 'i', nom: 'Interfrange', expr: 'i = X / (N − 1)', val: i, u: 'mm' }],
+        raisons: { a: rA },
+        cherche: { bonne: 'La distance l entre les deux fentes (en µm)', faux: ['L’interfrange i (en mm)', 'La largeur a de chaque fente (en µm)', 'La distance D entre les fentes et l’écran (en m)'] },
+        manque: null, solution: { txt: 'l = λ·D / i', val: p.lam * 1e-9 * p.D / (i * 1e-3) * 1e6, u: 'µm' } };
+    },
+  },
+  {
+    id: 'ondReseau', domaine: 'Ondes', titre: 'Un réseau éclairé par un laser', noms: ['Angle de déviation de l’ordre 1', 'Pas du réseau', 'Longueur d’onde du laser'],
+    gen: () => {
+      const lam = tire([405, 532, 650]), n = tire([200, 250, 400, 500]), D = tire([1.0, 1.5]), a = 1e3 / n;           // a en µm
+      const th = Math.asin(lam * 1e-3 / a);                                                                               // sin θ₁ = λ / a (λ en nm, a en µm : facteur 10⁻³)
+      return { lam, n, D, a, x1: Math.round(D * Math.tan(th) * 1e3) / 10, P: tire([1, 5]) };                              // x₁ en cm, au mm près
+    },
+    build: (p, q) => {
+      const tokens = {
+        lam: tok(`${p.lam} nm`, 'Longueur d’onde du laser', p.lam, 'nm'),
+        n: tok(`${p.n} traits par mm`, 'Nombre de traits par millimètre du réseau', p.n, 'mm⁻¹'),
+        D: tok(`${nb(p.D, 1)} m`, 'Distance entre le réseau et l’écran', p.D, 'm'),
+        x1: tok(`${nb(p.x1, 1)} cm`, 'Distance entre la tache d’ordre 1 et la tache centrale', p.x1, 'cm'),
+        P: tok(`${p.P} mW`, 'Puissance du laser', p.P, 'mW'),
+      };
+      const th = Math.atan(p.x1 * 1e-2 / p.D), s1 = Math.sin(th);
+      const rP = 'La puissance du laser change l’éclat des taches, pas leur position.';
+      const entete = ['Un laser éclaire sous incidence normale un réseau, placé à ', T('D'), ' d’un écran. '];
+      if (q === 0) return { tokens: { D: tokens.D, x1: tokens.x1, P: tokens.P }, derivees: [], texte: [...entete, 'Le laser a une puissance ', T('P'), '. La tache d’ordre 1 est à ', T('x1'), ' de la tache centrale (ordre 0). Quel est l’angle de déviation θ₁ de l’ordre 1 (en degré) ? '],
+        utiles: ['x1', 'D'], raisons: { P: rP },
+        cherche: { bonne: 'L’angle de déviation θ₁ de l’ordre 1 (en degré)', faux: ['Le pas a du réseau (en µm)', 'La distance x₁ entre les deux taches (en cm)', 'Le sinus de l’angle θ₁ (sans unité)'] },
+        manque: null, solution: { txt: 'tan θ₁ = x₁ / D, donc θ₁ = arctan(x₁ / D)', val: th * 180 / Math.PI, u: '°' } };
+      if (q === 1) return { tokens: { lam: tokens.lam, D: tokens.D, x1: tokens.x1, P: tokens.P }, texte: [...entete, 'Le laser a une longueur d’onde ', T('lam'), ' et une puissance ', T('P'), '. La tache d’ordre 1 est à ', T('x1'), ' de la tache centrale (ordre 0). Quel est le pas a du réseau, sachant que sin θ₁ = λ / a pour l’ordre 1 ? '],
+        utiles: ['lam', 'x1', 'D'], derivees: [{ id: 'th', nom: 'Angle de déviation de l’ordre 1', expr: 'θ₁ = arctan(x₁ / D)', val: th * 180 / Math.PI, u: '°' }],
+        raisons: { P: rP },
+        cherche: { bonne: 'Le pas a du réseau (en µm)', faux: ['L’angle de déviation θ₁ de l’ordre 1 (en degré)', 'Le nombre de traits par millimètre du réseau (en mm⁻¹)', 'La longueur d’onde λ du laser (en nm)'] },
+        manque: null, solution: { txt: 'a = λ / sin θ₁', val: p.lam * 1e-9 / s1 * 1e6, u: 'µm' } };
+      return { tokens: { n: tokens.n, D: tokens.D, x1: tokens.x1, P: tokens.P }, texte: [...entete, 'Le réseau comporte ', T('n'), '. Le laser a une puissance ', T('P'), ' ; sa longueur d’onde est inconnue. La tache d’ordre 1 est à ', T('x1'), ' de la tache centrale (ordre 0). Quelle est la longueur d’onde λ du laser, sachant que sin θ₁ = λ / a pour l’ordre 1 ? '],
+        utiles: ['n', 'x1', 'D'], derivees: [{ id: 'a', nom: 'Pas du réseau', expr: 'a = 1 / n', val: 1e3 / p.n, u: 'µm' }, { id: 'th', nom: 'Angle de déviation de l’ordre 1', expr: 'θ₁ = arctan(x₁ / D)', val: th * 180 / Math.PI, u: '°' }],
+        raisons: { P: rP },
+        cherche: { bonne: 'La longueur d’onde λ du laser (en nm)', faux: ['Le pas a du réseau (en µm)', 'L’angle de déviation θ₁ de l’ordre 1 (en degré)', 'La fréquence du laser (en Hz)'] },
+        manque: null, solution: { txt: 'λ = a·sin θ₁', val: 1e3 / p.n * s1 * 1e3, u: 'nm' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
