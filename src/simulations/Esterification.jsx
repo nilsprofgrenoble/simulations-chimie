@@ -284,13 +284,13 @@ export function SimulationEsterification({ naviguer }) {
           <rect x="361" y="171" width="44" height={129 - 120 * niveau} fill="#fef9c3" opacity="0.8"/>
           {[0, 4, 8, 12].map(v => <g key={v}><line x1="406" y1={300 - 120 * v / 12} x2="414" y2={300 - 120 * v / 12} stroke="#475569"/><text x="418" y={304 - 120 * v / 12} fontSize="10.5" fill="#334155">{v}</text></g>)}
           <text x="383" y="320" fontSize="11" textAnchor="middle" fill="#334155">décanteur (mL)</text>
-          <path d="M360,200 L330,200 L330,150" fill="none" stroke="#64748b" strokeWidth="3" strokeDasharray="4 3"/><text x="338" y="195" fontSize="10.5" fill="#475569">cyclohexane retour</text>
+          <path d="M360,200 L330,200 L330,150" fill="none" stroke="#64748b" strokeWidth="3" strokeDasharray="4 3"/>
         </g>}
         <path d="M292,150 L292,215" stroke="#94a3b8" strokeWidth="6"/>
         <circle cx="292" cy="268" r="55" fill="#fef3c7" stroke="#475569" strokeWidth="2.5"/><rect x="278" y="215" width="28" height="25" fill="white" stroke="#475569" strokeWidth="2"/>
         <circle cx="292" cy="268" r="42" fill="#fde68a" opacity="0.6"/>
         {bouil && [0, 1, 2, 3].map(k => <circle key={k} cx={270 + k * 14} cy={285 - (k % 2) * 14} r="3" fill="white" opacity="0.9"/>)}
-        <rect x="230" y="318" width="124" height="10" fill="#475569"/><text x="120" y="296" fontSize="11.5" fill="#334155">{bouil ? 'chauffage à reflux' : 'chauffage doux'} ({rx.T} °C)</text>
+        <rect x="230" y="318" width="124" height="10" fill="#475569"/><text x="140" y="324" fontSize="11.5" fill="#334155">{bouil ? 'chauffage à reflux' : 'chauffage doux'} ({rx.T} °C)</text>
         <text x="60" y="22" fontSize="11" fill="#475569">potence</text>
       </svg>);
   };
@@ -309,7 +309,7 @@ export function SimulationEsterification({ naviguer }) {
         {rx.ds && ligne(sim.Wd, COUL.W, '5 3')}
         <line x1={X(rx.t)} y1={Y(0)} x2={X(rx.t)} y2={Y(Ymax)} stroke="#0f172a" strokeWidth="1.3" strokeDasharray="3 3"/>
         {[[nAt, COUL.A], [nBt, COUL.B], [nE, COUL.E]].map(([v, c], i) => <circle key={i} cx={X(rx.t)} cy={Y(v)} r="4.5" fill={c} stroke="white" strokeWidth="1.5"/>)}
-        <g fontSize="11.5" fontWeight="700"><text x={W - 14} y="22" textAnchor="end" fill={COUL.A}>acide</text><text x={W - 14} y="36" textAnchor="end" fill={COUL.B}>{alc.nom}</text><text x={W - 14} y="50" textAnchor="end" fill={COUL.E}>ester</text>{rx.ds && <text x={W - 14} y="64" textAnchor="end" fill={COUL.W}>eau du décanteur</text>}</g>
+        <g fontSize="11.5" fontWeight="700" transform={`translate(0 ${H - 90})`}><text x={W - 14} y="22" textAnchor="end" fill={COUL.A}>acide</text><text x={W - 14} y="36" textAnchor="end" fill={COUL.B}>{alc.nom}</text><text x={W - 14} y="50" textAnchor="end" fill={COUL.E}>ester</text>{rx.ds && <text x={W - 14} y="64" textAnchor="end" fill={COUL.W}>eau du décanteur</text>}</g>
       </svg>);
   };
   const SceneReaction = () => <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{Montage()}{Courbes()}</div>;

@@ -39,6 +39,7 @@ export const CHAPITRES = [
   { id: 'tstl-controle', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '🧲 Contrôle des systèmes', sims: [46, 44, 45], domaines: ['Contrôle des systèmes'] },
   { id: 'tstl-ondes', niveau: 'TSTL', rubrique: 'Ondes', label: '🌊 Ondes', sims: [83, 84], domaines: ['Ondes'] },
   { id: 'tstl-acides-bases', niveau: 'TSTL', rubrique: 'Chimie et développement durable', label: '🧪 Acides et bases', sims: [85], domaines: ['Acides et bases'] },
+  { id: 'tstl-synthese-organique', niveau: 'TSTL', rubrique: 'Chimie et développement durable', label: '⚗️ Synthèse organique', sims: [86], domaines: ['Synthèse organique'] },
 
   // Analyse : électrochimie, chromatographie, étalonnage et quantification, fiabilité des mesures
   { id: 'bts-analyse', niveau: 'BTS', label: '🔬 Analyse', sims: [3, 29, 12, 54, 55, 11, 13, 9, 16], domaines: ['Chimie', 'Métrologie'] },

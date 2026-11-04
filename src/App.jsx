@@ -39,6 +39,7 @@ import { SimulationBoussole } from "./simulations/Boussole";
 import { SimulationDiffraction } from "./simulations/Diffraction";
 import { SimulationInterferences } from "./simulations/Interferences";
 import { SimulationAcidesBases } from "./simulations/AcidesBases";
+import { SimulationEsterification } from "./simulations/Esterification";
 import { SimulationChampForce } from "./simulations/ChampForce";
 import { SimulationDeuxCorps } from "./simulations/DeuxCorps";
 import { SimulationCondensateurMillikan } from "./simulations/CondensateurMillikan";
@@ -161,6 +162,8 @@ const SIMULATIONS = [
     component: SimulationInterferences },
   { id:85, label:"Acides et bases : pH, pKa, tampon et titrage", niveau:"TSTL", icon:"🧪", color:"#0f766e",
     component: SimulationAcidesBases },
+  { id:86, label:"Synthèse organique : estérification, Dean-Stark et CCM", niveau:"TSTL", icon:"⚗️", color:"#9a3412",
+    component: SimulationEsterification },
   { id:48, label:"Champ et force : gravitation et électrostatique", niveau:"1G", icon:"🌍", color:"#3f6212",
     component: SimulationChampForce },
   { id:49, label:"Deux corps en interaction : gravitation et Coulomb", niveau:"1G", icon:"🌙", color:"#3f6212",
