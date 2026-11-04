@@ -100,7 +100,7 @@ import { DESCRIPTIONS } from "./descriptions";
 //  MENU — modifiez les noms et icônes ici
 // ============================================================
 
-const ENERGY_URL = "https://nilsprofgrenoble.github.io/energy-at-school/";
+const ENERGY_URL = "https://energy.paillasse-virtuelle.fr/";
 
 const SIMULATIONS = [
   { id: 1, label: "Avancement d'une réaction", icon: "⚗️", color: "#2a9d8f", component: Simulation1, niveau: "1G" },
