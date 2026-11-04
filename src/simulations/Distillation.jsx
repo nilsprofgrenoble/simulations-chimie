@@ -335,7 +335,7 @@ export function SimulationDistillation({ naviguer }) {
         pieges: [[100, 'L’eau pure bout à 100 °C, mais le vin est un mélange : il commence à bouillir plus bas.'], [78.4, 'C’est l’éthanol pur. Le vin contient surtout de l’eau.']],
         expl: 'Un mélange bout en commençant à une température intermédiaire (ici environ 92 °C) et cette température augmente ensuite : contrairement à un corps pur, elle n’est pas constante.' } },
     { id: 'vapeur', titre: 'La première vapeur', focus: ['diagramme'],
-      texte: <>À cette température, la première vapeur se forme. Sa composition se lit <strong>à l’horizontale</strong>, sur la <strong style={{ color: '#dc2626' }}>courbe de rosée</strong> (rouge) : c’est le point rouge de la première marche.</>,
+      texte: <>À cette température ({nf(G.Teb, 1)}{NB}°C, celle de l’ébullition commençante), la première vapeur se forme. Sa composition se lit <strong>à l’horizontale</strong>, sur la <strong style={{ color: '#dc2626' }}>courbe de rosée</strong> (rouge) : c’est le point rouge de la première marche.</>,
       tache: { type: 'num', q: <>Fraction molaire <Xi e="V"/> en éthanol de la première vapeur</>, unite: '', vrai: G.y1, tol: 0.1, affiche: x => nf(x), cs: 3,
         bloque: reglageEW && f === 0 ? null : 'Réglez d’abord le vin (étape 2).',
         aide: 'Lecture : partez du point bleu, allez à l’horizontale (même température) jusqu’à la courbe rouge, puis lisez l’abscisse de ce point rouge.',

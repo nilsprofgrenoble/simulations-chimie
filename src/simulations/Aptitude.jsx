@@ -344,7 +344,7 @@ export function SimulationAptitude() {
         pieges: piegesLoin([[P.reduce((a, b) => a + b, 0), 'Vous avez donné la somme : il faut encore la diviser par le nombre de laboratoires (10).'],
           [P.reduce((a, b) => a + b, 0) / (P.length - 1), 'Pour une moyenne, on divise par N (10 résultats), pas par N − 1.']], mP) } },
     { id: 'ecartType', titre: 'L’écart-type expérimental', focus: [],
-      texte: <>Sur la calculatrice : σ<sub>n−1</sub> (ou s<sub>x</sub>).</>,
+      texte: <>Sur la calculatrice : σ<sub>n−1</sub> (ou s<sub>x</sub>), calculé sur les 10 résultats (mg/L) : {P.map(x => fmt(x, 1)).join(' ; ')}.</>,
       tache: { type: 'num', q: 'Écart-type expérimental s', unite: 'mg/L', vrai: sP, tol: 0.02, affiche: x => fmt(x, 2),
         calcul: () => {
           const S = P.reduce((a, b) => a + (b - mP) ** 2, 0);
@@ -357,7 +357,7 @@ export function SimulationAptitude() {
           ...piegesLoin([[sP ** 2, 'C’est la variance s² : l’écart-type est sa racine carrée.'],
             [Math.sqrt(P.reduce((a, b) => a + (b - mP) ** 2, 0)), 'Il manque la division par N − 1 (= 9) sous la racine.']], sP)] } },
     { id: 'z', titre: 'Le z-score d’un laboratoire', focus: [],
-      texte: <>Le laboratoire {iLab + 1} (en jaune) a trouvé {fmt(P[iLab], 1)} mg/L.</>,
+      texte: <>Le laboratoire {iLab + 1} (en jaune) a trouvé {fmt(P[iLab], 1)} mg/L. Rappel : x̄ = {fmt(mP, 2)} mg/L et s = {fmt(sP, 2)} mg/L (étapes précédentes).</>,
       tache: { type: 'num', q: `z-score du laboratoire ${iLab + 1}`, unite: '', vrai: zRef[iLab], tol: 0.03, affiche: x => fmt(x, 2),
         calcul: () => ['z = (x − x̄) / s, avec x̄ et s calculés sur tous les laboratoires. Si les laboratoires sont compétents, z suit à peu près une loi normale centrée réduite (hypothèse qui justifie les seuils 2 et 3).',
           `x − x̄ = ${fmt(P[iLab], 1)} − ${fmt(mP, 2)} = ${fmt(P[iLab] - mP, 2)} mg/L (négatif : le laboratoire trouve moins que la moyenne).`,
@@ -392,7 +392,7 @@ export function SimulationAptitude() {
       tache: { type: 'qcm', q: 'Avec 10 laboratoires, quelle catégorie est impossible à atteindre ?', options: ['non satisfaisant : |z| ne peut pas dépasser 2,85', 'discutable', 'aucune'], bonne: 0,
         expl: 'Avec 9 laboratoires, la borne tombe à 2,67 ; avec 5, à 1,79 : même « discutable » devient impossible. Il faut le savoir avant d’interpréter un essai à peu de participants.' } },
     { id: 'robuste', titre: 'Des statistiques robustes', focus: ['formule'],
-      texte: <>Choisissez « Médiane et MAD (robuste) » : la médiane remplace la moyenne, et s* = 1,483 × MAD remplace s (la MAD est la médiane des écarts absolus à la médiane). Une valeur aberrante les déplace très peu.</>,
+      texte: <>Choisissez « Médiane et MAD (robuste) » : la médiane remplace la moyenne, et s* = 1,483 × MAD remplace s (la MAD est la médiane des écarts absolus à la médiane). Une valeur aberrante les déplace très peu. Les résultats (mg/L) : {P.map(x => fmt(x, 1)).join(' ; ')}.</>,
       tache: { type: 'num', q: 'Médiane des 10 résultats', unite: 'mg/L', vrai: medP, tol: 0.001, affiche: x => fmt(x, 2),
         calcul: () => { const t = [...P].sort((a, b) => a - b), n = t.length;
           return [`On range les ${n} résultats par ordre croissant : ${t.map(x => fmt(x, 1)).join(' ; ')}.`,
@@ -401,7 +401,7 @@ export function SimulationAptitude() {
         pieges: [[mP, 'C’est la moyenne : rangez les valeurs et prenez celle du milieu (ici la moyenne des deux du milieu).']] } },
     { id: 'iso', titre: 'La norme ISO 13528', focus: ['formule'],
       texte: <>Les professionnels utilisent z = (x<sub>i</sub> − x<sub>pt</sub>) / σ<sub>pt</sub>. Ici, l'organisateur a utilisé un <strong>matériau de
-        référence certifié</strong> : x<sub>pt</sub> = 24,0 mg/L ; et il a fixé, d'après l'exigence de la méthode, σ<sub>pt</sub> = 1,2 mg/L. Choisissez « Norme ISO 13528 ».</>,
+        référence certifié</strong> : x<sub>pt</sub> = 24,0 mg/L ; et il a fixé, d'après l'exigence de la méthode, σ<sub>pt</sub> = 1,2 mg/L. Le laboratoire 10 a trouvé {fmt(P[9], 1)} mg/L. Choisissez « Norme ISO 13528 ».</>,
       tache: { type: 'num', q: 'z-score du laboratoire 10 avec cette formule', unite: '', vrai: (P[9] - 24) / 1.2, tol: 0.02, affiche: x => fmt(x, 2),
         calcul: () => ['z = (x − x_pt) / σ_pt. Hypothèses : x_pt = 24,0 mg/L (valeur de référence du matériau certifié, supposée exacte) et σ_pt = 1,2 mg/L (fixé à l’avance, indépendant des résultats des laboratoires).',
           `x − x_pt = ${fmt(P[9], 1)} − ${fmt(24, 1)} = ${fmt(P[9] - 24, 1)} mg/L.`,

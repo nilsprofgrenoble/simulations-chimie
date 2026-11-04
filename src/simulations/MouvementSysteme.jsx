@@ -295,7 +295,7 @@ export function SimulationMouvementSysteme() {
       tache: { type: 'qcm', q: 'La force responsable de la variation de vitesse est…', options: ['le poids P de la bille (vertical, vers le bas)', 'le poids et une poussée dans le sens du mouvement', 'aucune force : la vitesse change toute seule'], bonne: 0,
         expl: 'La bille n’est soumise qu’à son poids. Le vecteur Δv a le même direction et le même sens que cette force.' } },
     { id: 'loi', titre: 'La relation ΣF ≈ m·Δv/Δt', onglet: 'chrono', focus: ['bilan'],
-      texte: <>Le tableau donne la masse (m = 0,100 kg), ‖Δv‖ et Δt = 2τ. Calculez m·‖Δv‖/Δt, puis comparez avec le poids de la bille.</>,
+      texte: <>Le tableau donne la masse (m = 0,100 kg), ‖Δv‖ (≈ 2,35 m/s, trouvé à l’étape précédente) et Δt = 2τ = 0,24 s. Calculez m·‖Δv‖/Δt, puis comparez avec le poids de la bille.</>,
       tache: { type: 'num', q: 'm·‖Δv‖ / Δt (en N)', unite: 'N', vrai: 0.1 * G0, tol: 0.03, affiche: v => vir(v.toFixed(2)), cs: 2,
         pieges: [[0.1 * 2 * G0 * 0.12, 'Vous avez oublié de diviser par Δt = 2τ = 0,24 s : ΣF ≈ m·‖Δv‖ / Δt.'],
           [0.1 * 2 * G0 * 0.12 / 0.12, 'Δt n’est pas τ = 0,12 s : c’est la durée entre v_[i−1] et v_[i+1], soit 2τ = 0,24 s.'],
@@ -363,7 +363,7 @@ export function SimulationMouvementSysteme() {
       tache: { type: 'qcm', q: 'Le vecteur Δv est dirigé…', options: ['vers la Terre', 'vers l’avant, le long de la trajectoire', 'à l’opposé de la Terre'], bonne: 0,
         expl: 'La direction de v change : Δv pointe vers l’intérieur de l’orbite, donc vers la Terre. C’est bien la direction de la force de gravitation exercée par la Terre.' } },
     { id: 'lunef', titre: 'La force exercée par la Terre', onglet: 'chrono', focus: ['bilan'],
-      texte: <>La masse de la Lune est m = 7,35×10²² kg. Calculez m·‖Δv‖/Δt avec les valeurs du tableau (attention aux unités : km/s et jours ; passez en m/s et en s).</>,
+      texte: <>La masse de la Lune est m = 7,35×10²² kg. Calculez m·‖Δv‖/Δt avec les valeurs du tableau, au point A5 (attention aux unités : km/s et jours ; passez en m/s et en s).</>,
       tache: { type: 'num', q: 'm·‖Δv‖ / Δt (en N)', unite: 'N', vrai: FCIN_LUNE, tol: 0.04, affiche: v => sci(v, 2), cs: 2,
         bloque: okLune ? null : 'Faites d’abord la construction pour la Lune.',
         pieges: (() => { const S = SCEN.lune.build({}), d = dvEn(analyser(S, 0), S, 5, 1);

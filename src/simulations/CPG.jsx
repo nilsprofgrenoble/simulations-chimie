@@ -476,7 +476,7 @@ export function SimulationCPG() {
       texte: <>On injecte 0,2 µL d’un mélange d’éthanol, d’acétone, d’acétate d’éthyle, de toluène et d’o-xylène (5 % de chacun dans du CS₂, invisible au FID), sur colonne <strong>apolaire</strong>, avec un programme de 40 à 200 °C. Regardez les bandes avancer et le chromatogramme se tracer, puis survolez les pics.</>,
       tache: { type: 'action', ok: lancement > 0 && memeMelange(CINQ), label: '▶ Mettre le mélange et injecter', faire: () => mettre(CINQ), consigne: 'Glissez sur le chromatogramme pour zoomer sur les premiers pics.' } },
     { id: 'teb', titre: 'Sur colonne apolaire : l’ordre des températures d’ébullition', focus: ['viz', 'resultats'],
-      texte: <>Le tableau des résultats donne la température d’ébullition de chaque composé. Comparez avec l’ordre de sortie.</>,
+      texte: <>Le tableau des résultats donne la température d’ébullition de chaque composé du mélange injecté à l’étape précédente. Comparez avec l’ordre de sortie.</>,
       tache: { type: 'qcm', q: 'Sur une colonne apolaire, les composés sortent à peu près…', options: ['dans l’ordre croissant de leur température d’ébullition', 'dans l’ordre décroissant de leur température d’ébullition', 'dans l’ordre de leur masse molaire, quelle que soit leur famille'], bonne: 0,
         expl: 'Sur une phase apolaire, la rétention dépend surtout de la volatilité : plus un composé est volatil, plus il passe de temps dans le gaz et sort tôt. Ce n’est qu’une tendance : l’éthanol (78 °C) sort avant l’acétone (56 °C) car ses liaisons hydrogène ne trouvent pas de partenaire dans la phase apolaire.' } },
     { id: 'polaire', titre: 'Sur colonne polaire : les liaisons hydrogène', focus: ['colonne', 'viz', 'resultats'],

@@ -173,7 +173,7 @@ export function Simulation4({ plotlyReady }) {
         proportions dans le cadre « Mon mélange » pour obtenir RED ≤ 0,41.</>,
       tache: { type: 'action', ok: redMel <= 0.41 && polyId === 'tp', consigne: `RED actuel : ${fmt(redMel, 2)}${polyId !== 'tp' ? ' (revenez aux données du TP)' : ''}` } },
     { id: 'diluer', titre: 'Jusqu’où diluer ?', focus: ['mel'],
-      texte: <>Augmentez maintenant la part d'éthanol, jusqu'à ce que le mélange sorte de la sphère.</>,
+      texte: <>Reprenez le mélange d'acétate d'éthyle et d'éthanol (sans autre solvant) : augmentez maintenant la part d'éthanol, jusqu'à ce que le mélange sorte de la sphère.</>,
       tache: { type: 'num', q: 'Part maximale d’éthanol (en % du volume) pour rester dans la sphère', unite: '%', vrai: fMax * 100, tol: 0.03, affiche: x => fmt(x, 0),
         calcul: (() => {
           const E = SOLVANTS.ea, T = SOLVANTS.etoh, dP = T.p - E.p, dH = T.h - E.h, p0 = E.p - PT.p, h0 = E.h - PT.h, c0 = 4 * (E.d - PT.d) ** 2 + p0 * p0 + h0 * h0;
@@ -209,7 +209,7 @@ export function Simulation4({ plotlyReady }) {
       tache: { type: 'qcm', q: 'Que peut-on craindre en fin de séchage ?', options: ['Le dernier solvant est l’éthanol, un non-solvant (RED = 1,15) : la nitrocellulose risque de précipiter avant que le film soit formé', 'Rien : le mélange est dans la sphère au départ', 'Que le vernis sèche trop lentement'], bonne: 0,
         expl: 'Avec deux solvants de volatilités proches et un azéotrope, on ne peut pas prévoir sans mesure le moment exact où cela arrive ; mais le risque est réel, puisque le dernier liquide présent ne dissout pas le polymère.' } },
     { id: 'lent', titre: 'Le rôle du solvant lent', focus: ['sech'],
-      texte: <>Ajoutez de l'acétate de butyle au mélange (au moins 10 % du volume).</>,
+      texte: <>Gardez le mélange précédent (acétate d'éthyle et éthanol, environ 30 % / 70 %) et ajoutez-y de l'acétate de butyle (au moins 10 % du volume).</>,
       tache: { type: 'action', ok: !!dernier && dernier.k === 'ba' && vol.ba / tot >= 0.1 && redMel < 1,
         consigne: dernier ? `Dernier solvant : ${SOLVANTS[dernier.k].nom} (RED = ${fmt(ra(P, SOLVANTS[dernier.k]) / P.R0, 2)})` : 'Réglez un mélange.' } },
     { id: 'regle', titre: 'La règle de formulation', focus: [],

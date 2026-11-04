@@ -247,7 +247,7 @@ export function SimulationMailles() {
           [compacite(4, RCu, Cu.a) * 100, 'La compacité demandée est une fraction entre 0 et 1, pas un pourcentage : divisez par 100.'],
           [compacite(4, RCu, Cu.a) * 0.75, 'Le volume d’une sphère est (4/3) π R³ : n’oubliez pas le facteur 4/3.']], expl: 'C = 4 × (4/3) × π × 0,1278³ / 0,36149³ = 0,74. Cette valeur est la même pour tous les métaux CFC.' } },
     { id: 'masse', titre: 'La masse volumique', depart: () => voir({ atelier: 'maille', met: 'Cu', echelle: 0.5, contact: false, corrige: false }),
-      texte: <>La masse d’une maille est n M / N<sub>A</sub> et son volume a³ : <strong>ρ = n M / (N<sub>A</sub> a³)</strong>, avec a en cm (1 nm = 10⁻⁷ cm). M(Cu) = {fr(Cu.M, 3)} g/mol. N<sub>A</sub> = 6,022 × 10²³ mol⁻¹.</>,
+      texte: <>La masse d’une maille est n M / N<sub>A</sub> et son volume a³ : <strong>ρ = n M / (N<sub>A</sub> a³)</strong>, avec a en cm (1 nm = 10⁻⁷ cm). Pour le cuivre : n = 4 atomes par maille, a = {fr(Cu.a, 5)} nm, M(Cu) = {fr(Cu.M, 3)} g/mol. N<sub>A</sub> = 6,022 × 10²³ mol⁻¹.</>,
       tache: { type: 'num', q: 'Masse volumique du cuivre (en g/cm³)', unite: 'g/cm³', vrai: masseVol(4, Cu.M, Cu.a), tol: 0.02, affiche: x => fr(x, 2),
         calcul: () => { const aCm = Cu.a * 1e-7, m = 4 * Cu.M / 6.02214076e23;
           return ['ρ = n M / (N_A a³) avec n = 4 atomes par maille (CFC) et a en cm.',

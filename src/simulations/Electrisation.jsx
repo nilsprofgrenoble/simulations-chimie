@@ -356,7 +356,7 @@ export function SimulationElectrisation() {
       tache: { type: 'qcm', q: 'Après frottement, la tige en verre est chargée…', options: ['positivement : elle a perdu des électrons', 'négativement : elle a gagné des électrons', 'positivement : elle a gagné des protons'], bonne: 0,
         expl: 'Le tissu arrache des électrons au verre. Le verre, qui a perdu des charges négatives, est chargé positivement. Les protons, eux, ne bougent pas.' } },
     { id: 'compte', titre: 'Compter la charge', onglet: 'frottement', focus: ['bilan'],
-      texte: <>La charge de la tige s’exprime en nombre de charges élémentaires e. Une tige neutre qui perd n électrons porte la charge +n·e.</>,
+      texte: <>La charge de la tige s’exprime en nombre de charges élémentaires e. Une tige neutre qui perd n électrons porte la charge +n·e. Ici, la tige en verre a perdu n = {frot.n} électrons (bilan affiché).</>,
       tache: { type: 'num', q: 'Charge de la tige en verre après vos frottements', unite: 'e (avec son signe)', vrai: frot.n, tol: 0.01, affiche: v => String(v), cs: 1,
         bloque: okVerre ? null : 'Frottez d’abord la tige en verre au moins 4 fois (étape précédente).',
         pieges: [[-frot.n, 'Le signe : la tige a perdu des électrons, elle est donc positive.'],

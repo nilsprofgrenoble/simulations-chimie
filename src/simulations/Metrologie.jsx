@@ -252,7 +252,7 @@ export function SimulationMetrologie() {
         « moyenne » de ces écarts ; la bande bleue s'étend d'un écart-type de chaque côté.</>,
       tache: { type: 'action', ok: vuesEcarts, consigne: vuesEcarts ? null : 'Affichez la vue « Écarts à la moyenne ».' } },
     { id: 'ecartType', titre: 'L’écart-type expérimental', focus: [],
-      texte: <>Sur la calculatrice, l'écart-type expérimental est noté σ<sub>n−1</sub> ou s<sub>x</sub>.</>,
+      texte: <>Sur la calculatrice, l'écart-type expérimental est noté σ<sub>n−1</sub> ou s<sub>x</sub>. Calculez-le sur les mêmes N = {retG.length} résultats (sans la valeur aberrante) : {retG.map(v => fmt(v, 1)).join(' ; ')} L/mol.</>,
       tache: { type: 'num', q: 'Écart-type expérimental s_x', unite: 'L/mol', vrai: sxG, tol: 0.02, affiche: v => fmt(v, 2),
         calcul: () => { const ss = retG.reduce((a, x) => a + (x - xbG) ** 2, 0); return [
           `Formule : s_x = √[ Σ(xᵢ − x̄)² / (N − 1) ], avec x̄ = ${fmt(xbG, 3)} L/mol et N = ${retG.length} (valeur aberrante exclue).`,
@@ -261,7 +261,7 @@ export function SimulationMetrologie() {
           `s_x = √${fmt(ss / (retG.length - 1), 4)} ≈ ${fmt(sxG, 2)} L/mol.`]; },
         pieges: [[ecartTypePop(retG), 'C’est σ_n, qui divise par N : prenez σ_n−1, qui divise par N − 1.'], [ecartType(G.v), 'Vous avez gardé la valeur aberrante.']] } },
     { id: 'u', titre: 'L’incertitude-type', focus: [],
-      texte: <>La moyenne est plus fiable qu'un résultat isolé. L'incertitude-type sur la moyenne vaut u = s<sub>x</sub> / √N. On l'arrondit
+      texte: <>La moyenne est plus fiable qu'un résultat isolé. L'incertitude-type sur la moyenne vaut u = s<sub>x</sub> / √N, avec N = {retG.length} résultats retenus. On l'arrondit
         <strong> par excès</strong>, avec un seul chiffre significatif.</>,
       tache: { type: 'num', q: 'Incertitude-type u, arrondie par excès à 1 chiffre significatif', unite: 'L/mol', vrai: uG, tol: 0.001, affiche: v => fmt(v, decU),
         calcul: () => [`Hypothèse : les ${retG.length} résultats sont indépendants (groupes distincts, même protocole) ; u est l’incertitude-type de la moyenne.`,

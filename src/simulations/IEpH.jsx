@@ -280,7 +280,7 @@ function ParcoursIEpH({ plotlyReady, changerMode }) {
       tache: { type: "qcm", q: "Pourquoi le mur observé est-il situé environ 0,8 V plus haut que le potentiel thermodynamique ?", options: ["L’oxydation de l’eau est lente sur platine : il faut une surtension pour que le courant apparaisse", "Le platine réagit avec l’eau", "La loi de Nernst n’est pas valable pour l’oxygène"], bonne: 0,
         expl: "C’est la surtension de l’oxydation de l’eau. Dans ce modèle, elle est choisie de façon qualitative (0,8 V)." } },
     { id: "largeur", titre: "La largeur du domaine d’inertie", focus: ["coupe"], vue: V,
-      texte: <>Le mur supérieur observé est à E = 1,23 + 0,8 − 0,059·pH. Calculez la largeur du domaine entre les deux murs.</>,
+      texte: <>Le mur supérieur observé est à E = 1,23 + 0,8 − 0,059·pH ; le mur inférieur est à E = −0,059·pH. Calculez la largeur du domaine entre les deux murs.</>,
       tache: { type: "num", q: "Largeur du domaine d’inertie à pH = 7", unite: "V", vrai: 2.03, tol: 0.02, affiche: v => fmt(v, 2),
         aide: "Mur supérieur − mur inférieur.", pieges: [[1.23, "Il faut tenir compte de la surtension de 0,8 V."]] } },
     { id: "largeur2", titre: "Et à un autre pH ?", focus: ["coupe", "ph"], vue: V,

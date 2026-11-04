@@ -196,7 +196,7 @@ export function SimulationRefractometre({ naviguer }) {
       tache: { type: 'qcm', q: 'Quelle écriture traduit le mieux la lecture ?', options: ['n = 1,3640 ± 0,0002', 'n = 1,364 ± 0,01', 'n = 1,36 ± 0,0001'], bonne: 0,
         expl: 'On garde 4 décimales (dixième de graduation estimé) avec une incertitude de quelques 10⁻⁴. Écrire ±0,0001 serait trop optimiste, et ±0,01 beaucoup trop pessimiste.' } },
     { id: 'courbe', titre: 'Passer de n à la composition', focus: ['courbe'],
-      texte: <>Pour connaître la composition, on utilise la <strong>courbe d’étalonnage</strong> n = f(x) obtenue avec des mélanges eau – éthanol connus. La ligne orange est votre lecture : lisez l’abscisse du premier point d’intersection avec la courbe, <strong>le plus à gauche</strong>.</>,
+      texte: <>Pour connaître la composition, on utilise la <strong>courbe d’étalonnage</strong> n = f(x) obtenue avec des mélanges eau – éthanol connus. La ligne orange correspond à votre lecture, n = {nf(G.n, 4)} (étape 5) : lisez l’abscisse du premier point d’intersection avec la courbe, <strong>le plus à gauche</strong>.</>,
       tache: { type: 'num', q: 'Fraction molaire x en éthanol (première composition possible)', unite: '', vrai: G.x1, tol: 0.1, affiche: v => nf(v, 2), cs: 2,
         bloque: aligne ? null : 'Alignez d’abord la frontière (étape 4).',
         aide: 'Lecture : suivez la ligne orange horizontale jusqu’à sa première rencontre avec la courbe (en partant de la gauche), puis lisez l’abscisse sur l’axe horizontal.',

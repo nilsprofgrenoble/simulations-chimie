@@ -215,7 +215,7 @@ export function SimulationDiffractionRX() {
         <Formule>sin²θ = (λ² / 4a²) × N</Formule>
         Pour tous les pics, λ et a sont les mêmes : sin²θ est <strong>proportionnel à N</strong>. En divisant par le premier pic :
         <Formule>sin²θ / sin²θ₁ = N / N₁</Formule>
-        Ces rapports ne dépendent pas de a : ils ne dépendent que de la structure ! La colonne « sin²θ / sin²θ₁ » du tableau les calcule.</>,
+        Ces rapports ne dépendent pas de a : ils ne dépendent que de la structure ! La colonne « sin²θ / sin²θ₁ » du tableau les calcule. Pour la vérification, on prend 2θ = {fr(r2(W1), 2)}° pour le 1ᵉʳ pic et 2θ = {fr(r2(W3), 2)}° pour le 3ᵉ pic.</>,
       tache: { type: 'num', q: 'Vérifiez à la main : sin²θ / sin²θ₁ pour le 3ᵉ pic', unite: '', vrai: Math.sin(rad(r2(W3) / 2)) ** 2 / Math.sin(rad(r2(W1) / 2)) ** 2, tol: 0.01, affiche: x => fr(x, 2),
         calcul: () => { const t1 = r2(W1) / 2, t3 = r2(W3) / 2, s1 = Math.sin(rad(t1)) ** 2, s3 = Math.sin(rad(t3)) ** 2;
           return ['On travaille avec θ (la moitié de l’angle 2θ lu), à l’ordre 1.',

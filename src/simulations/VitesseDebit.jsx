@@ -206,7 +206,7 @@ export function SimulationVitesseDebit({ naviguer }) {
       texte: <>Fluide : l’<strong>huile d’olive</strong> (d = 0,92). Section 1 : <strong>D₁ = 40 mm</strong>. Section 2 : <strong>D₂ = 20 mm</strong>. Débit volumique réglé : <strong>Q<sub>v</sub> = 0,50 L·s⁻¹</strong>.</>,
       tache: { type: 'action', ok: reglageGuide, label: 'Régler l’expérience', faire: reglerGuide, consigne: reglageGuide ? null : 'Cliquez pour régler le fluide, les diamètres et le débit' } },
     { id: 'tranche', titre: 'Le volume d’une tranche', focus: ['manip'],
-      texte: <>Un débit volumique est un volume par unité de temps : Q<sub>v</sub> = V / Δt. Chaque bande est le fluide qui traverse une section pendant Δt = 1 s.</>,
+      texte: <>Un débit volumique est un volume par unité de temps : Q<sub>v</sub> = V / Δt. Chaque bande est le fluide qui traverse une section pendant Δt = 1 s. Ici Q<sub>v</sub> = 0,50 L·s⁻¹.</>,
       tache: { type: 'num', q: 'Volume V d’une tranche (1 s de débit)', unite: 'L', vrai: G.Q, tol: 0.01, affiche: x => sig(x, 2),
         calcul: () => ['Q_v = V / Δt, donc V = Q_v × Δt.', `V = ${sig(G.Q, 2)} L·s⁻¹ × 1 s = ${sig(G.Q, 2)} L (les secondes se simplifient).`],
         pieges: [[500, 'Il y a 0,50 L en 1 s, pas 500 : Q_v = 0,50 L·s⁻¹ donc V = Q_v × 1 s = 0,50 L.']],
@@ -234,7 +234,7 @@ export function SimulationVitesseDebit({ naviguer }) {
         expl: <ConvPrefixe nom="D_1" n={40} de="mm" vers="m" e={-3}/> } },
     { id: 'S1', titre: 'La section 1', focus: [],
       texte: <>
-        <p style={{ margin: '0 0 8px' }}>On calcule S₁ = π D₁² / 4 avec D₁ en m. Les m se multiplient : m × m = <strong>m²</strong>.</p>
+        <p style={{ margin: '0 0 8px' }}>On calcule S₁ = π D₁² / 4 avec D₁ = 40 mm = 0,040 m. Les m se multiplient : m × m = <strong>m²</strong>.</p>
         <Chaine nom="S_1" litt={litS(1)} facteurs={chS(G.D1)} nsf={3} sci cacher/>
         <p style={{ margin: '8px 0 0' }}>Donnez S₁ avec 3 chiffres significatifs (un de plus que les données), pour limiter les erreurs d’arrondi dans la suite.</p>
       </>,
@@ -305,7 +305,7 @@ export function SimulationVitesseDebit({ naviguer }) {
         pieges: [[1000 / FLUIDES[G.fl].d, 'Vous avez divisé par d : la masse volumique est ρ = d × ρ_eau (multiplication).'], [0.92, 'La densité n’a pas d’unité : ρ = d × 1 000 kg·m⁻³.']],
         expl: <RhoLigne d={0.92}/> } },
     { id: 'qm', titre: 'Le débit massique', focus: [],
-      texte: <>Le débit massique est le même dans les deux sections (régime permanent). Calculez Q<sub>m</sub> = ρ × Q<sub>v</sub>, avec Q<sub>v</sub> = 5,0 × 10⁻⁴ m³·s⁻¹ et ρ en kg·m⁻³.</>,
+      texte: <>Le débit massique est le même dans les deux sections (régime permanent). Calculez Q<sub>m</sub> = ρ × Q<sub>v</sub>, avec Q<sub>v</sub> = 5,0 × 10⁻⁴ m³·s⁻¹ et ρ = {nf(G.rho)} kg·m⁻³ (masse volumique de l’huile, étape précédente).</>,
       tache: { type: 'num', q: 'Q_m en kg·s⁻¹', unite: 'kg·s⁻¹', vrai: G.qm, tol: 0.02, affiche: x => sig(x, 2),
         calcul: () => ['Q_m = ρ × Q_v, avec ρ en kg·m⁻³ et Q_v en m³·s⁻¹ (les m³ se simplifient).', `Q_m = ${nf(G.rho)} × ${sciTxt(G.qsi, 2)} = ${sig(G.qm, 2)} kg·s⁻¹.`],
         pieges: [[G.rho * 0.5, 'Il faut Q_v en m³·s⁻¹ : 0,50 L·s⁻¹ = 5,0 × 10⁻⁴ m³·s⁻¹.'], [G.qsi / G.rho, 'On multiplie : Q_m = ρ × Q_v (les m³ se simplifient).']],
