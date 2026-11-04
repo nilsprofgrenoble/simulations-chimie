@@ -375,18 +375,33 @@ export function SimulationEsterification({ naviguer }) {
       </div>);
   };
 
-  const SceneBilan = () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <svg viewBox="0 0 600 150" style={{ width: '100%', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }} role="img" aria-label="Étapes du traitement : réaction, lavages, séchage, distillation, pesée">
-        {['Mélange réactionnel', `${bl.nLav} lavage${bl.nLav > 1 ? 's' : ''} NaHCO₃`, 'Séchage (MgSO₄)', bl.dist ? 'Distillation' : 'Évaporation du solvant', 'Pesée'].map((t, i) => <g key={t}>
-          <rect x={10 + i * 118} y="30" width="106" height="52" rx="8" fill={i === 1 ? '#dbeafe' : '#f1f5f9'} stroke="#64748b"/>
-          <text x={63 + i * 118} y="60" fontSize="11.5" fontWeight="700" textAnchor="middle" fill="#0f172a">{t.length > 16 ? t.split(' ').slice(0, 2).join(' ') : t}</text>
-          {t.length > 16 && <text x={63 + i * 118} y="74" fontSize="11.5" fontWeight="700" textAnchor="middle" fill="#0f172a">{t.split(' ').slice(2).join(' ')}</text>}
-          {i < 4 && <text x={119 + i * 118} y="60" fontSize="16" fill="#64748b">›</text>}</g>)}
-        <text x="300" y="118" fontSize="12" textAnchor="middle" fill="#334155">Teb : acide {M.ACIDE.Teb} °C ; {alc.nom} {alc.Teb} °C ; {est.nom} {est.Teb} °C</text>
-        <text x="300" y="136" fontSize="11" textAnchor="middle" fill="#475569">(températures d’ébullition voisines : la distillation seule sépare mal le mélange)</text>
-      </svg>
-    </div>);
+  const SceneBilan = () => {
+    // Une carte par opération : ce qui reste d'ester après chaque étape du traitement
+    const n0 = nE, etapesT = [{ t: 'Fin de la réaction', r: `t = ${rx.t} min${rx.ds ? ', avec Dean-Stark' : ''}`, n: n0, perte: null }];
+    let n = n0;
+    for (let k = 1; k <= bl.nLav; k++) { n *= 1 - M.PERTE_LAVAGE; etapesT.push({ t: `Lavage ${k}`, r: 'NaHCO₃ aqueux : élimine l’acide restant (il y a un dégagement de CO₂)', n, perte: `− ${nbf(M.PERTE_LAVAGE * 100, 0)} %` }); }
+    etapesT.push({ t: 'Séchage', r: 'MgSO₄ anhydre : retire l’eau', n, perte: '0 %' });
+    if (bl.dist) { n *= 1 - M.PERTE_DISTILLATION; etapesT.push({ t: 'Distillation', r: `on recueille la fraction qui bout vers ${est.Teb} °C : l’ester est séparé des autres espèces`, n, perte: `− ${nbf(M.PERTE_DISTILLATION * 100, 0)} %` }); }
+    else etapesT.push({ t: 'Évaporation du solvant', r: 'enlève seulement le solvant : l’ester n’est pas purifié', n, perte: '0 %' });
+    etapesT.push({ t: 'Pesée', r: 'masse d’ester obtenue, à comparer à la masse maximale', n, perte: null });
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {nE < 1e-6 && <div role="alert" style={{ color: '#b91c1c', fontSize: 14, fontWeight: 700, background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 8, padding: '6px 10px' }}>Aucun ester n’a été formé (la réaction dure {rx.t} min) : il n’y a rien à laver. Allongez la durée de la réaction (réglage « Durée de la réaction »).</div>}
+        <div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>Après la réaction, on <strong>purifie</strong> l’ester en plusieurs opérations. Chacune fait perdre un peu d’ester : voici la masse qui reste après chaque opération.</div>
+        <div data-traitement="1" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'stretch' }}>
+          {etapesT.map((e, i) => <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {i > 0 && <span aria-hidden="true" style={{ fontSize: 18, color: '#64748b' }}>›</span>}
+            <div style={{ width: 138, boxSizing: 'border-box', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, background: e.t.startsWith('Lavage') ? '#dbeafe' : '#f8fafc', padding: '6px 8px', height: '100%' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: KIT.txt }}>{e.t}</div>
+              <div style={{ fontSize: 11.5, color: KIT.txt2, lineHeight: 1.35, minHeight: 46 }}>{e.r}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#b45309' }}>{nbf(e.n * est.M, 1)}{NB}g d’ester</div>
+              <div style={{ fontSize: 11.5, color: '#b91c1c', minHeight: 15 }}>{e.perte ? `perte : ${e.perte}` : ''}</div>
+              <div style={{ height: 5, background: '#e2e8f0', borderRadius: 3, marginTop: 3 }}><div style={{ width: `${Math.min(100, e.n / nLim * 100)}%`, height: '100%', background: '#b45309', borderRadius: 3 }}/></div>
+            </div></div>)}
+        </div>
+        <div style={{ fontSize: 13, color: KIT.txt2 }}>Barre : part de la masse maximale possible ({nbf(mTheo, 1)}{NB}g si tout le réactif limitant se transformait en ester). Températures d’ébullition : acide {M.ACIDE.Teb} °C ; {alc.nom} {alc.Teb} °C ; {est.nom} {est.Teb} °C : voisines, donc la distillation seule sépare mal le mélange, d’où les lavages.</div>
+      </div>);
+  };
   const SceneCalcul = () => { const Cc = M.COUPLES[defi.couple]; return (
     <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse' }}>
       <thead><tr style={{ textAlign: 'left', color: KIT.txt2 }}><th style={{ padding: '3px 6px' }}>Espèce</th><th style={{ padding: '3px 6px' }}>M (g/mol)</th><th style={{ padding: '3px 6px' }}>ρ (g/mL)</th><th style={{ padding: '3px 6px' }}>Quantité</th></tr></thead>
@@ -401,14 +416,14 @@ export function SimulationEsterification({ naviguer }) {
   const sceneBox = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
       {!enDefi && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-        {ONGLETS.map(([k, l]) => <button key={k} onClick={() => setScene(k)} aria-pressed={scene === k} style={stylePetitBouton(scene === k, '#9a3412')}>{l}</button>)}
+        {ONGLETS.map(([k, l]) => <button key={k} onClick={() => { setScene(k); if (k === 'bilan' && !enGuide && rx.t === 0) setRx(sx => ({ ...sx, t: 120 })); }} aria-pressed={scene === k} style={stylePetitBouton(scene === k, '#9a3412')}>{l}</button>)}
       </div>}
       {zoneScene}
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>
         {sceneEff === 'reaction' && 'Le trait vertical est l’instant t choisi ; les points donnent les quantités à cet instant.'}
         {sceneEff === 'ccm' && 'L’intensité d’une tache du mélange dépend de la quantité de l’espèce prélevée. La règle verticale est en millimètres, zéro sur la ligne de dépôt.'}
         {sceneEff === 'calcul' && 'Données de l’expérience.'}
-        {sceneEff === 'bilan' && 'La masse obtenue dépend de l’avancement atteint et des pertes aux lavages et à la distillation.'}
+        {sceneEff === 'bilan' && 'La masse finale dépend de l’ester formé pendant la réaction et des pertes à chaque opération.'}
       </div>
     </div>);
 
@@ -434,9 +449,20 @@ export function SimulationEsterification({ naviguer }) {
           <div style={{ fontSize: 13, color: KIT.txt2 }}>Mélange équimolaire de la partie « Réaction » (15 mL d’acide, 24 mL de butan-1-ol, 100 °C, catalyseur).</div></>}
       </>}
       {sceneEff === 'bilan' && <>
-        <Curseur nom="Nombre de lavages" valeur={bl.nLav} onChange={v => setBl(s => ({ ...s, nLav: v }))} min={0} max={4} pas={1} unite="" decimales={0} couleur="#2563eb"/>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}><button onClick={() => setBl(s => ({ ...s, dist: !s.dist }))} aria-pressed={bl.dist} style={stylePetitBouton(bl.dist, '#475569')}>Distillation</button></div>
-        <div style={{ fontSize: 13, color: KIT.txt2 }}>Les quantités proviennent de la partie « Réaction » : {rx.vA} mL d’acide, {rx.vB} mL de {alc.nom}, t = {rx.t} min{rx.ds ? ', Dean-Stark' : ''}. Modifiez-les dans l’onglet « Réaction ».</div>
+        {enGuide ? <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>Les quantités proviennent de la partie « Réaction » : {rx.vA} mL d’acide, {rx.vB} mL de {alc.nom}, t = {rx.t} min{rx.ds ? ', Dean-Stark' : ''}.</div> : <>
+          <Curseur nom="Durée de la réaction avant traitement" valeur={rx.t} onChange={v => setRx(sx => ({ ...sx, t: v }))} min={0} max={TMAX} pas={10} unite="min" decimales={0} couleur="#0f172a"/>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+            <button onClick={() => setRx(sx => ({ ...sx, ds: false }))} aria-pressed={!rx.ds} style={stylePetitBouton(!rx.ds, '#9a3412')}>Sans Dean-Stark</button>
+            <button onClick={() => setRx(sx => ({ ...sx, ds: true }))} aria-pressed={rx.ds} style={stylePetitBouton(rx.ds, '#9a3412')}>Avec Dean-Stark</button>
+          </div>
+          <div style={{ fontSize: 12.5, color: KIT.txt2, marginBottom: 6 }}>Mélange de départ : {rx.vA} mL d’acide, {rx.vB} mL de {alc.nom} (réglable dans l’onglet « Réaction »).</div></>}
+        <Curseur nom="Nombre de lavages (hydrogénocarbonate)" valeur={bl.nLav} onChange={v => setBl(sx => ({ ...sx, nLav: v }))} min={0} max={4} pas={1} unite="" decimales={0} couleur="#2563eb"/>
+        <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, margin: '6px 0 4px' }}>Dernière opération</div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
+          <button onClick={() => setBl(sx => ({ ...sx, dist: false }))} aria-pressed={!bl.dist} style={stylePetitBouton(!bl.dist, '#475569')}>Évaporer le solvant</button>
+          <button onClick={() => setBl(sx => ({ ...sx, dist: true }))} aria-pressed={bl.dist} style={stylePetitBouton(bl.dist, '#475569')}>Distiller l’ester</button>
+        </div>
+        <div style={{ fontSize: 12.5, color: KIT.txt2 }}>{bl.dist ? `La distillation sépare l’ester (Teb ${est.Teb} °C) des autres espèces : on gagne en pureté, mais on perd un peu d’ester.` : 'On évapore seulement le solvant : on ne perd presque rien, mais les impuretés restent avec l’ester.'}</div>
       </>}
     </div>);
 
