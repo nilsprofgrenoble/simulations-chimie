@@ -1,6 +1,6 @@
 // ====================================================
 //  MODÈLE « SYNTHÈSE ORGANIQUE : ESTÉRIFICATION » (sim 86)
-//  Acide carboxylique + alcool primaire ⇌ ester + eau ; K = 4,0 (alcool primaire, athermique : K ne dépend pas de la température).
+//  Acide carboxylique + alcool primaire ⇌ ester + eau ; K = 4,0 (alcool primaire ; réaction quasi athermique : K varie très peu avec la température, on le prend constant).
 //  Hypothèses : volume réactionnel constant, loi de vitesse d'ordre 1 par réactif (v = kf·[A][B] − kb·[E][W], kb = kf/K),
 //  catalyse acide (catalyseur non consommé), constante de vitesse suivant la loi d'Arrhenius (Ea = 60 kJ/mol),
 //  entraînement de l'eau par le cyclohexane (hétéroazéotrope eau-cyclohexane, Teb ≈ 70 °C) si le Dean-Stark est utilisé et T ≥ 80 °C.
