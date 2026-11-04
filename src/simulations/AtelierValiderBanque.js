@@ -1331,6 +1331,16 @@ export const PLAUSIBLES = [
       F('L’ouverture est étroite : elle laisse passer peu d’énergie, donc l’onde s’étale pour se compenser', 'La diffraction n’est pas un mécanisme de « compensation d’énergie » : c’est un effet de la superposition d’ondes émises par les points de l’ouverture, lié à λ / a.'),
       F('Les ondes circulaires viennent d’un défaut de la cuve, la diffraction est impossible pour des ondes à la surface de l’eau', 'La diffraction concerne tous les types d’ondes, y compris celles à la surface de l’eau : c’est même une expérience classique.'),
     ] }),
+  P({ id: 'ond-spectro-angle-ok', domaine: 'Ondes', niveau: 2, titre: 'Réglage d’un réseau de spectrophotomètre', plausible: true,
+    ...presenter({ contexte: 'Dans un spectrophotomètre, un réseau de 1 200 traits par millimètre doit envoyer la longueur d’onde 600 nm vers la fente de sortie, dans l’ordre 1. Un élève calcule l’angle de déviation θ₁ par sin θ₁ = λ / a.', liste: [['Pas du réseau', 'a = 1 mm / 1 200 = 0,833 µm'], ['Longueur d’onde', 'λ = 600 nm']], suite: 'Il trouve θ₁ = 46°.' }),
+    reperes: [['Relation', 'sin θ₁ = λ / a (ordre 1)'], ['Valeur du sinus', 'sin 46° ≈ 0,72'], ['Condition d’existence', 'l’ordre 1 existe si λ / a est inférieur à 1']],
+    ver: 'λ / a = 600 nm / 833 nm ≈ 0,72, et sin 46° ≈ 0,72 : le résultat est exact. Il est cohérent, puisque λ / a est inférieur à 1 (l’ordre 1 existe) ; ce réglage correspond à un grand angle, ce qui est normal avec un réseau aussi serré.',
+    q2: 'Quel raisonnement valide le résultat ?',
+    options: [
+      V('λ / a ≈ 0,72 est inférieur à 1 et sin 46° ≈ 0,72', 'L’angle est bien celui dont le sinus vaut λ / a, et l’ordre 1 existe puisque λ est inférieure à a.'),
+      F('L’angle est inférieur à 90°, donc le calcul est forcément correct', 'Tout angle d’un ordre existant est inférieur à 90° : cette vérification n’aurait pas détecté une erreur de calcul sur le pas ou sur le sinus.'),
+      F('Le pas est exprimé en micromètres et λ en nanomètres, donc on ne peut pas comparer', 'On peut les comparer après conversion : 0,833 µm = 833 nm. Ici, les deux grandeurs sont comparables et λ est inférieure à a.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────

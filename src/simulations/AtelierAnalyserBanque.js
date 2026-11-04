@@ -2886,6 +2886,20 @@ export const PREVOIR = [
       F('Il supprime l’influence de la longueur d’onde sur la position de tous les maxima', 'Au contraire : la position de chaque ordre dépend de λ (sin θₖ = k·λ / a), et c’est ce qui permet de séparer les couleurs et de mesurer λ.'),
       F('Il ne produit qu’un seul ordre, ce qui est plus facile à étudier', 'Un réseau produit plusieurs ordres (tant que sin θₖ < 1), de part et d’autre de la tache centrale.'),
     ] },
+  { id: 'ond-spectro-principe', domaine: 'Ondes', titre: 'Choisir la couleur dans un spectrophotomètre à réseau',
+    ...presenter({ contexte: 'Un spectrophotomètre à réseau reçoit la lumière d’une lampe blanche. Il doit envoyer sur l’échantillon une lumière de longueur d’onde choisie par l’utilisateur (par exemple 600 nm), à partir de la lumière blanche.' }), q: 'Comment la longueur d’onde est-elle sélectionnée ?', options: [
+      V('Le réseau étale la lumière blanche en spectre et on le tourne pour qu’une seule couleur arrive sur la fente de sortie', 'Pour un ordre donné, sin θₖ = k·λ / a : chaque longueur d’onde part dans une direction différente. La fente de sortie est fixe : en tournant le réseau, on fait arriver sur elle la longueur d’onde voulue, et la fente ne laisse passer qu’une petite plage autour d’elle.'),
+      F('L’échantillon lui-même absorbe toutes les couleurs sauf celle que l’on veut mesurer', 'L’échantillon absorbe certaines longueurs d’onde : c’est justement ce que l’on cherche à mesurer. La sélection de la longueur d’onde se fait avant l’échantillon.'),
+      F('On change la puissance de la lampe, car chaque puissance correspond à une couleur', 'La puissance règle l’éclat de la lumière, pas sa longueur d’onde : une lampe blanche reste blanche quelle que soit sa puissance.'),
+      F('Le détecteur ne réagit qu’à la longueur d’onde choisie sur le panneau de commande', 'Le détecteur mesure l’intensité lumineuse qui lui parvient ; la sélection se fait en amont, par le réseau et la fente de sortie.'),
+    ] },
+  { id: 'ond-spectro-recouvrement', domaine: 'Ondes', titre: 'Spectres de plusieurs ordres : lesquels se recouvrent ?',
+    ...presenter({ contexte: 'Un réseau éclairé en lumière blanche (longueurs d’onde de 400 nm à 800 nm) donne, de chaque côté de la tache centrale, un spectre dans chaque ordre k. Pour l’ordre k, la direction de la longueur d’onde λ est donnée par sin θₖ = k·λ / a : deux couleurs sont déviées du même angle si elles ont le même produit k·λ.' }), q: 'Quels ordres se recouvrent partiellement ?', options: [
+      V('Les ordres 2 et 3 : 600 nm dans l’ordre 2 et 400 nm dans l’ordre 3 sont déviés du même angle', 'Dans l’ordre 2, le produit k·λ va de 800 à 1 600 nm ; dans l’ordre 3, de 1 200 à 2 400 nm. Les deux intervalles se chevauchent entre 1 200 et 1 600 nm, par exemple 2 × 600 = 3 × 400 = 1 200 nm.'),
+      F('Les ordres 1 et 2 : le violet de l’ordre 2 est au même endroit que le rouge de l’ordre 1', 'Dans l’ordre 1, k·λ va de 400 à 800 nm ; dans l’ordre 2, de 800 à 1 600 nm. Ils se touchent à 800 nm, limite du visible, mais ne se recouvrent pas.'),
+      F('Les ordres 1 et 3 : le bleu de l’ordre 1 est au même endroit que le violet de l’ordre 3', 'Dans l’ordre 1, k·λ va de 400 à 800 nm ; dans l’ordre 3, de 1 200 à 2 400 nm : aucun point commun.'),
+      F('Aucun : à chaque longueur d’onde correspond un angle unique, quel que soit l’ordre', 'Pour une longueur d’onde donnée, l’angle dépend de l’ordre (sin θₖ = k·λ / a) : des couleurs différentes d’ordres différents peuvent donc arriver au même endroit.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

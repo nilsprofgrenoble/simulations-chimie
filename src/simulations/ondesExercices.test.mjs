@@ -34,3 +34,8 @@ assert.ok(Math.abs(Math.hypot(6, 8) - 10) < 1e-9);
 // COMPATIBLES : seuils
 assert.ok(3 <= 2 * 2 && 13 > 2 * 5 && 12 <= 20);
 console.log('ondesExercices : tous les nombres cités sont vérifiés');
+// spectrophotomètre à réseau
+{ const a = 1 / 1200 * 1e-3; pres(a, 0.8333e-6, 0.001); pres(600e-9 / a, 0.72, 0.005); pres(Math.asin(600e-9 / a) * 180 / Math.PI, 46.05, 0.005);
+  assert.ok(2 * 600 === 3 * 400 && 2 * 600 === 1200); assert.ok(1 * 800 === 2 * 400);                   // 2·600 = 3·400 ; ordres 1 et 2 se touchent à 800 nm
+  assert.ok(3 * 400 <= 2 * 800 && 2 * 400 > 1 * 800 - 1e-9 && 3 * 400 > 1 * 800);                       // 3·400 = 1200 ≤ 1600 : ordres 2 et 3 se recouvrent ; ordre 3 (≥ 1200) et ordre 1 (≤ 800) : non
+  console.log('spectrophotomètre : nombres vérifiés'); }
