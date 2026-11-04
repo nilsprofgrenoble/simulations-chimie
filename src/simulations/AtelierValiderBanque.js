@@ -1341,6 +1341,40 @@ export const PLAUSIBLES = [
       F('L’angle est inférieur à 90°, donc le calcul est forcément correct', 'Tout angle d’un ordre existant est inférieur à 90° : cette vérification n’aurait pas détecté une erreur de calcul sur le pas ou sur le sinus.'),
       F('Le pas est exprimé en micromètres et λ en nanomètres, donc on ne peut pas comparer', 'On peut les comparer après conversion : 0,833 µm = 833 nm. Ici, les deux grandeurs sont comparables et λ est inférieure à a.'),
     ] }),
+  // ── Acides et bases / Synthèse organique ──
+  P({ id: 'ab-ph-formule-base', domaine: 'Acides et bases', niveau: 2, titre: 'pH trouvé basique pour un acide', plausible: false,
+    ...presenter({ contexte: 'Un élève calcule le pH d’une solution d’acide éthanoïque (acide faible, pKa = 4,8) de concentration C = 1,0×10⁻² mol·L⁻¹ à 25 °C.', liste: [['pKa du couple', '4,8'], ['Concentration apportée', 'C = 1,0×10⁻² mol·L⁻¹']], suite: 'Il écrit pH = ½ (14 + pKa + log C) et trouve pH = 8,4.' }),
+    reperes: [['Échelle de pH à 25 °C', 'pH < 7 : solution acide ; pH = 7 : neutre ; pH > 7 : basique'], ['Acide fort de même concentration', 'pH = − log C = 2,0'], ['Acide faible', 'pH compris entre − log C et 7']],
+    ver: 'Une solution d’acide, même faible, a un pH inférieur à 7. Le pH d’une solution de cet acide est compris entre 2,0 (acide fort de même concentration) et 7 : en fait 3,4.',
+    q2: 'Quelle erreur explique le mieux ce résultat ?',
+    options: [
+      V('Il a utilisé la relation d’une base faible au lieu de celle d’un acide faible', 'Pour un acide faible, pH = ½ (pKa − log C) = ½ (4,8 + 2,0) = 3,4. La relation ½ (14 + pKa + log C) donne pour sa part le pH d’une base faible de même pKa et de même concentration : 8,4.'),
+      F('Il a oublié de convertir la concentration en mol·L⁻¹', 'Avec la bonne relation, une erreur de puissance de 10 sur C ne déplace le pH que d’une demi-unité environ : on resterait en milieu acide. C’est la relation utilisée qui conduit à 8,4.'),
+      F('Il a exprimé la concentration en mmol·L⁻¹ sans convertir (10 au lieu de 0,010)', 'Avec la bonne relation d’un acide faible, on obtiendrait ½ (4,8 − 1) = 1,9 : un pH très acide, mais toujours inférieur à 7. Cette erreur ne conduit pas à 8,4.'),
+      F('L’acide éthanoïque est un acide faible : son pH est supérieur à 7', 'Un acide faible a un pH inférieur à 7 : il cède des protons à l’eau et rend la solution acide, même si c’est moins qu’un acide fort.'),
+    ] }),
+  P({ id: 'ab-ph-equivalence-ok', domaine: 'Acides et bases', niveau: 2, titre: 'pH à l’équivalence d’un titrage acide faible - base forte', plausible: true,
+    ...presenter({ contexte: 'Un élève calcule le pH à l’équivalence du titrage de 20,0 mL d’une solution d’acide éthanoïque de concentration 0,100 mol·L⁻¹ par une solution de soude de concentration 0,100 mol·L⁻¹.', liste: [['pKa du couple', '4,8'], ['Volume équivalent', 'Vₑq = 20,0 mL']], suite: 'Il trouve pH = 8,75.' }),
+    reperes: [['À l’équivalence', 'tout l’acide a été transformé en sa base conjuguée A⁻'], ['Base faible', 'pH = ½ (14 + pKa + log C), C : concentration en A⁻']],
+    ver: 'À l’équivalence, [A⁻] = 0,100 × 20,0 / 40,0 = 0,050 mol·L⁻¹ et pH = ½ (14 + 4,8 + log 0,050) = 8,75. La solution contient une base faible : un pH supérieur à 7 est attendu.',
+    q2: 'Quel raisonnement permet de le vérifier rapidement ?',
+    options: [
+      V('À l’équivalence il ne reste que la base faible A⁻ : la solution est basique, avec un pH supérieur à 7', 'Le sens de l’écart à 7 se prévoit sans calcul. L’acide éthanoïque étant faible, sa base conjuguée A⁻ rend la solution basique ; un pH de 7 est obtenu notamment à l’équivalence d’un acide fort par une base forte.'),
+      F('À l’équivalence, le pH vaut toujours 7, donc 8,75 est trop élevé', 'Le pH à l’équivalence vaut 7 seulement pour un acide fort et une base forte. Ici, l’espèce présente est une base faible.'),
+      F('Le pH à l’équivalence est égal au pKa du couple, soit 4,8', 'Le pH est égal au pKa à la demi-équivalence, pas à l’équivalence.'),
+      F('Un pH aussi élevé n’est possible qu’avec un excès de soude', 'Un excès de soude donnerait un pH voisin de 11 à 12 ; à l’équivalence, le pH est contrôlé par la base faible A⁻.'),
+    ] }),
+  P({ id: 'est-rendement-superieur-100', domaine: 'Synthèse organique', niveau: 1, titre: 'Rendement supérieur à 100 %', plausible: false,
+    ...presenter({ contexte: 'Un élève synthétise l’éthanoate de butyle à partir de 14,8 g de butan-1-ol (0,20 mol, réactif limitant) et d’un excès d’acide éthanoïque. Après distillation, il pèse le liquide recueilli.', liste: [['Quantité de butan-1-ol', '0,20 mol (réactif limitant)'], ['Masse molaire de l’éthanoate de butyle', '116,2 g·mol⁻¹'], ['Masse recueillie', '26,0 g']], suite: 'Il calcule un rendement de 112 %.' }),
+    reperes: [['Masse maximale d’ester', 'm = n(limitant) × M = 0,20 × 116,2 = 23,2 g'], ['Rendement', 'η = m obtenue / m maximale ; η ≤ 100 % pour une synthèse'] ],
+    ver: 'Avec 0,20 mol de réactif limitant, on ne peut pas obtenir plus de 0,20 mol d’ester, soit 23,2 g. Une masse de 26,0 g conduit à η = 112 % : un rendement supérieur à 100 % n’est pas possible.',
+    q2: 'Quelle explication est la plus probable ?',
+    options: [
+      V('Le liquide recueilli n’est pas pur : il contient encore de l’eau, de l’acide ou de l’alcool', 'La masse pesée n’est pas celle de l’ester seul. Un rendement supérieur à 100 % révèle presque toujours un produit mal lavé, mal séché ou mal distillé.'),
+      F('La réaction a un rendement supérieur à 100 % grâce au catalyseur', 'Un catalyseur accélère la réaction, il ne crée pas de matière : le rendement ne peut pas dépasser 100 %.'),
+      F('L’excès d’acide éthanoïque s’est transformé en ester', 'Le réactif limitant fixe la quantité maximale d’ester. L’excès d’acide ne peut pas en produire davantage.'),
+      F('La constante d’équilibre K est supérieure à 1', 'K = 4 signifie que la réaction est favorable mais limitée : elle impose un rendement inférieur à 100 % à l’équilibre.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────
@@ -1697,6 +1731,30 @@ export const COMPATIBLES = [
       V('Compatibles : l’écart (12 µm) est inférieur à 2·u_c = 20 µm', 'L’écart est environ 60 % du seuil : la marge est confortable.'),
       F('Les deux méthodes sont incompatibles car 12 µm dépasse chacune des incertitudes u₁ = 6 µm et u₂ = 8 µm', 'La règle compare l’écart à 2·u_c = 20 µm, calculé avec les deux incertitudes composées, et non à chaque incertitude prise séparément.'),
       F('Les deux méthodes sont compatibles car 12 µm est inférieur à u₁ + u₂ = 14 µm', 'La conclusion est juste, mais le critère est faux : on compose les incertitudes en quadrature (u_c = 10 µm) puis on compare à 2·u_c, et non à la somme simple.'),
+    ] },
+  // ── Acides et bases / Synthèse organique ──
+  { id: 'ab-pka-demi-equivalence', domaine: 'Acides et bases', niveau: 2, titre: 'pKa mesuré à la demi-équivalence',
+    contexte: 'Au cours d’un titrage de l’acide éthanoïque par la soude, un élève relève le pH à la demi-équivalence et en déduit pKa = 4,72, avec une incertitude-type u = 0,05. La valeur de référence est 4,76 (supposée exacte).',
+    reperes: [['Mesure', 'x = 4,72'], ['Incertitude-type', 'u = 0,05'], ['Valeur de référence', 'x_ref = 4,76 (supposée exacte)'], ['Règle', 'compatible si |x − x_ref| ≤ 2·u (u incertitude-type ; 2 facteur d’élargissement, ≈ 95 % si loi normale)'], ['Relation', 'à la demi-équivalence, pH = pKa']],
+    ecart: 0.04, uEcart: 'unité de pH', seuil: 0.10, compatible: true,
+    expl: '|4,72 − 4,76| = 0,04 et 2·u = 0,10. Comme 0,04 ≤ 0,10, la mesure est compatible avec la valeur de référence.',
+    q4: 'Que peut-on conclure ?',
+    options: [
+      V('Compatible : l’écart (0,04) s’explique par l’incertitude de mesure', 'L’écart est inférieur à 2·u : rien ne permet de dire que la mesure est en désaccord avec la valeur de référence.'),
+      F('Non compatible : 4,72 est différent de 4,76', 'Deux valeurs ne sont jamais rigoureusement égales : on juge l’écart par rapport à l’incertitude, ici 2·u = 0,10.'),
+      F('La mesure prouve que le pKa de l’acide éthanoïque vaut exactement 4,72', 'Une mesure donne un intervalle (ici 4,72 ± 0,10), pas une valeur exacte ; compatible ne veut pas dire identique.'),
+    ] },
+  { id: 'est-rendement-equilibre', domaine: 'Synthèse organique', niveau: 3, titre: 'Rendement mesuré et rendement à l’équilibre',
+    contexte: 'Pour un mélange équimolaire d’acide éthanoïque et de butan-1-ol avec catalyseur, le rendement attendu à l’équilibre (K = 4) est de 67 %. Un élève chauffe à reflux pendant 30 minutes, lave et pèse l’ester : il trouve un rendement de 58 %, avec une incertitude-type u = 3 %. Les pertes pendant le lavage et la distillation ne sont pas évaluées.',
+    reperes: [['Mesure', 'x = 58 %'], ['Incertitude-type', 'u = 3 %'], ['Référence', 'x_ref = 67 % (rendement à l’équilibre, supposé exact)'], ['Règle', 'compatible si |x − x_ref| ≤ 2·u (2 facteur d’élargissement, ≈ 95 % si loi normale)']],
+    ecart: 9, uEcart: '%', seuil: 6, compatible: false,
+    expl: '|58 − 67| = 9 % et 2·u = 6 %. Comme 9 > 6, le rendement mesuré n’est pas compatible avec 67 %.',
+    q4: 'Quelle explication est la plus cohérente avec les données ?',
+    options: [
+      V('Une partie de l’ester a été perdue au lavage ou à la distillation, ou l’équilibre n’était pas atteint après 30 minutes', 'Le rendement mesuré est inférieur au rendement à l’équilibre. Ces deux causes (pertes de produit lors des étapes de purification, réaction pas assez avancée) ne sont pas prises en compte dans l’incertitude.'),
+      F('Le rendement à l’équilibre est faux, car K dépend du catalyseur', 'Un catalyseur ne modifie pas K : il accélère seulement l’atteinte de l’équilibre.'),
+      F('La mesure est compatible, car 58 % et 67 % sont du même ordre de grandeur', 'La compatibilité se juge par rapport à 2·u (6 %) et non à l’ordre de grandeur : l’écart de 9 % est trop grand.'),
+      F('Le rendement ne peut pas être inférieur au rendement à l’équilibre', 'Rien n’interdit un rendement inférieur : les pertes de produit ou une réaction inachevée l’abaissent, seul le dépassement du rendement à l’équilibre (sans éliminer l’eau) serait anormal.'),
     ] },
 ];
 
