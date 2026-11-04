@@ -1313,6 +1313,23 @@ export const RELATIONS = [
       F('λ = a / sin θ₁', 'Le rapport est inversé : on trouverait 7,5 µm, une longueur d’onde plus grande que le pas, ce qui est impossible puisque sin θ₁ = λ / a ne peut dépasser 1.'),
       F('λ = a·cos θ₁', 'Le cosinus ne figure pas dans la formule des réseaux ; il donnerait 1,9 µm, une valeur hors du domaine visible.'),
     ] },
+  // ── Acides et bases / Synthèse organique ──
+  { id: 'ab-rel-henderson', domaine: 'Acides et bases', titre: 'pH d’une solution tampon éthanoïque',
+    ...presenter({ contexte: 'On prépare une solution tampon en mélangeant l’acide éthanoïque et l’ion éthanoate (pKa = 4,8).', liste: [['Concentration en acide éthanoïque', '[AH] = 0,010 mol·L⁻¹'], ['Concentration en ion éthanoate', '[A⁻] = 0,040 mol·L⁻¹']], question: 'Quel est le pH de la solution ?' }),
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('pH = pKa + log([A⁻] / [AH])', 'Relation de Henderson-Hasselbalch : pH = 4,8 + log(0,040 / 0,010) = 4,8 + 0,60 = 5,4. La base est en excès : le pH est supérieur au pKa.'),
+      F('pH = pKa + log([AH] / [A⁻])', 'Le rapport est inversé : on trouverait 4,2, inférieur au pKa, ce qui signifierait que l’acide domine alors que la base est quatre fois plus concentrée.'),
+      F('pH = pKa × [A⁻] / [AH]', 'Le logarithme est oublié : le résultat (19) n’a aucun sens pour un pH, il devrait être compris entre 0 et 14.'),
+      F('pH = − log([AH])', 'Cette relation n’est valable que pour un acide fort, totalement dissocié. L’acide éthanoïque est faible et la solution contient sa base conjuguée.'),
+    ] },
+  { id: 'ab-rel-ph-acide-faible', domaine: 'Acides et bases', titre: 'pH d’une solution d’acide éthanoïque',
+    ...presenter({ contexte: 'On considère une solution d’acide éthanoïque (acide faible, pKa = 4,8) dans l’eau pure. L’acide est peu dissocié et l’autoprotolyse de l’eau est négligeable.', liste: [['Concentration apportée', 'C = 2,0×10⁻² mol·L⁻¹']], question: 'Quel est le pH de la solution ?' }),
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('pH = ½ (pKa − log C)', 'Avec Kₐ = [H₃O⁺]² / C, on obtient pH = ½ (pKa − log C) = ½ (4,8 + 1,70) = 3,25.'),
+      F('pH = − log C', 'Cette relation suppose un acide fort, totalement dissocié. Elle donnerait 1,7, très inférieur au pH réel (3,25).'),
+      F('pH = ½ (pKa + log C)', 'Le signe devant log C est faux : on trouverait 1,55, un pH plus acide que celui d’un acide fort de même concentration, ce qui est impossible.'),
+      F('pH = ½ (14 + pKa + log C)', 'Cette relation concerne une base faible. Elle donnerait 8,55 pour une solution qui est en fait acide.'),
+    ] },
 ];
 
 // ──────────────────────────────── 3. HYPOTHÈSES D'UN MODÈLE ────────────────────────────────
@@ -1594,6 +1611,34 @@ export const HYPOTHESES = [
       F('L’angle θ₁ doit être petit pour que la formule s’applique', 'La formule des réseaux est exacte pour tout angle : elle ne contient pas d’approximation des petits angles (contrairement à l’expression de l’angle d’ouverture en diffraction).'),
       F('Le réseau doit comporter exactement deux traits éclairés', 'Ce serait un dispositif de Young. L’intérêt du réseau est justement d’en éclairer un grand nombre, ce qui affine les maxima.'),
       F('La largeur de chaque trait doit être égale au pas', 'La position des ordres ne dépend que du pas a ; la largeur des traits agit sur l’éclat de chaque ordre, pas sur sa direction.'),
+    ] },
+  // ── Acides et bases / Synthèse organique ──
+  { id: 'ab-hyp-henderson', domaine: 'Acides et bases', titre: 'Solution tampon : relation de Henderson-Hasselbalch',
+    ...presenter({ contexte: 'Pour prévoir le pH d’une solution tampon contenant l’acide éthanoïque AH et l’ion éthanoate A⁻, on utilise la relation pH = pKa + log([A⁻] / [AH]) en remplaçant les concentrations à l’équilibre par les concentrations introduites.' }), options: [
+      V('AH est un acide faible : il réagit très peu avec l’eau, donc [AH] reste voisine de la concentration introduite', 'La relation est exacte avec les concentrations à l’équilibre. On peut y mettre les concentrations introduites parce que la réaction de AH avec l’eau est très limitée (dans un tampon, τ est très petit, de l’ordre de 0,1 % ou moins).'),
+      V('A⁻ est une base faible : [A⁻] reste voisine de la concentration introduite', 'Pour la même raison, A⁻ réagit très peu avec l’eau : sa quantité n’est pas modifiée de façon sensible.'),
+      V('Les solutions sont assez diluées pour que les activités soient égales aux concentrations', 'La constante Kₐ s’écrit avec des activités ; pour l’écrire avec des concentrations, il faut que la solution soit diluée (de l’ordre de 10⁻¹ mol·L⁻¹ ou moins).'),
+      F('Le volume total de la solution doit être connu avec précision', 'Le rapport [A⁻] / [AH] est égal au rapport des quantités de matière n(A⁻) / n(AH) : le volume se simplifie et n’intervient pas dans le calcul.'),
+      F('L’acide AH doit être un acide fort', 'Un tampon est constitué d’un acide faible et de sa base conjuguée. Avec un acide fort, il n’y a pas de base conjuguée présente en quantité.'),
+      F('Le pH de la solution doit être égal à 7', 'La relation s’applique pour toute valeur du pH (en pratique pour 0,1 < [A⁻]/[AH] < 10, soit pKa ± 1). Pour le couple éthanoïque, le tampon est efficace autour de 4,8.'),
+    ] },
+  { id: 'ab-hyp-ph-acide-faible', domaine: 'Acides et bases', titre: 'pH d’un acide faible : la formule pH = ½(pKa − log C)',
+    ...presenter({ contexte: 'On calcule le pH d’une solution d’acide faible AH de concentration apportée C = 1,0×10⁻² mol·L⁻¹ (pKa = 4,8) par la relation pH = ½ (pKa − log C).' }), options: [
+      V('L’acide est peu dissocié : [AH] ≈ C', 'La relation vient de Kₐ = [H₃O⁺]² / [AH] avec [AH] ≈ C. C’est valable si τ est petit (ici τ ≈ 4 %).'),
+      V('Les ions H₃O⁺ proviennent uniquement de la réaction de l’acide avec l’eau : [H₃O⁺] = [A⁻]', 'La conservation de la charge donne [H₃O⁺] = [A⁻] + [HO⁻] ; on néglige [HO⁻], donc l’autoprotolyse de l’eau. C’est justifié car [H₃O⁺] ≈ 4×10⁻⁴ mol·L⁻¹ ≫ 10⁻⁷ mol·L⁻¹.'),
+      V('Les activités sont assimilées aux concentrations (solution diluée)', 'Kₐ est définie avec des activités ; avec des concentrations de l’ordre de 10⁻² mol·L⁻¹, l’approximation est raisonnable.'),
+      F('Le taux d’avancement final est égal à 1', 'Si τ = 1, l’acide serait fort et on aurait pH = − log C. La relation ne s’applique qu’aux acides faibles, de τ petit.'),
+      F('La solution doit contenir aussi la base conjuguée A⁻ en grande quantité', 'Ce serait une solution tampon, pour laquelle on utiliserait pH = pKa + log([A⁻] / [AH]). Ici, A⁻ n’est formé que par la réaction avec l’eau.'),
+      F('La température doit être de 100 °C', 'Les valeurs de pKa données correspondent à 25 °C : c’est cette température qu’il faut supposer, pas 100 °C.'),
+    ] },
+  { id: 'est-hyp-rendement', domaine: 'Synthèse organique', titre: 'Calculer le rendement d’une estérification : hypothèses',
+    ...presenter({ contexte: 'À l’issue d’une synthèse d’éthanoate de butyle, on pèse l’ester purifié et on calcule le rendement η = n(ester obtenu) / n(ester attendu), avec n(ester attendu) = n(réactif limitant).' }), options: [
+      V('La stœchiométrie est 1 : 1 : une mole d’acide et une mole d’alcool donnent au plus une mole d’ester', 'L’équation CH₃COOH + C₄H₉OH = CH₃COOC₄H₉ + H₂O donne n(ester)max = n(réactif limitant).'),
+      V('L’ester pesé est pur : il ne contient ni eau, ni acide, ni alcool résiduel', 'La masse mesurée n’est attribuée à l’ester que si le produit a été lavé, séché et distillé. Sinon le rendement est surestimé.'),
+      V('Le réactif limitant est identifié à partir des quantités de matière et non des volumes ou des masses', 'Un volume ou une masse plus grande ne signifie pas une quantité de matière plus grande : on compare n = ρ·V / M pour chaque réactif.'),
+      F('Le catalyseur acide doit être pris en compte dans le calcul de n(ester attendu)', 'Le catalyseur n’est ni consommé ni formé : sa quantité n’intervient pas dans la stœchiométrie.'),
+      F('La réaction est effectivement totale dans l’expérience, donc le rendement doit valoir 100 %', 'La réaction d’estérification est limitée (K = 4) : un rendement inférieur à 100 % est normal. La valeur 100 % n’est que la référence théorique (n(ester) = n(réactif limitant)) à laquelle on compare le résultat.'),
+      F('La température d’ébullition de l’ester doit être inférieure à celle des réactifs', 'La température d’ébullition sert à choisir la méthode de séparation (distillation), pas à calculer le rendement.'),
     ] },
 ];
 
@@ -2899,6 +2944,92 @@ export const PREVOIR = [
       F('Les ordres 1 et 2 : le violet de l’ordre 2 est au même endroit que le rouge de l’ordre 1', 'Dans l’ordre 1, k·λ va de 400 à 800 nm ; dans l’ordre 2, de 800 à 1 600 nm. Ils se touchent à 800 nm, limite du visible, mais ne se recouvrent pas.'),
       F('Les ordres 1 et 3 : le bleu de l’ordre 1 est au même endroit que le violet de l’ordre 3', 'Dans l’ordre 1, k·λ va de 400 à 800 nm ; dans l’ordre 3, de 1 200 à 2 400 nm : aucun point commun.'),
       F('Aucun : à chaque longueur d’onde correspond un angle unique, quel que soit l’ordre', 'Pour une longueur d’onde donnée, l’angle dépend de l’ordre (sin θₖ = k·λ / a) : des couleurs différentes d’ordres différents peuvent donc arriver au même endroit.'),
+    ] },
+  // ── Acides et bases ──
+  { id: 'ab-dilution-acide-faible', domaine: 'Acides et bases', titre: 'Diluer un acide faible 10 fois',
+    ...presenter({ contexte: 'On dispose d’une solution d’acide éthanoïque (pKa = 4,8) de concentration apportée C = 1,0×10⁻² mol·L⁻¹, dont le pH est 3,4 et le taux d’avancement final τ = 3,9 %. On la dilue 10 fois avec de l’eau distillée.', liste: [['Avant dilution', 'C = 1,0×10⁻² mol·L⁻¹'], ['Après dilution', 'C = 1,0×10⁻³ mol·L⁻¹']] }), q: 'Après la dilution, le pH et le taux d’avancement τ de l’acide…', options: [
+      V('le pH augmente de moins d’une unité (3,4 → 3,9) et τ augmente (3,9 % → 11,8 %)', 'Un acide faible réagit davantage avec l’eau quand il est dilué : τ passe de 3,9 % à 11,8 %. [H₃O⁺] ne diminue donc que d’un facteur voisin de √10, et non de 10 : le pH n’augmente que d’environ 0,5 unité (3,41 → 3,93).'),
+      F('le pH augmente d’une unité (3,4 → 4,4) et τ ne change pas', 'Ce comportement est celui d’un acide fort, totalement dissocié (τ = 100 % avant et après), pour lequel [H₃O⁺] = C est divisée par 10. L’acide éthanoïque est faible : sa dissociation dépend de la concentration.'),
+      F('le pH augmente de moins d’une unité et τ diminue', 'Le pH augmente bien d’environ 0,5 unité, mais τ augmente : en diluant, le quotient de réaction diminue (Qr < K) et le système évolue dans le sens de la dissociation de l’acide.'),
+      F('le pH ne change pas car le rapport [A⁻]/[AH] est fixé par le pKa', 'Le rapport [A⁻]/[AH] = Kₐ / [H₃O⁺] est fixé par le pKa pour un pH donné, mais le pH lui-même change quand la solution est diluée : [H₃O⁺] diminue.'),
+    ] },
+  { id: 'ab-acide-fort-faible-meme-c', domaine: 'Acides et bases', titre: 'Acide fort et acide faible à la même concentration',
+    ...presenter({ contexte: 'On prépare deux solutions de même concentration apportée C = 1,0×10⁻² mol·L⁻¹ : l’une d’acide chlorhydrique (acide fort), l’autre d’acide éthanoïque (acide faible, pKa = 4,8). On mesure leur pH.', liste: [['Solution 1', 'acide chlorhydrique'], ['Solution 2', 'acide éthanoïque']] }), q: 'Quelle prévision est correcte ?', options: [
+      V('pH₂ > pH₁ : l’acide éthanoïque ne réagit que partiellement avec l’eau, donc [H₃O⁺] est inférieure à C', 'Acide chlorhydrique : [H₃O⁺] = C, pH = 2,0. Acide éthanoïque : seule une petite fraction (τ ≈ 4 %) réagit, [H₃O⁺] ≈ 4×10⁻⁴ mol·L⁻¹, pH ≈ 3,4.'),
+      F('pH₁ = pH₂ : à concentration égale, les deux acides apportent autant d’ions H₃O⁺', 'La concentration apportée n’est pas la concentration en ions H₃O⁺ obtenue : un acide faible ne se dissocie que partiellement.'),
+      F('pH₂ < pH₁ : la molécule d’acide éthanoïque contient plus d’atomes d’hydrogène', 'Le nombre d’atomes d’hydrogène ne décide pas de l’acidité : c’est la facilité avec laquelle l’acide cède un proton à l’eau (pKa) qui compte.'),
+      F('on ne peut rien prévoir sans connaître le volume de chaque solution', 'Le pH ne dépend pas du volume prélevé, mais de la concentration et de la force de l’acide.'),
+    ] },
+  { id: 'ab-tampon-meme-ajout', domaine: 'Acides et bases', titre: 'Un tampon et de l’eau reçoivent le même acide',
+    ...presenter({ contexte: 'On dispose de deux béchers de 100 mL. Le premier contient une solution tampon avec 10 mmol d’acide éthanoïque et 10 mmol d’ion éthanoate (pH = 4,80). Le second contient de l’eau pure (pH = 7,0). On ajoute dans chacun 1,0 mmol d’acide chlorhydrique (acide fort), sans changer le volume.', liste: [['Ajout dans chaque bécher', '1,0 mmol de H₃O⁺']] }), q: 'Quelles variations de pH observe-t-on ?', options: [
+      V('tampon : environ − 0,1 unité (4,80 → 4,71) ; eau pure : environ − 5 unités (7,0 → 2,0)', 'Dans le tampon, les ions H₃O⁺ ajoutés sont consommés par l’ion éthanoate : [A⁻]/[AH] passe de 1 à 9/11 et le pH n’est modifié que de log(9/11) = − 0,09. Dans l’eau pure, [H₃O⁺] = 1,0×10⁻² mol·L⁻¹ : pH = 2,0.'),
+      F('les deux variations sont identiques, d’environ − 5 unités', 'L’ajout est le même, mais pas la réaction qui suit : dans le tampon, la base A⁻ consomme presque tous les H₃O⁺ apportés.'),
+      F('tampon : − 5 unités ; eau pure : − 0,1 unité', 'Les rôles sont inversés : c’est le tampon qui limite la variation de pH, l’eau pure n’a aucune espèce pour consommer les ions H₃O⁺.'),
+      F('aucune variation dans le tampon : le pH reste exactement égal à 4,80', 'Le pH d’un tampon varie toujours un peu : les quantités d’acide et de base conjuguée changent (11 mmol et 9 mmol), donc le rapport [A⁻]/[AH] et le pH aussi.'),
+    ] },
+  { id: 'ab-predominance-ph-pka', domaine: 'Acides et bases', titre: 'Quelle forme prédomine à pH = 6,8 ?',
+    ...presenter({ contexte: 'Le couple acide éthanoïque / ion éthanoate (CH₃COOH / CH₃COO⁻) a pour pKa = 4,8. On règle le pH d’une solution à 6,8 en ajoutant de la soude.', liste: [['pKa du couple', '4,8'], ['pH de la solution', '6,8']] }), q: 'Quelle forme prédomine, et dans quel rapport ?', options: [
+      V('l’ion éthanoate CH₃COO⁻, environ 100 fois plus concentré que CH₃COOH', 'pH − pKa = 2,0, donc [A⁻]/[AH] = 10^(pH − pKa) = 10² = 100. Quand pH > pKa, la forme basique prédomine.'),
+      F('l’acide CH₃COOH, car la solution contient des ions H₃O⁺', 'À pH = 6,8, [H₃O⁺] = 1,6×10⁻⁷ mol·L⁻¹ reste très inférieure à Kₐ = 1,6×10⁻⁵ mol·L⁻¹ : l’acide est en grande partie dissocié.'),
+      F('l’ion éthanoate, environ 2 fois plus concentré que CH₃COOH', 'On a confondu l’écart pH − pKa = 2 avec le rapport des concentrations. Le rapport vaut 10 élevé à cette puissance, soit 100.'),
+      F('les deux formes ont la même concentration', 'Les concentrations ne sont égales que pour pH = pKa = 4,8.'),
+    ] },
+  { id: 'ab-choix-indicateur-acide-faible', domaine: 'Acides et bases', titre: 'Quel indicateur pour un titrage acide faible - base forte ?',
+    ...presenter({ contexte: 'On dose 20,0 mL d’une solution d’acide éthanoïque (pKa = 4,8) par de la soude. À l’équivalence, le pH calculé est voisin de 8,7. On dispose de trois indicateurs colorés.', liste: [['Jaune de méthyle', 'zone de virage 2,9 – 4,0'], ['Bleu de bromothymol', 'zone de virage 6,0 – 7,6'], ['Phénolphtaléine', 'zone de virage 8,2 – 10,0']] }), q: 'Quel indicateur permet de repérer l’équivalence ?', options: [
+      V('la phénolphtaléine, dont la zone de virage contient le pH à l’équivalence (8,7)', 'Le changement de couleur doit se produire quand le pH atteint la valeur de l’équivalence : 8,2 < 8,7 < 10,0.'),
+      F('le bleu de bromothymol, car il change de couleur autour de la neutralité (pH = 7)', 'À l’équivalence, la solution contient l’ion éthanoate, une base faible : elle n’est pas neutre (pH ≈ 8,7). Le bleu de bromothymol aurait déjà viré avant l’équivalence.'),
+      F('le jaune de méthyle, car l’espèce titrée est un acide', 'La zone de virage doit encadrer le pH à l’équivalence et non le pH initial : le jaune de méthyle virerait très tôt, bien avant l’équivalence.'),
+      F('n’importe lequel : un indicateur change de couleur à l’équivalence quel que soit son pKa', 'Chaque indicateur change de couleur dans sa propre zone de pH : si elle ne contient pas le pH à l’équivalence, le virage a lieu trop tôt ou trop tard.'),
+    ] },
+  { id: 'ab-demi-equivalence', domaine: 'Acides et bases', titre: 'Que vaut le pH à la demi-équivalence ?',
+    ...presenter({ contexte: 'On titre un acide faible AH par de la soude. Le volume équivalent est Vₑq = 12,4 mL. On s’intéresse à l’état du système après l’ajout d’un volume V = Vₑq / 2 = 6,2 mL de soude.', liste: [['Volume équivalent', 'Vₑq = 12,4 mL'], ['Volume versé', 'V = 6,2 mL']] }), q: 'À V = Vₑq / 2, que peut-on affirmer ?', options: [
+      V('la moitié de l’acide a été transformée en sa base conjuguée : [AH] = [A⁻], donc pH = pKa', 'La soude versée a consommé la moitié de la quantité initiale d’acide, il reste donc autant de AH que de A⁻ formé. Avec pH = pKa + log([A⁻]/[AH]), on obtient pH = pKa.'),
+      F('tout l’acide a réagi : il ne reste que A⁻ et pH > 7', 'Ce serait l’état à l’équivalence (V = Vₑq). À mi-parcours, il reste la moitié de l’acide. (Le résultat pH = pKa suppose un acide ni trop fort ni trop dilué.)'),
+      F('le pH vaut 7, car on est à mi-chemin entre acide et base', 'Le pH à la demi-équivalence dépend de l’acide titré : il est égal à son pKa (4,8 pour l’acide éthanoïque), non à 7.'),
+      F('[A⁻] = 2 [AH]', 'Si la moitié de l’acide est consommée, les quantités sont égales : [A⁻] = [AH].'),
+    ] },
+  { id: 'ab-citrique-ph4', domaine: 'Acides et bases', titre: 'Acide citrique : espèce prédominante à pH = 4,0',
+    ...presenter({ contexte: 'L’acide citrique, noté H₃A, est un triacide. Ses trois couples ont pour pKa : 3,1 (H₃A / H₂A⁻) ; 4,8 (H₂A⁻ / HA²⁻) ; 6,4 (HA²⁻ / A³⁻). On étudie une solution de pH = 4,0.', liste: [['pKa₁', '3,1'], ['pKa₂', '4,8'], ['pKa₃', '6,4'], ['pH', '4,0']] }), q: 'Quelle est l’espèce prédominante ?', options: [
+      V('H₂A⁻, car pKa₁ < pH < pKa₂', 'H₃A prédomine pour pH < 3,1 ; H₂A⁻ entre 3,1 et 4,8 ; HA²⁻ entre 4,8 et 6,4 ; A³⁻ au-delà. À pH 4,0, H₂A⁻ représente environ 78 % de l’acide citrique introduit.'),
+      F('H₃A, car l’acide citrique est introduit sous la forme H₃A', 'La forme introduite n’est pas celle qui prédomine en solution : H₃A a cédé un proton dès que pH > pKa₁ = 3,1.'),
+      F('HA²⁻, car pH est supérieur à pKa₁', 'Pour que HA²⁻ prédomine, il faut pH > pKa₂ = 4,8.'),
+      F('A³⁻, car la solution contient trois protons à céder', 'A³⁻ ne prédomine que pour pH > pKa₃ = 6,4. Ici le pH est inférieur à pKa₂ : le deuxième proton n’est pas majoritairement cédé.'),
+    ] },
+  // ── Synthèse organique ──
+  { id: 'est-exces-alcool-rendement', domaine: 'Synthèse organique', titre: 'Excès d’alcool dans une estérification',
+    ...presenter({ contexte: 'On réalise l’estérification de l’acide éthanoïque par le butan-1-ol, avec catalyseur, à l’équilibre. Avec des quantités de matière égales (0,26 mol de chaque), le rendement par rapport au réactif limitant est de 67 %. On recommence avec la même quantité d’acide mais 3 fois plus de moles d’alcool.', liste: [['Expérience 1', 'n(acide) = n(alcool) = 0,26 mol'], ['Expérience 2', 'n(acide) = 0,26 mol ; n(alcool) = 0,78 mol'], ['Constante d’équilibre', 'K = 4,0']] }), q: 'Dans l’expérience 2, à l’équilibre, le rendement par rapport à l’acide est…', options: [
+      V('plus élevé, voisin de 90 %', 'L’excès d’alcool déplace l’équilibre dans le sens direct : l’avancement à l’équilibre est plus grand. En résolvant x² = 4(0,26 − x)(0,78 − x), on trouve x ≈ 0,235 mol, soit 90 % de 0,26 mol.'),
+      F('inchangé, égal à 67 %, car la constante d’équilibre K n’a pas changé', 'K est inchangée, mais le rendement dépend aussi de la composition initiale : l’excès d’un réactif déplace l’équilibre dans le sens direct.'),
+      F('égal à 100 %, car l’acide est le réactif limitant', 'La réaction reste limitée : même avec un excès d’alcool, il reste de l’acide à l’équilibre (environ 10 % ici).'),
+      F('plus faible, car il y a plus de réactifs à transformer', 'Le rendement est ramené au réactif limitant, qui est transformé plus complètement quand l’autre réactif est en excès.'),
+    ] },
+  { id: 'est-catalyseur-equilibre', domaine: 'Synthèse organique', titre: 'Avec ou sans catalyseur acide',
+    ...presenter({ contexte: 'On réalise deux synthèses de l’éthanoate de butyle à partir de mélanges identiques (acide éthanoïque et butan-1-ol en quantités égales), chauffés à la même température. L’une contient quelques gouttes d’acide sulfurique concentré, l’autre non. On attend assez longtemps pour que l’état final soit atteint dans chaque cas.', liste: [['Synthèse A', 'avec acide sulfurique (catalyseur)'], ['Synthèse B', 'sans catalyseur']] }), q: 'Que peut-on prévoir pour l’état final ?', options: [
+      V('les deux synthèses atteignent le même état d’équilibre, la synthèse B beaucoup plus lentement', 'Un catalyseur accélère la réaction directe et la réaction inverse dans les mêmes proportions : il diminue la durée nécessaire pour atteindre l’équilibre, mais ne modifie ni K, ni la composition finale.'),
+      F('la synthèse A a un meilleur rendement, car le catalyseur déplace l’équilibre', 'Un catalyseur ne déplace pas l’équilibre : il n’intervient pas dans la valeur de K.'),
+      F('la synthèse B n’avance jamais : sans catalyseur, la réaction n’a pas lieu', 'La réaction a lieu sans catalyseur, mais très lentement ; après un temps suffisant elle aboutit au même état.'),
+      F('la synthèse B a le meilleur rendement, car le catalyseur est consommé dans A', 'Un catalyseur n’est pas consommé : il est régénéré à chaque cycle de la réaction.'),
+    ] },
+  { id: 'est-dean-stark-bain-froid', domaine: 'Synthèse organique', titre: 'Dean-Stark avec un bain trop froid',
+    ...presenter({ contexte: 'On monte une estérification avec un Dean-Stark et du cyclohexane. L’hétéroazéotrope eau – cyclohexane bout vers 70 °C. Par erreur, le bain chauffant est réglé à 60 °C : le milieu réactionnel ne bout pas.', liste: [['Température du bain', '60 °C'], ['Température d’ébullition de l’hétéroazéotrope', 'environ 70 °C']] }), q: 'Que va-t-on observer ?', options: [
+      V('aucune eau n’est entraînée : le tube gradué reste vide, donc l’équilibre n’est pas déplacé', 'Sans ébullition, il n’y a pas de vapeurs, donc pas de condensation dans le Dean-Stark : l’eau reste dans le ballon et le rendement reste limité à celui de l’équilibre (la réaction est de plus assez lente à 60 °C).'),
+      F('l’eau est entraînée plus doucement mais le rendement final est le même', 'Sans ébullition, aucune eau n’est entraînée : le rendement visé grâce au Dean-Stark n’est pas atteint.'),
+      F('le cyclohexane réagit avec l’acide, ce qui consomme l’eau', 'Le cyclohexane est un solvant inerte : il sert uniquement à entraîner l’eau sous forme d’hétéroazéotrope.'),
+      F('l’eau se sépare quand même dans le tube gradué, car elle est plus dense que le cyclohexane', 'La séparation des deux liquides dans le tube gradué n’a lieu que si l’eau y arrive, donc après vaporisation et condensation.'),
+    ] },
+  { id: 'est-eau-initiale', domaine: 'Synthèse organique', titre: 'De l’eau dans le mélange de départ',
+    ...presenter({ contexte: 'Un mélange équimolaire d’acide éthanoïque et de butan-1-ol (0,26 mol de chaque) donne, avec catalyseur et à l’équilibre, un rendement de 67 %. On refait l’expérience avec les mêmes quantités, mais en utilisant une solution d’acide contenant déjà 0,10 mol d’eau.', liste: [['Quantités d’acide et d’alcool', '0,26 mol chacun'], ['Eau ajoutée au départ', '0,10 mol']] }), q: 'Le rendement à l’équilibre sera…', options: [
+      V('plus faible : l’eau initiale augmente le quotient de réaction et le système évolue moins loin dans le sens direct', 'Qr initial n’est plus nul. L’équilibre est atteint pour un avancement plus petit : x(x + 0,10) = 4(0,26 − x)², soit x ≈ 0,159 mol et un rendement d’environ 61 %.'),
+      F('identique, car l’eau n’est pas un réactif de la réaction d’estérification', 'L’eau est un produit de la réaction : elle intervient dans le quotient de réaction, donc dans l’état d’équilibre atteint.'),
+      F('plus élevé, car l’eau accélère la réaction', 'La vitesse n’est pas le sujet ici : l’eau déplace l’équilibre vers la gauche (hydrolyse de l’ester).'),
+      F('égal à 100 %, car l’eau permet de dissoudre le catalyseur', 'La réaction reste limitée.'),
+    ] },
+  { id: 'est-ccm-eluant-moins-polaire', domaine: 'Synthèse organique', titre: 'Changer d’éluant en CCM',
+    ...presenter({ contexte: 'On suit une estérification par chromatographie sur couche mince (plaque de silice). Avec un éluant contenant 30 % d’éthanoate d’éthyle dans le cyclohexane, les rapports frontaux sont : ester 0,74 ; alcool 0,45 ; acide 0,12. On refait la plaque avec un éluant contenant seulement 5 % d’éthanoate d’éthyle (donc moins polaire).', liste: [['Éluant 1', '30 % d’éthanoate d’éthyle'], ['Éluant 2', '5 % d’éthanoate d’éthyle']] }), q: 'Que prévoit-on pour les taches ?', options: [
+      V('tous les rapports frontaux diminuent et l’ordre des taches ne change pas (ester > alcool > acide)', 'Un éluant moins polaire entraîne moins bien les espèces, retenues par la silice polaire. L’ordre de polarité (acide > alcool > ester) ne dépend pas de l’éluant : l’ester reste le moins retenu.'),
+      F('tous les rapports frontaux augmentent', 'C’est le contraire : on rend l’éluant moins capable de déplacer les espèces polaires adsorbées sur la silice.'),
+      F('l’ordre des taches s’inverse', 'L’ordre de polarité des espèces est une propriété des molécules (liaisons hydrogène avec la silice), pas de l’éluant.'),
+      F('rien ne change, car le Rf est une propriété caractéristique de l’espèce', 'Le Rf caractérise une espèce pour un éluant et une plaque donnés : en changeant l’éluant, on change les Rf.'),
     ] },
 ];
 

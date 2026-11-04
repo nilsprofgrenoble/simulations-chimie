@@ -1287,6 +1287,72 @@ export const ENONCES = [
         manque: null, solution: { txt: 'λ = a·sin θ₁', val: 1e3 / p.n * s1 * 1e3, u: 'nm' } };
     },
   },
+  {
+    id: 'abTampon', domaine: 'Acides et bases', titre: 'Solution tampon : pH et concentration', noms: ['pH du tampon', 'Concentration en ion éthanoate'],
+    gen: () => ({ m1: tire([1.50, 3.00, 6.00]), m2: tire([2.05, 4.10, 8.20, 12.30]), V: tire([100, 200, 250, 500]), pKa: 4.8, Mh: 60.05, Mn: 82.03, prix: tire([4, 6, 9]) }),
+    build: (p, q) => {
+      const tokens = {
+        m1: tok(`${nb(p.m1, 2)} g`, 'Masse d’acide éthanoïque dissoute', p.m1, 'g'),
+        m2: tok(`${nb(p.m2, 2)} g`, 'Masse d’éthanoate de sodium dissous', p.m2, 'g'),
+        V: tok(`${p.V} mL`, 'Volume de la solution', p.V, 'mL'),
+        pKa: tok(`${nb(p.pKa, 1)}`, 'pKa du couple CH₃COOH / CH₃COO⁻', p.pKa, ''),
+        Mh: tok(`${nb(p.Mh, 2)} g·mol⁻¹`, 'Masse molaire de l’acide éthanoïque', p.Mh, 'g/mol'),
+        Mn: tok(`${nb(p.Mn, 2)} g·mol⁻¹`, 'Masse molaire de l’éthanoate de sodium', p.Mn, 'g/mol'),
+        prix: tok(`${p.prix} € le kilogramme`, 'Prix de l’éthanoate de sodium', p.prix, '€/kg'),
+      };
+      const nAH = p.m1 / p.Mh, nA = p.m2 / p.Mn, ph = p.pKa + Math.log10(nA / nAH);
+      const debut = ['On prépare une solution tampon en dissolvant ', T('m1'), ' d’acide éthanoïque et ', T('m2'), ' d’éthanoate de sodium dans de l’eau, pour obtenir un volume ', T('V'), ' de solution. Le pKa du couple acide éthanoïque / ion éthanoate vaut ', T('pKa'), ' à 25 °C. Les masses molaires sont : ', T('Mh'), ' pour l’acide éthanoïque et ', T('Mn'), ' pour l’éthanoate de sodium. Ce dernier coûte ', T('prix'), '. '];
+      const rP = 'Le prix n’a aucune influence sur la grandeur cherchée.';
+      if (q === 0) return { tokens, derivees: [
+          { id: 'nAH', nom: 'Quantité d’acide éthanoïque', expr: 'n(AH) = m₁ / M(AH)', val: nAH, u: 'mol' },
+          { id: 'nA', nom: 'Quantité d’ion éthanoate', expr: 'n(A⁻) = m₂ / M(A⁻)', val: nA, u: 'mol' }],
+        texte: [...debut, 'Quel est le pH du tampon ?'], utiles: ['m1', 'm2', 'pKa', 'Mh', 'Mn'],
+        raisons: { V: 'Le pH ne dépend que du rapport [A⁻] / [AH], égal à n(A⁻) / n(AH) : le volume se simplifie.', prix: rP },
+        cherche: { bonne: 'Le pH du tampon', faux: ['La concentration en acide éthanoïque (en mol·L⁻¹)', 'La concentration en ion éthanoate (en mol·L⁻¹)', 'La quantité de matière totale (en mol)'] },
+        manque: null, solution: { txt: 'pH = pKa + log(n(A⁻) / n(AH))', val: ph, u: '' } };
+      return { tokens, texte: [...debut, 'Quelle est la concentration en ion éthanoate dans la solution ?'], utiles: ['m2', 'Mn', 'V'],
+        derivees: [{ id: 'nA', nom: 'Quantité d’ion éthanoate', expr: 'n(A⁻) = m₂ / M(A⁻)', val: nA, u: 'mol' }],
+        raisons: { m1: 'La masse d’acide éthanoïque sert à calculer [AH] et le pH, pas [A⁻].', pKa: 'Le pKa sert à calculer un pH, pas une concentration.', Mh: 'Cette masse molaire sert à calculer la quantité d’acide, qui n’intervient pas ici.', prix: rP },
+        cherche: { bonne: 'La concentration en ion éthanoate (en mol·L⁻¹)', faux: ['La concentration en acide éthanoïque (en mol·L⁻¹)', 'Le pH du tampon', 'La quantité de matière d’ion éthanoate (en mol)'] },
+        manque: null, solution: { txt: '[A⁻] = n(A⁻) / V', val: nA / (p.V * 1e-3), u: 'mol/L' } };
+    },
+  },
+  {
+    id: 'estRendement', domaine: 'Synthèse organique', titre: 'Estérification : réactif limitant et rendement', noms: ['Quantité d’ester obtenue', 'Rendement'],
+    gen: () => {
+      const Va = tire([10, 12, 15]), Vb = tire([15, 20, 25]), eta = tire([0.50, 0.55, 0.60, 0.65]);
+      const na = Va * 1.05 / 60.05, nb_ = Vb * 0.80 / 60.10, nlim = Math.min(na, nb_);
+      return { Va, Vb, m: Math.round(eta * nlim * 102.13 * 10) / 10, t: tire([60, 90, 120]) };
+    },
+    build: (p, q) => {
+      const tokens = {
+        Va: tok(`${p.Va} mL`, 'Volume d’acide éthanoïque', p.Va, 'mL'),
+        Vb: tok(`${p.Vb} mL`, 'Volume de propan-1-ol', p.Vb, 'mL'),
+        ra: tok('1,05 g·mL⁻¹', 'Masse volumique de l’acide éthanoïque', 1.05, 'g/mL'),
+        rb: tok('0,80 g·mL⁻¹', 'Masse volumique du propan-1-ol', 0.80, 'g/mL'),
+        Ma: tok('60,05 g·mol⁻¹', 'Masse molaire de l’acide éthanoïque', 60.05, 'g/mol'),
+        Mb: tok('60,10 g·mol⁻¹', 'Masse molaire du propan-1-ol', 60.10, 'g/mol'),
+        Me: tok('102,13 g·mol⁻¹', 'Masse molaire de l’éthanoate de propyle', 102.13, 'g/mol'),
+        m: tok(`${nb(p.m, 1)} g`, 'Masse d’ester pur obtenue', p.m, 'g'),
+        t: tok(`${p.t} minutes`, 'Durée du chauffage à reflux', p.t, 'min'),
+      };
+      const na = p.Va * 1.05 / 60.05, nb_ = p.Vb * 0.80 / 60.10, nlim = Math.min(na, nb_), ne = p.m / 102.13;
+      const debut = ['On chauffe à reflux, pendant ', T('t'), ', ', T('Va'), ' d’acide éthanoïque (masse volumique ', T('ra'), ', masse molaire ', T('Ma'), ') avec ', T('Vb'), ' de propan-1-ol (masse volumique ', T('rb'), ', masse molaire ', T('Mb'), '), en présence d’acide sulfurique. Après lavage, séchage et distillation, on obtient ', T('m'), ' d’éthanoate de propyle pur (masse molaire ', T('Me'), '). L’équation est CH₃COOH + C₃H₇OH = CH₃COOC₃H₇ + H₂O. '];
+      const rT = 'La durée du chauffage n’intervient pas dans un bilan de matière.';
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle quantité de matière d’ester a-t-on obtenue ?'], utiles: ['m', 'Me'],
+        raisons: { Va: 'Les volumes de réactifs servent à calculer la quantité maximale d’ester, pas la quantité obtenue.', Vb: 'Les volumes de réactifs servent à calculer la quantité maximale d’ester, pas la quantité obtenue.', ra: 'Cette masse volumique sert à calculer la quantité d’acide, qui n’intervient pas ici.', rb: 'Cette masse volumique sert à calculer la quantité d’alcool, qui n’intervient pas ici.', Ma: 'Cette masse molaire sert à calculer la quantité d’acide, qui n’intervient pas ici.', Mb: 'Cette masse molaire sert à calculer la quantité d’alcool, qui n’intervient pas ici.', t: rT },
+        cherche: { bonne: 'La quantité de matière d’ester obtenue (en mol)', faux: ['Le rendement de la synthèse (en %)', 'La quantité maximale d’ester (en mol)', 'La masse maximale d’ester (en g)'] },
+        manque: null, solution: { txt: 'n(ester) = m / M(ester)', val: ne, u: 'mol' } };
+      return { tokens, texte: [...debut, 'Quel est le rendement de la synthèse ?'], utiles: ['Va', 'Vb', 'ra', 'rb', 'Ma', 'Mb', 'm', 'Me'],
+        derivees: [
+          { id: 'na', nom: 'Quantité d’acide', expr: 'n(acide) = ρ·V / M', val: na, u: 'mol' },
+          { id: 'nb', nom: 'Quantité d’alcool', expr: 'n(alcool) = ρ·V / M', val: nb_, u: 'mol' },
+          { id: 'ne', nom: 'Quantité d’ester obtenue', expr: 'n(ester) = m / M', val: ne, u: 'mol' }],
+        raisons: { t: rT },
+        cherche: { bonne: 'Le rendement de la synthèse (en %)', faux: ['La quantité d’ester obtenue (en mol)', 'La masse maximale d’ester (en g)', 'La constante d’équilibre K de la réaction'] },
+        manque: null, solution: { txt: 'η = n(ester obtenu) / n(réactif limitant)', val: ne / nlim * 100, u: '%' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
