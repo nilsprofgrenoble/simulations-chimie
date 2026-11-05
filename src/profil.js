@@ -72,3 +72,15 @@ export function prochaineSimulation(devoirs, lignes, trier) {
   }
   return null;
 }
+
+// Étape 0 : la première simulation non faite de CHAQUE devoir (profs différents → plusieurs devoirs),
+// sans doublon. Les devoirs restent progressifs : on ne montre que des simulations, pas des devoirs entiers.
+export function prochainesSimulations(devoirs, lignes, trier, max = 3) {
+  const vues = new Set(), res = [];
+  for (const { d } of trier(devoirs || [], lignes || [])) {
+    const e = etapesDevoir(d, lignes || []).find(x => !x.fait && x.sim);
+    if (e && !vues.has(String(e.sim))) { vues.add(String(e.sim)); res.push({ sim: e.sim, devoir: d }); }
+    if (res.length >= max) break;
+  }
+  return res;
+}

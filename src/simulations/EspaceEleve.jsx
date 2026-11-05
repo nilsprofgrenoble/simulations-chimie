@@ -3,7 +3,7 @@ import { analyser, ICONES_NIVEAU, TITRES } from "../carnet";
 import { tousLesExercices } from "./Entrainement";
 import { etiquettesDefis, nomsSim } from "../suivi";
 import { trierPourEleve } from "../devoirs";
-import { PROFIL_PAR_ETAPES, etapeEleve, badgesVisibles, prochaineSimulation } from "../profil";
+import { PROFIL_PAR_ETAPES, etapeEleve, badgesVisibles, prochaineSimulation, prochainesSimulations } from "../profil";
 import { Carnet, Anneau } from "./Carnet";
 import { DevoirsEleve, useDevoirs } from "./DevoirsEleve";
 import { VieDeClasse } from "./VieDeClasse";
@@ -56,7 +56,7 @@ function useNouveauPalier(etiquette, actif) {
   return [nouveau, fermer];
 }
 
-function BlocProfil({ A, etape, naviguer, prochaine, apercu }) {
+function BlocProfil({ A, etape, naviguer, prochaine, prochaines = [], apercu }) {
   const [mont, setMont] = useState(false);
   useEffect(() => { const t = setTimeout(() => setMont(true), 80); return () => clearTimeout(t); }, []);
   const { niveau } = A;
@@ -66,7 +66,7 @@ function BlocProfil({ A, etape, naviguer, prochaine, apercu }) {
   const titreSim = prochaine ? (nomsSim[prochaine.sim] || `Simulation ${prochaine.sim}`) : null;
   const frac = etape === 0 ? 0 : Math.max(0.04, niveau.frac);   // jamais « vide » une fois le parcours guidé terminé
   const texte = etape === 0
-    ? (prochaine ? <>Ton professeur te propose de commencer par <b>{titreSim}</b> : suis son parcours guidé.</> : <>Réussis ton premier exercice pour gagner ta première étoile ★</>)
+    ? (prochaines.length > 1 ? <>Tes professeurs te proposent de commencer par ces {prochaines.length} simulations : suis leurs parcours guidés.</> : prochaine ? <>Ton professeur te propose de commencer par <b>{titreSim}</b> : suis son parcours guidé.</> : <>Réussis ton premier exercice pour gagner ta première étoile ★</>)
     : A.stat.reussis === 0 ? <>Parcours guidé terminé, bravo ! Réussis un exercice ou un défi pour faire monter la jauge.</>
       : <><b>{A.stat.reussis}</b> réussite{A.stat.reussis > 1 ? 's' : ''} : encore <b>{niveau.reste} ★</b> pour devenir <b>{suivant}</b>.</>;
   return (
@@ -88,9 +88,13 @@ function BlocProfil({ A, etape, naviguer, prochaine, apercu }) {
             <i style={{ width: mont ? `${frac ? Math.max(4, frac * 100) : 0}%` : '0%' }} /></div>
           <div style={{ fontSize: 15, color: '#fff', margin: '10px 0 0', lineHeight: 1.5 }}>{texte}</div>
           {etape === 0 && (
-            <div style={{ marginTop: 12 }}>
-              <button className="ee-cta" data-cta-premiere onClick={() => (prochaine ? naviguer(Number(prochaine.sim)) : naviguer(38))}>
-                {prochaine ? 'Faire la 1ʳᵉ simulation ▶' : 'Commencer à m’entraîner ▶'}</button>
+            <div style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              {prochaines.length > 1
+                ? prochaines.map(p => (
+                    <button key={p.sim} className="ee-cta" data-cta-premiere onClick={() => naviguer(Number(p.sim))}>
+                      {nomsSim[p.sim] || `Simulation ${p.sim}`} ▶</button>))
+                : <button className="ee-cta" data-cta-premiere onClick={() => (prochaine ? naviguer(Number(prochaine.sim)) : naviguer(38))}>
+                    {prochaine ? 'Faire la 1ʳᵉ simulation ▶' : 'Commencer à m’entraîner ▶'}</button>}
             </div>)}
         </div>
       </div>
@@ -113,6 +117,7 @@ export function EspaceEleve({ lignes, naviguer, apercu, pied }) {
   const devoirs = useDevoirs(apercu?.devoirs);
   const etape = etapeEleve(A, lignes);
   const prochaine = useMemo(() => prochaineSimulation(devoirs, lignes, trierPourEleve), [devoirs, lignes]);
+  const prochaines = useMemo(() => prochainesSimulations(devoirs, lignes, trierPourEleve), [devoirs, lignes]);
 
   // Ancien affichage (PROFIL_PAR_ETAPES = false dans src/profil.js)
   if (!PROFIL_PAR_ETAPES) {
@@ -128,7 +133,7 @@ export function EspaceEleve({ lignes, naviguer, apercu, pied }) {
   return (
     <div data-espace-eleve data-etape={etape}>
       <style>{css}</style>
-      <BlocProfil A={A} etape={etape} naviguer={naviguer} prochaine={prochaine} apercu={!!apercu} />
+      <BlocProfil A={A} etape={etape} naviguer={naviguer} prochaine={prochaine} prochaines={prochaines} apercu={!!apercu} />
       {etape > 0 && (
         <>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', margin: '12px 0 0' }}>
