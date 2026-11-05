@@ -386,7 +386,7 @@ export function SimulationSon() {
 
   // ---------- scène « spectre et timbre » ----------
   const ecoute = (
-    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 4 }}>
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
       <button onClick={() => (audio.joue ? audio.arreter() : audio.jouer(comps, type === 'bruit', vol))} aria-pressed={audio.joue} style={stylePetitBouton(audio.joue, COUL)}><Pic n="signal"/>{audio.joue ? 'Arrêter le son' : 'Écouter (2,5 s)'}</button>
       <label style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>Volume
         <input type="range" min="10" max="100" step="10" value={vol} onChange={e => setVol(parseInt(e.target.value, 10))} aria-label="Volume d’écoute" aria-valuetext={`${vol} pour cent`} style={{ width: 110 }}/></label>
@@ -412,15 +412,16 @@ export function SimulationSon() {
     </div>);
   const boutonRetablir = etapeARetablir && <button onClick={rendreBase} style={{ ...styleBouton(true, '#b45309'), marginBottom: 8 }}>Rétablir le réglage de cette étape</button>;
   const sceneSynthe = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{boutonRetablir}{boiteTemps}{boiteSpectre}</div>);
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{boutonRetablir}<div style={{ ...styleBoite, ...cadre('reglages') }}>{dd?.type === 'freq' ? null : <>
+    <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Timbre</div>
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+      {Object.entries(M.PRESETS).map(([k, p]) => <button key={k} onClick={() => setSy(s => ({ ...s, preset: k, a: p.a.slice() }))} aria-pressed={sy.preset === k} style={stylePetitBouton(sy.preset === k, COUL)}>{k === 'pur' ? 'Son pur' : k === 'creux' ? 'Fondamental faible' : k === 'nonper' ? 'Non périodique' : p.nom.split(' (')[0]}</button>)}</div>
+      </>}{ecoute}</div>{boiteTemps}{boiteSpectre}</div>);
 
   const reglagesSynthe = (
     <div style={{ ...styleBoite, ...cadre('reglages') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
       {dd?.type === 'freq' ? <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 8 }}>Son de timbre {M.PRESETS[dd.timbre].nom.toLowerCase()}, fondamental inconnu.</div> : <>
-        <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Timbre</div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-          {Object.entries(M.PRESETS).map(([k, p]) => <button key={k} onClick={() => setSy(s => ({ ...s, preset: k, a: p.a.slice() }))} aria-pressed={sy.preset === k} style={stylePetitBouton(sy.preset === k, COUL)}>{k === 'pur' ? 'Son pur' : k === 'creux' ? 'Fondamental faible' : k === 'nonper' ? 'Non périodique' : p.nom.split(' (')[0]}</button>)}</div>
         <Curseur nom="Fréquence du fondamental f1" valeur={sy.f1} onChange={v => setS({ f1: v })} min={100} max={1000} pas={10} unite="Hz" decimales={0} couleur={COUL}/>
         {sy.preset !== 'bruit' && <>
           <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, margin: '4px 0' }}>{type === 'nonper' ? 'Amplitudes des 6 composantes' : 'Amplitudes du fondamental et des harmoniques'}</div>
@@ -429,7 +430,6 @@ export function SimulationSon() {
       </>}
       <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Fenêtre de temps affichée</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>{[10, 20, 40].map(x => <button key={x} onClick={() => setS({ fen: x, t1: Math.min(sy.t1, x), t2: Math.min(sy.t2, x) })} aria-pressed={sy.fen === x} style={stylePetitBouton(sy.fen === x, '#475569')}>{x} ms</button>)}</div>
-      {ecoute}
     </div>);
 
   const mesuresSynthe = (
