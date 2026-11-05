@@ -115,27 +115,32 @@ export function SimulationAcidesBases({ naviguer }) {
   const ETAPES0 = [
     { id: 'ph', titre: 'Le pH d’une solution', focus: ['scene'],
       texte: <>Le <strong>pH</strong> d’une solution aqueuse se définit par pH = −log [H₃O⁺] (concentration en mol·L⁻¹). On dispose ici d’une solution d’acide de concentration <em>C</em> = 1,0 × 10⁻² mol·L⁻¹.</>,
-      tache: { type: 'qcm', q: 'Si [H₃O⁺] = 1,0 × 10⁻³ mol·L⁻¹, le pH vaut…', options: ['3,0', '−3,0', '0,001'], bonne: 0,
+      tache: { type: 'qcm', indice: 'Appliquez pH = −log [H₃O⁺] : 1,0 × 10⁻³ = 10⁻³, et log(10⁻³) = −3.', q: 'Si [H₃O⁺] = 1,0 × 10⁻³ mol·L⁻¹, le pH vaut…', options: ['3,0', '−3,0', '0,001'], bonne: 0,
         expl: 'pH = −log(1,0 × 10⁻³) = 3,0. Plus la solution est acide, plus [H₃O⁺] est grande et plus le pH est petit.' } },
     { id: 'fort', titre: 'Un acide fort', focus: ['scene', 'reglages'],
       texte: <>L’acide chlorhydrique HCl réagit <strong>totalement</strong> avec l’eau : HCl + H₂O → H₃O⁺ + Cl⁻. Sélectionnez-le, avec <em>C</em> = 1,0 × 10⁻² mol·L⁻¹.</>,
       tache: { type: 'action', ok: scene === 'acide' && ac.id === 'hcl' && ac.logC === -2, label: 'Choisir HCl à 10⁻² mol/L', faire: () => { setScene('acide'); setAc({ id: 'hcl', logC: -2 }); }, consigne: 'Choisissez « acide chlorhydrique » et réglez log C = −2' } },
     { id: 'phfort', titre: 'Lire le pH', focus: ['mesures'],
       texte: <>Lisez le pH dans « Mesures » pour HCl à <em>C</em> = 1,0 × 10⁻² mol·L⁻¹. Pour un acide fort totalement dissocié, [H₃O⁺] = <em>C</em>.</>,
-      tache: { type: 'num', q: 'pH de la solution d’acide chlorhydrique', unite: '', vrai: M.pH({ ca: 1e-2 }), tol: 0.02, affiche: v => nbf(v, 1), cs: 2,
+      tache: { type: 'num', indice: 'Un acide fort réagit totalement : [H₃O⁺] = C. Il ne reste plus qu’à calculer −log C.', q: 'pH de la solution d’acide chlorhydrique', unite: '', vrai: M.pH({ ca: 1e-2 }), tol: 0.02, affiche: v => nbf(v, 1), cs: 2,
         bloque: scene === 'acide' && ac.id === 'hcl' && ac.logC === -2 ? null : 'Choisissez d’abord HCl à 10⁻² mol/L (étape précédente).',
         calcul: () => ['[H₃O⁺] = C = 1,0 × 10⁻² mol·L⁻¹.', 'pH = −log(1,0 × 10⁻²) = 2,0.'], pieges: [[-2, 'Le pH est −log [H₃O⁺], pas log [H₃O⁺] : il est positif ici.']],
         expl: 'pH = 2,0. Pour un acide fort, le pH se déduit directement de la concentration apportée.' } },
     { id: 'faible', titre: 'Un acide faible', focus: ['scene', 'reglages'],
-      texte: <>Prenons la même concentration, mais avec l’<strong>acide éthanoïque</strong> CH₃COOH (pKa = 4,8) : sa réaction avec l’eau est <em>limitée</em> : CH₃COOH + H₂O ⇌ CH₃COO⁻ + H₃O⁺.</>,
+      texte: <>Prenons la même concentration, mais avec l’<strong>acide éthanoïque</strong> CH₃COOH (pKa = 4,8) : sa réaction avec l’eau est <em>limitée</em> : CH₃COOH + H₂O ⇌ CH₃COO⁻ + H₃O⁺. Le <strong>tableau d’avancement</strong> sous le schéma la décrit : AH + H₂O ⇌ A⁻ + H₃O⁺.</>,
       tache: { type: 'action', ok: scene === 'acide' && ac.id === 'etha' && ac.logC === -2, label: 'Choisir l’acide éthanoïque à 10⁻² mol/L', faire: () => { setScene('acide'); setAc({ id: 'etha', logC: -2 }); }, consigne: 'Choisissez « acide éthanoïque » et réglez log C = −2' } },
+    { id: 'tabacide', titre: 'Lire le tableau d’avancement', focus: ['scene'],
+      texte: <>Dans le tableau, la ligne <em>x</em><sub>max</sub> est ce qui se passerait si <strong>tout</strong> l’acide AH réagissait ; la ligne <em>x</em><sub>f</sub> est l’état final réellement atteint. Comparez-les pour l’acide éthanoïque à 10⁻² mol·L⁻¹.</>,
+      tache: { type: 'qcm', q: 'Pour l’acide éthanoïque, l’avancement final x_f est…', indice: 'Comparez les deux dernières lignes du tableau : la quantité de AH restant est-elle nulle ou non ? Si AH n’a pas disparu, la réaction n’est pas allée jusqu’à x_max.', options: ['inférieur à x_max : il reste de l’acide AH', 'égal à x_max : tout l’acide a réagi', 'supérieur à x_max'], bonne: 0,
+        bloque: scene === 'acide' && ac.id === 'etha' && ac.logC === -2 ? null : 'Choisissez d’abord l’acide éthanoïque à 10⁻² mol/L.',
+        expl: 'Pour un acide faible, la réaction avec l’eau est limitée : x_f < x_max, il reste de AH en solution, à côté de A⁻ et H₃O⁺. Pour un acide fort, on aurait x_f = x_max.' } },
     { id: 'compare', titre: 'Comparer les pH', focus: ['mesures'],
       texte: <>Le pH est plus grand que celui de l’acide chlorhydrique à la même concentration.</>,
-      tache: { type: 'qcm', q: 'Pourquoi le pH de l’acide éthanoïque est-il plus grand ?', options: ['il ne réagit que partiellement avec l’eau : [H₃O⁺] est inférieure à C', 'sa concentration est plus faible', 'il contient moins d’atomes d’hydrogène'], bonne: 0,
+      tache: { type: 'qcm', indice: 'Regardez le tableau d’avancement : pour l’acide éthanoïque, x_f est-il égal à x_max ? Qu’est-ce que cela change pour [H₃O⁺] ?', q: 'Pourquoi le pH de l’acide éthanoïque est-il plus grand ?', options: ['il ne réagit que partiellement avec l’eau : [H₃O⁺] est inférieure à C', 'sa concentration est plus faible', 'il contient moins d’atomes d’hydrogène'], bonne: 0,
         expl: 'Un acide faible ne se dissocie que partiellement. À la même concentration apportée C, il fournit donc moins d’ions H₃O⁺ qu’un acide fort et le pH est plus élevé.' } },
     { id: 'tau', titre: 'Le taux d’avancement', focus: ['mesures'],
-      texte: <>Le <strong>taux d’avancement final</strong> est la fraction d’acide qui a réagi : τ = [A⁻] / <em>C</em> = [H₃O⁺] / <em>C</em> (ici [A⁻] = [H₃O⁺], on néglige l’autoprotolyse de l’eau). Calculez-le à partir du pH lu dans « Mesures » (pH = {nbf(M.pH({ C: 1e-2, pKas: [4.8] }), 2)} pour l’acide éthanoïque à <em>C</em> = 1,0 × 10⁻² mol·L⁻¹).</>,
-      tache: { type: 'num', q: 'Taux d’avancement τ de l’acide éthanoïque', unite: '%', vrai: M.tauAcide(1e-2, 4.8) * 100, tol: 0.05, affiche: v => nbf(v, 1), cs: 2,
+      texte: <>Le <strong>taux d’avancement final</strong> est la fraction d’acide qui a réagi : τ = <em>x</em><sub>f</sub> / <em>x</em><sub>max</sub> = [H₃O⁺] / <em>C</em> (ici [A⁻] = [H₃O⁺], on néglige l’autoprotolyse de l’eau). Calculez-le à partir du pH lu dans « Mesures » (pH = {nbf(M.pH({ C: 1e-2, pKas: [4.8] }), 2)} pour l’acide éthanoïque à <em>C</em> = 1,0 × 10⁻² mol·L⁻¹).</>,
+      tache: { type: 'num', indice: 'Lisez [H₃O⁺] = 10^(−pH) dans « Mesures » ; τ = x_f / x_max = [H₃O⁺] / C. Pensez à convertir en pourcentage.', q: 'Taux d’avancement τ de l’acide éthanoïque', unite: '%', vrai: M.tauAcide(1e-2, 4.8) * 100, tol: 0.05, affiche: v => nbf(v, 1), cs: 2,
         bloque: scene === 'acide' && ac.id === 'etha' && ac.logC === -2 ? null : 'Choisissez d’abord l’acide éthanoïque à 10⁻² mol/L.',
         calcul: () => [`pH = ${nbf(M.pH({ C: 1e-2, pKas: [4.8] }), 2)} donc [H₃O⁺] = 10^(−pH) = ${sci(M.concH(M.pH({ C: 1e-2, pKas: [4.8] })), 2)} mol·L⁻¹.`, `τ = [H₃O⁺] / C = ${nbf(M.tauAcide(1e-2, 4.8) * 100, 1)} %.`],
         pieges: [[M.tauAcide(1e-2, 4.8), 'Le taux d’avancement est demandé en pourcentage.']],
@@ -145,32 +150,32 @@ export function SimulationAcidesBases({ naviguer }) {
       tache: { type: 'action', ok: scene === 'acide' && ac.id === 'etha' && ac.logC === -4, label: 'Diluer à 10⁻⁴ mol/L', faire: () => { setScene('acide'); setAc({ id: 'etha', logC: -4 }); }, consigne: 'Réglez log C = −4 pour l’acide éthanoïque' } },
     { id: 'dilcons', titre: 'Effet de la dilution', focus: ['mesures'],
       texte: <>À 10⁻⁴ mol·L⁻¹, τ est bien plus grand qu’à 10⁻² mol·L⁻¹ (voir « Mesures »).</>,
-      tache: { type: 'qcm', q: 'Quand on dilue un acide faible, son taux d’avancement final…', options: ['augmente', 'diminue', 'ne change pas'], bonne: 0,
+      tache: { type: 'qcm', indice: 'Comparez, dans le tableau, la valeur de x_f par rapport à x_max à 10⁻² puis à 10⁻⁴ mol·L⁻¹.', q: 'Quand on dilue un acide faible, son taux d’avancement final…', options: ['augmente', 'diminue', 'ne change pas'], bonne: 0,
         expl: 'Plus la solution est diluée, plus une grande fraction de l’acide réagit : τ augmente (il tend vers 100 % aux très faibles concentrations). Le pH, lui, augmente quand même, car [H₃O⁺] diminue.' } },
     { id: 'distrib', titre: 'Qui domine à un pH donné ?', focus: ['scene'],
       texte: <>Le <strong>diagramme de distribution</strong> donne la fraction de chaque forme du couple en fonction du pH. Affichez celui de l’acide éthanoïque, avec pH = pKa = 4,8.</>,
       tache: { type: 'action', ok: scene === 'distrib' && ds.id === 'etha' && Math.abs(ds.ph - 4.8) < 0.06, label: 'Afficher le diagramme à pH = 4,8', faire: () => { setScene('distrib'); setDs({ id: 'etha', ph: 4.8 }); }, consigne: 'Choisissez l’acide éthanoïque et réglez pH = 4,8' } },
     { id: 'pkaegal', titre: 'Quand pH = pKa', focus: ['scene', 'mesures'],
       texte: <>Les deux courbes se croisent exactement à pH = pKa.</>,
-      tache: { type: 'qcm', q: 'À pH = pKa, on a…', options: ['[AH] = [A⁻]', '[AH] = 0', '[A⁻] = 10 [AH]'], bonne: 0,
+      tache: { type: 'qcm', indice: 'Partez de pH = pKa + log([A⁻]/[AH]) et posez pH = pKa : que vaut alors le logarithme ?', q: 'À pH = pKa, on a…', options: ['[AH] = [A⁻]', '[AH] = 0', '[A⁻] = 10 [AH]'], bonne: 0,
         expl: 'De Ka = [A⁻][H₃O⁺]/[AH], on tire pH = pKa + log([A⁻]/[AH]). Si pH = pKa, alors log([A⁻]/[AH]) = 0 : les deux formes sont en concentrations égales.' } },
     { id: 'predom', titre: 'Domaines de prédominance', focus: ['scene'],
       texte: <>Placez le pH à 6,5 : vous êtes plus d’une unité au-dessus du pKa.</>,
-      tache: { type: 'qcm', q: 'À pH = 6,5, quelle espèce prédomine pour le couple CH₃COOH / CH₃COO⁻ (pKa = 4,8) ?', options: ['CH₃COO⁻ (la base)', 'CH₃COOH (l’acide)', 'aucune : elles sont à égalité'], bonne: 0,
+      tache: { type: 'qcm', indice: 'Comparez pH = 6,5 au pKa = 4,8 : le pH est-il inférieur ou supérieur ? Rappel : acide si pH < pKa, base si pH > pKa.', q: 'À pH = 6,5, quelle espèce prédomine pour le couple CH₃COOH / CH₃COO⁻ (pKa = 4,8) ?', options: ['CH₃COO⁻ (la base)', 'CH₃COOH (l’acide)', 'aucune : elles sont à égalité'], bonne: 0,
         expl: 'Pour pH > pKa, la base prédomine ; pour pH < pKa, c’est l’acide. À pH = 6,5, [A⁻]/[AH] = 10^(6,5 − 4,8) ≈ 50 : la base est largement majoritaire.' } },
     { id: 'citrique', titre: 'Un polyacide', focus: ['scene'],
       texte: <>L’acide citrique H₃A possède <strong>trois acidités</strong> : pKa₁ = 3,1 ; pKa₂ = 4,8 ; pKa₃ = 6,4. Choisissez-le et placez le pH à 4,0.</>,
       tache: { type: 'action', ok: scene === 'distrib' && ds.id === 'cit' && Math.abs(ds.ph - 4) < 0.06, label: 'Acide citrique, pH = 4,0', faire: () => { setScene('distrib'); setDs({ id: 'cit', ph: 4 }); }, consigne: 'Choisissez « acide citrique » et réglez pH = 4,0' } },
     { id: 'citpredom', titre: 'Espèce prédominante', focus: ['mesures'],
       texte: <>Repérez dans quel intervalle de pKa se trouve pH = 4,0.</>,
-      tache: { type: 'qcm', q: 'À pH = 4,0, quelle espèce de l’acide citrique prédomine ?', options: ['H₂A⁻', 'H₃A', 'HA²⁻'], bonne: 0,
+      tache: { type: 'qcm', indice: 'Placez pH = 4,0 sur l’échelle des pKa (3,1 ; 4,8 ; 6,4) : entre quels deux pKa se trouve-t-il ?', q: 'À pH = 4,0, quelle espèce de l’acide citrique prédomine ?', options: ['H₂A⁻', 'H₃A', 'HA²⁻'], bonne: 0,
         expl: 'On a pKa₁ = 3,1 < pH = 4,0 < pKa₂ = 4,8 : H₃A a cédé un proton (pH > pKa₁) mais H₂A⁻ n’en a pas encore cédé un second (pH < pKa₂). H₂A⁻ prédomine.' } },
     { id: 'tampon', titre: 'Une solution tampon', focus: ['scene', 'reglages'],
       texte: <>Une <strong>solution tampon</strong> contient l’acide <em>et</em> sa base conjuguée en quantités comparables. Préparez 100{NB}mL de solution contenant 10{NB}mmol d’acide éthanoïque et 10{NB}mmol d’ion éthanoate.</>,
       tache: { type: 'action', ok: tpBase && tp.ajout === 0, label: 'Préparer le tampon équimolaire', faire: () => { setScene('tampon'); setTp(PRESET_TP); }, consigne: 'Réglez 10 mmol d’acide, 10 mmol de base, V = 100 mL, sans ajout' } },
     { id: 'phtampon', titre: 'Le pH du tampon', focus: ['mesures'],
       texte: <>Lisez le pH. Avec [A⁻] = [AH], la relation pH = pKa + log([A⁻]/[AH]) donne directement la valeur.</>,
-      tache: { type: 'num', q: 'pH du tampon équimolaire', unite: '', vrai: 4.8, tol: 0.01, affiche: v => nbf(v, 1), cs: 2,
+      tache: { type: 'num', indice: 'Il y a autant d’acide que de base : le rapport [A⁻]/[AH] vaut 1. Que vaut alors log(1) ?', q: 'pH du tampon équimolaire', unite: '', vrai: 4.8, tol: 0.01, affiche: v => nbf(v, 1), cs: 2,
         bloque: tpBase && tp.ajout === 0 ? null : 'Préparez d’abord le tampon équimolaire (étape précédente).',
         calcul: () => ['[A⁻]/[AH] = 10/10 = 1, donc log(1) = 0.', 'pH = pKa + 0 = 4,8.'], pieges: [[9.6, 'Ne doublez pas le pKa : pH = pKa + log([A⁻]/[AH]).']],
         expl: 'pH = pKa = 4,8 : un tampon équimolaire a un pH égal au pKa de son couple.' } },
@@ -179,43 +184,43 @@ export function SimulationAcidesBases({ naviguer }) {
       tache: { type: 'action', ok: tpBase && Math.abs(tp.ajout + 1) < 0.05, label: 'Ajouter 1,0 mmol d’acide', faire: () => { setScene('tampon'); setTp({ ...PRESET_TP, ajout: -1 }); }, consigne: 'Réglez l’ajout à −1,0 mmol (acide fort)' } },
     { id: 'delta', titre: 'La variation de pH', focus: ['mesures'],
       texte: <>Après l’ajout de 1,0{NB}mmol d’acide fort, le pH du tampon passe de 4,80 à une nouvelle valeur ; l’eau pure, elle, passe de 7 à une valeur très différente.</>,
-      tache: { type: 'num', q: 'Variation de pH du tampon (valeur absolue)', unite: '', vrai: Math.abs(dTamp), tol: 0.1, affiche: v => nbf(v, 2), cs: 1,
+      tache: { type: 'num', indice: 'Lisez le pH du tampon avant, puis après l’ajout : la variation est la différence des deux (en valeur absolue).', q: 'Variation de pH du tampon (valeur absolue)', unite: '', vrai: Math.abs(dTamp), tol: 0.1, affiche: v => nbf(v, 2), cs: 1,
         bloque: tpBase && Math.abs(tp.ajout + 1) < 0.05 ? null : 'Ajoutez d’abord 1,0 mmol d’acide fort au tampon.',
         calcul: () => [`Après l’ajout : pH = ${nbf(phAjout1, 2)}.`, `ΔpH = ${nbf(phAjout1, 2)} − 4,80 = ${nbf(dTamp, 2)}, soit ${nbf(Math.abs(dTamp), 2)} en valeur absolue.`],
         expl: `Le pH ne varie que de ${nbf(Math.abs(dTamp), 2)} unité, alors que dans l’eau pure il chute de ${nbf(Math.abs(dEau), 0)} unités.` } },
     { id: 'pourquoi', titre: 'Pourquoi ça résiste ?', focus: ['mesures'],
       texte: <>L’acide fort ajouté a réagi avec la base conjuguée du tampon.</>,
-      tache: { type: 'qcm', q: 'Pourquoi le pH varie-t-il si peu ?', options: ['les ions H₃O⁺ ajoutés sont consommés par CH₃COO⁻ (A⁻ + H₃O⁺ → AH + H₂O), et le rapport [A⁻]/[AH] ne change que peu', 'l’acide ajouté ne se dissocie pas', 'l’eau neutralise l’acide ajouté'], bonne: 0,
+      tache: { type: 'qcm', indice: 'Quelle espèce du tampon peut consommer les ions H₃O⁺ ajoutés ? Pensez à la base A⁻ qui réagit avec eux.', q: 'Pourquoi le pH varie-t-il si peu ?', options: ['les ions H₃O⁺ ajoutés sont consommés par CH₃COO⁻ (A⁻ + H₃O⁺ → AH + H₂O), et le rapport [A⁻]/[AH] ne change que peu', 'l’acide ajouté ne se dissocie pas', 'l’eau neutralise l’acide ajouté'], bonne: 0,
         expl: 'La base A⁻ consomme les H₃O⁺ ajoutés (et l’acide AH consomme les HO⁻ ajoutés). Comme A⁻ et AH sont abondants, leur rapport, donc le pH, varie peu.' } },
     { id: 'zone', titre: 'Où un tampon est-il efficace ?', focus: ['mesures'],
       texte: <>Faites varier le rapport des quantités (essayez 1 mmol d’acide pour 19 mmol de base) et regardez le « pouvoir tampon ».</>,
-      tache: { type: 'qcm', q: 'Un tampon est efficace lorsque le pH est…', options: ['dans l’intervalle pKa ± 1', 'toujours compris entre 6 et 8', 'très supérieur au pKa'], bonne: 0,
+      tache: { type: 'qcm', indice: 'Rappel : le pouvoir tampon est maximal quand [AH] = [A⁻], c’est-à-dire pH = pKa.', q: 'Un tampon est efficace lorsque le pH est…', options: ['dans l’intervalle pKa ± 1', 'toujours compris entre 6 et 8', 'très supérieur au pKa'], bonne: 0,
         expl: 'La résistance aux ajouts est maximale quand [AH] = [A⁻] (pH = pKa) et reste correcte tant que 0,1 < [A⁻]/[AH] < 10, c’est-à-dire pour pH compris entre pKa − 1 et pKa + 1.' } },
     { id: 'titrage', titre: 'Titrer un acide', focus: ['scene', 'reglages'],
       texte: <>On dose 20,0{NB}mL d’une solution d’acide éthanoïque de concentration inconnue par de la soude à 0,100{NB}mol·L⁻¹. Ouvrez le titrage préréglé ; sa concentration est à déterminer.</>,
       tache: { type: 'action', ok: tiBase, label: 'Ouvrir le titrage', faire: () => { setScene('titrage'); setTi(PRESET_TI); }, consigne: 'Choisissez l’onglet « Titrage » et réglez acide éthanoïque, C = 0,050 mol/L' } },
     { id: 'equiv', titre: 'L’équivalence', focus: ['scene', 'mesures'],
       texte: <>À l’<strong>équivalence</strong>, les réactifs ont été introduits dans les proportions stœchiométriques : <em>n</em>(HO⁻ versé) = <em>n</em>(acide initial). On la repère au maximum de la dérivée dpH/dV : affichez-la et déplacez le curseur de volume jusqu’à ce maximum.</>,
-      tache: { type: 'num', q: 'Volume équivalent Veq', unite: 'mL', vrai: Veq, tol: 0.03, affiche: v => nbf(v, 1), cs: 3,
+      tache: { type: 'num', indice: 'À l’équivalence, le pH varie très brusquement : cherchez le saut de pH, ou le maximum de la courbe dérivée.', q: 'Volume équivalent Veq', unite: 'mL', vrai: Veq, tol: 0.03, affiche: v => nbf(v, 1), cs: 3,
         bloque: tiBase ? null : 'Ouvrez d’abord le titrage préréglé (étape précédente).',
         calcul: () => ['Le maximum de dpH/dV se situe à V ≈ 10,0 mL.', 'Veq = 10,0 mL.'], pieges: [[Veq / 2, 'C’est le volume de la demi-équivalence, pas celui de l’équivalence.']],
         expl: 'Veq = 10,0 mL : le point où la courbe pH = f(V) a la pente la plus forte (maximum de la dérivée).' } },
     { id: 'pkalu', titre: 'Lire le pKa', focus: ['mesures'],
       texte: <>À la <strong>demi-équivalence</strong> (V = Veq/2), la moitié de l’acide a été transformée en sa base conjuguée : [AH] = [A⁻]. Déplacez le curseur sur V = 5,0{NB}mL.</>,
-      tache: { type: 'num', q: 'pH à la demi-équivalence, donc pKa du couple', unite: '', vrai: pKaT, tol: 0.02, affiche: v => nbf(v, 1), cs: 2,
+      tache: { type: 'num', indice: 'À V = Veq/2 la moitié de l’acide a été transformée : [AH] = [A⁻], donc pH = pKa. Placez le curseur sur Veq/2.', q: 'pH à la demi-équivalence, donc pKa du couple', unite: '', vrai: pKaT, tol: 0.02, affiche: v => nbf(v, 1), cs: 2,
         bloque: tiBase ? null : 'Ouvrez d’abord le titrage préréglé (acide éthanoïque, 0,050 mol/L).',
         calcul: () => [`À V = Veq/2 = ${nbf(Veq / 2, 1)} mL, [AH] = [A⁻].`, `pH = pKa + log(1) = pKa ≈ ${nbf(phDemi, 1)}.`],
         expl: `On lit pH ≈ ${nbf(phDemi, 1)} : c’est le pKa du couple CH₃COOH / CH₃COO⁻ (4,8).` } },
     { id: 'basique', titre: 'Un pH basique à l’équivalence', focus: ['mesures'],
       texte: <>À l’équivalence, il ne reste plus d’acide : la solution contient l’ion éthanoate, dont le pH est supérieur à 7.</>,
-      tache: { type: 'qcm', q: 'Pourquoi le pH à l’équivalence est-il supérieur à 7 ?', options: ['l’ion éthanoate CH₃COO⁻ est une base faible qui réagit avec l’eau', 'il reste de la soude en excès', 'l’acide éthanoïque est une base'], bonne: 0,
+      tache: { type: 'qcm', indice: 'À l’équivalence, il ne reste que la base conjuguée A⁻ du couple : quel est le caractère acide ou basique de A⁻ en solution ?', q: 'Pourquoi le pH à l’équivalence est-il supérieur à 7 ?', options: ['l’ion éthanoate CH₃COO⁻ est une base faible qui réagit avec l’eau', 'il reste de la soude en excès', 'l’acide éthanoïque est une base'], bonne: 0,
         expl: 'Seule l’espèce CH₃COO⁻ (base faible) est présente à l’équivalence : CH₃COO⁻ + H₂O ⇌ CH₃COOH + HO⁻. La solution est donc basique, au contraire d’un titrage acide fort / base forte pour lequel pH = 7.' } },
     { id: 'indic', titre: 'Choisir un indicateur coloré', focus: ['reglages', 'scene'],
       texte: <>Sans pH-mètre, on repère l’équivalence par le changement de couleur d’un <strong>indicateur coloré</strong>. Il convient si sa zone de virage <strong>contient le pH à l’équivalence</strong> (ici pH<sub>éq</sub> ≈ {nbf(M.phEquivalence({ C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 }), 1)} ; le saut de pH va d’environ pH {nbf(M.sautPH({ C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 })[0], 1)} à {nbf(M.sautPH({ C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 })[1], 1)} autour de l’équivalence). Choisissez celui qui convient.</>,
       tache: { type: 'action', ok: tiBase && ti.ind === 'php', label: 'Choisir la phénolphtaléine', faire: () => { setScene('titrage'); setTi(t => ({ ...PRESET_TI, ind: 'php', Vb: t.Vb })); }, consigne: 'Choisissez l’indicateur dont la zone de virage contient le pH à l’équivalence' } },
     { id: 'conc', titre: 'Calculer la concentration', focus: ['mesures'],
       texte: <>La relation à l’équivalence est <em>C</em><sub>a</sub>·<em>V</em><sub>0</sub> = <em>C</em><sub>b</sub>·<em>V</em><sub>eq</sub>. Exprimez <em>C</em><sub>a</sub> pour une prise d’essai <em>V</em>₀ = 20,0{NB}mL, avec la soude à <em>C</em><sub>b</sub> = 0,100{NB}mol·L⁻¹ et le volume équivalent <em>V</em><sub>eq</sub> trouvé à l’étape précédente « L’équivalence ».</>,
-      tache: { type: 'num', q: 'Concentration Cₐ de la solution d’acide', unite: 'mol/L', vrai: 0.050, tol: 0.02, affiche: v => nbf(v, 3), cs: 3,
+      tache: { type: 'num', indice: 'Isolez Cₐ dans Cₐ·V₀ = C_b·V_eq : Cₐ = C_b × V_eq / V₀.', q: 'Concentration Cₐ de la solution d’acide', unite: 'mol/L', vrai: 0.050, tol: 0.02, affiche: v => nbf(v, 3), cs: 3,
         bloque: tiBase ? null : 'Ouvrez d’abord le titrage préréglé.',
         calcul: () => ['Cₐ = C_b × Veq / V₀ = 0,100 × 10,0 / 20,0.', 'Cₐ = 0,0500 mol·L⁻¹.'], pieges: [[0.1 * 20 / 10, 'Vous avez inversé Veq et V₀.']],
         expl: 'Cₐ = 5,00 × 10⁻² mol·L⁻¹ : c’est la concentration de la solution d’acide dosée.' } },
@@ -329,17 +334,40 @@ export function SimulationAcidesBases({ naviguer }) {
     </svg>);
 
   const SceneAcide = () => {
-    const esp = A.fort ? [['H₃O⁺', hA, '#dc2626'], [A.base, C, '#0e7490']] : [['H₃O⁺', hA, '#dc2626'], [A.base, C * fracA[1], '#0e7490'], [A.formule, C * fracA[0], '#6d28d9']];
-    const lo = -8, hi = 0;
+    // Tableau d'avancement pour V = 100 mL (autoprotolyse de l'eau négligée dans le tableau)
+    const Vtab = 0.1, n0 = C * Vtab, xf = n0 * Math.min(1, tauA), xmax = n0;
+    const cel = { border: `1px solid ${KIT.bord}`, padding: '4px 2px', textAlign: 'center', fontSize: 12, lineHeight: 1.2 };
+    const ent = { ...cel, background: '#f1f5f9', fontWeight: 700 };
+    const q = v => (v < 1e-12 ? '0' : sci(v, 1));
+    const fin = A.fort ? '→' : '⇌';
     return (
       <div>
         {Echelle(phA)}
-        <svg viewBox="0 0 600 150" style={{ width: '100%', display: 'block', marginTop: 6, background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }} role="img"
-          aria-label={`Concentrations à l’équilibre en échelle logarithmique : ${esp.map(([n, c]) => `${n} ${sci(c, 1)} mol par litre`).join(' ; ')}`}>
-          {esp.map(([n, c, col], i) => { const lg = Math.log10(Math.max(c, 1e-12)), w = Math.max(2, 440 * (lg - lo) / (hi - lo)); return (
-            <g key={n}><text x="8" y={34 + i * 38} fontSize="13" fontWeight="700" fill="#0f172a">{n}</text><rect x="90" y={20 + i * 38} width={w} height="22" rx="4" fill={col} opacity="0.85"/><text x={96 + w} y={36 + i * 38} fontSize="12" fill="#0f172a">{sci(c, 1)} mol/L</text></g>); })}
-          <text x="8" y="144" fontSize="11" fill="#475569">échelle logarithmique : une barre deux fois plus longue = concentration bien plus grande</text>
-        </svg>
+        <div style={{ fontSize: 13, color: KIT.txt2, margin: '8px 0 4px' }}>
+          Tableau d’avancement (mol) pour V = 100{NB}mL ; x<sub>max</sub> : réaction totale, x<sub>f</sub> : état final. AH = <b>{A.formule}</b> et A⁻ = <b>{A.base}</b>.</div>
+        <div style={{ overflowX: 'auto' }}>
+          <table data-tableau-acide style={{ borderCollapse: 'collapse', background: 'white', width: '100%' }}
+            aria-label={`Tableau d’avancement de la réaction de ${A.formule} avec l’eau`}>
+            <thead><tr>
+              <th style={ent}>x</th><th style={{ ...ent, color: '#6d28d9' }}>AH</th><th style={ent}>+ H₂O</th>
+              <th style={{ ...ent, color: '#0e7490' }}>{fin} A⁻</th><th style={{ ...ent, color: '#dc2626' }}>+ H₃O⁺</th></tr></thead>
+            <tbody>
+              <tr><td style={ent}>0</td><td style={cel}>{q(n0)}</td><td style={cel}>excès</td><td style={cel}>0</td><td style={cel}>≈ 0</td></tr>
+              <tr><td style={ent}>x</td><td style={cel}>{q(n0)} − x</td><td style={cel}>excès</td><td style={cel}>x</td><td style={cel}>x</td></tr>
+              <tr><td style={ent}>x<sub>max</sub></td><td style={cel}>0</td><td style={cel}>excès</td><td style={cel}>{q(xmax)}</td><td style={cel}>{q(xmax)}</td></tr>
+              <tr style={{ background: '#fffbeb' }}><td style={ent}>x<sub>f</sub></td>
+                <td style={{ ...cel, fontWeight: 700 }}>{q(n0 - xf)}</td><td style={cel}>excès</td>
+                <td style={{ ...cel, fontWeight: 700 }}>{q(xf)}</td><td style={{ ...cel, fontWeight: 700 }}>{q(xf)}</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{ fontSize: 14, color: KIT.txt, fontWeight: 700 }}>x<sub>f</sub> = {nbf(Math.min(100, tauA * 100), 1)}{NB}% de x<sub>max</sub></div>
+          <div role="img" aria-label={`x f représente ${nbf(Math.min(100, tauA * 100), 1)} pour cent de x max`} style={{ flex: 1, minWidth: 140, height: 14, background: '#e2e8f0', borderRadius: 7, overflow: 'hidden' }}>
+            <div style={{ width: `${Math.max(0.8, Math.min(100, tauA * 100))}%`, height: '100%', background: A.fort ? '#15803d' : '#d97706' }}/></div>
+        </div>
+        <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4 }}>
+          {A.fort ? <>Réaction totale : <i>x</i><sub>f</sub> = <i>x</i><sub>max</sub>, il ne reste plus d’acide AH.</> : <>Réaction limitée : <i>x</i><sub>f</sub> &lt; <i>x</i><sub>max</sub>, il reste de l’acide AH en solution à côté de A⁻ et H₃O⁺.</>}</div>
       </div>);
   };
 
@@ -435,7 +463,7 @@ export function SimulationAcidesBases({ naviguer }) {
       </div>}
       {zoneScene}
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>
-        {sceneEff === 'acide' && 'Barres en échelle logarithmique : les concentrations varient de plusieurs puissances de 10.'}
+        {sceneEff === 'acide' && <>Modifiez l’acide et la concentration : observez comment <i>x</i><sub>f</sub> se compare à <i>x</i><sub>max</sub> dans le tableau.</>}
         {sceneEff === 'distrib' && 'Le trait vertical est le pH choisi ; les points donnent la fraction de chaque espèce à ce pH.'}
         {sceneEff === 'tampon' && 'Comparez la variation de pH de la solution tampon à celle de l’eau pure pour le même ajout.'}
         {sceneEff === 'titrage' && 'Bleu : pH = f(V). Le point orange suit le curseur de volume. Vert pointillé : dérivée dpH/dV (si affichée).'}
