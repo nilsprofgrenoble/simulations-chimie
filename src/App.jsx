@@ -37,6 +37,8 @@ import { SimulationMoteurPasAPas } from "./simulations/MoteurPasAPas";
 import { SimulationMoteurCode } from "./simulations/MoteurCode";
 import { SimulationBoussole } from "./simulations/Boussole";
 import { SimulationDiffraction } from "./simulations/Diffraction";
+import { SimulationSon } from "./simulations/Son";
+import { SimulationEchographe } from "./simulations/Echographe";
 import { SimulationInterferences } from "./simulations/Interferences";
 import { SimulationAcidesBases } from "./simulations/AcidesBases";
 import { SimulationEsterification } from "./simulations/Esterification";
@@ -160,6 +162,10 @@ const SIMULATIONS = [
     component: SimulationDiffraction },
   { id:84, label:"Interférences et réseaux", niveau:"TSTL", icon:"🌊", color:"#0e7490",
     component: SimulationInterferences },
+  { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
+    component: SimulationSon },
+  { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",
+    component: SimulationEchographe },
   { id:85, label:"Acides et bases : pH, pKa, tampon et titrage", niveau:"TSTL", icon:"🧪", color:"#0f766e",
     component: SimulationAcidesBases },
   { id:86, label:"Synthèse organique : estérification, Dean-Stark et CCM", niveau:"TSTL", icon:"⚗️", color:"#9a3412",

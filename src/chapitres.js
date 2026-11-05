@@ -37,7 +37,7 @@ export const CHAPITRES = [
   { id: 'tstl-thermique', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '🔥 Transferts thermiques', sims: [31, 32, 30], domaines: ['Transferts thermiques'] },
   { id: 'tstl-mesure', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '📏 Mesure et incertitudes', sims: [78], domaines: ['Mesure et incertitudes'] },
   { id: 'tstl-controle', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '🧲 Contrôle des systèmes', sims: [46, 44, 45], domaines: ['Contrôle des systèmes'] },
-  { id: 'tstl-ondes', niveau: 'TSTL', rubrique: 'Ondes', label: '🌊 Ondes', sims: [83, 84], domaines: ['Ondes'] },
+  { id: 'tstl-ondes', niveau: 'TSTL', rubrique: 'Ondes', label: '🌊 Ondes', sims: [83, 84, 87, 88], domaines: ['Ondes'] },
   { id: 'tstl-acides-bases', niveau: 'TSTL', rubrique: 'Chimie et développement durable', label: '🧪 Acides et bases', sims: [85], domaines: ['Acides et bases'] },
   { id: 'tstl-synthese-organique', niveau: 'TSTL', rubrique: 'Chimie et développement durable', label: '⚗️ Synthèse organique', sims: [86], domaines: ['Synthèse organique'] },
 
