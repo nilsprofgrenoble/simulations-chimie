@@ -40,61 +40,70 @@ const CAP = {
   numerique: 'capacité numérique : visualiser une somme de signaux sinusoïdaux de fréquences multiples de celle du fondamental.',
 };
 
-// Profils d'écoute « son naturel » : attaque (s), vibrato [Hz, amplitude en cents], souffle, décroissance. Ils ne changent pas le spectre affiché (régime établi).
+// Profils d'écoute « son naturel » : attaque (s), vibrato [Hz, amplitude en cents], souffle. Ils ne changent pas le spectre affiché (régime établi).
 const PROFILS_AUDIO = {
-  pur: { att: 0.01, chute: true },
+  pur: { att: 0.02 },
   creux: { att: 0.06 },
   flute: { att: 0.07, vib: [4.8, 6], vibDelai: 0.3, souffle: 0.05 },
   clarinette: { att: 0.03 },
   violon: { att: 0.09, vib: [5.5, 14], vibDelai: 0.35 },
 };
 
-// ---------- lecture audio (jamais au chargement ; arrêt automatique ; volume plafonné) ----------
+// ---------- lecture audio en direct (jamais au chargement ; volume plafonné ; arrêt après 60 s) ----------
+// Le son suit les réglages pendant l'écoute : 8 oscillateurs permanents dont on change fréquence et amplitude, un bruit, un souffle.
+const NB_OSC = 8, ARRET_S = 60;
 function useAudio() {
-  const ctxRef = useRef(null), stopRef = useRef(null);
+  const ctxRef = useRef(null), gRef = useRef(null), minuteurRef = useRef(null);
   const [joue, setJoue] = useState(false), [erreur, setErreur] = useState('');
-  const arreter = useCallback(() => { try { stopRef.current && stopRef.current(); } catch { /* déjà arrêté */ } stopRef.current = null; setJoue(false); }, []);
-  useEffect(() => () => { try { stopRef.current && stopRef.current(); ctxRef.current && ctxRef.current.close(); } catch { /* rien */ } }, []);
-  const jouer = useCallback((comps, bruit, vol, naturel = false, cle = '') => {
+  const armer = useCallback(arreterFn => { clearTimeout(minuteurRef.current); minuteurRef.current = setTimeout(arreterFn, ARRET_S * 1000); }, []);
+  const arreter = useCallback(() => {
+    clearTimeout(minuteurRef.current);
+    const g = gRef.current; gRef.current = null;
+    if (g) { try { const now = g.ctx.currentTime; g.master.gain.cancelScheduledValues(now); g.master.gain.setValueAtTime(g.master.gain.value, now); g.master.gain.linearRampToValueAtTime(0, now + 0.12); setTimeout(() => g.noeuds.forEach(n => { try { n.stop(); } catch { /* déjà arrêté */ } }), 200); } catch { /* rien */ } }
+    setJoue(false);
+  }, []);
+  useEffect(() => () => { clearTimeout(minuteurRef.current); try { (gRef.current?.noeuds || []).forEach(n => n.stop()); ctxRef.current && ctxRef.current.close(); } catch { /* rien */ } }, []);
+  // applique l'état (composantes, volume, timbre) au graphe audio ; tc = constante de temps du lissage
+  const appliquer = useCallback((e, tc, debut = false) => {
+    const g = gRef.current; if (!g) return;
+    const now = g.ctx.currentTime, P = e.naturel && !e.bruit ? PROFILS_AUDIO[e.cle] : null, att = P ? P.att : 0.05;
+    const valides = e.comps.filter(c => c.f >= 20 && c.f <= 12000).slice(0, NB_OSC), somme = valides.reduce((a, c) => a + c.a, 0) || 1;
+    g.master.gain.setTargetAtTime(0.2 * e.vol / 100, now, debut ? att / 3 : tc);
+    g.osc.forEach((x, i) => {
+      const c = valides[i], retard = debut && P ? att * 0.35 * i : 0;
+      if (c) x.o.frequency.setTargetAtTime(c.f, now, tc);
+      x.g.gain.setTargetAtTime(e.bruit || !c ? 0 : c.a / somme, now + retard, debut ? att / 3 : tc);
+      x.lfo.frequency.setTargetAtTime(P && P.vib ? P.vib[0] : 5, now, tc);
+      x.lg.gain.setTargetAtTime(P && P.vib ? P.vib[1] : 0, now + (debut && P && P.vib ? P.vibDelai || 0.2 : 0), debut ? 0.3 : tc);
+    });
+    g.bruitG.gain.setTargetAtTime(e.bruit ? 0.5 : 0, now, tc);
+    g.souffleG.gain.setTargetAtTime(P && P.souffle ? P.souffle : 0, now, tc);
+    g.bp.frequency.setTargetAtTime(Math.min(8000, 2 * (valides[0]?.f || 500)), now, tc);
+  }, []);
+  const demarrer = useCallback(e => {
     arreter(); setErreur('');
     try {
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) { setErreur('Ce navigateur ne sait pas jouer de son.'); return; }
       const ctx = ctxRef.current || (ctxRef.current = new AC());
       if (ctx.state === 'suspended') ctx.resume();
-      const MAX = 0.2, master = ctx.createGain(), t0 = ctx.currentTime, noeuds = [];
-      const P = naturel && !bruit ? PROFILS_AUDIO[cle] : null, niv = MAX * vol / 100;
-      master.gain.setValueAtTime(P && P.chute ? 0.0001 : 0, t0);
-      if (P && P.chute) { master.gain.exponentialRampToValueAtTime(niv, t0 + P.att); master.gain.exponentialRampToValueAtTime(niv * 0.3, t0 + 2.5); }
-      else master.gain.linearRampToValueAtTime(niv, t0 + (P ? P.att : 0.05));
-      master.connect(ctx.destination);
-      if (bruit) {
-        const buf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate), d = buf.getChannelData(0);
-        for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-        const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = buf; s.loop = true; g.gain.value = 0.5; s.connect(g); g.connect(master); s.start(); noeuds.push(s);
-      } else {
-        const somme = comps.reduce((a, c) => a + (c.f >= 20 && c.f <= 12000 ? c.a : 0), 0) || 1;
-        comps.forEach((c, rang) => {
-          if (c.f < 20 || c.f > 12000) return;
-          const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = c.f;
-          if (P) { g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(c.a / somme, t0 + P.att * (1 + 0.35 * rang)); } else g.gain.value = c.a / somme;
-          o.connect(g); g.connect(master); o.start(); noeuds.push(o);
-          if (P && P.vib) { const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = P.vib[0]; lg.gain.setValueAtTime(0, t0); lg.gain.linearRampToValueAtTime(P.vib[1], t0 + (P.vibDelai || 0.2) + 0.4); lfo.connect(lg); lg.connect(o.detune); lfo.start(); noeuds.push(lfo); }
-        });
-        if (P && P.souffle) {
-          const buf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate), d = buf.getChannelData(0);
-          for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-          const s = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain(); s.buffer = buf; s.loop = true;
-          bp.type = 'bandpass'; bp.frequency.value = Math.min(8000, 2 * (comps[0]?.f || 500)); bp.Q.value = 0.8;
-          g.gain.value = P.souffle; s.connect(bp); bp.connect(g); g.connect(master); s.start(); noeuds.push(s);
-        }
-      }
-      const minuteur = setTimeout(arreter, 2500);
-      stopRef.current = () => { clearTimeout(minuteur); const now = ctx.currentTime; master.gain.cancelScheduledValues(now); master.gain.setValueAtTime(master.gain.value, now); master.gain.linearRampToValueAtTime(0, now + 0.05); noeuds.forEach(n => { try { n.stop(now + 0.08); } catch { /* déjà arrêté */ } }); setTimeout(() => { try { master.disconnect(); } catch { /* rien */ } }, 200); };
-      setJoue(true);
+      const master = ctx.createGain(), noeuds = []; master.gain.value = 0; master.connect(ctx.destination);
+      const osc = Array.from({ length: NB_OSC }, () => {
+        const o = ctx.createOscillator(), g = ctx.createGain(), lfo = ctx.createOscillator(), lg = ctx.createGain();
+        g.gain.value = 0; lg.gain.value = 0; lfo.frequency.value = 5; lfo.connect(lg); lg.connect(o.detune); o.connect(g); g.connect(master); o.start(); lfo.start(); noeuds.push(o, lfo);
+        return { o, g, lfo, lg };
+      });
+      const buf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      const mkBruit = () => { const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.start(); noeuds.push(s); return s; };
+      const bruitG = ctx.createGain(); bruitG.gain.value = 0; mkBruit().connect(bruitG); bruitG.connect(master);
+      const bp = ctx.createBiquadFilter(), souffleG = ctx.createGain(); bp.type = 'bandpass'; bp.Q.value = 0.8; souffleG.gain.value = 0; mkBruit().connect(bp); bp.connect(souffleG); souffleG.connect(master);
+      gRef.current = { ctx, master, osc, bruitG, souffleG, bp, noeuds };
+      appliquer(e, 0.03, true); armer(arreter); setJoue(true);
     } catch { setErreur('Le son ne peut pas être joué sur cet appareil.'); }
-  }, [arreter]);
-  return { joue, jouer, arreter, erreur };
+  }, [arreter, appliquer, armer]);
+  const maj = useCallback(e => { if (!gRef.current) return; appliquer(e, 0.03); armer(arreter); }, [appliquer, armer, arreter]);
+  return { joue, demarrer, maj, arreter, erreur };
 }
 
 // ---------- graphique : évolution temporelle ----------
@@ -396,7 +405,7 @@ export function SimulationSon() {
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Signal</strong> : tension <em>u</em> en unités arbitraires qui commande un haut-parleur, variations de pression de l’air proportionnelles aux variations de <em>u</em> autour de <em>u</em><sub>0</sub> (pas de distorsion) ; une composante continue ne fait pas vibrer l’air. Les composantes sont toutes <strong>en phase</strong> à l’instant 0.</li>
-      <li><strong>Écoute</strong> : avec « Son naturel », le son joué ajoute une attaque progressive, et selon l’instrument un vibrato, un léger souffle ou une décroissance. Ces effets ne figurent pas sur le spectre affiché, qui décrit le son établi. En décochant « Son naturel », on entend exactement la somme des harmoniques affichés.</li>
+      <li><strong>Écoute</strong> : avec « Son naturel », le son joué ajoute une attaque progressive, et selon l’instrument un vibrato ou un léger souffle. Le son suit en direct les réglages que vous modifiez pendant l’écoute (arrêt automatique après 60 s). Ces effets ne figurent pas sur le spectre affiché, qui décrit le son établi. En décochant « Son naturel », on entend exactement la somme des harmoniques affichés.</li>
       <li><strong>Timbres</strong> : les amplitudes des harmoniques sont des valeurs choisies pour illustrer, pas des mesures d’instruments réels. Un vrai instrument a des amplitudes qui varient dans le temps.</li>
       <li><strong>Son non périodique</strong> : fréquences égales à <em>f</em><sub>1</sub> multiplié par √1, √2, √5, √7, √11 et √13, sans rapport simple entre elles. <strong>Bruit</strong> : 60 composantes de fréquences et de phases choisies au hasard (le spectre d’un vrai bruit est continu).</li>
       <li><strong>Spectre</strong> : amplitude de chaque composante (raies), pas la transformée de Fourier d’un enregistrement. La raie à 0 Hz représente la valeur moyenne <em>u</em><sub>0</sub> du signal.</li>
@@ -415,9 +424,14 @@ export function SimulationSon() {
   // ---------- scène « spectre et timbre » ----------
   const cleSon = dd?.type === 'freq' ? dd.timbre : sy.preset;
   const aProfil = !!PROFILS_AUDIO[cleSon] && type !== 'bruit';
+  const etatSon = { comps, bruit: type === 'bruit', vol, naturel, cle: cleSon };
+  const cleComps = comps.map(c => `${Math.round(c.f * 100)}:${Math.round(c.a * 1000)}`).join('|');
+  const etatRef = useRef(etatSon), { joue: sonJoue, maj: majSon } = audio;
+  useEffect(() => { etatRef.current = etatSon; });
+  useEffect(() => { if (sonJoue) majSon(etatRef.current); }, [sonJoue, majSon, cleComps, vol, naturel, cleSon, type]);
   const ecoute = (
     <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-      <button onClick={() => (audio.joue ? audio.arreter() : audio.jouer(comps, type === 'bruit', vol, naturel, cleSon))} aria-pressed={audio.joue} style={stylePetitBouton(audio.joue, COUL)}><Pic n="signal"/>{audio.joue ? 'Arrêter le son' : 'Écouter (2,5 s)'}</button>
+      <button onClick={() => (audio.joue ? audio.arreter() : audio.demarrer(etatSon))} aria-pressed={audio.joue} style={stylePetitBouton(audio.joue, COUL)}><Pic n="signal"/>{audio.joue ? 'Arrêter le son' : 'Écouter'}</button>
       <label style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>Volume
         <input type="range" min="10" max="100" step="10" value={vol} onChange={e => setVol(parseInt(e.target.value, 10))} aria-label="Volume d’écoute" aria-valuetext={`${vol} pour cent`} style={{ width: 90 }}/></label>
       {aProfil && <label style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}><input type="checkbox" checked={naturel} onChange={e => setNaturel(e.target.checked)}/>Son naturel</label>}
