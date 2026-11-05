@@ -138,11 +138,11 @@ export function SimulationAcidesBases({ naviguer }) {
       texte: <>Le pH est plus grand que celui de l’acide chlorhydrique à la même concentration.</>,
       tache: { type: 'qcm', indice: 'Regardez le tableau d’avancement : pour l’acide éthanoïque, x_f est-il égal à x_max ? Qu’est-ce que cela change pour [H₃O⁺] ?', q: 'Pourquoi le pH de l’acide éthanoïque est-il plus grand ?', options: ['il ne réagit que partiellement avec l’eau : [H₃O⁺] est inférieure à C', 'sa concentration est plus faible', 'il contient moins d’atomes d’hydrogène'], bonne: 0,
         expl: 'Un acide faible ne se dissocie que partiellement. À la même concentration apportée C, il fournit donc moins d’ions H₃O⁺ qu’un acide fort et le pH est plus élevé.' } },
-    { id: 'tau', titre: 'Le taux d’avancement', focus: ['mesures'],
-      texte: <>Le <strong>taux d’avancement final</strong> est la fraction d’acide qui a réagi : τ = <em>x</em><sub>f</sub> / <em>x</em><sub>max</sub> = [H₃O⁺] / <em>C</em> (ici [A⁻] = [H₃O⁺], on néglige l’autoprotolyse de l’eau). Calculez-le à partir du pH lu dans « Mesures » (pH = {nbf(M.pH({ C: 1e-2, pKas: [4.8] }), 2)} pour l’acide éthanoïque à <em>C</em> = 1,0 × 10⁻² mol·L⁻¹).</>,
-      tache: { type: 'num', indice: 'Lisez [H₃O⁺] = 10^(−pH) dans « Mesures » ; τ = x_f / x_max = [H₃O⁺] / C. Pensez à convertir en pourcentage.', q: 'Taux d’avancement τ de l’acide éthanoïque', unite: '%', vrai: M.tauAcide(1e-2, 4.8) * 100, tol: 0.05, affiche: v => nbf(v, 1), cs: 2,
+    { id: 'tau', titre: 'Le taux d’avancement', focus: ['scene', 'mesures'],
+      texte: <>Le <strong>taux d’avancement final</strong> est la fraction d’acide qui a réagi : τ = <em>x</em><sub>f</sub> / <em>x</em><sub>max</sub>. Lisez <em>x</em><sub>f</sub> et <em>x</em><sub>max</sub> dans le tableau d’avancement (acide éthanoïque, <em>C</em> = 1,0 × 10⁻² mol·L⁻¹), puis calculez τ. Vous pouvez vérifier avec le pH de « Mesures » : [H₃O⁺] = 10^(−pH) = <em>x</em><sub>f</sub> pour 1 L.</>,
+      tache: { type: 'num', indice: 'Dans le tableau, repérez x_f (dernière ligne) et x_max (ligne d’avant) : τ = x_f / x_max. Pensez à convertir en pourcentage.', q: 'Taux d’avancement τ de l’acide éthanoïque', unite: '%', vrai: M.tauAcide(1e-2, 4.8) * 100, tol: 0.05, affiche: v => nbf(v, 1), cs: 2,
         bloque: scene === 'acide' && ac.id === 'etha' && ac.logC === -2 ? null : 'Choisissez d’abord l’acide éthanoïque à 10⁻² mol/L.',
-        calcul: () => [`pH = ${nbf(M.pH({ C: 1e-2, pKas: [4.8] }), 2)} donc [H₃O⁺] = 10^(−pH) = ${sci(M.concH(M.pH({ C: 1e-2, pKas: [4.8] })), 2)} mol·L⁻¹.`, `τ = [H₃O⁺] / C = ${nbf(M.tauAcide(1e-2, 4.8) * 100, 1)} %.`],
+        calcul: () => [`Dans le tableau : x_f = ${sci(1e-2 * M.tauAcide(1e-2, 4.8), 2)} mol et x_max = 1,0 × 10⁻² mol.`, `τ = x_f / x_max = ${nbf(M.tauAcide(1e-2, 4.8) * 100, 1)} %.`],
         pieges: [[M.tauAcide(1e-2, 4.8), 'Le taux d’avancement est demandé en pourcentage.']],
         expl: 'τ ≈ 4 % : seule une petite fraction des molécules d’acide a réagi avec l’eau. Pour un acide fort, τ = 100 %.' } },
     { id: 'dilution', titre: 'Diluer l’acide', focus: ['reglages', 'mesures'],
@@ -335,7 +335,7 @@ export function SimulationAcidesBases({ naviguer }) {
 
   const SceneAcide = () => {
     // Tableau d'avancement pour V = 100 mL (autoprotolyse de l'eau négligée dans le tableau)
-    const Vtab = 0.1, n0 = C * Vtab, xf = n0 * Math.min(1, tauA), xmax = n0;
+    const Vtab = 1, n0 = C * Vtab, xf = n0 * Math.min(1, tauA), xmax = n0;
     const cel = { border: `1px solid ${KIT.bord}`, padding: '4px 2px', textAlign: 'center', fontSize: 12, lineHeight: 1.2 };
     const ent = { ...cel, background: '#f1f5f9', fontWeight: 700 };
     const q = v => (v < 1e-12 ? '0' : sci(v, 1));
@@ -344,7 +344,7 @@ export function SimulationAcidesBases({ naviguer }) {
       <div>
         {Echelle(phA)}
         <div style={{ fontSize: 13, color: KIT.txt2, margin: '8px 0 4px' }}>
-          Tableau d’avancement (mol) pour V = 100{NB}mL ; x<sub>max</sub> : réaction totale, x<sub>f</sub> : état final. AH = <b>{A.formule}</b> et A⁻ = <b>{A.base}</b>.</div>
+          Tableau d’avancement (mol) pour V = 1,00{NB}L de solution ; x<sub>max</sub> : réaction totale, x<sub>f</sub> : état final. AH = <b>{A.formule}</b> et A⁻ = <b>{A.base}</b>.</div>
         <div style={{ overflowX: 'auto' }}>
           <table data-tableau-acide style={{ borderCollapse: 'collapse', background: 'white', width: '100%' }}
             aria-label={`Tableau d’avancement de la réaction de ${A.formule} avec l’eau`}>
@@ -361,11 +361,11 @@ export function SimulationAcidesBases({ naviguer }) {
             </tbody>
           </table>
         </div>
-        <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        {apres('tau') && <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <div style={{ fontSize: 14, color: KIT.txt, fontWeight: 700 }}>x<sub>f</sub> = {nbf(Math.min(100, tauA * 100), 1)}{NB}% de x<sub>max</sub></div>
           <div role="img" aria-label={`x f représente ${nbf(Math.min(100, tauA * 100), 1)} pour cent de x max`} style={{ flex: 1, minWidth: 140, height: 14, background: '#e2e8f0', borderRadius: 7, overflow: 'hidden' }}>
             <div style={{ width: `${Math.max(0.8, Math.min(100, tauA * 100))}%`, height: '100%', background: A.fort ? '#15803d' : '#d97706' }}/></div>
-        </div>
+        </div>}
         <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4 }}>
           {A.fort ? <>Réaction totale : <i>x</i><sub>f</sub> = <i>x</i><sub>max</sub>, il ne reste plus d’acide AH.</> : <>Réaction limitée : <i>x</i><sub>f</sub> &lt; <i>x</i><sub>max</sub>, il reste de l’acide AH en solution à côté de A⁻ et H₃O⁺.</>}</div>
       </div>);
