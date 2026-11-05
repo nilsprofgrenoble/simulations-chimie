@@ -1,8 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { KIT, styleBouton, stylePetitBouton, styleBoite } from "../commun";
 import { catalogueDevoirs as catalogue } from "./catalogue";
 import { EspaceEleve } from "./EspaceEleve";
 import { Pic } from "../Pictos";
+import { rest, toutLire } from "../serveur";
+import { chapitresDe } from "../chapitres";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  APERÇU ÉLÈVE (professeur) : l'espace « Mon compte » d'un élève, avec des données FICTIVES.
@@ -67,28 +69,71 @@ function fabriquerClasse(profil) {
   };
 }
 
-export function ApercuEleve({ naviguer, onFermer }) {
+// Lit, avec le compte du professeur, ce que le serveur donnerait à cet élève : ses séances, les devoirs de sa classe, la vie de classe et son pseudo.
+// (Les règles de sécurité du serveur autorisent déjà le professeur à lire ces données pour les élèves de ses classes.)
+async function lireEleveReel(classeId, eleveId) {
+  const [lignes, devoirs, semaine, pseudos] = await Promise.all([
+    toutLire(`activites?select=cle,reussi,essais,corrections_vues,duree_s,debut,maj&order=debut.desc&user_id=eq.${eleveId}`),
+    rest(`devoirs?select=id,titre,cles,echeance,cree_le&classe_id=eq.${classeId}&order=cree_le.desc`).catch(() => []),
+    rest('rpc/classe_semaine', { method: 'POST', corps: { c: classeId } }).catch(() => null),
+    rest(`pseudos?select=adj,nom,visible&user_id=eq.${eleveId}`).catch(() => []),
+  ]);
+  return { lignes, devoirs: Array.isArray(devoirs) ? devoirs : [], classe: { semaine: semaine?.actif ? semaine : null, moi: pseudos?.[0] || null } };
+}
+
+export function ApercuEleve({ naviguer, onFermer, classe, eleves = [], eleveInitial }) {
+  const reelPossible = !!classe && eleves.length > 0;
+  const [source, setSource] = useState(eleveInitial && reelPossible ? 'reel' : 'fictif');
+  const [eleveId, setEleveId] = useState(() => (eleves.some(e => e.user_id === eleveInitial) ? eleveInitial : eleves[0]?.user_id || ''));
+  const [lu, setLu] = useState(null);       // { cle, donnees | erreur } : la dernière lecture terminée
   const [profil, setProfil] = useState('cours');
   const maintenant = useMemo(() => new Date(), []);
   const items = useMemo(() => catalogue(), []);
   const lignes = useMemo(() => fabriquer(items, profil, maintenant), [items, profil, maintenant]);
   const devoirs = useMemo(() => fabriquerDevoirs(items, profil, maintenant), [items, profil, maintenant]);
-  const classe = useMemo(() => fabriquerClasse(profil), [profil]);
+  const classeFictive = useMemo(() => fabriquerClasse(profil), [profil]);
   const p = PROFILS.find(x => x.id === profil);
+  const cleLue = `${classe?.id}|${eleveId}`;
+  useEffect(() => {
+    if (source !== 'reel' || !classe?.id || !eleveId) return undefined;
+    let vivant = true;
+    lireEleveReel(classe.id, eleveId).then(r => { if (vivant) setLu({ cle: cleLue, donnees: r }); }).catch(e => { if (vivant) setLu({ cle: cleLue, erreur: e.message || 'Lecture impossible.' }); });
+    return () => { vivant = false; };
+  }, [source, classe?.id, eleveId, cleLue]);
+  const courant = lu && lu.cle === cleLue ? lu : null, reel = courant?.donnees || null, erreur = courant?.erreur || '';
+  const eleve = eleves.find(e => e.user_id === eleveId);
+  const chaps = chapitresDe(classe?.chapitres).map(c => c.label).join(' · ');
   return (
     <div>
       <div style={{ ...styleBoite, border: '2px dashed #8fcfc5', background: '#eef7f5' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <b style={{ color: '#134e4a', flex: 1, minWidth: 200 }}><Pic n="eye"/>Aperçu élève : données fictives, rien n’est enregistré</b>
+          <b style={{ color: '#134e4a', flex: 1, minWidth: 200 }}><Pic n="eye"/>{source === 'reel' ? 'Aperçu élève : l’espace réel d’un élève de la classe, en lecture seule' : 'Aperçu élève : données fictives, rien n’est enregistré'}</b>
           <button onClick={onFermer} style={styleBouton(true, ROSE)}>← Retour au suivi</button>
         </div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '8px 0 4px' }}>
-          {PROFILS.map(x => <button key={x.id} onClick={() => setProfil(x.id)} style={stylePetitBouton(profil === x.id, '#1f7a72')}>{x.nom}</button>)}
-        </div>
-        <div style={{ fontSize: 13, color: KIT.txt2 }}>{p.aide} La vie de classe est montrée comme si elle était activée ; les boutons « Y aller » ouvrent les vrais exercices (rien n’est enregistré pour vous).</div>
+        {reelPossible && (
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '8px 0 0' }}>
+            <button onClick={() => setSource('fictif')} aria-pressed={source === 'fictif'} style={stylePetitBouton(source === 'fictif', '#1f7a72')}>Élèves fictifs</button>
+            <button onClick={() => setSource('reel')} aria-pressed={source === 'reel'} style={stylePetitBouton(source === 'reel', '#1f7a72')}>Un élève de ma classe</button>
+          </div>)}
+        {source === 'fictif' ? (<>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '8px 0 4px' }}>
+            {PROFILS.map(x => <button key={x.id} onClick={() => setProfil(x.id)} style={stylePetitBouton(profil === x.id, '#1f7a72')}>{x.nom}</button>)}
+          </div>
+          <div style={{ fontSize: 13, color: KIT.txt2 }}>{p.aide} La vie de classe est montrée comme si elle était activée ; les boutons « Y aller » ouvrent les vrais exercices (rien n’est enregistré pour vous).{!reelPossible && ' Pour voir un vrai élève, la classe doit avoir au moins un élève.'}</div>
+        </>) : (<>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', margin: '8px 0 4px', fontSize: 14, fontWeight: 700, color: '#134e4a' }}>Élève
+            <select value={eleveId} onChange={e => setEleveId(e.target.value)} style={{ font: 'inherit', padding: '6px 10px', borderRadius: 8, border: '1px solid #8fcfc5', background: '#fff' }}>
+              {eleves.map(e => <option key={e.user_id} value={e.user_id}>{e.identifiant}</option>)}
+            </select></label>
+          <div style={{ fontSize: 13, color: KIT.txt2 }}>
+            Ce que voit {eleve ? <b>{eleve.identifiant}</b> : 'cet élève'} dans « Mon compte » : ses vraies séances, les devoirs de sa classe{classe?.vie_classe ? ', la vie de classe (activée)' : ' (la vie de classe est éteinte : elle n’apparaît pas)'} et son pseudo.
+            {chaps ? <> Chapitre en cours pour la classe : {chaps}.</> : ' Aucun chapitre en cours n’est défini pour la classe.'} Seule cette page est reproduite ; les boutons « Y aller » ouvrent les vrais exercices (rien n’est enregistré pour vous).
+          </div>
+        </>)}
       </div>
-      <div key={profil}>
-        <EspaceEleve lignes={lignes} naviguer={naviguer} apercu={{ devoirs, classe }} />
-      </div>
+      {source === 'fictif' && <div key={profil}><EspaceEleve lignes={lignes} naviguer={naviguer} apercu={{ devoirs, classe: classeFictive }} /></div>}
+      {source === 'reel' && erreur && <div role="alert" style={{ ...styleBoite, color: '#991b1b' }}>Impossible de lire les données de cet élève : {erreur}</div>}
+      {source === 'reel' && !erreur && !reel && <div role="status" style={{ ...styleBoite, color: KIT.txt2 }}>Chargement des données de l’élève…</div>}
+      {source === 'reel' && reel && <div key={eleveId}><EspaceEleve lignes={reel.lignes} naviguer={naviguer} apercu={{ devoirs: reel.devoirs, classe: reel.classe }} /></div>}
     </div>);
 }
