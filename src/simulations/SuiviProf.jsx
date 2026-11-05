@@ -129,7 +129,7 @@ export function SimulationSuiviProf({ naviguer }) {
   if (apercu) {
     return (
       <div style={{ ...cardStyle, maxWidth: 1100, margin: '0 auto' }}>
-        <ApercuEleve naviguer={naviguer} onFermer={() => setApercu(false)} />
+        <ApercuEleve naviguer={naviguer} onFermer={() => setApercu(false)} classe={classes.find(c => c.id === classeId)} eleves={eleves} eleveInitial={typeof apercu === 'string' ? apercu : undefined} />
       </div>);
   }
 
@@ -304,7 +304,7 @@ export function SimulationSuiviProf({ naviguer }) {
           {onglet === 'devoirs' && <DevoirsProf key={`${classe.id}|${(classe.chapitres || []).join()}|${preset ? JSON.stringify(preset) : ''}`} classe={classe} eleves={eleves} lignes={lignes} preset={preset} />}
           {onglet === 'reprendre' && <AReprendreProf eleves={eleves} lignes={lignes} naviguer={naviguer} onDevoir={p => { setPreset(p); setOnglet('devoirs'); }} />}
 
-          {onglet === 'eleves' && <ElevesProf classe={classe} eleves={eleves} lignes={lignes} exos={exos} defis={defis} etq={etq} proprio={proprio} onReinitialiser={reinitialiser} onSupprimer={supprimerEleve} />}
+          {onglet === 'eleves' && <ElevesProf onApercu={setApercu} classe={classe} eleves={eleves} lignes={lignes} exos={exos} defis={defis} etq={etq} proprio={proprio} onReinitialiser={reinitialiser} onSupprimer={supprimerEleve} />}
 
           {onglet === 'sims' && (
             <div>

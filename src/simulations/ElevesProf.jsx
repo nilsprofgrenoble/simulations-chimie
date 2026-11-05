@@ -18,7 +18,7 @@ const statut = j => (j === null ? { t: 'Jamais venu', c: GRIS } : j <= 7 ? { t: 
 
 const TRIS = [['temps', 'Temps passé'], ['devoirs', 'Devoirs faits'], ['activite', 'Dernière activité'], ['id', 'Identifiant']];
 
-export function ElevesProf({ classe, eleves, lignes, exos, defis, etq, proprio, onReinitialiser, onSupprimer }) {
+export function ElevesProf({ classe, eleves, lignes, exos, defis, etq, proprio, onReinitialiser, onSupprimer, onApercu }) {
   const [devoirs, setDevoirs] = useState(null), [tri, setTri] = useState('temps'), [ouvert, setOuvert] = useState(null);
   useEffect(() => {
     let vivant = true;
@@ -120,6 +120,7 @@ export function ElevesProf({ classe, eleves, lignes, exos, defis, etq, proprio, 
                         </div>))}
                     </div>)}
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+                    {onApercu && <button onClick={() => onApercu(x.e.user_id)} style={stylePetitBouton(false, '#1f7a72')}>👁 Voir comme cet élève</button>}
                     <button onClick={() => onReinitialiser(x.e.identifiant)} style={stylePetitBouton(false, '#475569')}>🔑 Nouveau mot de passe</button>
                     {proprio && <button onClick={() => onSupprimer(x.e.identifiant)} style={stylePetitBouton(false, '#b91c1c')}>🗑 Supprimer le compte</button>}
                   </div>

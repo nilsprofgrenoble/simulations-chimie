@@ -7,7 +7,7 @@ const ETAPES = [
   ['Distribuer les fiches', <>Juste après la création : <b>« 🖨️ Imprimer les fiches »</b>. Les mots de passe ne sont affichés qu’une fois. Chaque fiche porte un <b>QR code</b> : l’élève le scanne, l’identifiant est déjà rempli, il tape son mot de passe.</>],
   ['Donner un devoir', <>Sur n’importe quelle simulation, le bouton <b>« 📌 Donner en devoir »</b> (en haut à droite) ouvre le formulaire déjà rempli : il ne reste qu’à choisir une date limite. Sinon, onglet <b>Devoirs</b>. L’élève avance pas à pas : parcours guidé, puis défi, puis la suite.</>],
   ['Suivre la classe', <>Onglet <b>Synthèse</b> : élèves actifs, exercices à reprendre en classe, élèves à relancer. L’onglet <b>Élèves</b> donne le détail de chacun ; <b>Détail</b> les chiffres par exercice, défi et simulation.</>],
-  ['Voir ce que voit un élève', <>Le bouton <b>« 👁 Aperçu élève »</b> montre l’espace d’un élève (données fictives) à ses différentes étapes : à essayer avant de distribuer les fiches.</>],
+  ['Voir ce que voit un élève', <>Le bouton <b>« 👁 Aperçu élève »</b> montre l’espace d’un élève à ses différentes étapes : soit des élèves fictifs, soit un vrai élève de votre classe (ses séances, les devoirs et la vie de classe tels que lui les voit, en lecture seule). Le bouton « 👁 Voir comme cet élève » de l’onglet Élèves y mène directement : à essayer avant de distribuer les fiches.</>],
   ['Mot de passe perdu ?', <>Onglet <b>Élèves</b>, bouton 🔑 sur la ligne de l’élève : un nouveau mot de passe est généré (l’ancien ne marche plus).</>],
 ];
 
