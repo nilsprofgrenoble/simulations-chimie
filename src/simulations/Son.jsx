@@ -232,7 +232,7 @@ export function SimulationSon() {
         pieges: [[1 / (d / 3), 'T est en millisecondes : convertissez-la en secondes avant de calculer 1 / T.'], [1 / (d / 3) * 1000 * 1000, 'Vérifiez la conversion : 1 ms = 10⁻³ s.']],
         expl: 'f = 1 / T = 500 Hz. Le spectre confirme : la raie est à 500 Hz.' } },
     { id: 'violon', titre: 'Un son complexe', focus: ['reglages', 'temps', 'spectre'],
-      texte: <>Un instrument réel n’émet pas un son pur. Affichez le son d’un <strong>violon</strong>, joué avec le même fondamental (500{NB}Hz) : la courbe n’est plus sinusoïdale et le spectre comporte plusieurs raies.<Cap>{CAP.pur}</Cap></>,
+      texte: <>Un instrument réel n’émet pas un son pur. Affichez le son d’un <strong>violon</strong>, joué avec le même fondamental (500{NB}Hz) : la courbe n’est plus sinusoïdale et le spectre comporte plusieurs raies. Vous pouvez aussi l’<strong>écouter</strong> avec la barre « Écouter » en bas de l’écran.<Cap>{CAP.pur}</Cap></>,
       tache: { type: 'action', ok: synthe && sy.preset === 'violon' && sy.f1 === 500, label: 'Jouer le violon', consigne: 'Choisissez le timbre « Violon » à 500 Hz', faire: () => { setScene('synthe'); setSy(syDe('violon', 500, T_PLACE)); } } },
     { id: 'periodeC', titre: 'La période d’un son complexe', focus: ['temps'], cible: cible.vio,
       texte: <>Les repères sont sur deux maximums séparés de trois motifs. Même si le signal est complexe, il se répète : il est <strong>périodique</strong>.<Cap>{CAP.harm}</Cap></>,
@@ -340,6 +340,7 @@ export function SimulationSon() {
   // en parcours guidé, le niveau et l’intensité ne sont affichés qu’une fois les calculs faits par l’élève
   const afficheL = !enGuide || (etape > IDS.indexOf('Ln'));
   const afficheI = !enGuide || etape > IDS.indexOf('Ln');
+  const idE = ETAPES[Math.min(etape, ETAPES.length - 1)].id;
 
   // ════════════════ DÉFIS ════════════════
   function nouveauDefi(t) {
@@ -437,17 +438,17 @@ export function SimulationSon() {
       {aProfil && <label style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}><input type="checkbox" checked={naturel} onChange={e => setNaturel(e.target.checked)}/>Son naturel</label>}
       {audio.erreur && <span role="status" style={{ fontSize: 12.5, color: '#b91c1c' }}>{audio.erreur}</span>}
     </div>);
-  const barreEcoute = ((dd ? dd.type === 'freq' : scene === 'synthe')) && (
+  const barreEcoute = ((dd ? dd.type === 'freq' : scene === 'synthe')) && depuis('violon') && (
     <div className="so-barre" role="group" aria-label="Écoute du son">{ecoute}</div>);
   const boiteTemps = (
     <div style={{ ...styleBoite, ...cadre('temps') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Évolution temporelle <span style={{ fontWeight: 600, fontSize: 13, color: KIT.txt2 }}>({dd?.type === 'freq' ? 'son à identifier' : M.PRESETS[sy.preset]?.nom || 'Réglage personnel'}{dd || type !== 'periodique' ? '' : ' · son périodique'})</span></div>
-      <Temps u={u} fen={fen} t1={t1} t2={t2} avecRepères aria={`Évolution de la tension en fonction du temps sur ${fen} millisecondes, ${type === 'bruit' ? 'signal irrégulier' : type === 'nonper' ? 'signal qui ne se répète pas' : 'signal périodique'}`}/>
-      <div role="group" aria-label="Placer les repères" style={{ background: '#f1f5f9', borderRadius: 10, padding: '6px 10px', marginTop: 8 }}>
+      <Temps u={u} fen={fen} t1={t1} t2={t2} avecRepères={depuis('repere')} aria={`Évolution de la tension en fonction du temps sur ${fen} millisecondes, ${type === 'bruit' ? 'signal irrégulier' : type === 'nonper' ? 'signal qui ne se répète pas' : 'signal périodique'}`}/>
+      {depuis('repere') && <div role="group" aria-label="Placer les repères" className={enGuide ? 'so-apparait' : undefined} style={{ background: '#f1f5f9', borderRadius: 10, padding: '6px 10px', marginTop: 8 }}>
         <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700 }}>Placer les repères (curseurs, ou flèches du clavier)</div>
         {[['t1', 'Repère 1 (orange)', t1, COUL_B], ['t2', 'Repère 2 (bleu)', t2, '#1d4ed8']].map(([k, n, vv, c]) => <label key={k} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: KIT.txt, marginTop: 4 }}><span style={{ fontWeight: 700, minWidth: 130 }}>{n}</span>
           <input type="range" aria-label={n} aria-valuetext={`${nbf(vv, 2)} millisecondes`} min={0} max={fen} step={0.05} value={vv} onChange={e => setS({ [k]: parseFloat(e.target.value) })} style={{ flex: 1, minHeight: 32, accentColor: c }}/></label>)}
-      </div>
+      </div>}
     </div>);
   const masqueSpectre = dd?.type === 'freq';
   const boiteSpectre = (
@@ -459,28 +460,29 @@ export function SimulationSon() {
     </div>);
   const boutonRetablir = etapeARetablir && <button onClick={rendreBase} style={{ ...styleBouton(true, '#b45309'), marginBottom: 8 }}>Rétablir le réglage de cette étape</button>;
   const sceneSynthe = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{boutonRetablir}<div style={{ ...styleBoite, ...cadre('reglages') }}>{dd?.type === 'freq' ? null : <>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{boutonRetablir}{depuis('violon') && <div className={enGuide ? 'so-apparait' : undefined} style={{ ...styleBoite, ...cadre('reglages') }}>{dd?.type === 'freq' ? null : <>
     <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Timbre</div>
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
       {Object.entries(M.PRESETS).map(([k, p]) => <button key={k} onClick={() => setSy(s => ({ ...s, preset: k, a: p.a.slice() }))} aria-pressed={sy.preset === k} style={stylePetitBouton(sy.preset === k, COUL)}>{k === 'pur' ? 'Son pur' : k === 'creux' ? 'Fondamental faible' : k === 'nonper' ? 'Non périodique' : p.nom.split(' (')[0]}</button>)}</div>
-      </>}</div>{boiteTemps}{boiteSpectre}</div>);
+      </>}</div>}{boiteTemps}{boiteSpectre}</div>);
 
   const reglagesSynthe = (
-    <div style={{ ...styleBoite, ...cadre('reglages') }}>
+    <div className={enGuide ? 'so-apparait' : undefined} style={{ ...styleBoite, ...cadre('reglages') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
       {dd?.type === 'freq' ? <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 8 }}>Son de timbre {M.PRESETS[dd.timbre].nom.toLowerCase()}, fondamental inconnu.</div> : <>
-        <Curseur nom="Fréquence du fondamental f1" valeur={sy.f1} onChange={v => setS({ f1: v })} min={100} max={1000} pas={10} unite="Hz" decimales={0} couleur={COUL}/>
-        {sy.preset !== 'bruit' && <>
+        {depuis('hauteur') && <Curseur nom="Fréquence du fondamental f1" valeur={sy.f1} onChange={v => setS({ f1: v })} min={100} max={1000} pas={10} unite="Hz" decimales={0} couleur={COUL}/>}
+        {sy.preset !== 'bruit' && depuis('amplitude') && <>
           <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, margin: '4px 0' }}>{type === 'nonper' ? 'Amplitudes des 6 composantes' : 'Amplitudes du fondamental et des harmoniques'}</div>
           <div className="so-amp">{sy.a.map((v, i) => <Curseur key={i} nom={type === 'nonper' ? `Composante ${i + 1}` : i === 0 ? 'a1 (fondamental)' : `a${i + 1} (rang ${i + 1})`} valeur={v} onChange={x => setSy(s => ({ ...s, preset: s.preset === 'nonper' ? 'nonper' : 'perso', a: s.a.map((y, j) => (j === i ? x : y)) }))} min={0} max={1} pas={0.05} decimales={2} couleur={COUL}/>)}</div>
-          <Curseur nom="Composante continue u0" valeur={sy.u0} onChange={v => setS({ u0: v })} min={0} max={1} pas={0.1} unite="" decimales={1} couleur="#b45309"/></>}
+          </>}
+        {sy.preset !== 'bruit' && depuis('continue') && <Curseur nom="Composante continue u0" valeur={sy.u0} onChange={v => setS({ u0: v })} min={0} max={1} pas={0.1} unite="" decimales={1} couleur="#b45309"/>}
       </>}
-      <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Fenêtre de temps affichée</div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>{[10, 20, 40].map(x => <button key={x} onClick={() => setS({ fen: x, t1: Math.min(sy.t1, x), t2: Math.min(sy.t2, x) })} aria-pressed={sy.fen === x} style={stylePetitBouton(sy.fen === x, '#475569')}>{x} ms</button>)}</div>
+      {!enGuide && <><div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Fenêtre de temps affichée</div>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>{[10, 20, 40].map(x => <button key={x} onClick={() => setS({ fen: x, t1: Math.min(sy.t1, x), t2: Math.min(sy.t2, x) })} aria-pressed={sy.fen === x} style={stylePetitBouton(sy.fen === x, '#475569')}>{x} ms</button>)}</div></>}
     </div>);
 
   const mesuresSynthe = (
-    <div style={{ ...styleBoite, ...cadre('mesures') }}>
+    <div className={enGuide ? 'so-apparait' : undefined} style={{ ...styleBoite, ...cadre('mesures') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
       <LigneMesure nom="Repère 1 (orange)" valeur={`${nbf(t1, 2)}${NB}ms`} couleur={COUL_B}/>
       <LigneMesure nom="Repère 2 (bleu)" valeur={`${nbf(t2, 2)}${NB}ms`} couleur="#1d4ed8"/>
@@ -503,22 +505,22 @@ export function SimulationSon() {
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Source ponctuelle, en champ libre (sans sol ni mur réfléchissant). Chaque source émet la puissance acoustique <em>P</em> indiquée.</div>
     </div>);
   const reglagesNiveau = (
-    <div style={{ ...styleBoite, ...cadre('reglages') }}>
+    <div className={enGuide ? 'so-apparait' : undefined} style={{ ...styleBoite, ...cadre('reglages') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
-      <div style={{ marginBottom: 8 }}>
+      {!enGuide && <div style={{ marginBottom: 8 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13.5, color: KIT.txt2, fontWeight: 700 }}><span>Puissance P d’une source</span><span style={{ color: KIT.txt }}>10<sup>{nv.k}</sup>{NB}W</span></div>
         <input type="range" min={-6} max={0} step={1} value={nv.k} onChange={e => setNv(x => ({ ...x, k: parseInt(e.target.value, 10) }))} aria-label="Puissance d’une source (exposant de 10, en watts)" aria-valuetext={`10 puissance ${nv.k} watt`} style={{ width: '100%', accentColor: COUL }}/>
-      </div>
+      </div>}
       <Curseur nom="Distance r à la source" valeur={nv.r} onChange={v => setNv(s => ({ ...s, r: v }))} min={1} max={50} pas={0.5} unite="m" decimales={1} couleur="#b45309"/>
-      <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Nombre de sources identiques</div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{[1, 2, 3, 4, 10].map(x => <button key={x} onClick={() => setNv(s => ({ ...s, n: x }))} aria-pressed={nv.n === x} style={stylePetitBouton(nv.n === x, COUL)}>{x}</button>)}</div>
+      {depuis('sources') && <><div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>Nombre de sources identiques</div>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{[1, 2, 3, 4, 10].map(x => <button key={x} onClick={() => setNv(s => ({ ...s, n: x }))} aria-pressed={nv.n === x} style={stylePetitBouton(nv.n === x, COUL)}>{x}</button>)}</div></>}
     </div>);
   const mesuresNiveau = (
-    <div style={{ ...styleBoite, ...cadre('mesures') }}>
+    <div className={enGuide ? 'so-apparait' : undefined} style={{ ...styleBoite, ...cadre('mesures') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
       <LigneMesure nom="Puissance totale n × P" valeur={`${nbm(nv.n * Pw * 1000, 3)}${NB}mW`}/>
       <LigneMesure nom="Distance r" valeur={`${nbf(nv.r, 1)}${NB}m`}/>
-      <LigneMesure nom="Surface S = 4π r²" valeur={`${nbf(M.surfaceSphere(nv.r), 2)}${NB}m²`}/>
+      {(!enGuide || (apres('surface') && idE !== 'L2')) && <LigneMesure nom="Surface S = 4π r²" valeur={`${nbf(M.surfaceSphere(nv.r), 2)}${NB}m²`}/>}
       {afficheI && <LigneMesure nom="Intensité I = n P / S" valeur={`${sci(I, 3)}${NB}W·m⁻²`} couleur="#15803d"/>}
       {afficheL && <LigneMesure nom="Niveau L = 10 log(I / I0)" valeur={`${nbf(L, 1)}${NB}dB`} couleur="#15803d"/>}
       {!enGuide && <LigneMesure nom="Seuil I0" valeur={`1,0 × 10⁻¹²${NB}W·m⁻²`}/>}
@@ -569,7 +571,10 @@ export function SimulationSon() {
     </ARetenir>);
 
   const zoneScene = dd ? (dd.type === 'freq' ? sceneSynthe : dd.type === 'timbre' ? vueTimbre : vueNiveau) : scene === 'synthe' ? sceneSynthe : sceneNiveau;
-  const colDroite = dd ? (dd.type === 'freq' ? <>{reglagesSynthe}{mesuresSynthe}</> : null) : scene === 'synthe' ? <>{reglagesSynthe}{mesuresSynthe}</> : <>{reglagesNiveau}{mesuresNiveau}</>;
+  const montreReglS = depuis('hauteur'), montreMesS = depuis('repere');
+  const colDroite = dd ? (dd.type === 'freq' ? <>{reglagesSynthe}{mesuresSynthe}</> : null)
+    : scene === 'synthe' ? ((montreReglS || montreMesS) ? <>{montreReglS && reglagesSynthe}{montreMesS && mesuresSynthe}</> : null)
+    : <>{depuis('dist') && reglagesNiveau}{mesuresNiveau}</>;
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       <style>{`
@@ -579,6 +584,9 @@ export function SimulationSon() {
         .so-pri { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr); }
         .so-pri.pile { grid-template-columns: minmax(0, 1fr); }
         .so-barre { position: sticky; bottom: 0; z-index: 20; background: #fff; border: 1px solid #cbd5e1; border-radius: 14px; padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 -2px 10px rgba(15, 23, 42, .12); margin-top: 8px; }
+        .so-apparait { animation: so-fondu .35s ease-out both; }
+        @keyframes so-fondu { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .so-apparait { animation: none; } }
         .so-amp { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
         .so-mini { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
         @media (min-width: 901px) { .so-l1.cote .so-carte { order: 2; } .so-l1.cote .so-main { order: 1; } }
@@ -589,8 +597,8 @@ export function SimulationSon() {
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Son : spectre, hauteur, timbre et niveau sonore</h2>
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Un son est une onde périodique ou non : on le décrit par sa <strong>courbe</strong> (évolution temporelle), son <strong>spectre</strong> (fréquences des composantes), sa <strong>hauteur</strong> (fondamental), son <strong>timbre</strong> (amplitudes des harmoniques) et son <strong>niveau</strong> en décibels.</div>
-      {!enDefi && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+      {!enGuide && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Un son est une onde périodique ou non : on le décrit par sa <strong>courbe</strong> (évolution temporelle), son <strong>spectre</strong> (fréquences des composantes), sa <strong>hauteur</strong> (fondamental), son <strong>timbre</strong> (amplitudes des harmoniques) et son <strong>niveau</strong> en décibels.</div>}
+      {!enDefi && depuis('niveau') && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
         {[['synthe', 'Spectre et timbre'], ['niveau', 'Niveau sonore']].map(([k, l]) => <button key={k} onClick={() => { setScene(k); audio.arreter(); }} aria-pressed={scene === k} style={stylePetitBouton(scene === k, COUL)}>{l}</button>)}
       </div>}
       <div className={`so-l1${mode !== 'explore' ? ' cote' : ''}`}>
@@ -603,7 +611,7 @@ export function SimulationSon() {
           </div>
         </div>
       </div>
-      {!enDefi && <div className="so-l2">{panneauHypo}</div>}
+      {!enDefi && depuis('bilan') && <div className="so-l2">{panneauHypo}</div>}
       {mode === 'explore' && <div className="so-l2">{aEssayer}{retenir}</div>}
       {barreEcoute}
     </div>
