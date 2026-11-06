@@ -151,6 +151,17 @@ function Tuyau({ qv, D1, D2, coul, animer, vit, cmd }) {
 
 const QM_UNITE = 'kg·s⁻¹';
 
+// Capacité visée (programme de SPCL de terminale STL, thème « Systèmes et procédés », « Transport et transformation des flux de matière »)
+const Cap = ({ children }) => <div style={{ marginTop: 8, fontSize: 12.5, color: '#475569', borderLeft: `3px solid ${ORANGE_GUIDE}`, paddingLeft: 8, lineHeight: 1.45 }}><strong>Capacité visée :</strong> {children}</div>;
+
+// Indice du défi : bouton « 💡 Indice » qui déplie une aide sans donner le résultat
+function IndiceDefi({ children }) {
+  const [vu, setVu] = useState(false);
+  return vu
+    ? <div style={{ fontSize: 13.5, color: KIT.txt, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 6, padding: '6px 8px', marginTop: 5, lineHeight: 1.5 }}><Pic n="bulb"/>{children}</div>
+    : <button type="button" onClick={() => setVu(true)} style={{ marginTop: 5, fontSize: 13, padding: '3px 10px', borderRadius: 8, cursor: 'pointer', fontWeight: 700, border: '1px solid #fcd34d', background: '#fffbeb', color: '#92400e' }}><Pic n="bulb"/>Indice</button>;
+}
+
 export function SimulationVitesseDebit({ naviguer }) {
   const [mode, setMode] = useState(() => modeOuverture('vitesse-guide-v1'));
   useSignalerMode(mode);
@@ -200,14 +211,14 @@ export function SimulationVitesseDebit({ naviguer }) {
   const ETAPES = [
     { id: 'observer', titre: 'Observer l’écoulement', focus: ['manip'],
       texte: <>Un fluide s’écoule de gauche à droite dans un tuyau dont la section <strong>se rétrécit</strong>. Chaque bande du schéma est la tranche de fluide qui traverse une section pendant <strong>1 s</strong>. Observez l’animation : les tranches avancent plus ou moins vite selon l’endroit.</>,
-      tache: { type: 'qcm', q: 'Où le fluide avance-t-il le plus vite ?', options: ['Dans la partie étroite du tuyau', 'Dans la partie large du tuyau', 'Partout à la même vitesse'], bonne: 0,
+      tache: { type: 'qcm', indice: 'Regardez la distance parcourue par une bande en 1 s : où est-elle la plus longue ? Une bande qui parcourt plus de distance dans le même temps va plus vite.', q: 'Où le fluide avance-t-il le plus vite ?', options: ['Dans la partie étroite du tuyau', 'Dans la partie large du tuyau', 'Partout à la même vitesse'], bonne: 0,
         expl: 'Dans la partie étroite, une tranche parcourt plus de distance en 1 s : le fluide y est plus rapide. Reste à comprendre pourquoi, puis à le calculer.' } },
     { id: 'regler', titre: 'Régler l’expérience', focus: ['manip'],
       texte: <>Fluide : l’<strong>huile d’olive</strong> (d = 0,92). Section 1 : <strong>D₁ = 40 mm</strong>. Section 2 : <strong>D₂ = 20 mm</strong>. Débit volumique réglé : <strong>Q<sub>v</sub> = 0,50 L·s⁻¹</strong>.</>,
       tache: { type: 'action', ok: reglageGuide, label: 'Régler l’expérience', faire: reglerGuide, consigne: reglageGuide ? null : 'Cliquez pour régler le fluide, les diamètres et le débit' } },
     { id: 'tranche', titre: 'Le volume d’une tranche', focus: ['manip'],
       texte: <>Un débit volumique est un volume par unité de temps : Q<sub>v</sub> = V / Δt. Chaque bande est le fluide qui traverse une section pendant Δt = 1 s. Ici Q<sub>v</sub> = 0,50 L·s⁻¹.</>,
-      tache: { type: 'num', q: 'Volume V d’une tranche (1 s de débit)', unite: 'L', vrai: G.Q, tol: 0.01, affiche: x => sig(x, 2),
+      tache: { type: 'num', indice: 'Q_v est un volume par seconde : V = Q_v × Δt. Les unités sont déjà cohérentes (L et s), aucune conversion à faire.', q: 'Volume V d’une tranche (1 s de débit)', unite: 'L', vrai: G.Q, tol: 0.01, affiche: x => sig(x, 2),
         calcul: () => ['Q_v = V / Δt, donc V = Q_v × Δt.', `V = ${sig(G.Q, 2)} L·s⁻¹ × 1 s = ${sig(G.Q, 2)} L (les secondes se simplifient).`],
         pieges: [[500, 'Il y a 0,50 L en 1 s, pas 500 : Q_v = 0,50 L·s⁻¹ donc V = Q_v × 1 s = 0,50 L.']],
         expl: 'V = Q_v × Δt = 0,50 L·s⁻¹ × 1 s = 0,50 L. Toutes les tranches ont ce même volume, que le tuyau soit large ou étroit : sinon du fluide s’accumulerait ou disparaîtrait.' } },
@@ -216,11 +227,11 @@ export function SimulationVitesseDebit({ naviguer }) {
       tache: { type: 'action', ok: paquetActif, label: 'Lâcher un paquet de points', faire: lacher, consigne: paquetActif ? null : 'Appuyez sur « Lâcher un paquet de points »' } },
     { id: 'longueur', titre: 'Une tranche dans un tuyau plus étroit', focus: ['manip'],
       texte: <>Le volume d’une tranche est le même dans les deux sections, mais la section du tuyau a changé.</>,
-      tache: { type: 'qcm', q: 'Dans la section étroite, la longueur d’une tranche est…', options: ['plus grande, pour garder le même volume', 'plus petite, parce que le tuyau est plus petit', 'identique, parce que le volume est identique'], bonne: 0,
+      tache: { type: 'qcm', indice: 'Le volume d’un cylindre est V = S × longueur. Si V reste le même et que S diminue, que doit faire la longueur ?', q: 'Dans la section étroite, la longueur d’une tranche est…', options: ['plus grande, pour garder le même volume', 'plus petite, parce que le tuyau est plus petit', 'identique, parce que le volume est identique'], bonne: 0,
         expl: 'Le volume d’un cylindre est V = S × longueur. À volume égal, une section plus petite impose une tranche plus longue. Et cette longueur est la distance parcourue en 1 s : c’est la vitesse du fluide.' } },
     { id: 'relation', titre: 'Débit, vitesse, section', focus: [],
-      texte: <>La <strong>section S</strong> du tuyau est l’aire de sa coupe perpendiculaire à l’écoulement : pour un tuyau cylindrique, c’est un <strong>disque</strong> de diamètre D (en orange ci-dessous). {SchemaSection}Une tranche de longueur L = v × Δt, de section S, a pour volume <strong>V = S × v × Δt</strong>. Le débit volumique est donc Q<sub>v</sub> = V / Δt. Regardez aussi les <strong>unités</strong> : Q<sub>v</sub> en m³·s⁻¹, v en m·s⁻¹, S en m².</>,
-      tache: { type: 'qcm', q: 'Quelle relation lie Q_v, v et S ?', options: ['Q_v = v × S', 'Q_v = v / S', 'Q_v = S / v'], bonne: 0,
+      texte: <>La <strong>section S</strong> du tuyau est l’aire de sa coupe perpendiculaire à l’écoulement : pour un tuyau cylindrique, c’est un <strong>disque</strong> de diamètre D (en orange ci-dessous). {SchemaSection}Une tranche de longueur L = v × Δt, de section S, a pour volume <strong>V = S × v × Δt</strong>. Le débit volumique est donc Q<sub>v</sub> = V / Δt. Regardez aussi les <strong>unités</strong> : Q<sub>v</sub> en m³·s⁻¹, v en m·s⁻¹, S en m².<Cap>« Exprimer la relation entre le débit volumique d’un fluide et sa vitesse d’écoulement. »</Cap></>,
+      tache: { type: 'qcm', indice: 'Une tranche de longueur L = v × Δt a pour volume S × L ; divisez par Δt pour obtenir le débit. Vérifiez les unités : m·s⁻¹ × m² donne quoi ?', q: 'Quelle relation lie Q_v, v et S ?', options: ['Q_v = v × S', 'Q_v = v / S', 'Q_v = S / v'], bonne: 0,
         expl: <>Q<sub>v</sub> = v × S. Contrôle des unités : <Un u="m"/>·<Un u="s" inv/> × <Un u="m²"/> = <Un u="m³"/>·<Un u="s" inv/>, ce sont bien des m³·s⁻¹. Pour un même débit, v est donc inversement proportionnelle à S.</> } },
     { id: 'Dm', titre: 'Le diamètre en mètres', focus: [],
       texte: <>
@@ -228,7 +239,7 @@ export function SimulationVitesseDebit({ naviguer }) {
         <ConvPrefixe nom="D" n={25} de="mm" vers="m" e={-3}/>
         <p style={{ margin: '8px 0 0' }}>Faites de même pour D₁ = 40 mm.</p>
       </>,
-      tache: { type: 'num', q: 'D₁ en m', unite: 'm', vrai: 0.04, tol: 0.001, affiche: x => sig(x, 2),
+      tache: { type: 'num', indice: '1 mm = 10⁻³ m : on remplace « mm » par « × 10⁻³ m ». Contrôle : le nombre en mètres doit être plus petit que le nombre en millimètres.', q: 'D₁ en m', unite: 'm', vrai: 0.04, tol: 0.001, affiche: x => sig(x, 2),
         calcul: () => ['Le préfixe « m » (milli) vaut 10⁻³ : 1 mm = 10⁻³ m.', `D₁ = ${G.D1} mm = ${G.D1} × 10⁻³ m = ${sD(G.D1)} m.`],
         pieges: [[0.4, '1 mm = 10⁻³ m : 40 mm = 40 × 10⁻³ m = 0,040 m, et non 0,4 m (ce serait 40 cm).'], [40000, 'On passe des mm aux m : le nombre diminue. 1 mm = 10⁻³ m (exposant négatif).']],
         expl: <ConvPrefixe nom="D_1" n={40} de="mm" vers="m" e={-3}/> } },
@@ -238,7 +249,7 @@ export function SimulationVitesseDebit({ naviguer }) {
         <Chaine nom="S_1" litt={litS(1)} facteurs={chS(G.D1)} nsf={3} sci cacher/>
         <p style={{ margin: '8px 0 0' }}>Donnez S₁ avec 3 chiffres significatifs (un de plus que les données), pour limiter les erreurs d’arrondi dans la suite.</p>
       </>,
-      tache: { type: 'num', q: 'S₁ en m²', unite: 'm²', vrai: G.S1, tol: 0.04, affiche: x => sciTxt(x, 3),
+      tache: { type: 'num', indice: 'S₁ = π D₁² / 4, avec D₁ en m. Calculez d’abord D₁² (en m²), multipliez par π, puis divisez par 4. Gardez 3 chiffres significatifs.', q: 'S₁ en m²', unite: 'm²', vrai: G.S1, tol: 0.04, cs: 3, affiche: x => sciTxt(x, 3),
         calcul: () => ['Disque de diamètre D₁ : S₁ = π D₁² / 4, avec D₁ en m.', `D₁ = ${sD(G.D1)} m, donc D₁² = ${sD(G.D1)}² = ${sciTxt((G.D1 / 1000) ** 2, 3)} m².`,
           `S₁ = π × ${sciTxt((G.D1 / 1000) ** 2, 3)} / 4 = ${sciTxt(G.S1, 3)} m².`],
         pieges: [[Math.PI * 0.04 ** 2, 'La formule est π D² / 4 (ou π R² avec R = D / 2) : il manque la division par 4.'], [G.S1 * 1e6, 'Ce résultat est en mm² (calcul avec D en mm). Reprenez avec D₁ en m pour avoir des m².']],
@@ -255,14 +266,14 @@ export function SimulationVitesseDebit({ naviguer }) {
         <p style={{ margin: '0 0 8px' }}>De Q<sub>v</sub> = v × S, on tire v = Q<sub>v</sub> × <Frac haut="1" bas="S"/>. Regardez les unités : les m³ du numérateur et les m² du dénominateur donnent des m.</p>
         <Chaine nom="v_1" litt="Q_v × 1/S_1" facteurs={chV(G.qsi, G.S1)} nsf={2} cacher/>
       </>,
-      tache: { type: 'num', q: 'v₁ en m·s⁻¹', unite: 'm·s⁻¹', vrai: G.v1, tol: 0.02, affiche: x => sig(x, 2),
+      tache: { type: 'num', indice: 'De Q_v = v × S, on tire v₁ = Q_v / S₁. Prenez Q_v en m³·s⁻¹ et S₁ en m² (étapes précédentes) : les unités donnent des m·s⁻¹.', q: 'v₁ en m·s⁻¹', unite: 'm·s⁻¹', vrai: G.v1, tol: 0.02, affiche: x => sig(x, 2),
         calcul: () => ['De Q_v = v × S on tire v₁ = Q_v / S₁ (Q_v en m³·s⁻¹, S₁ en m²).', `v₁ = ${sciTxt(G.qsi, 2)} / ${sciTxt(G.S1, 3)} = ${sig(G.v1, 2)} m·s⁻¹ (unités : m³·s⁻¹ / m² = m·s⁻¹).`,
           'Hypothèses : fluide incompressible, tuyau plein, vitesse uniforme sur la section (vitesse moyenne).'],
         pieges: [[G.qsi * G.S1, 'Vous avez multiplié : v = Q_v / S.'], [G.S1 / G.qsi, 'Attention à l’ordre : on divise Q_v par S.']],
         expl: 'v₁ = 5,0 × 10⁻⁴ / 1,26 × 10⁻³ ≈ 0,40 m·s⁻¹. On donne 2 chiffres significatifs, comme les données (D et Q_v).' } },
     { id: 'S2', titre: 'La section 2', focus: [],
       texte: <>Même méthode pour D₂ = 20 mm : convertissez D₂ en m, puis calculez la section S₂.</>,
-      tache: { type: 'num', q: 'S₂ en m²', unite: 'm²', vrai: G.S2, tol: 0.04, indice: 'S₂ = π D₂² / 4, avec D₂ en m (disque de diamètre D₂).', affiche: x => sciTxt(x, 3),
+      tache: { type: 'num', q: 'S₂ en m²', unite: 'm²', vrai: G.S2, tol: 0.04, cs: 3, indice: 'S₂ = π D₂² / 4, avec D₂ en m (disque de diamètre D₂).', affiche: x => sciTxt(x, 3),
         calcul: () => [`D₂ = ${G.D2} mm = ${sD(G.D2)} m.`, `S₂ = π D₂² / 4 = π × ${sD(G.D2)}² / 4 = π × ${sciTxt((G.D2 / 1000) ** 2, 3)} / 4 = ${sciTxt(G.S2, 3)} m².`],
         pieges: [[G.S1, 'C’est S₁ : D₂ vaut 20 mm, pas 40 mm.'], [G.S2 * 1e6, 'Ce résultat est en mm² : refaites avec D₂ en m.']],
         expl: <Chaine nom="S_2" litt={litS(2)} facteurs={chS(G.D2)} nsf={3} sci/> } },
@@ -274,12 +285,12 @@ export function SimulationVitesseDebit({ naviguer }) {
           [G.qsi * G.S2, 'Vous avez multiplié : v = Q_v / S.'], [G.S2 / G.qsi, 'Attention à l’ordre : on divise Q_v par S₂ (et non S₂ par Q_v).']],
         expl: <><Chaine nom="v_2" litt="Q_v × 1/S_2" facteurs={chV(G.qsi, G.S2)} nsf={2}/></> } },
     { id: 'continuite', titre: 'Vitesse et section', focus: ['manip'],
-      texte: <>Vous avez trouvé <strong>v₂ = {sig(G.v2, 2)} m·s⁻¹</strong> dans la section 2 (S₂ ≈ {sciTxt(G.S2, 3)} m²) et <strong>v₁ = {sig(G.v1, 2)} m·s⁻¹</strong> dans la section 1 (S₁ ≈ {sciTxt(G.S1, 3)} m²), pour le même débit volumique.</>,
-      tache: { type: 'qcm', q: 'Donc la vitesse augmente lorsque la section du tuyau…', options: ['diminue', 'augmente', 'ne change pas'], bonne: 0,
+      texte: <>Vous avez trouvé <strong>v₂ = {sig(G.v2, 2)} m·s⁻¹</strong> dans la section 2 (S₂ ≈ {sciTxt(G.S2, 3)} m²) et <strong>v₁ = {sig(G.v1, 2)} m·s⁻¹</strong> dans la section 1 (S₁ ≈ {sciTxt(G.S1, 3)} m²), pour le même débit volumique.<Cap>« Exploiter la conservation du débit pour des écoulements permanents incompressibles. »</Cap></>,
+      tache: { type: 'qcm', indice: 'Comparez S₁ et S₂, puis v₁ et v₂ : quand l’une des deux grandeurs diminue, que fait l’autre ?', q: 'Donc la vitesse augmente lorsque la section du tuyau…', options: ['diminue', 'augmente', 'ne change pas'], bonne: 0,
         expl: 'La section S₂ est plus petite que S₁ et la vitesse y est plus grande : pour un même débit, v et S varient en sens contraires. C’est la conservation du débit volumique (fluide incompressible, régime permanent) : v₁·S₁ = v₂·S₂.' } },
     { id: 'rapport', titre: 'Prévoir avant de calculer', focus: [],
       texte: <>On garde D₁ = 40 mm et Q<sub>v</sub>, mais on <strong>divise D₂ par 2</strong> : D₂ = 10 mm. Sans calculer S₂, prévoyez : par quel facteur v₂ est-elle multipliée ? Attention : S dépend de D<strong>²</strong>.</>,
-      tache: { type: 'num', q: 'Facteur de multiplication de v₂', unite: '', vrai: 4, tol: 0.01, affiche: x => sig(x, 1),
+      tache: { type: 'num', indice: 'S est proportionnelle à D². Si D est divisé par 2, par combien S est-elle divisée ? Q_v reste le même : que devient v = Q_v / S ?', q: 'Facteur de multiplication de v₂', unite: '', vrai: 4, tol: 0.01, affiche: x => sig(x, 1),
         calcul: () => ['S = π D² / 4 : la section est proportionnelle à D².', 'D₂ est divisé par 2 : S₂ est divisée par 2² = 4.', 'Q_v = v × S reste constant : si S est divisée par 4, v est multipliée par 4.'],
         pieges: [[2, 'Si D est divisé par 2, S = π D² / 4 est divisée par 4 (et non par 2), donc v est multipliée par 4.']],
         expl: 'S ∝ D² : D divisé par 2, S divisée par 4, et comme v = Q_v / S, v₂ est multipliée par 4. Vérifions avec la simulation.' } },
@@ -300,23 +311,23 @@ export function SimulationVitesseDebit({ naviguer }) {
         <p style={{ margin: '0 0 8px' }}>Le fluide est de l’huile d’olive, de densité d = 0,92. Comme dans la simulation sur les débits : <strong>ρ = d × ρ<sub>eau</sub></strong>, avec ρ<sub>eau</sub> = 1 000 kg·m⁻³.</p>
         <AlerteRho/>
       </>,
-      tache: { type: 'num', q: 'Masse volumique ρ de l’huile', unite: 'kg·m⁻³', vrai: G.rho, tol: 0.001, affiche: x => nf(x),
+      tache: { type: 'num', indice: 'ρ = d × ρ_eau, avec ρ_eau = 1 000 kg·m⁻³ : on multiplie la densité (sans unité) par la masse volumique de l’eau.', q: 'Masse volumique ρ de l’huile', unite: 'kg·m⁻³', vrai: G.rho, tol: 0.001, affiche: x => nf(x),
         calcul: () => ['ρ = d × ρ_eau, avec ρ_eau = 1 000 kg·m⁻³ (eau de référence, la densité d n’a pas d’unité).', `ρ = ${sig(FLUIDES[G.fl].d, 2)} × 1 000 = ${nf(G.rho)} kg·m⁻³.`],
         pieges: [[1000 / FLUIDES[G.fl].d, 'Vous avez divisé par d : la masse volumique est ρ = d × ρ_eau (multiplication).'], [0.92, 'La densité n’a pas d’unité : ρ = d × 1 000 kg·m⁻³.']],
         expl: <RhoLigne d={0.92}/> } },
     { id: 'qm', titre: 'Le débit massique', focus: [],
-      texte: <>Le débit massique est le même dans les deux sections (régime permanent). Calculez Q<sub>m</sub> = ρ × Q<sub>v</sub>, avec Q<sub>v</sub> = 5,0 × 10⁻⁴ m³·s⁻¹ et ρ = {nf(G.rho)} kg·m⁻³ (masse volumique de l’huile, étape précédente).</>,
-      tache: { type: 'num', q: 'Q_m en kg·s⁻¹', unite: 'kg·s⁻¹', vrai: G.qm, tol: 0.02, affiche: x => sig(x, 2),
+      texte: <>Le débit massique est le même dans les deux sections (régime permanent). Calculez Q<sub>m</sub> = ρ × Q<sub>v</sub>, avec Q<sub>v</sub> = 5,0 × 10⁻⁴ m³·s⁻¹ et ρ = {nf(G.rho)} kg·m⁻³ (masse volumique de l’huile, étape précédente).<Cap>« Exprimer la relation entre débit massique et débit volumique. »</Cap></>,
+      tache: { type: 'num', indice: 'Q_m = ρ × Q_v : multipliez la masse volumique (kg·m⁻³) par le débit volumique en m³·s⁻¹ ; les m³ se simplifient.', q: 'Q_m en kg·s⁻¹', unite: 'kg·s⁻¹', vrai: G.qm, tol: 0.02, affiche: x => sig(x, 2),
         calcul: () => ['Q_m = ρ × Q_v, avec ρ en kg·m⁻³ et Q_v en m³·s⁻¹ (les m³ se simplifient).', `Q_m = ${nf(G.rho)} × ${sciTxt(G.qsi, 2)} = ${sig(G.qm, 2)} kg·s⁻¹.`],
         pieges: [[G.rho * 0.5, 'Il faut Q_v en m³·s⁻¹ : 0,50 L·s⁻¹ = 5,0 × 10⁻⁴ m³·s⁻¹.'], [G.qsi / G.rho, 'On multiplie : Q_m = ρ × Q_v (les m³ se simplifient).']],
         expl: <Chaine nom="Q_m" litt="ρ × Q_v" facteurs={chQm(G.rho, G.qsi)} nsf={2}/> } },
     { id: 'hypotheses', titre: 'Sur quoi repose ce raisonnement ?', focus: ['hypo'],
       texte: <>Lisez l’encadré « Hypothèses de travail ».</>,
-      tache: { type: 'qcm', q: 'Pour que le débit volumique soit le même dans les deux sections, que suppose-t-on ?', options: ['Fluide incompressible, régime permanent, tuyau plein sans fuite', 'Fluide compressible, dont la masse volumique change le long du tuyau', 'Vitesse différente à chaque instant, selon un régime variable'], bonne: 0,
+      tache: { type: 'qcm', indice: 'Relisez l’encadré : pour que v₁S₁ = v₂S₂, la masse volumique ne doit pas varier et rien ne doit s’accumuler dans le tuyau.', q: 'Pour que le débit volumique soit le même dans les deux sections, que suppose-t-on ?', options: ['Fluide incompressible, régime permanent, tuyau plein sans fuite', 'Fluide compressible, dont la masse volumique change le long du tuyau', 'Vitesse différente à chaque instant, selon un régime variable'], bonne: 0,
         expl: 'Si la masse volumique variait (gaz comprimé) ou si le régime n’était pas permanent (du fluide s’accumule), v₁S₁ ne serait pas égal à v₂S₂. Pour un liquide dans un tuyau plein, l’hypothèse est très bonne.' } },
     { id: 'chiffres', titre: 'Combien de chiffres significatifs ?', focus: [],
       texte: <>Les données D (40 mm, à lire 4,0 × 10¹ mm) et Q<sub>v</sub> (0,50 L·s⁻¹) ont <strong>2 chiffres significatifs</strong>. Vos calculs en ont donné davantage.</>,
-      tache: { type: 'qcm', q: 'Avec combien de chiffres significatifs donner v₁ ?', options: ['2, comme les données D et Q_v', '3, comme S₁ = 1,26 × 10⁻³ m² calculée', '6, comme l’affichage de la calculatrice'], bonne: 0,
+      tache: { type: 'qcm', indice: 'Un résultat n’est pas plus précis que la donnée la moins précise : combien de chiffres significatifs ont D et Q_v ?', q: 'Avec combien de chiffres significatifs donner v₁ ?', options: ['2, comme les données D et Q_v', '3, comme S₁ = 1,26 × 10⁻³ m² calculée', '6, comme l’affichage de la calculatrice'], bonne: 0,
         expl: 'Un résultat n’est pas plus précis que la donnée la moins précise. S₁ en a 3 seulement parce qu’on garde un chiffre de plus dans les calculs intermédiaires ; au final, v₁ ≈ 0,40 m·s⁻¹ (2 chiffres significatifs).' } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
@@ -328,6 +339,10 @@ export function SimulationVitesseDebit({ naviguer }) {
         <li>résultat : autant de chiffres significatifs que la donnée la moins précise</li></ul>,
       texte: <>Vous savez relier débit, vitesse et section (Q<sub>v</sub> = v × S, v₁S₁ = v₂S₂), calculer une section à partir d’un diamètre en convertissant les unités, et prévoir comment la vitesse change quand le diamètre change. En exploration libre, changez l’unité du débit, les diamètres et le fluide, puis passez à la simulation suivante : la relation de Bernoulli.</>, tache: null },
   ];
+  // Progressivité : en parcours guidé, chaque élément n'apparaît qu'à l'étape qui l'introduit, puis reste affiché (exploration et défi : tout est visible)
+  const IDS = ETAPES.map(e => e.id);
+  const vu = id => !enGuide || etape >= IDS.indexOf(id);
+  const ap = enGuide ? 'vd-apparait' : undefined;
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
 
@@ -351,11 +366,11 @@ export function SimulationVitesseDebit({ naviguer }) {
     const d0 = FLUIDES[defi.fl].d, r0 = rhoDe(d0), qs = qSI(defi.q, defi.u);
     const sA = surface(defi.a), sB = surface(defi.b), vA = qs / sA, vB = qs / sB;
     const Q = [
-      { id: 'q1', q: <>Section S<sub>1</sub> du tuyau 1 (D<sub>1</sub> = {defi.a} mm), en <strong>m²</strong></>, unite: 'm²', vrai: sA, tol: 0.04, aff: sciTxt(sA, 3), ch: chS(defi.a), nom: 'S_1', litt: litS(1), sci: true, nsf: 3 },
-      { id: 'q2', q: <>Vitesse v<sub>1</sub> du fluide dans le tuyau 1, en <strong>m·s⁻¹</strong></>, unite: 'm·s⁻¹', vrai: vA, tol: 0.03, aff: sig(vA, 2), ch: chV(qs, sA), nom: 'v_1', litt: 'Q_v × 1/S_1', sci: false, nsf: 2 },
-      { id: 'q3', q: <>Vitesse v<sub>2</sub> du fluide dans le tuyau 2 (D<sub>2</sub> = {defi.b} mm), en <strong>m·s⁻¹</strong></>, unite: 'm·s⁻¹', vrai: vB, tol: 0.03, aff: sig(vB, 2), ch: chV(qs, sB), nom: 'v_2', litt: 'Q_v × 1/S_2', sci: false, nsf: 2 },
-      { id: 'q4', q: <>Masse volumique ρ du fluide (en SI)</>, unite: 'kg·m⁻³', vrai: r0, tol: 0.002, aff: nf(r0), ch: null },
-      { id: 'q5', q: <>Débit massique Q<sub>m</sub>, en <strong>kg·s⁻¹</strong></>, unite: 'kg·s⁻¹', vrai: r0 * qs, tol: 0.03, aff: sig(r0 * qs, 2), ch: chQm(r0, qs), nom: 'Q_m', litt: 'ρ × Q_v', sci: false, nsf: 2 },
+      { id: 'q1', q: <>Section S<sub>1</sub> du tuyau 1 (D<sub>1</sub> = {defi.a} mm), en <strong>m²</strong></>, unite: 'm²', vrai: sA, tol: 0.04, aff: sciTxt(sA, 2), indice: 'S = π D² / 4, avec D en mètres (1 mm = 10⁻³ m). Calculez D² avant de multiplier par π et de diviser par 4.', ch: chS(defi.a), nom: 'S_1', litt: litS(1), sci: true, nsf: 3 },
+      { id: 'q2', q: <>Vitesse v<sub>1</sub> du fluide dans le tuyau 1, en <strong>m·s⁻¹</strong></>, unite: 'm·s⁻¹', vrai: vA, tol: 0.06, aff: sig(vA, 2), indice: 'Q_v = v × S, donc v = Q_v / S. Convertissez d’abord Q_v en m³·s⁻¹ : 1 L = 10⁻³ m³ ; 1 min = 60 s ; 1 h = 3 600 s.', ch: chV(qs, sA), nom: 'v_1', litt: 'Q_v × 1/S_1', sci: false, nsf: 2 },
+      { id: 'q3', q: <>Vitesse v<sub>2</sub> du fluide dans le tuyau 2 (D<sub>2</sub> = {defi.b} mm), en <strong>m·s⁻¹</strong></>, unite: 'm·s⁻¹', vrai: vB, tol: 0.06, aff: sig(vB, 2), indice: 'Même débit Q_v dans les deux tuyaux : v₂ = Q_v / S₂, avec S₂ = π D₂² / 4 (D₂ en m).', ch: chV(qs, sB), nom: 'v_2', litt: 'Q_v × 1/S_2', sci: false, nsf: 2 },
+      { id: 'q4', q: <>Masse volumique ρ du fluide (en SI)</>, unite: 'kg·m⁻³', vrai: r0, tol: 0.002, aff: nf(r0), indice: 'ρ = d × ρ_eau, avec ρ_eau = 1 000 kg·m⁻³ : la densité d n’a pas d’unité.', ch: null },
+      { id: 'q5', q: <>Débit massique Q<sub>m</sub>, en <strong>kg·s⁻¹</strong></>, unite: 'kg·s⁻¹', vrai: r0 * qs, tol: 0.06, aff: sig(r0 * qs, 2), indice: 'Q_m = ρ × Q_v, avec ρ en kg·m⁻³ (question 4) et Q_v en m³·s⁻¹ : les m³ se simplifient.', ch: chQm(r0, qs), nom: 'Q_m', litt: 'ρ × Q_v', sci: false, nsf: 2 },
     ];
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -377,6 +392,7 @@ export function SimulationVitesseDebit({ naviguer }) {
                 {defi.verifie && <span>{ok ? '✅' : '❌'}</span>}
               </div>
               {defi.verifie && !ok && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 3 }}>Réponse attendue : {qu.aff} {qu.unite}</div>}
+              {!ok && qu.indice && <IndiceDefi key={`${qu.id}-${defi.a}-${defi.b}-${defi.q}-${defi.u}-${defi.fl}`}>{avecIndices(qu.indice)}</IndiceDefi>}
               {defi.corr && qu.ch && <div style={{ marginTop: 6 }}><Chaine nom={qu.nom} litt={qu.litt} facteurs={qu.ch} nsf={qu.nsf} sci={qu.sci}/></div>}
               {defi.corr && !qu.ch && <div style={{ marginTop: 6 }}><RhoLigne d={d0}/></div>}
               {defi.corr && k === 0 && <div style={{ marginTop: 6 }}><Chaine nom="Q_v" facteurs={chQsi(defi.q, defi.u)} nsf={2} sci/></div>}
@@ -456,47 +472,47 @@ export function SimulationVitesseDebit({ naviguer }) {
         <div style={{ fontWeight: 700, fontSize: 14, color: TXT, marginBottom: 8 }}>Manip : un fluide dans un tuyau qui change de section</div>
         <Tuyau qv={qsi} D1={D1} D2={D2} coul={coulF} animer={anim} vit={vit} cmd={cmd}/>
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'flex-end', marginTop: 10 }}>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {vu('regler') && <label className={ap} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <span style={lab}>Diamètre D<sub>1</sub> (section 1)</span>
             <select value={D1} onChange={e => setD1(parseInt(e.target.value, 10))} style={sel} aria-label="Diamètre D1">
               {DIAMS.map(x => <option key={x} value={x}>{x} mm</option>)}
             </select>
-          </label>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          </label>}
+          {vu('regler') && <label className={ap} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <span style={lab}>Diamètre D<sub>2</sub> (section 2)</span>
             <select value={D2} onChange={e => setD2(parseInt(e.target.value, 10))} style={sel} aria-label="Diamètre D2">
               {DIAMS.map(x => <option key={x} value={x}>{x} mm</option>)}
             </select>
-          </label>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          </label>}
+          {vu('rho') && <label className={ap} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <span style={lab}>Fluide</span>
             <select value={fluide} onChange={e => setFluide(e.target.value)} style={sel} aria-label="Fluide">
               {Object.entries(FLUIDES).map(([k, f]) => <option key={k} value={k}>{f.nom}</option>)}
             </select>
-          </label>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          </label>}
+          {vu('qsi') && <label className={ap} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <span style={lab}>Unité du débit</span>
             <select value={uQ} onChange={e => changerUnite(e.target.value)} style={sel} aria-label="Unité du débit volumique">
               {Object.keys(DEBITS).map(u => <option key={u} value={u}>{UNITE_Q[u]}</option>)}
             </select>
-          </label>
+          </label>}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '1 1 200px' }}>
             <span style={lab}>Débit volumique Q<sub>v</sub> : <strong style={{ color: '#0e7490' }}>{sig(q, 2)} {UNITE_Q[uQ]}</strong></span>
             <input type="range" min="0" max={liste.length - 1} step="1" value={iq} onChange={e => setQ(liste[parseInt(e.target.value, 10)])}
               aria-label="Débit volumique" style={{ accentColor: '#0e7490', width: '100%' }}/>
           </div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+          {vu('paquet') && <div className={ap} style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
             <button onClick={() => setAnim(a => !a)} style={stylePetitBouton(false, '#334155')}>{anim ? '⏸ Pause' : '▶ Animer'}</button>
             <button onClick={() => setVit(1)} style={stylePetitBouton(vit === 1, '#0369a1')}>Temps réel</button>
             <button onClick={() => setVit(0.4)} style={stylePetitBouton(vit === 0.4, '#0369a1')}>Ralenti</button>
-          </div>
+          </div>}
         </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
+        {vu('paquet') && <div className={ap} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
           <button onClick={lacher} style={stylePetitBouton(true, '#0f172a')}>⚫ Lâcher un paquet de points</button>
           <button onClick={effacer} disabled={!paquetActif} style={{ ...stylePetitBouton(false, '#64748b'), opacity: paquetActif ? 1 : 0.45 }}>Effacer les points</button>
           <span style={{ fontSize: 12.5, color: TXT2 }}>Les points marquent un « paquet » de fluide : suivez comment il s’étire ou s’amincit.</span>
-        </div>
-        <div style={{ fontSize: 13.5, color: TXT, marginTop: 8 }}>Densité du fluide : <strong>d = {String(d).replace('.', ',')}</strong> <span style={{ color: TXT2 }}>(sans unité)</span></div>
+        </div>}
+        {vu('rho') && <div className={ap} style={{ fontSize: 13.5, color: TXT, marginTop: 8 }}>Densité du fluide : <strong>d = {String(d).replace('.', ',')}</strong> <span style={{ color: TXT2 }}>(sans unité)</span></div>}
       </div>
       {!enGuide && <>
         {boiteConv}
@@ -513,6 +529,9 @@ export function SimulationVitesseDebit({ naviguer }) {
         .vd-l1.cote { grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
         .vd-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
         @media (max-width: 960px) { .vd-l1.cote { grid-template-columns: minmax(0, 1fr); } }
+        .vd-apparait { animation: vd-fondu .35s ease-out; }
+        @keyframes vd-fondu { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .vd-apparait { animation: none; } }
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Débit et vitesse d’écoulement</h2>
@@ -540,7 +559,7 @@ export function SimulationVitesseDebit({ naviguer }) {
           {panneauHypo}
         </div>
       )}
-      {mode === 'guide' && panneauHypo}
+      {mode === 'guide' && vu('hypotheses') && <div className="vd-apparait">{panneauHypo}</div>}
     </div>
   );
 }
