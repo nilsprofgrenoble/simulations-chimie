@@ -12,6 +12,23 @@ declarerDefis(SIM_ID, [['principal', 'Étalonner un manomètre et trouver la hau
 //  SIM 26 — STATIQUE DES FLUIDES : P = f(h) ET HAUTEUR D'EAU D'UN RÉCIPIENT INCONNU
 // ====================================================
 
+// Capacité du référentiel (STL, enseignement de spécialité SPCL, « Transport et transformation des flux de matière »), citée telle quelle
+const Cap = ({ children }) => <div style={{ marginTop: 8, fontSize: 12.5, color: '#475569', borderLeft: `3px solid ${ORANGE_GUIDE}`, paddingLeft: 8, lineHeight: 1.45 }}><strong>Capacité visée :</strong> {children}</div>;
+const CAP = {
+  mesurer: '« Mesurer une pression. »',
+  pfs: '« Utiliser le principe fondamental de la statique des fluides incompressibles. »',
+  hauteur: '« Concevoir et mettre en œuvre un protocole pour estimer la hauteur de liquide dans un réservoir. »',
+};
+// Apparition en fondu court (parcours guidé : un élément apparaît à l'étape qui l'introduit)
+const Apparait = ({ children, style }) => <div className="sf-apparait" style={style}>{children}</div>;
+// Bouton « Indice » des questions du défi
+function IndiceDefi({ children }) {
+  const [vu, setVu] = useState(false);
+  return vu
+    ? <div style={{ fontSize: 13.5, color: KIT.txt, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 6, padding: '6px 8px', marginTop: 5, lineHeight: 1.5 }}><Pic n="bulb"/>{children}</div>
+    : <button type="button" onClick={() => setVu(true)} style={{ marginTop: 5, fontSize: 13, padding: '3px 10px', borderRadius: 8, cursor: 'pointer', fontWeight: 700, border: '1.5px solid #fcd34d', background: '#fffbeb', color: '#92400e' }}><Pic n="bulb"/>Indice</button>;
+}
+
 // ── Modèle (fonctions pures) ──
 // Statique des fluides : pression absolue à la profondeur h : P = Patm + ρ g h.
 // Hypothèses : liquide incompressible, de masse volumique uniforme ; g = 9,81 m/s² ; température constante.
@@ -30,6 +47,8 @@ const H_GUIDE = 0.37; // hauteur d'eau (m) du récipient inconnu dans le parcour
 const pressionPa = (patmHpa, rho, d) => patmHpa * 100 + rho * G * Math.max(0, d);
 // Le manomètre affiche la pression absolue en hPa, avec une résolution de 1 hPa
 const affichage = pa => Math.round(pa / 100);
+// Valeur attendue à 2 chiffres significatifs (comme les données du défi)
+const sci2 = x => fmt(Number(x.toPrecision(2)), 0);
 
 export function SimulationStatiqueFluides({ plotlyReady }) {
   const [mode, setMode] = useState(() => modeOuverture('fluides-guide-v1'));
@@ -95,7 +114,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
       margin: { t: 14, b: 50, l: 80, r: 14 }, paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: '#fafcff',
       legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(255,255,255,0.8)' }, showlegend: true, hovermode: 'closest', autosize: true,
     }, { displayModeBar: false, responsive: true });
-  }, [plotlyReady, mode, mesures, mod, fit]); // eslint-disable-line
+  }, [plotlyReady, mode, mesures, mod, fit, guide.etape]); // eslint-disable-line
 
   // ════════════════ PARCOURS GUIDÉ ════════════════
   const etape = guide.etape;
@@ -106,18 +125,18 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
   const ETAPES = [
     { id: 'objectif', titre: 'Que cherche-t-on ?', focus: ['manip'],
       texte: <>On plonge l'embout d'un <strong>manomètre</strong> dans une éprouvette d'eau, à des profondeurs h croissantes, pour établir la relation entre la <strong>pression</strong> de l'eau et la <strong>profondeur</strong>. Le manomètre indique la pression <strong>absolue</strong>.</>,
-      tache: { type: 'qcm', q: 'Quelle pression indique le manomètre quand l’embout est à la surface de l’eau (h = 0) ?', options: ['La pression atmosphérique', '0 Pa', 'La pression due à l’eau seule'], bonne: 0,
+      tache: { type: 'qcm', indice: 'Au niveau de la surface, y a-t-il déjà de l’eau au-dessus de l’embout ? Et au-dessus de l’eau, qu’y a-t-il ?', q: 'Quelle pression indique le manomètre quand l’embout est à la surface de l’eau (h = 0) ?', options: ['La pression atmosphérique', '0 Pa', 'La pression due à l’eau seule'], bonne: 0,
         expl: 'À la surface, il n’y a pas encore d’eau au-dessus de l’embout : seule l’atmosphère pèse. Une pression absolue ne vaut zéro que dans le vide.' } },
     { id: 'patm', titre: 'Relever la pression atmosphérique', focus: ['manip'],
-      texte: <>Réglez la profondeur de l'embout à <strong>h = 0</strong> (à la surface) et lisez la pression indiquée par le manomètre.</>,
-      tache: { type: 'num', q: 'Pression atmosphérique indiquée', unite: 'hPa', vrai: P0, tol: 0.001, affiche: x => fmt(x, 0),
-        bloque: !(eauRef && hCm === 0) ? 'Réglez h = 0 cm (eau, Patm = 1013 hPa).' : null,
+      texte: <>Réglez la profondeur de l'embout à <strong>h = 0</strong> (à la surface) et lisez la pression indiquée par le manomètre.<Cap>{CAP.mesurer}</Cap></>,
+      tache: { type: 'num', indice: 'Lisez directement la valeur affichée par le manomètre quand h = 0 : elle est déjà en hPa, sans calcul.', q: 'Pression atmosphérique indiquée', unite: 'hPa', vrai: P0, tol: 0.001, affiche: x => fmt(x, 0),
+        bloque: !(eauRef && hCm === 0) ? 'Réglez la profondeur h = 0 cm.' : null,
         aide: 'Lecture directe sur le manomètre, sans calcul : il affiche des hectopascals (hPa).',
         pieges: [[P0 * 100, 'Le manomètre affiche déjà des hPa et on demande ici des hPa : ne convertissez pas en pascals (ce sera l’étape suivante).']],
         expl: `Patm = ${P0} hPa.` } },
     { id: 'unites', titre: 'Attention aux unités', focus: ['manip'],
       texte: <>Le manomètre donne des hectopascals, mais le Pascal est l'unité du Système international : 1 hPa = 100 Pa. Convertissez la pression atmosphérique relevée à l'étape précédente ({P0} hPa).</>,
-      tache: { type: 'num', q: 'Pression atmosphérique en pascals', unite: 'Pa', vrai: P0 * 100, tol: 0.001, affiche: x => fmt(x, 0),
+      tache: { type: 'num', indice: 'Le préfixe « hecto » vaut 100 : 1 hPa = 100 Pa. Un hectopascal est plus grand qu’un pascal.', q: 'Pression atmosphérique en pascals', unite: 'Pa', vrai: P0 * 100, tol: 0.001, affiche: x => fmt(x, 0),
         calcul: () => ['Le préfixe « hecto » signifie × 100 : 1 hPa = 100 Pa.', `P = ${P0} hPa = ${P0} × 100 Pa = ${fmt(P0 * 100, 0)} Pa.`],
         pieges: [[P0 / 100, 'Vous avez divisé par 100 au lieu de multiplier : un hectopascal est plus grand qu’un pascal (1 hPa = 100 Pa), le nombre de pascals est donc plus grand.'],
           [P0, 'Vous avez recopié la valeur en hPa sans convertir : multipliez par 100 pour obtenir des Pa.']],
@@ -127,8 +146,8 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
       tache: { type: 'action', ok: hCm === 15, label: 'Plonger à h = 15 cm', faire: () => setHCm(15), consigne: hCm === 15 ? null : `Profondeur : ${hCm} cm → 15 cm` } },
     { id: 'delta', titre: 'L’effet de l’eau', focus: ['manip'],
       texte: <>La pression a augmenté par rapport à la surface : c'est l'effet de l'eau située au-dessus de l'embout. Lisez la pression à h = 15 cm et comparez-la à celle de la surface ({P0} hPa, étape 2).</>,
-      tache: { type: 'num', q: 'Augmentation de pression entre h = 0 et h = 15 cm', unite: 'Pa', vrai: (P15 - P0) * 100, tol: 0.03, affiche: x => fmt(x, 0),
-        bloque: !(eauRef && hCm === 15) ? 'Gardez l’eau, Patm = 1013 hPa, et h = 15 cm.' : null,
+      tache: { type: 'num', indice: 'Faites la différence entre la pression lue à 15 cm et celle lue à la surface (étape 2), puis convertissez le résultat en pascals (× 100).', q: 'Augmentation de pression entre h = 0 et h = 15 cm', unite: 'Pa', vrai: (P15 - P0) * 100, tol: 0.03, affiche: x => fmt(x, 0),
+        bloque: !(eauRef && hCm === 15) ? 'Réglez la profondeur h = 15 cm.' : null,
         calcul: () => [`Pression lue à h = 15 cm : ${P15} hPa ; pression à la surface (h = 0) : ${P0} hPa.`, `Augmentation : ${P15} − ${P0} = ${P15 - P0} hPa.`,
           `Conversion : ${P15 - P0} hPa × 100 = ${fmt((P15 - P0) * 100, 0)} Pa.`,
           `Remarque : ρ·g·h = 1 000 × 9,81 × 0,15 ≈ ${fmt(1000 * G * 0.15, 0)} Pa en théorie ; l’écart avec la valeur lue vient de l’arrondi du manomètre à 1 hPa.`],
@@ -141,19 +160,19 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
         consigne: mesures.length >= 8 ? null : 'Cliquez pour relever la série de mesures' } },
     { id: 'allure', titre: 'Tracer P = f(h)', focus: ['courbe'],
       texte: <>Le graphique donne la pression absolue P (en Pa) en fonction de la profondeur h (en m).</>,
-      tache: { type: 'qcm', q: 'Comment se placent les points ?', options: ['Alignés sur une droite qui ne passe pas par l’origine', 'Alignés sur une droite qui passe par l’origine', 'Sur une courbe qui s’aplatit'], bonne: 0,
+      tache: { type: 'qcm', indice: 'Regardez si les points sont alignés, puis demandez-vous si la droite passerait par le point (0 ; 0) : que vaut P quand h = 0 ?', q: 'Comment se placent les points ?', options: ['Alignés sur une droite qui ne passe pas par l’origine', 'Alignés sur une droite qui passe par l’origine', 'Sur une courbe qui s’aplatit'], bonne: 0,
         expl: 'P augmente proportionnellement à h (relation affine), mais pas de zéro : à h = 0, P vaut la pression atmosphérique.' } },
     { id: 'modele', titre: 'Choisir un modèle', focus: ['courbe'],
       texte: <>Les points sont alignés : on modélise par une droite. Il reste à choisir son équation, avec P en Pa et h en m.</>,
-      tache: { type: 'qcm', q: 'Quel modèle choisir pour P en fonction de h ?', options: ['P = a·h + b (droite qui ne passe pas par l’origine)', 'P = a·h (proportionnalité)', 'P = a·h² + b'], bonne: 0,
+      tache: { type: 'qcm', indice: 'Quand h = 0, la pression n’est pas nulle (étape 2). Une proportionnalité P = a·h donnerait P = 0 pour h = 0.', q: 'Quel modèle choisir pour P en fonction de h ?', options: ['P = a·h + b (droite qui ne passe pas par l’origine)', 'P = a·h (proportionnalité)', 'P = a·h² + b'], bonne: 0,
         expl: 'Pour h = 0, P n’est pas nulle (elle vaut la pression atmosphérique) : la droite ne passe pas par l’origine, donc P = a·h + b et non P = a·h. Le modèle linéaire s’affiche alors sur le graphique.' } },
     { id: 'pente', titre: 'Interpréter la pente', focus: ['courbe'],
-      texte: <>Le modèle est de la forme P = a·h + b. Comparez avec la loi de la statique des fluides : P = Patm + ρ·g·h.</>,
-      tache: { type: 'qcm', q: 'Que représente la pente a de la droite ?', options: ['ρ × g (masse volumique × intensité de la pesanteur)', 'La pression atmosphérique', 'La profondeur maximale'], bonne: 0,
+      texte: <>Le modèle est de la forme P = a·h + b. Comparez avec la loi de la statique des fluides : P = Patm + ρ·g·h.<Cap>{CAP.pfs}</Cap></>,
+      tache: { type: 'qcm', indice: 'Comparez terme à terme P = a·h + b et P = Patm + ρ·g·h : que multiplie h dans la seconde équation ?', q: 'Que représente la pente a de la droite ?', options: ['ρ × g (masse volumique × intensité de la pesanteur)', 'La pression atmosphérique', 'La profondeur maximale'], bonne: 0,
         expl: 'En identifiant P = a·h + b et P = Patm + ρ·g·h : a = ρ·g (en Pa/m) et b = Patm.' } },
     { id: 'rho', titre: 'Masse volumique du liquide', focus: ['courbe'],
       texte: <>Avec g = 9,81 m/s², déduisez la masse volumique ρ = a / g à partir de la pente de votre droite{fit1 ? <> (a = {fmt(a1, 0)} Pa/m)</> : null}.</>,
-      tache: { type: 'num', q: 'Masse volumique ρ du liquide', unite: 'kg/m³', vrai: a1 / G, tol: 0.02, affiche: x => fmt(x, 0),
+      tache: { type: 'num', indice: 'La pente vaut a = ρ·g (en Pa/m), donc ρ = a / g avec g = 9,81 m/s².', q: 'Masse volumique ρ du liquide', unite: 'kg/m³', vrai: a1 / G, tol: 0.02, affiche: x => fmt(x, 0),
         bloque: !(mod === 1 && fit1) ? 'Le modèle linéaire doit être affiché (étape précédente).' : null,
         calcul: () => ['La pente de la droite vaut a = ρ·g (en Pa/m), donc ρ = a / g.', `a = ${fmt(a1, 0)} Pa/m ; g = 9,81 m/s².`,
           `ρ = ${fmt(a1, 0)} / 9,81 = ${fmt(a1 / G, 0)} kg/m³ (liquide supposé incompressible, g = 9,81 m/s²).`],
@@ -162,19 +181,19 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
         expl: `ρ = ${fmt(a1, 0)} / 9,81 ≈ ${fmt(a1 / G, 0)} kg/m³ : on retrouve la masse volumique de l'eau (1 000 kg/m³), à l'arrondi du manomètre près.` } },
     { id: 'ordonnee', titre: 'Ordonnée à l’origine', focus: ['courbe'],
       texte: <>La loi de la statique des fluides s’écrit <strong>P = Patm + ρ·g·h</strong>. Elle a la même forme que votre modèle <strong>P = a·h + b</strong>. Comparez b avec la pression atmosphérique que vous avez relevée au début, à l’étape 2 (embout à h = 0 : {P0} hPa).</>,
-      tache: { type: 'qcm', q: 'Que représente l’ordonnée à l’origine b ?', options: ['La pression atmosphérique (pression à h = 0)', 'La pression au fond de l’éprouvette', 'La masse volumique de l’eau'], bonne: 0,
+      tache: { type: 'qcm', indice: 'Dans P = Patm + ρ·g·h, que vaut P quand h = 0 ? C’est la valeur de b dans P = a·h + b.', q: 'Que représente l’ordonnée à l’origine b ?', options: ['La pression atmosphérique (pression à h = 0)', 'La pression au fond de l’éprouvette', 'La masse volumique de l’eau'], bonne: 0,
         expl: `b ≈ ${fmt(b1, 0)} Pa, soit ${fmt(b1 / 100, 0)} hPa : c'est la pression atmosphérique relevée à l'étape 2.` } },
     { id: 'inconnu', titre: 'Un récipient inconnu', focus: ['cuve'],
-      texte: <>Voici un récipient <strong>opaque</strong> contenant de l'eau. On ne voit pas le niveau H de l'eau (<strong>faites défiler la page vers le bas</strong> pour voir ce récipient). Mais on peut y descendre l'embout du manomètre (maintenant étalonné). Où faut-il le placer pour en déduire H ?</>,
-      tache: { type: 'qcm', q: 'Où placer l’embout du manomètre ?', options: ['Au fond du récipient : sa profondeur sous la surface est alors égale à H', 'À la surface, au niveau du bord supérieur', 'À mi-hauteur du récipient'], bonne: 0,
+      texte: <>Voici un récipient <strong>opaque</strong> contenant de l'eau. On ne voit pas le niveau H de l'eau (<strong>faites défiler la page vers le bas</strong> pour voir ce récipient). Mais on peut y descendre l'embout du manomètre (maintenant étalonné). Où faut-il le placer pour en déduire H ?<Cap>{CAP.hauteur}</Cap></>,
+      tache: { type: 'qcm', indice: 'On veut que la profondeur de l’embout sous la surface soit égale à H. À quel endroit du récipient est-ce le cas ?', q: 'Où placer l’embout du manomètre ?', options: ['Au fond du récipient : sa profondeur sous la surface est alors égale à H', 'À la surface, au niveau du bord supérieur', 'À mi-hauteur du récipient'], bonne: 0,
         expl: 'Au fond, la profondeur de l’embout sous la surface libre est exactement la hauteur d’eau H. Au bord supérieur, on lit seulement Patm. À mi-hauteur, on ne connaît pas la profondeur sous la surface.' } },
     { id: 'placer', titre: 'Placer le manomètre', focus: ['cuve'],
       texte: <>Descendez l'embout jusqu'au fond du récipient.</>,
       tache: { type: 'action', ok: zCm === HC_CM, label: 'Placer l’embout au fond', faire: () => setZCm(HC_CM), consigne: zCm === HC_CM ? null : 'Descendez l’embout jusqu’au fond' } },
     { id: 'lireP', titre: 'Lire la pression', focus: ['cuve'],
       texte: <>Lisez la pression indiquée par le manomètre, embout au fond du récipient.</>,
-      tache: { type: 'num', q: 'Pression lue au fond', unite: 'hPa', vrai: PincGuide, tol: 0.001, affiche: x => fmt(x, 0),
-        bloque: !(zCm === HC_CM && eauRef && Hinc === H_GUIDE) ? 'Placez l’embout au fond du récipient (eau, Patm = 1013 hPa).' : null,
+      tache: { type: 'num', indice: 'Lisez directement la valeur affichée par le manomètre, embout au fond du récipient : elle est en hPa, sans calcul.', q: 'Pression lue au fond', unite: 'hPa', vrai: PincGuide, tol: 0.001, affiche: x => fmt(x, 0),
+        bloque: !(zCm === HC_CM && eauRef && Hinc === H_GUIDE) ? 'Placez l’embout au fond du récipient.' : null,
         aide: 'Lecture directe sur le manomètre, en hPa (sans calcul).',
         pieges: [[PincGuide * 100, 'Le manomètre affiche des hPa et on demande des hPa : ne convertissez pas en pascals.']],
         expl: `${PincGuide} hPa : bien plus que la pression atmosphérique, donc l'embout est sous l'eau.` } },
@@ -193,7 +212,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
         expl: `h = (${fmt(PincGuide * 100, 0)} − ${fmt(b1, 0)}) / ${fmt(a1, 0)} ≈ ${fmt(HfitGuide, 1)} cm. Le niveau réel (${fmt(H_GUIDE * 100, 0)} cm) est maintenant révélé sur le schéma : l'écart vient surtout de l'arrondi du manomètre à 1 hPa, soit environ 1 cm d'eau.` } },
     { id: 'hypotheses', titre: 'Sur quoi repose ce modèle ?', focus: ['hypo'],
       texte: <>Lisez l'encadré « Hypothèses de travail ».</>,
-      tache: { type: 'qcm', q: 'Quelle hypothèse est faite sur le liquide ?', options: ['Il est incompressible : sa masse volumique est la même à toutes les profondeurs', 'Sa température change avec la profondeur', 'Il est en écoulement vers le fond'], bonne: 0,
+      tache: { type: 'qcm', indice: 'Relisez le premier point de l’encadré : que dit-on de la masse volumique du liquide aux différentes profondeurs ?', q: 'Quelle hypothèse est faite sur le liquide ?', options: ['Il est incompressible : sa masse volumique est la même à toutes les profondeurs', 'Sa température change avec la profondeur', 'Il est en écoulement vers le fond'], bonne: 0,
         expl: 'Sans cette hypothèse, la pression ne serait plus proportionnelle à la profondeur. Pour un liquide sur quelques dizaines de centimètres, elle est très bien vérifiée.' } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       retenir: <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -214,6 +233,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
   ];
   const idx = id => ETAPES.findIndex(e => e.id === id);
   const passe = id => !enGuide || etape > idx(id);
+  const vu = id => !enGuide || etape >= idx(id);           // élément introduit à l'étape id (puis conservé jusqu'à la fin)
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
   const Hfait = enGuide && (passe('H') || !!guide.verifs[idx('H')]);
@@ -237,11 +257,16 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
     const L = d => affichage(pressionPa(defi.patm, rh, d));
     const hs = [0, 10, 20, 30, 40], Pf = L(H);
     const Q = [
-      { id: 'p0', q: 'Pression atmosphérique (pression à h = 0)', unite: 'hPa', vrai: L(0), tol: 0.001, aff: fmt(L(0), 0) },
-      { id: 'a', q: 'Pente a de la droite P = f(h)', unite: 'Pa/m', vrai: rh * G, tol: 0.04, aff: `${fmt(rh * G, 0)} (±4 %)` },
-      { id: 'rho', q: 'Masse volumique ρ du liquide', unite: 'kg/m³', vrai: rh, tol: 0.05, aff: `${fmt(rh, 0)} (±5 %)` },
-      { id: 'H', q: `Un manomètre posé au fond d’un récipient contenant ce liquide indique ${Pf} hPa. Hauteur de liquide H ?`, unite: 'cm', vrai: defi.H, tol: 2 / defi.H, aff: `${fmt(defi.H, 0)} (±2 cm)` },
-      { id: 'pr', q: 'Pression que l’on lirait à 25 cm de profondeur', unite: 'hPa', vrai: defi.patm + rh * G * 0.25 / 100, tol: 0.002, aff: fmt(defi.patm + rh * G * 0.25 / 100, 1) },
+      { id: 'p0', q: 'Pression atmosphérique (pression à h = 0)', unite: 'hPa', vrai: L(0), tol: 0.001, aff: fmt(L(0), 0),
+        indice: 'À h = 0, l’embout est à la surface : lisez la première valeur du tableau.' },
+      { id: 'a', q: 'Pente a de la droite P = f(h)', unite: 'Pa/m', vrai: rh * G, tol: 0.04, aff: `${sci2(rh * G)} (à ±4 % près)`,
+        indice: 'La pente a est le rapport ΔP / Δh entre deux points : convertissez P en Pa (× 100) et h en m avant de diviser.' },
+      { id: 'rho', q: 'Masse volumique ρ du liquide', unite: 'kg/m³', vrai: rh, tol: 0.05, aff: `${sci2(rh)} (à ±5 % près)`,
+        indice: 'La pente vaut a = ρ·g : ρ = a / g, avec g = 9,81 m/s².' },
+      { id: 'H', q: `Un manomètre posé au fond d’un récipient contenant ce liquide indique ${Pf} hPa. Hauteur de liquide H ?`, unite: 'cm', vrai: defi.H, tol: 2 / defi.H, aff: `${fmt(defi.H, 0)} (à ±2 cm près)`,
+        indice: 'Au fond, la profondeur est H : h = (P − Patm) / (ρ·g). Convertissez P et Patm en Pa (× 100), puis le résultat de m en cm.' },
+      { id: 'pr', q: 'Pression que l’on lirait à 25 cm de profondeur', unite: 'hPa', vrai: defi.patm + rh * G * 0.25 / 100, tol: 0.002, aff: fmt(defi.patm + rh * G * 0.25 / 100, 1),
+        indice: 'P = Patm + ρ·g·h avec h = 0,25 m ; ρ·g·h est en Pa : divisez par 100 pour l’avoir en hPa.' },
     ];
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -267,6 +292,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
                 {defi.verifie && <span>{ok ? '✅' : '❌'}</span>}
               </div>
               {defi.verifie && !ok && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 3 }}>Réponse attendue : {qu.aff} {qu.unite}</div>}
+              {!ok && qu.indice && <IndiceDefi>{qu.indice}</IndiceDefi>}
             </div>
           );
         })}
@@ -375,17 +401,17 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start' }}>
           <div style={{ flex: '1 1 250px', maxWidth: 330 }}>{schemaEprouvette}</div>
           <div style={{ flex: '1 1 230px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {vu('patm') && <Apparait style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               <span style={lab}>Profondeur de l'embout h : <strong style={{ color: '#b45309' }}>{fmt(hCm, 1)} cm</strong></span>
               <input type="range" min="0" max={HEAU_CM} step="0.5" value={hCm} onChange={e => setHCm(parseFloat(e.target.value))}
                 aria-label="Profondeur de l'embout" style={{ accentColor: '#f59e0b', width: '100%' }}/>
-            </div>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            </Apparait>}
+            {vu('mesures') && <Apparait style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               <button onClick={releverPoint} style={stylePetitBouton(true, '#0369a1')}><Pic n="pin"/>Relever le point</button>
               <button onClick={mesuresAuto} style={stylePetitBouton(false, '#0369a1')}><Pic n="bolt"/>10 mesures (tous les 3 cm)</button>
               <button onClick={() => { setMesures([]); setModele(0); }} style={stylePetitBouton(false, '#64748b')}><Pic n="trash"/>Effacer</button>
-            </div>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            </Apparait>}
+            {!enGuide && <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <span style={lab}>Liquide</span>
                 <select value={fluide} onChange={e => { setFluide(e.target.value); setMesures([]); setModele(0); }} style={{ ...inp, width: 'auto' }} aria-label="Liquide">
@@ -397,15 +423,15 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
                 <input type="number" min="950" max="1060" step="1" value={patm}
                   onChange={e => { setPatm(Math.max(950, Math.min(1060, Math.round(parseFloat(e.target.value) || 1013)))); setMesures([]); setModele(0); }} style={inp}/>
               </label>
-            </div>
-            <div style={{ fontSize: 12.5, color: TXT2, lineHeight: 1.5 }}>Le manomètre affiche la pression <em>absolue</em>, arrondie à 1 hPa.</div>
+            </div>}
+            {vu('mesures') && <div style={{ fontSize: 12.5, color: TXT2, lineHeight: 1.5 }}>Le manomètre affiche la pression <em>absolue</em>, arrondie à 1 hPa.</div>}
           </div>
         </div>
       </div>
 
       {/* ── MESURES + COURBE ── */}
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-        <div style={{ ...styleBoite, flex: '0 1 260px', ...cadre('mesures') }}>
+      {vu('mesures') && <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        {vu('mesures') && <Apparait style={{ ...styleBoite, flex: '0 1 260px', ...cadre('mesures') }}>
           <div style={{ fontWeight: 700, fontSize: 14, color: TXT, marginBottom: 6 }}>Mesures</div>
           {mesures.length === 0 ? <div style={{ fontSize: 13, color: TXT2 }}>Aucune mesure : plongez l'embout puis « Relever le point ».</div> : (
             <div style={{ maxHeight: 300, overflowY: 'auto' }}>
@@ -419,27 +445,29 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
                     <td style={{ padding: '3px 4px', textAlign: 'right' }}>{fmt(m.h / 100, 3)}</td><td style={{ padding: '3px 4px', textAlign: 'right' }}>{m.p * 100}</td></tr>))}</tbody>
               </table>
             </div>)}
-        </div>
-        <div style={{ ...styleBoite, flex: '1 1 340px', minWidth: 0, ...cadre('courbe') }}>
+        </Apparait>}
+        {vu('allure') && <Apparait style={{ ...styleBoite, flex: '1 1 340px', minWidth: 0, ...cadre('courbe') }}>
           <div style={{ fontWeight: 700, fontSize: 14, color: TXT, marginBottom: 4 }}>Pression absolue en fonction de la profondeur</div>
           <div ref={plotRef} style={{ width: '100%', height: 320 }}/>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}>
-            <span style={lab}>Modèle :</span>
-            <button onClick={() => setModele(modele === 1 ? 0 : 1)} disabled={!fit1} style={{ ...stylePetitBouton(modele === 1, '#e76f51'), opacity: fit1 ? 1 : 0.5 }}>Modèle linéaire : P = a·h + b</button>
-            {!fit1 && <span style={{ fontSize: 12, color: TXT2 }}>(au moins 3 mesures)</span>}
+            {!enGuide && <>
+              <span style={lab}>Modèle :</span>
+              <button onClick={() => setModele(modele === 1 ? 0 : 1)} disabled={!fit1} style={{ ...stylePetitBouton(modele === 1, '#e76f51'), opacity: fit1 ? 1 : 0.5 }}>Modèle linéaire : P = a·h + b</button>
+              {!fit1 && <span style={{ fontSize: 12, color: TXT2 }}>(au moins 3 mesures)</span>}
+            </>}
           </div>
           {equation && (
             <div style={{ marginTop: 8, fontFamily: 'monospace', fontSize: 13.5, color: TXT, lineHeight: 1.6 }}>
               {equation} <span style={{ color: TXT2, fontFamily: 'sans-serif', fontSize: 12 }}>(P en Pa, h en m)</span>
               <div style={{ color: '#b45309', fontWeight: 700 }}>R² = {fit.r2.toFixed(5)}</div>
             </div>)}
-        </div>
-      </div>
+        </Apparait>}
+      </div>}
 
       {/* ── RÉCIPIENT INCONNU ── */}
-      <div style={{ ...styleBoite, ...cadre('cuve') }}>
-        <Section titre={<>Récipient inconnu : quelle est la hauteur d'eau ? <span style={{ fontWeight: 400, color: '#b45309' }}>(⚠ à n’ouvrir qu’après le défi : l’ouvrir peut révéler ses réponses)</span></>}
-          ouvert={recipOuv || hl('cuve')} onBascule={() => setRecipOuv(o => !o)}>
+      {vu('inconnu') && <Apparait style={{ ...styleBoite, ...cadre('cuve') }}>
+        <Section titre={<>Récipient inconnu : quelle est la hauteur d'eau ? {!enGuide && <span style={{ fontWeight: 400, color: '#b45309' }}>(⚠ à n’ouvrir qu’après le défi : l’ouvrir peut révéler ses réponses)</span>}</>}
+          ouvert={recipOuv || enGuide} onBascule={() => setRecipOuv(o => !o)}>
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start' }}>
           <div style={{ flex: '1 1 250px', maxWidth: 330 }}>{schemaCuve}</div>
           <div style={{ flex: '1 1 230px', display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -450,12 +478,12 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
             </div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               <button onClick={() => setZCm(HC_CM)} style={stylePetitBouton(false, '#0369a1')}>⬇ Placer au fond</button>
-              <button onClick={() => setRevele(r => !r)} style={stylePetitBouton(revele, '#64748b')}>{revele ? '🙈 Cacher le niveau' : '👁 Révéler le niveau'}</button>
-              <button onClick={() => { setHinc(Math.round((0.15 + Math.random() * 0.4) * 100) / 100); setRevele(false); setZCm(0); }} style={stylePetitBouton(false, '#64748b')}><Pic n="refresh"/>Autre récipient</button>
+              {!enGuide && <button onClick={() => setRevele(r => !r)} style={stylePetitBouton(revele, '#64748b')}>{revele ? '🙈 Cacher le niveau' : '👁 Révéler le niveau'}</button>}
+              {!enGuide && <button onClick={() => { setHinc(Math.round((0.15 + Math.random() * 0.4) * 100) / 100); setRevele(false); setZCm(0); }} style={stylePetitBouton(false, '#64748b')}><Pic n="refresh"/>Autre récipient</button>}
             </div>
-            <div style={{ fontSize: 13.5, color: TXT, lineHeight: 1.6 }}>
+            {(!enGuide || passe('lireP')) && <div style={{ fontSize: 13.5, color: TXT, lineHeight: 1.6 }}>
               Pression lue : <strong>{pLueInc} hPa</strong>
-            </div>
+            </div>}
             {estimationVisible && (mod === 1 && profEstimee != null ? (
               <div style={{ ...styleBoite, background: 'white', fontSize: 13.5, color: TXT, lineHeight: 1.6 }}>
                 Profondeur de l'embout sous la surface, d'après votre droite : h = (P − b) / a = <strong>{fmt(profEstimee, 1)} cm</strong>
@@ -467,7 +495,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
           </div>
         </div>
         </Section>
-      </div>
+      </Apparait>}
     </div>
   );
 
@@ -478,6 +506,9 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
         .sf-l1.cote { grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
         .sf-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
         @media (max-width: 960px) { .sf-l1.cote { grid-template-columns: minmax(0, 1fr); } }
+        @keyframes sf-fondu { from { opacity: 0; } to { opacity: 1; } }
+        .sf-apparait { animation: sf-fondu .35s ease-out; }
+        @media (prefers-reduced-motion: reduce) { .sf-apparait { animation: none; } }
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Statique des fluides : P = f(h) et hauteur d'eau</h2>
@@ -503,7 +534,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
           {panneauHypo}
         </div>
       )}
-      {mode === 'guide' && panneauHypo}
+      {mode === 'guide' && vu('hypotheses') && <Apparait>{panneauHypo}</Apparait>}
     </div>
   );
 }
