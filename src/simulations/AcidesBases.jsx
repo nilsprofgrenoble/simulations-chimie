@@ -242,6 +242,8 @@ export function SimulationAcidesBases({ naviguer }) {
   });
   const idE = ETAPES[Math.min(etape, ETAPES.length - 1)].id;
   const IDS = ETAPES.map(e => e.id), apres = id => !enGuide || etape > IDS.indexOf(id);
+  // Progressivité : en parcours guidé, un élément n'apparaît qu'à partir de l'étape qui l'introduit (puis reste affiché) ; ailleurs, tout est visible.
+  const depuis = id => !enGuide || etape >= IDS.indexOf(id);
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
 
@@ -343,6 +345,7 @@ export function SimulationAcidesBases({ naviguer }) {
     return (
       <div>
         {Echelle(phA)}
+        {depuis('faible') && <div className="acb-in">
         <div style={{ fontSize: 13, color: KIT.txt2, margin: '8px 0 4px' }}>
           Tableau d’avancement (mol) pour V = 1,00{NB}L de solution ; x<sub>max</sub> : réaction totale, x<sub>f</sub> : état final. AH = <b>{A.formule}</b> et A⁻ = <b>{A.base}</b>.</div>
         <div style={{ overflowX: 'auto' }}>
@@ -361,13 +364,14 @@ export function SimulationAcidesBases({ naviguer }) {
             </tbody>
           </table>
         </div>
+        </div>}
         {apres('tau') && <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <div style={{ fontSize: 14, color: KIT.txt, fontWeight: 700 }}>x<sub>f</sub> = {nbf(Math.min(100, tauA * 100), 1)}{NB}% de x<sub>max</sub></div>
           <div role="img" aria-label={`x f représente ${nbf(Math.min(100, tauA * 100), 1)} pour cent de x max`} style={{ flex: 1, minWidth: 140, height: 14, background: '#e2e8f0', borderRadius: 7, overflow: 'hidden' }}>
             <div style={{ width: `${Math.max(0.8, Math.min(100, tauA * 100))}%`, height: '100%', background: A.fort ? '#15803d' : '#d97706' }}/></div>
         </div>}
-        <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4 }}>
-          {A.fort ? <>Réaction totale : <i>x</i><sub>f</sub> = <i>x</i><sub>max</sub>, il ne reste plus d’acide AH.</> : <>Réaction limitée : <i>x</i><sub>f</sub> &lt; <i>x</i><sub>max</sub>, il reste de l’acide AH en solution à côté de A⁻ et H₃O⁺.</>}</div>
+        {depuis('faible') && apres('tabacide') && <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4 }}>
+          {A.fort ? <>Réaction totale : <i>x</i><sub>f</sub> = <i>x</i><sub>max</sub>, il ne reste plus d’acide AH.</> : <>Réaction limitée : <i>x</i><sub>f</sub> &lt; <i>x</i><sub>max</sub>, il reste de l’acide AH en solution à côté de A⁻ et H₃O⁺.</>}</div>}
       </div>);
   };
 
@@ -456,14 +460,15 @@ export function SimulationAcidesBases({ naviguer }) {
 
   const zoneScene = sceneEff === 'acide' ? SceneAcide() : sceneEff === 'distrib' ? SceneDistrib() : sceneEff === 'tampon' ? SceneTampon() : SceneTitrage();
   const ONGLETS = [['acide', 'pH d’un acide'], ['distrib', 'Diagramme de distribution'], ['tampon', 'Solution tampon'], ['titrage', 'Titrage']];
+  const ONGLETS_VUS = ONGLETS.filter(([k]) => k === 'acide' || depuis(k === 'distrib' ? 'distrib' : k === 'tampon' ? 'tampon' : 'titrage'));
   const sceneBox = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      {!enDefi && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-        {ONGLETS.map(([k, l]) => <button key={k} onClick={() => setScene(k)} aria-pressed={scene === k} style={stylePetitBouton(scene === k, '#0f766e')}>{l}</button>)}
+      {!enDefi && ONGLETS_VUS.length > 1 && <div className="acb-in" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+        {ONGLETS_VUS.map(([k, l]) => <button key={k} onClick={() => setScene(k)} aria-pressed={scene === k} style={stylePetitBouton(scene === k, '#0f766e')}>{l}</button>)}
       </div>}
       {zoneScene}
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>
-        {sceneEff === 'acide' && <>Modifiez l’acide et la concentration : observez comment <i>x</i><sub>f</sub> se compare à <i>x</i><sub>max</sub> dans le tableau.</>}
+        {sceneEff === 'acide' && depuis('dilution') && <>Modifiez l’acide et la concentration : observez comment <i>x</i><sub>f</sub> se compare à <i>x</i><sub>max</sub> dans le tableau.</>}
         {sceneEff === 'distrib' && 'Le trait vertical est le pH choisi ; les points donnent la fraction de chaque espèce à ce pH.'}
         {sceneEff === 'tampon' && 'Comparez la variation de pH de la solution tampon à celle de l’eau pure pour le même ajout.'}
         {sceneEff === 'titrage' && 'Bleu : pH = f(V). Le point orange suit le curseur de volume. Vert pointillé : dérivée dpH/dV (si affichée).'}
@@ -474,23 +479,23 @@ export function SimulationAcidesBases({ naviguer }) {
     <div style={{ ...styleBoite, ...cadre('reglages') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
       {sceneEff === 'acide' && <>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>{Object.entries(ACIDES).map(([k, a]) => <button key={k} onClick={() => setAc(s => ({ ...s, id: k }))} aria-pressed={ac.id === k} style={stylePetitBouton(ac.id === k, '#0f766e')}>{a.nom}</button>)}</div>
-        <Curseur nom="log C (C en mol/L)" valeur={ac.logC} onChange={v => setAc(s => ({ ...s, logC: v }))} min={-6} max={-1} pas={1} unite="" decimales={0} couleur="#475569"/>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>{Object.entries(ACIDES).filter(([k]) => !enGuide || k === 'hcl' || (k === 'etha' && depuis('faible'))).map(([k, a]) => <button key={k} onClick={() => setAc(s => ({ ...s, id: k }))} aria-pressed={ac.id === k} style={stylePetitBouton(ac.id === k, '#0f766e')}>{a.nom}</button>)}</div>
+        {depuis('dilution') && <div className="acb-in"><Curseur nom="log C (C en mol/L)" valeur={ac.logC} onChange={v => setAc(s => ({ ...s, logC: v }))} min={-6} max={-1} pas={1} unite="" decimales={0} couleur="#475569"/></div>}
         <div style={{ fontSize: 13, color: KIT.txt2 }}>C = {sci(C, 1)} mol/L</div>
       </>}
       {sceneEff === 'distrib' && <>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>{Object.entries(POLY).map(([k, a]) => <button key={k} onClick={() => setDs(s => ({ ...s, id: k }))} aria-pressed={ds.id === k} style={stylePetitBouton(ds.id === k, '#0f766e')}>{a.nom}</button>)}</div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>{Object.entries(POLY).filter(([k]) => !enGuide || k === 'etha' || (k === 'cit' && depuis('citrique'))).map(([k, a]) => <button key={k} onClick={() => setDs(s => ({ ...s, id: k }))} aria-pressed={ds.id === k} style={stylePetitBouton(ds.id === k, '#0f766e')}>{a.nom}</button>)}</div>
         <Curseur nom="pH" valeur={ds.ph} onChange={v => setDs(s => ({ ...s, ph: v }))} min={0} max={14} pas={0.1} unite="" decimales={1} couleur="#475569"/>
       </>}
       {sceneEff === 'tampon' && <>
         {dd ? <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6 }}>Couple de pKa = {nbf(dd.pKa, 1)}, volume 100 mL. Réglez les quantités.</div> : <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6 }}>Couple CH₃COOH / CH₃COO⁻ (pKa = 4,8)</div>}
         <Curseur nom="Quantité d’acide AH" valeur={tp.nAH} onChange={v => setTp(s => ({ ...s, nAH: v }))} min={0} max={40} pas={1} unite="mmol" decimales={0} couleur="#6d28d9"/>
         <Curseur nom="Quantité de base A⁻" valeur={tp.nA} onChange={v => setTp(s => ({ ...s, nA: v }))} min={0} max={40} pas={1} unite="mmol" decimales={0} couleur="#0e7490"/>
-        {!dd && <><Curseur nom="Volume de solution" valeur={tp.V} onChange={v => setTp(s => ({ ...s, V: v }))} min={50} max={200} pas={10} unite="mL" decimales={0} couleur="#475569"/>
-          <Curseur nom="Ajout (− acide fort / + base forte)" valeur={tp.ajout} onChange={v => setTp(s => ({ ...s, ajout: v }))} min={-5} max={5} pas={0.5} unite="mmol" decimales={1} couleur="#b45309"/></>}
+        {!dd && <>{!enGuide && <Curseur nom="Volume de solution" valeur={tp.V} onChange={v => setTp(s => ({ ...s, V: v }))} min={50} max={200} pas={10} unite="mL" decimales={0} couleur="#475569"/>}
+          {depuis('ajout') && <div className="acb-in"><Curseur nom="Ajout (− acide fort / + base forte)" valeur={tp.ajout} onChange={v => setTp(s => ({ ...s, ajout: v }))} min={-5} max={5} pas={0.5} unite="mmol" decimales={1} couleur="#b45309"/></div>}</>}
       </>}
       {sceneEff === 'titrage' && <>
-        {!enDefi && <Liste nom="Acide titré (solution de l’erlenmeyer)" valeur={ti.id} onChange={v => setTi(sx => ({ ...sx, id: v }))}
+        {!enDefi && !enGuide && <Liste nom="Acide titré (solution de l’erlenmeyer)" valeur={ti.id} onChange={v => setTi(sx => ({ ...sx, id: v }))}
           options={Object.entries(ACIDES).filter(([k]) => k !== 'amm').map(([k, a]) => [k, `${a.nom} (${a.formule})`])}/>}
         {enDefi ? <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6 }}>20,0 mL d’acide inconnu titrés par la soude (0,100 mol·L⁻¹).</div> : enGuide ? <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>Prise d’essai 20,0 mL d’acide de concentration inconnue ; soude à 0,100 mol/L.</div> : <>
           <Curseur nom="Concentration de l’acide C" valeur={ti.C0} onChange={v => setTi(sx => ({ ...sx, C0: v }))} min={0.02} max={0.1} pas={0.005} unite="mol/L" decimales={3} couleur="#475569"/>
@@ -499,9 +504,9 @@ export function SimulationAcidesBases({ naviguer }) {
           {Veq > VMAX && <div role="alert" style={{ fontSize: 13, color: '#b91c1c', marginBottom: 6 }}>Le volume équivalent ({nbf(Veq, 1)} mL) dépasse la burette de {VMAX} mL : prélevez moins d’acide ou prenez une soude plus concentrée.</div>}</>}
         <Curseur nom="Volume de soude versé V" valeur={ti.Vb} onChange={v => setTi(s => ({ ...s, Vb: v }))} min={0} max={VMAX} pas={0.1} unite="mL" decimales={1} couleur="#b45309"/>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
-          <button onClick={() => setTi(s => ({ ...s, deriv: !s.deriv }))} aria-pressed={ti.deriv} style={stylePetitBouton(ti.deriv, '#15803d')}>Afficher la dérivée</button>
+          {depuis('equiv') && <button className="acb-in" onClick={() => setTi(s => ({ ...s, deriv: !s.deriv }))} aria-pressed={ti.deriv} style={stylePetitBouton(ti.deriv, '#15803d')}>Afficher la dérivée</button>}
         </div>
-        {!enDefi && <div style={{ marginTop: 8 }}><Liste nom="Indicateur coloré" valeur={ti.ind || ''} onChange={v => setTi(sx => ({ ...sx, ind: v || null }))}
+        {!enDefi && depuis('indic') && <div className="acb-in" style={{ marginTop: 8 }}><Liste nom="Indicateur coloré" valeur={ti.ind || ''} onChange={v => setTi(sx => ({ ...sx, ind: v || null }))}
           options={[['', 'aucun'], ...M.INDICATEURS.map(i => [i.id, `${i.nom} (zone de virage ${nbf(i.zone[0], 1)} – ${nbf(i.zone[1], 1)})`])]}/></div>}
       </>}
     </div>);
@@ -511,7 +516,7 @@ export function SimulationAcidesBases({ naviguer }) {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
       {sceneEff === 'acide' && <>
         <LigneMesure nom="pH (pH-mètre)" valeur={nbf(phA, 2)} couleur="#b45309"/>
-        <LigneMesure nom="[H₃O⁺] = 10^(−pH)" valeur={`${sci(hA, 2)}${NB}mol/L`}/>
+        {depuis('tabacide') && <LigneMesure nom="[H₃O⁺] = 10^(−pH)" valeur={`${sci(hA, 2)}${NB}mol/L`}/>}
         {apres('phfort') && <LigneMesure nom="Concentration apportée C" valeur={`${sci(C, 1)}${NB}mol/L`}/>}
         {apres('tau') && <LigneMesure nom="Taux d’avancement τ = [A⁻] / C" valeur={`${nbf(Math.min(100, tauA * 100), 1)}${NB}%`} couleur="#15803d"/>}
         {!enGuide && !A.fort && <LigneMesure nom={`pH approché ½(pKa − log C), pKa = ${nbf(A.pKas[0], 2)}`} valeur={nbf(phApprox, 2)}/>}
@@ -526,8 +531,8 @@ export function SimulationAcidesBases({ naviguer }) {
       </>}
       {sceneEff === 'tampon' && <>
         <LigneMesure nom="pH de la solution" valeur={nbf(phTp, 2)} couleur="#b45309"/>
-        {!enDefi && <LigneMesure nom={`pH de ${tp.V} mL d’eau pure, même ajout`} valeur={nbf(phEau, 2)}/>}
-        {!enDefi && <LigneMesure nom="Variation de pH du tampon" valeur={nbf(phTp - phTp0, 2)} couleur="#15803d"/>}
+        {!enDefi && depuis('ajout') && <LigneMesure nom={`pH de ${tp.V} mL d’eau pure, même ajout`} valeur={nbf(phEau, 2)}/>}
+        {!enDefi && depuis('ajout') && <LigneMesure nom="Variation de pH du tampon" valeur={nbf(phTp - phTp0, 2)} couleur="#15803d"/>}
         {!enDefi && (!enGuide || apres('ajout')) && <LigneMesure nom="Rapport [A⁻] / [AH]" valeur={tp.nAH > 0 ? nbf(tp.nA / tp.nAH, 2) : '–'}/>}
         {!enDefi && (!enGuide || apres('ajout')) && <LigneMesure nom="Pouvoir tampon β" valeur={isFinite(betaTp) ? `${nbf(betaTp, 3)}${NB}mol·L⁻¹ par unité de pH` : '–'}/>}
         {!enDefi && (!enGuide || apres('ajout')) && tp.nAH > 0 && tp.nA > 0 && <LigneMesure nom="pH dans l’intervalle pKa ± 1 ?" valeur={Math.abs(phTp0 - 4.8) <= 1 ? 'oui : tampon efficace' : 'non : peu efficace'} couleur={Math.abs(phTp0 - 4.8) <= 1 ? '#15803d' : '#b91c1c'}/>}
@@ -589,6 +594,7 @@ export function SimulationAcidesBases({ naviguer }) {
         .acb-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 12px; }
         .acb-pri { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr); }
         .acb-pri.pile { grid-template-columns: minmax(0, 1fr); }
+        @media (prefers-reduced-motion: no-preference) { .acb-in { animation: acb-in .45s ease-out; } @keyframes acb-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } } }
         @media (min-width: 901px) { .acb-l1.cote .acb-carte { order: 2; } .acb-l1.cote .acb-main { order: 1; } }
         @media (max-width: 900px) { .acb-l1.cote, .acb-pri { grid-template-columns: minmax(0, 1fr); } }
       `}</style>
@@ -596,18 +602,18 @@ export function SimulationAcidesBases({ naviguer }) {
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Acides et bases</h2>
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Le <strong>pH</strong> mesure l’acidité d’une solution. Un acide <strong>fort</strong> réagit totalement avec l’eau, un acide <strong>faible</strong> partiellement : son pKa dit quelle forme, acide ou basique, <strong>prédomine</strong> à un pH donné. On en tire les solutions <strong>tampons</strong> et le <strong>titrage</strong> pH-métrique.</div>
+      {!enGuide && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Le <strong>pH</strong> mesure l’acidité d’une solution. Un acide <strong>fort</strong> réagit totalement avec l’eau, un acide <strong>faible</strong> partiellement : son pKa dit quelle forme, acide ou basique, <strong>prédomine</strong> à un pH donné. On en tire les solutions <strong>tampons</strong> et le <strong>titrage</strong> pH-métrique.</div>}
       <div className={`acb-l1${mode !== 'explore' ? ' cote' : ''}`}>
         {enGuide ? <div className="acb-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="acb-carte">{panneauHypo}</div> : null}
         <div className="acb-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'pka' ? suiviPka : defi.type === 'conc' ? suiviConc : suiviTampon}/></div>}
           <div className={`acb-pri${mode !== 'explore' ? ' pile' : ''}`}>
             {sceneBox}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{reglages}{mesures}{incertBox}</div>
+            {(!enGuide || depuis('fort')) && <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{depuis('fort') && <div className="acb-in">{reglages}</div>}{depuis('phfort') && <div className="acb-in">{mesures}</div>}{incertBox}</div>}
           </div>
         </div>
       </div>
-      {!enDefi && <div className="acb-l2">{panneauHypo}</div>}
+      {!enDefi && depuis('tau') && <div className="acb-l2">{panneauHypo}</div>}
       {mode === 'explore' && <div className="acb-l2">{aEssayer}{retenir}</div>}
     </div>
   );
