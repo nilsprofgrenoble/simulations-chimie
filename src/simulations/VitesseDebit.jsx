@@ -151,8 +151,6 @@ function Tuyau({ qv, D1, D2, coul, animer, vit, cmd }) {
 
 const QM_UNITE = 'kg·s⁻¹';
 
-// Capacité visée (programme de SPCL de terminale STL, thème « Systèmes et procédés », « Transport et transformation des flux de matière »)
-const Cap = ({ children }) => <div style={{ marginTop: 8, fontSize: 12.5, color: '#475569', borderLeft: `3px solid ${ORANGE_GUIDE}`, paddingLeft: 8, lineHeight: 1.45 }}><strong>Capacité visée :</strong> {children}</div>;
 
 // Indice du défi : bouton « 💡 Indice » qui déplie une aide sans donner le résultat
 function IndiceDefi({ children }) {
@@ -230,7 +228,7 @@ export function SimulationVitesseDebit({ naviguer }) {
       tache: { type: 'qcm', indice: 'Le volume d’un cylindre est V = S × longueur. Si V reste le même et que S diminue, que doit faire la longueur ?', q: 'Dans la section étroite, la longueur d’une tranche est…', options: ['plus grande, pour garder le même volume', 'plus petite, parce que le tuyau est plus petit', 'identique, parce que le volume est identique'], bonne: 0,
         expl: 'Le volume d’un cylindre est V = S × longueur. À volume égal, une section plus petite impose une tranche plus longue. Et cette longueur est la distance parcourue en 1 s : c’est la vitesse du fluide.' } },
     { id: 'relation', titre: 'Débit, vitesse, section', focus: [],
-      texte: <>La <strong>section S</strong> du tuyau est l’aire de sa coupe perpendiculaire à l’écoulement : pour un tuyau cylindrique, c’est un <strong>disque</strong> de diamètre D (en orange ci-dessous). {SchemaSection}Une tranche de longueur L = v × Δt, de section S, a pour volume <strong>V = S × v × Δt</strong>. Le débit volumique est donc Q<sub>v</sub> = V / Δt. Regardez aussi les <strong>unités</strong> : Q<sub>v</sub> en m³·s⁻¹, v en m·s⁻¹, S en m².<Cap>« Exprimer la relation entre le débit volumique d’un fluide et sa vitesse d’écoulement. »</Cap></>,
+      texte: <>La <strong>section S</strong> du tuyau est l’aire de sa coupe perpendiculaire à l’écoulement : pour un tuyau cylindrique, c’est un <strong>disque</strong> de diamètre D (en orange ci-dessous). {SchemaSection}Une tranche de longueur L = v × Δt, de section S, a pour volume <strong>V = S × v × Δt</strong>. Le débit volumique est donc Q<sub>v</sub> = V / Δt. Regardez aussi les <strong>unités</strong> : Q<sub>v</sub> en m³·s⁻¹, v en m·s⁻¹, S en m².</>,
       tache: { type: 'qcm', indice: 'Une tranche de longueur L = v × Δt a pour volume S × L ; divisez par Δt pour obtenir le débit. Vérifiez les unités : m·s⁻¹ × m² donne quoi ?', q: 'Quelle relation lie Q_v, v et S ?', options: ['Q_v = v × S', 'Q_v = v / S', 'Q_v = S / v'], bonne: 0,
         expl: <>Q<sub>v</sub> = v × S. Contrôle des unités : <Un u="m"/>·<Un u="s" inv/> × <Un u="m²"/> = <Un u="m³"/>·<Un u="s" inv/>, ce sont bien des m³·s⁻¹. Pour un même débit, v est donc inversement proportionnelle à S.</> } },
     { id: 'Dm', titre: 'Le diamètre en mètres', focus: [],
@@ -285,7 +283,7 @@ export function SimulationVitesseDebit({ naviguer }) {
           [G.qsi * G.S2, 'Vous avez multiplié : v = Q_v / S.'], [G.S2 / G.qsi, 'Attention à l’ordre : on divise Q_v par S₂ (et non S₂ par Q_v).']],
         expl: <><Chaine nom="v_2" litt="Q_v × 1/S_2" facteurs={chV(G.qsi, G.S2)} nsf={2}/></> } },
     { id: 'continuite', titre: 'Vitesse et section', focus: ['manip'],
-      texte: <>Vous avez trouvé <strong>v₂ = {sig(G.v2, 2)} m·s⁻¹</strong> dans la section 2 (S₂ ≈ {sciTxt(G.S2, 3)} m²) et <strong>v₁ = {sig(G.v1, 2)} m·s⁻¹</strong> dans la section 1 (S₁ ≈ {sciTxt(G.S1, 3)} m²), pour le même débit volumique.<Cap>« Exploiter la conservation du débit pour des écoulements permanents incompressibles. »</Cap></>,
+      texte: <>Vous avez trouvé <strong>v₂ = {sig(G.v2, 2)} m·s⁻¹</strong> dans la section 2 (S₂ ≈ {sciTxt(G.S2, 3)} m²) et <strong>v₁ = {sig(G.v1, 2)} m·s⁻¹</strong> dans la section 1 (S₁ ≈ {sciTxt(G.S1, 3)} m²), pour le même débit volumique.</>,
       tache: { type: 'qcm', indice: 'Comparez S₁ et S₂, puis v₁ et v₂ : quand l’une des deux grandeurs diminue, que fait l’autre ?', q: 'Donc la vitesse augmente lorsque la section du tuyau…', options: ['diminue', 'augmente', 'ne change pas'], bonne: 0,
         expl: 'La section S₂ est plus petite que S₁ et la vitesse y est plus grande : pour un même débit, v et S varient en sens contraires. C’est la conservation du débit volumique (fluide incompressible, régime permanent) : v₁·S₁ = v₂·S₂.' } },
     { id: 'rapport', titre: 'Prévoir avant de calculer', focus: [],
@@ -316,7 +314,7 @@ export function SimulationVitesseDebit({ naviguer }) {
         pieges: [[1000 / FLUIDES[G.fl].d, 'Vous avez divisé par d : la masse volumique est ρ = d × ρ_eau (multiplication).'], [0.92, 'La densité n’a pas d’unité : ρ = d × 1 000 kg·m⁻³.']],
         expl: <RhoLigne d={0.92}/> } },
     { id: 'qm', titre: 'Le débit massique', focus: [],
-      texte: <>Le débit massique est le même dans les deux sections (régime permanent). Calculez Q<sub>m</sub> = ρ × Q<sub>v</sub>, avec Q<sub>v</sub> = 5,0 × 10⁻⁴ m³·s⁻¹ et ρ = {nf(G.rho)} kg·m⁻³ (masse volumique de l’huile, étape précédente).<Cap>« Exprimer la relation entre débit massique et débit volumique. »</Cap></>,
+      texte: <>Le débit massique est le même dans les deux sections (régime permanent). Calculez Q<sub>m</sub> = ρ × Q<sub>v</sub>, avec Q<sub>v</sub> = 5,0 × 10⁻⁴ m³·s⁻¹ et ρ = {nf(G.rho)} kg·m⁻³ (masse volumique de l’huile, étape précédente).</>,
       tache: { type: 'num', indice: 'Q_m = ρ × Q_v : multipliez la masse volumique (kg·m⁻³) par le débit volumique en m³·s⁻¹ ; les m³ se simplifient.', q: 'Q_m en kg·s⁻¹', unite: 'kg·s⁻¹', vrai: G.qm, tol: 0.02, affiche: x => sig(x, 2),
         calcul: () => ['Q_m = ρ × Q_v, avec ρ en kg·m⁻³ et Q_v en m³·s⁻¹ (les m³ se simplifient).', `Q_m = ${nf(G.rho)} × ${sciTxt(G.qsi, 2)} = ${sig(G.qm, 2)} kg·s⁻¹.`],
         pieges: [[G.rho * 0.5, 'Il faut Q_v en m³·s⁻¹ : 0,50 L·s⁻¹ = 5,0 × 10⁻⁴ m³·s⁻¹.'], [G.qsi / G.rho, 'On multiplie : Q_m = ρ × Q_v (les m³ se simplifient).']],

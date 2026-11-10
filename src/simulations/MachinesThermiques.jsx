@@ -339,7 +339,7 @@ function Commandes({ machine, tc, tf, w, set }) {
 // (masquage des transferts d'énergie jusqu'à l'étape du bilan).
 function etapesGuide() {
   return [
-    { titre: 'Une machine à un fluide qui tourne en boucle', texte: <>Un élevage de truites doit garder l'eau de ses bassins à {G.tc} °C, même quand l'air extérieur est à {G.tf} °C. Une pompe à chaleur (PAC) chauffe cette eau. À l'intérieur, un fluide frigorigène circule dans un circuit fermé : il sort toujours dans le même état qu'il est entré, après avoir traversé quatre organes. <strong>Capacité visée :</strong> « Pour une pompe à chaleur, un climatiseur ou un réfrigérateur : décrire le principe de fonctionnement ; identifier les transferts d'énergie mis en jeu et réaliser le bilan énergétique. »</>,
+    { titre: 'Une machine à un fluide qui tourne en boucle', texte: <>Un élevage de truites doit garder l'eau de ses bassins à {G.tc} °C, même quand l'air extérieur est à {G.tf} °C. Une pompe à chaleur (PAC) chauffe cette eau. À l'intérieur, un fluide frigorigène circule dans un circuit fermé : il sort toujours dans le même état qu'il est entré, après avoir traversé quatre organes.</>,
       organe: null, montreEnergies: false,
       tache: { type: 'qcm', q: 'Pourquoi dit-on que le fonctionnement de cette machine est « cyclique » ?',
         options: ['Le fluide revient à son état initial après chaque tour du circuit', 'La machine chauffe par à-coups', 'Le circuit est ouvert sur l\'eau du bassin'], bonne: 0,
@@ -381,7 +381,7 @@ function etapesGuide() {
         options: ['Liquide, à basse pression, prêt à s\'évaporer dans l\'évaporateur', 'Vapeur, à haute pression', 'Liquide, à haute pression'], bonne: 0,
         indice: 'Le cycle doit se refermer : le fluide doit retrouver les conditions de la première étape (celle de l\'évaporateur).', } },
 
-    { titre: 'Bilan d\'un cycle : l\'énergie se conserve', texte: <>Sur un cycle complet, le fluide revient à son état initial : son énergie interne ne change pas, donc ΔU = 0. Le premier principe, ΔU = W + Q, s'écrit alors W + Q_c + Q_f = 0. La PAC fonctionne ici avec une puissance électrique W = {fmt(G.w, 1)} kW, et capte une puissance thermique Q_f = {fmt(GP.qChaude - G.w, 1)} kW à l'air extérieur. <strong>Capacité visée :</strong> « Pour une pompe à chaleur, un climatiseur ou un réfrigérateur : décrire le principe de fonctionnement ; identifier les transferts d'énergie mis en jeu et réaliser le bilan énergétique. »</>,
+    { titre: 'Bilan d\'un cycle : l\'énergie se conserve', texte: <>Sur un cycle complet, le fluide revient à son état initial : son énergie interne ne change pas, donc ΔU = 0. Le premier principe, ΔU = W + Q, s'écrit alors W + Q_c + Q_f = 0. La PAC fonctionne ici avec une puissance électrique W = {fmt(G.w, 1)} kW, et capte une puissance thermique Q_f = {fmt(GP.qChaude - G.w, 1)} kW à l'air extérieur.</>,
       organe: null, montreEnergies: false,
       tache: { type: 'num', q: 'Puissance thermique Q_c cédée à l\'eau du bassin', unite: 'kW', vrai: GP.qChaude, tol: 0.02, affiche: x => fmt(x, 1), cs: 3, detail: true,
         calcul: () => [`Premier principe sur un cycle : ΔU = W + Q_c + Q_f = 0, donc Q_c = −(W + Q_f).`,
@@ -425,7 +425,7 @@ function etapesGuide() {
         options: ['Le COP augmente : l\'écart entre sources diminue', 'Le COP diminue : la source froide apporte moins d\'énergie', 'Le COP ne change pas'], bonne: 0,
         indice: 'Regardez la courbe : le COP monte ou descend quand on se rapproche de T_c ?', } },
 
-    { titre: 'La limite théorique : efficacité thermodynamique', texte: <>Le COP d'une machine réelle ne peut pas dépasser une limite théorique, calculée avec les températures exprimées <strong>en kelvins</strong> : pour une PAC, COP_max = T_c / (T_c − T_f). Pour la PAC du bassin (T_c = {G.tc} °C, T_f = {G.tf} °C), la machine réelle est très en dessous de cette limite. <strong>Capacité visée :</strong> « Distinguer le coefficient de performance d\'une machine thermique de son efficacité thermodynamique. »</>,
+    { titre: 'La limite théorique : efficacité thermodynamique', texte: <>Le COP d'une machine réelle ne peut pas dépasser une limite théorique, calculée avec les températures exprimées <strong>en kelvins</strong> : pour une PAC, COP_max = T_c / (T_c − T_f). Pour la PAC du bassin (T_c = {G.tc} °C, T_f = {G.tf} °C), la machine réelle est très en dessous de cette limite.</>,
       organe: null, montreEnergies: true,
       tache: { type: 'num', q: 'Efficacité thermodynamique maximale de la PAC du bassin (en kelvins !)', unite: '', vrai: GMAX, tol: 0.02, affiche: x => fmt(x, 1), cs: 3, detail: true,
         calcul: () => [`Formule : COP_max = T_c / (T_c − T_f), températures en kelvins.`,
