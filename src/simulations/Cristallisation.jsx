@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { TabBtn, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 
 const SIM_ID = 7;
@@ -33,6 +33,7 @@ const tempDeSolub = s => {
   return NaN;
 };
 
+const INDICE_Q = {"s": "Pas de calcul : lisez l’ordonnée de la courbe à la température demandée.", "d": "Une solution saturée contient exactement la solubilité (proportionnelle à la masse d’eau).", "c": "Cristaux = sel introduit − sel resté dissous.", "r": "Rendement = cristaux ÷ sel introduit × 100.", "t": "Les premiers cristaux apparaissent quand la solubilité vaut la masse de sel pour 100 g d’eau.", "e": "À saturation, sel ÷ eau = solubilité ÷ 100 : calculez la masse d’eau correspondante."};
 export function Simulation7({ plotlyReady }) {
   const [mode, setMode]         = useState(() => modeOuverture('crist-guide-v1'));
   useSignalerMode(mode);
@@ -172,17 +173,17 @@ export function Simulation7({ plotlyReady }) {
     { id: 'objectif', titre: 'Que cherche-t-on ?', focus: [],
       texte: <>Pour obtenir du nitrate de potassium KNO₃ solide à partir d'une solution, on le fait <strong>cristalliser</strong> : on rend la solution <strong>saturée</strong>, puis les cristaux apparaissent. Deux procédés : refroidir la solution, ou évaporer une partie de l'eau.</>,
       tache: { type: 'qcm', q: 'Qu’est-ce qu’une solution saturée ?', options: ['Une solution qui ne peut plus dissoudre de soluté à cette température', 'Une solution très concentrée, quelle que soit la température', 'Une solution qui contient des cristaux de soluté dissous'], bonne: 0,
-        expl: 'À une température donnée, la solubilité est la masse maximale de soluté que l’on peut dissoudre dans une masse d’eau donnée. Au-delà, le soluté en excès reste solide.' } },
+        expl: 'À une température donnée, la solubilité est la masse maximale de soluté que l’on peut dissoudre dans une masse d’eau donnée. Au-delà, le soluté en excès reste solide.', indice: "Saturée : le soluté ne peut plus se dissoudre. Que devient du soluté ajouté en plus ?" } },
     { id: 'lecture', titre: 'Lire le diagramme de solubilité', focus: ['diagramme'],
       texte: <>Le diagramme donne la <strong>solubilité</strong> de KNO₃ (masse de sel pour 100 g d'eau) en fonction de la température. On dissout <strong>100 g</strong> de KNO₃ dans 100 g d'eau à 80 °C. Lisez sur la courbe la solubilité à 80 °C (le survol de la courbe affiche les valeurs).</>,
       tache: { type: 'num', q: 'Solubilité de KNO₃ à 80 °C', unite: 'g / 100 g d’eau', vrai: s80, tol: 0.03, affiche: x => fmt(x, 0),
         aide: 'Lecture : repérez 80 °C sur l’axe horizontal, montez jusqu’à la courbe, puis lisez la valeur sur l’axe vertical (g de KNO₃ pour 100 g d’eau).',
         bloque: !(typeCr === 'refroidissement' && T === 80) ? 'Gardez le mode « Par refroidissement » et T = 80 °C.' : null,
-        expl: `À 80 °C, 100 g d'eau peuvent dissoudre jusqu'à ${fmt(s80, 0)} g de KNO₃. Comme on n'en a mis que 100 g, la solution est insaturée : tout est dissous.` } },
+        expl: `À 80 °C, 100 g d'eau peuvent dissoudre jusqu'à ${fmt(s80, 0)} g de KNO₃. Comme on n'en a mis que 100 g, la solution est insaturée : tout est dissous.`, indice: "Pas de calcul : lisez l’ordonnée de la courbe à 80 °C, en g pour 100 g d’eau." } },
     { id: 'sens', titre: 'Effet de la température', focus: ['diagramme', 'params'],
       texte: <>Déplacez le curseur de température vers des valeurs plus basses et observez la courbe : la solubilité de KNO₃ varie fortement avec la température.</>,
       tache: { type: 'qcm', q: 'Quand on refroidit la solution, la solubilité de KNO₃…', options: ['diminue : du sel peut devenir solide', 'augmente : le sel se dissout mieux', 'ne change pas'], bonne: 0,
-        expl: 'La solubilité de KNO₃ chute de 169 g à 80 °C à environ 13 g à 0 °C (pour 100 g d’eau) : c’est ce qui rend la cristallisation par refroidissement efficace pour ce sel.' } },
+        expl: 'La solubilité de KNO₃ chute de 169 g à 80 °C à environ 13 g à 0 °C (pour 100 g d’eau) : c’est ce qui rend la cristallisation par refroidissement efficace pour ce sel.', indice: "Suivez la courbe vers les basses températures : la solubilité monte ou descend ?" } },
     { id: 'refroid40', titre: 'Refroidir à 40 °C', focus: ['params', 'diagramme', 'becher'],
       texte: <>On refroidit la solution (100 g de KNO₃ pour 100 g d'eau). Réglez la température à <strong>40 °C</strong>. Le losange est la composition globale du système ; le trait rouge vertical mesure l'écart entre cette composition et la courbe.</>,
       tache: { type: 'action', ok: T === 40, label: 'Régler T = 40 °C', faire: () => setT(40), consigne: T === 40 ? null : `Température : ${T} °C → 40 °C` } },
@@ -191,7 +192,7 @@ export function Simulation7({ plotlyReady }) {
       tache: { type: 'num', q: 'Solubilité de KNO₃ à 40 °C', unite: 'g / 100 g d’eau', vrai: s40, tol: 0.03, affiche: x => fmt(x, 1),
         aide: 'Lecture : repérez 40 °C sur l’axe horizontal, montez jusqu’à la courbe, puis lisez la valeur sur l’axe vertical (survolez la courbe pour la valeur exacte).',
         bloque: !(modeRef && T === 40) ? 'Gardez le mode « Par refroidissement », 100 g de soluté et T = 40 °C.' : null,
-        expl: `Environ ${fmt(s40, 1)} g de KNO₃ restent dissous.` } },
+        expl: `Environ ${fmt(s40, 1)} g de KNO₃ restent dissous.`, indice: "Pas de calcul : lisez l’ordonnée de la courbe à 40 °C, en g pour 100 g d’eau." } },
     { id: 'cristaux40', titre: 'Masse de cristaux', focus: ['diagramme', 'bilan'],
       texte: <>Sur les 100 g de KNO₃ introduits, une partie reste dissoute (la masse dissoute figure maintenant dans le bilan de matière) et le reste cristallise. La longueur du trait rouge sur le diagramme représente cette masse.</>,
       tache: { type: 'num', q: 'Masse de cristaux obtenue à 40 °C', unite: 'g', vrai: c40, tol: 0.03, affiche: x => fmt(x, 1),
@@ -199,7 +200,7 @@ export function Simulation7({ plotlyReady }) {
           `m(cristaux) = m(KNO₃ introduit) − m(KNO₃ dissous) = ${fmt(ref.m, 0)} − ${fmt(s40, 1)} = ${fmt(c40, 1)} g.`],
         pieges: [[s40, 'C’est la masse de KNO₃ restée dissoute. Les cristaux sont le reste : 100 g introduits moins la masse dissoute.']],
         bloque: !(modeRef && T === 40) ? 'Gardez le mode « Par refroidissement », 100 g de soluté et T = 40 °C.' : null,
-        expl: `m(cristaux) = 100 − ${fmt(s40, 1)} = ${fmt(c40, 1)} g. Vérifiez dans le bilan de matière.` } },
+        expl: `m(cristaux) = 100 − ${fmt(s40, 1)} = ${fmt(c40, 1)} g. Vérifiez dans le bilan de matière.`, indice: "Cristaux = masse de sel introduite − masse restée dissoute (la solubilité à 40 °C, pour 100 g d’eau)." } },
     { id: 'tsat', titre: 'Où apparaissent les premiers cristaux ?', focus: ['diagramme', 'params', 'bilan'],
       texte: <>On part de 100 g de KNO₃ dans 100 g d'eau, à 80 °C : la solution est insaturée. Refroidissez-la progressivement : la composition globale (losange) se déplace sur l'horizontale en pointillés. Les premiers cristaux apparaissent quand ce point <strong>rejoint la courbe</strong>.</>,
       tache: { type: 'num', q: 'Température à laquelle les premiers cristaux apparaissent', unite: '°C', vrai: tSat100, tol: 0.03, affiche: x => fmt(x, 0),
@@ -213,7 +214,7 @@ export function Simulation7({ plotlyReady }) {
         },
         pieges: [[80, 'C’est la température de départ : à 80 °C la solution est encore insaturée (la solubilité y vaut 169 g pour 100 g d’eau). Cherchez la température où la solubilité tombe à 100 g.']],
         bloque: !modeRef ? 'Gardez le mode « Par refroidissement » et 100 g de soluté.' : null,
-        expl: `La solution devient saturée quand sa solubilité vaut 100 g / 100 g d'eau, soit vers ${fmt(tSat100, 0)} °C.` } },
+        expl: `La solution devient saturée quand sa solubilité vaut 100 g / 100 g d'eau, soit vers ${fmt(tSat100, 0)} °C.`, indice: "Les premiers cristaux apparaissent quand la solubilité devient égale à la masse de sel introduite pour 100 g d’eau." } },
     { id: 'rendement', titre: 'Quel rendement de cristallisation ?', focus: ['params', 'bilan'],
       texte: <>On refroidit maintenant jusqu'à <strong>20 °C</strong> la solution de 100 g de KNO₃ dans 100 g d'eau. Le rendement est la proportion du KNO₃ introduit que l'on récupère sous forme de cristaux.</>,
       tache: { type: 'num', q: 'Rendement de la cristallisation à 20 °C', unite: '%', vrai: c20 / ref.m * 100, tol: 0.02, affiche: x => fmt(x, 0),
@@ -223,7 +224,7 @@ export function Simulation7({ plotlyReady }) {
         pieges: [[s20, 'C’est la masse de KNO₃ restée dissoute à 20 °C, pas celle qui a cristallisé : le rendement concerne les cristaux.'],
           [c20 / ref.m, 'Le rendement est demandé en % : multipliez le rapport m(cristaux) / m(introduite) par 100.']],
         bloque: !(modeRef && T === 20) ? 'Réglez T = 20 °C (mode « Par refroidissement », 100 g de soluté).' : null,
-        expl: `m(cristaux) = 100 − ${fmt(s20, 1)} = ${fmt(c20, 1)} g, soit ${fmt(c20, 1)} % du sel introduit. Même à 0 °C, on ne récupère jamais tout : ${fmt(solubilite(0), 1)} g restent dissous.` } },
+        expl: `m(cristaux) = 100 − ${fmt(s20, 1)} = ${fmt(c20, 1)} g, soit ${fmt(c20, 1)} % du sel introduit. Même à 0 °C, on ne récupère jamais tout : ${fmt(solubilite(0), 1)} g restent dissous.`, indice: "Rendement = masse de cristaux ÷ masse introduite × 100." } },
     { id: 'evap', titre: 'Cristalliser par évaporation', focus: ['mode', 'params'],
       texte: <>Autre procédé : on garde la température constante et on <strong>évapore l'eau</strong> (sous pression réduite, pour ne pas chauffer). On part de 50 g de KNO₃ dans 100 g d'eau, à 60 °C.</>,
       tache: { type: 'action', ok: modeEv, label: 'Passer en évaporation (60 °C, 50 g)', faire: () => { setTypeCr('evaporation'); setT(60); setMSolute(50); setMEau(100); },
@@ -236,7 +237,7 @@ export function Simulation7({ plotlyReady }) {
           `m(eau) = 50 × 100 / ${fmt(sEv, 0)} = ${fmt(eauSat, 1)} g (la solution est saturée à ce moment-là, et pas avant).`],
         pieges: [[50 * sEv / 100, 'Produit en croix à l’envers : la masse d’eau cherchée est (masse de sel × 100 g d’eau) divisée par la solubilité, et non multipliée par elle.']],
         bloque: !modeEv ? 'Gardez le mode « Par évaporation », T = 60 °C et 50 g de soluté.' : null,
-        expl: `${fmt(sEv, 0)} g de sel pour 100 g d'eau, donc 50 g de sel pour m(eau) : m(eau) = 50 × 100 / ${fmt(sEv, 0)} ≈ ${fmt(eauSat, 1)} g.` } },
+        expl: `${fmt(sEv, 0)} g de sel pour 100 g d'eau, donc 50 g de sel pour m(eau) : m(eau) = 50 × 100 / ${fmt(sEv, 0)} ≈ ${fmt(eauSat, 1)} g.`, indice: "À saturation, masse de sel ÷ masse d’eau = solubilité ÷ 100. Isolez la masse d’eau." } },
     { id: 'eau20', titre: 'Évaporer davantage', focus: ['params', 'bilan'],
       texte: <>On continue d'évaporer jusqu'à ce qu'il ne reste que <strong>20 g d'eau</strong>, toujours à 60 °C. Les 50 g de KNO₃ sont toujours là, et 100 g d'eau n'en dissolvent que {fmt(sEv, 0)} g à cette température. Réglez 20 g avec le curseur et lisez la masse de cristaux dans le bilan de matière.</>,
       tache: { type: 'num', q: 'Masse de cristaux obtenue avec 20 g d’eau restants', unite: 'g', vrai: cEv20, tol: 0.03, affiche: x => fmt(x, 1),
@@ -244,15 +245,15 @@ export function Simulation7({ plotlyReady }) {
           `m(cristaux) = m(KNO₃ introduit) − m(KNO₃ dissous) = 50 − ${fmt(sEv * 0.2, 1)} = ${fmt(cEv20, 1)} g.`],
         pieges: [[sEv * 0.2, 'C’est la masse de KNO₃ qui reste dissoute dans les 20 g d’eau. Les cristaux, c’est le reste : 50 g moins cette masse.']],
         bloque: !(modeEv && mEau === 20) ? 'Réglez la masse d’eau restante à 20 g (mode « Par évaporation », T = 60 °C, 50 g de soluté).' : null,
-        expl: `Contrôle par le calcul : la solution saturée garde ${fmt(sEv, 0)} × 20 / 100 = ${fmt(sEv * 0.2, 0)} g de sel dissous, donc ${fmt(cEv20, 0)} g de cristaux (50 − ${fmt(sEv * 0.2, 0)}).` } },
+        expl: `Contrôle par le calcul : la solution saturée garde ${fmt(sEv, 0)} × 20 / 100 = ${fmt(sEv * 0.2, 0)} g de sel dissous, donc ${fmt(cEv20, 0)} g de cristaux (50 − ${fmt(sEv * 0.2, 0)}).`, indice: "Avec 20 g d’eau, quelle masse de sel peut rester dissoute (proportionnalité avec la solubilité) ? Le reste cristallise." } },
     { id: 'choix', titre: 'Quel procédé choisir ?', focus: ['diagramme'],
       texte: <>Pour le chlorure de sodium NaCl, la solubilité varie très peu avec la température : environ 36 g pour 100 g d'eau à 20 °C et 39 g à 100 °C.</>,
       tache: { type: 'qcm', q: 'Pour récupérer NaCl dissous dans l’eau, quel procédé est le plus efficace ?', options: ['L’évaporation de l’eau, car le refroidissement ne fait presque rien cristalliser', 'Le refroidissement, comme pour KNO₃', 'Les deux sont également efficaces'], bonne: 0,
-        expl: 'Quand la courbe de solubilité est presque horizontale, refroidir ne diminue presque pas la quantité de sel dissous. Il faut retirer de l’eau, comme dans les marais salants.' } },
+        expl: 'Quand la courbe de solubilité est presque horizontale, refroidir ne diminue presque pas la quantité de sel dissous. Il faut retirer de l’eau, comme dans les marais salants.', indice: "Regardez la courbe de NaCl : varie-t-elle beaucoup avec la température ?" } },
     { id: 'hypotheses', titre: 'Sur quoi repose ce modèle ?', focus: ['hypo'],
       texte: <>Lisez l'encadré « Hypothèses de travail ».</>,
       tache: { type: 'qcm', q: 'Quelle hypothèse est faite sur la solution ?', options: ['À chaque température, l’équilibre est atteint : dès que la solution est saturée, l’excès cristallise (pas de sursaturation)', 'Les cristaux obtenus contiennent de l’eau', 'La solubilité de KNO₃ ne dépend pas de la température'], bonne: 0,
-        expl: 'Dans la réalité, une solution peut rester sursaturée (métastable) tant qu’aucun germe cristallin ne se forme ; le modèle ne le décrit pas.' } },
+        expl: 'Dans la réalité, une solution peut rester sursaturée (métastable) tant qu’aucun germe cristallin ne se forme ; le modèle ne le décrit pas.', indice: "Pensez au temps laissé à la solution et au risque de sursaturation." } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       texte: <>Vous savez lire un diagramme de solubilité, trouver la température d'apparition des cristaux et calculer la masse obtenue par refroidissement ou par évaporation. En exploration libre, changez la masse de sel ou la température pour d'autres cas.</>, tache: null },
   ];
@@ -323,6 +324,7 @@ export function Simulation7({ plotlyReady }) {
           return (
             <div key={qu.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {avecIndices(qu.q)}</div>
+              {INDICE_Q[qu.id] && <IndiceDefi cache={defi.verifie && ok}>{INDICE_Q[qu.id]}</IndiceDefi>}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input value={rep} placeholder="?" aria-label={`Réponse ${k + 1}`} onChange={x => { const val = x.target.value; setDefi(d => ({ ...d, verifie: false, reps: { ...d.reps, [qu.id]: val } })); }}
                   style={{ fontSize: 14, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 110 }}/>

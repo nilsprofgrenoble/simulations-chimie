@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { MELANGES, Teb, Tros, yEq, equilibreA, wDe } from "./distillationModele";
 import { Diagramme, Pastilles, nf, pct, NB, Xi, XiS } from "./Distillation";
 import { Pic } from "../Pictos";
@@ -87,6 +87,7 @@ function Analyse({ m, z, T, e }) {
   );
 }
 
+const INDICE_Q = {"q1": "Lisez-la sur la courbe d’ébullition, à la composition du mélange.", "q2": "Lisez-la sur la courbe de rosée, à la composition du mélange.", "q3": "Tracez l’horizontale à la température demandée : le liquide est sur la courbe d’ébullition.", "q4": "Même horizontale : la vapeur est sur la courbe de rosée.", "q5": "w = x·M_A ÷ (x·M_A + (1 − x)·M_B), avec x la fraction molaire de la vapeur (question 4)."};
 export function SimulationDiagramme({ naviguer }) {
   const [mode, setMode] = useState(() => modeOuverture('diagramme-guide-v1'));
   useSignalerMode(mode);
@@ -115,20 +116,20 @@ export function SimulationDiagramme({ naviguer }) {
     { id: 'pur', titre: 'Corps pur ou mélange ?', focus: ['analyse'],
       texte: <>Le graphique « Analyse thermique » montre la température d’un liquide qui bout. En pointillés : l’éthanol <strong>pur</strong>, dont la température reste constante pendant toute l’ébullition. En violet : un <strong>mélange</strong> d’eau et d’éthanol, dont la température change.</>,
       tache: { type: 'qcm', q: 'Comment reconnaît-on un mélange d’un corps pur pendant l’ébullition ?', options: ['La température du mélange augmente pendant que le liquide bout', 'La température du mélange est constante, comme celle d’un corps pur', 'Le mélange ne bout pas'], bonne: 0,
-        expl: 'Un corps pur bout à température constante. Un mélange bout sur un intervalle de température : la première bulle apparaît à la température d’ébullition, la dernière goutte disparaît à la température de rosée.' } },
+        expl: 'Un corps pur bout à température constante. Un mélange bout sur un intervalle de température : la première bulle apparaît à la température d’ébullition, la dernière goutte disparaît à la température de rosée.', indice: "Pour un corps pur, la température reste constante pendant le changement d’état. Et pour un mélange ?" } },
     { id: 'regler', titre: 'Régler le mélange', focus: ['reglages'],
       texte: <>Un mélange eau – éthanol avec <strong>20 % de molécules d’éthanol</strong> (<X0/> = 0,20), à 75 °C et sous 1,013 bar. L’abscisse du diagramme est la fraction molaire du composé le plus volatil : ici l’éthanol.</>,
       tache: { type: 'action', ok: ici('ew', 0.2, 75), label: <>Régler <X0/> = 0,20 et T = 75 °C</>, faire: () => regler('ew', 0.2, 75), consigne: ici('ew', 0.2, 75) ? null : 'Cliquez pour régler le mélange' } },
     { id: 'domaine1', titre: 'Dans quel domaine ?', focus: ['diagramme', 'recipient'],
       texte: <>Le losange orange est le point (composition globale <X0/> ; température T). Les deux courbes séparent trois domaines : <strong>liquide</strong> en bas, <strong>vapeur</strong> en haut, <strong>liquide + vapeur</strong> entre les deux courbes.</>,
       tache: { type: 'qcm', q: 'À 75 °C, le mélange est…', options: ['un liquide homogène (en dessous de la courbe d’ébullition)', 'un mélange de liquide et de vapeur', 'une vapeur homogène'], bonne: 0,
-        expl: 'Le point est sous la courbe d’ébullition : tout est liquide. Dans le récipient, il n’y a qu’une phase, de composition 0,20.' } },
+        expl: 'Le point est sous la courbe d’ébullition : tout est liquide. Dans le récipient, il n’y a qu’une phase, de composition 0,20.', indice: "Comparez 75 °C aux températures d’ébullition et de rosée à cette composition." } },
     { id: 'ebullition', titre: 'La première bulle', focus: ['diagramme'],
       texte: <>Pour le mélange réglé à l’étape 2 (<X0/> = 0,20), augmentez la température avec le curseur : à partir de quelle température apparaît la première bulle de vapeur ? C’est la température où le point touche la <strong style={{ color: '#2563eb' }}>courbe d’ébullition</strong> (bleue).</>,
       tache: { type: 'num', q: 'Température d’ébullition commençante du mélange', unite: '°C', vrai: G.Tb, tol: 0.015, affiche: x => nf(x, 1),
         bloque: mel === 'ew' && Math.abs(z - 0.2) < 1e-9 ? null : 'Réglez d’abord le mélange (étape 2).',
         pieges: [[78.4, 'C’est l’éthanol pur. Le mélange contient 80 % d’eau : il commence à bouillir plus haut.'], [100, 'C’est l’eau pure : le mélange commence à bouillir plus bas.']],
-        expl: 'Environ 83 °C : entre les températures d’ébullition de l’éthanol (78 °C) et de l’eau (100 °C), plus près de l’éthanol qui est volatil.' } },
+        expl: 'Environ 83 °C : entre les températures d’ébullition de l’éthanol (78 °C) et de l’eau (100 °C), plus près de l’éthanol qui est volatil.', indice: "Lisez-la sur la courbe d’ébullition, à la composition du mélange." } },
     { id: 'regler2', titre: 'Dans le fuseau', focus: ['reglages'],
       texte: <>Réglez maintenant la température à <strong>87 °C</strong> : le point est entre les deux courbes.</>,
       tache: { type: 'action', ok: ici('ew', 0.2, 87), label: 'Régler T = 87 °C', faire: () => regler('ew', 0.2, 87), consigne: ici('ew', 0.2, 87) ? null : 'Réglez T = 87 °C (curseur ou bouton)' } },
@@ -138,18 +139,18 @@ export function SimulationDiagramme({ naviguer }) {
         bloque: ici('ew', 0.2, 87) ? null : 'Réglez d’abord T = 87 °C.',
         aide: 'Lecture : à 87 °C, allez à l’horizontale jusqu’à la courbe d’ébullition (bleue), puis lisez l’abscisse de ce point bleu.',
         pieges: [[G.yV, 'C’est la composition de la vapeur (courbe de rosée, rouge). Le liquide se lit sur la courbe d’ébullition (bleue).'], [G.z0, 'C’est la composition globale du mélange. Le liquide en équilibre est plus pauvre en éthanol que ce mélange, car la vapeur a emporté de l’éthanol.']],
-        expl: 'x ≈ 0,093 : le liquide est devenu plus pauvre en éthanol que le mélange initial (0,20), parce que la vapeur a emporté de l’éthanol.' } },
+        expl: 'x ≈ 0,093 : le liquide est devenu plus pauvre en éthanol que le mélange initial (0,20), parce que la vapeur a emporté de l’éthanol.', indice: "Le point du liquide est toujours sur la courbe d’ébullition." } },
     { id: 'vapeur', titre: 'La composition de la vapeur', focus: ['diagramme'],
       texte: <>Lisez maintenant la composition de la <strong>vapeur</strong> en équilibre, sur la courbe de rosée (rouge), pour le même mélange (<X0/> = 0,20) et à la même température (87 °C).</>,
       tache: { type: 'num', q: <>Fraction molaire <Xi e="V"/> en éthanol de la vapeur</>, unite: '', vrai: G.yV, tol: 0.08, affiche: x => nf(x), cs: 3,
         bloque: ici('ew', 0.2, 87) ? null : 'Réglez d’abord T = 87 °C.',
         aide: 'Lecture : à 87 °C, allez à l’horizontale jusqu’à la courbe de rosée (rouge), puis lisez l’abscisse de ce point rouge.',
         pieges: [[G.xL, 'C’est la composition du liquide (courbe d’ébullition, bleue). La vapeur se lit sur la courbe de rosée (rouge) : elle est plus riche en éthanol.'], [G.z0, 'C’est la composition globale du mélange. La vapeur en équilibre est plus riche en éthanol que ce mélange.']],
-        expl: 'y ≈ 0,43 : la vapeur est beaucoup plus riche en éthanol que le liquide (0,093). C’est le principe de la distillation.' } },
+        expl: 'y ≈ 0,43 : la vapeur est beaucoup plus riche en éthanol que le liquide (0,093). C’est le principe de la distillation.', indice: "Le point de la vapeur est toujours sur la courbe de rosée." } },
     { id: 'riche', titre: 'Liquide ou vapeur ?', focus: ['recipient'],
       texte: <>Comparez x (liquide) et y (vapeur) sur le diagramme et sur les points du récipient.</>,
       tache: { type: 'qcm', q: 'La phase la plus riche en composé volatil (l’éthanol) est…', options: ['la vapeur', 'le liquide', 'aucune : les deux ont la même composition'], bonne: 0,
-        expl: 'La vapeur est toujours enrichie en composé volatil par rapport au liquide avec lequel elle est en équilibre (sauf à l’azéotrope).' } },
+        expl: 'La vapeur est toujours enrichie en composé volatil par rapport au liquide avec lequel elle est en équilibre (sauf à l’azéotrope).', indice: "Le composé volatil passe plus facilement en phase vapeur." } },
     { id: 'massique', titre: 'Fraction massique de la vapeur', focus: [],
       texte: <>Le diagramme donne des fractions <strong>molaires</strong>. Convertissez <Xi e="V"/> en fraction <strong>massique</strong> w<sub>A</sub>, avec M<sub>A</sub> = 46 g·mol⁻¹ (éthanol) et M<sub>B</sub> = 18 g·mol⁻¹ (eau) :
         <div style={{ textAlign: 'center', fontSize: 16, margin: '8px 0 0' }}>w<sub>A</sub> = <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', verticalAlign: 'middle' }}><span style={{ borderBottom: '1.5px solid #0f172a', padding: '0 4px' }}>y<sub>A</sub> × M<sub>A</sub></span><span style={{ padding: '0 4px' }}>y<sub>A</sub> × M<sub>A</sub> + (1 − y<sub>A</sub>) × M<sub>B</sub></span></span></div></>,
@@ -170,7 +171,7 @@ export function SimulationDiagramme({ naviguer }) {
       texte: <>Montez encore la température jusqu’à ce que le point sorte du fuseau par le haut : il n’y a plus de liquide, seulement de la vapeur de composition 0,20. C’est la <strong>température de rosée</strong> (courbe rouge).</>,
       tache: { type: 'num', q: 'Température à laquelle disparaît la dernière goutte de liquide', unite: '°C', vrai: G.Td, tol: 0.015, affiche: x => nf(x, 1),
         pieges: [[G.Tb, 'C’est la température de la première bulle. On cherche celle de la dernière goutte (courbe de rosée).']],
-        expl: 'Environ 94 °C : l’ébullition de ce mélange s’étale entre 83 et 94 °C, alors qu’un corps pur bout à température constante.' } },
+        expl: 'Environ 94 °C : l’ébullition de ce mélange s’étale entre 83 et 94 °C, alors qu’un corps pur bout à température constante.', indice: "La dernière goutte disparaît sur la courbe de rosée, à la composition du mélange." } },
     { id: 'azeo', titre: 'Un mélange particulier : l’azéotrope', focus: ['reglages', 'diagramme', 'analyse'],
       texte: <>Réglez <X0/> = 0,90 : les deux courbes se touchent. Pour cette composition, le mélange <strong>bout à température constante</strong> et la vapeur a <strong>la même composition que le liquide</strong> : on dit qu’il se comporte comme un corps pur, c’est un <strong>azéotrope</strong>. Regardez aussi l’analyse thermique.</>,
       tache: { type: 'action', ok: mel === 'ew' && Math.abs(z - 0.9) < 1e-9, label: <>Régler <X0/> = 0,90</>, faire: () => regler('ew', 0.9, 78.2), consigne: mel === 'ew' && Math.abs(z - 0.9) < 1e-9 ? null : 'Réglez z = 0,90' } },
@@ -178,7 +179,7 @@ export function SimulationDiagramme({ naviguer }) {
       texte: <>Lisez la température à laquelle bout l’azéotrope eau – éthanol. Elle est plus basse que celle des deux corps purs.</>,
       tache: { type: 'num', q: 'Température d’ébullition de l’azéotrope', unite: '°C', vrai: G.Taz, tol: 0.01, affiche: x => nf(x, 1),
         bloque: mel === 'ew' && Math.abs(z - 0.9) < 1e-9 ? null : <>Réglez d’abord <X0/> = 0,90.</>,
-        expl: 'Environ 78,2 °C, avec 90 % de molécules d’éthanol : c’est un azéotrope à minimum de température. On ne peut pas séparer ce mélange par distillation au-delà de cette composition.' } },
+        expl: 'Environ 78,2 °C, avec 90 % de molécules d’éthanol : c’est un azéotrope à minimum de température. On ne peut pas séparer ce mélange par distillation au-delà de cette composition.', indice: "L’azéotrope est le point où les deux courbes se touchent : même composition en phase liquide et en phase vapeur." } },
     { id: 'max', titre: 'Un azéotrope à maximum', focus: ['reglages', 'diagramme'],
       texte: <>Passez au mélange <strong>chloroforme – acétone</strong>. Ici, la courbe a un maximum : l’azéotrope bout à une température <em>plus haute</em> que les deux corps purs.</>,
       tache: { type: 'action', ok: mel === 'ca', label: 'Changer de mélange', faire: () => regler('ca', 0.2, 63), consigne: mel === 'ca' ? null : 'Choisissez chloroforme – acétone' } },
@@ -233,6 +234,7 @@ export function SimulationDiagramme({ naviguer }) {
           return (
             <div key={qu.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {qu.q}</div>
+              {INDICE_Q[qu.id] && <IndiceDefi cache={defi.verifie && ok}>{INDICE_Q[qu.id]}</IndiceDefi>}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input value={rep} placeholder="?" aria-label={`Réponse ${k + 1}`} onChange={ev => { const v = ev.target.value; setDefi(d => ({ ...d, verifie: false, reps: { ...d.reps, [qu.id]: v } })); }}
                   style={{ fontSize: 14, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 120 }}/>
