@@ -157,26 +157,39 @@ function hMethyle(c, voisin, phi0) {
 export function geom3D(u, face = 1) {
   const f = face >= 0 ? 1 : -1;
   const ph = phases(u);
+  // Géométrie finale tétraédrique autour de C2 et de C3 (angles ≈ 109,5°) : on part du plan (120°) et on y arrive en fin de réaction
+  const aX = v3.unit(A3.C3), pX = v3.unit(v3.cross([0, 0, 1], aX)), qX = [0, 0, 1];
+  const tetra = (axe, p, q, phi, L) => v3.mul(v3.add(v3.mul(axe, -1 / 3), v3.mul(v3.add(v3.mul(p, Math.cos(phi)), v3.mul(q, Math.sin(phi))), Math.sqrt(8) / 3)), L);
+  const rad = d => d * Math.PI / 180;
+  const zf = v => [v[0], v[1], v[2] * f];       // l'autre face : image dans le miroir du plan
+  const C3f = v3.mul(aX, 1.54);
+  const Brf = zf(tetra(aX, pX, qX, rad(90), 1.95));
+  const C1f = zf(tetra(aX, pX, qX, rad(210), 1.52));
+  const H2f = zf(tetra(aX, pX, qX, rad(330), 1.09));
+  const bX = v3.mul(aX, -1), p3 = v3.unit(v3.cross([0, 0, 1], bX));
+  const Htf = v3.add(C3f, tetra(bX, p3, qX, rad(90), 1.09));
+  const C4f = v3.add(C3f, tetra(bX, p3, qX, rad(210), 1.52));
+  const H3f = v3.add(C3f, tetra(bX, p3, qX, rad(330), 1.09));
   const pyr3 = ph.htFormee;                    // C3 devient tétraédrique quand H arrive
   const pyr2 = seg(u, 0.6, 1);                 // C2 devient tétraédrique quand Br arrive
-  const Ht = interp([[0, [0.95, -0.35, 3.1]], [0.25, [1.10, -0.55, 1.55]], [0.5, [1.27, -0.37, 1.03]], [1, [1.27, -0.37, 1.03]]], u);
+  const Ht = interp([[0, [0.95, -0.35, 3.1]], [0.25, [1.10, -0.55, 1.55]], [0.5, Htf], [1, Htf]], u);
   const BrCles = [
     [0, [1.16, 0.0, 4.45]], [0.25, [1.63, 0.24, 3.02]], [0.5, [2.3, 1.2, 3.3]],
     [0.56, f > 0 ? [0.9, 1.6, 3.8] : [3.4, 1.5, 0.0]],
-    [0.64, [-0.7, 0.9, f * 3.2]], [0.75, [-0.43, 0.53, f * 2.30]], [1, [-0.19, 0.23, f * 1.93]],
+    [0.64, [-0.7, 0.9, f * 3.2]], [0.75, [-0.43, 0.53, f * 2.30]], [1, Brf],
   ];
   const Br = interp(BrCles, u);
-  const H2 = interp([[0, A3.H2], [0.62, A3.H2], [1, [0.58, 0.66, -f * 0.66]]], u);
-  const dC = v3.mul(v3.unit(A3.C3), 0.20 * pyr3);   // la liaison C2–C3 passe de 1,34 Å (double) à 1,54 Å (simple)
-  const C1 = v3.add(A3.C1, [0, 0, -f * 0.40 * pyr2]);
-  const C4 = v3.add(v3.add(A3.C4, dC), [0, 0, -0.30 * pyr3]);
-  const H3 = v3.add(v3.add(A3.H3, dC), [0, 0, -0.40 * pyr3]);
+  const H2 = v3.mix(A3.H2, H2f, seg(u, 0.62, 1));
+  const C1 = v3.mix(A3.C1, C1f, pyr2);
+  const C3p = v3.mix(A3.C3, C3f, pyr3);
+  const C4 = v3.mix(A3.C4, C4f, pyr3);
+  const H3 = v3.mix(A3.H3, H3f, pyr3);
   const atomes = {
-    C1: { el: 'C', p: C1 }, C2: { el: 'C', p: A3.C2 }, C3: { el: 'C', p: v3.add(A3.C3, dC) }, C4: { el: 'C', p: C4 },
+    C1: { el: 'C', p: C1 }, C2: { el: 'C', p: A3.C2 }, C3: { el: 'C', p: C3p }, C4: { el: 'C', p: C4 },
     H2: { el: 'H', p: H2 }, H3: { el: 'H', p: H3 }, Ht: { el: 'H', p: Ht }, Br: { el: 'Br', p: Br },
   };
   hMethyle(C1, A3.C2, 0.4).forEach((p, i) => { atomes['H1' + 'abc'[i]] = { el: 'H', p }; });
-  hMethyle(C4, v3.add(A3.C3, dC), 1.2).forEach((p, i) => { atomes['H4' + 'abc'[i]] = { el: 'H', p }; });
+  hMethyle(C4, C3p, 1.2).forEach((p, i) => { atomes['H4' + 'abc'[i]] = { el: 'H', p }; });
   // Liaisons : opacité pleine (op) et pointillée (opPoint)
   const lb = (a, b, op = 1, opPoint = 0, ordre = 1) => ({ a, b, op, opPoint, ordre });
   const liaisons = [
@@ -205,6 +218,27 @@ export function geom3D(u, face = 1) {
     doublets.push({ dir: v3.unit(v3.add(v3.mul(axe, -0.334), v3.mul(perp, 0.943))), op: 1 });   // 109,5° de l'axe
   }
   return { atomes, liaisons, piOp, vac, doublets, face: f, ph };
+}
+
+// ═══════════════════════════ GÉOMÉTRIE VSEPR (angles mesurés sur le modèle 3D) ═══════════════════════════
+const angleDeg = (g, a, c, b) => {
+  const x = v3.unit(v3.sub(g[a].p, g[c].p)), y = v3.unit(v3.sub(g[b].p, g[c].p));
+  return Math.acos(Math.max(-1, Math.min(1, v3.dot(x, y)))) * 180 / Math.PI;
+};
+// Pour C2 et C3 : nombre de sites (liaisons σ, doublets non liants : ici aucun), type AXn, forme, angles mesurés
+export function geometrieVSEPR(u, face = 1) {
+  const g = geom3D(u, face), ph = g.ph;
+  const fait = (nom, voisins) => {
+    const paires = [];
+    for (let i = 0; i < voisins.length; i++) for (let j = i + 1; j < voisins.length; j++) paires.push([voisins[i], voisins[j]]);
+    const angles = paires.map(([a, b]) => ({ lib: `${a}–${nom}–${b}`, val: angleDeg(g.atomes, a, nom, b) }));
+    const moy = angles.reduce((s, x) => s + x.val, 0) / angles.length;
+    const n = voisins.length, ideal = n === 3 ? 120 : 109.5;
+    return { nom, n, type: 'AX' + n, forme: n === 3 ? 'plan trigonal' : 'tétraédrique', ideal, angles, moy, deformation: Math.abs(moy - ideal) > 4 };
+  };
+  const voisinsC2 = ['C1', 'C3', 'H2'].concat(ph.brFormee > 0.5 ? ['Br'] : []);
+  const voisinsC3 = ['C2', 'C4', 'H3'].concat(ph.htFormee > 0.5 ? ['Ht'] : []);
+  return { C2: fait('C2', voisinsC2), C3: fait('C3', voisinsC3) };
 }
 
 // ═══════════════════════════ STÉRÉOCHIMIE ═══════════════════════════

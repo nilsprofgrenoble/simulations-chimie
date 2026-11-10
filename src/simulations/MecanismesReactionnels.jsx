@@ -5,7 +5,7 @@ import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuvertu
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
-import { JALONS, energie, vitesse, EA1, EA2, DELTA_E, E_CARBOCATION, PRODUITS, descripteurProduit } from "./mecaModele";
+import { JALONS, energie, vitesse, EA1, EA2, DELTA_E, E_CARBOCATION, PRODUITS, descripteurProduit, geometrieVSEPR } from "./mecaModele";
 import { Mol2D } from "./MecaVue2D";
 import { DessinFleches } from "./MecaDessin";
 
@@ -30,6 +30,23 @@ function legende(u) {
 }
 
 // ── Profil d'énergie ──
+// Géométrie VSEPR autour de C2 et C3 : angles mesurés sur le modèle 3D
+function PanneauVSEPR({ u, face }) {
+  const g = geometrieVSEPR(u, face);
+  const sub = n => '₀₁₂₃₄₅'[n];
+  const ligne = c => (
+    <div key={c.nom} style={{ background: 'white', border: `1px solid ${KIT.bord}`, borderRadius: 8, padding: '6px 9px' }}>
+      <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt }}>Carbone {c.nom.slice(1)} : AX{sub(c.n)} · {c.forme}{c.deformation ? ' (en cours de déformation)' : ''}</div>
+      <div style={{ fontSize: 13, color: KIT.txt }}>{c.n} liaisons, aucun doublet non liant : angle de référence {c.ideal === 120 ? '120°' : '109,5°'}. Angle moyen mesuré : <strong>{c.moy.toFixed(0)}°</strong></div>
+    </div>);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, padding: '8px 10px' }}>
+      <div style={{ fontSize: 13.5, fontWeight: 700, color: '#0369a1' }}>Géométrie VSEPR (modèle de Gillespie)</div>
+      {ligne(g.C2)}{ligne(g.C3)}
+      <div style={{ fontSize: 12.5, color: KIT.txt, lineHeight: 1.5 }}>Les sites (liaisons, doublets non liants) se placent le plus loin possible les uns des autres : 3 sites → plan à 120°, 4 sites → tétraèdre à 109,5°. Une double liaison compte comme un seul site. Le carbocation C⁺ n'a pas de doublet non liant : il reste plan.</div>
+    </div>);
+}
+
 function Profil({ u, setU, montrerE }) {
   const W = 340, H = 205, mx = 34, my = 22, bas = H - 34;
   const xs = k => mx + k * (W - mx - 12);
@@ -91,6 +108,8 @@ function etapesGuide(u, setU, ouvrirDessin, reussi) {
       tache: { type: 'action', ok: !!reussi[1], label: 'Ouvrir l\'atelier de dessin', faire: () => ouvrirDessin(1), consigne: 'Trace les deux flèches de l\'étape 1, puis clique sur « Vérifier ».', indice: 'Une flèche part toujours d\'un doublet d\'électrons. Quel doublet est riche en électrons et va vers l\'atome δ+ ? Et le doublet de la liaison H–Br, où va-t-il quand cette liaison se rompt ?' } },
     { titre: 'Le carbocation', texte: <>Place la bille dans le creux central. La liaison H–Br est rompue : Br est resté avec le doublet, c'est l'ion <strong>Br⁻</strong> (quatre doublets non liants). Le carbone voisin ne possède plus que 6 électrons : c'est un <strong>carbocation C⁺</strong>. Le carré bleu marque sa <strong>lacune électronique</strong>.</>,
       tache: { type: 'action', ...va(0.5), consigne: 'Place la bille sur le carbocation (intermédiaire).', indice: 'Cherche le creux entre les deux bosses.' } },
+    { titre: 'La forme du carbocation', texte: <>Coche « Géométrie VSEPR (angles) » sous le schéma, puis regarde la vue 3D. Autour du carbone C⁺, il y a <strong>3 liaisons</strong> et <strong>aucun doublet non liant</strong> : d'après le modèle VSEPR, les 3 sites s'écartent au maximum et se placent dans un <strong>plan</strong>, à <strong>120°</strong>. La lacune électronique est perpendiculaire à ce plan : c'est par là que Br⁻ pourra arriver.</>,
+      tache: { type: 'qcm', q: 'Quelle est la géométrie autour du carbone C⁺ du carbocation ?', options: ['Plan trigonal, angles d’environ 120°', 'Tétraédrique, angles d’environ 109,5°', 'Linéaire, angle de 180°'], bonne: 0, indice: 'Compte les sites autour de C⁺ : liaisons et doublets non liants. Il n’y a que 3 liaisons et pas de doublet.', expl: <>C⁺ est lié à 3 atomes et n'a pas de doublet non liant : 3 sites, type AX₃, donc plan trigonal à 120°. Dans le produit, C est lié à 4 atomes (AX₄) : tétraèdre à 109,5°.</> } },
     { titre: 'Qui attaque qui ?', texte: <>Un <strong>nucléophile</strong> possède un doublet à donner ; un <strong>électrophile</strong> a une lacune à combler. Avance doucement vers ET₂ et observe l'ion Br⁻ : l'un de ses doublets se dirige vers la lacune.</>,
       tache: { type: 'qcm', q: 'Dans l’étape 2, qu’est-ce qui se passe ?', options: ['Le carbocation C⁺ se déplace vers Br⁻ pour l’attaquer', 'Un doublet non liant de Br⁻ attaque le carbone C⁺ (la lacune)', 'Un atome H quitte le carbone pour rejoindre Br⁻'], bonne: 1, indice: 'Qui possède un doublet à donner ? Qui a une lacune à combler ?', expl: <>Br⁻ est le <strong>nucléophile</strong> (doublet non liant), C⁺ est l'<strong>électrophile</strong> (lacune). C'est le doublet de Br⁻ qui devient la liaison C–Br.</> } },
     { titre: 'À toi de dessiner : l\'étape 2', texte: <>Retourne dans l'atelier de dessin, choisis « Étape 2 » et trace la flèche courbe de l'attaque de Br⁻ sur le carbocation.</>,
@@ -167,6 +186,7 @@ export function SimulationMecanismesReactionnels() {
   const [montrerE, setMontrerE] = useState(false);
   const [fleches, setFleches] = useState(true);
   const [numC, setNumC] = useState(false);
+  const [vsepr, setVsepr] = useState(false);
   const [df, setDf] = useState(() => defi());
   const [hypoOuv, setHypoOuv] = useState(false);
   const ref = useRef(u); ref.current = u;
@@ -213,9 +233,11 @@ export function SimulationMecanismesReactionnels() {
         {JALONS.map(j => <button key={j.id} onClick={() => { setLecture(false); setU(j.u); }} style={stylePetitBouton(proches(u, j.u, 0.02), '#b45309')}>{j.court}</button>)}
       </div>
       <input type="range" min={0} max={1000} value={Math.round(u * 1000)} onChange={e => { setLecture(false); setU(e.target.value / 1000); }} aria-label="Avancement de la réaction" style={{ width: '100%' }} />
+      {vsepr && <PanneauVSEPR u={u} face={face} />}
       <Profil u={u} setU={k => { setLecture(false); setU(k); }} montrerE={montrerE} />
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 13, color: KIT.txt }}>
         <label><input type="checkbox" checked={montrerE} onChange={e => setMontrerE(e.target.checked)} /> Montrer les énergies</label>
+        <label><input type="checkbox" checked={vsepr} onChange={e => setVsepr(e.target.checked)} /> Géométrie VSEPR (angles)</label>
         {vue === '2d' && <label><input type="checkbox" checked={numC} onChange={e => setNumC(e.target.checked)} /> Numéroter les carbones</label>}
         {vue === '2d' && <label><input type="checkbox" checked={fleches} onChange={e => setFleches(e.target.checked)} /> Flèches courbes (aux états clés)</label>}
       </div>

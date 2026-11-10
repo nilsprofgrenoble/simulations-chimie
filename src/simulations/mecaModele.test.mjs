@@ -11,3 +11,12 @@ for(let u=0;u<=1.0001;u+=0.01){const g=M.geom3D(u,1);for(const [k,a] of Object.e
  const a=M.atomes2D(u);for(const v of Object.values(a))ok(v.every(Number.isFinite),'NaN2D');M.doublets2D(u).forEach(d=>ok(Number.isFinite(d.ang)));M.fleches2D(u);}
 const a=M.atomes2D(1);ok(Math.hypot(a.Br[0]-a.C2[0],a.Br[1]-a.C2[1])-62<1e-6,'2D C-Br');
 console.log('ok');
+
+// VSEPR : plan 120° pour AX3, tétraèdre 109,5° pour AX4
+{
+  const { geometrieVSEPR } = await import('./mecaModele.js');
+  const chk = (u, c, type, moy) => { const g = geometrieVSEPR(u, 1)[c]; if (g.type !== type || Math.abs(g.moy - moy) > 1.5) throw new Error(`VSEPR ${c} u=${u} : ${g.type} ${g.moy}`); };
+  chk(0, 'C2', 'AX3', 120); chk(0, 'C3', 'AX3', 120); chk(0.5, 'C2', 'AX3', 120); chk(0.5, 'C3', 'AX4', 109.5);
+  chk(1, 'C2', 'AX4', 109.5); chk(1, 'C3', 'AX4', 109.5);
+  console.log('VSEPR ok');
+}
