@@ -669,5 +669,9 @@
  "34:se-mode": "SAPP165",
  "34:se-produit": "SAPP166",
  "34:se-comparer": "SAPP167",
- "34:se-vocabulaire": "SAPP168"
+ "34:se-vocabulaire": "SAPP168",
+ "34:ch-groupe": "SAPP169",
+ "34:ch-choisir": "SAPP170",
+ "34:ch-perte": "SAPP171",
+ "34:ch-paracetamol": "SAPP172"
 }

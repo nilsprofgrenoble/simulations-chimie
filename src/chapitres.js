@@ -44,7 +44,7 @@ export const CHAPITRES = [
 
   // Analyse : électrochimie, chromatographie, étalonnage et quantification, fiabilité des mesures
   { id: 'bts-analyse', niveau: 'BTS', label: '🔬 Analyse', sims: [3, 29, 12, 54, 55, 11, 13, 9, 16], domaines: ['Chimie', 'Métrologie'] },
-  { id: 'bts-organique', niveau: 'BTS', label: '⚗️ Synthèse organique', sims: [93, 94, 95, 96, 97, 98], domaines: ['Régiosélectivité (BTS)', 'Contrôle cinétique et thermodynamique (BTS)', 'Substitution ou élimination (BTS)', 'Addition du dibrome (BTS)', 'Types de réaction et transposition (BTS)', 'Syn, anti et sélectivités (BTS)'] },
+  { id: 'bts-organique', niveau: 'BTS', label: '⚗️ Synthèse organique', sims: [93, 94, 95, 96, 97, 98, 99], domaines: ['Régiosélectivité (BTS)', 'Contrôle cinétique et thermodynamique (BTS)', 'Substitution ou élimination (BTS)', 'Addition du dibrome (BTS)', 'Types de réaction et transposition (BTS)', 'Syn, anti et sélectivités (BTS)', 'Chimiosélectivité (BTS)'] },
   { id: 'bts-rmn', niveau: 'BTS', label: '🧲 Spectroscopie RMN', sims: [75, 76], domaines: ['Spectroscopie RMN'] },
   { id: 'bts-cristallo', niveau: 'BTS', label: '🔷 Analyse cristallographique', sims: [74, 73], domaines: ['Analyse cristallographique'] },
   { id: 'bts-formulation', niveau: 'BTS', label: '🧪 Formulation', sims: [4, 14], domaines: ['Formulation'] },
