@@ -61,13 +61,13 @@ function Profil({ u, setU, montrerE }) {
   );
 }
 
-function Stereo2Faces() {
+function Stereo2Faces({ numC = false }) {
   const items = [[1, 'Br arrive par l’avant'], [-1, 'Br arrive par l’arrière']];
   return (
     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
       {items.map(([f, nom]) => (
         <div key={f} style={{ flex: '1 1 160px', textAlign: 'center' }}>
-          <Mol2D u={1} face={f} petit titre={`Produit : ${nom}`} />
+          <Mol2D u={1} face={f} petit numC={numC} titre={`Produit : ${nom}`} />
           <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt }}>{nom} → ({descripteurProduit(f)})</div>
         </div>))}
     </div>
@@ -156,6 +156,7 @@ export function SimulationMecanismesReactionnels() {
   const [face, setFace] = useState(1);
   const [montrerE, setMontrerE] = useState(false);
   const [fleches, setFleches] = useState(true);
+  const [numC, setNumC] = useState(false);
   const [df, setDf] = useState(() => defi());
   const [hypoOuv, setHypoOuv] = useState(false);
   const ref = useRef(u); ref.current = u;
@@ -190,7 +191,7 @@ export function SimulationMecanismesReactionnels() {
         </label>
       </div>
       {vue === '2d'
-        ? <Mol2D u={u} face={face} avecFleches={fleches} />
+        ? <Mol2D u={u} face={face} avecFleches={fleches} numC={numC} />
         : <Suspense fallback={<div style={{ padding: 20, fontSize: 14 }}>Chargement de la 3D…</div>}><Vue3D u={u} face={face} /></Suspense>}
       <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.55, background: '#f8fafc', border: `1px solid ${KIT.bord}`, borderRadius: 10, padding: '8px 10px' }}>{legende(u)}</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -201,6 +202,7 @@ export function SimulationMecanismesReactionnels() {
       <Profil u={u} setU={k => { setLecture(false); setU(k); }} montrerE={montrerE} />
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 13, color: KIT.txt }}>
         <label><input type="checkbox" checked={montrerE} onChange={e => setMontrerE(e.target.checked)} /> Montrer les énergies</label>
+        {vue === '2d' && <label><input type="checkbox" checked={numC} onChange={e => setNumC(e.target.checked)} /> Numéroter les carbones</label>}
         {vue === '2d' && <label><input type="checkbox" checked={fleches} onChange={e => setFleches(e.target.checked)} /> Flèches courbes (aux états clés)</label>}
       </div>
     </div>
@@ -253,7 +255,7 @@ export function SimulationMecanismesReactionnels() {
         <div style={{ flex: '1 1 300px', minWidth: 280, display: 'flex', flexDirection: 'column', gap: 10 }}>
           {mode === 'guide' && <>
             <CarteParcours etapes={etapes} etat={guide} setEtat={setGuide} fin={finParcours} />
-            {guide.etape >= 9 && <div style={styleBoite}><Stereo2Faces /></div>}
+            {guide.etape >= 9 && <div style={styleBoite}><Stereo2Faces numC={numC} /></div>}
           </>}
           {mode === 'explore' && <div style={styleBoite}>
             <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Mesures sur le profil</div>
@@ -262,7 +264,7 @@ export function SimulationMecanismesReactionnels() {
             <LigneMesure nom="Ea étape 2 (kJ/mol)" valeur={fmt(EA2, 0)} couleur="#0284c7" />
             <LigneMesure nom="Bilan réactifs → produit (kJ/mol)" valeur={fmt(DELTA_E, 0)} couleur="#16a34a" />
             <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, margin: '10px 0 6px' }}>Deux faces d'attaque, deux énantiomères</div>
-            <Stereo2Faces />
+            <Stereo2Faces numC={numC} />
             <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 4 }}>Chaque face est attaquée avec la même probabilité : on obtient 50 % de (R) et 50 % de (S), un <strong>mélange racémique</strong>.</div>
           </div>}
           {mode === 'defi' && <div style={styleBoite}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></div>}
