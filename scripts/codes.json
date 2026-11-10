@@ -661,5 +661,9 @@
  "34:br-test": "SAPP157",
  "34:br-meca": "SAPP158",
  "34:br-stereo": "SAPP159",
- "34:br-cyclo": "SAPP160"
+ "34:br-cyclo": "SAPP160",
+ "34:tr-type": "SAPP161",
+ "34:tr-carbocation": "SAPP162",
+ "34:tr-produits": "SAPP163",
+ "34:tr-profil": "SAPP164"
 }
