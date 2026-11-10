@@ -179,7 +179,7 @@ const SIMULATIONS = [
     component: SimulationMachinesThermiques },
   { id:85, label:"Acides et bases : pH, pKa, tampon et titrage", niveau:"TSTL", icon:"🧪", color:"#0f766e",
     component: SimulationAcidesBases },
-  { id:92, label:"Mécanismes réactionnels : addition de HBr, carbocation et flèches courbes", niveau:"BTS", icon:"⚗️", color:"#7c3aed", component: SimulationMecanismesReactionnels },
+  { id:92, label:"Mécanismes réactionnels : addition de HBr, carbocation et flèches courbes", niveau:"TSTL", icon:"⚗️", color:"#7c3aed", component: SimulationMecanismesReactionnels },
   { id:86, label:"Synthèse organique : estérification, Dean-Stark et CCM", niveau:"TSTL", icon:"⚗️", color:"#9a3412",
     component: SimulationEsterification },
   { id:90, label:"Optimiser une synthèse : vitesse, rendement et coût", niveau:"TSTL", icon:"📈", color:"#15803d",
