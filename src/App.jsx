@@ -55,6 +55,7 @@ const SimulationBoussole = paresseux(() => import("./simulations/Boussole"), "Si
 const SimulationDiffraction = paresseux(() => import("./simulations/Diffraction"), "SimulationDiffraction");
 const SimulationSon = paresseux(() => import("./simulations/Son"), "SimulationSon");
 const SimulationEchographe = paresseux(() => import("./simulations/Echographe"), "SimulationEchographe");
+const SimulationMecanismesReactionnels = paresseux(() => import("./simulations/MecanismesReactionnels"), "SimulationMecanismesReactionnels");
 const SimulationEchographe2D = paresseux(() => import("./simulations/Echographe2D"), "SimulationEchographe2D");
 const SimulationOptimiserSynthese = paresseux(() => import("./simulations/OptimiserSynthese"), "SimulationOptimiserSynthese");
 const SimulationMachinesThermiques = paresseux(() => import("./simulations/MachinesThermiques"), "SimulationMachinesThermiques");
@@ -248,6 +249,7 @@ const SIMULATIONS = [
     component: SimulationAtelierValider },
   { id:38, label:"Je m'entraîne ! Travail par compétence", niveau:"COMP", icon:"🏋️", color:"#5b4bdb",
     component: SimulationEntrainement },
+  { id:92, label:"Mécanismes réactionnels", niveau:"COMPTE", icon:"⚗️", color:"#7c3aed", component: SimulationMecanismesReactionnels },
   // Pages hors menu (niveau « COMPTE ») : connexion et suivi, ouvertes par les boutons « Mon compte » et « Suivi professeur »
   { id:39, label:"Mon compte", niveau:"COMPTE", icon:"👧👦", color:"#25628f", component: SimulationCompte },
   { id:40, label:"Suivi professeur", niveau:"COMPTE", icon:"📊", color:"#25628f", component: SimulationSuiviProf },
