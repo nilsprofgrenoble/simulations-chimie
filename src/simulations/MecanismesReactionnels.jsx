@@ -17,7 +17,7 @@ const proches = (u, k, t = 0.04) => Math.abs(u - k) < t;
 
 // ── Texte qui accompagne l'animation ──
 function legende(u) {
-  if (u < 0.05) return "Réactifs : le but-2-ène est riche en électrons (sa liaison π, en violet, est un doublet facile à déplacer). Dans HBr, l'atome H est δ+ (pauvre en électrons) et Br est δ− (riche en électrons).";
+  if (u < 0.05) return "Réactifs : le but-2-ène est riche en électrons (sa liaison π, en violet, est un doublet facile à déplacer). Dans HBr, l'atome H est δ+ (pauvre en électrons) et Br est δ− (riche en électrons). Ici, H est l'électrophile : c'est une addition électrophile.";
   if (u < 0.22) return "Le doublet de la liaison π part vers l'atome H, très pauvre en électrons. En même temps, la liaison H–Br s'allonge.";
   if (u < 0.28) return "État de transition 1 : le sommet de la « montagne ». H est à moitié lié au carbone et à moitié lié à Br. C'est un instant, pas une molécule que l'on peut isoler.";
   if (u < 0.47) return "La liaison H–Br est rompue : le doublet qui la formait reste sur Br, qui devient l'ion Br⁻. Le carbone voisin n'a plus que 6 électrons : c'est un carbocation C⁺, avec une lacune (carré bleu).";
@@ -80,6 +80,8 @@ function etapesGuide(u, setU, setVue, setFace) {
   return [
     { titre: 'Les réactifs', texte: <>On fait réagir le <strong>but-2-ène</strong> (CH₃–CH=CH–CH₃) avec le <strong>bromure d'hydrogène</strong> HBr. Regarde le schéma : la double liaison contient une liaison π (en violet), riche en électrons. Dans HBr, le brome attire les électrons de la liaison : il est <strong>δ−</strong>, et l'hydrogène est <strong>δ+</strong>.</>,
       tache: { type: 'qcm', q: 'Quel atome de HBr est pauvre en électrons (δ+) ?', options: ['L’atome de brome', 'L’atome d’hydrogène'], bonne: 1, indice: 'Le brome est plus électronégatif que l’hydrogène : il attire les électrons de la liaison.', expl: <>Le brome, plus électronégatif, attire le doublet de la liaison H–Br : il est δ−, et H est δ+. C'est H qui sera attaqué par le doublet π.</> } },
+    { titre: 'Quel type de réaction ?', texte: <>Deux molécules se fixent sur la double liaison : la double liaison disparaît et deux atomes s'ajoutent. On parle de <strong>réaction d'addition</strong>. Ici, c'est H (δ+, pauvre en électrons) qui est attaqué en premier : on parle d'<strong>addition électrophile</strong>.</>,
+      tache: { type: 'qcm', q: 'Quel est le type de cette réaction ?', options: ['Une substitution', 'Une addition électrophile', 'Une élimination'], bonne: 1, indice: 'Regarde ce qui arrive à la double liaison : elle disparaît-elle, ou se remplace-t-elle ?', expl: <>Dans une addition, la double liaison disparaît et deux atomes s'ajoutent. Dans une substitution, un atome en remplace un autre ; dans une élimination, une molécule part.</> } },
     { titre: 'Qu\'est-ce qu\'une flèche courbe ?', texte: <>Amène la bille au sommet de la première bosse (ET₁). Des <strong>flèches courbes</strong> rouges apparaissent : elles montrent le déplacement d'un <strong>doublet d'électrons</strong>, de sa source (le début de la flèche) vers sa destination (la pointe).</>,
       tache: { type: 'action', ...va(0.25), consigne: 'Place la bille sur ET₁ (curseur ou clic sur la courbe).', indice: 'Fais glisser le curseur jusqu’à ce que la bille soit au sommet de la première bosse.' } },
     { titre: 'Le sens de la flèche', texte: <>À l'état de transition 1, la première flèche part de la liaison π et pointe vers l'atome H.</>,
@@ -100,7 +102,7 @@ function etapesGuide(u, setU, setVue, setFace) {
       tache: { type: 'qcm', q: 'Si Br⁻ attaque autant par l’avant que par l’arrière, que obtient-on ?', options: ['Un seul produit', 'Deux énantiomères en quantités égales (mélange racémique)', 'Deux isomères en proportions très différentes'], bonne: 1, indice: 'Les deux faces sont identiques par symétrie : elles sont attaquées avec la même probabilité.', expl: <>Les deux produits sont images l'un de l'autre dans un miroir (énantiomères). Chaque face étant attaquée 1 fois sur 2, on obtient 50 % de (R) et 50 % de (S) : un mélange racémique.</> } },
     { titre: 'Bilan', texte: <>Tu sais lire un mécanisme : les <strong>flèches courbes</strong> suivent les doublets, du <strong>nucléophile</strong> (doublet) vers l'<strong>électrophile</strong> (lacune).</>,
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>Deux étapes : formation du <strong>carbocation</strong> (lente), puis attaque de Br⁻ (rapide).</li>
+        <li>Addition électrophile de HBr sur une double liaison, en deux étapes : formation du <strong>carbocation</strong> (lente), puis attaque de Br⁻ (rapide).</li>
         <li>Une flèche courbe va d'un doublet vers un site pauvre en électrons.</li>
         <li>Le carbocation est un <strong>intermédiaire</strong> (creux), un état de transition est un <strong>sommet</strong>.</li>
         <li>Face plane attaquée de chaque côté : <strong>mélange racémique</strong>.</li>
@@ -138,6 +140,7 @@ const hypotheses = (
     <li>Les énergies (0 ; 100 ; 60 ; 70 ; −65 kJ/mol) sont des <strong>ordres de grandeur arrondis</strong>, choisis pour illustrer le mécanisme : ce ne sont pas des mesures précises.</li>
     <li>Le mouvement des atomes est <strong>interpolé</strong> entre des géométries typiques : ce n'est pas un calcul de dynamique moléculaire.</li>
     <li>Les atomes sont dessinés avec des rayons réduits en 3D, pour garder la scène lisible (pas à l'échelle des rayons de van der Waals).</li>
+    <li>Aucun catalyseur n'est représenté : HBr s'additionne seul sur l'alcène.</li>
     <li>On ne représente que la réaction avec HBr non solvaté ; dans un solvant, le carbocation et Br⁻ seraient entourés de molécules de solvant.</li>
     <li>Le carbocation est supposé plan ; les deux faces sont attaquées avec la <strong>même probabilité</strong> (molécule sans élément de chiralité préalable).</li>
     <li>Les flèches courbes ne sont affichées qu'aux états clés (réactifs, ET₁, carbocation, ET₂), où les doublets concernés sont bien placés.</li>
@@ -255,7 +258,7 @@ export function SimulationMecanismesReactionnels() {
         <div style={{ flex: '1 1 300px', minWidth: 280, display: 'flex', flexDirection: 'column', gap: 10 }}>
           {mode === 'guide' && <>
             <CarteParcours etapes={etapes} etat={guide} setEtat={setGuide} fin={finParcours} />
-            {guide.etape >= 9 && <div style={styleBoite}><Stereo2Faces numC={numC} /></div>}
+            {guide.etape >= 10 && <div style={styleBoite}><Stereo2Faces numC={numC} /></div>}
           </>}
           {mode === 'explore' && <div style={styleBoite}>
             <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Mesures sur le profil</div>
