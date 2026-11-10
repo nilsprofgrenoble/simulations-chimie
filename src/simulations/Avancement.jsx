@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, Cadre, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, PanneauHypotheses } from "../commun";
+  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, PanneauHypotheses, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 
 const SIM_ID = 1;
@@ -234,6 +234,7 @@ function OutilGeneral() {
 }
 
 // ════════════════ SIMULATION ════════════════
+const INDICE_Q = {"v": "Quantité de Mg : n = m / M (m en grammes). L’équation produit autant de H₂ que de Mg consommé, puis V = n × V_m.", "m": "Convertis le volume maximal en litres : n(H₂) = V / V_m. Il y a autant de Mg consommé que de H₂ produit : m = n × M.", "l": "Compare n(Mg) à n(H⁺) divisé par son coefficient stœchiométrique : le plus petit correspond au réactif limitant.", "x": "x_max est la quantité du réactif limitant divisée par son coefficient stœchiométrique."};
 export function Simulation1() {
   const [mode, setMode] = useState(() => modeOuverture('avancement-guide-v1'));
   useSignalerMode(mode);
@@ -311,13 +312,13 @@ export function Simulation1() {
         Les ions chlorure Cl⁻ sont <strong>spectateurs</strong> : ils ne participent pas à la réaction.</>, tache: null },
     { id: 'securite', titre: 'Sécurité', focus: ['erlen'],
       texte: <>L'acide chlorhydrique à 2 mol/L est corrosif (lunettes, blouse, gants). Et le gaz formé ?</>,
-      tache: { type: 'qcm', q: 'Quel danger présente le dihydrogène ?', options: ['Il est inflammable : aucune flamme à proximité', 'Il est toxique', 'Il n’est pas dangereux'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'Quel danger présente le dihydrogène ?', options: ['Il est inflammable : aucune flamme à proximité', 'Il est toxique', 'Il n’est pas dangereux'], bonne: 0, indice: "Le dihydrogène est un gaz. Que peut-il se passer s’il se mélange à l’air en présence d’une flamme ou d’une étincelle ?" } },
     { id: 'masse', titre: 'La masse de magnésium', focus: ['balance'],
       texte: <>Votre ruban de magnésium a été prépesé : lisez sa masse sur la balance.</>,
       tache: { type: 'num', q: 'Masse de magnésium m, en grammes', unite: 'g', vrai: ech.m / 1000, tol: 0.005,
         aide: 'Lisez la valeur affichée sur la balance (en mg) puis convertissez-la en grammes.',
         calcul: () => [`La balance affiche ${ech.m} mg.`, `1 g = 1000 mg, donc on divise par 1000 : m = ${ech.m} / 1000 = ${fmt(ech.m / 1000, 3)} g.`],
-        pieges: [[ech.m, 'La balance affiche des milligrammes : 1 mg = 0,001 g.']] } },
+        pieges: [[ech.m, 'La balance affiche des milligrammes : 1 mg = 0,001 g.']], indice: "Convertis les milligrammes en grammes : 1 g = 1000 mg." } },
     { id: 'manip', titre: 'L’expérience', focus: ['erlen'],
       texte: <>L'éprouvette retournée est remplie d'eau : le gaz formé va chasser l'eau, c'est un recueil par <strong>déplacement d'eau</strong>.
         Versez les 50 mL d'acide, puis introduisez le ruban et rebouchez aussitôt.</>,
@@ -329,21 +330,21 @@ export function Simulation1() {
         bloque: phase !== 'reaction' ? 'Faites d’abord l’expérience.' : !inst.finie ? 'Attendez la fin de la réaction.' : null,
         aide: 'Lisez dans le zoom la graduation située au niveau de la surface qui sépare le gaz de l’eau (chaque trait vaut 1 mL).',
         pieges: refroidi ? [] : [[Vgaz, 'Le volume diminue encore : la réaction a chauffé le gaz. Attendez qu’il revienne à température ambiante.']],
-        surReussite: v => setMes(x => ({ ...x, V: v })) } },
+        surReussite: v => setMes(x => ({ ...x, V: v })), indice: "Avant de lire, repère la valeur d’un trait de l’éprouvette, puis lis le niveau à hauteur d’œil, à la surface qui sépare le gaz de l’eau." } },
     { id: 'nMg', titre: 'La quantité de magnésium', focus: ['balance'],
       texte: <>On rappelle n = m / M, avec M(Mg) = 24,0 g/mol et m = {ech.m} mg.</>,
       tache: { type: 'num', q: 'Quantité de matière de magnésium n₁', unite: 'mol', vrai: n1Aff, tol: 0.02,
         calcul: () => [`Formule : n₁ = m / M, avec m en grammes et M en g/mol.`, `m = ${ech.m} mg = ${ech.m} / 1000 = ${fmt(ech.m / 1000, 3)} g.`,
           `n₁ = ${fmt(ech.m / 1000, 3)} / ${fmt(M_MG, 1)} = ${sci(n1Aff, 3)} mol.`],
         pieges: [[ech.m / M_MG, 'Convertissez d’abord la masse en grammes.'], [M_MG / (ech.m / 1000), 'C’est m / M, et non M / m.'],
-          [ech.m / 1000 * M_MG, 'On divise la masse par la masse molaire (n = m / M) ; on ne les multiplie pas.']], aide: 'Écriture scientifique acceptée : par exemple 4,5e-3.' } },
+          [ech.m / 1000 * M_MG, 'On divise la masse par la masse molaire (n = m / M) ; on ne les multiplie pas.']], aide: 'Écriture scientifique acceptée : par exemple 4,5e-3.', indice: "Quantité de matière : n = m / M, avec m en grammes et M la masse molaire du magnésium (en g/mol, d’après le tableau périodique)." } },
     { id: 'nH', titre: 'La quantité d’ions H⁺', focus: ['erlen'],
       texte: <>On a versé V = 50 mL d'acide à c = 2 mol/L. On rappelle n = c × V.</>,
       tache: { type: 'num', q: 'Quantité de matière d’ions H⁺ n₂', unite: 'mol', vrai: n2, tol: 0.02,
         calcul: () => [`Formule : n₂ = c × V, avec V en litres.`, `V = ${fmt(params.Va, 0)} mL = ${fmt(params.Va / 1000, 3)} L.`,
           `n₂ = ${fmt(params.c, 1)} × ${fmt(params.Va / 1000, 3)} = ${fmt(n2, 3)} mol.`],
         pieges: [[100, 'Le volume doit être en litres : 50 mL = 0,050 L.'], [2 / 0.05, 'C’est c × V.'],
-          [params.Va / 1000, 'Vous avez donné le volume en litres : il faut le multiplier par la concentration c (n = c × V).']] } },
+          [params.Va / 1000, 'Vous avez donné le volume en litres : il faut le multiplier par la concentration c (n = c × V).']], indice: "Quantité d’ions H⁺ : n = c × V, avec c en mol/L et V en litres (convertis les mL)." } },
     { id: 'tabInit', titre: 'Le tableau d’avancement : état initial', focus: ['tableau'],
       texte: <>Le tableau d'avancement est apparu sous le schéma. Remplissez la ligne de l'<strong>état initial</strong> (en mol) : au départ,
         il n'y a encore aucun produit. Reprenez n₁ = {sci(n1Aff, 3)} mol de Mg (étape 6) et n₂ = {fmt(n2, 3)} mol d'ions H⁺ (étape 7).</>,
@@ -355,14 +356,14 @@ export function Simulation1() {
     { id: 'limitant', titre: 'Le réactif limitant', focus: ['tableau'],
       texte: <>La réaction s'arrête quand un réactif est épuisé. Si c'est Mg : n₁ − x = 0. Si c'est H⁺ : n₂ − 2x = 0. Ici, n₁ = {sci(n1Aff, 3)} mol et n₂ = {fmt(n2, 3)} mol.</>,
       tache: { type: 'qcm', q: 'Quel est le réactif limitant ?', options: ['Le magnésium Mg', 'Les ions H⁺', 'Aucun des deux'], bonne: 0,
-        expl: `x = n₁ = ${sci(n1Aff, 2)} mol pour Mg, et x = n₂/2 = ${sci(n2 / 2, 2)} mol pour H⁺ : le plus petit gagne. L’acide est en large excès.` } },
+        expl: `x = n₁ = ${sci(n1Aff, 2)} mol pour Mg, et x = n₂/2 = ${sci(n2 / 2, 2)} mol pour H⁺ : le plus petit gagne. L’acide est en large excès.`, indice: "Écris l’équation de la réaction avec ses coefficients : le réactif limitant est celui qui disparaît en premier, c’est-à-dire celui qui a la plus petite valeur de n divisé par son coefficient." } },
     { id: 'xmax', titre: 'L’avancement maximal', focus: ['tableau'],
       texte: <>La transformation est totale : l'avancement final x<sub>f</sub> est égal à l'avancement maximal x<sub>max</sub>. Rappel : n₁ = {sci(n1Aff, 3)} mol et n₂ = {fmt(n2, 3)} mol.</>,
       tache: { type: 'num', q: 'Avancement maximal x_max', unite: 'mol', vrai: n1Aff, tol: 0.02,
         calcul: () => [`Si Mg est limitant : n₁ − x = 0, donc x = n₁ = ${sci(n1Aff, 3)} mol.`,
           `Si H⁺ est limitant : n₂ − 2x = 0, donc x = n₂ / 2 = ${fmt(n2, 3)} / 2 = ${sci(n2 / 2, 3)} mol.`,
           `La réaction s’arrête dès qu’un réactif est épuisé : x_max est la plus petite des deux valeurs, soit ${sci(Math.min(n1Aff, n2 / 2), 3)} mol.`],
-        pieges: [[n2 / 2, 'C’est la valeur obtenue si H⁺ était limitant : prenez la plus petite des deux.'], [n2, 'Pensez au coefficient 2 devant H⁺, et comparez avec n₁.']] } },
+        pieges: [[n2 / 2, 'C’est la valeur obtenue si H⁺ était limitant : prenez la plus petite des deux.'], [n2, 'Pensez au coefficient 2 devant H⁺, et comparez avec n₁.']], indice: "x_max est la valeur de x pour laquelle le réactif limitant est entièrement consommé : n(limitant) − coefficient × x = 0." } },
     { id: 'tabFin', titre: 'Le tableau d’avancement : état final', focus: ['tableau'],
       texte: <>Remplissez la dernière ligne avec x<sub>f</sub> = x<sub>max</sub> = {sci(n1Aff, 3)} mol (étape 11). Rappel : n₁ = {sci(n1Aff, 3)} mol et n₂ = {fmt(n2, 3)} mol.</>,
       tache: { type: 'action', ok: finOk, consigne: finOk ? null : 'Remplissez x_f et les 4 cases, puis vérifiez la ligne.' } },
@@ -374,7 +375,7 @@ export function Simulation1() {
           `V(H₂) = ${fmt(Veleve, 1)} mL = ${fmt(Math.round(Veleve * 10) / 10000, 4)} L ; n(H₂) = x_max = ${sci(n1Aff, 4)} mol.`,
           `V_m = ${fmt(Math.round(Veleve * 10) / 10000, 4)} / ${sci(n1Aff, 4)} = ${fmt(Math.round(Veleve * 10) / 10000 / Number(n1Aff.toPrecision(4)), 2)} L/mol.`],
         pieges: [[VmEleve * 1000, 'Le volume doit être en litres.'], [1 / VmEleve, 'C’est V / n, et non n / V.'], [VmEleve / 2, 'n(H₂) = x_max, et non 2 x_max.']],
-        surReussite: v => setMes(x => ({ ...x, Vm: v })) } },
+        surReussite: v => setMes(x => ({ ...x, Vm: v })), indice: "V_m = V / n(H₂), avec V en litres. L’équation produit 1 mole de H₂ pour 1 mole de Mg consommée : n(H₂) est égale à l’avancement maximal." } },
     { id: 'ecart', titre: 'Comparer à la valeur attendue', focus: [],
       texte: <>À 20 °C et sous 1013 hPa, le volume molaire d'un gaz vaut environ <strong>{fmt(VM_REF, 1)} L/mol</strong>. Avec votre V<sub>m</sub> = {fmt(mes.Vm ?? VmEleve, 2)} L/mol (étape 13), l'écart relatif vaut
         |V<sub>m</sub> − {fmt(VM_REF, 1)}| / {fmt(VM_REF, 1)}. Le gaz recueilli sur l'eau contient un peu de vapeur d'eau, ce qui augmente le V<sub>m</sub> mesuré d'environ 2 % : un petit écart positif est donc attendu, ce n'est pas forcément une erreur de manipulation.</>,
@@ -384,12 +385,12 @@ export function Simulation1() {
           `${fmt(Math.abs(Vm - VM_REF), 2)} / ${fmt(VM_REF, 1)} = ${fmt(Math.abs(Vm - VM_REF) / VM_REF, 4)}, soit × 100 = ${fmt(Math.abs(Vm - VM_REF) / VM_REF * 100, 2)} %.`]; },
         pieges: [[Math.abs((mes.Vm ?? VmEleve) - VM_REF) / VM_REF, 'Vous avez donné le rapport sans le multiplier par 100 : un pourcentage, c’est ce rapport × 100.'],
           [Math.abs((mes.Vm ?? VmEleve) - VM_REF), `Vous avez donné la différence |V_m − V_ref|. Il faut la diviser par V_ref (${fmt(VM_REF, 1)}), puis multiplier par 100.`]],
-        aide: 'Multipliez par 100 pour obtenir un pourcentage.' } },
+        aide: 'Multipliez par 100 pour obtenir un pourcentage.', indice: "Écart relatif = |valeur mesurée − valeur de référence| ÷ valeur de référence, puis × 100." } },
     { id: 'erreurs', titre: 'Les sources d’erreur', focus: ['eprouvette'],
       texte: <>Votre valeur est un peu plus grande que {fmt(VM_REF, 1)} L/mol. Le gaz recueilli sur l'eau n'est pas du dihydrogène pur.</>,
       tache: { type: 'qcm', q: 'Qu’est-ce qui peut expliquer un volume un peu trop grand ?',
         options: ['De la vapeur d’eau se mélange au dihydrogène, et le gaz peut être encore tiède', 'Il manque du magnésium', 'L’acide était trop concentré'], bonne: 0,
-        expl: 'La vapeur d’eau ajoute environ 2 % au volume à 20 °C. D’autres erreurs, comme une fuite au bouchon ou du gaz perdu avant de reboucher, donneraient au contraire un volume trop petit.' } },
+        expl: 'La vapeur d’eau ajoute environ 2 % au volume à 20 °C. D’autres erreurs, comme une fuite au bouchon ou du gaz perdu avant de reboucher, donneraient au contraire un volume trop petit.', indice: "Que fait la réaction à la température du gaz recueilli ? Un gaz plus chaud occupe-t-il un volume plus grand ou plus petit ?" } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       texte: <>Vous avez mené une étude quantitative complète : quantités de matière, tableau d'avancement, réactif limitant et volume
         molaire. En exploration libre, vous trouverez la manip avec tous les réglages, et un tableau d'avancement pour n'importe quelle
@@ -576,6 +577,7 @@ export function Simulation1() {
           return (
             <div key={q.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {avecIndices(q.q)}</div>
+              {INDICE_Q[q.id] && <IndiceDefi cache={defi.verifie && ok}>{INDICE_Q[q.id]}</IndiceDefi>}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input value={defi.reps[q.id] || ''} placeholder="?" aria-label={`Réponse ${k + 1}`}
                   onChange={x => { const v = x.target.value; setDefi(d => ({ ...d, verifie: false, reps: { ...d.reps, [q.id]: v } })); }}

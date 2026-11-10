@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, PanneauHypotheses } from "../commun";
+  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, PanneauHypotheses, IndiceDefi } from "../commun";
 import { Formule } from "./Avancement";
 import { V_BURETTE, seuilVisible, couleurSolution, ContexteBanc, SchemaBurette } from "./titrageCommun";
 import { Pic } from "../Pictos";
@@ -131,6 +131,7 @@ function OutilTitrageRetour() {
 const COUL_R = ['#2563eb', '#ea580c', '#16a34a'];
 
 // ════════════════ SIMULATION ════════════════
+const INDICE_Q = {"m": "Titrage en retour : n(I₂)restant = c₂ × V₂,e / 2, puis n(vitamine C) = n₁ − n(I₂)restant, puis m = n × M, à exprimer en mg.", "conf": "Compare la masse trouvée à celle annoncée (30 mg) en tenant compte de la tolérance indiquée."};
 export function SimulationTitrageIndirect() {
   const [mode, setMode] = useState(() => modeOuverture('titrage-guide-v1'));
   useSignalerMode(mode);
@@ -224,27 +225,27 @@ export function SimulationTitrageIndirect() {
           `m = 30 mg = 0,030 g ; n = 0,030 / ${fmt(M_VITC, 2)} = ${sci(30e-3 / M_VITC, 3)} mol.`,
           `V = 100 mL = 0,100 L ; c₀ = ${sci(30e-3 / M_VITC, 3)} / 0,100 = ${sci(ref.c0, 3)} mol/L.`],
         pieges: [[30e-3 / M_VITC * 0.1, 'Pour une concentration, on divise la quantité de matière par le volume (c = n / V), on ne multiplie pas.'], [ref.c0 * 1000, 'Convertissez la masse en grammes (30 mg = 0,030 g).'], [ref.c0 / 1000, 'Convertissez le volume en litres (100 mL = 0,100 L).'], [30e-3 / M_VITC, 'C’est une quantité de matière : divisez aussi par le volume de la fiole.']],
-        aide: 'Écriture scientifique acceptée : 4,5e-3 par exemple.' } },
+        aide: 'Écriture scientifique acceptée : 4,5e-3 par exemple.', indice: "c₀ = n₀ / V₀ : divise la quantité de vitamine C de la prise d’essai par le volume de la solution S₀ (en litres)." } },
     { id: 'n0', titre: 'La prise d’essai', focus: ['erlen'],
       texte: <>On prélève V₀ = 25 mL de S₀, que l'on verse dans l'erlenmeyer.</>,
       tache: { type: 'num', q: 'Quantité de vitamine C n₀ dans la prise d’essai', unite: 'mol', vrai: n0, tol: 0.04,
         calcul: () => ['On suppose S₀ homogène : n₀ = c₀ × V₀, avec V₀ en litres.', 'V₀ = 25 mL = 0,025 L.', `n₀ = ${sci(ref.c0, 3)} × 0,025 = ${sci(n0, 3)} mol.`],
-        pieges: [[n0 * 1000, 'Le volume doit être en litres : 25 mL = 0,025 L.'], [n0 * 4, 'On ne prélève que 25 mL de S₀, pas les 100 mL de la fiole : V₀ = 0,025 L.']] } },
+        pieges: [[n0 * 1000, 'Le volume doit être en litres : 25 mL = 0,025 L.'], [n0 * 4, 'On ne prélève que 25 mL de S₀, pas les 100 mL de la fiole : V₀ = 0,025 L.']], indice: "La vitamine C a consommé du diiode, dans la proportion de 1 pour 1 : n₀ = n₁ − n(I₂)restant." } },
     { id: 'n1', titre: 'Le diiode ajouté', focus: ['erlen'],
       texte: <>On ajoute V₁ = 10,0 mL de diiode à c₁ = 0,010 mol/L, et on agite 5 minutes : la réaction est lente, mais totale.</>,
       tache: { type: 'num', q: 'Quantité de diiode n₁ ajoutée', unite: 'mol', vrai: n1, tol: 0.02,
         calcul: () => ['Formule : n₁ = c₁ × V₁, avec V₁ en litres.', 'V₁ = 10,0 mL = 0,0100 L.', `n₁ = 0,010 × 0,0100 = ${sci(n1, 3)} mol.`],
-        pieges: [[n1 * 1000, 'Le volume doit être en litres.'], [0.010 / 0.0100, 'Une quantité de matière se calcule par n = c × V (et non c / V).']] } },
+        pieges: [[n1 * 1000, 'Le volume doit être en litres.'], [0.010 / 0.0100, 'Une quantité de matière se calcule par n = c × V (et non c / V).']], indice: "n = c × V, avec la concentration et le volume de la solution de diiode ajoutée (V en litres)." } },
     { id: 'limitant', titre: 'Le réactif limitant', focus: [],
       texte: <>C₆H₈O₆ + I₂ → C₆H₆O₆ + 2 H⁺ + 2 I⁻. Les deux réactifs ont le coefficient 1.</>,
       tache: { type: 'qcm', q: 'Quel est le réactif limitant ?', options: ['La vitamine C', 'Le diiode', 'Aucun des deux'], bonne: 0,
-        expl: `n₀ / 1 = ${sci(n0, 2)} mol < n₁ / 1 = ${sci(n1, 2)} mol. C’est voulu : le diiode doit être en excès, pour qu’il en reste à titrer.` } },
+        expl: `n₀ / 1 = ${sci(n0, 2)} mol < n₁ / 1 = ${sci(n1, 2)} mol. C’est voulu : le diiode doit être en excès, pour qu’il en reste à titrer.`, indice: "Compare les quantités n₀ et n₁ (la réaction est 1 pour 1). Rappelle-toi lequel des deux a été ajouté en excès." } },
     { id: 'xmax', titre: 'L’avancement maximal', focus: [],
       texte: <>La réaction s'arrête quand la vitamine C est épuisée.</>,
       tache: { type: 'num', q: 'Avancement maximal x_max', unite: 'mol', vrai: n0, tol: 0.04,
         calcul: () => ['Les deux réactifs ont le coefficient 1. Si la vitamine C est limitante : n₀ − x = 0, donc x = n₀.', `Si le diiode est limitant : n₁ − x = 0, donc x = n₁.`,
           `n₀ = ${sci(n0, 3)} mol et n₁ = ${sci(n1, 3)} mol : le plus petit est n₀, donc x_max = ${sci(n0, 3)} mol (la transformation est supposée totale).`],
-        pieges: [[n1, 'Le diiode n’est pas limitant.'], [n1 - n0, 'C’est la quantité de diiode qui reste à la fin. x_max est la quantité de vitamine C, qui est entièrement consommée.']] } },
+        pieges: [[n1, 'Le diiode n’est pas limitant.'], [n1 - n0, 'C’est la quantité de diiode qui reste à la fin. x_max est la quantité de vitamine C, qui est entièrement consommée.']], indice: "x_max est la quantité du réactif limitant (la réaction est 1 pour 1)." } },
     { id: 'tabInit', titre: 'Tableau d’avancement : état initial', focus: ['tableau'],
       texte: <>Le tableau est apparu sous le montage. Les ions H⁺ et I⁻ sont formés par la réaction mais ne servent pas au calcul : on ne remplit donc que les colonnes de C₆H₈O₆ et de I₂ (la colonne H⁺ est notée « non suivi »). Quantités initiales : n₀ = {sci(n0, 2)} mol de vitamine C (étape 3) et n₁ = {sci(n1, 2)} mol de diiode (étape 4).</>,
       tache: { type: 'action', ok: initOk, consigne: initOk ? null : 'Remplissez la ligne, puis « Vérifier la ligne ».' } },
@@ -258,31 +259,31 @@ export function SimulationTitrageIndirect() {
       texte: <>C'est ce diiode restant qui va être titré par le thiosulfate. Rappel : n₁ = {sci(n1, 2)} mol (étape 4) et x<sub>max</sub> = {sci(n0, 2)} mol (étape 6).</>,
       tache: { type: 'num', q: 'Quantité de diiode restant n(I₂)restant', unite: 'mol', vrai: nR, tol: 0.03,
         calcul: () => ['Le diiode restant est le diiode introduit moins celui qui a réagi : n(I₂)restant = n₁ − x_max.', `n(I₂)restant = ${sci(n1, 3)} − ${sci(n0, 3)} = ${sci(nR, 3)} mol.`],
-        pieges: [[n1 + n0, 'Le diiode est consommé : n₁ − x_max.'], [n1, 'C’est le diiode introduit. Il faut retirer celui qui a réagi avec la vitamine C : n₁ − x_max.']] } },
+        pieges: [[n1 + n0, 'Le diiode est consommé : n₁ − x_max.'], [n1, 'C’est le diiode introduit. Il faut retirer celui qui a réagi avec la vitamine C : n₁ − x_max.']], indice: "Le diiode ajouté a en partie réagi : n(I₂)restant = n₁ − x_max, en mol." } },
     { id: 'demi', titre: 'Partie 2 · Les demi-équations', focus: ['burette'],
       texte: <>Couples : I₂ / I⁻ et S₄O₆²⁻ / S₂O₃²⁻. Réaction de titrage : I₂ + 2 S₂O₃²⁻ → 2 I⁻ + S₄O₆²⁻ (rapide et totale).</>,
       tache: { type: 'qcm', q: 'Laquelle de ces demi-équations est une oxydation ?', options: ['2 S₂O₃²⁻ → S₄O₆²⁻ + 2 e⁻', 'I₂ + 2 e⁻ → 2 I⁻', 'S₄O₆²⁻ + 2 e⁻ → 2 S₂O₃²⁻'], bonne: 0,
-        expl: 'Une oxydation est une perte d’électrons : les électrons sont du côté des produits.' } },
+        expl: 'Une oxydation est une perte d’électrons : les électrons sont du côté des produits.', indice: "Une oxydation est une perte d’électrons : repère la demi-équation où les électrons figurent à droite de la flèche." } },
     { id: 'roles', titre: 'Oxydant et réducteur', focus: ['burette'],
       texte: <>Dans la réaction de titrage, une espèce capte les électrons, l'autre les cède.</>,
-      tache: { type: 'qcm', q: 'Quel est le rôle de chaque réactif ?', options: ['I₂ est l’oxydant, S₂O₃²⁻ est le réducteur', 'I₂ est le réducteur, S₂O₃²⁻ est l’oxydant', 'Les deux sont des oxydants'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'Quel est le rôle de chaque réactif ?', options: ['I₂ est l’oxydant, S₂O₃²⁻ est le réducteur', 'I₂ est le réducteur, S₂O₃²⁻ est l’oxydant', 'Les deux sont des oxydants'], bonne: 0, indice: "L’oxydant capte des électrons, le réducteur en cède. Appuie-toi sur les demi-équations de l’étape précédente." } },
     { id: 'montage', titre: 'Le montage', focus: ['burette', 'erlen', 'agitateur'],
       texte: <>Légendez le montage (repères 1, 2 et 3 sur le schéma) et indiquez la solution titrante, dans le cadre « Légendes » sous le schéma.</>,
       tache: { type: 'action', ok: legOk, consigne: legOk ? null : 'Choisissez les quatre légendes, puis vérifiez.' } },
     { id: 'equiv', titre: 'L’équivalence', focus: [],
       texte: <>On verse le thiosulfate peu à peu.</>,
       tache: { type: 'qcm', q: 'Qu’est-ce que l’équivalence ?', options: ['Le moment où les réactifs ont été introduits dans les proportions stœchiométriques', 'Le moment où l’on a versé autant de mL de titrant que de solution titrée', 'Le moment où la burette est vide'], bonne: 0,
-        expl: 'À l’équivalence, le titrant versé est tout juste suffisant pour consommer tout le diiode restant.' } },
+        expl: 'À l’équivalence, le titrant versé est tout juste suffisant pour consommer tout le diiode restant.', indice: "À l’équivalence, quelle relation lie les quantités de réactifs introduits et l’équation de la réaction ?" } },
     { id: 'titrer', titre: 'Titrez !', focus: ['burette', 'erlen'],
       texte: <>Les commandes de la burette sont apparues. Versez le thiosulfate : rapidement d'abord, puis goutte à goutte quand la couleur pâlit.
         Quand la solution devient incolore, cliquez sur « C'est l'équivalence ! ».</>,
       tache: { type: 'action', ok: mes.Ve != null, consigne: mes.Ve != null ? `✅ V₂,ₑ mesuré = ${fmt(mes.Ve, 1)} mL` : `Versé : ${fmt(V2, 2)} mL` } },
     { id: 'couleur', titre: 'Pourquoi la couleur change-t-elle ?', focus: ['erlen'],
       texte: <>Toutes les espèces sont incolores, sauf le diiode.</>,
-      tache: { type: 'qcm', q: 'Pourquoi la solution devient-elle incolore à l’équivalence ?', options: ['Il ne reste plus de diiode, seule espèce colorée', 'Le thiosulfate est un colorant blanc', 'La vitamine C a été détruite'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'Pourquoi la solution devient-elle incolore à l’équivalence ?', options: ['Il ne reste plus de diiode, seule espèce colorée', 'Le thiosulfate est un colorant blanc', 'La vitamine C a été détruite'], bonne: 0, indice: "À l’équivalence, quelle espèce colorée a été entièrement consommée ?" } },
     { id: 'relation', titre: 'La relation à l’équivalence', focus: [],
       texte: <>À l'équivalence, le diiode restant et le thiosulfate versé sont dans les proportions de l'équation : 1 I₂ pour 2 S₂O₃²⁻.</>,
-      tache: { type: 'qcm', q: 'Quelle relation est juste ?', options: ['n(I₂)restant = n(S₂O₃²⁻)ₑ / 2', 'n(I₂)restant = 2 n(S₂O₃²⁻)ₑ', 'n(I₂)restant = n(S₂O₃²⁻)ₑ'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'Quelle relation est juste ?', options: ['n(I₂)restant = n(S₂O₃²⁻)ₑ / 2', 'n(I₂)restant = 2 n(S₂O₃²⁻)ₑ', 'n(I₂)restant = n(S₂O₃²⁻)ₑ'], bonne: 0, indice: "Regarde les coefficients de l’équation du dosage : combien d’ions S₂O₃²⁻ réagissent par molécule de I₂ ?" } },
     { id: 'Vth', titre: 'Le volume équivalent théorique', focus: ['burette'],
       texte: <>Avec n(S₂O₃²⁻)ₑ = c₂ × V₂,ₑ et c₂ = 0,010 mol/L.{mes.Ve != null && guide.reussies?.[etape] ? ` Vous avez mesuré ${fmt(mes.Ve, 1)} mL.` : ''}</>,
       tache: { type: 'num', q: 'V₂,ₑ théorique = 2 n(I₂)restant / c₂, en mL', unite: 'mL', vrai: ref.Veq, tol: 0.025,
@@ -290,7 +291,7 @@ export function SimulationTitrageIndirect() {
           `n(S₂O₃²⁻)ₑ = 2 × ${sci(nR, 3)} = ${sci(2 * nR, 3)} mol.`, `V₂,ₑ = n(S₂O₃²⁻)ₑ / c₂ = ${sci(2 * nR, 3)} / 0,010 = ${fmt(2 * nR / ref.c2, 5)} L.`,
           `En mL : ${fmt(2 * nR / ref.c2, 5)} × 1000 = ${fmt(ref.Veq, 2)} mL.`],
         pieges: [[ref.Veq / 2, 'Vous avez oublié le coefficient 2 : il faut 2 ions S₂O₃²⁻ pour 1 molécule I₂, donc n(S₂O₃²⁻)ₑ = 2 n(I₂)restant.'],
-          [2 * n1 / ref.c2 * 1000, 'Seul le diiode restant est titré, pas tout le diiode introduit : utilisez n(I₂)restant.'], [ref.Veq / 4, 'n(S₂O₃²⁻) = 2 n(I₂) : multipliez par 2, ne divisez pas.'], [ref.Veq / 1000, 'La réponse est demandée en mL.']] } },
+          [2 * n1 / ref.c2 * 1000, 'Seul le diiode restant est titré, pas tout le diiode introduit : utilisez n(I₂)restant.'], [ref.Veq / 4, 'n(S₂O₃²⁻) = 2 n(I₂) : multipliez par 2, ne divisez pas.'], [ref.Veq / 1000, 'La réponse est demandée en mL.']], indice: "La relation est donnée dans l’énoncé : remplace n(I₂)restant et c₂ par leurs valeurs en gardant des unités cohérentes (mol et mol/L donnent des litres, à convertir en mL)." } },
     { id: 'technicien', titre: 'Partie 3 · Le technicien', focus: ['erlen'],
       texte: <>Un technicien a préparé S₀ le matin, mais ne l'a titrée qu'en fin d'après-midi : la solution est restée <strong>toute la
         journée à la lumière</strong>. Refaites le titrage avec sa solution (elle a été remplacée dans l'erlenmeyer).</>,
@@ -298,7 +299,7 @@ export function SimulationTitrageIndirect() {
     { id: 'plusPetite', titre: 'Plus ou moins de vitamine C ?', focus: ['burette'],
       texte: <>Il a fallu bien plus que 11,5 mL de thiosulfate.</>,
       tache: { type: 'qcm', q: 'La solution du technicien contenait-elle plus ou moins de 30 mg de vitamine C ?',
-        options: ['Moins : il restait plus de diiode à titrer, donc moins de vitamine C l’avait consommé', 'Plus : on a versé plus de thiosulfate', 'Autant : seule la couleur change'], bonne: 0 } },
+        options: ['Moins : il restait plus de diiode à titrer, donc moins de vitamine C l’avait consommé', 'Plus : on a versé plus de thiosulfate', 'Autant : seule la couleur change'], bonne: 0, indice: "Compare le volume équivalent mesuré à celui attendu pour 30 mg : un volume plus grand de thiosulfate signifie-t-il plus ou moins de diiode restant, donc plus ou moins de vitamine C ?" } },
     { id: 'masse', titre: 'Combien en reste-t-il ? (pour aller plus loin)', focus: [],
       texte: <>n(I₂)restant = c₂ × V₂,ₑ / 2 ; n(vitamine C) = n₁ − n(I₂)restant dans 25 mL, donc 4 fois plus dans la fiole.</>,
       tache: { type: 'num', q: 'Masse de vitamine C encore présente dans S₀ (V₂,ₑ = 19,1 mL)', unite: 'mg', vrai: vieille.mReste, tol: 0.06,
@@ -308,16 +309,16 @@ export function SimulationTitrageIndirect() {
             `La fiole (100 mL) contient 4 fois plus (prise d’essai de 25 mL supposée représentative) : ${sci(nF, 3)} mol.`,
             `m = n × M = ${sci(nF, 3)} × ${fmt(M_VITC, 2)} = ${sci(nF * M_VITC, 3)} g = ${fmt(nF * M_VITC * 1000, 2)} mg.`]; },
         pieges: [[vieille.mReste / 4, 'Vous avez la masse dans 25 mL : la fiole en contient 100 mL.'],
-          [(n1 - 0.010 * 19.1 / 1000 / 2) * 4, 'C’est la quantité de matière (en mol). Multipliez par M = 176,12 g/mol, puis convertissez en mg.']], aide: 'Facultatif : vous pouvez voir la réponse.' } },
+          [(n1 - 0.010 * 19.1 / 1000 / 2) * 4, 'C’est la quantité de matière (en mol). Multipliez par M = 176,12 g/mol, puis convertissez en mg.']], aide: 'Facultatif : vous pouvez voir la réponse.', indice: "Remonte étape par étape : n(I₂)restant, puis n(vitamine C) = n₁ − n(I₂)restant, puis m = n × M (en mg)." } },
     { id: 'conclusion', titre: 'Peut-on conclure sur la gélule ?', focus: [],
       texte: <>La vitamine C se dégrade vite en solution, à la lumière et à température ambiante.</>,
       tache: { type: 'qcm', q: 'Peut-on estimer la masse de vitamine C de la gélule avec ce titrage ?',
-        options: ['Non : on mesure ce qui reste après la dégradation, pas ce que contenait la gélule. Il faut titrer juste après avoir préparé S₀.', 'Oui : la gélule contenait environ 3 mg', 'Oui : il suffit de multiplier par 4'], bonne: 0 } },
+        options: ['Non : on mesure ce qui reste après la dégradation, pas ce que contenait la gélule. Il faut titrer juste après avoir préparé S₀.', 'Oui : la gélule contenait environ 3 mg', 'Oui : il suffit de multiplier par 4'], bonne: 0, indice: "Pour estimer une masse, quelles données faut-il connaître (prise d’essai, volume de solution, étapes de dilution) ?" } },
     { id: 'amidon', titre: 'Une astuce de TP : l’empois d’amidon', focus: ['erlen'],
       texte: <>Près de l'équivalence, le jaune très pâle est difficile à voir. En TP, on ajoute alors quelques gouttes d'empois d'amidon (le bouton
         est apparu) : il colore en bleu sombre la moindre trace de diiode. Essayez sur un nouveau titrage.</>,
       tache: { type: 'qcm', q: 'Pourquoi ajoute-t-on l’empois d’amidon ?', options: ['Pour rendre le changement de couleur à l’équivalence bien plus net', 'Pour accélérer la réaction', 'Pour neutraliser l’acide'], bonne: 0,
-        expl: 'Le bleu sombre disparaît brusquement à l’équivalence. On l’ajoute près de la fin, quand la solution est déjà jaune pâle.' } },
+        expl: 'Le bleu sombre disparaît brusquement à l’équivalence. On l’ajoute près de la fin, quand la solution est déjà jaune pâle.', indice: "L’amidon forme avec le diiode une espèce très colorée. Quel intérêt pour repérer l’équivalence ?" } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       texte: <>Vous avez réalisé un titrage en retour complet. En exploration libre, réglez la masse de vitamine C, le temps d'attente de la
         solution, les volumes et les concentrations ; un second onglet permet de simuler le titrage de n'importe quelle réaction. Le défi
@@ -446,6 +447,7 @@ export function SimulationTitrageIndirect() {
           return (
             <div key={q.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {avecIndices(q.q)}</div>
+              {INDICE_Q[q.id] && <IndiceDefi cache={defi.verifie && ok}>{INDICE_Q[q.id]}</IndiceDefi>}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input value={defi.reps[q.id] || ''} placeholder="?" aria-label={`Réponse ${k + 1}`} onChange={x => { const v = x.target.value; setDefi(d => ({ ...d, verifie: false, reps: { ...d.reps, [q.id]: v } })); }}
                   style={{ fontSize: 14, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 110 }}/>

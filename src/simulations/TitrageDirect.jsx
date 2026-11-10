@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
+  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, IndiceDefi } from "../commun";
 import { V_BURETTE, seuilVisible, couleurSolution, ContexteBanc, SchemaBurette, OutilTitrageGeneral } from "./titrageCommun";
 import { Pic } from "../Pictos";
 
@@ -33,6 +33,7 @@ function erlenLugol(mod, VB) {
   return { nI2, cI2: nI2 / ((mod.VA + VB) / 1000), nThio: Math.max(0, mod.cB * VB / 1000 - 2 * mod.nI2) };
 }
 
+const INDICE_Q = {"c": "À l’équivalence : n(I₂) = c_B × V_B,e / 2, puis c_A = n(I₂) / V_A, avec les volumes en litres.", "m": "Masse pour 100 mL = c_A × 0,100 L × M(I₂), avec M en g/mol.", "conf": "Compare la masse trouvée à celle annoncée sur le flacon : l’écart est-il inférieur à la tolérance de 5 % ?"};
 export function Simulation2() {
   const [mode, setMode] = useState(() => modeOuverture('titrage-direct-guide-v1'));
   useSignalerMode(mode);
@@ -91,7 +92,7 @@ export function Simulation2() {
     { id: 'burette', titre: 'Qui va où ?', focus: ['burette', 'erlen'],
       texte: <>On connaît précisément la concentration du thiosulfate (c<sub>B</sub> = 0,0500 mol/L) ; on cherche celle du diiode du Lugol.</>,
       tache: { type: 'qcm', q: 'Quelle solution met-on dans la burette ?', options: ['Le thiosulfate : c’est la solution titrante, de concentration connue', 'Le Lugol : c’est la solution titrée', 'Peu importe'], bonne: 0,
-        expl: 'La solution titrée (le Lugol) est prélevée à la pipette jaugée et placée dans l’erlenmeyer : V_A = 10,0 mL.' } },
+        expl: 'La solution titrée (le Lugol) est prélevée à la pipette jaugée et placée dans l’erlenmeyer : V_A = 10,0 mL.', indice: "La burette contient la solution de concentration connue, versée peu à peu dans l’erlenmeyer qui contient la solution dont on cherche la concentration." } },
     { id: 'schema', titre: 'Le schéma du titrage', focus: ['burette', 'erlen', 'agitateur'],
       texte: <>Légendez le montage (repères 1, 2 et 3) et indiquez le contenu de la burette et de l'erlenmeyer, dans le cadre « Légendes » sous le schéma.</>,
       tache: { type: 'action', ok: leg.verif && legOk(leg), consigne: leg.verif && legOk(leg) ? null : 'Choisissez toutes les légendes, puis vérifiez.' } },
@@ -106,7 +107,7 @@ export function Simulation2() {
     { id: 'equiv', titre: 'L’équivalence', focus: [],
       texte: <>À l'équivalence, les deux réactifs sont limitants : il n'en reste plus aucun.</>,
       tache: { type: 'qcm', q: 'Qu’est-ce que l’équivalence ?', options: ['Le moment où l’on a versé juste assez de thiosulfate pour faire réagir tout le diiode', 'Le moment où la burette est vide', 'Le moment où l’on a versé autant de thiosulfate que de Lugol'], bonne: 0,
-        expl: 'À l’équivalence, les réactifs ont été introduits dans les proportions stœchiométriques.' } },
+        expl: 'À l’équivalence, les réactifs ont été introduits dans les proportions stœchiométriques.', indice: "À l’équivalence, les réactifs ont été introduits dans les proportions de l’équation de la réaction. Qu’est-ce qui vient juste de réagir complètement ?" } },
     { id: 'precis', titre: 'Un titrage précis', focus: ['burette', 'erlen'],
       texte: <>Nouveau titrage. Versez rapidement jusqu'à environ <strong>{mes.Vrapide != null ? `${fmt(Math.max(0, mes.Vrapide - 1), 1)} mL` : 'V_B,e − 1 mL'}</strong>,
         puis ajoutez le <strong>thiodène</strong> : il forme avec le diiode un composé bleu très foncé, qui disparaît brutalement à l'équivalence.
@@ -114,39 +115,39 @@ export function Simulation2() {
       tache: { type: 'action', ok: mes.Ve != null, consigne: mes.Ve != null ? `✅ V_B,e = ${fmt(mes.Ve, 2)} mL` : `Versé : ${fmt(VB, 2)} mL${thiodene ? ' ; thiodène ajouté' : ''}` } },
     { id: 'relation', titre: 'La relation à l’équivalence', focus: [],
       texte: <>À l'équivalence : n<sub>initial</sub>(I₂) / 1 = n<sub>versé,e</sub>(S₂O₃²⁻) / 2.</>,
-      tache: { type: 'qcm', q: 'Pourquoi divise-t-on n(S₂O₃²⁻) par 2 ?', options: ['Il faut 2 ions thiosulfate pour 1 molécule de diiode', 'Parce que la burette fait 25 mL', 'Parce que le thiosulfate est dilué'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'Pourquoi divise-t-on n(S₂O₃²⁻) par 2 ?', options: ['Il faut 2 ions thiosulfate pour 1 molécule de diiode', 'Parce que la burette fait 25 mL', 'Parce que le thiosulfate est dilué'], bonne: 0, indice: "Regarde les coefficients de l’équation de titrage : combien d’ions S₂O₃²⁻ réagissent avec une molécule de I₂ ?" } },
     { id: 'nThio', titre: 'Le thiosulfate versé', focus: ['burette'],
       texte: <>Avec votre mesure V<sub>B,e</sub> = {fmt(Ve, 2)} mL et c<sub>B</sub> = 0,0500 mol/L.</>,
       tache: { type: 'num', q: 'Quantité de thiosulfate versée à l’équivalence n_versé,e(S₂O₃²⁻)', unite: 'mol', vrai: nThioE, tol: 0.02,
         calcul: () => ['Formule : n_versé,e(S₂O₃²⁻) = c_B × V_B,e, avec V_B,e en litres (c_B = 0,0500 mol/L, supposée exacte).',
           `V_B,e = ${fmt(Ve, 2)} mL = ${fmt(Ve / 1000, 5)} L.`, `n_versé,e = 0,0500 × ${fmt(Ve / 1000, 5)} = ${sci(nThioE, 3)} mol.`],
-        pieges: [[nThioE * 1000, 'Le volume doit être en litres.'], [ref.cB / (Ve / 1000), 'Formule à l’envers : une quantité de matière se calcule par n = c × V (et non c / V).']], aide: 'Écriture scientifique acceptée : 4,5e-4 par exemple.' } },
+        pieges: [[nThioE * 1000, 'Le volume doit être en litres.'], [ref.cB / (Ve / 1000), 'Formule à l’envers : une quantité de matière se calcule par n = c × V (et non c / V).']], aide: 'Écriture scientifique acceptée : 4,5e-4 par exemple.', indice: "n = c × V, avec c la concentration de la solution titrante et V le volume versé à l’équivalence (en litres)." } },
     { id: 'nI2', titre: 'Le diiode titré', focus: ['erlen'],
       texte: <>On utilise la relation à l'équivalence, avec n<sub>versé,e</sub>(S₂O₃²⁻) = {sci(nThioE, 3)} mol.</>,
       tache: { type: 'num', q: 'Quantité de diiode n_initial(I₂) dans l’erlenmeyer', unite: 'mol', vrai: nI2E, tol: 0.02,
         calcul: () => ['Équation : 2 S₂O₃²⁻ + I₂ → S₄O₆²⁻ + 2 I⁻ (réaction rapide et totale). À l’équivalence, les réactifs sont dans les proportions stœchiométriques : n_initial(I₂) / 1 = n_versé,e(S₂O₃²⁻) / 2.',
           `n_initial(I₂) = ${sci(nThioE, 3)} / 2 = ${sci(nI2E, 3)} mol.`],
-        pieges: [[nThioE * 2, 'C’est n(S₂O₃²⁻) / 2, et non × 2.'], [nThioE, 'Pensez au coefficient 2 devant S₂O₃²⁻.']] } },
+        pieges: [[nThioE * 2, 'C’est n(S₂O₃²⁻) / 2, et non × 2.'], [nThioE, 'Pensez au coefficient 2 devant S₂O₃²⁻.']], indice: "Utilise le rapport des coefficients de l’équation entre S₂O₃²⁻ et I₂ pour passer de la quantité de thiosulfate à celle de diiode." } },
     { id: 'cA', titre: 'La concentration du Lugol', focus: ['erlen'],
       texte: <>Les n<sub>initial</sub>(I₂) = {sci(nI2E, 3)} mol de diiode étaient contenus dans V<sub>A</sub> = 10,0 mL de Lugol.</>,
       tache: { type: 'num', q: 'Concentration en diiode c_A du Lugol', unite: 'mol/L', vrai: cAE, tol: 0.02,
         calcul: () => ['Formule : c_A = n_initial(I₂) / V_A, avec V_A en litres (V_A = 10,0 mL, prélevé à la pipette jaugée, supposé exact).',
           'V_A = 10,0 mL = 0,0100 L.', `c_A = ${sci(nI2E, 3)} / 0,0100 = ${sci(cAE, 3)} mol/L.`],
-        pieges: [[cAE / 1000, 'Le volume doit être en litres : 10,0 mL = 0,0100 L.'], [0.0100 / nI2E, 'Formule à l’envers : c = n / V (la quantité de matière divisée par le volume).']] } },
+        pieges: [[cAE / 1000, 'Le volume doit être en litres : 10,0 mL = 0,0100 L.'], [0.0100 / nI2E, 'Formule à l’envers : c = n / V (la quantité de matière divisée par le volume).']], indice: "c_A = n(I₂) / V_A, avec V_A le volume de Lugol dosé, en litres." } },
     { id: 'litteral', titre: 'Pour les plus à l’aise : en une seule formule', focus: [],
       texte: <>On peut regrouper les trois calculs précédents en une seule expression littérale.</>,
-      tache: { type: 'qcm', q: 'Quelle expression donne c_A ?', options: ['c_A = c_B × V_B,e / (2 × V_A)', 'c_A = 2 × c_B × V_B,e / V_A', 'c_A = c_B × V_A / (2 × V_B,e)'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'Quelle expression donne c_A ?', options: ['c_A = c_B × V_B,e / (2 × V_A)', 'c_A = 2 × c_B × V_B,e / V_A', 'c_A = c_B × V_A / (2 × V_B,e)'], bonne: 0, indice: "Exprime d’abord n(I₂) à partir de c_B, de V_B,e et du rapport des coefficients, puis divise par V_A." } },
     { id: 'masse', titre: 'Comparer à l’étiquette', focus: [],
       texte: <>M(I₂) = 253,8 g/mol ; concentration du Lugol c<sub>A</sub> = {sci(cAE, 3)} mol/L.</>,
       tache: { type: 'num', q: 'Masse de diiode dans 100 mL de Lugol', unite: 'g', vrai: mE, tol: 0.02,
         calcul: () => ['On suppose la concentration c_A uniforme dans le flacon : 100 mL de Lugol contiennent n = c_A × V, avec V = 100 mL = 0,100 L.',
           `n(I₂) = ${sci(cAE, 3)} × 0,100 = ${sci(cAE * 0.1, 3)} mol.`, `m = n × M = ${sci(cAE * 0.1, 3)} × ${fmt(M_I2, 1)} = ${sci(mE, 3)} g.`],
         pieges: [[mE * 10, 'Dans 100 mL = 0,100 L, et non 1 L.'], [cAE * M_I2, 'C’est la masse dans 1 L : prenez 100 mL.'],
-          [cAE * 0.1, 'Vous avez calculé la quantité de matière n (en mol). Pour la masse, multipliez par la masse molaire M = 253,8 g/mol.']] } },
+          [cAE * 0.1, 'Vous avez calculé la quantité de matière n (en mol). Pour la masse, multipliez par la masse molaire M = 253,8 g/mol.']], indice: "Quantité de diiode dans 100 mL : c_A × 0,100 L. Puis m = n × M, avec M la masse molaire du diiode." } },
     { id: 'conclusion', titre: 'L’étiquette est-elle juste ?', focus: [],
       texte: <>Vous trouvez {fmt(mE, 2)} g pour 100 mL, soit un écart de {fmt(Math.abs(mE - 1) * 100, 1)} % avec l'étiquette.</>,
       tache: { type: 'qcm', q: 'Que conclure ?', options: ['Le résultat est en accord avec l’étiquette, aux erreurs de mesure près', 'L’étiquette est fausse', 'On ne peut rien conclure'], bonne: Math.abs(mE - 1) <= 0.05 ? 0 : 1,
-        expl: 'Un écart de quelques pourcents vient de la lecture de la burette (à une goutte près), de la pipette et de la concentration du thiosulfate.' } },
+        expl: 'Un écart de quelques pourcents vient de la lecture de la burette (à une goutte près), de la pipette et de la concentration du thiosulfate.', indice: "Compare ta valeur à celle de l’étiquette en tenant compte des erreurs de mesure : l’écart est-il important ?" } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       texte: <>Vous avez réalisé un titrage direct complet. En exploration libre, un onglet permet de simuler le titrage de n'importe
         quelle réaction, et l'exemple du Lugol propose tous les réglages. La simulation « Titrage en retour » montre une autre façon de
@@ -300,6 +301,7 @@ export function Simulation2() {
           return (
             <div key={q.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {avecIndices(q.q)}</div>
+              {INDICE_Q[q.id] && <IndiceDefi cache={defi.verifie && ok}>{INDICE_Q[q.id]}</IndiceDefi>}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input value={defi.reps[q.id] || ''} placeholder="?" aria-label={`Réponse ${k + 1}`} onChange={x => { const v = x.target.value; setDefi(d => ({ ...d, verifie: false, reps: { ...d.reps, [q.id]: v } })); }}
                   style={{ fontSize: 14, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 120 }}/>
