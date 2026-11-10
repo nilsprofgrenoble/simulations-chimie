@@ -13,7 +13,7 @@
 //   • Loi de Biot, excès énantiomérique                                            → meca-biot
 //   • Comparer la stabilité des intermédiaires réactionnels (mécanisme fourni)     → meca-stabilite
 //   • Identifier le catalyseur et expliquer son rôle dans un mécanisme             → meca-catalyseur
-//   • Identifier les formes mésomères d'ions simples                               → meca-mesomerie
+//   • Identifier les formes mésomères d'ions simples (formules de Lewis dessinées)  → meca-mesomerie
 //   • (appui) intermédiaires réactionnels et étapes élémentaires, sur un profil    → meca-profil
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -50,9 +50,9 @@ const NB_C = { primaire: 1, secondaire: 2, tertiaire: 3 };
 
 // ── Ions mésomères ──
 const IONS = [
-  { nom: 'l\'ion éthanoate CH₃–COO⁻', centre: 'carbone', n: 2, formes: 'CH₃–C(=O)–O⁻ ↔ CH₃–C(–O⁻)=O', lien: 'C–O' },
-  { nom: 'l\'ion nitrate NO₃⁻', centre: 'azote', n: 3, formes: 'la double liaison N=O peut se placer sur l\'un quelconque des trois atomes d\'oxygène, les deux autres portant une charge −', lien: 'N–O' },
-  { nom: 'l\'ion carbonate CO₃²⁻', centre: 'carbone', n: 3, formes: 'la double liaison C=O peut se placer sur l\'un quelconque des trois atomes d\'oxygène, les deux autres portant une charge −', lien: 'C–O' },
+  { nom: 'l\'ion éthanoate CH₃–COO⁻', cle: 'ethanoate', n: 2, lien: 'C–O' },
+  { nom: 'l\'ion nitrate NO₃⁻', cle: 'nitrate', n: 3, lien: 'N–O' },
+  { nom: 'l\'ion carbonate CO₃²⁻', cle: 'carbonate', n: 3, lien: 'C–O' },
 ];
 
 const DESC = ['2R,3R', '2S,3S', '2R,3S', '2S,3R'];
@@ -358,10 +358,11 @@ export const EXERCICES = [
       const i = tire(IONS);
       const autre = i.n === 2 ? 3 : 2;
       return {
-        enonce: `On étudie ${i.nom}. Son schéma de Lewis ne peut pas être écrit d'une seule façon : ${i.formes}. Ces écritures sont des formes mésomères (ou formes limites) d'une même espèce.`,
+        enonce: `On étudie ${i.nom}. Le schéma de Lewis ci-dessous en est une écriture possible. Une même espèce peut parfois s'écrire de plusieurs façons, qui diffèrent seulement par la place de la double liaison et des charges : on les appelle des formes mésomères (ou formes limites).`,
+        schema: { type: 'lewis', ion: i.cle, formes: 1, legende: 'une écriture de Lewis de l\'ion', apres: { formes: i.n, legende: 'toutes les formes mésomères équivalentes' } },
         etapes: [
-          { id: 'nombre', titre: 'Le nombre de formes', q: `Combien de formes mésomères équivalentes peut-on écrire pour ${i.nom} ?`,
-            aide: 'Combien de positions différentes la double liaison peut-elle occuper ?',
+          { id: 'nombre', titre: 'Le nombre de formes', q: `Combien d'écritures de Lewis équivalentes (formes mésomères) peut-on écrire pour ${i.nom} ?`,
+            aide: 'Les atomes ne bougent pas. Combien de positions différentes la double liaison peut-elle occuper ?',
             o: [V(`${i.n} formes`, `La double liaison peut se placer sur ${i.n === 2 ? 'l\'un ou l\'autre' : 'l\'un quelconque'} des ${i.n} atomes d'oxygène : ${i.n} écritures équivalentes.`),
               F(`${autre} formes`, `Il y a autant de formes que de positions possibles pour la double liaison, soit ${i.n}.`),
               F('Une seule forme', 'Plusieurs écritures de Lewis équivalentes sont possibles : ce sont les formes mésomères.')] },
