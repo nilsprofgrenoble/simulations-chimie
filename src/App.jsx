@@ -354,9 +354,27 @@ export default function App() {
       m.setAttribute('content', valeur);
     };
     const niv = s && { '2GT': 'Seconde', '1G': 'Première', TSTL: 'Terminale STL', BTS: 'BTS Métiers de la chimie' }[s.niveau];
-    meta('description', s && activeId > 0
-      ? `${s.label} : simulation interactive${niv ? ` (${niv})` : ''}, avec parcours guidé, exploration libre et défi.`
-      : 'Simulations interactives de chimie et de physique pour la Première, la Terminale STL et le BTS Métiers de la chimie : parcours guidés, exploration libre, défis et exercices par compétence.');
+    // description : le texte rédigé de la simulation (descriptions.js), coupé à la fin d'une phrase vers 155 caractères
+    const resume = t => { if (!t || t.length <= 155) return t || ''; const c = t.slice(0, 155); const p = Math.max(c.lastIndexOf('. '), c.lastIndexOf(', ')); return (p > 70 ? c.slice(0, p) : c.slice(0, c.lastIndexOf(' '))) + '…'; };
+    const descSim = s && activeId > 0
+      ? `${niv ? `${niv} : ` : ''}${resume(DESCRIPTIONS[s.label]) || `${s.label}, simulation interactive avec parcours guidé, exploration libre et défi.`}`
+      : 'Simulations interactives de chimie et de physique pour la Première, la Terminale STL et le BTS Métiers de la chimie : parcours guidés, exploration libre, défis et exercices par compétence.';
+    meta('description', descSim);
+    const og = (propriete, valeur) => {
+      let m = document.querySelector(`meta[property="${propriete}"]`);
+      if (!m) { m = document.createElement('meta'); m.setAttribute('property', propriete); document.head.appendChild(m); }
+      m.setAttribute('content', valeur);
+    };
+    const adresse = activeId > 0 && activeId !== 39 && activeId !== 40 ? `https://paillasse-virtuelle.fr/?sim=${activeId}` : 'https://paillasse-virtuelle.fr/';
+    og('og:title', document.title); og('og:description', descSim); og('og:url', adresse);
+    // données structurées (ressource pédagogique) pour les simulations ; retirées sur l'accueil et les pages privées
+    let ld = document.getElementById('donnees-structurees');
+    if (s && activeId > 0 && activeId !== 39 && activeId !== 40) {
+      if (!ld) { ld = document.createElement('script'); ld.type = 'application/ld+json'; ld.id = 'donnees-structurees'; document.head.appendChild(ld); }
+      ld.textContent = JSON.stringify({ '@context': 'https://schema.org', '@type': 'LearningResource', name: s.label, description: descSim, url: adresse,
+        inLanguage: 'fr', learningResourceType: 'simulation interactive', interactivityType: 'active', isAccessibleForFree: true,
+        ...(niv ? { educationalLevel: niv } : {}), author: { '@type': 'Person', name: 'Nils Aronssohn' }, isPartOf: { '@type': 'WebSite', name: NOM_SITE, url: 'https://paillasse-virtuelle.fr/' } });
+    } else if (ld) ld.remove();
     meta('robots', activeId === 39 || activeId === 40 ? 'noindex' : 'index, follow');
     // adresse canonique : les liens vers un exercice (?sim=…&ex=…) ou un code court (?c=…) affichent la même page que ?sim=… ;
     // sans cette balise, Google les signale comme « pages en double sans URL canonique ». Pas de canonique pour les pages privées (noindex).

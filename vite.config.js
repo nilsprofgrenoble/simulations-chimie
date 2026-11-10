@@ -28,7 +28,16 @@ function securite(env) {
   return {
     name: 'securite-et-referencement',
     apply: 'build',
-    transformIndexHtml: html => html.replace('<meta charset="UTF-8" />', `<meta charset="UTF-8" />\n    <meta http-equiv="Content-Security-Policy" content="${csp}" />`),
+    transformIndexHtml: html => {
+      // contenu de repli sans JavaScript : la liste des simulations avec leurs adresses (lue dans App.jsx)
+      const app = readFileSync(new URL('./src/App.jsx', import.meta.url), 'utf8')
+      const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
+      const liste = [...app.matchAll(/\{\s*id:\s*(\d+),\s*label:\s*"([^"]+)"/g)].filter(m => m[1] !== '39' && m[1] !== '40')
+        .map(m => `<li><a href="${ADRESSE_SITE}?sim=${m[1]}">${esc(m[2])}</a></li>`).join('')
+      return html
+        .replace('<!--LISTE-SIMULATIONS-->', `<h1>Paillasse virtuelle</h1><p>Simulations interactives de chimie et de physique (lycée, BTS). Activez JavaScript pour les utiliser.</p><ul>${liste}</ul>`)
+        .replace('<meta charset="UTF-8" />', `<meta charset="UTF-8" />\n    <meta http-equiv="Content-Security-Policy" content="${csp}" />`)
+    },
     // Plan du site pour les moteurs de recherche (une adresse par simulation, sauf les pages de compte)
     generateBundle() {
       const app = readFileSync(new URL('./src/App.jsx', import.meta.url), 'utf8')
