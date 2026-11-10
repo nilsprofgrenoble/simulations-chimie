@@ -268,7 +268,7 @@ export function SimulationMecanismesReactionnels() {
           </select>
         </label>}
       </div>
-      {vue === 'dessin' ? <DessinFleches etape={etapeDessin} setEtape={setEtapeDessin} onReussite={n => setReussiDessin(r => ({ ...r, [n]: true }))} /> : <>
+      {vue === 'dessin' ? <DessinFleches key={etapeDessin} etape={etapeDessin} setEtape={setEtapeDessin} onReussite={n => setReussiDessin(r => ({ ...r, [n]: true }))} /> : <>
       {vue === '2d'
         ? <Mol2D u={u} face={face} avecFleches={fleches} numC={numC} />
         : <Suspense fallback={<div style={{ padding: 20, fontSize: 14 }}>Chargement de la 3D…</div>}><Vue3D u={u} face={face} /></Suspense>}
