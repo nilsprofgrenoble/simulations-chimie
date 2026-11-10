@@ -630,5 +630,16 @@
  "34:synthese-rendement": "SAPP126",
  "34:synthese-catalyseur-piege": "SAPP127",
  "34:synthese-optimiser-xeq": "SAPP128",
- "34:synthese-comparer-protocoles": "SAPP129"
+ "34:synthese-comparer-protocoles": "SAPP129",
+ "34:meca-type-reaction": "SAPP130",
+ "34:meca-fleche-pi": "SAPP131",
+ "34:meca-nucleophile": "SAPP132",
+ "34:meca-geometrie": "SAPP133",
+ "34:meca-racemique": "SAPP134",
+ "34:meca-stereo-relations": "SAPP135",
+ "34:meca-biot": "SAPP136",
+ "34:meca-stabilite": "SAPP137",
+ "34:meca-catalyseur": "SAPP138",
+ "34:meca-mesomerie": "SAPP139",
+ "34:meca-profil": "SAPP140"
 }
