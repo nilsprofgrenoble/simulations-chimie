@@ -60,7 +60,7 @@ export const EXERCICES = [
             aide: 'Un acide carboxylique + un alcool : regardez les produits attendus.',
             o: [
               V('Une estérification : l\'acide carboxylique et l\'alcool forment un ester et de l\'eau', 'Acide carboxylique + alcool → ester + eau : c\'est la définition de l\'estérification.'),
-              F('Une combustion : l\'alcool brûle au contact de l\'acide', 'Aucune combustion ici : pas de dioxygène réactif, et l\'eau formée par l\'estérification n\'est pas une « flamme ».'),
+              F('Une combustion : l\'alcool brûle au contact de l\'acide', 'Il n\'y a pas de dioxygène parmi les réactifs : ce n\'est pas une combustion.'),
               F('Une réaction acide-base : l\'acide cède un proton à l\'alcool', 'Une réaction acide-base serait rapide et totale : or l\'essai montre une réaction lente et limitée.'),
             ] },
           { id: 'equation', titre: 'L\'équation de la réaction', q: 'Quelle est l\'équation correcte de cette synthèse ?',
@@ -101,19 +101,19 @@ export const EXERCICES = [
       const t2 = t + 10;
       const k2 = kDe(t2);
       return {
-        enonce: `Le modèle de la simulation de laboratoire donne la loi d'avancement x(t) = x_éq·(1 − e^(−k·t)), avec k = ${nb(k, 3)} min⁻¹ pour un essai à ${nb(t, 0)} °C sans catalyseur. Dans la plage étudiée, la vitesse double tous les 10 °C. Le temps de demi-réaction t_(1/2) est la durée nécessaire pour atteindre la moitié de l'avancement final.`,
+        enonce: `Le modèle de la simulation de laboratoire donne la loi d'avancement x(t) = x_éq·(1 − e^(−k·t)), avec k = ${nb(k, 3)} min⁻¹ pour un essai à ${nb(t, 0)} °C sans catalyseur. Dans la plage étudiée, la vitesse double tous les 10 °C. Le temps de demi-réaction t_1/2 est la durée nécessaire pour atteindre la moitié de l'avancement final.`,
         etapes: [
-          { id: 'definition', titre: 'Ce que mesure t_(1/2)', q: 'Que représente exactement le temps de demi-réaction t_(1/2) ?',
+          { id: 'definition', titre: 'Ce que mesure t_1/2', q: 'Que représente exactement le temps de demi-réaction t_1/2 ?',
             aide: '« Demi-réaction » : la moitié de... quoi ?',
             o: [
-              V(`La durée nécessaire pour atteindre la moitié de l'avancement final x_éq`, 't_(1/2) correspond à x = x_éq/2 : c\'est l\'indicateur de durée utilisé pour planifier un essai.'),
+              V(`La durée nécessaire pour atteindre la moitié de l'avancement final x_éq`, 't_1/2 correspond à x = x_éq/2 : c\'est l\'indicateur de durée utilisé pour planifier un essai.'),
               F('La moitié de la température de l\'essai', 'Aucun rapport avec la température.'),
               F('Le temps au bout duquel la moitié du récipient a réagi de façon visible', 'On ne regarde pas le récipient mais l\'avancement : la moitié de l\'avancement final.'),
             ] },
-          { id: 't12', titre: 'Calculer t_(1/2)', q: `Calculez le temps de demi-réaction t_(1/2) de cet essai (en minutes).`,
-            aide: `Avec x(t) = x_éq(1 − e^(−k·t)), résolvez x_éq/2 = x_éq(1 − e^(−k·t)) : t_(1/2) = ln(2)/k, avec k = ${nb(k, 3)} min⁻¹.`,
-            type: 'saisie', champs: [{ id: 't12', lib: 't_(1/2)', u: 'min', vrai: t12, tol: 0.03 }],
-            expl: `t_(1/2) = ln(2)/k = 0,693/${nb(k, 3)} ≈ ${nb(t12, 1)} min. On remarque qu'il ne dépend PAS de x_éq : cinétique et rendement sont déconnectés.` },
+          { id: 't12', titre: 'Calculer t_1/2', q: `Calculez le temps de demi-réaction t_1/2 de cet essai (en minutes).`,
+            aide: `Avec x(t) = x_éq(1 − e^(−k·t)), résolvez x_éq/2 = x_éq(1 − e^(−k·t)) : t_1/2 = ln(2)/k, avec k = ${nb(k, 3)} min⁻¹.`,
+            type: 'saisie', champs: [{ id: 't12', lib: 't_1/2', u: 'min', vrai: t12, tol: 0.03 }],
+            expl: `t_1/2 = ln(2)/k = 0,693/${nb(k, 3)} ≈ ${nb(t12, 1)} min. On remarque qu'il ne dépend PAS de x_éq : cinétique et rendement sont déconnectés.` },
           { id: 'double', titre: 'Dix degrés de plus', q: `On refait l'essai à ${nb(t2, 0)} °C. Par quel facteur la constante de vitesse est-elle multipliée ?`,
             aide: `Règle simplifiée affichée : la vitesse double tous les 10 °C.`,
             type: 'saisie', champs: [{ id: 'fact', lib: 'facteur', u: '', vrai: 2, tol: 0.01 }],
@@ -121,12 +121,12 @@ export const EXERCICES = [
           { id: 'temporaire', titre: 'Chauffer change-t-il le plafond ?', q: `À ${nb(t2, 0)} °C, l'essai atteint l'équilibre plus vite. Le rendement maximal x_éq a-t-il changé ?`,
             aide: 'La température joue sur la vitesse (k) ; le plafond, lui, est imposé par l\'équilibre.',
             o: [
-              V('Non : x_éq ne dépend pas de la température dans ce modèle ; on atteint le même plafond, seulement plus vite', 'Chauffer accélère ; le plafond reste fixé par la constante d\'équilibre K. Le vérifier dans la simulation : bouger le curseur T déplace t_(1/2), pas le trait orange.'),
+              V('Non : x_éq ne dépend pas de la température dans ce modèle ; on atteint le même plafond, seulement plus vite', 'Chauffer accélère ; le plafond reste fixé par la constante d\'équilibre K. Le vérifier dans la simulation : bouger le curseur T déplace t_1/2, pas le trait orange.'),
               F('Oui : chauffer détruit l\'équilibre et rend la réaction totale', 'L\'équilibre n\'est pas détruit ; la réaction reste renversable.'),
               F('Oui : x_éq double comme la vitesse', 'Aucune raison : la vitesse double, pas le plafond.'),
             ] },
         ],
-        retenir: [`t_(1/2) = ln(2)/k ne dépend pas de x_éq. Chauffer (comme le catalyseur) réduit t_(1/2) mais ne déplace pas le plafond x_éq : cinétique et rendement sont deux problèmes distincts.`],
+        retenir: [`t_1/2 = ln(2)/k ne dépend pas de x_éq. Chauffer (comme le catalyseur) réduit t_1/2 mais ne déplace pas le plafond x_éq : cinétique et rendement sont deux problèmes distincts.`],
       };
     },
   },
@@ -185,14 +185,14 @@ export const EXERCICES = [
       return {
         enonce: `Un fournisseur propose un catalyseur acide « révolutionnaire » pour l'essai à ${nb(t, 0)} °C (k = ${nb(k, 3)} min⁻¹ sans artifice). Avec le catalyseur, la constante de vitesse est multipliée par 4 : k = ${nb(kc, 3)} min⁻¹. La plaquette publicitaire annonce : « réaction totale garantie, rendement 100 % ».`,
         etapes: [
-          { id: 't12', titre: 'L\'effet réel sur la durée', q: `Calculez le nouveau temps de demi-réaction t_(1/2) avec le catalyseur (en minutes).`,
-            aide: `t_(1/2) = ln(2)/k avec k = ${nb(kc, 3)} min⁻¹.`,
-            type: 'saisie', champs: [{ id: 't12', lib: 't_(1/2)', u: 'min', vrai: t12De(kc), tol: 0.03 }],
-            expl: `t_(1/2) = ln(2)/${nb(kc, 3)} ≈ ${nb(t12De(kc), 1)} min, contre ${nb(t12De(k), 1)} min sans catalyseur : quatre fois plus rapide.` },
+          { id: 't12', titre: 'L\'effet réel sur la durée', q: `Calculez le nouveau temps de demi-réaction t_1/2 avec le catalyseur (en minutes).`,
+            aide: `t_1/2 = ln(2)/k avec k = ${nb(kc, 3)} min⁻¹.`,
+            type: 'saisie', champs: [{ id: 't12', lib: 't_1/2', u: 'min', vrai: t12De(kc), tol: 0.03 }],
+            expl: `t_1/2 = ln(2)/${nb(kc, 3)} ≈ ${nb(t12De(kc), 1)} min, contre ${nb(t12De(k), 1)} min sans catalyseur : quatre fois plus rapide.` },
           { id: 'def', titre: 'La définition d\'un catalyseur', q: 'Quelle est la définition correcte d\'un catalyseur ?',
             aide: 'Suivez sa quantité au début et à la fin de la réaction.',
             o: [
-              V('Une espèce qui accélère une réaction ; elle est consommée puis régénérée, sa quantité est la même au début et à la fin', 'C\'est la définition exigible : le catalyseur ouvre un chemin réactionnel de moindre énergie d\'activation, sans être consommé globalement.'),
+              V('Une espèce qui accélère une réaction ; elle est consommée puis régénérée, sa quantité est la même au début et à la fin', 'Le catalyseur ouvre un chemin réactionnel de moindre énergie d\'activation, sans être consommé globalement.'),
               F('Un réactif qui apporte de l\'énergie à la réaction et disparaît en fin de réaction', 'Un réactif disparaissant n\'est pas un catalyseur ; et le catalyseur n\'apporte pas d\'énergie.'),
               F('Une espèce qui déplace l\'équilibre pour rendre la réaction totale', 'Le catalyseur ne déplace PAS l\'équilibre : il accélère les deux sens à la fois.'),
             ] },

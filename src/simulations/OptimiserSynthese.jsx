@@ -139,6 +139,7 @@ const hypotheses = (
     <li><strong>Modèle d'ordre 1</strong> : la loi d'évolution de l'avancement est fournie, x(t) = x<sub>éq</sub>(1 − e<sup>−k·t</sup>) ; l'influence de la dilution est simplifiée (facteur multiplicatif sur k).</li>
     <li><strong>Température</strong> : la vitesse double tous les 10 °C dans la plage étudiée (règle simplifiée d'Arrhenius).</li>
     <li><strong>Équilibre</strong> : constante K = 4 (hypothèse didactique classique pour une estérification) ; l'élimination de l'eau et l'anhydride donnent des rendements « quasi totaux » (0,97 et 0,98).</li>
+    <li><strong>Excès d'éthanol</strong> : on ne retient ici que son effet sur l'équilibre (donc sur le rendement) ; son effet sur la vitesse, réel mais plus faible, est négligé. Le chauffage au-dessus de 78 °C (ébullition de l'éthanol) suppose un montage à reflux.</li>
     <li><strong>Coût et chimie verte</strong> : unités fictives, destinées à comparer les protocoles entre eux, pas à un prix réel.</li>
     <li><strong>Données fictives plausibles</strong> : contextes et valeurs inventés pour la simulation, calibrés sur des ordres de grandeur réalistes.</li>
   </ul>
@@ -149,6 +150,8 @@ const hypotheses = (
 const G = { t: 40, catalyseur: false, fconc: 1, rapport: 1, reactif: "acide", eauEliminee: false };
 
 function etapesGuide() {
+  const pA = bilanProtocole({ ...G, rapport: 5 }), pB = bilanProtocole({ t: 60, catalyseur: true, fconc: 1, rapport: 1, reactif: 'anhydride', eauEliminee: false }),
+    pC = bilanProtocole({ t: 60, catalyseur: true, fconc: 1, rapport: 5, reactif: 'acide', eauEliminee: false });
   const g = bilanProtocole(G);   // t½ = 30,1 min ; x_eq = 0,67 ; rendement à 120 min = 0,63
   return [
     { titre: "La mission", texte: <>La réaction d'estérification est <strong>lente</strong> et <strong>limitée par l'équilibre</strong> : à 40 °C, sans artifice, elle ne donne jamais plus de {fmt(g.xeq * 100, 0)} % d'ester en un temps raisonnable. Le service production veut mieux. </>,
@@ -193,15 +196,15 @@ function etapesGuide() {
         pieges: [[g.t12 * 4, 'Vous avez multiplié au lieu de diviser : si k augmente, t_1/2 diminue.']],
         indice: 't_1/2 et k varient en sens inverse.' } },
 
-    { titre: "Catalyse homogène ou hétérogène", texte: <>Le catalyseur peut être dans la même phase que les réactifs (catalyse <strong>homogène</strong>, ici l'acide dissous) ou dans une phase différente (catalyse <strong>hétérogène</strong>, par exemple une résine solide). C'est la définition exigible.</>,
+    { titre: "Catalyse homogène ou hétérogène", texte: <>Le catalyseur peut être dans la même phase que les réactifs (catalyse <strong>homogène</strong>, ici l'acide dissous) ou dans une phase différente (catalyse <strong>hétérogène</strong>, par exemple une résine solide). </>,
       tache: { type: 'qcm', q: 'Un solide catalytique est plongé dans la solution réactionnelle. De quel type de catalyse s\'agit-il ?',
         options: ['Homogène : tout est mélangé dans le même récipient', 'Hétérogène : le catalyseur solide et les réactifs liquides sont dans des phases différentes', 'Ce n\'est pas une catalyse : un solide ne peut pas catalyser'],
         bonne: 1, indice: 'Le critère est la phase (état physique), pas le récipient.',
         expl: <>Catalyse hétérogène : le catalyseur solide agit à sa surface. Bonus industriel : on le récupère par simple filtration (réutilisable, moins de déchets).</> } },
 
-    { titre: "L'énergie d'activation", texte: <>Sur le <strong>profil réactionnel</strong> (énergie potentielle du système en fonction de l'avancement), le réactif doit franchir un col : l'<strong>énergie d'activation</strong>. Plus ce col est haut, plus la réaction est lente. Les produits sont plus bas que les réactifs : K = 4 &gt; 1, l'équilibre est favorisé dans le sens direct, sans être total. Le catalyseur ouvre un chemin avec un col plus bas : c'est ainsi qu'il accélère, sans rien apporter à l'état final.</>,
+    { titre: "L'énergie d'activation", texte: <>Sur le <strong>profil réactionnel</strong> (énergie potentielle du système en fonction de l'avancement), le réactif doit franchir un col : l'<strong>énergie d'activation</strong>. Plus ce col est haut, plus la réaction est lente. Ici l'estérification est presque athermique : les produits sont à un niveau voisin de celui des réactifs, et c'est la constante d'équilibre K qui fixe l'état final. Le catalyseur ouvre un chemin avec un col plus bas : c'est ainsi qu'il accélère, sans rien apporter à l'état final.</>,
       tache: { type: 'qcm', q: 'Que modifie un catalyseur sur le profil réactionnel ?',
-        options: ['Il abaisse l\'énergie d\'activation, la difference d\'énergie entre réactifs et produits est inchangée', 'Il abaisse l\'énergie des produits : la réaction devient plus favorable', 'Il apporte de l\'énergie thermique au système'],
+        options: ['Il abaisse l\'énergie d\'activation, la différence d\'énergie entre réactifs et produits est inchangée', 'Il abaisse l\'énergie des produits : la réaction devient plus favorable', 'Il apporte de l\'énergie thermique au système'],
         bonne: 0, indice: 'Comparez les deux profils : le point de départ et le point d\'arrivée, puis la hauteur du col.',
         expl: <>Le catalyseur abaisse le col (énergie d'activation) : plus de chocs le franchissent, la réaction est plus rapide. Mais les états initial et final ne bougent pas : l'état d'équilibre, lui, ne change pas.</> } },
 
@@ -229,11 +232,13 @@ function etapesGuide() {
         pieges: [[67, 'Vous avez répondu le rendement du mélange équimolaire : l\'excès d\'éthanol déplace l\'équilibre vers l\'ester.']],
         indice: 'L\'acide reste le réactif limitant : le rendement maximal est x_eq × 100.' } },
 
-    { titre: "Chimie verte : choisir le protocole", texte: <>Trois voies possibles : (a) excès d'éthanol (réactif bon marché), (b) élimination de l'eau au fur et à mesure (montage de déshydratation), (c) anhydride d'acide, dérivé plus réactif, quasi total mais plus cher et plus « chargé » côté sécurité. </>,
-      tache: { type: 'qcm', q: 'Cahier des charges : rendement supérieur à 90 %, temps de demi-réaction inférieur à 10 min, coût minimal. Quel protocole retenez-vous ?',
-        options: ['Excès d\'éthanol seul : rendement 95 %, mais t½ ≈ 30 min : trop lent', 'Anhydride d\'acide à chaud avec catalyseur : quasi total, très rapide, mais coût et impact plus élevés', 'Mélange équimolaire à froid sans catalyseur : le moins cher, mais 67 % et trop lent'],
-        bonne: 1, indice: 'Croisez les trois critères du cahier des charges avec les bilans de chaque protocole : aucun n\'est parfait, il faut prioriser.',
-        expl: <>Le cahier des charges impose la vitesse ET le rendement : seul l'anhydride les réunit. Si la contrainte environnementale devenait dominante, on chercherait un compromis différent : comparer des protocoles, c'est arbitrer, pas appliquer une recette.</> } },
+    { titre: "Chimie verte : choisir le protocole", texte: <>Plusieurs voies existent : (a) excès d'éthanol (réactif bon marché) pour le rendement, (b) catalyseur et chauffage pour la vitesse, (c) élimination de l'eau, (d) anhydride d'acide, dérivé plus réactif, quasi total mais plus cher et plus « chargé » côté sécurité. Les leviers de vitesse et de rendement sont indépendants : on peut les combiner.</>,
+      tache: { type: 'qcm', q: `Cahier des charges : rendement supérieur à 90 %, temps de demi-réaction inférieur à 10 min, coût minimal. Quel protocole retenez-vous ?`,
+        options: [`Excès d'éthanol seul (r = 5, 40 °C, sans catalyseur) : rendement ${fmt(pA.xeq * 100, 0)} %, mais t½ = ${fmt(pA.t12, 0)} min : trop lent`,
+          `Anhydride d'acide avec catalyseur à 60 °C : quasi total et très rapide, mais coût ${fmt(pB.cout, 1)} et impact plus élevé`,
+          `Excès d'éthanol (r = 5) + catalyseur + 60 °C : rendement ${fmt(pC.xeq * 100, 0)} %, t½ = ${fmt(pC.t12, 1)} min, coût ${fmt(pC.cout, 1)}`],
+        bonne: 2, indice: 'Croisez les trois critères avec les bilans de chaque protocole. Quel levier agit sur la vitesse ? Lequel sur le rendement ? Peut-on les combiner ?',
+        expl: <>L'excès d'éthanol relève le rendement, le catalyseur et la température accélèrent : en combinant ces leviers indépendants, on respecte les trois critères au moindre coût ({fmt(pC.cout, 1)} contre {fmt(pB.cout, 1)} avec l'anhydride). Comparer des protocoles, c'est arbitrer entre rendement, durée, coût et impact : ici, il y a même plusieurs compromis possibles, à vous de les explorer dans l'écran Exploration.</> } },
   ];
 }
 
@@ -567,7 +572,7 @@ function EcranExploration({ expl, maj }) {
       <div style={styleBoite}>
         <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Conditions opératoires</div>
         {rang("t", expl.t, "Température T", "°C", M.t[0], M.t[1], M.t[2], "Vitesse ×2 tous les 10 °C (règle simplifiée).")}
-        {rang("rapport", expl.rapport, "Excès d'éthanol (rapport molaire r)", "", M.rapport[0], M.rapport[1], M.rapport[2], "Réactif bon marché : déplace l'équilibre, donc le rendement… mais pas la vitesse.")}
+        {rang("rapport", expl.rapport, "Excès d'éthanol (rapport molaire r)", "", M.rapport[0], M.rapport[1], M.rapport[2], "Réactif bon marché : il déplace l'équilibre, donc le rendement (son effet sur la vitesse est négligé ici).")}
         {rang("fconc", expl.fconc, "Concentration (facteur)", "", M.fconc[0], M.fconc[1], M.fconc[2], "Diluer ralentit (moins de chocs par litre).")}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4 }}>
           <button style={stylePetitBouton(expl.catalyseur, KIT.accent)}
