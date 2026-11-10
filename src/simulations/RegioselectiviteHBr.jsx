@@ -108,12 +108,12 @@ function MolAnim({ a, v, u, numC }) {
   const mid = [(C[a.db[0]][0] + C[a.db[1]][0]) / 2, (C[a.db[0]][1] + C[a.db[1]][1]) / 2];
   const f1 = u > 0.1 && u < 0.34, f2 = u > 0.48 && u < 0.66, dQ = dirNum(v.c);
   const dd = [Ch[0] - Cc[0], Ch[1] - Cc[1]], dl = Math.hypot(...dd) || 1, nrm = [-dd[1] / dl * 4, dd[0] / dl * 4];
-  const trait = (p, q, op, tir, col = NOIR) => op > 0.02 && (() => {
+  const trait = (p, q, op, tir, col = NOIR, cp = 11, cq = 11) => op > 0.02 && (() => {
     const d = [q[0] - p[0], q[1] - p[1]], L = Math.hypot(...d) || 1, e = [d[0] / L, d[1] / L];
-    return <line x1={p[0] + e[0] * 11} y1={p[1] + e[1] * 11} x2={q[0] - e[0] * 11} y2={q[1] - e[1] * 11} stroke={col} strokeWidth={2.2} strokeLinecap="round" strokeDasharray={tir ? '4 4' : undefined} opacity={op} />;
+    return <line x1={p[0] + e[0] * cp} y1={p[1] + e[1] * cp} x2={q[0] - e[0] * cq} y2={q[1] - e[1] * cq} stroke={col} strokeWidth={2.2} strokeLinecap="round" strokeDasharray={tir ? '4 4' : undefined} opacity={op} />;
   })();
   return (
-    <svg viewBox={`${x0} ${y0} ${x1 - x0} ${y1 - y0}`} role="img" aria-label={`Mécanisme de la voie ${v.cle === 'A' ? 1 : 2}, animation`} style={{ width: '100%', height: 250, display: 'block', margin: '0 auto' }}>
+    <svg viewBox={`${x0} ${y0} ${x1 - x0} ${y1 - y0}`} role="img" aria-label={`Mécanisme de la voie ${v.cle === 'A' ? 1 : 2}, animation`} style={{ width: '100%', height: 215, display: 'block', margin: '0 auto' }}>
       {a.liaisons.map(([p, q], i) => {
         const [px, py] = C[p], [qx, qy] = C[q], ddx = qx - px, ddy = qy - py, d = Math.hypot(ddx, ddy), nx = -ddy / d * 3, ny = ddx / d * 3;
         const dbl = (p === a.db[0] && q === a.db[1]) || (q === a.db[0] && p === a.db[1]);
@@ -124,8 +124,8 @@ function MolAnim({ a, v, u, numC }) {
         </g>);
       })}
       {trait(H, Br, hbr, u > 0.1)}
-      {trait(ch, H, liaisonH, liaisonH < 0.98, VERT)}
-      {trait(Cc, Br, liaisonBr, liaisonBr < 0.98, BRUN)}
+      {trait(ch, H, liaisonH, liaisonH < 0.98, VERT, 0, 11)}
+      {trait(Cc, Br, liaisonBr, liaisonBr < 0.98, BRUN, 0, 11)}
       {charge > 0.02 && <g opacity={charge}><circle cx={cx + dQ[0] * 20} cy={cy + dQ[1] * 20} r={8} fill="white" stroke={BLEU} strokeWidth={1.8} /><text x={cx + dQ[0] * 20} y={cy + dQ[1] * 20 + 4.5} fontSize={14} fontWeight="700" textAnchor="middle" fill={BLEU}>+</text></g>}
       <text x={H[0]} y={H[1] + 5} fontSize={15} fontWeight="700" textAnchor="middle" fill={VERT}>H</text>
       <text x={Br[0]} y={Br[1] + 5} fontSize={16} fontWeight="700" textAnchor="middle" fill={BRUN}>Br{brIon > 0.5 && <tspan fontSize="11" dy="-7">−</tspan>}</text>
