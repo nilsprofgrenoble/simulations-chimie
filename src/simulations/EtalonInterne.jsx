@@ -222,7 +222,7 @@ export function SectionEtalonInterne({plotlyReady}) {
     vp5=40, vp5b=40, vF5=20,
   }) {
     // Cm EI calculée
-    const CmEI_calc = (masseEI / volF2).toFixed(2);
+    const CmEI_calc = fmt(masseEI / volF2, 2);
     return (
       <svg width="100%" viewBox="0 0 680 230">
         <defs>
@@ -243,7 +243,7 @@ export function SectionEtalonInterne({plotlyReady}) {
         <text x="85" y="26" textAnchor="middle" fontSize="11" fontWeight="700" fill="#1a7a6e">Fiole 1 ({volF1} mL)</text>
         {massesF1.length > 0
           ? massesF1.map((m,i)=>(
-              <text key={i} x="85" y={41+i*13} textAnchor="middle" fontSize="10" fill={COMP_COLORS[i]}>{nomF1?.[i]||`Analyte ${i+1}`} : {m} mg</text>
+              <text key={i} x="85" y={41+i*13} textAnchor="middle" fontSize="10" fill={COMP_COLORS[i]}>{nomF1?.[i]||`Analyte ${i+1}`} : {fmt(m, 1)} mg</text>
             ))
           : <text x="85" y="55" textAnchor="middle" fontSize="10" fill="#333">Analytes étalons</text>
         }
@@ -253,7 +253,7 @@ export function SectionEtalonInterne({plotlyReady}) {
         <rect x="265" y="10" width="150" height="90" rx="8" fill="#f3eeff" stroke="#6a4c93" strokeWidth="2"/>
         <text x="340" y="26" textAnchor="middle" fontSize="11" fontWeight="700" fill="#4a2c73">Fiole 2 ({volF2} mL)</text>
         <text x="340" y="44" textAnchor="middle" fontSize="10" fill="#6a4c93">{nomEI} (EI)</text>
-        <text x="340" y="58" textAnchor="middle" fontSize="10" fill="#333">{masseEI} mg</text>
+        <text x="340" y="58" textAnchor="middle" fontSize="10" fill="#333">{fmt(masseEI, 1)} mg</text>
         <text x="340" y="72" textAnchor="middle" fontSize="10" fill="#888">→ Cm ≈ {CmEI_calc} mg/mL</text>
         <text x="340" y="86" textAnchor="middle" fontSize="10" fill="#666">+ éluant qsp {volF2} mL</text>
 
@@ -261,7 +261,7 @@ export function SectionEtalonInterne({plotlyReady}) {
         <rect x="520" y="10" width="150" height="90" rx="8" fill="#fff0f5" stroke="#e63946" strokeWidth="1.5"/>
         <text x="595" y="26" textAnchor="middle" fontSize="11" fontWeight="700" fill="#a01020">Fiole 4 ({volF4} mL)</text>
         <text x="595" y="44" textAnchor="middle" fontSize="10" fill="#333">{nomF4}</text>
-        <text x="595" y="58" textAnchor="middle" fontSize="10" fill="#e63946">{masseF4} mg</text>
+        <text x="595" y="58" textAnchor="middle" fontSize="10" fill="#e63946">{fmt(masseF4, 1)} mg</text>
         <text x="595" y="74" textAnchor="middle" fontSize="10" fill="#666">+ éluant qsp {volF4} mL</text>
 
         {/* ── LIGNE 2 : Fiole 3, Fiole 5 ── */}
@@ -482,15 +482,15 @@ export function SectionEtalonInterne({plotlyReady}) {
                 <tr key={i}>
                   <td style={tdS}><span style={{color:colors[i],fontWeight:500}}>{nom}</span></td>
                   <td style={tdS}>
-                    {isEx ? <strong style={{color:colors[i]}}>{CmEt[i]}</strong>
-                          : <strong style={{color:colors[i]}}>{CmEt_calc[i]?.toFixed(4) ?? '—'}</strong>}
+                    {isEx ? <strong style={{color:colors[i]}}>{String(CmEt[i]).replace(".", ",")}</strong>
+                          : <strong style={{color:colors[i]}}>{CmEt_calc[i] != null ? fmt(CmEt_calc[i], 4) : '—'}</strong>}
                   </td>
                   <td style={tdS}>
-                    {isEx ? trEt[i]
+                    {isEx ? String(trEt[i]).replace(".", ",")
                           : <input type="number" value={etTr[i]} onChange={e=>setIdx(etTr,setEtTr,i,e.target.value)} style={inpW(55)}/>}
                   </td>
                   <td style={tdS}>
-                    {isEx ? airesEt[i]
+                    {isEx ? String(airesEt[i]).replace(".", ",")
                           : <input type="number" value={etAires[i]} onChange={e=>setIdx(etAires,setEtAires,i,e.target.value)} style={inpW(65)}/>}
                   </td>
                 </tr>
@@ -498,14 +498,14 @@ export function SectionEtalonInterne({plotlyReady}) {
               <tr style={{background:'rgba(106,76,147,0.07)',fontStyle:'italic'}}>
                 <td style={tdS}><span style={{color:'#6a4c93',fontWeight:500}}>{eiLabel} (EI)</span></td>
                 <td style={tdS}>
-                  {isEx ? <strong style={{color:'#6a4c93'}}>{CmEI_et}</strong>
+                  {isEx ? <strong style={{color:'#6a4c93'}}>{String(CmEI_et).replace(".", ",")}</strong>
                         : <input type="number" value={etCmEI} onChange={e=>setEtCmEI(parseFloat(e.target.value)||0)} style={inpW(65)}/>}
                 </td>
                 <td style={tdS}>
-                  {isEx ? trEI_et : <input type="number" value={etTrEI} onChange={e=>setEtTrEI(parseFloat(e.target.value)||0)} style={inpW(55)}/>}
+                  {isEx ? String(trEI_et).replace(".", ",") : <input type="number" value={etTrEI} onChange={e=>setEtTrEI(parseFloat(e.target.value)||0)} style={inpW(55)}/>}
                 </td>
                 <td style={tdS}>
-                  {isEx ? areEI_et : <input type="number" value={etAireEI} onChange={e=>setEtAireEI(parseFloat(e.target.value)||0)} style={inpW(65)}/>}
+                  {isEx ? String(areEI_et).replace(".", ",") : <input type="number" value={etAireEI} onChange={e=>setEtAireEI(parseFloat(e.target.value)||0)} style={inpW(65)}/>}
                 </td>
               </tr>
             </tbody>
@@ -530,21 +530,21 @@ export function SectionEtalonInterne({plotlyReady}) {
                   <td style={tdS}><span style={{color:colors[i],fontWeight:500}}>{nom}</span></td>
                   <td style={tdS}><span style={{color:'#aaa',fontStyle:'italic'}}>?</span></td>
                   <td style={tdS}>
-                    {isEx ? trEch[i] : <input type="number" value={echTr[i]} onChange={e=>setIdx(echTr,setEchTr,i,e.target.value)} style={inpW(55)}/>}
+                    {isEx ? String(trEch[i]).replace(".", ",") : <input type="number" value={echTr[i]} onChange={e=>setIdx(echTr,setEchTr,i,e.target.value)} style={inpW(55)}/>}
                   </td>
                   <td style={tdS}>
-                    {isEx ? airesEch[i] : <input type="number" value={echAires[i]} onChange={e=>setIdx(echAires,setEchAires,i,e.target.value)} style={inpW(65)}/>}
+                    {isEx ? String(airesEch[i]).replace(".", ",") : <input type="number" value={echAires[i]} onChange={e=>setIdx(echAires,setEchAires,i,e.target.value)} style={inpW(65)}/>}
                   </td>
                 </tr>
               ))}
               <tr style={{background:'rgba(233,168,36,0.08)',fontStyle:'italic'}}>
                 <td style={tdS}><span style={{color:'#e9a824',fontWeight:500}}>{eiLabel} (EI)</span></td>
-                <td style={tdS}><strong style={{color:'#e9a824'}}>{isEx ? ex.echantillon.CmEI : CmEI_calc_F5.toFixed(4)}</strong></td>
+                <td style={tdS}><strong style={{color:'#e9a824'}}>{isEx ? String(ex.echantillon.CmEI).replace(".", ",") : fmt(CmEI_calc_F5, 4)}</strong></td>
                 <td style={tdS}>
-                  {isEx ? trEI_ech : <input type="number" value={echTrEI} onChange={e=>setEchTrEI(parseFloat(e.target.value)||0)} style={inpW(55)}/>}
+                  {isEx ? String(trEI_ech).replace(".", ",") : <input type="number" value={echTrEI} onChange={e=>setEchTrEI(parseFloat(e.target.value)||0)} style={inpW(55)}/>}
                 </td>
                 <td style={tdS}>
-                  {isEx ? areEI_ech : <input type="number" value={echAireEI} onChange={e=>setEchAireEI(parseFloat(e.target.value)||0)} style={inpW(65)}/>}
+                  {isEx ? String(areEI_ech).replace(".", ",") : <input type="number" value={echAireEI} onChange={e=>setEchAireEI(parseFloat(e.target.value)||0)} style={inpW(65)}/>}
                 </td>
               </tr>
             </tbody>
@@ -598,10 +598,10 @@ export function SectionEtalonInterne({plotlyReady}) {
                     <strong style={{color:colors[i]}}>{nom}</strong>
                   </td>
                   <td style={{padding:'6px 12px',fontWeight:500,color:'#4a2c73'}}>
-                    {cm!==null ? cm.toFixed(4) : <span style={{color:'#aaa'}}>—</span>}
+                    {cm!==null ? fmt(cm, 4) : <span style={{color:'#aaa'}}>—</span>}
                   </td>
                   <td style={{padding:'6px 12px',fontWeight:600,color:'#e9a824'}}>
-                    {m!==null ? m.toFixed(3)+' mg' : <span style={{color:'#aaa'}}>—</span>}
+                    {m!==null ? fmt(m, 3)+' mg' : <span style={{color:'#aaa'}}>—</span>}
                   </td>
                 </tr>
               );
@@ -812,13 +812,13 @@ export function SectionNormalisationInterne({plotlyReady}) {
                         style={inpW(80)}/>
                     </td>
                     <td style={{padding:'3px 8px',fontWeight:500,color:COMP_COLORS[i]}}>
-                      {masseTotal > 0 ? ((masses[i]/masseTotal)*100).toFixed(2)+' %' : '—'}
+                      {masseTotal > 0 ? fmt((masses[i]/masseTotal)*100, 2)+' %' : '—'}
                     </td>
                   </tr>
                 ))}
                 <tr style={{background:'rgba(106,76,147,0.05)',fontWeight:600}}>
                   <td style={{padding:'4px 8px',color:'#4a2c73'}}>Total</td>
-                  <td style={{padding:'4px 8px',color:'#4a2c73'}}>{masseTotal.toFixed(1)} mg</td>
+                  <td style={{padding:'4px 8px',color:'#4a2c73'}}>{fmt(masseTotal, 1)} mg</td>
                   <td style={{padding:'4px 8px',color:'#2a9d8f'}}>100,00 %</td>
                 </tr>
               </tbody>
@@ -853,10 +853,10 @@ export function SectionNormalisationInterne({plotlyReady}) {
                     </span>
                   </td>
                   <td style={tdS}>
-                    <strong style={{color:colors[i]}}>{pctMasse[i].toFixed(2)} %</strong>
+                    <strong style={{color:colors[i]}}>{fmt(pctMasse[i], 2)} %</strong>
                   </td>
                   <td style={tdS}>
-                    {isEx ? trEtalon[i]
+                    {isEx ? String(trEtalon[i]).replace(".", ",")
                           : <input type="number" value={trEt[i]} onChange={e=>setI(trEt,setTrEt,i,e.target.value)} style={inpW(50)}/>}
                   </td>
                   <td style={tdS}>
@@ -889,7 +889,7 @@ export function SectionNormalisationInterne({plotlyReady}) {
                   <td style={tdS}><span style={{color:colors[i],fontWeight:500}}>{nom}</span></td>
                   <td style={tdS}><span style={{color:'#aaa',fontStyle:'italic'}}>?</span></td>
                   <td style={tdS}>
-                    {isEx ? trEchant[i]
+                    {isEx ? String(trEchant[i]).replace(".", ",")
                           : <input type="number" value={trEch[i]} onChange={e=>setI(trEch,setTrEch,i,e.target.value)} style={inpW(50)}/>}
                   </td>
                   <td style={tdS}>
@@ -939,7 +939,7 @@ export function SectionNormalisationInterne({plotlyReady}) {
                 K<sub>{nom.split(' ')[0]}/{nomsList[ref]?.split(' ')[0]}</sub> ={' '}
               </span>
               <strong style={{color:colors[i]}}>
-                {Ki[i]!==null ? Ki[i].toFixed(4) : '—'}{i===ref?' (réf.)':''}
+                {Ki[i]!==null ? fmt(Ki[i], 4) : '—'}{i===ref?' (réf.)':''}
               </strong>
             </div>
           ))}
@@ -970,7 +970,7 @@ export function SectionNormalisationInterne({plotlyReady}) {
                   <strong style={{color:colors[i]}}>{nom}</strong>
                 </td>
                 <td style={{padding:'6px 12px',fontWeight:600,color:pctEch[i]!==null?'#e9a824':'#aaa'}}>
-                  {pctEch[i]!==null ? pctEch[i].toFixed(2)+' %' : '—'}
+                  {pctEch[i]!==null ? fmt(pctEch[i], 2)+' %' : '—'}
                 </td>
               </tr>
             ))}
@@ -978,7 +978,7 @@ export function SectionNormalisationInterne({plotlyReady}) {
               <td style={{padding:'6px 12px',fontWeight:600,color:'#9a6000'}}>Somme</td>
               <td style={{padding:'6px 12px',fontWeight:700,color:pctEch.every(p=>p!==null)?'#2a9d8f':'#aaa'}}>
                 {pctEch.every(p=>p!==null)
-                  ? pctEch.reduce((s,p)=>s+p,0).toFixed(2)+' %'
+                  ? fmt(pctEch.reduce((s,p)=>s+p,0), 2)+' %'
                   : '—'}
               </td>
             </tr>

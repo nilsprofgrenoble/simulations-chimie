@@ -1,6 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices } from "../commun";
+const vf = x => String(x).replace('.', ',');
 import { Pic } from "../Pictos";
 
 const SIM_ID = 9;
@@ -442,14 +443,14 @@ function ExplorationInterlabo({ plotlyReady, visible = true }) {
                 <div style={{marginBottom:6}}>
                   <strong>C = s²max / Σsᵢ²</strong>
                   {" = "}
-                  <strong style={{color:"#c0392b"}}>{ecarts[idxMax]}² / Σsᵢ²</strong>
+                  <strong style={{color:"#c0392b"}}>{vf(ecarts[idxMax])}² / Σsᵢ²</strong>
                   {" = "}
-                  <strong style={{color:"#c0392b",fontSize:15}}>{C}</strong>
+                  <strong style={{color:"#c0392b",fontSize:15}}>{vf(C)}</strong>
                 </div>
                 <div style={{fontSize:12,color:"#555"}}>
                   Valeurs critiques (p={pActif}, n={nCap}) :
-                  C₅% = <strong>{crit?.p5 ?? "N/A"}</strong> &nbsp;|&nbsp;
-                  C₁% = <strong>{crit?.p1 ?? "N/A"}</strong>
+                  C₅% = <strong>{vf(crit?.p5 ?? "N/A")}</strong> &nbsp;|&nbsp;
+                  C₁% = <strong>{vf(crit?.p1 ?? "N/A")}</strong>
                 </div>
               </div>
 
@@ -468,8 +469,8 @@ function ExplorationInterlabo({ plotlyReady, visible = true }) {
                           setReponseUser(i);
                           setFeedback({correct,
                             msg: correct
-                              ? `🎉 Bravo ! C'est bien le Labo ${i+1} qui est suspecté par le test de Cochran — c'est celui qui a le plus grand écart-type (s = ${ecarts[i]}).`
-                              : `❌ Pas tout à fait ! C'est en réalité le Labo ${idxMax+1} qui est suspecté, car c'est celui qui a le plus grand écart-type (s = ${ecarts[idxMax]}).`
+                              ? `🎉 Bravo ! C'est bien le Labo ${i+1} qui est suspecté par le test de Cochran — c'est celui qui a le plus grand écart-type (s = ${vf(ecarts[i])}).`
+                              : `❌ Pas tout à fait ! C'est en réalité le Labo ${idxMax+1} qui est suspecté, car c'est celui qui a le plus grand écart-type (s = ${vf(ecarts[idxMax])}).`
                           });
                         }}
                         style={{padding:"4px 12px",borderRadius:5,cursor:"pointer",
@@ -509,12 +510,12 @@ function ExplorationInterlabo({ plotlyReady, visible = true }) {
                   ) : C <= crit.p5 ? (
                     <div style={{padding:"8px 12px",borderRadius:6,
                       background:"#f0fff4",border:"1px solid #2a9d8f",fontSize:13,color:"#2a9d8f",fontWeight:600}}>
-                      ✅ C = {C} ≤ C₅% = {crit.p5} → Aucun laboratoire rejeté. Test terminé !
+                      ✅ C = {vf(C)} ≤ C₅% = {vf(crit.p5)} → Aucun laboratoire rejeté. Test terminé !
                     </div>
                   ) : C > crit.p1 ? (
                     <div style={{padding:"8px 12px",borderRadius:6,
                       background:"#fff5f5",border:"1px solid #e63946",fontSize:13,color:"#e63946",fontWeight:600}}>
-                      ❌ C = {C} &gt; C₁% = {crit.p1} → Le Labo {idxMax+1} est <strong>aberrant</strong> : il est écarté.
+                      ❌ C = {vf(C)} &gt; C₁% = {vf(crit.p1)} → Le Labo {idxMax+1} est <strong>aberrant</strong> : il est écarté.
                       <button onClick={()=>{
                         const newActifs = labosActifs.filter(i=>i!==idxMax);
                         setLabosActifs(newActifs);
@@ -531,7 +532,7 @@ function ExplorationInterlabo({ plotlyReady, visible = true }) {
                   ) : (
                     <div style={{padding:"8px 12px",borderRadius:6,
                       background:"#fff8f0",border:"1px solid #e9a824",fontSize:13,color:"#e9a824",fontWeight:600}}>
-                      ⚠ C₅% = {crit.p5} &lt; C = {C} ≤ C₁% = {crit.p1} → Le Labo {idxMax+1} est <strong>isolé</strong> (douteux) : la norme le signale mais le <strong>conserve</strong>.
+                      ⚠ C₅% = {vf(crit.p5)} &lt; C = {vf(C)} ≤ C₁% = {vf(crit.p1)} → Le Labo {idxMax+1} est <strong>isolé</strong> (douteux) : la norme le signale mais le <strong>conserve</strong>.
                       <div style={{marginTop:8,display:"flex",gap:8,flexWrap:"wrap"}}>
                       <button onClick={()=>{
                         if (!labosDouteuxC.includes(idxMax)) setLabosDouteuxC([...labosDouteuxC, idxMax]);
@@ -587,20 +588,20 @@ function ExplorationInterlabo({ plotlyReady, visible = true }) {
               <div style={{background:"#f0f4ff",border:"1px solid #2a609933",borderRadius:6,
                 padding:"10px 14px",marginBottom:12,fontSize:13}}>
                 <div style={{marginBottom:4}}>
-                  ȳ = <strong>{ybar}</strong> &nbsp;|&nbsp; s(ȳ) = <strong>{sy}</strong>
+                  ȳ = <strong>{vf(ybar)}</strong> &nbsp;|&nbsp; s(ȳ) = <strong>{vf(sy)}</strong>
                 </div>
                 <div style={{marginBottom:4}}>
-                  G<sub>max</sub> = <strong style={{color:"#e63946"}}>{Gmax}</strong>
-                  &nbsp; (Labo {idxMax+1}, ȳ = {moyennes[idxMax]})
+                  G<sub>max</sub> = <strong style={{color:"#e63946"}}>{vf(Gmax)}</strong>
+                  &nbsp; (Labo {idxMax+1}, ȳ = {vf(moyennes[idxMax])})
                 </div>
                 <div style={{marginBottom:6}}>
-                  G<sub>min</sub> = <strong style={{color:"#2a6099"}}>{Gmin}</strong>
-                  &nbsp; (Labo {idxMin+1}, ȳ = {moyennes[idxMin]})
+                  G<sub>min</sub> = <strong style={{color:"#2a6099"}}>{vf(Gmin)}</strong>
+                  &nbsp; (Labo {idxMin+1}, ȳ = {vf(moyennes[idxMin])})
                 </div>
                 <div style={{fontSize:12,color:"#555"}}>
                   Valeurs critiques (p={pActif}) :
-                  G₅% = <strong>{crit?.p5 ?? "N/A"}</strong> &nbsp;|&nbsp;
-                  G₁% = <strong>{crit?.p1 ?? "N/A"}</strong>
+                  G₅% = <strong>{vf(crit?.p5 ?? "N/A")}</strong> &nbsp;|&nbsp;
+                  G₁% = <strong>{vf(crit?.p1 ?? "N/A")}</strong>
                 </div>
               </div>
 
@@ -611,19 +612,19 @@ function ExplorationInterlabo({ plotlyReady, visible = true }) {
                   <div style={{fontWeight:600,color:"#2a9d8f",marginBottom:8}}>
                     🤔 Question : Si un laboratoire devait être éliminé par le test de Grubbs, lequel serait-ce ?
                     <span style={{fontSize:11,color:"#888",marginLeft:6}}>
-                      (regardez les courbes Gauss — lequel s'écarte le plus de ȳ = {ybar} ?)
+                      (regardez les courbes Gauss — lequel s'écarte le plus de ȳ = {vf(ybar)} ?)
                     </span>
                   </div>
                   <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                     {labosActifs.map(i=>(
                       <button key={i}
                         onClick={()=>{
-                          const correct = i === idxMax;
+                          const correct = i === idxSusp;
                           setReponseUser(i);
                           setFeedback({correct,
                             msg: correct
-                              ? `🎉 Bravo ! C'est bien le Labo ${i+1} qui est suspecté par le test de Grubbs — c'est celui dont la moyenne (ȳ = ${moyennes[i]}) s'écarte le plus de la moyenne des moyennes (ȳ = ${ybar}).`
-                              : `❌ Pas tout à fait ! C'est en réalité le Labo ${idxSusp+1} qui est suspecté, car c'est celui dont la moyenne (ȳ = ${moyennes[idxSusp]}) s'écarte le plus de la moyenne des moyennes (ȳ = ${ybar}).`
+                              ? `🎉 Bravo ! C'est bien le Labo ${i+1} qui est suspecté par le test de Grubbs — c'est celui dont la moyenne (ȳ = ${vf(moyennes[i])}) s'écarte le plus de la moyenne des moyennes (ȳ = ${vf(ybar)}).`
+                              : `❌ Pas tout à fait ! C'est en réalité le Labo ${idxSusp+1} qui est suspecté, car c'est celui dont la moyenne (ȳ = ${vf(moyennes[idxSusp])}) s'écarte le plus de la moyenne des moyennes (ȳ = ${vf(ybar)}).`
                           });
                         }}
                         style={{padding:"4px 12px",borderRadius:5,cursor:"pointer",
@@ -662,12 +663,12 @@ function ExplorationInterlabo({ plotlyReady, visible = true }) {
                   ) : G <= crit.p5 ? (
                     <div style={{padding:"8px 12px",borderRadius:6,
                       background:"#f0fff4",border:"1px solid #2a9d8f",fontSize:13,color:"#2a9d8f",fontWeight:600}}>
-                      ✅ G = {G} ≤ G₅% = {crit.p5} → Aucun laboratoire rejeté. Test terminé !
+                      ✅ G = {vf(G)} ≤ G₅% = {vf(crit.p5)} → Aucun laboratoire rejeté. Test terminé !
                     </div>
                   ) : G > crit.p1 ? (
                     <div style={{padding:"8px 12px",borderRadius:6,
                       background:"#fff5f5",border:"1px solid #e63946",fontSize:13,color:"#e63946",fontWeight:600}}>
-                      ❌ G = {G} &gt; G₁% = {crit.p1} → Le Labo {idxSusp+1} est <strong>aberrant</strong> : il est écarté.
+                      ❌ G = {vf(G)} &gt; G₁% = {vf(crit.p1)} → Le Labo {idxSusp+1} est <strong>aberrant</strong> : il est écarté.
                       <button onClick={()=>{
                         const newActifs = labosActifs.filter(i=>i!==idxSusp);
                         setLabosActifs(newActifs);
@@ -684,7 +685,7 @@ function ExplorationInterlabo({ plotlyReady, visible = true }) {
                   ) : (
                     <div style={{padding:"8px 12px",borderRadius:6,
                       background:"#fff8f0",border:"1px solid #e9a824",fontSize:13,color:"#e9a824",fontWeight:600}}>
-                      ⚠ G₅% = {crit.p5} &lt; G = {G} ≤ G₁% = {crit.p1} → Le Labo {idxSusp+1} est <strong>isolé</strong> (douteux) : la norme le signale mais le <strong>conserve</strong>.
+                      ⚠ G₅% = {vf(crit.p5)} &lt; G = {vf(G)} ≤ G₁% = {vf(crit.p1)} → Le Labo {idxSusp+1} est <strong>isolé</strong> (douteux) : la norme le signale mais le <strong>conserve</strong>.
                       <div style={{marginTop:8,display:"flex",gap:8,flexWrap:"wrap"}}>
                       <button onClick={()=>{
                         if (!labosDouteuxG.includes(idxSusp)) setLabosDouteuxG([...labosDouteuxG, idxSusp]);
@@ -734,7 +735,7 @@ function ExplorationInterlabo({ plotlyReady, visible = true }) {
               </div>
               <div style={{display:"flex",gap:16,flexWrap:"wrap"}}>
                 {[
-                  {label:"Moyenne générale ȳ", val:`${ybar} ${unite}`, color:"#333"},
+                  {label:"Moyenne générale ȳ", val:`${vf(ybar)} ${unite}`, color:"#333"},
                   {label:"Écart-type de répétabilité Sᵣ", val:`${Sr} ${unite}`, color:"#2a6099",
                    desc:"Variabilité intra-laboratoire"},
                   {label:"Écart-type inter-labo SL", val:`${SL} ${unite}`, color:"#e9a824",
