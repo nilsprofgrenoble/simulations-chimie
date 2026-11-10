@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche } from "../commun";
+  BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, IndiceDefi } from "../commun";
 import { G, ASTRES, astre, gravite, forceGrav, fr, sci, PX_CM, ECHELLES, caracteristiques, conforme } from "./forcesModele";
 import { Pic } from "../Pictos";
 
@@ -221,6 +221,10 @@ function VoletDefi({ defi, setDefi, changerType, vec }) {
         <strong>{caracteristiques(...Object.values(dxdy(1, defi.ang)), 1).direction}, {caracteristiques(...Object.values(dxdy(1, defi.ang)), 1).sens}</strong>. Échelle : <strong>1 cm ↔ {defi.echelle} N</strong>, point d’application : {sc.pointTxt}.</div>}
       {defi.type === 'poids' && <><div style={txt}><Pic n="target"/>Quel est le poids d’un objet de <strong>{fr(defi.m, defi.m < 1 ? 1 : 0)} kg</strong> à la surface de {a.nom} ?{' '}
         {defi.variante === 'g' ? <>Donnée : à la surface, g = {fr(gravite(a), 1)} N/kg.</> : <>Données : G = {sci(G)} N·m²·kg⁻², M = {sci(a.M)} kg, R = {sci(a.R)} m : calcule la force F = G × M × m / R².</>}</div>{saisie}</>}
+      <IndiceDefi cache={reussi}>{defi.type === 'lire' ? <>Mesure la flèche avec la grille (1 carreau = 1 cm), puis : intensité = longueur (en cm) × valeur d’1 cm.</>
+        : defi.type === 'tracer' ? <>Longueur de la flèche (en cm) = intensité ÷ valeur d’1 cm. Place ensuite la pointe en respectant la direction et le sens demandés.</>
+        : defi.variante === 'g' ? <>Formule du poids : P = m × g, avec m en kg et g en N/kg.</>
+        : <>F = G × M × m / R², avec R en mètres. Écris les puissances de dix à part et regroupe-les à la fin.</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={verifier} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
         <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
@@ -271,7 +275,7 @@ export function SimulationForcesVecteurs() {
       texte: <>Quand un système <strong>agit</strong> sur un autre (il le pousse, le tire, le retient…), on dit qu’il exerce une <strong>action mécanique</strong>. Celui qui crée l’action est l’<strong>auteur</strong>, celui qui la subit est le <strong>receveur</strong>.
         <ExempleResolu>Le pied du footballeur frappe le ballon : l’auteur est le <strong>pied</strong>, le receveur est le <strong>ballon</strong>. L’action modifie la trajectoire et la vitesse du ballon.</ExempleResolu>
         À vous : une main pousse une porte.</>,
-      tache: { type: 'qcm', q: 'Une main pousse une porte. Quel est le receveur de l’action ?', options: ['la porte', 'la main', 'la Terre', 'le sol'], bonne: 0, expl: 'La main est l’auteur (elle crée l’action) ; la porte est le receveur (elle la subit).' } },
+      tache: { type: 'qcm', q: 'Une main pousse une porte. Quel est le receveur de l’action ?', options: ['la porte', 'la main', 'la Terre', 'le sol'], bonne: 0, expl: 'La main est l’auteur (elle crée l’action) ; la porte est le receveur (elle la subit).', indice: "L’auteur crée l’action, le receveur la subit. Sur quel objet la main agit-elle ?" } },
     { id: 'force', titre: 'On modélise l’action par une force', depart: () => voirVec('caisse', 100, 3, 0),
       texte: <>En physique, on <strong>modélise</strong> une action mécanique par une <strong>force</strong>, représentée par un <strong>vecteur</strong> (une flèche). Une force est caractérisée par <strong>4 informations</strong> : son <strong>point d’application</strong>, sa <strong>direction</strong>, son <strong>sens</strong>, son <strong>intensité</strong> (en newtons, N). La <strong>longueur</strong> de la flèche est proportionnelle à l’intensité : il faut une <strong>échelle</strong>.
         <ExempleResolu>Un homme pousse une caisse avec une force de 300 N, horizontale, vers la droite. Échelle : <strong>1 cm ↔ 100 N</strong>. Longueur de la flèche : 300 / 100 = <strong>3 cm</strong>. La flèche part du point de contact.
@@ -288,11 +292,11 @@ export function SimulationForcesVecteurs() {
           'Je mesure la flèche avec la grille (1 carreau = 1 cm) : elle mesure 2,5 cm.',
           'L’échelle dit : 1 cm de flèche représente 40 N.',
           'Intensité = longueur × valeur d’1 cm = 2,5 × 40 = 100 N.'],
-        expl: 'La flèche mesure 2,5 cm : F = 2,5 × 40 = 100 N.' } },
+        expl: 'La flèche mesure 2,5 cm : F = 2,5 × 40 = 100 N.', indice: "Mesure la flèche avec la grille (1 carreau = 1 cm), puis utilise : intensité = longueur (en cm) × valeur d’1 cm." } },
     { id: 'notation', titre: 'Intensité ou vecteur ?', depart: null,
       texte: <>On distingue la <strong>force</strong> (le vecteur, avec une flèche : <Vec/>) et son <strong>intensité</strong> (un nombre en newtons : F). La force exercée par l’auteur <em>a</em> sur le receveur <em>r</em> se note <Fn a="a" r="r" vec/>, et son intensité <Fn a="a" r="r"/>.
         <ExempleResolu>Intensité de la force de la main sur la porte : F<sub>main/porte</sub> = 5 N. On n’écrit pas « <Vec/> = 5 N » : un vecteur n’est pas égal à un nombre.</ExempleResolu></>,
-      tache: { type: 'qcm', q: 'Laquelle de ces écritures est correcte ?', options: ['F = 5 N', <span key="v1"><Vec/> = 5 N</span>, 'F = 5', <span key="v2"><Vec/> = 5 N/m</span>], bonne: 0, expl: 'L’intensité est un nombre avec une unité : F = 5 N. Le vecteur force a une direction et un sens, il n’est pas égal à un nombre.' } },
+      tache: { type: 'qcm', q: 'Laquelle de ces écritures est correcte ?', options: ['F = 5 N', <span key="v1"><Vec/> = 5 N</span>, 'F = 5', <span key="v2"><Vec/> = 5 N/m</span>], bonne: 0, expl: 'L’intensité est un nombre avec une unité : F = 5 N. Le vecteur force a une direction et un sens, il n’est pas égal à un nombre.', indice: "L’intensité d’une force est un nombre suivi d’une unité. Quelle est l’unité d’une force ? Un vecteur, lui, a aussi une direction et un sens : peut-il être égal à un simple nombre ?" } },
     { id: 'oblique', titre: 'Une force oblique', depart: () => voirVec('ballon', 50, 0, 30),
       texte: <>Une force n’est pas toujours horizontale ou verticale. L’angle indique la <strong>direction</strong>, la pointe de la flèche le <strong>sens</strong>.
         <ExempleResolu>Un tir à 30° vers le haut et la droite, de 150 N, échelle 1 cm ↔ 50 N : longueur = 150 / 50 = 3 cm, la flèche fait 30° avec l’horizontale.</ExempleResolu>
@@ -312,11 +316,11 @@ export function SimulationForcesVecteurs() {
           'Principe des actions réciproques : si B agit sur A, A agit sur B avec une force de même intensité (et de sens opposé).',
           'Donc F(A/B) = F(B/A). Ici, B indique 4 N : l’intensité de la force est 4 N.',
           'Le dynamomètre A indique donc aussi 4 N.'],
-        expl: 'Les forces réciproques ont la même intensité : A lit aussi 4 N.' } },
+        expl: 'Les forces réciproques ont la même intensité : A lit aussi 4 N.', indice: "Principe des actions réciproques : que peut-on dire de l’intensité des deux forces que A et B exercent l’une sur l’autre ?" } },
     { id: 'recip2', titre: 'Deux patineurs', depart: () => { setAtelier('recip'); setRecip({ scene: 'patin', F: 60, mA: 80, mB: 45, montrer: true }); },
       texte: <>On pourrait croire que le plus lourd pousse plus fort. Faux ! Quand A pousse B, <strong>B pousse A autant</strong>, quelle que soit leur masse. Ce qui change, c’est l’<strong>effet</strong> : le plus léger recule plus vite.
         <ExempleResolu>Si A (80 kg) pousse B (45 kg) avec 60 N, alors B pousse A avec 60 N dans l’autre sens.</ExempleResolu></>,
-      tache: { type: 'qcm', q: 'A pousse B avec une force de 60 N. Que dit le principe des actions réciproques ?', options: ['B exerce sur A une force de 60 N, de sens opposé', 'B exerce sur A une force de 60 N, de même sens', 'B exerce sur A une force plus petite car B est plus léger', 'B n’exerce aucune force sur A'], bonne: 0, expl: 'Les deux forces ont même intensité (60 N) et des sens opposés.' } },
+      tache: { type: 'qcm', q: 'A pousse B avec une force de 60 N. Que dit le principe des actions réciproques ?', options: ['B exerce sur A une force de 60 N, de sens opposé', 'B exerce sur A une force de 60 N, de même sens', 'B exerce sur A une force plus petite car B est plus léger', 'B n’exerce aucune force sur A'], bonne: 0, expl: 'Les deux forces ont même intensité (60 N) et des sens opposés.', indice: "Principe des actions réciproques : compare l’intensité, la direction et le sens des deux forces, sans te soucier de la masse des objets." } },
     { id: 'poids1', titre: 'Le poids : une action à distance', depart: () => voirPoids('terre', 0.5, 0),
       texte: <>La Terre attire tous les objets, <strong>sans les toucher</strong> : c’est une action <strong>à distance</strong>. La force correspondante est le <strong>poids</strong> de l’objet : P = m × g, avec m en kg et g l’intensité de la pesanteur (en N/kg). Sur Terre, g ≈ 9,8 N/kg.
         <ExempleResolu>Un objet de 0,2 kg a un poids P = 0,2 × 9,8 ≈ <strong>1,96 N</strong> (environ 2 N).
@@ -327,7 +331,7 @@ export function SimulationForcesVecteurs() {
           'Formule du poids : P = m × g.',
           'Ici, m = 0,5 kg (déjà en kg) et g = 9,8 N/kg.',
           'P = 0,5 × 9,8 = 4,9 N.'],
-        expl: 'P = m × g = 0,5 × 9,8 = 4,9 N.' } },
+        expl: 'P = m × g = 0,5 × 9,8 = 4,9 N.', indice: "Formule du poids : P = m × g, avec m en kg et g en N/kg." } },
     { id: 'poids2', titre: 'Le poids dépend de l’astre', depart: () => voirPoids('lune', 1, 0),
       texte: <>La masse (en kg) ne change pas d’un astre à l’autre, mais le <strong>poids</strong> change car g change : sur la Lune g ≈ 1,6 N/kg, sur Mars g ≈ 3,7 N/kg.
         <ExempleResolu>Sur Mars, un objet de 1 kg pèse 1 × 3,7 = 3,7 N.</ExempleResolu>
@@ -338,11 +342,11 @@ export function SimulationForcesVecteurs() {
           'Formule du poids : P = m × g.',
           'Ici, m = 1 kg (la masse ne change pas d’un astre à l’autre) et g = 1,6 N/kg sur la Lune.',
           'P = 1 × 1,6 = 1,6 N.'],
-        expl: 'P = 1 × 1,6 ≈ 1,6 N : six fois moins que sur Terre.' } },
+        expl: 'P = 1 × 1,6 ≈ 1,6 N : six fois moins que sur Terre.', indice: "Même formule du poids, P = m × g, mais avec la valeur de g de la Lune donnée dans l’énoncé." } },
     { id: 'grav', titre: 'L’interaction gravitationnelle', depart: () => voirPoids('terre', 1, 0),
       texte: <>Deux objets de masses m<sub>A</sub> et m<sub>B</sub>, dont les centres sont distants de d, s’attirent avec des forces de même intensité : <strong>F = G × m<sub>A</sub> × m<sub>B</sub> / d²</strong>, avec G = {sci(G)} N·m²·kg⁻². Le poids est cette force pour un objet proche de la surface d’un astre.
         <ExempleResolu>Si la distance d <strong>double</strong>, d² est multiplié par 4 : la force est <strong>divisée par 4</strong>. Regardez la valeur de g quand vous augmentez l’altitude.</ExempleResolu></>,
-      tache: { type: 'qcm', q: 'Si la distance entre deux astres est multipliée par 3, la force gravitationnelle…', options: ['est divisée par 9', 'est divisée par 3', 'est multipliée par 3', 'ne change pas'], bonne: 0, expl: 'F est proportionnelle à 1/d² : d × 3 donne F / 9.' } },
+      tache: { type: 'qcm', q: 'Si la distance entre deux astres est multipliée par 3, la force gravitationnelle…', options: ['est divisée par 9', 'est divisée par 3', 'est multipliée par 3', 'ne change pas'], bonne: 0, expl: 'F est proportionnelle à 1/d² : d × 3 donne F / 9.', indice: "La force gravitationnelle est F = G × M × m / d². Essaie avec une distance d, puis avec 3 d : que devient le dénominateur ?" } },
     { id: 'iss', titre: '★ La Station spatiale : le poids disparaît-il ?', depart: () => voirPoids('terre', 1, 400),
       texte: <>La Station spatiale internationale orbite à 400 km d’altitude. Les astronautes « flottent » : a-t-on <em>plus de gravité</em> là-haut ? Regardez avec l’altitude réglée à 400 km…
         <ExempleResolu>À la surface, g = 9,8 N/kg. À 400 km, g = G M / (R + h)² ≈ 8,7 N/kg : la gravité n’a presque pas diminué. Les astronautes flottent parce que la station et eux <strong>tombent ensemble</strong> autour de la Terre (chute libre), pas parce que la gravité a disparu.</ExempleResolu></>,
@@ -357,7 +361,7 @@ export function SimulationForcesVecteurs() {
             `g = G × M / (R + h)² = ${sci(G, 2)} × ${sci(T.M, 2)} / (${sci(d, 3)})² = ${fr(g, 1)} N/kg.`,
             `F = m × g = 1 × ${fr(g, 1)} = ${fr(g, 1)} N.`];
         },
-        expl: 'F = G M m / (R + h)² ≈ 8,7 N : presque autant qu’au sol (9,8 N). L’impesanteur vient de la chute libre.' } },
+        expl: 'F = G M m / (R + h)² ≈ 8,7 N : presque autant qu’au sol (9,8 N). L’impesanteur vient de la chute libre.', indice: "Cette force est le poids de l’objet : P = m × g. Lis la valeur de g à 400 km dans la simulation (curseur d’altitude)." } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li>Action mécanique → <strong>force</strong> (vecteur) : point d’application, direction, sens, intensité (N), échelle.</li>

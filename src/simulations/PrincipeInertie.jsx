@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, ExempleResolu, lireProgression } from "../commun";
+  BoutonsModes, ARetenir, ExempleResolu, lireProgression, IndiceDefi } from "../commun";
 import { fr, simuler, forcesSurCaisse, FORCES_CANDIDATES, BILANS, PREVOIR } from "./forcesModele";
 import { Pic } from "../Pictos";
 
@@ -133,6 +133,9 @@ function VoletDefi({ defi, setDefi, changerType, P, planche }) {
         <div style={txt}><Pic n="target"/>{p.txt}</div>
         {q('Les forces qui s’exercent sur le système se compensent-elles ?')}{choix('comp', [[true, 'Oui'], [false, 'Non']])}
         {q('Sa vitesse (valeur et direction)…')}{choix('mvt', [['constante', 'reste constante (ou nulle)'], ['varie', 'varie']])}</>}
+      <IndiceDefi cache={reussi}>{defi.type === 'bilan' ? <>Pense aux forces à distance (le poids) et aux forces de contact (sol, air, fil…). Puis applique le principe d’inertie : la vitesse est-elle constante ? La direction change-t-elle ?</>
+        : defi.type === 'regler' ? <>Pour garder la même vitesse en ligne droite, les forces horizontales doivent se compenser : la poussée doit avoir la même intensité que les frottements. Ajuste le curseur en surveillant la vitesse.</>
+        : <>Applique le principe d’inertie : regarde d’abord si les forces se compensent, puis si le mouvement est rectiligne et uniforme.</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={verifier} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
         <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
@@ -182,7 +185,7 @@ export function SimulationPrincipeInertie() {
         <ExempleResolu>Les points sont <strong>régulièrement espacés</strong> : le palet parcourt la même distance à chaque intervalle de temps. Sa vitesse est constante (1 m/s), sa trajectoire est une droite : c’est un <strong>mouvement rectiligne uniforme</strong>.
           {bouton('Voir la simulation', () => voir({ mu: 0, F: 0, v0: 1 }, 3))}</ExempleResolu>
         À vous : que fait la vitesse du palet après le lancer ?</>,
-      tache: { type: 'qcm', q: 'Après le lancer, sans frottement, la vitesse du palet…', options: ['reste constante', 'diminue peu à peu, car la force du lancer s’épuise', 'augmente', 'devient nulle aussitôt'], bonne: 0, expl: 'Sans frottement, la vitesse reste constante : il n’y a pas besoin de force pour maintenir un mouvement.' } },
+      tache: { type: 'qcm', q: 'Après le lancer, sans frottement, la vitesse du palet…', options: ['reste constante', 'diminue peu à peu, car la force du lancer s’épuise', 'augmente', 'devient nulle aussitôt'], bonne: 0, expl: 'Sans frottement, la vitesse reste constante : il n’y a pas besoin de force pour maintenir un mouvement.', indice: "Sans frottement, quelles forces horizontales s’exercent sur le palet après le lancer ? Que dit le principe d’inertie quand aucune force ne s’exerce, ou quand elles se compensent ?" } },
     { id: 'vertical', titre: 'Poids et réaction du sol', depart: () => voir({ m: 20, mu: 0, F: 0, v0: 1 }, 3),
       texte: <>Le palet n’est pas « sans force » pour autant : la <strong>Terre l’attire</strong> (son <strong>poids</strong> <Vec c="P"/>) et la table le soutient (la <strong>réaction du support</strong> <Vec c="R"/>). Ces deux forces sont verticales.
         <ExempleResolu>Le palet ne s’enfonce pas dans la table et ne s’envole pas : verticalement, <strong>poids et réaction se compensent</strong>. Elles ont même direction, sens opposés et même intensité : R = P = m × g.</ExempleResolu>
@@ -192,7 +195,7 @@ export function SimulationPrincipeInertie() {
           'Verticalement, la caisse ne monte ni ne descend : le poids P et la réaction R se compensent. Elles ont donc la même intensité : R = P.',
           'Le poids se calcule avec P = m × g, avec m = 20 kg et g = 9,8 N/kg.',
           'P = 20 × 9,8 = 196 N.',
-          'Donc R = P = 196 N.'], expl: 'R = P = m × g = 20 × 9,8 = 196 N.' } },
+          'Donc R = P = 196 N.'], expl: 'R = P = m × g = 20 × 9,8 = 196 N.', indice: "La caisse ne bouge pas verticalement : que doivent faire la réaction du sol et le poids ? Calcule le poids avec P = m × g (g = 9,8 N/kg)." } },
     { id: 'resultante', titre: 'La résultante des forces', depart: () => voir({ m: 25, mu: 0.2, F: 49, v0: 1 }, 3),
       texte: <>Pour savoir si des forces se compensent, on les <strong>additionne</strong> : la <strong>résultante</strong> <Vec c="ΣF"/> est la somme vectorielle de toutes les forces. Si <Vec c="ΣF"/> = <Vec c="0"/>, les forces <strong>se compensent</strong>.
         <ExempleResolu>Sol normal, caisse de 25 kg, glissant à 1 m/s. Les <strong>frottements</strong> f valent 0,2 × 25 × 9,8 = 49 N, vers la gauche. Une poussée F de 49 N vers la droite les compense : <Vec c="ΣF"/> = <Vec c="0"/> (la flèche violette disparaît).
@@ -212,7 +215,7 @@ export function SimulationPrincipeInertie() {
     { id: 'freine', titre: 'Pourquoi la caisse s’arrête-t-elle ?', depart: () => voir({ m: 25, mu: 0.2, F: 0, v0: 2 }, 0.5),
       texte: <>On lance la caisse à 2 m/s, sans la pousser. Elle ralentit puis s’arrête. Contrairement à ce qu’on croit souvent, ce n’est pas parce que « la force du lancer s’épuise » : il n’y en a plus.
         <ExempleResolu>Seuls les <strong>frottements</strong> agissent horizontalement : ils ne sont compensés par rien. La résultante n’est pas nulle, donc la vitesse diminue.</ExempleResolu></>,
-      tache: { type: 'qcm', q: 'Pourquoi la caisse ralentit-elle ?', options: ['Les frottements ne sont compensés par aucune autre force horizontale', 'Il n’y a plus aucune force sur la caisse', 'La force du lancer s’est épuisée', 'Le poids diminue'], bonne: 0, expl: 'Les frottements sont la seule force horizontale : la résultante n’est pas nulle, la vitesse diminue.' } },
+      tache: { type: 'qcm', q: 'Pourquoi la caisse ralentit-elle ?', options: ['Les frottements ne sont compensés par aucune autre force horizontale', 'Il n’y a plus aucune force sur la caisse', 'La force du lancer s’est épuisée', 'Le poids diminue'], bonne: 0, expl: 'Les frottements sont la seule force horizontale : la résultante n’est pas nulle, la vitesse diminue.', indice: "Principe d’inertie : la vitesse ne change que si les forces ne se compensent pas. Quelles forces horizontales s’exercent sur la caisse une fois lancée ?" } },
     { id: 'principe', titre: 'Le principe d’inertie', depart: null,
       texte: <ARetenir titre="LE PRINCIPE D’INERTIE"><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li>Si les forces qui s’exercent sur un système <strong>se compensent</strong> (<Vec c="ΣF"/> = <Vec c="0"/>), alors il est <strong>immobile</strong> ou en <strong>mouvement rectiligne uniforme</strong> (vitesse constante en ligne droite).</li>
@@ -221,18 +224,18 @@ export function SimulationPrincipeInertie() {
     { id: 'voiture', titre: 'Une voiture sur l’autoroute', depart: null,
       texte: <>Appliquons le principe d’inertie. Une voiture roule à 90 km/h en ligne droite sur une route horizontale.
         <ExempleResolu>Vitesse constante en ligne droite : les forces se compensent. Verticalement, poids et réaction. Horizontalement, la force motrice compense les frottements (air et route).</ExempleResolu></>,
-      tache: { type: 'qcm', q: 'La même voiture roule à 90 km/h en ligne droite. Que peut-on dire de la force motrice et des frottements ?', options: ['Ils ont la même intensité et des sens opposés', 'La force motrice est la plus grande', 'Les frottements sont la plus grande des forces', 'Il n’y a ni force motrice ni frottements'], bonne: 0, expl: 'Vitesse constante : ΣF = 0, donc la force motrice compense exactement les frottements.' } },
+      tache: { type: 'qcm', q: 'La même voiture roule à 90 km/h en ligne droite. Que peut-on dire de la force motrice et des frottements ?', options: ['Ils ont la même intensité et des sens opposés', 'La force motrice est la plus grande', 'Les frottements sont la plus grande des forces', 'Il n’y a ni force motrice ni frottements'], bonne: 0, expl: 'Vitesse constante : ΣF = 0, donc la force motrice compense exactement les frottements.', indice: "Le mouvement est rectiligne et uniforme. Que dit le principe d’inertie des forces dans ce cas ? Applique-le aux forces horizontales." } },
     { id: 'virage', titre: 'Un virage à valeur de vitesse constante', depart: null,
       texte: <>Attention : la vitesse est un <strong>vecteur</strong> (valeur, direction, sens). Elle est constante seulement si sa valeur <em>et</em> sa direction ne changent pas.
         <ExempleResolu>Une voiture roule à 50 km/h (valeur constante) dans un virage : la <strong>direction</strong> de sa vitesse change, donc le vecteur vitesse varie. Les forces ne se compensent pas.</ExempleResolu></>,
-      tache: { type: 'qcm', q: 'Dans un virage à valeur de vitesse constante, les forces sur la voiture…', options: ['ne se compensent pas', 'se compensent', 'sont nulles', 'ont une résultante dirigée vers l’arrière'], bonne: 0, expl: 'La direction de la vitesse change : le vecteur vitesse varie, donc les forces ne se compensent pas.' } },
+      tache: { type: 'qcm', q: 'Dans un virage à valeur de vitesse constante, les forces sur la voiture…', options: ['ne se compensent pas', 'se compensent', 'sont nulles', 'ont une résultante dirigée vers l’arrière'], bonne: 0, expl: 'La direction de la vitesse change : le vecteur vitesse varie, donc les forces ne se compensent pas.', indice: "Le principe d’inertie concerne un mouvement rectiligne uniforme. Dans un virage, la direction de la vitesse change-t-elle ? Le mouvement est-il rectiligne ?" } },
     { id: 'parachute', titre: 'Un parachutiste', depart: null,
       texte: <>Un parachutiste saute. Au début, il accélère : les frottements de l’air sont faibles. Plus il va vite, plus les frottements augmentent. Puis sa vitesse n’augmente plus : il a atteint sa <strong>vitesse limite</strong>.</>,
-      tache: { type: 'qcm', q: 'À la vitesse limite (constante, en ligne droite), les frottements de l’air valent…', options: ['exactement le poids', 'plus que le poids', 'moins que le poids', 'zéro'], bonne: 0, expl: 'Vitesse constante en ligne droite : ΣF = 0. Les frottements de l’air compensent le poids.' } },
+      tache: { type: 'qcm', q: 'À la vitesse limite (constante, en ligne droite), les frottements de l’air valent…', options: ['exactement le poids', 'plus que le poids', 'moins que le poids', 'zéro'], bonne: 0, expl: 'Vitesse constante en ligne droite : ΣF = 0. Les frottements de l’air compensent le poids.', indice: "Vitesse constante en ligne droite : que dit le principe d’inertie des forces ? Quelles forces verticales s’exercent sur le parachutiste ?" } },
     { id: 'iss', titre: '★ Les astronautes de la Station spatiale', depart: null,
       texte: <>À 400 km d’altitude, l’attraction de la Terre est encore forte (environ 90 % de sa valeur au sol). Les astronautes flottent pourtant. Seule force : le poids (l’attraction de la Terre). Ils sont en <strong>chute libre</strong> autour de la Terre.
         <ExempleResolu>Sur l’astronaute s’exerce <strong>une seule force</strong> : elle ne peut pas être compensée. Son vecteur vitesse change à chaque instant (il tourne autour de la Terre) : c’est cohérent avec le principe d’inertie. Dans la station (qui chute aussi), il paraît « flotter ».</ExempleResolu></>,
-      tache: { type: 'qcm', q: 'Pour un astronaute en orbite, soumis seulement à l’attraction de la Terre, les forces…', options: ['ne se compensent pas (une seule force)', 'se compensent', 'sont nulles', 'ont une résultante nulle car la gravité a disparu'], bonne: 0, expl: 'Une seule force ne peut pas se compenser elle-même : la vitesse varie (la direction change), comme le prévoit le principe d’inertie.' } },
+      tache: { type: 'qcm', q: 'Pour un astronaute en orbite, soumis seulement à l’attraction de la Terre, les forces…', options: ['ne se compensent pas (une seule force)', 'se compensent', 'sont nulles', 'ont une résultante nulle car la gravité a disparu'], bonne: 0, expl: 'Une seule force ne peut pas se compenser elle-même : la vitesse varie (la direction change), comme le prévoit le principe d’inertie.', indice: "Combien de forces s’exercent sur l’astronaute ? Que faut-il (au minimum) pour que des forces se compensent ?" } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li>Forces qui <strong>se compensent</strong> (<Vec c="ΣF"/> = <Vec c="0"/>) ⇒ vitesse constante (repos ou mouvement rectiligne uniforme).</li>
