@@ -1,7 +1,7 @@
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { useState, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, Frac, fmt, lireProgression } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, Frac, fmt, lireProgression, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 
@@ -225,6 +225,9 @@ function VoletDefi({ defi, setDefi, changerType, placer }) {
           {choix('sensF', [['vers', 'vers Q (attraction)'], ['loin', 'à l’opposé de Q (répulsion)']])}
         </div>
       </>}
+      <IndiceDefi cache={reussi}>{defi.type === 'signes' ? <>Observe le sens des vecteurs champ autour de la charge : vers elle ou loin d’elle ? Déduis-en son signe.</>
+        : defi.type === 'altitude' ? <>La norme du champ de gravitation diminue avec la distance au centre de la Terre (en 1 / d²). Fais varier l’altitude et observe l’évolution de g.</>
+        : <>E = k × |Q| / d², puis F = |q| × E (charges en coulombs, distance en mètres).</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
         <button onClick={verifier} style={styleBouton(true, VERT)}>✓ Vérifier</button>
         <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
@@ -322,11 +325,11 @@ export function SimulationChampForce() {
         <strong> en chaque point de l’espace</strong> un <strong>champ de gravitation</strong> <Vec>{GRAV}</Vec>. Les flèches grises le représentent en différents points ;
         le petit disque M est un objet que vous pouvez déplacer (glisser ou cliquer).</>,
       tache: { type: 'qcm', q: 'Le champ de gravitation créé par la Terre est…', options: ['un vecteur défini en chaque point de l’espace : direction, sens et norme', 'une force, qui n’existe que si un objet est présent', 'un nombre, sans direction'], bonne: 0,
-        expl: 'Le champ existe en chaque point, qu’il y ait un objet ou non : c’est un vecteur (direction, sens, norme). Un objet placé en ce point « ressent » ce champ et subit alors une force.' } },
+        expl: 'Le champ existe en chaque point, qu’il y ait un objet ou non : c’est un vecteur (direction, sens, norme). Un objet placé en ce point « ressent » ce champ et subit alors une force.', indice: "Un champ est défini en chaque point de l’espace, qu’un objet y soit présent ou non. Une force, elle, s’exerce sur un objet. Lequel des deux décrit le champ ?" } },
     { id: 'sens', titre: 'Direction et sens du champ', focus: ['scene'],
       texte: <>Observez les flèches grises tout autour de la Terre.</>,
       tache: { type: 'qcm', q: `En chaque point, le vecteur ${GRAV} est dirigé…`, options: ['vers le centre O de la Terre : le champ est centripète', 'vers l’extérieur : le champ est centrifuge', 'toujours vers le bas de l’écran'], bonne: 0,
-        expl: `Le vecteur ${GRAV} est porté par la droite (OM) et dirigé vers le centre de la Terre. « Vers le bas » n’est vrai que localement, à la surface.` } },
+        expl: `Le vecteur ${GRAV} est porté par la droite (OM) et dirigé vers le centre de la Terre. « Vers le bas » n’est vrai que localement, à la surface.`, indice: "Le champ de gravitation traduit l’attraction de la Terre : vers quel point est-on attiré, en n’importe quel endroit ?" } },
     { id: 'placer2R', titre: 'Placer un objet', focus: ['scene', 'reglages'],
       texte: <>Placez l’objet à la distance <strong>d = 2 R<sub>T</sub></strong> du centre de la Terre, soit à environ 12 740 km (lisez « Distance au centre » dans les mesures).</>,
       tache: { type: 'action', ok: a2R, label: 'Placer l’objet à deux rayons terrestres', faire: () => { setSrc('terre'); setZ(0); setPosT({ x: 0, y: 2 * RT }); },
@@ -344,16 +347,16 @@ export function SimulationChampForce() {
           `Dénominateur : d² = (${puiss(2 * RT, 4)})² = ${puiss((2 * RT) ** 2, 4)} m².`,
           `Numérateur : G·M_T = 6,674 × 10⁻¹¹ × 5,972 × 10²⁴ = ${puiss(G * MT, 4)} N·m²·kg⁻¹.`,
           `${GRAV} = ${puiss(G * MT, 4)} / ${puiss((2 * RT) ** 2, 4)} = ${val(g2)} N·kg⁻¹.`],
-        expl: `${GRAV} = G·M_T / (2 R_T)² ≈ ${val(g2)} N·kg⁻¹, quatre fois moins qu’au sol (9,82 N·kg⁻¹).` } },
+        expl: `${GRAV} = G·M_T / (2 R_T)² ≈ ${val(g2)} N·kg⁻¹, quatre fois moins qu’au sol (9,82 N·kg⁻¹).`, indice: "La norme du champ dépend de la distance d au centre de la Terre : g = G × M / d². Que devient d² quand d est doublée ? Compare avec la valeur à la surface." } },
     { id: 'loi', titre: 'Comment varie le champ ?', focus: ['scene', 'mesures'],
       texte: <>Déplacez l’objet à <strong>4 R<sub>T</sub></strong> (environ 25 500 km) et comparez.</>,
       tache: { type: 'qcm', q: `Quand la distance au centre double, la norme de ${GRAV} est…`, options: ['divisée par 4', 'divisée par 2', 'inchangée'], bonne: 0,
-        expl: `${GRAV} = G·M_T / d² : si d est multiplié par 2, d² est multiplié par 4, donc ${GRAV} est divisé par 4 (2,45 → 0,61 N·kg⁻¹).` } },
+        expl: `${GRAV} = G·M_T / d² : si d est multiplié par 2, d² est multiplié par 4, donc ${GRAV} est divisé par 4 (2,45 → 0,61 N·kg⁻¹).`, indice: "La norme est proportionnelle à 1 / d². Remplace d par 2 d dans g = G × M / d²." } },
     { id: 'lignes', titre: 'Les lignes de champ', focus: ['scene'],
       texte: <>Une <strong>ligne de champ</strong> est une courbe qui donne, en chaque point, la direction et le sens du champ. Autour de la Terre, ce sont des demi-droites
         qui convergent vers son centre (traits bleus fléchés).</>,
       tache: { type: 'qcm', q: `En un point, le vecteur ${GRAV} est…`, options: ['tangent à la ligne de champ qui passe par ce point, et orienté dans son sens', 'perpendiculaire à la ligne de champ', 'sans rapport avec les lignes de champ'], bonne: 0,
-        expl: 'Le vecteur champ est tangent aux lignes de champ, qui sont orientées dans le sens du champ.' } },
+        expl: 'Le vecteur champ est tangent aux lignes de champ, qui sont orientées dans le sens du champ.', indice: "Une ligne de champ est tracée pour que le champ lui soit lié en chaque point. Quelle est la relation entre le vecteur champ et la ligne de champ qui passe par ce point ?" } },
     { id: 'zoom', titre: 'Zoomer jusqu’à la salle de classe', focus: ['reglages', 'scene'],
       texte: <>Avec le curseur « Zoom », rapprochez-vous de la surface jusqu’à voir une <strong>salle de classe</strong> (une vue de moins de 100 m de haut). Regardez les flèches pendant le zoom.</>,
       tache: { type: 'action', ok: enSalle, label: 'Zoomer sur la salle de classe', faire: () => { setSrc('terre'); setZ(1); setPosT({ x: 0, y: RT + 1.2 }); },
@@ -361,7 +364,7 @@ export function SimulationChampForce() {
     { id: 'uniforme', titre: 'Un champ localement uniforme', focus: ['scene', 'uniformite'],
       texte: <>Dans la salle, les flèches semblent identiques. Le cadre « Uniformité » chiffre les écarts entre les vecteurs de la vue.</>,
       tache: { type: 'qcm', q: `À l’échelle de la salle, les vecteurs ${GRAV}…`, options: ['ont la même direction, le même sens et la même norme : le champ est uniforme', 'pointent dans des directions très différentes', 'sont nuls'], bonne: 0,
-        expl: 'Sur quelques mètres, les écarts sont infimes (environ 10⁻⁴ % pour la norme, moins de 10⁻⁴ ° pour la direction) : on dit que le champ de pesanteur est localement uniforme. À l’échelle de la Terre, il ne l’est pas du tout.' } },
+        expl: 'Sur quelques mètres, les écarts sont infimes (environ 10⁻⁴ % pour la norme, moins de 10⁻⁴ ° pour la direction) : on dit que le champ de pesanteur est localement uniforme. À l’échelle de la Terre, il ne l’est pas du tout.', indice: "À l’échelle d’une salle, la distance au centre de la Terre change-t-elle de façon notable ? Que deviennent alors la direction, le sens et la norme du champ ?" } },
     { id: 'g', titre: 'L’intensité de la pesanteur', focus: ['mesures'],
       texte: <>Près du sol, le champ de gravitation terrestre est appelé <strong>champ de pesanteur</strong> <Vec>g</Vec>. Lisez sa norme g au niveau de la salle.</>,
       tache: { type: 'num', q: 'Norme g du champ de pesanteur au sol (d’après le modèle)', unite: 'N·kg⁻¹', vrai: gSol, tol: 0.01, affiche: v => val(v), cs: 3,
@@ -373,7 +376,7 @@ export function SimulationChampForce() {
           `Numérateur : G·M_T = 6,674 × 10⁻¹¹ × 5,972 × 10²⁴ = ${puiss(G * MT, 4)} N·m²·kg⁻¹.`,
           `Dénominateur : R_T² = (6,371 × 10⁶)² = ${puiss(RT ** 2, 4)} m².`,
           `g = ${puiss(G * MT, 4)} / ${puiss(RT ** 2, 4)} = ${val(gSol)} N·kg⁻¹.`],
-        expl: 'g = G·M_T / R_T² ≈ 9,82 N·kg⁻¹. La valeur mesurée à Paris (9,81) est un peu plus faible : le modèle néglige la rotation de la Terre et sa forme aplatie.' } },
+        expl: 'g = G·M_T / R_T² ≈ 9,82 N·kg⁻¹. La valeur mesurée à Paris (9,81) est un peu plus faible : le modèle néglige la rotation de la Terre et sa forme aplatie.', indice: "g = G × M / R², avec M la masse de la Terre et R son rayon (en mètres). Utilise les valeurs du modèle affichées." } },
     { id: 'poids', titre: 'Le poids', focus: ['reglages', 'mesures'],
       texte: <>Un objet de masse m placé dans ce champ subit la force <Vec>F</Vec> = m·<Vec>g</Vec> : c’est son <strong>poids</strong> <Vec>P</Vec>. Réglez la masse sur 60 kg ; au sol, g = {val(gSol)} N·kg⁻¹ (étape précédente).</>,
       tache: { type: 'num', q: 'Poids d’un élève de 60 kg', unite: 'N', vrai: 60 * gSol, tol: 0.02, affiche: v => fmt(v, 0), cs: 3,
@@ -381,7 +384,7 @@ export function SimulationChampForce() {
         calcul: () => [
           `Formule : P = m × g, avec m = 60 kg et g = ${val(gSol)} N·kg⁻¹ (champ de pesanteur au sol, étape précédente).`,
           `P = 60 × ${val(gSol)} = ${fmt(60 * gSol, 0)} N.`],
-        expl: `P = m × g = 60 × 9,82 ≈ ${fmt(60 * gSol, 0)} N, dirigé vers le centre de la Terre (verticale, vers le bas).` } },
+        expl: `P = m × g = 60 × 9,82 ≈ ${fmt(60 * gSol, 0)} N, dirigé vers le centre de la Terre (verticale, vers le bas).`, indice: "Poids : P = m × g, avec m en kg et g la norme du champ de pesanteur trouvée précédemment (en N/kg)." } },
     { id: 'plus', titre: 'Une charge électrique crée aussi un champ', focus: ['reglages', 'scene'],
       texte: <>De même, un corps de charge Q crée en chaque point un <strong>champ électrostatique</strong> <Vec>E</Vec>. Choisissez la source « Charge Q {'>'} 0 ».</>,
       tache: { type: 'action', ok: src === 'plus', label: 'Choisir Q > 0', faire: () => { choisirSource('plus'); setQabs(10); setQ(2); },
@@ -389,14 +392,14 @@ export function SimulationChampForce() {
     { id: 'centrifuge', titre: 'Le champ d’une charge positive', focus: ['scene'],
       texte: <>Observez les flèches et les lignes de champ.</>,
       tache: { type: 'qcm', q: 'Le champ créé par une charge Q > 0 est…', options: ['centrifuge : il part de la charge vers l’extérieur', 'centripète : dirigé vers la charge', 'nul en dehors de la boule'], bonne: 0,
-        expl: 'Une charge positive crée un champ centrifuge : les lignes de champ partent de la charge.' } },
+        expl: 'Une charge positive crée un champ centrifuge : les lignes de champ partent de la charge.', indice: "Le champ indique la force subie par une charge test positive. Une charge positive attire-t-elle ou repousse-t-elle une charge test positive ?" } },
     { id: 'moins', titre: 'Et une charge négative ?', focus: ['reglages', 'scene'],
       texte: <>Choisissez maintenant la source « Charge Q {'<'} 0 ».</>,
       tache: { type: 'action', ok: src === 'moins', label: 'Choisir Q < 0', faire: () => choisirSource('moins'), consigne: 'Choisissez la source « Charge Q < 0 »' } },
     { id: 'centripete', titre: 'Le champ d’une charge négative', focus: ['scene'],
       texte: <>Comparez avec le cas précédent. Changez aussi le signe de la charge test q : le champ change-t-il ?</>,
       tache: { type: 'qcm', q: 'Le champ créé par une charge Q < 0…', options: ['est centripète (dirigé vers la charge), quel que soit le signe de q', 'est centrifuge', 'change de sens selon le signe de la charge q placée en M'], bonne: 0,
-        expl: 'Les lignes de champ arrivent sur une charge négative. Le champ ne dépend que de la source Q et du point M, pas de la charge q placée en M.' } },
+        expl: 'Les lignes de champ arrivent sur une charge négative. Le champ ne dépend que de la source Q et du point M, pas de la charge q placée en M.', indice: "Le champ indique la force subie par une charge test positive. Une charge négative attire-t-elle ou repousse-t-elle une charge test positive ?" } },
     { id: 'placer10', titre: 'Calculer un champ électrostatique', focus: ['reglages', 'scene'],
       texte: <>Reprenez <strong>Q = +10 nC</strong> et placez la charge test à <strong>10 cm</strong> du centre de la boule.</>,
       tache: { type: 'action', ok: a10, label: 'Q = +10 nC, q à 10 cm', faire: () => { setSrc('plus'); setQabs(10); setPosC({ x: 0.10, y: 0 }); },
@@ -413,14 +416,14 @@ export function SimulationChampForce() {
           'Dénominateur : d² = (0,10)² = 1,0 × 10⁻² m².',
           'Numérateur : k·|Q| = 9,0 × 10⁹ × 1,0 × 10⁻⁸ = 90 N·m²·C⁻¹.',
           `E = 90 / (1,0 × 10⁻²) = ${fmt(E10, 0)} N·C⁻¹ (soit 9,0 × 10³).`],
-        expl: 'E = 9,0 × 10⁹ × 10 × 10⁻⁹ / (10 × 10⁻²)² = 90 / 10⁻² = 9,0 × 10³ N·C⁻¹.' } },
+        expl: 'E = 9,0 × 10⁹ × 10 × 10⁻⁹ / (10 × 10⁻²)² = 90 / 10⁻² = 9,0 × 10³ N·C⁻¹.', indice: "E = k × |Q| / d², avec d en mètres et Q en coulombs (10 cm = 0,10 m ; 1 nC = 10⁻⁹ C)." } },
     { id: 'qneg', titre: 'Une charge test négative', focus: ['reglages', 'scene', 'vecteurs'],
       texte: <>Réglez la charge test sur <strong>q = −2 nC</strong>. Comparez les flèches <Vec>E</Vec> (vert) et <Vec>F</Vec> (rouge) en M.</>,
       tache: { type: 'action', ok: !terre && q === -2, label: 'Régler q = −2 nC', faire: () => { if (terre) choisirSource('plus'); setQ(-2); }, consigne: 'Curseur « charge test q » sur −2 nC' } },
     { id: 'sensF', titre: 'Sens de la force', focus: ['vecteurs'],
       texte: <>La force subie par la charge q placée dans le champ est <Vec>F</Vec> = q·<Vec>E</Vec>.</>,
       tache: { type: 'qcm', q: 'Pour q < 0, la force F = q·E est…', options: ['de sens opposé à E', 'de même sens que E', 'perpendiculaire à E'], bonne: 0,
-        expl: 'q < 0 : F = q·E est colinéaire à E mais de sens opposé. Si q > 0, F et E ont le même sens.' } },
+        expl: 'q < 0 : F = q·E est colinéaire à E mais de sens opposé. Si q > 0, F et E ont le même sens.', indice: "F = q × E (vecteurs). Que devient le sens de F par rapport à E quand q est négatif ?" } },
     { id: 'normeF', titre: 'Norme de la force', focus: ['calcul'],
       texte: <>Calculez la norme de la force : <strong>F = |q|·E</strong>, avec |q| = 2 nC et E = {fmt(E10, 0)} N·C⁻¹ (champ calculé à l’étape précédente).</>,
       tache: { type: 'num', q: 'Norme de la force sur q = −2 nC à 10 cm de Q = +10 nC', unite: 'N', vrai: 2e-9 * E10, tol: 0.03, affiche: v => puiss(v, 2), cs: 2,
@@ -432,7 +435,7 @@ export function SimulationChampForce() {
           'Conversion : |q| = 2 nC = 2 × 10⁻⁹ C (la valeur absolue : une norme est positive).',
           `E = ${fmt(E10, 0)} N·C⁻¹ (soit 9,0 × 10³).`,
           `F = 2 × 10⁻⁹ × ${fmt(E10, 0)} = ${puiss(2e-9 * E10, 2)} N.`],
-        expl: 'F = |q| × E = 2 × 10⁻⁹ × 9,0 × 10³ = 1,8 × 10⁻⁵ N.' } },
+        expl: 'F = |q| × E = 2 × 10⁻⁹ × 9,0 × 10³ = 1,8 × 10⁻⁵ N.', indice: "F = |q| × E, avec q en coulombs (1 nC = 10⁻⁹ C) et E la norme du champ calculée précédemment." } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
         <li>un champ est défini en chaque point : <Vec>{GRAV}</Vec> = −(G·M / d²)·<Vec>u</Vec> et <Vec>E</Vec> = (k·Q / d²)·<Vec>u</Vec></li>
