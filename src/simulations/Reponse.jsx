@@ -72,13 +72,6 @@ export function fenetre(s, an) {
 }
 
 // ── Mise en forme ──
-// Capacité du référentiel rattachée à une étape (même présentation que Son.jsx)
-const Cap = ({ children }) => <div style={{ marginTop: 8, fontSize: 12.5, color: '#475569', borderLeft: `3px solid ${ORANGE_GUIDE}`, paddingLeft: 8, lineHeight: 1.45 }}><strong>Capacité visée :</strong> {children}</div>;
-const CAP = {
-  mesure: 'Mesurer le temps de réponse de l’ensemble capteur-conditionneur.',
-  choix: 'Choisir un instrument selon ses caractéristiques (résolution, temps de réponse, étendue de mesure) et le cahier des charges.',
-  osc: 'Caractériser des oscillations harmoniques ou amorties (période, temps caractéristique).',
-};
 const nf = (x, n = 3) => (isFinite(x) ? Number(x).toLocaleString('fr-FR', { maximumSignificantDigits: n }) : '—');
 const dec = (x, d) => Number(x).toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d });
 const Sub = ({ c }) => <sub>{c}</sub>;
@@ -315,7 +308,7 @@ export function SimulationReponse() {
           `V_fin + 5 %ΔV = ${nf(CTN.fin)} + ${nf(aC.seuil)} = ${nf(CTN.fin + aC.seuil, 4)} ≈ ${nf(CTN.fin + aC.seuil)} V.`],
         expl: 'V_fin + 5 %ΔV = 2,08 + 0,115 ≈ 2,20 V. La ligne verte pointillée du graphique la représente.' } },
     { id: 'tR', titre: 'Lire t₀, t₁ et en déduire t_R', focus: ['graphe', 'releve'],
-      texte: <>Repérez <strong>t<Sub c="0"/></strong> (début de la chute) et <strong>t<Sub c="1"/></strong> (l’instant où la courbe atteint la ligne verte pour ne plus en ressortir). Le temps de réponse est <strong>t<Sub c="R"/> = t<Sub c="1"/> − t<Sub c="0"/></strong>.<Cap>{CAP.mesure}</Cap></>,
+      texte: <>Repérez <strong>t<Sub c="0"/></strong> (début de la chute) et <strong>t<Sub c="1"/></strong> (l’instant où la courbe atteint la ligne verte pour ne plus en ressortir). Le temps de réponse est <strong>t<Sub c="R"/> = t<Sub c="1"/> − t<Sub c="0"/></strong>.</>,
       tache: { type: 'num', q: 'Temps de réponse à 5 % t_R', unite: 's', vrai: aC.tR,
         indice: 'Formule : t_R = t_1 − t_0. Lisez t_0 (début de la chute), puis t_1 : l’abscisse du point où la courbe atteint la ligne verte sans plus en ressortir (le curseur de lecture donne t et V). Faites la soustraction : t_R est une durée, pas un instant.', tol: 0.05, affiche: x => nf(x),
         aide: 'Aidez-vous du curseur de lecture : cherchez le point de la courbe qui est sur la ligne verte.',
@@ -328,7 +321,7 @@ export function SimulationReponse() {
       texte: <>La courbe ressemble à une <strong>exponentielle décroissante</strong> : V(t) = V<Sub c="fin"/> + (V<Sub c="ini"/> − V<Sub c="fin"/>)·e<sup>−(t − t₀)/τ</sup> pour t ≥ t₀. Réglez la constante de temps <strong>τ</strong> avec le curseur jusqu’à ce que la courbe orange en pointillés passe au plus près des points.</>,
       tache: { type: 'action', ok: tauOk, consigne: tauOk ? null : 'Réglez τ pour que la courbe orange suive les points' } },
     { id: 'troisTau', titre: 't_R = 3τ', focus: ['modele', 'releve'],
-      texte: <>Pour une exponentielle, l’écart à la valeur finale vaut e<sup>−3</sup> ≈ 5 % de ΔV au bout de 3τ (exactement 2,996 τ) : <strong>t<Sub c="R"/> = 3τ</strong>. Votre valeur de τ (étape précédente) : <strong>τ = {nf(rg.tau)} s</strong>.<Cap>{CAP.mesure}</Cap></>,
+      texte: <>Pour une exponentielle, l’écart à la valeur finale vaut e<sup>−3</sup> ≈ 5 % de ΔV au bout de 3τ (exactement 2,996 τ) : <strong>t<Sub c="R"/> = 3τ</strong>. Votre valeur de τ (étape précédente) : <strong>τ = {nf(rg.tau)} s</strong>.</>,
       tache: { type: 'num', q: 'Calculez t_R = 3τ avec votre valeur de τ', unite: 's',
         indice: 'Formule : t_R = τ·ln 20 ≈ 3τ, car e⁻³ ≈ 5 %. Multipliez par 3 la valeur de τ réglée à l’étape précédente (en secondes).', vrai: 3 * rg.tau, tol: 0.02, affiche: x => nf(x),
         calcul: () => ['Hypothèse : réponse du premier ordre (exponentielle), échelon idéal. Alors l’écart à V_fin vaut ΔV·e^(−t/τ) ; il tombe à 5 % de ΔV quand e^(−t/τ) = 0,05, soit t ≈ 3τ (e⁻³ ≈ 0,0498).',
@@ -351,13 +344,13 @@ export function SimulationReponse() {
         pieges: [[5.926, 'C’est τ ; le temps de réponse à 5 % vaut 3τ.'], [5.926 / 3, 'Division à la place d’une multiplication : t_R = 3 × τ (et non τ / 3).']],
         expl: 't_R = 3τ = 3 × 5,926 ≈ 17,8 s.' } },
     { id: 'choix', titre: 'Choisir la bonne sonde', focus: [],
-      texte: <>Dans une bouilloire, la sonde doit couper le chauffage dès que l’eau bout.<Cap>{CAP.choix}</Cap></>,
+      texte: <>Dans une bouilloire, la sonde doit couper le chauffage dès que l’eau bout.</>,
       tache: { type: 'qcm', q: 'Quelle sonde choisir pour que l’ébullition ne soit pas prolongée inutilement ?',
         indice: 'Le critère est la rapidité : comparez les deux temps de réponse t_R. Demandez-vous quelle conséquence un t_R plus long a sur le moment où le chauffage est coupé.',
         options: ['La sonde CTN (t_R ≈ 5 s) : elle réagit plus vite', 'La Pt100 (t_R ≈ 18 s) : sa constante de temps est plus grande', 'Peu importe'], bonne: 0,
         expl: 'Plus t_R est court, plus tôt le chauffage est coupé. Réserve : t_R dépend aussi des conditions (fluide, agitation, gaine), donc la comparaison n’est rigoureuse que si les deux valeurs sont obtenues dans les mêmes conditions.' } },
     { id: 'osc', titre: 'Quand la grandeur oscille', focus: ['graphe'],
-      texte: <>Autre situation : un <strong>bain thermostaté mal réglé</strong>. À l’instant t<Sub c="0"/> on change la consigne de 20 °C à 60 °C. La température ne monte pas gentiment : elle <strong>dépasse</strong> la consigne, redescend en dessous, et oscille de moins en moins avant de se stabiliser (modèle illustratif, pas une mesure).<Cap>{CAP.osc}</Cap></>,
+      texte: <>Autre situation : un <strong>bain thermostaté mal réglé</strong>. À l’instant t<Sub c="0"/> on change la consigne de 20 °C à 60 °C. La température ne monte pas gentiment : elle <strong>dépasse</strong> la consigne, redescend en dessous, et oscille de moins en moins avant de se stabiliser (modèle illustratif, pas une mesure).</>,
       tache: { type: 'num', q: 'Valeur maximale atteinte par la température θ (le pic)', unite: '°C',
         indice: 'Le pic est le point le plus haut de la première oscillation, au-dessus de la consigne. Placez le curseur de lecture à ce sommet et lisez θ sur l’axe vertical (en °C).', vrai: aB.ymax, tol: 0.03, affiche: x => nf(x),
         aide: 'Utilisez le curseur de lecture au sommet de la première oscillation.',
@@ -373,7 +366,7 @@ export function SimulationReponse() {
           `Borne haute = θ_fin + 5 %Δθ = ${nf(BAIN.fin)} + ${nf(0.05 * dB)} = ${nf(BAIN.fin + 0.05 * dB)} °C (la borne basse est ${nf(BAIN.fin - 0.05 * dB)} °C).`],
         expl: '5 % de 40 = 2,0 °C ; la bande est [58 ; 62] °C.' } },
     { id: 'oscTR', titre: 'Temps de réponse : attention à la dernière sortie', focus: ['graphe'],
-      texte: <>On cherche l’instant où la température <strong>ne sort plus de la bande</strong> [{nf(BAIN.fin - 0.05 * dB)} ; {nf(BAIN.fin + 0.05 * dB)}] °C. La courbe y entre une première fois en montant, puis en ressort en dépassant la consigne… Lisez t<Sub c="1"/>, et calculez t<Sub c="R"/> = t<Sub c="1"/> − t<Sub c="0"/> (t<Sub c="0"/> = 30 s).<Cap>{CAP.mesure}</Cap></>,
+      texte: <>On cherche l’instant où la température <strong>ne sort plus de la bande</strong> [{nf(BAIN.fin - 0.05 * dB)} ; {nf(BAIN.fin + 0.05 * dB)}] °C. La courbe y entre une première fois en montant, puis en ressort en dépassant la consigne… Lisez t<Sub c="1"/>, et calculez t<Sub c="R"/> = t<Sub c="1"/> − t<Sub c="0"/> (t<Sub c="0"/> = 30 s).</>,
       tache: { type: 'num', q: 'Temps de réponse à 5 % t_R', unite: 's', vrai: aB.tR,
         indice: 'Formule : t_R = t_1 − t_0. Ici t_1 est l’instant de la dernière sortie de la bande [θ_fin − 5 %Δθ ; θ_fin + 5 %Δθ] : après lui, la courbe n’en ressort plus. La ligne grise (première entrée) ne convient pas. t_0 est l’instant de l’échelon de consigne.', tol: 0.05, affiche: x => nf(x),
         aide: 'Cherchez le dernier moment où la courbe passe la limite de la bande : après, elle y reste.',
@@ -389,7 +382,7 @@ export function SimulationReponse() {
         options: ['ne s’applique pas : la courbe n’est pas une exponentielle ; seule la méthode graphique (bande à 5 %) reste valable', 's’applique, avec une constante de temps plus grande', 's’applique si on ajuste la courbe sur le premier pic'], bonne: 0,
         expl: 't_R = 3τ vient de l’exponentielle (e⁻³ ≈ 5 %) : sans exponentielle, pas de τ. La définition à 5 % par la bande, elle, est valable pour toute réponse.' } },
     { id: 'oscDep', titre: 'Mesurer le dépassement', focus: ['graphe'],
-      texte: <>Le <strong>dépassement</strong> D compare l’excès au-dessus de la valeur finale à la variation totale : <strong>D = (θ<Sub c="max"/> − θ<Sub c="fin"/>) / Δθ</strong>. Ici θ<Sub c="max"/> ≈ {nf(aB.ymax)} °C (le pic lu plus haut), θ<Sub c="fin"/> = {nf(BAIN.fin)} °C et Δθ = {nf(dB)} °C.<Cap>{CAP.osc}</Cap></>,
+      texte: <>Le <strong>dépassement</strong> D compare l’excès au-dessus de la valeur finale à la variation totale : <strong>D = (θ<Sub c="max"/> − θ<Sub c="fin"/>) / Δθ</strong>. Ici θ<Sub c="max"/> ≈ {nf(aB.ymax)} °C (le pic lu plus haut), θ<Sub c="fin"/> = {nf(BAIN.fin)} °C et Δθ = {nf(dB)} °C.</>,
       tache: { type: 'num', q: 'Dépassement D, en %', unite: '%',
         indice: 'Formule : D = (θ_max − θ_fin) / Δθ (nombre sans unité), puis multipliez par 100 pour l’exprimer en %. Les trois grandeurs sont données dans l’énoncé de l’étape (et dans « Vos relevés »).', vrai: aB.depass * 100, tol: 0.08, affiche: x => nf(x),
         calcul: () => ['Hypothèse : le bain se comporte comme un système du second ordre peu amorti (modèle illustratif).',
