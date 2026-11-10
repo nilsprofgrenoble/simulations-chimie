@@ -55,6 +55,7 @@ const SimulationBoussole = paresseux(() => import("./simulations/Boussole"), "Si
 const SimulationDiffraction = paresseux(() => import("./simulations/Diffraction"), "SimulationDiffraction");
 const SimulationSon = paresseux(() => import("./simulations/Son"), "SimulationSon");
 const SimulationEchographe = paresseux(() => import("./simulations/Echographe"), "SimulationEchographe");
+const SimulationRegioselectiviteHBr = paresseux(() => import("./simulations/RegioselectiviteHBr"), "SimulationRegioselectiviteHBr");
 const SimulationMecanismesReactionnels = paresseux(() => import("./simulations/MecanismesReactionnels"), "SimulationMecanismesReactionnels");
 const SimulationEchographe2D = paresseux(() => import("./simulations/Echographe2D"), "SimulationEchographe2D");
 const SimulationOptimiserSynthese = paresseux(() => import("./simulations/OptimiserSynthese"), "SimulationOptimiserSynthese");
@@ -180,6 +181,7 @@ const SIMULATIONS = [
   { id:85, label:"Acides et bases : pH, pKa, tampon et titrage", niveau:"TSTL", icon:"🧪", color:"#0f766e",
     component: SimulationAcidesBases },
   { id:92, label:"Mécanismes réactionnels : addition de HBr, carbocation et flèches courbes", niveau:"TSTL", icon:"⚗️", color:"#7c3aed", component: SimulationMecanismesReactionnels },
+  { id:93, label:"Régiosélectivité de l'addition de HBr : carbocations et produit majoritaire", niveau:"BTS", icon:"⚗️", color:"#7c3aed", component: SimulationRegioselectiviteHBr },
   { id:86, label:"Synthèse organique : estérification, Dean-Stark et CCM", niveau:"TSTL", icon:"⚗️", color:"#9a3412",
     component: SimulationEsterification },
   { id:90, label:"Optimiser une synthèse : vitesse, rendement et coût", niveau:"TSTL", icon:"📈", color:"#15803d",
