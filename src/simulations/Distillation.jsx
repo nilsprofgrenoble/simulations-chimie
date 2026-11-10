@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, avecIndices, indicesProfond, lireNombre, proche, ARetenir, Curseur, LigneMesure } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, avecIndices, indicesProfond, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { MELANGES, Teb, yEq, Tros, escalier, tete, trajectoire, pointA, wDe, degre, bilanColonneInfinie } from "./distillationModele";
 import { Pic } from "../Pictos";
 
@@ -255,6 +255,7 @@ function Evolution({ titre, traj, pt, series, ymin, ymax, yLabel, unite }) {
   );
 }
 
+const INDICE_Q = {"q1": "Lisez la température sur la courbe d’ébullition, à la composition du liquide.", "q2": "Du point de la courbe d’ébullition, allez à l’horizontale jusqu’à la courbe de rosée, puis lisez l’abscisse.", "q3": "Montez les marches : une par plateau, en partant de la première vapeur.", "q4": "Avec une colonne infiniment haute, le distillat atteint la composition limite du diagramme.", "q5": "Ce qui ne passe pas dans le distillat reste dans le bouilleur : faites le bilan de matière."};
 export function SimulationDistillation({ naviguer }) {
   const [mode, setMode] = useState(() => modeOuverture('distillation-guide-v1'));
   useSignalerMode(mode);
@@ -305,7 +306,7 @@ export function SimulationDistillation({ naviguer }) {
     { id: 'melange', titre: 'Un mélange, pas un corps pur', focus: ['appareil'],
       texte: <>On veut distiller un <strong>vin</strong>, c’est-à-dire (en simplifiant) un <strong>mélange d’eau et d’éthanol</strong>. Dans le ballon, chaque point représente des molécules : <strong style={{ color: '#dc2626' }}>rouges = éthanol</strong>, <strong style={{ color: '#2563eb' }}>bleues = eau</strong>. Le ballon contient très peu de points rouges. L’éthanol bout à 78 °C et l’eau à 100 °C.</>,
       tache: { type: 'qcm', q: 'Quel composé est le plus volatil ?', options: ['L’éthanol : sa température d’ébullition est la plus basse', 'L’eau : elle est la plus abondante dans le ballon', 'Aucun : un mélange n’a pas de composé plus volatil'], bonne: 0,
-        expl: 'Plus la température d’ébullition est basse, plus le corps pur est volatil. On notera A le composé le plus volatil (l’éthanol) et B l’autre (l’eau).' } },
+        expl: 'Plus la température d’ébullition est basse, plus le corps pur est volatil. On notera A le composé le plus volatil (l’éthanol) et B l’autre (l’eau).', indice: "Le plus volatil passe le plus facilement à l’état gazeux : sa température d’ébullition est-elle haute ou basse ?" } },
     { id: 'regler', titre: 'Régler le vin', focus: ['reglages'],
       texte: <>Un vin à 12° a pour fraction molaire en éthanol <strong><Xi e="L"/> = 0,040</strong>. On commence par une <strong>distillation simple</strong> (aucun plateau, N = 0).</>,
       tache: { type: 'action', ok: reglageEW && N === 0 && f === 0, label: 'Régler le vin, distillation simple', faire: () => regler('ew', 0.04, 0), consigne: reglageEW && N === 0 && f === 0 ? null : 'Cliquez pour régler le mélange eau – éthanol, x = 0,040 et N = 0' } },
@@ -333,25 +334,25 @@ export function SimulationDistillation({ naviguer }) {
         bloque: reglageEW && f === 0 ? null : 'Réglez d’abord le vin (étape précédente).',
         aide: 'Lecture : sur la courbe d’ébullition (bleue), repérez le point d’abscisse x = 0,040 et lisez sa température sur l’axe vertical.',
         pieges: [[100, 'L’eau pure bout à 100 °C, mais le vin est un mélange : il commence à bouillir plus bas.'], [78.4, 'C’est l’éthanol pur. Le vin contient surtout de l’eau.']],
-        expl: 'Un mélange bout en commençant à une température intermédiaire (ici environ 92 °C) et cette température augmente ensuite : contrairement à un corps pur, elle n’est pas constante.' } },
+        expl: 'Un mélange bout en commençant à une température intermédiaire (ici environ 92 °C) et cette température augmente ensuite : contrairement à un corps pur, elle n’est pas constante.', indice: "Pas de calcul : lecture graphique sur la courbe d’ébullition." } },
     { id: 'vapeur', titre: 'La première vapeur', focus: ['diagramme'],
       texte: <>À cette température ({nf(G.Teb, 1)}{NB}°C, celle de l’ébullition commençante), la première vapeur se forme. Sa composition se lit <strong>à l’horizontale</strong>, sur la <strong style={{ color: '#dc2626' }}>courbe de rosée</strong> (rouge) : c’est le point rouge de la première marche.</>,
       tache: { type: 'num', q: <>Fraction molaire <Xi e="V"/> en éthanol de la première vapeur</>, unite: '', vrai: G.y1, tol: 0.1, affiche: x => nf(x), cs: 3,
         bloque: reglageEW && f === 0 ? null : 'Réglez d’abord le vin (étape 2).',
         aide: 'Lecture : partez du point bleu, allez à l’horizontale (même température) jusqu’à la courbe rouge, puis lisez l’abscisse de ce point rouge.',
         pieges: [[G.x, 'C’est la composition du liquide du ballon. La vapeur se lit à l’horizontale, sur la courbe de rosée (rouge) : elle est plus riche en éthanol.']],
-        expl: 'y ≈ 0,29 : la vapeur est environ 7 fois plus riche en éthanol (29 %) que le liquide (4 %).' } },
+        expl: 'y ≈ 0,29 : la vapeur est environ 7 fois plus riche en éthanol (29 %) que le liquide (4 %).', indice: "La vapeur est plus riche en éthanol que le liquide : la valeur lue doit être supérieure à x." } },
     { id: 'diff', titre: 'Liquide et vapeur : deux compositions', focus: ['diagramme', 'appareil'],
       texte: <>Regardez les points du ballon (liquide) et ceux juste au-dessus (vapeur) : ils n’ont <strong>pas la même composition</strong>. C’est toute l’idée de la distillation.</>,
       tache: { type: 'qcm', q: 'La vapeur formée est…', options: ['plus riche en composé le plus volatil que le liquide', 'de même composition que le liquide', 'plus riche en eau que le liquide'], bonne: 0,
-        expl: 'La vapeur est enrichie en composé volatil. Si on la condense, on obtient un liquide plus riche en éthanol que le vin de départ. Mais pas de l’éthanol pur !' } },
+        expl: 'La vapeur est enrichie en composé volatil. Si on la condense, on obtient un liquide plus riche en éthanol que le vin de départ. Mais pas de l’éthanol pur !', indice: "Comparez les abscisses des deux courbes à une même température." } },
     { id: 'chauffer', titre: 'Chauffer : distillation simple', focus: ['reglages', 'courbes'],
       texte: <>On chauffe jusqu’à avoir distillé 10 % de la quantité de matière. Appuyez sur « ▶ Chauffer » dans le panneau de réglages, ou cliquez ci-dessous. Surveillez la température du ballon et la composition du distillat instantané.</>,
       tache: { type: 'action', ok: reglageEW && N === 0 && f >= 0.09, label: 'Distiller 10 %', faire: () => { regler('ew', 0.04, 0); setTimeout(() => setF(0.1), 0); }, consigne: reglageEW && N === 0 && f >= 0.09 ? null : 'Chauffez jusqu’à 10 % de quantité distillée' } },
     { id: 'evolution', titre: 'Que se passe-t-il au fil de la distillation ?', focus: ['courbes'],
       texte: <>Comparez les valeurs au départ et maintenant (courbes d’évolution et mesures). Le ballon s’appauvrit en éthanol, et on continue d’y prélever de la vapeur.</>,
       tache: { type: 'qcm', q: 'Au cours d’une distillation simple…', options: ['la température du ballon augmente et le distillat s’appauvrit en éthanol', 'la température du ballon reste constante et le distillat reste identique', 'la température du ballon diminue et le distillat devient pur'], bonne: 0,
-        expl: 'Le liquide s’appauvrit en composé volatil, donc sa température d’ébullition monte vers celle de l’eau. La vapeur (donc le distillat) contient de moins en moins d’éthanol. Le composé volatil pur n’est jamais obtenu en distillation simple.' } },
+        expl: 'Le liquide s’appauvrit en composé volatil, donc sa température d’ébullition monte vers celle de l’eau. La vapeur (donc le distillat) contient de moins en moins d’éthanol. Le composé volatil pur n’est jamais obtenu en distillation simple.', indice: "Le liquide s’appauvrit en composé volatil : que devient alors sa température d’ébullition ?" } },
     { id: 'plateaux', titre: 'Ajouter une colonne : 2 plateaux', focus: ['reglages', 'appareil'],
       texte: <>Dans une <strong>distillation fractionnée</strong>, la vapeur monte dans une colonne. À chaque plateau elle <strong>se condense</strong> (le liquide a la composition de la vapeur), puis ce liquide <strong>se revaporise</strong> en donnant une vapeur encore plus riche. Chaque plateau est une marche de l’escalier violet. Réglez N = 2 plateaux, sans chauffer (quantité distillée nulle).</>,
       tache: { type: 'action', ok: reglageEW && N === 2 && f === 0, label: 'Régler N = 2', faire: () => regler('ew', 0.04, 2), consigne: reglageEW && N === 2 && f === 0 ? null : 'Cliquez pour régler N = 2 plateaux' } },
@@ -360,7 +361,7 @@ export function SimulationDistillation({ naviguer }) {
       tache: { type: 'num', q: <>Fraction molaire <Xi e="V"/> en éthanol du distillat (N = 2)</>, unite: '', vrai: G.y2, tol: 0.04, affiche: x => nf(x), cs: 3,
         bloque: reglageEW && N === 2 && f === 0 ? null : 'Réglez d’abord N = 2 (étape précédente).',
         pieges: [[G.y1, 'C’est la première marche (la vapeur de la distillation simple). Avec des plateaux, il faut continuer l’escalier : chaque plateau ajoute une marche et enrichit encore la vapeur.']],
-        expl: 'x_A^V ≈ 0,69 : avec seulement 2 plateaux, le distillat est déjà bien plus riche en éthanol qu’avec la distillation simple (0,29).' } },
+        expl: 'x_A^V ≈ 0,69 : avec seulement 2 plateaux, le distillat est déjà bien plus riche en éthanol qu’avec la distillation simple (0,29).', indice: "Chaque plateau théorique ajoute une marche : liquide, vapeur, condensation, nouvelle vapeur." } },
     { id: 'infinie', titre: 'Une colonne infiniment haute', focus: ['reglages', 'diagramme'],
       texte: <>Augmentons N jusqu’à une colonne <strong>infiniment haute</strong> (N = ∞) : l’escalier monte aussi haut que possible.</>,
       tache: { type: 'action', ok: reglageEW && N === Infinity && f === 0, label: 'Régler N = ∞', faire: () => regler('ew', 0.04, Infinity), consigne: reglageEW && N === Infinity && f === 0 ? null : 'Cliquez pour régler N = ∞' } },
@@ -370,12 +371,12 @@ export function SimulationDistillation({ naviguer }) {
         bloque: reglageEW && N === Infinity && f === 0 ? null : 'Réglez d’abord N = ∞ (étape précédente).',
         pieges: [[1, 'L’éthanol pur (x = 1) n’est pas atteignable : l’escalier s’arrête à l’azéotrope, où les courbes de rosée et d’ébullition se touchent. Lisez l’abscisse de ce point.'],
           [G.y2, 'C’est la valeur pour N = 2 plateaux. Avec une colonne infiniment haute, l’escalier monte jusqu’à l’azéotrope.']],
-        expl: 'x_A^V ≈ 0,90 (soit environ 95° en degré alcoolique) : on ne dépasse pas l’azéotrope. Une distillation fractionnée à pression atmosphérique ne donne pas d’éthanol pur à partir d’un mélange eau – éthanol.' } },
+        expl: 'x_A^V ≈ 0,90 (soit environ 95° en degré alcoolique) : on ne dépasse pas l’azéotrope. Une distillation fractionnée à pression atmosphérique ne donne pas d’éthanol pur à partir d’un mélange eau – éthanol.', indice: "Avec une infinité de marches, l’enrichissement s’arrête en un point particulier du diagramme." } },
     { id: 'tete75', titre: 'Contrôler le distillat par la température de tête', focus: ['diagramme'],
       texte: <>Pour un distillat d’au moins 75° (environ <Xi e="V"/> = 0,48 en éthanol), quelle température ne faut-il pas dépasser en tête de colonne ? Lisez-la sur la <strong>courbe de rosée</strong>, pour <Xi e="V"/> = 0,48.</>,
       tache: { type: 'num', q: 'Température maximale en tête de colonne', unite: '°C', vrai: G.T75, tol: 0.012, affiche: x => nf(x, 1),
         pieges: [[91.7, 'C’est la température du liquide dans le ballon. On cherche la température en tête, pour une vapeur à 48 %.']],
-        expl: 'Environ 85 °C. Si le thermomètre de tête dépasse cette valeur, les vapeurs qui arrivent sont moins riches en éthanol que 48 % : le distillat est trop dilué.' } },
+        expl: 'Environ 85 °C. Si le thermomètre de tête dépasse cette valeur, les vapeurs qui arrivent sont moins riches en éthanol que 48 % : le distillat est trop dilué.', indice: "En tête, la vapeur a la composition limite : lisez sa température sur la courbe d’ébullition." } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
         <li>liquide et vapeur n’ont pas la même composition (x ≠ y) ; la vapeur est plus riche en composé volatil</li>
@@ -424,6 +425,7 @@ export function SimulationDistillation({ naviguer }) {
           return (
             <div key={qu.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {qu.q}</div>
+              {INDICE_Q[qu.id] && <IndiceDefi cache={defi.verifie && ok}>{INDICE_Q[qu.id]}</IndiceDefi>}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input value={rep} placeholder="?" aria-label={`Réponse ${k + 1}`} onChange={e => { const v = e.target.value; setDefi(d => ({ ...d, verifie: false, reps: { ...d.reps, [qu.id]: v } })); }}
                   style={{ fontSize: 14, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 120 }}/>
@@ -438,6 +440,7 @@ export function SimulationDistillation({ naviguer }) {
           return (
             <div key={qu.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 4}. {qu.q} {defi.verifie && (ok ? '✅' : '❌')}</div>
+              {INDICE_Q[qu.id] && <IndiceDefi cache={defi.verifie && ok}>{INDICE_Q[qu.id]}</IndiceDefi>}
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {['A', 'B', 'az'].map(o => <button key={o} onClick={() => setDefi(d => ({ ...d, verifie: false, reps: { ...d.reps, [qu.id]: o } }))} style={stylePetitBouton(rep === o, '#0ea5e9')}>{noms[o]}</button>)}
               </div>

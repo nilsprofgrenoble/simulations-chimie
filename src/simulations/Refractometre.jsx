@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { MELANGES, Teb, yEq, wDe, degre } from "./distillationModele";
 import { Diagramme, nf, NB, Xi } from "./Distillation";
 import { Pic } from "../Pictos";
@@ -140,6 +140,7 @@ function Etalonnage({ nR, lecture, candidats, xVrai }) {
   );
 }
 
+const INDICE_Q = {"q1": "Repérez la graduation sous l’index, puis estimez le dernier chiffre à l’œil.", "q2": "Tracez l’horizontale à l’indice lu sur la courbe : combien de points d’intersection ?", "q3": "Lisez l’abscisse de la première intersection, la plus à gauche.", "q4": "w = x·M_A ÷ (x·M_A + (1 − x)·M_B)."};
 export function SimulationRefractometre({ naviguer }) {
   const [mode, setMode] = useState(() => modeOuverture('refracto-guide-v1'));
   useSignalerMode(mode);
@@ -174,7 +175,7 @@ export function SimulationRefractometre({ naviguer }) {
     { id: 'principe', titre: 'Que mesure un réfractomètre ?', focus: ['principe'],
       texte: <>Un réfractomètre mesure l’<strong>indice de réfraction</strong> n d’un liquide. La lumière traverse un prisme, puis le film de liquide. Les rayons rasants ne passent dans le liquide que si l’angle est assez petit : il existe un <strong>angle limite</strong>, qui dépend de n. Dans l’oculaire, on voit donc une zone claire et une zone sombre, séparées par une <strong>frontière nette</strong>.</>,
       tache: { type: 'qcm', q: 'La position de la frontière clair – sombre dépend…', options: ['de l’indice de réfraction du liquide déposé sur le prisme', 'de la couleur du liquide', 'du volume de la goutte déposée'], bonne: 0,
-        expl: 'La frontière correspond à l’angle limite de réfraction : elle ne dépend que de l’indice du liquide (et de la température), pas de la quantité déposée.' } },
+        expl: 'La frontière correspond à l’angle limite de réfraction : elle ne dépend que de l’indice du liquide (et de la température), pas de la quantité déposée.', indice: "La frontière correspond à l’angle limite de réfraction : de quoi dépend-il ?" } },
     { id: 'goutte', titre: 'Déposer la goutte', focus: ['principe', 'reglages'],
       texte: <>L’échantillon est le <strong>distillat</strong> d’une distillation fractionnée d’un vin. Déposez une goutte sur le prisme et refermez le prisme. Sans échantillon, le champ reste sombre.</>,
       tache: { type: 'action', ok: goutte && Math.abs(x - 0.9) < 1e-9, label: 'Déposer la goutte', faire: () => { setX(0.9); setGoutte(true); }, consigne: goutte ? null : 'Déposez la goutte' } },
@@ -190,18 +191,18 @@ export function SimulationRefractometre({ naviguer }) {
         bloque: aligne && comp ? null : 'Alignez d’abord la frontière sur le réticule (étape 4).',
         aide: 'Lecture : repérez la graduation (tous les 0,001) juste sous l’index rouge, puis estimez à l’œil le dixième de l’intervalle entre deux graduations pour la 4e décimale.',
         pieges: [[1.364 + 0.001, 'Vous avez lu une graduation voisine : regardez bien quelle graduation est juste sous l’index.'], [1.36, 'Vous n’avez gardé que 2 décimales : la graduation vaut 0,001 et on estime le dixième de graduation, soit 4 décimales.']],
-        expl: 'n ≈ 1,3640. L’échelle est graduée tous les 0,001 : on lit la graduation puis on estime le dixième, d’où 4 décimales. L’incertitude de lecture est de l’ordre de 0,0002.' } },
+        expl: 'n ≈ 1,3640. L’échelle est graduée tous les 0,001 : on lit la graduation puis on estime le dixième, d’où 4 décimales. L’incertitude de lecture est de l’ordre de 0,0002.', indice: "La 4ᵉ décimale s’estime à l’œil entre deux graduations." } },
     { id: 'decimales', titre: 'Combien de décimales ?', focus: ['champ'],
       texte: <>La plus petite graduation de l’échelle vaut 0,001, mais on estime le dixième de graduation à l’œil.</>,
       tache: { type: 'qcm', q: 'Quelle écriture traduit le mieux la lecture ?', options: ['n = 1,3640 ± 0,0002', 'n = 1,364 ± 0,01', 'n = 1,36 ± 0,0001'], bonne: 0,
-        expl: 'On garde 4 décimales (dixième de graduation estimé) avec une incertitude de quelques 10⁻⁴. Écrire ±0,0001 serait trop optimiste, et ±0,01 beaucoup trop pessimiste.' } },
+        expl: 'On garde 4 décimales (dixième de graduation estimé) avec une incertitude de quelques 10⁻⁴. Écrire ±0,0001 serait trop optimiste, et ±0,01 beaucoup trop pessimiste.', indice: "Le nombre de décimales du résultat doit être cohérent avec l’incertitude annoncée." } },
     { id: 'courbe', titre: 'Passer de n à la composition', focus: ['courbe'],
       texte: <>Pour connaître la composition, on utilise la <strong>courbe d’étalonnage</strong> n = f(x) obtenue avec des mélanges eau – éthanol connus. La ligne orange correspond à votre lecture, n = {nf(G.n, 4)} (étape 5) : lisez l’abscisse du premier point d’intersection avec la courbe, <strong>le plus à gauche</strong>.</>,
       tache: { type: 'num', q: 'Fraction molaire x en éthanol (première composition possible)', unite: '', vrai: G.x1, tol: 0.1, affiche: v => nf(v, 2), cs: 2,
         bloque: aligne ? null : 'Alignez d’abord la frontière (étape 4).',
         aide: 'Lecture : suivez la ligne orange horizontale jusqu’à sa première rencontre avec la courbe (en partant de la gauche), puis lisez l’abscisse sur l’axe horizontal.',
         pieges: [[G.x2, 'C’est la seconde composition possible (branche descendante de la courbe, à droite du maximum). On demande la première, la plus à gauche.']],
-        expl: 'La droite n = 1,364 coupe la branche croissante de la courbe vers x ≈ 0,30.' } },
+        expl: 'La droite n = 1,364 coupe la branche croissante de la courbe vers x ≈ 0,30.', indice: "L’indice n’est pas monotone avec la composition : il peut y avoir deux solutions, on cherche la plus petite." } },
     { id: 'deux', titre: 'Une seule composition ?', focus: ['courbe'],
       texte: <>Regardez la courbe : elle monte, passe par un maximum, puis redescend. Une même valeur de n peut donc correspondre à <strong>deux</strong> compositions.</>,
       tache: { type: 'qcm', q: 'Pour n = 1,3640, combien de compositions sont possibles ?', options: ['une seule, x ≈ 0,30', 'deux : x ≈ 0,30 et x ≈ 0,90', 'aucune'], bonne: 1,
@@ -209,7 +210,7 @@ export function SimulationRefractometre({ naviguer }) {
     { id: 'choix', titre: 'Choisir grâce au contexte', focus: ['courbe', 'diagramme'],
       texte: <>La mesure seule ne suffit pas : il faut une <strong>autre information</strong>. Ce distillat sort d’une colonne très efficace, qui plafonne à l’azéotrope eau – éthanol, dont la température d’ébullition est {nf(G.Taz, 1)}{NB}°C. Le thermomètre en tête indique 78,3{NB}°C.</>,
       tache: { type: 'qcm', q: 'Quelle composition retenez-vous pour le distillat ?', options: ['x ≈ 0,30 : un distillat pauvre en éthanol', 'x ≈ 0,90 : le distillat est proche de l’azéotrope', 'aucune des deux'], bonne: 1,
-        expl: 'À 78,3 °C, la vapeur de tête est presque à la température de l’azéotrope : sa composition est x ≈ 0,90, proche de l’azéotrope. Avec x ≈ 0,30, le thermomètre afficherait beaucoup plus de 80 °C.' } },
+        expl: 'À 78,3 °C, la vapeur de tête est presque à la température de l’azéotrope : sa composition est x ≈ 0,90, proche de l’azéotrope. Avec x ≈ 0,30, le thermomètre afficherait beaucoup plus de 80 °C.', indice: "Rappelez-vous la nature du distillat : riche ou pauvre en éthanol ?" } },
     { id: 'degre', titre: 'En degré alcoolique', focus: ['courbe'],
       texte: <>Convertissez la fraction molaire en fraction massique (M<sub>éthanol</sub> = 46 g·mol⁻¹, M<sub>eau</sub> = 18 g·mol⁻¹) puis en degré alcoolique avec la masse volumique du mélange (le simulateur le fait pour vous ci-dessous).</>,
       tache: { type: 'num', q: 'Fraction massique w en éthanol du distillat (x = 0,90)', unite: '', vrai: wDe(ew, 0.9), tol: 0.03, affiche: v => nf(v, 3), cs: 3,
@@ -223,7 +224,7 @@ export function SimulationRefractometre({ naviguer }) {
         pieges: [[0.9, 'C’est la fraction molaire. L’éthanol est plus lourd que l’eau : il faut tenir compte des masses molaires.', 0.01],
           [0.9 * ew.MA, 'Il manque la division : w = (masse d’éthanol) / (masse totale d’éthanol et d’eau), pas seulement la masse d’éthanol.'],
           [wDe({ MA: ew.MB, MB: ew.MA }, 0.9), 'Masses molaires inversées : M_A = 46 g·mol⁻¹ est celle de l’éthanol, M_B = 18 g·mol⁻¹ celle de l’eau.']],
-        expl: 'w = 0,90 × 46 / (0,90 × 46 + 0,10 × 18) ≈ 0,958, soit environ 96° : on retrouve le « 95° » du distillat de la distillation fractionnée.' } },
+        expl: 'w = 0,90 × 46 / (0,90 × 46 + 0,10 × 18) ≈ 0,958, soit environ 96° : on retrouve le « 95° » du distillat de la distillation fractionnée.', indice: "w = x·M_éthanol ÷ (x·M_éthanol + (1 − x)·M_eau)." } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
         <li>réfractomètre : la frontière clair – sombre donne l’indice n du liquide (angle limite)</li>
@@ -268,6 +269,7 @@ export function SimulationRefractometre({ naviguer }) {
           return (
             <div key={qu.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {qu.q}</div>
+              {INDICE_Q[qu.id] && <IndiceDefi cache={defi.verifie && ok}>{INDICE_Q[qu.id]}</IndiceDefi>}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input value={rep} placeholder="?" aria-label={`Réponse ${k + 1}`} onChange={ev => { const v = ev.target.value; setDefi(d => ({ ...d, verifie: false, reps: { ...d.reps, [qu.id]: v } })); }}
                   style={{ fontSize: 14, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 120 }}/>
