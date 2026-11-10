@@ -6,18 +6,15 @@
 //   • Écrire les produits d'addition 1,2 et 1,4 d'un diène conjugué (carbocation allylique, mésomérie)  → cinet-diene
 //   • Exploiter un profil d'énergie à deux voies : barrières, barrière inverse, stabilité des produits   → cinet-profil
 //   • Distinguer contrôle cinétique et contrôle thermodynamique selon les conditions                    → cinet-conditions
-//   • Calculer la composition à l'équilibre : K = exp(ΔE / RT)                                          → cinet-equilibre
-//   • Loi d'Arrhenius : constante de vitesse et demi-vie, réversibilité                                  → cinet-arrhenius
+//   • Prévoir qualitativement la composition à l'équilibre (stabilité des produits, température)         → cinet-equilibre
+//   • Réversibilité : barrière inverse, température et durée                                             → cinet-arrhenius
 // ═══════════════════════════════════════════════════════════════════════════
-import { E, A } from './cinetModele.js';
+import { E } from './cinetModele.js';
 
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const V = (t, e) => [t, true, e];
 const F = (t, e) => [t, false, e];
-const nb = (x, d) => Number(x).toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d });
 const DOM = 'Contrôle cinétique et thermodynamique (BTS)';
-const R = 8.314;
-const sci = x => { const e = Math.floor(Math.log10(x)); return `${nb(x / Math.pow(10, e), 2)} × 10${String(e).replace(/-/g, '⁻').replace(/\d/g, c => '⁰¹²³⁴⁵⁶⁷⁸⁹'[c])}`; };
 
 export const EXERCICES = [
   // ── C1 : les deux produits d'un diène conjugué ──
@@ -113,60 +110,60 @@ export const EXERCICES = [
     },
   },
 
-  // ── C4 : composition à l'équilibre ──
+  // ── C4 : composition à l'équilibre (lecture qualitative du profil) ──
   {
-    id: 'cinet-equilibre', domaine: DOM, niveau: 2, titre: 'Calculer la composition à l\'équilibre',
+    id: 'cinet-equilibre', domaine: DOM, niveau: 2, titre: 'Prévoir qualitativement la composition à l\'équilibre',
     construire: () => {
-      const d = tire([4, 5, 6, 7, 8]), T = tire([293, 313, 333, 353]);
-      const K = Math.exp(d * 1000 / (R * T)), p14 = 100 * K / (1 + K);
+      const d = tire([4, 7, 12]), P12 = -60, P14 = P12 - d;
       return {
-        enonce: `À l'équilibre (contrôle thermodynamique), le rapport des quantités des deux produits vaut [1,4] / [1,2] = exp[(E(1,2) − E(1,4)) / (R·T)]. Le produit 1,4 est plus stable que le produit 1,2 de ${d} kJ·mol⁻¹. La température est T = ${T} K ; R = 8,314 J·mol⁻¹·K⁻¹.`,
+        enonce: `Sous contrôle thermodynamique, les deux produits s'interconvertissent via le carbocation et le mélange atteint l'équilibre. Le produit 1,2 est à ${P12} kJ·mol⁻¹ et le produit 1,4 à ${P14} kJ·mol⁻¹ (réactifs = 0).`,
         etapes: [
-          { id: 'K', titre: 'Le rapport à l\'équilibre', q: `Calculez [1,4] / [1,2] à ${T} K.`,
-            aide: 'Convertissez ΔE en J·mol⁻¹ avant de diviser par R·T.',
-            type: 'saisie', champs: [{ id: 'K', lib: '[1,4] / [1,2]', u: '', vrai: K, tol: 0.03 }],
-            expl: `K = exp(${d} × 1000 / (8,314 × ${T})) = exp(${nb(d * 1000 / (R * T), 3)}) = ${nb(K, 1)}.` },
-          { id: 'p', titre: 'Le pourcentage de produit 1,4', q: 'En déduire le pourcentage de produit 1,4 dans le mélange des deux produits.',
-            aide: 'Si [1,4] / [1,2] = K, alors le produit 1,4 représente K / (1 + K) du mélange.',
-            type: 'saisie', champs: [{ id: 'p', lib: 'Produit 1,4', u: '%', vrai: p14, tol: 0.015 }],
-            expl: `%(1,4) = 100 × K / (1 + K) = 100 × ${nb(K, 1)} / ${nb(1 + K, 1)} = ${nb(p14, 1)} %.` },
-          { id: 'T', titre: 'L\'effet de la température', q: 'Si la température augmente, comment évolue la proportion de produit 1,4 à l\'équilibre ?',
-            aide: 'T est au dénominateur de l\'exposant : que devient le rapport quand T augmente ?',
-            o: [V('Elle diminue légèrement : le mélange devient moins sélectif', 'ΔE / RT diminue quand T augmente : K se rapproche de 1, les deux produits deviennent plus comparables.'),
-              F('Elle augmente : le mélange devient plus sélectif', 'Une température plus élevée réduit l\'écart de populations entre deux niveaux d\'énergie.'),
-              F('Elle ne change pas', 'Le rapport dépend de T par exp(ΔE / RT).')] },
+          { id: 'maj', titre: 'Le produit majoritaire', q: 'Quel produit est majoritaire à l\'équilibre ?',
+            aide: 'À l\'équilibre, le produit le plus stable domine.',
+            o: [V('Le produit 1,4', `Son énergie (${P14} kJ·mol⁻¹) est inférieure à celle du produit 1,2 (${P12} kJ·mol⁻¹) : c'est le plus stable.`),
+              F('Le produit 1,2', `Il est moins stable (${P12} kJ·mol⁻¹) que le produit 1,4 (${P14} kJ·mol⁻¹).`),
+              F('Les deux en quantités égales', 'Leurs énergies sont différentes : l\'équilibre favorise le plus stable.')] },
+          { id: 'ecart', titre: 'L\'effet de l\'écart d\'énergie', q: `L'écart d'énergie entre les deux produits est de ${d} kJ·mol⁻¹. Si cet écart était plus grand, la proportion de produit 1,4 à l'équilibre serait …`,
+            aide: 'Plus un produit est stable par rapport à l\'autre, plus il domine.',
+            o: [V('plus élevée : le mélange serait plus sélectif', 'Un écart d\'énergie plus grand favorise davantage le produit le plus stable.'),
+              F('plus faible', 'Un plus grand écart de stabilité accentue la domination du produit le plus stable.'),
+              F('inchangée', 'La composition à l\'équilibre dépend de l\'écart d\'énergie.')] },
+          { id: 'T', titre: 'L\'effet de la température', q: 'Si la température augmente, comment évolue la sélectivité à l\'équilibre (rapport des deux produits) ?',
+            aide: 'L\'agitation thermique rend les deux produits plus comparables.',
+            o: [V('Elle diminue légèrement : le mélange devient moins sélectif', 'À température plus élevée, l\'énergie thermique compense mieux l\'écart d\'énergie : les deux produits se rapprochent en proportion.'),
+              F('Elle augmente nettement', 'Une température plus élevée ne rend pas l\'équilibre plus sélectif.'),
+              F('Elle ne change pas', 'La composition à l\'équilibre dépend de la température.')] },
         ],
-        retenir: ['À l\'équilibre, le rapport des deux produits suit la loi de Boltzmann : K = exp(ΔE / RT). Un petit écart d\'énergie (quelques kJ·mol⁻¹) suffit à favoriser nettement le plus stable.'],
+        retenir: ['À l\'équilibre, le produit le plus stable domine d\'autant plus que l\'écart d\'énergie est grand ; une température plus élevée rend le mélange un peu moins sélectif.'],
       };
     },
   },
 
-  // ── C5 : Arrhenius et réversibilité ──
+  // ── C5 : réversibilité et barrière inverse (lecture qualitative du profil) ──
   {
-    id: 'cinet-arrhenius', domaine: DOM, niveau: 2, titre: 'Le produit cinétique se retransforme-t-il ? (loi d\'Arrhenius)',
+    id: 'cinet-arrhenius', domaine: DOM, niveau: 2, titre: 'Le produit cinétique se retransforme-t-il ? (barrière inverse)',
     construire: () => {
-      const T = tire([273, 293, 313, 333]), Ea = E.ET2a - E.P12;     // 90 kJ/mol : produit 1,2 → carbocation
-      const k = A * Math.exp(-Ea * 1000 / (R * T)), t12 = Math.LN2 / k;     // demi-vie en s
-      const th = t12 / 3600;
-      const rev = t12 < 3600;
+      const froid = Math.random() < 0.5, inv12 = E.ET2a - E.P12, inv14 = E.ET2b - E.P14;
       return {
-        enonce: `Le produit 1,2 peut se retransformer en carbocation en franchissant une barrière E_a = ${Ea} kJ·mol⁻¹. La constante de vitesse de ce retour vaut k = A·exp(−E_a / (R·T)), avec A = 1,0 × 10¹³ s⁻¹ et R = 8,314 J·mol⁻¹·K⁻¹. La température est T = ${T} K.`,
+        enonce: `Pour revenir au carbocation, le produit 1,2 doit franchir une barrière inverse de ${inv12} kJ·mol⁻¹, et le produit 1,4 une barrière de ${inv14} kJ·mol⁻¹. On travaille ${froid ? 'à basse température (0 °C), sur une durée courte' : 'à température plus élevée (40 °C), sur plusieurs heures'}.`,
         etapes: [
-          { id: 'k', titre: 'La constante de vitesse', q: `Calculez k à ${T} K (écrivez le nombre sans notation scientifique, par exemple 0,0012).`,
-            aide: 'Convertissez E_a en J·mol⁻¹ : E_a = 90 000 J·mol⁻¹. L\'exponentielle donne un nombre très petit.',
-            type: 'saisie', champs: [{ id: 'k', lib: 'k', u: 's⁻¹', vrai: k, tol: 0.06 }],
-            expl: `k = 1,0 × 10¹³ × exp(−${Ea * 1000} / (8,314 × ${T})) = 1,0 × 10¹³ × exp(−${nb(Ea * 1000 / (R * T), 2)}) = ${sci(k)} s⁻¹.` },
-          { id: 't', titre: 'La demi-vie', q: 'Pour une transformation d\'ordre 1, la demi-vie vaut t½ = ln 2 / k. Calculez t½ en heures.',
-            aide: 't½ = 0,693 / k, en secondes ; puis divisez par 3 600 pour obtenir des heures.',
-            type: 'saisie', champs: [{ id: 't', lib: 't½', u: 'h', vrai: th, tol: 0.06 }],
-            expl: `t½ = 0,693 / ${sci(k)} = ${nb(t12, 1)} s = ${th < 0.01 ? sci(th) : nb(th, 3)} h.` },
-          { id: 'c', titre: 'La conclusion', q: 'Pour une expérience de une heure à cette température, le produit 1,2 se retransforme-t-il de façon notable ?',
-            aide: 'Comparez la demi-vie à la durée de l\'expérience (1 h).',
-            o: [rev ? V('Oui : la demi-vie est très inférieure à 1 h, le retour est rapide (contrôle thermodynamique)', `t½ = ${nb(t12, 1)} s est très inférieure à 1 h : le produit 1,2 se retransforme en carbocation et l'équilibre s'établit.`) : F('Oui : la demi-vie est très inférieure à 1 h, le retour est rapide (contrôle thermodynamique)', `La demi-vie (${nb(th, 1)} h) n'est pas très inférieure à 1 h.`),
-              !rev ? V('Non : la demi-vie dépasse 1 h, le retour est négligeable (contrôle cinétique)', `t½ = ${nb(th, 1)} h est supérieure à 1 h : le produit 1,2 reste en grande partie intact pendant l'expérience.`) : F('Non : la demi-vie dépasse 1 h, le retour est négligeable (contrôle cinétique)', `t½ = ${nb(t12, 1)} s est très courte devant 1 h : le retour a lieu.`),
-              F('On ne peut pas conclure sans connaître le solvant', 'Dans ce modèle, k et t½ suffisent pour comparer au temps de l\'expérience.')] },
+          { id: 'qui', titre: 'Le premier à se retransformer', q: 'Quel produit se retransforme le plus facilement en carbocation ?',
+            aide: 'La barrière inverse la plus faible est franchie le plus facilement.',
+            o: [V('Le produit 1,2', `Sa barrière inverse (${inv12} kJ·mol⁻¹) est inférieure à celle du produit 1,4 (${inv14} kJ·mol⁻¹).`),
+              F('Le produit 1,4', `Sa barrière inverse (${inv14} kJ·mol⁻¹) est plus haute : il est plus stable et se retransforme moins.`),
+              F('Les deux de la même façon', 'Les deux barrières inverses sont différentes.')] },
+          { id: 'rev', titre: 'La réversibilité', q: 'Dans ces conditions, la formation du produit 1,2 est-elle réversible ?',
+            aide: 'À basse température et sur un temps court, peu de molécules franchissent une barrière haute.',
+            o: [V(froid ? 'Non : la barrière inverse est trop haute pour cette température et cette durée' : 'Oui : la température et la durée permettent de franchir la barrière inverse', froid ? 'Peu de molécules franchissent environ 90 kJ·mol⁻¹ à basse température et en peu de temps : le produit cinétique reste.' : 'À 40 °C et sur plusieurs heures, le retour est possible : les produits s\'interconvertissent.'),
+              F(froid ? 'Oui : la barrière inverse est franchie sans difficulté' : 'Non : la barrière inverse est trop haute', froid ? 'À basse température, le retour est négligeable.' : 'À cette température et sur ce temps, le retour a lieu.'),
+              F('On ne peut pas conclure sans connaître le solvant', 'Le profil, la température et la durée suffisent pour conclure qualitativement.')] },
+          { id: 'ctrl', titre: 'Le contrôle', q: 'Quel contrôle s\'applique ?',
+            aide: 'Irréversible : cinétique. Réversible : thermodynamique.',
+            o: [V(froid ? 'Contrôle cinétique : le produit formé le plus vite (1,2) domine' : 'Contrôle thermodynamique : le produit le plus stable (1,4) domine', froid ? 'La réaction est irréversible : la composition reflète les vitesses de formation.' : 'La réaction est réversible : la composition reflète les stabilités.'),
+              F(froid ? 'Contrôle thermodynamique' : 'Contrôle cinétique', froid ? 'Il n\'y a pas de retour : l\'équilibre n\'est pas atteint.' : 'Les produits se retransforment : on atteint l\'équilibre.'),
+              F('Aucun contrôle ne s\'applique', 'Les conditions déterminent toujours le régime.')] },
         ],
-        retenir: ['Un produit cinétique se retransforme si sa demi-vie de retour est courte devant la durée de la réaction. La loi d\'Arrhenius montre que cette demi-vie chute très vite quand la température augmente.'],
+        retenir: ['Un produit cinétique se retransforme si la température et la durée permettent de franchir sa barrière inverse ; alors le produit le plus stable finit par dominer.'],
       };
     },
   },
