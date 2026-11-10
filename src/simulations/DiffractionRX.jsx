@@ -135,6 +135,9 @@ const enonce = (d, { champ, choix }) => {
   const e = ECHANTILLONS[d.cle];
   return <><Pic n="target"/>Le {e.nom} ({e.formule}, M = {fr(e.M, 2)} g/mol) cristallise {e.sel ? 'dans une structure de type NaCl (réseau cubique à faces centrées, un motif NaCl par nœud)' : `dans le système ${STRUCTURES[e.type].nom}`}, de paramètre <strong>a = {fr(e.a, 4)} nm</strong>. Calculez sa masse volumique (en g/cm³). N<sub>A</sub> = 6,022 × 10²³ mol⁻¹.<div style={{ marginTop: 6 }}>{champ('v', 'g/cm³')}</div></>;
 };
+const indiceDefi = d => d.type === 'inconnu' ? <>Calcule les rapports sin²θ / sin²θ₁ des pics et compare-les à la suite des valeurs de N = h² + k² + l² permises pour chaque structure (cubique simple, centré, faces centrées).</>
+  : d.type === 'bragg' ? <>Loi de Bragg : d = λ / (2 sin θ), avec θ la moitié de 2θ ; puis a = d × √(h² + k² + l²), en nm.</>
+  : <>ρ = n × M / (N_A × a³), avec n atomes par maille et a converti en cm (1 nm = 10⁻⁷ cm).</>;
 const solution = d => {
   if (d.type === 'inconnu') { const e = ECHANTILLONS[d.cle]; return <>Échantillon : <strong>{e.nom} ({e.formule})</strong>, structure {e.sel ? 'de type NaCl (réseau F)' : STRUCTURES[e.type].nom}, a = {fr(e.a, 4)} nm. Avec le bon modèle, les rapports sin²θ / sin²θ₁ suivent la suite {sequence(e.type, 6).map(v => fr(v, 2)).join(' ; ')}… et a est le même pour tous les pics.</>; }
   if (d.type === 'bragg') return <>θ = {fr(d.dt / 2, 3)}° ; <F>d = λ / (2 sin θ) = 0,1542 / (2 × {fr(Math.sin(rad(d.dt / 2)), 4)}) = {fr(d.d, 4)} nm</F> ; <F>a = d × √(h² + k² + l²) = {fr(d.d, 4)} × √{d.N} = <strong>{fr(d.a, 4)} nm</strong></F>.</>;
@@ -173,7 +176,7 @@ export function SimulationDiffractionRX() {
     { id: 'contexte', titre: 'Comment « voir » l’intérieur d’un cristal ?', depart: () => voir('drx', 'W', null),
       texte: <>Les atomes d’un cristal sont rangés en <strong>plans parallèles</strong> régulièrement espacés. On envoie un faisceau de <strong>rayons X</strong> (λ = 0,1542 nm, du même ordre de grandeur que les distances entre atomes) sur une <strong>poudre</strong> du cristal, et un détecteur tourne autour de l’échantillon : il enregistre l’intensité diffractée en fonction de l’angle de déviation <strong>2θ</strong>. On obtient le <strong>diffractogramme</strong> ci-contre (tungstène).</>,
       tache: { type: 'qcm', q: 'Pourquoi le détecteur ne reçoit-il des rayons X que pour certains angles ?', options: ['Les ondes diffractées par les différents plans n’interfèrent constructivement que pour certains angles', 'Le tube à rayons X n’émet que dans certaines directions', 'La poudre absorbe les rayons X aux autres angles', 'Le détecteur n’est sensible qu’à certains angles'], bonne: 0,
-        expl: 'Chaque famille de plans atomiques diffracte les rayons X ; les ondes ne s’additionnent (interférences constructives) que pour des angles bien précis.' } },
+        expl: 'Chaque famille de plans atomiques diffracte les rayons X ; les ondes ne s’additionnent (interférences constructives) que pour des angles bien précis.', indice: "Les ondes diffractées par les plans successifs se superposent. À quelle condition sur leur déphasage l’interférence est-elle constructive ?" } },
     { id: 'bragg', titre: 'La loi de Bragg', depart: () => voir('bragg'),
       texte: <>Deux plans voisins, distants de <strong>d</strong>, renvoient chacun une onde. Le rayon réfléchi par le plan 2 parcourt un chemin plus long de <strong><F>δ = 2 d sin θ</F></strong> (en orange). Les deux ondes sont en phase (interférences constructives) si δ est un nombre entier de longueurs d’onde : <strong><F>2 d sin θ = n λ</F></strong> (loi de Bragg). Faites varier θ pour observer les deux cas.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'bragg' && Math.round(dl) >= 1 && Math.abs(dl - Math.round(dl)) < 0.04, consigne: 'Réglez θ pour obtenir des interférences constructives (δ / λ entier).' } },
@@ -188,19 +191,19 @@ export function SimulationDiffractionRX() {
             `d = 0,1542 / (2 × ${fr(s, 5)}) = ${fr(LAMBDA / (2 * s), 4)} nm.`]; },
         pieges: [[LAMBDA / (2 * Math.sin(rad(r2(W1)))), 'Attention : la loi de Bragg utilise θ, pas 2θ. Divisez d’abord l’angle lu par 2.'],
           [LAMBDA / Math.sin(rad(r2(W1) / 2)), 'Vous avez oublié le facteur 2 : la loi de Bragg est 2 d sin θ = λ, donc d = λ / (2 sin θ).']],
-        expl: `θ = ${fr(r2(W1) / 2, 3)}° et d = λ / (2 sin θ).` } },
+        expl: `θ = ${fr(r2(W1) / 2, 3)}° et d = λ / (2 sin θ).`, indice: "Loi de Bragg : 2 d sin θ = λ (ordre 1). Attention : l’angle lu sur le diffractogramme est 2θ, il faut le diviser par 2 pour obtenir θ." } },
     { id: 'miller', titre: 'Indices de Miller et distance d_hkl', depart: null,
       texte: <>Chaque famille de plans est repérée par trois entiers, ses <strong>indices de Miller (hkl)</strong>. Dans un cristal cubique de paramètre de maille a, la distance entre les plans (hkl) est :
         <Formule>d<sub>hkl</sub> = a / √(h² + k² + l²)</Formule>
         On note souvent <strong><F>N = h² + k² + l²</F></strong> : d<sub>hkl</sub> = a / √N.
         <ExempleResolu>Plans (110) d’un cristal de paramètre a = 0,3165 nm : <F>d<sub>110</sub> = 0,3165 / √2 = <strong>0,2238 nm</strong></F>.</ExempleResolu></>,
-      tache: { type: 'qcm', q: 'Pour les plans (200), la distance d₂₀₀ vaut…', options: ['a / 2', 'a / 4', '2 a', 'a / √2'], bonne: 0, expl: 'h² + k² + l² = 4, donc d₂₀₀ = a / √4 = a / 2.' } },
+      tache: { type: 'qcm', q: 'Pour les plans (200), la distance d₂₀₀ vaut…', options: ['a / 2', 'a / 4', '2 a', 'a / √2'], bonne: 0, expl: 'h² + k² + l² = 4, donc d₂₀₀ = a / √4 = a / 2.', indice: "Pour un cristal cubique : d(hkl) = a / √(h² + k² + l²). Applique cette formule avec h, k, l de (200)." } },
     { id: 'extinctions', titre: 'Des pics qui manquent : les extinctions', depart: null,
       texte: <>Selon la façon dont la maille est peuplée, les ondes de certains atomes s’annulent et des familles de plans <strong>ne donnent aucun pic</strong> :
         <ul style={{ margin: '4px 0', paddingLeft: 18 }}><li><strong>cubique simple (P)</strong> : {STRUCTURES.P.regle} ;</li><li><strong>cubique centré (I)</strong> : {STRUCTURES.I.regle} ;</li><li><strong>cubique à faces centrées (F)</strong> : {STRUCTURES.F.regle}.</li></ul>
         C’est cette « signature » qui permet de reconnaître la structure.</>,
       tache: { type: 'qcm', q: 'Dans un cristal cubique centré, les plans (100)…', options: ['ne donnent pas de pic : h + k + l = 1 est impair', 'donnent le pic le plus intense', 'donnent un pic car tous les plans existent', 'ne donnent pas de pic car h, k et l n’ont pas la même parité'], bonne: 0,
-        expl: 'En cubique centré, l’atome du centre est exactement entre deux plans (100) : son onde est en opposition et annule celle des plans (100).' } },
+        expl: 'En cubique centré, l’atome du centre est exactement entre deux plans (100) : son onde est en opposition et annule celle des plans (100).', indice: "Dans un cristal cubique centré, un pic n’apparaît que si h + k + l est pair. Calcule cette somme pour (100)." } },
     { id: 'releve', titre: 'Relever les pics du tungstène', depart: () => voir('drx', 'W', null),
       texte: <>Cliquez sur chaque pic du diffractogramme pour <strong>relever sa position 2θ</strong> (un triangle numéroté apparaît ; un second clic l’efface). Le tableau calcule θ et sin²θ. Relevez les {nW} pics, <strong>sans oublier le premier</strong>.</>,
       tache: { type: 'action', ok: enGuide && relW >= nW, consigne: `Relevez les ${nW} pics du tungstène (${relW} / ${nW}).` } },
@@ -223,7 +226,7 @@ export function SimulationDiffractionRX() {
             `sin²θ₃ / sin²θ₁ = ${fr(s3, 5)} / ${fr(s1, 5)} = ${fr(s3 / s1, 2)}.`]; },
         pieges: [[Math.sin(rad(r2(W3))) ** 2 / Math.sin(rad(r2(W1))) ** 2, 'Utilisez θ (la moitié de 2θ) dans le sinus.'],
           [Math.sin(rad(r2(W3) / 2)) / Math.sin(rad(r2(W1) / 2)), 'Vous avez oublié le carré : il faut calculer sin²θ₃ / sin²θ₁, donc élever chaque sinus au carré avant de diviser.'],
-          [Math.sin(rad(r2(W1) / 2)) ** 2 / Math.sin(rad(r2(W3) / 2)) ** 2, 'Rapport à l’envers : c’est sin²θ du 3ᵉ pic divisé par sin²θ du 1ᵉʳ pic.']], expl: `sin²(${fr(r2(W3) / 2, 3)}°) / sin²(${fr(r2(W1) / 2, 3)}°).` } },
+          [Math.sin(rad(r2(W1) / 2)) ** 2 / Math.sin(rad(r2(W3) / 2)) ** 2, 'Rapport à l’envers : c’est sin²θ du 3ᵉ pic divisé par sin²θ du 1ᵉʳ pic.']], expl: `sin²(${fr(r2(W3) / 2, 3)}°) / sin²(${fr(r2(W1) / 2, 3)}°).`, indice: "Calcule sin θ pour le pic 3 et pour le pic 1 (θ est la moitié de l’angle 2θ lu), puis fais le rapport de leurs carrés." } },
     { id: 'modele', titre: 'Tester les trois modèles', depart: () => voir('drx', 'W'),
       texte: <>Choisissez un modèle sous le tableau. Chaque modèle impose une liste de valeurs de N permises. Le simulateur calcule N estimé = (sin²θ / sin²θ₁) × N₁ et le compare aux valeurs permises : <strong>un ⚠️ signale un pic dont le N estimé n’est permis par aucun plan du modèle</strong>. Il calcule ensuite
         <Formule>a = λ √N / (2 sin θ)</Formule>
@@ -236,7 +239,7 @@ export function SimulationDiffractionRX() {
           <li><strong>cubique centré</strong> : h + k + l pair → N = 2 (110), 4 (200), 6 (211), 8 (220), 10 (310), 12 (222), <strong>14 (321)</strong>… soit, après division par N₁ = 2 : 1, 2, 3, 4, 5, 6, <strong>7</strong>…</li></ul>
         Avec les 6 premiers pics, les deux modèles donnent un a constant (celui du cubique simple est √2 fois plus petit) : les rapports 1, 2, 3, 4, 5, 6 sont identiques. C’est le <strong>7ᵉ pic</strong> qui tranche : son rapport sin²θ / sin²θ₁ vaut 7,00. Le tableau (modèle cubique simple) affiche ⚠️ sur ce pic.</>,
       tache: { type: 'qcm', q: 'Le 7ᵉ pic a un rapport égal à 7. Pourquoi cela exclut-il le cubique simple ?', options: ['N = 7 n’existe pas en cubique simple (la liste saute de 6 à 8), alors qu’il existe en cubique centré (rapport 14 / 2)', 'Il est trop intense', 'Il dépasse 2θ = 90°', 'Le cubique simple n’a que 6 pics'], bonne: 0,
-        expl: 'Aucune somme de trois carrés d’entiers ne vaut 7 : en cubique simple il y a un « trou » entre N = 6 et N = 8. En cubique centré, N = 14 (plans 321, h + k + l = 6 pair) existe bien et 14 / 2 = 7.' } },
+        expl: 'Aucune somme de trois carrés d’entiers ne vaut 7 : en cubique simple il y a un « trou » entre N = 6 et N = 8. En cubique centré, N = 14 (plans 321, h + k + l = 6 pair) existe bien et 14 / 2 = 7.', indice: "Le rapport sin²θ / sin²θ₁ est égal à N / N₁, avec N = h² + k² + l². Quelles valeurs de N sont possibles en cubique simple ? En cubique centré ?" } },
     { id: 'parametre', titre: 'Le paramètre de maille', depart: () => voir('drx', 'W', 'I'),
       texte: <>Avec le modèle cubique centré, lisez la moyenne de a sous le tableau.</>,
       tache: { type: 'num', q: 'Paramètre de maille du tungstène (en nm)', unite: 'nm', vrai: ECHANTILLONS.W.a, tol: 0.005, affiche: x => fr(x, 4),
@@ -245,7 +248,7 @@ export function SimulationDiffractionRX() {
             `Pic 1 : θ = ${fr(th, 3)}°, a = 0,1542 × √2 / (2 × ${fr(Math.sin(rad(th)), 5)}) = ${fr(a1, 4)} nm.`,
             'Chaque pic donne une valeur voisine (écarts de l’ordre de 0,0001 nm, dus à la précision de lecture des angles) : on en fait la moyenne.',
             `Moyenne sur tous les pics : a ≈ ${fr(ECHANTILLONS.W.a, 4)} nm.`]; },
-        pieges: [[ECHANTILLONS.W.a / Math.sqrt(2), 'C’est la valeur du modèle cubique simple : revenez au modèle cubique centré.']], expl: 'Les tables donnent a = 0,3165 nm.' } },
+        pieges: [[ECHANTILLONS.W.a / Math.sqrt(2), 'C’est la valeur du modèle cubique simple : revenez au modèle cubique centré.']], expl: 'Les tables donnent a = 0,3165 nm.', indice: "a = d × √(h² + k² + l²), avec d déduit de la loi de Bragg (θ est la moitié de l’angle 2θ lu)." } },
     { id: 'densite', titre: 'Contrôler par la masse volumique', depart: () => voir('drx', 'W', 'I'),
       texte: <>Une maille cubique centrée contient 1 + 8 × 1/8 = <strong>2 atomes</strong>. Sa masse est 2 M / N<sub>A</sub>, son volume a³ :
         <Formule>ρ = 2 M / (N<sub>A</sub> a³)</Formule>
@@ -256,7 +259,7 @@ export function SimulationDiffractionRX() {
             `a = ${fr(a, 5)} nm (valeur tabulée) = ${sci(aCm, 4)} cm, donc a³ = ${sci(aCm ** 3, 3)} cm³.`,
             `Masse de la maille : 2 × 183,84 / ${sci(6.02214076e23, 4)} = ${sci(m, 3)} g.`,
             `ρ = ${sci(m, 3)} / ${sci(aCm ** 3, 3)} = ${fr(masseVolumique(2, 183.84, a), 2)} g/cm³.`]; },
-        pieges: [[masseVolumique(1, 183.84, ECHANTILLONS.W.a), 'Une maille cubique centrée contient 2 atomes, pas 1.'], [masseVolumique(1, 183.84, ECHANTILLONS.W.a / Math.sqrt(2)), 'C’est le résultat du modèle cubique simple : il est incompatible avec la masse volumique mesurée.']], expl: 'ρ = 2 × 183,84 / (6,022 × 10²³ × (0,3165 × 10⁻⁷)³).' } },
+        pieges: [[masseVolumique(1, 183.84, ECHANTILLONS.W.a), 'Une maille cubique centrée contient 2 atomes, pas 1.'], [masseVolumique(1, 183.84, ECHANTILLONS.W.a / Math.sqrt(2)), 'C’est le résultat du modèle cubique simple : il est incompatible avec la masse volumique mesurée.']], expl: 'ρ = 2 × 183,84 / (6,022 × 10²³ × (0,3165 × 10⁻⁷)³).', indice: "ρ = n × M / (N_A × a³), avec n le nombre d’atomes par maille, M en g/mol et a converti en cm (1 nm = 10⁻⁷ cm)." } },
     { id: 'nacl', titre: 'Un cristal ionique : NaCl', depart: () => voir('drx', 'NaCl', null),
       texte: <>Dans NaCl, les ions Cl⁻ forment un réseau <strong>cubique à faces centrées</strong> et les ions Na⁺ occupent ses sites octaédriques. Pour les plans aux indices tous impairs (111, 311…), les ondes de Na⁺ et de Cl⁻ sont en opposition : ces pics sont <strong>faibles</strong>, mais présents. Relevez au moins 6 pics (dont le tout premier, à 2θ ≈ 27°) et trouvez la structure.</>,
       tache: { type: 'action', ok: enGuide && cle === 'NaCl' && modele === 'F' && !!idx && idx.constant && idx.lignes.length >= 6, consigne: 'Relevez au moins 6 pics de NaCl et trouvez le modèle qui donne a constant.' } },
@@ -394,7 +397,7 @@ export function SimulationDiffractionRX() {
         <button onClick={() => changerMode('guide')} style={styleBouton(true, '#1d4ed8')}><Pic n="compass"/>Commencer le parcours guidé</button></div>}
       <div className={`drx-l1${mode !== 'explore' ? ' cote' : ''}`}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {enDefi && <div style={styleBoite}><VoletDefiGen SIM={SIM} titres={TITRES} defi={defi} setDefi={setDefi} changerType={lancer} evaluer={evaluer} enonce={enonce} solution={solution}/></div>}
+          {enDefi && <div style={styleBoite}><VoletDefiGen SIM={SIM} titres={TITRES} defi={defi} setDefi={setDefi} changerType={lancer} evaluer={evaluer} enonce={enonce} solution={solution} indice={indiceDefi}/></div>}
           {(!enDefi || defi.type === 'inconnu') && planche}
         </div>
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : enDefi ? panneauHypo : null}

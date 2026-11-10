@@ -2,7 +2,7 @@ import { useSignalerMode, declarerDefis, SuiviDefi, useCompteurDefi, modeOuvertu
 import { useState, useEffect } from "react";
 import { HansenExploration, GraphesHansen } from "./HansenExploration";
 import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE } from "../commun";
+  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 
 const SIM_ID = 4;
@@ -115,42 +115,42 @@ export function Simulation4({ plotlyReady }) {
     { id: 'parametres', titre: 'Trois paramètres', focus: [],
       texte: <>Chaque molécule est décrite par trois paramètres de solubilité (en MPa½) : δd (forces de dispersion), δp (interactions entre dipôles), δh (liaisons hydrogène).
         Ce sont les coordonnées d'un point dans l'« espace de Hansen ». Deux substances se mélangent bien si leurs points sont proches.</>,
-      tache: { type: 'qcm', q: 'Pourquoi l’éthanol a-t-il un δh élevé (19,4) ?', options: ['Son groupe –OH forme des liaisons hydrogène', 'Il est très polaire', 'Il est très volatil'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'Pourquoi l’éthanol a-t-il un δh élevé (19,4) ?', options: ['Son groupe –OH forme des liaisons hydrogène', 'Il est très polaire', 'Il est très volatil'], bonne: 0, indice: "δh décrit les liaisons hydrogène. Quel groupe de l’éthanol peut en former ?" } },
     { id: 'ra', titre: 'La distance de Hansen', focus: ['vue'],
       texte: <>La distance entre un solvant (s) et le polymère (P) vaut Ra = √[4(δd,s − δd,P)² + (δp,s − δp,P)² + (δh,s − δh,P)²]. La nitrocellulose : δd = 17 ; δp = 8,7 ;
         δh = 9,3. L'acétate d'éthyle : 15,8 ; 5,3 ; 7,2.</>,
       tache: { type: 'num', q: 'Distance Ra entre l’acétate d’éthyle et la nitrocellulose', unite: 'MPa½', vrai: raEA, tol: 0.02, affiche: x => fmt(x, 2),
         calcul: calculRa(PT, SOLVANTS.ea, 'acétate d’éthyle'),
         pieges: [[Math.sqrt((15.8 - 17) ** 2 + 3.4 ** 2 + 2.1 ** 2), 'N’oubliez pas le facteur 4 devant le terme en δd.'],
-          [4 * 1.2 ** 2 + 3.4 ** 2 + 2.1 ** 2, 'Vous avez oublié la racine carrée à la fin : la somme des carrés vaut Ra², pas Ra.']] } },
+          [4 * 1.2 ** 2 + 3.4 ** 2 + 2.1 ** 2, 'Vous avez oublié la racine carrée à la fin : la somme des carrés vaut Ra², pas Ra.']], indice: "Distance de Hansen : Ra² = 4 (δd₁ − δd₂)² + (δp₁ − δp₂)² + (δh₁ − δh₂)². Calcule chaque différence, puis la racine carrée." } },
     { id: 'facteur4', titre: 'Pourquoi ce facteur 4 ?', focus: [],
       texte: <>Le facteur 4 devant le terme de dispersion n'est pas démontré : Hansen l'a choisi parce qu'avec lui, les domaines de solubilité mesurés deviennent à peu près
         sphériques. C'est pour cela que la vue 3D utilise l'axe 2δd.</>,
-      tache: { type: 'qcm', q: 'Le facteur 4 est…', options: ['un choix empirique, qui rend les domaines de solubilité à peu près sphériques', 'une constante physique fondamentale', 'une erreur de la formule'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'Le facteur 4 est…', options: ['un choix empirique, qui rend les domaines de solubilité à peu près sphériques', 'une constante physique fondamentale', 'une erreur de la formule'], bonne: 0, indice: "Le facteur 4 vient-il d’une loi physique fondamentale ou d’un ajustement des données pour que les domaines de solubilité soient proches de sphères ?" } },
     { id: 'red', titre: 'La sphère et le RED', focus: ['vue'],
       texte: <>Le polymère est entouré d'une <strong>sphère de solubilité</strong> de rayon R0 (ici 9,0 MPa½). On calcule RED = Ra / R0 : si RED &lt; 1, le solvant est dans la
         sphère, il doit dissoudre le polymère.</>,
       tache: { type: 'num', q: 'RED de l’acétate d’éthyle', unite: '', vrai: raEA / PT.R0, tol: 0.02, affiche: x => fmt(x, 2),
         calcul: [...calculRa(PT, SOLVANTS.ea, 'acétate d’éthyle'), `RED = Ra / R₀ = ${fmt(raEA, 2)} / ${fmt(PT.R0, 1)} = ${fmt(raEA / PT.R0, 2)} (inférieur à 1 : le solvant est dans la sphère).`],
-        pieges: [[raEA, 'C’est la distance Ra. Le RED est Ra divisé par le rayon R₀ de la sphère (9,0).'], [PT.R0 / raEA, 'Rapport à l’envers : le RED est Ra / R₀ (et non R₀ / Ra).']] } },
+        pieges: [[raEA, 'C’est la distance Ra. Le RED est Ra divisé par le rayon R₀ de la sphère (9,0).'], [PT.R0 / raEA, 'Rapport à l’envers : le RED est Ra / R₀ (et non R₀ / Ra).']], indice: "RED = Ra / R₀ : divise la distance calculée par le rayon d’interaction R₀ de la nitrocellulose (donné dans la simulation)." } },
     { id: 'tester', titre: 'Tester les quatre solvants', focus: ['solvants'],
       texte: <>Cliquez sur chaque solvant dans le cadre « Les solvants » : son RED et sa position sur le diagramme s'affichent.</>,
       tache: { type: 'action', ok: Object.keys(SOLVANTS).every(k => testes[k]), consigne: `Solvants testés : ${Object.keys(SOLVANTS).filter(k => testes[k]).length} / 4` } },
     { id: 'classer', titre: 'Solvants et non-solvants', focus: ['solvants'],
       texte: <>Les esters sont les vrais solvants de la nitrocellulose ; les alcools servent surtout de diluants, moins chers.</>,
       tache: { type: 'qcm', q: 'Lequel de ces quatre liquides est un non-solvant de la nitrocellulose ?', options: ['l’éthanol', 'l’acétate d’éthyle', 'l’acétate de butyle'], bonne: 0,
-        expl: `Éthanol : RED = ${fmt(redOf('etoh'), 2)}, juste au-dessus de 1 : trop de liaisons hydrogène.` } },
+        expl: `Éthanol : RED = ${fmt(redOf('etoh'), 2)}, juste au-dessus de 1 : trop de liaisons hydrogène.`, indice: "Un non-solvant a un RED supérieur à 1 (hors de la sphère de solubilité). Compare les RED des quatre liquides." } },
     { id: 'ipa', titre: 'Le cas de l’isopropanol', focus: ['solvants'],
       texte: <>L'isopropanol a un RED de {fmt(redOf('ipa'), 2)} : il serait dans la sphère. Pourtant, seul, il ne dissout pas la plupart des nitrocelluloses : on s'en sert pour
         les mouiller (les rendre moins inflammables au transport), et comme diluant.</>,
       tache: { type: 'qcm', q: 'Comment l’expliquer ?', options: ['Près de la frontière de la sphère, la prévision est incertaine, et les paramètres dépendent du grade de nitrocellulose', 'Le calcul est faux', 'L’isopropanol est toujours un bon solvant'], bonne: 0,
-        expl: 'Le modèle de Hansen prévoit bien la tendance, mais pas avec certitude près de RED = 1. Il faut toujours vérifier au laboratoire.' } },
+        expl: 'Le modèle de Hansen prévoit bien la tendance, mais pas avec certitude près de RED = 1. Il faut toujours vérifier au laboratoire.', indice: "Que dire d’une prévision très proche de la limite RED = 1 ? Les paramètres du modèle sont-ils exacts pour tous les grades du polymère ?" } },
     { id: 'source', titre: 'Une autre source de données', focus: ['poly'],
       texte: <>Les paramètres de la nitrocellulose ne sont pas universels. Dans le cadre « Le polymère », choisissez « moyenne citée par Hansen » (16,2 ; 14,1 ; 9,5 ;
         R0 = 10,7) et regardez les RED.</>,
       tache: { type: 'qcm', q: 'Avec ces valeurs, l’acétate de butyle a un RED de 1,02. Que conclure ?', options: ['La prévision dépend des données choisies : seule une mesure sur le grade réellement utilisé tranche', 'L’acétate de butyle ne dissout pas la nitrocellulose', 'Les deux sources sont fausses'], bonne: 0,
         bloque: vuHansen ? null : 'Choisissez d’abord l’autre jeu de paramètres.',
-        expl: 'En pratique, l’acétate de butyle est l’un des solvants les plus utilisés pour les vernis à la nitrocellulose : les données du TP décrivent mieux ce grade.' } },
+        expl: 'En pratique, l’acétate de butyle est l’un des solvants les plus utilisés pour les vernis à la nitrocellulose : les données du TP décrivent mieux ce grade.', indice: "Un RED très proche de 1 donne-t-il une prévision fiable ? Que faut-il faire pour trancher ?" } },
     { id: 'bravo1', titre: 'Bravo !', focus: [],
       texte: <>Vous savez situer un solvant par rapport à la sphère de solubilité, et vous connaissez les limites de la prévision. Parcours suivant : « Les mélanges ».</>, tache: null },
     // ── 2. Les mélanges ──
@@ -161,13 +161,13 @@ export function Simulation4({ plotlyReady }) {
       texte: <>Mélange à 50 % d'acétate d'éthyle (δh = 7,2) et 50 % d'éthanol (δh = 19,4), en volume.</>,
       tache: { type: 'num', q: 'δh du mélange', unite: 'MPa½', vrai: m5050.h, tol: 0.005, affiche: x => fmt(x, 1),
         calcul: [`Fractions volumiques : 50 % = 0,5 de chaque solvant.`, `δh = 0,5 × 7,2 + 0,5 × 19,4 = ${fmt(0.5 * 7.2, 1)} + ${fmt(0.5 * 19.4, 1)} = ${fmt(m5050.h, 1)} MPa½.`],
-        pieges: [[7.2 + 19.4, 'Vous avez additionné les deux δh : il faut les pondérer par les fractions (0,5 chacune), c’est une moyenne.'], [(7.2 + 19.4) / 2 * 0.5, 'La moyenne pondérée, c’est 0,5 × 7,2 + 0,5 × 19,4 : les deux fractions s’additionnent à 1.']] } },
+        pieges: [[7.2 + 19.4, 'Vous avez additionné les deux δh : il faut les pondérer par les fractions (0,5 chacune), c’est une moyenne.'], [(7.2 + 19.4) / 2 * 0.5, 'La moyenne pondérée, c’est 0,5 × 7,2 + 0,5 × 19,4 : les deux fractions s’additionnent à 1.']], indice: "Pour un mélange, chaque paramètre est la moyenne des valeurs des solvants pondérée par leurs fractions volumiques." } },
     { id: 'red5050', titre: 'Ce mélange dissout-il la nitrocellulose ?', focus: ['mel'],
       texte: <>Ce mélange : δd = 15,8 ; δp = {fmt(m5050.p, 2)} ; δh = {fmt(m5050.h, 1)}.</>,
       tache: { type: 'num', q: 'RED du mélange 50/50', unite: '', vrai: ra(PT, m5050) / PT.R0, tol: 0.02, affiche: x => fmt(x, 2),
         calcul: [`Paramètres du mélange (moyennes pondérées) : δd = ${fmt(m5050.d, 1)} ; δp = ${fmt(m5050.p, 2)} ; δh = ${fmt(m5050.h, 1)}.`, ...calculRa(PT, m5050, 'mélange 50/50'),
           `RED = Ra / R₀ = ${fmt(ra(PT, m5050), 2)} / ${fmt(PT.R0, 1)} = ${fmt(ra(PT, m5050) / PT.R0, 2)}.`],
-        pieges: [[ra(PT, m5050), 'C’est la distance Ra. Le RED est Ra divisé par R₀ = 9,0.'], [raEA / PT.R0, 'Vous avez calculé le RED de l’acétate d’éthyle seul : utilisez les paramètres du mélange (δp et δh moyens).']] } },
+        pieges: [[ra(PT, m5050), 'C’est la distance Ra. Le RED est Ra divisé par R₀ = 9,0.'], [raEA / PT.R0, 'Vous avez calculé le RED de l’acétate d’éthyle seul : utilisez les paramètres du mélange (δp et δh moyens).']], indice: "Calcule d’abord δd, δp et δh du mélange (moyennes pondérées par les fractions volumiques), puis Ra, puis RED = Ra / R₀." } },
     { id: 'optimum', titre: 'Le mélange le plus proche du centre', focus: ['mel'],
       texte: <>En formulation, on cherche souvent le mélange le plus proche du point du polymère (le RED le plus petit). Avec l'acétate d'éthyle et l'éthanol, réglez les
         proportions dans le cadre « Mon mélange » pour obtenir RED ≤ 0,41.</>,
@@ -185,10 +185,10 @@ export function Simulation4({ plotlyReady }) {
             `f = ${fmt(fMax, 3)}, soit environ ${fmt(fMax * 100, 0)} % d’éthanol. Autre méthode : dans la simulation, augmentez la part d’éthanol jusqu’à ce que le RED atteigne 1.`,
           ];
         })(),
-        pieges: [[50, 'À 50 % le RED vaut seulement 0,55 : on est encore bien dans la sphère. Cherchez la part où le RED atteint 1.']] } },
+        pieges: [[50, 'À 50 % le RED vaut seulement 0,55 : on est encore bien dans la sphère. Cherchez la part où le RED atteint 1.']], indice: "Cherche la fraction d’éthanol pour laquelle le RED du mélange atteint 1 : essaie plusieurs compositions dans la simulation." } },
     { id: 'marge', titre: 'Une marge de sécurité', focus: [],
       texte: <>Le modèle autorise jusqu'à {fmt(fMax * 100, 0)} % d'éthanol. Mais il ne décrit que le vernis au moment où il est dans le flacon.</>,
-      tache: { type: 'qcm', q: 'Pourquoi ne pas formuler à la limite ?', options: ['La prévision est incertaine près de RED = 1, et la composition change pendant le séchage', 'Parce que l’éthanol est un ester', 'Il n’y a aucune raison'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'Pourquoi ne pas formuler à la limite ?', options: ['La prévision est incertaine près de RED = 1, et la composition change pendant le séchage', 'Parce que l’éthanol est un ester', 'Il n’y a aucune raison'], bonne: 0, indice: "Près de RED = 1, la prévision est incertaine, et le film sèche : la composition évolue. Pourquoi prévoir une marge ?" } },
     { id: 'bravo2', titre: 'Bravo !', focus: [],
       texte: <>Vous savez calculer le point d'un mélange et l'optimiser. Parcours suivant : « Le séchage du vernis », où la composition du mélange change.</>, tache: null },
     // ── 3. Le séchage ──
@@ -198,16 +198,16 @@ export function Simulation4({ plotlyReady }) {
     { id: 'volatil', titre: 'Qui s’évapore le plus vite ?', focus: ['solvants'],
       texte: <>Pressions de vapeur saturante à 20 °C : acétate d'éthyle 10 000 Pa ; éthanol 5 800 Pa ; isopropanol 4 400 Pa ; acétate de butyle 1 070 Pa. Plus la pression
         de vapeur est grande, plus le solvant est volatil.</>,
-      tache: { type: 'qcm', q: 'Lequel s’évapore le plus vite ?', options: ['l’acétate d’éthyle', 'l’acétate de butyle', 'l’éthanol'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'Lequel s’évapore le plus vite ?', options: ['l’acétate d’éthyle', 'l’acétate de butyle', 'l’éthanol'], bonne: 0, indice: "Compare les pressions de vapeur des solvants : le plus volatil s’évapore le plus vite." } },
     { id: 'dernier', titre: 'Qui reste en dernier ?', focus: ['sech'],
       texte: <>Réglez un mélange d'acétate d'éthyle, d'éthanol et d'acétate de butyle. Le cadre « Ce qui reste en dernier » indique le solvant le moins volatil du mélange.</>,
       tache: { type: 'qcm', q: 'Dans un mélange de ces trois solvants, lequel reste en dernier dans le film ?', options: ['l’acétate de butyle : sa pression de vapeur est 5 à 10 fois plus faible que celle des deux autres', 'l’acétate d’éthyle', 'l’éthanol'], bonne: 0,
-        expl: 'L’écart est grand : même si le mélange n’est pas idéal, l’acétate de butyle reste nettement le moins volatil.' } },
+        expl: 'L’écart est grand : même si le mélange n’est pas idéal, l’acétate de butyle reste nettement le moins volatil.', indice: "Le solvant le moins volatil s’évapore en dernier : repère-le d’après les pressions de vapeur." } },
     { id: 'eco', titre: 'Un vernis sans solvant lent', focus: ['sech'],
       texte: <>Formulation « économique » : 30 % d'acétate d'éthyle et 70 % d'éthanol. Au départ, son RED vaut {fmt(ra(PT, melange({ ea: 30, etoh: 70 })) / PT.R0, 2)} : il dissout
         la nitrocellulose. Réglez ce mélange, et regardez le cadre « Ce qui reste en dernier ».</>,
       tache: { type: 'qcm', q: 'Que peut-on craindre en fin de séchage ?', options: ['Le dernier solvant est l’éthanol, un non-solvant (RED = 1,15) : la nitrocellulose risque de précipiter avant que le film soit formé', 'Rien : le mélange est dans la sphère au départ', 'Que le vernis sèche trop lentement'], bonne: 0,
-        expl: 'Avec deux solvants de volatilités proches et un azéotrope, on ne peut pas prévoir sans mesure le moment exact où cela arrive ; mais le risque est réel, puisque le dernier liquide présent ne dissout pas le polymère.' } },
+        expl: 'Avec deux solvants de volatilités proches et un azéotrope, on ne peut pas prévoir sans mesure le moment exact où cela arrive ; mais le risque est réel, puisque le dernier liquide présent ne dissout pas le polymère.', indice: "En fin de séchage, la composition du film se rapproche de celle du solvant le moins volatil. Ce solvant dissout-il encore la nitrocellulose ?" } },
     { id: 'lent', titre: 'Le rôle du solvant lent', focus: ['sech'],
       texte: <>Gardez le mélange précédent (acétate d'éthyle et éthanol, environ 30 % / 70 %) et ajoutez-y de l'acétate de butyle (au moins 10 % du volume).</>,
       tache: { type: 'action', ok: !!dernier && dernier.k === 'ba' && vol.ba / tot >= 0.1 && redMel < 1,
@@ -215,12 +215,12 @@ export function Simulation4({ plotlyReady }) {
     { id: 'regle', titre: 'La règle de formulation', focus: [],
       texte: <>Le solvant le plus lent est celui qui reste en dernier : c'est lui qui doit garder la nitrocellulose dissoute jusqu'à la formation du film.</>,
       tache: { type: 'qcm', q: 'Que doit être le solvant le moins volatil du mélange ?', options: ['Un vrai solvant du polymère (ici l’acétate de butyle)', 'Un diluant bon marché', 'Le plus volatil possible'], bonne: 0,
-        expl: 'Mais un solvant lent allonge le séchage : il en faut juste assez. On ajuste les proportions au laboratoire.' } },
+        expl: 'Mais un solvant lent allonge le séchage : il en faut juste assez. On ajuste les proportions au laboratoire.', indice: "En fin de séchage, c’est lui qui reste avec le polymère : doit-il encore dissoudre la nitrocellulose ?" } },
     { id: 'blanchiment', titre: 'Et le blanchiment ?', focus: ['hypo'],
       texte: <>Les vernis à la nitrocellulose connaissent un défaut classique : le <strong>blanchiment</strong> (le film devient laiteux). Sa cause la plus fréquente n'est pas le
         mélange de solvants, mais l'humidité : l'évaporation refroidit le film, l'eau de l'air s'y condense, et l'eau est un non-solvant de la nitrocellulose.</>,
       tache: { type: 'qcm', q: 'La simulation peut-elle prévoir ce blanchiment ?', options: ['Non : elle ne modélise ni l’humidité ni la cinétique du séchage', 'Oui, avec le RED', 'Oui, avec les pressions de vapeur'], bonne: 0,
-        expl: 'Un modèle ne répond qu’aux questions pour lesquelles il est construit : celui-ci ne dit que si un liquide dissout le polymère.' } },
+        expl: 'Un modèle ne répond qu’aux questions pour lesquelles il est construit : celui-ci ne dit que si un liquide dissout le polymère.', indice: "Le blanchiment fait intervenir l’humidité de l’air et la vitesse de séchage. Le modèle de Hansen les contient-il ?" } },
     { id: 'bravo3', titre: 'Bravo !', focus: [],
       texte: <>Un bon mélange de solvants doit dissoudre le polymère au départ, mais aussi en fin de séchage : son solvant le moins volatil doit être un vrai solvant. En exploration
         libre, testez vos propres mélanges ; le défi vous demande un vernis économique qui respecte ces deux conditions.</>, tache: null },
@@ -367,6 +367,7 @@ export function Simulation4({ plotlyReady }) {
           ? <>Vous voulez enlever un vernis à la nitrocellulose sur un objet en <strong>PMMA</strong> (verre acrylique) sans abîmer l’objet. Trouvez un mélange de solvants qui dissout le vernis mais pas le PMMA. Les deux polymères sont déjà réglés dans l’exploration libre ci-dessous (option « deux sphères ») : <strong>faites vos essais dans l’exploration</strong>, puis donnez votre réponse ici.</>
           : <>Formulez le mélange de solvants d’un vernis à la nitrocellulose (données du TP). <strong>Faites vos essais dans l’exploration libre</strong> ci-dessous (cochez des solvants, composez le mélange, regardez les RED), puis donnez votre réponse ici : le mélange doit respecter les critères ci-dessous.</>}</div>
         <div style={{ fontSize: 14, color: KIT.txt }}>Votre réponse actuelle (mélange composé dans l’exploration) : <strong>{rep}</strong></div>
+        <IndiceDefi cache={bilanDefi != null && bilanDefi.every(c => c.ok)}>{sel ? <>Cherche un mélange proche de la nitrocellulose (RED inférieur à 1) mais éloigné du PMMA (RED supérieur à 1) : compare, solvant par solvant, les RED vis-à-vis des deux polymères.</> : <>Un mélange dissout la nitrocellulose quand son RED est inférieur à 1. Compose-le dans l’exploration libre, puis vérifie aussi les autres critères listés après « Valider ».</>}</IndiceDefi>
         <button onClick={() => { const C = criteresDefi(); setBilanDefi(C); noterDefi(C.every(c => c.ok)); }} style={styleBouton(true, '#16a34a')}>✓ Valider ma réponse</button>
         <SuiviDefi cle={`${SIM_ID}:defi.${sel ? 'selectif' : 'principal'}`} etat={sd} key={sel ? 's' : 'p'}/>
         {bilanDefi && <>
