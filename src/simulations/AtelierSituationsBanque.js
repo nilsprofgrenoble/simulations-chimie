@@ -13,6 +13,7 @@ import { EXERCICES as EX_MACHINES } from './BanqueMachinesThermiques.js';
 import { EXERCICES as EX_SYNTHESE } from './BanqueOptimiserSynthese.js';
 import { EXERCICES as EX_MECA } from './BanqueMecanismes.js';
 import { EXERCICES as EX_REGIO } from './BanqueRegioBTS.js';
+import { EXERCICES as EX_CINET } from './BanqueCinetBTS.js';
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const V = (t, e) => [t, true, e];
 const F = (t, e) => [t, false, e];
@@ -233,7 +234,7 @@ const SITUATIONS_BASE = [
   },
 ];
 
-export const SITUATIONS = [...SITUATIONS_BASE, ...EX_MACHINES, ...EX_SYNTHESE, ...EX_MECA, ...EX_REGIO];
+export const SITUATIONS = [...SITUATIONS_BASE, ...EX_MACHINES, ...EX_SYNTHESE, ...EX_MECA, ...EX_REGIO, ...EX_CINET];
 
 // Vérifie un champ de saisie : renvoie true / false (nombre à l'unité près selon tol relatif)
 export const champOk = (champ, valeurs) => {

@@ -647,5 +647,10 @@
  "34:regio-stabilite": "SAPP143",
  "34:regio-produit": "SAPP144",
  "34:regio-barrieres": "SAPP145",
- "34:regio-chiral": "SAPP146"
+ "34:regio-chiral": "SAPP146",
+ "34:cinet-diene": "SAPP147",
+ "34:cinet-profil": "SAPP148",
+ "34:cinet-conditions": "SAPP149",
+ "34:cinet-equilibre": "SAPP150",
+ "34:cinet-arrhenius": "SAPP151"
 }
