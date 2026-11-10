@@ -65,7 +65,7 @@ export function Mol2D({ u, face = 1, avecFleches = true, petit = false, titre, n
   const H2devant = face < 0;                // H2 passe de l'autre côté du plan que Br
   const prod = u > 0.88;
   return (
-    <svg viewBox={petit ? "-110 -100 270 200" : "-125 -105 300 285"} role="img" aria-label={titre || 'Mécanisme réactionnel en 2D'} style={{ width: '100%', maxWidth: petit ? 230 : 560, height: 'auto', display: 'block', background: '#fbfdff', borderRadius: 12 }}>
+    <svg viewBox={petit || u >= 0.9 ? "-110 -100 270 200" : "-125 -105 300 285"} role="img" aria-label={titre || 'Mécanisme réactionnel en 2D'} style={{ width: '100%', maxWidth: petit ? 230 : 560, height: 'auto', display: 'block', background: '#fbfdff', borderRadius: 12 }}>
       {/* squelette */}
       <Liaison p={a.C1} q={a.C2} rp={R_LABEL + 6} rq={RC} />
       <Liaison p={a.C2} q={a.C3} rp={RC} rq={RC} />
