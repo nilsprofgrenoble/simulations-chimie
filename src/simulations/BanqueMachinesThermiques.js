@@ -178,7 +178,7 @@ export const EXERCICES = [
             o: [
               V(`T_c = ${nb(K(tc), 2)} K et T_f = ${nb(K(tf), 2)} K`, `On ajoute 273,15 à chaque température. L'écart T_c − T_f = ${nb(tc - tf, 0)} K est le même qu'en °C, mais pas les températures elles-mêmes !`),
               F(`T_c = ${nb(tc, 0)} K et T_f = ${nb(tf, 0)} K`, 'Vous avez laissé les températures en °C : ajoutez 273,15 avant de calculer.'),
-              F(`T_c = ${nb(tc + 273, 2)} K et T_f = ${nb(tf + 273, 2)} K`, `Presque : la conversion exacte est +273,15 (T_c = ${nb(K(tc), 2)} K, T_f = ${nb(K(tf), 2)} K).`),
+              F(`T_c = ${nb(tc - 273.15, 2)} K et T_f = ${nb(tf - 273.15, 2)} K`, `Vous avez soustrait 273,15 au lieu de l'ajouter : on passe des °C aux K en ajoutant 273,15 (T_c = ${nb(K(tc), 2)} K, T_f = ${nb(K(tf), 2)} K).`),
             ] },
           { id: 'maxpac', titre: 'Efficacité maximale de la PAC', q: `Calculez l'efficacité thermodynamique maximale de la PAC : T_c/(T_c − T_f), en kelvins.`,
             aide: `T_c = ${nb(K(tc), 2)} K et l'écart T_c − T_f = ${nb(tc - tf, 0)} K.`,
