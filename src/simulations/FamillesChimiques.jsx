@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, ExempleResolu, lireProgression } from "../commun";
+  BoutonsModes, ARetenir, ExempleResolu, lireProgression, IndiceDefi } from "../commun";
 import { element, ELEMENTS, FAMILLES, HORS_LISTE, ionProbable, etatEntite, configTxt, valence, ionTxt, sub,
   REACTIONS, PRECIPITES, bilanEquation, composeIonique, formuleIonique, nomIonique, CATIONS, ANIONS } from "./atomesModele";
 import { SchemaAtome, TableauPeriodique, COULEURS_FAMILLE } from "./atomesVue";
@@ -141,6 +141,9 @@ function VoletDefi({ defi, setDefi, changerType, coefs, setCoefs, xy, setXy }) {
           <span>Nombre de {ionTxt(cat.sym, cat.q)} : <Stepper valeur={xy.x} onChange={v => { setXy(s => ({ ...s, x: v })); setDefi(d => ({ ...d, verifie: false })); }} max={3} label="nombre de cations"/></span>
           <span>Nombre de {ionTxt(an.sym, an.q)} : <Stepper valeur={xy.y} onChange={v => { setXy(s => ({ ...s, y: v })); setDefi(d => ({ ...d, verifie: false })); }} max={3} label="nombre d’anions"/></span></div>
         <div style={{ fontSize: 14, color: KIT.txt2 }}>Formule obtenue : <strong>{cat.sym}{xy.x > 1 ? sub(xy.x) : ''}{an.sym}{xy.y > 1 ? sub(xy.y) : ''}</strong></div></>}
+      <IndiceDefi cache={reussi}>{defi.type === 'famille' ? <>Les éléments d’une même colonne ont le même nombre d’électrons de valence. Compte-les dans la configuration donnée : la colonne et l’ion s’en déduisent (gagner ou perdre pour avoir une couche pleine).</>
+        : defi.type === 'equation' ? <>Équilibre un élément à la fois, en comptant les atomes de chaque côté de la flèche. Vérifie à la fin que la charge totale est la même des deux côtés.</>
+        : <>Le solide est neutre : (nombre de cations × leur charge) + (nombre d’anions × leur charge) = 0. Cherche le plus petit nombre de chaque ion qui annule la somme.</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={verifier} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
         <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
@@ -194,25 +197,25 @@ export function SimulationFamillesChimiques() {
         <ExempleResolu>Lithium Li (Z = 3) : {configTxt(3)}, 1 électron de valence. Sodium Na (Z = 11) : {configTxt(11)}, 1 électron de valence. Tous deux sont dans la <strong>colonne 1</strong>.
           {bouton('Voir le sodium', () => voirTab(11, 1))}</ExempleResolu>
         À vous : regardez le potassium (colonne 1 aussi).</>,
-      tache: { type: 'qcm', q: 'Combien d’électrons de valence a le potassium K (Z = 19) ?', options: ['1', '19', '4', '8'], bonne: 0, expl: `Potassium : ${configTxt(19)} : un seul électron sur la dernière couche (4s¹). Même colonne que Li et Na.` } },
+      tache: { type: 'qcm', q: 'Combien d’électrons de valence a le potassium K (Z = 19) ?', options: ['1', '19', '4', '8'], bonne: 0, expl: `Potassium : ${configTxt(19)} : un seul électron sur la dernière couche (4s¹). Même colonne que Li et Na.`, indice: "Écris la répartition des électrons par couches et compte ceux de la dernière couche occupée." } },
     { id: 'alcalins', titre: 'La famille des alcalins', depart: () => voirTab(11, 1),
       texte: <>La colonne 1 (sauf l’hydrogène) forme la famille des <strong>alcalins</strong> : lithium, sodium, potassium… Ils ont <strong>1 électron de valence</strong> qu’ils perdent facilement pour atteindre la configuration d’un gaz noble.
         <ExempleResolu>Na → Na⁺ + e⁻. Na⁺ a 10 électrons : {configTxt(10)}, comme le néon. Tous les alcalins forment des ions de charge <strong>+1</strong> : Li⁺, Na⁺, K⁺.</ExempleResolu>
         À vous : quel ion forme le lithium ?</>,
-      tache: { type: 'qcm', q: 'Quel ion forme le lithium Li (Z = 3) ?', options: ['Li⁺', 'Li⁻', 'Li²⁺', 'Li³⁻'], bonne: 0, expl: 'Li : 1 électron de valence. En le perdant, il reste 2 électrons (configuration de l’hélium) : Li⁺.' } },
+      tache: { type: 'qcm', q: 'Quel ion forme le lithium Li (Z = 3) ?', options: ['Li⁺', 'Li⁻', 'Li²⁺', 'Li³⁻'], bonne: 0, expl: 'Li : 1 électron de valence. En le perdant, il reste 2 électrons (configuration de l’hélium) : Li⁺.', indice: "Combien d’électrons de valence a cet atome ? Pour obtenir une couche externe pleine, vaut-il mieux en perdre ou en gagner ? Déduis-en la charge de l’ion (un électron perdu laisse un excès de charge positive)." } },
     { id: 'terreux', titre: 'Les alcalino-terreux', depart: () => voirTab(12, 2),
       texte: <>La colonne 2 : béryllium, magnésium, calcium… ce sont les <strong>alcalino-terreux</strong>. Ils ont <strong>2 électrons de valence</strong> et en perdent 2 pour devenir stables.
         <ExempleResolu>Mg → Mg²⁺ + 2 e⁻. Mg²⁺ a 12 − 2 = 10 électrons, comme le néon. Les alcalino-terreux forment des ions de charge <strong>+2</strong>.</ExempleResolu>
         À vous : le calcium (Z = 20).</>,
-      tache: { type: 'qcm', q: 'Quel ion forme le calcium Ca (Z = 20) ?', options: ['Ca²⁺', 'Ca⁺', 'Ca²⁻', 'Ca⁶⁺'], bonne: 0, expl: 'Ca : colonne 2, 2 électrons de valence → il les perd : Ca²⁺ (18 électrons, comme l’argon).' } },
+      tache: { type: 'qcm', q: 'Quel ion forme le calcium Ca (Z = 20) ?', options: ['Ca²⁺', 'Ca⁺', 'Ca²⁻', 'Ca⁶⁺'], bonne: 0, expl: 'Ca : colonne 2, 2 électrons de valence → il les perd : Ca²⁺ (18 électrons, comme l’argon).', indice: "Combien d’électrons de valence a cet atome ? Pour obtenir une couche externe pleine, vaut-il mieux en perdre ou en gagner ? Déduis-en la charge de l’ion (un électron perdu laisse un excès de charge positive)." } },
     { id: 'halogenes', titre: 'Les halogènes', depart: () => voirTab(17, 17),
       texte: <>La colonne 17 : fluor, chlore, brome, iode… les <strong>halogènes</strong>. Ils ont <strong>7 électrons de valence</strong> : il leur en manque un. Ils le gagnent facilement.
         <ExempleResolu>Cl + e⁻ → Cl⁻. Cl⁻ a 18 électrons : {configTxt(18)}, comme l’argon. Les halogènes forment des ions de charge <strong>−1</strong> : F⁻, Cl⁻, Br⁻, I⁻.</ExempleResolu>
         À vous : le fluor.</>,
-      tache: { type: 'qcm', q: 'Quel ion forme le fluor F (Z = 9) ?', options: ['F⁻', 'F⁺', 'F²⁻', 'F⁷⁺'], bonne: 0, expl: 'F : 7 électrons de valence, il lui en manque 1 : il le gagne → F⁻ (10 électrons, comme le néon).' } },
+      tache: { type: 'qcm', q: 'Quel ion forme le fluor F (Z = 9) ?', options: ['F⁻', 'F⁺', 'F²⁻', 'F⁷⁺'], bonne: 0, expl: 'F : 7 électrons de valence, il lui en manque 1 : il le gagne → F⁻ (10 électrons, comme le néon).', indice: "Combien d’électrons de valence a cet atome ? Pour obtenir une couche externe pleine, vaut-il mieux en perdre ou en gagner ? Déduis-en la charge de l’ion (un électron perdu laisse un excès de charge positive)." } },
     { id: 'nobles', titre: 'Les gaz nobles', depart: () => voirTab(10, 18),
       texte: <>La colonne 18 : hélium, néon, argon… les <strong>gaz nobles</strong>. Leur couche de valence est déjà complète : 2 électrons pour l’hélium (un <strong>duet</strong>), 8 pour les autres (un <strong>octet</strong>). Ils sont <strong>stables</strong> et ne forment pas d’ions ni de liaisons dans les conditions habituelles.</>,
-      tache: { type: 'qcm', q: 'Pourquoi le néon ne forme-t-il pas d’ion ?', options: ['Sa couche de valence est déjà complète (octet)', 'Il a un seul électron de valence', 'Il est trop lourd', 'Il n’a pas de noyau'], bonne: 0, expl: 'Néon : 2 + 6 = 8 électrons de valence, c’est déjà un octet : il est stable tel quel.' } },
+      tache: { type: 'qcm', q: 'Pourquoi le néon ne forme-t-il pas d’ion ?', options: ['Sa couche de valence est déjà complète (octet)', 'Il a un seul électron de valence', 'Il est trop lourd', 'Il n’a pas de noyau'], bonne: 0, expl: 'Néon : 2 + 6 = 8 électrons de valence, c’est déjà un octet : il est stable tel quel.', indice: "Combien d’électrons de valence a le néon ? Que signifie une couche de valence complète pour la stabilité d’un atome ?" } },
     { id: 'retenir1', titre: 'À retenir : les familles', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li>Même <strong>colonne</strong> = même nombre d’électrons de valence = même <strong>famille</strong>.</li>
@@ -233,14 +236,14 @@ export function SimulationFamillesChimiques() {
       texte: <>Le sodium et le chlore forment le <strong>chlorure de sodium</strong> (sel de table) : un solide <strong>ionique</strong>, fait d’ions Na⁺ et Cl⁻. Il est <strong>électriquement neutre</strong> : charges positives et négatives se compensent.
         <ExempleResolu>Na⁺ et Cl⁻ : 1 × (+1) + 1 × (−1) = 0. Formule : <strong>NaCl</strong>. On cite l’anion en premier dans le nom : <em>chlorure de sodium</em>.</ExempleResolu>
         À vous : combinez Mg²⁺ et Cl⁻.</>,
-      tache: { type: 'qcm', q: 'Quelle est la formule du chlorure de magnésium (ions Mg²⁺ et Cl⁻) ?', options: ['MgCl₂', 'MgCl', 'Mg₂Cl', 'Mg₂Cl₂'], bonne: 0, expl: 'Il faut 2 Cl⁻ (2 × −1 = −2) pour compenser un Mg²⁺ (+2) : MgCl₂.' } },
+      tache: { type: 'qcm', q: 'Quelle est la formule du chlorure de magnésium (ions Mg²⁺ et Cl⁻) ?', options: ['MgCl₂', 'MgCl', 'Mg₂Cl', 'Mg₂Cl₂'], bonne: 0, expl: 'Il faut 2 Cl⁻ (2 × −1 = −2) pour compenser un Mg²⁺ (+2) : MgCl₂.', indice: "Un solide ionique est électriquement neutre : les charges positives doivent compenser les charges négatives. Combien d’ions Cl⁻ faut-il pour compenser la charge de Mg²⁺ ?" } },
     { id: 'ionique2', titre: 'À vous : oxyde d’aluminium', depart: () => voirIon('Al', 'O'),
       texte: <>Al³⁺ (+3) et O²⁻ (−2). Il faut trouver x et y tels que <strong>x × 3 = y × 2</strong>, les plus petits possibles.
         <ExempleResolu>Pour Ca²⁺ et Cl⁻ : x × 2 = y × 1 → x = 1, y = 2 : CaCl₂. Pour Na⁺ et O²⁻ : x × 1 = y × 2 → x = 2, y = 1 : Na₂O.</ExempleResolu></>,
-      tache: { type: 'qcm', q: 'Formule de l’oxyde d’aluminium (Al³⁺ et O²⁻) ?', options: ['Al₂O₃', 'AlO', 'Al₃O₂', 'Al₂O'], bonne: 0, expl: '2 Al³⁺ = +6 et 3 O²⁻ = −6 : Al₂O₃.' } },
+      tache: { type: 'qcm', q: 'Formule de l’oxyde d’aluminium (Al³⁺ et O²⁻) ?', options: ['Al₂O₃', 'AlO', 'Al₃O₂', 'Al₂O'], bonne: 0, expl: '2 Al³⁺ = +6 et 3 O²⁻ = −6 : Al₂O₃.', indice: "Neutralité du solide : total des charges positives = total des charges négatives. Cherche le plus petit nombre de chaque ion qui rend les deux totaux égaux (multiple commun de 3 et 2)." } },
     { id: 'halogenures', titre: 'Reconnaître les ions halogénure', depart: () => { setAtelier('halogene'); setHal('Cl'); },
       texte: <>Comment reconnaître un ion halogénure en solution ? On ajoute des ions <strong>argent Ag⁺</strong> : il se forme un <strong>précipité</strong> (un solide), dont l’aspect dépend de l’halogénure : <strong>blanc</strong> pour Cl⁻, <strong>jaune pâle</strong> pour Br⁻, <strong>jaune</strong> pour I⁻. L’équation : <strong>Ag⁺ + X⁻ → AgX</strong>.</>,
-      tache: { type: 'qcm', q: 'On ajoute des ions argent à une solution : un précipité blanc se forme. Quel ion contenait-elle ?', options: ['Cl⁻ (chlorure)', 'I⁻ (iodure)', 'Na⁺ (sodium)', 'Mg²⁺'], bonne: 0, expl: 'Précipité blanc : AgCl, donc la solution contenait des ions chlorure Cl⁻.' } },
+      tache: { type: 'qcm', q: 'On ajoute des ions argent à une solution : un précipité blanc se forme. Quel ion contenait-elle ?', options: ['Cl⁻ (chlorure)', 'I⁻ (iodure)', 'Na⁺ (sodium)', 'Mg²⁺'], bonne: 0, expl: 'Précipité blanc : AgCl, donc la solution contenait des ions chlorure Cl⁻.', indice: "Chaque ion se reconnaît par un test caractéristique, souvent la couleur du précipité formé. Retrouve dans le cours quel ion donne un précipité blanc avec les ions argent." } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li>Colonne = famille : alcalins (X⁺), alcalino-terreux (X²⁺), halogènes (X⁻), gaz nobles (stables).</li>

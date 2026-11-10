@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche } from "../commun";
+  BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, IndiceDefi } from "../commun";
 import { Fiole } from "./solutionsVue";
 import { fr, SOLUTES, soluteDe, concentration, massePeser, dissolution, teinte } from "./solutionsModele";
 import { Pic } from "../Pictos";
@@ -127,6 +127,9 @@ function VoletDefi({ defi, setDefi, changerType }) {
         <div style={{ fontSize: 14, fontWeight: 700, margin: '8px 0 4px' }}>Tout le solide se dissout-il ?</div>
         <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>{[[false, 'Oui, tout se dissout'], [true, 'Non, il reste du solide']].map(([v, l]) => <button key={String(v)} onClick={() => rep('sat', v)} style={stylePetitBouton(defi.reps.sat === v, '#0ea5e9')}>{l}</button>)}</div>
         {defi.reps.sat === true && champ('g de solide restant')}</>}
+      <IndiceDefi cache={reussi}>{defi.type === 'masse' ? <>Masse à peser : m = t × V, avec t en g/L et V en litres (convertis les mL).</>
+        : defi.type === 'conc' ? <>Concentration en masse : t = m / V, avec V en litres (convertis les mL).</>
+        : <>Calcule la masse maximale qui peut se dissoudre dans ce volume : solubilité × volume (en L). Compare-la à la masse introduite.</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
         <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
@@ -168,7 +171,7 @@ export function SimulationDissolution() {
         <ExempleResolu>L’<strong>eau</strong> est le <strong>solvant</strong> (le liquide dans lequel on dissout). Le <strong>permanganate</strong> est le <strong>soluté</strong> (ce qui est dissous). Le mélange obtenu est une <strong>solution</strong> (ici, une solution <em>aqueuse</em> car le solvant est l’eau).
           {bouton('Voir la fiole', () => voir({ sol: 'KMnO4', V: 250, m: 0.1 }))}</ExempleResolu>
         À vous : on dissout du sucre dans de l’eau.</>,
-      tache: { type: 'qcm', q: 'Dans une eau sucrée, quel est le soluté ?', options: ['le sucre', 'l’eau', 'l’eau sucrée', 'il n’y en a pas'], bonne: 0, expl: 'Le soluté est ce qui est dissous : le sucre. L’eau est le solvant, l’eau sucrée est la solution.' } },
+      tache: { type: 'qcm', q: 'Dans une eau sucrée, quel est le soluté ?', options: ['le sucre', 'l’eau', 'l’eau sucrée', 'il n’y en a pas'], bonne: 0, expl: 'Le soluté est ce qui est dissous : le sucre. L’eau est le solvant, l’eau sucrée est la solution.', indice: "Le soluté est l’espèce dissoute ; le solvant est le liquide qui la dissout. Qu’est-ce qui est dissous dans l’eau sucrée ?" } },
     { id: 'conc', titre: 'La concentration en masse', depart: () => voir({ sol: 'NaCl', V: 500, m: 2 }),
       texte: <>Une solution plus ou moins « chargée » en soluté se décrit par sa <strong>concentration en masse</strong> <em>t</em> : la masse de soluté dissous dans <strong>1 litre</strong> de solution.
         <ExempleResolu><strong>t = m / V</strong> (m en g, V en L, t en g/L). On dissout 2 g de sel dans une solution de 500 mL = 0,500 L : t = 2 / 0,500 = <strong>4 g/L</strong>. Attention : on convertit les mL en L (÷ 1000).
@@ -177,7 +180,7 @@ export function SimulationDissolution() {
       tache: { type: 'num', q: 'Quelle est la concentration en masse de cette solution ?', unite: 'g/L', vrai: 3, tol: 0.02, affiche: x => String(x),
         calcul: () => ['Formule : t = m / V, avec m en g et V en L.', 'Conversion : V = 200 mL = 200 / 1000 = 0,200 L.', 't = 0,60 / 0,200 = 3,0 g/L.'],
         pieges: [[0.003, 'Pense à convertir 200 mL en litres : 200 mL = 0,200 L.'], [0.12, 'Pour t on divise la masse par le volume (t = m / V), on ne multiplie pas.'],
-          [0.200 / 0.60, 'Formule à l’envers : t = m / V (la masse divisée par le volume), pas V / m.']], expl: 't = 0,60 / 0,200 = 3,0 g/L.' } },
+          [0.200 / 0.60, 'Formule à l’envers : t = m / V (la masse divisée par le volume), pas V / m.']], expl: 't = 0,60 / 0,200 = 3,0 g/L.', indice: "Concentration en masse : t = m / V, avec m la masse de soluté (en g) et V le volume de solution (en L). Convertis les mL en L si besoin." } },
     { id: 'masse', titre: 'Quelle masse faut-il peser ?', depart: () => voir({ sol: 'NaCl', V: 200, m: 1 }),
       texte: <>En pratique, on connaît la concentration voulue et le volume : il faut trouver la <strong>masse à peser</strong>. On inverse la formule : <strong>m = t × V</strong>. On peut aussi raisonner en phrases avec un produit en croix.
         <ExempleResolu>On veut 200 mL de solution de sel à 5 g/L. « 1 L contient 5 g, donc 0,200 L contient 5 × 0,200 = <strong>1,0 g</strong>. » (m = t × V = 5 × 0,200 = 1,0 g)
@@ -186,7 +189,7 @@ export function SimulationDissolution() {
       tache: { type: 'num', q: 'Quelle masse de KMnO₄ faut-il peser pour préparer 250 mL de solution à 0,40 g/L ?', unite: 'g', vrai: 0.1, tol: 0.03, affiche: x => String(x),
         calcul: () => ['Formule : m = t × V, avec V en L.', 'Conversion : V = 250 mL = 0,250 L.', 'm = 0,40 × 0,250 = 0,10 g.'],
         pieges: [[100, 'Tu as multiplié 0,40 par 250 sans convertir : 250 mL = 0,250 L.'], [1.6, 'Pour m on multiplie t par V (0,40 × 0,250), on ne divise pas.'],
-          [0.25, 'C’est le volume en litres. Il faut le multiplier par la concentration 0,40 g/L pour obtenir la masse.']], expl: 'm = t × V = 0,40 × 0,250 = 0,10 g.' } },
+          [0.25, 'C’est le volume en litres. Il faut le multiplier par la concentration 0,40 g/L pour obtenir la masse.']], expl: 'm = t × V = 0,40 × 0,250 = 0,10 g.', indice: "Masse à peser : m = t × V, avec t en g/L et V en litres (convertis les mL)." } },
     { id: 'regler', titre: 'Essayez avec la fiole', depart: () => voir({ sol: 'KMnO4', V: 250, m: 0.5 }),
       texte: <>Réglez la masse pour obtenir exactement la solution du TP. Observez la <strong>couleur</strong> : plus la solution est concentrée, plus elle est foncée.</>,
       tache: { type: 'action', ok: enGuide && P.sol === 'KMnO4' && P.V === 250 && Math.abs(tC - 0.4) < 0.005, consigne: 'Choisissez KMnO₄, fiole de 250 mL, et réglez la masse pour obtenir t = 0,40 g/L.' } },
@@ -195,12 +198,12 @@ export function SimulationDissolution() {
       tache: { type: 'action', ok: enGuide && atelier === 'protocole' && proto.n === 6, consigne: 'Cliquez sur les 6 étapes dans le bon ordre.' } },
     { id: 'pourquoi', titre: 'Pourquoi remplir à moitié ?', depart: null,
       texte: <>Dans le protocole, on remplit la fiole <strong>à moitié environ</strong>, on agite, puis on ajuste au trait.</>,
-      tache: { type: 'qcm', q: 'Pourquoi ne remplit-on pas tout de suite jusqu’au trait de jauge ?', options: ['Pour pouvoir agiter, puis ajuster le volume exactement au trait avec la pissette', 'Pour économiser l’eau distillée', 'Parce que le solide ne se dissout qu’à moitié', 'Parce qu’il faut laisser du solide au fond'], bonne: 0, expl: 'Une fiole pleine ne peut plus être agitée sans déborder. On dissout d’abord, puis on complète au trait : le volume est alors exactement celui de la fiole.' } },
+      tache: { type: 'qcm', q: 'Pourquoi ne remplit-on pas tout de suite jusqu’au trait de jauge ?', options: ['Pour pouvoir agiter, puis ajuster le volume exactement au trait avec la pissette', 'Pour économiser l’eau distillée', 'Parce que le solide ne se dissout qu’à moitié', 'Parce qu’il faut laisser du solide au fond'], bonne: 0, expl: 'Une fiole pleine ne peut plus être agitée sans déborder. On dissout d’abord, puis on complète au trait : le volume est alors exactement celui de la fiole.', indice: "Que se passerait-il si le niveau dépassait le trait de jauge ? Peut-on ensuite retirer du liquide ? Pense aussi à l’agitation, qui fait dissoudre le solide." } },
     { id: 'saturation', titre: '★ Peut-on tout dissoudre ?', depart: () => voir({ sol: 'NaCl', V: 100, m: 50 }),
       texte: <>On ne peut pas dissoudre n’importe quelle masse : l’eau a une <strong>limite</strong>. Au-delà, le soluté ne se dissout plus et reste <strong>solide</strong> au fond : la solution est <strong>saturée</strong>. Cette limite, la <strong>solubilité</strong>, dépend du soluté (environ 360 g/L pour le sel à 20 °C).
         <ExempleResolu>Dans 100 mL d’eau, au plus 360 × 0,100 = <strong>36 g</strong> de sel se dissolvent. Avec 50 g, il en reste 14 g sous forme solide.
           {bouton('Voir la fiole', () => voir({ sol: 'NaCl', V: 100, m: 50 }))}</ExempleResolu></>,
-      tache: { type: 'qcm', q: 'On introduit 20 g de sel dans 100 mL d’eau (limite : 36 g). Que se passe-t-il ?', options: ['Tout se dissout : la solution n’est pas saturée', 'Il reste 20 g de sel solide', 'La solution est saturée', 'Le sel ne se dissout pas du tout'], bonne: 0, expl: '20 g < 36 g : tout se dissout, la solution n’est pas saturée.' } },
+      tache: { type: 'qcm', q: 'On introduit 20 g de sel dans 100 mL d’eau (limite : 36 g). Que se passe-t-il ?', options: ['Tout se dissout : la solution n’est pas saturée', 'Il reste 20 g de sel solide', 'La solution est saturée', 'Le sel ne se dissout pas du tout'], bonne: 0, expl: '20 g < 36 g : tout se dissout, la solution n’est pas saturée.', indice: "Compare la masse de sel introduite à la quantité maximale que ce volume d’eau peut dissoudre (limite indiquée dans l’énoncé)." } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li>Soluté (dissous) + solvant (dissolvant) = <strong>solution</strong>.</li>

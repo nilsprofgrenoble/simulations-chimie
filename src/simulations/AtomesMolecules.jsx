@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, lireProgression } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, lireProgression, IndiceDefi } from "../commun";
 import { element, etatEntite, ionProbable, configTxt, valence, ionTxt,
   MOLECULES, MOLECULES_DEFI, moleculeDe, analyserLewis, doubletsAuto, liaisonsDeRef, cleLiaison, voisinsDe, GAZ_NOBLES } from "./atomesModele";
 import { SchemaAtome, TableauPeriodique } from "./atomesVue";
@@ -231,6 +231,9 @@ function VoletDefi({ defi, setDefi, changerType, ion, analyse, planche }) {
         {q('Il a la même configuration que le gaz noble…')}{choix('gaz', GAZ_NOBLES.map(g => [g.sym, g.sym]))}</>}
       {defi.type === 'lewis' && <div style={txt}><Pic n="target"/>Construis le <strong>schéma de Lewis</strong> de la molécule <strong>{m.formule}</strong> ({m.nom}) : trace les liaisons, ajoute les doublets non liants, jusqu’à ce que tous les atomes soient ✓. Puis clique sur « Vérifier ».</div>}
       {defi.type !== 'config' && planche}
+      <IndiceDefi cache={reussi}>{defi.type === 'ion' ? <>Compte les électrons de valence de l’atome. Pour avoir une couche externe pleine, est-il plus simple d’en gagner ou d’en perdre ? Combien ?</>
+        : defi.type === 'config' ? <>Un atome neutre a Z électrons ; un cation en a moins, un anion en a plus. Répartis les électrons par couches dans l’ordre, puis cherche le gaz noble qui a le même nombre d’électrons.</>
+        : <>Compte les électrons de valence de chaque atome. Chacun veut compléter sa couche externe (octet, ou duet pour H) : une liaison apporte un électron par atome, les électrons restants forment des doublets non liants.</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={verifier} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
         <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
@@ -303,7 +306,7 @@ export function SimulationAtomesMolecules() {
           {bouton('Voir le néon', () => voirAtome(10))}</ExempleResolu>
         À vous : l’argon. {bouton('Voir l’argon', () => voirAtome(18))}</>,
       tache: { type: 'qcm', q: 'Combien d’électrons de valence a l’argon (Z = 18) ?', options: ['8', '18', '2', '6'], bonne: 0,
-        expl: `L’argon : ${configTxt(18)}. Sa dernière couche (n = 3) a 2 + 6 = 8 électrons : un octet. (L’hélium, lui, est stable avec 2 électrons : un duet.)` } },
+        expl: `L’argon : ${configTxt(18)}. Sa dernière couche (n = 3) a 2 + 6 = 8 électrons : un octet. (L’hélium, lui, est stable avec 2 électrons : un duet.)`, indice: "Remplis les couches une à une, dans l’ordre (K, puis L, puis M…), avec le nombre maximal d’électrons de chaque couche. Les électrons de valence sont ceux de la dernière couche occupée." } },
     { id: 'valence', titre: 'Compter les électrons de valence', depart: () => voirAtome(8),
       texte: <>Pour trouver les <strong>électrons de valence</strong> d’un atome : on écrit sa configuration électronique, puis on compte les électrons de la <strong>dernière couche</strong> (celle dont le numéro n est le plus grand).
         <ExempleResolu>L’oxygène (Z = 8) : {eOx.config}. La dernière couche est n = 2 : 2 + 4 = <strong>{eOx.valence} électrons de valence</strong>. Pour un octet, il lui en manque {8 - eOx.valence}.
@@ -313,7 +316,7 @@ export function SimulationAtomesMolecules() {
         calcul: () => [`Le fluor a Z = 9 : il a 9 électrons. Sa configuration électronique est ${eF.config}.`, 'Les électrons de valence sont ceux de la dernière couche, la couche n = 2 (le plus grand n).',
           `Sur cette couche : 2 électrons en 2s et 5 en 2p, donc 2 + 5 = ${eF.valence} électrons de valence.`],
         pieges: [[9, 'Ce sont tous les électrons de l’atome. On ne compte que ceux de la dernière couche (n = 2).'], [5, 'Vous n’avez compté que les électrons 2p : n’oubliez pas ceux de 2s (couche n = 2 en entier).']],
-        expl: `Fluor : ${eF.config}. Dernière couche (n = 2) : 2 + 5 = ${eF.valence} électrons de valence.` } },
+        expl: `Fluor : ${eF.config}. Dernière couche (n = 2) : 2 + 5 = ${eF.valence} électrons de valence.`, indice: "Remplis les couches une à une, dans l’ordre (K, puis L, puis M…), avec le nombre maximal d’électrons de chaque couche. Les électrons de valence sont ceux de la dernière couche occupée." } },
     { id: 'manque', titre: 'Un atome pas stable', depart: () => voirAtome(9),
       texte: <>Un atome est stable s’il a <strong>8 électrons de valence</strong> (règle de l’<strong>octet</strong>). Une seule exception à connaître : <strong>H et He</strong> (et les ions Li⁺ et Be²⁺), dont la seule couche est la couche <strong>n = 1</strong>. Elle ne peut contenir que 2 électrons : elle est pleine avec <strong>2 électrons</strong> (règle du <strong>duet</strong>). Sinon, un atome cherche à compléter sa couche de valence.
         <ExempleResolu>L’oxygène a 6 électrons de valence : il lui en manque 8 − 6 = <strong>2</strong>. Il n’est pas stable seul.</ExempleResolu>
@@ -322,7 +325,7 @@ export function SimulationAtomesMolecules() {
         calcul: () => [`Un octet, c’est 8 électrons sur la couche de valence.`, `Le fluor en a déjà ${eF.valence}.`, `Il lui manque 8 − ${eF.valence} = ${8 - eF.valence} électron.`],
         pieges: [[7, 'C’est le nombre d’électrons de valence. Il manque 8 − 7.'], [8, 'C’est le nombre d’électrons d’un octet. Il faut enlever ceux que le fluor a déjà : 8 − 7.'],
           [15, 'On soustrait : le nombre d’électrons qui manquent est 8 (l’octet) moins 7 (ceux qu’il a déjà).']],
-        expl: 'Le fluor a 7 électrons de valence : 8 − 7 = 1 électron manquant.' } },
+        expl: 'Le fluor a 7 électrons de valence : 8 − 7 = 1 électron manquant.', indice: "Un octet, c’est 8 électrons sur la couche de valence. Combien le fluor en possède-t-il déjà (question précédente) ?" } },
     { id: 'anion', titre: 'Gagner des électrons : l’anion', depart: () => voirAtome(9),
       texte: <>Une solution : <strong>gagner</strong> des électrons. L’atome devient un <strong>ion négatif</strong>, un <strong>anion</strong>.
         <ExempleResolu>Le fluor F gagne 1 électron et devient l’ion <strong>fluorure F⁻</strong>. Il a maintenant 10 électrons : {configTxt(10)}, comme le néon. Sa couche de valence est pleine : il est stable.
@@ -339,14 +342,14 @@ export function SimulationAtomesMolecules() {
       texte: <>Retiens : <strong>cation</strong> = charge <strong>positive</strong> (l’atome a perdu des électrons) ; <strong>anion</strong> = charge <strong>négative</strong> (l’atome a gagné des électrons). La charge, c’est le nombre d’électrons perdus (+) ou gagnés (−).
         <ExempleResolu>Mg²⁺ : le magnésium (Z = 12) a perdu 2 électrons : 12 − 2 = 10 électrons, comme le néon. C’est un <strong>cation</strong>.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'L’ion chlorure Cl⁻ est…', options: ['un anion : il a gagné 1 électron', 'un cation : il a gagné 1 électron', 'un cation : il a perdu 1 électron', 'un anion : il a perdu 1 électron'], bonne: 0,
-        expl: 'La charge est négative (−) : c’est un anion. Le chlore (17 électrons) a gagné 1 électron : 18 électrons, comme l’argon.' } },
+        expl: 'La charge est négative (−) : c’est un anion. Le chlore (17 électrons) a gagné 1 électron : 18 électrons, comme l’argon.', indice: "Un électron porte une charge négative. Un ion de charge négative a-t-il gagné ou perdu des électrons ? Un anion est un ion négatif, un cation un ion positif." } },
     { id: 'proche', titre: 'Quel ion ? Le plus simple !', depart: () => voirAtome(16),
       texte: <>Un atome gagne ou perd <strong>le moins d’électrons possible</strong> pour ressembler au gaz noble <strong>le plus proche</strong>.
         <ExempleResolu>Le soufre (Z = 16) a 6 électrons de valence. Perdre 6 électrons ? Trop. Gagner 2 : il a alors 18 électrons comme l’argon. Il devient <strong>S²⁻</strong>.
           {bouton('Voir le soufre', () => voirAtome(16))}</ExempleResolu>
         À vous : le <strong>magnésium</strong> (2 électrons de valence).</>,
       tache: { type: 'qcm', q: 'Quel ion forme le plus simplement le magnésium (Z = 12) ?', options: ['Mg²⁺', 'Mg²⁻', 'Mg⁶⁺', 'Mg⁺'], bonne: 0,
-        expl: 'Le magnésium a 2 électrons de valence : en perdre 2 est le plus simple. Il reste 10 électrons, comme le néon : Mg²⁺.' } },
+        expl: 'Le magnésium a 2 électrons de valence : en perdre 2 est le plus simple. Il reste 10 électrons, comme le néon : Mg²⁺.', indice: "Cherche le nombre d’électrons de valence du magnésium (Z = 12). Pour avoir une couche externe pleine, il gagne ou perd le moins d’électrons possible. Déduis-en la charge de l’ion." } },
     { id: 'essentiel1', titre: 'À retenir : les ions', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li>Un atome est <strong>stable</strong> s’il a la configuration d’un gaz noble : 8 électrons de valence (octet). Seule exception : <strong>H, He</strong> (et Li⁺, Be²⁺), dont la couche n = 1 est pleine avec 2 électrons (duet).</li>
@@ -373,7 +376,7 @@ export function SimulationAtomesMolecules() {
           {bouton('Revoir avec les électrons', () => voirMol('HCl', 'electrons', true))}{' '}{bouton('Revenir aux tirets', () => voirMol('HCl', 'tirets', true))}</ExempleResolu>
         Désormais, à vous de dessiner directement des tirets.</>,
       tache: { type: 'qcm', q: 'Dans un schéma de Lewis, un tiret placé sur le seul atome de chlore (pas entre deux atomes) représente…', options: ['un doublet non liant (2 électrons)', 'un doublet liant (2 électrons partagés)', 'un électron célibataire', 'une liaison double'], bonne: 0,
-        expl: 'Un tiret entre deux atomes = doublet liant ; un tiret sur un seul atome = doublet non liant. Dans les deux cas, ce sont 2 électrons.' } },
+        expl: 'Un tiret entre deux atomes = doublet liant ; un tiret sur un seul atome = doublet non liant. Dans les deux cas, ce sont 2 électrons.', indice: "Un tiret entre deux atomes représente des électrons partagés par ces deux atomes. Ici, le tiret touche un seul atome : est-il partagé avec un autre atome ?" } },
     { id: 'regle', titre: 'Combien de liaisons par atome ?', depart: () => voirAtome(7),
       texte: <>Le nombre de liaisons que fait un atome dépend de ce qui lui manque pour avoir 8 électrons (2 pour H).
         <table style={{ borderCollapse: 'collapse', margin: '6px 0', fontSize: 14 }}><thead><tr><th style={{ textAlign: 'left', padding: '2px 10px 2px 0' }}>Atome</th><th style={{ padding: '2px 10px' }}>électrons de valence</th><th style={{ padding: '2px 10px' }}>liaisons</th><th style={{ padding: '2px 10px' }}>doublets non liants</th></tr></thead>
@@ -385,7 +388,7 @@ export function SimulationAtomesMolecules() {
           'Pour un atome neutre, le nombre de liaisons est le nombre d’électrons qui manquent pour avoir un octet : 8 − (électrons de valence).', `Liaisons = 8 − ${eN.valence} = ${8 - eN.valence}.`]; },
         pieges: [[5, 'C’est le nombre d’électrons de valence de l’azote. Il lui en manque 8 − 5.'], [8, 'C’est le nombre d’électrons d’un octet. Le nombre de liaisons est le nombre d’électrons qui manquent : 8 − 5.'],
           [1, 'C’est le nombre de doublets non liants de l’azote. Ici on demande le nombre de liaisons : 8 − 5.']],
-        expl: 'Azote : 5 électrons de valence, il lui en manque 3 pour l’octet : 3 liaisons, et il garde 1 doublet non liant (5 − 3 = 2 électrons).' } },
+        expl: 'Azote : 5 électrons de valence, il lui en manque 3 pour l’octet : 3 liaisons, et il garde 1 doublet non liant (5 − 3 = 2 électrons).', indice: "Combien d’électrons de valence a N (Z = 7) ? Pour atteindre l’octet, il lui en manque autant qu’il doit faire de liaisons (chaque liaison lui apporte un électron)." } },
     { id: 'h2o', titre: 'À vous : l’eau H₂O', depart: () => voirMol('H2O', 'tirets'),
       texte: <>Appliquez la règle : l’oxygène fait 2 liaisons (une avec chaque H), et il lui reste 2 doublets non liants. Chaque H fait 1 liaison.
         <ExempleResolu>O : 6 électrons de valence = 2 (liaisons) + 2 × 2 (2 doublets non liants). Chaque H : 1 liaison, duet ✓.</ExempleResolu>
