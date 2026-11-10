@@ -6,18 +6,6 @@ import { Pic } from "../Pictos";
 
 const SIM_ID = 17;
 const NB = '\u00a0';
-// Capacités du référentiel (Annexe 3, programme de STL, « Transport et transformation des flux de matière »)
-const CAP = {
-  bern: 'Exploiter le théorème de Bernoulli pour un fluide incompressible.',
-  debit: 'Exprimer la relation entre le débit volumique d’un fluide et sa vitesse d’écoulement.',
-  conserv: 'Exploiter la conservation du débit pour des écoulements permanents incompressibles.',
-  pertesB: 'Exploiter le théorème de Bernoulli avec pertes de charges.',
-  pertes: 'Exploiter des documents pour étudier les pertes d’énergie dans un circuit hydraulique et mettre en évidence l’influence de quelques paramètres : vitesse d’écoulement, longueur et section de la canalisation, singularités.',
-  pompe: 'Exploiter le théorème de Bernoulli avec une pompe.',
-  puissance: 'Définir et exploiter l’expression de la puissance utile d’une pompe.',
-  rendement: 'Définir et évaluer le rendement d’une pompe, la puissance électrique absorbée étant fournie.',
-};
-const Cap = ({ children }) => <div style={{ marginTop: 8, fontSize: 12.5, color: '#475569', borderLeft: `3px solid ${ORANGE_GUIDE}`, paddingLeft: 8, lineHeight: 1.45 }}><strong>Capacité visée{NB}:</strong> {children}</div>;
 declarerDefis(SIM_ID, [['principal', 'Résoudre un exercice complet (3 étapes)']]);
 
 // ====================================================
@@ -451,24 +439,24 @@ export function SimulationBernoulli({ plotlyReady }) {
         <strong> altitude</strong> (ρ·g·z) et sa <strong>vitesse</strong> (½·ρ·v²). Chaque terme est en pascals (1 Pa = 1 J·m⁻³).
         La relation de Bernoulli apparaît en haut de la page ; chaque terme y est encore un « ? » : on les déterminera un par un.
         Touchez ou survolez un terme de pression, un terme d'altitude et un terme de vitesse dans la relation : il s'allume sur le schéma.
-        <Cap>{CAP.bern}</Cap></>,
+        </>,
       tache: { type: 'action', ok: vusP && vusZ && vusV, consigne: `${vusP ? '✅' : '⬜'} pression   ${vusZ ? '✅' : '⬜'} altitude   ${vusV ? '✅' : '⬜'} vitesse` } },
     { titre: 'Le point A', survol: ['p', 'vA'], entoure: ['pA', 'zA', 'vA'],
       texte: <>Le point A est à la surface du réservoir A : la pression y vaut P<sub>atm</sub> (réservoir ouvert), et on prend
-        cette surface comme origine des altitudes (z<sub>A</sub> = 0). Les deux premiers termes de la relation sont maintenant renseignés.<Cap>{CAP.bern} {CAP.conserv}</Cap></>,
+        cette surface comme origine des altitudes (z<sub>A</sub> = 0). Les deux premiers termes de la relation sont maintenant renseignés.</>,
       tache: { type: 'qcm', q: <>Pourquoi peut-on écrire v<sub>A</sub> ≈ 0 ?</>,
         indice: <>Le débit est le même partout : Q<sub>V</sub> = v × S. Comparez la section du réservoir à celle du tuyau.</>,
         options: ['Le réservoir a une très grande surface donc le niveau descend très lentement', 'Il n’y a pas de pompe dans le réservoir', 'L’eau est toujours immobile à l’entrée d’un tuyau'], bonne: 0,
         expl: 'Le débit est le même partout, mais la section du réservoir est immense devant celle du tuyau : v = Q_V / S y est quasi nulle.' } },
     { titre: 'Le point B', survol: 'p', entoure: ['pB'],
       texte: <>Le point B est la sortie du tuyau, au-dessus du réservoir B : l'eau en sort en jet, à l'altitude z<sub>B</sub> = Δz,
-        avec la vitesse qu'elle avait dans le tuyau.<Cap>{CAP.bern}</Cap></>,
+        avec la vitesse qu'elle avait dans le tuyau.</>,
       tache: { type: 'qcm', q: 'Que vaut la pression en B ?',
         indice: <>Autour du jet qui sort du tuyau, il y a de l'air : quelle pression y règne ?</>, options: ['P_atm : le jet sort à l’air libre', 'Zéro', 'La pression de la pompe'], bonne: 0,
         expl: 'Comme P_A = P_B = P_atm, les deux termes de pression se compensent : ils sont barrés dans la relation.' } },
     { titre: 'La vitesse dans le tuyau', survol: 'vB',
       texte: <>Les réglages sont apparus. Le débit vaut Q<sub>V</sub> = <strong>{bernFmt(qvEff, 0)} L·h⁻¹</strong> et le diamètre intérieur
-        du tuyau D = <strong>{dMm} mm</strong>. Déterminez la vitesse v de l'eau dans le tuyau, de section S = π·D² / 4. Donnez la réponse avec <strong>2 chiffres significatifs</strong>.<Cap>{CAP.debit}</Cap></>,
+        du tuyau D = <strong>{dMm} mm</strong>. Déterminez la vitesse v de l'eau dans le tuyau, de section S = π·D² / 4. Donnez la réponse avec <strong>2 chiffres significatifs</strong>.</>,
       tache: { type: 'num', q: 'Vitesse de l’eau dans le tuyau', unite: 'm·s⁻¹', vrai: r.v, tol: 0.05, detail: true,
         indice: 'Convertissez d’abord Q_V en m³·s⁻¹ (1 L·h⁻¹ = 1/3 600 000 m³·s⁻¹) et D en m, puis utilisez v = Q_V / S.',
         pieges: [[r.v * 4, 'S = π·D²/4 : n’oubliez pas le 4.'], [r.v / 4, 'S = π·D²/4, avec D le diamètre (et non le rayon).'], [r.v * 1000, 'Convertissez le débit en m³·s⁻¹.'], [r.v * 3600, 'Convertissez le débit en m³·s⁻¹ : divisez aussi par 3600.'],
@@ -480,29 +468,29 @@ export function SimulationBernoulli({ plotlyReady }) {
     { titre: 'Les pertes de charge', survol: 'pertes',
       texte: <>En frottant sur les parois, et à chaque coude, vanne ou filtre, l'eau perd de l'énergie : ce sont les <strong>pertes de
         charge</strong> ΔP<sub>charge</sub>. Dans les réglages (« Géométrie du circuit », puis « Singularités »), ajoutez au moins deux coudes, et regardez la valeur des pertes de charge grandir.
-        <em>Le schéma du circuit est purement indicatif : il ne montre ni la nature ni le nombre réel des singularités.</em><Cap>{CAP.pertes}</Cap></>,
+        <em>Le schéma du circuit est purement indicatif : il ne montre ni la nature ni le nombre réel des singularités.</em></>,
       tache: { type: 'action', ok: coudesDepart != null && n.coude >= Math.max(6, coudesDepart + 2),
         consigne: `Coudes : ${n.coude} / ${coudesDepart == null ? 6 : Math.max(6, coudesDepart + 2)}  ·  pertes de charge : ${bernFmt(kpa(r.dpCharge), 2)} kPa` } },
     { titre: 'Où part l’énergie perdue ?', survol: 'pertes',
-      texte: <>Les pertes de charge valent ici {bernFmt(kpa(r.dpCharge), 2)} kPa.<Cap>{CAP.pertes}</Cap></>,
+      texte: <>Les pertes de charge valent ici {bernFmt(kpa(r.dpCharge), 2)} kPa.</>,
       tache: { type: 'qcm', q: 'Que devient cette énergie ?',
         indice: 'Quand on se frotte les mains, que ressent-on ? L’énergie ne disparaît jamais : elle change de forme.', options: ['Elle est transformée en chaleur par les frottements', 'Elle disparaît', 'Elle est stockée dans le tuyau'], bonne: 0 } },
     { titre: 'Le bilan en image', survol: null,
       texte: <>Le bilan, à droite du schéma, comporte <strong>quatre histogrammes</strong> : l'énergie volumique au point A, l'énergie <strong>gagnée</strong> entre A et B
-        (apport de la pompe), l'énergie <strong>perdue</strong> entre A et B (en négatif, sous la ligne zéro) et l'énergie au point B.<Cap>{CAP.bern}</Cap></>,
+        (apport de la pompe), l'énergie <strong>perdue</strong> entre A et B (en négatif, sous la ligne zéro) et l'énergie au point B.</>,
       tache: { type: 'qcm', q: 'Que traduit ce bilan entre A et B ?',
         indice: <>Lisez les quatre colonnes de gauche à droite : A, plus le gain, moins la perte, égale B. Quelle égalité en découle ?</>,
         options: ['L’énergie en B = l’énergie en A, plus l’énergie gagnée grâce à la pompe, moins l’énergie perdue', 'L’énergie en B est toujours égale à l’énergie en A', 'L’énergie perdue s’ajoute à l’énergie en B'], bonne: 0,
         expl: 'Aucune énergie ne disparaît : ce que l’eau a en A, plus ce que la pompe lui apporte, moins ce qu’elle perd par frottements, est ce qu’elle a en B.' } },
     { titre: 'L’énergie d’altitude', survol: 'zB',
-      texte: <>Calculons les termes un par un. ρ = 1000 kg·m⁻³, g = 9,81 m·s⁻² (soit N·kg⁻¹), Δz = {bernFmt(dz, 1)} m.<Cap>{CAP.bern}</Cap></>,
+      texte: <>Calculons les termes un par un. ρ = 1000 kg·m⁻³, g = 9,81 m·s⁻² (soit N·kg⁻¹), Δz = {bernFmt(dz, 1)} m.</>,
       tache: { type: 'num', q: 'ρ·g·z_B, en kPa', unite: 'kPa', vrai: kpa(r.Epot), tol: 0.05, detail: true,
         indice: <>ρ·g·z<sub>B</sub> avec ρ en kg·m⁻³, g en m·s⁻² et z<sub>B</sub> = Δz en m donne un résultat en Pa ; divisez par 1000 pour passer aux kPa.</>,
         pieges: [[r.Epot, 'La réponse est demandée en kPa : 1 kPa = 1000 Pa.'], [kpa(r.Epot) / BERN_G, 'N’oubliez pas g = 9,81 m·s⁻².'],
           ...piegesValides(kpa(r.Epot), 0.05, [[BERN_G * dz / 1000, 'N’oubliez pas la masse volumique de l’eau : ρ = 1000 kg·m⁻³.']])],
         expl: <>ρ·g·z<sub>B</sub> = 1000 × 9,81 × {bernFmt(dz, 1)} = {bernFmt(r.Epot, 0)} Pa = <strong>{bernFmt(kpa(r.Epot), 2)} kPa</strong> (on divise par 1000 pour passer des Pa aux kPa).</> } },
     { titre: 'L’énergie de vitesse', survol: 'vB',
-      texte: <>Avec la vitesse calculée plus tôt (v<sub>B</sub> = {bernFmt(r.v, 2)} m·s⁻¹).<Cap>{CAP.bern}</Cap></>,
+      texte: <>Avec la vitesse calculée plus tôt (v<sub>B</sub> = {bernFmt(r.v, 2)} m·s⁻¹).</>,
       tache: { type: 'num', q: '½·ρ·v_B², en kPa', unite: 'kPa', vrai: kpa(r.Ecin), tol: 0.05, detail: true,
         indice: <>½·ρ·v<sub>B</sub>² avec ρ en kg·m⁻³ et v<sub>B</sub> en m·s⁻¹ donne des Pa (÷ 1000 pour les kPa). Attention : la vitesse est au carré.</>,
         pieges: [[kpa(r.Ecin) * 2, 'N’oubliez pas le ½.'], [r.Ecin, 'La réponse est demandée en kPa.'], [kpa(r.Ecin) / r.v, 'La vitesse est au carré.'],
@@ -512,7 +500,7 @@ export function SimulationBernoulli({ plotlyReady }) {
       texte: <>Les pressions se compensent, z<sub>A</sub> = 0 et v<sub>A</sub> ≈ 0 : la relation se simplifie en
         P<sub>hyd</sub>/Q<sub>V</sub> = ρ·g·z<sub>B</sub> + ½·ρ·v<sub>B</sub>² + ΔP<sub>charge</sub>, avec ΔP<sub>charge</sub> = {bernFmt(kpa(r.dpCharge), 2)} kPa.
         Rappel des étapes précédentes : ρ·g·z<sub>B</sub> = {bernFmt(kpa(r.Epot), 2)} kPa et ½·ρ·v<sub>B</sub>² = {bernFmt(kpa(r.Ecin), 3)} kPa.
-        <strong> Déterminez par le calcul la valeur du terme P<sub>hyd</sub>/Q<sub>V</sub>.</strong><Cap>{CAP.pertesB} {CAP.pompe}</Cap></>,
+        <strong> Déterminez par le calcul la valeur du terme P<sub>hyd</sub>/Q<sub>V</sub>.</strong></>,
       tache: { type: 'num', q: 'Valeur du terme P_hyd / Q_V, en kPa', unite: 'kPa', vrai: kpa(r.Wp), tol: 0.05, detail: true,
         indice: <>Isolez P<sub>hyd</sub>/Q<sub>V</sub> : additionnez ρ·g·z<sub>B</sub>, ½·ρ·v<sub>B</sub>² et ΔP<sub>charge</sub> (les pertes sont à compenser), dans la même unité.</>,
         pieges: [[kpa(r.Epot + r.Ecin - r.dpCharge), 'Les pertes s’ajoutent : la pompe doit aussi les compenser.'], [kpa(r.Epot + r.dpCharge), 'N’oubliez pas l’énergie de vitesse ½·ρ·v_B².'],
@@ -520,7 +508,7 @@ export function SimulationBernoulli({ plotlyReady }) {
         expl: <>P<sub>hyd</sub>/Q<sub>V</sub> = {bernFmt(kpa(r.Epot), 2)} + {bernFmt(kpa(r.Ecin), 3)} + {bernFmt(kpa(r.dpCharge), 2)} = <strong>{bernFmt(kpa(r.Wp), 2)} kPa</strong>.</> } },
     { titre: 'La puissance hydraulique', survol: 'pompe',
       texte: <>P<sub>hyd</sub>/Q<sub>V</sub> est une <strong>énergie volumique</strong>. Pour déterminer P<sub>hyd</sub> en W, toutes les grandeurs doivent être dans leur unité SI :
-        le terme P<sub>hyd</sub>/Q<sub>V</sub> doit être exprimé en J·m⁻³ = Pa, et Q<sub>V</sub> en m³·s⁻¹. Dans notre cas, P<sub>hyd</sub>/Q<sub>V</sub> = {bernFmt(kpa(r.Wp), 2)} kPa (étape précédente) et Q<sub>V</sub> = {bernFmt(qvEff, 0)} L·h⁻¹.<Cap>{CAP.puissance}</Cap></>,
+        le terme P<sub>hyd</sub>/Q<sub>V</sub> doit être exprimé en J·m⁻³ = Pa, et Q<sub>V</sub> en m³·s⁻¹. Dans notre cas, P<sub>hyd</sub>/Q<sub>V</sub> = {bernFmt(kpa(r.Wp), 2)} kPa (étape précédente) et Q<sub>V</sub> = {bernFmt(qvEff, 0)} L·h⁻¹.</>,
       tache: { type: 'num', q: 'Puissance hydraulique P_hyd', unite: 'W', vrai: r.Phyd, tol: 0.05, detail: true,
         indice: <>P<sub>hyd</sub> = (P<sub>hyd</sub>/Q<sub>V</sub>) × Q<sub>V</sub>, avec P<sub>hyd</sub>/Q<sub>V</sub> en Pa et Q<sub>V</sub> en m³·s⁻¹ (1 L·h⁻¹ = 1/3 600 000 m³·s⁻¹). Pa × m³·s⁻¹ = W.</>,
         pieges: [[kpa(r.Wp) * r.Q, 'P_hyd/Q_V doit être en Pa (et non en kPa).'], [r.Wp * qvEff, 'Le débit doit être en m³·s⁻¹.'],
@@ -529,19 +517,19 @@ export function SimulationBernoulli({ plotlyReady }) {
           P<sub>hyd</sub> = {bernFmt(r.Wp, 0)} × {bernSci(r.Q, 2)} = <strong>{affP(r.Phyd)} W</strong>.</> } },
     { titre: 'La puissance de la pompe', survol: 'pompe',
       texte: <>Une partie de l'énergie électrique reçue par la pompe ne passe pas dans l'eau. Son <strong>rendement</strong> est η = P<sub>utile</sub> / P<sub>abs</sub>.
-        Ici, la puissance utile est la puissance hydraulique : P<sub>utile</sub> = P<sub>hyd</sub> = {affP(r.Phyd)} W, et η = {bernFmt(eta, 0)} %.<Cap>{CAP.rendement}</Cap></>,
+        Ici, la puissance utile est la puissance hydraulique : P<sub>utile</sub> = P<sub>hyd</sub> = {affP(r.Phyd)} W, et η = {bernFmt(eta, 0)} %.</>,
       tache: { type: 'num', q: 'Puissance électrique absorbée par la pompe P_abs', unite: 'W', vrai: r.Pabs, tol: 0.05, detail: true,
         indice: <>η = P<sub>utile</sub> / P<sub>abs</sub>, donc P<sub>abs</sub> = P<sub>utile</sub> / η, avec η en fraction ({bernFmt(eta, 0)} % = {bernFmt(eta / 100, 2)}).</>,
         pieges: [[r.Phyd * eta / 100, 'C’est P_hyd × η : la pompe absorbe plus qu’elle ne donne à l’eau.'],
           ...piegesValides(r.Pabs, 0.05, [[r.Phyd, 'Il manque le rendement : P_abs = P_utile / η, avec η < 1, donc P_abs > P_hyd.'], [r.Phyd / eta, `Le rendement doit être une fraction : η = ${eta} % = ${bernFmt(eta / 100, 2)} (et non ${eta}).`]])],
         expl: <>η = P<sub>utile</sub> / P<sub>abs</sub> donc P<sub>abs</sub> = P<sub>utile</sub> / η = {affP(r.Phyd)} / {bernFmt(eta / 100, 2)} = <strong>{affP(r.Pabs)} W</strong>.</> } },
     { titre: 'Et si l’on double le débit ?', survol: 'pertes',
-      texte: <>Réglez le débit à Q<sub>V</sub> = 1000 L·h⁻¹ et notez les pertes de charge, puis passez à Q<sub>V</sub> = 2000 L·h⁻¹ (le double).<Cap>{CAP.pertes}</Cap></>,
+      texte: <>Réglez le débit à Q<sub>V</sub> = 1000 L·h⁻¹ et notez les pertes de charge, puis passez à Q<sub>V</sub> = 2000 L·h⁻¹ (le double).</>,
       tache: { type: 'qcm', q: 'Quand le débit double, les pertes de charge…',
         indice: 'Comparez les deux valeurs lues dans les réglages. Quand le débit double, la vitesse double aussi : à quelle puissance de v les pertes sont-elles liées ?', options: ['doublent', 'sont multipliées par 3 à 4 environ', 'ne changent pas'], bonne: 1,
         expl: `Elles passent de ${fm(kpa(dp1000), 2)} kPa à ${fm(kpa(dp2000), 2)} kPa (environ ×${fm(dp2000 / dp1000, 1)}) : elles augmentent à peu près comme le carré de la vitesse, donc comme le carré du débit.` } },
     { titre: 'Le choix du diamètre', survol: 'pertes',
-      texte: <>Revenez à un débit de 1000 L·h⁻¹, puis passez le diamètre de 16 mm à 10 mm.<Cap>{CAP.pertes}</Cap></>,
+      texte: <>Revenez à un débit de 1000 L·h⁻¹, puis passez le diamètre de 16 mm à 10 mm.</>,
       tache: { type: 'qcm', q: 'Avec un tuyau plus fin…',
         indice: <>Quand D diminue, S = π·D² / 4 diminue : que devient la vitesse pour le même débit ? Comparez ensuite les pertes lues dans les réglages.</>, options: ['les pertes de charge sont beaucoup plus grandes', 'les pertes diminuent', 'rien ne change'], bonne: 0,
         expl: 'La vitesse augmente comme 1/D², et les pertes encore plus vite. C’est pourquoi on investit dans des canalisations assez larges : la pompe consomme ensuite moins chaque jour.' } },

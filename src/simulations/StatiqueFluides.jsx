@@ -12,13 +12,6 @@ declarerDefis(SIM_ID, [['principal', 'Étalonner un manomètre et trouver la hau
 //  SIM 26 — STATIQUE DES FLUIDES : P = f(h) ET HAUTEUR D'EAU D'UN RÉCIPIENT INCONNU
 // ====================================================
 
-// Capacité du référentiel (STL, enseignement de spécialité SPCL, « Transport et transformation des flux de matière »), citée telle quelle
-const Cap = ({ children }) => <div style={{ marginTop: 8, fontSize: 12.5, color: '#475569', borderLeft: `3px solid ${ORANGE_GUIDE}`, paddingLeft: 8, lineHeight: 1.45 }}><strong>Capacité visée :</strong> {children}</div>;
-const CAP = {
-  mesurer: '« Mesurer une pression. »',
-  pfs: '« Utiliser le principe fondamental de la statique des fluides incompressibles. »',
-  hauteur: '« Concevoir et mettre en œuvre un protocole pour estimer la hauteur de liquide dans un réservoir. »',
-};
 // Apparition en fondu court (parcours guidé : un élément apparaît à l'étape qui l'introduit)
 const Apparait = ({ children, style }) => <div className="sf-apparait" style={style}>{children}</div>;
 // Bouton « Indice » des questions du défi
@@ -128,7 +121,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
       tache: { type: 'qcm', indice: 'Au niveau de la surface, y a-t-il déjà de l’eau au-dessus de l’embout ? Et au-dessus de l’eau, qu’y a-t-il ?', q: 'Quelle pression indique le manomètre quand l’embout est à la surface de l’eau (h = 0) ?', options: ['La pression atmosphérique', '0 Pa', 'La pression due à l’eau seule'], bonne: 0,
         expl: 'À la surface, il n’y a pas encore d’eau au-dessus de l’embout : seule l’atmosphère pèse. Une pression absolue ne vaut zéro que dans le vide.' } },
     { id: 'patm', titre: 'Relever la pression atmosphérique', focus: ['manip'],
-      texte: <>Réglez la profondeur de l'embout à <strong>h = 0</strong> (à la surface) et lisez la pression indiquée par le manomètre.<Cap>{CAP.mesurer}</Cap></>,
+      texte: <>Réglez la profondeur de l'embout à <strong>h = 0</strong> (à la surface) et lisez la pression indiquée par le manomètre.</>,
       tache: { type: 'num', indice: 'Lisez directement la valeur affichée par le manomètre quand h = 0 : elle est déjà en hPa, sans calcul.', q: 'Pression atmosphérique indiquée', unite: 'hPa', vrai: P0, tol: 0.001, affiche: x => fmt(x, 0),
         bloque: !(eauRef && hCm === 0) ? 'Réglez la profondeur h = 0 cm.' : null,
         aide: 'Lecture directe sur le manomètre, sans calcul : il affiche des hectopascals (hPa).',
@@ -167,7 +160,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
       tache: { type: 'qcm', indice: 'Quand h = 0, la pression n’est pas nulle (étape 2). Une proportionnalité P = a·h donnerait P = 0 pour h = 0.', q: 'Quel modèle choisir pour P en fonction de h ?', options: ['P = a·h + b (droite qui ne passe pas par l’origine)', 'P = a·h (proportionnalité)', 'P = a·h² + b'], bonne: 0,
         expl: 'Pour h = 0, P n’est pas nulle (elle vaut la pression atmosphérique) : la droite ne passe pas par l’origine, donc P = a·h + b et non P = a·h. Le modèle linéaire s’affiche alors sur le graphique.' } },
     { id: 'pente', titre: 'Interpréter la pente', focus: ['courbe'],
-      texte: <>Le modèle est de la forme P = a·h + b. Comparez avec la loi de la statique des fluides : P = Patm + ρ·g·h.<Cap>{CAP.pfs}</Cap></>,
+      texte: <>Le modèle est de la forme P = a·h + b. Comparez avec la loi de la statique des fluides : P = Patm + ρ·g·h.</>,
       tache: { type: 'qcm', indice: 'Comparez terme à terme P = a·h + b et P = Patm + ρ·g·h : que multiplie h dans la seconde équation ?', q: 'Que représente la pente a de la droite ?', options: ['ρ × g (masse volumique × intensité de la pesanteur)', 'La pression atmosphérique', 'La profondeur maximale'], bonne: 0,
         expl: 'En identifiant P = a·h + b et P = Patm + ρ·g·h : a = ρ·g (en Pa/m) et b = Patm.' } },
     { id: 'rho', titre: 'Masse volumique du liquide', focus: ['courbe'],
@@ -184,7 +177,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
       tache: { type: 'qcm', indice: 'Dans P = Patm + ρ·g·h, que vaut P quand h = 0 ? C’est la valeur de b dans P = a·h + b.', q: 'Que représente l’ordonnée à l’origine b ?', options: ['La pression atmosphérique (pression à h = 0)', 'La pression au fond de l’éprouvette', 'La masse volumique de l’eau'], bonne: 0,
         expl: `b ≈ ${fmt(b1, 0)} Pa, soit ${fmt(b1 / 100, 0)} hPa : c'est la pression atmosphérique relevée à l'étape 2.` } },
     { id: 'inconnu', titre: 'Un récipient inconnu', focus: ['cuve'],
-      texte: <>Voici un récipient <strong>opaque</strong> contenant de l'eau. On ne voit pas le niveau H de l'eau (<strong>faites défiler la page vers le bas</strong> pour voir ce récipient). Mais on peut y descendre l'embout du manomètre (maintenant étalonné). Où faut-il le placer pour en déduire H ?<Cap>{CAP.hauteur}</Cap></>,
+      texte: <>Voici un récipient <strong>opaque</strong> contenant de l'eau. On ne voit pas le niveau H de l'eau (<strong>faites défiler la page vers le bas</strong> pour voir ce récipient). Mais on peut y descendre l'embout du manomètre (maintenant étalonné). Où faut-il le placer pour en déduire H ?</>,
       tache: { type: 'qcm', indice: 'On veut que la profondeur de l’embout sous la surface soit égale à H. À quel endroit du récipient est-ce le cas ?', q: 'Où placer l’embout du manomètre ?', options: ['Au fond du récipient : sa profondeur sous la surface est alors égale à H', 'À la surface, au niveau du bord supérieur', 'À mi-hauteur du récipient'], bonne: 0,
         expl: 'Au fond, la profondeur de l’embout sous la surface libre est exactement la hauteur d’eau H. Au bord supérieur, on lit seulement Patm. À mi-hauteur, on ne connaît pas la profondeur sous la surface.' } },
     { id: 'placer', titre: 'Placer le manomètre', focus: ['cuve'],

@@ -5,7 +5,6 @@ import { Frac, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, st
 import { Pic } from "../Pictos";
 
 const SIM_ID = 27;
-const Cap = ({ children }) => <div style={{ marginTop: 8, fontSize: 12.5, color: '#475569', borderLeft: `3px solid ${ORANGE_GUIDE}`, paddingLeft: 8, lineHeight: 1.45 }}><strong>Capacité visée :</strong> {children}</div>;
 declarerDefis(SIM_ID, [['principal', 'Débits et masse volumique']]);
 
 // ====================================================
@@ -444,14 +443,14 @@ export function SimulationDebits({ naviguer }) {
         pieges: [[0.991, 'La densité n’a pas d’unité : ρ est la densité multipliée par la masse volumique de l’eau (1 000 kg·m⁻³).']],
         expl: <>Chaque mètre cube de vin pèse 991 kg. <RhoLigne d={0.991}/></> } },
     { id: 'relRho', titre: 'Lier Q_m, ρ et Q_v', focus: [],
-      texte: <>Le <strong>débit volumique Q_v</strong> est le volume de fluide qui s’écoule par unité de temps (en m³·s⁻¹, L·s⁻¹, m³·h⁻¹…). Pour trouver la relation avec Q_m, <strong>regardez les unités</strong> : Q_m en kg·s⁻¹, Q_v en m³·s⁻¹, ρ en kg·m⁻³.<Cap>« Exprimer la relation entre débit massique et débit volumique. » (programme de sciences physiques et chimiques en laboratoire, terminale STL, « Débit et vitesse d’écoulement »)</Cap></>,
+      texte: <>Le <strong>débit volumique Q_v</strong> est le volume de fluide qui s’écoule par unité de temps (en m³·s⁻¹, L·s⁻¹, m³·h⁻¹…). Pour trouver la relation avec Q_m, <strong>regardez les unités</strong> : Q_m en kg·s⁻¹, Q_v en m³·s⁻¹, ρ en kg·m⁻³.</>,
       tache: { type: 'qcm', indice: 'Écrivez les unités de chaque relation : kg·m⁻³ × m³·s⁻¹ donne-t-il bien des kg·s⁻¹ ?', q: 'Quelle relation est cohérente avec ces unités ?', options: ['Q_m = ρ × Q_v', 'Q_m = Q_v / ρ', 'Q_v = ρ × Q_m'], bonne: 0,
         expl: 'kg·m⁻³ × m³·s⁻¹ = kg·s⁻¹ : les m³ se simplifient et il reste bien des kg·s⁻¹. Les deux autres relations donnent des unités qui ne correspondent pas à celles du premier membre.' } },
     { id: 'qvH', titre: 'Calculer Q_v en m³·h⁻¹', focus: [],
       texte: <>
         <p style={{ margin: '0 0 8px' }}>Q_m = ρ × Q_v, donc Q_v = Q_m × <Frac haut="1" bas="ρ"/>, avec ρ = 991 kg·m⁻³ (en SI), c’est-à-dire 1 m³ pour 991 kg. Partons de Q_m ≈ 428 kg·h⁻¹. Regardez les unités : le kg de Q_m se simplifie avec le kg du dénominateur, et il reste des m³ par heure.</p>
         <Ch1 nom="Q_v" facteurs={chaineQv(428, 'kg', 'h', 'm³', 'h', G_RHO, '428')} cacher/>
-        <Cap>« Exprimer la relation entre débit massique et débit volumique. » (programme de sciences physiques et chimiques en laboratoire, terminale STL, « Débit et vitesse d’écoulement »)</Cap>
+        
       </>,
       tache: { type: 'num', indice: 'Q_v = Q_m / ρ. Pour que les kg se simplifient, multipliez Q_m (en kg·h⁻¹) par la fraction (1 m³) / (991 kg).', q: 'Q_v en m³·h⁻¹', unite: 'm³·h⁻¹', vrai: G_QV_H, tol: 0.01, cs: 3, affiche: x => sig(x),
         calcul: () => ['Q_m = ρ × Q_v, donc Q_v = Q_m / ρ (fluide incompressible, ρ constante).', `Q_v = ${sig(G_QM_H, 3)} kg·h⁻¹ / ${fmt(G_RHO, 0)} kg·m⁻³ = ${sig(G_QV_H)} m³·h⁻¹ (les kg se simplifient).`],
