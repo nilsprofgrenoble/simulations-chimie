@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, ExempleResolu, lireProgression, avecIndices } from "../commun";
+  BoutonsModes, ARetenir, ExempleResolu, lireProgression, avecIndices, IndiceDefi } from "../commun";
 import { fr, LIQUIDES, COLORANTS, miscible, goutte, D_HUILE, SHA, shaEau, D_EAU } from "./solutionsModele";
 import { Pic } from "../Pictos";
 
@@ -137,6 +137,9 @@ function VoletDefi({ defi, setDefi, changerType, G }) {
       {defi.type === 'superposer' && <><div style={txt}><Pic n="target"/>On verse <strong>{defi.n}</strong> (densité <strong>{fr(defi.d, 2)}</strong>) dans de l’eau (densité 1,00). Les deux liquides <strong>ne sont pas miscibles</strong>.</div>
         {q(`Où se place ${defi.n} ?`)}{choix('pos', [['haut', 'au-dessus de l’eau'], ['bas', 'au-dessous de l’eau']])}</>}
       {defi.type === 'goutte' && <div style={txt}><Pic n="target"/>Dans un bécher, <strong>{defi.Ve} mL d’eau</strong> et 2 mL d’huile colorée (d = 0,9). Réglez le volume d’<strong>alcool</strong> (d = 0,8) pour que la goutte d’huile reste <strong>suspendue au milieu</strong> (curseur ci-dessous), puis cliquez sur « Vérifier ».</div>}
+      <IndiceDefi cache={reussi}>{defi.type === 'tubes' ? <>Rappelle-toi les tubes du parcours (eau + huile, eau + alcool…) : deux liquides de nature semblable se mélangent, pas ceux de nature différente.</>
+        : defi.type === 'superposer' ? <>Compare la densité du liquide à celle de l’eau (1,00) : que fait un liquide plus dense que celui qui l’entoure ?</>
+        : <>La goutte reste suspendue quand sa densité est égale à celle du liquide qui l’entoure. Calcule la densité du mélange eau + alcool (masse totale ÷ volume total) et cherche le volume d’alcool qui l’égale à celle de l’huile.</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
         <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
@@ -178,13 +181,13 @@ export function SimulationMelanges() {
         <ExempleResolu>Huile + eau : on voit <strong>deux couches</strong> : mélange hétérogène, l’huile n’est <strong>pas miscible</strong> à l’eau. Eau + alcool : un seul liquide : mélange homogène, <strong>miscibles</strong>.
           {bouton('Voir huile + eau', () => tube('huile', 'eau'))}{' '}{bouton('Voir eau + alcool', () => tube('eau', 'alcool'))}</ExempleResolu>
         À vous : on verse du sirop dans de l’eau et on obtient un seul liquide coloré.</>,
-      tache: { type: 'qcm', q: 'Le sirop et l’eau forment un seul liquide. On dit qu’ils sont…', options: ['miscibles', 'non miscibles', 'solubles', 'saturés'], bonne: 0, expl: 'Un mélange homogène (un seul liquide) signifie que les deux liquides sont miscibles.' } },
+      tache: { type: 'qcm', q: 'Le sirop et l’eau forment un seul liquide. On dit qu’ils sont…', options: ['miscibles', 'non miscibles', 'solubles', 'saturés'], bonne: 0, expl: 'Un mélange homogène (un seul liquide) signifie que les deux liquides sont miscibles.', indice: "Quand deux liquides forment un seul liquide homogène, se mélangent-ils ? Quel mot décrit cette propriété (le mot « soluble » s’applique à un solide dans un liquide) ?" } },
     { id: 'soluble', titre: 'Solubilité d’un colorant', depart: () => tube('huile', 'eau'),
       texte: <>« Miscible » parle de <strong>deux liquides</strong>. Pour un <strong>solide</strong> (ici un colorant) qui se dissout dans un liquide, on dit qu’il est <strong>soluble</strong> dans ce liquide.
         <ExempleResolu>Le <strong>bleu de méthylène</strong> est soluble dans l’eau : il la colore, mais il n’est pas soluble dans l’huile.
           {bouton('Ajouter du bleu de méthylène', () => tube('huile', 'eau', true, false))}</ExempleResolu>
         À vous : ajoutez du <strong>rouge Soudan</strong> au tube huile + eau.</>,
-      tache: { type: 'qcm', q: 'Où va le rouge Soudan (voir le tube : colorant ajouté, couche colorée) ?', options: ['Il est soluble dans l’huile : il colore l’huile', 'Il est soluble dans l’eau : il colore l’eau', 'Il est soluble dans les deux', 'Il n’est soluble dans aucun des deux'], bonne: 0, expl: 'Le rouge Soudan colore la couche d’huile : il est soluble dans l’huile, pas dans l’eau.' } },
+      tache: { type: 'qcm', q: 'Où va le rouge Soudan (voir le tube : colorant ajouté, couche colorée) ?', options: ['Il est soluble dans l’huile : il colore l’huile', 'Il est soluble dans l’eau : il colore l’eau', 'Il est soluble dans les deux', 'Il n’est soluble dans aucun des deux'], bonne: 0, expl: 'Le rouge Soudan colore la couche d’huile : il est soluble dans l’huile, pas dans l’eau.', indice: "Le colorant se retrouve dans le liquide qui le dissout. Observe sur le tube quelle couche est colorée." } },
     { id: 'rho', titre: 'Masse volumique et densité', depart: null,
       texte: <>La <strong>masse volumique</strong> d’un liquide est <strong>ρ = m / V</strong> (en g/L). Sa <strong>densité</strong> compare à l’eau : <strong>d = ρ / ρ<sub>eau</sub></strong> (sans unité, avec ρ<sub>eau</sub> = 1000 g/L).
         <ExempleResolu>L’huile : 90 g pour 100 mL = 0,100 L : ρ = 90 / 0,100 = 900 g/L ; d = 900 / 1000 = <strong>0,9</strong>.</ExempleResolu>
@@ -193,11 +196,11 @@ export function SimulationMelanges() {
           'Le volume doit être en litres : 50 mL = 50 ÷ 1000 = 0,050 L.',
           'ρ = 40 g / 0,050 L = 800 g/L.',
           'Deuxième étape : la densité d = ρ / ρ_eau = 800 / 1000 = 0,8 (sans unité).'],
-        pieges: [[800, 'Ça, c’est ρ en g/L : la densité s’obtient en divisant par 1000 g/L.'], [0.0008, 'Convertis d’abord 50 mL en litres.'], [50 / 40, 'Tu as divisé le volume par la masse. Il faut diviser la masse par le volume : ρ = m / V.']], expl: 'ρ = 40 / 0,050 = 800 g/L ; d = 800 / 1000 = 0,80.' } },
+        pieges: [[800, 'Ça, c’est ρ en g/L : la densité s’obtient en divisant par 1000 g/L.'], [0.0008, 'Convertis d’abord 50 mL en litres.'], [50 / 40, 'Tu as divisé le volume par la masse. Il faut diviser la masse par le volume : ρ = m / V.']], expl: 'ρ = 40 / 0,050 = 800 g/L ; d = 800 / 1000 = 0,80.', indice: "Densité = masse volumique du liquide ÷ masse volumique de l’eau. Calcule d’abord ρ = m / V (avec V converti en litres)." } },
     { id: 'superpose', titre: 'Dans quel ordre se superposent-ils ?', depart: () => tube('huile', 'eau'),
       texte: <>Deux liquides <strong>non miscibles</strong> se superposent : le <strong>moins dense flotte</strong> sur le plus dense. Dans le tube huile + eau, l’huile (d = 0,9) est au-dessus de l’eau (d = 1,0).
         <ExempleResolu>L’essence (d = 0,75) et l’eau (d = 1,0), non miscibles : l’essence, moins dense, flotte sur l’eau.</ExempleResolu></>,
-      tache: { type: 'qcm', q: 'Un liquide non miscible à l’eau a une densité de 1,3. Où se place-t-il ?', options: ['Au fond, sous l’eau', 'Au-dessus de l’eau', 'Il se mélange à l’eau', 'Au milieu'], bonne: 0, expl: '1,3 > 1,0 : il est plus dense que l’eau, il coule.' } },
+      tache: { type: 'qcm', q: 'Un liquide non miscible à l’eau a une densité de 1,3. Où se place-t-il ?', options: ['Au fond, sous l’eau', 'Au-dessus de l’eau', 'Il se mélange à l’eau', 'Au milieu'], bonne: 0, expl: '1,3 > 1,0 : il est plus dense que l’eau, il coule.', indice: "Compare la densité de ce liquide à celle de l’eau (1,0). Un liquide plus dense que l’eau se place-t-il au-dessus ou en dessous ?" } },
     { id: 'curie', titre: '★ L’expérience de Marie Curie', depart: () => goutteVoir(15, 0),
       texte: <>En 1907, Marie Curie fait une expérience aux enfants : dans un mélange <strong>eau + alcool</strong> bien dosé, une goutte d’<strong>huile</strong> reste <strong>suspendue</strong> en boule, sans monter ni descendre. Si l’huile monte, il y a trop d’eau ; si elle coule, trop d’alcool.
         <ExempleResolu>Sans alcool, l’huile (d = 0,9) flotte sur l’eau (d = 1,0). Avec beaucoup d’alcool (d = 0,8), elle coule. Entre les deux, le mélange eau-alcool a une densité d’environ 0,9 : celle de l’huile.</ExempleResolu>
@@ -209,7 +212,7 @@ export function SimulationMelanges() {
           'En haut de la fraction : 15 × 1,0 + 15 × 0,8 = 15 + 12 = 27.',
           'En bas : le volume total = 15 + 15 = 30 mL.',
           'd = 27 / 30 = 0,9.'],
-        pieges: [[1.8, 'Tu as additionné les densités. La densité du mélange est une moyenne pondérée : entre 0,8 et 1,0.'], [27, 'Tu as oublié de diviser par le volume total (30 mL). La densité du mélange est entre 0,8 et 1,0.']], expl: 'd = (15 × 1,0 + 15 × 0,8) / 30 = 27 / 30 = 0,90 : égale à celle de l’huile, la goutte est suspendue.' } },
+        pieges: [[1.8, 'Tu as additionné les densités. La densité du mélange est une moyenne pondérée : entre 0,8 et 1,0.'], [27, 'Tu as oublié de diviser par le volume total (30 mL). La densité du mélange est entre 0,8 et 1,0.']], expl: 'd = (15 × 1,0 + 15 × 0,8) / 30 = 27 / 30 = 0,90 : égale à celle de l’huile, la goutte est suspendue.', indice: "Densité du mélange = masse totale ÷ volume total (rapportée à l’eau). Calcule la masse de chaque liquide avec m = ρ × V." } },
     { id: 'sha', titre: 'Une solution hydro-alcoolique', depart: () => { setAtelier('sha'); setS({ e: 60, h: 2, g: 1 }); },
       texte: <>Pour décrire un mélange de liquides, on donne la <strong>proportion en volume</strong> de chaque constituant : <strong>V(E) / V<sub>tot</sub></strong>, souvent en pourcentage (« pourcentage volumique »). La recette de l’OMS pour 100,0 mL de solution hydro-alcoolique : 85 % d’éthanol, 4 % d’eau oxygénée, 1,5 % de glycérol, le reste en eau distillée.
         <ExempleResolu>Pour 100,0 mL : V(éthanol) = 85 % × 100,0 = <strong>85,0 mL</strong>. L’eau complète : 100,0 − 85,0 − 4,0 − 1,5 = 9,5 mL.</ExempleResolu>
@@ -221,7 +224,7 @@ export function SimulationMelanges() {
           'Le volume d’éthanol (pas celui de toute la solution) en litres : 85,0 mL = 0,0850 L.',
           'm = 810 g/L × 0,0850 L = 68,85 g.'],
         pieges: [[85, 'C’est le volume en mL. Pour la masse : m = ρ × V = 0,81 × 85,0.'], [104.9, 'Divise-t-on ? Non : m = ρ × V.'],
-          [0.81 * 100, 'Tu as pris le volume de toute la solution (100,0 mL). Il faut le volume d’éthanol : 85,0 mL.']], expl: 'm = 0,81 g/mL × 85,0 mL = 68,9 g.' } },
+          [0.81 * 100, 'Tu as pris le volume de toute la solution (100,0 mL). Il faut le volume d’éthanol : 85,0 mL.']], expl: 'm = 0,81 g/mL × 85,0 mL = 68,9 g.', indice: "Masse = masse volumique × volume. Déduis la masse volumique de l’éthanol de sa densité, convertis le volume en litres, et fais attention : seul le volume d’éthanol compte." } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li>Liquides <strong>miscibles</strong> → mélange <strong>homogène</strong> ; <strong>non miscibles</strong> → <strong>hétérogène</strong>. Un solide est <strong>soluble</strong> (ou non) dans un solvant.</li>

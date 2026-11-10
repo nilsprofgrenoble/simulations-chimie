@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, Curseur, lireProgression } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, Curseur, lireProgression, IndiceDefi } from "../commun";
 import { scene, ORDRE_SCENES, echantillonner, caracteriser, ecartPoint, ecartAttendu, meilleurDt, norme, angle } from "./mvtRefModele";
 import { Pic } from "../Pictos";
 
@@ -238,6 +238,9 @@ function VoletDefi({ defi, setDefi, changerType, dtChoisi }) {
           Choisissez, avec les boutons de Δt, la valeur pour laquelle l’<strong>écart moyen</strong> du tableau est le plus <strong>faible</strong>, puis cliquez sur « Vérifier ». L’écart moyen mesure la distance entre vitesses approchées et vitesses réelles du modèle.</div>
         <div style={{ ...txt, fontWeight: 700 }}>Δt actuellement choisi : {vir(dtChoisi)} s</div>
       </>}
+      <IndiceDefi cache={reussi}>{defi.type === 'vitesse' ? <>Vitesse de B dans le référentiel de A : v(B/A) = v(B) − v(A), en tenant compte du sens (signe). Relève d’abord chaque vitesse dans le référentiel de la route.</>
+        : defi.type === 'trajectoire' ? <>La trajectoire dépend du référentiel : place-toi mentalement dans le référentiel demandé (il devient immobile) et regarde comment l’objet se déplace par rapport à lui.</>
+        : <>Un Δt trop petit laisse l’erreur de pointage dominer ; un Δt trop grand donne une vitesse moyenne, pas celle de l’instant voulu. Teste plusieurs valeurs et compare l’écart moyen.</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={verifier} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
         <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
@@ -323,7 +326,7 @@ export function SimulationMouvementReferentiel() {
           {bouton('Voir le camion', () => go('deux', { vA: 20, vB: 25 }, { cmp: false, vis: ['A'], obj: 'A', dtIdx: 1 }))}</ExempleResolu>
         À vous : un colis est largué d’un avion ; on le regarde depuis le sol. {bouton('Voir le colis (depuis le sol)', () => go('avion', {}, { cmp: false, vis: ['colis'], obj: 'colis' }))}</>,
       tache: { type: 'qcm', q: 'Les points du colis s’écartent de plus en plus. Que fait le colis ?', options: ['il va de plus en plus vite', 'il va à vitesse constante', 'il ralentit', 'il est immobile'], bonne: 0,
-        expl: 'Entre deux photos, la distance parcourue augmente : le colis va de plus en plus vite (c’est la chute).' } },
+        expl: 'Entre deux photos, la distance parcourue augmente : le colis va de plus en plus vite (c’est la chute).', indice: "Les points sont enregistrés à intervalles de temps égaux. Si la distance entre deux points successifs augmente, que peut-on dire de la vitesse ?" } },
     { id: 'referentiel', titre: 'Le point de vue : le référentiel', focus: ['scene', 'reglages'], depart: () => go('wagon', {}, { cmp: false, vis: ['bille'], obj: 'bille' }),
       texte: <>Pour décrire un mouvement, il faut dire <strong>par rapport à quoi</strong>. On choisit un point de vue : un objet qui ne bouge pas pour l’observateur. On l’appelle le <strong>référentiel</strong>. Assis dans un train, la personne en face de vous est immobile ; pour quelqu’un sur le quai, elle défile.
         <ExempleResolu>La bille lâchée dans le wagon.<br/>
@@ -332,14 +335,14 @@ export function SimulationMouvementReferentiel() {
           {bouton('Voir les deux points de vue', () => go('wagon', {}, { cmp: true, vis: ['bille'], obj: 'bille' }))}</ExempleResolu>
         À vous : une passagère du wagon regarde tomber la bille.</>,
       tache: { type: 'qcm', q: 'Pour la passagère du wagon, la bille tombe…', options: ['tout droit vers le bas', 'en suivant une courbe', 'vers l’arrière du wagon', 'elle monte'], bonne: 0,
-        expl: 'La passagère avance avec la bille : elle ne voit pas son avance horizontale, seulement sa chute. Le mouvement dépend du point de vue.' } },
+        expl: 'La passagère avance avec la bille : elle ne voit pas son avance horizontale, seulement sa chute. Le mouvement dépend du point de vue.', indice: "Place-toi dans le wagon : horizontalement, la bille et toi avez la même vitesse. Que reste-t-il alors comme mouvement de la bille que tu observes ?" } },
     { id: 'avion', titre: 'Un point de vue qui avance : l’avion', focus: ['scene'], depart: () => go('avion', {}, { cmp: false, vis: ['colis'], obj: 'colis' }),
       texte: <>Même idée avec l’avion. Pour le pilote, le colis tombe tout droit, juste sous l’avion. Pour quelqu’un au sol, il décrit une courbe.
         <ExempleResolu>Le colis largué, vu du sol puis de l’avion : <strong>courbe</strong> pour le sol, <strong>ligne droite verticale</strong> pour le pilote (le colis avance avec l’avion).
           {bouton('Voir les deux points de vue', () => go('avion', {}, { cmp: true, vis: ['colis'], obj: 'colis' }))}</ExempleResolu>
         À vous : on regarde maintenant depuis le sol le colis <em>et</em> l’avion. {bouton('Voir colis et avion (depuis le sol)', () => go('avion', {}, { cmp: false, fG: 'sol', vis: ['colis', 'avion'], obj: 'colis' }))}</>,
       tache: { type: 'qcm', q: 'Vu du sol, quand le colis arrive près du sol, l’avion est…', options: ['juste au-dessus du colis', 'loin derrière le colis', 'loin devant le colis', 'revenu à son point de départ'], bonne: 0,
-        expl: 'Le colis garde la vitesse horizontale de l’avion (100 m/s) pendant toute sa chute : il reste sous l’avion (en négligeant l’air). C’est pour cela que, pour le pilote, il tombe tout droit.' } },
+        expl: 'Le colis garde la vitesse horizontale de l’avion (100 m/s) pendant toute sa chute : il reste sous l’avion (en négligeant l’air). C’est pour cela que, pour le pilote, il tombe tout droit.', indice: "Le colis et l’avion avaient la même vitesse horizontale au moment du largage. Compare ensuite leurs mouvements horizontaux pendant la chute." } },
     { id: 'vitesse', titre: 'La vitesse et le vecteur vitesse', focus: ['scene'], depart: () => go('deux', { vA: 20, vB: 25 }, { cmp: false, vis: ['A'], obj: 'A', dtIdx: 1, aff: { ...AFF0, v: true } }),
       texte: <>La vitesse dit <strong>de combien le mobile avance pendant une durée</strong> : <strong>vitesse = distance parcourue ÷ durée</strong>. Entre deux photos successives M et M′ séparées de la durée Δt : <strong>v = MM′ / Δt</strong>. On la représente par une flèche, le <strong>vecteur vitesse</strong> : il part du mobile, pointe dans le sens du mouvement et sa longueur est proportionnelle à la vitesse.
         <ExempleResolu>Le camion : entre deux photos, il parcourt MM′ = {nb(dEdep, 0)} m en Δt = 2 s.<br/>
@@ -356,7 +359,7 @@ export function SimulationMouvementReferentiel() {
           `Données : MM′ = ${nb(dAvion, 0)} m et Δt = 2 s.`,
           `En m/s : v = ${nb(dAvion, 0)} / 2 = ${nb(dAvion / 2, 0)} m/s.`,
           `Conversion : 1 m/s = 3,6 km/h, donc v = ${nb(dAvion / 2, 0)} × 3,6 = ${nb(dAvion / 2 * 3.6, 0)} km/h.`],
-        expl: `v = ${nb(dAvion, 0)} m / 2 s = ${nb(dAvion / 2, 0)} m/s, soit ${nb(dAvion / 2, 0)} × 3,6 = ${nb(dAvion / 2 * 3.6, 0)} km/h.` } },
+        expl: `v = ${nb(dAvion, 0)} m / 2 s = ${nb(dAvion / 2, 0)} m/s, soit ${nb(dAvion / 2, 0)} × 3,6 = ${nb(dAvion / 2 * 3.6, 0)} km/h.`, indice: "Vitesse = distance ÷ durée : avec des mètres et des secondes, on obtient des m/s. Pour passer de m/s à km/h, on multiplie par 3,6." } },
     { id: 'vitesserel', titre: 'La vitesse dépend aussi du point de vue', focus: ['scene'], depart: () => go('deux', { vA: 20, vB: 25 }, { cmp: true, fD: 'A', obj: 'B', dtIdx: 1, aff: { ...AFF0, v: true } }),
       texte: <>Un mobile n’a pas la même vitesse dans tous les référentiels.
         <ExempleResolu>Vous êtes dans le camion A (20 m/s par rapport à la route). La voiture B vous double à 25 m/s (par rapport à la route).<br/>
@@ -375,7 +378,7 @@ export function SimulationMouvementReferentiel() {
           'Données : v_A = +20 m/s (vers la droite) et v_B = −25 m/s (vers la gauche).',
           'v(B/A) = (−25) − (+20) = −45 m/s.',
           'Le signe − dit que B va vers la gauche. Sa vitesse (valeur positive) est 45 m/s.'],
-        expl: 'v(B/A) = v_B − v_A = (−25) − 20 = −45 m/s : 45 m/s, vers la gauche. En sens inverse, les vitesses s’additionnent (en valeur).' } },
+        expl: 'v(B/A) = v_B − v_A = (−25) − 20 = −45 m/s : 45 m/s, vers la gauche. En sens inverse, les vitesses s’additionnent (en valeur).', indice: "Place-toi dans le camion A : c’est lui qui devient immobile. Compare les sens de A et de B : dans le même sens, les vitesses se soustraient ; en sens opposés, elles s’additionnent." } },
     { id: 'essentiel', titre: 'À retenir : l’essentiel', focus: [],
       texte: <><ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li>Une chronophotographie : chaque point est une photo prise à intervalles réguliers.</li>
@@ -403,7 +406,7 @@ export function SimulationMouvementReferentiel() {
           {bouton('Voir la construction de Δv', () => go('wagon', {}, { cmp: true, vis: ['bille'], obj: 'bille', i: 3, aff: { ...AFF0, dv: true, v: true } }))}</ExempleResolu>
         À vous : la voiture B du dépassement. {bouton('Voir le dépassement', () => go('deux', { vA: 20, vB: 25 }, { cmp: true, fD: 'A', obj: 'B', dtIdx: 1, i: 3, aff: { ...AFF0, dv: true, v: true } }))}</>,
       tache: { type: 'qcm', q: 'La voiture roule en ligne droite à vitesse constante. Que vaut sa variation de vitesse Δv ?', options: ['nulle, dans le référentiel de la route comme dans celui du camion', 'nulle dans la route, mais pas dans le camion', 'égale à 5 m/s dans le référentiel du camion', 'égale à 25 m/s dans le référentiel de la route'], bonne: 0,
-        expl: 'Les deux vecteurs v sont identiques en chaque référentiel (25 m/s dans la route, 5 m/s dans le camion) : leur différence est nulle. La variation de vitesse ne dépend pas du référentiel choisi, tant que les référentiels se déplacent l’un par rapport à l’autre à vitesse constante.' } },
+        expl: 'Les deux vecteurs v sont identiques en chaque référentiel (25 m/s dans la route, 5 m/s dans le camion) : leur différence est nulle. La variation de vitesse ne dépend pas du référentiel choisi, tant que les référentiels se déplacent l’un par rapport à l’autre à vitesse constante.', indice: "Δv est la variation du vecteur vitesse (valeur, direction et sens). Un changement de référentiel à vitesse constante en modifie-t-il la variation ?" } },
     { id: 'force', titre: '★ Variation de vitesse et forces', focus: ['scene'],
       texte: <>Si Δv = 0 (vitesse constante en direction et en norme), les forces qui s’exercent sur le système <strong>se compensent</strong> : c’est le principe d’inertie. Si Δv n’est pas nul, la somme des forces n’est pas nulle et elle a la <strong>même direction et le même sens que Δv</strong>.
         <ExempleResolu>Le colis largué, vu du sol.<br/>
@@ -422,7 +425,7 @@ export function SimulationMouvementReferentiel() {
           {bouton('Montrer le bâton', () => majAff({ sys: true }))}</ExempleResolu>
         À vous : que ne sait-on pas quand on ne suit que le centre ?</>,
       tache: { type: 'qcm', q: 'Quelle information est perdue quand on décrit le bâton par son centre seulement ?', options: ['le fait que le bâton tourne sur lui-même', 'la trajectoire du centre', 'la durée du vol', 'la hauteur maximale du centre'], bonne: 0,
-        expl: 'La trajectoire du centre (parabole), la durée du vol et la hauteur maximale sont des informations du modèle du point. En revanche, ni la rotation, ni l’orientation du bâton n’y figurent.' } },
+        expl: 'La trajectoire du centre (parabole), la durée du vol et la hauteur maximale sont des informations du modèle du point. En revanche, ni la rotation, ni l’orientation du bâton n’y figurent.', indice: "Un point n’a pas d’orientation. Quel mouvement d’un bâton ne se voit pas si on ne regarde que son centre ?" } },
     { id: 'freinage', titre: '★ Un référentiel qui freine', focus: ['scene', 'mesures'],
       texte: <>Jusqu’ici, les référentiels se déplaçaient les uns par rapport aux autres à vitesse <em>constante</em>. Que se passe-t-il quand l’un d’eux freine ? {bouton('Voir la bille dans le train qui freine', () => go('freinage', {}, { cmp: true, vis: ['bille'], obj: 'bille', aff: { ...AFF0, dv: true, v: true } }))}
         <ExempleResolu>Une bille posée sur le plancher lisse d’un train qui freine (pas de frottement, donc aucune force horizontale).<br/>
@@ -430,7 +433,7 @@ export function SimulationMouvementReferentiel() {
           Vue du train : la bille accélère vers l’avant (Δv = {nb(norme(Ef.mobile.dv[0]), 1)} m/s en 1 s) alors qu’aucune force horizontale ne s’exerce sur elle.</ExempleResolu>
         Le principe d’inertie ne s’applique pas dans tous les référentiels : il s’applique dans celui du quai, pas dans celui d’un train qui freine. (Ce point est abordé plus tard dans la scolarité ; il montre pourquoi on précise toujours le référentiel.)</>,
       tache: { type: 'qcm', q: 'Dans le train qui freine, la bille se met à rouler vers l’avant. Une force horizontale la pousse-t-elle ?', options: ['non : c’est le train qui freine, la bille garde sa vitesse (vue du quai)', 'oui : la bille est attirée vers l’avant', 'oui : le principe d’inertie est faux', 'on ne peut rien dire'], bonne: 0,
-        expl: 'Vue du quai, la bille continue en ligne droite à 8 m/s : aucune force horizontale. C’est le plancher qui ralentit sous elle. Dans le référentiel du train, le mouvement de la bille semble accéléré sans cause : le principe d’inertie n’y est pas applicable.' } },
+        expl: 'Vue du quai, la bille continue en ligne droite à 8 m/s : aucune force horizontale. C’est le plancher qui ralentit sous elle. Dans le référentiel du train, le mouvement de la bille semble accéléré sans cause : le principe d’inertie n’y est pas applicable.', indice: "Vue du quai, que fait la bille quand le train freine ? Applique le principe d’inertie : une force horizontale est-elle nécessaire pour qu’elle garde sa vitesse ?" } },
     { id: 'fin', titre: 'À retenir (complet)', focus: [],
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18 }}>
         <li>Décrire un mouvement, c’est choisir un <strong>référentiel</strong>, puis suivre un point (modèle du point matériel : on perd de l’information, par exemple la rotation).</li>
