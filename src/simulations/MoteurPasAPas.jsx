@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { nf, NB } from "./Distillation";
 import { Pic } from "../Pictos";
 
@@ -240,7 +240,7 @@ export function SimulationMoteurPasAPas({ naviguer }) {
     { id: 'principe', titre: 'Le stator et le rotor', focus: ['schema'],
       texte: <>Le moteur pas à pas comporte une partie <strong>fixe</strong>, le <strong>stator</strong>, formé de 4 bobines placées à 90° les unes des autres, et une partie <strong>mobile</strong>, le <strong>rotor</strong>, qui est un aimant (pôle N rouge, pôle S bleu). Le microcontrôleur n’alimente que certaines bobines à la fois.</>,
       tache: { type: 'qcm', q: 'Quelle pièce est fixe ?', options: ['le stator : les 4 bobines', 'le rotor : l’aimant', 'l’axe de sortie'], bonne: 0,
-        expl: 'Les bobines sont fixes et c’est l’aimant (rotor) qui tourne, à l’intérieur.' } },
+        expl: 'Les bobines sont fixes et c’est l’aimant (rotor) qui tourne, à l’intérieur.', indice: "Le stator est fixé au boîtier ; le rotor est la pièce qui tourne." } },
     { id: 'bobine1', titre: 'Alimenter la bobine 1', focus: ['schema', 'commandes'],
       texte: <>Une bobine parcourue par un courant crée un <strong>champ magnétique</strong> (flèche orange). Le rotor, qui est un aimant, s’oriente dans le sens du champ : son pôle N se tourne vers la bobine alimentée. Alimentez la seule bobine 1 (cliquez sur la bobine ou sur son bouton) et observez le rotor.</>,
       tache: { type: 'action', ok: memeEtat(s.coils, [1, 0, 0, 0]) && alignee && !s.playing, label: 'Alimenter la bobine 1',
@@ -256,7 +256,7 @@ export function SimulationMoteurPasAPas({ naviguer }) {
       tache: { type: 'num', q: 'Angle dont le rotor a tourné en passant de la bobine 1 à la bobine 2', unite: '°', vrai: 90, tol: 0.03, affiche: v => nf(v, 0), cs: 2,
         calcul: () => ['Les 4 bobines sont régulièrement réparties sur un cercle : 360° / 4 = 90° entre deux bobines voisines.',
           `La bobine 1 est en haut (${PHI[0]}°) et la bobine 2 à droite (${PHI[1]}°) : le rotor suit le champ, donc il tourne de ${PHI[1]} − ${PHI[0]} = ${PHI[1] - PHI[0]}°.`],
-        expl: 'Les bobines sont à 90° l’une de l’autre : le rotor tourne d’un quart de tour. C’est un « pas ».' } },
+        expl: 'Les bobines sont à 90° l’une de l’autre : le rotor tourne d’un quart de tour. C’est un « pas ».', indice: "Les 4 bobines sont réparties régulièrement autour du rotor. Combien de degrés séparent deux bobines voisines ? (un tour = 360°)" } },
     { id: 'complet', titre: 'La séquence 1 – 2 – 3 – 4', focus: ['schema', 'commandes', 'chrono'],
       texte: <>En alimentant les bobines l’une après l’autre dans l’ordre 1-2-3-4, le champ « tourne » et entraîne le rotor : c’est le <strong>pas complet</strong>. Lancez la séquence et observez au moins quatre pas, ainsi que le chronogramme qui indique quelle bobine est alimentée à chaque pas.</>,
       tache: { type: 'action', ok: s.mode === 'complet' && s.cmd >= 4, label: 'Lancer la séquence en pas complet',
@@ -268,7 +268,7 @@ export function SimulationMoteurPasAPas({ naviguer }) {
         calcul: () => ['Un tour complet du rotor correspond à 360°, et un pas complet fait tourner le rotor de 90°.',
           'Nombre de pas = 360° / 90° = 4 pas complets.'],
         pieges: [[8, 'Vous avez compté des demi-pas (45° chacun). Un pas complet fait 90° : 360° / 90°.'], [360, 'Vous avez recopié l’angle d’un tour. Il faut diviser 360° par l’angle d’un pas (90°).']],
-        expl: '360° / 90° = 4 pas complets pour un tour.' } },
+        expl: '360° / 90° = 4 pas complets pour un tour.', indice: "Combien de fois l’angle d’un pas complet tient-il dans 360° ?" } },
     { id: 'chrono', titre: 'Le chronogramme du demi-pas', focus: ['chrono'],
       texte: <>On peut obtenir des positions intermédiaires en <strong>alimentant parfois deux bobines voisines</strong> : le champ résultant pointe entre les deux. La séquence du demi-pas comporte 8 étapes : une bobine, puis deux, puis une, etc., en partant de la bobine 1 seule. <strong>Complétez le tableau</strong> (cliquez sur les cases : 5{NB}V = alimentée, 0 = éteinte), puis vérifiez.</>,
       tache: { type: 'action', ok: grilleOk && grilleVerif, label: 'Voir la solution', faire: () => { setGrille(grilleDemi.map(c => c.slice())); setGrilleVerif(true); },
@@ -284,7 +284,7 @@ export function SimulationMoteurPasAPas({ naviguer }) {
         calcul: () => ['Un demi-pas est la moitié d’un pas complet, et un pas complet vaut 90°.',
           'Angle d’un demi-pas = 90° / 2 = 45°.'],
         pieges: [[180, 'Vous avez multiplié par 2 au lieu de diviser : un demi-pas est deux fois plus petit qu’un pas complet.']],
-        expl: '90° / 2 = 45° : il faut 8 demi-pas pour un tour du rotor. Le positionnement est deux fois plus fin.' } },
+        expl: '90° / 2 = 45° : il faut 8 demi-pas pour un tour du rotor. Le positionnement est deux fois plus fin.', indice: "Un demi-pas vaut la moitié d’un pas complet." } },
     { id: 'force', titre: 'Pas complet à force maximale', focus: ['schema', 'commandes', 'mesures'],
       texte: <>Il existe une autre façon de faire des pas complets : alimenter <strong>deux bobines voisines</strong> à chaque pas (1+2, puis 2+3, puis 3+4, puis 4+1). Le rotor fait toujours des quarts de tour, mais le champ résultant est plus intense : le moteur est plus puissant. Lancez cette séquence et lisez la valeur du champ résultant.</>,
       tache: { type: 'action', ok: s.mode === 'force' && s.cmd >= 4, label: 'Lancer le pas complet à force maximale',
@@ -299,11 +299,11 @@ export function SimulationMoteurPasAPas({ naviguer }) {
         pieges: [[2, 'Les deux champs ne sont pas dans la même direction : on ne peut pas simplement additionner les intensités.'],
           [1, 'C’est l’intensité du champ d’une seule bobine. Ici, deux bobines sont alimentées : additionnez les deux vecteurs.'],
           [1 / Math.SQRT2, 'Vous avez divisé par √2 au lieu de composer : la norme de la somme de deux vecteurs perpendiculaires de norme 1 est √(1² + 1²).']],
-        expl: 'Deux vecteurs perpendiculaires de norme 1 : la norme de la somme est √2 ≈ 1,41, soit 41 % de plus.' } },
+        expl: 'Deux vecteurs perpendiculaires de norme 1 : la norme de la somme est √2 ≈ 1,41, soit 41 % de plus.', indice: "Deux champs perpendiculaires, de même intensité B, s’additionnent comme les côtés d’un triangle rectangle (Pythagore)." } },
     { id: 'boucle', titre: 'Le rotor est-il surveillé ?', focus: ['schema'],
       texte: <>Dans le montage étudié, aucun capteur ne mesure la position du rotor.</>,
       tache: { type: 'qcm', q: 'Que fait le microcontrôleur ?', options: ['il compte les pas commandés et suppose que le rotor les a suivis (boucle ouverte)', 'il mesure l’angle réel et corrige', 'il ne commande qu’une seule bobine'], bonne: 0,
-        expl: 'La commande est en boucle ouverte : si le moteur est trop chargé ou trop rapide, il peut perdre des pas sans que le programme le sache. Ici, le modèle suppose que le rotor suit toujours.' } },
+        expl: 'La commande est en boucle ouverte : si le moteur est trop chargé ou trop rapide, il peut perdre des pas sans que le programme le sache. Ici, le modèle suppose que le rotor suit toujours.', indice: "Le montage comporte-t-il un capteur qui mesure l’angle réel du rotor ?" } },
     { id: 'axe', titre: 'Du rotor à l’axe', focus: ['commandes'],
       texte: <>Le rotor ne fait pas tourner directement l’axe de sortie : entre les deux, un <strong>réducteur à engrenages</strong> démultiplie le mouvement. Passez à la vue « Du rotor à l’axe ».</>,
       tache: { type: 'action', ok: vue === 'axe', label: 'Aller à la vue « Du rotor à l’axe »', faire: () => changerVue('axe'), consigne: 'Cliquez sur l’onglet « Du rotor à l’axe »' } },
@@ -316,7 +316,7 @@ export function SimulationMoteurPasAPas({ naviguer }) {
         pieges: [[4000, 'Avec 0,09° (valeur arrondie) vous trouvez environ 4000 : cette valeur est trop approchée. Gardez 0,0879° (ou la valeur exacte 5,625°/64) dans la division.', 0.01],
           [360 * 0.0879, 'Vous avez multiplié 360 par 0,0879. Le nombre de demi-pas est 360° divisé par l’angle d’un demi-pas.'],
           [0.0879 / 360, 'Division à l’envers : il faut 360° / 0,0879° (nombre de petits angles dans un tour).']],
-        expl: '360° / 0,0879° ≈ 4096 demi-pas.' } },
+        expl: '360° / 0,0879° ≈ 4096 demi-pas.', indice: "Un tour de rotor correspond à 8 demi-pas ; il faut aussi savoir combien de tours de rotor font un tour d’axe (réducteur)." } },
     { id: 'tours', titre: 'Combien de tours du rotor ?', focus: ['compteurs'],
       texte: <>Il faut 8 demi-pas (de 45°) pour un tour du rotor. Un tour d’axe demande {nf(N_AXE, 0)} demi-pas (étape précédente).</>,
       tache: { type: 'num', q: 'Nombre de tours du rotor pour un tour d’axe', unite: '', vrai: 512, tol: 0.005, affiche: v => nf(v, 0), cs: 3,
@@ -325,7 +325,7 @@ export function SimulationMoteurPasAPas({ naviguer }) {
         pieges: [[4096, 'C’est le nombre de demi-pas : divisez par 8 pour avoir des tours.'],
           [N_AXE / 4, 'Vous avez divisé par 4 (pas complets). Ici on compte des demi-pas : il y en a 8 par tour du rotor.'],
           [N_AXE * 8, 'Vous avez multiplié par 8 au lieu de diviser : 8 demi-pas font un tour, donc le nombre de tours est plus petit que le nombre de demi-pas.']],
-        expl: '4096 / 8 = 512 tours du rotor pour un seul tour de l’axe : le rapport de réduction est de 1/512.' } },
+        expl: '4096 / 8 = 512 tours du rotor pour un seul tour de l’axe : le rapport de réduction est de 1/512.', indice: "C’est le rapport de réduction : nombre de demi-pas d’un tour d’axe ÷ nombre de demi-pas d’un tour de rotor." } },
     { id: 'duree', titre: 'Durée d’un tour d’axe', focus: ['compteurs'],
       texte: <>Le programme Arduino contient <code>delay(5)</code> : le microcontrôleur attend 5{NB}ms entre deux pas. Un tour d’axe demande {nf(N_AXE, 0)} demi-pas.</>,
       tache: { type: 'num', q: 'Durée d’un tour de l’axe en demi-pas', unite: 's', vrai: N_AXE * T_DELAY, tol: 0.01, affiche: v => nf(v, 2), cs: 4,
@@ -334,7 +334,7 @@ export function SimulationMoteurPasAPas({ naviguer }) {
           `Conversion : 1 s = 1 000 ms, donc ${nf(N_AXE * 5, 0)} ms = ${nf(N_AXE * T_DELAY, 2)} s.`],
         pieges: [[N_AXE * T_DELAY * 1000, 'Facteur 1000 : 5 ms = 0,005 s.'],
           [N_AXE / 2 * T_DELAY, 'Vous avez divisé par 2 (pas complet). Ici on compte des demi-pas : 4096 demi-pas à 5 ms chacun.']],
-        expl: '4096 × 5 ms = 20 480 ms ≈ 20,48 s.' } },
+        expl: '4096 × 5 ms = 20 480 ms ≈ 20,48 s.', indice: "Durée = nombre de demi-pas × durée d’un demi-pas (le délai du programme)." } },
     { id: 'duree2', titre: 'Et en pas complet ?', focus: ['compteurs'],
       texte: <>En pas complet, le rotor avance de 2 demi-pas à chaque pas. Un tour d’axe demande {nf(N_AXE, 0)} demi-pas ; le délai reste delay(5), soit 5{NB}ms par pas.</>,
       tache: { type: 'num', q: 'Durée d’un tour de l’axe en pas complet', unite: 's', vrai: N_AXE / 2 * T_DELAY, tol: 0.01, affiche: v => nf(v, 2), cs: 4,
@@ -343,7 +343,7 @@ export function SimulationMoteurPasAPas({ naviguer }) {
           `Durée = ${nf(N_AXE / 2, 0)} × 5 ms = ${nf(N_AXE / 2 * 5, 0)} ms = ${nf(N_AXE / 2 * T_DELAY, 2)} s.`],
         pieges: [[N_AXE * T_DELAY, 'C’est la durée en demi-pas. En pas complet, il y a deux fois moins de pas à faire : divisez par 2.'],
           [N_AXE / 2 * 5, 'Résultat en ms : l’unité demandée est la seconde (1 s = 1 000 ms).']],
-        expl: '2048 pas × 5 ms = 10,24 s : deux fois plus rapide, mais deux fois moins précis.' } },
+        expl: '2048 pas × 5 ms = 10,24 s : deux fois plus rapide, mais deux fois moins précis.', indice: "Un pas complet vaut 2 demi-pas : il en faut deux fois moins pour le même angle." } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
         <li>stator fixe (bobines), rotor mobile (aimant) : le rotor s’aligne sur le champ magnétique</li>
@@ -396,6 +396,7 @@ export function SimulationMoteurPasAPas({ naviguer }) {
               : <span style={{ color: '#dc2626', fontWeight: 700 }}>✗ {nf(q.v, q.d)}{q.u ? NB + q.u : ''}</span>)}
           </div>);
       })}
+      <IndiceDefi cache={false}>Proportionnalité : nombre de demi-pas pour un tour d’axe × (angle ÷ 360°). En mode « pas complet », divisez par 2. Tours du rotor = demi-pas ÷ 8. Durée = nombre de pas × délai.</IndiceDefi>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button onClick={() => { noterDefi(sol.every(q => proche(lireNombre(defi.reps[q.id]), q.v, 0.01))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
         <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>

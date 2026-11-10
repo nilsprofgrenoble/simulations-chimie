@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 
@@ -170,7 +170,7 @@ export function SimulationBoussole({ naviguer }) {
     { id: 'champ', titre: 'Qu’est-ce qu’un champ magnétique ?', focus: ['scene'],
       texte: <>Un aimant, un courant électrique ou la Terre créent un <strong>champ magnétique</strong>, que l’on représente par un vecteur. Une <strong>boussole</strong> (petit aimant mobile) s’oriente le long de ce champ. Ici, la boussole est la petite rose à droite de l’aimant ; vous pouvez la faire glisser. Les lignes grises sont les lignes de champ : près de l’aimant, ce sont celles de l’aimant ; loin de lui, elles se redressent vers le nord.</>,
       tache: { type: 'qcm', q: 'Un champ magnétique est caractérisé par…', options: ['sa direction, son sens et son intensité (en tesla)', 'seulement son intensité', 'sa couleur et sa température'], bonne: 0,
-        expl: 'Le champ magnétique est une grandeur vectorielle : direction, sens et intensité (norme), exprimée en tesla (T).' } },
+        expl: 'Le champ magnétique est une grandeur vectorielle : direction, sens et intensité (norme), exprimée en tesla (T).', indice: "Un champ magnétique est une grandeur vectorielle : que faut-il pour définir un vecteur ?" } },
     { id: 'terre', titre: 'Le champ de la Terre', focus: ['scene', 'reglages'],
       texte: <>La Terre crée elle aussi un champ magnétique : c’est pourquoi une boussole indique le nord. <strong>Retirez l’aimant</strong> et regardez l’aiguille.</>,
       tache: { type: 'action', ok: !aimant && calme && Math.abs(dev) < 3, label: 'Retirer l’aimant', faire: () => setAimant(false), consigne: 'Cliquez sur « Retirer l’aimant »' } },
@@ -179,7 +179,7 @@ export function SimulationBoussole({ naviguer }) {
       tache: { type: 'num', q: 'Intensité du champ terrestre', unite: 'µT', vrai: B_T * 1e6, tol: 0.02, affiche: v => nbf(v, 0), cs: 2,
         aide: 'C’est une lecture, sans calcul : recopiez l’intensité affichée dans « Mesures », en µT (1 µT = 10⁻⁶ T). Le champ de l’aimant doit être retiré.',
         pieges: [[B_T, 'Votre valeur est en tesla (5,0 × 10⁻⁵ T). L’unité demandée est le microtesla : 1 T = 10⁶ µT.']],
-        expl: 'B ≈ 50 µT = 5,0 × 10⁻⁵ T : un champ très faible.' } },
+        expl: 'B ≈ 50 µT = 5,0 × 10⁻⁵ T : un champ très faible.', indice: "1 µT = 10⁻⁶ T : attention à l’unité affichée dans le panneau." } },
     { id: 'pres', titre: 'Approcher l’aimant', focus: ['scene', 'reglages'],
       texte: <>Remettez l’aimant et placez la boussole <strong>à 10 cm de son centre, sur son axe</strong> (à droite). L’aimant est horizontal : son pôle N pointe vers l’est.</>,
       tache: { type: 'action', ok: aimant && Math.abs(r - 0.10) < 0.005 && Math.abs(pos.y) < 0.01 && Math.abs(ecart(thetaM, 90)) < 1,
@@ -187,7 +187,7 @@ export function SimulationBoussole({ naviguer }) {
     { id: 'domine', titre: 'Qui l’emporte ?', focus: ['scene', 'addition'],
       texte: <>Observez l’aiguille et le schéma d’addition des champs : chaque source ajoute son vecteur champ.</>,
       tache: { type: 'qcm', q: 'À 10 cm de l’aimant, l’aiguille…', options: ['s’oriente presque selon le champ de l’aimant, bien plus intense que celui de la Terre', 'pointe toujours le nord comme avant', 'tourne sans s’arrêter'], bonne: 0,
-        expl: 'Le champ total est la somme vectorielle des deux champs. Celui de l’aimant (≈ 540 µT) est ici dix fois plus grand que celui de la Terre (50 µT) : l’aiguille se place presque dans sa direction, perpendiculaire au nord.' } },
+        expl: 'Le champ total est la somme vectorielle des deux champs. Celui de l’aimant (≈ 540 µT) est ici dix fois plus grand que celui de la Terre (50 µT) : l’aiguille se place presque dans sa direction, perpendiculaire au nord.', indice: "Comparez l’intensité du champ de l’aimant à 10 cm avec celle du champ terrestre : lequel domine ?" } },
     { id: 'valeurA', titre: 'Le champ de l’aimant', focus: ['mesures'],
       texte: <>Lisez dans « Mesures » l’intensité du champ créé <strong>par l’aimant seul</strong> à cette distance.</>,
       tache: { type: 'num', q: 'Champ de l’aimant à 10 cm sur son axe', unite: 'µT', vrai: B10 * 1e6, tol: 0.03, affiche: v => nbf(v, 0), cs: 3,
@@ -199,11 +199,11 @@ export function SimulationBoussole({ naviguer }) {
         pieges: [[B10 * 1e3, 'Attention à l’unité : 540 µT = 0,54 mT.'],
           [B_REF * 1e6 * (R_REF / 0.1) ** 2, 'Vous avez utilisé une décroissance en 1/r². Pour un aimant (dipôle), le champ décroît en 1/r³.'],
           [B10 * 1e6 + B_T * 1e6, 'Vous avez ajouté le champ de la Terre : on demande le champ créé par l’aimant seul.']],
-        expl: 'À 10 cm, B ≈ 540 µT soit environ 0,5 mT : dix fois le champ de la Terre.' } },
+        expl: 'À 10 cm, B ≈ 540 µT soit environ 0,5 mT : dix fois le champ de la Terre.', indice: "Lisez la valeur affichée dans « Mesures » pour cette distance et convertissez-la en µT." } },
     { id: 'distance', titre: 'L’éloigner', focus: ['scene', 'mesures'],
       texte: <>Doublez la distance (20 cm) et comparez l’intensité du champ de l’aimant. Dans ce modèle (un aimant droit idéal), le champ décroît très vite avec la distance.</>,
       tache: { type: 'qcm', q: 'En doublant la distance à l’aimant, son champ est divisé par…', options: ['2', '4', '8'], bonne: 2,
-        expl: 'Le champ d’un aimant (dipôle) décroît comme 1/r³ : distance × 2, champ ÷ 8 (540 µT → 68 µT).' } },
+        expl: 'Le champ d’un aimant (dipôle) décroît comme 1/r³ : distance × 2, champ ÷ 8 (540 µT → 68 µT).', indice: "Le champ décroît comme une puissance de 1/d. Testez dans la simulation : mesurez à d, puis à 2d." } },
     { id: 'tangente', titre: 'La boussole des tangentes', focus: ['scene', 'mesures', 'addition'],
       texte: <>Le champ de l’aimant (est – ouest) est perpendiculaire à celui de la Terre (nord). L’aiguille dévie d’un angle α tel que tan α = B<sub>aimant</sub> / B<sub>Terre</sub>. <strong>Placez la boussole sur l’axe</strong> (à droite ou à gauche) pour obtenir une déviation de <strong>45°</strong> (±3°) : que valent alors les deux champs ?</>,
       tache: { type: 'action', ok: surAxe && calme && Math.abs(Math.abs(dev) - 45) < 3, label: 'Placer pour 45°', faire: () => aPlace(rEq, 0), consigne: 'Faites glisser la boussole sur l’axe horizontal jusqu’à obtenir 45° (déviation lue dans « Mesures »)' } },
@@ -217,7 +217,7 @@ export function SimulationBoussole({ naviguer }) {
         pieges: [[100, 'On n’additionne pas les intensités : les champs sont perpendiculaires, il faut additionner les vecteurs (Pythagore).'],
           [2 * (B_T * 1e6) ** 2, 'Vous avez oublié la racine carrée : la somme des carrés vaut B², pas B.'],
           [B_T * 1e6, 'C’est l’intensité d’un seul champ. Le champ total est la somme vectorielle des deux.']],
-        expl: 'B = √(50² + 50²) = 50 × √2 ≈ 70,7 µT. Même résultat que pour deux bobines voisines du moteur pas à pas (×√2).' } },
+        expl: 'B = √(50² + 50²) = 50 × √2 ≈ 70,7 µT. Même résultat que pour deux bobines voisines du moteur pas à pas (×√2).', indice: "Si l’aiguille dévie de 45°, les deux composantes ont la même intensité : additionnez-les vectoriellement (Pythagore)." } },
     { id: 'grandeur', titre: 'Ordres de grandeur', focus: ['echelle'],
       texte: <>Sur l’échelle logarithmique, la Terre est à 50 µT, un aimant droit à 20 mT, un électroaimant puissant à 1 – 10 T et le record à 100 T. Comparez un électroaimant de 10 T avec le champ de la Terre.</>,
       tache: { type: 'num', q: 'Combien de fois 10 T est-il plus grand que le champ terrestre ?', unite: 'fois', vrai: 10 / B_T, tol: 0.03, affiche: v => nbf(v, 0), cs: 2,
@@ -227,11 +227,11 @@ export function SimulationBoussole({ naviguer }) {
         pieges: [[2000, 'Attention aux puissances de dix : 50 µT = 5 × 10⁻⁵ T.'], [20000, 'Attention aux puissances de dix : 50 µT = 5 × 10⁻⁵ T.'],
           [10 / (B_T * 1e6), 'Les deux champs ne sont pas dans la même unité : 10 T est en tesla, 50 est en microtesla. Convertissez avant de diviser.'],
           [B_T / 10, 'Division à l’envers : on cherche 10 T divisé par le champ terrestre.']],
-        expl: '10 / (50 × 10⁻⁶) = 200 000 : un électroaimant de 10 T est 200 000 fois plus intense que le champ terrestre.' } },
+        expl: '10 / (50 × 10⁻⁶) = 200 000 : un électroaimant de 10 T est 200 000 fois plus intense que le champ terrestre.', indice: "Divisez 10 T par le champ terrestre exprimé en tesla (50 µT = 50 × 10⁻⁶ T)." } },
     { id: 'local', titre: 'Une boussole peut se tromper', focus: ['scene'],
       texte: <>Près d’un aimant, la boussole ne pointe plus le nord.</>,
       tache: { type: 'qcm', q: 'Pourquoi une boussole peut-elle se tromper près d’un haut-parleur ou d’un câble parcouru par un courant ?', options: ['un champ local plus intense que celui de la Terre s’ajoute vectoriellement à lui', 'la Terre a changé de pôle', 'la boussole est trop lourde'], bonne: 0,
-        expl: 'Tout aimant ou courant proche crée un champ qui s’ajoute à celui de la Terre ; s’il est plus fort, l’aiguille s’oriente dans la direction du champ total, pas vers le nord.' } },
+        expl: 'Tout aimant ou courant proche crée un champ qui s’ajoute à celui de la Terre ; s’il est plus fort, l’aiguille s’oriente dans la direction du champ total, pas vers le nord.', indice: "Les champs s’ajoutent comme des vecteurs : la boussole indique la direction du champ total." } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
         <li>le champ magnétique est un vecteur : direction, sens, intensité (tesla)</li>
@@ -275,6 +275,7 @@ export function SimulationBoussole({ naviguer }) {
           style={{ width: 90, padding: '5px 8px', borderRadius: 6, border: `1.5px solid ${defiRes ? (defiRes.valOk ? '#16a34a' : '#dc2626') : KIT.bord}`, fontSize: 14 }}/>
         <span>µT</span>
       </div>
+      <IndiceDefi cache={false}>L’aiguille s’oriente selon le champ total. Dessinez les deux champs perpendiculaires et reliez l’angle de déviation à leur rapport (tangente).</IndiceDefi>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button onClick={() => { noterDefi(surAxe && calme && Math.abs(Math.abs(dev) - defi.X) <= 3 && proche(lireNombre(defi.reps.b) * 1e-6, defiVrai, 0.05)); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
         <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
