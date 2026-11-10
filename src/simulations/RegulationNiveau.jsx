@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton,
-  styleBoite, Section, LigneMesure, Curseur, BoutonsModes, lireNombre, proche, sci, avecIndices } from "../commun";
+  styleBoite, Section, LigneMesure, Curseur, BoutonsModes, lireNombre, proche, sci, avecIndices, IndiceDefi } from "../commun";
 import { SchemaChateau, COUL, H_FOND, H_TROP, ecrireTransfert, lireTransfert, effacerTransfert } from "./chateauEau";
 import { Pic } from "../Pictos";
 
@@ -92,6 +92,7 @@ function simuler(p) {
 // Garde seulement les pièges dont la fenêtre de détection ne recouvre pas celle de la bonne réponse (±max(tol, 4 %) autour du piège)
 const piegesValides = (vrai, tol, liste) => liste.filter(([v]) => isFinite(v) && Math.abs(v - vrai) > Math.max(tol, 0.04) * Math.abs(v) + tol * Math.abs(vrai));
 
+const INDICE_Q = {"v": "Nombre d’habitants × consommation par personne et par jour, en convertissant les litres en m³.", "q": "Débit = volume consommé par jour ÷ 24 h.", "u": "Taux d’utilisation = débit de puisage ÷ débit de la pompe × 100."};
 export function Simulation5({ naviguer }) {
   const [tr] = useState(lireTransfert);                      // réglages venus de « Point de fonctionnement », s'il y en a
   useEffect(() => { if (tr) effacerTransfert(); }, []);
@@ -166,28 +167,28 @@ export function Simulation5({ naviguer }) {
     { titre: 'La boucle de régulation (1/3)', focus: ['reservoir'],
       texte: <>On veut contrôler la hauteur d'eau dans le réservoir. Un capteur la mesure ; le régulateur commande la pompe.</>,
       tache: { type: 'qcm', q: 'Quelle est la grandeur réglée ?', options: ['La hauteur d’eau H du réservoir', 'Le débit de la pompe', 'Le débit de puisage'], bonne: 0,
-        expl: 'C’est la grandeur que l’on veut maintenir : la hauteur d’eau.' } },
+        expl: 'C’est la grandeur que l’on veut maintenir : la hauteur d’eau.', indice: "C’est la grandeur que l’on veut maintenir à sa consigne." } },
     { titre: 'La boucle de régulation (2/3)', focus: ['pompe'],
       texte: <>Pour agir sur la hauteur d'eau, le régulateur dispose d'un seul moyen.</>,
       tache: { type: 'qcm', q: 'Quelle est la grandeur réglante ?', options: ['La hauteur d’eau H du réservoir', 'Le débit de la pompe', 'Le débit de puisage'], bonne: 1,
-        expl: 'Le régulateur agit sur la pompe : c’est son débit qui permet de corriger la hauteur.' } },
+        expl: 'Le régulateur agit sur la pompe : c’est son débit qui permet de corriger la hauteur.', indice: "C’est celle sur laquelle agit le régulateur, par l’intermédiaire de l’actionneur, pour corriger l’écart." } },
     { titre: 'La boucle de régulation (3/3)', focus: ['maison'],
       texte: <>Les abonnés ouvrent et ferment leurs robinets quand ils le veulent.</>,
       tache: { type: 'qcm', q: 'Quelle est la grandeur perturbatrice ?', options: ['La hauteur d’eau H du réservoir', 'Le débit de la pompe', 'Le débit de puisage'], bonne: 2,
-        expl: 'Le débit de puisage fait varier la hauteur sans que le régulateur le décide.' } },
+        expl: 'Le débit de puisage fait varier la hauteur sans que le régulateur le décide.', indice: "Elle n’est pas commandée par le régulateur, mais elle fait varier la grandeur réglée." } },
     { titre: 'La régulation tout-ou-rien', focus: ['pompe'],
       texte: <>Le haut du réservoir est à <strong>36 m</strong> du sol, le bas à <strong>30 m</strong>. La pompe est régulée en
         <strong> tout-ou-rien</strong> (TOR) : si l'eau atteint le haut du réservoir, on arrête la pompe ; si elle atteint le bas, on la démarre.</>,
-      tache: { type: 'qcm', q: 'En TOR, quelles valeurs peut prendre la commande de l’actionneur ?', options: ['Deux valeurs : 0 % et 100 %', 'Toutes les valeurs entre 0 % et 100 %'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'En TOR, quelles valeurs peut prendre la commande de l’actionneur ?', options: ['Deux valeurs : 0 % et 100 %', 'Toutes les valeurs entre 0 % et 100 %'], bonne: 0, indice: "TOR signifie « tout ou rien »." } },
     { titre: 'Les seuils (1/2)', focus: ['reservoir'],
       texte: <>La régulation TOR utilise deux seuils de hauteur. Rappel : le haut du réservoir est à 36 m du sol, le bas à 30 m.</>,
       tache: { type: 'num', q: 'Hauteur du seuil haut, à ne pas dépasser', unite: 'm', vrai: 36, tol: 0.01,
         aide: 'Pas de calcul : relisez l’énoncé de l’étape précédente (hauteur du haut du réservoir par rapport au sol).',
-        pieges: [[30, 'Ça, c’est le seuil bas.'], [6, 'On demande la hauteur par rapport au sol, pas la hauteur d’eau dans le réservoir.']] } },
+        pieges: [[30, 'Ça, c’est le seuil bas.'], [6, 'On demande la hauteur par rapport au sol, pas la hauteur d’eau dans le réservoir.']], indice: "Pensez au niveau maximal admissible avant que le réservoir ne déborde." } },
     { titre: 'Les seuils (2/2)', focus: ['reservoir'],
       texte: <>Et le niveau ne doit pas descendre sous le fond du réservoir (à 30 m du sol).</>,
       tache: { type: 'num', q: 'Hauteur du seuil bas', unite: 'm', vrai: 30, tol: 0.01,
-        aide: 'Pas de calcul : le fond du réservoir est à 30 m du sol (énoncé de l’étape « La régulation tout-ou-rien »).', pieges: [[36, 'Ça, c’est le seuil haut.']] } },
+        aide: 'Pas de calcul : le fond du réservoir est à 30 m du sol (énoncé de l’étape « La régulation tout-ou-rien »).', pieges: [[36, 'Ça, c’est le seuil haut.']], indice: "Relisez l’énoncé : à quelle hauteur du sol se trouve le fond du réservoir ?" } },
     { titre: 'Régler la simulation', focus: ['reservoir'],
       texte: <>Les réglages des seuils sont apparus sous le schéma. Au départ, ils sont réglés sur 31 et 33 m : le réservoir n'est pas
         bien utilisé. Réglez le seuil bas sur <strong>30 m</strong> et le seuil haut sur <strong>36 m</strong>, et regardez les courbes changer.</>,
@@ -196,7 +197,7 @@ export function Simulation5({ naviguer }) {
       texte: <>Lisez la courbe verte du débit de la pompe (en bas) : quand la pompe tourne, elle fonctionne à son débit maximal.</>,
       tache: { type: 'num', q: <>Débit maximal de la pompe Q<sub>v,pompe,MAX</sub></>, unite: 'm³/h', vrai: Qmax, tol: 0.02,
         aide: 'Lecture graphique, sans calcul : valeur du palier haut de la courbe verte (pompe en marche).',
-        pieges: piegesValides(Qmax, 0.02, [[Qp, 'C’est le débit de puisage (la consommation des abonnés), pas le débit de la pompe.']]) } },
+        pieges: piegesValides(Qmax, 0.02, [[Qp, 'C’est le débit de puisage (la consommation des abonnés), pas le débit de la pompe.']]), indice: "Lisez l’ordonnée du palier haut de la courbe, en m³/h." } },
     { titre: 'Le programme de régulation', focus: [],
       texte: <>Dans le programme Python de la régulation, le débit de la pompe à l'instant suivant s'écrit :{codeTOR}
         Autrement dit : le débit vaut A si H &gt; B, C si H &lt; D, et sinon il ne change pas.</>,
@@ -204,19 +205,19 @@ export function Simulation5({ naviguer }) {
         options: ['A = Qv_pompe_MIN ; B = H_seuil_haut ; C = Qv_pompe_MAX ; D = H_seuil_bas',
           'A = Qv_pompe_MAX ; B = H_seuil_haut ; C = Qv_pompe_MIN ; D = H_seuil_bas',
           'A = Qv_pompe_MIN ; B = H_seuil_bas ; C = Qv_pompe_MAX ; D = H_seuil_haut'], bonne: 0,
-        expl: 'Au-dessus du seuil haut on arrête la pompe, sous le seuil bas on la démarre, et entre les deux on garde l’état précédent : c’est ce qui crée les cycles.' } },
+        expl: 'Au-dessus du seuil haut on arrête la pompe, sous le seuil bas on la démarre, et entre les deux on garde l’état précédent : c’est ce qui crée les cycles.', indice: "Repérez le rôle de chaque bloc : comparaison avec la consigne, régulateur, actionneur, procédé." } },
     { titre: 'La consommation d’une ville', focus: ['maison'],
       texte: <>En 2020, en France, la consommation d'eau potable était de l'ordre de <strong>150 L par jour et par personne</strong>
         (notre-environnement.gouv.fr). Le château d'eau alimente une ville de <strong>7200 habitants</strong>.</>,
       tache: { type: 'num', q: 'Consommation de la ville par jour', unite: 'm³', vrai: 7200 * 0.15, tol: 0.01,
         calcul: () => ['Hypothèse : chaque habitant consomme en moyenne 150 L par jour.', `Volume par jour : 7200 × 150 L = ${fmt(7200 * 150, 0)} L.`, `Conversion : 1 m³ = 1000 L, donc ${fmt(7200 * 150, 0)} L / 1000 = ${fmt(7200 * 0.15, 0)} m³.`],
-        pieges: [[7200 * 150, 'Convertissez en m³ : 1 m³ = 1000 L.']] } },
+        pieges: [[7200 * 150, 'Convertissez en m³ : 1 m³ = 1000 L.']], indice: "Nombre d’habitants × consommation par personne et par jour, en convertissant les litres en m³." } },
     { titre: 'Le débit de puisage', focus: ['maison'],
       texte: <>La ville consomme {fmt(7200 * 0.15, 0)} m³ par jour (étape précédente). On suppose que la consommation est la même à toute heure de la journée.</>,
       tache: { type: 'num', q: <>Débit de puisage Q<sub>v,puisage</sub></>, unite: 'm³/h', vrai: 45, tol: 0.01,
         calcul: () => ['Hypothèse : consommation uniforme sur la journée, donc Q_v,puisage = V / Δt.', `Q_v,puisage = ${fmt(7200 * 0.15, 0)} m³ / 24 h = ${fmt(7200 * 0.15 / 24, 0)} m³/h.`],
         pieges: [[1080 * 24, 'Il y a 24 heures dans une journée : on divise.'], [7200 * 0.15, 'C’est le volume de la journée entière : divisez-le par la durée (24 h) pour obtenir un débit en m³/h.'],
-          [7200 * 0.15 / 86400, 'La durée doit être en heures (24 h), puisque le débit est demandé en m³/h : ne convertissez pas en secondes.']] } },
+          [7200 * 0.15 / 86400, 'La durée doit être en heures (24 h), puisque le débit est demandé en m³/h : ne convertissez pas en secondes.']], indice: "Débit = volume consommé par jour ÷ 24 h." } },
     { titre: 'Régler le puisage', focus: ['maison'],
       texte: <>Le réglage du débit de puisage est apparu. Réglez-le sur la valeur que vous venez de calculer (Q<sub>v,puisage</sub> = 45 m³/h).</>,
       tache: { type: 'action', ok: qp45 && seuilsOk, consigne: `Débit de puisage : ${fmt(Qp, 0)} m³/h${seuilsOk ? '' : ' (vérifiez aussi les seuils : 30 et 36 m)'}` } },
@@ -226,56 +227,56 @@ export function Simulation5({ naviguer }) {
       tache: { type: 'num', q: 'Taux d’utilisation de la pompe sur un cycle (à 1 % près)', unite: '%', vrai: (sim.utilisation || 0.45) * 100, tol: 0.05,
         aide: 'Repérez deux démarrages successifs de la pompe, et la durée pendant laquelle elle tourne entre les deux (mesure sur le graphique, sans formule : taux = t_marche / durée d’un cycle).',
         pieges: piegesValides((sim.utilisation || 0.45) * 100, 0.05, [[100 - (sim.utilisation || 0.45) * 100, 'Vous avez donné la part du temps où la pompe est à l’arrêt. Le taux d’utilisation est t_marche / durée du cycle.'],
-          [sim.utilisation || 0.45, 'Donnez le taux en pourcentage : multipliez la fraction par 100.']]) } },
+          [sim.utilisation || 0.45, 'Donnez le taux en pourcentage : multipliez la fraction par 100.']]), indice: "Taux = durée de marche ÷ durée du cycle × 100." } },
     { titre: 'Pourquoi cette valeur ?', focus: ['pompe', 'maison'],
       texte: <>Comparez le taux d'utilisation au rapport Q<sub>v,puisage</sub> / Q<sub>v,pompe,MAX</sub> = 45 / 100.</>,
       tache: { type: 'qcm', q: 'Le taux d’utilisation est égal à ce rapport. Pourquoi ?',
         options: ['Sur un cycle complet, le volume pompé est égal au volume puisé', 'C’est une coïncidence', 'Parce que les seuils sont à 30 et 36 m'], bonne: 0,
-        expl: 'Au bout d’un cycle, le niveau revient au même point : la pompe a fourni exactement ce que la ville a consommé. Le taux ne dépend donc pas des seuils.' } },
+        expl: 'Au bout d’un cycle, le niveau revient au même point : la pompe a fourni exactement ce que la ville a consommé. Le taux ne dépend donc pas des seuils.', indice: "Le niveau reste stable en moyenne : le volume fourni par la pompe est égal au volume consommé." } },
     { titre: 'Rapprocher les seuils ?', focus: ['reservoir'],
       texte: <>Les mesures (nombre de démarrages, durée d'un cycle) sont apparues sous le schéma. Essayez des seuils plus proches, par
         exemple 32 et 34 m, puis revenez à 30 et 36 m.</>,
       tache: { type: 'qcm', q: 'Si l’on rapproche les seuils…', options: ['la pompe démarre plus souvent, et s’use plus vite', 'la pompe tourne plus longtemps au total', 'le niveau devient instable'], bonne: 0,
-        expl: 'Les cycles sont plus courts, mais le taux d’utilisation reste le même. Le réservoir joue moins bien son rôle de tampon.' } },
+        expl: 'Les cycles sont plus courts, mais le taux d’utilisation reste le même. Le réservoir joue moins bien son rôle de tampon.', indice: "Avec des seuils proches, le niveau passe plus vite d’un seuil à l’autre. Combien de cycles par heure ?" } },
     { titre: 'La régulation proportionnelle', focus: ['pompe'],
       texte: <>Avec une pompe à vitesse variable, on peut faire mieux que tout-ou-rien. En régulation <strong>proportionnelle</strong> (P),
         la commande est proportionnelle à l'écart entre la consigne et la mesure : Y = K<sub>p</sub> × (consigne − H). Les réglages
         sont apparus : passez en mode <strong>P</strong>, avec une consigne de 33 m et K<sub>p</sub> = 20 %/m.</>,
       tache: { type: 'qcm', q: 'Où le niveau se stabilise-t-il ?', options: ['Exactement à la consigne', 'Un peu en dessous de la consigne', 'Il ne se stabilise jamais'], bonne: 1,
         bloque: !enP ? 'Passez d’abord en régulation P.' : null,
-        expl: 'C’est l’écart statique, typique de la régulation proportionnelle.' } },
+        expl: 'C’est l’écart statique, typique de la régulation proportionnelle.', indice: "Pour que la pompe fournisse un débit non nul, il faut une commande non nulle. Est-ce possible si l’écart est nul ?" } },
     { titre: 'L’écart statique (1/2)', focus: ['pompe'],
       texte: <>Quand le niveau est stable, le débit de la pompe compense exactement le débit de puisage ({fmt(Qp, 0)} m³/h, sur une
         pompe de {fmt(Qmax, 0)} m³/h au maximum).</>,
       tache: { type: 'num', q: 'Valeur de la commande Y une fois le niveau stabilisé', unite: '%', vrai: Qp / Qmax * 100, tol: 0.02,
         calcul: () => ['Niveau stable : Q_pompe = Q_puisage (S · dH/dt = 0).', `Pompe supposée idéale : Q_pompe = Q_max × Y / 100, donc Y = 100 × Q_pompe / Q_max.`, `Y = 100 × ${fmt(Qp, 0)} / ${fmt(Qmax, 0)} = ${fmt(Qp / Qmax * 100, 1)} %.`],
-        pieges: piegesValides(Qp / Qmax * 100, 0.02, [[Qmax / Qp * 100, 'Le rapport est à l’envers : Y = 100 × Q_pompe / Q_max.'], [Qp / Qmax, 'Vous avez donné une fraction : multipliez par 100 pour l’exprimer en %.']]) } },
+        pieges: piegesValides(Qp / Qmax * 100, 0.02, [[Qmax / Qp * 100, 'Le rapport est à l’envers : Y = 100 × Q_pompe / Q_max.'], [Qp / Qmax, 'Vous avez donné une fraction : multipliez par 100 pour l’exprimer en %.']]), indice: "À l’équilibre, Q_pompe = Q_puisage ; et Q_pompe = Q_max × Y ÷ 100." } },
     { titre: 'L’écart statique (2/2)', focus: ['reservoir'],
       texte: <>On a Y = K<sub>p</sub> × (consigne − H), avec K<sub>p</sub> = {fmt(Kp, 0)} %/m et Y la commande stabilisée trouvée à l’étape précédente ({fmt(Qp / Qmax * 100, 0)} %).</>,
       tache: { type: 'num', q: 'Écart statique : consigne − H', unite: 'm', vrai: (Qp / Qmax * 100) / Kp, tol: 0.03,
         bloque: !enP ? 'Restez en régulation P.' : null,
         calcul: () => [`Commande stabilisée : Y = 100 × ${fmt(Qp, 0)} / ${fmt(Qmax, 0)} = ${fmt(Qp / Qmax * 100, 1)} %.`, 'Y = K_p × (consigne − H), donc consigne − H = Y / K_p.',
           `Écart statique = ${fmt(Qp / Qmax * 100, 1)} / ${fmt(Kp, 0)} = ${fmt((Qp / Qmax * 100) / Kp, 2)} m (régulateur P pur, pompe idéale, puisage constant).`],
-        pieges: [[(Qp / Qmax * 100) * Kp, 'Vous avez multiplié par K_p : l’écart statique est Y divisé par K_p.'], [Qp / Qmax * 100, 'C’est la commande Y en %. L’écart statique est Y / K_p, en m.']] } },
+        pieges: [[(Qp / Qmax * 100) * Kp, 'Vous avez multiplié par K_p : l’écart statique est Y divisé par K_p.'], [Qp / Qmax * 100, 'C’est la commande Y en %. L’écart statique est Y / K_p, en m.']], indice: "Y = K_p × écart, donc écart = Y ÷ K_p." } },
     { titre: 'Augmenter le gain', focus: ['reservoir'],
       texte: <>Augmentez K<sub>p</sub>, par exemple à 80 %/m, et observez le niveau.</>,
       tache: { type: 'qcm', q: 'Quand Kp augmente, l’écart statique…', options: ['diminue', 'augmente', 'ne change pas'], bonne: 0,
-        expl: 'Mais il ne s’annule jamais. Et dans un vrai système, avec des retards de mesure, un gain trop fort fait osciller le niveau (essayez le retard en exploration libre).' } },
+        expl: 'Mais il ne s’annule jamais. Et dans un vrai système, avec des retards de mesure, un gain trop fort fait osciller le niveau (essayez le retard en exploration libre).', indice: "écart = Y ÷ K_p, avec Y fixé par le puisage." } },
     { titre: 'La régulation proportionnelle-intégrale', focus: ['pompe'],
       texte: <>Le régulateur <strong>PI</strong> ajoute une action intégrale : tant qu'il reste un écart, la commande continue d'évoluer.
         Le réglage du temps intégral est apparu : passez en mode <strong>PI</strong> (K<sub>p</sub> = 20 %/m, T<sub>i</sub> = 50 h).</>,
       tache: { type: 'qcm', q: 'Que devient l’écart statique ?', options: ['Il disparaît : le niveau rejoint la consigne', 'Il double', 'Il ne change pas'], bonne: 0,
-        bloque: !enPI ? 'Passez d’abord en régulation PI.' : Math.abs(Kp - 20) > 0.5 ? 'Remettez Kp sur 20 %/m.' : null } },
+        bloque: !enPI ? 'Passez d’abord en régulation PI.' : Math.abs(Kp - 20) > 0.5 ? 'Remettez Kp sur 20 %/m.' : null, indice: "L’action intégrale continue d’augmenter la commande tant qu’il reste un écart." } },
     { titre: 'Le réglage du temps intégral', focus: ['reservoir'],
       texte: <>Gardez K<sub>p</sub> = 20 %/m. Diminuez T<sub>i</sub>, par exemple à 5 h, puis augmentez-le à 200 h.</>,
       tache: { type: 'qcm', q: 'Avec un Ti trop petit…', options: ['le niveau oscille et dépasse la consigne', 'le niveau ne bouge plus', 'l’écart statique revient'], bonne: 0,
         bloque: !enPI ? 'Restez en régulation PI.' : Math.abs(Kp - 20) > 0.5 ? 'Remettez Kp sur 20 %/m.' : null,
-        expl: 'Une action intégrale trop forte fait osciller ; trop faible, elle met longtemps à corriger. Régler un PI, c’est trouver le compromis.' } },
+        expl: 'Une action intégrale trop forte fait osciller ; trop faible, elle met longtemps à corriger. Régler un PI, c’est trouver le compromis.', indice: "Un T_i petit donne une action intégrale très forte : le régulateur corrige trop vivement." } },
     { titre: 'Bilan', focus: [],
       texte: <>Le TOR est simple et robuste, mais la pompe fonctionne par cycles. Le P donne une commande progressive, avec un écart
         statique. Le PI supprime cet écart, mais doit être bien réglé pour ne pas osciller.</>,
       tache: { type: 'qcm', q: 'Pour une pompe qui ne peut être qu’en marche ou à l’arrêt, quelle régulation utiliser ?', options: ['TOR', 'P', 'PI'], bonne: 0,
-        expl: 'Les régulations P et PI demandent un actionneur capable de prendre toutes les valeurs entre 0 et 100 % (pompe à vitesse variable).' } },
+        expl: 'Les régulations P et PI demandent un actionneur capable de prendre toutes les valeurs entre 0 et 100 % (pompe à vitesse variable).', indice: "Une pompe à deux états peut-elle recevoir une commande intermédiaire ?" } },
     { titre: 'Bravo !', focus: [],
       texte: <>Vous savez identifier les grandeurs d'une boucle de régulation, et comparer les régulations TOR, P et PI. Explorez
         librement (consommation variable sur la journée, incendie, retard de mesure…) ou relevez le défi.</>, tache: null },
@@ -460,6 +461,7 @@ export function Simulation5({ naviguer }) {
           return (
             <div key={q.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {avecIndices(q.q)}</div>
+              {INDICE_Q[q.id] && <IndiceDefi cache={defi.verifie && ok}>{INDICE_Q[q.id]}</IndiceDefi>}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input value={defi.reps[q.id] || ''} placeholder="?" aria-label={`Réponse ${k + 1}`}
                   onChange={x => { const v = x.target.value; setDefi(d => ({ ...d, verifie: false, reps: { ...d.reps, [q.id]: v } })); }}
@@ -480,6 +482,7 @@ export function Simulation5({ naviguer }) {
           Mission : après les 72 premières heures, garder le niveau le plus près possible de la consigne (33 m), sans débordement
           ni pénurie. Réglez K<sub>p</sub> et T<sub>i</sub>, puis validez. 🥉 écart maximal sous 0,5 m · 🥈 sous 0,3 m · 🥇 sous 0,2 m.
         </div>
+        <IndiceDefi cache={!!(defi.valide && defi.valide.medaille)}>Augmentez K<sub>p</sub> pour réduire l’écart, puis diminuez T<sub>i</sub> pour que l’écart statique disparaisse plus vite, sans faire osciller le niveau.</IndiceDefi>
         <div><button onClick={() => {
           const sain = sim.perdu <= 20 && sim.penurie <= 1, e = sim.ecartMax;
           const medaille = !sain || e == null ? null : e <= 0.2 ? '🥇 or' : e <= 0.3 ? '🥈 argent' : e <= 0.5 ? '🥉 bronze' : null;

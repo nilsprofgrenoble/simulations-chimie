@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
+  BoutonsModes, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { SchemaChateau, COUL, H_FOND, H_TROP, ecrireTransfert, lireTransfert, effacerTransfert } from "./chateauEau";
 import { Pic } from "../Pictos";
 
@@ -102,6 +102,7 @@ function GraphePF({ c, Kp, Qmax, Qp, eq, showPuisage, showRegul, showPoint, show
   );
 }
 
+const INDICE_Q = {"y": "Y = Q_pompe ÷ Q_max × 100, avec Q_pompe = Q_puisage à l’équilibre.", "xp": "X_p = 100 ÷ K_p.", "es": "ES = Y ÷ K_p, avec Y fixé par le puisage.", "h": "H = consigne − ES.", "kp": "On veut ES ≤ 0,5 m avec ES = Y ÷ K_p : isolez K_p."};
 export function Simulation6({ naviguer }) {
   const [tr] = useState(lireTransfert);                       // réglages venus de « Régulation TOR, P et PI », s'il y en a
   useEffect(() => { if (tr) effacerTransfert(); }, []);
@@ -131,23 +132,23 @@ export function Simulation6({ naviguer }) {
       texte: <>C'est la maquette de la simulation « Régulation TOR, P et PI » : une pompe (B) remplit le réservoir (A), et les abonnés (C) puisent de l'eau. Ici, on ne regarde pas
         le niveau évoluer dans le temps : on cherche le <strong>niveau où il finit par se stabiliser</strong>, avec une régulation proportionnelle (P). Le niveau est entre 30 m (fond) et 36 m (trop-plein).</>,
       tache: { type: 'qcm', q: 'Quelle est la grandeur réglée ?', options: ['La hauteur d’eau H du réservoir', 'Le débit de la pompe', 'Le débit de puisage'], bonne: 0,
-        expl: 'C’est la grandeur que l’on veut maintenir : la hauteur d’eau.' } },
+        expl: 'C’est la grandeur que l’on veut maintenir : la hauteur d’eau.', indice: "C’est la grandeur que l’on veut maintenir à sa consigne." } },
     { id: 'grandeurs', titre: 'Qui agit sur quoi ?', focus: ['pompe', 'maison'],
       texte: <>Le régulateur dispose d'un seul moyen d'agir. Les abonnés, eux, ouvrent leurs robinets quand ils le veulent.</>,
       tache: { type: 'qcm', q: 'Quelle est la grandeur perturbatrice ?', options: ['Le débit de la pompe', 'Le débit de puisage', 'La consigne'], bonne: 1,
-        expl: 'Le débit de puisage fait varier le niveau sans que le régulateur l’ait décidé. Le régulateur, lui, agit sur le débit de la pompe (grandeur réglante).' } },
+        expl: 'Le débit de puisage fait varier le niveau sans que le régulateur l’ait décidé. Le régulateur, lui, agit sur le débit de la pompe (grandeur réglante).', indice: "Elle vient de l’extérieur du régulateur et n’est pas commandée." } },
     { id: 'equilibre', titre: 'Qu’est-ce que l’équilibre ?', focus: ['maison'],
       texte: <>Le niveau est stable quand l'eau qui entre est égale à l'eau qui sort : S · dH/dt = Q<sub>pompe</sub> − Q<sub>puisage</sub> = 0. Le débit de puisage vaut
         ici {fmt(Qp, 0)} m³/h (par exemple, une ville de 7200 habitants).</>,
       tache: { type: 'num', q: 'Débit que doit fournir la pompe à l’équilibre', unite: 'm³/h', vrai: Qp, tol: 0.01,
         aide: 'Pas de calcul compliqué : que vaut dH/dt à l’équilibre ?',
-        calcul: () => ['À l’équilibre le niveau ne varie plus : S · dH/dt = 0, donc Q_pompe − Q_puisage = 0.', `Q_pompe = Q_puisage = ${fmt(Qp, 0)} m³/h (le puisage est imposé par les abonnés, indépendant de H).`] } },
+        calcul: () => ['À l’équilibre le niveau ne varie plus : S · dH/dt = 0, donc Q_pompe − Q_puisage = 0.', `Q_pompe = Q_puisage = ${fmt(Qp, 0)} m³/h (le puisage est imposé par les abonnés, indépendant de H).`], indice: "À l’équilibre, le niveau ne varie plus : la pompe apporte autant d’eau que ce qui est puisé." } },
     { id: 'commande', titre: 'La commande nécessaire', focus: ['pompe'],
       texte: <>La pompe fournit au maximum Q<sub>max</sub> = {fmt(Qmax, 0)} m³/h pour une commande Y = 100 %. Son débit est proportionnel à la commande : Q = Q<sub>max</sub> × Y / 100. À l'équilibre, la pompe fournit le débit de puisage : Q = {fmt(Qp, 0)} m³/h.</>,
       tache: { type: 'num', q: 'Commande Y nécessaire à l’équilibre', unite: '%', vrai: Qp / Qmax * 100, tol: 0.02, affiche: x => fmt(x, 1),
         calcul: () => ['Q = Q_max × Y / 100, donc Y = 100 × Q / Q_max (pompe idéale : débit proportionnel à la commande).', `Q = ${fmt(Qp, 0)} m³/h (débit d’équilibre) et Q_max = ${fmt(Qmax, 0)} m³/h.`, `Y = 100 × ${fmt(Qp, 0)} / ${fmt(Qmax, 0)} = ${fmt(Yeq, 1)} %.`],
         pieges: piegesValides(Yeq, 0.02, [[Qmax / Qp * 100, 'Le rapport est à l’envers : Y = 100 × Q / Q_max (débit demandé sur débit maximal).'], [Qp / Qmax, 'Vous avez donné une fraction : multipliez par 100 pour l’exprimer en %.']]),
-        expl: `Y = ${fmt(Qp, 0)} / ${fmt(Qmax, 0)} × 100 = ${fmt(Qp / Qmax * 100, 1)} %.` } },
+        expl: `Y = ${fmt(Qp, 0)} / ${fmt(Qmax, 0)} × 100 = ${fmt(Qp / Qmax * 100, 1)} %.`, indice: "Y = Q_pompe ÷ Q_max × 100." } },
     { id: 'regulateur', titre: 'Le régulateur proportionnel', focus: ['graph', 'params'],
       texte: <>Le régulateur P commande la pompe d'après l'écart : <strong>Y = K<sub>p</sub> × (consigne − H)</strong>, borné entre 0 et 100 %. La courbe verte donne le débit
         que le régulateur demande à la pompe pour chaque hauteur d'eau. Consigne : {fmt(consigne, 0)} m ; K<sub>p</sub> = {fmt(Kp, 0)} %/m.</>,
@@ -155,21 +156,21 @@ export function Simulation6({ naviguer }) {
         calcul: () => [`Écart : consigne − H = ${fmt(consigne, 0)} − ${fmt(consigne - 2, 0)} = 2 m.`, `Commande : Y = K_p × écart = ${fmt(Kp, 0)} × 2 = ${fmt(Kp * 2, 0)} %${Kp * 2 > 100 ? ', limitée à 100 %' : ''}.`,
           `Débit : Q = Q_max × Y / 100 = ${fmt(Qmax, 0)} × ${fmt(Yreg2, 0)} / 100 = ${fmt(Qreg2, 1)} m³/h (régulateur P pur, pompe idéale).`],
         pieges: piegesValides(Qreg2, 0.02, [[Qmax * 2 / 100, 'Vous avez oublié K_p : Y = K_p × (consigne − H), pas seulement l’écart.'], [Yreg2, 'C’est la commande Y en % : convertissez-la en débit avec Q = Q_max × Y / 100.'], [Qmax * Yreg2, 'Il manque la division par 100 : Q = Q_max × Y / 100 (Y est en %).']]),
-        expl: `Y = ${fmt(Kp, 0)} × 2 = ${fmt(Math.min(100, Kp * 2), 0)} %, soit ${fmt(qRegul(consigne - 2, consigne, Kp, Qmax), 1)} m³/h.` } },
+        expl: `Y = ${fmt(Kp, 0)} × 2 = ${fmt(Math.min(100, Kp * 2), 0)} %, soit ${fmt(qRegul(consigne - 2, consigne, Kp, Qmax), 1)} m³/h.`, indice: "Y = K_p × (consigne − H), puis Q = Q_max × Y ÷ 100 (avec Y limité à 100 %)." } },
     { id: 'xp', titre: 'La bande proportionnelle', focus: ['graph'],
       texte: <>La <strong>bande proportionnelle</strong> X<sub>p</sub> est la variation de hauteur qui fait passer la commande de 0 à 100 % : X<sub>p</sub> = 100 / K<sub>p</sub>. Elle est
         tracée en violet sous le graphique. Ici K<sub>p</sub> = {fmt(Kp, 0)} %/m.</>,
       tache: { type: 'num', q: <>Bande proportionnelle X<sub>p</sub></>, unite: 'm', vrai: 100 / Kp, tol: 0.01, affiche: x => fmt(x, 1),
         calcul: () => ['Y varie de 0 à 100 % quand H varie de X_p : K_p × X_p = 100 %, donc X_p = 100 / K_p.', `X_p = 100 / ${fmt(Kp, 0)} = ${fmt(100 / Kp, 1)} m (K_p en %/m, donc X_p en m).`],
         pieges: piegesValides(100 / Kp, 0.01, [[Kp / 100, 'Le rapport est à l’envers : X_p = 100 / K_p.'], [1 / Kp, 'Il manque le 100 (la commande varie de 0 à 100 %) : X_p = 100 / K_p.']]),
-        expl: `Xp = 100 / ${fmt(Kp, 0)} = ${fmt(100 / Kp, 1)} m.` } },
+        expl: `Xp = 100 / ${fmt(Kp, 0)} = ${fmt(100 / Kp, 1)} m.`, indice: "X_p = 100 ÷ K_p : c’est l’écart pour lequel Y passe de 0 à 100 %." } },
     { id: 'fond', titre: 'La pompe peut-elle tourner à fond ?', focus: ['graph', 'reservoir'],
       texte: <>La commande atteint 100 % quand H est à X<sub>p</sub> sous la consigne, soit à {fmt(consigne - 100 / Kp, 0)} m. Or le réservoir s'arrête à 30 m. Rappel : consigne = {fmt(consigne, 0)} m et K<sub>p</sub> = {fmt(Kp, 0)} %/m.</>,
       tache: { type: 'num', q: 'Commande Y du régulateur quand le réservoir est presque vide (H = 30 m)', unite: '%', vrai: Math.min(100, Kp * (consigne - H_FOND)), tol: 0.02, affiche: x => fmt(x, 0),
         calcul: () => [`Écart : consigne − H = ${fmt(consigne, 0)} − ${fmt(H_FOND, 0)} = ${fmt(consigne - H_FOND, 0)} m.`, `Y = K_p × écart = ${fmt(Kp, 0)} × ${fmt(consigne - H_FOND, 0)} = ${fmt(Kp * (consigne - H_FOND), 0)} %.`,
           Kp * (consigne - H_FOND) > 100 ? 'Le régulateur est borné entre 0 et 100 % : Y = 100 %.' : 'Ce résultat est inférieur à 100 % : la commande n’est pas saturée.'],
         pieges: piegesValides(Yfond, 0.02, [[-Kp * (consigne - H_FOND), 'Attention au signe : l’écart est consigne − H (positif quand le niveau est sous la consigne).'], [Kp * 2, 'Vous avez repris l’écart de 2 m de l’étape précédente. Ici H = 30 m : calculez consigne − 30.']]),
-        expl: `Y = ${fmt(Kp, 0)} × (${fmt(consigne, 0)} − 30) = ${fmt(Kp * (consigne - H_FOND), 0)} %${Kp * (consigne - H_FOND) > 100 ? ', limité à 100 %' : ''} : le régulateur ne demande jamais plus à ce niveau.` } },
+        expl: `Y = ${fmt(Kp, 0)} × (${fmt(consigne, 0)} − 30) = ${fmt(Kp * (consigne - H_FOND), 0)} %${Kp * (consigne - H_FOND) > 100 ? ', limité à 100 %' : ''} : le régulateur ne demande jamais plus à ce niveau.`, indice: "Y = K_p × (consigne − H), plafonné à 100 %." } },
     { id: 'point', titre: 'Le point de fonctionnement', focus: ['graph', 'reservoir'],
       texte: <>La droite rouge est le débit de puisage. À l'équilibre, la pompe fournit ce que les abonnés puisent : le niveau est donné par l'<strong>intersection</strong> de la courbe verte et
         de la droite rouge, appelée <strong>point de fonctionnement</strong>. Lisez la hauteur d'eau correspondante.</>,
@@ -179,7 +180,7 @@ export function Simulation6({ naviguer }) {
         calcul: () => [`À l’équilibre la pompe fournit le puisage : Y = 100 × ${fmt(Qp, 0)} / ${fmt(Qmax, 0)} = ${fmt(eq.Y, 1)} %.`, `Y = K_p × (consigne − H), donc l’écart vaut consigne − H = Y / K_p = ${fmt(eq.Y, 1)} / ${fmt(Kp, 0)} = ${fmt(eq.ES, 2)} m.`,
           `H = consigne − écart = ${fmt(consigne, 0)} − ${fmt(eq.ES, 2)} = ${fmt(eq.H, 2)} m (régulateur P pur, pompe idéale, puisage indépendant de H).`],
         pieges: piegesValides(eq.H, 0.003, [[consigne + eq.ES, 'Signe : le niveau d’équilibre est sous la consigne, H = consigne − écart (et non +).'], [eq.ES, 'C’est l’écart statique. On demande la hauteur d’eau : H = consigne − écart.']]),
-        expl: `H = ${fmt(consigne, 0)} − ${fmt(eq.ES, 2)} = ${fmt(eq.H, 2)} m.` } },
+        expl: `H = ${fmt(consigne, 0)} − ${fmt(eq.ES, 2)} = ${fmt(eq.H, 2)} m.`, indice: "Le point de fonctionnement est celui où la pompe fournit exactement le débit puisé." } },
     { id: 'es', titre: 'L’écart statique', focus: ['graph'],
       texte: <>L'écart entre la consigne et le niveau d'équilibre s'appelle l'<strong>écart statique</strong> ES = consigne − H. C'est celui que l'on observe à la fin de la simulation de
         régulation en mode P.{eq.cas === 'ok' && <> Ici : consigne = {fmt(consigne, 0)} m et hauteur d'équilibre H = {fmt(eq.H, 2)} m (étape précédente).</>}</>,
@@ -187,11 +188,11 @@ export function Simulation6({ naviguer }) {
         bloque: eq.cas !== 'ok' ? 'Avec ces réglages, il n’y a pas de point de fonctionnement dans le réservoir.' : null,
         calcul: () => [`Commande à l’équilibre : Y = 100 × ${fmt(Qp, 0)} / ${fmt(Qmax, 0)} = ${fmt(eq.Y, 1)} %.`, 'Y = K_p × (consigne − H) = K_p × ES, donc ES = Y / K_p.', `ES = ${fmt(eq.Y, 1)} / ${fmt(Kp, 0)} = ${fmt(eq.ES, 2)} m (régulateur P pur, pompe idéale).`],
         pieges: piegesValides(eq.ES, 0.03, [[eq.Y, 'C’est la commande Y en %. L’écart statique est ES = Y / K_p, en m.'], [eq.Y * Kp, 'Vous avez multiplié par K_p : K_p = Y / ES, donc ES = Y / K_p.'], [Qp / Qmax / Kp, 'Y doit être en % (K_p est en %/m) : Y = 100 × Q / Q_max.']]),
-        expl: `ES = Y / K_p = ${fmt(eq.Y, 1)} / ${fmt(Kp, 0)} = ${fmt(eq.ES, 2)} m.` } },
+        expl: `ES = Y / K_p = ${fmt(eq.Y, 1)} / ${fmt(Kp, 0)} = ${fmt(eq.ES, 2)} m.`, indice: "ES = consigne − H." } },
     { id: 'pourquoi', titre: 'Pourquoi un écart ?', focus: ['pompe'],
       texte: <>Réfléchissez : que commande le régulateur quand H est exactement égal à la consigne ?</>,
       tache: { type: 'qcm', q: 'Pourquoi le niveau ne peut-il pas atteindre la consigne ?', options: ['À H = consigne, le régulateur commande Y = 0 : la pompe s’arrête alors que les abonnés continuent de puiser', 'La pompe est trop petite', 'La consigne est mal choisie'], bonne: 0,
-        expl: 'Un régulateur proportionnel n’agit que s’il y a un écart. Pour fournir le débit qui compense le puisage, il lui faut donc un écart non nul.' } },
+        expl: 'Un régulateur proportionnel n’agit que s’il y a un écart. Pour fournir le débit qui compense le puisage, il lui faut donc un écart non nul.', indice: "Que vaut la commande Y quand l’écart est nul ?" } },
     { id: 'kp', titre: 'Augmenter le gain', focus: ['params'],
       texte: <>Dans « Commandes », réglez K<sub>p</sub> = 80 %/m : la courbe verte devient plus raide.</>,
       tache: { type: 'action', ok: Math.abs(Kp - 80) < 0.5, consigne: Math.abs(Kp - 80) < 0.5 ? null : `Gain K_p : ${fmt(Kp, 0)} %/m → 80 %/m` } },
@@ -201,19 +202,19 @@ export function Simulation6({ naviguer }) {
         bloque: Math.abs(Kp - 80) > 0.5 ? 'Réglez d’abord Kp = 80 %/m à l’étape précédente.' : null,
         calcul: () => [`Le puisage n’a pas changé : la commande nécessaire reste Y = ${fmt(Yeq, 1)} %.`, `ES = Y / K_p = ${fmt(Yeq, 1)} / 80 = ${fmt(ES80, 2)} m (régulateur P pur, pompe idéale).`],
         pieges: piegesValides(ES80, 0.04, [[Yeq / 20, 'C’est l’écart statique avec l’ancien gain (K_p = 20 %/m). Reprenez avec K_p = 80 %/m.'], [Yeq, 'C’est la commande Y en %. ES = Y / K_p, en m.']]),
-        expl: `ES = ${fmt(Qp / Qmax * 100, 1)} / 80 = ${fmt(ES80, 2)} m : il a diminué, mais il n’est pas nul. En revanche, avec un retard de mesure, un gain trop élevé fait osciller le niveau : essayez-le dans « Régulation TOR, P et PI ».` } },
+        expl: `ES = ${fmt(Qp / Qmax * 100, 1)} / 80 = ${fmt(ES80, 2)} m : il a diminué, mais il n’est pas nul. En revanche, avec un retard de mesure, un gain trop élevé fait osciller le niveau : essayez-le dans « Régulation TOR, P et PI ».`, indice: "Même démarche : ES = Y ÷ K_p, avec Y fixé par le puisage." } },
     { id: 'vide', titre: 'Un puisage trop fort', focus: ['params', 'graph'],
       texte: <>Remettez K<sub>p</sub> = 20 %/m, puis réglez le débit de puisage à <strong>70 m³/h</strong>.</>,
       tache: { type: 'qcm', q: 'Que montre le graphique ?', options: ['Les deux courbes se coupent sous 30 m, hors du réservoir : même à H = 30 m, le régulateur ne demande que 60 m³/h, moins que le puisage, donc le réservoir se vide', 'Le niveau se stabilise un peu plus bas', 'La pompe est trop petite : elle ne peut pas dépasser 70 m³/h'], bonne: 0,
         bloque: !(Math.abs(Kp - 20) < 0.5 && Math.abs(Qp - 70) < 0.5) ? 'Réglez Kp = 20 %/m et un puisage de 70 m³/h.' : null,
-        expl: 'La pompe pourrait fournir jusqu’à 100 m³/h, mais le régulateur, avec ce gain, ne la commande qu’à 60 % au fond du réservoir.' } },
+        expl: 'La pompe pourrait fournir jusqu’à 100 m³/h, mais le régulateur, avec ce gain, ne la commande qu’à 60 % au fond du réservoir.', indice: "Observez où se coupent la droite du régulateur et la ligne du puisage." } },
     { id: 'kpFort', titre: 'Le gain, remède au réservoir vide', focus: ['params', 'graph'],
       texte: <>Gardez le puisage à 70 m³/h et réglez K<sub>p</sub> = 40 %/m (consigne : 33 m).</>,
       tache: { type: 'num', q: 'Hauteur d’eau H au point de fonctionnement', unite: 'm', vrai: 33 - 70 / 40, tol: 0.003, affiche: x => fmt(x, 2),
         bloque: !(Math.abs(Kp - 40) < 0.5 && Math.abs(Qp - 70) < 0.5 && Math.abs(consigne - 33) < 0.05) ? 'Réglez Kp = 40 %/m, un puisage de 70 m³/h et une consigne de 33 m.' : null,
         calcul: () => ['Puisage 70 m³/h, pompe de 100 m³/h au maximum : Y = 100 × 70 / 100 = 70 %.', 'ES = Y / K_p = 70 / 40 = 1,75 m.', `H = consigne − ES = 33 − 1,75 = ${fmt(33 - 70 / 40, 2)} m (régulateur P pur, pompe idéale).`],
         pieges: [[70 / 40, 'C’est l’écart statique ES. La hauteur d’eau est H = consigne − ES.'], [33 + 70 / 40, 'Signe : H = consigne − ES (le niveau est sous la consigne).'], [33 - 70 / 20, 'Vous avez gardé K_p = 20 %/m. Avec K_p = 40 %/m : ES = 70 / 40.']],
-        expl: 'ES = 70 / 40 = 1,75 m : le point de fonctionnement est maintenant dans le réservoir (H = 31,25 m).' } },
+        expl: 'ES = 70 / 40 = 1,75 m : le point de fonctionnement est maintenant dans le réservoir (H = 31,25 m).', indice: "Refaites la même démarche : H = consigne − écart, avec écart = Y ÷ K_p." } },
     { id: 'dynamique', titre: 'Et dans le temps ?', focus: [],
       texte: <>Dans la simulation « Régulation TOR, P et PI », en mode P et avec les mêmes réglages, le niveau finit par se stabiliser exactement au point de fonctionnement. Le point de
         fonctionnement donne le résultat final ; la simulation montre le chemin pour y arriver.
@@ -222,11 +223,11 @@ export function Simulation6({ naviguer }) {
     { id: 'limite', titre: 'La limite du régulateur P', focus: [],
       texte: <>Un régulateur P seul ne peut pas supprimer l'écart statique, tant que le puisage n'est pas nul.</>,
       tache: { type: 'qcm', q: 'Que faut-il ajouter pour annuler cet écart en régime permanent ?', options: ['Une action intégrale (régulateur PI)', 'Une pompe plus puissante', 'Rien : c’est impossible'], bonne: 0,
-        expl: 'L’action intégrale continue d’augmenter la commande tant que l’écart n’est pas nul : on la rencontre avec le régulateur PI.' } },
+        expl: 'L’action intégrale continue d’augmenter la commande tant que l’écart n’est pas nul : on la rencontre avec le régulateur PI.', indice: "Quelle action du régulateur continue d’agir tant qu’il reste un écart ?" } },
     { id: 'hypotheses', titre: 'Sur quoi repose ce modèle ?', focus: ['hypo'],
       texte: <>Lisez l'encadré « Hypothèses de travail ».</>,
       tache: { type: 'qcm', q: 'Quelle hypothèse est faite sur le débit de puisage ?', options: ['Il est imposé par les abonnés, indépendant de la hauteur d’eau', 'Il dépend de la hauteur d’eau (loi de Torricelli)', 'Il est réglé par le régulateur'], bonne: 0,
-        expl: 'Le niveau d’équilibre vient donc de la seule pompe : c’est elle qui doit compenser le puisage.' } },
+        expl: 'Le niveau d’équilibre vient donc de la seule pompe : c’est elle qui doit compenser le puisage.', indice: "Les abonnés puisent ce dont ils ont besoin : cela dépend-il du niveau d’eau ?" } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       texte: <>Vous savez construire un point de fonctionnement, en déduire le niveau d'équilibre et l'écart statique, et expliquer l'effet de K<sub>p</sub> et du puisage. En exploration libre,
         changez les réglages, puis comparez avec « Régulation TOR, P et PI ».</>, tache: null },
@@ -270,6 +271,7 @@ export function Simulation6({ naviguer }) {
           return (
             <div key={q.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {avecIndices(q.q)}</div>
+              {INDICE_Q[q.id] && <IndiceDefi cache={defi.verifie && ok}>{INDICE_Q[q.id]}</IndiceDefi>}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input value={rep} placeholder="?" aria-label={`Réponse ${k + 1}`} onChange={x => { const val = x.target.value; setDefi(d => ({ ...d, verifie: false, reps: { ...d.reps, [q.id]: val } })); }}
                   style={{ fontSize: 14, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 110 }}/>
