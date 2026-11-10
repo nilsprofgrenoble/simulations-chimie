@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
   BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import { ALCENES, REACTIFS, RES, resultat, NOM_TYPE } from "./seleModele";
+import { AnimAddition } from "./AnimAddition";
 
 const SIM_ID = 98;
 declarerDefis(SIM_ID, [['principal', 'Syn ou anti, sélectivités']]);
@@ -12,40 +13,6 @@ const NOIR = '#0f172a', BRUN = '#9a3412', BLEU = '#1d4ed8', VERT = '#15803d', RO
 const lerp = (a, b, t) => a + (b - a) * Math.max(0, Math.min(1, t));
 const seg = (u, a, b) => Math.max(0, Math.min(1, (u - a) / (b - a)));
 const COUL = { Br2: BRUN, OsO4: VIOLET, H2: VERT };
-
-// ── Animation en vue de côté : l'alcène est dans le plan de la figure, la face supérieure est en haut ──
-function Anim({ alc, re, u }) {
-  const A = ALCENES[alc], R = REACTIFS[re], x1 = 130, x2 = 230, y0 = 120, col = COUL[re];
-  const t1 = seg(u, 0, 0.35), t2 = seg(u, 0.35, 0.6), t3 = seg(u, 0.6, 1);
-  const trait = (a, b, c = NOIR, w = 2.6, dash) => <line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke={c} strokeWidth={w} strokeLinecap="round" strokeDasharray={dash} />;
-  const pastille = (x, y, txt, c, r = 10) => <g><circle cx={x} cy={y} r={r} fill="white" stroke={c} strokeWidth={2} /><text x={x} y={y + 4} fontSize={11} fontWeight="700" textAnchor="middle" fill={c}>{txt}</text></g>;
-  const C2 = [x1, y0], C3 = [x2, y0];
-  const dessus = [], dessous = [];
-  if (re === 'Br2') {
-    if (u < 0.35) dessus.push(<g key="a">{pastille(lerp(260, 200, t1), lerp(40, 62, t1), 'Br', col)}{pastille(lerp(300, 240, t1), lerp(40, 62, t1), 'Br', col)}</g>);
-    if (u >= 0.35 && u < 0.6) { const y = lerp(62, 70, t2); dessus.push(<g key="b">{trait(C2, [180, y], col)}{trait(C3, [180, y], col)}{pastille(180, y, 'Br⁺', col, 12)}{pastille(lerp(300, 280, t2), 58, 'Br⁻', BLEU)}</g>); }
-    if (u >= 0.6) { dessus.push(<g key="c">{trait(C2, [x1, y0 - 42], col)}{pastille(x1, y0 - 56, 'Br', col)}</g>); const y = lerp(60, 175, SMOOTH(t3));
-      dessous.push(<g key="d">{trait(C3, [x2, y0 + 42 * seg(t3, 0.3, 1)], BLEU, 2.6, t3 < 0.99 ? '4 3' : undefined)}{pastille(lerp(300, x2, SMOOTH(t3)), lerp(58, y0 + 56, SMOOTH(t3)), t3 > 0.99 ? 'Br' : 'Br⁻', t3 > 0.99 ? col : BLEU)}</g>); }
-  } else if (re === 'OsO4') {
-    if (u < 0.35) dessus.push(<g key="a">{pastille(lerp(250, 180, t1), lerp(30, 58, t1), 'OsO₄', col, 18)}</g>);
-    if (u >= 0.35 && u < 0.6) dessus.push(<g key="b">{trait(C2, [150, 78], col)}{trait(C3, [210, 78], col)}{trait([150, 78], [180, 52], col)}{trait([210, 78], [180, 52], col)}{pastille(150, 78, 'O', col, 8)}{pastille(210, 78, 'O', col, 8)}{pastille(180, 48, 'Os', col, 11)}</g>);
-    if (u >= 0.6) dessus.push(<g key="c">{trait(C2, [x1, y0 - 42], col)}{pastille(x1, y0 - 56, 'OH', col, 12)}{trait(C3, [x2, y0 - 42], col)}{pastille(x2, y0 - 56, 'OH', col, 12)}{t3 < 0.95 && <text x={290} y={50} fontSize={11} fill={KIT.txt2} textAnchor="middle">+ H₂O</text>}</g>);
-  } else {
-    dessus.push(<rect key="s" x={90} y={22} width={180} height={12} rx={4} fill="#cbd5e1" stroke="#64748b" />, <text key="t" x={280} y={32} fontSize={11} fontWeight="700" fill="#475569">Pd</text>);
-    if (u < 0.6) { const p = seg(u, 0, 0.35); dessus.push(<g key="a">{pastille(lerp(110, x1, 0.1 + 0.0), 46, 'H', col, 8)}{pastille(lerp(250, x2, 0.1), 46, 'H', col, 8)}</g>); }
-    if (u >= 0.6) dessus.push(<g key="c">{trait(C2, [x1, lerp(46, y0 - 42, 1) ], col)}{pastille(x1, y0 - 56, 'H', col, 9)}{trait(C3, [x2, y0 - 42], col)}{pastille(x2, y0 - 56, 'H', col, 9)}</g>);
-  }
-  return (
-    <svg viewBox="0 0 360 230" role="img" aria-label={`Animation de l'addition ${R.mode} avec ${R.court} sur ${A.nom}`} style={{ width: '100%', height: 230, display: 'block', background: '#fbfdff', borderRadius: 10 }}>
-      {trait([x1, y0 - 3], [x2, y0 - 3], NOIR, 3)}{trait([x1, y0 + 3], [x2, y0 + 3], u > 0.35 ? '#94a3b8' : NOIR, 3, u > 0.35 ? '4 3' : undefined)}
-      <text x={x1 - 8} y={y0 + 5} fontSize={12} fontWeight="700" fill={NOIR} textAnchor="end">{A.R === 'cycle' ? 'cycle' : 'CH₃'}</text>
-      <text x={x2 + 8} y={y0 + 5} fontSize={12} fontWeight="700" fill={NOIR}>{A.R === 'cycle' ? 'cycle' : 'CH₃'}</text>
-      <text x={x1 - 14} y={y0 + 24} fontSize={11} fill={KIT.txt2}>C2{A.cyc ? ' (CH₃)' : ''}</text><text x={x2 + 8} y={y0 + 24} fontSize={11} fill={KIT.txt2}>C3{A.cyc ? ' (CH₃)' : ''}</text>
-      {dessus}{dessous}
-      <text x={10} y={222} fontSize={12} fill={KIT.txt2}>face inférieure</text><text x={10} y={14} fontSize={12} fill={KIT.txt2}>face supérieure</text>
-    </svg>);
-}
-const SMOOTH = t => (1 - Math.cos(Math.PI * Math.max(0, Math.min(1, t)))) / 2;
 
 function texteEtat(re, u) {
   const R = REACTIFS[re];
@@ -150,7 +117,7 @@ export function SimulationSyntheseStereo() {
             {Object.values(REACTIFS).map(r => <option key={r.cle} value={r.cle}>{r.nom}</option>)}</select></label>
         <div style={{ fontSize: 13.5, color: KIT.txt }}>Mode d'addition : <strong style={{ color: COUL[re] }}>{R.mode}</strong> ({R.inter}).</div>
       </div>
-      <Anim alc={alc} re={re} u={u} />
+      <AnimAddition alc={alc} re={re} u={u} />
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <button onClick={() => { if (u >= 0.999) setU(0); setLecture(l => !l); }} style={styleBouton(true, '#16a34a')}>{lecture ? '⏸ Pause' : '▶ Lecture'}</button>
         <input type="range" min={0} max={1000} step={1} value={Math.round(u * 1000)} onChange={e => { setLecture(false); setU(+e.target.value / 1000); }} aria-label="Avancement de la réaction" style={{ flex: 1 }} />
