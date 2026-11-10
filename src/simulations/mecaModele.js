@@ -254,3 +254,13 @@ export const descripteurProduit = face => {
 // Le produit obtenu par chaque face : l'autre face donne l'énantiomère (mélange racémique si les deux faces sont équiprobables)
 export const PRODUITS = { 1: { face: 1, cip: descripteurProduit(1) }, [-1]: { face: -1, cip: descripteurProduit(-1) } };
 export const POURCENT_RACEMIQUE = 50;
+
+// ═══════════════════════════ POLARIMÈTRE (loi de Biot, mélange de deux énantiomères) ═══════════════════════════
+// Valeurs indicatives : le 2-bromobutane (S) est dextrogyre (+), le (R) lévogyre (−), pouvoir rotatoire spécifique de l'ordre de 23 °·mL·g⁻¹·dm⁻¹.
+export const POLARI = { specifique: 23.1, l: 1, c: 0.5 };     // [α] (°·mL·g⁻¹·dm⁻¹), ℓ (dm), c totale (g·mL⁻¹)
+export function polarimetre(pctR) {
+  const p = Math.max(0, Math.min(100, pctR)) / 100;
+  const pur = POLARI.specifique * POLARI.l * POLARI.c;         // α d'un énantiomère pur (loi de Biot α = [α]·ℓ·c)
+  return { pctR: pctR, pctS: 100 - pctR, ee: Math.abs(2 * p - 1) * 100, alpha: pur * (1 - 2 * p), alphaPur: pur,
+    majoritaire: p > 0.5 ? 'R' : p < 0.5 ? 'S' : null };
+}
