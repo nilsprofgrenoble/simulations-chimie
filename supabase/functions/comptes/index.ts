@@ -43,7 +43,8 @@ const ORIGINES = ['https://paillasse-virtuelle.fr', 'https://www.paillasse-virtu
 const entetes = (req: Request) => {
   const o = req.headers.get('Origin') ?? '';
   return {
-    'Access-Control-Allow-Origin': ORIGINES.includes(o) ? o : ORIGINES[0],
+    // Origine inconnue : aucun en-tête CORS, le navigateur bloque alors la lecture de la réponse
+    ...(ORIGINES.includes(o) ? { 'Access-Control-Allow-Origin': o } : {}),
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Vary': 'Origin',
