@@ -1,10 +1,11 @@
 // Régiosélectivité de l'addition de HBr sur un alcène dissymétrique (BTS) : deux carbocations possibles, un profil d'énergie à deux voies.
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import { ALCENES, alcene, voies, proportions, profil, NOM_CLASSE, E_CATION, MONTEE_ET1, E_PRODUIT, T } from "./regioModele";
+import { FlecheCourbe } from "./MecaVue2D";
 
 const SIM_ID = 93;
 declarerDefis(SIM_ID, [['principal', 'Régiosélectivité']]);
@@ -14,9 +15,9 @@ const COUL = { A: '#0284c7', B: '#ea580c' };
 const nb = (x, d = 0) => x.toFixed(d).replace('.', ',');
 const pct = x => x >= 99.95 ? '> 99,9' : x <= 0.05 ? '< 0,1' : nb(x, x >= 10 && x <= 90 ? 0 : 1);
 
-// ── Formule topologique d'une molécule : alcène, carbocation ou produit ──
-function Squelette({ a, mode, v, numC, titre }) {
-  const C = a.C, ids = Object.keys(C).map(k => (k === 'm' ? 'm' : +k));
+// Outils de placement des étiquettes autour des atomes d'un squelette
+function outils(a) {
+  const C = a.C;
   const voisins = id => a.liaisons.filter(([p, q]) => p === id || q === id).map(([p, q]) => (p === id ? q : p));
   // Directions libres autour d'un atome (éloignées des liaisons), de la plus dégagée à la moins dégagée
   const libres = id => {
@@ -30,6 +31,13 @@ function Squelette({ a, mode, v, numC, titre }) {
     const t0 = libres(id)[0].t, ok = libres(id).find(d => Math.abs(Math.atan2(Math.sin(d.t - t0), Math.cos(d.t - t0))) > 0.87) || libres(id)[1];
     return [Math.cos(ok.t), Math.sin(ok.t)];
   };
+  return { voisins, libres, dehors, dirNum };
+}
+
+// ── Formule topologique d'une molécule : alcène, carbocation ou produit ──
+function Squelette({ a, mode, v, numC, titre }) {
+  const C = a.C, ids = Object.keys(C).map(k => (k === 'm' ? 'm' : +k));
+  const { voisins, libres, dehors, dirNum } = outils(a);
   const xs = ids.map(i => C[i][0]), ys = ids.map(i => C[i][1]);
   const x0 = Math.min(...xs) - 42, x1 = Math.max(...xs) + 42, y0 = Math.min(...ys) - 46, y1 = Math.max(...ys) + 46;
   const doubleLiaison = mode === 'alcene';
@@ -61,8 +69,74 @@ function Squelette({ a, mode, v, numC, titre }) {
     </svg>);
 }
 
+// Texte qui accompagne l'animation
+function legende(u, v) {
+  const cl = NOM_CLASSE[v.classe];
+  if (u < 0.06) return `Réactifs : la liaison π (violet) est riche en électrons ; dans HBr, H est δ+. H va se fixer sur C${v.h}.`;
+  if (u < 0.2) return `Le doublet π se déplace vers H (flèche rouge) pendant que la liaison H–Br s'allonge.`;
+  if (u < 0.3) return `État de transition 1 : H est à moitié lié à C${v.h} et à Br. Son énergie (${v.ET1} kJ/mol) fixe la vitesse de l'étape 1.`;
+  if (u < 0.5) return `Carbocation ${cl} sur C${v.c} (charge +) et ion Br⁻ : c'est l'intermédiaire, à ${v.Ecat} kJ/mol. Plus il est stable, plus l'état de transition qui y mène est bas.`;
+  if (u < 0.74) return `Un doublet non liant de Br⁻ attaque le carbone C${v.c}⁺ (flèche rouge). L'étape 2 est très rapide : la barrière est faible.`;
+  if (u < 0.95) return `La liaison C–Br se forme : C${v.c} retrouve 8 électrons.`;
+  return `Produit : ${v.produit}.`;
+}
+
+// ── Animation d'une voie : u de 0 (réactifs) à 1 (produit) ; jalons alignés sur le profil ──
+const JAL = [['Réactifs', 0], ['ET₁', 0.22], ['Carbocation', 0.45], ['ET₂', 0.68], ['Produit', 1]];
+const lisse = t => { const c = Math.max(0, Math.min(1, t)); return c * c * (3 - 2 * c); };
+const seg = (u, a, b) => lisse((u - a) / (b - a));
+const mixP = (p, q, t) => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t];
+const plus = (p, d, r) => [p[0] + d[0] * r, p[1] + d[1] * r];
+
+function MolAnim({ a, v, u, numC }) {
+  const C = a.C, { dehors, dirNum } = outils(a), ids = Object.keys(C).map(k => (k === 'm' ? 'm' : +k));
+  const dH = dehors(v.h), dC = dehors(v.c), Ch = C[v.h], Cc = C[v.c];
+  const Hdep = plus(Ch, dH, 64), Hfin = plus(Ch, dH, 30);
+  const Brdep = plus(Hdep, dH, 30), Brmid = plus(Cc, dC, 58), Brfin = plus(Cc, dC, 30);
+  const H = mixP(Hdep, Hfin, seg(u, 0, 0.24));
+  let Br = mixP(Brdep, plus(Brdep, dH, 8), seg(u, 0, 0.2));
+  Br = mixP(Br, Brmid, seg(u, 0.2, 0.46));
+  Br = mixP(Br, Brfin, seg(u, 0.5, 0.78));
+  const piOp = 1 - seg(u, 0.1, 0.45), hbr = 1 - seg(u, 0.15, 0.4), liaisonH = seg(u, 0.08, 0.28), liaisonBr = seg(u, 0.6, 0.82);
+  const charge = seg(u, 0.3, 0.45) * (1 - seg(u, 0.7, 0.92));
+  const brIon = seg(u, 0.4, 0.46) * (1 - seg(u, 0.7, 0.8));
+  const pts = [...ids.map(i => C[i]), Hdep, Brdep, Brmid];
+  const xs = pts.map(q => q[0]), ys = pts.map(q => q[1]);
+  const x0 = Math.min(...xs) - 40, x1 = Math.max(...xs) + 40, y0 = Math.min(...ys) - 40, y1 = Math.max(...ys) + 40;
+  const [cx, cy] = C[v.c], ch = Ch;
+  // flèches : étape 1 (π → H) puis étape 2 (doublet de Br⁻ → C⁺)
+  const mid = [(C[a.db[0]][0] + C[a.db[1]][0]) / 2, (C[a.db[0]][1] + C[a.db[1]][1]) / 2];
+  const f1 = u > 0.1 && u < 0.34, f2 = u > 0.48 && u < 0.66, dQ = dirNum(v.c);
+  const dd = [Ch[0] - Cc[0], Ch[1] - Cc[1]], dl = Math.hypot(...dd) || 1, nrm = [-dd[1] / dl * 4, dd[0] / dl * 4];
+  const trait = (p, q, op, tir, col = NOIR) => op > 0.02 && (() => {
+    const d = [q[0] - p[0], q[1] - p[1]], L = Math.hypot(...d) || 1, e = [d[0] / L, d[1] / L];
+    return <line x1={p[0] + e[0] * 11} y1={p[1] + e[1] * 11} x2={q[0] - e[0] * 11} y2={q[1] - e[1] * 11} stroke={col} strokeWidth={2.2} strokeLinecap="round" strokeDasharray={tir ? '4 4' : undefined} opacity={op} />;
+  })();
+  return (
+    <svg viewBox={`${x0} ${y0} ${x1 - x0} ${y1 - y0}`} role="img" aria-label={`Mécanisme de la voie ${v.cle === 'A' ? 1 : 2}, animation`} style={{ width: '100%', height: 250, display: 'block', margin: '0 auto' }}>
+      {a.liaisons.map(([p, q], i) => {
+        const [px, py] = C[p], [qx, qy] = C[q], ddx = qx - px, ddy = qy - py, d = Math.hypot(ddx, ddy), nx = -ddy / d * 3, ny = ddx / d * 3;
+        const dbl = (p === a.db[0] && q === a.db[1]) || (q === a.db[0] && p === a.db[1]);
+        return (<g key={i}>
+          <line x1={px + (dbl ? nx : 0)} y1={py + (dbl ? ny : 0)} x2={qx + (dbl ? nx : 0)} y2={qy + (dbl ? ny : 0)} stroke={NOIR} strokeWidth={2.4} strokeLinecap="round" />
+          {dbl && <line x1={px - nx} y1={py - ny} x2={qx - nx} y2={qy - ny} stroke={VIOLET} strokeWidth={2.4} strokeLinecap="round" opacity={piOp} />}
+          {dbl && <line x1={px + nx} y1={py + ny} x2={qx + nx} y2={qy + ny} stroke={NOIR} strokeWidth={2.4} strokeLinecap="round" />}
+        </g>);
+      })}
+      {trait(H, Br, hbr, u > 0.1)}
+      {trait(ch, H, liaisonH, liaisonH < 0.98, VERT)}
+      {trait(Cc, Br, liaisonBr, liaisonBr < 0.98, BRUN)}
+      {charge > 0.02 && <g opacity={charge}><circle cx={cx + dQ[0] * 20} cy={cy + dQ[1] * 20} r={8} fill="white" stroke={BLEU} strokeWidth={1.8} /><text x={cx + dQ[0] * 20} y={cy + dQ[1] * 20 + 4.5} fontSize={14} fontWeight="700" textAnchor="middle" fill={BLEU}>+</text></g>}
+      <text x={H[0]} y={H[1] + 5} fontSize={15} fontWeight="700" textAnchor="middle" fill={VERT}>H</text>
+      <text x={Br[0]} y={Br[1] + 5} fontSize={16} fontWeight="700" textAnchor="middle" fill={BRUN}>Br{brIon > 0.5 && <tspan fontSize="11" dy="-7">−</tspan>}</text>
+      {numC && ids.filter(i => i !== 'm' && !(charge > 0.3 && i === v.c)).map(i => { const [rx, ry] = dirNum(i); return <text key={i} x={C[i][0] + rx * 16} y={C[i][1] + ry * 16 + 4.5} fontSize={13} fontWeight="700" textAnchor="middle" fill={VIOLET}>{i}</text>; })}
+      {f1 && <FlecheCourbe de={mid} vers={[H[0], H[1]]} courbe={dH[1] > 0 ? -1 : 1} couleur="#b91c1c" />}
+      {f2 && <FlecheCourbe de={[Br[0] + (Cc[0] - Br[0]) * 0.2, Br[1] + (Cc[1] - Br[1]) * 0.2]} vers={[Cc[0] + dC[0] * 14, Cc[1] + dC[1] * 14]} courbe={1} couleur="#b91c1c" />}
+    </svg>);
+}
+
 // ── Profil d'énergie à deux voies ──
-function ProfilRegio({ a, sel, setSel, montrerE }) {
+function ProfilRegio({ a, sel, setSel, montrerE, u, vAnim }) {
   const [A, B] = voies(a), W = 360, H = 250, gx = 48, gy = 14, gw = W - gx - 14, gh = H - gy - 34;
   const Emin = -90, Emax = 125, X = x => gx + x * gw, Y = e => gy + (1 - (e - Emin) / (Emax - Emin)) * gh;
   const chemin = pts => {
@@ -75,6 +149,16 @@ function ProfilRegio({ a, sel, setSel, montrerE }) {
     return d;
   };
   const ecart = Math.abs(A.ET1 - B.ET1);
+  // position de la bille sur la courbe de la voie animée (même courbe de Catmull-Rom que le tracé)
+  const bille = (() => {
+    if (!vAnim) return null;
+    const P = profil(vAnim).map(([x, e]) => [X(x), Y(e)]);
+    let i = P.length - 2; for (let k = 0; k < P.length - 1; k++) { if (u <= profil(vAnim)[k + 1][0] + 1e-9) { i = k; break; } }
+    const p0 = P[Math.max(0, i - 1)], p1 = P[i], p2 = P[i + 1], p3 = P[Math.min(P.length - 1, i + 2)];
+    const t = (u - profil(vAnim)[i][0]) / (profil(vAnim)[i + 1][0] - profil(vAnim)[i][0]), m = 1 - t;
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6], c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    return [0, 1].map(k => m * m * m * p1[k] + 3 * m * m * t * c1[k] + 3 * m * t * t * c2[k] + t * t * t * p2[k]);
+  })();
   return (
     <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Profil d'énergie : deux voies d'addition, une par carbocation possible" style={{ width: '100%', display: 'block', background: '#fbfdff', borderRadius: 10 }}>
       <line x1={gx} y1={gy} x2={gx} y2={gy + gh} stroke="#64748b" /><line x1={gx} y1={Y(0)} x2={gx + gw} y2={Y(0)} stroke="#cbd5e1" strokeDasharray="4 3" />
@@ -93,6 +177,7 @@ function ProfilRegio({ a, sel, setSel, montrerE }) {
       <text x={X(0.45)} y={Y(Math.min(A.Ecat, B.Ecat)) + 30} fontSize={11} fill={KIT.txt2} textAnchor="middle">carbocation</text>
       <text x={X(1)} y={Y(E_PRODUIT) + 15} fontSize={11} fill={KIT.txt2} textAnchor="end">produit</text>
       <text x={X(0) + 4} y={Y(0) + 15} fontSize={11} fill={KIT.txt2}>réactifs</text>
+      {bille && <circle cx={bille[0]} cy={bille[1]} r={7} fill="#f59e0b" stroke="white" strokeWidth={2} />}
       {ecart > 0 && <g>
         <line x1={X(0.41)} y1={Y(A.ET1)} x2={X(0.41)} y2={Y(B.ET1)} stroke="#475569" strokeWidth={1.5} />
         <line x1={X(0.39)} y1={Y(A.ET1)} x2={X(0.43)} y2={Y(A.ET1)} stroke="#475569" /><line x1={X(0.39)} y1={Y(B.ET1)} x2={X(0.43)} y2={Y(B.ET1)} stroke="#475569" />
@@ -117,13 +202,15 @@ function CarteVoie({ a, v, p, numC, sel, setSel, majeure }) {
 }
 
 // ── Parcours guidé ──
-function etapesGuide(alc, setAlc) {
+function etapesGuide(alc, setAlc, u, setU, choisirVoie) {
   const choisir = (id, nom) => ({ type: 'action', ok: alc === id, label: 'Le faire pour moi', faire: () => setAlc(id), consigne: `Choisis le ${nom} dans la liste des alcènes.`, indice: 'Utilise les boutons au-dessus du schéma.' });
   return [
     { titre: 'Un alcène dissymétrique', texte: <>Le <strong>propène</strong> CH₃–CH=CH₂ n'est pas symétrique : les deux carbones de la double liaison ne sont pas équivalents. HBr peut donc s'additionner de <strong>deux façons</strong> : H sur C1 ou H sur C2. Les deux cartes montrent les deux possibilités.</>,
       tache: { type: 'qcm', q: 'Combien de produits d’addition différents peut-on écrire avec le propène et HBr ?', options: ['Un seul', 'Deux : le 1-bromopropane et le 2-bromopropane', 'Trois'], bonne: 1, indice: 'Br peut se fixer sur C1 ou sur C2.', expl: <>Si H se fixe sur C2, Br se fixe sur C1 (1-bromopropane) ; si H se fixe sur C1, Br se fixe sur C2 (2-bromopropane). Une réaction qui favorise l'un de ces isomères de constitution est dite <strong>régiosélective</strong>.</> } },
     { titre: 'Où est la charge + ?', texte: <>À l'étape 1, le doublet π attaque H. Le carbone qui <strong>ne reçoit pas</strong> H perd sa part de la liaison π : il devient un carbocation, porteur de la charge +.</>,
       tache: { type: 'qcm', q: 'Si H se fixe sur C1 du propène, sur quel carbone se trouve la charge + ?', options: ['Sur C1', 'Sur C2', 'Sur C3'], bonne: 1, indice: 'La charge + est sur l’autre carbone de la double liaison.', expl: <>C1 reçoit H : c'est C2, l'autre carbone de la double liaison, qui n'a plus que 6 électrons de valence.</> } },
+    { titre: 'Suivre la voie 1', texte: <>Vérifie ta réponse en animant la voie 1 : lance la lecture ou place la bille sur le <strong>carbocation</strong>. H se fixe sur C1, la liaison H–Br se rompt et la charge + apparaît. Les flèches rouges montrent le déplacement des doublets.</>,
+      tache: { type: 'action', ok: Math.abs(u - 0.45) < 0.04, label: 'Le faire pour moi', faire: () => { choisirVoie('A'); setU(0.45); }, consigne: 'Place la bille sur le carbocation (creux du profil, voie 1).', indice: 'Utilise le bouton « Carbocation » sous le schéma ou fais glisser le curseur.' } },
     { titre: 'Classer les carbocations', texte: <>On classe un carbocation d'après le nombre d'atomes de carbone liés au C⁺ : <strong>primaire</strong> (1), <strong>secondaire</strong> (2), <strong>tertiaire</strong> (3). Les cartes indiquent ce nombre.</>,
       tache: { type: 'qcm', q: 'Quelle est la classe du carbocation formé quand H se fixe sur C1 du propène ?', options: ['Primaire', 'Secondaire', 'Tertiaire'], bonne: 1, indice: 'Compte les carbones liés à C2 (celui qui porte la charge).', expl: <>C2 est lié à C1 et à C3 : deux carbones, donc carbocation secondaire. Dans l'autre voie, C1⁺ n'est lié qu'à C2 : primaire.</> } },
     { titre: 'Pourquoi le secondaire est plus stable', texte: <>Les groupes alkyle <strong>donnent</strong> de la densité électronique au carbone chargé (effet inductif donneur, et hyperconjugaison). Plus il y en a, plus la charge + est « diluée » et plus le carbocation est stable, donc plus bas en énergie.</>,
@@ -175,6 +262,7 @@ const hypotheses = (
     <li>Les proportions sont calculées en <strong>contrôle cinétique</strong> à {T} K, avec un rapport de vitesses exp(ΔΔE‡/RT). On néglige les termes entropiques et le rôle du solvant.</li>
     <li>HBr s'additionne par un mécanisme <strong>ionique</strong> (sans peroxydes). En présence de peroxydes ou de lumière, un mécanisme radicalaire donnerait le produit anti-Markovnikov.</li>
     <li>On ne considère pas les <strong>transpositions</strong> de carbocation (migration d'un H ou d'un CH₃), qui peuvent se produire pour certains substrats.</li>
+    <li>L'animation est <strong>schématique</strong> : les trajectoires de H et de Br⁻ sont interpolées entre des positions typiques (ce n'est pas un calcul de dynamique moléculaire) et la molécule est dessinée à plat, sans stéréochimie.</li>
     <li>Les produits des deux voies sont supposés avoir la même énergie (−{Math.abs(E_PRODUIT)} kJ/mol) : la sélectivité est ici d'origine cinétique.</li>
   </ul>
 );
@@ -188,27 +276,49 @@ export function SimulationRegioselectiviteHBr() {
   const [numC, setNumC] = useState(true);
   const [montrerE, setMontrerE] = useState(true);
   const [sel, setSel] = useState(null);
+  const [u, setU] = useState(0);
+  const [lecture, setLecture] = useState(false);
+  const ref = useRef(u); ref.current = u;
+  useEffect(() => {
+    if (!lecture) return;
+    let raf, t0 = performance.now();
+    const pas = t => {
+      const dt = Math.min(0.05, (t - t0) / 1000); t0 = t;
+      const nv = ref.current + dt * (0.1 + 0.1 * Math.abs(Math.sin(ref.current * Math.PI * 4)));
+      if (nv >= 1) { setU(1); setLecture(false); return; }
+      setU(nv); raf = requestAnimationFrame(pas);
+    };
+    raf = requestAnimationFrame(pas);
+    return () => cancelAnimationFrame(raf);
+  }, [lecture]);
   const [df, setDf] = useState(() => defi());
   const [hypoOuv, setHypoOuv] = useState(false);
   const a = alcene(alc), [A, B] = voies(a), pr = proportions(a);
-  const etapes = etapesGuide(alc, setAlc);
+  const vAnim = sel ? voies(a).find(x => x.cle === sel) : pr.majeure;
+  const etapes = etapesGuide(alc, k => { setAlc(k); setSel(null); setU(0); }, u, k => { setLecture(false); setU(k); }, setSel);
   const finParcours = guide.etape >= etapes.length;
   const juste = q => q.type === 'num' ? proche(lireNombre(df.reps[q.id] ?? ''), q.vrai, q.tol) : df.reps[q.id] === q.bonne;
 
   const visuel = (
     <div style={{ flex: '1 1 380px', minWidth: 280, display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-        {ALCENES.map(x => <button key={x.id} onClick={() => { setAlc(x.id); setSel(null); }} style={stylePetitBouton(alc === x.id, '#7c3aed')}>{x.nom}</button>)}
+        {ALCENES.map(x => <button key={x.id} onClick={() => { setAlc(x.id); setSel(null); setU(0); setLecture(false); }} style={stylePetitBouton(alc === x.id, '#7c3aed')}>{x.nom}</button>)}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', background: '#f8fafc', border: `1px solid ${KIT.bord}`, borderRadius: 10, padding: '6px 10px' }}>
-        <div style={{ width: 190, flex: '0 0 auto' }}><Squelette a={a} mode="alcene" numC={numC} titre={`Formule topologique du ${a.nom}`} /></div>
-        <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5 }}><strong>{a.nom}</strong> + HBr<br /><span style={{ color: KIT.txt2 }}>{a.semi}</span><br />Deux voies sont possibles : choisis une carte pour la suivre sur le profil.</div>
+      <div style={{ background: '#f8fafc', border: `1px solid ${KIT.bord}`, borderRadius: 10, padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ fontSize: 14, color: KIT.txt }}><strong>{a.nom}</strong> + HBr <span style={{ color: KIT.txt2 }}>({a.semi})</span> — mécanisme de la <strong style={{ color: COUL[vAnim.cle] }}>voie {vAnim.cle === 'A' ? 1 : 2}</strong> (clique une carte pour changer de voie)</div>
+        <MolAnim a={a} v={vAnim} u={u} numC={numC} />
+        <div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.5, minHeight: 40 }}>{legende(u, vAnim)}</div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+          <button onClick={() => { if (u >= 0.999) setU(0); setLecture(l => !l); }} style={styleBouton(true, '#16a34a')}>{lecture ? '⏸ Pause' : '▶ Lecture'}</button>
+          {JAL.map(([t, k]) => <button key={t} onClick={() => { setLecture(false); setU(k); }} style={stylePetitBouton(Math.abs(u - k) < 0.02, '#b45309')}>{t}</button>)}
+        </div>
+        <input type="range" min={0} max={1000} value={Math.round(u * 1000)} onChange={e => { setLecture(false); setU(e.target.value / 1000); }} aria-label="Avancement de la réaction" style={{ width: '100%' }} />
       </div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <CarteVoie a={a} v={A} p={pr.A} numC={numC} sel={sel} setSel={setSel} majeure={pr.majeure.cle === 'A' && !pr.egales} />
         <CarteVoie a={a} v={B} p={pr.B} numC={numC} sel={sel} setSel={setSel} majeure={pr.majeure.cle === 'B' && !pr.egales} />
       </div>
-      <ProfilRegio a={a} sel={sel} setSel={setSel} montrerE={montrerE} />
+      <ProfilRegio a={a} sel={sel} setSel={setSel} montrerE={montrerE} u={u} vAnim={vAnim} />
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 13, color: KIT.txt }}>
         <label><input type="checkbox" checked={montrerE} onChange={e => setMontrerE(e.target.checked)} /> Montrer les énergies</label>
         <label><input type="checkbox" checked={numC} onChange={e => setNumC(e.target.checked)} /> Numéroter les carbones</label>
