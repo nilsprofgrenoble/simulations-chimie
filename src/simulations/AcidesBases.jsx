@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
 import { SchemaBurette } from "./titrageCommun";
 import { Pic } from "../Pictos";
@@ -295,6 +295,9 @@ export function SimulationAcidesBases({ naviguer }) {
       {defi.type === 'pka' && champReponse('v', '', 'pKa de l’acide')}
       {defi.type === 'conc' && champReponse('v', 'mol/L', 'Concentration trouvée')}
       {defi.type === 'tampon' && <div style={{ fontSize: 14, marginBottom: 8, color: KIT.txt2 }}>Aucune saisie : le pH affiché dans « Mesures » est celui qui sera contrôlé.</div>}
+      {defi.type === 'pka' && <IndiceDefi cache={false}>Repérez le volume équivalent, puis lisez le pH à la demi-équivalence : à V_eq ÷ 2, pH = pKa.</IndiceDefi>}
+      {defi.type === 'conc' && <IndiceDefi cache={false}>À l’équivalence : C_acide × V_acide = C_base × V_eq. Isolez C_acide, puis comparez à l’étiquette en tenant compte des incertitudes.</IndiceDefi>}
+      {defi.type === 'tampon' && <IndiceDefi cache={false}>pH = pKa + log([base] ÷ [acide]) : trouvez le rapport base / acide nécessaire, puis les quantités pour 100 mL.</IndiceDefi>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="ab-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
         <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
