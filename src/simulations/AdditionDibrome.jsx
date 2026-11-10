@@ -5,58 +5,13 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
   BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import { ALCENES, activiteOptique } from "./brModele";
+import { AnimAddition } from "./AnimAddition";
 
 const SIM_ID = 96;
 declarerDefis(SIM_ID, [['principal', 'Addition du dibrome']]);
 const NOIR = '#0f172a', BRUN = '#9a3412', BLEU = '#1d4ed8', ROUGE = '#dc2626';
 const lerp = (a, b, t) => a + (b - a) * Math.max(0, Math.min(1, t));
 const seg = (u, a, b) => Math.max(0, Math.min(1, (u - a) / (b - a)));
-
-// ── Animation (vue de côté : l'alcène est dans le plan de l'écran, perpendiculaire à l'écran = face avant) ──
-// u : 0 approche de Br₂, 0,4 ion bromonium, 1 produit (anti). « syn » : Br⁻ essaie la même face et est bloqué.
-function Anim({ alc, u, face, syn }) {
-  const s = face === 'dessus' ? 1 : -1;           // +1 : Br₂ arrive par le haut
-  const A = ALCENES[alc], x1 = 130, x2 = 230, y0 = 120;
-  const Y = d => y0 - s * d;                       // d > 0 : vers la face d'attaque
-  const t1 = seg(u, 0, 0.35), t2 = seg(u, 0.35, 0.55), t3 = seg(u, 0.55, 1);
-  const bloque = syn && u > 0.62;
-  const bromoniumY = Y(lerp(95, 62, t2));
-  const brM = [180, bromoniumY], brmoins = [lerp(300, 230, t2) , Y(lerp(70, 70, 1))];
-  const trait = (a, b, col = NOIR, w = 3, dash) => <line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke={col} strokeWidth={w} strokeLinecap="round" strokeDasharray={dash} />;
-  // Étape 1 : Br₂ → Br⁺ (pont) + Br⁻ ; étape 2 : Br⁻ attaque une des deux liaisons du pont par la face opposée.
-  const C1 = [x1, y0], C2 = [x2, y0];
-  const brAttaque = syn ? [lerp(300, 262, seg(u, 0.55, 0.62)), Y(lerp(70, 30, seg(u, 0.55, 0.62)))] : [lerp(300, x2, t3), lerp(Y(70), Y(-50), t3)];
-  const pont = u >= 0.35 && !(t3 > 0.98 && !syn);
-  return (
-    <svg viewBox="0 0 360 230" role="img" aria-label="Animation de l'addition de Br₂ sur un alcène : approche, ion bromonium, attaque anti" style={{ width: '100%', height: 230, display: 'block', background: '#fbfdff', borderRadius: 10 }}>
-      {/* alcène : double liaison dans le plan */}
-      {trait([x1, y0 - 3], [x2, y0 - 3], NOIR, 3)}{trait([x1, y0 + 3], [x2, y0 + 3], u > 0.35 ? '#94a3b8' : NOIR, 3, u > 0.35 ? '4 3' : undefined)}
-      <text x={x1 - 8} y={y0 + 5} fontSize={12} fontWeight="700" fill={NOIR} textAnchor="end">{A.R === 'cycle' ? 'cycle' : 'CH₃'}</text>
-      <text x={x2 + 8} y={y0 + 5} fontSize={12} fontWeight="700" fill={NOIR}>{A.R === 'cycle' ? 'cycle' : 'CH₃'}</text>
-      <text x={x1} y={y0 + 22} fontSize={11} fill={KIT.txt2} textAnchor="middle">C2</text><text x={x2 + 14} y={y0 + 22} fontSize={11} fill={KIT.txt2} textAnchor="middle">C3</text>
-      {/* Br₂ qui s'approche puis se polarise */}
-      {u < 0.35 && <g>
-        {trait([lerp(250, 180 + 20, t1), Y(lerp(130, 95, t1))], [lerp(250, 180 - 20, t1) - 0, Y(lerp(130, 95, t1)) + 0 * s], BRUN, 3)}
-        <circle cx={lerp(250, 200, t1)} cy={Y(lerp(130, 95, t1))} r={9} fill="#fed7aa" stroke={BRUN} /><text x={lerp(250, 200, t1)} y={Y(lerp(130, 95, t1)) + 4} fontSize={11} fontWeight="700" textAnchor="middle" fill={BRUN}>Br</text>
-        <circle cx={lerp(250, 160, t1)} cy={Y(lerp(130, 95, t1))} r={9} fill="#fed7aa" stroke={BRUN} /><text x={lerp(250, 160, t1)} y={Y(lerp(130, 95, t1)) + 4} fontSize={11} fontWeight="700" textAnchor="middle" fill={BRUN}>Br</text>
-      </g>}
-      {/* ion bromonium : pont Br⁺ entre C2 et C3, du côté d'attaque de Br₂ */}
-      {u >= 0.35 && pont && <g>
-        {trait(C1, brM, BRUN, 2.5)}{trait(C2, brM, BRUN, 2.5)}
-        <circle cx={brM[0]} cy={brM[1]} r={11} fill="#fed7aa" stroke={BRUN} strokeWidth={2} /><text x={brM[0]} y={brM[1] + 4} fontSize={11} fontWeight="700" textAnchor="middle" fill={BRUN}>Br⁺</text>
-      </g>}
-      {/* Br⁻ */}
-      {u >= 0.35 && <g>
-        <circle cx={brAttaque[0]} cy={brAttaque[1]} r={10} fill="#bfdbfe" stroke={BLEU} strokeWidth={2} /><text x={brAttaque[0]} y={brAttaque[1] + 4} fontSize={11} fontWeight="700" textAnchor="middle" fill={BLEU}>{t3 > 0.98 && !syn ? 'Br' : 'Br⁻'}</text>
-      </g>}
-      {/* produit : Br du pont sur C2 (face du pont), Br⁻ sur C3 (face opposée) */}
-      {t3 > 0.98 && !syn && <g>{trait(C1, [x1, Y(38)], BRUN, 2.5)}<text x={x1} y={Y(48)} fontSize={11} fontWeight="700" textAnchor="middle" fill={BRUN}>Br</text></g>}
-      {t3 > 0.05 && !syn && <>{trait(C2, [x2, Y(lerp(-8, -40, seg(t3, 0, 1)))], BLEU, 2.5, t3 < 0.98 ? '4 3' : undefined)}</>}
-      {bloque && <g><text x={262} y={Y(46)} fontSize={22} fontWeight="800" fill={ROUGE} textAnchor="middle">✕</text></g>}
-      <text x={10} y={20} fontSize={12} fill={KIT.txt2}>{s > 0 ? 'face supérieure' : 'face inférieure'} : Br₂ approche</text>
-      <text x={10} y={218} fontSize={12} fill={KIT.txt2}>{s > 0 ? 'face inférieure' : 'face supérieure'} : attaque anti de Br⁻</text>
-    </svg>);
-}
 
 function etat(u, syn) {
   if (u < 0.35) return <>Le dibrome Br₂, <strong>polarisable</strong>, s'approche de la double liaison C=C, riche en électrons (nucléophile). La molécule Br–Br se polarise.</>;
@@ -169,7 +124,7 @@ export function SimulationAdditionDibrome() {
           <button onClick={() => { setSyn(true); setU(0); }} style={stylePetitBouton(syn, ROUGE)}>même face que le pont</button>
         </div>
       </div>
-      <Anim alc={alc} u={u} face={face} syn={syn} />
+      <AnimAddition alc={alc} re="Br2" u={u} face={face} syn={syn} />
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <button onClick={() => { if (u >= 0.999) setU(0); setLecture(l => !l); }} style={styleBouton(true, '#16a34a')}>{lecture ? '⏸ Pause' : '▶ Lecture'}</button>
         <input type="range" min={0} max={1000} step={1} value={Math.round(u * 1000)} onChange={e => { setLecture(false); setU(+e.target.value / 1000); }} aria-label="Avancement de la réaction" style={{ flex: 1 }} />
