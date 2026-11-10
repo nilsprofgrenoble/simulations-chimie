@@ -5,7 +5,7 @@ import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuvertu
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
-import { JALONS, energie, vitesse, EA1, EA2, DELTA_E, E_CARBOCATION, PRODUITS, descripteurProduit, geometrieVSEPR } from "./mecaModele";
+import { JALONS, energie, vitesse, EA1, EA2, DELTA_E, E_CARBOCATION, PRODUITS, descripteurProduit, geometrieVSEPR, polarimetre, POLARI } from "./mecaModele";
 import { Mol2D } from "./MecaVue2D";
 import { DessinFleches } from "./MecaDessin";
 
@@ -30,6 +30,45 @@ function legende(u) {
 }
 
 // ── Profil d'énergie ──
+// Polarimètre : α mesuré pour un mélange de (R) et de (S) (loi de Biot)
+function Polarimetre({ pctR, setPctR }) {
+  const m = polarimetre(pctR), signe = m.alpha > 0.005 ? '+' : m.alpha < -0.005 ? '−' : '';
+  const nb = (x, d) => x.toFixed(d).replace('.', ',');
+  const rot = Math.max(-25, Math.min(25, m.alpha));
+  const Plan = ({ cx, ang, couleur }) => (<g>
+    <circle cx={cx} cy={50} r={26} fill="white" stroke={KIT.bord} strokeWidth={1.5} />
+    <g transform={`rotate(${ang} ${cx} 50)`}><line x1={cx} y1={29} x2={cx} y2={71} stroke={couleur} strokeWidth={3} strokeLinecap="round" /></g>
+  </g>);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>Un faisceau de lumière polarisée traverse une cuve contenant le produit. Un énantiomère fait tourner le plan de polarisation : (S) vers la droite (+), (R) vers la gauche (−). Fais varier la composition du mélange.</div>
+      <label style={{ fontSize: 14, color: KIT.txt, fontWeight: 700 }}>Part de (R) dans le mélange : {pctR} % (R) · {100 - pctR} % (S)
+        <input type="range" min={0} max={100} step={1} value={pctR} onChange={e => setPctR(+e.target.value)} aria-label="Pourcentage de (R)" style={{ width: '100%' }} />
+      </label>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        {[['(S) pur', 0], ['75 % (S)', 25], ['Racémique', 50], ['75 % (R)', 75], ['(R) pur', 100]].map(([t, v]) =>
+          <button key={t} onClick={() => setPctR(v)} style={stylePetitBouton(pctR === v, '#0284c7')}>{t}</button>)}
+      </div>
+      <svg viewBox="0 0 330 100" role="img" aria-label={`Polarimètre : le plan de polarisation tourne de ${signe}${nb(Math.abs(m.alpha), 1)} degrés`} style={{ width: '100%', maxWidth: 420, display: 'block', background: '#fbfdff', borderRadius: 10 }}>
+        <Plan cx={40} ang={0} couleur="#64748b" />
+        <text x={40} y={92} fontSize={11} textAnchor="middle" fill={KIT.txt2}>entrée</text>
+        <rect x={90} y={30} width={150} height={40} rx={6} fill="#e0f2fe" stroke="#0284c7" strokeWidth={1.5} />
+        <line x1={68} y1={50} x2={90} y2={50} stroke="#f59e0b" strokeWidth={3} /><line x1={240} y1={50} x2={262} y2={50} stroke="#f59e0b" strokeWidth={3} />
+        <text x={165} y={54} fontSize={12} textAnchor="middle" fill="#0369a1" fontWeight="700">cuve ℓ = {POLARI.l} dm</text>
+        <Plan cx={290} ang={rot} couleur="#b91c1c" />
+        <text x={290} y={92} fontSize={11} textAnchor="middle" fill={KIT.txt2}>sortie</text>
+      </svg>
+      <div style={styleBoite}>
+        <LigneMesure nom="Excès énantiomérique (%)" valeur={fmt(m.ee, 0)} couleur="#7c3aed" />
+        <LigneMesure nom="Angle mesuré α (°)" valeur={`${signe}${nb(Math.abs(m.alpha), 1)}`} couleur="#b91c1c" />
+      </div>
+      <div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
+        {m.ee === 0 ? <>Autant de (R) que de (S) : les rotations <strong>se compensent</strong>, α = 0. Le mélange racémique est <strong>optiquement inactif</strong>.</>
+          : <>L'énantiomère ({m.majoritaire}) est en excès : e.e. = {fmt(m.ee, 0)} %. On mesure α = e.e. × α({m.majoritaire} pur) = {fmt(m.ee, 0)} % × ({m.majoritaire === 'S' ? '+' : '−'}{nb(m.alphaPur, 1)} °) = {signe}{nb(Math.abs(m.alpha), 1)} °.</>}
+      </div>
+    </div>);
+}
+
 // Géométrie VSEPR autour de C2 et C3 : angles mesurés sur le modèle 3D
 function PanneauVSEPR({ u, face }) {
   const g = geometrieVSEPR(u, face);
@@ -124,12 +163,14 @@ function etapesGuide(u, setU, ouvrirDessin, reussi) {
       tache: { type: 'num', q: 'Quelle est la variation d’énergie entre réactifs et produit ?', unite: 'kJ/mol', vrai: DELTA_E, tol: 0.02, cs: 2, indice: 'Énergie finale moins énergie initiale (le signe compte).', calcul: () => [`E(produit) − E(réactifs) = ${JALONS[4].E} − ${JALONS[0].E} = ${DELTA_E} kJ/mol`] } },
     { titre: 'Devant ou derrière le plan ?', texte: <>Le carbocation est plan : Br⁻ peut arriver <strong>par l'avant</strong> ou <strong>par l'arrière</strong>. Les deux faces sont équivalentes. Observe les deux produits.</>,
       tache: { type: 'qcm', q: 'Si Br⁻ attaque autant par l’avant que par l’arrière, que obtient-on ?', options: ['Un seul produit', 'Deux énantiomères en quantités égales (mélange racémique)', 'Deux isomères en proportions très différentes'], bonne: 1, indice: 'Les deux faces sont identiques par symétrie : elles sont attaquées avec la même probabilité.', expl: <>Les deux produits sont images l'un de l'autre dans un miroir (énantiomères). Chaque face étant attaquée 1 fois sur 2, on obtient 50 % de (R) et 50 % de (S) : un mélange racémique.</> } },
+    { titre: 'Mesurer au polarimètre', texte: <>Un mélange racémique contient autant de (R) que de (S). Un polarimètre mesure la rotation du plan de polarisation de la lumière. Déplace le curseur de composition du polarimètre (en dessous), puis réponds.</>,
+      tache: { type: 'qcm', q: 'Que mesure-t-on au polarimètre pour le mélange racémique obtenu dans cette réaction ?', options: ['Une rotation α = 0 : le mélange est optiquement inactif', 'La rotation d’un énantiomère pur', 'Une rotation positive, car il y a autant de (S) que de (R)'], bonne: 0, indice: 'Les deux énantiomères tournent le plan de polarisation du même angle, mais dans des sens opposés.', expl: <>Le (R) et le (S) ont des pouvoirs rotatoires opposés. À 50 % chacun, les rotations se compensent : α = 0, e.e. = 0 %. On ne peut donc pas distinguer un racémique d'un composé achiral par cette mesure.</> } },
     { titre: 'Bilan', texte: <>Tu sais lire un mécanisme : les <strong>flèches courbes</strong> suivent les doublets, du <strong>nucléophile</strong> (doublet) vers l'<strong>électrophile</strong> (lacune).</>,
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li>Addition électrophile de HBr sur une double liaison, en deux étapes : formation du <strong>carbocation</strong> (lente), puis attaque de Br⁻ (rapide).</li>
         <li>Une flèche courbe va d'un doublet vers un site pauvre en électrons.</li>
         <li>Le carbocation est un <strong>intermédiaire</strong> (creux), un état de transition est un <strong>sommet</strong>.</li>
-        <li>Face plane attaquée de chaque côté : <strong>mélange racémique</strong>.</li>
+        <li>Face plane attaquée de chaque côté : <strong>mélange racémique</strong>, optiquement inactif (α = 0).</li>
       </ul> },
   ];
 }
@@ -167,6 +208,7 @@ const hypotheses = (
     <li>Aucun catalyseur n'est représenté : HBr s'additionne seul sur l'alcène.</li>
     <li>On ne représente que la réaction avec HBr non solvaté ; dans un solvant, le carbocation et Br⁻ seraient entourés de molécules de solvant.</li>
     <li>Le carbocation est supposé plan ; les deux faces sont attaquées avec la <strong>même probabilité</strong> (molécule sans élément de chiralité préalable).</li>
+    <li>Polarimètre : pouvoir rotatoire spécifique du 2-bromobutane pris égal à ±23,1 °·mL·g⁻¹·dm⁻¹ (valeur indicative), cuve de 1 dm, concentration 0,50 g·mL⁻¹, loi de Biot additive pour les deux énantiomères, sans effet de solvant ni de température.</li>
     <li>Les flèches courbes ne sont affichées qu'aux états clés (réactifs, ET₁, carbocation, ET₂), où les doublets concernés sont bien placés.</li>
   </ul>
 );
@@ -187,6 +229,8 @@ export function SimulationMecanismesReactionnels() {
   const [fleches, setFleches] = useState(true);
   const [numC, setNumC] = useState(false);
   const [vsepr, setVsepr] = useState(false);
+  const [pctR, setPctR] = useState(50);
+  const [polarOuv, setPolarOuv] = useState(false);
   const [df, setDf] = useState(() => defi());
   const [hypoOuv, setHypoOuv] = useState(false);
   const ref = useRef(u); ref.current = u;
@@ -207,6 +251,7 @@ export function SimulationMecanismesReactionnels() {
   const ouvrirDessin = n => { setLecture(false); setEtapeDessin(n); setVue('dessin'); };
   const etapes = etapesGuide(u, k => { setLecture(false); setU(k); }, ouvrirDessin, reussiDessin);
   const iStereo = etapes.findIndex(e => e.titre === 'Devant ou derrière le plan ?');
+  const iPolar = etapes.findIndex(e => e.titre === 'Mesurer au polarimètre');
   const finParcours = guide.etape >= etapes.length;
   const juste = q => q.type === 'num' ? proche(lireNombre(df.reps[q.id] ?? ''), q.vrai, q.tol) : df.reps[q.id] === q.bonne;
 
@@ -293,6 +338,7 @@ export function SimulationMecanismesReactionnels() {
           {mode === 'guide' && <>
             <CarteParcours etapes={etapes} etat={guide} setEtat={setGuide} fin={finParcours} />
             {guide.etape >= iStereo && <div style={styleBoite}><Stereo2Faces numC={numC} /></div>}
+            {guide.etape >= iPolar && <div style={styleBoite}><Polarimetre pctR={pctR} setPctR={setPctR} /></div>}
           </>}
           {mode === 'explore' && <div style={styleBoite}>
             <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Mesures sur le profil</div>
@@ -303,6 +349,7 @@ export function SimulationMecanismesReactionnels() {
             <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, margin: '10px 0 6px' }}>Deux faces d'attaque, deux énantiomères</div>
             <Stereo2Faces numC={numC} />
             <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 4 }}>Chaque face est attaquée avec la même probabilité : on obtient 50 % de (R) et 50 % de (S), un <strong>mélange racémique</strong>.</div>
+            <Section titre="Polarimètre : mesurer l’excès énantiomérique" ouvert={polarOuv} onBascule={() => setPolarOuv(o => !o)}><Polarimetre pctR={pctR} setPctR={setPctR} /></Section>
           </div>}
           {mode === 'defi' && <div style={styleBoite}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></div>}
         </div>

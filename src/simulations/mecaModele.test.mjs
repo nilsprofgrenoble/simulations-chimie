@@ -20,3 +20,13 @@ console.log('ok');
   chk(1, 'C2', 'AX4', 109.5); chk(1, 'C3', 'AX4', 109.5);
   console.log('VSEPR ok');
 }
+
+{
+  const { polarimetre, POLARI } = await import('./mecaModele.js');
+  const r = polarimetre(50), a = polarimetre(100), b = polarimetre(75), c = polarimetre(0);
+  const pur = POLARI.specifique * POLARI.l * POLARI.c;
+  if (Math.abs(r.alpha) > 1e-9 || r.ee !== 0 || r.majoritaire !== null) throw new Error('polarimètre : racémique');
+  if (Math.abs(a.alpha + pur) > 1e-9 || a.ee !== 100 || c.alpha < 0) throw new Error('polarimètre : énantiomères purs');
+  if (Math.abs(b.ee - 50) > 1e-9 || Math.abs(b.alpha + pur / 2) > 1e-9) throw new Error('polarimètre : 75/25');
+  console.log('polarimètre ok');
+}
