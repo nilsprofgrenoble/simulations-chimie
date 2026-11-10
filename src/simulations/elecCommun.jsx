@@ -1,7 +1,7 @@
 import { useId } from "react";
 import { pointsSurFil, VERMILLON, BLEU, GRIS, VERT } from "./elecOutils";
 import { useSuivi } from "../suivi";
-import { KIT, styleBouton, stylePetitBouton, lireProgression, avecIndices } from "../commun";
+import { KIT, styleBouton, stylePetitBouton, lireProgression, avecIndices, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 
 // Éléments communs aux simulations d'électricité (68 à 72) : volet de défis générique, curseur, graphe, dessin de circuit.
@@ -14,7 +14,7 @@ export function Curseur({ nom, val, min, max, pas, set, unite, fmt }) {
 
 // Volet de défis : le défi est un objet { type, reps, verifie, solution, …données du tirage }
 //  evaluer(d) → { ok, lignes: [[ok, texte]] } ; enonce(d, outils) → JSX ; solution(d) → JSX
-export function VoletDefiGen({ SIM, titres, defi, setDefi, changerType, evaluer, enonce, solution, couleur = '#0ea5e9' }) {
+export function VoletDefiGen({ SIM, titres, defi, setDefi, changerType, evaluer, enonce, solution, indice, couleur = '#0ea5e9' }) {
   const res = defi.verifie ? evaluer(defi) : null, reussi = !!res && res.ok;
   const suivi = useSuivi(`${SIM}:defi.${defi.type}`, reussi);
   const prog = lireProgression();
@@ -26,6 +26,7 @@ export function VoletDefiGen({ SIM, titres, defi, setDefi, changerType, evaluer,
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(titres).map(([t, l]) => <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, couleur)}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
       <div style={{ fontSize: 14.5, color: KIT.txt, marginBottom: 8, lineHeight: 1.55 }}>{enonce(defi, { champ, choix })}</div>
+      {indice && <div style={{ marginBottom: 8 }}><IndiceDefi cache={reussi}>{indice(defi)}</IndiceDefi></div>}
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
         <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
