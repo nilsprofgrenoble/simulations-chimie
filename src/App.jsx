@@ -56,6 +56,7 @@ const SimulationDiffraction = paresseux(() => import("./simulations/Diffraction"
 const SimulationSon = paresseux(() => import("./simulations/Son"), "SimulationSon");
 const SimulationEchographe = paresseux(() => import("./simulations/Echographe"), "SimulationEchographe");
 const SimulationRegioselectiviteHBr = paresseux(() => import("./simulations/RegioselectiviteHBr"), "SimulationRegioselectiviteHBr");
+const SimulationCinetiqueThermoBTS = paresseux(() => import("./simulations/CinetiqueThermoBTS"), "SimulationCinetiqueThermoBTS");
 const SimulationMecanismesReactionnels = paresseux(() => import("./simulations/MecanismesReactionnels"), "SimulationMecanismesReactionnels");
 const SimulationEchographe2D = paresseux(() => import("./simulations/Echographe2D"), "SimulationEchographe2D");
 const SimulationOptimiserSynthese = paresseux(() => import("./simulations/OptimiserSynthese"), "SimulationOptimiserSynthese");
@@ -182,6 +183,7 @@ const SIMULATIONS = [
     component: SimulationAcidesBases },
   { id:92, label:"Mécanismes réactionnels : addition de HBr, carbocation et flèches courbes", niveau:"TSTL", icon:"⚗️", color:"#7c3aed", component: SimulationMecanismesReactionnels },
   { id:93, label:"Régiosélectivité de l'addition de HBr : carbocations et produit majoritaire", niveau:"BTS", icon:"⚗️", color:"#7c3aed", component: SimulationRegioselectiviteHBr },
+  { id:94, label:"Contrôle cinétique ou thermodynamique : addition de HBr sur le buta-1,3-diène", niveau:"BTS", icon:"⚖️", color:"#ea580c", component: SimulationCinetiqueThermoBTS },
   { id:86, label:"Synthèse organique : estérification, Dean-Stark et CCM", niveau:"TSTL", icon:"⚗️", color:"#9a3412",
     component: SimulationEsterification },
   { id:90, label:"Optimiser une synthèse : vitesse, rendement et coût", niveau:"TSTL", icon:"📈", color:"#15803d",
