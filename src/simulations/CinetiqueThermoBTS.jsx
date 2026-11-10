@@ -46,6 +46,7 @@ function Molecules() {
       {boite('Carbocation allylique', BLEU, <div style={{ display: 'flex', alignItems: 'center' }}><Chaine dbl={[[3, 4]]} plus={2} largeur={150} titre="Forme limite : charge sur C2, double liaison C3=C4" /><span style={{ fontSize: 16, color: KIT.txt }}>↔</span><Chaine dbl={[[2, 3]]} plus={4} largeur={150} titre="Forme limite : charge sur C4, double liaison C2=C3" /></div>, 'deux formes mésomères : la charge + est délocalisée sur C2 et C4', '1 1 100%')}
       {boite('Produit 1,2 (cinétique)', C12, <Chaine dbl={[[3, 4]]} br={2} largeur={150} titre="3-bromobut-1-ène" />, '3-bromobut-1-ène')}
       {boite('Produit 1,4 (thermodynamique)', C14, <Chaine dbl={[[2, 3]]} br={4} largeur={150} titre="1-bromobut-2-ène" />, '1-bromobut-2-ène')}
+      <div style={{ flex: '1 1 100%', fontSize: 12.5, color: KIT.txt2, textAlign: 'center' }}>Les numéros en violet suivent le buta-1,3-diène de départ (d’où « addition 1,2 » et « addition 1,4 ») ; les noms des produits suivent leur propre numérotation officielle.</div>
     </div>);
 }
 
