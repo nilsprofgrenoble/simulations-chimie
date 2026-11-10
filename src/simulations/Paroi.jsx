@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 
 const SIM_ID = 31;
@@ -255,6 +255,7 @@ function questionsDefi(df) {
 }
 
 // ════════════════ SIMULATION ════════════════
+const INDICE_Q = {"Ri": "R_th = e ÷ (λ × S), avec e en mètres.", "Rt": "Les couches sont en série : additionnez leurs résistances.", "P": "P = (T_int − T_ext) ÷ R_th,global, pour la surface considérée.", "dT": "ΔT d’une couche = R_th de la couche × P.", "E": "Énergie = puissance × durée ; avec P en kW et la durée en h, on obtient des kWh.", "Rm": "R = e ÷ λ pour 1 m², avec e en mètres.", "Rp": "R = e ÷ λ pour 1 m², avec e en mètres.", "Rmin": "R de l’isolant = R cible − R de la maçonnerie − R du plâtre.", "emin": "e = R × λ, converti en centimètres.", "Rs": "Une seule couche de verre : R = e ÷ (λ × S), avec l’épaisseur totale.", "Rd": "Verre, lame d’air, verre : trois résistances en série.", "Ps": "P = ΔT ÷ R_th, pour la surface vitrée.", "Pd": "P = ΔT ÷ R_th, pour la surface vitrée."};
 export function SimulationParoi() {
   const [mode, setMode] = useState(() => modeOuverture('paroi-guide-v1'));
   useSignalerMode(mode);
@@ -297,29 +298,29 @@ export function SimulationParoi() {
       texte: <>Une paroi sépare l’intérieur d’une maison, à <strong>20 °C</strong>, de l’extérieur, à <strong>0 °C</strong>. Ici : un mur de brique de 20 cm d’épaisseur et de 1 m² de surface. On ne s’intéresse qu’à la conduction thermique à travers la paroi (ni fenêtre, ni vent).</>,
       tache: { type: 'qcm', q: 'Dans quel sens l’énergie thermique traverse-t-elle le mur ?',
         options: ['De l’intérieur (chaud) vers l’extérieur (froid)', 'De l’extérieur vers l’intérieur', 'Elle ne traverse pas : le mur arrête le transfert'], bonne: 0,
-        expl: 'Le transfert thermique se fait toujours du milieu le plus chaud vers le plus froid. Un mur ne l’arrête pas : il le ralentit plus ou moins (c’est son pouvoir isolant).' } },
+        expl: 'Le transfert thermique se fait toujours du milieu le plus chaud vers le plus froid. Un mur ne l’arrête pas : il le ralentit plus ou moins (c’est son pouvoir isolant).', indice: "L’énergie thermique passe spontanément du corps chaud vers le corps froid." } },
     { id: 'lambda', titre: 'Conductivité et résistance thermique', focus: ['donnees'],
       texte: <>La <strong>conductivité thermique λ</strong> (W·m⁻¹·K⁻¹) dit si un matériau laisse passer facilement l’énergie. La <strong>résistance thermique R<Sub c="th"/></strong> (K·W⁻¹) d’une paroi dépend en plus de son épaisseur e et de sa surface S : <strong>R<Sub c="th"/> = e / (λ · S)</strong>.</>,
       tache: { type: 'qcm', q: 'Laquelle de ces deux grandeurs dépend de la forme de la paroi (épaisseur, surface) ?', options: ['La résistance thermique R_th', 'La conductivité thermique λ', 'Les deux'], bonne: 0,
-        expl: 'λ est une propriété du matériau : la brique a la même λ en 1 cm ou en 1 m. R_th dépend aussi de e et de S : doubler e double R_th ; doubler S divise R_th par 2.' } },
+        expl: 'λ est une propriété du matériau : la brique a la même λ en 1 cm ou en 1 m. R_th dépend aussi de e et de S : doubler e double R_th ; doubler S divise R_th par 2.', indice: "Un même matériau, en plus grande épaisseur, résiste-t-il autant ? La conductivité décrit-elle le matériau ou l’objet ?" } },
     { id: 'Rb', titre: 'La résistance thermique de la brique', focus: ['donnees'],
       texte: <>Données : e = 20 cm, λ = 0,25 W·m⁻¹·K⁻¹, S = 1 m². Attention aux unités : l’épaisseur doit être en <strong>mètres</strong>.</>,
       tache: { type: 'num', q: 'R_th de la brique', unite: 'K·W⁻¹', vrai: A.Rb, tol: 0.02, affiche: x => nf(x),
         calcul: () => ['Conversion de l’épaisseur en mètres : e = 20 cm = 0,20 m.',
           `R_th = e / (λ × S) = 0,20 / (0,25 × 1) = 0,20 / 0,25 = ${nf(A.Rb)} K·W⁻¹.`],
         pieges: [[20 / 0.25, 'e = 20 cm = 0,20 m : convertissez en mètres.'], [200 / 0.25, 'e doit être en m (0,20 m), pas en mm.'], [0.25 / 0.2, 'R_th = e / (λ·S) : on divise e par λ·S, pas l’inverse.']],
-        expl: 'R_th = e / (λ·S) = 0,20 / (0,25 × 1) = 0,80 K·W⁻¹.' } },
+        expl: 'R_th = e / (λ·S) = 0,20 / (0,25 × 1) = 0,80 K·W⁻¹.', indice: "R_th = e ÷ (λ × S), avec e en mètres." } },
     { id: 'P1', titre: 'La puissance thermique à travers la brique', focus: ['schema'],
       texte: <>La puissance thermique P qui traverse la paroi est d’autant plus grande que l’écart de température est grand et que la résistance est faible : <strong>P = (T<Sub c="int"/> − T<Sub c="ext"/>) / R<Sub c="th"/></strong>. Calculez-la pour le mur de brique seul (R<Sub c="th"/> trouvée à l’étape 3).</>,
       tache: { type: 'num', q: 'Puissance P', unite: 'W', vrai: A.P1, tol: 0.02, affiche: x => nf(x),
         calcul: () => ['Écart de température : T_int − T_ext = 20 − 0 = 20 °C (soit 20 K).',
           `P = (T_int − T_ext) / R_th = 20 / ${nf(A.Rb)} = ${nf(A.P1)} W.`],
         pieges: [[20 * A.Rb, 'On divise : P = ΔT / R_th (plus R_th est grande, plus P est faible).']],
-        expl: 'P = 20 / 0,80 = 25 W : le mur laisse passer 25 J par seconde.' } },
+        expl: 'P = 20 / 0,80 = 25 W : le mur laisse passer 25 J par seconde.', indice: "P = (T_int − T_ext) ÷ R_th, avec la résistance de la brique." } },
     { id: 'profil1', titre: 'La température à l’intérieur du mur', focus: ['graphe'],
       texte: <>Le graphique montre la température en chaque point de l’épaisseur du mur, de l’intérieur (à gauche) vers l’extérieur (à droite).</>,
       tache: { type: 'qcm', q: 'Comment varie la température dans une couche homogène ?', options: ['Linéairement : une droite, la température baisse de façon régulière', 'Brutalement au milieu de la couche', 'Elle reste égale à celle de l’intérieur'], bonne: 0,
-        expl: 'En régime stationnaire, la même puissance P traverse chaque tranche du mur : l’écart de température par millimètre est constant dans un matériau homogène. Le profil est donc une droite, d’autant plus inclinée que λ est faible.' } },
+        expl: 'En régime stationnaire, la même puissance P traverse chaque tranche du mur : l’écart de température par millimètre est constant dans un matériau homogène. Le profil est donc une droite, d’autant plus inclinée que λ est faible.', indice: "Dans un matériau homogène, la puissance est la même en tout point. Que dit cela du profil de température ?" } },
     { id: 'ajout', titre: 'Isoler le mur', focus: ['schema', 'donnees'],
       texte: <>On ajoute du côté intérieur <strong>10 cm de laine de bois</strong> (λ = 0,036 W·m⁻¹·K⁻¹) et une <strong>plaque de plâtre de 13 mm</strong> (λ = 0,33 W·m⁻¹·K⁻¹). Même surface, mêmes températures.</>,
       tache: { type: 'action', ok: apresAjout, label: 'Isoler le mur', faire: () => setRg(x => ({ ...x, ajout: true })), consigne: apresAjout ? null : 'Cliquez pour ajouter la laine de bois et le plâtre' } },
@@ -329,7 +330,7 @@ export function SimulationParoi() {
         calcul: () => ['Conversion de l’épaisseur en mètres : e = 10 cm = 0,10 m.',
           `R_th = e / (λ × S) = 0,10 / (0,036 × 1) = 0,10 / 0,036 = ${nf(A.Rl)} K·W⁻¹.`],
         pieges: [[0.036 / 0.1, 'Fraction à l’envers : R_th = e / (λ·S), avec e = 0,10 m au numérateur.'], [10 / 0.036, 'e = 10 cm = 0,10 m : convertissez en mètres.'], [A.Rb, 'C’est la valeur de la brique : la laine de bois a une λ bien plus faible.']],
-        expl: `R_th = 0,10 / (0,036 × 1) ≈ ${nf(A.Rl)} K·W⁻¹ : ${nf(A.Rl / A.Rb, 2)} fois la résistance de la brique, pour la moitié de l’épaisseur.` } },
+        expl: `R_th = 0,10 / (0,036 × 1) ≈ ${nf(A.Rl)} K·W⁻¹ : ${nf(A.Rl / A.Rb, 2)} fois la résistance de la brique, pour la moitié de l’épaisseur.`, indice: "Même formule : R_th = e ÷ (λ × S)." } },
     { id: 'serie', titre: 'Les résistances s’ajoutent', focus: ['donnees'],
       texte: <>La plaque de plâtre a une résistance R<Sub c="th"/> ≈ {nf(A.Rp, 2)} K·W⁻¹ (même calcul). Les trois couches sont traversées l’une après l’autre par la même puissance : elles sont <strong>en série</strong>, et leurs résistances s’ajoutent.</>,
       tache: { type: 'num', q: 'R_th,global de la paroi', unite: 'K·W⁻¹', vrai: A.Rt, tol: 0.02, affiche: x => nf(x),
@@ -337,7 +338,7 @@ export function SimulationParoi() {
           `Laine de bois : ${nf(A.Rl)} K·W⁻¹ ; brique : ${nf(A.Rb)} K·W⁻¹.`,
           `Couches en série, traversées par la même puissance : R_th,global = ${nf(A.Rp)} + ${nf(A.Rl)} + ${nf(A.Rb)} = ${nf(A.Rt)} K·W⁻¹.`],
         pieges: [[A.Rl, 'Il faut ajouter les trois résistances (plâtre + laine + brique).'], [1 / (1 / A.Rb + 1 / A.Rl + 1 / A.Rp), 'Des couches superposées s’additionnent simplement : ce n’est pas la formule des résistances en parallèle.']],
-        expl: `R_th,global = ${nf(A.Rp)} + ${nf(A.Rl)} + ${nf(A.Rb)} ≈ ${nf(A.Rt)} K·W⁻¹ : ${nf(A.Rt / A.Rb, 2)} fois plus qu’avec la brique seule.` } },
+        expl: `R_th,global = ${nf(A.Rp)} + ${nf(A.Rl)} + ${nf(A.Rb)} ≈ ${nf(A.Rt)} K·W⁻¹ : ${nf(A.Rt / A.Rb, 2)} fois plus qu’avec la brique seule.`, indice: "Les couches sont traversées l’une après l’autre : leurs résistances s’ajoutent." } },
     { id: 'P2', titre: 'La puissance après isolation', focus: ['schema'],
       texte: <>Avec la même différence de température (20 °C) et la résistance globale R<Sub c="th,global"/> trouvée à l’étape précédente, calculez la nouvelle puissance P.</>,
       tache: { type: 'num', q: 'Puissance P', unite: 'W', vrai: A.P2, tol: 0.02, affiche: x => nf(x),
@@ -345,26 +346,26 @@ export function SimulationParoi() {
           `P = (T_int − T_ext) / R_th,global = 20 / ${nf(A.Rt)} = ${nf(A.P2)} W.`],
         pieges: [[A.P1, 'C’est la valeur sans isolant (25 W).'], [20 / A.Rl, 'Vous avez utilisé la résistance de la laine seule : la puissance dépend de la résistance globale des trois couches (R_th,global).'],
           [20 * A.Rt, 'On divise : P = ΔT / R_th,global (plus R_th est grande, plus P est faible).']],
-        expl: `P = 20 / ${nf(A.Rt)} ≈ ${nf(A.P2)} W, contre 25 W sans isolant : on divise la puissance perdue par ${nf(A.Rt / A.Rb, 2)}.` } },
+        expl: `P = 20 / ${nf(A.Rt)} ≈ ${nf(A.P2)} W, contre 25 W sans isolant : on divise la puissance perdue par ${nf(A.Rt / A.Rb, 2)}.`, indice: "Même formule, avec la résistance globale R_th,global de la paroi." } },
     { id: 'dTl', titre: 'Où tombe l’écart de température ?', focus: ['graphe'],
       texte: <>Le graphique montre maintenant les trois couches : la pente change à chaque couche. La même puissance P les traverse toutes ; l’écart de température aux bornes d’une couche vaut <strong>ΔT = P × R<Sub c="th"/></strong> (comme U = R × I en électricité). Utilisez la puissance P après isolation (étape 9) et la résistance de la laine de bois (étape 7).</>,
       tache: { type: 'num', q: 'Écart de température ΔT aux bornes de la laine de bois', unite: '°C', vrai: A.dTl, tol: 0.02, affiche: x => nf(x),
         calcul: () => [`La puissance qui traverse la laine de bois est la même que celle de toute la paroi : P = ${nf(A.P2)} W (celle d’après isolation).`,
           `ΔT = P × R_th = ${nf(A.P2)} × ${nf(A.Rl)} = ${nf(A.dTl)} °C.`],
         pieges: [[A.P1 * A.Rl, 'Vous avez pris la puissance sans isolant (25 W) : utilisez P après isolation.'], [A.P2 * A.Rb, 'Il faut la résistance de la laine de bois (pas celle de la brique).'], [A.P2, 'ΔT = P × R_th : il faut multiplier P par la résistance de la couche.']],
-        expl: `ΔT = P × R_th = ${nf(A.P2)} × ${nf(A.Rl)} ≈ ${nf(A.dTl)} °C : sur les 20 °C d’écart total, ${nf(A.dTl, 3)} °C « tombent » dans la laine de bois.` } },
+        expl: `ΔT = P × R_th = ${nf(A.P2)} × ${nf(A.Rl)} ≈ ${nf(A.dTl)} °C : sur les 20 °C d’écart total, ${nf(A.dTl, 3)} °C « tombent » dans la laine de bois.`, indice: "ΔT = R_th × P : la même puissance traverse chaque couche." } },
     { id: 'part', titre: 'Qui isole vraiment ?', focus: ['barre', 'graphe'],
       texte: <>La barre colorée montre la part de chaque couche dans la résistance thermique totale, donc dans l’écart de température.</>,
       tache: { type: 'qcm', q: 'La brique est la couche la plus épaisse. Laquelle prend pourtant la plus grande part de l’écart de température ?',
         options: ['La laine de bois, car sa résistance thermique est la plus grande', 'La brique, car elle est la plus épaisse', 'Chaque couche en prend le même tiers'], bonne: 0,
-        expl: `Ce n’est pas l’épaisseur seule qui compte, mais R_th = e / (λ·S) : un isolant (λ faible) même peu épais a une grande résistance. Ici la laine de bois fait ${partEp} % de l’épaisseur du mur mais ${partR} % de sa résistance.` } },
+        expl: `Ce n’est pas l’épaisseur seule qui compte, mais R_th = e / (λ·S) : un isolant (λ faible) même peu épais a une grande résistance. Ici la laine de bois fait ${partEp} % de l’épaisseur du mur mais ${partR} % de sa résistance.`, indice: "La part de l’écart de température dépend de la résistance de la couche, pas de son épaisseur seule." } },
     { id: 'ordre', titre: 'Changer l’ordre des couches', focus: ['schema', 'graphe'],
       texte: <>Mettons maintenant la brique côté intérieur et le plâtre côté extérieur : les couches dans l’ordre inverse.</>,
       tache: { type: 'action', ok: rg.inv, label: 'Inverser l’ordre des couches', faire: () => setRg(x => ({ ...x, inv: true })), consigne: rg.inv ? null : 'Cliquez pour inverser l’ordre' } },
     { id: 'ordreQ', titre: 'L’ordre change-t-il la puissance ?', focus: ['graphe'],
       texte: <>Comparez le graphique avec le précédent : les températures aux interfaces ne sont plus les mêmes.</>,
       tache: { type: 'qcm', q: 'Quand on inverse l’ordre des couches, la puissance P qui traverse le mur…', options: ['reste la même, mais les températures aux interfaces changent', 'augmente', 'diminue'], bonne: 0,
-        expl: 'Les résistances s’ajoutent dans n’importe quel ordre : R_th,global et P ne changent pas. Seules les températures aux interfaces changent, ce qui peut compter dans un vrai mur (condensation, gel).' } },
+        expl: 'Les résistances s’ajoutent dans n’importe quel ordre : R_th,global et P ne changent pas. Seules les températures aux interfaces changent, ce qui peut compter dans un vrai mur (condensation, gel).', indice: "R_th,global est la somme des résistances : change-t-elle si l’on permute les couches ?" } },
     { id: 'conception', titre: 'Dimensionner l’isolant', focus: ['slider'],
       texte: <>Cahier des charges (exercice du TD) : pour 1 m², il faut <strong>R<Sub c="th,global"/> ≥ 4 K·W⁻¹</strong>. Quelle épaisseur minimale de laine de bois (λ = 0,036 W·m⁻¹·K⁻¹) faut-il ? La brique (R<Sub c="th"/> = {nf(A.Rb)} K·W⁻¹) et le plâtre (R<Sub c="th"/> ≈ {nf(A.Rp, 2)} K·W⁻¹) sont inchangés.</>,
       tache: { type: 'num', q: 'Épaisseur minimale de laine de bois', unite: 'cm', vrai: A.emin, tol: 0.02, affiche: x => nf(x),
@@ -373,7 +374,7 @@ export function SimulationParoi() {
           `Conversion en cm (1 m = 100 cm) : e = ${nf(A.emin)} cm.`],
         aide: 'Calculez d’abord la résistance minimale de la laine : R_min = 4 − R_plâtre − R_brique. Puis e = R × λ × S.',
         pieges: [[A.emin * 10, 'Résultat en mm : l’énoncé demande des cm.'], [A.emin / 100, 'Résultat en m : l’énoncé demande des cm.'], [4 * 0.036 * 100, 'Il faut retirer la résistance du plâtre et de la brique : elles contribuent déjà.', 0.004], [(4 - A.Rp) * 0.036 * 100, 'Vous avez oublié de retirer la résistance de la brique (0,8 K·W⁻¹) : elle contribue déjà.', 0.004]],
-        expl: `R_min = 4 − ${nf(A.Rp)} − ${nf(A.Rb)} = ${nf(4 - A.Rp - A.Rb)} K·W⁻¹ ; e = R × λ × S = ${nf(4 - A.Rp - A.Rb)} × 0,036 × 1 ≈ ${nf(A.emin / 100)} m, soit ${nf(A.emin)} cm.` } },
+        expl: `R_min = 4 − ${nf(A.Rp)} − ${nf(A.Rb)} = ${nf(4 - A.Rp - A.Rb)} K·W⁻¹ ; e = R × λ × S = ${nf(4 - A.Rp - A.Rb)} × 0,036 × 1 ≈ ${nf(A.emin / 100)} m, soit ${nf(A.emin)} cm.`, indice: "Procédez par étapes : résistance cible, moins les autres couches, puis conversion en épaisseur (en cm)." } },
     { id: 'verif', titre: 'Vérifier avec la simulation', focus: ['slider', 'donnees'],
       texte: <>Réglez l’épaisseur de laine de bois avec le curseur : l’indicateur R<Sub c="th,global"/> doit atteindre 4 K·W⁻¹ (au mm près).</>,
       tache: { type: 'action', ok: rEp >= 4, consigne: rEp >= 4 ? null : 'Réglez le curseur jusqu’à R_th,global ≥ 4 K·W⁻¹' } },
@@ -381,7 +382,7 @@ export function SimulationParoi() {
       texte: <>Ouvrez l’encadré « Hypothèses de travail ».</>,
       tache: { type: 'qcm', q: 'Pour additionner les résistances des couches, on suppose que…',
         options: ['la même puissance traverse toutes les couches (régime stationnaire, bon contact entre couches, pas de fuite sur les côtés)', 'chaque couche est traversée par une puissance différente', 'la température est la même dans toute la paroi'], bonne: 0,
-        expl: 'Sans ces hypothèses (ponts thermiques, fuites sur les côtés, mauvais contact entre couches, régime variable), le calcul n’est qu’une approximation. Autre simplification : ici la face du mur est à la température de l’air ; en réalité un film d’air limite l’échange (option « films d’air » en exploration libre).' } },
+        expl: 'Sans ces hypothèses (ponts thermiques, fuites sur les côtés, mauvais contact entre couches, régime variable), le calcul n’est qu’une approximation. Autre simplification : ici la face du mur est à la température de l’air ; en réalité un film d’air limite l’échange (option « films d’air » en exploration libre).', indice: "Le flux est-il le même à travers toutes les couches quand le régime est établi ?" } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       texte: <>Vous savez calculer la résistance thermique d’une couche (R<Sub c="th"/> = e / (λ·S)), additionner les résistances de couches superposées, en déduire la puissance P = ΔT / R<Sub c="th"/> et l’écart de température aux bornes de chaque couche, et dimensionner une épaisseur d’isolant. En exploration libre, chargez le simple et le double vitrage (exercice 2 du TD), ajoutez les films d’air et comparez les matériaux.</>, tache: null },
   ];
@@ -555,6 +556,7 @@ export function SimulationParoi() {
           return (
             <div key={q.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {q.q}</div>
+              {INDICE_Q[q.id] && <IndiceDefi cache={defi.verifie && ok}>{INDICE_Q[q.id]}</IndiceDefi>}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input value={defi.reps[q.id] || ''} placeholder="?" aria-label={`Réponse au défi ${k + 1}`} onChange={e => setRep(q.id, e.target.value)}
                   style={{ fontSize: 14, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 130 }}/>

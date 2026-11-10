@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 
 const SIM_ID = 32;
@@ -370,6 +370,7 @@ function questionsDefi(df) {
 }
 
 // ════════════════ SIMULATION ════════════════
+const INDICE_Q = {"Q": "|Q| = m × C × ΔT_eau, avec C = 4 185 J·kg⁻¹·°C⁻¹.", "S": "S = circonférence × hauteur, côté latéral.", "dTm": "ΔT_m = température moyenne de l’eau − température extérieure.", "phi": "φ = |Q| ÷ Δt, ou φ = λ × S × ΔT_m ÷ e, selon la question.", "dt": "Δt = |Q| ÷ φ.", "m": "m_eau = masse pleine − masse vide, en kg.", "lam": "λ = φ × e ÷ (S × ΔT_m)."};
 export function SimulationBouilloire() {
   const [mode, setMode] = useState(() => modeOuverture('bouilloire-guide-v1'));
   useSignalerMode(mode);
@@ -431,11 +432,11 @@ export function SimulationBouilloire() {
     { id: 'intro', titre: 'La bouilloire vient de s’arrêter', focus: ['schema'],
       texte: <>L’eau vient de bouillir : la bouilloire s’arrête, l’eau est à <strong>θ₁′ = 100,0 °C</strong>. L’air autour, renouvelé par un ventilateur, est à <strong>T<Sub c="ext"/> = 21,0 °C</strong>.</>,
       tache: { type: 'qcm', q: 'Que va faire la température de l’eau ?', options: ['Elle va baisser : l’eau cède de l’énergie à l’air, plus froid', 'Elle va rester à 100 °C', 'Elle va monter'], bonne: 0,
-        expl: 'Le transfert thermique va toujours du plus chaud vers le plus froid : l’eau perd de l’énergie, sa température baisse.' } },
+        expl: 'Le transfert thermique va toujours du plus chaud vers le plus froid : l’eau perd de l’énergie, sa température baisse.', indice: "L’eau est à 100 °C et l’air à environ 20 °C : dans quel sens va l’énergie ?" } },
     { id: 'energie', titre: 'Où va l’énergie perdue par l’eau ?', focus: ['schema'],
       texte: <>L’eau est enfermée dans la bouilloire. L’énergie qu’elle perd ne disparaît pas.</>,
       tache: { type: 'qcm', q: 'L’énergie perdue par l’eau…', options: ['traverse les parois de la bouilloire, puis part dans l’air', 'disparaît', 'reste dans l’eau'], bonne: 0,
-        expl: 'L’énergie se conserve : celle que l’eau perd traverse les parois par conduction, puis est emportée par l’air. C’est cette traversée de la paroi qui va permettre de mesurer la conductivité thermique λ du plastique.' } },
+        expl: 'L’énergie se conserve : celle que l’eau perd traverse les parois par conduction, puis est emportée par l’air. C’est cette traversée de la paroi qui va permettre de mesurer la conductivité thermique λ du plastique.', indice: "Suivez le trajet : eau, paroi, air." } },
     { id: 'go', titre: 'Le protocole : chronométrer une baisse de 3,0 °C', focus: ['schema', 'graphe'],
       texte: <>On déclenche le chronomètre quand la bouilloire s’arrête (θ₁′ = 100,0 °C) et on l’arrête quand l’eau a perdu <strong>3,0 °C</strong> (θ₁″ = 97,0 °C). La simulation accélère le temps ; le chronomètre affiche le temps réel de l’expérience.</>,
       tache: { type: 'action', ok: fini && !phaseReel, label: '▶ Lancer l’expérience', faire: lancer, attente: enMarche ? 'Expérience en cours… le chronomètre s’arrête tout seul à 97,0 °C.' : null,
@@ -446,12 +447,12 @@ export function SimulationBouilloire() {
         calcul: () => [`m_eau = m_plein − m_vide = ${GUIDE.mPlein} − ${GUIDE.mVide} = ${GUIDE.mPlein - GUIDE.mVide} g`,
           `Conversion en kg (1 kg = 1 000 g) : ${GUIDE.mPlein - GUIDE.mVide} g = ${dec(A.m, 3)} kg.`],
         pieges: [[2.19, 'C’est la masse de la bouilloire pleine : retirez la masse de la bouilloire vide.'], [0.599, 'C’est la masse de la bouilloire vide.']],
-        expl: 'm_eau = m_plein − m_vide = 2 190 − 599 = 1 591 g = 1,591 kg (en kg, l’unité de la capacité thermique).' } },
+        expl: 'm_eau = m_plein − m_vide = 2 190 − 599 = 1 591 g = 1,591 kg (en kg, l’unité de la capacité thermique).', indice: "m_eau = masse de la bouilloire pleine − masse de la bouilloire vide, en kg." } },
     { id: 'deuxDT', titre: 'Deux écarts de température à ne pas confondre', focus: ['graphe'],
       texte: <>Le graphique (échelle complète) montre deux écarts très différents : la <strong>baisse de température de l’eau</strong> pendant la mesure (toute petite) et l’<strong>écart entre l’eau et l’air</strong> (grand).</>,
       tache: { type: 'qcm', q: 'Pour calculer l’énergie Q perdue par l’eau, Q = m · C · ΔT, quel écart de température faut-il prendre ?',
         options: ['La baisse de température de l’eau : de θ₁′ = 100,0 °C à θ₁″ = 97,0 °C', 'L’écart entre l’eau et l’air, d’environ 78 °C', 'La température de l’eau, 100 °C'], bonne: 0,
-        expl: 'Q = m·C·ΔT décrit le système « eau » : ΔT est la variation de SA température entre le début et la fin de la mesure. L’écart entre l’eau et l’air servira plus tard, pour la paroi.' } },
+        expl: 'Q = m·C·ΔT décrit le système « eau » : ΔT est la variation de SA température entre le début et la fin de la mesure. L’écart entre l’eau et l’air servira plus tard, pour la paroi.', indice: "Il s’agit de l’écart de température de l’eau, pas de celui de l’air." } },
     { id: 'Q', titre: 'L’énergie perdue par l’eau', focus: ['releve'],
       texte: <>Q = m<Sub c="eau"/> · C<Sub c="eau"/> · (θ₁″ − θ₁′), avec m<Sub c="eau"/> = {dec(A.m, 3)} kg (étape 4), θ₁′ = 100,0 °C, θ₁″ = 97,0 °C et C<Sub c="eau"/> = 4 185 J·kg⁻¹·°C⁻¹. Donnez Q <strong>en kJ, avec son signe</strong>.</>,
       tache: { type: 'num', q: 'Énergie Q (en kJ, avec son signe)', unite: 'kJ', vrai: A.Q / 1000, tol: 0.02, affiche: x => nf(x, 4),
@@ -461,25 +462,25 @@ export function SimulationBouilloire() {
         pieges: [[-A.Q / 1000, 'L’eau cède de l’énergie : Q est négative (ce qui sort du système est compté négativement).'],
           [-A.m * C_EAU * 77.5 / 1000, 'Pour Q, on utilise la variation de température de l’eau (3,0 °C), pas l’écart entre l’eau et l’air.'],
           [-A.m * C_EAU * 100 / 1000, 'ΔT est la variation de température de l’eau pendant la mesure (θ₁″ − θ₁′ = −3,0 °C), pas sa température.']],
-        expl: `Q = 1,591 × 4 185 × (97,0 − 100,0) ≈ ${nf(A.Q, 4)} J ≈ ${nf(A.Q / 1000, 4)} kJ : négative, car l’eau cède de l’énergie.` } },
+        expl: `Q = 1,591 × 4 185 × (97,0 − 100,0) ≈ ${nf(A.Q, 4)} J ≈ ${nf(A.Q / 1000, 4)} kJ : négative, car l’eau cède de l’énergie.`, indice: "Q = m × C × (θ_final − θ_initial). L’eau perd de l’énergie : Q est négatif." } },
     { id: 'phi', titre: 'La puissance thermique', focus: ['releve', 'graphe'],
       texte: <>Cette énergie (|Q| = {nf(-A.Q, 4)} J, étape 6) est sortie de l’eau pendant la durée Δt = {dec(A.dt, 1)} s lue au chronomètre à l’étape 3. La puissance thermique (énergie perdue par seconde) vaut <strong>φ = |Q| / Δt</strong>.</>,
       tache: { type: 'num', q: 'Puissance thermique φ', unite: 'W', vrai: A.phi, tol: 0.02, affiche: x => nf(x),
         calcul: () => [`|Q| = ${nf(-A.Q, 4)} J (valeur absolue de Q, en joules et non en kJ) ; Δt = ${dec(A.dt, 1)} s.`,
           `φ = |Q| / Δt = ${nf(-A.Q, 4)} / ${dec(A.dt, 1)} = ${nf(A.phi)} W.`],
         pieges: [[-A.Q * A.dt, 'On divise l’énergie par la durée : φ = |Q| / Δt.'], [A.Q / A.dt, 'φ est la valeur absolue : prenez |Q|.']],
-        expl: `φ = ${nf(-A.Q, 4)} J / ${dec(A.dt, 1)} s ≈ ${nf(A.phi)} W : l’eau perd environ ${nf(A.phi, 2)} J chaque seconde.` } },
+        expl: `φ = ${nf(-A.Q, 4)} J / ${dec(A.dt, 1)} s ≈ ${nf(A.phi)} W : l’eau perd environ ${nf(A.phi, 2)} J chaque seconde.`, indice: "φ = |Q| ÷ Δt, avec Q en joules et Δt en secondes." } },
     { id: 'chemin', titre: 'Par où sort cette énergie ?', focus: ['schema'],
       texte: <>Le modèle du TP fait une <strong>grosse approximation</strong> : toute cette énergie traverse la <strong>paroi latérale</strong> en plastique (les flèches orange) ; rien ne sort par le couvercle, le fond ou la vapeur. On reviendra sur cette hypothèse.</>,
       tache: { type: 'qcm', q: 'Avec cette hypothèse, la puissance qui traverse la paroi latérale est…', options: ['égale à la puissance perdue par l’eau, φ = |Q| / Δt', 'plus petite que φ', 'nulle, car la paroi est isolante'], bonne: 0,
-        expl: 'Ce que l’eau perd, la paroi latérale le transmet : la même puissance φ traverse la paroi. On peut donc relier φ aux caractéristiques de la paroi (λ, S, e).' } },
+        expl: 'Ce que l’eau perd, la paroi latérale le transmet : la même puissance φ traverse la paroi. On peut donc relier φ aux caractéristiques de la paroi (λ, S, e).', indice: "On suppose que toute l’énergie perdue par l’eau traverse la paroi latérale." } },
     { id: 'S', titre: 'La surface de la paroi latérale', focus: ['schema', 'releve'],
       texte: <>On modélise la bouilloire par un <strong>cylindre</strong>. Déroulée, sa paroi latérale (au contact de l’eau) est un rectangle de longueur c (la circonférence) et de largeur h (la hauteur d’eau) : <strong>S = c × h</strong>, avec c = {dec(GUIDE.ccm, 1)} cm et h = {dec(GUIDE.hcm, 1)} cm (relevé).</>,
       tache: { type: 'num', q: 'Surface latérale S', unite: 'm²', vrai: A.S, tol: 0.02, affiche: x => nf(x),
         calcul: () => [`Conversions en m : c = ${dec(GUIDE.ccm, 1)} cm = ${dec(GUIDE.ccm / 100, 3)} m ; h = ${dec(GUIDE.hcm, 1)} cm = ${dec(GUIDE.hcm / 100, 3)} m.`,
           `S = c × h = ${dec(GUIDE.ccm / 100, 3)} × ${dec(GUIDE.hcm / 100, 3)} = ${nf(A.S)} m² (cylindre : paroi latérale déroulée = rectangle).`],
         pieges: [[A.S * 1e4, 'c et h en cm donnent des cm² : convertissez d’abord en m (0,426 m et 0,143 m).'], [0.426 ** 2 / (4 * Math.PI), 'C’est l’aire du fond (un disque) : la surface latérale est c × h.'], [Math.PI * A.S, 'S = c × h : la circonférence c contient déjà le π (c = π × D).']],
-        expl: `S = 0,426 m × 0,143 m ≈ ${nf(A.S)} m².` } },
+        expl: `S = 0,426 m × 0,143 m ≈ ${nf(A.S)} m².`, indice: "S = circonférence × hauteur." } },
     { id: 'dTm', titre: 'L’écart de température de part et d’autre de la paroi', focus: ['graphe'],
       texte: <>La puissance qui traverse une paroi dépend de l’écart de température entre ses deux côtés : l’<strong>eau</strong> dedans, l’<strong>air</strong> dehors. Ce n’est pas la baisse de 3,0 °C ! La température de l’air est T<Sub c="ext"/> = 21,0 °C. Comme l’eau passe de 100,0 à 97,0 °C pendant la mesure, on prend sa <strong>température moyenne</strong> θ<Sub c="moy"/> = (θ₁′ + θ₁″) / 2 : c’est une approximation.</>,
       tache: { type: 'num', q: 'Écart moyen ΔT_m = θ_moy − T_ext', unite: '°C', vrai: A.dTm, tol: 0.005, affiche: x => dec(x, 1),
@@ -488,7 +489,7 @@ export function SimulationBouilloire() {
           `ΔT_m = θ_moy − T_ext = ${dec(GUIDE.T0 - GUIDE.drop / 2, 1)} − ${dec(GUIDE.Text, 1)} = ${dec(A.dTm, 1)} °C.`],
         pieges: [[3, 'C’est la baisse de température de l’eau, utilisée pour Q. Pour la paroi, il faut l’écart entre l’eau et l’air.'], [79, 'θ₁′ − T_ext : prenez la température moyenne de l’eau pendant la mesure.', 0.005],
           [76, 'θ₁″ − T_ext : prenez la température moyenne de l’eau pendant la mesure.', 0.005], [98.5, 'C’est la température moyenne de l’eau : retirez la température de l’air.']],
-        expl: 'θ_moy = (100,0 + 97,0) / 2 = 98,5 °C, donc ΔT_m = 98,5 − 21,0 = 77,5 °C : 26 fois plus que la baisse de 3,0 °C.' } },
+        expl: 'θ_moy = (100,0 + 97,0) / 2 = 98,5 °C, donc ΔT_m = 98,5 − 21,0 = 77,5 °C : 26 fois plus que la baisse de 3,0 °C.', indice: "ΔT_m = moyenne des températures de l’eau (début et fin) − température extérieure." } },
     { id: 'lambda', titre: 'La conductivité thermique de la paroi', focus: ['releve'],
       texte: <>Pour une paroi plane d’épaisseur e : φ = λ · S · ΔT<Sub c="m"/> / e, donc <strong>λ = φ · e / (S · ΔT<Sub c="m"/>)</strong>. Reprenez φ = {nf(A.phi)} W (étape 7), S = {nf(A.S)} m² (étape 9), ΔT<Sub c="m"/> = {dec(A.dTm, 1)} °C (étape 10) et l’épaisseur e = {dec(GUIDE.emm, 1)} mm (relevé). Attention à l’unité de e.</>,
       tache: { type: 'num', q: 'Conductivité thermique λ de la paroi', unite: 'W·m⁻¹·K⁻¹', vrai: A.lam, tol: 0.03, affiche: x => nf(x, 2),
@@ -498,11 +499,11 @@ export function SimulationBouilloire() {
         pieges: [[A.lam * 100, 'e = 2,1 mm = 0,0021 m : l’épaisseur doit être en mètres.'], [A.lam * A.dTm / 3, 'Vous avez pris ΔT = 3,0 °C : pour la paroi, il faut l’écart eau – air ΔT_m = 77,5 °C.'],
           [A.lam * 1000, 'e = 2,1 mm = 0,0021 m : l’épaisseur doit être en mètres (1 mm = 10⁻³ m).'],
           [A.S * A.dTm / (A.phi * A.e), 'Formule à l’envers : de φ = λ·S·ΔT_m / e on tire λ = φ·e / (S·ΔT_m).']],
-        expl: `λ = ${nf(A.phi)} × 0,0021 / (${nf(A.S)} × 77,5) ≈ ${nf(A.lam, 2)} W·m⁻¹·K⁻¹.` } },
+        expl: `λ = ${nf(A.phi)} × 0,0021 / (${nf(A.S)} × 77,5) ≈ ${nf(A.lam, 2)} W·m⁻¹·K⁻¹.`, indice: "φ = λ × S × ΔT_m ÷ e, donc λ = φ × e ÷ (S × ΔT_m), avec e en mètres." } },
     { id: 'verdict', titre: 'Le verdict', focus: [],
       texte: <>La simulation utilisait une paroi en ABS, de conductivité <strong>λ = 0,16 W·m⁻¹·K⁻¹</strong>, dans un monde où <strong>toutes les hypothèses du TP sont exactement vraies</strong>.</>,
       tache: { type: 'qcm', q: 'Que montre votre résultat ?', options: ['Quand les hypothèses sont vraies, la méthode du TP retrouve la bonne valeur de λ', 'La méthode du TP donne toujours la bonne valeur, même dans une vraie bouilloire', 'La méthode du TP est fausse'], bonne: 0,
-        expl: 'Dans ce monde « idéal », vous retrouvez 0,16. Pourtant, en TP, on trouve plutôt 0,13 : regardons une bouilloire plus réaliste.' } },
+        expl: 'Dans ce monde « idéal », vous retrouvez 0,16. Pourtant, en TP, on trouve plutôt 0,13 : regardons une bouilloire plus réaliste.', indice: "Comparez la valeur de λ trouvée à celle du matériau." } },
     { id: 'reel', titre: 'Une bouilloire plus réaliste', focus: ['schema'],
       texte: <>Même bouilloire, même eau, même ABS (λ = 0,16). Mais la simulation tient compte cette fois de ce que le modèle du TP néglige : les <strong>films d’eau et d’air</strong> contre la paroi, les pertes par le <strong>couvercle et le fond</strong>, l’<strong>évaporation</strong> et la <strong>capacité thermique de la bouilloire</strong>.</>,
       tache: { type: 'action', ok: phaseReel && fini, label: rg.reel ? null : 'Passer à la bouilloire réaliste', faire: () => setRg(x => ({ ...x, reel: true })),
@@ -514,24 +515,24 @@ export function SimulationBouilloire() {
           `Même modèle du TP (paroi plane, toute la puissance par la paroi latérale, ΔT_m = ${dec(A.dTm, 1)} °C) : λ = φ × e / (S × ΔT_m).`,
           `λ = ${nf(-A.Q / A.dtR)} × ${dec(A.e, 4)} / (${nf(A.S)} × ${dec(A.dTm, 1)}) = ${nf(A.lamR, 2)} W·m⁻¹·K⁻¹.`],
         pieges: [[0.16, 'C’est la vraie valeur de la simulation : refaites le calcul avec le nouveau Δt.'], [A.lam, 'C’est le résultat avec l’ancien Δt.']],
-        expl: `λ = (${nf(-A.Q, 4)} / ${dec(A.dtR, 1)}) × 0,0021 / (${nf(A.S)} × 77,5) ≈ ${nf(A.lamR, 2)} W·m⁻¹·K⁻¹, au lieu de 0,16 : comme en TP, on trouve moins que la valeur de référence.` } },
+        expl: `λ = (${nf(-A.Q, 4)} / ${dec(A.dtR, 1)}) × 0,0021 / (${nf(A.S)} × 77,5) ≈ ${nf(A.lamR, 2)} W·m⁻¹·K⁻¹, au lieu de 0,16 : comme en TP, on trouve moins que la valeur de référence.`, indice: "Refaites le calcul avec la nouvelle durée : φ change, puis λ." } },
     { id: 'flux', titre: 'Où passe vraiment l’énergie ?', focus: ['flux'],
       texte: <>Le bilan montre par où sort l’énergie de cette bouilloire réaliste.</>,
       tache: { type: 'qcm', q: 'Quelle part de l’énergie traverse la paroi latérale ?', options: [`Environ ${A.partLat} %`, '100 %, comme le suppose le modèle du TP', 'Moins de 10 %'], bonne: 0,
-        expl: 'Le reste sort par le couvercle, le fond et avec la vapeur. Attribuer toute l’énergie perdue à la seule paroi latérale ferait croire à une paroi plus conductrice : cet effet seul ferait trouver un λ trop grand.' } },
+        expl: 'Le reste sort par le couvercle, le fond et avec la vapeur. Attribuer toute l’énergie perdue à la seule paroi latérale ferait croire à une paroi plus conductrice : cet effet seul ferait trouver un λ trop grand.', indice: "L’énergie peut aussi sortir par le couvercle, le fond, ou par évaporation." } },
     { id: 'film', titre: 'La paroi voit-elle vraiment 77,5 °C ?', focus: ['profil'],
       texte: <>Le schéma montre les températures à travers la paroi latérale.</>,
       tache: { type: 'qcm', q: 'La face extérieure de la paroi est-elle à la température de l’air (21 °C) ?', options: [`Non : elle est à environ ${Math.round(A.Tse)} °C`, 'Oui, grâce au ventilateur', 'Elle est à 98,5 °C, comme l’eau'], bonne: 0,
-        expl: `Un film d’air, même brassé par le ventilateur, freine le transfert (c’est la convection). L’ABS ne « voit » qu’environ ${Math.round(A.dTabs)} °C sur les 77,5 °C. Le modèle du TP attribue tout l’écart à l’ABS : cet effet seul ferait trouver un λ trop petit. (Une bouilloire en plastique est d’ailleurs brûlante au toucher.)` } },
+        expl: `Un film d’air, même brassé par le ventilateur, freine le transfert (c’est la convection). L’ABS ne « voit » qu’environ ${Math.round(A.dTabs)} °C sur les 77,5 °C. Le modèle du TP attribue tout l’écart à l’ABS : cet effet seul ferait trouver un λ trop petit. (Une bouilloire en plastique est d’ailleurs brûlante au toucher.)`, indice: "Entre la paroi et l’air, un film d’air résiste aussi au transfert." } },
     { id: 'effets', titre: 'Quelle hypothèse pèse le plus ?', focus: ['effets'],
       texte: <>Le tableau donne le λ que trouverait un élève si on ajoutait <strong>un seul</strong> effet au modèle du TP, puis tous ensemble.</>,
       tache: { type: 'qcm', q: 'Quel effet fait le plus baisser le λ mesuré ?', options: ['Les films d’eau et d’air contre la paroi', 'L’évaporation', 'Les pertes par le couvercle et le fond'], bonne: 0,
-        expl: `Films : ${pct(A.eff.films)} ; couvercle et fond : ${pct(A.eff.cf)} ; évaporation : ${pct(A.eff.evap)} ; capacité de la bouilloire : ${pct(A.eff.corps)}. Les effets se compensent en partie : au total ${pct(A.eff.tous)}.` } },
+        expl: `Films : ${pct(A.eff.films)} ; couvercle et fond : ${pct(A.eff.cf)} ; évaporation : ${pct(A.eff.evap)} ; capacité de la bouilloire : ${pct(A.eff.corps)}. Les effets se compensent en partie : au total ${pct(A.eff.tous)}.`, indice: "Pensez à ce qui s’ajoute à la résistance de la paroi sans être pris en compte dans le calcul." } },
     { id: 'conclusion', titre: 'Et votre TP ?', focus: ['hypo'],
       texte: <>Ouvrez l’encadré « Hypothèses de travail » sous la simulation.</>,
       tache: { type: 'qcm', q: 'En TP, on trouve λ ≈ 0,13 pour 0,16 attendu. Que peut-on conclure ?',
         options: ['L’ordre de grandeur est bon, mais l’écart vient surtout des hypothèses du modèle, dont les erreurs se compensent en partie', 'Le TP mesure exactement λ : l’écart vient des erreurs de lecture', 'La bouilloire n’est pas en ABS'], bonne: 0,
-        expl: 'Le TP mesure une conductivité « apparente ». Trouver une valeur proche de la référence ne prouve pas que les hypothèses sont vraies : plusieurs erreurs peuvent se compenser. Attention : les paramètres de la bouilloire réaliste sont des ordres de grandeur plausibles, pas des mesures sur votre bouilloire.' } },
+        expl: 'Le TP mesure une conductivité « apparente ». Trouver une valeur proche de la référence ne prouve pas que les hypothèses sont vraies : plusieurs erreurs peuvent se compenser. Attention : les paramètres de la bouilloire réaliste sont des ordres de grandeur plausibles, pas des mesures sur votre bouilloire.', indice: "Cherchez les phénomènes que la méthode ignore : pertes par d’autres parois, films d’eau et d’air." } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       texte: <>Vous savez distinguer la <strong>baisse de température de l’eau</strong> (pour Q = m·C·ΔT) de l’<strong>écart entre l’eau et l’air</strong> (pour la paroi, φ = λ·S·ΔT<Sub c="m"/>/e), relier les deux par la puissance φ = |Q|/Δt, et critiquer les hypothèses du modèle. En exploration libre, changez le matériau (verre, inox), arrêtez le ventilateur, ou désactivez les effets un par un.</>, tache: null },
   ];
@@ -708,6 +709,7 @@ export function SimulationBouilloire() {
           return (
             <div key={q.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {q.q}</div>
+              {INDICE_Q[q.id] && <IndiceDefi cache={defi.verifie && ok}>{INDICE_Q[q.id]}</IndiceDefi>}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input value={defi.reps[q.id] || ''} placeholder="?" aria-label={`Réponse au défi ${k + 1}`} onChange={e => setRep(q.id, e.target.value)}
                   style={{ fontSize: 14, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 130 }}/>

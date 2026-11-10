@@ -20,7 +20,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, ARetenir, avecIndices, fmt, lireNombre, proche } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 
 const SIM_ID = 89;
@@ -516,6 +516,7 @@ const hypotheses = (
 );
 
 // ── Composant principal ─────────────────────────────────────────────────────
+const INDICE_Q = {"src": "Une machine prend de l’énergie à une source et en cède à l’autre. Que cherche-t-on à chauffer, ou à refroidir ?", "utile": "Énergie utile = COP × puissance électrique W.", "autre": "Premier principe sur un cycle : Q_c = Q_f + W (la machine reçoit W du réseau).", "max": "Efficacité maximale : T_c ÷ (T_c − T_f) pour une PAC, T_f ÷ (T_c − T_f) pour un groupe froid, avec les températures en kelvins.", "compar": "Le COP réel tient compte des imperfections de la machine : se compare-t-il au maximum idéal ?"};
 export function SimulationMachinesThermiques() {
   const [mode, setMode] = useState(() => modeOuverture('mt-guide-v1'));
   useSignalerMode(mode);
@@ -619,6 +620,7 @@ export function SimulationMachinesThermiques() {
           return (
             <div key={q.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {avecIndices(q.q)}</div>
+              {INDICE_Q[q.id] && <IndiceDefi cache={defi.verifie && ok}>{INDICE_Q[q.id]}</IndiceDefi>}
               {q.type === 'qcm' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {q.options.map((o, i) => (
