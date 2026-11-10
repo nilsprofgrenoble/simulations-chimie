@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, ARetenir, Curseur, LigneMesure } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { nf, NB } from "./Distillation";
 import { Moteur, Chrono } from "./MoteurPasAPas";
 import { simuler, delaiMin, N_PAS, F0 } from "./moteurModele";
@@ -132,7 +132,7 @@ export function SimulationMoteurCode({ naviguer }) {
     { id: 'oscille', titre: 'Que fait le rotor à chaque pas ?', focus: ['courbe', 'figure'],
       texte: <>Regardez l’animation et la courbe : la ligne orange en pointillés est la position commandée (un escalier), la ligne bleue est l’angle réel du rotor. Le temps est <strong>très ralenti</strong> (le programme entier dure environ {nf(N_PAS * 5, 0)}{NB}ms).</>,
       tache: { type: 'qcm', q: 'À chaque pas, le rotor…', options: ['se place instantanément et reste immobile', 'oscille un peu autour de sa nouvelle position d’équilibre avant de se stabiliser', 'continue de tourner sans s’arrêter'], bonne: 1,
-        expl: 'Le rotor est un aimant avec de l’inertie : il dépasse un peu sa position d’équilibre puis se stabilise (oscillations amorties). Il lui faut du temps pour atteindre la nouvelle position.' } },
+        expl: 'Le rotor est un aimant avec de l’inertie : il dépasse un peu sa position d’équilibre puis se stabilise (oscillations amorties). Il lui faut du temps pour atteindre la nouvelle position.', indice: "Le rotor a une inertie : peut-il s’arrêter instantanément sur sa nouvelle position ?" } },
     { id: 'tours', titre: 'Combien de tours ?', focus: ['mesures'],
       texte: <>La séquence a commandé 16 pas complets. Regardez dans « Mesures » la rotation réelle du rotor.</>,
       tache: { type: 'num', q: 'Nombre de tours réellement faits par le rotor', unite: '', vrai: 4, tol: 0.02, affiche: v => nf(v, 0), cs: 1,
@@ -143,7 +143,7 @@ export function SimulationMoteurCode({ naviguer }) {
         pieges: [[N_PAS, 'C’est le nombre de pas commandés. Un tour correspond à 4 pas complets (4 × 90° = 360°) : divisez.'],
           [N_PAS * 90, 'C’est l’angle total en degrés. Un tour = 360° : divisez par 360.'],
           [N_PAS / 8, 'Vous avez compté 8 pas par tour, comme en demi-pas. En pas complet, un tour fait 4 pas.']],
-        expl: '16 pas × 90° = 1440° = 4 tours.' } },
+        expl: '16 pas × 90° = 1440° = 4 tours.', indice: "Comptez les tours en observant le rotor, pas les pas commandés par le programme." } },
     { id: 'court', titre: 'Un délai trop court', focus: ['programme', 'mesures'],
       texte: <>Plus le délai est court, plus le moteur tourne vite. Mais le rotor a besoin de temps pour atteindre chaque position. Réglez <strong>delay(1)</strong> (1{NB}ms) et exécutez à nouveau.</>,
       tache: { type: 'action', ok: !!(frais && egal(cycle, 'complet') && delai <= 2 && charge === 0 && !res.ok), label: 'Essayer delay(1)',
@@ -151,12 +151,12 @@ export function SimulationMoteurCode({ naviguer }) {
     { id: 'pourquoi', titre: 'Pourquoi des pas perdus ?', focus: ['courbe'],
       texte: <>Regardez la courbe : l’escalier orange part loin devant, le rotor (bleu) ne le rattrape pas.</>,
       tache: { type: 'qcm', q: 'Pourquoi le moteur perd-il des pas ?', options: ['le champ change avant que le rotor ait atteint sa position : il est « décroché »', 'les bobines chauffent et s’éteignent', 'l’Arduino se trompe de bobine'], bonne: 0,
-        expl: 'Le rotor n’a pas le temps de rejoindre sa position avant que le champ ne tourne à nouveau : il se retrouve en retard, voire repart dans le mauvais sens, et le champ finit par « passer devant » sans l’entraîner.' } },
+        expl: 'Le rotor n’a pas le temps de rejoindre sa position avant que le champ ne tourne à nouveau : il se retrouve en retard, voire repart dans le mauvais sens, et le champ finit par « passer devant » sans l’entraîner.', indice: "Que se passe-t-il si le champ change avant que le rotor soit arrivé à sa position d’équilibre ?" } },
     { id: 'dmin', titre: 'Le délai minimal', focus: ['programme', 'mesures'],
       texte: <>En pas complet et sans charge, cherchez le <strong>plus petit délai</strong> (par pas de 0,5{NB}ms) pour lequel le rotor suit toute la séquence sans perdre de pas. Essayez plusieurs valeurs.</>,
       tache: { type: 'num', q: 'Plus petit délai sans pas perdu (pas complet, charge 0 %)', unite: 'ms', vrai: dMinComplet, tol: 0.3, affiche: v => nf(v, 1), cs: 2,
         aide: 'C’est une mesure par essais : exécutez la séquence avec des délais de plus en plus courts et gardez le plus petit pour lequel la zone « Mesures » n’indique aucun pas perdu.',
-        expl: `Vers ${nf(dMinComplet, 1)}${NB}ms dans ce modèle. Avec delay(5), on a donc une marge de sécurité.` } },
+        expl: `Vers ${nf(dMinComplet, 1)}${NB}ms dans ce modèle. Avec delay(5), on a donc une marge de sécurité.`, indice: "Procédez par essais : raccourcissez le délai tant que tout va bien, rallongez-le dès qu’un pas est perdu." } },
     { id: 'charge', titre: 'Ajouter une charge', focus: ['programme', 'mesures'],
       texte: <>Le moteur entraîne maintenant une pompe ou un mécanisme : il doit fournir un couple. Réglez une <strong>charge de 40 %</strong> (en pourcentage du couple maximal d’une bobine), gardez <strong>delay(5)</strong> et le pas complet : exécutez.</>,
       tache: { type: 'action', ok: !!(frais && egal(cycle, 'complet') && delai === 5 && charge === 40 && !res.ok), label: 'Charge 40 %, 5 ms',
@@ -168,18 +168,18 @@ export function SimulationMoteurCode({ naviguer }) {
     { id: 'pourquoif', titre: 'Pourquoi ça marche ?', focus: ['courbe'],
       texte: <>Le moteur ne perd plus de pas avec la même charge et le même délai.</>,
       tache: { type: 'qcm', q: 'Pourquoi la force maximale résiste-t-elle mieux à la charge ?', options: ['le champ résultant de deux bobines est plus intense (×√2) : le couple est plus grand', 'le rotor est plus léger', 'le délai est devenu plus court'], bonne: 0,
-        expl: 'Deux bobines voisines créent un champ d’intensité √2 ≈ 1,41 : le couple maximal est plus grand, le moteur supporte une charge plus élevée.' } },
+        expl: 'Deux bobines voisines créent un champ d’intensité √2 ≈ 1,41 : le couple maximal est plus grand, le moteur supporte une charge plus élevée.', indice: "Deux bobines sont alimentées en même temps : que devient le champ résultant, et donc le couple ?" } },
     { id: 'faux', titre: 'Se tromper d’ordre', focus: ['programme', 'courbe'],
       texte: <>Que se passe-t-il si l’ordre des bobines est faux ? Choisissez « Ordre 1-3-2-4 » (delay(5), charge 0) et exécutez.</>,
       tache: { type: 'action', ok: !!(frais && egal(cycle, 'faux')), label: 'Essayer l’ordre 1-3-2-4', faire: () => appliquer('faux', 5, 0), consigne: 'Choisissez « Ordre 1-3-2-4 » puis exécutez' } },
     { id: 'fauxq', titre: 'Un ordre incohérent', focus: ['courbe', 'figure'],
       texte: <>Observez le rotor : il hésite, avance puis recule. Avec les bobines 1 puis 3, le champ se retourne : le rotor est poussé aussi bien vers un sens que vers l’autre.</>,
       tache: { type: 'qcm', q: 'Que constate-t-on ?', options: ['le rotor ne tourne pas régulièrement : la séquence n’impose pas de sens de rotation', 'le rotor tourne plus vite', 'rien ne change'], bonne: 0,
-        expl: 'Passer de la bobine 1 à la bobine 3 (opposée) inverse le champ : le rotor n’a aucune raison de tourner dans un sens plutôt que dans l’autre. L’ordre des bobines doit suivre la géométrie.' } },
+        expl: 'Passer de la bobine 1 à la bobine 3 (opposée) inverse le champ : le rotor n’a aucune raison de tourner dans un sens plutôt que dans l’autre. L’ordre des bobines doit suivre la géométrie.', indice: "La séquence impose-t-elle un sens de rotation ? Regardez l’ordre dans lequel les bobines sont alimentées." } },
     { id: 'boucle', titre: 'Le programme le sait-il ?', focus: [],
       texte: <>Dans tous ces essais, le programme a commandé exactement le même nombre de pas.</>,
       tache: { type: 'qcm', q: 'Quand des pas sont perdus, le programme Arduino…', options: ['ne s’en aperçoit pas : il n’a aucun capteur de position (boucle ouverte)', 'les détecte automatiquement et les rejoue', 'arrête le moteur'], bonne: 0,
-        expl: 'Sans capteur de position, rien n’informe le programme : c’est pourquoi on garde une marge sur le délai et le couple, ou on ajoute un capteur (boucle fermée).' } },
+        expl: 'Sans capteur de position, rien n’informe le programme : c’est pourquoi on garde une marge sur le délai et le couple, ou on ajoute un capteur (boucle fermée).', indice: "Y a-t-il un capteur de position dans le montage Arduino ?" } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
         <li>le programme = une séquence d’états des bobines + un délai entre deux pas</li>
@@ -218,6 +218,7 @@ export function SimulationMoteurCode({ naviguer }) {
     <div>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : aller le plus vite possible</div>
       <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>Le moteur entraîne une charge de <strong>{defi.charge}{NB}%</strong> en <strong>{PRE[defi.m].nom.toLowerCase()}</strong>. Trouvez le <strong>plus petit délai</strong> (à 0,5{NB}ms près) pour lequel le rotor ne perd <strong>aucun pas</strong>, puis vérifiez.</div>
+      <IndiceDefi cache={false}>Raccourcissez le délai jusqu’à ce que des pas se perdent, puis revenez juste au-dessus. Plus la charge est grande, plus le délai minimal est long.</IndiceDefi>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button onClick={() => { noterDefi(!stale && !!res && res.ok && delai <= dMinDefi + 0.5); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier mon réglage</button>
         <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
