@@ -29,13 +29,6 @@ export const rpDe = e => {
 const urDe = (Rp, R) => 5 * R / (Rp + R);
 // CAN idéal à n bits, référence 5 V : N = partie entière de Ur / 5 × (2ⁿ − 1)
 const nDe = (Ur, bits) => Math.floor(Ur / 5 * (Math.pow(2, bits) - 1) + 1e-9);
-// Capacité du référentiel rattachée à une étape (même présentation que Son.jsx)
-const Cap = ({ children }) => <div style={{ marginTop: 8, fontSize: 12.5, color: '#475569', borderLeft: `3px solid ${ORANGE_GUIDE}`, paddingLeft: 8, lineHeight: 1.45 }}><strong>Capacité visée :</strong> {children}</div>;
-const CAP = {
-  chaine: 'Identifier les blocs d’une chaîne de mesure : capteur, conditionneur, CAN, calculateur, afficheur.',
-  quantum: 'Définir et relier le quantum, la résolution (nombre de bits) et la tension pleine échelle d’un CAN.',
-  seuils: 'Citer l’influence du choix des seuils autour de la consigne sur la régulation.',
-};
 const SEUIL_BAS = 393, SEUIL_HAUT = 491;   // valeurs par défaut de l'algorithme (10 bits)
 const PRESETS_E = [12, 70, 200, 470, 1050, 1500];
 
@@ -109,7 +102,7 @@ export function Simulation8({ plotlyReady }) {
   const ETAPES = [
     { id: 'chaine', titre: 'La chaîne de mesure', focus: ['source', 'capteur', 'conditionneur', 'can', 'arduino'], bloc: 'capteur',
       texte: <>Une voiture allume ses phares quand il fait sombre. Pour cela, une carte Arduino traite une mesure d'éclairement : <strong>capteur</strong> (photorésistance), <strong>conditionneur</strong> (pont diviseur),
-        <strong> convertisseur analogique-numérique</strong> (CAN), puis <strong>traitement</strong> (algorithme). Chaque maillon transforme la grandeur : E → Rp → Ur → N.<Cap>{CAP.chaine}</Cap></>,
+        <strong> convertisseur analogique-numérique</strong> (CAN), puis <strong>traitement</strong> (algorithme). Chaque maillon transforme la grandeur : E → Rp → Ur → N.</>,
       tache: { type: 'qcm', q: 'Quelle est la grandeur physique que l’on cherche à mesurer ?', indice: 'Repérez l’entrée de la chaîne : la grandeur physique à mesurer est celle que reçoit le capteur. Les autres grandeurs (Rp, Ur, N) sont produites ensuite par les maillons suivants.', options: ['L’éclairement E, en lux', 'La résistance Rp de la photorésistance', 'Le nombre N donné par le CAN'], bonne: 0,
         expl: 'Rp, Ur et N ne sont que des images successives de l’éclairement E.' } },
     { id: 'capteur', titre: 'Le capteur', focus: ['source', 'capteur', 'graph'], bloc: 'capteur',
@@ -156,7 +149,7 @@ export function Simulation8({ plotlyReady }) {
     { id: 'quantum', titre: 'Le quantum', focus: ['can', 'graph'], bloc: 'can',
       retenirTitre: 'À RETENIR : le CAN',
       retenir: <ul style={{ margin: 0, paddingLeft: 18 }}><li>n bits : N de 0 à 2<sup>n</sup> − 1</li><li>q = (V<sub>max</sub> − V<sub>min</sub>) / (2<sup>n</sup> − 1)</li></ul>,
-      texte: <>Le <strong>quantum</strong> q est la variation de tension qui fait changer N d'une unité. Dans ce modèle, N va de 0 à 2<sup>n</sup> − 1 pour une tension de 0 à 5 V, donc <strong>q = 5 / (2<sup>n</sup> − 1)</strong>.<Cap>{CAP.quantum}</Cap></>,
+      texte: <>Le <strong>quantum</strong> q est la variation de tension qui fait changer N d'une unité. Dans ce modèle, N va de 0 à 2<sup>n</sup> − 1 pour une tension de 0 à 5 V, donc <strong>q = 5 / (2<sup>n</sup> − 1)</strong>.</>,
       tache: { type: 'num', q: 'Quantum q pour 10 bits', unite: 'mV', vrai: q10, tol: 0.01, affiche: x => fmt(x, 2), cs: 3,
         indice: <>Utilisez q = (V<sub>max</sub> − V<sub>min</sub>) / (2ⁿ − 1), avec une plage de 0 à 5 V et n = 10 bits. Le calcul donne q en V : l’unité demandée est le mV (1 V = 1 000 mV).</>,
         calcul: () => [`Modèle du parcours : N va de 0 à 2ⁿ − 1 pour une tension de 0 à 5 V (CAN idéal, référence 5 V exacte).`,
@@ -193,7 +186,7 @@ export function Simulation8({ plotlyReady }) {
     { id: 'hyst', titre: 'Entre les deux seuils', focus: ['arduino', 'montage'], bloc: 'arduino',
       retenirTitre: 'À RETENIR : l’hystérésis',
       retenir: <ul style={{ margin: 0, paddingLeft: 18 }}><li>N &lt; seuil bas : phares allumés</li><li>N &gt; seuil haut : phares éteints</li><li>Entre les deux : état précédent conservé</li></ul>,
-      texte: <>N = {fmt(N200, 0)} est compris entre {SEUIL_BAS} et {SEUIL_HAUT} : ni inférieur au seuil bas, ni supérieur au seuil haut.<Cap>{CAP.seuils}</Cap></>,
+      texte: <>N = {fmt(N200, 0)} est compris entre {SEUIL_BAS} et {SEUIL_HAUT} : ni inférieur au seuil bas, ni supérieur au seuil haut.</>,
       tache: { type: 'qcm', q: 'Que deviennent les phares ?', indice: 'Vérifiez si N est inférieur au seuil bas, puis s’il est supérieur au seuil haut. Si aucune de ces deux conditions n’est vraie, demandez-vous si le programme contient une instruction qui modifie la sortie 8.', options: ['Ils restent dans l’état précédent (allumés)', 'Ils s’éteignent', 'On ne peut pas savoir'], bonne: 0,
         expl: 'Aucune condition n’est vraie : la sortie garde sa valeur précédente. C’est une hystérésis.' } },
     { id: 'eteint', titre: 'Plein jour', focus: ['source', 'arduino'], bloc: 'arduino',
@@ -201,7 +194,7 @@ export function Simulation8({ plotlyReady }) {
       tache: { type: 'action', ok: E === 470 && pharesOn && !ledOn, label: '🌤 Choisir E = 470 lx', faire: () => setE(470),
         consigne: (E === 470 && pharesOn && !ledOn) ? null : (!pharesOn ? 'Les phares doivent rester activés.' : `Éclairement : ${E} lx → 470 lx`) } },
     { id: 'pourquoi', titre: 'Pourquoi deux seuils ?', focus: ['arduino'], bloc: 'arduino',
-      texte: <>On aurait pu comparer N à un seul seuil.<Cap>{CAP.seuils}</Cap></>,
+      texte: <>On aurait pu comparer N à un seul seuil.</>,
       tache: { type: 'qcm', q: `Pourquoi utiliser deux seuils (${SEUIL_BAS} et ${SEUIL_HAUT}) ?`, indice: 'Imaginez un seul seuil et un éclairement qui fluctue autour de lui (nuage, ombre) : que ferait la sortie à chaque franchissement du seuil ?', options: ['Pour éviter que les phares clignotent quand l’éclairement fluctue autour d’un seuil', 'Pour mesurer deux éclairements différents', 'Parce que le CAN a deux entrées'], bonne: 0,
         expl: 'Avec un seul seuil, le moindre nuage ou le bruit de mesure ferait basculer les phares en permanence.' } },
     { id: 'hypotheses', titre: 'Sur quoi repose ce modèle ?', focus: ['hypo'], bloc: 'conditionneur',
