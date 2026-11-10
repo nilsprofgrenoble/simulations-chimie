@@ -7,6 +7,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { Pic } from "../Pictos";
 import { JALONS, energie, vitesse, EA1, EA2, DELTA_E, E_CARBOCATION, PRODUITS, descripteurProduit } from "./mecaModele";
 import { Mol2D } from "./MecaVue2D";
+import { DessinFleches } from "./MecaDessin";
 
 const Vue3D = lazy(() => import("./MecaVue3D"));
 
@@ -75,7 +76,7 @@ function Stereo2Faces({ numC = false }) {
 }
 
 // ── Parcours guidé ──
-function etapesGuide(u, setU, setVue, setFace) {
+function etapesGuide(u, setU, ouvrirDessin, reussi) {
   const va = (k, t = 0.04) => ({ ok: proches(u, k, t), label: 'Le faire pour moi', faire: () => setU(k) });
   return [
     { titre: 'Les réactifs', texte: <>On fait réagir le <strong>but-2-ène</strong> (CH₃–CH=CH–CH₃) avec le <strong>bromure d'hydrogène</strong> HBr. Regarde le schéma : la double liaison contient une liaison π (en violet), riche en électrons. Dans HBr, le brome attire les électrons de la liaison : il est <strong>δ−</strong>, et l'hydrogène est <strong>δ+</strong>.</>,
@@ -86,10 +87,14 @@ function etapesGuide(u, setU, setVue, setFace) {
       tache: { type: 'action', ...va(0.25), consigne: 'Place la bille sur ET₁ (curseur ou clic sur la courbe).', indice: 'Fais glisser le curseur jusqu’à ce que la bille soit au sommet de la première bosse.' } },
     { titre: 'Le sens de la flèche', texte: <>À l'état de transition 1, la première flèche part de la liaison π et pointe vers l'atome H.</>,
       tache: { type: 'qcm', q: 'Que représente le début d’une flèche courbe ?', options: ['La position de départ d’un atome', 'La source d’un doublet d’électrons (liaison ou doublet non liant)', 'Le sens du mouvement de la molécule entière'], bonne: 1, indice: 'Une flèche courbe ne suit pas des atomes : elle suit des électrons.', expl: <>Une flèche courbe décrit le déplacement d'un doublet d'électrons. Les atomes bougent <em>ensuite</em>, parce que les liaisons changent.</> } },
+    { titre: 'À toi de dessiner : l\'étape 1', texte: <>Ouvre l'atelier de dessin et trace les <strong>deux flèches courbes</strong> de l'étape 1. Clique sur le <strong>début</strong> de la flèche (une liaison ou un doublet non liant), puis sur sa <strong>destination</strong>, puis sur « Vérifier ».</>,
+      tache: { type: 'action', ok: !!reussi[1], label: 'Ouvrir l\'atelier de dessin', faire: () => ouvrirDessin(1), consigne: 'Trace les deux flèches de l\'étape 1, puis clique sur « Vérifier ».', indice: 'Une flèche part toujours d\'un doublet d\'électrons. Quel doublet est riche en électrons et va vers l\'atome δ+ ? Et le doublet de la liaison H–Br, où va-t-il quand cette liaison se rompt ?' } },
     { titre: 'Le carbocation', texte: <>Place la bille dans le creux central. La liaison H–Br est rompue : Br est resté avec le doublet, c'est l'ion <strong>Br⁻</strong> (quatre doublets non liants). Le carbone voisin ne possède plus que 6 électrons : c'est un <strong>carbocation C⁺</strong>. Le carré bleu marque sa <strong>lacune électronique</strong>.</>,
       tache: { type: 'action', ...va(0.5), consigne: 'Place la bille sur le carbocation (intermédiaire).', indice: 'Cherche le creux entre les deux bosses.' } },
     { titre: 'Qui attaque qui ?', texte: <>Un <strong>nucléophile</strong> possède un doublet à donner ; un <strong>électrophile</strong> a une lacune à combler. Avance doucement vers ET₂ et observe l'ion Br⁻ : l'un de ses doublets se dirige vers la lacune.</>,
       tache: { type: 'qcm', q: 'Dans l’étape 2, qu’est-ce qui se passe ?', options: ['Le carbocation C⁺ se déplace vers Br⁻ pour l’attaquer', 'Un doublet non liant de Br⁻ attaque le carbone C⁺ (la lacune)', 'Un atome H quitte le carbone pour rejoindre Br⁻'], bonne: 1, indice: 'Qui possède un doublet à donner ? Qui a une lacune à combler ?', expl: <>Br⁻ est le <strong>nucléophile</strong> (doublet non liant), C⁺ est l'<strong>électrophile</strong> (lacune). C'est le doublet de Br⁻ qui devient la liaison C–Br.</> } },
+    { titre: 'À toi de dessiner : l\'étape 2', texte: <>Retourne dans l'atelier de dessin, choisis « Étape 2 » et trace la flèche courbe de l'attaque de Br⁻ sur le carbocation.</>,
+      tache: { type: 'action', ok: !!reussi[2], label: 'Ouvrir l\'atelier de dessin', faire: () => ouvrirDessin(2), consigne: 'Trace la flèche de l\'étape 2, puis clique sur « Vérifier ».', indice: 'Qui possède un doublet à donner ? Qui a une lacune à combler ? La flèche va du premier vers le second.' } },
     { titre: 'Lire le profil : la barrière de l’étape 1', texte: <>L'énergie d'activation d'une étape est la hauteur à gravir entre le départ de l'étape et son sommet. Pour l'étape 1, il faut passer de <strong>0 kJ/mol</strong> (réactifs) au sommet ET₁. Active « Montrer les énergies » pour lire les valeurs.</>,
       tache: { type: 'num', q: 'Quelle est l’énergie d’activation de l’étape 1 ?', unite: 'kJ/mol', vrai: EA1, tol: 0.02, cs: 3, indice: 'Énergie du sommet ET₁ moins énergie des réactifs.', calcul: () => [`E(ET₁) − E(réactifs) = ${JALONS[1].E} − ${JALONS[0].E} = ${EA1} kJ/mol`], pieges: [[JALONS[1].E - E_CARBOCATION, 'Tu as pris le carbocation comme départ : l’étape 1 part des réactifs.']] } },
     { titre: 'L’étape la plus lente', texte: <>L'étape 2 démarre depuis le carbocation (60 kJ/mol) et monte jusqu'à ET₂ (70 kJ/mol).</>,
@@ -156,6 +161,8 @@ export function SimulationMecanismesReactionnels() {
   const [u, setU] = useState(0);
   const [lecture, setLecture] = useState(false);
   const [vue, setVue] = useState('2d');
+  const [etapeDessin, setEtapeDessin] = useState(1);
+  const [reussiDessin, setReussiDessin] = useState({});
   const [face, setFace] = useState(1);
   const [montrerE, setMontrerE] = useState(false);
   const [fleches, setFleches] = useState(true);
@@ -177,7 +184,9 @@ export function SimulationMecanismesReactionnels() {
     return () => cancelAnimationFrame(raf);
   }, [lecture]);
 
-  const etapes = etapesGuide(u, k => { setLecture(false); setU(k); });
+  const ouvrirDessin = n => { setLecture(false); setEtapeDessin(n); setVue('dessin'); };
+  const etapes = etapesGuide(u, k => { setLecture(false); setU(k); }, ouvrirDessin, reussiDessin);
+  const iStereo = etapes.findIndex(e => e.titre === 'Devant ou derrière le plan ?');
   const finParcours = guide.etape >= etapes.length;
   const juste = q => q.type === 'num' ? proche(lireNombre(df.reps[q.id] ?? ''), q.vrai, q.tol) : df.reps[q.id] === q.bonne;
 
@@ -186,13 +195,15 @@ export function SimulationMecanismesReactionnels() {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
         <button onClick={() => setVue('2d')} style={stylePetitBouton(vue === '2d', '#0284c7')}>Vue 2D</button>
         <button onClick={() => setVue('3d')} style={stylePetitBouton(vue === '3d', '#0284c7')}>Vue 3D</button>
-        <label style={{ fontSize: 13, color: KIT.txt, display: 'flex', alignItems: 'center', gap: 4 }}>
+        <button onClick={() => { setLecture(false); setVue('dessin'); }} style={stylePetitBouton(vue === 'dessin', '#b91c1c')}>✏️ Dessiner les flèches</button>
+        {vue !== 'dessin' && <label style={{ fontSize: 13, color: KIT.txt, display: 'flex', alignItems: 'center', gap: 4 }}>
           Br⁻ arrive par :
           <select value={face} onChange={e => setFace(+e.target.value)} style={{ fontSize: 13 }}>
             <option value={1}>l’avant</option><option value={-1}>l’arrière</option>
           </select>
-        </label>
+        </label>}
       </div>
+      {vue === 'dessin' ? <DessinFleches etape={etapeDessin} setEtape={setEtapeDessin} onReussite={n => setReussiDessin(r => ({ ...r, [n]: true }))} /> : <>
       {vue === '2d'
         ? <Mol2D u={u} face={face} avecFleches={fleches} numC={numC} />
         : <Suspense fallback={<div style={{ padding: 20, fontSize: 14 }}>Chargement de la 3D…</div>}><Vue3D u={u} face={face} /></Suspense>}
@@ -208,6 +219,7 @@ export function SimulationMecanismesReactionnels() {
         {vue === '2d' && <label><input type="checkbox" checked={numC} onChange={e => setNumC(e.target.checked)} /> Numéroter les carbones</label>}
         {vue === '2d' && <label><input type="checkbox" checked={fleches} onChange={e => setFleches(e.target.checked)} /> Flèches courbes (aux états clés)</label>}
       </div>
+      </>}
     </div>
   );
 
@@ -258,7 +270,7 @@ export function SimulationMecanismesReactionnels() {
         <div style={{ flex: '1 1 300px', minWidth: 280, display: 'flex', flexDirection: 'column', gap: 10 }}>
           {mode === 'guide' && <>
             <CarteParcours etapes={etapes} etat={guide} setEtat={setGuide} fin={finParcours} />
-            {guide.etape >= 10 && <div style={styleBoite}><Stereo2Faces numC={numC} /></div>}
+            {guide.etape >= iStereo && <div style={styleBoite}><Stereo2Faces numC={numC} /></div>}
           </>}
           {mode === 'explore' && <div style={styleBoite}>
             <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Mesures sur le profil</div>

@@ -37,7 +37,7 @@ function Symbole({ pos, texte, couleur = NOIR, taille = 17, fond = true }) {
 }
 
 // Flèche courbe : part du milieu d'un doublet (ou d'une liaison) et pointe vers sa destination
-function FlecheCourbe({ de, vers, courbe = 1, couleur = ROUGE, id }) {
+export function FlecheCourbe({ de, vers, courbe = 1, couleur = ROUGE, id }) {
   const dx = vers[0] - de[0], dy = vers[1] - de[1], d = Math.hypot(dx, dy) || 1;
   const cx = (de[0] + vers[0]) / 2 - dy / d * 0.4 * d * courbe, cy = (de[1] + vers[1]) / 2 + dx / d * 0.4 * d * courbe;
   const tx = vers[0] - cx, ty = vers[1] - cy, tl = Math.hypot(tx, ty) || 1, ux = tx / tl, uy = ty / tl;
