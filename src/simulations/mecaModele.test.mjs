@@ -30,3 +30,14 @@ console.log('ok');
   if (Math.abs(b.ee - 50) > 1e-9 || Math.abs(b.alpha + pur / 2) > 1e-9) throw new Error('polarimètre : 75/25');
   console.log('polarimètre ok');
 }
+
+// Cohérence 2D / CIP : dans le dessin 2D (C1 à gauche, C3 à droite, y vers le bas), Br en coin plein (devant) donne (S), Br en traits (derrière) donne (R)
+{
+  const a = M.atomes2D(1), P = (k, z) => [a[k][0] - a.C2[0], -(a[k][1] - a.C2[1]), z];
+  const cr = (u, v) => [u[1]*v[2]-u[2]*v[1], u[2]*v[0]-u[0]*v[2], u[0]*v[1]-u[1]*v[0]], dt = (u, v) => u[0]*v[0]+u[1]*v[1]+u[2]*v[2];
+  for (const [face, z] of [[1, 1], [-1, -1]]) {
+    const attendu = dt(P('Br', z), cr(P('C3', 0), P('C1', 0))) < 0 ? 'R' : 'S';
+    ok(M.descripteurProduit(face) === attendu, `CIP face ${face} : 2D ${attendu}, modèle ${M.descripteurProduit(face)}`);
+  }
+  console.log('CIP 2D/3D cohérents');
+}

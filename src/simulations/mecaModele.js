@@ -154,7 +154,7 @@ function hMethyle(c, voisin, phi0) {
 
 // Positions 3D de tous les atomes. face = +1 : Br⁻ attaque la face avant (+z) ; −1 : face arrière (−z).
 // L'attaque de H–Br (étape 1) se fait toujours par la face +z (l'autre face est équivalente, par symétrie du plan).
-export function geom3D(u, face = 1) {
+function geom3DBrut(u, face = 1) {
   const f = face >= 0 ? 1 : -1;
   const ph = phases(u);
   // Géométrie finale tétraédrique autour de C2 et de C3 (angles ≈ 109,5°) : on part du plan (120°) et on y arrive en fin de réaction
@@ -218,6 +218,16 @@ export function geom3D(u, face = 1) {
     doublets.push({ dir: v3.unit(v3.add(v3.mul(axe, -0.334), v3.mul(perp, 0.943))), op: 1 });   // 109,5° de l'axe
   }
   return { atomes, liaisons, piOp, vac, doublets, face: f, ph };
+}
+
+// Le modèle 3D est l'image dans un miroir (x → −x) de la construction ci-dessus : ainsi, quand Br arrive par l'avant (coin plein en 2D),
+// le descripteur CIP calculé sur le 3D est celui du dessin 2D (vérifié avec RDKit : Br en coin plein, C1 à gauche, C3 à droite = (S)).
+export function geom3D(u, face = 1) {
+  const g = geom3DBrut(u, face), mx = v => [-v[0], v[1], v[2]];
+  Object.keys(g.atomes).forEach(k => { g.atomes[k] = { ...g.atomes[k], p: mx(g.atomes[k].p) }; });
+  g.vac = { ...g.vac, centre: mx(g.vac.centre) };
+  g.doublets = g.doublets.map(d => ({ ...d, dir: mx(d.dir) }));
+  return g;
 }
 
 // ═══════════════════════════ GÉOMÉTRIE VSEPR (angles mesurés sur le modèle 3D) ═══════════════════════════
