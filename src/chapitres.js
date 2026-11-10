@@ -34,7 +34,7 @@ export const CHAPITRES = [
   { id: 'tstl-regulation', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '⚙️ Régulation', sims: [5, 6], domaines: ['Régulation'] },
   { id: 'tstl-cristallisation', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '❄️ Évaporation et cristallisation', sims: [7], domaines: ['Évaporation et cristallisation'] },
   { id: 'tstl-distillation', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '🧪 Distillation', sims: [42, 41, 43], domaines: ['Distillation'] },
-  { id: 'tstl-thermique', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '🔥 Transferts thermiques', sims: [31, 32, 30], domaines: ['Transferts thermiques'] },
+  { id: 'tstl-thermique', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '🔥 Transferts thermiques', sims: [31, 32, 30, 89], domaines: ['Transferts thermiques'] },
   { id: 'tstl-mesure', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '📏 Mesure et incertitudes', sims: [78], domaines: ['Mesure et incertitudes'] },
   { id: 'tstl-controle', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '🧲 Contrôle des systèmes', sims: [46, 44, 45], domaines: ['Contrôle des systèmes'] },
   { id: 'tstl-ondes', niveau: 'TSTL', rubrique: 'Ondes', label: '🌊 Ondes', sims: [83, 84, 87, 88], domaines: ['Ondes'] },

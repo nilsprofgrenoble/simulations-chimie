@@ -39,6 +39,7 @@ import { SimulationBoussole } from "./simulations/Boussole";
 import { SimulationDiffraction } from "./simulations/Diffraction";
 import { SimulationSon } from "./simulations/Son";
 import { SimulationEchographe } from "./simulations/Echographe";
+import { SimulationMachinesThermiques } from "./simulations/MachinesThermiques";
 import { SimulationInterferences } from "./simulations/Interferences";
 import { SimulationAcidesBases } from "./simulations/AcidesBases";
 import { SimulationEsterification } from "./simulations/Esterification";
@@ -166,6 +167,8 @@ const SIMULATIONS = [
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",
     component: SimulationEchographe },
+  { id:89, label:"Machines thermiques : PAC, groupe froid et COP", niveau:"TSTL", icon:"🔥", color:"#b45309",
+    component: SimulationMachinesThermiques },
   { id:85, label:"Acides et bases : pH, pKa, tampon et titrage", niveau:"TSTL", icon:"🧪", color:"#0f766e",
     component: SimulationAcidesBases },
   { id:86, label:"Synthèse organique : estérification, Dean-Stark et CCM", niveau:"TSTL", icon:"⚗️", color:"#9a3412",
