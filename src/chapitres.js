@@ -46,6 +46,7 @@ export const CHAPITRES = [
   { id: 'bts-analyse', niveau: 'BTS', label: '🔬 Analyse', sims: [3, 29, 12, 54, 55, 11, 13, 9, 16], domaines: ['Chimie', 'Métrologie'] },
   { id: 'bts-rmn', niveau: 'BTS', label: '🧲 Spectroscopie RMN', sims: [75, 76], domaines: ['Spectroscopie RMN'] },
   { id: 'bts-cristallo', niveau: 'BTS', label: '🔷 Analyse cristallographique', sims: [74, 73], domaines: ['Analyse cristallographique'] },
+  { id: 'bts-mecanismes', niveau: 'BTS', label: '⚗️ Mécanismes réactionnels', sims: [92], domaines: ['Mécanismes réactionnels'] },
   { id: 'bts-formulation', niveau: 'BTS', label: '🧪 Formulation', sims: [4, 14], domaines: ['Formulation'] },
 ];
 

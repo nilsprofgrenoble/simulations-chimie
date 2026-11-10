@@ -51,7 +51,7 @@ function FlecheCourbe({ de, vers, courbe = 1, couleur = ROUGE, id }) {
 
 // u : coordonnée de réaction. face : +1 le Br arrive devant le plan (coin plein), −1 derrière (traits).
 // avecFleches : affiche les flèches courbes au voisinage d'un jalon. petit : version réduite sans annotations.
-export function Mol2D({ u, face = 1, avecFleches = true, petit = false, titre }) {
+export function Mol2D({ u, face = 1, avecFleches = true, petit = false, titre, numC = false }) {
   const a = atomes2D(u), ph = phases(u), dbl = doublets2D(u, a);
   const uF = U_FLECHES.find(k => Math.abs(k - u) < 0.04);
   const fl = avecFleches && !petit && uF !== undefined ? fleches2D(uF) : [];
@@ -98,6 +98,8 @@ export function Mol2D({ u, face = 1, avecFleches = true, petit = false, titre })
       <text x={a.C4[0]} y={a.C4[1] + 6} fontSize="17" fontWeight="700" textAnchor="middle" fill={NOIR}>CH<tspan fontSize="11" dy="4">3</tspan></text>
       <Symbole pos={a.C2} texte="C" />
       <Symbole pos={a.C3} texte="C" />
+      {numC && [[a.C1, 0, -22, '1'], [a.C2, 17, 4, '2'], [a.C3, 16, -12, '3'], [a.C4, 0, -22, '4']].map(([c, dx, dy, n]) => (
+        <text key={n} x={c[0] + dx} y={c[1] + dy + 4} fontSize="13" fontWeight="700" textAnchor="middle" fill="#7c3aed">{n}</text>))}
       <Symbole pos={a.H3} texte="H" />
       <Symbole pos={a.H2} texte="H" />
       <Symbole pos={a.Ht} texte="H" couleur={u < 0.5 ? VERT : NOIR} />

@@ -179,6 +179,7 @@ const SIMULATIONS = [
     component: SimulationMachinesThermiques },
   { id:85, label:"Acides et bases : pH, pKa, tampon et titrage", niveau:"TSTL", icon:"🧪", color:"#0f766e",
     component: SimulationAcidesBases },
+  { id:92, label:"Mécanismes réactionnels : addition de HBr, carbocation et flèches courbes", niveau:"BTS", icon:"⚗️", color:"#7c3aed", component: SimulationMecanismesReactionnels },
   { id:86, label:"Synthèse organique : estérification, Dean-Stark et CCM", niveau:"TSTL", icon:"⚗️", color:"#9a3412",
     component: SimulationEsterification },
   { id:90, label:"Optimiser une synthèse : vitesse, rendement et coût", niveau:"TSTL", icon:"📈", color:"#15803d",
@@ -249,8 +250,7 @@ const SIMULATIONS = [
     component: SimulationAtelierValider },
   { id:38, label:"Je m'entraîne ! Travail par compétence", niveau:"COMP", icon:"🏋️", color:"#5b4bdb",
     component: SimulationEntrainement },
-  { id:92, label:"Mécanismes réactionnels", niveau:"COMPTE", icon:"⚗️", color:"#7c3aed", component: SimulationMecanismesReactionnels },
-  // Pages hors menu (niveau « COMPTE ») : connexion et suivi, ouvertes par les boutons « Mon compte » et « Suivi professeur »
+    // Pages hors menu (niveau « COMPTE ») : connexion et suivi, ouvertes par les boutons « Mon compte » et « Suivi professeur »
   { id:39, label:"Mon compte", niveau:"COMPTE", icon:"👧👦", color:"#25628f", component: SimulationCompte },
   { id:40, label:"Suivi professeur", niveau:"COMPTE", icon:"📊", color:"#25628f", component: SimulationSuiviProf },
   // Page hors menu : à propos et contact (ouverte depuis le bas du menu et le pied de page)
