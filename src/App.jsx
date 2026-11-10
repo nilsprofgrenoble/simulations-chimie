@@ -55,6 +55,7 @@ const SimulationBoussole = paresseux(() => import("./simulations/Boussole"), "Si
 const SimulationDiffraction = paresseux(() => import("./simulations/Diffraction"), "SimulationDiffraction");
 const SimulationSon = paresseux(() => import("./simulations/Son"), "SimulationSon");
 const SimulationEchographe = paresseux(() => import("./simulations/Echographe"), "SimulationEchographe");
+const SimulationOptimiserSynthese = paresseux(() => import("./simulations/OptimiserSynthese"), "SimulationOptimiserSynthese");
 const SimulationMachinesThermiques = paresseux(() => import("./simulations/MachinesThermiques"), "SimulationMachinesThermiques");
 const SimulationInterferences = paresseux(() => import("./simulations/Interferences"), "SimulationInterferences");
 const SimulationAcidesBases = paresseux(() => import("./simulations/AcidesBases"), "SimulationAcidesBases");
@@ -176,6 +177,8 @@ const SIMULATIONS = [
     component: SimulationAcidesBases },
   { id:86, label:"Synthèse organique : estérification, Dean-Stark et CCM", niveau:"TSTL", icon:"⚗️", color:"#9a3412",
     component: SimulationEsterification },
+  { id:90, label:"Optimiser une synthèse : vitesse, rendement et coût", niveau:"TSTL", icon:"📈", color:"#15803d",
+    component: SimulationOptimiserSynthese },
   { id:48, label:"Champ et force : gravitation et électrostatique", niveau:"1G", icon:"🌍", color:"#3f6212",
     component: SimulationChampForce },
   { id:49, label:"Deux corps en interaction : gravitation et Coulomb", niveau:"1G", icon:"🌙", color:"#3f6212",

@@ -40,6 +40,7 @@ export const CHAPITRES = [
   { id: 'tstl-ondes', niveau: 'TSTL', rubrique: 'Ondes', label: '🌊 Ondes', sims: [83, 84, 87, 88], domaines: ['Ondes'] },
   { id: 'tstl-acides-bases', niveau: 'TSTL', rubrique: 'Chimie et développement durable', label: '🧪 Acides et bases', sims: [85], domaines: ['Acides et bases'] },
   { id: 'tstl-synthese-organique', niveau: 'TSTL', rubrique: 'Chimie et développement durable', label: '⚗️ Synthèse organique', sims: [86], domaines: ['Synthèse organique'] },
+  { id: 'tstl-synthese-optimiser', niveau: 'TSTL', rubrique: 'Chimie et développement durable', label: '📈 Optimiser une synthèse', sims: [90], domaines: ['Optimiser une synthèse'] },
 
   // Analyse : électrochimie, chromatographie, étalonnage et quantification, fiabilité des mesures
   { id: 'bts-analyse', niveau: 'BTS', label: '🔬 Analyse', sims: [3, 29, 12, 54, 55, 11, 13, 9, 16], domaines: ['Chimie', 'Métrologie'] },
