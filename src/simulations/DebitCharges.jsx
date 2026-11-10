@@ -94,6 +94,9 @@ function evaluer(d) {
 const enonce = (d, { champ }) => d.type === 'charge' ? <><Pic n="target"/>Un fil est parcouru par un courant d’intensité <strong>I = {fr(d.I, 1)} A</strong> pendant <strong>Δt = {d.dt} s</strong>. Quelle charge électrique Q (valeur absolue) a traversé une section du fil ?<div style={{ marginTop: 6 }}>{champ('v', 'C')}</div></>
   : d.type === 'electrons' ? <><Pic n="target"/>Un fil de cuivre est parcouru par <strong>I = {fr(d.I, 1)} A</strong> pendant <strong>Δt = {d.dt} s</strong>. Combien d’électrons ont traversé une section du fil ? (e = 1,602·10⁻¹⁹ C ; écris par exemple 6,2e18)<div style={{ marginTop: 6 }}>{champ('v', 'électrons')}</div></>
   : <><Pic n="target"/>La batterie d’un appareil a une capacité de <strong>{d.cap} mA·h</strong>. L’appareil fonctionne avec un courant moyen <strong>I = {d.I} mA</strong>. Pendant combien de temps (en heures) peut-il fonctionner jusqu’à la décharge complète ?<div style={{ marginTop: 6 }}>{champ('v', 'h')}</div></>;
+const indiceDefi = d => d.type === 'charge' ? <>Q = I × Δt, avec I en ampères et Δt en secondes.</>
+  : d.type === 'electrons' ? <>Commence par la charge Q = I × Δt, puis le nombre d’électrons N = Q / e.</>
+  : <>Autonomie : Δt = Q / I, avec Q en mA·h et I en mA (unités cohérentes).</>;
 const solution = d => d.type === 'charge' ? <>Q = I × Δt = {fr(d.I, 1)} × {d.dt} = <strong>{fr(d.Q, 1)} C</strong>.</>
   : d.type === 'electrons' ? <>Q = I × Δt = {fr(d.I * d.dt, 1)} C ; N = Q / e = {fr(d.I * d.dt, 1)} / 1,602·10⁻¹⁹ = <strong>{sci(d.N)}</strong> électrons (soit {String(d.N.toExponential(2)).replace('.', ',').replace('e+', 'e')}).</>
   : <>Q = I × Δt donc Δt = Q / I = {d.cap} mA·h / {d.I} mA = <strong>{fr(d.T, d.T < 10 ? 1 : 0)} h</strong>.</>;
@@ -123,13 +126,13 @@ export function SimulationDebitCharges() {
     { id: 'porteurs', titre: 'Qu’est-ce qui circule dans un fil ?', depart: () => voir('fil', { I: 1, sens: 1 }),
       texte: <>Un métal est un empilement ordonné d’<strong>ions positifs</strong> (en gris) baignant dans un « gaz » d’<strong>électrons libres</strong> (en bleu) : c’est le <strong>modèle de Drude</strong>. Chaque électron libre n’est lié à aucun ion en particulier. Sans générateur, ils bougent dans tous les sens ; avec un générateur, ils se déplacent <strong>ensemble dans le même sens</strong> : c’est le courant électrique.
         <ExempleResolu>Le courant électrique est un <strong>déplacement ordonné de charges électriques</strong>. Ces charges sont portées par des <strong>porteurs de charge</strong> : les électrons libres dans les métaux, les <strong>ions</strong> dans les solutions.</ExempleResolu></>,
-      tache: { type: 'qcm', q: 'Dans un fil de cuivre, quels sont les porteurs de charge mobiles ?', options: ['Les électrons libres', 'Les ions cuivre', 'Les atomes de cuivre', 'Les protons'], bonne: 0, expl: 'Dans un métal, ce sont les électrons libres qui se déplacent ; les ions positifs restent à leur place.' } },
+      tache: { type: 'qcm', q: 'Dans un fil de cuivre, quels sont les porteurs de charge mobiles ?', options: ['Les électrons libres', 'Les ions cuivre', 'Les atomes de cuivre', 'Les protons'], bonne: 0, expl: 'Dans un métal, ce sont les électrons libres qui se déplacent ; les ions positifs restent à leur place.', indice: "Dans un métal, certains électrons ne sont plus liés à un atome en particulier. Que sont ces porteurs de charge ?" } },
     { id: 'sens', titre: 'Sens conventionnel et sens des électrons', depart: () => { voir('fil', { sens: 1 }); },
       texte: <>Par convention, le courant circule de la borne <strong>+</strong> vers la borne <strong>−</strong> à l’extérieur du générateur : c’est le <strong>sens conventionnel</strong> (flèche orange). Mais les électrons, de charge négative, se déplacent <strong>en sens inverse</strong> (flèche bleue). Cliquez sur « Inverser le générateur » : les deux flèches changent ensemble.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'fil' && vu.sens, consigne: 'Cliquez sur « Inverser le générateur » pour voir les deux sens changer.' } },
     { id: 'ions', titre: 'Dans une solution : ce sont des ions', depart: () => setAtelier('solution'),
       texte: <>Dans une solution ionique, les porteurs de charge sont des <strong>ions</strong>. Cliquez sur « Brancher le générateur » : les <strong>cations</strong> (+) vont vers l’électrode reliée à la borne <strong>−</strong>, les <strong>anions</strong> (−) vers l’électrode reliée à la borne <strong>+</strong>. Dans les fils, ce sont encore des électrons.</>,
-      tache: { type: 'qcm', q: 'Dans la solution, les anions (charge négative) se dirigent vers…', options: ['l’électrode reliée à la borne +', 'l’électrode reliée à la borne −', 'le fond du bécher', 'ils ne bougent pas'], bonne: 0, expl: 'Charges opposées s’attirent : les anions (−) sont attirés par la borne +, les cations (+) par la borne −.' } },
+      tache: { type: 'qcm', q: 'Dans la solution, les anions (charge négative) se dirigent vers…', options: ['l’électrode reliée à la borne +', 'l’électrode reliée à la borne −', 'le fond du bécher', 'ils ne bougent pas'], bonne: 0, expl: 'Charges opposées s’attirent : les anions (−) sont attirés par la borne +, les cations (+) par la borne −.', indice: "Un anion est un ion négatif. Il est attiré par une électrode de signe opposé. Laquelle ?" } },
     { id: 'debit', titre: 'L’intensité : un débit de charges', depart: () => voir('fil', { I: 1, dt: 1 }),
       texte: <>L’<strong>intensité I</strong> du courant est le <strong>débit de charges</strong> : la charge Q (en valeur absolue) qui traverse une section du conducteur pendant une durée Δt. <strong>I = Q / Δt</strong>, donc <strong>Q = I × Δt</strong> (I en A, Q en C, Δt en s). 1 A = 1 C·s⁻¹.
         <ExempleResolu>Une charge Q = 3 C traverse une section en Δt = 2 s : I = Q / Δt = 3 / 2 = <strong>1,5 A</strong>.</ExempleResolu></>,
@@ -137,7 +140,7 @@ export function SimulationDebitCharges() {
         calcul: () => [
           'L’intensité est un débit de charges : I = Q / Δt, donc Q = I × Δt (I en A, Δt en s, Q en C).',
           'Données : I = 2,0 A et Δt = 5,0 s (déjà en unités SI, pas de conversion).',
-          'Q = 2,0 × 5,0 = 10 C.'], expl: 'Q = I × Δt = 2,0 × 5,0 = 10 C.' } },
+          'Q = 2,0 × 5,0 = 10 C.'], expl: 'Q = I × Δt = 2,0 × 5,0 = 10 C.', indice: "Charge qui traverse une section : Q = I × Δt, avec I en ampères et Δt en secondes (le résultat est en coulombs)." } },
     { id: 'electrons', titre: 'Combien d’électrons ?', depart: () => voir('fil', { I: 1, dt: 1 }),
       texte: <>Chaque électron porte une charge −e, avec <strong>e = 1,602·10⁻¹⁹ C</strong>. Pour une charge Q, il faut donc <strong>N = Q / e</strong> électrons. Lancez le chrono et regardez la charge qui s’accumule. Pour 1 A pendant 1 s : 1 C, soit environ <strong>6,24·10¹⁸ électrons</strong> !
         <ExempleResolu>Q = 3,0 C : N = 3,0 / 1,602·10⁻¹⁹ = <strong>1,9·10¹⁹ électrons</strong>.</ExempleResolu></>,
@@ -146,7 +149,7 @@ export function SimulationDebitCharges() {
           'Chaque électron porte la charge e = 1,602·10⁻¹⁹ C (en valeur absolue). Pour la charge totale Q, le nombre d’électrons est N = Q / e.',
           'Données : Q = 2,0 C ; e = 1,602·10⁻¹⁹ C.',
           `N = 2,0 / (1,602·10⁻¹⁹) = ${sci(2 / E_CHARGE, 3)} électrons.`,
-          `Arrondi à 3 chiffres significatifs : N ≈ ${sci(2 / E_CHARGE, 2)} électrons.`], expl: 'N = Q / e = 2,0 / 1,602·10⁻¹⁹ = 1,25·10¹⁹.' } },
+          `Arrondi à 3 chiffres significatifs : N ≈ ${sci(2 / E_CHARGE, 2)} électrons.`], expl: 'N = Q / e = 2,0 / 1,602·10⁻¹⁹ = 1,25·10¹⁹.', indice: "N = Q / e, avec e = 1,6 × 10⁻¹⁹ C la charge d’un électron (en valeur absolue)." } },
     { id: 'ah', titre: 'Autre unité : l’ampère-heure', depart: () => setAtelier('batterie'),
       texte: <>Les fabricants indiquent la <strong>capacité</strong> d’une batterie en <strong>mA·h</strong> : c’est une charge ! Comme 1 A·h = 1 A × 3600 s, on a <strong>1 A·h = 3600 C</strong>, soit <strong>1 mA·h = 3,6 C</strong>.
         <ExempleResolu>Une batterie de 2000 mA·h contient Q = 2000 × 3,6 = <strong>7200 C</strong>.</ExempleResolu></>,
@@ -154,7 +157,7 @@ export function SimulationDebitCharges() {
         calcul: () => [
           'Une capacité en mA·h est une charge : 1 mA·h = 1 mA × 1 h.',
           'Conversion : 1 mA = 10⁻³ A et 1 h = 3600 s, donc 1 mA·h = 10⁻³ × 3600 = 3,6 C.',
-          'Q = 3000 × 3,6 = 10 800 C.'], expl: 'Q = 3000 × 3,6 = 10 800 C.' } },
+          'Q = 3000 × 3,6 = 10 800 C.'], expl: 'Q = 3000 × 3,6 = 10 800 C.', indice: "Une capacité en mA·h est une charge : 1 mA·h = 0,001 A × 3600 s. Convertis en coulombs." } },
     { id: 'autonomie', titre: 'Autonomie d’une batterie', depart: () => { setAtelier('batterie'); setP({ cap: 2000, I: 20 }); },
       texte: <>Un appareil qui consomme un courant moyen I vide une batterie de capacité Q en <strong>Δt = Q / I</strong>. Avec Q en mA·h et I en mA, la durée sort directement en <strong>heures</strong>.
         <ExempleResolu>Téléphone en veille : 2000 mA·h et I = 20 mA : Δt = 2000 / 20 = <strong>100 h</strong>.</ExempleResolu></>,
@@ -162,10 +165,10 @@ export function SimulationDebitCharges() {
         calcul: () => [
           'Une batterie de charge Q fournit un courant I pendant Δt = Q / I (courant supposé constant, batterie vidée complètement).',
           'Unités cohérentes : Q = 4000 mA·h et I = 250 mA (tous deux en « milli »). Le résultat sort alors directement en heures.',
-          'Δt = 4000 / 250 = 16 h.'], expl: 'Δt = 4000 / 250 = 16 h.' } },
+          'Δt = 4000 / 250 = 16 h.'], expl: 'Δt = 4000 / 250 = 16 h.', indice: "Autonomie : Δt = Q / I. Garde des unités cohérentes : des mA·h divisés par des mA donnent des heures." } },
     { id: 'vitesse', titre: '★ À quelle vitesse vont les électrons ?', depart: () => voir('fil', { I: 1, dt: 1, S: 1.5 }),
       texte: <>Dans un fil de cuivre de section S = 1,5 mm² parcouru par 1 A, la vitesse moyenne des électrons est de <strong>environ 0,05 mm par seconde seulement</strong> (calcul : v = I / (n·S·e), avec n = 8,5·10²⁸ électrons libres par m³). Pourtant la lampe s’allume <strong>tout de suite</strong> : c’est la <strong>perturbation</strong> (le signal) qui se propage à environ 2·10⁸ m/s, pas les électrons. Comme un long tuyau déjà plein d’eau : on ouvre le robinet, l’eau sort aussitôt à l’autre bout.</>,
-      tache: { type: 'qcm', q: 'Pourquoi la lampe s’allume-t-elle presque instantanément alors que les électrons avancent très lentement ?', options: ['Les électrons sont déjà présents dans tout le fil : tous se mettent en mouvement presque en même temps', 'Les électrons vont à la vitesse de la lumière', 'Les électrons sont créés par l’interrupteur', 'Les ions du métal transportent le courant'], bonne: 0, expl: 'Les électrons libres occupent tout le circuit : le signal se propage vite, chaque électron avance lentement.' } },
+      tache: { type: 'qcm', q: 'Pourquoi la lampe s’allume-t-elle presque instantanément alors que les électrons avancent très lentement ?', options: ['Les électrons sont déjà présents dans tout le fil : tous se mettent en mouvement presque en même temps', 'Les électrons vont à la vitesse de la lumière', 'Les électrons sont créés par l’interrupteur', 'Les ions du métal transportent le courant'], bonne: 0, expl: 'Les électrons libres occupent tout le circuit : le signal se propage vite, chaque électron avance lentement.', indice: "Les électrons libres sont déjà présents dans tout le fil. Qu’est-ce qui se propage très vite : les électrons eux-mêmes ou la mise en mouvement de tous les électrons ?" } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li>Le courant est un déplacement ordonné de <strong>porteurs de charge</strong> : électrons libres (métaux), ions (solutions).</li>
@@ -269,7 +272,7 @@ export function SimulationDebitCharges() {
         Qu’est-ce qui circule vraiment dans un fil ou dans une solution ? Découvrez les <strong>porteurs de charge</strong>, le <strong>sens du courant</strong> et le lien entre l’<strong>intensité</strong> et le <strong>débit de charges</strong> : I = Q / Δt.</div>
       <div className={`dc-l1${mode !== 'explore' ? ' cote' : ''}`}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {enDefi && <div style={styleBoite}><VoletDefiGen SIM={SIM} titres={TITRES} defi={defi} setDefi={setDefi} changerType={lancer} evaluer={evaluer} enonce={enonce} solution={solution}/></div>}
+          {enDefi && <div style={styleBoite}><VoletDefiGen SIM={SIM} titres={TITRES} defi={defi} setDefi={setDefi} changerType={lancer} evaluer={evaluer} enonce={enonce} solution={solution} indice={indiceDefi}/></div>}
           {!enDefi && planche}
         </div>
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : enDefi ? panneauHypo : null}
