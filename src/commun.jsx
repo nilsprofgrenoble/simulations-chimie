@@ -10,7 +10,7 @@ import { missionEnCours } from "./mission";
 export function Field({ label, value, onChange, step = 0.01, min = 0, width = 90, type = "number" }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      <label style={{ fontSize: 12, color: "#667" }}>{label}</label>
+      <label style={{ fontSize: 13, color: "#334155" }}>{label}</label>
       <input
         type={type}
         value={value}

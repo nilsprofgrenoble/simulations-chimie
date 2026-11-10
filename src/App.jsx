@@ -439,6 +439,8 @@ export default function App() {
       <div style={styles.bgBlob1} />
       <div style={styles.bgBlob2} />
 
+      <a href="#zone-simulation" className="lien-evitement"
+        onClick={e => { e.preventDefault(); const z = document.getElementById('zone-simulation') || document.querySelector('main, h1'); if (z) { z.setAttribute('tabindex', '-1'); z.focus(); z.scrollIntoView(); } }}>Aller au contenu</a>
       <EnTete menus={MENUS} simulations={SIMULATIONS} activeId={activeId} niveauActif={activeId === 0 ? null : active.niveau} naviguer={naviguer} session={sessionSb} />
 
 
