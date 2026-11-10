@@ -206,6 +206,20 @@ export function indicesProfond(n) {
   return n;
 }
 
+// Bouton « 💡 Indice » d'une question de défi, présenté comme dans les parcours guidés.
+// À placer sous la question : <IndiceDefi cache={ok}>formule, conversion, démarche (jamais le résultat)</IndiceDefi>
+// Il reste visible avant et après « Vérifier » tant que la réponse n'est pas juste (cache = réponse juste).
+export function IndiceDefi({ children, cache = false }) {
+  const [ouvert, setOuvert] = useState(false);
+  if (cache) return null;
+  return ouvert ? (
+    <div style={{ fontSize: 13.5, color: KIT.txt, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 6, padding: '6px 8px', marginTop: 4 }}><Pic n="bulb"/>{indicesProfond(children)}</div>
+  ) : (
+    <button onClick={() => setOuvert(true)} style={{ fontSize: 13, padding: '4px 10px', borderRadius: 8, cursor: 'pointer', fontWeight: 700, marginTop: 4,
+      border: '1.5px solid #fcd34d', background: '#fffbeb', color: '#92400e' }}><Pic n="bulb"/>Indice</button>
+  );
+}
+
 // Ordre d'affichage des choix d'un QCM : mélangé, mais stable pour une étape donnée.
 // Les auteurs écrivent la bonne réponse en premier ; sans mélange, elle serait toujours en tête.
 function ordreOptions(n, graine) {
