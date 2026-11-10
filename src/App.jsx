@@ -58,6 +58,7 @@ const SimulationEchographe = paresseux(() => import("./simulations/Echographe"),
 const SimulationRegioselectiviteHBr = paresseux(() => import("./simulations/RegioselectiviteHBr"), "SimulationRegioselectiviteHBr");
 const SimulationCinetiqueThermoBTS = paresseux(() => import("./simulations/CinetiqueThermoBTS"), "SimulationCinetiqueThermoBTS");
 const SimulationSubstitutionElimination = paresseux(() => import("./simulations/SubstitutionElimination"), "SimulationSubstitutionElimination");
+const SimulationAdditionDibrome = paresseux(() => import("./simulations/AdditionDibrome"), "SimulationAdditionDibrome");
 const SimulationMecanismesReactionnels = paresseux(() => import("./simulations/MecanismesReactionnels"), "SimulationMecanismesReactionnels");
 const SimulationEchographe2D = paresseux(() => import("./simulations/Echographe2D"), "SimulationEchographe2D");
 const SimulationOptimiserSynthese = paresseux(() => import("./simulations/OptimiserSynthese"), "SimulationOptimiserSynthese");
@@ -186,6 +187,7 @@ const SIMULATIONS = [
   { id:93, label:"Régiosélectivité de l'addition de HBr : carbocations et produit majoritaire", niveau:"BTS", icon:"⚗️", color:"#7c3aed", component: SimulationRegioselectiviteHBr },
   { id:94, label:"Contrôle cinétique ou thermodynamique : addition de HBr sur le buta-1,3-diène", niveau:"BTS", icon:"⚖️", color:"#ea580c", component: SimulationCinetiqueThermoBTS },
   { id:95, label:"Substitution ou élimination ? SN1, SN2, E1 et E2 sur les halogénoalcanes", niveau:"BTS", icon:"🔀", color:"#0891b2", component: SimulationSubstitutionElimination },
+  { id:96, label:"Addition du dibrome sur un alcène : ion bromonium et addition anti", niveau:"BTS", icon:"🟤", color:"#9a3412", component: SimulationAdditionDibrome },
   { id:86, label:"Synthèse organique : estérification, Dean-Stark et CCM", niveau:"TSTL", icon:"⚗️", color:"#9a3412",
     component: SimulationEsterification },
   { id:90, label:"Optimiser une synthèse : vitesse, rendement et coût", niveau:"TSTL", icon:"📈", color:"#15803d",
