@@ -652,5 +652,10 @@
  "34:cinet-profil": "SAPP148",
  "34:cinet-conditions": "SAPP149",
  "34:cinet-equilibre": "SAPP150",
- "34:cinet-arrhenius": "SAPP151"
+ "34:cinet-arrhenius": "SAPP151",
+ "34:sn-meca": "SAPP152",
+ "34:sn-ordre": "SAPP153",
+ "34:sn-stereo": "SAPP154",
+ "34:sn-conditions": "SAPP155",
+ "34:sn-profil": "SAPP156"
 }
