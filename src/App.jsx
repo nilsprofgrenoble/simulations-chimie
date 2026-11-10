@@ -17,6 +17,7 @@ import { AccueilSite } from "./AccueilSite";
 import { resoudreCode } from "./resoudreCode";
 import { DESCRIPTIONS } from "./descriptions";
 import { paresseux, EnChargement } from "./chargement";
+import { chargerPlotly, SIMS_PLOTLY } from "./bibliotheques";
 const SimulationAptitude = paresseux(() => import("./simulations/Aptitude"), "SimulationAptitude");
 const Simulation1 = paresseux(() => import("./simulations/Avancement"), "Simulation1");
 const SimulationDosageEtalonnage = paresseux(() => import("./simulations/DosageEtalonnage"), "SimulationDosageEtalonnage");
@@ -331,6 +332,7 @@ export default function App() {
   const ActiveComponent = active.component;
   const [plotlyReady, setPlotlyReady] = useState(false);
   const [copyMsg, setCopyMsg] = useState('');
+  useEffect(() => { if (SIMS_PLOTLY.has(idAffiche)) chargerPlotly().catch(() => {}); }, [idAffiche]);
   useEffect(() => {
     const check = setInterval(() => {
       if (window.Plotly) { setPlotlyReady(true); clearInterval(check); }
