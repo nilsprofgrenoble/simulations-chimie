@@ -1,5 +1,6 @@
 // Courtes descriptions des simulations, affichées en infobulle dans le menu de l'en-tête (clé : titre de la simulation).
 export const DESCRIPTIONS = {
+  "Machines thermiques : PAC, groupe froid et COP": "Une même machine, deux usages : la pompe à chaleur d'un bassin d'aquaculture et le groupe froid d'une chambre de laboratoire. Les quatre organes, le bilan d'énergie d'un cycle (ce que reçoit la source chaude, ce que prend la source froide, le travail électrique), le COP d'une machine réelle et la limite théorique calculée en kelvins.",
   "Je m'entraîne ! Travail par compétence": "Le point d'entrée : une carte par compétence (S'APP, ANA, REA, VAL), l'ordre conseillé, la liste de tous les exercices filtrable par thème du programme, et ta progression (mémorisée sur cet appareil).",
   "S'APP : extraire les données d'un énoncé": "S'approprier : la formule est donnée ; il faut comprendre la question, repérer les données utiles, associer chaque donnée au symbole de la formule et à la bonne unité. 7 énoncés rangés par thème.",
   "S'APP : lire un graphique": "S'approprier : identifier grandeurs, unités et échelles des axes, lire une valeur (directe, inverse, à l'origine, avec une autre unité), interpréter l'allure. 8 graphiques rangés par thème.",
