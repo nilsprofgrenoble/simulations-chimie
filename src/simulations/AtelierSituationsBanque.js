@@ -16,6 +16,7 @@ import { EXERCICES as EX_REGIO } from './BanqueRegioBTS.js';
 import { EXERCICES as EX_CINET } from './BanqueCinetBTS.js';
 import { EXERCICES as EX_SN } from './BanqueSNBTS.js';
 import { EXERCICES as EX_BR } from './BanqueBrBTS.js';
+import { EXERCICES as EX_TR } from './BanqueTranspoBTS.js';
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const V = (t, e) => [t, true, e];
 const F = (t, e) => [t, false, e];
@@ -236,7 +237,7 @@ const SITUATIONS_BASE = [
   },
 ];
 
-export const SITUATIONS = [...SITUATIONS_BASE, ...EX_MACHINES, ...EX_SYNTHESE, ...EX_MECA, ...EX_REGIO, ...EX_CINET, ...EX_SN, ...EX_BR];
+export const SITUATIONS = [...SITUATIONS_BASE, ...EX_MACHINES, ...EX_SYNTHESE, ...EX_MECA, ...EX_REGIO, ...EX_CINET, ...EX_SN, ...EX_BR, ...EX_TR];
 
 // Vérifie un champ de saisie : renvoie true / false (nombre à l'unité près selon tol relatif)
 export const champOk = (champ, valeurs) => {
