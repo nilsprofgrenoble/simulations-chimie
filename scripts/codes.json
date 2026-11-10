@@ -619,5 +619,16 @@
  "77:plausible:ab-ph-equivalence-ok": "VAL165",
  "77:plausible:est-rendement-superieur-100": "VAL166",
  "77:compat:ab-pka-demi-equivalence": "VAL167",
- "77:compat:est-rendement-equilibre": "VAL168"
+ "77:compat:est-rendement-equilibre": "VAL168",
+ "34:pac-bassin-situer": "SAPP119",
+ "34:pac-bilan": "SAPP120",
+ "34:frigo-chambre": "SAPP121",
+ "34:thermo-limite": "SAPP122",
+ "34:pac-catalogue": "SAPP123",
+ "34:ester-confiserie-situer": "SAPP124",
+ "34:synthese-temps-demi": "SAPP125",
+ "34:synthese-rendement": "SAPP126",
+ "34:synthese-catalyseur-piege": "SAPP127",
+ "34:synthese-optimiser-xeq": "SAPP128",
+ "34:synthese-comparer-protocoles": "SAPP129"
 }

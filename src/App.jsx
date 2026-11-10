@@ -55,6 +55,7 @@ const SimulationBoussole = paresseux(() => import("./simulations/Boussole"), "Si
 const SimulationDiffraction = paresseux(() => import("./simulations/Diffraction"), "SimulationDiffraction");
 const SimulationSon = paresseux(() => import("./simulations/Son"), "SimulationSon");
 const SimulationEchographe = paresseux(() => import("./simulations/Echographe"), "SimulationEchographe");
+const SimulationEchographe2D = paresseux(() => import("./simulations/Echographe2D"), "SimulationEchographe2D");
 const SimulationOptimiserSynthese = paresseux(() => import("./simulations/OptimiserSynthese"), "SimulationOptimiserSynthese");
 const SimulationMachinesThermiques = paresseux(() => import("./simulations/MachinesThermiques"), "SimulationMachinesThermiques");
 const SimulationInterferences = paresseux(() => import("./simulations/Interferences"), "SimulationInterferences");
@@ -171,6 +172,8 @@ const SIMULATIONS = [
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",
     component: SimulationEchographe },
+  { id:91, label:"Échographe 2D : image en éventail, profondeur et fréquence", niveau:"TSTL", icon:"🩺", color:"#0e7490",
+    component: SimulationEchographe2D },
   { id:89, label:"Machines thermiques : PAC, groupe froid et COP", niveau:"TSTL", icon:"🔥", color:"#b45309",
     component: SimulationMachinesThermiques },
   { id:85, label:"Acides et bases : pH, pKa, tampon et titrage", niveau:"TSTL", icon:"🧪", color:"#0f766e",
