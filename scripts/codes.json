@@ -641,5 +641,11 @@
  "34:meca-stabilite": "SAPP137",
  "34:meca-catalyseur": "SAPP138",
  "34:meca-mesomerie": "SAPP139",
- "34:meca-profil": "SAPP140"
+ "34:meca-profil": "SAPP140",
+ "34:regio-nombre": "SAPP141",
+ "34:regio-carbocation": "SAPP142",
+ "34:regio-stabilite": "SAPP143",
+ "34:regio-produit": "SAPP144",
+ "34:regio-barrieres": "SAPP145",
+ "34:regio-chiral": "SAPP146"
 }
