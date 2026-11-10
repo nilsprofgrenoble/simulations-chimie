@@ -86,6 +86,9 @@ const enonce = (d, { champ, choix }) => {
   if (d.type === 'intensites') return <><Pic n="target"/>Circuit <strong>en dérivation</strong> : l’ampèremètre placé près de la pile indique <strong>I = {d.Ia} mA</strong> ; dans la branche de R₁, il indique <strong>I₁ = {d.I1a} mA</strong>. Quelle est l’intensité I₂ dans la branche de R₂ ?<div style={{ marginTop: 6 }}>{champ('v', 'mA')}</div></>;
   return <><Pic n="target"/>{d.q}<div style={{ marginTop: 6 }}>{choix('d', [['plus', 'augmente'], ['moins', 'diminue'], ['meme', 'ne change pas'], ['nul', 'devient nulle']])}</div></>;
 };
+const indiceDefi = d => d.type === 'tensions' ? <>Circuit en série : une seule maille, donc E = U₁ + U₂. Isole U₂ avant de calculer.</>
+  : d.type === 'intensites' ? <>Loi des nœuds : I = I₁ + I₂. Isole I₂ ; les intensités sont déjà en mA.</>
+  : <>Commence par repérer si le circuit est en série (une seule boucle) ou en dérivation (plusieurs branches, chacune sous la tension E). Raisonne avec I = U / R, sans calcul chiffré.</>;
 const solution = d => d.type === 'tensions' ? <>Loi des mailles (une seule maille) : E = U₁ + U₂, donc U₂ = E − U₁ = {fr(d.E, 1)} − {fr(d.U1, 1)} = <strong>{fr(d.U2, 1)} V</strong>.</>
   : d.type === 'intensites' ? <>Loi des nœuds : I = I₁ + I₂, donc I₂ = I − I₁ = {d.Ia} − {d.I1a} = <strong>{d.I2a} mA</strong>.</>
   : <>{d.expl}</>;
@@ -109,17 +112,17 @@ export function SimulationCircuits() {
     { id: 'boucle', titre: 'Un circuit, c’est une boucle', depart: () => voir('serie'),
       texte: <>Un <strong>circuit électrique</strong> est une boucle fermée de <strong>fils</strong> qui relie un <strong>générateur</strong> (ici une pile) à des <strong>dipôles</strong> (ici deux résistors). Les points orange sont des charges électriques en mouvement : elles ne circulent que si la boucle est <strong>fermée</strong>.
         <ExempleResolu>Par convention, le courant sort de la borne <strong>+</strong> de la pile et revient par la borne <strong>−</strong> : c’est le <strong>sens conventionnel</strong> du courant (flèche sur le fil).</ExempleResolu></>,
-      tache: { type: 'qcm', q: 'À l’extérieur de la pile, dans quel sens circule le courant (sens conventionnel) ?', options: ['De la borne + vers la borne −', 'De la borne − vers la borne +', 'Dans les deux sens à la fois', 'Il ne circule pas'], bonne: 0, expl: 'Le sens conventionnel va de + vers − à l’extérieur du générateur.' } },
+      tache: { type: 'qcm', q: 'À l’extérieur de la pile, dans quel sens circule le courant (sens conventionnel) ?', options: ['De la borne + vers la borne −', 'De la borne − vers la borne +', 'Dans les deux sens à la fois', 'Il ne circule pas'], bonne: 0, expl: 'Le sens conventionnel va de + vers − à l’extérieur du générateur.', indice: 'Repère sur le schéma la flèche dessinée sur le fil et la borne de la pile d’où elle part : une pile a une borne + et une borne −.' } },
     { id: 'intensite', titre: 'L’intensité du courant', depart: () => voir('serie'),
       texte: <>L’<strong>intensité I</strong> du courant dit « combien de charges passent par seconde » dans un fil. Elle s’exprime en <strong>ampères (A)</strong> ; on utilise souvent le milliampère : 1 mA = 0,001 A. On la mesure avec un <strong>ampèremètre</strong> placé <strong>dans</strong> la boucle (en série).
         <ExempleResolu>Ici, avec E = 6 V, R₁ = 100 Ω et R₂ = 220 Ω : I = <strong>18,8 mA</strong> = 0,0188 A.</ExempleResolu></>,
-      tache: { type: 'qcm', q: 'Un ampèremètre se branche…', options: ['dans la boucle, en série avec le dipôle', 'aux bornes du dipôle, en dérivation', 'n’importe où', 'à côté du circuit'], bonne: 0, expl: 'L’ampèremètre mesure le courant qui le traverse : il doit être dans la boucle.' } },
+      tache: { type: 'qcm', q: 'Un ampèremètre se branche…', options: ['dans la boucle, en série avec le dipôle', 'aux bornes du dipôle, en dérivation', 'n’importe où', 'à côté du circuit'], bonne: 0, expl: 'L’ampèremètre mesure le courant qui le traverse : il doit être dans la boucle.', indice: 'L’intensité est le nombre de charges qui traversent un fil chaque seconde. Pour les compter, l’appareil doit être traversé par ces charges : où faut-il le placer dans la boucle ?' } },
     { id: 'serie', titre: 'En série : la même intensité partout', depart: () => voir('serie'),
       texte: <>Dans un circuit <strong>en série</strong>, il n’y a qu’<strong>une seule boucle</strong>. Le courant n’a aucun chemin de rechange : il est <strong>le même en tout point</strong> (loi d’unicité de l’intensité). Changez R₁ ou R₂ et regardez : l’intensité I change, mais c’est toujours la même valeur partout.</>,
-      tache: { type: 'qcm', q: 'Circuit en série : l’intensité qui traverse R₁ vaut 20 mA. Quelle est l’intensité qui traverse R₂ ?', options: ['20 mA', '10 mA', '40 mA', 'On ne peut pas savoir'], bonne: 0, expl: 'Une seule boucle : l’intensité est la même partout, 20 mA.' } },
+      tache: { type: 'qcm', q: 'Circuit en série : l’intensité qui traverse R₁ vaut 20 mA. Quelle est l’intensité qui traverse R₂ ?', options: ['20 mA', '10 mA', '40 mA', 'On ne peut pas savoir'], bonne: 0, expl: 'Une seule boucle : l’intensité est la même partout, 20 mA.', indice: 'Une seule boucle : les charges n’ont qu’un seul chemin. Peut-il y en avoir plus qui passent par seconde en un point qu’en un autre ?' } },
     { id: 'tension', titre: 'La tension électrique', depart: () => voir('serie'),
       texte: <>La <strong>tension U</strong> mesure la « poussée » qui fait circuler les charges. Elle s’exprime en <strong>volts (V)</strong> et se mesure avec un <strong>voltmètre</strong> branché <strong>aux bornes</strong> du dipôle (en dérivation). On la représente par une <strong>flèche-tension</strong> (en bleu) : ici E aux bornes de la pile, U₁ aux bornes de R₁ et U₂ aux bornes de R₂.</>,
-      tache: { type: 'qcm', q: 'Un voltmètre se branche…', options: ['aux bornes du dipôle, en dérivation', 'dans la boucle, en série', 'seulement sur la pile', 'on ne le branche pas'], bonne: 0, expl: 'Le voltmètre compare deux points du circuit : il se place en dérivation, aux bornes du dipôle.' } },
+      tache: { type: 'qcm', q: 'Un voltmètre se branche…', options: ['aux bornes du dipôle, en dérivation', 'dans la boucle, en série', 'seulement sur la pile', 'on ne le branche pas'], bonne: 0, expl: 'Le voltmètre compare deux points du circuit : il se place en dérivation, aux bornes du dipôle.', indice: 'Une tension se mesure entre deux points du circuit. Pour la mesurer sans couper la boucle, où faut-il brancher les deux bornes du voltmètre ?' } },
     { id: 'additivite', titre: 'En série : la loi des mailles', depart: () => voir('serie', { maille: 1 }),
       texte: <>Une <strong>maille</strong> est une boucle fermée du circuit (en pointillés violets). La <strong>loi des mailles</strong> dit que, le long d’une maille, la tension de la pile se « partage » entre les dipôles : <strong>E = U₁ + U₂</strong>, ou encore E − U₁ − U₂ = 0. Ici il n’y a <strong>qu’une seule maille</strong>. Vérifiez avec les mesures du schéma, pour plusieurs valeurs de R₁ et R₂ : le plus grand résistor reçoit la plus grande tension.
         <ExempleResolu>E = 6 V, U₁ = 1,88 V : U₂ = E − U₁ = 6 − 1,88 = <strong>4,12 V</strong>.</ExempleResolu></>,
@@ -127,10 +130,11 @@ export function SimulationCircuits() {
         calcul: () => [
           'En série, il n’y a qu’une maille. La loi des mailles dit : E = U₁ + U₂.',
           'On cherche U₂, donc U₂ = E − U₁.',
-          'U₂ = 9 − 3,5 = 5,5 V.'], expl: 'U₂ = E − U₁ = 9 − 3,5 = 5,5 V.' } },
+          'U₂ = 9 − 3,5 = 5,5 V.'], expl: 'U₂ = E − U₁ = 9 − 3,5 = 5,5 V.',
+        indice: 'Une seule maille : E = U₁ + U₂. Isole d’abord l’inconnue (U₂ = …), puis remplace par les valeurs. Le résultat doit être plus petit que E.' } },
     { id: 'derivation', titre: 'En dérivation : deux mailles', depart: () => voir('derivation', { maille: 1 }),
       texte: <>Dans un circuit <strong>en dérivation</strong>, il y a <strong>plusieurs chemins</strong> possibles, donc ici <strong>deux mailles</strong> : la maille 1 (pile et R₁) et la maille 2 (pile et R₂). Cliquez sur « maille 1 » puis « maille 2 ». La loi des mailles donne <strong>E = U₁</strong> pour la maille 1 et <strong>E = U₂</strong> pour la maille 2 : <strong>U₁ = U₂ = E</strong>. La tension est la même aux bornes de chaque branche.</>,
-      tache: { type: 'qcm', q: 'Deux résistors sont en dérivation sur une pile de 6 V. Quelle est la tension aux bornes de R₂ ?', options: ['6 V', '3 V', '12 V', 'Ça dépend de R₂'], bonne: 0, expl: 'En dérivation, la tension est la même aux bornes de chaque branche : 6 V, quelle que soit la valeur de R₂.' } },
+      tache: { type: 'qcm', q: 'Deux résistors sont en dérivation sur une pile de 6 V. Quelle est la tension aux bornes de R₂ ?', options: ['6 V', '3 V', '12 V', 'Ça dépend de R₂'], bonne: 0, expl: 'En dérivation, la tension est la même aux bornes de chaque branche : 6 V, quelle que soit la valeur de R₂.', indice: 'Écris la loi des mailles pour la maille formée par la pile et R₂ seulement : que vaut U₂ par rapport à E ? La valeur de R₂ intervient-elle dans cette égalité ?' } },
     { id: 'noeud', titre: 'Aux nœuds : l’intensité se partage', depart: () => voir('derivation'),
       texte: <>Au <strong>nœud</strong>, le courant arrivant de la pile se sépare en deux : <strong>I = I₁ + I₂</strong> (loi des nœuds). Le plus petit résistor laisse passer le plus grand courant. Changez R₁ et R₂ et vérifiez.
         <ExempleResolu>I = 87 mA et I₁ = 60 mA : I₂ = I − I₁ = <strong>27 mA</strong>.</ExempleResolu></>,
@@ -138,7 +142,8 @@ export function SimulationCircuits() {
         calcul: () => [
           'Au nœud, le courant I se sépare en deux : loi des nœuds I = I₁ + I₂.',
           'On cherche I₂, donc I₂ = I − I₁ (tous les courants sont déjà en mA, pas de conversion).',
-          'I₂ = 120 − 45 = 75 mA.'], expl: 'I₂ = I − I₁ = 120 − 45 = 75 mA.' } },
+          'I₂ = 120 − 45 = 75 mA.'], expl: 'I₂ = I − I₁ = 120 − 45 = 75 mA.',
+        indice: 'Loi des nœuds : I = I₁ + I₂. Isole I₂ (I₂ = …). Les trois intensités sont déjà en mA : aucune conversion. Le résultat doit être plus petit que I.' } },
     { id: 'effet', titre: 'Ajouter ou changer un dipôle', depart: () => voir('serie', { R2: 100 }),
       texte: <>Essayez : en série, augmentez R₂ (de 100 Ω à 1000 Ω) : l’intensité I <strong>diminue</strong>. En dérivation, diminuer R₂ fait <strong>augmenter</strong> I₂, donc le courant total I débité par la pile augmente aussi, mais I₁ ne change pas.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'serie' && C.R2 >= 470, consigne: 'Dans le circuit en série, choisissez R₂ = 470 Ω ou plus et regardez I.' } },
@@ -218,7 +223,7 @@ export function SimulationCircuits() {
         Comment le courant circule-t-il dans un circuit ? Comparez un circuit <strong>en série</strong> et un circuit <strong>en dérivation</strong>, et découvrez comment l’<strong>intensité</strong> et la <strong>tension</strong> se répartissent.</div>
       <div className={`ci-l1${mode !== 'explore' ? ' cote' : ''}`}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {enDefi && <div style={styleBoite}><VoletDefiGen SIM={SIM} titres={TITRES} defi={defi} setDefi={setDefi} changerType={lancer} evaluer={evaluer} enonce={enonce} solution={solution}/></div>}
+          {enDefi && <div style={styleBoite}><VoletDefiGen SIM={SIM} titres={TITRES} defi={defi} setDefi={setDefi} changerType={lancer} evaluer={evaluer} enonce={enonce} solution={solution} indice={indiceDefi}/></div>}
           {planche}
         </div>
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : enDefi ? panneauHypo : null}

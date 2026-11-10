@@ -75,6 +75,10 @@ const enonce = (d, { champ }) => {
   if (d.type === 'courant') return <><Pic n="target"/>On applique une tension <strong>U = {fr(d.U, 1)} V</strong> aux bornes d’un conducteur ohmique de résistance <strong>R = {d.R} Ω</strong>. Quelle intensité I le traverse ?<div style={{ marginTop: 6 }}>{champ('v', 'mA')}</div></>;
   return <><Pic n="target"/>Un capteur de température (thermistance) est alimenté sous <strong>5,0 V</strong>. L’ampèremètre indique <strong>I = {fr(d.I * 1000, 2)} mA</strong>. Calculez la résistance du capteur, puis utilisez la <strong>courbe d’étalonnage</strong> pour trouver la température θ.<div style={{ marginTop: 6 }}>{champ('v', '°C')}</div></>;
 };
+const indiceDefi = d => d.type === 'res' ? <>Loi d’Ohm : R = U / I. Convertis d’abord I de mA en A (1 mA = 0,001 A).</>
+  : d.type === 'courant' ? <>Loi d’Ohm : I = U / R. Le résultat sort en ampères : convertis-le en mA (1 A = 1000 mA).</>
+  : d.type === 'fonct' ? <>Le point de fonctionnement est là où la courbe de la lampe croise la droite pointillée. Lis alors l’intensité sur l’axe horizontal et pense à l’unité (mA).</>
+  : <>Deux temps : calcule d’abord la résistance du capteur avec la loi d’Ohm (R = U / I, I en ampères), puis cherche cette valeur sur l’axe vertical de la courbe d’étalonnage et lis θ sur l’axe horizontal.</>;
 const solution = d => d.type === 'fonct' ? <>Le point de fonctionnement est l’intersection de la courbe de la lampe et de la droite : I ≈ <strong>{fr(d.I * 1000, 0)} mA</strong> et U ≈ {fr(d.U, 1)} V aux bornes de la lampe. Vérification (loi des mailles) : E = U + R × I = {fr(d.U, 1)} + {d.Rp} × {fr(d.I, 3)} = {fr(d.U + d.Rp * d.I, 1)} V.</>
   : d.type === 'res' ? <>R = U / I = {fr(d.U, 1)} / {fr(d.I, 4)} = <strong>{fr(d.R, 0)} Ω</strong> (I = {fr(d.I * 1000, 1)} mA = {fr(d.I, 4)} A).</>
   : d.type === 'courant' ? <>I = U / R = {fr(d.U, 1)} / {d.R} = {fr(d.I, 4)} A = <strong>{fr(d.I * 1000, 1)} mA</strong>.</>
@@ -111,13 +115,13 @@ export function SimulationLoiOhm() {
   const ETAPES = [
     { id: 'resistor', titre: 'Le résistor et sa résistance', depart: () => voir('ohm', { inconnu: false, R: 100, U: 6 }),
       texte: <>Un <strong>résistor</strong> (ou « conducteur ohmique ») limite le courant dans un circuit. Sa <strong>résistance R</strong> s’exprime en <strong>ohms (Ω)</strong>. Sur le schéma, un <strong>ampèremètre</strong> (A) mesure l’intensité I et un <strong>voltmètre</strong> (V) mesure la tension U aux bornes du résistor. Changez R avec les boutons, en gardant la même tension.</>,
-      tache: { type: 'qcm', q: 'Pour la même tension U, si on remplace R = 100 Ω par R = 470 Ω, l’intensité I…', options: ['diminue : un grand R freine le courant', 'augmente', 'ne change pas', 'devient nulle'], bonne: 0, expl: 'Plus la résistance est grande, plus le courant est freiné : I diminue.' } },
+      tache: { type: 'qcm', q: 'Pour la même tension U, si on remplace R = 100 Ω par R = 470 Ω, l’intensité I…', options: ['diminue : un grand R freine le courant', 'augmente', 'ne change pas', 'devient nulle'], bonne: 0, expl: 'Plus la résistance est grande, plus le courant est freiné : I diminue.', indice: 'La tension U reste la même. Compare l’intensité I = U / R pour les deux valeurs de R : que se passe-t-il quand on divise par un nombre plus grand ?' } },
     { id: 'mesures', titre: 'Faire des mesures', depart: () => voir('ohm', { inconnu: false, R: 100 }),
       texte: <>Faisons comme en TP : on règle la tension U du générateur (curseur), on lit I, puis on clique sur « Noter cette mesure ». Faites <strong>au moins 5 mesures</strong> avec des tensions différentes, pour le même résistor R = 100 Ω.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'ohm' && !O.inconnu && ptsO.filter(p => p.R === 100).length >= 5, consigne: 'Notez au moins 5 mesures avec R = 100 Ω.' } },
     { id: 'caract', titre: 'La caractéristique : une droite', depart: null,
       texte: <>Le graphique U = f(I) s’appelle la <strong>caractéristique</strong> du dipôle. Pour un résistor, les points sont <strong>alignés sur une droite qui passe par l’origine</strong> : U et I sont <strong>proportionnelles</strong>. Plus la droite est « raide », plus R est grande.</>,
-      tache: { type: 'qcm', q: 'La caractéristique d’un conducteur ohmique est…', options: ['une droite passant par l’origine', 'une droite qui ne passe pas par l’origine', 'une courbe qui monte de plus en plus vite', 'un point'], bonne: 0, expl: 'U est proportionnelle à I : droite passant par l’origine.' } },
+      tache: { type: 'qcm', q: 'La caractéristique d’un conducteur ohmique est…', options: ['une droite passant par l’origine', 'une droite qui ne passe pas par l’origine', 'une courbe qui monte de plus en plus vite', 'un point'], bonne: 0, expl: 'U est proportionnelle à I : droite passant par l’origine.', indice: 'U et I sont proportionnelles : U = k × I. Que vaut U quand I = 0 ? Et quelle forme de graphique donne une proportionnalité ?' } },
     { id: 'loi', titre: 'La loi d’Ohm : U = R × I', depart: () => voir('ohm', { inconnu: false, R: 100, U: 6 }),
       texte: <>Le coefficient de proportionnalité est la résistance : <strong>U = R × I</strong> (loi d’Ohm), avec U en <strong>volts</strong>, I en <strong>ampères</strong>, R en <strong>ohms</strong>. Donc R = U / I. ⚠️ Pensez à convertir les mA en A !
         <ExempleResolu>U = 6,0 V et I = 60 mA = 0,060 A : R = U / I = 6,0 / 0,060 = <strong>100 Ω</strong>.</ExempleResolu></>,
@@ -126,7 +130,8 @@ export function SimulationLoiOhm() {
           'La loi d’Ohm donne U = R × I. Donc R = U / I.',
           'Les unités doivent être des volts (V) et des ampères (A). U = 9,0 V est déjà en volts.',
           'Conversion : 1 mA = 0,001 A, donc I = 45 mA = 45 × 0,001 = 0,045 A.',
-          'R = U / I = 9,0 / 0,045 = 200 Ω.'], expl: 'R = U / I = 9,0 / 0,045 = 200 Ω.' } },
+          'R = U / I = 9,0 / 0,045 = 200 Ω.'], expl: 'R = U / I = 9,0 / 0,045 = 200 Ω.',
+        indice: 'Loi d’Ohm : U = R × I, donc R = U / I. Attention aux unités : U en volts, I en ampères (1 mA = 0,001 A).' } },
     { id: 'calcul', titre: 'Prévoir l’intensité', depart: () => voir('ohm', { inconnu: false, R: 220, U: 9 }),
       texte: <>On peut aussi <strong>prévoir</strong> le courant : I = U / R.
         <ExempleResolu>U = 6,0 V et R = 100 Ω : I = 6,0 / 100 = 0,060 A = <strong>60 mA</strong>. {bouton('Voir sur le montage', () => voir('ohm', { inconnu: false, R: 100, U: 6 }))}</ExempleResolu>
@@ -136,10 +141,11 @@ export function SimulationLoiOhm() {
           'La loi d’Ohm donne U = R × I. Donc I = U / R.',
           'Ici, U = 6,0 V et R = 330 Ω (déjà en volts et en ohms).',
           'I = U / R = 6,0 / 330 = 0,01818 A.',
-          'Conversion en mA : 1 A = 1000 mA, donc I = 0,01818 × 1000 = 18,18 mA (environ 18 mA).'], expl: 'I = 6,0 / 330 = 0,0182 A = 18,2 mA.' } },
+          'Conversion en mA : 1 A = 1000 mA, donc I = 0,01818 × 1000 = 18,18 mA (environ 18 mA).'], expl: 'I = 6,0 / 330 = 0,0182 A = 18,2 mA.',
+        indice: 'Loi d’Ohm : I = U / R, avec U en volts et R en ohms. Le résultat sort en ampères : il faut ensuite le convertir en mA (1 A = 1000 mA).' } },
     { id: 'modele', titre: 'Modéliser la caractéristique', depart: () => voir('ohm', { inconnu: false, R: 100 }),
       texte: <>Modéliser, c’est trouver une <strong>relation mathématique</strong> qui décrit les points mesurés. Deux modèles sont possibles : <strong>proportionnel</strong> U = k × I (droite passant par l’origine) ou <strong>affine</strong> U = a × I + b (droite qui ne passe pas forcément par l’origine). Essayez les deux dans l’atelier. Vous pouvez aussi copier vos mesures et utiliser le code <strong>Python</strong> proposé pour tracer le nuage de points et la droite.</>,
-      tache: { type: 'qcm', q: 'Pour un conducteur ohmique, on trouve avec le modèle affine…', options: ['b ≈ 0 : le modèle proportionnel convient', 'b très grand', 'a = 0', 'rien : le modèle affine ne marche pas'], bonne: 0, expl: 'La droite passe par l’origine : b est nul (aux incertitudes près). U = k × I convient, et k est la résistance R.' } },
+      tache: { type: 'qcm', q: 'Pour un conducteur ohmique, on trouve avec le modèle affine…', options: ['b ≈ 0 : le modèle proportionnel convient', 'b très grand', 'a = 0', 'rien : le modèle affine ne marche pas'], bonne: 0, expl: 'La droite passe par l’origine : b est nul (aux incertitudes près). U = k × I convient, et k est la résistance R.', indice: 'Dans le modèle affine U = a × I + b, b est l’ordonnée à l’origine. Que vaut b pour une droite qui passe par l’origine ?' } },
     { id: 'inconnu', titre: 'Trouver une résistance inconnue', depart: () => voir('ohm', { inconnu: true, U: 6, reveler: false }),
       texte: <>Le résistor du montage est maintenant <strong>inconnu</strong>. Mesurez U et I, calculez R = U / I, puis vérifiez en cliquant sur « Révéler R ». Faites plusieurs mesures : la <strong>pente</strong> de la droite donne R.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'ohm' && O.inconnu && ptsO.filter(p => p.inconnu).length >= 3, consigne: 'Notez au moins 3 mesures avec le résistor inconnu.' } },
@@ -157,7 +163,8 @@ export function SimulationLoiOhm() {
       texte: <>La courbe d’étalonnage permet l’opération inverse : <strong>mesurer R</strong> (avec U et I), puis <strong>lire la température</strong> correspondante sur la courbe.
         <ExempleResolu>R = 5,3 kΩ : on cherche 5,3 sur l’axe vertical, on suit l’horizontale jusqu’à la courbe, puis on descend sur l’axe horizontal : θ ≈ <strong>40 °C</strong>.</ExempleResolu></>,
       tache: { type: 'num', q: 'Une mesure donne R = 3,6 kΩ. Quelle est la température (en °C, à 3 °C près) ?', unite: '°C', vrai: 50, tol: 0.06, affiche: x => String(x), pieges: [[3.6, 'Ce nombre est la résistance (en kΩ), que l’énoncé donne déjà. On cherche la température : lisez-la sur l’axe horizontal de la courbe.']],
-        aide: 'Sur la courbe, repérez 3,6 sur l’axe vertical (résistance en kΩ), suivez l’horizontale jusqu’à la courbe, puis descendez sur l’axe horizontal pour lire θ.', expl: 'Sur la courbe, R = 3,6 kΩ correspond à environ 50 °C.' } },
+        aide: 'Sur la courbe, repérez 3,6 sur l’axe vertical (résistance en kΩ), suivez l’horizontale jusqu’à la courbe, puis descendez sur l’axe horizontal pour lire θ.', expl: 'Sur la courbe, R = 3,6 kΩ correspond à environ 50 °C.',
+        indice: 'Aucun calcul : c’est une lecture graphique. Tu as 3 °C de marge, une lecture approximative suffit. Inspire-toi de l’exemple de l’énoncé (R = 5,3 kΩ).' } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li><strong>Loi d’Ohm</strong> : U = R × I (U en V, I en A, R en Ω) ; valable pour un conducteur ohmique.</li>
@@ -327,7 +334,7 @@ plt.show()`;
         Quel lien entre la <strong>tension</strong> aux bornes d’un résistor et le <strong>courant</strong> qui le traverse ? Mesurez, tracez la <strong>caractéristique</strong>, retrouvez la <strong>loi d’Ohm</strong>, puis utilisez un <strong>capteur de température</strong>.</div>
       <div className={`oh-l1${mode !== 'explore' ? ' cote' : ''}`}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {enDefi && <div style={styleBoite}><VoletDefiGen SIM={SIM} titres={TITRES} defi={defi} setDefi={setDefi} changerType={lancer} evaluer={evaluer} enonce={enonce} solution={solution}/>
+          {enDefi && <div style={styleBoite}><VoletDefiGen SIM={SIM} titres={TITRES} defi={defi} setDefi={setDefi} changerType={lancer} evaluer={evaluer} enonce={enonce} solution={solution} indice={indiceDefi}/>
             {defi.type === 'capteur' && <div style={{ marginTop: 10 }}>{graphCapteur(true, [])}</div>}
             {defi.type === 'fonct' && <div style={{ marginTop: 10 }}>{grapheFonct(defi.E, defi.Rp, 'lampe', null)}</div>}</div>}
           {!enDefi && planche}
