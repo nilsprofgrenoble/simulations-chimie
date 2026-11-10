@@ -9,6 +9,8 @@
 // Aucune dépendance à React : testable seul. Notation : « U_R » s'affiche avec un indice (voir avecIndices dans commun.jsx).
 
 import { presenter } from './presenter.js';
+import { EXERCICES as EX_MACHINES } from './BanqueMachinesThermiques.js';
+import { EXERCICES as EX_SYNTHESE } from './BanqueOptimiserSynthese.js';
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const V = (t, e) => [t, true, e];
 const F = (t, e) => [t, false, e];
@@ -53,7 +55,7 @@ const NAT = {
   ],
 };
 
-export const SITUATIONS = [
+const SITUATIONS_BASE = [
   arduino('arduino-allumer', 'Quelle instruction : allumer une DEL',
     'Sur une carte Arduino, une DEL est branchée sur la broche numérique 11 (déjà configurée en sortie avec pinMode). On veut l’allumer.',
     NAT.sortieNum, [
@@ -228,6 +230,8 @@ export const SITUATIONS = [
     },
   },
 ];
+
+export const SITUATIONS = [...SITUATIONS_BASE, ...EX_MACHINES, ...EX_SYNTHESE];
 
 // Vérifie un champ de saisie : renvoie true / false (nombre à l'unité près selon tol relatif)
 export const champOk = (champ, valeurs) => {
