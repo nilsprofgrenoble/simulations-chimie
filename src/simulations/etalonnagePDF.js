@@ -1,3 +1,4 @@
+import { chargerJsPDF } from "../bibliotheques";
 // Rapport PDF du dosage par étalonnage (sim 11) : paramètres, statistiques, graphiques (SVG convertis en images), test de Fisher.
 // Utilise jsPDF chargé dans index.html (window.jspdf). Les polices standard de jsPDF ne connaissent pas les accents : on les retire.
 
@@ -25,6 +26,7 @@ async function svgEnImage(svg) {
 // r = { meta: [[nom, valeur]], stats: [[nom, valeur]], resultat: texte | null, graphes: [{ titre, svg }],
 //       fisher: { lignes: [[source, SCE, ddl, variance, F, Fcrit]], conclusion, ok } | null }
 export async function exporterRapportPDF(r) {
+  await chargerJsPDF();
   if (!window.jspdf) throw new Error('bibliothèque PDF non chargée');
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
