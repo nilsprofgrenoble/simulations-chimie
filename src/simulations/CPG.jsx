@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useLargeur, pasTemps, grille } from "./cpgOutils";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, Curseur, lireProgression } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, Curseur, lireProgression, IndiceDefi } from "../commun";
 import { COMPOSES, PAR_ID, PHASES, GAZ, PARAMS_DEFAUT, SEUIL_RS, P_MAX, PANNES, FRACTION_VOL,
   analyse, ecoulement, signal, ligneBase, temperature, positionBande } from "./cpgModele";
 import { Pic } from "../Pictos";
@@ -471,14 +471,14 @@ export function SimulationCPG() {
     { id: 'appareil', titre: 'Le chemin de l’échantillon', focus: ['appareil'],
       texte: <>Un chromatographe en phase gazeuse est une chaîne : le <strong>gaz vecteur</strong> (hélium) traverse l’<strong>injecteur</strong> chauffé où l’on vaporise l’échantillon, puis la <strong>colonne capillaire</strong> enroulée dans le <strong>four</strong>, et enfin le <strong>détecteur FID</strong>. Cliquez sur chaque élément du schéma pour lire son rôle et ce qu’on y contrôle.</>,
       tache: { type: 'qcm', q: 'Dans quel ordre l’échantillon vaporisé traverse-t-il l’appareil ?', options: ['injecteur → colonne (dans le four) → détecteur', 'colonne → injecteur → détecteur', 'injecteur → détecteur → colonne'], bonne: 0,
-        expl: 'L’échantillon est vaporisé dans l’injecteur, séparé dans la colonne et détecté à sa sortie. Le gaz vecteur, lui, circule en permanence depuis la bouteille.' } },
+        expl: 'L’échantillon est vaporisé dans l’injecteur, séparé dans la colonne et détecté à sa sortie. Le gaz vecteur, lui, circule en permanence depuis la bouteille.', indice: "Suivez le trajet : injection, séparation dans le four, puis détection." } },
     { id: 'inj', titre: 'Injecter et regarder', focus: ['viz'],
       texte: <>On injecte 0,2 µL d’un mélange d’éthanol, d’acétone, d’acétate d’éthyle, de toluène et d’o-xylène (5 % de chacun dans du CS₂, invisible au FID), sur colonne <strong>apolaire</strong>, avec un programme de 40 à 200 °C. Regardez les bandes avancer et le chromatogramme se tracer, puis survolez les pics.</>,
       tache: { type: 'action', ok: lancement > 0 && memeMelange(CINQ), label: '▶ Mettre le mélange et injecter', faire: () => mettre(CINQ), consigne: 'Glissez sur le chromatogramme pour zoomer sur les premiers pics.' } },
     { id: 'teb', titre: 'Sur colonne apolaire : l’ordre des températures d’ébullition', focus: ['viz', 'resultats'],
       texte: <>Le tableau des résultats donne la température d’ébullition de chaque composé du mélange injecté à l’étape précédente. Comparez avec l’ordre de sortie.</>,
       tache: { type: 'qcm', q: 'Sur une colonne apolaire, les composés sortent à peu près…', options: ['dans l’ordre croissant de leur température d’ébullition', 'dans l’ordre décroissant de leur température d’ébullition', 'dans l’ordre de leur masse molaire, quelle que soit leur famille'], bonne: 0,
-        expl: 'Sur une phase apolaire, la rétention dépend surtout de la volatilité : plus un composé est volatil, plus il passe de temps dans le gaz et sort tôt. Ce n’est qu’une tendance : l’éthanol (78 °C) sort avant l’acétone (56 °C) car ses liaisons hydrogène ne trouvent pas de partenaire dans la phase apolaire.' } },
+        expl: 'Sur une phase apolaire, la rétention dépend surtout de la volatilité : plus un composé est volatil, plus il passe de temps dans le gaz et sort tôt. Ce n’est qu’une tendance : l’éthanol (78 °C) sort avant l’acétone (56 °C) car ses liaisons hydrogène ne trouvent pas de partenaire dans la phase apolaire.', indice: "Avec une phase apolaire, pensez à ce qui rend un composé plus ou moins volatil." } },
     { id: 'polaire', titre: 'Sur colonne polaire : les liaisons hydrogène', focus: ['colonne', 'viz', 'resultats'],
       texte: <>Une colonne <strong>polaire</strong> (phase PEG, dite « WAX ») retient surtout les composés capables de <strong>liaisons hydrogène</strong> (les alcools) ou très polaires, quelle que soit leur température d’ébullition.
         <ExempleResolu>Mélange : acétone (téb 56 °C), éthanol (78 °C), toluène (111 °C), o-xylène (144 °C), même programme.<br/>
@@ -492,7 +492,7 @@ export function SimulationCPG() {
     { id: 'ident', titre: 'Identifier un pic par son temps de rétention', focus: ['viz', 'resultats'],
       texte: <>En routine, on identifie un composé en comparant son t<Ind>R</Ind> à celui d’un <strong>étalon injecté dans les mêmes conditions</strong> (même colonne, même programme, même débit). Étalon de toluène seul : t<Ind>R</Ind> = {v(trSeul(PARAMS_DEFAUT, 'tol'), 3)} min ; étalon d’o-xylène seul : {v(trSeul(PARAMS_DEFAUT, 'oxyl'), 3)} min.</>,
       tache: { type: 'qcm', q: `Dans un échantillon analysé avec la même méthode, un pic sort à ${v(trSeul(PARAMS_DEFAUT, 'tol'), 3)} min. Que peut-on conclure ?`, options: ['c’est probablement du toluène : il faut le confirmer (autre colonne ou spectre de masse)', 'c’est certainement du toluène', 'on ne peut rien dire sans calculer k'], bonne: 0,
-        expl: 'Un même t_R est un indice fort mais pas une preuve : un autre composé peut sortir au même instant. On confirme en changeant de colonne (polarité différente) ou par CPG couplée à la spectrométrie de masse.' } },
+        expl: 'Un même t_R est un indice fort mais pas une preuve : un autre composé peut sortir au même instant. On confirme en changeant de colonne (polarité différente) ou par CPG couplée à la spectrométrie de masse.', indice: "Un même t_R ne prouve pas l’identité : d’autres composés peuvent sortir au même moment." } },
     { id: 'ident3', titre: 'Identifier les pics d’un échantillon', focus: ['viz', 'resultats'],
       texte: <>On injecte des <strong>étalons</strong> seuls, puis on associe chaque pic de l’échantillon à l’étalon de même t<Ind>R</Ind>, à quelques centièmes de minute près (répétabilité).
         <ExempleResolu>Étalons (colonne apolaire, méthode de départ) : éthanol {t2('etoh')} min ; acétate d’éthyle {t2('aceet')} ; toluène {t2('tol')} ; o-xylène {t2('oxyl')}.<br/>
@@ -511,7 +511,7 @@ export function SimulationCPG() {
           Colonne polaire : {ordreTxt(EX_COEL, { phase: 'polaire' })} ; R<Ind>s</Ind> minimal = {v(rsDe(EX_COEL, { phase: 'polaire' }))}. Les trois sont séparés parce que le PEG ne les retient pas de la même façon.</ExempleResolu>
         Pour séparer deux composés co-élués, il faut changer ce qui les distingue : la <strong>polarité de la colonne</strong>.</>,
       tache: { type: 'qcm', q: 'Sur colonne apolaire, trois composés de volatilités voisines co-éluent. Que faut-il changer en priorité ?', options: ['la colonne, pour une phase de polarité différente', 'le débit du gaz vecteur', 'le rapport de division de l’injecteur'], bonne: 0,
-        expl: 'La séparation de composés de volatilités voisines dépend de la sélectivité de la phase, pas de la température ni du débit. Les réglages du four servent ensuite à ajuster la durée de l’analyse.' } },
+        expl: 'La séparation de composés de volatilités voisines dépend de la sélectivité de la phase, pas de la température ni du débit. Les réglages du four servent ensuite à ajuster la durée de l’analyse.', indice: "Des composés de volatilités voisines ne se séparent pas par leur volatilité. Quelle propriété de la colonne faut-il changer ?" } },
     { id: 'colonne', titre: 'Choisir la colonne', focus: ['colonne', 'viz', 'resultats'],
       texte: <>À vous, avec un autre mélange difficile : butanone, hexane, acétate d’éthyle et chloroforme, quatre composés de volatilités voisines. {bouton('Mettre ce mélange (colonne apolaire)', () => mettre(VOISINS))} Sur colonne apolaire, deux pics se superposent. Passez sur la colonne <strong>polaire</strong> (PEG) et injectez à nouveau.</>,
       tache: { type: 'action', ok: memeMelange(VOISINS) && p.phase === 'polaire' && nbPics === 4 && rsMin >= SEUIL_RS[1], label: null,
@@ -519,7 +519,7 @@ export function SimulationCPG() {
     { id: 'iso', titre: 'Isotherme ou programmation de température ?', focus: ['four', 'viz'],
       texte: <>Mélange très étalé : du très volatil (éthanol, 78 °C) au très lourd (dodécane, 216 °C). {bouton('Mettre ce mélange en isotherme à 40 °C', () => mettre(LARGE, { rampe: 0 }))} Essayez aussi un isotherme à 120 °C.</>,
       tache: { type: 'qcm', q: 'Que constate-t-on en isotherme ?', options: ['à basse température, les composés lourds sortent très tard et en pics larges et bas ; à haute température, les composés volatils sortent ensemble', 'l’isotherme sépare tout, rapidement', 'la température du four ne change pas les temps de rétention'], bonne: 0,
-        expl: 'Aucune température unique ne convient à un mélange de volatilités très différentes. On programme donc le four : départ froid pour séparer les volatils, puis montée en température pour faire sortir les lourds plus tôt, en pics fins.' } },
+        expl: 'Aucune température unique ne convient à un mélange de volatilités très différentes. On programme donc le four : départ froid pour séparer les volatils, puis montée en température pour faire sortir les lourds plus tôt, en pics fins.', indice: "Comparez une température basse et une haute : que deviennent les composés lourds ? et les volatils ?" } },
     { id: 'prog', titre: 'Programmer le four', focus: ['four', 'viz', 'resultats'],
       texte: <>Réglez une <strong>rampe de température</strong> (vitesse en °C/min non nulle) pour séparer les 7 composés (R<Ind>s</Ind> ≥ 1,5) avec un dernier pic avant 12 min.</>,
       tache: { type: 'action', ok: p.rampe > 0 && memeMelange(LARGE) && nbPics === 7 && rsMin >= SEUIL_RS[1] && dernierTr <= 12, label: null,
@@ -527,11 +527,11 @@ export function SimulationCPG() {
     { id: 'debit', titre: 'Débit du gaz vecteur et pression', focus: ['appareil', 'colonne'],
       texte: <>{bouton('Revenir au mélange de 5 composés (méthode de départ)', () => mettre(CINQ))} Le régulateur maintient un <strong>débit constant</strong> en ajustant la pression en tête de colonne : ≈ {Math.round(ref0)} kPa au départ. Changez le débit et regardez la pression, t<Ind>0</Ind> et les temps de rétention.</>,
       tache: { type: 'qcm', q: 'On passe de 1,2 à 2,4 mL/min. Que se passe-t-il ?', options: ['la pression en tête augmente et tous les composés sortent plus tôt', 'la pression diminue et les composés sortent plus tard', 'rien ne change : seule la température compte'], bonne: 0,
-        expl: 'Pour faire passer plus de gaz dans le même tube, il faut plus de pression. Le gaz va plus vite : t₀ et tous les t_R diminuent. Un débit trop élevé élargit un peu les pics ; on garde le débit de la méthode validée.' } },
+        expl: 'Pour faire passer plus de gaz dans le même tube, il faut plus de pression. Le gaz va plus vite : t₀ et tous les t_R diminuent. Un débit trop élevé élargit un peu les pics ; on garde le débit de la méthode validée.', indice: "Un gaz plus rapide traverse la colonne plus vite, mais rencontre plus de résistance." } },
     { id: 'split', titre: 'Split ou splitless ?', focus: ['injecteur', 'viz'],
       texte: <>En mode <strong>split</strong>, la vanne de fuite évacue la plus grande partie de l’échantillon vaporisé : avec un rapport 1:100, environ 1 % seulement entre dans la colonne. Essayez 1:10, puis le mode <strong>splitless</strong>.</>,
       tache: { type: 'qcm', q: 'On passe du rapport de division 1:100 à 1:10. Les aires des pics…', options: ['sont multipliées par environ 9', 'sont divisées par 10', 'ne changent pas'], bonne: 0,
-        expl: 'La fraction qui entre dans la colonne passe de 1/101 à 1/11 : les aires sont multipliées par ≈ 9. En splitless, presque tout l’échantillon entre : les pics d’un échantillon concentré se déforment (colonne saturée). Le splitless est réservé aux traces, avec un four froid au départ pour reconcentrer les composés en tête de colonne.' } },
+        expl: 'La fraction qui entre dans la colonne passe de 1/101 à 1/11 : les aires sont multipliées par ≈ 9. En splitless, presque tout l’échantillon entre : les pics d’un échantillon concentré se déforment (colonne saturée). Le splitless est réservé aux traces, avec un four froid au départ pour reconcentrer les composés en tête de colonne.', indice: "Le rapport 1:100 envoie 1/101 de l’échantillon dans la colonne, le rapport 1:10 en envoie 1/11. Comparez." } },
     { id: 'methode', titre: 'Diagnostiquer : la méthode', focus: ['controle'],
       texte: <>Face à une analyse anormale, on <strong>compare la journée à la méthode validée</strong>, indicateur par indicateur. Le « Contrôle de routine » du simulateur donne ces écarts.
         <ExempleResolu titre="Grille de lecture">
@@ -544,27 +544,27 @@ export function SimulationCPG() {
           On lit dans cet ordre : <strong>pression</strong>, puis <strong>t<Ind>R</Ind></strong>, puis <strong>forme et aires des pics</strong>, enfin <strong>ligne de base</strong>.</ExempleResolu>
         Les cinq pannes qui suivent se règlent avec cette grille.</>,
       tache: { type: 'qcm', q: 'Les alcools traînent, mais les autres pics sont normaux. Quel indicateur écarte le septum usé ?', options: ['la pression en tête de colonne, restée normale', 'la température d’ébullition des composés', 'le rapport de division'], bonne: 0,
-        expl: 'Un septum usé laisse fuir le gaz : la pression baisse et tous les t_R augmentent. Ici la pression est normale et seuls les composés polaires sont touchés : c’est un liner encrassé.' } },
+        expl: 'Un septum usé laisse fuir le gaz : la pression baisse et tous les t_R augmentent. Ici la pression est normale et seuls les composés polaires sont touchés : c’est un liner encrassé.', indice: "Un septum usé fuit : quel indicateur du gaz vecteur le montrerait ?" } },
     { id: 'septum', titre: 'Panne n° 1 : pression basse, pics en retard', focus: ['appareil', 'controle', 'viz'],
       texte: <>{bouton('Charger la situation', () => mettre(CINQ, { panne: 'septum' }))} Comparez le tableau « Contrôle de routine » à la référence. Injectez plusieurs fois et regardez les aires.</>,
       tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.septum.nom, PANNES.flamme.nom, PANNES.ressuage.nom], bonne: 0,
-        expl: `Une fuite à l’injecteur fait perdre du gaz vecteur et de l’échantillon : la pression et le débit réel baissent, les t_R augmentent, les aires diminuent et varient d’une injection à l’autre. Geste : ${PANNES.septum.geste}` } },
+        expl: `Une fuite à l’injecteur fait perdre du gaz vecteur et de l’échantillon : la pression et le débit réel baissent, les t_R augmentent, les aires diminuent et varient d’une injection à l’autre. Geste : ${PANNES.septum.geste}`, indice: "Observez la pression en tête de colonne et les aires de tous les pics : un défaut d’étanchéité à l’injecteur les modifie." } },
     { id: 'liner', titre: 'Panne n° 2 : les alcools traînent', focus: ['controle', 'viz'],
       texte: <>{bouton('Charger la situation', () => mettre(['etoh', 'buoh', 'aceet', 'tol', 'oxyl'], { panne: 'liner' }))} Zoomez sur les pics de l’éthanol et du butan-1-ol, puis sur ceux du toluène.</>,
       tache: { type: 'qcm', q: 'Seuls les alcools traînent et perdent de l’aire. Cause la plus probable ?', options: [PANNES.liner.nom, PANNES.septum.nom, PANNES.hydrogene.nom], bonne: 0,
-        expl: `Des sites actifs (liner sale, débris de septum, tête de colonne dégradée) retiennent les composés capables de liaisons hydrogène : leurs pics traînent. Geste : ${PANNES.liner.geste}` } },
+        expl: `Des sites actifs (liner sale, débris de septum, tête de colonne dégradée) retiennent les composés capables de liaisons hydrogène : leurs pics traînent. Geste : ${PANNES.liner.geste}`, indice: "Ce sont les composés à groupe OH qui sont touchés : où rencontrent-ils une surface active avant la colonne ?" } },
     { id: 'flamme', titre: 'Panne n° 3 : plus aucun pic', focus: ['appareil', 'controle', 'viz'],
       texte: <>{bouton('Charger la situation', () => mettre(CINQ, { panne: 'flamme' }))} La pression et le débit sont normaux, l’injection s’est bien passée…</>,
       tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.flamme.nom, PANNES.septum.nom, PANNES.liner.nom], bonne: 0,
-        expl: `Ligne de base plate à zéro, sans aucun bruit : le détecteur ne fonctionne pas. Geste : ${PANNES.flamme.geste}` } },
+        expl: `Ligne de base plate à zéro, sans aucun bruit : le détecteur ne fonctionne pas. Geste : ${PANNES.flamme.geste}`, indice: "Le détecteur à flamme dépend de ses gaz et de sa flamme : que devient le signal de tous les pics si elle est mal réglée ?" } },
     { id: 'ressuage', titre: 'Panne n° 4 : la ligne de base monte', focus: ['controle', 'viz'],
       texte: <>{bouton('Charger la situation', () => mettre(CINQ, { panne: 'ressuage', Tf: 250 }))} Le programme monte jusqu’à 250 °C. Observez la ligne de base en fin d’analyse.</>,
       tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.ressuage.nom, PANNES.flamme.nom, PANNES.hydrogene.nom], bonne: 0,
-        expl: `À haute température, une colonne usée (ou chauffée au-delà de sa limite) perd de la phase stationnaire, qui brûle dans le FID : la ligne de base monte avec la température. Geste : ${PANNES.ressuage.geste}` } },
+        expl: `À haute température, une colonne usée (ou chauffée au-delà de sa limite) perd de la phase stationnaire, qui brûle dans le FID : la ligne de base monte avec la température. Geste : ${PANNES.ressuage.geste}`, indice: "Le fond monte avec la température du four : quelle pièce libère des composés quand elle chauffe ?" } },
     { id: 'hydrogene', titre: 'Panne n° 5 : des pics trop petits', focus: ['controle', 'viz'],
       texte: <>{bouton('Charger la situation', () => mettre(CINQ, { panne: 'hydrogene' }))} Les pics sont présents, à leur place habituelle, mais leur hauteur est réduite à environ 40 % de la normale et la ligne de base est plus bruitée. La pression est normale.</>,
       tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.hydrogene.nom, PANNES.flamme.nom, PANNES.septum.nom], bonne: 0,
-        expl: `Avec une flamme éteinte, il n’y aurait aucun pic ; avec un septum usé, la pression baisserait et les t_R augmenteraient. Ici seul le détecteur est affecté. Geste : ${PANNES.hydrogene.geste}` } },
+        expl: `Avec une flamme éteinte, il n’y aurait aucun pic ; avec un septum usé, la pression baisserait et les t_R augmenteraient. Ici seul le détecteur est affecté. Geste : ${PANNES.hydrogene.geste}`, indice: "Pensez à ce que provoque, sur le signal, le manque d’un des gaz du détecteur." } },
     { id: 'fin', titre: 'À retenir', focus: [],
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18 }}>
         <li>Chaîne : <strong>gaz vecteur → injecteur → colonne (four) → FID</strong>.</li>
@@ -628,6 +628,10 @@ export function SimulationCPG() {
         <div style={txtD}><Pic n="target"/>Une analyse de routine (mélange {ids.map(i => PAR_ID[i].nom).join(', ')} ; méthode validée : {conditions}) donne ce chromatogramme. Observez l’appareil et le contrôle de routine (réinjectez si besoin), puis choisissez la <strong>cause la plus probable</strong>.</div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
           {Object.entries(PANNES).map(([k, q]) => <button key={k} onClick={() => rep('cause', k)} style={stylePetitBouton(defi.reps.cause === k, '#0ea5e9')}>{q.nom}</button>)}</div></>}
+      {defi.type === 'ordre' && <IndiceDefi cache={reussi}>Classez d’abord les composés par température d’ébullition, puis tenez compte de la polarité de la colonne.</IndiceDefi>}
+      {defi.type === 'identifier' && <IndiceDefi cache={reussi}>Associez chaque pic à l’étalon de même t_R ; l’étalon sans pic est absent.</IndiceDefi>}
+      {defi.type === 'separer' && <IndiceDefi cache={reussi}>Changer de phase modifie la sélectivité ; une rampe de température raccourcit l’analyse. Surveillez la résolution.</IndiceDefi>}
+      {defi.type === 'panne' && <IndiceDefi cache={reussi}>Comparez pression en tête, t_R, aires, ligne de base et forme des pics à la méthode validée.</IndiceDefi>}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
         <button onClick={() => lancer(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>

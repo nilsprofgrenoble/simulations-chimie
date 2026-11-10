@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { Field, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, Frac, Curseur, lireProgression } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, Frac, Curseur, lireProgression, IndiceDefi } from "../commun";
 import { MOLECULES_CLHP, PARAMS_DEFAUT, SEUIL_RS, P_MAX, PANNES, analyse, colonne, signal, bruitLigne, positionBande, phiEntree } from "./clhpModele";
 import { Pic } from "../Pictos";
 
@@ -533,7 +533,7 @@ export function SimulationCLHP() {
     { id: 'appareil', titre: 'Le chemin de l’échantillon', focus: ['appareil'],
       texte: <>Un chromatographe liquide est une chaîne d’éléments traversés par l’éluant. La <strong>pompe</strong> impose le débit ; le <strong>manomètre</strong> indique la pression ; l’<strong>injecteur</strong> introduit l’échantillon dans le flux ; dans la <strong>colonne</strong> (thermostatée dans un four) les composés se séparent ; le <strong>détecteur UV</strong> les repère à la sortie. Cliquez sur chaque élément du schéma pour lire son rôle et ce qu’on y contrôle.</>,
       tache: { type: 'qcm', q: 'Dans quel ordre le liquide traverse-t-il ces éléments ?', options: ['pompe → injecteur → colonne → détecteur', 'injecteur → pompe → colonne → détecteur', 'pompe → colonne → injecteur → détecteur', 'pompe → injecteur → détecteur → colonne'], bonne: 0,
-        expl: 'La pompe pousse l’éluant ; l’échantillon est injecté juste avant la colonne (sinon il ne serait pas séparé) ; le détecteur est placé à la sortie de la colonne.' } },
+        expl: 'La pompe pousse l’éluant ; l’échantillon est injecté juste avant la colonne (sinon il ne serait pas séparé) ; le détecteur est placé à la sortie de la colonne.', indice: "Suivez le trajet de l’éluant : d’abord ce qui le met sous pression, puis ce qui introduit l’échantillon." } },
     { id: 'inj', titre: 'Injecter et regarder', focus: ['viz'],
       texte: <>On injecte un mélange de <strong>caféine</strong>, de <strong>phénol</strong> et de <strong>benzophénone</strong>, avec un éluant à 50 % d’acétonitrile. Les bandes avancent dans la colonne, passent devant le détecteur, et le chromatogramme se trace. En phase inverse, <strong>plus un composé est apolaire, plus il est retenu</strong> par la phase C18 : il sort plus tard.</>,
       tache: { type: 'action', ok: lancement > 0 && memeMelange(TROIS), label: '▶ Mettre le mélange et injecter', faire: () => mettre(TROIS), consigne: 'Observez l’ordre de sortie des trois pics.' } },
@@ -577,7 +577,7 @@ export function SimulationCLHP() {
         pieges: [[(r3(moB.tr) - r3(moA.tr)) / (r3(moA.W) + r3(moB.W)), 'Il manque le facteur 1,18 dans la formule.'],
           [2 * rsExercice, <>Au dénominateur, c’est la somme W<Ind>½,1</Ind> + W<Ind>½,2</Ind> (et non leur moyenne).</>],
           [-rsExercice, 'Signe négatif : le pic 2 sort après le pic 1, donc t_R2 − t_R1 est positif.']],
-        expl: `R_s = 1,18 × (${v(moB.tr, 3)} − ${v(moA.tr, 3)}) / (${v(moA.W, 3)} + ${v(moB.W, 3)}) ≈ ${v(rsExercice)}. Comme R_s ≥ 1,5, les deux pics sont séparés. Vérifiez dans le tableau en mettant ces deux composés dans le simulateur.` } },
+        expl: `R_s = 1,18 × (${v(moB.tr, 3)} − ${v(moA.tr, 3)}) / (${v(moA.W, 3)} + ${v(moB.W, 3)}) ≈ ${v(rsExercice)}. Comme R_s ≥ 1,5, les deux pics sont séparés. Vérifiez dans le tableau en mettant ces deux composés dans le simulateur.`, indice: "Au numérateur, la différence des temps de rétention ; au dénominateur, la somme des largeurs à mi-hauteur." } },
     { id: 'separer2', titre: 'Séparer deux composés proches', focus: ['eluant', 'viz', 'resultats'],
       texte: <>Le réglage le plus efficace est la <strong>composition de l’éluant</strong> : moins il y a d’acétonitrile, plus les composés sont retenus (k’ plus grand) et plus leurs pics s’écartent, mais plus ils sortent tard.
         <ExempleResolu>Caféine et paracétamol sortent presque ensemble à 50 %. On essaie plusieurs compositions et on relève R<Ind>s</Ind> et le t<Ind>R</Ind> du dernier pic :
@@ -590,14 +590,14 @@ export function SimulationCLHP() {
     { id: 'iso', titre: 'Choisir la composition de l’éluant', focus: ['eluant', 'viz', 'resultats'],
       texte: <>Mélange plus difficile : caféine, paracétamol (très proches), benzophénone et triphénylcarbinol (très retenu). {bouton('Mettre ces 4 composés (50 %)', () => mettre(QUATRE))} Faites varier le pourcentage d’acétonitrile : plus l’éluant est riche en acétonitrile, plus tout sort vite… mais moins les pics du début sont séparés. Cherchez Rs ≥ 1,5 pour toutes les paires <strong>et</strong> un dernier pic avant 10 min.</>,
       tache: { type: 'qcm', q: 'En élution isocratique (composition constante), peut-on séparer les 4 pics (Rs ≥ 1,5) en moins de 10 min ?', options: ['non : ce qui sépare les premiers retarde trop les derniers', 'oui, vers 50 % d’acétonitrile', 'oui, en diminuant le débit'], bonne: 0,
-        expl: 'À 36 % d’acétonitrile les deux premiers pics sont tout juste séparés, mais le dernier sort après 13 min ; à 50 % tout sort vite mais caféine et paracétamol se chevauchent. Un compromis unique n’existe pas : c’est le cas typique où l’on passe en gradient.' } },
+        expl: 'À 36 % d’acétonitrile les deux premiers pics sont tout juste séparés, mais le dernier sort après 13 min ; à 50 % tout sort vite mais caféine et paracétamol se chevauchent. Un compromis unique n’existe pas : c’est le cas typique où l’on passe en gradient.', indice: "Ce qui sépare les premiers pics retarde-t-il aussi les derniers ?" } },
     { id: 'grad', titre: 'Passer en gradient', focus: ['eluant', 'viz', 'resultats'],
       texte: <>En <strong>gradient d’élution</strong>, la pompe augmente progressivement la proportion d’acétonitrile : les premiers composés sont séparés dans un éluant faible, les derniers sont décrochés par un éluant fort. Choisissez « gradient » et réglez le départ, la fin et la durée. Objectif (comme à l’étape précédente) : Rs ≥ 1,5 pour toutes les paires et un dernier pic avant 10 min, avec les 4 composés.</>,
       tache: { type: 'action', ok: p.grad && memeMelange(QUATRE) && rsMin >= SEUIL_RS[1] && dernierTr <= 10, label: null, consigne: memeMelange(QUATRE) ? `Rs minimal : ${v(rsMin ?? 0)} · dernier pic à ${v(dernierTr)} min${p.grad ? '' : ' · passez en gradient'}` : 'Remettez les 4 composés à l’étape précédente.' } },
     { id: 'debit', titre: 'Débit et pression', focus: ['appareil', 'eluant'],
       texte: <>Retour à l’isocratique. {bouton('Mettre le mélange de 3 composés (50 %, débit habituel)', () => mettre(TROIS))} Le <strong>manomètre</strong> lit la pression nécessaire pour faire passer l’éluant dans la colonne : ici ≈ {Math.round(ref0)} bar. Changez le débit et lisez la pression ; regardez aussi ce qui arrive aux temps de rétention.</>,
       tache: { type: 'qcm', q: 'On double le débit. Que devient la pression lue au manomètre ?', options: ['elle double à peu près', 'elle est divisée par 2', 'elle ne change pas'], bonne: 0,
-        expl: 'La pression est proportionnelle au débit (loi de Darcy). C’est pourquoi on note la pression de référence de la méthode : un écart à débit identique signale un problème. Doubler le débit divise aussi les temps de rétention par 2 ; au-delà de la limite de pression de l’appareil, la pompe s’arrête.' } },
+        expl: 'La pression est proportionnelle au débit (loi de Darcy). C’est pourquoi on note la pression de référence de la méthode : un écart à débit identique signale un problème. Doubler le débit divise aussi les temps de rétention par 2 ; au-delà de la limite de pression de l’appareil, la pompe s’arrête.', indice: "Pour un liquide qui traverse une colonne, la pression est proportionnelle au débit." } },
     { id: 'methode', titre: 'Diagnostiquer : la méthode', focus: ['controle'],
       texte: <>Face à une analyse anormale, on <strong>compare la journée à la méthode validée</strong>, indicateur par indicateur, plutôt que de deviner. Le tableau « Contrôle de routine » du simulateur donne ces écarts.
         <ExempleResolu titre="Grille de lecture">
@@ -611,31 +611,31 @@ export function SimulationCLHP() {
           On lit dans cet ordre : <strong>pression</strong>, puis <strong>t<Ind>R</Ind></strong>, puis <strong>forme des pics et R<Ind>s</Ind></strong>, enfin <strong>hauteur et bruit</strong>. Le premier indicateur qui sort de la tolérance oriente vers la cause.</ExempleResolu>
         Les six pannes qui suivent se règlent avec cette grille.</>,
       tache: { type: 'qcm', q: 'Les t_R ont tous beaucoup augmenté et les pics sont toujours bien séparés. Quel indicateur fait d’abord la différence entre une fuite et un éluant mal préparé ?', options: ['la pression au manomètre', 'la hauteur des pics', 'la ligne de base'], bonne: 0,
-        expl: 'Avec une fuite, le débit réel est plus faible : la pression baisse. Avec un éluant mal préparé, le débit est le bon : la pression ne bouge presque pas.' } },
+        expl: 'Avec une fuite, le débit réel est plus faible : la pression baisse. Avec un éluant mal préparé, le débit est le bon : la pression ne bouge presque pas.', indice: "Cherchez l’indicateur qui change pour une fuite mais pas pour un éluant mal préparé." } },
     { id: 'bouchee', titre: 'Panne n° 1 : la pression monte', focus: ['appareil', 'controle', 'viz'],
       texte: <>{bouton('Charger la situation', () => situation(TROIS, 'bouchee'))} Le tableau « Contrôle de routine » compare la journée à la méthode validée. Ici la pression est passée de {Math.round(ref0)} à {Math.round(colonne({ ...PARAMS_DEFAUT, panne: 'bouchee' }).dP)} bar alors que les chromatogrammes ont gardé les mêmes temps de rétention, la même résolution et la même hauteur de pic.</>,
       tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.bouchee.nom, PANNES.fuite.nom, PANNES.lampe.nom], bonne: 0,
-        expl: `Pression ↑ sans autre changement : l’écoulement est gêné (filtre en ligne, frittés ou tête de colonne encrassés par des particules). Geste : ${PANNES.bouchee.geste}` } },
+        expl: `Pression ↑ sans autre changement : l’écoulement est gêné (filtre en ligne, frittés ou tête de colonne encrassés par des particules). Geste : ${PANNES.bouchee.geste}`, indice: "Comparez la pression et les t_R à ceux de la méthode validée : lequel des deux a bougé ?" } },
     { id: 'fuite', titre: 'Panne n° 2 : tout sort trop tard', focus: ['appareil', 'controle', 'viz'],
       texte: <>{bouton('Charger la situation', () => situation(TROIS, 'fuite'))} Les temps de rétention ont beaucoup augmenté, la pression est plus faible que d’habitude, les pics sont toujours bien séparés (Rs inchangé). Le débit réel dans la colonne est inférieur au débit réglé sur la pompe.</>,
       tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.fuite.nom, PANNES.bouchee.nom, PANNES.vieille.nom], bonne: 0,
-        expl: `Débit réel plus faible : t₀ augmente, donc tous les t_R aussi, et la pression baisse (elle est proportionnelle au débit). Geste : ${PANNES.fuite.geste}` } },
+        expl: `Débit réel plus faible : t₀ augmente, donc tous les t_R aussi, et la pression baisse (elle est proportionnelle au débit). Geste : ${PANNES.fuite.geste}`, indice: "Notez le sens de variation de la pression par rapport à l’habitude, et celui des t_R." } },
     { id: 'vieille', titre: 'Panne n° 3 : les pics s’élargissent', focus: ['appareil', 'controle', 'viz'],
       texte: <>{bouton('Charger la situation', () => situation(TROIS, 'vieille'))} Les pics sont plus larges et plus bas, la résolution a chuté, les temps de rétention sont un peu plus courts. La pression n’a pas bougé.</>,
       tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.vieille.nom, PANNES.bulle.nom, PANNES.eluant.nom], bonne: 0,
-        expl: `Une colonne usée (phase greffée dégradée, vide dans le lit) retient moins et élargit les bandes, sans changer la pression. Geste : ${PANNES.vieille.geste}` } },
+        expl: `Une colonne usée (phase greffée dégradée, vide dans le lit) retient moins et élargit les bandes, sans changer la pression. Geste : ${PANNES.vieille.geste}`, indice: "Les t_R et la pression sont-ils normaux ? Regardez alors la largeur des pics et la séparation." } },
     { id: 'lampe', titre: 'Panne n° 4 : des pics trop petits', focus: ['appareil', 'controle', 'viz'],
       texte: <>{bouton('Charger la situation', () => situation(TROIS, 'lampe'))} Les temps de rétention, la pression et la résolution sont corrects, mais les pics ont perdu les deux tiers de leur hauteur et la ligne de base est plus bruitée.</>,
       tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.lampe.nom, PANNES.fuite.nom, PANNES.vieille.nom], bonne: 0,
-        expl: `Tout ce qui concerne la séparation est normal : c’est le détecteur qui a perdu en sensibilité. Geste : ${PANNES.lampe.geste}` } },
+        expl: `Tout ce qui concerne la séparation est normal : c’est le détecteur qui a perdu en sensibilité. Geste : ${PANNES.lampe.geste}`, indice: "Si t_R et pression sont normaux, c’est le signal qui change : hauteur des pics et bruit de fond." } },
     { id: 'bulle', titre: 'Panne n° 5 : la pression oscille', focus: ['appareil', 'controle', 'viz'],
       texte: <>{bouton('Charger la situation', () => situation(TROIS, 'bulle'))} Observez l’aiguille du manomètre : elle oscille entre {Math.round(cBulle.dPmin)} et {Math.round(cBulle.dPmax)} bar. La ligne de base ondule et les pics sont irréguliers, alors que les temps de rétention moyens sont corrects.</>,
       tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.bulle.nom, PANNES.bouchee.nom, PANNES.lampe.nom], bonne: 0,
-        expl: `Une bulle d’air dans la pompe rend le débit irrégulier : la pression oscille et la ligne de base ondule. Une pression trop haute mais stable serait un encrassement. Geste : ${PANNES.bulle.geste}` } },
+        expl: `Une bulle d’air dans la pompe rend le débit irrégulier : la pression oscille et la ligne de base ondule. Une pression trop haute mais stable serait un encrassement. Geste : ${PANNES.bulle.geste}`, indice: "Regardez la pression et la ligne de base : sont-elles stables ?" } },
     { id: 'eluant', titre: 'Panne n° 6 : les derniers pics sortent trop tard', focus: ['appareil', 'controle', 'viz'],
       texte: <>{bouton('Charger la situation', () => situation(TROIS, 'eluant'))} Les t<Ind>R</Ind> ont augmenté, surtout ceux des derniers pics : la benzophénone sort à {v(pEluant[2].tr)} min au lieu de {v(pRef[2].tr)} min, la caféine à peine décalée ({v(pEluant[0].tr)} au lieu de {v(pRef[0].tr)} min). La pression est presque inchangée ({Math.round(cEluant.dP)} bar au lieu de {Math.round(ref0)} bar) et les pics restent bien séparés.</>,
       tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.eluant.nom, PANNES.fuite.nom, PANNES.vieille.nom], bonne: 0,
-        expl: `Un éluant trop pauvre en acétonitrile retient davantage les composés apolaires, donc les derniers pics sont les plus retardés. Avec une fuite, tous les t_R seraient multipliés par le même facteur et la pression baisserait. Geste : ${PANNES.eluant.geste}` } },
+        expl: `Un éluant trop pauvre en acétonitrile retient davantage les composés apolaires, donc les derniers pics sont les plus retardés. Avec une fuite, tous les t_R seraient multipliés par le même facteur et la pression baisserait. Geste : ${PANNES.eluant.geste}`, indice: "Tous les t_R sont décalés mais la pression change peu : l’écoulement est normal. Que reste-t-il à incriminer ?" } },
     { id: 'fin', titre: 'À retenir', focus: [],
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18 }}>
         <li>Chaîne : <strong>pompe → injecteur → colonne (four) → détecteur</strong>. Le manomètre donne la santé du circuit.</li>
@@ -699,6 +699,10 @@ export function SimulationCLHP() {
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
           <span style={{ ...styleBoite, padding: '3px 8px', color: nbPics === 2 ? COUL_RS[classeRs(rsMin)] : KIT.txt2, fontWeight: 700 }}>R<Ind>s</Ind> = {v(rsMin ?? 0)}</span>
           <span style={{ ...styleBoite, padding: '3px 8px', color: dernierTr <= TEMPS_MAX_DEFI ? '#15803d' : '#b91c1c', fontWeight: 700 }}>dernier pic : {v(dernierTr)} min</span></div></>}
+      {defi.type === 'ordre' && <IndiceDefi cache={reussi}>Plus le logP est élevé, plus le composé est retenu par la phase apolaire. Classez d’abord les logP.</IndiceDefi>}
+      {defi.type === 'identifier' && <IndiceDefi cache={reussi}>Associez chaque pic à l’étalon de même t_R ; l’étalon sans pic est absent.</IndiceDefi>}
+      {defi.type === 'separer' && <IndiceDefi cache={reussi}>Quel réglage de l’éluant augmente k’ et α ? Surveillez le temps du dernier pic.</IndiceDefi>}
+      {defi.type === 'panne' && <IndiceDefi cache={reussi}>Comparez pression, t_R, largeur et hauteur des pics à la méthode validée : un indicateur sort de l’ordinaire.</IndiceDefi>}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
         <button onClick={() => lancer(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>

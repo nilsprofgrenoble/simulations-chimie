@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useMemo } from "react";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices } from "../commun";
+  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 
 const SIM_ID = 16;
@@ -265,6 +265,7 @@ function Hypotheses({ formules = ['ref'], consensus = false }) {
 }
 
 // ════════════════ SIMULATION ════════════════
+const INDICE_Q = {"m": "Moyenne de tous les résultats des laboratoires.", "s": "Écart-type expérimental : division par n − 1.", "zk": "z = (résultat du laboratoire − x̄) ÷ s.", "zl": "z = (résultat − x_pt) ÷ σ_pt, avec les valeurs imposées par la norme ISO.", "b": "Le maximum de |z| vaut (n − 1)/√n pour n laboratoires."};
 export function SimulationAptitude() {
   const [mode, setMode] = useState(() => modeOuverture('aptitude-guide-v2'));
   useSignalerMode(mode);
@@ -330,7 +331,7 @@ export function SimulationAptitude() {
         z-score à l'aide d'une méthode fournie » ; ici, on va plus loin, en comparant plusieurs méthodes et leurs hypothèses.</>, tache: null },
     { id: 'difference', titre: 'Évaluer qui, ou quoi ?', focus: [],
       texte: <>Un essai d’aptitude est une <strong>comparaison interlaboratoire</strong>. La simulation « Fidélité d’une méthode : étude interlaboratoire » (ISO 5725) fait aussi analyser le même échantillon par plusieurs laboratoires, mais dans un autre but.</>,
-      tache: { type: 'qcm', q: 'Que cherche-t-on à évaluer dans un essai d’aptitude ?', options: ['La compétence de chaque laboratoire', 'La fidélité (répétabilité et reproductibilité) de la méthode', 'La pureté de l’échantillon'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'Que cherche-t-on à évaluer dans un essai d’aptitude ?', options: ['La compétence de chaque laboratoire', 'La fidélité (répétabilité et reproductibilité) de la méthode', 'La pureté de l’échantillon'], bonne: 0, indice: "Contrairement à l’étude ISO 5725, on évalue ici chaque laboratoire et non la méthode." } },
     { id: 'arrivee', titre: 'Les résultats arrivent', focus: [],
       texte: <>Cliquez sur « Recevoir les résultats » sous le graphique.</>,
       tache: { type: 'action', ok: tous, consigne: tous ? null : `Résultats reçus : ${arrives} / ${v.length}` } },
@@ -342,7 +343,7 @@ export function SimulationAptitude() {
           `Somme = ${P.map(x => fmt(x, 1)).join(' + ')} = ${fmt(P.reduce((a, b) => a + b, 0), 1)} mg/L ; N = ${P.length}.`,
           `x̄ = ${fmt(P.reduce((a, b) => a + b, 0), 1)} / ${P.length} = ${fmt(mP, 2)} mg/L.`],
         pieges: piegesLoin([[P.reduce((a, b) => a + b, 0), 'Vous avez donné la somme : il faut encore la diviser par le nombre de laboratoires (10).'],
-          [P.reduce((a, b) => a + b, 0) / (P.length - 1), 'Pour une moyenne, on divise par N (10 résultats), pas par N − 1.']], mP) } },
+          [P.reduce((a, b) => a + b, 0) / (P.length - 1), 'Pour une moyenne, on divise par N (10 résultats), pas par N − 1.']], mP), indice: "Moyenne arithmétique des résultats de tous les laboratoires." } },
     { id: 'ecartType', titre: 'L’écart-type expérimental', focus: [],
       texte: <>Sur la calculatrice : σ<sub>n−1</sub> (ou s<sub>x</sub>), calculé sur les 10 résultats (mg/L) : {P.map(x => fmt(x, 1)).join(' ; ')}.</>,
       tache: { type: 'num', q: 'Écart-type expérimental s', unite: 'mg/L', vrai: sP, tol: 0.02, affiche: x => fmt(x, 2),
@@ -355,7 +356,7 @@ export function SimulationAptitude() {
         },
         pieges: [[ecartTypePop(P), 'C’est σ_n : prenez σ_n−1, qui divise par N − 1.'],
           ...piegesLoin([[sP ** 2, 'C’est la variance s² : l’écart-type est sa racine carrée.'],
-            [Math.sqrt(P.reduce((a, b) => a + (b - mP) ** 2, 0)), 'Il manque la division par N − 1 (= 9) sous la racine.']], sP)] } },
+            [Math.sqrt(P.reduce((a, b) => a + (b - mP) ** 2, 0)), 'Il manque la division par N − 1 (= 9) sous la racine.']], sP)], indice: "Écart-type expérimental : division par n − 1 (touche σₙ₋₁)." } },
     { id: 'z', titre: 'Le z-score d’un laboratoire', focus: [],
       texte: <>Le laboratoire {iLab + 1} (en jaune) a trouvé {fmt(P[iLab], 1)} mg/L. Rappel : x̄ = {fmt(mP, 2)} mg/L et s = {fmt(sP, 2)} mg/L (étapes précédentes).</>,
       tache: { type: 'num', q: `z-score du laboratoire ${iLab + 1}`, unite: '', vrai: zRef[iLab], tol: 0.03, affiche: x => fmt(x, 2),
@@ -364,21 +365,21 @@ export function SimulationAptitude() {
           `z = ${fmt(P[iLab] - mP, 2)} / ${fmt(sP, 2)} = ${fmt(zRef[iLab], 2)} (sans unité).`],
         pieges: [[-zRef[iLab], 'Attention au signe : c’est x − x̄. Un z négatif signifie que le laboratoire trouve moins que la moyenne.'],
           ...piegesLoin([[P[iLab] - mP, 'Il manque la division par s : z est un écart exprimé en nombre d’écarts-types.'],
-            [(P[iLab] - mP) / sP ** 2, 'On divise par l’écart-type s, pas par sa variance s².']], zRef[iLab])] } },
+            [(P[iLab] - mP) / sP ** 2, 'On divise par l’écart-type s, pas par sa variance s².']], zRef[iLab])], indice: "Le z-score exprime l’écart du résultat du laboratoire à la référence, en nombre d’écarts-types." } },
     { id: 'classer', titre: 'Classer les laboratoires', focus: [],
       texte: <>Classez chaque laboratoire dans le tableau : |z| ≤ 2 satisfaisant ; 2 &lt; |z| &lt; 3 discutable ; |z| ≥ 3 non satisfaisant.</>,
       tache: { type: 'action', ok: classesVerif && classesOk, consigne: classesVerif && classesOk ? null : 'Classez les 10 laboratoires, puis vérifiez.' } },
     { id: 'hypotheses', titre: 'Sur quoi reposent ces seuils ?', focus: ['hypo'],
       texte: <>Lisez l'encadré « Hypothèses de travail » : toute l'interprétation en dépend.</>,
-      tache: { type: 'qcm', q: 'D’où viennent les seuils |z| = 2 et |z| = 3 ?', options: ['De la loi normale : un laboratoire compétent a environ 95 % de chances d’avoir |z| ≤ 2, et 99,7 % d’avoir |z| ≤ 3', 'Ce sont des valeurs choisies au hasard', 'Du nombre de laboratoires'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'D’où viennent les seuils |z| = 2 et |z| = 3 ?', options: ['De la loi normale : un laboratoire compétent a environ 95 % de chances d’avoir |z| ≤ 2, et 99,7 % d’avoir |z| ≤ 3', 'Ce sont des valeurs choisies au hasard', 'Du nombre de laboratoires'], bonne: 0, indice: "Pour une loi normale, quelle proportion des valeurs est à moins de 2 écarts-types ? à moins de 3 ?" } },
     { id: 'henry', titre: 'Vérifier la normalité', focus: ['alertes'],
       texte: <>Passez à la vue « Droite de Henry » : on y range les résultats et on les compare aux valeurs attendues pour une loi normale. S'ils
         s'alignent, l'hypothèse est plausible.</>,
-      tache: { type: 'qcm', q: 'Que montre la droite de Henry ?', options: ['Les points s’alignent, sauf un : le laboratoire 10 s’écarte de la loi normale des autres', 'Tous les points sont parfaitement alignés', 'On ne peut rien en dire'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'Que montre la droite de Henry ?', options: ['Les points s’alignent, sauf un : le laboratoire 10 s’écarte de la loi normale des autres', 'Tous les points sont parfaitement alignés', 'On ne peut rien en dire'], bonne: 0, indice: "Sur une droite de Henry, des points alignés suivent une loi normale. Cherchez le point écarté." } },
     { id: 'masque', titre: 'Un laboratoire qui se cache', focus: ['alertes'],
       texte: <>Le laboratoire 10 trouve 30,5 mg/L quand les autres trouvent entre 23,6 et 25,1. Il est clairement à part, et pourtant son z-score ne vaut
         que {fmt(zRef[9], 2)}.</>,
-      tache: { type: 'qcm', q: 'Pourquoi n’est-il que « discutable » ?', options: [`Il entre dans le calcul de x̄ et de s : il tire la moyenne vers lui, et gonfle s de ${fmt(sSans10, 2)} à ${fmt(sP, 2)}`, 'Son erreur est faible', 'Les autres laboratoires se trompent'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'Pourquoi n’est-il que « discutable » ?', options: [`Il entre dans le calcul de x̄ et de s : il tire la moyenne vers lui, et gonfle s de ${fmt(sSans10, 2)} à ${fmt(sP, 2)}`, 'Son erreur est faible', 'Les autres laboratoires se trompent'], bonne: 0, indice: "Ce laboratoire participe lui-même au calcul de x̄ et de s. Qu’est-ce que cela provoque ?" } },
     { id: 'choisirExclu', titre: 'Changer de formule', focus: ['formule'],
       texte: <>Le sélecteur de formule est apparu au-dessus du graphique. Choisissez « Labo évalué exclu » : pour chaque laboratoire, x̄ et s sont calculés
         <strong> sans lui</strong>.</>,
@@ -386,11 +387,11 @@ export function SimulationAptitude() {
     { id: 'exclu', titre: 'Le laboratoire 10, sans lui-même', focus: [],
       texte: <>Regardez son nouveau z-score dans le tableau.</>,
       tache: { type: 'qcm', q: 'Avec cette formule, le laboratoire 10 est…', options: ['non satisfaisant', 'discutable', 'satisfaisant'], bonne: 0,
-        expl: `Son z passe de ${fmt(zRef[9], 2)} à ${fmt(tousZ.exclu && PARCOURS.v === v ? tousZ.exclu[9] : NaN, 1)} : la même mesure, un tout autre verdict. Le choix de la formule n’est pas un détail.` } },
+        expl: `Son z passe de ${fmt(zRef[9], 2)} à ${fmt(tousZ.exclu && PARCOURS.v === v ? tousZ.exclu[9] : NaN, 1)} : la même mesure, un tout autre verdict. Le choix de la formule n’est pas un détail.`, indice: "Recalculez z avec la référence et l’écart-type imposés par la formule, puis comparez à 2 et à 3." } },
     { id: 'borne', titre: 'Une limite mathématique', focus: ['alertes'],
       texte: <>Revenez à la formule du référentiel et lisez la première alerte. Avec p laboratoires, cette formule ne peut jamais donner |z| &gt; (p − 1) / √p.</>,
       tache: { type: 'qcm', q: 'Avec 10 laboratoires, quelle catégorie est impossible à atteindre ?', options: ['non satisfaisant : |z| ne peut pas dépasser 2,85', 'discutable', 'aucune'], bonne: 0,
-        expl: 'Avec 9 laboratoires, la borne tombe à 2,67 ; avec 5, à 1,79 : même « discutable » devient impossible. Il faut le savoir avant d’interpréter un essai à peu de participants.' } },
+        expl: 'Avec 9 laboratoires, la borne tombe à 2,67 ; avec 5, à 1,79 : même « discutable » devient impossible. Il faut le savoir avant d’interpréter un essai à peu de participants.', indice: "Quand x̄ et s viennent des mêmes résultats, |z| est limité à (n − 1)/√n. Comparez ce maximum à 2 et à 3." } },
     { id: 'robuste', titre: 'Des statistiques robustes', focus: ['formule'],
       texte: <>Choisissez « Médiane et MAD (robuste) » : la médiane remplace la moyenne, et s* = 1,483 × MAD remplace s (la MAD est la médiane des écarts absolus à la médiane). Une valeur aberrante les déplace très peu. Les résultats (mg/L) : {P.map(x => fmt(x, 1)).join(' ; ')}.</>,
       tache: { type: 'num', q: 'Médiane des 10 résultats', unite: 'mg/L', vrai: medP, tol: 0.001, affiche: x => fmt(x, 2),
@@ -398,7 +399,7 @@ export function SimulationAptitude() {
           return [`On range les ${n} résultats par ordre croissant : ${t.map(x => fmt(x, 1)).join(' ; ')}.`,
             `N = ${n} est pair : la médiane est la moyenne des deux valeurs centrales (les ${n / 2}e et ${n / 2 + 1}e).`,
             `Médiane = (${fmt(t[n / 2 - 1], 1)} + ${fmt(t[n / 2], 1)}) / 2 = ${fmt(medP, 2)} mg/L.`]; },
-        pieges: [[mP, 'C’est la moyenne : rangez les valeurs et prenez celle du milieu (ici la moyenne des deux du milieu).']] } },
+        pieges: [[mP, 'C’est la moyenne : rangez les valeurs et prenez celle du milieu (ici la moyenne des deux du milieu).']], indice: "Rangez les 10 résultats par ordre croissant. Avec n pair, faites la moyenne des deux valeurs centrales." } },
     { id: 'iso', titre: 'La norme ISO 13528', focus: ['formule'],
       texte: <>Les professionnels utilisent z = (x<sub>i</sub> − x<sub>pt</sub>) / σ<sub>pt</sub>. Ici, l'organisateur a utilisé un <strong>matériau de
         référence certifié</strong> : x<sub>pt</sub> = 24,0 mg/L ; et il a fixé, d'après l'exigence de la méthode, σ<sub>pt</sub> = 1,2 mg/L. Le laboratoire 10 a trouvé {fmt(P[9], 1)} mg/L. Choisissez « Norme ISO 13528 ».</>,
@@ -408,26 +409,26 @@ export function SimulationAptitude() {
           `z = ${fmt(P[9] - 24, 1)} / ${fmt(1.2, 1)} = ${fmt((P[9] - 24) / 1.2, 2)} (sans unité).`],
         pieges: piegesLoin([[zRef[9], 'C’est le z avec la formule du référentiel (x̄ et s des participants). Ici, utilisez x_pt = 24,0 et σ_pt = 1,2.'],
           [P[9] - 24, 'Il manque la division par σ_pt (1,2 mg/L) : z est un écart en nombre d’écarts-types.'],
-          [(P[9] - 24) * 1.2, 'On divise par σ_pt, on ne multiplie pas.']], (P[9] - 24) / 1.2) } },
+          [(P[9] - 24) * 1.2, 'On divise par σ_pt, on ne multiplie pas.']], (P[9] - 24) / 1.2), indice: "Remplacez x par le résultat du laboratoire 10, puis x_pt et σ_pt par les valeurs de la formule." } },
     { id: 'pourquoiSigma', titre: 'Pourquoi un σ_pt fixé ?', focus: [],
       texte: <>La norme accepte plusieurs façons de fixer σ<sub>pt</sub> : l'exigence de la méthode, les campagnes précédentes, une étude de fidélité, ou
         un écart-type robuste des participants.</>,
       tache: { type: 'qcm', q: 'Quel est l’avantage d’un σ_pt fixé à l’avance, d’après l’exigence de la méthode ?',
-        options: ['Il ne dépend pas des résultats évalués : ni un laboratoire aberrant, ni une campagne où tous travaillent mal ne peuvent le modifier', 'Il est toujours plus petit que s', 'Il rend tous les laboratoires satisfaisants'], bonne: 0 } },
+        options: ['Il ne dépend pas des résultats évalués : ni un laboratoire aberrant, ni une campagne où tous travaillent mal ne peuvent le modifier', 'Il est toujours plus petit que s', 'Il rend tous les laboratoires satisfaisants'], bonne: 0, indice: "Si σ_pt est fixé par l’exigence de la méthode, il ne dépend plus de la dispersion des participants." } },
     { id: 'reperes', titre: 'Des laboratoires très dispersés', focus: ['jeu'],
       texte: <>Choisissez le jeu de données « Des laboratoires très dispersés » (14 laboratoires, teneur en soufre de feuilles de frêne, d'après un exemple des « Repères pour la formation »), avec la formule du référentiel.
         Le laboratoire 1 trouve {fmt(R[0], 2)} quand les autres trouvent entre 2,10 et 2,83 ; son z vaut {fmt(zR1, 2)}. Essayez aussi la formule robuste : {fmt(zR1rob, 2)}.</>,
       tache: { type: 'qcm', q: 'Pourquoi la formule robuste ne change-t-elle presque rien ici ?',
         options: ['Les 13 autres laboratoires sont eux-mêmes très dispersés : leur dispersion devient la référence, et le laboratoire 1 paraît moins anormal', 'Le laboratoire 1 n’est pas aberrant', 'La médiane est mal calculée'], bonne: 0,
-        expl: 'Toute formule qui tire sa dispersion des participants hérite de leur dispersion. Seul un σ_pt fixé d’après l’exigence de la méthode dirait si cette dispersion est acceptable. Essayez la formule ISO en réglant σ_pt.' } },
+        expl: 'Toute formule qui tire sa dispersion des participants hérite de leur dispersion. Seul un σ_pt fixé d’après l’exigence de la méthode dirait si cette dispersion est acceptable. Essayez la formule ISO en réglant σ_pt.', indice: "Un seul résultat extrême déplace-t-il beaucoup une médiane ? et une moyenne ?" } },
     { id: 'signe', titre: 'Le signe du z-score', focus: [],
       texte: <>Dans le document d'où vient cet exemple, le tableau ne donne que des valeurs positives. Pourtant, le z du laboratoire 1 est négatif.</>,
       tache: { type: 'qcm', q: 'Que signifie un z-score négatif ?', options: ['Le laboratoire trouve moins que la référence : il sous-estime', 'Le laboratoire est meilleur que les autres', 'Rien : seule la valeur absolue compte'], bonne: 0,
-        expl: 'On classe avec |z|, mais le signe dit dans quel sens chercher l’erreur. Il faut toujours l’écrire.' } },
+        expl: 'On classe avec |z|, mais le signe dit dans quel sens chercher l’erreur. Il faut toujours l’écrire.', indice: "Le signe de z indique le sens de l’écart par rapport à la référence." } },
     { id: 'suivi', titre: 'Le suivi dans le temps', focus: ['suivi'],
       texte: <>Le graphique sous les alertes montre les z-scores d'un même laboratoire sur six campagnes successives.</>,
       tache: { type: 'qcm', q: 'Que conclure ?', options: ['Il reste satisfaisant, mais il dérive : une erreur systématique s’installe, à corriger avant qu’elle ne devienne un problème', 'Tout va bien', 'Il est non satisfaisant'], bonne: 0,
-        expl: 'Sous l’hypothèse de la loi normale, six z-scores positifs et croissants d’affilée ont très peu de chances d’arriver par hasard.' } },
+        expl: 'Sous l’hypothèse de la loi normale, six z-scores positifs et croissants d’affilée ont très peu de chances d’arriver par hasard.', indice: "Regardez l’évolution des z-scores d’une campagne à l’autre, pas seulement le dernier." } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       texte: <>Vous savez appliquer la formule du référentiel, et surtout dans quelles conditions elle a un sens : un laboratoire aberrant peut s'y cacher,
         le seuil 3 peut être inatteignable, et toute interprétation suppose une loi normale à vérifier. En exploration libre, comparez les formules sur
@@ -608,6 +609,7 @@ export function SimulationAptitude() {
           return (
             <div key={q.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {avecIndices(q.q)}</div>
+              {INDICE_Q[q.id] && <IndiceDefi cache={defi.verifie && ok}>{INDICE_Q[q.id]}</IndiceDefi>}
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input value={rep} placeholder="?" aria-label={`Réponse ${k + 1}`} onChange={x => { const val = x.target.value; setDefi(d => ({ ...d, verifie: false, reps: { ...d.reps, [q.id]: val } })); }}
                   style={{ fontSize: 14, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 110 }}/>
