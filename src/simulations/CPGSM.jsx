@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, ARetenir, Curseur, lireProgression } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, ARetenir, Curseur, lireProgression, IndiceDefi } from "../commun";
 import { ColonneAnim } from "./CPG";
 import { useLargeur, pasTemps, grille } from "./cpgOutils";
 import { SPECTRES } from "./cpgsmSpectres";
@@ -406,7 +406,7 @@ export function SimulationCPGSM() {
     { id: 'appareil', titre: 'Un détecteur qui donne un spectre', focus: ['appareil'],
       texte: <>La séparation est celle de la CPG ; à la sortie de la colonne, la <strong>ligne de transfert</strong> conduit les composés dans le <strong>spectromètre de masse</strong>, sous vide : la <strong>source</strong> (électrons de 70 eV) ionise et fragmente les molécules, le <strong>quadripôle</strong> trie les ions selon leur rapport m/z, le <strong>détecteur</strong> les compte. Cliquez sur chaque élément du schéma.</>,
       tache: { type: 'qcm', q: 'Dans quel ordre les molécules sortant de la colonne traversent-elles le spectromètre ?', options: ['source d’ions → quadripôle → détecteur', 'quadripôle → source d’ions → détecteur', 'détecteur → quadripôle → source d’ions'], bonne: 0,
-        expl: 'Il faut d’abord former des ions (source), puis les trier selon m/z (analyseur quadripolaire), puis les compter (multiplicateur d’électrons). Le tout sous vide.' } },
+        expl: 'Il faut d’abord former des ions (source), puis les trier selon m/z (analyseur quadripolaire), puis les compter (multiplicateur d’électrons). Le tout sous vide.', indice: "Source d’ions, puis tri des ions selon m/z, puis comptage." } },
     { id: 'tic', titre: 'Le courant ionique total (TIC)', focus: ['viz'],
       texte: <>On injecte cinq solvants. Le chromatogramme affiché est le <strong>TIC</strong> : à chaque instant, la somme de tous les ions détectés. Il ressemble au chromatogramme d’une CPG classique, mais chaque point contient en plus un <strong>spectre de masse</strong> complet.</>,
       tache: { type: 'action', ok: lancement > 0 && memeMelange(CINQ), label: '▶ Mettre le mélange et injecter', faire: () => mettre(CINQ), consigne: 'Regardez le TIC se tracer.' } },
@@ -416,19 +416,19 @@ export function SimulationCPGSM() {
     { id: 'ions', titre: 'Ion moléculaire et pic de base', focus: ['spectre'],
       texte: <>L’<strong>ion moléculaire</strong> M⁺• a pour m/z la masse molaire de la molécule (toluène C₇H₈ : 92 g/mol). Le <strong>pic de base</strong> est le plus intense (100 %) : pour le toluène, c’est l’ion C₇H₇⁺ (perte d’un atome H), très stable.</>,
       tache: { type: 'qcm', q: 'Dans le spectre du toluène, quels sont l’ion moléculaire et le pic de base ?', options: ['M⁺• à m/z 92 ; pic de base à m/z 91', 'M⁺• à m/z 91 ; pic de base à m/z 92', 'M⁺• à m/z 65 ; pic de base à m/z 91'], bonne: 0,
-        expl: 'm/z 92 = masse molaire du toluène : c’est l’ion moléculaire. m/z 91 (C₇H₇⁺, ion tropylium) est le plus abondant : c’est le pic de base. On retrouve m/z 91 dans le spectre de tous les alkylbenzènes.' } },
+        expl: 'm/z 92 = masse molaire du toluène : c’est l’ion moléculaire. m/z 91 (C₇H₇⁺, ion tropylium) est le plus abondant : c’est le pic de base. On retrouve m/z 91 dans le spectre de tous les alkylbenzènes.', indice: "L’ion moléculaire a la masse de la molécule entière ; le pic de base est le plus intense." } },
     { id: 'biblio', titre: 'La recherche en bibliothèque', focus: ['spectre'],
       texte: <>Le logiciel compare le spectre à ceux d’une bibliothèque et donne un <strong>facteur de concordance</strong> (sur 999). Cliquez sur la première proposition pour superposer les deux spectres « tête-bêche ».</>,
       tache: { type: 'qcm', q: 'Un spectre obtient 950 avec le toluène, 460 avec l’éthylbenzène. Que conclure ?', options: ['c’est très probablement du toluène, à confirmer par le temps de rétention d’un étalon', 'c’est certainement du toluène, aucune vérification n’est utile', 'le facteur est trop bas, ce n’est pas du toluène'], bonne: 0,
-        expl: 'Au-dessus de ≈ 900, la concordance est excellente ; mais certains composés ont des spectres presque identiques. L’identification est solide quand le spectre ET le temps de rétention (étalon, même méthode) concordent.' } },
+        expl: 'Au-dessus de ≈ 900, la concordance est excellente ; mais certains composés ont des spectres presque identiques. L’identification est solide quand le spectre ET le temps de rétention (étalon, même méthode) concordent.', indice: "Un indice de similarité élevé suggère un candidat sans le prouver : quelle autre donnée faut-il comparer ?" } },
     { id: 'chlore', titre: 'Les isotopes du chlore', focus: ['spectre', 'viz'],
       texte: <>{bouton('Mettre dichlorométhane, chloroforme et toluène', () => mettre(CHLORES))} Le chlore existe sous deux isotopes : ³⁵Cl (≈ 76 %) et ³⁷Cl (≈ 24 %). Cliquez sur le pic du dichlorométhane (CH₂Cl₂) et regardez les ions vers m/z 84, 86 et 88.</>,
       tache: { type: 'qcm', q: 'Pourquoi trouve-t-on trois ions à m/z 84, 86 et 88 dans le spectre de CH₂Cl₂ ?', options: ['ce sont les ions moléculaires avec ³⁵Cl₂, ³⁵Cl³⁷Cl et ³⁷Cl₂', 'ce sont trois fragments différents de la molécule', 'ce sont des impuretés de la colonne'], bonne: 0,
-        expl: 'Avec deux atomes de chlore, l’ion moléculaire existe en trois versions, espacées de 2 unités, d’intensités ≈ 9 : 6 : 1 (100 : 64 : 10). Ce motif signe la présence de deux chlores ; avec un seul chlore, on aurait deux ions séparés de 2 dans le rapport ≈ 3 : 1.' } },
+        expl: 'Avec deux atomes de chlore, l’ion moléculaire existe en trois versions, espacées de 2 unités, d’intensités ≈ 9 : 6 : 1 (100 : 64 : 10). Ce motif signe la présence de deux chlores ; avec un seul chlore, on aurait deux ions séparés de 2 dans le rapport ≈ 3 : 1.', indice: "Le chlore possède deux isotopes stables, ³⁵Cl et ³⁷Cl, et la molécule contient deux atomes de chlore." } },
     { id: 'isomeres', titre: 'Des isomères au spectre presque identique', focus: ['spectre', 'viz'],
       texte: <>{bouton('Mettre éthylbenzène, p-xylène et toluène', () => mettre(ISOMERES))} L’éthylbenzène et le p-xylène sont deux isomères C₈H₁₀ (M = 106). Comparez leurs spectres et les propositions de la bibliothèque.</>,
       tache: { type: 'qcm', q: 'Comment distinguer sûrement l’éthylbenzène du p-xylène ?', options: ['par leur temps de rétention (étalons injectés dans les mêmes conditions)', 'par leur ion moléculaire', 'par leur pic de base'], bonne: 0,
-        expl: `Les deux ont M⁺• = 106 et un pic de base à 91 ; leurs spectres concordent à ${concordance(SPECTRES.ebz.pics, SPECTRES.pxyl.pics)}/999. Seule la séparation chromatographique (t_R) les distingue sûrement : la CPG et la SM sont complémentaires.` } },
+        expl: `Les deux ont M⁺• = 106 et un pic de base à 91 ; leurs spectres concordent à ${concordance(SPECTRES.ebz.pics, SPECTRES.pxyl.pics)}/999. Seule la séparation chromatographique (t_R) les distingue sûrement : la CPG et la SM sont complémentaires.`, indice: "Les deux molécules ont la même masse et des spectres voisins : quelle donnée de la CPG les sépare ?" } },
     { id: 'coelution', titre: 'Deux composés qui sortent ensemble', focus: ['viz', 'spectre', 'eic'],
       texte: <>{bouton('Mettre butanone, hexane et toluène', () => mettre(COELU))} Sur cette colonne, la butanone et l’hexane sortent presque en même temps : un seul pic, un spectre mélangé, une bibliothèque hésitante. Extrayez les ions <strong>m/z 72</strong> (ion moléculaire de la butanone) et <strong>m/z 86</strong> (ion moléculaire de l’hexane) dans « Ions extraits ».</>,
       tache: { type: 'action', ok: memeMelange(COELU) && eics.includes(72) && eics.includes(86), label: 'Extraire m/z 72 et 86', faire: () => setEics([72, 86]),
@@ -436,15 +436,15 @@ export function SimulationCPGSM() {
     { id: 'plage', titre: 'La plage de m/z balayée', focus: ['reglages', 'viz'],
       texte: <>{bouton('Mettre méthanol, éthanol, propan-1-ol et toluène', () => mettre(ALCOOLS))} On évite souvent de balayer en dessous de m/z 29 ou 35, pour ne pas enregistrer l’air et l’eau. Passez le début de la plage à m/z 35 et injectez à nouveau.</>,
       tache: { type: 'qcm', q: 'Avec une plage commençant à m/z 35, le pic du méthanol a presque disparu. Pourquoi ?', options: ['ses ions principaux (m/z 29, 31, 32) sont en dehors de la plage balayée', 'le méthanol ne sort plus de la colonne', 'le méthanol n’est pas ionisé à 70 eV'], bonne: 0,
-        expl: 'Le méthanol (M = 32) ne donne que des ions légers. La plage de m/z doit couvrir les ions caractéristiques des composés recherchés, tout en excluant le fond (eau 18, azote 28, oxygène 32).' } },
+        expl: 'Le méthanol (M = 32) ne donne que des ions légers. La plage de m/z doit couvrir les ions caractéristiques des composés recherchés, tout en excluant le fond (eau 18, azote 28, oxygène 32).', indice: "Le spectromètre ne détecte que les ions de la plage balayée. Quelles sont les masses des ions du méthanol ?" } },
     { id: 'air', titre: 'Panne n° 1 : le fond est très élevé', focus: ['aireau', 'viz'],
       texte: <>{bouton('Charger la situation', () => mettre(CINQ, { panne: 'air' }))} Regardez le contrôle air / eau et le spectre du fond (cliquez entre deux pics).</>,
       tache: { type: 'qcm', q: 'm/z 28 et 32 dominent, dans un rapport voisin de 4. Cause la plus probable ?', options: [PANNES.air.nom, PANNES.filament.nom, PANNES.ressuage.nom], bonne: 0,
-        expl: `N₂⁺ (28) et O₂⁺ (32) dans le rapport de l’air : de l’air entre dans le vide. Geste : ${PANNES.air.geste}` } },
+        expl: `N₂⁺ (28) et O₂⁺ (32) dans le rapport de l’air : de l’air entre dans le vide. Geste : ${PANNES.air.geste}`, indice: "Quelles molécules du gaz ambiant ont m/z 28 et 32, et dans quel rapport ?" } },
     { id: 'ressuage', titre: 'Panne n° 2 : des ions qui montent avec la température', focus: ['viz', 'spectre'],
       texte: <>{bouton('Charger la situation', () => mettre(CINQ, { panne: 'ressuage', Tf: 280 }))} Le four monte jusqu’à 280 °C. Cliquez en fin de chromatogramme, là où le fond monte, et lisez le spectre.</>,
       tache: { type: 'qcm', q: 'Le fond qui monte en fin de programme contient surtout m/z 207, 281 et 73. Cause la plus probable ?', options: [PANNES.ressuage.nom, PANNES.air.nom, PANNES.source.nom], bonne: 0,
-        expl: `Les ions 73, 207 et 281 viennent de siloxanes cycliques : la phase stationnaire (polydiméthylsiloxane) se dégrade à haute température. Geste : ${PANNES.ressuage.geste}` } },
+        expl: `Les ions 73, 207 et 281 viennent de siloxanes cycliques : la phase stationnaire (polydiméthylsiloxane) se dégrade à haute température. Geste : ${PANNES.ressuage.geste}`, indice: "Un fond qui monte avec le four vient d’une pièce chauffée qui libère des composés (m/z 73, 207, 281 : silicones)." } },
     { id: 'fin', titre: 'À retenir', focus: [],
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18 }}>
         <li>CPG/SM = séparation (t<Ind>R</Ind>) + spectre de masse de chaque pic.</li>
@@ -496,6 +496,9 @@ export function SimulationCPGSM() {
         <div style={txtD}><Pic n="target"/>Une analyse de routine (mélange {ids.map(i => PAR_ID[i].nom).join(', ')}) donne ce résultat. Observez le TIC, le contrôle air / eau et les spectres (pics et fond), puis choisissez la <strong>cause la plus probable</strong>.</div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
           {Object.entries(PANNES).map(([k, q]) => <button key={k} onClick={() => rep('cause', k)} style={stylePetitBouton(defi.reps.cause === k, '#0ea5e9')}>{q.nom}</button>)}</div></>}
+      {defi.type === 'inconnu' && <IndiceDefi cache={reussi}>Repérez l’ion moléculaire (le plus à droite) et le pic de base, puis comparez avec les masses M des boutons.</IndiceDefi>}
+      {defi.type === 'coelution' && <IndiceDefi cache={reussi}>Cherchez, dans chaque spectre de référence, un pic intense absent de l’autre.</IndiceDefi>}
+      {defi.type === 'panne' && <IndiceDefi cache={reussi}>Regardez le TIC, le contrôle air / eau (m/z 18, 28, 32) et le fond du spectre : quel indicateur sort de l’ordinaire ?</IndiceDefi>}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
         <button onClick={() => lancer(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>

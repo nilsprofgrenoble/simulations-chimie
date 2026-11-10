@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Field, TabBtn, cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices } from "../commun";
+import { Field, TabBtn, cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 
 const SIM_ID = 13;
@@ -1156,14 +1156,14 @@ function ParcoursEtalon({ plotlyReady, changerMode }) {
   const ETAPES = [
     { id: 'principe', titre: 'Pourquoi un étalon interne ?', focus: [],
       texte: <>On veut doser trois composés (hydrobenzoïne, benzoïne, benzile) dans un solide de synthèse, par chromatographie. L’aire d’un pic dépend de la concentration, mais aussi du <strong>volume réellement injecté</strong>, qui varie un peu d’une injection à l’autre. L’<strong>étalon interne</strong> (EI), le paracétamol, est ajouté à chaque solution.</>,
-      tache: { type: 'qcm', q: 'Que permet l’EI ?', options: ['Compenser les variations de volume injecté : on utilise le rapport des aires analyte / EI', 'Augmenter la hauteur des pics', 'Éviter de préparer une solution étalon'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'Que permet l’EI ?', options: ['Compenser les variations de volume injecté : on utilise le rapport des aires analyte / EI', 'Augmenter la hauteur des pics', 'Éviter de préparer une solution étalon'], bonne: 0, indice: "L’EI est ajouté en même quantité partout : que reste-t-il constant quand le volume injecté varie ?" } },
     { id: 'choixEI', titre: 'Choisir l’étalon interne', focus: [],
       texte: <>Le paracétamol a un temps de rétention proche de ceux des analytes, mais séparé de leurs pics.</>,
       tache: { type: 'qcm', q: 'Lequel de ces composés ne pourrait pas servir d’EI ?', options: ['Un composé déjà présent dans l’échantillon à analyser', 'Un composé pur et stable', 'Un composé dont le pic est bien séparé des autres'], bonne: 0,
-        expl: 'Son aire contiendrait la contribution de l’échantillon : le rapport des aires n’aurait plus de sens.' } },
+        expl: 'Son aire contiendrait la contribution de l’échantillon : le rapport des aires n’aurait plus de sens.', indice: "Un EI doit être absent de l’échantillon, pur, stable et proche de l’analyte : cherchez celui qui enfreint une règle." } },
     { id: 'hypotheses', titre: 'Sur quoi repose la méthode ?', focus: ['hypo'],
       texte: <>Lisez l’encadré « Hypothèses de travail ». Ici, un seul étalon est préparé : la méthode suppose donc que la réponse est proportionnelle à la concentration.</>,
-      tache: { type: 'qcm', q: 'Pourquoi un seul point d’étalonnage suffit-il ?', options: ['On suppose la droite d’étalonnage linéaire et passant par l’origine, avec une concentration d’échantillon proche de celle de l’étalon', 'Parce que les erreurs se compensent toujours', 'Parce que l’EI est présent'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'Pourquoi un seul point d’étalonnage suffit-il ?', options: ['On suppose la droite d’étalonnage linéaire et passant par l’origine, avec une concentration d’échantillon proche de celle de l’étalon', 'Parce que les erreurs se compensent toujours', 'Parce que l’EI est présent'], bonne: 0, indice: "Quelle hypothèse sur la droite d’étalonnage permet de la définir avec un seul point ?" } },
     { id: 'cmEtalon', titre: 'La solution étalon (fiole 3)', focus: [],
       texte: <>On dissout 102,0 mg d’hydrobenzoïne dans une fiole 1 de 20 mL. On prélève 40 µL de cette solution, que l’on introduit dans la fiole 3 de 20 mL, avec 40 µL de la solution d’EI (fiole 2), puis on complète au trait.</>,
       tache: { type: 'num', q: 'Concentration massique C_m de l’hydrobenzoïne dans la fiole 3', unite: 'mg/L', vrai: E.etalon.CmAnalytes[0], tol: 0.002, affiche: x => fmt(x, 2),
@@ -1173,11 +1173,11 @@ function ParcoursEtalon({ plotlyReady, changerMode }) {
           `C_m = 5 100 mg/L × 0,002 = ${fmt(E.etalon.CmAnalytes[0], 2)} mg/L.`],
         pieges: [[102 / 20, 'Il manque la dilution de la fiole 1 vers la fiole 3 (prélèvement de 40 µL dans 20 mL).'],
           [5100, 'C’est la concentration de la fiole 1 (102,0 mg dans 20 mL). Il reste à tenir compte de la dilution : 40 µL complétés à 20 mL.'],
-          [5100 * 40 / 20, 'Les unités sont mélangées : 40 µL et 20 mL ne se divisent pas directement. 20 mL = 20 000 µL.']] } },
+          [5100 * 40 / 20, 'Les unités sont mélangées : 40 µL et 20 mL ne se divisent pas directement. 20 mL = 20 000 µL.']], indice: "Procédez en deux temps : concentration de la fiole 1, puis dilution jusqu’à la fiole 3." } },
     { id: 'cmEI', titre: 'L’EI dans les deux solutions', focus: [],
       texte: <>La solution échantillon (fiole 5) est préparée de la même façon : 40 µL de la solution du solide (fiole 4) et 40 µL de la <strong>même</strong> solution d’EI (fiole 2), dans une fiole de 20 mL. Dans la fiole 3 (étalon), l’EI est à {fmt(E.etalon.CmEI, 2)} mg/L.</>,
       tache: { type: 'qcm', q: 'Dans la fiole 5, la concentration en EI est…', options: [`la même : ${fmt(E.etalon.CmEI, 2)} mg/L`, 'nulle, puisque l’EI est dans l’étalon', 'inconnue : elle dépend de l’échantillon'], bonne: 0,
-        expl: 'C’est ce qui permet de se servir de l’EI comme repère commun aux deux solutions.' } },
+        expl: 'C’est ce qui permet de se servir de l’EI comme repère commun aux deux solutions.', indice: "Quelle quantité d’EI a-t-on ajoutée dans la fiole 5, par rapport à la fiole 3 ?" } },
     { id: 'rapportEt', titre: 'Les chromatogrammes', focus: ['tableau'],
       texte: <>Les aires des pics sont maintenant dans le tableau, pour la solution étalon et pour la solution échantillon. Pour chaque solution, on forme le <strong>rapport des aires</strong> A<sub>analyte</sub> / A<sub>EI</sub>. Commencez par l’étalon, pour l’hydrobenzoïne.</>,
       tache: { type: 'num', q: 'Rapport A_hydrobenzoïne / A_EI dans la solution étalon', unite: '', vrai: r0.ret, tol: 0.004, affiche: x => fmt(x, 4),
@@ -1185,7 +1185,7 @@ function ParcoursEtalon({ plotlyReady, changerMode }) {
         calcul: () => ['Rapport = A_hydrobenzoïne / A_EI, avec les aires de la solution étalon (même chromatogramme).',
           `A_hydrobenzoïne = ${fmt(E.etalon.airesAnalytes[0], 2)} ; A_EI = ${fmt(E.etalon.aireEI, 2)}.`,
           `Rapport = ${fmt(E.etalon.airesAnalytes[0], 2)} / ${fmt(E.etalon.aireEI, 2)} = ${fmt(r0.ret, 4)} (sans unité).`],
-        pieges: [[E.etalon.aireEI / E.etalon.airesAnalytes[0], 'Le rapport est à l’envers : l’aire de l’analyte (hydrobenzoïne) est au numérateur, celle de l’EI au dénominateur.']] } },
+        pieges: [[E.etalon.aireEI / E.etalon.airesAnalytes[0], 'Le rapport est à l’envers : l’aire de l’analyte (hydrobenzoïne) est au numérateur, celle de l’EI au dénominateur.']], indice: "Divisez l’aire de l’hydrobenzoïne par celle de l’EI, dans la même colonne." } },
     { id: 'rapportEch', titre: 'Dans l’échantillon', focus: ['tableau'],
       texte: <>Même calcul sur le chromatogramme de la solution échantillon.</>,
       tache: { type: 'num', q: 'Rapport A_hydrobenzoïne / A_EI dans la solution échantillon', unite: '', vrai: r0.rech, tol: 0.004, affiche: x => fmt(x, 4),
@@ -1194,14 +1194,14 @@ function ParcoursEtalon({ plotlyReady, changerMode }) {
           `A_hydrobenzoïne = ${fmt(E.echantillon.airesAnalytes[0], 1)} ; A_EI = ${fmt(E.echantillon.aireEI, 1)}.`,
           `Rapport = ${fmt(E.echantillon.airesAnalytes[0], 1)} / ${fmt(E.echantillon.aireEI, 1)} = ${fmt(r0.rech, 4)} (sans unité).`],
         pieges: [[E.echantillon.aireEI / E.echantillon.airesAnalytes[0], 'Le rapport est à l’envers : l’aire de l’analyte au numérateur, celle de l’EI au dénominateur.'],
-          [r0.ret, 'C’est le rapport de la solution étalon. Ici, il faut lire les aires de la solution échantillon (F5).']] } },
+          [r0.ret, 'C’est le rapport de la solution étalon. Ici, il faut lire les aires de la solution échantillon (F5).']], indice: "Même calcul, avec les aires de la solution échantillon." } },
     { id: 'cEch', titre: 'La concentration dans la solution injectée', focus: [],
       texte: <>Comme l’EI est à la même concentration dans les deux solutions, le rapport des aires est proportionnel à C<sub>m</sub> de l’analyte : C<sub>éch</sub> / C<sub>ét</sub> = (A<sub>an</sub> / A<sub>EI</sub>)<sub>éch</sub> / (A<sub>an</sub> / A<sub>EI</sub>)<sub>ét</sub>. Reprenez C<sub>ét</sub> = {fmt(E.etalon.CmAnalytes[0], 2)} mg/L (fiole 3) et les rapports calculés aux deux étapes précédentes : {fmt(r0.ret, 4)} (étalon) et {fmt(r0.rech, 4)} (échantillon).</>,
       tache: { type: 'num', q: 'C_m de l’hydrobenzoïne dans la fiole 5', unite: 'mg/L', vrai: r0.C, tol: 0.004, affiche: x => fmt(x, 3),
         calcul: () => ['Hypothèse : réponse proportionnelle à la concentration (droite passant par l’origine) et même concentration en EI dans F3 et F5. Alors C_éch = C_ét × (rapport éch) / (rapport ét).',
           `C_éch = ${fmt(E.etalon.CmAnalytes[0], 2)} × ${fmt(r0.rech, 4)} / ${fmt(r0.ret, 4)}.`,
           `C_éch = ${fmt(E.etalon.CmAnalytes[0], 2)} × ${fmt(r0.rech / r0.ret, 4)} = ${fmt(r0.C, 3)} mg/L.`],
-        pieges: [[E.etalon.CmAnalytes[0] * E.echantillon.airesAnalytes[0] / E.etalon.airesAnalytes[0], 'Vous avez utilisé les aires brutes. L’EI sert justement à corriger : il faut les rapports A_analyte / A_EI.'], [E.etalon.CmAnalytes[0] * r0.ret / r0.rech, 'Les deux rapports sont inversés : le rapport de l’échantillon est au numérateur.'], [E.etalon.CmAnalytes[0] * r0.rech, 'Il faut aussi diviser par le rapport des aires de l’étalon.']] } },
+        pieges: [[E.etalon.CmAnalytes[0] * E.echantillon.airesAnalytes[0] / E.etalon.airesAnalytes[0], 'Vous avez utilisé les aires brutes. L’EI sert justement à corriger : il faut les rapports A_analyte / A_EI.'], [E.etalon.CmAnalytes[0] * r0.ret / r0.rech, 'Les deux rapports sont inversés : le rapport de l’échantillon est au numérateur.'], [E.etalon.CmAnalytes[0] * r0.rech, 'Il faut aussi diviser par le rapport des aires de l’étalon.']], indice: "Avec un seul point : rapport (échantillon) ÷ rapport (étalon) = C_éch ÷ C_étalon, à concentration d’EI identique." } },
     { id: 'masse', titre: 'La masse dans la prise d’essai', focus: [],
       texte: <>La fiole 5 est une dilution de la fiole 4 (101,7 mg de solide dans 20 mL) : on a prélevé 40 µL de la fiole 4 pour faire 20 mL, soit un facteur de dilution de 40 / 20 000 = 0,002. Partez de la concentration dans la fiole 5 trouvée à l’étape précédente ({fmt(r0.C, 3)} mg/L). Remontez d’abord à la concentration dans la fiole 4, puis à la masse d’hydrobenzoïne dans les 20 mL.</>,
       tache: { type: 'num', q: 'Masse d’hydrobenzoïne dans la prise d’essai', unite: 'mg', vrai: r0.m, tol: 0.004, affiche: x => fmt(x, 1),
@@ -1210,41 +1210,41 @@ function ParcoursEtalon({ plotlyReady, changerMode }) {
           `Masse dans la fiole 4 (20 mL = 0,020 L) : m = C × V = ${fmt(r0.C * 500, 0)} mg/L × 0,020 L = ${fmt(r0.m, 2)} mg.`],
         pieges: [[r0.C * 0.020, 'Il manque le facteur de dilution : la fiole 4 est 500 fois plus concentrée que la fiole 5.'],
           [r0.C * 500, 'C’est la concentration de la fiole 4 en mg/L. Pour obtenir une masse, multipliez par le volume de la fiole 4 (0,020 L).'],
-          [r0.m * 1000, 'Le volume doit être en litres : 20 mL = 0,020 L.']] } },
+          [r0.m * 1000, 'Le volume doit être en litres : 20 mL = 0,020 L.']], indice: "Remontez les dilutions : concentration × volume de la fiole 5 donne la masse dans la prise d’essai." } },
     { id: 'pct', titre: 'Le pourcentage massique', focus: [],
       texte: <>La prise d’essai du solide est de 101,7 mg. La masse d’hydrobenzoïne qu’elle contient est celle trouvée à l’étape précédente ({fmt(r0.m, 1)} mg).</>,
       tache: { type: 'num', q: 'Pourcentage massique d’hydrobenzoïne dans le solide', unite: '%', vrai: r0.pct, tol: 0.004, affiche: x => fmt(x, 1),
         calcul: () => ['Pourcentage massique = masse d’hydrobenzoïne / masse de solide × 100 (les deux masses en mg).',
           `% = ${fmt(r0.m, 2)} mg / ${fmt(PEI.m0, 1)} mg × 100 = ${fmt(r0.pct, 1)} %.`],
-        pieges: [[r0.pct / 100, 'Vous donnez une fraction : le résultat est demandé en %, multipliez par 100.']] } },
+        pieges: [[r0.pct / 100, 'Vous donnez une fraction : le résultat est demandé en %, multipliez par 100.']], indice: "Pourcentage = masse d’hydrobenzoïne ÷ masse de solide pesée × 100." } },
     { id: 'somme', titre: 'Une somme supérieure à 100 %', focus: [],
       texte: <>Les mêmes calculs donnent {fmt(PEI.r[1].m, 2)} mg de benzoïne et {fmt(PEI.r[2].m, 2)} mg de benzile. Au total : {fmt(PEI.somme, 1)} mg d’analytes pour {fmt(PEI.m0, 1)} mg de solide, soit {fmt(PEI.somme / PEI.m0 * 100, 1)} %.</>,
       tache: { type: 'qcm', q: 'Que peut-on dire de ce résultat ?', options: ['Il est physiquement impossible, mais cet écart de quelques % est de l’ordre des incertitudes (pesées, prélèvements de 40 µL, intégration des aires)', 'La méthode de l’étalon interne est fausse', 'Le solide contient plus que sa masse'], bonne: 0,
-        expl: 'Un écart de 4 % est plausible : prélever 40 µL à la micropipette a déjà une incertitude de l’ordre du pourcent. Cette méthode ne donne pas d’incertitude ici : il faudrait la calculer avant de conclure.' } },
+        expl: 'Un écart de 4 % est plausible : prélever 40 µL à la micropipette a déjà une incertitude de l’ordre du pourcent. Cette méthode ne donne pas d’incertitude ici : il faudrait la calculer avant de conclure.', indice: "Un pourcentage supérieur à 100 % est impossible. Comparez l’excès aux incertitudes de pesée et de prélèvement." } },
     { id: 'injection', titre: 'Et si le volume injecté change ?', focus: [],
       texte: <>On réinjecte la solution échantillon en doublant le volume injecté, par exemple parce que l’échantillonneur automatique est déréglé.</>,
-      tache: { type: 'qcm', q: 'La masse d’hydrobenzoïne calculée sera…', options: ['inchangée : les aires de l’analyte et de l’EI doublent toutes les deux, et leur rapport ne change pas', 'doublée', 'divisée par deux'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'La masse d’hydrobenzoïne calculée sera…', options: ['inchangée : les aires de l’analyte et de l’EI doublent toutes les deux, et leur rapport ne change pas', 'doublée', 'divisée par deux'], bonne: 0, indice: "Que deviennent les deux aires, et donc leur rapport, quand le volume injecté double ?" } },
     { id: 'quantiteEI', titre: 'Et si l’EI n’est pas en même quantité ?', focus: ['hypo'],
       texte: <>Une erreur de préparation introduit dans la fiole 5 <strong>deux fois plus</strong> d’EI que dans la fiole 3. On applique pourtant la même formule que pour C<sub>éch</sub> (rapports des aires), sans la corriger.</>,
       tache: { type: 'qcm', q: 'La concentration en analyte trouvée sera…', options: ['sous-estimée d’un facteur 2', 'correcte, car l’EI compense tout', 'surestimée d’un facteur 2'], bonne: 0,
-        expl: 'L’aire de l’EI double dans l’échantillon, donc le rapport A_analyte / A_EI est divisé par 2. La formule suppose la même concentration en EI ; sinon, il faut multiplier par C_EI,éch / C_EI,ét (ce que fait l’exploration libre).' } },
+        expl: 'L’aire de l’EI double dans l’échantillon, donc le rapport A_analyte / A_EI est divisé par 2. La formule suppose la même concentration en EI ; sinon, il faut multiplier par C_EI,éch / C_EI,ét (ce que fait l’exploration libre).', indice: "Le rapport des aires suppose la même concentration d’EI. Que devient le rapport si l’EI est doublé ?" } },
     // ── normalisation interne ──
     { id: 'niPrincipe', titre: 'La normalisation interne', focus: [],
       texte: <>Autre cas : un mélange éthanol / toluène / acétate de butyle, analysé par CPG. Ici, on n’ajoute rien : on veut la <strong>composition massique</strong> de l’échantillon. On dispose d’un étalon de composition connue, passé dans les mêmes conditions.</>,
-      tache: { type: 'qcm', q: 'Dans quel cas la normalisation interne convient-elle ?', options: ['Tous les constituants de l’échantillon sont élués et détectés, et l’on veut leur pourcentage massique', 'On veut doser un seul constituant, présent à l’état de traces', 'On ne connaît la composition d’aucun étalon'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'Dans quel cas la normalisation interne convient-elle ?', options: ['Tous les constituants de l’échantillon sont élués et détectés, et l’on veut leur pourcentage massique', 'On veut doser un seul constituant, présent à l’état de traces', 'On ne connaît la composition d’aucun étalon'], bonne: 0, indice: "La NI donne un pourcentage : il faut que tous les constituants soient vus par le détecteur." } },
     { id: 'niHypo', titre: 'Une hypothèse forte', focus: ['hypo'],
       texte: <>Les pourcentages sont calculés à partir de la somme des aires corrigées : par construction, leur somme vaut 100 %.</>,
-      tache: { type: 'qcm', q: 'L’échantillon contient aussi de l’eau, non détectée par le détecteur. Les pourcentages calculés par NI seront…', options: ['surestimés, car on les rapporte à un total qui ne contient pas l’eau', 'sous-estimés', 'corrects : l’eau ne gêne pas'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'L’échantillon contient aussi de l’eau, non détectée par le détecteur. Les pourcentages calculés par NI seront…', options: ['surestimés, car on les rapporte à un total qui ne contient pas l’eau', 'sous-estimés', 'corrects : l’eau ne gêne pas'], bonne: 0, indice: "Les pourcentages sont rapportés à la somme des aires corrigées : que manque-t-il à cette somme ?" } },
     { id: 'k2', titre: 'Le coefficient de réponse du toluène', focus: ['tableauNI'],
       texte: <>On prend l’éthanol comme référence (1). Le coefficient de réponse relatif K<sub>i/1</sub> compare la masse et l’aire de chaque composé à celles de la référence : K<sub>i/1</sub> = (%<sub>i</sub> / %<sub>1</sub>) × (A<sub>1</sub> / A<sub>i</sub>), mesurés sur <strong>l’étalon</strong>.</>,
       tache: { type: 'num', q: 'K du toluène par rapport à l’éthanol', unite: '', vrai: PNI.K[1], tol: 0.005, affiche: x => fmt(x, 4),
         calcul: () => kCalcul(1),
-        pieges: [[1 / PNI.K[1], 'Le rapport est inversé : A de la référence au numérateur.'], ...piegesK(1)] } },
+        pieges: [[1 / PNI.K[1], 'Le rapport est inversé : A de la référence au numérateur.'], ...piegesK(1)], indice: "K = (% du toluène ÷ % de la référence) × (aire de la référence ÷ aire du toluène), sur l’étalon." } },
     { id: 'k3', titre: 'Le coefficient de l’acétate de butyle', focus: ['tableauNI'],
       texte: <>Même calcul pour l’acétate de butyle.</>,
       tache: { type: 'num', q: 'K de l’acétate de butyle par rapport à l’éthanol', unite: '', vrai: PNI.K[2], tol: 0.005, affiche: x => fmt(x, 4),
         calcul: () => kCalcul(2),
-        pieges: [[1 / PNI.K[2], 'Le rapport est inversé : A de la référence au numérateur.'], ...piegesK(2)] } },
+        pieges: [[1 / PNI.K[2], 'Le rapport est inversé : A de la référence au numérateur.'], ...piegesK(2)], indice: "K = (% du composé ÷ % de la référence) × (aire de la référence ÷ aire du composé), sur l’étalon." } },
     { id: 'denom', titre: 'Corriger les aires de l’échantillon', focus: ['tableauNI'],
       texte: <>Dans l’échantillon, on corrige chaque aire par son coefficient : la quantité K<sub>i/1</sub> × A<sub>i</sub> est proportionnelle à la masse du composé i. Sommez ces trois quantités (la référence a K = 1), avec K<sub>toluène/éthanol</sub> = {fmt(PNI.K[1], 4)} et K<sub>acétate/éthanol</sub> = {fmt(PNI.K[2], 4)} (étapes précédentes) et les aires de l’échantillon du tableau.</>,
       tache: { type: 'num', q: 'Σ K_i/1 × A_i, sur l’échantillon', unite: '', vrai: PNI.den, tol: 0.004, affiche: x => Math.round(x).toLocaleString('fr-FR'),
@@ -1257,20 +1257,20 @@ function ParcoursEtalon({ plotlyReady, changerMode }) {
             `Somme = ${g(A[0])} + ${g(PNI.K[1] * A[1])} + ${g(PNI.K[2] * A[2])} ≈ ${g(PNI.den)}.`];
         },
         pieges: [[EX_NI.composesEch.reduce((t, c) => t + c.aire, 0), 'Vous avez additionné les aires brutes : il faut d’abord multiplier chaque aire par son coefficient K.'],
-          [PNI.den - EX_NI.composesEch[0].aire, 'N’oubliez pas l’éthanol : la référence compte aussi dans la somme (K = 1).']] } },
+          [PNI.den - EX_NI.composesEch[0].aire, 'N’oubliez pas l’éthanol : la référence compte aussi dans la somme (K = 1).']], indice: "Multipliez chaque aire de l’échantillon par son K (K = 1 pour l’éthanol), puis additionnez." } },
     { id: 'pctAc', titre: 'Le pourcentage d’acétate de butyle', focus: [],
       texte: <>%<sub>i</sub> = K<sub>i/1</sub> × A<sub>i</sub> / Σ(K × A) × 100, avec K<sub>acétate/éthanol</sub> = {fmt(PNI.K[2], 4)} et Σ(K × A) = {Math.round(PNI.den).toLocaleString('fr-FR')} (étape précédente).</>,
       tache: { type: 'num', q: 'Pourcentage massique d’acétate de butyle dans l’échantillon', unite: '%', vrai: PNI.pct[2], tol: 0.005, affiche: x => fmt(x, 1),
         calcul: () => pctCalcul(2),
-        pieges: piegesPct(2) } },
+        pieges: piegesPct(2), indice: "% = K × A du composé ÷ Σ(K × A) × 100." } },
     { id: 'pctEth', titre: 'Un pourcentage de plus', focus: [],
       texte: <>Pour terminer, le pourcentage d’éthanol (K = 1), avec le même Σ(K × A) = {Math.round(PNI.den).toLocaleString('fr-FR')}. Vérifiez que les trois pourcentages totalisent 100 %.</>,
       tache: { type: 'num', q: 'Pourcentage massique d’éthanol dans l’échantillon', unite: '%', vrai: PNI.pct[0], tol: 0.005, affiche: x => fmt(x, 1),
         calcul: () => [...pctCalcul(0), `Vérification : ${fmt(PNI.pct[0], 1)} + ${fmt(PNI.pct[1], 1)} + ${fmt(PNI.pct[2], 1)} = ${fmt(PNI.pct[0] + PNI.pct[1] + PNI.pct[2], 1)} %.`],
-        pieges: piegesPct(0) } },
+        pieges: piegesPct(0), indice: "Même formule, avec K = 1 pour l’éthanol." } },
     { id: 'niInjection', titre: 'Pourquoi pas de masse injectée ?', focus: [],
       texte: <>La normalisation interne ne demande ni la masse de l’échantillon, ni le volume injecté.</>,
-      tache: { type: 'qcm', q: 'Pourquoi ?', options: ['On n’utilise que des rapports d’aires au sein d’un même chromatogramme : l’injection se simplifie, mais on n’obtient qu’une composition, pas une quantité', 'Parce que ces grandeurs sont toujours égales à 1', 'Parce que le détecteur les mesure'], bonne: 0 } },
+      tache: { type: 'qcm', q: 'Pourquoi ?', options: ['On n’utilise que des rapports d’aires au sein d’un même chromatogramme : l’injection se simplifie, mais on n’obtient qu’une composition, pas une quantité', 'Parce que ces grandeurs sont toujours égales à 1', 'Parce que le détecteur les mesure'], bonne: 0, indice: "La NI utilise seulement des rapports d’aires au sein d’un même chromatogramme." } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       texte: <>Vous avez mené les deux méthodes en gardant en tête leurs conditions de validité : linéarité, pics bien résolus, même quantité d’EI, tous les constituants détectés. En exploration libre, saisissez vos propres résultats ; dans le défi, un jeu de données inconnu vous attend.</>, tache: null },
   ];
@@ -1344,6 +1344,7 @@ function pick3() {
   const jeux = [['Éthanol', 'Toluène', 'Acétate de butyle'], ['Hexane', 'Cyclohexane', 'Toluène'], ['Méthanol', 'Éthanol', 'Propan-2-ol'], ['Benzène', 'Xylène', 'Éthylbenzène']];
   return jeux[Math.floor(Math.random() * jeux.length)];
 }
+const INDICE_Q = {"cet": "Concentration de la fiole 1 d’abord, puis dilution jusqu’à la fiole 3.", "ret": "Aire du composé A ÷ aire de l’EI, sur la solution étalon.", "rech": "Même rapport, sur la solution échantillon.", "c": "Avec un seul point : C = C_étalon × (rapport échantillon ÷ rapport étalon), à concentration d’EI identique.", "m": "Remontez les dilutions : concentration × volume de la fiole 5.", "p": "Pourcentage = masse de A ÷ masse de solide pesée × 100.", "tw": "Demandez-vous ce que l’EI ou la NI corrige, et ce qu’ils ne corrigent pas.", "k2": "K = (% du composé ÷ % de la référence) × (aire de la référence ÷ aire du composé), sur l’étalon.", "k3": "K = (% du composé ÷ % de la référence) × (aire de la référence ÷ aire du composé), sur l’étalon.", "den": "Multipliez chaque aire de l’échantillon par son K (K = 1 pour la référence), puis additionnez.", "pc": "% = K × A du composé ÷ Σ(K × A) × 100.", "p0": "% = K × A du composé ÷ Σ(K × A) × 100 (K = 1 pour la référence)."};
 function DefiEtalon() {
   const [defi, setDefi] = useState(() => campagneEI());
   const [suiviDefi, noterDefi] = useCompteurDefi();
@@ -1411,6 +1412,7 @@ function DefiEtalon() {
           return (
             <div key={q.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{i + 1}. {avecIndices(q.q)}</div>
+              {INDICE_Q[q.id] && <IndiceDefi cache={defi.verifie && ok}>{INDICE_Q[q.id]}</IndiceDefi>}
               {q.choix ? (
                 <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
                   {q.choix.map((c, k) => <button key={k} onClick={() => maj(d => ({ choix: { ...d.choix, [q.id]: k } }))} style={{ ...styleBouton(defi.choix[q.id] === k, '#0ea5e9'), padding: '4px 9px', fontSize: 13 }}>{c}</button>)}
