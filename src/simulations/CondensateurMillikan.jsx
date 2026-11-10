@@ -1,7 +1,7 @@
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { useState, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, Frac, fmt, lireProgression } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, Frac, fmt, lireProgression, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 
@@ -180,6 +180,9 @@ function VoletDefi({ defi, setDefi, changerType, appliquer }) {
           {saisie('n', '', 'n = |q| / e')}
         </div>
       </>}
+      <IndiceDefi cache={reussi}>{defi.type === 'champ' ? <>E = U / d (U en volts, d en mètres), puis F = |q| × E.</>
+        : defi.type === 'equilibre' ? <>À l’équilibre, la force électrique compense le poids : |q| × U / d = m × g. Isole U.</>
+        : <>À l’équilibre, |q| = m × g × d / U. Compare ensuite |q| à la charge élémentaire e pour trouver le nombre n.</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
         <button onClick={verifier} style={styleBouton(true, VERT)}>✓ Vérifier</button>
         <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
@@ -243,14 +246,14 @@ export function SimulationCondensateurMillikan() {
       texte: <>Deux plaques métalliques parallèles, portant des charges opposées, forment un <strong>condensateur plan</strong>. On applique entre elles une tension U (en volt) ;
         elles sont séparées par la distance d. Un champ électrostatique <Vec>E</Vec> existe entre les plaques (petites flèches grises et traits bleus).</>,
       tache: { type: 'qcm', q: 'Entre les plaques, le champ électrostatique…', options: ['est perpendiculaire aux plaques et identique en tous les points : il est uniforme', 'est parallèle aux plaques', 'est plus fort près de la plaque positive que près de la plaque négative'], bonne: 0,
-        expl: 'Entre les deux plaques, le champ est perpendiculaire aux plaques, et son vecteur est le même (direction, sens, norme) en tout point : on dit qu’il est uniforme.' } },
+        expl: 'Entre les deux plaques, le champ est perpendiculaire aux plaques, et son vecteur est le même (direction, sens, norme) en tout point : on dit qu’il est uniforme.', indice: "Entre deux plaques parallèles chargées, comment sont orientées les lignes de champ ? Et que dire de leur espacement d’un point à un autre ?" } },
     { id: 'sens', titre: 'Le sens du champ', focus: ['reglages', 'scene'],
       texte: <>Mettez la plaque du <strong>haut</strong> au potentiel positif (bouton « Plaque du haut + »).</>,
       tache: { type: 'action', ok: pol === 'haut+', label: 'Plaque du haut positive', faire: () => setPol('haut+'), consigne: 'Plaque du haut positive' } },
     { id: 'sensE', titre: 'De la plaque + vers la plaque −', focus: ['scene'],
       texte: <>Observez les flèches.</>,
       tache: { type: 'qcm', q: 'Avec la plaque du haut positive, le champ est dirigé…', options: ['vers le bas, de la plaque positive vers la plaque négative', 'vers le haut, de la plaque négative vers la plaque positive', 'horizontalement'], bonne: 0,
-        expl: 'Le champ électrostatique est toujours dirigé de la plaque chargée + vers la plaque chargée −.' } },
+        expl: 'Le champ électrostatique est toujours dirigé de la plaque chargée + vers la plaque chargée −.', indice: "Le champ électrostatique va de la plaque chargée positivement vers la plaque chargée négativement. Repère la plaque positive." } },
     { id: 'regler', titre: 'Régler la tension et la distance', focus: ['reglages'],
       texte: <>Réglez la tension sur <strong>U = 500 V</strong> et la distance entre les plaques sur <strong>d = 2,0 cm</strong>.</>,
       tache: { type: 'action', ok: okE, label: 'U = 500 V, d = 2,0 cm', faire: () => { setU(500); setD(2); }, consigne: 'U = 500 V et d = 2,0 cm' } },
@@ -264,18 +267,18 @@ export function SimulationCondensateurMillikan() {
           'Formule : E = U / d (champ uniforme : on néglige les effets de bord des plaques).',
           'Conversion : d = 2,0 cm = 2,0 × 10⁻² m.',
           `E = 500 / (2,0 × 10⁻²) = ${fmt(EG, 0)} V·m⁻¹ = ${fmt(EG, 0)} N·C⁻¹ (soit 2,5 × 10⁴).`],
-        expl: 'E = U / d = 500 / (2,0 × 10⁻²) = 2,5 × 10⁴ N·C⁻¹ (ou V·m⁻¹).' } },
+        expl: 'E = U / d = 500 / (2,0 × 10⁻²) = 2,5 × 10⁴ N·C⁻¹ (ou V·m⁻¹).', indice: "E = U / d, avec U en volts et d en mètres (2,0 cm = 0,020 m)." } },
     { id: 'unif', titre: 'Un champ uniforme', focus: ['scene', 'mesures'],
       texte: <>Faites glisser le point M (la gouttelette) à différents endroits entre les plaques, en regardant la mesure « Champ E en M ».</>,
       tache: { type: 'qcm', q: 'Quand M se déplace entre les plaques, la norme de E…', options: ['ne change pas : le champ est le même en tout point', 'augmente en se rapprochant de la plaque positive', 'diminue quand M s’éloigne du milieu'], bonne: 0,
-        expl: 'E = U / d ne dépend pas de la position de M entre les plaques : c’est ce qui définit un champ uniforme. (Près des bords des plaques, le champ réel se déforme : le modèle les néglige.)' } },
+        expl: 'E = U / d ne dépend pas de la position de M entre les plaques : c’est ce qui définit un champ uniforme. (Près des bords des plaques, le champ réel se déforme : le modèle les néglige.)', indice: "Entre les plaques, le champ est uniforme. Que peut-on en déduire sur sa norme d’un point à un autre ?" } },
     { id: 'dMoitie', titre: 'On rapproche les plaques', focus: ['reglages', 'mesures'],
       texte: <>Gardez U = 500 V et réglez maintenant <strong>d = 1,0 cm</strong>.</>,
       tache: { type: 'action', ok: U === 500 && Math.abs(d - 1) < 0.01, label: 'U = 500 V, d = 1,0 cm', faire: () => { setU(500); setD(1); }, consigne: 'U = 500 V et d = 1,0 cm' } },
     { id: 'effetD', titre: 'Effet de la distance', focus: ['mesures', 'calcul'],
       texte: <>Comparez avec le champ obtenu pour d = 2,0 cm (2,5 × 10⁴ N·C⁻¹).</>,
       tache: { type: 'qcm', q: 'À tension constante, quand la distance d est divisée par 2, la norme de E est…', options: ['multipliée par 2', 'divisée par 2', 'inchangée'], bonne: 0,
-        expl: 'E = U / d : à U constant, E est inversement proportionnelle à d. Deux fois plus près, deux fois plus de champ.' } },
+        expl: 'E = U / d : à U constant, E est inversement proportionnelle à d. Deux fois plus près, deux fois plus de champ.', indice: "E = U / d. Si d est divisée par 2 avec la même tension U, que devient E ?" } },
     { id: 'objet', titre: 'Une gouttelette chargée', focus: ['reglages', 'scene'],
       texte: <>Entre les plaques, on place une gouttelette d’huile de rayon <strong>1,0 µm</strong> qui porte une charge négative <strong>q = −3e</strong> (e = 1,602 × 10⁻¹⁹ C). Remettez aussi U = 500 V, d = 2,0 cm, plaque du haut positive.</>,
       tache: { type: 'action', ok: okBase, label: 'Gouttelette q = −3e, U = 500 V, d = 2,0 cm', faire: aBase, consigne: 'r = 1,0 µm, q = −3e, U = 500 V, d = 2,0 cm, plaque du haut +' } },
@@ -291,11 +294,11 @@ export function SimulationCondensateurMillikan() {
           'Charge : |q| = 3 × 1,602 × 10⁻¹⁹ = 4,806 × 10⁻¹⁹ C.',
           `Champ (étape précédente) : E = ${fmt(EG, 0)} N·C⁻¹ (soit 2,5 × 10⁴).`,
           `F = 4,806 × 10⁻¹⁹ × ${fmt(EG, 0)} = ${puiss(FG, 2)} N.`],
-        expl: 'F = |q|·E = 3 × 1,602 × 10⁻¹⁹ × 2,5 × 10⁴ ≈ 1,2 × 10⁻¹⁴ N.' } },
+        expl: 'F = |q|·E = 3 × 1,602 × 10⁻¹⁹ × 2,5 × 10⁴ ≈ 1,2 × 10⁻¹⁴ N.', indice: "F = |q| × E, avec q en coulombs et E la norme du champ calculée précédemment." } },
     { id: 'sensF', titre: 'Le sens de la force', focus: ['scene'],
       texte: <>Observez la flèche rouge.</>,
       tache: { type: 'qcm', q: 'Pour une charge négative, la force F = q·E est…', options: ['de sens opposé à E : ici vers le haut', 'de même sens que E : ici vers le bas', 'horizontale'], bonne: 0,
-        expl: 'q < 0 : F = q·E est de sens opposé à E. Le champ est vers le bas, donc la force est vers le haut.' } },
+        expl: 'q < 0 : F = q·E est de sens opposé à E. Le champ est vers le bas, donc la force est vers le haut.', indice: "F = q × E : quand q est négatif, la force a-t-elle le même sens que E ou le sens opposé ?" } },
     { id: 'calculP', titre: 'Le poids de la gouttelette', focus: ['calcul', 'mesures'],
       texte: <>La gouttelette a aussi un poids <Vec>P</Vec> = m·<Vec>g</Vec>, avec g = 9,81 N·kg⁻¹. Lisez sa masse m dans « Mesures » et calculez la norme P.</>,
       tache: { type: 'num', q: 'Poids de la gouttelette (r = 1,0 µm)', unite: 'N', vrai: PG, tol: 0.02, affiche: v => puiss(v, 2), cs: 2,
@@ -304,11 +307,11 @@ export function SimulationCondensateurMillikan() {
           `Masse (lue dans « Mesures ») : m = ${puiss(mG, 3)} kg (gouttelette sphérique de rayon 1,0 µm, masse volumique de l’huile 886 kg·m⁻³).`,
           'Formule : P = m × g, avec g = 9,81 N·kg⁻¹.',
           `P = ${puiss(mG, 3)} × 9,81 = ${puiss(PG, 2)} N.`],
-        expl: 'P = m·g = 3,71 × 10⁻¹⁵ × 9,81 ≈ 3,6 × 10⁻¹⁴ N, dirigé vers le bas.' } },
+        expl: 'P = m·g = 3,71 × 10⁻¹⁵ × 9,81 ≈ 3,6 × 10⁻¹⁴ N, dirigé vers le bas.', indice: "Masse de la gouttelette : m = ρ × V, avec V = (4/3) × π × r³ pour une sphère (r en mètres). Puis P = m × g." } },
     { id: 'bilan', titre: 'Qui l’emporte ?', focus: ['scene', 'mesures'],
       texte: <>Comparez les longueurs des flèches rouge (force électrique) et bleue (poids) : elles sont à la même échelle l’une par rapport à l’autre.</>,
       tache: { type: 'qcm', q: 'Avec U = 500 V, la résultante des deux forces est…', options: ['dirigée vers le bas : le poids l’emporte, la gouttelette descend', 'dirigée vers le haut : la gouttelette monte', 'nulle : la gouttelette reste immobile'], bonne: 0,
-        expl: 'F ≈ 1,2 × 10⁻¹⁴ N est trois fois plus petite que P ≈ 3,6 × 10⁻¹⁴ N : la résultante est vers le bas.' } },
+        expl: 'F ≈ 1,2 × 10⁻¹⁴ N est trois fois plus petite que P ≈ 3,6 × 10⁻¹⁴ N : la résultante est vers le bas.', indice: "Compare les normes de la force électrique et du poids, et regarde le sens de chacune : la résultante est dirigée dans le sens de la plus grande." } },
     { id: 'calculUeq', titre: 'Quelle tension pour l’équilibre ?', focus: ['calcul'],
       texte: <>Pour que la gouttelette reste immobile, il faut que la force électrique compense exactement le poids : <strong>F = P</strong>, soit |q|·U / d = m·g. Calculez la tension U correspondante (d = 2,0 cm ; |q| = 3e ; m = {puiss(mG, 3)} kg, lue dans « Mesures » ; g = 9,81 N·kg⁻¹).</>,
       tache: { type: 'num', q: 'Tension U qui immobilise la gouttelette', unite: 'V', vrai: UeqG, tol: 0.01, affiche: v => fmt(v, 0),
@@ -319,7 +322,7 @@ export function SimulationCondensateurMillikan() {
           `Numérateur : m·g·d = ${puiss(mG, 3)} × 9,81 × 2,0 × 10⁻² = ${puiss(PG * 0.02, 3)} (unités SI ; d = 2,0 cm = 2,0 × 10⁻² m).`,
           'Dénominateur : |q| = 3 × 1,602 × 10⁻¹⁹ = 4,806 × 10⁻¹⁹ C.',
           `U = ${puiss(PG * 0.02, 3)} / 4,806 × 10⁻¹⁹ = ${fmt(UeqG, 0)} V (soit 1,5 × 10³).`],
-        expl: 'U = m·g·d / |q| = 3,71 × 10⁻¹⁵ × 9,81 × 2,0 × 10⁻² / (3 × 1,602 × 10⁻¹⁹) ≈ 1,5 × 10³ V.' } },
+        expl: 'U = m·g·d / |q| = 3,71 × 10⁻¹⁵ × 9,81 × 2,0 × 10⁻² / (3 × 1,602 × 10⁻¹⁹) ≈ 1,5 × 10³ V.', indice: "À l’équilibre, la force électrique compense le poids : |q| × E = m × g, avec E = U / d. Isole U." } },
     { id: 'equilibre', titre: 'Vérifier avec la simulation', focus: ['reglages', 'scene', 'mesures'],
       texte: <>Réglez la tension sur la valeur calculée (à 1 % près) et vérifiez que les flèches rouge et bleue ont la même longueur.</>,
       tache: { type: 'action', ok: equilibre && pol === 'haut+' && Math.abs(d - 2) < 0.01 && r === 1 && n === -3, label: 'Régler U pour l’équilibre', faire: () => { aBase(); setU(Math.round(UeqG / 10) * 10); },
@@ -327,7 +330,7 @@ export function SimulationCondensateurMillikan() {
     { id: 'millikanIdee', titre: 'L’expérience de Millikan', focus: [],
       texte: <>En 1909-1913, Robert Millikan a utilisé cette méthode : il immobilisait des gouttelettes d’huile entre deux plaques, et calculait leur charge |q| = m·g·d / U. Il a mesuré des centaines de gouttelettes.</>,
       tache: { type: 'qcm', q: 'Qu’a-t-il découvert sur les charges mesurées ?', options: ['elles sont toutes des multiples entiers d’une même valeur, la charge élémentaire e', 'elles prennent toutes les valeurs possibles', 'elles sont toutes égales'], bonne: 0,
-        expl: 'Les charges mesurées étaient toujours des multiples entiers d’une valeur e ≈ 1,6 × 10⁻¹⁹ C : la charge électrique est quantifiée.' } },
+        expl: 'Les charges mesurées étaient toujours des multiples entiers d’une valeur e ≈ 1,6 × 10⁻¹⁹ C : la charge électrique est quantifiée.', indice: "Compare entre elles les charges mesurées par Millikan : que remarque-t-on quand on les divise par la plus petite d’entre elles ?" } },
     { id: 'millikanQ', titre: 'Calculer une charge', focus: ['millikan'],
       texte: <>Une gouttelette de masse 3,71 × 10⁻¹⁵ kg est immobile pour U = 2 270 V, avec d = 2,0 cm. Calculez la valeur absolue de sa charge : |q| = m·g·d / U.</>,
       tache: { type: 'num', q: '|q| de la gouttelette', unite: '× 10⁻¹⁹ C', vrai: qMill * 1e19, tol: 0.015, affiche: v => fmt(v, 2),
@@ -338,7 +341,7 @@ export function SimulationCondensateurMillikan() {
           'Conversion : d = 2,0 cm = 2,0 × 10⁻² m.',
           `Numérateur : m·g·d = 3,71 × 10⁻¹⁵ × 9,81 × 2,0 × 10⁻² = ${puiss(3.71e-15 * 9.81 * 0.02, 3)}.`,
           `|q| = ${puiss(3.71e-15 * 9.81 * 0.02, 3)} / 2 270 = ${puiss(qMill, 3)} C, soit ${fmt(qMill * 1e19, 2)} × 10⁻¹⁹ C.`],
-        expl: '|q| = 3,71 × 10⁻¹⁵ × 9,81 × 2,0 × 10⁻² / 2 270 ≈ 3,2 × 10⁻¹⁹ C.' } },
+        expl: '|q| = 3,71 × 10⁻¹⁵ × 9,81 × 2,0 × 10⁻² / 2 270 ≈ 3,2 × 10⁻¹⁹ C.', indice: "À l’équilibre, |q| × U / d = m × g. Isole |q|, puis exprime-la en 10⁻¹⁹ C." } },
     { id: 'millikanN', titre: 'Combien de charges élémentaires ?', focus: ['millikan'],
       texte: <>Divisez |q| = {fmt(qMill * 1e19, 2)} × 10⁻¹⁹ C (étape précédente) par la charge élémentaire e = 1,602 × 10⁻¹⁹ C.</>,
       tache: { type: 'num', q: 'n = |q| / e (nombre entier)', unite: '', vrai: 2, tol: 0.05, affiche: v => fmt(v, 0),
@@ -348,7 +351,7 @@ export function SimulationCondensateurMillikan() {
           `n = |q| / e = ${fmt(qMill * 1e19, 2)} × 10⁻¹⁹ / 1,602 × 10⁻¹⁹ = ${fmt(qMill / E_CH, 2)}.`,
           'On suppose (hypothèse de Millikan) que la charge est un multiple entier de e, aux incertitudes de mesure près : n est l’entier le plus proche.',
           'n = 2.'],
-        expl: 'n = 3,2 × 10⁻¹⁹ / 1,602 × 10⁻¹⁹ ≈ 2,0 : la gouttelette porte deux charges élémentaires (q = ±2e). Un résultat comme 2,4 serait impossible : n est entier.' } },
+        expl: 'n = 3,2 × 10⁻¹⁹ / 1,602 × 10⁻¹⁹ ≈ 2,0 : la gouttelette porte deux charges élémentaires (q = ±2e). Un résultat comme 2,4 serait impossible : n est entier.', indice: "Divise |q| par la charge élémentaire e = 1,6 × 10⁻¹⁹ C : le résultat doit être très proche d’un nombre entier." } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
         <li>entre deux plaques parallèles chargées, le champ est <strong>uniforme</strong> : perpendiculaire aux plaques, de la plaque + vers la plaque −, de norme E = U / d</li>

@@ -1,7 +1,7 @@
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { useState, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, Frac, fmt, lireProgression } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, Frac, fmt, lireProgression, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 
@@ -220,6 +220,9 @@ function VoletDefi({ defi, setDefi, changerType, placer }) {
           {choix('sensF', [['vers', 'vers B (attraction)'], ['loin', 'à l’opposé de B (répulsion)']])}
         </div>
       </>}
+      <IndiceDefi cache={reussi}>{defi.type === 'sens' ? <>Charges de même signe : répulsion ; de signes opposés : attraction. Chaque force est dirigée selon la droite qui joint les deux corps.</>
+        : defi.type === 'gravite' ? <>F = G × M × m / d², avec d la distance entre le centre de la Terre et celui du satellite (rayon de la Terre + altitude, en mètres).</>
+        : <>Isole d dans la loi de Coulomb F = k × |qA × qB| / d² : d = √(k × |qA × qB| / F). Convertis tout en unités du système international.</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
         <button onClick={verifier} style={styleBouton(true, VERT)}>✓ Vérifier</button>
         <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
@@ -274,14 +277,14 @@ export function SimulationDeuxCorps() {
       texte: <>Deux corps A et B s’attirent ou se repoussent <strong>à distance</strong>. Cette interaction est modélisée par deux forces : {FAB}, exercée par A sur B (flèche rouge, appliquée en B),
         et {FBA}, exercée par B sur A (flèche orange, appliquée en A). Observez-les sur la scène.</>,
       tache: { type: 'qcm', q: 'Comparez les deux forces exercées par les deux corps l’un sur l’autre :', options: ['même direction, même norme, sens opposés', 'même direction, même sens, même norme', 'même direction, sens opposés, mais la plus grosse masse exerce la plus grande force'], bonne: 0,
-        expl: 'C’est le principe des actions réciproques (3ᵉ loi de Newton) : la force de A sur B est l’opposée de la force de B sur A. Les deux forces ont la même norme, même si les masses sont très différentes.' } },
+        expl: 'C’est le principe des actions réciproques (3ᵉ loi de Newton) : la force de A sur B est l’opposée de la force de B sur A. Les deux forces ont la même norme, même si les masses sont très différentes.', indice: "Principe des actions réciproques : compare la direction, le sens et la norme des deux forces que les deux corps exercent l’un sur l’autre." } },
     { id: 'lune', titre: 'La Terre et la Lune', focus: ['reglages', 'scene'],
       texte: <>Choisissez le cas « Terre – Lune » et réglez la distance sur la valeur moyenne <strong>d = 3,84 × 10⁸ m</strong>.</>,
       tache: { type: 'action', ok: okLune, label: 'Terre – Lune, d = 3,84 × 10⁸ m', faire: () => { setCas('lune'); setP(defauts('lune')); }, consigne: 'Cas « Terre – Lune » avec d = 3,84 × 10⁸ m' } },
     { id: 'reciproque', titre: 'Qui attire le plus fort ?', focus: ['scene', 'mesures'],
       texte: <>La Terre est 80 fois plus massive que la Lune. Lisez les forces dans « Mesures » et regardez la longueur des flèches.</>,
       tache: { type: 'qcm', q: 'La force exercée par la Lune sur la Terre est…', options: ['de même norme que celle exercée par la Terre sur la Lune', '80 fois plus faible que celle exercée par la Terre sur la Lune', 'nulle, car la Lune est très légère'], bonne: 0,
-        expl: 'Les deux forces ont exactement la même norme (≈ 2,0 × 10²⁰ N). Ce qui diffère, c’est l’effet : la même force fait beaucoup plus varier le mouvement de la Lune, moins massive, que celui de la Terre.' } },
+        expl: 'Les deux forces ont exactement la même norme (≈ 2,0 × 10²⁰ N). Ce qui diffère, c’est l’effet : la même force fait beaucoup plus varier le mouvement de la Lune, moins massive, que celui de la Terre.', indice: "Même principe des actions réciproques. La Terre est plus massive que la Lune : la masse influe-t-elle sur la norme de la force exercée par l’un sur l’autre ?" } },
     { id: 'calculLune', titre: 'Calculer la force de gravitation', focus: ['calcul'],
       texte: <>La norme de la force de gravitation entre deux corps de masses m<sub>A</sub> et m<sub>B</sub> dont les centres sont distants de d est <strong>F = G·m<sub>A</sub>·m<sub>B</sub> / d²</strong>, avec G = 6,674 × 10⁻¹¹ N·m²·kg⁻². Faites le calcul vous-même avant de lire la mesure.</>,
       tache: { type: 'num', q: 'Norme de la force entre la Terre et la Lune à d = 3,84 × 10⁸ m', unite: 'N', vrai: F_LUNE, tol: 0.03, affiche: v => puiss(v, 2), cs: 2,
@@ -294,7 +297,7 @@ export function SimulationDeuxCorps() {
           `Numérateur : G·M_T·M_L = 6,674 × 10⁻¹¹ × 5,972 × 10²⁴ × 7,35 × 10²² = ${puiss(G * M_T * 7.35e22, 4)}.`,
           `Dénominateur : d² = (3,84 × 10⁸)² = ${puiss(3.84e8 ** 2, 4)} m².`,
           `F = ${puiss(G * M_T * 7.35e22, 4)} / ${puiss(3.84e8 ** 2, 4)} = ${puiss(F_LUNE, 3)} N, soit ${puiss(F_LUNE, 2)} N.`],
-        expl: 'F = 6,674 × 10⁻¹¹ × 5,972 × 10²⁴ × 7,35 × 10²² / (3,84 × 10⁸)² ≈ 1,99 × 10²⁰ N.' } },
+        expl: 'F = 6,674 × 10⁻¹¹ × 5,972 × 10²⁴ × 7,35 × 10²² / (3,84 × 10⁸)² ≈ 1,99 × 10²⁰ N.', indice: "F = G × mA × mB / d², avec les masses en kg et d en mètres (valeurs données dans la simulation). Garde 2 chiffres significatifs." } },
     { id: 'eleves', titre: 'Deux élèves', focus: ['reglages', 'scene'],
       texte: <>Passons à une échelle humaine : deux élèves de <strong>60 kg</strong> et <strong>70 kg</strong>, à <strong>1,0 m</strong> l’un de l’autre.</>,
       tache: { type: 'action', ok: okEleves, label: 'Deux élèves : 60 kg, 70 kg, d = 1,0 m', faire: () => { setCas('eleves'); setP({ mA: 60, mB: 70, d: 1 }); },
@@ -309,11 +312,11 @@ export function SimulationDeuxCorps() {
           'Données : m_A = 60 kg ; m_B = 70 kg ; d = 1,0 m (déjà en mètres).',
           `Numérateur : G·m_A·m_B = 6,674 × 10⁻¹¹ × 60 × 70 = ${puiss(G * 4200, 4)}.`,
           `F = ${puiss(G * 4200, 4)} / 1,0² = ${puiss(G * 4200, 2)} N.`],
-        expl: 'F = 6,674 × 10⁻¹¹ × 60 × 70 / 1,0² ≈ 2,8 × 10⁻⁷ N.' } },
+        expl: 'F = 6,674 × 10⁻¹¹ × 60 × 70 / 1,0² ≈ 2,8 × 10⁻⁷ N.', indice: "F = G × mA × mB / d² : prends les masses des deux élèves (en kg) et la distance indiquée (en m)." } },
     { id: 'poidsComp', titre: 'Pourquoi ne la sent-on pas ?', focus: ['mesures'],
       texte: <>Le poids d’un élève de 70 kg est d’environ 690 N. Comparez avec la force que vous venez de calculer.</>,
       tache: { type: 'qcm', q: 'On ne ressent pas l’attraction gravitationnelle de son voisin parce que…', options: ['elle est environ 10⁹ fois plus faible que le poids : elle est négligeable', 'elle n’existe pas entre deux personnes', 'elle est compensée par la force exercée par le voisin sur nous'], bonne: 0,
-        expl: 'L’interaction existe, mais G est minuscule : elle ne devient importante que si au moins un des corps a une masse astronomique. Les deux forces ne se compensent pas : elles s’appliquent sur deux corps différents.' } },
+        expl: 'L’interaction existe, mais G est minuscule : elle ne devient importante que si au moins un des corps a une masse astronomique. Les deux forces ne se compensent pas : elles s’appliquent sur deux corps différents.', indice: "Compare la valeur de cette force à celle du poids de l’élève : combien de fois plus faible est-elle ? Ressent-on une force aussi faible ?" } },
     { id: 'doubleD', titre: 'On double la distance', focus: ['reglages', 'scene', 'graphe'],
       texte: <>Gardez les mêmes élèves, mais éloignez-les à <strong>d = 2,0 m</strong> (curseur ou glisser sur la scène).</>,
       tache: { type: 'action', ok: okD2, label: 'Régler d = 2,0 m', faire: () => { setCas('eleves'); setP({ mA: 60, mB: 70, d: 2 }); }, consigne: 'Distance d = 2,0 m' } },
@@ -329,25 +332,25 @@ export function SimulationDeuxCorps() {
           `Numérateur : G·m_A·m_B = 6,674 × 10⁻¹¹ × 60 × 70 = ${puiss(G * 4200, 4)}.`,
           'Dénominateur : d² = (2,0)² = 4,0 m².',
           `F = ${puiss(G * 4200, 4)} / 4,0 = ${puiss(G * 4200 / 4, 2)} N.`],
-        expl: 'F = 6,674 × 10⁻¹¹ × 60 × 70 / 2,0² ≈ 7,0 × 10⁻⁸ N, soit quatre fois moins qu’à 1,0 m.' } },
+        expl: 'F = 6,674 × 10⁻¹¹ × 60 × 70 / 2,0² ≈ 7,0 × 10⁻⁸ N, soit quatre fois moins qu’à 1,0 m.', indice: "Même formule, F = G × mA × mB / d², avec cette nouvelle valeur de d (en mètres)." } },
     { id: 'loiD', titre: 'La loi en 1/d²', focus: ['graphe'],
       texte: <>Comparez les deux résultats (à 1,0 m et à 2,0 m) et regardez la courbe de F en fonction de d.</>,
       tache: { type: 'qcm', q: 'Quand la distance entre les centres des deux corps double, la norme de la force est…', options: ['divisée par 4', 'divisée par 2', 'inchangée'], bonne: 0,
-        expl: 'F = G·m_A·m_B / d² : si d est multiplié par 2, d² est multiplié par 4, donc F est divisée par 4.' } },
+        expl: 'F = G·m_A·m_B / d² : si d est multiplié par 2, d² est multiplié par 4, donc F est divisée par 4.', indice: "La norme de la force est proportionnelle à 1 / d². Remplace d par 2 d dans F = G × mA × mB / d²." } },
     { id: 'masse', titre: 'On double une masse', focus: ['reglages', 'mesures'],
       texte: <>Remettez les élèves à 1,0 m l’un de l’autre, puis remplacez l’élève B par un élève de <strong>140 kg</strong> (deux fois plus lourd).</>,
       tache: { type: 'action', ok: okM2, label: 'm_B = 140 kg, d = 1,0 m', faire: () => { setCas('eleves'); setP({ mA: 60, mB: 140, d: 1 }); }, consigne: 'm_A = 60 kg, m_B = 140 kg, d = 1,0 m' } },
     { id: 'loiM', titre: 'Effet de la masse', focus: ['mesures', 'calcul'],
       texte: <>Comparez avec la force obtenue pour 70 kg à 1,0 m (≈ 2,8 × 10⁻⁷ N).</>,
       tache: { type: 'qcm', q: 'Quand la masse m_B double, la norme de la force est…', options: ['multipliée par 2 (proportionnelle à m_B)', 'multipliée par 4', 'inchangée'], bonne: 0,
-        expl: 'F = G·m_A·m_B / d² est proportionnelle à chacune des deux masses : doubler m_B double F.' } },
+        expl: 'F = G·m_A·m_B / d² est proportionnelle à chacune des deux masses : doubler m_B double F.', indice: "La norme de la force est proportionnelle au produit mA × mB. Que devient F quand l’une des deux masses est multipliée par 2 ?" } },
     { id: 'elec', titre: 'Passons aux charges électriques', focus: ['reglages', 'scene'],
       texte: <>Deux corps portant des charges électriques q<sub>A</sub> et q<sub>B</sub> exercent aussi l’un sur l’autre des forces : c’est l’<strong>interaction électrostatique</strong>. Choisissez deux boules de <strong>+10 nC</strong> chacune, à <strong>10 cm</strong>.</>,
       tache: { type: 'action', ok: okPP, label: 'q_A = q_B = +10 nC, d = 10 cm', faire: () => { setCas('boules'); setP({ qA: 10, qB: 10, d: 10 }); }, consigne: 'q_A = +10 nC, q_B = +10 nC, d = 10 cm' } },
     { id: 'repulsion', titre: 'Des charges de même signe', focus: ['scene'],
       texte: <>Observez le sens des flèches de force.</>,
       tache: { type: 'qcm', q: 'Deux charges de même signe…', options: ['se repoussent : chaque force est dirigée à l’opposé de l’autre corps', 's’attirent : chaque force est dirigée vers l’autre corps', 'n’interagissent pas'], bonne: 0,
-        expl: 'Charges de même signe : interaction répulsive. Charges de signes opposés : interaction attractive.' } },
+        expl: 'Charges de même signe : interaction répulsive. Charges de signes opposés : interaction attractive.', indice: "Rappelle la règle d’interaction entre charges : même signe ou signes opposés, attraction ou répulsion ? Les forces sont dirigées selon la droite qui joint les deux corps." } },
     { id: 'attraction', titre: 'Des charges de signes opposés', focus: ['reglages', 'scene'],
       texte: <>Gardez q<sub>A</sub> = +10 nC et réglez maintenant <strong>q<sub>B</sub> = −10 nC</strong>. Observez les flèches.</>,
       tache: { type: 'action', ok: okPM, label: 'q_B = −10 nC', faire: () => { setCas('boules'); setP({ qA: 10, qB: -10, d: 10 }); }, consigne: 'q_A = +10 nC, q_B = −10 nC, d = 10 cm' } },
@@ -364,7 +367,7 @@ export function SimulationDeuxCorps() {
           'Numérateur : k·|q_A|·|q_B| = 9,0 × 10⁹ × 1,0 × 10⁻⁸ × 1,0 × 10⁻⁸ = 9,0 × 10⁻⁷.',
           'Dénominateur : d² = (0,10)² = 1,0 × 10⁻² m².',
           `F = 9,0 × 10⁻⁷ / 1,0 × 10⁻² = ${puiss(F_COUL, 2)} N.`],
-        expl: 'F = 9,0 × 10⁹ × 10 × 10⁻⁹ × 10 × 10⁻⁹ / (0,10)² = 9,0 × 10⁻⁵ N.' } },
+        expl: 'F = 9,0 × 10⁹ × 10 × 10⁻⁹ × 10 × 10⁻⁹ / (0,10)² = 9,0 × 10⁻⁵ N.', indice: "Loi de Coulomb : F = k × |qA × qB| / d², avec les charges en coulombs et d en mètres (convertis les µC, nC et cm)." } },
     { id: 'atome', titre: 'L’atome d’hydrogène', focus: ['reglages', 'scene'],
       texte: <>Dans le modèle planétaire de l’atome d’hydrogène, un électron (−e) est à R = <strong>53 pm</strong> d’un proton (+e). Choisissez ce cas.</>,
       tache: { type: 'action', ok: okAtome, label: 'Atome d’hydrogène, R = 53 pm', faire: () => { setCas('atome'); setP(defauts('atome')); }, consigne: 'Cas « Atome d’hydrogène » avec d = 53 pm' } },
@@ -380,15 +383,15 @@ export function SimulationDeuxCorps() {
           `Numérateur : k·e² = 9,0 × 10⁹ × (1,602 × 10⁻¹⁹)² = 9,0 × 10⁹ × ${puiss(E_CH ** 2, 4)} = ${puiss(K * E_CH ** 2, 4)}.`,
           `Dénominateur : R² = (5,3 × 10⁻¹¹)² = ${puiss((53e-12) ** 2, 4)} m².`,
           `F = ${puiss(K * E_CH ** 2, 4)} / ${puiss((53e-12) ** 2, 4)} = ${puiss(F_ATOME, 2)} N.`],
-        expl: 'F = 9,0 × 10⁹ × (1,602 × 10⁻¹⁹)² / (53 × 10⁻¹²)² ≈ 8,2 × 10⁻⁸ N. Petite valeur… mais appliquée à un électron de 9 × 10⁻³¹ kg !' } },
+        expl: 'F = 9,0 × 10⁹ × (1,602 × 10⁻¹⁹)² / (53 × 10⁻¹²)² ≈ 8,2 × 10⁻⁸ N. Petite valeur… mais appliquée à un électron de 9 × 10⁻³¹ kg !', indice: "Proton et électron ont des charges égales (en valeur absolue) à e = 1,6 × 10⁻¹⁹ C : F = k × e² / d², avec d en mètres." } },
     { id: 'compare', titre: 'Gravitation ou électrostatique ?', focus: ['compar'],
       texte: <>Le cadre « Comparer les deux interactions » calcule aussi la force de <em>gravitation</em> entre le proton (1,673 × 10⁻²⁷ kg) et l’électron (9,109 × 10⁻³¹ kg) à la même distance.</>,
       tache: { type: 'qcm', q: 'Dans l’atome, la force électrostatique est… la force de gravitation.', options: ['environ 10³⁹ fois plus grande que', 'environ 10³ fois plus grande que', 'du même ordre de grandeur que'], bonne: 0,
-        expl: `F_élec ≈ ${puiss(F_ATOME, 2)} N et F_grav ≈ ${puiss(F_GATOME, 2)} N : le rapport vaut ≈ ${puiss(F_ATOME / F_GATOME, 2)}. À l’échelle atomique, la gravitation est totalement négligeable ; c’est l’électrostatique qui assemble les atomes et les molécules.` } },
+        expl: `F_élec ≈ ${puiss(F_ATOME, 2)} N et F_grav ≈ ${puiss(F_GATOME, 2)} N : le rapport vaut ≈ ${puiss(F_ATOME / F_GATOME, 2)}. À l’échelle atomique, la gravitation est totalement négligeable ; c’est l’électrostatique qui assemble les atomes et les molécules.`, indice: "Calcule le rapport entre la force électrostatique et la force gravitationnelle dans l’atome, puis donne son ordre de grandeur (une puissance de 10)." } },
     { id: 'analogie', titre: 'Deux lois, une même forme', focus: [],
       texte: <>Comparez F = G·m<sub>A</sub>·m<sub>B</sub> / d² et F = k·|q<sub>A</sub>|·|q<sub>B</sub>| / d².</>,
       tache: { type: 'qcm', q: 'Quelle est la principale différence entre les deux interactions ?', options: ['la gravitation est toujours attractive ; l’interaction électrostatique peut être attractive ou répulsive', 'la gravitation varie en 1/d et l’électrostatique en 1/d²', 'seule la gravitation obéit au principe des actions réciproques'], bonne: 0,
-        expl: 'Les deux lois ont la même forme (proportionnelles au produit des « charges » — masses ou charges électriques — et en 1/d²). Les masses sont toujours positives : la gravitation est toujours attractive. Les charges ont deux signes : l’interaction peut être répulsive.' } },
+        expl: 'Les deux lois ont la même forme (proportionnelles au produit des « charges » — masses ou charges électriques — et en 1/d²). Les masses sont toujours positives : la gravitation est toujours attractive. Les charges ont deux signes : l’interaction peut être répulsive.', indice: "Pense au signe des charges et à la forme des deux lois : laquelle des deux interactions peut être aussi bien attractive que répulsive ? Les deux varient-elles en 1 / d² ?" } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
         <li>deux corps A et B interagissent : <Vec>F</Vec><sub>A/B</sub> = −<Vec>F</Vec><sub>B/A</sub> (même direction, même norme, sens opposés)</li>
