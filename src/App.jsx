@@ -1,103 +1,105 @@
 import { useState, useEffect } from "react";
 import { compter } from "./stats";
-import { SimulationAptitude } from "./simulations/Aptitude";
-import { Simulation1 } from "./simulations/Avancement";
-import { SimulationDosageEtalonnage } from "./simulations/DosageEtalonnage";
-import { BeerLambert1G } from "./simulations/BeerLambert1G";
-import { SimulationBernoulli } from "./simulations/Bernoulli";
 import { BandeauContexte } from "./commun";
 import { CONTEXTES } from "./contextes";
-import { SimulationCLHP } from "./simulations/CLHP";
-import { SimulationCPG } from "./simulations/CPG";
-import { SimulationCPGSM } from "./simulations/CPGSM";
-import { Simulation8 } from "./simulations/ChaineMesure";
-import { Simulation7 } from "./simulations/Cristallisation";
-import { SimulationEtalonnageInterne } from "./simulations/EtalonInterne";
-import { Simulation4 } from "./simulations/Hansen";
-import { Simulation9 } from "./simulations/InterLaboratoire";
-import { SimulationPeinture } from "./simulations/Peinture";
-import { Simulation6 } from "./simulations/PointFonctionnement";
-import { SimulationCAN } from "./simulations/QuantumCAN";
-import { Simulation5 } from "./simulations/RegulationNiveau";
-import { Simulation2 } from "./simulations/TitrageDirect";
-import { SimulationTitrageIndirect } from "./simulations/TitrageIndirect";
-import { SimulationIEpH } from "./simulations/IEpH";
-import { Simulation3 } from "./simulations/TitragesElectrochimiques";
-import { SimulationStatiqueFluides } from "./simulations/StatiqueFluides";
-import { SimulationDebits } from "./simulations/DebitsFluides";
-import { SimulationVitesseDebit } from "./simulations/VitesseDebit";
-import { SimulationEchangeur } from "./simulations/Echangeur";
-import { SimulationParoi } from "./simulations/Paroi";
-import { SimulationBouilloire } from "./simulations/Bouilloire";
-import { SimulationReponse } from "./simulations/Reponse";
-import { SimulationDistillation } from "./simulations/Distillation";
-import { SimulationDiagramme } from "./simulations/DiagrammeBinaire";
-import { SimulationRefractometre } from "./simulations/Refractometre";
-import { SimulationMoteurPasAPas } from "./simulations/MoteurPasAPas";
-import { SimulationMoteurCode } from "./simulations/MoteurCode";
-import { SimulationBoussole } from "./simulations/Boussole";
-import { SimulationDiffraction } from "./simulations/Diffraction";
-import { SimulationSon } from "./simulations/Son";
-import { SimulationEchographe } from "./simulations/Echographe";
-import { SimulationMachinesThermiques } from "./simulations/MachinesThermiques";
-import { SimulationInterferences } from "./simulations/Interferences";
-import { SimulationAcidesBases } from "./simulations/AcidesBases";
-import { SimulationEsterification } from "./simulations/Esterification";
-import { SimulationChampForce } from "./simulations/ChampForce";
-import { SimulationDeuxCorps } from "./simulations/DeuxCorps";
-import { SimulationCondensateurMillikan } from "./simulations/CondensateurMillikan";
-import { SimulationElectrisation } from "./simulations/Electrisation";
-import { SimulationMouvementSysteme } from "./simulations/MouvementSysteme";
-import { SimulationMouvementReferentiel } from "./simulations/MouvementReferentiel";
-import { SimulationAtomesMolecules } from "./simulations/AtomesMolecules";
-import { SimulationFamillesChimiques } from "./simulations/FamillesChimiques";
-import { SimulationForcesVecteurs } from "./simulations/ForcesVecteurs";
-import { SimulationPrincipeInertie } from "./simulations/PrincipeInertie";
-import { SimulationDissolution } from "./simulations/Dissolution";
-import { SimulationDilution } from "./simulations/Dilution";
-import { SimulationMelanges } from "./simulations/Melanges";
-import { SimulationRefraction } from "./simulations/Refraction";
-import { SimulationLentille } from "./simulations/Lentille";
-import { SimulationSpectres } from "./simulations/Spectres";
-import { SimulationCircuits } from "./simulations/Circuits";
-import { SimulationLoiOhm } from "./simulations/LoiOhm";
-import { SimulationDebitCharges } from "./simulations/DebitCharges";
-import { SimulationDiffractionRX } from "./simulations/DiffractionRX";
-import { SimulationMailles } from "./simulations/MaillesCristallines";
-import { SimulationRMN } from "./simulations/RMNProton";
 import { Pic, Emo, PictosSprite } from "./Pictos";
-import { SimulationRMNC2D } from "./simulations/RMNCarbone2D";
-import { SimulationPuissanceJoule } from "./simulations/PuissanceJoule";
-import { SimulationCaracPile } from "./simulations/CaracPile";
-import { SimulationISS } from "./simulations/ISS";
-import { SimulationSolubilite } from "./simulations/Solubilite";
-import { SimulationAPropos } from "./simulations/APropos";
-import { SimulationAtelierDonnees } from "./simulations/AtelierDonnees";
-import { SimulationAtelierGraphique } from "./simulations/AtelierGraphique";
-import { SimulationAtelierRealiser } from "./simulations/AtelierRealiser";
-import { SimulationAtelierAnalyser } from "./simulations/AtelierAnalyser";
-import { SimulationAtelierValider } from "./simulations/AtelierValider";
-import { SimulationIncertitudeType } from "./simulations/IncertitudeType";
-import { SimulationEntrainement, SimulationChapitre } from "./simulations/Entrainement";
-import { JeuxMenu } from "./simulations/JeuxEscape";
-import { SimulationCompte } from "./simulations/Compte";
 import { ToastRecompense } from "./ToastRecompense";
-import { SimulationSuiviProf } from "./simulations/SuiviProf";
 import { useSession, restaurer, estEleve, estProf } from "./serveur";
 import { chapitresDuNiveau } from "./chapitres";
 import { SuiviTemps, nomsSim } from "./suivi";
 import { ModeParDefaut } from "./ModeParDefaut";
 import CadreMission from "./CadreMission";
 import { missionEnCours } from "./mission";
-import { SimulationEscapeKepler } from "./simulations/EscapeKepler";
-import { SimulationEscapeAqua } from "./simulations/EscapeAqua";
-import { SimulationHistoireLabo } from "./simulations/HistoireLabo";
 import { ProchaineEtape } from "./ProchaineEtape";
 import { EnTete } from "./EnTete";
 import { PiedDePage } from "./PiedDePage";
 import { AccueilSite } from "./AccueilSite";
 import { resoudreCode } from "./resoudreCode";
 import { DESCRIPTIONS } from "./descriptions";
+import { paresseux, EnChargement } from "./chargement";
+const SimulationAptitude = paresseux(() => import("./simulations/Aptitude"), "SimulationAptitude");
+const Simulation1 = paresseux(() => import("./simulations/Avancement"), "Simulation1");
+const SimulationDosageEtalonnage = paresseux(() => import("./simulations/DosageEtalonnage"), "SimulationDosageEtalonnage");
+const BeerLambert1G = paresseux(() => import("./simulations/BeerLambert1G"), "BeerLambert1G");
+const SimulationBernoulli = paresseux(() => import("./simulations/Bernoulli"), "SimulationBernoulli");
+const SimulationCLHP = paresseux(() => import("./simulations/CLHP"), "SimulationCLHP");
+const SimulationCPG = paresseux(() => import("./simulations/CPG"), "SimulationCPG");
+const SimulationCPGSM = paresseux(() => import("./simulations/CPGSM"), "SimulationCPGSM");
+const Simulation8 = paresseux(() => import("./simulations/ChaineMesure"), "Simulation8");
+const Simulation7 = paresseux(() => import("./simulations/Cristallisation"), "Simulation7");
+const SimulationEtalonnageInterne = paresseux(() => import("./simulations/EtalonInterne"), "SimulationEtalonnageInterne");
+const Simulation4 = paresseux(() => import("./simulations/Hansen"), "Simulation4");
+const Simulation9 = paresseux(() => import("./simulations/InterLaboratoire"), "Simulation9");
+const SimulationPeinture = paresseux(() => import("./simulations/Peinture"), "SimulationPeinture");
+const Simulation6 = paresseux(() => import("./simulations/PointFonctionnement"), "Simulation6");
+const SimulationCAN = paresseux(() => import("./simulations/QuantumCAN"), "SimulationCAN");
+const Simulation5 = paresseux(() => import("./simulations/RegulationNiveau"), "Simulation5");
+const Simulation2 = paresseux(() => import("./simulations/TitrageDirect"), "Simulation2");
+const SimulationTitrageIndirect = paresseux(() => import("./simulations/TitrageIndirect"), "SimulationTitrageIndirect");
+const SimulationIEpH = paresseux(() => import("./simulations/IEpH"), "SimulationIEpH");
+const Simulation3 = paresseux(() => import("./simulations/TitragesElectrochimiques"), "Simulation3");
+const SimulationStatiqueFluides = paresseux(() => import("./simulations/StatiqueFluides"), "SimulationStatiqueFluides");
+const SimulationDebits = paresseux(() => import("./simulations/DebitsFluides"), "SimulationDebits");
+const SimulationVitesseDebit = paresseux(() => import("./simulations/VitesseDebit"), "SimulationVitesseDebit");
+const SimulationEchangeur = paresseux(() => import("./simulations/Echangeur"), "SimulationEchangeur");
+const SimulationParoi = paresseux(() => import("./simulations/Paroi"), "SimulationParoi");
+const SimulationBouilloire = paresseux(() => import("./simulations/Bouilloire"), "SimulationBouilloire");
+const SimulationReponse = paresseux(() => import("./simulations/Reponse"), "SimulationReponse");
+const SimulationDistillation = paresseux(() => import("./simulations/Distillation"), "SimulationDistillation");
+const SimulationDiagramme = paresseux(() => import("./simulations/DiagrammeBinaire"), "SimulationDiagramme");
+const SimulationRefractometre = paresseux(() => import("./simulations/Refractometre"), "SimulationRefractometre");
+const SimulationMoteurPasAPas = paresseux(() => import("./simulations/MoteurPasAPas"), "SimulationMoteurPasAPas");
+const SimulationMoteurCode = paresseux(() => import("./simulations/MoteurCode"), "SimulationMoteurCode");
+const SimulationBoussole = paresseux(() => import("./simulations/Boussole"), "SimulationBoussole");
+const SimulationDiffraction = paresseux(() => import("./simulations/Diffraction"), "SimulationDiffraction");
+const SimulationSon = paresseux(() => import("./simulations/Son"), "SimulationSon");
+const SimulationEchographe = paresseux(() => import("./simulations/Echographe"), "SimulationEchographe");
+const SimulationMachinesThermiques = paresseux(() => import("./simulations/MachinesThermiques"), "SimulationMachinesThermiques");
+const SimulationInterferences = paresseux(() => import("./simulations/Interferences"), "SimulationInterferences");
+const SimulationAcidesBases = paresseux(() => import("./simulations/AcidesBases"), "SimulationAcidesBases");
+const SimulationEsterification = paresseux(() => import("./simulations/Esterification"), "SimulationEsterification");
+const SimulationChampForce = paresseux(() => import("./simulations/ChampForce"), "SimulationChampForce");
+const SimulationDeuxCorps = paresseux(() => import("./simulations/DeuxCorps"), "SimulationDeuxCorps");
+const SimulationCondensateurMillikan = paresseux(() => import("./simulations/CondensateurMillikan"), "SimulationCondensateurMillikan");
+const SimulationElectrisation = paresseux(() => import("./simulations/Electrisation"), "SimulationElectrisation");
+const SimulationMouvementSysteme = paresseux(() => import("./simulations/MouvementSysteme"), "SimulationMouvementSysteme");
+const SimulationMouvementReferentiel = paresseux(() => import("./simulations/MouvementReferentiel"), "SimulationMouvementReferentiel");
+const SimulationAtomesMolecules = paresseux(() => import("./simulations/AtomesMolecules"), "SimulationAtomesMolecules");
+const SimulationFamillesChimiques = paresseux(() => import("./simulations/FamillesChimiques"), "SimulationFamillesChimiques");
+const SimulationForcesVecteurs = paresseux(() => import("./simulations/ForcesVecteurs"), "SimulationForcesVecteurs");
+const SimulationPrincipeInertie = paresseux(() => import("./simulations/PrincipeInertie"), "SimulationPrincipeInertie");
+const SimulationDissolution = paresseux(() => import("./simulations/Dissolution"), "SimulationDissolution");
+const SimulationDilution = paresseux(() => import("./simulations/Dilution"), "SimulationDilution");
+const SimulationMelanges = paresseux(() => import("./simulations/Melanges"), "SimulationMelanges");
+const SimulationRefraction = paresseux(() => import("./simulations/Refraction"), "SimulationRefraction");
+const SimulationLentille = paresseux(() => import("./simulations/Lentille"), "SimulationLentille");
+const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
+const SimulationCircuits = paresseux(() => import("./simulations/Circuits"), "SimulationCircuits");
+const SimulationLoiOhm = paresseux(() => import("./simulations/LoiOhm"), "SimulationLoiOhm");
+const SimulationDebitCharges = paresseux(() => import("./simulations/DebitCharges"), "SimulationDebitCharges");
+const SimulationDiffractionRX = paresseux(() => import("./simulations/DiffractionRX"), "SimulationDiffractionRX");
+const SimulationMailles = paresseux(() => import("./simulations/MaillesCristallines"), "SimulationMailles");
+const SimulationRMN = paresseux(() => import("./simulations/RMNProton"), "SimulationRMN");
+const SimulationRMNC2D = paresseux(() => import("./simulations/RMNCarbone2D"), "SimulationRMNC2D");
+const SimulationPuissanceJoule = paresseux(() => import("./simulations/PuissanceJoule"), "SimulationPuissanceJoule");
+const SimulationCaracPile = paresseux(() => import("./simulations/CaracPile"), "SimulationCaracPile");
+const SimulationISS = paresseux(() => import("./simulations/ISS"), "SimulationISS");
+const SimulationSolubilite = paresseux(() => import("./simulations/Solubilite"), "SimulationSolubilite");
+const SimulationAPropos = paresseux(() => import("./simulations/APropos"), "SimulationAPropos");
+const SimulationAtelierDonnees = paresseux(() => import("./simulations/AtelierDonnees"), "SimulationAtelierDonnees");
+const SimulationAtelierGraphique = paresseux(() => import("./simulations/AtelierGraphique"), "SimulationAtelierGraphique");
+const SimulationAtelierRealiser = paresseux(() => import("./simulations/AtelierRealiser"), "SimulationAtelierRealiser");
+const SimulationAtelierAnalyser = paresseux(() => import("./simulations/AtelierAnalyser"), "SimulationAtelierAnalyser");
+const SimulationAtelierValider = paresseux(() => import("./simulations/AtelierValider"), "SimulationAtelierValider");
+const SimulationIncertitudeType = paresseux(() => import("./simulations/IncertitudeType"), "SimulationIncertitudeType");
+const SimulationEntrainement = paresseux(() => import("./simulations/Entrainement"), "SimulationEntrainement");
+const SimulationChapitre = paresseux(() => import("./simulations/Entrainement"), "SimulationChapitre");
+const JeuxMenu = paresseux(() => import("./simulations/JeuxEscape"), "JeuxMenu");
+const SimulationCompte = paresseux(() => import("./simulations/Compte"), "SimulationCompte");
+const SimulationSuiviProf = paresseux(() => import("./simulations/SuiviProf"), "SimulationSuiviProf");
+const SimulationEscapeKepler = paresseux(() => import("./simulations/EscapeKepler"), "SimulationEscapeKepler");
+const SimulationEscapeAqua = paresseux(() => import("./simulations/EscapeAqua"), "SimulationEscapeAqua");
+const SimulationHistoireLabo = paresseux(() => import("./simulations/HistoireLabo"), "SimulationHistoireLabo");
 
 // ============================================================
 //  MENU — modifiez les noms et icônes ici
@@ -274,7 +276,7 @@ const ORDRE_COMP = [38, 34, 35, 37, 36, 77];
 function construireMenus() {
   const fiche = s => ({ id: s.id, icon: s.icon, label: s.label, desc: DESCRIPTIONS[s.label] });
   return MENUS_ENTETE.map(m => {
-    if (m.key === "JEUX") return { ...m, groupes: [{ sims: [], contenu: ({ aller }) => <JeuxMenu aller={aller} /> }] };
+    if (m.key === "JEUX") return { ...m, groupes: [{ sims: [], contenu: ({ aller }) => <EnChargement><JeuxMenu aller={aller} /></EnChargement> }] };
     if (m.key === "COMP") {
       const sims = SIMULATIONS.filter(s => s.niveau === "COMP").sort((a, b) => ORDRE_COMP.indexOf(a.id) - ORDRE_COMP.indexOf(b.id)).map(fiche);
       return { ...m, groupes: [{ sims }] };
@@ -428,7 +430,7 @@ export default function App() {
       <PictosSprite/>
       <CadreMission mission={mission} naviguer={naviguer}>
         <SuiviTemps simId={activeId} />
-        <div id="zone-simulation"><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></div>
+        <div id="zone-simulation"><EnChargement><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></EnChargement></div>
       </CadreMission>
       <ToastRecompense naviguer={naviguer} />
     </>);
@@ -446,7 +448,7 @@ export default function App() {
         <span style={{ width: 72 }} aria-hidden="true" />
       </div>
       <main style={{ ...styles.main, padding: 'clamp(8px, 2vw, 20px)', animation: 'jeu-entree .7s ease-out .1s both' }}>
-        <div id="zone-simulation" style={{ textAlign: 'left', flex: 1 }}><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></div>
+        <div id="zone-simulation" style={{ textAlign: 'left', flex: 1 }}><EnChargement><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></EnChargement></div>
         <ToastRecompense naviguer={naviguer} />
       </main>
     </div>);
@@ -506,7 +508,7 @@ export default function App() {
                 <BandeauContexte key={`b${activeId}`} id={activeId} contexte={CONTEXTES[activeId]} couleur={active.color} />
                 {(activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81) && <SuiviTemps simId={activeId} />}
                 {estEleve(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81) && <ProchaineEtape key={`pe${activeId}`} simId={activeId} naviguer={naviguer} />}
-                <div id="zone-simulation"><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></div>
+                <div id="zone-simulation"><EnChargement><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></EnChargement></div>
                 {activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 ? <ModeParDefaut simId={activeId} cibleId="zone-simulation" /> : null}
               </div>}
         </div>
