@@ -118,6 +118,14 @@ input:disabled, select:disabled, textarea:disabled { background-color: #f1f5f9; 
 /* Anneau de focus : visible seulement au clavier, et jamais noir (il ressemblait à une « bonne réponse » encadrée) */
 button:focus:not(:focus-visible) { outline: none; }
 button:focus-visible { outline: 2px solid #0ea5e9; outline-offset: 2px; }
+a:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid #0ea5e9; outline-offset: 2px; }
+
+/* Lien d'évitement : invisible sauf quand il reçoit le focus au clavier */
+.lien-evitement { position: absolute; left: 8px; top: -64px; z-index: 1000; background: #0b4f94; color: #fff; padding: 10px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; }
+.lien-evitement:focus { top: 8px; }
+
+/* Mouvement réduit : plus de transitions ni d'animations CSS pour les personnes qui le demandent */
+@media (prefers-reduced-motion: reduce) { * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }
 
 /* ───── Smartphone : champs de formulaire et boutons faciles à toucher ───── */
 @media (max-width: 700px) {
