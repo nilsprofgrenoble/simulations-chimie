@@ -460,7 +460,13 @@ export function useEtatPersistant(cle, initial) {
   const [valeur, setValeur] = useState(() => {
     try {
       const brut = window.localStorage.getItem(cle);
-      if (brut) return JSON.parse(brut);
+      if (brut) {
+        const lu = JSON.parse(brut);
+        // un état sauvegardé par une ancienne version peut manquer de champs : on complète avec les valeurs initiales
+        const init = typeof initial === 'function' ? initial() : initial;
+        if (init && typeof init === 'object' && !Array.isArray(init) && lu && typeof lu === 'object' && !Array.isArray(lu)) return { ...init, ...lu };
+        return lu;
+      }
     } catch { /* valeur illisible : on repart de la valeur initiale */ }
     return typeof initial === 'function' ? initial() : initial;
   });
