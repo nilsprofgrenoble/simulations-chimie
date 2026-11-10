@@ -665,5 +665,9 @@
  "34:tr-type": "SAPP161",
  "34:tr-carbocation": "SAPP162",
  "34:tr-produits": "SAPP163",
- "34:tr-profil": "SAPP164"
+ "34:tr-profil": "SAPP164",
+ "34:se-mode": "SAPP165",
+ "34:se-produit": "SAPP166",
+ "34:se-comparer": "SAPP167",
+ "34:se-vocabulaire": "SAPP168"
 }
