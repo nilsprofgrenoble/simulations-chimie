@@ -78,7 +78,7 @@ const BR_P = polaire(FIXE2D.C2, L, BR_FINAL_ANGLE);
 const H2_P = polaire(FIXE2D.C2, LH, H2_FINAL_ANGLE);
 const ET2_BR = polaire(FIXE2D.C2, 92, BR_FINAL_ANGLE);
 const HT_FINAL = [c30, -s30 + LH];         // H transféré, lié à C3 (vers le haut)
-export const VACANCE2D = polaire(FIXE2D.C2, L, BR_FINAL_ANGLE);   // le carré codé est exactement là où Br viendra
+export const VACANCE2D = polaire(FIXE2D.C2, 28, BR_FINAL_ANGLE);   // le carré codé est collé au carbone, du côté où Br viendra
 
 export const angleVers = (a, b) => Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI;
 const norm360 = x => ((x % 360) + 360) % 360;
@@ -119,7 +119,7 @@ export function fleches2D(u) {
   }
   const dir = doublets2D(u, a).find(d => d.k === 0).ang;
   const rad = dir * Math.PI / 180;
-  return [{ id: 'Br-vers-C', nom: 'Un doublet non liant de Br⁻ attaque le carbone C⁺', de: [a.Br[0] + 13 * Math.cos(rad), a.Br[1] + 13 * Math.sin(rad)], vers: [VACANCE2D[0] + 6, VACANCE2D[1] - 4], courbe: 1 }];
+  return [{ id: 'Br-vers-C', nom: 'Un doublet non liant de Br⁻ attaque le carbone C⁺', de: [a.Br[0] + 13 * Math.cos(rad), a.Br[1] + 13 * Math.sin(rad)], vers: [VACANCE2D[0] + 8, VACANCE2D[1] - 3], courbe: 1 }];
 }
 
 // ═══════════════════════════ VUE 3D (Å, plan moléculaire = plan xy, z = perpendiculaire) ═══════════════════════════

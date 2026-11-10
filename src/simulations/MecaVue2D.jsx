@@ -2,7 +2,7 @@
 import { atomes2D, doublets2D, fleches2D, phases, seg, VACANCE2D, U_FLECHES } from "./mecaModele";
 
 const NOIR = '#0f172a', ROUGE = '#dc2626', BLEU = '#1d4ed8', VERT = '#15803d', VIOLET = '#7c3aed';
-const R_LABEL = 9;   // rayon d'un symbole : la liaison s'arrête avant
+const R_LABEL = 9, RC = 10;   // rayon d'un symbole : la liaison s'arrête avant
 
 // Raccourcit un segment aux extrémités qui portent un symbole
 function coupe(p, q, rp, rq) {
@@ -17,8 +17,8 @@ function Liaison({ p, q, rp = 0, rq = 0, op = 1, tirets = false, w = 2.2, col = 
 }
 
 // Liaison stéréo : coin plein (devant le plan) ou traits fins (derrière le plan). Sommet côté carbone.
-function Stereo({ p, q, rq, devant, op = 1 }) {
-  const [x1, y1, x2, y2] = coupe(p, q, 0, rq);
+function Stereo({ p, q, rp = 0, rq, devant, op = 1 }) {
+  const [x1, y1, x2, y2] = coupe(p, q, rp, rq);
   const dx = x2 - x1, dy = y2 - y1, d = Math.hypot(dx, dy) || 1, nx = -dy / d, ny = dx / d, lg = 5.5;
   if (devant) return <polygon points={`${x1},${y1} ${x2 + nx * lg},${y2 + ny * lg} ${x2 - nx * lg},${y2 - ny * lg}`} fill={NOIR} opacity={op} />;
   const traits = [];
@@ -58,7 +58,7 @@ export function Mol2D({ u, face = 1, avecFleches = true, petit = false, titre })
   const piOp = 1 - seg(u, 0.25, 0.5);
   const piDecal = 4.2;
   // seconde ligne de la double liaison C2=C3 (liaison π), décalée perpendiculairement
-  const dx = a.C3[0] - a.C2[0], dy = a.C3[1] - a.C2[1], dd = Math.hypot(dx, dy), nx = -dy / dd * piDecal, ny = dx / dd * piDecal;
+  const dx = a.C3[0] - a.C2[0], dy = a.C3[1] - a.C2[1], dd = Math.hypot(dx, dy), nx = -dy / dd * piDecal, ny = dx / dd * piDecal, ux = dx / dd, uy = dy / dd;
   const brLibre = u >= 0.5 && u < 0.85;    // Br⁻ visible comme ion avec ses 4 doublets
   const diag = ((dbl[0].ang + 45) * Math.PI) / 180;
   const stereoOp = ph.stereo;
@@ -67,24 +67,24 @@ export function Mol2D({ u, face = 1, avecFleches = true, petit = false, titre })
   return (
     <svg viewBox={petit ? "-110 -100 270 200" : "-125 -105 300 285"} role="img" aria-label={titre || 'Mécanisme réactionnel en 2D'} style={{ width: '100%', maxWidth: petit ? 230 : 560, height: 'auto', display: 'block', background: '#fbfdff', borderRadius: 12 }}>
       {/* squelette */}
-      <Liaison p={a.C1} q={a.C2} rp={R_LABEL + 6} />
-      <Liaison p={a.C2} q={a.C3} />
-      {piOp > 0.02 && <line x1={a.C2[0] + nx} y1={a.C2[1] + ny} x2={a.C3[0] + nx} y2={a.C3[1] + ny} stroke={VIOLET} strokeWidth={2.2} opacity={piOp} strokeLinecap="round" />}
-      <Liaison p={a.C3} q={a.C4} rq={R_LABEL + 6} />
-      <Liaison p={a.C3} q={a.H3} rq={R_LABEL} />
+      <Liaison p={a.C1} q={a.C2} rp={R_LABEL + 6} rq={RC} />
+      <Liaison p={a.C2} q={a.C3} rp={RC} rq={RC} />
+      {piOp > 0.02 && <line x1={a.C2[0] + nx + ux * 9} y1={a.C2[1] + ny + uy * 9} x2={a.C3[0] + nx - ux * 9} y2={a.C3[1] + ny - uy * 9} stroke={VIOLET} strokeWidth={2.2} opacity={piOp} strokeLinecap="round" />}
+      <Liaison p={a.C3} q={a.C4} rp={RC} rq={R_LABEL + 6} />
+      <Liaison p={a.C3} q={a.H3} rp={RC} rq={R_LABEL} />
       {/* H lié à C2 : simple, puis stéréo à la fin */}
-      {!prod && <Liaison p={a.C2} q={a.H2} rq={R_LABEL} />}
-      {prod && <Stereo p={a.C2} q={a.H2} rq={R_LABEL} devant={H2devant} op={stereoOp} />}
-      {prod && stereoOp < 1 && <Liaison p={a.C2} q={a.H2} rq={R_LABEL} op={1 - stereoOp} />}
+      {!prod && <Liaison p={a.C2} q={a.H2} rp={RC} rq={R_LABEL} />}
+      {prod && <Stereo p={a.C2} q={a.H2} rp={RC} rq={R_LABEL} devant={H2devant} op={stereoOp} />}
+      {prod && stereoOp < 1 && <Liaison p={a.C2} q={a.H2} rp={RC} rq={R_LABEL} op={1 - stereoOp} />}
       {/* liaisons qui se défont / se forment */}
       <Liaison p={a.Ht} q={a.Br} rp={R_LABEL} rq={R_LABEL + 1} op={1 - ph.hbrCassee} tirets={ph.hbrAmorce > 0.02} />
-      <Liaison p={a.Ht} q={a.C3} rp={R_LABEL} op={Math.max(ph.htFormee, ph.htLiaison * 0.7)} tirets={ph.htFormee < 0.98} col={ph.htFormee < 0.98 ? VERT : NOIR} />
-      {ph.brApproche > 0.02 && ph.brFormee < 0.98 && <Liaison p={a.C2} q={a.Br} rq={R_LABEL + 1} op={ph.brApproche} tirets col={VERT} />}
-      {ph.brFormee >= 0.98 && !prod && <Liaison p={a.C2} q={a.Br} rq={R_LABEL + 1} />}
-      {prod && <Stereo p={a.C2} q={a.Br} rq={R_LABEL + 2} devant={face > 0} op={stereoOp} />}
-      {prod && stereoOp < 1 && <Liaison p={a.C2} q={a.Br} rq={R_LABEL + 2} op={1 - stereoOp} />}
+      <Liaison p={a.Ht} q={a.C3} rp={R_LABEL} rq={RC} op={Math.max(ph.htFormee, ph.htLiaison * 0.7)} tirets={ph.htFormee < 0.98} col={ph.htFormee < 0.98 ? VERT : NOIR} />
+      {ph.brApproche > 0.02 && ph.brFormee < 0.98 && <Liaison p={a.C2} q={a.Br} rp={RC} rq={R_LABEL + 1} op={ph.brApproche} tirets col={VERT} />}
+      {ph.brFormee >= 0.98 && !prod && <Liaison p={a.C2} q={a.Br} rp={RC} rq={R_LABEL + 1} />}
+      {prod && <Stereo p={a.C2} q={a.Br} rp={RC} rq={R_LABEL + 2} devant={face > 0} op={stereoOp} />}
+      {prod && stereoOp < 1 && <Liaison p={a.C2} q={a.Br} rp={RC} rq={R_LABEL + 2} op={1 - stereoOp} />}
       {/* lacune électronique du carbocation (carré codé) */}
-      {ph.lacune > 0.02 && <rect x={VACANCE2D[0] - 7} y={VACANCE2D[1] - 7} width={14} height={14} fill="white" stroke={BLEU} strokeWidth={2} strokeDasharray="3 2" opacity={ph.lacune} />}
+      {ph.lacune > 0.02 && <rect x={VACANCE2D[0] - 6} y={VACANCE2D[1] - 6} width={12} height={12} fill="white" stroke={BLEU} strokeWidth={2} strokeDasharray="3 2" opacity={ph.lacune} />}
       {/* doublets non liants de Br : un trait par doublet */}
       {dbl.map(d => {
         const r = (R_LABEL + 6) * 1, ca = Math.cos(d.ang * Math.PI / 180), sa = Math.sin(d.ang * Math.PI / 180);
@@ -96,13 +96,15 @@ export function Mol2D({ u, face = 1, avecFleches = true, petit = false, titre })
       {/* symboles */}
       <text x={a.C1[0]} y={a.C1[1] + 6} fontSize="17" fontWeight="700" textAnchor="middle" fill={NOIR}>CH<tspan fontSize="11" dy="4">3</tspan></text>
       <text x={a.C4[0]} y={a.C4[1] + 6} fontSize="17" fontWeight="700" textAnchor="middle" fill={NOIR}>CH<tspan fontSize="11" dy="4">3</tspan></text>
+      <Symbole pos={a.C2} texte="C" />
+      <Symbole pos={a.C3} texte="C" />
       <Symbole pos={a.H3} texte="H" />
       <Symbole pos={a.H2} texte="H" />
       <Symbole pos={a.Ht} texte="H" couleur={u < 0.5 ? VERT : NOIR} />
       <Symbole pos={a.Br} texte="Br" couleur="#9a3412" taille={16} />
       {/* charges et polarité */}
       {ph.charge > 0.05 && <>
-        <g opacity={ph.charge}><circle cx={a.C2[0]} cy={a.C2[1] - 22} r={7} fill="white" stroke={BLEU} strokeWidth={1.6} /><text x={a.C2[0]} y={a.C2[1] - 18.5} fontSize="12" fontWeight="700" textAnchor="middle" fill={BLEU}>+</text></g>
+        <g opacity={ph.charge}><circle cx={a.C2[0]} cy={a.C2[1] - 25} r={7} fill="white" stroke={BLEU} strokeWidth={1.6} /><text x={a.C2[0]} y={a.C2[1] - 21.5} fontSize="12" fontWeight="700" textAnchor="middle" fill={BLEU}>+</text></g>
         {brLibre && <g opacity={ph.charge}><circle cx={a.Br[0] + Math.cos(diag) * 30} cy={a.Br[1] + Math.sin(diag) * 30} r={7} fill="white" stroke={ROUGE} strokeWidth={1.6} /><text x={a.Br[0] + Math.cos(diag) * 30} y={a.Br[1] + Math.sin(diag) * 30 + 3.5} fontSize="13" fontWeight="700" textAnchor="middle" fill={ROUGE}>−</text></g>}
       </>}
       {ph.polarite > 0.05 && <g opacity={ph.polarite} fontSize="13" fontWeight="700">
