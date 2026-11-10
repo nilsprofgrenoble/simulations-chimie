@@ -213,7 +213,7 @@ export function Simulation8({ plotlyReady }) {
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
   useEffect(() => { if (enGuide) setActiveBlock(ETAPES[Math.min(etape, ETAPES.length - 1)].bloc); }, [enGuide, etape]); // eslint-disable-line
   const vRp = passe('rp') ? `Rp = ${fmt(Rp, 0)} Ω` : 'Rp = ?';
-  const vUr = passe('ur') ? `Ur = ${Ur.toFixed(3)} V` : 'Ur = ?';
+  const vUr = passe('ur') ? `Ur = ${fmt(Ur, 3)} V` : 'Ur = ?';
   const vN = passe('n') ? `N = ${N}` : 'N = ?';
   const montreQuantum = passe('quantum'), montreN = passe('n'), montreUr = passe('ur');   // point courant du conditionneur masqué tant que Ur n’est pas calculée (guidé)
 
@@ -323,7 +323,7 @@ export function Simulation8({ plotlyReady }) {
       window.Plotly.react(plotRef.current, [
         {x:[`${canInput} (${canUnite})`], y:[canValReel],
          type:'bar', marker:{color:'#e9a824'},
-         name:`${canInput} = ${canValReel.toFixed(canInput==="Ur"?3:0)} ${canUnite}`, yaxis:'y'},
+         name:`${canInput} = ${fmt(canValReel, canInput==="Ur"?3:0)} ${canUnite}`, yaxis:'y'},
         {x:['N'], y:[montreN ? NcanVal : 0],
          type:'bar', marker:{color:'#2a6099'},
          name:`N = ${montreN ? NcanVal : '?'}`, yaxis:'y2'},
@@ -355,7 +355,7 @@ export function Simulation8({ plotlyReady }) {
           {
             x:`${canInput} (${canUnite})`,
             y: canValReel + canMax*0.08,
-            text:`${canValReel.toFixed(canInput==="Ur"?3:0)} ${canUnite}`,
+            text:`${fmt(canValReel, canInput==="Ur"?3:0)} ${canUnite}`,
             showarrow:false,
             font:{size:12, color:'#e9a824', weight:600},
             yref:'y',
@@ -370,7 +370,7 @@ export function Simulation8({ plotlyReady }) {
           },
           {
             x:0.5, y:-0.35, xref:'paper', yref:'paper',
-            text: montreQuantum ? `⚡ Quantum = ${quantum.toFixed(canInput==="Ur"?4:1)} ${canUnite}/pas` : '',
+            text: montreQuantum ? `⚡ Quantum = ${fmt(quantum, canInput==="Ur"?4:1)} ${canUnite}/pas` : '',
             showarrow:false, font:{size:12, color:'#2a9d8f'}, xanchor:'center'
           },
         ]
@@ -573,7 +573,7 @@ export function Simulation8({ plotlyReady }) {
                     Ur = 5 × R / (Rp + R)
                   </span><br/>
                   <span style={{color:"#888", fontSize:12}}>
-                    R={R}Ω, Rp={fmt(Rp, 0)}Ω → <strong>Ur = {passe('ur') ? Ur.toFixed(3) + ' V' : '?'}</strong>
+                    R={R}Ω, Rp={fmt(Rp, 0)}Ω → <strong>Ur = {passe('ur') ? fmt(Ur, 3) + ' V' : '?'}</strong>
                   </span>
                 </div>
               )}
