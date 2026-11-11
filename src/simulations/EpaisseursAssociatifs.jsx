@@ -36,7 +36,7 @@ const ITT_HASE = simuler3ITT({ famille: "hase" });
 // Fiches techniques (étape 1 du parcours).
 // ---------------------------------------------------------------------------
 
-function FichesTDS() {
+function FichesTDS({ complet = false }) {
   const fiche = (nom, type, citations, couleur) => (
     <div style={{ flex: "1 1 230px", minWidth: 230, background: "#fff", border: `2px solid ${couleur}`, borderRadius: 14, padding: "10px 12px" }}>
       <div style={{ fontWeight: 800, fontSize: 16, color: couleur }}>{nom}</div>
@@ -51,9 +51,12 @@ function FichesTDS() {
       <div style={{ fontWeight: 700, marginBottom: 6 }}>Deux fiches techniques du même fournisseur</div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
         {fiche("Coapur 3025", "Modificateur de rhéologie polyuréthane non ionique",
-          ["« Pure Newtonian rheology »", "« Excellent film build, spatter resistance and levelling »"], INFOS_FAMILLE.heur.couleur)}
+          ["« Pure Newtonian rheology »", "« Excellent film build, spatter resistance and levelling »",
+            ...(complet ? ["« Able to increase high shear viscosity independantly of low shear viscosity »", "« Designed to be used in combination or as sole thickener »",
+              "Dosage : « between 0.5 and 1.5 % […] when used in combination, or between 1 and 3 % when used as sole thickener » (en produit sec sur la formule)"] : [])], INFOS_FAMILLE.heur.couleur)}
         {fiche("Thixol 53 L", "Épaississant acrylique associatif",
-          ["« Strongly pseudoplastic »", "« Prevents settling and sagging without affecting levelling »"], INFOS_FAMILLE.hase.couleur)}
+          ["« Strongly pseudoplastic »", "« Prevents settling and sagging without affecting levelling »",
+            ...(complet ? ["« It thickens in a medium with a pH preferably adjusted between 8 and 9 »", "Dosage : « between 0.1 % and 1 % of dry product on total formulation, which in most cases is below 0.5 % »"] : [])], INFOS_FAMILLE.hase.couleur)}
       </div>
     </div>
   );
@@ -481,7 +484,7 @@ function ZoomGradient({ famille, setFamille, gamma, setGamma, pH = 8.5, setPH, d
         <span style={{ fontSize: 12.5, color: KIT.txt2 }}>{INFOS_FAMILLE[famille].produit}</span>
         {famille === "heur" && setDoseForte && (
           <button type="button" style={stylePetitBouton(doseForte, "#7c3aed")} aria-pressed={doseForte}
-            onClick={() => setDoseForte(!doseForte)}>dose forte</button>
+            onClick={() => setDoseForte(!doseForte)}>➕ Dose forte : beaucoup plus de chaînes</button>
         )}
       </div>
       {(famille === "ase" || famille === "hase") && setPH && (
@@ -847,7 +850,7 @@ export function SimulationEpaisseursAssociatifs() {
   const [doseForteExplo, setDoseForteExplo] = useState(false);
   const [ouvHyp, setOuvHyp] = useState(false);
   const [doseForteGuide, setDoseForteGuide] = useState(false);
-  const [doses, setDoses] = useState({ thixol: 0.2, coapur: 0 });
+  const [doses, setDoses] = useState({ thixol: 0, coapur: 0 });
   const [volet, setVolet] = useState("meca");
   // Sur téléphone, la consigne passe avant le schéma : l’élève lit la question puis regarde.
   const [etroit, setEtroit] = useState(() => typeof window !== "undefined" && window.innerWidth < 720);
@@ -1010,7 +1013,7 @@ export function SimulationEpaisseursAssociatifs() {
       titre: "Pour aller plus loin : le HEUR à forte dose",
       texte: "Le Coapur 3025 n’est pas thixotrope à dose normale. Mais utilisé à forte concentration, " +
         "des gants de molécules voisines peuvent s’attraper entre eux. Sélectionne le Coapur (HEUR), " +
-        "active « dose forte », puis lance la rampe aller-retour.",
+        "active « Dose forte » : beaucoup plus de chaînes apparaissent, alors que le nombre de particules ne change pas. Regarde ce que font les gants en trop, puis lance la rampe aller-retour.",
       tache: {
         type: "qcm",
         q: "Pourquoi le Coapur devient-il alors un peu thixotrope ?",
@@ -1066,8 +1069,6 @@ export function SimulationEpaisseursAssociatifs() {
       tache: {
         type: "action",
         ok: evaluerPeinture(doses).every((c) => c.ok),
-        label: "Le faire pour moi",
-        faire: () => setDoses({ thixol: 0.6, coapur: 0.6 }),
         consigne: "Obtiens les quatre critères au vert : tenue en pot, mur frais, application et nivellement.",
         indice: "Règle d’abord le Thixol pour la viscosité à bas gradient (0,1 et 1 s⁻¹), puis ajoute du Coapur pour remonter la viscosité à 300 s⁻¹, sans dépasser la limite à 1 s⁻¹.",
       },
@@ -1087,6 +1088,7 @@ export function SimulationEpaisseursAssociatifs() {
     if (e === 0) return <FichesTDS />;
     if (e === 1) return <AtelierMotifs montages={montages} setMontages={setMontages} />;
     if (e === 2) return <PanneauLiaisons />;
+    if (e === 11) return <FichesTDS complet />;
     if (e === 12) return <AtelierFormulateur doses={doses} setDoses={setDoses} />;
     const dispos = e >= 10 ? ["hase", "heur", "ase"] : ["hase", "heur"];
     const fam = dispos.includes(familleGuide) ? familleGuide : "hase";

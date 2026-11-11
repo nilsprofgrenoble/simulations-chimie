@@ -143,7 +143,17 @@ const CHAINES_HEUR = [[0, 1], [0, 2], [1, 2], [1, 3], [2, 3]];
 const ORDRE_ASSOC = [0, 5, 2, 7, 4, 9, 1, 6, 3, 8]; // ordre de rupture : réparti dans l’image
 const REPOS = 45 * S; // distance du point d’attache au bord de la particule, quand le gant tient
 
-function sceneHEUR({ fAssoc, fAuto }) {
+// Dose forte : des chaînes en plus. Les particules sont déjà « saturées » (tous leurs sites sont pris) : les gants en trop
+// ne trouvent plus de particule et s’attrapent entre eux. Trois paires de chaînes dans les zones libres de l’image.
+// axe « h » : gants face à face horizontalement ; axe « v » : verticalement.
+const PAIRES_AUTO = [
+  { axe: "h", A: [{ x: 290, y: 300 }, { x: 405, y: 300 }], B: [{ x: 465, y: 300 }, { x: 555, y: 300 }] },
+  { axe: "h", A: [{ x: 365, y: 32 }, { x: 425, y: 32 }], B: [{ x: 485, y: 32 }, { x: 545, y: 32 }] },
+  { axe: "v", A: [{ x: 45, y: 125 }, { x: 45, y: 180 }], B: [{ x: 45, y: 240 }, { x: 45, y: 295 }] },
+];
+const ORDRE_AUTO = [0, 2, 1];
+
+function sceneHEUR({ fAssoc, fAuto, doseForte = false }) {
   const gants = [];
   const chaines = [];
   CHAINES_HEUR.forEach(([i, j], k) => {
@@ -161,17 +171,24 @@ function sceneHEUR({ fAssoc, fAuto }) {
     gants.push({ ...pb, a: angleDeg(u), tient: tenuB, part: B, type: "assoc" });
     chaines.push([pa, pb]);
   });
-  // Deux chaînes libres dont les gants s’attrapent entre eux seulement à dose forte.
-  const ok = fAuto > 0.5;
-  const dE = ok ? 0 : 22;
-  const E = [{ x: 290, y: 300 }, { x: 405 - dE, y: 300 }];
-  const F = [{ x: 465 + dE, y: 300 }, { x: 555, y: 300 }];
-  gants.push({ ...E[0], a: 180, tient: false, type: "libre" }, { ...E[1], a: 0, tient: ok, type: "auto" },
-    { ...F[0], a: 180, tient: ok, type: "auto" }, { ...F[1], a: 0, tient: false, type: "libre" });
-  chaines.push(E, F);
+  let nbAuto = 0;
+  if (doseForte) {
+    const nbPaires = Math.round(PAIRES_AUTO.length * fAuto);
+    PAIRES_AUTO.forEach((pr, k) => {
+      const ok = ORDRE_AUTO.indexOf(k) < nbPaires;
+      if (ok) nbAuto++;
+      const d = ok ? 0 : 22;
+      const h = pr.axe === "h";
+      const A = pr.A.map((p) => ({ ...p })), B = pr.B.map((p) => ({ ...p }));
+      if (h) { A[1].x -= d; B[0].x += d; } else { A[1].y -= d; B[0].y += d; }
+      gants.push({ ...A[0], a: h ? 180 : -90, tient: false, type: "libre" }, { ...A[1], a: h ? 0 : 90, tient: ok, type: "auto" },
+        { ...B[0], a: h ? 180 : -90, tient: ok, type: "auto" }, { ...B[1], a: h ? 0 : 90, tient: false, type: "libre" });
+      chaines.push(A, B);
+    });
+  }
   const compte = {
     assoc: [gants.filter((g) => g.type === "assoc" && g.tient).length, gants.filter((g) => g.type === "assoc").length],
-    auto: [ok ? 1 : 0, 1],
+    auto: [nbAuto, doseForte ? PAIRES_AUTO.length : 0],
   };
   return { gants, chaines, compte };
 }
@@ -343,7 +360,7 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
       charges = placer(4, [21, 18, 20, 19], obst, 11, { x0: 20, x1: W - 20, y0: 12, y1: H - 12 });
     } else if (famille === "heur") {
       for (const f of [1, 0]) {
-        const s = sceneHEUR({ fAssoc: f, fAuto: f });
+        const s = sceneHEUR({ fAssoc: f, fAuto: f, doseForte: true });
         s.chaines.forEach((c) => { obst = obst.concat(obstacleChaine(c, 14)); });
         s.gants.forEach((g) => obst.push({ x: g.x, y: g.y, r: 44 }));
       }
@@ -389,7 +406,7 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
     );
     compte = <>Crochets accrochés : <b>{s.compte.crochet[0]}</b> paires sur {s.compte.crochet[1]}</>;
   } else if (famille === "heur") {
-    const s = sceneHEUR({ fAssoc: fr.assoc, fAuto: fr.auto });
+    const s = sceneHEUR({ fAssoc: fr.assoc, fAuto: fr.auto, doseForte });
     lignes = s.chaines.map((c) => onduler(c, 7, 55)); rayonEau = 4 + 14 * fr.assoc;
     dessin = (
       <g>
@@ -402,7 +419,7 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
       </g>
     );
     compte = <>Gants accrochés à une particule : <b>{s.compte.assoc[0]}</b> sur {s.compte.assoc[1]}
-      {doseForte && <> · gants accrochés entre eux : <b>{s.compte.auto[0]}</b> paire sur 1</>}</>;
+      {doseForte && <> · gants accrochés entre eux : <b>{s.compte.auto[0]}</b> paire{s.compte.auto[0] > 1 ? "s" : ""} sur {s.compte.auto[1]}</>}</>;
     dessin = <>{dessin}{s.gants.map((g, i) => <Gant key={"g" + i} x={g.x} y={g.y} a={g.a} ouvert={!g.tient} />)}</>;
   } else {
     const s = sceneASE({ ion });
@@ -442,6 +459,13 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
         {famille === "heur" && decor.charges.map((p, i) => <Particule key={"c" + i} p={p} />)}
       </svg>
       <div style={{ fontSize: 14, color: KIT.txt, marginTop: 6 }}>{compte}</div>
+      {famille === "heur" && doseForte && (
+        <div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 4, padding: "6px 8px", borderRadius: 8, background: "#f5f3ff", border: "1px solid #c4b5fd" }}>
+          Dose forte : il y a plus de chaînes que de particules. Les particules (rouges) sont saturées, tous leurs sites sont pris :
+          les gants en trop ne trouvent plus de particule et <b>s’attrapent entre eux</b> (trois paires en bas, en haut à droite et à gauche).
+          Ces liaisons gant-gant sont lâches : elles cèdent au cisaillement et se reforment lentement, d’où la thixotropie.
+        </div>
+      )}
       {eau && (
         <div style={{ fontSize: 14, color: KIT.txt, marginTop: 4 }}>
           Eau libre (blanche, bord gris) : <b>{Math.round(eauLibrePct)} %</b> · eau liée aux chaînes (ambre) : <b>{Math.round(100 - eauLibrePct)} %</b>
