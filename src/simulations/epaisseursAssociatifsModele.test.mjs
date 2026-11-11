@@ -246,4 +246,28 @@ ok(profilFiche({ ...ficheRheo, famille: 'heur' }) === 'Rhéofluidifiant (pseudop
   ok(a.crochet === 0 && a.assoc === 0 && a.auto === 0, 'ASE : aucune liaison');
 }
 
+// ---------- 6. Atelier du formulateur ----------
+{
+  const imp = await import('./epaisseursAssociatifsModele.js');
+  const { etaPeinture, evaluerPeinture, regenerationPeinture, DOSES_REF } = imp;
+  ok(Math.abs(etaPeinture(1, { thixol: 0, coapur: 0 }) - PARAMS.hase.etaInf) < 1e-9, 'sans épaississant : viscosité du milieu');
+  procheVal(etaPeinture(1, { thixol: DOSES_REF.thixol, coapur: 0 }), etaStatio('hase', 1, {}), 1e-9, 'dose de référence de Thixol = courbe HASE');
+  procheVal(etaPeinture(1, { thixol: 0, coapur: DOSES_REF.coapur }), etaStatio('heur', 1, {}), 1e-9, 'dose de référence de Coapur = courbe HEUR');
+  const nOk = (d) => evaluerPeinture(d).filter((c) => c.ok).length;
+  const ids = (d) => evaluerPeinture(d).filter((c) => !c.ok).map((c) => c.id);
+  ok(nOk({ thixol: 0.3, coapur: 0.6 }) === 4, `combinaison 0,3 % + 0,6 % : 4 critères (échecs : ${ids({ thixol: 0.3, coapur: 0.6 })})`);
+  ok(nOk({ thixol: 0.4, coapur: 0.4 }) === 4, `combinaison 0,4 % + 0,4 % : 4 critères (échecs : ${ids({ thixol: 0.4, coapur: 0.4 })})`);
+  ok(ids({ thixol: 0.4, coapur: 0 }).includes('appli'), 'Thixol seul : échoue à l’application');
+  for (let c = 0; c <= 3.0001; c += 0.1) ok(nOk({ thixol: 0, coapur: c }) < 4, `Coapur seul (${c.toFixed(1)} %) : jamais les 4 critères`);
+  for (let t = 0; t <= 1.0001; t += 0.05) ok(nOk({ thixol: t, coapur: 0 }) < 4, `Thixol seul (${t.toFixed(2)} %) : jamais les 4 critères`);
+  ok(ids({ thixol: 0, coapur: 0 }).length === 4, 'sans épaississant : aucun critère');
+  // La zone de solutions existe sur la grille des curseurs (pas 0,05 et 0,1) et n’est pas réduite à un point.
+  let solutions = 0;
+  for (let t = 0; t <= 1.0001; t += 0.05) for (let c = 0; c <= 3.0001; c += 0.1) if (nOk({ thixol: t, coapur: c }) === 4) solutions++;
+  ok(solutions >= 8, `au moins 8 réglages gagnants sur la grille (obtenu ${solutions})`);
+  const r = regenerationPeinture({ thixol: 0.3, coapur: 0.6 });
+  ok(r.regeneration > 60 && r.regeneration < 100, 'régénération du mélange entre 60 et 100 %');
+}
+
 console.log(`epaisseursAssociatifsModele.test.mjs : ${nVerifs} vérifications, 0 échec.`);
+

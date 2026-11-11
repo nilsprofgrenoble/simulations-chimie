@@ -7,14 +7,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, LigneMesure, ARetenir, fmt, lireNombre, proche, IndiceDefi } from "../commun";
+  BoutonsModes, Curseur, LigneMesure, ARetenir, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import { SceneMoleculaire, LegendeScene, IconeGant, IconeCrochet, IconeParticule } from "./EpaisseursScene";
 import {
   PARAMS, ZONES, zoneDeGradient,
   lambdaStatio, cinetiqueReseau, etaStatio, etaInstantane,
   simulerRappe, hysteresisMoyenne, simuler3ITT,
-  tirerFicheTDS, questionsDefi,
+  tirerFicheTDS, questionsDefi, etaPeinture, evaluerPeinture, DOSES_REF,
 } from "./epaisseursAssociatifsModele";
 
 const SIM_ID = 100;
@@ -218,7 +218,7 @@ function PanneauLiaisons() {
 // Courbe η(γ̇) en log-log, avec les bandes de gradient.
 // ---------------------------------------------------------------------------
 
-function CourbeLogLog({ series, gammaCur = null }) {
+function CourbeLogLog({ series, gammaCur = null, cibles = [] }) {
   const refCanvas = useRef(null);
   useEffect(() => {
     const canvas = refCanvas.current;
@@ -228,6 +228,7 @@ function CourbeLogLog({ series, gammaCur = null }) {
     const xMin = Math.log10(GAMMA_MIN), xMax = Math.log10(GAMMA_MAX);
     let etaMin = Infinity, etaMax = -Infinity;
     for (const s of series) for (const p of s.points) { etaMin = Math.min(etaMin, p.eta); etaMax = Math.max(etaMax, p.eta); }
+    for (const c of cibles) { etaMin = Math.min(etaMin, c.min); etaMax = Math.max(etaMax, c.max); }
     let yMin = Math.max(Math.log10(etaMin) - 0.3, 2);
     let yMax = Math.log10(etaMax) + 0.3;
     if (yMax - yMin < 1.3) { // courbe presque plate : on garde au moins une décade et demie d’échelle
@@ -236,6 +237,10 @@ function CourbeLogLog({ series, gammaCur = null }) {
     }
     const px = (g) => marge.g + (Math.log10(g) - xMin) / (xMax - xMin) * (L - marge.g - marge.d);
     const py = (eta) => H - marge.b - (Math.log10(eta) - yMin) / (yMax - yMin) * (H - marge.h - marge.b);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 1;
+    ctx.setLineDash([]);
     ctx.clearRect(0, 0, L, H);
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, L, H);
@@ -283,6 +288,16 @@ function CourbeLogLog({ series, gammaCur = null }) {
       ctx.stroke();
       ctx.setLineDash([]);
     }
+    // Cibles du cahier des charges : barre verticale verte (respectée) ou rouge (non respectée).
+    for (const c of cibles) {
+      const x = px(c.gamma);
+      ctx.strokeStyle = c.ok ? "#16a34a" : "#dc2626";
+      ctx.globalAlpha = 0.55;
+      ctx.lineWidth = 12;
+      ctx.lineCap = "butt";
+      ctx.beginPath(); ctx.moveTo(x, py(c.max)); ctx.lineTo(x, py(c.min)); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
     // Curseur de gradient courant.
     if (gammaCur) {
       const x = px(gammaCur);
@@ -300,7 +315,7 @@ function CourbeLogLog({ series, gammaCur = null }) {
     ctx.rotate(-Math.PI / 2);
     ctx.fillText("η (mPa·s)", 0, 0);
     ctx.restore();
-  }, [series, gammaCur]);
+  }, [series, gammaCur, cibles]);
   return <canvas ref={refCanvas} width={1000} height={400} role="img" aria-label="Courbe de la viscosité η en fonction du gradient de vitesse γ̇, échelles logarithmiques"
     style={{ width: "100%", height: "auto", borderRadius: 10, border: "1px solid #cbd5e1" }} />;
 }
@@ -589,6 +604,57 @@ function BancExploration({ famille, doseForte, pH, avecITT = true, masquerRegene
 }
 
 // ---------------------------------------------------------------------------
+// Atelier du formulateur : doses de Thixol 53 L et de Coapur 3025, cahier des charges d’une peinture mate.
+// ---------------------------------------------------------------------------
+
+function AtelierFormulateur({ doses, setDoses }) {
+  const res = useMemo(() => evaluerPeinture(doses), [doses]);
+  const serie = useMemo(() => {
+    const points = [];
+    for (let i = 0; i <= 90; i++) {
+      const g = GAMMA_MIN * Math.pow(GAMMA_MAX / GAMMA_MIN, i / 90);
+      points.push({ gamma: g, eta: etaPeinture(g, doses) });
+    }
+    return [{ points, couleur: "#0f172a", libelle: "peinture" }];
+  }, [doses]);
+  const cibles = res.filter((c) => c.gamma).map((c) => ({ gamma: c.gamma, min: c.min, max: c.max, ok: c.ok }));
+  const nOk = res.filter((c) => c.ok).length;
+  return (
+    <div style={{ ...styleBoite, marginTop: 10 }}>
+      <div style={{ fontWeight: 700, marginBottom: 4 }}>Atelier du formulateur : peinture mate</div>
+      <Curseur nom="Thixol 53 L (HASE), % sec sur la formule" valeur={doses.thixol} onChange={(v) => setDoses({ ...doses, thixol: v })}
+        min={0} max={1} pas={0.05} unite="%" decimales={2} couleur={INFOS_FAMILLE.hase.couleur} />
+      <Curseur nom="Coapur 3025 (HEUR), % sec sur la formule" valeur={doses.coapur} onChange={(v) => setDoses({ ...doses, coapur: v })}
+        min={0} max={3} pas={0.1} unite="%" decimales={1} couleur={INFOS_FAMILLE.heur.couleur} />
+      <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>
+        Doses de référence du modèle : {fmt(DOSES_REF.thixol, 1)} % de Thixol et {fmt(DOSES_REF.coapur, 1)} % de Coapur (fiches : Thixol en général moins de 0,5 % ; Coapur de 0,5 à 1,5 % en association, de 1 à 3 % seul).
+      </div>
+      <div role="list" aria-label="Cahier des charges" style={{ display: "grid", gap: 4 }}>
+        {res.map((c) => (
+          <div role="listitem" key={c.id} style={{
+            display: "flex", gap: 8, alignItems: "baseline", flexWrap: "wrap", padding: "6px 8px", borderRadius: 8,
+            background: c.ok ? "#f0fdf4" : "#fef2f2", border: `1px solid ${c.ok ? "#86efac" : "#fca5a5"}`,
+          }}>
+            <span aria-hidden="true" style={{ fontWeight: 800, color: c.ok ? "#15803d" : "#b91c1c" }}>{c.ok ? "✓" : "✗"}</span>
+            <span style={{ flex: "1 1 220px", fontSize: 13.5, color: KIT.txt }}>{c.texte}</span>
+            <span style={{ fontWeight: 700, fontSize: 13.5, color: c.ok ? "#15803d" : "#b91c1c" }}>
+              {c.id === "thixo" ? `${fmt(c.valeur, 0)} %` : `${fmt(c.valeur, 0)} mPa·s`}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontWeight: 700, margin: "8px 0", color: nOk === 4 ? "#15803d" : KIT.txt }}>
+        {nOk === 4 ? "Cahier des charges respecté : 4 critères sur 4." : `${nOk} critère${nOk > 1 ? "s" : ""} sur 4 respecté${nOk > 1 ? "s" : ""}.`}
+      </div>
+      <CourbeLogLog series={serie} cibles={cibles} />
+      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>
+        Courbe de viscosité de la peinture. Barres : plage visée pour chaque critère (verte si respectée, rouge sinon).
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Volet défi : une fiche tirée au hasard, un tableau de mesures, quatre questions.
 // ---------------------------------------------------------------------------
 
@@ -713,6 +779,10 @@ function Hypotheses() {
         En réalité, les groupes hydrophobes peuvent aussi s’adsorber sur les particules de liant : le dessin est une simplification pédagogique.</li>
       <li>Le liant (bleu) est un latex : une dispersion aqueuse (on dit aussi émulsion) de très petites particules de polymère. Il est dessiné comme décor, hors échelle : ses particules ne participent pas aux liaisons du modèle.</li>
       <li>Courbe d’écoulement : τ = η × γ̇ avec η la viscosité en régime permanent du modèle (axes linéaires).</li>
+      <li>Atelier du formulateur : les effets du Thixol et du Coapur sont supposés s’additionner (les fiches disent seulement qu’ils se combinent bien)
+        et proportionnels aux doses. Les courbes de référence correspondent à {fmt(DOSES_REF.thixol, 1)} % de Thixol et {fmt(DOSES_REF.coapur, 1)} % de Coapur secs sur la formule ;
+        le niveau de viscosité du Coapur est un choix du modèle.</li>
+      <li>Les quatre critères du cahier des charges sont des ordres de grandeur pédagogiques, pas des normes ni des valeurs de la fiche.</li>
       <li>Rampe : chaque gradient est maintenu 0,8 s. Test 3ITT : 20 s à 1 s⁻¹, 20 s à 256 s⁻¹, 80 s à 1 s⁻¹.</li>
       <li>La scène moléculaire est un dessin pédagogique : une chaîne réelle porte des milliers de motifs,
         et les échelles de taille et de temps ne sont pas réalistes.</li>
@@ -756,6 +826,8 @@ export function SimulationEpaisseursAssociatifs() {
   const [doseForteExplo, setDoseForteExplo] = useState(false);
   const [ouvHyp, setOuvHyp] = useState(false);
   const [doseForteGuide, setDoseForteGuide] = useState(false);
+  const [doses, setDoses] = useState({ thixol: 0.2, coapur: 0 });
+  const [volet, setVolet] = useState("meca");
   // Sur téléphone, la consigne passe avant le schéma : l’élève lit la question puis regarde.
   const [etroit, setEtroit] = useState(() => typeof window !== "undefined" && window.innerWidth < 720);
   useEffect(() => {
@@ -966,6 +1038,19 @@ export function SimulationEpaisseursAssociatifs() {
           Les fiches proposent d’ailleurs cette combinaison, comme dans la formulation de la peinture mate de la simulation « Peinture à l’eau ».</>,
       },
     },
+    {
+      titre: "Régler les doses",
+      texte: "À toi de formuler : règle la dose de Thixol 53 L et celle de Coapur 3025 pour respecter les quatre critères du cahier des charges d’une peinture mate. " +
+        "Les valeurs de viscosité et la courbe se mettent à jour quand tu bouges les curseurs.",
+      tache: {
+        type: "action",
+        ok: evaluerPeinture(doses).every((c) => c.ok),
+        label: "Le faire pour moi",
+        faire: () => setDoses({ thixol: 0.3, coapur: 0.6 }),
+        consigne: "Obtiens les quatre critères au vert : tenue en pot, mur frais, application et nivellement.",
+        indice: "Règle d’abord le Thixol pour la tenue en pot (viscosité à 0,1 s⁻¹), puis ajoute du Coapur pour remonter la viscosité à 1 000 s⁻¹, sans dépasser la limite à 1 s⁻¹.",
+      },
+    },
   ];
 
   const dernier = etapes.length - 1;
@@ -981,6 +1066,7 @@ export function SimulationEpaisseursAssociatifs() {
     if (e === 0) return <FichesTDS />;
     if (e === 1) return <AtelierMotifs montages={montages} setMontages={setMontages} />;
     if (e === 2) return <PanneauLiaisons />;
+    if (e === 12) return <AtelierFormulateur doses={doses} setDoses={setDoses} />;
     const dispos = e >= 10 ? ["hase", "heur", "ase"] : ["hase", "heur"];
     const fam = dispos.includes(familleGuide) ? familleGuide : "hase";
     return (
@@ -1024,15 +1110,23 @@ export function SimulationEpaisseursAssociatifs() {
 
       {mode === "explore" && (
         <>
-          <ZoomGradient
-            famille={familleExplo} setFamille={setFamilleExplo}
-            famillesDispos={["hase", "heur", "ase"]}
-            gamma={gammaExplo} setGamma={setGammaExplo}
-            pH={pHExplo} setPH={setPHExplo}
-            doseForte={doseForteExplo} setDoseForte={setDoseForteExplo}
-            montrerEcoulement
-          />
-          <BancExploration famille={familleExplo} doseForte={doseForteExplo} pH={pHExplo} />
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+            <button type="button" style={stylePetitBouton(volet === "meca", "#334155")} aria-pressed={volet === "meca"} onClick={() => setVolet("meca")}>Comprendre : zoom moléculaire et courbes</button>
+            <button type="button" style={stylePetitBouton(volet === "formulateur", "#334155")} aria-pressed={volet === "formulateur"} onClick={() => setVolet("formulateur")}>Formuler : atelier du formulateur</button>
+          </div>
+          {volet === "formulateur" ? <AtelierFormulateur doses={doses} setDoses={setDoses} /> : (
+            <>
+              <ZoomGradient
+                famille={familleExplo} setFamille={setFamilleExplo}
+                famillesDispos={["hase", "heur", "ase"]}
+                gamma={gammaExplo} setGamma={setGammaExplo}
+                pH={pHExplo} setPH={setPHExplo}
+                doseForte={doseForteExplo} setDoseForte={setDoseForteExplo}
+                montrerEcoulement
+              />
+              <BancExploration famille={familleExplo} doseForte={doseForteExplo} pH={pHExplo} />
+            </>
+          )}
           <div style={{ marginTop: 10 }}>
             <ARetenir titre="À RETENIR">{RETENIR_ESSENTIEL}</ARetenir>
           </div>

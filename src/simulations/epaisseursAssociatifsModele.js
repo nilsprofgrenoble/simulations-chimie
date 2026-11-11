@@ -523,3 +523,52 @@ export function fractionsLiaisons(famille, { gamma = 0.1, lambda = 1, doseForte 
   }
   return { crochet: 0, assoc: 0, auto: 0 };
 }
+
+// ============================================================================
+// Atelier du formulateur : une peinture épaissie par le Thixol 53 L (HASE) et le Coapur 3025 (HEUR).
+// HYPOTHÈSES (à afficher à l'élève) :
+//  1. Les contributions des deux épaississants s'ADDITIONNENT (les fiches disent qu'ils se combinent bien :
+//     ce n'est pas une loi, c'est une simplification).
+//  2. Chaque contribution est PROPORTIONNELLE à la dose (en réalité, l'effet croît plus vite que la dose).
+//  3. Les courbes de référence sont celles du modèle, à la dose de référence : 0,4 % de Thixol sec
+//     (ordre de grandeur de l'exemple de la fiche : 1,3 % de produit à 30 % d'extrait sec) et 1,5 % de Coapur sec
+//     (fiche : 0,5 à 1,5 % en association, 1 à 3 % seul). Le niveau de viscosité du Coapur est un choix du modèle.
+//  4. Le milieu (eau, liant, charges) apporte une viscosité newtonienne de base : PARAMS.hase.etaInf.
+//  5. Les critères sont un cahier des charges PÉDAGOGIQUE en ordres de grandeur (pas des normes).
+// ============================================================================
+
+export const DOSES_REF = { thixol: 0.4, coapur: 1.5 }; // % d'épaississant sec sur la formule
+
+export function etaPeinture(gamma, { thixol = 0, coapur = 0 } = {}) {
+  const base = PARAMS.hase.etaInf;
+  const aT = thixol / DOSES_REF.thixol;
+  const aC = coapur / DOSES_REF.coapur;
+  return base + aT * (etaStatio('hase', gamma, {}) - base) + aC * (etaStatio('heur', gamma, {}) - base);
+}
+
+export function regenerationPeinture({ thixol = 0, coapur = 0 } = {}) {
+  const base = PARAMS.hase.etaInf;
+  const aT = thixol / DOSES_REF.thixol;
+  const aC = coapur / DOSES_REF.coapur;
+  const h = simuler3ITT({ famille: 'hase' });
+  const c = simuler3ITT({ famille: 'heur' });
+  const comb = (eH, eC) => base + aT * (eH - base) + aC * (eC - base);
+  const etaRef = comb(h.etaRef, c.etaRef);
+  const etaFinal = comb(h.etaFinal, c.etaFinal);
+  return { etaRef, etaFinal, regeneration: etaFinal / etaRef * 100 };
+}
+
+// Cahier des charges d'une peinture mate (ordres de grandeur pédagogiques).
+export const CRITERES_PEINTURE = [
+  { id: 'sedim', court: 'Tenue en pot', texte: 'Pas de sédimentation en pot : η(0,1 s⁻¹) d’au moins 8 000 mPa·s', gamma: 0.1, min: 8000, max: 40000, unite: 'mPa·s' },
+  { id: 'affais', court: 'Mur frais', texte: 'Pas d’affaissement sans nuire au nivellement : η(1 s⁻¹) entre 5 000 et 12 000 mPa·s', gamma: 1, min: 5000, max: 12000, unite: 'mPa·s' },
+  { id: 'appli', court: 'Application', texte: 'Peu d’éclaboussures et bon pouvoir garnissant : η(1 000 s⁻¹) entre 800 et 1 800 mPa·s', gamma: 1000, min: 800, max: 1800, unite: 'mPa·s' },
+  { id: 'thixo', court: 'Nivellement', texte: 'Retour progressif de la structure : régénération au test 3ITT entre 60 et 95 %', min: 60, max: 95, unite: '%' },
+];
+
+export function evaluerPeinture(doses) {
+  return CRITERES_PEINTURE.map((c) => {
+    const valeur = c.id === 'thixo' ? regenerationPeinture(doses).regeneration : etaPeinture(c.gamma, doses);
+    return { ...c, valeur, ok: valeur >= c.min && valeur <= c.max };
+  });
+}
