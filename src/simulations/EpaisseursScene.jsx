@@ -73,15 +73,24 @@ function echantillonner(pts, pas = 14) {
 
 // Place des disques sans chevauchement, loin des obstacles (points avec rayon de dégagement).
 function placer(n, rayons, obstacles, graine, zone = { x0: 20, x1: W - 20, y0: 20, y1: H - 20 }, deja = []) {
+  // « Meilleur candidat » : pour chaque disque, on tire plusieurs positions libres et on garde la plus éloignée
+  // des disques déjà posés (et des bords) : le décor se répartit ainsi sur toute la scène, sans amas.
   const rng = mulberry32(graine);
   const out = [];
-  for (let essai = 0; essai < 6000 && out.length < n; essai++) {
-    const r = rayons[out.length % rayons.length];
-    const x = zone.x0 + r + rng() * (zone.x1 - zone.x0 - 2 * r);
-    const y = zone.y0 + r + rng() * (zone.y1 - zone.y0 - 2 * r);
-    if (obstacles.some((o) => Math.hypot(o.x - x, o.y - y) < o.r + r)) continue;
-    if ([...deja, ...out].some((o) => Math.hypot(o.x - x, o.y - y) < o.r + r + 8)) continue;
-    out.push({ x, y, r });
+  for (let k = 0; k < n; k++) {
+    const r = rayons[k % rayons.length];
+    let meilleur = null, dMeilleur = -1;
+    for (let essai = 0, valides = 0; essai < 4000 && valides < 40; essai++) {
+      const x = zone.x0 + r + rng() * (zone.x1 - zone.x0 - 2 * r);
+      const y = zone.y0 + r + rng() * (zone.y1 - zone.y0 - 2 * r);
+      if (obstacles.some((o) => Math.hypot(o.x - x, o.y - y) < o.r + r)) continue;
+      const autres = [...deja, ...out];
+      if (autres.some((o) => Math.hypot(o.x - x, o.y - y) < o.r + r + 8)) continue;
+      valides++;
+      const d = autres.length ? Math.min(...autres.map((o) => Math.hypot(o.x - x, o.y - y) - o.r - r)) : 1e3;
+      if (d > dMeilleur) { dMeilleur = d; meilleur = { x, y, r }; }
+    }
+    if (meilleur) out.push(meilleur);
   }
   return out;
 }
@@ -200,10 +209,10 @@ function sceneHASE({ fCrochet }) {
 
 const Y_ASE = [70, 170, 270];
 function sceneASE({ ion }) {
-  const longueur = 90 + 280 * ion, amp = 11;
+  const longueur = 90 + 440 * ion, amp = 11;
   const chaines = Y_ASE.map((y, c) => {
     const pts = [];
-    const n = 14;
+    const n = 20;
     for (let i = 0; i <= n; i++) {
       const t = i / n;
       pts.push({ x: 40 + t * longueur, y: y + amp * Math.sin(i * 1.3 + c * 1.7) * (0.55 + 0.45 * ion) });
