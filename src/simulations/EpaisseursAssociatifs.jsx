@@ -13,7 +13,7 @@ import {
   PARAMS, ZONES, zoneDeGradient, fractionIonisee,
   lambdaStatio, cinetiqueReseau, etaStatio, etaInstantane,
   simulerRappe, hysteresisMoyenne, simuler3ITT,
-  construireScene, majLiaisons, tirerFicheTDS, questionsDefi,
+  construireScene, majLiaisons, tirerFicheTDS, questionsDefi, mulberry32,
 } from "./epaisseursAssociatifsModele";
 
 const SIM_ID = 100;
@@ -224,7 +224,8 @@ function PanneauLiaisons() {
 
 const STYLE_SCENE = {
   charge: { fond: "#dc2626", bord: "#7f1d1d" }, // mêmes codes que « pigments et charges » du séchage
-  polymere: "#4aa3d8",                         // bleu « liant » du séchage
+  liant: { fond: "#4aa3d8", bord: "#2b6ea3" }, // bleu « liant » du séchage (particules de latex, décor : elles ne s’associent pas)
+  polymere: "#475569",                         // chaîne de l’épaississant (gris ardoise, pour ne pas la confondre avec le liant)
   gant: "#b45309",
   crochet: "#7c3aed",
   assoc: "#0f172a",                            // liaison associative (forte) : longs pointillés
@@ -239,6 +240,31 @@ const Pastille = ({ fond, bord, ligne, pointille }) => {
   return <span style={{ display: "inline-block", width: 11, height: 11, borderRadius: "50%", background: fond, border: `1px solid ${bord || fond}`, verticalAlign: -1, marginRight: 4 }} />;
 };
 
+// Grains de liant (latex) du décor : tirage déterministe, à l’écart des chaînes, des particules et des liaisons possibles.
+function distSegment(px, py, a, b) {
+  const dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy || 1;
+  const t = Math.max(0, Math.min(1, ((px - a.x) * dx + (py - a.y) * dy) / l2));
+  return Math.hypot(px - (a.x + t * dx), py - (a.y + t * dy));
+}
+function grainsDeLiant(scene) {
+  const rng = mulberry32(2024);
+  const segments = [];
+  for (const ch of scene.chaines) {
+    for (let i = 0; i + 1 < ch.points.length; i++) segments.push([ch.points[i], ch.points[i + 1]]);
+    for (const g of ch.groupes) for (const p of scene.particules) segments.push([g, p]);
+  }
+  const grains = [];
+  for (let essai = 0; essai < 4000 && grains.length < 26; essai++) {
+    const r = 8 + Math.floor(rng() * 4);
+    const x = 24 + rng() * (scene.L - 48), y = 24 + rng() * (scene.H - 70);
+    if (scene.particules.some((p) => Math.hypot(p.x - x, p.y - y) < p.r + r + 10)) continue;
+    if (segments.some(([a, b]) => distSegment(x, y, a, b) < r + 14)) continue;
+    if (grains.some((g) => Math.hypot(g.x - x, g.y - y) < g.r + r + 14)) continue;
+    grains.push({ x, y, r });
+  }
+  return grains;
+}
+
 function SceneMoleculaire({ famille, gamma, lambda, doseForte = false, pH = 8.5, masquerLiaisons = false }) {
   const scene = useMemo(
     () => construireScene({ famille, gonflement: famille === "ase" ? fractionIonisee(pH) : 1 }),
@@ -248,6 +274,7 @@ function SceneMoleculaire({ famille, gamma, lambda, doseForte = false, pH = 8.5,
     () => majLiaisons(scene, { gamma, lambda, doseForte }),
     [scene, gamma, lambda, doseForte],
   );
+  const liant = useMemo(() => grainsDeLiant(scene), [scene]);
   // Étiquettes « gant » / « crochet » : une seule par type, sous le premier rencontré.
   const premiers = {};
   for (const ch of scene.chaines) for (const g of ch.groupes) if (!(g.type in premiers)) premiers[g.type] = g;
@@ -267,6 +294,10 @@ function SceneMoleculaire({ famille, gamma, lambda, doseForte = false, pH = 8.5,
         <rect x="0" y="0" width={scene.L} height={scene.H} fill="#f8fafc" />
         {fleche(26, 1)}
         {fleche(scene.H - 26, -1)}
+        {/* Particules de liant (latex) : décor, mêmes codes que le séchage ; elles ne participent pas aux liaisons. */}
+        {liant.map((g, i) => (
+          <circle key={"l" + i} cx={g.x} cy={g.y} r={g.r} fill={STYLE_SCENE.liant.fond} stroke={STYLE_SCENE.liant.bord} strokeWidth="1.2" opacity="0.85" />
+        ))}
         {/* Liaisons intermoléculaires : toutes en pointillés, masquables. */}
         {!masquerLiaisons && (
           <g>
@@ -321,14 +352,15 @@ function SceneMoleculaire({ famille, gamma, lambda, doseForte = false, pH = 8.5,
         ))}
       </svg>
       <figcaption style={{ fontSize: 13, color: KIT.txt, marginTop: 4, lineHeight: 1.5 }}>
-        <b>Comment lire la scène :</b> des chaînes de polymère (bleu) nagent dans la peinture.
+        <b>Comment lire la scène :</b> des chaînes d’épaississant (gris) nagent dans l’eau de la peinture, entre les grains de liant (bleu) et les pigments et charges (rouge).
         Elles portent des <b style={{ color: STYLE_SCENE.gant }}>gants</b> (qui attrapent une particule,
         liaison associative forte, ou un autre gant, liaison auto-associante lâche) et des
         <b style={{ color: STYLE_SCENE.crochet }}> crochets</b> (qui ne s’accrochent qu’entre eux, jamais à une particule).
         Toutes les liaisons intermoléculaires sont en pointillés : monte γ̇ et regarde lesquelles cèdent.
         <span style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 4, fontSize: 12, color: KIT.txt2 }}>
           <span><Pastille fond={STYLE_SCENE.charge.fond} bord={STYLE_SCENE.charge.bord} /> pigments et charges</span>
-          <span><Pastille fond={STYLE_SCENE.polymere} /> chaîne de polymère</span>
+          <span><Pastille fond={STYLE_SCENE.liant.fond} bord={STYLE_SCENE.liant.bord} /> liant (latex)</span>
+          <span><Pastille ligne fond={STYLE_SCENE.polymere} pointille="solid" /> chaîne d’épaississant</span>
           <span><Pastille fond={STYLE_SCENE.gant} /> gant</span>
           <span><Pastille fond={STYLE_SCENE.crochet} /> crochet</span>
           <span><Pastille ligne fond={STYLE_SCENE.assoc} pointille="dashed" /> liaison associative (forte)</span>
@@ -483,12 +515,79 @@ function Courbe3ITT({ points }) {
 }
 
 // ---------------------------------------------------------------------------
+// Courbe d’écoulement : contrainte de cisaillement τ = η·γ̇ en fonction de γ̇ (axes linéaires).
+// Newtonien : droite passant par l’origine ; pseudoplastique : courbe qui s’incurve vers l’axe de γ̇.
+// ---------------------------------------------------------------------------
+
+function CourbeEcoulement({ series, gammaMax, gammaCur = null }) {
+  const refCanvas = useRef(null);
+  useEffect(() => {
+    const canvas = refCanvas.current;
+    const ctx = canvas.getContext("2d");
+    const L = 1000, H = 340;
+    const marge = { g: 70, d: 16, h: 30, b: 40 };
+    let tauMax = 0;
+    for (const s of series) for (const p of s.points) tauMax = Math.max(tauMax, p.tau);
+    const pasBrut = tauMax / 4;
+    const dec = Math.pow(10, Math.floor(Math.log10(pasBrut)));
+    const pasTau = [1, 2, 5, 10].map((m) => m * dec).find((v) => v >= pasBrut);
+    const yMax = pasTau * Math.ceil(tauMax / pasTau - 1e-9);
+    const px = (g) => marge.g + g / gammaMax * (L - marge.g - marge.d);
+    const py = (t) => H - marge.b - t / yMax * (H - marge.h - marge.b);
+    ctx.clearRect(0, 0, L, H);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, L, H);
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.fillStyle = "#475569";
+    ctx.font = "13px sans-serif";
+    ctx.textAlign = "right";
+    for (let t = 0; t <= yMax + 1e-9; t += pasTau) {
+      const y = py(t);
+      ctx.beginPath(); ctx.moveTo(marge.g, y); ctx.lineTo(L - marge.d, y); ctx.stroke();
+      ctx.fillText(fmt(t, 0), marge.g - 6, y + 4);
+    }
+    ctx.textAlign = "center";
+    for (let i = 0; i <= 5; i++) {
+      const g = gammaMax * i / 5;
+      const x = px(g);
+      ctx.beginPath(); ctx.moveTo(x, marge.h); ctx.lineTo(x, H - marge.b); ctx.stroke();
+      ctx.fillText(fmt(g, 0), x, H - marge.b + 16);
+    }
+    for (const s of series) {
+      ctx.beginPath();
+      ctx.strokeStyle = s.couleur;
+      ctx.lineWidth = 2.5;
+      s.points.forEach((p, i) => {
+        const x = px(p.gamma), y = py(p.tau);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    }
+    if (gammaCur && gammaCur <= gammaMax) {
+      const x = px(gammaCur);
+      ctx.strokeStyle = "#dc2626";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(x, marge.h); ctx.lineTo(x, H - marge.b); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    ctx.fillStyle = "#334155";
+    ctx.textAlign = "left";
+    ctx.fillText("γ̇ (s⁻¹)", L - 70, H - 6);
+    ctx.fillText("τ (Pa)", 14, 16);
+  }, [series, gammaMax, gammaCur]);
+  return <canvas ref={refCanvas} width={1000} height={340} role="img" aria-label="Courbe d’écoulement : contrainte de cisaillement τ en fonction du gradient de vitesse γ̇, axes linéaires"
+    style={{ width: "100%", height: "auto", borderRadius: 10, border: "1px solid #cbd5e1" }} />;
+}
+
+// ---------------------------------------------------------------------------
 // Zoom moléculaire + curseur de gradient (utilisé en guide et en exploration).
 // Les options montrerCourbe / montrerLambda servent au parcours guidé progressif.
 // ---------------------------------------------------------------------------
 
 function ZoomGradient({ famille, setFamille, gamma, setGamma, pH = 8.5, setPH, doseForte = false, setDoseForte,
-  onHautGradient, famillesDispos, montrerCourbe = true, montrerLambda = true }) {
+  onHautGradient, famillesDispos, montrerCourbe = true, montrerLambda = true, montrerEcoulement = false }) {
+  const [gMaxEcoul, setGMaxEcoul] = useState(100);
   const cin = cinetiqueReseau(famille, doseForte);
   const [masquerLiaisons, setMasquerLiaisons] = useState(false);
   const lambda = cin ? lambdaStatio(gamma, cin) : 1;
@@ -501,6 +600,18 @@ function ZoomGradient({ famille, setFamille, gamma, setGamma, pH = 8.5, setPH, d
     }
     return { points, couleur: INFOS_FAMILLE[famille].couleur, libelle: INFOS_FAMILLE[famille].nom };
   }, [famille, pH, doseForte]);
+  const serieEcoulement = useMemo(() => {
+    const fams = famille === "ase" ? ["ase"] : ["hase", "heur"];
+    return fams.map((f) => {
+      const points = [];
+      for (let i = 0; i <= 120; i++) {
+        const g = gMaxEcoul * i / 120;
+        const gg = Math.max(g, 1e-4);
+        points.push({ gamma: g, tau: etaStatio(f, gg, { pH, doseForte: f === famille && doseForte }) * g / 1000 });
+      }
+      return { points, couleur: INFOS_FAMILLE[f].couleur };
+    });
+  }, [famille, pH, doseForte, gMaxEcoul]);
   return (
     <div style={{ ...styleBoite, marginTop: 10 }}>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
@@ -544,6 +655,22 @@ function ZoomGradient({ famille, setFamille, gamma, setGamma, pH = 8.5, setPH, d
         <LigneMesure nom="η (mPa·s)" valeur={fmt(eta, 0)} couleur={INFOS_FAMILLE[famille].couleur} />
         {cin && montrerLambda && <LigneMesure nom="λ (réseau reconstruit)" valeur={fmt(lambda, 2)} couleur="#7c3aed" />}
       </div>
+      {montrerEcoulement && (
+        <div style={{ marginTop: 10 }}>
+          <div style={{ fontWeight: 600, fontSize: 14, color: KIT.txt }}>Courbe d’écoulement τ = f(γ̇)</div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", margin: "4px 0" }}>
+            <span style={{ fontSize: 13, color: KIT.txt2 }}>Échelle de γ̇ :</span>
+            {[10, 100, 1000].map((g) => (
+              <button key={g} type="button" style={stylePetitBouton(gMaxEcoul === g, "#475569")} aria-pressed={gMaxEcoul === g}
+                onClick={() => setGMaxEcoul(g)}>0 à {fmt(g, 0)} s⁻¹</button>
+            ))}
+          </div>
+          <CourbeEcoulement series={serieEcoulement} gammaMax={gMaxEcoul} gammaCur={gamma} />
+          <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>
+            τ = η × γ̇ (en Pa). {famille === "ase" ? "" : "Bleu : Thixol 53 L (HASE) ; orange : Coapur 3025 (HEUR)."} Axes linéaires.
+          </div>
+        </div>
+      )}
       {montrerCourbe && (
         <>
           <div style={{ marginTop: 8 }}>
@@ -730,17 +857,19 @@ function Hypotheses() {
         sa dépendance au pH n’est pas modélisée, seule celle de l’ASE l’est.</li>
       <li>Notre Coapur 3025 (HEUR) : liaisons gant-particule tenues, donc η quasi constant (variation &lt; 8 %) ;
         à dose forte, un réseau auto-associé s’ajoute (τ = {fmt(PARAMS.heur.tauRecAuto, 0)} s).</li>
-      <li>Chaque modèle décrit un PRODUIT, pas une architecture : selon les fonctions chimiques greffées
-        (densité de greffons, nature des gants et des crochets, masse), un autre HASE ou un autre HEUR
-        aurait un autre profil.</li>
+      <li>Les profils modélisés sont ceux des deux produits du TP (Thixol 53 L et Coapur 3025), lus sur leurs fiches techniques :
+        le modèle n’est pas une loi générale de toutes les familles HASE ou HEUR.</li>
       <li>ASE : gonflement par neutralisation (fraction ionisée 1/(1 + 10<sup>pKa − pH</sup>), pKa = {fmt(PARAMS.ase.pKa, 1)}) ;
         pas de modification hydrophobe, donc aucune liaison associative.</li>
       <li>Calibration : les fiches techniques donnent des viscosités Brookfield à 10 et 100 tr/min
         (environ 9 000 et 1 500 mPa·s pour le Thixol). Le modèle en reprend l’ordre de grandeur
         (environ 11 000 mPa·s à 1 s⁻¹ et 1 500 mPa·s à 100 s⁻¹) et le rapport de 6 à 7. La conversion tr/min → s⁻¹
         dépend du mobile et de la géométrie : ce n’est pas une équivalence exacte, la courbe n’est pas un ajustement des mesures.</li>
-      <li>Gants et crochets : c’est la convention du TP. En réalité, les groupes hydrophobes d’un HASE ou d’un HEUR
-        peuvent aussi s’adsorber sur les particules ; la distinction « le crochet ne touche jamais une particule » est une simplification pédagogique.</li>
+      <li>Gants et crochets : c’est la convention de dessin du TP. Le Thixol (HASE) est dessiné avec des crochets (liaisons auto-associantes seulement),
+        le Coapur (HEUR) avec des gants (liaisons associatives avec les particules, auto-associantes entre gants).
+        En réalité, les groupes hydrophobes peuvent aussi s’adsorber sur les particules de liant : le dessin est une simplification pédagogique.</li>
+      <li>Les grains de liant (bleu) sont dessinés comme décor : ils ne participent pas aux liaisons du modèle.</li>
+      <li>Courbe d’écoulement : τ = η × γ̇ avec η la viscosité en régime permanent du modèle (axes linéaires).</li>
       <li>Rampe : chaque gradient est maintenu 0,8 s. Test 3ITT : 20 s à 1 s⁻¹, 20 s à 256 s⁻¹, 80 s à 1 s⁻¹.</li>
       <li>La scène moléculaire est un dessin pédagogique : une chaîne réelle porte des milliers de motifs,
         et les échelles de taille et de temps ne sont pas réalistes.</li>
@@ -755,12 +884,11 @@ const RETENIR_ESSENTIEL = (
     <div>🧤 Liaison associative = gant + particule : forte, difficile à défaire.</div>
     <div>🪝 Liaison auto-associante = gant + gant ou crochet + crochet : lâche, facile à défaire.
       Dans la convention du TP, le crochet ne touche jamais une particule.</div>
-    <div>Architecture ≠ comportement : « HASE » ou « HEUR » désigne un squelette et un greffon,
-      pas un profil. Ce sont les fonctions chimiques portées qui décident.</div>
     <div>Notre Thixol 53 L (HASE) : surtout des liaisons auto-associantes → η forte à bas gradient,
       effondrée à haut gradient, thixotrope.</div>
-    <div>Notre Coapur 3025 (HEUR) : liaisons gant-particule tenues → η quasi constante,
-      pas thixotrope (sauf dose forte).</div>
+    <div>Notre Coapur 3025 (HEUR) : liaisons gant-particule tenues → η quasi constante (fluide newtonien : courbe d’écoulement en droite),
+      pas thixotrope à dose normale ; à forte dose, des liaisons auto-associantes le rendent un peu thixotrope.</div>
+    <div>Thixol 53 L pour le bas gradient (pot, mur frais), Coapur 3025 pour le haut gradient (application) : les deux se combinent.</div>
     <div>ASE : pas de modification hydrophobe → épaissit par gonflement après neutralisation (pH 8-9).</div>
   </>
 );
@@ -770,10 +898,10 @@ const RETENIR_ESSENTIEL = (
 // ---------------------------------------------------------------------------
 
 export function SimulationEpaisseursAssociatifs() {
-  const [mode, setMode] = useState(() => modeOuverture("epaisseurs-v1"));
+  const [mode, setMode] = useState(() => modeOuverture("epaisseurs-v2"));
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant("epaisseurs-v1", { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const [guide, setGuide] = useEtatPersistant("epaisseurs-v2", { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [montages, setMontages] = useState({ hase: {}, heur: {} });
   const [aExploreHaut, setAExploreHaut] = useState(false);
   const [gammaGuide, setGammaGuide] = useState(0.1);
@@ -783,6 +911,15 @@ export function SimulationEpaisseursAssociatifs() {
   const [pHExplo, setPHExplo] = useState(8.5);
   const [doseForteExplo, setDoseForteExplo] = useState(false);
   const [ouvHyp, setOuvHyp] = useState(false);
+  const [doseForteGuide, setDoseForteGuide] = useState(false);
+  // Sur téléphone, la consigne passe avant le schéma : l’élève lit la question puis regarde.
+  const [etroit, setEtroit] = useState(() => typeof window !== "undefined" && window.innerWidth < 720);
+  useEffect(() => {
+    const maj = () => setEtroit(window.innerWidth < 720);
+    window.addEventListener("resize", maj);
+    return () => window.removeEventListener("resize", maj);
+  }, []);
+  const [pHGuide, setPHGuide] = useState(8.5);
 
   const montagesOK = montagesSontCorrects(montages);
 
@@ -817,9 +954,8 @@ export function SimulationEpaisseursAssociatifs() {
     },
     {
       titre: "Gants et crochets",
-      texte: "Sur un épaississant associatif, les modifications hydrophobes ne se ressemblent pas toutes. " +
-        "Dans le TP, on les dessine comme des gants de baseball ou comme des crochets. " +
-        "Touche chacun dans le panneau pour voir avec quoi il peut interagir, puis réponds.",
+      texte: "Les modifications hydrophobes sont dessinées de deux façons dans le TP : comme des gants de baseball " +
+        "ou comme des crochets. Touche chacun dans le panneau pour voir avec quoi il peut interagir, puis réponds.",
       tache: {
         type: "qcm",
         q: "Un groupe hydrophobe de type crochet peut-il interagir avec une particule de TiO₂ ?",
@@ -832,31 +968,30 @@ export function SimulationEpaisseursAssociatifs() {
     },
     {
       titre: "Monter le gradient",
-      texte: "Voici le zoom sur la peinture. À bas gradient, le réseau du HASE est intact : " +
-        "la peinture tient au mur et la charge ne sédimente pas. Monte le curseur " +
-        "jusqu’à la zone d’application (au-delà de 1 000 s⁻¹) et regarde quelles liaisons lâchent.",
+      texte: "Voici le zoom sur la peinture : le liant (bleu), les pigments et charges (rouge) et, en gris, les chaînes de l’épaississant. " +
+        "Ici, le Thixol 53 L est dessiné avec des crochets et le Coapur 3025 avec des gants. " +
+        "À bas gradient, les liaisons sont en place. Monte le curseur jusqu’à la zone d’application (au-delà de 1 000 s⁻¹) et regarde ce qui se passe.",
       tache: {
         type: "action",
         ok: aExploreHaut,
         label: "Le faire pour moi",
         faire: () => { setGammaGuide(2000); setAExploreHaut(true); },
         consigne: "Monte le curseur γ̇ au-delà de 1 000 s⁻¹, puis compare le Thixol (HASE) et le Coapur (HEUR).",
-        indice: "Sur la scène, regarde quelles liaisons cèdent en premier : les pointillés serrés entre gants (auto-associantes, lâches) ou les longs pointillés gant-particule (associatives, fortes) ?",
+        indice: "Compare le nombre de pointillés pour chaque produit à γ̇ = 0,1 s⁻¹ puis à γ̇ = 2 000 s⁻¹ : lequel perd presque toutes ses liaisons ? Lequel garde presque les mêmes ?",
       },
     },
     {
       titre: "Viscosité à bas gradient",
       texte: "Le gradient est faible dans le pot (sédimentation : 0,01-0,1 s⁻¹) et sur le mur frais " +
-        "(affaissement et nivellement : 0,1-3 s⁻¹). La courbe η(γ̇) apparaît : compare les deux produits dans ces zones.",
+        "(affaissement et nivellement : 0,1-3 s⁻¹). La courbe de viscosité η(γ̇) apparaît : compare les deux produits dans ces zones.",
       tache: {
         type: "qcm",
         q: "Lequel assure une forte viscosité à bas gradient et empêche la sédimentation en pot ?",
         options: ["Le Coapur 3025 (HEUR)", "Le Thixol 53 L (HASE)", "Les deux également", "Aucun des deux"],
         bonne: 1,
         indice: "Descends le curseur γ̇ sous 0,1 s⁻¹ et compare les viscosités affichées pour chacun des deux produits.",
-        expl: <>À bas gradient, le réseau auto-associé du Thixol est intact : η est forte.
-          Sa fiche l’annonce : « prevents settling and sagging ». Le Coapur, quasi newtonien,
-          garde une viscosité moyenne : il n’est pas fait pour ça.</>,
+        expl: <>À bas gradient, les liaisons entre crochets du Thixol sont toutes en place : la résistance à l’écoulement est forte.
+          Sa fiche l’annonce : « prevents settling and sagging ». Le Coapur offre une viscosité moyenne : il n’est pas fait pour ça.</>,
       },
     },
     {
@@ -870,48 +1005,44 @@ export function SimulationEpaisseursAssociatifs() {
         bonne: 0,
         indice: "Remonte le curseur γ̇ vers 1 000-10 000 s⁻¹ et compare les viscosités affichées.",
         expl: <>Sa fiche l’annonce : « spatter resistance », « film build », « levelling ».
-          Le Coapur, notre HEUR, garde sa viscosité car ses liaisons gant-particule tiennent bon.
-          Le Thixol, notre HASE, a cassé son réseau : sa viscosité s’est effondrée.</>,
+          Le Coapur garde sa viscosité car ses liaisons gant-particule tiennent bon.
+          Le Thixol a vu ses liaisons se rompre : sa viscosité s’est effondrée.</>,
+      },
+    },
+    {
+      titre: "Courbe d’écoulement",
+      texte: "Le programme demande d’identifier un comportement sur deux courbes : la courbe de viscosité η(γ̇), que tu viens d’utiliser, " +
+        "et la courbe d’écoulement τ(γ̇), où τ = η × γ̇ est la contrainte de cisaillement. La deuxième apparaît sous la première, avec les deux produits. " +
+        "Teste les trois échelles de γ̇.",
+      tache: {
+        type: "qcm",
+        q: "Sur la courbe d’écoulement, comment se reconnaît le Thixol 53 L, produit rhéofluidifiant ?",
+        options: [
+          "Une droite passant par l’origine",
+          "Une courbe qui s’incurve : la pente (donc la viscosité) diminue quand γ̇ augmente",
+          "Une courbe dont la pente augmente quand γ̇ augmente",
+          "Une droite horizontale",
+        ],
+        bonne: 1,
+        indice: "La pente de la courbe d’écoulement, c’est la viscosité. Compare la pente du Thixol près de l’origine et plus loin.",
+        expl: <>Un fluide newtonien (Coapur) donne une droite passant par l’origine : sa pente η est constante.
+          Pour le Thixol, la pente (η) diminue quand γ̇ augmente : c’est la courbe d’un fluide rhéofluidifiant (pseudoplastique).</>,
       },
     },
     {
       titre: "Qui est thixotrope ?",
       texte: "Thixotrope, c’est une viscosité qui met du temps à revenir après un cisaillement. " +
         "Lance la rampe aller-retour pour chaque produit : on monte γ̇, puis on le redescend. " +
-        "Regarde la valeur de λ, la part du réseau reconstruit, et compare la montée et la descente.",
+        "Regarde la valeur de λ, la part de liaisons en place, et compare la montée et la descente.",
       tache: {
         type: "qcm",
-        q: "Lequel des deux apporte de la thixotropie ?",
+        q: "À dose normale, lequel des deux apporte de la thixotropie ?",
         options: ["Le Coapur 3025 (HEUR)", "Le Thixol 53 L (HASE)", "Les deux", "Aucun des deux"],
         bonne: 1,
         indice: "Sur la rampe, la descente est-elle superposée à la montée ? Qui doit reformer des liaisons, et à quelle vitesse ?",
         expl: <>Les liaisons auto-associantes du Thixol cassent à haut gradient et mettent du temps à se reformer :
-          la viscosité revient lentement, c’est la thixotropie. Le Coapur, à dose normale, ne casse rien :
-          sa structure ne dépend pas du gradient, aucune raison d’être thixotrope.</>,
-      },
-    },
-    {
-      titre: "Architecture et comportement",
-      texte: "Attention, une idée reçue à démonter : « HASE » ou « HEUR » ne décrit pas un comportement, " +
-        "mais une architecture : le squelette du polymère et la façon d’y greffer les motifs hydrophobes. " +
-        "Le profil rhéologique vient des fonctions chimiques portées : nature des greffons " +
-        "(gants ou crochets), densité de greffage, masse du polymère. Dans ce TP, notre HASE Thixol 53 L est " +
-        "pseudoplastique thixotrope et notre HEUR Coapur 3025 quasi newtonien ; mais des produits d’une même famille " +
-        "peuvent avoir des profils différents.",
-      tache: {
-        type: "qcm",
-        q: "Que détermine le sigle « HASE » ou « HEUR » d’un épaississant ?",
-        options: [
-          "Un profil imposé : un HASE est toujours pseudoplastique et thixotrope",
-          "Une architecture : squelette et greffage des motifs hydrophobes, pas un comportement",
-          "Rien : c’est un simple nom commercial sans lien avec la chimie",
-          "La viscosité à bas gradient, fixée par la famille",
-        ],
-        bonne: 1,
-        indice: "Relis les deux fiches : les comportements annoncés (« pseudoplastique », « newtonien ») sont des propriétés de ces produits précis. Que reste-t-il alors derrière le sigle ?",
-        expl: <>« HASE » et « HEUR » décrivent l’architecture (squelette acrylique ou polyuréthane, motifs
-          éthoxylés, greffons hydrophobes). Le comportement vient des fonctions chimiques effectivement
-          portées. D’où l’intérêt de lire la fiche technique du produit plutôt que de se fier au sigle.</>,
+          la viscosité revient lentement, c’est la thixotropie. La structure du Coapur ne dépend pas du gradient :
+          aucune raison d’être thixotrope.</>,
       },
     },
     {
@@ -939,6 +1070,45 @@ export function SimulationEpaisseursAssociatifs() {
       },
     },
     {
+      titre: "Pour aller plus loin : le HEUR à forte dose",
+      texte: "Le Coapur 3025 n’est pas thixotrope à dose normale. Mais utilisé à forte concentration, " +
+        "des gants de molécules voisines peuvent s’attraper entre eux. Sélectionne le Coapur (HEUR), " +
+        "active « dose forte », puis lance la rampe aller-retour.",
+      tache: {
+        type: "qcm",
+        q: "Pourquoi le Coapur devient-il alors un peu thixotrope ?",
+        options: [
+          "Des liaisons auto-associantes entre molécules d’épaississant, lâches, se rompent sous cisaillement et se reforment lentement",
+          "Les liaisons gant-particule se rompent toutes à haut gradient",
+          "Il se transforme en HASE",
+          "Il ne devient pas thixotrope",
+        ],
+        bonne: 0,
+        indice: "Quelles liaisons se rompent au cisaillement et mettent du temps à se reformer ? Regarde la scène avec la dose forte.",
+        expl: <>À forte concentration, un HEUR peut former des liaisons auto-associantes entre molécules d’épaississant :
+          comme pour le HASE, elles se rompent à haut gradient et se reforment lentement, d’où la thixotropie.</>,
+      },
+    },
+    {
+      titre: "Le non-associatif : l’ASE",
+      texte: "Un ASE (alcali-gonflable) n’a pas de modification hydrophobe : c’est un épaississant non associatif. " +
+        "Il est livré à pH acide et épaissit quand on neutralise. Choisis l’ASE, puis fais varier le pH du milieu.",
+      tache: {
+        type: "qcm",
+        q: "Pourquoi un ASE n’épaissit-il qu’après neutralisation (pH 8-9) ?",
+        options: [
+          "Les groupes acide carboxylique s’ionisent : les charges se repoussent, la chaîne se déploie et gonfle",
+          "Les gants se mettent à s’attraper entre eux",
+          "L’acide réagit avec le TiO₂",
+          "La neutralisation le rend hydrophobe",
+        ],
+        bonne: 0,
+        indice: "Que deviennent les groupes –COOH quand on ajoute une base ? Que font des charges de même signe ?",
+        expl: <>La neutralisation transforme –COOH en –COO⁻ : les charges négatives se repoussent, la chaîne se déploie et gonfle,
+          ce qui augmente la viscosité. Pas de liaisons associatives ici : c’est un mode d’action différent.</>,
+      },
+    },
+    {
       titre: "Le formulateur",
       texte: "Un formulateur veut une peinture mate : une tenue en pot sans sédimentation, " +
         "pas d’affaissement sur le mur, mais aussi zéro éclaboussure au rouleau et un film bien garni.",
@@ -949,7 +1119,7 @@ export function SimulationEpaisseursAssociatifs() {
         bonne: 2,
         indice: "Chaque additif couvre sa zone de gradient : bas gradient pour l’un, haut gradient pour l’autre.",
         expl: <>Le Thixol couvre le bas gradient (pot, mur frais), le Coapur le haut gradient (application).
-          Combiner les deux permet à chaque produit de faire ce qu’il sait faire.</>,
+          Les fiches proposent d’ailleurs cette combinaison, comme dans la formulation de la peinture mate de la simulation « Peinture à l’eau ».</>,
       },
     },
   ];
@@ -967,14 +1137,18 @@ export function SimulationEpaisseursAssociatifs() {
     if (e === 0) return <FichesTDS />;
     if (e === 1) return <AtelierMotifs montages={montages} setMontages={setMontages} />;
     if (e === 2) return <PanneauLiaisons />;
+    const dispos = e >= 10 ? ["hase", "heur", "ase"] : ["hase", "heur"];
+    const fam = dispos.includes(familleGuide) ? familleGuide : "hase";
     return (
       <>
-        <ZoomGradient famille={familleGuide} setFamille={setFamilleGuide}
-          famillesDispos={["hase", "heur"]}
+        <ZoomGradient famille={fam} setFamille={setFamilleGuide}
+          famillesDispos={dispos}
           gamma={gammaGuide} setGamma={setGammaGuide} onHautGradient={() => setAExploreHaut(true)}
-          montrerCourbe={e >= 4} montrerLambda={e >= 6} />
-        {e >= 6 && (
-          <BancExploration famille={familleGuide} doseForte={false} pH={8.5}
+          doseForte={e >= 9 && doseForteGuide} setDoseForte={e >= 9 ? setDoseForteGuide : undefined}
+          pH={pHGuide} setPH={e >= 10 ? setPHGuide : undefined}
+          montrerCourbe={e >= 4} montrerEcoulement={e >= 6} montrerLambda={e >= 7} />
+        {e >= 7 && (
+          <BancExploration famille={fam} doseForte={e >= 9 && doseForteGuide} pH={pHGuide}
             avecITT={e >= 8} masquerRegeneration={!regenReussie} />
         )}
       </>
@@ -991,8 +1165,8 @@ export function SimulationEpaisseursAssociatifs() {
       {mode === "guide" && (
         <>
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "flex-start", marginTop: 10 }}>
-            <div style={{ flex: "2 1 420px", minWidth: 280 }}>{panneauGuide()}</div>
-            <div style={{ flex: "1 1 300px", minWidth: 280, display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ flex: "2 1 420px", minWidth: 280, order: etroit ? 2 : 1 }}>{panneauGuide()}</div>
+            <div style={{ flex: "1 1 300px", minWidth: 280, display: "flex", flexDirection: "column", gap: 10, order: etroit ? 1 : 2 }}>
               <CarteParcours etapes={etapes} etat={guide} setEtat={setGuide} fin={fin} />
             </div>
           </div>
@@ -1012,6 +1186,7 @@ export function SimulationEpaisseursAssociatifs() {
             gamma={gammaExplo} setGamma={setGammaExplo}
             pH={pHExplo} setPH={setPHExplo}
             doseForte={doseForteExplo} setDoseForte={setDoseForteExplo}
+            montrerEcoulement
           />
           <BancExploration famille={familleExplo} doseForte={doseForteExplo} pH={pHExplo} />
           <div style={{ marginTop: 10 }}>

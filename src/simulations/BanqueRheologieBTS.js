@@ -2,7 +2,7 @@
 // Format du site (voir AtelierSituationsBanque.js) : un exercice = { id, domaine, niveau, titre, construire }.
 // Programme : « Propriétés rhéologiques : comment modifier les propriétés rhéologiques d'un produit ? »,
 //   « additifs rhéologiques : épaississants », « identifier à partir de rhéogrammes les comportements rhéologiques ».
-//   rheo-famille, rheo-gant-crochet, rheo-thixol, rheo-coapur, rheo-3itt, rheo-ase, rheo-architecture
+//   rheo-famille, rheo-gant-crochet, rheo-thixol, rheo-coapur, rheo-3itt, rheo-ase, rheo-ecoulement, rheo-dose-forte
 // Les réponses numériques sont calculées par le modèle à partir des valeurs AFFICHÉES (donnée arrondie avant le calcul).
 import {
   etaStatioHASE, etaASE, simuler3ITT, arrondiSig,
@@ -232,33 +232,56 @@ export const EXERCICES = [
     },
   },
   {
-    id: 'rheo-architecture', domaine: DOM, niveau: 2, titre: 'Architecture ou comportement ?',
+    id: 'rheo-ecoulement', domaine: DOM, niveau: 2, titre: 'Courbe de viscosité et courbe d’écoulement',
     construire: () => ({
-      enonce: 'Sur un forum de formulation, un stagiaire écrit : « Prends un HEUR, il sera forcément newtonien ; prends un HASE, il sera forcément thixotrope. » Son tuteur répond : « Pas si vite… »',
+      enonce: 'Un rhéomètre trace, pour deux additifs, la courbe de viscosité η(γ̇) et la courbe d’écoulement τ(γ̇), avec τ = η × γ̇. Le Coapur 3025 est annoncé « pure Newtonian », le Thixol 53 L « strongly pseudoplastic ».',
       etapes: [
-        { id: 'sigle', titre: 'Le sigle', q: 'Que désigne réellement le sigle « HASE » ou « HEUR » ?', aide: aideFamilles,
+        { id: 'visc', titre: 'Courbe de viscosité du Coapur', q: 'Quelle est l’allure de la courbe de viscosité η(γ̇) d’un fluide newtonien comme le Coapur 3025 ?', aide: 'Newtonien : η ne dépend pas de γ̇.',
           o: [
-            F('Un comportement rhéologique imposé au produit', 'Si c’était vrai, tous les produits d’une même famille se comporteraient de la même façon : les fournisseurs proposent pourtant des profils variés dans une même famille.'),
-            V('Une architecture : squelette du polymère et greffage des motifs hydrophobes', 'Exact : le sigle décrit une structure chimique (acrylique alcali-gonflable modifié, ou polyuréthane éthoxylé modifié), pas un comportement.'),
-            F('Une marque commerciale déposée', 'Ce sont des familles chimiques génériques, pas des marques.'),
-            F('La zone de gradient où le produit travaille', 'La zone de travail dépend du comportement du produit, pas de son sigle.'),
+            V('Une droite horizontale : η constante', 'Exact : pour un fluide newtonien, la viscosité ne dépend pas du gradient de vitesse.'),
+            F('Une courbe qui descend quand γ̇ augmente', 'C’est le profil d’un fluide rhéofluidifiant (pseudoplastique), comme le Thixol.'),
+            F('Une courbe qui monte quand γ̇ augmente', 'C’est le profil d’un fluide rhéoépaississant.'),
+            F('Une droite qui passe par l’origine', 'C’est l’allure de la courbe d’écoulement d’un newtonien, pas de sa courbe de viscosité.'),
           ] },
-        { id: 'qui', titre: 'Qui décide du comportement ?', q: 'Qu’est-ce qui détermine réellement le profil rhéologique d’un épaississant associatif ?', aide: 'Pense à ce qui est greffé sur la chaîne, et à sa densité.',
+        { id: 'ecoul-n', titre: 'Courbe d’écoulement du Coapur', q: 'Quelle est l’allure de la courbe d’écoulement τ(γ̇) du même fluide newtonien ?', aide: 'τ = η × γ̇ : si η est constante, que devient τ quand γ̇ double ?',
           o: [
-            F('Le sigle de la famille (ASE, HASE ou HEUR)', 'C’est l’idée reçue : le sigle décrit une architecture, pas un comportement.'),
-            V('La nature, la densité et l’agencement des groupes greffés sur la chaîne', 'Exact : des gants bien répartis qui adsorbent sur les charges donnent des liaisons tenues (viscosité quasi constante) ; des auto-associations lâches dominantes donnent rhéofluidification et thixotropie.'),
-            F('La seule masse molaire du polymère', 'La masse compte, mais ne suffit pas : elle agit avec la nature et la densité des greffons.'),
-            F('Uniquement la quantité d’eau de la peinture', 'L’eau est le milieu : elle ne fixe pas à elle seule les liaisons que l’épaississant peut former.'),
+            F('Une droite horizontale', 'τ ne reste pas constant : il augmente avec γ̇.'),
+            V('Une droite passant par l’origine, de pente η', 'Exact : τ = η × γ̇ avec η constante, donc τ proportionnelle à γ̇.'),
+            F('Une courbe qui s’incurve vers l’axe de γ̇', 'C’est l’allure d’un fluide rhéofluidifiant.'),
+            F('Une courbe qui s’incurve vers l’axe de τ', 'C’est l’allure d’un fluide rhéoépaississant.'),
           ] },
-        { id: 'contrexemple', titre: 'Le tuteur a-t-il raison ?', q: 'Un sigle suffit-il à prédire le profil rhéologique d’un épaississant ?', aide: 'Relis ce que le mot « forcément » suppose, et ce que la fiche technique d’un produit mesure.',
+        { id: 'ecoul-p', titre: 'Courbe d’écoulement du Thixol', q: 'Sur la courbe d’écoulement du Thixol 53 L (pseudoplastique), que devient la pente quand γ̇ augmente ?', aide: 'La pente de la courbe d’écoulement est la viscosité.',
           o: [
-            F('Oui : les sigles imposent les profils', 'C’est précisément l’idée reçue à démonter : le sigle décrit une architecture.'),
-            V('Non : selon la chimie du greffage, des produits d’une même famille ont des profils différents', 'Exact : notre Thixol 53 L (HASE) est pseudoplastique thixotrope et notre Coapur 3025 (HEUR) quasi newtonien, mais des produits d’une même famille couvrent des profils variés. Il faut lire la fiche du produit.'),
-            F('Oui, mais seulement à dose très forte', 'La dose change l’intensité du comportement, pas la logique : le sigle ne suffit pas.'),
-            F('La question n’a pas de sens : HASE et HEUR sont identiques', 'Les squelettes diffèrent (acrylique modifié contre polyuréthane éthoxylé), mais aucun des deux n’impose un profil.'),
+            F('Elle reste constante', 'Ce serait un fluide newtonien.'),
+            V('Elle diminue : la courbe s’incurve vers l’axe de γ̇', 'Exact : la pente est la viscosité, qui chute quand les liaisons sont rompues par le cisaillement.'),
+            F('Elle augmente', 'Ce serait un fluide rhéoépaississant.'),
+            F('Elle devient nulle dès les plus petits gradients', 'La viscosité ne s’annule pas : elle diminue, mais reste non nulle.'),
           ] },
       ],
-      retenir: ['« HASE » et « HEUR » désignent des architectures (squelette + greffons), pas des comportements.', 'Le profil vient des fonctions chimiques effectivement portées : on le lit sur la fiche technique du produit.'],
+      retenir: ['Newtonien : η constante ; courbe d’écoulement = droite passant par l’origine.', 'Pseudoplastique : η diminue quand γ̇ augmente ; la courbe d’écoulement s’incurve vers l’axe de γ̇.'],
+    }),
+  },
+  {
+    id: 'rheo-dose-forte', domaine: DOM, niveau: 2, titre: 'Un HEUR peut-il être thixotrope ?',
+    construire: () => ({
+      enonce: 'Le Coapur 3025 (HEUR) n’est pas thixotrope à dose normale. Remarque de la correction du TP : utilisé à haute concentration, un HEUR peut apporter de la thixotropie par des liaisons auto-associantes entre les molécules d’épaississant.',
+      etapes: [
+        { id: 'normal', titre: 'Dose normale', q: 'À dose normale, pourquoi le Coapur 3025 n’est-il pas thixotrope ?', aide: aideGants,
+          o: [
+            V('Sa structure ne dépend pas du gradient imposé : ses liaisons gant-particule restent en place', 'Exact : aucune raison d’avoir un retour lent de la viscosité.'),
+            F('Il n’a aucune liaison', 'Il a des liaisons associatives gant-particule.'),
+            F('Ses liaisons se rompent mais se reforment instantanément', 'Ce n’est pas le mécanisme : elles ne se rompent pas notablement.'),
+            F('Il est trop dilué pour être mesuré', 'La dose n’empêche pas la mesure.'),
+          ] },
+        { id: 'forte', titre: 'Dose forte', q: 'À forte concentration, quelles liaisons expliquent une thixotropie modérée ?', aide: 'Quelles liaisons sont lâches, cèdent au cisaillement et se reforment lentement ?',
+          o: [
+            F('Des liaisons covalentes entre chaînes', 'Les liaisons covalentes ne se reforment pas : ce serait un réseau chimique.'),
+            V('Des liaisons auto-associantes entre gants de molécules voisines', 'Exact : lâches, elles se rompent à haut gradient et se reforment lentement quand γ̇ diminue.'),
+            F('Des liaisons associatives gant-particule uniquement', 'Elles restent en place à haut gradient : elles ne créent pas la thixotropie.'),
+            F('Aucune : le HEUR n’est jamais thixotrope', 'La correction du TP indique le contraire pour un HEUR à haute concentration.'),
+          ] },
+      ],
+      retenir: ['Thixotropie = retour lent de la viscosité après cisaillement.', 'Elle vient de liaisons auto-associantes (lâches) : celles du HASE, et celles d’un HEUR à forte concentration.'],
     }),
   },
 ];
