@@ -205,13 +205,16 @@ function sceneHASE({ fCrochet }) {
   return { crochets, chaines, compte: { crochet: [nIntact, PAIRES_HASE.length] } };
 }
 
+// Quand le pH baisse, chaque chaîne se replie sur place : celle du haut vers la gauche, celle du milieu vers le centre, celle du bas vers la droite.
+const debutChaine = (k, longueur) => (k === 0 ? 40 : k === 1 ? (W - longueur) / 2 : W - 40 - longueur);
+
 // HASE en milieu acide (non neutralisé) : comme un ASE, la chaîne est repliée en pelote ; les groupes hydrophobes sont enfouis, pas de crochets.
 const SEUIL_PELOTE = 0.5;
 function sceneHASEPelote({ f }) {
-  const longueur = 90 + 440 * f, amp = 11;
+  const longueur = 90 + 430 * f, amp = 11;
   return ["A", "B", "C"].map((c, k) => {
     const pts = [];
-    for (let i = 0; i <= 20; i++) pts.push({ x: 40 + (i / 20) * longueur, y: Y_RANG[c] + amp * Math.sin(i * 1.3 + k * 1.7) * (0.55 + 0.45 * f) });
+    for (let i = 0; i <= 20; i++) pts.push({ x: debutChaine(k, longueur) + (i / 20) * longueur, y: Y_RANG[c] + amp * Math.sin(i * 1.3 + k * 1.7) * (0.55 + 0.45 * f) });
     return pts;
   });
 }
@@ -220,13 +223,13 @@ function sceneHASEPelote({ f }) {
 
 const Y_ASE = [70, 170, 270];
 function sceneASE({ ion }) {
-  const longueur = 90 + 440 * ion, amp = 11;
+  const longueur = 90 + 430 * ion, amp = 11;
   const chaines = Y_ASE.map((y, c) => {
     const pts = [];
     const n = 20;
     for (let i = 0; i <= n; i++) {
       const t = i / n;
-      pts.push({ x: 40 + t * longueur, y: y + amp * Math.sin(i * 1.3 + c * 1.7) * (0.55 + 0.45 * ion) });
+      pts.push({ x: debutChaine(c, longueur) + t * longueur, y: y + amp * Math.sin(i * 1.3 + c * 1.7) * (0.55 + 0.45 * ion) });
     }
     return pts;
   });
@@ -454,6 +457,42 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
       <button type="button" aria-pressed={agitation} onClick={() => setAgitation(!agitation)} style={{ ...stylePetitBouton(agitation, "#0369a1"), marginTop: 6 }}>
         {agitation ? "⏸ Arrêter l’agitation thermique" : "▶ Agitation thermique (mouvement brownien)"}
       </button>
+    </figure>
+  );
+}
+
+// ---------------------------------------------------------------- profil de vitesse (image fixe du gradient de vitesse)
+
+// Cisaillement entre deux plaques : plaque du bas fixe, plaque du haut mobile ; la vitesse de chaque couche (flèche) augmente avec la hauteur.
+// La longueur des flèches grandit avec γ̇ (échelle comprimée, logarithmique), seule la tendance est exacte.
+export function ProfilVitesse({ gamma }) {
+  const Lmax = 40 + 380 * Math.min(1, Math.log10(1 + gamma) / 3.3);
+  const ys = [0, 1, 2, 3, 4, 5].map((k) => 138 - 20 * k);
+  return (
+    <figure style={{ margin: "8px 0 0" }}>
+      <svg viewBox="0 0 600 180" role="img" aria-label="Profil de vitesse : les couches du liquide glissent les unes sur les autres, la vitesse augmente avec la hauteur"
+        style={{ width: "100%", display: "block", background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: 8 }}>
+        <rect x="70" y="146" width="500" height="10" fill="#cbd5e1" stroke="#64748b" />
+        <text x="76" y="174" fontSize="12" fill="#475569">plaque fixe : v = 0</text>
+        <rect x="70" y="22" width="500" height="10" fill="#cbd5e1" stroke="#64748b" />
+        <text x="76" y="16" fontSize="12" fill="#475569">plaque mobile : v maximale</text>
+        {ys.slice(1).map((y, i) => {
+          const k = i + 1, L = Lmax * k / 5, x0 = 80;
+          return (
+            <g key={k}>
+              <line x1={x0} y1={y} x2={x0 + L - 8} y2={y} stroke="#0369a1" strokeWidth="3" />
+              <polygon points={`${x0 + L},${y} ${x0 + L - 12},${y - 6} ${x0 + L - 12},${y + 6}`} fill="#0369a1" />
+            </g>
+          );
+        })}
+        <line x1="40" y1="146" x2="40" y2="40" stroke="#475569" strokeWidth="1.5" />
+        <polygon points="40,30 35,44 45,44" fill="#475569" />
+        <text x="22" y="110" fontSize="12" fill="#475569" transform="rotate(-90 22 110)">hauteur</text>
+      </svg>
+      <figcaption style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.45 }}>
+        Les couches de liquide glissent les unes sur les autres : plus on monte, plus elles vont vite. Le gradient de vitesse γ̇ = (variation de vitesse) / (distance entre couches), en s⁻¹ :
+        plus γ̇ est grand, plus la vitesse change vite d’une couche à l’autre (flèches plus longues, échelle comprimée).
+      </figcaption>
     </figure>
   );
 }

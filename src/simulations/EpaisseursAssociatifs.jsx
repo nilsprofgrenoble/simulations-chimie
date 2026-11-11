@@ -9,7 +9,7 @@ import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuvertu
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, Curseur, LigneMesure, ARetenir, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
-import { SceneMoleculaire, LegendeScene, IconeGant, IconeCrochet, IconeParticule } from "./EpaisseursScene";
+import { SceneMoleculaire, ProfilVitesse, LegendeScene, IconeGant, IconeCrochet, IconeParticule } from "./EpaisseursScene";
 import {
   PARAMS, ZONES, zoneDeGradient,
   lambdaStatio, cinetiqueReseau, etaStatio, etaInstantane,
@@ -510,7 +510,8 @@ function ZoomGradient({ famille, setFamille, gamma, setGamma, pH = 8.5, setPH, d
             if (onHautGradient && g >= 1000) onHautGradient();
           }} />
       </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+      <ProfilVitesse gamma={gamma} />
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
         <LigneMesure nom="γ̇ (s⁻¹)" valeur={fmt(gamma, gamma < 10 ? 2 : 0)} couleur="#dc2626" />
         <LigneMesure nom="η (mPa·s)" valeur={fmt(eta, 0)} couleur={INFOS_FAMILLE[famille].couleur} />
         {cin && montrerLambda && <LigneMesure nom="λ (réseau reconstruit)" valeur={fmt(lambda, 2)} couleur="#7c3aed" />}
@@ -799,7 +800,7 @@ function Hypotheses() {
         Les peintures A et B ont aussi une hystérésis (retour à 1 s⁻¹ à 83 % et 72 % de l’aller), du même ordre que la régénération du test 3ITT (environ 80 %), mais ce n’est pas le même protocole.</li>
       <li>Rampe : chaque gradient est maintenu 0,8 s. Test 3ITT : 20 s à 1 s⁻¹, 20 s à 256 s⁻¹, 80 s à 1 s⁻¹.</li>
       <li>Agitation thermique (mouvement brownien) : les particules de latex et les charges libres bougent au hasard autour de leur position, de façon schématique (ce n’est pas une simulation physique).
-        Elle existe à tout gradient et n’est pas liée à l’écoulement : la scène ne représente pas le sens ni la vitesse du cisaillement, seulement l’état des liaisons.
+        Elle existe à tout gradient et n’est pas liée à l’écoulement : la scène moléculaire ne représente pas le sens ni la vitesse du cisaillement, seulement l’état des liaisons. Le gradient de vitesse est illustré à part, par le schéma de deux plaques (la longueur des flèches grandit avec γ̇ en échelle comprimée : seule la tendance est exacte).
         Les chaînes d’épaississant, les gants et les crochets ne sont pas animés. Le bouton permet d’arrêter l’animation.</li>
       <li>Vue « eau » : quelques centaines de billes représentent l’eau (il y en a des milliards de milliards dans un pot, et une molécule est environ 300 fois plus petite qu’une particule de latex). Une bille est dite « liée » si elle est dans la bande ambrée autour d’une chaîne.
         Pour l’ASE, la bande s’élargit quand les chaînes se chargent et gonflent : c’est l’augmentation du volume hydrodynamique. Pour le Thixol et le Coapur, la bande représente l’eau piégée dans le réseau, proportionnelle à la fraction de liaisons en place ; c’est une image qualitative, pas un calcul de volume réel.
