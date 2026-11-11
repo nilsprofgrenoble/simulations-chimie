@@ -24,9 +24,9 @@ const GAMMA_MIN = 0.01;
 const GAMMA_MAX = 10000;
 
 const INFOS_FAMILLE = {
-  ase: { nom: "ASE", produit: "acrylique alcali-gonflable", couleur: "#0d9488" },
-  hase: { nom: "HASE", produit: "Thixol 53 L (acrylique associatif)", couleur: "#1d4ed8" },
-  heur: { nom: "HEUR", produit: "Coapur 3025 (polyuréthane)", couleur: "#b45309" },
+  ase: { nom: "ASE", bouton: "ASE", produit: "un ASE : acrylique alcali-gonflable, sans modification hydrophobe", couleur: "#0d9488" },
+  hase: { nom: "HASE", bouton: "Thixol 53 L", produit: "un HASE : acrylique associatif", couleur: "#1d4ed8" },
+  heur: { nom: "HEUR", bouton: "Coapur 3025", produit: "un HEUR : polyuréthane éthoxylé associatif", couleur: "#b45309" },
 };
 
 // Test 3ITT de référence (HASE), calculé par le modèle une fois pour toutes :
@@ -459,7 +459,7 @@ function ZoomGradient({ famille, setFamille, gamma, setGamma, pH = 8.5, setPH, d
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
         {(famillesDispos || ["hase", "heur", "ase"]).map((f) => (
           <button key={f} type="button" style={stylePetitBouton(famille === f, INFOS_FAMILLE[f].couleur)}
-            aria-pressed={famille === f} onClick={() => setFamille(f)}>{INFOS_FAMILLE[f].nom}</button>
+            aria-pressed={famille === f} onClick={() => setFamille(f)}>{INFOS_FAMILLE[f].bouton}</button>
         ))}
         <span style={{ fontSize: 12.5, color: KIT.txt2 }}>{INFOS_FAMILLE[famille].produit}</span>
         {famille === "heur" && setDoseForte && (
@@ -700,8 +700,8 @@ function Hypotheses() {
         sa dépendance au pH n’est pas modélisée, seule celle de l’ASE l’est.</li>
       <li>Notre Coapur 3025 (HEUR) : liaisons gant-particule tenues, donc η quasi constant (variation &lt; 8 %) ;
         à dose forte, un réseau auto-associé s’ajoute (τ = {fmt(PARAMS.heur.tauRecAuto, 0)} s).</li>
-      <li>Les profils modélisés sont ceux des deux produits du TP (Thixol 53 L et Coapur 3025), lus sur leurs fiches techniques :
-        le modèle n’est pas une loi générale de toutes les familles HASE ou HEUR.</li>
+      <li>Les profils modélisés sont ceux des deux produits du TP (Thixol 53 L, un HASE, et Coapur 3025, un HEUR), lus sur leurs fiches techniques :
+        « HASE » et « HEUR » sont des familles chimiques, pas des comportements. Un autre HASE ou un autre HEUR peut avoir un profil différent : le modèle n’est pas une loi générale.</li>
       <li>ASE : gonflement par neutralisation (fraction ionisée 1/(1 + 10<sup>pKa − pH</sup>), pKa = {fmt(PARAMS.ase.pKa, 1)}) ;
         pas de modification hydrophobe, donc aucune liaison associative.</li>
       <li>Calibration : les fiches techniques donnent des viscosités Brookfield à 10 et 100 tr/min
@@ -711,7 +711,7 @@ function Hypotheses() {
       <li>Gants et crochets : c’est la convention de dessin du TP. Le Thixol (HASE) est dessiné avec des crochets (liaisons auto-associantes seulement),
         le Coapur (HEUR) avec des gants (liaisons associatives avec les particules, auto-associantes entre gants).
         En réalité, les groupes hydrophobes peuvent aussi s’adsorber sur les particules de liant : le dessin est une simplification pédagogique.</li>
-      <li>Les grains de liant (bleu) sont dessinés comme décor : ils ne participent pas aux liaisons du modèle.</li>
+      <li>Le liant (bleu) est un latex : une dispersion aqueuse (on dit aussi émulsion) de très petites particules de polymère. Il est dessiné comme décor, hors échelle : ses particules ne participent pas aux liaisons du modèle.</li>
       <li>Courbe d’écoulement : τ = η × γ̇ avec η la viscosité en régime permanent du modèle (axes linéaires).</li>
       <li>Rampe : chaque gradient est maintenu 0,8 s. Test 3ITT : 20 s à 1 s⁻¹, 20 s à 256 s⁻¹, 80 s à 1 s⁻¹.</li>
       <li>La scène moléculaire est un dessin pédagogique : une chaîne réelle porte des milliers de motifs,
@@ -724,6 +724,7 @@ function Hypotheses() {
 
 const RETENIR_ESSENTIEL = (
   <>
+    <div>« HASE » et « HEUR » sont des familles chimiques. Les profils ci-dessous sont ceux de nos deux produits : pour une autre référence, on lit sa fiche technique.</div>
     <div>🧤 Liaison associative = gant + particule : forte, difficile à défaire.</div>
     <div>🪝 Liaison auto-associante = gant + gant ou crochet + crochet : lâche, facile à défaire.
       Dans la convention du TP, le crochet ne touche jamais une particule.</div>
