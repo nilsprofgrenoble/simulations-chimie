@@ -121,13 +121,14 @@ ok(sceneHASE.chaines.length === 3, '3 chaînes');
 ok(sceneHASE.chaines.every((c) => c.points.length === 15), 'chaînes de 15 points');
 const groupesHASE = sceneHASE.chaines.flatMap((c) => c.groupes);
 ok(groupesHASE.length === 9, '9 groupes hydrophobes HASE');
-ok(groupesHASE.filter((g) => g.type === 'crochet').length === 3, '3 crochets (chaîne du bas)');
-ok(groupesHASE.filter((g) => g.type === 'gant').length === 6, '6 gants (2 chaînes du haut)');
+ok(groupesHASE.filter((g) => g.type === 'crochet').length === 9, 'HASE du TP : 9 crochets, aucun gant');
+ok(groupesHASE.filter((g) => g.type === 'gant').length === 0, 'HASE : pas de gant');
+const sceneHEUR0 = construireScene({ famille: 'heur' });
+ok(sceneHEUR0.chaines.flatMap((c) => c.groupes).every((g) => g.type === 'gant'), 'HEUR du TP : 9 gants');
 ok(sceneHASE.particules.length === 4, '4 particules');
-// Comptes exacts, garantis par le layout déterministe.
-ok(sceneHASE.pairesAuto.length === 7, `7 paires gant-gant candidates (obtenu ${sceneHASE.pairesAuto.length})`);
-ok(sceneHASE.pairesAssoc.length === 6, `6 paires gant-particule candidates (obtenu ${sceneHASE.pairesAssoc.length})`);
-ok(sceneHASE.pairesCrochet.length === 2, `2 paires crochet-crochet (obtenu ${sceneHASE.pairesCrochet.length})`);
+ok(sceneHASE.pairesAssoc.length === 0 && sceneHASE.pairesAuto.length === 0, 'HASE : ni gant-particule ni gant-gant');
+ok(sceneHASE.pairesCrochet.length > 0, `paires crochet-crochet entre chaînes différentes (obtenu ${sceneHASE.pairesCrochet.length})`);
+ok(sceneHASE.pairesCrochet.every((p) => p.a.y !== undefined && p.d < 200), 'portées < 200');
 // Déterminisme : deux constructions donnent exactement la même scène, graine ignorée.
 const sceneHASEbis = construireScene({ famille: 'hase', graine: 999 });
 ok(JSON.stringify(sceneHASE) === JSON.stringify(sceneHASEbis), 'layout déterministe (la graine est ignorée)');
@@ -142,11 +143,11 @@ for (const p of sceneHASE.particules) {
 }
 // Chaque particule est attrapable par au moins un gant (sinon elle ne sert à rien).
 for (const p of sceneHASE.particules) {
-  ok(groupesHASE.some((g) => g.type === 'gant' && Math.hypot(g.x - p.x, g.y - p.y) < 260), `particule ${p.nom} attrapable par un gant`);
+  ok(sceneHEUR0.chaines.flatMap((c) => c.groupes).some((g) => g.type === 'gant' && Math.hypot(g.x - p.x, g.y - p.y) < 260), `particule ${p.nom} attrapable par un gant`);
 }
 // Toute paire candidate annoncée apparaît bien dans la scène (aucun élément fantôme).
-for (const paire of sceneHASE.pairesAssoc) {
-  ok(sceneHASE.particules.includes(paire.part), 'particule de la paire réellement dans la scène');
+for (const paire of sceneHEUR0.pairesAssoc) {
+  ok(sceneHEUR0.particules.includes(paire.part), 'particule de la paire réellement dans la scène');
 }
 
 const sceneASE = construireScene({ famille: 'ase' });
@@ -164,12 +165,12 @@ ok(amplitudeOndulation(construireScene({ famille: 'ase', gonflement: 1 })) > amp
 
 // Liaisons actives proportionnelles à λ (HASE) et maintenues (HEUR).
 const liaisonsPleines = majLiaisons(sceneHASE, { gamma: 0.01, lambda: 1 });
-ok(liaisonsPleines.nAuto === liaisonsPleines.nAutoTotal, 'λ=1 : toutes les liaisons auto actives');
-ok(liaisonsPleines.nAssoc === Math.round(0.6 * liaisonsPleines.nAssocTotal), 'adsorption partielle 0,6');
+ok(liaisonsPleines.nCrochet === liaisonsPleines.nCrochetTotal, 'λ=1 : toutes les liaisons crochet-crochet actives');
+ok(liaisonsPleines.nAssoc === 0 && liaisonsPleines.nAuto === 0, 'HASE du TP : seules des liaisons crochet-crochet');
 const liaisonsBasses = majLiaisons(sceneHASE, { gamma: 100, lambda: 0.1 });
-ok(liaisonsBasses.nAuto === Math.round(0.1 * liaisonsBasses.nAutoTotal), 'λ=0,1 : 10 % des liaisons auto');
-ok(liaisonsBasses.nAuto < liaisonsPleines.nAuto, 'le cisaillement réduit le réseau');
-ok(liaisonsPleines.nCrochet === liaisonsPleines.nCrochetTotal, 'λ=1 : toutes les liaisons crochet actives');
+ok(liaisonsBasses.nCrochet === Math.round(0.1 * liaisonsBasses.nCrochetTotal), 'λ=0,1 : 10 % des liaisons crochet');
+ok(liaisonsBasses.nCrochet < liaisonsPleines.nCrochet, 'le cisaillement réduit le réseau');
+ok(majLiaisons(sceneHASE, { gamma: 10000, lambda: 0 }).nCrochet === 0, 'λ=0 : plus aucune liaison');
 
 const sceneHEUR = construireScene({ famille: 'heur' });
 ok(sceneHEUR.pairesCrochet.length === 0, 'HEUR : aucun crochet');

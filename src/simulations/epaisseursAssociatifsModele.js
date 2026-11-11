@@ -280,9 +280,10 @@ export function construireScene({
     }
     const groupes = [];
     if (famille === 'hase' || famille === 'heur') {
-      // Le HASE et le HEUR portent des gants ; un HASE porte aussi quelques crochets
-      // (groupes hydrophobes n'adsorbant pas sur les charges, cf. légende du TP).
-      const type = famille === 'hase' && c === 2 ? 'crochet' : 'gant';
+      // Convention du TP (TPF4) : le Thixol 53 L (HASE) est dessiné avec des crochets
+      // (liaisons auto-associantes seulement) ; le Coapur 3025 (HEUR) avec des gants
+      // (liaisons associatives avec les particules, et auto-associantes entre gants).
+      const type = famille === 'hase' ? 'crochet' : 'gant';
       for (const i of [4, 8, 12]) {
         groupes.push({ i, x: points[i].x, y: points[i].y, type });
       }
@@ -322,10 +323,13 @@ export function construireScene({
   const pairesCrochet = [];
   for (let i = 0; i < crochets.length; i++) {
     for (let j = i + 1; j < crochets.length; j++) {
+      if (chaines.some((ch) => ch.groupes.includes(crochets[i]) && ch.groupes.includes(crochets[j]))) continue; // jamais sur la même chaîne
       const d = Math.hypot(crochets[i].x - crochets[j].x, crochets[i].y - crochets[j].y);
       if (d < 200) pairesCrochet.push({ a: crochets[i], b: crochets[j], d });
     }
   }
+  // Les liaisons de plus courte portée résistent le plus longtemps : on trie par distance.
+  for (const liste of [pairesAuto, pairesAssoc, pairesCrochet]) liste.sort((u, v) => u.d - v.d);
   return { famille, chaines, particules, pairesAuto, pairesAssoc, pairesCrochet, L, H };
 }
 
@@ -339,12 +343,7 @@ export function majLiaisons(scene, { gamma = 0.1, lambda = 1, doseForte = false 
   const assoc = [];
   const crochet = [];
   if (fam === 'hase') {
-    // Réseau auto-associé dominant, piloté par λ (casse sous cisaillement).
-    const nAuto = Math.round(scene.pairesAuto.length * Math.min(1, Math.max(0, lambda)));
-    for (let i = 0; i < nAuto; i++) auto.push(scene.pairesAuto[i]);
-    // Adsorption partielle des gants sur les particules, qui suit aussi λ.
-    const nAssoc = Math.round(scene.pairesAssoc.length * 0.6 * Math.min(1, Math.max(0, lambda)));
-    for (let i = 0; i < nAssoc; i++) assoc.push(scene.pairesAssoc[i]);
+    // HASE du TP (crochets) : réseau auto-associé seul, piloté par λ (casse sous cisaillement).
     const nC = Math.round(scene.pairesCrochet.length * Math.min(1, Math.max(0, lambda)));
     for (let i = 0; i < nC; i++) crochet.push(scene.pairesCrochet[i]);
   } else if (fam === 'heur') {
