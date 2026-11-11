@@ -47,7 +47,7 @@ export const CHAPITRES = [
   { id: 'bts-organique', niveau: 'BTS', label: '⚗️ Synthèse organique', sims: [93, 94, 95, 96, 97, 98, 99], domaines: ['Régiosélectivité (BTS)', 'Contrôle cinétique et thermodynamique (BTS)', 'Substitution ou élimination (BTS)', 'Addition du dibrome (BTS)', 'Types de réaction et transposition (BTS)', 'Syn, anti et sélectivités (BTS)', 'Chimiosélectivité (BTS)'] },
   { id: 'bts-rmn', niveau: 'BTS', label: '🧲 Spectroscopie RMN', sims: [75, 76], domaines: ['Spectroscopie RMN'] },
   { id: 'bts-cristallo', niveau: 'BTS', label: '🔷 Analyse cristallographique', sims: [74, 73], domaines: ['Analyse cristallographique'] },
-  { id: 'bts-formulation', niveau: 'BTS', label: '🧪 Formulation', sims: [4, 14, 100], domaines: ['Formulation', 'Rhéologie'] },
+  { id: 'bts-formulation', niveau: 'BTS', label: '🧪 Formulation', sims: [4, 14], domaines: ['Formulation'] },
 ];
 
 export const MAX_CHAPITRES = 3;
