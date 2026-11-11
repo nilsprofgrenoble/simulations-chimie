@@ -771,7 +771,7 @@ function Hypotheses() {
         avec dλ/dt = (1 − λ)/τ − k·γ̇·λ (cassage rapide, reformation lente : τ = {fmt(PARAMS.hase.tauRec, 0)} s).
         La rhéofluidification et la thixotropie sortent de cette seule équation.</li>
       <li>Le HASE est lui aussi alcali-gonflable : livré à pH acide (pH 3 pour le Thixol), il épaissit à pH 8-9 (fiche). Son effet est multiplié par la fraction ionisée relative à pH 8,5,
-        avec la même loi que l’ASE ; à pH 8,5 le facteur vaut 1. À pH bas, le dessin montre des crochets non accrochés : en réalité, la chaîne est repliée, c’est une simplification.
+        avec la même loi que l’ASE ; à pH 8,5 le facteur vaut 1. À pH bas (facteur inférieur à 0,5), le dessin montre la chaîne repliée en pelote, comme pour l’ASE, avec les groupes hydrophobes enfouis ; entre les deux, la pelote se déploie progressivement (le passage au réseau complet se fait d’un coup à l’écran, c’est une simplification).
         Le HEUR est non ionique : le pH ne joue pas. L’atelier du formulateur suppose une peinture à pH 8,5.</li>
       <li>Notre Coapur 3025 (HEUR) : liaisons gant-particule tenues, donc η quasi constant (variation &lt; 8 %) ;
         à dose forte, un réseau auto-associé s’ajoute (τ = {fmt(PARAMS.heur.tauRecAuto, 0)} s).</li>

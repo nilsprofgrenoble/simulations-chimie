@@ -9,7 +9,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { KIT, stylePetitBouton } from "../commun";
-import { mulberry32, fractionIonisee, fractionsLiaisons } from "./epaisseursAssociatifsModele";
+import { mulberry32, fractionIonisee, fractionsLiaisons, facteurPHHASE } from "./epaisseursAssociatifsModele";
 
 const W = 600, H = 340;
 const COUL = {
@@ -205,6 +205,17 @@ function sceneHASE({ fCrochet }) {
   return { crochets, chaines, compte: { crochet: [nIntact, PAIRES_HASE.length] } };
 }
 
+// HASE en milieu acide (non neutralisé) : comme un ASE, la chaîne est repliée en pelote ; les groupes hydrophobes sont enfouis, pas de crochets.
+const SEUIL_PELOTE = 0.5;
+function sceneHASEPelote({ f }) {
+  const longueur = 90 + 440 * f, amp = 11;
+  return ["A", "B", "C"].map((c, k) => {
+    const pts = [];
+    for (let i = 0; i <= 20; i++) pts.push({ x: 40 + (i / 20) * longueur, y: Y_RANG[c] + amp * Math.sin(i * 1.3 + k * 1.7) * (0.55 + 0.45 * f) });
+    return pts;
+  });
+}
+
 // ---------------------------------------------------------------- ASE : chaîne sans groupe hydrophobe, qui gonfle
 
 const Y_ASE = [70, 170, 270];
@@ -331,6 +342,7 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
         s.chaines.forEach((c) => { obst = obst.concat(obstacleChaine(c, 14)); });
         s.crochets.forEach((c) => obst.push({ x: c.x, y: c.y, r: 42 }));
       }
+      sceneHASEPelote({ f: SEUIL_PELOTE }).forEach((c) => { obst = obst.concat(obstacleChaine(c, 18)); });
       charges = placer(4, [21, 18, 20, 19], obst, 11, { x0: 20, x1: W - 20, y0: 12, y1: H - 12 });
     } else if (famille === "heur") {
       for (const f of [1, 0]) {
@@ -357,7 +369,18 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
   const halo = (chaines, r) => eau ? chaines.map((c, i) => (
     <path key={"h" + i} d={courbe(c)} fill="none" stroke="#f59e0b" strokeOpacity="0.22" strokeWidth={2 * r} strokeLinecap="round" strokeLinejoin="round" />
   )) : null;
-  if (famille === "hase") {
+  const fPH = facteurPHHASE(pH);
+  if (famille === "hase" && fPH < SEUIL_PELOTE) {
+    const chaines = sceneHASEPelote({ f: fPH });
+    lignes = chaines; rayonEau = 4 + 22 * fPH;
+    dessin = (
+      <g>
+        {halo(chaines, rayonEau)}
+        {chaines.map((c, i) => <path key={i} d={courbe(c)} fill="none" stroke={COUL.chaine} strokeWidth="3.5" strokeLinecap="round" />)}
+      </g>
+    );
+    compte = <>pH trop bas : le polymère n’est pas neutralisé, la chaîne est repliée en pelote et ses groupes hydrophobes sont enfouis : <b>aucun crochet</b>, pas de réseau.</>;
+  } else if (famille === "hase") {
     const s = sceneHASE({ fCrochet: fr.crochet });
     lignes = s.chaines; rayonEau = 4 + 14 * fr.crochet;
     dessin = (
@@ -367,8 +390,7 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
         {s.crochets.map((c, i) => <Crochet key={i} x={c.x} y={c.y} a={c.a} />)}
       </g>
     );
-    compte = <>Crochets accrochés : <b>{s.compte.crochet[0]}</b> paires sur {s.compte.crochet[1]}
-      {ion < 0.5 && <> · pH trop bas : le polymère n’est pas neutralisé, il n’épaissit pas</>}</>;
+    compte = <>Crochets accrochés : <b>{s.compte.crochet[0]}</b> paires sur {s.compte.crochet[1]}</>;
   } else if (famille === "heur") {
     const s = sceneHEUR({ fAssoc: fr.assoc, fAuto: fr.auto });
     lignes = s.chaines.map((c) => onduler(c, 7, 55)); rayonEau = 4 + 14 * fr.assoc;
