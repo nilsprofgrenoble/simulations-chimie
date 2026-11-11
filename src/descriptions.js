@@ -83,4 +83,5 @@ export const DESCRIPTIONS = {
   "Simulation CPG": "Chromatographie en phase gazeuse : indices de Kováts, programmation de température, gaz vecteur, injecteur split ou splitless, détecteur FID. Chromatogramme en direct, pannes, parcours et défis.",
   "CPG couplée à la spectrométrie de masse": "CPG-SM : chromatogramme (TIC), spectre de masse d'un pic (ion moléculaire, pic de base, isotopes du chlore), recherche en bibliothèque, chromatogrammes d'ions extraits, contrôle air / eau, pannes.",
   "Courbes i-E et diagramme E-pH": "Faisceau de courbes intensité-potentiel à plusieurs pH, vue 3D (E, pH, i), coupe à un pH donné et diagramme E-pH correspondant.",
+  "Épaississants associatifs : ASE, HASE, HEUR": "Gants, crochets et particules : comment un épaississant associatif (HASE, HEUR) ou alcali-gonflable (ASE) règle la viscosité d’une peinture selon le gradient de vitesse. Rampe aller-retour, test 3ITT, thixotropie ; parcours guidé et défi « fiche technique » : les fiches techniques n’auront plus de secret.",
 };

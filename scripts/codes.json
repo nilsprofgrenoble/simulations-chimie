@@ -673,5 +673,12 @@
  "34:ch-groupe": "SAPP169",
  "34:ch-choisir": "SAPP170",
  "34:ch-perte": "SAPP171",
- "34:ch-paracetamol": "SAPP172"
+ "34:ch-paracetamol": "SAPP172",
+ "34:rheo-famille": "SAPP173",
+ "34:rheo-gant-crochet": "SAPP174",
+ "34:rheo-thixol": "SAPP175",
+ "34:rheo-coapur": "SAPP176",
+ "34:rheo-3itt": "SAPP177",
+ "34:rheo-ase": "SAPP178",
+ "34:rheo-architecture": "SAPP179"
 }
