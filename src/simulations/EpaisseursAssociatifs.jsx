@@ -4,7 +4,7 @@
 // Aucune bibliothèque externe : scène moléculaire en SVG, courbes en canvas 2D natif.
 // Parcours guidé progressif : à chaque étape, seuls les éléments utiles sont à l'écran.
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, Curseur, LigneMesure, ARetenir, fmt, lireNombre, proche, IndiceDefi } from "../commun";
@@ -215,16 +215,50 @@ function PanneauLiaisons() {
 }
 
 // ---------------------------------------------------------------------------
+// Graphiques : le canevas prend la largeur réelle de l’écran (police 12 px et marges en pixels réels),
+// donc lisible sur téléphone ; plus haut en proportion quand l’écran est étroit.
+// ---------------------------------------------------------------------------
+
+function Toile({ dessiner, ratio, aria }) {
+  const boite = useRef(null);
+  const canvas = useRef(null);
+  const [largeur, setLargeur] = useState(0);
+  useEffect(() => {
+    const el = boite.current;
+    const mesurer = () => setLargeur(Math.round(el.getBoundingClientRect().width));
+    mesurer();
+    const ro = new ResizeObserver(mesurer);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const etroit = largeur > 0 && largeur < 520;
+  const hauteur = Math.round(largeur * (etroit ? Math.max(ratio, 0.8) : ratio));
+  useEffect(() => {
+    if (!largeur) return;
+    const c = canvas.current;
+    const dpr = Math.min(3, window.devicePixelRatio || 1);
+    c.width = Math.round(largeur * dpr); c.height = Math.round(hauteur * dpr);
+    const ctx = c.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineWidth = 1; ctx.globalAlpha = 1; ctx.setLineDash([]); ctx.lineCap = "butt";
+    ctx.clearRect(0, 0, largeur, hauteur);
+    ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, largeur, hauteur);
+    ctx.font = "12px sans-serif";
+    dessiner(ctx, largeur, hauteur, etroit);
+  }, [dessiner, largeur, hauteur, etroit]);
+  return (
+    <div ref={boite} style={{ width: "100%" }}>
+      <canvas ref={canvas} role="img" aria-label={aria} style={{ width: largeur || "100%", height: hauteur || 0, display: "block", borderRadius: 10, border: "1px solid #cbd5e1" }} />
+    </div>);
+}
+
+// ---------------------------------------------------------------------------
 // Courbe η(γ̇) en log-log, avec les bandes de gradient.
 // ---------------------------------------------------------------------------
 
 function CourbeLogLog({ series, gammaCur = null, cibles = [] }) {
-  const refCanvas = useRef(null);
-  useEffect(() => {
-    const canvas = refCanvas.current;
-    const ctx = canvas.getContext("2d");
-    const L = 1000, H = 400;
-    const marge = { g: 58, d: 14, h: 34, b: 40 };
+  const dessiner = useCallback((ctx, L, H, etroit) => {
+    const marge = { g: 46, d: 10, h: 38, b: 38 };
     const xMin = Math.log10(GAMMA_MIN), xMax = Math.log10(GAMMA_MAX);
     let etaMin = Infinity, etaMax = -Infinity;
     for (const s of series) for (const p of s.points) { etaMin = Math.min(etaMin, p.eta); etaMax = Math.max(etaMax, p.eta); }
@@ -237,45 +271,35 @@ function CourbeLogLog({ series, gammaCur = null, cibles = [] }) {
     }
     const px = (g) => marge.g + (Math.log10(g) - xMin) / (xMax - xMin) * (L - marge.g - marge.d);
     const py = (eta) => H - marge.b - (Math.log10(eta) - yMin) / (yMax - yMin) * (H - marge.h - marge.b);
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.lineWidth = 1;
-    ctx.globalAlpha = 1;
-    ctx.setLineDash([]);
-    ctx.clearRect(0, 0, L, H);
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, L, H);
-    // Bandes de gradient.
     const teintes = ["#fefce8", "#f0fdf4", "#eff6ff", "#faf5ff"];
     ZONES.forEach((z, i) => {
       ctx.fillStyle = teintes[i];
       ctx.fillRect(px(z.min), marge.h, px(z.max) - px(z.min), H - marge.h - marge.b);
     });
-    // Grille et graduations.
     ctx.strokeStyle = "#e2e8f0";
     ctx.fillStyle = "#475569";
-    ctx.font = "13px sans-serif";
     ctx.textAlign = "center";
     for (let d = -2; d <= 4; d++) {
       const g = Math.pow(10, d);
       const x = px(g);
       ctx.beginPath(); ctx.moveTo(x, marge.h); ctx.lineTo(x, H - marge.b); ctx.stroke();
-      ctx.fillText(fmt(g, d < 0 ? -d : 0), x, H - marge.b + 16);
+      if (!etroit || d % 2 === 0) ctx.fillText(fmt(g, d < 0 ? -d : 0), Math.min(x, L - 22), H - marge.b + 15);
     }
     ctx.textAlign = "right";
     for (let d = Math.ceil(yMin); d <= Math.floor(yMax); d++) {
       const y = py(Math.pow(10, d));
       ctx.beginPath(); ctx.moveTo(marge.g, y); ctx.lineTo(L - marge.d, y); ctx.stroke();
-      ctx.fillText(fmt(Math.pow(10, d), 0), marge.g - 6, y + 4);
+      ctx.fillText(fmt(Math.pow(10, d), 0), marge.g - 5, y + 4);
     }
-    // Noms des zones (abrégés).
+    // Noms des zones : la version la plus longue qui tient dans la bande.
     ctx.textAlign = "center";
     ctx.fillStyle = "#334155";
-    const nomsZones = ["Sédimentation", "Affaissement / nivellement", "Mélange", "Application"];
+    const noms = [["Sédimentation", "Pot"], ["Affaissement / nivellement", "Mur frais", "Mur"], ["Mélange", "Mél."], ["Application", "Appl."]];
     ZONES.forEach((z, i) => {
-      const x = (px(z.min) + px(z.max)) / 2;
-      if (x > marge.g + 30 && x < L - marge.d - 30) ctx.fillText(nomsZones[i], x, marge.h - 8);
+      const x0 = Math.max(px(z.min), marge.g), x1 = Math.min(px(z.max), L - marge.d);
+      const nom = noms[i].find((n) => ctx.measureText(n).width <= x1 - x0 - 4);
+      if (nom) ctx.fillText(nom, (x0 + x1) / 2, marge.h - 6);
     });
-    // Courbes.
     for (const s of series) {
       ctx.beginPath();
       ctx.strokeStyle = s.couleur;
@@ -293,12 +317,10 @@ function CourbeLogLog({ series, gammaCur = null, cibles = [] }) {
       const x = px(c.gamma);
       ctx.strokeStyle = c.ok ? "#16a34a" : "#dc2626";
       ctx.globalAlpha = 0.55;
-      ctx.lineWidth = 12;
-      ctx.lineCap = "butt";
+      ctx.lineWidth = 8;
       ctx.beginPath(); ctx.moveTo(x, py(c.max)); ctx.lineTo(x, py(c.min)); ctx.stroke();
       ctx.globalAlpha = 1;
     }
-    // Curseur de gradient courant.
     if (gammaCur) {
       const x = px(gammaCur);
       ctx.strokeStyle = "#dc2626";
@@ -308,16 +330,12 @@ function CourbeLogLog({ series, gammaCur = null, cibles = [] }) {
       ctx.setLineDash([]);
     }
     ctx.fillStyle = "#334155";
+    ctx.textAlign = "right";
+    ctx.fillText("γ̇ (s⁻¹)", L - 4, H - 4);
     ctx.textAlign = "left";
-    ctx.fillText("γ̇ (s⁻¹)", L - 70, H - 6);
-    ctx.save();
-    ctx.translate(14, 60);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillText("η (mPa·s)", 0, 0);
-    ctx.restore();
+    ctx.fillText("η (mPa·s)", 4, 12);
   }, [series, gammaCur, cibles]);
-  return <canvas ref={refCanvas} width={1000} height={400} role="img" aria-label="Courbe de la viscosité η en fonction du gradient de vitesse γ̇, échelles logarithmiques"
-    style={{ width: "100%", height: "auto", borderRadius: 10, border: "1px solid #cbd5e1" }} />;
+  return <Toile dessiner={dessiner} ratio={0.4} aria="Courbe de la viscosité η en fonction du gradient de vitesse γ̇, échelles logarithmiques" />;
 }
 
 // ---------------------------------------------------------------------------
@@ -325,35 +343,27 @@ function CourbeLogLog({ series, gammaCur = null, cibles = [] }) {
 // ---------------------------------------------------------------------------
 
 function Courbe3ITT({ points }) {
-  const refCanvas = useRef(null);
-  useEffect(() => {
-    const canvas = refCanvas.current;
-    const ctx = canvas.getContext("2d");
-    const L = 1000, H = 340;
+  const dessiner = useCallback((ctx, L, H) => {
     const tMax = points[points.length - 1].t;
     const etaMax = Math.max(...points.map((p) => p.eta)) * 1.12;
-    const marge = { g: 62, d: 14, h: 20, b: 36 };
+    const marge = { g: 46, d: 10, h: 22, b: 30 };
     const px = (t) => marge.g + t / tMax * (L - marge.g - marge.d);
     const py = (eta) => H - marge.b - eta / etaMax * (H - marge.h - marge.b);
-    ctx.clearRect(0, 0, L, H);
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, L, H);
     const phases = [{ de: 0, a: 20, coul: "#f1f5f9" }, { de: 20, a: 40, coul: "#fee2e2" }, { de: 40, a: 120, coul: "#f1f5f9" }];
     for (const ph of phases) {
       ctx.fillStyle = ph.coul;
       ctx.fillRect(px(ph.de), marge.h, px(ph.a) - px(ph.de), H - marge.h - marge.b);
     }
     ctx.fillStyle = "#475569";
-    ctx.font = "13px sans-serif";
     ctx.textAlign = "center";
-    for (const t of [0, 20, 40, 120]) ctx.fillText(fmt(t, 0) + " s", px(t), H - marge.b + 16);
+    for (const t of [0, 20, 40, 120]) ctx.fillText(fmt(t, 0) + " s", Math.min(Math.max(px(t), marge.g + 8), L - 18), H - marge.b + 15);
     ctx.textAlign = "right";
     ctx.strokeStyle = "#e2e8f0";
     const pas = etaMax / 4;
     for (let i = 0; i <= 4; i++) {
       const y = py(pas * i);
       ctx.beginPath(); ctx.moveTo(marge.g, y); ctx.lineTo(L - marge.d, y); ctx.stroke();
-      ctx.fillText(fmt(pas * i, 0), marge.g - 6, y + 4);
+      ctx.fillText(fmt(pas * i, 0), marge.g - 5, y + 4);
     }
     ctx.beginPath();
     ctx.strokeStyle = "#1d4ed8";
@@ -364,12 +374,12 @@ function Courbe3ITT({ points }) {
     });
     ctx.stroke();
     ctx.fillStyle = "#334155";
+    ctx.textAlign = "right";
+    ctx.fillText("t (s)", L - 4, H - 4);
     ctx.textAlign = "left";
-    ctx.fillText("t (s)", L - 60, H - 4);
-    ctx.fillText("η (mPa·s)", 14, 34);
+    ctx.fillText("η (mPa·s)", 4, 12);
   }, [points]);
-  return <canvas ref={refCanvas} width={1000} height={340} role="img" aria-label="Courbe de la viscosité η en fonction du temps pendant le test en trois intervalles"
-    style={{ width: "100%", height: "auto", borderRadius: 10, border: "1px solid #cbd5e1" }} />;
+  return <Toile dessiner={dessiner} ratio={0.34} aria="Courbe de la viscosité η en fonction du temps pendant le test en trois intervalles" />;
 }
 
 // ---------------------------------------------------------------------------
@@ -378,12 +388,8 @@ function Courbe3ITT({ points }) {
 // ---------------------------------------------------------------------------
 
 function CourbeEcoulement({ series, gammaMax, gammaCur = null }) {
-  const refCanvas = useRef(null);
-  useEffect(() => {
-    const canvas = refCanvas.current;
-    const ctx = canvas.getContext("2d");
-    const L = 1000, H = 340;
-    const marge = { g: 70, d: 16, h: 30, b: 40 };
+  const dessiner = useCallback((ctx, L, H) => {
+    const marge = { g: 46, d: 12, h: 24, b: 30 };
     let tauMax = 0;
     for (const s of series) for (const p of s.points) tauMax = Math.max(tauMax, p.tau);
     const pasBrut = tauMax / 4;
@@ -392,24 +398,20 @@ function CourbeEcoulement({ series, gammaMax, gammaCur = null }) {
     const yMax = pasTau * Math.ceil(tauMax / pasTau - 1e-9);
     const px = (g) => marge.g + g / gammaMax * (L - marge.g - marge.d);
     const py = (t) => H - marge.b - t / yMax * (H - marge.h - marge.b);
-    ctx.clearRect(0, 0, L, H);
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, L, H);
     ctx.strokeStyle = "#e2e8f0";
     ctx.fillStyle = "#475569";
-    ctx.font = "13px sans-serif";
     ctx.textAlign = "right";
     for (let t = 0; t <= yMax + 1e-9; t += pasTau) {
       const y = py(t);
       ctx.beginPath(); ctx.moveTo(marge.g, y); ctx.lineTo(L - marge.d, y); ctx.stroke();
-      ctx.fillText(fmt(t, 0), marge.g - 6, y + 4);
+      ctx.fillText(fmt(t, 0), marge.g - 5, y + 4);
     }
     ctx.textAlign = "center";
     for (let i = 0; i <= 5; i++) {
       const g = gammaMax * i / 5;
       const x = px(g);
       ctx.beginPath(); ctx.moveTo(x, marge.h); ctx.lineTo(x, H - marge.b); ctx.stroke();
-      ctx.fillText(fmt(g, 0), x, H - marge.b + 16);
+      ctx.fillText(fmt(g, 0), Math.min(x, L - 14), H - marge.b + 15);
     }
     for (const s of series) {
       ctx.beginPath();
@@ -430,12 +432,12 @@ function CourbeEcoulement({ series, gammaMax, gammaCur = null }) {
       ctx.setLineDash([]);
     }
     ctx.fillStyle = "#334155";
+    ctx.textAlign = "right";
+    ctx.fillText("γ̇ (s⁻¹)", L - 4, H - 4);
     ctx.textAlign = "left";
-    ctx.fillText("γ̇ (s⁻¹)", L - 70, H - 6);
-    ctx.fillText("τ (Pa)", 14, 16);
+    ctx.fillText("τ (Pa)", 4, 12);
   }, [series, gammaMax, gammaCur]);
-  return <canvas ref={refCanvas} width={1000} height={340} role="img" aria-label="Courbe d’écoulement : contrainte de cisaillement τ en fonction du gradient de vitesse γ̇, axes linéaires"
-    style={{ width: "100%", height: "auto", borderRadius: 10, border: "1px solid #cbd5e1" }} />;
+  return <Toile dessiner={dessiner} ratio={0.36} aria="Courbe d’écoulement : contrainte de cisaillement τ en fonction du gradient de vitesse γ̇, axes linéaires" />;
 }
 
 // ---------------------------------------------------------------------------
