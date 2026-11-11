@@ -14,7 +14,7 @@ import {
   PARAMS, ZONES, zoneDeGradient,
   lambdaStatio, cinetiqueReseau, etaStatio, etaInstantane,
   simulerRappe, hysteresisMoyenne, simuler3ITT,
-  tirerFicheTDS, questionsDefi, etaPeinture, evaluerPeinture, DOSES_REF,
+  tirerFicheTDS, questionsDefi, etaPeinture, evaluerPeinture, DOSES_REF, PEINTURES_MESUREES, GAMMAS_PEINTURES,
 } from "./epaisseursAssociatifsModele";
 
 const SIM_ID = 100;
@@ -615,7 +615,11 @@ function AtelierFormulateur({ doses, setDoses }) {
       const g = GAMMA_MIN * Math.pow(GAMMA_MAX / GAMMA_MIN, i / 90);
       points.push({ gamma: g, eta: etaPeinture(g, doses) });
     }
-    return [{ points, couleur: "#0f172a", libelle: "peinture" }];
+    const reelles = ["A", "B"].map((k, i) => ({
+      points: GAMMAS_PEINTURES.map((g, j) => ({ gamma: g, eta: PEINTURES_MESUREES[k].aller[j] })),
+      couleur: i ? "#7c3aed" : "#64748b", tirets: i ? [2, 3] : [8, 4], libelle: PEINTURES_MESUREES[k].nom,
+    }));
+    return [{ points, couleur: "#0f172a", libelle: "peinture" }, ...reelles];
   }, [doses]);
   const cibles = res.filter((c) => c.gamma).map((c) => ({ gamma: c.gamma, min: c.min, max: c.max, ok: c.ok }));
   const nOk = res.filter((c) => c.ok).length;
@@ -648,7 +652,9 @@ function AtelierFormulateur({ doses, setDoses }) {
       </div>
       <CourbeLogLog series={serie} cibles={cibles} />
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>
-        Courbe de viscosité de la peinture. Barres : plage visée pour chaque critère (verte si respectée, rouge sinon).
+        Trait plein noir : ta peinture (modèle). Tirets longs gris : peinture A mesurée ; pointillés violets : peinture B mesurée
+        (viscosimètre LAMY RM100+, mobile MS-R3, de 1 à 300 s⁻¹, branche aller). Barres : plage visée pour chaque critère (verte si respectée, rouge sinon).
+        Le critère d’application vise une peinture plus visqueuse à haut gradient que A et B (environ 0,85 Pa·s à 300 s⁻¹).
       </div>
     </div>
   );
@@ -782,7 +788,12 @@ function Hypotheses() {
       <li>Atelier du formulateur : les effets du Thixol et du Coapur sont supposés s’additionner (les fiches disent seulement qu’ils se combinent bien)
         et proportionnels aux doses. Les courbes de référence correspondent à {fmt(DOSES_REF.thixol, 1)} % de Thixol et {fmt(DOSES_REF.coapur, 1)} % de Coapur secs sur la formule ;
         le niveau de viscosité du Coapur est un choix du modèle.</li>
-      <li>Les quatre critères du cahier des charges sont des ordres de grandeur pédagogiques, pas des normes ni des valeurs de la fiche.</li>
+      <li>Les quatre critères du cahier des charges sont des ordres de grandeur pédagogiques, pas des normes ni des valeurs de la fiche.
+        Ceux de bas gradient (mur frais) encadrent deux peintures du commerce mesurées ; celui de haut gradient est fixé au-dessus d’elles (haut de gamme).
+        La tenue en pot (0,1 s⁻¹) n’a pas pu être mesurée (le viscosimètre ne descend pas sous 1 s⁻¹) : sa limite est une estimation.</li>
+      <li>Comparaison avec les peintures A et B : une vraie peinture contient en plus du latex, des pigments et des charges qui lui donnent une viscosité de base, et sa viscosité continue de baisser
+        jusqu’à 300 s⁻¹ (pente d’environ –0,5 à –0,6 en log-log). Le modèle s’aplatit vers 100 s⁻¹ : les courbes ne se superposent pas, seules les ordres de grandeur sont comparables.
+        Les peintures A et B ont aussi une hystérésis (retour à 1 s⁻¹ à 83 % et 72 % de l’aller), du même ordre que la régénération du test 3ITT (environ 80 %), mais ce n’est pas le même protocole.</li>
       <li>Rampe : chaque gradient est maintenu 0,8 s. Test 3ITT : 20 s à 1 s⁻¹, 20 s à 256 s⁻¹, 80 s à 1 s⁻¹.</li>
       <li>La scène moléculaire est un dessin pédagogique : une chaîne réelle porte des milliers de motifs,
         et les échelles de taille et de temps ne sont pas réalistes.</li>
@@ -1046,9 +1057,9 @@ export function SimulationEpaisseursAssociatifs() {
         type: "action",
         ok: evaluerPeinture(doses).every((c) => c.ok),
         label: "Le faire pour moi",
-        faire: () => setDoses({ thixol: 0.3, coapur: 0.6 }),
+        faire: () => setDoses({ thixol: 0.6, coapur: 0.6 }),
         consigne: "Obtiens les quatre critères au vert : tenue en pot, mur frais, application et nivellement.",
-        indice: "Règle d’abord le Thixol pour la tenue en pot (viscosité à 0,1 s⁻¹), puis ajoute du Coapur pour remonter la viscosité à 1 000 s⁻¹, sans dépasser la limite à 1 s⁻¹.",
+        indice: "Règle d’abord le Thixol pour la viscosité à bas gradient (0,1 et 1 s⁻¹), puis ajoute du Coapur pour remonter la viscosité à 300 s⁻¹, sans dépasser la limite à 1 s⁻¹.",
       },
     },
   ];

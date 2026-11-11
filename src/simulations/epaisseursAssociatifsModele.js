@@ -558,11 +558,28 @@ export function regenerationPeinture({ thixol = 0, coapur = 0 } = {}) {
   return { etaRef, etaFinal, regeneration: etaFinal / etaRef * 100 };
 }
 
-// Cahier des charges d'une peinture mate (ordres de grandeur pédagogiques).
+// Mesures réelles de deux peintures du commerce (viscosimètre LAMY RM100+, mobile MS-R3, 22–23 °C, rampe 1 → 300 → 1 s⁻¹, 2 s par palier).
+// Viscosité en mPa·s : « aller » = gradient croissant, « retour » = gradient décroissant (l'écart des deux branches est l'hystérésis).
+export const GAMMAS_PEINTURES = [1, 2, 4, 10, 20, 40, 80, 150, 220, 300];
+export const PEINTURES_MESUREES = {
+  A: {
+    nom: 'Peinture A',
+    aller: [18290, 12548, 8602, 5314, 3876, 2713, 1884, 1326, 1049, 874],
+    retour: [15111, 10550, 7214, 4717, 3404, 2469, 1748, 1233, 994, 858],
+  },
+  B: {
+    nom: 'Peinture B',
+    aller: [28049, 17608, 10744, 5997, 3868, 2477, 1624, 1135, 935, 816],
+    retour: [20308, 13031, 8715, 5069, 3483, 2327, 1588, 1120, 923, 812],
+  },
+};
+
+// Cahier des charges d'une peinture mate haut de gamme (ordres de grandeur pédagogiques).
+// Mur frais : encadre les deux peintures mesurées (18 et 28 Pa·s à 1 s⁻¹). Application : plus visqueuse à haut gradient que ces deux peintures (0,8 à 0,9 Pa·s à 300 s⁻¹).
 export const CRITERES_PEINTURE = [
-  { id: 'sedim', court: 'Tenue en pot', texte: 'Pas de sédimentation en pot : η(0,1 s⁻¹) d’au moins 8 000 mPa·s', gamma: 0.1, min: 8000, max: 40000, unite: 'mPa·s' },
-  { id: 'affais', court: 'Mur frais', texte: 'Pas d’affaissement sans nuire au nivellement : η(1 s⁻¹) entre 5 000 et 12 000 mPa·s', gamma: 1, min: 5000, max: 12000, unite: 'mPa·s' },
-  { id: 'appli', court: 'Application', texte: 'Peu d’éclaboussures et bon pouvoir garnissant : η(1 000 s⁻¹) entre 800 et 1 800 mPa·s', gamma: 1000, min: 800, max: 1800, unite: 'mPa·s' },
+  { id: 'sedim', court: 'Tenue en pot', texte: 'Pas de sédimentation en pot : η(0,1 s⁻¹) d’au moins 8 000 mPa·s', gamma: 0.1, min: 8000, max: 60000, unite: 'mPa·s' },
+  { id: 'affais', court: 'Mur frais', texte: 'Pas d’affaissement sur le mur frais : η(1 s⁻¹) entre 15 000 et 30 000 mPa·s', gamma: 1, min: 15000, max: 30000, unite: 'mPa·s' },
+  { id: 'appli', court: 'Application', texte: 'Peu d’éclaboussures et film bien garni (haut de gamme) : η(300 s⁻¹) entre 1 500 et 3 000 mPa·s', gamma: 300, min: 1500, max: 3000, unite: 'mPa·s' },
   { id: 'thixo', court: 'Nivellement', texte: 'Retour progressif de la structure : régénération au test 3ITT entre 60 et 95 %', min: 60, max: 95, unite: '%' },
 ];
 

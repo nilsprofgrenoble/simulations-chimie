@@ -255,8 +255,8 @@ ok(profilFiche({ ...ficheRheo, famille: 'heur' }) === 'Rhéofluidifiant (pseudop
   procheVal(etaPeinture(1, { thixol: 0, coapur: DOSES_REF.coapur }), etaStatio('heur', 1, {}), 1e-9, 'dose de référence de Coapur = courbe HEUR');
   const nOk = (d) => evaluerPeinture(d).filter((c) => c.ok).length;
   const ids = (d) => evaluerPeinture(d).filter((c) => !c.ok).map((c) => c.id);
-  ok(nOk({ thixol: 0.3, coapur: 0.6 }) === 4, `combinaison 0,3 % + 0,6 % : 4 critères (échecs : ${ids({ thixol: 0.3, coapur: 0.6 })})`);
-  ok(nOk({ thixol: 0.4, coapur: 0.4 }) === 4, `combinaison 0,4 % + 0,4 % : 4 critères (échecs : ${ids({ thixol: 0.4, coapur: 0.4 })})`);
+  ok(nOk({ thixol: 0.6, coapur: 0.6 }) === 4, `combinaison 0,6 % + 0,6 % : 4 critères (échecs : ${ids({ thixol: 0.6, coapur: 0.6 })})`);
+  ok(nOk({ thixol: 0.55, coapur: 0.5 }) === 4, `combinaison 0,55 % + 0,5 % : 4 critères (échecs : ${ids({ thixol: 0.55, coapur: 0.5 })})`);
   ok(ids({ thixol: 0.4, coapur: 0 }).includes('appli'), 'Thixol seul : échoue à l’application');
   for (let c = 0; c <= 3.0001; c += 0.1) ok(nOk({ thixol: 0, coapur: c }) < 4, `Coapur seul (${c.toFixed(1)} %) : jamais les 4 critères`);
   for (let t = 0; t <= 1.0001; t += 0.05) ok(nOk({ thixol: t, coapur: 0 }) < 4, `Thixol seul (${t.toFixed(2)} %) : jamais les 4 critères`);
@@ -264,9 +264,22 @@ ok(profilFiche({ ...ficheRheo, famille: 'heur' }) === 'Rhéofluidifiant (pseudop
   // La zone de solutions existe sur la grille des curseurs (pas 0,05 et 0,1) et n’est pas réduite à un point.
   let solutions = 0;
   for (let t = 0; t <= 1.0001; t += 0.05) for (let c = 0; c <= 3.0001; c += 0.1) if (nOk({ thixol: t, coapur: c }) === 4) solutions++;
-  ok(solutions >= 8, `au moins 8 réglages gagnants sur la grille (obtenu ${solutions})`);
-  const r = regenerationPeinture({ thixol: 0.3, coapur: 0.6 });
+  ok(solutions >= 30, `au moins 30 réglages gagnants sur la grille (obtenu ${solutions})`);
+  const r = regenerationPeinture({ thixol: 0.6, coapur: 0.6 });
   ok(r.regeneration > 60 && r.regeneration < 100, 'régénération du mélange entre 60 et 100 %');
+}
+
+// Peintures mesurées : même nombre de points, viscosité = contrainte/gradient cohérente, hystérésis (retour sous l'aller à bas gradient).
+{
+  const { PEINTURES_MESUREES, GAMMAS_PEINTURES } = await import('./epaisseursAssociatifsModele.js');
+  for (const k of ['A', 'B']) {
+    const m = PEINTURES_MESUREES[k];
+    ok(m.aller.length === GAMMAS_PEINTURES.length && m.retour.length === GAMMAS_PEINTURES.length, `peinture ${k} : nombre de points`);
+    ok(m.aller.every((v, i) => i === 0 || v < m.aller[i - 1]) && m.retour.every((v, i) => i === 0 || v < m.retour[i - 1]), `peinture ${k} : viscosité décroissante`);
+    ok(m.retour[0] < m.aller[0], `peinture ${k} : hystérésis à 1 s⁻¹`);
+  }
+  procheVal(PEINTURES_MESUREES.A.retour[0] / PEINTURES_MESUREES.A.aller[0], 0.826, 0.01, 'A : retour/aller à 1 s⁻¹ = 83 %');
+  procheVal(PEINTURES_MESUREES.B.retour[0] / PEINTURES_MESUREES.B.aller[0], 0.724, 0.01, 'B : retour/aller à 1 s⁻¹ = 72 %');
 }
 
 console.log(`epaisseursAssociatifsModele.test.mjs : ${nVerifs} vérifications, 0 échec.`);
