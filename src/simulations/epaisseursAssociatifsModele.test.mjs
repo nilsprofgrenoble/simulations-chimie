@@ -8,7 +8,7 @@ import {
   etaStatioHASE, etaHEUR, etaASE, fractionIonisee,
   etaStatio, etaInstantane,
   simulerRappe, hysteresisMoyenne, simuler3ITT,
-  construireScene, majLiaisons, mulberry32,
+  construireScene, fractionsLiaisons, majLiaisons, mulberry32,
   tirerFicheTDS, etaStatioFiche, profilFiche, questionsDefi, arrondiSig, GAMMAS_MESURES,
 } from './epaisseursAssociatifsModele.js';
 
@@ -232,5 +232,18 @@ const ficheRheo = { famille: 'hase', params: { etaInf: 400, delta: 12000, gammaE
 ok(profilFiche(ficheRheo) === 'Rhéofluidifiant (pseudoplastique)', 'produit à réseau cassable : rhéofluidifiant');
 ok(profilFiche({ ...ficheRheo, famille: 'heur' }) === 'Rhéofluidifiant (pseudoplastique)',
   'le même produit étiqueté HEUR reste rhéofluidifiant');
+
+// Fractions de liaisons pour le dessin
+{
+  const f1 = fractionsLiaisons('hase', { gamma: 0.1, lambda: 1 });
+  const f2 = fractionsLiaisons('hase', { gamma: 2000, lambda: 0.01 });
+  ok(f1.crochet === 1 && f2.crochet === 0.01 && f1.assoc === 0, 'HASE : crochets pilotés par λ, jamais de gant');
+  const h1 = fractionsLiaisons('heur', { gamma: 0.1, lambda: 1 });
+  const h2 = fractionsLiaisons('heur', { gamma: 10000, lambda: 1 });
+  ok(h1.assoc > 0.99 && h2.assoc > 0.9 && h2.assoc < h1.assoc, 'HEUR : liaisons gant-particule quasi maintenues');
+  ok(h1.auto === 0 && fractionsLiaisons('heur', { lambda: 0.5, doseForte: true }).auto === 0.5, 'HEUR : auto-associations seulement à dose forte');
+  const a = fractionsLiaisons('ase');
+  ok(a.crochet === 0 && a.assoc === 0 && a.auto === 0, 'ASE : aucune liaison');
+}
 
 console.log(`epaisseursAssociatifsModele.test.mjs : ${nVerifs} vérifications, 0 échec.`);

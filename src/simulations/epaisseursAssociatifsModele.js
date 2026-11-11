@@ -509,3 +509,17 @@ export function questionsDefi(fiche) {
     q4: { q: 'Quelles liaisons ce polymère peut-il former dans une peinture chargée en TiO₂ ?', options: q4.options, bonne: q4.bonne },
   };
 }
+
+// Fractions de liaisons en place (0 à 1), pour le dessin de la scène.
+//  - crochet : liaisons crochet-crochet du HASE, pilotées par λ ;
+//  - assoc   : liaisons gant-particule du HEUR, quasi maintenues (comme η_HEUR) ;
+//  - auto    : liaisons gant-gant du HEUR, seulement à dose forte, pilotées par λ.
+export function fractionsLiaisons(famille, { gamma = 0.1, lambda = 1, doseForte = false } = {}) {
+  const l = Math.min(1, Math.max(0, lambda));
+  if (famille === 'hase') return { crochet: l, assoc: 0, auto: 0 };
+  if (famille === 'heur') {
+    const p = PARAMS.heur;
+    return { crochet: 0, assoc: 1 - p.epsilon * (gamma / (gamma + p.gammaDemi)), auto: doseForte ? l : 0 };
+  }
+  return { crochet: 0, assoc: 0, auto: 0 };
+}
