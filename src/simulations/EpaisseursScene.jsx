@@ -268,25 +268,20 @@ const agiter = (i, t, amp) => ({
   dy: amp * (Math.sin(t * (1.9 + 0.29 * i) + i * 2.3) + 0.6 * Math.sin(t * (4.7 + 0.33 * i) + i * 3.1)) / 1.6,
 });
 
-// Vitesse d’entraînement par l’écoulement (px/s) : douce, pour que le mouvement d’ensemble ne fatigue pas.
-const vitesseEcoulement = (gamma) => 22 * Math.min(1, Math.log10(1 + gamma) / 3.3);
-
 // Errance lente d’une molécule d’eau dans l’espace libre autour d’elle (amplitude amp en px).
 const errer = (i, t, amp) => ({
   dx: amp * (Math.sin(t * (0.35 + 0.05 * (i % 7)) + i * 1.7) + 0.5 * Math.sin(t * (0.8 + 0.04 * (i % 5)) + i * 0.9)) / 1.5,
   dy: amp * (Math.sin(t * (0.3 + 0.04 * (i % 6)) + i * 2.3) + 0.5 * Math.sin(t * (0.7 + 0.05 * (i % 4)) + i * 3.1)) / 1.5,
 });
 
-// Particules de liant (et charges libres) : agitation autour de leur position ; à fort gradient, l’écoulement les entraîne.
-function DecorAnime({ decor, famille, gamma, actif }) {
+// Particules de liant (et charges libres) : agitation thermique autour de leur position (identique à tout gradient).
+function DecorAnime({ decor, famille, actif }) {
   const t = useHorloge(actif);
-  const amp = 5 / (1 + gamma / 100);                                         // l’agitation thermique est noyée par l’écoulement
-  const vitesse = vitesseEcoulement(gamma);                                  // entraînement par l’écoulement
+  const amp = 5;                                                             // l’agitation thermique ne dépend pas du gradient
   const liant = decor.liant.map((g, i) => {
     if (!actif) return { ...g, x: g.x, y: g.y };
     const { dx, dy } = agiter(i, t, amp);
-    const x = ((g.x + dx + vitesse * t) % W + W) % W;
-    return { ...g, x, y: g.y + dy };
+    return { ...g, x: g.x + dx, y: g.y + dy };
   });
   const charges = decor.charges.map((c, i) => {
     if (!actif) return { c, dx: 0, dy: 0 };
@@ -308,16 +303,14 @@ const BASE_EAU = (() => {
   return out;
 })();
 
-function EauAnimee({ billes, actif, gamma }) {
+function EauAnimee({ billes, actif }) {
   const t = useHorloge(actif);
-  const vitesse = vitesseEcoulement(gamma);
   return (
     <>
       {billes.map((b, i) => {
-        // L’eau libre se promène lentement dans l’espace libre autour d’elle et suit l’écoulement ; l’eau liée reste accrochée à sa chaîne.
+        // L’eau libre se promène lentement dans l’espace libre autour d’elle ; l’eau liée reste accrochée à sa chaîne.
         const { dx, dy } = actif ? errer(i, t, b.amp) : { dx: 0, dy: 0 };
-        const x = b.liee || !actif ? b.x + dx : ((b.x + dx + vitesse * t) % W + W) % W;
-        return <circle key={i} cx={x} cy={b.y + dy} r="2.6"
+        return <circle key={i} cx={b.x + dx} cy={b.y + dy} r="2.6"
           fill={b.liee ? "#f59e0b" : "#ffffff"} stroke={b.liee ? "#b45309" : "#94a3b8"} strokeWidth="1" />;
       })}
     </>
@@ -326,9 +319,10 @@ function EauAnimee({ billes, actif, gamma }) {
 
 // ---------------------------------------------------------------- composant
 
-export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte = false, pH = 8.5 }) {
+export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte = false, pH = 8.5, avecEau = true }) {
   const [agitation, setAgitation] = useState(() => !reduireMouvement());
-  const [eau, setEau] = useState(false);
+  const [eauDemandee, setEau] = useState(false);
+  const eau = avecEau && eauDemandee;      // la vue « eau » n’est proposée qu’en exploration (parcours guidé : un seul objet à la fois)
   const ion = fractionIonisee(pH);
   const fr = fractionsLiaisons(famille, { gamma, lambda, doseForte, pH });
 
@@ -439,8 +433,8 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
     <figure style={{ margin: "10px 0 0", width: "100%" }}>
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Scène moléculaire : chaînes d’épaississant, particules de charge et particules de liant (latex) dans la peinture"
         style={{ width: "100%", display: "block", background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: 8 }}>
-        {eau && <EauAnimee billes={billes} actif={agitation} gamma={gamma} />}
-        <DecorAnime decor={decor} famille={famille} gamma={gamma} actif={agitation} />
+        {eau && <EauAnimee billes={billes} actif={agitation} />}
+        <DecorAnime decor={decor} famille={famille} actif={agitation} />
         {dessin}
         {famille === "heur" && decor.charges.map((p, i) => <Particule key={"c" + i} p={p} />)}
       </svg>
@@ -454,9 +448,9 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
           </div>
         </div>
       )}
-      <button type="button" aria-pressed={eau} onClick={() => setEau(!eau)} style={{ ...stylePetitBouton(eau, "#b45309"), marginTop: 6, marginRight: 8 }}>
+      {avecEau && <button type="button" aria-pressed={eau} onClick={() => setEau(!eau)} style={{ ...stylePetitBouton(eau, "#b45309"), marginTop: 6, marginRight: 8 }}>
         {eau ? "💧 Cacher l’eau" : "💧 Voir l’eau et le volume hydrodynamique"}
-      </button>
+      </button>}
       <button type="button" aria-pressed={agitation} onClick={() => setAgitation(!agitation)} style={{ ...stylePetitBouton(agitation, "#0369a1"), marginTop: 6 }}>
         {agitation ? "⏸ Arrêter l’agitation thermique" : "▶ Agitation thermique (mouvement brownien)"}
       </button>

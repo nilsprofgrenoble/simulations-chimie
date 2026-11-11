@@ -446,7 +446,7 @@ function CourbeEcoulement({ series, gammaMax, gammaCur = null }) {
 // ---------------------------------------------------------------------------
 
 function ZoomGradient({ famille, setFamille, gamma, setGamma, pH = 8.5, setPH, doseForte = false, setDoseForte,
-  onHautGradient, famillesDispos, montrerCourbe = true, montrerLambda = true, montrerEcoulement = false }) {
+  onHautGradient, famillesDispos, montrerCourbe = true, montrerLambda = true, montrerEcoulement = false, avecEau = true }) {
   const [gMaxEcoul, setGMaxEcoul] = useState(100);
   const cin = cinetiqueReseau(famille, doseForte);
   const lambda = cin ? lambdaStatio(gamma, cin) : 1;
@@ -492,7 +492,7 @@ function ZoomGradient({ famille, setFamille, gamma, setGamma, pH = 8.5, setPH, d
           <span> livré à pH 3, épaissit une fois neutralisé (pH 8-9)</span>
         </div>
       )}
-      <SceneMoleculaire famille={famille} gamma={gamma} lambda={lambda} doseForte={doseForte} pH={pH} />
+      <SceneMoleculaire famille={famille} gamma={gamma} lambda={lambda} doseForte={doseForte} pH={pH} avecEau={avecEau} />
       <LegendeScene famille={famille} />
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
         <button type="button" style={stylePetitBouton(false, "#0369a1")} onClick={() => setGamma(0.1)}>Au repos dans le pot (0,1 s⁻¹)</button>
@@ -799,7 +799,7 @@ function Hypotheses() {
         Les peintures A et B ont aussi une hystérésis (retour à 1 s⁻¹ à 83 % et 72 % de l’aller), du même ordre que la régénération du test 3ITT (environ 80 %), mais ce n’est pas le même protocole.</li>
       <li>Rampe : chaque gradient est maintenu 0,8 s. Test 3ITT : 20 s à 1 s⁻¹, 20 s à 256 s⁻¹, 80 s à 1 s⁻¹.</li>
       <li>Agitation thermique (mouvement brownien) : les particules de latex et les charges libres bougent au hasard autour de leur position, de façon schématique (ce n’est pas une simulation physique).
-        Elle est amortie quand le gradient augmente, car l’écoulement l’emporte : à fort gradient, le latex est entraîné dans le sens de l’écoulement.
+        Elle existe à tout gradient et n’est pas liée à l’écoulement : la scène ne représente pas le sens ni la vitesse du cisaillement, seulement l’état des liaisons.
         Les chaînes d’épaississant, les gants et les crochets ne sont pas animés. Le bouton permet d’arrêter l’animation.</li>
       <li>Vue « eau » : quelques centaines de billes représentent l’eau (il y en a des milliards de milliards dans un pot, et une molécule est environ 300 fois plus petite qu’une particule de latex). Une bille est dite « liée » si elle est dans la bande ambrée autour d’une chaîne.
         Pour l’ASE, la bande s’élargit quand les chaînes se chargent et gonflent : c’est l’augmentation du volume hydrodynamique. Pour le Thixol et le Coapur, la bande représente l’eau piégée dans le réseau, proportionnelle à la fraction de liaisons en place ; c’est une image qualitative, pas un calcul de volume réel.
@@ -1091,7 +1091,7 @@ export function SimulationEpaisseursAssociatifs() {
     const fam = dispos.includes(familleGuide) ? familleGuide : "hase";
     return (
       <>
-        <ZoomGradient famille={fam} setFamille={setFamilleGuide}
+        <ZoomGradient famille={fam} setFamille={setFamilleGuide} avecEau={false}
           famillesDispos={dispos}
           gamma={gammaGuide} setGamma={setGammaGuide} onHautGradient={() => setAExploreHaut(true)}
           doseForte={e >= 9 && doseForteGuide} setDoseForte={e >= 9 ? setDoseForteGuide : undefined}
