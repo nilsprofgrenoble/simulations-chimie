@@ -258,7 +258,7 @@ function Toile({ dessiner, ratio, aria }) {
 
 function CourbeLogLog({ series, gammaCur = null, cibles = [] }) {
   const dessiner = useCallback((ctx, L, H, etroit) => {
-    const marge = { g: 46, d: 10, h: 38, b: 38 };
+    const marge = { g: 54, d: 10, h: 38, b: 38 };
     const xMin = Math.log10(GAMMA_MIN), xMax = Math.log10(GAMMA_MAX);
     let etaMin = Infinity, etaMax = -Infinity;
     for (const s of series) for (const p of s.points) { etaMin = Math.min(etaMin, p.eta); etaMax = Math.max(etaMax, p.eta); }
