@@ -281,10 +281,31 @@ function DecorAnime({ decor, famille, gamma, actif }) {
   );
 }
 
+// Billes d’eau (hors échelle) : une bille par case d’une grille irrégulière, positions fixes.
+const BASE_EAU = (() => {
+  const r = mulberry32(2024), out = [], nx = 24, ny = 13;
+  for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++) out.push({ x: (i + 0.15 + 0.7 * r()) * W / nx, y: (j + 0.15 + 0.7 * r()) * H / ny });
+  return out;
+})();
+
+function EauAnimee({ billes, actif }) {
+  const t = useHorloge(actif);
+  return (
+    <>
+      {billes.map((b, i) => {
+        const { dx, dy } = actif ? agiter(i, t * 2.4, b.liee ? 1.2 : 3) : { dx: 0, dy: 0 };
+        return <circle key={i} cx={b.x + dx} cy={b.y + dy} r="2.6"
+          fill={b.liee ? "#f59e0b" : "#ffffff"} stroke={b.liee ? "#b45309" : "#94a3b8"} strokeWidth="1" />;
+      })}
+    </>
+  );
+}
+
 // ---------------------------------------------------------------- composant
 
 export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte = false, pH = 8.5 }) {
   const [agitation, setAgitation] = useState(() => !reduireMouvement());
+  const [eau, setEau] = useState(false);
   const ion = fractionIonisee(pH);
   const fr = fractionsLiaisons(famille, { gamma, lambda, doseForte });
 
@@ -318,10 +339,18 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
 
   let dessin = null;
   let compte = null;
+  let lignes = [];
+  let rayonEau = 0;
+  // Zone d’eau liée (volume hydrodynamique) : bande ambrée autour de chaque chaîne, visible seulement avec la vue « eau ».
+  const halo = (chaines, r) => eau ? chaines.map((c, i) => (
+    <path key={"h" + i} d={courbe(c)} fill="none" stroke="#f59e0b" strokeOpacity="0.22" strokeWidth={2 * r} strokeLinecap="round" strokeLinejoin="round" />
+  )) : null;
   if (famille === "hase") {
     const s = sceneHASE({ fCrochet: fr.crochet });
+    lignes = s.chaines; rayonEau = 4 + 14 * fr.crochet;
     dessin = (
       <g>
+        {halo(s.chaines, rayonEau)}
         {s.chaines.map((c, i) => <path key={i} d={courbe(c)} fill="none" stroke={COUL.chaine} strokeWidth="3.5" strokeLinecap="round" />)}
         {s.crochets.map((c, i) => <Crochet key={i} x={c.x} y={c.y} a={c.a} />)}
       </g>
@@ -329,8 +358,10 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
     compte = <>Crochets accrochés : <b>{s.compte.crochet[0]}</b> paires sur {s.compte.crochet[1]}</>;
   } else if (famille === "heur") {
     const s = sceneHEUR({ fAssoc: fr.assoc, fAuto: fr.auto });
+    lignes = s.chaines.map((c) => onduler(c, 7, 55)); rayonEau = 4 + 14 * fr.assoc;
     dessin = (
       <g>
+        {halo(lignes, rayonEau)}
         {s.gants.filter((g) => g.type === "assoc" && g.tient).map((g, i) => (
           <line key={"b" + i} x1={g.x + 29 * S * Math.cos(rad(g.a))} y1={g.y + 29 * S * Math.sin(rad(g.a))}
             x2={g.part.x} y2={g.part.y} stroke="#0f172a" strokeWidth="2.5" strokeDasharray="5 4" />
@@ -343,8 +374,10 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
     dessin = <>{dessin}{s.gants.map((g, i) => <Gant key={"g" + i} x={g.x} y={g.y} a={g.a} ouvert={!g.tient} />)}</>;
   } else {
     const s = sceneASE({ ion });
+    lignes = s.chaines; rayonEau = 4 + 22 * ion;
     dessin = (
       <g>
+        {halo(s.chaines, rayonEau)}
         {s.chaines.map((c, i) => <path key={i} d={courbe(c)} fill="none" stroke={COUL.chaine} strokeWidth="3.5" strokeLinecap="round" />)}
         {s.moins.map((m, i) => (
           <g key={i}><circle cx={m.x} cy={m.y} r="6.5" fill={COUL.moins} /><rect x={m.x - 3.5} y={m.y - 0.9} width="7" height="1.8" fill="#fff" /></g>
@@ -354,15 +387,37 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
     compte = <>Groupes –COOH ionisés (–COO⁻) : <b>{Math.round(ion * 100)} %</b></>;
   }
 
+  // Billes d’eau : positions de base réparties (grille irrégulière), classées « liées » (dans la zone autour d’une chaîne) ou « libres ».
+  let eauLibrePct = 100;
+  let billes = [];
+  if (eau) {
+    const pts = lignes.flatMap((c) => echantillonner(c, 10));
+    billes = BASE_EAU.map((b) => ({ ...b, liee: pts.some((p) => Math.hypot(p.x - b.x, p.y - b.y) < rayonEau) }));
+    eauLibrePct = 100 * billes.filter((b) => !b.liee).length / billes.length;
+  }
+
   return (
     <figure style={{ margin: "10px 0 0", width: "100%" }}>
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Scène moléculaire : chaînes d’épaississant, particules de charge et particules de liant (latex) dans la peinture"
         style={{ width: "100%", display: "block", background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: 8 }}>
+        {eau && <EauAnimee billes={billes} actif={agitation} />}
         <DecorAnime decor={decor} famille={famille} gamma={gamma} actif={agitation} />
         {dessin}
         {famille === "heur" && decor.charges.map((p, i) => <Particule key={"c" + i} p={p} />)}
       </svg>
       <div style={{ fontSize: 14, color: KIT.txt, marginTop: 6 }}>{compte}</div>
+      {eau && (
+        <div style={{ fontSize: 14, color: KIT.txt, marginTop: 4 }}>
+          Eau libre (blanche, bord gris) : <b>{Math.round(eauLibrePct)} %</b> · eau liée aux chaînes (ambre) : <b>{Math.round(100 - eauLibrePct)} %</b>
+          <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 2 }}>
+            Idée qualitative : plus les chaînes immobilisent d’eau (volume hydrodynamique), moins il en reste de libre pour s’écouler, et plus la viscosité est élevée.
+            Billes hors échelle : une molécule d’eau est environ 300 fois plus petite qu’une particule de latex.
+          </div>
+        </div>
+      )}
+      <button type="button" aria-pressed={eau} onClick={() => setEau(!eau)} style={{ ...stylePetitBouton(eau, "#b45309"), marginTop: 6, marginRight: 8 }}>
+        {eau ? "💧 Cacher l’eau" : "💧 Voir l’eau et le volume hydrodynamique"}
+      </button>
       <button type="button" aria-pressed={agitation} onClick={() => setAgitation(!agitation)} style={{ ...stylePetitBouton(agitation, "#0369a1"), marginTop: 6 }}>
         {agitation ? "⏸ Arrêter l’agitation thermique" : "▶ Agitation thermique (mouvement brownien)"}
       </button>

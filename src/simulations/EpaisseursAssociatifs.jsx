@@ -799,7 +799,10 @@ function Hypotheses() {
       <li>Rampe : chaque gradient est maintenu 0,8 s. Test 3ITT : 20 s à 1 s⁻¹, 20 s à 256 s⁻¹, 80 s à 1 s⁻¹.</li>
       <li>Agitation thermique (mouvement brownien) : les particules de latex et les charges libres bougent au hasard autour de leur position, de façon schématique (ce n’est pas une simulation physique).
         Elle est amortie quand le gradient augmente, car l’écoulement l’emporte : à fort gradient, le latex est entraîné dans le sens de l’écoulement.
-        Les chaînes d’épaississant, les gants et les crochets ne sont pas animés, et les molécules d’eau ne sont pas représentées. Le bouton permet d’arrêter l’animation.</li>
+        Les chaînes d’épaississant, les gants et les crochets ne sont pas animés. Le bouton permet d’arrêter l’animation.</li>
+      <li>Vue « eau » : quelques centaines de billes représentent l’eau (il y en a des milliards de milliards dans un pot, et une molécule est environ 300 fois plus petite qu’une particule de latex). Une bille est dite « liée » si elle est dans la bande ambrée autour d’une chaîne.
+        Pour l’ASE, la bande s’élargit quand les chaînes se chargent et gonflent : c’est l’augmentation du volume hydrodynamique. Pour le Thixol et le Coapur, la bande représente l’eau piégée dans le réseau, proportionnelle à la fraction de liaisons en place ; c’est une image qualitative, pas un calcul de volume réel.
+        Le lien « moins d’eau libre = viscosité plus élevée » est qualitatif (en rhéologie, on parle de fraction volumique effective) ; le pourcentage affiché est un comptage de billes, pas une mesure.</li>
       <li>La scène moléculaire est un dessin pédagogique : une chaîne réelle porte des milliers de motifs,
         et les échelles de taille et de temps ne sont pas réalistes.</li>
       <li>En exploration, λ affiché correspond au régime permanent du gradient choisi ;
