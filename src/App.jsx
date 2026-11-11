@@ -195,6 +195,7 @@ const SIMULATIONS = [
   { id:97, label:"Transposition de carbocation : migration d’un hydrure ou d’un méthyle", niveau:"BTS", icon:"↔️", color:"#7c3aed", component: SimulationTranspositionCarbocation },
   { id:98, label:"Syn ou anti ? Stéréosélectivité et stéréospécificité des additions sur un alcène", niveau:"BTS", icon:"🔁", color:"#7c3aed", component: SimulationSyntheseStereo },
   { id:99, label:"Chimiosélectivité : quel groupe fonctionnel réagit ?", niveau:"BTS", icon:"🎯", color:"#7c3aed", component: SimulationChimioselectivite },
+  { id:100, label:"Épaississants associatifs : ASE, HASE, HEUR", niveau:"BTS", icon:"🧴", color:"#1d4ed8", component: SimulationEpaisseursAssociatifs },
   { id:86, label:"Synthèse organique : estérification, Dean-Stark et CCM", niveau:"TSTL", icon:"⚗️", color:"#9a3412",
     component: SimulationEsterification },
   { id:90, label:"Optimiser une synthèse : vitesse, rendement et coût", niveau:"TSTL", icon:"📈", color:"#15803d",
@@ -277,8 +278,6 @@ const SIMULATIONS = [
   // Histoire à choix « Une journée au labo » (BTS, d'après le CCF4 : Vinnapas → Orgal) : hors menu, ?sim=81
   // Page d'accueil d'un chapitre (simulations + exercices par compétence) : ?sim=82&chap=<id d'un chapitre de chapitres.js>
   { id:82, label:"Page d'un chapitre", niveau:"COMPTE", icon:"📚", color:"#5b4bdb", component: SimulationChapitre },
-  // Épaississants associatifs (en chantier) : hors menu, ouvert seulement par son lien ?sim=100
-  { id:100, label:"Épaississants associatifs : ASE, HASE, HEUR", niveau:"COMPTE", icon:"🧴", color:"#1d4ed8", component: SimulationEpaisseursAssociatifs },
   { id:81, label:"Une journée au labo (histoire à choix, BTS)", niveau:"COMPTE", icon:"🧪", color:"#0f766e", component: SimulationHistoireLabo },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; });
