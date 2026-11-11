@@ -7,8 +7,8 @@
 // Codes couleurs du séchage de peinture : pigments et charges en rouge, liant (latex) en bleu.
 // Dessin schématique : tailles, nombres et positions sont indicatifs.
 
-import { useMemo } from "react";
-import { KIT } from "../commun";
+import { useEffect, useMemo, useState } from "react";
+import { KIT, stylePetitBouton } from "../commun";
 import { mulberry32, fractionIonisee, fractionsLiaisons } from "./epaisseursAssociatifsModele";
 
 const W = 600, H = 340;
@@ -231,9 +231,60 @@ function sceneASE({ ion }) {
   return { chaines, moins };
 }
 
+// ---------------------------------------------------------------- agitation thermique (mouvement brownien schématique)
+
+const reduireMouvement = () => typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Horloge à 30 images par seconde, limitée au composant qui l’appelle.
+function useHorloge(actif) {
+  const [t, setT] = useState(0);
+  useEffect(() => {
+    if (!actif) return undefined;
+    let raf = 0, dernier = 0;
+    const boucle = (ts) => {
+      if (ts - dernier > 33) { dernier = ts; setT(ts / 1000); }
+      raf = requestAnimationFrame(boucle);
+    };
+    raf = requestAnimationFrame(boucle);
+    return () => cancelAnimationFrame(raf);
+  }, [actif]);
+  return t;
+}
+
+// Décalage pseudo-aléatoire lisse (somme de sinusoïdes de fréquences non commensurables), propre à chaque particule.
+const agiter = (i, t, amp) => ({
+  dx: amp * (Math.sin(t * (2.1 + 0.37 * i) + i * 1.7) + 0.6 * Math.sin(t * (5.3 + 0.21 * i) + i * 0.9)) / 1.6,
+  dy: amp * (Math.sin(t * (1.9 + 0.29 * i) + i * 2.3) + 0.6 * Math.sin(t * (4.7 + 0.33 * i) + i * 3.1)) / 1.6,
+});
+
+// Particules de liant (et charges libres) : agitation autour de leur position ; à fort gradient, l’écoulement les entraîne.
+function DecorAnime({ decor, famille, gamma, actif }) {
+  const t = useHorloge(actif);
+  const amp = 5 / (1 + gamma / 100);                                         // l’agitation thermique est noyée par l’écoulement
+  const vitesse = 70 * Math.min(1, Math.log10(1 + gamma) / 3.3);          // px/s, entraînement par l’écoulement
+  const liant = decor.liant.map((g, i) => {
+    if (!actif) return { ...g, x: g.x, y: g.y };
+    const { dx, dy } = agiter(i, t, amp);
+    const x = ((g.x + dx + vitesse * t) % W + W) % W;
+    return { ...g, x, y: g.y + dy };
+  });
+  const charges = decor.charges.map((c, i) => {
+    if (!actif) return { c, dx: 0, dy: 0 };
+    const { dx, dy } = agiter(i + 7, t, amp * 0.4);
+    return { c, dx, dy };
+  });
+  return (
+    <>
+      {liant.map((g, i) => <circle key={"l" + i} cx={g.x} cy={g.y} r={g.r} fill={COUL.liant} stroke={COUL.liantBord} strokeWidth="1.2" opacity="0.9" />)}
+      {famille !== "heur" && charges.map(({ c, dx, dy }, i) => <g key={"c" + i} transform={`translate(${dx.toFixed(1)} ${dy.toFixed(1)})`}><Particule p={c} /></g>)}
+    </>
+  );
+}
+
 // ---------------------------------------------------------------- composant
 
 export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte = false, pH = 8.5 }) {
+  const [agitation, setAgitation] = useState(() => !reduireMouvement());
   const ion = fractionIonisee(pH);
   const fr = fractionsLiaisons(famille, { gamma, lambda, doseForte });
 
@@ -307,12 +358,14 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
     <figure style={{ margin: "10px 0 0", width: "100%" }}>
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Scène moléculaire : chaînes d’épaississant, particules de charge et particules de liant (latex) dans la peinture"
         style={{ width: "100%", display: "block", background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: 8 }}>
-        {decor.liant.map((g, i) => <circle key={"l" + i} cx={g.x} cy={g.y} r={g.r} fill={COUL.liant} stroke={COUL.liantBord} strokeWidth="1.2" opacity="0.9" />)}
-        {famille !== "heur" && decor.charges.map((p, i) => <Particule key={"c" + i} p={p} />)}
+        <DecorAnime decor={decor} famille={famille} gamma={gamma} actif={agitation} />
         {dessin}
         {famille === "heur" && decor.charges.map((p, i) => <Particule key={"c" + i} p={p} />)}
       </svg>
       <div style={{ fontSize: 14, color: KIT.txt, marginTop: 6 }}>{compte}</div>
+      <button type="button" aria-pressed={agitation} onClick={() => setAgitation(!agitation)} style={{ ...stylePetitBouton(agitation, "#0369a1"), marginTop: 6 }}>
+        {agitation ? "⏸ Arrêter l’agitation thermique" : "▶ Agitation thermique (mouvement brownien)"}
+      </button>
     </figure>
   );
 }

@@ -797,6 +797,9 @@ function Hypotheses() {
         jusqu’à 300 s⁻¹ (pente d’environ –0,5 à –0,6 en log-log). Le modèle s’aplatit vers 100 s⁻¹ : les courbes ne se superposent pas, seules les ordres de grandeur sont comparables.
         Les peintures A et B ont aussi une hystérésis (retour à 1 s⁻¹ à 83 % et 72 % de l’aller), du même ordre que la régénération du test 3ITT (environ 80 %), mais ce n’est pas le même protocole.</li>
       <li>Rampe : chaque gradient est maintenu 0,8 s. Test 3ITT : 20 s à 1 s⁻¹, 20 s à 256 s⁻¹, 80 s à 1 s⁻¹.</li>
+      <li>Agitation thermique (mouvement brownien) : les particules de latex et les charges libres bougent au hasard autour de leur position, de façon schématique (ce n’est pas une simulation physique).
+        Elle est amortie quand le gradient augmente, car l’écoulement l’emporte : à fort gradient, le latex est entraîné dans le sens de l’écoulement.
+        Les chaînes d’épaississant, les gants et les crochets ne sont pas animés, et les molécules d’eau ne sont pas représentées. Le bouton permet d’arrêter l’animation.</li>
       <li>La scène moléculaire est un dessin pédagogique : une chaîne réelle porte des milliers de motifs,
         et les échelles de taille et de temps ne sont pas réalistes.</li>
       <li>En exploration, λ affiché correspond au régime permanent du gradient choisi ;
