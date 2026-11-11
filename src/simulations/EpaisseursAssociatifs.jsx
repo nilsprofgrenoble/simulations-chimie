@@ -484,7 +484,7 @@ function ZoomGradient({ famille, setFamille, gamma, setGamma, pH = 8.5, setPH, d
             onClick={() => setDoseForte(!doseForte)}>dose forte</button>
         )}
       </div>
-      {famille === "ase" && setPH && (
+      {(famille === "ase" || famille === "hase") && setPH && (
         <div style={{ marginTop: 8, fontSize: 13, color: KIT.txt2 }}>
           pH du milieu : {fmt(pH, 1)}
           <input type="range" min={3} max={9} step={0.1} value={pH} aria-label="pH du milieu"
@@ -770,8 +770,9 @@ function Hypotheses() {
       <li>Notre Thixol 53 L (HASE) : tout le réseau auto-associé est résumé dans un paramètre de structure λ,
         avec dλ/dt = (1 − λ)/τ − k·γ̇·λ (cassage rapide, reformation lente : τ = {fmt(PARAMS.hase.tauRec, 0)} s).
         La rhéofluidification et la thixotropie sortent de cette seule équation.</li>
-      <li>Le HASE est modélisé neutralisé (pH 8-9, état d’emploi). Comme l’ASE, il est livré à pH acide (pH 3 pour le Thixol) :
-        sa dépendance au pH n’est pas modélisée, seule celle de l’ASE l’est.</li>
+      <li>Le HASE est lui aussi alcali-gonflable : livré à pH acide (pH 3 pour le Thixol), il épaissit à pH 8-9 (fiche). Son effet est multiplié par la fraction ionisée relative à pH 8,5,
+        avec la même loi que l’ASE ; à pH 8,5 le facteur vaut 1. À pH bas, le dessin montre des crochets non accrochés : en réalité, la chaîne est repliée, c’est une simplification.
+        Le HEUR est non ionique : le pH ne joue pas. L’atelier du formulateur suppose une peinture à pH 8,5.</li>
       <li>Notre Coapur 3025 (HEUR) : liaisons gant-particule tenues, donc η quasi constant (variation &lt; 8 %) ;
         à dose forte, un réseau auto-associé s’ajoute (τ = {fmt(PARAMS.heur.tauRecAuto, 0)} s).</li>
       <li>Les profils modélisés sont ceux des deux produits du TP (Thixol 53 L, un HASE, et Coapur 3025, un HEUR), lus sur leurs fiches techniques :

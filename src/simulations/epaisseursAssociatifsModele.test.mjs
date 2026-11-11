@@ -282,5 +282,20 @@ ok(profilFiche({ ...ficheRheo, famille: 'heur' }) === 'Rhéofluidifiant (pseudop
   procheVal(PEINTURES_MESUREES.B.retour[0] / PEINTURES_MESUREES.B.aller[0], 0.724, 0.01, 'B : retour/aller à 1 s⁻¹ = 72 %');
 }
 
+// HASE alcali-gonflable : dépend du pH (1 à pH 8,5, quasi nul en milieu acide), valeurs par défaut inchangées.
+{
+  const { facteurPHHASE, etaStatio, etaInstantane, fractionsLiaisons } = await import('./epaisseursAssociatifsModele.js');
+  procheVal(facteurPHHASE(8.5), 1, 1e-12, 'facteur HASE à pH 8,5');
+  procheVal(facteurPHHASE(9), 1, 1e-12, 'facteur HASE plafonné à 1 au-delà de pH 8,5');
+  ok(facteurPHHASE(3) < 0.05, 'facteur HASE à pH 3 : presque nul');
+  ok(facteurPHHASE(4) < facteurPHHASE(5) && facteurPHHASE(5) < facteurPHHASE(7), 'facteur HASE croissant avec le pH');
+  procheVal(etaStatio('hase', 1, {}), etaStatio('hase', 1, { pH: 8.5 }), 1e-12, 'HASE : pH par défaut = 8,5');
+  ok(etaStatio('hase', 0.1, { pH: 3 }) < PARAMS.hase.etaInf * 2, 'HASE à pH 3 : viscosité proche de celle du milieu');
+  ok(etaInstantane('hase', 1, 1, { pH: 3 }) < etaInstantane('hase', 1, 1, { pH: 8.5 }) / 5, 'HASE instantané à pH 3 beaucoup plus faible');
+  ok(fractionsLiaisons('hase', { lambda: 1, pH: 3 }).crochet < 0.05, 'HASE à pH 3 : presque aucun crochet');
+  procheVal(fractionsLiaisons('hase', { lambda: 0.7 }).crochet, 0.7, 1e-9, 'HASE à pH 8,5 : crochets = λ');
+  procheVal(etaStatio('heur', 1, { pH: 3 }), etaStatio('heur', 1, { pH: 8.5 }), 1e-12, 'HEUR indépendant du pH');
+}
+
 console.log(`epaisseursAssociatifsModele.test.mjs : ${nVerifs} vérifications, 0 échec.`);
 

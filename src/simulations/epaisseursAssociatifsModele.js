@@ -19,8 +19,9 @@
 //   ~1 500 mPa·s à 100 rpm -> on retient η(1 s⁻¹) ≈ 11 000 et η(100 s⁻¹) ≈ 1 500 mPa·s.
 //   ATTENTION : la conversion tr/min -> s⁻¹ dépend du mobile et de la géométrie, ce n'est
 //   pas une équivalence : on reprend l'ordre de grandeur et le rapport (≈ 6 à 7), pas un ajustement ;
-// - le HASE est modélisé NEUTRALISÉ (pH 8-9, état d'emploi) : sa dépendance au pH
-//   (livré à pH 3 dans la TDS) n'est pas modélisée, seule celle de l'ASE l'est ;
+// - le HASE est lui aussi alcali-gonflable (TDS Thixol : livré à pH 3, épaissit « à pH de préférence 8-9 ») :
+//   sa contribution est multipliée par la fraction ionisée relative à pH 8,5 (même loi que l'ASE, pKa 4,6) ;
+//   à pH 8,5 (valeur par défaut, état d'emploi) elle vaut exactement 1 ;
 // - « relatively low speed viscosity recovering » (TDS Thixol) -> τ_récup = 60 s ;
 // - Coapur 3025 : « pure Newtonian rheology » -> variation < 8 % sur tout le domaine.
 
@@ -121,8 +122,13 @@ export function etaStatioHEURForte(gamma, p = PARAMS.heur) {
   return etaInstantaneHEURForte(gamma, lambdaStatio(gamma, { k: p.kAuto, tauRec: p.tauRecAuto }), p);
 }
 
+// Facteur de neutralisation d'un HASE (1 à pH 8,5 et au-delà ; tend vers 0 en milieu acide).
+export function facteurPHHASE(pH) {
+  return Math.min(1, fractionIonisee(pH) / fractionIonisee(8.5));
+}
+
 export function etaStatio(famille, gamma, { pH = 8.5, doseForte = false } = {}) {
-  if (famille === 'hase') return etaStatioHASE(gamma);
+  if (famille === 'hase') return PARAMS.hase.etaInf + (etaStatioHASE(gamma) - PARAMS.hase.etaInf) * facteurPHHASE(pH);
   if (famille === 'heur') return doseForte ? etaStatioHEURForte(gamma) : etaHEUR(gamma);
   if (famille === 'ase') return etaASE(gamma, pH);
   throw new Error('Famille inconnue : ' + famille);
@@ -130,7 +136,7 @@ export function etaStatio(famille, gamma, { pH = 8.5, doseForte = false } = {}) 
 
 // Viscosité instantanée, toutes familles (λ ignoré quand il n'y a pas de réseau).
 export function etaInstantane(famille, gamma, lambda, { pH = 8.5, doseForte = false } = {}) {
-  if (famille === 'hase') return etaInstantaneHASE(lambda);
+  if (famille === 'hase') return PARAMS.hase.etaInf + (etaInstantaneHASE(lambda) - PARAMS.hase.etaInf) * facteurPHHASE(pH);
   if (famille === 'heur') return doseForte ? etaInstantaneHEURForte(gamma, lambda) : etaHEUR(gamma);
   if (famille === 'ase') return etaASE(gamma, pH);
   throw new Error('Famille inconnue : ' + famille);
@@ -514,9 +520,9 @@ export function questionsDefi(fiche) {
 //  - crochet : liaisons crochet-crochet du HASE, pilotées par λ ;
 //  - assoc   : liaisons gant-particule du HEUR, quasi maintenues (comme η_HEUR) ;
 //  - auto    : liaisons gant-gant du HEUR, seulement à dose forte, pilotées par λ.
-export function fractionsLiaisons(famille, { gamma = 0.1, lambda = 1, doseForte = false } = {}) {
+export function fractionsLiaisons(famille, { gamma = 0.1, lambda = 1, doseForte = false, pH = 8.5 } = {}) {
   const l = Math.min(1, Math.max(0, lambda));
-  if (famille === 'hase') return { crochet: l, assoc: 0, auto: 0 };
+  if (famille === 'hase') return { crochet: l * facteurPHHASE(pH), assoc: 0, auto: 0 };
   if (famille === 'heur') {
     const p = PARAMS.heur;
     return { crochet: 0, assoc: 1 - p.epsilon * (gamma / (gamma + p.gammaDemi)), auto: doseForte ? l : 0 };
