@@ -257,11 +257,20 @@ const agiter = (i, t, amp) => ({
   dy: amp * (Math.sin(t * (1.9 + 0.29 * i) + i * 2.3) + 0.6 * Math.sin(t * (4.7 + 0.33 * i) + i * 3.1)) / 1.6,
 });
 
+// Vitesse d’entraînement par l’écoulement (px/s) : douce, pour que le mouvement d’ensemble ne fatigue pas.
+const vitesseEcoulement = (gamma) => 22 * Math.min(1, Math.log10(1 + gamma) / 3.3);
+
+// Errance lente d’une molécule d’eau dans l’espace libre autour d’elle (amplitude amp en px).
+const errer = (i, t, amp) => ({
+  dx: amp * (Math.sin(t * (0.35 + 0.05 * (i % 7)) + i * 1.7) + 0.5 * Math.sin(t * (0.8 + 0.04 * (i % 5)) + i * 0.9)) / 1.5,
+  dy: amp * (Math.sin(t * (0.3 + 0.04 * (i % 6)) + i * 2.3) + 0.5 * Math.sin(t * (0.7 + 0.05 * (i % 4)) + i * 3.1)) / 1.5,
+});
+
 // Particules de liant (et charges libres) : agitation autour de leur position ; à fort gradient, l’écoulement les entraîne.
 function DecorAnime({ decor, famille, gamma, actif }) {
   const t = useHorloge(actif);
   const amp = 5 / (1 + gamma / 100);                                         // l’agitation thermique est noyée par l’écoulement
-  const vitesse = 70 * Math.min(1, Math.log10(1 + gamma) / 3.3);          // px/s, entraînement par l’écoulement
+  const vitesse = vitesseEcoulement(gamma);                                  // entraînement par l’écoulement
   const liant = decor.liant.map((g, i) => {
     if (!actif) return { ...g, x: g.x, y: g.y };
     const { dx, dy } = agiter(i, t, amp);
@@ -288,13 +297,16 @@ const BASE_EAU = (() => {
   return out;
 })();
 
-function EauAnimee({ billes, actif }) {
+function EauAnimee({ billes, actif, gamma }) {
   const t = useHorloge(actif);
+  const vitesse = vitesseEcoulement(gamma);
   return (
     <>
       {billes.map((b, i) => {
-        const { dx, dy } = actif ? agiter(i, t * 2.4, b.liee ? 1.2 : 3) : { dx: 0, dy: 0 };
-        return <circle key={i} cx={b.x + dx} cy={b.y + dy} r="2.6"
+        // L’eau libre se promène lentement dans l’espace libre autour d’elle et suit l’écoulement ; l’eau liée reste accrochée à sa chaîne.
+        const { dx, dy } = actif ? errer(i, t, b.amp) : { dx: 0, dy: 0 };
+        const x = b.liee || !actif ? b.x + dx : ((b.x + dx + vitesse * t) % W + W) % W;
+        return <circle key={i} cx={x} cy={b.y + dy} r="2.6"
           fill={b.liee ? "#f59e0b" : "#ffffff"} stroke={b.liee ? "#b45309" : "#94a3b8"} strokeWidth="1" />;
       })}
     </>
@@ -307,7 +319,7 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
   const [agitation, setAgitation] = useState(() => !reduireMouvement());
   const [eau, setEau] = useState(false);
   const ion = fractionIonisee(pH);
-  const fr = fractionsLiaisons(famille, { gamma, lambda, doseForte });
+  const fr = fractionsLiaisons(famille, { gamma, lambda, doseForte, pH });
 
   // Décor (liant et charges) : positions fixes, calculées une fois par famille à l’écart de toutes les positions possibles.
   const decor = useMemo(() => {
@@ -355,7 +367,8 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
         {s.crochets.map((c, i) => <Crochet key={i} x={c.x} y={c.y} a={c.a} />)}
       </g>
     );
-    compte = <>Crochets accrochés : <b>{s.compte.crochet[0]}</b> paires sur {s.compte.crochet[1]}</>;
+    compte = <>Crochets accrochés : <b>{s.compte.crochet[0]}</b> paires sur {s.compte.crochet[1]}
+      {ion < 0.5 && <> · pH trop bas : le polymère n’est pas neutralisé, il n’épaissit pas</>}</>;
   } else if (famille === "heur") {
     const s = sceneHEUR({ fAssoc: fr.assoc, fAuto: fr.auto });
     lignes = s.chaines.map((c) => onduler(c, 7, 55)); rayonEau = 4 + 14 * fr.assoc;
@@ -392,7 +405,11 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
   let billes = [];
   if (eau) {
     const pts = lignes.flatMap((c) => echantillonner(c, 10));
-    billes = BASE_EAU.map((b) => ({ ...b, liee: pts.some((p) => Math.hypot(p.x - b.x, p.y - b.y) < rayonEau) }));
+    billes = BASE_EAU.map((b) => {
+      const d = pts.length ? Math.min(...pts.map((p) => Math.hypot(p.x - b.x, p.y - b.y))) : 1e3;
+      const liee = d < rayonEau;
+      return { ...b, liee, amp: liee ? 1.5 : Math.max(2, Math.min(12, d - rayonEau - 3)) };    // amplitude limitée à l’espace libre accessible
+    });
     eauLibrePct = 100 * billes.filter((b) => !b.liee).length / billes.length;
   }
 
@@ -400,7 +417,7 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
     <figure style={{ margin: "10px 0 0", width: "100%" }}>
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Scène moléculaire : chaînes d’épaississant, particules de charge et particules de liant (latex) dans la peinture"
         style={{ width: "100%", display: "block", background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: 8 }}>
-        {eau && <EauAnimee billes={billes} actif={agitation} />}
+        {eau && <EauAnimee billes={billes} actif={agitation} gamma={gamma} />}
         <DecorAnime decor={decor} famille={famille} gamma={gamma} actif={agitation} />
         {dessin}
         {famille === "heur" && decor.charges.map((p, i) => <Particule key={"c" + i} p={p} />)}
