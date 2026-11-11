@@ -296,7 +296,7 @@ export function SceneMoleculaire({ famille, gamma = 0.1, lambda = 1, doseForte =
 
   return (
     <figure style={{ margin: "10px 0 0", width: "100%" }}>
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Scène moléculaire : chaînes d’épaississant, particules de charge et grains de liant dans la peinture"
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Scène moléculaire : chaînes d’épaississant, particules de charge et particules de liant (latex) dans la peinture"
         style={{ width: "100%", display: "block", background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: 8 }}>
         {decor.liant.map((g, i) => <circle key={"l" + i} cx={g.x} cy={g.y} r={g.r} fill={COUL.liant} stroke={COUL.liantBord} strokeWidth="1.2" opacity="0.9" />)}
         {famille !== "heur" && decor.charges.map((p, i) => <Particule key={"c" + i} p={p} />)}
@@ -319,7 +319,7 @@ export function LegendeScene({ famille }) {
   return (
     <div style={{ fontSize: 13, color: KIT.txt, marginTop: 4, lineHeight: 1.5 }}>
       {item(<circle cx="14" cy="0" r="10" fill={COUL.charge} stroke={COUL.chargeBord} strokeWidth="1.5" />, "pigment ou charge (rouge)")}
-      {item(<circle cx="14" cy="0" r="7" fill={COUL.liant} stroke={COUL.liantBord} strokeWidth="1.2" />, "grain de liant (bleu)")}
+      {item(<circle cx="14" cy="0" r="7" fill={COUL.liant} stroke={COUL.liantBord} strokeWidth="1.2" />, "liant : particule de latex dans l’eau (bleu)")}
       {item(<path d="M0,0 C8,-8 16,8 32,0" stroke={COUL.chaine} strokeWidth="3.5" fill="none" strokeLinecap="round" />, "chaîne d’épaississant")}
       {famille === "heur" && item(<Gant x={0} y={0} a={0} />, "gant : tient une particule (liaison associative, forte)")}
       {famille === "hase" && item(<Crochet x={0} y={0} a={0} />, "crochet : s’accroche à un autre crochet (liaison auto-associante, lâche)")}
