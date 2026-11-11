@@ -2,11 +2,11 @@
 // Format du site (voir AtelierSituationsBanque.js) : un exercice = { id, domaine, niveau, titre, construire }.
 // Programme : « Propriétés rhéologiques : comment modifier les propriétés rhéologiques d'un produit ? »,
 //   « additifs rhéologiques : épaississants », « identifier à partir de rhéogrammes les comportements rhéologiques ».
-//   rheo-famille, rheo-gant-crochet, rheo-thixol, rheo-coapur, rheo-3itt, rheo-ase, rheo-ecoulement, rheo-dose-forte
+//   rheo-famille, rheo-gant-crochet, rheo-thixol, rheo-coapur, rheo-3itt, rheo-ase, rheo-ecoulement, rheo-dose-forte, rheo-peintures
 // Les réponses numériques sont calculées par le modèle à partir des valeurs AFFICHÉES (donnée arrondie avant le calcul).
 import {
   etaStatioHASE, etaASE, simuler3ITT, arrondiSig,
-  tirerFicheTDS, profilFiche, GAMMAS_MESURES,
+  tirerFicheTDS, profilFiche, GAMMAS_MESURES, PEINTURES_MESUREES, GAMMAS_PEINTURES,
 } from './epaisseursAssociatifsModele.js';
 
 const V = (t, e) => [t, true, e];
@@ -283,5 +283,58 @@ export const EXERCICES = [
       ],
       retenir: ['Thixotropie = retour lent de la viscosité après cisaillement.', 'Elle vient de liaisons auto-associantes (lâches) : celles du HASE, et celles d’un HEUR à forte concentration.'],
     }),
+  },
+  {
+    id: 'rheo-peintures', domaine: DOM, niveau: 2, titre: 'Deux peintures du commerce : lire une rampe aller-retour',
+    construire: (rng = Math.random) => {
+      const k = rng() < 0.5 ? 'A' : 'B';
+      const m = PEINTURES_MESUREES[k];
+      const i = (g) => GAMMAS_PEINTURES.indexOf(g);
+      const ligne = (g) => [nb(g), nb(PEINTURES_MESUREES.A.aller[i(g)]), nb(PEINTURES_MESUREES.A.retour[i(g)]), nb(PEINTURES_MESUREES.B.aller[i(g)]), nb(PEINTURES_MESUREES.B.retour[i(g)])];
+      const e1 = m.aller[i(1)], e300 = m.aller[i(300)];
+      const r = e1 / e300;
+      const perte = (k2) => (1 - PEINTURES_MESUREES[k2].retour[i(1)] / PEINTURES_MESUREES[k2].aller[i(1)]) * 100;
+      const pA = Math.round(perte('A')), pB = Math.round(perte('B'));
+      const pk = Math.round(perte(k));
+      return {
+        enonce: 'Deux peintures du commerce ont été mesurées au viscosimètre LAMY RM100+ (mobile MS-R3, environ 22 °C) : le gradient de vitesse monte de 1 à 300 s⁻¹ (aller), puis redescend de 300 à 1 s⁻¹ (retour), avec 2 s par palier. Tableau des viscosités mesurées, en mPa·s.',
+        tableau: { entetes: ['γ̇ (s⁻¹)', 'A aller', 'A retour', 'B aller', 'B retour'], lignes: [1, 10, 40, 300].map(ligne) },
+        etapes: [
+          { id: 'profil', titre: 'Comportement', q: 'Quel est le comportement des deux peintures sur la montée (aller) ?',
+            aide: 'Regarde comment la viscosité évolue quand le gradient passe de 1 à 300 s⁻¹.',
+            o: [
+              F('Newtonien : η constante', 'Non : η passe d’environ 20 000 à moins de 1 000 mPa·s.'),
+              V('Rhéofluidifiant : η diminue quand γ̇ augmente', 'Exact : la structure de la peinture se défait sous cisaillement.'),
+              F('Rhéoépaississant : η augmente avec γ̇', 'Non : les valeurs diminuent.'),
+            ] },
+          { id: 'rapport', titre: 'Rapport de viscosités', q: `Calculer le rapport η(1 s⁻¹) / η(300 s⁻¹) de la peinture ${k} sur la branche aller.`,
+            aide: 'Divise la viscosité à 1 s⁻¹ par celle à 300 s⁻¹ (lues dans la colonne « aller »).',
+            type: 'saisie',
+            champs: [{ id: 'rapport', lib: 'η(1 s⁻¹) / η(300 s⁻¹)', u: SANS_UNITE, vrai: r, tol: 0.05 }],
+            expl: `${nb(e1)} / ${nb(e300)} = ${nb(r, 1)} : la viscosité de la peinture ${k} est divisée par environ ${nb(r, 0)} entre le pot (bas gradient) et l’application (haut gradient).` },
+          { id: 'hysteresis', titre: 'Aller et retour', q: 'Au retour, à un même gradient, la viscosité est plus faible qu’à l’aller, surtout à bas gradient. Comment l’interpréter ?',
+            aide: 'Que fait la structure de la peinture quand on la cisaille puis qu’on réduit le gradient : se reforme-t-elle instantanément ?',
+            o: [
+              F('La peinture a séché pendant la mesure', 'Une mesure de quelques dizaines de secondes ne change pas la composition de la peinture.'),
+              V('La structure détruite par le cisaillement ne se reforme qu’en partie pendant la mesure : thixotropie', 'Exact : le retour lent de la viscosité est la signature d’un produit thixotrope.'),
+              F('Le produit est rhéoépaississant', 'Un produit rhéoépaississant verrait sa viscosité augmenter avec le gradient.'),
+              F('Les deux branches devraient toujours être identiques', 'Elles ne le sont que pour un produit non thixotrope : ici la boucle d’hystérésis révèle une mémoire de la structure.'),
+            ] },
+          { id: 'perte', titre: 'Taux de perte', q: `Calculer la perte relative de viscosité de la peinture ${k} à 1 s⁻¹ entre l’aller et le retour : (η aller − η retour) / η aller × 100.`,
+            aide: 'Prends les deux valeurs à γ̇ = 1 s⁻¹ dans les colonnes « aller » et « retour » de la peinture. Résultat en pourcentage.',
+            type: 'saisie',
+            champs: [{ id: 'perte', lib: 'Perte relative à 1 s⁻¹', u: '%', vrai: perte(k), tol: 0.05 }],
+            expl: `(${nb(m.aller[i(1)])} − ${nb(m.retour[i(1)])}) / ${nb(m.aller[i(1)])} × 100 ≈ ${nb(pk)} %. Hypothèse : on compare des viscosités mesurées au même gradient, 2 s après le palier précédent.` },
+          { id: 'compare', titre: 'Comparaison', q: 'Laquelle des deux peintures est la plus thixotrope, d’après cette perte relative à 1 s⁻¹ ?',
+            aide: `Compare les pertes : A ≈ ${nb(pA)} %, B ≈ ${nb(pB)} %.`,
+            o: [
+              F('La peinture A', `Sa perte relative (environ ${nb(pA)} %) est plus faible que celle de B.`),
+              V('La peinture B', `Exact : environ ${nb(pB)} % de perte contre ${nb(pA)} % pour A : elle retrouve moins vite sa structure.`),
+              F('Elles sont identiques', 'Les deux boucles n’ont pas la même ouverture.'),
+            ] },
+        ],
+        retenir: ['Une rampe aller-retour montre le caractère rhéofluidifiant (η baisse quand γ̇ monte) et la thixotropie (boucle d’hystérésis : le retour est sous l’aller).', 'Plus la boucle est ouverte à bas gradient, plus la structure se reforme lentement.'],
+      };
+    },
   },
 ];
