@@ -6,7 +6,8 @@ import { surSynchro } from "../etatsParcours";
 import { listerFiches, surChangementFiches, recolterFiches, lireFigure, simsTerminees } from "../fiches";
 import { toutLire } from "../serveur";
 import { tempsParSimulation, estSimulation, nomsSim, simsCachees } from "../suivi";
-import { chapitresDeSim, NIVEAUX_CHAPITRES } from "../chapitres";
+import { chapitresDeSim, chapitreDe, NIVEAUX_CHAPITRES } from "../chapitres";
+import { SIMS_AVEC_CARTES } from "../simsAvecCartes";
 import { Pic } from "../Pictos";
 
 // ═════════════════════════════════════════════════════════════════════════
@@ -61,13 +62,25 @@ function FicheSim({ g, couleur, coche, bascule, naviguer, impression }) {
 }
 
 // Feuille imprimée : visible seulement à l'impression (voir index.css), une fiche par simulation
-function ZoneImpression({ groupes, identifiant }) {
+function ZoneImpression({ groupes, identifiant, livret }) {
+  const date = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   return createPortal(
     <div className="fiches-print" aria-hidden="true">
-      <header className="fiches-print-entete">
-        <div><b>Paillasse virtuelle</b> · Mes fiches de révision</div>
-        <div>{identifiant ? `${identifiant} · ` : ''}{new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-      </header>
+      {livret ? (
+        <section className="fiches-print-couverture" style={{ '--c': COULEUR[livret.niv] || COULEUR.autre }}>
+          <div className="fpc-marque">Paillasse virtuelle</div>
+          <div className="fpc-type">Livret de révision</div>
+          <h1>{livret.label.replace(/^[^\p{L}\p{N}]+/u, '')}</h1>
+          <div className="fpc-niv">{livret.libNiv}</div>
+          <ol className="fpc-sommaire">
+            {groupes.map(g => <li key={g.sim}><b>{g.nom}</b><span>{g.L.length} point{g.L.length > 1 ? 's' : ''} à retenir</span></li>)}
+          </ol>
+          <div className="fpc-pied">{identifiant ? `${identifiant} · ` : ''}{date}</div>
+        </section>) : (
+        <header className="fiches-print-entete">
+          <div><b>Paillasse virtuelle</b> · Mes fiches de révision</div>
+          <div>{identifiant ? `${identifiant} · ` : ''}{date}</div>
+        </header>)}
       {groupes.map(g => <FicheSim key={g.sim} g={g} couleur={COULEUR[g.niv] || COULEUR.autre} coche={false} bascule={() => {}} naviguer={() => {}} impression />)}
     </div>, document.body);
 }
@@ -130,6 +143,17 @@ export function SimulationFiches({ naviguer }) {
   }, [visibles]);
   const bascule = sim => setChoisies(s => { const n = new Set(s); if (n.has(sim)) n.delete(sim); else n.add(sim); return n; });
   const selection = groupes.filter(g => choisies.has(g.sim));
+  // Livret d'un thème : toutes ses fiches, dans l'ordre des simulations du thème, avec une page de garde
+  const [livret, setLivret] = useState(null);
+  const ordreDuThème = c => { const def = chapitreDe(c.id); const rang = id => { const k = def ? def.sims.indexOf(id) : -1; return k < 0 ? 999 : k; }; return [...c.L].sort((a, b) => rang(a.sim) - rang(b.sim)); };
+  useEffect(() => {
+    if (!livret) return undefined;
+    const fin = () => setLivret(null);
+    window.addEventListener('afterprint', fin, { once: true });
+    const t = setTimeout(() => window.print(), 300), secours = setTimeout(fin, 90000);
+    return () => { clearTimeout(t); clearTimeout(secours); window.removeEventListener('afterprint', fin); };
+  }, [livret]);
+  const aImprimer = livret ? ordreDuThème(livret) : selection;
   const niveauxPresents = ['tous', ...NIVEAUX_CHAPITRES.map(n => n.key).filter(k => groupes.some(g => g.niv === k)), ...(groupes.some(g => g.niv === 'autre') ? ['autre'] : [])];
 
   return (
@@ -172,7 +196,7 @@ export function SimulationFiches({ naviguer }) {
             <span style={{ flex: 1 }} />
             <button style={stylePetitBouton(false)} onClick={() => setChoisies(new Set(visibles.map(g => g.sim)))}>Tout sélectionner</button>
             <button style={stylePetitBouton(false)} onClick={() => setChoisies(new Set())} disabled={!selection.length}>Tout désélectionner</button>
-            <button data-imprimer style={{ ...styleBouton(selection.length > 0, '#0b4f94'), opacity: selection.length ? 1 : 0.5 }} disabled={!selection.length} onClick={() => window.print()}>
+            <button data-imprimer style={{ ...styleBouton(selection.length > 0, '#0b4f94'), opacity: selection.length ? 1 : 0.5 }} disabled={!selection.length} onClick={() => { setLivret(null); setTimeout(() => window.print(), 50); }}>
               <Pic n="clipboard"/>Imprimer la sélection{selection.length ? ` (${selection.length})` : ''}</button>
           </div>
           {niveauxPresents.length > 2 && (
@@ -180,16 +204,35 @@ export function SimulationFiches({ naviguer }) {
               {niveauxPresents.map(k => <button key={k} onClick={() => setNiveau(k)} aria-pressed={niveau === k}
                 style={{ ...styleBouton(niveau === k, COULEUR[k] || '#334155'), padding: '5px 14px', fontSize: 13.5, borderRadius: 999, boxShadow: 'none' }}>{libNiv(k)}</button>)}
             </div>)}
-          {chapitres.map(c => (
-            <section key={c.id} data-chapitre-fiches={c.id} style={{ margin: '14px 0 20px' }}>
-              <h3 style={{ margin: '0 0 8px', fontFamily: TITRE_B, fontSize: 19, color: KIT.txt, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                <span style={{ background: COULEUR[c.niv] || COULEUR.autre, color: '#fff', borderRadius: 999, fontSize: 12, padding: '2px 10px', fontWeight: 800 }}>{libNiv(c.niv)}</span>{c.label}
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 420px), 1fr))', gap: 14, alignItems: 'start' }}>
-                {c.L.map(g => <FicheSim key={g.sim} g={g} couleur={COULEUR[g.niv] || COULEUR.autre} coche={choisies.has(g.sim)} bascule={() => bascule(g.sim)} naviguer={naviguer} />)}
-              </div>
-            </section>))}
+          {chapitres.map(c => {
+            const def = chapitreDe(c.id);
+            const possibles = def ? def.sims.filter(id => SIMS_AVEC_CARTES.has(id) && !simsCachees.has(id)) : c.L.map(g => g.sim);
+            const aDebloquer = possibles.filter(id => !c.L.some(g => g.sim === id));
+            const total = Math.max(possibles.length, c.L.length), part = Math.round(100 * c.L.length / total);
+            return (
+              <section key={c.id} data-chapitre-fiches={c.id} style={{ margin: '14px 0 22px' }}>
+                <h3 style={{ margin: '0 0 6px', fontFamily: TITRE_B, fontSize: 19, color: KIT.txt, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span style={{ background: COULEUR[c.niv] || COULEUR.autre, color: '#fff', borderRadius: 999, fontSize: 12, padding: '2px 10px', fontWeight: 800 }}>{libNiv(c.niv)}</span>{c.label}
+                </h3>
+                <div data-avancement-theme style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', margin: '0 0 8px', fontSize: 13.5, color: KIT.txt2 }}>
+                  <span style={{ fontWeight: 800, color: KIT.txt }}>{c.L.length} fiche{c.L.length > 1 ? 's' : ''} sur {total}</span>
+                  <span aria-hidden="true" style={{ width: 110, height: 8, background: '#e2e8f0', borderRadius: 99, overflow: 'hidden', display: 'inline-block' }}><span style={{ display: 'block', width: `${part}%`, height: '100%', background: COULEUR[c.niv] || COULEUR.autre }}/></span>
+                  <button type="button" data-livret onClick={() => setLivret({ ...c, libNiv: libNiv(c.niv) })} style={{ ...stylePetitBouton(false), marginLeft: 'auto' }}><Pic n="book"/>Imprimer le livret du thème</button>
+                </div>
+                {aDebloquer.length > 0
+                  ? <div data-a-debloquer style={{ margin: '0 0 10px', padding: '8px 12px', borderRadius: 12, background: '#fff8eb', border: '1px dashed #e0b25f', fontSize: 13.5, color: KIT.txt }}>
+                      <b>Ton livret n’est pas complet.</b> Enchaîne ces simulations jusqu’au bilan (ou réussis leur défi) pour débloquer leurs fiches :
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+                        {aDebloquer.map(id => <button key={id} type="button" onClick={() => naviguer(id)} style={{ ...stylePetitBouton(false), borderStyle: 'dashed', color: '#92400e' }}>🔒 {nomsSim[id] || `Simulation ${id}`} ▶</button>)}
+                      </div>
+                    </div>
+                  : <div style={{ margin: '0 0 10px', fontSize: 13.5, color: '#166534' }}>✅ Livret complet pour ce thème : tu peux l’imprimer.</div>}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 420px), 1fr))', gap: 14, alignItems: 'start' }}>
+                  {ordreDuThème(c).map(g => <FicheSim key={g.sim} g={g} couleur={COULEUR[g.niv] || COULEUR.autre} coche={choisies.has(g.sim)} bascule={() => bascule(g.sim)} naviguer={naviguer} />)}
+                </div>
+              </section>);
+          })}
         </>)}
-      <ZoneImpression groupes={selection} identifiant={eleve ? sess.profil.identifiant : ''} />
+      <ZoneImpression groupes={aImprimer} livret={livret} identifiant={eleve ? sess.profil.identifiant : ''} />
     </div>);
 }

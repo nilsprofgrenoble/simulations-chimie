@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { cardStyle, KIT, styleBouton, styleBoite } from "../commun";
 import { useSession, estEleve, estProf, connexion, deconnexion, toutLire, changerMotDePasse } from "../serveur";
-import { listerFiches } from "../fiches";
+import { listerFiches, simsTerminees } from "../fiches";
+import { chapitresDeSim } from "../chapitres";
 import { tousLesExercices } from "./Entrainement";
-import { estSimulation, estDefi, tempsParSimulation, MODES, etiquettesDefis } from "../suivi";
+import { estSimulation, estDefi, tempsParSimulation, MODES, etiquettesDefis, simsCachees } from "../suivi";
 import { EspaceEleve } from "./EspaceEleve";
 import { BoutonMail } from "../contact";
 import { ACCENT, TEXTE, TEXTE2, LAME } from "../theme";
@@ -186,17 +187,26 @@ export function TableauTempsSimulations({ lignes, vide = 'Aucun temps enregistr�
     </div>);
 }
 
+// Grande tuile en tête de « Mon compte » : l'accès aux fiches de révision (nombre de fiches, thèmes, invitation à en débloquer d'autres)
 function TuileFiches({ naviguer }) {
-  const n = listerFiches().length;
+  const sims = new Set([...listerFiches().map(f => f.sim), ...simsTerminees()].filter(id => !simsCachees.has(id)));
+  const n = sims.size;
+  const themes = new Map();
+  sims.forEach(id => { const c = chapitresDeSim(id)[0]; if (c) themes.set(c.id, { label: c.label.replace(/^[^\p{L}\p{N}]+/u, ''), n: (themes.get(c.id)?.n || 0) + 1 }); });
   return (
-    <button data-tuile-fiches onClick={() => naviguer(103)} style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', textAlign: 'left', margin: '18px 0 0', padding: '14px 16px', borderRadius: 16,
-      border: '1px solid #f3b6cf', background: 'linear-gradient(135deg,#fff5f9,#fdeaf2)', cursor: 'pointer', color: KIT.txt }}>
-      <span aria-hidden="true" style={{ fontSize: 30 }}>📇</span>
-      <span style={{ flex: 1 }}>
-        <b style={{ display: 'block', fontSize: 16.5, color: '#9d174d' }}>Mes fiches « À retenir » ({n})</b>
-        <span style={{ fontSize: 13.5, color: KIT.txt2 }}>{n ? 'Relis tes cartes de cours pour réviser, et imprime celles que tu choisis.' : 'Les cartes « À retenir » que tu rencontres se rangent ici, prêtes à réviser.'}</span>
+    <button data-tuile-fiches onClick={() => naviguer(103)} style={{ display: 'flex', alignItems: 'center', gap: 16, width: '100%', textAlign: 'left', margin: '10px 0 18px', padding: '16px 18px', borderRadius: 18,
+      border: '2px solid #ec4899', background: 'linear-gradient(135deg,#fff1f7,#fde2ee)', cursor: 'pointer', color: KIT.txt, boxShadow: '0 4px 14px rgba(190,24,93,0.14)' }}>
+      <span aria-hidden="true" style={{ fontSize: 42, lineHeight: 1 }}>📇</span>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <b style={{ display: 'block', fontSize: 19, color: '#9d174d' }}>Mes fiches de révision{n ? ` · ${n} fiche${n > 1 ? 's' : ''}` : ''}</b>
+        <span style={{ display: 'block', fontSize: 14, color: KIT.txt2, lineHeight: 1.45, marginTop: 2 }}>
+          {n ? 'Relis les points à retenir de chaque simulation, et imprime un livret par thème pour réviser.' : 'Termine un parcours guidé (ou réussis un défi) : la fiche de la simulation se range ici, prête à réviser et à imprimer.'}
+        </span>
+        {n > 0 && <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+          {[...themes.values()].map((t, i) => <span key={i} style={{ background: '#fff', border: '1px solid #f3b6cf', borderRadius: 99, padding: '1px 9px', fontSize: 12.5, color: '#9d174d', fontWeight: 700 }}>{t.label} · {t.n}</span>)}
+        </span>}
       </span>
-      <span aria-hidden="true" style={{ fontSize: 20, color: '#9d174d' }}>▶</span>
+      <span style={{ background: '#be185d', color: '#fff', borderRadius: 12, padding: '8px 14px', fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap' }}>Ouvrir ▶</span>
     </button>);
 }
 
@@ -211,8 +221,8 @@ export function SimulationCompte({ naviguer }) {
             <span>Connecté·e : <b style={{ color: KIT.txt }}>{sess.profil.identifiant}</b>{sess.profil.classe ? <> — classe <b style={{ color: KIT.txt }}>{sess.profil.classe}</b></> : null}</span>
             <button onClick={deconnexion} style={{ ...styleBouton(false, '#475569'), fontSize: 13 }}>Se déconnecter</button>
           </div>
-          <MesResultats naviguer={naviguer} />
           <TuileFiches naviguer={naviguer} />
+          <MesResultats naviguer={naviguer} />
           <div style={{ marginTop: 22 }}><MotDePasse /></div>
         </>)}
       {estProf(sess) && (
