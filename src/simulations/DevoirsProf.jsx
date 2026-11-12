@@ -40,7 +40,7 @@ export function DevoirsProf({ classe, eleves, lignes, preset }) {
   const [titre, setTitre] = useState(preset?.titre || ''), [echeance, setEcheance] = useState(''), [choix, setChoix] = useState(preset?.cles || []), [recherche, setRecherche] = useState('');
   const [theme, setTheme] = useState(preset ? 'tous' : classe.chapitres?.[0] && chapitreDe(classe.chapitres[0]) ? `chap:${classe.chapitres[0]}` : 'tous');
   const [certains, setCertains] = useState(!!preset?.eleves?.length), [visés, setVisés] = useState(preset?.eleves || []);
-  const [erreur, setErreur] = useState(''), [msg, setMsg] = useState(''), [occupe, setOccupe] = useState(false), [version, setVersion] = useState(0);
+  const [ouvert, setOuvert] = useState(!!preset), [erreur, setErreur] = useState(''), [msg, setMsg] = useState(''), [occupe, setOccupe] = useState(false), [version, setVersion] = useState(0);
   const items = useMemo(() => catalogueDevoirs(), []);
   const par = useMemo(() => new Map(items.map(i => [i.cle, i])), [items]);
 
@@ -66,7 +66,7 @@ export function DevoirsProf({ classe, eleves, lignes, preset }) {
     const cibles = certains && cible ? visés : null;
     proteger(async () => {
       await rest('devoirs', { method: 'POST', corps: { classe_id: classe.id, titre: titre.trim(), cles: choix, echeance: echeance || null, ...(cibles ? { eleves: cibles } : {}) } });
-      setTitre(''); setEcheance(''); setChoix([]); setRecherche(''); setCertains(false); setVisés([]);
+      setTitre(''); setEcheance(''); setChoix([]); setRecherche(''); setCertains(false); setVisés([]); setOuvert(false);
       setMsg(cibles ? `Devoir créé : ${cibles.length} élève${cibles.length > 1 ? 's le voient' : ' le voit'} dès la prochaine visite.` : 'Devoir créé : les élèves de la classe le voient dès leur prochaine visite.'); setVersion(v => v + 1);
     });
   };
@@ -84,8 +84,12 @@ export function DevoirsProf({ classe, eleves, lignes, preset }) {
       {erreur && <div role="alert" style={{ color: '#b91c1c', fontWeight: 600, margin: '6px 0' }}><Pic n="ko"/>{erreur}</div>}
       {msg && <div role="status" style={{ color: '#15803d', fontWeight: 600, margin: '6px 0' }}><Pic n="ok"/>{msg}</div>}
 
-      <form onSubmit={creer} style={{ ...styleBoite, display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div style={{ fontWeight: 800, color: KIT.txt }}><Pic n="plus"/>Nouveau devoir pour « {classe.nom} »</div>
+      <button type="button" aria-expanded={ouvert} aria-controls="form-devoir" onClick={() => setOuvert(o => !o)}
+        style={{ ...styleBouton(true, '#0b4f94'), width: '100%', justifyContent: 'space-between', display: 'flex', alignItems: 'center', padding: '12px 16px', fontSize: 15, marginBottom: 10 }}>
+        <span><Pic n="plus"/>Paramétrer un nouveau devoir</span><span aria-hidden="true">{ouvert ? '▲' : '▼'}</span>
+      </button>
+      {ouvert && <form id="form-devoir" onSubmit={creer} style={{ ...styleBoite, display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 10 }}>
+        <div style={{ fontWeight: 800, color: KIT.txt }}>Nouveau devoir pour « {classe.nom} »</div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <label style={{ fontSize: 13, fontWeight: 700, flex: '1 1 240px' }}>Titre<br />
             <input value={titre} maxLength={80} onChange={e => setTitre(e.target.value)} placeholder="Révisions avant l’évaluation" style={{ ...champ, width: '100%' }} aria-label="Titre du devoir" /></label>
@@ -139,9 +143,9 @@ export function DevoirsProf({ classe, eleves, lignes, preset }) {
           </div>)}
         <div style={{ fontSize: 12.5, color: KIT.txt2 }}>Un exercice compte comme <b>fait</b> s’il est <b>réussi après la création du devoir</b> (un exercice réussi avant doit donc être refait : pratique pour des révisions). Une <b>simulation</b> compte comme <b>faite</b> après au moins {SEUIL_GUIDE_S / 60} minutes en parcours guidé <b>et</b> un défi réussi quand le site suit les défis de la simulation (c’est le cas de certaines seulement ; pour les autres, le parcours guidé seul est vérifié) : c’est mesuré dans le navigateur de l’élève, donc une aide à l’organisation et non une preuve.</div>
         <div><button type="submit" style={styleBouton(true, '#16a34a')} disabled={occupe || !titre.trim() || choix.length === 0 || (certains && cible && visés.length === 0)}>Créer le devoir</button></div>
-      </form>
+      </form>}
 
-      <h3 style={{ margin: '16px 0 8px', color: KIT.txt }}>Devoirs de la classe</h3>
+      <h3 style={{ margin: '6px 0 8px', color: KIT.txt }}>Devoirs de la classe</h3>
       {devoirs === null && <div style={{ color: KIT.txt2 }}>Chargement…</div>}
       {devoirs && devoirs.length === 0 && <div style={{ ...styleBoite, fontSize: 14 }}>Aucun devoir pour cette classe pour l’instant.</div>}
       {(devoirs || []).map(d => {

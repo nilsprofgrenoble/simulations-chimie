@@ -66,18 +66,20 @@ function Comptes({ classe, comptes, onFermer }) {
   const avecMdp = comptes.filter(c => c.mot_de_passe), echecs = comptes.filter(c => c.erreur);
   const copier = () => navigator.clipboard?.writeText(avecMdp.map(c => `${c.identifiant}\t${c.mot_de_passe}`).join('\n'));
   return (
-    <div style={{ ...styleBoite, border: '2px solid #f59e0b', background: '#fffbeb' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(12,26,46,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 12 }}>
+    <div role="dialog" aria-modal="true" aria-label="Mots de passe des élèves" style={{ ...styleBoite, border: '2px solid #f59e0b', background: '#fffbeb', maxWidth: 560, width: '100%', maxHeight: '88vh', overflowY: 'auto', margin: 0 }}>
       <div style={{ fontWeight: 800, color: '#92400e', marginBottom: 6 }}><Pic n="warn"/>Mots de passe affichés une seule fois : imprimez ou copiez-les maintenant.</div>
       <table style={{ borderCollapse: 'collapse', fontSize: 14, marginBottom: 8 }}><tbody>
         {comptes.map(c => <tr key={c.identifiant}><td style={td}><b>{c.identifiant}</b></td>
           <td style={{ ...td, fontFamily: 'monospace' }}>{c.mot_de_passe || <span style={{ color: '#b91c1c' }}><Pic n="ko"/>{c.erreur}</span>}</td></tr>)}
       </tbody></table>
-      {!!echecs.length && <div style={{ color: '#b91c1c', fontSize: 13, marginBottom: 6 }}>Certains comptes n’ont pas pu être créés : relancez « Ajouter des élèves » pour compléter.</div>}
+      {!!echecs.length && <div style={{ color: '#b91c1c', fontSize: 13, marginBottom: 6 }}>Certains comptes n’ont pas pu être créés : relancez l’ajout d’élèves pour compléter.</div>}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <button onClick={() => imprimerFiches(classe, comptes)} style={styleBouton(true, '#16a34a')}>🖨️ Imprimer les fiches</button>
         <button onClick={copier} style={styleBouton(false, '#475569')}><Pic n="clipboard"/>Copier (tableur)</button>
         <button onClick={onFermer} style={styleBouton(false, '#475569')}>J’ai noté les mots de passe, fermer</button>
       </div>
+    </div>
     </div>
   );
 }
@@ -127,7 +129,7 @@ export function SimulationSuiviProf({ naviguer }) {
   const [msg, setMsg] = useState(''), [erreur, setErreur] = useState(''), [occupe, setOccupe] = useState(false);
   const [comptes, setComptes] = useState(null), [formClasse, setFormClasse] = useState(false);
   const [siteDispo, setSiteDispo] = useState(false), [etabDispo, setEtabDispo] = useState(false), [vieDispo, setVieDispo] = useState(true), [chapDispo, setChapDispo] = useState(true), [apercu, setApercu] = useState(false), [preset, setPreset] = useState(presetInit);
-  const [nc, setNc] = useState({ nom: '', prefixe: '', nombre: 30 }), [prefixeSaisi, setPrefixeSaisi] = useState(false), [ajout, setAjout] = useState(5);
+  const [nc, setNc] = useState({ nom: '', prefixe: '', nombre: 30 }), [prefixeSaisi, setPrefixeSaisi] = useState(false), [ajout, setAjout] = useState(5), [exosTous, setExosTous] = useState(false);
   const etq = useMemo(() => etiquettes(), []), exos = useMemo(() => tousLesExercices(), []), defis = useMemo(() => etiquettesDefis(), []);
 
   const chargerClasses = useCallback(async (choisir) => {
@@ -337,7 +339,7 @@ export function SimulationSuiviProf({ naviguer }) {
           {actif === 'stats' && (
             <div style={{ display: 'flex', gap: 6, margin: '0 0 12px', flexWrap: 'wrap', alignItems: 'center', fontSize: 13.5, color: KIT.txt2 }}>
               Afficher :
-              <button onClick={() => ouvrir('exos')} style={stylePetitBouton(onglet === 'exos', '#475569')}>Par exercice</button>
+              <button onClick={() => ouvrir('exos')} style={stylePetitBouton(onglet === 'exos', '#475569')}>Exercices travaillés</button>
               <button onClick={() => ouvrir('defis')} style={stylePetitBouton(onglet === 'defis', '#475569')}>Défis des simulations</button>
               <button onClick={() => ouvrir('sims')} style={stylePetitBouton(onglet === 'sims', '#475569')}>Temps par simulation</button>
             </div>)}
@@ -354,9 +356,9 @@ export function SimulationSuiviProf({ naviguer }) {
                 <h3>👥 Élèves et comptes</h3>
                 <p className="sp-sous">Ajoutez des comptes si un élève arrive en cours d’année, ou téléchargez les résultats de la classe.</p>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <span style={{ fontSize: 14, color: KIT.txt2 }}>Ajouter</span>
-                  <input type="number" min={1} max={40} value={ajout} onChange={e => setAjout(e.target.value)} style={{ ...champ, width: 64 }} aria-label="Nombre d’élèves à ajouter" />
-                  <button onClick={ajouter} style={styleBouton(false, '#475569')} disabled={occupe}>élèves</button>
+                  <label style={{ fontSize: 14, color: KIT.txt2 }}>Nombre de nouveaux élèves :{' '}
+                    <input type="number" min={1} max={40} value={ajout} onChange={e => setAjout(e.target.value)} style={{ ...champ, width: 64 }} aria-label="Nombre d’élèves à ajouter" /></label>
+                  <button onClick={ajouter} style={styleBouton(true, '#16a34a')} disabled={occupe || !(Number(ajout) >= 1)}>＋ Créer {Number(ajout) >= 1 ? Number(ajout) : ''} compte{Number(ajout) > 1 ? 's' : ''} élève</button>
                   <button onClick={exporter} style={styleBouton(false, '#475569')}>⬇️ Télécharger les résultats (CSV)</button>
                 </div>
               </section>
@@ -442,17 +444,28 @@ export function SimulationSuiviProf({ naviguer }) {
               {!defis.length && <div style={{ color: KIT.txt2, padding: 8 }}>Aucune simulation n’a encore de défi suivi.</div>}
             </div>)}
 
-          {onglet === 'exos' && (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ borderCollapse: 'collapse', fontSize: 13.5, width: '100%' }}>
-                <thead><tr><th style={th}>Exercice</th><th style={th}>Réussi par</th><th style={th}>Travaillé par</th><th style={th}>Essais (moyenne)</th><th style={th}>Ont vu la correction</th><th style={th}>Temps (médiane)</th></tr></thead>
-                <tbody>{parExo.map(x => (
-                  <tr key={x.cle} style={{ borderTop: `1px solid ${KIT.bord}`, opacity: x.travailles ? 1 : 0.5 }}>
-                    <td style={td}><b>{x.comp}</b> {x.titre}</td><td style={td}>{x.reussis} / {eleves.length}</td><td style={td}>{x.travailles}</td>
-                    <td style={td}>{x.travailles ? x.essaisMoy.toFixed(1).replace('.', ',') : '—'}</td><td style={td}>{x.travailles ? x.vues : '—'}</td>
-                    <td style={td}>{x.travailles ? formatDuree(x.tempsMed) : '—'}</td></tr>))}</tbody>
-              </table>
-            </div>)}
+          {onglet === 'exos' && (() => {
+            const faits = parExo.filter(x => x.travailles > 0).sort((p, q) => (p.reussis / p.travailles) - (q.reussis / q.travailles) || q.travailles - p.travailles);
+            const jamais = parExo.length - faits.length, liste = exosTous ? [...faits, ...parExo.filter(x => !x.travailles)] : faits;
+            return (
+              <div>
+                {faits.length === 0 && <div style={{ ...styleBoite, fontSize: 14 }}>Aucun exercice n’a encore été travaillé par cette classe. Les résultats apparaîtront ici dès que les élèves s’entraîneront.</div>}
+                {faits.length > 0 && <p style={{ margin: '0 2px 10px', fontSize: 13.5, color: KIT.txt2 }}>Triés du plus difficile (le moins réussi) au plus facile. Seuls les exercices travaillés par au moins un élève sont listés.</p>}
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ borderCollapse: 'collapse', fontSize: 13.5, width: '100%' }}>
+                    <thead><tr><th style={th}>Exercice</th><th style={th}>Réussite</th><th style={th}>Réussi par</th><th style={th}>Travaillé par</th><th style={th}>Essais (moy.)</th><th style={th}>Correction vue</th><th style={th}>Temps (méd.)</th></tr></thead>
+                    <tbody>{liste.map(x => { const pct = x.travailles ? Math.round(100 * x.reussis / x.travailles) : null; return (
+                      <tr key={x.cle} style={{ borderTop: `1px solid ${KIT.bord}`, opacity: x.travailles ? 1 : 0.5 }}>
+                        <td style={td}><b>{x.comp}</b> {x.titre}</td>
+                        <td style={{ ...td, minWidth: 90 }}>{pct === null ? '—' : <><div style={{ height: 8, borderRadius: 4, background: '#e2e8f0' }}><div style={{ width: `${pct}%`, height: 8, borderRadius: 4, background: pct >= 70 ? '#16a34a' : pct >= 40 ? '#f5a31a' : '#dc2626' }} /></div><span style={{ fontSize: 12 }}>{pct} %</span></>}</td>
+                        <td style={td}>{x.reussis} / {eleves.length}</td><td style={td}>{x.travailles}</td>
+                        <td style={td}>{x.travailles ? x.essaisMoy.toFixed(1).replace('.', ',') : '—'}</td><td style={td}>{x.travailles ? x.vues : '—'}</td>
+                        <td style={td}>{x.travailles ? formatDuree(x.tempsMed) : '—'}</td></tr>); })}</tbody>
+                  </table>
+                </div>
+                {jamais > 0 && <p style={{ margin: '10px 2px', fontSize: 13.5, color: KIT.txt2 }}>{exosTous ? '' : `${jamais} exercice${jamais > 1 ? 's' : ''} du catalogue pas encore travaillé${jamais > 1 ? 's' : ''} (masqué${jamais > 1 ? 's' : ''}). `}<button onClick={() => setExosTous(t => !t)} style={{ background: 'none', border: 0, padding: 0, color: '#0b4f94', fontWeight: 800, cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }}>{exosTous ? 'Masquer les exercices non travaillés' : 'Les afficher quand même'}</button></p>}
+              </div>);
+          })()}
           </div>
         </>)}
     </div>
