@@ -1161,7 +1161,7 @@ function ecritureResultat(m, U) {
   return { d, m: m.toFixed(d).replace('.', ','), U: Ur.toFixed(d).replace('.', ',') };
 }
 
-function TableauEssais({ data, unite, stats, ecartes = [], isoles = [], focus = false }) {
+function TableauEssais({ data, unite, stats, ecartes = [], isoles = [], focus = false, masque = -1 }) {
   const n = data[0].length, m = data.map(moy), s = data.map(ect);
   const c = { padding: '3px 7px', border: `1px solid ${KIT.bord}`, textAlign: 'center', fontSize: 13.5 };
   const h = { ...c, background: '#f1f5f9', fontWeight: 700 };
@@ -1172,8 +1172,8 @@ function TableauEssais({ data, unite, stats, ecartes = [], isoles = [], focus = 
         <tbody>
           {Array.from({ length: n }, (_, j) => <tr key={j}><td style={h}>Essai {j + 1}</td>{data.map((col, i) => <td key={i} style={{ ...c, opacity: ecartes.includes(i) ? 0.45 : 1 }}>{fmt(col[j], 2)}</td>)}</tr>)}
           {stats && <>
-            <tr><td style={{ ...h, background: '#eff6ff' }}>{avecIndices('ȳ_i')} ({unite})</td>{m.map((x, i) => <td key={i} style={{ ...c, background: '#eff6ff', fontWeight: 700, opacity: ecartes.includes(i) ? 0.45 : 1 }}>{fmt(x, 3)}</td>)}</tr>
-            <tr><td style={{ ...h, background: '#fff7ed' }}>{avecIndices('s_i')} ({unite})</td>{s.map((x, i) => <td key={i} style={{ ...c, background: '#fff7ed', fontWeight: 700, opacity: ecartes.includes(i) ? 0.45 : 1 }}>{fmt(x, 3)}</td>)}</tr>
+            <tr><td style={{ ...h, background: '#eff6ff' }}>{avecIndices('ȳ_i')} ({unite})</td>{m.map((x, i) => <td key={i} style={{ ...c, background: '#eff6ff', fontWeight: 700, opacity: ecartes.includes(i) ? 0.45 : 1 }}>{i === masque ? '?' : fmt(x, 3)}</td>)}</tr>
+            <tr><td style={{ ...h, background: '#fff7ed' }}>{avecIndices('s_i')} ({unite})</td>{s.map((x, i) => <td key={i} style={{ ...c, background: '#fff7ed', fontWeight: 700, opacity: ecartes.includes(i) ? 0.45 : 1 }}>{i === masque ? '?' : fmt(x, 3)}</td>)}</tr>
           </>}
         </tbody>
       </table>
@@ -1489,13 +1489,13 @@ function DefiInterlabo() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }}>
         <div style={styleBoite}>
           <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, marginBottom: 8 }}>
-            Une étude interlaboratoire : {p} laboratoires, {n} essais chacun, résultats en mmol/L. Appliquez la procédure de la norme : Cochran (répété si un laboratoire est aberrant), puis Grubbs (idem).
+            Une étude interlaboratoire : {p} laboratoires, {n} essais chacun, résultats en mmol/L. Appliquez la procédure de la norme : Cochran (répété si un laboratoire est aberrant), puis Grubbs (idem). Les moyennes ȳ<sub>i</sub> et écarts-types s<sub>i</sub> de chaque laboratoire sont fournis, sauf ceux du laboratoire {k + 1}, à calculer vous-même : utilisez les valeurs du tableau pour C et G.
           </div>
           <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.55, marginBottom: 8, background: 'white', border: `1px solid ${KIT.bord}`, borderRadius: 6, padding: '6px 8px' }}>
             <strong>Résultats de l’étude</strong> (calculés par la norme, une fois les laboratoires aberrants écartés) : s<sub>r</sub> = {fmt(defi.srD, 3)} mmol/L ; s<sub>R</sub> = {fmt(defi.sRD, 3)} mmol/L.<br/>
             <strong>Votre laboratoire</strong> applique la méthode à un échantillon de teneur voisine : deux essais, en conditions de répétabilité, donnent {fmt(defi.y[0], 2)} et {fmt(defi.y[1], 2)} mmol/L.
           </div>
-          <TableauEssais data={data} unite="mmol/L" stats={false}/>
+          <TableauEssais data={data} unite="mmol/L" stats masque={k}/>
         </div>
         <NuagePoints data={data} unite="mmol/L"/>
         <GaussiennesSVG data={data} unite="mmol/L"/>
