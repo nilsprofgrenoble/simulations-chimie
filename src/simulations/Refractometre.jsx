@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useMemo } from "react";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { MELANGES, Teb, yEq, wDe, degre } from "./distillationModele";
 import { Diagramme, nf, NB, Xi } from "./Distillation";
@@ -180,6 +180,23 @@ export function SimulationRefractometre({ naviguer }) {
       texte: <>L’échantillon est le <strong>distillat</strong> d’une distillation fractionnée d’un vin. Déposez une goutte sur le prisme et refermez le prisme. Sans échantillon, le champ reste sombre.</>,
       tache: { type: 'action', ok: goutte && Math.abs(x - 0.9) < 1e-9, label: 'Déposer la goutte', faire: () => { setX(0.9); setGoutte(true); }, consigne: goutte ? null : 'Déposez la goutte' } },
     { id: 'comp', titre: 'Supprimer les irisations', focus: ['reglages', 'champ'],
+      retenirTitre: 'À RETENIR : LE PRINCIPE ET LE COMPENSATEUR',
+      retenir: <>
+        <svg viewBox="0 0 360 140" role="img" aria-label="Principe du réfractomètre : la lumière traverse un prisme puis le film de liquide ; au-delà d’un angle limite qui dépend de l’indice n du liquide, les rayons rasants ne passent plus ; dans l’oculaire, on voit une zone claire et une zone sombre séparées par une frontière nette" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <polygon points="60,70 150,20 240,20 240,70" fill="#dbeafe" stroke="#1d4ed8" strokeWidth="2" /><text x="150" y="48" textAnchor="middle" fontSize="12" fontWeight="700" fill="#1e3a8a">prisme</text>
+          <rect x="60" y="70" width="180" height="8" fill="#fde68a" stroke="#b45309" strokeWidth="1.5" /><text x="150" y="98" textAnchor="middle" fontSize="12" fontWeight="700" fill="#92400e">film de liquide (indice n)</text>
+          <line x1="40" y1="30" x2="118" y2="70" stroke="#d55e00" strokeWidth="2.5" /><line x1="40" y1="50" x2="104" y2="70" stroke="#d55e00" strokeWidth="2.5" />
+          <line x1="240" y1="78" x2="290" y2="108" stroke="#334155" strokeWidth="1.5" strokeDasharray="4 3" /><text x="236" y="122" fontSize="11" fill="#475569">angle limite θ</text>
+          <rect x="300" y="14" width="50" height="40" fill="#fffbeb" stroke="#334155" strokeWidth="1.5" /><rect x="325" y="14" width="25" height="40" fill="#1e293b" /><line x1="325" y1="14" x2="325" y2="54" stroke="#ef4444" strokeWidth="2" />
+          <text x="325" y="68" textAnchor="middle" fontSize="10.5" fill="#334155">oculaire</text>
+        </svg>
+        <Formule><mi>n</mi><mo>=</mo><mfrac><mi>c</mi><mi>v</mi></mfrac></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Un réfractomètre mesure l’<strong>indice de réfraction n</strong> d’un liquide : il existe un <strong>angle limite</strong> qui dépend de n ; la frontière clair – sombre se déplace quand n change.</li>
+          <li>Le <strong>compensateur</strong> supprime les irisations dues à la dispersion (l’indice dépend un peu de la couleur) : n est mesuré pour la raie D du sodium, n<sub>D</sub>, à 20 °C.</li>
+          <li>Sans échantillon, le champ reste sombre.</li>
+        </ul>
+      </>,
       texte: <>Regardez la frontière : si le compensateur est inactif, elle est <strong>floue et colorée</strong> (la lumière blanche est dispersée : l’indice dépend un peu de la couleur). Le <strong>compensateur</strong> corrige cette dispersion : l’indice mesuré est celui de la raie jaune du sodium (n<sub>D</sub>).</>,
       tache: { type: 'action', ok: comp && goutte, label: 'Activer le compensateur', faire: () => { setGoutte(true); setComp(true); }, consigne: comp ? null : 'Activez le compensateur' } },
     { id: 'aligner', titre: 'Amener la frontière sur le réticule', focus: ['champ', 'reglages'],
@@ -193,10 +210,36 @@ export function SimulationRefractometre({ naviguer }) {
         pieges: [[1.364 + 0.001, 'Vous avez lu une graduation voisine : regardez bien quelle graduation est juste sous l’index.'], [1.36, 'Vous n’avez gardé que 2 décimales : la graduation vaut 0,001 et on estime le dixième de graduation, soit 4 décimales.']],
         expl: 'n ≈ 1,3640. L’échelle est graduée tous les 0,001 : on lit la graduation puis on estime le dixième, d’où 4 décimales. L’incertitude de lecture est de l’ordre de 0,0002.', indice: "La 4ᵉ décimale s’estime à l’œil entre deux graduations." } },
     { id: 'decimales', titre: 'Combien de décimales ?', focus: ['champ'],
+      retenirTitre: 'À RETENIR : LIRE L’INDICE',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Lecture</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Valeur</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>grande graduation</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,001</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>estimation à l’œil</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>dixième de graduation, soit 0,0001</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>écriture du résultat</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4 décimales, avec incertitude : n = 1,3640 ± 0,0002</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>On amène la frontière sur le <strong>centre du réticule</strong> et on lit l’échelle <strong>au niveau de l’index rouge</strong>.</li>
+          <li>n est un nombre <strong>sans unité</strong> ; l’incertitude doit rester cohérente avec la précision de la lecture (±0,0002 environ).</li>
+        </ul>
+      </>,
       texte: <>La plus petite graduation de l’échelle vaut 0,001, mais on estime le dixième de graduation à l’œil.</>,
       tache: { type: 'qcm', q: 'Quelle écriture traduit le mieux la lecture ?', options: ['n = 1,3640 ± 0,0002', 'n = 1,364 ± 0,01', 'n = 1,36 ± 0,0001'], bonne: 0,
         expl: 'On garde 4 décimales (dixième de graduation estimé) avec une incertitude de quelques 10⁻⁴. Écrire ±0,0001 serait trop optimiste, et ±0,01 beaucoup trop pessimiste.', indice: "Le nombre de décimales du résultat doit être cohérent avec l’incertitude annoncée." } },
     { id: 'courbe', titre: 'Passer de n à la composition', focus: ['courbe'],
+      retenirTitre: 'À RETENIR : DE L’INDICE À LA COMPOSITION',
+      retenir: <>
+        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+          <li>Préparer des mélanges eau – éthanol de composition connue et mesurer leur indice : <strong>courbe d’étalonnage n = f(x)</strong>.</li>
+          <li>Tracer sur la courbe la ligne horizontale n = n<sub>mesuré</sub>.</li>
+          <li>Lire l’abscisse x (fraction molaire en éthanol) de chaque intersection.</li>
+        </ol>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La courbe <strong>monte, passe par un maximum, puis redescend</strong> : pour un indice assez élevé, il y a <strong>deux</strong> compositions possibles (avant et après le maximum).</li>
+        </ul>
+      </>,
       texte: <>Pour connaître la composition, on utilise la <strong>courbe d’étalonnage</strong> n = f(x) obtenue avec des mélanges eau – éthanol connus. La ligne orange correspond à votre lecture, n = {nf(G.n, 4)} (étape 5) : lisez l’abscisse du premier point d’intersection avec la courbe, <strong>le plus à gauche</strong>.</>,
       tache: { type: 'num', q: 'Fraction molaire x en éthanol (première composition possible)', unite: '', vrai: G.x1, tol: 0.1, affiche: v => nf(v, 2), cs: 2,
         bloque: aligne ? null : 'Alignez d’abord la frontière (étape 4).',
@@ -208,10 +251,27 @@ export function SimulationRefractometre({ naviguer }) {
       tache: { type: 'qcm', q: 'Pour n = 1,3640, combien de compositions sont possibles ?', options: ['une seule, x ≈ 0,30', 'deux : x ≈ 0,30 et x ≈ 0,90', 'aucune'], bonne: 1,
         expl: 'Le maximum de la courbe (n ≈ 1,366 vers x = 0,6) fait que, pour n > 1,3615, deux compositions donnent le même indice : une avant et une après le maximum.' } },
     { id: 'choix', titre: 'Choisir grâce au contexte', focus: ['courbe', 'diagramme'],
+      retenirTitre: 'À RETENIR : LEVER L’AMBIGUÏTÉ',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La mesure seule ne suffit pas : il faut une <strong>autre information</strong> (contexte).</li>
+          <li>Une colonne très efficace plafonne à l’<strong>azéotrope eau – éthanol</strong> (température d’ébullition minimale, composition voisine de x ≈ 0,90) : le distillat ne peut pas être beaucoup plus riche, ni beaucoup plus pauvre en éthanol.</li>
+          <li>La <strong>température en tête de colonne</strong> et l’étape de la distillation permettent de choisir la bonne composition parmi les deux.</li>
+        </ul>
+      </>,
       texte: <>La mesure seule ne suffit pas : il faut une <strong>autre information</strong>. Ce distillat sort d’une colonne très efficace, qui plafonne à l’azéotrope eau – éthanol, dont la température d’ébullition est {nf(G.Taz, 1)}{NB}°C. Le thermomètre en tête indique 78,3{NB}°C.</>,
       tache: { type: 'qcm', q: 'Quelle composition retenez-vous pour le distillat ?', options: ['x ≈ 0,30 : un distillat pauvre en éthanol', 'x ≈ 0,90 : le distillat est proche de l’azéotrope', 'aucune des deux'], bonne: 1,
         expl: 'À 78,3 °C, la vapeur de tête est presque à la température de l’azéotrope : sa composition est x ≈ 0,90, proche de l’azéotrope. Avec x ≈ 0,30, le thermomètre afficherait beaucoup plus de 80 °C.', indice: "Rappelez-vous la nature du distillat : riche ou pauvre en éthanol ?" } },
     { id: 'degre', titre: 'En degré alcoolique', focus: ['courbe'],
+      retenirTitre: 'À RETENIR : FRACTION MOLAIRE, MASSIQUE ET DEGRÉ',
+      retenir: <>
+        <Formule><mi>w</mi><mo>=</mo><mfrac><mrow><mi>x</mi><mo>×</mo><msub><mi>M</mi><mtext>éthanol</mtext></msub></mrow><mrow><mi>x</mi><mo>×</mo><msub><mi>M</mi><mtext>éthanol</mtext></msub><mo>+</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>x</mi><mo>)</mo><mo>×</mo><msub><mi>M</mi><mtext>eau</mtext></msub></mrow></mfrac></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>M(éthanol) = 46 g·mol⁻¹ ; M(eau) = 18 g·mol⁻¹. Raisonner sur <strong>1 mol de mélange</strong> : masse d’éthanol = x × 46, masse d’eau = (1 − x) × 18.</li>
+          <li>Le <strong>degré alcoolique</strong> est le volume d’éthanol pour 100 volumes de mélange (à 20 °C) : on passe de w au volume avec les masses volumiques.</li>
+          <li>x et w sont des fractions (sans unité) comprises entre 0 et 1.</li>
+        </ul>
+      </>,
       texte: <>Convertissez la fraction molaire en fraction massique (M<sub>éthanol</sub> = 46 g·mol⁻¹, M<sub>eau</sub> = 18 g·mol⁻¹) puis en degré alcoolique avec la masse volumique du mélange (le simulateur le fait pour vous ci-dessous).</>,
       tache: { type: 'num', q: 'Fraction massique w en éthanol du distillat (x = 0,90)', unite: '', vrai: wDe(ew, 0.9), tol: 0.03, affiche: v => nf(v, 3), cs: 3,
         calcul: () => {
@@ -226,12 +286,15 @@ export function SimulationRefractometre({ naviguer }) {
           [wDe({ MA: ew.MB, MB: ew.MA }, 0.9), 'Masses molaires inversées : M_A = 46 g·mol⁻¹ est celle de l’éthanol, M_B = 18 g·mol⁻¹ celle de l’eau.']],
         expl: 'w = 0,90 × 46 / (0,90 × 46 + 0,10 × 18) ≈ 0,958, soit environ 96° : on retrouve le « 95° » du distillat de la distillation fractionnée.', indice: "w = x·M_éthanol ÷ (x·M_éthanol + (1 − x)·M_eau)." } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
-        <li>réfractomètre : la frontière clair – sombre donne l’indice n du liquide (angle limite)</li>
-        <li>compensateur : supprime les irisations ; n est mesuré pour la raie D du sodium, à 20 °C</li>
-        <li>lecture : graduation + dixième de graduation → 4 décimales</li>
-        <li>courbe d’étalonnage : n → x ; pour eau – éthanol, <strong>deux compositions</strong> possibles pour un même n</li>
-        <li>on choisit grâce au contexte : température en tête, étape de la distillation</li></ul>,
+      retenirTitre: 'À RETENIR : LE BILAN',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Réfractomètre</strong> : la frontière clair – sombre (angle limite) donne l’indice n du liquide ; compensateur → n<sub>D</sub> à 20 °C.</li>
+          <li><strong>Lecture</strong> : graduation + dixième de graduation → 4 décimales, n sans unité.</li>
+          <li><strong>Composition</strong> : courbe d’étalonnage n = f(x) ; pour eau – éthanol, <strong>deux compositions</strong> possibles pour un même n.</li>
+          <li>On choisit grâce au <strong>contexte</strong> (azéotrope, température en tête), puis x → w → degré alcoolique.</li>
+        </ul>
+      </>,
       texte: <>Vous savez lire un réfractomètre, passer de l’indice à la composition, et lever l’ambiguïté grâce au contexte. Vous pouvez maintenant tester d’autres échantillons en mode exploration.</>, tache: null },
   ];
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
