@@ -10,6 +10,7 @@
 import { useEffect, useRef, useState, useCallback, useSyncExternalStore } from 'react';
 import { noterReussite } from './commun';
 import { annoncerReussite, etoilesReussite } from './carnet';
+import { DEFIS_DECLARES } from './defisDeclares.js';
 import { getSession, estEleve, rest, restaurer } from './serveur';
 
 const INACTIVITE_MS = 60_000;     // au-delà, le temps n'est plus compté
@@ -184,7 +185,9 @@ export function tempsParSimulation(lignes) {
 //  exercice (useSuivi, clé « <id>:defi.<nom> ») : temps actif, essais (clics sur « Vérifier »), solutions vues, réussite.
 //  Les pages « Mon compte » et « Suivi professeur » les affichent à part des exercices « je m'entraîne ».
 // ════════════════════════════════════════════════════════════════════════════
-export const DEFIS = [];
+// Les défis sont connus d'avance (liste générée par scripts/defis.mjs) : une simulation ne se déclare qu'une fois chargée,
+// or « Mon compte » doit compter les défis de TOUTES les simulations, même non visitées pendant la session.
+export const DEFIS = DEFIS_DECLARES.map(([sim, nom, titre]) => ({ cle: `${sim}:defi.${nom}`, sim, comp: 'DÉFI', titre }));
 export function declarerDefis(simId, liste) {
   liste.forEach(([nom, titre]) => {
     const cle = `${simId}:defi.${nom}`;
