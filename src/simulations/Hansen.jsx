@@ -387,10 +387,25 @@ export function Simulation4({ plotlyReady }) {
           <button onClick={() => nouveauDefi('selectif')} style={stylePetitBouton(sel, '#0b4f94')}>Défi 2 : un dissolvant sélectif</button>
         </div>
         <div style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.55 }}>{sel
-          ? <>Vous voulez enlever un vernis à la nitrocellulose sur un objet en <strong>PMMA</strong> (verre acrylique) sans abîmer l’objet. Trouvez un mélange de solvants qui dissout le vernis mais pas le PMMA. Les deux polymères sont déjà réglés dans l’exploration libre ci-dessous (option « deux sphères ») : <strong>faites vos essais dans l’exploration</strong>, puis donnez votre réponse ici.</>
+          ? <>Vous voulez enlever un vernis à la nitrocellulose sur un objet en <strong>PMMA</strong> (verre acrylique) sans abîmer l’objet. Trouvez un mélange de solvants qui dissout le vernis mais pas le PMMA. Les deux polymères sont déjà réglés dans l’exploration libre ci-dessous (option « deux sphères ») : <strong>faites vos essais dans l’exploration</strong>, puis donnez votre réponse ici, en respectant les critères ci-dessous.</>
           : <>Formulez le mélange de solvants d’un vernis à la nitrocellulose (données du TP). <strong>Faites vos essais dans l’exploration libre</strong> ci-dessous (cochez des solvants, composez le mélange, regardez les RED), puis donnez votre réponse ici : le mélange doit respecter les critères ci-dessous.</>}</div>
+        <div data-criteres-defi="1" style={{ fontSize: 14, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, padding: '8px 12px' }}>
+          <strong>Critères à respecter</strong>
+          <ul style={{ margin: '4px 0 0', paddingLeft: 20, lineHeight: 1.55 }}>
+            {sel ? <>
+              <li>Le mélange <strong>dissout la nitrocellulose, avec une marge</strong> : RED du mélange inférieur à 0,9.</li>
+              <li>Le mélange <strong>n’attaque pas le PMMA, avec une marge</strong> : RED du mélange pour le PMMA supérieur ou égal à 1,2.</li>
+              <li>Les deux polymères restent ceux déjà réglés (option « deux sphères ») : ne les changez pas.</li>
+            </> : <>
+              <li>Le mélange <strong>dissout la nitrocellulose, avec une marge</strong> : RED du mélange inférieur à 0,9.</li>
+              <li>Le solvant <strong>le moins volatil</strong> du mélange (pression de vapeur la plus faible, parmi les solvants présents à 5 % ou plus) est un vrai solvant de la nitrocellulose : son RED est inférieur à 1. Ainsi, en fin de séchage, le film ne précipite pas.</li>
+              <li>Le mélange est <strong>économique</strong> : au moins {defi.alcoolMin} % de solvants de la famille « Alcools » (somme de leurs parts).</li>
+              <li>Le polymère reste la nitrocellulose (données du TP) : ne le changez pas.</li>
+            </>}
+          </ul>
+        </div>
         <div style={{ fontSize: 14, color: KIT.txt }}>Votre réponse actuelle (mélange composé dans l’exploration) : <strong>{rep}</strong></div>
-        <IndiceDefi cache={bilanDefi != null && bilanDefi.every(c => c.ok)}>{sel ? <>Cherche un mélange proche de la nitrocellulose (RED inférieur à 1) mais éloigné du PMMA (RED supérieur à 1) : compare, solvant par solvant, les RED vis-à-vis des deux polymères.</> : <>Un mélange dissout la nitrocellulose quand son RED est inférieur à 1. Compose-le dans l’exploration libre, puis vérifie aussi les autres critères listés après « Valider ».</>}</IndiceDefi>
+        <IndiceDefi cache={bilanDefi != null && bilanDefi.every(c => c.ok)}>{sel ? <>Cherche un mélange proche de la nitrocellulose (RED inférieur à 1) mais éloigné du PMMA (RED supérieur à 1) : compare, solvant par solvant, les RED vis-à-vis des deux polymères.</> : <>Un mélange dissout la nitrocellulose quand son RED est inférieur à 1. Compose-le dans l’exploration libre, puis vérifie aussi les autres critères de la liste ci-dessus.</>}</IndiceDefi>
         <button onClick={() => { const C = criteresDefi(); setBilanDefi(C); noterDefi(C.every(c => c.ok)); }} style={styleBouton(true, '#16a34a')}>✓ Valider ma réponse</button>
         <SuiviDefi cle={`${SIM_ID}:defi.${sel ? 'selectif' : 'principal'}`} etat={sd} key={sel ? 's' : 'p'}/>
         {bilanDefi && <>
