@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, lireNombre, IndiceDefi } from "../commun";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { Pic } from "../Pictos";
@@ -110,9 +110,35 @@ export function SimulationIncertitudeType() {
   const ETAPES = [
     { id: 'objectif', titre: 'Que doit-on écrire ?', texte: <>Un dosage répété {N0} fois ne donne pas {N0} fois la même valeur. On résume ces mesures par <strong>un résultat</strong> (la moyenne) accompagné de <strong>son incertitude-type</strong> u, qui décrit la dispersion. Au niveau STL, on attend une phrase du type : « le résultat est … avec une incertitude-type de … ».</>,
       tache: { type: 'qcm', q: 'Que représente l’incertitude-type u dans cette phrase ?', options: ['La dispersion des résultats de la méthode', 'L’écart entre mon résultat et la valeur vraie', 'La précision de la calculatrice'], bonne: 0, expl: 'u décrit à quel point les mesures se dispersent. Elle ne dit pas, à elle seule, où est la valeur vraie.', indice: "La valeur vraie est inconnue : u ne mesure pas l’écart à celle-ci, mais une dispersion." } },
-    { id: 'mesures', titre: 'Les mesures', texte: <>Faites {N0} dosages d’une même solution. Chaque mesure est un peu différente : c’est la <strong>dispersion</strong>.</>,
+    { id: 'mesures', titre: 'Les mesures',
+      retenirTitre: 'À RETENIR : DISPERSION, MOYENNE, ÉCART-TYPE',
+      retenir: <>
+        <div>Des mesures répétées d’une même grandeur, dans les mêmes conditions, <strong>ne donnent pas toutes la même valeur</strong> : c’est la <strong>dispersion</strong>. On la résume par :</div>
+        <Formule><mover><mi>x</mi><mo>¯</mo></mover><mo>=</mo><mfrac><mrow><msub><mi>x</mi><mn>1</mn></msub><mo>+</mo><mo>…</mo><mo>+</mo><msub><mi>x</mi><mi>n</mi></msub></mrow><mi>n</mi></mfrac><mspace width="1.5em"/><mi>s</mi><mo>=</mo><msqrt><mfrac><mrow><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msup><mrow><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><mover><mi>x</mi><mo>¯</mo></mover><mo>)</mo></mrow><mn>2</mn></msup></mrow><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow></mfrac></msqrt></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Moyenne x̄</strong> : la meilleure estimation du résultat. <strong>Écart-type expérimental s</strong> : dispersion d’<em>une</em> mesure autour de la moyenne (calculatrice : touche σₙ₋₁ ou s).</li>
+          <li>On ne connaît jamais la <strong>valeur vraie</strong> de la grandeur : on n’a que des mesures.</li>
+          <li><strong>Erreur aléatoire</strong> : varie d’une mesure à l’autre, dans les deux sens ; elle crée la dispersion. <strong>Erreur systématique</strong> : décale toutes les mesures dans le même sens.</li>
+          <li>L’<strong>incertitude-type u</strong> décrit la dispersion. Ce n’est <strong>pas</strong> l’écart entre le résultat et la valeur vraie, qui est inconnu.</li>
+          <li>Hypothèse : les mesures sont <strong>indépendantes</strong> et faites dans les <strong>mêmes conditions</strong>.</li>
+        </ul>
+      </>,
+      texte: <>Faites {N0} dosages d’une même solution. Chaque mesure est un peu différente : c’est la <strong>dispersion</strong>.</>,
       tache: { type: 'action', ok: serieVue, label: `Faire ${N0} mesures →`, faire: () => setSerieVue(true) } },
-    { id: 'u', titre: 'Calculer l’incertitude-type', texte: <>La calculatrice donne la moyenne x̄ = {st.m.toFixed(6).replace('.', ',')} mol/L et l’écart-type s = {st.s.toFixed(6).replace('.', ',')} mol/L. L’incertitude-type <strong>de la moyenne</strong> est u = s / √n, avec n = {N0}.</>,
+    { id: 'u', titre: 'Calculer l’incertitude-type',
+      retenirTitre: 'À RETENIR : L’INCERTITUDE-TYPE DE LA MOYENNE',
+      retenir: <>
+        <Formule><mi>u</mi><mo>=</mo><mfrac><mi>s</mi><msqrt><mi>n</mi></msqrt></mfrac></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>u est l’incertitude-type de la moyenne</strong> (incertitude de <strong>type A</strong>, évaluée par une étude statistique de n mesures). Pour <em>une seule</em> mesure de la série, on garde s.</li>
+          <li>u est <strong>plus petite que s</strong> : la moyenne est moins dispersée qu’une mesure isolée.</li>
+          <li><strong>Plus de mesures, moins d’incertitude</strong>, mais lentement : pour diviser u par 2, il faut <strong>4 fois plus</strong> de mesures.</li>
+          <li><strong>Exemple :</strong> 10,2 ; 10,4 ; 10,3 mL. x̄ = 10,3 mL ; s = 0,10 mL ; u = 0,10 / √3 ≈ 0,058 mL.</li>
+          <li><strong>Hypothèses :</strong> mesures indépendantes, mêmes conditions ; seule la dispersion aléatoire est prise en compte.</li>
+          <li><strong>Pièges :</strong> diviser par n au lieu de √n ; multiplier par √n ; donner s à la place de u.</li>
+        </ul>
+      </>,
+      texte: <>La calculatrice donne la moyenne x̄ = {st.m.toFixed(6).replace('.', ',')} mol/L et l’écart-type s = {st.s.toFixed(6).replace('.', ',')} mol/L. L’incertitude-type <strong>de la moyenne</strong> est u = s / √n, avec n = {N0}.</>,
       tache: { type: 'num', q: 'Calculez u = s / √n', unite: 'mol/L', vrai: st.u, tol: 0.02, affiche: x => fr(x, 6), aide: 'Écrivez au moins 3 chiffres significatifs.', indice: 'Divisez s par la racine carrée de 10 (≈ 3,162).',
         calcul: () => [`Hypothèses : les ${N0} mesures sont indépendantes, faites dans les mêmes conditions (incertitude de type A) ; on cherche l’incertitude-type de la moyenne, et non celle d’une mesure isolée.`,
           `Formule : u = s / √n, avec s = ${fr(st.s, 6)} mol/L (écart-type expérimental) et n = ${N0}.`,
@@ -126,29 +152,96 @@ export function SimulationIncertitudeType() {
       tache: { type: 'qcm', q: `u = ${fr(st.u, 6)} mol/L. Quelle écriture respecte la règle ?`, options: [`${ec.u} mol/L`, `${fr(st.u, ec.d + 2)} mol/L`, `${fr(st.u, Math.max(ec.d - 1, 0))} mol/L`], bonne: 0, expl: `Le premier chiffre significatif de u est ${String(ec.u).replace(/^0,0*/, '')[0]} : on garde ${ec.cs} chiffre${ec.cs > 1 ? 's' : ''} significatif${ec.cs > 1 ? 's' : ''}.`, indice: "Comptez les chiffres significatifs de u : la règle de la classe en fixe 1 ou 2." } },
     { id: 'moyenne', titre: 'Arrondir le résultat', texte: <>Le résultat s’arrondit <strong>à la même décimale que u</strong> : ici u s’écrit avec {ec.d} décimales, le résultat aussi.</>,
       tache: { type: 'qcm', q: `x̄ = ${fr(st.m, 6)} mol/L. Quelle écriture est cohérente avec u = ${ec.u} mol/L ?`, options: [`${ec.x} mol/L`, `${candidates[1]} mol/L`, `${fr(st.m, Math.max(ec.d - 1, 0))} mol/L`], bonne: 0, expl: `On garde ${ec.d} décimales, comme pour u : ${ec.x} mol/L.`, indice: "x̄ s’écrit avec le même nombre de décimales que u." } },
-    { id: 'phrase', titre: 'Écrire la phrase', texte: <>Il reste à écrire une phrase complète : le <strong>résultat avec son unité</strong>, <strong>d’où il vient</strong> (moyenne de {N0} mesures, ou mesurage unique) et <strong>l’incertitude-type avec son unité</strong>. L’écriture « c = 0,125 ± 0,008 mol/L » est courante, mais elle fait croire à tort que la valeur vraie est à coup sûr dans l’intervalle.</>,
+    { id: 'phrase', titre: 'Écrire la phrase',
+      retenirTitre: 'À RETENIR : ÉCRIRE LE RÉSULTAT',
+      retenir: <>
+        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+          <li><strong>Arrondir u</strong> (règle de la classe) : s’il commence par <strong>1, 2, 3 ou 4</strong>, garder <strong>2 chiffres significatifs</strong> ; s’il commence par <strong>5 à 9</strong>, en garder <strong>1</strong>.</li>
+          <li><strong>Arrondir le résultat à la même décimale que u</strong>.</li>
+          <li><strong>Écrire une phrase</strong> : résultat + unité, origine du résultat (moyenne de n mesures ou mesurage unique), incertitude-type + unité.</li>
+        </ol>
+        <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>u ou x̄</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Règle</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Écriture</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>0,058 mL</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 chiffre significatif (commence par 5)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,06 mL</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>0,0123 mol/L</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2 chiffres significatifs (commence par 1)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,012 mol/L</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>10,3041 mL</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>même décimale que u = 0,06</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>10,30 mL</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Phrase type :</strong> « Le volume est 10,30 mL (moyenne de 3 mesures) avec une incertitude-type de 0,06 mL. »</li>
+          <li>L’écriture « 10,30 ± 0,06 mL » est courante, mais elle laisse croire que la valeur vraie est <strong>sûrement</strong> dans l’intervalle : elle ne l’est pas.</li>
+          <li>Convention de la classe : d’autres conventions d’arrondi existent. Arrondir <strong>à la fin</strong>, pas dans les calculs intermédiaires.</li>
+          <li><strong>Pièges :</strong> trop de décimales sur le résultat ; oublier l’unité ; ne pas dire que u est une incertitude-type.</li>
+        </ul>
+      </>,
+      texte: <>Il reste à écrire une phrase complète : le <strong>résultat avec son unité</strong>, <strong>d’où il vient</strong> (moyenne de {N0} mesures, ou mesurage unique) et <strong>l’incertitude-type avec son unité</strong>. L’écriture « c = 0,125 ± 0,008 mol/L » est courante, mais elle fait croire à tort que la valeur vraie est à coup sûr dans l’intervalle.</>,
       tache: { type: 'qcm', q: 'Quelle phrase est correcte ?', options: [phrase(ec.x, ec.u), phrase(fr(st.m, ec.d + 2), ec.u), phrase(fr(st.m, Math.max(ec.d - 1, 0)), ec.u), `c = ${ec.x} ± ${ec.u}`], bonne: 0, expl: 'Résultat et u ont la même décimale, les unités sont présentes, la nature de u est dite (incertitude-type).', indice: "Cherchez la phrase où x̄ et u ont la même décimale, avec peu de chiffres significatifs pour u." } },
     { id: 'pari', titre: 'Un pari', texte: <>Votre phrase est écrite. Question : <strong>la valeur vraie de la concentration est-elle forcément dans l’intervalle [x̄ − u ; x̄ + u] ?</strong> Imaginez 100 élèves qui refont le même dosage, chacun avec sa propre phrase (sa propre moyenne et son propre u).</>,
       tache: { type: 'qcm', q: 'Sur 100 élèves, combien auront la valeur vraie dans leur intervalle [x̄ − u ; x̄ + u] ?', options: ['À peu près 2 sur 3 (environ 65)', 'Les 100 : l’intervalle contient forcément la valeur vraie', 'Environ la moitié (50)', 'Seulement 5 ou 6'], bonne: 0, expl: 'On va le vérifier avec la simulation à l’étape suivante.', indice: "Pour une loi à peu près normale, quelle proportion des valeurs est à moins d’un écart-type de la moyenne ?" } },
     { id: 'revele', titre: 'On refait l’expérience 100 fois', texte: <>Chaque trait est l’intervalle [x̄ − u ; x̄ + u] d’un élève. La ligne noire est la valeur vraie, connue de la simulation seulement.</>,
       tache: { type: 'action', ok: simVue, label: 'Simuler 100 élèves →', faire: () => { setK(1); setBiais(0); setSimVue(true); } } },
-    { id: 'conclu', titre: 'Ce que l’on constate', texte: <>Environ <strong>2 intervalles sur 3</strong> contiennent la valeur vraie : un tiers ne la contient pas. Avec seulement {N0} mesures, c’est même un peu moins de 2 sur 3.</>,
+    { id: 'conclu', titre: 'Ce que l’on constate',
+      retenirTitre: 'À RETENIR : CE QUE DIT L’INTERVALLE',
+      retenir: <>
+        <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Intervalle</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Contient la valeur vraie (loi normale, n grand)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Avec peu de mesures</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>[x̄ − u ; x̄ + u]</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>environ 2 sur 3 (≈ 68 %)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>avec n = 10 : un peu moins (≈ 65 %)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>[x̄ − 2u ; x̄ + 2u]</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>environ 95 %</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>avec n = 10 : environ 9 sur 10</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Rien ne garantit</strong> que la valeur vraie soit dans [x̄ − u ; x̄ + u] : environ un intervalle sur trois la rate.</li>
+          <li>u traduit la <strong>dispersion de la méthode</strong>, pas l’erreur réellement commise sur ce résultat.</li>
+          <li>Pour <strong>comparer</strong> une mesure à une valeur de référence, on utilise la règle « écart ≤ 2u » (intervalle plus large).</li>
+          <li><strong>Hypothèse :</strong> ces proportions valent pour des écarts de loi <strong>à peu près normale</strong>. Avec peu de mesures, s est lui-même estimé : les proportions sont un peu plus faibles.</li>
+          <li>Pour une loi rectangulaire ou triangulaire, les proportions changent pour une seule mesure ; plus on moyenne, plus la moyenne se rapproche d’une loi normale.</li>
+        </ul>
+      </>,
+      texte: <>Environ <strong>2 intervalles sur 3</strong> contiennent la valeur vraie : un tiers ne la contient pas. Avec seulement {N0} mesures, c’est même un peu moins de 2 sur 3.</>,
       tache: { type: 'qcm', q: 'Quelle phrase est vraie ?', options: ['La valeur vraie est probablement proche de x̄, mais rien ne garantit qu’elle soit dans [x̄ − u ; x̄ + u]', 'La valeur vraie est toujours dans [x̄ − u ; x̄ + u]', 'u est l’écart entre x̄ et la valeur vraie'], bonne: 0, expl: 'u décrit la dispersion de la méthode, pas l’erreur réelle commise sur ce résultat.', indice: "Un intervalle ±u ne garantit rien : il traduit une probabilité." } },
     { id: 'k2', titre: 'Un intervalle plus large', texte: <>Doublez la largeur : utilisez [x̄ − 2u ; x̄ + 2u]. C’est ce que l’on fait pour comparer une mesure à une référence (règle « écart ≤ 2u »).</>,
       tache: { type: 'action', ok: simVue && k === 2, label: 'Passer à 2u', faire: () => setK(2) } },
-    { id: 'biais', titre: 'Et s’il y a une erreur systématique ?', texte: <>Supposons maintenant que la burette soit mal étalonnée : toutes les mesures sont décalées de +0,010 mol/L. Les mesures restent regroupées, donc u reste petite… mais le résultat est faux.</>,
+    { id: 'biais', titre: 'Et s’il y a une erreur systématique ?',
+      retenirTitre: 'À RETENIR : ERREUR ALÉATOIRE, ERREUR SYSTÉMATIQUE',
+      retenir: <>
+        <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}></th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Aléatoire</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Systématique</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Effet sur les mesures</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>dispersées autour de la valeur vraie</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>toutes décalées dans le même sens</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Prise en compte dans u</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>oui (type A)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>non</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Avec plus de mesures</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>u diminue (en 1/√n)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>rien ne change</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Comment la réduire</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>répéter, moyenner</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>étalonner, comparer à un étalon, corriger</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Dans la simulation, la burette décalée de 0,010 mol/L donne un résultat <strong>faux avec une u petite</strong> (de l’ordre de 0,002 mol/L) : presque tous les intervalles ratent la valeur vraie.</li>
+          <li><strong>Un u petit ne prouve pas un résultat juste</strong> : il dit que les mesures sont proches entre elles (fidélité), pas qu’elles sont proches de la valeur vraie (justesse).</li>
+          <li>100 mesures au lieu de 10 réduisent u, donc l’intervalle rate <strong>encore plus souvent</strong> la valeur vraie.</li>
+        </ul>
+      </>,
+      texte: <>Supposons maintenant que la burette soit mal étalonnée : toutes les mesures sont décalées de +0,010 mol/L. Les mesures restent regroupées, donc u reste petite… mais le résultat est faux.</>,
       tache: { type: 'action', ok: simVue && biais > 0, label: 'Ajouter un défaut de burette (+0,010 mol/L)', faire: () => { setBiais(0.01); setK(1); } } },
     { id: 'biais-q', titre: 'Plus de mesures, plus juste ?', texte: <>Regardez le graphique : avec la burette décalée, presque tous les intervalles ratent la valeur vraie. On pense alors à faire plus de mesures pour réduire u.</>,
       tache: { type: 'qcm', q: 'Avec la burette décalée, si l’on fait 100 mesures au lieu de 10, la valeur vraie sera-t-elle plus souvent dans l’intervalle ?', options: ['Non : u diminue, mais le décalage reste ; les intervalles ratent encore plus souvent la valeur vraie', 'Oui : plus de mesures corrigent tout', 'Oui, mais seulement pour 2u'], bonne: 0, expl: 'Répéter les mesures réduit la dispersion, jamais une erreur systématique. Seul un meilleur étalonnage la corrige.', indice: "Plus de mesures réduisent la dispersion aléatoire. Réduisent-elles aussi un décalage systématique ?" } },
     { id: 'bilan', titre: 'Bilan', texte: <>Voici ce qu’il faut savoir écrire et comprendre.</>,
       retenirTitre: 'À RETENIR',
-      retenir: <ul style={{ margin: 0, paddingLeft: 18 }}>
-        <li>On donne <b>un résultat x</b> (moyenne de n mesures, ou mesurage unique) <b>et son incertitude-type u</b>, avec l’unité, dans une phrase.</li>
-        <li>u : 2 chiffres significatifs si elle commence par 1 à 4, 1 chiffre sinon ; x est arrondi à la même décimale.</li>
-        <li>Ma meilleure estimation est x ; la dispersion de ma méthode est u.</li>
-        <li>Rien ne garantit que la valeur vraie soit dans [x − u ; x + u] (environ 2 fois sur 3 seulement).</li>
-        <li>Une erreur systématique n’est pas contenue dans u : plus de mesures ne la corrigent pas.</li>
-      </ul> },
+      retenir: <>
+        <Formule><mi>u</mi><mo>=</mo><mfrac><mi>s</mi><msqrt><mi>n</mi></msqrt></mfrac></Formule>
+        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+          <li><strong>Calculer</strong> x̄, s, puis u = s / √n.</li>
+          <li><strong>Arrondir u</strong> (1 ou 2 chiffres significatifs selon son premier chiffre), puis x̄ à la même décimale.</li>
+          <li><strong>Écrire la phrase</strong> : résultat, unité, origine, incertitude-type.</li>
+          <li><strong>Interpréter</strong> : meilleure estimation = x̄ ; dispersion de la méthode = u ; pas de garantie sur l’intervalle.</li>
+        </ol>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>[x̄ − u ; x̄ + u] contient la valeur vraie environ 2 fois sur 3 ; [x̄ − 2u ; x̄ + 2u], environ 90 à 95 % du temps selon n.</li>
+          <li><strong>Hypothèses :</strong> mesures indépendantes, mêmes conditions ; incertitude de type A seulement ; écarts à peu près normaux ; u est celle de la <strong>moyenne</strong>.</li>
+          <li>Une <strong>erreur systématique</strong> n’est pas dans u : plus de mesures ne la corrigent pas, seul l’étalonnage le fait.</li>
+          <li><strong>Pièges :</strong> confondre s et u ; écrire « ± » comme une garantie ; trop de chiffres significatifs.</li>
+        </ul>
+      </> },
   ];
 
   const hypotheses = (
