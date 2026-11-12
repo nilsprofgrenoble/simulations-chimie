@@ -189,8 +189,8 @@ export function Carnet({ lignes, naviguer, parties }) {
               {c.bientot ? <div style={{ margin: '14px 0 4px', fontSize: 14, fontWeight: 700, color: '#64748b' }}>🚧 Bientôt disponible</div> : (
                 <>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', margin: '12px 0 5px', fontSize: 13.5, color: '#475569' }}>
-                    <span><b style={{ color: '#0f172a', fontSize: 17 }}>{c.etoiles}</b> / {c.max} ★</span>
-                    <span>{c.reussis} / {c.n} réussis</span>
+                    <span><b style={{ color: '#0f172a', fontSize: 17 }}>{c.etoiles}</b> ★ gagnées</span>
+                    <span>{c.reussis} réussi{c.reussis > 1 ? 's' : ''}</span>
                   </div>
                   <div className="cn-barre" role="progressbar" aria-valuemin={0} aria-valuemax={c.max} aria-valuenow={c.etoiles} aria-label={`Étoiles en ${c.nom}`}>
                     <i style={{ width: mont ? `${Math.max(c.etoiles ? 3 : 0, p.frac * 100)}%` : '0%', background: c.couleur }} />
