@@ -1,5 +1,6 @@
 import { BoutonMail } from "./contact";
-import { A_LA_UNE } from "./aLaUne";
+import { lazy, Suspense } from "react";
+const SimulationClassement = lazy(() => import("./simulations/Classement").then(m => ({ default: m.SimulationClassement })));
 import { ACCENT } from "./theme";
 import "./AccueilBlocs.css";
 import { Pic, Emo } from "./Pictos";
@@ -17,7 +18,6 @@ import { InstallerAppli } from "./InstallerAppli";
 
 export function AccueilSite({ onStart, onCode, session, simulations, energyUrl }) {
   const profil = session?.profil;
-  const sim = simulations.find(s => s.id === A_LA_UNE.id);
   const niveaux = { '2GT': 'Seconde', '1G': 'Première spé PC', TSTL: 'Terminale STL', BTS: 'BTS Métiers de la chimie' };
   const classes = { '2GT': 'ab-t2gt', '1G': 'ab-t1g', TSTL: 'ab-ttstl', BTS: 'ab-tbts' };
   const sansEmoji = s => s.replace(/^[^\p{L}\d]+/u, '');
@@ -52,18 +52,15 @@ export function AccueilSite({ onStart, onCode, session, simulations, energyUrl }
           );
         })}
 
-        {/* Simulation mise en avant */}
-        {sim && (
-          <section className="ab-une" aria-labelledby="titre-une">
-            <div className="ab-ico" aria-hidden="true"><Emo e={sim.icon} t={40}/></div>
-            <div>
-              <span className="ab-pill">{A_LA_UNE.badge}</span><span className="ab-niveau">{A_LA_UNE.niveau || niveaux[sim.niveau]}</span>
-              <h3 id="titre-une">{sim.label}</h3>
-              <p>{A_LA_UNE.accroche}</p>
-            </div>
-            <button type="button" className="ab-bouton" onClick={() => onStart(sim.id)}>Essayer →</button>
-          </section>
-        )}
+        {/* Classement public : les 5 premiers de chaque lame */}
+        <section className="ab-une ab-classement" aria-labelledby="titre-classement">
+          <div>
+            <span className="ab-pill">Nouveau</span>
+            <h3 id="titre-classement">🏅 Le classement de la paillasse</h3>
+            <p>Fais glisser pour changer de classement. Pour y apparaître : choisis un pseudo et coche la case dans « Mon compte ».</p>
+            <Suspense fallback={null}><SimulationClassement naviguer={onStart} accueil /></Suspense>
+          </div>
+        </section>
 
         <section className="ab-carte" aria-labelledby="titre-energy">
           <div className="ab-pic" style={{ background: '#f5a31a' }} aria-hidden="true"><Pic n="bolt" t={28}/></div>

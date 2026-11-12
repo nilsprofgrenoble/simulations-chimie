@@ -44,3 +44,5 @@
   .ab-une .ab-ico { width: 56px; height: 56px; }
 }
 @media (max-width: 480px) { .ab-niv, .ab-carte, .ab-une { border-radius: 22px; padding: 20px; } .ab-code { border-radius: 22px; padding: 20px; } }
+.ab-classement { display: block; } .ab-classement .cl { padding-top: 12px; margin: 0; max-width: none; }
+.ab-classement .cl-note { max-width: none; }

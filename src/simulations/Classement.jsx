@@ -57,7 +57,7 @@ const css = `
   @media (prefers-reduced-motion: reduce) { .cl-piste { scroll-behavior: auto; } }
 `;
 
-function Lame({ lame, lignes, moi, lundi }) {
+function Lame({ lame, lignes, moi, lundi, max }) {
   return (
     <section className="cl-lame" id={`cl-lame-${lame.code}`} role="tabpanel" aria-labelledby={`cl-onglet-${lame.code}`} style={{ '--c': lame.couleur, '--f': lame.fond }}>
       <header className="cl-tete">
@@ -69,7 +69,7 @@ function Lame({ lame, lignes, moi, lundi }) {
         : (<>
           <div className="cl-cols" aria-hidden="true"><span>Rang</span><span>Pseudo</span><span>Établissement</span><span>Classe</span><span style={{ textAlign: 'right' }}>Score</span></div>
           <ol className="cl-liste" aria-label={`Classement : ${lame.titre}`}>
-            {lignes.map((l, i) => {
+            {(max ? lignes.slice(0, max) : lignes).map((l, i) => {
               const p = pseudo(l.adj, l.nom), m = estMoi(l, moi), med = medaille(l.rang);
               return (
                 <li key={`${l.etab}|${l.classe}|${l.adj}|${l.nom}|${i}`} className={`cl-ligne${m ? ' cl-moi' : ''}`}>
@@ -86,7 +86,8 @@ function Lame({ lame, lignes, moi, lundi }) {
     </section>);
 }
 
-export function SimulationClassement({ naviguer }) {
+// accueil : version réduite pour la page d'accueil (5 premiers de chaque lame, lien vers le classement complet)
+export function SimulationClassement({ naviguer, accueil = false }) {
   const sess = useSession();
   const [donnees, setDonnees] = useState(null), [erreur, setErreur] = useState(false), [charge, setCharge] = useState(true);
   const [idx, setIdx] = useState(0), [moi, setMoi] = useState(null);
@@ -140,7 +141,7 @@ export function SimulationClassement({ naviguer }) {
   return (
     <div className="cl" data-classement>
       <style>{css}</style>
-      <p className="cl-intro">Fais glisser les lames pour changer de classement. Seuls les élèves qui l’ont choisi apparaissent, sous un pseudo.</p>
+      {!accueil && <p className="cl-intro">Fais glisser les lames pour changer de classement. Seuls les élèves qui l’ont choisi apparaissent, sous un pseudo.</p>}
 
       {erreur && (
         <div className="cl-vide" role="status" style={{ border: '1px solid #d5dfeb', borderRadius: 18, background: '#fff' }}>
@@ -158,7 +159,7 @@ export function SimulationClassement({ naviguer }) {
               </button>))}
           </div>
           <div className="cl-piste" ref={piste} onScroll={surDefilement} aria-busy={charge}>
-            {LAMES.map(l => <Lame key={l.code} lame={l} lignes={lignesDe(donnees, l.code)} moi={moi} lundi={lundi} />)}
+            {LAMES.map(l => <Lame key={l.code} lame={l} lignes={lignesDe(donnees, l.code)} moi={moi} lundi={lundi} max={accueil ? 5 : 0} />)}
           </div>
           <div className="cl-nav">
             <button type="button" className="cl-fleche" onClick={() => aller(idx - 1)} disabled={idx === 0} aria-label="Classement précédent">‹</button>
@@ -167,11 +168,12 @@ export function SimulationClassement({ naviguer }) {
           </div>
         </>)}
 
-      <p className="cl-note">
+      {accueil && <p className="cl-note" style={{ textAlign: 'center' }}><button type="button" className="cl-lien" onClick={() => naviguer(104)}>Voir le classement complet →</button></p>}
+      {!accueil && <p className="cl-note">
         {eleve
           ? <>Tu n’apparais que si tu l’as choisi : <button type="button" className="cl-lien" onClick={() => naviguer(39)}>règle ça dans Mon compte</button>.</>
           : <>Tu as un compte élève ? Dans <button type="button" className="cl-lien" onClick={() => naviguer(39)}>Mon compte</button>, tu peux choisir un pseudo et décider d’apparaître ici.</>}
         {' '}Un pseudo est tiré d’une liste (jamais de nom ni d’identifiant). Les scores sont calculés à partir du travail enregistré dans les comptes ; ils servent à s’amuser, pas à noter.
-      </p>
+      </p>}
     </div>);
 }
