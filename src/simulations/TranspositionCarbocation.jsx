@@ -1,7 +1,7 @@
 // Transposition de carbocation (BTS) : migration 1,2 d'un hydrure ou d'un méthyle lors de l'addition de HBr.
 import { useState, useEffect } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import { CAS, voie, energie, barriereMigration, gainStabilite } from "./transpoModele";
@@ -99,15 +99,99 @@ function etapesGuide(st, regler) {
   return [
     { titre: 'Un carbocation secondaire se forme', texte: <>On additionne HBr sur le <strong>3-méthylbut-1-ène</strong>. H⁺ se fixe sur C1 : c'est une <strong>addition électrophile</strong> qui forme un carbocation <strong>secondaire</strong>, charge + sur C2. Ce carbocation est un <strong>intermédiaire de réaction</strong>.</>,
       tache: { type: 'qcm', q: 'Quel type de réaction est la fixation de H⁺ sur C1 ?', options: ['Une addition', 'Une substitution', 'Une élimination'], bonne: 0, indice: 'Un doublet π de C=C est utilisé pour former une liaison C–H ; rien ne part.', expl: <>Le doublet π de la double liaison forme la liaison C1–H : c'est une <strong>addition</strong> (électrophile).</> } },
-    { titre: 'Un voisin plus substitué', texte: <>À côté du carbone positif C2 se trouve C3, un carbone lié à <strong>trois autres carbones</strong> (ou à deux, plus un H). Si la charge + pouvait s'y placer, le carbocation serait <strong>tertiaire</strong>.</>,
+    { titre: 'Un voisin plus substitué',
+      retenirTitre: 'À RETENIR : POURQUOI UNE TRANSPOSITION ?',
+      retenir: <>
+        <Formule><mtext>(CH₃)₂CH–CH=CH₂</mtext><mo>+</mo><mtext>H⁺</mtext><mo>→</mo><mtext>(CH₃)₂CH–C⁺H–CH₃</mtext></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>H⁺ se fixe sur C1 du 3-méthylbut-1-ène : le carbocation formé, en C2, est <strong>secondaire</strong> (lié à 2 carbones).</li>
+          <li>Son voisin C3 porte un H et 2 groupes CH₃ : si la charge + passait en C3, le carbocation serait <strong>tertiaire</strong> (lié à 3 carbones), donc <strong>plus stable</strong> (effet inductif donneur et hyperconjugaison des groupes alkyle).</li>
+        </ul>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Carbocation</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Énergie (kJ·mol⁻¹)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>secondaire (en C2)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>60</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>tertiaire (en C3)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>50</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Critère :</strong> une transposition a lieu quand le voisin <strong>permet un carbocation plus stable</strong> ; le gain est ici de 10 kJ·mol⁻¹.</li>
+        </ul>
+      </>,
+      texte: <>À côté du carbone positif C2 se trouve C3, un carbone lié à <strong>trois autres carbones</strong> (ou à deux, plus un H). Si la charge + pouvait s'y placer, le carbocation serait <strong>tertiaire</strong>.</>,
       tache: { type: 'qcm', q: 'Pourquoi un carbocation tertiaire est-il plus stable qu’un secondaire ?', options: ['Les groupes alkyle voisins donnent de la densité électronique au carbone positif (effet inductif donneur et hyperconjugaison)', 'Parce qu’il possède plus d’hydrogènes', 'Parce qu’il est plus petit'], bonne: 0, indice: 'Rappelle-toi la régiosélectivité de l’addition de HBr.', expl: <>Chaque groupe alkyle voisin <strong>donne</strong> de la densité électronique au carbone positif et disperse la charge : plus il y en a, plus le carbocation est stable.</> } },
-    { titre: 'La transposition 1,2', texte: <>Lance l'animation de la voie <strong>« après transposition »</strong>. Un atome H (ou un groupe) migre de C3 vers C2, avec le doublet de sa liaison. La charge + « saute » de C2 à C3. C'est une <strong>transposition</strong> (ou réarrangement).</>,
+    { titre: 'La transposition 1,2',
+      retenirTitre: 'À RETENIR : LA TRANSPOSITION 1,2',
+      retenir: <>
+        <Formule><mtext>CH₃–C⁺H–CH(CH₃)₂</mtext><mo>→</mo><mtext>CH₃–CH₂–C⁺(CH₃)₂</mtext><mspace width="1em"/><mtext>(H migre de C3 vers C2)</mtext></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Un atome ou un groupe <strong>migre</strong> d’un carbone à son voisin <strong>avec le doublet de sa liaison</strong> : on parle de migration <strong>1,2</strong>.</li>
+          <li><strong>Flèche courbe :</strong> elle part du <strong>doublet de la liaison C3–H</strong> et pointe vers le <strong>carbone positif C2</strong>. Ce doublet forme la nouvelle liaison C2–H.</li>
+          <li>La charge + « saute » de C2 à C3 : C3 devient le carbone déficitaire.</li>
+          <li>Rien n’est ajouté ni retiré : <strong>même formule brute</strong>, le squelette se réorganise. L’intermédiaire reste un carbocation.</li>
+          <li><strong>Piège :</strong> la flèche ne part pas du carbone positif ; elle part de la liaison qui migre.</li>
+        </ul>
+      </>,
+      texte: <>Lance l'animation de la voie <strong>« après transposition »</strong>. Un atome H (ou un groupe) migre de C3 vers C2, avec le doublet de sa liaison. La charge + « saute » de C2 à C3. C'est une <strong>transposition</strong> (ou réarrangement).</>,
       tache: { type: 'qcm', q: 'D’où part la flèche courbe qui représente la migration de H ?', options: ['Du doublet de la liaison C3–H, vers le carbone positif C2', 'Du carbone positif C2, vers l’atome H', 'De l’ion Br⁻, vers C3'], bonne: 0, indice: 'Une flèche courbe part toujours d’un doublet (liaison ou doublet non liant) vers un site pauvre en électrons.', expl: <>La flèche part du <strong>doublet de la liaison C3–H</strong> et pointe vers <strong>C2⁺</strong> : ce doublet forme la nouvelle liaison C2–H. C3 devient alors déficitaire en électrons.</> } },
-    { titre: 'Reconnaître une transposition', texte: <>Dans cette étape, aucun atome n'est ajouté ni retiré : le squelette <strong>se réorganise</strong> et l'intermédiaire reste un carbocation.</>,
+    { titre: 'Reconnaître une transposition',
+      retenirTitre: 'À RETENIR : RECONNAÎTRE LE TYPE D’ÉTAPE',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Type</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Ce qui se passe</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>addition</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>deux molécules s’unissent, une liaison π disparaît</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>substitution</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>un groupe en remplace un autre</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>élimination</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>une liaison π se forme, deux groupes partent</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>transposition</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>un groupe migre au voisin, rien n’est ajouté ni retiré</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Pour trancher, <strong>compare les formules</strong> avant et après l’étape : une transposition conserve les atomes et change leur <strong>enchaînement</strong>.</li>
+        </ul>
+      </>,
+      texte: <>Dans cette étape, aucun atome n'est ajouté ni retiré : le squelette <strong>se réorganise</strong> et l'intermédiaire reste un carbocation.</>,
       tache: { type: 'qcm', q: 'Comment reconnaît-on une transposition dans un mécanisme ?', options: ['Un atome ou un groupe migre d’un atome vers l’atome voisin, sans que rien ne soit ajouté ni éliminé', 'Un groupe est remplacé par un autre', 'Une double liaison apparaît avec départ d’un H et d’un groupe partant'], bonne: 0, indice: 'Compare avec substitution (un groupe en remplace un autre) et élimination (une double liaison se forme).', expl: <>Transposition : un groupe <strong>migre</strong> d'un atome à son voisin. Une substitution remplace un groupe ; une élimination forme une double liaison en expulsant deux groupes.</> } },
-    { titre: 'La barrière de la migration', texte: <>Lis sur le profil l'énergie du carbocation secondaire et celle de l'état de transition de la migration. Elle est bien plus basse que la barrière de formation du carbocation (≈ 100 kJ/mol) : la transposition est <strong>très rapide</strong>.</>,
+    { titre: 'La barrière de la migration',
+      retenirTitre: 'À RETENIR : BARRIÈRE DE MIGRATION',
+      retenir: <>
+        <Formule><msub><mi>E</mi><mi>a</mi></msub><mo>=</mo><mi>E</mi><mo>(</mo><mtext>ET migration</mtext><mo>)</mo><mo>−</mo><mi>E</mi><mo>(</mo><mtext>carbocation secondaire</mtext><mo>)</mo></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Groupe qui migre</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Eₐ migration (kJ·mol⁻¹)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Gain de stabilité (kJ·mol⁻¹)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>H (3-méthylbut-1-ène)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>75 − 60 = 15</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>60 − 50 = 10</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>CH₃ (3,3-diméthylbut-1-ène)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>80 − 60 = 20</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>60 − 48 = 12</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La barrière de migration (15 à 20 kJ·mol⁻¹) est <strong>très inférieure</strong> à celle de formation du carbocation (≈ 100 kJ·mol⁻¹) : la transposition est <strong>très rapide</strong>.</li>
+          <li>Le groupe méthyle migre un peu plus difficilement que H (barrière plus haute).</li>
+          <li>Le départ est le <strong>carbocation secondaire</strong>, pas les réactifs.</li>
+          <li>Énergies : ordres de grandeur de la simulation (réactifs : 0).</li>
+        </ul>
+      </>,
+      texte: <>Lis sur le profil l'énergie du carbocation secondaire et celle de l'état de transition de la migration. Elle est bien plus basse que la barrière de formation du carbocation (≈ 100 kJ/mol) : la transposition est <strong>très rapide</strong>.</>,
       tache: { type: 'num', q: 'Quelle est l’énergie d’activation de la migration (ET migration − cation secondaire) ?', unite: 'kJ/mol', vrai: barriereMigration(cas), tol: 0.02, cs: 2, indice: 'Énergie de ET migration moins énergie du cation secondaire.', calcul: () => [`E(ET) − E(cation secondaire) = ${K.E.etS} − ${K.E.cs} = ${barriereMigration(cas)} kJ/mol`] } },
-    { titre: 'Deux produits', texte: <>Br⁻ peut attaquer le carbocation secondaire (voie <strong>directe</strong>) ou le carbocation tertiaire apparu après la transposition. Compare les deux voies sur le profil.</>,
+    { titre: 'Deux produits',
+      retenirTitre: 'À RETENIR : DEUX PRODUITS',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Voie directe</strong> : Br⁻ capture le carbocation secondaire → produit <strong>sans transposition</strong> (sous-produit).</li>
+          <li><strong>Voie avec transposition</strong> : le carbocation tertiaire, plus stable et plus abondant, est capturé → produit <strong>transposé</strong> (majoritaire).</li>
+        </ul>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Alcène</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Sans transposition</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}></th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Avec transposition</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}></th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>3-méthylbut-1-ène</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2-bromo-3-méthylbutane</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 40 %</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2-bromo-2-méthylbutane</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 60 %</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>3,3-diméthylbut-1-ène</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2-bromo-3,3-diméthylbutane</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 20 %</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2-bromo-2,3-diméthylbutane</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 80 %</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Les pourcentages sont des <strong>ordres de grandeur</strong> expérimentaux, pas des résultats de calcul.</li>
+          <li>Un produit « inattendu » peut s’expliquer par un carbocation voisin plus stable : on cherche une <strong>transposition</strong>.</li>
+        </ul>
+      </>,
+      texte: <>Br⁻ peut attaquer le carbocation secondaire (voie <strong>directe</strong>) ou le carbocation tertiaire apparu après la transposition. Compare les deux voies sur le profil.</>,
       tache: { type: 'qcm', q: 'Quel est le produit majoritaire de l’addition de HBr sur le 3-méthylbut-1-ène ?', options: ['Le 2-bromo-2-méthylbutane (produit de transposition, ≈ 60 %)', 'Le 2-bromo-3-méthylbutane (sans transposition, ≈ 40 %)', 'Le 1-bromo-3-méthylbutane'], bonne: 0, indice: 'Le carbocation tertiaire est plus stable ; la transposition est rapide.', expl: <>Le carbocation tertiaire, plus stable, est le plus abondant : le <strong>2-bromo-2-méthylbutane</strong> domine (ordre de grandeur 60 %). Le <strong>2-bromo-3-méthylbutane</strong> est le <strong>sous-produit</strong> formé par capture directe.</> } },
     { titre: 'Un groupe méthyle qui migre', texte: <>Le groupe qui migre n'est pas forcément un H. Place-toi sur le <strong>3,3-diméthylbut-1-ène</strong> : après addition de H⁺, le carbone voisin n'a plus d'hydrogène, mais porte un groupe méthyle.</>,
       tache: ici('methyle', 'Choisis le 3,3-diméthylbut-1-ène.') },
@@ -116,12 +200,18 @@ function etapesGuide(st, regler) {
     { titre: 'Pourquoi ce sous-produit ?', texte: <>Une transposition permet d'<strong>expliquer la formation d'un produit inattendu</strong> : si un composé inattendu apparaît lors d'une addition sur un alcène, on cherche si un carbocation voisin plus stable pouvait se former.</>,
       tache: { type: 'qcm', q: 'Un chimiste obtient le 2-bromo-2-méthylbutane alors qu’il visait le 2-bromo-3-méthylbutane. Quelle est l’explication la plus probable ?', options: ['Une transposition de carbocation (migration d’un H)', 'Une élimination', 'Une réaction acide-base'], bonne: 0, indice: 'Quel intermédiaire est impliqué ? Comment devient-il plus stable ?', expl: <>Le carbocation secondaire s'est <strong>transposé</strong> en carbocation tertiaire avant d'être capturé. Les transpositions sont une source classique de produits inattendus.</> } },
     { titre: 'Bilan', texte: <>Tu sais repérer et expliquer une transposition de carbocation.</>,
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>Un carbocation peut <strong>se transposer</strong> (migration 1,2 d'un H ou d'un alkyle) s'il devient plus stable (secondaire → tertiaire).</li>
-        <li>La flèche courbe part du <strong>doublet de la liaison qui migre</strong> vers le carbone positif.</li>
-        <li>La barrière de migration est faible : la transposition est rapide devant la capture.</li>
-        <li>Elle explique la formation de produits « inattendus » (sous-produits ou produit majoritaire transposé).</li>
-      </ul> },
+      retenir: <>
+        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+          <li><strong>Écrire</strong> le carbocation formé et le <strong>classer</strong> (primaire, secondaire, tertiaire).</li>
+          <li><strong>Regarder le voisin</strong> : porte-t-il un H ou un CH₃ qui permettrait un carbocation <strong>plus stable</strong> ?</li>
+          <li>Si oui, dessiner la <strong>flèche courbe</strong> : du doublet de la liaison C–H (ou C–CH₃) vers C⁺.</li>
+          <li><strong>Placer Br</strong> sur chaque carbocation : produit direct et produit transposé.</li>
+        </ol>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La transposition est rapide (Eₐ ≈ 15 à 20 kJ·mol⁻¹), mais le produit sans transposition subsiste en faible quantité.</li>
+          <li><strong>Hypothèses :</strong> énergies arrondies, proportions indicatives, migration 1,2 uniquement.</li>
+        </ul>
+      </> },
   ];
 }
 

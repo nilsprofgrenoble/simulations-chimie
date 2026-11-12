@@ -1,7 +1,7 @@
 // Contrôle cinétique ou thermodynamique (BTS) : addition de HBr sur le buta-1,3-diène (produits 1,2 et 1,4).
 import { useState, useMemo } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import { E, evolution, composition, regime, rapportCinetique, rapportThermo, tempsDepuisCurseur, curseurDepuisTemps, formatTemps } from "./cinetModele";
@@ -110,31 +110,120 @@ function etapesGuide(reg, regler) {
   const { Tc, t } = reg;
   const scen = (c0, tsec) => ({ ok: Math.abs(Tc - c0) <= (c0 === 0 ? 8 : 10) && (tsec === 10 ? t >= 1 && t <= 200 : t >= 3600), faire: () => regler(c0, tsec) });
   return [
-    { titre: 'Un diène conjugué', texte: <>Le <strong>buta-1,3-diène</strong> CH₂=CH–CH=CH₂ possède deux doubles liaisons séparées par une liaison simple (diène conjugué). H⁺ se fixe sur C1 : le carbocation formé a sa charge + à côté d'une double liaison C3=C4. On l'appelle <strong>carbocation allylique</strong>.</>,
+    { titre: 'Un diène conjugué',
+      retenirTitre: 'À RETENIR : CARBOCATION ALLYLIQUE',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Un <strong>diène conjugué</strong> a deux doubles liaisons séparées par <strong>une</strong> liaison simple : CH₂=CH–CH=CH₂ (buta-1,3-diène).</li>
+          <li>H⁺ se fixe sur C1 : la charge + se place sur C2, à côté de la double liaison C3=C4. C’est un <strong>carbocation allylique</strong>.</li>
+          <li>Les électrons π se <strong>délocalisent</strong> : deux formes limites (↔) placent la charge + sur <strong>C2</strong> ou sur <strong>C4</strong>. Ce n’est pas un équilibre entre deux molécules, c’est une seule entité décrite par deux écritures.</li>
+          <li>Br⁻ peut donc attaquer C2 ou C4 : deux produits.</li>
+        </ul>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Produit</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Br sur</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Nom</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Formule</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>addition 1,2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>C2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>3-bromobut-1-ène</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>CH₂=CH–CHBr–CH₃</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>addition 1,4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>C4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1-bromobut-2-ène</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>CH₃–CH=CH–CH₂Br</td></tr>
+          </tbody>
+        </table>
+      </>,
+      texte: <>Le <strong>buta-1,3-diène</strong> CH₂=CH–CH=CH₂ possède deux doubles liaisons séparées par une liaison simple (diène conjugué). H⁺ se fixe sur C1 : le carbocation formé a sa charge + à côté d'une double liaison C3=C4. On l'appelle <strong>carbocation allylique</strong>.</>,
       tache: { type: 'qcm', q: 'Sur quels carbones du carbocation allylique Br⁻ peut-il se fixer ?', options: ['Seulement C2', 'C2 ou C4 : la charge + est délocalisée sur ces deux carbones', 'C1 ou C3'], bonne: 1, indice: 'Observe les deux formes mésomères du carbocation (↔).', expl: <>Les deux formes limites placent la charge + sur C2 ou sur C4 : Br⁻ peut attaquer l'un ou l'autre. On obtient donc deux produits : l'addition <strong>1,2</strong> (3-bromobut-1-ène) et l'addition <strong>1,4</strong> (1-bromobut-2-ène).</> } },
-    { titre: 'Le produit le plus stable', texte: <>Compare les énergies des deux produits sur le profil (coche « Montrer les énergies »). Le produit 1,4 a une double liaison C2=C3 <strong>disubstituée</strong> (au milieu de la chaîne) ; le produit 1,2 a une double liaison terminale C3=C4.</>,
+    { titre: 'Le produit le plus stable',
+      retenirTitre: 'À RETENIR : STABILITÉ DES PRODUITS',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Produit</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Énergie (kJ·mol⁻¹)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Caractéristique</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>produit 1,2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>−60</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>double liaison terminale</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>produit 1,4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>−67</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>double liaison disubstituée</td></tr>
+          </tbody>
+        </table>
+        <Formule><mi>Δ</mi><mi>E</mi><mo>=</mo><mi>E</mi><mo>(</mo><mn>1,2</mn><mo>)</mo><mo>−</mo><mi>E</mi><mo>(</mo><mn>1,4</mn><mo>)</mo><mo>=</mo><mo>−</mo><mn>60</mn><mo>−</mo><mo>(</mo><mo>−</mo><mn>67</mn><mo>)</mo><mo>=</mo><mn>7</mn><mtext> kJ·mol⁻¹</mtext></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Le <strong>plus stable</strong> est celui d’<strong>énergie la plus basse</strong> : le produit 1,4 (−67), car une double liaison <strong>plus substituée</strong> est plus stable.</li>
+          <li>C’est le <strong>produit thermodynamique</strong>.</li>
+          <li>Les énergies de la simulation (réactifs : 0) sont des <strong>ordres de grandeur</strong>.</li>
+        </ul>
+      </>,
+      texte: <>Compare les énergies des deux produits sur le profil (coche « Montrer les énergies »). Le produit 1,4 a une double liaison C2=C3 <strong>disubstituée</strong> (au milieu de la chaîne) ; le produit 1,2 a une double liaison terminale C3=C4.</>,
       tache: { type: 'qcm', q: 'Quel produit est le plus stable (énergie la plus basse) ?', options: ['Le produit 1,2', 'Le produit 1,4', 'Ils ont la même énergie'], bonne: 1, indice: 'Lis les énergies des deux produits sur le profil : la plus basse correspond au plus stable.', expl: <>Le produit 1,4 est à −67 kJ/mol, le 1,2 à −60 kJ/mol : 7 kJ/mol de moins. Une double liaison plus substituée est plus stable.</> } },
-    { titre: 'Le produit qui se forme le plus vite', texte: <>L'étape 2 part du carbocation (20 kJ/mol). La barrière qui mène au produit 1,2 est plus basse que celle qui mène au 1,4 : l'attaque sur C2 est un peu plus facile (C2 est plus proche de la charge + dans la forme la plus chargée).</>,
+    { titre: 'Le produit qui se forme le plus vite',
+      retenirTitre: 'À RETENIR : PRODUIT CINÉTIQUE',
+      retenir: <>
+        <Formule><msub><mi>E</mi><mi>a</mi></msub><mo>=</mo><mi>E</mi><mo>(</mo><mtext>ET₂</mtext><mo>)</mo><mo>−</mo><mi>E</mi><mo>(</mo><mtext>carbocation</mtext><mo>)</mo><mspace width="1.5em"/><mi>k</mi><mo>=</mo><mi>A</mi><mspace width="0.2em"/><mi>exp</mi><mo>(</mo><mo>−</mo><mfrac><msub><mi>E</mi><mi>a</mi></msub><mrow><mi>R</mi><mi>T</mi></mrow></mfrac><mo>)</mo></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Étape 2</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Eₐ (kJ·mol⁻¹)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Conclusion</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>carbocation → produit 1,2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>30 − 20 = 10</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>plus basse : plus rapide</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>carbocation → produit 1,4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>33 − 20 = 13</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>plus haute : plus lente</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La barrière la <strong>plus basse</strong> donne la formation la <strong>plus rapide</strong> : le produit 1,2 est le <strong>produit cinétique</strong>.</li>
+          <li><strong>Attention :</strong> le produit le plus rapide (1,2) n’est pas le plus stable (1,4).</li>
+          <li><strong>Piège :</strong> l’énergie d’activation de l’étape 2 se compte depuis le <strong>carbocation</strong>, pas depuis les réactifs.</li>
+        </ul>
+      </>,
+      texte: <>L'étape 2 part du carbocation (20 kJ/mol). La barrière qui mène au produit 1,2 est plus basse que celle qui mène au 1,4 : l'attaque sur C2 est un peu plus facile (C2 est plus proche de la charge + dans la forme la plus chargée).</>,
       tache: { type: 'num', q: 'Quelle est l’énergie d’activation de la formation du produit 1,2 à partir du carbocation ?', unite: 'kJ/mol', vrai: E.ET2a - E.C, tol: 0.02, cs: 2, indice: 'Énergie du sommet ET₂ (voie 1,2) moins énergie du carbocation.', calcul: () => [`E(ET₂, 1,2) − E(carbocation) = ${E.ET2a} − ${E.C} = ${E.ET2a - E.C} kJ/mol`] } },
-    { titre: 'Contrôle cinétique', texte: <>Place-toi à <strong>0 °C</strong> avec un temps court (<strong>10 s</strong>). Le réactif est consommé, mais le mélange n'a pas eu le temps d'évoluer : sa composition reflète les <strong>vitesses</strong> de formation.</>,
+    { titre: 'Contrôle cinétique',
+      retenirTitre: 'À RETENIR : CONTRÔLE CINÉTIQUE',
+      retenir: <>
+        <Formule><mfrac><mrow><mo>[</mo><mn>1,2</mn><mo>]</mo></mrow><mrow><mo>[</mo><mn>1,4</mn><mo>]</mo></mrow></mfrac><mo>=</mo><mfrac><msub><mi>k</mi><mrow><mn>2</mn><mi>a</mi></mrow></msub><msub><mi>k</mi><mrow><mn>2</mn><mi>b</mi></mrow></msub></mfrac><mo>=</mo><mi>exp</mi><mo>(</mo><mfrac><mrow><mn>13</mn><mo>−</mo><mn>10</mn></mrow><mrow><mi>R</mi><mi>T</mi></mrow></mfrac><mo>)</mo><mo>≈</mo><mn>3,7</mn><mspace width="1em"/><mtext>(0 °C = 273 K, énergies en kJ·mol⁻¹, R = 8,314×10⁻³ kJ·mol⁻¹·K⁻¹)</mtext></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Conditions :</strong> température <strong>basse</strong> (0 °C) et temps <strong>court</strong> (10 s) : la réaction est <strong>irréversible</strong>, car les produits n’ont pas assez d’énergie pour revenir au carbocation.</li>
+          <li>La composition reflète les <strong>vitesses de formation</strong> : ≈ 79 % de produit 1,2 (≈ 80 % lu dans la simulation).</li>
+          <li>On obtient le <strong>produit cinétique</strong> (barrière la plus basse).</li>
+        </ul>
+      </>,
+      texte: <>Place-toi à <strong>0 °C</strong> avec un temps court (<strong>10 s</strong>). Le réactif est consommé, mais le mélange n'a pas eu le temps d'évoluer : sa composition reflète les <strong>vitesses</strong> de formation.</>,
       tache: { type: 'action', ...scen(0, 10), label: 'Le faire pour moi', consigne: 'Règle la température à 0 °C et le temps à environ 10 s.', indice: 'Utilise les deux curseurs, ou le bouton « Cinétique ».' } },
     { titre: 'Qui domine ?', texte: <>Lis la composition du mélange (barre sous les curseurs).</>,
       tache: { type: 'qcm', q: 'À 0 °C après 10 s, quel produit est majoritaire ?', options: ['Le produit 1,2 (≈ 80 %)', 'Le produit 1,4 (≈ 80 %)', 'Les deux en quantités égales'], bonne: 0, indice: 'Compare les barrières ET₂ : la plus basse conduit au produit le plus rapidement formé.', expl: <>Le produit 1,2 (barrière 10 kJ/mol) se forme plus vite que le 1,4 (barrière 13 kJ/mol) : c'est le <strong>produit cinétique</strong>. Il est majoritaire tant que la réaction n'est pas réversible.</> } },
     { titre: 'Contrôle thermodynamique', texte: <>Place-toi à <strong>40 °C</strong> et attends longtemps (<strong>3 h</strong>). Observe sur la courbe : le produit 1,2 apparaît d'abord, puis diminue pendant que le produit 1,4 augmente.</>,
       tache: { type: 'action', ...scen(40, 10800), label: 'Le faire pour moi', consigne: 'Règle la température à 40 °C et le temps à environ 3 h.', indice: 'Bouton « Thermodynamique », ou curseurs : 40 °C et le temps vers 3 h.' } },
-    { titre: 'Pourquoi le mélange évolue', texte: <>À 40 °C, le produit 1,2 peut <strong>se retransformer en carbocation</strong> (il faut franchir 90 kJ/mol, ce qui est possible à cette température), puis donner le produit 1,4. Les deux produits sont en équilibre ; le plus stable finit par dominer.</>,
+    { titre: 'Pourquoi le mélange évolue',
+      retenirTitre: 'À RETENIR : CONTRÔLE THERMODYNAMIQUE',
+      retenir: <>
+        <Formule><mfrac><mrow><mo>[</mo><mn>1,4</mn><mo>]</mo></mrow><mrow><mo>[</mo><mn>1,2</mn><mo>]</mo></mrow></mfrac><mo>=</mo><mi>exp</mi><mo>(</mo><mfrac><mrow><mi>Δ</mi><mi>E</mi></mrow><mrow><mi>R</mi><mi>T</mi></mrow></mfrac><mo>)</mo><mo>=</mo><mi>exp</mi><mo>(</mo><mfrac><mn>7</mn><mrow><mn>8,314</mn><mo>×</mo><msup><mn>10</mn><mn>−3</mn></msup><mo>×</mo><mn>313</mn></mrow></mfrac><mo>)</mo><mo>≈</mo><mn>15</mn></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Barrière inverse</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Eₐ (kJ·mol⁻¹)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>produit 1,2 → carbocation</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>30 − (−60) = 90</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>produit 1,4 → carbocation</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>33 − (−67) = 100</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Conditions :</strong> température plus <strong>élevée</strong> (40 °C) et temps <strong>long</strong> (3 h) : les produits franchissent la barrière inverse, la réaction est <strong>réversible</strong>.</li>
+          <li>Les produits s’interconvertissent via le carbocation jusqu’à l’<strong>équilibre</strong> : le plus stable domine, ≈ 94 % de produit 1,4 (15 / 16).</li>
+          <li>La barrière inverse = E(ET₂) − E(produit) : <strong>produit</strong> comme point de départ, sommet comme arrivée.</li>
+          <li><strong>Hypothèse :</strong> même facteur A pour toutes les étapes ; HBr en excès (pseudo-premier ordre).</li>
+        </ul>
+      </>,
+      texte: <>À 40 °C, le produit 1,2 peut <strong>se retransformer en carbocation</strong> (il faut franchir 90 kJ/mol, ce qui est possible à cette température), puis donner le produit 1,4. Les deux produits sont en équilibre ; le plus stable finit par dominer.</>,
       tache: { type: 'qcm', q: 'Pourquoi le produit 1,4 devient-il majoritaire après plusieurs heures à 40 °C ?', options: ['Le produit 1,2 se reforme en carbocation, qui peut donner le produit 1,4 plus stable : la réaction est réversible et l\'équilibre favorise le plus stable', 'Le produit 1,4 se forme plus vite que le 1,2', 'Le produit 1,2 s\'évapore'], bonne: 0, indice: 'Que se passe-t-il quand les étapes deviennent réversibles ?', expl: <>Quand la température permet de franchir la barrière inverse, les produits s'interconvertissent via le carbocation. La composition atteint l'équilibre, fixé par la différence d'énergie des produits (ΔE = 7 kJ/mol) : on obtient environ 94 % de produit 1,4.</> } },
     { titre: 'La barrière inverse', texte: <>Pour que le produit 1,2 se retransforme en carbocation, il doit gravir la barrière inverse : du produit 1,2 jusqu'au sommet ET₂ de sa voie.</>,
       tache: { type: 'num', q: 'Quelle est l’énergie à fournir pour que le produit 1,2 revienne au carbocation ?', unite: 'kJ/mol', vrai: E.ET2a - E.P12, tol: 0.02, cs: 2, indice: 'Énergie de ET₂ (voie 1,2) moins énergie du produit 1,2.', calcul: () => [`E(ET₂, 1,2) − E(produit 1,2) = ${E.ET2a} − (${E.P12}) = ${E.ET2a - E.P12} kJ/mol`] } },
     { titre: 'Choisir ses conditions', texte: <>En synthèse, on choisit le produit en réglant la température et la durée.</>,
       tache: { type: 'qcm', q: 'Pour obtenir surtout le produit 1,2, on opère :', options: ['À basse température, pendant un temps court', 'À température élevée, pendant plusieurs heures', 'Peu importe : le résultat est le même'], bonne: 0, indice: 'Il faut éviter que le produit 1,2 ne se retransforme.', expl: <>À basse température, la réaction est irréversible : le produit cinétique (1,2) reste. À température élevée et temps long, l'équilibre favorise le produit 1,4.</> } },
     { titre: 'Bilan', texte: <>Tu sais distinguer contrôle cinétique et contrôle thermodynamique.</>,
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>Un carbocation allylique donne deux produits : addition <strong>1,2</strong> et addition <strong>1,4</strong>.</li>
-        <li><strong>Contrôle cinétique</strong> (basse température, temps court, réaction irréversible) : le produit qui se forme le plus vite domine (barrière la plus basse).</li>
-        <li><strong>Contrôle thermodynamique</strong> (température plus élevée, temps long, réaction réversible) : le produit le plus stable domine (énergie la plus basse).</li>
-        <li>Le rapport à l'équilibre vaut exp(ΔE / RT).</li>
-      </ul> },
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}></th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Contrôle cinétique</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Contrôle thermodynamique</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Température / durée</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>basse, courte</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>plus élevée, longue</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Réversibilité</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>irréversible</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>réversible</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Ce qui décide</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>vitesses (barrière la plus basse)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>stabilité (énergie la plus basse)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Produit favorisé</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,2 (≈ 79 %)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,4 (≈ 94 %)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Loi</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>k = A·exp(−Eₐ/RT)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>K = exp(ΔE/RT)</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Méthode :</strong> repérer le produit le plus rapide (Eₐ la plus basse depuis le carbocation) et le plus stable (E la plus basse) ; choisir les conditions selon le produit voulu.</li>
+          <li><strong>Piège :</strong> croire que le produit majoritaire est toujours le plus stable ; cela dépend des conditions.</li>
+        </ul>
+      </> },
   ];
 }
 

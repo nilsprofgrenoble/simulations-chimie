@@ -1,7 +1,7 @@
 // Régiosélectivité de l'addition de HBr sur un alcène dissymétrique (BTS) : deux carbocations possibles, un profil d'énergie à deux voies.
 import { useState, useEffect, useRef } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import { ALCENES, alcene, voies, proportions, profil, NOM_CLASSE, E_CATION, MONTEE_ET1, E_PRODUIT, T } from "./regioModele";
@@ -207,17 +207,107 @@ function etapesGuide(alc, setAlc, u, setU, choisirVoie) {
   return [
     { titre: 'Un alcène dissymétrique', texte: <>Le <strong>propène</strong> CH₃–CH=CH₂ n'est pas symétrique : les deux carbones de la double liaison ne sont pas équivalents. HBr peut donc s'additionner de <strong>deux façons</strong> : H sur C1 ou H sur C2. Les deux cartes montrent les deux possibilités.</>,
       tache: { type: 'qcm', q: 'Combien de produits d’addition différents peut-on écrire avec le propène et HBr ?', options: ['Un seul', 'Deux : le 1-bromopropane et le 2-bromopropane', 'Trois'], bonne: 1, indice: 'Br peut se fixer sur C1 ou sur C2.', expl: <>Si H se fixe sur C2, Br se fixe sur C1 (1-bromopropane) ; si H se fixe sur C1, Br se fixe sur C2 (2-bromopropane). Une réaction qui favorise l'un de ces isomères de constitution est dite <strong>régiosélective</strong>.</> } },
-    { titre: 'Où est la charge + ?', texte: <>À l'étape 1, le doublet π attaque H. Le carbone qui <strong>ne reçoit pas</strong> H perd sa part de la liaison π : il devient un carbocation, porteur de la charge +.</>,
+    { titre: 'Où est la charge + ?',
+      retenirTitre: 'À RETENIR : DEUX VOIES POSSIBLES',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Un alcène <strong>dissymétrique</strong> (les deux carbones de C=C ne sont pas équivalents) peut s’additionner à HBr de <strong>deux façons</strong> : on obtient deux <strong>isomères de constitution</strong>.</li>
+          <li>Étape 1 : le doublet π attaque H ; <strong>H se fixe sur un carbone</strong>, la charge <strong>+ apparaît sur l’autre</strong> carbone de la double liaison (celui qui perd sa part du doublet π).</li>
+          <li>Étape 2 : Br⁻ se fixe sur ce carbone chargé.</li>
+        </ul>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Voie (propène)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Carbocation</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Produit</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>H sur C1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>C2⁺</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2-bromopropane</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>H sur C2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>C1⁺</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1-bromopropane</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Une réaction qui favorise un seul de ces isomères de constitution est dite <strong>régiosélective</strong>.</li>
+        </ul>
+      </>,
+      texte: <>À l'étape 1, le doublet π attaque H. Le carbone qui <strong>ne reçoit pas</strong> H perd sa part de la liaison π : il devient un carbocation, porteur de la charge +.</>,
       tache: { type: 'qcm', q: 'Si H se fixe sur C1 du propène, sur quel carbone se trouve la charge + ?', options: ['Sur C1', 'Sur C2', 'Sur C3'], bonne: 1, indice: 'La charge + est sur l’autre carbone de la double liaison.', expl: <>C1 reçoit H : c'est C2, l'autre carbone de la double liaison, qui n'a plus que 6 électrons de valence.</> } },
     { titre: 'Suivre la voie 1', texte: <>Vérifie ta réponse en animant la voie 1 : lance la lecture ou place la bille sur le <strong>carbocation</strong>. H se fixe sur C1, la liaison H–Br se rompt et la charge + apparaît. Les flèches rouges montrent le déplacement des doublets.</>,
       tache: { type: 'action', ok: Math.abs(u - 0.45) < 0.04, label: 'Le faire pour moi', faire: () => { choisirVoie('A'); setU(0.45); }, consigne: 'Place la bille sur le carbocation (creux du profil, voie 1).', indice: 'Utilise le bouton « Carbocation » sous le schéma ou fais glisser le curseur.' } },
-    { titre: 'Classer les carbocations', texte: <>On classe un carbocation d'après le nombre d'atomes de carbone liés au C⁺ : <strong>primaire</strong> (1), <strong>secondaire</strong> (2), <strong>tertiaire</strong> (3). Les cartes indiquent ce nombre.</>,
+    { titre: 'Classer les carbocations',
+      retenirTitre: 'À RETENIR : CLASSE D’UN CARBOCATION',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Classe</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Carbones liés à C⁺</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Formule</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Énergie (kJ·mol⁻¹)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>primaire</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>R–CH₂⁺</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>75</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>secondaire</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>R₂CH⁺</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>60</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>tertiaire</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>3</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>R₃C⁺</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>50</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>On <strong>compte les atomes de carbone</strong> directement liés au C⁺ (pas les hydrogènes).</li>
+          <li>Exemple : dans le propène, si H se fixe sur C1, C2⁺ est lié à C1 et C3 : <strong>secondaire</strong>. L’autre voie donne C1⁺, lié à C2 seulement : <strong>primaire</strong>.</li>
+          <li>Les énergies sont celles de la simulation (réactifs : 0 kJ·mol⁻¹), des <strong>ordres de grandeur</strong> qui ne dépendent que de la classe.</li>
+        </ul>
+      </>,
+      texte: <>On classe un carbocation d'après le nombre d'atomes de carbone liés au C⁺ : <strong>primaire</strong> (1), <strong>secondaire</strong> (2), <strong>tertiaire</strong> (3). Les cartes indiquent ce nombre.</>,
       tache: { type: 'qcm', q: 'Quelle est la classe du carbocation formé quand H se fixe sur C1 du propène ?', options: ['Primaire', 'Secondaire', 'Tertiaire'], bonne: 1, indice: 'Compte les carbones liés à C2 (celui qui porte la charge).', expl: <>C2 est lié à C1 et à C3 : deux carbones, donc carbocation secondaire. Dans l'autre voie, C1⁺ n'est lié qu'à C2 : primaire.</> } },
-    { titre: 'Pourquoi le secondaire est plus stable', texte: <>Les groupes alkyle <strong>donnent</strong> de la densité électronique au carbone chargé (effet inductif donneur, et hyperconjugaison). Plus il y en a, plus la charge + est « diluée » et plus le carbocation est stable, donc plus bas en énergie.</>,
+    { titre: 'Pourquoi le secondaire est plus stable',
+      retenirTitre: 'À RETENIR : STABILITÉ DES CARBOCATIONS',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Un groupe <strong>alkyle</strong> est <strong>donneur d’électrons</strong> (effet inductif donneur) et l’<strong>hyperconjugaison</strong> des liaisons C–H voisines l’aide aussi à enrichir le carbone C⁺ (lacune).</li>
+          <li>Plus il y a de groupes alkyle, plus la charge + est « <strong>diluée</strong> » : le carbocation est plus <strong>stable</strong>, donc plus <strong>bas en énergie</strong>.</li>
+        </ul>
+        <Formule><mtext>tertiaire</mtext><mo>&gt;</mo><mtext>secondaire</mtext><mo>&gt;</mo><mtext>primaire</mtext><mo>&gt;</mo><mtext>méthyle</mtext><mspace width="1em"/><mtext>(stabilité décroissante)</mtext></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Dans la simulation : 50 &lt; 60 &lt; 75 kJ·mol⁻¹ (énergie croissante, stabilité décroissante).</li>
+          <li><strong>Piège :</strong> « plus stable » signifie « énergie <strong>plus basse</strong> », pas « énergie plus haute ».</li>
+        </ul>
+      </>,
+      texte: <>Les groupes alkyle <strong>donnent</strong> de la densité électronique au carbone chargé (effet inductif donneur, et hyperconjugaison). Plus il y en a, plus la charge + est « diluée » et plus le carbocation est stable, donc plus bas en énergie.</>,
       tache: { type: 'qcm', q: 'Quel carbocation est le plus stable ?', options: ['Primaire', 'Secondaire', 'Ils ont la même énergie'], bonne: 1, indice: 'Regarde les énergies du carbocation sur le profil (active « Montrer les énergies »).', expl: <>Secondaire (60 kJ/mol) est plus bas que primaire (75 kJ/mol). Ordre de stabilité : tertiaire &gt; secondaire &gt; primaire.</> } },
-    { titre: 'Lire les deux barrières', texte: <>L'étape qui détermine la vitesse est la formation du carbocation. Le sommet ET₁ ressemble au carbocation (postulat de Hammond) : un carbocation plus stable est atteint par un état de transition plus bas.</>,
+    { titre: 'Lire les deux barrières',
+      retenirTitre: 'À RETENIR : LIRE LES BARRIÈRES',
+      retenir: <>
+        <Formule><msub><mi>E</mi><mi>a</mi></msub><mo>=</mo><msub><mi>E</mi><mrow><mi>ET</mi><mn>1</mn></mrow></msub><mo>−</mo><mi>E</mi><mo>(</mo><mtext>réactifs</mtext><mo>)</mo><mspace width="1.5em"/><msub><mi>E</mi><mrow><mi>ET</mi><mn>1</mn></mrow></msub><mo>=</mo><mi>E</mi><mo>(</mo><mtext>carbocation</mtext><mo>)</mo><mo>+</mo><mn>40</mn><mtext> kJ·mol⁻¹</mtext></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>L’étape 1 (formation du carbocation) est la plus <strong>lente</strong> : elle fixe la vitesse de chaque voie.</li>
+          <li><strong>Postulat de Hammond</strong> : l’état de transition ET₁ ressemble au carbocation. Un carbocation plus stable s’obtient donc par un ET₁ plus <strong>bas</strong>.</li>
+        </ul>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Voie</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>E carbocation (kJ·mol⁻¹)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>E(ET₁) (kJ·mol⁻¹)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>voie → carbocation secondaire</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>60</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>100</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>voie → carbocation primaire</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>75</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>115</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>voie → carbocation tertiaire</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>50</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>90</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Exemple (propène) :</strong> ΔE(ET₁) = 115 − 100 = <strong>15 kJ·mol⁻¹</strong>.</li>
+        </ul>
+      </>,
+      texte: <>L'étape qui détermine la vitesse est la formation du carbocation. Le sommet ET₁ ressemble au carbocation (postulat de Hammond) : un carbocation plus stable est atteint par un état de transition plus bas.</>,
       tache: { type: 'num', q: 'Quelle est la différence de hauteur entre les deux états de transition ET₁ ?', unite: 'kJ/mol', vrai: 15, tol: 0.02, cs: 2, indice: 'ET₁ voie 2 moins ET₁ voie 1 (valeurs lisibles sur le profil).', calcul: () => ['ET₁(primaire) − ET₁(secondaire) = 115 − 100 = 15 kJ/mol'] } },
-    { titre: 'Le produit majoritaire', texte: <>La voie la plus basse est la plus rapide : c'est elle qui donne le produit <strong>majoritaire</strong> (contrôle cinétique). La proportion est calculée à 298 K avec la loi d'Arrhenius.</>,
+    { titre: 'Le produit majoritaire',
+      retenirTitre: 'À RETENIR : PRODUIT MAJORITAIRE',
+      retenir: <>
+        <Formule><mfrac><msub><mi>v</mi><mn>1</mn></msub><msub><mi>v</mi><mn>2</mn></msub></mfrac><mo>=</mo><mi>exp</mi><mo>(</mo><mfrac><mrow><mi>Δ</mi><msub><mi>E</mi><mrow><mi>ET</mi><mn>1</mn></mrow></msub></mrow><mrow><mi>R</mi><mi>T</mi></mrow></mfrac><mo>)</mo><mspace width="1.5em"/><mi>R</mi><mo>=</mo><mn>8,314</mn><mo>×</mo><msup><mn>10</mn><mn>−3</mn></msup><mtext> kJ·mol⁻¹·K⁻¹</mtext><mo>,</mo><mi>T</mi><mo>=</mo><mn>298</mn><mtext> K</mtext></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Contrôle cinétique</strong> : la voie la plus rapide (ET₁ le plus bas) donne le produit <strong>majoritaire</strong>. L’autre produit est <strong>minoritaire</strong> mais pas forcément nul.</li>
+          <li><strong>Règle de Markovnikov</strong> : H se fixe sur le carbone de C=C <strong>le plus hydrogéné</strong> ; Br se fixe sur le carbone le plus substitué. C’est une <strong>conséquence</strong> de la stabilité du carbocation, pas une loi indépendante.</li>
+        </ul>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Alcène</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>ΔE(ET₁) (kJ·mol⁻¹)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>v₁/v₂</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Produit majoritaire</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>propène</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>15</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 4×10²</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2-bromopropane</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>but-1-ène</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>15</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 4×10²</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2-bromobutane</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>2-méthylprop-1-ène</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>25</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 2×10⁴</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2-bromo-2-méthylpropane</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>2-méthylbut-2-ène</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>10</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 6×10¹</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2-bromo-2-méthylbutane</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Exemple : pour le propène, ΔE = 15 kJ·mol⁻¹ donne v₁/v₂ ≈ 4×10², soit ≈ 99,8 % de 2-bromopropane.</li>
+        </ul>
+      </>,
+      texte: <>La voie la plus basse est la plus rapide : c'est elle qui donne le produit <strong>majoritaire</strong> (contrôle cinétique). La proportion est calculée à 298 K avec la loi d'Arrhenius.</>,
       tache: { type: 'qcm', q: 'Quel est le produit majoritaire de l’addition de HBr sur le propène ?', options: ['Le 1-bromopropane', 'Le 2-bromopropane', 'Les deux en quantités égales'], bonne: 1, indice: 'Le produit majoritaire vient du carbocation le plus stable.', expl: <>Le carbocation secondaire (en C2) conduit au 2-bromopropane, formé à environ 99,8 %. C'est ce que résume la règle de Markovnikov.</> } },
     { titre: 'Avec le but-1-ène', texte: <>Même raisonnement avec une chaîne plus longue.</>, tache: choisir('but1ene', 'but-1-ène') },
     { titre: 'But-1-ène : le produit', texte: <>Le but-1-ène CH₃–CH₂–CH=CH₂ présente la même dissymétrie que le propène.</>,
@@ -226,12 +316,19 @@ function etapesGuide(alc, setAlc, u, setU, choisirVoie) {
     { titre: 'Primaire contre tertiaire', texte: <>Observe les deux cartes : un carbocation tertiaire est en compétition avec un primaire.</>,
       tache: { type: 'qcm', q: 'Pourquoi le carbocation tertiaire se forme-t-il beaucoup plus vite ici ?', options: ['Il est lié à 3 groupes alkyle donneurs : il est plus stable et son ET₁ est plus bas', 'Il possède plus de liaisons C–H', 'La charge + est plus petite'], bonne: 0, indice: 'Pense à l’effet des groupes alkyle sur la charge +.', expl: <>L'écart de barrière est de 25 kJ/mol : la voie tertiaire est plus rapide d'un facteur ~25 000. Le produit minoritaire est à peine détectable.</> } },
     { titre: 'Bilan', texte: <>Tu sais prévoir le produit majoritaire d'une addition de HBr sur un alcène dissymétrique.</>,
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>Un alcène dissymétrique donne <strong>deux produits possibles</strong> : la réaction est <strong>régiosélective</strong>.</li>
-        <li>On écrit les deux carbocations possibles et on compare leur <strong>stabilité</strong> : tertiaire &gt; secondaire &gt; primaire.</li>
-        <li>Le carbocation le plus stable se forme le plus vite : il donne le <strong>produit majoritaire</strong>.</li>
-        <li>Règle de Markovnikov : H se fixe sur le carbone <em>le plus hydrogéné</em> de la double liaison (conséquence de la stabilité du carbocation).</li>
-      </ul> },
+      retenir: <>
+        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+          <li><strong>Écrire les deux carbocations</strong> possibles (H sur chacun des deux carbones de C=C).</li>
+          <li><strong>Classer</strong> chaque C⁺ (nombre de carbones liés) et comparer leur stabilité : tertiaire &gt; secondaire &gt; primaire.</li>
+          <li>Le <strong>plus stable</strong> a l’ET₁ le plus bas : voie la plus rapide, donc <strong>produit majoritaire</strong>.</li>
+          <li><strong>Placer Br</strong> sur le carbone chargé de ce carbocation et nommer le produit.</li>
+        </ol>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Régiosélective ne veut pas dire exclusive : v₁/v₂ = exp(ΔE/RT) donne des proportions, pas du tout-ou-rien.</li>
+          <li><strong>Hypothèses :</strong> énergie du carbocation ne dépendant que de sa classe, ET₁ = carbocation + 40 kJ·mol⁻¹, T = 298 K, contrôle cinétique.</li>
+          <li><strong>Pièges :</strong> compter des H au lieu des C pour la classe ; confondre H sur le C le plus hydrogéné et charge + sur le C le plus substitué.</li>
+        </ul>
+      </> },
   ];
 }
 
