@@ -60,8 +60,18 @@ export function noterFiche({ sim, nomSim, etape, html, texte }) {
 
 // Toutes les cartes gardées sur cet appareil (et dans le compte de l'élève, une fois la synchronisation faite), de la plus récemment vue à la plus ancienne
 // Une carte n'entre dans la collection qu'une fois le parcours guidé de la simulation TERMINÉ (dernière étape atteinte), pas seulement commencé.
-const CLE_FINI = 'fiches-fini-';
-export const marquerTermine = sim => { try { if (Number.isFinite(sim) && !window.localStorage.getItem(CLE_FINI + sim)) { window.localStorage.setItem(CLE_FINI + sim, String(Date.now())); annoncerFiches(); } } catch { /* ignoré */ } };
+const CLE_FINI = 'fiches-fini-';   // ancien drapeau, local à l'appareil (encore lu)
+const CLE_OK = 'fiches-ok-';      // drapeau « parcours terminé » : copié dans le compte de l'élève, donc retrouvé sur tous ses appareils et jamais perdu si le parcours est recommencé
+export const marquerTermine = sim => { try {
+  if (!Number.isFinite(sim) || window.localStorage.getItem(CLE_OK + sim)) return;
+  const cle = CLE_OK + sim;
+  enregistrer(cle, false);
+  window.localStorage.setItem(cle, JSON.stringify({ t: Date.now() }));
+  noterModification(cle);
+  annoncerFiches();
+} catch { /* ignoré */ } };
+export const estTermine = sim => { try { return !!(window.localStorage.getItem(CLE_OK + sim) || window.localStorage.getItem(CLE_FINI + sim)); } catch { return false; } };
+
 // Avancement le plus loin atteint dans les parcours guidés de la simulation (pour expliquer l'absence de fiche)
 export const noterProgres = (sim, etape, total) => { try {
   if (!Number.isFinite(sim) || !(total > 0)) return;
@@ -69,7 +79,6 @@ export const noterProgres = (sim, etape, total) => { try {
   if (!avant || (etape + 1) / total > avant.e / avant.n) window.localStorage.setItem(cle, JSON.stringify({ e: etape + 1, n: total }));
 } catch { /* ignoré */ } };
 export const lireProgres = sim => { try { return JSON.parse(window.localStorage.getItem('fiches-prog-' + sim) || 'null'); } catch { return null; } };
-export const estTermine = sim => { try { return !!window.localStorage.getItem(CLE_FINI + sim); } catch { return false; } };
 
 // ── Schéma de la simulation, joint à sa fiche : le dessin principal de l'écran (SVG, graphique ou canevas), recopié en petite image ──
 const PREFIXE_FIGURE = 'ficfig-';

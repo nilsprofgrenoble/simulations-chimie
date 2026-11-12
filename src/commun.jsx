@@ -311,7 +311,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, color: TXT2, fontWeight: 700 }}>
           <span>Étape {etape + 1} / {etapes.length}</span>
-          {etape > 0 && <button onClick={() => setEtat({ etape: 0, reps: {}, verifs: {}, reussies: {}, carnet: {} })} style={{ background: 'none', border: 'none', color: TXT2,
+          {etape > 0 && <button onClick={() => setEtat({ etape: 0, reps: {}, verifs: {}, reussies: {}, carnet: {}, ...(etat.fini ? { fini: true } : {}) })} style={{ background: 'none', border: 'none', color: TXT2,
             cursor: 'pointer', textDecoration: 'underline', fontSize: 12 }}>revenir au début</button>}
         </div>
         <div style={{ height: 6, background: '#e2e8f0', borderRadius: 3, marginTop: 4 }}>
