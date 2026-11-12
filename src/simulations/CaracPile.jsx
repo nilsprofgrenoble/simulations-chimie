@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche } from "../commun";
 import { fr, lampeI, regression } from "./elecModele";
 import { BLEU, VERMILLON, VIOLET, alea, usePhase } from "./elecOutils";
@@ -115,9 +115,41 @@ export function SimulationCaracPile() {
       texte: <>Fermez l’interrupteur, puis <strong>diminuez R</strong> pour faire augmenter I. À chaque étape, notez (I ; U). Faites <strong>au moins 6 mesures</strong>, en incluant la mesure à vide (I = 0). Vous pouvez aussi charger les mesures réelles du TP.</>,
       tache: { type: 'action', ok: nPtsOK(6), consigne: 'Notez au moins 6 mesures (I ; U), dont une à vide.' } },
     { id: 'carac', titre: 'La caractéristique de la pile', depart: null,
+      retenirTitre: 'À RETENIR : CARACTÉRISTIQUE D’UNE PILE',
+      retenir: <>
+        <svg viewBox="0 0 360 225" role="img" aria-label="Caractéristique U en fonction de I d’une pile réelle : droite décroissante partant de la tension à vide U₀, comparée à la droite horizontale d’une source idéale de tension" style={{ width: '100%', maxWidth: 340, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <line x1="50" y1="190" x2="345" y2="190" stroke="#0f172a" strokeWidth="2" /><line x1="50" y1="190" x2="50" y2="22" stroke="#0f172a" strokeWidth="2" />
+          <text x="50" y="208" textAnchor="middle" fontSize="11" fill="#334155">0</text><text x="143" y="208" textAnchor="middle" fontSize="11" fill="#334155">100</text><text x="237" y="208" textAnchor="middle" fontSize="11" fill="#334155">200</text><text x="330" y="208" textAnchor="middle" fontSize="11" fill="#334155">300</text>
+          <text x="41" y="194" textAnchor="end" fontSize="11" fill="#334155">0</text><text x="41" y="130" textAnchor="end" fontSize="11" fill="#334155">2</text><text x="41" y="66" textAnchor="end" fontSize="11" fill="#334155">4</text>
+          <text x="345" y="220" textAnchor="end" fontSize="11.5" fontWeight="700" fill="#0f172a">I (mA)</text><text x="6" y="14" fontSize="11.5" fontWeight="700" fill="#0f172a">U (V)</text>
+          <line x1="50" y1="48" x2="330" y2="48" stroke="#15803d" strokeWidth="2" strokeDasharray="6 4" />
+          <line x1="50" y1="48" x2="330" y2="96" stroke="#d55e00" strokeWidth="2.6" />
+          <circle cx="50" cy="48" r="4" fill="#d55e00" />
+          <text x="58" y="40" fontSize="11.5" fontWeight="700" fill="#15803d">source idéale : r = 0</text>
+          <text x="96" y="128" fontSize="11.5" fontWeight="700" fill="#d55e00">pile réelle : U = U₀ − r × I</text>
+          <text x="58" y="66" fontSize="12" fontWeight="700" fill="#d55e00">U₀</text>
+          <text x="200" y="168" fontSize="11" fill="#334155">pente = −r (en Ω)</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La <strong>tension à vide U₀</strong> est la tension aux bornes de la pile quand I = 0 (interrupteur ouvert).</li>
+          <li>La caractéristique U = f(I) d’une pile est une droite <strong>affine décroissante</strong> : plus la pile débite, plus U <strong>baisse</strong>.</li>
+          <li>Une <strong>source idéale</strong> a une caractéristique <strong>horizontale</strong> (U = U₀, r = 0).</li>
+          <li><strong>Hypothèse :</strong> U₀ et r constants (en réalité, r augmente quand la pile s’use) ; ici pile plate 4,5 V : U₀ = 4,43 V, r = 5,0 Ω.</li>
+        </ul>
+      </>,
       texte: <>Le graphe U = f(I) est la <strong>caractéristique</strong> de la pile. Les points sont alignés sur une <strong>droite qui ne passe pas par l’origine et qui descend</strong> : c’est une fonction <strong>affine décroissante</strong> : U = a·I + b avec a &lt; 0. Quand la pile débite davantage, sa tension <strong>baisse</strong>. (Attention : l’axe vertical ne commence pas à 0.)</>,
       tache: { type: 'qcm', q: 'Quand l’intensité I débitée par la pile augmente, la tension U entre ses bornes…', options: ['diminue', 'augmente', 'ne change pas', 'devient nulle aussitôt'], bonne: 0, expl: 'La caractéristique est une droite décroissante : plus I est grand, plus U est petit.', indice: "La pile a une résistance interne r : U = U₀ − r × I. Que devient U quand I augmente ?" } },
     { id: 'modele', titre: 'U = U₀ − r × I', depart: null,
+      retenirTitre: 'À RETENIR : U = U₀ − r × I',
+      retenir: <>
+        <Formule><mi>U</mi><mo>=</mo><msub><mi>U</mi><mn>0</mn></msub><mo>−</mo><mi>r</mi><mo>×</mo><mi>I</mi><mspace width="1.5em"/><mi>r</mi><mo>=</mo><mfrac><mrow><msub><mi>U</mi><mn>0</mn></msub><mo>−</mo><mi>U</mi></mrow><mi>I</mi></mfrac></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Régression linéaire</strong> : U = a × I + b. L’ordonnée à l’origine b est <strong>U₀</strong> ; le coefficient directeur a est négatif et <strong>r = −a</strong> (résistance interne, en Ω).</li>
+          <li><strong>Méthode :</strong> (1) U₀ − U en volts ; (2) I en <strong>ampères</strong> (1 mA = 10⁻³ A) ; (3) r = (U₀ − U) / I.</li>
+          <li><strong>Exemple :</strong> U₀ = 9,0 V et U = 8,2 V pour I = 0,20 A : r = 0,8 / 0,20 = <strong>4,0 Ω</strong>.</li>
+          <li><strong>Pièges :</strong> diviser U (et non la baisse U₀ − U) par I ; laisser I en mA.</li>
+        </ul>
+      </>,
       texte: <>La régression linéaire donne la droite U = a·I + b. L’<strong>ordonnée à l’origine</strong> b est la tension à vide <strong>U₀</strong> ; le coefficient directeur a est négatif, et <strong>r = −a</strong> est la <strong>résistance interne</strong> de la pile (en Ω). Donc <strong>U = U₀ − r × I</strong>.
         <ExempleResolu>Mesures du TP : U = 4,43 V à vide et U = 3,80 V pour I = 125,8 mA. r = (4,43 − 3,80) / 0,1258 = <strong>5,0 Ω</strong>.</ExempleResolu></>,
       tache: { type: 'num', q: 'Une pile donne U₀ = 4,50 V à vide et U = 4,00 V pour I = 100 mA. Quelle est sa résistance interne r (en Ω) ?', unite: 'Ω', vrai: 5, tol: 0.02, affiche: x => String(x),
@@ -128,6 +160,29 @@ export function SimulationCaracPile() {
       texte: <>Une <strong>source idéale de tension</strong> délivre une tension <strong>indépendante du courant</strong> : sa caractéristique est une <strong>droite horizontale</strong>, sa résistance interne est <strong>nulle</strong> (r = 0). L’alimentation du lycée s’en approche. Choisissez-la, faites des mesures et regardez la tension.</>,
       tache: { type: 'qcm', q: 'La caractéristique d’une source idéale de tension est…', options: ['une droite horizontale (U constante)', 'une droite passant par l’origine', 'une droite décroissante', 'une courbe qui monte'], bonne: 0, expl: 'U = U₀ quelle que soit l’intensité : droite parallèle à l’axe des I, r = 0.', indice: "Une source idéale a une résistance interne nulle : que devient U = U₀ − r × I ? Comment U varie-t-elle avec I ?" } },
     { id: 'source', titre: 'Le modèle d’une pile réelle', depart: () => voir('modele', { M: { U0: 4.5, r: 5, R: 100 } }),
+      retenirTitre: 'À RETENIR : MODÈLE D’UNE PILE RÉELLE',
+      retenir: <>
+        <svg viewBox="0 0 360 140" role="img" aria-label="Modèle d’une pile réelle : source idéale de tension U₀ en série avec la résistance interne r, branchée sur un résistor R ; I est l’intensité et U la tension aux bornes de la pile" style={{ width: '100%', maxWidth: 340, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <rect x="22" y="14" width="190" height="112" rx="8" fill="#f8fafc" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="5 4" />
+          <text x="30" y="30" fontSize="10.5" fill="#475569">pile réelle</text>
+          <g fill="none" stroke="#334155" strokeWidth="2">
+            <path d="M 60 38 L 100 38 M 150 38 L 230 38 L 320 38 L 320 56 M 320 96 L 320 116 L 60 116 L 60 88 M 60 62 L 60 38" />
+          </g>
+          <circle cx="60" cy="75" r="14" fill="#fff" stroke="#334155" strokeWidth="2" /><text x="60" y="79" textAnchor="middle" fontSize="12" fontWeight="700">U₀</text>
+          <rect x="100" y="28" width="50" height="20" fill="#fff" stroke="#334155" strokeWidth="2" /><text x="125" y="43" textAnchor="middle" fontSize="12" fontWeight="700">r</text>
+          <rect x="308" y="56" width="24" height="40" fill="#fff" stroke="#334155" strokeWidth="2" /><text x="320" y="80" textAnchor="middle" fontSize="12" fontWeight="700">R</text>
+          <circle cx="230" cy="38" r="3.5" fill="#334155" /><circle cx="230" cy="116" r="3.5" fill="#334155" />
+          <line x1="244" y1="44" x2="244" y2="108" stroke="#0072b2" strokeWidth="2" /><polygon points="244,110 239,100 249,100" fill="#0072b2" /><polygon points="244,42 239,52 249,52" fill="#0072b2" />
+          <text x="256" y="80" fontSize="12" fontWeight="700" fill="#0072b2">U</text>
+          <text x="186" y="30" fontSize="12" fontWeight="700" fill="#d55e00">I →</text>
+        </svg>
+        <Formule><mi>I</mi><mo>=</mo><mfrac><msub><mi>U</mi><mn>0</mn></msub><mrow><mi>r</mi><mo>+</mo><mi>R</mi></mrow></mfrac><mspace width="1.5em"/><mi>U</mi><mo>=</mo><mi>R</mi><mo>×</mo><mi>I</mi><mo>=</mo><msub><mi>U</mi><mn>0</mn></msub><mo>−</mo><mi>r</mi><mo>×</mo><mi>I</mi></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Pile réelle = <strong>source idéale U₀ en série avec une résistance r</strong> ; la <strong>loi d’additivité des tensions</strong> donne U = U₀ − r × I.</li>
+          <li>Le <strong>point de fonctionnement</strong> est l’intersection de la caractéristique de la pile et de celle du résistor U = R × I.</li>
+          <li><strong>Exemple :</strong> U₀ = 4,5 V, r = 5 Ω, R = 45 Ω : I = 4,5 / 50 = 0,090 A = 90 mA ; U = 4,5 − 5 × 0,090 = <strong>4,05 V</strong>.</li>
+        </ul>
+      </>,
       texte: <>Une pile réelle se modélise par une <strong>source idéale de tension U₀ en série avec une résistance r</strong>. La loi d’additivité des tensions donne <strong>U = U₀ − r × I</strong>. Plus R est petit, plus I est grand et plus U chute. À droite, la droite orange est la caractéristique du résistor (U = R × I) : le point d’intersection est le <strong>point de fonctionnement</strong>.
         <ExempleResolu>U₀ = 4,5 V, r = 5 Ω, R = 100 Ω : I = U₀ / (r + R) = 4,5 / 105 = <strong>42,9 mA</strong> ; U = 4,5 − 5 × 0,0429 = <strong>4,29 V</strong>.</ExempleResolu></>,
       tache: { type: 'num', q: 'Pile de U₀ = 4,5 V et r = 5 Ω débitant 100 mA : quelle est la tension U entre ses bornes (en V) ?', unite: 'V', vrai: 4, tol: 0.01, affiche: x => String(x),
@@ -135,19 +190,50 @@ export function SimulationCaracPile() {
         pieges: [[500, 'Convertis I en ampères : 100 mA = 0,100 A.'], [0.5, 'C’est la chute de tension r × I dans la pile. La tension U entre les bornes est U₀ moins cette chute.'],
           [5, 'Tu as additionné : la pile débite, sa tension baisse. U = U₀ − r × I (et non U₀ + r × I).'], [4.5, 'C’est la tension à vide U₀. Quand la pile débite, il faut retirer la chute r × I.']], expl: 'U = U₀ − r × I = 4,5 − 5 × 0,100 = 4,0 V.', indice: "U = U₀ − r × I, avec I en ampères (100 mA = 0,100 A)." } },
     { id: 'joule', titre: 'De l’énergie perdue dans la pile', depart: () => voir('modele', { M: { U0: 4.5, r: 5, R: 10 } }),
+      retenirTitre: 'À RETENIR : ÉNERGIE PERDUE DANS LA PILE',
+      retenir: <>
+        <Formule><msub><mi>P</mi><mtext>th</mtext></msub><mo>=</mo><mi>r</mi><mo>×</mo><msup><mi>I</mi><mn>2</mn></msup><mspace width="1.5em"/><mi>ρ</mi><mo>=</mo><mfrac><mi>U</mi><msub><mi>U</mi><mn>0</mn></msub></mfrac><mspace width="1.5em"/><mi>Q</mi><mo>=</mo><mi>r</mi><mo>×</mo><msup><mi>I</mi><mn>2</mn></msup><mo>×</mo><mi>Δ</mi><mi>t</mi></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Le courant traverse la résistance interne : <strong>effet Joule</strong>, P<sub>th</sub> = r × I² (I en A, <strong>au carré</strong>). Le reste, U × I, est fourni au circuit.</li>
+          <li><strong>Rendement de la pile</strong> : ρ = U / U₀ ; il baisse quand I augmente (jusqu’au court-circuit : U ≈ 0).</li>
+          <li><strong>Exemple :</strong> U₀ = 6,0 V, r = 2,0 Ω, I = 0,50 A : P<sub>th</sub> = 2,0 × 0,50² = 0,50 W ; U = 6,0 − 1,0 = 5,0 V ; ρ = 5,0 / 6,0 ≈ 83 %.</li>
+        </ul>
+      </>,
       texte: <>Le courant traverse la résistance interne : une partie de l’énergie de la pile est <strong>dissipée par effet Joule</strong>, <strong>P<sub>th</sub> = r × I²</strong>, soit Q = r × I² × Δt. Le reste, <strong>U × I</strong>, est fourni au circuit extérieur : le <strong>rendement</strong> de la pile vaut U / U₀. Diminuez R : la perte augmente fortement (jusqu’au court-circuit !).
         <ExempleResolu>r = 5 Ω, I = 100 mA pendant 1 h : Q = 5 × 0,100² × 3600 = <strong>180 J</strong> dissipés dans la pile.</ExempleResolu></>,
       tache: { type: 'num', q: 'Une pile de résistance interne 10 Ω débite 200 mA. Quelle puissance thermique (en W) est dissipée dans la pile ?', unite: 'W', vrai: 0.4, tol: 0.02, affiche: x => String(x).replace('.', ','),
         calcul: () => ['Effet Joule dans la résistance interne : P_th = r × I², avec I en ampères.', 'I = 200 mA = 0,200 A, donc I² = 0,200 × 0,200 = 0,0400 A².', 'P_th = 10 × 0,0400 = 0,40 W.'],
         pieges: [[2, 'Convertis I en ampères et mets-le au carré : P = r × I² = 10 × 0,200².'], [4, 'I² signifie I × I (0,200 × 0,200), et non 2 × I.']], expl: 'P = r × I² = 10 × 0,200² = 0,40 W.', indice: "Puissance dissipée dans la résistance interne : P = r × I², avec I en ampères (convertis les mA)." } },
     { id: 'usee', titre: 'Conséquences pratiques : la pile usée', depart: () => voir('modele', { M: { U0: 4.2, r: 25, R: 22 } }),
+      retenirTitre: 'À RETENIR : PILE NEUVE ET PILE USÉE',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Pile</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>U₀ (V)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>r (Ω)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>I (mA)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>U (V)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>neuve</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4,2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>183</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4,02</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>usée</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4,2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>25</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>89</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,97</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Conditions :</strong> même résistor R = 22 Ω ; I = U₀ / (r + R) ; U = U₀ − r × I.</li>
+          <li>Une pile usée garde presque la même tension à vide, mais sa <strong>résistance interne augmente beaucoup</strong> : dès qu’elle débite, la tension à ses bornes <strong>s’effondre</strong>.</li>
+          <li><strong>Conséquence :</strong> on ne teste pas une pile avec un voltmètre à vide seulement ; il faut la tester <strong>en charge</strong>.</li>
+        </ul>
+      </>,
       texte: <>Une pile <strong>usée</strong> garde presque la même tension à vide, mais sa <strong>résistance interne r augmente beaucoup</strong>. Branchée sur un appareil, la tension U à ses bornes s’effondre : la lampe éclaire peu. Comparez : U₀ = 4,2 V, r = 25 Ω, R = 22 Ω, puis r = 1 Ω.</>,
       tache: { type: 'qcm', q: 'Pourquoi une pile usée alimente-t-elle mal un appareil alors que son voltmètre indique encore une bonne tension à vide ?', options: ['Sa résistance interne est grande : dès qu’elle débite, la tension à ses bornes chute', 'Sa tension à vide est nulle', 'Elle ne contient plus de charges', 'Le voltmètre est faux'], bonne: 0, expl: 'U = U₀ − r × I : avec r grand, la chute de tension r × I est importante dès que I est notable.', indice: "Quand la pile débite, U = U₀ − r × I. Si r est grande, que devient U dès que I n’est plus nul ?" } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
-      texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>La <strong>caractéristique</strong> d’un dipôle est la courbe U = f(I). Conducteur ohmique : droite par l’origine, U = R·I.</li>
-        <li>Pile réelle : <strong>U = U₀ − r·I</strong> (droite décroissante). U₀ = tension à vide, r = résistance interne = −(coefficient directeur).</li>
-        <li>Modèle : <strong>source idéale U₀ en série avec r</strong> ; effet Joule dans la pile : P<sub>th</sub> = r·I² ; source idéale : r = 0.</li></ul></ARetenir>, tache: null },
+      retenirTitre: 'À RETENIR : LE BILAN',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Pile réelle : <strong>U = U₀ − r × I</strong> ; U₀ = tension à vide ; r = résistance interne = −pente.</li>
+          <li>Modèle : <strong>source idéale U₀ en série avec r</strong> ; source idéale : r = 0, U constante.</li>
+          <li>Pertes dans la pile : P<sub>th</sub> = r × I² ; rendement ρ = U / U₀.</li>
+          <li><strong>Méthode :</strong> convertir I en A, calculer la chute r × I (ou (U₀ − U) / I), conclure avec l’unité.</li>
+          <li><strong>Pièges :</strong> additionner au lieu de soustraire ; oublier le carré de I ; confondre U₀ et U en charge.</li>
+        </ul>
+      </>,
+      texte: <>Bravo : vous savez modéliser une pile réelle. Voici le bilan à garder.</>, tache: null },
   ];
   useEffect(() => {
     if (mode !== 'guide') return;
