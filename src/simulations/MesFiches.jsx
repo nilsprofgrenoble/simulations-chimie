@@ -5,7 +5,7 @@ import { useSession, estEleve } from "../serveur";
 import { surSynchro } from "../etatsParcours";
 import { listerFiches, surChangementFiches, recolterFiches, lireFigure } from "../fiches";
 import { toutLire } from "../serveur";
-import { tempsParSimulation, estSimulation, nomsSim } from "../suivi";
+import { tempsParSimulation, estSimulation, nomsSim, simsCachees } from "../suivi";
 import { chapitresDeSim, NIVEAUX_CHAPITRES } from "../chapitres";
 import { Pic } from "../Pictos";
 
@@ -86,7 +86,7 @@ export function SimulationFiches({ naviguer }) {
     setRecolte({ i: 0, n: 0 });
     try {
       const lignes = await toutLire('activites?select=cle,duree_s&order=debut.desc');
-      const ids = tempsParSimulation(lignes.filter(l => estSimulation(l.cle))).map(a => Number(a.id)).filter(Number.isFinite);
+      const ids = tempsParSimulation(lignes.filter(l => estSimulation(l.cle))).map(a => Number(a.id)).filter(id => Number.isFinite(id) && !simsCachees.has(id));
       const r = await recolterFiches(ids, (i, n) => setRecolte({ i, n }));
       setBilanRecolte(r.bilan);
     } catch { /* hors ligne : on garde ce qui est déjà rangé */ }

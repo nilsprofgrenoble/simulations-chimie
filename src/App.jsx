@@ -7,7 +7,7 @@ import { ToastRecompense } from "./ToastRecompense";
 import { useSession, restaurer, estEleve, estProf } from "./serveur";
 import { chapitresDuNiveau, confierNavigation } from "./chapitres";
 import { EN_RECOLTE, finRecolte, capturerFigure, envoyerFigure } from "./fiches";
-import { SuiviTemps, nomsSim } from "./suivi";
+import { SuiviTemps, nomsSim, simsCachees } from "./suivi";
 import { ModeParDefaut } from "./ModeParDefaut";
 import CadreMission from "./CadreMission";
 import { missionEnCours } from "./mission";
@@ -287,7 +287,7 @@ const SIMULATIONS = [
   { id:82, label:"Page d'un chapitre", niveau:"COMPTE", icon:"📚", color:"#5b4bdb", component: SimulationChapitre },
   { id:81, label:"Une journée au labo (histoire à choix, BTS)", niveau:"COMPTE", icon:"🧪", color:"#0f766e", component: SimulationHistoireLabo },
 ];
-SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; });
+SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
 
 // Menus de l'en-tête, de gauche à droite (les simulations de chaque niveau viennent de src/chapitres.js)
 const MENUS_ENTETE = [

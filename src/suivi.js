@@ -128,6 +128,7 @@ export function useSuivi(cle, reussi) {
 let modeSim = null;
 const abonnes = new Set();
 const fixerMode = m => { if (m !== modeSim) { modeSim = m; abonnes.forEach(f => f()); } };
+export const simsCachees = new Set();   // pages sans parcours guidé (Mon compte, page d'un chapitre, Mes fiches…), remplie par App
 export const nomsSim = {};     // id → titre, rempli par App (pour l'affichage)
 
 // ── Mode d'ouverture d'une simulation (selon l'historique de l'élève dans ce navigateur) ──
