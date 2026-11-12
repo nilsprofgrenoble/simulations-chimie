@@ -5,6 +5,8 @@ import { suiviClasse } from "../devoirs";
 import { agreger, formatDuree, formatDate } from "./Compte";
 import { ACCENT, ACCENT_CLAIR } from "../theme";
 import { estSimulation, estDefi, tempsParSimulation } from "../suivi";
+import { rest } from "../serveur";
+import { signauxSuspects } from "../classement";
 
 // Vue « Élèves » du suivi professeur : une carte par élève, dans l'ordre
 // temps passé sur le site → devoirs faits → dernière activité ; le détail (exercices, défis, essais…) se déplie.
@@ -20,6 +22,24 @@ const TRIS = [['temps', 'Temps passé'], ['devoirs', 'Devoirs faits'], ['activit
 
 export function ElevesProf({ classe, eleves, lignes, exos, defis, etq, proprio, onReinitialiser, onSupprimer, onApercu }) {
   const [devoirs, setDevoirs] = useState(null), [tri, setTri] = useState('temps'), [ouvert, setOuvert] = useState(null);
+  const [classement, setClassement] = useState(null), [msgClassement, setMsgClassement] = useState('');   // user_id → { classement, exclu } (null : script SQL 13 pas encore exécuté)
+  useEffect(() => {
+    let vivant = true;
+    (async () => {
+      let r;
+      try { r = await rest(`pseudos?select=user_id,classement,exclu&classe_id=eq.${classe.id}`); }
+      catch { try { r = (await rest(`pseudos?select=user_id,classement&classe_id=eq.${classe.id}`)).map(x => ({ ...x, exclu: false })); } catch { r = null; } }
+      if (vivant) setClassement(r ? new Map(r.map(x => [x.user_id, { classement: !!x.classement, exclu: !!x.exclu }])) : null);
+    })();
+    return () => { vivant = false; };
+  }, [classe.id]);
+  const retirer = async (userId, retirerDuClassement) => {
+    setMsgClassement('');
+    try {
+      await rest('rpc/exclure_du_classement', { method: 'POST', corps: { eleve: userId, retirer: retirerDuClassement } });
+      setClassement(m => new Map(m).set(userId, { ...(m?.get(userId) || { classement: true }), exclu: retirerDuClassement }));
+    } catch { setMsgClassement('Impossible de modifier le classement pour le moment : le script SQL 14 a-t-il été exécuté dans Supabase ?'); }
+  };
   useEffect(() => {
     let vivant = true;
     lireDevoirs(classe.id).then(r => { if (vivant) setDevoirs(r.dispo ? r.liste : []); }).catch(() => { if (vivant) setDevoirs([]); });
@@ -38,10 +58,11 @@ export function ElevesProf({ classe, eleves, lignes, exos, defis, etq, proprio, 
       const defisL = [...agreger(toutes.filter(l => estDefi(l.cle))).values()];
       const mesDevoirs = suivis.map(s => s.parEleve.find(x => x.eleve.user_id === e.user_id)).filter(Boolean);
       const sims = tempsParSimulation(toutes), tExo = exosL.reduce((t, a) => t + a.duree, 0), tDefi = defisL.reduce((t, a) => t + a.duree, 0);
-      return { e, temps, sims, tExo, tDefi, der: der || null, j: jours(der), exosL, defisL, detail: [...agreger(toutes.filter(l => !estSimulation(l.cle))).values()],
+      const detail = [...agreger(toutes.filter(l => !estSimulation(l.cle))).values()];
+      return { e, temps, sims, tExo, tDefi, der: der || null, j: jours(der), exosL, defisL, detail, signaux: signauxSuspects(detail, etq),
         devFaits: mesDevoirs.filter(x => x.termine).length, devTotal: mesDevoirs.length };
     });
-  }, [eleves, lignes, devoirs]);
+  }, [eleves, lignes, devoirs, etq]);
 
   const trie = useMemo(() => {
     const t = [...lignes_];
@@ -80,6 +101,7 @@ export function ElevesProf({ classe, eleves, lignes, exos, defis, etq, proprio, 
                 <span style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
                   <span style={{ fontWeight: 800, fontSize: 16, color: '#0c1a2e' }}>{x.e.identifiant}</span>
                   <span style={{ fontSize: 12.5, fontWeight: 700, color: s.c }}>● {s.t}</span>
+                  {x.signaux.suspect && <span style={{ fontSize: 12.5, fontWeight: 700, color: '#b91c1c' }}>⚠️ résultats à vérifier</span>}
                   <span aria-hidden style={{ marginLeft: 'auto', color: KIT.txt2, fontSize: 13 }}>{ouv ? '▲' : '▼'}</span>
                 </span>
                 <span style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.2fr', gap: 8, marginTop: 6, alignItems: 'start' }}>
@@ -119,6 +141,20 @@ export function ElevesProf({ classe, eleves, lignes, exos, defis, etq, proprio, 
                           <span style={{ color: KIT.txt2, whiteSpace: 'nowrap' }}>{a.essais} essai{a.essais > 1 ? 's' : ''} · {formatDuree(a.duree)} · {formatDate(a.derniere)}</span>
                         </div>))}
                     </div>)}
+                  {x.signaux.suspect && (
+                    <div role="note" style={{ margin: '10px 0 0', padding: '8px 12px', borderRadius: 12, background: '#fef2f2', border: '1px solid #fecaca', fontSize: 13.5 }}>
+                      ⚠️ <b>À vérifier</b> (un signal, pas une preuve) :{x.signaux.inconnus >= 5 ? ` ${x.signaux.inconnus} exercices réussis absents du catalogue actuel` : ''}{x.signaux.inconnus >= 5 && x.signaux.rapides >= 10 ? ' ;' : ''}{x.signaux.rapides >= 10 ? ` ${x.signaux.rapides} exercices réussis en moins de 10 secondes` : ''}.
+                    </div>)}
+                  {classement && (() => {
+                    const c = classement.get(x.e.user_id);
+                    return (
+                      <div data-classement-eleve style={{ margin: '10px 0 0', padding: '8px 12px', borderRadius: 12, background: '#f8fafc', border: `1px solid ${KIT.bord}`, fontSize: 13.5, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                        <span>🏅 <b>Classement public</b> : {!c ? 'pas de pseudo choisi' : !c.classement ? 'n’apparaît pas (choix de l’élève)' : c.exclu ? 'retiré par vous' : 'apparaît'}</span>
+                        {c?.classement && !c.exclu && <button onClick={() => retirer(x.e.user_id, true)} style={stylePetitBouton(false, '#b91c1c')}>🚫 Retirer du classement</button>}
+                        {c?.classement && c.exclu && <button onClick={() => retirer(x.e.user_id, false)} style={stylePetitBouton(false, '#15803d')}>🏅 Remettre dans le classement</button>}
+                      </div>);
+                  })()}
+                  {msgClassement && <div role="alert" style={{ color: '#b91c1c', fontSize: 13, marginTop: 6 }}>{msgClassement}</div>}
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
                     {onApercu && <button onClick={() => onApercu(x.e.user_id)} style={stylePetitBouton(false, '#1f7a72')}>👁 Voir comme cet élève</button>}
                     <button onClick={() => onReinitialiser(x.e.identifiant)} style={stylePetitBouton(false, '#475569')}>🔑 Nouveau mot de passe</button>

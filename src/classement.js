@@ -25,6 +25,18 @@ export const estMoi = (ligne, moi) => !!moi && ligne.adj === moi.adj && ligne.no
 // Lignes d'une lame, telles que renvoyées par le serveur (jamais plus de 30), tableau vide si rien
 export const lignesDe = (donnees, code) => (Array.isArray(donnees?.lames?.[code]) ? donnees.lames[code] : []);
 
+// Signaux d'alerte pour le professeur (aide au repérage, JAMAIS une preuve) à partir des exercices agrégés d'un élève
+// (detail : [{ cle, reussi, duree }]) et du catalogue actuel (etq : clé → exercice).
+//  • inconnus : exercices « réussis » absents du catalogue actuel (clés inventées, ou très anciens exercices retirés du site) ;
+//  • rapides : exercices réussis en moins de SEUIL_RAPIDE_S secondes de temps actif (lire l'énoncé prend plus que cela).
+export const SEUIL_RAPIDE_S = 10, MIN_INCONNUS = 5, MIN_RAPIDES = 10;
+export function signauxSuspects(detail, etq) {
+  const reussis = (detail || []).filter(a => a.reussi);
+  const inconnus = reussis.filter(a => !etq[a.cle]).length;
+  const rapides = reussis.filter(a => etq[a.cle] && (a.duree || 0) < SEUIL_RAPIDE_S).length;
+  return { inconnus, rapides, suspect: inconnus >= MIN_INCONNUS || rapides >= MIN_RAPIDES };
+}
+
 // Lundi de la semaine en cours, pour l'affichage (« depuis lundi 9 novembre »)
 export const jourLundi = donnees => {
   const d = donnees?.lundi ? new Date(donnees.lundi) : null;

@@ -164,5 +164,14 @@ Un élève connecté qui commence un parcours guidé à la maison le retrouve au
 4. Le classement est la page `?sim=104` (lien « 🏅 Classement » en bas de chaque page), ouverte à tous sans compte. Quatre lames : étoiles, cette semaine (remise à zéro chaque lundi), défis, régularité.
 
 Ce qui est public pour un élève qui a coché : son pseudo, le nom de l'établissement, le nom de la classe et ses scores. Jamais d'identifiant, de nom ni d'adresse.
-Pour retirer quelqu'un tout de suite : effacer l'établissement de sa classe (plus personne de la classe n'apparaît), ou supprimer son compte.
+Pour retirer un élève : Suivi professeur → Élèves → ouvrir sa carte → « 🚫 Retirer du classement » (voir l'étape 27). Pour retirer toute une classe : effacer son établissement.
 Les scores sont calculés par le serveur à partir des mêmes lignes « activites » que le carnet, mais ces lignes sont envoyées par le navigateur de l'élève : un élève très débrouillard pourrait les falsifier.
+
+## Classement public : anti-triche (étape 27, après un audit de sécurité)
+
+1. **SQL** : SQL Editor → New snippet → coller `14-classement-durci.sql` → **Run** (après le 13). Le résultat doit afficher trois lignes : `cles_valides`, `exclu` puis `classement_public`. Sans risque, peut être relancé.
+2. **Ouvrir « Suivi professeur » une fois** avec ton compte : le site remplit tout seul la liste des exercices valides (898 clés : 731 exercices et 167 défis). Tant que ce n'est pas fait, le classement reste vide. Ensuite, la liste se met à jour toute seule à chaque ouverture du Suivi professeur (un nouvel exercice ne compte dans le classement qu'après cette ouverture).
+3. **Ce que ça change** : le classement ne compte que les exercices qui existent vraiment ; au plus 50 exercices comptent par élève et par jour ; le classement se recalcule au plus une fois par minute ; un professeur peut retirer un élève (bouton dans sa carte, dans Suivi professeur → Élèves), qui en est informé dans son espace.
+4. **Signal « ⚠️ résultats à vérifier »** dans la carte d'un élève : au moins 5 exercices « réussis » absents du catalogue, ou au moins 10 réussites en moins de 10 secondes. C'est un signal, pas une preuve (un exercice très ancien, retiré du site depuis, peut aussi s'afficher ainsi).
+5. **Limite qui reste** : les réponses sont corrigées dans le navigateur de l'élève, le serveur ne peut pas les revérifier. Un élève qui fabrique lui-même de fausses réussites pour de vrais exercices peut gagner jusqu'à 150 étoiles par jour ; le signal ci-dessus et le bouton de retrait servent à cela.
+
