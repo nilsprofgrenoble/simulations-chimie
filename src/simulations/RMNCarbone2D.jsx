@@ -196,6 +196,15 @@ export function SimulationRMNC2D() {
   const voir = o => { if (o.mol) setMolId(o.mol); setVue(o.vue ?? 'c13'); setSel(o.sel ?? null); setCorrige(!!o.corrige); };
   const ETAPES = [
     { id: 'principe', titre: 'Le carbone 13 : un spectre simple', depart: () => voir({ mol: 'ethoxyethane', corrige: false }),
+      retenirTitre: 'À RETENIR : LE SPECTRE DU CARBONE 13',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Seul l’isotope ¹³C (1,1 % des carbones) est actif. Spectre <strong>découplé du proton</strong> : <strong>un singulet par carbone (ou groupe de carbones équivalents)</strong>.</li>
+          <li>δC de <strong>0 à 220 ppm</strong>, bien plus étendu qu’en ¹H.</li>
+          <li><strong>Pas d’intégration</strong> : la hauteur ne compte pas les carbones. Les carbones sans H (C=O, C aromatiques substitués) donnent des signaux bien plus petits.</li>
+          <li>Nombre de signaux = nombre de types de carbones non équivalents (la symétrie réduit leur nombre).</li>
+        </ul>
+      </>,
       texte: <>Seul l’isotope ¹³C (1,1 % des carbones) est actif en RMN. Dans le spectre ¹³C <strong>découplé du proton</strong> (le mode usuel), chaque carbone ou groupe de carbones équivalents donne <strong>un seul signal : un singulet</strong>, sans multiplicité. Le déplacement chimique δC s’étend de 0 à 220 ppm (bien plus que pour ¹H).
         <ExempleResolu>Éthoxyéthane CH₃–CH₂–O–CH₂–CH₃ : les deux CH₃ sont équivalents (symétrie), les deux CH₂ aussi. Deux types de carbone, donc <strong>deux signaux</strong>.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Combien de signaux dans le spectre ¹³C de l’éthoxyéthane ?', options: ['1', '2', '3', '4'], bonne: 1, expl: 'Quatre carbones, mais équivalents deux à deux par symétrie : 2 signaux.', indice: "Un signal ¹³C par carbone non équivalent. Écris la molécule CH₃CH₂–O–CH₂CH₃ et repère ses symétries." } },
@@ -203,6 +212,15 @@ export function SimulationRMNC2D() {
       texte: <>En ¹³C, <strong>on n’intègre pas</strong> : la hauteur d’un signal n’est pas proportionnelle au nombre de carbones. Les carbones qui portent des H sont renforcés (effet NOE du découplage) ; les carbones <strong>sans H</strong> (C=O, carbones aromatiques substitués) donnent des signaux bien plus petits. Regardez le C=O de l’éthanoate d’éthyle (n° 1).</>,
       tache: { type: 'qcm', q: 'Pourquoi le signal du C=O est-il bien plus petit que les autres ?', options: ['il ne porte pas de H : pas de renforcement par effet NOE, relaxation lente', 'il y a un seul C=O dans la molécule', 'son δC est trop élevé', 'le carbone C=O ne résonne pas'], bonne: 0, expl: 'Même avec un seul carbone de chaque sorte, les signaux sans H sont plus faibles. Le nombre de carbones ne se lit donc pas sur la hauteur.', indice: "L’effet NOE renforce le signal des carbones qui portent des H. Le carbone du C=O en porte-t-il ? Que devient alors son intensité ?" } },
     { id: 'domaines', titre: 'Les domaines de déplacement chimique', depart: () => voir({ mol: 'propanal', corrige: false }),
+      retenirTitre: 'À RETENIR : LES DOMAINES DE δC',
+      retenir: <>
+        <svg viewBox="0 0 400 130" role="img" aria-label="Axe du déplacement chimique du carbone 13 de 220 à 0 ppm, découpé en quatre domaines : de 160 à 220 les carbonyles C=O, de 100 à 160 les carbones C=C et aromatiques, de 50 à 100 les carbones liés à O ou N, de 0 à 50 les carbones alkyles" style={{ width: '100%', maxWidth: 400, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+<rect x="20.0" y="30" width="98.2" height="50" fill="#e0f2fe" stroke="#334155" strokeWidth="1.2" /><text x="69.1" y="60" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">C=O</text><rect x="118.2" y="30" width="98.2" height="50" fill="#fef3c7" stroke="#334155" strokeWidth="1.2" /><text x="167.3" y="52" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">C=C,</text><text x="167.3" y="66" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">aromatique</text><rect x="216.4" y="30" width="81.8" height="50" fill="#dcfce7" stroke="#334155" strokeWidth="1.2" /><text x="257.3" y="60" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">C–O, C–N</text><rect x="298.2" y="30" width="81.8" height="50" fill="#f3f4f6" stroke="#334155" strokeWidth="1.2" /><text x="339.1" y="60" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">alkyle</text><line x1="20.0" y1="80" x2="20.0" y2="88" stroke="#334155" strokeWidth="1.5" /><text x="20.0" y="102" textAnchor="middle" fontSize="12" fill="#334155">220</text><line x1="118.2" y1="80" x2="118.2" y2="88" stroke="#334155" strokeWidth="1.5" /><text x="118.2" y="102" textAnchor="middle" fontSize="12" fill="#334155">160</text><line x1="216.4" y1="80" x2="216.4" y2="88" stroke="#334155" strokeWidth="1.5" /><text x="216.4" y="102" textAnchor="middle" fontSize="12" fill="#334155">100</text><line x1="298.2" y1="80" x2="298.2" y2="88" stroke="#334155" strokeWidth="1.5" /><text x="298.2" y="102" textAnchor="middle" fontSize="12" fill="#334155">50</text><line x1="380.0" y1="80" x2="380.0" y2="88" stroke="#334155" strokeWidth="1.5" /><text x="380.0" y="102" textAnchor="middle" fontSize="12" fill="#334155">0</text><text x="200" y="122" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">δC (ppm)</text><text x="20" y="20" fontSize="11" fill="#334155">plus déblindé</text><text x="380" y="20" textAnchor="end" fontSize="11" fill="#334155">plus blindé</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Plus un carbone est lié à des atomes électronégatifs ou appauvri en électrons, plus δC est grand.</li>
+        </ul>
+      </>,
       texte: <>Le spectre est découpé en quatre domaines (bandes colorées) : <strong>160–220</strong> : C=O ; <strong>100–160</strong> : C=C et aromatiques ; <strong>50–100</strong> : C sp³ lié à O ou N ; <strong>0–50</strong> : C sp³ alkyle (ou halogéné). Plus un carbone est lié à des atomes électronégatifs ou appauvri en électrons, plus δC est grand.</>,
       tache: { type: 'action', ok: enGuide && molId === 'propanal' && sel === 1, consigne: 'Cliquez sur le signal le plus déblindé du propanal (carbone n° 1) et lisez son domaine dans le tableau.' } },
     { id: 'domaines2', titre: 'Attribuer un signal avec les domaines', depart: () => voir({ mol: 'acetateethyle', corrige: true }),
@@ -230,6 +248,20 @@ export function SimulationRMNC2D() {
       texte: <>Le butanoate d’éthyle a deux CH₃ aux δC voisins (13,7 et 14,2 ppm) : impossible de les distinguer en ¹³C seul. La HSQC les sépare grâce à leurs H : l’un à δH = 0,95 ppm, l’autre à 1,26 ppm.</>,
       tache: { type: 'qcm', q: 'Quel carbone porte les H du CH₃ à δH = 0,95 ppm ?', options: ['δC = 13,7 ppm', 'δC = 14,2 ppm', 'δC = 18,5 ppm', 'δC = 60,2 ppm'], bonne: 0, expl: 'La tache à (0,95 ; 13,7) : c’est le CH₃ du groupe butanoyle.', indice: "Cherche la tache HSQC dont la coordonnée en δH vaut 0,95 ppm et lis la coordonnée en δC." } },
     { id: 'cosy', titre: 'COSY : quels H sont voisins ?', depart: () => voir({ mol: 'bromobutane', vue: 'cosy', corrige: false }),
+      retenirTitre: 'À RETENIR : HSQC ET COSY',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Carte</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Axes</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Lecture</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>HSQC</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>δH (abscisse), δC (ordonnée)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>tache (δH ; δC) : le carbone à δC <strong>porte directement</strong> les H à δH ; pas de tache pour un carbone sans H</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>COSY</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>δH sur les deux axes</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>diagonale = spectre ¹H ; tache hors diagonale (δ₁ ; δ₂) : H <strong>couplés</strong> (carbones voisins, ³J) ; carte symétrique</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>HSQC : lève une ambiguïté en ¹³C (deux CH₃ de δC voisins, séparés par leurs δH).</li>
+          <li>COSY : enchaîner les groupes voisins le long d’une chaîne ; chaque couple de signaux couplés compte une seule fois.</li>
+        </ul>
+      </>,
       texte: <>La carte <strong>COSY</strong> a le même axe δH en abscisse et en ordonnée. Les taches de la <strong>diagonale</strong> reproduisent le spectre ¹H. Une tache <strong>hors diagonale</strong> en (δ₁ ; δ₂) montre que les H des signaux à δ₁ et δ₂ sont <strong>couplés</strong> (³J : carbones voisins). La carte est symétrique par rapport à la diagonale.</>,
       tache: { type: 'qcm', q: 'Une tache hors diagonale en (δ₁ ; δ₂) indique que :', options: ['les H de ces deux signaux sont couplés (carbones voisins)', 'ces deux signaux ont le même δ', 'ces H sont portés par le même carbone', 'ces deux signaux ont la même intégration'], bonne: 0, expl: 'COSY : corrélation entre H qui se couplent à trois liaisons (H–C–C–H).', indice: "Dans une carte COSY, la diagonale relie un signal à lui-même. Que traduit une tache entre deux signaux différents ?" } },
     { id: 'cosy2', titre: 'COSY : parcourir la chaîne', depart: () => voir({ mol: 'bromobutane', vue: 'cosy', corrige: false }),
@@ -243,6 +275,16 @@ export function SimulationRMNC2D() {
       texte: <>Dans le butanoate d’éthyle, deux CH₃ sont des triplets (0,95 et 1,26 ppm) : lequel appartient à l’éthyle ? Suivez la COSY depuis l’OCH₂ (δH = 4,12 ppm) : il n’est couplé qu’à un seul CH₃.</>,
       tache: { type: 'qcm', q: 'Quel CH₃ est celui du groupe éthyle ?', options: ['celui à 1,26 ppm (corrélé avec l’OCH₂ à 4,12)', 'celui à 0,95 ppm', 'celui qui a le plus grand δC', 'le plus intense'], bonne: 0, expl: 'La tache (4,12 ; 1,26) relie l’OCH₂ à son CH₃. Le CH₃ à 0,95 est couplé au CH₂ central (1,65).', indice: "Le CH₃ du groupe éthyle est couplé au CH₂ lié à O. Cherche, dans la carte COSY, le CH₃ corrélé à ce CH₂." } },
     { id: 'methode', titre: 'La démarche complète', depart: () => voir({ mol: 'acetateethyle', vue: 'c13', corrige: true }),
+      retenirTitre: 'À RETENIR : LA DÉMARCHE COMPLÈTE',
+      retenir: <>
+        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+          <li><strong>Formule brute</strong> et nombre de signaux ¹³C.</li>
+          <li><strong>Domaines de δC</strong> : type de chaque carbone (C=O, aromatique, C–O, alkyle).</li>
+          <li><strong>HSQC</strong> : associer chaque carbone à ses H.</li>
+          <li><strong>COSY</strong> : enchaîner les groupes voisins.</li>
+          <li><strong>Vérifier</strong> avec le spectre ¹H (intégration, multiplicité).</li>
+        </ol>
+      </>,
       texte: <>Pour retrouver une structure : <strong>1.</strong> formule brute et nombre de signaux ¹³C ; <strong>2.</strong> domaines de δC et type de chaque carbone ; <strong>3.</strong> HSQC pour associer chaque carbone à ses H ; <strong>4.</strong> COSY pour enchaîner les groupes voisins ; <strong>5.</strong> vérifier avec le spectre ¹H (intégration, multiplicité).</>,
       tache: { type: 'qcm', q: 'Quelle carte donne le lien entre un carbone et les H qu’il porte ?', options: ['HSQC', 'COSY', 'le spectre ¹³C seul', 'l’intégration ¹H'], bonne: 0, expl: 'HSQC : C–H directs. COSY : H–H voisins.', indice: "Quelle carte relie un carbone aux H qu’il porte directement (couplage à une liaison) : HSQC ou COSY ?" } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
