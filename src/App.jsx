@@ -446,7 +446,7 @@ export default function App() {
     try {
       const u = new URL(window.location.href);
       if (ex) u.searchParams.set('ex', ex); else u.searchParams.delete('ex');
-      if (id !== 82) u.searchParams.delete('chap');
+      if (id !== 82) { u.searchParams.delete('chap'); u.searchParams.delete('depuis'); }
       if (duDevoir) u.searchParams.set('devoir', '1'); else u.searchParams.delete('devoir');
       window.history.replaceState(null, '', u.toString());
     } catch { /* adresse non modifiable */ }

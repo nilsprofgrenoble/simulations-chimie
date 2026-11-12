@@ -11,6 +11,7 @@ import { useSession, estEleve, estProf, toutLire, rest } from "../serveur";
 import { exosDuChapitre, exosCalcul, prochainExercice, avancementChapitre } from "../chapitre";
 import { NIVEAUX_CHAPITRES, CHAPITRES, chapitresDuNiveau, chapitreDe, chapitresDe, domainesDe, allerChapitre } from "../chapitres";
 import { nomsSim } from "../suivi";
+import { exosDeSim, EXOS_DE_SIM } from "../exosDeSim";
 import { Pic } from "../Pictos";
 import { JeuxCode } from "./JeuxEscape";
 
@@ -116,6 +117,35 @@ function useProgressionEleve() {
 }
 
 // Contenu d'un chapitre : ses simulations, l'exercice conseillé et ses exercices rangés par compétence
+// Exercices en lien avec UNE simulation (arrivée par l'onglet « Exercices » d'une simulation) : l'exercice à faire d'abord, puis la liste courte
+function ExosDeSimulation({ simId, exos, ctx, naviguer }) {
+  const { prog, etoilesSrv, etoilesDe, nbFaits } = ctx;
+  const liste = useMemo(() => exosDeSim(exos, simId), [exos, simId]);
+  const ouvrir = e => naviguer(e.atelier, e.ex);
+  const conseil = liste.length ? prochainExercice(liste, etoilesDe) : null;
+  const nom = nomsSim[simId] || `la simulation ${simId}`;
+  return (
+    <section data-exos-simulation={simId} style={{ margin: '14px 0 10px', padding: '18px 18px', border: `2px solid ${ROSE}`, borderRadius: 26, background: 'white' }}>
+      <button onClick={() => naviguer(simId)} style={{ ...stylePetitBouton, marginBottom: 10 }}>← Retour à la simulation</button>
+      <h3 style={{ margin: '0 0 4px', color: ROSE, fontFamily: TITRE_B, fontSize: 20 }}>Pour continuer après « {nom} »</h3>
+      {liste.length === 0
+        ? <p style={{ fontSize: 14, color: KIT.txt2, lineHeight: 1.5, margin: '6px 0 0' }}>Il n’y a pas encore d’exercice rattaché précisément à cette simulation. Tu peux travailler sur le thème du chapitre, plus bas.</p>
+        : <>
+          <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 10 }}>{liste.length} exercice{liste.length > 1 ? 's' : ''} directement liés à cette simulation · {nbFaits(liste)} réussi{nbFaits(liste) > 1 ? 's' : ''}</div>
+          {conseil && <div data-conseil style={{ ...styleBoite, border: 'none', borderRadius: 22, padding: '14px 16px', background: ROSE, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 800, color: '#ffd68a', letterSpacing: 0.5 }}>{conseil.raison === 'nouveau' ? '👉 COMMENCE PAR' : '👉 POUR VISER LES 3 ÉTOILES'}</div>
+              <div style={{ fontWeight: 800, color: 'white', fontSize: 16, fontFamily: TITRE_B }}>{conseil.exo.comp} · {conseil.exo.titre.replace(/^[^—]*— /, '')}</div>
+            </div>
+            <button onClick={() => ouvrir(conseil.exo)} style={{ background: ORANGE_B, color: '#1b2b3a', border: 'none', borderRadius: 999, padding: '10px 20px', fontWeight: 800, fontSize: 15, cursor: 'pointer' }}>Y aller ▶</button>
+          </div>}
+          <div data-liste-exos-sim style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {["S'APP", 'ANA', 'VAL'].flatMap(code => liste.filter(e => e.comp === code)).map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} />)}
+          </div>
+        </>}
+    </section>);
+}
+
 function DetailChapitre({ c, exos, ctx, naviguer, sansTitre }) {
   const { prog, etoilesSrv, etoilesDe, nbFaits, idsEnCours } = ctx;
   const ouvrir = e => naviguer(e.atelier, e.ex);
@@ -178,6 +208,7 @@ export function SimulationChapitre({ naviguer }) {
   const niveau = c && NIVEAUX_CHAPITRES.find(n => n.key === c.niveau);
   const autres = c ? chapitresDuNiveau(c.niveau).filter(x => x.id !== c.id) : [];
   const aller = id => allerChapitre(naviguer, id);
+  const depuis = (() => { try { const v = parseInt(new URLSearchParams(window.location.search).get('depuis')); return c && c.sims.includes(v) && v in EXOS_DE_SIM ? v : null; } catch { return null; } })();
   const cartes = l => (
     <div data-chapitres style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 10, margin: '8px 0' }}>
       {l.map(x => <CarteChapitre key={x.id} c={x} ouvert={false} enCours={ctx.idsEnCours.includes(x.id)} av={avancementChapitre(exosDuChapitre(exos, x.domaines), ctx.etoilesDe)} onClick={() => aller(x.id)} />)}
@@ -195,7 +226,13 @@ export function SimulationChapitre({ naviguer }) {
             Tout ce qu’il faut pour ce chapitre : les <b>simulations</b> pour comprendre et expérimenter, puis des <b>exercices</b> pour t’entraîner, rangés par compétence
             (<b>s’approprier → analyser → valider</b>). Les exercices de calcul (<b>réaliser</b>) sont en bas de page.
           </p>
-          <DetailChapitre c={c} exos={exos} ctx={ctx} naviguer={naviguer} sansTitre />
+          {depuis ? <>
+            <ExosDeSimulation simId={depuis} exos={exos} ctx={ctx} naviguer={naviguer} />
+            <details open={exosDeSim(exos, depuis).length === 0} style={{ margin: '8px 0' }}>
+              <summary style={{ cursor: 'pointer', fontSize: 15, fontWeight: 800, color: KIT.txt }}>Tous les exercices du chapitre « {c.label} »</summary>
+              <DetailChapitre c={c} exos={exos} ctx={ctx} naviguer={naviguer} sansTitre />
+            </details>
+          </> : <DetailChapitre c={c} exos={exos} ctx={ctx} naviguer={naviguer} sansTitre />}
           {autres.length > 0 && <>
             <h3 style={{ margin: '10px 0 0', color: KIT.txt }}>Les autres chapitres de {niveau?.label}</h3>
             {cartes(autres)}
