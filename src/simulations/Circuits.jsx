@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireNombre } from "../commun";
 import { fr, serie, derivation } from "./elecModele";
 import { BLEU, VERMILLON, VIOLET, GRIS, alea, usePhase } from "./elecOutils";
@@ -110,10 +110,43 @@ export function SimulationCircuits() {
 
   const ETAPES = [
     { id: 'boucle', titre: 'Un circuit, c’est une boucle', depart: () => voir('serie'),
+      retenirTitre: 'À RETENIR : UN CIRCUIT EST UNE BOUCLE',
+      retenir: <>
+        <svg viewBox="0 0 300 150" role="img" aria-label="Circuit en série : une pile et deux résistors R1 et R2 dans une seule boucle ; le courant sort de la borne plus de la pile, parcourt la boucle et revient à la borne moins" style={{ width: '100%', maxWidth: 320, height: 'auto', display: 'block', margin: '6px auto' }}>
+          <polyline points="40,62 40,25 260,25 260,125 40,125 40,86" fill="none" stroke="#0f172a" strokeWidth="2.4" />
+          <rect x="125" y="15" width="70" height="20" fill="#fff" stroke="#0f172a" strokeWidth="2.4" /><text x="160" y="50" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">R₁</text>
+          <rect x="125" y="115" width="70" height="20" fill="#fff" stroke="#0f172a" strokeWidth="2.4" /><text x="160" y="110" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">R₂</text>
+          <line x1="28" y1="62" x2="52" y2="62" stroke="#0f172a" strokeWidth="4" /><line x1="34" y1="86" x2="46" y2="86" stroke="#0f172a" strokeWidth="4" />
+          <text x="62" y="66" fontSize="13" fill="#dc2626" fontWeight="700">+</text><text x="62" y="92" fontSize="13" fill="#1d4ed8" fontWeight="700">−</text><text x="70" y="112" fontSize="11" textAnchor="start" fill="#334155" fontWeight="700">pile</text>
+          <polygon points="95,25 85,20 85,30" fill="#d55e00" /><polygon points="260,78 255,68 265,68" fill="#d55e00" /><polygon points="95,125 105,120 105,130" fill="#d55e00" />
+          <text x="250" y="78" fontSize="12" fill="#c2410c" fontWeight="700" textAnchor="end">I</text><text x="150" y="80" fontSize="10" fill="#c2410c" textAnchor="middle">sens conventionnel du courant</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Un <strong>circuit</strong> est une boucle <strong>fermée</strong> de fils qui relie un <strong>générateur</strong> (la pile) à des <strong>dipôles</strong> (les résistors). Le courant ne circule que si la boucle est fermée.</li>
+          <li><strong>Sens conventionnel</strong> : à l’extérieur de la pile, le courant va de la borne <strong>+</strong> vers la borne <strong>−</strong>.</li>
+          <li>Les points orange de la simulation représentent des charges en mouvement ; leur vitesse n’est qu’indicative.</li>
+          <li><strong>Hypothèses :</strong> pile idéale (tension constante), fils sans résistance, résistors ohmiques, appareils de mesure parfaits, régime continu.</li>
+        </ul>
+      </>,
       texte: <>Un <strong>circuit électrique</strong> est une boucle fermée de <strong>fils</strong> qui relie un <strong>générateur</strong> (ici une pile) à des <strong>dipôles</strong> (ici deux résistors). Les points orange sont des charges électriques en mouvement : elles ne circulent que si la boucle est <strong>fermée</strong>.
         <ExempleResolu>Par convention, le courant sort de la borne <strong>+</strong> de la pile et revient par la borne <strong>−</strong> : c’est le <strong>sens conventionnel</strong> du courant (flèche sur le fil).</ExempleResolu></>,
       tache: { type: 'qcm', q: 'À l’extérieur de la pile, dans quel sens circule le courant (sens conventionnel) ?', options: ['De la borne + vers la borne −', 'De la borne − vers la borne +', 'Dans les deux sens à la fois', 'Il ne circule pas'], bonne: 0, expl: 'Le sens conventionnel va de + vers − à l’extérieur du générateur.', indice: 'Repère sur le schéma la flèche dessinée sur le fil et la borne de la pile d’où elle part : une pile a une borne + et une borne −.' } },
     { id: 'intensite', titre: 'L’intensité du courant', depart: () => voir('serie'),
+      retenirTitre: 'À RETENIR : L’INTENSITÉ DU COURANT',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Grandeur</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Unité</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Mesure</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>intensité I</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>A (1 mA = 0,001 A)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ampèremètre en <strong>série</strong> (dans la boucle)</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>L’intensité I dit « <strong>combien de charges passent par seconde</strong> » dans un fil.</li>
+          <li><strong>Exemple :</strong> E = 6 V, R₁ = 100 Ω, R₂ = 220 Ω : I = 18,8 mA = <strong>0,0188 A</strong> (pour passer de mA à A : ÷ 1 000).</li>
+          <li><strong>En série</strong>, il n’y a qu’une seule boucle : l’intensité est la <strong>même en tout point</strong> (unicité de l’intensité). Si 20 mA traversent R₁, 20 mA traversent R₂.</li>
+          <li>Changer R₁ ou R₂ change I, mais I reste <strong>la même valeur partout</strong> dans la boucle.</li>
+        </ul>
+      </>,
       texte: <>L’<strong>intensité I</strong> du courant dit « combien de charges passent par seconde » dans un fil. Elle s’exprime en <strong>ampères (A)</strong> ; on utilise souvent le milliampère : 1 mA = 0,001 A. On la mesure avec un <strong>ampèremètre</strong> placé <strong>dans</strong> la boucle (en série).
         <ExempleResolu>Ici, avec E = 6 V, R₁ = 100 Ω et R₂ = 220 Ω : I = <strong>18,8 mA</strong> = 0,0188 A.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Un ampèremètre se branche…', options: ['dans la boucle, en série avec le dipôle', 'aux bornes du dipôle, en dérivation', 'n’importe où', 'à côté du circuit'], bonne: 0, expl: 'L’ampèremètre mesure le courant qui le traverse : il doit être dans la boucle.', indice: 'L’intensité est le nombre de charges qui traversent un fil chaque seconde. Pour les compter, l’appareil doit être traversé par ces charges : où faut-il le placer dans la boucle ?' } },
@@ -121,9 +154,35 @@ export function SimulationCircuits() {
       texte: <>Dans un circuit <strong>en série</strong>, il n’y a qu’<strong>une seule boucle</strong>. Le courant n’a aucun chemin de rechange : il est <strong>le même en tout point</strong> (loi d’unicité de l’intensité). Changez R₁ ou R₂ et regardez : l’intensité I change, mais c’est toujours la même valeur partout.</>,
       tache: { type: 'qcm', q: 'Circuit en série : l’intensité qui traverse R₁ vaut 20 mA. Quelle est l’intensité qui traverse R₂ ?', options: ['20 mA', '10 mA', '40 mA', 'On ne peut pas savoir'], bonne: 0, expl: 'Une seule boucle : l’intensité est la même partout, 20 mA.', indice: 'Une seule boucle : les charges n’ont qu’un seul chemin. Peut-il y en avoir plus qui passent par seconde en un point qu’en un autre ?' } },
     { id: 'tension', titre: 'La tension électrique', depart: () => voir('serie'),
+      retenirTitre: 'À RETENIR : LA TENSION ÉLECTRIQUE',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Grandeur</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Unité</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Mesure</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>tension U</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>V (volt)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>voltmètre en <strong>dérivation</strong> (aux bornes du dipôle)</td></tr>
+          </tbody>
+        </table>
+        <Formule><mi>U</mi><mo>=</mo><mi>R</mi><mo>×</mo><mi>I</mi><mspace width="1.5em"/><mtext>(résistor ohmique : U en V, R en Ω, I en A)</mtext></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La <strong>tension</strong> U est la « poussée » qui fait circuler les charges ; elle se mesure <strong>entre deux points</strong> du circuit, sans couper la boucle.</li>
+          <li>On la représente par une <strong>flèche-tension</strong> : E aux bornes de la pile, U₁ aux bornes de R₁, U₂ aux bornes de R₂.</li>
+          <li><strong>Exemple :</strong> I = 18,8 mA = 0,0188 A et R₁ = 100 Ω : U₁ = 100 × 0,0188 = <strong>1,88 V</strong>.</li>
+          <li><strong>Piège :</strong> ampèremètre en série (dans la boucle), voltmètre en dérivation (aux bornes) : ne jamais les inverser.</li>
+        </ul>
+      </>,
       texte: <>La <strong>tension U</strong> mesure la « poussée » qui fait circuler les charges. Elle s’exprime en <strong>volts (V)</strong> et se mesure avec un <strong>voltmètre</strong> branché <strong>aux bornes</strong> du dipôle (en dérivation). On la représente par une <strong>flèche-tension</strong> (en bleu) : ici E aux bornes de la pile, U₁ aux bornes de R₁ et U₂ aux bornes de R₂.</>,
       tache: { type: 'qcm', q: 'Un voltmètre se branche…', options: ['aux bornes du dipôle, en dérivation', 'dans la boucle, en série', 'seulement sur la pile', 'on ne le branche pas'], bonne: 0, expl: 'Le voltmètre compare deux points du circuit : il se place en dérivation, aux bornes du dipôle.', indice: 'Une tension se mesure entre deux points du circuit. Pour la mesurer sans couper la boucle, où faut-il brancher les deux bornes du voltmètre ?' } },
     { id: 'additivite', titre: 'En série : la loi des mailles', depart: () => voir('serie', { maille: 1 }),
+      retenirTitre: 'À RETENIR : LA LOI DES MAILLES (SÉRIE)',
+      retenir: <>
+        <Formule><mi>E</mi><mo>=</mo><msub><mi>U</mi><mn>1</mn></msub><mo>+</mo><msub><mi>U</mi><mn>2</mn></msub><mspace width="1.5em"/><mtext>soit</mtext><mspace width="1.5em"/><msub><mi>U</mi><mn>2</mn></msub><mo>=</mo><mi>E</mi><mo>−</mo><msub><mi>U</mi><mn>1</mn></msub></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Une <strong>maille</strong> est une boucle fermée du circuit. Le long d’une maille, la tension de la pile se <strong>partage</strong> entre les dipôles : <strong>E = U₁ + U₂</strong>. En série, il n’y a qu’une seule maille.</li>
+          <li><strong>Exemple :</strong> E = 9 V et U₁ = 3,5 V : U₂ = 9 − 3,5 = <strong>5,5 V</strong>.</li>
+          <li>Le résistor le plus grand reçoit la <strong>plus grande tension</strong> (R₂ = 220 Ω reçoit 4,12 V, R₁ = 100 Ω reçoit 1,88 V).</li>
+          <li><strong>Vérification :</strong> chaque tension doit être plus petite que E ; les tensions s’additionnent pour donner E, on ne les soustrait pas.</li>
+        </ul>
+      </>,
       texte: <>Une <strong>maille</strong> est une boucle fermée du circuit (en pointillés violets). La <strong>loi des mailles</strong> dit que, le long d’une maille, la tension de la pile se « partage » entre les dipôles : <strong>E = U₁ + U₂</strong>, ou encore E − U₁ − U₂ = 0. Ici il n’y a <strong>qu’une seule maille</strong>. Vérifiez avec les mesures du schéma, pour plusieurs valeurs de R₁ et R₂ : le plus grand résistor reçoit la plus grande tension.
         <ExempleResolu>E = 6 V, U₁ = 1,88 V : U₂ = E − U₁ = 6 − 1,88 = <strong>4,12 V</strong>.</ExempleResolu></>,
       tache: { type: 'num', q: 'E = 9 V et U₁ = 3,5 V (circuit en série). Quelle est la tension U₂ ?', unite: 'V', vrai: 5.5, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[12.5, 'Tu as additionné : les tensions U₁ et U₂ s’additionnent pour donner E, donc U₂ = E − U₁.'], [3.5, 'C’est U₁, la tension du premier résistor. On cherche U₂, celle du deuxième.'], [9, 'C’est E, la tension de la pile. U₂ n’est qu’une partie de E : on retire U₁.']],
@@ -133,6 +192,16 @@ export function SimulationCircuits() {
           'U₂ = 9 − 3,5 = 5,5 V.'], expl: 'U₂ = E − U₁ = 9 − 3,5 = 5,5 V.',
         indice: 'Une seule maille : E = U₁ + U₂. Isole d’abord l’inconnue (U₂ = …), puis remplace par les valeurs. Le résultat doit être plus petit que E.' } },
     { id: 'derivation', titre: 'En dérivation : deux mailles', depart: () => voir('derivation', { maille: 1 }),
+      retenirTitre: 'À RETENIR : DÉRIVATION, MAILLES ET NŒUDS',
+      retenir: <>
+        <Formule><msub><mi>U</mi><mn>1</mn></msub><mo>=</mo><msub><mi>U</mi><mn>2</mn></msub><mo>=</mo><mi>E</mi><mspace width="2em"/><mi>I</mi><mo>=</mo><msub><mi>I</mi><mn>1</mn></msub><mo>+</mo><msub><mi>I</mi><mn>2</mn></msub></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>En <strong>dérivation</strong>, il y a plusieurs chemins : ici <strong>deux mailles</strong> (pile + R₁, pile + R₂). La loi des mailles donne <strong>U₁ = E</strong> et <strong>U₂ = E</strong> : la <strong>tension est la même</strong> aux bornes de chaque branche, quelle que soit la valeur de R.</li>
+          <li>Au <strong>nœud</strong>, le courant de la pile se sépare : <strong>loi des nœuds</strong> I = I₁ + I₂. <strong>Exemple :</strong> I = 120 mA et I₁ = 45 mA : I₂ = 120 − 45 = <strong>75 mA</strong>.</li>
+          <li>Le <strong>plus petit résistor</strong> laisse passer le <strong>plus grand courant</strong> (E = 6 V : I₁ = 60 mA pour 100 Ω, I₂ ≈ 27 mA pour 220 Ω ; I ≈ 87 mA).</li>
+          <li><strong>Piège :</strong> ne pas confondre : série = intensité commune, tensions qui s’additionnent ; dérivation = tension commune, intensités qui s’additionnent.</li>
+        </ul>
+      </>,
       texte: <>Dans un circuit <strong>en dérivation</strong>, il y a <strong>plusieurs chemins</strong> possibles, donc ici <strong>deux mailles</strong> : la maille 1 (pile et R₁) et la maille 2 (pile et R₂). Cliquez sur « maille 1 » puis « maille 2 ». La loi des mailles donne <strong>E = U₁</strong> pour la maille 1 et <strong>E = U₂</strong> pour la maille 2 : <strong>U₁ = U₂ = E</strong>. La tension est la même aux bornes de chaque branche.</>,
       tache: { type: 'qcm', q: 'Deux résistors sont en dérivation sur une pile de 6 V. Quelle est la tension aux bornes de R₂ ?', options: ['6 V', '3 V', '12 V', 'Ça dépend de R₂'], bonne: 0, expl: 'En dérivation, la tension est la même aux bornes de chaque branche : 6 V, quelle que soit la valeur de R₂.', indice: 'Écris la loi des mailles pour la maille formée par la pile et R₂ seulement : que vaut U₂ par rapport à E ? La valeur de R₂ intervient-elle dans cette égalité ?' } },
     { id: 'noeud', titre: 'Aux nœuds : l’intensité se partage', depart: () => voir('derivation'),
@@ -148,10 +217,24 @@ export function SimulationCircuits() {
       texte: <>Essayez : en série, augmentez R₂ (de 100 Ω à 1000 Ω) : l’intensité I <strong>diminue</strong>. En dérivation, diminuer R₂ fait <strong>augmenter</strong> I₂, donc le courant total I débité par la pile augmente aussi, mais I₁ ne change pas.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'serie' && C.R2 >= 470, consigne: 'Dans le circuit en série, choisissez R₂ = 470 Ω ou plus et regardez I.' } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
-      texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li><strong>Série</strong> : une seule maille, <strong>même intensité</strong> partout ; loi des mailles : <strong>E = U₁ + U₂</strong>.</li>
-        <li><strong>Dérivation</strong> : deux mailles, <strong>U₁ = U₂ = E</strong> ; loi des nœuds : <strong>I = I₁ + I₂</strong>.</li>
-        <li>Ampèremètre en <strong>série</strong> (A), voltmètre en <strong>dérivation</strong> (V).</li></ul></ARetenir>, tache: null },
+      retenirTitre: 'À RETENIR : LE BILAN',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}></th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>En série</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>En dérivation</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>mailles</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>intensité</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>même partout</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>I = I₁ + I₂ (nœud)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>tension</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>E = U₁ + U₂</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>U₁ = U₂ = E</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>si R₂ augmente</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>I diminue</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>I₂ diminue, I₁ inchangé</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Ampèremètre en <strong>série</strong> (A), voltmètre en <strong>dérivation</strong> (V). U = R × I pour un résistor.</li>
+          <li><strong>Méthode :</strong> repérer les mailles et les nœuds, écrire la loi qui convient, isoler l’inconnue, calculer (convertir mA en A si besoin), vérifier la cohérence (une partie est plus petite que le tout).</li>
+          <li><strong>Hypothèses :</strong> pile idéale, fils sans résistance, appareils de mesure parfaits, régime continu.</li>
+        </ul>
+      </>,
+      texte: <>Bravo : vous savez utiliser la loi des mailles et la loi des nœuds. Voici le bilan à garder.</>, tache: null },
   ];
   useEffect(() => {
     if (mode !== 'guide') return;
