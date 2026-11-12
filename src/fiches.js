@@ -62,6 +62,13 @@ export function noterFiche({ sim, nomSim, etape, html, texte }) {
 // Une carte n'entre dans la collection qu'une fois le parcours guidé de la simulation TERMINÉ (dernière étape atteinte), pas seulement commencé.
 const CLE_FINI = 'fiches-fini-';
 export const marquerTermine = sim => { try { if (Number.isFinite(sim) && !window.localStorage.getItem(CLE_FINI + sim)) { window.localStorage.setItem(CLE_FINI + sim, String(Date.now())); annoncerFiches(); } } catch { /* ignoré */ } };
+// Avancement le plus loin atteint dans les parcours guidés de la simulation (pour expliquer l'absence de fiche)
+export const noterProgres = (sim, etape, total) => { try {
+  if (!Number.isFinite(sim) || !(total > 0)) return;
+  const cle = 'fiches-prog-' + sim, avant = JSON.parse(window.localStorage.getItem(cle) || 'null');
+  if (!avant || (etape + 1) / total > avant.e / avant.n) window.localStorage.setItem(cle, JSON.stringify({ e: etape + 1, n: total }));
+} catch { /* ignoré */ } };
+export const lireProgres = sim => { try { return JSON.parse(window.localStorage.getItem('fiches-prog-' + sim) || 'null'); } catch { return null; } };
 export const estTermine = sim => { try { return !!window.localStorage.getItem(CLE_FINI + sim); } catch { return false; } };
 
 // ── Schéma de la simulation, joint à sa fiche : le dessin principal de l'écran (SVG, graphique ou canevas), recopié en petite image ──
@@ -142,7 +149,7 @@ export function listerFiches() {
 export const EN_RECOLTE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('recolte');
 export const envoyerRecolte = fiche => { try { window.parent.postMessage({ type: 'fiche-recolte', fiche }, window.location.origin); } catch { /* sans parent : rien à faire */ } };
 export const envoyerFigure = (sim, img) => { try { window.parent.postMessage({ type: 'fiche-figure', sim, img }, window.location.origin); } catch { /* idem */ } };
-export const finRecolte = sim => { try { window.parent.postMessage({ type: 'fiche-recolte-fin', sim, termine: estTermine(sim) }, window.location.origin); } catch { /* idem */ } };
+export const finRecolte = sim => { try { window.parent.postMessage({ type: 'fiche-recolte-fin', sim, termine: estTermine(sim), progres: lireProgres(sim) }, window.location.origin); } catch { /* idem */ } };
 
 export async function recolterFiches(ids, surAvancee) {
   let trouvees = 0;
@@ -154,14 +161,14 @@ export async function recolterFiches(ids, surAvancee) {
       cadre.setAttribute('aria-hidden', 'true'); cadre.tabIndex = -1;
       // dans l'écran mais invisible (opacité 0) : un cadre hors écran ou « hidden » peut être ralenti ou suspendu par certains navigateurs
       cadre.style.cssText = 'position:fixed;right:0;bottom:0;width:1100px;height:900px;border:0;opacity:0;pointer-events:none;z-index:-1';
-      let cartes = 0, termine = false;
+      let cartes = 0, termine = false, progres = null;
       let fin = false;
-      const terminer = () => { if (fin) return; fin = true; bilan.push({ sim: ids[i], termine, cartes, delai: !termine && !cartes }); window.removeEventListener('message', ecouter); clearTimeout(garde); cadre.remove(); fini(); };
+      const terminer = () => { if (fin) return; fin = true; bilan.push({ sim: ids[i], termine, cartes, progres, delai: !termine && !cartes }); window.removeEventListener('message', ecouter); clearTimeout(garde); cadre.remove(); fini(); };
       const ecouter = e => {
         if (e.origin !== window.location.origin || e.source !== cadre.contentWindow || !e.data) return;
         if (e.data.type === 'fiche-recolte' && e.data.fiche) { if (noterFiche(e.data.fiche)) { trouvees++; cartes++; } }
         else if (e.data.type === 'fiche-figure') { noterFigure(Number(e.data.sim), e.data.img); }
-        else if (e.data.type === 'fiche-recolte-fin') { termine = !!e.data.termine; terminer(); }
+        else if (e.data.type === 'fiche-recolte-fin') { termine = !!e.data.termine; progres = e.data.progres || null; terminer(); }
       };
       const garde = setTimeout(terminer, 45000);
       window.addEventListener('message', ecouter);

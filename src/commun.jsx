@@ -3,7 +3,7 @@ import { compter } from "./stats";
 import { Pic, Emo } from "./Pictos";
 import { missionEnCours } from "./mission";
 import { chapitresDeSim, ouvrirExercicesDeSim, ouvrirFiches } from "./chapitres";
-import { noterFiche, EN_RECOLTE, envoyerRecolte, envoyerFigure, estTermine, marquerTermine, capturerFigure, noterFigure, aFigure } from "./fiches";
+import { noterFiche, EN_RECOLTE, envoyerRecolte, envoyerFigure, estTermine, marquerTermine, noterProgres, capturerFigure, noterFigure, aFigure } from "./fiches";
 import { nomsSim } from "./suivi";
 import { enregistrer, noterModification, surChangementServeur } from "./etatsParcours";
 
@@ -277,6 +277,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
   const derniere = etape >= etapes.length - 1;
   useEffect(() => { if (derniere && !etat.fini) setEtat(e => (e.fini ? e : { ...e, fini: true })); }, [derniere, etat.fini, setEtat]);
   // Parcours terminé : la simulation entre dans « Mes fiches » (cartes « À retenir » de toutes ses étapes) ; son schéma principal est gardé pour la fiche
+  useEffect(() => { noterProgres(parseInt(new URLSearchParams(window.location.search).get('sim')), etape, etapes.length); }, [etape, etapes.length]);   // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!etat.fini) return undefined;
     const sim = parseInt(new URLSearchParams(window.location.search).get('sim'));

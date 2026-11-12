@@ -144,7 +144,7 @@ export function SimulationFiches({ naviguer }) {
           <details data-bilan-recolte style={{ margin: '0 0 12px', fontSize: 13.5, color: KIT.txt2 }}>
             <summary style={{ cursor: 'pointer' }}>{sans.length} simulation{sans.length > 1 ? 's' : ''} sans fiche : pourquoi ?</summary>
             <ul style={{ margin: '4px 0', paddingLeft: 18, lineHeight: 1.5 }}>
-              {sans.map(b => <li key={b.sim}><b>{nomsSim[b.sim] || `Simulation ${b.sim}`}</b> : {b.termine ? 'parcours terminé, mais cette simulation n’a pas encore de carte « À retenir »' : 'parcours guidé non terminé (il faut aller jusqu’au bilan) ou simulation sans parcours guidé'}</li>)}
+              {sans.map(b => <li key={b.sim}><b>{nomsSim[b.sim] || `Simulation ${b.sim}`}</b> : {b.termine ? 'parcours terminé, mais cette simulation n’a pas encore de carte « À retenir »' : (b.progres ? `parcours guidé non terminé : étape ${b.progres.e} sur ${b.progres.n} (il faut aller jusqu’au bilan)` : 'parcours guidé jamais ouvert sur cet appareil (ou simulation sans parcours guidé)')}</li>)}
             </ul>
           </details>) : null;
       })()}
