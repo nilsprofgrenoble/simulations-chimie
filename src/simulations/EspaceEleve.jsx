@@ -7,14 +7,16 @@ import { PROFIL_PAR_ETAPES, etapeEleve, badgesVisibles, prochaineSimulation, pro
 import { Carnet, Anneau } from "./Carnet";
 import { DevoirsEleve, useDevoirs } from "./DevoirsEleve";
 import { VieDeClasse } from "./VieDeClasse";
-import { MonClassement } from "./MonClassement";
+import { MonPseudo } from "./MonPseudo";
 import { ACCENT, ACCENT_CLAIR, FOND_BLOC, TEXTE, TEXTE2, BORDURE } from "../theme";
 import { Pic } from "../Pictos";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  L'ESPACE ÉLÈVE (« Mon profil »), par étapes : voir ../profil.js pour les règles.
 //  apercu : { devoirs, classe } = données fictives (aperçu élève du professeur) : rien n'est lu ni écrit sur le serveur.
-//  pied : fonction (étape) → contenu ajouté tout en bas (détail des résultats).
+//  pied : fonction (étape) → contenu ajouté en bas de l'onglet « Mes progrès » (détail des résultats) ;
+//  fiches : tuile « Mes fiches de révision » (onglet « Aujourd'hui ») ; reglages : contenu de l'onglet « Mon compte » (identité, mot de passe, déconnexion).
+//  Quatre onglets : Aujourd'hui · Mes progrès · Ma classe · Mon compte.
 // ═══════════════════════════════════════════════════════════════════════════
 const css = `
   .ee-profil { border-radius: 28px; padding: 26px; background: #0b4f94; color: #fff; display: flex; gap: 22px; align-items: center; flex-wrap: wrap; text-align: left; }
@@ -41,6 +43,14 @@ const css = `
   .ee-repli > summary::after { content: '▾'; margin-left: auto; color: ${TEXTE2}; transition: transform .2s; }
   .ee-repli[open] > summary::after { transform: rotate(180deg); }
   .ee-repli[open] { padding-bottom: 16px; }
+  .ee-onglets { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 4px; }
+  .ee-onglet { border: 2px solid #cbd5e1; background: #fff; color: #0c1a2e; border-radius: 999px; min-height: 44px; padding: 8px 18px; font: 800 15px Inter, system-ui, sans-serif; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+  .ee-onglet:hover { border-color: #0b4f94; }
+  .ee-onglet[aria-selected="true"] { background: #f5a31a; border-color: #f5a31a; color: #3a2500; }
+  .ee-onglet:focus-visible { outline: 3px solid #0b4f94; outline-offset: 2px; }
+  .ee-panneau { margin-top: 14px; display: flex; flex-direction: column; gap: 18px; text-align: left; }
+  .ee-panneau > section, .ee-panneau > div { margin-top: 0; }
+  @media (max-width: 480px) { .ee-onglet { padding: 8px 14px; font-size: 14px; } }
   @media (prefers-reduced-motion: reduce) { .ee-barre > i { transition: none; } }
 `;
 
@@ -112,11 +122,12 @@ function Tuiles({ A, lignes }) {
     </div>);
 }
 
-export function EspaceEleve({ lignes, naviguer, apercu, pied }) {
+export function EspaceEleve({ lignes, naviguer, apercu, pied, fiches, reglages }) {
   const items = useMemo(() => [...tousLesExercices(), ...etiquettesDefis().map(d => ({ cle: d.cle, comp: 'DÉFI', titre: d.titre, sim: d.sim }))], []);
   const A = useMemo(() => analyser(items, lignes), [items, lignes]);
   const devoirs = useDevoirs(apercu?.devoirs);
   const etape = etapeEleve(A, lignes);
+  const [onglet, setOnglet] = useState('aujourdhui'), [vPseudo, setVPseudo] = useState(0);
   const prochaine = useMemo(() => prochaineSimulation(devoirs, lignes, trierPourEleve), [devoirs, lignes]);
   const prochaines = useMemo(() => prochainesSimulations(devoirs, lignes, trierPourEleve), [devoirs, lignes]);
 
@@ -125,53 +136,81 @@ export function EspaceEleve({ lignes, naviguer, apercu, pied }) {
     return (<>
       <DevoirsEleve lignes={lignes} naviguer={naviguer} devoirsListe={devoirs ?? []} />
       <Carnet lignes={lignes} naviguer={naviguer} />
-      <VieDeClasse lignes={lignes} apercu={apercu?.classe} />
-      <MonClassement naviguer={naviguer} apercu={apercu ? { moi: apercu.classe?.moi ?? null } : false} />
-      {pied?.(2)}
+      <VieDeClasse lignes={lignes} apercu={apercu?.classe} rafraichir={vPseudo} />
+      <MonPseudo naviguer={naviguer} apercu={apercu ? { moi: apercu.classe?.moi ?? null } : false} onChange={() => setVPseudo(v => v + 1)} />
+      {pied?.(2)}{reglages}
     </>);
   }
   const avecBadges = badgesVisibles(A, lignes);
   const aDesDevoirs = (devoirs || []).length > 0;
+  const onglets = [
+    { id: 'aujourdhui', label: 'Aujourd’hui', icone: '🏠' },
+    ...(etape > 0 ? [{ id: 'progres', label: 'Mes progrès', icone: '📈' }] : []),
+    { id: 'classe', label: 'Ma classe', icone: '👥' },
+    ...(reglages ? [{ id: 'reglages', label: 'Mon compte', icone: '⚙️' }] : []),
+  ];
+  const actif = onglets.some(o => o.id === onglet) ? onglet : 'aujourdhui';
+  const clavier = e => {
+    const k = onglets.findIndex(o => o.id === actif), pas = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+    if (!pas) return;
+    e.preventDefault();
+    const suivant = onglets[(k + pas + onglets.length) % onglets.length];
+    setOnglet(suivant.id);
+    document.getElementById(`ee-onglet-${suivant.id}`)?.focus();
+  };
   return (
     <div data-espace-eleve data-etape={etape}>
       <style>{css}</style>
       <BlocProfil A={A} etape={etape} naviguer={naviguer} prochaine={prochaine} prochaines={prochaines} apercu={!!apercu} />
-      {etape > 0 && (
-        <>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', margin: '12px 0 0' }}>
-            <button className="ee-lien" onClick={() => naviguer(38)}>Compétences →</button>
-            <button className="ee-lien" onClick={() => naviguer(prochaine ? Number(prochaine.sim) : 0)}>Simulations →</button>
-          </div>
-        </>)}
 
-      {/* 1. Ma classe : étape 0, une simple invitation ; ensuite, les devoirs pas à pas (2 au plus, les autres repliés) */}
-      {etape === 0
-        ? (aDesDevoirs && (
-          <section data-ma-classe-attente style={{ marginTop: 22, textAlign: 'left' }}>
-            <h3 className="ee-h" style={{ margin: '0 0 8px' }}><Pic n="pin"/>Ma classe</h3>
-            <div style={{ border: `1px dashed ${BORDURE}`, borderRadius: 14, padding: '12px 14px', color: TEXTE2, fontSize: 14.5 }}>
-              Ton professeur a préparé des activités pour toi. Elles apparaîtront ici, une étape après l’autre, dès que tu auras terminé ta première simulation.
-            </div>
-          </section>))
-        : <DevoirsEleve lignes={lignes} naviguer={naviguer} devoirsListe={devoirs ?? []} pasAPas max={2} />}
+      <div className="ee-onglets" role="tablist" aria-label="Mon espace" onKeyDown={clavier}>
+        {onglets.map(o => (
+          <button key={o.id} id={`ee-onglet-${o.id}`} type="button" role="tab" className="ee-onglet" aria-selected={actif === o.id} aria-controls={`ee-panneau-${o.id}`}
+            tabIndex={actif === o.id ? 0 : -1} onClick={() => setOnglet(o.id)}><span aria-hidden="true">{o.icone}</span>{o.label}</button>))}
+      </div>
 
-      {/* 2. À revoir (2 cartes au plus) */}
-      <Carnet lignes={lignes} naviguer={naviguer} parties={{ hero: false, vide: false, revoir: true, revoirToujours: etape === 0, revoirMax: 2, objectifs: false, competences: false, badges: false, regularite: false }} />
+      <div className="ee-panneau" id={`ee-panneau-${actif}`} role="tabpanel" aria-labelledby={`ee-onglet-${actif}`}>
+        {actif === 'aujourdhui' && (
+          <>
+            {etape > 0 && (
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button className="ee-lien" onClick={() => naviguer(prochaine ? Number(prochaine.sim) : 0)}>Simulations →</button>
+                <button className="ee-lien" onClick={() => naviguer(38)}>Compétences →</button>
+              </div>)}
+            {fiches}
+            {/* Ma classe : étape 0, une simple invitation ; ensuite, les devoirs pas à pas (2 au plus, les autres repliés) */}
+            {etape === 0
+              ? (aDesDevoirs && (
+                <section data-ma-classe-attente style={{ textAlign: 'left' }}>
+                  <h3 className="ee-h" style={{ margin: '0 0 8px' }}><Pic n="pin"/>Ma classe</h3>
+                  <div style={{ border: `1px dashed ${BORDURE}`, borderRadius: 14, padding: '12px 14px', color: TEXTE2, fontSize: 14.5 }}>
+                    Ton professeur a préparé des activités pour toi. Elles apparaîtront ici, une étape après l’autre, dès que tu auras terminé ta première simulation.
+                  </div>
+                </section>))
+              : <DevoirsEleve lignes={lignes} naviguer={naviguer} devoirsListe={devoirs ?? []} pasAPas max={2} />}
+            <Carnet lignes={lignes} naviguer={naviguer} parties={{ hero: false, vide: false, revoir: true, revoirToujours: etape === 0, revoirMax: 2, objectifs: false, competences: false, badges: false, regularite: false }} />
+          </>)}
 
-      {etape > 0 && <VieDeClasse lignes={lignes} apercu={apercu?.classe} />}
-      <MonClassement naviguer={naviguer} apercu={apercu ? { moi: apercu.classe?.moi ?? null } : false} />
+        {actif === 'progres' && (
+          <>
+            <Tuiles A={A} lignes={lignes} />
+            {etape >= 2 && (
+              <details className="ee-repli" data-repli="objectifs" open><summary><Pic n="target"/>Objectifs et compétences</summary>
+                <Carnet lignes={lignes} naviguer={naviguer} parties={{ hero: false, vide: false, revoir: false, objectifs: true, competences: true, badges: false, regularite: false }} /></details>)}
+            {avecBadges && (
+              <details className="ee-repli" data-repli="badges-regularite" open><summary><Pic n="medal"/>Badges et régularité</summary>
+                <Carnet lignes={lignes} naviguer={naviguer} parties={{ hero: false, vide: false, revoir: false, objectifs: false, competences: false, badges: true, regularite: true }} /></details>)}
+            {pied?.(etape)}
+          </>)}
 
-      {/* 3. Le reste : repliable, pour ne pas noyer l'essentiel */}
-      {etape > 0 && (
-        <div style={{ marginTop: 22, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <details className="ee-repli" data-repli="chiffres"><summary><Pic n="bars"/>Mes chiffres</summary><Tuiles A={A} lignes={lignes} /></details>
-          {etape >= 2 && (
-            <details className="ee-repli" data-repli="objectifs"><summary><Pic n="target"/>Objectifs et compétences</summary>
-              <Carnet lignes={lignes} naviguer={naviguer} parties={{ hero: false, vide: false, revoir: false, objectifs: true, competences: true, badges: false, regularite: false }} /></details>)}
-          {avecBadges && (
-            <details className="ee-repli" data-repli="badges-regularite"><summary><Pic n="medal"/>Badges et régularité</summary>
-              <Carnet lignes={lignes} naviguer={naviguer} parties={{ hero: false, vide: false, revoir: false, objectifs: false, competences: false, badges: true, regularite: true }} /></details>)}
-        </div>)}
-      {pied?.(etape)}
-    </div>);
+        {actif === 'classe' && (
+          <>
+            <MonPseudo naviguer={naviguer} apercu={apercu ? { moi: apercu.classe?.moi ?? null } : false} onChange={() => setVPseudo(v => v + 1)} />
+            <VieDeClasse lignes={lignes} apercu={apercu?.classe} rafraichir={vPseudo} />
+          </>)}
+
+        {actif === 'reglages' && reglages}
+      </div>
+    </div>
+  );
 }
