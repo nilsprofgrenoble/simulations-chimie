@@ -140,3 +140,23 @@ a:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visib
 
 input[type="range"] { accent-color: #0b4f94; }
 input[type="checkbox"], input[type="radio"] { accent-color: #0b4f94; }
+
+/* ── Mes fiches « À retenir » : mise en page des cartes à l'écran et feuille imprimée ── */
+.fiche-corps { font-size: 14px; line-height: 1.5; color: #0f172a; overflow-wrap: anywhere; }
+.fiche-corps svg { max-width: 100%; height: auto; }
+.fiche-corps math { font-size: 1.08em; }
+.fiche-corps > div, .fiche-corps > * { max-width: 100%; }
+.fiches-print { display: none; }
+@media print {
+  body.impression-fiches > *:not(.fiches-print) { display: none !important; }
+  body.impression-fiches .fiches-print { display: block !important; font-family: 'Inter', Arial, sans-serif; color: #000; background: #fff; }
+  @page { size: A4; margin: 12mm; }
+  .fiches-print-entete { display: flex; justify-content: space-between; font-size: 10pt; border-bottom: 1.5px solid #0b4f94; padding-bottom: 4pt; margin-bottom: 8pt; color: #0b4f94; }
+  .fiches-print-groupe h2 { font-size: 13pt; margin: 10pt 0 5pt; color: #0b4f94; break-after: avoid; }
+  .fiches-print-grille { columns: 2; column-gap: 8mm; }
+  .fiches-print-carte { break-inside: avoid; border: 1px solid #9aa9bb; border-left: 4px solid #0b4f94; border-radius: 6px; padding: 5pt 7pt; margin: 0 0 7pt; font-size: 9.5pt; }
+  .fiches-print-titre { font-weight: 800; font-size: 10.5pt; margin-bottom: 3pt; }
+  .fiches-print-titre span { color: #be185d; }
+  .fiche-corps-impr { font-size: 9.5pt; line-height: 1.4; }
+  .fiches-print * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

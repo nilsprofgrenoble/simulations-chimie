@@ -34,6 +34,9 @@ export function surChangementServeur(cle, f) {
   return () => ecouteurs.get(cle)?.delete(f);
 }
 const notifier = cle => ecouteurs.get(cle)?.forEach(f => f());
+// Abonnement global : prévenu quand une synchronisation vient d'apporter des données du compte (ex. la liste des fiches « À retenir »)
+const ecouteursSynchro = new Set();
+export const surSynchro = f => { ecouteursSynchro.add(f); return () => ecouteursSynchro.delete(f); };
 
 // ── État de la synchronisation ──
 let compte = null;         // identifiant du compte dont l'état est chargé (null : pas encore, ou personne)
@@ -123,6 +126,7 @@ async function synchroniser(forcer = false) {
       }
       ecrire(CLE_MAJ, maj);
       compte = uid; pret = true; dernierEchec = 0; dernierePull = Date.now();
+      ecouteursSynchro.forEach(f => f());
       // ce que cet appareil a de plus récent que le compte (ou que le compte n'a pas encore) part au serveur
       for (const [cle, t] of Object.entries(maj)) if (t > 0 && t > (serveur.get(cle) ?? -1)) planifier(cle, 300);
     } catch (e) {

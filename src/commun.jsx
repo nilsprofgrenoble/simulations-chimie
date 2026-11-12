@@ -2,7 +2,9 @@ import { Children, Fragment, cloneElement, isValidElement, useState, useEffect, 
 import { compter } from "./stats";
 import { Pic, Emo } from "./Pictos";
 import { missionEnCours } from "./mission";
-import { chapitresDeSim, ouvrirExercicesDeSim } from "./chapitres";
+import { chapitresDeSim, ouvrirExercicesDeSim, ouvrirFiches } from "./chapitres";
+import { noterFiche } from "./fiches";
+import { nomsSim } from "./suivi";
 import { enregistrer, noterModification, surChangementServeur } from "./etatsParcours";
 
 // ============================================================
@@ -413,11 +415,31 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
 
 
 // Encadré « À RETENIR » : ce que l'élève doit mémoriser (formule, schéma, ordres de grandeur), en quelques lignes très courtes.
-export function ARetenir({ titre = 'À RETENIR', children }) {
+// À son affichage, la carte est rangée dans « Mes fiches » (Mon compte) : l'élève la retrouve, la relit et l'imprime pour réviser.
+export function ARetenir({ titre = 'À RETENIR', children, sansFiche = false }) {
+  const contenu = useRef(null);
+  const [, relire] = useState(0);
+  useEffect(() => {
+    if (sansFiche) return undefined;
+    const t = setTimeout(() => {
+      const el = contenu.current;
+      if (!el) return;
+      const sim = parseInt(new URLSearchParams(window.location.search).get('sim'));
+      const carte = el.closest('[data-retenir]');
+      const zone = carte?.parentElement;
+      const etape = (zone?.querySelector('[data-titre-etape]') || null)?.textContent?.trim() || '';
+      const cle = noterFiche({ sim, nomSim: nomsSim[sim] || '', etape: etape || (typeof titre === 'string' ? titre : ''), html: el.innerHTML, texte: el.textContent });
+      if (cle) relire(n => n + 1);
+    }, 700);
+    return () => clearTimeout(t);
+  });
   return (
     <div data-retenir="1" style={{ background: '#eaf2fb', border: '2px solid #7aa6d6', borderRadius: 10, padding: '8px 12px', color: '#0f172a' }}>
       <div style={{ fontWeight: 800, fontSize: 14, color: '#be123c', letterSpacing: 0.4, marginBottom: 4 }}>{titre} ❤️</div>
-      <div style={{ fontSize: 15, lineHeight: 1.6 }}>{children}</div>
+      <div ref={contenu} style={{ fontSize: 15, lineHeight: 1.6 }}>{children}</div>
+      {!sansFiche && <div data-retenir-rangee="1" style={{ marginTop: 6, fontSize: 12, color: '#475569', textAlign: 'right' }}>
+        <Pic n="clipboard"/>Rangée dans tes fiches · <button type="button" onClick={() => ouvrirFiches()} style={{ background: 'none', border: 'none', padding: 0, color: '#0b4f94', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }}>Mes fiches</button>
+      </div>}
     </div>
   );
 }

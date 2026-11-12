@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { cardStyle, KIT, styleBouton, styleBoite } from "../commun";
 import { useSession, estEleve, estProf, connexion, deconnexion, toutLire, changerMotDePasse } from "../serveur";
+import { listerFiches } from "../fiches";
 import { tousLesExercices } from "./Entrainement";
 import { estSimulation, estDefi, tempsParSimulation, MODES, etiquettesDefis } from "../suivi";
 import { EspaceEleve } from "./EspaceEleve";
@@ -185,6 +186,20 @@ export function TableauTempsSimulations({ lignes, vide = 'Aucun temps enregistr�
     </div>);
 }
 
+function TuileFiches({ naviguer }) {
+  const n = listerFiches().length;
+  return (
+    <button data-tuile-fiches onClick={() => naviguer(102)} style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', textAlign: 'left', margin: '18px 0 0', padding: '14px 16px', borderRadius: 16,
+      border: '1px solid #f3b6cf', background: 'linear-gradient(135deg,#fff5f9,#fdeaf2)', cursor: 'pointer', color: KIT.txt }}>
+      <span aria-hidden="true" style={{ fontSize: 30 }}>📇</span>
+      <span style={{ flex: 1 }}>
+        <b style={{ display: 'block', fontSize: 16.5, color: '#9d174d' }}>Mes fiches « À retenir » ({n})</b>
+        <span style={{ fontSize: 13.5, color: KIT.txt2 }}>{n ? 'Relis tes cartes de cours pour réviser, et imprime celles que tu choisis.' : 'Les cartes « À retenir » que tu rencontres se rangent ici, prêtes à réviser.'}</span>
+      </span>
+      <span aria-hidden="true" style={{ fontSize: 20, color: '#9d174d' }}>▶</span>
+    </button>);
+}
+
 export function SimulationCompte({ naviguer }) {
   const sess = useSession();
   return (
@@ -197,6 +212,7 @@ export function SimulationCompte({ naviguer }) {
             <button onClick={deconnexion} style={{ ...styleBouton(false, '#475569'), fontSize: 13 }}>Se déconnecter</button>
           </div>
           <MesResultats naviguer={naviguer} />
+          <TuileFiches naviguer={naviguer} />
           <div style={{ marginTop: 22 }}><MotDePasse /></div>
         </>)}
       {estProf(sess) && (

@@ -75,3 +75,6 @@ export function allerChapitre(naviguer, id, depuis) {
 let naviguerApp = null;
 export const confierNavigation = f => { naviguerApp = f; };
 export const ouvrirExercicesDeSim = simId => { const c = chapitresDeSim(Number(simId))[0]; if (c && naviguerApp) { allerChapitre(naviguerApp, c.id, Number(simId)); window.scrollTo({ top: 0 }); } };
+// Page « Mes fiches » (cartes « À retenir » collectionnées), cachée du menu : ouverte depuis Mon compte et depuis les cartes elles-mêmes
+export const ID_PAGE_FICHES = 102;
+export const ouvrirFiches = () => { if (naviguerApp) { naviguerApp(ID_PAGE_FICHES); window.scrollTo({ top: 0 }); } };
