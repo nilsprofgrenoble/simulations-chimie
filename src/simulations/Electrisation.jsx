@@ -1,6 +1,6 @@
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { useState, useRef, useEffect } from "react";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, ARetenir, Curseur, LigneMesure, lireProgression, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
@@ -383,6 +383,25 @@ export function SimulationElectrisation() {
       tache: { type: 'qcm', q: 'Avec l’ébonite, après frottement…', options: ['l’ébonite est négative et le tissu positif', 'l’ébonite est positive et le tissu négatif', 'les deux corps sont négatifs'], bonne: 0,
         expl: 'L’ébonite (comme le polypropylène de la paille) gagne des électrons : elle est négative. Le tissu, qui en a cédé, est positif.', indice: "Le verre et l’ébonite ne se chargent pas de la même façon : dans la simulation, compare le sens de passage des électrons." } },
     { id: 'seuls', titre: 'Qui se déplace ?', onglet: 'frottement', focus: [],
+      retenirTitre: 'À RETENIR : ÉLECTRISATION PAR FROTTEMENT',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Corps frotté</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Transfert</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Charge après frottement</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>verre</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>perd des électrons</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>positive</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>ébonite</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>gagne des électrons</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>négative</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>paille (polypropylène)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>gagne des électrons</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>négative</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>tissu</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>l’inverse de la tige</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>de signe opposé à la tige</td></tr>
+          </tbody>
+        </table>
+        <Formule><mi>q</mi><mo>=</mo><mo>±</mo><mi>n</mi><mo>×</mo><mi>e</mi><mspace width="1.5em"/><mi>e</mi><mo>=</mo><mn>1,602</mn><mo>×</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>19</mn></mrow></msup><mtext> C</mtext></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Un objet est <strong>neutre</strong> quand il contient autant de charges + (protons) que de charges − (électrons).</li>
+          <li>Par frottement, <strong>seuls les électrons se déplacent</strong> (les protons restent dans les noyaux) : le corps qui <strong>perd</strong> n électrons porte +n e, celui qui en <strong>gagne</strong> n porte −n e.</li>
+          <li>La <strong>charge totale du système</strong> (tige + tissu) reste <strong>nulle</strong> : rien ne se crée, les électrons changent de corps.</li>
+          <li><strong>Exemple :</strong> une tige qui perd 4 électrons : q = +4e ≈ +6,4 × 10⁻¹⁹ C ; le tissu gagne ces 4 électrons : q = −4e.</li>
+        </ul>
+      </>,
       texte: <>Revoyez les deux frottements.</>,
       tache: { type: 'qcm', q: 'Lors de l’électrisation par frottement (modèle du cours)…', options: ['seuls les électrons se déplacent ; les protons restent fixes', 'seuls les protons se déplacent', 'protons et électrons se déplacent'], bonne: 0,
         expl: 'Les protons sont liés aux noyaux, qui ne quittent pas leur matériau. Seuls les électrons, bien moins liés, passent d’un corps à l’autre.', indice: "Dans un atome, quelles particules sont solidement liées au noyau, et lesquelles peuvent être arrachées par frottement ?" } },
@@ -402,6 +421,22 @@ export function SimulationElectrisation() {
       tache: { type: 'qcm', q: 'La tige en verre (+) et la paille (−)…', options: ['s’attirent', 'se repoussent', 'n’interagissent pas'], bonne: 0,
         expl: 'Deux corps de charges opposées s’attirent. Contrairement à la gravitation, toujours attractive, l’interaction électrostatique peut être attractive ou répulsive.', indice: "Rappelle la règle d’interaction entre deux charges : que se passe-t-il quand elles ont le même signe ? Et quand elles sont de signes opposés ?" } },
     { id: 'recip', titre: 'Deux forces', onglet: 'interaction', focus: ['scene'],
+      retenirTitre: 'À RETENIR : INTERACTION ENTRE CORPS CHARGÉS',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Signes des deux corps</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Interaction</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>+ et +</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>répulsion</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>− et −</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>répulsion</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>+ et −</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>attraction</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Deux corps de <strong>même signe se repoussent</strong>, de <strong>signes opposés s’attirent</strong> (la gravitation, elle, est toujours attractive).</li>
+          <li><strong>Actions réciproques</strong> : F<sub>tige/paille</sub> = −F<sub>paille/tige</sub> (même norme, sens opposés) ; la loi de Coulomb donne cette norme.</li>
+          <li><strong>Exemple :</strong> tige en ébonite (−) et paille (−) : répulsion ; tige en verre (+) et paille (−) : attraction.</li>
+        </ul>
+      </>,
       texte: <>Comme pour la gravitation (simulation « Deux corps en interaction »), l’interaction est modélisée par deux forces. Comparez les deux flèches.</>,
       tache: { type: 'qcm', q: 'La force exercée par la tige sur la paille et celle exercée par la paille sur la tige ont…', options: ['la même norme et des sens opposés', 'des normes différentes : la tige est plus grosse', 'le même sens'], bonne: 0,
         expl: 'Principe des actions réciproques : F(tige/paille) = −F(paille/tige). La loi de Coulomb donne leur norme (voir la simulation sur les deux corps).', indice: "Principe des actions réciproques : que peut-on dire des forces que deux corps exercent l’un sur l’autre ? La taille ou la masse des corps intervient-elle ?" } },
@@ -427,6 +462,28 @@ export function SimulationElectrisation() {
       tache: { type: 'qcm', q: 'La charge totale de la boule est…', options: ['nulle : seule la répartition des charges a changé', 'négative, car la face proche est négative', 'positive, car la tige est positive'], bonne: 0,
         expl: 'On parle d’électrisation par influence : la boule reste neutre au total, mais ses deux faces sont chargées de signes opposés.', indice: "Les électrons se déplacent à l’intérieur de la boule : en entre-t-il ou en sort-il ? Que vaut alors la charge totale ?" } },
     { id: 'attrA', titre: 'Pourquoi une boule neutre est-elle attirée ?', onglet: 'influence', focus: ['scene'],
+      retenirTitre: 'À RETENIR : L’INFLUENCE ÉLECTROSTATIQUE',
+      retenir: <>
+        <svg viewBox="0 0 360 140" role="img" aria-label="Influence : une tige de verre chargée positivement approchée d’une boule d’aluminium neutre attire les électrons libres vers la face proche, négative ; la face éloignée est positive ; la force sur la face proche l’emporte, la boule est attirée" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <rect x="14" y="54" width="96" height="28" rx="5" fill="#fee2e2" stroke="#dc2626" strokeWidth="2" /><text x="62" y="73" textAnchor="middle" fontSize="15" fontWeight="700" fill="#dc2626">+ + + +</text>
+          <text x="62" y="102" textAnchor="middle" fontSize="11" fontWeight="700" fill="#dc2626">tige en verre (+)</text>
+          <line x1="250" y1="6" x2="250" y2="34" stroke="#475569" strokeWidth="1.5" />
+          <circle cx="250" cy="68" r="34" fill="#e2e8f0" stroke="#334155" strokeWidth="2" />
+          <text x="228" y="62" textAnchor="middle" fontSize="16" fontWeight="700" fill="#2563eb">−</text><text x="228" y="82" textAnchor="middle" fontSize="16" fontWeight="700" fill="#2563eb">−</text>
+          <text x="272" y="62" textAnchor="middle" fontSize="16" fontWeight="700" fill="#dc2626">+</text><text x="272" y="82" textAnchor="middle" fontSize="16" fontWeight="700" fill="#dc2626">+</text>
+          <line x1="212" y1="68" x2="150" y2="68" stroke="#d55e00" strokeWidth="3.4" /><polygon points="140,68 152,62 152,74" fill="#d55e00" />
+          <line x1="290" y1="68" x2="312" y2="68" stroke="#0072b2" strokeWidth="2" /><polygon points="320,68 310,63 310,73" fill="#0072b2" />
+          <text x="176" y="58" textAnchor="middle" fontSize="11" fontWeight="700" fill="#d55e00">attraction</text>
+          <text x="316" y="58" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#0072b2">répulsion</text><text x="316" y="88" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#0072b2">(plus faible)</text>
+          <text x="200" y="124" textAnchor="middle" fontSize="11" fill="#334155">boule neutre au total : seule la répartition change</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Dans un <strong>métal</strong>, les électrons libres se déplacent : une tige chargée approchée (<strong>sans contact</strong>) les attire (tige +) ou les repousse (tige −).</li>
+          <li>La boule reste <strong>neutre au total</strong> : seule la <strong>répartition</strong> des charges change (face proche de signe opposé à la tige, face éloignée de même signe).</li>
+          <li>Elle est <strong>attirée</strong> car la force diminue avec la distance : l’attraction sur la face proche l’emporte sur la répulsion sur la face éloignée.</li>
+          <li>Si on éloigne la tige, les charges se répartissent de nouveau uniformément.</li>
+        </ul>
+      </>,
       texte: <>Regardez le fil : la boule est attirée par la tige.</>,
       tache: { type: 'qcm', q: 'Pourquoi la boule neutre est-elle attirée ?', options: ['les charges − de la face proche, plus près de la tige, sont plus attirées que les charges + éloignées ne sont repoussées', 'la boule porte une charge totale négative', 'c’est la force de gravitation de la tige'], bonne: 0,
         expl: 'La force diminue avec la distance : l’attraction exercée sur la face proche (charges −) l’emporte sur la répulsion exercée sur la face éloignée (charges +).', indice: "Compare la force de la tige sur la face proche et sur la face éloignée de la boule : la force électrique dépend de la distance entre les charges." } },
@@ -449,6 +506,15 @@ export function SimulationElectrisation() {
       texte: <>Écartez un peu la tige (au moins 2 cm) et observez le fil.</>,
       tache: { type: 'action', ok: okRepouss, label: 'Tige écartée (≥ 2 cm), boule chargée +', faire: () => setInfl({ tige: 'verre', d: 4, Q: Q_CONTACT }), consigne: 'Boule chargée +, tige à 2 cm ou plus' } },
     { id: 'rep2', titre: 'Après le contact', onglet: 'influence', focus: ['scene'],
+      retenirTitre: 'À RETENIR : LE CONTACT',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Au <strong>contact</strong>, des électrons <strong>passent d’un corps à l’autre</strong> : avec une tige +, ils vont de la boule vers la tige ; avec une tige −, de la tige vers la boule.</li>
+          <li>La boule prend alors une charge <strong>de même signe que la tige</strong> : elle est <strong>repoussée</strong>.</li>
+          <li><strong>Dé-électrisation :</strong> une paille (−) qui touche une tige en verre (+) cède ses électrons en excès à la tige, qui en manquait ; les charges se compensent et la force disparaît.</li>
+          <li><strong>Exemple :</strong> boule qui perd 3 électrons : q = +3e ≈ +4,8 × 10⁻¹⁹ C.</li>
+        </ul>
+      </>,
       texte: <>La boule est maintenant chargée au total.</>,
       tache: { type: 'qcm', q: 'Après le contact, la boule est… par la tige.', options: ['repoussée : elle et la tige portent des charges de même signe', 'attirée, comme avant le contact', 'ni attirée ni repoussée'], bonne: 0,
         expl: 'La boule et la tige sont maintenant toutes deux positives : elles se repoussent. C’est la « violente répulsion » observée dans l’expérience.', indice: "Après le contact, la boule et la tige portent-elles des charges de même signe ou de signes opposés ? Rappelle la règle d’interaction entre charges." } },
@@ -508,6 +574,23 @@ export function SimulationElectrisation() {
       texte: <>Choisissez la tige <strong>en ébonite</strong> (chargée −) et approchez-la lentement jusqu’à ce que les feuilles se referment (vers 3 à 4 cm).</>,
       tache: { type: 'action', ok: okE6, label: 'Tige en ébonite à 3 cm', faire: () => setEle({ tige: 'ebonite', d: 3, Q: Q_ELE }), consigne: 'Feuilles refermées, tige en ébonite' } },
     { id: 'e6q', titre: 'Pourquoi se referment-elles ?', onglet: 'electroscope', focus: ['scene', 'bilan'],
+      retenirTitre: 'À RETENIR : L’ÉLECTROSCOPE',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Situation</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Feuilles</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Explication</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>neutre, tige loin</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>fermées</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>aucune charge nette</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>neutre, tige + proche (sans contact)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ouvertes</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>influence : feuilles +, charge totale nulle ; refermées si la tige s’éloigne</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>après contact avec une tige +</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ouvertes, même tige éloignée</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>chargé + (électrons perdus)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>chargé +, tige − approchée</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>se referment</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>électrons repoussés vers les feuilles</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>chargé +, tige − très proche</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>se rouvrent</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>feuilles négatives (trop d’électrons)</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Les feuilles s’écartent quand elles portent des charges de <strong>même signe</strong> (elles se repoussent).</li>
+          <li><strong>Sans contact</strong> : aucun électron ne quitte l’appareil, l’effet disparaît quand la tige s’éloigne. <strong>Avec contact</strong> : l’électroscope reste chargé.</li>
+        </ul>
+      </>,
       texte: <>La tige négative repousse les électrons libres.</>,
       tache: { type: 'qcm', q: 'Les feuilles se referment parce que…', options: ['les électrons repoussés par la tige − descendent vers les feuilles et compensent leurs charges +', 'la tige en ébonite a neutralisé l’électroscope par contact', 'les feuilles ont perdu leurs protons'], bonne: 0,
         expl: 'Un électroscope chargé + voit ses feuilles se refermer quand on approche une tige −. Si on la rapproche encore, il arrive trop d’électrons : les feuilles se rouvrent, chargées −.', indice: "Les électrons de l’électroscope sont repoussés ou attirés selon le signe de la tige. Se déplacent-ils vers les feuilles ou loin d’elles ? Compare avec la charge des feuilles." } },
@@ -519,13 +602,17 @@ export function SimulationElectrisation() {
       tache: { type: 'qcm', q: 'Les feuilles sont maintenant chargées…', options: ['négativement : trop d’électrons ont été repoussés vers elles', 'positivement, comme l’électroscope', 'elles sont neutres'], bonne: 0,
         expl: 'La charge nette de l’électroscope reste +4 e, mais les feuilles portent un excès d’électrons : les charges + ont été attirées vers la sphère par la tige −.', indice: "Compare le nombre d’électrons sur les feuilles avec ce qu’il faudrait pour qu’elles soient neutres : y en a-t-il trop ou pas assez ?" } },
     { id: 'bravo', titre: 'Bravo !', onglet: 'electroscope', focus: [],
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
-        <li>Un corps est neutre quand il contient autant de charges + que de charges −.</li>
-        <li>On l’électrise en lui faisant gagner ou perdre des électrons ; seuls les électrons se déplacent, les protons restent fixes.</li>
-        <li>Deux corps de même signe se repoussent, de signes opposés s’attirent.</li>
-        <li>Un corps neutre conducteur est attiré par un corps chargé : c’est l’influence (charges séparées, charge totale nulle).</li>
-        <li>Au contact, la boule prend la charge de même signe que la tige : elle est ensuite repoussée.</li>
-        <li>Les feuilles d’un électroscope s’écartent quand elles portent des charges de même signe. Chargé par contact, il le reste ; une tige de signe opposé les rapproche.</li></ul>,
+      retenirTitre: 'À RETENIR : LE BILAN',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Un corps est neutre quand il contient autant de charges + que de charges − ; on l’électrise en lui faisant gagner ou perdre des <strong>électrons</strong> (les protons restent fixes) ; q = ±n × e.</li>
+          <li>Deux corps de même signe se repoussent, de signes opposés s’attirent ; les forces sont réciproques.</li>
+          <li><strong>Influence</strong> (sans contact) : un conducteur neutre est attiré, charge totale nulle. <strong>Contact</strong> : le conducteur prend la charge de même signe que la tige et est repoussé.</li>
+          <li>Les feuilles d’un électroscope s’écartent quand elles portent des charges de même signe ; chargé par contact, il le reste.</li>
+          <li><strong>Méthode :</strong> dire quel corps gagne ou perd des électrons, en déduire les signes, puis attraction ou répulsion.</li>
+          <li><strong>Pièges :</strong> croire que les protons se déplacent ; confondre influence (sans contact) et contact ; neutre ≠ sans charges.</li>
+        </ul>
+      </>,
       texte: <>Vous savez interpréter les expériences d’électrisation. Essayez maintenant les défis.</>, tache: null },
   ];
   const ongletGuide = ETAPES[Math.min(etape, ETAPES.length - 1)].onglet;
