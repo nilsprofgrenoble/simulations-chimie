@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { TabBtn, cardStyle, KIT, Section, styleBoite, CarteParcours, useEtatPersistant, styleBouton, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
+import { TabBtn, cardStyle, KIT, Section, styleBoite, CarteParcours, useEtatPersistant, styleBouton, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche, IndiceDefi, OngletExercices } from "../commun";
 import { Pic } from "../Pictos";
 
 const SIM_ID = 29;
@@ -333,6 +333,7 @@ function ParcoursIEpH({ plotlyReady, changerMode }) {
     <span style={{ display: "flex", gap: 6 }}>
       <button onClick={() => changerMode("explore")} style={styleBouton(true, "#334155")}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode("defi")} style={styleBouton(true, "#0ea5e9")}><Pic n="target"/>Défi</button>
+      <OngletExercices />
     </span>
   );
   return (
@@ -442,6 +443,7 @@ export function SimulationIEpH({ plotlyReady }) {
         <button onClick={() => setMode("guide")} style={styleBouton(mode === "guide", ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>
         <button onClick={() => setMode("explore")} style={styleBouton(mode === "explore", "#334155")}><Pic n="search"/>Exploration libre</button>
         <button onClick={() => setMode("defi")} style={styleBouton(mode === "defi", "#0ea5e9")}><Pic n="target"/>Défi</button>
+        <OngletExercices />
       </div>
       <div style={{ display: mode === "explore" ? "block" : "none" }}><ExplorationIEpH plotlyReady={plotlyReady}/></div>
       {mode === "guide" && <ParcoursIEpH plotlyReady={plotlyReady} changerMode={setMode}/>}

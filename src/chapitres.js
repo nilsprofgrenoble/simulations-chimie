@@ -69,3 +69,8 @@ export function allerChapitre(naviguer, id) {
   try { const u = new URL(window.location.href); u.searchParams.set('chap', id); window.history.replaceState(null, '', u.toString()); } catch { /* adresse non modifiable */ }
   naviguer(ID_PAGE_CHAPITRE);
 }
+
+// La fonction de navigation de l'application, confiée ici pour que les boutons communs (onglet « Exercices ») puissent s'en servir
+let naviguerApp = null;
+export const confierNavigation = f => { naviguerApp = f; };
+export const ouvrirExercicesDeSim = simId => { const c = chapitresDeSim(Number(simId))[0]; if (c && naviguerApp) { allerChapitre(naviguerApp, c.id); window.scrollTo({ top: 0 }); } };

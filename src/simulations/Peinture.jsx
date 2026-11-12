@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { PeintureExploration, AnimationSechageTest } from "./PeintureExploration";
 import { SchemasFilmSec } from "./peintureSchema";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, IndiceDefi } from "../commun";
+  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, IndiceDefi, OngletExercices } from "../commun";
 import { Pic } from "../Pictos";
 
 const SIM_ID = 14;
@@ -464,6 +464,7 @@ export function SimulationPeinture({ plotlyReady }) {
     <span style={{ display: 'flex', gap: 6 }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
+      <OngletExercices />
     </span>
   );
   return (
@@ -479,6 +480,7 @@ export function SimulationPeinture({ plotlyReady }) {
           <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>
           <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}><Pic n="search"/>Exploration libre</button>
           <button onClick={() => changerMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}><Pic n="target"/>Défi</button>
+          <OngletExercices />
         </div>
       </div>
       {enGuide && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>

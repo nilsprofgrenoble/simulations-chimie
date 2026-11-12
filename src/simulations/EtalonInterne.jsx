@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Field, TabBtn, cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices, IndiceDefi } from "../commun";
+import { Field, TabBtn, cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices, IndiceDefi, OngletExercices } from "../commun";
 import { Pic } from "../Pictos";
 
 const SIM_ID = 13;
@@ -1284,6 +1284,7 @@ function ParcoursEtalon({ plotlyReady, changerMode }) {
     <span style={{ display: 'flex', gap: 6 }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
+      <OngletExercices />
     </span>
   );
   const picsEt = [...E.analytes.map((a, i) => ({ nom: a.nom, tr: E.etalon.trAnalytes[i], aire: E.etalon.airesAnalytes[i], color: a.couleur })), { nom: E.eiNom, tr: E.etalon.trEI, aire: E.etalon.aireEI, color: '#888' }];
@@ -1457,6 +1458,7 @@ export function SimulationEtalonnageInterne({ plotlyReady }) {
         <button onClick={() => setMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>
         <button onClick={() => setMode('explore')} style={styleBouton(mode === 'explore', '#334155')}><Pic n="search"/>Exploration libre</button>
         <button onClick={() => setMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}><Pic n="target"/>Défi</button>
+        <OngletExercices />
       </div>
       <div style={{ display: mode === 'explore' ? 'block' : 'none' }}><ExplorationEtalonnage plotlyReady={plotlyReady}/></div>
       {mode === 'guide' && <ParcoursEtalon plotlyReady={plotlyReady} changerMode={setMode}/>}

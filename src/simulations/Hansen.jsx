@@ -2,7 +2,7 @@ import { useSignalerMode, declarerDefis, SuiviDefi, useCompteurDefi, modeOuvertu
 import { useState, useEffect } from "react";
 import { HansenExploration, GraphesHansen, DefinitionRED, DefinitionIndiceEvap } from "./HansenExploration";
 import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, IndiceDefi, Formule, FormuleEnLigne } from "../commun";
+  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, IndiceDefi, Formule, FormuleEnLigne, OngletExercices } from "../commun";
 import { Pic } from "../Pictos";
 
 // Formule de la distance de Hansen en notation classique, sur une ligne :
@@ -442,6 +442,7 @@ export function Simulation4({ plotlyReady }) {
           <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>
           <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}><Pic n="search"/>Exploration libre</button>
           <button onClick={() => changerMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}><Pic n="target"/>Défi</button>
+          <OngletExercices simId={4}/>
         </div>
       </div>
       {enDefi ? <>

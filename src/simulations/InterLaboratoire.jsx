@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices, IndiceDefi, Formule, FormuleEnLigne } from "../commun";
+import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices, IndiceDefi, Formule, FormuleEnLigne, OngletExercices } from "../commun";
 const vf = x => String(x).replace('.', ',');
 import { Pic } from "../Pictos";
 
@@ -1372,6 +1372,7 @@ function ParcoursInterlabo({ changerMode }) {
     <span style={{ display: 'flex', gap: 6 }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
+      <OngletExercices />
     </span>
   );
   return (
@@ -1543,6 +1544,7 @@ export function Simulation9({ plotlyReady }) {
         <button onClick={() => setMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>
         <button onClick={() => setMode('explore')} style={styleBouton(mode === 'explore', '#334155')}><Pic n="search"/>Exploration libre</button>
         <button onClick={() => setMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}><Pic n="target"/>Défi</button>
+        <OngletExercices />
       </div>
       <div style={{ display: mode === 'explore' ? 'block' : 'none' }}>
         <ExplorationInterlabo plotlyReady={plotlyReady} visible={mode === 'explore'}/>

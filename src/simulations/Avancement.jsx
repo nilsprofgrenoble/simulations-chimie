@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, Cadre, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, PanneauHypotheses, IndiceDefi } from "../commun";
+  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, PanneauHypotheses, IndiceDefi, OngletExercices } from "../commun";
 import { Pic } from "../Pictos";
 
 const SIM_ID = 1;
@@ -604,6 +604,7 @@ export function Simulation1() {
     <span style={{ display: 'flex', gap: 6 }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
+      <OngletExercices />
     </span>
   );
   const boutonsModes = (
@@ -611,6 +612,7 @@ export function Simulation1() {
       <button onClick={() => changerMode('guide')} style={styleBouton(mode === 'guide', ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>
       <button onClick={() => changerMode('explore')} style={styleBouton(mode === 'explore', '#334155')}><Pic n="search"/>Exploration libre</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(mode === 'defi', '#0ea5e9')}><Pic n="target"/>Défi</button>
+      <OngletExercices />
     </div>
   );
   const vueManip = mode !== 'explore' || onglet === 'manip';

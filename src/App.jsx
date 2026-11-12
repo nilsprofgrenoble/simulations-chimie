@@ -5,13 +5,12 @@ import { CONTEXTES } from "./contextes";
 import { Pic, Emo, PictosSprite } from "./Pictos";
 import { ToastRecompense } from "./ToastRecompense";
 import { useSession, restaurer, estEleve, estProf } from "./serveur";
-import { chapitresDuNiveau } from "./chapitres";
+import { chapitresDuNiveau, confierNavigation } from "./chapitres";
 import { SuiviTemps, nomsSim } from "./suivi";
 import { ModeParDefaut } from "./ModeParDefaut";
 import CadreMission from "./CadreMission";
 import { missionEnCours } from "./mission";
 import { ProchaineEtape } from "./ProchaineEtape";
-import { ExercicesLies } from "./ExercicesLies";
 import { EnTete } from "./EnTete";
 import { PiedDePage } from "./PiedDePage";
 import { AccueilSite } from "./AccueilSite";
@@ -440,6 +439,7 @@ export default function App() {
   }
 
   // Ferme le menu et navigue
+  confierNavigation(naviguer);
   function naviguer(id, ex, duDevoir) {
     // ex : exercice précis à ouvrir dans un atelier (lu par l'atelier à son ouverture)
     // duDevoir : l'élève vient d'un devoir (l'atelier propose alors « Retour à mon devoir » plutôt que l'exercice suivant)
@@ -538,7 +538,6 @@ export default function App() {
                 {(activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81) && <SuiviTemps simId={activeId} />}
                 {estEleve(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81) && <ProchaineEtape key={`pe${activeId}`} simId={activeId} naviguer={naviguer} />}
                 <div id="zone-simulation"><EnChargement><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></EnChargement></div>
-                {(activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 82) && <ExercicesLies simId={activeId} naviguer={naviguer} />}
                 {activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 ? <ModeParDefaut simId={activeId} cibleId="zone-simulation" /> : null}
               </div>}
         </div>
