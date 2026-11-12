@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { nf, NB } from "./Distillation";
 import { Pic } from "../Pictos";
@@ -258,6 +258,33 @@ export function SimulationMoteurPasAPas({ naviguer }) {
           `La bobine 1 est en haut (${PHI[0]}°) et la bobine 2 à droite (${PHI[1]}°) : le rotor suit le champ, donc il tourne de ${PHI[1]} − ${PHI[0]} = ${PHI[1] - PHI[0]}°.`],
         expl: 'Les bobines sont à 90° l’une de l’autre : le rotor tourne d’un quart de tour. C’est un « pas ».', indice: "Les 4 bobines sont réparties régulièrement autour du rotor. Combien de degrés séparent deux bobines voisines ? (un tour = 360°)" } },
     { id: 'complet', titre: 'La séquence 1 – 2 – 3 – 4', focus: ['schema', 'commandes', 'chrono'],
+      retenirTitre: 'À RETENIR : LE PRINCIPE ET LE PAS COMPLET',
+      retenir: <>
+        <svg viewBox="0 0 440 190" role="img" aria-label="Moteur pas à pas : le stator fixe porte quatre bobines placées à 90 degrés, numérotées 1 en haut, 2 à droite, 3 en bas et 4 à gauche ; le rotor est un aimant dont le pôle nord, rouge, se tourne vers la bobine alimentée, ici la bobine 1" style={{ width: '100%', maxWidth: 440, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <circle cx="180" cy="95" r="62" fill="none" stroke="#94a3b8" strokeWidth="2" strokeDasharray="5 4" />
+          <rect x="158" y="8" width="44" height="22" rx="4" fill="#fde68a" stroke="#d97706" strokeWidth="3" /><text x="180" y="24" textAnchor="middle" fontSize="12" fontWeight="700" fill="#92400e">1</text>
+          <rect x="268" y="84" width="22" height="22" rx="4" fill="#e2e8f0" stroke="#64748b" strokeWidth="1.5" /><text x="279" y="100" textAnchor="middle" fontSize="12" fontWeight="700" fill="#475569">2</text>
+          <rect x="158" y="160" width="44" height="22" rx="4" fill="#e2e8f0" stroke="#64748b" strokeWidth="1.5" /><text x="180" y="176" textAnchor="middle" fontSize="12" fontWeight="700" fill="#475569">3</text>
+          <rect x="70" y="84" width="22" height="22" rx="4" fill="#e2e8f0" stroke="#64748b" strokeWidth="1.5" /><text x="81" y="100" textAnchor="middle" fontSize="12" fontWeight="700" fill="#475569">4</text>
+          <circle cx="180" cy="95" r="26" fill="#f1f5f9" stroke="#334155" strokeWidth="2" /><path d="M180 69 A26 26 0 0 1 180 121 L180 95 Z" fill="#fecaca" /><path d="M180 69 A26 26 0 0 0 180 121 L180 95 Z" fill="#bfdbfe" />
+          <polygon points="180,52 172,70 188,70" fill="#dc2626" /><text x="212" y="64" fontSize="12" fontWeight="700" fill="#dc2626">N</text><text x="212" y="136" fontSize="12" fontWeight="700" fill="#2563eb">S</text>
+          <text x="300" y="50" fontSize="11" fill="#334155">STATOR (fixe)</text><text x="300" y="64" fontSize="11" fill="#334155">4 bobines à 90°</text>
+          <text x="262" y="150" fontSize="11" fill="#334155">ROTOR (aimant)</text><text x="262" y="164" fontSize="11" fill="#334155">s’aligne sur le champ</text>
+        </svg>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Pas</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Bobine alimentée</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Position du rotor</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>bobine 1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0°</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>bobine 2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>90°</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>3</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>bobine 3</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>180°</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>bobine 4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>270°</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Une bobine parcourue par un courant crée un <strong>champ magnétique</strong> ; le rotor (aimant) s’oriente dans le sens du champ.</li>
+          <li>En alimentant les bobines dans l’ordre 1-2-3-4, le champ « tourne » : le <strong>pas complet</strong> fait tourner le rotor de 90° (un quart de tour), soit 4 pas par tour.</li>
+        </ul>
+      </>,
       texte: <>En alimentant les bobines l’une après l’autre dans l’ordre 1-2-3-4, le champ « tourne » et entraîne le rotor : c’est le <strong>pas complet</strong>. Lancez la séquence et observez au moins quatre pas, ainsi que le chronogramme qui indique quelle bobine est alimentée à chaque pas.</>,
       tache: { type: 'action', ok: s.mode === 'complet' && s.cmd >= 4, label: 'Lancer la séquence en pas complet',
         faire: () => { remiseAZero(s, 'complet'); s.dir = 1; s.playing = true; maj(); },
@@ -274,6 +301,26 @@ export function SimulationMoteurPasAPas({ naviguer }) {
       tache: { type: 'action', ok: grilleOk && grilleVerif, label: 'Voir la solution', faire: () => { setGrille(grilleDemi.map(c => c.slice())); setGrilleVerif(true); },
         consigne: grilleOk ? (grilleVerif ? null : 'Appuyez sur « Vérifier le tableau »') : 'Complétez le tableau puis appuyez sur « Vérifier le tableau »' } },
     { id: 'demi', titre: 'Lancer le demi-pas', focus: ['schema', 'commandes', 'chrono'],
+      retenirTitre: 'À RETENIR : LE DEMI-PAS',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Étape</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Bobines alimentées</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Position du rotor</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0°</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 + 2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>45°</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>3</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>90°</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2 + 3</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>135°</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>5</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>3</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>180°</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>6</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>3 + 4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>225°</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>7</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>270°</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>8</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4 + 1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>315°</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>En alimentant parfois <strong>deux bobines voisines</strong>, le champ pointe entre deux bobines : le rotor s’arrête sur des positions intermédiaires.</li>
+          <li>Demi-pas : 8 étapes par tour, <strong>45°</strong> par étape (la moitié du pas complet).</li>
+        </ul>
+      </>,
       texte: <>Lancez maintenant cette séquence et observez le rotor : le champ pointe tantôt vers une bobine, tantôt entre deux.</>,
       tache: { type: 'action', ok: s.mode === 'demi' && s.cmd >= 8, label: 'Lancer la séquence en demi-pas',
         faire: () => { remiseAZero(s, 'demi'); s.dir = 1; s.playing = true; maj(); },
@@ -291,6 +338,22 @@ export function SimulationMoteurPasAPas({ naviguer }) {
         faire: () => { remiseAZero(s, 'force'); s.dir = 1; s.playing = true; maj(); },
         consigne: s.mode !== 'force' ? 'Choisissez « Force maximale »' : 'Lancez la lecture et attendez 4 pas' } },
     { id: 'champ', titre: 'Le champ de deux bobines', focus: ['mesures'],
+      retenirTitre: 'À RETENIR : LE PAS COMPLET À FORCE MAXIMALE',
+      retenir: <>
+        <Formule><mi>B</mi><mo>=</mo><msqrt><msup><msub><mi>B</mi><mn>1</mn></msub><mn>2</mn></msup><mo>+</mo><msup><msub><mi>B</mi><mn>2</mn></msub><mn>2</mn></msup></msqrt><mo>=</mo><msqrt><mn>2</mn></msqrt><mo>×</mo><msub><mi>B</mi><mn>1</mn></msub><mo>≈</mo><mn>1,41</mn><mo>×</mo><msub><mi>B</mi><mn>1</mn></msub></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Séquence</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Angle par étape</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Intensité du champ</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>pas complet (1 bobine)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>90°</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>pas complet à force maximale (2 bobines)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>90°</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>√2 ≈ 1,41</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>demi-pas</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>45°</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 et √2 en alternance</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Deux bobines voisines créent deux champs <strong>perpendiculaires</strong> : on les additionne <strong>comme des vecteurs</strong> (théorème de Pythagore), pas comme des nombres.</li>
+          <li>Champ plus intense : le moteur est plus puissant (couple plus grand), mais il consomme aussi plus de courant.</li>
+        </ul>
+      </>,
       texte: <>Une seule bobine crée un champ d’intensité 1 (unité : le champ d’une bobine). Deux bobines voisines, perpendiculaires, créent deux vecteurs champ à 90° : on les <strong>additionne comme des vecteurs</strong>.</>,
       tache: { type: 'num', q: 'Intensité du champ résultant de deux bobines voisines (en unité du champ d’une bobine)', unite: '', vrai: Math.SQRT2, tol: 0.03, affiche: v => nf(v, 2), cs: 3,
         calcul: () => ['Hypothèse : les deux bobines créent des champs de même intensité (1 chacune) et la superposition est une simple somme vectorielle.',
@@ -327,6 +390,15 @@ export function SimulationMoteurPasAPas({ naviguer }) {
           [N_AXE * 8, 'Vous avez multiplié par 8 au lieu de diviser : 8 demi-pas font un tour, donc le nombre de tours est plus petit que le nombre de demi-pas.']],
         expl: '4096 / 8 = 512 tours du rotor pour un seul tour de l’axe : le rapport de réduction est de 1/512.', indice: "C’est le rapport de réduction : nombre de demi-pas d’un tour d’axe ÷ nombre de demi-pas d’un tour de rotor." } },
     { id: 'duree', titre: 'Durée d’un tour d’axe', focus: ['compteurs'],
+      retenirTitre: 'À RETENIR : DU ROTOR À L’AXE',
+      retenir: <>
+        <Formule><msub><mi>N</mi><mtext>axe</mtext></msub><mo>=</mo><mfrac><mrow><mn>360</mn><mo>°</mo></mrow><mrow><mtext>angle de l’axe par demi-pas</mtext></mrow></mfrac><mo>=</mo><mfrac><mn>360</mn><mrow><mn>5,625</mn><mo>/</mo><mn>64</mn></mrow></mfrac><mo>=</mo><mn>4096</mn><mspace width="0.4em"/><mtext>demi-pas</mtext></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Le <strong>réducteur à engrenages</strong> démultiplie le mouvement : à chaque demi-pas du rotor, l’axe tourne de 5,625° / 64 ≈ 0,0879°.</li>
+          <li>Un tour de l’axe = <strong>4096 demi-pas</strong> = 4096 / 8 = <strong>512 tours du rotor</strong> (8 demi-pas par tour du rotor).</li>
+          <li>Le microcontrôleur <strong>compte les pas commandés</strong> et suppose que le rotor les a suivis : c’est une <strong>boucle ouverte</strong> (aucun capteur de position).</li>
+        </ul>
+      </>,
       texte: <>Le programme Arduino contient <code>delay(5)</code> : le microcontrôleur attend 5{NB}ms entre deux pas. Un tour d’axe demande {nf(N_AXE, 0)} demi-pas.</>,
       tache: { type: 'num', q: 'Durée d’un tour de l’axe en demi-pas', unite: 's', vrai: N_AXE * T_DELAY, tol: 0.01, affiche: v => nf(v, 2), cs: 4,
         calcul: () => ['Hypothèse : le temps de calcul du programme est négligeable devant delay(5) (5 ms entre deux demi-pas) et le rotor suit toutes les commandes.',
@@ -336,6 +408,21 @@ export function SimulationMoteurPasAPas({ naviguer }) {
           [N_AXE / 2 * T_DELAY, 'Vous avez divisé par 2 (pas complet). Ici on compte des demi-pas : 4096 demi-pas à 5 ms chacun.']],
         expl: '4096 × 5 ms = 20 480 ms ≈ 20,48 s.', indice: "Durée = nombre de demi-pas × durée d’un demi-pas (le délai du programme)." } },
     { id: 'duree2', titre: 'Et en pas complet ?', focus: ['compteurs'],
+      retenirTitre: 'À RETENIR : DURÉE D’UN TOUR D’AXE',
+      retenir: <>
+        <Formule><mi>t</mi><mo>=</mo><mtext>nombre de pas</mtext><mo>×</mo><mtext>durée d’un pas</mtext><mspace width="1.5em"/><mn>1</mn><mspace width="0.3em"/><mtext>s</mtext><mo>=</mo><mn>1 000</mn><mspace width="0.3em"/><mtext>ms</mtext></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Mode</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Pas pour un tour d’axe</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>delay</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Durée d’un tour d’axe</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>demi-pas</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4096</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>5 ms</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>20,48 s</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>pas complet</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2048</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>5 ms</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>10,24 s</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>En <strong>pas complet</strong>, le rotor avance de 2 demi-pas à chaque pas : il faut deux fois moins de pas, donc deux fois moins de temps pour le même <code>delay(5)</code>.</li>
+          <li>Convertir les ms en s (÷ 1 000) avant de donner la durée.</li>
+        </ul>
+      </>,
       texte: <>En pas complet, le rotor avance de 2 demi-pas à chaque pas. Un tour d’axe demande {nf(N_AXE, 0)} demi-pas ; le délai reste delay(5), soit 5{NB}ms par pas.</>,
       tache: { type: 'num', q: 'Durée d’un tour de l’axe en pas complet', unite: 's', vrai: N_AXE / 2 * T_DELAY, tol: 0.01, affiche: v => nf(v, 2), cs: 4,
         calcul: () => [`Un pas complet = 2 demi-pas, donc pour un tour d’axe : ${nf(N_AXE, 0)} / 2 = ${nf(N_AXE / 2, 0)} pas.`,
@@ -345,12 +432,15 @@ export function SimulationMoteurPasAPas({ naviguer }) {
           [N_AXE / 2 * 5, 'Résultat en ms : l’unité demandée est la seconde (1 s = 1 000 ms).']],
         expl: '2048 pas × 5 ms = 10,24 s : deux fois plus rapide, mais deux fois moins précis.', indice: "Un pas complet vaut 2 demi-pas : il en faut deux fois moins pour le même angle." } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
-        <li>stator fixe (bobines), rotor mobile (aimant) : le rotor s’aligne sur le champ magnétique</li>
-        <li>alimenter les bobines successivement « fait tourner » le champ : pas complet = 1/4 de tour, demi-pas = 1/8</li>
-        <li>deux bobines voisines : champ ×√2 (≈ +41 %) : force maximale</li>
-        <li>le réducteur : 4096 demi-pas = 512 tours du rotor = 1 tour de l’axe</li>
-        <li>à delay(5) : 20,48 s (demi-pas) ou 10,24 s (pas complet) par tour d’axe</li></ul>,
+      retenirTitre: 'À RETENIR : LE BILAN',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Stator</strong> fixe (bobines), <strong>rotor</strong> mobile (aimant) : le rotor s’aligne sur le champ ; alimenter les bobines successivement fait « tourner » le champ.</li>
+          <li>Pas complet = 1/4 de tour (90°) ; demi-pas = 1/8 de tour (45°) ; deux bobines voisines : champ × √2 (≈ +41 %).</li>
+          <li>Réducteur : 4096 demi-pas = 512 tours du rotor = 1 tour de l’axe.</li>
+          <li>À delay(5) : 20,48 s (demi-pas) ou 10,24 s (pas complet) par tour d’axe ; commande en boucle ouverte.</li>
+        </ul>
+      </>,
       texte: <>Vous savez expliquer comment des bobines alimentées successivement font tourner un rotor, puis comment un réducteur transforme ce mouvement en rotation lente de l’axe.</>, tache: null },
   ];
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);

@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { nf, NB } from "./Distillation";
 import { Moteur, Chrono } from "./MoteurPasAPas";
@@ -126,6 +126,28 @@ export function SimulationMoteurCode({ naviguer }) {
   const frais = !stale && res;
   const ETAPES = [
     { id: 'prog', titre: 'Un programme qui commande les bobines', focus: ['programme'],
+      retenirTitre: 'À RETENIR : LA SÉQUENCE DE COMMANDE',
+      retenir: <>
+        <svg viewBox="0 0 330 150" role="img" aria-label="Chronogramme du pas complet : à chaque pas, une seule bobine est alimentée à 5 volts, dans l’ordre 1, 2, 3, 4, puis la séquence recommence ; chaque pas dure delay(D)" style={{ width: '100%', maxWidth: 330, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <text x="14" y="43" fontSize="11.5" fontWeight="700" fill="#334155">bobine 1</text><path d="M70 46 L70 30 L130 30 L130 46 L190 46 L190 46 L250 46 L250 46 L310 46 L310 46" fill="none" stroke="#d55e00" strokeWidth="2.5" />
+          <text x="14" y="69" fontSize="11.5" fontWeight="700" fill="#334155">bobine 2</text><path d="M70 72 L70 72 L130 72 L130 56 L190 56 L190 72 L250 72 L250 72 L310 72 L310 72" fill="none" stroke="#d55e00" strokeWidth="2.5" />
+          <text x="14" y="95" fontSize="11.5" fontWeight="700" fill="#334155">bobine 3</text><path d="M70 98 L70 98 L130 98 L130 98 L190 98 L190 82 L250 82 L250 98 L310 98 L310 98" fill="none" stroke="#d55e00" strokeWidth="2.5" />
+          <text x="14" y="121" fontSize="11.5" fontWeight="700" fill="#334155">bobine 4</text><path d="M70 124 L70 124 L130 124 L130 124 L190 124 L190 124 L250 124 L250 108 L310 108 L310 124" fill="none" stroke="#d55e00" strokeWidth="2.5" />
+          <text x="190" y="144" textAnchor="middle" fontSize="11" fill="#475569">pas 1 · pas 2 · pas 3 · pas 4  (chacun dure D)</text>
+        </svg>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Séquence</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Bobines alimentées</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Principe</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Rotor</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>pas complet</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 → 2 → 3 → 4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>une bobine à la fois</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4 pas / tour (90°)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>force maximale</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1+2 → 2+3 → 3+4 → 4+1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>deux bobines voisines</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4 pas / tour (90°)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>demi-pas</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 → 1+2 → 2 → 2+3 → 3 → 3+4 → 4 → 4+1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>une puis deux bobines</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>8 pas / tour (45°)</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Le programme répète une <strong>séquence</strong> d’états des 4 bobines (5 V = alimentée, 0 = éteinte) et attend <code>delay(D)</code> entre deux pas.</li>
+          <li>L’<strong>ordre</strong> des bobines fixe le sens de rotation ; le <strong>délai</strong> fixe la vitesse : plus D est court, plus le moteur tourne vite.</li>
+        </ul>
+      </>,
       texte: <>Le programme Arduino allume les bobines dans un ordre donné, une séquence de pas, et attend <code>delay(D)</code> avant le pas suivant. Ici, le tableau est la séquence : une ligne par bobine, une colonne par pas, 5{NB}V = alimentée. Exécutez la séquence en <strong>pas complet</strong> avec <strong>delay(5)</strong>, sans charge.</>,
       tache: { type: 'action', ok: !!(frais && egal(cycle, 'complet') && delai === 5 && charge === 0 && res.ok), label: 'Exécuter le pas complet, 5 ms',
         faire: () => appliquer('complet', 5, 0), consigne: 'Choisissez « Pas complet », delay 5 ms, charge 0 %, puis « Exécuter »' } },
@@ -145,6 +167,15 @@ export function SimulationMoteurCode({ naviguer }) {
           [N_PAS / 8, 'Vous avez compté 8 pas par tour, comme en demi-pas. En pas complet, un tour fait 4 pas.']],
         expl: '16 pas × 90° = 1440° = 4 tours.', indice: "Comptez les tours en observant le rotor, pas les pas commandés par le programme." } },
     { id: 'court', titre: 'Un délai trop court', focus: ['programme', 'mesures'],
+      retenirTitre: 'À RETENIR : TOURS ET DURÉE',
+      retenir: <>
+        <Formule><msub><mi>n</mi><mtext>tours</mtext></msub><mo>=</mo><mfrac><mrow><msub><mi>N</mi><mtext>pas</mtext></msub><mo>×</mo><mtext>angle par pas</mtext></mrow><mrow><mn>360</mn><mo>°</mo></mrow></mfrac><mspace width="1.5em"/><mi>t</mi><mo>=</mo><msub><mi>N</mi><mtext>pas</mtext></msub><mo>×</mo><mi>D</mi></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Pas complet : 90° par pas, donc 4 pas par tour du rotor ; demi-pas : 45°, donc 8 pas par tour.</li>
+          <li>La durée du programme est proportionnelle au délai D (en ms : ÷ 1 000 pour passer en s).</li>
+          <li>Le rotor <strong>oscille</strong> autour de sa nouvelle position d’équilibre avant de se stabiliser : il lui faut du temps.</li>
+        </ul>
+      </>,
       texte: <>Plus le délai est court, plus le moteur tourne vite. Mais le rotor a besoin de temps pour atteindre chaque position. Réglez <strong>delay(1)</strong> (1{NB}ms) et exécutez à nouveau.</>,
       tache: { type: 'action', ok: !!(frais && egal(cycle, 'complet') && delai <= 2 && charge === 0 && !res.ok), label: 'Essayer delay(1)',
         faire: () => appliquer('complet', 1, 0), consigne: 'Réglez le délai à 1 ms et exécutez' } },
@@ -153,6 +184,14 @@ export function SimulationMoteurCode({ naviguer }) {
       tache: { type: 'qcm', q: 'Pourquoi le moteur perd-il des pas ?', options: ['le champ change avant que le rotor ait atteint sa position : il est « décroché »', 'les bobines chauffent et s’éteignent', 'l’Arduino se trompe de bobine'], bonne: 0,
         expl: 'Le rotor n’a pas le temps de rejoindre sa position avant que le champ ne tourne à nouveau : il se retrouve en retard, voire repart dans le mauvais sens, et le champ finit par « passer devant » sans l’entraîner.', indice: "Que se passe-t-il si le champ change avant que le rotor soit arrivé à sa position d’équilibre ?" } },
     { id: 'dmin', titre: 'Le délai minimal', focus: ['programme', 'mesures'],
+      retenirTitre: 'À RETENIR : PAS PERDUS ET BOUCLE OUVERTE',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Délai trop court</strong> : le champ change avant que le rotor ait atteint (ou stabilisé) sa position : il est <strong>décroché</strong> et <strong>perd des pas</strong>.</li>
+          <li>Il existe un <strong>délai minimal</strong> pour lequel le rotor suit toute la séquence ; il dépend de la séquence et de la charge.</li>
+          <li><strong>Boucle ouverte</strong> : aucun capteur de position ; le programme compte les pas commandés et ne s’aperçoit pas des pas perdus.</li>
+        </ul>
+      </>,
       texte: <>En pas complet et sans charge, cherchez le <strong>plus petit délai</strong> (par pas de 0,5{NB}ms) pour lequel le rotor suit toute la séquence sans perdre de pas. Essayez plusieurs valeurs.</>,
       tache: { type: 'num', q: 'Plus petit délai sans pas perdu (pas complet, charge 0 %)', unite: 'ms', vrai: dMinComplet, tol: 0.3, affiche: v => nf(v, 1), cs: 2,
         aide: 'C’est une mesure par essais : exécutez la séquence avec des délais de plus en plus courts et gardez le plus petit pour lequel la zone « Mesures » n’indique aucun pas perdu.',
@@ -162,6 +201,22 @@ export function SimulationMoteurCode({ naviguer }) {
       tache: { type: 'action', ok: !!(frais && egal(cycle, 'complet') && delai === 5 && charge === 40 && !res.ok), label: 'Charge 40 %, 5 ms',
         faire: () => appliquer('complet', 5, 40), consigne: 'Charge 40 %, delay 5 ms, pas complet : exécutez' } },
     { id: 'force', titre: 'Plus de force', focus: ['programme', 'mesures'],
+      retenirTitre: 'À RETENIR : CHARGE ET COUPLE',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Situation</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Résultat</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>charge faible, delay long</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>suit la séquence</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>charge élevée, pas complet, même delay</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>pas perdus possibles</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>charge élevée, force maximale</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>couple plus grand : suit la séquence</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La <strong>charge</strong> (en % du couple maximal d’une bobine) est le couple que le moteur doit fournir.</li>
+          <li>Deux bobines voisines créent un champ <strong>×√2</strong> : le couple est plus grand, donc le moteur résiste mieux à la charge.</li>
+          <li>Pour une charge plus grande : <strong>allonger le délai</strong> ou passer à la <strong>force maximale</strong>.</li>
+        </ul>
+      </>,
       texte: <>Avec la même charge et le même délai, passez au <strong>pas complet à force maximale</strong> (deux bobines alimentées à chaque pas).</>,
       tache: { type: 'action', ok: !!(frais && egal(cycle, 'force') && delai === 5 && charge === 40 && res.ok), label: 'Force maximale, charge 40 %',
         faire: () => appliquer('force', 5, 40), consigne: 'Choisissez « Force maximale », charge 40 %, delay 5 ms : exécutez' } },
@@ -173,6 +228,20 @@ export function SimulationMoteurCode({ naviguer }) {
       texte: <>Que se passe-t-il si l’ordre des bobines est faux ? Choisissez « Ordre 1-3-2-4 » (delay(5), charge 0) et exécutez.</>,
       tache: { type: 'action', ok: !!(frais && egal(cycle, 'faux')), label: 'Essayer l’ordre 1-3-2-4', faire: () => appliquer('faux', 5, 0), consigne: 'Choisissez « Ordre 1-3-2-4 » puis exécutez' } },
     { id: 'fauxq', titre: 'Un ordre incohérent', focus: ['courbe', 'figure'],
+      retenirTitre: 'À RETENIR : L’ORDRE DES BOBINES',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Ordre</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Direction du champ</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Résultat</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>1 → 2 → 3 → 4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>90° à chaque pas, toujours dans le même sens</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>rotation régulière</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>1 → 3 → 2 → 4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>le champ se retourne (1 → 3 : demi-tour), le sens de rotation n’est plus imposé</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>rotor qui hésite, avance puis recule</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Le sens de rotation est imposé par l’<strong>ordre</strong> dans lequel les bobines sont alimentées.</li>
+          <li>Quand le champ se retourne (bobines opposées), le rotor est poussé aussi bien dans un sens que dans l’autre : la séquence n’impose plus de sens de rotation.</li>
+        </ul>
+      </>,
       texte: <>Observez le rotor : il hésite, avance puis recule. Avec les bobines 1 puis 3, le champ se retourne : le rotor est poussé aussi bien vers un sens que vers l’autre.</>,
       tache: { type: 'qcm', q: 'Que constate-t-on ?', options: ['le rotor ne tourne pas régulièrement : la séquence n’impose pas de sens de rotation', 'le rotor tourne plus vite', 'rien ne change'], bonne: 0,
         expl: 'Passer de la bobine 1 à la bobine 3 (opposée) inverse le champ : le rotor n’a aucune raison de tourner dans un sens plutôt que dans l’autre. L’ordre des bobines doit suivre la géométrie.', indice: "La séquence impose-t-elle un sens de rotation ? Regardez l’ordre dans lequel les bobines sont alimentées." } },
@@ -181,12 +250,15 @@ export function SimulationMoteurCode({ naviguer }) {
       tache: { type: 'qcm', q: 'Quand des pas sont perdus, le programme Arduino…', options: ['ne s’en aperçoit pas : il n’a aucun capteur de position (boucle ouverte)', 'les détecte automatiquement et les rejoue', 'arrête le moteur'], bonne: 0,
         expl: 'Sans capteur de position, rien n’informe le programme : c’est pourquoi on garde une marge sur le délai et le couple, ou on ajoute un capteur (boucle fermée).', indice: "Y a-t-il un capteur de position dans le montage Arduino ?" } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
-        <li>le programme = une séquence d’états des bobines + un délai entre deux pas</li>
-        <li>le rotor oscille et a besoin de temps pour atteindre sa position : délai trop court → pas perdus</li>
-        <li>une charge plus grande demande plus de couple, donc un délai plus long ou plus de force (deux bobines, ×√2)</li>
-        <li>l’ordre des bobines détermine le sens de rotation</li>
-        <li>boucle ouverte : le programme ne sait pas qu’un pas a été perdu</li></ul>,
+      retenirTitre: 'À RETENIR : LE BILAN',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Programme = <strong>séquence</strong> d’états des bobines + <strong>délai</strong> entre deux pas ; l’ordre des bobines fixe le sens.</li>
+          <li>Rotor qui oscille : délai trop court → <strong>pas perdus</strong> (décrochage).</li>
+          <li>Charge plus grande → plus de couple nécessaire : délai plus long ou deux bobines (champ × √2).</li>
+          <li><strong>Boucle ouverte</strong> : le programme ne sait pas qu’un pas a été perdu.</li>
+        </ul>
+      </>,
       texte: <>Vous savez construire une séquence de commande, régler son délai et prévoir quand le moteur va décrocher. Essayez maintenant le défi.</>, tache: null },
   ];
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
