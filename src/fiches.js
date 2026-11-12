@@ -59,13 +59,67 @@ export function noterFiche({ sim, nomSim, etape, html, texte }) {
 }
 
 // Toutes les cartes gardées sur cet appareil (et dans le compte de l'élève, une fois la synchronisation faite), de la plus récemment vue à la plus ancienne
+// Une carte n'entre dans la collection qu'une fois le parcours guidé de la simulation TERMINÉ (dernière étape atteinte), pas seulement commencé.
+const CLE_FINI = 'fiches-fini-';
+export const marquerTermine = sim => { try { if (Number.isFinite(sim) && !window.localStorage.getItem(CLE_FINI + sim)) { window.localStorage.setItem(CLE_FINI + sim, String(Date.now())); annoncerFiches(); } } catch { /* ignoré */ } };
+export const estTermine = sim => { try { return !!window.localStorage.getItem(CLE_FINI + sim); } catch { return false; } };
+
+// ── Schéma de la simulation, joint à sa fiche : le dessin principal de l'écran (SVG, graphique ou canevas), recopié en petite image ──
+const PREFIXE_FIGURE = 'ficfig-';
+const TAILLE_MAX_FIGURE = 58000;
+const PROPRIETES = ['fill', 'stroke', 'stroke-width', 'stroke-dasharray', 'opacity', 'fill-opacity', 'stroke-opacity', 'font-family', 'font-size', 'font-weight', 'text-anchor', 'dominant-baseline', 'visibility', 'display'];
+function inlinerStyles(source, copie) {
+  const a = [source, ...source.querySelectorAll('*')], b = [copie, ...copie.querySelectorAll('*')];
+  a.forEach((el, i) => { const cs = window.getComputedStyle(el); const t = b[i]; if (!t) return;
+    PROPRIETES.forEach(pr => { const v = cs.getPropertyValue(pr); if (v) t.style.setProperty(pr, v); }); });
+}
+export async function capturerFigure() {
+  try {
+    const zone = document.getElementById('zone-simulation'); if (!zone) return null;
+    const candidats = [...zone.querySelectorAll('svg, canvas')].filter(el => {
+      if (el.closest('[data-carte-parcours], [data-retenir], button, [hidden]')) return false;
+      const r = el.getBoundingClientRect(); return r.width >= 220 && r.height >= 130;
+    }).sort((x, y) => { const rx = x.getBoundingClientRect(), ry = y.getBoundingClientRect(); return ry.width * ry.height - rx.width * rx.height; });
+    const el = candidats[0]; if (!el) return null;
+    const r = el.getBoundingClientRect();
+    const W = Math.min(720, Math.round(r.width)), H = Math.round(r.height * W / r.width);
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+    if (el.tagName.toLowerCase() === 'canvas') ctx.drawImage(el, 0, 0, W, H);
+    else {
+      const copie = el.cloneNode(true); inlinerStyles(el, copie);
+      copie.setAttribute('xmlns', 'http://www.w3.org/2000/svg'); copie.setAttribute('width', r.width); copie.setAttribute('height', r.height);
+      if (!copie.getAttribute('viewBox')) copie.setAttribute('viewBox', `0 0 ${r.width} ${r.height}`);
+      copie.querySelectorAll('foreignObject, script').forEach(x => x.remove());
+      const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(copie));
+      const img = await new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ko; i.src = url; });
+      ctx.drawImage(img, 0, 0, W, H);
+    }
+    for (const q of [0.72, 0.55, 0.4]) { const d = cv.toDataURL('image/jpeg', q); if (d.length < TAILLE_MAX_FIGURE) return d; }
+    return null;
+  } catch { return null; }
+}
+export function noterFigure(sim, dataUrl) {
+  if (!Number.isFinite(sim) || !dataUrl || !dataUrl.startsWith('data:image/')) return;
+  const cle = PREFIXE_FIGURE + sim;
+  let brut = null; try { brut = window.localStorage.getItem(cle); } catch { /* ignoré */ }
+  enregistrer(cle, brut !== null);
+  try { window.localStorage.setItem(cle, JSON.stringify({ v: 1, sim, img: dataUrl, t: Date.now() })); } catch { return; }
+  noterModification(cle);
+  annoncerFiches();
+}
+export function lireFigure(sim) {
+  try { const f = JSON.parse(window.localStorage.getItem(PREFIXE_FIGURE + sim) || 'null'); return f && typeof f.img === 'string' && f.img.startsWith('data:image/') ? f.img : null; } catch { return null; }
+}
+export const aFigure = sim => { try { return !!window.localStorage.getItem(PREFIXE_FIGURE + sim); } catch { return false; } };
+
 export function listerFiches() {
   const L = [];
   try {
     for (let i = 0; i < window.localStorage.length; i++) {
       const cle = window.localStorage.key(i);
       if (!cle || !cle.startsWith(PREFIXE_FICHE)) continue;
-      try { const f = JSON.parse(window.localStorage.getItem(cle)); if (f && f.html && Number.isFinite(f.sim)) L.push({ ...f, cle }); } catch { /* carte illisible : ignorée */ }
+      try { const f = JSON.parse(window.localStorage.getItem(cle)); if (f && f.html && Number.isFinite(f.sim) && estTermine(f.sim)) L.push({ ...f, cle }); } catch { /* carte illisible : ignorée */ }
     }
   } catch { /* stockage indisponible */ }
   return L.sort((a, b) => (b.t || 0) - (a.t || 0));
@@ -76,6 +130,7 @@ export function listerFiches() {
 // (adresse « ?sim=N&recolte=1 ») qui ne compte aucun temps et qui renvoie les cartes des étapes déjà atteintes à la page « Mes fiches ».
 export const EN_RECOLTE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('recolte');
 export const envoyerRecolte = fiche => { try { window.parent.postMessage({ type: 'fiche-recolte', fiche }, window.location.origin); } catch { /* sans parent : rien à faire */ } };
+export const envoyerFigure = (sim, img) => { try { window.parent.postMessage({ type: 'fiche-figure', sim, img }, window.location.origin); } catch { /* idem */ } };
 export const finRecolte = () => { try { window.parent.postMessage({ type: 'fiche-recolte-fin' }, window.location.origin); } catch { /* idem */ } };
 
 export async function recolterFiches(ids, surAvancee) {
@@ -91,6 +146,7 @@ export async function recolterFiches(ids, surAvancee) {
       const ecouter = e => {
         if (e.origin !== window.location.origin || e.source !== cadre.contentWindow || !e.data) return;
         if (e.data.type === 'fiche-recolte' && e.data.fiche) { if (noterFiche(e.data.fiche)) trouvees++; }
+        else if (e.data.type === 'fiche-figure') { noterFigure(Number(e.data.sim), e.data.img); }
         else if (e.data.type === 'fiche-recolte-fin') terminer();
       };
       const garde = setTimeout(terminer, 15000);

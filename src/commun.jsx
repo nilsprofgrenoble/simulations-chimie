@@ -3,7 +3,7 @@ import { compter } from "./stats";
 import { Pic, Emo } from "./Pictos";
 import { missionEnCours } from "./mission";
 import { chapitresDeSim, ouvrirExercicesDeSim, ouvrirFiches } from "./chapitres";
-import { noterFiche, EN_RECOLTE, envoyerRecolte } from "./fiches";
+import { noterFiche, EN_RECOLTE, envoyerRecolte, envoyerFigure, estTermine, marquerTermine, capturerFigure, noterFigure, aFigure } from "./fiches";
 import { nomsSim } from "./suivi";
 import { enregistrer, noterModification, surChangementServeur } from "./etatsParcours";
 
@@ -276,6 +276,15 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
   // Arrivé à la dernière étape (le bilan) : le parcours est terminé ; la simulation s'ouvrira désormais sur l'exploration libre
   const derniere = etape >= etapes.length - 1;
   useEffect(() => { if (derniere && !etat.fini) setEtat(e => (e.fini ? e : { ...e, fini: true })); }, [derniere, etat.fini, setEtat]);
+  // Parcours terminé : la simulation entre dans « Mes fiches » (cartes « À retenir » de toutes ses étapes) ; son schéma principal est gardé pour la fiche
+  useEffect(() => {
+    if (!etat.fini) return undefined;
+    const sim = parseInt(new URLSearchParams(window.location.search).get('sim'));
+    marquerTermine(sim);
+    if (EN_RECOLTE || aFigure(sim)) return undefined;
+    const t = setTimeout(async () => { const img = await capturerFigure(); if (img) noterFigure(sim, img); }, 1500);
+    return () => clearTimeout(t);
+  }, [etat.fini]);   // eslint-disable-line react-hooks/exhaustive-deps
   // Message de reprise, affiché une seule fois quand on retrouve un parcours commencé
   const [reprise] = useState(() => etape > 0);
   // Étapes du calcul pas à pas : liste, ou fonction qui renvoie la liste (évaluée seulement à l'affichage ; une erreur de calcul masque simplement les étapes)
@@ -322,7 +331,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
             {valeursGardees.slice(-8).map((v, i) => <li key={i}>{avecIndices(v.n)} : <strong>{avecIndices(v.v)}</strong></li>)}
           </ul>
         </details>)}
-      {et.retenir && <ARetenir titre={et.retenirTitre || 'À RETENIR'}>{et.retenir}</ARetenir>}
+      {et.retenir && <ARetenir titre={et.retenirTitre || 'À RETENIR'} capture={false} rangee={!!etat.fini}>{et.retenir}</ARetenir>}
       {tache && tache.type === 'action' && (
         <div>
           {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}</div>
@@ -408,10 +417,9 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
             style={{ ...btn(peutSuivre, ORANGE_GUIDE), opacity: peutSuivre ? 1 : 0.45 }}>Suivant ▶</button>
         ) : fin}
       </div>
-      {EN_RECOLTE && (
+      {etat.fini && (
         <div hidden aria-hidden="true">
-          {etapes.map((e2, k) => (e2.retenir && k <= Math.max(etape, ...Object.keys(etat.reussies || {}).map(Number)))
-            ? <ARetenir key={k} titre={e2.retenirTitre || 'À RETENIR'} titreEtape={e2.titre}>{e2.retenir}</ARetenir> : null)}
+          {etapes.map((e2, k) => e2.retenir ? <ARetenir key={k} titre={e2.retenirTitre || 'À RETENIR'} titreEtape={e2.titre}>{e2.retenir}</ARetenir> : null)}
         </div>)}
     </div>
   );
@@ -421,15 +429,16 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
 
 // Encadré « À RETENIR » : ce que l'élève doit mémoriser (formule, schéma, ordres de grandeur), en quelques lignes très courtes.
 // À son affichage, la carte est rangée dans « Mes fiches » (Mon compte) : l'élève la retrouve, la relit et l'imprime pour réviser.
-export function ARetenir({ titre = 'À RETENIR', children, sansFiche = false, titreEtape }) {
+export function ARetenir({ titre = 'À RETENIR', children, sansFiche = false, titreEtape, capture = true, rangee = null }) {
   const contenu = useRef(null);
   const [, relire] = useState(0);
   useEffect(() => {
-    if (sansFiche) return undefined;
+    if (sansFiche || !capture) return undefined;
     const t = setTimeout(() => {
       const el = contenu.current;
       if (!el) return;
       const sim = parseInt(new URLSearchParams(window.location.search).get('sim'));
+      if (!estTermine(sim)) return;   // seules les simulations dont le parcours guidé est terminé alimentent la collection
       const carte = el.closest('[data-retenir]');
       const zone = carte?.parentElement;
       const etape = titreEtape || (zone?.querySelector('[data-titre-etape]') || null)?.textContent?.trim() || '';
@@ -444,9 +453,11 @@ export function ARetenir({ titre = 'À RETENIR', children, sansFiche = false, ti
     <div data-retenir="1" style={{ background: '#eaf2fb', border: '2px solid #7aa6d6', borderRadius: 10, padding: '8px 12px', color: '#0f172a' }}>
       <div style={{ fontWeight: 800, fontSize: 14, color: '#be123c', letterSpacing: 0.4, marginBottom: 4 }}>{titre} ❤️</div>
       <div ref={contenu} style={{ fontSize: 15, lineHeight: 1.6 }}>{children}</div>
-      {!sansFiche && <div data-retenir-rangee="1" style={{ marginTop: 6, fontSize: 12, color: '#475569', textAlign: 'right' }}>
+      {!sansFiche && !EN_RECOLTE && (rangee === false
+        ? <div data-retenir-rangee="attente" style={{ marginTop: 6, fontSize: 12, color: '#475569', textAlign: 'right' }}><Pic n="clipboard"/>Cette carte rejoindra tes fiches quand tu auras terminé le parcours.</div>
+        : <div data-retenir-rangee="1" style={{ marginTop: 6, fontSize: 12, color: '#475569', textAlign: 'right' }}>
         <Pic n="clipboard"/>Rangée dans tes fiches · <button type="button" onClick={() => ouvrirFiches()} style={{ background: 'none', border: 'none', padding: 0, color: '#0b4f94', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }}>Mes fiches</button>
-      </div>}
+      </div>)}
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { Pic, Emo, PictosSprite } from "./Pictos";
 import { ToastRecompense } from "./ToastRecompense";
 import { useSession, restaurer, estEleve, estProf } from "./serveur";
 import { chapitresDuNiveau, confierNavigation } from "./chapitres";
-import { EN_RECOLTE, finRecolte } from "./fiches";
+import { EN_RECOLTE, finRecolte, capturerFigure, envoyerFigure } from "./fiches";
 import { SuiviTemps, nomsSim } from "./suivi";
 import { ModeParDefaut } from "./ModeParDefaut";
 import CadreMission from "./CadreMission";
@@ -335,7 +335,7 @@ export default function App() {
     if (!EN_RECOLTE) return undefined;
     window.__clicAuto = true;
     const cliquer = txt => { const b = [...document.querySelectorAll('#zone-simulation button')].find(x => x.textContent.includes(txt) && !x.disabled); if (b) b.click(); };
-    const t = [setTimeout(() => cliquer('Parcours guidé'), 2200), setTimeout(() => cliquer('Exploration libre'), 4200), setTimeout(finRecolte, 6200)];
+    const t = [setTimeout(() => cliquer('Parcours guidé'), 2200), setTimeout(() => cliquer('Exploration libre'), 4200), setTimeout(async () => { const sim = parseInt(new URLSearchParams(window.location.search).get('sim')); const img = await capturerFigure(); if (img) envoyerFigure(sim, img); finRecolte(); }, 6200)];
     return () => t.forEach(clearTimeout);
   }, []);
   const getInitialId = () => {

@@ -141,22 +141,36 @@ a:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visib
 input[type="range"] { accent-color: #0b4f94; }
 input[type="checkbox"], input[type="radio"] { accent-color: #0b4f94; }
 
-/* ── Mes fiches « À retenir » : mise en page des cartes à l'écran et feuille imprimée ── */
+/* ── Mes fiches de révision : une fiche par simulation (écran et impression) ── */
+.fiche-ecran { background: #fff; border: 1px solid #d5dfeb; border-top: 6px solid var(--c); border-radius: 14px; box-shadow: 0 1px 3px rgba(15,23,42,0.06); min-width: 0; }
+.fiche-ecran-tete { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px 6px; cursor: pointer; }
+.fiche-ecran-chap { display: block; font-size: 11.5px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase; color: var(--c); }
+.fiche-ecran-nom { display: block; font-family: 'Outfit','Inter',sans-serif; font-weight: 800; font-size: 17px; line-height: 1.25; color: #0f172a; }
+.fiche-ecran-corps { padding: 4px 14px 8px; }
+.fiche-figure { display: block; width: 100%; max-height: 260px; object-fit: contain; border: 1px solid #e2e8f0; border-radius: 10px; background: #fff; margin: 4px 0 10px; }
+.fiche-points { list-style: none; counter-reset: pt; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.fiche-points > li { counter-increment: pt; position: relative; padding: 8px 10px 8px 38px; background: #f4f8fd; border-radius: 10px; border-left: 3px solid var(--c); }
+.fiche-points > li::before { content: counter(pt); position: absolute; left: 9px; top: 8px; width: 21px; height: 21px; border-radius: 50%; background: var(--c); color: #fff; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+.fiche-point-titre { font-weight: 800; font-size: 13.5px; color: var(--c); margin-bottom: 2px; }
 .fiche-corps { font-size: 14px; line-height: 1.5; color: #0f172a; overflow-wrap: anywhere; }
+.fiche-corps ul { margin: 0; padding-left: 18px; }
 .fiche-corps svg { max-width: 100%; height: auto; }
 .fiche-corps math { font-size: 1.08em; }
-.fiche-corps > div, .fiche-corps > * { max-width: 100%; }
 .fiches-print { display: none; }
 @media print {
   body.impression-fiches > *:not(.fiches-print) { display: none !important; }
   body.impression-fiches .fiches-print { display: block !important; font-family: 'Inter', Arial, sans-serif; color: #000; background: #fff; }
   @page { size: A4; margin: 12mm; }
-  .fiches-print-entete { display: flex; justify-content: space-between; font-size: 10pt; border-bottom: 1.5px solid #0b4f94; padding-bottom: 4pt; margin-bottom: 8pt; color: #0b4f94; }
-  .fiches-print-groupe h2 { font-size: 13pt; margin: 10pt 0 5pt; color: #0b4f94; break-after: avoid; }
-  .fiches-print-grille { columns: 2; column-gap: 8mm; }
-  .fiches-print-carte { break-inside: avoid; border: 1px solid #9aa9bb; border-left: 4px solid #0b4f94; border-radius: 6px; padding: 5pt 7pt; margin: 0 0 7pt; font-size: 9.5pt; }
-  .fiches-print-titre { font-weight: 800; font-size: 10.5pt; margin-bottom: 3pt; }
-  .fiches-print-titre span { color: #be185d; }
-  .fiche-corps-impr { font-size: 9.5pt; line-height: 1.4; }
+  .fiches-print-entete { display: flex; justify-content: space-between; font-size: 9.5pt; border-bottom: 1.5px solid #0b4f94; padding-bottom: 4pt; margin-bottom: 8pt; color: #0b4f94; }
+  .fiche-feuille { break-inside: avoid; page-break-inside: avoid; border: 1px solid #9aa9bb; border-top: 5px solid var(--c, #0b4f94); border-radius: 6px; padding: 7pt 9pt; margin: 0 0 10pt; }
+  .fiche-feuille header { font-size: 8.5pt; text-transform: uppercase; letter-spacing: .3pt; color: var(--c, #0b4f94); font-weight: 800; }
+  .fiche-feuille header h2 { margin: 2pt 0 5pt; font-size: 13pt; text-transform: none; letter-spacing: 0; color: #000; }
+  .fiche-feuille-niv { background: var(--c, #0b4f94); color: #fff; padding: 1pt 5pt; border-radius: 8pt; margin-right: 4pt; }
+  .fiche-feuille .fiche-figure { max-height: 62mm; margin: 2pt 0 6pt; }
+  .fiche-feuille .fiche-points { gap: 5pt; }
+  .fiche-feuille .fiche-points > li { padding: 4pt 6pt 4pt 26pt; break-inside: avoid; }
+  .fiche-feuille .fiche-points > li::before { width: 15px; height: 15px; font-size: 9px; left: 6px; top: 5px; }
+  .fiche-feuille .fiche-point-titre { font-size: 9.5pt; }
+  .fiche-feuille .fiche-corps { font-size: 9.5pt; line-height: 1.4; }
   .fiches-print * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }

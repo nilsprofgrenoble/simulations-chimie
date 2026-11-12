@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { cardStyle, KIT, styleBouton, stylePetitBouton } from "../commun";
 import { useSession, estEleve } from "../serveur";
 import { surSynchro } from "../etatsParcours";
-import { listerFiches, surChangementFiches, recolterFiches } from "../fiches";
+import { listerFiches, surChangementFiches, recolterFiches, lireFigure } from "../fiches";
 import { toutLire } from "../serveur";
 import { tempsParSimulation, estSimulation } from "../suivi";
 import { chapitresDeSim, NIVEAUX_CHAPITRES } from "../chapitres";
@@ -24,64 +24,60 @@ function useFiches() {
   return useMemo(() => listerFiches(), [version]);   // eslint-disable-line react-hooks/exhaustive-deps
 }
 
-const dateFr = t => { try { return new Date(t).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }); } catch { return ''; } };
-
-// Corps d'une carte : l'instantané « À retenir » (déjà nettoyé), avec une mise en page commune pour les formules et les schémas
-function CorpsFiche({ html, impression }) {
-  return <div className={impression ? 'fiche-corps fiche-corps-impr' : 'fiche-corps'} dangerouslySetInnerHTML={{ __html: html }} />;
-}
-
-function Fiche({ f, couleur, coche, bascule, naviguer }) {
+// Une fiche de révision = une simulation : bandeau titre, schéma de la simulation, puis les points à retenir dans l'ordre du parcours
+function FicheSim({ g, couleur, coche, bascule, naviguer, impression }) {
+  const fig = lireFigure(g.sim);
+  const corps = (
+    <>
+      {fig && <img className="fiche-figure" src={fig} alt={`Schéma de la simulation : ${g.nom}`} />}
+      <ol className="fiche-points">
+        {g.L.map(f => (
+          <li key={f.cle}>
+            <div className="fiche-point-titre">{f.etape || 'À retenir'}</div>
+            <div className="fiche-corps" dangerouslySetInnerHTML={{ __html: f.html }} />
+          </li>))}
+      </ol>
+    </>);
+  if (impression) return (
+    <section className="fiche-feuille" style={{ '--c': couleur }}>
+      <header><span className="fiche-feuille-niv">{g.libNiv}</span> {g.chapLabel}<h2>{g.nom}</h2></header>
+      {corps}
+    </section>);
   return (
-    <article data-fiche={f.cle} style={{ position: 'relative', background: '#fff', border: `1px solid ${coche ? couleur : '#d5dfeb'}`, borderLeft: `6px solid ${couleur}`, borderRadius: 14,
-      padding: '12px 14px 12px', boxShadow: coche ? `0 0 0 2px ${couleur}33` : '0 1px 3px rgba(15,23,42,0.06)', display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
-      <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', cursor: 'pointer' }}>
-        <input type="checkbox" checked={coche} onChange={bascule} aria-label={`Sélectionner la fiche : ${f.etape || f.nom}`} style={{ marginTop: 3, accentColor: couleur, width: 17, height: 17 }} />
+    <article data-fiche={g.sim} className="fiche-ecran" style={{ '--c': couleur, borderColor: coche ? couleur : '#d5dfeb', boxShadow: coche ? `0 0 0 2px ${couleur}44` : undefined }}>
+      <label className="fiche-ecran-tete">
+        <input type="checkbox" checked={coche} onChange={bascule} aria-label={`Sélectionner la fiche : ${g.nom}`} style={{ accentColor: couleur, width: 18, height: 18 }} />
         <span style={{ flex: 1, minWidth: 0 }}>
-          <span style={{ display: 'block', fontFamily: TITRE_B, fontWeight: 800, fontSize: 15.5, color: KIT.txt, lineHeight: 1.3 }}>{f.etape || 'À retenir'}</span>
-          <span style={{ display: 'block', fontSize: 11.5, color: KIT.txt2, marginTop: 1 }}>Vue le {dateFr(f.t0 || f.t)}</span>
+          <span className="fiche-ecran-chap">{g.libNiv} · {g.chapLabel}</span>
+          <span className="fiche-ecran-nom">{g.nom}</span>
         </span>
-        <span aria-hidden="true" style={{ fontSize: 16 }}>❤️</span>
+        <span aria-hidden="true" style={{ fontSize: 18 }}>❤️</span>
       </label>
-      <CorpsFiche html={f.html} />
-      <div style={{ textAlign: 'right' }}>
-        <button type="button" onClick={() => naviguer(f.sim)} style={{ background: 'none', border: 'none', color: couleur, fontWeight: 700, fontSize: 12.5, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>Revoir la simulation ▶</button>
+      <div className="fiche-ecran-corps">{corps}</div>
+      <div style={{ textAlign: 'right', padding: '0 14px 10px' }}>
+        <button type="button" onClick={() => naviguer(g.sim)} style={{ background: 'none', border: 'none', color: couleur, fontWeight: 700, fontSize: 13, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>Revoir la simulation ▶</button>
       </div>
     </article>);
 }
 
-// Feuille imprimée : visible seulement à l'impression (voir App.css), cartes groupées par simulation
-function ZoneImpression({ fiches, identifiant }) {
-  const groupes = useMemo(() => {
-    const m = new Map();
-    fiches.forEach(f => { if (!m.has(f.sim)) m.set(f.sim, { nom: f.nom || `Simulation ${f.sim}`, L: [] }); m.get(f.sim).L.push(f); });
-    return [...m.values()];
-  }, [fiches]);
+// Feuille imprimée : visible seulement à l'impression (voir index.css), une fiche par simulation
+function ZoneImpression({ groupes, identifiant }) {
   return createPortal(
     <div className="fiches-print" aria-hidden="true">
       <header className="fiches-print-entete">
-        <div><b>Paillasse virtuelle</b> · Mes fiches « À retenir »</div>
+        <div><b>Paillasse virtuelle</b> · Mes fiches de révision</div>
         <div>{identifiant ? `${identifiant} · ` : ''}{new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
       </header>
-      {groupes.map(g => (
-        <section key={g.nom} className="fiches-print-groupe">
-          <h2>{g.nom}</h2>
-          <div className="fiches-print-grille">
-            {g.L.map(f => (
-              <div key={f.cle} className="fiches-print-carte">
-                <div className="fiches-print-titre">{f.etape || 'À retenir'} <span>❤</span></div>
-                <CorpsFiche html={f.html} impression />
-              </div>))}
-          </div>
-        </section>))}
+      {groupes.map(g => <FicheSim key={g.sim} g={g} couleur={COULEUR[g.niv] || COULEUR.autre} coche={false} bascule={() => {}} naviguer={() => {}} impression />)}
     </div>, document.body);
 }
 
 export function SimulationFiches({ naviguer }) {
   const sess = useSession();
   const fiches = useFiches();
-  const [choisies, setChoisies] = useState(() => new Set());
+  const [choisies, setChoisies] = useState(() => new Set());   // numéros de simulations
   const [niveau, setNiveau] = useState('tous');
+  useEffect(() => { document.body.classList.add('impression-fiches'); return () => document.body.classList.remove('impression-fiches'); }, []);
   const [recolte, setRecolte] = useState(null);   // { i, n } pendant la récolte, 'fini' ensuite
   const eleve = estEleve(sess);
   const lancerRecolte = async () => {
@@ -92,68 +88,65 @@ export function SimulationFiches({ naviguer }) {
       const ids = tempsParSimulation(lignes.filter(l => estSimulation(l.cle))).filter(a => a.guide > 0 || a.explore > 0 || a.defi > 0).map(a => Number(a.id)).filter(Number.isFinite);
       await recolterFiches(ids, (i, n) => setRecolte({ i, n }));
     } catch { /* hors ligne : on garde ce qui est déjà rangé */ }
-    try { window.localStorage.setItem('fiches-recolte-v1-' + (sess?.profil?.identifiant || ''), String(Date.now())); } catch { /* pas grave */ }
+    try { window.localStorage.setItem('fiches-recolte-v2-' + (sess?.profil?.identifiant || ''), String(Date.now())); } catch { /* pas grave */ }
     setRecolte('fini');
   };
-  // Une première fois, à l'ouverture de la page : retrouver les cartes des simulations déjà travaillées
+  // Une première fois, à l'ouverture de la page : retrouver les fiches des parcours déjà terminés
   useEffect(() => {
     if (!eleve) return;
-    let deja = null; try { deja = window.localStorage.getItem('fiches-recolte-v1-' + sess.profil.identifiant); } catch { /* ignoré */ }
+    let deja = null; try { deja = window.localStorage.getItem('fiches-recolte-v2-' + sess.profil.identifiant); } catch { /* ignoré */ }
     if (!deja) lancerRecolte();
   }, [eleve]);   // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { document.body.classList.add('impression-fiches'); return () => document.body.classList.remove('impression-fiches'); }, []);
 
-  // chapitre de chaque simulation (le premier qui la contient) ; « autre » sinon
-  const enrichies = useMemo(() => fiches.map(f => {
-    const c = chapitresDeSim(f.sim)[0];
-    return { ...f, chap: c ? c.id : 'autre', chapLabel: c ? c.label : 'Autres simulations', niv: c ? c.niveau : 'autre' };
-  }), [fiches]);
-  const visibles = enrichies.filter(f => niveau === 'tous' || f.niv === niveau);
+  const libNiv = k => (k === 'tous' ? 'Tous' : k === 'autre' ? 'Autres' : NIVEAUX_CHAPITRES.find(n => n.key === k)?.label || k);
+  // une fiche par simulation, ses points dans l'ordre des étapes du parcours (date de première vue)
+  const groupes = useMemo(() => {
+    const m = new Map();
+    fiches.forEach(f => {
+      if (!m.has(f.sim)) { const c = chapitresDeSim(f.sim)[0]; m.set(f.sim, { sim: f.sim, nom: f.nom || `Simulation ${f.sim}`, chap: c ? c.id : 'autre', chapLabel: c ? c.label : 'Autres simulations', niv: c ? c.niveau : 'autre', libNiv: libNiv(c ? c.niveau : 'autre'), L: [] }); }
+      m.get(f.sim).L.push(f);
+    });
+    m.forEach(g => g.L.sort((a, b) => (a.t0 || 0) - (b.t0 || 0)));
+    return [...m.values()];
+  }, [fiches]);   // eslint-disable-line react-hooks/exhaustive-deps
+  const visibles = groupes.filter(g => niveau === 'tous' || g.niv === niveau);
   const chapitres = useMemo(() => {
     const m = new Map();
-    visibles.forEach(f => {
-      if (!m.has(f.chap)) m.set(f.chap, { id: f.chap, label: f.chapLabel, niv: f.niv, sims: new Map() });
-      const g = m.get(f.chap);
-      if (!g.sims.has(f.sim)) g.sims.set(f.sim, { sim: f.sim, nom: f.nom || `Simulation ${f.sim}`, L: [] });
-      g.sims.get(f.sim).L.push(f);
-    });
+    visibles.forEach(g => { if (!m.has(g.chap)) m.set(g.chap, { id: g.chap, label: g.chapLabel, niv: g.niv, L: [] }); m.get(g.chap).L.push(g); });
     return [...m.values()].sort((a, b) => NIVEAUX_CHAPITRES.findIndex(n => n.key === a.niv) - NIVEAUX_CHAPITRES.findIndex(n => n.key === b.niv) || a.label.localeCompare(b.label));
   }, [visibles]);
-
-  const bascule = cle => setChoisies(s => { const n = new Set(s); if (n.has(cle)) n.delete(cle); else n.add(cle); return n; });
-  const basculeGroupe = L => setChoisies(s => { const n = new Set(s); const tout = L.every(f => n.has(f.cle)); L.forEach(f => (tout ? n.delete(f.cle) : n.add(f.cle))); return n; });
-  const selection = enrichies.filter(f => choisies.has(f.cle)).sort((a, b) => a.sim - b.sim || (a.t0 || 0) - (b.t0 || 0));
-  const niveauxPresents = ['tous', ...NIVEAUX_CHAPITRES.map(n => n.key).filter(k => enrichies.some(f => f.niv === k)), ...(enrichies.some(f => f.niv === 'autre') ? ['autre'] : [])];
-  const libNiv = k => (k === 'tous' ? 'Tous' : k === 'autre' ? 'Autres' : NIVEAUX_CHAPITRES.find(n => n.key === k)?.label || k);
+  const bascule = sim => setChoisies(s => { const n = new Set(s); if (n.has(sim)) n.delete(sim); else n.add(sim); return n; });
+  const selection = groupes.filter(g => choisies.has(g.sim));
+  const niveauxPresents = ['tous', ...NIVEAUX_CHAPITRES.map(n => n.key).filter(k => groupes.some(g => g.niv === k)), ...(groupes.some(g => g.niv === 'autre') ? ['autre'] : [])];
 
   return (
     <div style={{ ...cardStyle, maxWidth: 1040, margin: '0 auto' }} data-page-fiches>
       <div style={{ fontSize: 13, color: KIT.txt2 }}>
         <button onClick={() => naviguer(39)} style={{ background: 'none', border: 'none', padding: 0, color: '#0b4f94', textDecoration: 'underline', cursor: 'pointer', fontSize: 13 }}>Mon compte</button> › Mes fiches
       </div>
-      <h2 style={{ margin: '4px 0 2px', color: '#0b4f94', fontFamily: TITRE_B, fontSize: 28 }}><Pic n="clipboard"/>Mes fiches « À retenir »</h2>
+      <h2 style={{ margin: '4px 0 2px', color: '#0b4f94', fontFamily: TITRE_B, fontSize: 28 }}><Pic n="clipboard"/>Mes fiches de révision</h2>
       <p style={{ margin: '0 0 12px', color: KIT.txt2, fontSize: 14.5, lineHeight: 1.55 }}>
-        Chaque carte « À retenir » rencontrée dans une simulation vient se ranger ici, avec ses formules et ses schémas. Relis-les tranquillement pour réviser,
-        et imprime celles que tu choisis.{estEleve(sess) ? ' Elles te suivent d’un appareil à l’autre.' : ' Sans compte, elles restent sur cet appareil.'}
+        Quand tu as <b>terminé le parcours guidé</b> d’une simulation, sa fiche vient se ranger ici : le schéma de la simulation et les points « À retenir » de chaque étape, avec leurs formules.
+        Relis-les pour réviser, et imprime celles que tu choisis.{eleve ? ' Elles te suivent d’un appareil à l’autre.' : ' Sans compte, elles restent sur cet appareil.'}
       </p>
       {eleve && (
         <div data-recolte style={{ margin: '0 0 12px', fontSize: 13.5, color: KIT.txt2, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
           {recolte && recolte !== 'fini'
-            ? <span>🔎 Je retrouve tes cartes dans les simulations déjà faites… {recolte.n ? `(${Math.min(recolte.i + 1, recolte.n)} / ${recolte.n})` : ''}</span>
-            : <><span>Il manque des cartes d’une simulation déjà faite ?</span>
-              <button type="button" onClick={lancerRecolte} style={{ background: 'none', border: 'none', color: '#0b4f94', textDecoration: 'underline', cursor: 'pointer', fontSize: 13.5, padding: 0 }}>Retrouver mes cartes</button></>}
+            ? <span>🔎 Je retrouve tes fiches dans les simulations déjà faites… {recolte.n ? `(${Math.min(recolte.i + 1, recolte.n)} / ${recolte.n})` : ''}</span>
+            : <><span>Il manque la fiche d’une simulation que tu as terminée ?</span>
+              <button type="button" onClick={lancerRecolte} style={{ background: 'none', border: 'none', color: '#0b4f94', textDecoration: 'underline', cursor: 'pointer', fontSize: 13.5, padding: 0 }}>Retrouver mes fiches</button></>}
         </div>)}
-      {enrichies.length === 0 ? (
+      {groupes.length === 0 ? (
         <div style={{ padding: '22px 18px', borderRadius: 16, background: '#f1f6fb', border: '1px dashed #9fb8d4', textAlign: 'center', color: KIT.txt }}>
           <div style={{ fontSize: 34 }} aria-hidden="true">📇</div>
           <div style={{ fontWeight: 800, fontSize: 17, margin: '4px 0' }}>Ta collection est vide pour l’instant</div>
-          <div style={{ fontSize: 14, color: KIT.txt2, lineHeight: 1.5 }}>Ouvre un parcours guidé : chaque fois qu’une carte « À retenir ❤️ » apparaît, elle est rangée ici toute seule.</div>
+          <div style={{ fontSize: 14, color: KIT.txt2, lineHeight: 1.5 }}>Termine un parcours guidé jusqu’au bilan : la fiche de la simulation se range ici toute seule.</div>
         </div>) : (
         <>
           <div data-barre-fiches style={{ position: 'sticky', top: 0, zIndex: 5, background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(4px)', padding: '8px 0', display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', borderBottom: '1px solid #e2e8f0', marginBottom: 10 }}>
-            <span style={{ fontSize: 14, fontWeight: 800, color: KIT.txt }}>{enrichies.length} fiche{enrichies.length > 1 ? 's' : ''} · {selection.length} sélectionnée{selection.length > 1 ? 's' : ''}</span>
+            <span style={{ fontSize: 14, fontWeight: 800, color: KIT.txt }}>{groupes.length} fiche{groupes.length > 1 ? 's' : ''} · {selection.length} sélectionnée{selection.length > 1 ? 's' : ''}</span>
             <span style={{ flex: 1 }} />
-            <button style={stylePetitBouton(false)} onClick={() => setChoisies(new Set(visibles.map(f => f.cle)))}>Tout sélectionner</button>
+            <button style={stylePetitBouton(false)} onClick={() => setChoisies(new Set(visibles.map(g => g.sim)))}>Tout sélectionner</button>
             <button style={stylePetitBouton(false)} onClick={() => setChoisies(new Set())} disabled={!selection.length}>Tout désélectionner</button>
             <button data-imprimer style={{ ...styleBouton(selection.length > 0, '#0b4f94'), opacity: selection.length ? 1 : 0.5 }} disabled={!selection.length} onClick={() => window.print()}>
               <Pic n="clipboard"/>Imprimer la sélection{selection.length ? ` (${selection.length})` : ''}</button>
@@ -168,19 +161,11 @@ export function SimulationFiches({ naviguer }) {
               <h3 style={{ margin: '0 0 8px', fontFamily: TITRE_B, fontSize: 19, color: KIT.txt, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                 <span style={{ background: COULEUR[c.niv] || COULEUR.autre, color: '#fff', borderRadius: 999, fontSize: 12, padding: '2px 10px', fontWeight: 800 }}>{libNiv(c.niv)}</span>{c.label}
               </h3>
-              {[...c.sims.values()].map(g => (
-                <div key={g.sim} style={{ margin: '0 0 14px' }}>
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap', margin: '0 0 6px' }}>
-                    <span style={{ fontWeight: 800, color: KIT.txt, fontSize: 15 }}>{g.nom}</span>
-                    <button type="button" onClick={() => basculeGroupe(g.L)} style={{ background: 'none', border: 'none', color: '#0b4f94', textDecoration: 'underline', cursor: 'pointer', fontSize: 12.5, padding: 0 }}>
-                      {g.L.every(f => choisies.has(f.cle)) ? 'Désélectionner cette simulation' : 'Sélectionner cette simulation'}</button>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 330px), 1fr))', gap: 12 }}>
-                    {g.L.map(f => <Fiche key={f.cle} f={f} couleur={COULEUR[f.niv] || COULEUR.autre} coche={choisies.has(f.cle)} bascule={() => bascule(f.cle)} naviguer={naviguer} />)}
-                  </div>
-                </div>))}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 420px), 1fr))', gap: 14, alignItems: 'start' }}>
+                {c.L.map(g => <FicheSim key={g.sim} g={g} couleur={COULEUR[g.niv] || COULEUR.autre} coche={choisies.has(g.sim)} bascule={() => bascule(g.sim)} naviguer={naviguer} />)}
+              </div>
             </section>))}
         </>)}
-      <ZoneImpression fiches={selection} identifiant={estEleve(sess) ? sess.profil.identifiant : ''} />
+      <ZoneImpression groupes={selection} identifiant={eleve ? sess.profil.identifiant : ''} />
     </div>);
 }
