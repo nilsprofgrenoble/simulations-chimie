@@ -35,7 +35,9 @@ export function MonClassement({ naviguer }) {
     (async () => {
       try {
         const [p, c] = await Promise.all([rest('pseudos?select=adj,nom,classement'), rest('classes?select=nom,etablissement')]);
-        if (vivant) setEtat({ moi: p[0] || null, etab: (c[0]?.etablissement || '').trim(), classe: c[0]?.nom || '' });
+        let exclu = false;
+        try { exclu = !!(await rest('pseudos?select=exclu'))[0]?.exclu; } catch { /* script 14 pas encore appliqué */ }
+        if (vivant) setEtat({ moi: p[0] || null, etab: (c[0]?.etablissement || '').trim(), classe: c[0]?.nom || '', exclu });
       } catch { if (vivant) setEtat(null); }      // script SQL 13 pas encore appliqué, réseau coupé… : on n'affiche rien
     })();
     return () => { vivant = false; };
@@ -43,7 +45,7 @@ export function MonClassement({ naviguer }) {
 
   if (!etat) return null;
   const recharger = () => setVersion(v => v + 1);
-  const { moi, etab, classe } = etat;
+  const { moi, etab, classe, exclu } = etat;
   const monPseudo = moi && pseudoValide(moi.adj, moi.nom) ? pseudo(moi.adj, moi.nom) : null;
 
   const choisir = async (adj, nom) => {
@@ -93,6 +95,7 @@ export function MonClassement({ naviguer }) {
                 Si tu coches, <b>tout le monde sur Internet</b> verra ton pseudo, « {etab} », « {classe} » et tes scores. Ton nom n’apparaît jamais. Tu peux décocher quand tu veux.
                 En cas de doute, demande à ton professeur ou à tes parents avant de cocher.</span>
             </label>
+            {exclu && <div className="mc-msg" role="status">Ton professeur t’a retiré du classement : tu n’y apparais pas. Parles-en avec lui si tu penses que c’est une erreur.</div>}
             <div style={{ marginTop: 10 }}>
               <button type="button" className="mc-lien" onClick={() => naviguer(104)}>Voir le classement</button>{' · '}
               <button type="button" className="mc-lien" onClick={() => { setIdees(propositions(4)); setChange(true); }}>Changer de pseudo</button>

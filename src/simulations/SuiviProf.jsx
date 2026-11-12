@@ -13,6 +13,7 @@ import { SyntheseProf } from "./SyntheseProf";
 import { ChapitreClasse } from "./ChapitreClasse";
 import { PartageClasse } from "./PartageClasse";
 import { EtablissementClasse } from "./EtablissementClasse";
+import { synchroniserClesValides } from "../syncCles";
 import { ComptesProf } from "./ComptesProf";
 import { ApercuEleve } from "./ApercuEleve";
 import { GuideProf } from "./GuideProf";
@@ -120,6 +121,8 @@ export function SimulationSuiviProf({ naviguer }) {
 
   useEffect(() => { if (prof) proteger(() => chargerClasses()); }, [prof, proteger, chargerClasses]);
   useEffect(() => { if (prof) proteger(() => chargerClasse(classeId)); }, [prof, classeId, proteger, chargerClasse]);
+  // met à jour la liste des exercices valides du classement public (supabase/14-classement-durci.sql) : sans bruit, une fois par visite
+  useEffect(() => { if (prof) synchroniserClesValides([...exos.map(e => e.cle), ...defis.map(d => d.cle)]); }, [prof, exos, defis]);
 
   if (!prof) {
     return (
