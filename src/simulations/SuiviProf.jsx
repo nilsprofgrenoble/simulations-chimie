@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, Fragment } from "react";
 import { JeuxProf } from "./JeuxEscape";
+
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite } from "../commun";
 import { useSession, estProf, deconnexion, rest, toutLire, fonctionComptes } from "../serveur";
 import { agreger, etiquettes, formatDuree, formatDate, TableauTempsSimulations, MotDePasse } from "./Compte";
@@ -117,6 +118,17 @@ const AIDES = {
   reglages: 'Tout ce qui se règle une fois pour la classe : élèves, chapitre en cours, vie de classe, classement, partage.',
   compte: 'Votre mot de passe, la déconnexion, le guide de prise en main et les jeux.',
 };
+
+
+// Accès des enseignants à toutes les fiches de révision (page « Mes fiches », espace enseignant)
+function FichesProf({ naviguer }) {
+  return (
+    <div data-fiches-prof style={{ ...styleBoite, margin: '10px 0', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+      <span style={{ fontWeight: 800 }}>📇 Fiches de révision</span>
+      <span style={{ fontSize: 13.5, color: '#475569', flex: '1 1 260px' }}>Consulter et imprimer les fiches de toutes les simulations.</span>
+      <button onClick={() => naviguer(103)} style={styleBouton(true, '#be185d')}>Ouvrir les fiches</button>
+    </div>);
+}
 
 export function SimulationSuiviProf({ naviguer }) {
   const sess = useSession();
@@ -283,6 +295,7 @@ export function SimulationSuiviProf({ naviguer }) {
     <>
       {carteMonCompte}
       <GuideProf ouvertParDefaut={false} />
+      <FichesProf naviguer={naviguer} />
       <JeuxProf naviguer={naviguer} />
     </>);
 
@@ -325,7 +338,7 @@ export function SimulationSuiviProf({ naviguer }) {
         </form>)}
 
 
-      {!classe && <>{carteMonCompte}<JeuxProf naviguer={naviguer} /></>}
+      {!classe && <>{carteMonCompte}<FichesProf naviguer={naviguer} /><JeuxProf naviguer={naviguer} /></>}
 
       {classe && (
         <>

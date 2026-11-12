@@ -144,10 +144,13 @@ export function noterFigure(sim, dataUrl) {
   noterModification(cle);
   annoncerFiches();
 }
+// Consultation enseignant : figures gardées en mémoire (et, si la place le permet, dans l'appareil), sans toucher aux fiches de l'élève
+const figuresConsult = new Map();
 export function lireFigure(sim) {
+  if (figuresConsult.has(sim)) return figuresConsult.get(sim);
   try { const f = JSON.parse(window.localStorage.getItem(PREFIXE_FIGURE + sim) || 'null'); return f && typeof f.img === 'string' && f.img.startsWith('data:image/') ? f.img : null; } catch { return null; }
 }
-export const aFigure = sim => { try { return !!window.localStorage.getItem(PREFIXE_FIGURE + sim); } catch { return false; } };
+export const aFigure = sim => { if (figuresConsult.has(sim)) return true; try { return !!window.localStorage.getItem(PREFIXE_FIGURE + sim); } catch { return false; } };
 
 export function listerFiches() {
   const L = [];
@@ -164,16 +167,19 @@ export function listerFiches() {
 // ═════ RÉCOLTE : retrouver les cartes des simulations déjà travaillées ═════
 // Le site ne garde pas le texte des cartes, seulement l'avancement. On rouvre donc chaque simulation travaillée dans un cadre invisible
 // (adresse « ?sim=N&recolte=1 ») qui ne compte aucun temps et qui renvoie les cartes des étapes déjà atteintes à la page « Mes fiches ».
+export const EN_CONSULT = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('consult');
 export const EN_RECOLTE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('recolte');
 export const envoyerRecolte = fiche => { try { window.parent.postMessage({ type: 'fiche-recolte', fiche }, window.location.origin); } catch { /* sans parent : rien à faire */ } };
 export const envoyerFigure = (sim, img) => { try { window.parent.postMessage({ type: 'fiche-figure', sim, img }, window.location.origin); } catch { /* idem */ } };
 export const finRecolte = sim => { try { window.parent.postMessage({ type: 'fiche-recolte-fin', sim, termine: estTermine(sim), progres: lireProgres(sim) }, window.location.origin); } catch { /* idem */ } };
 
-export async function recolterFiches(ids, surAvancee) {
+export async function recolterFiches(ids, surAvancee, options = {}) {
+  const consult = !!options.consult;   // consultation enseignant : toutes les cartes, rangées en mémoire (options.cartes) et non dans la collection
   let trouvees = 0;
   const bilan = [];   // une ligne par simulation : { sim, termine, cartes }
-  for (let i = 0; i < ids.length; i++) {
-    if (surAvancee) surAvancee(i, ids.length);
+  let fait = 0;
+  const une = async i => {
+    if (surAvancee) surAvancee(fait, ids.length);
     await new Promise(fini => {
       const cadre = document.createElement('iframe');
       cadre.setAttribute('aria-hidden', 'true'); cadre.tabIndex = -1;
@@ -184,15 +190,54 @@ export async function recolterFiches(ids, surAvancee) {
       const terminer = () => { if (fin) return; fin = true; bilan.push({ sim: ids[i], termine, cartes, progres, delai: !termine && !cartes }); window.removeEventListener('message', ecouter); clearTimeout(garde); cadre.remove(); fini(); };
       const ecouter = e => {
         if (e.origin !== window.location.origin || e.source !== cadre.contentWindow || !e.data) return;
-        if (e.data.type === 'fiche-recolte' && e.data.fiche) { if (noterFiche(e.data.fiche)) { trouvees++; cartes++; } }
-        else if (e.data.type === 'fiche-figure') { noterFigure(Number(e.data.sim), e.data.img); }
+        if (e.data.type === 'fiche-recolte' && e.data.fiche) {
+          if (consult) { if (garderCarteConsult(options.cartes, e.data.fiche)) { trouvees++; cartes++; } }
+          else if (noterFiche(e.data.fiche)) { trouvees++; cartes++; }
+        }
+        else if (e.data.type === 'fiche-figure') { if (consult) { if (typeof e.data.img === 'string' && e.data.img.startsWith('data:image/')) figuresConsult.set(Number(e.data.sim), e.data.img); } else noterFigure(Number(e.data.sim), e.data.img); }
         else if (e.data.type === 'fiche-recolte-fin') { termine = !!e.data.termine; progres = e.data.progres || null; terminer(); }
       };
       const garde = setTimeout(terminer, 45000);
       window.addEventListener('message', ecouter);
-      cadre.src = `${window.location.pathname}?sim=${ids[i]}&recolte=1`;
+      cadre.src = `${window.location.pathname}?sim=${ids[i]}&recolte=1${consult ? '&consult=1' : ''}`;
       document.body.appendChild(cadre);
     });
-  }
+    fait++;
+    if (surAvancee) surAvancee(fait, ids.length);
+  };
+  let prochain = 0;   // plusieurs cadres à la fois possibles (consultation de toutes les fiches)
+  await Promise.all(Array.from({ length: Math.max(1, options.parallele || 1) }, async () => { while (prochain < ids.length) await une(prochain++); }));
   return { trouvees, bilan };
 }
+
+// ═════ CONSULTATION ENSEIGNANT : toutes les fiches du site, sans avoir fait les parcours ═════
+// Même cadre invisible que la récolte, avec « &consult=1 » : le cadre rend toutes les cartes de la simulation sans tenir compte de l'avancement.
+// Elles sont gardées à part (clé « fiches-consult-v1 », meilleur effort) : jamais dans la collection de l'élève ni dans le suivi.
+export function garderCarteConsult(liste, f) {
+  if (!Array.isArray(liste) || !f || !Number.isFinite(f.sim) || !f.html) return false;
+  const propre = nettoyerHtml(f.html);
+  if (!propre || propre.length > TAILLE_MAX_HTML) return false;
+  const base = `${f.etape || ''}|${String(f.texte || '').replace(/[0-9]+([.,][0-9]+)?/g, '#').replace(/\s+/g, ' ').slice(0, 160)}`;
+  const cle = `consult-${f.sim}-${empreinte(base)}`;
+  if (liste.some(c => c.cle === cle)) return false;
+  const rang = Number.isFinite(f.ordre) ? f.ordre : undefined;
+  liste.push({ v: 1, sim: f.sim, nom: f.nomSim || '', etape: f.etape || '', html: propre, ordre: rang, t0: Date.now(), t: Date.now(), cle });
+  return true;
+}
+const CLE_CONSULT = 'fiches-consult-v1';
+export function lireConsult() {
+  try {
+    const b = JSON.parse(window.localStorage.getItem(CLE_CONSULT) || 'null');
+    if (!b || !Array.isArray(b.cartes)) return null;
+    Object.entries(b.figures || {}).forEach(([k, v]) => { if (typeof v === 'string' && v.startsWith('data:image/')) figuresConsult.set(Number(k), v); });
+    return b;
+  } catch { return null; }
+}
+export function garderConsult(cartes) {
+  const figures = {}; figuresConsult.forEach((v, k) => { figures[k] = v; });
+  const t = Date.now();
+  try { window.localStorage.setItem(CLE_CONSULT, JSON.stringify({ v: 1, t, cartes, figures })); return t; } catch { /* trop gros : on garde les cartes sans les figures */ }
+  try { window.localStorage.setItem(CLE_CONSULT, JSON.stringify({ v: 1, t, cartes, figures: {} })); } catch { /* en mémoire seulement */ }
+  return t;
+}
+export function oublierConsult() { try { window.localStorage.removeItem(CLE_CONSULT); } catch { /* ignoré */ } figuresConsult.clear(); }

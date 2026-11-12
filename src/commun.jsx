@@ -3,7 +3,7 @@ import { compter } from "./stats";
 import { Pic, Emo } from "./Pictos";
 import { missionEnCours } from "./mission";
 import { chapitresDeSim, ouvrirExercicesDeSim, ouvrirFiches } from "./chapitres";
-import { noterFiche, EN_RECOLTE, envoyerRecolte, envoyerFigure, estTermine, marquerTermine, noterProgres, capturerFigure, noterFigure, aFigure } from "./fiches";
+import { noterFiche, EN_RECOLTE, EN_CONSULT, envoyerRecolte, envoyerFigure, estTermine, marquerTermine, noterProgres, capturerFigure, noterFigure, aFigure } from "./fiches";
 import { nomsSim } from "./suivi";
 import { enregistrer, noterModification, surChangementServeur } from "./etatsParcours";
 
@@ -418,7 +418,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
             style={{ ...btn(peutSuivre, ORANGE_GUIDE), opacity: peutSuivre ? 1 : 0.45 }}>Suivant ▶</button>
         ) : fin}
       </div>
-      {(etat.fini || estTermine(parseInt(new URLSearchParams(window.location.search).get('sim')))) && (
+      {(etat.fini || EN_CONSULT || estTermine(parseInt(new URLSearchParams(window.location.search).get('sim')))) && (
         <div hidden aria-hidden="true">
           {etapes.map((e2, k) => e2.retenir ? <ARetenir key={k} titre={e2.retenirTitre || 'À RETENIR'} titreEtape={e2.titre} ordre={k}>{e2.retenir}</ARetenir> : null)}
         </div>)}
@@ -443,7 +443,7 @@ export function ARetenir({ titre = 'À RETENIR', children, sansFiche = false, ti
       const el = contenu.current;
       if (!el) return;
       const sim = parseInt(new URLSearchParams(window.location.search).get('sim'));
-      if (!estTermine(sim)) return;   // seules les simulations dont le parcours guidé est terminé alimentent la collection
+      if (!estTermine(sim) && !EN_CONSULT) return;   // seules les simulations dont le parcours guidé est terminé alimentent la collection
       const carte = el.closest('[data-retenir]');
       const zone = carte?.parentElement;
       const etape = titreEtape || (zone?.querySelector('[data-titre-etape]') || null)?.textContent?.trim() || '';
