@@ -13,7 +13,9 @@ export const DOMAINE = 'eleves.example.com';       // adresses fictives des él�
 const CLE_STOCKAGE = 'sb-session-v1';
 
 // ── Session : gardée dans l'onglet (sessionStorage), ou dans le navigateur si l'élève coche « rester connecté » ──
-function stockage(persistant) { try { return persistant ? window.localStorage : window.sessionStorage; } catch { return null; } }
+// Cadre invisible de récolte des fiches (?recolte=1) : il ne doit jamais voir, renouveler ni effacer la session de l'élève (le jeton partagé serait invalidé)
+const EN_RECOLTE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('recolte');
+function stockage(persistant) { if (EN_RECOLTE) return null; try { return persistant ? window.localStorage : window.sessionStorage; } catch { return null; } }
 function lireSession() {
   for (const p of [false, true]) {
     try {
@@ -48,7 +50,7 @@ function relireAutresOnglets() {
 }
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', e => {
-    if (e.key !== CLE_STOCKAGE) return;
+    if (EN_RECOLTE || e.key !== CLE_STOCKAGE) return;
     try { if (e.storageArea !== window.localStorage) return; } catch { return; }
     let s = null;
     try { s = JSON.parse(e.newValue || 'null'); } catch { /* illisible */ }

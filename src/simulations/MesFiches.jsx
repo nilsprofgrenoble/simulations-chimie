@@ -5,7 +5,7 @@ import { useSession, estEleve } from "../serveur";
 import { surSynchro } from "../etatsParcours";
 import { listerFiches, surChangementFiches, recolterFiches, lireFigure } from "../fiches";
 import { toutLire } from "../serveur";
-import { tempsParSimulation, estSimulation } from "../suivi";
+import { tempsParSimulation, estSimulation, nomsSim } from "../suivi";
 import { chapitresDeSim, NIVEAUX_CHAPITRES } from "../chapitres";
 import { Pic } from "../Pictos";
 
@@ -78,6 +78,7 @@ export function SimulationFiches({ naviguer }) {
   const [choisies, setChoisies] = useState(() => new Set());   // numéros de simulations
   const [niveau, setNiveau] = useState('tous');
   useEffect(() => { document.body.classList.add('impression-fiches'); return () => document.body.classList.remove('impression-fiches'); }, []);
+  const [bilanRecolte, setBilanRecolte] = useState(null);   // après une récupération : pourquoi telle simulation n'a pas de fiche
   const [recolte, setRecolte] = useState(null);   // { i, n } pendant la récolte, 'fini' ensuite
   const eleve = estEleve(sess);
   const lancerRecolte = async () => {
@@ -86,7 +87,8 @@ export function SimulationFiches({ naviguer }) {
     try {
       const lignes = await toutLire('activites?select=cle,duree_s&order=debut.desc');
       const ids = tempsParSimulation(lignes.filter(l => estSimulation(l.cle))).map(a => Number(a.id)).filter(Number.isFinite);
-      await recolterFiches(ids, (i, n) => setRecolte({ i, n }));
+      const r = await recolterFiches(ids, (i, n) => setRecolte({ i, n }));
+      setBilanRecolte(r.bilan);
     } catch { /* hors ligne : on garde ce qui est déjà rangé */ }
     try { window.localStorage.setItem('fiches-recolte-v2-' + (sess?.profil?.identifiant || ''), String(Date.now())); } catch { /* pas grave */ }
     setRecolte('fini');
@@ -136,6 +138,16 @@ export function SimulationFiches({ naviguer }) {
             : <><span>Il manque la fiche d’une simulation que tu as terminée ?</span>
               <button type="button" onClick={lancerRecolte} style={{ background: 'none', border: 'none', color: '#0b4f94', textDecoration: 'underline', cursor: 'pointer', fontSize: 13.5, padding: 0 }}>Retrouver mes fiches</button></>}
         </div>)}
+      {eleve && bilanRecolte && recolte === 'fini' && (() => {
+        const sans = bilanRecolte.filter(b => !groupes.some(g => g.sim === b.sim));
+        return sans.length ? (
+          <details data-bilan-recolte style={{ margin: '0 0 12px', fontSize: 13.5, color: KIT.txt2 }}>
+            <summary style={{ cursor: 'pointer' }}>{sans.length} simulation{sans.length > 1 ? 's' : ''} sans fiche : pourquoi ?</summary>
+            <ul style={{ margin: '4px 0', paddingLeft: 18, lineHeight: 1.5 }}>
+              {sans.map(b => <li key={b.sim}><b>{nomsSim[b.sim] || `Simulation ${b.sim}`}</b> : {b.termine ? 'parcours terminé, mais cette simulation n’a pas encore de carte « À retenir »' : 'parcours guidé non terminé (il faut aller jusqu’au bilan) ou simulation sans parcours guidé'}</li>)}
+            </ul>
+          </details>) : null;
+      })()}
       {groupes.length === 0 ? (
         <div style={{ padding: '22px 18px', borderRadius: 16, background: '#f1f6fb', border: '1px dashed #9fb8d4', textAlign: 'center', color: KIT.txt }}>
           <div style={{ fontSize: 34 }} aria-hidden="true">📇</div>

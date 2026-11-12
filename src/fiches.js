@@ -142,23 +142,26 @@ export function listerFiches() {
 export const EN_RECOLTE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('recolte');
 export const envoyerRecolte = fiche => { try { window.parent.postMessage({ type: 'fiche-recolte', fiche }, window.location.origin); } catch { /* sans parent : rien à faire */ } };
 export const envoyerFigure = (sim, img) => { try { window.parent.postMessage({ type: 'fiche-figure', sim, img }, window.location.origin); } catch { /* idem */ } };
-export const finRecolte = () => { try { window.parent.postMessage({ type: 'fiche-recolte-fin' }, window.location.origin); } catch { /* idem */ } };
+export const finRecolte = sim => { try { window.parent.postMessage({ type: 'fiche-recolte-fin', sim, termine: estTermine(sim) }, window.location.origin); } catch { /* idem */ } };
 
 export async function recolterFiches(ids, surAvancee) {
   let trouvees = 0;
+  const bilan = [];   // une ligne par simulation : { sim, termine, cartes }
   for (let i = 0; i < ids.length; i++) {
     if (surAvancee) surAvancee(i, ids.length);
     await new Promise(fini => {
       const cadre = document.createElement('iframe');
       cadre.setAttribute('aria-hidden', 'true'); cadre.tabIndex = -1;
-      cadre.style.cssText = 'position:fixed;left:-9999px;top:0;width:1100px;height:900px;border:0;visibility:hidden';
+      // dans l'écran mais invisible (opacité 0) : un cadre hors écran ou « hidden » peut être ralenti ou suspendu par certains navigateurs
+      cadre.style.cssText = 'position:fixed;right:0;bottom:0;width:1100px;height:900px;border:0;opacity:0;pointer-events:none;z-index:-1';
+      let cartes = 0, termine = false;
       let fin = false;
-      const terminer = () => { if (fin) return; fin = true; window.removeEventListener('message', ecouter); clearTimeout(garde); cadre.remove(); fini(); };
+      const terminer = () => { if (fin) return; fin = true; bilan.push({ sim: ids[i], termine, cartes, delai: !termine && !cartes }); window.removeEventListener('message', ecouter); clearTimeout(garde); cadre.remove(); fini(); };
       const ecouter = e => {
         if (e.origin !== window.location.origin || e.source !== cadre.contentWindow || !e.data) return;
-        if (e.data.type === 'fiche-recolte' && e.data.fiche) { if (noterFiche(e.data.fiche)) trouvees++; }
+        if (e.data.type === 'fiche-recolte' && e.data.fiche) { if (noterFiche(e.data.fiche)) { trouvees++; cartes++; } }
         else if (e.data.type === 'fiche-figure') { noterFigure(Number(e.data.sim), e.data.img); }
-        else if (e.data.type === 'fiche-recolte-fin') terminer();
+        else if (e.data.type === 'fiche-recolte-fin') { termine = !!e.data.termine; terminer(); }
       };
       const garde = setTimeout(terminer, 45000);
       window.addEventListener('message', ecouter);
@@ -166,5 +169,5 @@ export async function recolterFiches(ids, surAvancee) {
       document.body.appendChild(cadre);
     });
   }
-  return trouvees;
+  return { trouvees, bilan };
 }

@@ -362,7 +362,7 @@ export default function App() {
         const img = await capturerFigure(); if (img) envoyerFigure(sim, img);
       } catch { /* on rend la main quoi qu'il arrive */ }
       try { Object.entries(choixAvant).forEach(([k, v]) => window.localStorage.setItem(k, v)); } catch { /* ignoré */ }
-      if (!annule) finRecolte();
+      if (!annule) finRecolte(sim);
     })();
     return () => { annule = true; };
   }, []);
