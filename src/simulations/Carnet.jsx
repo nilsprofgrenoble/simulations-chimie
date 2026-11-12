@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { analyser, objectifs, titreNiveau } from "../carnet";
+import { useNiveauxEleve } from "../niveauEleve";
 import { aRevoir, raisonRevision, dansJours } from "../revision";
 import { tousLesExercices } from "./Entrainement";
 import { etiquettesDefis } from "../suivi";
@@ -35,7 +36,8 @@ export function Carnet({ lignes, naviguer, parties }) {
   useEffect(() => { const t = setTimeout(() => setMont(true), 80); return () => clearTimeout(t); }, []);
   const items = useMemo(() => [...tousLesExercices(), ...etiquettesDefis().map(d => ({ cle: d.cle, comp: 'DÉFI', titre: d.titre, sim: d.sim }))], []);
   const A = useMemo(() => analyser(items, lignes), [items, lignes]);
-  const obj = useMemo(() => objectifs(items, A), [items, A]);
+  const niveauxEleve = useNiveauxEleve(items, A.d);
+  const obj = useMemo(() => objectifs(items, A, niveauxEleve), [items, A, niveauxEleve]);
   const rev = useMemo(() => aRevoir(items, lignes), [items, lignes]);
   const { niveau, comps, badges, semaines } = A;
   const suivant = titreNiveau(niveau.n + 1);
@@ -151,7 +153,7 @@ export function Carnet({ lignes, naviguer, parties }) {
       {P.objectifs && !A.aucun && (
         <>
           <h3 className="cn-h"><Pic n="target"/>Mes prochains objectifs</h3>
-          {obj.length === 0 ? <div className="cn-carte" style={{ fontSize: 15 }}><Pic n="party"/>Tu as tout réussi avec toutes les étoiles. Bravo ! D’autres exercices arrivent bientôt.</div> : (
+          {obj.length === 0 ? (niveauxEleve && <div className="cn-carte" style={{ fontSize: 15 }}><Pic n="party"/>Tu as tout réussi avec toutes les étoiles. Bravo ! D’autres exercices arrivent bientôt.</div>) : (
             <div className="cn-grille">
               {obj.map(o => { const comp = A.comps.find(c => c.code === o.item.comp);
                 return (
@@ -165,6 +167,7 @@ export function Carnet({ lignes, naviguer, parties }) {
                     </div>
                   </div>); })}
             </div>)}
+          {!niveauxEleve && <p style={{ fontSize: 13.5, color: '#475569', margin: '8px 0 0' }}>Pour recevoir des propositions adaptées à ton année, choisis ton niveau dans « Je m’entraîne ».</p>}
         </>)}
 
       {/* ── Compétences ── */}

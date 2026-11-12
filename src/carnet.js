@@ -1,3 +1,4 @@
+import { convientAuxNiveaux } from "./niveaux";
 // ═══════════════════════════════════════════════════════════════════════════
 //  « MON CARNET » : étoiles, niveaux, badges et objectifs d'un élève connecté.
 //  Tout est CALCULÉ à partir des lignes déjà enregistrées (table « activites » : cle, reussi, essais,
@@ -135,7 +136,8 @@ export function analyser(items, lignes, maintenant = new Date()) {
 }
 
 // ── Prochains objectifs (3 au plus) ──
-export function objectifs(items, A) {
+// niveaux : Set des niveaux de l'élève (voir niveauEleve.js) ; null si inconnu : on ne propose alors ni nouveauté ni défi au hasard
+export function objectifs(items, A, niveaux = null) {
   const { d, comps } = A, res = [], deja = new Set();
   const ajouter = (item, type, texte) => { if (res.length < 3 && !deja.has(item.cle)) { deja.add(item.cle); res.push({ item, type, texte }); } };
   // 1. à terminer : commencé mais jamais réussi (le plus récent d'abord)
@@ -147,11 +149,11 @@ export function objectifs(items, A) {
   // 3. à découvrir : premier exercice jamais ouvert de la compétence la moins avancée (ordre conseillé)
   const dispo = comps.filter(c => !c.bientot && c.code !== 'DÉFI' && c.n > 0).sort((a, b) => a.palier.frac - b.palier.frac);
   for (const c of dispo) {
-    const nouveau = items.find(i => i.comp === c.code && !d(i.cle).vu);
+    const nouveau = niveaux && items.find(i => i.comp === c.code && !d(i.cle).vu && convientAuxNiveaux(i, niveaux));
     if (nouveau) { ajouter(nouveau, 'decouvrir', `Une nouvelle étape en ${c.court.toLowerCase()}.`); break; }
   }
   // 4. sinon un défi pas encore réussi
-  items.filter(i => i.comp === 'DÉFI' && !d(i.cle).reussi).slice(0, 1).forEach(i => ajouter(i, 'defi', 'Un défi de simulation à relever.'));
+  if (niveaux) items.filter(i => i.comp === 'DÉFI' && !d(i.cle).reussi && convientAuxNiveaux(i, niveaux)).slice(0, 1).forEach(i => ajouter(i, 'defi', 'Un défi de simulation à relever.'));
   return res.slice(0, 3);
 }
 
