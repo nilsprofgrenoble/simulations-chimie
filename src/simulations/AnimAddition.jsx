@@ -54,7 +54,7 @@ export function AnimAddition({ alc, re, u, face = 'dessus', syn = false, hauteur
   });
   // double liaison (π estompée après la première étape)
   elements.push(<g key="cc">{ligne(C2, C3, NOIR, 3)}{ligne([c2x, c2y - 6], [c3x, c3y - 6], pi ? NOIR : GRIS, 3, pi ? undefined : '4 3')}</g>);
-  elements.push(<g key="cl">{etiq(c2x + 15, c2y + 17, 'C2', KIT.txt2, 11)}{etiq(c3x - 15, c3y + 17, 'C3', KIT.txt2, 11)}</g>);
+  elements.push(<g key="cl">{etiq(c2x + 14, c2y - 15, 'C2', KIT.txt2, 11)}{etiq(c3x - 14, c3y - 15, 'C3', KIT.txt2, 11)}</g>);
 
   // 2) réactif et intermédiaires. up(d) : d pixels du côté du réactif ; down(d) : de l'autre côté
   const up = d => 150 - m * d, down = d => 150 + m * d;
