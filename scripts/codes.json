@@ -683,5 +683,10 @@
  "34:rheo-architecture": "SAPP179",
  "34:rheo-ecoulement": "SAPP180",
  "34:rheo-dose-forte": "SAPP181",
- "34:rheo-peintures": "SAPP182"
+ "34:rheo-peintures": "SAPP182",
+ "37:prevoir:for-hansen-r0": "ANA320",
+ "37:prevoir:for-hansen-evaporation": "ANA321",
+ "77:plausible:for-hansen-ra-sans-racine": "VAL169",
+ "77:plausible:for-hansen-red-ethanol-ok": "VAL170",
+ "77:plausible:for-hansen-melange-moyenne-red": "VAL171"
 }

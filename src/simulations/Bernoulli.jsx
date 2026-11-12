@@ -1,7 +1,7 @@
 import { missionEnCours } from "../mission";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { cardStyle, CarteParcours, useEtatPersistant, ORANGE_GUIDE, lireNombre } from "../commun";
+import { cardStyle, CarteParcours, useEtatPersistant, ORANGE_GUIDE, lireNombre, OngletExercices } from "../commun";
 import { Pic } from "../Pictos";
 
 const SIM_ID = 17;
@@ -1863,6 +1863,7 @@ export function SimulationBernoulli({ plotlyReady }) {
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={btn(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('exercice')} style={btn(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
+      <OngletExercices />
     </span>
   );
   const volet = enGuide
@@ -1919,6 +1920,7 @@ export function SimulationBernoulli({ plotlyReady }) {
             : <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>}
           <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}><Pic n="search"/>Exploration libre</button>
           <button onClick={() => changerMode('exercice')} style={btn(mode === 'exercice', '#0ea5e9')}><Pic n="target"/>Défi (exercices)</button>
+          <OngletExercices />
         </div>
       </div>
 

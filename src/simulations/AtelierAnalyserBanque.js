@@ -2647,6 +2647,18 @@ export const PREVOIR = [
       F('ne peut pas dissoudre le polymère, car aucun des deux solvants ne le dissout', 'Les propriétés d’un mélange ne se déduisent pas simplement de celles des constituants : seuls comptent les paramètres du mélange.'),
       F('dissout toujours mieux le polymère que chacun des deux solvants', 'Cela dépend de la position du mélange par rapport à la sphère. Il peut aussi rester à l’extérieur.'),
     ] },
+  { id: 'for-hansen-r0', domaine: 'Formulation', titre: 'Agrandir la sphère de solubilité',
+    enonce: 'Deux polymères P1 et P2 ont exactement les mêmes paramètres de Hansen (même centre de sphère), mais le rayon de solubilité R₀ de P2 est plus grand que celui de P1. On teste le même solvant sur les deux.', q: 'Si le solvant est hors de la sphère de P1 (RED > 1), que peut-on affirmer pour P2 ?', options: [
+      V('Sa distance Ra au centre est la même ; avec un R₀ plus grand, son RED est plus petit, et il peut être devenu inférieur à 1', 'RED = Ra / R₀ : Ra ne dépend que du solvant et du centre de la sphère, donc agrandir R₀ fait baisser le RED.'),
+      F('Son RED est inchangé, car il ne dépend que du solvant', 'Le RED est le rapport Ra / R₀ : il dépend aussi du rayon de la sphère.'),
+      F('Il reste forcément hors de la sphère, car le centre est le même', 'Une sphère plus grande englobe davantage de solvants : un solvant juste à l’extérieur de la petite sphère peut être à l’intérieur de la grande.'),
+    ] },
+  { id: 'for-hansen-evaporation', domaine: 'Formulation', titre: 'Lire un indice d’évaporation',
+    enonce: 'Dans les tables de solvants, l’indice d’évaporation est donné par rapport à l’acétate de butyle, pris comme référence (indice = 1). Un solvant S1 a un indice de 3 et un solvant S2 un indice de 0,5.', q: 'Que peut-on dire de la vitesse d’évaporation de ces deux solvants (mêmes conditions de température et de surface) ?', options: [
+      V('S1 s’évapore plus vite que l’acétate de butyle (environ 3 fois) ; S2 plus lentement (environ 2 fois plus lentement)', 'Plus l’indice est grand, plus le solvant est volatil : indice 3 signifie une évaporation environ trois fois plus rapide que la référence.'),
+      F('S2 est plus volatil que S1, car son indice est plus petit', 'Un indice plus petit correspond à une évaporation plus lente : S2 est moins volatil que S1.'),
+      F('Les deux s’évaporent plus lentement que l’acétate de butyle, car on les compare à une référence', 'La référence vaut 1 : un indice supérieur à 1 est plus volatil, un indice inférieur à 1 moins volatil.'),
+    ] },
   { id: 'for-extrait-sec', domaine: 'Formulation', titre: 'Masse de film sec',
     enonce: 'Un pot contient 2,0 kg de peinture dont l’extrait sec est de 60 % en masse. On admet que tout ce qui n’est pas l’extrait sec s’évapore au séchage.', q: 'Après séchage complet, la masse de film sec est…', options: [
       V('1,2 kg : 60 % de 2,0 kg', 'L’extrait sec est la fraction de la peinture qui reste après évaporation des composés volatils.'),
