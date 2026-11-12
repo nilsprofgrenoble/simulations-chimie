@@ -76,6 +76,17 @@ function inlinerStyles(source, copie) {
 export async function capturerFigure() {
   try {
     const zone = document.getElementById('zone-simulation'); if (!zone) return null;
+    // Graphique Plotly (2D ou 3D, dont WebGL) : Plotly sait lui-même en faire une image
+    const gd = [...zone.querySelectorAll('.js-plotly-plot')].filter(el => !el.closest('[data-carte-parcours], [data-retenir], [hidden]') && el.getBoundingClientRect().width >= 220)
+      .sort((x, y) => y.getBoundingClientRect().height * y.getBoundingClientRect().width - x.getBoundingClientRect().height * x.getBoundingClientRect().width)[0];
+    if (gd && window.Plotly && window.Plotly.toImage) {
+      const rg = gd.getBoundingClientRect(), L = Math.min(720, Math.round(rg.width));
+      for (const q of [1, 0.7]) {
+        const d = await window.Plotly.toImage(gd, { format: 'jpeg', width: Math.round(L * q), height: Math.round(rg.height * L * q / rg.width) });
+        if (d && d.length < TAILLE_MAX_FIGURE) return d;
+      }
+      return null;
+    }
     const candidats = [...zone.querySelectorAll('svg, canvas')].filter(el => {
       if (el.closest('[data-carte-parcours], [data-retenir], button, [hidden]')) return false;
       const r = el.getBoundingClientRect(); return r.width >= 220 && r.height >= 130;
