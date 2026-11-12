@@ -5,6 +5,7 @@ import { etapesDevoir, prochaineSimulation } from "./profil";
 import { nomsSim } from "./suivi";
 import { ACCENT, ACCENT_CLAIR, TEXTE, TEXTE2 } from "./theme";
 import { Pic, Emo } from "./Pictos";
+import { chapitresDeSim, allerChapitre } from "./chapitres";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  BANDEAU « OÙ J'EN SUIS » (élève connecté), en haut d'une simulation.
@@ -66,6 +67,7 @@ export function ProchaineEtape({ simId, naviguer }) {
       <span style={{ flex: '1 1 260px', lineHeight: 1.45 }}>
         {info.titre && <span style={{ display: 'block', fontSize: 12.5, color: TEXTE2, fontWeight: 700 }}><Pic n="pin"/>{info.titre}</span>}{texte}</span>
       {action}
+      {info.type !== 'guide' && chapitresDeSim(Number(simId))[0] && <button style={btn2} onClick={() => allerChapitre(naviguer, chapitresDeSim(Number(simId))[0].id)}>S’entraîner ✏️</button>}
       <button style={btn2} onClick={() => naviguer(39)}>Mon profil</button>
       <button aria-label="Masquer" onClick={() => setFerme(true)} style={{ background: 'none', border: 'none', fontSize: 20, color: TEXTE2, cursor: 'pointer', padding: '0 4px' }}>×</button>
     </div>);

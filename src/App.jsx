@@ -11,6 +11,7 @@ import { ModeParDefaut } from "./ModeParDefaut";
 import CadreMission from "./CadreMission";
 import { missionEnCours } from "./mission";
 import { ProchaineEtape } from "./ProchaineEtape";
+import { ExercicesLies } from "./ExercicesLies";
 import { EnTete } from "./EnTete";
 import { PiedDePage } from "./PiedDePage";
 import { AccueilSite } from "./AccueilSite";
@@ -537,6 +538,7 @@ export default function App() {
                 {(activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81) && <SuiviTemps simId={activeId} />}
                 {estEleve(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81) && <ProchaineEtape key={`pe${activeId}`} simId={activeId} naviguer={naviguer} />}
                 <div id="zone-simulation"><EnChargement><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></EnChargement></div>
+                {(activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 82) && <ExercicesLies simId={activeId} naviguer={naviguer} />}
                 {activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 ? <ModeParDefaut simId={activeId} cibleId="zone-simulation" /> : null}
               </div>}
         </div>
