@@ -10,7 +10,7 @@ export const EXOS_DE_SIM = {
   4: [/for-hansen-/],                                                                                                 // Hansen
   14: [/for-(extrait-sec|cpv|cpvc|aspect-cpv|tmff|coalescent|sechage-latex|prise-huile)/, /for-val-extrait-sec/],         // Peinture à l'eau
   100: [/^rheo-/],                                                                                                      // Épaississants associatifs
-  101: [],                                                                                                              // Lasure alkyde (pas encore d'exercice dédié)
+  101: [/for-lasure-/],                                                                                                 // Lasure alkyde
   // ── BTS · Synthèse organique (un thème d'exercices par simulation) ──
   93: [/^regio-/], 94: [/^cinet-/], 95: [/^sn-/], 96: [/^br-/], 97: [/^tr-/], 98: [/^se-/], 99: [/^ch-/],
   // ── BTS · RMN et cristallographie ──
@@ -19,6 +19,12 @@ export const EXOS_DE_SIM = {
   74: [/cri-(motifs|compacite|contact|masse-volumique|sites|taille|val-)/],
   73: [/cri-(bragg|distance-plans|extinctions)/],
   // ── BTS · Analyse ──
+  13: [/met-ei-/],
+  9: [/met-fid-/],
+  16: [/met-apt-/],
+  12: [/chr-(clhp|resolution)/],
+  54: [/chr-(cpg|resolution)/],
+  55: [/chr-sm/],
   11: [/relation\.dilution|beer|etalonnage|absorbance|etalon-nacl/],
   3: [/titrage/],
   // ── 2GT ──

@@ -688,5 +688,21 @@
  "37:prevoir:for-hansen-evaporation": "ANA321",
  "77:plausible:for-hansen-ra-sans-racine": "VAL169",
  "77:plausible:for-hansen-red-ethanol-ok": "VAL170",
- "77:plausible:for-hansen-melange-moyenne-red": "VAL171"
+ "77:plausible:for-hansen-melange-moyenne-red": "VAL171",
+ "37:prevoir:for-lasure-siccatif": "ANA322",
+ "37:prevoir:for-lasure-antipeau": "ANA323",
+ "37:prevoir:met-ei-volume-injecte": "ANA324",
+ "37:prevoir:met-ei-choix": "ANA325",
+ "37:prevoir:met-fid-sr-sR": "ANA326",
+ "37:prevoir:met-fid-cochran": "ANA327",
+ "37:prevoir:met-apt-z-seuils": "ANA328",
+ "37:prevoir:met-apt-z-sigma": "ANA329",
+ "37:prevoir:chr-clhp-acn": "ANA330",
+ "37:prevoir:chr-cpg-temperature": "ANA331",
+ "37:prevoir:chr-sm-ion-moleculaire": "ANA332",
+ "77:plausible:for-lasure-antipeau-seche-plus-vite": "VAL172",
+ "77:plausible:met-ei-rapport-inverse": "VAL173",
+ "77:plausible:met-fid-sR-inferieur-sr": "VAL174",
+ "77:plausible:met-apt-z-calcul-ok": "VAL175",
+ "77:plausible:chr-resolution-ok": "VAL176"
 }
