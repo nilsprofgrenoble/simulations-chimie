@@ -418,7 +418,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
             style={{ ...btn(peutSuivre, ORANGE_GUIDE), opacity: peutSuivre ? 1 : 0.45 }}>Suivant ▶</button>
         ) : fin}
       </div>
-      {etat.fini && (
+      {(etat.fini || estTermine(parseInt(new URLSearchParams(window.location.search).get('sim')))) && (
         <div hidden aria-hidden="true">
           {etapes.map((e2, k) => e2.retenir ? <ARetenir key={k} titre={e2.retenirTitre || 'À RETENIR'} titreEtape={e2.titre}>{e2.retenir}</ARetenir> : null)}
         </div>)}

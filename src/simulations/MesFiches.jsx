@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { cardStyle, KIT, styleBouton, stylePetitBouton } from "../commun";
 import { useSession, estEleve } from "../serveur";
 import { surSynchro } from "../etatsParcours";
-import { listerFiches, surChangementFiches, recolterFiches, lireFigure } from "../fiches";
+import { listerFiches, surChangementFiches, recolterFiches, lireFigure, simsTerminees } from "../fiches";
 import { toutLire } from "../serveur";
 import { tempsParSimulation, estSimulation, nomsSim, simsCachees } from "../suivi";
 import { chapitresDeSim, NIVEAUX_CHAPITRES } from "../chapitres";
@@ -93,6 +93,17 @@ export function SimulationFiches({ naviguer }) {
     try { window.localStorage.setItem('fiches-recolte-v2-' + (sess?.profil?.identifiant || ''), String(Date.now())); } catch { /* pas grave */ }
     setRecolte('fini');
   };
+  // À chaque ouverture : les simulations débloquées (parcours terminé ou défi réussi) dont la fiche n'est pas encore rangée sont relues en arrière-plan
+  const [relecture, setRelecture] = useState(false);
+  useEffect(() => {
+    const dejaLues = new Set(listerFiches().map(f => f.sim));
+    const ids = simsTerminees().filter(id => !dejaLues.has(id) && !simsCachees.has(id));
+    if (!ids.length) return;
+    let vivant = true;
+    setRelecture(true);
+    recolterFiches(ids).finally(() => { if (vivant) setRelecture(false); });
+    return () => { vivant = false; };
+  }, []);
   // Une première fois, à l'ouverture de la page : retrouver les fiches des parcours déjà terminés
   useEffect(() => {
     if (!eleve) return;
@@ -128,7 +139,7 @@ export function SimulationFiches({ naviguer }) {
       </div>
       <h2 style={{ margin: '4px 0 2px', color: '#0b4f94', fontFamily: TITRE_B, fontSize: 28 }}><Pic n="clipboard"/>Mes fiches de révision</h2>
       <p style={{ margin: '0 0 12px', color: KIT.txt2, fontSize: 14.5, lineHeight: 1.55 }}>
-        Quand tu as <b>terminé le parcours guidé</b> d’une simulation, sa fiche vient se ranger ici : le schéma de la simulation et les points « À retenir » de chaque étape, avec leurs formules.
+        Quand tu as <b>terminé le parcours guidé</b> d’une simulation (ou réussi son défi), sa fiche vient se ranger ici : le schéma de la simulation et les points « À retenir » de chaque étape, avec leurs formules.
         Relis-les pour réviser, et imprime celles que tu choisis.{eleve ? ' Elles te suivent d’un appareil à l’autre.' : ' Sans compte, elles restent sur cet appareil.'}
       </p>
       {eleve && (
@@ -138,6 +149,7 @@ export function SimulationFiches({ naviguer }) {
             : <><span>Il manque la fiche d’une simulation que tu as terminée ?</span>
               <button type="button" onClick={lancerRecolte} style={{ background: 'none', border: 'none', color: '#0b4f94', textDecoration: 'underline', cursor: 'pointer', fontSize: 13.5, padding: 0 }}>Retrouver mes fiches</button></>}
         </div>)}
+      {relecture && !(recolte && recolte !== 'fini') && <div style={{ margin: '0 0 12px', fontSize: 13.5, color: KIT.txt2 }}>🔎 Je prépare tes nouvelles fiches…</div>}
       {eleve && bilanRecolte && recolte === 'fini' && (() => {
         const sans = bilanRecolte.filter(b => !groupes.some(g => g.sim === b.sim));
         return sans.length ? (

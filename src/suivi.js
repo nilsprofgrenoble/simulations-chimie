@@ -12,6 +12,7 @@ import { noterReussite } from './commun';
 import { annoncerReussite, etoilesReussite } from './carnet';
 import { DEFIS_DECLARES } from './defisDeclares.js';
 import { getSession, estEleve, rest, restaurer } from './serveur';
+import { marquerTermine } from './fiches';
 
 const INACTIVITE_MS = 60_000;     // au-delà, le temps n'est plus compté
 const SEUIL_CREATION_S = 10;      // une ligne n'est créée qu'après une action, ou 10 s d'activité
@@ -107,6 +108,8 @@ export function useSuivi(cle, reussi) {
   useEffect(() => {
     if (!reussi) return;
     noterReussite(cle);
+    const mDefi = /^(\d+):defi/.exec(cle || '');
+    if (mDefi) marquerTermine(Number(mDefi[1]));   // un défi réussi débloque aussi la fiche de révision de la simulation
     const s = e.current;
     if (s.cle === cle && !s.reussi) { s.reussi = true; horodaterReussite(cle); annoncerReussite({ cle, etoiles: etoilesReussite(s.essais, s.vues) }); marquer(); }
   }, [reussi, cle, marquer]);

@@ -72,6 +72,13 @@ export const marquerTermine = sim => { try {
 } catch { /* ignoré */ } };
 export const estTermine = sim => { try { return !!(window.localStorage.getItem(CLE_OK + sim) || window.localStorage.getItem(CLE_FINI + sim)); } catch { return false; } };
 
+// Simulations dont la fiche est débloquée (parcours guidé terminé ou défi réussi), d'après les drapeaux de cet appareil
+export function simsTerminees() {
+  const L = new Set();
+  try { for (let i = 0; i < window.localStorage.length; i++) { const k = window.localStorage.key(i) || ''; const m = /^fiches-(?:ok|fini)-(\d+)$/.exec(k); if (m) L.add(Number(m[1])); } } catch { /* ignoré */ }
+  return [...L];
+}
+
 // Avancement le plus loin atteint dans les parcours guidés de la simulation (pour expliquer l'absence de fiche)
 export const noterProgres = (sim, etape, total) => { try {
   if (!Number.isFinite(sim) || !(total > 0)) return;
