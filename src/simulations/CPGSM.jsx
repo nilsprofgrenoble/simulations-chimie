@@ -404,6 +404,24 @@ export function SimulationCPGSM() {
   const CINQ = ['etoh', 'acet', 'aceet', 'tol', 'pxyl'], CHLORES = ['dcm', 'chcl3', 'tol'], ISOMERES = ['ebz', 'pxyl', 'tol'], COELU = ['mek', 'c6', 'tol'], ALCOOLS = ['meoh', 'etoh', 'nproh', 'tol'];
   const ETAPES = [
     { id: 'appareil', titre: 'Un détecteur qui donne un spectre', focus: ['appareil'],
+      retenirTitre: 'À RETENIR : LE COUPLAGE CPG / SM',
+      retenir: <>
+        <svg viewBox="0 0 400 110" role="img" aria-label="Chaîne d’une CPG couplée à un spectromètre de masse : colonne, ligne de transfert, puis, sous vide, source d’ions à 70 eV, quadripôle qui trie les ions selon m/z et détecteur qui les compte" style={{ width: '100%', maxWidth: 400, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+<rect x="4" y="34" width="72" height="44" rx="6" fill="#e8f1fa" stroke="#0072b2" strokeWidth="1.8" /><text x="40.0" y="54.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">Colonne</text><text x="40.0" y="67.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">CPG</text><rect x="84" y="34" width="72" height="44" rx="6" fill="#e8f1fa" stroke="#0072b2" strokeWidth="1.8" /><text x="120.0" y="54.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">Ligne de</text><text x="120.0" y="67.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">transfert</text><rect x="164" y="34" width="72" height="44" rx="6" fill="#e8f1fa" stroke="#0072b2" strokeWidth="1.8" /><text x="200.0" y="54.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">Source</text><text x="200.0" y="67.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">(70 eV)</text><rect x="244" y="34" width="72" height="44" rx="6" fill="#e8f1fa" stroke="#0072b2" strokeWidth="1.8" /><text x="280.0" y="54.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">Quadripôle</text><text x="280.0" y="67.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">tri selon m/z</text><rect x="324" y="34" width="72" height="44" rx="6" fill="#e8f1fa" stroke="#0072b2" strokeWidth="1.8" /><text x="360.0" y="54.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">Détecteur</text><text x="360.0" y="67.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">(comptage)</text><line x1="76" y1="56" x2="80" y2="56" stroke="#334155" strokeWidth="2" /><polygon points="80,52 84,56 80,60" fill="#334155" /><line x1="156" y1="56" x2="160" y2="56" stroke="#334155" strokeWidth="2" /><polygon points="160,52 164,56 160,60" fill="#334155" /><line x1="236" y1="56" x2="240" y2="56" stroke="#334155" strokeWidth="2" /><polygon points="240,52 244,56 240,60" fill="#334155" /><line x1="316" y1="56" x2="320" y2="56" stroke="#334155" strokeWidth="2" /><polygon points="320,52 324,56 320,60" fill="#334155" /><rect x="160" y="22" width="236" height="64" rx="8" fill="none" stroke="#d55e00" strokeWidth="1.5" strokeDasharray="5 4" /><text x="278" y="100" textAnchor="middle" fontSize="11" fontWeight="700" fill="#d55e00">sous vide</text><text x="4" y="16" fontSize="11" fill="#334155">séparation : t<tspan fontSize="9" dy="3">R</tspan></text><text x="396" y="16" textAnchor="end" fontSize="11" fill="#334155">identification : spectre de masse</text>
+        </svg>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Élément</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Rôle</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Sortie</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>CPG</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>sépare les composés</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>temps de rétention t<sub>R</sub></td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>source (70 eV)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ionise et fragmente</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ion moléculaire M<sup>+•</sup> et fragments</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>quadripôle</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>trie les ions selon m/z</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>plage de m/z balayée</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>détecteur</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>compte les ions</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>intensité relative (le plus intense = 100 %)</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>TIC</strong> : somme de tous les ions à chaque instant (allure d’un chromatogramme) ; chaque point porte un spectre de masse.</li>
+        </ul>
+      </>,
       texte: <>La séparation est celle de la CPG ; à la sortie de la colonne, la <strong>ligne de transfert</strong> conduit les composés dans le <strong>spectromètre de masse</strong>, sous vide : la <strong>source</strong> (électrons de 70 eV) ionise et fragmente les molécules, le <strong>quadripôle</strong> trie les ions selon leur rapport m/z, le <strong>détecteur</strong> les compte. Cliquez sur chaque élément du schéma.</>,
       tache: { type: 'qcm', q: 'Dans quel ordre les molécules sortant de la colonne traversent-elles le spectromètre ?', options: ['source d’ions → quadripôle → détecteur', 'quadripôle → source d’ions → détecteur', 'détecteur → quadripôle → source d’ions'], bonne: 0,
         expl: 'Il faut d’abord former des ions (source), puis les trier selon m/z (analyseur quadripolaire), puis les compter (multiplicateur d’électrons). Le tout sous vide.', indice: "Source d’ions, puis tri des ions selon m/z, puis comptage." } },
@@ -414,6 +432,21 @@ export function SimulationCPGSM() {
       texte: <>Cliquez sur le pic du <strong>toluène</strong> : le spectre de masse correspondant s’affiche sous le chromatogramme (barres : intensité relative de chaque ion, le plus intense valant 100 %).</>,
       tache: { type: 'action', ok: memeMelange(CINQ) && picSel?.id === 'tol', label: null, consigne: picSel ? `Pic sélectionné : ${picSel.nom}` : 'Cliquez sur un pic du chromatogramme.' } },
     { id: 'ions', titre: 'Ion moléculaire et pic de base', focus: ['spectre'],
+      retenirTitre: 'À RETENIR : LIRE UN SPECTRE DE MASSE',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Pic</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Définition</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Exemple</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>ion moléculaire M<sup>+•</sup></td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>m/z = masse molaire</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>toluène C<sub>7</sub>H<sub>8</sub> : m/z 92</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>pic de base</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ion le plus intense (100 %)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>toluène : m/z 91, C<sub>7</sub>H<sub>7</sub><sup>+</sup> (perte d’un H)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>fragments</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>morceaux de la molécule</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>m/z 91 dans les alkylbenzènes</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Bibliothèque</strong> : le facteur de concordance (sur 999) mesure la ressemblance ; au-dessus de ≈ 900, excellente, mais les isomères ont des spectres presque identiques.</li>
+          <li>Identification solide : spectre <strong>et</strong> temps de rétention d’un étalon concordent (CPG et SM sont complémentaires).</li>
+        </ul>
+      </>,
       texte: <>L’<strong>ion moléculaire</strong> M⁺• a pour m/z la masse molaire de la molécule (toluène C₇H₈ : 92 g/mol). Le <strong>pic de base</strong> est le plus intense (100 %) : pour le toluène, c’est l’ion C₇H₇⁺ (perte d’un atome H), très stable.</>,
       tache: { type: 'qcm', q: 'Dans le spectre du toluène, quels sont l’ion moléculaire et le pic de base ?', options: ['M⁺• à m/z 92 ; pic de base à m/z 91', 'M⁺• à m/z 91 ; pic de base à m/z 92', 'M⁺• à m/z 65 ; pic de base à m/z 91'], bonne: 0,
         expl: 'm/z 92 = masse molaire du toluène : c’est l’ion moléculaire. m/z 91 (C₇H₇⁺, ion tropylium) est le plus abondant : c’est le pic de base. On retrouve m/z 91 dans le spectre de tous les alkylbenzènes.', indice: "L’ion moléculaire a la masse de la molécule entière ; le pic de base est le plus intense." } },
@@ -422,6 +455,26 @@ export function SimulationCPGSM() {
       tache: { type: 'qcm', q: 'Un spectre obtient 950 avec le toluène, 460 avec l’éthylbenzène. Que conclure ?', options: ['c’est très probablement du toluène, à confirmer par le temps de rétention d’un étalon', 'c’est certainement du toluène, aucune vérification n’est utile', 'le facteur est trop bas, ce n’est pas du toluène'], bonne: 0,
         expl: 'Au-dessus de ≈ 900, la concordance est excellente ; mais certains composés ont des spectres presque identiques. L’identification est solide quand le spectre ET le temps de rétention (étalon, même méthode) concordent.', indice: "Un indice de similarité élevé suggère un candidat sans le prouver : quelle autre donnée faut-il comparer ?" } },
     { id: 'chlore', titre: 'Les isotopes du chlore', focus: ['spectre', 'viz'],
+      retenirTitre: 'À RETENIR : LE MOTIF ISOTOPIQUE DU CHLORE',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Isotope</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Abondance</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>³⁵Cl</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 76 %</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>³⁷Cl</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 24 %</td></tr>
+          </tbody>
+        </table>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Atomes de chlore</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Ions moléculaires</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Intensités</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>1 Cl</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>deux ions séparés de 2 unités</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 3 : 1</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>2 Cl (CH<sub>2</sub>Cl<sub>2</sub>)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>m/z 84, 86, 88</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 9 : 6 : 1 (100 : 64 : 10)</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Un motif d’ions espacés de 2 unités signe la présence de chlore : on compte les atomes à partir des rapports d’intensité.</li>
+        </ul>
+      </>,
       texte: <>{bouton('Mettre dichlorométhane, chloroforme et toluène', () => mettre(CHLORES))} Le chlore existe sous deux isotopes : ³⁵Cl (≈ 76 %) et ³⁷Cl (≈ 24 %). Cliquez sur le pic du dichlorométhane (CH₂Cl₂) et regardez les ions vers m/z 84, 86 et 88.</>,
       tache: { type: 'qcm', q: 'Pourquoi trouve-t-on trois ions à m/z 84, 86 et 88 dans le spectre de CH₂Cl₂ ?', options: ['ce sont les ions moléculaires avec ³⁵Cl₂, ³⁵Cl³⁷Cl et ³⁷Cl₂', 'ce sont trois fragments différents de la molécule', 'ce sont des impuretés de la colonne'], bonne: 0,
         expl: 'Avec deux atomes de chlore, l’ion moléculaire existe en trois versions, espacées de 2 unités, d’intensités ≈ 9 : 6 : 1 (100 : 64 : 10). Ce motif signe la présence de deux chlores ; avec un seul chlore, on aurait deux ions séparés de 2 dans le rapport ≈ 3 : 1.', indice: "Le chlore possède deux isotopes stables, ³⁵Cl et ³⁷Cl, et la molécule contient deux atomes de chlore." } },
@@ -430,6 +483,14 @@ export function SimulationCPGSM() {
       tache: { type: 'qcm', q: 'Comment distinguer sûrement l’éthylbenzène du p-xylène ?', options: ['par leur temps de rétention (étalons injectés dans les mêmes conditions)', 'par leur ion moléculaire', 'par leur pic de base'], bonne: 0,
         expl: `Les deux ont M⁺• = 106 et un pic de base à 91 ; leurs spectres concordent à ${concordance(SPECTRES.ebz.pics, SPECTRES.pxyl.pics)}/999. Seule la séparation chromatographique (t_R) les distingue sûrement : la CPG et la SM sont complémentaires.`, indice: "Les deux molécules ont la même masse et des spectres voisins : quelle donnée de la CPG les sépare ?" } },
     { id: 'coelution', titre: 'Deux composés qui sortent ensemble', focus: ['viz', 'spectre', 'eic'],
+      retenirTitre: 'À RETENIR : ION EXTRAIT ET CO-ÉLUTION',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Deux composés qui co-éluent donnent un seul pic du TIC et un spectre <strong>mélangé</strong> (bibliothèque hésitante).</li>
+          <li>On <strong>extrait un ion</strong> propre à chaque composé (ici m/z 72 pour la butanone, m/z 86 pour l’hexane, leurs ions moléculaires) : chaque courbe a son maximum à un instant légèrement différent.</li>
+          <li>Une plage de m/z doit couvrir les ions caractéristiques des composés cherchés (le méthanol, M = 32, disparaît si l’on balaie à partir de m/z 35) tout en excluant le fond (eau 18, azote 28, oxygène 32).</li>
+        </ul>
+      </>,
       texte: <>{bouton('Mettre butanone, hexane et toluène', () => mettre(COELU))} Sur cette colonne, la butanone et l’hexane sortent presque en même temps : un seul pic, un spectre mélangé, une bibliothèque hésitante. Extrayez les ions <strong>m/z 72</strong> (ion moléculaire de la butanone) et <strong>m/z 86</strong> (ion moléculaire de l’hexane) dans « Ions extraits ».</>,
       tache: { type: 'action', ok: memeMelange(COELU) && eics.includes(72) && eics.includes(86), label: 'Extraire m/z 72 et 86', faire: () => setEics([72, 86]),
         consigne: 'Cochez « chaque ion à sa propre échelle » et zoomez : les deux courbes ont leur maximum à des instants légèrement différents.' } },
@@ -438,6 +499,16 @@ export function SimulationCPGSM() {
       tache: { type: 'qcm', q: 'Avec une plage commençant à m/z 35, le pic du méthanol a presque disparu. Pourquoi ?', options: ['ses ions principaux (m/z 29, 31, 32) sont en dehors de la plage balayée', 'le méthanol ne sort plus de la colonne', 'le méthanol n’est pas ionisé à 70 eV'], bonne: 0,
         expl: 'Le méthanol (M = 32) ne donne que des ions légers. La plage de m/z doit couvrir les ions caractéristiques des composés recherchés, tout en excluant le fond (eau 18, azote 28, oxygène 32).', indice: "Le spectromètre ne détecte que les ions de la plage balayée. Quelles sont les masses des ions du méthanol ?" } },
     { id: 'air', titre: 'Panne n° 1 : le fond est très élevé', focus: ['aireau', 'viz'],
+      retenirTitre: 'À RETENIR : DIAGNOSTIQUER LE FOND',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Panne</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Ions du fond</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Allure</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Geste</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>fuite d’air</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>m/z 28 (N<sub>2</sub><sup>+</sup>) et 32 (O<sub>2</sub><sup>+</sup>) dans le rapport de l’air, ≈ 4 : 1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>fond élevé dès le début</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>resserrer les raccords</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>ressuage de la colonne</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>m/z 73, 207, 281 (siloxanes)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>fond qui monte avec la température du four</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>respecter la température limite, changer la colonne</td></tr>
+          </tbody>
+        </table>
+      </>,
       texte: <>{bouton('Charger la situation', () => mettre(CINQ, { panne: 'air' }))} Regardez le contrôle air / eau et le spectre du fond (cliquez entre deux pics).</>,
       tache: { type: 'qcm', q: 'm/z 28 et 32 dominent, dans un rapport voisin de 4. Cause la plus probable ?', options: [PANNES.air.nom, PANNES.filament.nom, PANNES.ressuage.nom], bonne: 0,
         expl: `N₂⁺ (28) et O₂⁺ (32) dans le rapport de l’air : de l’air entre dans le vide. Geste : ${PANNES.air.geste}`, indice: "Quelles molécules du gaz ambiant ont m/z 28 et 32, et dans quel rapport ?" } },
