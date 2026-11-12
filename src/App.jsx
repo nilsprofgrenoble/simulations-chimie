@@ -110,6 +110,7 @@ const SimulationIncertitudeType = paresseux(() => import("./simulations/Incertit
 const SimulationEntrainement = paresseux(() => import("./simulations/Entrainement"), "SimulationEntrainement");
 const SimulationChapitre = paresseux(() => import("./simulations/Entrainement"), "SimulationChapitre");
 const SimulationFiches = paresseux(() => import("./simulations/MesFiches"), "SimulationFiches");
+const SimulationClassement = paresseux(() => import("./simulations/Classement"), "SimulationClassement");
 const JeuxMenu = paresseux(() => import("./simulations/JeuxEscape"), "JeuxMenu");
 const SimulationCompte = paresseux(() => import("./simulations/Compte"), "SimulationCompte");
 const SimulationSuiviProf = paresseux(() => import("./simulations/SuiviProf"), "SimulationSuiviProf");
@@ -284,6 +285,8 @@ const SIMULATIONS = [
   // Histoire à choix « Une journée au labo » (BTS, d'après le CCF4 : Vinnapas → Orgal) : hors menu, ?sim=81
   // Page d'accueil d'un chapitre (simulations + exercices par compétence) : ?sim=82&chap=<id d'un chapitre de chapitres.js>
   { id:103, label:"Mes fiches", niveau:"COMPTE", icon:"📇", color:"#be185d", component: SimulationFiches },
+  // Classement public (étoiles, semaine, défis, régularité) : ouvert à tous, même sans compte, ?sim=104
+  { id:104, label:"Classement", niveau:"COMPTE", icon:"🏅", color:"#b45309", component: SimulationClassement },
   { id:82, label:"Page d'un chapitre", niveau:"COMPTE", icon:"📚", color:"#5b4bdb", component: SimulationChapitre },
   { id:81, label:"Une journée au labo (histoire à choix, BTS)", niveau:"COMPTE", icon:"🧪", color:"#0f766e", component: SimulationHistoireLabo },
 ];
@@ -548,7 +551,7 @@ export default function App() {
                 {idAffiche === 39 ? (estEleve(sessionSb) ? 'Mon profil' : sessionSb?.profil ? 'Mon compte' : 'Se connecter') : active.label}
               </span>
             </h1>
-            {estProf(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 && activeId !== 82) && (
+            {estProf(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 && activeId !== 104 && activeId !== 82) && (
               <button data-donner-devoir onClick={() => {
                 try { window.sessionStorage.setItem('devoir-preset', JSON.stringify({ titre: active.label, cles: [`sim:${activeId}`], eleves: [] })); } catch { /* sans mémorisation, le formulaire s'ouvre vide */ }
                 naviguer(40);
@@ -576,10 +579,10 @@ export default function App() {
                 {/* Le fichier App.css du modèle Vite centre tout le texte (#root) : on rétablit l'alignement
                     à gauche pour les simulations ; la page d'accueil garde sa mise en page centrée. */}
                 <BandeauContexte key={`b${activeId}`} id={activeId} contexte={CONTEXTES[activeId]} couleur={active.color} />
-                {(activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103) && <SuiviTemps simId={activeId} />}
-                {estEleve(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103) && <ProchaineEtape key={`pe${activeId}`} simId={activeId} naviguer={naviguer} />}
+                {(activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 && activeId !== 104) && <SuiviTemps simId={activeId} />}
+                {estEleve(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 && activeId !== 104) && <ProchaineEtape key={`pe${activeId}`} simId={activeId} naviguer={naviguer} />}
                 <div id="zone-simulation"><EnChargement><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></EnChargement></div>
-                {activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 ? <ModeParDefaut simId={activeId} cibleId="zone-simulation" /> : null}
+                {activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 && activeId !== 104 ? <ModeParDefaut simId={activeId} cibleId="zone-simulation" /> : null}
               </div>}
         </div>
         <ToastRecompense naviguer={naviguer} />

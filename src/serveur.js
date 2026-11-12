@@ -111,6 +111,14 @@ async function appeler(url, { method = 'GET', corps, entetes = {}, keepalive = f
 
 // ── Base de données (PostgREST) ──
 export const rest = (chemin, options) => appeler(`${URL_SB}/rest/v1/${chemin}`, options);
+// Classement public (supabase/13-classement.sql) : ouvert à tous, même sans compte. Seule la clé publique est envoyée.
+export async function lireClassementPublic() {
+  let r;
+  try { r = await fetch(`${URL_SB}/rest/v1/rpc/classement_public`, { method: 'POST', headers: { apikey: CLE_PUBLIQUE, 'Content-Type': 'application/json' }, body: '{}' }); }
+  catch { throw new ErreurServeur('Serveur injoignable : vérifiez votre connexion internet.', 0); }
+  if (!r.ok) throw new ErreurServeur(await messageDe(r), r.status);
+  return r.json();
+}
 // Lit toutes les lignes, par pages de 1000
 export async function toutLire(chemin) {
   const lignes = [];

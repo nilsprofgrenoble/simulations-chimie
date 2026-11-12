@@ -7,6 +7,7 @@ import { PROFIL_PAR_ETAPES, etapeEleve, badgesVisibles, prochaineSimulation, pro
 import { Carnet, Anneau } from "./Carnet";
 import { DevoirsEleve, useDevoirs } from "./DevoirsEleve";
 import { VieDeClasse } from "./VieDeClasse";
+import { MonClassement } from "./MonClassement";
 import { ACCENT, ACCENT_CLAIR, FOND_BLOC, TEXTE, TEXTE2, BORDURE } from "../theme";
 import { Pic } from "../Pictos";
 
@@ -125,6 +126,7 @@ export function EspaceEleve({ lignes, naviguer, apercu, pied }) {
       <DevoirsEleve lignes={lignes} naviguer={naviguer} devoirsListe={devoirs ?? []} />
       <Carnet lignes={lignes} naviguer={naviguer} />
       <VieDeClasse lignes={lignes} apercu={apercu?.classe} />
+      {!apercu && <MonClassement naviguer={naviguer} />}
       {pied?.(2)}
     </>);
   }
@@ -157,6 +159,7 @@ export function EspaceEleve({ lignes, naviguer, apercu, pied }) {
       <Carnet lignes={lignes} naviguer={naviguer} parties={{ hero: false, vide: false, revoir: true, revoirToujours: etape === 0, revoirMax: 2, objectifs: false, competences: false, badges: false, regularite: false }} />
 
       {etape > 0 && <VieDeClasse lignes={lignes} apercu={apercu?.classe} />}
+      {etape > 0 && !apercu && <MonClassement naviguer={naviguer} />}
 
       {/* 3. Le reste : repliable, pour ne pas noyer l'essentiel */}
       {etape > 0 && (

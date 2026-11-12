@@ -15,6 +15,7 @@ export function PiedDePage({ naviguer, energyUrl }) {
         <a href="?sim=47" onClick={aller(47)} style={lien}>À propos</a>
         <button type="button" onClick={() => ecrireAuAuteur('Paillasse virtuelle — message')} style={lien}>Contact</button>
         <a href="?sim=38" onClick={aller(38)} style={lien}>Travail par compétence</a>
+        <a href="?sim=104" onClick={aller(104)} style={lien}>🏅 Classement</a>
         <a href="?sim=39" onClick={aller(39)} style={lien}>Mon compte</a>
         <a href={energyUrl} style={lien}>Energy@School ↗</a>
         <a href="?sim=47" onClick={aller(47)} style={lien}>Données personnelles</a>
