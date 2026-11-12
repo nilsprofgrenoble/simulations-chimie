@@ -3,6 +3,7 @@ import { compter } from "./stats";
 import { Pic, Emo } from "./Pictos";
 import { missionEnCours } from "./mission";
 import { chapitresDeSim, ouvrirExercicesDeSim, ouvrirFiches } from "./chapitres";
+import { OngletFiche } from "./FicheOnglet";
 import { noterFiche, EN_RECOLTE, EN_CONSULT, envoyerRecolte, envoyerFigure, estTermine, marquerTermine, noterProgres, capturerFigure, noterFigure, aFigure } from "./fiches";
 import { nomsSim } from "./suivi";
 import { enregistrer, noterModification, surChangementServeur } from "./etatsParcours";
@@ -669,10 +670,14 @@ export function Curseur({ nom, valeur, onChange, min, max, pas, unite = '', deci
 // Onglet « Exercices » : ouvre la page du chapitre (exercices de remédiation du thème). Absent si la simulation n'est dans aucun chapitre.
 export function OngletExercices({ simId: id }) {
   const simId = id || parseInt(new URLSearchParams(window.location.search).get('sim'));
-  if (!simId || !chapitresDeSim(simId).length) return null;
-  return (
+  if (!simId) return null;
+  const fiche = <OngletFiche simId={simId} styleBouton={styleBouton(false, '#0f766e')}/>;
+  if (!chapitresDeSim(simId).length) return fiche;
+  return (<>
     <button onClick={() => { compter(`sim${simId}:exercices`, `Simulation ${simId} : onglet exercices`, true); ouvrirExercicesDeSim(simId); }}
-      title="Les exercices d'entraînement de ce thème" style={styleBouton(false, '#be185d')}><Pic n="dumbbell"/>Exercices</button>);
+      title="Les exercices d'entraînement de ce thème" style={styleBouton(false, '#be185d')}><Pic n="dumbbell"/>Exercices</button>
+    {fiche}
+  </>);
 }
 
 // Les trois boutons de mode, identiques sur toutes les pages
