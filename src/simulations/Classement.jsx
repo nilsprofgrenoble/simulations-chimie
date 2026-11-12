@@ -40,8 +40,8 @@ const css = `
   .cl-nav { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 12px; }
   .cl-fleche { border: 2px solid #cbd5e1; background: #fff; border-radius: 50%; width: 38px; height: 38px; font-size: 18px; font-weight: 800; cursor: pointer; color: #0f172a; }
   .cl-fleche:disabled { opacity: .35; cursor: default; }
-  .cl-points { display: flex; gap: 7px; }
-  .cl-point { width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; border: none; padding: 0; cursor: pointer; }
+  .cl-points { display: flex; align-items: center; gap: 7px; }
+  .cl-point { flex: none; box-sizing: border-box; width: 10px; height: 10px; min-width: 0; min-height: 0; max-height: 10px; border-radius: 50%; background: #cbd5e1; border: none; padding: 0; cursor: pointer; }
   .cl-point[aria-current="true"] { background: #0b4f94; transform: scale(1.25); }
   .cl-note { margin: 16px 0 0; font-size: 13.5px; color: #475569; line-height: 1.55; }
   .cl-lien { border: none; background: none; padding: 0; font: inherit; font-weight: 800; color: #0b4f94; text-decoration: underline; cursor: pointer; }

@@ -44,5 +44,32 @@
   .ab-une .ab-ico { width: 56px; height: 56px; }
 }
 @media (max-width: 480px) { .ab-niv, .ab-carte, .ab-une { border-radius: 22px; padding: 20px; } .ab-code { border-radius: 22px; padding: 20px; } }
-.ab-classement { display: block; } .ab-classement .cl { padding-top: 12px; margin: 0; max-width: none; }
-.ab-classement .cl-note { max-width: none; }
+/* Classement : un grand aplat bleu nuit, comme les autres blocs de l'accueil (écrase le style de la page détaillée) */
+.ab-classement { grid-column: span 12; background: #0c1a2e; color: #fff; border-radius: 28px; padding: 26px; min-width: 0; }
+.ab-classement .ab-pill { background: #f5a31a; color: #3a2500; margin: 0; }
+.ab-classement > h3 { font: 800 clamp(26px, 4vw, 38px)/1.1 'Outfit', sans-serif; letter-spacing: -.02em; margin: 12px 0 8px; color: #fff; }
+.ab-classement > p { margin: 0; color: #cbd5e1; font-size: 15px; line-height: 1.6; max-width: 60ch; }
+.ab-classement .cl { max-width: none; margin: 0; padding: 18px 0 0; font-family: Inter, system-ui, Arial; color: #fff; }
+.ab-classement .cl-onglet { background: rgba(255,255,255,.14); border: 0; color: #fff; padding: 9px 16px; font: 700 14px/1.2 Inter, system-ui, sans-serif; }
+.ab-classement .cl-onglet:hover { background: rgba(255,255,255,.26); }
+.ab-classement .cl-onglet[aria-selected="true"] { background: #f5a31a; color: #3a2500; }
+.ab-classement .cl-onglet:focus-visible, .ab-classement .cl-fleche:focus-visible, .ab-classement .cl-lien:focus-visible { outline: 3px solid #fff; }
+.ab-classement .cl-lame { background: transparent; border: 0; border-radius: 0; overflow: visible; }
+.ab-classement .cl-tete { background: none; border: 0; padding: 14px 2px 10px; }
+.ab-classement .cl-tete h3 { font: 800 clamp(20px, 2.6vw, 26px)/1.15 'Outfit', sans-serif; color: #fff; }
+.ab-classement .cl-tete p { color: #cbd5e1; font-size: 14.5px; }
+.ab-classement .cl-cols { color: #94a3b8; border-bottom: 0; padding: 4px 16px; }
+.ab-classement .cl-liste { display: flex; flex-direction: column; gap: 6px; }
+.ab-classement .cl-ligne { background: rgba(255,255,255,.08); border-bottom: 0; border-radius: 14px; color: #fff; }
+.ab-classement .cl-ligne.cl-moi { background: rgba(245,163,26,.28); box-shadow: none; }
+.ab-classement .cl-rang { color: #e2e8f0; font-family: 'Outfit', sans-serif; }
+.ab-classement .cl-etab, .ab-classement .cl-classe, .ab-classement .cl-sous { color: #cbd5e1; }
+.ab-classement .cl-score { color: #f5a31a; }
+.ab-classement .cl-toi { background: #f5a31a; color: #3a2500; }
+.ab-classement .cl-vide { background: rgba(255,255,255,.08); border-radius: 14px; color: #e2e8f0; }
+.ab-classement .cl-fleche { background: transparent; border-color: rgba(255,255,255,.4); color: #fff; }
+.ab-classement .cl-point { background: rgba(255,255,255,.3); }
+.ab-classement .cl-point[aria-current="true"] { background: #f5a31a; }
+.ab-classement .cl-note { max-width: none; color: #fff; }
+.ab-classement .cl-lien { color: #fff; }
+@media (max-width: 480px) { .ab-classement { border-radius: 22px; padding: 20px; } }
