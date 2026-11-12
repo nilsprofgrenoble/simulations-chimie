@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { fmt, lireNombre, KIT, styleBoite, stylePetitBouton, Section, LigneMesure } from "../commun";
+import { fmt, lireNombre, KIT, styleBoite, stylePetitBouton, Section, LigneMesure, FormuleEnLigne } from "../commun";
 
 // ============================================================
 //  PARAMÈTRES DE SOLUBILITÉ DE HANSEN — exploration libre
@@ -11,6 +11,17 @@ import { fmt, lireNombre, KIT, styleBoite, stylePetitBouton, Section, LigneMesur
 // Banque de solvants, rangée par familles. d = [δd, δp, δh] (MPa½) ; pvap en hPa à 20 °C ; ie : indice d'évaporation
 // (acétate de butyle = 1), null si la donnée n'est pas renseignée ; rho en g/mL ; M en g/mol.
 // Valeurs de δ : tables usuelles (C. M. Hansen, Hansen Solubility Parameters: A User's Handbook). pvap et ie : indicatifs.
+// Définition du RED, à afficher partout où la grandeur est utilisée : RED = Ra / R0 (distance au polymère ÷ rayon de la sphère de solubilité).
+// court : une seule phrase (défis) ; sinon définition complète avec lecture des trois cas (exploration libre).
+const ForRED = () => <FormuleEnLigne><mi>RED</mi><mo>=</mo><mfrac><mi>Ra</mi><msub><mi>R</mi><mn>0</mn></msub></mfrac></FormuleEnLigne>;
+export function DefinitionRED({ court = false }) {
+  return court ? (
+    <span><strong>RED</strong> (<em>Relative Energy Difference</em>) = <ForRED/> : la distance Ra entre le solvant et le polymère, divisée par le rayon R<sub>0</sub> de la sphère de solubilité du polymère. RED &lt; 1 : dans la sphère, le solvant dissout ; RED &gt; 1 : hors de la sphère, il ne dissout pas.</span>
+  ) : (
+    <span><strong>RED</strong> (<em>Relative Energy Difference</em>, « différence d’énergie relative ») : <ForRED/>. C’est la distance Ra entre le solvant (ou le mélange) et le polymère, divisée par le rayon R<sub>0</sub> de la sphère de solubilité du polymère : plus le RED est petit, plus le solvant est proche du polymère. <strong>RED &lt; 1</strong> : à l’intérieur de la sphère, le solvant doit dissoudre le polymère (vert) ; <strong>RED = 1</strong> : sur la frontière, la prévision est incertaine ; <strong>RED &gt; 1</strong> : à l’extérieur, il ne le dissout pas (rouge).</span>
+  );
+}
+
 export const FAMILLES = [
   { nom: 'Alcools', solvants: {
     'Méthanol':                 { d: [14.7, 12.3, 22.3], pvap: 129, ie: 4.5, rho: 0.791, M: 32.0 },
@@ -437,7 +448,7 @@ export function HansenExploration({ plotlyReady, initial = {}, onEtat }) {
         {['d', 'p', 'h'].map(k => <input key={k} value={nouveau[k]} onChange={e => setNouveau(o => ({ ...o, [k]: e.target.value }))} placeholder={`δ${k}`} aria-label={`δ${k} du nouveau solvant`} style={{ ...champ, width: 60 }}/>)}
         <button onClick={ajouterSolvant} style={stylePetitBouton(true, '#0b4f94')}>+ Ajouter</button>
       </div>
-      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>Valeurs de δ : tables usuelles de Hansen. RED = Ra / R0, avec Ra² = 4(Δδd)² + (Δδp)² + (Δδh)² : vert si RED &lt; 1 (le solvant doit dissoudre le polymère), rouge sinon.{deux && ' Avec deux sphères, le 1er RED est celui du 1er polymère, le 2e (à droite) celui du 2e polymère.'}</div>
+      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6, lineHeight: 1.75 }}>Valeurs de δ : tables usuelles de Hansen, avec Ra² = 4(Δδd)² + (Δδp)² + (Δδh)². <DefinitionRED/>{deux && ' Avec deux sphères, le 1er RED est celui du 1er polymère, le 2e (à droite) celui du 2e polymère.'}</div>
     </div>
   );
   const blocEvap = (

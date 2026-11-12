@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, SuiviDefi, useCompteurDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
-import { HansenExploration, GraphesHansen } from "./HansenExploration";
+import { HansenExploration, GraphesHansen, DefinitionRED } from "./HansenExploration";
 import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, IndiceDefi, Formule, FormuleEnLigne } from "../commun";
 import { Pic } from "../Pictos";
@@ -151,8 +151,10 @@ export function Simulation4({ plotlyReady }) {
         sphériques. C'est pour cela que la vue 3D utilise l'axe 2δd.</>,
       tache: { type: 'qcm', q: 'Le facteur 4 est…', options: ['un choix empirique, qui rend les domaines de solubilité à peu près sphériques', 'une constante physique fondamentale', 'une erreur de la formule'], bonne: 0, indice: "Le facteur 4 vient-il d’une loi physique fondamentale ou d’un ajustement des données pour que les domaines de solubilité soient proches de sphères ?" } },
     { id: 'red', titre: 'La sphère et le RED', focus: ['vue'],
-      texte: <>Le polymère est entouré d'une <strong>sphère de solubilité</strong> de rayon R0 (ici 9,0 MPa½). On calcule RED = Ra / R0 : si RED &lt; 1, le solvant est dans la
-        sphère, il doit dissoudre le polymère.</>,
+      texte: <>Le polymère est entouré d'une <strong>sphère de solubilité</strong> de rayon R<sub>0</sub> (ici 9,0 MPa½) : un solvant situé dans la sphère dissout le polymère, un solvant situé à l'extérieur ne le dissout pas.
+        Pour savoir où il se trouve, on compare sa distance Ra au rayon de la sphère : c'est le <strong>RED</strong> (<em>Relative Energy Difference</em>).
+        <Formule><mi>RED</mi><mo>=</mo><mfrac><mi>Ra</mi><msub><mi>R</mi><mn>0</mn></msub></mfrac></Formule>
+        <strong>RED &lt; 1</strong> : dans la sphère, le solvant doit dissoudre le polymère. <strong>RED = 1</strong> : sur la frontière. <strong>RED &gt; 1</strong> : hors de la sphère, il ne le dissout pas.</>,
       tache: { type: 'num', q: 'RED de l’acétate d’éthyle', unite: '', vrai: raEA / PT.R0, tol: 0.02, affiche: x => fmt(x, 2),
         calcul: [...calculRa(PT, SOLVANTS.ea, 'acétate d’éthyle'), `RED = Ra / R₀ = ${fmt(raEA, 2)} / ${fmt(PT.R0, 1)} = ${fmt(raEA / PT.R0, 2)} (inférieur à 1 : le solvant est dans la sphère).`],
         pieges: [[raEA, 'C’est la distance Ra. Le RED est Ra divisé par le rayon R₀ de la sphère (9,0).'], [PT.R0 / raEA, 'Rapport à l’envers : le RED est Ra / R₀ (et non R₀ / Ra).']], indice: "RED = Ra / R₀ : divise la distance calculée par le rayon d’interaction R₀ de la nitrocellulose (donné dans la simulation)." } },
@@ -390,6 +392,7 @@ export function Simulation4({ plotlyReady }) {
           ? <>Vous voulez enlever un vernis à la nitrocellulose sur un objet en <strong>PMMA</strong> (verre acrylique) sans abîmer l’objet. Trouvez un mélange de solvants qui dissout le vernis mais pas le PMMA. Les deux polymères sont déjà réglés dans l’exploration libre ci-dessous (option « deux sphères ») : <strong>faites vos essais dans l’exploration</strong>, puis donnez votre réponse ici, en respectant les critères ci-dessous.</>
           : <>Formulez le mélange de solvants d’un vernis à la nitrocellulose (données du TP). <strong>Faites vos essais dans l’exploration libre</strong> ci-dessous (cochez des solvants, composez le mélange, regardez les RED), puis donnez votre réponse ici : le mélange doit respecter les critères ci-dessous.</>}</div>
         <div data-criteres-defi="1" style={{ fontSize: 14, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, padding: '8px 12px' }}>
+          <div style={{ marginBottom: 6, fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}><DefinitionRED court/></div>
           <strong>Critères à respecter</strong>
           <ul style={{ margin: '4px 0 0', paddingLeft: 20, lineHeight: 1.55 }}>
             {sel ? <>
