@@ -433,9 +433,13 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
 export function ARetenir({ titre = 'À RETENIR', children, sansFiche = false, titreEtape, capture = true, rangee = null, ordre }) {
   const contenu = useRef(null);
   const [, relire] = useState(0);
+  const minuterie = useRef(null), derniere = useRef(null);
+  // Si la page se redessine en continu (animation), on ne remet pas la minuterie à zéro à chaque image : un seul instantané est programmé, il lit le contenu le plus récent.
+  useEffect(() => () => { if (minuterie.current) clearTimeout(minuterie.current); }, []);
   useEffect(() => {
-    if (sansFiche || !capture) return undefined;
-    const t = setTimeout(() => {
+    if (sansFiche || !capture || minuterie.current) return undefined;
+    minuterie.current = setTimeout(() => {
+      minuterie.current = null;
       const el = contenu.current;
       if (!el) return;
       const sim = parseInt(new URLSearchParams(window.location.search).get('sim'));
@@ -446,9 +450,9 @@ export function ARetenir({ titre = 'À RETENIR', children, sansFiche = false, ti
       const fiche = { sim, nomSim: nomsSim[sim] || '', etape: etape || (typeof titre === 'string' ? titre : ''), html: el.innerHTML, texte: el.textContent, ordre };
       if (EN_RECOLTE) { envoyerRecolte(fiche); return; }   // cadre de récolte : c'est la page « Mes fiches » qui range la carte
       const cle = noterFiche(fiche);
-      if (cle) relire(n => n + 1);
+      if (cle && cle !== derniere.current) { derniere.current = cle; relire(n => n + 1); }
     }, 700);
-    return () => clearTimeout(t);
+    return undefined;
   });
   return (
     <div data-retenir="1" style={{ background: '#eaf2fb', border: '2px solid #7aa6d6', borderRadius: 10, padding: '8px 12px', color: '#0f172a' }}>

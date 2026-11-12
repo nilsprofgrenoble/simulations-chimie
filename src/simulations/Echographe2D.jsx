@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import { SCENES, V_APPAREIL, marcher, tirerExacts, dAppCm, positionApparente } from "./echo2D";
@@ -301,21 +301,113 @@ export function SimulationEchographe2D() {
 
   // ── Parcours guidé ──
   const etapes = [
-    { titre: 'Un tir, des échos', texte: <>Comme dans la simulation « Échographe », la sonde envoie une brève salve et écoute les <strong>échos</strong>. Ici la sonde est en haut de l'image et vise dans une direction. <strong>Cliquez sur l'image</strong> pour orienter la sonde et tirer.</>,
+    { titre: 'Un tir, des échos',
+      retenirTitre: 'À RETENIR : PRINCIPE DE L’ÉCHOGRAPHIE',
+      retenir: <>
+        <svg viewBox="0 0 300 150" role="img" aria-label="Schéma d’un écho : la sonde envoie une onde qui traverse le milieu 1 jusqu’à l’interface avec le milieu 2 à la profondeur d ; une partie est réfléchie et revient vers la sonde, après un trajet aller-retour de longueur 2d" style={{ width: '100%', maxWidth: 340, height: 'auto', display: 'block', margin: '6px auto' }}>
+          <rect x="60" y="8" width="80" height="16" rx="4" fill="#475569" /><text x="100" y="20" fontSize="10.5" textAnchor="middle" fill="#fff" fontWeight="700">sonde</text>
+          <rect x="60" y="24" width="180" height="62" fill="#e0f2fe" /><rect x="60" y="86" width="180" height="50" fill="#fde68a" />
+          <line x1="60" y1="86" x2="240" y2="86" stroke="#334155" strokeWidth="2" />
+          <text x="248" y="58" fontSize="10.5" fill="#0c4a6e">milieu 1</text><text x="248" y="114" fontSize="10.5" fill="#92400e">milieu 2</text><text x="248" y="90" fontSize="10.5" fill="#334155" fontWeight="700">interface</text>
+          <line x1="88" y1="26" x2="88" y2="84" stroke="#1d4ed8" strokeWidth="2.4" /><polygon points="88,86 83,76 93,76" fill="#1d4ed8" />
+          <line x1="112" y1="84" x2="112" y2="28" stroke="#ea580c" strokeWidth="2.4" /><polygon points="112,26 107,36 117,36" fill="#ea580c" />
+          <text x="82" y="60" fontSize="10.5" textAnchor="end" fill="#1d4ed8" fontWeight="700">aller</text><text x="118" y="60" fontSize="10.5" fill="#c2410c" fontWeight="700">retour</text>
+          <line x1="48" y1="26" x2="48" y2="86" stroke="#334155" strokeWidth="1.3" /><line x1="44" y1="26" x2="52" y2="26" stroke="#334155" strokeWidth="1.3" /><line x1="44" y1="86" x2="52" y2="86" stroke="#334155" strokeWidth="1.3" />
+          <text x="42" y="60" fontSize="11" textAnchor="end" fill="#334155" fontWeight="700">d</text>
+          <text x="150" y="146" fontSize="11" textAnchor="middle" fill="#334155">trajet total aller-retour = 2d</text>
+        </svg>
+        <Formule><mi>d</mi><mo>=</mo><mfrac><mrow><mi>v</mi><mo>×</mo><mi>t</mi></mrow><mn>2</mn></mfrac><mspace width="1.5em"/><mi>t</mi><mo>=</mo><mfrac><mrow><mn>2</mn><mi>d</mi></mrow><mi>v</mi></mfrac></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La sonde émet une brève <strong>salve d’ultrasons</strong> puis « écoute » les <strong>échos</strong> : à chaque <strong>interface</strong> entre deux milieux, une partie de l’onde est réfléchie.</li>
+          <li>Le temps <em>t</em> mesuré est un <strong>aller-retour</strong> : la profondeur <em>d</em> se calcule avec <em>d</em> = <em>v</em>·<em>t</em>/2. <strong>Piège :</strong> oublier le « /2 ».</li>
+          <li>L’<strong>échogramme (mode A)</strong> trace l’amplitude de l’écho en fonction du temps : un pic = une interface.</li>
+          <li><strong>Unités :</strong> 1 µs = 10⁻⁶ s ; avec v en m·s⁻¹ et t en s, d est en m (× 100 pour des cm).</li>
+        </ul>
+      </>,
+      texte: <>Comme dans la simulation « Échographe », la sonde envoie une brève salve et écoute les <strong>échos</strong>. Ici la sonde est en haut de l'image et vise dans une direction. <strong>Cliquez sur l'image</strong> pour orienter la sonde et tirer.</>,
       tache: { type: 'action', ok: shots.length > 0, label: 'Tirer pour moi', faire: () => tirSimple(20), consigne: 'Faire au moins un tir',
         indice: "Cliquez n'importe où dans l'image sombre : la sonde s'oriente vers ce point et tire." } },
-    { titre: "Ce que signale un point brillant", texte: <>Sur la ligne du tir apparaissent des points brillants. Regardez aussi l'échogramme (mode A) à droite : chaque pic correspond à un point.</>,
+    { titre: "Ce que signale un point brillant",
+      retenirTitre: 'À RETENIR : LA BRILLANCE D’UN ÉCHO',
+      retenir: <>
+        <Formule><mi>L</mi><mo>=</mo><mn>10</mn><mspace width="0.2em"/><mi>log</mi><mo>(</mo><mi>R</mi><mo>×</mo><msup><mi>T</mi><mn>2</mn></msup><mo>)</mo><mo>−</mo><mtext>absorption (aller-retour)</mtext><mspace width="1.5em"/><mi>T</mi><mo>=</mo><mn>1</mn><mo>−</mo><mi>R</mi></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Interface</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Coefficient de réflexion R</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>air / peau</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,99</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>gel / peau</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,02</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>peau / graisse</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,03</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>graisse / muscle</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,01</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>muscle / organe</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,02</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>liquide amniotique / os</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,45</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Plus <em>R</em> est grand, plus l’écho est <strong>intense</strong> et le point <strong>brillant</strong>. Le niveau <em>L</em> s’exprime en <strong>dB</strong> (0 dB = onde émise) ; un écho est détecté si <em>L</em> ≥ <strong>−80 dB</strong> (seuil de l’appareil).</li>
+          <li>Un <strong>liquide homogène</strong> (kyste, liquide amniotique) n’a presque pas d’interfaces internes : zone <strong>sombre</strong>. Un <strong>os</strong> réfléchit très fort : très brillant.</li>
+          <li><strong>Hypothèses :</strong> valeurs de R et seuil propres à la simulation ; la brillance du « grain » des tissus est cosmétique.</li>
+        </ul>
+      </>,
+      texte: <>Sur la ligne du tir apparaissent des points brillants. Regardez aussi l'échogramme (mode A) à droite : chaque pic correspond à un point.</>,
       tache: { type: 'qcm', q: 'Un point brillant sur l’image correspond à…', options: ["une interface entre deux milieux, où une partie de l'onde est réfléchie", 'la sonde elle-même', 'un endroit où la célérité est nulle'], bonne: 0,
         indice: "Un écho revient quand l'onde rencontre un changement de milieu.",
         expl: <>Une partie de l'énergie est réfléchie à chaque interface : c'est le coefficient de réflexion <em>R</em>. Plus <em>R</em> est grand, plus le point est brillant.</> } },
-    { titre: 'Pourquoi un éventail ?', texte: <>Lancez le <strong>balayage complet</strong> : la sonde pivote de −40° à +40° et l'image se construit tir par tir.</>,
+    { titre: 'Pourquoi un éventail ?',
+      retenirTitre: 'À RETENIR : L’IMAGE EN ÉVENTAIL',
+      retenir: <>
+        <svg viewBox="0 0 300 168" role="img" aria-label="Image en éventail : la sonde, au sommet, pivote de −40° à +40° ; chaque tir est une ligne de l’image et la profondeur se lit en cm sur des arcs de cercle centrés sur la sonde" style={{ width: '100%', maxWidth: 340, height: 'auto', display: 'block', margin: '6px auto' }}>
+          <circle cx="150" cy="14" r="5" fill="#475569" /><text x="162" y="12" fontSize="10.5" fill="#334155" fontWeight="700">sonde (pivot)</text>
+          <path d="M 129.4 38.5 A 32 32 0 0 0 170.6 38.5" fill="none" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3 3" />
+          <text x="175.6" y="41.5" fontSize="9.5" fill="#64748b">2 cm</text>
+          <path d="M 108.9 63.0 A 64 64 0 0 0 191.1 63.0" fill="none" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3 3" />
+          <text x="196.1" y="66.0" fontSize="9.5" fill="#64748b">4 cm</text>
+          <path d="M 88.3 87.5 A 96 96 0 0 0 211.7 87.5" fill="none" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3 3" />
+          <text x="216.7" y="90.5" fontSize="9.5" fill="#64748b">6 cm</text>
+          <path d="M 67.7 112.1 A 128 128 0 0 0 232.3 112.1" fill="none" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3 3" />
+          <text x="237.3" y="115.1" fontSize="9.5" fill="#64748b">8 cm</text>
+          <line x1="150" y1="14" x2="63.6" y2="117.0" stroke="#1d4ed8" strokeWidth="1.3" />
+          <line x1="150" y1="14" x2="104.0" y2="140.3" stroke="#1d4ed8" strokeWidth="1.3" />
+          <line x1="150" y1="14" x2="150.0" y2="148.4" stroke="#ea580c" strokeWidth="2" />
+          <line x1="150" y1="14" x2="196.0" y2="140.3" stroke="#1d4ed8" strokeWidth="1.3" />
+          <line x1="150" y1="14" x2="236.4" y2="117.0" stroke="#1d4ed8" strokeWidth="1.3" />
+          <text x="59.6" y="129.0" fontSize="10.5" fill="#1d4ed8" fontWeight="700" textAnchor="middle">−40°</text>
+          <text x="240.4" y="129.0" fontSize="10.5" fill="#1d4ed8" fontWeight="700" textAnchor="middle">+40°</text>
+          <text x="150.0" y="160.4" fontSize="10.5" fill="#c2410c" fontWeight="700" textAnchor="middle">0°</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Pour former une image 2D, la sonde <strong>pivote</strong> (ici de −40° à +40°). Chaque tir donne <strong>une ligne</strong> de l’image : l’image se construit <strong>tir par tir</strong>.</li>
+          <li>Un point à la profondeur <em>d</em> et à l’angle <em>θ</em> se place à (<em>d</em>·sin <em>θ</em> ; <em>d</em>·cos <em>θ</em>) par rapport à la sonde : on obtient un <strong>secteur</strong>, d’où le nom de balayage sectoriel.</li>
+          <li>Les arcs de cercle indiquent des profondeurs égales, centrés sur la sonde.</li>
+        </ul>
+      </>,
+      texte: <>Lancez le <strong>balayage complet</strong> : la sonde pivote de −40° à +40° et l'image se construit tir par tir.</>,
       tache: { type: 'action', ok: shots.length >= 150, label: 'Lancer le balayage', faire: lancer, consigne: 'Laisser le balayage se terminer',
         indice: "Appuyez sur « Balayage complet » et attendez quelques secondes : l'image est terminée quand la sonde a tout parcouru." } },
     { titre: 'Le kyste est sombre', texte: <>Sur la coupe d'organe, repérez le <strong>kyste</strong> (poche de liquide) : activez « Légende » si besoin. Il paraît presque noir.</>,
       tache: { type: 'qcm', q: 'Pourquoi le kyste apparaît-il sombre ?', options: ["Il contient du liquide homogène : très peu d'interfaces, donc presque pas d'échos à l'intérieur", 'Il absorbe toute l’onde dès l’entrée', "Il est plus profond que l'organe"], bonne: 0,
         indice: "Un écho a besoin d'une interface. Que rencontre l'onde à l'intérieur d'un liquide homogène ?",
         expl: <>Dans un liquide homogène, l'onde ne rencontre pas d'interface : pas d'écho, donc une zone noire. Les parois du kyste, elles, renvoient des échos.</> } },
-    { titre: 'Convertir un temps en profondeur', texte: <>Le temps que met l'écho à revenir est un <strong>aller-retour</strong> : l'appareil calcule la profondeur avec <em>d</em> = <em>v</em>·<em>t</em>/2, en supposant <em>v</em> = 1 540 m/s.</>,
+    { titre: 'Convertir un temps en profondeur',
+      retenirTitre: 'À RETENIR : PROFONDEUR APPARENTE ET CÉLÉRITÉS',
+      retenir: <>
+        <Formule><msub><mi>d</mi><mtext>app</mtext></msub><mo>=</mo><mfrac><mrow><mn>1540</mn><mo>×</mo><mi>t</mi></mrow><mn>2</mn></mfrac><mspace width="1em"/><mtext>(v supposée = 1 540 m·s⁻¹ partout)</mtext></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Milieu</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Célérité v (m·s⁻¹)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>α₁ (dB·cm⁻¹·MHz⁻¹)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>gel</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 500</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>peau</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 540</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,5</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>graisse</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 450</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,6</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>muscle</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 580</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,1</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>organe</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 590</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,7</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Exemple :</strong> t = 26 µs : d<sub>app</sub> = 1 540 × 26×10⁻⁶ / 2 = 0,0200 m = <strong>2,0 cm</strong>.</li>
+          <li>L’appareil <strong>suppose</strong> v = 1 540 m·s⁻¹ dans tout le corps. Dans la <strong>graisse</strong> (1 450 m·s⁻¹), l’onde va moins vite : l’écho revient <strong>plus tard</strong>, et les structures situées derrière paraissent <strong>plus profondes</strong> qu’en réalité.</li>
+          <li><strong>Hypothèse :</strong> les valeurs de v et α₁ sont celles de la simulation ; les contours de la légende sont tracés aux profondeurs apparentes.</li>
+        </ul>
+      </>,
+      texte: <>Le temps que met l'écho à revenir est un <strong>aller-retour</strong> : l'appareil calcule la profondeur avec <em>d</em> = <em>v</em>·<em>t</em>/2, en supposant <em>v</em> = 1 540 m/s.</>,
       tache: { type: 'num', q: "Un écho revient au bout de t = 26 µs (aller-retour). Quelle profondeur l'appareil affiche-t-il ? (en cm)", unite: 'cm', vrai: dAppCm(26), tol: 0.02, cs: 2, detail: true,
         calcul: () => ['d = v·t/2 avec v = 1 540 m/s et t = 26 µs.', `d = 1 540 × 26·10⁻⁶ / 2 = ${nbf(dAppCm(26), 2)} cm.`],
         pieges: [[dAppCm(52), 'Vous avez oublié que le temps mesuré est un aller-retour : il faut diviser par 2.']],
@@ -324,7 +416,17 @@ export function SimulationEchographe2D() {
       tache: { type: 'qcm', q: 'Les structures situées sous la graisse apparaissent…', options: ['un peu plus profondes que la réalité', 'un peu moins profondes que la réalité', 'exactement à leur profondeur réelle'], bonne: 0,
         indice: 'Dans la graisse, la durée de l’aller-retour est-elle plus longue ou plus courte que ce que l’appareil attend ?',
         expl: <>Dans la graisse l'onde va moins vite : l'écho revient plus tard, donc l'appareil croit la structure plus profonde.</> } },
-    { titre: 'Fréquence : voir loin ou voir net', texte: <>Réglez la fréquence à <strong>8 MHz</strong> puis à <strong>2 MHz</strong>, puis relancez un balayage : comparez la netteté et la profondeur atteinte.</>,
+    { titre: 'Fréquence : voir loin ou voir net',
+      retenirTitre: 'À RETENIR : FRÉQUENCE, ABSORPTION ET GEL',
+      retenir: <>
+        <Formule><mi>α</mi><mo>=</mo><msub><mi>α</mi><mn>1</mn></msub><mo>×</mo><mi>f</mi><mspace width="1.5em"/><mtext>(en dB·cm⁻¹, f en MHz)</mtext></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>L’absorption est <strong>proportionnelle à la fréquence</strong>. <strong>Exemple</strong> (organe, α₁ = 0,7) : 1,4 dB·cm⁻¹ à 2 MHz, 5,6 dB·cm⁻¹ à 8 MHz, comptés à l’aller <strong>et</strong> au retour.</li>
+          <li><strong>Compromis :</strong> fréquence <strong>basse</strong> (2 MHz) : on voit <strong>loin</strong> mais l’image est moins nette ; fréquence <strong>haute</strong> (8 MHz) : image plus fine mais le fond disparaît.</li>
+          <li><strong>Le gel</strong> supprime la couche d’air entre sonde et peau : R(air/peau) = 0,99 contre 0,02 pour gel/peau. Sans gel, T² = (0,01)² = 10⁻⁴ soit <strong>−40 dB</strong> : presque tous les échos passent sous le seuil de −80 dB.</li>
+        </ul>
+      </>,
+      texte: <>Réglez la fréquence à <strong>8 MHz</strong> puis à <strong>2 MHz</strong>, puis relancez un balayage : comparez la netteté et la profondeur atteinte.</>,
       tache: { type: 'qcm', q: 'Pour observer une structure profonde, quel réglage choisir ?', options: ['Une fréquence plus basse : moins d’absorption, mais une image moins nette', 'Une fréquence plus haute : image plus nette et meilleure pénétration', 'La fréquence ne change rien'], bonne: 0,
         indice: "L'absorption croît avec la fréquence. Et la netteté ?",
         expl: <>L'atténuation est proportionnelle à la fréquence : à 8 MHz le fond disparaît. À 2 MHz on voit loin, mais les petits détails fusionnent : c'est un compromis.</> } },
@@ -332,7 +434,21 @@ export function SimulationEchographe2D() {
       tache: { type: 'qcm', q: 'Pourquoi l’image est-elle noire sans gel ?', options: ["L'air entre la sonde et la peau réfléchit environ 99 % de l'énergie", 'La peau absorbe tout', 'Le gel produit les ultrasons'], bonne: 0,
         indice: "Regardez le coefficient de réflexion air/peau dans la liste des échos : R = 0,99.",
         expl: <>Avec R = 0,99, seule 1 % de l'énergie entre dans le corps à l'aller (et 1 % au retour) : 40 dB de perte, la plupart des échos passent sous le seuil.</> } },
-    { titre: "Échographie obstétricale", texte: <>Passez à la scène <strong>« Échographie obstétricale »</strong> et activez les <strong>calipers</strong> : les ✕ jaunes sont déjà placés sur les extrémités du fémur du fœtus (os très réfléchissant).</>,
+    { titre: "Échographie obstétricale",
+      retenirTitre: 'À RETENIR : LIRE UNE ÉCHOGRAPHIE',
+      retenir: <>
+        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+          <li><strong>Repérer</strong> les zones sombres (liquides homogènes) et les points très brillants (os, interfaces fortement réfléchissantes).</li>
+          <li><strong>Placer les calipers</strong> aux deux extrémités de la structure à mesurer.</li>
+          <li><strong>Lire</strong> la distance affichée (cm) ; elle est mesurée sur l’image, donc à la <strong>profondeur apparente</strong>.</li>
+          <li><strong>Comparer</strong> avec les valeurs de référence : la longueur du fémur sert à estimer l’âge de la grossesse.</li>
+        </ol>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Le fémur est un os : très <strong>réfléchissant</strong> (R = 0,45 avec le liquide amniotique) donc bien visible, mais très <strong>absorbant</strong> (α₁ = 4 dB·cm⁻¹·MHz⁻¹) : l’ombre derrière lui est sombre.</li>
+          <li><strong>Hypothèse :</strong> l’appareil suppose v = 1 540 m·s⁻¹ ; une structure sous une couche de graisse paraît plus profonde que la réalité.</li>
+        </ul>
+      </>,
+      texte: <>Passez à la scène <strong>« Échographie obstétricale »</strong> et activez les <strong>calipers</strong> : les ✕ jaunes sont déjà placés sur les extrémités du fémur du fœtus (os très réfléchissant).</>,
       tache: { type: 'action', ok: sceneKey === 'foetus' && calOn, label: 'Le faire pour moi', faire: () => { changerScene('foetus'); setCal(CAL_FEMUR); setCalOn(true); setGel(true); },
         consigne: 'Scène obstétricale + calipers activés', indice: 'Boutons « Échographie obstétricale » puis « Calipers » sous l’image.' } },
     { titre: 'Mesurer le fémur', texte: <>On mesure la longueur du fémur (os de la cuisse) pour estimer l'âge de la grossesse. Lisez la distance affichée par les calipers.</>,

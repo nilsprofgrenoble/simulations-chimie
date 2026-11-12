@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, IndiceDefi } from "../commun";
 import { Fiole } from "./solutionsVue";
 import { fr, SOLUTES, soluteDe, concentration, massePeser, dissolution, teinte } from "./solutionsModele";
@@ -167,12 +167,49 @@ export function SimulationDissolution() {
   const tC = concentration(P.m, P.V);
   const ETAPES = [
     { id: 'vocab', titre: 'Soluté, solvant, solution', depart: () => voir({ sol: 'KMnO4', V: 250, m: 0.1 }),
+      retenirTitre: 'À RETENIR : SOLUTÉ, SOLVANT, SOLUTION',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Mot</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Définition</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Exemple</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>soluté</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>espèce dissoute (solide, liquide ou gaz)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>le sucre, le sel, le permanganate de potassium</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>solvant</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>liquide qui dissout</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>l’eau</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>solution</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>mélange homogène soluté + solvant</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>l’eau sucrée, l’eau salée</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Soluté + solvant = <strong>solution</strong>. Quand le solvant est l’eau, la solution est dite <strong>aqueuse</strong>.</li>
+          <li>Dissoudre, c’est répartir le soluté dans tout le liquide : le mélange est <strong>homogène</strong> (on ne voit qu’une seule phase).</li>
+          <li>Plus une solution colorée est <strong>concentrée</strong>, plus sa <strong>couleur</strong> est foncée (exemple : KMnO₄, violet).</li>
+        </ul>
+      </>,
       texte: <>Le permanganate de potassium KMnO₄ est un <strong>solide violet</strong>. Quand on le met dans l’eau, il se <strong>dissout</strong> : l’eau devient violette.
         <ExempleResolu>L’<strong>eau</strong> est le <strong>solvant</strong> (le liquide dans lequel on dissout). Le <strong>permanganate</strong> est le <strong>soluté</strong> (ce qui est dissous). Le mélange obtenu est une <strong>solution</strong> (ici, une solution <em>aqueuse</em> car le solvant est l’eau).
           {bouton('Voir la fiole', () => voir({ sol: 'KMnO4', V: 250, m: 0.1 }))}</ExempleResolu>
         À vous : on dissout du sucre dans de l’eau.</>,
       tache: { type: 'qcm', q: 'Dans une eau sucrée, quel est le soluté ?', options: ['le sucre', 'l’eau', 'l’eau sucrée', 'il n’y en a pas'], bonne: 0, expl: 'Le soluté est ce qui est dissous : le sucre. L’eau est le solvant, l’eau sucrée est la solution.', indice: "Le soluté est l’espèce dissoute ; le solvant est le liquide qui la dissout. Qu’est-ce qui est dissous dans l’eau sucrée ?" } },
     { id: 'conc', titre: 'La concentration en masse', depart: () => voir({ sol: 'NaCl', V: 500, m: 2 }),
+      retenirTitre: 'À RETENIR : CONCENTRATION EN MASSE',
+      retenir: <>
+        <Formule><mi>t</mi><mo>=</mo><mfrac><mi>m</mi><mi>V</mi></mfrac><mspace width="1.5em"/><mtext>m en g ; V en L ; t en g·L⁻¹</mtext></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Volume en mL</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Volume en L (÷ 1 000)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>50 mL</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,050 L</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>100 mL</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,100 L</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>200 mL</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,200 L</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>250 mL</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,250 L</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>500 mL</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,500 L</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La <strong>concentration en masse</strong> t est la masse de soluté dissous dans <strong>1 litre</strong> de solution.</li>
+          <li><strong>Exemple 1 :</strong> 2 g de sel dans 500 mL : t = 2 / 0,500 = <strong>4 g·L⁻¹</strong>.</li>
+          <li><strong>Exemple 2 :</strong> 0,60 g de sulfate de cuivre dans 200 mL : t = 0,60 / 0,200 = <strong>3,0 g·L⁻¹</strong>.</li>
+          <li><strong>Piège :</strong> convertir les mL en L <em>avant</em> de calculer ; diviser m par V (et non l’inverse).</li>
+          <li>Doubler la masse double t ; doubler le volume divise t par 2.</li>
+        </ul>
+      </>,
       texte: <>Une solution plus ou moins « chargée » en soluté se décrit par sa <strong>concentration en masse</strong> <em>t</em> : la masse de soluté dissous dans <strong>1 litre</strong> de solution.
         <ExempleResolu><strong>t = m / V</strong> (m en g, V en L, t en g/L). On dissout 2 g de sel dans une solution de 500 mL = 0,500 L : t = 2 / 0,500 = <strong>4 g/L</strong>. Attention : on convertit les mL en L (÷ 1000).
           {bouton('Voir la fiole', () => voir({ sol: 'NaCl', V: 500, m: 2 }))}</ExempleResolu>
@@ -182,6 +219,23 @@ export function SimulationDissolution() {
         pieges: [[0.003, 'Pense à convertir 200 mL en litres : 200 mL = 0,200 L.'], [0.12, 'Pour t on divise la masse par le volume (t = m / V), on ne multiplie pas.'],
           [0.200 / 0.60, 'Formule à l’envers : t = m / V (la masse divisée par le volume), pas V / m.']], expl: 't = 0,60 / 0,200 = 3,0 g/L.', indice: "Concentration en masse : t = m / V, avec m la masse de soluté (en g) et V le volume de solution (en L). Convertis les mL en L si besoin." } },
     { id: 'masse', titre: 'Quelle masse faut-il peser ?', depart: () => voir({ sol: 'NaCl', V: 200, m: 1 }),
+      retenirTitre: 'À RETENIR : MASSE À PESER',
+      retenir: <>
+        <svg viewBox="0 0 300 130" role="img" aria-label="Triangle des formules : m en haut, t et V en bas. On cache la grandeur cherchée : m = t × V, t = m / V, V = m / t" style={{ width: '100%', maxWidth: 300, height: 'auto', display: 'block', margin: '6px auto' }}>
+          <polygon points="150,8 40,118 260,118" fill="#dcfce7" stroke="#15803d" strokeWidth="2.4" strokeLinejoin="round" />
+          <line x1="95" y1="63" x2="205" y2="63" stroke="#15803d" strokeWidth="2.4" /><line x1="150" y1="63" x2="150" y2="118" stroke="#15803d" strokeWidth="2.4" />
+          <text x="150" y="50" fontSize="26" textAnchor="middle" fill="#14532d" fontWeight="700">m</text>
+          <text x="112" y="100" fontSize="26" textAnchor="middle" fill="#14532d" fontWeight="700">t</text>
+          <text x="190" y="100" fontSize="26" textAnchor="middle" fill="#14532d" fontWeight="700">V</text>
+        </svg>
+        <Formule><mi>m</mi><mo>=</mo><mi>t</mi><mo>×</mo><mi>V</mi><mspace width="1.5em"/><mi>t</mi><mo>=</mo><mfrac><mi>m</mi><mi>V</mi></mfrac><mspace width="1.5em"/><mi>V</mi><mo>=</mo><mfrac><mi>m</mi><mi>t</mi></mfrac></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Triangle :</strong> on cache la grandeur cherchée. Si on cache m, il reste t et V côte à côte : on <strong>multiplie</strong>. Si on cache t (ou V), il reste m au-dessus : on <strong>divise</strong> m par l’autre grandeur.</li>
+          <li><strong>Exemple :</strong> 200 mL de sel à 5 g·L⁻¹ : m = 5 × 0,200 = <strong>1,0 g</strong>.</li>
+          <li><strong>Solution du TP :</strong> KMnO₄ à 0,40 g·L⁻¹ en fiole de 250 mL : m = 0,40 × 0,250 = <strong>0,10 g</strong>.</li>
+          <li><strong>Piège :</strong> multiplier 0,40 par 250 sans convertir donne 100 g, valeur absurde : toujours vérifier l’ordre de grandeur.</li>
+        </ul>
+      </>,
       texte: <>En pratique, on connaît la concentration voulue et le volume : il faut trouver la <strong>masse à peser</strong>. On inverse la formule : <strong>m = t × V</strong>. On peut aussi raisonner en phrases avec un produit en croix.
         <ExempleResolu>On veut 200 mL de solution de sel à 5 g/L. « 1 L contient 5 g, donc 0,200 L contient 5 × 0,200 = <strong>1,0 g</strong>. » (m = t × V = 5 × 0,200 = 1,0 g)
           {bouton('Voir la fiole', () => voir({ sol: 'NaCl', V: 200, m: 1 }))}</ExempleResolu>
@@ -194,22 +248,66 @@ export function SimulationDissolution() {
       texte: <>Réglez la masse pour obtenir exactement la solution du TP. Observez la <strong>couleur</strong> : plus la solution est concentrée, plus elle est foncée.</>,
       tache: { type: 'action', ok: enGuide && P.sol === 'KMnO4' && P.V === 250 && Math.abs(tC - 0.4) < 0.005, consigne: 'Choisissez KMnO₄, fiole de 250 mL, et réglez la masse pour obtenir t = 0,40 g/L.' } },
     { id: 'protocole', titre: 'Le protocole de la fiole jaugée', depart: () => voir({ sol: 'KMnO4', V: 250, m: 0.1 }, 'protocole'),
+      retenirTitre: 'À RETENIR : LA FIOLE JAUGÉE',
+      retenir: <>
+        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+          <li><strong>Peser</strong> le soluté dans une capsule.</li>
+          <li><strong>Introduire</strong> le soluté dans la fiole (entonnoir).</li>
+          <li><strong>Rincer</strong> capsule et entonnoir à l’eau distillée, puis remplir la fiole <strong>à moitié</strong>.</li>
+          <li><strong>Agiter</strong> doucement, sans bouchon, pour dissoudre.</li>
+          <li><strong>Ajuster</strong> au trait de jauge (pissette puis pipette), œil en face, bas du ménisque sur le trait.</li>
+          <li><strong>Boucher et retourner</strong> plusieurs fois : la solution devient homogène.</li>
+        </ol>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Le volume de la solution doit être <strong>exactement</strong> celui de la fiole : c’est le V de la formule t = m / V.</li>
+          <li>On ne remplit qu’à moitié d’abord pour <strong>pouvoir agiter</strong> ; au-delà du trait, on ne peut plus retirer du liquide.</li>
+        </ul>
+      </>,
       texte: <>Pour que la formule <em>t = m / V</em> soit juste, le volume de la solution doit être <strong>exactement</strong> celui de la fiole. D’où un protocole précis. Réalisez-le dans l’ordre : en cas d’erreur, le message vous aide.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'protocole' && proto.n === 6, consigne: 'Cliquez sur les 6 étapes dans le bon ordre.' } },
     { id: 'pourquoi', titre: 'Pourquoi remplir à moitié ?', depart: null,
       texte: <>Dans le protocole, on remplit la fiole <strong>à moitié environ</strong>, on agite, puis on ajuste au trait.</>,
       tache: { type: 'qcm', q: 'Pourquoi ne remplit-on pas tout de suite jusqu’au trait de jauge ?', options: ['Pour pouvoir agiter, puis ajuster le volume exactement au trait avec la pissette', 'Pour économiser l’eau distillée', 'Parce que le solide ne se dissout qu’à moitié', 'Parce qu’il faut laisser du solide au fond'], bonne: 0, expl: 'Une fiole pleine ne peut plus être agitée sans déborder. On dissout d’abord, puis on complète au trait : le volume est alors exactement celui de la fiole.', indice: "Que se passerait-il si le niveau dépassait le trait de jauge ? Peut-on ensuite retirer du liquide ? Pense aussi à l’agitation, qui fait dissoudre le solide." } },
     { id: 'saturation', titre: '★ Peut-on tout dissoudre ?', depart: () => voir({ sol: 'NaCl', V: 100, m: 50 }),
+      retenirTitre: 'À RETENIR : SOLUBILITÉ ET SATURATION',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Soluté (eau, 20 °C)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Solubilité (g·L⁻¹)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>permanganate de potassium KMnO₄</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>64</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>sulfate de cuivre CuSO₄</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>200</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>chlorure de sodium NaCl</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>360</td></tr>
+          </tbody>
+        </table>
+        <Formule><msub><mi>m</mi><mtext>max</mtext></msub><mo>=</mo><mtext>solubilité</mtext><mo>×</mo><mi>V</mi></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La <strong>solubilité</strong> est la masse maximale de soluté qui se dissout dans 1 L de solvant. Au-delà, le solide reste au fond : la solution est <strong>saturée</strong>.</li>
+          <li><strong>Exemple :</strong> NaCl dans 100 mL : m<sub>max</sub> = 360 × 0,100 = <strong>36 g</strong>. Avec 50 g, il reste 14 g de solide ; avec 20 g, tout se dissout (20 g &lt; 36 g).</li>
+          <li>Dans une solution saturée, t = solubilité (ici 360 g·L⁻¹ pour NaCl) : ajouter du solide ne change plus t.</li>
+          <li><strong>Hypothèses :</strong> température de 20 °C ; dissolution complète jusqu’à la solubilité ; volume de la solution égal à celui de la fiole.</li>
+        </ul>
+      </>,
       texte: <>On ne peut pas dissoudre n’importe quelle masse : l’eau a une <strong>limite</strong>. Au-delà, le soluté ne se dissout plus et reste <strong>solide</strong> au fond : la solution est <strong>saturée</strong>. Cette limite, la <strong>solubilité</strong>, dépend du soluté (environ 360 g/L pour le sel à 20 °C).
         <ExempleResolu>Dans 100 mL d’eau, au plus 360 × 0,100 = <strong>36 g</strong> de sel se dissolvent. Avec 50 g, il en reste 14 g sous forme solide.
           {bouton('Voir la fiole', () => voir({ sol: 'NaCl', V: 100, m: 50 }))}</ExempleResolu></>,
       tache: { type: 'qcm', q: 'On introduit 20 g de sel dans 100 mL d’eau (limite : 36 g). Que se passe-t-il ?', options: ['Tout se dissout : la solution n’est pas saturée', 'Il reste 20 g de sel solide', 'La solution est saturée', 'Le sel ne se dissout pas du tout'], bonne: 0, expl: '20 g < 36 g : tout se dissout, la solution n’est pas saturée.', indice: "Compare la masse de sel introduite à la quantité maximale que ce volume d’eau peut dissoudre (limite indiquée dans l’énoncé)." } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
-      texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>Soluté (dissous) + solvant (dissolvant) = <strong>solution</strong>.</li>
-        <li><strong>t = m / V</strong> : g/L = g ÷ L. On convertit les mL en L.</li>
-        <li>Masse à peser : <strong>m = t × V</strong>.</li>
-        <li>Fiole jaugée : on ajuste au trait pour que V soit exact. Au-delà de la solubilité, la solution est saturée.</li></ul></ARetenir>, tache: null },
+      retenirTitre: 'À RETENIR : LE BILAN',
+      retenir: <>
+        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+          <li><strong>Identifier</strong> la grandeur cherchée : t, m ou V.</li>
+          <li><strong>Convertir</strong> les mL en L (÷ 1 000).</li>
+          <li><strong>Calculer</strong> : t = m / V ; m = t × V.</li>
+          <li><strong>Vérifier</strong> l’unité (g·L⁻¹) et l’ordre de grandeur.</li>
+        </ol>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Soluté (dissous) + solvant (dissolvant) = <strong>solution</strong>.</li>
+          <li>Fiole jaugée : on ajuste au trait pour que V soit exact. Au-delà de la solubilité, la solution est <strong>saturée</strong>.</li>
+          <li><strong>Hypothèses :</strong> 20 °C, volume de la solution = volume de la fiole, masse pesée exacte.</li>
+          <li><strong>Pièges :</strong> oublier la conversion mL → L ; diviser à l’envers ; remplir la fiole directement au trait.</li>
+        </ul>
+      </>,
+      texte: <>Bravo : vous savez préparer une solution de concentration donnée. Voici le bilan à garder.</>, tache: null },
   ];
   useEffect(() => {
     if (mode !== 'guide') return;
