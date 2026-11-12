@@ -54,7 +54,7 @@ grant all on public.classement_cache to service_role;
 create or replace function public.classement_invalide()
 returns trigger language plpgsql security definer set search_path = '' as $$
 begin
-  delete from public.classement_cache;
+  delete from public.classement_cache where id = 1;
   return null;
 end $$;
 revoke all on function public.classement_invalide() from public, anon, authenticated;
