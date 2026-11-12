@@ -3,8 +3,8 @@
 //  Pour en changer : modifiez id (numéro de la simulation dans App.jsx), badge et accroche.
 // ============================================================
 export const A_LA_UNE = {
-  id: 56,
+  id: 104,
   badge: "Nouveau",
-  accroche: "Des chronophotographies vues depuis deux référentiels : la même scène n'a pas la même trajectoire selon l'observateur. Construisez le vecteur vitesse et comprenez enfin ce que « relatif » veut dire.",
-  niveau: "Seconde",
+  accroche: "Qui sont les meilleur·e·s de la paillasse ? Étoiles, exercices de la semaine, défis, régularité : quatre classements à faire défiler. Choisis un pseudo, coche la case dans « Mon espace » et défie les autres classes !",
+  niveau: "Pour tous",
 };
