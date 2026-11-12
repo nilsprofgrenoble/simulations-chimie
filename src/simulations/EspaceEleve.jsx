@@ -126,7 +126,7 @@ export function EspaceEleve({ lignes, naviguer, apercu, pied }) {
       <DevoirsEleve lignes={lignes} naviguer={naviguer} devoirsListe={devoirs ?? []} />
       <Carnet lignes={lignes} naviguer={naviguer} />
       <VieDeClasse lignes={lignes} apercu={apercu?.classe} />
-      {!apercu && <MonClassement naviguer={naviguer} />}
+      <MonClassement naviguer={naviguer} apercu={!!apercu} />
       {pied?.(2)}
     </>);
   }
@@ -159,7 +159,7 @@ export function EspaceEleve({ lignes, naviguer, apercu, pied }) {
       <Carnet lignes={lignes} naviguer={naviguer} parties={{ hero: false, vide: false, revoir: true, revoirToujours: etape === 0, revoirMax: 2, objectifs: false, competences: false, badges: false, regularite: false }} />
 
       {etape > 0 && <VieDeClasse lignes={lignes} apercu={apercu?.classe} />}
-      {etape > 0 && !apercu && <MonClassement naviguer={naviguer} />}
+      <MonClassement naviguer={naviguer} apercu={!!apercu} />
 
       {/* 3. Le reste : repliable, pour ne pas noyer l'essentiel */}
       {etape > 0 && (
