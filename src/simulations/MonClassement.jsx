@@ -25,7 +25,7 @@ const css = `
 export function MonClassement({ naviguer, apercu = false }) {
   const sess = useSession();
   const monId = sess?.user?.id;
-  const [etat, setEtat] = useState(apercu ? { moi: { adj: 0, nom: 0, classement: false }, etab: 'Ton établissement', classe: 'Ta classe', exclu: false } : undefined);              // undefined : chargement · null : indisponible · { moi, etab, classe }
+  const [etat, setEtat] = useState(apercu ? { moi: apercu.moi ? { adj: apercu.moi.adj, nom: apercu.moi.nom, classement: false } : null, etab: 'Ton établissement', classe: 'Ta classe', exclu: false } : undefined);              // undefined : chargement · null : indisponible · { moi, etab, classe }
   const [version, setVersion] = useState(0);
   const [idees, setIdees] = useState(() => propositions(4));
   const [change, setChange] = useState(false), [occupe, setOccupe] = useState(apercu), [msg, setMsg] = useState('');
@@ -90,6 +90,7 @@ export function MonClassement({ naviguer, apercu = false }) {
         ) : !monPseudo || change ? choixPseudo : (
           <>
             <div>Ton pseudo : <span className="mc-pseudo"><span aria-hidden="true">{monPseudo.icone}</span> {monPseudo.texte}</span></div>
+            <div style={{ fontSize: 13.5, color: '#475569' }}>C’est le même pseudo que dans ta classe : si tu le changes ici, il change aussi là-bas.</div>
             <label className="mc-case">
               <input type="checkbox" checked={!!moi.classement} disabled={occupe} onChange={e => basculer(e.target.checked)} />
               <span><b>Apparaître dans le classement public</b> (désactivé par défaut).<br />
