@@ -129,7 +129,7 @@ export function MotDePasse() {
   );
 }
 
-function MesResultats({ naviguer }) {
+function MesResultats({ naviguer, reglages }) {
   const [lignes, setLignes] = useState(null), [erreur, setErreur] = useState('');
   useEffect(() => {
     toutLire('activites?select=cle,reussi,essais,corrections_vues,duree_s,debut,maj&order=debut.desc').then(setLignes).catch(e => setErreur(e.message));
@@ -141,7 +141,7 @@ function MesResultats({ naviguer }) {
   const nbDefis = ag.filter(a => a.reussi && estDefi(a.cle)).length, total = ag.reduce((t, a) => t + a.duree, 0);
   return (
     <div>
-      <EspaceEleve lignes={lignes} naviguer={naviguer} pied={etape => etape >= 2 && (
+      <EspaceEleve lignes={lignes} naviguer={naviguer} fiches={<TuileFiches naviguer={naviguer} />} reglages={reglages} pied={etape => etape >= 2 && (
       <details style={{ marginTop: 22 }}>
       <summary style={{ cursor: 'pointer', fontSize: 16, fontWeight: 800, color: KIT.txt, padding: '6px 0' }}><Pic n="clipboard"/>Le détail de mes résultats</summary>
       <h3 style={{ margin: '14px 0 6px' }}>Mes résultats</h3>
@@ -194,37 +194,44 @@ function TuileFiches({ naviguer }) {
   const themes = new Map();
   sims.forEach(id => { const c = chapitresDeSim(id)[0]; if (c) themes.set(c.id, { label: c.label.replace(/^[^\p{L}\p{N}]+/u, ''), n: (themes.get(c.id)?.n || 0) + 1 }); });
   return (
-    <button data-tuile-fiches onClick={() => naviguer(103)} style={{ display: 'flex', alignItems: 'center', gap: 16, width: '100%', textAlign: 'left', margin: '10px 0 18px', padding: '16px 18px', borderRadius: 18,
-      border: '2px solid #ec4899', background: 'linear-gradient(135deg,#fff1f7,#fde2ee)', cursor: 'pointer', color: KIT.txt, boxShadow: '0 4px 14px rgba(190,24,93,0.14)' }}>
+    <button data-tuile-fiches onClick={() => naviguer(103)} style={{ display: 'flex', alignItems: 'center', gap: 16, width: '100%', textAlign: 'left', margin: 0, padding: '20px 22px', borderRadius: 22,
+      border: 0, background: '#2cc4ae', cursor: 'pointer', color: '#04352d' }}>
       <span aria-hidden="true" style={{ fontSize: 42, lineHeight: 1 }}>📇</span>
       <span style={{ flex: 1, minWidth: 0 }}>
-        <b style={{ display: 'block', fontSize: 19, color: '#9d174d' }}>Mes fiches de révision{n ? ` · ${n} fiche${n > 1 ? 's' : ''}` : ''}</b>
-        <span style={{ display: 'block', fontSize: 14, color: KIT.txt2, lineHeight: 1.45, marginTop: 2 }}>
+        <b style={{ display: 'block', fontSize: 21, fontFamily: "'Outfit', sans-serif", color: '#04352d' }}>Mes fiches de révision{n ? ` · ${n} fiche${n > 1 ? 's' : ''}` : ''}</b>
+        <span style={{ display: 'block', fontSize: 14.5, color: '#04352d', lineHeight: 1.45, marginTop: 2 }}>
           {n ? 'Relis les points à retenir de chaque simulation, et imprime un livret par thème pour réviser.' : 'Termine un parcours guidé (ou réussis un défi) : la fiche de la simulation se range ici, prête à réviser et à imprimer.'}
         </span>
         {n > 0 && <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
-          {[...themes.values()].map((t, i) => <span key={i} style={{ background: '#fff', border: '1px solid #f3b6cf', borderRadius: 99, padding: '1px 9px', fontSize: 12.5, color: '#9d174d', fontWeight: 700 }}>{t.label} · {t.n}</span>)}
+          {[...themes.values()].map((t, i) => <span key={i} style={{ background: 'rgba(255,255,255,.4)', borderRadius: 99, padding: '2px 10px', fontSize: 12.5, color: '#04352d', fontWeight: 700 }}>{t.label} · {t.n}</span>)}
         </span>}
       </span>
-      <span style={{ background: '#be185d', color: '#fff', borderRadius: 12, padding: '8px 14px', fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap' }}>Ouvrir ▶</span>
+      <span style={{ background: '#04352d', color: '#fff', borderRadius: 14, padding: '10px 16px', fontWeight: 800, fontSize: 14, whiteSpace: 'nowrap' }}>Ouvrir ▶</span>
     </button>);
+}
+
+// Onglet « Mon compte » de l'espace élève : qui je suis, mot de passe, déconnexion
+function ReglagesEleve({ sess }) {
+  return (
+    <section data-reglages-eleve aria-label="Mon compte" style={{ background: '#fff', border: '1px solid #d5dfeb', borderRadius: 22, padding: 22, textAlign: 'left' }}>
+      <h3 style={{ margin: '0 0 10px', font: "800 22px Outfit, Inter, sans-serif", color: '#0c1a2e' }}>⚙️ Mon compte</h3>
+      <div style={{ fontSize: 15, color: KIT.txt2, lineHeight: 1.7 }}>
+        Identifiant : <b style={{ color: KIT.txt }}>{sess.profil.identifiant}</b>
+        {sess.profil.classe ? <><br />Classe : <b style={{ color: KIT.txt }}>{sess.profil.classe}</b></> : null}
+      </div>
+      <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-start' }}>
+        <MotDePasse />
+        <button onClick={deconnexion} style={{ ...styleBouton(false, '#475569'), fontSize: 14 }}>Se déconnecter</button>
+      </div>
+    </section>);
 }
 
 export function SimulationCompte({ naviguer }) {
   const sess = useSession();
   return (
-    <div style={{ ...(sess?.profil ? cardStyle : {}), maxWidth: sess?.profil ? 900 : 940, margin: '0 auto' }}>
+    <div style={{ ...(sess?.profil && !estEleve(sess) ? cardStyle : {}), maxWidth: sess?.profil ? 900 : 940, margin: '0 auto' }}>
       {!sess?.profil && <Connexion />}
-      {estEleve(sess) && (
-        <>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', fontSize: 14, color: KIT.txt2, marginBottom: 6 }}>
-            <span>Connecté·e : <b style={{ color: KIT.txt }}>{sess.profil.identifiant}</b>{sess.profil.classe ? <> — classe <b style={{ color: KIT.txt }}>{sess.profil.classe}</b></> : null}</span>
-            <button onClick={deconnexion} style={{ ...styleBouton(false, '#475569'), fontSize: 13 }}>Se déconnecter</button>
-          </div>
-          <TuileFiches naviguer={naviguer} />
-          <MesResultats naviguer={naviguer} />
-          <div style={{ marginTop: 22 }}><MotDePasse /></div>
-        </>)}
+      {estEleve(sess) && <MesResultats naviguer={naviguer} reglages={<ReglagesEleve sess={sess} />} />}
       {estProf(sess) && (
         <>
           <p style={{ fontSize: 15, color: KIT.txt }}>Connecté : <b>{sess.profil.nom}</b> (professeur)</p>

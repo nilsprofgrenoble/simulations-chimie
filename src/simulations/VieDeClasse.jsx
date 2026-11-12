@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { rest, useSession } from "../serveur";
-import { PROUESSES, MAX_PAR_ELEVE, pseudo, pseudoValide, propositions, progressionSemaine, lundiDe } from "../classe";
-import { ChoixDomaine } from "./ChoixDomaine";
+import { PROUESSES, MAX_PAR_ELEVE, pseudo, pseudoValide, progressionSemaine, lundiDe } from "../classe";
 import { Pic } from "../Pictos";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -24,48 +23,22 @@ async function lireClasse(classeId) {
 }
 
 // apercu : { semaine, moi } = données fictives (aperçu élève du professeur) : rien n'est lu ni écrit sur le serveur.
-export function VieDeClasse({ lignes, apercu }) {
+// rafraichir : nombre qui augmente quand l'élève change son pseudo ou ses accords (bloc « Mon pseudo ») : relit le serveur
+export function VieDeClasse({ lignes, apercu, rafraichir = 0 }) {
   const sess = useSession();
-  const classeId = sess?.profil?.classe_id, monId = sess?.user?.id;
+  const classeId = sess?.profil?.classe_id;
   const [semaine, setSemaine] = useState(apercu?.semaine ?? null);          // null : chargement ou indisponible
   const [moi, setMoi] = useState(apercu?.moi ?? null);                  // null : pas de pseudo
-  const [domaine, setDomaine] = useState('tout');
-  const [idees, setIdees] = useState(() => propositions(4));
-  const [msg, setMsg] = useState(''), [occupe, setOccupe] = useState(false), [mont, setMont] = useState(false);
-  const [version, setVersion] = useState(0);             // augmente après chaque enregistrement : relit le serveur
+  const [mont, setMont] = useState(false);
 
   useEffect(() => {
     if (apercu || !classeId) return undefined;
     let vivant = true;
     lireClasse(classeId).then(r => { if (vivant) { setSemaine(r?.semaine || null); setMoi(r?.moi || null); } });
     return () => { vivant = false; };
-  }, [classeId, version, apercu]);
+  }, [classeId, rafraichir, apercu]);
   useEffect(() => { if (semaine) { const t = setTimeout(() => setMont(true), 80); return () => clearTimeout(t); } return undefined; }, [semaine]);
-  const recharger = () => setVersion(v => v + 1);
-
   const prog = useMemo(() => progressionSemaine(lignes || []), [lignes]);
-
-  const choisir = async (adj, nom) => {
-    if (apercu) { setMoi(m => ({ adj, nom, visible: m?.visible ?? false })); return; }
-    setOccupe(true); setMsg('');
-    try {
-      if (moi) await rest(`pseudos?user_id=eq.${monId}`, { method: 'PATCH', corps: { adj, nom } });
-      else await rest('pseudos', { method: 'POST', corps: { adj, nom, visible: false } });
-      recharger();
-    } catch (e) {
-      setMsg(e.statut === 409 ? 'Ce pseudo vient d’être pris dans ta classe : choisis-en un autre.' : `Impossible d’enregistrer : ${e.message}`);
-      setIdees(propositions(4, Math.random, [], domaine));
-    }
-    setOccupe(false);
-  };
-  const montrer = async visible => {
-    setMoi(m => (m ? { ...m, visible } : m));               // affichage immédiat, annulé si le serveur refuse
-    if (apercu) return;
-    setOccupe(true); setMsg('');
-    try { await rest(`pseudos?user_id=eq.${monId}`, { method: 'PATCH', corps: { visible } }); recharger(); }
-    catch (e) { setMoi(m => (m ? { ...m, visible: !visible } : m)); setMsg(`Impossible d’enregistrer : ${e.message}`); }
-    setOccupe(false);
-  };
 
   if (!semaine) return null;
   const { reussites, objectif, prouesses, effectif } = semaine;
@@ -132,7 +105,7 @@ export function VieDeClasse({ lignes, apercu }) {
 
       <details className="vc-repli" data-repli="prouesses">
       <summary><Pic n="medal"/>Les prouesses de la semaine <small>{PROUESSES.filter(p => (prog[p.code] || 0) >= p.cible).length} sur {PROUESSES.length} pour toi{monPseudo ? ` · pseudo : ${monPseudo.texte}` : ' · choisis ton pseudo'}</small></summary>
-      <p className="vc-sous">Pas de podium : si tu atteins une prouesse, ton pseudo y apparaît (si tu l’as décidé ci-dessous). Tout repart à zéro chaque lundi.</p>
+      <p className="vc-sous">Pas de podium : si tu atteins une prouesse, ton pseudo y apparaît (si tu l’as décidé dans « Mon pseudo »). Tout repart à zéro chaque lundi.</p>
       <div className="vc-grille">
         {PROUESSES.map(p => {
           const liste = parCode.get(p.code) || [], mien = Math.min(p.cible, prog[p.code] || 0), fait = mien >= p.cible;
@@ -158,34 +131,6 @@ export function VieDeClasse({ lignes, apercu }) {
         })}
       </div>
 
-      <div className="vc-carte" style={{ marginTop: 14 }}>
-        <div style={{ fontWeight: 800, color: '#0f172a', marginBottom: 4 }}>🎭 Mon pseudo</div>
-        {monPseudo ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 34 }} aria-hidden="true">{monPseudo.icone}</span>
-            <div style={{ flex: 1, minWidth: 180 }}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: '#134e4a' }}>{monPseudo.texte}</div>
-              <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 14, marginTop: 4, cursor: 'pointer' }}>
-                <input type="checkbox" checked={!!moi.visible} disabled={occupe} onChange={e => montrer(e.target.checked)} style={{ accentColor: '#0b4f94' }} />
-                Montrer mon pseudo dans les prouesses de ma classe
-              </label>
-            </div>
-          </div>
-        ) : (
-          <div style={{ fontSize: 14, color: '#475569' }}>Tu n’en as pas encore. C’est facultatif : choisis-en un pour pouvoir apparaître dans les prouesses.</div>
-        )}
-        <div style={{ fontSize: 13, fontWeight: 700, margin: '10px 0 6px', color: '#475569' }}>{monPseudo ? 'Changer de pseudo :' : 'Choisis ton pseudo :'}</div>
-        <ChoixDomaine valeur={domaine} disabled={occupe} onChange={d => { setDomaine(d); setIdees(propositions(4, Math.random, [], d)); }} />
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {idees.map(([a, n]) => { const ps = pseudo(a, n); return (
-            <button key={`${a}-${n}`} className="vc-idee" disabled={occupe} onClick={() => choisir(a, n)}><span aria-hidden="true">{ps.icone}</span>{ps.texte}</button>); })}
-          <button className="vc-idee" style={{ borderStyle: 'dashed' }} disabled={occupe} onClick={() => setIdees(propositions(4, Math.random, [], domaine))}>🎲 Autres idées</button>
-        </div>
-        {msg && <div role="alert" style={{ color: '#b91c1c', fontWeight: 600, fontSize: 13.5, marginTop: 8 }}><Pic n="ko"/>{msg}</div>}
-        <div style={{ fontSize: 12.5, color: '#64748b', marginTop: 10, lineHeight: 1.45 }}>
-          C’est le même pseudo que dans le classement public. Seuls les élèves de ta classe voient ce pseudo ici (et ton professeur sait de toute façon qui tu es). Aucun nom, aucune note, aucun chiffre sur toi n’est montré à la classe.
-        </div>
-      </div>
       </details>
     </section>
   );
