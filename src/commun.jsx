@@ -1,7 +1,8 @@
-import { Children, Fragment, cloneElement, isValidElement, useState, useEffect, useRef, useMemo } from "react";
+import { Children, Fragment, cloneElement, isValidElement, useState, useEffect, useLayoutEffect, useRef, useMemo } from "react";
 import { compter } from "./stats";
 import { Pic, Emo } from "./Pictos";
 import { missionEnCours } from "./mission";
+import { enregistrer, noterModification, surChangementServeur } from "./etatsParcours";
 
 // ============================================================
 //  UTILITAIRES PARTAGÉS
@@ -451,13 +452,51 @@ export function Frac({ haut, bas }) {
   );
 }
 
+// Formule en notation mathématique classique (MathML) : vraie barre de fraction, vraie racine, vrais indices, sur UNE seule ligne.
+// <Formule> : formule centrée sur sa propre ligne ; si l'écran est trop étroit (téléphone), la formule défile sans jamais se couper.
+// Les éléments MathML s'écrivent directement dedans : <mi>, <mn>, <mo>, <mfrac>, <msqrt>, <msub>, <msup>, <msubsup>, <mrow>.
+export function Formule({ children, compact = null }) {
+  const cadre = useRef(null), maths = useRef(null), largeurPleine = useRef(0);
+  const [etat, setEtat] = useState({ taille: 1.05, compact: false });
+  // Une seule ligne, toujours : si la formule dépasse la largeur disponible (carte étroite, téléphone), on réduit un peu les caractères.
+  // Si elle ne tient pas lisiblement (moins de 0,88 em) et qu'une forme « compact » est fournie (formule abrégée, suivie de la définition
+  // de ses abréviations), c'est celle-ci qui s'affiche ; sans forme compacte, la formule garde sa ligne et défile au-delà de 0,72 em.
+  useLayoutEffect(() => {
+    const ajuster = () => {
+      const c = cadre.current, m = maths.current;
+      if (!c) return;
+      if (m) { m.style.fontSize = '1.05em'; largeurPleine.current = m.getBoundingClientRect().width; m.style.fontSize = ''; }
+      const l = c.clientWidth, w = largeurPleine.current;
+      if (!(l > 0 && w > 0)) return;
+      const t = w > l ? 1.05 * (l - 2) / w : 1.05;
+      const suivant = compact && t < 0.88 ? { taille: 1.05, compact: true } : { taille: Math.max(0.72, t), compact: false };
+      setEtat(a => (a.compact === suivant.compact && Math.abs(a.taille - suivant.taille) < 0.005 ? a : suivant));
+    };
+    ajuster();
+    let obs = null;
+    if (typeof ResizeObserver !== 'undefined' && cadre.current) { obs = new ResizeObserver(ajuster); obs.observe(cadre.current); }
+    if (document.fonts?.ready) document.fonts.ready.then(ajuster).catch(() => {});
+    return () => obs && obs.disconnect();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return (
+    <span ref={cadre} data-formule={etat.compact ? 'compact' : 'complete'} role="math" style={{ display: 'block', overflowX: 'auto', overflowY: 'hidden', maxWidth: '100%', textAlign: 'center', margin: '6px 0', padding: '2px 0' }}>
+      {etat.compact ? compact : <math ref={maths} style={{ fontSize: `${etat.taille}em`, whiteSpace: 'nowrap', mathStyle: 'normal' }}>{children}</math>}
+    </span>
+  );
+}
+// Même chose, mais au fil du texte (par exemple dans une ligne du « calcul pas à pas ») ; les fractions gardent leur taille normale
+export function FormuleEnLigne({ children }) {
+  return <math style={{ fontSize: '1.05em', whiteSpace: 'nowrap', mathStyle: 'normal' }}>{children}</math>;
+}
+
 // ============================================================
 //  KIT COMMUN : mémorisation, bandeau de contexte, briques d'interface
 // ============================================================
 
 // useState dont la valeur est gardée sur l'appareil (localStorage) : elle survit au rechargement de la page.
 export function useEtatPersistant(cle, initial) {
-  const [valeur, setValeur] = useState(() => {
+  const valeurDe = () => {
     try {
       const brut = window.localStorage.getItem(cle);
       if (brut) {
@@ -469,10 +508,28 @@ export function useEtatPersistant(cle, initial) {
       }
     } catch { /* valeur illisible : on repart de la valeur initiale */ }
     return typeof initial === 'function' ? initial() : initial;
-  });
+  };
+  const avait = useRef(null);       // une valeur était-elle déjà gardée sur l'appareil avant cet affichage ?
+  if (avait.current === null) { try { avait.current = window.localStorage.getItem(cle) !== null; } catch { avait.current = false; } }
+  const [valeur, setValeur] = useState(valeurDe);
+  const precedent = useRef(undefined);     // dernier état écrit (pour ne pas confondre l'affichage initial avec une modification de l'élève)
+  const duServeur = useRef(null);          // état venu du compte de l'élève (pas à renvoyer)
   useEffect(() => {
-    try { window.localStorage.setItem(cle, JSON.stringify(valeur)); } catch { /* stockage indisponible : on continue sans */ }
+    let brut;
+    try { brut = JSON.stringify(valeur); window.localStorage.setItem(cle, brut); } catch { return; /* stockage indisponible : on continue sans */ }
+    if (precedent.current === undefined) { precedent.current = brut; enregistrer(cle, avait.current); return; }
+    if (brut === precedent.current) return;
+    precedent.current = brut;
+    if (brut === duServeur.current) return;
+    noterModification(cle);
   }, [cle, valeur]);
+  // L'élève connecté retrouve ici la progression faite sur un autre appareil : le serveur peut apporter une version plus récente
+  useEffect(() => surChangementServeur(cle, () => {
+    const v = valeurDe();
+    duServeur.current = JSON.stringify(v);
+    setValeur(v);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [cle]);
   return [valeur, setValeur];
 }
 

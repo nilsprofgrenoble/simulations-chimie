@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices, IndiceDefi } from "../commun";
+import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices, IndiceDefi, Formule, FormuleEnLigne } from "../commun";
 const vf = x => String(x).replace('.', ',');
 import { Pic } from "../Pictos";
 
@@ -1207,6 +1207,14 @@ const lignesEcartType = (vals, nom, nomMoy, dMoy, dS) => {
     `${nom} = √${fmt(S / (N - 1), 5)} = ${fmt(Math.sqrt(S / (N - 1)), dS)} mmol/L.`];
 };
 
+
+// Statistique de Cochran en notation classique : C = s²max / Σ s²i (vraie barre de fraction)
+const FormuleCochran = () => (
+  <><mi>C</mi><mo>=</mo><mfrac><msubsup><mi>s</mi><mtext>max</mtext><mn>2</mn></msubsup><mrow><mo>∑</mo><msubsup><mi>s</mi><mi>i</mi><mn>2</mn></msubsup></mrow></mfrac></>
+);
+const Jeton = ({ v }) => (/^[0-9][0-9 ,.]*$/.test(String(v)) ? <mn>{v}</mn> : <mi>{v}</mi>);
+const Fraction = ({ haut, bas }) => <mfrac><Jeton v={haut}/><Jeton v={bas}/></mfrac>;
+
 function ParcoursInterlabo({ changerMode }) {
   const [guide, setGuide] = useEtatPersistant('interlabo-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [clicEcarte, setClicEcarte] = useState(false);
@@ -1242,13 +1250,13 @@ function ParcoursInterlabo({ changerMode }) {
       tache: { type: 'qcm', q: 'Quel laboratoire a les essais les plus dispersés ?', options: ['Le laboratoire 3', 'Le laboratoire 6', 'Le laboratoire 1'], bonne: 0,
         expl: 'Le laboratoire 6, lui, a des essais groupés mais une moyenne plus haute que les autres : c’est Grubbs qui s’en occupera.', indice: "Comparez les écarts-types s_i du tableau et cherchez le plus grand." } },
     { id: 'cochranF', titre: 'Le test de Cochran', focus: [],
-      texte: <>Le test compare la plus grande variance à la somme des variances : C = s<sup>2</sup><sub>max</sub> / Σ s<sub>i</sub><sup>2</sup>, sur les 8 laboratoires. Si un laboratoire est bien plus dispersé que les autres, C est proche de 1 ; si tous se ressemblent, C vaut environ 1 / p.</>,
+      texte: <>Le test compare la plus grande variance à la somme des variances, sur les 8 laboratoires :<Formule><FormuleCochran/></Formule>Si un laboratoire est bien plus dispersé que les autres, C est proche de 1 ; si tous se ressemblent, C vaut environ <FormuleEnLigne><Fraction haut="1" bas="p"/></FormuleEnLigne>.</>,
       tache: { type: 'num', q: 'Statistique de Cochran C (8 laboratoires)', unite: '', vrai: c8.C, tol: 0.01, affiche: x => fmt(x, 3),
         calcul: () => { const v = s.map(x => x ** 2), tot = v.reduce((a, b) => a + b, 0), k = v.indexOf(Math.max(...v));
-          return ['C = s²_max / Σ s²_i : on utilise les variances (carrés des écarts-types s_i du tableau), sur les 8 laboratoires. Le test suppose que, sans anomalie, tous les laboratoires ont la même variance de répétabilité.',
+          return [<>La formule est <FormuleEnLigne><FormuleCochran/></FormuleEnLigne> : on utilise les variances (carrés des écarts-types s_i du tableau), sur les 8 laboratoires. Le test suppose que, sans anomalie, tous les laboratoires ont la même variance de répétabilité.</>,
             `Variances s²_i (laboratoires 1 à 8) : ${v.map(x => fmt(x, 5)).join(' ; ')}.`,
             `La plus grande est celle du laboratoire ${k + 1} : s²_max = ${fmt(v[k], 5)}. Somme : Σ s²_i = ${fmt(tot, 5)}.`,
-            `C = ${fmt(v[k], 5)} / ${fmt(tot, 5)} = ${fmt(c8.C, 3)}.`]; },
+            <>C = <FormuleEnLigne><Fraction haut={fmt(v[k], 5)} bas={fmt(tot, 5)}/></FormuleEnLigne> = {fmt(c8.C, 3)}.</>]; },
         pieges: [[Math.max(...s) / s.reduce((a, b) => a + b, 0), 'Il faut élever les écarts-types au carré (variances), au numérateur et pour la somme.'],
           ...piegesLoin([[1 / s.length, 'C’est la valeur que prendrait C si tous les laboratoires avaient la même dispersion (1 / p). Calculez s²_max / Σ s²_i avec les données.']], c8.C)], indice: "C = plus grande variance ÷ somme des variances de tous les laboratoires." } },
     { id: 'cochranT', titre: 'Lire la table de Cochran', focus: ['tables'],
@@ -1266,10 +1274,10 @@ function ParcoursInterlabo({ changerMode }) {
       texte: <>La norme demande de répéter le test tant qu’un laboratoire est aberrant. Recalculez C sans le laboratoire écarté (p = 7).</>,
       tache: { type: 'num', q: 'Statistique de Cochran C (7 laboratoires)', unite: '', vrai: c7.C, tol: 0.02, affiche: x => fmt(x, 3),
         calcul: () => { const act = s.map((_, i) => i).filter(i => i !== 2), v = act.map(i => s[i] ** 2), tot = v.reduce((a, b) => a + b, 0), k = v.indexOf(Math.max(...v));
-          return ['Même formule C = s²_max / Σ s²_i, mais sans le laboratoire 3 (écarté) : p = 7.',
+          return [<>Même formule <FormuleEnLigne><FormuleCochran/></FormuleEnLigne>, mais sans le laboratoire 3 (écarté) : p = 7.</>,
             `Variances s²_i des laboratoires 1, 2, 4 à 8 : ${v.map(x => fmt(x, 5)).join(' ; ')}.`,
             `La plus grande est celle du laboratoire ${act[k] + 1} : s²_max = ${fmt(v[k], 5)}. Somme : Σ s²_i = ${fmt(tot, 5)}.`,
-            `C = ${fmt(v[k], 5)} / ${fmt(tot, 5)} = ${fmt(c7.C, 3)}.`]; },
+            <>C = <FormuleEnLigne><Fraction haut={fmt(v[k], 5)} bas={fmt(tot, 5)}/></FormuleEnLigne> = {fmt(c7.C, 3)}.</>]; },
         pieges: [[c8.C, 'Le laboratoire écarté est encore dans votre somme.']],
         expl: `Pour p = 7 et n = 4, C₅ % vaut ${fmt(tableCochran[7][4].p5, 3)} : C est en dessous, il n’y a plus de laboratoire trop dispersé.`, indice: "Même calcul, sans le laboratoire écarté : p passe à 7." } },
     { id: 'grubbsF', titre: 'Le test de Grubbs', focus: [],

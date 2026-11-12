@@ -149,3 +149,9 @@ Seul l'**administrateur** (vous) voit, dans *Suivi professeur*, le bloc « 👩�
 3. **Tester** : recharger le site, vous connecter, Suivi professeur → ouvrir « Ajouter un professeur ».
 
 Sécurité : seul un professeur marqué `admin` peut créer un compte (contrôlé côté serveur, pas seulement par le bouton) ; un professeur ne peut pas se donner ce droit (la colonne est en lecture seule pour lui) ; 40 professeurs au maximum ; chaque professeur ne voit que ses propres classes. La suppression d'un compte professeur reste à faire dans Supabase (elle supprimerait aussi ses classes).
+
+## Progression des parcours retrouvée sur n'importe quel appareil (étape 25)
+
+Un élève connecté qui commence un parcours guidé à la maison le retrouve au lycée, à la même étape (et inversement).
+1. **SQL** : SQL Editor → New snippet → coller `12-etats-parcours.sql` → Run. Le résultat doit afficher une ligne `etats_parcours` avec « t ».
+2. Rien d'autre à faire : le site l'utilise tout seul dès que la table existe. Tant que le script n'est pas exécuté, la progression reste gardée dans le navigateur, comme avant.

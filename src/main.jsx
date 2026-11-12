@@ -10,6 +10,10 @@ import '@fontsource/nunito/latin-400.css'
 import '@fontsource/nunito/latin-600.css'
 import './index.css'
 import App from './App.jsx'
+import { demarrerSynchro } from './etatsParcours.js'
+
+// Progression des parcours : un élève connecté la retrouve sur n'importe quel appareil (voir etatsParcours.js)
+demarrerSynchro()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

@@ -2,8 +2,30 @@ import { useSignalerMode, declarerDefis, SuiviDefi, useCompteurDefi, modeOuvertu
 import { useState, useEffect } from "react";
 import { HansenExploration, GraphesHansen } from "./HansenExploration";
 import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, IndiceDefi } from "../commun";
+  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, IndiceDefi, Formule, FormuleEnLigne } from "../commun";
 import { Pic } from "../Pictos";
+
+// Formule de la distance de Hansen en notation classique, sur une ligne :
+// Ra = √( 4(δ_d,s − δ_d,P)² + (δ_p,s − δ_p,P)² + (δ_h,s − δ_h,P)² )
+const Dlt = ({ t, c }) => <msub><mi>δ</mi><mrow><mi>{t}</mi><mo>,</mo><mi>{c}</mi></mrow></msub>;
+const Par = ({ o }) => <mo fence="true" stretchy="false" lspace="0" rspace="0">{o}</mo>;
+const EcartCarre = ({ t, facteur }) => (
+  <mrow>{facteur ? <mn>4</mn> : null}<msup><mrow><Par o="("/><Dlt t={t} c="s"/><mo lspace="0.2em" rspace="0.2em">−</mo><Dlt t={t} c="P"/><Par o=")"/></mrow><mn>2</mn></msup></mrow>
+);
+// Forme abrégée pour les écrans étroits (téléphone) : Ra = √( 4(Δδ_d)² + (Δδ_p)² + (Δδ_h)² ), puis la définition des Δδ, chacune sur une ligne
+const Ecart = ({ t, facteur }) => (
+  <mrow>{facteur ? <mn>4</mn> : null}<msup><mrow><Par o="("/><mi>Δ</mi><msub><mi>δ</mi><mi>{t}</mi></msub><Par o=")"/></mrow><mn>2</mn></msup></mrow>
+);
+const mathLigne = { whiteSpace: 'nowrap', margin: '4px 0', fontSize: '1.05em', mathStyle: 'normal' };
+const FormuleRaCompacte = (
+  <>
+    <math display="block" style={mathLigne}><mi>Ra</mi><mo>=</mo><msqrt><Ecart t="d" facteur/><mo>+</mo><Ecart t="p"/><mo>+</mo><Ecart t="h"/></msqrt></math>
+    <span style={{ display: 'block', fontSize: '0.95em' }}>avec <math style={{ whiteSpace: 'nowrap', mathStyle: 'normal' }}><mi>Δ</mi><msub><mi>δ</mi><mi>d</mi></msub><mo>=</mo><Dlt t="d" c="s"/><mo lspace="0.2em" rspace="0.2em">−</mo><Dlt t="d" c="P"/></math> (idem pour p&nbsp;et&nbsp;h)</span>
+  </>
+);
+const FormuleRa = () => (
+  <><mi>Ra</mi><mo>=</mo><msqrt><EcartCarre t="d" facteur/><mo>+</mo><EcartCarre t="p"/><mo>+</mo><EcartCarre t="h"/></msqrt></>
+);
 
 const SIM_ID = 4;
 declarerDefis(SIM_ID, [['principal', 'Formuler le mélange de solvants du vernis'], ['selectif', 'Un dissolvant qui épargne le PMMA']]);
@@ -98,10 +120,10 @@ export function Simulation4({ plotlyReady }) {
   const calculRa = (Q, S, nom) => {
     const g = x => String(+x.toFixed(2)).replace('.', ',').replace('-', '−'), dd = S.d - Q.d, dp = S.p - Q.p, dh = S.h - Q.h, tD = 4 * dd * dd, tP = dp * dp, tH = dh * dh, tot = tD + tP + tH;
     return [
-      `Écarts avec la nitrocellulose${nom ? ' (' + nom + ')' : ''} : Δδd = ${g(S.d)} − ${g(Q.d)} = ${g(dd)} ; Δδp = ${g(S.p)} − ${g(Q.p)} = ${g(dp)} ; Δδh = ${g(S.h)} − ${g(Q.h)} = ${g(dh)}.`,
-      `Carrés (avec le facteur 4 pour δd) : 4 × (${g(dd)})² = ${g(tD)} ; (${g(dp)})² = ${g(tP)} ; (${g(dh)})² = ${g(tH)}.`,
+      `Écarts avec la nitrocellulose${nom ? ' (' + nom + ')' : ''} : Δδ_d = ${g(S.d)} − ${g(Q.d)} = ${g(dd)} ; Δδ_p = ${g(S.p)} − ${g(Q.p)} = ${g(dp)} ; Δδ_h = ${g(S.h)} − ${g(Q.h)} = ${g(dh)}.`,
+      `Carrés (avec le facteur 4 pour δ_d) : 4 × (${g(dd)})² = ${g(tD)} ; (${g(dp)})² = ${g(tP)} ; (${g(dh)})² = ${g(tH)}.`,
       `Somme : ${g(tD)} + ${g(tP)} + ${g(tH)} = ${g(tot)}.`,
-      `Racine carrée : Ra = √${g(tot)} = ${fmt(Math.sqrt(tot), 2)} MPa½.`,
+      <>Racine carrée : <FormuleEnLigne><mi>Ra</mi><mo>=</mo><msqrt><mn>{g(tot)}</mn></msqrt><mo>=</mo><mn>{fmt(Math.sqrt(tot), 2)}</mn></FormuleEnLigne> MPa½.</>,
     ];
   };
 
@@ -117,12 +139,13 @@ export function Simulation4({ plotlyReady }) {
         Ce sont les coordonnées d'un point dans l'« espace de Hansen ». Deux substances se mélangent bien si leurs points sont proches.</>,
       tache: { type: 'qcm', q: 'Pourquoi l’éthanol a-t-il un δh élevé (19,4) ?', options: ['Son groupe –OH forme des liaisons hydrogène', 'Il est très polaire', 'Il est très volatil'], bonne: 0, indice: "δh décrit les liaisons hydrogène. Quel groupe de l’éthanol peut en former ?" } },
     { id: 'ra', titre: 'La distance de Hansen', focus: ['vue'],
-      texte: <>La distance entre un solvant (s) et le polymère (P) vaut Ra = √[4(δd,s − δd,P)² + (δp,s − δp,P)² + (δh,s − δh,P)²]. La nitrocellulose : δd = 17 ; δp = 8,7 ;
-        δh = 9,3. L'acétate d'éthyle : 15,8 ; 5,3 ; 7,2.</>,
+      texte: <>La distance entre un solvant (s) et le polymère (P) vaut :
+        <Formule compact={FormuleRaCompacte}><FormuleRa/></Formule>
+        La nitrocellulose : δ<sub>d</sub> = 17 ; δ<sub>p</sub> = 8,7 ; δ<sub>h</sub> = 9,3. L'acétate d'éthyle : 15,8 ; 5,3 ; 7,2.</>,
       tache: { type: 'num', q: 'Distance Ra entre l’acétate d’éthyle et la nitrocellulose', unite: 'MPa½', vrai: raEA, tol: 0.02, affiche: x => fmt(x, 2),
         calcul: calculRa(PT, SOLVANTS.ea, 'acétate d’éthyle'),
         pieges: [[Math.sqrt((15.8 - 17) ** 2 + 3.4 ** 2 + 2.1 ** 2), 'N’oubliez pas le facteur 4 devant le terme en δd.'],
-          [4 * 1.2 ** 2 + 3.4 ** 2 + 2.1 ** 2, 'Vous avez oublié la racine carrée à la fin : la somme des carrés vaut Ra², pas Ra.']], indice: "Distance de Hansen : Ra² = 4 (δd₁ − δd₂)² + (δp₁ − δp₂)² + (δh₁ − δh₂)². Calcule chaque différence, puis la racine carrée." } },
+          [4 * 1.2 ** 2 + 3.4 ** 2 + 2.1 ** 2, 'Vous avez oublié la racine carrée à la fin : la somme des carrés vaut Ra², pas Ra.']], indice: <>Distance de Hansen :<Formule compact={FormuleRaCompacte}><FormuleRa/></Formule>Calcule chaque différence, puis la racine carrée.</> } },
     { id: 'facteur4', titre: 'Pourquoi ce facteur 4 ?', focus: [],
       texte: <>Le facteur 4 devant le terme de dispersion n'est pas démontré : Hansen l'a choisi parce qu'avec lui, les domaines de solubilité mesurés deviennent à peu près
         sphériques. C'est pour cela que la vue 3D utilise l'axe 2δd.</>,

@@ -59,6 +59,7 @@ if (typeof window !== 'undefined') {
 }
 export const getSession = () => session;
 const abonner = f => { abonnes.add(f); return () => abonnes.delete(f); };
+export const surSession = abonner;      // abonnement aux changements de session (connexion, déconnexion, profil chargé)
 export const useSession = () => useSyncExternalStore(abonner, getSession, getSession);
 export const estEleve = s => s?.profil?.role === 'eleve';
 export const estProf = s => s?.profil?.role === 'prof';
@@ -154,8 +155,10 @@ export async function connexion(identifiant, motDePasse, persistant = false) {
     ecrireSession({ ...session, profil });
   } catch (e) { if (session) ecrireSession(null); throw e; }
 }
+export const avantDeconnexion = [];      // tâches à terminer pendant que l'élève est encore connecté (ex. envoyer sa progression)
 export async function deconnexion() {
   const s = session;
+  try { await Promise.race([Promise.allSettled(avantDeconnexion.map(f => f())), new Promise(r => setTimeout(r, 2000))]); } catch { /* sans importance */ }
   ecrireSession(null);
   if (s) { try { await fetch(`${URL_SB}/auth/v1/logout`, { method: 'POST', headers: { apikey: CLE_PUBLIQUE, Authorization: `Bearer ${s.access_token}` } }); } catch { /* sans importance */ } }
 }
