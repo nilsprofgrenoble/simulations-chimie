@@ -26,9 +26,38 @@ function etapesGuide(st, regler) {
   const ici = k => ({ type: 'action', ok: alc === k, faire: () => regler(k), label: 'Le faire pour moi', consigne: `Choisis ${ALCENES[k].nom}.`, indice: 'Utilise le menu « Alcène ».' });
   return [
     { titre: 'Le test au dibrome', texte: <>L'eau de dibrome est <strong>brune</strong>. Mélangée à un alcène, elle se <strong>décolore</strong> : les doubles liaisons C=C réagissent avec Br₂ par addition, et il ne reste plus de dibrome coloré.</>,
+      retenirTitre: 'À RETENIR : LE TEST AU DIBROME',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Réactif</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Observation</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Conclusion</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>eau de dibrome (brune)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>se décolore aussitôt</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>présence d’une double liaison C=C (alcène)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>eau de dibrome (brune)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>reste brune</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>pas de C=C (liaisons simples seulement)</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Br₂ s’additionne sur C=C : il est consommé et la couleur disparaît.</li>
+        </ul>
+      </>,
       tache: { type: 'qcm', q: 'On ajoute de l’eau de dibrome à un composé, elle se décolore aussitôt. Ce composé contient probablement …', options: ['Une double liaison C=C', 'Seulement des liaisons simples C–C et C–H', 'Un groupe hydroxyle –OH'], bonne: 0, indice: 'Br₂ s’additionne sur la double liaison : il disparaît du mélange.', expl: <>Br₂ s'additionne sur C=C : le dibrome est consommé et la couleur brune disparaît. C'est un <strong>test caractéristique des alcènes</strong>.</> } },
     { titre: 'Le (Z)-but-2-ène', texte: <>Place-toi sur un alcène simple : le <strong>(Z)-but-2-ène</strong>, où les deux CH₃ sont du même côté de la double liaison.</>, tache: ici('Z') },
     { titre: 'Un pont bromonium', texte: <>Lance l'animation. Br₂ ne se fixe pas simplement sur un carbone : le doublet π attaque Br et forme un <strong>pont à trois chaînons</strong>, l'ion bromonium, qui est un intermédiaire.</>,
+      retenirTitre: 'À RETENIR : LE MÉCANISME EN DEUX ÉTAPES',
+      retenir: <>
+        <svg viewBox="0 0 420 150" role="img" aria-label="Mécanisme de l’addition de Br₂ sur un alcène : le doublet π de la double liaison forme avec un atome de brome un pont à trois chaînons, l’ion bromonium, puis l’ion bromure Br⁻ ouvre le pont par la face opposée ; les deux atomes de brome se retrouvent de part et d’autre du plan : addition anti" style={{ width: '100%', maxWidth: 420, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <text x="10" y="18" fontSize="12" fontWeight="700" fill="#334155">① alcène + Br₂</text><text x="150" y="18" fontSize="12" fontWeight="700" fill="#334155">② ion bromonium</text><text x="300" y="18" fontSize="12" fontWeight="700" fill="#334155">③ produit</text>
+          <text x="52" y="52" textAnchor="middle" fontSize="12" fill="#d55e00">Br–Br</text><line x1="35" y1="92" x2="75" y2="92" stroke="#334155" strokeWidth="2.5" /><line x1="35" y1="98" x2="75" y2="98" stroke="#334155" strokeWidth="2.5" /><text x="28" y="118" fontSize="12" fill="#334155">C</text><text x="72" y="118" fontSize="12" fill="#334155">C</text>
+          <line x1="110" y1="95" x2="140" y2="95" stroke="#334155" strokeWidth="2" /><polygon points="140,91 148,95 140,99" fill="#334155" />
+          <polygon points="170,100 230,100 200,58" fill="none" stroke="#0072b2" strokeWidth="2.5" /><text x="200" y="52" textAnchor="middle" fontSize="12" fontWeight="700" fill="#d55e00">Br⁺</text><text x="160" y="118" fontSize="12" fill="#334155">C</text><text x="226" y="118" fontSize="12" fill="#334155">C</text><text x="250" y="62" fontSize="12" fontWeight="700" fill="#d55e00">Br⁻</text>
+          <line x1="250" y1="95" x2="282" y2="95" stroke="#334155" strokeWidth="2" /><polygon points="282,91 290,95 282,99" fill="#334155" />
+          <line x1="310" y1="95" x2="370" y2="95" stroke="#334155" strokeWidth="2.5" /><text x="302" y="118" fontSize="12" fill="#334155">C</text><text x="366" y="118" fontSize="12" fill="#334155">C</text>
+          <line x1="320" y1="95" x2="320" y2="62" stroke="#334155" strokeWidth="2" /><text x="320" y="54" textAnchor="middle" fontSize="12" fontWeight="700" fill="#d55e00">Br</text><line x1="360" y1="95" x2="360" y2="128" stroke="#334155" strokeWidth="2" /><text x="360" y="142" textAnchor="middle" fontSize="12" fontWeight="700" fill="#d55e00">Br</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Étape 1</strong> : le doublet π attaque Br₂, le pont bromonium se forme sur <strong>une face</strong> de l’alcène.</li>
+          <li><strong>Étape 2</strong> : Br⁻ ouvre le pont par la face <strong>opposée</strong> (comme une SN2) : addition <strong>anti</strong>.</li>
+        </ul>
+      </>,
       tache: { type: 'qcm', q: 'Pourquoi le pont bromonium est-il formé d’un seul côté du plan de l’alcène ?', options: ['Br₂ arrive par une face de l’alcène : le pont se forme de ce côté', 'Br⁺ passe à travers le plan de l’alcène', 'Les deux Br s’additionnent en même temps sur les deux faces'], bonne: 0, indice: 'Br₂ s’approche de la liaison π par le haut ou par le bas.', expl: <>Br₂ s'approche de la double liaison par <strong>une face</strong> : Br⁺ forme le pont de ce côté, et Br⁻ part. Cela décide de la suite : une face est occupée, l'autre est libre.</> } },
     { titre: 'L’attaque de Br⁻', texte: <>Dans la seconde étape, Br⁻ ouvre le pont. Teste dans la simulation : choisis « même face que le pont » puis « face opposée ».</>,
       tache: { type: 'qcm', q: 'Par quelle face Br⁻ attaque-t-il l’ion bromonium ?', options: ['Par la face opposée au pont (attaque « par l’arrière »)', 'Par la même face que le pont', 'Indifféremment, par l’une ou l’autre face'], bonne: 0, indice: 'Comparer avec la SN2 : le nucléophile attaque du côté opposé au groupe partant.', expl: <>Br⁻ attaque <strong>par l'arrière</strong>, du côté opposé au pont, qui joue le rôle de groupe partant. Les deux Br sont donc de part et d'autre du plan de l'ancienne double liaison : <strong>addition anti</strong>.</> } },
@@ -36,16 +65,37 @@ function etapesGuide(st, regler) {
       tache: { type: 'qcm', q: 'Quel est le produit de l’addition de Br₂ sur le (Z)-but-2-ène ?', options: ['Un mélange racémique de (2R,3R)- et (2S,3S)-2,3-dibromobutane', 'Le composé méso (2R,3S)-2,3-dibromobutane', 'Un seul énantiomère (2R,3R)'], bonne: 0, indice: 'Les deux faces sont équiprobables et donnent chacune un énantiomère.', expl: <>Selon la face attaquée, on obtient (2R,3R) ou (2S,3S), en proportions égales : un <strong>racémique</strong>, sans pouvoir rotatoire.</> } },
     { titre: 'Le (E)-but-2-ène', texte: <>Change d'alcène : le <strong>(E)-but-2-ène</strong> a ses deux CH₃ de part et d'autre de la double liaison.</>, tache: ici('E') },
     { titre: 'Stéréospécificité', texte: <>La même addition anti, appliquée à l'autre stéréoisomère, donne un produit <strong>différent</strong> : on dit que la réaction est <strong>stéréospécifique</strong>.</>,
+      retenirTitre: 'À RETENIR : RACÉMIQUE, MÉSO, STÉRÉOSPÉCIFIQUE',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Terme</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Définition</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>À retenir</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>racémique</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>mélange en proportions égales de deux énantiomères</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>sans pouvoir rotatoire</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>composé méso</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>molécule à plan de symétrie, bien que portant des carbones asymétriques</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>achiral, sans activité optique</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>réaction stéréospécifique</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>chaque stéréoisomère de départ donne un stéréoisomère d’arrivée différent</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ici : addition anti de Br₂</td></tr>
+          </tbody>
+        </table>
+      </>,
       tache: { type: 'qcm', q: 'Quel est le produit de l’addition de Br₂ sur le (E)-but-2-ène ?', options: ['Le composé méso (2R,3S)-2,3-dibromobutane', 'Un mélange racémique (2R,3R) + (2S,3S)', 'Un mélange des trois stéréoisomères'], bonne: 0, indice: 'Les deux faces donnent ici le même composé : il possède un plan de symétrie.', expl: <>L'addition anti sur le (E) donne le composé <strong>méso</strong>, quelle que soit la face attaquée : il possède un plan de symétrie, donc aucune activité optique et un seul produit.</> } },
     { titre: 'Le cyclohexène', texte: <>Sur un alcène cyclique, la même règle s'applique : les deux Br sont de part et d'autre du plan du cycle.</>, tache: ici('cyclo') },
     { titre: 'Cis ou trans ?', texte: <>Compare la configuration relative des deux Br.</>,
       tache: { type: 'qcm', q: 'Quel stéréoisomère de 1,2-dibromocyclohexane obtient-on ?', options: ['Le trans (racémique de (1R,2R) et (1S,2S))', 'Le cis (méso)', 'Un mélange de cis et de trans à parts égales'], bonne: 0, indice: 'Addition anti : les deux Br sont de part et d’autre du cycle.', expl: <>L'addition anti place les deux Br de part et d'autre du plan moyen du cycle : on obtient le <strong>trans</strong>, racémique.</> } },
     { titre: 'Bilan', texte: <>Tu sais prévoir le produit de l'addition de Br₂ sur un alcène.</>,
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>L'eau de dibrome est décolorée par les alcènes : test de la double liaison.</li>
-        <li>Mécanisme en deux étapes : formation de l'<strong>ion bromonium</strong> (pont), puis ouverture par Br⁻ <strong>par la face opposée</strong>.</li>
-        <li><strong>Addition anti</strong>, donc stéréospécifique : (Z) → racémique ; (E) → composé méso ; cyclohexène → trans racémique.</li>
-      </ul> },
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Alcène + Br₂ (anti)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Produit</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Stéréochimie</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>(Z)-but-2-ène</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2,3-dibromobutane</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>racémique (2R,3R) + (2S,3S)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>(E)-but-2-ène</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2,3-dibromobutane</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>composé méso (2R,3S)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>cyclohexène</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,2-dibromocyclohexane</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>trans (racémique de (1R,2R) et (1S,2S))</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>L’eau de dibrome est décolorée par les alcènes : test de la double liaison.</li>
+          <li>Mécanisme en deux étapes : <strong>ion bromonium</strong> (pont), puis ouverture par Br⁻ <strong>par la face opposée</strong>.</li>
+          <li><strong>Addition anti</strong>, donc stéréospécifique : un stéréoisomère de départ différent donne un produit différent.</li>
+        </ul>
+      </> },
   ];
 }
 

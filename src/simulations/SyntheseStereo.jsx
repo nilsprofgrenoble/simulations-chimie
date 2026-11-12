@@ -27,6 +27,25 @@ function etapesGuide(st, regler) {
   const ici = (a, r, consigne) => ({ type: 'action', ok: alc === a && re === r, faire: () => regler(a, r), label: 'Le faire pour moi', consigne, indice: 'Utilise les menus « Alcène » et « Réactif ».' });
   return [
     { titre: 'Syn ou anti ?', texte: <>Quand un réactif s'additionne sur une double liaison, les deux groupes se fixent soit sur la <strong>même face</strong> du plan de l'alcène (addition <strong>syn</strong>), soit sur des faces <strong>opposées</strong> (addition <strong>anti</strong>).</>,
+      retenirTitre: 'À RETENIR : SYN OU ANTI',
+      retenir: <>
+        <svg viewBox="0 0 400 140" role="img" aria-label="Addition syn : les deux groupes X et Y se fixent sur la même face du plan de l’alcène ; addition anti : ils se fixent sur des faces opposées" style={{ width: '100%', maxWidth: 400, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <text x="100" y="16" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">addition syn</text><text x="300" y="16" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">addition anti</text>
+          <line x1="20" y1="75" x2="180" y2="75" stroke="#334155" strokeWidth="2.5" /><line x1="220" y1="75" x2="380" y2="75" stroke="#334155" strokeWidth="2.5" />
+          <line x1="80" y1="75" x2="80" y2="45" stroke="#334155" strokeWidth="2" /><line x1="120" y1="75" x2="120" y2="45" stroke="#334155" strokeWidth="2" />
+          <line x1="280" y1="75" x2="280" y2="45" stroke="#334155" strokeWidth="2" /><line x1="320" y1="75" x2="320" y2="105" stroke="#334155" strokeWidth="2" />
+          <text x="80" y="38" textAnchor="middle" fontSize="13" fontWeight="700" fill="#d55e00">X</text><text x="120" y="38" textAnchor="middle" fontSize="13" fontWeight="700" fill="#d55e00">Y</text><text x="280" y="38" textAnchor="middle" fontSize="13" fontWeight="700" fill="#d55e00">X</text><text x="320" y="120" textAnchor="middle" fontSize="13" fontWeight="700" fill="#d55e00">Y</text>
+          <text x="100" y="98" textAnchor="middle" fontSize="12" fill="#334155">même face</text><text x="100" y="112" textAnchor="middle" fontSize="12" fill="#334155">du plan de l’alcène</text>
+          <text x="384" y="62" textAnchor="end" fontSize="11" fill="#334155">plan de l’alcène</text><text x="200" y="136" textAnchor="middle" fontSize="12" fill="#334155"> </text>
+        </svg>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Addition</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Faces occupées</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Exemples de réactifs</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>syn</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>même face</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>OsO₄ (ester cyclique osmié), H₂/Pd</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>anti</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>faces opposées</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Br₂ (ion bromonium puis attaque de Br⁻ par l’arrière)</td></tr>
+          </tbody>
+        </table>
+      </>,
       tache: { type: 'qcm', q: 'Deux groupes qui se fixent de part et d’autre du plan de l’alcène : c’est une addition …', options: ['syn', 'anti', 'en 1,4'], bonne: 1, indice: 'Anti = opposé.', expl: <><strong>Anti</strong> : faces opposées. <strong>Syn</strong> : même face.</> } },
     { titre: 'L’addition de Br₂ sur le (Z)-but-2-ène', texte: <>Choisis le (Z)-but-2-ène avec Br₂ et anime. Rappel : Br₂ passe par un ion bromonium, puis Br⁻ attaque par la face opposée.</>, tache: ici('Z', 'Br2', 'Choisis le (Z)-but-2-ène et Br₂.') },
     { titre: 'Un racémique', texte: <>L'addition est <strong>anti</strong>. Les deux faces de l'alcène étant équivalentes, deux énantiomères se forment en proportions égales.</>,
@@ -36,18 +55,54 @@ function etapesGuide(st, regler) {
       tache: { type: 'qcm', q: 'Quel est le résultat de la dihydroxylation syn du (Z)-but-2-ène ?', options: ['Le butane-2,3-diol méso (2R,3S)', 'Un mélange racémique (2R,3R) + (2S,3S)', 'Le butane-1,2-diol'], bonne: 0, indice: 'Syn sur (Z) : l’inverse de anti sur (Z).', expl: <>Syn sur le (Z) donne le <strong>méso</strong> : l'inverse de l'addition anti, qui donnait le racémique.</> } },
     { titre: 'Changer de stéréoisomère de départ', texte: <>Passe au <strong>(E)-but-2-ène</strong> avec OsO₄.</>, tache: ici('E', 'OsO4', 'Choisis le (E)-but-2-ène et OsO₄.') },
     { titre: 'Stéréospécificité', texte: <>Avec OsO₄ : (Z) donne le méso et (E) donne le racémique. Un stéréoisomère de départ différent donne un stéréoisomère d'arrivée différent.</>,
+      retenirTitre: 'À RETENIR : QUEL PRODUIT SUR LE BUT-2-ÈNE ?',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Alcène</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Addition anti (Br₂)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Addition syn (OsO₄)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>(Z)-but-2-ène</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>racémique (2R,3R) + (2S,3S)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>méso (2R,3S)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>(E)-but-2-ène</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>méso (2R,3S)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>racémique (2R,3R) + (2S,3S)</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Le stéréoisomère de départ <strong>et</strong> le mode d’addition (syn ou anti) déterminent le produit.</li>
+          <li>Un racémique contient deux énantiomères en proportions égales (sans activité optique) ; le composé méso a un plan de symétrie.</li>
+        </ul>
+      </>,
       tache: { type: 'qcm', q: 'Comment appelle-t-on une réaction dont chaque stéréoisomère de départ donne un stéréoisomère différent ?', options: ['Stéréospécifique', 'Chimiosélective', 'Régiosélective'], bonne: 0, indice: 'Elle dépend entièrement de la configuration de départ.', expl: <>C'est une réaction <strong>stéréospécifique</strong> : la configuration du produit est dictée par celle du réactif et par le mode d'addition (syn ou anti).</> } },
     { titre: 'Un cas stéréosélectif', texte: <>Passe au <strong>1,2-diméthylcyclohexène</strong> avec H₂/Pd. Les deux H se fixent sur la même face (syn). Le produit peut exister sous forme cis ou trans.</>, tache: ici('cyc', 'H2', 'Choisis le 1,2-diméthylcyclohexène et H₂/Pd.') },
     { titre: 'Stéréosélectivité', texte: <>La réaction pourrait donner le cis ou le trans ; elle donne essentiellement le <strong>cis</strong>.</>,
       tache: { type: 'qcm', q: 'Pourquoi parle-t-on ici de stéréosélectivité plutôt que de stéréospécificité ?', options: ['La réaction forme un stéréoisomère (cis) de préférence à l’autre, possible lui aussi', 'Il y a deux stéréoisomères de départ qui donnent deux produits différents', 'La réaction donne un mélange en parts égales'], bonne: 0, indice: 'Un seul stéréoisomère est formé, alors que deux sont possibles.', expl: <>La réaction est <strong>stéréosélective</strong> : elle forme majoritairement le <strong>cis</strong> alors que le trans existe. On ne compare pas ici deux stéréoisomères de départ.</> } },
     { titre: 'Ce qu’il faut distinguer', texte: <>Une réaction <strong>stéréospécifique</strong> est forcément stéréosélective (un produit différent pour chaque réactif) ; l'inverse n'est pas vrai.</>,
+      retenirTitre: 'À RETENIR : STÉRÉOSÉLECTIVE OU STÉRÉOSPÉCIFIQUE',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Réaction</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Définition</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Exemple</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>stéréosélective</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>forme <strong>de préférence</strong> un stéréoisomère parmi plusieurs possibles</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,2-diméthylcyclohexène + H₂/Pd → surtout le cis</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>stéréospécifique</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}><strong>chaque</strong> stéréoisomère de départ donne un stéréoisomère d’arrivée différent</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>(Z) et (E)-but-2-ène + Br₂ ou OsO₄</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Toute réaction stéréospécifique est stéréosélective ; l’inverse n’est pas vrai.</li>
+        </ul>
+      </>,
       tache: { type: 'qcm', q: 'Laquelle de ces affirmations est correcte ?', options: ['Toute réaction stéréospécifique est stéréosélective, mais pas l’inverse', 'Toute réaction stéréosélective est stéréospécifique', 'Les deux mots sont synonymes'], bonne: 0, indice: 'Pense à l’exemple du cyclohexène : stéréosélectif, mais un seul réactif.', expl: <>Stéréospécifique ⊂ stéréosélective : la spécificité est un cas particulier, où chaque réactif donne un produit différent.</> } },
     { titre: 'Bilan', texte: <>Tu sais utiliser syn/anti pour prévoir le produit.</>,
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li><strong>Syn</strong> : même face (OsO₄, H₂/Pd). <strong>Anti</strong> : faces opposées (Br₂ par l'ion bromonium).</li>
-        <li>Sur le but-2-ène : anti donne (Z) → racémique, (E) → méso ; syn donne (Z) → méso, (E) → racémique.</li>
-        <li><strong>Stéréosélective</strong> : un stéréoisomère formé de préférence. <strong>Stéréospécifique</strong> : à chaque stéréoisomère de départ correspond un stéréoisomère d'arrivée.</li>
-      </ul> },
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Réactif</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Addition</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Intermédiaire</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Résultat</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Br₂</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>anti</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ion bromonium</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>(Z) → racémique ; (E) → méso</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>OsO₄</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>syn</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ester cyclique osmié</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>(Z) → méso ; (E) → racémique</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>H₂/Pd</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>syn</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>—</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,2-diméthylcyclohexène → surtout le cis</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Syn</strong> : même face. <strong>Anti</strong> : faces opposées.</li>
+          <li><strong>Stéréosélective</strong> : un stéréoisomère formé de préférence. <strong>Stéréospécifique</strong> : à chaque stéréoisomère de départ correspond un stéréoisomère d’arrivée.</li>
+        </ul>
+      </> },
   ];
 }
 
