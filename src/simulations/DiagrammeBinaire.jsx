@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useMemo } from "react";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { MELANGES, Teb, Tros, yEq, equilibreA, wDe } from "./distillationModele";
 import { Diagramme, Pastilles, nf, pct, NB, Xi, XiS } from "./Distillation";
@@ -118,6 +118,18 @@ export function SimulationDiagramme({ naviguer }) {
       tache: { type: 'qcm', q: 'Comment reconnaît-on un mélange d’un corps pur pendant l’ébullition ?', options: ['La température du mélange augmente pendant que le liquide bout', 'La température du mélange est constante, comme celle d’un corps pur', 'Le mélange ne bout pas'], bonne: 0,
         expl: 'Un corps pur bout à température constante. Un mélange bout sur un intervalle de température : la première bulle apparaît à la température d’ébullition, la dernière goutte disparaît à la température de rosée.', indice: "Pour un corps pur, la température reste constante pendant le changement d’état. Et pour un mélange ?" } },
     { id: 'regler', titre: 'Régler le mélange', focus: ['reglages'],
+      retenirTitre: 'À RETENIR : FRACTION MOLAIRE, CORPS PUR ET MÉLANGE',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Corps pur</strong> : bout à <strong>température constante</strong> sous une pression donnée. <strong>Mélange</strong> : bout sur un <strong>intervalle</strong> de température, de la première bulle à la dernière goutte.</li>
+          <li>Le diagramme est <strong>isobare</strong> : la pression est constante (1,013 bar). L’abscisse est la <strong>fraction molaire</strong> du composé le plus volatil, ici l’éthanol.</li>
+        </ul>
+        <Formule><msub><mi>x</mi><mi>A</mi></msub><mo>=</mo><mfrac><msub><mi>n</mi><mi>A</mi></msub><mrow><msub><mi>n</mi><mi>A</mi></msub><mo>+</mo><msub><mi>n</mi><mi>B</mi></msub></mrow></mfrac><mspace width="1.5em"/><msub><mi>x</mi><mi>A</mi></msub><mo>+</mo><msub><mi>x</mi><mi>B</mi></msub><mo>=</mo><mn>1</mn></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>x<sub>A,0</sub> = 0,20 signifie : 20 molécules sur 100 sont de l’éthanol, 80 sont de l’eau. La fraction molaire est un nombre <strong>sans unité</strong>, entre 0 et 1.</li>
+          <li>Le composé le plus <strong>volatil</strong> est celui qui passe le plus facilement en vapeur (température d’ébullition la plus basse).</li>
+        </ul>
+      </>,
       texte: <>Un mélange eau – éthanol avec <strong>20 % de molécules d’éthanol</strong> (<X0/> = 0,20), à 75 °C et sous 1,013 bar. L’abscisse du diagramme est la fraction molaire du composé le plus volatil : ici l’éthanol.</>,
       tache: { type: 'action', ok: ici('ew', 0.2, 75), label: <>Régler <X0/> = 0,20 et T = 75 °C</>, faire: () => regler('ew', 0.2, 75), consigne: ici('ew', 0.2, 75) ? null : 'Cliquez pour régler le mélange' } },
     { id: 'domaine1', titre: 'Dans quel domaine ?', focus: ['diagramme', 'recipient'],
@@ -125,6 +137,36 @@ export function SimulationDiagramme({ naviguer }) {
       tache: { type: 'qcm', q: 'À 75 °C, le mélange est…', options: ['un liquide homogène (en dessous de la courbe d’ébullition)', 'un mélange de liquide et de vapeur', 'une vapeur homogène'], bonne: 0,
         expl: 'Le point est sous la courbe d’ébullition : tout est liquide. Dans le récipient, il n’y a qu’une phase, de composition 0,20.', indice: "Comparez 75 °C aux températures d’ébullition et de rosée à cette composition." } },
     { id: 'ebullition', titre: 'La première bulle', focus: ['diagramme'],
+      retenirTitre: 'À RETENIR : LIRE UN DIAGRAMME BINAIRE',
+      retenir: <>
+        <svg viewBox="0 0 275 156" style={{ width: '100%', maxWidth: 340, display: 'block', margin: '4px auto' }} role="img" aria-label="Diagramme binaire isobare : la courbe d’ébullition en bleu, la courbe de rosée en rouge, trois domaines ; à une température donnée, le liquide se lit sur la courbe d’ébullition et la vapeur sur la courbe de rosée">
+          <path d="M40,10 V108 H256" fill="none" stroke="#475569" strokeWidth="1.5"/>
+          <polyline points="40.0,20.0 50.5,25.3 61.0,30.5 71.5,35.6 82.0,40.5 92.5,45.2 103.0,49.9 113.5,54.4 124.0,58.7 134.5,62.9 145.0,67.0 155.5,70.9 166.0,74.7 176.5,78.4 187.0,81.9 197.5,85.2 208.0,88.5 218.5,91.6 229.0,94.5 239.5,97.3 250.0,100.0" fill="none" stroke="#2563eb" strokeWidth="2.5"/>
+          <polyline points="40.0,20.0 50.5,22.7 61.0,25.5 71.5,28.4 82.0,31.5 92.5,34.8 103.0,38.1 113.5,41.6 124.0,45.3 134.5,49.1 145.0,53.0 155.5,57.1 166.0,61.3 176.5,65.6 187.0,70.1 197.5,74.8 208.0,79.5 218.5,84.4 229.0,89.5 239.5,94.7 250.0,100.0" fill="none" stroke="#dc2626" strokeWidth="2.5"/>
+          <line x1="40" y1="60" x2="250" y2="60" stroke="#64748b" strokeDasharray="4,3"/>
+          <path d="M127.2,60 V108 M162.8,60 V108 M145,60 V108" stroke="#94a3b8" strokeDasharray="2,3"/>
+          <circle cx="127.2" cy="60" r="3.6" fill="#2563eb"/><circle cx="162.8" cy="60" r="3.6" fill="#dc2626"/>
+          <path d="M145,55.5 L149.5,60 L145,64.5 L140.5,60 Z" fill="#f59e0b" stroke="#b45309"/>
+          <text x="127.2" y="120" textAnchor="middle" fontSize="9" fill="#1d4ed8">x<tspan dy="2" fontSize="6.5">L</tspan></text>
+          <text x="145" y="120" textAnchor="middle" fontSize="9" fill="#b45309">z</text>
+          <text x="162.8" y="120" textAnchor="middle" fontSize="9" fill="#b91c1c">y<tspan dy="2" fontSize="6.5">V</tspan></text>
+          <text x="148" y="136" textAnchor="middle" fontSize="8.5" fill="#334155">fraction molaire du composé le plus volatil A</text>
+          <path d="M40,147 H54" stroke="#2563eb" strokeWidth="2.5"/><text x="57" y="150" fontSize="8.5" fill="#1d4ed8">ébullition</text>
+          <path d="M104,147 H118" stroke="#dc2626" strokeWidth="2.5"/><text x="121" y="150" fontSize="8.5" fill="#b91c1c">rosée</text>
+          <text x="150" y="150" fontSize="8.5" fill="#334155">entre : liquide + vapeur</text>
+          <text x="36" y="23" textAnchor="end" fontSize="8.5" fill="#334155">T*<tspan dy="2" fontSize="6.5">B</tspan></text>
+          <text x="256" y="103" textAnchor="start" fontSize="8.5" fill="#334155">T*<tspan dy="2" fontSize="6.5">A</tspan></text>
+          <text x="36" y="63" textAnchor="end" fontSize="9" fill="#334155">T</text>
+          <text x="95" y="92" textAnchor="middle" fontSize="10" fontWeight="700" fill="#1d4ed8">liquide</text>
+          <text x="190" y="40" textAnchor="middle" fontSize="10" fontWeight="700" fill="#b91c1c">vapeur</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Courbe d’ébullition</strong> (bleue) : apparition de la <strong>première bulle</strong>. <strong>Courbe de rosée</strong> (rouge) : disparition de la <strong>dernière goutte</strong>.</li>
+          <li>Trois domaines : <strong>liquide</strong> sous la courbe d’ébullition, <strong>vapeur</strong> au-dessus de la courbe de rosée, <strong>liquide + vapeur</strong> entre les deux (le « fuseau »).</li>
+          <li>À la composition z du mélange : on monte en température ; la première bulle apparaît sur la courbe d’ébullition, la dernière goutte disparaît sur la courbe de rosée.</li>
+          <li>Aux extrémités, les courbes rejoignent les températures d’ébullition des corps purs T*<sub>B</sub> et T*<sub>A</sub> (corps pur : une seule température).</li>
+        </ul>
+      </>,
       texte: <>Pour le mélange réglé à l’étape 2 (<X0/> = 0,20), augmentez la température avec le curseur : à partir de quelle température apparaît la première bulle de vapeur ? C’est la température où le point touche la <strong style={{ color: '#2563eb' }}>courbe d’ébullition</strong> (bleue).</>,
       tache: { type: 'num', q: 'Température d’ébullition commençante du mélange', unite: '°C', vrai: G.Tb, tol: 0.015, affiche: x => nf(x, 1),
         bloque: mel === 'ew' && Math.abs(z - 0.2) < 1e-9 ? null : 'Réglez d’abord le mélange (étape 2).',
@@ -134,6 +176,19 @@ export function SimulationDiagramme({ naviguer }) {
       texte: <>Réglez maintenant la température à <strong>87 °C</strong> : le point est entre les deux courbes.</>,
       tache: { type: 'action', ok: ici('ew', 0.2, 87), label: 'Régler T = 87 °C', faire: () => regler('ew', 0.2, 87), consigne: ici('ew', 0.2, 87) ? null : 'Réglez T = 87 °C (curseur ou bouton)' } },
     { id: 'deux', titre: 'Deux phases en équilibre', focus: ['recipient', 'diagramme'],
+      retenirTitre: 'À RETENIR : LIQUIDE ET VAPEUR EN ÉQUILIBRE',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Dans le fuseau, les deux phases ont <strong>la même température</strong> mais <strong>pas la même composition</strong>. On lit <strong>à l’horizontale</strong> : liquide (x<sub>L</sub>) sur la courbe d’ébullition, vapeur (y<sub>V</sub>) sur la courbe de rosée.</li>
+          <li>La vapeur est <strong>plus riche en composé volatil</strong> que le liquide en équilibre : y<sub>V</sub> &gt; z &gt; x<sub>L</sub> (sauf à l’azéotrope). C’est le principe de la distillation.</li>
+          <li><strong>Quantités de chaque phase</strong> (règle du levier), fraction des molécules en phase vapeur :</li>
+        </ul>
+        <Formule><mfrac><msub><mi>n</mi><mi>V</mi></msub><msub><mi>n</mi><mtext>tot</mtext></msub></mfrac><mo>=</mo><mfrac><mrow><mi>z</mi><mo>−</mo><msub><mi>x</mi><mi>L</mi></msub></mrow><mrow><msub><mi>y</mi><mi>V</mi></msub><mo>−</mo><msub><mi>x</mi><mi>L</mi></msub></mrow></mfrac></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Plus le point (z ; T) est proche de la courbe de rosée, plus il y a de vapeur ; près de la courbe d’ébullition, plus il y a de liquide.</li>
+          <li><strong>Pièges :</strong> lire x<sub>L</sub> sur la courbe de rosée (et inversement) ; confondre z (mélange global) et x<sub>L</sub> ou y<sub>V</sub> ; lire à la verticale au lieu de l’horizontale.</li>
+        </ul>
+      </>,
       texte: <>Pour le mélange <X0/> = 0,20 à 87 °C, deux phases coexistent : le liquide et la vapeur sont à <strong>la même température</strong>, mais <strong>n’ont pas la même composition</strong>. On lit la composition de chacune <strong>à l’horizontale</strong> : sur la courbe d’ébullition pour le liquide (point bleu), sur la courbe de rosée pour la vapeur (point rouge).</>,
       tache: { type: 'num', q: <>Fraction molaire <Xi e="L"/> en éthanol du liquide</>, unite: '', vrai: G.xL, tol: 0.12, affiche: x => nf(x), cs: 3,
         bloque: ici('ew', 0.2, 87) ? null : 'Réglez d’abord T = 87 °C.',
@@ -152,6 +207,18 @@ export function SimulationDiagramme({ naviguer }) {
       tache: { type: 'qcm', q: 'La phase la plus riche en composé volatil (l’éthanol) est…', options: ['la vapeur', 'le liquide', 'aucune : les deux ont la même composition'], bonne: 0,
         expl: 'La vapeur est toujours enrichie en composé volatil par rapport au liquide avec lequel elle est en équilibre (sauf à l’azéotrope).', indice: "Le composé volatil passe plus facilement en phase vapeur." } },
     { id: 'massique', titre: 'Fraction massique de la vapeur', focus: [],
+      retenirTitre: 'À RETENIR : FRACTION MOLAIRE ET FRACTION MASSIQUE',
+      retenir: <>
+        <Formule><msub><mi>w</mi><mi>A</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>y</mi><mi>A</mi></msub><mo>×</mo><msub><mi>M</mi><mi>A</mi></msub></mrow><mrow><msub><mi>y</mi><mi>A</mi></msub><mo>×</mo><msub><mi>M</mi><mi>A</mi></msub><mo>+</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>y</mi><mi>A</mi></msub><mo>)</mo><mo>×</mo><msub><mi>M</mi><mi>B</mi></msub></mrow></mfrac></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Le diagramme est en <strong>fractions molaires</strong> (x, y : nombre de molécules) ; la fraction <strong>massique</strong> w compte les masses. Les deux sont sans unité.</li>
+          <li><strong>Méthode :</strong> raisonner sur 1 mol de mélange : masse de A = y × M<sub>A</sub> ; masse de B = (1 − y) × M<sub>B</sub> ; w<sub>A</sub> = masse de A / masse totale.</li>
+          <li>M<sub>A</sub> = 46 g·mol⁻¹ (éthanol) ; M<sub>B</sub> = 18 g·mol⁻¹ (eau).</li>
+          <li><strong>Exemple :</strong> y<sub>A</sub> = 0,50 : 0,50 × 46 = 23 g d’éthanol et 0,50 × 18 = 9 g d’eau ; w<sub>A</sub> = 23 / 32 ≈ 0,72.</li>
+          <li>L’éthanol est plus lourd que l’eau : sa <strong>fraction massique est supérieure</strong> à sa fraction molaire.</li>
+          <li><strong>Pièges :</strong> inverser M<sub>A</sub> et M<sub>B</sub> ; oublier la division par la masse totale ; garder des g·mol⁻¹ dans le résultat.</li>
+        </ul>
+      </>,
       texte: <>Le diagramme donne des fractions <strong>molaires</strong>. Convertissez <Xi e="V"/> en fraction <strong>massique</strong> w<sub>A</sub>, avec M<sub>A</sub> = 46 g·mol⁻¹ (éthanol) et M<sub>B</sub> = 18 g·mol⁻¹ (eau) :
         <div style={{ textAlign: 'center', fontSize: 16, margin: '8px 0 0' }}>w<sub>A</sub> = <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', verticalAlign: 'middle' }}><span style={{ borderBottom: '1.5px solid #0f172a', padding: '0 4px' }}>y<sub>A</sub> × M<sub>A</sub></span><span style={{ padding: '0 4px' }}>y<sub>A</sub> × M<sub>A</sub> + (1 − y<sub>A</sub>) × M<sub>B</sub></span></span></div></>,
       tache: { type: 'num', q: <>Fraction massique w<sub>A</sub> de la vapeur (<Xi e="V"/> = 0,428)</>, unite: '', vrai: G.wV, tol: 0.03, affiche: x => nf(x), cs: 3,
@@ -173,6 +240,17 @@ export function SimulationDiagramme({ naviguer }) {
         pieges: [[G.Tb, 'C’est la température de la première bulle. On cherche celle de la dernière goutte (courbe de rosée).']],
         expl: 'Environ 94 °C : l’ébullition de ce mélange s’étale entre 83 et 94 °C, alors qu’un corps pur bout à température constante.', indice: "La dernière goutte disparaît sur la courbe de rosée, à la composition du mélange." } },
     { id: 'azeo', titre: 'Un mélange particulier : l’azéotrope', focus: ['reglages', 'diagramme', 'analyse'],
+      retenirTitre: 'À RETENIR : L’AZÉOTROPE',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Azéotrope</strong> : composition pour laquelle le mélange <strong>bout à température constante</strong> et où la vapeur a <strong>la même composition que le liquide</strong> (y<sub>V</sub> = x<sub>L</sub>). Les deux courbes se touchent.</li>
+          <li>Il se comporte comme un corps pur : <strong>on ne peut pas le séparer</strong> par distillation simple.</li>
+          <li><strong>Azéotrope à minimum</strong> (eau – éthanol) : bout à une température <strong>plus basse</strong> que les deux corps purs. Il s’échappe en tête de colonne.</li>
+          <li><strong>Azéotrope à maximum</strong> (chloroforme – acétone) : bout à une température <strong>plus haute</strong> que les deux corps purs. Il reste dans le bouilleur.</li>
+          <li>Eau – éthanol : l’azéotrope se situe vers x = 0,90, soit environ 96 % d’éthanol <strong>en masse</strong> : au-delà, la distillation ne sépare plus.</li>
+          <li>Sur l’analyse thermique, l’azéotrope donne un palier de température, comme un corps pur.</li>
+        </ul>
+      </>,
       texte: <>Réglez <X0/> = 0,90 : les deux courbes se touchent. Pour cette composition, le mélange <strong>bout à température constante</strong> et la vapeur a <strong>la même composition que le liquide</strong> : on dit qu’il se comporte comme un corps pur, c’est un <strong>azéotrope</strong>. Regardez aussi l’analyse thermique.</>,
       tache: { type: 'action', ok: mel === 'ew' && Math.abs(z - 0.9) < 1e-9, label: <>Régler <X0/> = 0,90</>, faire: () => regler('ew', 0.9, 78.2), consigne: mel === 'ew' && Math.abs(z - 0.9) < 1e-9 ? null : 'Réglez z = 0,90' } },
     { id: 'taz', titre: 'La température de l’azéotrope', focus: ['diagramme'],
@@ -184,12 +262,20 @@ export function SimulationDiagramme({ naviguer }) {
       texte: <>Passez au mélange <strong>chloroforme – acétone</strong>. Ici, la courbe a un maximum : l’azéotrope bout à une température <em>plus haute</em> que les deux corps purs.</>,
       tache: { type: 'action', ok: mel === 'ca', label: 'Changer de mélange', faire: () => regler('ca', 0.2, 63), consigne: mel === 'ca' ? null : 'Choisissez chloroforme – acétone' } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
-        <li>courbe d’ébullition : 1ʳᵉ bulle ; courbe de rosée : dernière goutte</li>
-        <li>deux courbes → trois domaines : liquide, liquide + vapeur, vapeur</li>
-        <li>à l’horizontale, liquide et vapeur ont la même T mais pas la même composition</li>
-        <li>la vapeur est plus riche en composé volatil</li>
-        <li>azéotrope : T constante, <Xi e="V"/> = <Xi e="L"/>, comme un corps pur (minimum ou maximum)</li></ul>,
+      retenir: <>
+        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+          <li><strong>Repérer</strong> les courbes : ébullition (première bulle), rosée (dernière goutte) ; les trois domaines.</li>
+          <li><strong>Placer</strong> le point (z ; T) pour savoir dans quel domaine on est.</li>
+          <li><strong>Lire à l’horizontale</strong> dans le fuseau : x<sub>L</sub> sur la courbe d’ébullition, y<sub>V</sub> sur la courbe de rosée.</li>
+          <li><strong>Convertir</strong> si besoin : fraction molaire ↔ fraction massique, avec les masses molaires.</li>
+        </ol>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Même température dans les deux phases ; la vapeur est plus riche en composé volatil ; règle du levier pour les quantités.</li>
+          <li><strong>Azéotrope</strong> : T constante, y<sub>V</sub> = x<sub>L</sub>, comme un corps pur (minimum ou maximum).</li>
+          <li><strong>Hypothèses :</strong> pression constante (1,013 bar), équilibre liquide-vapeur atteint, mélange binaire.</li>
+          <li><strong>Pièges :</strong> courbes échangées ; z confondu avec x<sub>L</sub> ou y<sub>V</sub> ; fractions molaire et massique confondues.</li>
+        </ul>
+      </>,
       texte: <>Vous savez lire un diagramme binaire isobare : domaines, températures d’ébullition et de rosée, composition du liquide et de la vapeur, azéotrope. La simulation suivante utilise ce diagramme pour comprendre la distillation.</>, tache: null },
   ];
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
