@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, avecIndices, IndiceDefi } from "../commun";
 import { fr, MILIEUX, milieu, refraction, angleLimite, mesurerI2, pente, pecheur } from "./optiqueModele";
 import { Pic } from "../Pictos";
@@ -176,10 +176,58 @@ export function SimulationRefraction() {
         <ExempleResolu>La droite en <strong>orange pointillé</strong> est la direction de visée : celle de la lumière vue par l’œil, prolongée tout droit. La visée ne tombe pas sur le poisson <strong>réel</strong> : le poisson n’est pas là où on le voit. Changez la profondeur du poisson avec les curseurs.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Pour toucher le poisson, où faut-il viser par rapport à l’endroit où on le voit ?', options: ['Plus bas : le poisson est plus profond qu’il ne paraît', 'Plus haut', 'Exactement là où on le voit', 'Sur la surface de l’eau'], bonne: 0, expl: 'La lumière est déviée à la surface : l’œil voit le poisson plus près de la surface qu’il ne l’est vraiment.', indice: "Notre œil prolonge toujours le rayon lumineux en ligne droite. Mais la lumière change de direction en sortant de l’eau : compare la position où l’on voit le poisson et sa position réelle." } },
     { id: 'vocab', titre: 'Le vocabulaire de la réfraction', depart: () => voirI('air', 'plexi', 50, true),
+      retenirTitre: 'À RETENIR : LE VOCABULAIRE',
+      retenir: <>
+        <svg viewBox="0 0 300 180" role="img" aria-label="Dioptre plan : rayon incident dans l’air, rayon réfléchi, rayon réfracté dans le second milieu, normale et angles i₁ et i₂ mesurés par rapport à la normale" style={{ width: '100%', maxWidth: 340, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <rect x="0" y="90" width="300" height="90" fill="#dbeafe" />
+          <line x1="0" y1="90" x2="300" y2="90" stroke="#334155" strokeWidth="2" />
+          <line x1="150" y1="14" x2="150" y2="170" stroke="#475569" strokeWidth="1.4" strokeDasharray="5 4" />
+          <line x1="96" y1="45" x2="150" y2="90" stroke="#d55e00" strokeWidth="2.6" /><polygon points="131,74 120.7,70.7 125.9,64.5" fill="#d55e00" />
+          <line x1="150" y1="90" x2="204" y2="45" stroke="#475569" strokeWidth="2" strokeDasharray="2 3" />
+          <line x1="150" y1="90" x2="185" y2="151" stroke="#0072b2" strokeWidth="2.6" /><polygon points="177,137 171,136 179,128" fill="#0072b2" />
+          <path d="M 150 62 A 28 28 0 0 0 128.5 72" fill="none" stroke="#d55e00" strokeWidth="1.6" />
+          <path d="M 150 120 A 30 30 0 0 0 165 116" fill="none" stroke="#0072b2" strokeWidth="1.6" />
+          <text x="134" y="58" fontSize="12" fontWeight="700" fill="#d55e00">i₁</text>
+          <text x="156" y="136" fontSize="12" fontWeight="700" fill="#0072b2">i₂</text>
+          <text x="156" y="22" fontSize="10.5" fill="#475569">normale</text>
+          <text x="52" y="38" fontSize="10.5" fill="#d55e00" fontWeight="700">rayon incident</text>
+          <text x="196" y="38" fontSize="10.5" fill="#475569">rayon réfléchi</text>
+          <text x="190" y="160" fontSize="10.5" fill="#0072b2" fontWeight="700">rayon réfracté</text>
+          <text x="8" y="106" fontSize="10.5" fill="#334155">surface de séparation</text>
+          <text x="8" y="22" fontSize="11" fontWeight="700" fill="#334155">milieu 1 (n₁)</text>
+          <text x="8" y="172" fontSize="11" fontWeight="700" fill="#334155">milieu 2 (n₂)</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Les angles <strong>i₁</strong> (incidence) et <strong>i₂</strong> (réfraction) se mesurent <strong>par rapport à la normale</strong>, jamais par rapport à la surface.</li>
+          <li>À la surface, une partie de la lumière est <strong>réfléchie</strong> (dans le milieu 1), l’autre est <strong>réfractée</strong> (dans le milieu 2).</li>
+          <li>Si i₁ = 0° (le long de la normale), le rayon n’est <strong>pas dévié</strong> : i₂ = 0°.</li>
+          <li><strong>Hypothèses :</strong> milieux transparents et homogènes, surface plane, rayons rectilignes.</li>
+        </ul>
+      </>,
       texte: <>Un rayon lumineux (en <strong>orange</strong>) arrive sur la surface de séparation entre l’air (milieu 1) et le plexiglas (milieu 2). La droite perpendiculaire à la surface, en pointillé, est la <strong>normale</strong>. Une partie de la lumière est <strong>réfléchie</strong>, l’autre <strong>réfractée</strong> (en <strong>bleu</strong>, elle change de direction).
         <ExempleResolu>L’<strong>angle d’incidence i₁</strong> est mesuré entre le rayon incident et la <strong>normale</strong> (pas la surface !). L’<strong>angle de réfraction i₂</strong> est mesuré entre le rayon réfracté et la normale.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'L’angle d’incidence i₁ est l’angle entre…', options: ['le rayon incident et la normale', 'le rayon incident et la surface', 'le rayon incident et le rayon réfracté', 'le rayon réfracté et la surface'], bonne: 0, expl: 'Les angles se mesurent toujours par rapport à la normale.', indice: "Un angle d’incidence se mesure toujours par rapport à la normale (la perpendiculaire à la surface), jamais par rapport à la surface. Repère sur le schéma entre quels deux traits se trouve i₁." } },
     { id: 'rapproche', titre: 'Air → eau : le rayon se rapproche', depart: () => voirI('air', 'eau', 50),
+      retenirTitre: 'À RETENIR : INDICE ET DÉVIATION',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Milieu</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Indice n (sans unité, à 589 nm)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>air</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,00</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>eau</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,33</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>eau sucrée (20 %)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,36</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>glycérol</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,47</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>plexiglas</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,51</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>diamant</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2,42</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>L’<strong>indice de réfraction n</strong> caractérise un milieu transparent : n ≥ 1, sans unité (n<sub>air</sub> = 1,00).</li>
+          <li>n augmente (air → eau) : le rayon <strong>se rapproche</strong> de la normale, i₂ {'<'} i₁. Exemple : air → eau, i₁ = 50° donne i₂ ≈ 35°.</li>
+          <li>n diminue (plexiglas → air) : le rayon <strong>s’écarte</strong> de la normale, i₂ {'>'} i₁. Exemple : i₁ = 25° donne i₂ ≈ 40°.</li>
+          <li>Plus l’indice du milieu 2 est grand, plus la déviation est importante.</li>
+        </ul>
+      </>,
       texte: <>Chaque milieu transparent a un <strong>indice de réfraction n</strong> (sans unité, toujours ≥ 1) : sa « carte d’identité ». Pour l’air, n = 1,00. Quand la lumière passe dans un milieu d’indice <strong>plus grand</strong>, le rayon réfracté <strong>se rapproche de la normale</strong>.
         <ExempleResolu>Air (1,00) → eau (1,33) : i₁ = 50°, le rayon réfracté fait seulement 35° avec la normale : i₂ {'<'} i₁.
           {bouton('Voir air → eau', () => voirI('air', 'eau', 50))}</ExempleResolu>
@@ -197,6 +245,16 @@ export function SimulationRefraction() {
         <ExempleResolu>Mesures du TP : i₁ = 30° donne i₂ = 19,5° ; i₁ = 60° donne i₂ = 35,0°. Les angles ne sont <strong>pas</strong> proportionnels (30/19,5 ≠ 60/35,0), mais les sinus le sont : sin 30° / sin 19,5° = 0,500 / 0,334 = 1,50 et sin 60° / sin 35,0° = 0,866 / 0,574 = 1,51.</ExempleResolu></>,
       tache: { type: 'action', ok: enGuide && atelier === 'mesure' && pts.length >= 5, consigne: 'Notez au moins 5 mesures avec des angles d’incidence différents.' } },
     { id: 'indice', titre: 'En déduire l’indice du plexiglas', depart: null,
+      retenirTitre: 'À RETENIR : LA LOI DE SNELL-DESCARTES',
+      retenir: <>
+        <Formule><msub><mi>n</mi><mn>1</mn></msub><mo>×</mo><mi>sin</mi><msub><mi>i</mi><mn>1</mn></msub><mo>=</mo><msub><mi>n</mi><mn>2</mn></msub><mo>×</mo><mi>sin</mi><msub><mi>i</mi><mn>2</mn></msub></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Les <strong>angles</strong> ne sont pas proportionnels, ce sont les <strong>sinus</strong> qui le sont : le graphique sin i₁ en fonction de sin i₂ est une droite passant par l’origine.</li>
+          <li><strong>Méthode du TP :</strong> milieu 1 = air (n₁ = 1,00) ; on mesure plusieurs couples (i₁ ; i₂), on trace sin i₁ = f(sin i₂) : la <strong>pente</strong> de la droite est l’indice n du milieu 2.</li>
+          <li><strong>Exemple :</strong> i₁ = 30° et i₂ = 19,5° donnent n = sin 30° / sin 19,5° = 0,500 / 0,334 ≈ 1,50.</li>
+          <li><strong>Piège :</strong> diviser les angles (30 / 19,5) au lieu des sinus.</li>
+        </ul>
+      </>,
       texte: <>La pente de la droite sin i₁ = f(sin i₂) est l’<strong>indice de réfraction</strong> n du plexiglas (le milieu 1 est l’air, n₁ = 1,00). C’est la loi de <strong>Snell-Descartes</strong> : <strong>n₁ × sin i₁ = n₂ × sin i₂</strong>.</>,
       tache: { type: 'num', q: 'Une mesure donne i₁ = 60° et i₂ = 35,0°. Quel est l’indice n du plexiglas ? (n = sin i₁ / sin i₂)', unite: '', vrai: 1.51, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[1.71, 'Tu as divisé les angles. Il faut diviser les sinus : sin 60° / sin 35°.'], [0.66, 'Tu as inversé : n = sin i₁ / sin i₂.'], [Math.sin(60) / Math.sin(35), 'Ta calculatrice est en radians : passe-la en mode degrés (DEG).']],
         calcul: () => [
@@ -204,6 +262,16 @@ export function SimulationRefraction() {
           'Calculatrice en mode degrés : sin 60° = 0,866 et sin 35,0° = 0,574.',
           'n = 0,866 / 0,574 = 1,51 (l’indice n’a pas d’unité).'], expl: 'n = sin 60° / sin 35,0° = 0,866 / 0,574 ≈ 1,51.', indice: "Calcule chaque sinus séparément avec la calculatrice réglée en degrés, puis divise. Ne divise pas les angles entre eux." } },
     { id: 'snell', titre: 'Calculer un angle de réfraction', depart: () => voirI('air', 'eau', 40),
+      retenirTitre: 'À RETENIR : CALCULER UN ANGLE',
+      retenir: <>
+        <Formule><mi>sin</mi><msub><mi>i</mi><mn>2</mn></msub><mo>=</mo><mfrac><mrow><msub><mi>n</mi><mn>1</mn></msub><mo>×</mo><mi>sin</mi><msub><mi>i</mi><mn>1</mn></msub></mrow><msub><mi>n</mi><mn>2</mn></msub></mfrac><mspace width="1.5em"/><msub><mi>i</mi><mn>2</mn></msub><mo>=</mo><msup><mi>sin</mi><mrow><mo>−</mo><mn>1</mn></mrow></msup><mo>(</mo><mi>sin</mi><msub><mi>i</mi><mn>2</mn></msub><mo>)</mo></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Méthode :</strong> (1) relever n₁, n₂ et i₁ ; (2) calculer sin i₁ ; (3) en déduire sin i₂ = n₁ sin i₁ / n₂ ; (4) appliquer <strong>sin⁻¹</strong> pour obtenir i₂.</li>
+          <li><strong>Exemple :</strong> air → diamant, i₁ = 50° : sin i₂ = 1,00 × 0,766 / 2,42 = 0,317 ; i₂ = sin⁻¹(0,317) ≈ <strong>18,5°</strong>.</li>
+          <li>Calculatrice en <strong>mode degrés</strong> ; vérifier la cohérence : n₂ {'>'} n₁ donne i₂ {'<'} i₁.</li>
+          <li>Garder au moins 3 chiffres significatifs sur les sinus avant de revenir à l’angle.</li>
+        </ul>
+      </>,
       texte: <>Avec n₁ et n₂ connus, on peut <strong>prévoir</strong> i₂ : sin i₂ = n₁ × sin i₁ / n₂, puis on utilise la touche <strong>sin⁻¹</strong> de la calculatrice (mode degrés).
         <ExempleResolu>Air → eau, i₁ = 40° : sin i₂ = 1,00 × sin 40° / 1,33 = 0,643 / 1,33 = 0,483, donc i₂ = <strong>28,9°</strong>.
           {bouton('Vérifier sur le schéma', () => voirI('air', 'eau', 40))}</ExempleResolu>
@@ -221,6 +289,22 @@ export function SimulationRefraction() {
       texte: <>Comparez les deux droites : la pente de l’eau sucrée est un peu plus grande que celle de l’eau. L’eau sucrée a donc un indice <strong>plus grand</strong> (1,36 contre 1,33).</>,
       tache: { type: 'qcm', q: 'Pour un même angle d’incidence, le rayon réfracté dans l’eau sucrée, par rapport à l’eau, est…', options: ['un peu plus proche de la normale (i₂ plus petit)', 'un peu plus loin de la normale (i₂ plus grand)', 'exactement identique', 'impossible à dire'], bonne: 0, expl: 'n plus grand : le rayon se rapproche davantage de la normale, donc i₂ est plus petit.', indice: "L’eau sucrée a un indice un peu plus grand que l’eau. Dans n₁ sin i₁ = n₂ sin i₂, que devient i₂ quand n₂ augmente, avec le même i₁ ?" } },
     { id: 'tir', titre: '★ Quand il n’y a plus de rayon réfracté', depart: () => voirI('plexi', 'air', 50),
+      retenirTitre: 'À RETENIR : RÉFLEXION TOTALE',
+      retenir: <>
+        <Formule><mi>sin</mi><msub><mi>i</mi><mtext>lim</mtext></msub><mo>=</mo><mfrac><msub><mi>n</mi><mn>2</mn></msub><msub><mi>n</mi><mn>1</mn></msub></mfrac><mspace width="1.5em"/><mtext>(si </mtext><msub><mi>n</mi><mn>1</mn></msub><mo>&gt;</mo><msub><mi>n</mi><mn>2</mn></msub><mtext>)</mtext></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Passage</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>n₁ → n₂</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Angle limite</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>plexiglas → air</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,51 → 1,00</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>41,5°</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>eau → air</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,33 → 1,00</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>48,8°</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>diamant → air</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2,42 → 1,00</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>24,4°</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Au-delà de l’<strong>angle limite</strong>, il n’y a plus de rayon réfracté : toute la lumière est réfléchie.</li>
+          <li>Condition : passer d’un milieu <strong>plus réfringent</strong> à un milieu <strong>moins réfringent</strong> (n₁ {'>'} n₂). De l’air vers l’eau, elle est impossible.</li>
+        </ul>
+      </>,
       texte: <>Dans le sens plexiglas → air, essayez i₁ = 50° : <strong>plus de rayon réfracté</strong> ! Au-delà d’un <strong>angle limite</strong> (41,5° ici), toute la lumière est réfléchie : c’est la <strong>réflexion totale</strong> (hors programme de Seconde : vous la reverrez en Première, c’est le principe des fibres optiques).
         <ExempleResolu>Elle ne se produit que si la lumière va d’un milieu à un indice <strong>plus faible</strong> (n₁ {'>'} n₂), et seulement au-delà de l’angle limite : sin i<sub>lim</sub> = n₂ / n₁.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Peut-on observer une réflexion totale pour un rayon qui passe de l’air au plexiglas ?', options: ['Non : l’indice augmente, le rayon réfracté existe toujours', 'Oui, pour un grand angle d’incidence', 'Oui, à partir de 41,5°', 'Oui, à tous les angles'], bonne: 0, expl: 'La réflexion totale n’existe que de l’indice le plus grand vers le plus petit.', indice: "Il y aurait réflexion totale si sin i₂ = (n₁ / n₂) × sin i₁ devait dépasser 1. Compare n₁ (air) et n₂ (plexiglas) : le rapport n₁ / n₂ peut-il être supérieur à 1 ?" } },
@@ -228,10 +312,17 @@ export function SimulationRefraction() {
       texte: <>On peut maintenant tout expliquer : la lumière issue du poisson passe de l’eau (n = 1,33) à l’air (n = 1,00) : elle <strong>s’écarte de la normale</strong>. L’œil prolonge en ligne droite ce rayon : il voit le poisson à un autre endroit que celui où il est vraiment.</>,
       tache: { type: 'qcm', q: 'Pourquoi le pêcheur manque-t-il facilement le poisson ?', options: ['La lumière change de direction à la surface eau/air : le poisson n’est pas là où il paraît', 'Le poisson bouge trop vite', 'L’eau absorbe toute la lumière', 'Le poisson est une source primaire de lumière'], bonne: 0, expl: 'La réfraction à la surface eau/air déplace l’image du poisson : il est plus profond qu’il ne paraît.', indice: "Que devient la lumière venant du poisson quand elle sort de l’eau vers l’œil du pêcheur : suit-elle une ligne droite ?" } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
-      texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>Réfraction : la lumière <strong>change de direction</strong> en passant d’un milieu à un autre (sauf si i₁ = 0°). Les angles se mesurent avec la <strong>normale</strong>.</li>
-        <li><strong>n₁ sin i₁ = n₂ sin i₂</strong> (Snell-Descartes). n<sub>air</sub> = 1,00.</li>
-        <li>n augmente → le rayon <strong>se rapproche</strong> de la normale ; n diminue → il <strong>s’écarte</strong>.</li></ul></ARetenir>, tache: null },
+      retenirTitre: 'À RETENIR : LE BILAN',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>n₁ sin i₁ = n₂ sin i₂</strong> ; angles mesurés avec la <strong>normale</strong> ; i₁ = 0° : pas de déviation.</li>
+          <li>n augmente : le rayon <strong>se rapproche</strong> de la normale ; n diminue : il <strong>s’écarte</strong>.</li>
+          <li><strong>Pêcheur :</strong> la lumière du poisson s’écarte de la normale en sortant de l’eau ; l’œil prolonge le rayon en ligne droite et voit le poisson à une autre place que la vraie (plus haut que sa profondeur réelle).</li>
+          <li><strong>Méthode :</strong> sin i₂ = n₁ sin i₁ / n₂, puis sin⁻¹ en degrés ; n se lit comme la pente de sin i₁ = f(sin i₂).</li>
+          <li><strong>Pièges :</strong> angle pris avec la surface ; angles divisés au lieu des sinus ; calculatrice en radians.</li>
+        </ul>
+      </>,
+      texte: <>Bravo : vous savez prévoir la déviation d’un rayon lumineux. Voici le bilan à garder.</>, tache: null },
   ];
   useEffect(() => {
     if (mode !== 'guide') return;
