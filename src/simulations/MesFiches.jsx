@@ -85,7 +85,7 @@ export function SimulationFiches({ naviguer }) {
     setRecolte({ i: 0, n: 0 });
     try {
       const lignes = await toutLire('activites?select=cle,duree_s&order=debut.desc');
-      const ids = tempsParSimulation(lignes.filter(l => estSimulation(l.cle))).filter(a => a.guide > 0 || a.explore > 0 || a.defi > 0).map(a => Number(a.id)).filter(Number.isFinite);
+      const ids = tempsParSimulation(lignes.filter(l => estSimulation(l.cle))).map(a => Number(a.id)).filter(Number.isFinite);
       await recolterFiches(ids, (i, n) => setRecolte({ i, n }));
     } catch { /* hors ligne : on garde ce qui est déjà rangé */ }
     try { window.localStorage.setItem('fiches-recolte-v2-' + (sess?.profil?.identifiant || ''), String(Date.now())); } catch { /* pas grave */ }

@@ -330,13 +330,41 @@ const MENUS = construireMenus();
 //  COMPOSANT PRINCIPAL
 // ============================================================
 export default function App() {
-  // Cadre invisible de récolte des cartes « À retenir » (voir src/fiches.js) : ouvre le parcours guidé puis l'exploration, puis prévient la page « Mes fiches »
+  // Cadre invisible de récolte des cartes « À retenir » (voir src/fiches.js) : ouvre le parcours guidé (et chacun de ses parcours s'il y en a plusieurs),
+  // puis l'exploration, attend que tout soit affiché, puis prévient la page « Mes fiches ». Chaque attente est un sondage, pas un délai fixe :
+  // une simulation lente à charger (graphiques) n'est plus ratée.
   useEffect(() => {
     if (!EN_RECOLTE) return undefined;
     window.__clicAuto = true;
-    const cliquer = txt => { const b = [...document.querySelectorAll('#zone-simulation button')].find(x => x.textContent.includes(txt) && !x.disabled); if (b) b.click(); };
-    const t = [setTimeout(() => cliquer('Parcours guidé'), 2200), setTimeout(() => cliquer('Exploration libre'), 4200), setTimeout(async () => { const sim = parseInt(new URLSearchParams(window.location.search).get('sim')); const img = await capturerFigure(); if (img) envoyerFigure(sim, img); finRecolte(); }, 6200)];
-    return () => t.forEach(clearTimeout);
+    let annule = false;
+    const pause = ms => new Promise(r => setTimeout(r, ms));
+    const zone = () => document.getElementById('zone-simulation');
+    const boutons = () => [...(zone()?.querySelectorAll('button') || [])];
+    const bouton = txt => boutons().find(x => x.textContent.includes(txt) && !x.disabled);
+    const attendre = async (cond, max) => { const t0 = Date.now(); while (!annule && Date.now() - t0 < max) { const r = cond(); if (r) return r; await pause(150); } return null; };
+    (async () => {
+      const sim = parseInt(new URLSearchParams(window.location.search).get('sim'));
+      const choixAvant = {}; try { for (let i = 0; i < window.localStorage.length; i++) { const k = window.localStorage.key(i); if (/parcours-choix/.test(k)) choixAvant[k] = window.localStorage.getItem(k); } } catch { /* ignoré */ }
+      try {
+        const g = await attendre(() => bouton('Parcours guidé'), 12000);
+        if (g) {
+          g.click();
+          await attendre(() => document.querySelector('[data-carte-parcours]'), 6000);
+          await pause(1800);
+          const nb = boutons().filter(x => /^\d\.\s/.test(x.textContent.trim())).length;   // sélecteur « 1. … 2. … 3. … » des simulations à plusieurs parcours
+          for (let k = 0; k < nb && !annule; k++) {
+            const c = boutons().filter(x => /^\d\.\s/.test(x.textContent.trim()))[k];
+            if (c) { c.click(); await pause(2000); }
+          }
+        }
+        const e = await attendre(() => bouton('Exploration libre'), 4000);
+        if (e) { e.click(); await pause(3200); }
+        const img = await capturerFigure(); if (img) envoyerFigure(sim, img);
+      } catch { /* on rend la main quoi qu'il arrive */ }
+      try { Object.entries(choixAvant).forEach(([k, v]) => window.localStorage.setItem(k, v)); } catch { /* ignoré */ }
+      if (!annule) finRecolte();
+    })();
+    return () => { annule = true; };
   }, []);
   const getInitialId = () => {
     const params = new URLSearchParams(window.location.search);

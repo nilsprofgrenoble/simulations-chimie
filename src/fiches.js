@@ -160,7 +160,7 @@ export async function recolterFiches(ids, surAvancee) {
         else if (e.data.type === 'fiche-figure') { noterFigure(Number(e.data.sim), e.data.img); }
         else if (e.data.type === 'fiche-recolte-fin') terminer();
       };
-      const garde = setTimeout(terminer, 15000);
+      const garde = setTimeout(terminer, 45000);
       window.addEventListener('message', ecouter);
       cadre.src = `${window.location.pathname}?sim=${ids[i]}&recolte=1`;
       document.body.appendChild(cadre);
