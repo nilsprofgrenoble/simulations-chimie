@@ -1525,6 +1525,37 @@ export const PLAUSIBLES = [
       F('L’excès d’acide éthanoïque s’est transformé en ester', 'Le réactif limitant fixe la quantité maximale d’ester. L’excès d’acide ne peut pas en produire davantage.'),
       F('La constante d’équilibre K est supérieure à 1', 'K = 4 signifie que la réaction est favorable mais limitée : elle impose un rendement inférieur à 100 % à l’équilibre.'),
     ] }),
+  // ── Chimie organique (1re spé) ──
+  P({ id: 'org-brute-hexane', domaine: 'Chimie organique', niveau: 1, titre: 'Formule brute de l’hexane', plausible: false,
+    ...presenter({ contexte: 'L’hexane est un alcane linéaire à 6 atomes de carbone.', suite: 'Un élève écrit sa formule semi-développée, CH₃–CH₂–CH₂–CH₂–CH₂–CH₃, puis annonce la formule brute C₆H₁₂.' }),
+    reperes: [['Méthane', 'CH₄'], ['Éthane', 'CH₃–CH₃, soit C₂H₆'], ['Règle', 'un atome de carbone établit toujours 4 liaisons']],
+    ver: 'En comptant les atomes d’hydrogène de la formule semi-développée : 3 + 2 + 2 + 2 + 2 + 3 = 14. La formule brute est C₆H₁₄ ; C₆H₁₂ ne correspond pas à ce qui est écrit (il manque 2 H).',
+    q2: 'Quelle erreur explique le mieux ce résultat ?',
+    options: [
+      V('Les deux carbones d’extrémité ont été comptés CH₂ (2 H) au lieu de CH₃ (3 H)', 'Avec 2 H par carbone, 6 × 2 = 12 : c’est bien la formule de l’élève. Un carbone d’extrémité n’est lié qu’à un seul carbone : il lui reste 3 liaisons, donc 3 H.'),
+      F('Un atome de carbone a été oublié', 'On aurait trouvé C₅ : le nombre de carbones (6) est correct, c’est le nombre d’hydrogènes qui est faux.'),
+      F('Un atome d’oxygène a été ajouté par erreur', 'La formule annoncée, C₆H₁₂, ne contient pas d’oxygène : l’erreur porte sur les hydrogènes.'),
+    ] }),
+  P({ id: 'org-brute-butanal', domaine: 'Chimie organique', niveau: 2, titre: 'Formule brute du butanal', plausible: true,
+    ...presenter({ contexte: 'Le butanal est un aldéhyde dont la formule semi-développée est CH₃–CH₂–CH₂–CHO.', suite: 'Un élève annonce la formule brute C₄H₈O.' }),
+    reperes: [['Butane', 'CH₃–CH₂–CH₂–CH₃, soit C₄H₁₀'], ['Règle', 'un atome de carbone établit toujours 4 liaisons (C=O compte pour 2)'], ['Groupe –CHO', 'un carbone, un oxygène, un hydrogène']],
+    ver: 'On compte 4 C, 1 O et 3 + 2 + 2 + 1 = 8 H : C₄H₈O est correct. Le butanal a 2 H de moins que le butane (C₄H₁₀), car le carbone du groupe –CHO porte une double liaison avec l’oxygène.',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('Cohérent : en lisant la formule semi-développée, 4 C, 1 O et 3 + 2 + 2 + 1 = 8 H', 'Le comptage atome par atome donne bien C₄H₈O.'),
+      F('Pas cohérent : un composé à 4 carbones doit avoir 10 H, comme le butane', 'Le nombre d’hydrogènes dépend de la famille : le carbone du groupe –CHO n’a qu’un H (il fait 2 liaisons avec l’oxygène), donc le butanal n’a que 8 H.'),
+      F('Cohérent, car la formule brute d’un composé à 4 carbones comporte toujours 8 H', 'Ce n’est pas général : le butane en a 10 et l’acide butanoïque (C₄H₈O₂) 8 mais avec 2 O. Il faut compter à partir de la formule semi-développée.'),
+    ] }),
+  P({ id: 'org-nom-butanone', domaine: 'Chimie organique', niveau: 2, titre: 'Quel nom pour CH₃–CH₂–CO–CH₃ ?', plausible: false,
+    ...presenter({ contexte: 'Un élève doit nommer le composé de formule semi-développée CH₃–CH₂–CO–CH₃, qui porte un groupe C=O.', suite: 'Il répond « butanal ».' }),
+    reperes: [['Suffixe -ol', 'alcool (groupe –OH)'], ['Suffixe -al', 'aldéhyde : C=O en bout de chaîne, lié à un H'], ['Suffixe -one', 'cétone : C=O au milieu de la chaîne, lié à deux C'], ['Suffixe -oïque', 'acide carboxylique (groupe –COOH)']],
+    ver: 'Dans CH₃–CH₂–CO–CH₃, le C=O est au milieu de la chaîne, lié à deux carbones : c’est une cétone, la butanone. « Butanal » est le nom de l’aldéhyde CH₃–CH₂–CH₂–CHO, dont le C=O est en bout de chaîne.',
+    q2: 'Quelle erreur explique le mieux cette réponse ?',
+    options: [
+      V('Le suffixe des aldéhydes (-al) a été utilisé pour un C=O situé au milieu de la chaîne', 'Un C=O au milieu de la chaîne caractérise une cétone, dont le suffixe est « -one ».'),
+      F('Un atome de carbone de trop a été compté', 'La chaîne compte bien 4 atomes de carbone : « but » est correct. L’erreur est dans le suffixe.'),
+      F('Le composé a été pris pour un alcool', 'Le suffixe d’un alcool serait « -ol » : l’élève a écrit « -al », celui des aldéhydes.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────

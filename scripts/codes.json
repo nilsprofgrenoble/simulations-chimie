@@ -725,5 +725,12 @@
  "77:plausible:iE-eau-ph7-ok": "VAL180",
  "77:plausible:son-deux-sources-niveau": "VAL181",
  "77:plausible:ech-profondeur-sans-moitie": "VAL182",
- "77:plausible:e2d-frequence-double-profondeur": "VAL183"
+ "77:plausible:e2d-frequence-double-profondeur": "VAL183",
+ "37:prevoir:org-isomeres": "ANA347",
+ "37:prevoir:org-carbonyle": "ANA348",
+ "37:prevoir:org-numerotation": "ANA349",
+ "37:prevoir:org-chaine-principale": "ANA350",
+ "77:plausible:org-brute-hexane": "VAL184",
+ "77:plausible:org-brute-butanal": "VAL185",
+ "77:plausible:org-nom-butanone": "VAL186"
 }

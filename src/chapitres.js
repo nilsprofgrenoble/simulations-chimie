@@ -26,6 +26,7 @@ export const CHAPITRES = [
   { id: '1g-evolution', niveau: '1G', label: '⚗️ Suivi de l’évolution d’un système, siège d’une transformation', sims: [1, 2, 25, 10], domaines: ['Chimie'] },
   { id: '1g-champ', niveau: '1G', label: '🌍 Interactions fondamentales et notion de champ', sims: [51, 48, 49, 50], domaines: ['Interactions et champs'] },
   { id: '1g-cohesion', niveau: '1G', label: '🧪 Cohésion, solubilité et miscibilité', sims: [53], domaines: ['Cohésion et solubilité'] },
+  { id: '1g-organique', niveau: '1G', label: '🧬 La chimie organique', sims: [102], domaines: ['Chimie organique'] },
   { id: '1g-electricite', niveau: '1G', label: '⚡ Aspects énergétiques des phénomènes électriques', sims: [70, 71, 72], domaines: ['Énergie électrique'] },
   { id: '1g-mouvement', niveau: '1G', label: '🚀 Mouvement d’un système', sims: [52], domaines: ['Mécanique'] },
 

@@ -3193,6 +3193,35 @@ export const PREVOIR = [
       F('l’ordre des taches s’inverse', 'L’ordre de polarité des espèces est une propriété des molécules (liaisons hydrogène avec la silice), pas de l’éluant.'),
       F('rien ne change, car le Rf est une propriété caractéristique de l’espèce', 'Le Rf caractérise une espèce pour un éluant et une plaque donnés : en changeant l’éluant, on change les Rf.'),
     ] },
+  // ── Chimie organique (1re spé) : nomenclature et groupes caractéristiques ──
+  { id: 'org-isomeres', domaine: 'Chimie organique', titre: 'Déplacer le groupe –OH sur la chaîne',
+    ...presenter({ contexte: 'Deux alcools à chaîne de trois atomes de carbone ont pour formules semi-développées :', liste: [['Propan-1-ol', 'CH₃–CH₂–CH₂–OH'], ['Propan-2-ol', 'CH₃–CH(OH)–CH₃']] }), q: 'Leurs formules brutes sont…', options: [
+      V('identiques : C₃H₈O', 'Dans chaque molécule on compte 3 C, 1 O et 8 H (3 + 2 + 2 + 1 pour le premier ; 3 + 1 + 3 + 1 pour le second). Seul l’enchaînement des atomes change : c’est ce que montre la formule semi-développée et que la formule brute ne montre pas.'),
+      F('différentes, car le groupe –OH n’est pas porté par le même carbone', 'La formule brute compte seulement les atomes de chaque élément, pas leur place dans la molécule.'),
+      F('C₃H₈O pour le propan-1-ol et C₃H₆O pour le propan-2-ol, car le carbone n° 2 ne porte qu’un seul atome d’hydrogène', 'Le carbone n° 2 porte bien un H de moins (CH au lieu de CH₂), mais le carbone n° 1 en porte un de plus (CH₃ au lieu de CH₂) : le total reste 8.'),
+      F('C₃H₇O pour les deux, car l’atome d’hydrogène du groupe –OH ne compte pas', 'Tous les atomes d’hydrogène comptent, y compris celui du groupe –OH : 8 H au total.'),
+    ] },
+  { id: 'org-carbonyle', domaine: 'Chimie organique', titre: 'Aldéhyde ou cétone ?',
+    ...presenter({ contexte: 'Deux composés contiennent un groupe carbonyle C=O :', liste: [['Composé A', 'CH₃–CH₂–CHO'], ['Composé B', 'CH₃–CO–CH₃']] }), q: 'Quelle affirmation est exacte ?', options: [
+      V('A est un aldéhyde et B une cétone ; ils ont la même formule brute, C₃H₆O', 'Dans A, le C=O est en bout de chaîne, lié à un atome d’hydrogène : aldéhyde (propanal). Dans B, il est au milieu de la chaîne, lié à deux carbones : cétone (propanone). Les deux ont 3 C, 6 H et 1 O.'),
+      F('A et B sont deux aldéhydes, puisqu’ils contiennent tous les deux un groupe C=O', 'Le groupe C=O (carbonyle) ne suffit pas à reconnaître la famille : un aldéhyde a son C=O en bout de chaîne, lié à un atome d’hydrogène. B est une cétone.'),
+      F('A et B sont deux cétones, puisqu’ils contiennent tous les deux un groupe C=O', 'Une cétone a son C=O au milieu de la chaîne, lié à deux carbones. Dans A, le carbone du C=O porte un atome d’hydrogène : c’est un aldéhyde.'),
+      F('A est une cétone et B un aldéhyde, car B est la molécule la plus symétrique', 'C’est l’inverse : le C=O en bout de chaîne (A) caractérise un aldéhyde ; au milieu de la chaîne (B), une cétone.'),
+    ] },
+  { id: 'org-numerotation', domaine: 'Chimie organique', titre: 'Dans quel sens numéroter la chaîne ?',
+    ...presenter({ contexte: 'Un alcool a pour formule semi-développée CH₃–CH₂–CH₂–CH(OH)–CH₃. Sa chaîne principale compte 5 atomes de carbone ; le groupe –OH est porté par le 4ᵉ carbone en comptant depuis la gauche.' }), q: 'Son nom est…', options: [
+      V('pentan-2-ol', 'On numérote de droite à gauche pour que le groupe –OH porte le plus petit numéro possible : le carbone qui le porte est alors le n° 2.'),
+      F('pentan-4-ol', 'C’est le numéro obtenu en numérotant de gauche à droite. La règle impose de choisir le sens qui donne le plus petit numéro au groupe caractéristique.'),
+      F('pentan-1-ol', 'Le groupe –OH n’est pas en bout de chaîne : il est porté par un carbone intermédiaire, pas par un carbone d’extrémité.'),
+      F('pentan-3-ol', 'Le carbone n° 3 est le carbone central de la chaîne ; ici le groupe –OH est sur l’avant-dernier carbone d’un côté (n° 2 de l’autre côté).'),
+    ] },
+  { id: 'org-chaine-principale', domaine: 'Chimie organique', titre: 'Où est la chaîne principale ?',
+    ...presenter({ contexte: 'Un alcane a pour formule semi-développée CH₃–CH(CH₂–CH₃)–CH₂–CH₃. Un élève prend la ligne écrite (4 atomes de carbone) pour chaîne principale et lit le groupe CH₂–CH₃ comme un substituant éthyle.' }), q: 'Quel est le nom correct de cet alcane ?', options: [
+      V('3-méthylpentane', 'La chaîne principale est la plus longue : en passant par le groupe CH₂–CH₃ on trouve 5 carbones (CH₃–CH₂–CH–CH₂–CH₃). Le carbone restant (le CH₃ écrit en début de ligne) est un méthyle, porté par le carbone central, le n° 3.'),
+      F('2-éthylbutane', 'C’est le nom de l’élève : la chaîne qu’il a choisie (4 carbones) n’est pas la plus longue, alors que la méthode demande la plus longue chaîne de carbones.'),
+      F('2-méthylpentane', 'La chaîne de 5 carbones est la bonne, mais le méthyle est porté par le carbone central (n° 3), pas par le n° 2 : le carbone n° 2 est un CH₂.'),
+      F('hexane', 'Il y a bien 6 atomes de carbone en tout, mais la chaîne est ramifiée : la plus longue chaîne n’en compte que 5, le sixième est un substituant.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

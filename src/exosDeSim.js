@@ -43,6 +43,7 @@ export const EXOS_DE_SIM = {
   60: [/frc-(objet-immobile|vitesse-constante|cycliste|glissement|parachutiste|reaction-sol|actions)/],
   67: [/^poids2/, /frc-(chute-sans-air|iss-flotte)/],
   // ── 1re spé ──
+  102: [/(^|\.)org-/],                                                                                         // Nomenclature et groupes caractéristiques
   1: [/avancement-max/, /^cinetique$/],
   2: [/relation\.dilution/, /^titrage$/, /aspirine/, /vinaigre/, /relation\.diacide/, /hypothese\.titrage/, /deux-methodes/],
   25: [/^titrage$/, /aspirine/, /hypothese\.titrage/, /avancement-max/],

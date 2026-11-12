@@ -64,6 +64,7 @@ const SimulationSyntheseStereo = paresseux(() => import("./simulations/SyntheseS
 const SimulationChimioselectivite = paresseux(() => import("./simulations/Chimioselectivite"), "SimulationChimioselectivite");
 const SimulationEpaisseursAssociatifs = paresseux(() => import("./simulations/EpaisseursAssociatifs"), "SimulationEpaisseursAssociatifs");
 const SimulationLasure = paresseux(() => import("./simulations/Lasure"), "SimulationLasure");
+const SimulationNomenclatureOrganique = paresseux(() => import("./simulations/NomenclatureOrganique"), "SimulationNomenclatureOrganique");
 const SimulationMecanismesReactionnels = paresseux(() => import("./simulations/MecanismesReactionnels"), "SimulationMecanismesReactionnels");
 const SimulationEchographe2D = paresseux(() => import("./simulations/Echographe2D"), "SimulationEchographe2D");
 const SimulationOptimiserSynthese = paresseux(() => import("./simulations/OptimiserSynthese"), "SimulationOptimiserSynthese");
@@ -198,6 +199,7 @@ const SIMULATIONS = [
   { id:99, label:"Chimiosélectivité : quel groupe fonctionnel réagit ?", niveau:"BTS", icon:"🎯", color:"#7c3aed", component: SimulationChimioselectivite },
   { id:100, label:"Épaississants associatifs : ASE, HASE, HEUR", niveau:"BTS", icon:"🧴", color:"#1d4ed8", component: SimulationEpaisseursAssociatifs },
   { id:101, label:"Lasure alkyde : séchage oxydant et peau en pot", niveau:"BTS", icon:"🪵", color:"#7c2d12", component: SimulationLasure },
+  { id:102, label:"Nomenclature et groupes caractéristiques : nommer, identifier, dessiner", niveau:"1G", icon:"🧬", color:"#0f766e", component: SimulationNomenclatureOrganique },
   { id:86, label:"Synthèse organique : estérification, Dean-Stark et CCM", niveau:"TSTL", icon:"⚗️", color:"#9a3412",
     component: SimulationEsterification },
   { id:90, label:"Optimiser une synthèse : vitesse, rendement et coût", niveau:"TSTL", icon:"📈", color:"#15803d",
