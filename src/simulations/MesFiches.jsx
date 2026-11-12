@@ -1,14 +1,16 @@
-import { useState, useEffect, useMemo, useSyncExternalStore } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { cardStyle, KIT, styleBouton, stylePetitBouton } from "../commun";
 import { useSession, estEleve } from "../serveur";
 import { surSynchro } from "../etatsParcours";
-import { listerFiches, surChangementFiches } from "../fiches";
+import { listerFiches, surChangementFiches, recolterFiches } from "../fiches";
+import { toutLire } from "../serveur";
+import { tempsParSimulation, estSimulation } from "../suivi";
 import { chapitresDeSim, NIVEAUX_CHAPITRES } from "../chapitres";
 import { Pic } from "../Pictos";
 
 // ═════════════════════════════════════════════════════════════════════════
-//  « MES FICHES » (page cachée n° 102, ouverte depuis Mon compte et depuis les cartes) :
+//  « MES FICHES » (page cachée n° 103, ouverte depuis Mon compte et depuis les cartes) :
 //  la collection des cartes « À retenir » débloquées, rangées par chapitre puis par simulation, à relire pour réviser
 //  et à imprimer (sélection de cartes → feuille A4 sobre, deux colonnes). Les cartes viennent de src/fiches.js.
 // ═════════════════════════════════════════════════════════════════════════
@@ -80,7 +82,25 @@ export function SimulationFiches({ naviguer }) {
   const fiches = useFiches();
   const [choisies, setChoisies] = useState(() => new Set());
   const [niveau, setNiveau] = useState('tous');
-  useSyncExternalStore(() => () => {}, () => 0);   // (réserve : rien à écouter de plus)
+  const [recolte, setRecolte] = useState(null);   // { i, n } pendant la récolte, 'fini' ensuite
+  const eleve = estEleve(sess);
+  const lancerRecolte = async () => {
+    if (recolte && recolte !== 'fini') return;
+    setRecolte({ i: 0, n: 0 });
+    try {
+      const lignes = await toutLire('activites?select=cle,duree_s&order=debut.desc');
+      const ids = tempsParSimulation(lignes.filter(l => estSimulation(l.cle))).filter(a => a.guide > 0 || a.explore > 0 || a.defi > 0).map(a => Number(a.id)).filter(Number.isFinite);
+      await recolterFiches(ids, (i, n) => setRecolte({ i, n }));
+    } catch { /* hors ligne : on garde ce qui est déjà rangé */ }
+    try { window.localStorage.setItem('fiches-recolte-v1-' + (sess?.profil?.identifiant || ''), String(Date.now())); } catch { /* pas grave */ }
+    setRecolte('fini');
+  };
+  // Une première fois, à l'ouverture de la page : retrouver les cartes des simulations déjà travaillées
+  useEffect(() => {
+    if (!eleve) return;
+    let deja = null; try { deja = window.localStorage.getItem('fiches-recolte-v1-' + sess.profil.identifiant); } catch { /* ignoré */ }
+    if (!deja) lancerRecolte();
+  }, [eleve]);   // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { document.body.classList.add('impression-fiches'); return () => document.body.classList.remove('impression-fiches'); }, []);
 
   // chapitre de chaque simulation (le premier qui la contient) ; « autre » sinon
@@ -116,6 +136,13 @@ export function SimulationFiches({ naviguer }) {
         Chaque carte « À retenir » rencontrée dans une simulation vient se ranger ici, avec ses formules et ses schémas. Relis-les tranquillement pour réviser,
         et imprime celles que tu choisis.{estEleve(sess) ? ' Elles te suivent d’un appareil à l’autre.' : ' Sans compte, elles restent sur cet appareil.'}
       </p>
+      {eleve && (
+        <div data-recolte style={{ margin: '0 0 12px', fontSize: 13.5, color: KIT.txt2, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+          {recolte && recolte !== 'fini'
+            ? <span>🔎 Je retrouve tes cartes dans les simulations déjà faites… {recolte.n ? `(${Math.min(recolte.i + 1, recolte.n)} / ${recolte.n})` : ''}</span>
+            : <><span>Il manque des cartes d’une simulation déjà faite ?</span>
+              <button type="button" onClick={lancerRecolte} style={{ background: 'none', border: 'none', color: '#0b4f94', textDecoration: 'underline', cursor: 'pointer', fontSize: 13.5, padding: 0 }}>Retrouver mes cartes</button></>}
+        </div>)}
       {enrichies.length === 0 ? (
         <div style={{ padding: '22px 18px', borderRadius: 16, background: '#f1f6fb', border: '1px dashed #9fb8d4', textAlign: 'center', color: KIT.txt }}>
           <div style={{ fontSize: 34 }} aria-hidden="true">📇</div>

@@ -3,7 +3,7 @@ import { compter } from "./stats";
 import { Pic, Emo } from "./Pictos";
 import { missionEnCours } from "./mission";
 import { chapitresDeSim, ouvrirExercicesDeSim, ouvrirFiches } from "./chapitres";
-import { noterFiche } from "./fiches";
+import { noterFiche, EN_RECOLTE, envoyerRecolte } from "./fiches";
 import { nomsSim } from "./suivi";
 import { enregistrer, noterModification, surChangementServeur } from "./etatsParcours";
 
@@ -408,6 +408,11 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
             style={{ ...btn(peutSuivre, ORANGE_GUIDE), opacity: peutSuivre ? 1 : 0.45 }}>Suivant ▶</button>
         ) : fin}
       </div>
+      {EN_RECOLTE && (
+        <div hidden aria-hidden="true">
+          {etapes.map((e2, k) => (e2.retenir && k <= Math.max(etape, ...Object.keys(etat.reussies || {}).map(Number)))
+            ? <ARetenir key={k} titre={e2.retenirTitre || 'À RETENIR'} titreEtape={e2.titre}>{e2.retenir}</ARetenir> : null)}
+        </div>)}
     </div>
   );
 }
@@ -416,7 +421,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
 
 // Encadré « À RETENIR » : ce que l'élève doit mémoriser (formule, schéma, ordres de grandeur), en quelques lignes très courtes.
 // À son affichage, la carte est rangée dans « Mes fiches » (Mon compte) : l'élève la retrouve, la relit et l'imprime pour réviser.
-export function ARetenir({ titre = 'À RETENIR', children, sansFiche = false }) {
+export function ARetenir({ titre = 'À RETENIR', children, sansFiche = false, titreEtape }) {
   const contenu = useRef(null);
   const [, relire] = useState(0);
   useEffect(() => {
@@ -427,8 +432,10 @@ export function ARetenir({ titre = 'À RETENIR', children, sansFiche = false }) 
       const sim = parseInt(new URLSearchParams(window.location.search).get('sim'));
       const carte = el.closest('[data-retenir]');
       const zone = carte?.parentElement;
-      const etape = (zone?.querySelector('[data-titre-etape]') || null)?.textContent?.trim() || '';
-      const cle = noterFiche({ sim, nomSim: nomsSim[sim] || '', etape: etape || (typeof titre === 'string' ? titre : ''), html: el.innerHTML, texte: el.textContent });
+      const etape = titreEtape || (zone?.querySelector('[data-titre-etape]') || null)?.textContent?.trim() || '';
+      const fiche = { sim, nomSim: nomsSim[sim] || '', etape: etape || (typeof titre === 'string' ? titre : ''), html: el.innerHTML, texte: el.textContent };
+      if (EN_RECOLTE) { envoyerRecolte(fiche); return; }   // cadre de récolte : c'est la page « Mes fiches » qui range la carte
+      const cle = noterFiche(fiche);
       if (cle) relire(n => n + 1);
     }, 700);
     return () => clearTimeout(t);

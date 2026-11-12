@@ -6,6 +6,7 @@ import { Pic, Emo, PictosSprite } from "./Pictos";
 import { ToastRecompense } from "./ToastRecompense";
 import { useSession, restaurer, estEleve, estProf } from "./serveur";
 import { chapitresDuNiveau, confierNavigation } from "./chapitres";
+import { EN_RECOLTE, finRecolte } from "./fiches";
 import { SuiviTemps, nomsSim } from "./suivi";
 import { ModeParDefaut } from "./ModeParDefaut";
 import CadreMission from "./CadreMission";
@@ -282,7 +283,7 @@ const SIMULATIONS = [
   { id:80, label:"Mission Aqua (escape game)", niveau:"COMPTE", icon:"💧", color:"#0b2540", component: SimulationEscapeAqua },
   // Histoire à choix « Une journée au labo » (BTS, d'après le CCF4 : Vinnapas → Orgal) : hors menu, ?sim=81
   // Page d'accueil d'un chapitre (simulations + exercices par compétence) : ?sim=82&chap=<id d'un chapitre de chapitres.js>
-  { id:102, label:"Mes fiches", niveau:"COMPTE", icon:"📇", color:"#be185d", component: SimulationFiches },
+  { id:103, label:"Mes fiches", niveau:"COMPTE", icon:"📇", color:"#be185d", component: SimulationFiches },
   { id:82, label:"Page d'un chapitre", niveau:"COMPTE", icon:"📚", color:"#5b4bdb", component: SimulationChapitre },
   { id:81, label:"Une journée au labo (histoire à choix, BTS)", niveau:"COMPTE", icon:"🧪", color:"#0f766e", component: SimulationHistoireLabo },
 ];
@@ -329,6 +330,14 @@ const MENUS = construireMenus();
 //  COMPOSANT PRINCIPAL
 // ============================================================
 export default function App() {
+  // Cadre invisible de récolte des cartes « À retenir » (voir src/fiches.js) : ouvre le parcours guidé puis l'exploration, puis prévient la page « Mes fiches »
+  useEffect(() => {
+    if (!EN_RECOLTE) return undefined;
+    window.__clicAuto = true;
+    const cliquer = txt => { const b = [...document.querySelectorAll('#zone-simulation button')].find(x => x.textContent.includes(txt) && !x.disabled); if (b) b.click(); };
+    const t = [setTimeout(() => cliquer('Parcours guidé'), 2200), setTimeout(() => cliquer('Exploration libre'), 4200), setTimeout(finRecolte, 6200)];
+    return () => t.forEach(clearTimeout);
+  }, []);
   const getInitialId = () => {
     const params = new URLSearchParams(window.location.search);
     // lien court d'un exercice : ?c=ANA23 (équivaut à ?sim=…&ex=…)
@@ -511,7 +520,7 @@ export default function App() {
                 {idAffiche === 39 ? (estEleve(sessionSb) ? 'Mon profil' : sessionSb?.profil ? 'Mon compte' : 'Se connecter') : active.label}
               </span>
             </h1>
-            {estProf(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 102 && activeId !== 82) && (
+            {estProf(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 && activeId !== 82) && (
               <button data-donner-devoir onClick={() => {
                 try { window.sessionStorage.setItem('devoir-preset', JSON.stringify({ titre: active.label, cles: [`sim:${activeId}`], eleves: [] })); } catch { /* sans mémorisation, le formulaire s'ouvre vide */ }
                 naviguer(40);
@@ -539,10 +548,10 @@ export default function App() {
                 {/* Le fichier App.css du modèle Vite centre tout le texte (#root) : on rétablit l'alignement
                     à gauche pour les simulations ; la page d'accueil garde sa mise en page centrée. */}
                 <BandeauContexte key={`b${activeId}`} id={activeId} contexte={CONTEXTES[activeId]} couleur={active.color} />
-                {(activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 102) && <SuiviTemps simId={activeId} />}
-                {estEleve(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 102) && <ProchaineEtape key={`pe${activeId}`} simId={activeId} naviguer={naviguer} />}
+                {(activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103) && <SuiviTemps simId={activeId} />}
+                {estEleve(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103) && <ProchaineEtape key={`pe${activeId}`} simId={activeId} naviguer={naviguer} />}
                 <div id="zone-simulation"><EnChargement><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></EnChargement></div>
-                {activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 102 ? <ModeParDefaut simId={activeId} cibleId="zone-simulation" /> : null}
+                {activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 ? <ModeParDefaut simId={activeId} cibleId="zone-simulation" /> : null}
               </div>}
         </div>
         <ToastRecompense naviguer={naviguer} />

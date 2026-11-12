@@ -189,7 +189,7 @@ export function TableauTempsSimulations({ lignes, vide = 'Aucun temps enregistrÃ
 function TuileFiches({ naviguer }) {
   const n = listerFiches().length;
   return (
-    <button data-tuile-fiches onClick={() => naviguer(102)} style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', textAlign: 'left', margin: '18px 0 0', padding: '14px 16px', borderRadius: 16,
+    <button data-tuile-fiches onClick={() => naviguer(103)} style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', textAlign: 'left', margin: '18px 0 0', padding: '14px 16px', borderRadius: 16,
       border: '1px solid #f3b6cf', background: 'linear-gradient(135deg,#fff5f9,#fdeaf2)', cursor: 'pointer', color: KIT.txt }}>
       <span aria-hidden="true" style={{ fontSize: 30 }}>ðŸ“‡</span>
       <span style={{ flex: 1 }}>

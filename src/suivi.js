@@ -158,6 +158,7 @@ export function useSignalerMode(mode) {
 }
 
 export function SuiviTemps({ simId }) {
+  if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('recolte')) return null;   // cadre de récolte des fiches : aucun temps compté
   const mode = useSyncExternalStore(f => { abonnes.add(f); return () => abonnes.delete(f); }, () => modeSim);
   useSuivi(`sim:${simId}:${mode || 'libre'}`, false);
   return null;

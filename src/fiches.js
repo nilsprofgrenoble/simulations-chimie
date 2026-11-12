@@ -70,3 +70,34 @@ export function listerFiches() {
   } catch { /* stockage indisponible */ }
   return L.sort((a, b) => (b.t || 0) - (a.t || 0));
 }
+
+// ═════ RÉCOLTE : retrouver les cartes des simulations déjà travaillées ═════
+// Le site ne garde pas le texte des cartes, seulement l'avancement. On rouvre donc chaque simulation travaillée dans un cadre invisible
+// (adresse « ?sim=N&recolte=1 ») qui ne compte aucun temps et qui renvoie les cartes des étapes déjà atteintes à la page « Mes fiches ».
+export const EN_RECOLTE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('recolte');
+export const envoyerRecolte = fiche => { try { window.parent.postMessage({ type: 'fiche-recolte', fiche }, window.location.origin); } catch { /* sans parent : rien à faire */ } };
+export const finRecolte = () => { try { window.parent.postMessage({ type: 'fiche-recolte-fin' }, window.location.origin); } catch { /* idem */ } };
+
+export async function recolterFiches(ids, surAvancee) {
+  let trouvees = 0;
+  for (let i = 0; i < ids.length; i++) {
+    if (surAvancee) surAvancee(i, ids.length);
+    await new Promise(fini => {
+      const cadre = document.createElement('iframe');
+      cadre.setAttribute('aria-hidden', 'true'); cadre.tabIndex = -1;
+      cadre.style.cssText = 'position:fixed;left:-9999px;top:0;width:1100px;height:900px;border:0;visibility:hidden';
+      let fin = false;
+      const terminer = () => { if (fin) return; fin = true; window.removeEventListener('message', ecouter); clearTimeout(garde); cadre.remove(); fini(); };
+      const ecouter = e => {
+        if (e.origin !== window.location.origin || e.source !== cadre.contentWindow || !e.data) return;
+        if (e.data.type === 'fiche-recolte' && e.data.fiche) { if (noterFiche(e.data.fiche)) trouvees++; }
+        else if (e.data.type === 'fiche-recolte-fin') terminer();
+      };
+      const garde = setTimeout(terminer, 15000);
+      window.addEventListener('message', ecouter);
+      cadre.src = `${window.location.pathname}?sim=${ids[i]}&recolte=1`;
+      document.body.appendChild(cadre);
+    });
+  }
+  return trouvees;
+}
