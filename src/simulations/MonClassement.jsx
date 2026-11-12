@@ -22,15 +22,16 @@ const css = `
   .mc button:focus-visible, .mc input:focus-visible { outline: 3px solid #0b4f94; outline-offset: 2px; }
 `;
 
-export function MonClassement({ naviguer }) {
+export function MonClassement({ naviguer, apercu = false }) {
   const sess = useSession();
   const monId = sess?.user?.id;
-  const [etat, setEtat] = useState(undefined);              // undefined : chargement · null : indisponible · { moi, etab, classe }
+  const [etat, setEtat] = useState(apercu ? { moi: { adj: 0, nom: 0, classement: false }, etab: 'Ton établissement', classe: 'Ta classe', exclu: false } : undefined);              // undefined : chargement · null : indisponible · { moi, etab, classe }
   const [version, setVersion] = useState(0);
   const [idees, setIdees] = useState(() => propositions(4));
-  const [change, setChange] = useState(false), [occupe, setOccupe] = useState(false), [msg, setMsg] = useState('');
+  const [change, setChange] = useState(false), [occupe, setOccupe] = useState(apercu), [msg, setMsg] = useState('');
 
   useEffect(() => {
+    if (apercu) return undefined;      // aperçu du professeur : exemple fixe, rien n'est lu ni écrit
     let vivant = true;
     (async () => {
       try {
@@ -41,7 +42,7 @@ export function MonClassement({ naviguer }) {
       } catch { if (vivant) setEtat(null); }      // script SQL 13 pas encore appliqué, réseau coupé… : on n'affiche rien
     })();
     return () => { vivant = false; };
-  }, [version]);
+  }, [version, apercu]);
 
   if (!etat) return null;
   const recharger = () => setVersion(v => v + 1);
@@ -101,6 +102,7 @@ export function MonClassement({ naviguer }) {
               <button type="button" className="mc-lien" onClick={() => { setIdees(propositions(4)); setChange(true); }}>Changer de pseudo</button>
             </div>
           </>)}
+        {apercu && <div className="mc-msg" style={{ color: '#475569' }}>Aperçu : chez un vrai élève, la case est cliquable et le pseudo se choisit dans une liste.</div>}
         {msg && <div className="mc-msg" role="alert">{msg}</div>}
       </div>
     </section>);
