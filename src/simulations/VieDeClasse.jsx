@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { rest, useSession } from "../serveur";
 import { PROUESSES, MAX_PAR_ELEVE, pseudo, pseudoValide, propositions, progressionSemaine, lundiDe } from "../classe";
+import { ChoixDomaine } from "./ChoixDomaine";
 import { Pic } from "../Pictos";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -28,6 +29,7 @@ export function VieDeClasse({ lignes, apercu }) {
   const classeId = sess?.profil?.classe_id, monId = sess?.user?.id;
   const [semaine, setSemaine] = useState(apercu?.semaine ?? null);          // null : chargement ou indisponible
   const [moi, setMoi] = useState(apercu?.moi ?? null);                  // null : pas de pseudo
+  const [domaine, setDomaine] = useState('tout');
   const [idees, setIdees] = useState(() => propositions(4));
   const [msg, setMsg] = useState(''), [occupe, setOccupe] = useState(false), [mont, setMont] = useState(false);
   const [version, setVersion] = useState(0);             // augmente après chaque enregistrement : relit le serveur
@@ -52,7 +54,7 @@ export function VieDeClasse({ lignes, apercu }) {
       recharger();
     } catch (e) {
       setMsg(e.statut === 409 ? 'Ce pseudo vient d’être pris dans ta classe : choisis-en un autre.' : `Impossible d’enregistrer : ${e.message}`);
-      setIdees(propositions(4));
+      setIdees(propositions(4, Math.random, [], domaine));
     }
     setOccupe(false);
   };
@@ -173,10 +175,11 @@ export function VieDeClasse({ lignes, apercu }) {
           <div style={{ fontSize: 14, color: '#475569' }}>Tu n’en as pas encore. C’est facultatif : choisis-en un pour pouvoir apparaître dans les prouesses.</div>
         )}
         <div style={{ fontSize: 13, fontWeight: 700, margin: '10px 0 6px', color: '#475569' }}>{monPseudo ? 'Changer de pseudo :' : 'Choisis ton pseudo :'}</div>
+        <ChoixDomaine valeur={domaine} disabled={occupe} onChange={d => { setDomaine(d); setIdees(propositions(4, Math.random, [], d)); }} />
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {idees.map(([a, n]) => { const ps = pseudo(a, n); return (
             <button key={`${a}-${n}`} className="vc-idee" disabled={occupe} onClick={() => choisir(a, n)}><span aria-hidden="true">{ps.icone}</span>{ps.texte}</button>); })}
-          <button className="vc-idee" style={{ borderStyle: 'dashed' }} disabled={occupe} onClick={() => setIdees(propositions(4))}>🎲 Autres idées</button>
+          <button className="vc-idee" style={{ borderStyle: 'dashed' }} disabled={occupe} onClick={() => setIdees(propositions(4, Math.random, [], domaine))}>🎲 Autres idées</button>
         </div>
         {msg && <div role="alert" style={{ color: '#b91c1c', fontWeight: 600, fontSize: 13.5, marginTop: 8 }}><Pic n="ko"/>{msg}</div>}
         <div style={{ fontSize: 12.5, color: '#64748b', marginTop: 10, lineHeight: 1.45 }}>
