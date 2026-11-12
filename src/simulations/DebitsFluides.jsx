@@ -419,7 +419,7 @@ export function SimulationDebits({ naviguer }) {
         <div>Les <strong>unités</strong> se traitent comme des nombres : elles se multiplient, se divisent et <strong>se simplifient</strong>. Pour convertir, on multiplie par une <strong>fraction égale à 1</strong>, placée pour que l’unité à faire disparaître se simplifie.</div>
         <Formule><mn>4</mn><mtext> min</mtext><mo>×</mo><mfrac><mrow><mn>60</mn><mtext> s</mtext></mrow><mrow><mn>1</mn><mtext> min</mtext></mrow></mfrac><mo>=</mo><mn>240</mn><mtext> s</mtext></Formule>
         <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Grandeur</th><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Équivalences</th></tr></thead>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Grandeur</th><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Équivalences</th></tr></thead>
           <tbody>
             <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Temps</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 min = 60 s ; 1 h = 60 min = 3&nbsp;600 s</td></tr>
             <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Masse</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 kg = 1&nbsp;000 g ; 1 t = 1&nbsp;000 kg</td></tr>
@@ -501,7 +501,7 @@ export function SimulationDebits({ naviguer }) {
           <li>1 m³ = 1&nbsp;000 L : <strong>1 L d’eau pèse 1 kg</strong> ; 1 L d’huile d’olive pèse 0,920 kg.</li>
         </ul>
         <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Fluide</th><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>d</th><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>ρ (kg·m⁻³)</th></tr></thead>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Fluide</th><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>d</th><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>ρ (kg·m⁻³)</th></tr></thead>
           <tbody>
             <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>eau</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1&nbsp;000</td></tr>
             <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>huile d’olive</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,92</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>920</td></tr>
@@ -579,7 +579,7 @@ export function SimulationDebits({ naviguer }) {
       retenirTitre: 'À RETENIR : LES HYPOTHÈSES DE LA MESURE',
       retenir: <>
         <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Hypothèse</th><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>À quoi elle sert</th><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Si elle est fausse</th></tr></thead>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Hypothèse</th><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>À quoi elle sert</th><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Si elle est fausse</th></tr></thead>
           <tbody>
             <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Débit constant</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>m / Δt est le débit moyen sur Δt. Il ne représente « le » débit qu’en régime permanent.</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Le résultat dépend de la durée choisie.</td></tr>
             <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Fluide incompressible</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ρ est la même partout et ne change pas : Q<sub>m</sub> = ρ·Q<sub>v</sub> et m = ρ·V sont valables.</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Conversion masse ↔ volume fausse.</td></tr>

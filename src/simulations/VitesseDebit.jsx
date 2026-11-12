@@ -294,7 +294,7 @@ export function SimulationVitesseDebit({ naviguer }) {
       retenir: <>
         <div>Pour obtenir une vitesse en m·s⁻¹, il faut <strong>Q<sub>v</sub> en m³·s⁻¹</strong> et S en m².</div>
         <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Débit</th><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>En m³·s⁻¹</th></tr></thead>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Débit</th><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>En m³·s⁻¹</th></tr></thead>
           <tbody>
             <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>1 L·s⁻¹</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>10⁻³ m³·s⁻¹ (1 L = 1 dm³ = 10⁻³ m³)</td></tr>
             <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>1 L·min⁻¹</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>10⁻³ / 60 m³·s⁻¹ ≈ 1,67 × 10⁻⁵ m³·s⁻¹</td></tr>
@@ -388,7 +388,7 @@ export function SimulationVitesseDebit({ naviguer }) {
       retenirTitre: 'À RETENIR : LES HYPOTHÈSES DU RAISONNEMENT',
       retenir: <>
         <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Hypothèse</th><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Ce qu’elle permet</th><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Si elle est fausse</th></tr></thead>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Hypothèse</th><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Ce qu’elle permet</th><th style={{ padding: '2px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Si elle est fausse</th></tr></thead>
           <tbody>
             <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Incompressible</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ρ est constante, donc la conservation du débit massique devient celle du débit volumique : v₁S₁ = v₂S₂.</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Gaz comprimé : v₁S₁ ≠ v₂S₂.</td></tr>
             <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Régime permanent</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Q<sub>v</sub> et les vitesses ne changent pas avec le temps.</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Du fluide s’accumule ou se vide entre les deux sections.</td></tr>
