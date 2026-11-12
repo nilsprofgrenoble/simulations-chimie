@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { cardStyle, KIT, styleBouton, stylePetitBouton } from "../commun";
-import { useSession, estEleve } from "../serveur";
+import { useSession, estEleve, estProf } from "../serveur";
 import { surSynchro } from "../etatsParcours";
-import { listerFiches, surChangementFiches, recolterFiches, lireFigure, simsTerminees } from "../fiches";
+import { listerFiches, surChangementFiches, recolterFiches, lireFigure, simsTerminees, lireConsult, garderConsult, oublierConsult } from "../fiches";
 import { toutLire } from "../serveur";
 import { tempsParSimulation, estSimulation, nomsSim, simsCachees } from "../suivi";
 import { chapitresDeSim, chapitreDe, NIVEAUX_CHAPITRES } from "../chapitres";
@@ -94,6 +94,20 @@ export function SimulationFiches({ naviguer }) {
   const [bilanRecolte, setBilanRecolte] = useState(null);   // après une récupération : pourquoi telle simulation n'a pas de fiche
   const [recolte, setRecolte] = useState(null);   // { i, n } pendant la récolte, 'fini' ensuite
   const eleve = estEleve(sess);
+  const prof = estProf(sess);
+  // Espace enseignant : les fiches de TOUTES les simulations, sans avoir fait les parcours (rendues en arrière-plan, gardées à part de la collection d'un élève)
+  const [consult, setConsult] = useState(null);   // { cartes, t }
+  const [chargeConsult, setChargeConsult] = useState(null);   // { i, n } pendant le chargement
+  useEffect(() => { if (prof) setConsult(c => c || lireConsult()); }, [prof]);
+  const lancerConsult = async () => {
+    if (chargeConsult) return;
+    const ids = [...SIMS_AVEC_CARTES].filter(id => !simsCachees.has(id)).sort((a, b) => a - b);
+    const cartes = [];
+    setChargeConsult({ i: 0, n: ids.length });
+    try { await recolterFiches(ids, (i, n) => setChargeConsult({ i, n }), { consult: true, cartes, parallele: 3 }); } catch { /* hors ligne : on garde ce qui est arrivé */ }
+    if (cartes.length) { const t = garderConsult(cartes); setConsult({ cartes, t }); }
+    setChargeConsult(null);
+  };
   const lancerRecolte = async () => {
     if (recolte && recolte !== 'fini') return;
     setRecolte({ i: 0, n: 0 });
@@ -126,15 +140,20 @@ export function SimulationFiches({ naviguer }) {
 
   const libNiv = k => (k === 'tous' ? 'Tous' : k === 'autre' ? 'Autres' : NIVEAUX_CHAPITRES.find(n => n.key === k)?.label || k);
   // une fiche par simulation, ses points dans l'ordre des étapes du parcours (rang de l'étape ; à défaut, date de première vue)
+  const fichesAff = useMemo(() => {
+    if (!consult) return fiches;
+    const simsConsult = new Set(consult.cartes.map(f => f.sim));
+    return [...fiches.filter(f => !simsConsult.has(f.sim)), ...consult.cartes];
+  }, [fiches, consult]);
   const groupes = useMemo(() => {
     const m = new Map();
-    fiches.forEach(f => {
+    fichesAff.forEach(f => {
       if (!m.has(f.sim)) { const c = chapitresDeSim(f.sim)[0]; m.set(f.sim, { sim: f.sim, nom: f.nom || `Simulation ${f.sim}`, chap: c ? c.id : 'autre', chapLabel: c ? c.label : 'Autres simulations', niv: c ? c.niveau : 'autre', libNiv: libNiv(c ? c.niveau : 'autre'), L: [] }); }
       m.get(f.sim).L.push(f);
     });
     m.forEach(g => g.L.sort((a, b) => (Number.isFinite(a.ordre) ? a.ordre : 1e6) - (Number.isFinite(b.ordre) ? b.ordre : 1e6) || (a.t0 || 0) - (b.t0 || 0)));
     return [...m.values()];
-  }, [fiches]);   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fichesAff]);   // eslint-disable-line react-hooks/exhaustive-deps
   const visibles = groupes.filter(g => niveau === 'tous' || g.niv === niveau);
   const chapitres = useMemo(() => {
     const m = new Map();
@@ -166,6 +185,17 @@ export function SimulationFiches({ naviguer }) {
         Quand tu as <b>terminé le parcours guidé</b> d’une simulation (ou réussi son défi), sa fiche vient se ranger ici : le schéma de la simulation et les points « À retenir » de chaque étape, avec leurs formules.
         Relis-les pour réviser, et imprime celles que tu choisis.{eleve ? ' Elles te suivent d’un appareil à l’autre.' : ' Sans compte, elles restent sur cet appareil.'}
       </p>
+      {prof && (
+        <div data-consult-prof style={{ margin: '0 0 12px', padding: '10px 14px', borderRadius: 12, background: '#f1f6fb', border: '1px solid #9fb8d4', fontSize: 14, color: KIT.txt, lineHeight: 1.5 }}>
+          <b>Espace enseignant</b> : consultez et imprimez les fiches de toutes les simulations, sans refaire les parcours. Le chargement se fait en arrière-plan (quelques minutes) et reste sur cet appareil ; il n’a aucun effet sur le suivi des élèves.
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}>
+            {chargeConsult
+              ? <span>🔎 Chargement des fiches… {chargeConsult.i} / {chargeConsult.n} simulations</span>
+              : <button type="button" data-charger-consult onClick={lancerConsult} style={styleBouton(true, '#0b4f94')}><Pic n="clipboard"/>{consult ? 'Recharger toutes les fiches' : 'Charger toutes les fiches'}</button>}
+            {consult && !chargeConsult && <span style={{ color: KIT.txt2, fontSize: 13 }}>{new Set(consult.cartes.map(f => f.sim)).size} simulations chargées le {new Date(consult.t).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</span>}
+            {consult && !chargeConsult && <button type="button" onClick={() => { oublierConsult(); setConsult(null); }} style={{ background: 'none', border: 'none', color: '#0b4f94', textDecoration: 'underline', cursor: 'pointer', fontSize: 13, padding: 0 }}>Effacer</button>}
+          </div>
+        </div>)}
       {eleve && (
         <div data-recolte style={{ margin: '0 0 12px', fontSize: 13.5, color: KIT.txt2, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
           {recolte && recolte !== 'fini'
