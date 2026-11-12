@@ -6,7 +6,7 @@ import { surSynchro } from "../etatsParcours";
 import { listerFiches, surChangementFiches, recolterFiches, lireFigure, simsTerminees, lireConsult, garderConsult, oublierConsult } from "../fiches";
 import { toutLire } from "../serveur";
 import { tempsParSimulation, estSimulation, nomsSim, simsCachees } from "../suivi";
-import { chapitresDeSim, chapitreDe, NIVEAUX_CHAPITRES } from "../chapitres";
+import { chapitresDeSim, chapitreDe, chapitresDuNiveau, NIVEAUX_CHAPITRES } from "../chapitres";
 import { SIMS_AVEC_CARTES } from "../simsAvecCartes";
 import { Pic } from "../Pictos";
 
@@ -99,13 +99,18 @@ export function SimulationFiches({ naviguer }) {
   const [consult, setConsult] = useState(null);   // { cartes, t }
   const [chargeConsult, setChargeConsult] = useState(null);   // { i, n } pendant le chargement
   useEffect(() => { if (prof) setConsult(c => c || lireConsult()); }, [prof]);
-  const lancerConsult = async () => {
-    if (chargeConsult) return;
-    const ids = [...SIMS_AVEC_CARTES].filter(id => !simsCachees.has(id)).sort((a, b) => a - b);
+  const avecCartes = ids => [...new Set(ids)].filter(id => SIMS_AVEC_CARTES.has(id) && !simsCachees.has(id)).sort((x, y) => x - y);
+  const simsDuNiveau = k => avecCartes(chapitresDuNiveau(k).flatMap(c => c.sims));
+  const lancerConsult = async ids => {
+    if (chargeConsult || !ids.length) return;
     const cartes = [];
     setChargeConsult({ i: 0, n: ids.length });
     try { await recolterFiches(ids, (i, n) => setChargeConsult({ i, n }), { consult: true, cartes, parallele: 3 }); } catch { /* hors ligne : on garde ce qui est arrivé */ }
-    if (cartes.length) { const t = garderConsult(cartes); setConsult({ cartes, t }); }
+    if (cartes.length) {
+      const nouvelles = new Set(cartes.map(f => f.sim));
+      const tout = [...(consult?.cartes || []).filter(f => !nouvelles.has(f.sim)), ...cartes];   // les simulations rechargées remplacent les anciennes, les autres sont gardées
+      setConsult({ cartes: tout, t: garderConsult(tout) });
+    }
     setChargeConsult(null);
   };
   const lancerRecolte = async () => {
@@ -187,11 +192,19 @@ export function SimulationFiches({ naviguer }) {
       </p>
       {prof && (
         <div data-consult-prof style={{ margin: '0 0 12px', padding: '10px 14px', borderRadius: 12, background: '#f1f6fb', border: '1px solid #9fb8d4', fontSize: 14, color: KIT.txt, lineHeight: 1.5 }}>
-          <b>Espace enseignant</b> : consultez et imprimez les fiches de toutes les simulations, sans refaire les parcours. Le chargement se fait en arrière-plan (quelques minutes) et reste sur cet appareil ; il n’a aucun effet sur le suivi des élèves.
+          <b>Espace enseignant</b> : consultez et imprimez les fiches de toutes les simulations, sans refaire les parcours. Choisissez un niveau, un chapitre, ou tout : le chargement se fait en arrière-plan (quelques secondes par chapitre, quelques minutes pour tout) et reste sur cet appareil ; il n’a aucun effet sur le suivi des élèves.
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}>
             {chargeConsult
               ? <span>🔎 Chargement des fiches… {chargeConsult.i} / {chargeConsult.n} simulations</span>
-              : <button type="button" data-charger-consult onClick={lancerConsult} style={styleBouton(true, '#0b4f94')}><Pic n="clipboard"/>{consult ? 'Recharger toutes les fiches' : 'Charger toutes les fiches'}</button>}
+              : <>
+                  <span style={{ fontWeight: 700 }}>Charger :</span>
+                  {NIVEAUX_CHAPITRES.map(n => <button key={n.key} type="button" data-charger-niveau={n.key} onClick={() => lancerConsult(simsDuNiveau(n.key))} style={stylePetitBouton(false)}>{n.label}</button>)}
+                  <select aria-label="Charger un chapitre" data-charger-chapitre value="" onChange={e => { const c = chapitreDe(e.target.value); if (c) lancerConsult(avecCartes(c.sims)); }} style={{ padding: '4px 8px', borderRadius: 8, border: '1px solid #9fb8d4', fontSize: 13.5 }}>
+                    <option value="">Un chapitre…</option>
+                    {NIVEAUX_CHAPITRES.map(n => <optgroup key={n.key} label={n.label}>{chapitresDuNiveau(n.key).filter(c => avecCartes(c.sims).length).map(c => <option key={c.id} value={c.id}>{c.label}</option>)}</optgroup>)}
+                  </select>
+                  <button type="button" data-charger-consult onClick={() => lancerConsult(avecCartes([...SIMS_AVEC_CARTES]))} style={styleBouton(true, '#0b4f94')}><Pic n="clipboard"/>Tout charger</button>
+                </>}
             {consult && !chargeConsult && <span style={{ color: KIT.txt2, fontSize: 13 }}>{new Set(consult.cartes.map(f => f.sim)).size} simulations chargées le {new Date(consult.t).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</span>}
             {consult && !chargeConsult && <button type="button" onClick={() => { oublierConsult(); setConsult(null); }} style={{ background: 'none', border: 'none', color: '#0b4f94', textDecoration: 'underline', cursor: 'pointer', fontSize: 13, padding: 0 }}>Effacer</button>}
           </div>
