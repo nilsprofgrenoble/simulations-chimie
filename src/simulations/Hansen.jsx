@@ -98,7 +98,6 @@ export function Simulation4({ plotlyReady }) {
   const [vol, setVol] = useState({ ea: 50, ba: 0, etoh: 50, ipa: 0 });
   const [testes, setTestes] = useState({});
   const [vue, setVue] = useState('carte');
-  const [vuHansen, setVuHansen] = useState(false);
   const [ouverts, setOuverts] = useState({ mel: true, hypo: true, sech: true });
   const [defi, setDefi] = useState(null);
 
@@ -170,11 +169,10 @@ export function Simulation4({ plotlyReady }) {
         les mouiller (les rendre moins inflammables au transport), et comme diluant.</>,
       tache: { type: 'qcm', q: 'Comment l’expliquer ?', options: ['Près de la frontière de la sphère, la prévision est incertaine, et les paramètres dépendent du grade de nitrocellulose', 'Le calcul est faux', 'L’isopropanol est toujours un bon solvant'], bonne: 0,
         expl: 'Le modèle de Hansen prévoit bien la tendance, mais pas avec certitude près de RED = 1. Il faut toujours vérifier au laboratoire.', indice: "Que dire d’une prévision très proche de la limite RED = 1 ? Les paramètres du modèle sont-ils exacts pour tous les grades du polymère ?" } },
-    { id: 'source', titre: 'Une autre source de données', focus: ['poly'],
-      texte: <>Les paramètres de la nitrocellulose ne sont pas universels. Dans le cadre « Le polymère », choisissez « moyenne citée par Hansen » (16,2 ; 14,1 ; 9,5 ;
-        R0 = 10,7) et regardez les RED.</>,
-      tache: { type: 'qcm', q: 'Avec ces valeurs, l’acétate de butyle a un RED de 1,02. Que conclure ?', options: ['La prévision dépend des données choisies : seule une mesure sur le grade réellement utilisé tranche', 'L’acétate de butyle ne dissout pas la nitrocellulose', 'Les deux sources sont fausses'], bonne: 0,
-        bloque: vuHansen ? null : 'Choisissez d’abord l’autre jeu de paramètres.',
+    { id: 'source', titre: 'Une autre source de données', focus: [],
+      texte: <>Les paramètres de la nitrocellulose ne sont pas universels : ils dépendent du grade et de la source. Dans tout ce parcours, on utilise les données du TP (δ<sub>d</sub> = 17 ; δ<sub>p</sub> = 8,7 ; δ<sub>h</sub> = 9,3 ; R<sub>0</sub> = 9,0).
+        Une autre source, la moyenne de valeurs citées par Hansen, donne δ<sub>d</sub> = 16,2 ; δ<sub>p</sub> = 14,1 ; δ<sub>h</sub> = 9,5 et R<sub>0</sub> = 10,7. Pour l’acétate de butyle, le RED vaut {fmt(redOf('ba'), 2)} avec les données du TP et {fmt(redOf('ba', POLYMERES.hansen), 2)} avec celles de Hansen.</>,
+      tache: { type: 'qcm', q: `Avec les données de Hansen, l’acétate de butyle a un RED de ${fmt(redOf('ba', POLYMERES.hansen), 2)}. Que conclure ?`, options: ['La prévision dépend des données choisies : seule une mesure sur le grade réellement utilisé tranche', 'L’acétate de butyle ne dissout pas la nitrocellulose', 'Les deux sources sont fausses'], bonne: 0,
         expl: 'En pratique, l’acétate de butyle est l’un des solvants les plus utilisés pour les vernis à la nitrocellulose : les données du TP décrivent mieux ce grade.', indice: "Un RED très proche de 1 donne-t-il une prévision fiable ? Que faut-il faire pour trancher ?" } },
     { id: 'bravo1', titre: 'Bravo !', focus: [],
       texte: <>Vous savez situer un solvant par rapport à la sphère de solubilité, et vous connaissez les limites de la prévision. Parcours suivant : « Les mélanges ».</>, tache: null },
@@ -260,7 +258,8 @@ export function Simulation4({ plotlyReady }) {
   const hl = id => enGuide && et.focus.includes(id);
   const cadre = id => (hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3 } : {});
   useEffect(() => { if (enGuide && parc === 1 && etape === loc('tester')) setTestes({}); }, [etape, enGuide, parc]);
-  useEffect(() => { if (polyId === 'hansen') setVuHansen(true); }, [polyId]);
+  // Dans le parcours guidé, les données de la nitrocellulose sont toujours celles du TP (les questions en dépendent)
+  useEffect(() => { if (enGuide && polyId !== 'tp') setPolyId('tp'); }, [enGuide, polyId]);
   // Dans le parcours 1, le solvant « testé » est affiché ; ailleurs, tous les solvants sont visibles
   const montrerPoint = k => !enGuide || parc > 1 || etape > loc('tester') || testes[k];
   const points = Object.entries(SOLVANTS).filter(([k]) => montrerPoint(k)).map(([k, s]) => ({ ...s, k }));
@@ -293,7 +292,7 @@ export function Simulation4({ plotlyReady }) {
   const blocPoly = (
     <div style={{ ...styleBoite, ...cadre('poly') }}>
       <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Le polymère : nitrocellulose</div>
-      {(!enGuide || parc > 1 || etape >= loc('source')) && <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 6 }}>
+      {!enGuide && <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 6 }}>
         {Object.entries(POLYMERES).map(([k, q]) => <button key={k} onClick={() => setPolyId(k)} style={stylePetitBouton(polyId === k, '#15803d')}>{q.nom}</button>)}
       </div>}
       <div style={{ fontSize: 13.5, color: KIT.txt }}>δd = {fmt(P.d, 1)} ; δp = {fmt(P.p, 1)} ; δh = {fmt(P.h, 1)} ; R0 = {fmt(P.R0, 1)} MPa½</div>
