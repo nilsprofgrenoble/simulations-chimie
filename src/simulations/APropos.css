@@ -1,0 +1,25 @@
+/* Page « À propos » : même habillage que l'accueil (AccueilBlocs.css). */
+.ap { max-width: 1100px; margin: 0 auto; width: 100%; padding: 8px 0 24px; display: flex; flex-direction: column; gap: 14px; font-family: Inter, system-ui, Arial; text-align: left; }
+.ap-hero { background: #fff; border: 1px solid #d5dfeb; border-radius: 28px; padding: 30px; display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 32px; align-items: start; }
+.ap-photo { width: 200px; height: 200px; border-radius: 50%; object-fit: cover; border: 5px solid #f5a31a; display: block; }
+.ap-etiquette { display: block; font: 700 13px Inter, system-ui, sans-serif; letter-spacing: .09em; text-transform: uppercase; color: #0b4f94; margin-bottom: 10px; }
+.ap h1 { font: 800 clamp(30px, 5vw, 52px)/1.12 'Outfit', sans-serif; letter-spacing: -.03em; margin: 0 0 18px; color: #0c1a2e; text-wrap: balance; }
+.ap h1 mark { background: #f5a31a; color: #3a2500; padding: 0 .12em; border-radius: .16em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.ap-hero h2 { font: 800 19px 'Outfit', sans-serif; margin: 16px 0 4px; color: #0c1a2e; }
+.ap-hero p { margin: 0; color: #3d4d63; font-size: 16px; line-height: 1.65; max-width: 62ch; }
+.ap-bouton { display: inline-flex; align-items: center; margin-top: 18px; border-radius: 14px; padding: 12px 20px; font: 800 15px Inter, system-ui, sans-serif; text-decoration: none; background: #0b4f94; color: #fff; }
+.ap-bouton:hover { background: #093f78; }
+.ap-titre-section { margin: 22px 4px 0; }
+.ap-titre-section h2 { font: 800 clamp(24px, 3.4vw, 32px)/1.1 'Outfit', sans-serif; letter-spacing: -.02em; margin: 0; color: #0c1a2e; }
+.ap-grille { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.ap-pers, .ap-carte { background: #fff; border: 1px solid #d5dfeb; border-radius: 28px; padding: 24px; min-width: 0; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.ap-pers h4, .ap-carte h3 { font: 800 19px 'Outfit', sans-serif; margin: 0; color: #0c1a2e; }
+.ap-pers .ap-role { font-size: 13px; font-weight: 700; color: #0b4f94; }
+.ap-pers p, .ap-carte p { margin: 0; color: #3d4d63; font-size: 14.5px; line-height: 1.6; overflow-wrap: anywhere; }
+.ap-pers code { font-size: 12.5px; }
+@media (max-width: 900px) {
+  .ap-hero { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .ap-photo { width: 140px; height: 140px; }
+  .ap-grille { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 480px) { .ap-hero, .ap-pers, .ap-carte { border-radius: 22px; padding: 20px; } }
