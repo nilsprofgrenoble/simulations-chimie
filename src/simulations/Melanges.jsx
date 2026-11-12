@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, avecIndices, IndiceDefi } from "../commun";
 import { fr, LIQUIDES, COLORANTS, miscible, goutte, D_HUILE, SHA, shaEau, D_EAU } from "./solutionsModele";
 import { Pic } from "../Pictos";
@@ -177,6 +177,28 @@ export function SimulationMelanges() {
   const goutteVoir = (Ve, Va) => { setAtelier('goutte'); setG({ Ve, Va }); };
   const ETAPES = [
     { id: 'miscible', titre: 'Miscibles ou non ?', depart: () => tube('eau', 'alcool'),
+      retenirTitre: 'À RETENIR : MISCIBILITÉ ET SOLUBILITÉ',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Deux liquides…</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>On observe</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Exemple</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>miscibles</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>un seul liquide (mélange homogène)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>eau + alcool</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>non miscibles</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>deux couches (mélange hétérogène)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>huile + eau</td></tr>
+          </tbody>
+        </table>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Colorant (solide)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Soluble dans l’eau ?</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Soluble dans l’huile ?</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Soluble dans l’alcool ?</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>bleu de méthylène</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>oui</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>non</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>oui</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>rouge Soudan</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>non</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>oui</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>oui</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>« <strong>Miscible</strong> » s’emploie pour deux <strong>liquides</strong> ; « <strong>soluble</strong> » pour un <strong>solide</strong> (ou un gaz) qui se dissout dans un liquide.</li>
+          <li>Un colorant colore le liquide qui le dissout : le bleu de méthylène colore l’eau, le rouge Soudan colore l’huile.</li>
+          <li><strong>Hypothèse :</strong> l’huile végétale est supposée très peu miscible à l’éthanol à 20 °C.</li>
+        </ul>
+      </>,
       texte: <>Quand on mélange deux liquides, on obtient soit un seul liquide (<strong>mélange homogène</strong>), soit deux couches (<strong>mélange hétérogène</strong>). Deux liquides qui donnent un mélange homogène sont <strong>miscibles</strong>.
         <ExempleResolu>Huile + eau : on voit <strong>deux couches</strong> : mélange hétérogène, l’huile n’est <strong>pas miscible</strong> à l’eau. Eau + alcool : un seul liquide : mélange homogène, <strong>miscibles</strong>.
           {bouton('Voir huile + eau', () => tube('huile', 'eau'))}{' '}{bouton('Voir eau + alcool', () => tube('eau', 'alcool'))}</ExempleResolu>
@@ -189,6 +211,24 @@ export function SimulationMelanges() {
         À vous : ajoutez du <strong>rouge Soudan</strong> au tube huile + eau.</>,
       tache: { type: 'qcm', q: 'Où va le rouge Soudan (voir le tube : colorant ajouté, couche colorée) ?', options: ['Il est soluble dans l’huile : il colore l’huile', 'Il est soluble dans l’eau : il colore l’eau', 'Il est soluble dans les deux', 'Il n’est soluble dans aucun des deux'], bonne: 0, expl: 'Le rouge Soudan colore la couche d’huile : il est soluble dans l’huile, pas dans l’eau.', indice: "Le colorant se retrouve dans le liquide qui le dissout. Observe sur le tube quelle couche est colorée." } },
     { id: 'rho', titre: 'Masse volumique et densité', depart: null,
+      retenirTitre: 'À RETENIR : MASSE VOLUMIQUE ET DENSITÉ',
+      retenir: <>
+        <Formule><mi>ρ</mi><mo>=</mo><mfrac><mi>m</mi><mi>V</mi></mfrac><mspace width="1.5em"/><mi>d</mi><mo>=</mo><mfrac><mi>ρ</mi><msub><mi>ρ</mi><mtext>eau</mtext></msub></mfrac><mspace width="1.5em"/><msub><mi>ρ</mi><mtext>eau</mtext></msub><mo>=</mo><mn>1000</mn><mtext> g·L⁻¹</mtext></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Liquide</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>ρ (g/L)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>d (sans unité)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>eau</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1000</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,0</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>huile</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>900</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,9</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>alcool (éthanol)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>800</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,8</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Masse volumique ρ</strong> : masse de 1 L du liquide (m en g, V en L, ρ en g·L⁻¹). La <strong>densité d</strong> compare à l’eau : elle n’a <strong>pas d’unité</strong>.</li>
+          <li><strong>Exemple :</strong> huile, 90 g dans 100 mL : ρ = 90 / 0,100 = 900 g·L⁻¹ ; d = 900 / 1000 = <strong>0,9</strong>.</li>
+          <li><strong>Exemple :</strong> alcool, 40 g dans 50 mL = 0,050 L : ρ = 800 g·L⁻¹ ; d = <strong>0,8</strong>.</li>
+          <li><strong>Piège :</strong> convertir les mL en L avant de diviser ; ne pas confondre ρ (en g/L) et d.</li>
+        </ul>
+      </>,
       texte: <>La <strong>masse volumique</strong> d’un liquide est <strong>ρ = m / V</strong> (en g/L). Sa <strong>densité</strong> compare à l’eau : <strong>d = ρ / ρ<sub>eau</sub></strong> (sans unité, avec ρ<sub>eau</sub> = 1000 g/L).
         <ExempleResolu>L’huile : 90 g pour 100 mL = 0,100 L : ρ = 90 / 0,100 = 900 g/L ; d = 900 / 1000 = <strong>0,9</strong>.</ExempleResolu>
         À vous : un alcool de masse 40 g occupe 50 mL.</>,
@@ -198,6 +238,22 @@ export function SimulationMelanges() {
           'Deuxième étape : la densité d = ρ / ρ_eau = 800 / 1000 = 0,8 (sans unité).'],
         pieges: [[800, 'Ça, c’est ρ en g/L : la densité s’obtient en divisant par 1000 g/L.'], [0.0008, 'Convertis d’abord 50 mL en litres.'], [50 / 40, 'Tu as divisé le volume par la masse. Il faut diviser la masse par le volume : ρ = m / V.']], expl: 'ρ = 40 / 0,050 = 800 g/L ; d = 800 / 1000 = 0,80.', indice: "Densité = masse volumique du liquide ÷ masse volumique de l’eau. Calcule d’abord ρ = m / V (avec V converti en litres)." } },
     { id: 'superpose', titre: 'Dans quel ordre se superposent-ils ?', depart: () => tube('huile', 'eau'),
+      retenirTitre: 'À RETENIR : LIQUIDES NON MISCIBLES',
+      retenir: <>
+        <svg viewBox="0 0 300 150" role="img" aria-label="Tube à essais contenant deux liquides non miscibles : l’huile, de densité 0,9, flotte au-dessus de l’eau, de densité 1,0" style={{ width: '100%', maxWidth: 320, height: 'auto', display: 'block', margin: '6px auto' }}>
+          <clipPath id="tubeSup"><path d="M 110 12 L 110 110 Q 110 138 140 138 Q 170 138 170 110 L 170 12 Z" /></clipPath>
+          <g clipPath="url(#tubeSup)"><rect x="100" y="52" width="80" height="48" fill="#fde68a" /><rect x="100" y="100" width="80" height="50" fill="#bae6fd" /></g>
+          <path d="M 110 12 L 110 110 Q 110 138 140 138 Q 170 138 170 110 L 170 12" fill="none" stroke="#334155" strokeWidth="2.4" />
+          <text x="180" y="80" fontSize="11.5" fill="#92400e" fontWeight="700">huile (d = 0,9)</text><text x="180" y="122" fontSize="11.5" fill="#0369a1" fontWeight="700">eau (d = 1,0)</text>
+          <line x1="100" y1="110" x2="100" y2="58" stroke="#475569" strokeWidth="2.2" /><polygon points="100,52 94,64 106,64" fill="#475569" />
+          <text x="90" y="84" fontSize="11" textAnchor="end" fill="#334155" fontWeight="700">moins dense :</text><text x="90" y="98" fontSize="11" textAnchor="end" fill="#334155" fontWeight="700">au-dessus</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Deux liquides <strong>non miscibles</strong> se <strong>superposent</strong> : le <strong>moins dense flotte</strong> sur le plus dense.</li>
+          <li><strong>Exemples :</strong> huile (d = 0,9) sur eau (d = 1,0) ; essence (d = 0,75) sur l’eau ; un liquide non miscible de densité 1,3 coule <strong>sous</strong> l’eau.</li>
+          <li><strong>Méthode :</strong> comparer les densités, le plus petit nombre est au-dessus.</li>
+        </ul>
+      </>,
       texte: <>Deux liquides <strong>non miscibles</strong> se superposent : le <strong>moins dense flotte</strong> sur le plus dense. Dans le tube huile + eau, l’huile (d = 0,9) est au-dessus de l’eau (d = 1,0).
         <ExempleResolu>L’essence (d = 0,75) et l’eau (d = 1,0), non miscibles : l’essence, moins dense, flotte sur l’eau.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Un liquide non miscible à l’eau a une densité de 1,3. Où se place-t-il ?', options: ['Au fond, sous l’eau', 'Au-dessus de l’eau', 'Il se mélange à l’eau', 'Au milieu'], bonne: 0, expl: '1,3 > 1,0 : il est plus dense que l’eau, il coule.', indice: "Compare la densité de ce liquide à celle de l’eau (1,0). Un liquide plus dense que l’eau se place-t-il au-dessus ou en dessous ?" } },
@@ -207,6 +263,16 @@ export function SimulationMelanges() {
         À vous : ajoutez de l’alcool (curseur) jusqu’à ce que la goutte soit suspendue.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'goutte' && g.etat === 'suspendue', consigne: 'Réglez le volume d’alcool pour que la goutte d’huile reste suspendue.' } },
     { id: 'calcul', titre: 'Pourquoi cette quantité d’alcool ?', depart: () => goutteVoir(20, 5),
+      retenirTitre: 'À RETENIR : LA GOUTTE DE MARIE CURIE',
+      retenir: <>
+        <Formule><mi>d</mi><mo>(</mo><mtext>mélange</mtext><mo>)</mo><mo>=</mo><mfrac><mrow><msub><mi>V</mi><mtext>eau</mtext></msub><mo>×</mo><mn>1,0</mn><mo>+</mo><msub><mi>V</mi><mtext>alcool</mtext></msub><mo>×</mo><mn>0,8</mn></mrow><mrow><msub><mi>V</mi><mtext>eau</mtext></msub><mo>+</mo><msub><mi>V</mi><mtext>alcool</mtext></msub></mrow></mfrac></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La densité d’un mélange eau + alcool est une <strong>moyenne pondérée par les volumes</strong> : elle reste comprise entre <strong>0,8 et 1,0</strong>.</li>
+          <li>La goutte d’huile (d = 0,9) est <strong>suspendue</strong> quand d(mélange) = d(huile) = 0,9 ; elle <strong>monte</strong> s’il y a trop d’eau (mélange plus dense) et <strong>coule</strong> s’il y a trop d’alcool.</li>
+          <li><strong>Exemple :</strong> 15 mL d’eau + 15 mL d’alcool : d = (15 × 1,0 + 15 × 0,8) / 30 = 27 / 30 = <strong>0,9</strong> : goutte suspendue (volumes égaux).</li>
+          <li><strong>Hypothèses :</strong> volumes additifs (en réalité eau + éthanol se contractent d’environ 3 %), densités à 20 °C, goutte « suspendue » à 0,01 de densité près.</li>
+        </ul>
+      </>,
       texte: <>Le mélange eau-alcool a une densité <strong>comprise entre 0,8 et 1,0</strong> : une moyenne pondérée par les volumes, <strong>d = (V<sub>eau</sub> × 1,0 + V<sub>alcool</sub> × 0,8) / (V<sub>eau</sub> + V<sub>alcool</sub>)</strong>. La goutte est suspendue quand d(mélange) = d(huile) = 0,9.</>,
       tache: { type: 'num', q: 'Quelle est la densité d’un mélange de 15 mL d’eau et de 15 mL d’alcool ?', unite: '', vrai: 0.9, tol: 0.01, affiche: x => String(x).replace('.', ','), calcul: () => ['On a 15 mL d’eau (d = 1,0) et 15 mL d’alcool (d = 0,8).',
           'En haut de la fraction : 15 × 1,0 + 15 × 0,8 = 15 + 12 = 27.',
@@ -214,6 +280,24 @@ export function SimulationMelanges() {
           'd = 27 / 30 = 0,9.'],
         pieges: [[1.8, 'Tu as additionné les densités. La densité du mélange est une moyenne pondérée : entre 0,8 et 1,0.'], [27, 'Tu as oublié de diviser par le volume total (30 mL). La densité du mélange est entre 0,8 et 1,0.']], expl: 'd = (15 × 1,0 + 15 × 0,8) / 30 = 27 / 30 = 0,90 : égale à celle de l’huile, la goutte est suspendue.', indice: "Densité du mélange = masse totale ÷ volume total (rapportée à l’eau). Calcule la masse de chaque liquide avec m = ρ × V." } },
     { id: 'sha', titre: 'Une solution hydro-alcoolique', depart: () => { setAtelier('sha'); setS({ e: 60, h: 2, g: 1 }); },
+      retenirTitre: 'À RETENIR : SOLUTION HYDRO-ALCOOLIQUE',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Constituant (100,0 mL)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Volume (mL)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Densité</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Masse (g)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>éthanol à 96 %</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>85</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,81</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>85,0 × 0,81 = 68,9</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>eau oxygénée 10 vol.</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,01</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4,0 × 1,01 ≈ 4,0</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>glycérol</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,5</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,26</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,5 × 1,26 ≈ 1,9</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>eau distillée</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>9,5</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,0</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>9,5</td></tr>
+          </tbody>
+        </table>
+        <Formule><mtext>pourcentage volumique</mtext><mo>=</mo><mfrac><mrow><mi>V</mi><mo>(</mo><mtext>constituant</mtext><mo>)</mo></mrow><msub><mi>V</mi><mtext>tot</mtext></msub></mfrac><mo>×</mo><mn>100</mn><mspace width="1.5em"/><mi>m</mi><mo>=</mo><mi>ρ</mi><mo>×</mo><mi>V</mi></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Pour 100,0 mL : V(éthanol) = 85 % × 100,0 = <strong>85,0 mL</strong> ; l’eau complète : 100,0 − 85,0 − 4,0 − 1,5 = <strong>9,5 mL</strong>.</li>
+          <li>La masse se calcule avec la masse volumique du constituant : ρ = d × 1000 g·L⁻¹ ; <strong>seul le volume du constituant compte</strong> (pas celui de la solution entière).</li>
+          <li>Les pourcentages <strong>en masse</strong> ne sont pas les mêmes que ceux <strong>en volume</strong>.</li>
+        </ul>
+      </>,
       texte: <>Pour décrire un mélange de liquides, on donne la <strong>proportion en volume</strong> de chaque constituant : <strong>V(E) / V<sub>tot</sub></strong>, souvent en pourcentage (« pourcentage volumique »). La recette de l’OMS pour 100,0 mL de solution hydro-alcoolique : 85 % d’éthanol, 4 % d’eau oxygénée, 1,5 % de glycérol, le reste en eau distillée.
         <ExempleResolu>Pour 100,0 mL : V(éthanol) = 85 % × 100,0 = <strong>85,0 mL</strong>. L’eau complète : 100,0 − 85,0 − 4,0 − 1,5 = 9,5 mL.</ExempleResolu>
         À vous : réglez les volumes pour respecter la recette.</>,
@@ -226,11 +310,17 @@ export function SimulationMelanges() {
         pieges: [[85, 'C’est le volume en mL. Pour la masse : m = ρ × V = 0,81 × 85,0.'], [104.9, 'Divise-t-on ? Non : m = ρ × V.'],
           [0.81 * 100, 'Tu as pris le volume de toute la solution (100,0 mL). Il faut le volume d’éthanol : 85,0 mL.']], expl: 'm = 0,81 g/mL × 85,0 mL = 68,9 g.', indice: "Masse = masse volumique × volume. Déduis la masse volumique de l’éthanol de sa densité, convertis le volume en litres, et fais attention : seul le volume d’éthanol compte." } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
-      texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>Liquides <strong>miscibles</strong> → mélange <strong>homogène</strong> ; <strong>non miscibles</strong> → <strong>hétérogène</strong>. Un solide est <strong>soluble</strong> (ou non) dans un solvant.</li>
-        <li><strong>ρ = m / V</strong> ; <strong>d = ρ / ρ<sub>eau</sub></strong>.</li>
-        <li>Deux liquides non miscibles : le <strong>moins dense</strong> est au-dessus.</li>
-        <li>Proportion en volume : <strong>V(E) / V<sub>tot</sub></strong> (en %).</li></ul></ARetenir>, tache: null },
+      retenirTitre: 'À RETENIR : LE BILAN',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Miscibles</strong> : un seul liquide ; <strong>soluble</strong> : un solide qui se dissout.</li>
+          <li><strong>ρ = m / V</strong> (g·L⁻¹) ; <strong>d = ρ / ρ<sub>eau</sub></strong> (sans unité) ; liquides non miscibles : le moins dense est au-dessus.</li>
+          <li>Densité d’un mélange : moyenne pondérée par les volumes ; pourcentage volumique = V(constituant) / V<sub>tot</sub>.</li>
+          <li><strong>Méthode :</strong> convertir (mL → L), choisir la relation, calculer, vérifier l’ordre de grandeur (d du mélange entre celles de ses constituants).</li>
+          <li><strong>Pièges :</strong> oublier la conversion mL → L ; confondre miscible et soluble ; additionner les densités au lieu de les pondérer.</li>
+        </ul>
+      </>,
+      texte: <>Bravo : vous savez décrire un mélange avec ses densités. Voici le bilan à garder.</>, tache: null },
   ];
   useEffect(() => {
     if (mode !== 'guide') return;
