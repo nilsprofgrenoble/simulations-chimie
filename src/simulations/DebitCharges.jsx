@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche } from "../commun";
 import { fr, E_CHARGE, N_CUIVRE, deriveVitesse } from "./elecModele";
 import { BLEU, VERMILLON, GRIS, alea, usePhase } from "./elecOutils";
@@ -124,6 +124,31 @@ export function SimulationDebitCharges() {
 
   const ETAPES = [
     { id: 'porteurs', titre: 'Qu’est-ce qui circule dans un fil ?', depart: () => voir('fil', { I: 1, sens: 1 }),
+      retenirTitre: 'À RETENIR : PORTEURS DE CHARGE ET SENS DU COURANT',
+      retenir: <>
+        <svg viewBox="0 0 300 150" role="img" aria-label="Modèle d’un fil métallique : des ions positifs fixes et des électrons libres mobiles ; les électrons se déplacent vers la gauche, le courant conventionnel vers la droite" style={{ width: '100%', maxWidth: 340, height: 'auto', display: 'block', margin: '6px auto' }}>
+          <rect x="18" y="18" width="264" height="92" rx="10" fill="#f1f5f9" stroke="#475569" strokeWidth="2" />
+          <circle cx="40" cy="38" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="40" y="42" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="40" cy="86" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="40" y="90" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="70" cy="38" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="70" y="42" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="70" cy="86" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="70" y="90" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="100" cy="38" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="100" y="42" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="100" cy="86" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="100" y="90" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="130" cy="38" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="130" y="42" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="130" cy="86" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="130" y="90" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="160" cy="38" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="160" y="42" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="160" cy="86" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="160" y="90" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="190" cy="38" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="190" y="42" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="190" cy="86" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="190" y="90" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="220" cy="38" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="220" y="42" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="220" cy="86" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="220" y="90" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="250" cy="38" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="250" y="42" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="250" cy="86" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="250" y="90" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="55" cy="62" r="5" fill="#2563eb" /><text x="55" y="65" fontSize="9" textAnchor="middle" fill="#fff" fontWeight="700">−</text><circle cx="85" cy="62" r="5" fill="#2563eb" /><text x="85" y="65" fontSize="9" textAnchor="middle" fill="#fff" fontWeight="700">−</text><circle cx="115" cy="62" r="5" fill="#2563eb" /><text x="115" y="65" fontSize="9" textAnchor="middle" fill="#fff" fontWeight="700">−</text><circle cx="145" cy="62" r="5" fill="#2563eb" /><text x="145" y="65" fontSize="9" textAnchor="middle" fill="#fff" fontWeight="700">−</text><circle cx="175" cy="62" r="5" fill="#2563eb" /><text x="175" y="65" fontSize="9" textAnchor="middle" fill="#fff" fontWeight="700">−</text><circle cx="205" cy="62" r="5" fill="#2563eb" /><text x="205" y="65" fontSize="9" textAnchor="middle" fill="#fff" fontWeight="700">−</text><circle cx="235" cy="62" r="5" fill="#2563eb" /><text x="235" y="65" fontSize="9" textAnchor="middle" fill="#fff" fontWeight="700">−</text>
+          <line x1="250" y1="126" x2="130" y2="126" stroke="#2563eb" strokeWidth="2.4" /><polygon points="126,126 138,120 138,132" fill="#2563eb" /><text x="124" y="130" fontSize="10.5" textAnchor="end" fill="#1d4ed8" fontWeight="700">électrons</text>
+          <line x1="20" y1="142" x2="106" y2="142" stroke="#d55e00" strokeWidth="2.4" /><polygon points="110,142 98,136 98,148" fill="#d55e00" /><text x="116" y="146" fontSize="10.5" fill="#c2410c" fontWeight="700">sens conventionnel de I</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Le <strong>courant électrique</strong> est un <strong>déplacement ordonné de charges</strong> portées par des <strong>porteurs de charge</strong>.</li>
+          <li><strong>Métal</strong> (<strong>modèle de Drude</strong>) : des <strong>ions positifs</strong> fixes baignent dans un « gaz » d’<strong>électrons libres</strong> ; sans générateur ils bougent dans tous les sens, avec un générateur ils dérivent <strong>ensemble</strong> dans le même sens.</li>
+          <li><strong>Sens conventionnel</strong> : de la borne <strong>+</strong> vers la borne <strong>−</strong> à l’extérieur du générateur. Les <strong>électrons</strong> (charge négative) se déplacent en <strong>sens inverse</strong>.</li>
+        </ul>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Où ?</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Porteurs</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Déplacement</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>fil métallique</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>électrons libres</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>sens inverse de I</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>solution : cations (+)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ions positifs</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>vers l’électrode reliée à la borne −</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>solution : anions (−)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ions négatifs</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>vers l’électrode reliée à la borne +</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Inverser le générateur inverse <strong>à la fois</strong> le sens conventionnel et le sens des électrons.</li>
+        </ul>
+      </>,
       texte: <>Un métal est un empilement ordonné d’<strong>ions positifs</strong> (en gris) baignant dans un « gaz » d’<strong>électrons libres</strong> (en bleu) : c’est le <strong>modèle de Drude</strong>. Chaque électron libre n’est lié à aucun ion en particulier. Sans générateur, ils bougent dans tous les sens ; avec un générateur, ils se déplacent <strong>ensemble dans le même sens</strong> : c’est le courant électrique.
         <ExempleResolu>Le courant électrique est un <strong>déplacement ordonné de charges électriques</strong>. Ces charges sont portées par des <strong>porteurs de charge</strong> : les électrons libres dans les métaux, les <strong>ions</strong> dans les solutions.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Dans un fil de cuivre, quels sont les porteurs de charge mobiles ?', options: ['Les électrons libres', 'Les ions cuivre', 'Les atomes de cuivre', 'Les protons'], bonne: 0, expl: 'Dans un métal, ce sont les électrons libres qui se déplacent ; les ions positifs restent à leur place.', indice: "Dans un métal, certains électrons ne sont plus liés à un atome en particulier. Que sont ces porteurs de charge ?" } },
@@ -134,6 +159,16 @@ export function SimulationDebitCharges() {
       texte: <>Dans une solution ionique, les porteurs de charge sont des <strong>ions</strong>. Cliquez sur « Brancher le générateur » : les <strong>cations</strong> (+) vont vers l’électrode reliée à la borne <strong>−</strong>, les <strong>anions</strong> (−) vers l’électrode reliée à la borne <strong>+</strong>. Dans les fils, ce sont encore des électrons.</>,
       tache: { type: 'qcm', q: 'Dans la solution, les anions (charge négative) se dirigent vers…', options: ['l’électrode reliée à la borne +', 'l’électrode reliée à la borne −', 'le fond du bécher', 'ils ne bougent pas'], bonne: 0, expl: 'Charges opposées s’attirent : les anions (−) sont attirés par la borne +, les cations (+) par la borne −.', indice: "Un anion est un ion négatif. Il est attiré par une électrode de signe opposé. Laquelle ?" } },
     { id: 'debit', titre: 'L’intensité : un débit de charges', depart: () => voir('fil', { I: 1, dt: 1 }),
+      retenirTitre: 'À RETENIR : L’INTENSITÉ, UN DÉBIT DE CHARGES',
+      retenir: <>
+        <Formule><mi>I</mi><mo>=</mo><mfrac><mi>Q</mi><mrow><mi>Δ</mi><mi>t</mi></mrow></mfrac><mspace width="1.5em"/><mi>Q</mi><mo>=</mo><mi>I</mi><mo>×</mo><mi>Δ</mi><mi>t</mi><mspace width="1.5em"/><mtext>I en A ; Q en C ; Δt en s</mtext></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>L’<strong>intensité I</strong> est la charge Q (en valeur absolue) qui traverse une section du conducteur <strong>par seconde</strong> : 1 A = 1 C·s⁻¹.</li>
+          <li><strong>Exemple 1 :</strong> Q = 3 C en Δt = 2 s : I = 3 / 2 = <strong>1,5 A</strong>.</li>
+          <li><strong>Exemple 2 :</strong> I = 2,0 A pendant Δt = 5,0 s : Q = 2,0 × 5,0 = <strong>10 C</strong>.</li>
+          <li><strong>Piège :</strong> Q se calcule en <strong>multipliant</strong> I par Δt ; convertir Δt en secondes avant de calculer.</li>
+        </ul>
+      </>,
       texte: <>L’<strong>intensité I</strong> du courant est le <strong>débit de charges</strong> : la charge Q (en valeur absolue) qui traverse une section du conducteur pendant une durée Δt. <strong>I = Q / Δt</strong>, donc <strong>Q = I × Δt</strong> (I en A, Q en C, Δt en s). 1 A = 1 C·s⁻¹.
         <ExempleResolu>Une charge Q = 3 C traverse une section en Δt = 2 s : I = Q / Δt = 3 / 2 = <strong>1,5 A</strong>.</ExempleResolu></>,
       tache: { type: 'num', q: 'Un courant de 2,0 A circule pendant 5,0 s. Quelle charge Q (en C) traverse une section du fil ?', unite: 'C', vrai: 10, tol: 0.02, affiche: x => String(x), pieges: [[0.4, 'Tu as divisé : Q = I × Δt (on multiplie l’intensité par la durée).'], [2.5, 'Tu as divisé la durée par l’intensité. La charge est Q = I × Δt : on multiplie.'], [7, 'Tu as additionné I et Δt. La charge est Q = I × Δt : on multiplie.']],
@@ -142,6 +177,16 @@ export function SimulationDebitCharges() {
           'Données : I = 2,0 A et Δt = 5,0 s (déjà en unités SI, pas de conversion).',
           'Q = 2,0 × 5,0 = 10 C.'], expl: 'Q = I × Δt = 2,0 × 5,0 = 10 C.', indice: "Charge qui traverse une section : Q = I × Δt, avec I en ampères et Δt en secondes (le résultat est en coulombs)." } },
     { id: 'electrons', titre: 'Combien d’électrons ?', depart: () => voir('fil', { I: 1, dt: 1 }),
+      retenirTitre: 'À RETENIR : COMPTER LES ÉLECTRONS',
+      retenir: <>
+        <Formule><mi>N</mi><mo>=</mo><mfrac><mi>Q</mi><mi>e</mi></mfrac><mspace width="1.5em"/><mi>e</mi><mo>=</mo><mn>1,602</mn><mo>×</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>19</mn></mrow></msup><mtext> C</mtext></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Chaque électron porte la charge <strong>−e</strong> ; la charge Q correspond à <strong>N = Q / e</strong> électrons (on divise la charge totale par la charge d’un électron).</li>
+          <li><strong>Exemple :</strong> Q = 2,0 C : N = 2,0 / 1,602×10⁻¹⁹ ≈ <strong>1,2×10¹⁹</strong> électrons (2 chiffres significatifs comme Q).</li>
+          <li><strong>Ordre de grandeur :</strong> 1 A pendant 1 s = 1 C ≈ 6,24×10¹⁸ électrons.</li>
+          <li><strong>Piège :</strong> ne pas inverser le rapport (N = e / Q) ; écrire le résultat en notation scientifique.</li>
+        </ul>
+      </>,
       texte: <>Chaque électron porte une charge −e, avec <strong>e = 1,602·10⁻¹⁹ C</strong>. Pour une charge Q, il faut donc <strong>N = Q / e</strong> électrons. Lancez le chrono et regardez la charge qui s’accumule. Pour 1 A pendant 1 s : 1 C, soit environ <strong>6,24·10¹⁸ électrons</strong> !
         <ExempleResolu>Q = 3,0 C : N = 3,0 / 1,602·10⁻¹⁹ = <strong>1,9·10¹⁹ électrons</strong>.</ExempleResolu></>,
       tache: { type: 'num', q: 'Combien d’électrons correspondent à une charge Q = 2,0 C ? (écris par exemple 1,9e19)', unite: '', vrai: 1.248e19, tol: 0.04, affiche: () => '1,25·10¹⁹', pieges: [[3.2e-19, 'Tu as multiplié : N = Q / e (on divise la charge totale par la charge d’un électron).'], [1.602e-19 / 2, 'Tu as inversé : N = Q / e (la charge totale Q au numérateur).']],
@@ -159,6 +204,16 @@ export function SimulationDebitCharges() {
           'Conversion : 1 mA = 10⁻³ A et 1 h = 3600 s, donc 1 mA·h = 10⁻³ × 3600 = 3,6 C.',
           'Q = 3000 × 3,6 = 10 800 C.'], expl: 'Q = 3000 × 3,6 = 10 800 C.', indice: "Une capacité en mA·h est une charge : 1 mA·h = 0,001 A × 3600 s. Convertis en coulombs." } },
     { id: 'autonomie', titre: 'Autonomie d’une batterie', depart: () => { setAtelier('batterie'); setP({ cap: 2000, I: 20 }); },
+      retenirTitre: 'À RETENIR : BATTERIE, A·h ET AUTONOMIE',
+      retenir: <>
+        <Formule><mn>1</mn><mtext> mA·h</mtext><mo>=</mo><mn>3,6</mn><mtext> C</mtext><mspace width="1.5em"/><mn>1</mn><mtext> A·h</mtext><mo>=</mo><mn>3600</mn><mtext> C</mtext><mspace width="1.5em"/><mi>Δ</mi><mi>t</mi><mo>=</mo><mfrac><mi>Q</mi><mi>I</mi></mfrac></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La <strong>capacité</strong> d’une batterie (mA·h) est une <strong>charge</strong> : 1 mA·h = 10⁻³ A × 3600 s = 3,6 C.</li>
+          <li><strong>Exemples :</strong> 3000 mA·h = 3000 × 3,6 = <strong>10 800 C</strong> ; 2000 mA·h = 7200 C.</li>
+          <li><strong>Autonomie</strong> : Δt = Q / I. Avec Q en mA·h et I en mA (unités « milli » cohérentes), Δt sort <strong>directement en heures</strong> : 4000 / 250 = <strong>16 h</strong> ; 2000 / 20 = <strong>100 h</strong>.</li>
+          <li><strong>Hypothèse :</strong> courant moyen constant, batterie entièrement utilisée.</li>
+        </ul>
+      </>,
       texte: <>Un appareil qui consomme un courant moyen I vide une batterie de capacité Q en <strong>Δt = Q / I</strong>. Avec Q en mA·h et I en mA, la durée sort directement en <strong>heures</strong>.
         <ExempleResolu>Téléphone en veille : 2000 mA·h et I = 20 mA : Δt = 2000 / 20 = <strong>100 h</strong>.</ExempleResolu></>,
       tache: { type: 'num', q: 'Une batterie de 4000 mA·h alimente un appareil qui consomme 250 mA. Combien de temps tient-elle (en h) ?', unite: 'h', vrai: 16, tol: 0.02, affiche: x => String(x), pieges: [[0.0625, 'Tu as inversé : Δt = Q / I.'], [4000 / 0.25, 'Les unités ne sont pas cohérentes : Q est en mA·h donc I doit être en mA (250 mA, pas 0,25 A).'], [16 * 3600, 'La durée est demandée en heures, pas en secondes : avec Q en mA·h et I en mA, le résultat est directement en h.']],
@@ -167,13 +222,37 @@ export function SimulationDebitCharges() {
           'Unités cohérentes : Q = 4000 mA·h et I = 250 mA (tous deux en « milli »). Le résultat sort alors directement en heures.',
           'Δt = 4000 / 250 = 16 h.'], expl: 'Δt = 4000 / 250 = 16 h.', indice: "Autonomie : Δt = Q / I. Garde des unités cohérentes : des mA·h divisés par des mA donnent des heures." } },
     { id: 'vitesse', titre: '★ À quelle vitesse vont les électrons ?', depart: () => voir('fil', { I: 1, dt: 1, S: 1.5 }),
+      retenirTitre: 'À RETENIR : VITESSE DES ÉLECTRONS ET SIGNAL',
+      retenir: <>
+        <Formule><mi>v</mi><mo>=</mo><mfrac><mi>I</mi><mrow><mi>n</mi><mo>×</mo><mi>S</mi><mo>×</mo><mi>e</mi></mrow></mfrac><mspace width="1.5em"/><mi>n</mi><mo>=</mo><mn>8,5</mn><mo>×</mo><msup><mn>10</mn><mn>28</mn></msup><msup><mtext> m</mtext><mrow><mo>−</mo><mn>3</mn></mrow></msup></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Exemple :</strong> cuivre, S = 1,5 mm², I = 1 A : v ≈ <strong>0,05 mm·s⁻¹</strong> (5×10⁻⁵ m·s⁻¹) : les électrons avancent très lentement.</li>
+          <li>Pourtant la lampe s’allume presque instantanément : les électrons libres sont <strong>déjà présents dans tout le fil</strong>. Ce qui se propage vite (≈ 2×10⁸ m·s⁻¹) est la <strong>perturbation</strong> (le signal), pas les électrons. Image : un tuyau déjà plein d’eau.</li>
+          <li><strong>Hypothèses :</strong> modèle de Drude, un électron libre par atome de cuivre (n = 8,5×10²⁸ m⁻³), régime permanent.</li>
+        </ul>
+      </>,
       texte: <>Dans un fil de cuivre de section S = 1,5 mm² parcouru par 1 A, la vitesse moyenne des électrons est de <strong>environ 0,05 mm par seconde seulement</strong> (calcul : v = I / (n·S·e), avec n = 8,5·10²⁸ électrons libres par m³). Pourtant la lampe s’allume <strong>tout de suite</strong> : c’est la <strong>perturbation</strong> (le signal) qui se propage à environ 2·10⁸ m/s, pas les électrons. Comme un long tuyau déjà plein d’eau : on ouvre le robinet, l’eau sort aussitôt à l’autre bout.</>,
       tache: { type: 'qcm', q: 'Pourquoi la lampe s’allume-t-elle presque instantanément alors que les électrons avancent très lentement ?', options: ['Les électrons sont déjà présents dans tout le fil : tous se mettent en mouvement presque en même temps', 'Les électrons vont à la vitesse de la lumière', 'Les électrons sont créés par l’interrupteur', 'Les ions du métal transportent le courant'], bonne: 0, expl: 'Les électrons libres occupent tout le circuit : le signal se propage vite, chaque électron avance lentement.', indice: "Les électrons libres sont déjà présents dans tout le fil. Qu’est-ce qui se propage très vite : les électrons eux-mêmes ou la mise en mouvement de tous les électrons ?" } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
-      texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>Le courant est un déplacement ordonné de <strong>porteurs de charge</strong> : électrons libres (métaux), ions (solutions).</li>
-        <li>Sens conventionnel : de + vers − à l’extérieur du générateur ; les électrons vont en sens inverse.</li>
-        <li><strong>I = Q / Δt</strong> (A, C, s) ; Q = N·e ; 1 mA·h = 3,6 C ; autonomie Δt = Q / I.</li></ul></ARetenir>, tache: null },
+      retenirTitre: 'À RETENIR : LE BILAN',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Grandeur</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Relation</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Unité</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>intensité</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>I = Q / Δt</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>A</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>charge</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Q = I × Δt</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>C</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>nombre d’électrons</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>N = Q / e</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>sans unité</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>capacité de batterie</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 mA·h = 3,6 C</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>C</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>autonomie</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Δt = Q / I</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>h si Q en mA·h et I en mA</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Porteurs de charge : <strong>électrons libres</strong> (métaux), <strong>ions</strong> (solutions). Sens conventionnel de + vers − ; électrons en sens inverse.</li>
+          <li><strong>Méthode :</strong> convertir (min, h, mA·h en s, C…), choisir la relation, calculer, donner le résultat avec le bon nombre de chiffres significatifs et l’unité.</li>
+          <li><strong>Hypothèses :</strong> modèle de Drude, e = 1,602×10⁻¹⁹ C, régime permanent, courant constant.</li>
+        </ul>
+      </>,
+      texte: <>Bravo : vous savez relier intensité, charge, nombre d’électrons et autonomie. Voici le bilan à garder.</>, tache: null },
   ];
   useEffect(() => {
     if (mode !== 'guide') return;
