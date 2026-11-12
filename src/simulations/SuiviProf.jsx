@@ -82,6 +82,40 @@ function Comptes({ classe, comptes, onFermer }) {
   );
 }
 
+const css = `
+  .sp { max-width: 1100px; margin: 0 auto; text-align: left; }
+  .sp-hero { border-radius: 28px; padding: 24px 26px; background: #0b4f94; color: #fff; }
+  .sp-etiq { font: 700 13px Inter, system-ui, sans-serif; letter-spacing: .09em; text-transform: uppercase; color: #cfe3f7; }
+  .sp-hero h2 { margin: 4px 0 14px; font: 800 clamp(26px, 5vw, 36px)/1.1 Outfit, Inter, sans-serif; letter-spacing: -.02em; color: #fff; }
+  .sp-ligne { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .sp-select { padding: 10px 14px; border-radius: 14px; border: 0; font: 800 16px Inter, system-ui, sans-serif; color: #0c1a2e; background: #fff; max-width: 100%; }
+  .sp-cta { border: 0; border-radius: 14px; padding: 11px 18px; font: 800 15px Inter, system-ui, sans-serif; cursor: pointer; color: #3a2500; background: #f5a31a; }
+  .sp-cta:hover { background: #ffb83d; }
+  .sp-sec { border: 0; border-radius: 14px; padding: 11px 18px; font: 800 15px Inter, system-ui, sans-serif; cursor: pointer; color: #fff; background: rgba(255,255,255,.18); }
+  .sp-sec:hover { background: rgba(255,255,255,.3); }
+  .sp-onglets { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 6px; }
+  .sp-onglet { border: 2px solid #cbd5e1; background: #fff; color: #0c1a2e; border-radius: 999px; min-height: 44px; padding: 8px 17px; font: 800 15px Inter, system-ui, sans-serif; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+  .sp-onglet:hover { border-color: #0b4f94; }
+  .sp-onglet[aria-selected="true"] { background: #f5a31a; border-color: #f5a31a; color: #3a2500; }
+  .sp-onglet:focus-visible, .sp-cta:focus-visible, .sp-sec:focus-visible, .sp-select:focus-visible { outline: 3px solid #0b4f94; outline-offset: 2px; }
+  .sp-aide { margin: 0 2px 14px; color: #3d4d63; font-size: 14.5px; line-height: 1.5; }
+  .sp-carte { background: #fff; border: 1px solid #d5dfeb; border-radius: 22px; padding: 20px 22px; margin-bottom: 14px; }
+  .sp-carte > h3 { margin: 0 0 4px; font: 800 20px Outfit, Inter, sans-serif; color: #0c1a2e; }
+  .sp-carte > .sp-sous { margin: 0 0 12px; color: #3d4d63; font-size: 14px; }
+  .sp-danger { border-color: #fecaca; }
+  @media (max-width: 480px) { .sp-hero { border-radius: 22px; padding: 20px; } .sp-onglet { padding: 8px 13px; font-size: 14px; } }
+`;
+
+const AIDES = {
+  synthese: 'Le point sur la classe : qui a travaillé cette semaine, ce qui a été le plus raté, les élèves à relancer.',
+  reprendre: 'Les exercices que plusieurs élèves ont ratés : de quoi préparer une reprise en classe, ou un devoir ciblé.',
+  devoirs: 'Donnez un devoir (une liste d’exercices et de simulations avec une date limite) et suivez qui l’a fait.',
+  eleves: 'Un élève par ligne : ses résultats, ses séances, et les actions sur son compte (mot de passe perdu, suppression).',
+  stats: 'Les chiffres détaillés : par exercice, par défi de simulation, et le temps passé sur chaque simulation.',
+  reglages: 'Tout ce qui se règle une fois pour la classe : élèves, chapitre en cours, vie de classe, classement, partage.',
+  compte: 'Votre mot de passe, la déconnexion, le guide de prise en main et les jeux.',
+};
+
 export function SimulationSuiviProf({ naviguer }) {
   const sess = useSession();
   const prof = estProf(sess);
@@ -145,7 +179,6 @@ export function SimulationSuiviProf({ naviguer }) {
   const parEleve = new Map(eleves.map(e => [e.user_id, agreger(lignes.filter(l => l.user_id === e.user_id && !estSimulation(l.cle) && !estDefi(l.cle)))]));
   const parEleveTout = new Map(eleves.map(e => [e.user_id, agreger(lignes.filter(l => l.user_id === e.user_id && !estSimulation(l.cle)))]));
   const parEleveDefis = new Map(eleves.map(e => [e.user_id, agreger(lignes.filter(l => l.user_id === e.user_id && estDefi(l.cle)))]));
-  const total = exos.length;
 
   const creerClasse = e => {
     e.preventDefault();
@@ -216,72 +249,68 @@ export function SimulationSuiviProf({ naviguer }) {
       qui: eleves.map(e => ({ id: e.identifiant, a: parEleveDefis.get(e.user_id).get(x.cle) })).filter(o => o.a) };
   });
 
-  return (
-    <div style={{ ...cardStyle, maxWidth: 1100, margin: '0 auto' }}>
-      <details data-compte style={{ margin: '0 0 8px' }}>
-        <summary style={{ cursor: 'pointer', fontSize: 14, fontWeight: 700, color: KIT.txt, padding: '4px 0' }}>👤 Mon compte <span style={{ fontWeight: 600, color: KIT.txt2 }}>· {sess.profil.nom}</span></summary>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', fontSize: 13.5, color: KIT.txt2, margin: '6px 0' }}>
+  const ongletsListe = [
+    { id: 'synthese', label: 'Vue d’ensemble', icone: '🏠' },
+    { id: 'devoirs', label: 'Devoirs', icone: '📌' },
+    { id: 'eleves', label: `Élèves (${eleves.length})`, icone: '👥' },
+    { id: 'stats', label: 'Statistiques', icone: '📈' },
+    { id: 'reglages', label: 'Réglages de la classe', icone: '⚙️' },
+    { id: 'compte', label: 'Mon compte', icone: '👤' },
+  ];
+  const actif = DETAILS.includes(onglet) ? 'stats' : onglet === 'reprendre' ? 'synthese' : onglet;
+  const choisirOnglet = id => ouvrir(id === 'stats' ? (DETAILS.includes(onglet) ? onglet : 'exos') : id);
+  const clavier = e => {
+    const k = ongletsListe.findIndex(o => o.id === actif), pas = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+    if (!pas) return;
+    e.preventDefault();
+    const sv = ongletsListe[(k + pas + ongletsListe.length) % ongletsListe.length];
+    choisirOnglet(sv.id);
+    document.getElementById(`sp-onglet-${sv.id}`)?.focus();
+  };
+  const carteMonCompte = (
+      <section className="sp-carte" data-compte aria-label="Mon compte">
+        <h3>👤 Mon compte</h3>
+        <p className="sp-sous">Connecté·e : <b>{sess.profil.nom}</b></p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <MotDePasse />
-          <button onClick={deconnexion} style={{ ...styleBouton(false, '#475569'), fontSize: 13 }}>Se déconnecter</button>
+          <button onClick={deconnexion} style={{ ...styleBouton(false, '#475569'), fontSize: 14 }}>Se déconnecter</button>
         </div>
-        {sess.profil.admin && <ComptesProf occupe={occupe} proteger={proteger} setMsg={setMsg} />}
-        {!!classes.length && <GuideProf ouvertParDefaut={false} />}
-      </details>
-      {erreur && <div role="alert" style={{ color: '#b91c1c', fontWeight: 600, margin: '8px 0' }}><Pic n="ko"/>{erreur}</div>}
-      {msg && <div role="status" style={{ color: '#15803d', fontWeight: 600, margin: '8px 0' }}><Pic n="ok"/>{msg}</div>}
+        {sess.profil.admin && <div style={{ marginTop: 12 }}><ComptesProf occupe={occupe} proteger={proteger} setMsg={setMsg} /></div>}
+      </section>);
+  const carteCompte = (
+    <>
+      {carteMonCompte}
+      <GuideProf ouvertParDefaut={false} />
+      <JeuxProf naviguer={naviguer} />
+    </>);
+
+  return (
+    <div className="sp">
+      <style>{css}</style>
+      <section className="sp-hero" aria-label="Espace professeur">
+        <div className="sp-etiq">Espace professeur</div>
+        <h2>Suivi de mes classes</h2>
+        <div className="sp-ligne">
+          <select className="sp-select" aria-label="Classe" value={classeId} onChange={e => { setClasseId(e.target.value); setOuvert(null); setMsg(''); }}>
+            {!classes.length && <option value="">Aucune classe</option>}
+            {classes.map(c => <option key={c.id} value={c.id}>{c.nom} ({c.prefixe}){moiId && c.prof_id && c.prof_id !== moiId ? ' · partagée' : ''}</option>)}
+          </select>
+          <button className="sp-cta" onClick={() => setFormClasse(v => !v)} disabled={occupe}>＋ Nouvelle classe</button>
+          <button className="sp-sec" onClick={() => setApercu(true)}><Pic n="eye"/>Voir comme un élève</button>
+        </div>
+      </section>
+
+      {erreur && <div role="alert" style={{ color: '#b91c1c', fontWeight: 600, margin: '10px 2px' }}><Pic n="ko"/>{erreur}</div>}
+      {msg && <div role="status" style={{ color: '#15803d', fontWeight: 600, margin: '10px 2px' }}><Pic n="ok"/>{msg}</div>}
       {comptes && <div style={{ margin: '10px 0' }}><Comptes classe={comptes.classe} comptes={comptes.liste} onFermer={() => setComptes(null)} /></div>}
+
 
       {!classes.length && !occupe && <p data-bienvenue style={{ fontSize: 16, color: KIT.txt, margin: '10px 0 0' }}>👋 <b>Bienvenue !</b> Mettons en route votre première classe : donnez-lui un nom, c’est tout ce qu’il faut pour commencer.</p>}
       {!classes.length && <GuideProf ouvertParDefaut />}
 
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', margin: '10px 0' }}>
-        <select aria-label="Classe" value={classeId} onChange={e => { setClasseId(e.target.value); setOuvert(null); setMsg(''); }} style={{ ...champ, fontWeight: 700, fontSize: 15 }}>
-          {!classes.length && <option value="">Aucune classe</option>}
-          {classes.map(c => <option key={c.id} value={c.id}>{c.nom} ({c.prefixe}){moiId && c.prof_id && c.prof_id !== moiId ? ' · partagée' : ''}</option>)}
-        </select>
-        <button onClick={() => setFormClasse(v => !v)} style={styleBouton(false, '#475569')} disabled={occupe}>＋ Nouvelle classe</button>
-        <button onClick={() => setApercu(true)} style={{ ...styleBouton(false, '#475569'), marginLeft: 'auto' }}><Pic n="eye"/>Aperçu élève</button>
-      </div>
-
-      {classe && (
-        <details style={{ margin: '0 0 10px' }} data-reglages>
-          <summary style={{ cursor: 'pointer', fontSize: 14, fontWeight: 700, color: KIT.txt, padding: '4px 0' }}>
-            ⚙️ Gérer la classe <span style={{ fontWeight: 600, color: KIT.txt2 }}>
-              · 📘 {chapDispo ? (classe.chapitres?.length ? chapitresDe(classe.chapitres).map(c => c.label).join(' · ') || 'aucun chapitre choisi' : 'aucun chapitre choisi') : 'chapitre : script SQL 07 à lancer'}{' '}
-              · 🏆 vie de classe {vieDispo ? (classe.vie_classe ? 'activée' : 'désactivée') : 'non disponible'}</span>
-          </summary>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', margin: '6px 0 8px' }}>
-          <span style={{ fontSize: 13, color: KIT.txt2 }}>Ajouter</span>
-          <input type="number" min={1} max={40} value={ajout} onChange={e => setAjout(e.target.value)} style={{ ...champ, width: 64 }} aria-label="Nombre d’élèves à ajouter" />
-          <button onClick={ajouter} style={styleBouton(false, '#475569')} disabled={occupe}>élèves</button>
-          <button onClick={exporter} style={styleBouton(false, '#475569')}>⬇️ Export CSV</button>
-          {proprio && <button onClick={supprimerClasse} style={{ ...styleBouton(false, '#b91c1c'), marginLeft: 'auto' }} disabled={occupe}><Pic n="trash"/>Supprimer la classe</button>}
-        </div>
-        <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }}>
-          {vieDispo ? (
-            <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', cursor: 'pointer' }}>
-              <input type="checkbox" checked={!!classe.vie_classe} disabled={occupe} onChange={e => basculerVie(e.target.checked)} style={{ marginTop: 3, accentColor: '#0b4f94' }} />
-              <span><b><Pic n="trophy"/>Vie de classe</b> (désactivée par défaut) : les élèves de « {classe.nom} » voient un objectif collectif de la semaine et des « prouesses »
-                (pas de classement). Les pseudos sont tirés d’une liste fixe, et chaque élève décide s’il apparaît.</span>
-            </label>
-          ) : (
-            <span><Pic n="trophy"/><b>Vie de classe</b> : disponible après avoir exécuté <code>supabase/05-vie-de-classe.sql</code> dans Supabase (SQL Editor → Run).</span>
-          )}
-        </div>
-        {siteDispo && (
-          <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }}>
-            <b>🌐 Site des élèves</b> : les élèves de « {classe.nom} » se connectent sur
-            <label style={{ margin: '0 10px 0 8px', cursor: 'pointer' }}><input type="radio" name="site-classe" checked={classe.site !== 'energy'} disabled={occupe} onChange={() => choisirSite('paillasse')} style={{ accentColor: '#0b4f94' }} /> la Paillasse virtuelle</label>
-            <label style={{ cursor: 'pointer' }}><input type="radio" name="site-classe" checked={classe.site === 'energy'} disabled={occupe} onChange={() => choisirSite('energy')} style={{ accentColor: '#ea580c' }} /> Energy@School</label>
-            <div style={{ color: KIT.txt2, marginTop: 3 }}>Les comptes sont les mêmes ; ce réglage sépare les deux sites. Le suivi de l’avancement Energy@School se consulte sur le site Energy@School (avec votre compte professeur).</div>
-          </div>)}
-        <EtablissementClasse key={`${classe.id}|${classe.etablissement || ''}`} classe={classe} dispo={etabDispo} occupe={occupe} onEnregistrer={enregistrerEtab} />
-        <ChapitreClasse classe={classe} dispo={chapDispo} occupe={occupe} onChoix={choisirChapitres} />
-        <PartageClasse classe={classe} proprio={proprio} occupe={occupe} proteger={proteger} setMsg={setMsg} onQuitte={async () => { setClasseId(''); await chargerClasses(); }} />
-        </details>)}
 
       {(formClasse || (!classes.length && !occupe)) && (
-        <form onSubmit={creerClasse} style={{ ...styleBoite, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <form onSubmit={creerClasse} style={{ ...styleBoite, margin: '14px 0 0', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <label style={{ fontSize: 13, fontWeight: 700 }}>Nom de la classe<br />
             <input value={nc.nom} onChange={e => setNc({ ...nc, nom: e.target.value, prefixe: prefixeSaisi ? nc.prefixe : prefixeDe(e.target.value) })} placeholder="TSTL 1" style={champ} aria-label="Nom de la classe" /></label>
           <label style={{ fontSize: 13, fontWeight: 700 }}>Préfixe des identifiants<br />
@@ -293,30 +322,84 @@ export function SimulationSuiviProf({ naviguer }) {
             Aucun nom d’élève n’est saisi ici : gardez vous-même la correspondance identifiant ↔ élève.</div>
         </form>)}
 
-      <JeuxProf naviguer={naviguer} />
+
+      {!classe && <>{carteMonCompte}<JeuxProf naviguer={naviguer} /></>}
 
       {classe && (
         <>
-          <div style={{ display: 'flex', gap: 6, margin: '12px 0 8px', flexWrap: 'wrap' }}>
-            <button onClick={() => ouvrir('synthese')} style={stylePetitBouton(onglet === 'synthese', ROSE)}><Pic n="home"/>Synthèse</button>
-            <button onClick={() => ouvrir('reprendre')} style={stylePetitBouton(onglet === 'reprendre', ROSE)}>🔁 À reprendre</button>
-            <button onClick={() => ouvrir('devoirs')} style={stylePetitBouton(onglet === 'devoirs', ROSE)}><Pic n="pin"/>Devoirs</button>
-            <button onClick={() => ouvrir('eleves')} style={stylePetitBouton(onglet === 'eleves', ROSE)}>👥 Élèves ({eleves.length})</button>
-            <button onClick={() => ouvrir(DETAILS.includes(onglet) ? onglet : 'exos')} style={stylePetitBouton(DETAILS.includes(onglet), ROSE)}><Pic n="book"/>Détail</button>
+          <div className="sp-onglets" role="tablist" aria-label="Suivi de la classe" onKeyDown={clavier}>
+            {ongletsListe.map(o => (
+              <button key={o.id} id={`sp-onglet-${o.id}`} type="button" role="tab" className="sp-onglet" aria-selected={actif === o.id} aria-controls="sp-panneau"
+                tabIndex={actif === o.id ? 0 : -1} onClick={() => choisirOnglet(o.id)}><span aria-hidden="true">{o.icone}</span>{o.label}</button>))}
           </div>
-          {DETAILS.includes(onglet) && (
-            <div style={{ display: 'flex', gap: 6, margin: '0 0 10px 4px', flexWrap: 'wrap', alignItems: 'center', fontSize: 13, color: KIT.txt2 }}>
-              Détail :
+          <p className="sp-aide">{AIDES[onglet === 'reprendre' ? 'reprendre' : actif]}</p>
+          {onglet === 'reprendre' && <p style={{ margin: '0 2px 12px' }}><button onClick={() => ouvrir('synthese')} style={{ background: 'none', border: 0, padding: 0, color: '#0b4f94', fontWeight: 800, fontSize: 15, cursor: 'pointer', textDecoration: 'underline' }}>← Retour à la vue d’ensemble</button></p>}
+          {actif === 'stats' && (
+            <div style={{ display: 'flex', gap: 6, margin: '0 0 12px', flexWrap: 'wrap', alignItems: 'center', fontSize: 13.5, color: KIT.txt2 }}>
+              Afficher :
               <button onClick={() => ouvrir('exos')} style={stylePetitBouton(onglet === 'exos', '#475569')}>Par exercice</button>
               <button onClick={() => ouvrir('defis')} style={stylePetitBouton(onglet === 'defis', '#475569')}>Défis des simulations</button>
               <button onClick={() => ouvrir('sims')} style={stylePetitBouton(onglet === 'sims', '#475569')}>Temps par simulation</button>
             </div>)}
 
+          <div id="sp-panneau" role="tabpanel" aria-labelledby={`sp-onglet-${actif}`}>
           {onglet === 'synthese' && <SyntheseProf classe={classe} eleves={eleves} lignes={lignes} allerA={ouvrir} onApercu={() => setApercu(true)} />}
           {onglet === 'devoirs' && <DevoirsProf key={`${classe.id}|${(classe.chapitres || []).join()}|${preset ? JSON.stringify(preset) : ''}`} classe={classe} eleves={eleves} lignes={lignes} preset={preset} />}
           {onglet === 'reprendre' && <AReprendreProf eleves={eleves} lignes={lignes} naviguer={naviguer} onDevoir={p => { setPreset(p); setOnglet('devoirs'); }} />}
-
           {onglet === 'eleves' && <ElevesProf onApercu={setApercu} classe={classe} eleves={eleves} lignes={lignes} exos={exos} defis={defis} etq={etq} proprio={proprio} onReinitialiser={reinitialiser} onSupprimer={supprimerEleve} />}
+
+          {onglet === 'reglages' && (
+            <div data-reglages>
+              <section className="sp-carte">
+                <h3>👥 Élèves et comptes</h3>
+                <p className="sp-sous">Ajoutez des comptes si un élève arrive en cours d’année, ou téléchargez les résultats de la classe.</p>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span style={{ fontSize: 14, color: KIT.txt2 }}>Ajouter</span>
+                  <input type="number" min={1} max={40} value={ajout} onChange={e => setAjout(e.target.value)} style={{ ...champ, width: 64 }} aria-label="Nombre d’élèves à ajouter" />
+                  <button onClick={ajouter} style={styleBouton(false, '#475569')} disabled={occupe}>élèves</button>
+                  <button onClick={exporter} style={styleBouton(false, '#475569')}>⬇️ Télécharger les résultats (CSV)</button>
+                </div>
+              </section>
+              <section className="sp-carte">
+                <h3>📚 Ce que voient les élèves de « {classe.nom} »</h3>
+                <p className="sp-sous">Ces réglages sont modifiables à tout moment, sans effet sur les résultats.</p>
+                <ChapitreClasse classe={classe} dispo={chapDispo} occupe={occupe} onChoix={choisirChapitres} />
+        <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }}>
+          {vieDispo ? (
+            <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', cursor: 'pointer' }}>
+              <input type="checkbox" checked={!!classe.vie_classe} disabled={occupe} onChange={e => basculerVie(e.target.checked)} style={{ marginTop: 3, accentColor: '#0b4f94' }} />
+              <span><b><Pic n="trophy"/>Vie de classe</b> (désactivée par défaut) : les élèves de « {classe.nom} » voient un objectif collectif de la semaine et des « prouesses »
+                (pas de classement). Les pseudos sont tirés d’une liste fixe, et chaque élève décide s’il apparaît.</span>
+            </label>
+          ) : (
+            <span><Pic n="trophy"/><b>Vie de classe</b> : disponible après avoir exécuté <code>supabase/05-vie-de-classe.sql</code> dans Supabase (SQL Editor → Run).</span>
+          )}
+        </div>
+                <EtablissementClasse key={`${classe.id}|${classe.etablissement || ''}`} classe={classe} dispo={etabDispo} occupe={occupe} onEnregistrer={enregistrerEtab} />
+              </section>
+              <section className="sp-carte">
+                <h3>🌐 Site des élèves</h3>
+              {siteDispo && (
+          <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }}>
+            <b>🌐 Site des élèves</b> : les élèves de « {classe.nom} » se connectent sur
+            <label style={{ margin: '0 10px 0 8px', cursor: 'pointer' }}><input type="radio" name="site-classe" checked={classe.site !== 'energy'} disabled={occupe} onChange={() => choisirSite('paillasse')} style={{ accentColor: '#0b4f94' }} /> la Paillasse virtuelle</label>
+            <label style={{ cursor: 'pointer' }}><input type="radio" name="site-classe" checked={classe.site === 'energy'} disabled={occupe} onChange={() => choisirSite('energy')} style={{ accentColor: '#ea580c' }} /> Energy@School</label>
+            <div style={{ color: KIT.txt2, marginTop: 3 }}>Les comptes sont les mêmes ; ce réglage sépare les deux sites. Le suivi de l’avancement Energy@School se consulte sur le site Energy@School (avec votre compte professeur).</div>
+          </div>)}
+              </section>
+              <section className="sp-carte">
+                <h3>🤝 Partager la classe avec un collègue</h3>
+                <PartageClasse classe={classe} proprio={proprio} occupe={occupe} proteger={proteger} setMsg={setMsg} onQuitte={async () => { setClasseId(''); await chargerClasses(); }} />
+              </section>
+              {proprio && (
+                <section className="sp-carte sp-danger">
+                  <h3>🗑️ Supprimer la classe</h3>
+                  <p className="sp-sous">Efface la classe, ses comptes élèves et toutes leurs données. Définitif.</p>
+                  <button onClick={supprimerClasse} style={styleBouton(false, '#b91c1c')} disabled={occupe}><Pic n="trash"/>Supprimer « {classe.nom} »</button>
+                </section>)}
+            </div>)}
+
+          {onglet === 'compte' && carteCompte}
 
           {onglet === 'sims' && (
             <div>
@@ -370,8 +453,8 @@ export function SimulationSuiviProf({ naviguer }) {
                     <td style={td}>{x.travailles ? formatDuree(x.tempsMed) : '—'}</td></tr>))}</tbody>
               </table>
             </div>)}
+          </div>
         </>)}
-      
     </div>
   );
 }
