@@ -25,24 +25,32 @@ export function ChapitreClasse({ classe, dispo, occupe, onChoix }) {
   return (
     <div style={{ ...styleBoite, margin: '0 0 10px', fontSize: 13.5 }}>
       <div><b><Pic n="book"/>Chapitre en cours</b> pour « {classe.nom} » : les élèves connectés voient ces chapitres en premier dans « Je m’entraîne », avec leurs simulations et l’exercice conseillé (jusqu’à {MAX_CHAPITRES} chapitres). Le reste reste accessible, replié.</div>
-      {NIVEAUX_CHAPITRES.map(n => (
-        <div key={n.key} role="group" aria-label={`Chapitres ${n.label}`} data-niveau={n.key} style={{ marginTop: 10 }}>
-          <div style={{ fontSize: 12, fontWeight: 800, color: KIT.txt2, letterSpacing: 0.5, marginBottom: 4 }}>{n.label.toUpperCase()}</div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {chapitresDuNiveau(n.key).map(c => {
+      {NIVEAUX_CHAPITRES.map(n => {
+        const liste = chapitresDuNiveau(n.key), choisis = liste.filter(c => cur.includes(c.id));
+        return (
+        <details key={n.key} role="group" aria-label={`Chapitres ${n.label}`} data-niveau={n.key} open={choisis.length > 0 || undefined} style={{ marginTop: 8, border: `1px solid ${KIT.bord}`, borderRadius: 14, background: '#f6f9fd' }}>
+          <summary style={{ cursor: 'pointer', padding: '9px 13px', fontWeight: 800, color: KIT.txt, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span>{n.label}</span>
+            {choisis.length > 0
+              ? <span style={{ fontSize: 12.5, fontWeight: 700, background: '#f5a31a', color: '#3a2500', borderRadius: 999, padding: '2px 10px' }}>{choisis.length} choisi{choisis.length > 1 ? 's' : ''}</span>
+              : <span style={{ fontSize: 12.5, fontWeight: 600, color: KIT.txt2 }}>{liste.length} chapitres</span>}
+          </summary>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', padding: '0 13px 12px' }}>
+            {liste.map(c => {
               const on = cur.includes(c.id), plein = !on && cur.length >= MAX_CHAPITRES;
               const ne = c.domaines.reduce((s, d) => s + (nbExos.get(d) || 0), 0);
               return (
                 <button key={c.id} type="button" aria-pressed={on} disabled={occupe || plein} onClick={() => bascule(c.id)} data-chapitre-id={c.id}
                   title={`${c.sims.length} simulation${c.sims.length > 1 ? 's' : ''} · ${ne} exercice${ne > 1 ? 's' : ''} de remédiation`}
                   style={{ cursor: plein ? 'default' : 'pointer', font: 'inherit', fontSize: 13.5, fontWeight: 700, padding: '5px 11px', borderRadius: 999, border: `1.5px solid ${on ? ROSE : KIT.bord}`, background: on ? ROSE : '#fff', color: on ? '#fff' : KIT.txt2, opacity: plein ? 0.5 : 1, textAlign: 'left' }}>
-                  {on ? '✓ ' : ''}{c.label} <span style={{ fontWeight: 600, opacity: 0.85 }}>({c.sims.length} sim. · {ne} exo.)</span>
+                  {on ? '✓ ' : ''}{c.label}
                 </button>);
             })}
           </div>
-        </div>))}
+        </details>);
+      })}
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 8 }}>
-        {cur.length === 0 ? 'Aucun chapitre choisi : les élèves voient la liste complète, comme avant.' : 'Entre parenthèses : le nombre de simulations du chapitre et d’exercices de remédiation (S’APP et ANA) du thème rattaché. Les calculs (REA) sont proposés à part, pour tous les chapitres.'}
+        {cur.length === 0 ? 'Aucun chapitre choisi : les élèves voient la liste complète, comme avant.' : 'Les exercices de remédiation (S’APP et ANA) du thème rattaché sont proposés avec le chapitre ; les calculs (REA) le sont à part, pour tous les chapitres.'}
       </div>
     </div>);
 }
