@@ -420,7 +420,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
       </div>
       {(etat.fini || estTermine(parseInt(new URLSearchParams(window.location.search).get('sim')))) && (
         <div hidden aria-hidden="true">
-          {etapes.map((e2, k) => e2.retenir ? <ARetenir key={k} titre={e2.retenirTitre || 'À RETENIR'} titreEtape={e2.titre}>{e2.retenir}</ARetenir> : null)}
+          {etapes.map((e2, k) => e2.retenir ? <ARetenir key={k} titre={e2.retenirTitre || 'À RETENIR'} titreEtape={e2.titre} ordre={k}>{e2.retenir}</ARetenir> : null)}
         </div>)}
     </div>
   );
@@ -430,7 +430,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
 
 // Encadré « À RETENIR » : ce que l'élève doit mémoriser (formule, schéma, ordres de grandeur), en quelques lignes très courtes.
 // À son affichage, la carte est rangée dans « Mes fiches » (Mon compte) : l'élève la retrouve, la relit et l'imprime pour réviser.
-export function ARetenir({ titre = 'À RETENIR', children, sansFiche = false, titreEtape, capture = true, rangee = null }) {
+export function ARetenir({ titre = 'À RETENIR', children, sansFiche = false, titreEtape, capture = true, rangee = null, ordre }) {
   const contenu = useRef(null);
   const [, relire] = useState(0);
   useEffect(() => {
@@ -443,7 +443,7 @@ export function ARetenir({ titre = 'À RETENIR', children, sansFiche = false, ti
       const carte = el.closest('[data-retenir]');
       const zone = carte?.parentElement;
       const etape = titreEtape || (zone?.querySelector('[data-titre-etape]') || null)?.textContent?.trim() || '';
-      const fiche = { sim, nomSim: nomsSim[sim] || '', etape: etape || (typeof titre === 'string' ? titre : ''), html: el.innerHTML, texte: el.textContent };
+      const fiche = { sim, nomSim: nomsSim[sim] || '', etape: etape || (typeof titre === 'string' ? titre : ''), html: el.innerHTML, texte: el.textContent, ordre };
       if (EN_RECOLTE) { envoyerRecolte(fiche); return; }   // cadre de récolte : c'est la page « Mes fiches » qui range la carte
       const cle = noterFiche(fiche);
       if (cle) relire(n => n + 1);

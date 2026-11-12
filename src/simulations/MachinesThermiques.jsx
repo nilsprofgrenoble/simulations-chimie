@@ -20,7 +20,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, Formule, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 
 const SIM_ID = 89;
@@ -375,13 +375,55 @@ function etapesGuide() {
         options: ['passe de l\'état vapeur à l\'état liquide en cédant de l\'énergie à l\'eau du bassin', 's\'évapore en captant l\'énergie de l\'eau du bassin', 'est comprimé par le compresseur'], bonne: 0,
         indice: '« Condenseur » et « se condense » : le changement d\'état va de la vapeur vers le liquide. Que devient l\'énergie libérée par ce changement d\'état ?', } },
 
-    { titre: 'Le détendeur : revenir au point de départ', texte: <>Le liquide, encore sous haute pression, traverse le détendeur : sa pression chute, sa température aussi. Il redevient capable de s'évaporer à la température de l'air extérieur : le cycle peut recommencer.</>,
+    { titre: 'Le détendeur : revenir au point de départ',
+      retenirTitre: 'À RETENIR : LE CIRCUIT COMPLET, EN QUATRE ORGANES',
+      retenir: <>
+        <div>Le fluide frigorigène tourne en <strong>boucle fermée</strong> : il revient à son état initial après chaque cycle.</div>
+        <ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Évaporateur</strong> (côté source froide) : liquide → vapeur ; le fluide <strong>capte</strong> de l’énergie.</li>
+          <li><strong>Compresseur</strong> : il reçoit le travail électrique W ; pression et température <strong>augmentent</strong>. Compression rapide : pas de transfert thermique pendant.</li>
+          <li><strong>Condenseur</strong> (côté source chaude) : vapeur → liquide ; le fluide <strong>cède</strong> l’énergie utile (PAC).</li>
+          <li><strong>Détendeur</strong> : pression et température <strong>chutent</strong> ; le liquide peut de nouveau s’évaporer.</li>
+        </ul>
+      </>,
+      texte: <>Le liquide, encore sous haute pression, traverse le détendeur : sa pression chute, sa température aussi. Il redevient capable de s'évaporer à la température de l'air extérieur : le cycle peut recommencer.</>,
       organe: 'detendeur', montreEnergies: false,
       tache: { type: 'qcm', q: 'À la sortie du détendeur, dans quel état et à quelle pression se trouve le fluide ?',
         options: ['Liquide, à basse pression, prêt à s\'évaporer dans l\'évaporateur', 'Vapeur, à haute pression', 'Liquide, à haute pression'], bonne: 0,
         indice: 'Le cycle doit se refermer : le fluide doit retrouver les conditions de la première étape (celle de l\'évaporateur).', } },
 
-    { titre: 'Bilan d\'un cycle : l\'énergie se conserve', texte: <>Sur un cycle complet, le fluide revient à son état initial : son énergie interne ne change pas, donc ΔU = 0. Le premier principe, ΔU = W + Q, s'écrit alors W + Q_c + Q_f = 0. La PAC fonctionne ici avec une puissance électrique W = {fmt(G.w, 1)} kW, et capte une puissance thermique Q_f = {fmt(GP.qChaude - G.w, 1)} kW à l'air extérieur.</>,
+    { titre: 'Bilan d\'un cycle : l\'énergie se conserve',
+      retenirTitre: 'À RETENIR : LE BILAN D’UN CYCLE',
+      retenir: <>
+        <svg viewBox="0 0 300 136" style={{ width: '100%', maxWidth: 300, display: 'block', margin: '0 auto' }} role="img" aria-label="Machine thermique réceptrice : elle reçoit le travail W et la chaleur Qf de la source froide, et cède la chaleur Qc à la source chaude">
+          <circle cx="48" cy="78" r="38" fill="#dbeafe" stroke="#93c5fd" strokeWidth="2"/>
+          <text x="48" y="74" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#1d4ed8">Source</text>
+          <text x="48" y="87" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#1d4ed8">froide</text>
+          <circle cx="252" cy="78" r="38" fill="#fee2e2" stroke="#fca5a5" strokeWidth="2"/>
+          <text x="252" y="74" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#b91c1c">Source</text>
+          <text x="252" y="87" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#b91c1c">chaude</text>
+          <rect x="112" y="52" width="76" height="52" rx="12" fill="#dcfce7" stroke="#86efac" strokeWidth="2"/>
+          <text x="150" y="75" textAnchor="middle" fontSize="11" fontWeight="700" fill="#15803d">Machine</text>
+          <text x="150" y="90" textAnchor="middle" fontSize="10" fill="#15803d">réceptrice</text>
+          <line x1="88" y1="78" x2="104" y2="78" stroke="#2563eb" strokeWidth="5"/><polygon points="112,78 102,72 102,84" fill="#2563eb"/>
+          <text x="100" y="64" textAnchor="middle" fontSize="11" fontWeight="700" fill="#1d4ed8">Q<tspan dy="3" fontSize="8">f</tspan></text>
+          <line x1="188" y1="78" x2="204" y2="78" stroke="#dc2626" strokeWidth="5"/><polygon points="212,78 202,72 202,84" fill="#dc2626"/>
+          <text x="200" y="64" textAnchor="middle" fontSize="11" fontWeight="700" fill="#b91c1c">Q<tspan dy="3" fontSize="8">c</tspan></text>
+          <line x1="150" y1="10" x2="150" y2="42" stroke="#9333ea" strokeWidth="5"/><polygon points="150,52 144,42 156,42" fill="#9333ea"/>
+          <text x="162" y="30" fontSize="12" fontWeight="700" fill="#7e22ce">W</text>
+          <text x="150" y="128" textAnchor="middle" fontSize="10.5" fill="#334155">l’énergie va du froid vers le chaud, grâce à W</text>
+        </svg>
+        <Formule><mi>Δ</mi><mi>U</mi><mo>=</mo><mi>W</mi><mo>+</mo><msub><mi>Q</mi><mi>c</mi></msub><mo>+</mo><msub><mi>Q</mi><mi>f</mi></msub><mo>=</mo><mn>0</mn></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Sur un <strong>cycle</strong>, le fluide revient à son état initial : <strong>ΔU = 0</strong> (premier principe). Les mêmes relations valent pour les puissances (en kW).</li>
+          <li>En valeurs positives, comme sur le schéma : l’énergie cédée à la source chaude vient de la source froide <strong>et</strong> du compresseur.</li>
+        </ul>
+        <Formule><msub><mi>Q</mi><mi>c</mi></msub><mo>=</mo><msub><mi>Q</mi><mi>f</mi></msub><mo>+</mo><mi>W</mi></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Machine <strong>réceptrice</strong> (PAC, groupe froid) : elle reçoit W et transfère l’énergie de la source froide vers la source chaude, <strong>à contre-sens du transfert spontané</strong> (second principe).</li>
+        </ul>
+      </>,
+      texte: <>Sur un cycle complet, le fluide revient à son état initial : son énergie interne ne change pas, donc ΔU = 0. Le premier principe, ΔU = W + Q, s'écrit alors W + Q_c + Q_f = 0. La PAC fonctionne ici avec une puissance électrique W = {fmt(G.w, 1)} kW, et capte une puissance thermique Q_f = {fmt(GP.qChaude - G.w, 1)} kW à l'air extérieur.</>,
       organe: null, montreEnergies: false,
       tache: { type: 'num', q: 'Puissance thermique Q_c cédée à l\'eau du bassin', unite: 'kW', vrai: GP.qChaude, tol: 0.02, affiche: x => fmt(x, 1), cs: 3, detail: true,
         calcul: () => [`Premier principe sur un cycle : ΔU = W + Q_c + Q_f = 0, donc Q_c = −(W + Q_f).`,
@@ -399,7 +441,20 @@ function etapesGuide() {
         options: ['W > 0, Q_c < 0, Q_f > 0', 'W > 0, Q_c > 0, Q_f < 0', 'W < 0, Q_c > 0, Q_f > 0'], bonne: 0,
         indice: 'Le compresseur donne du travail au fluide. Le fluide cède de l\'énergie à l\'eau du bassin (condenseur) et en reçoit de l\'air extérieur (évaporateur).', } },
 
-    { titre: 'Le COP : la performance de la machine', texte: <>Le coefficient de performance (COP) compare l'énergie utile à l'énergie payée : pour une PAC, COP = Q_c / W_elec. Le fabricant annonce un COP de {fmt(GP.cop, 1)} pour la PAC du bassin, et la puissance électrique du compresseur est W = {fmt(G.w, 1)} kW.</>,
+    { titre: 'Le COP : la performance de la machine',
+      retenirTitre: 'À RETENIR : LES DEUX COP',
+      retenir: <>
+        <div>Le <strong>COP</strong> compare l’énergie <strong>utile</strong> à l’énergie <strong>payée</strong> (l’électricité du compresseur). Il n’a pas d’unité.</div>
+        <Formule><mi>COP</mi><mtext> (PAC)</mtext><mo>=</mo><mfrac><msub><mi>Q</mi><mi>c</mi></msub><msub><mi>W</mi><mtext>élec</mtext></msub></mfrac></Formule>
+        <Formule><mi>COP</mi><mtext> (groupe froid)</mtext><mo>=</mo><mfrac><msub><mi>Q</mi><mi>f</mi></msub><msub><mi>W</mi><mtext>élec</mtext></msub></mfrac></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Même machine, même circuit : seule change l’énergie utile, <strong>côté chaud</strong> pour une PAC, <strong>côté froid</strong> pour un groupe froid.</li>
+          <li>Pour une PAC, le COP est <strong>supérieur à 1</strong> : Q<sub>c</sub> = Q<sub>f</sub> + W est plus grand que W. L’énergie en plus vient de la source froide : ce n’est pas un rendement supérieur à 100 %.</li>
+          <li>Pour trouver l’énergie utile : <strong>Q<sub>utile</sub> = COP × W<sub>élec</sub></strong> (on multiplie, on ne divise pas).</li>
+          <li>Ordre de grandeur réel : COP de 3 à 5 pour le chauffage d’une maison (eau à 35 °C et plus). La PAC du bassin fait mieux parce que l’eau n’est qu’à 22 °C.</li>
+        </ul>
+      </>,
+      texte: <>Le coefficient de performance (COP) compare l'énergie utile à l'énergie payée : pour une PAC, COP = Q_c / W_elec. Le fabricant annonce un COP de {fmt(GP.cop, 1)} pour la PAC du bassin, et la puissance électrique du compresseur est W = {fmt(G.w, 1)} kW.</>,
       organe: null, montreEnergies: true,
       tache: { type: 'num', q: `Puissance thermique utile Q_c de la PAC (COP = ${fmt(GP.cop, 1)})`, unite: 'kW', vrai: GP.cop * G.w, tol: 0.02, affiche: x => fmt(x, 1), cs: 3, detail: true,
         calcul: () => [`Définition : COP = Q_c / W_elec, donc Q_c = COP × W_elec.`,
@@ -425,7 +480,18 @@ function etapesGuide() {
         options: ['Le COP augmente : l\'écart entre sources diminue', 'Le COP diminue : la source froide apporte moins d\'énergie', 'Le COP ne change pas'], bonne: 0,
         indice: 'Regardez la courbe : le COP monte ou descend quand on se rapproche de T_c ?', } },
 
-    { titre: 'La limite théorique : efficacité thermodynamique', texte: <>Le COP d'une machine réelle ne peut pas dépasser une limite théorique, calculée avec les températures exprimées <strong>en kelvins</strong> : pour une PAC, COP_max = T_c / (T_c − T_f). Pour la PAC du bassin (T_c = {G.tc} °C, T_f = {G.tf} °C), la machine réelle est très en dessous de cette limite.</>,
+    { titre: 'La limite théorique : efficacité thermodynamique',
+      retenirTitre: 'À RETENIR : LA LIMITE THÉORIQUE (EN KELVINS)',
+      retenir: <>
+        <Formule><msub><mi>COP</mi><mtext>max, PAC</mtext></msub><mo>=</mo><mfrac><msub><mi>T</mi><mi>c</mi></msub><mrow><msub><mi>T</mi><mi>c</mi></msub><mo>−</mo><msub><mi>T</mi><mi>f</mi></msub></mrow></mfrac></Formule>
+        <Formule><msub><mi>COP</mi><mtext>max, froid</mtext></msub><mo>=</mo><mfrac><msub><mi>T</mi><mi>f</mi></msub><mrow><msub><mi>T</mi><mi>c</mi></msub><mo>−</mo><msub><mi>T</mi><mi>f</mi></msub></mrow></mfrac></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Les températures se mettent <strong>en kelvins</strong> : T(K) = T(°C) + 273,15. L’<strong>écart</strong> T<sub>c</sub> − T<sub>f</sub> est le même en K et en °C.</li>
+          <li>Méthode : ① convertir T<sub>c</sub> et T<sub>f</sub> en K ② calculer l’écart ③ diviser T<sub>c</sub> (PAC) ou T<sub>f</sub> (groupe froid) par cet écart.</li>
+          <li>Piège : laisser les températures en °C donne un résultat faux.</li>
+        </ul>
+      </>,
+      texte: <>Le COP d'une machine réelle ne peut pas dépasser une limite théorique, calculée avec les températures exprimées <strong>en kelvins</strong> : pour une PAC, COP_max = T_c / (T_c − T_f). Pour la PAC du bassin (T_c = {G.tc} °C, T_f = {G.tf} °C), la machine réelle est très en dessous de cette limite.</>,
       organe: null, montreEnergies: true,
       tache: { type: 'num', q: 'Efficacité thermodynamique maximale de la PAC du bassin (en kelvins !)', unite: '', vrai: GMAX, tol: 0.02, affiche: x => fmt(x, 1), cs: 3, detail: true,
         calcul: () => [`Formule : COP_max = T_c / (T_c − T_f), températures en kelvins.`,
@@ -437,7 +503,15 @@ function etapesGuide() {
         indice: 'Deux conversions à ne pas oublier : T(K) = T(°C) + 273,15, à faire AVANT le calcul. L\'écart T_c − T_f, lui, est le même dans les deux unités.',
         expl: <>COP_max = {fmt(K(G.tc), 2)} / {G.tc - G.tf} ≈ <strong>{fmt(GMAX, 1)}</strong>, alors que le COP réel vaut {fmt(GP.cop, 1)}.</> } },
 
-    { titre: 'COP réel contre limite théorique', texte: <>Le COP réel de la PAC du bassin vaut {fmt(GP.cop, 1)}, très loin sous la limite théorique de {fmt(GMAX, 1)} : frottements, pertes thermiques, compresseur imparfait. La limite n'est pas un objectif, c'est un plafond.</>,
+    { titre: 'COP réel contre limite théorique',
+      retenirTitre: 'À RETENIR : COP RÉEL ET LIMITE THÉORIQUE',
+      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+        <li>Le COP d’une machine réelle reste <strong>strictement inférieur</strong> à la limite théorique : frottements, pertes thermiques, compresseur imparfait. La limite est un <strong>plafond</strong>, pas un objectif.</li>
+        <li>Le COP est <strong>d’autant plus grand que l’écart T<sub>c</sub> − T<sub>f</sub> est petit</strong> : une PAC « décroche » quand il gèle.</li>
+        <li>Dans la simulation : le rendement global est supposé constant (<strong>42 %</strong> de la limite pour la PAC, <strong>30 %</strong> pour le groupe froid). En vrai, il varie avec les conditions de fonctionnement.</li>
+        <li>Exemple, PAC du bassin (T<sub>c</sub> = 22 °C = 295,15 K ; T<sub>f</sub> = 7 °C = 280,15 K) : COP<sub>max</sub> = 295,15 / 15 ≈ <strong>19,7</strong> ; COP réel = <strong>8,3</strong>.</li>
+      </ul>,
+      texte: <>Le COP réel de la PAC du bassin vaut {fmt(GP.cop, 1)}, très loin sous la limite théorique de {fmt(GMAX, 1)} : frottements, pertes thermiques, compresseur imparfait. La limite n'est pas un objectif, c'est un plafond.</>,
       organe: null, montreEnergies: true,
       tache: { type: 'qcm', q: 'Que peut-on affirmer à propos du COP d\'une machine thermique réelle ?',
         options: [`Il est toujours strictement inférieur à l'efficacité thermodynamique maximale`, 'Il peut dépasser la limite théorique si la machine est bien réglée', 'Il est égal à la limite théorique pour une machine industrielle'], bonne: 0,
@@ -449,7 +523,22 @@ function etapesGuide() {
         options: ['Le fluide revient exactement dans son état initial à la fin de chaque cycle', 'Le compresseur ne consomme aucune énergie', 'Les deux sources ont la même température'], bonne: 0,
         indice: 'ΔU compare l\'énergie interne du fluide entre le début et la fin du cycle. Que faut-il pour qu\'elle soit nulle ?', } },
 
-    { titre: 'Bravo !', texte: <>Vous savez décrire les quatre organes, faire le bilan d'un cycle et calculer un COP. Passez en exploration libre pour faire varier les températures des deux sources, puis tentez le défi !</>,
+    { titre: 'Bravo !',
+      retenirTitre: 'À RETENIR : LA MÉTHODE, DE W AU COP',
+      retenir: <>
+        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+          <li><strong>Repérer l’énergie utile</strong> : Q<sub>c</sub> pour une PAC, Q<sub>f</sub> pour un groupe froid.</li>
+          <li><strong>Q<sub>utile</sub> = COP × W<sub>élec</sub></strong>.</li>
+          <li><strong>L’autre transfert</strong> par le bilan Q<sub>c</sub> = Q<sub>f</sub> + W : PAC → Q<sub>f</sub> = Q<sub>c</sub> − W ; groupe froid → Q<sub>c</sub> = Q<sub>f</sub> + W.</li>
+          <li><strong>Juger la machine</strong> : comparer le COP à la limite théorique, calculée en kelvins.</li>
+        </ol>
+        <ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Convention de signes du système (reçu &gt; 0, cédé &lt; 0), pour la PAC : <strong>W &gt; 0</strong>, <strong>Q<sub>f</sub> &gt; 0</strong> (reçus), <strong>Q<sub>c</sub> &lt; 0</strong> (cédé).</li>
+          <li>Exemple, PAC du bassin : W = 2,0 kW et COP = 8,3 donnent Q<sub>c</sub> = 8,3 × 2,0 = <strong>16,6 kW</strong> et Q<sub>f</sub> = 16,6 − 2,0 = <strong>14,6 kW</strong>.</li>
+          <li><strong>Pièges :</strong> des °C au lieu des K dans la limite théorique ; confondre COP réel et limite ; oublier W dans le bilan ; diviser par le COP au lieu de multiplier.</li>
+        </ul>
+      </>,
+      texte: <>Vous savez décrire les quatre organes, faire le bilan d'un cycle et calculer un COP. Passez en exploration libre pour faire varier les températures des deux sources, puis tentez le défi !</>,
       organe: null, montreEnergies: true, sansTache: true },
   ];
 }
@@ -671,19 +760,7 @@ export function SimulationMachinesThermiques() {
         ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div>
         : mode === 'explore' ? exploration
         : <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{schemaGuide}</div>}
-      {mode === 'guide' && (
-        <>
-          <CarteParcours etapes={etapes} etat={guide} setEtat={setGuide} fin={finParcours} />
-          <ARetenir titre="À RETENIR">
-            <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-              <li>Une machine thermique fonctionne en <strong>cycle</strong> : le fluide revient à son état initial, donc <strong>ΔU = W + Q<sub>c</sub> + Q<sub>f</sub> = 0</strong>.</li>
-              <li>Une machine <strong>réceptrice</strong> (PAC, réfrigérateur) reçoit du travail et transfère de l'énergie de la source froide vers la source chaude, à contre-sens du transfert spontané.</li>
-              <li>PAC : <strong>COP = Q<sub>c</sub> / W<sub>elec</sub></strong> ; machine frigorifique : <strong>COP = Q<sub>f</sub> / W<sub>elec</sub></strong>. Le COP augmente quand l'écart entre les deux sources diminue.</li>
-              <li>Limite théorique (kelvins) : <strong>T<sub>c</sub>/(T<sub>c</sub> − T<sub>f</sub>)</strong> pour une PAC, <strong>T<sub>f</sub>/(T<sub>c</sub> − T<sub>f</sub>)</strong> pour un groupe froid ; le COP réel reste <strong>strictement inférieur</strong> à cette limite.</li>
-            </ul>
-          </ARetenir>
-        </>
-      )}
+      {mode === 'guide' && <CarteParcours etapes={etapes} etat={guide} setEtat={setGuide} fin={finParcours} />}
       {mode !== 'guide' && panneauHypo}
     </div>
   );

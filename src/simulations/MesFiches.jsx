@@ -40,7 +40,7 @@ function FicheSim({ g, couleur, coche, bascule, naviguer, impression }) {
       </ol>
     </>);
   if (impression) return (
-    <section className="fiche-feuille" style={{ '--c': couleur }}>
+    <section className={`fiche-feuille ${g.L.length >= 4 ? 'fiche-longue' : 'fiche-courte'}`} style={{ '--c': couleur }}>
       <header><span className="fiche-feuille-niv">{g.libNiv}</span> {g.chapLabel}<h2>{g.nom}</h2></header>
       {corps}
     </section>);
@@ -125,14 +125,14 @@ export function SimulationFiches({ naviguer }) {
   }, [eleve]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   const libNiv = k => (k === 'tous' ? 'Tous' : k === 'autre' ? 'Autres' : NIVEAUX_CHAPITRES.find(n => n.key === k)?.label || k);
-  // une fiche par simulation, ses points dans l'ordre des étapes du parcours (date de première vue)
+  // une fiche par simulation, ses points dans l'ordre des étapes du parcours (rang de l'étape ; à défaut, date de première vue)
   const groupes = useMemo(() => {
     const m = new Map();
     fiches.forEach(f => {
       if (!m.has(f.sim)) { const c = chapitresDeSim(f.sim)[0]; m.set(f.sim, { sim: f.sim, nom: f.nom || `Simulation ${f.sim}`, chap: c ? c.id : 'autre', chapLabel: c ? c.label : 'Autres simulations', niv: c ? c.niveau : 'autre', libNiv: libNiv(c ? c.niveau : 'autre'), L: [] }); }
       m.get(f.sim).L.push(f);
     });
-    m.forEach(g => g.L.sort((a, b) => (a.t0 || 0) - (b.t0 || 0)));
+    m.forEach(g => g.L.sort((a, b) => (Number.isFinite(a.ordre) ? a.ordre : 1e6) - (Number.isFinite(b.ordre) ? b.ordre : 1e6) || (a.t0 || 0) - (b.t0 || 0)));
     return [...m.values()];
   }, [fiches]);   // eslint-disable-line react-hooks/exhaustive-deps
   const visibles = groupes.filter(g => niveau === 'tous' || g.niv === niveau);

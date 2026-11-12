@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
+  BoutonsModes, LigneMesure, ARetenir, FormuleEnLigne, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import { SUBSTRATS, REACTIFS, MECA, proportions, profil, energieEn, barriere } from "./snModele";
 
@@ -93,23 +93,90 @@ function etapesGuide(st, regler) {
   const ici = (s, r, c) => sub === s && re === r && (c === undefined || chaud === c);
   const le_faire = (s, r, c, consigne) => ({ type: 'action', ok: ici(s, r, c), faire: () => regler(s, r, c), label: 'Le faire pour moi', consigne, indice: 'Utilise les menus « Halogénoalcane » et « Réactif », ou le bouton « Le faire pour moi ».' });
   return [
-    { titre: 'Un halogénoalcane et un réactif', texte: <>Un halogénoalcane R–Br a un carbone <strong>positivement polarisé</strong> (δ+) lié à Br. Un réactif riche en électrons peut deux choses : <strong>attaquer ce carbone</strong> (substitution) ou <strong>arracher un H voisin</strong> (élimination d'un H et de Br : on forme un alcène). Premier cas : un halogénoalcane <strong>primaire</strong> avec la base forte HO⁻.</>,
+    { titre: 'Un halogénoalcane et un réactif',
+      retenirTitre: 'À RETENIR : DEUX VOIES POSSIBLES',
+      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+        <li>Dans R–Br, le carbone lié à Br est <strong>δ+</strong> (Br est plus électronégatif que C).</li>
+        <li><strong>Substitution (S)</strong> : le réactif remplace Br sur le carbone. Avec HO⁻ : R–Br + HO⁻ → R–OH + Br⁻ (un <strong>alcool</strong>).</li>
+        <li><strong>Élimination (E)</strong> : le réactif arrache un H voisin et Br part. Avec HO⁻ : R–Br + HO⁻ → alcène + H₂O + Br⁻ (un <strong>alcène</strong>).</li>
+        <li>Un réactif est <strong>nucléophile</strong> s’il attaque un carbone, <strong>base</strong> s’il arrache un H. Le même réactif peut jouer les deux rôles : tout l’enjeu est de savoir lequel l’emporte.</li>
+        <li>Dans SN2, E1… : S ou E donne le type de réaction ; <strong>1</strong> ou <strong>2</strong> indique combien d’espèces interviennent dans l’étape lente.</li>
+      </ul>,
+      texte: <>Un halogénoalcane R–Br a un carbone <strong>positivement polarisé</strong> (δ+) lié à Br. Un réactif riche en électrons peut deux choses : <strong>attaquer ce carbone</strong> (substitution) ou <strong>arracher un H voisin</strong> (élimination d'un H et de Br : on forme un alcène). Premier cas : un halogénoalcane <strong>primaire</strong> avec la base forte HO⁻.</>,
       tache: le_faire('prim', 'HO', false, 'Choisis le 1-bromobutane et HO⁻ à 25 °C.') },
     { titre: 'Une seule étape', texte: <>Fais glisser la bille sur le profil. Il n'y a qu'<strong>un état de transition</strong> : la réaction se fait en une seule étape. Le nucléophile attaque en même temps que Br⁻ part : c'est une <strong>SN2</strong>.</>,
       tache: { type: 'qcm', q: 'Pour une SN2, comment varie la vitesse si on double la concentration en HO⁻ ?', options: ['Elle ne change pas', 'Elle double : v = k·[RBr]·[HO⁻]', 'Elle est multipliée par quatre'], bonne: 1, indice: 'Dans une réaction en une seule étape, les deux réactifs interviennent dans l’état de transition.', expl: <>L'état de transition contient à la fois RBr et HO⁻ : la vitesse dépend des deux concentrations (ordre global 2). On dit <strong>bimoléculaire</strong>, d'où le « 2 » de SN2.</> } },
-    { titre: 'Le substrat tertiaire', texte: <>Remplace maintenant le substrat par un halogénoalcane <strong>tertiaire</strong> (le carbone lié à Br porte trois groupes alkyle), toujours avec HO⁻.</>,
+    { titre: 'Le substrat tertiaire',
+      retenirTitre: 'À RETENIR : LA CLASSE DU SUBSTRAT',
+      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+        <li>La <strong>classe</strong> d’un halogénoalcane est le nombre de groupes alkyle portés par le carbone lié à Br : <strong>primaire</strong> (1), <strong>secondaire</strong> (2), <strong>tertiaire</strong> (3).</li>
+        <li>Plus la classe monte, plus ce carbone est <strong>encombré</strong> : l’attaque par l’arrière (SN2) devient difficile.</li>
+        <li>Plus la classe monte, plus le carbocation formé est <strong>stable</strong> : SN1 et E1 deviennent possibles.</li>
+        <li>Barrière de la SN2 dans le modèle (ordres de grandeur schématiques) : <strong>85</strong> kJ·mol⁻¹ (primaire), <strong>100</strong> (secondaire), <strong>125</strong> (tertiaire).</li>
+        <li>Les trois substrats de la simulation : 1-bromobutane (primaire), 2-bromobutane (secondaire), 2-bromo-2-méthylpropane (tertiaire).</li>
+      </ul>,
+      texte: <>Remplace maintenant le substrat par un halogénoalcane <strong>tertiaire</strong> (le carbone lié à Br porte trois groupes alkyle), toujours avec HO⁻.</>,
       tache: le_faire('tert', 'HO', false, 'Choisis le 2-bromo-2-méthylpropane et HO⁻ à 25 °C.') },
     { titre: 'Pourquoi pas de SN2 ?', texte: <>Compare la barrière de la SN2 et celle de l'E2 pour ce substrat (boutons « Mécanisme examiné » du profil).</>,
       tache: { type: 'qcm', q: 'Pourquoi la SN2 est-elle quasi impossible sur un substrat tertiaire ?', options: ['HO⁻ est trop faible comme nucléophile', 'Le carbone est encombré par les trois groupes alkyle : l’attaque par l’arrière est bloquée', 'Br⁻ est un mauvais groupe partant'], bonne: 1, indice: 'La SN2 demande une approche du nucléophile du côté opposé à Br.', expl: <>Trois groupes alkyle entourent le carbone : HO⁻ ne peut pas approcher par l'arrière (barrière SN2 ≈ 125 kJ/mol). L'<strong>E2</strong> est bien plus facile : HO⁻ attaque un H périphérique, plus accessible. HO⁻ est ici une <strong>base</strong> plutôt qu’un nucléophile.</> } },
     { titre: 'Sans base forte : le solvant seul', texte: <>Garde le substrat tertiaire, mais remplace HO⁻ par <strong>l'eau</strong> (nucléophile faible, base faible).</>,
       tache: le_faire('tert', 'H2O', false, 'Choisis le 2-bromo-2-méthylpropane et l’eau à 25 °C.') },
-    { titre: 'Deux étapes et un carbocation', texte: <>Le profil montre maintenant <strong>deux états de transition</strong> séparés par un minimum : le <strong>carbocation</strong>. Anime-le avec la bille. L'étape 1 est la rupture de C–Br, sans aucun réactif : c'est l'étape lente.</>,
+    { titre: 'Deux étapes et un carbocation',
+      retenirTitre: 'À RETENIR : UNE ÉTAPE OU DEUX ?',
+      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+        <li><strong>SN2 et E2</strong> : une seule étape, un seul état de transition ; les deux réactifs y participent.</li>
+        <li><strong>SN1 et E1</strong> : deux étapes, avec un <strong>carbocation</strong> entre les deux. C’est un <strong>intermédiaire</strong> (un creux du profil), pas un état de transition (un sommet).</li>
+        <li>Étape 1 : rupture de C–Br, sans aucun réactif. C’est l’étape <strong>lente</strong>, elle fixe la vitesse. Étape 2 : le nucléophile ou la base arrive sur le carbocation, étape rapide.</li>
+        <li>Stabilité du carbocation : <strong>tertiaire &gt; secondaire &gt; primaire</strong>. Énergie du carbocation dans le modèle : 55 (tertiaire), 85 (secondaire), 160 kJ·mol⁻¹ (primaire).</li>
+        <li>Un carbocation peut se réarranger : voir la simulation « Transposition de carbocation ».</li>
+      </ul>,
+      texte: <>Le profil montre maintenant <strong>deux états de transition</strong> séparés par un minimum : le <strong>carbocation</strong>. Anime-le avec la bille. L'étape 1 est la rupture de C–Br, sans aucun réactif : c'est l'étape lente.</>,
       tache: { type: 'num', q: 'Quelle est l’énergie d’activation de l’étape 1 (ET₁ − réactifs) pour ce substrat ?', unite: 'kJ/mol', vrai: barriere('SN1', 'tert', 'H2O'), tol: 0.02, cs: 2, indice: 'Lis l’énergie de ET₁ sur le profil ; les réactifs sont à 0.', calcul: () => [`E(ET₁) − E(réactifs) = ${barriere('SN1', 'tert', 'H2O')} − 0 = ${barriere('SN1', 'tert', 'H2O')} kJ/mol`] } },
     { titre: 'La loi de vitesse de la SN1', texte: <>L'étape lente ne fait intervenir que le substrat. Le nucléophile arrive après, dans une étape rapide.</>,
       tache: { type: 'qcm', q: 'Si on double la concentration du nucléophile, la vitesse d’une SN1 …', options: ['est doublée', 'ne change pas : v = k·[RBr]', 'est divisée par deux'], bonne: 1, indice: 'La vitesse est fixée par l’étape lente.', expl: <>La vitesse est celle de l'étape lente (ET₁), qui ne dépend que de [RBr] : ordre 1, réaction <strong>monomoléculaire</strong>, d'où le « 1 » de SN1.</> } },
     { titre: 'Le substrat secondaire et la stéréochimie', texte: <>Le 2-bromobutane est <strong>chiral</strong> (le carbone lié à Br est asymétrique). Place-toi sur ce substrat avec l'eau et observe l'étape 2 du mécanisme : le nucléophile arrive sur le carbocation <strong>plan</strong>.</>,
       tache: { ...le_faire('sec', 'H2O', false, 'Choisis le 2-bromobutane et l’eau à 25 °C.'), } },
-    { titre: 'SN1 ou SN2 : conséquence sur la configuration', texte: <>Rappel : en SN2, le nucléophile attaque par l'arrière (inversion). En SN1, le carbocation est plan.</>,
+    { titre: 'SN1 ou SN2 : conséquence sur la configuration',
+      retenirTitre: 'À RETENIR : LES MARQUEURS DES MÉCANISMES',
+      retenir: <>
+        <svg viewBox="0 0 300 124" style={{ width: '100%', maxWidth: 300, display: 'block', margin: '0 auto' }} role="img" aria-label="SN2 : le nucléophile attaque par l’arrière, la configuration s’inverse. SN1 : le carbocation est plan, le nucléophile peut attaquer sur les deux faces, on obtient un mélange racémique.">
+          <text x="70" y="14" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0284c7">SN2 : inversion</text>
+          <text x="228" y="14" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0891b2">SN1 : racémique</text>
+          <line x1="150" y1="6" x2="150" y2="118" stroke="#cbd5e1" strokeDasharray="3,3"/>
+          <g stroke="#0f172a" strokeWidth="2" strokeLinecap="round">
+            <line x1="70" y1="66" x2="70" y2="36"/><line x1="70" y1="66" x2="46" y2="94"/><line x1="70" y1="66" x2="94" y2="94"/>
+          </g>
+          <circle cx="70" cy="66" r="4" fill="#0f172a"/>
+          <text x="70" y="32" textAnchor="middle" fontSize="10" fill="#0f172a">R</text><text x="40" y="104" textAnchor="middle" fontSize="10" fill="#0f172a">R</text><text x="100" y="104" textAnchor="middle" fontSize="10" fill="#0f172a">R</text>
+          <text x="14" y="70" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0284c7">Nu⁻</text>
+          <line x1="26" y1="66" x2="60" y2="66" stroke="#0284c7" strokeWidth="2"/><polygon points="64,66 56,62 56,70" fill="#0284c7"/>
+          <text x="126" y="70" textAnchor="middle" fontSize="11" fontWeight="700" fill="#b45309">Br⁻</text>
+          <line x1="78" y1="66" x2="112" y2="66" stroke="#b45309" strokeWidth="1.5" strokeDasharray="3,2"/>
+          <text x="70" y="120" textAnchor="middle" fontSize="9" fill="#475569">attaque par l’arrière</text>
+          <polygon points="188,78 268,78 254,56 202,56" fill="#e0f2fe" stroke="#7dd3fc"/>
+          <g stroke="#0f172a" strokeWidth="2" strokeLinecap="round">
+            <line x1="228" y1="67" x2="208" y2="70"/><line x1="228" y1="67" x2="248" y2="70"/><line x1="228" y1="67" x2="228" y2="58"/>
+          </g>
+          <circle cx="228" cy="67" r="3.5" fill="#0f172a"/><text x="238" y="64" fontSize="11" fontWeight="700" fill="#0f172a">+</text>
+          <text x="202" y="76" textAnchor="middle" fontSize="9.5" fill="#0f172a">R</text><text x="254" y="76" textAnchor="middle" fontSize="9.5" fill="#0f172a">R</text><text x="228" y="54" textAnchor="middle" fontSize="9.5" fill="#0f172a">R</text>
+          <text x="228" y="26" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0891b2">Nu⁻</text>
+          <line x1="228" y1="31" x2="228" y2="44" stroke="#0891b2" strokeWidth="2"/><polygon points="228,50 223,42 233,42" fill="#0891b2"/>
+          <text x="228" y="108" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0891b2">Nu⁻</text>
+          <line x1="228" y1="96" x2="228" y2="88" stroke="#0891b2" strokeWidth="2"/><polygon points="228,82 223,90 233,90" fill="#0891b2"/>
+          <text x="228" y="121" textAnchor="middle" fontSize="9" fill="#475569">carbocation plan : deux faces</text>
+        </svg>
+        <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5, width: '100%' }}>
+          <thead><tr><th style={{ padding: '3px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Mécanisme</th><th style={{ padding: '3px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Étapes</th><th style={{ padding: '3px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Loi de vitesse</th><th style={{ padding: '3px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Marqueur</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', verticalAlign: 'top' }}><strong>SN2</strong></td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', textAlign: 'center', verticalAlign: 'top', whiteSpace: 'nowrap' }}>1</td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', verticalAlign: 'top' }}><FormuleEnLigne><mi>v</mi><mo>=</mo><mi>k</mi><mo>·</mo><mo stretchy="false">[</mo><mi>RBr</mi><mo stretchy="false">]</mo><mo>·</mo><mo stretchy="false">[</mo><mi>Nu</mi><mo stretchy="false">]</mo></FormuleEnLigne></td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', verticalAlign: 'top' }}>inversion de configuration</td></tr>
+            <tr><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', verticalAlign: 'top' }}><strong>SN1</strong></td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', textAlign: 'center', verticalAlign: 'top', whiteSpace: 'nowrap' }}>2</td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', verticalAlign: 'top' }}><FormuleEnLigne><mi>v</mi><mo>=</mo><mi>k</mi><mo>·</mo><mo stretchy="false">[</mo><mi>RBr</mi><mo stretchy="false">]</mo></FormuleEnLigne></td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', verticalAlign: 'top' }}>racémique (si C asymétrique)</td></tr>
+            <tr><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', verticalAlign: 'top' }}><strong>E2</strong></td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', textAlign: 'center', verticalAlign: 'top', whiteSpace: 'nowrap' }}>1</td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', verticalAlign: 'top' }}><FormuleEnLigne><mi>v</mi><mo>=</mo><mi>k</mi><mo>·</mo><mo stretchy="false">[</mo><mi>RBr</mi><mo stretchy="false">]</mo><mo>·</mo><mo stretchy="false">[</mo><mi>B</mi><mo stretchy="false">]</mo></FormuleEnLigne></td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', verticalAlign: 'top' }}>alcène, en une étape</td></tr>
+            <tr><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', verticalAlign: 'top' }}><strong>E1</strong></td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', textAlign: 'center', verticalAlign: 'top', whiteSpace: 'nowrap' }}>2</td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', verticalAlign: 'top' }}><FormuleEnLigne><mi>v</mi><mo>=</mo><mi>k</mi><mo>·</mo><mo stretchy="false">[</mo><mi>RBr</mi><mo stretchy="false">]</mo></FormuleEnLigne></td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', verticalAlign: 'top' }}>alcène, par le carbocation</td></tr>
+          </tbody>
+        </table>
+        <div style={{ fontSize: 13.5 }}>Ordre global 2 : les deux réactifs dans l’étape déterminante. Ordre 1 : seul le substrat.</div>
+      </>,
+      texte: <>Rappel : en SN2, le nucléophile attaque par l'arrière (inversion). En SN1, le carbocation est plan.</>,
       tache: { type: 'qcm', q: 'Partant du (R)-2-bromobutane pur, quel est le produit d’une SN1 ?', options: ['Le (S)-butan-2-ol pur (inversion)', 'Le (R)-butan-2-ol pur (rétention)', 'Un mélange racémique de butan-2-ol (R et S)'], bonne: 2, indice: 'Le nucléophile peut attaquer le carbocation plan sur ses deux faces.', expl: <>Le carbocation est plan, achiral : l'attaque est possible sur les deux faces avec la même probabilité. On obtient un <strong>racémique</strong>, alors qu'une SN2 donnerait l'énantiomère inversé (S), pur.</> } },
     { titre: 'L\'effet de la température', texte: <>Reste sur le même substrat et chauffe à <strong>80 °C</strong>. Observe la barre de composition.</>,
       tache: le_faire('sec', 'H2O', true, 'Passe à 80 °C avec le 2-bromobutane et l’eau.') },
@@ -117,7 +184,26 @@ function etapesGuide(st, regler) {
       tache: { type: 'qcm', q: 'Pour limiter l’élimination et obtenir surtout l’alcool, on opère plutôt …', options: ['à température élevée', 'à température modérée ou basse', 'la température n’a aucun effet'], bonne: 1, indice: 'L’élimination est favorisée par l’élévation de température.', expl: <>L'élimination est favorisée par la température (variation d'entropie positive). Pour obtenir l'alcool, on reste à température modérée.</> } },
     { titre: 'Une base encombrée', texte: <>Dernier cas : la base <strong>tBuO⁻</strong> est très encombrée. Essaie-la avec un substrat <strong>primaire</strong>, qui donnait de la SN2 avec HO⁻.</>,
       tache: le_faire('prim', 'tBuO', false, 'Choisis le 1-bromobutane et tBuO⁻ à 25 °C.') },
-    { titre: 'Nucléophile ou base ?', texte: <>tBuO⁻ est volumineux : attaquer un carbone est difficile, arracher un H périphérique est facile.</>,
+    { titre: 'Nucléophile ou base ?',
+      retenirTitre: 'À RETENIR : PRÉVOIR LE MÉCANISME DOMINANT',
+      retenir: <>
+        <table style={{ borderCollapse: 'collapse', margin: '2px 0 6px', fontSize: 13.5, width: '100%' }}>
+          <thead><tr><th style={{ padding: '3px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>à 25 °C</th><th style={{ padding: '3px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>HO⁻<br/><span style={{ fontWeight: 400 }}>base forte</span></th><th style={{ padding: '3px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>tBuO⁻<br/><span style={{ fontWeight: 400 }}>base encombrée</span></th><th style={{ padding: '3px 8px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>eau, éthanol<br/><span style={{ fontWeight: 400 }}>sans base</span></th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', verticalAlign: 'top' }}><strong>primaire</strong></td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', textAlign: 'center', verticalAlign: 'top', whiteSpace: 'nowrap' }}>SN2 (90 %)</td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', textAlign: 'center', verticalAlign: 'top', whiteSpace: 'nowrap' }}>E2 (85 %)</td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', textAlign: 'center', verticalAlign: 'top', whiteSpace: 'nowrap' }}>pas de réaction</td></tr>
+            <tr><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', verticalAlign: 'top' }}><strong>secondaire</strong></td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', textAlign: 'center', verticalAlign: 'top', whiteSpace: 'nowrap' }}>E2 (70 %)</td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', textAlign: 'center', verticalAlign: 'top', whiteSpace: 'nowrap' }}>E2 (95 %)</td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', textAlign: 'center', verticalAlign: 'top', whiteSpace: 'nowrap' }}>SN1 (75 %)</td></tr>
+            <tr><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', verticalAlign: 'top' }}><strong>tertiaire</strong></td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', textAlign: 'center', verticalAlign: 'top', whiteSpace: 'nowrap' }}>E2 (90 %)</td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', textAlign: 'center', verticalAlign: 'top', whiteSpace: 'nowrap' }}>E2 (100 %)</td><td style={{ padding: '3px 8px', borderTop: '1px solid #c5d9f0', textAlign: 'center', verticalAlign: 'top', whiteSpace: 'nowrap' }}>SN1 (80 %)</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Une <strong>base encombrée</strong> donne surtout l’élimination (E2), même sur un substrat primaire.</li>
+          <li><strong>Primaire + bon nucléophile</strong> : SN2. <strong>Secondaire ou tertiaire + base forte</strong> : E2.</li>
+          <li><strong>Sans base forte</strong>, sur un substrat secondaire ou tertiaire : SN1 (avec un peu de E1). Un primaire ne réagit pratiquement pas.</li>
+          <li><strong>Chauffer</strong> augmente la part d’élimination : 2-bromobutane dans l’eau, 25 % d’alcène à 25 °C, 45 % à 80 °C.</li>
+          <li>Pourcentages = ordres de grandeur arrondis à 5 % (modèle de la simulation), pas des mesures. Seuls les solvants protiques sont traités.</li>
+        </ul>
+      </>,
+      texte: <>tBuO⁻ est volumineux : attaquer un carbone est difficile, arracher un H périphérique est facile.</>,
       tache: { type: 'qcm', q: 'Quel est le produit majoritaire avec tBuO⁻ sur un substrat primaire ?', options: ['L’éther (substitution)', 'L’alcène (élimination E2)', 'L’alcool'], bonne: 1, indice: 'Une base encombrée attaque plus facilement un H qu’un carbone.', expl: <>L'encombrement fait monter la barrière de la SN2 (≈ 110 kJ/mol) au-dessus de celle de l'E2 (≈ 95 kJ/mol) : on obtient surtout l'<strong>alcène</strong>. C'est la méthode classique pour favoriser l'élimination.</> } },
     { titre: 'Bilan', texte: <>Tu sais prévoir le mécanisme dominant.</>,
       retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>

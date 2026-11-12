@@ -105,7 +105,7 @@ export async function capturerFigure() {
     if (gd && window.Plotly && window.Plotly.toImage) {
       const rg = gd.getBoundingClientRect(), L = Math.min(720, Math.round(rg.width));
       for (const q of [1, 0.7]) {
-        const d = await window.Plotly.toImage(gd, { format: 'jpeg', width: Math.round(L * q), height: Math.round(rg.height * L * q / rg.width) });
+        const d = await window.Plotly.toImage(gd, { format: 'png', width: Math.round(L * q), height: Math.round(rg.height * L * q / rg.width) });
         if (d && d.length < TAILLE_MAX_FIGURE) return d;
       }
       return null;

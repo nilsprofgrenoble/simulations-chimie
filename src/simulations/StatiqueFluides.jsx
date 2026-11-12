@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, Formule, avecIndices, fmt, lireNombre, proche } from "../commun";
 import { polyReg, evalPoly } from "./QuantumCAN";
 import { Pic } from "../Pictos";
 
@@ -138,6 +138,18 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
       texte: <>Plongez l'embout à <strong>h = 15 cm</strong> sous la surface et observez le manomètre.</>,
       tache: { type: 'action', ok: hCm === 15, label: 'Plonger à h = 15 cm', faire: () => setHCm(15), consigne: hCm === 15 ? null : `Profondeur : ${hCm} cm → 15 cm` } },
     { id: 'delta', titre: 'L’effet de l’eau', focus: ['manip'],
+      retenirTitre: 'À RETENIR : L’EFFET DE L’EAU ET LES UNITÉS',
+      retenir: <>
+        <div>L’eau située au-dessus de l’embout <strong>pèse</strong> : elle ajoute à la pression atmosphérique le terme ρ·g·h.</div>
+        <Formule><mi>Δ</mi><mi>P</mi><mo>=</mo><mi>P</mi><mo>−</mo><msub><mi>P</mi><mtext>atm</mtext></msub><mo>=</mo><mi>ρ</mi><mo>·</mo><mi>g</mi><mo>·</mo><mi>h</mi></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>ρ en kg·m⁻³, g = 9,81 N·kg⁻¹, h en m : ΔP s’obtient <strong>en pascals</strong>.</li>
+          <li>Le manomètre donne la pression <strong>absolue</strong> : à la surface il indique P<sub>atm</sub>, pas zéro.</li>
+          <li><strong>1 Pa = 1 N·m⁻²</strong> ; <strong>1 hPa = 100 Pa</strong> ; <strong>1 bar = 10<sup>5</sup> Pa = 1&nbsp;000 hPa</strong> ; <strong>1 mCE</strong> (mètre de colonne d’eau) <strong>≈ 9&nbsp;810 Pa</strong>.</li>
+          <li>Pression atmosphérique normale : <strong>≈ 1&nbsp;013 hPa</strong> (elle varie de quelques % avec la météo).</li>
+          <li><strong>Réflexe :</strong> convertir les hPa en Pa (× 100) avant tout calcul avec ρ, g et h.</li>
+        </ul>
+      </>,
       texte: <>La pression a augmenté par rapport à la surface : c'est l'effet de l'eau située au-dessus de l'embout. Lisez la pression à h = 15 cm et comparez-la à celle de la surface ({P0} hPa, étape 2).</>,
       tache: { type: 'num', indice: 'Faites la différence entre la pression lue à 15 cm et celle lue à la surface (étape 2), puis convertissez le résultat en pascals (× 100).', q: 'Augmentation de pression entre h = 0 et h = 15 cm', unite: 'Pa', vrai: (P15 - P0) * 100, tol: 0.03, affiche: x => fmt(x, 0),
         bloque: !(eauRef && hCm === 15) ? 'Réglez la profondeur h = 15 cm.' : null,
@@ -164,6 +176,28 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
       tache: { type: 'qcm', indice: 'Comparez terme à terme P = a·h + b et P = Patm + ρ·g·h : que multiplie h dans la seconde équation ?', q: 'Que représente la pente a de la droite ?', options: ['ρ × g (masse volumique × intensité de la pesanteur)', 'La pression atmosphérique', 'La profondeur maximale'], bonne: 0,
         expl: 'En identifiant P = a·h + b et P = Patm + ρ·g·h : a = ρ·g (en Pa/m) et b = Patm.' } },
     { id: 'rho', titre: 'Masse volumique du liquide', focus: ['courbe'],
+      retenirTitre: 'À RETENIR : LIRE LA DROITE D’ÉTALONNAGE',
+      retenir: <>
+        <div>La droite mesurée et la loi de la statique des fluides ont la même forme : on <strong>identifie</strong> terme à terme.</div>
+        <Formule><mi>P</mi><mo>=</mo><mi>a</mi><mo>·</mo><mi>h</mi><mo>+</mo><mi>b</mi></Formule>
+        <Formule><mi>P</mi><mo>=</mo><mi>ρ</mi><mo>·</mo><mi>g</mi><mo>·</mo><mi>h</mi><mo>+</mo><msub><mi>P</mi><mtext>atm</mtext></msub></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Pente a = ρ·g</strong> (en Pa·m⁻¹), donc <strong>ρ = a / g</strong>.</li>
+          <li><strong>Ordonnée à l’origine b = P<sub>atm</sub></strong> (en Pa) : la pression à h = 0.</li>
+        </ul>
+        <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr>
+            <th style={{ padding: '2px 10px', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Liquide</th>
+            <th style={{ padding: '2px 10px', borderBottom: '1px solid #7aa6d6' }}>ρ (kg·m⁻³)</th>
+            <th style={{ padding: '2px 10px', borderBottom: '1px solid #7aa6d6' }}>a (Pa·m⁻¹)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 10px' }}>eau</td><td style={{ padding: '2px 10px', textAlign: 'center' }}>1&nbsp;000</td><td style={{ padding: '2px 10px', textAlign: 'center', whiteSpace: 'nowrap' }}>≈ 9&nbsp;810</td></tr>
+            <tr><td style={{ padding: '2px 10px' }}>eau saturée en sel</td><td style={{ padding: '2px 10px', textAlign: 'center' }}>1&nbsp;200</td><td style={{ padding: '2px 10px', textAlign: 'center', whiteSpace: 'nowrap' }}>≈ 11&nbsp;800</td></tr>
+            <tr><td style={{ padding: '2px 10px' }}>huile végétale</td><td style={{ padding: '2px 10px', textAlign: 'center' }}>920</td><td style={{ padding: '2px 10px', textAlign: 'center', whiteSpace: 'nowrap' }}>≈ 9&nbsp;030</td></tr>
+          </tbody>
+        </table>
+        <div style={{ fontSize: 13.5 }}>Avec g = 9,81 N·kg⁻¹. Le manomètre est arrondi à 1 hPa (≈ 1 cm d’eau) : on trouve ρ à quelques % près, pas exactement.</div>
+      </>,
       texte: <>Avec g = 9,81 m/s², déduisez la masse volumique ρ = a / g à partir de la pente de votre droite{fit1 ? <> (a = {fmt(a1, 0)} Pa/m)</> : null}.</>,
       tache: { type: 'num', indice: 'La pente vaut a = ρ·g (en Pa/m), donc ρ = a / g avec g = 9,81 m/s².', q: 'Masse volumique ρ du liquide', unite: 'kg/m³', vrai: a1 / G, tol: 0.02, affiche: x => fmt(x, 0),
         bloque: !(mod === 1 && fit1) ? 'Le modèle linéaire doit être affiché (étape précédente).' : null,
@@ -191,6 +225,21 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
         pieges: [[PincGuide * 100, 'Le manomètre affiche des hPa et on demande des hPa : ne convertissez pas en pascals.']],
         expl: `${PincGuide} hPa : bien plus que la pression atmosphérique, donc l'embout est sous l'eau.` } },
     { id: 'H', titre: 'En déduire la hauteur d’eau', focus: ['cuve', 'courbe'],
+      retenirTitre: 'À RETENIR : MÉTHODE, DE LA PRESSION À LA HAUTEUR',
+      retenir: <>
+        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+          <li><strong>Convertir</strong> la pression lue en pascals : P(Pa) = P(hPa) × 100.</li>
+          <li><strong>Isoler h</strong> dans P = a·h + b :</li>
+        </ol>
+        <Formule><mi>h</mi><mo>=</mo><mfrac><mrow><mi>P</mi><mo>−</mo><mi>b</mi></mrow><mi>a</mi></mfrac></Formule>
+        <ol start={3} style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+          <li><strong>Convertir</strong> h de mètres en centimètres (× 100) si on demande des cm.</li>
+        </ol>
+        <ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Embout <strong>au fond</strong> : la profondeur de l’embout est la hauteur d’eau H. Ailleurs, h n’est que la profondeur de l’embout.</li>
+          <li><strong>Pièges :</strong> oublier de retrancher b (h trop grand) ; mélanger hPa et Pa (facteur 100) ; rendre des m quand on demande des cm.</li>
+        </ul>
+      </>,
       texte: <>Rappel de vos résultats : modèle <strong>P = {fmt(a1, 0)}·h + {fmt(b1, 0)}</strong> (P en Pa, h en m), et pression lue au fond du récipient : <strong>{PincGuide} hPa</strong>. Avec votre modèle, trouvez la profondeur h correspondant à cette pression : c’est la hauteur d’eau H. Donnez H en centimètres.</>,
       tache: { type: 'num', q: 'Hauteur d’eau H dans le récipient', unite: 'cm', vrai: HfitGuide, tol: 0.03, affiche: x => fmt(x, 0),
         indice: 'On isole h dans P = a·h + b : h = (P − b) / a. Attention aux unités : P en Pa (1 hPa = 100 Pa), h en m, puis convertir en cm.',
@@ -204,6 +253,29 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
           [(PincGuide - b1) / a1 * 100, 'Vous avez mélangé les unités : P doit être en Pa (1 hPa = 100 Pa) pour être comparée à a (Pa/m) et b (Pa).']],
         expl: `h = (${fmt(PincGuide * 100, 0)} − ${fmt(b1, 0)}) / ${fmt(a1, 0)} ≈ ${fmt(HfitGuide, 1)} cm. Le niveau réel (${fmt(H_GUIDE * 100, 0)} cm) est maintenant révélé sur le schéma : l'écart vient surtout de l'arrondi du manomètre à 1 hPa, soit environ 1 cm d'eau.` } },
     { id: 'hypotheses', titre: 'Sur quoi repose ce modèle ?', focus: ['hypo'],
+      retenirTitre: 'À RETENIR : CONSÉQUENCES ET LIMITES',
+      retenir: <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+        <svg viewBox="0 0 260 128" style={{ width: 230, flex: '0 0 auto' }} role="img" aria-label="Trois branches de formes différentes reliées par le bas : l’eau est au même niveau dans chacune">
+          <path d="M100,100 L120,100 L134.3,50 L85.7,50 Z" fill="rgba(56,189,248,0.4)"/>
+          <rect x="30" y="50" width="22" height="50" fill="rgba(56,189,248,0.4)"/>
+          <rect x="190" y="50" width="46" height="50" fill="rgba(56,189,248,0.4)"/>
+          <rect x="30" y="100" width="206" height="16" fill="rgba(56,189,248,0.4)"/>
+          <path d="M30,30 V116 H236 V30 M52,30 V100 H100 L80,30 M120,100 L140,30 M120,100 H190 V30" fill="none" stroke="#475569" strokeWidth="2.5" strokeLinejoin="round"/>
+          <line x1="24" y1="50" x2="242" y2="50" stroke="#0284c7" strokeWidth="1.5" strokeDasharray="4,3"/>
+          <text x="163" y="44" textAnchor="middle" fontSize="8.5" fill="#0284c7">même niveau</text>
+          <line x1="16" y1="50" x2="16" y2="108" stroke="#b45309" strokeWidth="1.5"/>
+          <text x="8" y="82" fontSize="12" fontWeight="700" fill="#b45309" textAnchor="middle">h</text>
+          <circle cx="41" cy="108" r="3.5" fill="#f59e0b"/><circle cx="110" cy="108" r="3.5" fill="#f59e0b"/><circle cx="213" cy="108" r="3.5" fill="#f59e0b"/>
+          <text x="41" y="126" textAnchor="middle" fontSize="10" fill="#334155">P</text>
+          <text x="110" y="126" textAnchor="middle" fontSize="10" fill="#334155">P</text>
+          <text x="213" y="126" textAnchor="middle" fontSize="10" fill="#334155">P</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6, flex: '1 1 230px' }}>
+          <li>Liquide <strong>au repos</strong> : sa surface libre est <strong>plane et horizontale</strong>.</li>
+          <li>Dans un même liquide au repos, deux points à la <strong>même profondeur</strong> ont la <strong>même pression</strong>, quelle que soit la forme du récipient.</li>
+          <li>Liquides non miscibles superposés : on <strong>additionne</strong> les termes ρ·g·h de chaque couche, avec sa propre hauteur.</li>
+          <li><strong>Valable si</strong> le liquide est incompressible (ρ uniforme) et g uniforme. h se mesure <strong>à la verticale</strong>, depuis la surface libre.</li>
+        </ul></div>,
       texte: <>Lisez l'encadré « Hypothèses de travail ».</>,
       tache: { type: 'qcm', indice: 'Relisez le premier point de l’encadré : que dit-on de la masse volumique du liquide aux différentes profondeurs ?', q: 'Quelle hypothèse est faite sur le liquide ?', options: ['Il est incompressible : sa masse volumique est la même à toutes les profondeurs', 'Sa température change avec la profondeur', 'Il est en écoulement vers le fond'], bonne: 0,
         expl: 'Sans cette hypothèse, la pression ne serait plus proportionnelle à la profondeur. Pour un liquide sur quelques dizaines de centimètres, elle est très bien vérifiée.' } },
