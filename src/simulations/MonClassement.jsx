@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { rest, useSession } from "../serveur";
 import { pseudo, pseudoValide, propositions } from "../classe";
+import { ChoixDomaine } from "./ChoixDomaine";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  « CLASSEMENT PUBLIC » dans l'espace élève : choisir son pseudo (liste fixe, aucun texte libre) et décider d'apparaître
@@ -27,6 +28,7 @@ export function MonClassement({ naviguer, apercu = false }) {
   const monId = sess?.user?.id;
   const [etat, setEtat] = useState(apercu ? { moi: apercu.moi ? { adj: apercu.moi.adj, nom: apercu.moi.nom, classement: false } : null, etab: 'Ton établissement', classe: 'Ta classe', exclu: false } : undefined);              // undefined : chargement · null : indisponible · { moi, etab, classe }
   const [version, setVersion] = useState(0);
+  const [domaine, setDomaine] = useState('tout');
   const [idees, setIdees] = useState(() => propositions(4));
   const [change, setChange] = useState(false), [occupe, setOccupe] = useState(apercu), [msg, setMsg] = useState('');
 
@@ -57,7 +59,7 @@ export function MonClassement({ naviguer, apercu = false }) {
       setChange(false); recharger();
     } catch (e) {
       setMsg(e.statut === 409 ? 'Ce pseudo vient d’être pris dans ta classe : choisis-en un autre.' : 'Impossible d’enregistrer pour le moment. Réessaie dans un instant.');
-      setIdees(propositions(4));
+      setIdees(propositions(4, Math.random, [], domaine));
     }
     setOccupe(false);
   };
@@ -72,10 +74,11 @@ export function MonClassement({ naviguer, apercu = false }) {
   const choixPseudo = (
     <>
       <div>{moi ? 'Choisis un autre pseudo (tiré d’une liste, aucun texte libre) :' : 'Choisis ton pseudo (tiré d’une liste, aucun texte libre) :'}</div>
+      <ChoixDomaine valeur={domaine} disabled={occupe && !apercu} onChange={d => { setDomaine(d); setIdees(propositions(4, Math.random, [], d)); }} />
       <div className="mc-idees">
         {idees.map(([a, n]) => { const p = pseudo(a, n); return <button key={`${a}-${n}`} type="button" className="mc-idee" disabled={occupe} onClick={() => choisir(a, n)}><span aria-hidden="true">{p.icone}</span> {p.texte}</button>; })}
       </div>
-      <button type="button" className="mc-lien" onClick={() => setIdees(propositions(4))}>D’autres idées</button>
+      <button type="button" className="mc-lien" onClick={() => setIdees(propositions(4, Math.random, [], domaine))}>D’autres idées</button>
       {moi && <>{' · '}<button type="button" className="mc-lien" onClick={() => setChange(false)}>Garder mon pseudo</button></>}
     </>);
 
@@ -100,7 +103,7 @@ export function MonClassement({ naviguer, apercu = false }) {
             {exclu && <div className="mc-msg" role="status">Ton professeur t’a retiré du classement : tu n’y apparais pas. Parles-en avec lui si tu penses que c’est une erreur.</div>}
             <div style={{ marginTop: 10 }}>
               <button type="button" className="mc-lien" onClick={() => naviguer(104)}>Voir le classement</button>{' · '}
-              <button type="button" className="mc-lien" onClick={() => { setIdees(propositions(4)); setChange(true); }}>Changer de pseudo</button>
+              <button type="button" className="mc-lien" onClick={() => { setIdees(propositions(4, Math.random, [], domaine)); setChange(true); }}>Changer de pseudo</button>
             </div>
           </>)}
         {apercu && <div className="mc-msg" style={{ color: '#475569' }}>Aperçu : chez un vrai élève, la case est cliquable et le pseudo se choisit dans une liste.</div>}

@@ -175,3 +175,7 @@ Les scores sont calculés par le serveur à partir des mêmes lignes « activite
 4. **Signal « ⚠️ résultats à vérifier »** dans la carte d'un élève : au moins 5 exercices « réussis » absents du catalogue, ou au moins 10 réussites en moins de 10 secondes. C'est un signal, pas une preuve (un exercice très ancien, retiré du site depuis, peut aussi s'afficher ainsi).
 5. **Limite qui reste** : les réponses sont corrigées dans le navigateur de l'élève, le serveur ne peut pas les revérifier. Un élève qui fabrique lui-même de fausses réussites pour de vrais exercices peut gagner jusqu'à 150 étoiles par jour ; le signal ci-dessus et le bouton de retrait servent à cela.
 
+
+## Plus de pseudos (étape 28)
+
+Exécuter `15-pseudos-plus.sql` (Supabase → SQL Editor → Run) **tout de suite après la mise en ligne** : sans lui, un élève qui choisit l'un des nouveaux pseudos voit une erreur d'enregistrement. Vérification : deux lignes, « pseudos_adj_liste » et « pseudos_nom_liste ». Les pseudos déjà choisis ne changent pas. Listes dans `src/classe.js` : on peut seulement ajouter à la fin (256 maximum de chaque sorte).
