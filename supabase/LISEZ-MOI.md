@@ -155,3 +155,14 @@ Sécurité : seul un professeur marqué `admin` peut créer un compte (contrôl�
 Un élève connecté qui commence un parcours guidé à la maison le retrouve au lycée, à la même étape (et inversement).
 1. **SQL** : SQL Editor → New snippet → coller `12-etats-parcours.sql` → Run. Le résultat doit afficher une ligne `etats_parcours` avec « t ».
 2. Rien d'autre à faire : le site l'utilise tout seul dès que la table existe. Tant que le script n'est pas exécuté, la progression reste gardée dans le navigateur, comme avant.
+
+## Classement public (étape 26)
+
+1. **SQL** : SQL Editor → New snippet → coller `13-classement.sql` → **Run**. Le résultat doit afficher trois lignes : `etablissement`, `classement` puis `classement_public`. Sans risque, peut être relancé.
+2. **Établissement de chaque classe** : *Suivi professeur → ⚙️ Gérer la classe → 🏫 Établissement* (ex. « Lycée Argouges »), puis **Enregistrer**. Tant qu'il est vide, aucun élève de la classe n'apparaît dans le classement.
+3. **Chaque élève décide** : dans son espace (« Mon compte »), bloc « Classement public » : il choisit un pseudo (liste fixe) puis coche « Apparaître dans le classement public ». Case décochée par défaut ; cet accord est distinct de celui de la « vie de classe ».
+4. Le classement est la page `?sim=104` (lien « 🏅 Classement » en bas de chaque page), ouverte à tous sans compte. Quatre lames : étoiles, cette semaine (remise à zéro chaque lundi), défis, régularité.
+
+Ce qui est public pour un élève qui a coché : son pseudo, le nom de l'établissement, le nom de la classe et ses scores. Jamais d'identifiant, de nom ni d'adresse.
+Pour retirer quelqu'un tout de suite : effacer l'établissement de sa classe (plus personne de la classe n'apparaît), ou supprimer son compte.
+Les scores sont calculés par le serveur à partir des mêmes lignes « activites » que le carnet, mais ces lignes sont envoyées par le navigateur de l'élève : un élève très débrouillard pourrait les falsifier.

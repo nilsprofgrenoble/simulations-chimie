@@ -44,7 +44,7 @@ export function SimulationAPropos() {
         </div>
         <div style={styleBoite}>
           {titre('Données personnelles')}
-          <p style={para}>Les statistiques de fréquentation sont anonymes et sans cookie. Le compte élève est facultatif : il enregistre seulement le temps passé sur les simulations et les résultats aux exercices, visibles de l’élève et de son professeur, non notés, et supprimés à la fin de l’année scolaire.</p>
+          <p style={para}>Les statistiques de fréquentation sont anonymes et sans cookie. Le compte élève est facultatif : il enregistre seulement le temps passé sur les simulations et les résultats aux exercices, visibles de l’élève et de son professeur, non notés, et supprimés à la fin de l’année scolaire. Un élève peut, s’il le choisit (case à cocher, décochée par défaut, modifiable à tout moment), apparaître dans le classement public du site : seuls s’affichent alors un pseudo tiré d’une liste (jamais un nom), le nom de son établissement, le nom de sa classe et ses scores.</p>
         </div>
       </div>
     </div>
