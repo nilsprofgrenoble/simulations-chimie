@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo, useDeferredValue } from "react";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
@@ -235,6 +235,22 @@ export function SimulationDiffraction({ naviguer }) {
       tache: { type: 'qcm', q: 'Pour une ouverture donnée, plus la longueur d’onde est grande…', options: ['plus la diffraction est importante', 'moins la diffraction est importante', 'la diffraction ne dépend pas de λ'], bonne: 0,
         expl: 'La diffraction dépend du rapport entre la longueur d’onde λ et la taille a de l’ouverture. Elle est d’autant plus marquée que λ est grande ou que a est petite.', indice: "La diffraction est marquée quand λ est comparable à a : θ = λ ÷ a." } },
     { id: 'regler', titre: 'Afficher l’ouverture angulaire', focus: ['scene', 'reglages'],
+      retenirTitre: 'À RETENIR : LA DIFFRACTION',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Situation</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Derrière l’ouverture</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Conclusion</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>ouverture a ≫ λ</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>faisceau presque rectiligne</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>diffraction faible</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>ouverture a ≈ λ</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ondes étalées dans toutes les directions</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>diffraction marquée</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>même ouverture, λ plus grande</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>zone atteinte plus large</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>diffraction plus marquée</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La <strong>diffraction</strong> est l’étalement des directions de propagation d’une onde quand elle rencontre une <strong>ouverture ou un obstacle</strong> de petite dimension.</li>
+          <li>Elle concerne les <strong>ondes mécaniques</strong> (cuve à ondes, son) comme la <strong>lumière</strong>.</li>
+          <li>Elle est d’autant plus marquée que l’ouverture est <strong>petite</strong> ou la longueur d’onde <strong>grande</strong>.</li>
+        </ul>
+      </>,
       texte: <>Réglez <em>a</em> = 4{NB}cm et <em>λ</em> = 1{NB}cm, puis affichez la <strong>écart angulaire θ</strong> (traits rouges) : c’est l’écart angulaire qui limite la zone où l’onde est intense.</>,
       tache: { type: 'action', ok: scene === 'cuve' && Math.abs(cuve.a - 4) < 0.15 && Math.abs(cuve.lam - 1) < 0.1 && angle && vue === 'intensite', label: 'Régler et afficher θ',
         faire: () => { setScene('cuve'); setCuve({ a: 4, lam: 1 }); setAngle(true); setVue('intensite'); }, consigne: 'a = 4 cm, λ = 1 cm, vue « Amplitude », écart angulaire affichée' } },
@@ -246,6 +262,22 @@ export function SimulationDiffraction({ naviguer }) {
         pieges: [[14.3, 'Vous avez donné l’angle en degrés. La relation θ = λ/a donne des radians : θ = 0,25 rad (≈ 14°).'], [4, 'Division à l’envers : θ = λ / a, pas a / λ.']],
         expl: 'θ = λ / a = 1 / 4 = 0,25 rad, soit environ 14°. Les traits rouges tracés par la simulation (arcsin λ/a ≈ 14,5°) confirment que θ ≈ λ/a est une bonne approximation ici.', indice: "θ = λ ÷ a, avec λ et a dans la même unité." } },
     { id: 'porte', titre: 'On entend derrière une porte, mais on ne voit pas', focus: [],
+      retenirTitre: 'À RETENIR : L’ÉCART ANGULAIRE',
+      retenir: <>
+        <Formule><mi>θ</mi><mo>≈</mo><mfrac><mi>λ</mi><mi>a</mi></mfrac><mspace width="1.5em"/><mtext>(petits angles, θ en rad, λ et a dans la même unité)</mtext></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Situation</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Longueur d’onde</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Largeur a</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>θ = λ / a</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>cuve à ondes</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>λ = 1 cm</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>a = 4 cm</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,25 rad</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>voix derrière une porte</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>λ ≈ 0,5 m</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>a = 0,9 m</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 0,6 rad (marquée)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>lumière derrière la porte</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>λ ≈ 0,5 µm</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>a = 0,9 m</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 6 × 10⁻⁷ rad (négligeable)</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>On entend derrière une porte sans voir : pour le son, λ est comparable à a ; pour la lumière, λ ≪ a.</li>
+          <li>Pour voir la diffraction de la lumière, il faut une ouverture très fine (≈ 0,1 mm).</li>
+        </ul>
+      </>,
       texte: <>Une voix a une longueur d’onde d’environ 0,5{NB}m ; la lumière visible, d’environ 0,5{NB}µm. La porte ouverte mesure 0,9{NB}m de large.</>,
       tache: { type: 'qcm', q: 'Pourquoi entend-on quelqu’un parler derrière la porte sans le voir ?', options: ['le son se diffracte beaucoup (λ comparable à a), la lumière presque pas (λ ≪ a)', 'le son est plus rapide que la lumière', 'la lumière est absorbée par le mur'], bonne: 0,
         expl: 'Pour le son, λ ≈ 0,5 m est du même ordre que l’ouverture : il s’étale largement et contourne l’embrasure. Pour la lumière, λ ≈ 0,5 µm est un million de fois plus petite que la porte : la diffraction est invisible.', indice: "Comparez la longueur d’onde d’un son (de l’ordre du mètre) et celle de la lumière (de l’ordre du demi-micromètre) à la taille d’une porte." } },
@@ -257,6 +289,25 @@ export function SimulationDiffraction({ naviguer }) {
       tache: { type: 'qcm', q: 'La largeur L de la tache centrale se mesure…', options: ['entre les deux extinctions qui l’encadrent', 'entre les deux taches secondaires les plus lumineuses', 'du bord de l’écran à la tache'], bonne: 0,
         expl: 'La tache centrale est limitée par les deux premières extinctions : L est la distance entre leurs centres. On pointe les minima, pas les bords flous de la tache.', indice: "Repérez les zones sombres (extinctions) qui encadrent la tache." } },
     { id: 'pointer', titre: 'Pointer les extinctions', focus: ['ecran', 'mesures'],
+      retenirTitre: 'À RETENIR : LA FIGURE DE DIFFRACTION',
+      retenir: <>
+        <svg viewBox="0 0 420 170" role="img" aria-label="Diffraction d’un laser par une fente : le faisceau de longueur d’onde lambda traverse une fente de largeur a ; sur l’écran placé à la distance D, on observe une tache centrale de largeur L bordée de deux extinctions, puis des taches secondaires moins lumineuses ; l’écart angulaire theta vaut lambda divisé par a" style={{ width: '100%', maxWidth: 420, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <line x1="6" y1="85" x2="98" y2="85" stroke="#16a34a" strokeWidth="3" /><text x="8" y="72" fontSize="12" fontWeight="700" fill="#15803d">laser (λ)</text>
+          <rect x="104" y="20" width="8" height="55" fill="#475569" /><rect x="104" y="95" width="8" height="55" fill="#475569" /><text x="94" y="14" fontSize="12" fontWeight="700" fill="#334155">fente a</text>
+          <line x1="112" y1="78" x2="300" y2="30" stroke="#16a34a" strokeWidth="1.5" strokeDasharray="5 4" /><line x1="112" y1="92" x2="300" y2="140" stroke="#16a34a" strokeWidth="1.5" strokeDasharray="5 4" />
+          <path d="M150 85 A40 40 0 0 0 144 69" fill="none" stroke="#475569" strokeWidth="1.5" /><text x="152" y="68" fontSize="12" fontWeight="700" fill="#475569">θ</text>
+          <line x1="112" y1="160" x2="300" y2="160" stroke="#334155" strokeWidth="1.5" /><line x1="112" y1="155" x2="112" y2="165" stroke="#334155" /><line x1="300" y1="155" x2="300" y2="165" stroke="#334155" /><text x="206" y="156" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">D</text>
+          <rect x="300" y="8" width="10" height="144" fill="#e2e8f0" stroke="#475569" strokeWidth="1.5" />
+          <rect x="303" y="42" width="5" height="86" fill="#22c55e" /><rect x="303" y="22" width="5" height="12" fill="#86efac" /><rect x="303" y="136" width="5" height="12" fill="#86efac" />
+          <line x1="324" y1="42" x2="324" y2="128" stroke="#334155" strokeWidth="1.5" /><line x1="319" y1="42" x2="329" y2="42" stroke="#334155" /><line x1="319" y1="128" x2="329" y2="128" stroke="#334155" /><text x="334" y="90" fontSize="12" fontWeight="700" fill="#334155">L</text>
+          <text x="334" y="40" fontSize="10.5" fill="#475569">extinction</text><text x="334" y="134" fontSize="10.5" fill="#475569">extinction</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Une <strong>tache centrale</strong> très lumineuse, bordée de deux <strong>extinctions</strong> (minima d’intensité), puis des <strong>taches secondaires</strong> beaucoup moins lumineuses.</li>
+          <li>La <strong>largeur L</strong> de la tache centrale se mesure <strong>entre les deux premières extinctions</strong> (centre des creux d’intensité), pas au bord de la tache saturée.</li>
+          <li>Fente verticale : la figure s’étale dans la direction <strong>perpendiculaire</strong> à la fente.</li>
+        </ul>
+      </>,
       texte: <>Faites glisser les deux repères (orange et bleu) sur le <strong>centre</strong> des deux premières extinctions, de part et d’autre de la tache centrale. Pointez les minima de la courbe d’intensité sous l’image (les creux), et non le bord de la tache lumineuse, qui paraît plus étroite à cause de la saturation.</>,
       tache: { type: 'action', ok: laserDeBase && pointe, bloque: laserDeBase ? null : 'Revenez au réglage de base avec le bouton « Rétablir le réglage » sous les onglets.', consigne: 'Placez les deux repères sur les centres des deux premières extinctions', label: 'Placer pour moi', faire: () => setLz(l => ({ ...l, x1: -Lp / 2, x2: Lp / 2 })) } },
     { id: 'lireL', titre: 'La largeur de la tache centrale', focus: ['mesures'],
@@ -285,6 +336,22 @@ export function SimulationDiffraction({ naviguer }) {
       texte: <>Prenez maintenant un <strong>trou circulaire</strong> de diamètre <em>d</em> = 100{NB}µm. Observez la figure : disque central entouré d’anneaux.</>,
       tache: { type: 'action', ok: surLaser && lz.objet === 'trou' && lz.a === 100 && lz.lam === 532 && lz.D === 2, label: 'Mettre un trou de 100 µm', faire: () => { setScene('laser'); setL({ objet: 'trou', a: 100, lam: 532, D: 2 }); }, consigne: 'Choisissez « Trou circulaire », 100 µm' } },
     { id: 'trouL', titre: 'Le diamètre de la tache centrale', focus: ['mesures'],
+      retenirTitre: 'À RETENIR : LARGEUR DE LA TACHE CENTRALE',
+      retenir: <>
+        <Formule><mi>L</mi><mo>=</mo><mfrac><mrow><mn>2</mn><mi>λ</mi><mi>D</mi></mrow><mi>a</mi></mfrac><mspace width="1.2em"/><mi>a</mi><mo>=</mo><mfrac><mrow><mn>2</mn><mi>λ</mi><mi>D</mi></mrow><mi>L</mi></mfrac><mspace width="1.2em"/><mi>L</mi><mo>=</mo><mfrac><mrow><mn>2,44</mn><mi>λ</mi><mi>D</mi></mrow><mi>d</mi></mfrac></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Objet</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Largeur de la tache centrale</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Figure</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>fente ou fil de largeur a</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>L = 2 λ D / a</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>bande centrale</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>trou circulaire de diamètre d</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>L = 2,44 λ D / d</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>disque d’Airy entouré d’anneaux</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Convertir en <strong>unités SI</strong> avant de calculer : nm → 10⁻⁹ m, µm → 10⁻⁶ m, mm → 10⁻³ m.</li>
+          <li>Un <strong>obstacle</strong> (fil) donne la même figure qu’une <strong>ouverture</strong> de mêmes dimensions (sauf au centre) : on peut mesurer le diamètre d’un fil comme la largeur d’une fente.</li>
+          <li>Plus a est petit, plus L est grand : la diffraction est plus marquée.</li>
+        </ul>
+      </>,
       texte: <>Pour un trou circulaire, la tache centrale (disque d’Airy) a pour diamètre <strong>L = 2,44 λ D / d</strong>. Calculez-le pour ce réglage (<em>λ</em> = 532{NB}nm, <em>D</em> = 2,00{NB}m, <em>d</em> = 100{NB}µm), en millimètres.</>,
       tache: { type: 'num', q: 'Diamètre L de la tache centrale', unite: 'mm', vrai: M.largeurTrou(100e-6, 532e-9, 2) * 1e3, tol: 0.03, affiche: v => nbf(v, 1), cs: 3,
         calcul: () => ['Hypothèses : petits angles, écran loin du trou. Relation donnée : L = 2,44 λ D / d.', 'Unités SI : λ = 532 × 10⁻⁹ m ; D = 2,00 m ; d = 100 × 10⁻⁶ m.',
@@ -299,6 +366,15 @@ export function SimulationDiffraction({ naviguer }) {
       tache: { type: 'qcm', q: 'Quelle modification diminue le plus l’incertitude relative sur a ?', options: ['rapprocher l’écran de la fente, pour que la figure soit plus lumineuse', 'éloigner l’écran de la fente, pour que L augmente', 'prendre un laser de longueur d’onde plus petite, pour que λ soit plus précise'], bonne: 1,
         expl: 'L est proportionnel à D : en éloignant l’écran, L augmente alors que l’incertitude de pointé reste la même, donc l’incertitude relative u(L)/L diminue. Vous pouvez le vérifier avec le curseur de D, en vérifiant que les extinctions restent dans l’image.', indice: "L’incertitude relative vient de la lecture de L : plus L est grande, moins l’erreur de pointé pèse." } },
     { id: 'ua', titre: 'L’incertitude-type sur a', focus: ['incert', 'mesures'],
+      retenirTitre: 'À RETENIR : INCERTITUDE SUR a',
+      retenir: <>
+        <Formule><mfrac><mrow><mi>u</mi><mo>(</mo><mi>a</mi><mo>)</mo></mrow><mi>a</mi></mfrac><mo>=</mo><msqrt><msup><mrow><mo>(</mo><mfrac><mrow><mi>u</mi><mo>(</mo><mi>L</mi><mo>)</mo></mrow><mi>L</mi></mfrac><mo>)</mo></mrow><mn>2</mn></msup><mo>+</mo><msup><mrow><mo>(</mo><mfrac><mrow><mi>u</mi><mo>(</mo><mi>D</mi><mo>)</mo></mrow><mi>D</mi></mfrac><mo>)</mo></mrow><mn>2</mn></msup><mo>+</mo><msup><mrow><mo>(</mo><mfrac><mrow><mi>u</mi><mo>(</mo><mi>λ</mi><mo>)</mo></mrow><mi>λ</mi></mfrac><mo>)</mo></mrow><mn>2</mn></msup></msqrt></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Les sources d’erreur (pointé de L, mesure de D, longueur d’onde du laser) sont <strong>indépendantes</strong> : on combine les incertitudes <strong>relatives</strong> en quadrature.</li>
+          <li>Ici, le <strong>pointé de L</strong> domine : on améliore le protocole en agissant sur lui, par exemple en <strong>éloignant l’écran</strong> (D plus grand, donc L plus grand, donc u(L)/L plus petit).</li>
+          <li>u(a) = a × u(a)/a ; on la donne avec 1 ou 2 chiffres significatifs et la même unité que a.</li>
+        </ul>
+      </>,
       texte: <>Les sources d’erreur sur <em>L</em>, <em>D</em> et <em>λ</em> sont indépendantes : <strong>u(a)/a = √[ (u(L)/L)² + (u(D)/D)² + (u(λ)/λ)² ]</strong>. Calculez u(a) à partir des trois « u / valeur » du panneau « Incertitude »{isFinite(aCalc) ? <>, avec <em>a</em> = {nbf(aCalc, 0)}{NB}µm (étape « En déduire la largeur de la fente »)</> : null}.</>,
       tache: { type: 'num', q: 'Incertitude-type u(a)', unite: 'µm', vrai: inc ? inc.u * 1e6 : 1, tol: 0.1, affiche: v => nbf(v, 1), cs: 2,
         bloque: laserDeBase && pointe ? null : 'Placez d’abord les repères sur les extinctions (fente de 100 µm, D = 2,00 m, zoom × 1).',
@@ -309,12 +385,15 @@ export function SimulationDiffraction({ naviguer }) {
         pieges: [[inc ? aCalc * (inc.uL / (Lmes * 1e-3) + inc.uD / lz.D + inc.uLa / la) : 1, 'Vous avez additionné les incertitudes relatives. Elles se combinent en quadrature : racine de la somme des carrés.']],
         expl: inc ? `u(a) ≈ ${nbf(inc.u * 1e6, 1)} µm, soit ${nbf(inc.rel * 100, 1)} % de a. On écrit a = ${nbf(aCalc, 0)} µm avec u(a) = ${Number((inc.u * 1e6).toPrecision(1)).toString().replace('.', ',')} µm (u arrondie à un chiffre significatif).` : '', indice: "Si λ et D sont connus précisément, l’incertitude relative sur a est celle sur L. Puis u(a) = a × incertitude relative." } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
-        <li>la diffraction est un étalement des directions de propagation d’une onde limitée par une ouverture ou un obstacle ; elle concerne les ondes mécaniques comme la lumière</li>
-        <li>elle est d’autant plus marquée que la longueur d’onde est grande ou l’objet petit : θ ≈ λ / a</li>
-        <li>fente ou fil de largeur a : L = 2 λ D / a ; trou circulaire de diamètre d : L = 2,44 λ D / d</li>
-        <li>un obstacle donne la même figure qu’une ouverture de mêmes dimensions</li>
-        <li>L, D et λ sont mesurés avec une incertitude : on la combine, et on améliore le protocole en agissant sur la source qui domine</li></ul>,
+      retenirTitre: 'À RETENIR : LE BILAN',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Diffraction</strong> : étalement d’une onde (mécanique ou lumineuse) limitée par une ouverture ou un obstacle ; elle est plus marquée si λ est grande ou l’objet petit : θ ≈ λ / a.</li>
+          <li>Fente ou fil de largeur a : L = 2 λ D / a ; trou circulaire de diamètre d : L = 2,44 λ D / d.</li>
+          <li>Un obstacle donne la même figure qu’une ouverture de mêmes dimensions.</li>
+          <li>L, D et λ ont une incertitude : on la combine et on améliore le protocole sur la source qui domine.</li>
+        </ul>
+      </>,
       texte: <>Vous savez reconnaître la diffraction, prévoir l’effet de <em>λ</em> et de <em>a</em>, et mesurer une dimension avec son incertitude. Essayez maintenant les défis.</>, tache: null },
   ];
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
