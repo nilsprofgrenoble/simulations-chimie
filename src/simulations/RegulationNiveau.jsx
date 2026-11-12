@@ -176,7 +176,7 @@ export function Simulation5({ naviguer }) {
       texte: <>Les abonnés ouvrent et ferment leurs robinets quand ils le veulent.</>,
       tache: { type: 'qcm', q: 'Quelle est la grandeur perturbatrice ?', options: ['La hauteur d’eau H du réservoir', 'Le débit de la pompe', 'Le débit de puisage'], bonne: 2,
         expl: 'Le débit de puisage fait varier la hauteur sans que le régulateur le décide.', indice: "Elle n’est pas commandée par le régulateur, mais elle fait varier la grandeur réglée." } },
-    { titre: 'La régulation tout-ou-rien', focus: ['pompe'],
+    { titre: 'La régulation tout-ou-rien', focus: ['pompe'], retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>TOR : la commande ne prend que deux valeurs, 0 % ou 100 %</li><li>la pompe s’arrête au seuil haut (36 m) et redémarre au seuil bas (30 m)</li></ul>,
       texte: <>Le haut du réservoir est à <strong>36 m</strong> du sol, le bas à <strong>30 m</strong>. La pompe est régulée en
         <strong> tout-ou-rien</strong> (TOR) : si l'eau atteint le haut du réservoir, on arrête la pompe ; si elle atteint le bas, on la démarre.</>,
       tache: { type: 'qcm', q: 'En TOR, quelles valeurs peut prendre la commande de l’actionneur ?', options: ['Deux valeurs : 0 % et 100 %', 'Toutes les valeurs entre 0 % et 100 %'], bonne: 0, indice: "TOR signifie « tout ou rien »." } },
@@ -238,7 +238,7 @@ export function Simulation5({ naviguer }) {
         exemple 32 et 34 m, puis revenez à 30 et 36 m.</>,
       tache: { type: 'qcm', q: 'Si l’on rapproche les seuils…', options: ['la pompe démarre plus souvent, et s’use plus vite', 'la pompe tourne plus longtemps au total', 'le niveau devient instable'], bonne: 0,
         expl: 'Les cycles sont plus courts, mais le taux d’utilisation reste le même. Le réservoir joue moins bien son rôle de tampon.', indice: "Avec des seuils proches, le niveau passe plus vite d’un seuil à l’autre. Combien de cycles par heure ?" } },
-    { titre: 'La régulation proportionnelle', focus: ['pompe'],
+    { titre: 'La régulation proportionnelle', focus: ['pompe'], retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>P : Y = K<sub>p</sub> × (consigne − H), commande continue entre 0 et 100 %</li><li>pour fournir un débit non nul, il faut un écart non nul : le niveau se stabilise sous la consigne (écart statique)</li></ul>,
       texte: <>Avec une pompe à vitesse variable, on peut faire mieux que tout-ou-rien. En régulation <strong>proportionnelle</strong> (P),
         la commande est proportionnelle à l'écart entre la consigne et la mesure : Y = K<sub>p</sub> × (consigne − H). Les réglages
         sont apparus : passez en mode <strong>P</strong>, avec une consigne de 33 m et K<sub>p</sub> = 20 %/m.</>,
@@ -262,7 +262,7 @@ export function Simulation5({ naviguer }) {
       texte: <>Augmentez K<sub>p</sub>, par exemple à 80 %/m, et observez le niveau.</>,
       tache: { type: 'qcm', q: 'Quand Kp augmente, l’écart statique…', options: ['diminue', 'augmente', 'ne change pas'], bonne: 0,
         expl: 'Mais il ne s’annule jamais. Et dans un vrai système, avec des retards de mesure, un gain trop fort fait osciller le niveau (essayez le retard en exploration libre).', indice: "écart = Y ÷ K_p, avec Y fixé par le puisage." } },
-    { titre: 'La régulation proportionnelle-intégrale', focus: ['pompe'],
+    { titre: 'La régulation proportionnelle-intégrale', focus: ['pompe'], retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>PI : l’action intégrale fait évoluer la commande tant qu’il reste un écart</li><li>l’écart statique disparaît : le niveau rejoint la consigne (T<sub>i</sub> : temps intégral)</li></ul>,
       texte: <>Le régulateur <strong>PI</strong> ajoute une action intégrale : tant qu'il reste un écart, la commande continue d'évoluer.
         Le réglage du temps intégral est apparu : passez en mode <strong>PI</strong> (K<sub>p</sub> = 20 %/m, T<sub>i</sub> = 50 h).</>,
       tache: { type: 'qcm', q: 'Que devient l’écart statique ?', options: ['Il disparaît : le niveau rejoint la consigne', 'Il double', 'Il ne change pas'], bonne: 0,

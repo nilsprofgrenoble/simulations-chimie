@@ -157,7 +157,7 @@ export function Simulation6({ naviguer }) {
           `Débit : Q = Q_max × Y / 100 = ${fmt(Qmax, 0)} × ${fmt(Yreg2, 0)} / 100 = ${fmt(Qreg2, 1)} m³/h (régulateur P pur, pompe idéale).`],
         pieges: piegesValides(Qreg2, 0.02, [[Qmax * 2 / 100, 'Vous avez oublié K_p : Y = K_p × (consigne − H), pas seulement l’écart.'], [Yreg2, 'C’est la commande Y en % : convertissez-la en débit avec Q = Q_max × Y / 100.'], [Qmax * Yreg2, 'Il manque la division par 100 : Q = Q_max × Y / 100 (Y est en %).']]),
         expl: `Y = ${fmt(Kp, 0)} × 2 = ${fmt(Math.min(100, Kp * 2), 0)} %, soit ${fmt(qRegul(consigne - 2, consigne, Kp, Qmax), 1)} m³/h.`, indice: "Y = K_p × (consigne − H), puis Q = Q_max × Y ÷ 100 (avec Y limité à 100 %)." } },
-    { id: 'xp', titre: 'La bande proportionnelle', focus: ['graph'],
+    { id: 'xp', titre: 'La bande proportionnelle', focus: ['graph'], retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>régulateur proportionnel : Y = K<sub>p</sub> × (consigne − H), borné entre 0 et 100 %</li><li>bande proportionnelle : X<sub>p</sub> = 100 / K<sub>p</sub>, variation de H qui fait passer Y de 0 à 100 %</li><li>débit de la pompe : Q = Q<sub>max</sub> × Y / 100</li></ul>, retenirTitre: 'LE RÉGULATEUR P',
       texte: <>La <strong>bande proportionnelle</strong> X<sub>p</sub> est la variation de hauteur qui fait passer la commande de 0 à 100 % : X<sub>p</sub> = 100 / K<sub>p</sub>. Elle est
         tracée en violet sous le graphique. Ici K<sub>p</sub> = {fmt(Kp, 0)} %/m.</>,
       tache: { type: 'num', q: <>Bande proportionnelle X<sub>p</sub></>, unite: 'm', vrai: 100 / Kp, tol: 0.01, affiche: x => fmt(x, 1),
@@ -181,7 +181,7 @@ export function Simulation6({ naviguer }) {
           `H = consigne − écart = ${fmt(consigne, 0)} − ${fmt(eq.ES, 2)} = ${fmt(eq.H, 2)} m (régulateur P pur, pompe idéale, puisage indépendant de H).`],
         pieges: piegesValides(eq.H, 0.003, [[consigne + eq.ES, 'Signe : le niveau d’équilibre est sous la consigne, H = consigne − écart (et non +).'], [eq.ES, 'C’est l’écart statique. On demande la hauteur d’eau : H = consigne − écart.']]),
         expl: `H = ${fmt(consigne, 0)} − ${fmt(eq.ES, 2)} = ${fmt(eq.H, 2)} m.`, indice: "Le point de fonctionnement est celui où la pompe fournit exactement le débit puisé." } },
-    { id: 'es', titre: 'L’écart statique', focus: ['graph'],
+    { id: 'es', titre: 'L’écart statique', focus: ['graph'], retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>point de fonctionnement : intersection de la courbe du régulateur et de la droite du débit de puisage</li><li>à l’équilibre, Y = 100 × Q<sub>puisage</sub> / Q<sub>max</sub> et H = consigne − ES</li><li>écart statique : ES = consigne − H = Y / K<sub>p</sub>, jamais nul en régulation P pure tant que le puisage est non nul</li></ul>, retenirTitre: 'POINT DE FONCTIONNEMENT ET ÉCART STATIQUE',
       texte: <>L'écart entre la consigne et le niveau d'équilibre s'appelle l'<strong>écart statique</strong> ES = consigne − H. C'est celui que l'on observe à la fin de la simulation de
         régulation en mode P.{eq.cas === 'ok' && <> Ici : consigne = {fmt(consigne, 0)} m et hauteur d'équilibre H = {fmt(eq.H, 2)} m (étape précédente).</>}</>,
       tache: { type: 'num', q: 'Écart statique ES', unite: 'm', vrai: eq.ES, tol: 0.03, affiche: x => fmt(x, 2),
@@ -196,7 +196,7 @@ export function Simulation6({ naviguer }) {
     { id: 'kp', titre: 'Augmenter le gain', focus: ['params'],
       texte: <>Dans « Commandes », réglez K<sub>p</sub> = 80 %/m : la courbe verte devient plus raide.</>,
       tache: { type: 'action', ok: Math.abs(Kp - 80) < 0.5, consigne: Math.abs(Kp - 80) < 0.5 ? null : `Gain K_p : ${fmt(Kp, 0)} %/m → 80 %/m` } },
-    { id: 'kpES', titre: 'Effet sur l’écart statique', focus: ['graph'],
+    { id: 'kpES', titre: 'Effet sur l’écart statique', focus: ['graph'], retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>augmenter K<sub>p</sub> diminue l’écart statique (ES = Y / K<sub>p</sub>) sans l’annuler</li><li>avec un retard de mesure, un gain trop élevé fait osciller le niveau : compromis précision / stabilité</li></ul>,
       texte: <>Observez le point de fonctionnement : il s'est rapproché de la consigne. Rappel : à l'équilibre, la commande nécessaire est Y = {fmt(Yeq, 1)} %.</>,
       tache: { type: 'num', q: 'Écart statique ES avec K_p = 80 %/m', unite: 'm', vrai: ES80, tol: 0.04, affiche: x => fmt(x, 2),
         bloque: Math.abs(Kp - 80) > 0.5 ? 'Réglez d’abord Kp = 80 %/m à l’étape précédente.' : null,

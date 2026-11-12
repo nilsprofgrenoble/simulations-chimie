@@ -228,6 +228,12 @@ export function SimulationPeinture({ plotlyReady }) {
         calcul: () => calculCPVC(refFiche),
         pieges: piegesLoin([[refMes.CPVC, 'Ce sont les prises d’huile mesurées. Ici, utilisez celles des fiches techniques (20 g et 14 g pour 100 g).']], refFiche.CPVC), indice: "La CPVC est la valeur du CPV pour laquelle le liant remplit juste les espaces entre les pulvérulents : elle se calcule à partir des prises d’huile des fiches." } },
     { id: 'prevision', titre: 'L’aspect prévu', focus: ['resultats'],
+      retenir: (
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>CPV = V(pulvérulents) / [V(pulvérulents) + V(liant sec)] ; CPVC = V(pulvérulents) / [V(pulvérulents) + V(huile)].</li>
+          <li>λ = CPV / CPVC, sans unité : brillant si λ &lt; 0,5 ; satiné ; mat si 0,8 ≤ λ ≤ 1 ; film poreux si λ &gt; 1 (seuils indicatifs).</li>
+          <li>Les volumes viennent des masses et des masses volumiques vraies ; la CPVC dépend de la prise d’huile <strong>mesurée</strong>.</li>
+        </ul>),
       texte: <>λ = CPV / CPVC = {fmt(refFiche.lambda, 2)}.</>,
       tache: { type: 'qcm', q: 'D’après les fiches techniques, la peinture devrait être…', options: ['satinée (λ < 0,8), donc non conforme au cahier des charges', 'mate', 'poreuse'], bonne: 0, indice: "Calcule λ = CPV / CPVC avec les valeurs précédentes, puis compare-le à 0,8 et à 1 (cahier des charges)." } },
     { id: 'surprise', titre: 'On fabrique, on applique… elle est mate !', focus: [],
@@ -273,6 +279,11 @@ export function SimulationPeinture({ plotlyReady }) {
             `Sans eau, les autres matières pèsent ${fmt(sansEau, 1)} g : eau = ${fmt(mTotCible, 1)} − ${fmt(sansEau, 1)} = ${fmt(eauOrgal, 1)} g.`]; },
         pieges: piegesLoin([[mTotCible, 'C’est la masse totale visée. L’eau est la différence avec la masse des autres matières premières.'], [mSecOrgal, 'C’est la masse sèche. Divisez-la par ES pour obtenir la masse totale, puis soustrayez les autres matières.']], eauOrgal), indice: "Fais le bilan de l’eau : celle qu’apporte la nouvelle résine (selon son extrait sec) et celle à ajouter pour retrouver la formule visée." } },
     { id: 'cpvcInchangee', titre: 'Et la CPVC ?', focus: ['resultats'],
+      retenir: (
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Même volume de liant sec ⇒ même CPV ; même extrait sec ⇒ même masse totale.</li>
+          <li>La CPVC ne dépend que des <strong>pulvérulents</strong> (volumes et prises d’huile), pas de la résine.</li>
+        </ul>),
       texte: <>La nouvelle formule s'affiche dans le cadre « Formule ».</>,
       tache: { type: 'qcm', q: 'Pourquoi la CPVC ne change-t-elle pas avec la nouvelle résine ?', options: ['Elle ne dépend que des pulvérulents (leurs volumes et leurs prises d’huile)', 'Parce que la résine est la même', 'Elle change'], bonne: 0, indice: "De quoi dépend la CPVC : de la nature de la résine, ou des pulvérulents et de leurs prises d’huile ?" } },
     { id: 'coadisDiag', titre: 'Le problème de dispersion', focus: ['formule'],
@@ -299,6 +310,11 @@ export function SimulationPeinture({ plotlyReady }) {
         coalescent ») et lancez le séchage.</>,
       tache: { type: 'qcm', q: 'Avec l’Orgal, sans coalescent, appliqué à 10 °C…', options: ['le film se fissure ou reste poudreux : les particules ne fusionnent pas', 'le film est parfait', 'la peinture devient brillante'], bonne: 0, indice: "La température minimale de formation du film (TMFF) de l’Orgal est-elle supérieure ou inférieure à 10 °C ? Que devient le film si les particules de liant ne fusionnent pas ?" } },
     { id: 'coalescent', titre: 'Le rôle de l’agent de coalescence', focus: ['sechage'],
+      retenir: (
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Un latex forme un film continu seulement si T &gt; TMFF : Vinnapas ≈ 2 °C, Orgal ≈ 20 °C.</li>
+          <li>L’agent de coalescence (DPnB) ramollit les particules, abaisse la TMFF, puis s’évapore ; il est volatil donc ne compte pas dans l’extrait sec.</li>
+        </ul>),
       texte: <>Le DPnB ramollit temporairement les particules de liant : il abaisse la TMFF, puis s'évapore lentement. La fiche de la Vinnapas précise qu'elle « n'a besoin
         d'aucun agent de coalescence » (TMFF ≈ 2 °C).</>,
       tache: { type: 'qcm', q: 'Que conclure pour la formule ?', options: ['Avec l’Orgal, le coalescent devient nécessaire ; avec la Vinnapas, il était superflu', 'Le coalescent est inutile dans les deux cas', 'Il faut le remplacer par de l’eau'], bonne: 0,

@@ -1158,6 +1158,12 @@ function ParcoursEtalon({ plotlyReady, changerMode }) {
       texte: <>On veut doser trois composés (hydrobenzoïne, benzoïne, benzile) dans un solide de synthèse, par chromatographie. L’aire d’un pic dépend de la concentration, mais aussi du <strong>volume réellement injecté</strong>, qui varie un peu d’une injection à l’autre. L’<strong>étalon interne</strong> (EI), le paracétamol, est ajouté à chaque solution.</>,
       tache: { type: 'qcm', q: 'Que permet l’EI ?', options: ['Compenser les variations de volume injecté : on utilise le rapport des aires analyte / EI', 'Augmenter la hauteur des pics', 'Éviter de préparer une solution étalon'], bonne: 0, indice: "L’EI est ajouté en même quantité partout : que reste-t-il constant quand le volume injecté varie ?" } },
     { id: 'choixEI', titre: 'Choisir l’étalon interne', focus: [],
+      retenir: (
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Un étalon interne (EI) est ajouté <strong>en même quantité</strong> dans l’étalon et dans l’échantillon.</li>
+          <li>Il doit être absent de l’échantillon, pur, stable, de pic bien séparé et de temps de rétention proche de ceux des analytes.</li>
+          <li>On travaille avec le <strong>rapport des aires</strong> A<sub>analyte</sub> / A<sub>EI</sub> : il ne dépend plus du volume injecté.</li>
+        </ul>),
       texte: <>Le paracétamol a un temps de rétention proche de ceux des analytes, mais séparé de leurs pics.</>,
       tache: { type: 'qcm', q: 'Lequel de ces composés ne pourrait pas servir d’EI ?', options: ['Un composé déjà présent dans l’échantillon à analyser', 'Un composé pur et stable', 'Un composé dont le pic est bien séparé des autres'], bonne: 0,
         expl: 'Son aire contiendrait la contribution de l’échantillon : le rapport des aires n’aurait plus de sens.', indice: "Un EI doit être absent de l’échantillon, pur, stable et proche de l’analyte : cherchez celui qui enfreint une règle." } },
@@ -1175,6 +1181,12 @@ function ParcoursEtalon({ plotlyReady, changerMode }) {
           [5100, 'C’est la concentration de la fiole 1 (102,0 mg dans 20 mL). Il reste à tenir compte de la dilution : 40 µL complétés à 20 mL.'],
           [5100 * 40 / 20, 'Les unités sont mélangées : 40 µL et 20 mL ne se divisent pas directement. 20 mL = 20 000 µL.']], indice: "Procédez en deux temps : concentration de la fiole 1, puis dilution jusqu’à la fiole 3." } },
     { id: 'cmEI', titre: 'L’EI dans les deux solutions', focus: [],
+      retenir: (
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Réponse supposée proportionnelle à la concentration : (A<sub>i</sub> / A<sub>EI</sub>)<sub>éch</sub> / (A<sub>i</sub> / A<sub>EI</sub>)<sub>ét</sub> = C<sub>i,éch</sub> / C<sub>i,ét</sub>, si C<sub>EI</sub> est la même dans les deux solutions.</li>
+          <li>Un seul étalon suffit si la droite est linéaire, passe par l’origine, et si C<sub>éch</sub> est voisine de C<sub>ét</sub>.</li>
+          <li>Si C<sub>EI</sub> diffère, on corrige par le rapport C<sub>EI,éch</sub> / C<sub>EI,ét</sub>.</li>
+        </ul>),
       texte: <>La solution échantillon (fiole 5) est préparée de la même façon : 40 µL de la solution du solide (fiole 4) et 40 µL de la <strong>même</strong> solution d’EI (fiole 2), dans une fiole de 20 mL. Dans la fiole 3 (étalon), l’EI est à {fmt(E.etalon.CmEI, 2)} mg/L.</>,
       tache: { type: 'qcm', q: 'Dans la fiole 5, la concentration en EI est…', options: [`la même : ${fmt(E.etalon.CmEI, 2)} mg/L`, 'nulle, puisque l’EI est dans l’étalon', 'inconnue : elle dépend de l’échantillon'], bonne: 0,
         expl: 'C’est ce qui permet de se servir de l’EI comme repère commun aux deux solutions.', indice: "Quelle quantité d’EI a-t-on ajoutée dans la fiole 5, par rapport à la fiole 3 ?" } },
@@ -1230,6 +1242,12 @@ function ParcoursEtalon({ plotlyReady, changerMode }) {
         expl: 'L’aire de l’EI double dans l’échantillon, donc le rapport A_analyte / A_EI est divisé par 2. La formule suppose la même concentration en EI ; sinon, il faut multiplier par C_EI,éch / C_EI,ét (ce que fait l’exploration libre).', indice: "Le rapport des aires suppose la même concentration d’EI. Que devient le rapport si l’EI est doublé ?" } },
     // ── normalisation interne ──
     { id: 'niPrincipe', titre: 'La normalisation interne', focus: [],
+      retenir: (
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Normalisation interne : on veut la <strong>composition</strong> (% massiques), à condition que tous les constituants soient élués et détectés.</li>
+          <li>Coefficient de réponse relatif, sur l’étalon : K<sub>i/1</sub> = (%<sub>i</sub> / %<sub>1</sub>) × (A<sub>1</sub> / A<sub>i</sub>).</li>
+          <li>Sur l’échantillon : %<sub>i</sub> = K<sub>i/1</sub> A<sub>i</sub> / Σ(K A) × 100 ; la somme vaut 100 % par construction.</li>
+        </ul>),
       texte: <>Autre cas : un mélange éthanol / toluène / acétate de butyle, analysé par CPG. Ici, on n’ajoute rien : on veut la <strong>composition massique</strong> de l’échantillon. On dispose d’un étalon de composition connue, passé dans les mêmes conditions.</>,
       tache: { type: 'qcm', q: 'Dans quel cas la normalisation interne convient-elle ?', options: ['Tous les constituants de l’échantillon sont élués et détectés, et l’on veut leur pourcentage massique', 'On veut doser un seul constituant, présent à l’état de traces', 'On ne connaît la composition d’aucun étalon'], bonne: 0, indice: "La NI donne un pourcentage : il faut que tous les constituants soient vus par le détecteur." } },
     { id: 'niHypo', titre: 'Une hypothèse forte', focus: ['hypo'],

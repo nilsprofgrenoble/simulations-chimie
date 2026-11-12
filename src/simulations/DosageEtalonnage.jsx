@@ -325,6 +325,7 @@ export function SimulationDosageEtalonnage() {
       texte: <>Cliquez sur « Préparer et mesurer (même fiole injectée deux fois) », comme dans l'activité du collègue.</>,
       tache: { type: 'action', ok: !!mes.injection, consigne: mes.injection ? '✅ Gamme mesurée' : 'Mesurez la gamme.' } },
     { id: 'pente', titre: 'La droite d’étalonnage', focus: ['stats'],
+      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}><li>droite d’étalonnage : signal = a × c + b ; la pente a est la <strong>sensibilité</strong></li><li>on mesure le signal de l’échantillon, puis on lit c<sub>éch</sub> = (signal − b) / a</li><li>valable dans le domaine de concentrations de la gamme (pas d’extrapolation)</li></ul>,
       texte: <>La régression linéaire (la fonction DROITEREG du tableur) donne la pente a et l'ordonnée à l'origine b. Lisez-les dans « Exploitation ».</>,
       tache: { type: 'num', q: 'Pente a de la droite', unite: `${TECHNIQUES.clhp.signal} par mg/L`, vrai: reg ? reg.a : NaN, tol: 0.01, affiche: v => fmt(v, 2),
         aide: 'À lire dans « Exploitation » : a est la pente de la droite A = a × C + b (ce n’est ni l’ordonnée à l’origine b, ni R²).',
@@ -336,6 +337,7 @@ export function SimulationDosageEtalonnage() {
       tache: { type: 'qcm', q: 'La régression linéaire ordinaire suppose que…', options: ['les concentrations des étalons sont connues avec une erreur négligeable, et que toute l’erreur est sur le signal', 'le coefficient R² vaut 1', 'l’échantillon est hors de la gamme'], bonne: 0,
         expl: 'C’est pour cela qu’on prépare les étalons avec la verrerie la plus précise possible : la régression ne « voit » pas leurs erreurs.', indice: "Les concentrations sont préparées avec soin ; le signal, lui, fluctue d’une injection à l’autre." } },
     { id: 'r2', titre: 'Le R² suffit-il ?', focus: ['stats'],
+      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}><li>un R² proche de 1 ne suffit pas à valider le modèle linéaire : vérifier aussi les résidus et le test de Fisher</li><li>hypothèses : linéarité, résidus aléatoires et de même dispersion (homoscédasticité)</li></ul>,
       texte: <>R² = {reg ? fmt(reg.R2, 4) : '?'}. Un R² proche de 1 dit que les points sont proches d'une droite, mais il ne dit pas si les écarts à la droite sont
         dus au hasard ou à un défaut du modèle. Regardez le graphique des résidus.</>,
       tache: { type: 'qcm', q: 'Pour juger la linéarité, on regarde…', options: ['les résidus (pas de tendance) et un test statistique, pas seulement R²', 'uniquement R² ≥ 0,99', 'uniquement la pente'], bonne: 0, indice: "Un R² proche de 1 ne suffit pas : que regarde-t-on sur l’écart des points à la droite ?" } },
@@ -353,6 +355,7 @@ export function SimulationDosageEtalonnage() {
       texte: <>Choisissez la dilution B, puis cliquez sur « Préparer et injecter l'échantillon » (deux injections).</>,
       tache: { type: 'action', ok: !!mes.ech, consigne: mes.ech ? '✅ Échantillon mesuré' : 'Mesurez l’échantillon.' } },
     { id: 'cEch', titre: 'La concentration injectée', focus: ['stats'],
+      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}><li>c<sub>mère</sub> = c<sub>injectée</sub> × facteur de dilution</li><li>m = c<sub>mère</sub> × V<sub>mère</sub> ; teneur (%) = m<sub>dosée</sub> / m<sub>échantillon</sub> × 100</li></ul>,
       texte: <>On utilise la droite : C = (A − b) / a, avec A la moyenne des deux injections{echMoy != null ? ` (${fmt(echMoy, 2)})` : ''}{reg ? `, et a = ${fmt(reg.a, 3)}, b = ${fmt(reg.b, 3)} (droite d'étalonnage, lue dans « Exploitation »)` : ''}.</>,
       tache: { type: 'num', q: 'Concentration de caféine dans la solution injectée', unite: 'mg/L', vrai: cInj ?? NaN, tol: 0.01, affiche: v => fmt(v, 3),
         calcul: () => ['On inverse la droite d’étalonnage A = a × C + b, donc C = (A − b) / a. Hypothèse : la droite reste valable pour l’échantillon (modèle linéaire, échantillon dans la gamme, pas d’effet de matrice).',

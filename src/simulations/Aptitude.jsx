@@ -367,6 +367,12 @@ export function SimulationAptitude() {
           ...piegesLoin([[P[iLab] - mP, 'Il manque la division par s : z est un écart exprimé en nombre d’écarts-types.'],
             [(P[iLab] - mP) / sP ** 2, 'On divise par l’écart-type s, pas par sa variance s².']], zRef[iLab])], indice: "Le z-score exprime l’écart du résultat du laboratoire à la référence, en nombre d’écarts-types." } },
     { id: 'classer', titre: 'Classer les laboratoires', focus: [],
+      retenir: (
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>z = (x − x̄) / s : un écart exprimé en <strong>nombre d’écarts-types</strong>, sans unité.</li>
+          <li>|z| ≤ 2 : satisfaisant ; 2 &lt; |z| &lt; 3 : discutable ; |z| ≥ 3 : non satisfaisant.</li>
+          <li>Ces seuils supposent une loi normale : environ 95 % des laboratoires compétents ont |z| ≤ 2, 99,7 % ont |z| ≤ 3.</li>
+        </ul>),
       texte: <>Classez chaque laboratoire dans le tableau : |z| ≤ 2 satisfaisant ; 2 &lt; |z| &lt; 3 discutable ; |z| ≥ 3 non satisfaisant.</>,
       tache: { type: 'action', ok: classesVerif && classesOk, consigne: classesVerif && classesOk ? null : 'Classez les 10 laboratoires, puis vérifiez.' } },
     { id: 'hypotheses', titre: 'Sur quoi reposent ces seuils ?', focus: ['hypo'],
@@ -389,6 +395,11 @@ export function SimulationAptitude() {
       tache: { type: 'qcm', q: 'Avec cette formule, le laboratoire 10 est…', options: ['non satisfaisant', 'discutable', 'satisfaisant'], bonne: 0,
         expl: `Son z passe de ${fmt(zRef[9], 2)} à ${fmt(tousZ.exclu && PARCOURS.v === v ? tousZ.exclu[9] : NaN, 1)} : la même mesure, un tout autre verdict. Le choix de la formule n’est pas un détail.`, indice: "Recalculez z avec la référence et l’écart-type imposés par la formule, puis comparez à 2 et à 3." } },
     { id: 'borne', titre: 'Une limite mathématique', focus: ['alertes'],
+      retenir: (
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Si x̄ et s sont calculés avec les résultats évalués, |z| ≤ (p − 1) / √p : avec p = 10 laboratoires, |z| ne dépasse jamais 2,85.</li>
+          <li>Un laboratoire aberrant gonfle s et tire x̄ : il <strong>se masque lui-même</strong>. Remède : l’exclure du calcul, ou utiliser médiane et MAD (s* = 1,483 × MAD).</li>
+        </ul>),
       texte: <>Revenez à la formule du référentiel et lisez la première alerte. Avec p laboratoires, cette formule ne peut jamais donner |z| &gt; (p − 1) / √p.</>,
       tache: { type: 'qcm', q: 'Avec 10 laboratoires, quelle catégorie est impossible à atteindre ?', options: ['non satisfaisant : |z| ne peut pas dépasser 2,85', 'discutable', 'aucune'], bonne: 0,
         expl: 'Avec 9 laboratoires, la borne tombe à 2,67 ; avec 5, à 1,79 : même « discutable » devient impossible. Il faut le savoir avant d’interpréter un essai à peu de participants.', indice: "Quand x̄ et s viennent des mêmes résultats, |z| est limité à (n − 1)/√n. Comparez ce maximum à 2 et à 3." } },
@@ -411,6 +422,12 @@ export function SimulationAptitude() {
           [P[9] - 24, 'Il manque la division par σ_pt (1,2 mg/L) : z est un écart en nombre d’écarts-types.'],
           [(P[9] - 24) * 1.2, 'On divise par σ_pt, on ne multiplie pas.']], (P[9] - 24) / 1.2), indice: "Remplacez x par le résultat du laboratoire 10, puis x_pt et σ_pt par les valeurs de la formule." } },
     { id: 'pourquoiSigma', titre: 'Pourquoi un σ_pt fixé ?', focus: [],
+      retenir: (
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>ISO 13528 : z = (x − x<sub>pt</sub>) / σ<sub>pt</sub>, avec une valeur assignée x<sub>pt</sub> et un σ<sub>pt</sub> <strong>fixés à l’avance</strong>.</li>
+          <li>σ<sub>pt</sub> indépendant des résultats : ni un laboratoire aberrant ni une campagne dispersée ne peuvent le modifier.</li>
+          <li>Le signe de z indique le sens de l’écart : z &lt; 0, le laboratoire sous-estime.</li>
+        </ul>),
       texte: <>La norme accepte plusieurs façons de fixer σ<sub>pt</sub> : l'exigence de la méthode, les campagnes précédentes, une étude de fidélité, ou
         un écart-type robuste des participants.</>,
       tache: { type: 'qcm', q: 'Quel est l’avantage d’un σ_pt fixé à l’avance, d’après l’exigence de la méthode ?',

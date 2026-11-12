@@ -1225,6 +1225,12 @@ function ParcoursInterlabo({ changerMode }) {
       texte: <>Un organisateur envoie un <strong>même échantillon</strong> (ici, une solution à 10,00 mmol/L) à 8 laboratoires. Chacun réalise <strong>4 essais</strong> avec la même méthode d’analyse. On veut savoir si la méthode donne partout des résultats voisins.</>,
       tache: { type: 'qcm', q: 'Que cherche-t-on à évaluer avec la norme ISO 5725 ?', options: ['La fidélité de la méthode : sa répétabilité et sa reproductibilité', 'La compétence de chaque laboratoire (c’est le rôle d’un essai d’aptitude)', 'La valeur exacte de la concentration de l’échantillon'], bonne: 0, indice: "La norme ISO 5725 s’intéresse à la méthode d’analyse, pas au niveau de chaque laboratoire." } },
     { id: 'modele', titre: 'Deux sources de dispersion', focus: [],
+      retenir: (
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Répétabilité s<sub>r</sub> : même laboratoire, mêmes conditions. Effet laboratoire s<sub>L</sub> : dispersion des moyennes.</li>
+          <li>Reproductibilité : s<sub>R</sub>² = s<sub>L</sub>² + s<sub>r</sub>², donc s<sub>R</sub> ≥ s<sub>r</sub>.</li>
+          <li>Cochran contrôle l’égalité des variances de répétabilité ; Grubbs repère une moyenne de laboratoire isolée.</li>
+        </ul>),
       texte: <>Les résultats d’un même laboratoire varient un peu d’un essai à l’autre (<strong>répétabilité</strong>). Les moyennes des laboratoires diffèrent aussi entre elles (<strong>effet laboratoire</strong>). La <strong>reproductibilité</strong> cumule les deux : s<sub>R</sub>² = s<sub>L</sub>² + s<sub>r</sub>².</>,
       tache: { type: 'qcm', q: 'Quel écart-type décrit la dispersion des essais d’un même laboratoire, dans les mêmes conditions ?', options: ['L’écart-type de répétabilité s_r', 'L’écart-type de reproductibilité s_R', 'L’écart-type interlaboratoires s_L'], bonne: 0, indice: "Même laboratoire et mêmes conditions : c’est la plus petite dispersion possible." } },
     { id: 'hypotheses', titre: 'Sur quoi reposent les calculs ?', focus: ['hypo'],
@@ -1327,6 +1333,11 @@ function ParcoursInterlabo({ changerMode }) {
         pieges: [[SRG.sr, 'C’est s_r : il faut le multiplier par 2,8.'], [2.8 * SRG.sR, 'Vous avez pris s_R : pour des essais en conditions de répétabilité, c’est s_r.'],
           [1.96 * SRG.sr, 'Il manque le facteur √2 : l’écart de deux essais a pour écart-type √2 × s_r, d’où 1,96 × √2 ≈ 2,8.']], indice: "Multipliez s_r par le facteur 2,8 de la norme." } },
     { id: 'compat', titre: 'Les essais sont-ils compatibles ?', focus: ['mesurage'],
+      retenir: (
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Limite de répétabilité : r = 2,8 × s<sub>r</sub> (≈ 1,96 × √2 × s<sub>r</sub>, seuil à 95 %).</li>
+          <li>|y<sub>1</sub> − y<sub>2</sub>| ≤ r : essais compatibles, on prend leur moyenne. Sinon, on cherche la cause et on refait des essais.</li>
+        </ul>),
       texte: <>Comparez |y<sub>1</sub> − y<sub>2</sub>| à r = {fmt(2.8 * SRG.sr, 3)} mmol/L.</>,
       tache: { type: 'qcm', q: 'Peut-on faire la moyenne des deux essais ?', options: [`Oui : |y₁ − y₂| = ${fmt(Math.abs(Y_G[0] - Y_G[1]), 2)} est inférieur à r`, 'Non : il faut refaire des essais', 'On ne peut pas savoir sans connaître s_R'], bonne: 0, indice: "Comparez l’écart entre les deux essais à la limite de répétabilité r." } },
     { id: 'moyenneRes', titre: 'Le résultat du mesurage', focus: ['mesurage'],
@@ -1346,6 +1357,12 @@ function ParcoursInterlabo({ changerMode }) {
           `U = 2 × ${fmt(SRG.sR, 3)} = ${fmt(2 * SRG.sR, 3)} mmol/L.`],
         pieges: [[SRG.sR, 'Deux erreurs possibles ici : oublier le facteur k = 2 (U = k × u, avec u = s_R), ou prendre s_r à la place de s_R (seul s_R contient l’effet laboratoire).'], [2 * SRG.sr, 'Vous avez pris s_r : il faut s_R, qui contient l’effet laboratoire.']], indice: "U = k × s_R avec k = 2 (niveau de confiance d’environ 95 %)." } },
     { id: 'ecriture', titre: 'Écrire le résultat', focus: [],
+      retenir: (
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Incertitude-type u = s<sub>R</sub> (elle contient l’effet laboratoire) ; incertitude élargie U = k × u, avec k = 2 (≈ 95 %).</li>
+          <li>U avec 1 ou 2 chiffres significatifs (arrondi par excès), résultat arrondi à la même décimale : ȳ ± U, unité, k = 2.</li>
+          <li>Valable si votre laboratoire est représentatif de ceux de l’étude.</li>
+        </ul>),
       texte: <>Règle d’écriture : on donne U avec 2 chiffres significatifs au plus (arrondi par excès), et le résultat avec le même nombre de décimales. On précise k et l’unité.</>,
       tache: { type: 'qcm', q: 'Quelle écriture est correcte ?', options: [`${ECR_G.m} ± ${ECR_G.U} mmol/L (k = 2)`, '10,275 ± 0,1700 mmol/L (k = 2)', `${ECR_G.m} ± ${fmt(2 * SRG.sr, 3)} mmol/L (k = 2)`], bonne: 0,
         expl: 'La deuxième écriture annonce des chiffres que l’incertitude ne permet pas de garantir ; la troisième utilise s_r à la place de s_R.', indice: "On garde 1 ou 2 chiffres significatifs pour U, puis on arrondit le résultat à la même décimale." } },

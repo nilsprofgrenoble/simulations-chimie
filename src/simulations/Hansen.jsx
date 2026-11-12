@@ -161,6 +161,15 @@ export function Simulation4({ plotlyReady }) {
       texte: <>Cliquez sur chaque solvant dans le cadre « Les solvants » : son RED et sa position sur le diagramme s'affichent.</>,
       tache: { type: 'action', ok: Object.keys(SOLVANTS).every(k => testes[k]), consigne: `Solvants testés : ${Object.keys(SOLVANTS).filter(k => testes[k]).length} / 4` } },
     { id: 'classer', titre: 'Solvants et non-solvants', focus: ['solvants'],
+      retenir: (
+        <>
+          <Formule compact={FormuleRaCompacte}><FormuleRa/></Formule>
+          <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+            <li>RED = Ra / R<sub>0</sub> (R<sub>0</sub> = 9,0 MPa<sup>½</sup> pour la nitrocellulose).</li>
+            <li>RED &lt; 1 : dans la sphère, solvant ; RED &gt; 1 : hors sphère, non-solvant ; près de 1, la prévision est incertaine.</li>
+            <li>Le facteur 4 est un choix empirique qui rend les domaines à peu près sphériques.</li>
+          </ul>
+        </>),
       texte: <>Les esters sont les vrais solvants de la nitrocellulose ; les alcools servent surtout de diluants, moins chers.</>,
       tache: { type: 'qcm', q: 'Lequel de ces quatre liquides est un non-solvant de la nitrocellulose ?', options: ['l’éthanol', 'l’acétate d’éthyle', 'l’acétate de butyle'], bonne: 0,
         expl: `Éthanol : RED = ${fmt(redOf('etoh'), 2)}, juste au-dessus de 1 : trop de liaisons hydrogène.`, indice: "Un non-solvant a un RED supérieur à 1 (hors de la sphère de solubilité). Compare les RED des quatre liquides." } },
@@ -186,6 +195,11 @@ export function Simulation4({ plotlyReady }) {
         calcul: [`Fractions volumiques : 50 % = 0,5 de chaque solvant.`, `δh = 0,5 × 7,2 + 0,5 × 19,4 = ${fmt(0.5 * 7.2, 1)} + ${fmt(0.5 * 19.4, 1)} = ${fmt(m5050.h, 1)} MPa½.`],
         pieges: [[7.2 + 19.4, 'Vous avez additionné les deux δh : il faut les pondérer par les fractions (0,5 chacune), c’est une moyenne.'], [(7.2 + 19.4) / 2 * 0.5, 'La moyenne pondérée, c’est 0,5 × 7,2 + 0,5 × 19,4 : les deux fractions s’additionnent à 1.']], indice: "Pour un mélange, chaque paramètre est la moyenne des valeurs des solvants pondérée par leurs fractions volumiques." } },
     { id: 'red5050', titre: 'Ce mélange dissout-il la nitrocellulose ?', focus: ['mel'],
+      retenir: (
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Paramètres d’un mélange : moyenne pondérée par les fractions volumiques, δ<sub>mél</sub> = Σ φ<sub>i</sub> δ<sub>i</sub> (avec Σ φ<sub>i</sub> = 1), pour δd, δp et δh.</li>
+          <li>On calcule ensuite Ra, puis le RED du mélange : un mélange de deux liquides peut se placer dans la sphère.</li>
+        </ul>),
       texte: <>Ce mélange : δd = 15,8 ; δp = {fmt(m5050.p, 2)} ; δh = {fmt(m5050.h, 1)}.</>,
       tache: { type: 'num', q: 'RED du mélange 50/50', unite: '', vrai: ra(PT, m5050) / PT.R0, tol: 0.02, affiche: x => fmt(x, 2),
         calcul: [`Paramètres du mélange (moyennes pondérées) : δd = ${fmt(m5050.d, 1)} ; δp = ${fmt(m5050.p, 2)} ; δh = ${fmt(m5050.h, 1)}.`, ...calculRa(PT, m5050, 'mélange 50/50'),
@@ -236,6 +250,12 @@ export function Simulation4({ plotlyReady }) {
       tache: { type: 'action', ok: !!dernier && dernier.k === 'ba' && vol.ba / tot >= 0.1 && redMel < 1,
         consigne: dernier ? `Dernier solvant : ${SOLVANTS[dernier.k].nom} (RED = ${fmt(ra(P, SOLVANTS[dernier.k]) / P.R0, 2)})` : 'Réglez un mélange.' } },
     { id: 'regle', titre: 'La règle de formulation', focus: [],
+      retenir: (
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>En séchant, le mélange s’appauvrit en solvants volatils : le <strong>solvant le moins volatil</strong> reste en dernier.</li>
+          <li>Il doit être un vrai solvant du polymère (RED &lt; 1), sinon il précipite avant la formation du film.</li>
+          <li>Un solvant lent allonge le séchage : il en faut juste assez.</li>
+        </ul>),
       texte: <>Le solvant le plus lent est celui qui reste en dernier : c'est lui qui doit garder la nitrocellulose dissoute jusqu'à la formation du film.</>,
       tache: { type: 'qcm', q: 'Que doit être le solvant le moins volatil du mélange ?', options: ['Un vrai solvant du polymère (ici l’acétate de butyle)', 'Un diluant bon marché', 'Le plus volatil possible'], bonne: 0,
         expl: 'Mais un solvant lent allonge le séchage : il en faut juste assez. On ajuste les proportions au laboratoire.', indice: "En fin de séchage, c’est lui qui reste avec le polymère : doit-il encore dissoudre la nitrocellulose ?" } },
