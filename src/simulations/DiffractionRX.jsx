@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule as FormuleMath, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche, sci } from "../commun";
 import { LAMBDA, DT_MIN, DT_MAX, STRUCTURES, ECHANTILLONS, ORDRE_EXPLO, CANDIDATS_DEFI, pics, courbe, indexer,
   masseVolumique, sequence, Npermis } from "./drxModele";
@@ -178,6 +178,24 @@ export function SimulationDiffractionRX() {
       tache: { type: 'qcm', q: 'Pourquoi le détecteur ne reçoit-il des rayons X que pour certains angles ?', options: ['Les ondes diffractées par les différents plans n’interfèrent constructivement que pour certains angles', 'Le tube à rayons X n’émet que dans certaines directions', 'La poudre absorbe les rayons X aux autres angles', 'Le détecteur n’est sensible qu’à certains angles'], bonne: 0,
         expl: 'Chaque famille de plans atomiques diffracte les rayons X ; les ondes ne s’additionnent (interférences constructives) que pour des angles bien précis.', indice: "Les ondes diffractées par les plans successifs se superposent. À quelle condition sur leur déphasage l’interférence est-elle constructive ?" } },
     { id: 'bragg', titre: 'La loi de Bragg', depart: () => voir('bragg'),
+      retenirTitre: 'À RETENIR : LA LOI DE BRAGG',
+      retenir: <>
+        <svg viewBox="0 0 460 190" role="img" aria-label="Loi de Bragg : deux rayons X parallèles arrivent avec l’angle θ sur deux plans atomiques voisins distants de d ; les ondes réfléchies sont en phase si 2 d sin θ est un nombre entier de longueurs d’onde" style={{ width: '100%', maxWidth: 460, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <line x1="10" y1="90" x2="450" y2="90" stroke="#334155" strokeWidth="2.5" /><line x1="10" y1="150" x2="450" y2="150" stroke="#334155" strokeWidth="2.5" />
+          <g fill="#334155"><circle cx="60" cy="90" r="5" /><circle cx="130" cy="90" r="5" /><circle cx="200" cy="90" r="5" /><circle cx="270" cy="90" r="5" /><circle cx="340" cy="90" r="5" /><circle cx="60" cy="150" r="5" /><circle cx="130" cy="150" r="5" /><circle cx="200" cy="150" r="5" /><circle cx="270" cy="150" r="5" /><circle cx="340" cy="150" r="5" /></g>
+          <line x1="20" y1="50" x2="90" y2="90" stroke="#0072b2" strokeWidth="2.2" /><line x1="90" y1="90" x2="160" y2="50" stroke="#0072b2" strokeWidth="2.2" />
+          <line x1="60" y1="50" x2="235" y2="150" stroke="#d55e00" strokeWidth="2.2" /><line x1="235" y1="150" x2="410" y2="50" stroke="#d55e00" strokeWidth="2.2" />
+          <path d="M 65 90 A 25 25 0 0 1 68.3 77.6" fill="none" stroke="#334155" strokeWidth="1.5" /><text x="42" y="82" fontSize="13" fontWeight="700" fill="#334155">θ</text>
+          <line x1="440" y1="92" x2="440" y2="148" stroke="#334155" strokeWidth="1.6" /><line x1="434" y1="92" x2="446" y2="92" stroke="#334155" strokeWidth="1.6" /><line x1="434" y1="148" x2="446" y2="148" stroke="#334155" strokeWidth="1.6" />
+          <text x="428" y="124" textAnchor="end" fontSize="13" fontWeight="700" fill="#334155">d</text>
+          <text x="10" y="108" fontSize="12" fill="#334155">plan 1</text><text x="10" y="168" fontSize="12" fill="#334155">plan 2</text>
+        </svg>
+        <FormuleMath><mn>2</mn><mo>×</mo><mi>d</mi><mo>×</mo><mi>sin</mi><mi>θ</mi><mo>=</mo><mi>n</mi><mo>×</mo><mi>λ</mi><mspace width="1.5em"/><mi>d</mi><mo>=</mo><mfrac><mi>λ</mi><mrow><mn>2</mn><mo>×</mo><mi>sin</mi><mi>θ</mi></mrow></mfrac><mspace width="0.8em"/><mtext>(n = 1)</mtext></FormuleMath>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Interférences constructives si la différence de marche δ = 2 d sin θ est un nombre entier de longueurs d’onde.</li>
+          <li>Le diffractogramme donne <strong>2θ</strong> : diviser par 2 avant d’utiliser la formule. λ = 0,1542 nm (raie Kα du cuivre).</li>
+        </ul>
+      </>,
       texte: <>Deux plans voisins, distants de <strong>d</strong>, renvoient chacun une onde. Le rayon réfléchi par le plan 2 parcourt un chemin plus long de <strong><F>δ = 2 d sin θ</F></strong> (en orange). Les deux ondes sont en phase (interférences constructives) si δ est un nombre entier de longueurs d’onde : <strong><F>2 d sin θ = n λ</F></strong> (loi de Bragg). Faites varier θ pour observer les deux cas.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'bragg' && Math.round(dl) >= 1 && Math.abs(dl - Math.round(dl)) < 0.04, consigne: 'Réglez θ pour obtenir des interférences constructives (δ / λ entier).' } },
     { id: 'braggCalc', titre: 'Calculer une distance entre plans', depart: () => voir('drx', 'W'),
@@ -199,6 +217,21 @@ export function SimulationDiffractionRX() {
         <ExempleResolu>Plans (110) d’un cristal de paramètre a = 0,3165 nm : <F>d<sub>110</sub> = 0,3165 / √2 = <strong>0,2238 nm</strong></F>.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Pour les plans (200), la distance d₂₀₀ vaut…', options: ['a / 2', 'a / 4', '2 a', 'a / √2'], bonne: 0, expl: 'h² + k² + l² = 4, donc d₂₀₀ = a / √4 = a / 2.', indice: "Pour un cristal cubique : d(hkl) = a / √(h² + k² + l²). Applique cette formule avec h, k, l de (200)." } },
     { id: 'extinctions', titre: 'Des pics qui manquent : les extinctions', depart: null,
+      retenirTitre: 'À RETENIR : EXTINCTIONS ET STRUCTURES CUBIQUES',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Réseau</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Plans qui existent</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Atomes par maille</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>sin²θ / sin²θ₁</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>cubique simple (P)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>tous les plans (hkl) existent</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 ; 2 ; 3 ; 4 ; 5 ; 6 ; 8…</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>cubique centré (I)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>h + k + l pair</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 ; 2 ; 3 ; 4 ; 5 ; 6 ; 7…</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>cubique à faces centrées (F)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>h, k, l de même parité</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 ; 1,33 ; 2,67 ; 3,67 ; 4…</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>N = h² + k² + l²</strong> ; d<sub>hkl</sub> = a / √N. Pas de N = 7 en cubique simple : c’est le 7ᵉ pic qui départage P et I.</li>
+          <li>Les pics absents (extinctions) sont une « signature » : les ondes de certains atomes s’annulent.</li>
+        </ul>
+      </>,
       texte: <>Selon la façon dont la maille est peuplée, les ondes de certains atomes s’annulent et des familles de plans <strong>ne donnent aucun pic</strong> :
         <ul style={{ margin: '4px 0', paddingLeft: 18 }}><li><strong>cubique simple (P)</strong> : {STRUCTURES.P.regle} ;</li><li><strong>cubique centré (I)</strong> : {STRUCTURES.I.regle} ;</li><li><strong>cubique à faces centrées (F)</strong> : {STRUCTURES.F.regle}.</li></ul>
         C’est cette « signature » qui permet de reconnaître la structure.</>,
@@ -208,6 +241,14 @@ export function SimulationDiffractionRX() {
       texte: <>Cliquez sur chaque pic du diffractogramme pour <strong>relever sa position 2θ</strong> (un triangle numéroté apparaît ; un second clic l’efface). Le tableau calcule θ et sin²θ. Relevez les {nW} pics, <strong>sans oublier le premier</strong>.</>,
       tache: { type: 'action', ok: enGuide && relW >= nW, consigne: `Relevez les ${nW} pics du tungstène (${relW} / ${nW}).` } },
     { id: 'rapports', titre: 'La méthode des rapports', depart: () => voir('drx', 'W'),
+      retenirTitre: 'À RETENIR : LA MÉTHODE DES RAPPORTS',
+      retenir: <>
+        <FormuleMath><msup><mi>sin</mi><mn>2</mn></msup><mi>θ</mi><mo>=</mo><mfrac><msup><mi>λ</mi><mn>2</mn></msup><mrow><mn>4</mn><msup><mi>a</mi><mn>2</mn></msup></mrow></mfrac><mo>×</mo><mi>N</mi><mspace width="1.5em"/><mfrac><mrow><msup><mi>sin</mi><mn>2</mn></msup><mi>θ</mi></mrow><mrow><msup><mi>sin</mi><mn>2</mn></msup><msub><mi>θ</mi><mn>1</mn></msub></mrow></mfrac><mo>=</mo><mfrac><mi>N</mi><msub><mi>N</mi><mn>1</mn></msub></mfrac></FormuleMath>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Pour tous les pics λ et a sont identiques : sin²θ est <strong>proportionnel à N</strong>.</li>
+          <li>Les rapports ne dépendent <strong>pas de a</strong>, seulement de la structure.</li>
+        </ul>
+      </>,
       texte: <>Deux relations vont se combiner :
         <Formule>(1) Bragg (ordre 1) : 2 d<sub>hkl</sub> sin θ = λ</Formule>
         <Formule>(2) cubique : d<sub>hkl</sub> = a / √N</Formule>
@@ -228,6 +269,15 @@ export function SimulationDiffractionRX() {
           [Math.sin(rad(r2(W3) / 2)) / Math.sin(rad(r2(W1) / 2)), 'Vous avez oublié le carré : il faut calculer sin²θ₃ / sin²θ₁, donc élever chaque sinus au carré avant de diviser.'],
           [Math.sin(rad(r2(W1) / 2)) ** 2 / Math.sin(rad(r2(W3) / 2)) ** 2, 'Rapport à l’envers : c’est sin²θ du 3ᵉ pic divisé par sin²θ du 1ᵉʳ pic.']], expl: `sin²(${fr(r2(W3) / 2, 3)}°) / sin²(${fr(r2(W1) / 2, 3)}°).`, indice: "Calcule sin θ pour le pic 3 et pour le pic 1 (θ est la moitié de l’angle 2θ lu), puis fais le rapport de leurs carrés." } },
     { id: 'modele', titre: 'Tester les trois modèles', depart: () => voir('drx', 'W'),
+      retenirTitre: 'À RETENIR : IDENTIFIER LA STRUCTURE',
+      retenir: <>
+        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+          <li>Relever tous les pics (2θ), <strong>sans oublier le premier</strong> ; calculer θ = 2θ / 2 puis sin²θ.</li>
+          <li>Calculer les rapports sin²θ / sin²θ₁ et les comparer aux suites de N / N₁ de P, I et F.</li>
+          <li>Tester un modèle : tous les N estimés doivent être permis <em>et</em> a = λ √N / (2 sin θ) doit être le <strong>même pour tous les pics</strong>.</li>
+          <li>Moyenner a, puis confirmer par la masse volumique.</li>
+        </ol>
+      </>,
       texte: <>Choisissez un modèle sous le tableau. Chaque modèle impose une liste de valeurs de N permises. Le simulateur calcule N estimé = (sin²θ / sin²θ₁) × N₁ et le compare aux valeurs permises : <strong>un ⚠️ signale un pic dont le N estimé n’est permis par aucun plan du modèle</strong>. Il calcule ensuite
         <Formule>a = λ √N / (2 sin θ)</Formule>
         pour chaque pic. Le bon modèle est celui où <strong>tous les N estimés sont permis</strong> (aucun ⚠️) et où <strong>a est le même pour tous les pics</strong>. Testez le modèle cubique simple : regardez le 7ᵉ pic du tungstène.</>,
@@ -250,6 +300,14 @@ export function SimulationDiffractionRX() {
             `Moyenne sur tous les pics : a ≈ ${fr(ECHANTILLONS.W.a, 4)} nm.`]; },
         pieges: [[ECHANTILLONS.W.a / Math.sqrt(2), 'C’est la valeur du modèle cubique simple : revenez au modèle cubique centré.']], expl: 'Les tables donnent a = 0,3165 nm.', indice: "a = d × √(h² + k² + l²), avec d déduit de la loi de Bragg (θ est la moitié de l’angle 2θ lu)." } },
     { id: 'densite', titre: 'Contrôler par la masse volumique', depart: () => voir('drx', 'W', 'I'),
+      retenirTitre: 'À RETENIR : CONFIRMER PAR LA MASSE VOLUMIQUE',
+      retenir: <>
+        <FormuleMath><mi>ρ</mi><mo>=</mo><mfrac><mrow><mi>n</mi><mo>×</mo><mi>M</mi></mrow><mrow><msub><mi>N</mi><mtext>A</mtext></msub><mo>×</mo><msup><mi>a</mi><mn>3</mn></msup></mrow></mfrac></FormuleMath>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>n : nombre d’atomes (ou d’unités formulaires) par maille : 1 (P), 2 (I), 4 (F) ; M en g/mol, a converti en cm (1 nm = 10⁻⁷ cm) pour obtenir ρ en g/cm³.</li>
+          <li>Tungstène (cubique centré) : ρ ≈ 19,25 g/cm³, en accord avec les tables ; le modèle cubique simple donnerait une valeur incompatible.</li>
+        </ul>
+      </>,
       texte: <>Une maille cubique centrée contient 1 + 8 × 1/8 = <strong>2 atomes</strong>. Sa masse est 2 M / N<sub>A</sub>, son volume a³ :
         <Formule>ρ = 2 M / (N<sub>A</sub> a³)</Formule>
         Données : M(W) = 183,84 g/mol ; N<sub>A</sub> = 6,022 × 10²³ mol⁻¹ ; a = 0,3165 nm, à convertir en cm (1 nm = 10⁻⁷ cm). Calculez ρ, puis comparez aux tables : ρ = 19,25 g/cm³. (Le contrôle automatique du simulateur est masqué pendant cette étape.)</>,
