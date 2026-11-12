@@ -22,6 +22,15 @@ export function DefinitionRED({ court = false }) {
   );
 }
 
+// Définition de l'indice d'évaporation (à afficher partout où il est lu) : vitesse relative, acétate de butyle = 1 ; grand = volatil.
+export function DefinitionIndiceEvap({ court = false }) {
+  return court ? (
+    <span><strong>Indice d’évaporation</strong> : vitesse d’évaporation du solvant comparée à celle de l’acétate de butyle (indice = 1). Plus l’indice est <strong>grand</strong>, plus le solvant est <strong>volatil</strong> ; plus il est petit, moins il l’est.</span>
+  ) : (
+    <span><strong>Indice d’évaporation</strong> : vitesse d’évaporation d’un solvant pur, comparée à celle de l’acétate de butyle, prise comme référence (indice = 1). <strong>Plus l’indice est grand, plus le solvant s’évapore vite : il est plus volatil.</strong> Un indice de 4 signifie qu’il s’évapore environ 4 fois plus vite que l’acétate de butyle ; un indice de 0,25, environ 4 fois plus lentement. Exemples : acétone 7,7 (très volatile) ; éthanol 2,7 ; acétate de butyle 1 ; 1-butanol 0,46 (peu volatil). Pour un mélange, repères utilisés ici : supérieur à 3, séchage rapide ; entre 1 et 3, séchage moyen ; inférieur à 1, séchage lent. L’indice va globalement dans le même sens que la pression de vapeur (une pression de vapeur élevée correspond à un solvant volatil), sans lui être proportionnel.</span>
+  );
+}
+
 export const FAMILLES = [
   { nom: 'Alcools', solvants: {
     'Méthanol':                 { d: [14.7, 12.3, 22.3], pvap: 129, ie: 4.5, rho: 0.791, M: 32.0 },
@@ -454,6 +463,7 @@ export function HansenExploration({ plotlyReady, initial = {}, onEtat }) {
   const blocEvap = (
     <div style={{ ...styleBoite, gridColumn: '1 / -1' }}>
       <Section titre="Propriétés d'évaporation du mélange" ouvert={voirEvap} onBascule={() => setVoirEvap(v => !v)}>
+        <div data-def-indice-evap="1" style={{ fontSize: 13, color: KIT.txt, lineHeight: 1.5, padding: '6px 10px', background: '#f0fdfa', borderLeft: '3px solid #0f766e', borderRadius: 6, marginBottom: 8 }}><DefinitionIndiceEvap/></div>
         {!evap ? <div style={{ fontSize: 13.5, color: KIT.txt2 }}>Composez d'abord un mélange.</div>
           : evap.manque ? <div style={{ fontSize: 13.5, color: '#b45309' }}>Données d'évaporation non renseignées pour : {evap.manque.join(', ')}.</div> : <>
             <LigneMesure nom="Indice d'évaporation du mélange (acétate de butyle = 1)" valeur={`${fmt(evap.ie, 2)} : ${evap.ie > 3 ? 'séchage rapide' : evap.ie > 1 ? 'séchage moyen' : 'séchage lent'}`}
@@ -462,7 +472,7 @@ export function HansenExploration({ plotlyReady, initial = {}, onEtat }) {
           </>}
         <div style={{ overflowX: 'auto', marginTop: 8 }}>
           <table style={{ borderCollapse: 'collapse', background: 'white', width: '100%' }}>
-            <thead><tr>{['Solvant coché', 'δd', 'δp', 'δh', 'Pvap 20 °C (hPa)', 'Indice d’évap.', 'RED', ...(deux ? ['RED 2'] : [])].map(h => <th key={h} style={cell}>{h}</th>)}</tr></thead>
+            <thead><tr>{[['Solvant coché', ''], ['δd', ''], ['δp', ''], ['δh', ''], ['Pvap 20 °C (hPa)', 'Pression de vapeur à 20 °C : plus elle est grande, plus le solvant est volatil'], ['Indice d’évap. (AB = 1)', 'Indice d’évaporation : vitesse d’évaporation relative, acétate de butyle = 1. Plus il est grand, plus le solvant est volatil'], ['RED', 'RED = Ra / R0 : inférieur à 1, le solvant dissout le polymère'], ...(deux ? [['RED 2', 'RED pour le 2e polymère']] : [])].map(([h, t]) => <th key={h} style={cell} title={t || undefined}>{h}</th>)}</tr></thead>
             <tbody>{cochesListe.map(s => { const q = SOLVANTS[s], r = red(s); return (
               <tr key={s}><td style={{ ...cell, textAlign: 'left' }}>{s}</td><td style={cell}>{fmt(q.d[0], 1)}</td><td style={cell}>{fmt(q.d[1], 1)}</td><td style={cell}>{fmt(q.d[2], 1)}</td>
                 <td style={cell}>{q.pvap == null ? '—' : fmtPvap(q.pvap)}</td><td style={cell}>{q.ie == null ? '—' : fmt(q.ie, 2)}</td>

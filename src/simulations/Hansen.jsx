@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, SuiviDefi, useCompteurDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
-import { HansenExploration, GraphesHansen, DefinitionRED } from "./HansenExploration";
+import { HansenExploration, GraphesHansen, DefinitionRED, DefinitionIndiceEvap } from "./HansenExploration";
 import { cardStyle, fmt, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, IndiceDefi, Formule, FormuleEnLigne } from "../commun";
 import { Pic } from "../Pictos";
@@ -392,6 +392,7 @@ export function Simulation4({ plotlyReady }) {
           : <>Formulez le mélange de solvants d’un vernis à la nitrocellulose (données du TP). <strong>Faites vos essais dans l’exploration libre</strong> ci-dessous (cochez des solvants, composez le mélange, regardez les RED), puis donnez votre réponse ici : le mélange doit respecter les critères ci-dessous.</>}</div>
         <div data-criteres-defi="1" style={{ fontSize: 14, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, padding: '8px 12px' }}>
           <div style={{ marginBottom: 6, fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}><DefinitionRED court/></div>
+          {!sel && <div style={{ marginBottom: 6, fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}><DefinitionIndiceEvap court/></div>}
           <strong>Critères à respecter</strong>
           <ul style={{ margin: '4px 0 0', paddingLeft: 20, lineHeight: 1.55 }}>
             {sel ? <>
@@ -400,7 +401,7 @@ export function Simulation4({ plotlyReady }) {
               <li>Les deux polymères restent ceux déjà réglés (option « deux sphères ») : ne les changez pas.</li>
             </> : <>
               <li>Le mélange <strong>dissout la nitrocellulose, avec une marge</strong> : RED du mélange inférieur à 0,9.</li>
-              <li>Le solvant <strong>le moins volatil</strong> du mélange (pression de vapeur la plus faible, parmi les solvants présents à 5 % ou plus) est un vrai solvant de la nitrocellulose : son RED est inférieur à 1. Ainsi, en fin de séchage, le film ne précipite pas.</li>
+              <li>Le solvant <strong>le moins volatil</strong> du mélange (celui dont la <strong>pression de vapeur</strong> est la plus faible, parmi les solvants présents à 5 % ou plus ; elle se lit dans la colonne « Pvap 20 °C » de la section « Propriétés d’évaporation du mélange » de l’exploration, à déplier) est un vrai solvant de la nitrocellulose : son RED est inférieur à 1. Ainsi, en fin de séchage, le film ne précipite pas.</li>
               <li>Le mélange est <strong>économique</strong> : au moins {defi.alcoolMin} % de solvants de la famille « Alcools » (somme de leurs parts).</li>
               <li>Le polymère reste la nitrocellulose (données du TP) : ne le changez pas.</li>
             </>}
