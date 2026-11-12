@@ -26,7 +26,8 @@ export const EXOS_DE_SIM = {
   54: [/chr-(cpg|resolution)/],
   55: [/chr-sm/],
   11: [/relation\.dilution|beer|etalonnage|absorbance|etalon-nacl/],
-  3: [/titrage/],
+  3: [/elc-/],
+  29: [/iE-/],
   // ── 2GT ──
   57: [/^noyau/, /mic-(electrons|ion-|octet|masse-noyau|taille|masse-carbone)/],
   58: [/mic-(famille|gaz-nobles|octet)/],
@@ -74,6 +75,9 @@ export const EXOS_DE_SIM = {
   45: [/ctl-hyp-led|ctl-prev|ctrl-pwm|clignotement|delai-double|ctl-bobine-champ/],
   83: [/ondDiffraction|ond-.*diffraction|ond-diff|ond-fil|ond-cuve/],
   84: [/ondYoung|ondReseau|young|reseau|interferences|ond-spectro/],
+  87: [/son-/],
+  88: [/ech-/],
+  91: [/e2d-/],
   86: [/^estRendement|est-/],
   92: [/^meca-/],
 };
