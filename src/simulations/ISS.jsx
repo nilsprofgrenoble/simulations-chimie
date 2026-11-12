@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, avecIndices, IndiceDefi } from "../commun";
 import { fr, R_KM, gAlt, G0, vOrb, periode, typeOrbite, depart, pas, trajectoire } from "./issModele";
 import { Pic } from "../Pictos";
@@ -215,6 +215,24 @@ export function SimulationISS() {
       texte: <>À bord de la Station spatiale internationale (<strong>ISS</strong>), à <strong>400 km</strong> d’altitude, les astronautes <strong>flottent</strong>. On dit qu’ils sont en <strong>apesanteur</strong>. Beaucoup pensent qu’à cette altitude « il n’y a plus de gravité ». Vérifions !</>,
       tache: { type: 'qcm', q: 'À ton avis, pourquoi les astronautes flottent-ils dans la station ?', options: ['La station et eux tombent ensemble autour de la Terre', 'Il n’y a plus de gravité à 400 km d’altitude', 'Il n’y a pas d’air dans l’espace', 'La station tourne si vite qu’ils sont plaqués au plafond'], bonne: 0, expl: 'Ils flottent parce que la station et les astronautes sont en chute libre ensemble. La gravité est toujours là (près de 90 % de celle du sol) : c’est elle qui les fait tourner autour de la Terre.', indice: "Compare g à 400 km avec g au sol dans la simulation : la gravité a-t-elle disparu ? Puis imagine ce qui arrive à une cabine et à tout ce qu’elle contient quand ils tombent ensemble." } },
     { id: 'gravite', titre: 'Y a-t-il encore de la gravité à 400 km ?', depart: () => voirO(400, 7.7),
+      retenirTitre: 'À RETENIR : LA GRAVITÉ EN ALTITUDE',
+      retenir: <>
+        <Formule><mi>g</mi><mo>=</mo><mfrac><mrow><mi>G</mi><mo>×</mo><mi>M</mi></mrow><msup><mrow><mo>(</mo><mi>R</mi><mo>+</mo><mi>h</mi><mo>)</mo></mrow><mn>2</mn></msup></mfrac><mspace width="1.5em"/><mi>P</mi><mo>=</mo><mi>m</mi><mo>×</mo><mi>g</mi></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Lieu</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Altitude h (km)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>g (N·kg⁻¹)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>g / g(sol)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>sol</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>9,8</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>100 %</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>ISS</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>400</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>8,7</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>89 %</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>satellite</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 000</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>7,3</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>75 %</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La gravité <strong>diminue lentement</strong> avec l’altitude : à 400 km, il en reste près de <strong>90 %</strong> (R<sub>Terre</sub> = 6 378 km).</li>
+          <li>La <strong>masse</strong> ne change pas avec l’altitude ; le <strong>poids</strong> P = m × g, si.</li>
+          <li><strong>Exemple :</strong> 60 kg à 1 000 km : P = 60 × 7,3 ≈ 440 N (au sol : 60 × 9,8 ≈ 590 N).</li>
+          <li><strong>Hypothèses :</strong> Terre sphérique et homogène, seule la Terre attire (M = 5,98 × 10²⁴ kg, G = 6,67 × 10⁻¹¹ N·m²·kg⁻²).</li>
+        </ul>
+      </>,
       texte: <>Regardez la flèche rouge : à 400 km, la Terre attire <strong>chaque kilogramme</strong> avec une force de <strong>8,7 N</strong> (g = 8,7 N/kg). Au sol, c’est 9,8 N/kg. La Terre est grande : monter de 400 km, c’est peu par rapport à son rayon de 6 378 km.
         <ExempleResolu>Un objet de <strong>10 kg</strong> : au sol P = 10 × 9,8 = 98 N ; à 400 km P = 10 × 8,7 = <strong>87 N</strong>. Presque pareil !</ExempleResolu></>,
       tache: { type: 'num', q: 'Quel est le poids d’un astronaute de 70 kg à 400 km d’altitude ? (P = m × g)', unite: 'N', vrai: 608, tol: 0.02, affiche: x => String(x), pieges: [[686, 'C’est son poids au sol (70 × 9,8). À 400 km, g vaut 8,7 N/kg.'], [0, 'Le poids n’est pas nul : la Terre attire toujours l’astronaute.'], [8.7, 'C’est g (le poids d’1 kg). Pour 70 kg, multipliez par la masse : P = m × g.'], [70 / 8.7, 'On multiplie : P = m × g (on ne divise pas la masse par g).']],
@@ -234,26 +252,105 @@ export function SimulationISS() {
       texte: <>Cochez <strong>« vue depuis la cabine »</strong> : on se place dans le <strong>référentiel de la cabine</strong>. La cabine devient immobile sur l’écran, et c’est le <strong>sol qui monte</strong> vers elle. Relancez l’expérience : la personne et la balle <strong>ne bougent pas</strong>, comme s’il n’y avait plus de gravité (alors que la gravité est toujours là : la cabine et la personne tombent ensemble). C’est ce que ressentent les astronautes.</>,
       tache: { type: 'action', ok: enGuide && fait.vue, consigne: 'Cochez « vue depuis la cabine ».' } },
     { id: 'balance', titre: 'La force de la Terre existe toujours', depart: () => voirC(true),
+      retenirTitre: 'À RETENIR : POIDS ET APESANTEUR',
+      retenir: <>
+        <svg viewBox="0 0 370 160" role="img" aria-label="Deux cabines. À gauche, câble tenu : la personne subit son poids P vers le bas et la force N du plancher vers le haut, qui se compensent. À droite, câble coupé : seul le poids P agit, la cabine tombe avec la personne, qui flotte" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <text x="90" y="14" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">câble tenu</text><text x="280" y="14" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">câble coupé</text>
+          <rect x="10" y="22" width="160" height="100" fill="#f8fafc" stroke="#334155" strokeWidth="2" /><rect x="200" y="22" width="160" height="100" fill="#f8fafc" stroke="#334155" strokeWidth="2" />
+          <line x1="10" y1="114" x2="170" y2="114" stroke="#334155" strokeWidth="3" /><line x1="200" y1="114" x2="360" y2="114" stroke="#334155" strokeWidth="3" />
+          <circle cx="90" cy="36" r="9" fill="#fde68a" stroke="#334155" strokeWidth="1.6" /><path d="M 90 45 L 90 72 M 90 72 L 80 92 M 90 72 L 100 92 M 78 54 L 102 54" stroke="#334155" strokeWidth="2" fill="none" />
+          <line x1="66" y1="60" x2="66.0" y2="96.0" stroke="#c2410c" strokeWidth="2.4" /><polygon points="66,104 62.0,96.0 70.0,96.0" fill="#c2410c" /><text x="52" y="86" fontSize="12" fontWeight="700" fill="#c2410c">P</text>
+          <line x1="114" y1="112" x2="114.0" y2="74.0" stroke="#0072b2" strokeWidth="2.4" /><polygon points="114,66 118.0,74.0 110.0,74.0" fill="#0072b2" /><text x="120" y="92" fontSize="12" fontWeight="700" fill="#0072b2">N</text>
+          <circle cx="280" cy="30" r="9" fill="#fde68a" stroke="#334155" strokeWidth="1.6" /><path d="M 280 39 L 280 66 M 280 66 L 270 86 M 280 66 L 290 86 M 268 48 L 292 48" stroke="#334155" strokeWidth="2" fill="none" />
+          <line x1="256" y1="54" x2="256.0" y2="84.0" stroke="#c2410c" strokeWidth="2.4" /><polygon points="256,92 252.0,84.0 260.0,84.0" fill="#c2410c" /><text x="242" y="76" fontSize="12" fontWeight="700" fill="#c2410c">P</text>
+          <text x="90" y="138" textAnchor="middle" fontSize="11" fill="#334155">P et N se compensent</text><text x="90" y="152" textAnchor="middle" fontSize="11" fill="#334155">on sent son poids</text>
+          <text x="280" y="138" textAnchor="middle" fontSize="11" fill="#334155">seul P agit : tout tombe ensemble</text><text x="280" y="152" textAnchor="middle" fontSize="11" fill="#334155">apesanteur</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Le <strong>poids P</strong> existe toujours : la Terre attire toujours. On « sent » son poids grâce à la <strong>force N du support</strong> (plancher).</li>
+          <li>Dans une cabine en <strong>chute libre</strong>, le plancher tombe aussi : plus de N, la personne flotte. L’<strong>apesanteur</strong> est une absence de <strong>support</strong>, pas une absence de gravité.</li>
+          <li><strong>Piège :</strong> croire qu’« il n’y a plus de gravité » dans l’espace (à 400 km, g ≈ 8,7 N·kg⁻¹).</li>
+        </ul>
+      </>,
       texte: <>Regardez les flèches <strong>P</strong> (poids) : elles sont toujours là, sur la personne comme sur la balle. La Terre attire toujours. Mais le plancher de la cabine <strong>tombe aussi</strong> : il ne pousse plus la personne vers le haut (plus de flèche bleue). Elle ne sent plus son poids.</>,
       tache: { type: 'qcm', q: 'Dans la cabine qui tombe, la personne a-t-elle encore un poids ?', options: ['Oui : la Terre l’attire toujours, mais rien ne la soutient', 'Non : il n’y a plus d’attraction', 'Oui, mais la cabine le supprime', 'Non, la cabine est trop petite'], bonne: 0, expl: 'La force de la Terre (le poids) existe toujours. Ce qui disparaît, c’est la sensation de poids : personne ne pousse l’astronaute, le sol de la cabine tombe avec lui.', indice: "Le poids est la force exercée par la Terre. Cette force disparaît-elle quand on tombe ? Ne confonds pas le poids avec la sensation de poids (ce qui te soutient ou te pousse)." } },
     { id: 'lancer', titre: 'Lançons la balle !', depart: () => voirC(true, true),
+      retenirTitre: 'À RETENIR : CHANGER DE RÉFÉRENTIEL',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Référentiel</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Cabine</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Balle lancée</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>la Terre (le sol)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>tombe de plus en plus vite</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>courbe (elle tombe en avançant)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>la cabine</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>immobile</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>droite, à vitesse constante</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Le <strong>mouvement dépend du référentiel</strong> : il se décrit toujours par rapport à un objet de référence.</li>
+          <li>Cabine et balle subissent la <strong>même chute</strong> : par rapport à la cabine, la balle part en ligne droite. Son poids n’a pas disparu : la cabine « tombe » comme elle.</li>
+          <li><strong>Hypothèses :</strong> g constant sur la hauteur de la cabine, pas de frottements.</li>
+        </ul>
+      </>,
       texte: <>On <strong>lance</strong> maintenant la balle vers la droite, la cabine étant en chute libre. Vue depuis le <strong>sol</strong>, elle décrit une <strong>courbe</strong> (elle tombe en avançant). Cochez « vue depuis la cabine » : la balle part <strong>tout droit</strong>, à <strong>vitesse constante</strong>, car la cabine tombe exactement comme elle. Attention : la balle a toujours son <strong>poids</strong>, non compensé (elle accélère vers la Terre, comme on le voit depuis le sol). Dans la cabine, on voit seulement son mouvement <strong>par rapport à la cabine</strong>.</>,
       tache: { type: 'action', ok: enGuide && fait.lance, consigne: 'Lancez la balle (« lancée vers la droite ») avec le câble coupé.' } },
     { id: 'orbite', titre: 'Une chute… sans fin', depart: () => voirO(400, 3),
+      retenirTitre: 'À RETENIR : LE CANON DE NEWTON',
+      retenir: <>
+        <svg viewBox="0 60 360 145" role="img" aria-label="Canon de Newton : plus la vitesse horizontale est grande, plus le projectile tombe loin ; à la bonne vitesse, il tombe sans jamais toucher la Terre et suit une orbite circulaire" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <circle cx="180" cy="320" r="150" fill="#bae6fd" stroke="#0369a1" strokeWidth="2" />
+          <circle cx="180" cy="320" r="162" fill="none" stroke="#15803d" strokeWidth="2" strokeDasharray="6 4" />
+          <rect x="176" y="156" width="8" height="14" fill="#475569" /><circle cx="180" cy="153" r="5" fill="#334155" />
+          <path d="M 180 153 Q 212 153 235 180" fill="none" stroke="#b45309" strokeWidth="2.4" />
+          <path d="M 180 153 Q 245 153 268 198" fill="none" stroke="#c2410c" strokeWidth="2.4" />
+          <text x="180" y="196" textAnchor="middle" fontSize="12" fill="#0369a1" fontWeight="700">Terre</text>
+          <text x="8" y="76" fontSize="11" fill="#b45309" fontWeight="700">v faible : retombe tout près</text>
+          <text x="8" y="91" fontSize="11" fill="#c2410c" fontWeight="700">v plus grande : retombe plus loin</text>
+          <text x="8" y="106" fontSize="11" fill="#15803d" fontWeight="700">v ≈ 7,7 km/s : orbite (chute sans fin)</text>
+          <text x="8" y="121" fontSize="10" fill="#475569">schéma : altitude exagérée, échelle non respectée</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Un objet lancé <strong>horizontalement</strong> tombe vers la Terre ; plus sa vitesse est grande, plus il retombe loin.</li>
+          <li>À la bonne vitesse, la Terre étant ronde, le sol « se dérobe » : l’objet <strong>tombe sans fin</strong> autour de la Terre. C’est une <strong>orbite</strong>.</li>
+        </ul>
+      </>,
       texte: <>Comment la station peut-elle « tomber » sans jamais toucher la Terre ? Imaginez un canon qui tire <strong>horizontalement</strong> (idée de Newton). Plus la vitesse est grande, plus l’objet va loin avant de toucher le sol. Avec <strong>assez de vitesse</strong>, la Terre étant ronde, le sol « se dérobe » sous lui : il tombe… sans jamais arriver !
         <ExempleResolu>À <strong>400 km</strong>, la vitesse qu’il faut est d’environ <strong>7,7 km/s</strong> : près de 28 000 km/h. Réglez le curseur « vitesse » sur 7,7 km/s puis cliquez sur « Lancer ».</ExempleResolu></>,
       tache: { type: 'action', ok: enGuide && fait.orbite, consigne: 'Réglez la vitesse à 7,7 km/s (entre 7,65 et 7,70) puis lancez, et attendez un tour complet.' } },
     { id: 'pourquoi', titre: 'Pourquoi ne tombe-t-elle pas sur la Terre ?', depart: null,
+      retenirTitre: 'À RETENIR : VITESSE ET ORBITE',
+      retenir: <>
+        <Formule><mi>v</mi><mo>=</mo><msqrt><mfrac><mrow><mi>G</mi><mo>×</mo><mi>M</mi></mrow><mrow><mi>R</mi><mo>+</mo><mi>h</mi></mrow></mfrac></msqrt><mspace width="1.5em"/><mi>T</mi><mo>=</mo><mfrac><mrow><mn>2</mn><mi>π</mi><mo>(</mo><mi>R</mi><mo>+</mo><mi>h</mi><mo>)</mo></mrow><mi>v</mi></mfrac></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Vitesse de lancement à 400 km</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Trajectoire</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>5 km/s</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>la station retombe sur la Terre</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>7,7 km/s</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>orbite circulaire, T ≈ 92 min</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>8 km/s</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>orbite allongée (ellipse)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>≥ 10,8 km/s</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>l’objet quitte la Terre</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>À 400 km : v ≈ <strong>7,7 km/s</strong> (environ 28 000 km/h) et une période d’environ <strong>92 min</strong> par tour.</li>
+          <li>La station subit <strong>toujours</strong> l’attraction de la Terre : elle <strong>tombe en permanence</strong> mais avance assez vite pour la manquer.</li>
+          <li><strong>Hypothèses :</strong> lancement horizontal, trajectoire dans un plan, pas d’atmosphère, Terre sphérique homogène.</li>
+        </ul>
+      </>,
       texte: <>Essayez aussi une vitesse plus faible (5 km/s) : la station <strong>retombe</strong> sur la Terre. Et plus grande (8 km/s) : l’orbite devient plus allongée.</>,
       tache: { type: 'qcm', q: 'Pourquoi la station ne tombe-t-elle pas sur la Terre ?', options: ['Elle tombe en permanence, mais elle avance assez vite pour que la Terre se dérobe', 'La Terre ne l’attire plus à cette altitude', 'Elle est repoussée par l’espace', 'Elle est trop légère'], bonne: 0, expl: 'La station subit toujours l’attraction de la Terre. Sa vitesse horizontale est telle qu’elle « manque » la Terre : elle tombe en tournant.', indice: "La Terre attire-t-elle encore la station à cette altitude ? Observe la trajectoire dans la simulation : que devient la chute si la vitesse horizontale est grande ?" } },
     { id: 'marteau', titre: 'Même chute pour tout le monde', depart: () => voirO(400, 7.7),
       texte: <>La flèche rouge (force par kilogramme) est <strong>la même</strong> pour la station et pour tout ce qu’elle contient : l’astronaute, un marteau, une balle… Tous ont la <strong>même chute</strong> : ils suivent la <strong>même trajectoire</strong> autour de la Terre.</>,
       tache: { type: 'qcm', q: 'Un astronaute lâche son marteau dans la station. Pourquoi reste-t-il à côté de lui ?', options: ['Marteau, astronaute et station tombent de la même façon autour de la Terre', 'Le marteau n’est plus attiré par la Terre', 'Le marteau est plus léger que l’air', 'Le marteau est attiré par l’astronaute'], bonne: 0, expl: 'Tout ce qui est dans la station subit la même attraction par kilogramme, donc tombe pareil : il n’y a aucun mouvement relatif.', indice: "Compare la façon dont tombent le marteau, l’astronaute et la station. La chute dépend-elle de la masse de l’objet ?" } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
-      texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>À 400 km, la gravité est encore à <strong>environ 90 %</strong> de celle du sol (g = 8,7 N/kg).</li>
-        <li>L’ISS est en <strong>chute libre</strong> autour de la Terre : elle tombe sans cesse, mais sa vitesse (≈ 7,7 km/s) fait qu’elle ne touche jamais la Terre.</li>
-        <li>Astronautes et objets tombent <strong>avec</strong> la station : l’<strong>apesanteur</strong> n’est pas l’absence de gravité mais l’absence de support.</li></ul></ARetenir>, tache: null },
+      retenirTitre: 'À RETENIR : LE BILAN',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>À 400 km, g ≈ 8,7 N·kg⁻¹ : environ <strong>90 %</strong> de la gravité au sol ; P = m × g.</li>
+          <li>L’ISS est en <strong>chute libre</strong> autour de la Terre (v ≈ 7,7 km/s, T ≈ 92 min) : elle tombe sans cesse sans toucher la Terre.</li>
+          <li>Astronautes, marteau, station tombent <strong>pareil</strong> : <strong>apesanteur = absence de support</strong>, pas absence de gravité.</li>
+          <li><strong>Méthode :</strong> pour expliquer « ça flotte », comparer les forces (P, N) et se placer dans le bon référentiel.</li>
+          <li><strong>Pièges :</strong> confondre masse et poids ; croire qu’il n’y a plus de gravité à 400 km.</li>
+        </ul>
+      </>,
+      texte: <>Bravo : vous savez expliquer l’apesanteur. Voici le bilan à garder.</>, tache: null },
   ];
   useEffect(() => {
     if (mode !== 'guide') return;
