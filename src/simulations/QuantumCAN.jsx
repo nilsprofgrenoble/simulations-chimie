@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import montageCtn from "./montageCtn";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 
@@ -320,9 +320,27 @@ export function SimulationCAN({ plotlyReady }) {
       texte: <>Vous avez mesuré la tension Ur pour plusieurs températures T : c'est la <strong>courbe d'étalonnage</strong> du capteur. Chargez les données du TP.</>,
       tache: { type: 'action', ok: source === 'exemple', label: '📊 Charger les données du TP', faire: choisirExemple } },
     { id: 'courbe', titre: 'La courbe d’étalonnage', focus: ['donnees', 'courbe'],
+      retenirTitre: 'À RETENIR : LE MONTAGE ET L’ÉTALONNAGE',
+      retenir: <>
+        <svg viewBox="0 0 360 150" role="img" aria-label="Montage du TP : la thermistance CTN est reliée à l’alimentation 5 V, une résistance de 10 kilo-ohms à la masse ; la tension Ur aux bornes de la résistance est lue sur l’entrée A0 de la carte Arduino" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <line x1="90" y1="14" x2="250" y2="14" stroke="#334155" strokeWidth="2" /><text x="94" y="10" fontSize="12" fontWeight="700" fill="#b45309">+5 V</text>
+          <line x1="130" y1="14" x2="130" y2="30" stroke="#334155" strokeWidth="2" />
+          <rect x="116" y="30" width="28" height="42" fill="#fef3c7" stroke="#b45309" strokeWidth="2.5" /><text x="152" y="56" fontSize="13" fontWeight="700" fill="#92400e">CTN (R<tspan fontSize="9" dy="3">CTN</tspan><tspan dy="-3"> ↘ quand T ↗)</tspan></text>
+          <line x1="130" y1="72" x2="130" y2="84" stroke="#334155" strokeWidth="2" />
+          <circle cx="130" cy="84" r="3.5" fill="#334155" /><line x1="130" y1="84" x2="60" y2="84" stroke="#0072b2" strokeWidth="2.5" /><text x="14" y="80" fontSize="12.5" fontWeight="700" fill="#0072b2">U<tspan fontSize="9" dy="3">r</tspan><tspan dy="-3"> → A0</tspan></text>
+          <line x1="130" y1="84" x2="130" y2="92" stroke="#334155" strokeWidth="2" />
+          <rect x="116" y="92" width="28" height="34" fill="#e0f2fe" stroke="#0369a1" strokeWidth="2.5" /><text x="152" y="114" fontSize="13" fontWeight="700" fill="#0369a1">R = 10 kΩ</text>
+          <line x1="130" y1="126" x2="130" y2="138" stroke="#334155" strokeWidth="2" /><line x1="112" y1="138" x2="148" y2="138" stroke="#334155" strokeWidth="2.5" /><line x1="118" y1="143" x2="142" y2="143" stroke="#334155" strokeWidth="2" /><text x="156" y="142" fontSize="11" fill="#475569">masse</text>
+        </svg>
+        <Formule><msub><mi>U</mi><mi>r</mi></msub><mo>=</mo><mn>5</mn><mo>×</mo><mfrac><mi>R</mi><mrow><mi>R</mi><mo>+</mo><msub><mi>R</mi><mtext>CTN</mtext></msub></mrow></mfrac></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Une CTN a un coefficient de température <strong>négatif</strong> : R<sub>CTN</sub> ↘ quand T ↗, donc U<sub>r</sub> ↗.</li>
+          <li>La <strong>courbe d’étalonnage</strong> U<sub>r</sub> = f(T) est mesurée point par point ; on en déduit T à partir de U<sub>r</sub> grâce à un <strong>modèle</strong> ajusté sur ces points.</li>
+        </ul>
+      </>,
       texte: <>Affichez les points de mesure. Le pointeur de la souris affiche les valeurs de Ur et de T, avec un repère en pointillés.</>,
       tache: { type: 'action', ok: etapeDonnees, label: 'Afficher la courbe d’étalonnage →', faire: () => setEtapeDonnees(true) } },
-    { id: 'quantum', titre: 'Le quantum', focus: ['can'], retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>CAN de n bits : N entier de 0 à 2<sup>n</sup> − 1, soit 2<sup>n</sup> − 1 intervalles égaux sur la plage de tension</li><li>quantum : q = (V<sub>max</sub> − V<sub>min</sub>) / (2<sup>n</sup> − 1) ; pour 10 bits sur 0–5 V, q ≈ 4,89 mV</li><li>plus n est grand, plus q est petit : le CAN est plus fin</li></ul>, retenirTitre: 'LE QUANTUM D’UN CAN',
+    { id: 'quantum', titre: 'Le quantum', focus: ['can'],
       texte: <>Le CAN a n bits : il fournit un nombre entier N de 0 à 2<sup>n</sup> − 1, pour une tension de 0 à 5 V. Le <strong>quantum</strong> q est la variation de tension qui fait changer N d'une unité : les 5 V sont partagés en 2<sup>n</sup> − 1 intervalles égaux, <strong>q = (V<sub>max</sub> − V<sub>min</sub>) / (2<sup>n</sup> − 1)</strong>. Ici, n = 10 bits (carte Arduino Uno).</>,
       tache: { type: 'num', q: 'Quantum q pour 10 bits sur 0–5 V', unite: 'mV', vrai: Q10 * 1000, tol: 0.01, affiche: x => fmt(x, 2),
         calcul: () => ['Hypothèse : CAN idéal (sans bruit ni défaut), N de 0 à 2ⁿ − 1 pour une tension de 0 à 5 V.',
@@ -338,6 +356,15 @@ export function SimulationCAN({ plotlyReady }) {
       texte: <>Pour connaître la température à partir de n'importe quelle tension, on ajuste un <strong>modèle polynomial</strong> T = f(Ur) sur les points mesurés.</>,
       tache: { type: 'action', ok: etapeModele, label: 'Ajuster un modèle →', faire: () => setEtapeModele(true) } },
     { id: 'ordre', titre: 'Quel modèle choisir ?', focus: ['modele', 'courbe'],
+      retenirTitre: 'À RETENIR : CHOISIR UN MODÈLE POLYNOMIAL',
+      retenir: <>
+        <Formule><mi>T</mi><mo>=</mo><msub><mi>a</mi><mn>0</mn></msub><mo>+</mo><msub><mi>a</mi><mn>1</mn></msub><msub><mi>U</mi><mi>r</mi></msub><mo>+</mo><msub><mi>a</mi><mn>2</mn></msub><msubsup><mi>U</mi><mi>r</mi><mn>2</mn></msubsup><mo>+</mo><msub><mi>a</mi><mn>3</mn></msub><msubsup><mi>U</mi><mi>r</mi><mn>3</mn></msubsup></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Un modèle d’<strong>ordre plus élevé</strong> suit mieux une courbe non linéaire, mais il faut le juger sur l’<strong>écart maximal</strong> avec les mesures (en °C).</li>
+          <li>Un <strong>R² proche de 1 ne suffit pas</strong> : un modèle d’ordre 1 peut avoir un bon R² et pourtant s’écarter des mesures de plusieurs °C.</li>
+          <li>Ici, l’ordre 3 est retenu pour la suite.</li>
+        </ul>
+      </>,
       texte: <>Essayez les ordres 1, 2 et 3. Écart maximal entre le modèle et une mesure : <strong>{fmt(oEx1.ecart, 1)} °C</strong> pour l'ordre 1 (R² = {fmt(oEx1.r2, 4)}), <strong>{fmt(oEx2.ecart, 1)} °C</strong> pour l'ordre 2
         (R² = {fmt(oEx2.r2, 4)}) et <strong>{fmt(oEx3.ecart, 1)} °C</strong> pour l'ordre 3 (R² = {fmt(oEx3.r2, 4)}). Un R² proche de 1 ne suffit pas : on regarde aussi l'écart avec les mesures. Choisissez l'ordre 3.</>,
       tache: { type: 'action', ok: ordre === 3, label: 'Choisir l’ordre 3', faire: () => setOrdre(3), consigne: ordre === 3 ? null : `Ordre du modèle : ${ordre} → 3` } },
@@ -348,7 +375,16 @@ export function SimulationCAN({ plotlyReady }) {
       texte: <>Le curseur ne peut s'arrêter que sur des niveaux du CAN. Placez-le vers Ur = 3,19 V (point mesuré à 36 °C).</>,
       tache: { type: 'action', ok: pres(accroche(3.19)) && etapeZoom, label: 'Placer le curseur vers 3,19 V', faire: () => placer(3.19),
         consigne: pres(accroche(3.19)) ? null : `Ur : ${fmt(urCur, 2)} V → 3,19 V` } },
-    { id: 'dt', titre: 'La résolution en température', focus: ['zoom', 'table'], retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>résolution en température : ΔT ≈ q × |dT/dU<sub>r</sub>|, plus petite variation de T qui fait changer N</li><li>elle dépend de la pente de la courbe d’étalonnage : elle n’est pas la même partout</li></ul>,
+    { id: 'dt', titre: 'La résolution en température', focus: ['zoom', 'table'],
+      retenirTitre: 'À RETENIR : LA RÉSOLUTION EN TEMPÉRATURE',
+      retenir: <>
+        <Formule><mi>Δ</mi><mi>T</mi><mo>≈</mo><mi>q</mi><mo>×</mo><mrow><mo>|</mo><mfrac><mrow><mi>d</mi><mi>T</mi></mrow><mrow><mi>d</mi><msub><mi>U</mi><mi>r</mi></msub></mrow></mfrac><mo>|</mo></mrow></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>ΔT est la <strong>plus petite variation de température qui fait changer N</strong> : la <strong>résolution</strong> de la chaîne.</li>
+          <li>Elle dépend de q (le CAN) <strong>et</strong> de la pente de la courbe d’étalonnage (le capteur) : à q constant, elle n’est pas la même partout.</li>
+          <li>Plus la courbe T = f(U<sub>r</sub>) est pentue, plus ΔT est grand (moins bonne résolution).</li>
+        </ul>
+      </>,
       texte: <>Deux niveaux consécutifs du CAN sont séparés par le quantum q. Les températures correspondantes diffèrent de <strong>ΔT ≈ q × |dT/dUr|</strong> : c'est la plus petite variation de température qui fait changer N. Le tableau gris donne cette valeur pour la tension choisie.</>,
       tache: { type: 'num', q: 'Lisez ΔT dans le tableau (ligne entourée) pour Ur = 3,19 V', unite: '°C', vrai: dT319, tol: 0.01, affiche: x => fmt(x, 3),
         bloque: !pres(accroche(3.19)) ? 'Replacez le curseur vers 3,19 V.' : null,
@@ -373,6 +409,24 @@ export function SimulationCAN({ plotlyReady }) {
       texte: <>Pour voir clairement l'effet de la discrétisation, passez à <strong>4 bits</strong> (N de 0 à 15) dans « Paramètres du CAN ». Le curseur ne peut plus prendre que quelques positions. Le zoom est masqué à partir de cette étape : il deviendrait illisible.</>,
       tache: { type: 'action', ok: nbits === 4, label: 'Passer à 4 bits', faire: () => setNbits(4), consigne: nbits === 4 ? null : `Nombre de bits : ${nbits} → 4` } },
     { id: 'q3', titre: 'Le quantum à 4 bits', focus: ['can'],
+      retenirTitre: 'À RETENIR : LE QUANTUM D’UN CAN',
+      retenir: <>
+        <Formule><mi>q</mi><mo>=</mo><mfrac><mrow><msub><mi>V</mi><mtext>max</mtext></msub><mo>−</mo><msub><mi>V</mi><mtext>min</mtext></msub></mrow><mrow><msup><mn>2</mn><mi>n</mi></msup><mo>−</mo><mn>1</mn></mrow></mfrac></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>n (bits)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Valeurs de N</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Intervalles 2<sup>n</sup> − 1</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>q sur 0–5 V (mV)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>16</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>15</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>333,3</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>8</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>256</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>255</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>19,6</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>10 (Arduino Uno)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 024</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 023</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4,89</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>12</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4 096</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4 095</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,22</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>N est un <strong>entier</strong> de 0 à 2<sup>n</sup> − 1 ; le quantum q est la variation de tension qui fait changer N d’une unité.</li>
+          <li>Plus n est grand, plus q est petit : le CAN est plus <strong>fin</strong>.</li>
+          <li>Diviser par le nombre d’<strong>intervalles</strong> (2<sup>n</sup> − 1), non par n ni par 2<sup>n</sup> ; convertir q en mV (× 1 000).</li>
+        </ul>
+      </>,
       texte: <>Le même calcul avec n = 4.</>,
       tache: { type: 'num', q: 'Quantum q pour 4 bits sur 0–5 V', unite: 'mV', vrai: Q4 * 1000, tol: 0.01, affiche: x => fmt(x, 1),
         calcul: () => ['Même hypothèse : CAN idéal, N de 0 à 2ⁿ − 1 pour une tension de 0 à 5 V.',
@@ -408,6 +462,15 @@ export function SimulationCAN({ plotlyReady }) {
         indice: <>Tous les U<sub>r</sub> compris entre N × q et (N + 1) × q donnent le même N. Repérez sur le graphique les températures associées à ces deux niveaux : la température réelle est comprise entre elles.</>,
         expl: `Avec 4 bits, la température réelle n'est connue qu'à ${fmt(Thaut - Tbas, 0)} °C près : la chaîne est inutilisable pour un thermomètre. Avec 10 bits, l'intervalle n'est plus que de ${fmt(dT319, 2)} °C.` } },
     { id: 'erreur', titre: 'Le CAN est-il le facteur limitant ?', focus: [],
+      retenirTitre: 'À RETENIR : TEMPÉRATURE AFFICHÉE ET INCERTITUDE',
+      retenir: <>
+        <Formule><mi>N</mi><mo>=</mo><mo>⌊</mo><mfrac><msub><mi>U</mi><mi>r</mi></msub><mi>q</mi></mfrac><mo>⌋</mo><mspace width="1.5em"/><mi>N</mi><mo>×</mo><mi>q</mi><mo>≤</mo><msub><mi>U</mi><mi>r</mi></msub><mo>&lt;</mo><mo>(</mo><mi>N</mi><mo>+</mo><mn>1</mn><mo>)</mo><mo>×</mo><mi>q</mi></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La chaîne affiche la température associée à la tension <strong>N × q</strong> (niveau situé juste à gauche de U<sub>r</sub>), pas à U<sub>r</sub> exacte.</li>
+          <li>Tous les U<sub>r</sub> d’un même intervalle donnent le <strong>même N</strong> : la température réelle n’est connue qu’à ΔT près ; avec 4 bits, c’est inutilisable pour un thermomètre.</li>
+          <li>La résolution du CAN n’est <strong>qu’une composante</strong> de l’incertitude, avec l’étalonnage (écart du modèle), la linéarité du capteur, le bruit et la dérive.</li>
+        </ul>
+      </>,
       texte: <>Avec 10 bits, ΔT vaut environ {fmt(dT319, 2)} °C. Mais le modèle s'écarte des mesures de {fmt(oEx3.ecart, 1)} °C au plus, même avec l'ordre 3.</>,
       tache: { type: 'qcm', q: 'Que peut-on conclure pour la mesure de température ?', options: ['Ici, la qualité de l’étalonnage (modèle, capteur) limite l’exactitude bien avant la résolution du CAN', 'La résolution du CAN limite seule l’exactitude de la mesure', 'Le modèle est exact car son R² est proche de 1'], bonne: 0,
         indice: 'Comparez deux écarts en °C : la résolution ΔT due au CAN, et l’écart maximal entre le modèle et les mesures. C’est le plus grand des deux qui limite l’exactitude. Un R² proche de 1 ne dit rien sur cet écart en °C.',
@@ -418,6 +481,15 @@ export function SimulationCAN({ plotlyReady }) {
         indice: 'Relisez la puce « CAN idéal à n bits » du panneau d’hypothèses : valeurs possibles de N, expression de q, défauts que l’on suppose absents.',
         expl: 'Un CAN réel a aussi du bruit, une erreur de gain et de décalage, et une non-linéarité.' } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
+      retenirTitre: 'À RETENIR : LE BILAN',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>CAN à n bits</strong> : N entier de 0 à 2<sup>n</sup> − 1 ; q = (V<sub>max</sub> − V<sub>min</sub>) / (2<sup>n</sup> − 1) ; N = ⌊U<sub>r</sub> / q⌋.</li>
+          <li><strong>Résolution en température</strong> : ΔT ≈ q × |dT/dU<sub>r</sub>| ; elle dépend du CAN et de la pente de l’étalonnage.</li>
+          <li>Peu de bits : peu de températures affichables ; plus de bits : q plus petit, mais l’exactitude est aussi limitée par l’étalonnage.</li>
+          <li><strong>Méthode</strong> : choisir le modèle sur l’écart maximal (pas seulement R²), calculer q, N, N × q, puis T affichée.</li>
+        </ul>
+      </>,
       texte: <>Vous savez calculer le quantum d'un CAN, en déduire la résolution en température (ΔT ≈ q × |dT/dUr|) et expliquer pourquoi peu de bits ne laissent qu'un petit nombre de températures affichables. En exploration libre,
         changez le nombre de bits, la plage ou le modèle, ou chargez vos propres mesures.</>, tache: null },
   ];
