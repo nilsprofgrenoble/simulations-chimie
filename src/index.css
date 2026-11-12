@@ -162,11 +162,15 @@ input[type="checkbox"], input[type="radio"] { accent-color: #0b4f94; }
   body.impression-fiches .fiches-print { display: block !important; font-family: 'Inter', Arial, sans-serif; color: #000; background: #fff; }
   @page { size: A4; margin: 12mm; }
   .fiches-print-entete { display: flex; justify-content: space-between; font-size: 9.5pt; border-bottom: 1.5px solid #0b4f94; padding-bottom: 4pt; margin-bottom: 8pt; color: #0b4f94; }
-  .fiche-feuille { break-inside: avoid; page-break-inside: avoid; border: 1px solid #9aa9bb; border-top: 5px solid var(--c, #0b4f94); border-radius: 6px; padding: 7pt 9pt; margin: 0 0 10pt; }
+  .fiche-courte { break-inside: avoid; page-break-inside: avoid; }
+  .fiche-longue { break-inside: auto; break-before: page; page-break-before: always; }
+  .fiches-print-entete + .fiche-longue, .fiches-print-couverture + .fiche-longue { break-before: auto; page-break-before: auto; }
+  .fiche-feuille { border: 1px solid #9aa9bb; border-top: 5px solid var(--c, #0b4f94); border-radius: 6px; padding: 7pt 9pt; margin: 0 0 10pt; }
   .fiche-feuille header { font-size: 8.5pt; text-transform: uppercase; letter-spacing: .3pt; color: var(--c, #0b4f94); font-weight: 800; }
   .fiche-feuille header h2 { margin: 2pt 0 5pt; font-size: 13pt; text-transform: none; letter-spacing: 0; color: #000; }
   .fiche-feuille-niv { background: var(--c, #0b4f94); color: #fff; padding: 1pt 5pt; border-radius: 8pt; margin-right: 4pt; }
-  .fiche-feuille .fiche-figure { max-height: 62mm; margin: 2pt 0 6pt; }
+  .fiche-feuille header { break-after: avoid-page; page-break-after: avoid; }
+  .fiche-feuille .fiche-figure { max-height: 62mm; margin: 2pt 0 6pt; break-before: avoid-page; break-inside: avoid; break-after: avoid-page; }
   .fiche-feuille .fiche-points { gap: 5pt; }
   .fiche-feuille .fiche-points > li { padding: 4pt 6pt 4pt 26pt; break-inside: avoid; }
   .fiche-feuille .fiche-points > li::before { width: 15px; height: 15px; font-size: 9px; left: 6px; top: 5px; }
