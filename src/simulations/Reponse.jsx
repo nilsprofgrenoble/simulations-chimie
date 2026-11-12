@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
-import { IndiceDefi, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, IndiceDefi, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche } from "../commun";
 import { Pic } from "../Pictos";
 
@@ -291,6 +291,37 @@ export function SimulationReponse() {
           `Valeur absolue : |ΔV| = ${dec(Math.abs(CTN.fin - CTN.ini), 2)} V.`],
         expl: 'V_ini ≈ 4,38 V ; V_fin ≈ 2,08 V ; |ΔV| = 4,38 − 2,08 = 2,30 V.' } },
     { id: 'seuil', titre: 'Calculer 5 % de ΔV', focus: ['graphe', 'releve'],
+      retenirTitre: 'À RETENIR : LE TEMPS DE RÉPONSE À 5 %',
+      retenir: <>
+        <div>Un capteur n’est pas instantané : il a une <strong>inertie</strong> (la sonde doit échanger de l’énergie avec le fluide). On le caractérise par la réponse à un <strong>échelon</strong> : la grandeur mesurée change brusquement à t₀.</div>
+        <svg viewBox="0 0 270 135" style={{ width: '100%', maxWidth: 330, display: 'block', margin: '4px auto' }} role="img" aria-label="Réponse d’un capteur à un échelon : la grandeur passe de V_ini à V_fin ; le temps de réponse à 5 % est la durée entre t0 et le moment où la courbe entre dans la bande de plus ou moins 5 % autour de V_fin">
+          <path d="M26,8 V112 H262" fill="none" stroke="#475569" strokeWidth="1.5"/>
+          <line x1="26" y1="25" x2="258" y2="25" stroke="#94a3b8" strokeDasharray="3,3"/>
+          <line x1="26" y1="100" x2="258" y2="100" stroke="#94a3b8" strokeDasharray="3,3"/>
+          <line x1="26" y1="96.3" x2="258" y2="96.3" stroke="#16a34a" strokeWidth="1.5" strokeDasharray="4,2"/>
+          <path d="M26,25 H70" fill="none" stroke="#2563eb" strokeWidth="2.5"/>
+          <polyline points="70,25.0 76,36.0 82,45.3 88,53.3 94,60.1 100,65.9 106,70.9 112,75.2 118,78.8 124,81.9 130,84.5 136,86.8 142,88.7 148,90.4 154,91.8 160,93.0 166,94.0 172,94.9 178,95.6 184,96.3 190,96.8 196,97.3 202,97.7 208,98.0 214,98.3 220,98.6 226,98.8 232,98.9 238,99.1 244,99.2 250,99.3" fill="none" stroke="#2563eb" strokeWidth="2.5"/>
+          <line x1="70" y1="12" x2="70" y2="116" stroke="#b45309" strokeDasharray="3,3"/>
+          <line x1="184" y1="12" x2="184" y2="116" stroke="#b45309" strokeDasharray="3,3"/>
+          <path d="M70,119 H184" stroke="#b45309" strokeWidth="1.5"/><path d="M70,115.5 V122.5 M184,115.5 V122.5" stroke="#b45309" strokeWidth="1.5"/>
+          <text x="127" y="131" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#b45309">t<tspan dy="2" fontSize="7">R</tspan><tspan dy="-2"> = t</tspan><tspan dy="2" fontSize="7">1</tspan><tspan dy="-2"> − t</tspan><tspan dy="2" fontSize="7">0</tspan></text>
+          <text x="22" y="28" textAnchor="end" fontSize="9" fill="#334155">V<tspan dy="2" fontSize="6.5">ini</tspan></text>
+          <text x="22" y="103" textAnchor="end" fontSize="9" fill="#334155">V<tspan dy="2" fontSize="6.5">fin</tspan></text>
+          <text x="240" y="90" textAnchor="end" fontSize="8" fill="#15803d">V<tspan dy="2" fontSize="6">fin</tspan><tspan dy="-2"> + 5 %ΔV</tspan></text>
+          <text x="70" y="9" textAnchor="middle" fontSize="8.5" fill="#b45309">t<tspan dy="2" fontSize="6.5">0</tspan></text>
+          <text x="184" y="9" textAnchor="middle" fontSize="8.5" fill="#b45309">t<tspan dy="2" fontSize="6.5">1</tspan></text>
+          <text x="262" y="124" textAnchor="end" fontSize="8.5" fill="#334155">t</text>
+          <path d="M44,25 V100" stroke="#7c3aed" strokeWidth="1.2"/><path d="M41,28 L44,25 L47,28 M41,97 L44,100 L47,97" fill="none" stroke="#7c3aed" strokeWidth="1.2"/>
+          <text x="48" y="64" fontSize="9" fill="#7c3aed">ΔV</text>
+        </svg>
+        <Formule><mi>Δ</mi><mi>V</mi><mo>=</mo><msub><mi>V</mi><mtext>fin</mtext></msub><mo>−</mo><msub><mi>V</mi><mtext>ini</mtext></msub><mspace width="1.5em"/><mo>|</mo><mi>Δ</mi><mi>V</mi><mo>|</mo><mo>=</mo><mtext>variation totale</mtext><mspace width="1.5em"/><msub><mi>t</mi><mi>R</mi></msub><mo>=</mo><msub><mi>t</mi><mn>1</mn></msub><mo>−</mo><msub><mi>t</mi><mn>0</mn></msub></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Temps de réponse à 5 %</strong> : durée, comptée <strong>depuis t₀</strong>, au bout de laquelle la grandeur ne s’écarte plus de sa valeur finale de plus de <strong>5 % de |ΔV|</strong>.</li>
+          <li><strong>Méthode :</strong> ① lire V<sub>ini</sub> et V<sub>fin</sub> sur les paliers ② |ΔV| = |V<sub>fin</sub> − V<sub>ini</sub>| ③ écart admis = 0,05 × |ΔV| ④ limite = V<sub>fin</sub> ± 5 %ΔV, du côté d’où arrive la courbe ⑤ t₁ = instant où la courbe atteint la limite <strong>sans plus en ressortir</strong> ⑥ t<sub>R</sub> = t₁ − t₀.</li>
+          <li>Si V diminue, ΔV est négative : on prend la <strong>valeur absolue</strong>, et la limite est V<sub>fin</sub> <strong>+</strong> 5 %ΔV (la courbe arrive par au-dessus).</li>
+          <li><strong>Pièges :</strong> donner t₁ (un instant) à la place de t<sub>R</sub> (une durée) ; confondre 5 % = 0,05 avec 5 ; oublier de convertir le pourcentage en nombre.</li>
+        </ul>
+      </>,
       texte: <>Le temps de réponse à 5 % est la durée au bout de laquelle la tension <strong>ne diffère plus de sa valeur finale de plus de 5 % de ΔV</strong>. Commençons par calculer cet écart admis.</>,
       tache: { type: 'num', q: '5 % de ΔV', unite: 'V',
         indice: 'Conversion : 5 % = 5 / 100 = 0,05. Formule : écart admis = 0,05 × |ΔV|, avec la valeur de |ΔV| trouvée à l’étape précédente (voir « Vos relevés »).', vrai: 0.05 * aC.aD, tol: 0.03, affiche: x => nf(x),
@@ -321,6 +352,24 @@ export function SimulationReponse() {
       texte: <>La courbe ressemble à une <strong>exponentielle décroissante</strong> : V(t) = V<Sub c="fin"/> + (V<Sub c="ini"/> − V<Sub c="fin"/>)·e<sup>−(t − t₀)/τ</sup> pour t ≥ t₀. Réglez la constante de temps <strong>τ</strong> avec le curseur jusqu’à ce que la courbe orange en pointillés passe au plus près des points.</>,
       tache: { type: 'action', ok: tauOk, consigne: tauOk ? null : 'Réglez τ pour que la courbe orange suive les points' } },
     { id: 'troisTau', titre: 't_R = 3τ', focus: ['modele', 'releve'],
+      retenirTitre: 'À RETENIR : LE MODÈLE EXPONENTIEL',
+      retenir: <>
+        <Formule><mi>V</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><msub><mi>V</mi><mtext>fin</mtext></msub><mo>+</mo><mo>(</mo><msub><mi>V</mi><mtext>ini</mtext></msub><mo>−</mo><msub><mi>V</mi><mtext>fin</mtext></msub><mo>)</mo><msup><mi>e</mi><mrow><mo>−</mo><mfrac><mrow><mi>t</mi><mo>−</mo><msub><mi>t</mi><mn>0</mn></msub></mrow><mi>τ</mi></mfrac></mrow></msup><mspace width="1.5em"/><msub><mi>t</mi><mi>R</mi></msub><mo>=</mo><mi>τ</mi><mo>·</mo><mi>ln</mi><mspace width="0.25em"/><mn>20</mn><mo>≈</mo><mn>3</mn><mi>τ</mi></Formule>
+        <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Après</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Variation déjà effectuée (en % de |ΔV|)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>τ</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>63 %</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>3τ</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>95 %</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>5τ</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>99,3 %</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>τ</strong> est la constante de temps du capteur (en secondes). Plus τ est petite, plus le capteur est rapide.</li>
+          <li>e⁻³ ≈ 0,0498 ≈ 5 % : au bout de 3τ, il reste 5 % de la variation, d’où <strong>t<sub>R</sub> = 3τ</strong> (exactement 2,996 τ).</li>
+          <li><strong>Deux méthodes</strong> : lecture graphique (un seul point, sensible au bruit et à la lecture) ou ajustement d’une exponentielle (tous les points, bruit moyenné) puis t<sub>R</sub> = 3τ.</li>
+          <li><strong>Hypothèse :</strong> capteur du <strong>premier ordre</strong>, une seule constante de temps. Sinon, 3τ n’a pas de sens.</li>
+        </ul>
+      </>,
       texte: <>Pour une exponentielle, l’écart à la valeur finale vaut e<sup>−3</sup> ≈ 5 % de ΔV au bout de 3τ (exactement 2,996 τ) : <strong>t<Sub c="R"/> = 3τ</strong>. Votre valeur de τ (étape précédente) : <strong>τ = {nf(rg.tau)} s</strong>.</>,
       tache: { type: 'num', q: 'Calculez t_R = 3τ avec votre valeur de τ', unite: 's',
         indice: 'Formule : t_R = τ·ln 20 ≈ 3τ, car e⁻³ ≈ 5 %. Multipliez par 3 la valeur de τ réglée à l’étape précédente (en secondes).', vrai: 3 * rg.tau, tol: 0.02, affiche: x => nf(x),
@@ -336,6 +385,16 @@ export function SimulationReponse() {
         options: ['Elle utilise tous les points de la courbe, alors que la lecture graphique repose sur un seul croisement avec la ligne, sensible au bruit et à la lecture', 'Parce que 3τ est une valeur exacte et 5 % une approximation', 'Parce qu’elle n’a pas besoin de connaître t₀'], bonne: 0,
         expl: 'L’ajustement exploite des centaines de points et moyenne le bruit ; la lecture graphique dépend d’un seul point d’intersection et de la précision du tracé. Attention : cela suppose que la courbe est vraiment une exponentielle, ce qu’on va remettre en question.' } },
     { id: 'sondes', titre: 'Comparer deux sondes', focus: [],
+      retenirTitre: 'À RETENIR : COMPARER ET CHOISIR UNE SONDE',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Plus t<sub>R</sub> est petit, plus le capteur est rapide.</strong> Pour un premier ordre : t<sub>R</sub> ≈ 3τ. Exemple : τ = 2 s donne t<sub>R</sub> ≈ 6 s ; τ = 10 s donne t<sub>R</sub> ≈ 30 s.</li>
+          <li><strong>Rapport de rapidité</strong> : t<sub>R,2</sub> / t<sub>R,1</sub> = τ₂ / τ₁ (le facteur 3 se simplifie).</li>
+          <li>Un capteur lent réagit tard : un chauffage commandé par une sonde lente est coupé trop tard.</li>
+          <li><strong>Hypothèse :</strong> la comparaison n’est rigoureuse que si les deux t<sub>R</sub> sont obtenus <strong>dans les mêmes conditions</strong> (fluide, agitation, gaine).</li>
+          <li>Le temps de réponse n’est qu’un critère : la plage de mesure, la justesse et le coût comptent aussi.</li>
+        </ul>
+      </>,
       texte: <>On considère maintenant un autre type de sonde, la <strong>Pt100</strong> gainée en inox, de constante de temps <strong>τ = 5,926 s</strong>.</>,
       tache: { type: 'num', q: 'Temps de réponse à 5 % de la sonde Pt100', unite: 's',
         indice: 'Pour un capteur du premier ordre, t_R = τ·ln 20 ≈ 3τ. La constante de temps τ est donnée dans l’énoncé, en secondes : appliquez cette relation.', vrai: 3 * 5.926, tol: 0.02, affiche: x => nf(x),
@@ -366,6 +425,20 @@ export function SimulationReponse() {
           `Borne haute = θ_fin + 5 %Δθ = ${nf(BAIN.fin)} + ${nf(0.05 * dB)} = ${nf(BAIN.fin + 0.05 * dB)} °C (la borne basse est ${nf(BAIN.fin - 0.05 * dB)} °C).`],
         expl: '5 % de 40 = 2,0 °C ; la bande est [58 ; 62] °C.' } },
     { id: 'oscTR', titre: 'Temps de réponse : attention à la dernière sortie', focus: ['graphe'],
+      retenirTitre: 'À RETENIR : GRANDEUR QUI OSCILLE',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La courbe arrive à la valeur finale <strong>des deux côtés</strong> : la bande est <strong>y<sub>fin</sub> ± 5 %|Δy|</strong>.</li>
+          <li><strong>t<sub>R</sub> = t₁ − t₀</strong>, avec t₁ = instant de la <strong>dernière sortie</strong> de la bande. La première entrée ne convient pas : la courbe en ressort.</li>
+          <li>t<sub>R</sub> = 3τ <strong>ne s’applique pas</strong> : pas d’exponentielle, pas de τ. La définition par la bande reste valable pour toute réponse.</li>
+        </ul>
+        <Formule><mi>D</mi><mo>=</mo><mfrac><mrow><msub><mi>y</mi><mtext>max</mtext></msub><mo>−</mo><msub><mi>y</mi><mtext>fin</mtext></msub></mrow><mrow><mo>|</mo><mi>Δ</mi><mi>y</mi><mo>|</mo></mrow></mfrac><mspace width="1.5em"/><mi>D</mi><mo>=</mo><mi>exp</mi><mo>(</mo><mo>−</mo><mfrac><mrow><mi>π</mi><mi>ζ</mi></mrow><msqrt><mrow><mn>1</mn><mo>−</mo><msup><mi>ζ</mi><mn>2</mn></msup></mrow></msqrt></mfrac><mo>)</mo></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Dépassement D</strong> : l’excès du pic sur la valeur finale, rapporté à |Δy|, souvent en %. Plus l’amortissement ζ (inférieur à 1) est faible, plus D est grand. Exemple : ζ = 0,5 donne D ≈ 16 %.</li>
+          <li>Le pic se lit au sommet de la première oscillation ; le dépassement est un nombre sans unité (× 100 pour des %).</li>
+          <li>Le « bain thermostaté mal réglé » est un modèle <strong>illustratif</strong> (second ordre sous-amorti), pas une mesure.</li>
+        </ul>
+      </>,
       texte: <>On cherche l’instant où la température <strong>ne sort plus de la bande</strong> [{nf(BAIN.fin - 0.05 * dB)} ; {nf(BAIN.fin + 0.05 * dB)}] °C. La courbe y entre une première fois en montant, puis en ressort en dépassant la consigne… Lisez t<Sub c="1"/>, et calculez t<Sub c="R"/> = t<Sub c="1"/> − t<Sub c="0"/> (t<Sub c="0"/> = 30 s).</>,
       tache: { type: 'num', q: 'Temps de réponse à 5 % t_R', unite: 's', vrai: aB.tR,
         indice: 'Formule : t_R = t_1 − t_0. Ici t_1 est l’instant de la dernière sortie de la bande [θ_fin − 5 %Δθ ; θ_fin + 5 %Δθ] : après lui, la courbe n’en ressort plus. La ligne grise (première entrée) ne convient pas. t_0 est l’instant de l’échelon de consigne.', tol: 0.05, affiche: x => nf(x),
@@ -392,18 +465,38 @@ export function SimulationReponse() {
         pieges: [[aB.ymax, 'C’est θ_max ; D est un écart rapporté à Δθ.'], [aB.depass, 'Exprimez D en % (multipliez par 100).'], [aB.ymax - BAIN.fin, 'C’est l’excès θ_max − θ_fin en °C. Il faut le diviser par Δθ (40 °C), puis exprimer D en %.']],
         expl: `D = (${nf(aB.ymax, 3)} − 60) / 40 ≈ ${nf(aB.depass * 100, 3)} %.` } },
     { id: 'hypo', titre: 'Sur quoi repose ce travail ?', focus: ['hypo'],
+      retenirTitre: 'À RETENIR : LES HYPOTHÈSES DU TRAVAIL',
+      retenir: <>
+        <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Hypothèse</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Ce qu’elle permet</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Limite</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Échelon idéal</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>La grandeur change instantanément à t₀.</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>En TP, le transfert d’un bécher à l’autre prend du temps : ce délai s’ajoute à la réponse de la sonde.</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Premier ordre</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Une seule constante de temps : réponse exponentielle, t<sub>R</sub> = 3τ.</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Une sonde gainée a plusieurs constantes de temps : la courbe réelle s’écarte de l’exponentielle.</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Tension ∝ température</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>La forme de la courbe est celle de la température.</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Une CTN est non linéaire : pour un grand échelon, l’exponentielle n’est qu’approchée.</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Bruit</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Les points sont bruités ; les valeurs « exactes » sont calculées sans bruit.</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>La lecture graphique est moins précise que l’ajustement.</td></tr>
+          </tbody>
+        </table>
+        <div style={{ fontSize: 13.5 }}>Si l’une des hypothèses est fausse, la <strong>méthode graphique</strong> (bande à 5 %) reste la référence.</div>
+      </>,
       texte: <>Ouvrez l’encadré « Hypothèses de travail ».</>,
       tache: { type: 'qcm', q: 'La relation t_R = 3τ n’a de sens que si la réponse du capteur est…',
         indice: 'Rappelez-vous d’où vient t_R = 3τ : d’une exponentielle, c’est-à-dire d’un capteur à une seule constante de temps. Relisez les hypothèses dans l’encadré et cherchez quelle forme de courbe elles décrivent.',
         options: ['celle d’un système du premier ordre : une exponentielle, sans oscillation', 'n’importe quelle courbe qui se stabilise', 'une courbe qui oscille autour de la valeur finale'], bonne: 0,
         expl: 'Hypothèses à retenir : échelon idéal, capteur du premier ordre (une seule constante de temps), tension proportionnelle à la température. Si l’une d’elles est fausse, la méthode graphique reste la référence.' } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>t<Sub c="R"/> = t<Sub c="1"/> − t<Sub c="0"/> : durée à partir de l’échelon</li>
-        <li>bande : valeur finale ± 5 % de |Δy|</li>
-        <li>1<sup>er</sup> ordre : t<Sub c="R"/> ≈ 3τ</li>
-        <li>qui oscille : dernière sortie de la bande, pas de 3τ</li>
-        <li>plus t<Sub c="R"/> est petit, plus le capteur est rapide</li></ul>,
+      retenir: <>
+        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+          <li><strong>Relever</strong> V<sub>ini</sub>, V<sub>fin</sub>, t₀ ; calculer |ΔV|.</li>
+          <li><strong>Tracer la bande</strong> : V<sub>fin</sub> ± 0,05 × |ΔV|.</li>
+          <li><strong>Lire</strong> t₁, dernière entrée dans la bande ; t<sub>R</sub> = t₁ − t₀.</li>
+          <li><strong>Premier ordre</strong> : t<sub>R</sub> ≈ 3τ. <strong>Grandeur qui oscille</strong> : pas de τ.</li>
+        </ol>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>t<sub>R</sub> est une <strong>durée</strong> à partir de l’échelon ; plus t<sub>R</sub> est petit, plus le capteur est rapide.</li>
+          <li><strong>Hypothèses :</strong> échelon idéal, capteur du premier ordre, tension proportionnelle à la température, mêmes conditions pour comparer.</li>
+          <li><strong>Pièges :</strong> t₁ au lieu de t<sub>R</sub> ; première entrée au lieu de dernière sortie ; 3τ pour une courbe qui oscille.</li>
+        </ul>
+      </>,
       texte: <>Vous savez mesurer un temps de réponse à 5 % : relever V<Sub c="ini"/>, V<Sub c="fin"/>, t<Sub c="0"/>, tracer la bande de ±5 %ΔV et lire t<Sub c="R"/> = t<Sub c="1"/> − t<Sub c="0"/> ; l’obtenir aussi par un modèle exponentiel (t<Sub c="R"/> = 3τ) ; et vous savez que pour une grandeur qui oscille, seule la dernière sortie de la bande compte. En exploration libre, essayez d’autres situations, changez l’amortissement, ajoutez du bruit.</>, tache: null },
   ];
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
