@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { analyser, ICONES_NIVEAU, TITRES } from "../carnet";
+import { analyser, iconeNiveau, titreNiveau } from "../carnet";
 import { tousLesExercices } from "./Entrainement";
 import { etiquettesDefis, nomsSim } from "../suivi";
 import { trierPourEleve } from "../devoirs";
@@ -60,8 +60,8 @@ function BlocProfil({ A, etape, naviguer, prochaine, prochaines = [], apercu }) 
   const [mont, setMont] = useState(false);
   useEffect(() => { const t = setTimeout(() => setMont(true), 80); return () => clearTimeout(t); }, []);
   const { niveau } = A;
-  const nom = etape === 0 ? 'Bienvenue' : niveau.titre, icone = etape === 0 ? '🌠' : ICONES_NIVEAU[Math.min(niveau.n, ICONES_NIVEAU.length) - 1];
-  const suivant = TITRES[Math.min(niveau.n + 1, TITRES.length) - 1];
+  const nom = etape === 0 ? 'Bienvenue' : niveau.titre, icone = etape === 0 ? '🌠' : iconeNiveau(niveau.n);
+  const suivant = titreNiveau(niveau.n + 1);
   const [ruban, fermerRuban] = useNouveauPalier(`${niveau.n}`, etape > 0 && !apercu);
   const titreSim = prochaine ? (nomsSim[prochaine.sim] || `Simulation ${prochaine.sim}`) : null;
   const frac = etape === 0 ? 0 : Math.max(0.04, niveau.frac);   // jamais « vide » une fois le parcours guidé terminé

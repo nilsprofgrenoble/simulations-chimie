@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { analyser, objectifs, TITRES } from "../carnet";
+import { analyser, objectifs, titreNiveau } from "../carnet";
 import { aRevoir, raisonRevision, dansJours } from "../revision";
 import { tousLesExercices } from "./Entrainement";
 import { etiquettesDefis } from "../suivi";
@@ -38,7 +38,7 @@ export function Carnet({ lignes, naviguer, parties }) {
   const obj = useMemo(() => objectifs(items, A), [items, A]);
   const rev = useMemo(() => aRevoir(items, lignes), [items, lignes]);
   const { niveau, comps, badges, semaines } = A;
-  const suivant = TITRES[Math.min(niveau.n + 1, TITRES.length) - 1];
+  const suivant = titreNiveau(niveau.n + 1);
   const nbBadges = badges.filter(b => b.ok).length, nbSem = semaines.filter(s => s.actif).length;
   const ouvrir = i => (i.atelier ? naviguer(i.atelier, i.ex) : naviguer(i.sim));
 

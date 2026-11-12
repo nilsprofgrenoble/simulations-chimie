@@ -92,7 +92,7 @@ function Connexion() {
           <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6, fontSize: 14.5, color: TEXTE }}>
             <li><span aria-hidden="true"><Pic n="star"/></span> <b>Des étoiles à gagner</b> : jusqu’à 3 par exercice</li>
             <li><span aria-hidden="true"><Pic n="tree"/></span> <b>Des paliers par compétence</b> : de Découverte à Expert·e</li>
-            <li><span aria-hidden="true"><Pic n="medal"/></span> <b>Des niveaux et des badges</b> : de Novice à Légende de la paillasse</li>
+            <li><span aria-hidden="true"><Pic n="medal"/></span> <b>Des niveaux et des badges</b> : 20 niveaux, de Novice à Légende éternelle de la paillasse</li>
           </ul>
         </section>
       </div>

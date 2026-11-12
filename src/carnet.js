@@ -42,13 +42,21 @@ export function palier(etoiles, max) {
 
 // ── Niveau général : il faut 3·n·(n−1)/2 étoiles pour atteindre le niveau n (3, 9, 18, 30, 45…) ──
 export const seuilNiveau = n => (3 * n * (n - 1)) / 2;
-export const TITRES = ['Novice', 'Apprenti·e pipette', 'Dompteur·se de burette', 'Alchimiste en herbe', 'Chimiste de choc', 'Maître·sse des moles', 'Légende de la paillasse'];
-export const ICONES_NIVEAU = ['🥼', '🧪', '⚗️', '🔬', '⚡', '🧬', '🏆'];
+// Les 7 premiers rangs n'ont pas changé (aucun élève ne perd son titre) ; les suivants prolongent l'échelle pour que chaque niveau ait son titre.
+export const TITRES = [
+  'Novice', 'Apprenti·e pipette', 'Dompteur·se de burette', 'Alchimiste en herbe', 'Chimiste de choc', 'Maître·sse des moles', 'Légende de la paillasse',
+  'Virtuose du pH-mètre', 'Chef·fe d’orchestre des réactions', 'Architecte moléculaire', 'Dompteur·se d’électrons', 'Sorcier·ère du spectre', 'Orfèvre de la balance',
+  'Oracle de l’équilibre', 'Explorateur·rice de l’infiniment petit', 'Nobel en herbe', 'Prix Nobel de la paillasse', 'Mythe du laboratoire', 'Grand·e sage de la chimie', 'Légende éternelle de la paillasse',
+];
+export const ICONES_NIVEAU = ['🥼', '🧪', '⚗️', '🔬', '⚡', '🧬', '🏆', '🎚️', '🎼', '🏛️', '🔋', '🌈', '⚖️', '🔮', '🔭', '🌱', '🥇', '🐉', '🦉', '👑'];
+// au-delà du dernier titre (très rare), on garde le titre final en comptant les rangs : « Légende éternelle de la paillasse · rang 2 »
+export const titreNiveau = n => (n <= TITRES.length ? TITRES[n - 1] : `${TITRES[TITRES.length - 1]} · rang ${n - TITRES.length + 1}`);
+export const iconeNiveau = n => ICONES_NIVEAU[Math.min(n, ICONES_NIVEAU.length) - 1];
 export function niveau(total) {
   let n = 1;
   while (total >= seuilNiveau(n + 1)) n += 1;
   const debut = seuilNiveau(n), fin = seuilNiveau(n + 1);
-  return { n, titre: TITRES[Math.min(n, TITRES.length) - 1], debut, fin, reste: fin - total, frac: (total - debut) / (fin - debut) };
+  return { n, titre: titreNiveau(n), debut, fin, reste: fin - total, frac: (total - debut) / (fin - debut) };
 }
 
 // ── Semaines (lundi → dimanche), en heure locale ──
