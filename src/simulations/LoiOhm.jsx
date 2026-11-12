@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche } from "../commun";
 import { fr, ctn, ldr, lampeI, fonctionnementLampe, regression } from "./elecModele";
 import { BLEU, VERMILLON, VIOLET, alea, usePhase } from "./elecOutils";
@@ -120,9 +120,48 @@ export function SimulationLoiOhm() {
       texte: <>Faisons comme en TP : on règle la tension U du générateur (curseur), on lit I, puis on clique sur « Noter cette mesure ». Faites <strong>au moins 5 mesures</strong> avec des tensions différentes, pour le même résistor R = 100 Ω.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'ohm' && !O.inconnu && ptsO.filter(p => p.R === 100).length >= 5, consigne: 'Notez au moins 5 mesures avec R = 100 Ω.' } },
     { id: 'caract', titre: 'La caractéristique : une droite', depart: null,
+      retenirTitre: 'À RETENIR : LA CARACTÉRISTIQUE',
+      retenir: <>
+        <svg viewBox="0 0 360 225" role="img" aria-label="Caractéristiques U en fonction de I de deux conducteurs ohmiques, R = 100 ohms et R = 330 ohms : deux droites passant par l’origine, la plus raide correspondant à la plus grande résistance" style={{ width: '100%', maxWidth: 340, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <line x1="50" y1="190" x2="345" y2="190" stroke="#0f172a" strokeWidth="2" /><line x1="50" y1="190" x2="50" y2="22" stroke="#0f172a" strokeWidth="2" /><line x1="50" y1="190" x2="50" y2="195" stroke="#0f172a" /><text x="50" y="208" textAnchor="middle" fontSize="11" fill="#334155">0</text><line x1="190" y1="190" x2="190" y2="195" stroke="#0f172a" /><text x="190" y="208" textAnchor="middle" fontSize="11" fill="#334155">30</text><line x1="330" y1="190" x2="330" y2="195" stroke="#0f172a" /><text x="330" y="208" textAnchor="middle" fontSize="11" fill="#334155">60</text><line x1="45" y1="190" x2="50" y2="190" stroke="#0f172a" /><text x="41" y="194" textAnchor="end" fontSize="11" fill="#334155">0</text><line x1="45" y1="110" x2="50" y2="110" stroke="#0f172a" /><text x="41" y="114" textAnchor="end" fontSize="11" fill="#334155">3</text><line x1="45" y1="30" x2="50" y2="30" stroke="#0f172a" /><text x="41" y="34" textAnchor="end" fontSize="11" fill="#334155">6</text><text x="345" y="218" textAnchor="end" fontSize="11.5" fontWeight="700" fill="#0f172a">I (mA)</text><text x="6" y="14" fontSize="11.5" fontWeight="700" fill="#0f172a">U (V)</text>
+          <line x1="50" y1="190" x2="330" y2="30" stroke="#0072b2" strokeWidth="2.4" /><line x1="50" y1="190" x2="134.8" y2="30" stroke="#d55e00" strokeWidth="2.4" />
+          <circle cx="143.3" cy="141.6" r="3.5" fill="#0072b2" /><circle cx="236.7" cy="85.4" r="3.5" fill="#0072b2" /><circle cx="330" cy="30" r="3.5" fill="#0072b2" />
+          <text x="262" y="104" fontSize="11.5" fontWeight="700" fill="#0072b2">R = 100 Ω</text><text x="143" y="44" fontSize="11.5" fontWeight="700" fill="#d55e00">R = 330 Ω</text>
+          <text x="200" y="176" fontSize="11" fill="#334155">droite passant par l’origine</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La <strong>caractéristique</strong> d’un dipôle est la courbe <strong>U = f(I)</strong>. Pour un conducteur ohmique : une <strong>droite passant par l’origine</strong> (U et I sont proportionnelles).</li>
+          <li>Plus la droite est <strong>raide</strong>, plus la résistance R (la pente) est <strong>grande</strong>.</li>
+          <li><strong>Modéliser</strong> : U = k × I (proportionnel) ou U = a × I + b (affine). Pour un résistor, b ≈ 0 aux incertitudes près, et k = R.</li>
+        </ul>
+      </>,
       texte: <>Le graphique U = f(I) s’appelle la <strong>caractéristique</strong> du dipôle. Pour un résistor, les points sont <strong>alignés sur une droite qui passe par l’origine</strong> : U et I sont <strong>proportionnelles</strong>. Plus la droite est « raide », plus R est grande.</>,
       tache: { type: 'qcm', q: 'La caractéristique d’un conducteur ohmique est…', options: ['une droite passant par l’origine', 'une droite qui ne passe pas par l’origine', 'une courbe qui monte de plus en plus vite', 'un point'], bonne: 0, expl: 'U est proportionnelle à I : droite passant par l’origine.', indice: 'U et I sont proportionnelles : U = k × I. Que vaut U quand I = 0 ? Et quelle forme de graphique donne une proportionnalité ?' } },
     { id: 'loi', titre: 'La loi d’Ohm : U = R × I', depart: () => voir('ohm', { inconnu: false, R: 100, U: 6 }),
+      retenirTitre: 'À RETENIR : LA LOI D’OHM',
+      retenir: <>
+        <svg viewBox="0 0 360 150" role="img" aria-label="Montage : générateur, ampèremètre en série avec le résistor, voltmètre en dérivation aux bornes du résistor" style={{ width: '100%', maxWidth: 340, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <g fill="none" stroke="#334155" strokeWidth="2">
+            <path d="M 40 38 L 96 38 M 124 38 L 206 38 M 254 38 L 320 38 L 320 124 L 40 124 L 40 96 M 40 68 L 40 38" />
+            <path d="M 206 38 L 206 88 L 216 88 M 244 88 L 254 88 L 254 38" />
+          </g>
+          <rect x="206" y="28" width="48" height="20" fill="#fff" stroke="#334155" strokeWidth="2" />
+          <circle cx="110" cy="38" r="14" fill="#fff" stroke="#334155" strokeWidth="2" /><text x="110" y="43" textAnchor="middle" fontSize="14" fontWeight="700">A</text>
+          <circle cx="230" cy="88" r="14" fill="#fff" stroke="#334155" strokeWidth="2" /><text x="230" y="93" textAnchor="middle" fontSize="14" fontWeight="700">V</text>
+          <circle cx="40" cy="82" r="14" fill="#fff" stroke="#334155" strokeWidth="2" /><text x="40" y="87" textAnchor="middle" fontSize="13" fontWeight="700">G</text>
+          <text x="230" y="22" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">R</text>
+          <text x="152" y="28" fontSize="12" fontWeight="700" fill="#d55e00">I →</text>
+          <text x="262" y="92" fontSize="12" fontWeight="700" fill="#0072b2">U</text>
+          <text x="110" y="70" textAnchor="middle" fontSize="10.5" fill="#475569">en série</text><text x="230" y="118" textAnchor="middle" fontSize="10.5" fill="#475569">en dérivation</text>
+        </svg>
+        <Formule><mi>U</mi><mo>=</mo><mi>R</mi><mo>×</mo><mi>I</mi><mspace width="1.5em"/><mi>R</mi><mo>=</mo><mfrac><mi>U</mi><mi>I</mi></mfrac><mspace width="1.5em"/><mi>I</mi><mo>=</mo><mfrac><mi>U</mi><mi>R</mi></mfrac></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>U en <strong>volts</strong> (V), I en <strong>ampères</strong> (A), R en <strong>ohms</strong> (Ω). L’ampèremètre se branche <strong>en série</strong>, le voltmètre <strong>en dérivation</strong>.</li>
+          <li><strong>Méthode :</strong> (1) convertir : 1 mA = 10⁻³ A ; (2) choisir R = U / I ou I = U / R ; (3) calculer ; (4) donner l’unité.</li>
+          <li><strong>Exemple :</strong> U = 12 V et I = 40 mA = 0,040 A : R = 12 / 0,040 = <strong>300 Ω</strong>.</li>
+          <li><strong>Pièges :</strong> oublier de convertir les mA ; diviser à l’envers. La loi ne vaut que pour un <strong>conducteur ohmique</strong> (R constante).</li>
+        </ul>
+      </>,
       texte: <>Le coefficient de proportionnalité est la résistance : <strong>U = R × I</strong> (loi d’Ohm), avec U en <strong>volts</strong>, I en <strong>ampères</strong>, R en <strong>ohms</strong>. Donc R = U / I. ⚠️ Pensez à convertir les mA en A !
         <ExempleResolu>U = 6,0 V et I = 60 mA = 0,060 A : R = U / I = 6,0 / 0,060 = <strong>100 Ω</strong>.</ExempleResolu></>,
       tache: { type: 'num', q: 'On mesure U = 9,0 V et I = 45 mA. Quelle est la résistance R (en Ω) ?', unite: 'Ω', vrai: 200, tol: 0.02, affiche: x => String(x), pieges: [[0.2, 'Tu as oublié de convertir : I = 45 mA = 0,045 A.'], [5, 'Tu as divisé à l’envers. La résistance est R = U / I : on divise la tension U par l’intensité I.'], [9 * 45, 'Tu as multiplié. La résistance est R = U / I : on divise U par I (avec I en ampères).']],
@@ -150,9 +189,33 @@ export function SimulationLoiOhm() {
       texte: <>Le résistor du montage est maintenant <strong>inconnu</strong>. Mesurez U et I, calculez R = U / I, puis vérifiez en cliquant sur « Révéler R ». Faites plusieurs mesures : la <strong>pente</strong> de la droite donne R.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'ohm' && O.inconnu && ptsO.filter(p => p.inconnu).length >= 3, consigne: 'Notez au moins 3 mesures avec le résistor inconnu.' } },
     { id: 'lampe', titre: 'Tous les dipôles ne sont pas ohmiques', depart: () => setAtelier('dipoles'),
+      retenirTitre: 'À RETENIR : DIPÔLES NON OHMIQUES',
+      retenir: <>
+        <svg viewBox="0 0 360 225" role="img" aria-label="Caractéristiques U en fonction de I : un résistor de 20 ohms est une droite passant par l’origine, tandis que la lampe 6 V – 0,30 A est une courbe qui s’incurve : ce n’est pas un dipôle ohmique" style={{ width: '100%', maxWidth: 340, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <line x1="50" y1="190" x2="345" y2="190" stroke="#0f172a" strokeWidth="2" /><line x1="50" y1="190" x2="50" y2="22" stroke="#0f172a" strokeWidth="2" /><line x1="50" y1="190" x2="50" y2="195" stroke="#0f172a" /><text x="50" y="208" textAnchor="middle" fontSize="11" fill="#334155">0</text><line x1="143" y1="190" x2="143" y2="195" stroke="#0f172a" /><text x="143" y="208" textAnchor="middle" fontSize="11" fill="#334155">100</text><line x1="237" y1="190" x2="237" y2="195" stroke="#0f172a" /><text x="237" y="208" textAnchor="middle" fontSize="11" fill="#334155">200</text><line x1="330" y1="190" x2="330" y2="195" stroke="#0f172a" /><text x="330" y="208" textAnchor="middle" fontSize="11" fill="#334155">300</text><line x1="45" y1="190" x2="50" y2="190" stroke="#0f172a" /><text x="41" y="194" textAnchor="end" fontSize="11" fill="#334155">0</text><line x1="45" y1="110" x2="50" y2="110" stroke="#0f172a" /><text x="41" y="114" textAnchor="end" fontSize="11" fill="#334155">3</text><line x1="45" y1="30" x2="50" y2="30" stroke="#0f172a" /><text x="41" y="34" textAnchor="end" fontSize="11" fill="#334155">6</text><text x="345" y="218" textAnchor="end" fontSize="11.5" fontWeight="700" fill="#0f172a">I (mA)</text><text x="6" y="14" fontSize="11.5" fontWeight="700" fill="#0f172a">U (V)</text>
+          <line x1="50" y1="190" x2="330" y2="30" stroke="#0072b2" strokeWidth="2.4" />
+          <polyline points="50,190 96.7,182.5 143.3,165.7 190,141.5 236.7,110.3 283.3,72.9 330,30" fill="none" stroke="#d55e00" strokeWidth="2.6" />
+          <text x="60" y="64" fontSize="11.5" fontWeight="700" fill="#0072b2">résistor : droite</text><text x="60" y="80" fontSize="11.5" fontWeight="700" fill="#d55e00">lampe : courbe</text>
+          <text x="200" y="176" fontSize="11" fill="#334155">U / I augmente : R de la lampe croît</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Pour la lampe, la caractéristique est une <strong>courbe</strong> : le filament chauffe, sa résistance <strong>augmente</strong> (U / I passe de 9 Ω à 100 mA à 20 Ω à 300 mA).</li>
+          <li>La loi d’Ohm <strong>ne s’applique pas</strong> à la lampe sous la forme U = R × I avec R constante.</li>
+          <li><strong>Hypothèses :</strong> lampe 6 V – 0,30 A (modèle en loi de puissance), résistor idéal, appareils de mesure parfaits.</li>
+        </ul>
+      </>,
       texte: <>Comparez le résistor (100 Ω) et une <strong>lampe</strong> : choisissez-en un, faites varier U et notez au moins 4 mesures pour chacun. La caractéristique de la lampe n’est <strong>pas une droite</strong> : son filament chauffe, sa résistance augmente. La loi d’Ohm ne s’applique qu’aux <strong>conducteurs ohmiques</strong>.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'dipoles' && ptsD.filter(p => p.dip === 'res').length >= 4 && ptsD.filter(p => p.dip === 'lampe').length >= 4, consigne: 'Notez 4 mesures pour le résistor et 4 pour la lampe.' } },
     { id: 'fonct', titre: 'Le point de fonctionnement', depart: () => setAtelier('fonct'),
+      retenirTitre: 'À RETENIR : LE POINT DE FONCTIONNEMENT',
+      retenir: <>
+        <Formule><mi>E</mi><mo>=</mo><mi>U</mi><mo>+</mo><mi>R</mi><mo>×</mo><mi>I</mi><mspace width="1.5em"/><mi>U</mi><mo>=</mo><mi>E</mi><mo>−</mo><mi>R</mi><mo>×</mo><mi>I</mi></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Lampe en série avec un résistor sur un générateur : la <strong>loi des mailles</strong> donne la droite U = E − R × I (pente −R, ordonnée à l’origine E).</li>
+          <li>Le <strong>point de fonctionnement</strong> est l’<strong>intersection</strong> de cette droite et de la caractéristique de la lampe : il donne I et U réels.</li>
+          <li><strong>Exemple :</strong> E = 9 V et R = 47 Ω : intersection vers I ≈ 150 mA et U ≈ 1,9 V (contrôle : 47 × 0,15 + 1,9 ≈ 9 V).</li>
+        </ul>
+      </>,
       texte: <>Quand on branche un dipôle (lampe) en série avec un résistor sur un générateur, la <strong>loi des mailles</strong> donne E = U + R × I, soit <strong>U = E − R × I</strong> : une droite. Le dipôle impose sa propre caractéristique. Le courant dans le circuit est donné par l’<strong>intersection</strong> des deux courbes : c’est le <strong>point de fonctionnement</strong>.
         <ExempleResolu>E = 9 V, R = 47 Ω : la droite coupe l’axe vertical en 9 V. Elle croise la courbe de la lampe vers I ≈ 150 mA et U ≈ 2 V.</ExempleResolu></>,
       tache: { type: 'action', ok: enGuide && atelier === 'fonct' && Fo.montre, consigne: 'Cliquez sur « Placer le point de fonctionnement ».' } },
@@ -160,17 +223,42 @@ export function SimulationLoiOhm() {
       texte: <>Une <strong>thermistance</strong> (CTN) est un capteur dont la <strong>résistance dépend de la température</strong> : quand θ augmente, R diminue. Pour s’en servir, on fait son <strong>étalonnage</strong> : on mesure R pour plusieurs températures connues. Notez au moins 5 points entre 0 et 80 °C.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'capteur' && ptsK.filter(p => p.c === 'ctn').length >= 5, consigne: 'Notez au moins 5 points d’étalonnage.' } },
     { id: 'etalon', titre: 'Utiliser la courbe d’étalonnage', depart: () => { setAtelier('capteur'); setK(k => ({ ...k, ref: true })); },
+      retenirTitre: 'À RETENIR : ÉTALONNER UN CAPTEUR',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>θ (°C)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>R de la CTN (kΩ)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>0</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>33,6</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>20</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>12,5</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>40</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>5,3</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>60</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2,5</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>80</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,3</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Une <strong>CTN</strong> est un capteur résistif : quand θ augmente, R <strong>diminue</strong> (10 kΩ à 25 °C).</li>
+          <li><strong>Étalonner</strong> : mesurer R pour des températures connues et tracer R = f(θ). <strong>Utiliser</strong> : mesurer R, puis lire θ sur la courbe.</li>
+          <li><strong>Méthode :</strong> repérer R sur l’axe vertical, suivre l’horizontale jusqu’à la courbe, descendre sur l’axe horizontal.</li>
+          <li><strong>Hypothèses :</strong> capteur alimenté sous 5 V sans auto-échauffement ; seule la courbe est exploitée (pas de formule).</li>
+        </ul>
+      </>,
       texte: <>La courbe d’étalonnage permet l’opération inverse : <strong>mesurer R</strong> (avec U et I), puis <strong>lire la température</strong> correspondante sur la courbe.
         <ExempleResolu>R = 5,3 kΩ : on cherche 5,3 sur l’axe vertical, on suit l’horizontale jusqu’à la courbe, puis on descend sur l’axe horizontal : θ ≈ <strong>40 °C</strong>.</ExempleResolu></>,
       tache: { type: 'num', q: 'Une mesure donne R = 3,6 kΩ. Quelle est la température (en °C, à 3 °C près) ?', unite: '°C', vrai: 50, tol: 0.06, affiche: x => String(x), pieges: [[3.6, 'Ce nombre est la résistance (en kΩ), que l’énoncé donne déjà. On cherche la température : lisez-la sur l’axe horizontal de la courbe.']],
         aide: 'Sur la courbe, repérez 3,6 sur l’axe vertical (résistance en kΩ), suivez l’horizontale jusqu’à la courbe, puis descendez sur l’axe horizontal pour lire θ.', expl: 'Sur la courbe, R = 3,6 kΩ correspond à environ 50 °C.',
         indice: 'Aucun calcul : c’est une lecture graphique. Tu as 3 °C de marge, une lecture approximative suffit. Inspire-toi de l’exemple de l’énoncé (R = 5,3 kΩ).' } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
-      texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li><strong>Loi d’Ohm</strong> : U = R × I (U en V, I en A, R en Ω) ; valable pour un conducteur ohmique.</li>
-        <li>Caractéristique d’un conducteur ohmique : <strong>droite passant par l’origine</strong>, de pente R.</li>
-        <li><strong>Modéliser</strong> : proportionnel U = k × I ou affine U = a × I + b ; le <strong>point de fonctionnement</strong> est l’intersection de la caractéristique du dipôle et de la droite U = E − R × I (loi des mailles).</li>
-        <li>Un <strong>capteur résistif</strong> a une résistance qui dépend d’une grandeur physique : on l’<strong>étalonne</strong>, puis on lit la grandeur sur la courbe.</li></ul></ARetenir>, tache: null },
+      retenirTitre: 'À RETENIR : LE BILAN',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Loi d’Ohm</strong> : U = R × I (V, A, Ω) pour un conducteur ohmique ; caractéristique = droite passant par l’origine, de pente R.</li>
+          <li>Lampe : non ohmique (courbe) ; point de fonctionnement = intersection avec U = E − R × I.</li>
+          <li>Capteur résistif : on l’étalonne, puis on lit la grandeur sur la courbe.</li>
+          <li><strong>Méthode :</strong> convertir en unités SI, appliquer la relation, vérifier l’ordre de grandeur et l’unité.</li>
+          <li><strong>Pièges :</strong> mA non convertis ; R = U / I écrit à l’envers ; appliquer la loi d’Ohm à une lampe.</li>
+        </ul>
+      </>,
+      texte: <>Bravo : vous maîtrisez la loi d’Ohm et les capteurs résistifs. Voici le bilan à garder.</>, tache: null },
   ];
   useEffect(() => {
     if (mode !== 'guide') return;

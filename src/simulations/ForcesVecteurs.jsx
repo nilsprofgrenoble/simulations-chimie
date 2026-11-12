@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, IndiceDefi } from "../commun";
 import { G, ASTRES, astre, gravite, forceGrav, fr, sci, PX_CM, ECHELLES, caracteristiques, conforme } from "./forcesModele";
 import { Pic } from "../Pictos";
@@ -277,6 +277,26 @@ export function SimulationForcesVecteurs() {
         À vous : une main pousse une porte.</>,
       tache: { type: 'qcm', q: 'Une main pousse une porte. Quel est le receveur de l’action ?', options: ['la porte', 'la main', 'la Terre', 'le sol'], bonne: 0, expl: 'La main est l’auteur (elle crée l’action) ; la porte est le receveur (elle la subit).', indice: "L’auteur crée l’action, le receveur la subit. Sur quel objet la main agit-elle ?" } },
     { id: 'force', titre: 'On modélise l’action par une force', depart: () => voirVec('caisse', 100, 3, 0),
+      retenirTitre: 'À RETENIR : LE VECTEUR FORCE',
+      retenir: <>
+        <svg viewBox="0 0 360 160" role="img" aria-label="Un homme pousse une caisse : le vecteur force part du point d’application sur la caisse, est horizontal, dirigé vers la droite, et sa longueur de 3 cm représente 300 N avec l’échelle 1 cm pour 100 N" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <line x1="10" y1="120" x2="350" y2="120" stroke="#334155" strokeWidth="2" />
+          <rect x="180" y="72" width="50" height="48" fill="#fde68a" stroke="#92400e" strokeWidth="2" />
+          <circle cx="140" cy="62" r="8" fill="#fff" stroke="#334155" strokeWidth="2" />
+          <path d="M 140 70 L 140 98 M 140 98 L 130 120 M 140 98 L 150 120 M 140 80 L 180 96" stroke="#334155" strokeWidth="2" fill="none" />
+          <line x1="180" y1="96" x2="280" y2="96" stroke="#c2410c" strokeWidth="3" /><polygon points="290,96 278,90 278,102" fill="#c2410c" />
+          <circle cx="180" cy="96" r="4" fill="#c2410c" />
+          <text x="150" y="42" fontSize="11" fontWeight="700" fill="#c2410c">point d’application</text><line x1="196" y1="46" x2="182" y2="92" stroke="#c2410c" strokeWidth="1.2" />
+          <text x="240" y="84" fontSize="12" fontWeight="700" fill="#c2410c">F</text>
+          <text x="180" y="138" textAnchor="middle" fontSize="11" fill="#334155">direction : horizontale · sens : vers la droite</text>
+          <text x="180" y="153" textAnchor="middle" fontSize="11" fill="#334155">intensité 300 N : flèche de 3 cm (échelle 1 cm ↔ 100 N)</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Une <strong>action mécanique</strong> (de l’<strong>auteur</strong> sur le <strong>receveur</strong>) se modélise par une <strong>force</strong>, représentée par un <strong>vecteur</strong>.</li>
+          <li><strong>4 caractéristiques :</strong> point d’application, direction, sens, intensité (en newtons, N).</li>
+          <li><strong>Exemple :</strong> un homme pousse une caisse avec 300 N, horizontalement vers la droite ; avec 1 cm ↔ 100 N, la flèche mesure 300 / 100 = <strong>3 cm</strong>.</li>
+        </ul>
+      </>,
       texte: <>En physique, on <strong>modélise</strong> une action mécanique par une <strong>force</strong>, représentée par un <strong>vecteur</strong> (une flèche). Une force est caractérisée par <strong>4 informations</strong> : son <strong>point d’application</strong>, sa <strong>direction</strong>, son <strong>sens</strong>, son <strong>intensité</strong> (en newtons, N). La <strong>longueur</strong> de la flèche est proportionnelle à l’intensité : il faut une <strong>échelle</strong>.
         <ExempleResolu>Un homme pousse une caisse avec une force de 300 N, horizontale, vers la droite. Échelle : <strong>1 cm ↔ 100 N</strong>. Longueur de la flèche : 300 / 100 = <strong>3 cm</strong>. La flèche part du point de contact.
           {bouton('Voir cet exemple', () => voirVec('caisse', 100, 3, 0))}</ExempleResolu>
@@ -303,11 +323,39 @@ export function SimulationForcesVecteurs() {
         À vous : tracez le tir du footballeur : <strong>200 N</strong>, direction à <strong>30°</strong> au-dessus de l’horizontale, vers la droite. Échelle : <strong>1 cm ↔ 50 N</strong>.</>,
       tache: { type: 'action', ok: bon('ballon', 50, 200, 30), consigne: 'Tracez le vecteur force : 200 N, 30° au-dessus de l’horizontale, vers la droite, échelle 1 cm ↔ 50 N.' } },
     { id: 'retenir1', titre: 'À retenir : la force', depart: null,
-      texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>Une <strong>action mécanique</strong> se modélise par une <strong>force</strong> (vecteur <Vec/>).</li>
-        <li>4 caractéristiques : <strong>point d’application, direction, sens, intensité</strong> (en N).</li>
-        <li>La longueur de la flèche est proportionnelle à l’intensité : on précise toujours l’<strong>échelle</strong>.</li></ul></ARetenir>, tache: null },
+      retenirTitre: 'À RETENIR : ÉCHELLE ET NOTATIONS',
+      retenir: <>
+        <Formule><mi>L</mi><mtext> (cm) = </mtext><mfrac><mi>F</mi><mtext>échelle</mtext></mfrac><mspace width="1.5em"/><mi>F</mi><mtext> (N) = </mtext><mi>L</mi><mo>×</mo><mtext>échelle (N par cm)</mtext></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La <strong>longueur</strong> de la flèche est proportionnelle à l’<strong>intensité</strong> : on précise toujours l’<strong>échelle</strong> (par exemple 1 cm ↔ 50 N).</li>
+          <li><strong>Exemple :</strong> flèche de 4 cm avec 1 cm ↔ 20 N : F = 4 × 20 = 80 N. Tir de 150 N à 30° avec 1 cm ↔ 50 N : flèche de 3 cm, inclinée de 30° sur l’horizontale.</li>
+          <li><strong>Notations :</strong> le <strong>vecteur</strong> force <Fn a="a" r="r" vec/> (avec flèche) a une direction et un sens ; son <strong>intensité</strong> <Fn a="a" r="r"/> est un nombre en N. On n’écrit jamais « vecteur = 5 N ».</li>
+          <li><strong>Pièges :</strong> multiplier l’échelle au lieu de la longueur ; oublier l’unité ; confondre direction (horizontale, verticale, oblique) et sens (vers la droite, vers le haut…).</li>
+        </ul>
+      </>,
+      texte: <>Voici ce qu’il faut retenir sur la force et sa représentation.</>, tache: null },
     { id: 'recip1', titre: 'Deux dynamomètres accrochés', depart: () => voirRecip('dyno', 4),
+      retenirTitre: 'À RETENIR : ACTIONS RÉCIPROQUES',
+      retenir: <>
+        <svg viewBox="0 0 360 130" role="img" aria-label="Deux dynamomètres A et B accrochés l’un à l’autre : B exerce sur A une force vers la droite, A exerce sur B une force de même intensité vers la gauche" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <line x1="22" y1="34" x2="22" y2="86" stroke="#334155" strokeWidth="3" /><path d="M 22 40 L 12 50 M 22 54 L 12 64 M 22 68 L 12 78" stroke="#334155" strokeWidth="1.5" />
+          <line x1="22" y1="60" x2="40" y2="60" stroke="#334155" strokeWidth="2" />
+          <rect x="40" y="44" width="90" height="32" fill="#e0f2fe" stroke="#334155" strokeWidth="2" /><text x="85" y="66" textAnchor="middle" fontSize="14" fontWeight="700">A</text>
+          <line x1="130" y1="60" x2="160" y2="60" stroke="#334155" strokeWidth="2" />
+          <rect x="160" y="44" width="90" height="32" fill="#fef3c7" stroke="#334155" strokeWidth="2" /><text x="205" y="66" textAnchor="middle" fontSize="14" fontWeight="700">B</text>
+          <line x1="250" y1="60" x2="320" y2="60" stroke="#334155" strokeWidth="2" /><text x="338" y="64" textAnchor="middle" fontSize="11" fill="#334155">main</text>
+          <line x1="112" y1="28" x2="170" y2="28" stroke="#0072b2" strokeWidth="3" /><polygon points="180,28 168,22 168,34" fill="#0072b2" />
+          <text x="146" y="18" textAnchor="middle" fontSize="12" fontWeight="700" fill="#0072b2">F<tspan fontSize="9" dy="3">B/A</tspan></text>
+          <line x1="178" y1="96" x2="120" y2="96" stroke="#d55e00" strokeWidth="3" /><polygon points="110,96 122,90 122,102" fill="#d55e00" />
+          <text x="146" y="118" textAnchor="middle" fontSize="12" fontWeight="700" fill="#d55e00">F<tspan fontSize="9" dy="3">A/B</tspan></text>
+        </svg>
+        <div style={{ textAlign: 'center', margin: '8px 0', fontSize: 17 }}><Fn a="A" r="B" vec/> = − <Fn a="B" r="A" vec/></div>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Principe des actions réciproques :</strong> si A agit sur B, alors B agit sur A. Les deux forces ont <strong>même direction</strong>, <strong>sens opposés</strong> et <strong>même intensité</strong>.</li>
+          <li>Cette égalité vaut quelles que soient les masses : deux patineurs (80 kg et 45 kg) se repoussent avec des forces de même intensité ; seul l’<strong>effet</strong> diffère (le plus léger recule plus vite).</li>
+          <li><strong>Piège :</strong> ces deux forces s’exercent sur deux objets <strong>différents</strong> ; elles ne se compensent pas.</li>
+        </ul>
+      </>,
       texte: <>Deux dynamomètres A et B sont accrochés l’un à l’autre. Le premier est fixé à un support. On tire sur B. Comme B tire sur A, <strong>A tire aussi sur B</strong> : si A agit sur B, alors B agit sur A. C’est le <strong>principe des actions réciproques</strong>.
         <ExempleResolu>B tire A vers la droite avec F<sub>B/A</sub>. A tire B vers la gauche avec F<sub>A/B</sub>. Ces deux forces ont même direction, <strong>sens opposés</strong> et <strong>même intensité</strong>.</ExempleResolu>
         À vous : modifiez la force de la main avec le curseur.</>,
@@ -333,6 +381,23 @@ export function SimulationForcesVecteurs() {
           'P = 0,5 × 9,8 = 4,9 N.'],
         expl: 'P = m × g = 0,5 × 9,8 = 4,9 N.', indice: "Formule du poids : P = m × g, avec m en kg et g en N/kg." } },
     { id: 'poids2', titre: 'Le poids dépend de l’astre', depart: () => voirPoids('lune', 1, 0),
+      retenirTitre: 'À RETENIR : LE POIDS SELON L’ASTRE',
+      retenir: <>
+        <Formule><mi>P</mi><mo>=</mo><mi>m</mi><mo>×</mo><mi>g</mi><mspace width="1.5em"/><mi>g</mi><mo>=</mo><mfrac><mrow><mi>G</mi><mo>×</mo><mi>M</mi></mrow><msup><mi>R</mi><mn>2</mn></msup></mfrac></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Astre</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>g (N·kg⁻¹)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>P d’un objet de 2,0 kg (N)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Terre</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>9,8</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>19,6</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Mars</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>3,7</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>7,4</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Lune</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,6</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>3,2</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Le <strong>poids</strong> est la force d’attraction de l’astre sur l’objet : <strong>P = m × g</strong>, m en kg, g en N·kg⁻¹.</li>
+          <li>La <strong>masse</strong> est la même partout ; le <strong>poids</strong> change avec g, donc avec l’astre.</li>
+          <li><strong>Hypothèses :</strong> astre sphérique ; on ne distingue pas poids et attraction gravitationnelle (rotation de l’astre négligée).</li>
+        </ul>
+      </>,
       texte: <>La masse (en kg) ne change pas d’un astre à l’autre, mais le <strong>poids</strong> change car g change : sur la Lune g ≈ 1,6 N/kg, sur Mars g ≈ 3,7 N/kg.
         <ExempleResolu>Sur Mars, un objet de 1 kg pèse 1 × 3,7 = 3,7 N.</ExempleResolu>
         À vous : la Lune.</>,
@@ -344,6 +409,23 @@ export function SimulationForcesVecteurs() {
           'P = 1 × 1,6 = 1,6 N.'],
         expl: 'P = 1 × 1,6 ≈ 1,6 N : six fois moins que sur Terre.', indice: "Même formule du poids, P = m × g, mais avec la valeur de g de la Lune donnée dans l’énoncé." } },
     { id: 'grav', titre: 'L’interaction gravitationnelle', depart: () => voirPoids('terre', 1, 0),
+      retenirTitre: 'À RETENIR : LA GRAVITATION',
+      retenir: <>
+        <Formule><mi>F</mi><mo>=</mo><mfrac><mrow><mi>G</mi><mo>×</mo><msub><mi>m</mi><mtext>A</mtext></msub><mo>×</mo><msub><mi>m</mi><mtext>B</mtext></msub></mrow><msup><mi>d</mi><mn>2</mn></msup></mfrac><mspace width="1.5em"/><mi>G</mi><mo>=</mo><mn>6,67</mn><mo>×</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>11</mn></mrow></msup><mtext> N·m²·kg⁻²</mtext></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Variation de la distance</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Effet sur la force</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>d multipliée par 2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>F divisée par 4</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>d multipliée par 10</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>F divisée par 100</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>d divisée par 2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>F multipliée par 4</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Deux objets s’attirent avec des forces de <strong>même intensité</strong> (actions réciproques) ; d est la distance entre leurs <strong>centres</strong>, en <strong>mètres</strong>.</li>
+          <li><strong>Méthode :</strong> convertir (km → m, masses en kg), calculer d², puis G × m<sub>A</sub> × m<sub>B</sub> / d².</li>
+          <li>À l’altitude h : g = G × M / (R + h)² ; à 400 km, g ≈ 8,7 N·kg⁻¹ (contre 9,8 au sol) : la gravité n’a pas disparu.</li>
+        </ul>
+      </>,
       texte: <>Deux objets de masses m<sub>A</sub> et m<sub>B</sub>, dont les centres sont distants de d, s’attirent avec des forces de même intensité : <strong>F = G × m<sub>A</sub> × m<sub>B</sub> / d²</strong>, avec G = {sci(G)} N·m²·kg⁻². Le poids est cette force pour un objet proche de la surface d’un astre.
         <ExempleResolu>Si la distance d <strong>double</strong>, d² est multiplié par 4 : la force est <strong>divisée par 4</strong>. Regardez la valeur de g quand vous augmentez l’altitude.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Si la distance entre deux astres est multipliée par 3, la force gravitationnelle…', options: ['est divisée par 9', 'est divisée par 3', 'est multipliée par 3', 'ne change pas'], bonne: 0, expl: 'F est proportionnelle à 1/d² : d × 3 donne F / 9.', indice: "La force gravitationnelle est F = G × M × m / d². Essaie avec une distance d, puis avec 3 d : que devient le dénominateur ?" } },
@@ -363,10 +445,17 @@ export function SimulationForcesVecteurs() {
         },
         expl: 'F = G M m / (R + h)² ≈ 8,7 N : presque autant qu’au sol (9,8 N). L’impesanteur vient de la chute libre.', indice: "Cette force est le poids de l’objet : P = m × g. Lis la valeur de g à 400 km dans la simulation (curseur d’altitude)." } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
-      texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>Action mécanique → <strong>force</strong> (vecteur) : point d’application, direction, sens, intensité (N), échelle.</li>
-        <li><strong>Actions réciproques</strong> : si A agit sur B avec <Fn a="A" r="B" vec/>, B agit sur A avec <Fn a="B" r="A" vec/> : même intensité, sens opposés.</li>
-        <li><strong>Poids</strong> : P = m × g (g ≈ 9,8 N/kg sur Terre). <strong>Gravitation</strong> : F = G m<sub>A</sub> m<sub>B</sub> / d².</li></ul></ARetenir>, tache: null },
+      retenirTitre: 'À RETENIR : LE BILAN',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Action mécanique → <strong>force</strong> (vecteur) : point d’application, direction, sens, intensité (N) ; F = L × échelle.</li>
+          <li><strong>Actions réciproques</strong> : <Fn a="A" r="B" vec/> = −<Fn a="B" r="A" vec/> (même intensité, sens opposés).</li>
+          <li><strong>Poids</strong> : P = m × g (g ≈ 9,8 N·kg⁻¹ sur Terre, 1,6 sur la Lune, 3,7 sur Mars) ; <strong>gravitation</strong> : F = G × m<sub>A</sub> × m<sub>B</sub> / d².</li>
+          <li><strong>Méthode :</strong> identifier auteur et receveur, choisir l’échelle, calculer, vérifier l’unité (N).</li>
+          <li><strong>Pièges :</strong> masse ≠ poids ; intensité ≠ vecteur ; distance en m entre les centres.</li>
+        </ul>
+      </>,
+      texte: <>Bravo : vous savez modéliser une action par une force. Voici le bilan à garder.</>, tache: null },
   ];
   useEffect(() => {
     if (mode !== 'guide') return;

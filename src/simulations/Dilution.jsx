@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, avecIndices, indicesProfond, IndiceDefi } from "../commun";
 import { Fiole } from "./solutionsVue";
 import { fr, TM, concFille, volumeMere, ECHELLE, PIPETTES, FIOLES, T_DAKIN, teinte } from "./solutionsModele";
@@ -174,11 +174,37 @@ export function SimulationDilution() {
   const bouton = (label, faire) => <button onClick={faire} style={{ ...styleBouton(true, '#4338ca'), margin: '6px 0' }}>{label}</button>;
   const ETAPES = [
     { id: 'def', titre: 'Qu’est-ce que diluer ?', depart: () => voir({ Vm: 10, Vf: 100 }),
+      retenirTitre: 'À RETENIR : DILUER',
+      retenir: <>
+        <svg viewBox="0 0 300 140" role="img" aria-label="Dilution : on prélève un volume Vm de solution mère, on le verse dans une fiole jaugée puis on complète avec de l’eau distillée jusqu’au trait de jauge pour obtenir la solution fille" style={{ width: '100%', maxWidth: 340, height: 'auto', display: 'block', margin: '6px auto' }}>
+          <rect x="22" y="40" width="58" height="76" rx="4" fill="#7b2d8e" fillOpacity="0.85" stroke="#334155" strokeWidth="2" /><text x="51" y="132" fontSize="11" textAnchor="middle" fill="#334155" fontWeight="700">solution mère</text><text x="51" y="30" fontSize="10.5" textAnchor="middle" fill="#334155">t<tspan fontSize="8" dy="2">m</tspan><tspan dy="-2"> = 0,40 g/L</tspan></text>
+          <line x1="92" y1="70" x2="150" y2="70" stroke="#d55e00" strokeWidth="2.4" /><polygon points="154,70 142,64 142,76" fill="#d55e00" /><text x="123" y="62" fontSize="10.5" textAnchor="middle" fill="#c2410c" fontWeight="700">prélever V<tspan fontSize="8" dy="2">m</tspan></text><text x="123" y="90" fontSize="10.5" textAnchor="middle" fill="#0072b2" fontWeight="700">+ eau</text>
+          <path d="M 218 14 L 218 52 L 190 100 Q 186 118 206 118 L 250 118 Q 270 118 266 100 L 238 52 L 238 14 Z" fill="#7b2d8e" fillOpacity="0.28" stroke="#334155" strokeWidth="2" />
+          <line x1="214" y1="30" x2="242" y2="30" stroke="#dc2626" strokeWidth="2" /><text x="248" y="34" fontSize="10" fill="#dc2626">trait</text>
+          <text x="228" y="132" fontSize="11" textAnchor="middle" fill="#334155" fontWeight="700">solution fille</text><text x="228" y="8" fontSize="10.5" textAnchor="middle" fill="#334155">V<tspan fontSize="8" dy="2">f</tspan><tspan dy="-2">, t</tspan><tspan fontSize="8" dy="2">f</tspan></text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Diluer</strong>, c’est <strong>ajouter de l’eau</strong> à une solution pour obtenir une solution <strong>moins concentrée</strong>. On part d’une solution <strong>mère</strong> pour préparer une solution <strong>fille</strong>.</li>
+          <li>On ajoute <strong>seulement de l’eau</strong> : la <strong>masse de soluté ne change pas</strong>. <strong>Exemple :</strong> 10 mL de mère à 0,40 g/L contiennent 0,40 × 0,010 = 0,0040 g (4,0 mg) ; ils sont tous dans la fiole de 100 mL.</li>
+          <li>La solution fille est plus claire : 0,40 g/L → <strong>0,040 g/L</strong>.</li>
+        </ul>
+      </>,
       texte: <>Diluer une solution, c’est lui <strong>ajouter de l’eau</strong> pour obtenir une solution <strong>moins concentrée</strong>. On part d’une solution <strong>mère</strong> et on prépare une solution <strong>fille</strong>.
         <ExempleResolu>On prélève 10 mL de solution mère (0,40 g/L) et on complète à 100 mL avec de l’eau distillée. On a <strong>seulement ajouté de l’eau</strong> : le soluté prélevé (4,0 mg) est <strong>tout entier dans la fiole</strong>. La fille est plus claire : 0,040 g/L.
           {bouton('Voir la dilution', () => voir({ Vm: 10, Vf: 100 }))}</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Quand on dilue une solution en ajoutant de l’eau, la masse de soluté…', options: ['ne change pas', 'augmente', 'diminue', 'est divisée par le volume d’eau'], bonne: 0, expl: 'On n’ajoute que de l’eau : la masse de soluté est la même dans le prélèvement et dans la solution fille (tₘ × Vₘ = t_f × V_f).', indice: "Quand on ajoute de l’eau, ajoute-t-on du soluté ou du solvant ? Qu’est-ce qui change : la quantité de soluté ou le volume de la solution ?" } },
     { id: 'facteur', titre: 'Le facteur de dilution', depart: () => voir({ Vm: 10, Vf: 100 }),
+      retenirTitre: 'À RETENIR : LE FACTEUR DE DILUTION',
+      retenir: <>
+        <Formule><msub><mi>t</mi><mi>m</mi></msub><mo>×</mo><msub><mi>V</mi><mi>m</mi></msub><mo>=</mo><msub><mi>t</mi><mi>f</mi></msub><mo>×</mo><msub><mi>V</mi><mi>f</mi></msub><mspace width="1.5em"/><mi>F</mi><mo>=</mo><mfrac><msub><mi>t</mi><mi>m</mi></msub><msub><mi>t</mi><mi>f</mi></msub></mfrac><mo>=</mo><mfrac><msub><mi>V</mi><mi>f</mi></msub><msub><mi>V</mi><mi>m</mi></msub></mfrac></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La masse de soluté se <strong>conserve</strong> : t<sub>m</sub>·V<sub>m</sub> = t<sub>f</sub>·V<sub>f</sub> (mêmes unités de volume des deux côtés).</li>
+          <li>Le <strong>facteur de dilution</strong> F n’a pas d’unité : « diluer 10 fois » signifie diviser la concentration par 10.</li>
+          <li><strong>Exemple 1 :</strong> 10 mL complétés à 100 mL : F = 100 / 10 = <strong>10</strong> ; t<sub>f</sub> = 0,40 / 10 = 0,040 g/L.</li>
+          <li><strong>Exemple 2 :</strong> 5 mL complétés à 100 mL : F = 100 / 5 = <strong>20</strong>.</li>
+          <li><strong>Piège :</strong> F est toujours supérieur à 1 pour une dilution : le grand volume (V<sub>f</sub>) au numérateur, le petit (V<sub>m</sub>) au dénominateur.</li>
+        </ul>
+      </>,
       texte: <>Comme la masse de soluté se conserve : <strong>t<sub>m</sub> × V<sub>m</sub> = t<sub>f</sub> × V<sub>f</sub></strong>. Le <strong>facteur de dilution</strong> est <strong>F = t<sub>m</sub> / t<sub>f</sub> = V<sub>f</sub> / V<sub>m</sub></strong> : « diluer 10 fois » signifie diviser la concentration par 10.
         <ExempleResolu>10 mL complétés à 100 mL : F = 100 / 10 = <strong>10</strong>. La concentration est divisée par 10 : 0,40 / 10 = 0,040 g/L.</ExempleResolu>
         À vous : on prélève 5 mL de solution mère, que l’on complète à 100 mL.</>,
@@ -186,6 +212,25 @@ export function SimulationDilution() {
         calcul: () => ['Le facteur de dilution est le volume final divisé par le volume prélevé : F = V_f / V_m.', 'Ici V_f = 100 mL (la fiole) et V_m = 5 mL (ce qu’on prélève).', 'F = 100 / 5 = 20.'],
         pieges: [[0.05, 'F = V_f / V_m (le grand volume divisé par le petit), pas l’inverse.'], [95, 'Tu as soustrait : on divise V_f par V_m.'], [500, 'Tu as multiplié : on divise V_f par V_m.']], expl: 'F = V_f / V_m = 100 / 5 = 20 : la solution fille est 20 fois moins concentrée.', indice: "Facteur de dilution : F = concentration de la solution mère ÷ concentration de la solution fille (dans la même unité)." } },
     { id: 'volume', titre: 'Quel volume prélever ?', depart: () => voir({ Vm: 10, Vf: 200 }),
+      retenirTitre: 'À RETENIR : QUEL VOLUME PRÉLEVER ?',
+      retenir: <>
+        <Formule><mi>F</mi><mo>=</mo><mfrac><msub><mi>t</mi><mi>m</mi></msub><msub><mi>t</mi><mi>f</mi></msub></mfrac><mspace width="1.5em"/><msub><mi>V</mi><mi>m</mi></msub><mo>=</mo><mfrac><msub><mi>V</mi><mi>f</mi></msub><mi>F</mi></mfrac></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Solution (100 mL)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>t<sub>f</sub> (g/L)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>F</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>V<sub>m</sub> (mL)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Sf1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,080</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>5</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>20</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Sf2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,040</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>10</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>10</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Sf3</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,020</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>20</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>5</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Sf4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,010</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>40</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2,5</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Sf5</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,004</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>100</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Méthode :</strong> 1. calculer F = t<sub>m</sub> / t<sub>f</sub> ; 2. en déduire V<sub>m</sub> = V<sub>f</sub> / F.</li>
+          <li><strong>Exemple :</strong> 100 mL à 0,020 g/L : F = 0,40 / 0,020 = 20 ; V<sub>m</sub> = 100 / 20 = <strong>5 mL</strong>.</li>
+          <li>Plus on dilue, <strong>moins</strong> il faut prélever de solution mère (V<sub>m</sub> petit). Solution mère : t<sub>m</sub> = 0,40 g/L.</li>
+        </ul>
+      </>,
       texte: <>On connaît la concentration voulue : on calcule d’abord <strong>F = t<sub>m</sub> / t<sub>f</sub></strong>, puis <strong>V<sub>m</sub> = V<sub>f</sub> / F</strong>.
         <ExempleResolu>Pour 100 mL à 0,040 g/L : F = 0,40 / 0,040 = 10, donc V<sub>m</sub> = 100 / 10 = <strong>10 mL</strong>.</ExempleResolu>
         À vous : 100 mL de solution fille à 0,020 g/L.</>,
@@ -197,12 +242,39 @@ export function SimulationDilution() {
       texte: <>Choisissez une pipette jaugée et une fiole : la couleur et la concentration de la fille s’affichent.</>,
       tache: { type: 'action', ok: enGuide && D.Vf === 200 && Math.abs(tf - 0.04) < 0.0005, consigne: 'Obtenez 0,040 g/L en fiole de 200 mL (calculez d’abord V_m).' } },
     { id: 'verrerie', titre: 'Pourquoi une pipette jaugée ?', depart: null,
+      retenirTitre: 'À RETENIR : LA VERRERIE DE LA DILUTION',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Étape</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Verrerie</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Remarque</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>prélever V<sub>m</sub></td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>pipette jaugée + propipette</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>volume précis, jamais à la bouche</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>compléter à V<sub>f</sub></td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>fiole jaugée</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>volume exact jusqu’au trait de jauge</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>volume non disponible</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>pipette graduée</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ex. 2,5 mL, moins précise</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Pipettes jaugées disponibles dans la simulation : <strong>1, 2, 5, 10, 20 et 25 mL</strong> ; fioles jaugées : 50, 100, 200 et 250 mL.</li>
+          <li>Un <strong>bécher</strong> n’est gradué qu’à quelques % près : l’incertitude sur V<sub>m</sub> se retrouve sur la concentration de la fille.</li>
+          <li><strong>Protocole :</strong> rincer, prélever V<sub>m</sub>, le verser dans la fiole, compléter à moitié d’eau distillée, agiter, ajuster au trait, boucher et homogénéiser.</li>
+          <li><strong>Hypothèses :</strong> verrerie parfaite (sans incertitude) et eau distillée pure.</li>
+        </ul>
+      </>,
       texte: <>Pour prélever V<sub>m</sub>, on utilise une <strong>pipette jaugée</strong> avec une propipette (jamais à la bouche !). Une <strong>fiole jaugée</strong> sert à compléter le volume.</>,
       tache: { type: 'qcm', q: 'Pourquoi prélève-t-on la solution mère avec une pipette jaugée plutôt qu’avec un bécher ?', options: ['Elle donne le volume avec bien plus de précision', 'Elle va plus vite', 'Elle contient plus de liquide', 'Elle ne se salit pas'], bonne: 0, expl: 'Le bécher n’est gradué qu’à quelques % près ; la pipette jaugée mesure un volume précis. L’incertitude sur V_m se retrouve sur la concentration de la fille.', indice: "Compare la précision des graduations d’un bécher et celle du trait d’une pipette jaugée : lequel donne le volume avec le plus petit écart ?" } },
     { id: 'tableau', titre: 'Préparer toute une échelle', depart: () => voir({}, 'tableau'),
       texte: <>On prépare cinq solutions filles de 100 mL avec des concentrations de plus en plus faibles : une <strong>échelle de teintes</strong>. Calculez F et V<sub>m</sub>, puis choisissez la verrerie (une pipette jaugée n’existe que pour certains volumes), et cliquez sur « Vérifier ».</>,
       tache: { type: 'action', ok: enGuide && tabV && juste, consigne: 'Complétez et vérifiez le tableau : tout doit être juste.' } },
     { id: 'echelle', titre: 'Encadrer une concentration par la couleur', depart: () => { setMystere(0.015); setVoirT(false); setAtelier('echelle'); },
+      retenirTitre: 'À RETENIR : ÉCHELLE DE TEINTES',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Plus une solution est <strong>concentrée</strong>, plus sa teinte est <strong>foncée</strong> (faibles concentrations : teinte proportionnelle à la concentration).</li>
+          <li>Comparer l’inconnue à une <strong>échelle de teintes</strong> permet d’<strong>encadrer</strong> sa concentration : <strong>plus foncée que Sf4, plus claire que Sf3</strong> donne 0,010 g/L &lt; t &lt; 0,020 g/L.</li>
+          <li><strong>Exemple (liqueur de Dakin) :</strong> 1,0 mg de KMnO₄ dans 100,0 mL : t = 0,0010 g / 0,1000 L = <strong>0,010 g/L</strong>, soit la teinte de Sf4 : le fabricant est cohérent.</li>
+          <li><strong>Conversions :</strong> 1 mg = 0,0010 g ; 100,0 mL = 0,1000 L.</li>
+          <li><strong>Hypothèse :</strong> comparaison « à l’œil » idéalisée ; à l’écran, la couleur n’est qu’une représentation.</li>
+        </ul>
+      </>,
       texte: <>Plus la solution est concentrée, plus elle est <strong>foncée</strong>. En comparant la teinte d’une solution inconnue à l’échelle, on peut <strong>encadrer</strong> sa concentration.
         <ExempleResolu>Si la solution inconnue est plus foncée que Sf3 (0,02 g/L) mais plus claire que Sf2 (0,04 g/L), alors 0,02 g/L {'<'} t {'<'} 0,04 g/L.</ExempleResolu>
         À vous : regardez l’inconnue dans l’atelier « Échelle de teintes ».</>,
@@ -213,11 +285,20 @@ export function SimulationDilution() {
         calcul: () => ['Formule : t = m / V, avec m en g et V en L.', 'Conversions : m = 1,0 mg = 0,0010 g ; V = 100,0 mL = 0,1000 L.', 't = 0,0010 / 0,1000 = 0,010 g/L (on suppose les valeurs du fabricant exactes).'],
         pieges: [[1, 'Convertis : 1,0 mg = 0,0010 g, pas 1 g.'], [0.1, 'Convertis aussi les mL : 100,0 mL = 0,1000 L.'], [10, 'Les mg ne sont pas convertis en g : 1,0 mg = 0,0010 g (1 g = 1000 mg).']], expl: 't = m / V = 0,0010 g / 0,1000 L = 0,010 g/L : c’est la teinte de Sf4 sur l’échelle.', indice: "Concentration en masse = masse de KMnO₄ ÷ volume de solution (en litres). Les conversions utiles sont rappelées dans l’énoncé." } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
-      texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>On dilue en <strong>ajoutant de l’eau</strong> : la masse de soluté ne change pas, donc <strong>t<sub>m</sub> V<sub>m</sub> = t<sub>f</sub> V<sub>f</sub></strong>.</li>
-        <li><strong>F = t<sub>m</sub> / t<sub>f</sub> = V<sub>f</sub> / V<sub>m</sub></strong> ; <strong>V<sub>m</sub> = V<sub>f</sub> / F</strong>.</li>
-        <li>On prélève avec une pipette jaugée, on complète en fiole jaugée.</li>
-        <li>Une échelle de teintes permet d’encadrer une concentration.</li></ul></ARetenir>, tache: null },
+      retenirTitre: 'À RETENIR : LE BILAN',
+      retenir: <>
+        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+          <li><strong>Calculer F</strong> = t<sub>m</sub> / t<sub>f</sub> (ou V<sub>f</sub> / V<sub>m</sub>).</li>
+          <li><strong>Calculer V<sub>m</sub></strong> = V<sub>f</sub> / F.</li>
+          <li><strong>Choisir la verrerie</strong> : pipette jaugée pour V<sub>m</sub>, fiole jaugée pour V<sub>f</sub>.</li>
+          <li><strong>Vérifier</strong> : t<sub>f</sub> &lt; t<sub>m</sub> et V<sub>m</sub> &lt; V<sub>f</sub>.</li>
+        </ol>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>On dilue en <strong>ajoutant de l’eau</strong> : t<sub>m</sub>·V<sub>m</sub> = t<sub>f</sub>·V<sub>f</sub>.</li>
+          <li><strong>Pièges :</strong> inverser F ; oublier de convertir les unités ; croire que diluer change la masse de soluté.</li>
+        </ul>
+      </>,
+      texte: <>Bravo : vous savez préparer une solution diluée. Voici le bilan à garder.</>, tache: null },
   ];
   useEffect(() => {
     if (mode !== 'guide') return;
