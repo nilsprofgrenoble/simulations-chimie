@@ -84,4 +84,5 @@ export const DESCRIPTIONS = {
   "CPG couplée à la spectrométrie de masse": "CPG-SM : chromatogramme (TIC), spectre de masse d'un pic (ion moléculaire, pic de base, isotopes du chlore), recherche en bibliothèque, chromatogrammes d'ions extraits, contrôle air / eau, pannes.",
   "Courbes i-E et diagramme E-pH": "Faisceau de courbes intensité-potentiel à plusieurs pH, vue 3D (E, pH, i), coupe à un pH donné et diagramme E-pH correspondant.",
   "Épaississants associatifs : ASE, HASE, HEUR": "Gants, crochets et particules : comment un épaississant associatif (HASE, HEUR) ou alcali-gonflable (ASE) règle la viscosité d’une peinture selon le gradient de vitesse. Rampe aller-retour, test 3ITT, thixotropie ; parcours guidé et défi « fiche technique » : les fiches techniques n’auront plus de secret.",
+  "Lasure alkyde : séchage oxydant et peau en pot": "Du film humide au film dur : évaporation du white spirit puis réticulation par le dioxygène (siccatif), sur une échelle de temps logarithmique de 1 minute à 3 mois. Rôle de l’anti-peau (DEHA) et formation de la peau dans le pot fermé ; carte du compromis séchage rapide / pot sans peau ; parcours guidé et défi."
 };
