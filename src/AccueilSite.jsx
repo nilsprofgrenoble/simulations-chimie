@@ -53,13 +53,11 @@ export function AccueilSite({ onStart, onCode, session, simulations, energyUrl }
         })}
 
         {/* Classement public : les 5 premiers de chaque lame */}
-        <section className="ab-une ab-classement" aria-labelledby="titre-classement">
-          <div>
-            <span className="ab-pill">Nouveau</span>
-            <h3 id="titre-classement">🏅 Le classement de la paillasse</h3>
-            <p>Fais glisser pour changer de classement. Pour y apparaître : choisis un pseudo et coche la case dans « Mon compte ».</p>
-            <Suspense fallback={null}><SimulationClassement naviguer={onStart} accueil /></Suspense>
-          </div>
+        <section className="ab-classement" aria-labelledby="titre-classement">
+          <span className="ab-pill">Nouveau</span>
+          <h3 id="titre-classement">Le classement de la paillasse</h3>
+          <p>Fais glisser pour changer de classement. Pour y apparaître : choisis un pseudo et coche la case dans « Mon compte ».</p>
+          <Suspense fallback={null}><SimulationClassement naviguer={onStart} accueil /></Suspense>
         </section>
 
         <section className="ab-carte" aria-labelledby="titre-energy">
