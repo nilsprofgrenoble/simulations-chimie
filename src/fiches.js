@@ -41,16 +41,18 @@ export const surChangementFiches = f => { ecouteurs.add(f); return () => ecouteu
 export const annoncerFiches = () => ecouteurs.forEach(f => f());
 
 // Garde (ou met à jour) la carte affichée. Renvoie l'identifiant de la carte, ou null si elle n'a pas pu être gardée.
-export function noterFiche({ sim, nomSim, etape, html, texte }) {
+export function noterFiche({ sim, nomSim, etape, html, texte, ordre }) {
   if (!Number.isFinite(sim) || !html) return null;
+  const rang = Number.isFinite(ordre) ? ordre : undefined;   // rang de l'étape dans le parcours : sert à ranger les cartes dans l'ordre
   const propre = nettoyerHtml(html);
   if (!propre || propre.length > TAILLE_MAX_HTML) return null;
   const base = `${etape || ''}|${String(texte || '').replace(/[0-9]+([.,][0-9]+)?/g, '#').replace(/\s+/g, ' ').slice(0, 160)}`;
   const cle = `${PREFIXE_FICHE}${sim}-${empreinte(base)}`;
   let avant = null, brut = null;
   try { brut = window.localStorage.getItem(cle); avant = brut ? JSON.parse(brut) : null; } catch { /* illisible : on repart de zéro */ }
-  if (avant && avant.html === propre && avant.nom === (nomSim || '') && avant.etape === (etape || '')) return cle;
+  if (avant && avant.html === propre && avant.nom === (nomSim || '') && avant.etape === (etape || '') && avant.ordre === rang) return cle;
   const fiche = { v: 1, sim, nom: nomSim || '', etape: etape || '', html: propre, t0: avant?.t0 || Date.now(), t: Date.now() };
+  if (rang !== undefined) fiche.ordre = rang;
   enregistrer(cle, brut !== null);
   try { window.localStorage.setItem(cle, JSON.stringify(fiche)); } catch { return null; }
   noterModification(cle);
