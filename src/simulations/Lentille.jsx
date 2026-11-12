@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, avecIndices, IndiceDefi } from "../commun";
 import { fr, tracer, foyer, geometrie, PX_CM } from "./optiqueModele";
 import { Pic } from "../Pictos";
@@ -181,6 +181,32 @@ export function SimulationLentille() {
   const voirB = (f, s = 5) => { setAtelier('banc'); setB({ f, s, reveler: false }); };
   const ETAPES = [
     { id: 'idee', titre: 'Une lentille, c’est de la réfraction', depart: () => voirL({ type: 'plano', n: 1.5, R: 100, normales: true, mince: false, foyers: false }),
+      retenirTitre: 'À RETENIR : RÉFRACTION ET NORMALE',
+      retenir: <>
+        <Formule><msub><mi>n</mi><mn>1</mn></msub><mi>sin</mi><msub><mi>i</mi><mn>1</mn></msub><mo>=</mo><msub><mi>n</mi><mn>2</mn></msub><mi>sin</mi><msub><mi>i</mi><mn>2</mn></msub></Formule>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Passage</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Indices</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Variation</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Effet</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>air → verre</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,00 → 1,50</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>n augmente</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>le rayon se rapproche de la normale</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>verre → air</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,50 → 1,00</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>n diminue</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>le rayon s’écarte de la normale</td></tr>
+          </tbody>
+        </table>
+        <svg viewBox="0 0 300 150" role="img" aria-label="Face courbe d’une lentille plan-convexe : deux rayons parallèles à l’axe arrivent à des hauteurs différentes ; la normale en chaque point passe par le centre C de la sphère, elle est plus inclinée pour le rayon éloigné de l’axe" style={{ width: '100%', maxWidth: 340, height: 'auto', display: 'block', margin: '6px auto' }}>
+          <path d="M 165 25 L 150.9 25 A 120 120 0 0 0 150.9 125 L 165 125 Z" fill="#dbeafe" stroke="#1d4ed8" strokeWidth="2" />
+          <line x1="10" y1="75" x2="290" y2="75" stroke="#94a3b8" strokeWidth="1" strokeDasharray="6 3" />
+          <line x1="20" y1="63" x2="140.6" y2="63" stroke="#d55e00" strokeWidth="2.2" /><line x1="20" y1="37" x2="146.2" y2="37" stroke="#d55e00" strokeWidth="2.2" />
+          <line x1="140.6" y1="63" x2="260" y2="75" stroke="#475569" strokeWidth="1.4" strokeDasharray="4 3" /><line x1="146.2" y1="37" x2="260" y2="75" stroke="#475569" strokeWidth="1.4" strokeDasharray="4 3" />
+          <circle cx="260" cy="75" r="3.5" fill="#334155" /><text x="266" y="64" fontSize="11" fill="#334155" fontWeight="700">C</text><text x="266" y="94" fontSize="10" fill="#334155">centre de la sphère</text>
+          <text x="22" y="56" fontSize="10.5" fill="#c2410c">près de l’axe : i petit</text><text x="22" y="30" fontSize="10.5" fill="#c2410c">loin de l’axe : i grand</text>
+          <text x="165" y="142" fontSize="10.5" fill="#475569" textAnchor="middle">normales en pointillés gris</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Une lentille est un morceau de verre : la lumière subit <strong>deux réfractions</strong>, une à chaque face (loi de Snell-Descartes).</li>
+          <li>Sur une face <strong>plane</strong>, la normale est la même partout. Sur une face <strong>courbe</strong>, la normale en un point est la droite qui relie ce point au <strong>centre de la sphère</strong> : elle change d’inclinaison d’un point à l’autre.</li>
+          <li>Plus un rayon arrive <strong>loin de l’axe</strong>, plus son angle d’incidence i est <strong>grand</strong> et plus il est dévié : c’est pourquoi les rayons ne sont pas tous déviés pareil.</li>
+          <li>Les angles se mesurent <strong>avec la normale</strong>, jamais avec la surface.</li>
+        </ul>
+      </>,
       texte: <>Une lentille est un morceau de verre taillé. La lumière y entre et en ressort : à <strong>chaque surface</strong>, c’est de la <strong>réfraction</strong>, exactement comme dans le chapitre précédent (n₁ sin i₁ = n₂ sin i₂). Ici, un faisceau de rayons <strong>parallèles</strong> arrive sur une lentille <strong>plan-convexe</strong> : la face de gauche est courbe, celle de droite est plane.
         <ExempleResolu>Chaque rayon arrive sur la face courbe avec un angle d’incidence <strong>différent</strong> (mesuré avec la <strong>normale</strong>, en pointillés gris). C’est pour cela que les rayons ne sont pas tous déviés pareil.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Un rayon passe de l’air (n = 1,00) au verre (n = 1,50) sur la face courbe. À l’entrée, il…', options: ['se rapproche de la normale', 's’écarte de la normale', 'n’est pas dévié', 'est entièrement réfléchi'], bonne: 0, expl: 'L’indice augmente (1,00 → 1,50) : le rayon se rapproche de la normale.', indice: "Loi de Snell-Descartes : n₁ sin i₁ = n₂ sin i₂. Compare n₁ (air) et n₂ (verre), puis sin i₂ et sin i₁." } },
@@ -191,10 +217,47 @@ export function SimulationLentille() {
       texte: <>À la sortie, sur la face <strong>plane</strong>, la normale est horizontale (parallèle à l’axe). Le rayon passe du verre (1,50) à l’air (1,00) : l’indice <strong>diminue</strong>, donc le rayon <strong>s’écarte de la normale</strong>. Il est dévié <strong>encore plus</strong> vers l’axe.</>,
       tache: { type: 'qcm', q: 'Le rayon sort du verre vers l’air. Par rapport à la normale, il…', options: ['s’écarte de la normale', 'se rapproche de la normale', 'reste sur la normale', 'revient dans le verre'], bonne: 0, expl: 'n diminue (1,50 → 1,00) : le rayon s’écarte de la normale.', indice: "Même raisonnement que pour l’entrée, mais dans l’autre sens : n₁ (verre) est maintenant plus grand que n₂ (air). Compare sin i₂ et sin i₁." } },
     { id: 'foyer', titre: 'Les rayons se rejoignent : le foyer', depart: () => voirL({ normales: false, foyers: true }),
+      retenirTitre: 'À RETENIR : FOYER ET DISTANCE FOCALE',
+      retenir: <>
+        <svg viewBox="0 0 300 150" role="img" aria-label="Lentille mince convergente : un rayon parallèle à l’axe passe par le foyer image F prime, un rayon qui passe par le centre optique O n’est pas dévié, f prime est la distance OF prime" style={{ width: '100%', maxWidth: 340, height: 'auto', display: 'block', margin: '6px auto' }}>
+          <line x1="10" y1="70" x2="290" y2="70" stroke="#94a3b8" strokeWidth="1.2" strokeDasharray="6 3" />
+          <line x1="150" y1="20" x2="150" y2="120" stroke="#0f172a" strokeWidth="2.6" /><polygon points="150,16 144,28 156,28" fill="#0f172a" /><polygon points="150,124 144,112 156,112" fill="#0f172a" />
+          <line x1="20" y1="35" x2="150" y2="35" stroke="#15803d" strokeWidth="2.2" /><polyline points="150,35 210,70 270,105" fill="none" stroke="#15803d" strokeWidth="2.2" />
+          <line x1="20" y1="105" x2="150" y2="105" stroke="#15803d" strokeWidth="2.2" /><polyline points="150,105 210,70 270,35" fill="none" stroke="#15803d" strokeWidth="2.2" />
+          <polyline points="40,92 150,70 260,48" fill="none" stroke="#d55e00" strokeWidth="2.2" />
+          <circle cx="210" cy="70" r="3.5" fill="#0072b2" /><circle cx="90" cy="70" r="3.5" fill="#0072b2" /><circle cx="150" cy="70" r="3" fill="#0f172a" />
+          <text x="210" y="88" fontSize="12" fill="#0072b2" fontWeight="700" textAnchor="middle">F′</text><text x="90" y="62" fontSize="12" fill="#0072b2" fontWeight="700" textAnchor="middle">F</text><text x="144" y="86" fontSize="12" fill="#0f172a" fontWeight="700" textAnchor="end">O</text>
+          <line x1="150" y1="132" x2="210" y2="132" stroke="#334155" strokeWidth="1.3" /><line x1="150" y1="127" x2="150" y2="137" stroke="#334155" strokeWidth="1.3" /><line x1="210" y1="127" x2="210" y2="137" stroke="#334155" strokeWidth="1.3" />
+          <text x="180" y="147" fontSize="11.5" fill="#334155" fontWeight="700" textAnchor="middle">f′ = OF′</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Une lentille <strong>convergente</strong> fait converger des rayons parallèles à l’axe en un même point de l’axe : le <strong>foyer image F′</strong>.</li>
+          <li>Le <strong>centre optique O</strong> est le milieu de la lentille. La <strong>distance focale</strong> est f′ = OF′ (en cm ou en m).</li>
+          <li>Le <strong>foyer objet F</strong> est le symétrique de F′ par rapport à la lentille (OF = OF′).</li>
+          <li><strong>Exemple :</strong> lentille plan-convexe de la simulation (n = 1,50 ; R = 2,5 cm) : f′ ≈ 4,9 cm.</li>
+          <li><strong>Hypothèse :</strong> les rayons éloignés de l’axe passent un peu à côté de F′ (aberration sphérique, réelle) : le foyer est « presque » un point.</li>
+        </ul>
+      </>,
       texte: <>Après la lentille, tous les rayons <strong>convergent</strong> (presque) en un même point de l’axe : c’est le <strong>foyer image F′</strong>. La lentille est dite <strong>convergente</strong>. Le <strong>centre optique O</strong> est le milieu de la lentille. La distance <strong>f′ = OF′</strong> est la <strong>distance focale</strong>.
         <ExempleResolu>Ici f′ ≈ {cm(foyer(lentille('plano', 1.5, 100)).f)} cm. Le <strong>foyer objet F</strong> est le symétrique de F′ par rapport à la lentille.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Des rayons parallèles à l’axe optique traversent une lentille convergente. Ils se rejoignent au…', options: ['foyer image F′', 'centre optique O', 'foyer objet F', 'bord de la lentille'], bonne: 0, expl: 'Les rayons parallèles à l’axe convergent au foyer image F′.', indice: "Une lentille a deux foyers : F du côté de l’objet et F′ du côté de l’image. Après la lentille, vers quel côté vont les rayons ?" } },
     { id: 'schema', titre: 'Le schéma de la lentille mince', depart: () => voirL({ normales: false, foyers: true, mince: true }),
+      retenirTitre: 'À RETENIR : LA LENTILLE MINCE',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Rayon entrant</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Rayon sortant</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>rayon parallèle à l’axe</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>passe par le foyer image F′ (en sortie)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>rayon passant par O</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>n’est pas dévié</td></tr>
+            
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Le <strong>modèle de la lentille mince</strong> remplace tout le verre par un trait vertical avec deux flèches vers l’extérieur (symbole de la lentille convergente) : la déviation a lieu « au niveau du trait ».</li>
+          <li>Au centre O, la lentille est comme une lame à faces parallèles très mince : un rayon qui passe par O <strong>n’est pas dévié</strong>.</li>
+          <li><strong>Méthode de construction :</strong> tracer un rayon parallèle à l’axe qui passe par F′, puis un rayon qui passe par O sans déviation.</li>
+        </ul>
+      </>,
       texte: <>Dessiner toute la forme du verre est long. Pour les schémas on utilise le modèle de la <strong>lentille mince</strong> : un trait vertical avec deux <strong>flèches vers l’extérieur</strong> (symbole d’une lentille convergente). En vert : un rayon <strong>parallèle à l’axe</strong> est dévié au centre O de la lentille et passe par F′.
         <ExempleResolu>Un rayon qui passe par le centre optique O <strong>n’est pas dévié</strong> (la lentille y est comme une lame à faces parallèles, très mince).</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Dans le schéma d’une lentille mince convergente, un rayon parallèle à l’axe optique…', options: ['passe par le foyer image F′', 'passe par le foyer objet F', 'n’est pas dévié', 'est parallèle à l’axe après la lentille'], bonne: 0, expl: 'Parallèle à l’axe en entrée → passe par F′ en sortie.', indice: "Règle de construction : un rayon parallèle à l’axe est dévié par la lentille vers un point particulier. F est le foyer objet, F′ le foyer image : lequel se trouve après la lentille ?" } },
@@ -202,9 +265,40 @@ export function SimulationLentille() {
       texte: <>Que se passe-t-il si le verre dévie plus la lumière, c’est-à-dire si son indice <strong>n</strong> est plus grand ? Réglez <strong>n = 1,90 ou plus</strong> avec le curseur et regardez où est F′.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'lentille' && Le.n >= 1.85, consigne: 'Réglez l’indice n à 1,85 ou plus.' } },
     { id: 'conclusion-n', titre: 'Plus n est grand…', depart: null,
+      retenirTitre: 'À RETENIR : DE QUOI DÉPEND f′ ?',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Indice n du verre</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Rayon R (cm)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>f′ (cm)</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>1,5</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2,5</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4,9</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>1,9</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2,5</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2,8</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>1,5</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4,0</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>7,9</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>1,9</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4,0</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4,4</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Plus l’indice n est <strong>grand</strong>, plus la lumière est déviée à chaque face : les rayons se croisent plus près et f′ <strong>diminue</strong>.</li>
+          <li>Plus la face est <strong>bombée</strong> (rayon de courbure R petit), plus f′ est <strong>courte</strong>. Ici, R de 2,5 à 4,0 cm.</li>
+          <li>Une lentille qui dévie beaucoup a une distance focale courte (« lentille forte »).</li>
+          <li>Valeurs de la simulation : lentille plan-convexe, face plane à droite, mesurées sur le tracé de rayons proches de l’axe.</li>
+        </ul>
+      </>,
       texte: <>Un verre plus réfringent dévie davantage : les rayons se croisent <strong>plus près</strong> de la lentille. La distance focale f′ <strong>diminue</strong>. C’est aussi le cas si la face est plus bombée (rayon de courbure R plus petit).</>,
       tache: { type: 'qcm', q: 'Si l’indice n du verre augmente, la distance focale f′…', options: ['diminue', 'augmente', 'ne change pas', 'devient négative'], bonne: 0, expl: 'Plus n est grand, plus la lentille dévie la lumière : F′ est plus proche, f′ est plus petite.', indice: "Plus l’indice est grand, plus un rayon est dévié à chaque face. Des rayons plus déviés se rejoignent-ils plus près ou plus loin de la lentille ?" } },
     { id: 'banc', titre: 'Mesurer f′ au banc d’optique', depart: () => voirB(12, 5),
+      retenirTitre: 'À RETENIR : MESURER f′ AU BANC D’OPTIQUE',
+      retenir: <>
+        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+          <li>Envoyer sur la lentille un faisceau de <strong>rayons parallèles</strong> (source lointaine).</li>
+          <li>Déplacer l’<strong>écran</strong> jusqu’à obtenir la tache lumineuse <strong>la plus petite</strong> : l’écran est alors au foyer image F′.</li>
+          <li><strong>Lire</strong> la distance lentille–écran sur la règle : c’est <strong>f′</strong> (préciser l’unité).</li>
+        </ol>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Objet très éloigné</strong> (Soleil, étoile, fenêtre lointaine) : ses rayons sont presque parallèles, son image se forme dans le <strong>plan du foyer</strong> : une loupe et une feuille de papier permettent d’estimer f′.</li>
+          <li><strong>Piège :</strong> la position de départ de l’écran n’est pas f′ ; c’est celle où la tache est minimale.</li>
+          <li><strong>Hypothèses :</strong> lentille mince, rayons proches de l’axe, modèle géométrique (la diffraction est ignorée).</li>
+        </ul>
+      </>,
       texte: <>En TP, on envoie un faisceau parallèle (lumière d’une source lointaine) sur une lentille et on déplace un <strong>écran</strong> jusqu’à obtenir la tache <strong>la plus petite</strong> : l’écran est alors au foyer image F′. Ici, la lentille est « cachée » : déplacez l’écran avec le curseur.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'banc' && Math.abs(B.s - B.f) <= 0.4, consigne: 'Placez l’écran de façon que la tache soit la plus petite possible.' } },
     { id: 'valeur', titre: 'Lire la distance focale', depart: null,
@@ -214,10 +308,17 @@ export function SimulationLentille() {
       texte: <>Le Soleil, une étoile, une fenêtre lointaine : les rayons qui arrivent sur la lentille sont presque <strong>parallèles</strong> entre eux. Leur image se forme donc dans le <strong>plan du foyer</strong>. C’est ainsi qu’on peut estimer f′ avec une lentille loupe et une feuille de papier.</>,
       tache: { type: 'qcm', q: 'Pour obtenir l’image nette d’un objet très éloigné, où place-t-on l’écran ?', options: ['À la distance f′ de la lentille', 'Contre la lentille', 'À 2 cm de la lentille', 'Très loin de la lentille'], bonne: 0, expl: 'Un objet très éloigné envoie des rayons parallèles : son image est au foyer image F′.', indice: "Un objet très éloigné envoie des rayons presque parallèles à l’axe optique. Où se rejoignent des rayons parallèles à l’axe ?" } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
-      texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>Une lentille = <strong>deux réfractions</strong> (une par face).</li>
-        <li>Lentille convergente : des rayons <strong>parallèles à l’axe</strong> convergent au <strong>foyer image F′</strong> ; <strong>f′ = OF′</strong>.</li>
-        <li>Rayon par le centre O : <strong>pas dévié</strong>. Plus n est grand ou R petit, plus f′ est <strong>courte</strong>.</li></ul></ARetenir>, tache: null },
+      retenirTitre: 'À RETENIR : LE BILAN',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Une lentille = <strong>deux réfractions</strong> (une par face).</li>
+          <li>Lentille convergente : des rayons <strong>parallèles à l’axe</strong> convergent au <strong>foyer image F′</strong> ; <strong>f′ = OF′</strong>.</li>
+          <li>Rayon par le centre O : <strong>pas dévié</strong>. Plus n est grand ou R petit, plus f′ est <strong>courte</strong>.</li>
+          <li><strong>Au banc :</strong> tache minimale = écran en F′ ; lire f′ (en cm).</li>
+          <li><strong>Pièges :</strong> angles à mesurer avec la normale ; ne pas confondre F et F′ ; oublier l’unité.</li>
+        </ul>
+      </>,
+      texte: <>Bravo : vous savez expliquer comment une lentille fait converger la lumière et mesurer sa distance focale. Voici le bilan à garder.</>, tache: null },
   ];
   useEffect(() => {
     if (mode !== 'guide') return;
