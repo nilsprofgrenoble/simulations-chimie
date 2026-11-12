@@ -5,7 +5,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, Curseur, LigneMesure, ARetenir, fmt, IndiceDefi } from "../commun";
 import { SceneFilm, LegendeFilm, ScenePot, GrapheLog, CarteCompromis, T_MIN, T_MAX, tDepuisU, uDepuisT, REPERES, formatTemps } from "./LasureScene";
 import {
@@ -369,6 +369,22 @@ export function SimulationLasure() {
     },
     {
       titre: "Le film continue de durcir pendant des jours",
+      retenirTitre: "À RETENIR : DEUX TEMPS DE SÉCHAGE",
+      retenir: <>
+        <svg viewBox="0 0 400 135" role="img" aria-label="Échelle de temps logarithmique de 1 minute à 3 mois : le séchage physique, par évaporation du white spirit, s’achève en quelques heures ; le séchage chimique, par réticulation, se poursuit pendant des jours à des semaines" style={{ width: '100%', maxWidth: 400, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <line x1="20" y1="92" x2="380" y2="92" stroke="#334155" strokeWidth="2" /><line x1="20.0" y1="92" x2="20.0" y2="100" stroke="#334155" strokeWidth="1.5" /><text x="20.0" y="114" textAnchor="middle" fontSize="11" fill="#334155">1 min</text><line x1="145.2" y1="92" x2="145.2" y2="100" stroke="#334155" strokeWidth="1.5" /><text x="145.2" y="114" textAnchor="middle" fontSize="11" fill="#334155">1 h</text><line x1="242.4" y1="92" x2="242.4" y2="100" stroke="#334155" strokeWidth="1.5" /><text x="242.4" y="114" textAnchor="middle" fontSize="11" fill="#334155">1 j</text><line x1="301.9" y1="92" x2="301.9" y2="100" stroke="#334155" strokeWidth="1.5" /><text x="301.9" y="114" textAnchor="middle" fontSize="11" fill="#334155">1 sem.</text><line x1="380.0" y1="92" x2="380.0" y2="100" stroke="#334155" strokeWidth="1.5" /><text x="380.0" y="114" textAnchor="middle" fontSize="11" fill="#334155">3 mois</text>
+          <rect x="20" y="30" width="201.2" height="22" rx="4" fill="#cfe5f6" stroke="#0072b2" strokeWidth="1.6" /><text x="120.6" y="45" textAnchor="middle" fontSize="11.5" fontWeight="700" fill="#0072b2">évaporation du solvant</text>
+          <rect x="178.8" y="58" width="201.2" height="22" rx="4" fill="#fbdcc6" stroke="#d55e00" strokeWidth="1.6" /><text x="279.4" y="73" textAnchor="middle" fontSize="11.5" fontWeight="700" fill="#d55e00">réticulation (séchage chimique)</text>
+          <text x="20" y="18" fontSize="11" fill="#334155">ordres de grandeur, échelle logarithmique</text>
+        </svg>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Séchage</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Phénomène</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Durée</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Conséquence</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>physique</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>le white spirit s’évapore</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>quelques heures (proportionnel à l’épaisseur humide)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>aucune liaison formée</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>chimique</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>réticulation de la résine par oxydation</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>jours à semaines</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>dureté Persoz : plus de 100 s en deux semaines</td></tr>
+          </tbody>
+        </table>
+      </>,
       texte: "Reviens à 200 µm. Une fois le solvant parti, la résine n’est pas encore dure : des liaisons entre les chaînes se forment. Regarde la dureté Persoz et la réticulation évoluer sur plusieurs jours.",
       tache: {
         type: "qcm", q: "Après évaporation complète du solvant (12 h), la dureté Persoz…", bonne: 0,
@@ -379,6 +395,21 @@ export function SimulationLasure() {
     },
     {
       titre: "Le dioxygène fait le travail",
+      retenirTitre: "À RETENIR : L’AUTOXYDATION DE LA RÉSINE ALKYDE",
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Espèce</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Rôle</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Effet</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>résine alkyde</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>chaînes d’acides gras insaturés (liaisons C=C)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>se relie en réseau</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>dioxygène O₂</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>réactif : attaque les C=C (réaction radicalaire en chaîne)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>forme des ponts –O– entre chaînes</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>siccatif (sels de Co, Zr, Ca)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>catalyseur</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>accélère la réticulation</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Plus de siccatif : réticulation plus rapide (dureté plus élevée à 12 h).</li>
+          <li>Sans dioxygène, pas de réticulation : le liquide du pot reste fluide.</li>
+        </ul>
+      </>,
       texte: "La résine alkyde porte des chaînes d’acides gras insaturés (liaisons C=C). Le dioxygène de l’air les attaque par une réaction radicalaire en chaîne, catalysée par le siccatif (sels de cobalt, zirconium, calcium) : les chaînes se relient par des ponts –O– (cercles rouges).",
       tache: {
         type: "qcm", q: "Quel est le mode de séchage chimique d’une lasure alkyde ?", bonne: 0,
@@ -399,6 +430,21 @@ export function SimulationLasure() {
     },
     {
       titre: "L’anti-peau ralentit le séchage… volontairement",
+      retenirTitre: "À RETENIR : LE RÔLE DE L’ANTI-PEAU",
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Situation</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>DEHA (N,N-diéthylhydroxylamine)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Effet</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>pot fermé</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>reste en solution, se lie au métal du siccatif et le désactive</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>pas de peau</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>film mince à l’air</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>volatil : s’évapore</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>le siccatif redevient actif</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>pendant ce temps</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>séchage retardé</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>compromis à accepter</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>L’anti-peau doit être <strong>volatil</strong> pour libérer le siccatif après l’application.</li>
+          <li>Dans le pot, il diffuse vers la surface et s’y échappe dans l’air : tant qu’il en reste assez, le siccatif est bridé.</li>
+        </ul>
+      </>,
       texte: "Dans le pot fermé, il faut empêcher la lasure de réticuler. On ajoute un anti-peau : ici la N,N-diéthylhydroxylamine (DEHA). Elle se lie au métal du siccatif et le désactive, tant qu’elle est présente. Mets 0,3 % et regarde la dureté à 12 h.",
       tache: {
         type: "qcm", q: "Pourquoi l’anti-peau doit-il être volatil ?", bonne: 0,
@@ -446,6 +492,14 @@ export function SimulationLasure() {
     },
     {
       titre: "Trop de siccatif : la peau",
+      retenirTitre: "À RETENIR : LE RAPPORT ANTI-PEAU / SICCATIF",
+      retenir: <>
+        <Formule><mi>R</mi><mo>=</mo><mfrac><mrow><mo>%</mo><mtext>anti-peau</mtext></mrow><mrow><mo>%</mo><mtext>siccatif</mtext></mrow></mfrac><mspace width="1.5em"/><mtext>formule F+/+ du TP : </mtext><mfrac><mn>0,3</mn><mn>2</mn></mfrac><mo>=</mo><mn>0,15</mn></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>R grand : siccatif très bridé, pot protégé, séchage plus lent. R petit : siccatif libre, peau plus tôt.</li>
+          <li>Augmenter le siccatif sans toucher à l’anti-peau fait <strong>baisser R</strong> : la peau apparaît plus tôt.</li>
+        </ul>
+      </>,
       texte: "Mets 2 % de siccatif et 0,3 % d’anti-peau, puis 2,4 % de siccatif sans changer l’anti-peau, et regarde R et le délai de peau prévu.",
       tache: {
         type: "qcm", q: "On augmente le siccatif sans toucher à l’anti-peau. Dans le pot…", bonne: 0,
@@ -456,6 +510,22 @@ export function SimulationLasure() {
     },
     {
       titre: "Le compromis du formulateur",
+      retenirTitre: "À RETENIR : SÉCHAGE ET COMPROMIS DU FORMULATEUR",
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Critère</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Valeur visée</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Levier</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>dureté Persoz à 12 h</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≥ 30 s</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>séchage assez rapide : plus de siccatif</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>délai sans peau</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≥ 45 jours</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>pot protégé : plus d’anti-peau</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>siccatif</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>de 1,6 à 2,4 %</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>plage de formulation autorisée</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Séchage en <strong>deux temps</strong> : évaporation du white spirit (quelques heures), puis réticulation par oxydation (jours) catalysée par le siccatif.</li>
+          <li>Anti-peau volatil : il bride le siccatif dans le pot fermé, puis s’évapore du film mince.</li>
+          <li>Les deux leviers agissent en sens contraire : plus de siccatif sèche plus vite mais fait « peau » plus tôt ; plus d’anti-peau protège le pot mais ralentit le séchage. On cherche la zone de la carte qui respecte <strong>tout</strong> le cahier des charges.</li>
+        </ul>
+      </>,
       texte: "Cette carte montre toutes les formules : à droite, elles sèchent vite ; en haut, le pot reste sans peau longtemps. Les points violets sont les formules du TP. Cahier des charges : dureté Persoz ≥ 30 s à 12 h, pas de peau avant 45 jours, siccatif entre 1,6 et 2,4 %.",
       tache: {
         type: "action", ok: respecteCahier(bg.si, bg.ap, cdcGuide),
