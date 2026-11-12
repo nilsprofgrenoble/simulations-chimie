@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
-import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
+import { Formule, cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, IndiceDefi, OngletExercices } from "../commun";
 import { V_BURETTE, seuilVisible, couleurSolution, ContexteBanc, SchemaBurette, OutilTitrageGeneral } from "./titrageCommun";
 import { Pic } from "../Pictos";
@@ -97,6 +97,27 @@ export function Simulation2() {
       texte: <>Légendez le montage (repères 1, 2 et 3) et indiquez le contenu de la burette et de l'erlenmeyer, dans le cadre « Légendes » sous le schéma.</>,
       tache: { type: 'action', ok: leg.verif && legOk(leg), consigne: leg.verif && legOk(leg) ? null : 'Choisissez toutes les légendes, puis vérifiez.' } },
     { id: 'rapide', titre: 'Un titrage rapide', focus: ['burette', 'erlen'],
+      retenirTitre: 'À RETENIR : LE MONTAGE DU TITRAGE DIRECT',
+      retenir: <>
+        <svg viewBox="0 0 360 190" role="img" aria-label="Montage d’un titrage direct : la burette graduée contient la solution titrante de thiosulfate de sodium, de concentration c B connue ; l’erlenmeyer contient la solution titrée, un volume V A de Lugol, avec un barreau aimanté posé sur un agitateur magnétique" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <rect x="40" y="6" width="14" height="86" fill="#e0f2fe" stroke="#0369a1" strokeWidth="2" /><rect x="40" y="6" width="14" height="30" fill="#bae6fd" />
+          <line x1="47" y1="92" x2="47" y2="108" stroke="#0369a1" strokeWidth="2" /><circle cx="47" cy="100" r="4" fill="#0369a1" />
+          <path d="M47 112 L47 124" stroke="#0369a1" strokeWidth="2" strokeDasharray="2 3" />
+          <path d="M26 128 L34 164 L60 164 L68 128 Z" fill="#fde68a" stroke="#334155" strokeWidth="2" /><line x1="22" y1="128" x2="72" y2="128" stroke="#334155" strokeWidth="2" />
+          <rect x="18" y="168" width="58" height="12" rx="3" fill="#cbd5e1" stroke="#475569" strokeWidth="1.5" /><rect x="39" y="158" width="16" height="5" rx="2" fill="#475569" />
+          <text x="68" y="24" fontSize="12" fontWeight="700" fill="#0369a1">burette graduée</text>
+          <text x="68" y="40" fontSize="11.5" fill="#334155">solution <tspan fontWeight="700">titrante</tspan> : thiosulfate S₂O₃²⁻</text>
+          <text x="68" y="55" fontSize="11.5" fill="#334155">concentration c<tspan fontSize="9" dy="3">B</tspan><tspan dy="-3"> connue</tspan></text>
+          <text x="80" y="140" fontSize="12" fontWeight="700" fill="#b45309">erlenmeyer</text>
+          <text x="80" y="156" fontSize="11.5" fill="#334155">solution <tspan fontWeight="700">titrée</tspan> : Lugol (I₂)</text>
+          <text x="80" y="171" fontSize="11.5" fill="#334155">volume V<tspan fontSize="9" dy="3">A</tspan><tspan dy="-3"> prélevé à la pipette jaugée</tspan></text>
+        </svg>
+        <Formule><mtext>2 S₂O₃²⁻</mtext><mo>+</mo><mtext>I₂</mtext><mo>→</mo><mtext>S₄O₆²⁻</mtext><mo>+</mo><mtext>2 I⁻</mtext></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Titrage direct</strong> : une réaction <strong>rapide</strong>, <strong>totale</strong> et <strong>unique</strong> entre la solution titrante (burette, concentration connue) et l’espèce à doser (erlenmeyer).</li>
+          <li>Un premier titrage <strong>rapide</strong> donne une valeur approchée de V<sub>B,e</sub> ; on le refait <strong>goutte à goutte</strong> (1 goutte ≈ 0,05 mL) autour de cette valeur.</li>
+        </ul>
+      </>,
       texte: <>Les commandes sont apparues. Versez le thiosulfate assez vite (robinet ouvert), et arrêtez dès que la solution est
         <strong> pratiquement incolore</strong>. Cliquez alors sur « La solution est décolorée ». Ce premier essai donne une valeur approchée.</>,
       tache: { type: 'action', ok: mes.Vrapide != null, consigne: mes.Vrapide != null ? `✅ V_B,e ≈ ${fmt(mes.Vrapide, 1)} mL` : `Versé : ${fmt(VB, 2)} mL` } },
@@ -105,17 +126,48 @@ export function Simulation2() {
         réactif en excès.</>,
       tache: { type: 'action', ok: sit.verif && situationsOk(sit), consigne: sit.verif && situationsOk(sit) ? null : 'Remplissez le tableau, puis vérifiez.' } },
     { id: 'equiv', titre: 'L’équivalence', focus: [],
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}><li>à l’équivalence, les deux réactifs sont <strong>limitants</strong> : ils ont été mélangés dans les proportions stœchiométriques</li><li>la solution <strong>titrante</strong> (burette) a une concentration connue ; la solution <strong>titrée</strong> (erlenmeyer) est celle que l’on cherche</li><li>réaction de titrage : <strong>rapide, totale, unique</strong></li></ul>,
+      retenirTitre: 'À RETENIR : AVANT, À ET APRÈS L’ÉQUIVALENCE',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Situation</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Réactif limitant</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Réactif en excès</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Solution</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>avant</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>le diiode I₂</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>le thiosulfate S₂O₃²⁻</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>colorée (jaune–brun, bleue avec le thiodène)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>à l’équivalence</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>les deux</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>aucun</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>décolorée (la teinte bleue vient de disparaître)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>après</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>le diiode (entièrement consommé)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>le thiosulfate (versé en excès)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>incolore</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>À l’<strong>équivalence</strong>, les réactifs ont été mélangés dans les <strong>proportions stœchiométriques</strong> : il n’en reste plus aucun.</li>
+          <li>La solution <strong>titrante</strong> (burette) a une concentration connue ; la solution <strong>titrée</strong> (erlenmeyer) est celle que l’on cherche.</li>
+        </ul>
+      </>,
       texte: <>À l'équivalence, les deux réactifs sont limitants : il n'en reste plus aucun.</>,
       tache: { type: 'qcm', q: 'Qu’est-ce que l’équivalence ?', options: ['Le moment où l’on a versé juste assez de thiosulfate pour faire réagir tout le diiode', 'Le moment où la burette est vide', 'Le moment où l’on a versé autant de thiosulfate que de Lugol'], bonne: 0,
         expl: 'À l’équivalence, les réactifs ont été introduits dans les proportions stœchiométriques.', indice: "À l’équivalence, les réactifs ont été introduits dans les proportions de l’équation de la réaction. Qu’est-ce qui vient juste de réagir complètement ?" } },
     { id: 'precis', titre: 'Un titrage précis', focus: ['burette', 'erlen'],
+      retenirTitre: 'À RETENIR : L’INDICATEUR DE FIN DE RÉACTION',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Le <strong>thiodène</strong> (empois d’amidon) forme avec le diiode un composé <strong>bleu très foncé</strong> : la couleur est visible même pour très peu de diiode.</li>
+          <li>On l’ajoute <strong>près de l’équivalence</strong> (environ 1 mL avant), quand la solution est devenue jaune pâle.</li>
+          <li>À l’équivalence, le diiode a disparu : la couleur bleue <strong>disparaît brutalement</strong> ; c’est le repère de V<sub>B,e</sub>.</li>
+          <li>On lit V<sub>B,e</sub> à la graduation de la burette (précision : une goutte, soit ≈ 0,05 mL).</li>
+        </ul>
+      </>,
       texte: <>Nouveau titrage. Versez rapidement jusqu'à environ <strong>{mes.Vrapide != null ? `${fmt(Math.max(0, mes.Vrapide - 1), 1)} mL` : 'V_B,e − 1 mL'}</strong>,
         puis ajoutez le <strong>thiodène</strong> : il forme avec le diiode un composé bleu très foncé, qui disparaît brutalement à l'équivalence.
         Finissez <strong>goutte à goutte</strong> (1 goutte ≈ 0,05 mL ≈ 1 graduation), puis cliquez sur « C'est l'équivalence ! ».</>,
       tache: { type: 'action', ok: mes.Ve != null, consigne: mes.Ve != null ? `✅ V_B,e = ${fmt(mes.Ve, 2)} mL` : `Versé : ${fmt(VB, 2)} mL${thiodene ? ' ; thiodène ajouté' : ''}` } },
     { id: 'relation', titre: 'La relation à l’équivalence', focus: [],
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}><li>pour 2 S₂O₃²⁻ + I₂ → S₄O₆²⁻ + 2 I⁻ : n<sub>initial</sub>(I₂) / 1 = n<sub>versé,e</sub>(S₂O₃²⁻) / 2</li><li>n<sub>versé,e</sub>(S₂O₃²⁻) = c<sub>B</sub> × V<sub>B,e</sub></li></ul>,
+      retenirTitre: 'À RETENIR : LA RELATION À L’ÉQUIVALENCE',
+      retenir: <>
+        <Formule><mfrac><mrow><msub><mi>n</mi><mtext>initial</mtext></msub><mo>(</mo><msub><mtext>I</mtext><mn>2</mn></msub><mo>)</mo></mrow><mn>1</mn></mfrac><mo>=</mo><mfrac><mrow><msub><mi>n</mi><mrow><mtext>versé,e</mtext></mrow></msub><mo>(</mo><mtext>S₂O₃²⁻</mtext><mo>)</mo></mrow><mn>2</mn></mfrac></Formule>
+        <Formule><msub><mi>n</mi><mrow><mtext>versé,e</mtext></mrow></msub><mo>=</mo><msub><mi>c</mi><mi>B</mi></msub><mo>×</mo><msub><mi>V</mi><mrow><mi>B</mi><mo>,</mo><mi>e</mi></mrow></msub></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Les coefficients 1 et 2 viennent de l’équation : il faut <strong>2 ions thiosulfate pour 1 molécule de diiode</strong>.</li>
+          <li>Quantité de matière : n = c × V, avec V en <strong>litres</strong> (V<sub>B,e</sub> = 10,5 mL = 0,0105 L, par exemple).</li>
+        </ul>
+      </>,
       texte: <>À l'équivalence : n<sub>initial</sub>(I₂) / 1 = n<sub>versé,e</sub>(S₂O₃²⁻) / 2.</>,
       tache: { type: 'qcm', q: 'Pourquoi divise-t-on n(S₂O₃²⁻) par 2 ?', options: ['Il faut 2 ions thiosulfate pour 1 molécule de diiode', 'Parce que la burette fait 25 mL', 'Parce que le thiosulfate est dilué'], bonne: 0, indice: "Regarde les coefficients de l’équation de titrage : combien d’ions S₂O₃²⁻ réagissent avec une molécule de I₂ ?" } },
     { id: 'nThio', titre: 'Le thiosulfate versé', focus: ['burette'],
@@ -137,7 +189,15 @@ export function Simulation2() {
           'V_A = 10,0 mL = 0,0100 L.', `c_A = ${sci(nI2E, 3)} / 0,0100 = ${sci(cAE, 3)} mol/L.`],
         pieges: [[cAE / 1000, 'Le volume doit être en litres : 10,0 mL = 0,0100 L.'], [0.0100 / nI2E, 'Formule à l’envers : c = n / V (la quantité de matière divisée par le volume).']], indice: "c_A = n(I₂) / V_A, avec V_A le volume de Lugol dosé, en litres." } },
     { id: 'litteral', titre: 'Pour les plus à l’aise : en une seule formule', focus: [],
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}><li>c<sub>A</sub> = c<sub>B</sub> × V<sub>B,e</sub> / (2 × V<sub>A</sub>)</li><li>volumes en litres (ou même unité dans le rapport V<sub>B,e</sub> / V<sub>A</sub>) ; concentration en mol/L</li></ul>,
+      retenirTitre: 'À RETENIR : LA CONCENTRATION ET LA MASSE',
+      retenir: <>
+        <Formule><msub><mi>c</mi><mi>A</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>c</mi><mi>B</mi></msub><mo>×</mo><msub><mi>V</mi><mrow><mi>B</mi><mo>,</mo><mi>e</mi></mrow></msub></mrow><mrow><mn>2</mn><mo>×</mo><msub><mi>V</mi><mi>A</mi></msub></mrow></mfrac><mspace width="1.5em"/><mi>m</mi><mo>=</mo><msub><mi>c</mi><mi>A</mi></msub><mo>×</mo><mi>V</mi><mo>×</mo><mi>M</mi></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Les volumes V<sub>B,e</sub> et V<sub>A</sub> sont dans la <strong>même unité</strong> (le rapport est sans unité) ; c<sub>A</sub> a la même unité que c<sub>B</sub> (mol·L⁻¹).</li>
+          <li>Masse dans un flacon de 100 mL : V = 0,100 L et M(I₂) = 253,8 g·mol⁻¹.</li>
+          <li>Comparer à l’étiquette (1,00 g pour 100 mL) : un écart de quelques pourcents s’explique par les erreurs de mesure (goutte, pipette, concentration du thiosulfate).</li>
+        </ul>
+      </>,
       texte: <>On peut regrouper les trois calculs précédents en une seule expression littérale.</>,
       tache: { type: 'qcm', q: 'Quelle expression donne c_A ?', options: ['c_A = c_B × V_B,e / (2 × V_A)', 'c_A = 2 × c_B × V_B,e / V_A', 'c_A = c_B × V_A / (2 × V_B,e)'], bonne: 0, indice: "Exprime d’abord n(I₂) à partir de c_B, de V_B,e et du rapport des coefficients, puis divise par V_A." } },
     { id: 'masse', titre: 'Comparer à l’étiquette', focus: [],
@@ -152,6 +212,15 @@ export function Simulation2() {
       tache: { type: 'qcm', q: 'Que conclure ?', options: ['Le résultat est en accord avec l’étiquette, aux erreurs de mesure près', 'L’étiquette est fausse', 'On ne peut rien conclure'], bonne: Math.abs(mE - 1) <= 0.05 ? 0 : 1,
         expl: 'Un écart de quelques pourcents vient de la lecture de la burette (à une goutte près), de la pipette et de la concentration du thiosulfate.', indice: "Compare ta valeur à celle de l’étiquette en tenant compte des erreurs de mesure : l’écart est-il important ?" } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
+      retenirTitre: 'À RETENIR : LE BILAN',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Titrage direct</strong> : réaction rapide, totale, unique ; la burette contient la solution titrante (c<sub>B</sub> connue), l’erlenmeyer la solution titrée.</li>
+          <li><strong>Équivalence</strong> : réactifs en proportions stœchiométriques, aucun n’est en excès ; repérée par le changement de couleur (thiodène).</li>
+          <li><strong>Relation</strong> : n(I₂) / 1 = n<sub>versé,e</sub>(S₂O₃²⁻) / 2 ; n = c × V (V en litres).</li>
+          <li><strong>Méthode</strong> : titrage rapide → titrage précis → n(S₂O₃²⁻) → n(I₂) → c<sub>A</sub> → masse → comparaison à l’étiquette.</li>
+        </ul>
+      </>,
       texte: <>Vous avez réalisé un titrage direct complet. En exploration libre, un onglet permet de simuler le titrage de n'importe
         quelle réaction, et l'exemple du Lugol propose tous les réglages. La simulation « Titrage en retour » montre une autre façon de
         doser : on titre l'excès d'un réactif.</>, tache: null },
