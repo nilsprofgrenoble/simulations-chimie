@@ -180,7 +180,7 @@ export function VieDeClasse({ lignes, apercu }) {
         </div>
         {msg && <div role="alert" style={{ color: '#b91c1c', fontWeight: 600, fontSize: 13.5, marginTop: 8 }}><Pic n="ko"/>{msg}</div>}
         <div style={{ fontSize: 12.5, color: '#64748b', marginTop: 10, lineHeight: 1.45 }}>
-          Seuls les élèves de ta classe voient ce pseudo (et ton professeur sait de toute façon qui tu es). Aucun nom, aucune note, aucun chiffre sur toi n’est montré à la classe.
+          C’est le même pseudo que dans le classement public. Seuls les élèves de ta classe voient ce pseudo ici (et ton professeur sait de toute façon qui tu es). Aucun nom, aucune note, aucun chiffre sur toi n’est montré à la classe.
         </div>
       </div>
       </details>
