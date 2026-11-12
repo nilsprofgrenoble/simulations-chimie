@@ -79,10 +79,14 @@ function FenetreFiche({ simId, debloquee, onFermer, onParcours }) {
 // Va au parcours guidé en cliquant sur son onglet (les simulations n'ont pas toutes la même barre de modes).
 const versParcours = () => { const b = [...document.querySelectorAll('button')].find(x => /Parcours guidé/.test(x.textContent) && !x.disabled); if (b) b.click(); };
 
+// Déploiement progressif : tant que les fiches n'ont pas été toutes relues, l'onglet n'est visible que des professeurs.
+// Mettre à true pour l'ouvrir à tous les élèves.
+const OUVERT_AUX_ELEVES = false;
+
 export function OngletFiche({ simId, styleBouton }) {
   const sess = useSession();
   const [ouverte, setOuverte] = useState(false);
-  if (!simId || EN_RECOLTE || !SIMS_AVEC_CARTES.has(simId)) return null;
+  if (!simId || EN_RECOLTE || !SIMS_AVEC_CARTES.has(simId) || !(OUVERT_AUX_ELEVES || estProf(sess))) return null;
   const debloquee = estProf(sess) || estTermine(simId);
   return (
     <>
