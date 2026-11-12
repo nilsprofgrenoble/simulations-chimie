@@ -71,7 +71,7 @@ export function SceneFilm({ etat, si, ap, wft, couches }) {
   const yTop = ySupport - hFilm;
   const largeur = x1 - x0;
   const sec = 1 - etat.solvant;                              // fraction d'évaporation du solvant
-  const couleurFilm = melange("#fde68a", "#e9b872", Math.min(1, etat.X * 0.7 + sec * 0.3));
+  const couleurFilm = melange("#bfdcf5", "#f1f5f9", sec);        // fond bleu = solvant (white spirit), comme sur le schéma de la fiche ; blanc-gris une fois évaporé
   const nSicc = Math.round(si * 4);
   const nInhibes = Math.round((1 - etat.phi) * nSicc);
   const nAP = Math.round(ap * 26);
@@ -86,7 +86,7 @@ export function SceneFilm({ etat, si, ap, wft, couches }) {
       {/* Air */}
       <text x={x0} y={22} fontSize="12" fill={KIT.txt2} fontWeight="700">air</text>
       {/* Film */}
-      <rect x={x0} y={yTop} width={largeur} height={hFilm} fill={couleurFilm} stroke="#b45309" strokeWidth="1" opacity="0.95" />
+      <rect x={x0} y={yTop} width={largeur} height={hFilm} fill={couleurFilm} stroke="#475569" strokeWidth="1" />
       {/* Support (bois) */}
       <rect x={x0} y={ySupport} width={largeur} height={30} fill="#c8975a" />
       {[6, 14, 22].map((d) => <path key={d} d={`M${x0} ${ySupport + d} q 60 -4 120 0 t 120 0 t 134 0`} stroke="#a16f36" strokeWidth="1" fill="none" opacity="0.7" />)}
@@ -99,26 +99,20 @@ export function SceneFilm({ etat, si, ap, wft, couches }) {
           const u = k / 25;
           return `${k === 0 ? "M" : "L"}${(x0 + u * largeur).toFixed(1)} ${(y + Math.sin(c.ph + u * c.f * 6.28) * c.a).toFixed(1)}`;
         }).join(" ");
-        return <path key={i} d={d} fill="none" stroke="#7c2d12" strokeWidth="2" strokeLinecap="round" opacity="0.85" />;
+        return <path key={i} d={d} fill="none" stroke="#111827" strokeWidth="2.2" strokeLinecap="round" />;
       })}
 
-      {/* Liaisons de réticulation : leur nombre visible est proportionnel à l'avancement X */}
+      {/* Ponts –O– entre chaînes (siccativation) : leur nombre visible est proportionnel à l'avancement X */}
       {couches.liaisons && LIAISONS.map((l, k) => {
         if (l.r >= etat.X) return null;
         const xa = x0 + l.x * largeur, y1 = ySupport - CHAINES[l.i].y * hFilm, y2 = ySupport - CHAINES[l.i + 1].y * hFilm;
+        const ym = (y1 + y2) / 2;
         return (
           <g key={k}>
-            <line x1={xa} y1={y1} x2={xa} y2={y2} stroke="#ea580c" strokeWidth="2.4" strokeLinecap="round" />
-            <circle cx={xa} cy={(y1 + y2) / 2} r="2.4" fill="#ea580c" />
+            <line x1={xa} y1={y1} x2={xa} y2={y2} stroke="#111827" strokeWidth="1.6" />
+            <circle cx={xa} cy={ym} r="4.6" fill="white" stroke="#dc2626" strokeWidth="2.2" />
           </g>
         );
-      })}
-
-      {/* Solvant : white spirit */}
-      {SOLVANT.map((m, k) => {
-        if (m.r >= etat.solvant) return null;
-        const [px, py] = pos(m.x, m.y);
-        return <ellipse key={k} cx={px} cy={py} rx="6" ry="2.8" fill="#64748b" opacity="0.8" transform={`rotate(${m.rot} ${px} ${py})`} />;
       })}
 
       {/* Siccatif (métaux : Co, Zr, Ca…) : inhibé = entouré d'un croissant d'anti-peau */}
@@ -127,9 +121,9 @@ export function SceneFilm({ etat, si, ap, wft, couches }) {
         const inhibe = k < nInhibes;
         return (
           <g key={k}>
-            {!inhibe && <circle cx={px} cy={py} r="9" fill="none" stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="2.5 2.5" />}
-            <circle cx={px} cy={py} r="5.5" fill={inhibe ? "#93c5fd" : "#2563eb"} stroke={inhibe ? "#16a34a" : "#1e3a8a"} strokeWidth={inhibe ? 2 : 1} />
-            {inhibe && <path d={CROISSANT} transform={`translate(${px + 8} ${py}) scale(1.05)`} fill="#16a34a" />}
+            <circle cx={px} cy={py} r="4.6" fill="#1d4ed8" />
+            {inhibe && <path d={CROISSANT} transform={`translate(${px - 4} ${py}) scale(1.15)`} fill="#16a34a" />}
+            {inhibe && <path d={CROISSANT} transform={`translate(${px + 4} ${py}) scale(-1.15 1.15)`} fill="#16a34a" />}
           </g>
         );
       })}
@@ -177,13 +171,13 @@ export function LegendeFilm({ couches }) {
   const svg = (enfants) => <svg width="22" height="14" viewBox="0 0 22 14" aria-hidden="true">{enfants}</svg>;
   return (
     <div style={{ marginTop: 6, lineHeight: 1.9 }}>
-      {item(svg(<path d="M1 7 Q 6 1 11 7 T 21 7" fill="none" stroke="#7c2d12" strokeWidth="2" />), "chaîne de résine alkyde")}
-      {item(svg(<ellipse cx="11" cy="7" rx="6" ry="2.8" fill="#64748b" />), "white spirit")}
-      {couches.liaisons && item(svg(<><line x1="11" y1="1" x2="11" y2="13" stroke="#ea580c" strokeWidth="2.4" /><circle cx="11" cy="7" r="2.4" fill="#ea580c" /></>), "liaison de réticulation")}
-      {couches.o2 && item(svg(<><circle cx="7" cy="7" r="3.6" fill="#dc2626" /><circle cx="14" cy="7" r="3.6" fill="#dc2626" /></>), "dioxygène")}
-      {couches.siccatif && item(svg(<circle cx="11" cy="7" r="5" fill="#2563eb" stroke="#f59e0b" strokeDasharray="2 2" />), "siccatif actif")}
+      {item(svg(<path d="M1 7 Q 6 1 11 7 T 21 7" fill="none" stroke="#111827" strokeWidth="2.2" />), "chaîne de résine alkyde modifiée")}
+      {item(svg(<rect x="2" y="2" width="18" height="10" rx="2" fill="#bfdcf5" stroke="#475569" />), "solvant (white spirit) : fond bleu")}
+      {couches.liaisons && item(svg(<><line x1="11" y1="0" x2="11" y2="14" stroke="#111827" strokeWidth="1.6" /><circle cx="11" cy="7" r="4.4" fill="white" stroke="#dc2626" strokeWidth="2.2" /></>), "pont –O– entre chaînes")}
+      {couches.o2 && item(svg(<><circle cx="7" cy="7" r="3.6" fill="#dc2626" /><circle cx="14" cy="7" r="3.6" fill="#dc2626" /></>), "dioxygène O₂")}
+      {couches.siccatif && item(svg(<circle cx="11" cy="7" r="4.6" fill="#1d4ed8" />), "siccatif")}
       {couches.antipeau && item(svg(<path d={CROISSANT} transform="translate(11 7)" fill="#16a34a" />), "anti-peau (DEHA)")}
-      {couches.antipeau && item(svg(<><circle cx="8" cy="7" r="4.4" fill="#93c5fd" stroke="#16a34a" strokeWidth="1.6" /><path d={CROISSANT} transform="translate(16 7) scale(0.9)" fill="#16a34a" /></>), "siccatif inhibé")}
+      {couches.antipeau && item(svg(<><circle cx="11" cy="7" r="3.6" fill="#1d4ed8" /><path d={CROISSANT} transform="translate(6.5 7) scale(0.9)" fill="#16a34a" /><path d={CROISSANT} transform="translate(15.5 7) scale(-0.9 0.9)" fill="#16a34a" /></>), "siccatif inhibé par l’anti-peau")}
     </div>
   );
 }

@@ -349,7 +349,7 @@ export function SimulationLasure() {
   const etapes = [
     {
       titre: "Un film humide qui s’évapore",
-      texte: "Tu viens d’étaler la lasure : un film de 200 µm. Fais défiler le temps (de 1 minute à 3 mois, sur une échelle logarithmique) et regarde la coupe du film.",
+      texte: "Tu viens d’étaler la lasure : un film de 200 µm. Fais défiler le temps (de 1 minute à 3 mois, sur une échelle logarithmique) et regarde la coupe du film : le fond bleu est le solvant (white spirit), les traits noirs sont les chaînes de résine.",
       tache: {
         type: "qcm", q: "Pendant les premières heures, qu’est-ce qui fait diminuer l’épaisseur du film ?", bonne: 0,
         options: ["Le white spirit s’évapore (séchage physique)", "La résine alkyde s’évapore", "Le film réticule et se contracte", "Le siccatif se décompose"],
@@ -379,12 +379,12 @@ export function SimulationLasure() {
     },
     {
       titre: "Le dioxygène fait le travail",
-      texte: "La résine alkyde porte des chaînes d’acides gras insaturés (liaisons C=C). Le dioxygène de l’air les attaque par une réaction radicalaire en chaîne, catalysée par le siccatif (sels de cobalt, zirconium, calcium) : les chaînes se relient par des ponts.",
+      texte: "La résine alkyde porte des chaînes d’acides gras insaturés (liaisons C=C). Le dioxygène de l’air les attaque par une réaction radicalaire en chaîne, catalysée par le siccatif (sels de cobalt, zirconium, calcium) : les chaînes se relient par des ponts –O– (cercles rouges).",
       tache: {
         type: "qcm", q: "Quel est le mode de séchage chimique d’une lasure alkyde ?", bonne: 0,
         options: ["Oxydation des C=C des acides gras par O₂, catalysée par le siccatif", "Évaporation de l’eau puis coalescence des particules", "Réaction avec un durcisseur isocyanate", "Photopolymérisation sous UV"],
         expl: "C’est une autoxydation radicalaire : le dioxygène est un réactif, le siccatif un catalyseur.",
-        indice: "Regarde les points rouges qui entrent dans le film.",
+        indice: "Regarde les ponts –O– (cercles rouges) apparaître entre les chaînes.",
       },
     },
     {
@@ -404,7 +404,7 @@ export function SimulationLasure() {
         type: "qcm", q: "Pourquoi l’anti-peau doit-il être volatil ?", bonne: 0,
         options: ["Pour s’évaporer du film mince après l’application et libérer le siccatif", "Pour accélérer l’évaporation du white spirit", "Pour augmenter la dureté finale", "Pour réticuler avec la résine"],
         expl: "Dans le pot fermé il reste en solution et protège ; dans le film mince il s’évapore et le siccatif devient actif. Mais pendant ce temps le séchage est retardé.",
-        indice: "Regarde les croissants verts dans le film : que deviennent-ils avec le temps ?",
+        indice: "Regarde les croissants verts autour des points bleus : que deviennent-ils avec le temps ?",
       },
     },
     {
