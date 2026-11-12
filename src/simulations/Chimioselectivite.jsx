@@ -1,7 +1,7 @@
 // Chimiosélectivité (BTS) : un réactif transforme un groupe fonctionnel en laissant l'autre intact.
 import { useState, useEffect } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import { SUBSTRATS, COUPLES, bilan, nomGroupe } from "./chimioModele";
@@ -53,29 +53,112 @@ function etapesGuide(st, regler) {
   const { sub, re } = st;
   const ici = (s, r, consigne) => ({ type: 'action', ok: sub === s && re === r, faire: () => regler(s, r), label: 'Le faire pour moi', consigne, indice: 'Utilise les menus « Molécule » et « Réactif ».' });
   return [
-    { titre: 'Deux groupes, un réactif', texte: <>Une molécule porte souvent <strong>plusieurs groupes fonctionnels</strong>. Quand un réactif en transforme un seul en laissant l'autre intact, la réaction est dite <strong>chimiosélective</strong>.</>,
+    { titre: 'Deux groupes, un réactif',
+      retenirTitre: 'À RETENIR : TROIS SÉLECTIVITÉS',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Sélectivité</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Le réactif choisit…</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Exemple</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>chimiosélectivité</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>un groupe fonctionnel parmi plusieurs</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>cétone plutôt qu’ester</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>régiosélectivité</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>une position parmi plusieurs</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Markovnikov (HBr)</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>stéréosélectivité</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>un stéréoisomère parmi plusieurs</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>R plutôt que S</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Une molécule polyfonctionnelle porte <strong>plusieurs groupes fonctionnels</strong> ; un réactif <strong>chimiosélectif</strong> n’en transforme qu’un, l’autre reste intact.</li>
+          <li>Pour la prévoir, on compare la <strong>réactivité</strong> de chaque groupe vis-à-vis du réactif (électrophilie, nucléophilie) et le <strong>pouvoir</strong> du réactif (doux ou puissant).</li>
+        </ul>
+      </>,
+      texte: <>Une molécule porte souvent <strong>plusieurs groupes fonctionnels</strong>. Quand un réactif en transforme un seul en laissant l'autre intact, la réaction est dite <strong>chimiosélective</strong>.</>,
       tache: { type: 'qcm', q: 'Une réaction est chimiosélective lorsque …', options: ['le réactif attaque un groupe fonctionnel de préférence à un autre', 'le réactif attaque une position précise d’un même groupe', 'la réaction donne un seul stéréoisomère'], bonne: 0, indice: 'Pense aux deux groupes différents de la molécule.', expl: <>Chimiosélective : le réactif choisit <strong>un groupe fonctionnel</strong> parmi plusieurs. (Régiosélectivité : choix d'une <em>position</em> ; stéréosélectivité : choix d'un <em>stéréoisomère</em>.)</> } },
     { titre: 'Une cétone et un ester', texte: <>Le <strong>4-oxopentanoate d'éthyle</strong> porte une cétone et un ester. On le traite par NaBH₄, un réducteur doux.</>, tache: ici('cetoester', 'NaBH4', 'Choisis le 4-oxopentanoate d’éthyle et NaBH₄.') },
-    { titre: 'Qui réagit ?', texte: <>Lance la lecture et observe quel groupe est transformé.</>,
+    { titre: 'Qui réagit ?',
+      retenirTitre: 'À RETENIR : POURQUOI LA CÉTONE ?',
+      retenir: <>
+        <Formule><mtext>CH₃–C(=O)–CH₂CH₂–C(=O)OEt</mtext><mover><mo>→</mo><mtext>NaBH₄, éthanol, 0 °C</mtext></mover><mtext>CH₃–CH(OH)–CH₂CH₂–C(=O)OEt</mtext></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>NaBH₄</strong> est un réducteur <strong>doux</strong> : source d’ion <strong>hydrure H⁻</strong> (nucléophile), qui réduit aldéhydes et cétones.</li>
+          <li>Le <strong>4-oxopentanoate d’éthyle</strong> donne le <strong>4-hydroxypentanoate d’éthyle</strong> : cétone → alcool secondaire, <strong>ester intact</strong>.</li>
+          <li>L’hydrure attaque le <strong>carbone le plus électrophile</strong>. <strong>Cétone</strong> : C=O polarisé (C δ+, O δ–), carbone très électrophile. <strong>Ester</strong> : un doublet de l’<strong>oxygène voisin</strong> (O–Et) est <strong>délocalisé</strong> vers le C=O, le carbone est <strong>moins électrophile</strong>.</li>
+          <li><strong>Réactivité vis-à-vis des hydrures :</strong> aldéhyde &gt; cétone &gt; ester.</li>
+        </ul>
+      </>,
+      texte: <>Lance la lecture et observe quel groupe est transformé.</>,
       tache: { type: 'qcm', q: 'Avec NaBH₄, quel groupe est réduit ?', options: ['La cétone seulement', 'L’ester seulement', 'Les deux'], bonne: 0, indice: 'Regarde les badges sous la formule.', expl: <>NaBH₄ réduit la <strong>cétone</strong> en alcool secondaire et laisse l'<strong>ester</strong> intact : la réaction est chimiosélective.</> } },
     { titre: 'Pourquoi la cétone ?', texte: <>Dans un ester, un doublet de l'oxygène voisin est délocalisé vers le C=O : le carbone est <strong>moins électrophile</strong> que celui d'une cétone.</>,
       tache: { type: 'qcm', q: 'Pourquoi NaBH₄ attaque-t-il la cétone plutôt que l’ester ?', options: ['Le carbone de la cétone est plus électrophile', 'L’ester est plus encombré', 'NaBH₄ ne peut pas attaquer un groupe C=O'], bonne: 0, indice: 'L’ion hydrure H⁻ attaque un carbone déficitaire en électrons.', expl: <>L'hydrure attaque le carbone le plus <strong>électrophile</strong>. Celui de l'ester l'est moins, à cause de la délocalisation du doublet de O–Et.</> } },
     { titre: 'Un réducteur plus puissant', texte: <>Remplace NaBH₄ par <strong>LiAlH₄</strong>, bien plus réactif.</>, tache: ici('cetoester', 'LiAlH4', 'Choisis le 4-oxopentanoate d’éthyle et LiAlH₄.') },
-    { titre: 'La sélectivité disparaît', texte: <>Avec LiAlH₄, les deux groupes sont réduits. Pour réduire <em>seulement</em> la cétone, il faut donc choisir le réactif adapté.</>,
+    { titre: 'La sélectivité disparaît',
+      retenirTitre: 'À RETENIR : CHOISIR LE RÉDUCTEUR',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Réactif</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Cétone réduite ?</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Ester réduit ?</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Produit</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>NaBH₄ (éthanol, 0 °C)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>oui</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>non</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4-hydroxypentanoate d’éthyle</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>LiAlH₄ (éther, puis hydrolyse)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>oui</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>oui</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>pentane-1,4-diol</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>H₂/Pd (1 bar, 25 °C)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>non</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>non</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>aucune réaction notable</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>NaBH₄ : <strong>chimiosélective</strong> ; LiAlH₄ : <strong>non sélective</strong>.</li>
+          <li>Pour réduire <strong>seulement la cétone</strong>, on choisit le réducteur <strong>doux</strong> NaBH₄.</li>
+          <li>Un réactif <strong>trop puissant</strong> (LiAlH₄) fait perdre la sélectivité : le choix du réactif fait la chimiosélectivité.</li>
+        </ul>
+      </>,
+      texte: <>Avec LiAlH₄, les deux groupes sont réduits. Pour réduire <em>seulement</em> la cétone, il faut donc choisir le réactif adapté.</>,
       tache: { type: 'qcm', q: 'Pour réduire uniquement la cétone du 4-oxopentanoate d’éthyle, on choisit …', options: ['NaBH₄, réducteur doux', 'LiAlH₄, réducteur puissant', 'Un des deux, c’est équivalent'], bonne: 0, indice: 'Rappelle-toi quel réactif laisse l’ester intact.', expl: <>On choisit <strong>NaBH₄</strong> : plus doux, il laisse l'ester. Le choix du réactif fait la chimiosélectivité.</> } },
     { titre: 'Un alcène et une cétone', texte: <>Passe à la <strong>hex-5-én-2-one</strong> (une cétone et une double liaison C=C) et utilise H₂ sur palladium.</>, tache: ici('alcenone', 'H2Pd', 'Choisis l’hex-5-én-2-one et H₂/Pd.') },
-    { titre: 'La sélectivité s’inverse', texte: <>Avec NaBH₄, c'était la cétone qui était réduite. Avec H₂/Pd, c'est l'<strong>alcène</strong>.</>,
+    { titre: 'La sélectivité s’inverse',
+      retenirTitre: 'À RETENIR : LE RÉACTIF CHOISIT LE GROUPE',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Réactif sur l’hex-5-én-2-one</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>C=O réduit ?</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>C=C réduit ?</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Produit</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>NaBH₄</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>oui (alcool)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>non</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>hex-5-én-2-ol</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>LiAlH₄</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>oui (alcool)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>non</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>hex-5-én-2-ol</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>H₂/Pd (1 bar, 25 °C)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>non</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>oui (alcane)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>hexan-2-one</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Hydrures</strong> : l’ion H⁻ attaque le carbone électrophile du C=O ; la liaison C=C isolée, non polarisée, n’est pas attaquée.</li>
+          <li><strong>H₂/Pd</strong> : H₂ est activé à la surface du métal et s’additionne sur C=C ; le C=O n’est pas réduit dans ces conditions.</li>
+          <li>La sélectivité est <strong>inversée</strong> : deux réactifs, deux produits différents à partir de la même molécule.</li>
+        </ul>
+      </>,
+      texte: <>Avec NaBH₄, c'était la cétone qui était réduite. Avec H₂/Pd, c'est l'<strong>alcène</strong>.</>,
       tache: { type: 'qcm', q: 'Pour obtenir l’hex-5-én-2-ol (alcool, C=C intact), quel réactif faut-il utiliser ?', options: ['NaBH₄ (ou LiAlH₄)', 'H₂/Pd', 'Aucun des deux'], bonne: 0, indice: 'Quel réactif réduit le C=O sans toucher à C=C ?', expl: <>Les hydrures (<strong>NaBH₄</strong>) réduisent le C=O sans toucher la C=C isolée ; H₂/Pd fait l'inverse. Deux réactifs, deux groupes, deux produits différents.</> } },
     { titre: 'Le paracétamol', texte: <>Le <strong>4-aminophénol</strong> porte un groupe –OH (phénol) et un groupe –NH₂ (amine). Traité par un équivalent d'anhydride éthanoïque, il donne le paracétamol.</>, tache: ici('aminophenol', 'Ac2O', 'Choisis le 4-aminophénol et Ac₂O (1 éq.).') },
-    { titre: 'N ou O ?', texte: <>L'azote de l'amine et l'oxygène du phénol portent chacun un doublet.</>,
+    { titre: 'N ou O ?',
+      retenirTitre: 'À RETENIR : LE PARACÉTAMOL',
+      retenir: <>
+                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Conditions</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Groupe acylé</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Produit</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Ac₂O, 1 éq., eau, 25 °C</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>amine –NH₂ (amide)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>paracétamol</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Ac₂O en excès, pyridine, 80 °C</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>amine et phénol</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>éthanoate de 4-acétamidophényle</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Avec 1 éq. : <strong>chimiosélective</strong> (paracétamol = N-(4-hydroxyphényl)éthanamide) ; avec excès et chauffage : non sélective.</li>
+          <li>Le doublet de l’<strong>azote</strong> est plus <strong>nucléophile</strong> que celui de l’oxygène du phénol : l’amine attaque en premier le C=O de l’anhydride.</li>
+          <li>Un <strong>excès</strong> de réactif et le <strong>chauffage</strong> permettent d’acyler aussi le phénol : la sélectivité est perdue.</li>
+          <li><strong>Piège :</strong> la sélectivité dépend aussi des <strong>conditions</strong> (quantité, température), pas seulement du réactif.</li>
+        </ul>
+      </>,
+      texte: <>L'azote de l'amine et l'oxygène du phénol portent chacun un doublet.</>,
       tache: { type: 'qcm', q: 'Quel groupe est acylé par un équivalent d’anhydride éthanoïque ?', options: ['L’amine –NH₂ (formation de l’amide)', 'Le phénol –OH (formation de l’ester)', 'Les deux en parts égales'], bonne: 0, indice: 'Le doublet le plus disponible attaque le carbone du C=O de l’anhydride.', expl: <>Le doublet de l'<strong>azote</strong> est plus nucléophile : on obtient l'<strong>amide</strong>, le paracétamol. C'est une réaction chimiosélective.</> } },
     { titre: 'Bilan', texte: <>Tu sais prévoir quel groupe réagit.</>,
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li><strong>Chimiosélectivité</strong> : le réactif transforme un groupe fonctionnel de préférence à un autre.</li>
-        <li>Elle vient de la différence de <strong>réactivité</strong> des groupes (électrophilie, nucléophilie) et du <strong>pouvoir</strong> du réactif.</li>
-        <li>Un réactif trop puissant (LiAlH₄) ou des conditions trop dures (excès, chauffage) peuvent faire <strong>perdre</strong> la sélectivité.</li>
-        <li>Le choix du réactif permet de viser l'un ou l'autre groupe (NaBH₄ ou H₂/Pd sur la hex-5-én-2-one).</li>
-      </ul> },
+      retenir: <>
+        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
+          <li><strong>Repérer</strong> les groupes fonctionnels de la molécule.</li>
+          <li><strong>Comparer</strong> leur réactivité vis-à-vis du réactif : électrophilie (C=O) ou nucléophilie (N, O).</li>
+          <li><strong>Tenir compte du pouvoir du réactif</strong> et des conditions : doux ou puissant, 1 éq. ou excès, froid ou chauffé.</li>
+          <li><strong>Conclure</strong> : quel groupe est transformé, lequel est intact, et quel est le produit.</li>
+        </ol>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Hypothèses :</strong> résultats classiques de cours, valables dans les conditions indiquées ; une autre température ou un autre solvant peut changer le bilan.</li>
+        </ul>
+      </> },
   ];
 }
 
