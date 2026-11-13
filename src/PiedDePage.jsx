@@ -15,6 +15,7 @@ export function PiedDePage({ naviguer, energyUrl }) {
       <nav aria-label="Liens du pied de page" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '4px 20px' }}>
         <a href="?" onClick={aller(0)} style={lien}>Accueil</a>
         <a href={cheminSimulation(105, nomsSim[105] || '', import.meta.env.BASE_URL)} onClick={aller(105)} style={lien}>Pour les enseignants</a>
+        <a href={`${import.meta.env.BASE_URL}trajectoire.html`} style={lien}>Trajectoire (correction)</a>
         <a href="?sim=47" onClick={aller(47)} style={lien}>À propos</a>
         <button type="button" onClick={() => ecrireAuAuteur('Paillasse virtuelle — message')} style={lien}>Contact</button>
         <a href="?sim=38" onClick={aller(38)} style={lien}>Travail par compétence</a>
