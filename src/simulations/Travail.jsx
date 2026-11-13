@@ -53,24 +53,24 @@ function SceneTire({ p, pos, force }) {
     <svg viewBox="0 0 600 200" style={{ width: '100%', display: 'block', background: '#f8fafc', borderRadius: 8 }} role="img"
       aria-label={`Chariot de masse ${nbf(p.m, 1)} kilogrammes sur un rail horizontal entre les points A et B distants de ${nbf(p.AB, 1)} mètres${force && p.F > 0 ? `, tiré par une force de ${nbf(p.F, 0)} newtons faisant un angle de ${nbf(p.theta, 0)} degrés avec le déplacement` : ''}`}>
       <line x1="20" y1={hautSol} x2="580" y2={hautSol} stroke={GRIS} strokeWidth="3"/>
-      {[[W0 + 30, 'A'], [W1 - 30, 'B']].map(([x, n]) => <g key={n}><line x1={x} y1="60" x2={x} y2={hautSol} stroke="#94a3b8" strokeDasharray="4 4"/><text x={x} y="175" textAnchor="middle" fontSize="15" fontWeight="700" fill={NOIR}>{n}</text></g>)}
+      {[[W0 + 30, 'A'], [W1 - 30, 'B']].map(([x, n]) => <g key={n}><line x1={x} y1="60" x2={x} y2={hautSol} stroke="#94a3b8" strokeDasharray="4 4"/><text x={x} y="175" textAnchor="middle" fontSize="21" fontWeight="700" fill={NOIR}>{n}</text></g>)}
       <g>
         <rect x={cx - 34} y={hautSol - 44} width="68" height="28" rx="4" fill="#fde68a" stroke={NOIR} strokeWidth="2"/>
         <circle cx={cx - 20} cy={hautSol - 8} r="8" fill="#475569"/><circle cx={cx + 20} cy={hautSol - 8} r="8" fill="#475569"/>
         {v > 0.05 && <g><line x1={cx} y1={hautSol - 62} x2={cx + lv} y2={hautSol - 62} stroke={VERT} strokeWidth="4"/><polygon points={`${cx + lv + 9},${hautSol - 62} ${cx + lv - 2},${hautSol - 68} ${cx + lv - 2},${hautSol - 56}`} fill={VERT}/>
-          <TV x={cx} y={hautSol - 72} s={13} c={VERT}>v</TV></g>}
+          <TV x={cx + 4} y={hautSol - 74} s={19} c={VERT} halo>v</TV></g>}
         {force && p.F > 0 && <g><line x1={cx} y1={hautSol - 30} x2={cx + fx} y2={hautSol - 30 + fy} stroke={ROUGE} strokeWidth="4"/>
           <polygon points={`${cx + fx},${hautSol - 30 + fy} ${cx + fx - 10 * Math.cos(ang) - 5 * Math.sin(ang)},${hautSol - 30 + fy + 10 * Math.sin(ang) - 5 * Math.cos(ang)} ${cx + fx - 10 * Math.cos(ang) + 5 * Math.sin(ang)},${hautSol - 30 + fy + 10 * Math.sin(ang) + 5 * Math.cos(ang)}`} fill={ROUGE}/>
-          <TV x={cx + fx / 2 + (fx >= 0 ? 6 : -18)} y={hautSol - 36 + fy / 2 - 4} c={ROUGE} halo>F</TV></g>}
+          <TV x={cx + fx / 2 + (fx >= 0 ? 6 : -18)} y={hautSol - 36 + fy / 2 - 4} c={ROUGE} s={19} halo>F</TV></g>}
       </g>
     </svg>);
 }
 
 // ---------- scène 2 : plan incliné et barrières lumineuses ----------
 function ScenePlan({ alpha, pos, a, flechesPRF, f, m }) {
-  const ang = alpha * M.RAD, ech = 330, x0 = 40, y0 = 40, sMax = S_E + L_EF;
+  const ang = alpha * M.RAD, ech = 310, x0 = 95, y0 = 90, sMax = S_E + L_EF;
   const pt = s => [x0 + s * ech * Math.cos(ang), y0 + s * ech * Math.sin(ang)];
-  const [xA, yA] = pt(0), [xB, yB] = pt(sMax + 0.12);
+  const [xA, yA] = pt(-0.2), [xB, yB] = pt(sMax + 0.12);
   const sCourant = Math.min(sMax, 0.5 * a * Math.pow(pos * Math.sqrt(2 * sMax / Math.max(a, 1e-9)), 2));
   const [mx, my] = pt(sCourant);
   const nx = -Math.sin(ang), ny = Math.cos(ang);           // normale au plan, vers le bas (côté du plan) ; l'objet est du côté opposé
@@ -79,7 +79,7 @@ function ScenePlan({ alpha, pos, a, flechesPRF, f, m }) {
     const n = Math.hypot(dx, dy) || 1, ux = dx / n, uy = dy / n;
     return <g key={nom}><line x1={x1} y1={y1} x2={x1 + dx} y2={y1 + dy} stroke={col} strokeWidth="4"/>
       <polygon points={`${x1 + dx},${y1 + dy} ${x1 + dx - 11 * ux - 5.5 * uy},${y1 + dy - 11 * uy + 5.5 * ux} ${x1 + dx - 11 * ux + 5.5 * uy},${y1 + dy - 11 * uy - 5.5 * ux}`} fill={col}/>
-      <TV x={x1 + dx + dxt} y={y1 + dy + dyt} c={col} halo>{nom}</TV></g>;
+      <TV x={x1 + dx + dxt} y={y1 + dy + dyt} c={col} s={19} halo>{nom}</TV></g>;
   };
   const P = 0.55 * 100;                                   // longueur du poids (px) ; les autres forces sont à la même échelle (1 px ≈ 0,036 N)
   const forces = flechesPRF ? [
@@ -92,15 +92,15 @@ function ScenePlan({ alpha, pos, a, flechesPRF, f, m }) {
       aria-label={`Mobile sur un plan incliné de ${nbf(alpha, 0)} degrés muni de deux barrières lumineuses E et F distantes de 1,00 mètre${flechesPRF ? ' ; forces : poids, réaction du support' + (f > 0 ? ', frottement' : '') : ''}`}>
       <polygon points={`${xA},${yA} ${xB},${yB} ${xB},${yA}`} fill="#e2e8f0" stroke={GRIS} strokeWidth="2"/>
       <line x1={xA} y1={yA} x2={xB} y2={yB} stroke={NOIR} strokeWidth="4"/>
-      <path d={`M${xB - 50},${yB} A50,50 0 0 0 ${xB - 50 * Math.cos(ang) * 1},${yB - 50 * Math.sin(ang)}`} fill="none" stroke={GRIS} strokeWidth="1.5" transform={`translate(0,0)`}/>
+      <line x1={xB} y1={yB} x2={xB - 90} y2={yB} stroke={GRIS} strokeWidth="1.5" strokeDasharray="4 3"/><path d={`M${xB - 70},${yB} A70,70 0 0 1 ${xB - 70 * Math.cos(ang)},${yB - 70 * Math.sin(ang)}`} fill="none" stroke={GRIS} strokeWidth="2"/>
       {[[S_E, 'E'], [sMax, 'F']].map(([s, n]) => { const [gx, gy] = pt(s); return <g key={n}>
         <line x1={gx - nx * 8} y1={gy - ny * 8} x2={gx - nx * 40} y2={gy - ny * 40} stroke={ORANGE} strokeWidth="3"/><line x1={gx} y1={gy} x2={gx - nx * 10} y2={gy - ny * 10} stroke={ORANGE} strokeWidth="3"/>
-        <text x={gx - nx * 50 - 4} y={gy - ny * 50 + 2} fontSize="15" fontWeight="700" fill={ORANGE}>{n}</text></g>; })}
+        <text x={gx - nx * 52 - 6} y={gy - ny * 52 + 2} fontSize="21" fontWeight="700" fill={ORANGE}>{n}</text></g>; })}
       <g transform={`rotate(${alpha} ${cx} ${cy})`}>
         <rect x={cx - 22} y={cy - 8} width="44" height="16" rx="3" fill="#fde68a" stroke={NOIR} strokeWidth="2"/>
         <rect x={cx - 3} y={cy - 16} width="6" height="9" fill={NOIR}/></g>
       {forces}
-      <text x={xB - 82} y={yB - 6} fontSize="13" fontWeight="700" fill={GRIS}>α</text>
+      <text x={xB - 100} y={yB - 6} fontSize="20" fontWeight="700" fill={GRIS}>α</text>
     </svg>);
 }
 
