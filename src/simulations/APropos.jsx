@@ -39,7 +39,7 @@ export function SimulationAPropos() {
       <div className="ap-titre-section"><h2>Qui m’a inspiré</h2></div>
       <div className="ap-grille">
         <Personne nom="Marc-Olivier REULA" role="Enseignant en BTS Métiers de la Chimie, ENCPB (Paris)">
-          Ma principale source d’inspiration pour ce site. Je n’ai jamais vu quelqu’un tirer autant de choses d’un ordinateur.
+          Source d’inspiration ultime pour la conception de ce site. Il est le GOAT de ce qu’il est possible de faire avec un ordinateur.
         </Personne>
         <Personne nom="Xavier BATAILLE" role="Enseignant en BTS Métiers de la Chimie, ENCPB (Paris)">
           Le modèle de simulation CLHP en phase inverse est issu de ses travaux publiés sur RNChimie (2008). Ses relectures de plusieurs simulations du site m’ont été très précieuses.
