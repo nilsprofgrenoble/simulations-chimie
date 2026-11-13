@@ -43,12 +43,24 @@ export const CHAPITRES = [
   { id: 'tstl-synthese-organique', niveau: 'TSTL', rubrique: 'Chimie et développement durable', label: '⚗️ Synthèse organique', sims: [86, 92], domaines: ['Synthèse organique', 'Mécanismes réactionnels'] },
   { id: 'tstl-synthese-optimiser', niveau: 'TSTL', rubrique: 'Chimie et développement durable', label: '📈 Optimiser une synthèse', sims: [90], domaines: ['Optimiser une synthèse'] },
 
-  // Analyse : électrochimie, chromatographie, étalonnage et quantification, fiabilité des mesures
-  { id: 'bts-analyse', niveau: 'BTS', label: '🔬 Analyse', sims: [3, 29, 12, 54, 55, 11, 13, 9, 16], domaines: ['Chimie', 'Métrologie'] },
-  { id: 'bts-organique', niveau: 'BTS', label: '⚗️ Synthèse organique', sims: [93, 94, 95, 96, 97, 98, 99], domaines: ['Régiosélectivité (BTS)', 'Contrôle cinétique et thermodynamique (BTS)', 'Substitution ou élimination (BTS)', 'Addition du dibrome (BTS)', 'Types de réaction et transposition (BTS)', 'Syn, anti et sélectivités (BTS)', 'Chimiosélectivité (BTS)'] },
-  { id: 'bts-rmn', niveau: 'BTS', label: '🧲 Spectroscopie RMN', sims: [75, 76], domaines: ['Spectroscopie RMN'] },
-  { id: 'bts-cristallo', niveau: 'BTS', label: '🔷 Analyse cristallographique', sims: [74, 73], domaines: ['Analyse cristallographique'] },
-  { id: 'bts-formulation', niveau: 'BTS', label: '🧪 Formulation', sims: [4, 14, 100, 101], domaines: ['Formulation', 'Rhéologie', 'Séchage'] },
+  // BTS : trois rubriques (Analyse, Synthèse, Formulation), chacune découpée en chapitres. Les anciens identifiants
+  // « bts-analyse », « bts-organique », « bts-rmn », « bts-cristallo » et « bts-formulation » ont été retirés (ils restent
+  // enregistrés en base : un chapitre inconnu est simplement ignoré, le professeur le rechoisit).
+  // Analyse (référentiel S5)
+  { id: 'bts-mesures', niveau: 'BTS', rubrique: 'Analyse', label: '📏 Mesures et fiabilité', sims: [9, 16], domaines: ['Métrologie'] },
+  { id: 'bts-titrages', niveau: 'BTS', rubrique: 'Analyse', label: '⚡ Titrages et électrochimie', sims: [3, 29], domaines: ['Chimie'] },
+  { id: 'bts-chromatographie', niveau: 'BTS', rubrique: 'Analyse', label: '💉 Chromatographie et spectrométrie de masse', sims: [12, 54, 55], domaines: [] },
+  { id: 'bts-etalonnage', niveau: 'BTS', rubrique: 'Analyse', label: '📐 Dosages par étalonnage', sims: [11, 13], domaines: ['Chimie'] },
+  { id: 'bts-rmn', niveau: 'BTS', rubrique: 'Analyse', label: '🧲 Spectroscopie RMN', sims: [75, 76], domaines: ['Spectroscopie RMN'] },
+  { id: 'bts-cristallo', niveau: 'BTS', rubrique: 'Analyse', label: '🔷 Cristallographie', sims: [73, 74], domaines: ['Analyse cristallographique'] },
+  // Synthèse (référentiel S6)
+  { id: 'bts-selectivites', niveau: 'BTS', rubrique: 'Synthèse', label: '🎯 Régiosélectivité et sélectivités', sims: [93, 98, 99], domaines: ['Régiosélectivité (BTS)', 'Syn, anti et sélectivités (BTS)', 'Chimiosélectivité (BTS)'] },
+  { id: 'bts-mecanismes', niveau: 'BTS', rubrique: 'Synthèse', label: '⚗️ Mécanismes et réactivité', sims: [95, 96, 97], domaines: ['Substitution ou élimination (BTS)', 'Addition du dibrome (BTS)', 'Types de réaction et transposition (BTS)'] },
+  { id: 'bts-cinetique', niveau: 'BTS', rubrique: 'Synthèse', label: '📈 Cinétique et thermodynamique', sims: [94], domaines: ['Contrôle cinétique et thermodynamique (BTS)'] },
+  // Formulation (référentiel S7)
+  { id: 'bts-solubilite', niveau: 'BTS', rubrique: 'Formulation', label: '🔵 Solubilité et solvants', sims: [4], domaines: ['Formulation'] },
+  { id: 'bts-films', niveau: 'BTS', rubrique: 'Formulation', label: '🎨 Films et séchage', sims: [14, 101], domaines: ['Formulation', 'Séchage'] },
+  { id: 'bts-rheologie', niveau: 'BTS', rubrique: 'Formulation', label: '🧴 Rhéologie', sims: [100], domaines: ['Formulation', 'Rhéologie'] },
 ];
 
 export const MAX_CHAPITRES = 3;
