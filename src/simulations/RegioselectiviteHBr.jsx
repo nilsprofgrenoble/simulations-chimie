@@ -282,6 +282,7 @@ function etapesGuide(alc, setAlc, u, setU, choisirVoie) {
         </table>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
           <li><strong>Exemple (propène) :</strong> ΔE(ET₁) = 115 − 100 = <strong>15 kJ·mol⁻¹</strong>.</li>
+          <li>Ces énergies sont <strong>illustratives, propres à cette simulation</strong> : seul le classement (tertiaire &gt; secondaire &gt; primaire) est à retenir, pas les valeurs.</li>
         </ul>
       </>,
       texte: <>L'étape qui détermine la vitesse est la formation du carbocation. Le sommet ET₁ ressemble au carbocation (postulat de Hammond) : un carbocation plus stable est atteint par un état de transition plus bas.</>,

@@ -128,6 +128,7 @@ export function Simulation8({ plotlyReady }) {
             <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>1 590</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>346</td></tr>
           </tbody>
         </table>
+        <p style={{ margin: '2px 0 4px', fontSize: 12.5, color: '#475569' }}>(extrait : 6 des 9 points de mesure du modèle)</p>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
           <li>Plus la photorésistance est éclairée, <strong>plus sa résistance diminue</strong> (la lumière libère des porteurs de charge) : R<sub>p</sub> ↘ quand E ↗.</li>
           <li>La caractéristique Rp = f(E) est <strong>non linéaire</strong> : elle se lit sur la courbe (points de mesure, interpolés entre deux points).</li>

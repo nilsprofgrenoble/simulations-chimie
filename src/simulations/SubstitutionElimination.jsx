@@ -127,7 +127,7 @@ function etapesGuide(st, regler) {
         <li><strong>SN2 et E2</strong> : une seule étape, un seul état de transition ; les deux réactifs y participent.</li>
         <li><strong>SN1 et E1</strong> : deux étapes, avec un <strong>carbocation</strong> entre les deux. C’est un <strong>intermédiaire</strong> (un creux du profil), pas un état de transition (un sommet).</li>
         <li>Étape 1 : rupture de C–Br, sans aucun réactif. C’est l’étape <strong>lente</strong>, elle fixe la vitesse. Étape 2 : le nucléophile ou la base arrive sur le carbocation, étape rapide.</li>
-        <li>Stabilité du carbocation : <strong>tertiaire &gt; secondaire &gt; primaire</strong>. Énergie du carbocation dans le modèle : 55 (tertiaire), 85 (secondaire), 160 kJ·mol⁻¹ (primaire).</li>
+        <li>Stabilité du carbocation : <strong>tertiaire &gt; secondaire &gt; primaire</strong>. Énergie du carbocation dans le modèle : 55 (tertiaire), 85 (secondaire), 160 kJ·mol⁻¹ (primaire). Ces valeurs sont <strong>illustratives, propres à cette simulation</strong> : seul le classement est à retenir.</li>
         <li>Un carbocation peut se réarranger : voir la simulation « Transposition de carbocation ».</li>
       </ul>,
       texte: <>Le profil montre maintenant <strong>deux états de transition</strong> séparés par un minimum : le <strong>carbocation</strong>. Anime-le avec la bille. L'étape 1 est la rupture de C–Br, sans aucun réactif : c'est l'étape lente.</>,

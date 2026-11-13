@@ -429,7 +429,7 @@ export function SimulationReponse() {
       retenir: <>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
           <li>La courbe arrive à la valeur finale <strong>des deux côtés</strong> : la bande est <strong>y<sub>fin</sub> ± 5 %|Δy|</strong>.</li>
-          <li><strong>t<sub>R</sub> = t₁ − t₀</strong>, avec t₁ = instant de la <strong>dernière sortie</strong> de la bande. La première entrée ne convient pas : la courbe en ressort.</li>
+          <li><strong>t<sub>R</sub> = t₁ − t₀</strong>, avec t₁ = instant à partir duquel la courbe <strong>reste dans la bande</strong> ±5 % de Δy, c’est-à-dire sa <strong>dernière sortie</strong>. La première entrée ne convient pas : la courbe en ressort.</li>
           <li>t<sub>R</sub> = 3τ <strong>ne s’applique pas</strong> : pas d’exponentielle, pas de τ. La définition par la bande reste valable pour toute réponse.</li>
         </ul>
         <Formule><mi>D</mi><mo>=</mo><mfrac><mrow><msub><mi>y</mi><mtext>max</mtext></msub><mo>−</mo><msub><mi>y</mi><mtext>fin</mtext></msub></mrow><mrow><mo>|</mo><mi>Δ</mi><mi>y</mi><mo>|</mo></mrow></mfrac><mspace width="1.5em"/><mi>D</mi><mo>=</mo><mi>exp</mi><mo>(</mo><mo>−</mo><mfrac><mrow><mi>π</mi><mi>ζ</mi></mrow><msqrt><mrow><mn>1</mn><mo>−</mo><msup><mi>ζ</mi><mn>2</mn></msup></mrow></msqrt></mfrac><mo>)</mo></Formule>
@@ -488,13 +488,13 @@ export function SimulationReponse() {
         <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
           <li><strong>Relever</strong> V<sub>ini</sub>, V<sub>fin</sub>, t₀ ; calculer |ΔV|.</li>
           <li><strong>Tracer la bande</strong> : V<sub>fin</sub> ± 0,05 × |ΔV|.</li>
-          <li><strong>Lire</strong> t₁, dernière entrée dans la bande ; t<sub>R</sub> = t₁ − t₀.</li>
+          <li><strong>Lire</strong> t₁ = instant à partir duquel la courbe <strong>reste dans la bande</strong> ±5 % de Δy (exponentielle : son entrée dans la bande ; courbe oscillante : sa dernière sortie) ; t<sub>R</sub> = t₁ − t₀.</li>
           <li><strong>Premier ordre</strong> : t<sub>R</sub> ≈ 3τ. <strong>Grandeur qui oscille</strong> : pas de τ.</li>
         </ol>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
           <li>t<sub>R</sub> est une <strong>durée</strong> à partir de l’échelon ; plus t<sub>R</sub> est petit, plus le capteur est rapide.</li>
           <li><strong>Hypothèses :</strong> échelon idéal, capteur du premier ordre, tension proportionnelle à la température, mêmes conditions pour comparer.</li>
-          <li><strong>Pièges :</strong> t₁ au lieu de t<sub>R</sub> ; première entrée au lieu de dernière sortie ; 3τ pour une courbe qui oscille.</li>
+          <li><strong>Pièges :</strong> t₁ au lieu de t<sub>R</sub> ; prendre la première entrée dans la bande pour une courbe qui oscille (il faut la dernière sortie) ; 3τ pour une courbe qui oscille.</li>
         </ul>
       </>,
       texte: <>Vous savez mesurer un temps de réponse à 5 % : relever V<Sub c="ini"/>, V<Sub c="fin"/>, t<Sub c="0"/>, tracer la bande de ±5 %ΔV et lire t<Sub c="R"/> = t<Sub c="1"/> − t<Sub c="0"/> ; l’obtenir aussi par un modèle exponentiel (t<Sub c="R"/> = 3τ) ; et vous savez que pour une grandeur qui oscille, seule la dernière sortie de la bande compte. En exploration libre, essayez d’autres situations, changez l’amortissement, ajoutez du bruit.</>, tache: null },

@@ -355,7 +355,6 @@ export function Simulation1() {
       tache: { type: 'action', ok: coursOk, consigne: coursOk ? null : 'Choisissez l’expression de chaque case, puis vérifiez la ligne.' } },
     { id: 'limitant', titre: 'Le réactif limitant', focus: ['tableau'],
       retenir: <><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>Le <strong>réactif limitant</strong> est celui qui est épuisé le premier : il fixe l’arrêt de la réaction.</li><li>Pour chaque réactif, on cherche x tel que n<sub>restant</sub> = 0 (en tenant compte du coefficient) ; le <strong>plus petit x</strong> l’emporte.</li><li>Ici : Mg donne x = n₁, H⁺ donne x = n₂ / 2.</li></ul></>,
-      retenir: <><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>Le <strong>réactif limitant</strong> est celui qui est épuisé le premier : il fixe l’arrêt de la réaction.</li><li>Pour chaque réactif, on cherche x tel que n<sub>restant</sub> = 0 (en tenant compte du coefficient) ; le <strong>plus petit x</strong> l’emporte.</li><li>Ici : Mg donne x = n₁, H⁺ donne x = n₂ / 2.</li></ul></>,
       texte: <>La réaction s'arrête quand un réactif est épuisé. Si c'est Mg : n₁ − x = 0. Si c'est H⁺ : n₂ − 2x = 0. Ici, n₁ = {sci(n1Aff, 3)} mol et n₂ = {fmt(n2, 3)} mol.</>,
       tache: { type: 'qcm', q: 'Quel est le réactif limitant ?', options: ['Le magnésium Mg', 'Les ions H⁺', 'Aucun des deux'], bonne: 0,
         expl: `x = n₁ = ${sci(n1Aff, 2)} mol pour Mg, et x = n₂/2 = ${sci(n2 / 2, 2)} mol pour H⁺ : le plus petit gagne. L’acide est en large excès.`, indice: "Écris l’équation de la réaction avec ses coefficients : le réactif limitant est celui qui disparaît en premier, c’est-à-dire celui qui a la plus petite valeur de n divisé par son coefficient." } },
@@ -374,7 +373,6 @@ export function Simulation1() {
       texte: <>Remplissez la dernière ligne avec x<sub>f</sub> = x<sub>max</sub> = {sci(n1Aff, 3)} mol (étape 11). Rappel : n₁ = {sci(n1Aff, 3)} mol et n₂ = {fmt(n2, 3)} mol.</>,
       tache: { type: 'action', ok: finOk, consigne: finOk ? null : 'Remplissez x_f et les 4 cases, puis vérifiez la ligne.' } },
     { id: 'Vm', titre: 'Le volume molaire', focus: ['eprouvette'],
-      retenir: <><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>Volume molaire : <strong>V<sub>m</sub> = V(gaz) / n(gaz)</strong>, en L·mol⁻¹.</li><li>Il dépend de la température et de la pression, pas de la nature du gaz (ordre de grandeur : ≈ 24 L·mol⁻¹ à 20 °C et 1 bar).</li><li>Convertir : 1 mL = 10⁻³ L.</li></ul></>,
       retenir: <><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>Volume molaire : <strong>V<sub>m</sub> = V(gaz) / n(gaz)</strong>, en L·mol⁻¹.</li><li>Il dépend de la température et de la pression, pas de la nature du gaz (ordre de grandeur : ≈ 24 L·mol⁻¹ à 20 °C et 1 bar).</li><li>Convertir : 1 mL = 10⁻³ L.</li></ul></>,
       texte: <>Le dihydrogène formé a la quantité n(H₂) = x<sub>max</sub> = {sci(n1Aff, 3)} mol, et il occupe le volume V(H₂) = {fmt(Veleve, 1)} mL que vous avez mesuré.
         Le volume molaire est le volume occupé par une mole : V<sub>m</sub> = V(H₂) / n(H₂).</>,
