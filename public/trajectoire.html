@@ -54,7 +54,7 @@
     <h1>Trajectoire : corriger un DS par compétences et donner à chaque élève des <mark>exercices ciblés</mark></h1>
     <p>Trajectoire est une application gratuite à installer sur son ordinateur. Elle sert à corriger un devoir par compétences, puis à éditer pour chaque élève une fiche avec son niveau dans chaque compétence et des <b>codes d'exercices</b> de la Paillasse virtuelle (du type <span class="code-ex">ANA273</span>). L'élève tape le code sur la page d'accueil du site et l'exercice s'ouvre.</p>
     <p>Tout fonctionne en local, sans compte ni connexion : les noms et les notes de vos élèves restent sur votre ordinateur.</p>
-    <a class="bouton" href="trajectoire/Trajectoire_v3.11.zip" download>⬇ Télécharger Trajectoire (version 3.11, 0,4 Mo)</a>
+    <a class="bouton" href="trajectoire/Trajectoire_v3.12.zip" download>⬇ Télécharger Trajectoire (version 3.12, 0,4 Mo)</a>
     <a class="bouton clair" href="#tuto">Voir le mini tuto</a>
     <p class="discret">Gratuit. C'est une version en test, faite par un collègue : pas de garantie ni de service après-vente, mais je lis volontiers vos retours.</p>
   </section>
@@ -135,7 +135,7 @@
   <section class="carte">
     <h2>Questions que vous vous posez peut-être</h2>
     <details><summary>Où sont mes données ?</summary>
-      <p>Dans un seul fichier, <code>copie_helper.db</code>, à côté de l'application, sur votre ordinateur. Rien n'est envoyé sur internet. L'application fait une copie de sécurité automatique au lancement (au plus une toutes les 6 heures, les 14 dernières sont gardées), et la page Réglages permet de télécharger une sauvegarde. C'est ce fichier qu'il faut copier si vous changez d'ordinateur.</p></details>
+      <p>Dans un seul fichier, <code>trajectoire.db</code>, rangé dans le dossier <code>Documents/Trajectoire</code> de votre ordinateur, donc en dehors du dossier de l'application. Rien n'est envoyé sur internet. L'application fait des copies de sécurité automatiques dans ce même dossier : dès que vous avez modifié quelque chose et que la copie précédente date de plus d'une heure, en gardant les plus récentes et une par jour pendant 30 jours. Vous pouvez aussi choisir une « copie miroir » dans un autre dossier (clé USB, OneDrive…), et si la base est vide alors qu'une sauvegarde existe, l'application propose de la restaurer. La page Réglages permet de télécharger une sauvegarde : c'est ce fichier qu'il faut restaurer si vous changez d'ordinateur.</p></details>
     <details><summary>Et le RGPD ?</summary>
       <p>Les données des élèves ne quittent pas votre poste. Un point demande tout de même de la vigilance : si vous copiez dans une IA des extraits qui contiennent des noms d'élèves, ce sont vos propres données qui sortent. Le prompt de remédiation ne s'appuie que sur l'énoncé et le corrigé, sans aucun nom.</p></details>
     <details><summary>Ça marche sur tablette ou Chromebook ?</summary>
@@ -143,7 +143,7 @@
     <details><summary>Je suis bloqué à l'installation</summary>
       <p>Les deux causes les plus fréquentes sont Python absent ou installé sans « Add python.exe to PATH » sous Windows, et le blocage du script par macOS au premier lancement. Les deux sont décrites dans le <code>README.md</code> du dossier. Si rien ne marche, écrivez-moi en indiquant votre système et ce que vous voyez à l'écran.</p></details>
     <details><summary>Comment avoir les mises à jour ?</summary>
-      <p>Cette page porte toujours la dernière version. Pour changer de version, décompressez la nouvelle dans un autre dossier et recopiez-y votre fichier <code>copie_helper.db</code> : vos classes, élèves et notes sont retrouvés.</p></details>
+      <p>Cette page porte toujours la dernière version. Décompressez la nouvelle version où vous voulez et lancez-la : vos classes, élèves et notes sont retrouvés automatiquement, puisqu'ils sont dans <code>Documents/Trajectoire</code> et non dans le dossier de l'application. Si vous veniez d'une version antérieure à la 3.12 (où le fichier s'appelait <code>copie_helper.db</code> et se trouvait à côté de l'application), l'application le retrouve et le copie au premier lancement, sans jamais modifier l'ancien fichier.</p></details>
   </section>
 
   <p class="discret" style="text-align:center">Trajectoire est développée par Nils Aronssohn, enseignant au lycée Argouges (Grenoble), avec l'aide de Claude (Anthropic).</p>
