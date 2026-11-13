@@ -2552,6 +2552,27 @@ export const PREVOIR = [
       F('A est impur car 97 est différent de 98', 'Une mesure n’est jamais exactement égale à la littérature : l’écart de 1 °C est inférieur à l’incertitude.'),
       F('on ne peut rien dire sans CCM', 'La Tf renseigne déjà sur la pureté ; la CCM sert surtout à identifier les espèces.'),
     ] },
+  { id: 'ext-position', domaine: 'Synthèse et rendement', titre: 'Quelle phase en haut ?',
+    enonce: 'Dans une ampoule à décanter, on mélange de l’eau (d = 1,00) et du dichlorométhane (d = 1,33), non miscible avec l’eau.', q: 'Après décantation…', options: [
+      V('le dichlorométhane est en bas et l’eau en haut', 'Le liquide le plus dense (d = 1,33) occupe le bas de l’ampoule.'),
+      F('le dichlorométhane est en haut, car c’est un solvant organique', 'La position dépend de la densité, pas de la nature organique du solvant.'),
+      F('on obtient une seule phase', 'Le dichlorométhane est non miscible avec l’eau : il y a deux phases.'),
+      F('l’eau est toujours en bas', 'L’eau est en bas seulement si l’autre liquide est moins dense qu’elle.'),
+    ] },
+  { id: 'ext-solvant', domaine: 'Synthèse et rendement', titre: 'Choisir le solvant extracteur',
+    enonce: 'On veut extraire le diiode d’une solution aqueuse. Le diiode est très soluble dans le cyclohexane (d = 0,78, non miscible avec l’eau) et dans l’éthanol (miscible avec l’eau).', q: 'Quel solvant utiliser et où se trouvera le diiode après décantation ?', options: [
+      V('le cyclohexane : le diiode sera dans la phase supérieure', 'Le solvant est non miscible et dissout bien le diiode ; moins dense que l’eau, il est au-dessus.'),
+      F('l’éthanol : le diiode y est très soluble', 'L’éthanol est miscible avec l’eau : il n’y a pas deux phases à séparer.'),
+      F('le cyclohexane : le diiode sera dans la phase inférieure', 'Le cyclohexane (d = 0,78) est moins dense que l’eau : il est au-dessus.'),
+      F('aucun : le diiode ne peut pas être extrait', 'Le cyclohexane convient : non miscible et bon solvant du diiode.'),
+    ] },
+  { id: 'ext-gestes', domaine: 'Synthèse et rendement', titre: 'Soutirer la bonne phase',
+    enonce: 'Après décantation du mélange eau (d = 1,00) et dichlorométhane (d = 1,33) contenant le diiode, on veut recueillir la phase organique.', q: 'Que faire ?', options: [
+      V('retirer le bouchon puis ouvrir le robinet pour soutirer la phase du bas', 'Le dichlorométhane est en bas ; sans retirer le bouchon, l’écoulement est mauvais.'),
+      F('ouvrir le robinet avec le bouchon en place pour soutirer la phase du haut', 'La phase du haut ne sort pas en premier par le robinet, et il faut retirer le bouchon.'),
+      F('verser la phase organique par le haut de l’ampoule', 'La phase organique est en bas : on la soutire par le robinet.'),
+      F('agiter encore sans dégazer', 'Il faut dégazer régulièrement pour éviter la surpression.'),
+    ] },
   { id: 'ir-nombre-onde', domaine: 'Chimie organique', titre: 'Du micromètre au nombre d’onde',
     enonce: 'Une radiation infrarouge a pour longueur d’onde λ = 5,0 µm (1 µm = 10⁻⁴ cm). On rappelle σ = 1 ÷ λ, avec λ exprimée en cm.', q: 'Son nombre d’onde vaut…', options: [
       V('2000 cm⁻¹', 'λ = 5,0 × 10⁻⁴ cm ; σ = 1 ÷ (5,0 × 10⁻⁴) = 2000 cm⁻¹.'),
