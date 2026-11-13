@@ -49,8 +49,8 @@ export const CHAPITRES = [
   // Analyse (référentiel S5)
   { id: 'bts-mesures', niveau: 'BTS', rubrique: 'Analyse', label: '📏 Mesures et fiabilité', sims: [9, 16], domaines: ['Métrologie'] },
   { id: 'bts-titrages', niveau: 'BTS', rubrique: 'Analyse', label: '⚡ Titrages et électrochimie', sims: [3, 29], domaines: ['Chimie'] },
-  { id: 'bts-chromatographie', niveau: 'BTS', rubrique: 'Analyse', label: '💉 Chromatographie et spectrométrie de masse', sims: [12, 54, 55], domaines: [] },
-  { id: 'bts-etalonnage', niveau: 'BTS', rubrique: 'Analyse', label: '📐 Dosages par étalonnage', sims: [11, 13], domaines: ['Chimie'] },
+  { id: 'bts-chromatographie', niveau: 'BTS', rubrique: 'Analyse', label: '💉 Chromatographie et spectrométrie de masse', sims: [12, 54, 55], domaines: ['Chimie'] },
+  { id: 'bts-etalonnage', niveau: 'BTS', rubrique: 'Analyse', label: '📐 Dosages par étalonnage', sims: [11, 13], domaines: ['Chimie', 'Métrologie'] },
   { id: 'bts-rmn', niveau: 'BTS', rubrique: 'Analyse', label: '🧲 Spectroscopie RMN', sims: [75, 76], domaines: ['Spectroscopie RMN'] },
   { id: 'bts-cristallo', niveau: 'BTS', rubrique: 'Analyse', label: '🔷 Cristallographie', sims: [73, 74], domaines: ['Analyse cristallographique'] },
   // Synthèse (référentiel S6)
