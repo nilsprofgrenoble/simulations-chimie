@@ -66,14 +66,14 @@ function evaluer(d) {
   if (d.type === 'joule') { const ok = isFinite(x) && proche(x, d.Q, 0.015); return { ok, lignes: [[ok, ok ? 'Transfert thermique correct.' : 'Revois : Q = R × I² × Δt (attention : I est au carré), Q en joules, Δt en secondes.']] }; }
   if (d.type === 'ligne') { const ok = isFinite(x) && proche(x, d.Pj, 0.03); return { ok, lignes: [[ok, ok ? 'Puissance perdue correcte.' : 'Revois : I = P / U (en A, avec P en W et U en V), puis P_perdue = r × I² avec r = 0,1 Ω/km × longueur.']] }; }
   const cible = d.v === 'rho' ? d.rho * 100 : d.Pu, ok = isFinite(x) && proche(x, cible, 0.015);
-  return { ok, lignes: [[ok, ok ? 'Bonne réponse.' : 'Revois : ρ = puissance utile / puissance consommée (en % : × 100).']] };
+  return { ok, lignes: [[ok, ok ? 'Bonne réponse.' : 'Revois : η = puissance utile / puissance consommée (en % : × 100).']] };
 }
 const enonce = (d, { champ }) => {
   if (d.type === 'cout') return <><Pic n="target"/>Un appareil de puissance <strong>{d.P} W</strong> fonctionne pendant <strong>{d.dt} min</strong>. Quel est le coût de l’énergie consommée, sachant que le kWh est facturé <strong>0,20 €</strong> ?<div style={{ marginTop: 6 }}>{champ('v', '€')}</div></>;
   if (d.type === 'joule') return <><Pic n="target"/>Un conducteur ohmique de résistance <strong>R = {d.R} Ω</strong> est parcouru par un courant d’intensité <strong>I = {fr(d.I, 1)} A</strong> pendant <strong>Δt = {d.dt} s</strong>. Quel transfert thermique Q est produit par effet Joule ?<div style={{ marginTop: 6 }}>{champ('v', 'J')}</div></>;
   if (d.type === 'ligne') return <><Pic n="target"/>Une ligne électrique de <strong>{d.L} km</strong> (résistance <strong>0,1 Ω par km</strong>) transporte une puissance <strong>P = {d.P} MW</strong> sous une tension <strong>U = {d.U} kV</strong>. Quelle puissance est perdue par effet Joule dans la ligne ? (en MW)<div style={{ marginTop: 6 }}>{champ('v', 'MW')}</div></>;
-  return d.v === 'rho' ? <><Pic n="target"/>Un moteur reçoit une puissance électrique de <strong>{d.Pe} W</strong> et fournit une puissance mécanique de <strong>{fr(d.Pu, 0)} W</strong>. Quel est son rendement ρ ? (en %)<div style={{ marginTop: 6 }}>{champ('v', '%')}</div></>
-    : <><Pic n="target"/>Un moteur de rendement <strong>ρ = {fr(d.rho * 100, 0)} %</strong> reçoit une puissance électrique de <strong>{d.Pe} W</strong>. Quelle puissance mécanique fournit-il ?<div style={{ marginTop: 6 }}>{champ('v', 'W')}</div></>;
+  return d.v === 'rho' ? <><Pic n="target"/>Un moteur reçoit une puissance électrique de <strong>{d.Pe} W</strong> et fournit une puissance mécanique de <strong>{fr(d.Pu, 0)} W</strong>. Quel est son rendement η ? (en %)<div style={{ marginTop: 6 }}>{champ('v', '%')}</div></>
+    : <><Pic n="target"/>Un moteur de rendement <strong>η = {fr(d.rho * 100, 0)} %</strong> reçoit une puissance électrique de <strong>{d.Pe} W</strong>. Quelle puissance mécanique fournit-il ?<div style={{ marginTop: 6 }}>{champ('v', 'W')}</div></>;
 };
 const indiceDefi = d => d.type === 'cout' ? <>Énergie (en kWh) = puissance (en kW) × durée (en h) ; coût = énergie × prix du kWh. Convertis les minutes en heures.</>
   : d.type === 'joule' ? <>Effet Joule : Q = R × I² × Δt, avec I en ampères et Δt en secondes (Q en joules).</>
@@ -82,8 +82,8 @@ const indiceDefi = d => d.type === 'cout' ? <>Énergie (en kWh) = puissance (en 
 const solution = d => d.type === 'cout' ? <>E = P × Δt = {fr(d.P / 1000, 3)} kW × {fr(d.dt / 60, 3)} h = {fr(d.kWh, 3)} kWh ; coût = {fr(d.kWh, 3)} × 0,20 = <strong>{fr(d.cout, 3)} €</strong>.</>
   : d.type === 'joule' ? <>Q = R × I² × Δt = {d.R} × {fr(d.I, 1)}² × {d.dt} = <strong>{fr(d.Q, 0)} J</strong>.</>
   : d.type === 'ligne' ? <>I = P / U = {d.P}·10⁶ / {d.U}·10³ = {fr(d.I, 0)} A ; r = 0,1 × {d.L} = {fr(d.r, 0)} Ω ; P<sub>perdue</sub> = r × I² = {fr(d.r, 0)} × {fr(d.I, 0)}² = <strong>{fr(d.Pj, 2)} MW</strong> ({fr(d.Pj / d.P * 100, 1)} % de la puissance transportée).</>
-  : d.v === 'rho' ? <>ρ = P<sub>utile</sub> / P<sub>consommée</sub> = {fr(d.Pu, 0)} / {d.Pe} = {fr(d.rho, 2)} = <strong>{fr(d.rho * 100, 0)} %</strong>.</>
-  : <>P<sub>utile</sub> = ρ × P<sub>consommée</sub> = {fr(d.rho, 2)} × {d.Pe} = <strong>{fr(d.Pu, 0)} W</strong>.</>;
+  : d.v === 'rho' ? <>η = P<sub>utile</sub> / P<sub>consommée</sub> = {fr(d.Pu, 0)} / {d.Pe} = {fr(d.rho, 2)} = <strong>{fr(d.rho * 100, 0)} %</strong>.</>
+  : <>P<sub>utile</sub> = η × P<sub>consommée</sub> = {fr(d.rho, 2)} × {d.Pe} = <strong>{fr(d.Pu, 0)} W</strong>.</>;
 
 // ====================================================
 export function SimulationPuissanceJoule() {
@@ -200,22 +200,22 @@ export function SimulationPuissanceJoule() {
     { id: 'rendement', titre: 'Le rendement d’un convertisseur', depart: () => voir('rendement', { k: 'moteur' }),
       retenirTitre: 'À RETENIR : LE RENDEMENT',
       retenir: <>
-        <Formule><mi>ρ</mi><mo>=</mo><mfrac><mtext>énergie utile</mtext><mtext>énergie consommée</mtext></mfrac><mo>=</mo><mfrac><msub><mi>P</mi><mtext>utile</mtext></msub><msub><mi>P</mi><mtext>consommée</mtext></msub></mfrac><mo>≤</mo><mn>1</mn></Formule>
+        <Formule><mi>η</mi><mo>=</mo><mfrac><mtext>énergie utile</mtext><mtext>énergie consommée</mtext></mfrac><mo>=</mo><mfrac><msub><mi>P</mi><mtext>utile</mtext></msub><msub><mi>P</mi><mtext>consommée</mtext></msub></mfrac><mo>≤</mo><mn>1</mn></Formule>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
           <li>Le rendement est un nombre <strong>sans unité</strong>, toujours ≤ 1 (souvent en %). Énergie consommée = énergie utile + pertes.</li>
           <li><strong>Méthode :</strong> identifier l’énergie (ou puissance) <strong>utile</strong> et celle <strong>consommée</strong>, diviser <strong>utile / consommée</strong>, puis × 100 pour un pourcentage.</li>
-          <li><strong>Exemple :</strong> un chargeur reçoit 10 W et fournit 8,0 W : ρ = 8,0 / 10 = 0,80 = 80 % ; 2,0 W sont perdus en chaleur.</li>
-          <li><strong>Piège :</strong> inverser le rapport (ρ ne peut pas dépasser 1) ; confondre pertes et énergie utile.</li>
+          <li><strong>Exemple :</strong> un chargeur reçoit 10 W et fournit 8,0 W : η = 8,0 / 10 = 0,80 = 80 % ; 2,0 W sont perdus en chaleur.</li>
+          <li><strong>Piège :</strong> inverser le rapport (η ne peut pas dépasser 1) ; confondre pertes et énergie utile.</li>
         </ul>
       </>,
-      texte: <>Un <strong>convertisseur</strong> transforme l’énergie reçue en énergie utile, avec des pertes (sous forme de chaleur). Le <strong>rendement</strong> est <strong>ρ = énergie utile / énergie consommée = P<sub>utile</sub> / P<sub>consommée</sub></strong> : un nombre sans unité, toujours ≤ 1 (souvent donné en %).
-        <ExempleResolu>Moteur : W<sub>élec</sub> = 100 J reçus, W<sub>méca</sub> = 90 J fournis (10 J dissipés en chaleur) : ρ = 90 / 100 = <strong>0,90 = 90 %</strong>.</ExempleResolu></>,
-      tache: { type: 'num', q: 'Un moteur reçoit 200 W et fournit 150 W de puissance mécanique. Quel est son rendement (en %) ?', unite: '%', vrai: 75, tol: 0.02, affiche: x => String(x), pieges: [[0.75, 'Exprime le rendement en pourcentage : 0,75 = 75 %.'], [133, 'Tu as inversé : ρ = utile / consommée.'], [25, 'C’est la part de puissance perdue (25 %). Le rendement est la part utile : ρ = P_utile / P_consommée.'], [50, 'C’est la puissance perdue (200 − 150 = 50 W). Le rendement est le rapport utile / consommée.']],
+      texte: <>Un <strong>convertisseur</strong> transforme l’énergie reçue en énergie utile, avec des pertes (sous forme de chaleur). Le <strong>rendement</strong> est <strong>η = énergie utile / énergie consommée = P<sub>utile</sub> / P<sub>consommée</sub></strong> : un nombre sans unité, toujours ≤ 1 (souvent donné en %).
+        <ExempleResolu>Moteur : W<sub>élec</sub> = 100 J reçus, W<sub>méca</sub> = 90 J fournis (10 J dissipés en chaleur) : η = 90 / 100 = <strong>0,90 = 90 %</strong>.</ExempleResolu></>,
+      tache: { type: 'num', q: 'Un moteur reçoit 200 W et fournit 150 W de puissance mécanique. Quel est son rendement (en %) ?', unite: '%', vrai: 75, tol: 0.02, affiche: x => String(x), pieges: [[0.75, 'Exprime le rendement en pourcentage : 0,75 = 75 %.'], [133, 'Tu as inversé : η = utile / consommée.'], [25, 'C’est la part de puissance perdue (25 %). Le rendement est la part utile : η = P_utile / P_consommée.'], [50, 'C’est la puissance perdue (200 − 150 = 50 W). Le rendement est le rapport utile / consommée.']],
         calcul: () => [
-          'Rendement : ρ = P_utile / P_consommée (même durée, donc même rapport que les énergies).',
+          'Rendement : η = P_utile / P_consommée (même durée, donc même rapport que les énergies).',
           'Données : P_consommée = 200 W (reçue du circuit) ; P_utile = 150 W (puissance mécanique).',
-          'ρ = 150 / 200 = 0,75.',
-          'En pourcentage : 0,75 × 100 = 75 %.'], expl: 'ρ = 150 / 200 = 0,75 = 75 %.', indice: "Rendement = puissance utile ÷ puissance consommée, à exprimer en pourcentage." } },
+          'η = 150 / 200 = 0,75.',
+          'En pourcentage : 0,75 × 100 = 75 %.'], expl: 'η = 150 / 200 = 0,75 = 75 %.', indice: "Rendement = puissance utile ÷ puissance consommée, à exprimer en pourcentage." } },
     { id: 'calo', titre: 'L’expérience : chauffer de l’eau', depart: () => setAtelier('calo'),
       retenirTitre: 'À RETENIR : BILAN ÉNERGÉTIQUE EXPÉRIMENTAL',
       retenir: <>
@@ -224,26 +224,26 @@ export function SimulationPuissanceJoule() {
           <li>Résistance chauffante dans <strong>0,2 kg d’eau</strong> : l’énergie électrique reçue W<sub>élec</sub> est comparée à celle reçue par l’eau Q (C<sub>eau</sub> = 4 180 J·kg⁻¹·K⁻¹).</li>
           <li>On observe <strong>Q {'<'} W<sub>élec</sub></strong> : le rendement est inférieur à 1, car le récipient, la résistance et le thermomètre (40 J·K⁻¹) s’échauffent et l’air ambiant reçoit de la chaleur (0,15 W·K⁻¹).</li>
           <li><strong>Exemple :</strong> m = 0,200 kg et Δθ = 5,0 K : Q = 0,200 × 4 180 × 5,0 = 4 180 J.</li>
-          <li><strong>Méthode :</strong> calculer W<sub>élec</sub>, calculer Q, puis ρ = Q / W<sub>élec</sub>.</li>
+          <li><strong>Méthode :</strong> calculer W<sub>élec</sub>, calculer Q, puis η = Q / W<sub>élec</sub>.</li>
         </ul>
       </>,
       texte: <>Une résistance chauffante plongée dans <strong>0,2 kg d’eau</strong> reçoit W<sub>élec</sub> = U × I × Δt (courbe bleue). L’eau reçoit Q = m × C × Δθ (courbe orange), avec C = 4180 J·kg⁻¹·K⁻¹. Si tout était transféré à l’eau, les deux courbes seraient confondues. Déplacez le curseur de temps : <strong>Q reste un peu en dessous de W<sub>élec</sub></strong>. Décochez « avec pertes » pour comparer : les deux courbes se rapprochent, mais restent distinctes, car la cuve, la résistance et le thermomètre (40 J·K⁻¹) absorbent aussi de l’énergie.</>,
       tache: { type: 'qcm', q: 'Pourquoi le transfert thermique Q reçu par l’eau est-il un peu inférieur au travail électrique W_élec ?', options: ['Une partie de la chaleur chauffe le récipient et l’air ambiant (pertes)', 'L’énergie disparaît', 'La résistance consomme de l’eau', 'Q = W_élec exactement, c’est une erreur de mesure'], bonne: 0, expl: 'Le rendement est inférieur à 1 : une partie de l’énergie chauffe le récipient et le thermomètre, et une autre est perdue vers l’air.', indice: "Compare l’énergie électrique fournie à la chaleur reçue par l’eau : où a pu aller le reste de l’énergie ?" } },
     { id: 'rho_calo', titre: 'Rendement de l’expérience', depart: () => { setAtelier('calo'); setCa(c => ({ ...c, t: 300, pertes: true })); },
-      texte: <>À t = 300 s on mesure : Q = 6656 J et W<sub>élec</sub> = 7330 J. Le rendement du dispositif « résistance + eau » vaut ρ = Q / W<sub>élec</sub>.</>,
-      tache: { type: 'num', q: 'Calculez ρ en % (Q = 6656 J ; W_élec = 7330 J).', unite: '%', vrai: 90.8, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[1.1, 'Tu as inversé : ρ = Q / W_élec (utile / consommée).'], [0.908, 'Exprime le rendement en pourcentage : multiplie le rapport par 100.'], [(7330 - 6656) / 7330 * 100, 'C’est la part d’énergie perdue. Le rendement est la part utile : ρ = Q / W_élec.']],
+      texte: <>À t = 300 s on mesure : Q = 6656 J et W<sub>élec</sub> = 7330 J. Le rendement du dispositif « résistance + eau » vaut η = Q / W<sub>élec</sub>.</>,
+      tache: { type: 'num', q: 'Calculez η en % (Q = 6656 J ; W_élec = 7330 J).', unite: '%', vrai: 90.8, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[1.1, 'Tu as inversé : η = Q / W_élec (utile / consommée).'], [0.908, 'Exprime le rendement en pourcentage : multiplie le rapport par 100.'], [(7330 - 6656) / 7330 * 100, 'C’est la part d’énergie perdue. Le rendement est la part utile : η = Q / W_élec.']],
         calcul: () => [
-          'Rendement : ρ = énergie utile / énergie consommée = Q / W_élec (ici l’énergie utile est celle reçue par l’eau).',
+          'Rendement : η = énergie utile / énergie consommée = Q / W_élec (ici l’énergie utile est celle reçue par l’eau).',
           'Données : Q = 6656 J ; W_élec = 7330 J (mêmes unités, des joules).',
-          'ρ = 6656 / 7330 = 0,908.',
-          'En pourcentage : 0,908 × 100 = 90,8 %.'], expl: 'ρ = 6656 / 7330 = 0,908 = 90,8 %.', indice: "Rendement = énergie utile ÷ énergie consommée, soit Q / W(élec), puis × 100 pour l’exprimer en %." } },
+          'η = 6656 / 7330 = 0,908.',
+          'En pourcentage : 0,908 × 100 = 90,8 %.'], expl: 'η = 6656 / 7330 = 0,908 = 90,8 %.', indice: "Rendement = énergie utile ÷ énergie consommée, soit Q / W(élec), puis × 100 pour l’exprimer en %." } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
       retenirTitre: 'À RETENIR : LE BILAN',
       retenir: <>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
           <li><strong>P = W / Δt</strong> (W) ; <strong>P<sub>élec</sub> = U × I</strong> ; W<sub>élec</sub> = U × I × Δt ; 1 kWh = 3,6 × 10⁶ J.</li>
           <li><strong>Effet Joule</strong> : P = R × I², Q = R × I² × Δt ; pertes en ligne ↓ quand U ↑ et I ↓.</li>
-          <li><strong>Rendement</strong> ρ = énergie utile / énergie consommée = P<sub>utile</sub> / P<sub>consommée</sub> ≤ 1 ; calorimètre : Q = m × C × Δθ.</li>
+          <li><strong>Rendement</strong> η = énergie utile / énergie consommée = P<sub>utile</sub> / P<sub>consommée</sub> ≤ 1 ; calorimètre : Q = m × C × Δθ.</li>
           <li><strong>Méthode :</strong> convertir (kW, h, kg, K), appliquer la relation, vérifier l’ordre de grandeur et l’unité.</li>
           <li><strong>Pièges :</strong> oublier le carré de I ; rendement inversé ; mélanger W (travail) et W (watt).</li>
         </ul>
@@ -329,8 +329,8 @@ export function SimulationPuissanceJoule() {
       <Bilan Pe={Rd.Pe} rho={rho} utile={conv ? conv[3] : 'puissance utile'} pertes={conv ? conv[4] : 'chaleur'}/>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginTop: 8 }}>
         <Curseur nom="Puissance électrique reçue" val={Rd.Pe} min={10} max={1000} pas={10} set={v => setRd(r => ({ ...r, Pe: v }))} unite=" W"/>
-        {Rd.k === 'perso' && <Curseur nom="Rendement ρ" val={Math.round(Rd.perso * 100)} min={0} max={100} pas={1} set={v => setRd(r => ({ ...r, perso: v / 100 }))} unite=" %"/>}</div>
-      {carte('', <>ρ = P<sub>utile</sub> / P<sub>consommée</sub> = {fr(rho * Rd.Pe, 0)} / {Rd.Pe} = <strong>{fr(rho, 2)}</strong> = <strong>{fr(rho * 100, 0)} %</strong></>)}
+        {Rd.k === 'perso' && <Curseur nom="Rendement η" val={Math.round(Rd.perso * 100)} min={0} max={100} pas={1} set={v => setRd(r => ({ ...r, perso: v / 100 }))} unite=" %"/>}</div>
+      {carte('', <>η = P<sub>utile</sub> / P<sub>consommée</sub> = {fr(rho * Rd.Pe, 0)} / {Rd.Pe} = <strong>{fr(rho, 2)}</strong> = <strong>{fr(rho * 100, 0)} %</strong></>)}
     </div>);
   const atelierCalo = (
     <div>
@@ -348,7 +348,7 @@ export function SimulationPuissanceJoule() {
         <div>t = {Ca.t} s : θ = <strong>{fr(ptC.th, 1)} °C</strong> (Δθ = {fr(ptC.th - 25.9, 1)} °C)</div>
         <div>W<sub>élec</sub> = U × I × Δt = {fr(Ca.U, 2)} × {fr(Ca.I, 2)} × {Ca.t} = <strong>{fr(ptC.W, 0)} J</strong></div>
         <div>Q = m × C × Δθ = {fr(Ca.m, 2)} × {C_EAU} × {fr(ptC.th - 25.9, 1)} = <strong>{fr(ptC.Q, 0)} J</strong></div>
-        <div>Rendement : ρ = Q / W<sub>élec</sub> = <strong>{ptC.W > 0 ? `${fr(ptC.Q / ptC.W * 100, 1)} %` : '—'}</strong></div></>)}
+        <div>Rendement : η = Q / W<sub>élec</sub> = <strong>{ptC.W > 0 ? `${fr(ptC.Q / ptC.W * 100, 1)} %` : '—'}</strong></div></>)}
     </div>);
   const planche = (
     <div style={styleBoite}>
@@ -369,7 +369,7 @@ export function SimulationPuissanceJoule() {
       </ul>
     </div>);
   const retenir = <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
-    <li>P = U·I ; W = P·Δt ; Q = R·I²·Δt</li><li>ρ = P<sub>utile</sub> / P<sub>consommée</sub></li><li>Haute tension → moins de pertes en ligne</li></ul></ARetenir>;
+    <li>P = U·I ; W = P·Δt ; Q = R·I²·Δt</li><li>η = P<sub>utile</sub> / P<sub>consommée</sub></li><li>Haute tension → moins de pertes en ligne</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>

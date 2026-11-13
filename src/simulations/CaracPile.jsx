@@ -192,11 +192,11 @@ export function SimulationCaracPile() {
     { id: 'joule', titre: 'De l’énergie perdue dans la pile', depart: () => voir('modele', { M: { U0: 4.5, r: 5, R: 10 } }),
       retenirTitre: 'À RETENIR : ÉNERGIE PERDUE DANS LA PILE',
       retenir: <>
-        <Formule><msub><mi>P</mi><mtext>th</mtext></msub><mo>=</mo><mi>r</mi><mo>×</mo><msup><mi>I</mi><mn>2</mn></msup><mspace width="1.5em"/><mi>ρ</mi><mo>=</mo><mfrac><mi>U</mi><msub><mi>U</mi><mn>0</mn></msub></mfrac><mspace width="1.5em"/><mi>Q</mi><mo>=</mo><mi>r</mi><mo>×</mo><msup><mi>I</mi><mn>2</mn></msup><mo>×</mo><mi>Δ</mi><mi>t</mi></Formule>
+        <Formule><msub><mi>P</mi><mtext>th</mtext></msub><mo>=</mo><mi>r</mi><mo>×</mo><msup><mi>I</mi><mn>2</mn></msup><mspace width="1.5em"/><mi>η</mi><mo>=</mo><mfrac><mi>U</mi><msub><mi>U</mi><mn>0</mn></msub></mfrac><mspace width="1.5em"/><mi>Q</mi><mo>=</mo><mi>r</mi><mo>×</mo><msup><mi>I</mi><mn>2</mn></msup><mo>×</mo><mi>Δ</mi><mi>t</mi></Formule>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
           <li>Le courant traverse la résistance interne : <strong>effet Joule</strong>, P<sub>th</sub> = r × I² (I en A, <strong>au carré</strong>). Le reste, U × I, est fourni au circuit.</li>
-          <li><strong>Rendement de la pile</strong> : ρ = U / U₀ ; il baisse quand I augmente (jusqu’au court-circuit : U ≈ 0).</li>
-          <li><strong>Exemple :</strong> U₀ = 6,0 V, r = 2,0 Ω, I = 0,50 A : P<sub>th</sub> = 2,0 × 0,50² = 0,50 W ; U = 6,0 − 1,0 = 5,0 V ; ρ = 5,0 / 6,0 ≈ 83 %.</li>
+          <li><strong>Rendement de la pile</strong> : η = U / U₀ ; il baisse quand I augmente (jusqu’au court-circuit : U ≈ 0).</li>
+          <li><strong>Exemple :</strong> U₀ = 6,0 V, r = 2,0 Ω, I = 0,50 A : P<sub>th</sub> = 2,0 × 0,50² = 0,50 W ; U = 6,0 − 1,0 = 5,0 V ; η = 5,0 / 6,0 ≈ 83 %.</li>
         </ul>
       </>,
       texte: <>Le courant traverse la résistance interne : une partie de l’énergie de la pile est <strong>dissipée par effet Joule</strong>, <strong>P<sub>th</sub> = r × I²</strong>, soit Q = r × I² × Δt. Le reste, <strong>U × I</strong>, est fourni au circuit extérieur : le <strong>rendement</strong> de la pile vaut U / U₀. Diminuez R : la perte augmente fortement (jusqu’au court-circuit !).
@@ -228,7 +228,7 @@ export function SimulationCaracPile() {
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
           <li>Pile réelle : <strong>U = U₀ − r × I</strong> ; U₀ = tension à vide ; r = résistance interne = −pente.</li>
           <li>Modèle : <strong>source idéale U₀ en série avec r</strong> ; source idéale : r = 0, U constante.</li>
-          <li>Pertes dans la pile : P<sub>th</sub> = r × I² ; rendement ρ = U / U₀.</li>
+          <li>Pertes dans la pile : P<sub>th</sub> = r × I² ; rendement η = U / U₀.</li>
           <li><strong>Méthode :</strong> convertir I en A, calculer la chute r × I (ou (U₀ − U) / I), conclure avec l’unité.</li>
           <li><strong>Pièges :</strong> additionner au lieu de soustraire ; oublier le carré de I ; confondre U₀ et U en charge.</li>
         </ul>

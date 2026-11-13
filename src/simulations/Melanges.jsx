@@ -218,7 +218,7 @@ export function SimulationMelanges() {
           <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Liquide</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>ρ (g/L)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>d (sans unité)</th></tr></thead>
           <tbody>
             <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>eau</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1000</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,0</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>huile</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>900</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,9</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>huile (valeur arrondie)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>900</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,9</td></tr>
             <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>alcool (éthanol)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>800</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,8</td></tr>
           </tbody>
         </table>
@@ -349,7 +349,7 @@ export function SimulationMelanges() {
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
       <li><strong>Volumes additifs</strong> : le volume du mélange eau-alcool est la somme des volumes. En réalité, eau et éthanol <strong>se contractent</strong> (environ 3 % pour un mélange à parts égales) : la densité mesurée est un peu plus grande que celle calculée.</li>
       <li><strong>Densité du mélange</strong> = moyenne des densités pondérée par les volumes (conséquence de l’additivité des volumes et de la conservation de la masse).</li>
-      <li><strong>Valeurs à 20 °C</strong> : eau 1,00 ; huile 0,9 ; alcool 0,8 (valeurs de l’énoncé). Une goutte est « suspendue » si les densités diffèrent de moins de 0,01 : un petit intervalle de volumes d’alcool convient.</li>
+      <li><strong>Valeurs à 20 °C</strong> : eau 1,00 ; huile 0,9 ; alcool 0,8 (valeurs de l’énoncé). L’huile 0,9 est un ordre de grandeur : selon l’huile, d vaut 0,91 à 0,93 (huile d’olive : 0,92). Une goutte est « suspendue » si les densités diffèrent de moins de 0,01 : un petit intervalle de volumes d’alcool convient.</li>
       <li><strong>Miscibilité</strong> : eau et alcool miscibles ; huile et eau non miscibles. L’huile <strong>végétale</strong> est très peu miscible à l’éthanol à froid, on la considère donc comme non miscible (l’huile de ricin, elle, y est miscible).</li>
       <li><strong>Colorants</strong> : le bleu de méthylène est soluble dans l’eau et l’alcool, le rouge Soudan dans l’huile et l’alcool. Solubilité = oui / non (on ne parle pas ici de quantité limite).</li>
       <li><strong>Recette OMS</strong> : pourcentages en volume pour 100,0 mL, l’eau complétant au volume final ; on néglige aussi la contraction pour calculer les masses.</li>

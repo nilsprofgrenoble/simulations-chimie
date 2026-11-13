@@ -228,7 +228,14 @@ function etapesGuide() {
         bonne: 1, indice: 'La température est une mesure de l\'agitation thermique : que devient le mouvement des entités ?',
         expl: <>Plus chaud = plus d'agitation = plus de chocs par seconde, et surtout des chocs qui dépassent plus souvent l'énergie d'activation. Attention : la température peut aussi déplacer l'équilibre, mais ici l'estérification est traitée athermique.</> } },
 
-    { titre: "Facteur cinétique n° 2 : la concentration", texte: <>Deuxième levier : la <strong>concentration</strong> des réactifs. Plus les entités sont proches les unes des autres, plus les rencontres sont fréquentes.</>,
+    { titre: "Facteur cinétique n° 2 : la concentration",
+      retenirTitre: 'À RETENIR : LA CONCENTRATION',
+      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+        <li>Une solution <strong>plus concentrée</strong> contient plus d’entités réactives par litre : elles se rencontrent plus souvent, la réaction est <strong>plus rapide</strong> (dans le modèle, k plus grand, facteur borné entre 0,5 et 2).</li>
+        <li>Diluer fait l’inverse : moins de chocs par litre et par seconde, réaction plus lente.</li>
+        <li>Travailler concentré accélère et réduit la quantité de solvant à traiter (point positif pour la chimie verte) ; la limite pratique est la solubilité et l’évacuation de la chaleur.</li>
+      </ul>,
+      texte: <>Deuxième levier : la <strong>concentration</strong> des réactifs. Plus les entités sont proches les unes des autres, plus les rencontres sont fréquentes.</>,
       tache: { type: 'qcm', q: 'On dilue le mélange réactionnel avec du solvant. Que devient la vitesse de réaction ?',
         options: ['Elle augmente : il y a plus de liquide', 'Elle diminue : les entités réactives sont moins nombreuses par litre, les chocs se raréfient', 'Elle ne change pas : la quantité de matière est la même'],
         bonne: 1, indice: 'La vitesse dépend du nombre de rencontres par unité de temps et de volume.',
