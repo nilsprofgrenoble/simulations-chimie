@@ -28,6 +28,7 @@ export const CHAPITRES = [
   { id: '1g-cohesion', niveau: '1G', label: '🧪 Cohésion, solubilité et miscibilité', sims: [53], domaines: ['Cohésion et solubilité'] },
   { id: '1g-organique', niveau: '1G', label: '🧬 La chimie organique', sims: [102], domaines: ['Chimie organique'] },
   { id: '1g-electricite', niveau: '1G', label: '⚡ Aspects énergétiques des phénomènes électriques', sims: [70, 71, 72], domaines: ['Énergie électrique'] },
+  { id: '1g-energie-meca', niveau: '1G', label: '🎢 Aspects énergétiques des phénomènes mécaniques', sims: [106], domaines: ['Mécanique'] },
   { id: '1g-mouvement', niveau: '1G', label: '🚀 Mouvement d’un système', sims: [52], domaines: ['Mécanique'] },
 
   { id: 'tstl-signaux', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '📡 Transmission de signaux numériques', sims: [8, 15, 33], domaines: ['Transmission de signaux numériques'] },
