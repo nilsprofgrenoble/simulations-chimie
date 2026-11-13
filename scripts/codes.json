@@ -732,5 +732,10 @@
  "37:prevoir:org-chaine-principale": "ANA350",
  "77:plausible:org-brute-hexane": "VAL184",
  "77:plausible:org-brute-butanal": "VAL185",
- "77:plausible:org-nom-butanone": "VAL186"
+ "77:plausible:org-nom-butanone": "VAL186",
+ "37:prevoir:mec-theoreme-arret": "ANA351",
+ "37:prevoir:mec-travail-angle": "ANA352",
+ "37:prevoir:mec-theoreme-bilan": "ANA353",
+ "77:plausible:mec-barriere-val": "VAL187",
+ "77:plausible:mec-theoreme-val": "VAL188"
 }

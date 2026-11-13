@@ -79,6 +79,7 @@ const SimulationChampForce = paresseux(() => import("./simulations/ChampForce"),
 const SimulationDeuxCorps = paresseux(() => import("./simulations/DeuxCorps"), "SimulationDeuxCorps");
 const SimulationCondensateurMillikan = paresseux(() => import("./simulations/CondensateurMillikan"), "SimulationCondensateurMillikan");
 const SimulationElectrisation = paresseux(() => import("./simulations/Electrisation"), "SimulationElectrisation");
+const SimulationTravail = paresseux(() => import("./simulations/Travail"), "SimulationTravail");
 const SimulationMouvementSysteme = paresseux(() => import("./simulations/MouvementSysteme"), "SimulationMouvementSysteme");
 const SimulationMouvementReferentiel = paresseux(() => import("./simulations/MouvementReferentiel"), "SimulationMouvementReferentiel");
 const SimulationAtomesMolecules = paresseux(() => import("./simulations/AtomesMolecules"), "SimulationAtomesMolecules");
@@ -221,6 +222,8 @@ const SIMULATIONS = [
     component: SimulationElectrisation },
   { id:52, label:"Mouvement d'un système : variation de vitesse et forces", niveau:"1G", icon:"🚀", color:"#3f6212",
     component: SimulationMouvementSysteme },
+  { id:106, label:"Travail d’une force et énergie cinétique", niveau:"1G", icon:"🏋️", color:"#3f6212",
+    component: SimulationTravail },
   { id:56, label:"Référentiel et mouvement : décrire un mouvement", niveau:"2GT", icon:"🚃", color:"#4338ca",
     component: SimulationMouvementReferentiel },
   { id:57, label:"Atomes, ions et molécules : la quête de l’octet", niveau:"2GT", icon:"⚛️", color:"#16a34a",

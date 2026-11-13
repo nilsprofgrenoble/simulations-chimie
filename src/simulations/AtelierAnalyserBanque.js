@@ -2468,6 +2468,27 @@ export const PREVOIR = [
       F('4 fois plus grande à 2 m qu’à 1 m', 'Epp est proportionnelle à h (et non à h²).'),
       F('identique, la masse est la même', 'Epp dépend de la hauteur.'),
     ] },
+  { id: 'mec-theoreme-arret', domaine: 'Mécanique', titre: 'Distance d’arrêt et vitesse doublée',
+    enonce: 'Un chariot lancé à la vitesse v s’arrête sur une distance d sous l’action d’une force de freinage constante F opposée au mouvement. On le relance deux fois plus vite (2 v), avec la même force F.', q: 'Sa distance d’arrêt devient…', options: [
+      F('2 d', 'Ce serait vrai si l’énergie cinétique était proportionnelle à v. Or Ec = ½ m v² dépend de v².'),
+      V('4 d', 'Théorème de l’énergie cinétique : 0 − ½ m v² = − F × d, donc d = m v² / (2 F). Avec 2 v, v² est multipliée par 4 : d aussi.'),
+      F('8 d', 'L’exposant de v est 2, pas 3 : (2 v)² = 4 v².'),
+      F('d, car la force de freinage est la même', 'La force est la même, mais le chariot possède 4 fois plus d’énergie cinétique à dissiper : il faut 4 fois plus de distance.'),
+    ] },
+  { id: 'mec-travail-angle', domaine: 'Mécanique', titre: 'Force oblique et travail',
+    enonce: 'On tire un chariot sur un rail horizontal avec une force constante de 10 N, dirigée vers le haut et vers l’avant. L’angle entre la force et le déplacement vaut 60°. Le chariot avance de 2,0 m.', q: 'Le travail de cette force est…', options: [
+      F('égal à 20 J', 'Ce résultat F × d oublie le facteur cos θ : seule la composante de la force le long du déplacement travaille.'),
+      V('égal à 10 J', 'W = F × d × cos θ = 10 × 2,0 × cos 60° = 10 × 2,0 × 0,50 = 10 J.'),
+      F('nul, puisque la force n’est pas dans le sens du déplacement', 'Le travail est nul seulement si la force est perpendiculaire (θ = 90°). À 60°, une partie de la force travaille.'),
+      F('négatif, puisque la force est oblique', 'Le travail est négatif si θ dépasse 90° ; ici θ = 60° < 90° donc W est positif.'),
+    ] },
+  { id: 'mec-theoreme-bilan', domaine: 'Mécanique', titre: 'Qui fait varier l’énergie cinétique ?',
+    enonce: 'Un mobile glisse en descendant un plan incliné rugueux. Les forces qui s’exercent sont le poids, la réaction normale du plan (perpendiculaire au plan) et une force de frottement.', q: 'Entre deux points du trajet, la variation d’énergie cinétique ΔEc est égale à…', options: [
+      F('W(poids) seulement', 'Le frottement travaille aussi (négativement) : on additionne les travaux de toutes les forces.'),
+      F('W(poids) + W(réaction) + W(frottement), avec W(réaction) négatif', 'La réaction est perpendiculaire au déplacement : son travail est nul, pas négatif.'),
+      V('W(poids) + W(frottement), car le travail de la réaction est nul', 'ΔEc = ΣW. La réaction normale est perpendiculaire au déplacement (cos 90° = 0) ; le poids est moteur (positif) et le frottement résistant (négatif).'),
+      F('W(poids) − W(frottement), avec W(frottement) positif', 'Le travail du frottement est lui-même négatif (W = − f × L) : on l’additionne tel quel, avec son signe.'),
+    ] },
   // ── BTS : spectroscopie RMN, analyse cristallographique, formulation ──
   { id: 'rmn-singulet-acetyle', domaine: 'Spectroscopie RMN', titre: 'Le CH₃ de l’éthanoate d’éthyle',
     enonce: 'L’éthanoate d’éthyle s’écrit CH₃–C(=O)–O–CH₂–CH₃. On enregistre son spectre RMN du proton.', q: 'Le signal des 3 H du groupe CH₃–C(=O)– est…', options: [
