@@ -120,6 +120,16 @@ const AIDES = {
 };
 
 
+// Lien vers Trajectoire (appli locale de correction par compétences) depuis l'espace enseignant
+function TrajectoireProf() {
+  return (
+    <div data-trajectoire-prof style={{ ...styleBoite, margin: '10px 0', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+      <span style={{ fontWeight: 800 }}>📝 Trajectoire</span>
+      <span style={{ fontSize: 13.5, color: '#475569', flex: '1 1 260px' }}>Corriger vos copies par compétences et générer des fiches de remédiation liées aux exercices du site.</span>
+      <a href={`${import.meta.env.BASE_URL}trajectoire.html`} style={{ ...styleBouton(true, '#be185d'), textDecoration: 'none', display: 'inline-block' }}>Ouvrir Trajectoire</a>
+    </div>);
+}
+
 // Accès des enseignants à toutes les fiches de révision (page « Mes fiches », espace enseignant)
 function FichesProf({ naviguer }) {
   return (
@@ -296,7 +306,7 @@ export function SimulationSuiviProf({ naviguer }) {
     <>
       {carteMonCompte}
       <GuideProf ouvertParDefaut={false} />
-      <FichesProf naviguer={naviguer} />
+      <FichesProf naviguer={naviguer} /><TrajectoireProf />
       <JeuxProf naviguer={naviguer} />
     </>);
 
@@ -340,7 +350,7 @@ export function SimulationSuiviProf({ naviguer }) {
         </form>)}
 
 
-      {!classe && <>{carteMonCompte}<FichesProf naviguer={naviguer} /><JeuxProf naviguer={naviguer} /></>}
+      {!classe && <>{carteMonCompte}<FichesProf naviguer={naviguer} /><TrajectoireProf /><JeuxProf naviguer={naviguer} /></>}
 
       {classe && (
         <>
