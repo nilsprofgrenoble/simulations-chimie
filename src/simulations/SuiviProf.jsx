@@ -188,6 +188,7 @@ export function SimulationSuiviProf({ naviguer }) {
   }
 
   const classe = classes.find(c => c.id === classeId);
+  const invite = !!sess.profil.invite;   // compte invité (supabase/16-profs-invites.sql) : ni création de classe, ni création de comptes élèves
   const moiId = sess.user?.id, proprio = !classe?.prof_id || !moiId || classe.prof_id === moiId;   // co-professeur : ni suppression, ni partage (09-partage-classe.sql)
   // exercices « je m'entraîne » seuls (pour les compteurs), et exercices + défis des simulations (pour le détail et l'export)
   const parEleve = new Map(eleves.map(e => [e.user_id, agreger(lignes.filter(l => l.user_id === e.user_id && !estSimulation(l.cle) && !estDefi(l.cle)))]));
@@ -310,7 +311,7 @@ export function SimulationSuiviProf({ naviguer }) {
             {!classes.length && <option value="">Aucune classe</option>}
             {classes.map(c => <option key={c.id} value={c.id}>{c.nom} ({c.prefixe}){moiId && c.prof_id && c.prof_id !== moiId ? ' · partagée' : ''}</option>)}
           </select>
-          <button className="sp-cta" onClick={() => setFormClasse(v => !v)} disabled={occupe}>＋ Nouvelle classe</button>
+          {!invite && <button className="sp-cta" onClick={() => setFormClasse(v => !v)} disabled={occupe}>＋ Nouvelle classe</button>}
           <button className="sp-sec" onClick={() => setApercu(true)}><Pic n="eye"/>Voir comme un élève</button>
         </div>
       </section>
@@ -320,11 +321,12 @@ export function SimulationSuiviProf({ naviguer }) {
       {comptes && <div style={{ margin: '10px 0' }}><Comptes classe={comptes.classe} comptes={comptes.liste} onFermer={() => setComptes(null)} /></div>}
 
 
-      {!classes.length && !occupe && <p data-bienvenue style={{ fontSize: 16, color: KIT.txt, margin: '10px 0 0' }}>👋 <b>Bienvenue !</b> Mettons en route votre première classe : donnez-lui un nom, c’est tout ce qu’il faut pour commencer.</p>}
-      {!classes.length && <GuideProf ouvertParDefaut />}
+      {invite && !classes.length && !occupe && <p data-bienvenue-invite style={{ fontSize: 16, color: KIT.txt, margin: '10px 0 0' }}>👋 <b>Bienvenue !</b> Aucune classe n’est partagée avec vous pour l’instant. Dès que l’administrateur du site vous en partagera une, elle apparaîtra ici : vous pourrez suivre vos élèves et leur donner des devoirs.</p>}
+      {!invite && !classes.length && !occupe && <p data-bienvenue style={{ fontSize: 16, color: KIT.txt, margin: '10px 0 0' }}>👋 <b>Bienvenue !</b> Mettons en route votre première classe : donnez-lui un nom, c’est tout ce qu’il faut pour commencer.</p>}
+      {!invite && !classes.length && <GuideProf ouvertParDefaut />}
 
 
-      {(formClasse || (!classes.length && !occupe)) && (
+      {!invite && (formClasse || (!classes.length && !occupe)) && (
         <form onSubmit={creerClasse} style={{ ...styleBoite, margin: '14px 0 0', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <label style={{ fontSize: 13, fontWeight: 700 }}>Nom de la classe<br />
             <input value={nc.nom} onChange={e => setNc({ ...nc, nom: e.target.value, prefixe: prefixeSaisi ? nc.prefixe : prefixeDe(e.target.value) })} placeholder="TSTL 1" style={champ} aria-label="Nom de la classe" /></label>
@@ -367,11 +369,11 @@ export function SimulationSuiviProf({ naviguer }) {
             <div data-reglages>
               <section className="sp-carte">
                 <h3>👥 Élèves et comptes</h3>
-                <p className="sp-sous">Ajoutez des comptes si un élève arrive en cours d’année, ou téléchargez les résultats de la classe.</p>
+                <p className="sp-sous">{invite ? 'Téléchargez les résultats de la classe. Pour ajouter un élève, demandez à l’administrateur du site.' : 'Ajoutez des comptes si un élève arrive en cours d’année, ou téléchargez les résultats de la classe.'}</p>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <label style={{ fontSize: 14, color: KIT.txt2 }}>Nombre de nouveaux élèves :{' '}
-                    <input type="number" min={1} max={40} value={ajout} onChange={e => setAjout(e.target.value)} style={{ ...champ, width: 64 }} aria-label="Nombre d’élèves à ajouter" /></label>
-                  <button onClick={ajouter} style={styleBouton(true, '#16a34a')} disabled={occupe || !(Number(ajout) >= 1)}>＋ Créer {Number(ajout) >= 1 ? Number(ajout) : ''} compte{Number(ajout) > 1 ? 's' : ''} élève</button>
+                  {!invite && <label style={{ fontSize: 14, color: KIT.txt2 }}>Nombre de nouveaux élèves :{' '}
+                    <input type="number" min={1} max={40} value={ajout} onChange={e => setAjout(e.target.value)} style={{ ...champ, width: 64 }} aria-label="Nombre d’élèves à ajouter" /></label>}
+                  {!invite && <button onClick={ajouter} style={styleBouton(true, '#16a34a')} disabled={occupe || !(Number(ajout) >= 1)}>＋ Créer {Number(ajout) >= 1 ? Number(ajout) : ''} compte{Number(ajout) > 1 ? 's' : ''} élève</button>}
                   <button onClick={exporter} style={styleBouton(false, '#475569')}>⬇️ Télécharger les résultats (CSV)</button>
                 </div>
               </section>

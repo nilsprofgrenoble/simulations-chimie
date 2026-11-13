@@ -139,9 +139,10 @@ export const emailDe = identifiant => {
 };
 async function chargerProfil() {
   // « admin » existe après supabase/10-administrateur.sql ; sans ce script, on retombe sur la lecture d'avant (pas d'administrateur)
+  // « invite » existe après supabase/16-profs-invites.sql : sans ce script, personne n'est invité
   let prof;
-  try { prof = await rest('professeurs?select=nom,admin'); } catch { prof = await rest('professeurs?select=nom'); }
-  if (prof.length) return { role: 'prof', nom: prof[0].nom, admin: !!prof[0].admin };
+  try { prof = await rest('professeurs?select=nom,admin,invite'); } catch { try { prof = await rest('professeurs?select=nom,admin'); } catch { prof = await rest('professeurs?select=nom'); } }
+  if (prof.length) return { role: 'prof', nom: prof[0].nom, admin: !!prof[0].admin, invite: !!prof[0].invite };
   let el;
   try { el = await rest('eleves?select=identifiant,classe_id,classes(nom,site)'); } catch { el = await rest('eleves?select=identifiant,classe_id,classes(nom)'); }   // « site » : supabase/11-energy-at-school.sql
   if (el.length && el[0].classes?.site === 'energy') throw new ErreurServeur('Ce compte est réservé au site Energy@School.', 403);

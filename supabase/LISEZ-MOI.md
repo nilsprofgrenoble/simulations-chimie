@@ -179,3 +179,30 @@ Les scores sont calculés par le serveur à partir des mêmes lignes « activite
 ## Plus de pseudos (étape 28)
 
 Exécuter `15-pseudos-plus.sql` (Supabase → SQL Editor → Run) **tout de suite après la mise en ligne** : sans lui, un élève qui choisit l'un des nouveaux pseudos voit une erreur d'enregistrement. Vérification : deux lignes, « pseudos_adj_liste » et « pseudos_nom_liste ». Les pseudos déjà choisis ne changent pas. Listes dans `src/classe.js` : on peut seulement ajouter à la fin (256 maximum de chaque sorte).
+
+
+## Professeurs invités, et gestion des professeurs depuis le site (étape 29)
+
+Depuis *Suivi professeur → Mon compte → « Gérer les professeurs »* (administrateur seul), on peut désormais : créer un compte avec un rôle, changer le rôle d'un professeur, générer un nouveau mot de passe, supprimer un professeur. Plus besoin d'ouvrir Supabase pour cela.
+
+Trois rôles :
+| | Invité | Professeur | Administrateur |
+|---|---|---|---|
+| Voir les classes qu'on lui partage, leurs résultats, l'export CSV | oui | oui | oui |
+| Donner des devoirs, régler le chapitre en cours et la vie de classe | oui | oui | oui |
+| Réinitialiser le mot de passe d'un élève d'une classe partagée | oui | oui | oui |
+| Créer des classes et des comptes élèves | **non** | oui | oui |
+| Alimenter la liste des exercices valides du classement | **non** | oui | oui |
+| Gérer les comptes professeur | non | non | oui |
+
+À faire **une fois** (sans cela, le site continue de fonctionner comme avant et aucun compte n'est « invité ») :
+1. **SQL** : SQL Editor → New query → coller `16-profs-invites.sql` → Run. Le résultat doit lister les professeurs avec les colonnes `admin` et `invite` (toutes à `false` pour `invite`). Relançable sans risque.
+2. **Fonction « comptes »** : Edge Functions → comptes → Code → remplacer tout le contenu par `functions/comptes/index.ts` → Deploy (garder le réglage JWT déjà fait).
+3. **Tester** : Suivi professeur → Mon compte → « Gérer les professeurs ». Passer un collègue en « Invité », puis se connecter avec son compte : il ne doit voir ni « Nouvelle classe » ni la création de comptes élèves.
+
+Règles à connaître :
+- un compte créé depuis le site est **Invité par défaut** ; l'administrateur peut le passer « Professeur » ou « Administrateur » ;
+- vous ne pouvez pas changer votre propre rôle, ni supprimer votre propre compte (pour ne pas perdre l'accès d'administrateur) ; un administrateur ne peut pas être supprimé tant qu'il garde ce rôle ;
+- supprimer un professeur qui possède des classes supprime aussi ces classes, les comptes de leurs élèves et leurs résultats : le site demande une seconde confirmation ;
+- la fermeture est faite **côté serveur** (fonction « comptes » et règles de la base), pas seulement en cachant les boutons.
+
