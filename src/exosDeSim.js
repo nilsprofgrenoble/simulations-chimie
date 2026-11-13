@@ -54,6 +54,7 @@ export const EXOS_DE_SIM = {
   50: [/force-champ/, /electro\.1/, /champ\.(champ-uniforme|champ-force)/, /deux-gouttelettes/],
   71: [/^ener2/, /ene-(puissance|duree|joule|rendement|haute|kwh)/, /plausible\.ene-(batterie|kwh|rendement|joule)/],
   72: [/ene-(loi-mailles|pente|pile-reelle)/],
+  108: [/mec-pointage/, /plausible\.mec-pointage/],
   107: [/mec-(em|epp|chute)/, /plausible\.mec-(epp|em)/],
   106: [/mec-(theoreme|travail|barriere|ec-)/, /plausible\.mec-/],
   // ── Terminale STL ──

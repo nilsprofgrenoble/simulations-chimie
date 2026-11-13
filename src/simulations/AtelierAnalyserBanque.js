@@ -2489,6 +2489,27 @@ export const PREVOIR = [
       V('W(vec(P)) + W(vec(f)), car le travail de la réaction est nul', 'ΔEc = ΣW. La réaction normale est perpendiculaire au déplacement (cos 90° = 0) ; le poids est moteur (positif) et le frottement résistant (négatif).'),
       F('W(vec(P)) − W(vec(f)), avec W(vec(f)) positif', 'Le travail du frottement est lui-même négatif (W = − f × L) : on l’additionne tel quel, avec son signe.'),
     ] },
+  { id: 'mec-pointage-echelle', domaine: 'Mécanique', titre: 'Des pixels aux mètres',
+    enonce: 'Sur une image d’un film, un étalon de 0,30 m mesure 150 pixels. Une distance entre deux points pointés mesure 400 pixels sur la même image (même plan).', q: 'Cette distance vaut…', options: [
+      V('0,80 m', 'échelle = 0,30 m ÷ 150 px = 0,0020 m/px ; 400 px × 0,0020 m/px = 0,80 m.'),
+      F('120 m', 'Vous avez multiplié 400 par la longueur de l’étalon (0,30) puis par 1000 : il faut multiplier par l’échelle en m/px.'),
+      F('2,0 × 10⁵ m', 'Vous avez inversé l’échelle (150 ÷ 0,30 = 500 px/m) et multiplié : l’échelle est en mètres par pixel.'),
+      F('0,0020 m', 'C’est la valeur d’un pixel (l’échelle), pas celle de 400 pixels.'),
+    ] },
+  { id: 'mec-pointage-vitesse', domaine: 'Mécanique', titre: 'Vitesse par différence centrée',
+    enonce: 'Un mobile est filmé à 25 images par seconde (τ = 0,040 s entre deux images). Sur le pointage, la distance M(i−1)M(i+1) vaut 0,12 m.', q: 'La vitesse au point M(i) vaut environ…', options: [
+      V('1,5 m·s⁻¹', 'v ≈ M(i−1)M(i+1) ÷ (2τ) = 0,12 ÷ 0,080 = 1,5 m·s⁻¹ : la distance couvre deux intervalles de temps.'),
+      F('3,0 m·s⁻¹', 'Vous avez divisé par τ : M(i−1)M(i+1) correspond à deux intervalles, donc il faut diviser par 2τ.'),
+      F('0,75 m·s⁻¹', 'Vous avez divisé par 4τ : le dénominateur est 2τ = 0,080 s.'),
+      F('0,0048 m·s⁻¹', 'Vous avez multiplié la distance par τ au lieu de diviser : une vitesse est une distance divisée par une durée.'),
+    ] },
+  { id: 'mec-pointage-compat', domaine: 'Mécanique', titre: 'L’énergie mécanique est-elle conservée ?',
+    enonce: 'Deux images d’un pendule donnent E_m = 21,0 mJ et E_m = 19,8 mJ. On retient u(E_m) = 7 % de E_m pour chaque valeur (incertitudes indépendantes), soit 1,47 mJ et 1,39 mJ ; l’incertitude composée vaut √(u₁² + u₂²) ≈ 2,0 mJ.', q: 'On peut conclure que…', options: [
+      V('les deux valeurs sont compatibles : E_m est conservée à l’incertitude près', 'L’écart (1,2 mJ) est inférieur à l’incertitude composée (≈ 2,0 mJ) : on ne peut pas affirmer que E_m a changé.'),
+      F('E_m a diminué, car 19,8 est inférieur à 21,0', 'Deux valeurs différentes ne suffisent pas : il faut comparer leur écart à l’incertitude.'),
+      F('E_m n’est pas conservée, car les deux valeurs ne sont pas égales', 'Une mesure n’est jamais exactement reproductible ; l’égalité exacte n’est pas le critère.'),
+      F('on ne peut rien conclure sans refaire 100 pointages', 'L’incertitude retenue permet déjà de conclure : écart < incertitude composée.'),
+    ] },
   { id: 'mec-em-conservation', domaine: 'Mécanique', titre: 'Bille lâchée de plus haut',
     enonce: 'Deux billes identiques sont lâchées sans vitesse, sans frottement, dans une même cuvette : la première d’une hauteur h, la seconde d’une hauteur 4 h (au-dessus du point bas). On compare leurs vitesses au point bas, sachant que toute l’énergie potentielle se convertit en énergie cinétique.', q: 'La vitesse de la seconde bille au point bas est…', options: [
       F('4 fois plus grande', 'E_c = ½ m v² est multipliée par 4, donc v est multipliée par 2 (v² est multipliée par 4), pas par 4.'),

@@ -79,6 +79,7 @@ const SimulationChampForce = paresseux(() => import("./simulations/ChampForce"),
 const SimulationDeuxCorps = paresseux(() => import("./simulations/DeuxCorps"), "SimulationDeuxCorps");
 const SimulationCondensateurMillikan = paresseux(() => import("./simulations/CondensateurMillikan"), "SimulationCondensateurMillikan");
 const SimulationElectrisation = paresseux(() => import("./simulations/Electrisation"), "SimulationElectrisation");
+const SimulationPointage = paresseux(() => import("./simulations/Pointage"), "SimulationPointage");
 const SimulationEnergieMeca = paresseux(() => import("./simulations/EnergieMeca"), "SimulationEnergieMeca");
 const SimulationTravail = paresseux(() => import("./simulations/Travail"), "SimulationTravail");
 const SimulationMouvementSysteme = paresseux(() => import("./simulations/MouvementSysteme"), "SimulationMouvementSysteme");
@@ -227,6 +228,8 @@ const SIMULATIONS = [
     component: SimulationTravail },
   { id:107, label:"Énergies cinétique, potentielle et mécanique", niveau:"1G", icon:"🎢", color:"#3f6212",
     component: SimulationEnergieMeca },
+  { id:108, label:"Pointage d’un film et bilan énergétique", niveau:"1G", icon:"🎞️", color:"#3f6212",
+    component: SimulationPointage },
   { id:56, label:"Référentiel et mouvement : décrire un mouvement", niveau:"2GT", icon:"🚃", color:"#4338ca",
     component: SimulationMouvementReferentiel },
   { id:57, label:"Atomes, ions et molécules : la quête de l’octet", niveau:"2GT", icon:"⚛️", color:"#16a34a",

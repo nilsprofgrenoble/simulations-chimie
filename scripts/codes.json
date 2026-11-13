@@ -741,5 +741,9 @@
  "37:prevoir:mec-em-conservation": "ANA354",
  "37:prevoir:mec-em-frottement": "ANA355",
  "37:prevoir:mec-epp-origine": "ANA356",
- "77:plausible:mec-em-val": "VAL189"
+ "77:plausible:mec-em-val": "VAL189",
+ "37:prevoir:mec-pointage-echelle": "ANA357",
+ "37:prevoir:mec-pointage-vitesse": "ANA358",
+ "37:prevoir:mec-pointage-compat": "ANA359",
+ "77:plausible:mec-pointage-val": "VAL190"
 }
