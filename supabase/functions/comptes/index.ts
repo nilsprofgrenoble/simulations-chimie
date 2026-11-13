@@ -15,7 +15,13 @@
 //    retirer_prof     { classe_id, prof_id }    → retire un co-professeur
 //    quitter_classe   { classe_id }             → un co-professeur quitte la classe
 //    creer_prof       { email, nom }            → ADMINISTRATEUR seul : crée un compte professeur (mot de passe affiché une seule fois)
-//    lister_profs     {}                        → ADMINISTRATEUR seul : liste des professeurs (nom, email, admin)
+//    lister_profs     {}                        → ADMINISTRATEUR seul : liste des professeurs (nom, email, rôle)
+//    changer_role     { email, role }           → ADMINISTRATEUR seul : « admin », « prof » ou « invite » (jamais pour soi-même)
+//    reinitialiser_prof { email }               → ADMINISTRATEUR seul : nouveau mot de passe d'un professeur (affiché une seule fois)
+//    supprimer_prof   { email, forcer? }        → ADMINISTRATEUR seul : supprime un professeur ; s'il possède des classes, il faut « forcer »
+//                                                 (ses classes et les comptes élèves sont alors supprimés)
+//  Rôles : « admin » (tout), « prof » (crée ses classes), « invite » (droits limités : voit les classes qu'on lui partage, donne des devoirs,
+//  règle le chapitre en cours ; ne crée NI classe NI compte élève). « invite » demande supabase/16-profs-invites.sql.
 //  Droits : le propriétaire de la classe peut tout. Un co-professeur peut ajouter des comptes et réinitialiser des mots de passe,
 //  mais NI supprimer un compte, NI supprimer la classe, NI partager, NI retirer un professeur (supprimer_eleve, supprimer_classe,
 //  partager, retirer_prof : propriétaire seulement).
@@ -78,9 +84,10 @@ Deno.serve(async (req) => {
   const { data: qui, error: errQui } = await admin.auth.getUser(jeton);
   if (errQui || !qui?.user) return rep(401, { erreur: 'Connexion requise.' });
   const profId = qui.user.id;
-  const { data: prof, error: errProf } = await admin.from('professeurs').select('user_id, admin').eq('user_id', profId).maybeSingle();
+  const { data: prof, error: errProf } = await admin.from('professeurs').select('*').eq('user_id', profId).maybeSingle();
   if (errProf) return rep(500, { erreur: `Erreur du serveur (base de données) : ${errProf.message}` });
   if (!prof) return rep(403, { erreur: 'Action réservée aux professeurs.' });
+  const estInvite = !!(prof as { invite?: boolean }).invite;   // colonne ajoutée par 16-profs-invites.sql ; absente avant : personne n'est invité
 
   let corps: Record<string, unknown>;
   try { corps = await req.json(); } catch { return rep(400, { erreur: 'Requête illisible.' }); }
@@ -134,11 +141,20 @@ Deno.serve(async (req) => {
     }
     return comptes;
   };
+  // Professeur retrouvé par son adresse (identifiant), ou null
+  const profParEmail = async (email: unknown) => {
+    const adresse = String(email ?? '').trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adresse)) return null;
+    const { data, error } = await admin.rpc('prof_par_email', { e: adresse });
+    if (error) throw new Error(error.message);
+    return (data as string | null) ?? null;
+  };
   const nombreValide = (x: unknown) => Number.isInteger(x) && (x as number) >= 1 && (x as number) <= MAX_PAR_APPEL;
 
   try {
   switch (corps.action) {
     case 'creer_classe': {
+      if (estInvite) return rep(403, { erreur: 'Un compte invité ne peut pas créer de classe. Demandez à l’administrateur de vous en partager une.' });
       const nom = String(corps.nom ?? '').trim(), prefixe = String(corps.prefixe ?? '').trim().toLowerCase();
       if (nom.length < 1 || nom.length > 40) return rep(400, { erreur: 'Nom de classe : 1 à 40 caractères.' });
       if (!/^[a-z0-9]{2,12}$/.test(prefixe)) return rep(400, { erreur: 'Préfixe : 2 à 12 lettres minuscules ou chiffres, sans espace ni accent (ex. tstl1).' });
@@ -151,6 +167,7 @@ Deno.serve(async (req) => {
       return rep(200, { classe, comptes: await creerComptes(classe, corps.nombre as number) });
     }
     case 'ajouter_eleves': {
+      if (estInvite) return rep(403, { erreur: 'Un compte invité ne peut pas créer de comptes élèves.' });
       const classe = await maClasseOuPartagee(corps.classe_id);
       if (!classe) return rep(404, { erreur: 'Classe introuvable.' });
       if (!nombreValide(corps.nombre)) return rep(400, { erreur: `Nombre d’élèves : entre 1 et ${MAX_PAR_APPEL}.` });
@@ -219,21 +236,75 @@ Deno.serve(async (req) => {
       const { count, error: errNb } = await admin.from('professeurs').select('user_id', { count: 'exact', head: true });
       if (errNb) throw new Error(errNb.message);
       if ((count ?? 0) >= MAX_PROFS) return rep(400, { erreur: `Limite de ${MAX_PROFS} professeurs atteinte.` });
+      const invite = corps.invite !== false;     // par défaut : compte invité (droits limités), sauf demande contraire explicite
       const mot_de_passe = motDePasseProf();
       const { data: cree, error } = await admin.auth.admin.createUser({ email, password: mot_de_passe, email_confirm: true });
       if (error || !cree?.user) return rep(409, { erreur: /already|registered|exists/i.test(error?.message ?? '') ? 'Un compte existe déjà avec cette adresse.' : (error?.message ?? 'Création impossible.') });
-      const { error: errIns } = await admin.from('professeurs').insert({ user_id: cree.user.id, nom, admin: false });
-      if (errIns) { await admin.auth.admin.deleteUser(cree.user.id); throw new Error(errIns.message); }
-      return rep(200, { email, nom, mot_de_passe });
+      const { error: errIns } = await admin.from('professeurs').insert({ user_id: cree.user.id, nom, admin: false, invite });
+      if (errIns) {
+        await admin.auth.admin.deleteUser(cree.user.id);
+        if (/invite/i.test(errIns.message)) return rep(409, { erreur: 'Le rôle « invité » n’est pas encore activé : exécutez le fichier 16-profs-invites.sql dans Supabase (une seule fois).' });
+        throw new Error(errIns.message);
+      }
+      return rep(200, { email, nom, mot_de_passe, invite });
     }
     case 'lister_profs': {
       if (!prof.admin) return rep(403, { erreur: 'Réservé à l’administrateur.' });
-      const { data, error } = await admin.from('professeurs').select('user_id, nom, admin');
+      const { data, error } = await admin.from('professeurs').select('*');
       if (error) throw new Error(error.message);
       const { data: liste, error: errU } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
       if (errU) throw new Error(errU.message);
       const emails = new Map((liste?.users ?? []).map((u) => [u.id, u.email]));
-      return rep(200, { profs: (data ?? []).map((p) => ({ nom: p.nom, admin: p.admin, email: emails.get(p.user_id) ?? '' })) });
+      return rep(200, { profs: (data ?? []).map((p) => ({ nom: p.nom, admin: !!p.admin, invite: !!p.invite, moi: p.user_id === profId, email: emails.get(p.user_id) ?? '' })) });
+    }
+    case 'changer_role': {
+      if (!prof.admin) return rep(403, { erreur: 'Réservé à l’administrateur.' });
+      const cible = await profParEmail(corps.email);
+      if (!cible) return rep(404, { erreur: 'Aucun professeur avec cette adresse.' });
+      if (cible === profId) return rep(400, { erreur: 'Vous ne pouvez pas changer votre propre rôle (vous perdriez l’accès d’administrateur).' });
+      const role = corps.role;
+      if (role !== 'admin' && role !== 'prof' && role !== 'invite') return rep(400, { erreur: 'Rôle inconnu.' });
+      const { error } = await admin.from('professeurs').update({ admin: role === 'admin', invite: role === 'invite' }).eq('user_id', cible);
+      if (error) return rep(409, { erreur: /invite/i.test(error.message) ? 'Le rôle « invité » n’est pas encore activé : exécutez le fichier 16-profs-invites.sql dans Supabase (une seule fois).' : error.message });
+      return rep(200, { ok: true });
+    }
+    case 'reinitialiser_prof': {
+      if (!prof.admin) return rep(403, { erreur: 'Réservé à l’administrateur.' });
+      const cible = await profParEmail(corps.email);
+      if (!cible) return rep(404, { erreur: 'Aucun professeur avec cette adresse.' });
+      if (cible === profId) return rep(400, { erreur: 'Pour votre propre mot de passe, utilisez « Changer mon mot de passe ».' });
+      const mot_de_passe = motDePasseProf();
+      const { error } = await admin.auth.admin.updateUserById(cible, { password: mot_de_passe });
+      if (error) return rep(500, { erreur: error.message });
+      return rep(200, { email: String(corps.email).trim().toLowerCase(), mot_de_passe });
+    }
+    case 'supprimer_prof': {
+      if (!prof.admin) return rep(403, { erreur: 'Réservé à l’administrateur.' });
+      const cible = await profParEmail(corps.email);
+      if (!cible) return rep(404, { erreur: 'Aucun professeur avec cette adresse.' });
+      if (cible === profId) return rep(400, { erreur: 'Vous ne pouvez pas supprimer votre propre compte.' });
+      const { data: fiche, error: errFiche } = await admin.from('professeurs').select('admin').eq('user_id', cible).maybeSingle();
+      if (errFiche) throw new Error(errFiche.message);
+      if (fiche?.admin) return rep(400, { erreur: 'Ce professeur est administrateur : retirez-lui d’abord ce rôle.' });
+      const { data: classes, error: errCl } = await admin.from('classes').select('id, nom').eq('prof_id', cible);
+      if (errCl) throw new Error(errCl.message);
+      if ((classes ?? []).length && corps.forcer !== true) {
+        return rep(409, { erreur: `Ce professeur possède ${(classes ?? []).length} classe(s) : les supprimer effacerait aussi les comptes et les résultats de ses élèves.`, classes: (classes ?? []).length, confirmation: true });
+      }
+      // On supprime d'abord les comptes élèves de ses classes (sinon ils resteraient sans classe), puis son compte (qui supprime ses classes)
+      const echecs: string[] = [];
+      for (const c of classes ?? []) {
+        const { data: eleves, error: errEl } = await admin.from('eleves').select('user_id, identifiant').eq('classe_id', c.id);
+        if (errEl) throw new Error(errEl.message);
+        for (const e of eleves ?? []) {
+          const { error } = await admin.auth.admin.deleteUser(e.user_id);
+          if (error) echecs.push(e.identifiant);
+        }
+      }
+      if (echecs.length) return rep(500, { erreur: `Comptes élèves non supprimés : ${echecs.join(', ')}. Relancez la suppression.` });
+      const { error } = await admin.auth.admin.deleteUser(cible);
+      if (error) return rep(500, { erreur: error.message });
+      return rep(200, { ok: true, classes: (classes ?? []).length });
     }
     case 'quitter_classe': {
       if (typeof corps.classe_id !== 'string') return rep(400, { erreur: 'Classe inconnue.' });
