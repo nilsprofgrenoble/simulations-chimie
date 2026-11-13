@@ -81,8 +81,7 @@ const SimulationCondensateurMillikan = paresseux(() => import("./simulations/Con
 const SimulationElectrisation = paresseux(() => import("./simulations/Electrisation"), "SimulationElectrisation");
 const SimulationExtraction = paresseux(() => import("./simulations/Extraction"), "SimulationExtraction");
 const SimulationIr = paresseux(() => import("./simulations/Ir"), "SimulationIr");
-const SimulationCcm = paresseux(() => import("./simulations/Ccm"), "SimulationCcm");
-const SimulationSynthese = paresseux(() => import("./simulations/Synthese"), "SimulationSynthese");
+const SimulationTpChalcone = paresseux(() => import("./simulations/TpChalcone"), "SimulationTpChalcone");
 const SimulationPointage = paresseux(() => import("./simulations/Pointage"), "SimulationPointage");
 const SimulationEnergieMeca = paresseux(() => import("./simulations/EnergieMeca"), "SimulationEnergieMeca");
 const SimulationTravail = paresseux(() => import("./simulations/Travail"), "SimulationTravail");
@@ -234,10 +233,8 @@ const SIMULATIONS = [
     component: SimulationEnergieMeca },
   { id:108, label:"Pointage d’un film et bilan énergétique", niveau:"1G", icon:"🎞️", color:"#3f6212",
     component: SimulationPointage },
-  { id:109, label:"Synthèse organique : du protocole au rendement (TP chalcone)", niveau:"1G", icon:"🧫", color:"#0f766e",
-    component: SimulationSynthese },
-  { id:110, label:"CCM et température de fusion : le produit est-il le bon, est-il pur ?", niveau:"1G", icon:"🔬", color:"#0f766e",
-    component: SimulationCcm },
+  { id:109, label:"TP de la chalcone : préparer la séance", niveau:"1G", icon:"🧫", color:"#0f766e",
+    component: SimulationTpChalcone },
   { id:111, label:"Spectroscopie infrarouge : repérer O–H et C=O", niveau:"1G", icon:"📈", color:"#0f766e",
     component: SimulationIr },
   { id:112, label:"Ampoule à décanter : extraction liquide-liquide", niveau:"1G", icon:"⚗️", color:"#0369a1",

@@ -1,0 +1,15 @@
+import { simuler, phLavage, SCENARIOS } from './tpModele.js';
+const ok = (c, m) => { if (!c) { console.error('ÉCHEC', m); process.exit(1); } };
+const S = k => simuler(SCENARIOS[k].p);
+const r = S('reussi');
+ok(r.diag.length === 1 && r.diag[0] === 'ok', 'réussi : ' + r.diag);
+ok(r.rApp < 1 && r.rApp > 0.6, 'rendement réussi ' + r.rApp);
+ok(S('sechage').diag.includes('humide') && S('sechage').rApp > r.rApp, 'séchage');
+ok(S('soude').diag.includes('soude') && S('soude').ph > 10, 'soude');
+ok(S('exces').diag.includes('exces') && S('exces').taches.length === 2, 'excès visible en CCM');
+ok(S('solvant').diag.includes('tropDeSolvant') && S('solvant').rVrai < r.rVrai, 'trop de solvant fait perdre du produit');
+ok(S('sechage').taches.length === 1, 'eau et soude invisibles en CCM');
+ok(Math.abs(phLavage(0) - 12.7) < 0.1 && phLavage(3) < 10, 'pH');
+ok(S('sechage').fusion.fin < r.fusion.fin, 'Tf abaissée si humide');
+ok(simuler({ m1: 3.4, m2: 3.35, nLav: 3, tSec: 0, vEtOH: 0 }).rApp > 1, 'rendement > 100 % possible si humide');
+console.log('tpModele : tous les tests passent');

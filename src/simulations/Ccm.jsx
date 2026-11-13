@@ -1,5 +1,5 @@
-import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useState } from "react";
+import { declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
+import { useState, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, IndiceDefi, avecIndices, indicesProfond } from "../commun";
 import { NB } from "./Distillation";
@@ -7,7 +7,7 @@ import { Pic } from "../Pictos";
 import { nbf, tire, Schema, T, puces, ROUGE, VERT, BLEU, ORANGE, NOIR, GRIS } from "./Travail";
 import * as C from "./ccmModele";
 
-const SIM_ID = 110;
+export const SIM_ID = 109;
 declarerDefis(SIM_ID, [['rf', 'Identifier une impureté par son Rf']]);
 
 // ====================================================
@@ -20,10 +20,10 @@ const reduit = () => typeof window !== 'undefined' && window.matchMedia && windo
 const cel = (h) => ({ border: `1px solid ${KIT.bord}`, padding: '2px 8px', textAlign: 'center', background: h ? '#f1f5f9' : 'transparent' });
 
 // ---------- plaque de CCM ----------
-function Plaque({ p, etat, front = true, niveau = false, titre }) {
+export function Plaque({ p, etat, front = true, niveau = false, titre }) {
   const mont = etat === 'eluee', anim = !reduit();
   return (
-    <svg viewBox="0 0 360 310" style={{ width: '100%', maxWidth: 440, display: 'block', background: '#fff', borderRadius: 8 }} role="img"
+    <svg viewBox="0 0 385 310" style={{ width: "100%", maxWidth: 440, display: 'block', background: '#fff', borderRadius: 8 }} role="img"
       aria-label={`${titre || 'Plaque de CCM'} : ligne de dépôt à 1,5 cm du bas${etat !== 'vide' ? ', quatre dépôts : produit, chalcone, anisaldéhyde, 4’-méthylacétophénone' : ''}${mont ? `, front de l’éluant à ${nbf(p.front, 1)} cm de la ligne de dépôt` : ''}`}>
       <rect x="62" y="20" width="270" height="262" rx="4" fill="#ecfccb" stroke={GRIS} strokeWidth="2"/>
       <line x1="62" y1={Y0} x2="332" y2={Y0} stroke={NOIR} strokeWidth="1.5" strokeDasharray="5 3"/>
@@ -42,7 +42,7 @@ function Plaque({ p, etat, front = true, niveau = false, titre }) {
 
 // ---------- banc Kofler ----------
 const xT = T => 20 + (T - 50) * 1.6;
-function Kofler({ tf, largeur = 0 }) {
+export function Kofler({ tf, largeur = 0 }) {
   const ticks = []; for (let T = 50; T <= 250; T += 5) ticks.push(T);
   return (
     <svg viewBox="0 0 360 150" style={{ width: '100%', maxWidth: 440, display: 'block', background: '#fff', borderRadius: 8 }} role="img"
@@ -98,15 +98,16 @@ const SchemaTfCompat = () => (
     <T x={6} y={140} s={11.5} c={GRIS}>fusion nette + valeur compatible ⇒ produit sans doute pur</T><T x={196} y={78} s={11.5}>l’intervalle contient 98 °C</T>
   </Schema>);
 
-export function SimulationCcm() {
-  const [mode, setMode] = useState(() => modeOuverture('ccm-guide-v1'));
-  useSignalerMode(mode);
+export function SimulationCcm({ integre = false, modeExt, setModeExt, suite } = {}) {
+  const [modeLoc, setModeLoc] = useState(() => modeOuverture('ccm-guide-v1'));
+  const mode = modeExt ?? modeLoc, setMode = setModeExt ?? setModeLoc;
   const [suiviP, noterP] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('ccm-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);
   const [dep, setDep] = useState(false), [elu, setElu] = useState(false);
   const [xe, setXe] = useState(0.5), [xprod, setXprod] = useState('brut'), [ximp, setXimp] = useState(0);
+  useEffect(() => { if (mode === 'defi' && !defi) nouveauDefi(); }, [mode]);   // eslint-disable-line
   const enGuide = mode === 'guide', enDefi = mode === 'defi', etape = guide.etape;
   const P1 = C.plaque({ front: FRONT, produit: 'brut' }), P2 = C.plaque({ front: FRONT, produit: 'recris' });
   const dCh = C.distance('chalcone', FRONT), dAn = C.distance('anisaldehyde', FRONT), dAc = C.distance('acetophenone', FRONT);
@@ -184,7 +185,8 @@ export function SimulationCcm() {
   function changerMode(md) { setMode(md); if (md === 'defi' && !defi) nouveauDefi(); }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      {suite && <button onClick={suite.action} style={styleBouton(true, '#7c3aed')}>{suite.label} ▶</button>}
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Paillasse libre</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0369a1')}><Pic n="target"/>Défi</button>
     </span>);
 
@@ -280,11 +282,11 @@ export function SimulationCcm() {
         @media (min-width: 901px) { .cc-l1.cote .cc-carte { order: 2; } .cc-l1.cote .cc-main { order: 1; } }
         @media (max-width: 900px) { .cc-l1.cote { grid-template-columns: minmax(0, 1fr); } }
       `}</style>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 6 }}>
+      {!integre && <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 6 }}>
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>CCM et température de fusion</h2>
         <BoutonsModes mode={mode} setMode={changerMode}/>
-      </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Contrôler le produit du TP de la <strong>chalcone</strong> : lire une plaque de <strong>CCM</strong> (Rf, comparaison avec des références) et une <strong>température de fusion</strong> sur banc Kofler.</div>
+      </div>}
+      {!integre && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Contrôler le produit du TP de la <strong>chalcone</strong> : lire une plaque de <strong>CCM</strong> (Rf, comparaison avec des références) et une <strong>température de fusion</strong> sur banc Kofler.</div>}
       <div className={`cc-l1${mode !== 'explore' ? ' cote' : ''}`}>
         {enGuide ? <div className="cc-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="cc-carte">{panneauHypo}</div> : null}
         <div className="cc-main">
