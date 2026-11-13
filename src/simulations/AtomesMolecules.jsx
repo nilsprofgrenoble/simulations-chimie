@@ -301,6 +301,62 @@ export function SimulationAtomesMolecules() {
   const eOx = etatEntite(8, 8), eF = etatEntite(9, 9), eNa = etatEntite(11, 11);
   const ETAPES = [
     { id: 'gaz', titre: 'Les gaz nobles : des atomes stables', depart: () => voirAtome(10),
+      retenirTitre: 'À RETENIR : LES GAZ NOBLES, ATOMES STABLES',
+      retenir: <>
+        <svg viewBox="0 0 360 134" role="img" aria-label="Schémas en couches de l’hélium (2 électrons), du néon et de l’argon (8 électrons sur la dernière couche) : la couche de valence est pleine" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <text x="180" y="13" fontSize="11" fill="#475569" textAnchor="middle">dernière couche (couche de valence) pleine = atome stable</text>
+            <circle cx="62" cy="60" r="3" fill="#475569"/>
+            <circle cx="62" cy="60" r="24" fill="none" stroke="#b45309" strokeWidth="2.2"/>
+            <circle cx="62" cy="36" r="3.4" fill="#b45309"/>
+            <circle cx="62" cy="84" r="3.4" fill="#b45309"/>
+            <text x="62" y="112" fontSize="11" fill="#0f172a" textAnchor="middle" fontWeight="700">hélium (Z = 2)</text>
+            <text x="62" y="127" fontSize="11" fill="#b45309" textAnchor="middle" fontWeight="700">duet : 2 e⁻</text>
+            <circle cx="180" cy="60" r="3" fill="#475569"/>
+            <circle cx="180" cy="60" r="14" fill="none" stroke="#94a3b8" strokeWidth="1.1"/>
+            <circle cx="180" cy="46" r="3.4" fill="#0b4f94"/>
+            <circle cx="180" cy="74" r="3.4" fill="#0b4f94"/>
+            <circle cx="180" cy="60" r="30" fill="none" stroke="#b45309" strokeWidth="2.2"/>
+            <circle cx="190.3" cy="31.8" r="3" fill="#b45309"/>
+            <circle cx="207.2" cy="47.3" r="3" fill="#b45309"/>
+            <circle cx="208.2" cy="70.3" r="3" fill="#b45309"/>
+            <circle cx="192.7" cy="87.2" r="3" fill="#b45309"/>
+            <circle cx="169.7" cy="88.2" r="3" fill="#b45309"/>
+            <circle cx="152.8" cy="72.7" r="3" fill="#b45309"/>
+            <circle cx="151.8" cy="49.7" r="3" fill="#b45309"/>
+            <circle cx="167.3" cy="32.8" r="3" fill="#b45309"/>
+            <text x="180" y="112" fontSize="11" fill="#0f172a" textAnchor="middle" fontWeight="700">néon (Z = 10)</text>
+            <text x="180" y="127" fontSize="11" fill="#b45309" textAnchor="middle" fontWeight="700">octet : 8 e⁻</text>
+            <circle cx="298" cy="60" r="3" fill="#475569"/>
+            <circle cx="298" cy="60" r="11" fill="none" stroke="#94a3b8" strokeWidth="1.1"/>
+            <circle cx="298" cy="49" r="3.4" fill="#0b4f94"/>
+            <circle cx="298" cy="71" r="3.4" fill="#0b4f94"/>
+            <circle cx="298" cy="60" r="21" fill="none" stroke="#94a3b8" strokeWidth="1.1"/>
+            <circle cx="305.2" cy="40.3" r="3" fill="#0b4f94"/>
+            <circle cx="317" cy="51.1" r="3" fill="#0b4f94"/>
+            <circle cx="317.7" cy="67.2" r="3" fill="#0b4f94"/>
+            <circle cx="306.9" cy="79" r="3" fill="#0b4f94"/>
+            <circle cx="290.8" cy="79.7" r="3" fill="#0b4f94"/>
+            <circle cx="279" cy="68.9" r="3" fill="#0b4f94"/>
+            <circle cx="278.3" cy="52.8" r="3" fill="#0b4f94"/>
+            <circle cx="289.1" cy="41" r="3" fill="#0b4f94"/>
+            <circle cx="298" cy="60" r="31" fill="none" stroke="#b45309" strokeWidth="2.2"/>
+            <circle cx="298" cy="29" r="3" fill="#b45309"/>
+            <circle cx="319.9" cy="38.1" r="3" fill="#b45309"/>
+            <circle cx="329" cy="60" r="3" fill="#b45309"/>
+            <circle cx="319.9" cy="81.9" r="3" fill="#b45309"/>
+            <circle cx="298" cy="91" r="3" fill="#b45309"/>
+            <circle cx="276.1" cy="81.9" r="3" fill="#b45309"/>
+            <circle cx="267" cy="60" r="3" fill="#b45309"/>
+            <circle cx="276.1" cy="38.1" r="3" fill="#b45309"/>
+            <text x="298" y="112" fontSize="11" fill="#0f172a" textAnchor="middle" fontWeight="700">argon (Z = 18)</text>
+            <text x="298" y="127" fontSize="11" fill="#b45309" textAnchor="middle" fontWeight="700">octet : 8 e⁻</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Les <strong>gaz nobles</strong> sont les seuls atomes qui restent <strong>seuls</strong> : leur couche de valence est <strong>pleine</strong>.</li>
+          <li><strong>Octet</strong> = 8 électrons de valence ; <strong>duet</strong> = 2 électrons, pour H et He seulement (leur seule couche est n = 1).</li>
+          <li>Tout autre atome cherche à <strong>ressembler au gaz noble le plus proche</strong>.</li>
+        </ul>
+      </>,
       texte: <>La plupart des atomes ne restent pas seuls dans la nature. Les <strong>gaz nobles</strong> (hélium, néon, argon…) sont les seuls à vivre en atomes isolés : on dit qu’ils sont <strong>stables</strong>. Leur secret : leur dernière couche d’électrons, la <strong>couche de valence</strong>, est <strong>pleine</strong>.
         <ExempleResolu>Le néon (Z = 10) : {configTxt(10)}. Sa couche de valence (la dernière, n = 2) contient 2 + 6 = <strong>8 électrons</strong> : c’est un <strong>octet</strong>. Elle est pleine.
           {bouton('Voir le néon', () => voirAtome(10))}</ExempleResolu>
@@ -308,6 +364,25 @@ export function SimulationAtomesMolecules() {
       tache: { type: 'qcm', q: 'Combien d’électrons de valence a l’argon (Z = 18) ?', options: ['8', '18', '2', '6'], bonne: 0,
         expl: `L’argon : ${configTxt(18)}. Sa dernière couche (n = 3) a 2 + 6 = 8 électrons : un octet. (L’hélium, lui, est stable avec 2 électrons : un duet.)`, indice: "Remplis les couches une à une, dans l’ordre (K, puis L, puis M…), avec le nombre maximal d’électrons de chaque couche. Les électrons de valence sont ceux de la dernière couche occupée." } },
     { id: 'valence', titre: 'Compter les électrons de valence', depart: () => voirAtome(8),
+      retenirTitre: 'À RETENIR : COMPTER LES ÉLECTRONS DE VALENCE',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Électrons de valence = électrons de la dernière couche</strong> (celle dont le numéro n est le plus grand).</li>
+          <li>Méthode : ① configuration électronique ② repérer la dernière couche ③ additionner ses électrons.</li>
+        </ul>
+        <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Atome</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Dernière couche</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Valence</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Manque</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>O (Z = 8)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>n = 2 : 2 + 4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>6</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>F (Z = 9)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>n = 2 : 2 + 5</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>7</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Na (Z = 11)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>n = 3 : 1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>7</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Cl (Z = 17)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>n = 3 : 2 + 5</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>7</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Manque pour l’octet = 8 − valence</strong> (O : 8 − 6 = 2).</li>
+        </ul>
+      </>,
       texte: <>Pour trouver les <strong>électrons de valence</strong> d’un atome : on écrit sa configuration électronique, puis on compte les électrons de la <strong>dernière couche</strong> (celle dont le numéro n est le plus grand).
         <ExempleResolu>L’oxygène (Z = 8) : {eOx.config}. La dernière couche est n = 2 : 2 + 4 = <strong>{eOx.valence} électrons de valence</strong>. Pour un octet, il lui en manque {8 - eOx.valence}.
           {bouton('Voir l’oxygène', () => voirAtome(8))}</ExempleResolu>
@@ -339,6 +414,67 @@ export function SimulationAtomesMolecules() {
         À vous : l’<strong>aluminium</strong> (Z = 13). {bouton('Voir l’aluminium', () => voirAtome(13))}</>,
       tache: { type: 'action', ok: atelierEff === 'ion' && ion.Z === 13 && ion.n === 10, consigne: `Avec « − électron », retirez les électrons de l’aluminium pour qu’il devienne stable (couche de valence pleine). Ici : ${E.formule} (${E.n} électrons).` } },
     { id: 'vocab', titre: 'Cation ou anion ?', depart: () => voirAtome(12, 10),
+      retenirTitre: 'À RETENIR : CATIONS ET ANIONS',
+      retenir: <>
+        <svg viewBox="0 0 360 120" role="img" aria-label="Un atome de fluor gagne un électron et devient l’anion F⁻ (8 électrons de valence) ; un atome de sodium perd un électron et devient le cation Na⁺" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <circle cx="38" cy="52" r="22" fill="#f8fafc" stroke="#0b4f94" strokeWidth="2.2"/>
+            <circle cx="38" cy="30" r="3.4" fill="#0b4f94"/>
+            <circle cx="55.2" cy="38.3" r="3.4" fill="#0b4f94"/>
+            <circle cx="59.4" cy="56.9" r="3.4" fill="#0b4f94"/>
+            <circle cx="47.5" cy="71.8" r="3.4" fill="#0b4f94"/>
+            <circle cx="28.5" cy="71.8" r="3.4" fill="#0b4f94"/>
+            <circle cx="16.6" cy="56.9" r="3.4" fill="#0b4f94"/>
+            <circle cx="20.8" cy="38.3" r="3.4" fill="#0b4f94"/>
+            <text x="38" y="57" fontSize="13" fill="#0f172a" textAnchor="middle" fontWeight="700">F</text>
+            <text x="38" y="94" fontSize="10.5" fill="#0b4f94" textAnchor="middle" fontWeight="700">7 e⁻</text>
+            <line x1="70" y1="52" x2="93" y2="52" stroke="#475569" strokeWidth="2"/>
+            <polygon points="100,52 93,55.1 93,48.9" fill="#475569"/>
+            <text x="85" y="44" fontSize="10" fill="#475569" textAnchor="middle" fontWeight="700">+ 1 e⁻</text>
+            <circle cx="134" cy="52" r="22" fill="#f8fafc" stroke="#15803d" strokeWidth="2.2"/>
+            <circle cx="134" cy="30" r="3.4" fill="#15803d"/>
+            <circle cx="149.6" cy="36.4" r="3.4" fill="#15803d"/>
+            <circle cx="156" cy="52" r="3.4" fill="#15803d"/>
+            <circle cx="149.6" cy="67.6" r="3.4" fill="#15803d"/>
+            <circle cx="134" cy="74" r="3.4" fill="#15803d"/>
+            <circle cx="118.4" cy="67.6" r="3.4" fill="#15803d"/>
+            <circle cx="112" cy="52" r="3.4" fill="#15803d"/>
+            <circle cx="118.4" cy="36.4" r="3.4" fill="#15803d"/>
+            <text x="134" y="57" fontSize="13" fill="#0f172a" textAnchor="middle" fontWeight="700">F⁻</text>
+            <text x="134" y="94" fontSize="10.5" fill="#15803d" textAnchor="middle" fontWeight="700">8 e⁻ : stable</text>
+            <circle cx="232" cy="52" r="22" fill="#f8fafc" stroke="#0b4f94" strokeWidth="2.2"/>
+            <circle cx="232" cy="30" r="3.4" fill="#0b4f94"/>
+            <text x="232" y="57" fontSize="13" fill="#0f172a" textAnchor="middle" fontWeight="700">Na</text>
+            <text x="232" y="94" fontSize="10.5" fill="#0b4f94" textAnchor="middle" fontWeight="700">1 e⁻</text>
+            <line x1="264" y1="52" x2="287" y2="52" stroke="#475569" strokeWidth="2"/>
+            <polygon points="294,52 287,55.1 287,48.9" fill="#475569"/>
+            <text x="279" y="44" fontSize="10" fill="#475569" textAnchor="middle" fontWeight="700">− 1 e⁻</text>
+            <circle cx="328" cy="52" r="22" fill="#f8fafc" stroke="#15803d" strokeWidth="2.2"/>
+            <circle cx="328" cy="30" r="3.4" fill="#15803d"/>
+            <circle cx="343.6" cy="36.4" r="3.4" fill="#15803d"/>
+            <circle cx="350" cy="52" r="3.4" fill="#15803d"/>
+            <circle cx="343.6" cy="67.6" r="3.4" fill="#15803d"/>
+            <circle cx="328" cy="74" r="3.4" fill="#15803d"/>
+            <circle cx="312.4" cy="67.6" r="3.4" fill="#15803d"/>
+            <circle cx="306" cy="52" r="3.4" fill="#15803d"/>
+            <circle cx="312.4" cy="36.4" r="3.4" fill="#15803d"/>
+            <text x="328" y="57" fontSize="13" fill="#0f172a" textAnchor="middle" fontWeight="700">Na⁺</text>
+            <text x="328" y="94" fontSize="10.5" fill="#15803d" textAnchor="middle" fontWeight="700">8 e⁻ (n = 2)</text>
+            <text x="86" y="14" fontSize="11" fill="#0b4f94" textAnchor="middle" fontWeight="700">ANION : gagne des e⁻</text>
+            <text x="280" y="14" fontSize="11" fill="#b45309" textAnchor="middle" fontWeight="700">CATION : perd des e⁻</text>
+            <text x="180" y="112" fontSize="10" fill="#475569" textAnchor="middle">les points sont les électrons de valence</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Le <strong>t</strong> de ca<strong>t</strong>ion ressemble à un <strong>+</strong> : <strong>cation = positif</strong> (a perdu des e⁻) ; <strong>anion = négatif</strong> (a gagné des e⁻).</li>
+          <li>Un atome gagne ou perd <strong>le moins d’électrons possible</strong> pour ressembler au gaz noble le plus proche (F⁻ et Na⁺ ont 10 e⁻, comme le néon).</li>
+        </ul>
+        <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Famille</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Ions courants</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>cations (perdent des e⁻)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Na⁺ · Mg²⁺ · Al³⁺</td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>anions (gagnent des e⁻)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>F⁻ · Cl⁻ · O²⁻ · S²⁻</td></tr>
+          </tbody>
+        </table>
+      </>,
       texte: <>Retiens : <strong>cation</strong> = charge <strong>positive</strong> (l’atome a perdu des électrons) ; <strong>anion</strong> = charge <strong>négative</strong> (l’atome a gagné des électrons). La charge, c’est le nombre d’électrons perdus (+) ou gagnés (−).
         <ExempleResolu>Mg²⁺ : le magnésium (Z = 12) a perdu 2 électrons : 12 − 2 = 10 électrons, comme le néon. C’est un <strong>cation</strong>.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'L’ion chlorure Cl⁻ est…', options: ['un anion : il a gagné 1 électron', 'un cation : il a gagné 1 électron', 'un cation : il a perdu 1 électron', 'un anion : il a perdu 1 électron'], bonne: 0,
@@ -371,6 +507,46 @@ export function SimulationAtomesMolecules() {
         À vous : construisez O₂ (double liaison : cliquez deux fois sur la même paire d’atomes), puis ajoutez les doublets non liants.</>,
       tache: { type: 'action', ok: molOk('O2'), consigne: 'Construisez O₂ : 2 doublets liants et 2 doublets non liants sur chaque atome.' } },
     { id: 'tirets', titre: 'On simplifie : seulement des tirets', depart: () => voirMol('HCl', 'tirets', true),
+      retenirTitre: 'À RETENIR : LE SCHÉMA DE LEWIS',
+      retenir: <>
+        <svg viewBox="0 0 390 146" role="img" aria-label="Schémas de Lewis de HCl, H₂O et CO₂ : un tiret bleu entre deux atomes est un doublet liant, un tiret orange sur un atome est un doublet non liant" style={{ width: '100%', maxWidth: 400, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <text x="24" y="53" fontSize="15" fill="#0f172a" textAnchor="middle" fontWeight="700">H</text>
+            <text x="72" y="53" fontSize="15" fill="#0f172a" textAnchor="middle" fontWeight="700">Cl</text>
+            <line x1="34" y1="48" x2="58" y2="48" stroke="#0b4f94" strokeWidth="2.4"/>
+            <line x1="76.5" y1="33" x2="67.5" y2="33" stroke="#b45309" strokeWidth="2.6"/>
+            <line x1="92" y1="52.5" x2="92" y2="43.5" stroke="#b45309" strokeWidth="2.6"/>
+            <line x1="67.5" y1="63" x2="76.5" y2="63" stroke="#b45309" strokeWidth="2.6"/>
+            <text x="48" y="92" fontSize="12" fill="#0f172a" textAnchor="middle" fontWeight="700">HCl</text>
+            <text x="168" y="45" fontSize="15" fill="#0f172a" textAnchor="middle" fontWeight="700">O</text>
+            <text x="138" y="81" fontSize="15" fill="#0f172a" textAnchor="middle" fontWeight="700">H</text>
+            <text x="198" y="81" fontSize="15" fill="#0f172a" textAnchor="middle" fontWeight="700">H</text>
+            <line x1="160" y1="48" x2="144" y2="66" stroke="#0b4f94" strokeWidth="2.4"/>
+            <line x1="176" y1="48" x2="192" y2="66" stroke="#0b4f94" strokeWidth="2.4"/>
+            <line x1="159.4" y1="26.9" x2="153.6" y2="33.8" stroke="#b45309" strokeWidth="2.6"/>
+            <line x1="182.4" y1="33.8" x2="176.6" y2="26.9" stroke="#b45309" strokeWidth="2.6"/>
+            <text x="168" y="100" fontSize="12" fill="#0f172a" textAnchor="middle" fontWeight="700">H₂O</text>
+            <text x="262" y="53" fontSize="15" fill="#0f172a" textAnchor="middle" fontWeight="700">O</text>
+            <text x="312" y="53" fontSize="15" fill="#0f172a" textAnchor="middle" fontWeight="700">C</text>
+            <text x="362" y="53" fontSize="15" fill="#0f172a" textAnchor="middle" fontWeight="700">O</text>
+            <line x1="274" y1="45" x2="300" y2="45" stroke="#0b4f94" strokeWidth="2.4"/>
+            <line x1="274" y1="51" x2="300" y2="51" stroke="#0b4f94" strokeWidth="2.4"/>
+            <line x1="324" y1="45" x2="350" y2="45" stroke="#0b4f94" strokeWidth="2.4"/>
+            <line x1="324" y1="51" x2="350" y2="51" stroke="#0b4f94" strokeWidth="2.4"/>
+            <line x1="266.5" y1="33" x2="257.5" y2="33" stroke="#b45309" strokeWidth="2.6"/>
+            <line x1="257.5" y1="63" x2="266.5" y2="63" stroke="#b45309" strokeWidth="2.6"/>
+            <line x1="366.5" y1="33" x2="357.5" y2="33" stroke="#b45309" strokeWidth="2.6"/>
+            <line x1="357.5" y1="63" x2="366.5" y2="63" stroke="#b45309" strokeWidth="2.6"/>
+            <text x="312" y="92" fontSize="12" fill="#0f172a" textAnchor="middle" fontWeight="700">CO₂</text>
+            <line x1="10" y1="116" x2="30" y2="116" stroke="#0b4f94" strokeWidth="2.4"/>
+            <text x="36" y="120" fontSize="10.5" fill="#475569">entre deux atomes : doublet liant (2 e⁻ partagés)</text>
+            <line x1="14" y1="134" x2="24" y2="134" stroke="#b45309" strokeWidth="2.6"/>
+            <text x="36" y="138" fontSize="10.5" fill="#475569">sur un atome : doublet non liant (2 e⁻)</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Un <strong>tiret = un doublet</strong> d’électrons. <strong>Entre</strong> deux atomes : doublet <strong>liant</strong> (liaison). <strong>Sur</strong> un atome : doublet <strong>non liant</strong>.</li>
+          <li>Chaque atome doit « voir » <strong>8 électrons</strong> (octet), ou <strong>2</strong> pour H (duet). Exemple CO₂ : C voit 4 × 2 = 8, chaque O voit 4 + 4 = 8.</li>
+        </ul>
+      </>,
       texte: <>Dessiner tous les électrons devient vite long. En chimie, on utilise une notation plus simple, le <strong>schéma de Lewis</strong> : on ne dessine plus les points, mais <strong>un tiret par doublet</strong> d’électrons.
         <ExempleResolu>HCl : H — Cl avec 3 tirets autour de Cl. Le tiret <em>entre</em> deux atomes est un <strong>doublet liant</strong> (la liaison covalente). Les tirets <em>sur</em> un atome sont des <strong>doublets non liants</strong>.
           {bouton('Revoir avec les électrons', () => voirMol('HCl', 'electrons', true))}{' '}{bouton('Revenir aux tirets', () => voirMol('HCl', 'tirets', true))}</ExempleResolu>
@@ -378,6 +554,54 @@ export function SimulationAtomesMolecules() {
       tache: { type: 'qcm', q: 'Dans un schéma de Lewis, un tiret placé sur le seul atome de chlore (pas entre deux atomes) représente…', options: ['un doublet non liant (2 électrons)', 'un doublet liant (2 électrons partagés)', 'un électron célibataire', 'une liaison double'], bonne: 0,
         expl: 'Un tiret entre deux atomes = doublet liant ; un tiret sur un seul atome = doublet non liant. Dans les deux cas, ce sont 2 électrons.', indice: "Un tiret entre deux atomes représente des électrons partagés par ces deux atomes. Ici, le tiret touche un seul atome : est-il partagé avec un autre atome ?" } },
     { id: 'regle', titre: 'Combien de liaisons par atome ?', depart: () => voirAtome(7),
+      retenirTitre: 'À RETENIR : COMBIEN DE LIAISONS ?',
+      retenir: <>
+        <svg viewBox="0 0 360 134" role="img" aria-label="Nombre de liaisons de H (1), O (2), N (3), C (4) et Cl (1), avec leurs doublets non liants" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <text x="180" y="14" fontSize="11" fill="#475569" textAnchor="middle">nombre de liaisons d’un atome neutre</text>
+            <circle cx="36" cy="62" r="14" fill="#f1f5f9" stroke="#475569" strokeWidth="1.8"/>
+            <text x="36" y="67" fontSize="14" fill="#0f172a" textAnchor="middle" fontWeight="700">H</text>
+            <line x1="36" y1="76" x2="36" y2="92" stroke="#0b4f94" strokeWidth="3"/>
+            <text x="36" y="112" fontSize="11" fill="#0b4f94" textAnchor="middle" fontWeight="700">1 liaison</text>
+            <text x="36" y="126" fontSize="10" fill="#b45309" textAnchor="middle">0 non liant</text>
+            <circle cx="108" cy="62" r="14" fill="#f1f5f9" stroke="#475569" strokeWidth="1.8"/>
+            <text x="108" y="67" fontSize="14" fill="#0f172a" textAnchor="middle" fontWeight="700">O</text>
+            <line x1="117.9" y1="71.9" x2="129.2" y2="83.2" stroke="#0b4f94" strokeWidth="3"/>
+            <line x1="98.1" y1="71.9" x2="86.8" y2="83.2" stroke="#0b4f94" strokeWidth="3"/>
+            <line x1="124.6" y1="51.7" x2="118.3" y2="45.4" stroke="#b45309" strokeWidth="2.6"/>
+            <line x1="97.7" y1="45.4" x2="91.4" y2="51.7" stroke="#b45309" strokeWidth="2.6"/>
+            <text x="108" y="112" fontSize="11" fill="#0b4f94" textAnchor="middle" fontWeight="700">2 liaisons</text>
+            <text x="108" y="126" fontSize="10" fill="#b45309" textAnchor="middle">2 non liants</text>
+            <circle cx="180" cy="62" r="14" fill="#f1f5f9" stroke="#475569" strokeWidth="1.8"/>
+            <text x="180" y="67" fontSize="14" fill="#0f172a" textAnchor="middle" fontWeight="700">N</text>
+            <line x1="192.1" y1="69" x2="206" y2="77" stroke="#0b4f94" strokeWidth="3"/>
+            <line x1="180" y1="76" x2="180" y2="92" stroke="#0b4f94" strokeWidth="3"/>
+            <line x1="167.9" y1="69" x2="154" y2="77" stroke="#0b4f94" strokeWidth="3"/>
+            <line x1="184.5" y1="43" x2="175.5" y2="43" stroke="#b45309" strokeWidth="2.6"/>
+            <text x="180" y="112" fontSize="11" fill="#0b4f94" textAnchor="middle" fontWeight="700">3 liaisons</text>
+            <text x="180" y="126" fontSize="10" fill="#b45309" textAnchor="middle">1 non liant</text>
+            <circle cx="252" cy="62" r="14" fill="#f1f5f9" stroke="#475569" strokeWidth="1.8"/>
+            <text x="252" y="67" fontSize="14" fill="#0f172a" textAnchor="middle" fontWeight="700">C</text>
+            <line x1="261.9" y1="71.9" x2="273.2" y2="83.2" stroke="#0b4f94" strokeWidth="3"/>
+            <line x1="242.1" y1="71.9" x2="230.8" y2="83.2" stroke="#0b4f94" strokeWidth="3"/>
+            <line x1="242.1" y1="52.1" x2="230.8" y2="40.8" stroke="#0b4f94" strokeWidth="3"/>
+            <line x1="261.9" y1="52.1" x2="273.2" y2="40.8" stroke="#0b4f94" strokeWidth="3"/>
+            <text x="252" y="112" fontSize="11" fill="#0b4f94" textAnchor="middle" fontWeight="700">4 liaisons</text>
+            <text x="252" y="126" fontSize="10" fill="#b45309" textAnchor="middle">0 non liant</text>
+            <circle cx="324" cy="62" r="14" fill="#f1f5f9" stroke="#475569" strokeWidth="1.8"/>
+            <text x="324" y="67" fontSize="14" fill="#0f172a" textAnchor="middle" fontWeight="700">Cl</text>
+            <line x1="324" y1="76" x2="324" y2="92" stroke="#0b4f94" strokeWidth="3"/>
+            <line x1="328.5" y1="43" x2="319.5" y2="43" stroke="#b45309" strokeWidth="2.6"/>
+            <line x1="342.7" y1="56.4" x2="338.2" y2="48.6" stroke="#b45309" strokeWidth="2.6"/>
+            <line x1="309.8" y1="48.6" x2="305.3" y2="56.4" stroke="#b45309" strokeWidth="2.6"/>
+            <text x="324" y="112" fontSize="11" fill="#0b4f94" textAnchor="middle" fontWeight="700">1 liaison</text>
+            <text x="324" y="126" fontSize="10" fill="#b45309" textAnchor="middle">3 non liants</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>H – O – N – C : 1 – 2 – 3 – 4</strong> liaisons (Cl et F : 1).</li>
+          <li>Pour un atome : <strong>liaisons + doublets non liants = 4</strong> (H : 1 liaison seulement).</li>
+          <li>Liaisons = 8 − électrons de valence (N : 8 − 5 = 3).</li>
+        </ul>
+      </>,
       texte: <>Le nombre de liaisons que fait un atome dépend de ce qui lui manque pour avoir 8 électrons (2 pour H).
         <table style={{ borderCollapse: 'collapse', margin: '6px 0', fontSize: 14 }}><thead><tr><th style={{ textAlign: 'left', padding: '2px 10px 2px 0' }}>Atome</th><th style={{ padding: '2px 10px' }}>électrons de valence</th><th style={{ padding: '2px 10px' }}>liaisons</th><th style={{ padding: '2px 10px' }}>doublets non liants</th></tr></thead>
           <tbody>{[['H', 1, 1, 0], ['O', 6, 2, 2], ['Cl', 7, 1, 3], ['C', 4, 4, 0]].map(l => <tr key={l[0]} style={{ borderTop: '1px solid #e2e8f0' }}><td style={{ padding: '2px 10px 2px 0', fontWeight: 700 }}>{l[0]}</td><td style={{ textAlign: 'center' }}>{l[1]}</td><td style={{ textAlign: 'center' }}>{l[2]}</td><td style={{ textAlign: 'center' }}>{l[3]}</td></tr>)}</tbody></table>

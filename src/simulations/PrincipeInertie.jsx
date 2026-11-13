@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, ExempleResolu, lireProgression, IndiceDefi } from "../commun";
+  BoutonsModes, ARetenir, ExempleResolu, Formule, lireProgression, IndiceDefi } from "../commun";
 import { fr, simuler, forcesSurCaisse, FORCES_CANDIDATES, BILANS, PREVOIR } from "./forcesModele";
 import { Pic } from "../Pictos";
 
@@ -181,6 +181,37 @@ export function SimulationPrincipeInertie() {
   const bouton = (label, faire) => <button onClick={faire} style={{ ...styleBouton(true, '#4338ca'), margin: '6px 0' }}>{label}</button>;
   const ETAPES = [
     { id: 'coussin', titre: 'Faut-il une force pour avancer ?', depart: () => voir({ mu: 0, F: 0, v0: 1 }, 3),
+      retenirTitre: 'À RETENIR : IL N’Y A PAS BESOIN DE FORCE POUR AVANCER',
+      retenir: <>
+        <svg viewBox="0 0 360 116" role="img" aria-label="Chronophotographie d’un palet sur coussin d’air : les positions sont régulièrement espacées et le vecteur vitesse garde la même longueur" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <text x="10" y="14" fontSize="11" fill="#475569">Palet sur une table à coussin d’air (presque sans frottement)</text>
+            <line x1="8" y1="70" x2="352" y2="70" stroke="#475569" strokeWidth="2.2"/>
+            <rect x="14" y="50" width="24" height="18" rx="3" fill="#e2e8f0" stroke="#475569" strokeWidth="1.5"/>
+            <line x1="26" y1="42" x2="55" y2="42" stroke="#b45309" strokeWidth="2.2"/>
+            <polygon points="62,42 55,45.1 55,38.9" fill="#b45309"/>
+            <rect x="68" y="50" width="24" height="18" rx="3" fill="#e2e8f0" stroke="#475569" strokeWidth="1.5"/>
+            <line x1="80" y1="42" x2="109" y2="42" stroke="#b45309" strokeWidth="2.2"/>
+            <polygon points="116,42 109,45.1 109,38.9" fill="#b45309"/>
+            <rect x="122" y="50" width="24" height="18" rx="3" fill="#e2e8f0" stroke="#475569" strokeWidth="1.5"/>
+            <line x1="134" y1="42" x2="163" y2="42" stroke="#b45309" strokeWidth="2.2"/>
+            <polygon points="170,42 163,45.1 163,38.9" fill="#b45309"/>
+            <rect x="176" y="50" width="24" height="18" rx="3" fill="#e2e8f0" stroke="#475569" strokeWidth="1.5"/>
+            <line x1="188" y1="42" x2="217" y2="42" stroke="#b45309" strokeWidth="2.2"/>
+            <polygon points="224,42 217,45.1 217,38.9" fill="#b45309"/>
+            <rect x="230" y="50" width="24" height="18" rx="3" fill="#e2e8f0" stroke="#475569" strokeWidth="1.5"/>
+            <line x1="242" y1="42" x2="271" y2="42" stroke="#b45309" strokeWidth="2.2"/>
+            <polygon points="278,42 271,45.1 271,38.9" fill="#b45309"/>
+            <rect x="284" y="50" width="24" height="18" rx="3" fill="#e2e8f0" stroke="#475569" strokeWidth="1.5"/>
+            <line x1="296" y1="42" x2="325" y2="42" stroke="#b45309" strokeWidth="2.2"/>
+            <polygon points="332,42 325,45.1 325,38.9" fill="#b45309"/>
+            <text x="180" y="92" fontSize="11" fill="#15803d" textAnchor="middle" fontWeight="700">écarts égaux, flèches vitesse égales : vitesse constante</text>
+            <text x="180" y="108" fontSize="11" fill="#475569" textAnchor="middle">« plus rien ne le pousse », et pourtant il continue</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Idée fausse :</strong> « il faut une force pour qu’un objet continue d’avancer ».</li>
+          <li><strong>Vrai :</strong> une force sert à <strong>changer</strong> la vitesse, pas à l’entretenir. Sans frottement, le palet garde sa vitesse : mouvement <strong>rectiligne uniforme</strong> (droite, vitesse constante).</li>
+        </ul>
+      </>,
       texte: <>Un palet est lancé sur une table à <strong>coussin d’air</strong> : l’air le soulève et supprime presque tous les frottements. Après le lancer, <strong>plus rien ne le pousse</strong>. Regardez la chronophotographie (une position toutes les 0,5 s) et la courbe de vitesse.
         <ExempleResolu>Les points sont <strong>régulièrement espacés</strong> : le palet parcourt la même distance à chaque intervalle de temps. Sa vitesse est constante (1 m/s), sa trajectoire est une droite : c’est un <strong>mouvement rectiligne uniforme</strong>.
           {bouton('Voir la simulation', () => voir({ mu: 0, F: 0, v0: 1 }, 3))}</ExempleResolu>
@@ -197,6 +228,36 @@ export function SimulationPrincipeInertie() {
           'P = 20 × 9,8 = 196 N.',
           'Donc R = P = 196 N.'], expl: 'R = P = m × g = 20 × 9,8 = 196 N.', indice: "La caisse ne bouge pas verticalement : que doivent faire la réaction du sol et le poids ? Calcule le poids avec P = m × g (g = 9,8 N/kg)." } },
     { id: 'resultante', titre: 'La résultante des forces', depart: () => voir({ m: 25, mu: 0.2, F: 49, v0: 1 }, 3),
+      retenirTitre: 'À RETENIR : FORCES QUI SE COMPENSENT',
+      retenir: <>
+        <svg viewBox="0 0 360 162" role="img" aria-label="Une caisse glisse à vitesse constante : le poids et la réaction du sol se compensent, la poussée et les frottements se compensent" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <text x="10" y="14" fontSize="11" fill="#475569">Caisse de 25 kg qui glisse à vitesse constante</text>
+            <line x1="8" y1="106" x2="352" y2="106" stroke="#475569" strokeWidth="2.2"/>
+            <rect x="150" y="66" width="60" height="40" rx="3" fill="#e2e8f0" stroke="#475569" strokeWidth="1.8"/>
+            <line x1="180" y1="86" x2="180" y2="120" stroke="#15803d" strokeWidth="2.8"/>
+            <polygon points="180,128 176.4,120 183.6,120" fill="#15803d"/>
+            <text x="188" y="126" fontSize="12" fill="#15803d" fontWeight="700">P</text>
+            <line x1="180" y1="86" x2="180" y2="52" stroke="#0b4f94" strokeWidth="2.8"/>
+            <polygon points="180,44 183.6,52 176.4,52" fill="#0b4f94"/>
+            <text x="188" y="50" fontSize="12" fill="#0b4f94" fontWeight="700">R</text>
+            <line x1="210" y1="86" x2="260" y2="86" stroke="#b45309" strokeWidth="2.8"/>
+            <polygon points="268,86 260,89.6 260,82.4" fill="#b45309"/>
+            <text x="262" y="78" fontSize="12" fill="#b45309" fontWeight="700">F</text>
+            <line x1="150" y1="86" x2="100" y2="86" stroke="#b91c1c" strokeWidth="2.8"/>
+            <polygon points="92,86 100,82.4 100,89.6" fill="#b91c1c"/>
+            <text x="94" y="78" fontSize="12" fill="#b91c1c" fontWeight="700">f</text>
+            <text x="268" y="100" fontSize="10" fill="#b45309">poussée</text>
+            <text x="36" y="100" fontSize="10" fill="#b91c1c">frottements</text>
+            <text x="190" y="138" fontSize="10" fill="#15803d">poids</text>
+            <text x="196" y="40" fontSize="10" fill="#0b4f94">réaction du sol</text>
+            <text x="180" y="154" fontSize="12" fill="#0f172a" textAnchor="middle" fontWeight="700">forces qui se compensent : ΣF = 0</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Deux forces <strong>se compensent</strong> quand elles ont même direction, <strong>sens opposés</strong> et <strong>même intensité</strong> : leur résultante ΣF est nulle.</li>
+          <li><strong>Verticalement : R = P = m × g</strong>. Exemple : 20 kg, g = 9,8 N/kg ⇒ P = 20 × 9,8 = 196 N.</li>
+          <li><strong>Horizontalement :</strong> la poussée ne sert pas à « faire avancer » mais à <strong>annuler les frottements</strong> (ici 49 N chacune).</li>
+        </ul>
+      </>,
       texte: <>Pour savoir si des forces se compensent, on les <strong>additionne</strong> : la <strong>résultante</strong> <Vec c="ΣF"/> est la somme vectorielle de toutes les forces. Si <Vec c="ΣF"/> = <Vec c="0"/>, les forces <strong>se compensent</strong>.
         <ExempleResolu>Sol normal, caisse de 25 kg, glissant à 1 m/s. Les <strong>frottements</strong> f valent 0,2 × 25 × 9,8 = 49 N, vers la gauche. Une poussée F de 49 N vers la droite les compense : <Vec c="ΣF"/> = <Vec c="0"/> (la flèche violette disparaît).
           {bouton('Voir cette situation', () => voir({ m: 25, mu: 0.2, F: 49, v0: 1 }, 3))}</ExempleResolu>
@@ -208,6 +269,41 @@ export function SimulationPrincipeInertie() {
         À vous : réglez la poussée pour que la caisse garde une vitesse constante de 1 m/s.</>,
       tache: { type: 'action', ok: enGuide && P.mu > 0 && P.v0 >= 0.5 && P.F > 5 && Math.abs(r0.x) < tolF(P.m), consigne: 'Réglez la poussée F pour que la résultante soit nulle et que la vitesse reste constante.' } },
     { id: 'accelere', titre: 'Quand les forces ne se compensent pas', depart: () => voir({ m: 25, mu: 0.2, F: 100, v0: 1 }, 6),
+      retenirTitre: 'À RETENIR : FORCES NON COMPENSÉES',
+      retenir: <>
+        <svg viewBox="0 0 360 128" role="img" aria-label="Trois cas : poussée plus grande que les frottements (la caisse accélère), pas de poussée (elle ralentit), virage (la direction de la vitesse change)" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <text x="180" y="14" fontSize="11" fill="#475569" textAnchor="middle">trois cas où les forces ne se compensent pas</text>
+            <line x1="10" y1="70" x2="110" y2="70" stroke="#475569" strokeWidth="2"/>
+            <rect x="40" y="46" width="40" height="24" rx="3" fill="#e2e8f0" stroke="#475569" strokeWidth="1.8"/>
+            <line x1="80" y1="58" x2="114" y2="58" stroke="#b45309" strokeWidth="2.6"/>
+            <polygon points="122,58 114,61.6 114,54.4" fill="#b45309"/>
+            <text x="82" y="42" fontSize="10" fill="#b45309" fontWeight="700">F = 100 N</text>
+            <line x1="40" y1="58" x2="27.4" y2="58" stroke="#b91c1c" strokeWidth="2.6"/>
+            <polygon points="19.4,58 27.4,54.4 27.4,61.6" fill="#b91c1c"/>
+            <text x="40" y="86" fontSize="10" fill="#b91c1c" textAnchor="middle" fontWeight="700">f = 49 N</text>
+            <text x="60" y="104" fontSize="11" fill="#0f172a" textAnchor="middle" fontWeight="700">ΣF = 51 N →</text>
+            <text x="60" y="119" fontSize="12" fill="#15803d" textAnchor="middle" fontWeight="700">il accélère</text>
+            <line x1="130" y1="70" x2="230" y2="70" stroke="#475569" strokeWidth="2"/>
+            <rect x="160" y="46" width="40" height="24" rx="3" fill="#e2e8f0" stroke="#475569" strokeWidth="1.8"/>
+            <line x1="160" y1="58" x2="147.4" y2="58" stroke="#b91c1c" strokeWidth="2.6"/>
+            <polygon points="139.4,58 147.4,54.4 147.4,61.6" fill="#b91c1c"/>
+            <text x="160" y="86" fontSize="10" fill="#b91c1c" textAnchor="middle" fontWeight="700">f = 49 N</text>
+            <text x="180" y="104" fontSize="11" fill="#0f172a" textAnchor="middle" fontWeight="700">ΣF = 49 N ←</text>
+            <text x="180" y="119" fontSize="12" fill="#b91c1c" textAnchor="middle" fontWeight="700">il ralentit</text>
+            <polyline points="262,70 278,46 310,36 344,50" fill="none" stroke="#475569" strokeWidth="1.6" strokeDasharray="4,3"/>
+            <circle cx="262" cy="70" r="4" fill="#0b4f94"/>
+            <circle cx="278" cy="46" r="4" fill="#0b4f94"/>
+            <circle cx="310" cy="36" r="4" fill="#0b4f94"/>
+            <circle cx="344" cy="50" r="4" fill="#0b4f94"/>
+            <text x="300" y="104" fontSize="11" fill="#0f172a" textAnchor="middle" fontWeight="700">virage</text>
+            <text x="300" y="119" fontSize="10.5" fill="#b91c1c" textAnchor="middle" fontWeight="700">la direction change</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Si les forces <strong>ne se compensent pas</strong> (ΣF ≠ 0), la <strong>vitesse varie</strong> : sa valeur <em>ou</em> sa direction.</li>
+          <li>La caisse lancée s’arrête à cause des <strong>frottements</strong>, seule force horizontale : pas parce que « la force du lancer s’épuise ».</li>
+          <li>Plus la résultante est grande, plus la vitesse varie vite.</li>
+        </ul>
+      </>,
       texte: <>Si la poussée est <strong>plus grande</strong> que les frottements, la résultante n’est plus nulle : elle est dirigée vers l’avant et la <strong>vitesse augmente</strong>.
         <ExempleResolu>Avec F = 100 N et f = 49 N, la résultante vaut 51 N vers la droite : la vitesse augmente. Plus la résultante est grande, plus la vitesse varie vite.</ExempleResolu>
         À vous : faites <strong>accélérer</strong> la caisse.</>,
@@ -217,6 +313,35 @@ export function SimulationPrincipeInertie() {
         <ExempleResolu>Seuls les <strong>frottements</strong> agissent horizontalement : ils ne sont compensés par rien. La résultante n’est pas nulle, donc la vitesse diminue.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Pourquoi la caisse ralentit-elle ?', options: ['Les frottements ne sont compensés par aucune autre force horizontale', 'Il n’y a plus aucune force sur la caisse', 'La force du lancer s’est épuisée', 'Le poids diminue'], bonne: 0, expl: 'Les frottements sont la seule force horizontale : la résultante n’est pas nulle, la vitesse diminue.', indice: "Principe d’inertie : la vitesse ne change que si les forces ne se compensent pas. Quelles forces horizontales s’exercent sur la caisse une fois lancée ?" } },
     { id: 'principe', titre: 'Le principe d’inertie', depart: null,
+      retenirTitre: 'À RETENIR : LE PRINCIPE D’INERTIE',
+      retenir: <>
+        <svg viewBox="0 0 360 148" role="img" aria-label="Schéma du principe d’inertie : les forces se compensent si et seulement si la vitesse est constante (repos ou mouvement rectiligne uniforme) ; sinon la vitesse varie" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <rect x="10" y="10" width="150" height="58" rx="8" fill="#ecfdf5" stroke="#15803d" strokeWidth="2"/>
+            <text x="85" y="30" fontSize="10.5" fill="#15803d" textAnchor="middle" fontWeight="700">forces qui se compensent</text>
+            <text x="85" y="48" fontSize="14" fill="#0f172a" textAnchor="middle" fontWeight="700">ΣF = 0</text>
+            <rect x="200" y="10" width="150" height="58" rx="8" fill="#eff6ff" stroke="#0b4f94" strokeWidth="2"/>
+            <text x="275" y="30" fontSize="11.5" fill="#0b4f94" textAnchor="middle" fontWeight="700">vitesse constante</text>
+            <text x="275" y="48" fontSize="10.5" fill="#0f172a" textAnchor="middle">repos ou droite uniforme</text>
+            <line x1="164" y1="32" x2="188" y2="32" stroke="#475569" strokeWidth="2.4"/>
+            <polygon points="196,32 188,35.6 188,28.4" fill="#475569"/>
+            <line x1="196" y1="46" x2="172" y2="46" stroke="#475569" strokeWidth="2.4"/>
+            <polygon points="164,46 172,42.4 172,49.6" fill="#475569"/>
+            <rect x="10" y="82" width="150" height="58" rx="8" fill="#fef2f2" stroke="#b91c1c" strokeWidth="2"/>
+            <text x="85" y="102" fontSize="11.5" fill="#b91c1c" textAnchor="middle" fontWeight="700">forces qui ne se</text>
+            <text x="85" y="117" fontSize="11.5" fill="#b91c1c" textAnchor="middle" fontWeight="700">compensent pas</text>
+            <rect x="200" y="82" width="150" height="58" rx="8" fill="#fff7ed" stroke="#b45309" strokeWidth="2"/>
+            <text x="275" y="102" fontSize="11.5" fill="#b45309" textAnchor="middle" fontWeight="700">la vitesse varie</text>
+            <text x="275" y="120" fontSize="10.5" fill="#0f172a" textAnchor="middle">valeur ou direction</text>
+            <line x1="164" y1="104" x2="188" y2="104" stroke="#475569" strokeWidth="2.4"/>
+            <polygon points="196,104 188,107.6 188,100.4" fill="#475569"/>
+            <line x1="196" y1="118" x2="172" y2="118" stroke="#475569" strokeWidth="2.4"/>
+            <polygon points="164,118 172,114.4 172,121.6" fill="#475569"/>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Si les forces qui s’exercent sur un système <strong>se compensent</strong>, il est <strong>immobile</strong> ou en <strong>mouvement rectiligne uniforme</strong>.</li>
+          <li><strong>Dans les deux sens :</strong> vitesse qui varie ⇒ forces non compensées ; pas de force nécessaire pour <em>entretenir</em> un mouvement.</li>
+        </ul>
+      </>,
       texte: <ARetenir titre="LE PRINCIPE D’INERTIE"><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li>Si les forces qui s’exercent sur un système <strong>se compensent</strong> (<Vec c="ΣF"/> = <Vec c="0"/>), alors il est <strong>immobile</strong> ou en <strong>mouvement rectiligne uniforme</strong> (vitesse constante en ligne droite).</li>
         <li>Autre façon de le dire : si la <strong>vitesse varie</strong> (valeur ou direction), les forces <strong>ne se compensent pas</strong>.</li>
@@ -230,6 +355,16 @@ export function SimulationPrincipeInertie() {
         <ExempleResolu>Une voiture roule à 50 km/h (valeur constante) dans un virage : la <strong>direction</strong> de sa vitesse change, donc le vecteur vitesse varie. Les forces ne se compensent pas.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Dans un virage à valeur de vitesse constante, les forces sur la voiture…', options: ['ne se compensent pas', 'se compensent', 'sont nulles', 'ont une résultante dirigée vers l’arrière'], bonne: 0, expl: 'La direction de la vitesse change : le vecteur vitesse varie, donc les forces ne se compensent pas.', indice: "Le principe d’inertie concerne un mouvement rectiligne uniforme. Dans un virage, la direction de la vitesse change-t-elle ? Le mouvement est-il rectiligne ?" } },
     { id: 'parachute', titre: 'Un parachutiste', depart: null,
+      retenirTitre: 'À RETENIR : APPLIQUER LE PRINCIPE D’INERTIE',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Voiture à 90 km/h, route droite</strong> : vitesse constante ⇒ forces <strong>compensées</strong> (force motrice = frottements).</li>
+          <li><strong>Virage à 50 km/h</strong> : la valeur ne change pas mais la <strong>direction</strong> change ⇒ forces <strong>non compensées</strong>.</li>
+          <li><strong>Parachutiste à vitesse limite</strong> : vitesse constante ⇒ <strong>frottements de l’air = poids</strong>.</li>
+          <li><strong>Astronaute en orbite</strong> : une seule force (le poids), elle ne peut pas se compenser ⇒ la vitesse varie.</li>
+          <li><strong>Méthode :</strong> la vitesse est-elle constante en valeur <strong>et</strong> en direction ? Oui ⇒ forces compensées ; non ⇒ non compensées.</li>
+        </ul>
+      </>,
       texte: <>Un parachutiste saute. Au début, il accélère : les frottements de l’air sont faibles. Plus il va vite, plus les frottements augmentent. Puis sa vitesse n’augmente plus : il a atteint sa <strong>vitesse limite</strong>.</>,
       tache: { type: 'qcm', q: 'À la vitesse limite (constante, en ligne droite), les frottements de l’air valent…', options: ['exactement le poids', 'plus que le poids', 'moins que le poids', 'zéro'], bonne: 0, expl: 'Vitesse constante en ligne droite : ΣF = 0. Les frottements de l’air compensent le poids.', indice: "Vitesse constante en ligne droite : que dit le principe d’inertie des forces ? Quelles forces verticales s’exercent sur le parachutiste ?" } },
     { id: 'iss', titre: '★ Les astronautes de la Station spatiale', depart: null,
