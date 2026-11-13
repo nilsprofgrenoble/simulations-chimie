@@ -34,17 +34,17 @@ function ScenePiste({ T, idx, f, forces, vitesse }) {
   const bx = X(p.x), by = Y(p.z) - 9;
   const v = Math.sqrt(Math.max(0, 2 * p.Ec / M_BILLE)), lv = Math.min(70, 20 * v);
   return (
-    <svg viewBox="0 0 600 215" style={{ width: '100%', display: 'block', background: '#f8fafc', borderRadius: 8 }} role="img"
+    <svg viewBox="0 0 600 250" style={{ width: '100%', display: 'block', background: '#f8fafc', borderRadius: 8 }} role="img"
       aria-label={`Bille de 0,200 kilogramme sur une piste en forme de cuvette, lâchée sans vitesse à ${nbf(T.z0, 2)} mètre au-dessus du point bas${forces ? ' ; forces : poids, réaction, frottement' : ''}`}>
       <line x1="20" y1={SOL} x2="580" y2={SOL} stroke="#94a3b8" strokeDasharray="4 4"/><text x="24" y={SOL - 5} fontSize="12" fill={GRIS}>z = 0</text>
       <path d={chemin} fill="none" stroke={NOIR} strokeWidth="4"/>
-      <line x1={X(1.15)} y1={Y(T.z0)} x2={X(-1.15)} y2={Y(T.z0)} stroke={BLEU} strokeDasharray="5 4" opacity="0.6"/><text x={X(-1.12)} y={Y(T.z0) - 4} fontSize="11.5" fill={BLEU}>hauteur de départ</text>
+      <line x1={X(1.15)} y1={Y(T.z0)} x2={X(-1.15)} y2={Y(T.z0)} stroke={BLEU} strokeDasharray="5 4" opacity="0.6"/><text x={X(-1.12)} y={Y(T.z0) - 4} fontSize="11.5" fill={BLEU} stroke="#f8fafc" strokeWidth="4" paintOrder="stroke">hauteur de départ</text>
       <circle cx={bx} cy={by} r="9" fill="#fde68a" stroke={NOIR} strokeWidth="2"/>
       {forces && <g>
         <Fl x1={bx} y1={by} x2={bx} y2={by + 42} c={ROUGE}/><TV x={bx + 6} y={by + 50} c={ROUGE} halo>P</TV>
         {f > 0 && p.s > 0 && <g><Fl x1={bx} y1={by} x2={bx - ux * (18 + f * 90)} y2={by - uy * (18 + f * 90)} c={ORANGE}/><TV x={bx - ux * (18 + f * 90) - 4} y={by - uy * (18 + f * 90) - 8} c={ORANGE} halo>f</TV></g>}
       </g>}
-      {vitesse && v > 0.03 && <g><Fl x1={bx} y1={by - 14} x2={bx + ux * lv} y2={by - 14 + uy * lv} c={VERT}/><TV x={bx + ux * lv * 0.5 - 4} y={by - 24 + uy * lv * 0.5} c={VERT} halo>v</TV></g>}
+      {vitesse && v > 0.03 && <g><Fl x1={bx} y1={by} x2={bx + ux * lv} y2={by + uy * lv} c={VERT}/><TV x={bx + ux * lv * 0.5 - 4} y={by - 12 + uy * lv * 0.5} c={VERT} halo>v</TV></g>}
     </svg>);
 }
 
@@ -67,11 +67,11 @@ const Mini = ({ x, z, c, nom, x0 = 0 }) => null;
 const SchemaDef = () => (
   <Schema aria="Bille sur une cuvette : en haut, énergie potentielle maximale et énergie cinétique nulle ; au point bas, énergie cinétique maximale ; l'énergie mécanique est la somme des deux" h={160}>
     <path d="M30,40 Q180,260 330,40" fill="none" stroke={NOIR} strokeWidth="3"/>
-    <circle cx="48" cy="52" r="7" fill="#fde68a" stroke={NOIR} strokeWidth="2"/><circle cx="180" cy="122" r="7" fill="#fde68a" stroke={NOIR} strokeWidth="2"/>
+    <circle cx="48" cy="58" r="7" fill="#fde68a" stroke={NOIR} strokeWidth="2"/><circle cx="180" cy="142" r="7" fill="#fde68a" stroke={NOIR} strokeWidth="2"/>
     <rect x="12" y="84" width="14" height="40" fill={VERT} opacity="0.85"/><text x="10" y="138" fontSize="10.5" fontWeight="700" fill={VERT}>E pp max</text>
-    <rect x="160" y="74" width="40" height="12" fill={BLEU} opacity="0.85"/><text x="150" y="150" fontSize="10.5" fontWeight="700" fill={BLEU}>E c max (v max)</text>
+    <rect x="160" y="104" width="40" height="12" fill={BLEU} opacity="0.85"/><text x="112" y="158" fontSize="10.5" fontWeight="700" fill={BLEU}>E c max (v max)</text>
     <T x={10} y={16} s={12.5} w={700}>E pp = m g z   ·   E c = ½ m v²   ·   E m = E c + E pp</T>
-    <TV x={236} y={96} c={VERT} s={12}>v</TV><Fl x1={230} y1={110} x2={262} y2={100} c={VERT}/>
+    <Fl x1={190} y1={142} x2={236} y2={142} c={VERT}/><TV x={206} y={131} c={VERT} s={12}>v</TV>
   </Schema>);
 const SchemaConserv = () => (
   <Schema aria="Trois positions de la bille sans frottement : à chaque fois, la somme de la barre verte (énergie potentielle) et de la barre bleue (énergie cinétique) donne la même hauteur totale, l'énergie mécanique" h={160}>
