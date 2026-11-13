@@ -237,6 +237,7 @@ export function SimulationCompte({ naviguer }) {
           <p style={{ fontSize: 15, color: KIT.txt }}>Connecté : <b>{sess.profil.nom}</b> (professeur)</p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <button onClick={() => naviguer(40)} style={styleBouton(true, ROSE)}><Pic n="bars"/>Suivi professeur</button>
+            <a href={`${import.meta.env.BASE_URL}trajectoire.html`} style={{ ...styleBouton(false, ROSE), textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}><Pic n="board"/>Corriger avec Trajectoire</a>
             <button onClick={deconnexion} style={styleBouton(false, '#475569')}>Se déconnecter</button>
           </div>
           <div style={{ marginTop: 10 }}><MotDePasse /></div>
