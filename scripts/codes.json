@@ -753,5 +753,9 @@
  "37:prevoir:ccm-rf": "ANA363",
  "37:prevoir:ccm-comparer": "ANA364",
  "37:prevoir:ccm-tf-pur": "ANA365",
- "77:plausible:ccm-val-rf": "VAL192"
+ "77:plausible:ccm-val-rf": "VAL192",
+ "37:prevoir:ir-nombre-onde": "ANA366",
+ "37:prevoir:ir-alcool-cetone": "ANA367",
+ "37:prevoir:ir-reaction": "ANA368",
+ "77:plausible:ir-val-nombre-onde": "VAL193"
 }

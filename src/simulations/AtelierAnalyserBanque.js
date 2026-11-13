@@ -2552,6 +2552,27 @@ export const PREVOIR = [
       F('A est impur car 97 est différent de 98', 'Une mesure n’est jamais exactement égale à la littérature : l’écart de 1 °C est inférieur à l’incertitude.'),
       F('on ne peut rien dire sans CCM', 'La Tf renseigne déjà sur la pureté ; la CCM sert surtout à identifier les espèces.'),
     ] },
+  { id: 'ir-nombre-onde', domaine: 'Chimie organique', titre: 'Du micromètre au nombre d’onde',
+    enonce: 'Une radiation infrarouge a pour longueur d’onde λ = 5,0 µm (1 µm = 10⁻⁴ cm). On rappelle σ = 1 ÷ λ, avec λ exprimée en cm.', q: 'Son nombre d’onde vaut…', options: [
+      V('2000 cm⁻¹', 'λ = 5,0 × 10⁻⁴ cm ; σ = 1 ÷ (5,0 × 10⁻⁴) = 2000 cm⁻¹.'),
+      F('0,20 cm⁻¹', 'Vous avez calculé 1 ÷ 5,0 sans convertir λ en cm : 5,0 µm = 5,0 × 10⁻⁴ cm.'),
+      F('5,0 × 10⁻⁴ cm⁻¹', 'Cette valeur est la longueur d’onde en cm ; il faut encore prendre l’inverse.'),
+      F('20 000 cm⁻¹', 'Vous avez converti λ en 5,0 × 10⁻⁵ cm : 1 µm vaut 10⁻⁴ cm, pas 10⁻⁵.'),
+    ] },
+  { id: 'ir-alcool-cetone', domaine: 'Chimie organique', titre: 'Alcool ou cétone ?',
+    enonce: 'Le spectre IR d’un liquide pur montre une bande large et forte vers 3300 cm⁻¹ et aucune bande vers 1700 cm⁻¹.', q: 'Ce composé est sans doute…', options: [
+      V('un alcool : il a une liaison O–H et pas de liaison C=O', 'Une bande large et forte vers 3300 cm⁻¹ est celle de O–H d’un alcool lié ; l’absence de bande vers 1700 cm⁻¹ exclut C=O.'),
+      F('une cétone, à cause de la bande large', 'La bande d’une cétone est C=O, fine et forte vers 1700 cm⁻¹, qui n’apparaît pas ici.'),
+      F('un acide carboxylique', 'Un acide présenterait aussi une bande C=O vers 1700 cm⁻¹, absente ici, et sa bande O–H serait plus basse (vers 2900 cm⁻¹).'),
+      F('un alcane, qui n’a pas de groupe caractéristique', 'La bande à 3300 cm⁻¹ signale une liaison O–H : ce n’est pas un alcane.'),
+    ] },
+  { id: 'ir-reaction', domaine: 'Chimie organique', titre: 'Suivre une oxydation par IR',
+    enonce: 'On oxyde un alcool en cétone. Le spectre IR du réactif présente une bande large vers 3300 cm⁻¹. Le spectre du produit purifié ne montre plus cette bande mais une bande fine et forte vers 1700 cm⁻¹.', q: 'On peut en conclure que…', options: [
+      V('l’alcool a été transformé en composé carbonylé ; il ne reste sans doute plus d’alcool', 'O–H a disparu et C=O est apparu : la réaction a eu lieu. L’absence de la bande O–H suggère qu’il ne reste plus de réactif (à la sensibilité de la mesure).'),
+      F('la réaction n’a pas eu lieu', 'Le spectre du produit est différent de celui du réactif : des groupes ont changé.'),
+      F('le produit est un acide carboxylique', 'Un acide aurait aussi une bande O–H très large vers 2900 cm⁻¹, qui n’apparaît pas.'),
+      F('le produit contient encore de l’alcool', 'La bande O–H a disparu : on n’en voit plus de trace.'),
+    ] },
   { id: 'mec-em-conservation', domaine: 'Mécanique', titre: 'Bille lâchée de plus haut',
     enonce: 'Deux billes identiques sont lâchées sans vitesse, sans frottement, dans une même cuvette : la première d’une hauteur h, la seconde d’une hauteur 4 h (au-dessus du point bas). On compare leurs vitesses au point bas, sachant que toute l’énergie potentielle se convertit en énergie cinétique.', q: 'La vitesse de la seconde bille au point bas est…', options: [
       F('4 fois plus grande', 'E_c = ½ m v² est multipliée par 4, donc v est multipliée par 2 (v² est multipliée par 4), pas par 4.'),
