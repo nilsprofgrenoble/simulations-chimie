@@ -2531,6 +2531,27 @@ export const PREVOIR = [
       F('la chalcone ne se dissout plus à chaud', 'Plus de solvant favorise la dissolution à chaud, pas l’inverse.'),
       F('la température de fusion du produit baisse', 'La Tf dépend des impuretés présentes, pas du volume de solvant utilisé.'),
     ] },
+  { id: 'ccm-rf', domaine: 'Synthèse et rendement', titre: 'Calculer un rapport frontal',
+    enonce: 'Sur une plaque de CCM, le front de l’éluant est à 5,0 cm de la ligne de dépôt. Une tache est à 2,0 cm de cette même ligne.', q: 'Le rapport frontal de cette espèce vaut…', options: [
+      V('0,40', 'Rf = d ÷ D = 2,0 ÷ 5,0 = 0,40 (sans unité).'),
+      F('2,5', 'Vous avez inversé le rapport : le Rf est la distance de la tache divisée par celle du front, donc inférieur à 1.'),
+      F('0,40 cm', 'Le Rf n’a pas d’unité : c’est un rapport de deux distances.'),
+      F('3,0', 'Vous avez soustrait les distances au lieu de les diviser.'),
+    ] },
+  { id: 'ccm-comparer', domaine: 'Synthèse et rendement', titre: 'Lire une CCM de produit brut',
+    enonce: 'Après élution, la voie du produit brut montre deux taches, à 2,7 cm et 3,3 cm de la ligne de dépôt. Les références sont à 2,7 cm (chalcone), 3,3 cm (anisaldéhyde) et 3,9 cm (4’-méthylacétophénone) ; le front est à 6,0 cm.', q: 'On peut conclure que le produit brut contient…', options: [
+      V('de la chalcone et de l’anisaldéhyde non consommé', 'Les taches du produit sont aux mêmes hauteurs que la chalcone (Rf 0,45) et l’anisaldéhyde (Rf 0,55) de référence.'),
+      F('de la chalcone et de la 4’-méthylacétophénone', 'La seconde tache est à 3,3 cm, hauteur de l’anisaldéhyde ; la 4’-méthylacétophénone est à 3,9 cm.'),
+      F('uniquement de la chalcone, car la seconde tache est plus pâle', 'Une tache pâle reste une tache : elle indique une espèce présente en plus faible quantité.'),
+      F('ni chalcone ni réactifs', 'Les hauteurs correspondent aux références : ces espèces sont bien présentes.'),
+    ] },
+  { id: 'ccm-tf-pur', domaine: 'Synthèse et rendement', titre: 'Température de fusion et pureté',
+    enonce: 'Deux échantillons de chalcone (Tf littérature : 98 °C ; incertitude de lecture retenue : 2 °C) sont placés sur un banc Kofler. L’échantillon A fond nettement à 97 °C ; l’échantillon B fond progressivement entre 90 °C et 95 °C.', q: 'On peut dire que…', options: [
+      V('A est sans doute pur ; B contient sans doute des impuretés', 'A : |97 − 98| = 1 °C ≤ 2 °C, fusion nette. B : Tf plus basse que la littérature et fusion étalée, signe d’impuretés.'),
+      F('A et B sont purs, car les deux fondent près de 98 °C', 'B fond entre 90 et 95 °C : trop bas et trop étalé pour un produit pur.'),
+      F('A est impur car 97 est différent de 98', 'Une mesure n’est jamais exactement égale à la littérature : l’écart de 1 °C est inférieur à l’incertitude.'),
+      F('on ne peut rien dire sans CCM', 'La Tf renseigne déjà sur la pureté ; la CCM sert surtout à identifier les espèces.'),
+    ] },
   { id: 'mec-em-conservation', domaine: 'Mécanique', titre: 'Bille lâchée de plus haut',
     enonce: 'Deux billes identiques sont lâchées sans vitesse, sans frottement, dans une même cuvette : la première d’une hauteur h, la seconde d’une hauteur 4 h (au-dessus du point bas). On compare leurs vitesses au point bas, sachant que toute l’énergie potentielle se convertit en énergie cinétique.', q: 'La vitesse de la seconde bille au point bas est…', options: [
       F('4 fois plus grande', 'E_c = ½ m v² est multipliée par 4, donc v est multipliée par 2 (v² est multipliée par 4), pas par 4.'),

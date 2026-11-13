@@ -79,6 +79,7 @@ const SimulationChampForce = paresseux(() => import("./simulations/ChampForce"),
 const SimulationDeuxCorps = paresseux(() => import("./simulations/DeuxCorps"), "SimulationDeuxCorps");
 const SimulationCondensateurMillikan = paresseux(() => import("./simulations/CondensateurMillikan"), "SimulationCondensateurMillikan");
 const SimulationElectrisation = paresseux(() => import("./simulations/Electrisation"), "SimulationElectrisation");
+const SimulationCcm = paresseux(() => import("./simulations/Ccm"), "SimulationCcm");
 const SimulationSynthese = paresseux(() => import("./simulations/Synthese"), "SimulationSynthese");
 const SimulationPointage = paresseux(() => import("./simulations/Pointage"), "SimulationPointage");
 const SimulationEnergieMeca = paresseux(() => import("./simulations/EnergieMeca"), "SimulationEnergieMeca");
@@ -233,6 +234,8 @@ const SIMULATIONS = [
     component: SimulationPointage },
   { id:109, label:"Synthèse organique : du protocole au rendement (TP chalcone)", niveau:"1G", icon:"🧫", color:"#0f766e",
     component: SimulationSynthese },
+  { id:110, label:"CCM et température de fusion : le produit est-il le bon, est-il pur ?", niveau:"1G", icon:"🔬", color:"#0f766e",
+    component: SimulationCcm },
   { id:56, label:"Référentiel et mouvement : décrire un mouvement", niveau:"2GT", icon:"🚃", color:"#4338ca",
     component: SimulationMouvementReferentiel },
   { id:57, label:"Atomes, ions et molécules : la quête de l’octet", niveau:"2GT", icon:"⚛️", color:"#16a34a",
