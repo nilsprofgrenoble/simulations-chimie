@@ -6,6 +6,7 @@ import { chapitresDeSim, ouvrirExercicesDeSim, ouvrirFiches } from "./chapitres"
 import { OngletFiche } from "./FicheOnglet";
 import { noterFiche, EN_RECOLTE, EN_CONSULT, envoyerRecolte, envoyerFigure, estTermine, marquerTermine, noterProgres, capturerFigure, noterFigure, aFigure } from "./fiches";
 import { nomsSim } from "./suivi";
+import { simDeLUrl } from "./slugs";
 import { enregistrer, noterModification, surChangementServeur } from "./etatsParcours";
 
 // ============================================================
@@ -278,10 +279,10 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
   const derniere = etape >= etapes.length - 1;
   useEffect(() => { if (derniere && !etat.fini) setEtat(e => (e.fini ? e : { ...e, fini: true })); }, [derniere, etat.fini, setEtat]);
   // Parcours terminé : la simulation entre dans « Mes fiches » (cartes « À retenir » de toutes ses étapes) ; son schéma principal est gardé pour la fiche
-  useEffect(() => { noterProgres(parseInt(new URLSearchParams(window.location.search).get('sim')), etape, etapes.length); }, [etape, etapes.length]);   // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { noterProgres(simDeLUrl(), etape, etapes.length); }, [etape, etapes.length]);   // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!etat.fini) return undefined;
-    const sim = parseInt(new URLSearchParams(window.location.search).get('sim'));
+    const sim = simDeLUrl();
     marquerTermine(sim);
     if (EN_RECOLTE || aFigure(sim)) return undefined;
     const t = setTimeout(async () => { const img = await capturerFigure(); if (img) noterFigure(sim, img); }, 1500);
@@ -419,7 +420,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
             style={{ ...btn(peutSuivre, ORANGE_GUIDE), opacity: peutSuivre ? 1 : 0.45 }}>Suivant ▶</button>
         ) : fin}
       </div>
-      {(etat.fini || EN_CONSULT || estTermine(parseInt(new URLSearchParams(window.location.search).get('sim')))) && (
+      {(etat.fini || EN_CONSULT || estTermine(simDeLUrl())) && (
         <div hidden aria-hidden="true">
           {etapes.map((e2, k) => e2.retenir ? <ARetenir key={k} titre={e2.retenirTitre || 'À RETENIR'} titreEtape={e2.titre} ordre={k}>{e2.retenir}</ARetenir> : null)}
         </div>)}
@@ -443,7 +444,7 @@ export function ARetenir({ titre = 'À RETENIR', children, sansFiche = false, ti
       minuterie.current = null;
       const el = contenu.current;
       if (!el) return;
-      const sim = parseInt(new URLSearchParams(window.location.search).get('sim'));
+      const sim = simDeLUrl();
       if (!estTermine(sim) && !EN_CONSULT) return;   // seules les simulations dont le parcours guidé est terminé alimentent la collection
       const carte = el.closest('[data-retenir]');
       const zone = carte?.parentElement;
@@ -669,7 +670,7 @@ export function Curseur({ nom, valeur, onChange, min, max, pas, unite = '', deci
 
 // Onglet « Exercices » : ouvre la page du chapitre (exercices de remédiation du thème). Absent si la simulation n'est dans aucun chapitre.
 export function OngletExercices({ simId: id }) {
-  const simId = id || parseInt(new URLSearchParams(window.location.search).get('sim'));
+  const simId = id || simDeLUrl();
   if (!simId) return null;
   const fiche = <OngletFiche simId={simId} styleBouton={styleBouton(false, '#0f766e')}/>;
   if (!chapitresDeSim(simId).length) return fiche;
@@ -682,14 +683,14 @@ export function OngletExercices({ simId: id }) {
 
 // Les trois boutons de mode, identiques sur toutes les pages
 export function BoutonsModes({ mode, setMode, modes = ['guide', 'explore', 'defi'] }) {
-  const enMission = !!missionEnCours(parseInt(new URLSearchParams(window.location.search).get('sim')));   // pendant une mission, le parcours guidé est verrouillé
-  const simId = parseInt(new URLSearchParams(window.location.search).get('sim'));
+  const enMission = !!missionEnCours(simDeLUrl());   // pendant une mission, le parcours guidé est verrouillé
+  const simId = simDeLUrl();
   const def = { guide: [<><Pic n="compass"/>Parcours guidé</>, ORANGE_GUIDE], explore: [<><Pic n="search"/>Exploration libre</>, '#334155'], defi: [<><Pic n="target"/>Défi</>, '#0ea5e9'] };
   return (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       {modes.map(m => m === 'guide' && enMission
         ? <button key={m} disabled title="Verrouillé pendant la mission : va directement au défi" style={{ ...styleBouton(false, '#94a3b8'), opacity: 0.55, cursor: 'not-allowed' }}>🔒 Parcours guidé</button>
-        : <button key={m} onClick={() => { setMode(m); if (!window.__clicAuto) compter(`sim${new URLSearchParams(window.location.search).get('sim') || '?'}:${m}`, `Simulation ${new URLSearchParams(window.location.search).get('sim') || '?'} : mode ${m}`, true); }} style={styleBouton(mode === m, def[m][1])}>{def[m][0]}</button>)}
+        : <button key={m} onClick={() => { setMode(m); if (!window.__clicAuto) compter(`sim${Number.isFinite(simDeLUrl()) ? simDeLUrl() : '?'}:${m}`, `Simulation ${Number.isFinite(simDeLUrl()) ? simDeLUrl() : '?'} : mode ${m}`, true); }} style={styleBouton(mode === m, def[m][1])}>{def[m][0]}</button>)}
       {modes.includes('defi') && <OngletExercices simId={simId}/>}
     </div>
   );

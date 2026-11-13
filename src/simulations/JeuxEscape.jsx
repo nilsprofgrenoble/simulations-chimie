@@ -11,7 +11,7 @@ const JEUX = [
   { id: 81, code: 'LABO', nom: 'Une journée au labo', niveau: 'BTS MDC', icone: '🧪', texte: "Histoire à choix : technicien·ne de R&D peinture le temps d'une journée (CCF4, remplacer la Vinnapas par l'Orgal). 10 fins, bilan par compétence. < 1 h." },
 ];
 
-const lien = j => `${window.location.origin}${window.location.pathname}?sim=${j.id}`;
+const lien = j => `${window.location.origin}${import.meta.env.BASE_URL}?sim=${j.id}`;
 
 export function JeuxProf({ naviguer }) {
   const [copie, setCopie] = useState(null);
