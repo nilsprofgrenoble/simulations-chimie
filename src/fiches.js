@@ -169,6 +169,16 @@ export function listerFiches() {
 // (adresse « ?sim=N&recolte=1 ») qui ne compte aucun temps et qui renvoie les cartes des étapes déjà atteintes à la page « Mes fiches ».
 export const EN_CONSULT = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('consult');
 export const EN_RECOLTE = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('recolte');
+// Consultation (professeur) : le cadre invisible parcourt le guide de chaque simulation pour en lire les cartes. Il ne doit RIEN laisser derrière lui :
+// sans cette garde, l'état « parcours terminé » de chaque simulation lue restait dans le navigateur, puis était copié dans le compte de l'élève connecté ensuite.
+if (EN_CONSULT) {
+  try {
+    const rien = () => {};
+    Storage.prototype.setItem = rien;
+    Storage.prototype.removeItem = rien;
+    Storage.prototype.clear = rien;
+  } catch { /* ignoré */ }
+}
 export const envoyerRecolte = fiche => { try { window.parent.postMessage({ type: 'fiche-recolte', fiche }, window.location.origin); } catch { /* sans parent : rien à faire */ } };
 export const envoyerFigure = (sim, img) => { try { window.parent.postMessage({ type: 'fiche-figure', sim, img }, window.location.origin); } catch { /* idem */ } };
 export const finRecolte = sim => { try { window.parent.postMessage({ type: 'fiche-recolte-fin', sim, termine: estTermine(sim), progres: lireProgres(sim) }, window.location.origin); } catch { /* idem */ } };
