@@ -749,5 +749,9 @@
  "37:prevoir:syn-limitant": "ANA360",
  "37:prevoir:syn-sechage": "ANA361",
  "37:prevoir:syn-recristal-volume": "ANA362",
- "77:plausible:syn-val-rendement": "VAL191"
+ "77:plausible:syn-val-rendement": "VAL191",
+ "37:prevoir:ccm-rf": "ANA363",
+ "37:prevoir:ccm-comparer": "ANA364",
+ "37:prevoir:ccm-tf-pur": "ANA365",
+ "77:plausible:ccm-val-rf": "VAL192"
 }
