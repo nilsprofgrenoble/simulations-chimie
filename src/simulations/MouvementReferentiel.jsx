@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, Curseur, lireProgression, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, ARetenir, Formule, ExempleResolu, Curseur, lireProgression, IndiceDefi } from "../commun";
 import { scene, ORDRE_SCENES, echantillonner, caracteriser, ecartPoint, ecartAttendu, meilleurDt, norme, angle } from "./mvtRefModele";
 import { Pic } from "../Pictos";
 
@@ -313,6 +313,36 @@ export function SimulationMouvementReferentiel() {
   const okDtAvion = sceneEst('avion', ex.bruit && dt === meilleurA.dt);
   const ETAPES = [
     { id: 'trajectoire', titre: 'Où passe le mobile ? La trajectoire', focus: ['scene'], depart: () => go('deux', { vA: 20, vB: 25 }, { cmp: false, vis: ['A'], obj: 'A', dtIdx: 1 }),
+      retenirTitre: 'À RETENIR : LA TRAJECTOIRE',
+      retenir: <>
+        <svg viewBox="0 0 360 148" role="img" aria-label="Deux chronophotographies : un camion dont les points sont alignés (trajectoire rectiligne) et une bille dont les points dessinent une courbe (trajectoire courbe)" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <text x="10" y="14" fontSize="11.5" fill="#0b4f94" fontWeight="700">Camion, vu de la route</text>
+            <text x="195" y="14" fontSize="11.5" fill="#0b4f94" fontWeight="700">Bille, vue du quai</text>
+            <line x1="8" y1="66" x2="160" y2="66" stroke="#475569" strokeWidth="1.2" strokeDasharray="3,3"/>
+            <circle cx="14" cy="66" r="4" fill="#0b4f94"/>
+            <circle cx="41" cy="66" r="4" fill="#0b4f94"/>
+            <circle cx="68" cy="66" r="4" fill="#0b4f94"/>
+            <circle cx="95" cy="66" r="4" fill="#0b4f94"/>
+            <circle cx="122" cy="66" r="4" fill="#0b4f94"/>
+            <circle cx="149" cy="66" r="4" fill="#0b4f94"/>
+            <polyline points="200,30 227,32.8 254,41.2 281,55.2 308,74.8 335,100" fill="none" stroke="#475569" strokeWidth="1.2" strokeDasharray="3,3"/>
+            <circle cx="200" cy="30" r="4" fill="#b45309"/>
+            <circle cx="227" cy="32.8" r="4" fill="#b45309"/>
+            <circle cx="254" cy="41.2" r="4" fill="#b45309"/>
+            <circle cx="281" cy="55.2" r="4" fill="#b45309"/>
+            <circle cx="308" cy="74.8" r="4" fill="#b45309"/>
+            <circle cx="335" cy="100" r="4" fill="#b45309"/>
+            <text x="10" y="124" fontSize="11" fill="#334155">points alignés</text>
+            <text x="10" y="139" fontSize="11.5" fill="#15803d" fontWeight="700">trajectoire rectiligne</text>
+            <text x="195" y="124" fontSize="11" fill="#334155">points sur une courbe</text>
+            <text x="195" y="139" fontSize="11.5" fill="#15803d" fontWeight="700">trajectoire courbe</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Un point = une photo</strong>, prise à intervalles de temps égaux (chronophotographie).</li>
+          <li>La <strong>trajectoire</strong> est le <strong>chemin dessiné par les points</strong> : une <strong>droite</strong> (mouvement rectiligne) ou une <strong>courbe</strong> (mouvement curviligne).</li>
+          <li>Pour la trouver : <strong>je relie les points</strong>, et je regarde la forme.</li>
+        </ul>
+      </>,
       texte: <>Un mobile est photographié à intervalles de temps réguliers : <strong>chaque point est une photo</strong>. Le chemin que suivent les points s’appelle la <strong>trajectoire</strong> : une ligne droite (on dit <em>rectiligne</em>) ou une <em>courbe</em>. Le bouton ▶ « Revoir le mouvement » montre les photos une à une.
         <ExempleResolu>Le camion, vu de la route : les points sont <strong>alignés</strong>. La trajectoire est donc une ligne droite (rectiligne).
           {bouton('Voir le camion', () => go('deux', { vA: 20, vB: 25 }, { cmp: false, vis: ['A'], obj: 'A', dtIdx: 1 }))}</ExempleResolu>
@@ -321,6 +351,47 @@ export function SimulationMouvementReferentiel() {
         indice: 'La bille tombe, mais le wagon avance pendant ce temps : regardez la forme du chemin des points.',
         expl: 'La bille tombe et avance en même temps (elle va avec le wagon) : les points dessinent une courbe.' } },
     { id: 'rapidite', titre: 'Va-t-il de plus en plus vite ?', focus: ['scene'], depart: () => go('deux', { vA: 20, vB: 25 }, { cmp: false, vis: ['A'], obj: 'A', dtIdx: 1 }),
+      retenirTitre: 'À RETENIR : LES ÉCARTS ENTRE LES POINTS',
+      retenir: <>
+        <svg viewBox="0 0 360 158" role="img" aria-label="Trois chronophotographies : points à écarts égaux (vitesse constante), écarts qui grandissent (le mobile accélère), écarts qui diminuent (il ralentit)" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <line x1="8" y1="30" x2="205" y2="30" stroke="#475569" strokeWidth="1.2" strokeDasharray="3,3"/>
+            <circle cx="14" cy="30" r="4" fill="#15803d"/>
+            <circle cx="42" cy="30" r="4" fill="#15803d"/>
+            <circle cx="70" cy="30" r="4" fill="#15803d"/>
+            <circle cx="98" cy="30" r="4" fill="#15803d"/>
+            <circle cx="126" cy="30" r="4" fill="#15803d"/>
+            <circle cx="154" cy="30" r="4" fill="#15803d"/>
+            <circle cx="182" cy="30" r="4" fill="#15803d"/>
+            <text x="220" y="28" fontSize="12" fill="#15803d" fontWeight="700">vitesse constante</text>
+            <text x="220" y="43" fontSize="10.5" fill="#334155">écarts égaux</text>
+            <line x1="8" y1="72" x2="205" y2="72" stroke="#475569" strokeWidth="1.2" strokeDasharray="3,3"/>
+            <circle cx="14" cy="72" r="4" fill="#b45309"/>
+            <circle cx="24" cy="72" r="4" fill="#b45309"/>
+            <circle cx="40" cy="72" r="4" fill="#b45309"/>
+            <circle cx="64" cy="72" r="4" fill="#b45309"/>
+            <circle cx="98" cy="72" r="4" fill="#b45309"/>
+            <circle cx="142" cy="72" r="4" fill="#b45309"/>
+            <circle cx="196" cy="72" r="4" fill="#b45309"/>
+            <text x="220" y="70" fontSize="12" fill="#b45309" fontWeight="700">il accélère</text>
+            <text x="220" y="85" fontSize="10.5" fill="#334155">écarts qui grandissent</text>
+            <line x1="8" y1="114" x2="205" y2="114" stroke="#475569" strokeWidth="1.2" strokeDasharray="3,3"/>
+            <circle cx="14" cy="114" r="4" fill="#b91c1c"/>
+            <circle cx="68" cy="114" r="4" fill="#b91c1c"/>
+            <circle cx="112" cy="114" r="4" fill="#b91c1c"/>
+            <circle cx="146" cy="114" r="4" fill="#b91c1c"/>
+            <circle cx="170" cy="114" r="4" fill="#b91c1c"/>
+            <circle cx="186" cy="114" r="4" fill="#b91c1c"/>
+            <circle cx="196" cy="114" r="4" fill="#b91c1c"/>
+            <text x="220" y="112" fontSize="12" fill="#b91c1c" fontWeight="700">il ralentit</text>
+            <text x="220" y="127" fontSize="10.5" fill="#334155">écarts qui diminuent</text>
+            <text x="10" y="150" fontSize="10" fill="#475569">Mouvement vers la droite · même durée entre deux points</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Durées égales entre les points : ce sont les <strong>écarts</strong> qui renseignent sur la vitesse.</li>
+          <li><strong>Écarts égaux ⇒ vitesse constante</strong> ; écarts croissants ⇒ le mobile accélère ; écarts décroissants ⇒ il ralentit.</li>
+          <li>Exemple : le camion parcourt toujours 40 m entre deux photos : sa vitesse est constante.</li>
+        </ul>
+      </>,
       texte: <>Les photos sont prises à intervalles réguliers. Si les points sont <strong>tous espacés de la même distance</strong>, le mobile va à <strong>vitesse constante</strong>. S’ils s’écartent de plus en plus, il va <strong>de plus en plus vite</strong> ; s’ils se rapprochent, il ralentit.
         <ExempleResolu>Le camion : entre deux photos, il parcourt toujours {nb(dEdep, 0)} m. Distances égales en durées égales : sa vitesse est <strong>constante</strong>.
           {bouton('Voir le camion', () => go('deux', { vA: 20, vB: 25 }, { cmp: false, vis: ['A'], obj: 'A', dtIdx: 1 }))}</ExempleResolu>
@@ -328,6 +399,38 @@ export function SimulationMouvementReferentiel() {
       tache: { type: 'qcm', q: 'Les points du colis s’écartent de plus en plus. Que fait le colis ?', options: ['il va de plus en plus vite', 'il va à vitesse constante', 'il ralentit', 'il est immobile'], bonne: 0,
         expl: 'Entre deux photos, la distance parcourue augmente : le colis va de plus en plus vite (c’est la chute).', indice: "Les points sont enregistrés à intervalles de temps égaux. Si la distance entre deux points successifs augmente, que peut-on dire de la vitesse ?" } },
     { id: 'referentiel', titre: 'Le point de vue : le référentiel', focus: ['scene', 'reglages'], depart: () => go('wagon', {}, { cmp: false, vis: ['bille'], obj: 'bille' }),
+      retenirTitre: 'À RETENIR : LE RÉFÉRENTIEL',
+      retenir: <>
+        <svg viewBox="0 0 360 150" role="img" aria-label="La même bille lâchée dans un wagon : vue du quai, sa trajectoire est une courbe ; vue du wagon, c’est une droite verticale" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <text x="10" y="14" fontSize="11.5" fill="#0b4f94" fontWeight="700">Vu du quai</text>
+            <text x="195" y="14" fontSize="11.5" fill="#0b4f94" fontWeight="700">Vu du wagon</text>
+            <line x1="8" y1="112" x2="170" y2="112" stroke="#475569" strokeWidth="2.2"/>
+            <text x="12" y="126" fontSize="10" fill="#475569">quai (référentiel)</text>
+            <line x1="195" y1="112" x2="352" y2="112" stroke="#475569" strokeWidth="2.2"/>
+            <text x="199" y="126" fontSize="10" fill="#475569">plancher du wagon (référentiel)</text>
+            <polyline points="20,26 46,28.8 72,37.2 98,51.2 124,70.8 150,96" fill="none" stroke="#475569" strokeWidth="1.2" strokeDasharray="3,3"/>
+            <circle cx="20" cy="26" r="4" fill="#b45309"/>
+            <circle cx="46" cy="28.8" r="4" fill="#b45309"/>
+            <circle cx="72" cy="37.2" r="4" fill="#b45309"/>
+            <circle cx="98" cy="51.2" r="4" fill="#b45309"/>
+            <circle cx="124" cy="70.8" r="4" fill="#b45309"/>
+            <circle cx="150" cy="96" r="4" fill="#b45309"/>
+            <polyline points="270,26 270,28.8 270,37.2 270,51.2 270,70.8 270,96" fill="none" stroke="#475569" strokeWidth="1.2" strokeDasharray="3,3"/>
+            <circle cx="270" cy="26" r="4" fill="#b45309"/>
+            <circle cx="270" cy="28.8" r="4" fill="#b45309"/>
+            <circle cx="270" cy="37.2" r="4" fill="#b45309"/>
+            <circle cx="270" cy="51.2" r="4" fill="#b45309"/>
+            <circle cx="270" cy="70.8" r="4" fill="#b45309"/>
+            <circle cx="270" cy="96" r="4" fill="#b45309"/>
+            <text x="10" y="142" fontSize="11.5" fill="#15803d" fontWeight="700">trajectoire : courbe</text>
+            <text x="195" y="142" fontSize="11.5" fill="#15803d" fontWeight="700">trajectoire : droite verticale</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Le <strong>référentiel</strong> est l’objet de référence que l’on considère comme <strong>immobile</strong> (le quai, le wagon, le sol…).</li>
+          <li>Un même mouvement, <strong>deux trajectoires</strong> : la trajectoire et la vitesse <strong>dépendent du référentiel</strong>.</li>
+          <li>Toujours dire : « par rapport à quoi ? ». Même idée pour le colis largué d’un avion : courbe vu du sol, droite vu du pilote.</li>
+        </ul>
+      </>,
       texte: <>Pour décrire un mouvement, il faut dire <strong>par rapport à quoi</strong>. On choisit un point de vue : un objet qui ne bouge pas pour l’observateur. On l’appelle le <strong>référentiel</strong>. Assis dans un train, la personne en face de vous est immobile ; pour quelqu’un sur le quai, elle défile.
         <ExempleResolu>La bille lâchée dans le wagon.<br/>
           Vue depuis le quai : elle avance et tombe, la trajectoire est une <strong>courbe</strong>.<br/>
@@ -344,6 +447,41 @@ export function SimulationMouvementReferentiel() {
       tache: { type: 'qcm', q: 'Vu du sol, quand le colis arrive près du sol, l’avion est…', options: ['juste au-dessus du colis', 'loin derrière le colis', 'loin devant le colis', 'revenu à son point de départ'], bonne: 0,
         expl: 'Le colis garde la vitesse horizontale de l’avion (100 m/s) pendant toute sa chute : il reste sous l’avion (en négligeant l’air). C’est pour cela que, pour le pilote, il tombe tout droit.', indice: "Le colis et l’avion avaient la même vitesse horizontale au moment du largage. Compare ensuite leurs mouvements horizontaux pendant la chute." } },
     { id: 'vitesse', titre: 'La vitesse et le vecteur vitesse', focus: ['scene'], depart: () => go('deux', { vA: 20, vB: 25 }, { cmp: false, vis: ['A'], obj: 'A', dtIdx: 1, aff: { ...AFF0, v: true } }),
+      retenirTitre: 'À RETENIR : LA VITESSE',
+      retenir: <>
+        <svg viewBox="0 0 360 118" role="img" aria-label="Deux positions successives M et M′ séparées de 40 mètres en 2 secondes : le vecteur vitesse part de M′, il est dirigé comme le déplacement" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <text x="10" y="16" fontSize="11.5" fill="#0b4f94" fontWeight="700">Deux photos successives M et M′</text>
+            <circle cx="50" cy="72" r="5" fill="#0b4f94"/>
+            <circle cx="190" cy="72" r="5" fill="#0b4f94"/>
+            <text x="50" y="58" fontSize="12" fill="#0b4f94" textAnchor="middle" fontWeight="700">M</text>
+            <text x="190" y="58" fontSize="12" fill="#0b4f94" textAnchor="middle" fontWeight="700">M′</text>
+            <line x1="50" y1="72" x2="190" y2="72" stroke="#475569" strokeWidth="1.2" strokeDasharray="3,3"/>
+            <text x="120" y="48" fontSize="11" fill="#475569" textAnchor="middle">Δt = 2 s</text>
+            <line x1="50" y1="92" x2="190" y2="92" stroke="#475569" strokeWidth="1.5"/>
+            <line x1="50" y1="87" x2="50" y2="97" stroke="#475569" strokeWidth="1.5"/>
+            <line x1="190" y1="87" x2="190" y2="97" stroke="#475569" strokeWidth="1.5"/>
+            <text x="120" y="109" fontSize="11.5" fill="#0f172a" textAnchor="middle" fontWeight="700">MM′ = 40 m</text>
+            <line x1="190" y1="72" x2="247" y2="72" stroke="#b45309" strokeWidth="2.4"/>
+            <polygon points="255,72 247,75.6 247,68.4" fill="#b45309"/>
+            <text x="222" y="60" fontSize="13" fill="#b45309" textAnchor="middle" fontWeight="700" fontStyle="italic">v</text>
+            <text x="236" y="108" fontSize="10.5" fill="#b45309" textAnchor="middle">vecteur vitesse</text>
+        </svg>
+        <Formule><mi>v</mi><mo>=</mo><mfrac><mrow><mi>MM′</mi></mrow><mrow><mi>Δ</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mfrac><mrow><mn>40</mn><mtext> m</mtext></mrow><mrow><mn>2</mn><mtext> s</mtext></mrow></mfrac><mo>=</mo><mn>20</mn><mtext> m·s⁻¹</mtext></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Vitesse = distance parcourue ÷ durée</strong>. Le vecteur vitesse a la direction et le sens du déplacement, et sa longueur représente la valeur.</li>
+          <li><strong>× 3,6</strong> pour passer de m/s à km/h (20 m/s = 72 km/h) ; <strong>÷ 3,6</strong> dans l’autre sens.</li>
+        </ul>
+        <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
+          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Situation</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>B vue depuis A</th></tr></thead>
+          <tbody>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>dépassement</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>v<sub>B/A</sub> = 25 − 20 = <strong>5 m/s</strong></td></tr>
+            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>croisement</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>v<sub>B/A</sub> = (−25) − 20 = −45 m/s : <strong>45 m/s</strong> vers la gauche</td></tr>
+          </tbody>
+        </table>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Dans le référentiel du camion A, on <strong>retranche la vitesse de A</strong> : v<sub>B/A</sub> = v<sub>B</sub> − v<sub>A</sub>. La vitesse dépend du référentiel.</li>
+        </ul>
+      </>,
       texte: <>La vitesse dit <strong>de combien le mobile avance pendant une durée</strong> : <strong>vitesse = distance parcourue ÷ durée</strong>. Entre deux photos successives M et M′ séparées de la durée Δt : <strong>v = MM′ / Δt</strong>. On la représente par une flèche, le <strong>vecteur vitesse</strong> : il part du mobile, pointe dans le sens du mouvement et sa longueur est proportionnelle à la vitesse.
         <ExempleResolu>Le camion : entre deux photos, il parcourt MM′ = {nb(dEdep, 0)} m en Δt = 2 s.<br/>
           Expression littérale : v = MM′ / Δt.<br/>
