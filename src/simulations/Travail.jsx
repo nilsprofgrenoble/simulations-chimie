@@ -58,7 +58,7 @@ function SceneTire({ p, pos, force }) {
         <rect x={cx - 34} y={hautSol - 44} width="68" height="28" rx="4" fill="#fde68a" stroke={NOIR} strokeWidth="2"/>
         <circle cx={cx - 20} cy={hautSol - 8} r="8" fill="#475569"/><circle cx={cx + 20} cy={hautSol - 8} r="8" fill="#475569"/>
         {v > 0.05 && <g><line x1={cx} y1={hautSol - 62} x2={cx + lv} y2={hautSol - 62} stroke={VERT} strokeWidth="4"/><polygon points={`${cx + lv + 9},${hautSol - 62} ${cx + lv - 2},${hautSol - 68} ${cx + lv - 2},${hautSol - 56}`} fill={VERT}/>
-          <TV x={cx + 4} y={hautSol - 74} s={19} c={VERT} halo>v</TV></g>}
+          <TV x={cx + lv + 14} y={hautSol - 55} s={19} c={VERT} halo>v</TV></g>}
         {force && p.F > 0 && <g><line x1={cx} y1={hautSol - 30} x2={cx + fx} y2={hautSol - 30 + fy} stroke={ROUGE} strokeWidth="4"/>
           <polygon points={`${cx + fx},${hautSol - 30 + fy} ${cx + fx - 10 * Math.cos(ang) - 5 * Math.sin(ang)},${hautSol - 30 + fy + 10 * Math.sin(ang) - 5 * Math.cos(ang)} ${cx + fx - 10 * Math.cos(ang) + 5 * Math.sin(ang)},${hautSol - 30 + fy + 10 * Math.sin(ang) + 5 * Math.cos(ang)}`} fill={ROUGE}/>
           <TV x={cx + fx / 2 + (fx >= 0 ? 6 : -18)} y={hautSol - 36 + fy / 2 - 4} c={ROUGE} s={19} halo>F</TV></g>}
@@ -85,7 +85,7 @@ function ScenePlan({ alpha, pos, a, flechesPRF, f, m }) {
   const forces = flechesPRF ? [
     fleche(cx, cy, 0, P, ROUGE, 'P', 8, 4),
     fleche(cx, cy, nx * -P * Math.cos(ang), ny * -P * Math.cos(ang), BLEU, 'R', 8, -2),
-    ...(f > 0 ? [fleche(cx, cy, -Math.cos(ang) * (f / (m * M.G)) * P, -Math.sin(ang) * (f / (m * M.G)) * P, ORANGE, 'f', -22, -6)] : []),
+    ...(f > 0 ? [fleche(cx, cy, -Math.cos(ang) * Math.max(30, (f / (m * M.G)) * P), -Math.sin(ang) * Math.max(30, (f / (m * M.G)) * P), ORANGE, 'f', -24, -10)] : []),
   ] : [];
   return (
     <svg viewBox="0 0 600 300" style={{ width: '100%', display: 'block', background: '#f8fafc', borderRadius: 8 }} role="img"
@@ -127,7 +127,7 @@ export const TV = ({ x, y, children, c = NOIR, s = 14, w = 700, halo }) => {
 // Ligne de texte SVG mêlant texte et lettres-vecteurs : segs = ['W(', {v:'P'}, ') = …']
 export const TL = ({ x, y, s = 12, w = 700, c = NOIR, segs }) => { let cur = x;
   return <g>{segs.map((g, i) => { const px = cur;
-    if (typeof g === 'string') { cur += g.length * s * 0.56; return <text key={i} x={px} y={y} fontSize={s} fontWeight={w} fill={c}>{g}</text>; }
+    if (typeof g === 'string') { cur += g.length * s * 0.56; return <text key={i} x={px} y={y} fontSize={s} fontWeight={w} fill={c} xmlSpace="preserve" style={{ whiteSpace: 'pre' }}>{g}</text>; }
     cur += s * 0.66; return <TV key={i} x={px} y={y} s={s} w={w} c={g.c || c}>{g.v}</TV>; })}</g>; };
 
 const SchemaEc = () => (
@@ -143,11 +143,11 @@ const SchemaEc = () => (
 const SchemaMoteur = () => (
   <Schema aria="Un chariot est poussé par une force dans le sens du déplacement : le travail est positif et l'énergie cinétique augmente de A à B" h={150}>
     <line x1="10" y1="108" x2="350" y2="108" stroke={GRIS} strokeWidth="2"/>
-    <g><rect x="30" y="80" width="50" height="22" rx="3" fill="#fde68a" stroke={NOIR} strokeWidth="2"/><Fl x1={32} y1={92} x2={12} y2={92} c={ROUGE} w={0}/></g>
+    <rect x="30" y="80" width="50" height="22" rx="3" fill="#fde68a" stroke={NOIR} strokeWidth="2"/>
     <Fl x1={40} y1={70} x2={90} y2={70} c={ROUGE}/><TV x={66} y={64} c={ROUGE}>F</TV>
     <T x={42} y={126} w={700}>A</T><T x={300} y={126} w={700}>B</T>
     <rect x="270" y="80" width="50" height="22" rx="3" fill="#fde68a" stroke={NOIR} strokeWidth="2"/><Fl x1={272} y1={70} x2={322} y2={70} c={ROUGE}/>
-    <Fl x1={70} y1={92} x2={96} y2={92} c={VERT}/><Fl x1={272} y1={52} x2={340} y2={52} c={VERT}/><TV x={344} y={60} c={VERT} s={13}>v</TV>
+    <Fl x1={55} y1={92} x2={96} y2={92} c={VERT}/><TV x={100} y={100} c={VERT} s={13}>v</TV><Fl x1={295} y1={92} x2={345} y2={92} c={VERT}/><TV x={330} y={80} c={VERT} s={13}>v</TV>
     <TL x={10} y={22} s={13} segs={[{v:'F'},' dans le sens du mouvement']}/><T x={10} y={138} s={12} c={VERT} w={700}>W &gt; 0  ⇒  E c augmente</T>
   </Schema>);
 const SchemaAngle = () => (
