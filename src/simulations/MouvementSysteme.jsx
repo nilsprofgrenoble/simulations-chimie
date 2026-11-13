@@ -1,7 +1,7 @@
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { useState, Children, Fragment, cloneElement, isValidElement } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, lireProgression, fmt, sci, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, Formule, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, lireProgression, fmt, sci, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 
 // ====================================================
@@ -275,6 +275,41 @@ export function SimulationMouvementSysteme() {
       tache: { type: 'qcm', q: 'Au cours de la chute, le vecteur vitesse…', options: ['varie : sa norme augmente (sa direction reste verticale)', 'reste constant', 'change de direction'], bonne: 0,
         expl: 'Les flèches s’allongent d’une image à l’autre : la vitesse augmente. Le vecteur vitesse varie donc, alors que la direction ne change pas.', indice: "Compare le vecteur vitesse à différents instants de la chute : que deviennent sa norme et sa direction ?" } },
     { id: 'constr', titre: 'Construire Δv', onglet: 'chrono', focus: ['reglages', 'scene'],
+      retenirTitre: 'À RETENIR : CONSTRUIRE Δv',
+      retenir: <>
+        <svg viewBox="0 0 360 162" role="img" aria-label="Construction du vecteur variation de vitesse : on place les deux vecteurs vitesse au même point, Δv relie la pointe de v avant à la pointe de v après ; ou on ajoute v après et l’opposé de v avant" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <text x="10" y="14" fontSize="11" fill="#0b4f94" fontWeight="700">Deux vitesses au point A</text>
+            <text x="205" y="14" fontSize="11" fill="#0b4f94" fontWeight="700">Méthode de la somme</text>
+            <circle cx="50" cy="110" r="3.5" fill="#475569"/>
+            <line x1="50" y1="110" x2="112" y2="105.6" stroke="#0b4f94" strokeWidth="2.6"/>
+            <polygon points="120,105 112.3,109.2 111.8,102" fill="#0b4f94"/>
+            <text x="124" y="112" fontSize="10.5" fill="#0b4f94" fontWeight="700">v avant</text>
+            <line x1="50" y1="110" x2="99.3" y2="60.7" stroke="#15803d" strokeWidth="2.6"/>
+            <polygon points="105,55 101.9,63.2 96.8,58.1" fill="#15803d"/>
+            <text x="60" y="48" fontSize="10.5" fill="#15803d" fontWeight="700">v après</text>
+            <line x1="120" y1="105" x2="107.3" y2="62.7" stroke="#b91c1c" strokeWidth="2.8"/>
+            <polygon points="105,55 110.7,61.6 103.9,63.7" fill="#b91c1c"/>
+            <text x="128" y="82" fontSize="13" fill="#b91c1c" fontWeight="700" fontStyle="italic">Δv</text>
+            <circle cx="215" cy="110" r="3.5" fill="#475569"/>
+            <line x1="215" y1="110" x2="264.3" y2="60.7" stroke="#15803d" strokeWidth="2.6"/>
+            <polygon points="270,55 266.9,63.2 261.8,58.1" fill="#15803d"/>
+            <text x="276" y="70" fontSize="10" fill="#15803d" fontWeight="700">① v après</text>
+            <line x1="270" y1="55" x2="208" y2="59.4" stroke="#0b4f94" strokeWidth="2.4"/>
+            <polygon points="200,60 207.7,55.8 208.2,63" fill="#0b4f94"/>
+            <text x="150" y="52" fontSize="10" fill="#334155"></text>
+            <text x="204" y="48" fontSize="10" fill="#0b4f94" fontWeight="700">② − v avant</text>
+            <line x1="215" y1="110" x2="202.3" y2="67.7" stroke="#b91c1c" strokeWidth="2.8"/>
+            <polygon points="200,60 205.7,66.6 198.9,68.7" fill="#b91c1c"/>
+            <text x="222" y="92" fontSize="11.5" fill="#b91c1c" fontWeight="700">③ Δv</text>
+            <text x="10" y="142" fontSize="11" fill="#0f172a" fontWeight="700">Δv = v après − v avant :</text>
+            <text x="10" y="156" fontSize="10.5" fill="#475569">de la pointe de l’ancienne vitesse vers la pointe de la nouvelle</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Δv = v<sub>après</sub> − v<sub>avant</sub> : c’est une <strong>soustraction de vecteurs</strong>, faite <strong>au point Aᵢ</strong>.</li>
+          <li>Méthode : ① recopier v<sub>après</sub> en Aᵢ ② ajouter son opposé −v<sub>avant</sub> ③ Δv va de l’origine à l’extrémité.</li>
+          <li>Δv est un <strong>vecteur</strong> : sa direction compte autant que sa norme.</li>
+        </ul>
+      </>,
       texte: <>La variation du vecteur vitesse entre deux dates voisines est Δv_[i] = v_[i+1] − v_[i−1]. Dans « Construction de Δv », cliquez sur ▶ jusqu’à l’étape 3 : on recopie v_[i+1] au point A_[i], on lui ajoute − v_[i−1],
         et Δv relie l’origine à l’extrémité. C’est la méthode de la fiche.</>,
       tache: { type: 'action', ok: okConstr, label: 'Construire Δv au point A5', faire: () => setSc(s => ({ ...s, ...etatInit('chute'), i: 5, etape: 3, aff: { ...s.aff, dv: true } })), consigne: 'Construction de Δv terminée (étape 3 sur 3)' } },
@@ -298,6 +333,41 @@ export function SimulationMouvementSysteme() {
       tache: { type: 'qcm', q: 'La force responsable de la variation de vitesse est…', options: ['le poids P de la bille (vertical, vers le bas)', 'le poids et une poussée dans le sens du mouvement', 'aucune force : la vitesse change toute seule'], bonne: 0,
         expl: 'La bille n’est soumise qu’à son poids. Le vecteur Δv a le même direction et le même sens que cette force.', indice: "La variation de vitesse est due aux forces. Quelle(s) force(s) s’exerce(nt) sur la bille en chute libre ?" } },
     { id: 'loi', titre: 'La relation ΣF ≈ m·Δv/Δt', onglet: 'chrono', focus: ['bilan'],
+      retenirTitre: 'À RETENIR : Δv A LA DIRECTION DE LA FORCE',
+      retenir: <>
+        <svg viewBox="0 0 360 162" role="img" aria-label="Une bille en chute libre : le vecteur vitesse s’allonge à chaque image, le vecteur variation de vitesse Δv est vertical vers le bas, comme le poids" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <text x="10" y="14" fontSize="11" fill="#0b4f94" fontWeight="700">Chute libre : v augmente</text>
+            <circle cx="50" cy="24" r="3.5" fill="#475569"/>
+            <line x1="50" y1="28" x2="50" y2="35" stroke="#15803d" strokeWidth="2.4"/>
+            <polygon points="50,42 46.9,35 53.1,35" fill="#15803d"/>
+            <circle cx="50" cy="70" r="3.5" fill="#475569"/>
+            <line x1="50" y1="74" x2="50" y2="97" stroke="#15803d" strokeWidth="2.4"/>
+            <polygon points="50,104 46.9,97 53.1,97" fill="#15803d"/>
+            <circle cx="50" cy="118" r="3.5" fill="#475569"/>
+            <line x1="50" y1="122" x2="50" y2="163" stroke="#15803d" strokeWidth="2.4"/>
+            <polygon points="50,170 46.9,163 53.1,163" fill="#15803d"/>
+            <text x="62" y="40" fontSize="11" fill="#15803d" fontWeight="700">v</text>
+            <text x="62" y="92" fontSize="11" fill="#15803d" fontWeight="700">v</text>
+            <text x="62" y="146" fontSize="11" fill="#15803d" fontWeight="700">v</text>
+            <text x="180" y="14" fontSize="11" fill="#0b4f94" fontWeight="700">Au même point</text>
+            <line x1="210" y1="54" x2="210" y2="106" stroke="#b91c1c" strokeWidth="3"/>
+            <polygon points="210,114 206.4,106 213.6,106" fill="#b91c1c"/>
+            <text x="220" y="88" fontSize="13" fill="#b91c1c" fontWeight="700" fontStyle="italic">Δv</text>
+            <line x1="280" y1="54" x2="280" y2="106" stroke="#b45309" strokeWidth="3"/>
+            <polygon points="280,114 276.4,106 283.6,106" fill="#b45309"/>
+            <text x="290" y="88" fontSize="13" fill="#b45309" fontWeight="700">P</text>
+            <text x="210" y="128" fontSize="10" fill="#b91c1c" textAnchor="middle">variation</text>
+            <text x="210" y="140" fontSize="10" fill="#b91c1c" textAnchor="middle">de vitesse</text>
+            <text x="280" y="128" fontSize="10" fill="#b45309" textAnchor="middle">poids</text>
+            <text x="245" y="156" fontSize="11" fill="#0f172a" textAnchor="middle" fontWeight="700">même direction, même sens</text>
+        </svg>
+        <Formule><mi>ΣF</mi><mo>≈</mo><mi>m</mi><mo>×</mo><mfrac><mrow><mi>Δv</mi></mrow><mrow><mi>Δ</mi><mi>t</mi></mrow></mfrac></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Δv et ΣF ont la même direction et le même sens</strong> ; v et ΣF, eux, n’ont aucun lien de direction.</li>
+          <li>Exemple : bille de 0,200 kg, ‖Δv‖ = 2,35 m/s en Δt = 0,24 s : ΣF ≈ 0,200 × 2,35 / 0,24 ≈ 1,96 N, soit m × g (0,200 × 9,8).</li>
+          <li>Plus Δt est petit, mieux la relation est vérifiée.</li>
+        </ul>
+      </>,
       texte: <>Le tableau donne la masse (m = 0,100 kg), ‖Δv‖ (≈ 2,35 m/s, trouvé à l’étape précédente) et Δt = 2τ = 0,24 s. Calculez m·‖Δv‖/Δt, puis comparez avec le poids de la bille.</>,
       tache: { type: 'num', q: 'm·‖Δv‖ / Δt (en N)', unite: 'N', vrai: 0.1 * G0, tol: 0.03, affiche: v => vir(v.toFixed(2)), cs: 2,
         pieges: [[0.1 * 2 * G0 * 0.12, 'Vous avez oublié de diviser par Δt = 2τ = 0,24 s : ΣF ≈ m·‖Δv‖ / Δt.'],
@@ -331,6 +401,38 @@ export function SimulationMouvementSysteme() {
       tache: { type: 'qcm', q: 'Dans ce mouvement, les vecteurs Δv sont…', options: ['tous verticaux, vers le bas, de même longueur', 'tangents à la trajectoire', 'de plus en plus longs'], bonne: 0,
         expl: 'Il n’existe pas de lien simple entre v et ΣF, mais Δv a toujours la direction de ΣF : ici le poids, vertical et constant. Δv est donc le même en chaque point.', indice: "Δv a la direction et le sens de la somme des forces ΣF. Quelle est ΣF dans ce mouvement, et comment varie-t-elle ?" } },
     { id: 'inertie', titre: 'Sans force : le principe d’inertie', onglet: 'chrono', focus: ['reglages', 'scene'],
+      retenirTitre: 'À RETENIR : SANS FORCE, PAS DE VARIATION DE VITESSE',
+      retenir: <>
+        <svg viewBox="0 0 360 138" role="img" aria-label="Chronophotographie sans force : points régulièrement espacés, vecteurs vitesse identiques, donc variation de vitesse nulle" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <text x="10" y="14" fontSize="11" fill="#0b4f94" fontWeight="700">Sans force (ΣF = 0)</text>
+            <line x1="8" y1="66" x2="352" y2="66" stroke="#475569" strokeWidth="1.2" strokeDasharray="3,3"/>
+            <circle cx="26" cy="66" r="4" fill="#475569"/>
+            <line x1="26" y1="52" x2="57" y2="52" stroke="#15803d" strokeWidth="2.4"/>
+            <polygon points="64,52 57,55.1 57,48.9" fill="#15803d"/>
+            <circle cx="82" cy="66" r="4" fill="#475569"/>
+            <line x1="82" y1="52" x2="113" y2="52" stroke="#15803d" strokeWidth="2.4"/>
+            <polygon points="120,52 113,55.1 113,48.9" fill="#15803d"/>
+            <circle cx="138" cy="66" r="4" fill="#475569"/>
+            <line x1="138" y1="52" x2="169" y2="52" stroke="#15803d" strokeWidth="2.4"/>
+            <polygon points="176,52 169,55.1 169,48.9" fill="#15803d"/>
+            <circle cx="194" cy="66" r="4" fill="#475569"/>
+            <line x1="194" y1="52" x2="225" y2="52" stroke="#15803d" strokeWidth="2.4"/>
+            <polygon points="232,52 225,55.1 225,48.9" fill="#15803d"/>
+            <circle cx="250" cy="66" r="4" fill="#475569"/>
+            <line x1="250" y1="52" x2="281" y2="52" stroke="#15803d" strokeWidth="2.4"/>
+            <polygon points="288,52 281,55.1 281,48.9" fill="#15803d"/>
+            <circle cx="306" cy="66" r="4" fill="#475569"/>
+            <line x1="306" y1="52" x2="337" y2="52" stroke="#15803d" strokeWidth="2.4"/>
+            <polygon points="344,52 337,55.1 337,48.9" fill="#15803d"/>
+            <text x="180" y="92" fontSize="11" fill="#15803d" textAnchor="middle" fontWeight="700">écarts égaux, flèches v identiques : Δv = 0</text>
+            <text x="180" y="112" fontSize="11" fill="#0f172a" textAnchor="middle" fontWeight="700">ΣF = 0 ⇒ Δv = 0 ⇒ v constante (principe d’inertie)</text>
+            <text x="180" y="130" fontSize="10.5" fill="#475569" textAnchor="middle">Δv = 0 : la construction donne un vecteur nul</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Si ΣF = 0, alors <strong>Δv = 0</strong> : le vecteur vitesse ne change ni de norme ni de direction (principe d’inertie).</li>
+          <li>Piège : « pas de force » ne veut pas dire « immobile » ; l’objet continue en ligne droite à vitesse constante.</li>
+        </ul>
+      </>,
       texte: <>Un mobile auto-porteur glisse sur une table (coussin d’air). Choisissez « Mobile tiré par un fil » et réglez la force du fil sur <strong>0 N</strong>.</>,
       tache: { type: 'action', ok: okInertie, label: 'Mobile sans fil (F = 0)', faire: () => setSc(s => ({ ...s, ...etatInit('mobile'), F: 0, aff: { ...s.aff, dv: true } })), consigne: 'Mobile, force du fil = 0 N' } },
     { id: 'inertieq', titre: 'Vitesse constante', onglet: 'chrono', focus: ['scene', 'bilan'],
@@ -338,6 +440,33 @@ export function SimulationMouvementSysteme() {
       tache: { type: 'qcm', q: 'Sans force du fil (P et R se compensent), le vecteur Δv est…', options: ['nul : le mouvement est rectiligne et uniforme', 'dirigé vers l’avant', 'dirigé vers le bas'], bonne: 0,
         expl: 'ΣF = 0 (P et R se compensent) donc Δv = 0 : v est constant. C’est le principe d’inertie : on n’a pas besoin de force pour maintenir un mouvement.', indice: "Si les forces se compensent (ΣF = 0), que dit le principe d’inertie de la vitesse ? Que vaut alors Δv ?" } },
     { id: 'masseM', titre: 'Le rôle de la masse', onglet: 'chrono', focus: ['reglages', 'scene'],
+      retenirTitre: 'À RETENIR : LE RÔLE DE LA MASSE',
+      retenir: <>
+        <svg viewBox="0 0 360 158" role="img" aria-label="Deux objets soumis à la même force pendant la même durée : celui qui a la moitié de la masse a une variation de vitesse deux fois plus grande" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <text x="10" y="14" fontSize="11" fill="#0b4f94" fontWeight="700">Même force F, même durée Δt</text>
+            <circle cx="40" cy="58" r="12" fill="#e2e8f0" stroke="#475569" strokeWidth="1.8"/>
+            <text x="40" y="63" fontSize="12" fill="#0f172a" textAnchor="middle" fontWeight="700">m</text>
+            <line x1="56" y1="58" x2="108" y2="58" stroke="#b45309" strokeWidth="2.8"/>
+            <polygon points="116,58 108,61.6 108,54.4" fill="#b45309"/>
+            <text x="86" y="50" fontSize="12" fill="#b45309" textAnchor="middle" fontWeight="700">F</text>
+            <line x1="150" y1="58" x2="282" y2="58" stroke="#b91c1c" strokeWidth="2.8"/>
+            <polygon points="290,58 282,61.6 282,54.4" fill="#b91c1c"/>
+            <text x="150" y="50" fontSize="11" fill="#b91c1c" fontWeight="700">Δv grand</text>
+            <circle cx="40" cy="116" r="20" fill="#cbd5e1" stroke="#475569" strokeWidth="1.8"/>
+            <text x="40" y="121" fontSize="12" fill="#0f172a" textAnchor="middle" fontWeight="700">2m</text>
+            <line x1="66" y1="116" x2="118" y2="116" stroke="#b45309" strokeWidth="2.8"/>
+            <polygon points="126,116 118,119.6 118,112.4" fill="#b45309"/>
+            <text x="96" y="108" fontSize="12" fill="#b45309" textAnchor="middle" fontWeight="700">F</text>
+            <line x1="150" y1="116" x2="212" y2="116" stroke="#b91c1c" strokeWidth="2.8"/>
+            <polygon points="220,116 212,119.6 212,112.4" fill="#b91c1c"/>
+            <text x="150" y="106" fontSize="11" fill="#b91c1c" fontWeight="700">Δv deux fois plus petit</text>
+            <text x="180" y="148" fontSize="11" fill="#0f172a" textAnchor="middle" fontWeight="700">À même force, le moins massif varie le plus : Δv ∝ 1/m</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La masse mesure la <strong>résistance à la variation de vitesse</strong> : plus m est grande, plus il faut de force pour changer v.</li>
+          <li>De ΣF ≈ m·Δv/Δt : <strong>Δv ≈ ΣF·Δt / m</strong>. Deux fois plus lourd, deux fois moins de variation de vitesse.</li>
+        </ul>
+      </>,
       texte: <>On tire le mobile avec le fil. Réglez la force à 0,5 N et la masse à 0,5 kg, notez ‖Δv‖, puis passez à <strong>0,2 kg</strong> (même force).</>,
       tache: { type: 'action', ok: okMasseM, label: 'Mobile de 0,2 kg tiré par 0,5 N', faire: () => setSc(s => ({ ...s, ...etatInit('mobile'), F: 0.5, m: 0.2, aff: { ...s.aff, dv: true } })), consigne: 'Mobile de masse ≤ 0,25 kg, force ≥ 0,4 N' } },
     { id: 'masseMq', titre: 'Plus léger : plus de variation', onglet: 'chrono', focus: ['bilan'],
@@ -345,6 +474,33 @@ export function SimulationMouvementSysteme() {
       tache: { type: 'qcm', q: 'À force et durée identiques, un mobile 2,5 fois plus léger subit une variation de vitesse…', options: ['2,5 fois plus grande', '2,5 fois plus petite', 'identique'], bonne: 0,
         expl: 'Δv ≈ ΣF·Δt / m : Δv est inversement proportionnel à la masse. Le plus léger (le moins inerte) varie le plus.', indice: "Δv / Δt = ΣF / m. À force identique, comment varie Δv quand la masse diminue ?" } },
     { id: 'plan', titre: 'Deux forces non colinéaires', onglet: 'chrono', focus: ['reglages', 'scene'],
+      retenirTitre: 'À RETENIR : PLUSIEURS FORCES',
+      retenir: <>
+        <svg viewBox="0 0 360 140" role="img" aria-label="Deux forces non alignées F1 et F2 : leur somme vectorielle ΣF est la diagonale du parallélogramme, et Δv a la même direction que ΣF" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <text x="10" y="14" fontSize="11" fill="#0b4f94" fontWeight="700">Deux forces qui ne sont pas alignées</text>
+            <circle cx="90" cy="100" r="3.5" fill="#475569"/>
+            <line x1="90" y1="100" x2="182" y2="100" stroke="#b45309" strokeWidth="2.6"/>
+            <polygon points="190,100 182,103.6 182,96.4" fill="#b45309"/>
+            <text x="194" y="104" fontSize="12" fill="#b45309" fontWeight="700">F₁</text>
+            <line x1="90" y1="100" x2="90" y2="52" stroke="#b45309" strokeWidth="2.6"/>
+            <polygon points="90,44 93.6,52 86.4,52" fill="#b45309"/>
+            <text x="78" y="42" fontSize="12" fill="#b45309" textAnchor="end" fontWeight="700">F₂</text>
+            <line x1="190" y1="100" x2="190" y2="44" stroke="#475569" strokeWidth="1.2" strokeDasharray="3,3"/>
+            <line x1="90" y1="44" x2="190" y2="44" stroke="#475569" strokeWidth="1.2" strokeDasharray="3,3"/>
+            <line x1="90" y1="100" x2="183" y2="47.9" stroke="#b91c1c" strokeWidth="3"/>
+            <polygon points="190,44 184.8,51 181.3,44.8" fill="#b91c1c"/>
+            <text x="150" y="62" fontSize="13" fill="#b91c1c" fontWeight="700" fontStyle="italic">ΣF</text>
+            <line x1="240" y1="104" x2="283" y2="79.9" stroke="#15803d" strokeWidth="3"/>
+            <polygon points="290,76 284.8,83 281.3,76.8" fill="#15803d"/>
+            <text x="236" y="120" fontSize="13" fill="#15803d" textAnchor="end" fontWeight="700" fontStyle="italic">Δv</text>
+            <text x="306" y="112" fontSize="10.5" fill="#475569" textAnchor="middle">même direction</text>
+            <text x="306" y="125" fontSize="10.5" fill="#475569" textAnchor="middle">que ΣF</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>ΣF = F₁ + F₂ : une <strong>somme vectorielle</strong> (diagonale du parallélogramme), pas une somme de normes.</li>
+          <li>C’est <strong>ΣF</strong> (et non chaque force) qui donne la direction et le sens de Δv.</li>
+        </ul>
+      </>,
       texte: <>Un solide glisse sur un plan incliné sans frottement. Il subit son poids P et la réaction R du plan. Choisissez « Plan incliné » et affichez les <strong>forces</strong> (cases « forces » et « variation Δv »).</>,
       tache: { type: 'action', ok: okPlan, label: 'Plan incliné, avec les forces', faire: () => setSc(s => ({ ...s, ...etatInit('plan'), aff: { ...s.aff, F: true, dv: true } })), consigne: 'Plan incliné, forces affichées' } },
     { id: 'planq', titre: 'Somme vectorielle', onglet: 'chrono', focus: ['scene', 'bilan'],
