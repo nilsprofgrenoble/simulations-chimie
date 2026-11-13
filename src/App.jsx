@@ -103,6 +103,7 @@ const SimulationCaracPile = paresseux(() => import("./simulations/CaracPile"), "
 const SimulationISS = paresseux(() => import("./simulations/ISS"), "SimulationISS");
 const SimulationSolubilite = paresseux(() => import("./simulations/Solubilite"), "SimulationSolubilite");
 const SimulationAPropos = paresseux(() => import("./simulations/APropos"), "SimulationAPropos");
+const SimulationPourEnseignants = paresseux(() => import("./simulations/PourEnseignants"), "SimulationPourEnseignants");
 const SimulationAtelierDonnees = paresseux(() => import("./simulations/AtelierDonnees"), "SimulationAtelierDonnees");
 const SimulationAtelierGraphique = paresseux(() => import("./simulations/AtelierGraphique"), "SimulationAtelierGraphique");
 const SimulationAtelierRealiser = paresseux(() => import("./simulations/AtelierRealiser"), "SimulationAtelierRealiser");
@@ -281,6 +282,8 @@ const SIMULATIONS = [
   { id:40, label:"Suivi professeur", niveau:"COMPTE", icon:"📊", color:"#25628f", component: SimulationSuiviProf },
   // Page hors menu : à propos et contact (ouverte depuis le bas du menu et le pied de page)
   { id:47, label:"À propos et contact", niveau:"COMPTE", icon:"ℹ️", color:"#475569", component: SimulationAPropos },
+  // Page « Pour les enseignants » (présentation sans jargon, pour les collègues) : hors menu, ouverte depuis le pied de page et l'accueil
+  { id:105, label:"Pour les enseignants", niveau:"COMPTE", icon:"🧑‍🏫", color:"#0b4f94", component: SimulationPourEnseignants },
   // Escape game « Mission Kepler » : hors menu, ouvert par son lien (?sim=79)
   { id:79, label:"Mission Kepler (escape game)", niveau:"COMPTE", icon:"🛰️", color:"#0a1530", component: SimulationEscapeKepler },
   // Mini escape game « Mission Aqua » (chapitre Transport des fluides) : hors menu, ?sim=80
@@ -558,7 +561,7 @@ export default function App() {
                 {idAffiche === 39 ? (estEleve(sessionSb) ? 'Mon profil' : sessionSb?.profil ? 'Mon compte' : 'Se connecter') : active.label}
               </span>
             </h1>
-            {estProf(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 && activeId !== 104 && activeId !== 82) && (
+            {estProf(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 && activeId !== 104 && activeId !== 105 && activeId !== 82) && (
               <button data-donner-devoir onClick={() => {
                 try { window.sessionStorage.setItem('devoir-preset', JSON.stringify({ titre: active.label, cles: [`sim:${activeId}`], eleves: [] })); } catch { /* sans mémorisation, le formulaire s'ouvre vide */ }
                 naviguer(40);
@@ -586,10 +589,10 @@ export default function App() {
                 {/* Le fichier App.css du modèle Vite centre tout le texte (#root) : on rétablit l'alignement
                     à gauche pour les simulations ; la page d'accueil garde sa mise en page centrée. */}
                 <BandeauContexte key={`b${activeId}`} id={activeId} contexte={CONTEXTES[activeId]} couleur={active.color} />
-                {(activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 && activeId !== 104) && <SuiviTemps simId={activeId} />}
-                {estEleve(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 && activeId !== 104) && <ProchaineEtape key={`pe${activeId}`} simId={activeId} naviguer={naviguer} />}
+                {(activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 && activeId !== 104 && activeId !== 105) && <SuiviTemps simId={activeId} />}
+                {estEleve(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 && activeId !== 104 && activeId !== 105) && <ProchaineEtape key={`pe${activeId}`} simId={activeId} naviguer={naviguer} />}
                 <div id="zone-simulation"><EnChargement><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></EnChargement></div>
-                {activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 && activeId !== 104 ? <ModeParDefaut simId={activeId} cibleId="zone-simulation" /> : null}
+                {activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 && activeId !== 104 && activeId !== 105 ? <ModeParDefaut simId={activeId} cibleId="zone-simulation" /> : null}
               </div>}
         </div>
         <ToastRecompense naviguer={naviguer} />

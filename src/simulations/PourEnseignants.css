@@ -1,0 +1,14 @@
+/* Page « Pour les enseignants » : même habillage que « À propos » (APropos.css) et l'accueil. */
+.pe-hero { background: #fff; border: 1px solid #d5dfeb; border-radius: 28px; padding: 34px 30px; }
+.pe-hero p { margin: 0; color: #3d4d63; font-size: 17px; line-height: 1.65; max-width: 62ch; }
+.pe-hero .ap-bouton + .ap-bouton { margin-left: 10px; background: #dce9f7; color: #0b4f94; }
+.pe-hero .ap-bouton + .ap-bouton:hover { background: #c9ddf3; }
+.pe-num { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: #f5a31a; color: #3a2500; font: 800 17px 'Outfit', sans-serif; }
+.pe-niveaux { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.pe-niveaux a { display: flex; flex-direction: column; gap: 4px; background: #fff; border: 1px solid #d5dfeb; border-radius: 22px; padding: 18px 22px; text-decoration: none; color: #0c1a2e; }
+.pe-niveaux a:hover { border-color: #0b4f94; box-shadow: 0 2px 12px #0b4f9422; }
+.pe-niveaux b { font: 800 13px Inter, system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: #0b4f94; }
+.pe-niveaux span { font: 800 18px 'Outfit', sans-serif; }
+.pe-niveaux small { color: #3d4d63; font-size: 14px; line-height: 1.5; }
+@media (max-width: 900px) { .pe-niveaux { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 480px) { .pe-hero { border-radius: 22px; padding: 22px 20px; } .pe-hero .ap-bouton + .ap-bouton { margin-left: 0; } }

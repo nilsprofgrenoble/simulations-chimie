@@ -1,6 +1,8 @@
 import { STATS_ACTIVES } from "./stats";
 import { ecrireAuAuteur } from "./contact";
 import { TEXTE2, ACCENT } from "./theme";
+import { nomsSim } from "./suivi";
+import { cheminSimulation } from "./slugs";
 
 // Pied de page : présent en bas de toutes les pages du site (compact, sur fond clair).
 const lien = { color: TEXTE2, textDecoration: 'none', background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', fontSize: 13.5, fontWeight: 700 };
@@ -12,6 +14,7 @@ export function PiedDePage({ naviguer, energyUrl }) {
       marginTop: 24, fontFamily: "'Nunito', 'Segoe UI', sans-serif", textAlign: 'center' }}>
       <nav aria-label="Liens du pied de page" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '4px 20px' }}>
         <a href="?" onClick={aller(0)} style={lien}>Accueil</a>
+        <a href={cheminSimulation(105, nomsSim[105] || '', import.meta.env.BASE_URL)} onClick={aller(105)} style={lien}>Pour les enseignants</a>
         <a href="?sim=47" onClick={aller(47)} style={lien}>À propos</a>
         <button type="button" onClick={() => ecrireAuAuteur('Paillasse virtuelle — message')} style={lien}>Contact</button>
         <a href="?sim=38" onClick={aller(38)} style={lien}>Travail par compétence</a>

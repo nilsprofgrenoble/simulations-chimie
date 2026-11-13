@@ -73,7 +73,10 @@ export function AccueilSite({ onStart, onCode, session, simulations, energyUrl }
           <div className="ab-pic" style={{ background: '#dce9f7', color: '#0b4f94', '--ia': '#f5a31a' }} aria-hidden="true"><Pic n="users" t={28}/></div>
           <h3 id="titre-contact">Un coup de main pour vos classes ?</h3>
           <p>Prise en main du site, simulation à adapter à votre séquence, idée de nouvelle simulation : n’hésitez pas à me contacter via mon adresse mail académique !</p>
-          <BoutonMail libelle={<><Pic n="mail"/>Me contacter</>} sujet="Besoin d'un coup de main pour ma classe — Paillasse virtuelle" couleur={ACCENT} plein/>
+          <span style={{ display: 'inline-flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+            <button type="button" className="ab-bouton" onClick={() => onStart(105)}>Pour les enseignants</button>
+            <BoutonMail libelle={<><Pic n="mail"/>Me contacter</>} sujet="Besoin d'un coup de main pour ma classe — Paillasse virtuelle" couleur={ACCENT} plein/>
+          </span>
         </section>
       </div>
 
