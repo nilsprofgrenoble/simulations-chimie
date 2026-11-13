@@ -9,6 +9,7 @@ const JEUX = [
   { id: 79, code: 'KEPLER', nom: 'Mission Kepler', niveau: 'TSTL', icone: '🚀', texte: "Escape game spatial : enchaîne les épreuves (mécanique, ondes, signal…) pour sauver la mission. ~45 min." },
   { id: 80, code: 'AQUA', nom: 'Mission Aqua', niveau: 'TSTL', icone: '💧', texte: "Mini escape game sur le transport des fluides (une seule séance, à tester en classe en priorité). ~20 min." },
   { id: 81, code: 'LABO', nom: 'Une journée au labo', niveau: 'BTS MDC', icone: '🧪', texte: "Histoire à choix : technicien·ne de R&D peinture le temps d'une journée (CCF4, remplacer la Vinnapas par l'Orgal). 10 fins, bilan par compétence. < 1 h." },
+  { id: 113, code: 'PERCU', nom: 'Contre-typer la Percutaféine', niveau: 'BTS MDC', icone: '🧴', texte: "Histoire à choix : retrouver la formule d'un gel à la caféine, le fabriquer et le contrôler (TP de contre-typage). 6 fins, bilan par compétence. < 1 h." },
 ];
 
 const lien = j => `${window.location.origin}${import.meta.env.BASE_URL}?sim=${j.id}`;

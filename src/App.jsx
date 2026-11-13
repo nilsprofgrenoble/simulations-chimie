@@ -127,6 +127,7 @@ const SimulationSuiviProf = paresseux(() => import("./simulations/SuiviProf"), "
 const SimulationEscapeKepler = paresseux(() => import("./simulations/EscapeKepler"), "SimulationEscapeKepler");
 const SimulationEscapeAqua = paresseux(() => import("./simulations/EscapeAqua"), "SimulationEscapeAqua");
 const SimulationHistoireLabo = paresseux(() => import("./simulations/HistoireLabo"), "SimulationHistoireLabo");
+const SimulationHistoirePercutafeine = paresseux(() => import("./simulations/HistoirePercutafeine"), "SimulationHistoirePercutafeine");
 
 // ============================================================
 //  MENU — modifiez les noms et icônes ici
@@ -316,6 +317,8 @@ const SIMULATIONS = [
   { id:104, label:"Classement", niveau:"COMPTE", icon:"🏅", color:"#b45309", component: SimulationClassement },
   { id:82, label:"Page d'un chapitre", niveau:"COMPTE", icon:"📚", color:"#5b4bdb", component: SimulationChapitre },
   { id:81, label:"Une journée au labo (histoire à choix, BTS)", niveau:"COMPTE", icon:"🧪", color:"#0f766e", component: SimulationHistoireLabo },
+  // Histoire à choix « Contre-typer la Percutaféine » (BTS, d'après le TP / CCF4 gel à la caféine) : hors menu, ?sim=113
+  { id:113, label:"Contre-typage de la Percutaféine (histoire à choix, BTS)", niveau:"COMPTE", icon:"🧴", color:"#0f766e", component: SimulationHistoirePercutafeine },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
 
@@ -328,11 +331,12 @@ const MENUS_ENTETE = [
   { key: "COMP", label: "Travail par compétence" },
   { key: "JEUX", label: "🎮 Jeux" },
 ];
-const JEUX_IDS = [79, 80, 81];   // jeux : affichage immersif (sans en-tête ni pied de page)
+const JEUX_IDS = [79, 80, 81, 113];   // jeux : affichage immersif (sans en-tête ni pied de page)
 const FONDS_JEUX = {
   79: "radial-gradient(ellipse at 50% 0%, #1b2a5c 0%, #070d24 55%, #03060f 100%)",
   80: "linear-gradient(180deg, #0b3b5e 0%, #082a45 50%, #04182a 100%)",
   81: "radial-gradient(ellipse at 50% 20%, rgba(255,255,255,.12), rgba(0,0,0,.45) 85%), repeating-linear-gradient(90deg, #7a5a40 0 7px, #6f5037 7px 10px, #7f5f45 10px 19px, #694c34 19px 21px)",
+  113: "radial-gradient(ellipse at 50% 20%, rgba(255,255,255,.14), rgba(0,0,0,.45) 85%), linear-gradient(160deg, #0f4c5c 0%, #0b2f3a 60%, #071c24 100%)",
 };
 const ORDRE_COMP = [38, 34, 35, 37, 36, 77];
 function construireMenus() {
@@ -582,7 +586,7 @@ export default function App() {
                 {idAffiche === 39 ? (estEleve(sessionSb) ? 'Mon profil' : sessionSb?.profil ? 'Mon compte' : 'Se connecter') : active.label}
               </span>
             </h1>
-            {estProf(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 && activeId !== 104 && activeId !== 105 && activeId !== 82) && (
+            {estProf(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 113 && activeId !== 103 && activeId !== 104 && activeId !== 105 && activeId !== 82) && (
               <button data-donner-devoir onClick={() => {
                 try { window.sessionStorage.setItem('devoir-preset', JSON.stringify({ titre: active.label, cles: [`sim:${activeId}`], eleves: [] })); } catch { /* sans mémorisation, le formulaire s'ouvre vide */ }
                 naviguer(40);
@@ -610,10 +614,10 @@ export default function App() {
                 {/* Le fichier App.css du modèle Vite centre tout le texte (#root) : on rétablit l'alignement
                     à gauche pour les simulations ; la page d'accueil garde sa mise en page centrée. */}
                 <BandeauContexte key={`b${activeId}`} id={activeId} contexte={CONTEXTES[activeId]} couleur={active.color} />
-                {(activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 && activeId !== 104 && activeId !== 105) && <SuiviTemps simId={activeId} />}
-                {estEleve(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 && activeId !== 104 && activeId !== 105) && <ProchaineEtape key={`pe${activeId}`} simId={activeId} naviguer={naviguer} />}
+                {(activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 113 && activeId !== 103 && activeId !== 104 && activeId !== 105) && <SuiviTemps simId={activeId} />}
+                {estEleve(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 113 && activeId !== 103 && activeId !== 104 && activeId !== 105) && <ProchaineEtape key={`pe${activeId}`} simId={activeId} naviguer={naviguer} />}
                 <div id="zone-simulation"><EnChargement><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></EnChargement></div>
-                {activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 103 && activeId !== 104 && activeId !== 105 ? <ModeParDefaut simId={activeId} cibleId="zone-simulation" /> : null}
+                {activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 113 && activeId !== 103 && activeId !== 104 && activeId !== 105 ? <ModeParDefaut simId={activeId} cibleId="zone-simulation" /> : null}
               </div>}
         </div>
         <ToastRecompense naviguer={naviguer} />

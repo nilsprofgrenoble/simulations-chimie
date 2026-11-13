@@ -1,0 +1,542 @@
+// ====================================================
+//  CONTRE-TYPAGE DE LA PERCUTAFÉINE : histoire à choix pour le BTS Métiers de la Chimie (sans React, testable seule avec node).
+//  Support : TP / CCF4 « contre-typage d'un gel de Percutaféine » (déformulation, formulation d'un gel au Carbopol, contrôle qualité :
+//  extrait sec, rhéologie, caféine par CLHP ou UV, éthanol par CPG). Le joueur est technicien·ne de R&D, sur deux demi-journées (7 h 30).
+//  Les valeurs sont FICTIVES mais calées sur les mesures réelles des élèves (pentes, bruits, écarts entre méthodes) ;
+//  chaque donnée affichée est celle qui sert au corrigé (les calculs repartent des valeurs arrondies affichées).
+//  Hypothèses de mesure : voir les champs « hyp » de chaque scène (toujours affichées à l'élève).
+// ====================================================
+export const ID_PERCU = 113;
+export const CLE_ETAT = 'percu-histoire-v1';
+export const CLE_FINS = 'percu-fins-v1';
+export const T_FIN = 450;        // 7 h 30 de TP : séance 1 (13 h – 17 h) puis séance 2 (8 h – 11 h 30)
+export const T_S2 = 240;         // début de la séance 2 (le lendemain matin)
+
+export const nf = (x, d = 1) => Number(x).toFixed(d).replace('.', ',');
+export const horloge = t => {
+  const s2 = t >= T_S2, m = s2 ? 8 * 60 + (t - T_S2) : 13 * 60 + t;
+  return `${s2 ? 'Séance 2' : 'Séance 1'} · ${Math.floor(m / 60)} h ${String(Math.floor(m % 60)).padStart(2, '0')}`;
+};
+export const duree = min => min >= 60 ? `${Math.floor(min / 60)} h ${String(Math.round(min % 60)).padStart(2, '0')}` : `${Math.round(min)} min`;
+
+// ───────────── Aléatoire reproductible (une graine par partie) ─────────────
+const hachage = s => { let h = 1779033703 ^ s.length; for (let i = 0; i < s.length; i++) { h = Math.imul(h ^ s.charCodeAt(i), 3432918353); h = (h << 13) | (h >>> 19); } h = Math.imul(h ^ (h >>> 16), 2246822507); h = Math.imul(h ^ (h >>> 13), 3266489909); return (h ^ (h >>> 16)) >>> 0; };
+export const unif = (graine, cle) => hachage(`${graine}|${cle}`) / 4294967296;
+export const gauss = (graine, cle) => Math.sqrt(-2 * Math.log(Math.max(1e-9, unif(graine, cle + 'a')))) * Math.cos(2 * Math.PI * unif(graine, cle + 'b'));
+const arr = (x, d) => +Number(x).toFixed(d);
+
+// ───────────── Données du scénario ─────────────
+export const PNJ = {
+  moi: { nom: 'Toi', role: 'Technicien·ne de R&D', couleur: '#0f766e' },
+  dubreuil: { nom: 'Mme Dubreuil', role: 'Responsable du laboratoire', couleur: '#7c3aed' },
+  ines: { nom: 'Inès', role: 'Technicienne en analyses (CLHP, CPG, UV)', couleur: '#0369a1' },
+  lucas: { nom: 'Lucas', role: 'Technicien rhéologie et formulation', couleur: '#15803d' },
+};
+export const M_LOT = 200;                    // g de gel à fabriquer
+export const COM = { caf: 5.0, carb: 0.75, coc: 4.0, trol: 0.9, eth96: 40.0 };   // gel commercial (vérité cachée, % massiques)
+export const ETH_PUR_COM = COM.eth96 * 0.96;  // 38,4 % d'éthanol pur
+export const ES_COM = COM.caf + COM.carb + COM.coc + COM.trol;   // 10,65 %
+export const SR_ES = 0.5;                    // écart-type de répétabilité de l'extrait sec (donné par le sujet), en % absolus
+export const RHO_ETOH = 0.789;               // g/mL à 20 °C
+export const SPEC = { caf: [4.5, 5.5], eth: [35.4, 41.4], q: 0.7 };   // cahier des charges du contretype (hypothèse du scénario)
+export const V_REF = 250, V_EI = 500;        // µL d'éthanol et d'étalon interne dans la fiole de référence (CPG)
+export const PENTE_CPG = 0.00139;            // r = %A(EtOH)/%A(EI) par µL d'éthanol dans 20 mL (EI = butan-1-ol, 500 µL) : pente mesurée par les élèves
+export const SIG_CPG = 0.035;                // dispersion relative d'une injection CPG (volume injecté mal maîtrisé), hypothèse gaussienne
+export const K_GEL = 0.0455, K_ELU = 0.0330; // L/mg : sensibilité UV de la caféine dans la solution de gel (effet de matrice) et dans l'éluant seul
+export const KC = 23.4, KB = 2.1;            // aire de pic par mg/L : caféine, benzoïne (CLHP, 273 nm)
+export const FINS = [
+  ['fin_conforme', 'Contretype conforme'],
+  ['fin_detecte', 'Non-conformité détectée'],
+  ['fin_mauvaise_cause', 'Bon diagnostic, mauvaise cause'],
+  ['fin_faux_ok', 'Lot non conforme validé'],
+  ['fin_faux_nok', 'Lot conforme refusé'],
+  ['fin_temps', 'Hors délai'],
+];
+
+// ───────────── Vérité sur le gel formulé par le joueur ─────────────
+const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
+export const QDISP = { continuer: 1.0, neutraliser: 0.85, chauffer: 0.95, grumeaux: 0.3 };
+export function phDe(e, m) {      // pH du gel après ajout cumulé de m g de trolamine (modèle simple, pour 1,5 g de Carbopol par 200 g)
+  const carb = e.f.fm?.carb || 1.5;
+  return 3.0 + 3.6 * (1 - Math.exp(-m / (1.2 * carb / 1.5)));
+}
+export function gelVrai(e) {
+  const fm = e.f.fm || { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 98.7 };
+  const l = e.f.perteEth || 0, ethPur = fm.eth96 * 0.96, trol = e.f.trolAdd || 0;
+  const total = fm.caf + fm.carb + fm.coc + fm.eth96 + fm.eau + trol - ethPur * l;
+  const carbPct = fm.carb / total * 100;
+  const ph = e.f.phFinal ?? phDe(e, trol);
+  const fPH = clamp((ph - 4.0) / 1.5, 0.15, 1);
+  const q = Math.min(1.1, (QDISP[e.f.disp] ?? 0.85) * fPH * Math.pow(carbPct / COM.carb, 1.3));
+  return { caf: fm.caf / total * 100, eth: ethPur * (1 - l) / total * 100, carb: carbPct, ph, q };
+}
+export function defauts(e) {
+  const g = gelVrai(e), d = [];
+  if (g.caf < SPEC.caf[0] || g.caf > SPEC.caf[1]) d.push('caf');
+  if (g.eth < SPEC.eth[0] || g.eth > SPEC.eth[1]) d.push('eth');
+  if (g.q < SPEC.q) d.push('visco');
+  return d;
+}
+
+// ───────────── Données calculées (toujours déterministes à partir de la graine) ─────────────
+export function donneesEs(e) {
+  const g = e.f.graine;
+  return [0, 1, 2].map(i => {
+    const m0 = arr(34.4 + 1.8 * unif(g, `m0${i}`), 4), m1 = arr(1.0 + 0.06 * unif(g, `m1${i}`), 4);
+    const m2 = arr(m0 + (ES_COM + SR_ES * gauss(g, `es${i}`)) / 100 * m1, 4);
+    return { m0, m1, m2, ES: (m2 - m0) / m1 * 100 };
+  });
+}
+export function esRetenu(e) {
+  const d = donneesEs(e).map(x => x.ES);
+  return e.f.es3 ? [...d].sort((a, b) => a - b)[1] : e.f.es2 === false ? d[0] : (d[0] + d[1]) / 2;
+}
+export const ecartEs = e => { const d = donneesEs(e); return Math.abs(d[0].ES - d[1].ES); };
+
+export function donneesHplc(e) {
+  const g = e.f.graine, gel = gelVrai(e), mPes = arr(0.98 + 0.08 * unif(g, 'hm'), 3), cRef = 5.09;
+  const aRefC = arr(KC * cRef * (1 + 0.01 * gauss(g, 'h1')), 2), aRefB = arr(KB * 20 * (1 + 0.01 * gauss(g, 'h2')), 2);
+  const aEchC = arr(KC * gel.caf * mPes * (1 + 0.01 * gauss(g, 'h3')), 2), aEchB = arr(KB * 20 * (1 + 0.01 * gauss(g, 'h4')), 2);
+  const c5 = cRef * (aRefB / aRefC) * (aEchC / aEchB);
+  return { mPes, cRef, aRefC, aRefB, aEchC, aEchB, pct: c5 / mPes };
+}
+export const regression = pts => {
+  const n = pts.length, mx = pts.reduce((s, p) => s + p[0], 0) / n, my = pts.reduce((s, p) => s + p[1], 0) / n;
+  const sxx = pts.reduce((s, p) => s + (p[0] - mx) ** 2, 0), sxy = pts.reduce((s, p) => s + (p[0] - mx) * (p[1] - my), 0);
+  const a = sxy / sxx, b = my - a * mx, sst = pts.reduce((s, p) => s + (p[1] - my) ** 2, 0), sse = pts.reduce((s, p) => s + (p[1] - (a * p[0] + b)) ** 2, 0);
+  return { a, b, r2: 1 - sse / sst };
+};
+export function donneesUv(e) {
+  const g = e.f.graine, gel = gelVrai(e), mPes = arr(0.98 + 0.08 * unif(g, 'um'), 3), cx = 2 * gel.caf * mPes;   // mg/L dans la fiole de 20 mL
+  const ajouts = [0, 50, 100, 150, 200].map((v, i) => { const c = v * 1.003 / 20; return { v, c: arr(c, 2), A: arr(K_GEL * (cx + c) + 0.006 * gauss(g, `ua${i}`), 3) }; });
+  const rg = regression(ajouts.map(p => [p.c, p.A])), a = arr(rg.a, 4), b = arr(rg.b, 4);
+  const aGel = arr(K_GEL * cx + 0.006 * gauss(g, 'ug'), 3);
+  return { mPes, ajouts, a, b, r2: arr(rg.r2, 4), pctAjouts: (b / a) / (2 * mPes), aExt: K_ELU, aGel, pctExt: (aGel / K_ELU) / (2 * mPes), residus: ajouts.map(p => arr(p.A - (a * p.c + b), 3)) };
+}
+export function donneesCpg(e) {
+  const g = e.f.graine, gel = gelVrai(e);
+  const ratio = r => ({ aE: arr(100 * r / (1 + r), 2), aEI: arr(100 / (1 + r), 2) });
+  const rRef = PENTE_CPG * V_REF * (1 + SIG_CPG * gauss(g, 'cr')), ref = ratio(rRef);
+  const mP = arr(0.5 + 0.03 * unif(g, 'cm'), 3), vE = mP * gel.eth / 100 / RHO_ETOH * 1000;
+  const ech = ratio(PENTE_CPG * vE * (1 + SIG_CPG * gauss(g, 'ce')));
+  const gamme = [100, 100, 300, 300, 500, 500, 700, 700, 1000, 1000].map((v, i) => ({ v, r: arr(PENTE_CPG * v * (1 + SIG_CPG * gauss(g, `gm${i}`)), 4) }));
+  const rg = regression(gamme.map(p => [p.v, p.r])), a = arr(rg.a, 6), b = arr(rg.b, 4);
+  const rR = ref.aE / ref.aEI, rE = ech.aE / ech.aEI;
+  return { ref, ech, mP, gamme, a, b, r2: arr(rg.r2, 4), rR, rE,
+    pctSimple: V_REF * (rE / rR) * RHO_ETOH / (mP * 1000) * 100, pctGamme: ((rE - b) / a) * RHO_ETOH / (mP * 1000) * 100,
+    residus: gamme.map(p => arr(p.r - (a * p.v + b), 4)),
+    // trois injections successives de la même solution, sans étalon interne (pour montrer que l'aire seule ne suffit pas)
+    sansEI: [0, 1, 2].map(i => arr(100 * (1 + 0.14 * gauss(g, `sei${i}`)), 1)) };
+}
+// Rhéologie : modèle d'Herschel-Bulkley, τ = τ0 + K·γ̇^n (données de scénario inspirées des courbes des élèves)
+export const GAMMAS = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100];
+export const HB = { tau0: 18, K: 9, n: 0.45 };
+export const courbe = q => GAMMAS.map(g => { const s = q * (HB.tau0 + HB.K * Math.pow(g, HB.n)); return { g, s, eta: s / g }; });
+
+// ───────────── Moteur ─────────────
+export const etatInitial = (graine = (Math.random() * 2147483647) | 0) => ({ scene: 'intro', t: 0, f: { graine, attente: 0, nbErr: 0 }, carnet: [], essais: 0, fait: {}, bg: {} });
+const nota = (e, texte) => texte ? { ...e, carnet: [...e.carnet, `${horloge(e.t)} : ${texte}`] } : e;
+const marquer = (e, ...cles) => ({ ...e, fait: { ...e.fait, ...Object.fromEntries(cles.map(c => [c, true])) } });
+const attendre = (e, cle) => { const r = e.bg[cle]; if (r == null || r <= e.t) return e; return nota({ ...e, t: r, f: { ...e.f, attente: e.f.attente + (r - e.t) } }, `J'attends (${cle === 'es' ? "l'étuve" : 'le ballon'}) pendant ${duree(r - e.t)}.`); };
+
+export const SCENES = {};
+const add = (id, o) => { SCENES[id] = { id, ...o }; };
+export const estFin = id => !!SCENES[id]?.fin;
+
+export function aller(e, id) {
+  let cible = id;
+  if (!SCENES[cible]) throw new Error(`Scène inconnue : ${cible}`);
+  if (!SCENES[cible].fin && e.t >= T_FIN) cible = 'fin_temps';
+  const n = { ...e, scene: cible, essais: 0 };
+  return SCENES[cible].entree ? SCENES[cible].entree(n) : n;
+}
+export const texteDe = (e, sc = SCENES[e.scene]) => typeof sc.texte === 'function' ? sc.texte(e) : sc.texte;
+export const choixDe = (e, sc = SCENES[e.scene]) => (typeof sc.choix === 'function' ? sc.choix(e) : sc.choix || []).filter(c => !c.si || c.si(e));
+export const visuelsDe = (e, sc = SCENES[e.scene]) => (sc.visuels ? sc.visuels(e) : []) || [];
+export function choisir(e, c) {
+  let n = { ...e, t: e.t + (c.duree || 0), f: { ...e.f, ...(c.f || {}), corrige: undefined } };
+  n = nota(n, c.note);
+  if (c.run) n = c.run(n);
+  return aller(n, typeof c.vers === 'function' ? c.vers(n) : c.vers);
+}
+export function valider(e, saisie) {
+  const sc = SCENES[e.scene], k = sc.calcul;
+  const v = parseFloat(String(saisie).replace(',', '.').replace(/\s/g, ''));
+  const vrai = k.vrai(e), tol = k.tolAbs ?? Math.abs(vrai) * k.tol;
+  if (Number.isFinite(v) && Math.abs(v - vrai) <= tol) return { etat: choisir(e, k.ok), juste: true, message: '' };
+  const e2 = { ...e, f: { ...e.f, nbErr: e.f.nbErr + 1 } }, essais = e.essais + 1;
+  if (essais >= 2) {
+    const st = choisir({ ...e2, t: e2.t + 5 }, k.ko);
+    return { etat: { ...st, f: { ...st.f, corrige: `Valeur attendue à l'étape précédente : ${nf(vrai, k.cs ?? 2)} ${k.unite}.` } }, juste: false, message: '' };
+  }
+  return { etat: { ...e2, t: e2.t + 5, essais }, juste: false, message: (k.retour && Number.isFinite(v) && k.retour(v, e)) || k.indice };
+}
+export const cer = (cause, effet, remede) => `Cause : ${cause} Effet : ${effet} Remède : ${remede}`;
+
+// ───────────── La paillasse (hub) ─────────────
+export const statutBg = e => ({
+  es: e.fait.es && !e.fait.esRes ? (e.bg.es > e.t ? `Étuve en route, prête dans ${duree(e.bg.es - e.t)}` : 'Étuve terminée : les coupelles sont prêtes à peser') : null,
+  gel: e.fait.fab && !e.fait.ph ? (e.bg.gel > e.t ? `Ballon en route, prêt dans ${duree(e.bg.gel - e.t)}` : 'Ballon terminé : le gel est prêt') : null,
+});
+const taches = e => {
+  const F = e.fait, L = [];
+  if (!F.es) L.push(['Lancer l\'extrait sec du gel commercial', 'Peser, étaler, mettre à l\'étuve : 15 min de travail, puis l\'étuve tourne seule.', 'es_prep']);
+  if (!F.eth) L.push(['Raisonner sur l\'éthanol de la notice', 'Quelle masse d\'éthanol faut-il mettre dans 200 g de gel ?', 'eth1']);
+  if (F.es && !F.esRes) L.push(['Lire l\'extrait sec', 'Calculer ES, vérifier la répétabilité, en déduire le tensioactif.', 'es_calc1']);
+  if (F.eth && F.esRes && !F.formule) L.push(['Écrire la formule du contretype', 'Fixer les masses des constituants pour environ 200 g.', 'formule']);
+  if (F.formule && !F.fab) L.push(['Fabriquer le gel', 'Choisir le procédé, lancer la dispersion du Carbopol.', 'fab_choix']);
+  if (!F.rheoC) L.push(['Rhéologie du gel commercial', 'Mesurer la courbe d\'écoulement du témoin (15 min).', 'rheoC']);
+  if (!F.hplcPrep) L.push(['Préparer le dosage de la caféine (CLHP)', 'Masse à peser, solution de référence, première injection.', 'hplc_m']);
+  if (F.eth && !F.cpgPrep) L.push(['Préparer le dosage de l\'éthanol (CPG)', 'Choix de l\'étalon interne, masse à peser, injection de la référence.', 'cpg_ei']);
+  if (F.fab && !F.ph) L.push(['Neutraliser et mettre en pot', 'Quand le Carbopol est dispersé : ajouter la trolamine et contrôler le pH.', 'fab_disp']);
+  if (F.ph && F.rheoC && !F.rheoF) L.push(['Comparer les rhéologies', 'Mesurer le gel formulé et le comparer au commercial.', 'rheoF']);
+  if (F.ph && F.hplcPrep && !F.caf) L.push(['Doser la caféine du gel formulé', e.f.methCaf === 'ajouts' ? 'Ajouts dosés au spectrophotomètre UV.' : e.f.methCaf === 'ext' ? 'Étalonnage externe au spectrophotomètre UV.' : 'CLHP, méthode de l\'étalon interne.', e.f.methCaf === 'ajouts' ? 'uv_ajouts' : e.f.methCaf === 'ext' ? 'uv_ext' : 'hplc_ei']);
+  if (F.ph && F.cpgPrep && !F.ethQC) L.push(['Doser l\'éthanol du gel formulé', 'CPG avec étalon interne, puis avec une gamme d\'étalonnage.', 'cpg_inj']);
+  if (F.caf && F.ethQC && F.rheoF) L.push(['Conclure : le contretype est-il conforme ?', 'Comparer aux exigences et décider.', 'verdict']);
+  return L;
+};
+add('intro', {
+  lieu: 'Laboratoire de R&D', pnj: 'dubreuil', titre: 'Contre-typer la Percutaféine',
+  texte: () => `« Une cliente veut un gel équivalent à la Percutaféine, un gel à la caféine vendu pour les surcharges adipeuses localisées. Ton travail : retrouver la formule du gel commercial, fabriquer environ 200 g d'un contretype, puis contrôler sa qualité : caféine, éthanol, viscosité. »\n« Tu as deux demi-journées, soit 7 h 30. L'étuve et le ballon chauffent pendant que tu fais autre chose : organise-toi pour ne pas attendre devant. Les appareils sont fragiles, et une analyse qui ne donne pas ce qu'on attend se discute. »\nDocuments dans ton dossier : liste des constituants (caféine, Carbopol 980, cocoate de macrogol, trolamine, éthanol, eau purifiée) et notice (résumé des caractéristiques du produit).`,
+  choix: [{ t: 'Aller à la paillasse', vers: 'hub', note: 'Début du travail : contre-typer la Percutaféine.' }],
+});
+add('hub', {
+  lieu: 'Paillasse', pnj: 'moi', titre: 'À la paillasse',
+  texte: e => { const s = statutBg(e); return [`${horloge(e.t)}. Il te reste ${duree(T_FIN - e.t)} de TP.`, s.es && `🔥 ${s.es}.`, s.gel && `⚗️ ${s.gel}.`, 'Que fais-tu maintenant ?'].filter(Boolean).join('\n'); },
+  choix: e => taches(e).map(([t, d, vers]) => ({ t, d, vers })),
+});
+
+// ───────────── Déformulation ─────────────
+add('es_prep', {
+  lieu: 'Salle des étuves', pnj: 'moi', titre: 'Extrait sec du gel commercial',
+  texte: () => `Seuls l'eau et l'éthanol s'évaporent à 105 °C : ce qui reste dans la coupelle est le résidu de caféine, de Carbopol, de tensioactif et de trolamine. Le sujet donne un écart-type de répétabilité S_r = 0,5 % pour l'extrait sec.\nCombien de coupelles prépares-tu ?`,
+  hyp: "Hypothèse : les constituants non volatils (caféine, Carbopol, cocoate de macrogol, trolamine) ne se perdent pas à 105 °C ; l'éthanol et l'eau sont évaporés en 1 h.",
+  choix: [
+    { t: 'Deux coupelles, à l\'étuve à 105 °C pendant 1 h', duree: 15, vers: 'hub', f: { es2: true }, run: n => ({ ...marquer(n, 'es'), bg: { ...n.bg, es: n.t + 60 } }), note: 'Extrait sec lancé en double (105 °C, 1 h).' },
+    { t: 'Une seule coupelle, pour gagner du temps', duree: 10, vers: 'hub', f: { es2: false }, run: n => ({ ...marquer(n, 'es'), bg: { ...n.bg, es: n.t + 60 } }), note: 'Extrait sec lancé avec une seule coupelle.' },
+  ],
+});
+add('eth1', {
+  lieu: 'Bureau', pnj: 'moi', titre: 'L\'éthanol de la notice',
+  texte: () => `La notice indique : « pour 10 g de gel, 4 g d'éthanol à 96 % (en masse) ». Le gel est un mélange à base d'eau et d'éthanol : c'est l'éthanol pur qui compte pour la spécification.`,
+  hyp: "Hypothèse : l'éthanol à 96 % contient 96 g d'éthanol pur pour 100 g de solution (le reste est de l'eau).",
+  calcul: { q: 'Quel est le pourcentage massique d\'éthanol pur dans le gel ?', unite: '%', vrai: () => ETH_PUR_COM, tol: 0.013, cs: 1, indice: 'Dans 10 g de gel il y a 4 g de solution d\'éthanol à 96 %. Quelle masse d\'éthanol pur cela représente-t-il ? Rapporte-la à 10 g de gel.',
+    retour: v => Math.abs(v - 40) < 0.4 ? cer('tu as pris les 4 g de solution comme de l\'éthanol pur.', 'tu obtiens 40 % au lieu de 38,4 %.', 'multiplie par 0,96 : la solution contient 4 % d\'eau.') : null,
+    ok: { vers: 'eth2', duree: 5, note: 'Éthanol pur dans le gel : 38,4 %.' }, ko: { vers: 'eth2', duree: 0, f: { errEth: true } } },
+});
+add('eth2', {
+  lieu: 'Bureau', pnj: 'moi', titre: 'Masse d\'éthanol à peser',
+  texte: () => `Tu fabriques 200 g de gel. L'éthanol disponible au laboratoire est de l'éthanol à 96 %.`,
+  calcul: { q: 'Quelle masse d\'éthanol à 96 % faut-il peser pour 200 g de gel ?', unite: 'g', vrai: () => M_LOT * 4 / 10, tol: 0.02, cs: 0, indice: 'La notice donne 4 g d\'éthanol à 96 % pour 10 g de gel : cherche la masse pour 200 g.',
+    ok: { vers: 'hub', duree: 5, run: n => marquer(n, 'eth'), note: 'Éthanol à 96 % à peser : 80 g pour 200 g de gel.' }, ko: { vers: 'hub', duree: 0, run: n => marquer(n, 'eth'), f: { errEth: true } } },
+});
+add('es_calc1', {
+  lieu: 'Salle des étuves', pnj: 'moi', titre: 'Premier extrait sec',
+  entree: e => attendre(e, 'es'),
+  texte: e => { const d = donneesEs(e)[0]; return `L'étuve est terminée. Coupelle 1 : coupelle vide m₀ = ${nf(d.m0, 4)} g ; gel humide déposé m₁ = ${nf(d.m1, 4)} g ; coupelle + résidu sec m₂ = ${nf(d.m2, 4)} g.`; },
+  formule: 'es',
+  calcul: { q: 'Calcule l\'extrait sec ES₁ de la coupelle 1 (en % massique).', unite: '%', vrai: e => donneesEs(e)[0].ES, tol: 0.02, cs: 2, indice: 'ES = (m₂ − m₀) / m₁ × 100.',
+    retour: (v, e) => { const d = donneesEs(e)[0]; return Math.abs(v - d.m2 / d.m1 * 100) < 1 ? cer('tu as divisé m₂ au lieu de (m₂ − m₀).', 'tu trouves une valeur d\'environ 3 000 %.', 'retire la masse de la coupelle vide avant de diviser.') : null; },
+    ok: { vers: e => e.f.es2 ? 'es_calc2' : 'es_calc3', duree: 5 }, ko: { vers: e => e.f.es2 ? 'es_calc2' : 'es_calc3', duree: 0 } },
+});
+add('es_calc2', {
+  lieu: 'Salle des étuves', pnj: 'moi', titre: 'Les deux essais sont-ils compatibles ?',
+  texte: e => { const d = donneesEs(e); return `Coupelle 2 : m₀ = ${nf(d[1].m0, 4)} g ; m₁ = ${nf(d[1].m1, 4)} g ; m₂ = ${nf(d[1].m2, 4)} g, soit ES₂ = ${nf(d[1].ES, 2)} %. Pour la coupelle 1, ES₁ = ${nf(d[0].ES, 2)} %.\nÉcart |ES₁ − ES₂| = ${nf(ecartEs(e), 2)} %. Critère de répétabilité pour deux essais : écart ≤ 2,8 × S_r = 1,4 %.`; },
+  hyp: "Hypothèse : les deux essais suivent la même loi normale d'écart-type S_r = 0,5 % ; le critère 2,8·S_r correspond alors à un niveau de confiance de 95 % pour l'écart de deux essais.",
+  choix: e => { const compat = ecartEs(e) <= 1.4; return [
+    { t: 'Les deux résultats sont compatibles : je retiens la moyenne', vers: 'es_calc3', duree: 5, f: compat ? {} : { errEs: true }, note: compat ? `Extrait sec retenu : moyenne de deux essais.` : 'Extrait sec : moyenne retenue malgré un écart trop grand.' },
+    { t: 'L\'écart est trop grand : je fais un troisième essai et je retiens la médiane', vers: 'es_calc3', duree: 15, f: { es3: true, errEs: compat }, run: n => ({ ...n, bg: { ...n.bg, es: n.t + 60 } }), note: 'Troisième essai d\'extrait sec lancé (médiane).' },
+  ]; },
+});
+add('es_calc3', {
+  lieu: 'Bureau', pnj: 'moi', titre: 'Le tensioactif par différence',
+  entree: e => e.f.es3 ? attendre(e, 'es') : e,
+  texte: e => `Extrait sec retenu : ES = ${nf(esRetenu(e), 2)} %. La fiche donne la caféine à 5 % ; la bibliographie place le Carbopol 980 à environ 0,75 % (plage 0,5 à 1 %) et la trolamine à environ 0,9 % pour atteindre un pH voisin de 6.`,
+  hyp: 'Hypothèse : le résidu sec est la somme de la caféine, du Carbopol, de la trolamine et du cocoate de macrogol (seuls constituants non volatils). Incertitude sur ES : environ 0,5 %.',
+  calcul: { q: 'Quel pourcentage massique de cocoate de macrogol déduis-tu ?', unite: '%', vrai: e => esRetenu(e) - 5 - 0.75 - 0.9, tolAbs: 0.7, cs: 1, indice: 'Cocoate = ES − caféine − Carbopol − trolamine.',
+    ok: { vers: 'hub', duree: 5, run: n => marquer(n, 'esRes'), note: 'Cocoate de macrogol estimé par différence.' }, ko: { vers: 'hub', duree: 0, run: n => marquer(n, 'esRes') } },
+});
+
+// ───────────── Formulation ─────────────
+export const CHAMPS_FORMULE = [['caf', 'Caféine'], ['carb', 'Carbopol 980'], ['coc', 'Cocoate de macrogol'], ['eth96', 'Éthanol à 96 %'], ['trol', 'Trolamine (estimation)'], ['eau', 'Eau purifiée']];
+export const FORMULE_REPLI = { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 98.7 };
+export function controlesFormule(e, fm) {
+  const v = Object.fromEntries(Object.entries(fm).map(([k, x]) => [k, parseFloat(String(x).replace(',', '.')) || 0]));
+  const tot = Object.values(v).reduce((s, x) => s + x, 0), pct = k => v[k] / tot * 100, esTh = (v.caf + v.carb + v.coc + v.trol) / tot * 100, ethP = v.eth96 * 0.96 / tot * 100;
+  return [
+    { ok: Math.abs(tot - M_LOT) <= 4, t: `Masse totale : ${nf(tot, 1)} g (attendu : environ ${M_LOT} g).` },
+    { ok: pct('caf') >= 4.5 && pct('caf') <= 5.5, t: `Caféine : ${nf(pct('caf'), 2)} % (attendu : 5 %).` },
+    { ok: pct('carb') >= 0.5 && pct('carb') <= 1.0, t: `Carbopol : ${nf(pct('carb'), 2)} % (plage de la fiche : 0,5 à 1 %).` },
+    { ok: ethP >= 36.5 && ethP <= 40.5, t: `Éthanol pur : ${nf(ethP, 1)} % (attendu : ${nf(ETH_PUR_COM, 1)} %).` },
+    { ok: v.trol >= 1.2 && v.trol <= 2.4, t: `Trolamine : ${nf(pct('trol'), 2)} % (ordre de grandeur : 0,6 à 1,2 %).` },
+    { ok: Math.abs(esTh - esRetenu(e)) <= 1.0, t: `Extrait sec calculé de ta formule : ${nf(esTh, 2)} % ; mesuré sur le commercial : ${nf(esRetenu(e), 2)} % (écart toléré : 1 %).` },
+  ];
+}
+export function validerFormule(e, fm, repli = false) {
+  const val = repli ? FORMULE_REPLI : Object.fromEntries(Object.entries(fm).map(([k, x]) => [k, parseFloat(String(x).replace(',', '.')) || 0]));
+  const lignes = controlesFormule(e, val), tous = lignes.every(l => l.ok);
+  const n = { ...e, t: e.t + 3, f: { ...e.f, fTent: (e.f.fTent || 0) + 1 } };
+  if (tous || repli) return { ok: true, lignes, etat: choisir({ ...n, f: { ...n.f, fm: val, repli: repli || undefined, nbErr: n.f.nbErr + (repli ? 2 : 0) } }, { vers: 'hub', run: x => marquer(x, 'formule'), note: repli ? 'Formule de repli utilisée.' : `Formule validée (éthanol à 96 % : ${nf(val.eth96, 1)} g).` }) };
+  return { ok: false, lignes, etat: n };
+}
+add('formule', {
+  lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'formule', titre: 'La formule du contretype',
+  texte: e => `« Écris les masses pour environ ${M_LOT} g. Je te dis ce qui cloche, mais chaque vérification me prend 3 minutes. » Rappels : ES mesuré ${nf(esRetenu(e), 2)} %, éthanol à 96 % pour ${nf(ETH_PUR_COM, 1)} % d'éthanol pur.`,
+  hyp: "Hypothèse : le volume de gel est la somme des masses (pas de contraction de volume à l'échelle de ce contrôle) ; la trolamine finale est ajustée au pH, la valeur saisie n'est qu'une estimation.",
+  choix: [],
+});
+
+// ───────────── Fabrication ─────────────
+add('fab_choix', {
+  lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Comment fabriques-tu le gel ?',
+  texte: () => `« Le Carbopol 980 est très long à se disperser : compte 30 min à 1 h. Dès qu'il est dispersé, c'est la base (la trolamine) qui fait épaissir. Et l'éthanol s'évapore vite quand on chauffe. »\nComment procèdes-tu ?`,
+  hyp: 'Hypothèse : le Carbopol gonfle et épaissit quand il est neutralisé ; mal dispersé, il forme des grumeaux qui ne se redissolvent pas bien.',
+  choix: [
+    { t: 'Tout sauf la base dans un ballon à reflux sous agitation, puis la base à la fin', d: '15 min de travail, ballon en route 1 h 15 environ.', duree: 15, vers: 'hub', f: { mode: 'reflux', perteEth: 0.01 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 75 } }), note: 'Fabrication : ballon à reflux sous agitation, base en dernier.' },
+    { t: 'Tout sauf la base dans un bécher chauffé sur plaque, sans couvercle', d: '10 min de travail, plus court (45 min), mais on chauffe de l\'éthanol à l\'air libre.', duree: 10, vers: 'hub', f: { mode: 'becher', perteEth: 0.18 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 45 } }), note: 'Fabrication : bécher chauffé à l\'air libre, base en dernier.' },
+    { t: 'Mettre la base tout de suite avec le Carbopol pour gagner du temps', d: '10 min de travail.', duree: 10, vers: 'fab_grumeaux', f: { mode: 'base', perteEth: 0.01 }, note: 'Fabrication : base ajoutée dès le départ.' },
+  ],
+});
+add('fab_grumeaux', {
+  lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Des grumeaux gélifiés',
+  texte: () => `Après 20 minutes, le milieu est trouble et plein de petits grumeaux translucides : le Carbopol a gonflé au contact de la base avant d'être dispersé. Lucas : « Ça ne se redissoudra pas. »`,
+  choix: [
+    { t: 'Tout recommencer proprement avec le reflux (45 min de plus)', duree: 45, vers: 'hub', f: { errBase: true, mode: 'reflux', perteEth: 0.01 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 75 } }), note: 'Gel raté (base trop tôt) : fabrication refaite avec reflux.' },
+    { t: 'Continuer tel quel et espérer que ça passera', duree: 5, vers: 'hub', f: { errBase: true, disp: 'grumeaux' }, run: n => ({ ...marquer(n, 'fab', 'disp'), bg: { ...n.bg, gel: n.t + 10 } }), note: 'Gel avec grumeaux conservé.' },
+  ],
+});
+add('fab_disp', {
+  lieu: 'Paillasse de formulation', pnj: 'moi', titre: 'Le Carbopol est-il dispersé ?',
+  entree: e => attendre(e, 'gel'),
+  texte: e => e.fait.disp ? 'Le gel est prêt à être neutralisé.' : `Après le temps prévu, il reste encore des morceaux de Carbopol dans le milieu. Que fais-tu ?`,
+  choix: e => e.fait.disp ? [{ t: 'Passer à la neutralisation', vers: 'ph' }] : [
+    { t: 'Continuer l\'agitation 30 minutes de plus', duree: 30, vers: 'ph', f: { disp: 'continuer' }, run: n => marquer(n, 'disp'), note: 'Dispersion prolongée de 30 min : Carbopol dissous.' },
+    { t: 'Arrêter le chauffage et ajouter la base pour voir si le reste se dissout', duree: 2, vers: 'ph', f: { disp: 'neutraliser' }, run: n => marquer(n, 'disp'), note: 'Dispersion arrêtée avant la fin, base ajoutée ensuite.' },
+    { t: 'Augmenter le chauffage pour accélérer', duree: 15, vers: 'ph', run: n => ({ ...marquer(n, 'disp'), f: { ...n.f, disp: 'chauffer', perteEth: n.f.perteEth + (n.f.mode === 'becher' ? 0.06 : 0.03) } }), note: 'Chauffage augmenté : Carbopol dispersé, un peu d\'éthanol perdu.' },
+  ],
+});
+export function ajouterBase(e, g) {
+  const m = (e.f.trolAdd || 0) + g;
+  return { ...e, t: e.t + 2, f: { ...e.f, trolAdd: arr(m, 2), phMes: arr(phDe(e, m) + 0.04 * gauss(e.f.graine, `ph${Math.round(m * 100)}`), 2) } };
+}
+export function validerPh(e) {
+  const ph = phDe(e, e.f.trolAdd || 0);
+  if (!(e.f.trolAdd > 0)) return { ok: false, message: 'Tu n\'as pas encore ajouté de trolamine.' };
+  if (ph < 5.0) return { ok: false, message: `pH mesuré ${nf(e.f.phMes, 2)} : encore trop acide, le gel n'a pas fini d'épaissir (le gel commercial est vers 6).` };
+  return { ok: true, etat: choisir({ ...e, f: { ...e.f, phFinal: ph } }, { vers: 'hub', run: n => marquer(n, 'ph'), note: `Gel neutralisé : pH ${nf(e.f.phMes, 2)}, ${nf(e.f.trolAdd, 2)} g de trolamine, mis en pot.`, duree: 10 }) };
+}
+add('ph', {
+  lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'ph', titre: 'Neutraliser et mettre en pot',
+  texte: e => `« Ajoute la trolamine par petites fractions en agitant, et lis le pH au pH-mètre après chaque ajout (2 minutes l'ajout). Vise un pH proche de celui du gel commercial, vers 6. » ${e.f.disp === 'grumeaux' ? 'Le gel contient des grumeaux.' : ''}`,
+  hyp: 'Hypothèse : la viscosité d\'un gel de Carbopol dépend du pH (elle augmente de pH 4 à 6 environ puis se stabilise) ; la lecture du pH-mètre a une dispersion de ±0,04.',
+  choix: [],
+});
+
+// ───────────── Rhéologie ─────────────
+add('rheoC', {
+  lieu: 'Salle de rhéologie', pnj: 'lucas', titre: 'Rhéologie du gel commercial',
+  texte: () => `Lucas lance le rhéomètre sur le gel commercial et te montre la courbe d'écoulement (contrainte σ) et la viscosité η en fonction du gradient de vitesse γ̇.`,
+  hyp: "Hypothèse : les points suivent le modèle d'Herschel-Bulkley (seuil + loi de puissance) ; les valeurs sont des données de scénario inspirées des mesures des élèves.",
+  visuels: () => [{ type: 'rheo', courbes: [{ nom: 'Gel commercial', pts: courbe(1), couleur: '#1e3a8a' }] }],
+  choix: [
+    { t: 'Le gel est rhéofluidifiant : la viscosité diminue quand le gradient augmente', duree: 15, vers: 'hub', run: n => marquer(n, 'rheoC'), note: 'Rhéologie du commercial : rhéofluidifiant avec seuil.' },
+    { t: 'Le gel est newtonien : sa viscosité ne dépend pas du gradient', duree: 15, vers: 'rheoC_faux', run: n => marquer(n, 'rheoC'), f: { errRheo: true } },
+    { t: 'Le gel est rhéoépaississant : la viscosité augmente avec le gradient', duree: 15, vers: 'rheoC_faux', run: n => marquer(n, 'rheoC'), f: { errRheo: true } },
+  ],
+});
+add('rheoC_faux', {
+  lieu: 'Salle de rhéologie', pnj: 'lucas', titre: 'Relis la courbe',
+  texte: () => 'Lucas : « Regarde la pente de η = f(γ̇) : elle descend. La viscosité diminue quand on cisaille davantage, c\'est un comportement rhéofluidifiant, et la contrainte ne tend pas vers zéro à faible gradient : il y a un seuil d\'écoulement. »',
+  choix: [{ t: 'Compris, retour à la paillasse', vers: 'hub' }],
+});
+const causeVisco = e => { const g = gelVrai(e), fDisp = QDISP[e.f.disp] ?? 0.85, fPH = clamp((g.ph - 4) / 1.5, 0.15, 1), fCarb = Math.pow(g.carb / COM.carb, 1.3);
+  if (g.q >= 0.9) return 'similaires'; const m = Math.min(fDisp, fPH, fCarb); return m === fDisp ? 'dispersion' : m === fPH ? 'ph' : 'carbopol'; };
+add('rheoF', {
+  lieu: 'Salle de rhéologie', pnj: 'lucas', titre: 'Gel formulé et gel commercial',
+  texte: e => { const q = gelVrai(e).q; return `Voici les deux courbes. Rapport des contraintes formulé / commercial : ${nf(q, 2)} (spécification du scénario : au moins ${nf(SPEC.q, 2)}).\nSi les courbes diffèrent, quelle est la cause la plus probable dans ta fabrication ?`; },
+  hyp: 'Hypothèse : à composition proche, la différence de viscosité vient surtout de la dispersion du Carbopol, du pH final ou de la teneur en Carbopol.',
+  visuels: e => [{ type: 'rheo', courbes: [{ nom: 'Gel commercial', pts: courbe(1), couleur: '#1e3a8a' }, { nom: 'Gel formulé', pts: courbe(gelVrai(e).q), couleur: '#b45309' }] }],
+  choix: e => { const bon = causeVisco(e), ok = c => c === bon;
+    const mk = (id, t) => ({ t, duree: 15, vers: 'hub', f: { errRheo2: !ok(id) || undefined }, run: n => marquer(n, 'rheoF'), note: ok(id) ? 'Cause de l\'écart de viscosité correctement identifiée.' : 'Cause de l\'écart de viscosité mal identifiée.' });
+    return [mk('similaires', 'Les deux gels sont très proches : pas de défaut de viscosité'), mk('dispersion', 'Carbopol mal dispersé (morceaux restants)'), mk('ph', 'pH trop bas : le gel n\'a pas fini d\'épaissir'), mk('carbopol', 'Pas assez de Carbopol dans la formule')]; },
+});
+
+// ───────────── Caféine : CLHP, ou UV si la CLHP tombe en panne ─────────────
+add('hplc_m', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Préparer le dosage de la caféine',
+  texte: () => `Fiole 1 : environ 50 mg de caféine dans 50 mL d'éluant. Pour la fiole 4 (50 mL), tu veux la même masse de caféine que dans la fiole 1, à partir du gel (à 5 % de caféine en masse).`,
+  hyp: "Hypothèse : le gel formulé contient environ 5 % de caféine (c'est la valeur à vérifier) ; la prise d'essai est faite sur balance de précision.",
+  calcul: { q: 'Quelle masse m de gel faut-il peser pour la fiole 4 ?', unite: 'g', vrai: () => 1.0, tol: 0.1, cs: 1, indice: '50 mg de caféine représentent 5 % de la masse m de gel : m = 50 mg / 0,05.',
+    ok: { vers: 'hplc_inj', duree: 5 }, ko: { vers: 'hplc_inj', duree: 0 } },
+});
+add('hplc_inj', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Première injection',
+  entree: e => e.f.panne === undefined ? { ...e, f: { ...e.f, panne: unif(e.f.graine, 'panne') < 0.6 } } : e,
+  texte: () => `Les solutions sont prêtes (référence avec benzoïne comme étalon interne). Tu passes à l'injection de la solution de référence en CLHP (boucle de 20 µL, λ = 273 nm).`,
+  choix: [{ t: 'Injecter la solution de référence', duree: 10, vers: e => e.f.panne ? 'hplc_panne' : 'hplc_ref', run: n => marquer(n, 'hplcPrep'), f: {} }],
+});
+add('hplc_ref', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Chromatogramme de référence',
+  texte: e => { const d = donneesHplc(e); return `Deux pics bien séparés : la caféine (t_R ≈ 0,8 min) et la benzoïne, étalon interne (t_R ≈ 1,2 min). Aires de la référence : caféine ${nf(d.aRefC, 2)}, benzoïne ${nf(d.aRefB, 2)}.`; },
+  visuels: () => [{ type: 'chroma', titre: 'CLHP · référence (caféine + benzoïne)', tmax: 2, pics: [{ tr: 0.82, h: 0.9, l: 'caféine' }, { tr: 1.24, h: 0.35, l: 'benzoïne (EI)' }] }],
+  choix: [{ t: 'Retour à la paillasse', vers: 'hub', f: { methCaf: 'EI' } }],
+});
+add('hplc_panne', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'La CLHP ne répond plus',
+  texte: () => `Plus de débit : l'erreur de pompe revient à chaque injection. Inès : « Il faut compter une demi-journée de réparation, au moins. Tu peux aussi doser la caféine autrement : elle absorbe fort à 273 nm, on a un spectrophotomètre UV. »\nQue fais-tu ?`,
+  hyp: 'Hypothèse (UV) : loi de Beer-Lambert (A proportionnelle à C) dans la zone de travail, A restant inférieure à 1.',
+  choix: [
+    { t: 'Ajouts dosés au spectrophotomètre UV : on ajoute des quantités connues de caféine à la solution de gel', d: '5 fioles à préparer', duree: 10, vers: 'hub', f: { methCaf: 'ajouts' }, note: 'Panne de CLHP : dosage par ajouts dosés en UV.' },
+    { t: 'Étalonnage externe en UV : gamme de caféine dans l\'éluant, puis lecture de la solution de gel', d: 'Plus simple à préparer', duree: 10, vers: 'hub', f: { methCaf: 'ext' }, note: 'Panne de CLHP : dosage par étalonnage externe en UV.' },
+    { t: 'Attendre la réparation de la CLHP', d: 'Au moins 2 heures', duree: 120, vers: 'hub', f: { methCaf: 'EI', attendu: true }, note: 'Panne de CLHP : j\'attends la réparation (2 h).' },
+  ],
+});
+add('hplc_ei', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Caféine par CLHP, étalon interne',
+  texte: e => { const d = donneesHplc(e); return `Gel formulé : m = ${nf(d.mPes, 3)} g dans 50 mL (fiole 4), puis 100 µL de cette fiole + 200 µL de la solution de benzoïne dans 20 mL (fiole 5). Concentration de la caféine dans la référence : ${nf(d.cRef, 2)} mg/L.\nAires : référence caféine ${nf(d.aRefC, 2)}, benzoïne ${nf(d.aRefB, 2)} ; échantillon caféine ${nf(d.aEchC, 2)}, benzoïne ${nf(d.aEchB, 2)}.`; },
+  formule: 'hplcEI', hyp: "Hypothèses : la réponse du détecteur est proportionnelle à la concentration pour chaque composé ; la benzoïne est stable et à la même concentration dans les deux fioles ; le volume injecté est constant (boucle de 20 µL).",
+  visuels: e => { const d = donneesHplc(e); return [{ type: 'tableau', titre: 'Aires des pics (unités arbitraires)', cols: ['', 'caféine', 'benzoïne'], lignes: [['Référence (fiole 3)', nf(d.aRefC, 2), nf(d.aRefB, 2)], ['Échantillon (fiole 5)', nf(d.aEchC, 2), nf(d.aEchB, 2)]] }]; },
+  calcul: { q: 'Quel est le pourcentage massique de caféine dans le gel ?', unite: '%', vrai: e => donneesHplc(e).pct, tol: 0.03, cs: 2, indice: 'C_fiole5 = C_réf × (A_benz,réf / A_caf,réf) × (A_caf,éch / A_benz,éch). Puis × 200 (dilution de la fiole 4 vers la fiole 5), × 0,050 L pour la masse en mg, ÷ masse de gel.',
+    ok: { vers: 'hub', duree: 25, run: n => marquer(n, 'caf'), f: { cafMes: true } }, ko: { vers: 'hub', duree: 0, run: n => marquer(n, 'caf'), f: { cafMes: true } } },
+});
+add('uv_ajouts', {
+  lieu: 'Salle des spectrophotomètres', pnj: 'ines', titre: 'Caféine par ajouts dosés (UV, 273 nm)',
+  texte: e => { const d = donneesUv(e); return `Gel formulé : m = ${nf(d.mPes, 3)} g dans 50 mL (fiole mère). Dans 5 fioles de 20 mL : 200 µL de la fiole mère + un volume croissant de solution étalon de caféine (1,003 g/L). Droite A = a·C_ajoutée + b, avec C en mg/L dans la fiole de 20 mL : a = ${nf(d.a, 4)} L/mg, b = ${nf(d.b, 4)}, R² = ${nf(d.r2, 4)}.`; },
+  formule: 'ajouts',
+  hyp: "Hypothèses : A proportionnelle à la concentration (Beer-Lambert) ; la matrice (excipients du gel) est identique dans les 5 fioles, donc la sensibilité est la même pour la caféine du gel et pour la caféine ajoutée ; extrapolation linéaire jusqu'à A = 0. Vérifie les résidus.",
+  visuels: e => { const d = donneesUv(e); return [{ type: 'droite', titre: 'Ajouts dosés : A = f(C ajoutée)', xl: 'C ajoutée (mg/L)', yl: 'A', pts: d.ajouts.map(p => [p.c, p.A]), a: d.a, b: d.b, residus: d.residus }, { type: 'tableau', titre: 'Mesures', cols: ['V ajouté (µL)', 'C ajoutée (mg/L)', 'A'], lignes: d.ajouts.map(p => [String(p.v), nf(p.c, 2), nf(p.A, 3)]) }]; },
+  calcul: { q: 'Quel est le pourcentage massique de caféine dans le gel ?', unite: '%', vrai: e => donneesUv(e).pctAjouts, tol: 0.04, cs: 2, indice: 'À A = 0, C = −b/a : la concentration de caféine du gel dans la fiole de 20 mL vaut b/a. Multiplie par 100 (200 µL dans 20 mL), puis par 0,050 L (fiole mère) pour la masse en mg, et divise par la masse de gel.',
+    ok: { vers: 'hub', duree: 40, run: n => marquer(n, 'caf'), f: { cafMes: true } }, ko: { vers: 'hub', duree: 0, run: n => marquer(n, 'caf'), f: { cafMes: true } } },
+});
+add('uv_ext', {
+  lieu: 'Salle des spectrophotomètres', pnj: 'ines', titre: 'Caféine par étalonnage externe (UV)',
+  texte: e => { const d = donneesUv(e); return `Gamme d'étalonnage de caféine dans l'éluant : A = ${nf(d.aExt, 4)} × C (C en mg/L), R² > 0,999. Solution de gel (200 µL de la fiole mère de ${nf(d.mPes, 3)} g / 50 mL dans 20 mL) : A = ${nf(d.aGel, 3)}.`; },
+  formule: 'ext',
+  hyp: "Hypothèse : la sensibilité de la caféine est la même dans l'éluant seul et dans la solution de gel (pas d'effet de matrice).",
+  calcul: { q: 'Quel est le pourcentage massique de caféine dans le gel ?', unite: '%', vrai: e => donneesUv(e).pctExt, tol: 0.03, cs: 2, indice: 'C_fiole = A / pente. Multiplie par 100 (dilution 200 µL vers 20 mL), par 0,050 L pour la masse en mg, et divise par la masse de gel.',
+    ok: { vers: 'uv_ext_dec', duree: 20, f: { extTente: true } }, ko: { vers: 'uv_ext_dec', duree: 0, f: { extTente: true } } },
+});
+add('uv_ext_dec', {
+  lieu: 'Salle des spectrophotomètres', pnj: 'ines', titre: 'Ce résultat est-il crédible ?',
+  texte: e => `Tu trouves ${nf(donneesUv(e).pctExt, 1)} % de caféine pour un gel censé en contenir 5 %. Inès : « Ça fait beaucoup. Tu as un témoin sous la main. »`,
+  choix: [
+    { t: 'Je garde ce résultat : le gel formulé contient trop de caféine', duree: 3, vers: 'hub', f: { extAccepte: true, cafMes: 'ext' }, run: n => marquer(n, 'caf'), note: 'Caféine dosée par étalonnage externe UV, résultat retenu sans vérification.' },
+    { t: 'Je mesure le gel commercial (à 5 % connus) avec la même gamme pour vérifier la méthode', d: '25 min', duree: 25, vers: 'uv_ext_verif' },
+  ],
+});
+add('uv_ext_verif', {
+  lieu: 'Salle des spectrophotomètres', pnj: 'ines', titre: 'Le témoin sort aussi trop haut',
+  texte: e => `Le gel commercial, qui contient 5 % de caféine, donne lui aussi environ ${nf(donneesUv(e).pctExt, 1)} % avec cette gamme : la méthode est biaisée. Dans la solution de gel, la caféine absorbe plus que dans l'éluant seul (effet de matrice des excipients) : la gamme faite dans l'éluant ne convient pas. Il faut faire les ajouts dans la solution de gel elle-même.`,
+  choix: [{ t: 'Refaire en ajouts dosés', duree: 10, vers: 'uv_ajouts', f: { methCaf: 'ajouts' } }],
+});
+
+// ───────────── Éthanol : CPG ─────────────
+add('cpg_ei', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Quel étalon interne pour l\'éthanol ?',
+  texte: () => `En CPG, le volume injecté (≈ 0,1 µL) n'est pas maîtrisé : l'aire d'un pic seul ne permet pas de remonter à la masse injectée. On ajoute donc à chaque solution la même quantité d'un étalon interne. Colonne polaire, four à 70 °C. Que choisis-tu ?`,
+  hyp: "Hypothèse : le facteur de réponse éthanol / étalon interne est constant ; les deux pics doivent être résolus.",
+  choix: () => [
+    { t: 'Le propan-1-ol', d: 'Un alcool voisin, fréquent comme étalon interne', duree: 5, vers: 'cpg_coel', f: { errCoel: true } },
+    { t: 'Le butan-1-ol', duree: 5, vers: 'cpg_m', note: 'Étalon interne CPG : butan-1-ol.' },
+    { t: 'Aucun : j\'injecte la référence seule et je compare les aires', duree: 5, vers: 'cpg_sans', si: x => !x.f.sansEI },
+  ],
+});
+add('cpg_coel', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Les deux pics se chevauchent',
+  texte: () => `Avec le propan-1-ol, l'éthanol (t_R ≈ 1,36 min) et l'étalon interne (≈ 1,40 min) sortent presque en même temps : un seul pic large. Impossible de mesurer deux aires séparées. Inès : « Il en faut un qui sorte plus tard, comme le butan-1-ol. »`,
+  visuels: () => [{ type: 'chroma', titre: 'CPG · éthanol + propan-1-ol : coélution', tmax: 3, pics: [{ tr: 1.36, h: 0.8, l: 'éthanol + propan-1-ol' }, { tr: 1.42, h: 0.6, l: '' }] }],
+  choix: [{ t: 'Prendre le butan-1-ol comme étalon interne (10 min de reprise)', duree: 10, vers: 'cpg_m', note: 'Coélution avec le propan-1-ol : changement pour le butan-1-ol.' }],
+});
+add('cpg_sans', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Trois injections de la même solution',
+  texte: e => { const d = donneesCpg(e).sansEI; return `Même solution, trois injections : aires d'éthanol ${d.map(x => nf(x, 1)).join(' ; ')} (unités arbitraires). Les aires varient de plus de 10 % alors que la solution est la même : le volume injecté change d'une injection à l'autre. Il faut un étalon interne.`; },
+  choix: [{ t: 'Revenir au choix de l\'étalon interne', duree: 5, vers: 'cpg_ei', f: { sansEI: true } }],
+});
+add('cpg_m', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Masse de gel à peser pour la CPG',
+  texte: () => `Solution de référence (fiole de 20 mL) : 500 µL d'étalon interne, 250 µL d'éthanol (ρ = ${nf(RHO_ETOH, 3)} g/mL), eau qsp. Pour la solution échantillon, tu veux environ la même quantité d'éthanol que dans la référence, à partir du gel (rappel : ${nf(ETH_PUR_COM, 1)} % d'éthanol pur).`,
+  hyp: "Hypothèse : la masse volumique de l'éthanol pur est 0,789 g/mL à 20 °C ; la solution échantillon est préparée avec la même masse d'étalon interne.",
+  calcul: { q: 'Quelle masse m\' de gel faut-il peser dans la fiole échantillon ?', unite: 'g', vrai: () => V_REF * RHO_ETOH / 1000 / (ETH_PUR_COM / 100), tol: 0.1, cs: 2, indice: 'Masse d\'éthanol de la référence : 250 µL × 0,789 g/mL. Elle représente 38,4 % de la masse de gel m\'.',
+    ok: { vers: 'cpg_ref', duree: 5 }, ko: { vers: 'cpg_ref', duree: 0 } },
+});
+add('cpg_ref', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Injection de la référence',
+  texte: e => { const d = donneesCpg(e).ref; return `Chromatogramme de la référence : éthanol ${nf(d.aE, 2)} % de l'aire, butan-1-ol ${nf(d.aEI, 2)} %. Les deux pics sont bien séparés.`; },
+  visuels: () => [{ type: 'chroma', titre: 'CPG · référence (éthanol + butan-1-ol)', tmax: 3, pics: [{ tr: 1.36, h: 0.5, l: 'éthanol' }, { tr: 2.1, h: 0.9, l: 'butan-1-ol (EI)' }] }],
+  choix: [{ t: 'Retour à la paillasse', duree: 15, vers: 'hub', run: n => marquer(n, 'cpgPrep') }],
+});
+add('cpg_inj', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Éthanol du gel formulé : étalon interne',
+  texte: e => { const d = donneesCpg(e); return `Gel formulé : m' = ${nf(d.mP, 3)} g pesés dans la fiole de 20 mL (avec 500 µL de butan-1-ol).\nRéférence : éthanol ${nf(d.ref.aE, 2)} %, butan-1-ol ${nf(d.ref.aEI, 2)} % de l'aire (V_réf = 250 µL).\nÉchantillon : éthanol ${nf(d.ech.aE, 2)} %, butan-1-ol ${nf(d.ech.aEI, 2)} % de l'aire.`; },
+  formule: 'cpgEI',
+  hyp: "Hypothèses : l'aire est proportionnelle à la quantité injectée pour chaque composé ; le facteur de réponse éthanol / EI est constant ; une injection a une dispersion relative d'environ 3 à 4 % (gaussienne), et la méthode à un seul point de référence la porte entièrement.",
+  visuels: e => { const d = donneesCpg(e); return [{ type: 'chroma', titre: 'CPG · échantillon (gel formulé)', tmax: 3, pics: [{ tr: 1.36, h: 0.5 * d.rE / d.rR, l: 'éthanol' }, { tr: 2.1, h: 0.9, l: 'butan-1-ol (EI)' }] }]; },
+  calcul: { q: 'Quel est le pourcentage massique d\'éthanol dans le gel (méthode de l\'étalon interne, un point) ?', unite: '%', vrai: e => donneesCpg(e).pctSimple, tol: 0.03, cs: 1, indice: 'V_éch = V_réf × (%A_EI,réf / %A_EtOH,réf) × (%A_EtOH,éch / %A_EI,éch). Puis m_EtOH = V_éch × 0,789 g/mL, et divise par m\'.',
+    ok: { vers: 'cpg_gamme', duree: 20 }, ko: { vers: 'cpg_gamme', duree: 0 } },
+});
+add('cpg_gamme', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Éthanol : méthode améliorée (gamme)',
+  texte: e => { const d = donneesCpg(e); return `Tu prépares dix fioles (5 volumes d'éthanol de 100 à 1 000 µL, en double) avec 500 µL de butan-1-ol, et tu traces r = %A(EtOH) / %A(EI) en fonction de V(EtOH). Régression : r = a·V + b avec a = ${nf(d.a, 6)} µL⁻¹, b = ${nf(d.b, 4)}, R² = ${nf(d.r2, 4)}.\nPour l'échantillon : r = ${nf(d.rE, 4)}.`; },
+  formule: 'gamme',
+  hyp: "Hypothèses : relation linéaire sur la plage 100–1 000 µL ; dispersion identique à tous les niveaux (homoscédasticité) ; résidus aléatoires, sans tendance. Vérifie le graphique des résidus.",
+  visuels: e => { const d = donneesCpg(e); return [{ type: 'droite', titre: 'Gamme CPG : r = f(V éthanol)', xl: 'V éthanol (µL)', yl: 'r', pts: d.gamme.map(p => [p.v, p.r]), a: d.a, b: d.b, residus: d.residus }]; },
+  calcul: { q: 'Quel est le pourcentage massique d\'éthanol dans le gel (méthode de la gamme) ?', unite: '%', vrai: e => donneesCpg(e).pctGamme, tol: 0.03, cs: 1, indice: 'V_EtOH = (r_éch − b) / a, en µL. Puis m_EtOH = V × 0,789 g/mL = V × 0,789 × 10⁻³ g, et divise par m\'.',
+    ok: { vers: 'cpg_comp', duree: 15 }, ko: { vers: 'cpg_comp', duree: 0 } },
+});
+add('cpg_comp', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Les deux méthodes concordent-elles ?',
+  texte: e => { const d = donneesCpg(e); return `Étalon interne à un point : ${nf(d.pctSimple, 1)} %. Gamme : ${nf(d.pctGamme, 1)} %. Écart : ${nf(Math.abs(d.pctSimple - d.pctGamme), 1)} points.\nQuel commentaire est le plus juste ?`; },
+  choix: [
+    { t: 'L\'écart est de l\'ordre de la dispersion d\'une injection (≈ 4 %) ; la gamme, qui moyenne dix points, est plus fiable : je retiens son résultat', duree: 5, vers: 'hub', run: n => marquer(n, 'ethQC'), f: { ethMes: true }, note: 'Éthanol : résultat de la gamme retenu, écart avec le point unique commenté.' },
+    { t: 'Les deux méthodes sont équivalentes : je fais la moyenne', duree: 5, vers: 'hub', run: n => marquer(n, 'ethQC'), f: { ethMes: true, errComp: true }, note: 'Éthanol : moyenne des deux méthodes, sans discussion de leur fiabilité.' },
+    { t: 'L\'écart prouve que le gel perd de l\'éthanol à l\'air', duree: 5, vers: 'hub', run: n => marquer(n, 'ethQC'), f: { ethMes: true, errComp: true }, note: 'Éthanol : écart attribué à une perte, sans preuve.' },
+  ],
+});
+
+// ───────────── Conclusion ─────────────
+export const mesures = e => ({ caf: e.f.cafMes === 'ext' ? donneesUv(e).pctExt : e.f.methCaf === 'ajouts' ? donneesUv(e).pctAjouts : donneesHplc(e).pct, eth: donneesCpg(e).pctGamme, q: gelVrai(e).q });
+add('verdict', {
+  lieu: 'Bureau de Mme Dubreuil', pnj: 'dubreuil', titre: 'Le contretype est-il conforme ?',
+  texte: e => { const m = mesures(e); return `Mme Dubreuil : « Je t'écoute. Qu'écris-tu sur le bon de contrôle ? »\nTes résultats : caféine ${nf(m.caf, 1)} % (exigence ${nf(SPEC.caf[0], 1)} à ${nf(SPEC.caf[1], 1)} %) ; éthanol ${nf(m.eth, 1)} % (exigence ${nf(SPEC.eth[0], 1)} à ${nf(SPEC.eth[1], 1)} %) ; viscosité : rapport des contraintes ${nf(m.q, 2)} (au moins ${nf(SPEC.q, 2)}).`; },
+  hyp: "Règle de décision du scénario : un résultat est conforme s'il est dans la plage exigée ; l'incertitude de mesure n'est pas ajoutée à la plage.",
+  choix: [
+    { t: 'Conforme sur les trois critères', vers: e => verdictVers(e, 'conforme') },
+    { t: 'Non conforme : la caféine', vers: e => verdictVers(e, 'caf') },
+    { t: 'Non conforme : l\'éthanol', vers: e => verdictVers(e, 'eth') },
+    { t: 'Non conforme : la viscosité', vers: e => verdictVers(e, 'visco') },
+  ],
+});
+const verdictVers = (e, decl) => { const D = defauts(e);
+  if (!D.length) return decl === 'conforme' ? 'fin_conforme' : 'fin_faux_nok';
+  if (decl === 'conforme') return 'fin_faux_ok';
+  return D.includes(decl) ? 'fin_detecte' : 'fin_mauvaise_cause'; };
+const fin = (id, ton, titre, texte) => add(id, { lieu: 'Bureau de Mme Dubreuil', pnj: 'dubreuil', titre, fin: { ton, titre }, texte, choix: [] });
+fin('fin_conforme', 'ok', 'Contretype conforme', e => `« Le gel est conforme : caféine, éthanol et viscosité sont dans les exigences, et tes méthodes se tiennent. On peut proposer le contretype à la cliente. »\nTu as fini à ${horloge(e.t)}.`);
+fin('fin_detecte', 'ok', 'Non-conformité détectée', e => { const D = defauts(e); return `« Tu as vu juste : ${D.includes('eth') ? "il manque de l'éthanol (perte à la fabrication)" : D.includes('visco') ? 'le gel est trop fluide' : 'la teneur en caféine est hors exigence'}. Mieux vaut le savoir avant la cliente. On refait un lot en corrigeant le procédé. »`; });
+fin('fin_mauvaise_cause', 'moyen', 'Bon diagnostic, mauvaise cause', e => `« Il y a bien un défaut, mais pas celui que tu écris sur le bon. Reprends tes résultats critère par critère : ${defauts(e).map(d => ({ caf: 'caféine', eth: 'éthanol', visco: 'viscosité' }[d])).join(', ')}. »`);
+fin('fin_faux_ok', 'ko', 'Lot non conforme validé', e => `« Tu as signé un lot qui ne respecte pas le cahier des charges (${defauts(e).map(d => ({ caf: 'caféine', eth: 'éthanol', visco: 'viscosité' }[d])).join(', ')}). C'est exactement ce qu'un contrôle qualité doit empêcher. »`);
+fin('fin_faux_nok', 'ko', 'Lot conforme refusé', e => `« Le gel était en fait conforme. ${e.f.extAccepte ? 'Ta méthode UV externe surestimait la caféine (effet de matrice) : un témoin t\'aurait prévenu.' : 'Reprends tes résultats : ils étaient dans les exigences.'} Un faux rejet coûte un lot et du temps. »`);
+fin('fin_temps', 'ko', 'Hors délai', () => `Les deux demi-journées sont écoulées sans conclusion : le bon de contrôle reste vide. En TP comme au laboratoire, il faut anticiper les temps d'attente, les pannes et les reprises.`);
+
+// ───────────── Résumé et bilan par compétence ─────────────
+export const resume = e => [
+  `Formule : ${e.f.fm ? `éthanol à 96 % ${nf(e.f.fm.eth96, 1)} g, Carbopol ${nf(e.f.fm.carb, 2)} g, caféine ${nf(e.f.fm.caf, 1)} g` : 'non fixée'}${e.f.repli ? ' (formule de repli)' : ''}.`,
+  e.f.mode ? `Procédé : ${{ reflux: 'ballon à reflux sous agitation', becher: 'bécher chauffé à l\'air libre', base: 'base ajoutée dès le début' }[e.f.mode]}${e.f.disp ? `, dispersion : ${{ continuer: 'prolongée', neutraliser: 'arrêtée avant la fin', chauffer: 'chauffage augmenté', grumeaux: 'grumeaux conservés' }[e.f.disp]}` : ''}.` : null,
+  e.f.methCaf ? `Caféine : ${e.f.methCaf === 'EI' ? (e.f.attendu ? 'CLHP après réparation' : 'CLHP, étalon interne') : e.f.methCaf === 'ajouts' ? 'UV, ajouts dosés' : 'UV, étalonnage externe'}.` : null,
+  `Temps d'attente subi : ${duree(e.f.attente)}.`,
+].filter(Boolean);
+export function bilan(e, finId = e.scene) {
+  const f = e.f, niv = (n, a, b) => n <= a ? 'ok' : n <= b ? 'moyen' : 'ko';
+  const n1 = (f.errCoel ? 1 : 0) + (f.sansEI ? 1 : 0) + (f.extTente ? 1 : 0) + (f.extAccepte ? 2 : 0) + (f.errComp ? 1 : 0);
+  const c4 = f.panne === false || f.panne === undefined ? 'nd' : f.methCaf === 'ajouts' && !f.extTente ? 'ok' : f.attendu ? 'moyen' : f.extAccepte ? 'ko' : 'moyen';
+  const att = f.attente || 0, nbErr = f.nbErr || 0;
+  const c3 = finId === 'fin_conforme' || finId === 'fin_detecte' ? 'ok' : finId === 'fin_mauvaise_cause' ? 'moyen' : finId === 'fin_temps' ? 'nd' : 'ko';
+  return [
+    { comp: 'C.1.4', titre: 'Sélectionner les méthodes, techniques et matériels', niveau: niv(n1, 0, 1), texte: n1 === 0 ? 'Étalon interne adapté, méthodes cohérentes avec la matrice.' : `À revoir : ${[f.errCoel && 'étalon interne (propan-1-ol coélue avec l\'éthanol)', f.sansEI && 'nécessité d\'un étalon interne en CPG', f.extTente && 'étalonnage externe UV (effet de matrice)', f.extAccepte && 'résultat UV non vérifié avec un témoin', f.errComp && 'comparaison des deux méthodes CPG'].filter(Boolean).join(' ; ')}.` },
+    { comp: 'C.2.1', titre: 'Préparer les produits et les calculs', niveau: f.repli ? 'moyen' : niv(nbErr + (f.errEs ? 1 : 0), 1, 4), texte: `${nbErr} réponse(s) de calcul fausse(s)${f.errEth ? ' (titre de l\'éthanol à 96 %)' : ''}${f.repli ? ' ; formule de repli utilisée' : ''}.` },
+    { comp: 'C.3.2', titre: 'Détecter les non-conformités', niveau: c3, texte: c3 === 'nd' ? 'Pas de conclusion rendue.' : c3 === 'ok' ? 'Décision cohérente avec la réalité du lot.' : 'La décision ne correspond pas aux défauts réels du lot : relis tes résultats critère par critère.' },
+    { comp: 'C.4', titre: 'Adapter son protocole face à un imprévu', niveau: c4, texte: c4 === 'nd' ? 'Pas de panne dans cette partie.' : c4 === 'ok' ? 'Panne de CLHP : bascule immédiate vers une méthode adaptée (ajouts dosés).' : c4 === 'moyen' ? 'Panne de CLHP : solution trouvée mais coûteuse ou après un détour.' : 'Résultat biaisé conservé sans vérification.' },
+    { comp: 'C.6.1', titre: 'Organiser le travail dans le respect des délais', niveau: finId === 'fin_temps' ? 'ko' : niv(att, 70, 130), texte: `${duree(att)} d'attente subie devant l'étuve, le ballon ou la CLHP en panne (environ 1 h est incompressible)${att > 70 ? ' : lance les opérations longues en premier et prépare les analyses pendant ce temps' : ''}.` },
+    { comp: 'C.7.3', titre: 'Travailler en équipe', niveau: 'nd', texte: 'Non évalué dans ce jeu (travail individuel).' },
+  ];
+}
