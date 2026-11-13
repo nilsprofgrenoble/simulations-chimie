@@ -108,6 +108,7 @@ export const INDICATEURS = [
   { id: 'jm',  nom: 'jaune de méthyle',     zone: [2.9, 4.0],  acide: '#dc2626', base: '#facc15', pKa: 3.45 },
   { id: 'vbc', nom: 'vert de bromocrésol',  zone: [3.8, 5.4],  acide: '#facc15', base: '#2563eb', pKa: 4.6 },
   { id: 'bbt', nom: 'bleu de bromothymol',  zone: [6.0, 7.6],  acide: '#facc15', base: '#2563eb', pKa: 6.8 },
+  { id: 'bth', nom: 'bleu de thymol (2ᵉ virage)', zone: [8.0, 9.6], acide: '#facc15', base: '#2563eb', pKa: 8.8 },   // remplace la phénolphtaléine (CMR) au lycée
   { id: 'php', nom: 'phénolphtaléine',      zone: [8.2, 10.0], acide: '#f8fafc', base: '#db2777', pKa: 9.1 },
   { id: 'jar', nom: 'jaune d’alizarine R',  zone: [10.1, 12.0], acide: '#facc15', base: '#b45309', pKa: 11.0 },
 ];
