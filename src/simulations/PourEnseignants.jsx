@@ -32,6 +32,7 @@ export function SimulationPourEnseignants({ naviguer }) {
         <p>La Paillasse virtuelle est un site gratuit de simulations de chimie et de physique, conçu par un professeur pour ses classes. Pour l’essayer : <b>un lien, une simulation, trente secondes.</b> Pas d’inscription, pas d’installation, rien à configurer.</p>
         <a className="ap-bouton" {...lien(2)}>Essayer une simulation</a>
         <a className="ap-bouton" href="#pe-suivi">Suivre mes classes</a>
+        <a className="ap-bouton" href={`${base}trajectoire.html`}>Corriger avec Trajectoire</a>
       </section>
 
       <div className="ap-titre-section"><h2>En classe, c’est simple</h2></div>

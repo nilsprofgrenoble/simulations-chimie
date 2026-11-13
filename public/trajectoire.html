@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trajectoire, l'appli de correction qui renvoie vers la Paillasse virtuelle</title>
+<meta name="description" content="Trajectoire est une petite application gratuite, installée sur son ordinateur, pour corriger des DS par compétences et remettre à chaque élève une fiche avec les codes d'exercices de la Paillasse virtuelle.">
+<link rel="canonical" href="https://paillasse-virtuelle.fr/trajectoire.html">
+<meta property="og:title" content="Trajectoire × Paillasse virtuelle">
+<meta property="og:description" content="Corriger un DS par compétences, puis donner à chaque élève des codes d'exercices ciblés. Application gratuite et locale.">
+<meta property="og:image" content="https://paillasse-virtuelle.fr/trajectoire/trajectoire-demo.jpg">
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --bleu:#0b4f94; --nuit:#0c1a2e; --texte:#3d4d63; --orange:#f5a31a; --bord:#d5dfeb; --fond:#eef3f9; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--fond); color:var(--texte); font:16px/1.65 Inter,system-ui,Arial,sans-serif; }
+  .page { max-width:980px; margin:0 auto; padding:18px 16px 60px; }
+  .retour { display:inline-block; margin:6px 4px 14px; color:var(--bleu); font-weight:700; text-decoration:none; }
+  .retour:hover { text-decoration:underline; }
+  .carte { background:#fff; border:1px solid var(--bord); border-radius:28px; padding:30px; margin-bottom:16px; }
+  .etiquette { display:block; font:700 13px Inter,sans-serif; letter-spacing:.09em; text-transform:uppercase; color:var(--bleu); margin-bottom:10px; }
+  h1 { font:800 clamp(30px,5vw,50px)/1.12 Outfit,sans-serif; letter-spacing:-.03em; margin:0 0 16px; color:var(--nuit); text-wrap:balance; }
+  h1 mark { background:var(--orange); color:#3a2500; padding:0 .12em; border-radius:.16em; }
+  h2 { font:800 clamp(24px,3.4vw,32px)/1.1 Outfit,sans-serif; letter-spacing:-.02em; margin:0 0 14px; color:var(--nuit); }
+  h3 { font:800 19px Outfit,sans-serif; margin:0 0 6px; color:var(--nuit); }
+  p { margin:0 0 12px; }
+  .bouton { display:inline-flex; align-items:center; gap:8px; border-radius:14px; padding:13px 22px; font:800 16px Inter,sans-serif; text-decoration:none; background:var(--bleu); color:#fff; margin:6px 10px 6px 0; }
+  .bouton:hover { background:#093f78; }
+  .bouton.clair { background:#fff; color:var(--bleu); border:2px solid var(--bleu); }
+  .discret { font-size:14px; color:#5a6a80; }
+  video { width:100%; border-radius:18px; display:block; background:#0b3b73; }
+  .etape { display:grid; grid-template-columns:48px minmax(0,1fr); gap:6px 18px; padding:22px 0; border-top:1px solid var(--bord); }
+  .etape:first-of-type { border-top:0; padding-top:4px; }
+  .num { width:44px; height:44px; border-radius:50%; background:var(--orange); color:#3a2500; font:800 22px Outfit,sans-serif; display:flex; align-items:center; justify-content:center; }
+  .etape img { max-width:100%; border:1px solid var(--bord); border-radius:14px; margin-top:8px; display:block; }
+  .legende { font-size:13.5px; color:#5a6a80; margin-top:6px; }
+  code { background:#eef3f9; border-radius:6px; padding:1px 6px; font-size:.92em; }
+  .code-ex { font:800 22px Outfit,sans-serif; color:var(--bleu); background:#e4eefa; border-radius:10px; padding:2px 10px; }
+  ul { padding-left:20px; margin:6px 0 12px; }
+  li { margin:4px 0; }
+  details { border:1px solid var(--bord); border-radius:14px; padding:10px 16px; margin:8px 0; background:#fafcff; }
+  summary { cursor:pointer; font-weight:700; color:var(--nuit); }
+  @media (max-width:640px){ .carte{ border-radius:22px; padding:20px; } .etape{ grid-template-columns:minmax(0,1fr);} }
+</style>
+</head>
+<body>
+<div class="page">
+  <a class="retour" href="/">← Retour à la Paillasse virtuelle</a>
+
+  <section class="carte">
+    <span class="etiquette">Pour les enseignants</span>
+    <h1>Trajectoire : mon outil de correction, <mark>branché sur la Paillasse.</mark></h1>
+    <p>Trajectoire est une petite application que j'ai fait construire pour corriger mes DS par compétences, après des années de tableur dont la colonne F n'en faisait qu'à sa tête. Elle tourne sur votre ordinateur, sans compte et sans connexion : les noms de vos élèves et leurs notes restent chez vous.</p>
+    <p>Elle sert aussi à ceci : quand on prépare les fiches de remédiation, chaque élève reçoit des <b>codes d'exercices</b> de la Paillasse virtuelle (du type <span class="code-ex">ANA273</span>), choisis selon son niveau dans chaque compétence. Il lui suffit de taper le code sur la page d'accueil du site pour arriver à l'exercice.</p>
+    <a class="bouton" href="trajectoire/Trajectoire_v3.11.zip" download>⬇ Télécharger Trajectoire (version 3.11, 0,4 Mo)</a>
+    <a class="bouton clair" href="#tuto">Voir le mini tuto</a>
+    <p class="discret">Gratuit. C'est une version en test, faite par un collègue : pas de garantie ni de service après-vente, mais je lis volontiers vos retours.</p>
+  </section>
+
+  <section class="carte">
+    <h2>En 30 secondes</h2>
+    <video controls preload="metadata" playsinline poster="trajectoire/trajectoire-demo.jpg">
+      <source src="trajectoire/trajectoire-demo.mp4" type="video/mp4">
+      Votre navigateur ne lit pas la vidéo : <a href="trajectoire/trajectoire-demo.mp4">télécharger la vidéo</a>.
+    </video>
+    <p class="legende">La démonstration utilise une classe et des copies fictives.</p>
+  </section>
+
+  <section class="carte" id="tuto">
+    <h2>Mini tuto</h2>
+    <p>Six étapes, de l'installation à l'élève qui tape son code.</p>
+
+    <div class="etape">
+      <div class="num">1</div>
+      <div>
+        <h3>Installer et lancer</h3>
+        <p>Il faut que <a href="https://www.python.org/downloads/">Python</a> soit installé sur l'ordinateur (sous Windows, cochez « Add python.exe to PATH » pendant l'installation). Décompressez le zip, puis :</p>
+        <ul>
+          <li><b>Windows</b> : double-clic sur <code>lancer_windows.bat</code> ;</li>
+          <li><b>Mac</b> : double-clic sur <code>lancer_mac.command</code> (au premier essai, clic droit puis « Ouvrir »).</li>
+        </ul>
+        <p>La première fois, l'installation automatique prend 1 à 3 minutes. Ensuite, l'application s'ouvre en quelques secondes dans le navigateur. Le fichier <code>README.md</code> du dossier détaille la marche à suivre si le lancement automatique ne fonctionne pas.</p>
+      </div>
+    </div>
+
+    <div class="etape">
+      <div class="num">2</div>
+      <div>
+        <h3>Préparer la classe et le devoir</h3>
+        <p>Dans <b>Liste des classes et élèves</b>, créez une classe et importez la liste (export CSV de Pronote) ou ajoutez les élèves à la main. Dans <b>Paramétrisation d'une évaluation</b>, créez le devoir : une ligne par question, avec sa compétence (S'APP, ANA, REA, VAL, COM) et son barème.</p>
+      </div>
+    </div>
+
+    <div class="etape">
+      <div class="num">3</div>
+      <div>
+        <h3>Corriger</h3>
+        <p>Dans <b>Corriger</b>, un clic par question : A, B, C ou D. La note et le niveau de chaque compétence se calculent tout seuls, et tout s'enregistre à chaque clic. On peut corriger élève par élève ou question par question pour toute la classe.</p>
+        <img src="trajectoire/tuto-1-corriger.jpg" alt="Écran de correction : une ligne par question avec les boutons A, B, C, D" loading="lazy" width="1300">
+      </div>
+    </div>
+
+    <div class="etape">
+      <div class="num">4</div>
+      <div>
+        <h3>Préparer la remédiation avec une IA</h3>
+        <p>Dans <b>Remédiation</b>, l'application fabrique un texte de consigne (le « prompt ») à partir de votre devoir. Cochez l'option qui ajoute des liens vers la Paillasse virtuelle, copiez le prompt dans l'IA de votre choix avec l'énoncé et le corrigé, puis récupérez le fichier CSV qu'elle vous renvoie. <b>L'application elle-même n'appelle aucune IA</b> : c'est vous qui copiez-collez.</p>
+        <p>Importez ensuite le CSV. L'application relit chaque code dans le catalogue du site : si l'IA en a inventé un qui n'existe pas, il est signalé, et vous pouvez tout relire et corriger avant impression.</p>
+        <img src="trajectoire/tuto-2-importer.jpg" alt="Écran Remédiation : import du fichier CSV, puis relecture par compétence" loading="lazy" width="1300">
+        <img src="trajectoire/tuto-3-codes.jpg" alt="Une cellule de remédiation avec un texte et un code d'exercice" loading="lazy" width="1300">
+        <p class="legende">Le catalogue des exercices est fourni dans le dossier de l'application (<code>catalogue.csv</code>). Le site s'enrichissant régulièrement, vous pouvez le remplacer par <a href="catalogue.csv" download>la dernière version</a>.</p>
+      </div>
+    </div>
+
+    <div class="etape">
+      <div class="num">5</div>
+      <div>
+        <h3>Imprimer les fiches</h3>
+        <p>Dans <b>Édition de rapports</b>, générez le PDF d'un élève ou celui de toute la classe (un fichier par élève dans un zip, ou un PDF unique). Chaque fiche donne la note, le niveau par compétence, un texte qui parle de son devoir, et les codes d'exercices : ceux qui consolident le chapitre du devoir, puis ceux qui préparent le suivant.</p>
+        <img src="trajectoire/tuto-4-fiche.jpg" alt="Fiche élève imprimée avec ses codes d'exercices" loading="lazy" width="1100">
+      </div>
+    </div>
+
+    <div class="etape">
+      <div class="num">6</div>
+      <div>
+        <h3>L'élève tape son code</h3>
+        <p>Sur <a href="/">paillasse-virtuelle.fr</a>, il écrit le code lu sur sa fiche dans le champ « J'ai un code », clique sur « Ouvrir », et l'exercice s'affiche. Cela marche sur téléphone comme sur ordinateur, sans compte et sans lien à recopier.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="carte">
+    <h2>Questions que vous vous posez peut-être</h2>
+    <details><summary>Où sont mes données ?</summary>
+      <p>Dans un seul fichier, <code>copie_helper.db</code>, à côté de l'application, sur votre ordinateur. Rien n'est envoyé sur internet. L'application fait une copie de sécurité automatique au lancement (au plus une toutes les 6 heures, les 14 dernières sont gardées), et la page Réglages permet de télécharger une sauvegarde. C'est ce fichier qu'il faut copier si vous changez d'ordinateur.</p></details>
+    <details><summary>Et le RGPD ?</summary>
+      <p>Les données des élèves ne quittent pas votre poste. Un point demande tout de même de la vigilance : si vous copiez dans une IA des extraits qui contiennent des noms d'élèves, ce sont vos propres données qui sortent. Le prompt de remédiation ne s'appuie que sur l'énoncé et le corrigé, sans aucun nom.</p></details>
+    <details><summary>Ça marche sur tablette ou Chromebook ?</summary>
+      <p>Non, il faut un ordinateur Windows ou Mac sur lequel installer Python.</p></details>
+    <details><summary>Je suis bloqué à l'installation</summary>
+      <p>Les deux causes les plus fréquentes sont Python absent ou installé sans « Add python.exe to PATH » sous Windows, et le blocage du script par macOS au premier lancement. Les deux sont décrites dans le <code>README.md</code> du dossier. Si rien ne marche, écrivez-moi en indiquant votre système et ce que vous voyez à l'écran.</p></details>
+    <details><summary>Comment avoir les mises à jour ?</summary>
+      <p>Cette page porte toujours la dernière version. Pour changer de version, décompressez la nouvelle dans un autre dossier et recopiez-y votre fichier <code>copie_helper.db</code> : vos classes, élèves et notes sont retrouvés.</p></details>
+  </section>
+
+  <p class="discret" style="text-align:center">Trajectoire est développée par Nils Aronssohn, enseignant au lycée Argouges (Grenoble), avec l'aide de Claude (Anthropic).</p>
+</div>
+</body>
+</html>
