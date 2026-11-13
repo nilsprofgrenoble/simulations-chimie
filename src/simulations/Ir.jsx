@@ -221,7 +221,7 @@ export function SimulationIr() {
   const courbesEx = [courbe(mol1, mol1.nom, BLEU), ...(mol2 ? [courbe(mol2, mol2.nom, ROUGE)] : [])];
   const tc = I.T(mol1, curs);
   const marquesEx = rep ? I.bandesCaracteristiques(mol1).map(b => ({ s: b[0], t: I.T(mol1, b[0]), txt: b[3].startsWith('O–H') ? 'O–H' : 'C=O', c: BLEU })) : [];
-  const explore = (
+  const exploreComparer = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={styleBoite}>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 6 }}>Composé <strong style={{ color: BLEU }}>(bleu)</strong>, puis éventuellement un second <strong style={{ color: ROUGE }}>(rouge)</strong> à comparer.</div>
@@ -235,6 +235,41 @@ export function SimulationIr() {
       <div style={styleBoite}><TableBandes/></div>
     </div>);
 
+
+  // ---- Suivre une oxydation : mélange menthol → menthone selon l'avancement ----
+  const [conv, setConv] = useState(0), [sousExp, setSousExp] = useState('oxydation');
+  const mixT = (sg, x) => 100 - ((1 - x) * (100 - I.T(M.menthol, sg)) + x * (100 - I.T(M.menthone, sg)));
+  const ptsMix = []; for (let sg = I.SIGMA_MAX; sg >= I.SIGMA_MIN; sg -= 5) ptsMix.push([sg, Math.max(2, Math.min(99, mixT(sg, conv / 100)))]);
+  const profOH = 100 - mixT(3300, conv / 100), profCO = 100 - mixT(1715, conv / 100), ohVisible = profOH > 10;
+  const exploreOxydation = (
+    <div style={styleBoite}>
+      <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 6, lineHeight: 1.5 }}>On oxyde le menthol (alcool) en menthone (cétone). Faites avancer la réaction et regardez le <strong>spectre du mélange</strong> : à partir de quel avancement ne voit-on plus la bande O–H ?</div>
+      <SpectreIR courbes={[{ nom: `mélange à ${conv} % de conversion`, c: BLEU, pts: ptsMix }, { nom: 'menthol pur', c: '#94a3b8', pts: I.spectre(M.menthol, 5, 0) }]} titre="Spectre du mélange menthol / menthone"/>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontSize: 14, color: KIT.txt, marginTop: 8 }}><span style={{ flex: '1 1 160px' }}>Conversion du menthol</span><input type="range" min="0" max="100" step="5" value={conv} onChange={e => setConv(parseInt(e.target.value))} aria-label="Conversion du menthol en pourcentage" style={{ flex: '2 1 140px', minHeight: 32 }}/><strong>{conv}{NB}%</strong></label>
+      <div role="status" aria-live="polite" style={{ fontSize: 14, color: KIT.txt, marginTop: 6, lineHeight: 1.6 }}>
+        Bande O–H (3300{NB}cm⁻¹) : absorption de <strong>{nbf(profOH, 0)}{NB}%</strong> — <strong style={{ color: ohVisible ? ROUGE : VERT }}>{ohVisible ? 'bien visible' : 'quasi invisible'}</strong>. Bande C=O (1715{NB}cm⁻¹) : <strong>{nbf(profCO, 0)}{NB}%</strong> — {profCO > 10 ? 'bien visible' : 'quasi invisible'}.
+        {!ohVisible && conv < 100 && <div style={{ color: '#b45309', fontWeight: 700 }}>Attention : il reste encore {100 - conv}{NB}% de menthol, mais sa bande se confond avec le bruit. Ne plus voir la bande O–H ne prouve pas qu’il ne reste plus de menthol, seulement qu’il en reste peu.</div>}
+      </div>
+    </div>);
+  // ---- Composé mystère : identifier la famille ----
+  const FAM = { propanol: 'alcool', ethanolDilue: 'alcool', menthol: 'alcool', propanone: 'carbonyle', propanal: 'carbonyle', menthone: 'carbonyle', chalcone: 'carbonyle', acideEthanoique: 'acide' };
+  const [myst, setMyst] = useState(() => tire(Object.keys(FAM))), [rm, setRm] = useState('');
+  const raison = { alcool: 'Une bande O–H (large vers 3300, ou fine vers 3600 si l’alcool est dilué) sans bande C=O : alcool.', carbonyle: 'Une bande C=O fine et forte vers 1700, sans bande O–H : aldéhyde ou cétone.', acide: 'Bande C=O vers 1700 et bande O–H très large vers 2900 : acide carboxylique.' };
+  const exploreMystere = (
+    <div style={styleBoite}>
+      <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 6, lineHeight: 1.5 }}>Voici le spectre d’un composé dont on cache le nom. Repérez ses bandes (table de référence ci-dessous) et dites à quelle famille il appartient.</div>
+      <SpectreIR courbes={[{ nom: 'composé mystère', c: BLEU, pts: I.spectre(M[myst], 5, 0.4) }]} titre="Spectre d’un composé inconnu"/>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '8px 0' }} role="group" aria-label="Famille du composé">{[['alcool', 'un alcool'], ['carbonyle', 'un aldéhyde ou une cétone'], ['acide', 'un acide carboxylique']].map(([k, n]) => <button key={k} onClick={() => setRm(k)} aria-pressed={rm === k} style={stylePetitBouton(rm === k, BLEU)}>{n}</button>)}</div>
+      {rm && <div role="status" aria-live="polite" style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: rm === FAM[myst] ? VERT : ROUGE }}>{rm === FAM[myst] ? `✓ Oui : c’était ${M[myst].nom}. ${raison[FAM[myst]]}` : `✗ Pas tout à fait. Cherchez d’abord s’il y a une bande fine et forte vers 1700, puis une bande O–H (3600, 3300 ou 2900).`}</div>}
+      <button onClick={() => { setMyst(tire(Object.keys(FAM).filter(k => k !== myst))); setRm(''); }} style={{ ...styleBouton(false), marginTop: 8 }}><Pic n="refresh"/>Autre composé</button>
+      <div style={{ marginTop: 10 }}><TableBandes/></div>
+    </div>);
+  const explore = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }} role="group" aria-label="Que voulez-vous explorer ?">{[['oxydation', 'Suivre une oxydation'], ['mystere', 'Composé mystère'], ['comparer', 'Comparer deux spectres']].map(([k, n]) => <button key={k} onClick={() => setSousExp(k)} aria-pressed={sousExp === k} style={stylePetitBouton(sousExp === k, '#0f766e')}>{n}</button>)}</div>
+      {sousExp === 'oxydation' ? exploreOxydation : sousExp === 'mystere' ? exploreMystere : exploreComparer}
+    </div>);
+
   const hypotheses = indicesProfond(
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Spectres illustratifs</strong> : ils sont <strong>construits</strong> à partir de bandes (position, largeur, profondeur) pour illustrer les valeurs de référence ; ce ne sont <strong>pas des enregistrements</strong> de ces composés. Les nombres d’onde des bandes sont réalistes mais approchés.</li>
@@ -242,6 +277,7 @@ export function SimulationIr() {
       <li><strong>Bande O–H</strong> : sa largeur dépend des liaisons hydrogène ; en solution diluée, elle devient étroite et se déplace vers 3600 cm⁻¹.</li>
       <li><strong>Région 1500–500 cm⁻¹</strong> : « empreinte digitale ». Elle n’est pas interprétée au niveau 1G ; elle sert à comparer deux spectres.</li>
       <li><strong>Pureté</strong> : l’absence d’une bande n’est constatée qu’à la sensibilité du spectromètre ; elle suggère que le composé a été consommé, sans le prouver absolument.</li>
+      <li><strong>Mélange (exploration)</strong> : le spectre d’un mélange est obtenu en additionnant les absorptions des constituants pondérées par leur proportion (modèle simplifié) ; on juge une bande « visible » si elle absorbe plus de 10 % : c’est un seuil de travail, pas une limite instrumentale.</li>
       <li><strong>Lecture</strong> : le nombre d’onde est lu à une graduation de 100 cm⁻¹ près (quelques dizaines de cm⁻¹ d’incertitude de lecture) ; le défi accepte 5 % d’écart.</li>
     </ul>);
   const panneauHypo = <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>;

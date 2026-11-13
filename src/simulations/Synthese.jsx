@@ -1,5 +1,5 @@
-import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useState } from "react";
+import { declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
+import { useState, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, IndiceDefi, Formule, avecIndices, indicesProfond } from "../commun";
 import { NB } from "./Distillation";
@@ -7,7 +7,7 @@ import { Pic } from "../Pictos";
 import { nbf, tire, Schema, T, puces, ROUGE, VERT, BLEU, ORANGE, NOIR, GRIS } from "./Travail";
 import * as M from "./syntheseModele";
 
-const SIM_ID = 109;
+export const SIM_ID = 109;
 declarerDefis(SIM_ID, [['rendement', 'Calculer le rendement d’une synthèse']]);
 
 // ====================================================
@@ -73,7 +73,7 @@ function Reactifs({ m1, m2 }) {
 }
 
 // ---------- séchage à masse constante ----------
-function Sechage({ pes, mBoite, nom = 'm' }) {
+export function Sechage({ pes, mBoite, nom = 'm' }) {
   const W = 600, H = 190, mx = 52, my = 16, lo = Math.min(...pes) - 0.3, hi = Math.max(...pes) + 0.3, n = pes.length;
   const X = i => mx + i * (W - mx - 16) / (n - 1), Y = v => H - 30 - (v - lo) / (hi - lo) * (H - 30 - my);
   return (
@@ -143,15 +143,16 @@ const SchemaTf = () => (
     <T x={6} y={138} s={11.5} c={GRIS}>un solide pur a une Tf précise ; les impuretés l’abaissent</T>
   </Schema>);
 
-export function SimulationSynthese() {
-  const [mode, setMode] = useState(() => modeOuverture('synthese-guide-v1'));
-  useSignalerMode(mode);
+export function SimulationSynthese({ integre = false, modeExt, setModeExt, suite } = {}) {
+  const [modeLoc, setModeLoc] = useState(() => modeOuverture('synthese-guide-v1'));
+  const mode = modeExt ?? modeLoc, setMode = setModeExt ?? setModeLoc;
   const [suiviP, noterP] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('synthese-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);
   const [aff, setAff] = useState({}), [verifTri, setVerifTri] = useState(false);
   const [xm1, setXm1] = useState(3.40), [xm2, setXm2] = useState(3.35), [xme, setXme] = useState(5.46), [xeau, setXeau] = useState(2.4);
+  useEffect(() => { if (mode === 'defi' && !defi) nouveauDefi(); }, [mode]);   // eslint-disable-line
   const enGuide = mode === 'guide', enDefi = mode === 'defi', etape = guide.etape;
   const triOk = OPS.every(([, p], i) => aff[i] === p);
 
@@ -236,7 +237,8 @@ export function SimulationSynthese() {
   function changerMode(md) { setMode(md); if (md === 'defi' && !defi) nouveauDefi(); }
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      {suite && <button onClick={suite.action} style={styleBouton(true, '#7c3aed')}>{suite.label} ▶</button>}
+      <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Paillasse libre</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0369a1')}><Pic n="target"/>Défi</button>
     </span>);
 
@@ -326,11 +328,11 @@ export function SimulationSynthese() {
         @media (min-width: 901px) { .sy-l1.cote .sy-carte { order: 2; } .sy-l1.cote .sy-main { order: 1; } }
         @media (max-width: 900px) { .sy-l1.cote { grid-template-columns: minmax(0, 1fr); } }
       `}</style>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 6 }}>
+      {!integre && <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 6 }}>
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Synthèse organique : du protocole au rendement</h2>
         <BoutonsModes mode={mode} setMode={changerMode}/>
-      </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Préparez le TP de la <strong>chalcone</strong> : phases d’une synthèse, quantités de matière, réactif limitant, <strong>rendement</strong>, séchage, recristallisation et contrôle.</div>
+      </div>}
+      {!integre && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Préparez le TP de la <strong>chalcone</strong> : phases d’une synthèse, quantités de matière, réactif limitant, <strong>rendement</strong>, séchage, recristallisation et contrôle.</div>}
       <div className={`sy-l1${mode !== 'explore' ? ' cote' : ''}`}>
         {enGuide ? <div className="sy-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="sy-carte">{panneauHypo}</div> : null}
         <div className="sy-main">

@@ -124,7 +124,18 @@ export function SimulationExtraction() {
       {defi.ok ? `✓ Correct : d ≈ ${nbf(defi.vrai, 2)}. Le ${lib(defi.cle)} est ${E.SOLVANTS[defi.cle].d < 1 ? 'au-dessus' : 'en dessous'} de l’eau.` : '✗ Vérifiez : ρ = m ÷ V, puis divisez par 1,00 g/mL.'}</div>}
     <div style={{ marginTop: 8 }}><Ampoule solvant={defi.cle} titre="Ampoule du défi" agite={false}/></div>
   </div>);
-  const explore = (<div style={styleBoite}>
+  const [vT, setVT] = useState(30), [nExt, setNExt] = useState(1), [sExt, setSExt] = useState('dichloromethane'), [sousExp, setSousExp] = useState('combien');
+  const Kx = E.K_DIIODE[sExt], VEAU = 50, pct = n => 100 * E.fractionExtraite(Kx, VEAU, vT, n);
+  const exploreCombien = (<div style={styleBoite}>
+    <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 6, lineHeight: 1.5 }}>On extrait le diiode de {VEAU}{NB}mL d’eau. Vous disposez d’un <strong>volume total</strong> d’extractant : faut-il le verser <strong>en une fois</strong> ou en <strong>plusieurs fois</strong> ?</div>
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }} role="group" aria-label="Solvant extracteur">{['cyclohexane', 'dichloromethane', 'ether'].map(k => <button key={k} onClick={() => setSExt(k)} aria-pressed={sExt === k} style={stylePetitBouton(sExt === k, BLEU)}>{lib(k)}</button>)}</div>
+    <label style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontSize: 14, color: KIT.txt }}><span style={{ flex: '1 1 160px' }}>Volume total d’extractant</span><input type="range" min="10" max="60" step="5" value={vT} onChange={e => setVT(parseInt(e.target.value))} aria-label="Volume total d’extractant" style={{ flex: '2 1 140px', minHeight: 32 }}/><strong>{vT}{NB}mL</strong></label>
+    <label style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontSize: 14, color: KIT.txt }}><span style={{ flex: '1 1 160px' }}>Nombre d’extractions</span><div style={{ display: 'flex', gap: 4 }} role="group" aria-label="Nombre d’extractions">{[1, 2, 3, 4].map(n => <button key={n} onClick={() => setNExt(n)} aria-pressed={nExt === n} style={{ ...stylePetitBouton(nExt === n, ROUGE), minWidth: 36 }}>{n}</button>)}</div></label>
+    <div role="status" aria-live="polite" style={{ fontSize: 14, color: KIT.txt, marginTop: 8, lineHeight: 1.6 }}>{nExt} extraction{nExt > 1 ? 's' : ''} de {nbf(vT / nExt, 1)}{NB}mL : <strong>{nbf(pct(nExt), 1)}{NB}%</strong> du diiode passe dans le {lib(sExt)} ; il reste {nbf(100 - pct(nExt), 1)}{NB}% dans l’eau.</div>
+    <div style={{ marginTop: 8 }}>{[1, 2, 3, 4].map(n => <div key={n} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: KIT.txt, marginBottom: 4 }}><span style={{ width: 90 }}>{n} × {nbf(vT / n, 1)}{NB}mL</span><div style={{ flex: 1, background: '#e2e8f0', borderRadius: 4, height: 16 }}><div style={{ width: `${pct(n)}%`, background: n === nExt ? ROUGE : BLEU, height: 16, borderRadius: 4 }}/></div><span style={{ width: 52, textAlign: 'right' }}>{nbf(pct(n), 1)}{NB}%</span></div>)}</div>
+    <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4 }}>Constat : pour le même volume total, <strong>fractionner</strong> extrait davantage. Mais chaque extraction demande du temps : on s’arrête quand le gain devient faible.</div>
+  </div>);
+  const exploreAmpoule = (<div style={styleBoite}>
     <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 6 }}>Solvant ajouté à l’eau :</div>
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }} role="group" aria-label="Solvant">{['cyclohexane', 'dichloromethane', 'ether', 'ethanol'].map(k => <button key={k} onClick={() => setSol(k)} aria-pressed={sol === k} style={stylePetitBouton(sol === k, BLEU)}>{lib(k)}</button>)}</div>
     <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 6 }}>Espèce dissoute dans l’eau :</div>
@@ -135,10 +146,14 @@ export function SimulationExtraction() {
       {E.biphasique(sol) ? <>Deux phases : <strong>{lib(E.phaseSuperieure(sol))}</strong> au-dessus, <strong>{lib(E.phaseInferieure(sol))}</strong> en dessous. </> : <>Une seule phase : l’éthanol est miscible avec l’eau, extraction impossible. </>}
       {sute && agite && E.biphasique(sol) && <>{E.oùSoluté(sute, sol) === 'organique' ? `Le ${E.SOLUTES[sute].nom} passe dans la phase organique (${lib(sol)}).` : `Le ${E.SOLUTES[sute].nom} reste dans l’eau : il y est plus soluble que dans ${lib(sol)}.`}</>}
     </div></div>);
+  const explore = (<div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }} role="group" aria-label="Que voulez-vous explorer ?">{[['combien', 'Une fois ou plusieurs ?'], ['ampoule', 'Ampoule : phases et solutés']].map(([k, n]) => <button key={k} onClick={() => setSousExp(k)} aria-pressed={sousExp === k} style={stylePetitBouton(sousExp === k, '#0f766e')}>{n}</button>)}</div>
+    {sousExp === 'combien' ? exploreCombien : exploreAmpoule}</div>);
   const hypotheses = indicesProfond(<ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
     <li>Valeurs de densité approchées à 20 °C (d relatif à l’eau, ρ<sub>eau</sub> = 1,00 g·mL⁻¹). Les liquides sont supposés purs.</li>
     <li>La répartition d’un soluté est traitée <strong>qualitativement</strong> (plus soluble dans l’une ou l’autre phase) ; le coefficient de partage n’est pas au programme de 1G. Après décantation, une trace du soluté reste dans l’autre phase.</li>
     <li>Le dichlorométhane et l’éther sont donnés comme solvants non miscibles à l’eau ; l’éthanol est miscible en toutes proportions.</li>
+    <li><strong>Efficacité (exploration)</strong> : le coefficient de partage K du diiode (de l’ordre de 10 : valeur choisie pour que les écarts soient visibles) et le modèle « n extractions de V/n » sont des <strong>valeurs illustratives</strong> ; le coefficient de partage n’est pas au programme de 1G, seul le constat qualitatif l’est.</li>
     <li>Pesée : le défi accepte 5 % d’écart pour tenir compte de l’arrondi des données.</li></ul>);
   const panneauHypo = <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>;
   return (

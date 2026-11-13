@@ -6,4 +6,6 @@ ok(X.phaseInferieure('dichloromethane') === 'dichloromethane', 'DCM dessous');
 ok(X.phaseSuperieure('ethanol') === null, 'éthanol miscible');
 ok(X.bonExtracteur('diiode', 'cyclohexane') && !X.bonExtracteur('diiode', 'ethanol') && !X.bonExtracteur('chlorureSodium', 'cyclohexane'), 'extracteur');
 ok(X.oùSoluté('diiode', 'dichloromethane') === 'organique', 'où le diiode');
+ok(X.fractionExtraite(15, 50, 30, 3) > X.fractionExtraite(15, 50, 30, 1), 'plusieurs extractions plus efficaces');
+ok(X.fractionExtraite(15, 50, 30, 1) > 0.5 && X.fractionExtraite(15, 50, 30, 1) < 1, 'fraction extraite');
 console.log('extractionModele : tous les tests passent');

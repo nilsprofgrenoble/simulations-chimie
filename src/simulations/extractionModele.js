@@ -21,3 +21,9 @@ export const phaseInferieure = s => (!biphasique(s) ? null : (SOLVANTS[s].d < RH
 export const bonExtracteur = (soluteCle, s) => biphasique(s) && SOLUTES[soluteCle].org && !SOLUTES[soluteCle].eau;
 // après agitation : où se trouve le soluté ? 'organique' | 'eau' | 'partout'
 export const oùSoluté = (soluteCle, s) => (!biphasique(s) ? 'partout' : (SOLUTES[soluteCle].org && !SOLUTES[soluteCle].eau ? 'organique' : 'eau'));
+
+// Efficacité de l'extraction : coefficient de partage K = [soluté]organique / [soluté]eau (valeurs illustratives, non au programme de 1G).
+export const K_DIIODE = { cyclohexane: 8, dichloromethane: 15, ether: 25 };
+// fraction restant dans l'eau après n extractions successives avec Vtot/n d'extractant chacune
+export const fractionRestante = (K, Veau, Vtot, n) => Math.pow(1 / (1 + K * (Vtot / n) / Veau), n);
+export const fractionExtraite = (K, Veau, Vtot, n) => 1 - fractionRestante(K, Veau, Vtot, n);
