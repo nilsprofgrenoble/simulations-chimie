@@ -69,3 +69,10 @@ pr(u.Ca, 0.0625, 1e-9, 'Ca'); ok(u.rel > 0.003 && u.rel < 0.01, 'rel ' + u.rel);
   ok(!M.convientDansSaut(I('bbt'), pe) && M.convientDansSaut(I('php'), pe), 'etha : BBT hors du saut');
 }
 console.log(`${n} tests, ${ko} échec(s)`); process.exit(ko ? 1 : 0);
+
+// Bleu de thymol (2e virage, 8,0-9,6) : remplace la phénolphtaléine au lycée ; il contient le pH d'équivalence de l'acide éthanoïque, pas le BBT
+{
+  const I2 = id => M.INDICATEURS.find(i => i.id === id), pe = { C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 };
+  ok(M.convient(I2('bth'), M.phEquivalence(pe)) && M.convient(I2('php'), M.phEquivalence(pe)) && !M.convient(I2('bbt'), M.phEquivalence(pe)), 'bleu de thymol et phénolphtaléine pour acide faible, pas BBT');
+  ok(M.convientDansSaut(I2('bth'), pe), 'bleu de thymol : dans le saut de pH');
+}

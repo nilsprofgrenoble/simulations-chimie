@@ -297,38 +297,40 @@ export function SimulationAcidesBases({ naviguer }) {
     { id: 'indic', titre: 'Choisir un indicateur coloré', focus: ['reglages', 'scene'],
       retenirTitre: 'À RETENIR : CHOISIR UN INDICATEUR COLORÉ',
       retenir: <>
-        <svg viewBox="0 0 360 148" role="img" aria-label="Zones de virage de cinq indicateurs colorés : la phénolphtaléine (8,2 à 10,0) contient le pH à l’équivalence, environ 8,7, du titrage d’un acide faible par une base forte" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-            <rect x="215.9" y="16" width="80.1" height="96" rx="0" fill="#ecfdf5" stroke="none" strokeWidth="0"/>
-            <line x1="112" y1="112" x2="350" y2="112" stroke="#475569" strokeWidth="1.5"/>
-            <text x="112" y="126" fontSize="9.5" fill="#475569" textAnchor="middle">2</text>
-            <text x="155.3" y="126" fontSize="9.5" fill="#475569" textAnchor="middle">4</text>
-            <text x="198.5" y="126" fontSize="9.5" fill="#475569" textAnchor="middle">6</text>
-            <text x="241.8" y="126" fontSize="9.5" fill="#475569" textAnchor="middle">8</text>
-            <text x="285.1" y="126" fontSize="9.5" fill="#475569" textAnchor="middle">10</text>
-            <text x="328.4" y="126" fontSize="9.5" fill="#475569" textAnchor="middle">12</text>
-            <text x="352" y="141" fontSize="10" fill="#475569" textAnchor="end">pH</text>
-            <text x="104" y="32" fontSize="9.5" fill="#475569" textAnchor="end">jaune de méthyle</text>
-            <rect x="131.5" y="22" width="23.8" height="12" rx="3" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1.2"/>
-            <text x="104" y="50" fontSize="9.5" fill="#475569" textAnchor="end">vert de bromocrésol</text>
-            <rect x="150.9" y="40" width="34.6" height="12" rx="3" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1.2"/>
-            <text x="104" y="68" fontSize="9.5" fill="#475569" textAnchor="end">bleu de bromothymol</text>
-            <rect x="198.5" y="58" width="34.6" height="12" rx="3" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1.2"/>
-            <text x="104" y="86" fontSize="9.5" fill="#0f172a" textAnchor="end" fontWeight="700">phénolphtaléine</text>
-            <rect x="246.1" y="76" width="38.9" height="12" rx="3" fill="#86efac" stroke="#15803d" strokeWidth="1.2"/>
-            <text x="104" y="104" fontSize="9.5" fill="#475569" textAnchor="end">jaune d’alizarine R</text>
-            <rect x="287.3" y="94" width="41.1" height="12" rx="3" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1.2"/>
-            <line x1="256.1" y1="14" x2="256.1" y2="112" stroke="#15803d" strokeWidth="2" strokeDasharray="4,3"/>
-            <text x="256.1" y="11" fontSize="10" fill="#15803d" textAnchor="middle" fontWeight="700">pH à l’équivalence ≈ 8,7</text>
-            <text x="446.1" y="30" fontSize="9" fill="#334155"></text>
-            <text x="112" y="141" fontSize="9.5" fill="#15803d">zone vert pâle = saut de pH</text>
+        <svg viewBox="0 0 360 154" role="img" aria-label="Zones de virage de six indicateurs colorés : le bleu de thymol (8,0 à 9,6) et la phénolphtaléine (8,2 à 10,0) contiennent le pH à l’équivalence, environ 8,7, du titrage d’un acide faible par une base forte" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <rect x="221.5" y="16" width="76.7" height="106" rx="0" fill="#ecfdf5" stroke="none" strokeWidth="0"/>
+            <line x1="122" y1="122" x2="350" y2="122" stroke="#475569" strokeWidth="1.5"/>
+            <text x="122" y="135" fontSize="9.5" fill="#475569" textAnchor="middle">2</text>
+            <text x="163.5" y="135" fontSize="9.5" fill="#475569" textAnchor="middle">4</text>
+            <text x="204.9" y="135" fontSize="9.5" fill="#475569" textAnchor="middle">6</text>
+            <text x="246.4" y="135" fontSize="9.5" fill="#475569" textAnchor="middle">8</text>
+            <text x="287.8" y="135" fontSize="9.5" fill="#475569" textAnchor="middle">10</text>
+            <text x="329.3" y="135" fontSize="9.5" fill="#475569" textAnchor="middle">12</text>
+            <text x="352" y="149" fontSize="10" fill="#475569" textAnchor="end">pH</text>
+            <text x="114" y="31.5" fontSize="9.5" fill="#475569" textAnchor="end">jaune de méthyle</text>
+            <rect x="140.7" y="22" width="22.8" height="11" rx="3" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1.2"/>
+            <text x="114" y="47.5" fontSize="9.5" fill="#475569" textAnchor="end">vert de bromocrésol</text>
+            <rect x="159.3" y="38" width="33.2" height="11" rx="3" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1.2"/>
+            <text x="114" y="63.5" fontSize="9.5" fill="#475569" textAnchor="end">bleu de bromothymol</text>
+            <rect x="204.9" y="54" width="33.2" height="11" rx="3" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1.2"/>
+            <text x="114" y="79.5" fontSize="9.5" fill="#0f172a" textAnchor="end" fontWeight="700">bleu de thymol</text>
+            <rect x="246.4" y="70" width="33.2" height="11" rx="3" fill="#86efac" stroke="#15803d" strokeWidth="1.2"/>
+            <text x="114" y="95.5" fontSize="9.5" fill="#0f172a" textAnchor="end" fontWeight="700">phénolphtaléine (CMR)</text>
+            <rect x="250.5" y="86" width="37.3" height="11" rx="3" fill="#86efac" stroke="#15803d" strokeWidth="1.2"/>
+            <text x="114" y="111.5" fontSize="9.5" fill="#475569" textAnchor="end">jaune d’alizarine R</text>
+            <rect x="289.9" y="102" width="39.4" height="11" rx="3" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1.2"/>
+            <line x1="260" y1="14" x2="260" y2="122" stroke="#15803d" strokeWidth="2" strokeDasharray="4,3"/>
+            <text x="260" y="11" fontSize="10" fill="#15803d" textAnchor="middle" fontWeight="700">pH à l’équivalence ≈ 8,7</text>
+            <text x="10" y="149" fontSize="9.5" fill="#15803d">zone vert pâle = saut de pH</text>
         </svg>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
           <li>Un indicateur convient si sa <strong>zone de virage contient le pH à l’équivalence</strong> (idéalement dans le saut de pH).</li>
-          <li>Acide faible + base forte : pH<sub>éq</sub> &gt; 7 ⇒ un indicateur dont la zone est du côté basique (phénolphtaléine) ; le BBT (6,0 à 7,6) ne convient pas.</li>
+          <li>Acide faible + base forte : pH<sub>éq</sub> &gt; 7 ⇒ il faut un indicateur du côté basique : <strong>bleu de thymol</strong> (8,0 à 9,6) ; le BBT (6,0 à 7,6) ne convient pas.</li>
+          <li>La phénolphtaléine (8,2 à 10,0) convient aussi, mais elle est classée <strong>CMR</strong> : au lycée, on lui préfère le bleu de thymol.</li>
         </ul>
       </>,
-      texte: <>Sans pH-mètre, on repère l’équivalence par le changement de couleur d’un <strong>indicateur coloré</strong>. Il convient si sa zone de virage <strong>contient le pH à l’équivalence</strong> (ici pH<sub>éq</sub> ≈ {nbf(M.phEquivalence({ C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 }), 1)} ; le saut de pH va d’environ pH {nbf(M.sautPH({ C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 })[0], 1)} à {nbf(M.sautPH({ C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 })[1], 1)} autour de l’équivalence). Choisissez celui qui convient.</>,
-      tache: { type: 'action', ok: tiBase && ti.ind === 'php', label: 'Choisir la phénolphtaléine', faire: () => { setScene('titrage'); setTi(t => ({ ...PRESET_TI, ind: 'php', Vb: t.Vb })); }, consigne: 'Choisissez l’indicateur dont la zone de virage contient le pH à l’équivalence' } },
+      texte: <>Sans pH-mètre, on repère l’équivalence par le changement de couleur d’un <strong>indicateur coloré</strong>. Il convient si sa zone de virage <strong>contient le pH à l’équivalence</strong> (ici pH<sub>éq</sub> ≈ {nbf(M.phEquivalence({ C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 }), 1)} ; le saut de pH va d’environ pH {nbf(M.sautPH({ C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 })[0], 1)} à {nbf(M.sautPH({ C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 })[1], 1)} autour de l’équivalence). Choisissez celui qui convient (au lycée, le bleu de thymol remplace la phénolphtaléine, classée CMR : les deux conviennent ici).</>,
+      tache: { type: 'action', ok: tiBase && (ti.ind === 'bth' || ti.ind === 'php'), label: 'Choisir le bleu de thymol', faire: () => { setScene('titrage'); setTi(t => ({ ...PRESET_TI, ind: 'bth', Vb: t.Vb })); }, consigne: 'Choisissez l’indicateur dont la zone de virage contient le pH à l’équivalence' } },
     { id: 'conc', titre: 'Calculer la concentration', focus: ['mesures'],
       retenirTitre: 'À RETENIR : LA COURBE DE TITRAGE',
       retenir: <>
