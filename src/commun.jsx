@@ -186,7 +186,19 @@ export function Cadre({ actif, x, y, w, h }) {
 // ── Indices dans les textes affichés : « n_versé,e », « V_B,e », « x_max » s'affichent avec un vrai indice ──
 // Les identifiants de code (deux tirets bas d'affilée dans un même mot, comme Qv_pompe_MIN) restent tels quels.
 const RE_INDICE = /_([A-Za-zÀ-ÿ0-9−]+(?:,[A-Za-zÀ-ÿ]+)?)/g;
+// Notation vectorielle dans les textes : « vec(F) » s'affiche F avec une flèche au-dessus (MathML), « W(vec(P)) » pour W(P⃗).
+const RE_VEC = /vec\(([A-Za-zΔ]{1,2})\)/g;
+export const Vec = ({ n }) => <math style={{ fontSize: '1.05em' }}><mover><mi>{n}</mi><mo stretchy="false">→</mo></mover></math>;
 export function avecIndices(t) {
+  if (typeof t === 'string' && t.includes('vec(')) {
+    const out = []; let dernier = 0, m; RE_VEC.lastIndex = 0;
+    while ((m = RE_VEC.exec(t))) {
+      if (m.index > dernier) out.push(<span key={`t${m.index}`}>{avecIndices(t.slice(dernier, m.index))}</span>);
+      out.push(<Vec key={`v${m.index}`} n={m[1]}/>); dernier = m.index + m[0].length;
+    }
+    if (dernier < t.length) out.push(<span key="fin">{avecIndices(t.slice(dernier))}</span>);
+    return <>{out}</>;
+  }
   if (typeof t !== 'string' || !t.includes('_')) return t;
   const morceaux = [];
   t.split(/(\s+)/).forEach((mot, k) => {
@@ -459,7 +471,7 @@ export function ARetenir({ titre = 'À RETENIR', children, sansFiche = false, ti
   return (
     <div data-retenir="1" style={{ background: '#eaf2fb', border: '2px solid #7aa6d6', borderRadius: 10, padding: '8px 12px', color: '#0f172a' }}>
       <div style={{ fontWeight: 800, fontSize: 14, color: '#be123c', letterSpacing: 0.4, marginBottom: 4 }}>{titre} ❤️</div>
-      <div ref={contenu} style={{ fontSize: 15, lineHeight: 1.6 }}>{children}</div>
+      <div ref={contenu} style={{ fontSize: 15, lineHeight: 1.6 }}>{indicesProfond(children)}</div>
       {!sansFiche && !EN_RECOLTE && (rangee === false
         ? <div data-retenir-rangee="attente" style={{ marginTop: 6, fontSize: 12, color: '#475569', textAlign: 'right' }}><Pic n="clipboard"/>Cette carte rejoindra tes fiches quand tu auras terminé le parcours.</div>
         : <div data-retenir-rangee="1" style={{ marginTop: 6, fontSize: 12, color: '#475569', textAlign: 'right' }}>
