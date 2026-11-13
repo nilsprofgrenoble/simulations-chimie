@@ -17,6 +17,8 @@ import { PiedDePage } from "./PiedDePage";
 import { AccueilSite } from "./AccueilSite";
 import { resoudreCode } from "./resoudreCode";
 import { DESCRIPTIONS } from "./descriptions";
+import { aAdressePropre, cheminSimulation, idDepuisChemin, simDeLUrl } from "./slugs";
+import { referencementSimulation, ADRESSE_SITE, TITRE_ACCUEIL, DESCRIPTION_ACCUEIL } from "./referencement";
 import { paresseux, EnChargement } from "./chargement";
 import { chargerPlotly, SIMS_PLOTLY } from "./bibliotheques";
 const SimulationAptitude = paresseux(() => import("./simulations/Aptitude"), "SimulationAptitude");
@@ -123,6 +125,7 @@ const SimulationHistoireLabo = paresseux(() => import("./simulations/HistoireLab
 // ============================================================
 
 const ENERGY_URL = "https://energy.paillasse-virtuelle.fr/";
+const BASE_SITE = import.meta.env.BASE_URL;   // « / » avec le nom de domaine
 
 const SIMULATIONS = [
   { id: 1, label: "Avancement d'une réaction", icon: "⚗️", color: "#2a9d8f", component: Simulation1, niveau: "1G" },
@@ -346,7 +349,7 @@ export default function App() {
     const bouton = txt => boutons().find(x => x.textContent.includes(txt) && !x.disabled);
     const attendre = async (cond, max) => { const t0 = Date.now(); while (!annule && Date.now() - t0 < max) { const r = cond(); if (r) return r; await pause(150); } return null; };
     (async () => {
-      const sim = parseInt(new URLSearchParams(window.location.search).get('sim'));
+      const sim = simDeLUrl(window.location, BASE_SITE);
       const choixAvant = {}; try { for (let i = 0; i < window.localStorage.length; i++) { const k = window.localStorage.key(i); if (/parcours-choix/.test(k)) choixAvant[k] = window.localStorage.getItem(k); } } catch { /* ignoré */ }
       try {
         const g = await attendre(() => bouton('Parcours guidé'), 12000);
@@ -383,6 +386,9 @@ export default function App() {
       if (r) return r.sim;
       return 0;
     }
+    // adresse propre : /sim/2-titrage-direct/ (le « ?sim=N » des anciennes adresses reste prioritaire et fonctionne toujours)
+    const idChemin = params.get('sim') ? null : idDepuisChemin(window.location.pathname, BASE_SITE);
+    if (idChemin !== null && SIMULATIONS.find(s => s.id === idChemin)) return idChemin;
     const simParam = params.get('sim');
     if (simParam) {
       const id = parseInt(simParam);
@@ -412,51 +418,52 @@ export default function App() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const url = new URL(window.location.href);
-    if (activeId === 0) url.searchParams.delete('sim');
-    else url.searchParams.set('sim', activeId);
-    window.history.replaceState(null, '', url.toString());
-    // statistiques anonymes : une consultation par simulation (voir stats.js)
     const s = SIMULATIONS.find(x => x.id === activeId);
+    // Adresse du navigateur : une simulation du menu vit sur son adresse propre (/sim/2-titrage-direct/), les autres pages (compte, suivi, chapitre, fiches)
+    // et l'accueil restent sur « ?sim=N » / « / ». Les autres paramètres (ex, devoir, chap…) sont conservés. Le cadre de récolte des fiches garde son adresse.
+    if (!EN_RECOLTE) {
+      const url = new URL(window.location.href);
+      if (s && aAdressePropre(activeId)) { url.pathname = cheminSimulation(activeId, s.label, BASE_SITE); url.searchParams.delete('sim'); }
+      else { url.pathname = BASE_SITE; if (activeId === 0) url.searchParams.delete('sim'); else url.searchParams.set('sim', activeId); }
+      window.history.replaceState(null, '', url.toString());
+    }
+    // statistiques anonymes : une consultation par simulation (voir stats.js)
     compter(activeId === 0 ? '/' : `/sim/${activeId}`, s ? s.label : 'Accueil');
-    // titre de l'onglet, description et indexation (moteurs de recherche)
-    const NOM_SITE = 'Paillasse virtuelle';
-    document.title = s && activeId > 0 ? `${s.label} — ${NOM_SITE}` : `${NOM_SITE} — simulations de chimie et de physique (lycée, BTS)`;
+    // titre de l'onglet, description et indexation (moteurs de recherche) : mêmes valeurs que celles écrites en dur dans la page statique
+    // de la simulation au build (voir src/referencement.js et vite.config.js)
+    const propre = !!s && aAdressePropre(activeId);
+    const ref = propre ? referencementSimulation(s) : null;
+    const titre = ref ? ref.titre : TITRE_ACCUEIL;
+    const descSim = ref ? ref.description : DESCRIPTION_ACCUEIL;
+    const adresse = ref ? ref.adresse : ADRESSE_SITE;
+    document.title = titre;
     const meta = (nom, valeur) => {
       let m = document.querySelector(`meta[name="${nom}"]`);
       if (!m) { m = document.createElement('meta'); m.setAttribute('name', nom); document.head.appendChild(m); }
       m.setAttribute('content', valeur);
     };
-    const niv = s && { '2GT': 'Seconde', '1G': 'Première', TSTL: 'Terminale STL', BTS: 'BTS Métiers de la chimie' }[s.niveau];
-    // description : le texte rédigé de la simulation (descriptions.js), coupé à la fin d'une phrase vers 155 caractères
-    const resume = t => { if (!t || t.length <= 155) return t || ''; const c = t.slice(0, 155); const p = Math.max(c.lastIndexOf('. '), c.lastIndexOf(', ')); return (p > 70 ? c.slice(0, p) : c.slice(0, c.lastIndexOf(' '))) + '…'; };
-    const descSim = s && activeId > 0
-      ? `${niv ? `${niv} : ` : ''}${resume(DESCRIPTIONS[s.label]) || `${s.label}, simulation interactive avec parcours guidé, exploration libre et défi.`}`
-      : 'Simulations interactives de chimie et de physique pour la Première, la Terminale STL et le BTS Métiers de la chimie : parcours guidés, exploration libre, défis et exercices par compétence.';
     meta('description', descSim);
     const og = (propriete, valeur) => {
       let m = document.querySelector(`meta[property="${propriete}"]`);
       if (!m) { m = document.createElement('meta'); m.setAttribute('property', propriete); document.head.appendChild(m); }
       m.setAttribute('content', valeur);
     };
-    const adresse = activeId > 0 && activeId !== 39 && activeId !== 40 ? `https://paillasse-virtuelle.fr/?sim=${activeId}` : 'https://paillasse-virtuelle.fr/';
-    og('og:title', document.title); og('og:description', descSim); og('og:url', adresse);
+    og('og:title', titre); og('og:description', descSim); og('og:url', adresse);
     // données structurées (ressource pédagogique) pour les simulations ; retirées sur l'accueil et les pages privées
     let ld = document.getElementById('donnees-structurees');
-    if (s && activeId > 0 && activeId !== 39 && activeId !== 40) {
+    if (ref) {
       if (!ld) { ld = document.createElement('script'); ld.type = 'application/ld+json'; ld.id = 'donnees-structurees'; document.head.appendChild(ld); }
-      ld.textContent = JSON.stringify({ '@context': 'https://schema.org', '@type': 'LearningResource', name: s.label, description: descSim, url: adresse,
-        inLanguage: 'fr', learningResourceType: 'simulation interactive', interactivityType: 'active', isAccessibleForFree: true,
-        ...(niv ? { educationalLevel: niv } : {}), author: { '@type': 'Person', name: 'Nils Aronssohn' }, isPartOf: { '@type': 'WebSite', name: NOM_SITE, url: 'https://paillasse-virtuelle.fr/' } });
+      ld.textContent = JSON.stringify(ref.donnees);
     } else if (ld) ld.remove();
-    meta('robots', activeId === 39 || activeId === 40 ? 'noindex' : 'index, follow');
-    // adresse canonique : les liens vers un exercice (?sim=…&ex=…) ou un code court (?c=…) affichent la même page que ?sim=… ;
-    // sans cette balise, Google les signale comme « pages en double sans URL canonique ». Pas de canonique pour les pages privées (noindex).
+    // pages privées ou sans contenu propre (compte, suivi, chapitre, fiches) : pas indexées
+    meta('robots', activeId > 0 && !propre ? 'noindex' : 'index, follow');
+    // adresse canonique : les anciennes adresses (?sim=…, ?sim=…&ex=…, ?c=…) affichent la même page que l'adresse propre ;
+    // sans cette balise, Google les signale comme « pages en double sans URL canonique ». Pas de canonique pour les pages en noindex.
     let lien = document.querySelector('link[rel="canonical"]');
-    if (activeId === 39 || activeId === 40) { if (lien) lien.remove(); }
+    if (activeId > 0 && !propre) { if (lien) lien.remove(); }
     else {
       if (!lien) { lien = document.createElement('link'); lien.setAttribute('rel', 'canonical'); document.head.appendChild(lien); }
-      lien.setAttribute('href', activeId > 0 ? `https://paillasse-virtuelle.fr/?sim=${activeId}` : 'https://paillasse-virtuelle.fr/');
+      lien.setAttribute('href', adresse);
     }
   }, [activeId]);
 
@@ -474,8 +481,8 @@ export default function App() {
   }, []);
 
   function partager() {
+    // l'adresse du navigateur est déjà l'adresse propre (réécrite par l'effet ci-dessus) : on la copie telle quelle
     const url = new URL(window.location.href);
-    if (activeId > 0) url.searchParams.set('sim', activeId);
     navigator.clipboard.writeText(url.toString()).then(() => {
       setCopyMsg('Lien copié !');
       setTimeout(() => setCopyMsg(''), 2000);

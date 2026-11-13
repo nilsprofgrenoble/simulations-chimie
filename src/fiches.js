@@ -209,7 +209,7 @@ export async function recolterFiches(ids, surAvancee, options = {}) {
       };
       const garde = setTimeout(terminer, 45000);
       window.addEventListener('message', ecouter);
-      cadre.src = `${window.location.pathname}?sim=${ids[i]}&recolte=1${consult ? '&consult=1' : ''}`;
+      cadre.src = `${import.meta.env.BASE_URL}?sim=${ids[i]}&recolte=1${consult ? '&consult=1' : ''}`;
       document.body.appendChild(cadre);
     });
     fait++;

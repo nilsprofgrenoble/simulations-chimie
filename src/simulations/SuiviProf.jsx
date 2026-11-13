@@ -47,7 +47,7 @@ function telecharger(nom, texte) {
 async function imprimerFiches(classe, comptes) {
   const w = window.open('', '_blank');        // ouvert tout de suite (avant l'attente) pour ne pas être bloqué par le navigateur
   if (!w) { alert('Le navigateur a bloqué la fenêtre d’impression : autorisez les fenêtres surgissantes pour ce site, puis recommencez.'); return; }
-  const base = window.location.origin + window.location.pathname;
+  const base = window.location.origin + import.meta.env.BASE_URL;
   let qrcode = null;
   try { qrcode = (await import('qrcode-generator')).default; } catch { /* sans QR : la fiche reste utilisable */ }
   const qr = id => { if (!qrcode) return ''; const q = qrcode(0, 'M'); q.addData(`${base}?sim=39&id=${encodeURIComponent(id)}`); q.make(); return q.createSvgTag({ cellSize: 3, margin: 0, scalable: true }); };
