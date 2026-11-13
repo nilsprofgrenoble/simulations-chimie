@@ -745,5 +745,9 @@
  "37:prevoir:mec-pointage-echelle": "ANA357",
  "37:prevoir:mec-pointage-vitesse": "ANA358",
  "37:prevoir:mec-pointage-compat": "ANA359",
- "77:plausible:mec-pointage-val": "VAL190"
+ "77:plausible:mec-pointage-val": "VAL190",
+ "37:prevoir:syn-limitant": "ANA360",
+ "37:prevoir:syn-sechage": "ANA361",
+ "37:prevoir:syn-recristal-volume": "ANA362",
+ "77:plausible:syn-val-rendement": "VAL191"
 }
