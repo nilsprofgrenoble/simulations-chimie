@@ -19,6 +19,10 @@ export function trajet({ m, x0, f = 0 }) {
   }
   let stop = pts.length - 1;
   for (let i = 1; i < pts.length; i++) if (pts[i].Ec <= 0) { stop = i; break; }
+  if (stop > 0 && pts[stop].Ec <= 0 && pts[stop - 1].Ec > 0) {          // arrêt exactement là où Ec s'annule (interpolation)
+    const a = pts[stop - 1], b = pts[stop], t = a.Ec / (a.Ec - b.Ec), L = k => a[k] + t * (b[k] - a[k]);
+    pts[stop] = { x: L('x'), z: L('z'), s: L('s'), Em: L('Em'), Epp: L('Epp'), Ec: 0 };
+  }
   const cible = pts[stop];
   const bas = pts.findIndex(p => p.x <= 0);
   const atteintBas = bas >= 0 && bas <= stop;

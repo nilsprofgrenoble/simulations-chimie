@@ -737,5 +737,9 @@
  "37:prevoir:mec-travail-angle": "ANA352",
  "37:prevoir:mec-theoreme-bilan": "ANA353",
  "77:plausible:mec-barriere-val": "VAL187",
- "77:plausible:mec-theoreme-val": "VAL188"
+ "77:plausible:mec-theoreme-val": "VAL188",
+ "37:prevoir:mec-em-conservation": "ANA354",
+ "37:prevoir:mec-em-frottement": "ANA355",
+ "37:prevoir:mec-epp-origine": "ANA356",
+ "77:plausible:mec-em-val": "VAL189"
 }
