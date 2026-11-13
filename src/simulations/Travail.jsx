@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, avecIndices, indicesProfond } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./travailModele";
@@ -420,13 +420,13 @@ export function SimulationTravail() {
         <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
       </div>
       {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>
-        {defi.ok ? `✓ Correct. Valeur de la simulation : ${nbf(defi.vrai, defi.type === 'frott' ? 2 : 2)}${NB}${defi.type === 'frott' ? 'N' : 'm'}.`
+        {avecIndices(defi.ok ? `✓ Correct. Valeur de la simulation : ${nbf(defi.vrai, defi.type === 'frott' ? 2 : 2)}${NB}${defi.type === 'frott' ? 'N' : 'm'}.`
           : defi.type === 'frott' ? '✗ Vérifiez : v = ℓ / Δt avec ℓ = 0,010 m et Δt en secondes ; ΔE_c = E_c(F) − E_c(E) ; W(vec(P)) = m g L sin α ; f = (W(vec(P)) − ΔE_c) / L ; m en kg.'
-            : '✗ Vérifiez : le chariot s’arrête quand E_c = 0 ; ΔE_c = − ½ m v_A² ; W = − F × d ; d = ½ m v_A² / F.'}
+            : '✗ Vérifiez : le chariot s’arrête quand E_c = 0 ; ΔE_c = − ½ m v_A² ; W = − F × d ; d = ½ m v_A² / F.')}
       </div>}
     </div>);
 
-  const hypotheses = (
+  const hypotheses = indicesProfond(
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Point matériel</strong> : le chariot et le mobile sont modélisés par un point (translation, pas de rotation des roues ni du mobile).</li>
       <li><strong>Forces constantes</strong> : F, le poids et le frottement f ont une intensité constante ; le travail se calcule par W = F·AB·cos θ sur une trajectoire rectiligne.</li>
@@ -505,7 +505,7 @@ export function SimulationTravail() {
       {(mode === 'explore' || (plEff.f > 0 && apres('wf'))) && !enDefi && plEff.f > 0 && <LigneMesure nom="Travail du frottement W(vec(f))" valeur={`${nbf(MP.Wf, 2)}${NB}J`} couleur="#c2410c"/>}
       {(mode === 'explore' || apres('verif')) && !enDefi && <LigneMesure nom="Σ W = W(vec(P)) + W(vec(R)) + W(vec(f))" valeur={`${nbf(MP.sommeW, 2)}${NB}J`} couleur="#b45309"/>}
     </div>);
-  const aEssayer = (
+  const aEssayer = indicesProfond(
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
       <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
