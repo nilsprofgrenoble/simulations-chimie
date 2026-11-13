@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Formule, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
 import { SchemaBurette } from "./titrageCommun";
 import { Pic } from "../Pictos";
@@ -149,6 +149,30 @@ export function SimulationAcidesBases({ naviguer }) {
       texte: <>Diluez la solution jusqu’à <em>C</em> = 1,0 × 10⁻⁴ mol·L⁻¹ (log C = −4) et observez le taux d’avancement.</>,
       tache: { type: 'action', ok: scene === 'acide' && ac.id === 'etha' && ac.logC === -4, label: 'Diluer à 10⁻⁴ mol/L', faire: () => { setScene('acide'); setAc({ id: 'etha', logC: -4 }); }, consigne: 'Réglez log C = −4 pour l’acide éthanoïque' } },
     { id: 'dilcons', titre: 'Effet de la dilution', focus: ['mesures'],
+      retenirTitre: 'À RETENIR : ACIDE FORT, ACIDE FAIBLE',
+      retenir: <>
+        <svg viewBox="0 0 360 144" role="img" aria-label="Trois barres : l’acide chlorhydrique réagit en totalité avec l’eau, l’acide éthanoïque à 10⁻² mol/L seulement à 4 %, et davantage quand on le dilue à 10⁻⁴ mol/L (33 %)" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <text x="180" y="13" fontSize="11" fill="#475569" textAnchor="middle">part de l’acide qui a réagi avec l’eau</text>
+            <text x="10" y="30" fontSize="10.5" fill="#0f172a" fontWeight="700">HCl 10⁻² mol/L</text>
+            <rect x="10" y="34" width="220" height="16" rx="3" fill="#e2e8f0" stroke="#475569" strokeWidth="1"/>
+            <rect x="10" y="34" width="220" height="16" rx="3" fill="#15803d" stroke="#15803d" strokeWidth="1"/>
+            <text x="240" y="46" fontSize="12" fill="#15803d" fontWeight="700">τ = 100 %</text>
+            <text x="240" y="62" fontSize="10.5" fill="#475569">pH = 2,0</text>
+            <text x="10" y="72" fontSize="10.5" fill="#0f172a" fontWeight="700">acide éthanoïque 10⁻² mol/L</text>
+            <rect x="10" y="76" width="220" height="16" rx="3" fill="#e2e8f0" stroke="#475569" strokeWidth="1"/>
+            <rect x="10" y="76" width="8.6" height="16" rx="3" fill="#b45309" stroke="#b45309" strokeWidth="1"/>
+            <text x="240" y="88" fontSize="12" fill="#b45309" fontWeight="700">τ ≈ 4 %</text>
+            <text x="240" y="104" fontSize="10.5" fill="#475569">pH ≈ 3,4</text>
+            <text x="10" y="114" fontSize="10.5" fill="#0f172a" fontWeight="700">acide éthanoïque 10⁻⁴ mol/L</text>
+            <rect x="10" y="118" width="220" height="16" rx="3" fill="#e2e8f0" stroke="#475569" strokeWidth="1"/>
+            <rect x="10" y="118" width="71.9" height="16" rx="3" fill="#b45309" stroke="#b45309" strokeWidth="1"/>
+            <text x="240" y="130" fontSize="12" fill="#b45309" fontWeight="700">τ ≈ 33 %</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Acide fort : réaction totale</strong> (τ = 100 %), [H₃O⁺] = C. <strong>Acide faible : réaction limitée</strong> (τ &lt; 100 %), il en reste en solution.</li>
+          <li><strong>Plus on dilue, plus un acide faible réagit</strong> (τ augmente) ; pourtant le pH augmente, car [H₃O⁺] diminue.</li>
+        </ul>
+      </>,
       texte: <>À 10⁻⁴ mol·L⁻¹, τ est bien plus grand qu’à 10⁻² mol·L⁻¹ (voir « Mesures »).</>,
       tache: { type: 'qcm', indice: 'Comparez, dans le tableau, la valeur de x_f par rapport à x_max à 10⁻² puis à 10⁻⁴ mol·L⁻¹.', q: 'Quand on dilue un acide faible, son taux d’avancement final…', options: ['augmente', 'diminue', 'ne change pas'], bonne: 0,
         expl: 'Plus la solution est diluée, plus une grande fraction de l’acide réagit : τ augmente (il tend vers 100 % aux très faibles concentrations). Le pH, lui, augmente quand même, car [H₃O⁺] diminue.' } },
@@ -160,6 +184,31 @@ export function SimulationAcidesBases({ naviguer }) {
       tache: { type: 'qcm', indice: 'Partez de pH = pKa + log([A⁻]/[AH]) et posez pH = pKa : que vaut alors le logarithme ?', q: 'À pH = pKa, on a…', options: ['[AH] = [A⁻]', '[AH] = 0', '[A⁻] = 10 [AH]'], bonne: 0,
         expl: 'De Ka = [A⁻][H₃O⁺]/[AH], on tire pH = pKa + log([A⁻]/[AH]). Si pH = pKa, alors log([A⁻]/[AH]) = 0 : les deux formes sont en concentrations égales.' } },
     { id: 'predom', titre: 'Domaines de prédominance', focus: ['scene'],
+      retenirTitre: 'À RETENIR : pH ET pKa',
+      retenir: <>
+        <svg viewBox="0 0 360 154" role="img" aria-label="Diagramme de distribution d’un couple acide-base : l’acide AH domine à gauche du pKa, la base A⁻ à droite, les deux sont à 50 % quand pH = pKa ; la zone tampon va de pKa − 1 à pKa + 1" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <rect x="105" y="20" width="150" height="92" rx="0" fill="#ecfdf5" stroke="none" strokeWidth="0"/>
+            <line x1="30" y1="112" x2="340" y2="112" stroke="#475569" strokeWidth="1.5"/>
+            <line x1="180" y1="16" x2="180" y2="112" stroke="#475569" strokeWidth="1.2" strokeDasharray="4,3"/>
+            <polyline points="30,22.9 45,23.4 60,24.2 75,25.4 90,27.3 105,30.2 120,34.3 135,40.1 150,47.6 165,56.8 180,67 195,77.2 210,86.4 225,93.9 240,99.7 255,103.8 270,106.7 285,108.6 300,109.8 315,110.6 330,111.1" fill="none" stroke="#0b4f94" strokeWidth="2.6" strokeDasharray="0"/>
+            <polyline points="30,111.1 45,110.6 60,109.8 75,108.6 90,106.7 105,103.8 120,99.7 135,93.9 150,86.4 165,77.2 180,67 195,56.8 210,47.6 225,40.1 240,34.3 255,30.2 270,27.3 285,25.4 300,24.2 315,23.4 330,22.9" fill="none" stroke="#b45309" strokeWidth="2.6" strokeDasharray="0"/>
+            <circle cx="180" cy="67" r="4" fill="#0f172a"/>
+            <text x="180" y="128" fontSize="11" fill="#0f172a" textAnchor="middle" fontWeight="700">pKa = 4,8</text>
+            <text x="105" y="128" fontSize="10" fill="#475569" textAnchor="middle">pKa − 1</text>
+            <text x="255" y="128" fontSize="10" fill="#475569" textAnchor="middle">pKa + 1</text>
+            <text x="342" y="126" fontSize="11" fill="#475569" textAnchor="end">pH</text>
+            <text x="34" y="56" fontSize="11.5" fill="#0b4f94" fontWeight="700">AH domine</text>
+            <text x="338" y="56" fontSize="11.5" fill="#b45309" textAnchor="end" fontWeight="700">A⁻ domine</text>
+            <text x="186" y="64" fontSize="10" fill="#0f172a">50 % / 50 %</text>
+            <text x="180" y="14" fontSize="10" fill="#15803d" textAnchor="middle" fontWeight="700">zone tampon : pKa ± 1</text>
+            <text x="10" y="148" fontSize="10.5" fill="#475569">acide (AH) pour pH &lt; pKa ; base (A⁻) pour pH &gt; pKa</text>
+        </svg>
+        <Formule><mi>pH</mi><mo>=</mo><msub><mi>pK</mi><mi>a</mi></msub><mo>+</mo><mi>log</mi><mfrac><mrow><mo>[</mo><msup><mi>A</mi><mo>−</mo></msup><mo>]</mo></mrow><mrow><mo>[</mo><mi>AH</mi><mo>]</mo></mrow></mfrac></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>pH = pKa ⇒ [A⁻] = [AH]</strong> : le pKa est le point d’équilibre du couple.</li>
+          <li>Un pH éloigné du pKa de plus d’une unité : une forme domine nettement (rapport 10 ou plus).</li>
+        </ul>
+      </>,
       texte: <>Placez le pH à 6,5 : vous êtes plus d’une unité au-dessus du pKa.</>,
       tache: { type: 'qcm', indice: 'Comparez pH = 6,5 au pKa = 4,8 : le pH est-il inférieur ou supérieur ? Rappel : acide si pH < pKa, base si pH > pKa.', q: 'À pH = 6,5, quelle espèce prédomine pour le couple CH₃COOH / CH₃COO⁻ (pKa = 4,8) ?', options: ['CH₃COO⁻ (la base)', 'CH₃COOH (l’acide)', 'aucune : elles sont à égalité'], bonne: 0,
         expl: 'Pour pH > pKa, la base prédomine ; pour pH < pKa, c’est l’acide. À pH = 6,5, [A⁻]/[AH] = 10^(6,5 − 4,8) ≈ 50 : la base est largement majoritaire.' } },
@@ -189,6 +238,36 @@ export function SimulationAcidesBases({ naviguer }) {
         calcul: () => [`Après l’ajout : pH = ${nbf(phAjout1, 2)}.`, `ΔpH = ${nbf(phAjout1, 2)} − 4,80 = ${nbf(dTamp, 2)}, soit ${nbf(Math.abs(dTamp), 2)} en valeur absolue.`],
         expl: `Le pH ne varie que de ${nbf(Math.abs(dTamp), 2)} unité, alors que dans l’eau pure il chute de ${nbf(Math.abs(dEau), 0)} unités.` } },
     { id: 'pourquoi', titre: 'Pourquoi ça résiste ?', focus: ['mesures'],
+      retenirTitre: 'À RETENIR : COMMENT UN TAMPON RÉSISTE',
+      retenir: <>
+        <svg viewBox="0 0 360 156" role="img" aria-label="Une solution tampon contient deux réserves : la base A⁻ consomme l’acide fort ajouté, l’acide AH consomme la base forte ajoutée" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <rect x="20" y="48" width="120" height="54" rx="8" fill="#eff6ff" stroke="#0b4f94" strokeWidth="2"/>
+            <text x="80" y="70" fontSize="16" fill="#0b4f94" textAnchor="middle" fontWeight="700">AH</text>
+            <text x="80" y="88" fontSize="10.5" fill="#0b4f94" textAnchor="middle">réserve d’acide</text>
+            <rect x="220" y="48" width="120" height="54" rx="8" fill="#fff7ed" stroke="#b45309" strokeWidth="2"/>
+            <text x="280" y="70" fontSize="16" fill="#b45309" textAnchor="middle" fontWeight="700">A⁻</text>
+            <text x="280" y="88" fontSize="10.5" fill="#b45309" textAnchor="middle">réserve de base</text>
+            <text x="280" y="13" fontSize="10.5" fill="#b91c1c" textAnchor="middle" fontWeight="700">acide fort ajouté (H₃O⁺)</text>
+            <line x1="280" y1="18" x2="280" y2="39" stroke="#b91c1c" strokeWidth="2.6"/>
+            <polygon points="280,46 276.9,39 283.1,39" fill="#b91c1c"/>
+            <text x="80" y="13" fontSize="10.5" fill="#b91c1c" textAnchor="middle" fontWeight="700">base forte ajoutée (HO⁻)</text>
+            <line x1="80" y1="18" x2="80" y2="39" stroke="#b91c1c" strokeWidth="2.6"/>
+            <polygon points="80,46 76.8,39 83.2,39" fill="#b91c1c"/>
+            <line x1="222" y1="60" x2="149" y2="60" stroke="#475569" strokeWidth="2.4"/>
+            <polygon points="142,60 149,56.9 149,63.1" fill="#475569"/>
+            <text x="182" y="53" fontSize="9.5" fill="#475569" textAnchor="middle">A⁻ + H₃O⁺</text>
+            <line x1="142" y1="92" x2="211" y2="92" stroke="#475569" strokeWidth="2.4"/>
+            <polygon points="218,92 211,95.2 211,88.8" fill="#475569"/>
+            <text x="182" y="106" fontSize="9.5" fill="#475569" textAnchor="middle">AH + HO⁻</text>
+            <text x="10" y="128" fontSize="11" fill="#0f172a" fontWeight="700">A⁻ + H₃O⁺ → AH</text>
+            <text x="190" y="128" fontSize="11" fill="#0f172a" fontWeight="700">AH + HO⁻ → A⁻ + H₂O</text>
+            <text x="180" y="148" fontSize="10.5" fill="#475569" textAnchor="middle">l’ajout est absorbé : le rapport [A⁻]/[AH] bouge peu, le pH aussi</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Un tampon contient l’acide <strong>et</strong> sa base conjuguée en quantités comparables : deux « éponges ».</li>
+          <li>Efficace tant que 0,1 &lt; [A⁻]/[AH] &lt; 10, soit <strong>pH = pKa ± 1</strong>, et au mieux quand [AH] = [A⁻].</li>
+        </ul>
+      </>,
       texte: <>L’acide fort ajouté a réagi avec la base conjuguée du tampon.</>,
       tache: { type: 'qcm', indice: 'Quelle espèce du tampon peut consommer les ions H₃O⁺ ajoutés ? Pensez à la base A⁻ qui réagit avec eux.', q: 'Pourquoi le pH varie-t-il si peu ?', options: ['les ions H₃O⁺ ajoutés sont consommés par CH₃COO⁻ (A⁻ + H₃O⁺ → AH + H₂O), et le rapport [A⁻]/[AH] ne change que peu', 'l’acide ajouté ne se dissocie pas', 'l’eau neutralise l’acide ajouté'], bonne: 0,
         expl: 'La base A⁻ consomme les H₃O⁺ ajoutés (et l’acide AH consomme les HO⁻ ajoutés). Comme A⁻ et AH sont abondants, leur rapport, donc le pH, varie peu.' } },
@@ -216,9 +295,72 @@ export function SimulationAcidesBases({ naviguer }) {
       tache: { type: 'qcm', indice: 'À l’équivalence, il ne reste que la base conjuguée A⁻ du couple : quel est le caractère acide ou basique de A⁻ en solution ?', q: 'Pourquoi le pH à l’équivalence est-il supérieur à 7 ?', options: ['l’ion éthanoate CH₃COO⁻ est une base faible qui réagit avec l’eau', 'il reste de la soude en excès', 'l’acide éthanoïque est une base'], bonne: 0,
         expl: 'Seule l’espèce CH₃COO⁻ (base faible) est présente à l’équivalence : CH₃COO⁻ + H₂O ⇌ CH₃COOH + HO⁻. La solution est donc basique, au contraire d’un titrage acide fort / base forte pour lequel pH = 7.' } },
     { id: 'indic', titre: 'Choisir un indicateur coloré', focus: ['reglages', 'scene'],
+      retenirTitre: 'À RETENIR : CHOISIR UN INDICATEUR COLORÉ',
+      retenir: <>
+        <svg viewBox="0 0 360 148" role="img" aria-label="Zones de virage de cinq indicateurs colorés : la phénolphtaléine (8,2 à 10,0) contient le pH à l’équivalence, environ 8,7, du titrage d’un acide faible par une base forte" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <rect x="215.9" y="16" width="80.1" height="96" rx="0" fill="#ecfdf5" stroke="none" strokeWidth="0"/>
+            <line x1="112" y1="112" x2="350" y2="112" stroke="#475569" strokeWidth="1.5"/>
+            <text x="112" y="126" fontSize="9.5" fill="#475569" textAnchor="middle">2</text>
+            <text x="155.3" y="126" fontSize="9.5" fill="#475569" textAnchor="middle">4</text>
+            <text x="198.5" y="126" fontSize="9.5" fill="#475569" textAnchor="middle">6</text>
+            <text x="241.8" y="126" fontSize="9.5" fill="#475569" textAnchor="middle">8</text>
+            <text x="285.1" y="126" fontSize="9.5" fill="#475569" textAnchor="middle">10</text>
+            <text x="328.4" y="126" fontSize="9.5" fill="#475569" textAnchor="middle">12</text>
+            <text x="352" y="141" fontSize="10" fill="#475569" textAnchor="end">pH</text>
+            <text x="104" y="32" fontSize="9.5" fill="#475569" textAnchor="end">jaune de méthyle</text>
+            <rect x="131.5" y="22" width="23.8" height="12" rx="3" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1.2"/>
+            <text x="104" y="50" fontSize="9.5" fill="#475569" textAnchor="end">vert de bromocrésol</text>
+            <rect x="150.9" y="40" width="34.6" height="12" rx="3" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1.2"/>
+            <text x="104" y="68" fontSize="9.5" fill="#475569" textAnchor="end">bleu de bromothymol</text>
+            <rect x="198.5" y="58" width="34.6" height="12" rx="3" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1.2"/>
+            <text x="104" y="86" fontSize="9.5" fill="#0f172a" textAnchor="end" fontWeight="700">phénolphtaléine</text>
+            <rect x="246.1" y="76" width="38.9" height="12" rx="3" fill="#86efac" stroke="#15803d" strokeWidth="1.2"/>
+            <text x="104" y="104" fontSize="9.5" fill="#475569" textAnchor="end">jaune d’alizarine R</text>
+            <rect x="287.3" y="94" width="41.1" height="12" rx="3" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1.2"/>
+            <line x1="256.1" y1="14" x2="256.1" y2="112" stroke="#15803d" strokeWidth="2" strokeDasharray="4,3"/>
+            <text x="256.1" y="11" fontSize="10" fill="#15803d" textAnchor="middle" fontWeight="700">pH à l’équivalence ≈ 8,7</text>
+            <text x="446.1" y="30" fontSize="9" fill="#334155"></text>
+            <text x="112" y="141" fontSize="9.5" fill="#15803d">zone vert pâle = saut de pH</text>
+        </svg>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Un indicateur convient si sa <strong>zone de virage contient le pH à l’équivalence</strong> (idéalement dans le saut de pH).</li>
+          <li>Acide faible + base forte : pH<sub>éq</sub> &gt; 7 ⇒ un indicateur dont la zone est du côté basique (phénolphtaléine) ; le BBT (6,0 à 7,6) ne convient pas.</li>
+        </ul>
+      </>,
       texte: <>Sans pH-mètre, on repère l’équivalence par le changement de couleur d’un <strong>indicateur coloré</strong>. Il convient si sa zone de virage <strong>contient le pH à l’équivalence</strong> (ici pH<sub>éq</sub> ≈ {nbf(M.phEquivalence({ C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 }), 1)} ; le saut de pH va d’environ pH {nbf(M.sautPH({ C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 })[0], 1)} à {nbf(M.sautPH({ C0: 0.05, V0: 0.02, pKas: [4.8], Cb: 0.1 })[1], 1)} autour de l’équivalence). Choisissez celui qui convient.</>,
       tache: { type: 'action', ok: tiBase && ti.ind === 'php', label: 'Choisir la phénolphtaléine', faire: () => { setScene('titrage'); setTi(t => ({ ...PRESET_TI, ind: 'php', Vb: t.Vb })); }, consigne: 'Choisissez l’indicateur dont la zone de virage contient le pH à l’équivalence' } },
     { id: 'conc', titre: 'Calculer la concentration', focus: ['mesures'],
+      retenirTitre: 'À RETENIR : LA COURBE DE TITRAGE',
+      retenir: <>
+        <svg viewBox="0 0 360 150" role="img" aria-label="Courbe de titrage de 20 mL d’acide éthanoïque par la soude à 0,100 mol/L : à la demi-équivalence (5 mL) le pH vaut le pKa, 4,8 ; à l’équivalence (10 mL) le pH est supérieur à 7" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+            <line x1="40" y1="130" x2="330" y2="130" stroke="#475569" strokeWidth="1.5"/>
+            <line x1="40" y1="16" x2="40" y2="130" stroke="#475569" strokeWidth="1.5"/>
+            <text x="358" y="124" fontSize="10" fill="#475569" textAnchor="end">V (mL)</text>
+            <text x="30" y="16" fontSize="10" fill="#475569" textAnchor="end">pH</text>
+            <line x1="40" y1="82.5" x2="330" y2="82.5" stroke="#475569" strokeWidth="1" strokeDasharray="3,3"/>
+            <text x="34" y="85.5" fontSize="9.5" fill="#475569" textAnchor="end">7</text>
+            <text x="40" y="144" fontSize="9.5" fill="#475569" textAnchor="middle">0</text>
+            <text x="110" y="144" fontSize="9.5" fill="#475569" textAnchor="middle">5</text>
+            <text x="180" y="144" fontSize="9.5" fill="#475569" textAnchor="middle">10</text>
+            <text x="320" y="144" fontSize="9.5" fill="#475569" textAnchor="middle">20</text>
+            <polyline points="40,120 54,112.3 75,107.9 110,103.4 145,98.8 166,94.4 173,91.2 178.6,84.4 180,66.7 181.4,49.1 187,42.5 194,39.7 208,36.9 250,33.6 320,31.2" fill="none" stroke="#0b4f94" strokeWidth="2.8" strokeDasharray="0"/>
+            <line x1="110" y1="130" x2="110" y2="103.4" stroke="#b45309" strokeWidth="1.2" strokeDasharray="3,3"/>
+            <line x1="40" y1="103.4" x2="110" y2="103.4" stroke="#b45309" strokeWidth="1.2" strokeDasharray="3,3"/>
+            <circle cx="110" cy="103.4" r="4.5" fill="#b45309"/>
+            <line x1="180" y1="130" x2="180" y2="66.7" stroke="#15803d" strokeWidth="1.2" strokeDasharray="3,3"/>
+            <circle cx="180" cy="66.7" r="4.5" fill="#15803d"/>
+            <text x="120" y="115.4" fontSize="10" fill="#b45309" fontWeight="700">demi-équivalence : V = 5 mL</text>
+            <text x="120" y="127.4" fontSize="10" fill="#b45309" fontWeight="700">pH = pKa = 4,8</text>
+            <text x="190" y="56" fontSize="10" fill="#15803d" fontWeight="700">équivalence : V = 10 mL</text>
+            <text x="190" y="68" fontSize="10" fill="#15803d" fontWeight="700">pH &gt; 7 (base faible)</text>
+        </svg>
+        <Formule><msub><mi>C</mi><mi>a</mi></msub><mo>×</mo><msub><mi>V</mi><mn>0</mn></msub><mo>=</mo><msub><mi>C</mi><mi>b</mi></msub><mo>×</mo><msub><mi>V</mi><mrow><mi>éq</mi></mrow></msub></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>À l’équivalence</strong> : n(HO⁻ versé) = n(acide initial) ; on la repère au <strong>saut de pH</strong> (maximum de dpH/dV).</li>
+          <li><strong>À la demi-équivalence</strong> : [AH] = [A⁻], donc <strong>pH = pKa</strong>.</li>
+          <li>Acide faible + base forte : pH<sub>éq</sub> &gt; 7 (la base conjuguée A⁻ est basique).</li>
+        </ul>
+      </>,
       texte: <>La relation à l’équivalence est <em>C</em><sub>a</sub>·<em>V</em><sub>0</sub> = <em>C</em><sub>b</sub>·<em>V</em><sub>eq</sub>. Exprimez <em>C</em><sub>a</sub> pour une prise d’essai <em>V</em>₀ = 20,0{NB}mL, avec la soude à <em>C</em><sub>b</sub> = 0,100{NB}mol·L⁻¹ et le volume équivalent <em>V</em><sub>eq</sub> trouvé à l’étape précédente « L’équivalence ».</>,
       tache: { type: 'num', indice: 'Isolez Cₐ dans Cₐ·V₀ = C_b·V_eq : Cₐ = C_b × V_eq / V₀.', q: 'Concentration Cₐ de la solution d’acide', unite: 'mol/L', vrai: 0.050, tol: 0.02, affiche: v => nbf(v, 3), cs: 3,
         bloque: tiBase ? null : 'Ouvrez d’abord le titrage préréglé.',
