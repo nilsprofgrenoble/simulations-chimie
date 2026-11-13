@@ -2510,6 +2510,27 @@ export const PREVOIR = [
       F('E_m n’est pas conservée, car les deux valeurs ne sont pas égales', 'Une mesure n’est jamais exactement reproductible ; l’égalité exacte n’est pas le critère.'),
       F('on ne peut rien conclure sans refaire 100 pointages', 'L’incertitude retenue permet déjà de conclure : écart < incertitude composée.'),
     ] },
+  { id: 'syn-limitant', domaine: 'Synthèse et rendement', titre: 'Masses égales, quantités différentes',
+    enonce: 'On mélange 2,0 g d’un réactif A (M = 100 g·mol⁻¹) et 2,0 g d’un réactif B (M = 50 g·mol⁻¹) pour la réaction A + B → C (coefficients 1 et 1).', q: 'Le réactif limitant est…', options: [
+      V('A, car n(A) = 20 mmol est inférieure à n(B) = 40 mmol', 'n = m ÷ M : n(A) = 2,0 ÷ 100 = 20 mmol et n(B) = 2,0 ÷ 50 = 40 mmol. Avec des coefficients égaux, le plus petit n est limitant : A.'),
+      F('B, car sa masse molaire est la plus petite', 'La masse molaire seule ne décide pas : il faut calculer les quantités de matière n = m ÷ M.'),
+      F('aucun des deux, car les masses sont égales', 'Ce sont les quantités de matière qui comptent, pas les masses : ici n(A) ≠ n(B).'),
+      F('B, car on en a introduit davantage en quantité de matière', 'B est bien en plus grande quantité (40 mmol), mais c’est ce qui en fait le réactif en excès, pas le limitant.'),
+    ] },
+  { id: 'syn-sechage', domaine: 'Synthèse et rendement', titre: 'Quand arrêter le séchage ?',
+    enonce: 'Un solide est séché à l’étuve ; on pèse boîte + solide toutes les 5 minutes (balance au centigramme) : 20,50 g ; 19,80 g ; 19,61 g ; 19,61 g.', q: 'On peut arrêter le séchage…', options: [
+      V('dès la 3e pesée, car elle est égale à la 4e : la masse est constante', 'Le produit est sec quand deux pesées successives sont égales à la précision de la balance : m₃ = m₄ = 19,61 g.'),
+      F('dès la 2e pesée, car la masse a déjà beaucoup diminué', 'Entre m₂ et m₃, la masse baisse encore de 0,19 g : de l’eau s’évapore toujours.'),
+      F('seulement après une pesée à 19,50 g', 'La masse finale n’est pas imposée : c’est sa stabilité qui indique la fin du séchage.'),
+      F('jamais : la masse d’un solide ne devient pas constante', 'Elle devient constante une fois toute l’eau évaporée.'),
+    ] },
+  { id: 'syn-recristal-volume', domaine: 'Synthèse et rendement', titre: 'Trop de solvant de recristallisation',
+    enonce: 'Pour recristalliser 1,5 g de chalcone, il suffisait d’environ 10 mL d’éthanol bouillant pour la dissoudre. Un élève en ajoute 30 mL « pour être sûr ».', q: 'La conséquence principale est que…', options: [
+      V('plus de chalcone reste dissoute à froid : on récupère moins de cristaux, le rendement baisse', 'À froid, la chalcone reste un peu soluble dans l’éthanol : plus il y a de solvant, plus la quantité dissoute (et perdue dans le filtrat) est grande.'),
+      F('les cristaux sont plus purs et la masse récupérée est la même', 'La pureté ne gagne pas à un grand volume, et la masse récupérée diminue.'),
+      F('la chalcone ne se dissout plus à chaud', 'Plus de solvant favorise la dissolution à chaud, pas l’inverse.'),
+      F('la température de fusion du produit baisse', 'La Tf dépend des impuretés présentes, pas du volume de solvant utilisé.'),
+    ] },
   { id: 'mec-em-conservation', domaine: 'Mécanique', titre: 'Bille lâchée de plus haut',
     enonce: 'Deux billes identiques sont lâchées sans vitesse, sans frottement, dans une même cuvette : la première d’une hauteur h, la seconde d’une hauteur 4 h (au-dessus du point bas). On compare leurs vitesses au point bas, sachant que toute l’énergie potentielle se convertit en énergie cinétique.', q: 'La vitesse de la seconde bille au point bas est…', options: [
       F('4 fois plus grande', 'E_c = ½ m v² est multipliée par 4, donc v est multipliée par 2 (v² est multipliée par 4), pas par 4.'),
