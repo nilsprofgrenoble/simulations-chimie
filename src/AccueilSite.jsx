@@ -4,7 +4,8 @@ const SimulationClassement = lazy(() => import("./simulations/Classement").then(
 import { ACCENT } from "./theme";
 import "./AccueilBlocs.css";
 import { Pic, Emo } from "./Pictos";
-import { CHAPITRES, NIVEAUX_CHAPITRES } from "./chapitres";
+import { CHAPITRES as TOUS_CHAPITRES, NIVEAUX_CHAPITRES, SIMS_HORS_MENU } from "./chapitres";
+const CHAPITRES = TOUS_CHAPITRES.map(c => ({ ...c, sims: c.sims.filter(id => !SIMS_HORS_MENU.has(id)) })).filter(c => c.sims.length > 0);
 
 // ============================================================
 //  PAGE D'ACCUEIL : texte de présentation, récapitulatif des niveaux et de leurs chapitres,

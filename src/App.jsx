@@ -5,7 +5,7 @@ import { CONTEXTES } from "./contextes";
 import { Pic, Emo, PictosSprite } from "./Pictos";
 import { ToastRecompense } from "./ToastRecompense";
 import { useSession, restaurer, estEleve, estProf } from "./serveur";
-import { chapitresDuNiveau, confierNavigation } from "./chapitres";
+import { chapitresDuNiveau, confierNavigation, SIMS_HORS_MENU } from "./chapitres";
 import { EN_RECOLTE, finRecolte, capturerFigure, envoyerFigure } from "./fiches";
 import { SuiviTemps, nomsSim, simsCachees } from "./suivi";
 import { ModeParDefaut } from "./ModeParDefaut";
@@ -79,6 +79,7 @@ const SimulationChampForce = paresseux(() => import("./simulations/ChampForce"),
 const SimulationDeuxCorps = paresseux(() => import("./simulations/DeuxCorps"), "SimulationDeuxCorps");
 const SimulationCondensateurMillikan = paresseux(() => import("./simulations/CondensateurMillikan"), "SimulationCondensateurMillikan");
 const SimulationElectrisation = paresseux(() => import("./simulations/Electrisation"), "SimulationElectrisation");
+const SimulationExtraction = paresseux(() => import("./simulations/Extraction"), "SimulationExtraction");
 const SimulationIr = paresseux(() => import("./simulations/Ir"), "SimulationIr");
 const SimulationCcm = paresseux(() => import("./simulations/Ccm"), "SimulationCcm");
 const SimulationSynthese = paresseux(() => import("./simulations/Synthese"), "SimulationSynthese");
@@ -239,6 +240,8 @@ const SIMULATIONS = [
     component: SimulationCcm },
   { id:111, label:"Spectroscopie infrarouge : repérer O–H et C=O", niveau:"1G", icon:"📈", color:"#0f766e",
     component: SimulationIr },
+  { id:112, label:"Ampoule à décanter : extraction liquide-liquide", niveau:"1G", icon:"⚗️", color:"#0369a1",
+    component: SimulationExtraction },
   { id:56, label:"Référentiel et mouvement : décrire un mouvement", niveau:"2GT", icon:"🚃", color:"#4338ca",
     component: SimulationMouvementReferentiel },
   { id:57, label:"Atomes, ions et molécules : la quête de l’octet", niveau:"2GT", icon:"⚛️", color:"#16a34a",
@@ -345,7 +348,7 @@ function construireMenus() {
     chapitresDuNiveau(m.key).forEach(c => {
       if (c.rubrique && c.rubrique !== rubrique) groupes.push({ entete: c.rubrique, sims: [] });   // intitulé de rubrique, sur toute la largeur du menu
       rubrique = c.rubrique || rubrique;
-      groupes.push({ label: c.label, chap: c.id, sims: c.sims.map(id => SIMULATIONS.find(s => s.id === id)).filter(Boolean).map(fiche) });
+      { const sims = c.sims.filter(id => !SIMS_HORS_MENU.has(id)).map(id => SIMULATIONS.find(s => s.id === id)).filter(Boolean).map(fiche); if (sims.length) groupes.push({ label: c.label, chap: c.id, sims }); }
     });
     return { ...m, groupes };
   });

@@ -757,5 +757,9 @@
  "37:prevoir:ir-nombre-onde": "ANA366",
  "37:prevoir:ir-alcool-cetone": "ANA367",
  "37:prevoir:ir-reaction": "ANA368",
- "77:plausible:ir-val-nombre-onde": "VAL193"
+ "77:plausible:ir-val-nombre-onde": "VAL193",
+ "37:prevoir:ext-position": "ANA369",
+ "37:prevoir:ext-solvant": "ANA370",
+ "37:prevoir:ext-gestes": "ANA371",
+ "77:plausible:ext-val-densite": "VAL194"
 }
