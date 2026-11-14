@@ -192,7 +192,11 @@ function Calcul({ e, sc, onEtat }) {
 }
 
 function StationFormule({ e, onEtat }) {
-  const [fm, setFm] = useState(() => Object.fromEntries(CHAMPS_FORMULE.map(([k]) => [k, ''])));
+  // Pré-remplissage d'après la fiche de formulation de l'élève : pour 200 g de gel, la masse en g est le pourcentage × 2
+  const DE_FICHE = { caf: 'caf', carb: 'carb', coc: 'coc', eth96: 'eth', trol: 'trol', eau: 'eau' };
+  const gDeFiche = k => { const v = lireTeneur((e.fichePct || {})[DE_FICHE[k]]); return v === null ? '' : String(Math.round(v * 2 * 100) / 100).replace('.', ','); };
+  const [fm, setFm] = useState(() => Object.fromEntries(CHAMPS_FORMULE.map(([k]) => [k, gDeFiche(k)])));
+  const prerempli = CHAMPS_FORMULE.some(([k]) => gDeFiche(k) !== '');
   const [lignes, setLignes] = useState([]);
   const verifier = ev => { ev.preventDefault(); const r = validerFormule(e, fm); setLignes(r.lignes); onEtat(r.etat); };
   const sc = SCENES[e.scene], aide = niveauAide(e), conseils = textesAide(e), pnjAide = PNJ[sc.aide.pnj];
@@ -205,6 +209,7 @@ function StationFormule({ e, onEtat }) {
         {aide < 3 && <button type="button" data-aide-btn onClick={demander} style={{ font: 'inherit', fontSize: 14.5, padding: '7px 14px', borderRadius: 99, border: `1.5px solid ${C.accent}`, background: '#fff', color: C.accent, cursor: 'pointer' }}>{aide === 0 ? `💬 Demander conseil à ${pnjAide.nom}` : aide === 1 ? `💬 Demander plus de précisions à ${pnjAide.nom}` : `💬 Demander à ${pnjAide.nom} ce qu'il ferait`}</button>}
       </div>
       <div style={{ fontWeight: 700, marginBottom: 10 }}>📝 Masses à peser pour environ 200 g (en g)</div>
+      {prerempli && <div data-prerempli style={{ fontSize: 14, color: C.doux, margin: '-4px 0 10px' }}>Les cases sont pré-remplies d'après ta fiche de formulation (masse en g = pourcentage × 2). Tu peux tout modifier.</div>}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(230px,1fr))', gap: 8 }}>
         {CHAMPS_FORMULE.map(([k, nom]) => <label key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, fontSize: 15, background: '#fff', border: `1px solid ${C.bord}`, borderRadius: 10, padding: '6px 10px' }}>{nom}
           <input value={fm[k]} onChange={ev => setFm({ ...fm, [k]: ev.target.value })} inputMode="decimal" autoComplete="off" aria-label={`${nom}, en grammes`} style={{ width: 84, fontSize: 16, padding: '5px 8px', border: `1.5px solid ${C.bleu}`, borderRadius: 8, textAlign: 'right' }} /></label>)}
