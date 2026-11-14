@@ -41,6 +41,7 @@ function joue(strat, graine) {
     }
     if (sc.station === 'ph') { e = strat.ph(e); continue; }
     if (sc.station === 'plan') { const r = J.validerPlan(e, strat.plan(e)); assert(r.ok, `plan refusé (${e.scene}) : ${r.message}`); e = r.etat; continue; }
+    if (sc.station === 'schema') { e = J.cliquerPiece(e, strat.clic ? strat.clic(e, sc) : sc.cible).etat; continue; }
     if (sc.station === 'obs') { e = J.noterObs(e, strat.obs ? strat.obs(e) : ['blanc', 'cristaux', 'fins']); continue; }
     if (sc.calcul) { calculsVus.add(e.scene); const r = J.valider(e, strat.calc(e, sc.calcul)); e = r.etat; continue; }
     const ch = J.choixDe(e);
@@ -100,6 +101,7 @@ const aleatoire = {
   ph: e => { let n = e; const k = Math.floor(rnd() * 8); for (let i = 0; i < k; i++) n = J.ajouterBase(n, 0.3); const r = J.validerPh(n); if (r.ok) return r.etat; n = J.ajouterBase(n, 0.5); for (let i = 0; i < 12 && J.phDe(n, n.f.trolAdd) < 5.0; i++) n = J.ajouterBase(n, 0.3); const r2 = J.validerPh(n); assert(r2.ok); return r2.etat; },
   calc: (e, k) => rnd() < 0.6 ? J.nf(k.vrai(e), k.cs ?? 2) : String(Math.round(rnd() * 100)),
   plan: e => { const P = J.SCENES[e.scene].plan, v = {}; for (const c of P.champs) v[c.id] = c.entier ? Math.round(c.min + rnd() * (c.max - c.min)) : +(c.min + rnd() * (c.max - c.min)).toFixed(2); return rnd() < 0.5 && J.validerPlan(e, v).ok ? v : PLAN_EXPERT[e.scene]; },
+  clic: (e, sc) => { const L = Object.keys(J.PIECES_SCHEMA[sc.schema]); return L[Math.floor(rnd() * L.length)]; },
   choix: (e, ch) => ch[Math.floor(rnd() * ch.length)],
 };
 const finsA = {}, scenesVues = new Set();
@@ -309,3 +311,13 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   for (const f of [{}, { es: true }, { es: true, formule: true }, { es: true, formule: true, fab: true }, { es: true, formule: true, fab: true, caf: true, ethQC: true }]) for (const qui of ['dubreuil', 'ines', 'lucas'])
     assert(J.texteDe({ ...J.etatInitial(1), scene: 'conseil_' + qui, fait: f }).length > 30, 'conseil à chaque étape');
   console.log('demander conseil : OK'); }
+// 21. Schémas cliquables : où injecte-t-on ?
+{ for (const [id, schema] of [['hplc_inj', 'clhp'], ['cpg_inj1', 'cpg']]) {
+    let e = { ...J.etatInitial(50), scene: id, t: 100 };
+    assert(J.SCENES[id].station === 'schema' && J.SCENES[id].cible === 'injecteur', `scène ${id}`);
+    const mauvaise = Object.keys(J.PIECES_SCHEMA[schema]).find(k => k !== 'injecteur');
+    const r1 = J.cliquerPiece(e, mauvaise); assert(!r1.ok && r1.etat.t === 102 && r1.etat.scene === id && !r1.indice && r1.message.includes('Ce n\'est pas là'), 'mauvais clic : 2 min, pas de changement de scène');
+    const r2 = J.cliquerPiece(r1.etat, mauvaise); assert(!r2.ok && r2.indice === 'injecteur' && r2.message.includes('Inès'), 'indice au deuxième essai');
+    const r3 = J.cliquerPiece(r2.etat, 'injecteur'); assert(r3.ok && r3.etat.scene !== id && r3.etat.f.errInj === 2, 'bon clic : on avance, erreurs mémorisées');
+    assert(J.bilan({ ...r3.etat, scene: 'fin_conforme' }, 'fin_conforme').find(b => b.comp === 'C.2.1').texte.includes('injecteur'), 'erreur citée au bilan C.2.1'); }
+  console.log('schémas cliquables : OK'); }

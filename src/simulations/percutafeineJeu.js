@@ -502,6 +502,19 @@ export function demanderAide(e) {
   const n = { ...e, t: e.t + cout, f: { ...e.f, aidePlan: { ...(e.f.aidePlan || {}), [e.scene]: k + 1 }, aidesPlan: (e.f.aidesPlan || 0) + 1 }, hist: [...(e.hist || []), { t0: e.t, t1: e.t + cout, k: 'act', l: `Conseil de ${nom} : ${sc.titre}` }] };
   return nota(n, `Conseil de ${nom} sur : ${sc.titre.charAt(0).toLowerCase() + sc.titre.slice(1)}.`);
 }
+// ───────────── Schémas cliquables : où injecte-t-on ? (reconnaître les éléments d'un chromatographe) ─────────────
+export const PIECES_SCHEMA = {
+  clhp: { eluant: ['les réservoirs d\'éluant', 'ils alimentent la pompe en éluant'], pompe: ['la pompe', 'elle impose le débit d\'éluant'], manometre: ['le manomètre', 'il mesure la pression en sortie de pompe'], injecteur: ['l\'injecteur', ''], colonne: ['la colonne, dans son four', 'les composés s\'y séparent'], detecteur: ['le détecteur UV', 'il mesure l\'absorbance à la sortie de la colonne'] },
+  cpg: { gaz: ['la bouteille de gaz vecteur', 'le gaz entraîne les composés vaporisés'], manometre: ['le manomètre', 'il indique la pression du gaz en tête de colonne'], injecteur: ['l\'injecteur', ''], four: ['le four et la colonne', 'les composés s\'y séparent'], fid: ['le détecteur FID', 'il détecte les composés à la sortie de la colonne'] },
+};
+const INDICE_SCHEMA = { clhp: 'on injecte dans le flux d\'éluant, juste avant la colonne : cherche la vanne à boucle', cpg: 'l\'échantillon est injecté dans la chambre chauffée où il se vaporise, avant la colonne : cherche le septum' };
+export function cliquerPiece(e, id) {
+  const sc = SCENES[e.scene], k = (e.f.clicInj || {})[e.scene] || 0;
+  if (id === sc.cible) return { ok: true, indice: null, message: '', etat: choisir(e, sc.choix[0]) };
+  const [nom, role] = PIECES_SCHEMA[sc.schema][id], n = { ...e, t: e.t + 2, f: { ...e.f, clicInj: { ...(e.f.clicInj || {}), [e.scene]: k + 1 }, errInj: (e.f.errInj || 0) + 1 } };
+  const aide = k + 1 >= 2;
+  return { ok: false, indice: aide ? sc.cible : null, message: `Ce n'est pas là : c'est ${nom} (${role}). ${aide ? `Inès : « ${INDICE_SCHEMA[sc.schema].charAt(0).toUpperCase()}${INDICE_SCHEMA[sc.schema].slice(1)}. »` : 'Essaie encore.'}`, etat: nota(n, `Clic sur ${nom} au lieu de l'injecteur.`) };
+}
 export const textesAide = e => { const sc = SCENES[e.scene]; return sc.aide ? sc.aide.textes.slice(0, niveauAide(e)).map(f => f(e)) : []; };
 export function validerPlan(e, vals) {
   const P = SCENES[e.scene].plan, v = {};
@@ -719,7 +732,8 @@ add('hplc_m', {
 add('hplc_inj', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Première injection',
   entree: e => e.f.panne === undefined ? { ...e, f: { ...e.f, panne: unif(e.f.graine, 'panne') < 0.6 } } : e,
-  texte: () => `Les solutions sont prêtes (référence avec benzoïne comme étalon interne). Tu passes à l'injection de la solution de référence en CLHP (boucle de 20 µL, λ = 273 nm).`,
+  texte: () => `Les solutions sont prêtes (référence avec benzoïne comme étalon interne). Tu passes à l'injection de la solution de référence en CLHP.\nSur le schéma de l'appareil, clique à l'endroit où tu injectes la solution.`,
+  station: 'schema', schema: 'clhp', cible: 'injecteur',
   choix: [{ t: 'Injecter la solution de référence', duree: 10, vers: e => e.f.panne ? (e.f.eq?.ext ? 'hplc_panne' : 'eq_ext') : 'hplc_ref', run: n => marquer(n, 'hplcPrep'), f: {} }],
 });
 add('hplc_ref', {
@@ -876,7 +890,14 @@ add('cpg_m', {
   texte: e => `Solution de référence (fiole de 20 mL) : 500 µL de ${eiNom(e)} (micropipette), 250 µL d'éthanol (ρ = ${nf(RHO_ETOH, 3)} g/mL), eau qsp. Pour la solution échantillon, tu veux environ la même quantité d'éthanol que dans la référence, à partir du gel (rappel : ${nf(ETH_PUR_COM, 1)} % d'éthanol pur).`,
   hyp: "Hypothèse : la masse volumique de l'éthanol pur est 0,789 g/mL à 20 °C ; la solution échantillon est préparée avec la même masse d'étalon interne.",
   calcul: { q: 'Quelle masse m\' de gel faut-il peser dans la fiole échantillon ?', unite: 'g', vrai: () => V_REF * RHO_ETOH / 1000 / (ETH_PUR_COM / 100), tol: 0.1, cs: 2, indice: 'Masse d\'éthanol de la référence : 250 µL × 0,789 g/mL. Elle représente 38,4 % de la masse de gel m\'.',
-    ok: { vers: 'cpg_ref', duree: 5 }, ko: { vers: 'cpg_ref', duree: 0 } },
+    ok: { vers: 'cpg_inj1', duree: 5 }, ko: { vers: 'cpg_inj1', duree: 0 } },
+});
+add('cpg_inj1', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Première injection en CPG',
+  fiches: ['mo3'],
+  texte: () => 'Les fioles sont prêtes. Tu passes à l\'injection de la solution de référence en CPG.\nSur le schéma de l\'appareil, clique à l\'endroit où tu injectes la solution.',
+  station: 'schema', schema: 'cpg', cible: 'injecteur',
+  choix: [{ t: 'Injecter la solution de référence', duree: 5, vers: 'cpg_ref' }],
 });
 add('cpg_ref', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Injection de la référence',
@@ -1077,7 +1098,7 @@ export function bilan(e, finId = e.scene) {
   const c3 = (finId === 'fin_conforme' || finId === 'fin_detecte') ? (f.secuErr || f.extAccepte ? 'moyen' : 'ok') : finId === 'fin_mauvaise_cause' ? 'moyen' : finId === 'fin_temps' ? 'nd' : 'ko';
   return [
     { comp: 'C.1.4', titre: 'Sélectionner les méthodes, techniques et matériels', niveau: niv(n1, 0, 1), texte: n1 === 0 ? 'Étalon interne adapté, méthodes cohérentes avec la matrice.' : `À revoir : ${[f.errCoel && 'étalon interne (propan-1-ol coélue avec l\'éthanol)', f.sansEI && 'nécessité d\'un étalon interne en CPG', f.extTente && 'étalonnage externe UV (effet de matrice)', f.extAccepte && 'résultat UV non vérifié avec un témoin', f.errComp && 'comparaison des deux méthodes CPG', f.leurres && 'appareils sans rapport avec la question (IR, réfractomètre, polarimètre, conductimètre, titrage du gel)', f.errMeth && 'technique de dosage inadaptée essayée avant la bonne (titrage de la caféine, CLHP-UV ou masse volumique pour l\'éthanol)'].filter(Boolean).join(' ; ')}.` },
-    { comp: 'C.2.1', titre: 'Préparer les produits et les calculs', niveau: f.repli ? 'moyen' : niv(nbErr + (f.errEs ? 1 : 0) + (f.aides || 0), 1, 4), texte: `${nbErr} réponse(s) de calcul fausse(s)${f.aides ? `, dont ${f.aides} refaite(s) avec l'aide d'un collègue` : ''}${f.errEth ? ' (titre de l\'éthanol à 96 %)' : ''}${f.repli ? ' ; formule de repli utilisée' : ''}.` },
+    { comp: 'C.2.1', titre: 'Préparer les produits et les calculs', niveau: f.repli ? 'moyen' : niv(nbErr + (f.errEs ? 1 : 0) + (f.aides || 0) + (f.errInj ? 1 : 0), 1, 4), texte: `${nbErr} réponse(s) de calcul fausse(s)${f.aides ? `, dont ${f.aides} refaite(s) avec l'aide d'un collègue` : ''}${f.errEth ? ' (titre de l\'éthanol à 96 %)' : ''}${f.repli ? ' ; formule de repli utilisée' : ''}${f.errInj ? ` ; ${f.errInj} erreur(s) pour repérer l'injecteur sur le schéma de l'appareil` : ''}.` },
     { comp: 'C.3.2', titre: 'Détecter les non-conformités', niveau: c3, texte: c3 === 'nd' ? 'Pas de conclusion rendue.' : f.secuErr && (finId === 'fin_conforme' || finId === 'fin_detecte') ? 'Décision cohérente avec le lot, mais le montage chauffant d\'éthanol a d\'abord été installé hors hotte : la sécurité fait partie de la détection des non-conformités.' : c3 === 'ok' ? 'Décision cohérente avec la réalité du lot.' : 'La décision ne correspond pas aux défauts réels du lot : relis tes résultats critère par critère.' },
     { comp: 'C.4', titre: 'Adapter son protocole face à un imprévu', niveau: c4, texte: c4 === 'nd' ? 'Pas de panne dans cette partie.' : c4 === 'ok' ? 'Panne de CLHP : bascule immédiate vers une méthode adaptée (ajouts dosés).' : c4 === 'moyen' ? 'Panne de CLHP : solution trouvée mais coûteuse ou après un détour.' : 'Résultat biaisé conservé sans vérification.' },
     { comp: 'C.6.1', titre: 'Organiser le travail dans le respect des délais', niveau: finId === 'fin_temps' ? 'ko' : niv(att, 70, 130), texte: `${duree(att)} d'attente subie devant l'étuve, le ballon ou la CLHP en panne (l'étuve et la dispersion tournent seules : profites-en pour lancer d'autres manipulations)${att > 70 ? ' : lance les opérations longues en premier et prépare les analyses pendant ce temps' : ''}.` },
