@@ -284,11 +284,11 @@ function StationSchema({ e, sc, onEtat }) {
 }
 const btn = (actif) => ({ padding: '9px 13px', borderRadius: 10, border: `1px solid ${actif ? C.accent : C.bord}`, background: actif ? C.accent : '#fff', color: actif ? '#fff' : C.encre, fontSize: 14.5, cursor: 'pointer', minHeight: 44, font: 'inherit' });
 function StationRheo({ e, onEtat }) {
-  const pts = pointsRheo(e, 1, 'rc'), [essais, setEssais] = useState([]), [cur, setCur] = useState(null), [retenu, setRetenu] = useState(null), [tau, setTau] = useState(''), [msg, setMsg] = useState('');
+  const pts = pointsRheo(e, 1, 'rc'), [essais, setEssais] = useState([]), [log, setLog] = useState(true), [cur, setCur] = useState(null), [retenu, setRetenu] = useState(null), [tau, setTau] = useState(''), [msg, setMsg] = useState('');
   const fits = Object.fromEntries(MODELES_RHEO.map(m => [m.id, ajusteRheo(pts, m.id)]));
-  const W = 360, H = 190, x0 = 38, x1 = 346, sMax = Math.max(...pts.map(p => p.s)) * 1.4, sMin = Math.min(...pts.map(p => p.s)) / 1.8;
-  const lx = g => x0 + (Math.log10(g) + 1) / 3 * (x1 - x0), sy = s => 160 - (Math.log10(s) - Math.log10(sMin)) / (Math.log10(sMax) - Math.log10(sMin)) * 140;
-  const f = cur && fits[cur].f, tr = f && Array.from({ length: 61 }, (_, i) => { const g = Math.pow(10, -1 + i / 20); return `${i ? 'L' : 'M'}${lx(g).toFixed(1)} ${sy(Math.max(f(g), sMin)).toFixed(1)}`; }).join('');
+  const W = 360, H = 190, x0 = 38, x1 = 346, sMax = Math.max(...pts.map(p => p.s)) * (log ? 1.4 : 1.1), sMin = Math.min(...pts.map(p => p.s)) / 1.8, gMax = Math.max(...pts.map(p => p.g));
+  const lx = g => log ? x0 + (Math.log10(g) + 1) / 3 * (x1 - x0) : x0 + g / gMax * (x1 - x0), sy = s => log ? 160 - (Math.log10(s) - Math.log10(sMin)) / (Math.log10(sMax) - Math.log10(sMin)) * 140 : 160 - s / sMax * 140;
+  const f = cur && fits[cur].f, tr = f && Array.from({ length: 61 }, (_, i) => { const g = log ? Math.pow(10, -1 + i / 20) : 0.1 + i / 60 * (gMax - 0.1); return `${i ? 'L' : 'M'}${lx(g).toFixed(1)} ${sy(Math.max(f(g), log ? sMin : 0)).toFixed(1)}`; }).join('');
   const valeurs = p => Object.entries(p).map(([k, v]) => `${{ eta: 'η', K: 'K', n: 'n', tau0: 'τ₀', etap: 'ηₚ' }[k]} = ${nf(v, k === 'n' ? 2 : 1)}`).join(' ; ');
   const tester = id => { setCur(id); if (!essais.includes(id)) setEssais([...essais, id]); setMsg(''); };
   const valider = () => { const x = nombre(tau); if (!retenu) return setMsg('Choisis le modèle que tu retiens.'); if (x === null || x < 0) return setMsg('Donne la valeur du seuil τ₀ en pascals.'); onEtat(validerRheo(e, retenu, x, essais.length)); };
@@ -296,12 +296,13 @@ function StationRheo({ e, onEtat }) {
     <Cadre titre="RHÉOMÈTRE · POINTS DE MESURE">
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Contrainte en fonction du gradient de vitesse, échelles logarithmiques, points de mesure du gel commercial" style={{ width: '100%', maxWidth: 640, margin: '0 auto', display: 'block' }}>
         <line x1={x0} y1="160" x2={x1} y2="160" stroke="#6b8794" /><line x1={x0} y1="16" x2={x0} y2="160" stroke="#6b8794" />
-        {[0.1, 1, 10, 100].map(g => <text key={g} x={lx(g)} y="175" textAnchor="middle" fontSize="10" fill="#9fc3d1">{nf(g, g < 1 ? 1 : 0)}</text>)}
-        {[20, 50, 100, 200].filter(s => s >= sMin && s <= sMax).map(s => <text key={s} x={x0 - 4} y={sy(s) + 3} textAnchor="end" fontSize="9" fill="#9fc3d1">{s}</text>)}
-        <text x="4" y="12" fontSize="10" fill="#9fc3d1">σ (Pa, échelle log)</text><text x={x1} y="188" textAnchor="end" fontSize="10" fill="#9fc3d1">γ̇ (s⁻¹, échelle log)</text>
+        {(log ? [0.1, 1, 10, 100] : [0, 25, 50, 75, 100]).map(g => <text key={g} x={lx(g)} y="175" textAnchor="middle" fontSize="10" fill="#9fc3d1">{nf(g, g < 1 && g > 0 ? 1 : 0)}</text>)}
+        {(log ? [20, 50, 100, 200] : [0, 25, 50, 75, 100]).filter(s => s <= sMax && (!log || s >= sMin)).map(s => <text key={s} x={x0 - 4} y={sy(s) + 3} textAnchor="end" fontSize="9" fill="#9fc3d1">{s}</text>)}
+        <text x="4" y="12" fontSize="10" fill="#9fc3d1">σ (Pa, échelle {log ? 'log' : 'linéaire'})</text><text x={x1} y="188" textAnchor="end" fontSize="10" fill="#9fc3d1">γ̇ (s⁻¹, échelle {log ? 'log' : 'linéaire'})</text>
         {tr && <path d={tr} fill="none" stroke="#fcd34d" strokeWidth="2.2" />}
         {pts.map((p, i) => <circle key={i} cx={lx(p.g)} cy={sy(p.s)} r="3.4" fill="#93c5fd" />)}
-      </svg></Cadre>
+      </svg>
+      <button type="button" data-echelle-rheo aria-pressed={!log} onClick={() => setLog(!log)} style={{ font: 'inherit', fontSize: 13, padding: '4px 12px', borderRadius: 99, border: '1.5px solid #9fc3d1', background: 'transparent', color: '#e6f4f8', cursor: 'pointer' }}>{log ? 'Passer en échelle linéaire' : 'Passer en échelle logarithmique'}</button></Cadre>
     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5, margin: '8px 0' }}><thead><tr style={{ textAlign: 'left', color: C.doux }}><th>γ̇ (s⁻¹)</th><th>σ (Pa)</th></tr></thead><tbody>{pts.map((p, i) => <tr key={i}><td>{nf(p.g, p.g < 1 ? 1 : 0)}</td><td>{nf(p.s, 1)}</td></tr>)}</tbody></table>
     <div style={{ fontWeight: 700, margin: '10px 0 4px' }}>1. Teste des modèles</div>
     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{MODELES_RHEO.map(m => <button key={m.id} type="button" data-modele={m.id} style={btn(cur === m.id)} onClick={() => tester(m.id)}>{m.nom}<span style={{ display: 'block', fontSize: 12.5, opacity: .85 }}>{m.eq}</span></button>)}</div>
@@ -384,14 +385,14 @@ function StationObs({ e, onEtat }) {
 // ───────────── La paillasse : cinq postes de travail illustrés ─────────────
 const POSTES = [
   { id: 'etuve', nom: 'Étuve et balance', vers: ['es_balance', 'es_prep', 'es_calc1', 'es_calc2b'] },
-  { id: 'bureau', nom: 'Bureau', vers: ['docs', 'eth1', 'formule', 'eq_ines', 'verdict', 'choix_caf', 'choix_eth'] },
+  { id: 'bureau', nom: 'Bureau', vers: ['docs', 'eth1', 'eq_ines', 'verdict'] },
   { id: 'ir', nom: 'Spectrométrie IR', vers: ['leurre_ir'] },
-  { id: 'formulation', nom: 'Formulation', vers: ['eq_base', 'fab_choix', 'fab_disp', 'obs_video'] },
+  { id: 'formulation', nom: 'Formulation', vers: ['formule', 'eq_base', 'fab_choix', 'fab_disp', 'obs_video'] },
   { id: 'optique', nom: 'Réfractomètre, polarimètre', vers: ['leurre_refracto', 'leurre_polar'] },
   { id: 'rheo', nom: 'Rhéologie', vers: ['rheoC', 'rheoF'] },
   { id: 'titrage', nom: 'Titrage', vers: ['titr_suivi', 'titr_carb_plan', 'leurre_titrgel'] },
   { id: 'conduc', nom: 'Conductimètre', vers: ['leurre_conduc'] },
-  { id: 'chroma', nom: 'Chromatographie, UV', vers: ['hplc_m', 'hplc_ei', 'hplc_gamme_plan', 'cpg_m', 'cpg_ei', 'cpg_sim', 'cpg_inj', 'uv_ajouts_plan', 'uv_ext_plan'] },
+  { id: 'chroma', nom: 'Chromatographie, UV', vers: ['choix_caf', 'choix_eth', 'hplc_m', 'hplc_ei', 'hplc_gamme_plan', 'cpg_m', 'cpg_ei', 'cpg_sim', 'cpg_inj', 'uv_ajouts_plan', 'uv_ext_plan'] },
 ];
 const posteDe = vers => (POSTES.find(p => p.vers.includes(vers)) || POSTES[1]).id;
 function Dessin({ id, actif, termine }) {
@@ -433,13 +434,14 @@ function Dessin({ id, actif, termine }) {
 }
 function Paillasse({ e, s, choix, onChoix }) {
   const parPoste = Object.fromEntries(POSTES.map(p => [p.id, []]));
-  const conseil = choix.find(c => c.vers === 'conseil');
-  choix.forEach((c, i) => { if (c.vers !== 'conseil') parPoste[posteDe(c.vers)].push({ c, i }); });
+  const conseil = choix.find(c => c.vers === 'conseil'), pause = choix.find(c => c.pause);
+  choix.forEach((c, i) => { if (c.vers !== 'conseil' && !c.pause) parPoste[posteDe(c.vers)].push({ c, i }); });
   const [sel, setSel] = useState(null);
   const actuel = sel;   // aucun poste n'est présélectionné : c'est à l'élève de choisir où aller
   const etuveActive = !!s.es && e.bg.es > e.t, etuveFinie = !!s.es && !etuveActive, gelActif = !!s.gel && e.bg.gel > e.t;
   return (<div data-paillasse>
     {conseil && <button type="button" data-conseil onClick={() => onChoix(conseil)} style={{ font: 'inherit', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 10, borderRadius: 14, border: `1.5px solid ${C.accent}`, background: '#fff', color: C.accent, cursor: 'pointer' }}><span aria-hidden="true" style={{ fontSize: 22 }}>💬</span><span><b>Perdu·e, ou un doute ?</b> Demander conseil à un collègue ou à Mme Dubreuil</span></button>}
+    {pause && <button type="button" data-pause onClick={() => onChoix(pause)} style={{ font: 'inherit', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 10, borderRadius: 14, border: `1.5px solid ${C.bord}`, background: '#fff', color: C.encre, cursor: 'pointer' }}><span aria-hidden="true" style={{ fontSize: 22 }}>☕</span><span><b>Prendre une pause de 10 minutes</b><span style={{ display: 'block', fontSize: 13.5, color: C.doux }}>Les appareils continuent de tourner pendant ce temps.</span></span></button>}
     <div style={{ background: 'linear-gradient(180deg,#e9eef3 0%,#dde5ec 100%)', borderRadius: 16, padding: '12px 8px 0', border: `1px solid ${C.bord}` }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(104px,1fr))', gap: 4 }}>
         {POSTES.map(p => { const actif = (p.id === 'etuve' && etuveActive) || (p.id === 'formulation' && gelActif), fini = (p.id === 'etuve' && etuveFinie);
@@ -452,7 +454,7 @@ function Paillasse({ e, s, choix, onChoix }) {
       <div aria-hidden="true" style={{ height: 14, margin: '4px -8px 0', borderRadius: '0 0 16px 16px', background: 'repeating-linear-gradient(90deg,#8a6a4c 0 22px,#7d5f43 22px 24px)', borderTop: '3px solid #5d452f' }} />
     </div>
     <div className="pc-grille" style={{ marginTop: 12 }}>{(parPoste[actuel] || []).map(({ c, i }) => (
-      <button key={i} type="button" className="pc-tache" data-choix={i} onClick={() => onChoix(c)}><span style={{ fontSize: 26, lineHeight: 1 }} aria-hidden="true">{ICONES[c.vers] || '▪️'}</span><span><b style={{ fontSize: 16 }}>{c.t}</b>{c.d && <span style={{ display: 'block', fontSize: 13.5, color: C.doux, marginTop: 3, lineHeight: 1.4 }}>{c.d}</span>}</span></button>))}
+      <button key={i} type="button" className="pc-tache" data-choix={i} data-bloque={c.bloque ? 'oui' : undefined} disabled={!!c.bloque} aria-disabled={!!c.bloque} style={c.bloque ? { opacity: .55, filter: 'grayscale(1)', cursor: 'not-allowed' } : undefined} onClick={() => !c.bloque && onChoix(c)}><span style={{ fontSize: 26, lineHeight: 1 }} aria-hidden="true">{ICONES[c.vers] || '▪️'}</span><span><b style={{ fontSize: 16 }}>{c.t}</b>{c.bloque ? <span style={{ display: 'block', fontSize: 13.5, color: C.doux, marginTop: 3, lineHeight: 1.4 }}>🔒 {c.bloque}</span> : c.d && <span style={{ display: 'block', fontSize: 13.5, color: C.doux, marginTop: 3, lineHeight: 1.4 }}>{c.d}</span>}</span></button>))}
       {!actuel && <div style={{ color: C.doux, fontSize: 14.5 }}>Choisis un poste de travail.</div>}{actuel && !(parPoste[actuel] || []).length && <div style={{ color: C.doux, fontSize: 14.5 }}>Rien à faire à ce poste pour l'instant.</div>}</div>
   </div>);
 }
