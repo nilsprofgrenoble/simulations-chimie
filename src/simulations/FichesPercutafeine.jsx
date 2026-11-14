@@ -35,18 +35,15 @@ export default function FichesPercutafeine({ ids, ouvert = false }) {
     if (id === 'synthalen') return (
       <Feuille key={id} ouvert={ouvert} entete="Fiche technique" titre="Synthalen K" sous="Carbomère du produit commercial : polymère carboxyvinylique, agent épaississant" edition="fabricant 3V, valeurs typiques">
         <Tableau lignes={[
-          ['Aspect', 'Poudre blanche fine, masse volumique apparente 0,20 à 0,23 g/cm³'],
           ['pH d\'une dispersion à 0,5 % dans l\'eau', '2,7 à 3,5'],
           ['Masse équivalente moyenne', 'environ 76 (en g de polymère par mole de groupes acide)'],
           ['Viscosité après neutralisation (Brookfield, 20 tr/min, 25 °C)', '0,2 % : 20 000 à 30 000 mPa·s ; 0,5 % : 40 000 à 60 000 mPa·s'],
           ['Taux d\'emploi habituel', '0,1 à 1,5 %, selon la formule et la viscosité voulue'],
         ]} />
         <Liste items={[
-          'Disperser par addition lente de la poudre, sous agitation, jusqu\'à hydratation complète de toutes les particules. Éviter l\'agitation turbulente, qui piège de l\'air difficile à chasser ensuite.',
-          'Neutralisation : pour amener 1 g de polymère à pH 7, il faut environ 0,01 équivalent de base (0,4 g de soude ou 1,5 g de trolamine). Une base forte s\'ajoute préalablement diluée, à 10 % au plus.',
+          'Disperser par addition lente de la poudre, sous agitation, jusqu\'à hydratation complète. Éviter l\'agitation turbulente, qui piège de l\'air.',
+          'Neutralisation : pour amener 1 g de polymère à pH 7, il faut environ 0,01 équivalent de base (0,4 g de soude ou 1,5 g de trolamine).',
           'Éviter un fort cisaillement prolongé pendant et après la neutralisation : la perte de viscosité peut être définitive.',
-          'Les électrolytes, surtout les cations bi- et trivalents, font chuter la viscosité. Éviter les bases minérales bivalentes (précipitation du polymère).',
-          'Les UV peuvent faire perdre de la viscosité au gel. Les valeurs de la fiche sont typiques et non destinées au contrôle qualité.',
         ]} />
       </Feuille>);
     if (id === 'trolamine') return (
@@ -58,9 +55,8 @@ export default function FichesPercutafeine({ ids, ouvert = false }) {
         <Tableau lignes={[['Aspect', 'Liquide limpide à légèrement trouble, peu coloré'], ['Rôle', 'Émollient et agent solubilisant, adoucit le toucher du gel'], ['Solubilité', 'Soluble dans l\'eau et dans l\'éthanol'], ['Volatilité', 'Non volatil : reste dans l\'extrait sec'], ['Remarque du sujet', 'S\'il manque au laboratoire, il peut être remplacé par du glycérol']]} />
       </Feuille>);
     if (id === 'mo1') return (
-      <Feuille key={id} ouvert={ouvert} entete="Mode opératoire · document 1" titre="Dosage de la caféine par CLHP, étalon interne" sous="Colonne Wakosil C18 (250 × 4,6 mm ; 5 µm) · éluant acétonitrile / eau acidifiée 70/30 · 3 mL/min · 273 nm · analyse de 2 min" edition="reproduction du sujet">
+      <Feuille key={id} ouvert={ouvert} entete="Mode opératoire · document 1" titre="Dosage de la caféine par CLHP, étalon interne" sous="Préparation des solutions · éluant acétonitrile / eau acidifiée 70/30, détection UV à 273 nm" edition="reproduction du sujet">
         <Liste items={[
-          'Boucle d\'injection de 20,0 µL, seringue de 25 µL. Le mode repos de la CLHP dure environ 10 min (3 mL/min, même éluant que l\'analyse).',
           'Solution de référence (fiole 3) : prélever 100 µL de la fiole 1 (caféine ≈ 50 mg dans 50 mL d\'éluant) et 200 µL de la fiole 2 (benzoïne ≈ 100 mg dans 50 mL d\'éluant), compléter à 20 mL avec l\'éluant.',
           'Solution échantillon : dissoudre environ exactement m g de gel dans environ 30 mL d\'éluant, filtrer sur papier plissé dans une fiole jaugée de 50 mL, rincer le filtre avec 10 mL d\'éluant et compléter au trait : c\'est la fiole 4.',
           'Fiole 5 : prélever 100 µL de la fiole 4 et 200 µL de la fiole 2, compléter à 20 mL avec l\'éluant. C\'est la solution échantillon injectée.',
@@ -68,30 +64,13 @@ export default function FichesPercutafeine({ ids, ouvert = false }) {
         ]} />
         <SchemaFiolesClhp />
       </Feuille>);
-    if (id === 'mo2') return (
-      <Feuille key={id} ouvert={ouvert} entete="Mode opératoire · document 2" titre="Comment injecter en CLHP ?" sous="Boucle d'injection de 20 µL, vanne Rheodyne" edition="reproduction du sujet">
-        <Liste items={[
-          'La boucle d\'injection contient 20 µL. Pour qu\'elle soit bien rincée et contienne effectivement 20 µL de la solution à analyser, il faut la charger avec un volume très supérieur à 20 µL.',
-          'Idéalement, il faudrait une seringue de 200 µL. Au lycée Argouges, la seringue est de 25 µL : on fera donc au minimum 3 chargements, d\'un volume proche de 25 µL, en position « LOAD ».',
-          'Ne jamais injecter la moindre bulle d\'air.',
-        ]} />
-      </Feuille>);
     if (id === 'mo3') return (
-      <Feuille key={id} ouvert={ouvert} entete="Mode opératoire · document 3" titre="Dosage de l'éthanol par CPG, étalon interne" sous="Colonne polaire CP Wax · four à 70 °C · injecteur et détecteur à 150 °C · split 15 PSI · analyse de 3 min · 0,1 µL + air" edition="reproduction du sujet">
+      <Feuille key={id} ouvert={ouvert} entete="Mode opératoire · document 3" titre="Dosage de l'éthanol par CPG, étalon interne" sous="Préparation des solutions de référence et d'échantillon" edition="reproduction du sujet">
         <div style={{ fontWeight: 700 }}>Solution de référence (fiole jaugée de 20 mL)</div>
         <Liste items={['Introduire à la micropipette 500 µL d\'étalon interne et 250 µL d\'éthanol (étalon interne mis à disposition : propan-1-ol).', 'Compléter au trait de jauge avec de l\'eau, homogénéiser, injecter en CPG.']} />
         <div style={{ fontWeight: 700 }}>Solution échantillon (fiole jaugée de 20 mL)</div>
         <Liste items={['Dissoudre environ exactement m\' g de gel avec un peu d\'eau (peser directement dans la fiole), ajouter 500 µL d\'étalon interne, compléter au trait avec de l\'eau.', 'Facultatif, selon l\'allure de l\'échantillon : filtrer avant injection. Injecter en CPG.']} />
         <div style={{ color: '#475569' }}>Exploitation : relever les aires de pics de la référence et de l\'échantillon, puis calculer le volume d\'éthanol de l\'échantillon avec le rapport des aires éthanol / étalon interne.</div>
-      </Feuille>);
-    if (id === 'mo4') return (
-      <Feuille key={id} ouvert={ouvert} entete="Mode opératoire · document 4" titre="Utiliser une micropipette" sous="Prélèvement de petits volumes" edition="reproduction du sujet">
-        <Liste items={[
-          'Régler le volume avec la molette, dans la plage de la pipette (par exemple 100 à 1 000 µL) : ne jamais sortir de cette plage.',
-          'Placer un embout neuf. Enfoncer le piston jusqu\'au premier cran, plonger l\'embout de quelques millimètres, relâcher lentement.',
-          'Distribuer en enfonçant jusqu\'au premier cran, puis jusqu\'au second pour vider l\'embout. Changer d\'embout entre deux liquides.',
-          'L\'erreur relative augmente quand le volume prélevé est petit devant le volume maximal de la pipette.',
-        ]} />
       </Feuille>);
     return null; })}</div>);
 }

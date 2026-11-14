@@ -269,7 +269,7 @@ add('intro2', {
   choix: [{ t: 'Aller à la paillasse', vers: 'hub', note: 'Début du travail : contre-typer la Percutaféine.' }],
 });
 add('docs', {
-  fiches: ['notice', 'carbopol', 'synthalen', 'cocoate', 'trolamine', 'mo1', 'mo2', 'mo3', 'mo4'],
+  fiches: ['notice', 'carbopol', 'synthalen', 'cocoate', 'trolamine', 'mo1', 'mo3'],
   lieu: 'Bureau', pnj: 'moi', titre: 'Le dossier du TP',
   texte: () => 'Tu relis la notice du gel commercial, les fiches techniques des matières premières et les modes opératoires du TP. Tout ce que tu y trouves est utilisable pour retrouver la formule ; ce qui n\'y figure pas, il faudra le déduire de tes mesures.',
   choix: [{ t: 'Retourner à la paillasse', vers: 'hub', duree: 3, note: 'Relecture du dossier (notice et fiches techniques).' }],
@@ -709,7 +709,7 @@ add('eth_dens', {
 // ───────────── Caféine : CLHP, ou UV si la CLHP tombe en panne ─────────────
 add('hplc_m', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Préparer le dosage de la caféine',
-  fiches: ['mo1', 'mo4'],
+  fiches: ['mo1'],
   visuels: () => [{ type: 'fioles' }],
   texte: () => `Fiole 1 : environ 51 mg de caféine dans 50 mL d'éluant. Pour la fiole 4 (50 mL), tu veux la même masse de caféine que dans la fiole 1, à partir du gel (à 5 % de caféine en masse).`,
   hyp: "Hypothèse : le gel formulé contient environ 5 % de caféine (c'est la valeur à vérifier) ; la prise d'essai est faite sur balance de précision.",
@@ -767,7 +767,6 @@ add('hplc_gamme_calc', {
 });
 add('hplc_ei', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Caféine par CLHP, étalon interne',
-  fiches: ['mo2'],
   texte: e => { const d = donneesHplc(e); return `Gel formulé : m = ${nf(d.mPes, 3)} g dans 50 mL (fiole 4), puis 100 µL de cette fiole + 200 µL de la solution de benzoïne dans 20 mL (fiole 5). Concentration de la caféine dans la référence : ${nf(d.cRef, 2)} mg/L.\nAires : référence caféine ${nf(d.aRefC, 2)}, benzoïne ${nf(d.aRefB, 2)} ; échantillon caféine ${nf(d.aEchC, 2)}, benzoïne ${nf(d.aEchB, 2)}.`; },
   formule: 'hplcEI', hyp: "Hypothèses : la réponse du détecteur est proportionnelle à la concentration pour chaque composé ; la benzoïne est stable et à la même concentration dans les deux fioles ; le volume injecté est constant (boucle de 20 µL).",
   visuels: e => { const d = donneesHplc(e); return [{ type: 'tableau', titre: 'Aires des pics (unités arbitraires)', cols: ['', 'caféine', 'benzoïne'], lignes: [['Référence (fiole 3)', nf(d.aRefC, 2), nf(d.aRefB, 2)], ['Échantillon (fiole 5)', nf(d.aEchC, 2), nf(d.aEchB, 2)]] }]; },
@@ -873,7 +872,7 @@ add('cpg_sans', {
 });
 add('cpg_m', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Masse de gel à peser pour la CPG',
-  fiches: ['mo3', 'mo4'],
+  fiches: ['mo3'],
   texte: e => `Solution de référence (fiole de 20 mL) : 500 µL de ${eiNom(e)} (micropipette), 250 µL d'éthanol (ρ = ${nf(RHO_ETOH, 3)} g/mL), eau qsp. Pour la solution échantillon, tu veux environ la même quantité d'éthanol que dans la référence, à partir du gel (rappel : ${nf(ETH_PUR_COM, 1)} % d'éthanol pur).`,
   hyp: "Hypothèse : la masse volumique de l'éthanol pur est 0,789 g/mL à 20 °C ; la solution échantillon est préparée avec la même masse d'étalon interne.",
   calcul: { q: 'Quelle masse m\' de gel faut-il peser dans la fiole échantillon ?', unite: 'g', vrai: () => V_REF * RHO_ETOH / 1000 / (ETH_PUR_COM / 100), tol: 0.1, cs: 2, indice: 'Masse d\'éthanol de la référence : 250 µL × 0,789 g/mL. Elle représente 38,4 % de la masse de gel m\'.',
