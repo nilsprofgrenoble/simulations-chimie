@@ -34,7 +34,7 @@ export const CHAPITRES = [
   { id: '1g-electricite', niveau: '1G', label: '⚡ Aspects énergétiques des phénomènes électriques', sims: [70, 71, 72], domaines: ['Énergie électrique'] },
   { id: '1g-energie-meca', niveau: '1G', label: '🎢 Aspects énergétiques des phénomènes mécaniques', sims: [106, 107, 108], domaines: ['Mécanique'] },
   { id: '1g-mouvement', niveau: '1G', label: '🚀 Mouvement d’un système', sims: [52], domaines: ['Mécanique'] },
-  { id: '1g-lentille', niveau: '1G', label: '🔍 Image donnée par une lentille mince', sims: [114], domaines: ['Lentille mince'] },
+  { id: '1g-lentille', niveau: '1G', label: '🔍 Image donnée par une lentille mince', sims: [115], domaines: ['Lentille mince'] },
 
   { id: 'tstl-signaux', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '📡 Transmission de signaux numériques', sims: [8, 15, 33], domaines: ['Transmission de signaux numériques'] },
   { id: 'tstl-fluides', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '💧 Transport des fluides', sims: [26, 27, 28, 17], domaines: ['Transport des fluides'] },

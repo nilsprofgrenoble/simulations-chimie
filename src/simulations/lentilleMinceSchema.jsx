@@ -1,6 +1,6 @@
 import * as M from "./lentilleMinceModele";
 
-// Schémas de la lentille mince (1G) : cartes « À retenir » de la simulation 114 et schémas d'énoncés d'exercices.
+// Schémas de la lentille mince (1G) : cartes « À retenir » de la simulation 115 et schémas d'énoncés d'exercices.
 // Les positions viennent du même modèle que la simulation (lentilleMinceModele.js) : le schéma ne peut pas contredire le calcul.
 // image = false : on ne dessine ni les rayons, ni l'image (énoncé d'exercice : la réponse n'est jamais dessinée avant la correction).
 const fleche = (x, y, ang, c, t = 7) => <polygon points={`0,0 ${-2 * t},${-t * 0.8} ${-2 * t},${t * 0.8}`} fill={c} transform={`translate(${x},${y}) rotate(${ang})`}/>;

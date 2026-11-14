@@ -8,11 +8,11 @@ import { puces, nbf, tire } from "./Travail";
 import * as M from "./lentilleMinceModele";
 import { Schema, COUL } from "./lentilleMinceSchema";
 
-const SIM_ID = 114;
+const SIM_ID = 115;
 declarerDefis(SIM_ID, [['focale', 'Trouver f′ au banc'], ['position', 'Prévoir la position de l’image'], ['focvar', 'Mise au point avec une focale variable']]);
 
 // ====================================================
-//  SIM 114 — LENTILLE MINCE : IMAGE, CONJUGAISON ET GRANDISSEMENT (1G, « Ondes et signaux », La lumière : images et couleurs)
+//  SIM 115 — LENTILLE MINCE : IMAGE, CONJUGAISON ET GRANDISSEMENT (1G, « Ondes et signaux », La lumière : images et couleurs)
 //  Banc d'optique : un objet-plan AB, une lentille mince convergente (f′ réglable), un écran. Image réelle ou virtuelle, droite ou renversée.
 //  Hypothèses : lentille mince, rayons proches de l'axe (approximation de Gauss), lumière monochromatique, objet-plan perpendiculaire à l'axe,
 //  netteté jugée à ± 0,6 cm près (modèle géométrique, diffraction ignorée). Le schéma n'a pas la même échelle sur l'axe et en hauteur.
