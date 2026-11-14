@@ -73,24 +73,33 @@ function Chroma({ v }) {
     </svg></Cadre>);
 }
 
+// Graduations « rondes » (1, 2, 5 × 10^k) pour l'échelle linéaire
+const gradsLin = (max, n = 4) => { const brut = max / n, p = Math.pow(10, Math.floor(Math.log10(brut))), f = brut / p, pas = (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p, L = []; for (let x = pas; x <= max * 1.001; x += pas) L.push(Math.round(x / p * 1e6) / 1e6 * p); return L; };
 function Rheo({ v }) {
-  const W = 360, Hh = 150, x0 = 38, x1 = 346, lx = g => x0 + (Math.log10(g) + 1) / 3 * (x1 - x0);
-  const etaMax = Math.max(...v.courbes.flatMap(c => c.pts.map(p => p.eta))), sMax = Math.max(...v.courbes.flatMap(c => c.pts.map(p => p.s)));
-  const ly = e => 128 - (Math.log10(e) - Math.log10(0.5)) / (Math.log10(etaMax * 1.2) - Math.log10(0.5)) * 110, sMin = Math.min(...v.courbes.flatMap(c => c.pts.map(p => p.s))), sy = s => 128 - (Math.log10(s) - Math.log10(sMin / 1.5)) / (Math.log10(sMax * 1.2) - Math.log10(sMin / 1.5)) * 110;
+  const [log, setLog] = useState(true);
+  const W = 360, Hh = 150, x0 = 38, x1 = 346;
+  const toutes = v.courbes.flatMap(c => c.pts), gMax = Math.max(...toutes.map(p => p.g));
+  const etaMax = Math.max(...toutes.map(p => p.eta)), sMax = Math.max(...toutes.map(p => p.s)), sMin = Math.min(...toutes.map(p => p.s));
+  const lx = g => log ? x0 + (Math.log10(g) + 1) / 3 * (x1 - x0) : x0 + g / gMax * (x1 - x0);
+  const ly = e => log ? 128 - (Math.log10(e) - Math.log10(0.5)) / (Math.log10(etaMax * 1.2) - Math.log10(0.5)) * 110 : 128 - e / (etaMax * 1.1) * 110;
+  const sy = s => log ? 128 - (Math.log10(s) - Math.log10(sMin / 1.5)) / (Math.log10(sMax * 1.2) - Math.log10(sMin / 1.5)) * 110 : 128 - s / (sMax * 1.1) * 110;
   const tr = (c, f) => c.pts.map((p, i) => `${i ? 'L' : 'M'}${lx(p.g).toFixed(1)} ${f(p).toFixed(1)}`).join('');
+  const gTicks = log ? [0.1, 1, 10, 100] : gradsLin(gMax, 4), eTicks = log ? [1, 10, 100] : gradsLin(etaMax * 1.1, 3), sTicks = log ? [1, 10, 100].filter(s => s >= sMin / 1.5 && s <= sMax * 1.2) : gradsLin(sMax * 1.1, 3);
   const axes = <><line x1={x0} y1="128" x2={x1} y2="128" stroke="#6b8794" /><line x1={x0} y1="12" x2={x0} y2="128" stroke="#6b8794" />
-    {[0.1, 1, 10, 100].map(g => <text key={g} x={lx(g)} y="142" textAnchor="middle" fontSize="10" fill="#9fc3d1">{g}</text>)}</>;
+    {gTicks.map(g => <text key={g} x={lx(g)} y="142" textAnchor="middle" fontSize="10" fill="#9fc3d1">{nf(g, g < 1 ? 1 : 0)}</text>)}</>;
+  const ech = log ? 'échelle log' : 'échelle linéaire';
   return (<Cadre titre="RHÉOMÈTRE · COURBES D'ÉCOULEMENT">
-    <svg viewBox={`0 0 ${W} ${2 * Hh + 20}`} role="img" aria-label={`Viscosité et contrainte en fonction du gradient de vitesse pour : ${v.courbes.map(c => c.nom).join(', ')}`} style={{ width: '100%', maxWidth: 640, margin: '0 auto', display: 'block' }}>
-      <g>{axes}<text x="4" y="14" fontSize="10" fill="#9fc3d1">η (Pa·s, échelle log)</text>
-        {[1, 10, 100].map(e => <text key={e} x={x0 - 4} y={ly(e) + 3} textAnchor="end" fontSize="9" fill="#9fc3d1">{e}</text>)}
+    <svg viewBox={`0 0 ${W} ${2 * Hh + 20}`} role="img" aria-label={`Viscosité et contrainte en fonction du gradient de vitesse (${ech}) pour : ${v.courbes.map(c => c.nom).join(', ')}`} style={{ width: '100%', maxWidth: 640, margin: '0 auto', display: 'block' }}>
+      <g>{axes}<text x="4" y="14" fontSize="10" fill="#9fc3d1">η (Pa·s, {ech})</text>
+        {eTicks.map(e => <text key={e} x={x0 - 4} y={ly(e) + 3} textAnchor="end" fontSize="9" fill="#9fc3d1">{nf(e, e < 1 ? 1 : 0)}</text>)}
         {v.courbes.map(c => <path key={c.nom} d={tr(c, p => ly(p.eta))} fill="none" stroke={c.couleur === '#1e3a8a' ? '#93c5fd' : '#fcd34d'} strokeWidth="2.2" />)}</g>
-      <g transform={`translate(0 ${Hh + 6})`}>{axes}<text x="4" y="14" fontSize="10" fill="#9fc3d1">σ (Pa, échelle log)</text>
-        {[1, 10, 100].filter(s => s >= sMin / 1.5 && s <= sMax * 1.2).map(s => <text key={s} x={x0 - 4} y={sy(s) + 3} textAnchor="end" fontSize="9" fill="#9fc3d1">{s}</text>)}
+      <g transform={`translate(0 ${Hh + 6})`}>{axes}<text x="4" y="14" fontSize="10" fill="#9fc3d1">σ (Pa, {ech})</text>
+        {sTicks.map(s => <text key={s} x={x0 - 4} y={sy(s) + 3} textAnchor="end" fontSize="9" fill="#9fc3d1">{nf(s, s < 1 ? 1 : 0)}</text>)}
         {v.courbes.map(c => <path key={c.nom} d={tr(c, p => sy(p.s))} fill="none" stroke={c.couleur === '#1e3a8a' ? '#93c5fd' : '#fcd34d'} strokeWidth="2.2" />)}
-        <text x={x1} y="156" textAnchor="end" fontSize="10" fill="#9fc3d1">γ̇ (s⁻¹, échelle log)</text></g>
+        <text x={x1} y="156" textAnchor="end" fontSize="10" fill="#9fc3d1">γ̇ (s⁻¹, {ech})</text></g>
     </svg>
-    <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 13 }}>{v.courbes.map(c => <span key={c.nom}><span style={{ color: c.couleur === '#1e3a8a' ? '#93c5fd' : '#fcd34d' }}>━</span> {c.nom}</span>)}</div>
+    <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center', fontSize: 13 }}>{v.courbes.map(c => <span key={c.nom}><span style={{ color: c.couleur === '#1e3a8a' ? '#93c5fd' : '#fcd34d' }}>━</span> {c.nom}</span>)}
+      <button type="button" data-echelle aria-pressed={!log} onClick={() => setLog(!log)} style={{ font: 'inherit', fontSize: 13, marginLeft: 'auto', padding: '4px 12px', borderRadius: 99, border: '1.5px solid #9fc3d1', background: 'transparent', color: '#e2f1f6', cursor: 'pointer' }}>{log ? 'Passer en échelle linéaire' : 'Passer en échelle logarithmique'}</button></div>
   </Cadre>);
 }
 
