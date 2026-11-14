@@ -251,7 +251,7 @@ function StationPh({ e, onEtat }) {
 // ───────────── L'ordinateur de la salle de titrage : simuler son titrage avant de le faire (règles de la simulation de première sur le titrage direct) ─────────────
 function OrdiTitrage({ vals, setVals }) {
   const [ouvert, setOuvert] = useState(false);
-  const [loc, setLoc] = useState({ m: String(vals.m || '0,1'), M: '', pred: '', c: String(vals.c || '0,1'), V0: String(vals.V0 || '150') }), [V, setV] = useState(0);
+  const [loc, setLoc] = useState({ m: '', M: '', pred: '', c: '', V0: String(vals.V0 || '150') }), [V, setV] = useState(0);
   const m = nombre(loc.m) || 0, M = nombre(loc.M) || 0, c = nombre(loc.c) || 0, V0 = nombre(loc.V0) || 0;
   const n0 = M > 0 ? m / M : 0, veq = c > 0 ? n0 / c * 1000 : 0, vmax = 25, v = Math.min(V, vmax), pred = nombre(loc.pred);
   const q = x => { const nb = c * x / 1000, av = Math.min(nb, n0); return { a: n0 - av, b: nb - av, s: av }; };
@@ -309,6 +309,7 @@ function StationPlan({ e, sc, onEtat }) {
         {conseils.map((c, i) => <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '8px 0' }}><Avatar pnj={sc.aide.pnj} e={e} taille={36} /><div style={{ flex: 1, background: '#fff', border: `1.5px solid ${C.bord}`, borderRadius: 12, padding: '8px 12px', fontSize: 15, lineHeight: 1.5 }}>{c}</div></div>)}
         {aide < 3 && <button type="button" data-aide-btn onClick={demander} style={{ font: 'inherit', fontSize: 14.5, padding: '7px 14px', borderRadius: 99, border: `1.5px solid ${C.accent}`, background: '#fff', color: C.accent, cursor: 'pointer' }}>{aide === 0 ? `💬 Demander conseil à ${pnjAide.nom}` : aide === 1 ? `💬 Demander plus de précisions à ${pnjAide.nom}` : `💬 Demander à ${pnjAide.nom} ce qu'${sc.aide.pnj === 'ines' ? 'elle' : 'il'} ferait`}<span style={{ color: C.doux }}> ({aide === 2 ? 5 : 3} min)</span></button>}
       </div>}
+      {P.materiel && <div data-materiel style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 8, margin: '0 0 12px' }}>{P.materiel.map(([k, v]) => <div key={k} style={{ background: '#fff', border: `1.5px solid ${C.bord}`, borderRadius: 10, padding: '8px 12px' }}><div style={{ fontSize: 13.5, color: C.doux }}>{k}</div><div style={{ fontSize: 17, fontWeight: 700 }}>{v}</div></div>)}</div>}
       {P.ordi && <OrdiTitrage vals={vals} setVals={setVals} />}
       <div style={{ fontWeight: 700, marginBottom: 6 }}>🧪 Ma préparation</div>
       <ul style={{ margin: '0 0 12px', paddingLeft: 18, fontSize: 14, color: C.doux, lineHeight: 1.5 }}>{P.infos.map((t, i) => <li key={i}>{t}</li>)}</ul>
