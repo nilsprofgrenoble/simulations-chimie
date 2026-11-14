@@ -72,18 +72,19 @@ function FrontsOnde({ beta, anim, relance, annot }) {
 // ---------- schéma du rail (scène 2) ----------
 function Rail({ montage, sens, v, fe }) {
   const echo = montage === 'echo', approche = sens === 'approche';
-  const cartX = echo ? (approche ? 340 : 270) : (approche ? 190 : 330), rx = echo ? 70 : 520;
+  const cartX = echo ? (approche ? 380 : 300) : (approche ? 190 : 330), rx = echo ? 62 : 520;
   const flecheDir = echo ? (approche ? -1 : 1) : (approche ? 1 : -1);
   return (
-    <svg viewBox="0 0 600 110" style={{ width: '100%', display: 'block', background: '#f8fafc', borderRadius: 8 }} role="img"
+    <svg viewBox="0 0 600 132" style={{ width: '100%', display: 'block', background: '#f8fafc', borderRadius: 8 }} role="img"
       aria-label={echo ? 'Schéma du montage : un émetteur et un récepteur fixes à gauche du rail, une plaque réfléchissante sur un chariot mobile' : 'Schéma du montage : un chariot portant l’émetteur ultrasonore roule sur un rail vers ou loin d’un récepteur fixe'}>
+      <g transform="translate(0,18)">
       <rect x="20" y="78" width="560" height="6" fill="#94a3b8"/>
       {echo ? <g>
-        <rect x={rx - 24} y="40" width="48" height="38" rx="5" fill="#1e293b"/><text x={rx} y="58" fontSize="11" fontWeight="700" fill="white" textAnchor="middle">émetteur</text><text x={rx} y="71" fontSize="11" fontWeight="700" fill="white" textAnchor="middle">+ récepteur</text>
+        <rect x={rx - 40} y="40" width="80" height="38" rx="5" fill="#1e293b"/><text x={rx} y="58" fontSize="11" fontWeight="700" fill="white" textAnchor="middle">émetteur</text><text x={rx} y="71" fontSize="11" fontWeight="700" fill="white" textAnchor="middle">+ récepteur</text>
         <rect x={cartX - 30} y="60" width="60" height="18" rx="4" fill="#475569"/><circle cx={cartX - 16} cy="82" r="5" fill="#0f172a"/><circle cx={cartX + 16} cy="82" r="5" fill="#0f172a"/>
         <rect x={cartX + 24} y="26" width="7" height="40" fill="#0e7490"/><text x={cartX + 28} y="20" fontSize="12" fontWeight="700" fill="#0e7490" textAnchor="middle">plaque</text>
-        <path d={`M${rx + 26} 50 L${cartX + 18} 50`} stroke="#0e7490" strokeWidth="2" strokeDasharray="6 4" fill="none"/><text x={(rx + cartX) / 2} y="44" fontSize="11" fill="#0e7490" textAnchor="middle">onde émise ({FE})</text>
-        <path d={`M${cartX + 18} 62 L${rx + 26} 62`} stroke="#b45309" strokeWidth="2" strokeDasharray="6 4" fill="none"/><text x={(rx + cartX) / 2} y="100" fontSize="11" fill="#b45309" textAnchor="middle">onde renvoyée ({FR})</text>
+        <path d={`M${rx + 44} 50 L${cartX + 18} 50`} stroke="#0e7490" strokeWidth="2" strokeDasharray="6 4" fill="none"/><text x={(rx + 44 + cartX) / 2} y="44" fontSize="11" fill="#0e7490" textAnchor="middle">onde émise ({FE})</text>
+        <path d={`M${cartX + 18} 62 L${rx + 44} 62`} stroke="#b45309" strokeWidth="2" strokeDasharray="6 4" fill="none"/><text x={(rx + 44 + cartX) / 2} y="76" fontSize="11" fill="#b45309" textAnchor="middle">onde renvoyée ({FR})</text>
       </g> : <g>
         <rect x={cartX - 36} y="52" width="72" height="26" rx="5" fill="#475569"/><circle cx={cartX - 20} cy="82" r="5" fill="#0f172a"/><circle cx={cartX + 20} cy="82" r="5" fill="#0f172a"/>
         <rect x={cartX - 14} y="36" width="28" height="16" rx="3" fill="#b45309"/><text x={cartX} y="30" fontSize="12" fontWeight="700" fill="#b45309" textAnchor="middle">émetteur ({FE})</text>
@@ -92,6 +93,7 @@ function Rail({ montage, sens, v, fe }) {
       {v > 0 && <g><line x1={cartX} y1="100" x2={cartX + flecheDir * 56} y2="100" stroke="#0f172a" strokeWidth="3"/>
         <path d={`M${cartX + flecheDir * 56} 94 L${cartX + flecheDir * 68} 100 L${cartX + flecheDir * 56} 106 Z`} fill="#0f172a"/>
         <text x={cartX} y={echo ? 96 : 96} fontSize="12" fontWeight="700" fill="#0f172a" textAnchor="middle" stroke="#f8fafc" strokeWidth="3" paintOrder="stroke">v</text></g>}
+      </g>
       <text x="8" y="12" fontSize="11" fill="#64748b">schéma non à l’échelle</text>
     </svg>);
 }
@@ -448,31 +450,6 @@ export function SimulationDoppler({ naviguer }) {
     || (rendreBaseEl && boutonRetablir('Rétablir : chariot qui s’éloigne à 0,50 m/s', () => { setScene('mesure'); setMes({ ...BASE_MES, sens: 'eloigne' }); setZoomC(null); }))
     || (rendreBaseDuree && boutonRetablir('Rétablir : v = 0,02 m/s', () => { setScene('mesure'); setMes({ ...BASE_MES, v: 0.02, T: idE === 'separer' ? 2 : 0.5 }); setZoomC(null); }));
   const montrerCurseur = deja('pointer');
-  const sceneMesure = (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <Rail montage={m.montage} sens={m.sens} v={vEff} fe={fe}/>
-      <div style={cadre('scene')}><Spectre fe={fe} fr={fr} T={T} fen={fen} cur={cur} setCur={setCur} aMontrerRef={vEff > 0} aMontrerCurseur={montrerCurseur} nomRef={vEff > 0 ? FE : <>{FE} = {FR}</>}
-        aria={vEff > 0 ? `Spectre du signal reçu : un pic gris pour la fréquence émise ${milliers(fe)} hertz et un pic bleu décalé pour la fréquence reçue` : `Spectre du signal reçu : un seul pic à la fréquence émise ${milliers(fe)} hertz`}/></div>
-      {montrerCurseur && <div role="group" aria-label="Curseur de lecture de la fréquence" style={{ background: '#f1f5f9', borderRadius: 10, padding: '6px 10px', ...cadre('curseur') }}>
-        <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700 }}>Curseur : {hz(cur)}</div>
-        <input type="range" aria-label="Fréquence du curseur" aria-valuetext={hz(cur)} min={Math.round(fen[0])} max={Math.round(fen[1])} step={1} value={Math.max(Math.round(fen[0]), Math.min(Math.round(fen[1]), cur))} onChange={e => setCur(parseFloat(e.target.value))} style={{ display: 'block', width: '100%', minHeight: 32, accentColor: '#b45309' }}/>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-          {[[-10, '−10'], [-1, '−1'], [1, '+1'], [10, '+10']].map(([dlt, l]) => <button key={l} onClick={() => setCur(cur + dlt)} aria-label={`Déplacer le curseur de ${l} hertz`} style={stylePetitBouton(false, '#475569')}>{l}{NB}Hz</button>)}
-          {zoomC == null ? <button onClick={() => setZoomC(Math.round(cur))} style={stylePetitBouton(false, '#0369a1')}><Pic n="search"/>Zoom autour du curseur</button> : <button onClick={() => setZoomC(null)} style={stylePetitBouton(true, '#0369a1')}>Vue d’ensemble</button>}
-        </div>
-      </div>}
-    </div>);
-  const sceneBox = (
-    <div style={{ ...styleBoite, ...cadre('scene') }}>
-      {mode === 'explore' && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-        {[['fronts', 'Fronts d’onde'], ['mesure', 'Mesure de vitesse']].map(([k, l]) => <button key={k} onClick={() => setScene(k)} aria-pressed={scene === k} style={stylePetitBouton(scene === k, '#0e7490')}>{l}</button>)}
-      </div>}
-      {sceneEff === 'fronts' ? <>{retablirFronts}<FrontsOnde beta={betaEff} anim={anim} relance={relance} annot={apres('derriere') || mode === 'explore'}/></> : <>{retablirMes}{sceneMesure}</>}
-      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>{sceneEff === 'fronts'
-        ? 'Chaque cercle est un front d’onde ; l’émetteur (orange) part de la gauche et recommence quand il atteint le bord. Vitesse exagérée pour la lisibilité.'
-        : montrerCurseur ? 'Glissez le curseur orange sur le spectre, ou utilisez le curseur et les boutons en dessous. En vue d’ensemble, la fenêtre est large de ' + (2 * W0) + ' Hz.' : 'Le spectre montre les fréquences présentes dans le signal reçu (échelle en hertz).'}</div>
-    </div>);
-
   const reglages = sceneEff === 'fronts' ? (
     <div style={{ ...styleBoite, ...cadre('reglages') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
@@ -489,18 +466,57 @@ export function SimulationDoppler({ naviguer }) {
         {mode === 'explore' && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
           {[['emetteur', 'Émetteur sur le chariot'], ['echo', 'Plaque qui renvoie l’onde']].map(([k, l]) => <button key={k} onClick={() => { setM({ montage: k }); setCurBrut(mes.fe); setZoomC(null); }} aria-pressed={mes.montage === k} style={stylePetitBouton(mes.montage === k, '#0e7490')}>{l}</button>)}
         </div>}
-        {deja('deplace') && <Curseur nom="Vitesse v du chariot" valeur={mes.v} onChange={v => setM({ v: Math.round(v * 100) / 100 })} min={0} max={1.5} pas={0.01} unite="m/s" decimales={2} couleur="#b45309"/>}
+        {deja('deplace') && <Curseur nom={echo ? "Vitesse v de la plaque" : "Vitesse v du chariot"} valeur={mes.v} onChange={v => setM({ v: Math.round(v * 100) / 100 })} min={0} max={1.5} pas={0.01} unite="m/s" decimales={2} couleur="#b45309"/>}
         {deja('eloigne') && <div role="group" aria-label="Sens du mouvement" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
           {[['approche', 'se rapproche du récepteur'], ['eloigne', 's’éloigne du récepteur']].map(([k, l]) => <button key={k} onClick={() => { setM({ sens: k }); setZoomC(null); }} aria-pressed={mes.sens === k} style={stylePetitBouton(mes.sens === k, '#0369a1')}>{enGuide ? l : (mes.montage === 'echo' ? (k === 'approche' ? 'la plaque se rapproche' : 'la plaque s’éloigne') : l)}</button>)}
         </div>}
         {mode === 'explore' && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}><span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Fréquence émise</span>
           {D.F_EMETTEURS.map(f => <button key={f} onClick={() => { setM({ fe: f }); setCurBrut(f); setZoomC(null); }} aria-pressed={mes.fe === f} style={stylePetitBouton(mes.fe === f, '#475569')}>{f / 1000}{NB}kHz</button>)}</div>}
-        {deja('duree') && <Curseur nom="Durée d’enregistrement T" valeur={mes.T} onChange={v => setM({ T: v })} min={0.5} max={2} pas={0.5} unite="s" decimales={1} couleur="#475569"/>}
+        {deja('duree') && <div style={{ marginBottom: 8 }}>
+          <Curseur nom="Durée d’écoute T (durée de l’enregistrement)" valeur={mes.T} onChange={v => setM({ T: v })} min={0.5} max={2} pas={0.5} unite="s" decimales={1} couleur="#475569"/>
+          <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.5, background: '#f1f5f9', borderRadius: 8, padding: '6px 10px' }}>
+            <strong>À quoi sert-elle ?</strong> Le spectre est calculé à partir du son enregistré pendant T secondes. Plus on écoute longtemps, plus les pics sont <strong>fins</strong> : largeur ≈ 1 / T = <strong>{nbf(D.resolution(T), 1)}{NB}Hz</strong> ici. Deux fréquences très proches ne se distinguent que si leur écart est plus grand que cette largeur.
+            {mode === 'explore' && <> <em>Essayez : v = 0,02 m/s (δf ≈ 2,4 Hz), puis T = 0,5 s et T = 2 s.</em></>}
+          </div></div>}
         {!deja('deplace') && <div style={{ fontSize: 13.5, color: KIT.txt2 }}>Le chariot est arrêté.</div>}
       </>}
       {enDefi && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6 }}>{echo ? 'Plaque mobile ; émetteur et récepteur fixes.' : 'Chariot mobile ; récepteur fixe.'} <em>f</em><sub>e</sub> = {hz(fe)}, <em>c</em> = 340{NB}m/s (± 3{NB}m/s). Enregistrement de 1{NB}s.</div>}
     </div>
   );
+
+  const sceneMesure = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {mode === 'explore' && <div style={{ background: '#ecfeff', border: '1px solid #a5f3fc', borderRadius: 10, padding: '8px 12px', fontSize: 14, lineHeight: 1.55, color: KIT.txt }}>
+        <strong>Le principe :</strong> un émetteur envoie un son de fréquence connue <em>f</em><sub>e</sub>. Si l’objet qui bouge fait varier la fréquence reçue, <strong>l’écart</strong> <em>δf</em> avec <em>f</em><sub>e</sub> indique sa vitesse.
+        <ol style={{ margin: '4px 0 0', paddingLeft: 20 }}>
+          <li>Réglez la <strong>vitesse</strong> ci-dessous : un 2<sup>e</sup> pic (bleu) apparaît à côté du pic gris de <em>f</em><sub>e</sub>.</li>
+          <li><strong>Lisez</strong> la fréquence reçue : placez le curseur orange au sommet du pic bleu.</li>
+          <li>Les <strong>Mesures</strong> donnent alors <em>δf</em>, puis la vitesse calculée ; comparez-la à celle que vous avez réglée.</li>
+        </ol></div>}
+      <Rail montage={m.montage} sens={m.sens} v={vEff} fe={fe}/>
+      <div style={cadre('scene')}><Spectre fe={fe} fr={fr} T={T} fen={fen} cur={cur} setCur={setCur} aMontrerRef={vEff > 0} aMontrerCurseur={montrerCurseur} nomRef={vEff > 0 ? FE : <>{FE} = {FR}</>}
+        aria={vEff > 0 ? `Spectre du signal reçu : un pic gris pour la fréquence émise ${milliers(fe)} hertz et un pic bleu décalé pour la fréquence reçue` : `Spectre du signal reçu : un seul pic à la fréquence émise ${milliers(fe)} hertz`}/></div>
+      {mode === 'explore' && reglages}
+      {montrerCurseur && <div role="group" aria-label="Curseur de lecture de la fréquence" style={{ background: '#f1f5f9', borderRadius: 10, padding: '6px 10px', ...cadre('curseur') }}>
+        <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700 }}>Curseur : {hz(cur)}</div>
+        <input type="range" aria-label="Fréquence du curseur" aria-valuetext={hz(cur)} min={Math.round(fen[0])} max={Math.round(fen[1])} step={1} value={Math.max(Math.round(fen[0]), Math.min(Math.round(fen[1]), cur))} onChange={e => setCur(parseFloat(e.target.value))} style={{ display: 'block', width: '100%', minHeight: 32, accentColor: '#b45309' }}/>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+          {[[-10, '−10'], [-1, '−1'], [1, '+1'], [10, '+10']].map(([dlt, l]) => <button key={l} onClick={() => setCur(cur + dlt)} aria-label={`Déplacer le curseur de ${l} hertz`} style={stylePetitBouton(false, '#475569')}>{l}{NB}Hz</button>)}
+          {mode === 'explore' && vEff > 0 && <button onClick={() => setCur(fr)} style={stylePetitBouton(true, '#b45309')}>Placer sur le pic bleu</button>}
+          {zoomC == null ? <button onClick={() => setZoomC(Math.round(cur))} style={stylePetitBouton(false, '#0369a1')}><Pic n="search"/>Zoom autour du curseur</button> : <button onClick={() => setZoomC(null)} style={stylePetitBouton(true, '#0369a1')}>Vue d’ensemble</button>}
+        </div>
+      </div>}
+    </div>);
+  const sceneBox = (
+    <div style={{ ...styleBoite, ...cadre('scene') }}>
+      {mode === 'explore' && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+        {[['fronts', 'Fronts d’onde'], ['mesure', 'Mesure de vitesse']].map(([k, l]) => <button key={k} onClick={() => setScene(k)} aria-pressed={scene === k} style={stylePetitBouton(scene === k, '#0e7490')}>{l}</button>)}
+      </div>}
+      {sceneEff === 'fronts' ? <>{retablirFronts}<FrontsOnde beta={betaEff} anim={anim} relance={relance} annot={apres('derriere') || mode === 'explore'}/></> : <>{retablirMes}{sceneMesure}</>}
+      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>{sceneEff === 'fronts'
+        ? 'Chaque cercle est un front d’onde ; l’émetteur (orange) part de la gauche et recommence quand il atteint le bord. Vitesse exagérée pour la lisibilité.'
+        : montrerCurseur ? 'Glissez le curseur orange sur le spectre, ou utilisez le curseur et les boutons en dessous. En vue d’ensemble, la fenêtre est large de ' + (2 * W0) + ' Hz.' : 'Le spectre montre les fréquences présentes dans le signal reçu (échelle en hertz).'}</div>
+    </div>);
 
   const mesures = sceneEff === 'fronts' ? (
     <div style={{ ...styleBoite, ...cadre('mesures') }}>
@@ -591,7 +607,7 @@ export function SimulationDoppler({ naviguer }) {
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'emetteur' ? suiviEm : suiviEc}/></div>}
           <div className={`dop-pri${mode !== 'explore' ? ' pile' : ''}`}>
             {sceneBox}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{(!enGuide || (sceneEff === 'fronts' ? deja('mobile') : deja('deplace'))) && reglages}{(!enGuide || deja('frequence')) && mesures}{incertBox}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{(!enGuide || (sceneEff === 'fronts' ? deja('mobile') : deja('deplace'))) && !(mode === 'explore' && sceneEff === 'mesure') && reglages}{(!enGuide || deja('frequence')) && mesures}{incertBox}</div>
           </div>
         </div>
       </div>
