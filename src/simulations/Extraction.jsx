@@ -1,5 +1,5 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useState } from "react";
+import { useState, useEffect, useId } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, IndiceDefi, indicesProfond } from "../commun";
 import { NB } from "./Distillation";
@@ -10,32 +10,102 @@ import * as E from "./extractionModele";
 const SIM_ID = 112;
 declarerDefis(SIM_ID, [['densite', 'Calculer la densité d’un solvant']]);
 
-// ---------- ampoule à décanter ----------
-function Ampoule({ solvant, soluteCle, agite, titre }) {
-  const s = E.SOLVANTS[solvant], bi = E.biphasique(solvant);
-  const so = soluteCle ? E.SOLUTES[soluteCle] : null;
-  const haut = bi ? E.phaseSuperieure(solvant) : null;
-  const lieu = so ? E.oùSoluté(soluteCle, solvant) : null;
-  const couleur = nom => {
-    if (!so) return nom === 'eau' ? E.SOLVANTS.eau.c : s.c;
-    if (!agite) return nom === 'eau' ? so.cEau : E.SOLVANTS[nom].c;
-    if (!bi) return so.cEau;
-    return (nom === 'eau' ? (lieu === 'eau' ? so.cEau : E.SOLVANTS.eau.c) : (lieu === 'organique' ? so.cOrg : E.SOLVANTS[nom].c));
+// ---------- ampoule à décanter (poire, bouchon, robinet, bécher) ----------
+const CONTOUR = "M142,40 L142,62 C142,62 70,95 70,160 C70,215 120,238 143,246 L143,284 L157,284 L157,246 C180,238 230,215 230,160 C230,95 158,62 158,62 L158,40 Z";
+const C_EAU = '#bfdbfe', C_ORG = '#fefce8', C_I2_EAU = '#c2823a', C_I2_ORG = '#8b5cf6';
+const Y_HAUT = 104, Y_INT = 176, Y_BAS = 284;
+function Ampoule({ solvant, soluteCle, etat = 'avant', drain = 0, bouchon = true, ouvert = false, titre }) {
+  const id = useId().replace(/:/g, ''), bi = E.biphasique(solvant), so = soluteCle ? E.SOLUTES[soluteCle] : null;
+  const haut = bi ? E.phaseSuperieure(solvant) : null, bas = bi ? E.phaseInferieure(solvant) : null;
+  const lieu = so ? E.oùSoluté(soluteCle, solvant) : null, apres = etat !== 'avant', diiode = so && soluteCle === 'diiode';
+  const col = nom => {
+    const base = nom === 'eau' ? C_EAU : C_ORG;
+    if (!diiode) return base;
+    if (!apres) return nom === 'eau' ? C_I2_EAU : base;
+    if (!bi) return C_I2_EAU;
+    return nom === 'eau' ? (lieu === 'eau' ? C_I2_EAU : C_EAU) : (lieu === 'organique' ? C_I2_ORG : base);
   };
-  const nomHaut = bi ? haut : null, nomBas = bi ? E.phaseInferieure(solvant) : null;
+  const top = Y_HAUT + drain * (Y_BAS - Y_INT), inter = Math.min(Y_BAS, Y_INT + drain * (Y_BAS - Y_INT));
+  const flux = ouvert && drain < 1.15 && bouchon === false;
+  const niveau = 350 - 38 * Math.min(drain, 1) - 10 * Math.max(0, drain - 1) / 0.15;
+  const gouttes = [[110, 130, 5], [190, 125, 4], [130, 190, 6], [175, 200, 5], [150, 150, 4], [100, 170, 4], [200, 170, 6], [160, 120, 3]];
+  const labY = (a, b) => Math.max(a + 8, Math.min(b - 6, (a + b) / 2 + 4));
   return (
-    <Schema aria={`${titre || 'Ampoule à décanter'} : ${bi ? `deux phases non miscibles, ${E.SOLVANTS[nomHaut].nom} au-dessus et ${E.SOLVANTS[nomBas].nom} en dessous` : 'une seule phase, les liquides sont miscibles'}`} h={230}>
-      <rect x="140" y="10" width="20" height="26" fill="#cbd5e1" stroke={GRIS}/>
-      <path d="M100,36 H200 L215,150 L165,196 H135 L85,150 Z" fill="#fff" stroke={GRIS} strokeWidth="2.5"/>
-      {bi ? <>
-        <clipPath id="amp"><path d="M100,36 H200 L215,150 L165,196 H135 L85,150 Z"/></clipPath>
-        <g clipPath="url(#amp)"><rect x="80" y="36" width="140" height="80" fill={couleur(nomHaut)}/><rect x="80" y="116" width="140" height="90" fill={couleur(nomBas)}/></g>
-        <line x1="86" y1="116" x2="214" y2="116" stroke={GRIS} strokeDasharray="4 3"/>
-        <Tx x={228} y={80} s={13} w={700}>{E.SOLVANTS[nomHaut].nom}</Tx><Tx x={228} y={96} s={11.5} c={GRIS}>d = {nbf(E.SOLVANTS[nomHaut].d, 2)}</Tx>
-        <Tx x={228} y={150} s={13} w={700}>{E.SOLVANTS[nomBas].nom}</Tx><Tx x={228} y={166} s={11.5} c={GRIS}>d = {nbf(E.SOLVANTS[nomBas].d, 2)}</Tx></>
-        : <><clipPath id="amp"><path d="M100,36 H200 L215,150 L165,196 H135 L85,150 Z"/></clipPath><g clipPath="url(#amp)"><rect x="80" y="60" width="140" height="150" fill={couleur('eau')}/></g><Tx x={228} y={110} s={13} w={700}>une seule phase</Tx><Tx x={228} y={126} s={11.5} c={GRIS}>eau et {E.SOLVANTS[solvant].nom} miscibles</Tx></>}
-      <rect x="145" y="196" width="10" height="14" fill="#cbd5e1" stroke={GRIS}/>
-    </Schema>);
+    <svg viewBox="0 0 400 365" style={{ width: '100%', maxWidth: 440, display: 'block', background: '#fff', borderRadius: 8 }} role="img"
+      aria-label={`${titre || 'Ampoule à décanter'} sur son support : ${bi ? `deux phases non miscibles, ${E.SOLVANTS[haut].nom} au-dessus et ${E.SOLVANTS[bas].nom} en dessous` : 'une seule phase, les liquides sont miscibles'}${apres && so ? `, ${so.nom} ${lieu === 'organique' ? 'dans la phase organique' : lieu === 'eau' ? 'dans l’eau' : 'dans le mélange'}` : ''}${bouchon ? '' : ', bouchon retiré'}${ouvert ? ', robinet ouvert' : ''}`}>
+      <style>{`@keyframes ampSecoue{from{transform:rotate(-11deg) translateX(-5px)}to{transform:rotate(11deg) translateX(5px)}}.amp-secoue{transform-origin:150px 170px;animation:ampSecoue .28s ease-in-out infinite alternate}@media (prefers-reduced-motion: reduce){.amp-secoue{animation:none}}`}</style>
+      <clipPath id={`c${id}`}><path d={CONTOUR}/></clipPath>
+      {/* support */}
+      <line x1="34" y1="20" x2="34" y2="358" stroke="#94a3b8" strokeWidth="5"/><line x1="8" y1="358" x2="96" y2="358" stroke="#94a3b8" strokeWidth="5"/>
+      <line x1="34" y1="68" x2="132" y2="68" stroke="#94a3b8" strokeWidth="4"/><ellipse cx="150" cy="68" rx="20" ry="5.5" fill="none" stroke="#94a3b8" strokeWidth="4"/>
+      <g className={etat === 'agite' ? 'amp-secoue' : undefined}>
+        <g clipPath={`url(#c${id})`}>
+          {!bi ? <rect x="60" y={top} width="180" height={Y_BAS - top} fill={col('eau')}/>
+            : etat === 'agite' ? <>
+              <rect x="60" y={Y_HAUT} width="180" height={Y_BAS - Y_HAUT} fill={col(haut)}/><rect x="60" y={Y_HAUT} width="180" height={Y_BAS - Y_HAUT} fill={col(bas)} opacity="0.55"/>
+              {gouttes.map(([x, y, r], i) => <circle key={i} cx={x} cy={y} r={r} fill={i % 2 ? col(bas) : col(haut)} stroke="#fff" strokeOpacity="0.6"/>)}
+              <rect x="60" y={Y_HAUT} width="180" height={Y_BAS - Y_HAUT} fill="#fff" opacity="0.22"/></>
+            : <><rect x="60" y={top} width="180" height={Math.max(0, inter - top)} fill={col(haut)}/><rect x="60" y={inter} width="180" height={Math.max(0, Y_BAS - inter)} fill={col(bas)}/>
+              <line x1="60" y1={inter} x2="240" y2={inter} stroke="#64748b" strokeDasharray="4 3" opacity={inter < Y_BAS ? 1 : 0}/></>}
+        </g>
+        <path d={CONTOUR} fill="none" stroke="#475569" strokeWidth="3"/>
+        {bouchon ? <path d="M138,40 L162,40 L158,18 L142,18 Z" fill="#94a3b8" stroke="#475569" strokeWidth="2"/>
+          : <path d="M250,40 L274,40 L270,18 L254,18 Z" fill="#94a3b8" stroke="#475569" strokeWidth="2" transform="rotate(28 262 30)"/>}
+        <rect x="140" y="262" width="20" height="14" rx="2" fill="#cbd5e1" stroke="#475569" strokeWidth="2"/>
+        {ouvert ? <line x1="160" y1="269" x2="176" y2="288" stroke="#475569" strokeWidth="6" strokeLinecap="round"/> : <line x1="160" y1="269" x2="188" y2="269" stroke="#475569" strokeWidth="6" strokeLinecap="round"/>}
+      </g>
+      {flux && <line x1="150" y1="285" x2="150" y2={niveau} stroke={drain <= 1 ? (bas ? col(bas) : C_EAU) : col(haut)} strokeWidth="3.5" strokeDasharray="5 3"/>}
+      {/* bécher */}
+      <path d="M104,300 L108,352 L192,352 L196,300" fill="none" stroke="#475569" strokeWidth="2.5"/>
+      {drain > 0 && <path d={`M${106 + (niveau - 300) * -0.0},${niveau} L${108 - 0},352 L192,352 L${194},${niveau} Z`} fill={bi ? col(bas) : C_EAU} opacity="0.9"/>}
+      {drain > 1 && <rect x="109" y={niveau} width="82" height={Math.max(0, 352 - niveau) * 0.25} fill={col(haut)} opacity="0.7"/>}
+      <text x="150" y="364" textAnchor="middle" fontSize="11" fill="#64748b">bécher</text>
+      {/* étiquettes */}
+      {bi && <g fontSize="13"><text x="244" y={labY(top, inter)} fontWeight="700" fill="#0f172a">{E.SOLVANTS[haut].nom}</text><text x="244" y={labY(top, inter) + 14} fontSize="11.5" fill="#64748b">d = {nbf(E.SOLVANTS[haut].d, 2)}</text>
+        {inter < Y_BAS - 14 && <><text x="244" y={labY(inter, Y_BAS)} fontWeight="700" fill="#0f172a">{E.SOLVANTS[bas].nom}</text><text x="244" y={labY(inter, Y_BAS) + 14} fontSize="11.5" fill="#64748b">d = {nbf(E.SOLVANTS[bas].d, 2)}</text></>}</g>}
+      {!bi && <g fontSize="13"><text x="244" y="170" fontWeight="700" fill="#0f172a">une seule phase</text><text x="244" y="186" fontSize="11.5" fill="#64748b">eau + {E.SOLVANTS[solvant].nom}</text><text x="244" y="200" fontSize="11.5" fill="#64748b">(miscibles)</text></g>}
+      <text x="206" y="28" fontSize="11.5" fill="#64748b">bouchon</text><text x="136" y="296" textAnchor="end" fontSize="11.5" fill="#64748b">robinet</text>
+      {soluteCle === 'chlorureSodium' && <text x="104" y="230" fontSize="11" fill="#475569">Na⁺ Cl⁻ (incolores)</text>}
+    </svg>);
+}
+// ---------- manipulation : agiter, dégazer, décanter, retirer le bouchon, soutirer ----------
+function Manip({ sol, sute }) {
+  const init = { bouchon: true, etat: 'avant', pression: false, ouvert: false, drain: 0, msg: 'L’ampoule contient l’eau et le solvant. Commencez : bouchon en place, on agite pour mettre les liquides en contact.', ok: null };
+  const [s, setS] = useState(init);
+  useEffect(() => { setS(init); }, [sol, sute]);   // eslint-disable-line
+  useEffect(() => { if (!s.ouvert) return; const t = setInterval(() => setS(x => ({ ...x, drain: Math.min(1.15, x.drain + 0.012) })), 40); return () => clearInterval(t); }, [s.ouvert]);
+  const say = (msg, plus = {}) => setS(x => ({ ...x, msg, ...plus }));
+  const bi = E.biphasique(sol), haut = bi && E.phaseSuperieure(sol), bas = bi && E.phaseInferieure(sol), lieu = sute ? E.oùSoluté(sute, sol) : null;
+  const agiter = () => !bi ? say('Avec l’éthanol, il n’y a qu’une seule phase : rien à séparer. Choisissez un solvant non miscible.')
+    : !s.bouchon ? say('Remettez le bouchon avant d’agiter, sinon le liquide gicle !')
+    : s.pression ? say('Surpression ! Dégazez d’abord (robinet vers le haut) avant d’agiter de nouveau.')
+    : say('Vous agitez : les deux liquides se divisent en fines gouttes et le soluté passe d’une phase à l’autre. La pression monte dans l’ampoule.', { etat: 'agite', pression: true, ouvert: false });
+  const degazer = () => !s.bouchon ? say('Le bouchon est déjà retiré : plus de pression.') : s.etat === 'avant' ? say('Rien à dégazer pour l’instant : agitez d’abord.') : s.pression ? say('Pshhh… vous évacuez les gaz en ouvrant le robinet, ampoule retournée. Fermez-le avant de ré-agiter.', { pression: false }) : say('Il n’y a plus de surpression.');
+  const decanter = () => s.etat === 'avant' ? say('Il n’y a rien à décanter : agitez d’abord.') : s.etat === 'decante' ? say('Les phases sont déjà séparées.')
+    : say(`On pose l’ampoule sur son support : les phases se séparent, ${lib(bas)} en bas (le plus dense), ${lib(haut)} en haut.${sute ? (lieu === 'organique' ? ` Le ${E.SOLUTES[sute].nom} est maintenant dans la phase organique.` : ` Le ${E.SOLUTES[sute].nom} reste dans l’eau.`) : ''}${s.pression ? ' Pensez à dégazer.' : ''}`, { etat: 'decante' });
+  const bouchon = () => s.bouchon ? say('Bouchon retiré : l’air peut maintenant entrer dans l’ampoule.', { bouchon: false, pression: false }) : say('Bouchon remis.', { bouchon: true });
+  const robinet = () => {
+    if (s.ouvert) {
+      const d = s.drain;
+      const m = d < 0.93 ? `Trop tôt : il reste de la phase inférieure (${lib(bas)}) dans l’ampoule.` : d <= 1.04 ? `✓ Bien fermé à temps : le bécher contient la phase inférieure (${lib(bas)}), sans mélange. ${bas === 'eau' ? `Le soluté est dans la phase supérieure : on la récupère par le haut de l’ampoule.` : `${sute ? 'La phase violette' : 'La phase organique'} est celle qui contient le soluté.`}` : 'Trop tard : un peu de phase supérieure est passée dans le bécher, qui contient maintenant un mélange.';
+      return say(m, { ouvert: false, ok: d >= 0.93 && d <= 1.04 });
+    }
+    if (!bi) return say('Une seule phase : rien à soutirer.');
+    if (s.etat !== 'decante') return say('Laissez d’abord décanter : les phases doivent être séparées avant d’ouvrir le robinet.');
+    if (s.bouchon) return say('Rien ne s’écoule : retirez d’abord le bouchon, l’air doit pouvoir entrer dans l’ampoule.');
+    if (s.drain >= 1) return say('La phase inférieure est déjà écoulée.');
+    say('Le liquide s’écoule dans le bécher. Fermez le robinet quand l’interface arrive juste au niveau du robinet.', { ouvert: true });
+  };
+  const btn = (txt, f, c = '#334155') => <button onClick={f} style={styleBouton(false, c)}>{txt}</button>;
+  return (
+    <div>
+      <Ampoule solvant={sol} soluteCle={sute} etat={s.etat} drain={s.drain} bouchon={s.bouchon} ouvert={s.ouvert} titre="Ampoule à décanter"/>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', margin: '8px 0' }}>
+        {btn('1. Agiter', agiter, ORANGE)}{btn('2. Dégazer', degazer)}{btn('3. Poser et décanter', decanter, BLEU)}{btn(s.bouchon ? '4. Retirer le bouchon' : 'Remettre le bouchon', bouchon)}{btn(s.ouvert ? '6. Fermer le robinet' : '5. Ouvrir le robinet', robinet, s.ouvert ? ROUGE : VERT)}
+        <button onClick={() => setS(init)} style={styleBouton(false)}><Pic n="refresh"/>Recommencer</button>
+      </div>
+      <div role="status" aria-live="polite" style={{ fontSize: 14, color: s.ok === true ? VERT : KIT.txt, fontWeight: s.ok === null ? 400 : 700, lineHeight: 1.5 }}>{s.msg}</div>
+    </div>);
 }
 const SchemaDensite = () => (
   <Schema aria="Deux liquides non miscibles : celui dont la densité est la plus petite flotte au-dessus" h={170}>
@@ -67,7 +137,7 @@ export function SimulationExtraction() {
   const [suiviP, noterP] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('ext-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [hypoOuv, setHypoOuv] = useState(false);
-  const [sol, setSol] = useState('cyclohexane'), [sute, setSute] = useState('diiode'), [agite, setAgite] = useState(false);
+  const [sol, setSol] = useState('cyclohexane'), [sute, setSute] = useState('diiode');
   const enGuide = mode === 'guide', enDefi = mode === 'defi', etape = guide.etape;
   const qcm = (q, options, expl, indice) => ({ type: 'qcm', q, options, bonne: 0, expl, indice });
   const ETAPES = [
@@ -86,7 +156,7 @@ export function SimulationExtraction() {
     { id: 'miscible', titre: 'Un solvant miscible', vue: { s: 'ethanol' },
       texte: <>On verse de l’éthanol (d = 0,79) sur de l’eau : on obtient <strong>une seule phase</strong>, car l’éthanol est miscible avec l’eau.</>,
       tache: qcm('L’éthanol peut-il servir à extraire une espèce dissoute dans l’eau avec une ampoule à décanter ?', ['non : il se mélange à l’eau, il n’y a pas deux phases à séparer', 'oui : il est moins dense que l’eau', 'oui : tous les solvants organiques conviennent'], 'Il faut deux phases : le solvant extracteur doit être non miscible avec l’eau.', 'Combien de phases voit-on dans l’ampoule ?') },
-    { id: 'solute', titre: 'Où va le diiode ?', vue: { s: 'cyclohexane', so: 'diiode', ag: true },
+    { id: 'solute', titre: 'Où va le diiode ?', vue: { s: 'cyclohexane', so: 'diiode' },
       texte: <>Une solution aqueuse jaune-brun de diiode est agitée avec du cyclohexane puis laissée au repos. Le diiode est beaucoup plus soluble dans le cyclohexane que dans l’eau : la couleur violette apparaît dans l’une des phases.</>,
       tache: qcm('Où est la phase colorée en violet ?', ['en haut : c’est la phase de cyclohexane qui contient le diiode', 'en bas : c’est la phase aqueuse', 'dans les deux phases de la même façon'], 'Le diiode a été extrait de l’eau par le cyclohexane (plus soluble). Le cyclohexane (d = 0,78) est au-dessus : la phase violette est en haut, l’eau est presque décolorée.', 'Dans quelle phase le diiode est-il le plus soluble ? Laquelle est au-dessus ?') },
     { id: 'criteres', titre: 'Choisir le solvant extracteur', vue: { s: 'cyclohexane', so: 'diiode', ag: true }, retenirTitre: 'À RETENIR : LE SOLVANT EXTRACTEUR',
@@ -122,9 +192,9 @@ export function SimulationExtraction() {
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}><button id="ext-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button><button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button></div>
     {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>
       {defi.ok ? `✓ Correct : d ≈ ${nbf(defi.vrai, 2)}. Le ${lib(defi.cle)} est ${E.SOLVANTS[defi.cle].d < 1 ? 'au-dessus' : 'en dessous'} de l’eau.` : '✗ Vérifiez : ρ = m ÷ V, puis divisez par 1,00 g/mL.'}</div>}
-    <div style={{ marginTop: 8 }}><Ampoule solvant={defi.cle} titre="Ampoule du défi" agite={false}/></div>
+    <div style={{ marginTop: 8 }}><Ampoule solvant={defi.cle} titre="Ampoule du défi"/></div>
   </div>);
-  const [vT, setVT] = useState(30), [nExt, setNExt] = useState(1), [sExt, setSExt] = useState('dichloromethane'), [sousExp, setSousExp] = useState('combien');
+  const [vT, setVT] = useState(30), [nExt, setNExt] = useState(1), [sExt, setSExt] = useState('dichloromethane'), [sousExp, setSousExp] = useState('ampoule');
   const Kx = E.K_DIIODE[sExt], VEAU = 50, pct = n => 100 * E.fractionExtraite(Kx, VEAU, vT, n);
   const exploreCombien = (<div style={styleBoite}>
     <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 6, lineHeight: 1.5 }}>On extrait le diiode de {VEAU}{NB}mL d’eau. Vous disposez d’un <strong>volume total</strong> d’extractant : faut-il le verser <strong>en une fois</strong> ou en <strong>plusieurs fois</strong> ?</div>
@@ -136,18 +206,13 @@ export function SimulationExtraction() {
     <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4 }}>Constat : pour le même volume total, <strong>fractionner</strong> extrait davantage. Mais chaque extraction demande du temps : on s’arrête quand le gain devient faible.</div>
   </div>);
   const exploreAmpoule = (<div style={styleBoite}>
-    <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 6 }}>Solvant ajouté à l’eau :</div>
-    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }} role="group" aria-label="Solvant">{['cyclohexane', 'dichloromethane', 'ether', 'ethanol'].map(k => <button key={k} onClick={() => setSol(k)} aria-pressed={sol === k} style={stylePetitBouton(sol === k, BLEU)}>{lib(k)}</button>)}</div>
-    <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 6 }}>Espèce dissoute dans l’eau :</div>
-    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }} role="group" aria-label="Espèce">{[['diiode', 'diiode'], ['chlorureSodium', 'chlorure de sodium'], ['', 'aucune']].map(([k, n]) => <button key={n} onClick={() => setSute(k)} aria-pressed={sute === k} style={stylePetitBouton(sute === k, ROUGE)}>{n}</button>)}</div>
-    <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 14, color: KIT.txt, marginBottom: 6 }}><input type="checkbox" checked={agite} onChange={e => setAgite(e.target.checked)} style={{ width: 20, height: 20 }}/>Après agitation et décantation</label>
-    <Ampoule solvant={sol} soluteCle={sute} agite={agite} titre="Ampoule à décanter"/>
-    <div role="status" aria-live="polite" style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5 }}>
-      {E.biphasique(sol) ? <>Deux phases : <strong>{lib(E.phaseSuperieure(sol))}</strong> au-dessus, <strong>{lib(E.phaseInferieure(sol))}</strong> en dessous. </> : <>Une seule phase : l’éthanol est miscible avec l’eau, extraction impossible. </>}
-      {sute && agite && E.biphasique(sol) && <>{E.oùSoluté(sute, sol) === 'organique' ? `Le ${E.SOLUTES[sute].nom} passe dans la phase organique (${lib(sol)}).` : `Le ${E.SOLUTES[sute].nom} reste dans l’eau : il y est plus soluble que dans ${lib(sol)}.`}</>}
-    </div></div>);
+    <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 6, lineHeight: 1.5 }}>Faites l’extraction vous-même, geste par geste. Les erreurs de manipulation ont des conséquences visibles.</div>
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }} role="group" aria-label="Solvant">{['cyclohexane', 'dichloromethane', 'ether', 'ethanol'].map(k => <button key={k} onClick={() => setSol(k)} aria-pressed={sol === k} style={stylePetitBouton(sol === k, BLEU)}>{lib(k)}</button>)}</div>
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }} role="group" aria-label="Espèce dissoute dans l’eau">{[['diiode', 'diiode'], ['chlorureSodium', 'chlorure de sodium'], ['', 'aucune']].map(([k, n]) => <button key={n} onClick={() => setSute(k)} aria-pressed={sute === k} style={stylePetitBouton(sute === k, ROUGE)}>{n} dans l’eau</button>)}</div>
+    <Manip sol={sol} sute={sute}/>
+  </div>);
   const explore = (<div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }} role="group" aria-label="Que voulez-vous explorer ?">{[['combien', 'Une fois ou plusieurs ?'], ['ampoule', 'Ampoule : phases et solutés']].map(([k, n]) => <button key={k} onClick={() => setSousExp(k)} aria-pressed={sousExp === k} style={stylePetitBouton(sousExp === k, '#0f766e')}>{n}</button>)}</div>
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }} role="group" aria-label="Que voulez-vous explorer ?">{[['ampoule', 'Faire l’extraction'], ['combien', 'Une fois ou plusieurs ?']].map(([k, n]) => <button key={k} onClick={() => setSousExp(k)} aria-pressed={sousExp === k} style={stylePetitBouton(sousExp === k, '#0f766e')}>{n}</button>)}</div>
     {sousExp === 'combien' ? exploreCombien : exploreAmpoule}</div>);
   const hypotheses = indicesProfond(<ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
     <li>Valeurs de densité approchées à 20 °C (d relatif à l’eau, ρ<sub>eau</sub> = 1,00 g·mL⁻¹). Les liquides sont supposés purs.</li>
@@ -165,7 +230,7 @@ export function SimulationExtraction() {
       <div className={`ex-l1${mode !== 'explore' ? ' cote' : ''}`}>
         {enGuide ? <div className="ex-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="ex-carte">{panneauHypo}</div> : null}
         <div>
-          {enGuide && <div style={styleBoite}><Ampoule solvant={v.s || 'cyclohexane'} soluteCle={v.so} agite={!!v.ag} titre="Ampoule à décanter"/></div>}
+          {enGuide && <div style={styleBoite}><Ampoule solvant={v.s || 'cyclohexane'} soluteCle={v.so} etat={v.ag ? 'decante' : 'avant'} titre="Ampoule à décanter"/></div>}
           {enDefi && defi && <div style={styleBoite}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.densite`} etat={suiviP}/></div>}
           {mode === 'explore' && explore}
         </div></div>
