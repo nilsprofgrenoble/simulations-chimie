@@ -57,15 +57,16 @@ const expert = {
   ph: e => { let n = e; for (let i = 0; i < 12 && (J.phDe(n, n.f.trolAdd || 0) < 5.6); i++) n = J.ajouterBase(n, 0.3); const r = J.validerPh(n); assert(r.ok, 'pH validé'); return r.etat; },
   calc: (e, k) => J.nf(k.vrai(e), k.cs ?? 2),   // réponse arrondie comme affichée : doit être acceptée
   choix: (e, ch) => {
-    if (e.scene === 'hub') { const ordre = ['es_prep', 'eth1', 'hplc_m', 'cpg_ei', 'rheoC', 'es_calc1', 'formule', 'eq_base', 'fab_choix', 'fab_disp', 'rheoF', 'uv_ajouts', 'uv_ext', 'hplc_ei', 'cpg_inj', 'eq_ines', 'verdict'];
+    if (e.scene === 'hub') { const ordre = ['es_balance', 'es_prep', 'eth1', 'hplc_m', 'cpg_ei', 'rheoC', 'es_calc1', 'formule', 'eq_base', 'fab_choix', 'fab_disp', 'rheoF', 'uv_ajouts', 'uv_ext', 'hplc_ei', 'cpg_inj', 'eq_ines', 'verdict'];
       return [...ch].sort((a, b) => ordre.indexOf(a.vers) - ordre.indexOf(b.vers)).find(c => ordre.includes(c.vers)) || ch[0]; }
+    if (e.scene === 'es_balance') return ch[1];
     if (e.scene === 'es_prep') return ch[0];
     if (e.scene === 'es_calc2') return J.ecartEs(e) <= 1.4 ? ch[0] : ch[1];
     if (e.scene === 'hplc_inj') return ch[0];
     if (e.scene === 'hplc_panne') return ch[0];
     if (e.scene === 'cpg_ei') return ch[1];
     if (e.scene === 'cpg_comp') return ch[0];
-    if (e.scene.startsWith('eq_')) return ch.find(c => c.tag === 'ok');
+    if (e.scene.startsWith('eq_') || e.scene === 'point_dubreuil' || e.scene === 'secu') return ch.find(c => c.tag === 'ok');
     if (e.scene === 'cause') return ch.find(c => c.f.causeJuste);
     if (e.scene === 'avis') return ch[0];
     if (e.scene === 'fab_choix' || e.scene === 'fab_disp') return ch[0];
@@ -132,7 +133,7 @@ assert(joue(expMauvaise, 99).e.scene === 'fin_mauvaise_cause', 'mauvaise cause �
 const expFroid = { ...expert, choix: (e, ch) => e.scene === 'fab_choix' ? ch[2] : expert.choix(e, ch) };
 { const r = joue(expFroid, 5).e; assert(!J.defauts(r).includes('eth'), 'à froid : éthanol conforme'); }
 { const r = joue(expert, 5).e; assert(J.bilan(r)[5].niveau === 'ok', 'C.7.3 ok pour un échange respectueux'); }
-const expSec = { ...expert, choix: (e, ch) => e.scene.startsWith('eq_') ? ch.find(c => c.tag === 'ko') : expert.choix(e, ch) };
+const expSec = { ...expert, choix: (e, ch) => e.scene.startsWith('eq_') || e.scene === 'point_dubreuil' ? ch.find(c => c.tag === 'ko') : expert.choix(e, ch) };
 { const r = joue(expSec, 5).e; assert(J.bilan(r)[5].niveau === 'ko', 'C.7.3 ko pour des échanges secs'); }
 const expPassif = { ...expert, choix: (e, ch) => e.scene === 'eq_base' ? ch.find(c => c.tag === 'moyen') : expert.choix(e, ch) };
 { const r = joue(expPassif, 5).e; assert(r.f.mode === 'base' || r.f.errBase, 'conseil faux suivi : grumeaux'); }
@@ -140,13 +141,30 @@ console.log('conséquences et C.7.3 : OK');
 
 // 5. Remédiation : le bécher ouvert se rattrape en compensant l'éthanol, un pH trop bas en reprenant la trolamine
 const expCompense = { ...expert, choix: (e, ch) => e.scene === 'fab_choix' ? ch[1] : expert.choix(e, ch) };
-for (let g = 1; g <= 60; g++) { const { e } = joue(expCompense, g * 3571); assert(e.f.compense && e.scene === 'fin_conforme', `compensation → conforme (${e.scene})`); assert(e.t < J.T_FIN, 'compensation dans les temps'); }
+let nOk = 0, nFt = 0; for (let g = 1; g <= 60; g++) { const { e } = joue(expCompense, g * 3571); assert(e.f.compense && (e.scene === 'fin_conforme' || e.scene === 'fin_temps'), `compensation (${e.scene})`); if (e.scene === 'fin_conforme') nOk++; else nFt++; }
+console.log(`compensation : ${nOk} conformes, ${nFt} hors délai sur 60`);
+assert(nOk / 60 >= 0.75, 'la remédiation reste faisable dans les temps pour la plupart des parties');
 const expPhBas = { ...expert, ph: e => { let n = J.ajouterBase(e, 0.3); const r = J.validerPh(n); assert(r.ok); return r.etat; } };
-let nPh = 0; for (let g = 1; g <= 60; g++) { const r = joue({ ...expPhBas, ph: e => e.scene === 'ph2' ? expert.ph(e) : expPhBas.ph(e) }, g * 977).e; if (r.f.reprisePh) { nPh++; assert(r.scene === 'fin_conforme', `pH repris → conforme (${r.scene})`); } }
-assert(nPh > 50, `pH bas repris avec Lucas (${nPh}/60)`);
+let nPh = 0, nPhOk = 0; for (let g = 1; g <= 60; g++) { const r = joue({ ...expPhBas, ph: e => e.scene === 'ph2' ? expert.ph(e) : expPhBas.ph(e) }, g * 977).e; if (r.f.reprisePh) { nPh++; assert(r.scene === 'fin_conforme' || r.scene === 'fin_temps', `pH repris (${r.scene})`); if (r.scene === 'fin_conforme') nPhOk++; } }
+assert(nPh > 50 && nPhOk / nPh >= 0.75, `pH bas repris avec Lucas (${nPh}/60, ${nPhOk} dans les temps)`);
 // la formule n'est jamais jugée : une formule pauvre en macrogol est acceptée telle quelle
 { const e0 = J.etatInitial(3); const r = J.validerFormule(e0, { caf: 10, carb: 1.5, coc: 2, eth96: 80, trol: 1.8, eau: 104.7 }); assert(r.ok && r.lignes.length === 0, 'formule non jugée'); }
 { const e0 = J.etatInitial(3); const r1 = J.validerFormule(e0, { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 190 }); assert(!r1.ok && r1.lignes.length === 1, 'somme signalée'); assert(J.validerFormule(r1.etat, { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 190 }).ok, 'puis acceptée'); }
 // observation vidéo : notée dans le cahier, sans verdict
 { const e0 = J.etatInitial(3); const e1 = J.noterObs({ ...e0, scene: 'obs_video' }, ['blanc', 'cristaux']); assert(e1.fait.obs && e1.carnet.some(l => l.includes('cristaux')), 'observation notée'); }
 console.log('remédiations : OK');
+
+// 6. Balance : la balance au 0,01 g rend les essais souvent incompatibles ; la balance de précision, non
+{ let std = 0, prec = 0; for (let g = 1; g <= 400; g++) { const f = { graine: g * 31 }; if (J.ecartEs({ f: { ...f, bal: 'std' } }) > 1.4) std++; if (J.ecartEs({ f: { ...f, bal: 'prec' } }) > 1.4) prec++; }
+  console.log(`balance 0,01 g : écart > 1,4 dans ${(std / 4).toFixed(0)} % des cas ; balance de précision : ${(prec / 4).toFixed(0)} %`);
+  assert(std / 400 > 0.2 && prec / 400 < 0.1, 'effet de la balance'); }
+// l'élève qui garde la balance ordinaire puis refait avec la balance de précision : il finit dans les temps
+const expBalStd = { ...expert, choix: (e, ch) => e.scene === 'es_balance' ? ch[0] : e.scene === 'es_calc2' ? (ch.find(c => c.f && c.f.refaitBal) || expert.choix(e, ch)) : expert.choix(e, ch) };
+let refait = 0; for (let g = 1; g <= 100; g++) { const { e } = joue(expBalStd, g * 211); if (e.f.refaitBal) refait++; assert(e.scene === 'fin_conforme' || e.scene === 'fin_temps', `balance std (${e.scene})`); }
+assert(refait > 10, `essais refaits avec la balance de précision (${refait}/100)`);
+// sécurité : hors hotte, la décision reste juste mais le bilan C.3.2 baisse
+const expHors = { ...expert, choix: (e, ch) => e.scene === 'secu' ? ch.find(c => c.tag === 'ko') : expert.choix(e, ch) };
+{ const r = joue(expHors, 5).e; assert(r.f.secuErr && J.bilan(r)[2].niveau === 'moyen', 'hors hotte : C.3.2 moyen'); }
+// point de Mme Dubreuil : une fois, en début de séance 2 ; chronologie et conséquences disponibles
+{ const r = joue(expert, 9).e; assert(r.f.pointD && r.f.eq.dub === 'ok', 'point de Mme Dubreuil'); const ch = J.chronologie(r); assert(ch.actif.length > 5 && ch.etuve.length >= 1 && ch.gel.length >= 1, 'chronologie'); assert(J.consequences(r).length >= 3, 'conséquences'); assert(J.fiche(r).length >= 4, 'fiche'); }
+console.log('balance, sécurité, point d\'étape, film de la journée : OK');

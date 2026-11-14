@@ -79,12 +79,15 @@ export function defauts(e) {
 }
 
 // ───────────── Données calculées (toujours déterministes à partir de la graine) ─────────────
+export const BALANCES = { std: { nom: 'balance au 0,01 g', res: 0.01, dec: 2 }, prec: { nom: 'balance de précision au 0,1 mg', res: 0.0001, dec: 4 } };
 export function donneesEs(e) {
-  const g = e.f.graine;
+  const g = e.f.graine, B = BALANCES[e.f.bal || 'prec'], aff = x => arr(Math.round(x / B.res) * B.res, B.dec);
   return [0, 1, 2].map(i => {
-    const m0 = arr(34.4 + 1.8 * unif(g, `m0${i}`), 4), m1 = arr(1.0 + 0.06 * unif(g, `m1${i}`), 4);
-    const m2 = arr(m0 + (ES_COM + SR_ES * gauss(g, `es${i}`)) / 100 * m1, 4);
-    return { m0, m1, m2, ES: (m2 - m0) / m1 * 100 };
+    const m0v = 34.4 + 1.8 * unif(g, `m0${i}`), m1v = 1.0 + 0.06 * unif(g, `m1${i}`);
+    const m2v = m0v + (ES_COM + SR_ES * gauss(g, `es${i}`)) / 100 * m1v;
+    const bruit = B.res >= 0.01 ? 0.007 : 0;   // reproductibilité d'une balance au 0,01 g : de l'ordre de ±0,01 g sur chaque pesée (dérive, courants d'air, tare)
+    const m0 = aff(m0v + bruit * gauss(g, `bn0${i}`)), m1 = aff(m1v), m2 = aff(m2v + bruit * gauss(g, `bn2${i}`));   // ce que la balance affiche : c'est avec ces valeurs que l'élève calcule
+    return { m0, m1, m2, ES: (m2 - m0) / m1 * 100, bal: B.nom };
   });
 }
 export function esRetenu(e) {
@@ -134,17 +137,19 @@ export const HB = { tau0: 18, K: 9, n: 0.45 };
 export const courbe = q => GAMMAS.map(g => { const s = q * (HB.tau0 + HB.K * Math.pow(g, HB.n)); return { g, s, eta: s / g }; });
 
 // ───────────── Moteur ─────────────
-export const etatInitial = (graine = (Math.random() * 2147483647) | 0) => ({ scene: 'intro', t: 0, f: { graine, attente: 0, nbErr: 0 }, carnet: [], essais: 0, fait: {}, bg: {} });
+export const etatInitial = (graine = (Math.random() * 2147483647) | 0) => ({ scene: 'intro', t: 0, f: { graine, attente: 0, nbErr: 0 }, carnet: [], essais: 0, fait: {}, bg: {}, hist: [], spans: [] });
 const nota = (e, texte) => texte ? { ...e, carnet: [...e.carnet, `${horloge(e.t)} : ${texte}`] } : e;
 const marquer = (e, ...cles) => ({ ...e, fait: { ...e.fait, ...Object.fromEntries(cles.map(c => [c, true])) } });
-const attendre = (e, cle) => { const r = e.bg[cle]; if (r == null || r <= e.t) return e; return nota({ ...e, t: r, f: { ...e.f, attente: e.f.attente + (r - e.t) } }, `J'attends (${cle === 'es' ? "l'étuve" : 'le ballon'}) pendant ${duree(r - e.t)}.`); };
+const attendre = (e, cle) => { const r = e.bg[cle]; if (r == null || r <= e.t) return e; return nota({ ...e, hist: [...(e.hist || []), { t0: e.t, t1: r, k: 'att', l: cle === 'es' ? 'attente devant l\'étuve' : 'attente devant le ballon' }], t: r, f: { ...e.f, attente: e.f.attente + (r - e.t) } }, `J'attends (${cle === 'es' ? "l'étuve" : 'le ballon'}) pendant ${duree(r - e.t)}.`); };
 
+const eqNote = (n, k, id) => ({ ...n, f: { ...n.f, eq: { ...(n.f.eq || {}), [id]: k } } });
 export const SCENES = {};
 const add = (id, o) => { SCENES[id] = { id, ...o }; };
 export const estFin = id => !!SCENES[id]?.fin;
 
 export function aller(e, id) {
   let cible = id;
+  if (cible === 'hub' && e.t >= T_S2 && !e.f.pointD && e.t < T_FIN) cible = 'point_dubreuil';
   if (!SCENES[cible]) throw new Error(`Scène inconnue : ${cible}`);
   if (!SCENES[cible].fin && e.t >= T_FIN) cible = 'fin_temps';
   const n = { ...e, scene: cible, essais: 0 };
@@ -153,10 +158,14 @@ export function aller(e, id) {
 export const texteDe = (e, sc = SCENES[e.scene]) => typeof sc.texte === 'function' ? sc.texte(e) : sc.texte;
 export const choixDe = (e, sc = SCENES[e.scene]) => (typeof sc.choix === 'function' ? sc.choix(e) : sc.choix || []).filter(c => !c.si || c.si(e));
 export const visuelsDe = (e, sc = SCENES[e.scene]) => (sc.visuels ? sc.visuels(e) : []) || [];
+const DATEES = ['mode', 'bal', 'methCaf', 'disp', 'decl'];
 export function choisir(e, c) {
-  let n = { ...e, t: e.t + (c.duree || 0), f: { ...e.f, ...(c.f || {}), corrige: undefined } };
+  const tDec = { ...(e.f.tDec || {}) }; DATEES.forEach(k => { if (c.f && k in c.f) tDec[k] = e.t; });
+  let n = { ...e, t: e.t + (c.duree || 0), f: { ...e.f, ...(c.f || {}), tDec, corrige: undefined }, hist: [...(e.hist || []), ...(c.duree ? [{ t0: e.t, t1: e.t + c.duree, k: c.f && c.f.attendu ? 'att' : 'act', l: c.note || c.t || '' }] : [])] };
   n = nota(n, c.note);
+  const avant = n.bg, t0 = n.t;
   if (c.run) n = c.run(n);
+  Object.keys(n.bg || {}).forEach(k => { if (n.bg[k] != null && n.bg[k] !== (avant || {})[k]) n = { ...n, spans: [...(n.spans || []), { k, t0, t1: n.bg[k] }] }; });
   return aller(n, typeof c.vers === 'function' ? c.vers(n) : c.vers);
 }
 export function valider(e, saisie) {
@@ -181,7 +190,7 @@ export const statutBg = e => ({
 const taches = e => {
   const F = e.fait, L = [];
   if (!F.obs) L.push(['Regarder la vidéo du gel étalé', 'Une noisette de gel sur une plaque, en accéléré (5 min).', 'obs_video']);
-  if (!F.es) L.push(['Lancer l\'extrait sec du gel commercial', 'Peser, étaler, mettre à l\'étuve : 15 min de travail, puis l\'étuve tourne seule.', 'es_prep']);
+  if (!F.es) L.push(['Lancer l\'extrait sec du gel commercial', 'Peser, étaler, mettre à l\'étuve : 15 min de travail, puis l\'étuve tourne seule.', e.f.bal ? 'es_prep' : 'es_balance']);
   if (!F.eth) L.push(['Raisonner sur l\'éthanol de la notice', 'Quelle masse d\'éthanol faut-il mettre dans 200 g de gel ?', 'eth1']);
   if (F.es && !F.esRes) L.push(['Lire l\'extrait sec', 'Calculer ES, vérifier la répétabilité, en déduire le tensioactif.', 'es_calc1']);
   if (F.eth && F.esRes && !F.formule) L.push(['Écrire la formule du contretype', 'Fixer les masses des constituants pour environ 200 g.', 'formule']);
@@ -208,6 +217,14 @@ add('hub', {
 });
 
 // ───────────── Déformulation ─────────────
+add('es_balance', {
+  lieu: 'Salle des étuves', pnj: 'moi', titre: 'Quelle balance pour l\'extrait sec ?',
+  texte: () => `Tu vas peser une coupelle vide, environ 1 g de gel humide, puis la coupelle avec le résidu sec. Deux balances sont libres : une balance au 0,01 g sur la paillasse (plateau large, rapide), et une balance de précision au 0,1 mg dans la salle voisine (5 minutes aller-retour).`,
+  choix: [
+    { t: 'La balance au 0,01 g, sur la paillasse', vers: 'es_prep', duree: 0, f: { bal: 'std' }, note: 'Extrait sec : pesées sur la balance au 0,01 g.' },
+    { t: 'La balance de précision au 0,1 mg, dans la salle voisine', vers: 'es_prep', duree: 5, f: { bal: 'prec' }, note: 'Extrait sec : pesées sur la balance de précision.' },
+  ],
+});
 add('es_prep', {
   lieu: 'Salle des étuves', pnj: 'moi', titre: 'Extrait sec du gel commercial',
   texte: () => `Seuls l'eau et l'éthanol s'évaporent à 105 °C : ce qui reste dans la coupelle est le résidu de caféine, de Carbopol, de tensioactif et de trolamine. Le sujet donne un écart-type de répétabilité S_r = 0,5 % pour l'extrait sec.\nCombien de coupelles prépares-tu ?`,
@@ -235,6 +252,7 @@ add('es_calc1', {
   lieu: 'Salle des étuves', pnj: 'moi', titre: 'Premier extrait sec',
   entree: e => attendre(e, 'es'),
   texte: e => { const d = donneesEs(e)[0]; return `L'étuve est terminée. Coupelle 1 : coupelle vide m₀ = ${nf(d.m0, 4)} g ; gel humide déposé m₁ = ${nf(d.m1, 4)} g ; coupelle + résidu sec m₂ = ${nf(d.m2, 4)} g.`; },
+  visuels: e => { const d = donneesEs(e)[0]; return [{ type: 'balance', nom: d.bal, lectures: [['Coupelle vide m₀', d.m0], ['Gel humide m₁', d.m1], ['Coupelle + résidu m₂', d.m2]], dec: (BALANCES[e.f.bal || 'prec']).dec }]; },
   formule: 'es',
   calcul: { q: 'Calcule l\'extrait sec ES₁ de la coupelle 1 (en % massique).', unite: '%', vrai: e => donneesEs(e)[0].ES, tol: 0.02, cs: 2, indice: 'ES = (m₂ − m₀) / m₁ × 100.',
     retour: (v, e) => { const d = donneesEs(e)[0]; return Math.abs(v - d.m2 / d.m1 * 100) < 1 ? cer('tu as divisé m₂ au lieu de (m₂ − m₀).', 'tu trouves une valeur d\'environ 3 000 %.', 'retire la masse de la coupelle vide avant de diviser.') : null; },
@@ -246,6 +264,7 @@ add('es_calc2', {
   hyp: "Hypothèse : les deux essais suivent la même loi normale d'écart-type S_r = 0,5 % ; le critère 2,8·S_r correspond alors à un niveau de confiance de 95 % pour l'écart de deux essais.",
   choix: e => { const compat = ecartEs(e) <= 1.4; return [
     { t: 'Les deux résultats sont compatibles : je retiens la moyenne', vers: 'es_calc3', duree: 5, f: compat ? {} : { errEs: true }, note: compat ? `Extrait sec retenu : moyenne de deux essais.` : 'Extrait sec : moyenne retenue malgré un écart trop grand.' },
+    ...(e.f.bal === 'std' ? [{ t: 'La balance au 0,01 g est trop peu précise pour un résidu d\'environ 0,1 g : je refais les deux essais sur la balance de précision', vers: 'es_prep', duree: 5, f: { bal: 'prec', es2: undefined, es3: undefined, refaitBal: true }, run: n => ({ ...n, fait: { ...n.fait, es: false, esRes: false }, bg: { ...n.bg, es: undefined } }), note: 'Extrait sec à refaire : balance de précision nécessaire pour un résidu d\'environ 0,1 g.' }] : []),
     { t: 'L\'écart est trop grand : je fais un troisième essai et je retiens la médiane', vers: 'es_calc3', duree: 15, f: { es3: true, errEs: compat }, run: n => ({ ...n, bg: { ...n.bg, es: n.t + 60 } }), note: 'Troisième essai d\'extrait sec lancé (médiane).' },
   ]; },
 });
@@ -284,7 +303,6 @@ add('formule', {
 
 // ───────────── Échanges avec les collègues (C.7.3) ─────────────
 // Chaque échange note l'attitude de l'élève (ok : respectueux et argumenté ; moyen : passif ; ko : sec ou fermé) ; les conséquences sont réelles plus loin.
-const eqNote = (n, k, id) => ({ ...n, f: { ...n.f, eq: { ...(n.f.eq || {}), [id]: k } } });
 add('eq_base', {
   lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Le conseil de Lucas',
   texte: () => `Lucas, qui a l'habitude du labo : « Moi je mets tout d'un coup, base comprise, ça fait gagner 20 minutes. J'ai toujours fait comme ça. »`,
@@ -366,23 +384,43 @@ add('reprise_eth', {
     ko: { vers: 'hub', duree: 15, run: n => ({ ...n, fait: { ...n.fait, ethQC: false } }), f: { perteEth: 0.01, compense: true }, note: 'Éthanol compensé avec l\'aide d\'un collègue ; dosage CPG à refaire.' } },
 });
 
+add('point_dubreuil', {
+  lieu: 'Paillasse', pnj: 'dubreuil', titre: 'Mme Dubreuil passe à la paillasse',
+  entree: e => ({ ...e, f: { ...e.f, pointD: true } }),
+  texte: e => { const F = e.fait, fait = [F.esRes && 'l\'extrait sec', F.formule && 'la formule', F.ph && 'le gel formulé', F.rheoC && 'la rhéologie du témoin', (F.caf || F.hplcPrep) && 'la caféine (en cours)', F.ethQC && 'l\'éthanol'].filter(Boolean); return `Mme Dubreuil : « Il est ${horloge(e.t).replace('Séance 2 · ', '')}, la deuxième séance commence. Où en es-tu ? »\nTu as fait : ${fait.length ? fait.join(', ') : 'peu de choses pour l\'instant'}.`; },
+  choix: [
+    { t: '« J\'ai fait ceci, il me reste cela, et je pense finir à telle heure. J\'ai besoin d\'un avis sur un point. »', tag: 'ok', vers: 'hub', duree: 3, run: n => eqNote(n, 'ok', 'dub'), note: 'Point d\'étape précis avec Mme Dubreuil.' },
+    { t: '« Ça va, tout est sous contrôle. »', tag: 'moyen', vers: 'hub', duree: 1, run: n => eqNote(n, 'moyen', 'dub'), note: 'Point d\'étape vague avec Mme Dubreuil.' },
+    { t: '« Laissez-moi travailler, je n\'ai pas le temps. »', tag: 'ko', vers: 'hub', duree: 2, run: n => eqNote(n, 'ko', 'dub'), note: 'Mme Dubreuil écartée sèchement.' },
+  ],
+});
+
 // ───────────── Fabrication ─────────────
 add('fab_choix', {
   lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Comment fabriques-tu le gel ?',
   texte: () => `« Le Carbopol 980 est long à se disperser : à froid, compte 1 h à 1 h 30 ; un chauffage modéré accélère la dispersion. Dès qu'il est dispersé, c'est la base (la trolamine) qui fait épaissir. »\nComment procèdes-tu ?`,
   hyp: 'Hypothèse : le Carbopol gonfle et épaissit quand il est neutralisé ; mal dispersé, il forme des grumeaux qui ne se redissolvent pas bien.',
   choix: [
-    { t: 'Ballon à reflux sous agitation, chauffage modéré, base ajoutée à la fin', d: '15 min de travail, puis environ 1 h de dispersion.', duree: 15, vers: 'hub', f: { mode: 'reflux', perteEth: 0.01 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 60 } }), note: 'Fabrication : ballon à reflux, chauffage modéré, agitation, base en dernier.' },
-    { t: 'Bécher sur plaque chauffante sous agitation, base ajoutée à la fin', d: '10 min de travail, puis environ 45 min de dispersion.', duree: 10, vers: 'hub', f: { mode: 'becher', perteEth: 0.18 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 45 } }), note: 'Fabrication : bécher sur plaque chauffante, agitation, base en dernier.' },
-    { t: 'Bécher à température ambiante sous agitation, base ajoutée à la fin', d: '10 min de travail, puis environ 1 h 30 de dispersion.', duree: 10, vers: 'hub', f: { mode: 'froid', perteEth: 0.04 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 90 } }), note: 'Fabrication : bécher à froid, agitation, base en dernier.' },
+    { t: 'Ballon à reflux sous agitation, chauffage modéré, base ajoutée à la fin', d: '15 min de travail, puis environ 1 h de dispersion.', duree: 15, vers: 'secu', f: { mode: 'reflux', perteEth: 0.01 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 60 } }), note: 'Fabrication : ballon à reflux, chauffage modéré, agitation, base en dernier.' },
+    { t: 'Bécher sur plaque chauffante sous agitation, base ajoutée à la fin', d: '10 min de travail, puis environ 45 min de dispersion.', duree: 10, vers: 'secu', f: { mode: 'becher', perteEth: 0.18 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 45 } }), note: 'Fabrication : bécher sur plaque chauffante, agitation, base en dernier.' },
+    { t: 'Bécher à température ambiante sous agitation, base ajoutée à la fin', d: '10 min de travail, puis environ 1 h 30 de dispersion.', duree: 10, vers: 'secu', f: { mode: 'froid', perteEth: 0.04 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 90 } }), note: 'Fabrication : bécher à froid, agitation, base en dernier.' },
     { t: 'Tout mélanger d\'un coup, base comprise, pour gagner du temps', d: '10 min de travail.', duree: 10, vers: 'fab_grumeaux', f: { mode: 'base', perteEth: 0.01 }, note: 'Fabrication : tous les constituants, base comprise, dès le départ.' },
   ],
+});
+const tourne = (e, cle, k) => { const L = [...k]; const r = Math.floor(unif(e.f.graine, cle) * L.length); return [...L.slice(r), ...L.slice(0, r)]; };
+add('secu', {
+  lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Où installes-tu le montage ?',
+  texte: () => `Lucas : « Ton mélange contient 80 g d'éthanol à 96 % et tu vas chauffer. L'éthanol est inflammable : où installes-tu le montage ? »`,
+  choix: e => tourne(e, 'rotsecu', [
+    { t: 'Sous la hotte, lunettes et blouse, aucune flamme ni point chaud à proximité', tag: 'ok', vers: 'hub', duree: 3, note: 'Montage installé sous la hotte, avec lunettes et blouse.' },
+    { t: 'Sur la paillasse, avec la plaque ; je reste à côté pour surveiller', tag: 'ko', vers: 'hub', duree: 10, f: { secuErr: true }, note: 'Montage installé hors hotte : Mme Dubreuil me fait tout déplacer sous la hotte.' },
+  ]),
 });
 add('fab_grumeaux', {
   lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Des grumeaux gélifiés',
   texte: () => `Après 20 minutes, le milieu est trouble et plein de petits grumeaux translucides : le Carbopol a gonflé au contact de la base avant d'être dispersé. Lucas : « Ça ne se redissoudra pas. »`,
   choix: [
-    { t: 'Tout recommencer avec la base à la fin, en ballon à reflux (45 min de plus)', duree: 45, vers: 'hub', f: { errBase: true, mode: 'reflux', perteEth: 0.01 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 75 } }), note: 'Gel raté (base trop tôt) : fabrication refaite avec reflux.' },
+    { t: 'Tout recommencer avec la base à la fin, en ballon à reflux (45 min de plus)', duree: 45, vers: 'secu', f: { errBase: true, mode: 'reflux', perteEth: 0.01 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 75 } }), note: 'Gel raté (base trop tôt) : fabrication refaite avec reflux.' },
     { t: 'Continuer tel quel et espérer que ça passera', duree: 5, vers: 'hub', f: { errBase: true, disp: 'grumeaux' }, run: n => ({ ...marquer(n, 'fab', 'disp'), bg: { ...n.bg, gel: n.t + 10 } }), note: 'Gel avec grumeaux conservé.' },
   ],
 });
@@ -660,13 +698,37 @@ export function bilan(e, finId = e.scene) {
   const n1 = (f.errCoel ? 1 : 0) + (f.sansEI ? 1 : 0) + (f.extTente ? 1 : 0) + (f.extAccepte ? 2 : 0) + (f.errComp ? 1 : 0);
   const c4 = f.panne === false || f.panne === undefined ? 'nd' : f.methCaf === 'ajouts' && !f.extTente ? 'ok' : f.attendu ? 'moyen' : f.extAccepte ? 'ko' : 'moyen';
   const att = f.attente || 0, nbErr = f.nbErr || 0;
-  const c3 = finId === 'fin_conforme' || finId === 'fin_detecte' ? 'ok' : finId === 'fin_mauvaise_cause' ? 'moyen' : finId === 'fin_temps' ? 'nd' : 'ko';
+  const c3 = (finId === 'fin_conforme' || finId === 'fin_detecte') ? (f.secuErr ? 'moyen' : 'ok') : finId === 'fin_mauvaise_cause' ? 'moyen' : finId === 'fin_temps' ? 'nd' : 'ko';
   return [
     { comp: 'C.1.4', titre: 'Sélectionner les méthodes, techniques et matériels', niveau: niv(n1, 0, 1), texte: n1 === 0 ? 'Étalon interne adapté, méthodes cohérentes avec la matrice.' : `À revoir : ${[f.errCoel && 'étalon interne (propan-1-ol coélue avec l\'éthanol)', f.sansEI && 'nécessité d\'un étalon interne en CPG', f.extTente && 'étalonnage externe UV (effet de matrice)', f.extAccepte && 'résultat UV non vérifié avec un témoin', f.errComp && 'comparaison des deux méthodes CPG'].filter(Boolean).join(' ; ')}.` },
     { comp: 'C.2.1', titre: 'Préparer les produits et les calculs', niveau: f.repli ? 'moyen' : niv(nbErr + (f.errEs ? 1 : 0) + (f.aides || 0), 1, 4), texte: `${nbErr} réponse(s) de calcul fausse(s)${f.aides ? `, dont ${f.aides} refaite(s) avec l'aide d'un collègue` : ''}${f.errEth ? ' (titre de l\'éthanol à 96 %)' : ''}${f.repli ? ' ; formule de repli utilisée' : ''}.` },
-    { comp: 'C.3.2', titre: 'Détecter les non-conformités', niveau: c3, texte: c3 === 'nd' ? 'Pas de conclusion rendue.' : c3 === 'ok' ? 'Décision cohérente avec la réalité du lot.' : 'La décision ne correspond pas aux défauts réels du lot : relis tes résultats critère par critère.' },
+    { comp: 'C.3.2', titre: 'Détecter les non-conformités', niveau: c3, texte: c3 === 'nd' ? 'Pas de conclusion rendue.' : f.secuErr && (finId === 'fin_conforme' || finId === 'fin_detecte') ? 'Décision cohérente avec le lot, mais le montage chauffant d\'éthanol a d\'abord été installé hors hotte : la sécurité fait partie de la détection des non-conformités.' : c3 === 'ok' ? 'Décision cohérente avec la réalité du lot.' : 'La décision ne correspond pas aux défauts réels du lot : relis tes résultats critère par critère.' },
     { comp: 'C.4', titre: 'Adapter son protocole face à un imprévu', niveau: c4, texte: c4 === 'nd' ? 'Pas de panne dans cette partie.' : c4 === 'ok' ? 'Panne de CLHP : bascule immédiate vers une méthode adaptée (ajouts dosés).' : c4 === 'moyen' ? 'Panne de CLHP : solution trouvée mais coûteuse ou après un détour.' : 'Résultat biaisé conservé sans vérification.' },
     { comp: 'C.6.1', titre: 'Organiser le travail dans le respect des délais', niveau: finId === 'fin_temps' ? 'ko' : niv(att, 70, 130), texte: `${duree(att)} d'attente subie devant l'étuve, le ballon ou la CLHP en panne (environ 1 h est incompressible)${att > 70 ? ' : lance les opérations longues en premier et prépare les analyses pendant ce temps' : ''}.` },
     { comp: 'C.7.3', titre: 'Travailler en équipe', niveau: eqNiveau(f).niveau, texte: eqNiveau(f).texte },
   ];
+}
+
+// ───────────── Après la partie : le film de la journée, les causes et les effets, la fiche de fabrication ─────────────
+export const chronologie = e => ({ actif: (e.hist || []).filter(h => h.k === 'act'), attentes: (e.hist || []).filter(h => h.k === 'att'), etuve: (e.spans || []).filter(x => x.k === 'es'), gel: (e.spans || []).filter(x => x.k === 'gel') });
+export function consequences(e) {
+  const f = e.f, d = f.tDec || {}, g = gelVrai(e), L = [], h = k => d[k] != null ? horloge(d[k]) : null;
+  if (f.mode) {
+    const txt = { reflux: `ballon à reflux : l'éthanol reste dans le montage (${nf(g.eth, 1)} % dans le gel)`, becher: `bécher chauffé sans reflux : de l'éthanol s'échappe (${nf(g.eth, 1)} % dans le gel au lieu de ${nf(ETH_PUR_COM, 1)} %)`, froid: `bécher à froid : peu de pertes (${nf(g.eth, 1)} % d'éthanol), mais une dispersion plus longue`, base: `base mélangée dès le départ : le Carbopol fait des grumeaux, le gel épaissit mal` }[f.mode];
+    L.push({ quand: h('mode'), cause: 'Procédé de fabrication', effet: txt });
+  }
+  if (f.bal) L.push({ quand: h('bal'), cause: 'Balance pour l\'extrait sec', effet: f.bal === 'std' ? (f.refaitBal ? 'balance au 0,01 g : résidu trop petit, écart trop grand entre les essais, essais à refaire (1 h perdue)' : 'balance au 0,01 g : le résidu d\'environ 0,1 g est connu à ±0,01 g, soit environ 1 point d\'extrait sec d\'incertitude') : 'balance de précision : écart de répétabilité compatible avec S_r' });
+  if (f.phFinal != null) L.push({ quand: null, cause: 'pH final du gel', effet: `pH ${nf(f.phFinal, 2)} : rapport des contraintes ${nf(g.q, 2)} (exigence : au moins ${nf(SPEC.q, 2)})${f.reprisePh ? ', après reprise de la trolamine' : ''}` });
+  if (f.methCaf) L.push({ quand: h('methCaf'), cause: 'Dosage de la caféine', effet: f.methCaf === 'ext' ? (f.extAccepte ? 'UV, étalonnage externe : effet de matrice, caféine surestimée d\'environ 40 %, résultat retenu sans vérification' : 'UV, étalonnage externe : surestimation détectée et corrigée par une autre méthode') : f.methCaf === 'ajouts' ? 'UV, ajouts dosés : l\'effet de matrice est compensé' : 'CLHP, étalon interne : volume injecté sans influence' });
+  if (f.compense) L.push({ quand: null, cause: 'Éthanol manquant', effet: 'compensation par ajout d\'éthanol à 96 % et dosage CPG refait' });
+  if (f.secuErr) L.push({ quand: null, cause: 'Sécurité', effet: 'montage chauffant d\'éthanol installé hors hotte : déplacé par la responsable' });
+  return L;
+}
+export function fiche(e) {
+  const f = e.f, fm = f.fm || null, L = ['FICHE DE FABRICATION : contretype de gel à la caféine (lot de ' + M_LOT + ' g)'];
+  if (fm) L.push('Formule (g) : ' + CHAMPS_FORMULE.map(([k, n]) => `${n} ${nf(fm[k], 2)}`).join(' ; '));
+  if (f.mode) L.push('Procédé : ' + ({ reflux: 'ballon à reflux, chauffage modéré, agitation ; base ajoutée à la fin', becher: 'bécher chauffé sans reflux ; base ajoutée à la fin', froid: 'bécher à température ambiante, agitation ; base ajoutée à la fin', base: 'tous les constituants mélangés dès le départ' })[f.mode]);
+  if (f.trolAdd != null) L.push(`Neutralisation : ${nf(f.trolAdd, 2)} g de trolamine, pH ${nf(f.phFinal ?? f.phMes ?? 0, 2)}`);
+  L.push(`Temps passé : ${horloge(Math.min(e.t, T_FIN))} ; attente subie : ${duree(f.attente || 0)}`);
+  return L;
 }
