@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useEtatPersistant, Formule } from "../commun";
 import {
   CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_FIN, T_S2, CHAMPS_FORMULE, FORMULE_REPLI, etatInitial, texteDe, choixDe, visuelsDe, choisir, valider, estFin,
-  horloge, duree, nf, statutBg, resume, bilan, validerFormule, ajouterBase, validerPh, OBSERVATIONS, noterObs,
+  horloge, duree, nf, statutBg, resume, bilan, validerFormule, ajouterBase, validerPh, OBSERVATIONS, noterObs, chronologie, consequences, fiche,
 } from "./percutafeineJeu";
 
 // ====================================================
@@ -31,6 +31,13 @@ const STYLE = `
 .pc-bulle{position:relative;background:#fff;border:1.5px solid ${C.bord};border-radius:4px 16px 16px 16px;padding:11px 15px;margin:8px 0;line-height:1.6}
 .pc-inst{border-radius:14px;padding:14px 16px;margin-top:14px}
 .pc-grille{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+@keyframes pc-trace{to{stroke-dashoffset:0}}
+@keyframes pc-lueur{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes pc-bulle{0%{transform:translateY(0);opacity:0}20%{opacity:.9}100%{transform:translateY(-22px);opacity:0}}
+@media (prefers-reduced-motion:no-preference){.pc-trace{stroke-dasharray:1;stroke-dashoffset:1;animation:pc-trace 2.4s ease-out forwards}.pc-lueur{animation:pc-lueur 1.6s ease-in-out infinite}.pc-bull{animation:pc-bulle 2.2s ease-in infinite}}
+.pc-poste{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px 8px;border:2px solid transparent;border-radius:14px;background:transparent;cursor:pointer;font:inherit;color:inherit;position:relative}
+.pc-poste:hover,.pc-poste:focus-visible{background:rgba(255,255,255,.55);outline:none}
+.pc-poste[aria-pressed="true"]{background:#fff;border-color:${C.accent};box-shadow:0 4px 14px rgba(15,118,110,.2)}
 @media (prefers-reduced-motion:reduce){.pc-scene{animation:none}.pc-choix,.pc-tache{transition:none}}
 `;
 
@@ -56,7 +63,7 @@ function Chroma({ v }) {
   const d = ys.map(([t, y], i) => `${i ? 'L' : 'M'}${X(t).toFixed(1)} ${(yb - Math.min(y, 1.15) * 105).toFixed(1)}`).join('');
   return (<Cadre titre={v.titre.toUpperCase()}>
     <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${v.titre} : ${v.pics.map(p => `${p.l || 'pic'} à ${p.tr} min`).join(', ')}`} style={{ width: '100%', maxWidth: 640, margin: '0 auto', display: 'block' }}>
-      <line x1={x0} y1={yb} x2={x1} y2={yb} stroke="#6b8794" /><path d={d} fill="none" stroke="#5eead4" strokeWidth="2" />
+      <line x1={x0} y1={yb} x2={x1} y2={yb} stroke="#6b8794" /><path d={d} className="pc-trace" pathLength="1" fill="none" stroke="#5eead4" strokeWidth="2" />
       {Array.from({ length: Math.floor(v.tmax) + 1 }, (_, i) => <g key={i}><line x1={X(i)} y1={yb} x2={X(i)} y2={yb + 4} stroke="#6b8794" /><text x={X(i)} y={yb + 16} textAnchor="middle" fontSize="10" fill="#9fc3d1">{i}</text></g>)}
       <text x={x1} y={yb + 30} textAnchor="end" fontSize="10" fill="#9fc3d1">temps (min)</text>
       {v.pics.filter(p => p.l).map((p, i) => <text key={i} x={X(p.tr)} y={yb - Math.min(p.h, 1.15) * 105 - 6} textAnchor="middle" fontSize="11" fill="#fde68a">{p.l}</text>)}
@@ -105,7 +112,15 @@ function Tableau({ v }) {
     <thead><tr>{v.cols.map((c, i) => <th key={i} style={{ border: `1px solid ${C.bord}`, padding: '4px 8px', background: C.fond, textAlign: i ? 'right' : 'left' }}>{c}</th>)}</tr></thead>
     <tbody>{v.lignes.map((l, i) => <tr key={i}>{l.map((c, j) => <td key={j} style={{ border: `1px solid ${C.bord}`, padding: '4px 8px', textAlign: j ? 'right' : 'left' }}>{c}</td>)}</tr>)}</tbody></table></div>);
 }
-const Visuel = ({ v }) => v.type === 'chroma' ? <Chroma v={v} /> : v.type === 'rheo' ? <Rheo v={v} /> : v.type === 'droite' ? <Droite v={v} /> : v.type === 'tableau' ? <Tableau v={v} /> : null;
+function BalanceVue({ v }) {
+  return (<Cadre titre={v.nom.toUpperCase()}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 10, marginTop: 6 }}>
+      {v.lectures.map(([nom, x]) => <div key={nom} style={{ background: '#0b1b22', borderRadius: 10, padding: '8px 12px', border: '1px solid #2a4654' }}>
+        <div style={{ fontSize: 12, color: '#9fc3d1' }}>{nom}</div>
+        <div style={{ fontFamily: 'ui-monospace,monospace', fontSize: 24, color: '#7ef0d4', letterSpacing: 1 }}>{nf(x, v.dec)} <span style={{ fontSize: 14, color: '#9fc3d1' }}>g</span></div></div>)}
+    </div></Cadre>);
+}
+const Visuel = ({ v }) => v.type === 'balance' ? <BalanceVue v={v} /> : v.type === 'chroma' ? <Chroma v={v} /> : v.type === 'rheo' ? <Rheo v={v} /> : v.type === 'droite' ? <Droite v={v} /> : v.type === 'tableau' ? <Tableau v={v} /> : null;
 
 
 // ───────────── Briques d'interaction ─────────────
@@ -171,6 +186,98 @@ function StationObs({ e, onEtat }) {
       {OBSERVATIONS.map(([id, t]) => <label key={id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '7px 4px', fontSize: 15.5, cursor: 'pointer' }}><input type="checkbox" checked={sel.includes(id)} onChange={() => bascule(id)} style={{ marginTop: 4, width: 18, height: 18 }} />{t}</label>)}
       <button type="button" className="pc-btn" style={{ marginTop: 10 }} onClick={() => onEtat(noterObs(e, sel))}>Noter dans mon cahier (5 min)</button>
     </div>);
+}
+
+
+// ───────────── La paillasse : cinq postes de travail illustrés ─────────────
+const POSTES = [
+  { id: 'etuve', nom: 'Étuve et balance', vers: ['es_balance', 'es_prep', 'es_calc1'] },
+  { id: 'bureau', nom: 'Bureau', vers: ['eth1', 'formule', 'eq_ines', 'verdict'] },
+  { id: 'formulation', nom: 'Formulation', vers: ['eq_base', 'fab_choix', 'fab_disp', 'obs_video'] },
+  { id: 'rheo', nom: 'Rhéologie', vers: ['rheoC', 'rheoF'] },
+  { id: 'chroma', nom: 'Chromatographie, UV', vers: ['hplc_m', 'hplc_ei', 'cpg_ei', 'cpg_inj', 'uv_ajouts', 'uv_ext'] },
+];
+const posteDe = vers => (POSTES.find(p => p.vers.includes(vers)) || POSTES[1]).id;
+function Dessin({ id, actif, termine }) {
+  const T = '#334155', L = '#cbd5e1', O = '#f59e0b';
+  const cadre = { width: 92, height: 68, display: 'block' };
+  if (id === 'etuve') return (<svg viewBox="0 0 100 74" style={cadre} aria-hidden="true">
+    <rect x="14" y="8" width="56" height="46" rx="5" fill="#e2e8f0" stroke={T} strokeWidth="2" />
+    <rect x="22" y="16" width="40" height="28" rx="3" fill={actif ? '#fb923c' : termine ? '#86efac' : '#94a3b8'} className={actif ? 'pc-lueur' : undefined} stroke={T} strokeWidth="1.5" />
+    <circle cx="78" cy="18" r="5" fill={actif ? O : '#cbd5e1'} stroke={T} /><rect x="74" y="28" width="9" height="3" fill={T} />
+    <rect x="62" y="60" width="32" height="6" rx="2" fill={T} /><rect x="68" y="52" width="20" height="8" fill="#f1f5f9" stroke={T} /><text x="78" y="58.5" textAnchor="middle" fontSize="6" fill={T}>0,0</text></svg>);
+  if (id === 'bureau') return (<svg viewBox="0 0 100 74" style={cadre} aria-hidden="true">
+    <rect x="22" y="8" width="46" height="32" rx="3" fill="#f1f5f9" stroke={T} strokeWidth="2" /><rect x="27" y="13" width="36" height="22" fill="#bae6fd" />
+    <path d="M30 30 L38 22 L45 27 L55 17" fill="none" stroke="#0369a1" strokeWidth="2" /><rect x="40" y="40" width="10" height="7" fill={T} /><rect x="30" y="47" width="30" height="5" rx="2" fill={L} stroke={T} />
+    <rect x="70" y="36" width="20" height="26" rx="2" fill="#fff" stroke={T} /><path d="M74 44h12M74 50h12M74 56h8" stroke={L} strokeWidth="2" /></svg>);
+  if (id === 'formulation') return (<svg viewBox="0 0 100 74" style={cadre} aria-hidden="true">
+    <rect x="14" y="58" width="60" height="8" rx="2" fill={T} /><circle cx="44" cy="42" r="17" fill="#e0f2fe" stroke={T} strokeWidth="2" /><path d="M29 44 Q44 36 59 44" fill="#7dd3fc" opacity=".8" />
+    <rect x="40" y="8" width="8" height="14" fill={L} stroke={T} /><path d="M44 8 V2" stroke={T} strokeWidth="2" />
+    {actif && [0, 1, 2].map(i => <circle key={i} className="pc-bull" style={{ animationDelay: `${i * .7}s` }} cx={37 + i * 7} cy="48" r="2" fill="#fff" stroke="#0369a1" strokeWidth=".8" />)}
+    <rect x="80" y="30" width="10" height="28" rx="2" fill="#bbf7d0" stroke={T} /></svg>);
+  if (id === 'rheo') return (<svg viewBox="0 0 100 74" style={cadre} aria-hidden="true">
+    <rect x="30" y="8" width="36" height="12" rx="2" fill={L} stroke={T} strokeWidth="2" /><rect x="44" y="20" width="8" height="18" fill={T} /><path d="M32 40 H64 L56 46 H40 Z" fill="#94a3b8" stroke={T} /><rect x="22" y="50" width="52" height="14" rx="3" fill="#e2e8f0" stroke={T} strokeWidth="2" />
+    <circle cx="80" cy="30" r="9" fill="#fff" stroke={T} strokeWidth="2" /><path d="M80 30 L85 25" stroke="#b91c1c" strokeWidth="2" /></svg>);
+  return (<svg viewBox="0 0 100 74" style={cadre} aria-hidden="true">
+    <rect x="12" y="10" width="46" height="12" rx="2" fill="#e2e8f0" stroke={T} strokeWidth="1.5" /><rect x="12" y="25" width="46" height="12" rx="2" fill="#e2e8f0" stroke={T} strokeWidth="1.5" /><rect x="12" y="40" width="46" height="12" rx="2" fill="#e2e8f0" stroke={T} strokeWidth="1.5" />
+    <circle cx="50" cy="16" r="2.5" fill="#22c55e" /><circle cx="50" cy="31" r="2.5" fill="#22c55e" />
+    <rect x="62" y="10" width="28" height="30" rx="3" fill="#0f2430" stroke={T} strokeWidth="1.5" /><path d="M65 34 L72 34 L75 18 L78 34 L87 34" fill="none" stroke="#5eead4" strokeWidth="1.8" /><path d="M20 62 H80" stroke={L} strokeWidth="3" strokeLinecap="round" /></svg>);
+}
+function Paillasse({ e, s, choix, onChoix }) {
+  const parPoste = Object.fromEntries(POSTES.map(p => [p.id, []]));
+  choix.forEach((c, i) => parPoste[posteDe(c.vers)].push({ c, i }));
+  const premier = (POSTES.find(p => parPoste[p.id].length) || POSTES[0]).id;
+  const [sel, setSel] = useState(null);
+  const actuel = sel && parPoste[sel] && parPoste[sel].length ? sel : premier;
+  const etuveActive = !!s.es && e.bg.es > e.t, etuveFinie = !!s.es && !etuveActive, gelActif = !!s.gel && e.bg.gel > e.t;
+  return (<div data-paillasse>
+    <div style={{ background: 'linear-gradient(180deg,#e9eef3 0%,#dde5ec 100%)', borderRadius: 16, padding: '12px 8px 0', border: `1px solid ${C.bord}` }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(104px,1fr))', gap: 4 }}>
+        {POSTES.map(p => { const n = parPoste[p.id].length, actif = (p.id === 'etuve' && etuveActive) || (p.id === 'formulation' && gelActif), fini = (p.id === 'etuve' && etuveFinie);
+          return <button key={p.id} type="button" className="pc-poste" aria-pressed={actuel === p.id} onClick={() => setSel(p.id)} aria-label={`${p.nom}, ${n} tâche${n > 1 ? 's' : ''} disponible${n > 1 ? 's' : ''}${actif ? ', un appareil tourne' : ''}`}>
+            <Dessin id={p.id} actif={actif} termine={fini} />
+            <span style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.2, textAlign: 'center' }}>{p.nom}</span>
+            {n > 0 && <span aria-hidden="true" style={{ position: 'absolute', top: 2, right: 6, minWidth: 20, height: 20, borderRadius: 10, background: C.accent, color: '#fff', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 5px' }}>{n}</span>}
+            {(actif || fini) && <span aria-hidden="true" style={{ fontSize: 11.5, color: actif ? C.ambre : C.vert, fontWeight: 700 }}>{actif ? (p.id === 'etuve' ? `encore ${duree(e.bg.es - e.t)}` : `encore ${duree(e.bg.gel - e.t)}`) : 'terminé'}</span>}
+          </button>; })}
+      </div>
+      <div aria-hidden="true" style={{ height: 14, margin: '4px -8px 0', borderRadius: '0 0 16px 16px', background: 'repeating-linear-gradient(90deg,#8a6a4c 0 22px,#7d5f43 22px 24px)', borderTop: '3px solid #5d452f' }} />
+    </div>
+    <div className="pc-grille" style={{ marginTop: 12 }}>{(parPoste[actuel] || []).map(({ c, i }) => (
+      <button key={i} type="button" className="pc-tache" data-choix={i} onClick={() => onChoix(c)}><span style={{ fontSize: 26, lineHeight: 1 }} aria-hidden="true">{ICONES[c.vers] || '▪️'}</span><span><b style={{ fontSize: 16 }}>{c.t}</b>{c.d && <span style={{ display: 'block', fontSize: 13.5, color: C.doux, marginTop: 3, lineHeight: 1.4 }}>{c.d}</span>}</span></button>))}
+      {!(parPoste[actuel] || []).length && <div style={{ color: C.doux, fontSize: 14.5 }}>Rien à faire à ce poste pour l'instant.</div>}</div>
+  </div>);
+}
+
+// ───────────── Le film de la journée (fin de partie) ─────────────
+function Film({ e }) {
+  const ch = chronologie(e), W = 680, x0 = 96, x1 = 664, X = t => x0 + t / T_FIN * (x1 - x0), tmax = Math.min(e.t, T_FIN);
+  const rangs = [['Toi (actif)', ch.actif, '#1e3a8a'], ['Étuve', ch.etuve, '#f59e0b'], ['Dispersion du gel', ch.gel, '#7c3aed'], ['Attente subie', ch.attentes, '#dc2626']];
+  const barres = a => a.map((b, i) => { const t0 = b.t0, t1 = b.t1 ?? b.t1; return <rect key={i} x={X(t0)} y="0" width={Math.max(2, X(Math.min(t1, T_FIN)) - X(t0))} height="18" rx="3" />; });
+  const ticks = [0, 60, 120, 180, 240, 300, 360, 420].map(t => [t, t < T_S2 ? `${13 + t / 60} h` : `${8 + (t - T_S2) / 60} h`]);
+  return (<figure data-film style={{ margin: '8px 0' }}>
+    <svg viewBox={`0 0 ${W} 170`} width="100%" role="img" aria-label="Frise horaire de ta journée : ton travail actif, l'étuve, la dispersion du gel et les attentes subies" style={{ display: 'block', background: C.fond, borderRadius: 12, border: `1px solid ${C.bord}` }}>
+      {rangs.map(([nom, a, col], r) => <g key={nom} transform={`translate(0 ${14 + r * 30})`}><text x="8" y="13" fontSize="12" fill={C.encre}>{nom}</text><rect x={x0} y="0" width={x1 - x0} height="18" rx="3" fill="#e8eef4" /><g fill={col}>{barres(a)}</g></g>)}
+      <line x1={X(T_S2)} y1="8" x2={X(T_S2)} y2="136" stroke={C.ambre} strokeDasharray="4 3" strokeWidth="1.5" />
+      <rect x={X(tmax)} y="8" width={Math.max(0, x1 - X(tmax))} height="128" fill="#fff" opacity=".6" />
+      {ticks.map(([t, l]) => <g key={t}><line x1={X(t)} y1="136" x2={X(t)} y2="141" stroke={C.doux} /><text x={X(t)} y="154" fontSize="11" textAnchor="middle" fill={C.doux}>{l}</text></g>)}
+      <text x={X(T_S2) + 4} y="10" fontSize="10" fill={C.ambre}>séance 2</text>
+    </svg>
+    <figcaption style={{ fontSize: 13.5, color: C.doux, marginTop: 6, lineHeight: 1.5 }}>Un technicien efficace lance d'abord les opérations longues (étuve, dispersion du Carbopol), puis prépare calculs, rhéologie du témoin et analyses pendant qu'elles tournent. Tes attentes subies : <b>{duree(e.f.attente || 0)}</b>.</figcaption>
+  </figure>);
+}
+function Conseq({ e }) {
+  const L = consequences(e);
+  if (!L.length) return null;
+  return (<div data-conseq style={{ display: 'grid', gap: 8 }}>{L.map((c, i) => <div key={i} style={{ display: 'flex', gap: 10, border: `1px solid ${C.bord}`, borderRadius: 12, padding: '9px 12px', background: '#fff', fontSize: 14.5, lineHeight: 1.5 }}>
+    <span aria-hidden="true" style={{ color: C.accent, fontWeight: 700 }}>→</span><div><b>{c.cause}</b>{c.quand && <span style={{ color: C.doux }}> ({c.quand})</span>} : {c.effet}.</div></div>)}</div>);
+}
+function Fiche({ e }) {
+  const [copie, setCopie] = useState(false), txt = fiche(e).join('\n');
+  const copier = async () => { try { await navigator.clipboard.writeText(txt); setCopie(true); setTimeout(() => setCopie(false), 2000); } catch { /* copie indisponible */ } };
+  return (<div data-fiche style={{ border: `1.5px dashed ${C.bord}`, borderRadius: 12, padding: '10px 14px', background: '#fff' }}>
+    <pre style={{ margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 14, lineHeight: 1.6 }}>{txt}</pre>
+    <button type="button" className="pc-btn2" style={{ marginTop: 8 }} onClick={copier}>{copie ? 'Copié' : 'Copier ma fiche'}</button></div>);
 }
 
 function BarreTemps({ t }) {
@@ -263,21 +370,25 @@ export function SimulationHistoirePercutafeine() {
         {sc.station === 'obs' && <StationObs e={e} onEtat={setEtat} />}
         {sc.calcul && <Calcul key={e.scene} e={e} sc={sc} onEtat={setEtat} />}
 
-        {hub && <Instruments e={e} s={s} />}
-        {hub && <div className="pc-grille">{choix.map((c, i) => (
-          <button key={i} type="button" className="pc-tache" data-choix={i} onClick={() => avancer(c)}><span style={{ fontSize: 26, lineHeight: 1 }} aria-hidden="true">{ICONES[c.vers] || '▪️'}</span><span><b style={{ fontSize: 16 }}>{c.t}</b>{c.d && <span style={{ display: 'block', fontSize: 13.5, color: C.doux, marginTop: 3, lineHeight: 1.4 }}>{c.d}</span>}</span></button>))}</div>}
+        {hub && <Paillasse e={e} s={s} choix={choix} onChoix={avancer} />}
         {!hub && !sc.calcul && !sc.station && choix.map((c, i) => (
           <button key={i} type="button" className="pc-choix" data-choix={i} onClick={() => avancer(c)}><span className="pc-badge" aria-hidden="true">{lettre(i)}</span><span>{c.t}{c.d && <span style={{ display: 'block', fontSize: 13.5, color: C.doux, marginTop: 3 }}>{c.d}</span>}</span></button>))}
 
         {fin && (<>
           <h4 style={{ margin: '20px 0 8px', fontSize: 17 }}>Résumé de tes choix</h4>
           <ul data-resume style={{ margin: 0, paddingLeft: 20, fontSize: 14.5, lineHeight: 1.6 }}>{resume(e).map((t, i) => <li key={i}>{t}</li>)}</ul>
+          <h4 style={{ margin: '20px 0 8px', fontSize: 17 }}>Le film de ta journée</h4>
+          <Film e={e} />
+          <h4 style={{ margin: '20px 0 8px', fontSize: 17 }}>Tes choix et leurs conséquences</h4>
+          <Conseq e={e} />
           <h4 style={{ margin: '20px 0 8px', fontSize: 17 }}>Bilan par compétence</h4>
           <div data-bilan className="pc-grille">{bilan(e).map(b => { const [ic, col, lib] = NIVEAUX[b.niveau]; return (
             <div key={b.comp} style={{ display: 'flex', gap: 10, padding: '10px 12px', border: `1px solid ${C.bord}`, borderLeft: `5px solid ${col}`, borderRadius: 12, fontSize: 14.5, lineHeight: 1.5, background: '#fff' }}>
               <span aria-label={lib} title={lib} style={{ fontSize: 20 }}>{ic}</span>
               <div><b>{b.comp}</b> · {b.titre} <span style={{ color: col, fontWeight: 700 }}>({lib})</span><div style={{ color: C.doux }}>{b.texte}</div></div>
             </div>); })}</div>
+          <h4 style={{ margin: '20px 0 8px', fontSize: 17 }}>Ta fiche de fabrication</h4>
+          <Fiche e={e} />
           <button type="button" className="pc-btn" data-rejouer onClick={() => { setEtat(null); setCarnetOuvert(false); }} style={{ marginTop: 16 }}>Rejouer</button>
           {boiteFins}
         </>)}

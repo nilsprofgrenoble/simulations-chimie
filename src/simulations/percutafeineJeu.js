@@ -85,7 +85,8 @@ export function donneesEs(e) {
   return [0, 1, 2].map(i => {
     const m0v = 34.4 + 1.8 * unif(g, `m0${i}`), m1v = 1.0 + 0.06 * unif(g, `m1${i}`);
     const m2v = m0v + (ES_COM + SR_ES * gauss(g, `es${i}`)) / 100 * m1v;
-    const m0 = aff(m0v), m1 = aff(m1v), m2 = aff(m2v);   // ce que la balance affiche : c'est avec ces valeurs que l'élève calcule
+    const bruit = B.res >= 0.01 ? 0.007 : 0;   // reproductibilité d'une balance au 0,01 g : de l'ordre de ±0,01 g sur chaque pesée (dérive, courants d'air, tare)
+    const m0 = aff(m0v + bruit * gauss(g, `bn0${i}`)), m1 = aff(m1v), m2 = aff(m2v + bruit * gauss(g, `bn2${i}`));   // ce que la balance affiche : c'est avec ces valeurs que l'élève calcule
     return { m0, m1, m2, ES: (m2 - m0) / m1 * 100, bal: B.nom };
   });
 }
