@@ -466,6 +466,23 @@ function Dialogue({ sc, paragraphes, p, e }) {
     : <p key={i} style={{ lineHeight: 1.65, margin: '10px 0', color: '#334155' }}>{l}</p>)}</div>;
 }
 
+const CONSTITUANTS_FICHE = [['caf', 'Caféine'], ['carb', 'Synthalen K'], ['coc', 'Cocoate de macrogol 7 glycérol'], ['eth', 'Éthanol à 96 %'], ['trol', 'Trolamine'], ['eau', 'Eau purifiée']];
+const lireTeneur = x => { const v = Number(String(x ?? '').replace(',', '.').trim()); return String(x ?? '').trim() !== '' && Number.isFinite(v) ? v : null; };
+// Fiche de formulation remise par Mme Dubreuil : toujours consultable, les pourcentages se notent au fur et à mesure (bloc-notes de l'élève, rien n'est corrigé ici)
+function FicheFormulation({ e, setEtat }) {
+  const val = e.fichePct || {}, nombres = CONSTITUANTS_FICHE.map(([id]) => lireTeneur(val[id])), saisis = nombres.filter(x => x !== null), somme = saisis.reduce((a, b) => a + b, 0);
+  return (<details data-fichepct style={{ marginTop: 20, border: `1.5px dashed ${C.bord}`, borderRadius: 14, padding: '10px 14px', background: C.fond }}>
+    <summary style={{ cursor: 'pointer', fontWeight: 700, color: C.encre }}>🧪 Fiche de formulation de Mme Dubreuil{saisis.length ? ` (${saisis.length} sur ${CONSTITUANTS_FICHE.length} notés)` : ' (à compléter)'}</summary>
+    <div style={{ fontSize: 14, color: C.doux, margin: '8px 0' }}>Note ici les pourcentages massiques au fur et à mesure que tu les trouves. Cette fiche est un bloc-notes : rien n'y est corrigé.</div>
+    <table style={{ borderCollapse: 'collapse', fontSize: 15, width: '100%', maxWidth: 480 }}>
+      <thead><tr><th style={{ textAlign: 'left', padding: '4px 8px', border: `1px solid ${C.bord}`, background: '#fff' }}>Constituant</th><th style={{ textAlign: 'right', padding: '4px 8px', border: `1px solid ${C.bord}`, background: '#fff' }}>% massique</th></tr></thead>
+      <tbody>{CONSTITUANTS_FICHE.map(([id, nom]) => <tr key={id}><td style={{ padding: '4px 8px', border: `1px solid ${C.bord}`, background: '#fff' }}><label htmlFor={`fp-${id}`}>{nom}</label></td>
+        <td style={{ padding: 2, border: `1px solid ${C.bord}`, background: '#fff', textAlign: 'right' }}><input id={`fp-${id}`} data-fp={id} inputMode="decimal" autoComplete="off" value={val[id] ?? ''} placeholder="?" onChange={ev => setEtat({ ...e, fichePct: { ...val, [id]: ev.target.value } })} style={{ width: 90, textAlign: 'right', font: 'inherit', padding: '6px 8px', border: `1px solid ${C.bord}`, borderRadius: 8 }} /></td></tr>)}
+        <tr><td style={{ padding: '4px 8px', border: `1px solid ${C.bord}`, background: '#fff', fontWeight: 700 }}>Total</td><td style={{ padding: '4px 10px', border: `1px solid ${C.bord}`, background: '#fff', textAlign: 'right' }}>{saisis.length ? `${nf(somme, 2)} %` : '100 %'}</td></tr></tbody>
+    </table>
+  </details>);
+}
+
 export function SimulationHistoirePercutafeine() {
   const [etat, setEtat] = useEtatPersistant(CLE_ETAT, null);
   const [fins, setFins] = useEtatPersistant(CLE_FINS, []);
@@ -564,6 +581,7 @@ export function SimulationHistoirePercutafeine() {
           {boiteFins}
         </>)}
       </div>
+      {!fin && <FicheFormulation e={e} setEtat={setEtat} />}
       <div data-carnet style={{ marginTop: 20, border: `1.5px dashed ${C.bord}`, borderRadius: 14, padding: '10px 14px', background: C.fond }}>
         <button type="button" onClick={() => setCarnetOuvert(o => !o)} aria-expanded={carnetOuvert} style={{ background: 'none', border: 'none', font: 'inherit', fontWeight: 700, cursor: 'pointer', padding: 0, color: C.encre }}>📓 Cahier de laboratoire ({e.carnet.length}) {carnetOuvert ? '▾' : '▸'}</button>
         {carnetOuvert && (e.carnet.length ? <ul style={{ margin: '8px 0 0', paddingLeft: 18, fontSize: 14, lineHeight: 1.6, color: C.doux }}>{e.carnet.map((l, i) => <li key={i}>{l}</li>)}</ul> : <div style={{ fontSize: 14, color: C.doux, marginTop: 6 }}>Rien de noté pour l'instant.</div>)}
