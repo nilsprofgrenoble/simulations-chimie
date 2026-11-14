@@ -4,7 +4,7 @@ import { useEtatPersistant, Formule } from "../commun";
 import { Avatar as AvatarVisuel, STYLE_VISUELS } from './LaboVisuels';
 import {
   CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_FIN, T_MIDI, T_PAUSE, NB_AVATARS, avatarDe, pn, CHAMPS_FORMULE, FORMULE_REPLI, etatInitial, texteDe, choixDe, visuelsDe, choisir, valider, estFin, peutRevenir, revenirHub,
-  horloge, duree, nf, statutBg, resume, bilan, validerFormule, ajouterBase, validerPh, OBSERVATIONS, noterObs, chronologie, consequences, fiche, validerPlan, nombre,
+  horloge, duree, nf, statutBg, resume, bilan, validerFormule, ajouterBase, validerPh, observationsDe, noterObs, chronologie, consequences, fiche, validerPlan, nombre,
 } from "./percutafeineJeu";
 
 // ====================================================
@@ -226,7 +226,7 @@ function StationObs({ e, onEtat }) {
   return (
     <div data-obs className="pc-inst" style={inst}>
       <div style={{ fontWeight: 700, marginBottom: 10 }}>📓 Qu'as-tu observé ? (coche ce que tu notes dans ton cahier)</div>
-      {OBSERVATIONS.map(([id, t]) => <label key={id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '7px 4px', fontSize: 15.5, cursor: 'pointer' }}><input type="checkbox" checked={sel.includes(id)} onChange={() => bascule(id)} style={{ marginTop: 4, width: 18, height: 18 }} />{t}</label>)}
+      {observationsDe(e).map(([id, t]) => <label key={id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '7px 4px', fontSize: 15.5, cursor: 'pointer' }}><input type="checkbox" checked={sel.includes(id)} onChange={() => bascule(id)} style={{ marginTop: 4, width: 18, height: 18 }} />{t}</label>)}
       <button type="button" className="pc-btn" style={{ marginTop: 10 }} onClick={() => onEtat(noterObs(e, sel))}>Noter dans mon cahier (5 min)</button>
     </div>);
 }
@@ -235,14 +235,14 @@ function StationObs({ e, onEtat }) {
 // ───────────── La paillasse : cinq postes de travail illustrés ─────────────
 const POSTES = [
   { id: 'etuve', nom: 'Étuve et balance', vers: ['es_balance', 'es_prep', 'es_calc1'] },
-  { id: 'bureau', nom: 'Bureau', vers: ['docs', 'eth1', 'formule', 'eq_ines', 'verdict'] },
+  { id: 'bureau', nom: 'Bureau', vers: ['docs', 'eth1', 'formule', 'eq_ines', 'verdict', 'choix_caf', 'choix_eth'] },
   { id: 'ir', nom: 'Spectrométrie IR', vers: ['leurre_ir'] },
   { id: 'formulation', nom: 'Formulation', vers: ['eq_base', 'fab_choix', 'fab_disp', 'obs_video'] },
   { id: 'optique', nom: 'Réfractomètre, polarimètre', vers: ['leurre_refracto', 'leurre_polar'] },
   { id: 'rheo', nom: 'Rhéologie', vers: ['rheoC', 'rheoF'] },
   { id: 'titrage', nom: 'Titrage', vers: ['titr_carb_plan', 'leurre_titrgel'] },
   { id: 'conduc', nom: 'Conductimètre', vers: ['leurre_conduc'] },
-  { id: 'chroma', nom: 'Chromatographie, UV', vers: ['choix_caf', 'choix_eth', 'hplc_m', 'hplc_ei', 'hplc_gamme_plan', 'cpg_ei', 'cpg_inj', 'uv_ajouts_plan', 'uv_ext_plan'] },
+  { id: 'chroma', nom: 'Chromatographie, UV', vers: ['hplc_m', 'hplc_ei', 'hplc_gamme_plan', 'cpg_ei', 'cpg_inj', 'uv_ajouts_plan', 'uv_ext_plan'] },
 ];
 const posteDe = vers => (POSTES.find(p => p.vers.includes(vers)) || POSTES[1]).id;
 function Dessin({ id, actif, termine }) {

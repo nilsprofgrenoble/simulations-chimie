@@ -402,6 +402,7 @@ add('eq_ines', {
 
 
 // ───────────── Observation filmée de l'évaporation (début de parcours, facultative) ─────────────
+export const observationsDe = e => [...OBSERVATIONS].sort((a, b) => unif(e.f.graine, 'obs' + a[0]) - unif(e.f.graine, 'obs' + b[0]));   // ordre mélangé, stable pour une partie
 export const OBSERVATIONS = [
   ['blanc', 'Le gel, d\'abord transparent, devient blanc et opaque'],
   ['cristaux', 'Des filaments de cristaux apparaissent'],
