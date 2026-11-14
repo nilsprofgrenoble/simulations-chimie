@@ -4,7 +4,7 @@ import { useEtatPersistant, Formule } from "../commun";
 import { Avatar as AvatarVisuel, STYLE_VISUELS } from './LaboVisuels';
 import {
   CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_FIN, T_MIDI, T_PAUSE, NB_AVATARS, avatarDe, pn, CHAMPS_FORMULE, FORMULE_REPLI, etatInitial, texteDe, choixDe, visuelsDe, choisir, valider, estFin, peutRevenir, revenirHub,
-  horloge, duree, nf, statutBg, resume, bilan, validerFormule, ajouterBase, validerPh, observationsDe, noterObs, chronologie, consequences, fiche, validerPlan, nombre,
+  horloge, duree, nf, statutBg, resume, bilan, validerFormule, ajouterBase, validerPh, observationsDe, resultatsVus, noterObs, chronologie, consequences, fiche, validerPlan, nombre,
 } from "./percutafeineJeu";
 
 // ====================================================
@@ -75,7 +75,7 @@ function Chroma({ v }) {
 function Rheo({ v }) {
   const W = 360, Hh = 150, x0 = 38, x1 = 346, lx = g => x0 + (Math.log10(g) + 1) / 3 * (x1 - x0);
   const etaMax = Math.max(...v.courbes.flatMap(c => c.pts.map(p => p.eta))), sMax = Math.max(...v.courbes.flatMap(c => c.pts.map(p => p.s)));
-  const ly = e => 128 - (Math.log10(e) - Math.log10(0.5)) / (Math.log10(etaMax * 1.2) - Math.log10(0.5)) * 110, sy = s => 128 - s / (sMax * 1.1) * 110;
+  const ly = e => 128 - (Math.log10(e) - Math.log10(0.5)) / (Math.log10(etaMax * 1.2) - Math.log10(0.5)) * 110, sMin = Math.min(...v.courbes.flatMap(c => c.pts.map(p => p.s))), sy = s => 128 - (Math.log10(s) - Math.log10(sMin / 1.5)) / (Math.log10(sMax * 1.2) - Math.log10(sMin / 1.5)) * 110;
   const tr = (c, f) => c.pts.map((p, i) => `${i ? 'L' : 'M'}${lx(p.g).toFixed(1)} ${f(p).toFixed(1)}`).join('');
   const axes = <><line x1={x0} y1="128" x2={x1} y2="128" stroke="#6b8794" /><line x1={x0} y1="12" x2={x0} y2="128" stroke="#6b8794" />
     {[0.1, 1, 10, 100].map(g => <text key={g} x={lx(g)} y="142" textAnchor="middle" fontSize="10" fill="#9fc3d1">{g}</text>)}</>;
@@ -84,8 +84,8 @@ function Rheo({ v }) {
       <g>{axes}<text x="4" y="14" fontSize="10" fill="#9fc3d1">η (Pa·s, échelle log)</text>
         {[1, 10, 100].map(e => <text key={e} x={x0 - 4} y={ly(e) + 3} textAnchor="end" fontSize="9" fill="#9fc3d1">{e}</text>)}
         {v.courbes.map(c => <path key={c.nom} d={tr(c, p => ly(p.eta))} fill="none" stroke={c.couleur === '#1e3a8a' ? '#93c5fd' : '#fcd34d'} strokeWidth="2.2" />)}</g>
-      <g transform={`translate(0 ${Hh + 6})`}>{axes}<text x="4" y="14" fontSize="10" fill="#9fc3d1">σ (Pa)</text>
-        {[0, Math.round(sMax / 2), Math.round(sMax)].map(s => <text key={s} x={x0 - 4} y={sy(s) + 3} textAnchor="end" fontSize="9" fill="#9fc3d1">{s}</text>)}
+      <g transform={`translate(0 ${Hh + 6})`}>{axes}<text x="4" y="14" fontSize="10" fill="#9fc3d1">σ (Pa, échelle log)</text>
+        {[1, 10, 100].filter(s => s >= sMin / 1.5 && s <= sMax * 1.2).map(s => <text key={s} x={x0 - 4} y={sy(s) + 3} textAnchor="end" fontSize="9" fill="#9fc3d1">{s}</text>)}
         {v.courbes.map(c => <path key={c.nom} d={tr(c, p => sy(p.s))} fill="none" stroke={c.couleur === '#1e3a8a' ? '#93c5fd' : '#fcd34d'} strokeWidth="2.2" />)}
         <text x={x1} y="156" textAnchor="end" fontSize="10" fill="#9fc3d1">γ̇ (s⁻¹, échelle log)</text></g>
     </svg>
@@ -338,6 +338,20 @@ function Fiche({ e }) {
     <button type="button" className="pc-btn2" style={{ marginTop: 8 }} onClick={copier}>{copie ? 'Copié' : 'Copier ma fiche'}</button></div>);
 }
 
+function RevoirResultats({ e }) {
+  const ids = resultatsVus(e), [id, setId] = useState(null);
+  if (!ids.length) return null;
+  const e2 = id ? { ...e, scene: id } : null, sc = id ? SCENES[id] : null;
+  return (<details data-resultats style={{ marginTop: 12, border: `1.5px dashed ${C.bord}`, borderRadius: 14, padding: '10px 14px', background: C.fond }}>
+    <summary style={{ cursor: 'pointer', fontWeight: 700 }}>📂 Revoir mes résultats ({ids.length})</summary>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '10px 0' }}>{ids.map(i => <button key={i} type="button" data-revoir={i} aria-pressed={id === i} onClick={() => setId(id === i ? null : i)} style={{ font: 'inherit', fontSize: 13.5, padding: '5px 11px', borderRadius: 99, border: `1.5px solid ${id === i ? C.accent : C.bord}`, background: id === i ? '#e6f4f1' : '#fff', cursor: 'pointer' }}>{SCENES[i].titre}</button>)}</div>
+    {sc && <div data-revoir-contenu style={{ borderTop: `1px solid ${C.bord}`, paddingTop: 6 }}>
+      {String(texteDe(e2)).split('\n').filter(l => l.trim()).map((l, k) => <p key={k} style={{ margin: '6px 0', lineHeight: 1.55, fontSize: 15 }}>{l}</p>)}
+      {visuelsDe(e2).map((v, k) => <Visuel key={k} v={v} />)}
+    </div>}
+  </details>);
+}
+
 function BarreTemps({ t }) {
   const pct = x => `${Math.min(100, x / T_FIN * 100)}%`, fin = t > T_FIN * 0.85;
   return (
@@ -471,6 +485,7 @@ export function SimulationHistoirePercutafeine() {
         <button type="button" onClick={() => setCarnetOuvert(o => !o)} aria-expanded={carnetOuvert} style={{ background: 'none', border: 'none', font: 'inherit', fontWeight: 700, cursor: 'pointer', padding: 0, color: C.encre }}>📓 Cahier de laboratoire ({e.carnet.length}) {carnetOuvert ? '▾' : '▸'}</button>
         {carnetOuvert && (e.carnet.length ? <ul style={{ margin: '8px 0 0', paddingLeft: 18, fontSize: 14, lineHeight: 1.6, color: C.doux }}>{e.carnet.map((l, i) => <li key={i}>{l}</li>)}</ul> : <div style={{ fontSize: 14, color: C.doux, marginTop: 6 }}>Rien de noté pour l'instant.</div>)}
       </div>
+      {!fin && <RevoirResultats e={e} />}
       {!fin && <div style={{ fontSize: 12.5, color: C.doux, marginTop: 10 }}>Ta partie est enregistrée sur cet appareil. <button type="button" onClick={() => { if (window.confirm('Abandonner cette partie et recommencer ?')) { setEtat(null); setCarnetOuvert(false); } }} style={{ background: 'none', border: 'none', padding: 0, color: C.accent, textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }}>Recommencer</button></div>}
     </div>);
 }

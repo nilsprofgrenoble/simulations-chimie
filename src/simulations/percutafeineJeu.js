@@ -171,12 +171,14 @@ export const SCENES = {};
 const add = (id, o) => { SCENES[id] = { id, ...o }; };
 export const estFin = id => !!SCENES[id]?.fin;
 
+// Écrans de résultats déjà vus (courbes, chromatogrammes, pesées…) : l'élève peut les relire à tout moment, sans rien engager.
+export const resultatsVus = e => (e.vus || []).filter(id => SCENES[id]);
 export function aller(e, id) {
   let cible = id;
   if (cible === 'hub' && e.t >= T_MIDI && !e.f.pointD && e.t < T_FIN) cible = 'point_dubreuil';
   if (!SCENES[cible]) throw new Error(`Scène inconnue : ${cible}`);
   if (!SCENES[cible].fin && e.t >= T_FIN) cible = 'fin_temps';
-  const n = { ...e, scene: cible, essais: 0 };
+  const n = { ...e, scene: cible, essais: 0, ...(SCENES[cible].visuels && !SCENES[cible].fin ? { vus: [...new Set([...(e.vus || []), cible])] } : {}) };
   return SCENES[cible].entree ? SCENES[cible].entree(n) : n;
 }
 const DEBUTS_SURS = new Set(['avant', 'pour', 'comme', 'alors', 'dis', 'voilà', 'plus', 'au', 'un', 'une', 'le', 'la', 'les', 'tu', 'notre', 'bien', 'même', 'sur', 'quand', 'ton', 'ta', 'tes', 'avec', 'après', 'ce', 'cette', 'ça', 'mon', 'il', 'elle', 'on', 'je', 'nous', 'vous', 'si', 'donc', 'mais', 'et', 'ici', 'là', 'ah', 'oui', 'non', 'c', 'l', 'd', 'j', 't', 'n', 's', 'qu', 'comment', 'combien', 'quel', 'quelle', 'est', 'regarde', 'lis', 'pose', 'note', 'tiens', 'écoute', 'attention', 'ok']);

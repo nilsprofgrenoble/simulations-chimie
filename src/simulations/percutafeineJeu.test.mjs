@@ -260,3 +260,8 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   assert(a === o(1) && J.observationsDe(J.etatInitial(1)).length === J.OBSERVATIONS.length, 'ordre stable, rien perdu');
   assert(autres.size > 1 && [...autres].some(x => x !== J.OBSERVATIONS.map(y => y[0]).join()), 'ordre mélangé');
   console.log('observations mélangées : OK'); }
+// 16. Résultats déjà vus : relisibles à tout moment
+{ let e = { ...J.etatInitial(8), scene: 'hub', t: 5 };
+  e = J.choisir(e, J.choixDe(e).find(c => c.vers === 'rheoC')); assert(J.resultatsVus(e).includes('rheoC'), 'courbe de rhéologie mémorisée');
+  const r = J.choisir(e, J.choixDe(e)[0]); assert(r.scene === 'hub' && J.resultatsVus(r).includes('rheoC') && J.visuelsDe({ ...r, scene: 'rheoC' }).length, 'relisible après la conclusion');
+  console.log('résultats relisibles : OK'); }
