@@ -1,8 +1,9 @@
 import FichesPercutafeine from './FichesPercutafeine';
 import { useState, useEffect, useRef } from "react";
 import { useEtatPersistant, Formule } from "../commun";
+import { Avatar as AvatarVisuel, STYLE_VISUELS } from './LaboVisuels';
 import {
-  CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_FIN, T_S2, CHAMPS_FORMULE, FORMULE_REPLI, etatInitial, texteDe, choixDe, visuelsDe, choisir, valider, estFin,
+  CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_FIN, T_MIDI, T_PAUSE, NB_AVATARS, avatarDe, pn, CHAMPS_FORMULE, FORMULE_REPLI, etatInitial, texteDe, choixDe, visuelsDe, choisir, valider, estFin,
   horloge, duree, nf, statutBg, resume, bilan, validerFormule, ajouterBase, validerPh, OBSERVATIONS, noterObs, chronologie, consequences, fiche, validerPlan, nombre,
 } from "./percutafeineJeu";
 
@@ -15,7 +16,7 @@ const NIVEAUX = { ok: ['✅', C.vert, 'Maîtrisé'], moyen: ['🟡', C.ambre, '�
 const TONS = { ok: C.vert, moyen: C.ambre, ko: C.rouge };
 const ICONES = { choix_caf: '🧪', choix_eth: '🧪', docs: '📄', obs_video: '🎞️', es_prep: '🔥', es_calc1: '📊', eth1: '⚖️', formule: '📝', eq_base: '⚗️', fab_choix: '⚗️', fab_disp: '🧴', rheoC: '🌀', rheoF: '🌀', hplc_m: '📈', cpg_ei: '🔬', cpg_inj: '🔬', uv_ajouts_plan: '🌈', uv_ext_plan: '🌈', hplc_gamme_plan: '📈', hplc_ei: '📈', verdict: '✅', eq_ines: '✅' };
 const FOND_LIEU = { 'Paillasse de formulation': '#ecf7ee', 'Salle de chromatographie': '#e8f1fa', 'Bureau': '#f3eefb', 'Bureau de Mme Dubreuil': '#f3eefb', 'Salle de rhéologie': '#fdf1e7', 'Salle des étuves': '#fdf1e7' };
-const STYLE = `
+const STYLE = `${STYLE_VISUELS}
 @keyframes pc-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .pc-scene{animation:pc-in .35s ease-out}
 .pc-choix{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;padding:12px 14px;margin:9px 0;border:1.5px solid ${C.bord};border-radius:14px;background:#fff;color:${C.encre};font:inherit;font-size:16px;line-height:1.45;cursor:pointer;transition:border-color .15s,background .15s,transform .15s,box-shadow .15s}
@@ -127,9 +128,8 @@ const Visuel = ({ v }) => v.type === 'balance' ? <BalanceVue v={v} /> : v.type =
 
 // ───────────── Briques d'interaction ─────────────
 const inst = { background: '#fffaf0', border: '1.5px solid #ecd9a6' };
-function Avatar({ pnj, taille = 40 }) {
-  const p = PNJ[pnj];
-  return <span aria-hidden="true" style={{ flex: 'none', width: taille, height: taille, borderRadius: '50%', background: p.couleur, color: '#fff', fontWeight: 700, fontSize: taille * 0.45, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 6px rgba(0,0,0,.2)' }}>{pnj === 'moi' ? '🧑‍🔬' : p.nom.replace(/^Mme /, '').charAt(0)}</span>;
+function Avatar({ pnj, taille = 40, e }) {
+  return <span aria-hidden="true" style={{ flex: 'none', display: 'inline-flex' }}><AvatarVisuel id={pnj === 'moi' ? avatarDe(e) : pnj} taille={taille} /></span>;
 }
 
 function Calcul({ e, sc, onEtat }) {
@@ -282,14 +282,14 @@ function Film({ e }) {
   const ch = chronologie(e), W = 680, x0 = 120, x1 = 664, X = t => x0 + t / T_FIN * (x1 - x0), tmax = Math.min(e.t, T_FIN);
   const rangs = [['Toi (actif)', ch.actif, '#1e3a8a'], ['Étuve', ch.etuve, '#f59e0b'], ['Dispersion gel', ch.gel, '#7c3aed'], ['Attente subie', ch.attentes, '#dc2626']];
   const barres = a => a.map((b, i) => { const t0 = b.t0, t1 = b.t1 ?? b.t1; return <rect key={i} x={X(t0)} y="0" width={Math.max(2, X(Math.min(t1, T_FIN)) - X(t0))} height="18" rx="3" />; });
-  const ticks = [0, 60, 120, 180, 240, 300, 360, 420].map(t => [t, t < T_S2 ? `${13 + t / 60} h` : `${8 + (t - T_S2) / 60} h`]);
+  const ticks = [0, 60, 120, 180, 240, 300, 360, 420, 480, 540].map(t => [t, `${8 + t / 60} h`]);
   return (<figure data-film style={{ margin: '8px 0' }}>
     <svg viewBox={`0 0 ${W} 170`} width="100%" role="img" aria-label="Frise horaire de ta journée : ton travail actif, l'étuve, la dispersion du gel et les attentes subies" style={{ display: 'block', background: C.fond, borderRadius: 12, border: `1px solid ${C.bord}` }}>
       {rangs.map(([nom, a, col], r) => <g key={nom} transform={`translate(0 ${14 + r * 30})`}><text x="8" y="13" fontSize="12" fill={C.encre}>{nom}</text><rect x={x0} y="0" width={x1 - x0} height="18" rx="3" fill="#e8eef4" /><g fill={col}>{barres(a)}</g></g>)}
-      <line x1={X(T_S2)} y1="8" x2={X(T_S2)} y2="136" stroke={C.ambre} strokeDasharray="4 3" strokeWidth="1.5" />
+      <rect x={X(T_MIDI)} y="8" width={X(T_MIDI + T_PAUSE) - X(T_MIDI)} height="128" fill={C.ambre} opacity=".18" />
       <rect x={X(tmax)} y="8" width={Math.max(0, x1 - X(tmax))} height="128" fill="#fff" opacity=".6" />
       {ticks.map(([t, l]) => <g key={t}><line x1={X(t)} y1="136" x2={X(t)} y2="141" stroke={C.doux} /><text x={X(t)} y="154" fontSize="11" textAnchor="middle" fill={C.doux}>{l}</text></g>)}
-      <text x={X(T_S2) + 4} y="10" fontSize="10" fill={C.ambre}>séance 2</text>
+      <text x={X(T_MIDI) + 2} y="20" fontSize="10" fill={C.ambre}>déj.</text>
     </svg>
     <figcaption style={{ fontSize: 13.5, color: C.doux, marginTop: 6, lineHeight: 1.5 }}>Un technicien efficace lance d'abord les opérations longues (étuve, dispersion du Carbopol), puis prépare calculs, rhéologie du témoin et analyses pendant qu'elles tournent. Tes attentes subies : <b>{duree(e.f.attente || 0)}</b>.</figcaption>
   </figure>);
@@ -315,9 +315,9 @@ function BarreTemps({ t }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 6, marginBottom: 6 }}><b style={{ fontSize: 16 }}>🕐 {horloge(Math.min(t, T_FIN))}</b><span style={{ fontSize: 14, color: fin ? C.rouge : C.doux, fontWeight: fin ? 700 : 400 }}>Reste {duree(Math.max(0, T_FIN - t))}</span></div>
       <div style={{ position: 'relative', height: 10, background: '#dbe4ee', borderRadius: 6 }}>
         <div style={{ width: pct(t), height: '100%', background: fin ? C.rouge : C.accent, borderRadius: 6, transition: 'width .4s' }} />
-        <div style={{ position: 'absolute', left: pct(T_S2), top: -3, width: 3, height: 16, borderRadius: 2, background: C.ambre }} title="Début de la séance 2" />
+        <div style={{ position: 'absolute', left: pct(T_MIDI), top: -3, width: `${T_PAUSE / T_FIN * 100}%`, height: 16, borderRadius: 2, background: C.ambre, opacity: .7 }} title="Pause déjeuner" />
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, color: C.doux, marginTop: 3 }}><span>Séance 1 · 13 h</span><span>Séance 2 · 8 h</span><span>11 h 30</span></div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5, color: C.doux, marginTop: 3 }}><span>8 h</span><span>Pause · 12 h</span><span>17 h</span></div>
     </div>);
 }
 
@@ -335,15 +335,16 @@ function Instruments({ e, s }) {
     {s.gel && carte('⚗️', 'Dispersion du gel', e.bg.gel, 90, 'Le Carbopol se disperse')}</div>;
 }
 
-function Dialogue({ sc, paragraphes, p }) {
+function Dialogue({ sc, paragraphes, p, e }) {
   return <div>{paragraphes.map((l, i) => l.startsWith('«') || /^[A-ZÉÈÀ][\w'’ éèêàùçî-]* : «/.test(l) ?
-    <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '10px 0' }}><Avatar pnj={sc.pnj} /><div className="pc-bulle" style={{ flex: 1, margin: 0, borderColor: p.couleur + '66', background: p.couleur + '0d' }}>{l}</div></div>
+    <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '10px 0' }}><Avatar pnj={sc.pnj} e={e} /><div className="pc-bulle" style={{ flex: 1, margin: 0, borderColor: p.couleur + '66', background: p.couleur + '0d' }}>{l}</div></div>
     : <p key={i} style={{ lineHeight: 1.65, margin: '10px 0', color: '#334155' }}>{l}</p>)}</div>;
 }
 
 export function SimulationHistoirePercutafeine() {
   const [etat, setEtat] = useEtatPersistant(CLE_ETAT, null);
   const [fins, setFins] = useEtatPersistant(CLE_FINS, []);
+  const [joueur, setJoueur] = useEtatPersistant('percu-joueur-v1', { prenom: '', avatar: 0 });
   const [carnetOuvert, setCarnetOuvert] = useState(false);
   const refTitre = useRef(null), refCadre = useRef(null);
   const e = etat && SCENES[etat.scene] ? etat : null, fin = !!e && estFin(e.scene);
@@ -363,12 +364,23 @@ export function SimulationHistoirePercutafeine() {
       <div style={{ background: 'linear-gradient(135deg,#0f4c5c,#0b2f3a)', color: '#fff', borderRadius: 16, padding: 'clamp(16px,4vw,28px)', marginBottom: 16 }}>
         <div style={{ fontSize: 12.5, letterSpacing: 2, color: '#7ef0d4', fontFamily: 'ui-monospace,monospace' }}>BTS MÉTIERS DE LA CHIMIE · HISTOIRE À CHOIX</div>
         <h2 style={{ margin: '8px 0 10px', fontSize: 'clamp(26px,6vw,38px)', color: '#fff', lineHeight: 1.15 }}>🧴 Contre-typer la Percutaféine</h2>
-        <p style={{ margin: 0, lineHeight: 1.6, maxWidth: 640, color: '#d7eef2' }}>Tu es technicien·ne de R&amp;D. En 7 h 30 de TP, tu retrouves la formule d'un gel à la caféine, tu en fabriques 200 g, puis tu contrôles sa qualité.</p>
+        <p style={{ margin: 0, lineHeight: 1.6, maxWidth: 640, color: '#d7eef2' }}>Tu es technicien·ne de R&amp;D. Pendant une journée de TP (8 h – 17 h), tu retrouves la formule d'un gel à la caféine, tu en fabriques 200 g, puis tu contrôles sa qualité.</p>
       </div>
       <div className="pc-grille" style={{ marginBottom: 14 }}>
         {[['⏱️', 'Environ 45 min', 'Tu joues seul·e, sur un temps de TP simulé.'], ['🔥', 'Le temps compte', "L'étuve et le ballon chauffent pendant que tu travailles."], ['🧮', 'Calculs et choix libres', 'Aucune alerte : tes choix ont des conséquences que tu verras plus loin.'], ['🏁', `${FINS.length} fins possibles`, 'Selon tes choix, tes résultats et ton organisation.']].map(([ic, t, d]) => <div key={t} style={{ display: 'flex', gap: 12, background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 14, padding: '11px 14px' }}><span style={{ fontSize: 24 }}>{ic}</span><div><b>{t}</b><div style={{ fontSize: 14, color: C.doux }}>{d}</div></div></div>)}
       </div>
-      <button type="button" className="pc-btn" data-commencer onClick={() => setEtat(etatInitial())} style={{ fontSize: 17, padding: '12px 28px' }}>Commencer</button>
+      <fieldset data-joueur style={{ border: `1.5px dashed ${C.bord}`, borderRadius: 12, padding: '10px 14px', margin: '0 0 16px', maxWidth: 560 }}>
+        <legend style={{ fontWeight: 800, padding: '0 6px' }}>Qui es-tu ?</legend>
+        <label style={{ display: 'block', fontSize: 15 }}>Ton prénom (tes collègues t'appelleront ainsi) :{' '}
+          <input data-prenom value={joueur.prenom} maxLength={20} onChange={ev => setJoueur({ ...joueur, prenom: ev.target.value })} placeholder="facultatif" style={{ padding: '6px 10px', fontSize: 16, borderRadius: 8, border: `2px solid ${C.bord}`, width: 170 }} /></label>
+        <div role="radiogroup" aria-label="Ton avatar" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 10 }}>
+          {Array.from({ length: NB_AVATARS }, (_, i) => (
+            <button key={i} type="button" role="radio" aria-checked={joueur.avatar === i} aria-label={`Avatar ${i + 1}`} data-avatar={i} onClick={() => setJoueur({ ...joueur, avatar: i })} style={{ padding: 3, borderRadius: '50%', border: joueur.avatar === i ? `3px solid ${C.accent}` : '3px solid transparent', background: 'none', cursor: 'pointer' }}>
+              <AvatarVisuel id={'moi' + i} taille={52} />
+            </button>))}
+        </div>
+      </fieldset>
+      <button type="button" className="pc-btn" data-commencer onClick={() => setEtat(etatInitial(undefined, joueur.prenom, joueur.avatar))} style={{ fontSize: 17, padding: '12px 28px' }}>Commencer</button>
       {boiteFins}
       <div style={{ fontSize: 12.5, color: C.doux, marginTop: 14 }}>Bilan final par compétence du référentiel. Rien n'est transmis à ton enseignant. Scénario fictif d'après le TP de contre-typage (BTS MDC, lycée Argouges) ; les valeurs mesurées sont des données de scénario calées sur des mesures d'élèves.</div>
     </div>);
@@ -382,12 +394,12 @@ export function SimulationHistoirePercutafeine() {
       <BarreTemps t={e.t} />
       <div key={e.scene} className="pc-scene">
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: C.doux, background: FOND_LIEU[sc.lieu] || C.fond, borderRadius: 99, padding: '4px 12px 4px 6px' }}>
-          <Avatar pnj={sc.pnj} taille={24} /><span>{sc.lieu} · {p.nom}</span></div>
+          <Avatar pnj={sc.pnj} taille={24} e={e} /><span>{sc.lieu} · {sc.pnj === 'moi' && pn(e) ? pn(e) : p.nom}</span></div>
         {fin && <div style={{ marginTop: 10, borderRadius: 14, padding: '14px 18px', background: TONS[sc.fin.ton] + '14', border: `1.5px solid ${TONS[sc.fin.ton]}55` }}><div style={{ fontSize: 12, letterSpacing: 1.5, color: TONS[sc.fin.ton], fontWeight: 700 }}>FIN DU TP</div>
           <h3 ref={refTitre} tabIndex={-1} data-titre style={{ margin: '2px 0 0', fontSize: 'clamp(22px,5vw,28px)', outline: 'none', color: TONS[sc.fin.ton] }}>{sc.titre}</h3></div>}
         {!fin && <h3 ref={refTitre} tabIndex={-1} data-titre style={{ margin: '10px 0 6px', fontSize: 'clamp(21px,4.5vw,26px)', outline: 'none', color: C.encre }}>{sc.titre}</h3>}
         {e.f.corrige && <div data-corrige role="status" style={{ background: '#fef3c7', border: '1px solid #f5d98a', borderRadius: 12, padding: '9px 13px', fontSize: 14.5, margin: '8px 0' }}>🤝 {e.f.corrige}</div>}
-        <Dialogue sc={sc} paragraphes={paragraphes} p={p} />
+        <Dialogue sc={sc} paragraphes={paragraphes} p={p} e={e} />
         {sc.fiches && <FichesPercutafeine ids={sc.fiches} ouvert={e.scene === 'docs'} />}
         {sc.formule && <div data-relation style={{ margin: '12px 0', background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 12, padding: '8px 12px', overflowX: 'auto' }}>{FORMULES[sc.formule]}</div>}
         {sc.video && <figure data-video style={{ margin: '12px 0' }}><video controls playsInline preload="metadata" aria-label={sc.video.legende} src={`${import.meta.env.BASE_URL}${sc.video.src}`} style={{ width: '100%', maxWidth: 520, maxHeight: '60vh', display: 'block', margin: '0 auto', borderRadius: 14, background: '#0f2430', boxShadow: '0 6px 18px rgba(0,0,0,.2)' }} /><figcaption style={{ fontSize: 13, color: C.doux, textAlign: 'center', marginTop: 6 }}>{sc.video.legende}</figcaption></figure>}

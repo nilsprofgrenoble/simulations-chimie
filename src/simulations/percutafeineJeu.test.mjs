@@ -60,7 +60,7 @@ const expert = {
   plan: e => PLAN_EXPERT[e.scene],
   calc: (e, k) => J.nf(k.vrai(e), k.cs ?? 2),   // réponse arrondie comme affichée : doit être acceptée
   choix: (e, ch) => {
-    if (e.scene === 'hub') { const ordre = ['es_balance', 'es_prep', 'eth1', 'choix_caf', 'hplc_m', 'choix_eth', 'cpg_ei', 'rheoC', 'es_calc1', 'formule', 'eq_base', 'fab_choix', 'fab_disp', 'rheoF', 'uv_ajouts_plan', 'uv_ext_plan', 'hplc_gamme_plan', 'hplc_ei', 'cpg_inj', 'eq_ines', 'verdict'];
+    if (e.scene === 'hub') { const ordre = ['es_balance', 'es_prep', 'eth1', 'choix_caf', 'hplc_m', 'choix_eth', 'cpg_m', 'rheoC', 'es_calc1', 'formule', 'eq_base', 'fab_choix', 'fab_disp', 'rheoF', 'uv_ajouts_plan', 'uv_ext_plan', 'hplc_gamme_plan', 'hplc_ei', 'cpg_inj', 'eq_ines', 'verdict'];
       return [...ch].sort((a, b) => ordre.indexOf(a.vers) - ordre.indexOf(b.vers)).find(c => ordre.includes(c.vers)) || ch[0]; }
     if (e.scene === 'choix_caf') return ch.find(c => c.id === (e.f.graine % 2 ? 'clhpEI' : 'clhpEI'));
     if (e.scene === 'choix_eth') return ch.find(c => c.id === 'cpg');
@@ -69,7 +69,8 @@ const expert = {
     if (e.scene === 'es_calc2') return J.ecartEs(e) <= 1.4 ? ch[0] : ch[1];
     if (e.scene === 'hplc_inj') return ch[0];
     if (e.scene === 'hplc_panne') return ch[0];
-    if (e.scene === 'cpg_ei') return ch[1];
+    if (e.scene === 'cpg_ei') return ch.find(c => c.id === 'butanol');
+    if (e.scene === 'cpg_ref') return ch[0];
     if (e.scene === 'cpg_comp') return ch[0];
     if (e.scene.startsWith('eq_') || e.scene === 'point_dubreuil' || e.scene === 'secu') return ch.find(c => c.tag === 'ok');
     if (e.scene === 'cause') return ch.find(c => c.f.causeJuste);
@@ -207,3 +208,21 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   console.log(`gamme CPG : ${cb.toFixed(1)} % (encadre l'échantillon), ${cm.toFixed(1)} % (gamme trop haute)`);
   assert(cb < 5 && cm > 2 * cb, 'gamme CPG');
   console.log('plans de préparation : OK'); }
+// 10. CPG : le protocole du sujet donne le propan-1-ol (coélué) ; l'élève change d'étalon interne ou exploite quand même
+{ const e0 = { ...J.etatInitial(11), scene: 'cpg_ref', f: { ...J.etatInitial(11).f, ei: 'propanol', voieEth: 'cpg' } };
+  assert(J.choixDe(e0).length === 2 && J.texteDe(e0).includes('un seul pic'), 'coélution visible sur la référence');
+  const e1 = J.choisir(e0, J.choixDe(e0)[0]); assert(e1.scene === 'cpg_ei' && J.choixDe(e1).some(c => c.id === 'butanol'), 'changer d\'étalon interne');
+  const e2 = J.choisir(e1, J.choixDe(e1).find(c => c.id === 'butanol')); assert(e2.scene === 'cpg_ref' && e2.f.ei === 'butanol' && J.texteDe(e2).includes('bien séparés'), 'butan-1-ol : pics séparés');
+  const e3 = J.choisir(e1, J.choixDe(e1).find(c => c.id === 'pentanol')); assert(e3.scene === 'cpg_pentanol' && e3.f.errMeth === 1, 'pentan-1-ol : pas de pic');
+  const ign = J.choisir(e0, J.choixDe(e0)[1]); assert(ign.f.coelIgnore && ign.f.errCoel, 'coélution ignorée');
+  const ok = { ...ign, f: { ...ign.f, coelIgnore: false } }; ok.f.fm = J.FORMULE_REPLI; ign.f.fm = J.FORMULE_REPLI;
+  const r = J.donneesCpg(ign).pctGamme / J.donneesCpg(ok).pctGamme; assert(Math.abs(r - 1.3) < 1e-9, 'éthanol surestimé de 30 %');
+  assert(J.consequences(ign).some(c => c.cause === 'Coélution ignorée'), 'conséquence affichée');
+  console.log('CPG, étalon interne : OK'); }
+// 11. Journée de 8 h à 17 h, prénom et avatar
+{ assert(J.horloge(0) === '8 h 00' && J.horloge(J.T_FIN) === '17 h 00' && J.horloge(240) === '12 h 00', 'horaires');
+  const e = J.etatInitial(5, '  Camille <b> ', 3); assert(J.pn(e) === 'Camille b' && J.avatarDe(e) === 'moi3', 'prénom nettoyé, avatar');
+  assert(J.texteDe(J.etatInitial(5, 'Camille', 3), J.SCENES.intro).startsWith('« Camille, une cliente'), 'les collègues appellent le joueur par son prénom');
+  assert(!J.texteDe(J.etatInitial(5), J.SCENES.intro).includes(','.concat(' une cliente')), 'sans prénom, texte inchangé');
+  const p = { ...J.etatInitial(9), t: 250, scene: 'point_dubreuil' }; const r = J.choisir(p, J.choixDe(p)[0]); assert(r.t >= 250 + 60 && r.hist.some(h => h.k === 'pause'), 'pause déjeuner après le point d\'étape');
+  console.log('journée 8 h – 17 h, prénom : OK'); }
