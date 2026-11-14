@@ -56,7 +56,7 @@ const expert = {
   ph: e => { let n = e; for (let i = 0; i < 12 && (J.phDe(n, n.f.trolAdd || 0) < 5.6); i++) n = J.ajouterBase(n, 0.3); const r = J.validerPh(n); assert(r.ok, 'pH validé'); return r.etat; },
   calc: (e, k) => J.nf(k.vrai(e), k.cs ?? 2),   // réponse arrondie comme affichée : doit être acceptée
   choix: (e, ch) => {
-    if (e.scene === 'hub') { const ordre = ['es_prep', 'eth1', 'hplc_m', 'cpg_ei', 'rheoC', 'es_calc1', 'formule', 'fab_choix', 'fab_disp', 'rheoF', 'uv_ajouts', 'uv_ext', 'hplc_ei', 'cpg_inj', 'verdict'];
+    if (e.scene === 'hub') { const ordre = ['es_prep', 'eth1', 'hplc_m', 'cpg_ei', 'rheoC', 'es_calc1', 'formule', 'eq_base', 'fab_choix', 'fab_disp', 'rheoF', 'uv_ajouts', 'uv_ext', 'hplc_ei', 'cpg_inj', 'eq_ines', 'verdict'];
       return [...ch].sort((a, b) => ordre.indexOf(a.vers) - ordre.indexOf(b.vers)).find(c => ordre.includes(c.vers)) || ch[0]; }
     if (e.scene === 'es_prep') return ch[0];
     if (e.scene === 'es_calc2') return J.ecartEs(e) <= 1.4 ? ch[0] : ch[1];
@@ -64,6 +64,8 @@ const expert = {
     if (e.scene === 'hplc_panne') return ch[0];
     if (e.scene === 'cpg_ei') return ch[1];
     if (e.scene === 'cpg_comp') return ch[0];
+    if (e.scene.startsWith('eq_')) return ch.find(c => c.tag === 'ok');
+    if (e.scene === 'cause') return ch.find(c => c.f.causeJuste);
     if (e.scene === 'fab_choix' || e.scene === 'fab_disp') return ch[0];
     if (e.scene === 'rheoC') return ch[0];
     if (e.scene === 'rheoF') return ch.find(c => !c.f.errRheo2);
@@ -110,3 +112,26 @@ for (const [id, sc] of Object.entries(J.SCENES)) {
   if (sc.calcul) for (const k of [sc.calcul.ok, sc.calcul.ko]) assert(typeof k.vers === 'function' ? J.SCENES[k.vers(e)] : J.SCENES[k.vers], `${id} calcul → ?`);
 }
 console.log('OK : scènes', Object.keys(J.SCENES).length);
+
+// 4. Conséquence réelle du procédé : sans reflux, l'éthanol manque ; la cause « fabrication » est la bonne, et seulement elle
+const expBecher = { ...expert, choix: (e, ch) => e.scene === 'fab_choix' ? ch[1] : expert.choix(e, ch) };
+let nDet = 0, nB = 0;
+for (let g = 1; g <= 100; g++) {
+  const { e } = joue(expBecher, g * 6571);
+  nB++; if (e.scene === 'fin_detecte' && e.f.decl === 'eth') nDet++;
+  assert(J.defauts(e).includes('eth'), 'le bécher ouvert fait manquer de l\'éthanol');
+}
+assert(nDet === nB, `bécher ouvert, bon diagnostic et bonne cause : ${nDet}/${nB}`);
+// l'élève qui accuse la mauvaise cause n'obtient pas la fin « détecte »
+{ let e = joue(expBecher, 99).e; assert(e.scene === 'fin_detecte'); }
+const expMauvaise = { ...expBecher, choix: (e, ch) => e.scene === 'cause' ? ch.find(c => !c.f.causeJuste) : expBecher.choix(e, ch) };
+assert(joue(expMauvaise, 99).e.scene === 'fin_mauvaise_cause', 'mauvaise cause → fin_mauvaise_cause');
+// froid : long mais sans défaut ; conseils de collègues : bilan C.7.3
+const expFroid = { ...expert, choix: (e, ch) => e.scene === 'fab_choix' ? ch[2] : expert.choix(e, ch) };
+{ const r = joue(expFroid, 5).e; assert(!J.defauts(r).includes('eth'), 'à froid : éthanol conforme'); }
+{ const r = joue(expert, 5).e; assert(J.bilan(r)[5].niveau === 'ok', 'C.7.3 ok pour un échange respectueux'); }
+const expSec = { ...expert, choix: (e, ch) => e.scene.startsWith('eq_') ? ch.find(c => c.tag === 'ko') : expert.choix(e, ch) };
+{ const r = joue(expSec, 5).e; assert(J.bilan(r)[5].niveau === 'ko', 'C.7.3 ko pour des échanges secs'); }
+const expPassif = { ...expert, choix: (e, ch) => e.scene === 'eq_base' ? ch.find(c => c.tag === 'moyen') : expert.choix(e, ch) };
+{ const r = joue(expPassif, 5).e; assert(r.f.mode === 'base' || r.f.errBase, 'conseil faux suivi : grumeaux'); }
+console.log('conséquences et C.7.3 : OK');

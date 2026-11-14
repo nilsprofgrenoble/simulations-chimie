@@ -47,7 +47,7 @@ export const KC = 23.4, KB = 2.1;            // aire de pic par mg/L : caféine,
 export const FINS = [
   ['fin_conforme', 'Contretype conforme'],
   ['fin_detecte', 'Non-conformité détectée'],
-  ['fin_mauvaise_cause', 'Bon diagnostic, mauvaise cause'],
+  ['fin_mauvaise_cause', 'Défaut mal identifié'],
   ['fin_faux_ok', 'Lot non conforme validé'],
   ['fin_faux_nok', 'Lot conforme refusé'],
   ['fin_temps', 'Hors délai'],
@@ -184,7 +184,7 @@ const taches = e => {
   if (!F.eth) L.push(['Raisonner sur l\'éthanol de la notice', 'Quelle masse d\'éthanol faut-il mettre dans 200 g de gel ?', 'eth1']);
   if (F.es && !F.esRes) L.push(['Lire l\'extrait sec', 'Calculer ES, vérifier la répétabilité, en déduire le tensioactif.', 'es_calc1']);
   if (F.eth && F.esRes && !F.formule) L.push(['Écrire la formule du contretype', 'Fixer les masses des constituants pour environ 200 g.', 'formule']);
-  if (F.formule && !F.fab) L.push(['Fabriquer le gel', 'Choisir le procédé, lancer la dispersion du Carbopol.', 'fab_choix']);
+  if (F.formule && !F.fab) L.push(['Fabriquer le gel', 'Choisir le procédé, lancer la dispersion du Carbopol.', e.f.eq?.base ? 'fab_choix' : 'eq_base']);
   if (!F.rheoC) L.push(['Rhéologie du gel commercial', 'Mesurer la courbe d\'écoulement du témoin (15 min).', 'rheoC']);
   if (!F.hplcPrep) L.push(['Préparer le dosage de la caféine (CLHP)', 'Masse à peser, solution de référence, première injection.', 'hplc_m']);
   if (F.eth && !F.cpgPrep) L.push(['Préparer le dosage de l\'éthanol (CPG)', 'Choix de l\'étalon interne, masse à peser, injection de la référence.', 'cpg_ei']);
@@ -192,7 +192,7 @@ const taches = e => {
   if (F.ph && F.rheoC && !F.rheoF) L.push(['Comparer les rhéologies', 'Mesurer le gel formulé et le comparer au commercial.', 'rheoF']);
   if (F.ph && F.hplcPrep && !F.caf) L.push(['Doser la caféine du gel formulé', e.f.methCaf === 'ajouts' ? 'Ajouts dosés au spectrophotomètre UV.' : e.f.methCaf === 'ext' ? 'Étalonnage externe au spectrophotomètre UV.' : 'CLHP, méthode de l\'étalon interne.', e.f.methCaf === 'ajouts' ? 'uv_ajouts' : e.f.methCaf === 'ext' ? 'uv_ext' : 'hplc_ei']);
   if (F.ph && F.cpgPrep && !F.ethQC) L.push(['Doser l\'éthanol du gel formulé', 'CPG avec étalon interne, puis avec une gamme d\'étalonnage.', 'cpg_inj']);
-  if (F.caf && F.ethQC && F.rheoF) L.push(['Conclure : le contretype est-il conforme ?', 'Comparer aux exigences et décider.', 'verdict']);
+  if (F.caf && F.ethQC && F.rheoF) L.push(['Conclure : le contretype est-il conforme ?', 'Comparer aux exigences et décider.', e.f.eq?.ines ? 'verdict' : 'eq_ines']);
   return L;
 };
 add('intro', {
@@ -226,7 +226,7 @@ add('eth1', {
 });
 add('eth2', {
   lieu: 'Bureau', pnj: 'moi', titre: 'Masse d\'éthanol à peser',
-  texte: () => `Tu fabriques 200 g de gel. L'éthanol disponible au laboratoire est de l'éthanol à 96 %.`,
+  texte: () => `Tu fabriques 200 g de gel. L'éthanol disponible au laboratoire est de l'éthanol à 96 %.\nLa notice annonce aussi 5 % de caféine : c'est une donnée du fabricant, on ne la dose pas à ce stade (le dosage viendra au contrôle qualité).`,
   calcul: { q: 'Quelle masse d\'éthanol à 96 % faut-il peser pour 200 g de gel ?', unite: 'g', vrai: () => M_LOT * 4 / 10, tol: 0.02, cs: 0, indice: 'La notice donne 4 g d\'éthanol à 96 % pour 10 g de gel : cherche la masse pour 200 g.',
     ok: { vers: 'hub', duree: 5, run: n => marquer(n, 'eth'), note: 'Éthanol à 96 % à peser : 80 g pour 200 g de gel.' }, ko: { vers: 'hub', duree: 0, run: n => marquer(n, 'eth'), f: { errEth: true } } },
 });
@@ -286,22 +286,55 @@ add('formule', {
   choix: [],
 });
 
+
+// ───────────── Échanges avec les collègues (C.7.3) ─────────────
+// Chaque échange note l'attitude de l'élève (ok : respectueux et argumenté ; moyen : passif ; ko : sec ou fermé) ; les conséquences sont réelles plus loin.
+const eqNote = (n, k, id) => ({ ...n, f: { ...n.f, eq: { ...(n.f.eq || {}), [id]: k } } });
+add('eq_base', {
+  lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Le conseil de Lucas',
+  texte: () => `Lucas, qui a l'habitude du labo : « Moi je mets tout d'un coup, base comprise, ça fait gagner 20 minutes. J'ai toujours fait comme ça. »`,
+  choix: [
+    { t: '« D\'accord, je fais comme toi. »', tag: 'moyen', vers: 'fab_grumeaux', duree: 5, f: { mode: 'base', perteEth: 0.01 }, run: n => eqNote(n, 'moyen', 'base'), note: 'Conseil de Lucas suivi sans discussion : tout mélangé, base comprise.' },
+    { t: '« Merci, mais le Carbopol doit être dispersé avant d\'être neutralisé, sinon il fait des grumeaux. Je préfère ajouter la base à la fin. »', tag: 'ok', vers: 'fab_choix', duree: 2, run: n => eqNote(n, 'ok', 'base'), note: 'Conseil de Lucas discuté poliment, procédé choisi par moi.' },
+    { t: '« Arrête, tu ne sais pas de quoi tu parles. »', tag: 'ko', vers: 'fab_choix', duree: 5, run: n => eqNote(n, 'ko', 'base'), note: 'Lucas rembarré sèchement.' },
+  ],
+});
+add('eq_ext', {
+  lieu: 'Salle de chromatographie', pnj: 'lucas', titre: 'Lucas passe à la paillasse',
+  texte: () => `Lucas s'arrête devant la CLHP en panne : « Tu devrais faire une gamme en UV, étalonnage externe : c'est ce qu'on a toujours fait, c'est rapide et ça marche très bien. »`,
+  choix: [
+    { t: '« Merci du conseil. Je regarde ce que ça donne et je vérifie avec une autre méthode si ça me paraît trop haut. »', tag: 'ok', vers: 'hplc_panne', duree: 2, run: n => eqNote(n, 'ok', 'ext'), note: 'Conseil de Lucas (UV externe) écouté, vérification prévue.' },
+    { t: '« Oui, bonne idée, j\'y vais. »', tag: 'moyen', vers: 'hplc_panne', duree: 1, run: n => eqNote(n, 'moyen', 'ext'), note: 'Conseil de Lucas (UV externe) accepté sans discussion.' },
+    { t: '« Je n\'ai pas besoin de ton avis. »', tag: 'ko', vers: 'hplc_panne', duree: 3, run: n => eqNote(n, 'ko', 'ext'), note: 'Lucas envoyé balader.' },
+  ],
+});
+add('eq_ines', {
+  lieu: 'Bureau', pnj: 'ines', titre: 'Inès relit tes résultats',
+  texte: e => { const D = defauts(e), m = mesures(e); return D.includes('eth') ? `Inès regarde ton cahier : « Ton éthanol est à ${nf(m.eth, 1)} % ; la notice en annonce 38,4 %. Tu veux qu'on regarde ça ensemble avant que tu rendes ton bon ? »` : `Inès regarde ton cahier : « Tes résultats me paraissent cohérents entre eux. Tu veux que je relise un calcul avant que tu rendes ton bon ? »`; },
+  choix: [
+    { t: '« Oui, volontiers : montre-moi ce qui te gêne, on regarde ça ensemble. »', tag: 'ok', vers: 'verdict', duree: 5, run: n => eqNote(n, 'ok', 'ines'), note: 'Relecture avec Inès acceptée.' },
+    { t: '« Ça va, je gère. »', tag: 'moyen', vers: 'verdict', duree: 0, run: n => eqNote(n, 'moyen', 'ines'), note: 'Aide d\'Inès déclinée sans explication.' },
+    { t: '« Tu n\'as pas à relire mon travail. »', tag: 'ko', vers: 'verdict', duree: 2, run: n => eqNote(n, 'ko', 'ines'), note: 'Inès envoyée balader.' },
+  ],
+});
+
 // ───────────── Fabrication ─────────────
 add('fab_choix', {
   lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Comment fabriques-tu le gel ?',
-  texte: () => `« Le Carbopol 980 est très long à se disperser : compte 30 min à 1 h. Dès qu'il est dispersé, c'est la base (la trolamine) qui fait épaissir. Et l'éthanol s'évapore vite quand on chauffe. »\nComment procèdes-tu ?`,
+  texte: () => `« Le Carbopol 980 est long à se disperser : à froid, compte 1 h à 1 h 30 ; un chauffage modéré accélère la dispersion. Dès qu'il est dispersé, c'est la base (la trolamine) qui fait épaissir. »\nComment procèdes-tu ?`,
   hyp: 'Hypothèse : le Carbopol gonfle et épaissit quand il est neutralisé ; mal dispersé, il forme des grumeaux qui ne se redissolvent pas bien.',
   choix: [
-    { t: 'Tout sauf la base dans un ballon à reflux sous agitation, puis la base à la fin', d: '15 min de travail, ballon en route 1 h 15 environ.', duree: 15, vers: 'hub', f: { mode: 'reflux', perteEth: 0.01 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 75 } }), note: 'Fabrication : ballon à reflux sous agitation, base en dernier.' },
-    { t: 'Tout sauf la base dans un bécher chauffé sur plaque, sans couvercle', d: '10 min de travail, plus court (45 min), mais on chauffe de l\'éthanol à l\'air libre.', duree: 10, vers: 'hub', f: { mode: 'becher', perteEth: 0.18 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 45 } }), note: 'Fabrication : bécher chauffé à l\'air libre, base en dernier.' },
-    { t: 'Mettre la base tout de suite avec le Carbopol pour gagner du temps', d: '10 min de travail.', duree: 10, vers: 'fab_grumeaux', f: { mode: 'base', perteEth: 0.01 }, note: 'Fabrication : base ajoutée dès le départ.' },
+    { t: 'Ballon à reflux sous agitation, chauffage modéré, base ajoutée à la fin', d: '15 min de travail, puis environ 1 h de dispersion.', duree: 15, vers: 'hub', f: { mode: 'reflux', perteEth: 0.01 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 60 } }), note: 'Fabrication : ballon à reflux, chauffage modéré, agitation, base en dernier.' },
+    { t: 'Bécher sur plaque chauffante sous agitation, base ajoutée à la fin', d: '10 min de travail, puis environ 45 min de dispersion.', duree: 10, vers: 'hub', f: { mode: 'becher', perteEth: 0.18 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 45 } }), note: 'Fabrication : bécher sur plaque chauffante, agitation, base en dernier.' },
+    { t: 'Bécher à température ambiante sous agitation, base ajoutée à la fin', d: '10 min de travail, puis environ 1 h 30 de dispersion.', duree: 10, vers: 'hub', f: { mode: 'froid', perteEth: 0.04 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 90 } }), note: 'Fabrication : bécher à froid, agitation, base en dernier.' },
+    { t: 'Tout mélanger d\'un coup, base comprise, pour gagner du temps', d: '10 min de travail.', duree: 10, vers: 'fab_grumeaux', f: { mode: 'base', perteEth: 0.01 }, note: 'Fabrication : tous les constituants, base comprise, dès le départ.' },
   ],
 });
 add('fab_grumeaux', {
   lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Des grumeaux gélifiés',
   texte: () => `Après 20 minutes, le milieu est trouble et plein de petits grumeaux translucides : le Carbopol a gonflé au contact de la base avant d'être dispersé. Lucas : « Ça ne se redissoudra pas. »`,
   choix: [
-    { t: 'Tout recommencer proprement avec le reflux (45 min de plus)', duree: 45, vers: 'hub', f: { errBase: true, mode: 'reflux', perteEth: 0.01 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 75 } }), note: 'Gel raté (base trop tôt) : fabrication refaite avec reflux.' },
+    { t: 'Tout recommencer avec la base à la fin, en ballon à reflux (45 min de plus)', duree: 45, vers: 'hub', f: { errBase: true, mode: 'reflux', perteEth: 0.01 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 75 } }), note: 'Gel raté (base trop tôt) : fabrication refaite avec reflux.' },
     { t: 'Continuer tel quel et espérer que ça passera', duree: 5, vers: 'hub', f: { errBase: true, disp: 'grumeaux' }, run: n => ({ ...marquer(n, 'fab', 'disp'), bg: { ...n.bg, gel: n.t + 10 } }), note: 'Gel avec grumeaux conservé.' },
   ],
 });
@@ -312,7 +345,7 @@ add('fab_disp', {
   choix: e => e.fait.disp ? [{ t: 'Passer à la neutralisation', vers: 'ph' }] : [
     { t: 'Continuer l\'agitation 30 minutes de plus', duree: 30, vers: 'ph', f: { disp: 'continuer' }, run: n => marquer(n, 'disp'), note: 'Dispersion prolongée de 30 min : Carbopol dissous.' },
     { t: 'Arrêter le chauffage et ajouter la base pour voir si le reste se dissout', duree: 2, vers: 'ph', f: { disp: 'neutraliser' }, run: n => marquer(n, 'disp'), note: 'Dispersion arrêtée avant la fin, base ajoutée ensuite.' },
-    { t: 'Augmenter le chauffage pour accélérer', duree: 15, vers: 'ph', run: n => ({ ...marquer(n, 'disp'), f: { ...n.f, disp: 'chauffer', perteEth: n.f.perteEth + (n.f.mode === 'becher' ? 0.06 : 0.03) } }), note: 'Chauffage augmenté : Carbopol dispersé, un peu d\'éthanol perdu.' },
+    { t: 'Augmenter le chauffage pour accélérer', duree: 15, vers: 'ph', run: n => ({ ...marquer(n, 'disp'), f: { ...n.f, disp: 'chauffer', perteEth: n.f.perteEth + (n.f.mode === 'becher' ? 0.06 : n.f.mode === 'froid' ? 0.05 : 0.03) } }), note: 'Chauffage augmenté : Carbopol dispersé, un peu d\'éthanol perdu.' },
   ],
 });
 export function ajouterBase(e, g) {
@@ -327,7 +360,8 @@ export function validerPh(e) {
 }
 add('ph', {
   lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'ph', titre: 'Neutraliser et mettre en pot',
-  texte: e => `« Ajoute la trolamine par petites fractions en agitant, et lis le pH au pH-mètre après chaque ajout (2 minutes l'ajout). Vise un pH proche de celui du gel commercial, vers 6. » ${e.f.disp === 'grumeaux' ? 'Le gel contient des grumeaux.' : ''}`,
+  video: { src: 'videos/neutralisation-carbopol.mp4', legende: 'Enregistrement du TP : le milieu agité s\'épaissit pendant la neutralisation.' },
+  texte: e => `« Ajoute la trolamine par petites fractions en agitant, et lis le pH au pH-mètre après chaque ajout (2 minutes l'ajout). Vise un pH proche de celui du gel commercial, vers 6. Regarde ce que ça donne quand le milieu épaissit. » ${e.f.disp === 'grumeaux' ? 'Le gel contient des grumeaux.' : ''}`,
   hyp: 'Hypothèse : la viscosité d\'un gel de Carbopol dépend du pH (elle augmente de pH 4 à 6 environ puis se stabilise) ; la lecture du pH-mètre a une dispersion de ±0,04.',
   choix: [],
 });
@@ -373,7 +407,7 @@ add('hplc_inj', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Première injection',
   entree: e => e.f.panne === undefined ? { ...e, f: { ...e.f, panne: unif(e.f.graine, 'panne') < 0.6 } } : e,
   texte: () => `Les solutions sont prêtes (référence avec benzoïne comme étalon interne). Tu passes à l'injection de la solution de référence en CLHP (boucle de 20 µL, λ = 273 nm).`,
-  choix: [{ t: 'Injecter la solution de référence', duree: 10, vers: e => e.f.panne ? 'hplc_panne' : 'hplc_ref', run: n => marquer(n, 'hplcPrep'), f: {} }],
+  choix: [{ t: 'Injecter la solution de référence', duree: 10, vers: e => e.f.panne ? (e.f.eq?.ext ? 'hplc_panne' : 'eq_ext') : 'hplc_ref', run: n => marquer(n, 'hplcPrep'), f: {} }],
 });
 add('hplc_ref', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Chromatogramme de référence',
@@ -501,19 +535,54 @@ add('verdict', {
   hyp: "Règle de décision du scénario : un résultat est conforme s'il est dans la plage exigée ; l'incertitude de mesure n'est pas ajoutée à la plage.",
   choix: [
     { t: 'Conforme sur les trois critères', vers: e => verdictVers(e, 'conforme') },
-    { t: 'Non conforme : la caféine', vers: e => verdictVers(e, 'caf') },
-    { t: 'Non conforme : l\'éthanol', vers: e => verdictVers(e, 'eth') },
-    { t: 'Non conforme : la viscosité', vers: e => verdictVers(e, 'visco') },
+    { t: 'Non conforme : la caféine', f: { decl: 'caf' }, vers: e => verdictVers(e, 'caf') },
+    { t: 'Non conforme : l\'éthanol', f: { decl: 'eth' }, vers: e => verdictVers(e, 'eth') },
+    { t: 'Non conforme : la viscosité', f: { decl: 'visco' }, vers: e => verdictVers(e, 'visco') },
   ],
+});
+
+// Cause probable du défaut : la vérité vient de l'historique réel de la partie (procédé, formule, pH), pas d'un tirage.
+const NOMS_DEFAUT = { caf: 'la teneur en caféine', eth: 'la teneur en éthanol', visco: 'la viscosité' };
+export function causesDe(e) {
+  const f = e.f, fm = f.fm || FORMULE_REPLI, g = gelVrai(e);
+  const L = {
+    eth: [
+      { t: 'De l\'éthanol s\'est échappé pendant la fabrication (chauffage sans reflux, récipient ouvert)', vrai: (f.perteEth || 0) > 0.06 },
+      { t: 'La masse d\'éthanol à 96 % pesée était trop faible', vrai: fm.eth96 < 75 },
+      { t: 'L\'étalon interne de la CPG était mal choisi', vrai: false },
+      { t: 'La caféine a réagi avec l\'éthanol', vrai: false },
+    ],
+    caf: [
+      { t: 'La masse de caféine pesée ne correspondait pas à 5 % du lot', vrai: fm.caf < 9 || fm.caf > 11 },
+      { t: 'La caféine s\'est évaporée pendant la fabrication', vrai: false },
+      { t: 'Le dosage par étalon interne est faussé par la benzoïne', vrai: false },
+      { t: 'La caféine a été dégradée par la trolamine', vrai: false },
+    ],
+    visco: [
+      { t: 'Le Carbopol n\'a pas été bien dispersé avant d\'ajouter la base (grumeaux)', vrai: f.disp === 'grumeaux' || !!f.errBase },
+      { t: 'Le pH final est resté trop bas : le Carbopol n\'est pas assez neutralisé', vrai: g.ph < 5.5 },
+      { t: 'La masse de Carbopol pesée était trop faible', vrai: fm.carb < 1.3 },
+      { t: 'L\'éthanol a fluidifié le gel', vrai: false },
+    ],
+  }[f.decl || 'eth'];
+  // si aucune cause « vraie » ne se détache (défaut léger), la plus plausible est celle de l'historique le plus marqué
+  if (!L.some(c => c.vrai)) { if (f.decl === 'eth') L[0].vrai = true; else if (f.decl === 'visco') L[1].vrai = true; else L[0].vrai = true; }
+  const rot = Math.floor(unif(f.graine, 'rotcause') * L.length);
+  return [...L.slice(rot), ...L.slice(0, rot)];
+}
+add('cause', {
+  lieu: 'Bureau de Mme Dubreuil', pnj: 'dubreuil', titre: 'Quelle cause probable ?',
+  texte: e => `« Tu écris que ${NOMS_DEFAUT[e.f.decl || 'eth']} est hors exigence. Sur le bon de contrôle, quelle cause probable proposes-tu ? Pense à ce que tu as fait depuis ce matin. »\nTon cahier de laboratoire garde la trace de tes choix.`,
+  choix: e => causesDe(e).map(c => ({ t: c.t, vers: c.vrai ? 'fin_detecte' : 'fin_mauvaise_cause', f: { causeJuste: !!c.vrai } })),
 });
 const verdictVers = (e, decl) => { const D = defauts(e);
   if (!D.length) return decl === 'conforme' ? 'fin_conforme' : 'fin_faux_nok';
   if (decl === 'conforme') return 'fin_faux_ok';
-  return D.includes(decl) ? 'fin_detecte' : 'fin_mauvaise_cause'; };
+  return D.includes(decl) ? 'cause' : 'fin_mauvaise_cause'; };
 const fin = (id, ton, titre, texte) => add(id, { lieu: 'Bureau de Mme Dubreuil', pnj: 'dubreuil', titre, fin: { ton, titre }, texte, choix: [] });
 fin('fin_conforme', 'ok', 'Contretype conforme', e => `« Le gel est conforme : caféine, éthanol et viscosité sont dans les exigences, et tes méthodes se tiennent. On peut proposer le contretype à la cliente. »\nTu as fini à ${horloge(e.t)}.`);
-fin('fin_detecte', 'ok', 'Non-conformité détectée', e => { const D = defauts(e); return `« Tu as vu juste : ${D.includes('eth') ? "il manque de l'éthanol (perte à la fabrication)" : D.includes('visco') ? 'le gel est trop fluide' : 'la teneur en caféine est hors exigence'}. Mieux vaut le savoir avant la cliente. On refait un lot en corrigeant le procédé. »`; });
-fin('fin_mauvaise_cause', 'moyen', 'Bon diagnostic, mauvaise cause', e => `« Il y a bien un défaut, mais pas celui que tu écris sur le bon. Reprends tes résultats critère par critère : ${defauts(e).map(d => ({ caf: 'caféine', eth: 'éthanol', visco: 'viscosité' }[d])).join(', ')}. »`);
+fin('fin_detecte', 'ok', 'Non-conformité détectée', e => `« Tu as vu juste, sur le défaut comme sur sa cause : ${e.f.decl === 'eth' ? (e.f.perteEth > 0.06 ? "l'éthanol s'est échappé à la fabrication, faute de reflux" : 'la masse d\'éthanol pesée était trop faible') : e.f.decl === 'visco' ? 'le gel est trop fluide' : 'la teneur en caféine est hors exigence'}. Mieux vaut le savoir avant la cliente. On refait un lot en corrigeant le procédé. »`);
+fin('fin_mauvaise_cause', 'moyen', 'Défaut mal identifié', e => defauts(e).includes(e.f.decl) ? `« Tu as vu qu'il y avait un défaut sur ${NOMS_DEFAUT[e.f.decl]}, mais la cause que tu proposes ne tient pas. Relis ton cahier : qu'as-tu fait, et dans quel ordre ? Avec une mauvaise cause, on refera un lot sans rien corriger. »` : `« Il y a bien un défaut, mais pas celui que tu écris sur le bon. Reprends tes résultats critère par critère : ${defauts(e).map(d => ({ caf: 'caféine', eth: 'éthanol', visco: 'viscosité' }[d])).join(', ')}. »`);
 fin('fin_faux_ok', 'ko', 'Lot non conforme validé', e => `« Tu as signé un lot qui ne respecte pas le cahier des charges (${defauts(e).map(d => ({ caf: 'caféine', eth: 'éthanol', visco: 'viscosité' }[d])).join(', ')}). C'est exactement ce qu'un contrôle qualité doit empêcher. »`);
 fin('fin_faux_nok', 'ko', 'Lot conforme refusé', e => `« Le gel était en fait conforme. ${e.f.extAccepte ? 'Ta méthode UV externe surestimait la caféine (effet de matrice) : un témoin t\'aurait prévenu.' : 'Reprends tes résultats : ils étaient dans les exigences.'} Un faux rejet coûte un lot et du temps. »`);
 fin('fin_temps', 'ko', 'Hors délai', () => `Les deux demi-journées sont écoulées sans conclusion : le bon de contrôle reste vide. En TP comme au laboratoire, il faut anticiper les temps d'attente, les pannes et les reprises.`);
@@ -521,10 +590,16 @@ fin('fin_temps', 'ko', 'Hors délai', () => `Les deux demi-journées sont écoul
 // ───────────── Résumé et bilan par compétence ─────────────
 export const resume = e => [
   `Formule : ${e.f.fm ? `éthanol à 96 % ${nf(e.f.fm.eth96, 1)} g, Carbopol ${nf(e.f.fm.carb, 2)} g, caféine ${nf(e.f.fm.caf, 1)} g` : 'non fixée'}${e.f.repli ? ' (formule de repli)' : ''}.`,
-  e.f.mode ? `Procédé : ${{ reflux: 'ballon à reflux sous agitation', becher: 'bécher chauffé à l\'air libre', base: 'base ajoutée dès le début' }[e.f.mode]}${e.f.disp ? `, dispersion : ${{ continuer: 'prolongée', neutraliser: 'arrêtée avant la fin', chauffer: 'chauffage augmenté', grumeaux: 'grumeaux conservés' }[e.f.disp]}` : ''}.` : null,
+  e.f.mode ? `Procédé : ${{ reflux: 'ballon à reflux sous agitation', becher: 'bécher chauffé sans reflux', froid: 'bécher à froid', base: 'base ajoutée dès le début' }[e.f.mode]}${e.f.disp ? `, dispersion : ${{ continuer: 'prolongée', neutraliser: 'arrêtée avant la fin', chauffer: 'chauffage augmenté', grumeaux: 'grumeaux conservés' }[e.f.disp]}` : ''}.` : null,
   e.f.methCaf ? `Caféine : ${e.f.methCaf === 'EI' ? (e.f.attendu ? 'CLHP après réparation' : 'CLHP, étalon interne') : e.f.methCaf === 'ajouts' ? 'UV, ajouts dosés' : 'UV, étalonnage externe'}.` : null,
   `Temps d'attente subi : ${duree(e.f.attente)}.`,
 ].filter(Boolean);
+const eqNiveau = f => {
+  const v = Object.values(f.eq || {}), ko = v.filter(x => x === 'ko').length, moy = v.filter(x => x === 'moyen').length;
+  if (!v.length) return { niveau: 'nd', texte: 'Pas d\'échange avec les collègues dans cette partie.' };
+  const niveau = ko >= 2 ? 'ko' : ko + moy === 0 ? 'ok' : 'moyen';
+  return { niveau, texte: niveau === 'ok' ? 'Conseils écoutés, désaccords exprimés avec tact, aide acceptée : une équipe de labo fonctionne ainsi.' : `${ko ? `${ko} échange(s) sec(s) ou fermé(s) avec un collègue. ` : ''}${moy ? `${moy} fois, tu as suivi un avis ou refusé une aide sans en discuter. ` : ''}Un désaccord technique s'exprime avec un argument, sur un ton qui laisse la porte ouverte.` };
+};
 export function bilan(e, finId = e.scene) {
   const f = e.f, niv = (n, a, b) => n <= a ? 'ok' : n <= b ? 'moyen' : 'ko';
   const n1 = (f.errCoel ? 1 : 0) + (f.sansEI ? 1 : 0) + (f.extTente ? 1 : 0) + (f.extAccepte ? 2 : 0) + (f.errComp ? 1 : 0);
@@ -537,6 +612,6 @@ export function bilan(e, finId = e.scene) {
     { comp: 'C.3.2', titre: 'Détecter les non-conformités', niveau: c3, texte: c3 === 'nd' ? 'Pas de conclusion rendue.' : c3 === 'ok' ? 'Décision cohérente avec la réalité du lot.' : 'La décision ne correspond pas aux défauts réels du lot : relis tes résultats critère par critère.' },
     { comp: 'C.4', titre: 'Adapter son protocole face à un imprévu', niveau: c4, texte: c4 === 'nd' ? 'Pas de panne dans cette partie.' : c4 === 'ok' ? 'Panne de CLHP : bascule immédiate vers une méthode adaptée (ajouts dosés).' : c4 === 'moyen' ? 'Panne de CLHP : solution trouvée mais coûteuse ou après un détour.' : 'Résultat biaisé conservé sans vérification.' },
     { comp: 'C.6.1', titre: 'Organiser le travail dans le respect des délais', niveau: finId === 'fin_temps' ? 'ko' : niv(att, 70, 130), texte: `${duree(att)} d'attente subie devant l'étuve, le ballon ou la CLHP en panne (environ 1 h est incompressible)${att > 70 ? ' : lance les opérations longues en premier et prépare les analyses pendant ce temps' : ''}.` },
-    { comp: 'C.7.3', titre: 'Travailler en équipe', niveau: 'nd', texte: 'Non évalué dans ce jeu (travail individuel).' },
+    { comp: 'C.7.3', titre: 'Travailler en équipe', niveau: eqNiveau(f).niveau, texte: eqNiveau(f).texte },
   ];
 }
