@@ -23,7 +23,7 @@ assert(dUv.pctExt > dUv.pctAjouts * 1.25 && Math.abs(dUv.pctAjouts - gRef.caf) <
 assert(Math.abs(J.donneesHplc(eRepli).pct - gRef.caf) < 0.2, 'CLHP : caféine');
 const dC = J.donneesCpg(eRepli);
 assert(Math.abs(dC.pctGamme - gRef.eth) < 4 && Math.abs(dC.pctSimple - gRef.eth) < 6, `CPG : gamme ${dC.pctGamme}, simple ${dC.pctSimple}`);
-assert(dC.r2 > 0.99, 'R² de la gamme CPG');
+assert(dC.r2 > 0.98, 'R² de la gamme CPG');
 // l'extrait sec : écart de deux essais le plus souvent sous 2,8 S_r
 let ok = 0; for (let g = 1; g <= 400; g++) if (J.ecartEs({ f: { graine: g } }) <= 1.4) ok++;
 assert(ok / 400 > 0.9 && ok / 400 < 1, `écart ES compatible dans ${ok / 4} % des parties`);
@@ -40,6 +40,7 @@ function joue(strat, graine) {
       e = r.etat; continue;
     }
     if (sc.station === 'ph') { e = strat.ph(e); continue; }
+    if (sc.station === 'plan') { const r = J.validerPlan(e, strat.plan(e)); assert(r.ok, `plan refusé (${e.scene}) : ${r.message}`); e = r.etat; continue; }
     if (sc.station === 'obs') { e = J.noterObs(e, strat.obs ? strat.obs(e) : ['blanc', 'cristaux', 'fins']); continue; }
     if (sc.calcul) { calculsVus.add(e.scene); const r = J.valider(e, strat.calc(e, sc.calcul)); e = r.etat; continue; }
     const ch = J.choixDe(e);
@@ -52,12 +53,14 @@ function joue(strat, graine) {
 const valid = { caf: 10, carb: 1.5, coc: 8.0, eth96: 80, trol: 1.8, eau: 98.7 };
 // formule d'un élève qui déduit le cocoate de l'extrait sec mesuré (ES − 5 − 0,75 − 0,9, en % puis en g pour 200 g)
 const formuleDe = e => { const coc = Math.max(2, (J.esRetenu(e) - 6.65) * 2), f = { caf: 10, carb: 1.5, coc, eth96: 80, trol: 1.8, eau: 0 }; f.eau = 200 - (f.caf + f.carb + f.coc + f.eth96 + f.trol); return f; };
+const PLAN_EXPERT = { uv_ajouts_plan: { m: 1, vp: 200, dv: 40, n: 6 }, uv_ext_plan: { vmin: 20, vmax: 300, n: 5, m: 1, vp: 200 }, hplc_gamme_plan: { vmin: 20, vmax: 200, n: 5 }, cpg_gamme_plan: { vmin: 100, vmax: 600, n: 5, rep: 2 } };
 const expert = {
   formule: e => J.validerFormule(e, formuleDe(e)),
   ph: e => { let n = e; for (let i = 0; i < 12 && (J.phDe(n, n.f.trolAdd || 0) < 5.6); i++) n = J.ajouterBase(n, 0.3); const r = J.validerPh(n); assert(r.ok, 'pH validé'); return r.etat; },
+  plan: e => PLAN_EXPERT[e.scene],
   calc: (e, k) => J.nf(k.vrai(e), k.cs ?? 2),   // réponse arrondie comme affichée : doit être acceptée
   choix: (e, ch) => {
-    if (e.scene === 'hub') { const ordre = ['es_balance', 'es_prep', 'eth1', 'choix_caf', 'hplc_m', 'choix_eth', 'cpg_ei', 'rheoC', 'es_calc1', 'formule', 'eq_base', 'fab_choix', 'fab_disp', 'rheoF', 'uv_ajouts', 'uv_ext', 'hplc_ei', 'cpg_inj', 'eq_ines', 'verdict'];
+    if (e.scene === 'hub') { const ordre = ['es_balance', 'es_prep', 'eth1', 'choix_caf', 'hplc_m', 'choix_eth', 'cpg_ei', 'rheoC', 'es_calc1', 'formule', 'eq_base', 'fab_choix', 'fab_disp', 'rheoF', 'uv_ajouts_plan', 'uv_ext_plan', 'hplc_gamme_plan', 'hplc_ei', 'cpg_inj', 'eq_ines', 'verdict'];
       return [...ch].sort((a, b) => ordre.indexOf(a.vers) - ordre.indexOf(b.vers)).find(c => ordre.includes(c.vers)) || ch[0]; }
     if (e.scene === 'choix_caf') return ch.find(c => c.id === (e.f.graine % 2 ? 'clhpEI' : 'clhpEI'));
     if (e.scene === 'choix_eth') return ch.find(c => c.id === 'cpg');
@@ -95,6 +98,7 @@ const aleatoire = {
   formule: e => rnd() < 0.5 ? J.validerFormule(e, formuleDe(e)) : (e.f.fTent || 0) >= 2 ? J.validerFormule(e, valid, true) : J.validerFormule(e, { caf: 11, carb: 3, coc: 2, eth96: 60, trol: 1, eau: 100 }),
   ph: e => { let n = e; const k = Math.floor(rnd() * 8); for (let i = 0; i < k; i++) n = J.ajouterBase(n, 0.3); const r = J.validerPh(n); if (r.ok) return r.etat; n = J.ajouterBase(n, 0.5); for (let i = 0; i < 12 && J.phDe(n, n.f.trolAdd) < 5.0; i++) n = J.ajouterBase(n, 0.3); const r2 = J.validerPh(n); assert(r2.ok); return r2.etat; },
   calc: (e, k) => rnd() < 0.6 ? J.nf(k.vrai(e), k.cs ?? 2) : String(Math.round(rnd() * 100)),
+  plan: e => { const P = J.SCENES[e.scene].plan, v = {}; for (const c of P.champs) v[c.id] = c.entier ? Math.round(c.min + rnd() * (c.max - c.min)) : +(c.min + rnd() * (c.max - c.min)).toFixed(2); return rnd() < 0.5 && J.validerPlan(e, v).ok ? v : PLAN_EXPERT[e.scene]; },
   choix: (e, ch) => ch[Math.floor(rnd() * ch.length)],
 };
 const finsA = {}, scenesVues = new Set();
@@ -116,6 +120,7 @@ for (const [id, sc] of Object.entries(J.SCENES)) {
   for (const c of J.choixDe(e, sc)) { if (typeof c.vers === 'string') assert(J.SCENES[c.vers], `${id} → ${c.vers}`); else assert(J.SCENES[c.vers(J.choisir ? { ...e, f: { ...e.f } } : e)], `${id} → vers calculé`); }
   if (sc.calcul) for (const k of [sc.calcul.ok, sc.calcul.ko]) assert(typeof k.vers === 'function' ? J.SCENES[k.vers(e)] : J.SCENES[k.vers], `${id} calcul → ?`);
 }
+for (const [id, sc] of Object.entries(J.SCENES)) if (sc.plan) { assert(J.SCENES[sc.plan.vers], `plan ${id} → ${sc.plan.vers}`); const v = PLAN_EXPERT[id]; assert(v, `plan expert pour ${id}`); assert(sc.plan.apercu(v).lignes.length >= 3 && sc.plan.duree(v) > 0 && sc.plan.note(v), `aperçu de ${id}`); }
 console.log('OK : scènes', Object.keys(J.SCENES).length);
 
 // 4. Conséquence réelle du procédé : sans reflux, l'éthanol manque ; la cause « fabrication » est la bonne, et seulement elle
@@ -186,3 +191,19 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   for (const id of Object.keys(T)) assert(Object.keys(T[id].fins).every(k => k.startsWith('fin_')), 'fins atteintes ' + id);
   const r = joue(voie('clhpEI', ['clhp', 'dens']), 3).e; assert(r.f.errMeth === 2 && J.bilan(r)[0].niveau !== 'ok', 'pistes inadaptées pénalisées'); assert(J.consequences(r).some(c => c.cause === 'Choix de techniques'), 'conséquence affichée');
   console.log('choix de techniques : OK'); }
+
+// 9. Plans de préparation : bornes physiques, qualité selon la conception
+{ const e = { ...J.etatInitial(5), scene: 'uv_ajouts_plan' };
+  assert(!J.validerPlan(e, { m: 1, vp: 10, dv: 50, n: 5 }).ok, 'micropipette : pas moins de 20 µL');
+  assert(!J.validerPlan(e, { m: 1, vp: 200, dv: 5000, n: 8 }).ok, 'débordement de fiole');
+  assert(!J.validerPlan(e, { m: '', vp: 200, dv: 50, n: 5 }).ok && J.validerPlan(e, { m: '1,0', vp: '200', dv: 40, n: 6 }).ok, 'virgule décimale acceptée');
+  const err = (plans, fn) => { let s = 0; for (let g = 1; g <= 200; g++) { const x = J.etatInitial(g * 13); x.f = { ...x.f, fm: J.FORMULE_REPLI, trolAdd: 1.8, disp: 'continuer', perteEth: 0.01, mode: 'reflux', plans }; const t = J.gelVrai(x); s += Math.abs(fn(x) - fn.ref(t)) / fn.ref(t); } return s / 2; };
+  const aj = Object.assign(x => J.donneesUv(x).pctAjouts, { ref: t => t.caf });
+  const bon = err({ uv_ajouts_plan: PLAN_EXPERT.uv_ajouts_plan }, aj), sature = err({ uv_ajouts_plan: { m: 1, vp: 1000, dv: 50, n: 5 } }, aj), petit = err({ uv_ajouts_plan: { m: 1, vp: 20, dv: 20, n: 4 } }, aj);
+  console.log(`ajouts dosés : erreur moyenne ${bon.toFixed(1)} % (bien conçu), ${sature.toFixed(1)} % (solution trop concentrée), ${petit.toFixed(1)} % (volumes minuscules)`);
+  assert(bon < 4 && sature > 3 * bon && petit > 2 * bon, 'la conception des fioles change la qualité du résultat');
+  const cg = Object.assign(x => J.donneesCpg(x).pctGamme, { ref: t => t.eth });
+  const cb = err({ cpg_gamme_plan: PLAN_EXPERT.cpg_gamme_plan }, cg), cm = err({ cpg_gamme_plan: { vmin: 1000, vmax: 3000, n: 4, rep: 1 } }, cg);
+  console.log(`gamme CPG : ${cb.toFixed(1)} % (encadre l'échantillon), ${cm.toFixed(1)} % (gamme trop haute)`);
+  assert(cb < 5 && cm > 2 * cb, 'gamme CPG');
+  console.log('plans de préparation : OK'); }
