@@ -417,3 +417,13 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   const t = J.choixDe({ ...r, scene: 'hub' }).map(c => c.vers); assert(t.includes('rapide_caf') && !t.includes('choix_caf') && !t.includes('relance'), `tâches après relance : ${t}`);
   const rc = J.choixDe({ ...r, scene: 'rapide_caf' })[0]; assert(J.choisir({ ...r, scene: 'rapide_caf' }, rc).fait.caf, 'dosage rapide validé');
   console.log('v36 : OK'); }
+// 29. v37 : la rhéologie tombe tôt ; si le gel est trop fluide, on relance un autre gel avant les dosages
+{ const b = J.etatInitial(11), fm = { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 0.5, eau: 98.5 };
+  const h = { ...b, scene: 'hub', t: 230, fait: { es: true, esRes: true, eth: true, rheoC: true, formule: true, fab: true, disp: true, ph: true, rheoF: true }, f: { ...b.f, fm, trolAdd: 0.5, phFinal: J.phDe({ ...b, f: { ...b.f, fm } }, 0.5), disp: 'continuer', mode: 'reflux' } };
+  assert(J.mesures(h).q < J.SPEC.q, 'gel sous-neutralisé : trop fluide');
+  const rel = J.choixDe(h).find(c => c.vers === 'relance'); assert(rel, 'relance proposée dès la rhéologie, avant les dosages');
+  const h2 = J.choisir({ ...h, scene: 'relance' }, J.choixDe({ ...h, scene: 'relance' })[0]);
+  assert(h2.f.lot === 2 && !h2.f.rapideCaf && !h2.f.rapideEth && !h2.fait.ph && h2.fait.rheoC, 'dosages non faits : pas de mode rapide');
+  const t2 = J.choixDe({ ...h2, scene: 'hub' }).map(c => c.vers); assert(t2.includes('choix_caf') && !t2.includes('rapide_caf'), 'dosages normaux sur le nouveau gel');
+  const refus = J.choisir({ ...h, scene: 'relance' }, J.choixDe({ ...h, scene: 'relance' })[1]); assert(!J.choixDe({ ...refus, scene: 'hub' }).some(c => c.vers === 'relance'), 'refus : pas reproposé pour ce lot');
+  console.log('v37 : OK'); }
