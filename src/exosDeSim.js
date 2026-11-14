@@ -59,6 +59,7 @@ export const EXOS_DE_SIM = {
   111: [/(^|\.)ir-/, /plausible\.ir-/],
   109: [/(^|\.)syn-/, /plausible\.syn-/, /(^|\.)ccm-/, /plausible\.ccm-/],
   108: [/mec-pointage/, /plausible\.mec-pointage/],
+  114: [/lum1-/, /plausible\.lum1-/],                                                                                  // Lentille mince (1G)
   107: [/mec-(em|epp|chute)/, /plausible\.mec-(epp|em)/],
   106: [/mec-(theoreme|travail|barriere|ec-)/, /plausible\.mec-/],
   // ── Terminale STL ──
