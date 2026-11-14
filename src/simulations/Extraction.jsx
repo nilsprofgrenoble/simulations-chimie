@@ -207,8 +207,11 @@ export function SimulationExtraction() {
   </div>);
   const exploreAmpoule = (<div style={styleBoite}>
     <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 6, lineHeight: 1.5 }}>Faites l’extraction vous-même, geste par geste. Les erreurs de manipulation ont des conséquences visibles.</div>
-    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }} role="group" aria-label="Solvant">{['cyclohexane', 'dichloromethane', 'ether', 'ethanol'].map(k => <button key={k} onClick={() => setSol(k)} aria-pressed={sol === k} style={stylePetitBouton(sol === k, BLEU)}>{lib(k)}</button>)}</div>
-    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }} role="group" aria-label="Espèce dissoute dans l’eau">{[['diiode', 'diiode'], ['chlorureSodium', 'chlorure de sodium'], ['', 'aucune']].map(([k, n]) => <button key={n} onClick={() => setSute(k)} aria-pressed={sute === k} style={stylePetitBouton(sute === k, ROUGE)}>{n} dans l’eau</button>)}</div>
+    <div style={{ display: 'grid', gap: 10, marginBottom: 12 }}>
+      <div style={{ border: `1px solid ${KIT.bord}`, borderRadius: 8, padding: 10, background: '#fff' }}><div style={{ fontSize: 13, fontWeight: 700, color: BLEU, marginBottom: 6 }}>① Le SOLVANT extracteur (ajouté à l’eau)</div>
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 0 }} role="group" aria-label="Solvant">{['cyclohexane', 'dichloromethane', 'ether', 'ethanol'].map(k => <button key={k} onClick={() => setSol(k)} aria-pressed={sol === k} style={stylePetitBouton(sol === k, BLEU)}>{lib(k)}</button>)}</div></div>
+      <div style={{ border: `1px solid ${KIT.bord}`, borderRadius: 8, padding: 10, background: '#fff' }}><div style={{ fontSize: 13, fontWeight: 700, color: ROUGE, marginBottom: 6 }}>② Le SOLUTÉ (l’espèce dissoute dans l’eau, à extraire)</div>
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 0 }} role="group" aria-label="Espèce dissoute dans l’eau">{[['diiode', 'diiode'], ['chlorureSodium', 'chlorure de sodium'], ['', 'aucune']].map(([k, n]) => <button key={n} onClick={() => setSute(k)} aria-pressed={sute === k} style={stylePetitBouton(sute === k, ROUGE)}>{n}</button>)}</div></div></div>
     <Manip sol={sol} sute={sute}/>
   </div>);
   const explore = (<div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

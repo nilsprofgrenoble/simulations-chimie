@@ -5,6 +5,7 @@ import { NB } from "./Distillation";
 import { nbf, ROUGE, VERT, BLEU, ORANGE } from "./Travail";
 import { SimulationSynthese } from "./Synthese";
 import { SimulationCcm, Plaque, Kofler } from "./Ccm";
+import { Depanneur } from "./Depanneur";
 import * as T from "./tpModele";
 import * as C from "./ccmModele";
 
@@ -83,6 +84,13 @@ function PaillasseLibre() {
     </div>);
 }
 
+function ExploreTP() {
+  const [sous, setSous] = useState('depanneur');
+  return (<div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }} role="group" aria-label="Que voulez-vous explorer ?">{[['depanneur', 'Dépanneur de TP'], ['libre', 'Paillasse libre']].map(([k, nom]) => <button key={k} onClick={() => setSous(k)} aria-pressed={sous === k} style={styleBouton(sous === k, '#0f766e')}>{nom}</button>)}</div>
+    {sous === 'depanneur' ? <Depanneur/> : <PaillasseLibre/>}</div>);
+}
+
 export function SimulationTpChalcone() {
   const [mode, setMode] = useState(() => modeOuverture('synthese-guide-v1'));
   useSignalerMode(mode);
@@ -95,10 +103,10 @@ export function SimulationTpChalcone() {
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>TP de la chalcone : préparer la séance</h2>
         <BoutonsModes mode={mode} setMode={setMode}/>
       </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Dans l’ordre du TP : <strong>synthèse, rendement</strong> puis <strong>contrôle</strong> (CCM, température de fusion). En exploration, la <strong>paillasse libre</strong> vous laisse régler votre TP et en observer les conséquences.</div>
+      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Dans l’ordre du TP : <strong>synthèse, rendement</strong> puis <strong>contrôle</strong> (CCM, température de fusion). En exploration, le <strong>dépanneur</strong> vous confie un TP qui a mal tourné : trouvez la cause et le geste qui répare.</div>
       {mode !== 'explore' && <div role="tablist" aria-label="Étapes du TP" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
         {ONGLETS.map(([k, nom], n) => <button key={k} role="tab" aria-selected={i === n} onClick={() => setOng({ i: n })} style={styleBouton(i === n, '#0f766e')}>{nom}</button>)}</div>}
-      {mode === 'explore' ? <PaillasseLibre/> : i === 0
+      {mode === 'explore' ? <ExploreTP/> : i === 0
         ? <SimulationSynthese key="s" integre modeExt={mode} setModeExt={setMode} suite={suite}/>
         : <SimulationCcm key="c" integre modeExt={mode} setModeExt={setMode}/>}
     </div>);
