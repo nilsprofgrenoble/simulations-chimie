@@ -32,6 +32,23 @@ export default function FichesPercutafeine({ ids, ouvert = false }) {
           'Exemples de formules du fabricant (gels hydroalcooliques) : de 0,5 % à 2,5 % de Carbopol 980 NF.',
         ]} />
       </Feuille>);
+    if (id === 'synthalen') return (
+      <Feuille key={id} ouvert={ouvert} entete="Fiche technique" titre="Synthalen K" sous="Carbomère du produit commercial : polymère carboxyvinylique, agent épaississant" edition="fabricant 3V, valeurs typiques">
+        <Tableau lignes={[
+          ['Aspect', 'Poudre blanche fine, masse volumique apparente 0,20 à 0,23 g/cm³'],
+          ['pH d\'une dispersion à 0,5 % dans l\'eau', '2,7 à 3,5'],
+          ['Masse équivalente moyenne', 'environ 76 (en g de polymère par mole de groupes acide)'],
+          ['Viscosité après neutralisation (Brookfield, 20 tr/min, 25 °C)', '0,2 % : 20 000 à 30 000 mPa·s ; 0,5 % : 40 000 à 60 000 mPa·s'],
+          ['Taux d\'emploi habituel', '0,1 à 1,5 %, selon la formule et la viscosité voulue'],
+        ]} />
+        <Liste items={[
+          'Disperser par addition lente de la poudre, sous agitation, jusqu\'à hydratation complète de toutes les particules. Éviter l\'agitation turbulente, qui piège de l\'air difficile à chasser ensuite.',
+          'Neutralisation : pour amener 1 g de polymère à pH 7, il faut environ 0,01 équivalent de base (0,4 g de soude ou 1,5 g de trolamine). Une base forte s\'ajoute préalablement diluée, à 10 % au plus.',
+          'Éviter un fort cisaillement prolongé pendant et après la neutralisation : la perte de viscosité peut être définitive.',
+          'Les électrolytes, surtout les cations bi- et trivalents, font chuter la viscosité. Éviter les bases minérales bivalentes (précipitation du polymère).',
+          'Les UV peuvent faire perdre de la viscosité au gel. Les valeurs de la fiche sont typiques et non destinées au contrôle qualité.',
+        ]} />
+      </Feuille>);
     if (id === 'trolamine') return (
       <Feuille key={id} ouvert={ouvert} entete="Fiche technique" titre="Trolamine (triéthanolamine)" sous="Amine tertiaire, base faible, liquide visqueux" edition="neutralisant du carbomère">
         <Tableau lignes={[['Rôle', 'Neutralise les groupes acide carboxylique du carbomère pour former le gel'], ['Couple acide/base', 'TEAH⁺ / TEA, pKa d\'environ 7,8'], ['Volatilité', 'Peu volatile (ébullition vers 335 °C) : reste dans l\'extrait sec'], ['Utilisation', 'À ajouter progressivement, sous agitation lente, en suivant le pH']]} />
