@@ -859,13 +859,20 @@ add('cpg_comp', {
 });
 
 // ───────────── Titrage des acides du Carbopol (matière première) ─────────────
+// Volumes de soude versés : pas grossier, pas fin dans la zone [vdeb ; vfz] autour de l'équivalence, puis de nouveau le pas grossier.
+export function volumesTitr(P) {
+  const vdeb = P.vdeb ?? 0, vfz = P.vfz ?? 0, dvf = P.dvf ?? P.dv, vols = [0]; let v = 0;
+  const jusque = (lim, pas) => { while (v < lim - 1e-9) { v = Math.min(v + pas, lim); vols.push(Math.round(v / 0.05) * 0.05); } };
+  jusque(vdeb, P.dv); jusque(vfz, dvf); jusque(P.vfin, P.dv);
+  return [...new Set(vols.map(x => arr(x, 2)))];
+}
 export function donneesTitr(e) {
   const P = planDe(e, 'titr_carb_plan') || { m: 0.2, V0: 100, c: 0.1, vfin: 12, dv: 0.5 }, w = coohLot(e);
   const n = P.m * w / M_COOH, veq = n / P.c * 1000;           // mol ; mL
-  const epais = P.m / P.V0 * 100 > 0.6, sig = epais ? 0.22 : 0.04, N = Math.floor(P.vfin / P.dv + 1e-9);
+  const epais = P.m / P.V0 * 100 > 0.6, sig = epais ? 0.22 : 0.04, vols = volumesTitr(P), N = vols.length - 1;
   const pHw = a => 6 + 2 * Math.log10((a + 0.02) / (1 - a + 0.02));
   const pH = v => { const a = P.c * v / 1000 / n; if (a < 0.995) return Math.max(2.8, pHw(a)); return Math.max(pHw(0.995), 14 + Math.log10(Math.max(1e-9, P.c * v / 1000 - n) / ((P.V0 + v) / 1000))); };
-  const pts = Array.from({ length: N + 1 }, (_, i) => { const v = Math.round(i * P.dv / 0.05) * 0.05; return [arr(v, 2), arr(Math.min(12.4, pH(v) + sig * gauss(e.f.graine, `tc${i}`)), 2)]; });
+  const pts = vols.map((v, i) => [v, arr(Math.min(12.4, pH(v) + sig * gauss(e.f.graine, `tc${i}`)), 2)]);
   const der = pts.slice(1).map((p, i) => [arr((p[0] + pts[i][0]) / 2, 2), arr((p[1] - pts[i][1]) / (p[0] - pts[i][0]), 2)]);
   let k = 0; der.forEach((d, i) => { if (d[1] > der[k][1]) k = i; });
   const atteint = P.vfin >= veq * 1.03 && N >= 4, vEq = atteint ? der[k][0] : null;
@@ -878,14 +885,14 @@ add('titr_carb_plan', {
   hyp: "Hypothèses : tous les groupes COOH sont accessibles à la soude ; le milieu reste assez fluide pour que le pH-mètre se stabilise ; l'équivalence est repérée au maximum de la courbe dérivée dpH/dV.",
   aide: { pnj: 'lucas', textes: [
     () => '« Commence par une estimation : combien de mmol de COOH dans ta prise d\'essai ? La fiche technique donne la teneur en COOH du Carbopol (58 à 63 %). Et combien de mL de soude cela demandera-t-il ? Il faut que ce volume tienne largement dans la burette. »',
-    () => '« n(COOH) ≈ m × 0,605 / 45 mol. Pour 0,1 g, ça fait environ 1,3 mmol, donc 13 mL de soude à 0,1 mol/L. Vise un volume final un peu au-dessus de l\'équivalence attendue, 20 % de plus environ. Reste en dessous de 0,5 g de poudre pour 100 mL d\'eau, sinon ça épaissit trop. Un pas de 1 mL suffit pour un premier titrage. »',
-    () => '« Je ferais : 0,100 g de Carbopol dans 150 mL d\'eau, soude à 0,1 mol/L, pas de 1 mL jusqu\'à 18 mL. Je te laisse changer ce que tu veux. »'],
-    valeurs: () => ({ m: 0.1, V0: 150, c: 0.1, vfin: 18, dv: 1 }) },
+    () => '« n(COOH) ≈ m × 0,605 / 45 mol. Pour 0,1 g, ça fait environ 1,3 mmol, donc 13 mL de soude à 0,1 mol/L. Verse vite, de 1 mL en 1 mL, loin de l\'équivalence, et resserre les ajouts de 2 mL avant à 2 mL après le volume équivalent attendu. Reste en dessous de 0,5 g de poudre pour 100 mL d\'eau, sinon ça épaissit trop. »',
+    () => '« Je ferais : 0,100 g de Carbopol dans 150 mL d\'eau, soude à 0,1 mol/L, pas de 1 mL, avec des ajouts de 0,25 mL entre 11 et 16 mL, jusqu\'à 18 mL. Je te laisse changer ce que tu veux. »'],
+    valeurs: () => ({ m: 0.1, V0: 150, c: 0.1, dv: 1, vdeb: 11, vfz: 16, dvf: 0.25, vfin: 18 }) },
   plan: { infos: ['Balance au 0,1 mg ; soude disponible à 0,1 mol/L et 0,5 mol/L (une autre concentration demande une dilution de 5 min) ; burette de 25 mL graduée tous les 0,05 mL.', 'Le Carbopol se disperse lentement dans l\'eau et épaissit quand il se neutralise : une prise d\'essai trop concentrée rend la lecture du pH difficile. Compte 10 min de dispersion, puis environ 30 s par point de mesure (ajout, agitation, lecture) ; 60 points au plus.'],
-    vers: 'titr_carb', duree: v => 10 + Math.round(0.5 * Math.floor(v.vfin / v.dv + 1e-9)) + ([0.1, 0.5].includes(v.c) ? 0 : 5), note: v => `Titrage du Carbopol : ${nf(v.m, 3)} g dans ${v.V0} mL d'eau, soude à ${nf(v.c, 2)} mol/L, pas de ${nf(v.dv, 2)} mL jusqu'à ${nf(v.vfin, 1)} mL.`,
-    champs: [{ id: 'm', l: 'Masse de Carbopol', u: 'g', min: 0.02, max: 1.5 }, { id: 'V0', l: 'Volume d\'eau', u: 'mL', min: 50, max: 500 }, { id: 'c', l: 'Concentration de la soude', u: 'mol/L', min: 0.01, max: 1 }, { id: 'vfin', l: 'Volume final de soude versé', u: 'mL', min: 1, max: 25 }, { id: 'dv', l: 'Pas d\'addition', u: 'mL', min: 0.05, max: 2 }],
-    controle: v => Math.floor(v.vfin / v.dv + 1e-9) > 60 ? 'Soixante points de mesure au plus : augmente le pas ou diminue le volume final.' : v.dv > v.vfin / 4 ? 'Il faut au moins quatre additions.' : null,
-    apercu: v => ({ cols: ['Grandeur', 'Valeur'], lignes: [['Carbopol dans la dispersion', `${nf(v.m / v.V0 * 100, 2)} g pour 100 mL d'eau`], ['Mesures de pH', String(Math.floor(v.vfin / v.dv + 1e-9) + 1)], ['Soude versée au maximum', `${nf(v.c * v.vfin, 1)} mmol`]] }) },
+    vers: 'titr_carb', duree: v => 10 + Math.round(0.5 * (volumesTitr(v).length - 1)) + ([0.1, 0.5].includes(v.c) ? 0 : 5), note: v => `Titrage du Carbopol : ${nf(v.m, 3)} g dans ${v.V0} mL d'eau, soude à ${nf(v.c, 2)} mol/L, pas de ${nf(v.dv, 2)} mL, pas de ${nf(v.dvf, 2)} mL entre ${nf(v.vdeb, 1)} et ${nf(v.vfz, 1)} mL, jusqu'à ${nf(v.vfin, 1)} mL.`,
+    champs: [{ id: 'm', l: 'Masse de Carbopol', u: 'g', min: 0.02, max: 1.5 }, { id: 'V0', l: 'Volume d\'eau', u: 'mL', min: 50, max: 500 }, { id: 'c', l: 'Concentration de la soude', u: 'mol/L', min: 0.01, max: 1 }, { id: 'dv', l: 'Pas d\'addition (loin de l\'équivalence)', u: 'mL', min: 0.05, max: 2 }, { id: 'vdeb', l: 'Début de la zone d\'ajouts fins', u: 'mL', min: 0, max: 25 }, { id: 'vfz', l: 'Fin de la zone d\'ajouts fins', u: 'mL', min: 0, max: 25 }, { id: 'dvf', l: 'Pas d\'addition dans la zone fine', u: 'mL', min: 0.05, max: 2 }, { id: 'vfin', l: 'Volume final de soude versé', u: 'mL', min: 1, max: 25 }],
+    controle: v => v.vfz < v.vdeb ? 'La zone fine doit finir après son début (mets les deux au même volume pour ne pas en faire).' : v.vfz > v.vfin ? 'La zone fine doit se terminer avant le volume final.' : v.dvf > v.dv ? 'Le pas fin doit être inférieur ou égal au pas habituel.' : volumesTitr(v).length - 1 > 60 ? 'Soixante points de mesure au plus : augmente les pas ou réduis la zone fine.' : volumesTitr(v).length - 1 < 4 ? 'Il faut au moins quatre additions.' : null,
+    apercu: v => ({ cols: ['Grandeur', 'Valeur'], lignes: [['Carbopol dans la dispersion', `${nf(v.m / v.V0 * 100, 2)} g pour 100 mL d'eau`], ['Mesures de pH', String(volumesTitr(v).length)], ['Zone d\'ajouts fins', v.vfz > v.vdeb ? `de ${nf(v.vdeb, 1)} à ${nf(v.vfz, 1)} mL, pas de ${nf(v.dvf, 2)} mL` : 'aucune'], ['Soude versée au maximum', `${nf(v.c * v.vfin, 1)} mmol`]] }) },
 });
 add('titr_carb', {
   lieu: 'Salle de titrage', pnj: 'moi', titre: 'Titrage du Carbopol : ta courbe',

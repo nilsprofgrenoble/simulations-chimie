@@ -53,7 +53,7 @@ function joue(strat, graine) {
 const valid = { caf: 10, carb: 1.5, coc: 8.0, eth96: 80, trol: 1.8, eau: 98.7 };
 // formule d'un élève qui déduit le cocoate de l'extrait sec mesuré (ES − 5 − 0,75 − 0,9, en % puis en g pour 200 g)
 const formuleDe = e => { const coc = Math.max(2, (J.esRetenu(e) - 6.65) * 2), f = { caf: 10, carb: 1.5, coc, eth96: 80, trol: 1.8, eau: 0 }; f.eau = 200 - (f.caf + f.carb + f.coc + f.eth96 + f.trol); return f; };
-const PLAN_EXPERT = { titr_carb_plan: { m: 0.1, V0: 150, c: 0.1, vfin: 18, dv: 1 }, uv_ajouts_plan: { m: 1, vp: 200, dv: 40, n: 6 }, uv_ext_plan: { vmin: 20, vmax: 300, n: 5, m: 1, vp: 200 }, hplc_gamme_plan: { vmin: 20, vmax: 200, n: 5 }, cpg_gamme_plan: { vmin: 100, vmax: 600, n: 5, rep: 2 } };
+const PLAN_EXPERT = { titr_carb_plan: { m: 0.1, V0: 150, c: 0.1, dv: 1, vdeb: 11, vfz: 16, dvf: 0.25, vfin: 18 }, uv_ajouts_plan: { m: 1, vp: 200, dv: 40, n: 6 }, uv_ext_plan: { vmin: 20, vmax: 300, n: 5, m: 1, vp: 200 }, hplc_gamme_plan: { vmin: 20, vmax: 200, n: 5 }, cpg_gamme_plan: { vmin: 100, vmax: 600, n: 5, rep: 2 } };
 const expert = {
   formule: e => J.validerFormule(e, formuleDe(e)),
   ph: e => { let n = e; for (let i = 0; i < 12 && (J.phDe(n, n.f.trolAdd || 0) < 5.6); i++) n = J.ajouterBase(n, 0.3); const r = J.validerPh(n); assert(r.ok, 'pH validé'); return r.etat; },
@@ -237,11 +237,11 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
 // 13. Titrage du Carbopol : bien conçu → teneur en COOH juste ; trop concentré ou arrêté trop tôt → mauvais ou sans résultat
 { const base = J.etatInitial(21), vrai = J.coohLot(base) * 100;
   const avec = p => ({ ...base, scene: 'titr_carb', f: { ...base.f, plans: { titr_carb_plan: p } } });
-  const bon = J.donneesTitr(avec({ m: 0.1, V0: 150, c: 0.1, vfin: 18, dv: 0.5 })), epais = J.donneesTitr(avec({ m: 1, V0: 50, c: 0.1, vfin: 25, dv: 1 })), court = J.donneesTitr(avec({ m: 0.1, V0: 150, c: 0.1, vfin: 8, dv: 1 }));
+  const bon = J.donneesTitr(avec({ m: 0.1, V0: 150, c: 0.1, dv: 1, vdeb: 11, vfz: 16, dvf: 0.25, vfin: 18 })), epais = J.donneesTitr(avec({ m: 1, V0: 50, c: 0.1, vfin: 25, dv: 1 })), court = J.donneesTitr(avec({ m: 0.1, V0: 150, c: 0.1, vfin: 8, dv: 1 }));
   assert(bon.atteint && Math.abs(bon.pctMes - vrai) / vrai < 0.05, `titrage bien conçu : ${bon.pctMes} vs ${vrai}`);
   assert(!court.atteint, 'arrêté avant l\'équivalence : pas de résultat');
   assert(epais.epais, 'dispersion trop concentrée détectée');
-  const tr = J.choisir(avec({ m: 0.1, V0: 150, c: 0.1, vfin: 18, dv: 0.5 }), { vers: 'titr_carb_calc', duree: 0 });
+  const tr = J.choisir(avec({ m: 0.1, V0: 150, c: 0.1, dv: 1, vdeb: 11, vfz: 16, dvf: 0.25, vfin: 18 }), { vers: 'titr_carb_calc', duree: 0 });
   const r = J.valider(tr, J.nf(bon.pctMes, 1)); assert(r.juste && r.etat.f.cooh > 50 && r.etat.fait.titrCarb, 'teneur COOH acceptée et mémorisée');
   const phSans = J.phDe(base, 2), phAvec = J.phDe({ ...base, f: { ...base.f, graine: 5 } }, 2); assert(phSans !== phAvec || true, 'le lot fait varier la courbe');
   console.log(`titrage du Carbopol : OK (lot ${vrai.toFixed(1)} %, mesuré ${bon.pctMes.toFixed(1)} %)`); }
