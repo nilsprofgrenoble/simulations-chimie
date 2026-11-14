@@ -54,9 +54,11 @@ export const FINS = [
 // ───────────── Vérité sur le gel formulé par le joueur ─────────────
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 export const QDISP = { continuer: 1.0, neutraliser: 0.85, chauffer: 0.95, grumeaux: 0.3 };
+export const M_COOH = 45.02, M_TEA = 149.19;
+export const coohLot = e => 0.56 + 0.12 * unif(e.f?.graine ?? 1, 'lotcooh');   // fraction massique de COOH du lot de Carbopol (monographie : 56 à 68 %)
 export function phDe(e, m) {      // pH du gel après ajout cumulé de m g de trolamine (modèle simple, pour 1,5 g de Carbopol par 200 g)
   const carb = e.f.fm?.carb || 1.5;
-  return 3.0 + 3.6 * (1 - Math.exp(-m / (1.2 * carb / 1.5)));
+  return 3.0 + 3.6 * (1 - Math.exp(-m / (1.2 * carb / 1.5 * coohLot(e) / 0.62)));
 }
 export function gelVrai(e) {
   const fm = e.f.fm || { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 98.7 };
@@ -237,6 +239,8 @@ const taches = e => {
   if (F.ph && F.rheoC && !F.rheoF) L.push(['Comparer les rhéologies', 'Mesurer le gel formulé et le comparer au commercial.', 'rheoF']);
   if (F.ph && F.hplcPrep && !F.caf) L.push(['Doser la caféine du gel formulé', e.f.methCaf === 'ajouts' ? 'Concevoir les fioles, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'ext' ? 'Concevoir la gamme, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'gamme' ? 'Concevoir la gamme, injecter en CLHP.' : 'CLHP, méthode de l\'étalon interne.', e.f.methCaf === 'ajouts' ? 'uv_ajouts_plan' : e.f.methCaf === 'ext' ? 'uv_ext_plan' : e.f.methCaf === 'gamme' ? 'hplc_gamme_plan' : 'hplc_ei']);
   if (F.ph && F.cpgPrep && !F.ethQC) L.push(['Doser l\'éthanol du gel formulé', 'CPG avec étalon interne, puis avec une gamme d\'étalonnage.', 'cpg_inj']);
+  if (!F.titrCarb) L.push(['Titrer les acides du Carbopol (poudre)', 'Titrage pH-métrique par la soude d\'une dispersion du Carbopol 980 NF.', 'titr_carb_plan']);
+  if (!F.leurre_titrgel) L.push(['Titrer le gel commercial', 'Titrage pH-métrique d\'une prise de gel par la soude : 30 min.', 'leurre_titrgel']);
   if (!F.leurre_ir) L.push(['Spectre infrarouge du gel (ATR)', 'Une goutte de gel sur le cristal : 20 min avec le nettoyage.', 'leurre_ir']);
   if (!F.leurre_refracto) L.push(['Indice de réfraction du gel', 'Une goutte sur le prisme du réfractomètre : 20 min.', 'leurre_refracto']);
   if (!F.leurre_polar) L.push(['Pouvoir rotatoire du gel', 'Remplir la cuve du polarimètre avec une solution de gel : 20 min.', 'leurre_polar']);
@@ -263,13 +267,14 @@ add('hub', {
 });
 
 // ───────────── Appareils du laboratoire qui ne répondent pas à la question ─────────────
-const leurre = (id, titre, texte, note) => add(id, {
+const leurre = (id, titre, texte, note, d = 20) => add(id, {
   lieu: 'Laboratoire', pnj: 'moi', titre, texte: () => texte,
-  choix: [{ t: 'Retour à la paillasse', duree: 20, vers: 'hub', run: n => ({ ...marquer(n, id), f: { ...n.f, leurres: (n.f.leurres || 0) + 1 } }), note }],
+  choix: [{ t: 'Retour à la paillasse', duree: d, vers: 'hub', run: n => ({ ...marquer(n, id), f: { ...n.f, leurres: (n.f.leurres || 0) + 1 } }), note }],
 });
 leurre('leurre_ir', 'Spectre IR du gel', 'Le spectre est dominé par une large bande O–H (eau, éthanol, groupes acides du Carbopol) et par les bandes C–O de l\'éthanol et du cocoate. Les bandes de la caféine (C=O vers 1 700 et 1 660 cm⁻¹) sont à peine visibles, noyées dans le reste. Tu ne peux ni remonter à la formule, ni doser quoi que ce soit avec ce spectre.', 'Spectre IR du gel : bandes de l\'eau et de l\'éthanol, rien d\'exploitable.');
 leurre('leurre_refracto', 'Indice de réfraction du gel', 'Le réfractomètre affiche n = 1,36. C\'est une valeur globale pour un mélange d\'eau, d\'éthanol, de polymère et de tensioactif : elle ne se décompose pas en teneurs. Tu n\'as rien appris de plus sur la formule.', 'Indice de réfraction du gel : n = 1,36, non exploitable.');
 leurre('leurre_polar', 'Pouvoir rotatoire du gel', 'Le polarimètre indique une rotation nulle, à la précision de l\'appareil. La caféine n\'est pas chirale, et les autres constituants ne tournent pas non plus le plan de polarisation de la lumière. La mesure ne t\'apprend rien sur la composition.', 'Polarimétrie du gel : rotation nulle, sans intérêt.');
+leurre('leurre_titrgel', 'Titrage du gel commercial', 'Tu dissous 5 g de gel dans 50 mL d\'eau et tu titres à la soude. Le pH de départ est déjà proche de 6 : le Carbopol est en partie neutralisé par la trolamine. La courbe monte lentement, sans saut net, l\'éthanol fait dériver l\'électrode et le milieu épaissit. Les acides du Carbopol et la base de la trolamine sont mélangés : tu ne peux séparer aucune des deux quantités.', 'Titrage du gel commercial : courbe sans saut net, inexploitable.', 30);
 leurre('leurre_conduc', 'Conductivité du gel', 'Le conductimètre donne une valeur stable, de l\'ordre de quelques centaines de µS/cm. Elle dépend du Carbopol neutralisé et des traces d\'ions, pas de la caféine (non ionique) : ce chiffre ne se relie à aucune teneur que tu cherches.', 'Conductivité du gel : valeur sans lien avec les teneurs recherchées.');
 
 // ───────────── Déformulation ─────────────
@@ -522,7 +527,7 @@ add('ph', {
   fiches: ['carbopol', 'trolamine'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'ph', titre: 'Neutraliser et mettre en pot',
   video: { src: 'videos/neutralisation-carbopol.mp4', legende: 'Enregistrement du TP : le milieu agité s\'épaissit pendant la neutralisation.' },
-  texte: e => `« Ajoute la trolamine par petites fractions en agitant, et lis le pH au pH-mètre après chaque ajout (2 minutes l'ajout). Vise un pH proche de celui du gel commercial, vers 6. Regarde ce que ça donne quand le milieu épaissit. » ${e.f.disp === 'grumeaux' ? 'Le gel contient des grumeaux.' : ''}`,
+  texte: e => `« Ajoute la trolamine par petites fractions en agitant, et lis le pH au pH-mètre après chaque ajout (2 minutes l'ajout). Vise un pH proche de celui du gel commercial, vers 6. Regarde ce que ça donne quand le milieu épaissit. » ${e.f.disp === 'grumeaux' ? 'Le gel contient des grumeaux.' : ''}${e.f.cooh ? `\nD'après ton titrage, ${nf(e.f.fm?.carb || 1.5, 2)} g de Carbopol contiennent ${nf((e.f.fm?.carb || 1.5) * e.f.cooh / 100 / M_COOH * 1000, 1)} mmol de COOH : les neutraliser tous demanderait ${nf((e.f.fm?.carb || 1.5) * e.f.cooh / 100 / M_COOH * M_TEA, 2)} g de trolamine.` : ''}`,
   hyp: 'Hypothèse : la viscosité d\'un gel de Carbopol dépend du pH (elle augmente de pH 4 à 6 environ puis se stabilise) ; la lecture du pH-mètre a une dispersion de ±0,04.',
   choix: [],
 });
@@ -814,6 +819,51 @@ add('cpg_comp', {
   ],
 });
 
+// ───────────── Titrage des acides du Carbopol (matière première) ─────────────
+export function donneesTitr(e) {
+  const P = planDe(e, 'titr_carb_plan') || { m: 0.2, V0: 100, c: 0.1, vfin: 12, dv: 0.5 }, w = coohLot(e);
+  const n = P.m * w / M_COOH, veq = n / P.c * 1000;           // mol ; mL
+  const epais = P.m / P.V0 * 100 > 0.6, sig = epais ? 0.22 : 0.04, N = Math.floor(P.vfin / P.dv + 1e-9);
+  const pHw = a => 6 + 2 * Math.log10((a + 0.02) / (1 - a + 0.02));
+  const pH = v => { const a = P.c * v / 1000 / n; if (a < 0.995) return Math.max(2.8, pHw(a)); return Math.max(pHw(0.995), 14 + Math.log10(Math.max(1e-9, P.c * v / 1000 - n) / ((P.V0 + v) / 1000))); };
+  const pts = Array.from({ length: N + 1 }, (_, i) => { const v = Math.round(i * P.dv / 0.05) * 0.05; return [arr(v, 2), arr(Math.min(12.4, pH(v) + sig * gauss(e.f.graine, `tc${i}`)), 2)]; });
+  const der = pts.slice(1).map((p, i) => [arr((p[0] + pts[i][0]) / 2, 2), arr((p[1] - pts[i][1]) / (p[0] - pts[i][0]), 2)]);
+  let k = 0; der.forEach((d, i) => { if (d[1] > der[k][1]) k = i; });
+  const atteint = P.vfin >= veq * 1.03 && N >= 4, vEq = atteint ? der[k][0] : null;
+  return { P, w, n, veq, pts, der, atteint, vEq, pctMes: vEq ? P.c * vEq / 1000 * M_COOH / P.m * 100 : null, epais, N };
+}
+add('titr_carb_plan', {
+  fiches: ['carbopol'],
+  lieu: 'Salle de titrage', pnj: 'moi', station: 'plan', titre: 'Titrer les acides du Carbopol',
+  texte: () => `Le Carbopol est un polymère de l'acide acrylique réticulé : ses groupes acide carboxylique (–COOH, M = ${nf(M_COOH, 2)} g/mol pour le motif COOH) sont neutralisés par la trolamine pour former le gel. Connaître leur quantité dans ton lot permet de calculer la base à prévoir. Tu disperses une masse m de poudre dans un volume d'eau, et tu la titres à la soude, avec suivi du pH. À toi de concevoir ce titrage.`,
+  hyp: "Hypothèses : tous les groupes COOH sont accessibles à la soude ; le milieu reste assez fluide pour que le pH-mètre se stabilise ; l'équivalence est repérée au maximum de la courbe dérivée dpH/dV.",
+  plan: { infos: ['Balance au 0,1 mg ; soude disponible à 0,1 mol/L et 0,5 mol/L (une autre concentration demande une dilution de 5 min) ; burette de 25 mL graduée tous les 0,05 mL.', 'Le Carbopol se disperse lentement dans l\'eau et épaissit quand il se neutralise : une prise d\'essai trop concentrée rend la lecture du pH difficile. Compte 10 min de dispersion, puis 1,5 min par point de mesure ; 60 points au plus.'],
+    vers: 'titr_carb', duree: v => 10 + Math.round(1.5 * Math.floor(v.vfin / v.dv + 1e-9)) + ([0.1, 0.5].includes(v.c) ? 0 : 5), note: v => `Titrage du Carbopol : ${nf(v.m, 3)} g dans ${v.V0} mL d'eau, soude à ${nf(v.c, 2)} mol/L, pas de ${nf(v.dv, 2)} mL jusqu'à ${nf(v.vfin, 1)} mL.`,
+    champs: [{ id: 'm', l: 'Masse de Carbopol', u: 'g', min: 0.02, max: 1.5 }, { id: 'V0', l: 'Volume d\'eau', u: 'mL', min: 50, max: 500 }, { id: 'c', l: 'Concentration de la soude', u: 'mol/L', min: 0.01, max: 1 }, { id: 'vfin', l: 'Volume final de soude versé', u: 'mL', min: 1, max: 25 }, { id: 'dv', l: 'Pas d\'addition', u: 'mL', min: 0.05, max: 2 }],
+    controle: v => Math.floor(v.vfin / v.dv + 1e-9) > 60 ? 'Soixante points de mesure au plus : augmente le pas ou diminue le volume final.' : v.dv > v.vfin / 4 ? 'Il faut au moins quatre additions.' : null,
+    apercu: v => ({ cols: ['Grandeur', 'Valeur'], lignes: [['Concentration de la dispersion', `${nf(v.m / v.V0 * 100, 2)} g pour 100 mL`], ['Points de mesure', String(Math.floor(v.vfin / v.dv + 1e-9) + 1)], ['Prise de soude maximale', `${nf(v.c * v.vfin, 1)} mmol`]] }) },
+});
+add('titr_carb', {
+  lieu: 'Salle de titrage', pnj: 'moi', titre: 'Titrage du Carbopol : ta courbe',
+  texte: e => { const d = donneesTitr(e); return d.atteint
+    ? `Tu as titré ${nf(d.P.m, 3)} g de Carbopol dans ${d.P.V0} mL d'eau par de la soude à ${nf(d.P.c, 2)} mol/L (${d.pts.length} points).${d.epais ? ' Le milieu est épais : le pH se stabilise mal et la courbe est bruitée.' : ''}\nLe maximum de la courbe dérivée est à V_éq = ${nf(d.vEq, 2)} mL.`
+    : `Tu as versé jusqu'à ${nf(d.P.vfin, 1)} mL de soude à ${nf(d.P.c, 2)} mol/L : le pH monte sans jamais présenter de saut net, ou tu n'as pas assez de points pour le repérer. Tu n'as pas atteint l'équivalence.`; },
+  visuels: e => { const d = donneesTitr(e); return [{ type: 'titrage', titre: 'Titrage du Carbopol : pH = f(V soude)', pts: d.pts, der: d.der, veq: d.vEq }]; },
+  hyp: 'Hypothèse : le saut de pH, très étalé pour un polyélectrolyte, est repéré au maximum de la dérivée ; l\'incertitude sur V_éq est de l\'ordre du pas d\'addition.',
+  choix: e => donneesTitr(e).atteint
+    ? [{ t: 'Calculer la teneur en groupes COOH', duree: 0, vers: 'titr_carb_calc' }, { t: 'Refaire le titrage autrement', d: 'Nouvelle prise d\'essai, nouvelle mesure.', duree: 0, vers: 'titr_carb_plan' }]
+    : [{ t: 'Refaire le titrage autrement', d: 'Nouvelle prise d\'essai, nouvelle mesure.', duree: 0, vers: 'titr_carb_plan' }, { t: 'Renoncer à ce dosage', duree: 0, vers: 'hub', note: 'Titrage du Carbopol abandonné.' }],
+});
+add('titr_carb_calc', {
+  fiches: ['carbopol'],
+  lieu: 'Salle de titrage', pnj: 'moi', titre: 'Teneur en groupes acides',
+  texte: e => { const d = donneesTitr(e); return `Prise d'essai m = ${nf(d.P.m, 3)} g de Carbopol ; soude à c = ${nf(d.P.c, 2)} mol/L ; équivalence à V_éq = ${nf(d.vEq, 2)} mL. Un groupe COOH consomme un ion hydroxyde.`; },
+  hyp: "Hypothèse : chaque COOH du polymère réagit avec un seul HO⁻ ; la masse de COOH est calculée avec M = 45,02 g/mol (motif –COOH).",
+  calcul: { q: 'Quel est le pourcentage massique de groupes COOH dans le Carbopol ?', unite: '%', vrai: e => donneesTitr(e).pctMes, tol: 0.04, cs: 1, indice: 'n(COOH) = c × V_éq (en mol, V en litres). Masse de COOH = n × 45,02 g/mol. Divise par la masse m de poudre.',
+    ok: { vers: 'hub', duree: 5, run: n => ({ ...marquer(n, 'titrCarb'), f: { ...n.f, cooh: arr(donneesTitr(n).pctMes, 1) } }), note: 'Titrage du Carbopol : teneur en groupes COOH déterminée.' },
+    ko: { vers: 'hub', duree: 0, run: n => marquer(n, 'titrCarb') } },
+});
+
 // ───────────── Conclusion ─────────────
 export const mesures = e => ({ caf: e.f.cafMes === 'ext' ? donneesUv(e).pctExt : e.f.methCaf === 'ajouts' ? donneesUv(e).pctAjouts : e.f.methCaf === 'gamme' ? donneesHplcGamme(e).pct : donneesHplc(e).pct, eth: donneesCpg(e).pctGamme, q: gelVrai(e).q });
 add('verdict', {
@@ -896,7 +946,7 @@ export function bilan(e, finId = e.scene) {
   const att = f.attente || 0, nbErr = f.nbErr || 0;
   const c3 = (finId === 'fin_conforme' || finId === 'fin_detecte') ? (f.secuErr ? 'moyen' : 'ok') : finId === 'fin_mauvaise_cause' ? 'moyen' : finId === 'fin_temps' ? 'nd' : 'ko';
   return [
-    { comp: 'C.1.4', titre: 'Sélectionner les méthodes, techniques et matériels', niveau: niv(n1, 0, 1), texte: n1 === 0 ? 'Étalon interne adapté, méthodes cohérentes avec la matrice.' : `À revoir : ${[f.errCoel && 'étalon interne (propan-1-ol coélue avec l\'éthanol)', f.sansEI && 'nécessité d\'un étalon interne en CPG', f.extTente && 'étalonnage externe UV (effet de matrice)', f.extAccepte && 'résultat UV non vérifié avec un témoin', f.errComp && 'comparaison des deux méthodes CPG', f.leurres && 'appareils sans rapport avec la question (IR, réfractomètre, polarimètre, conductimètre)', f.errMeth && 'technique de dosage inadaptée essayée avant la bonne (titrage de la caféine, CLHP-UV ou masse volumique pour l\'éthanol)'].filter(Boolean).join(' ; ')}.` },
+    { comp: 'C.1.4', titre: 'Sélectionner les méthodes, techniques et matériels', niveau: niv(n1, 0, 1), texte: n1 === 0 ? 'Étalon interne adapté, méthodes cohérentes avec la matrice.' : `À revoir : ${[f.errCoel && 'étalon interne (propan-1-ol coélue avec l\'éthanol)', f.sansEI && 'nécessité d\'un étalon interne en CPG', f.extTente && 'étalonnage externe UV (effet de matrice)', f.extAccepte && 'résultat UV non vérifié avec un témoin', f.errComp && 'comparaison des deux méthodes CPG', f.leurres && 'appareils sans rapport avec la question (IR, réfractomètre, polarimètre, conductimètre, titrage du gel)', f.errMeth && 'technique de dosage inadaptée essayée avant la bonne (titrage de la caféine, CLHP-UV ou masse volumique pour l\'éthanol)'].filter(Boolean).join(' ; ')}.` },
     { comp: 'C.2.1', titre: 'Préparer les produits et les calculs', niveau: f.repli ? 'moyen' : niv(nbErr + (f.errEs ? 1 : 0) + (f.aides || 0), 1, 4), texte: `${nbErr} réponse(s) de calcul fausse(s)${f.aides ? `, dont ${f.aides} refaite(s) avec l'aide d'un collègue` : ''}${f.errEth ? ' (titre de l\'éthanol à 96 %)' : ''}${f.repli ? ' ; formule de repli utilisée' : ''}.` },
     { comp: 'C.3.2', titre: 'Détecter les non-conformités', niveau: c3, texte: c3 === 'nd' ? 'Pas de conclusion rendue.' : f.secuErr && (finId === 'fin_conforme' || finId === 'fin_detecte') ? 'Décision cohérente avec le lot, mais le montage chauffant d\'éthanol a d\'abord été installé hors hotte : la sécurité fait partie de la détection des non-conformités.' : c3 === 'ok' ? 'Décision cohérente avec la réalité du lot.' : 'La décision ne correspond pas aux défauts réels du lot : relis tes résultats critère par critère.' },
     { comp: 'C.4', titre: 'Adapter son protocole face à un imprévu', niveau: c4, texte: c4 === 'nd' ? 'Pas de panne dans cette partie.' : c4 === 'ok' ? 'Panne de CLHP : bascule immédiate vers une méthode adaptée (ajouts dosés).' : c4 === 'moyen' ? 'Panne de CLHP : solution trouvée mais coûteuse ou après un détour.' : 'Résultat biaisé conservé sans vérification.' },
@@ -918,7 +968,8 @@ export function consequences(e) {
   if (f.methCaf) L.push({ quand: h('methCaf'), cause: 'Dosage de la caféine', effet: f.methCaf === 'gamme' ? 'CLHP, gamme d\'étalonnage externe : volume injecté maîtrisé par la boucle, pas d\'effet de matrice' : f.methCaf === 'ext' ? (f.extAccepte ? 'UV, étalonnage externe : effet de matrice, caféine surestimée d\'environ 40 %, résultat retenu sans vérification' : 'UV, étalonnage externe : surestimation détectée et corrigée par une autre méthode') : f.methCaf === 'ajouts' ? 'UV, ajouts dosés : l\'effet de matrice est compensé' : 'CLHP, étalon interne : volume injecté sans influence' });
   if (f.ei === 'butanol') L.push({ quand: h('ei'), cause: 'Étalon interne CPG', effet: 'le propan-1-ol du protocole sort en même temps que l\'éthanol (un seul pic) : remplacé par le butan-1-ol, dont le pic est séparé' });
   if (f.coelIgnore) L.push({ quand: null, cause: 'Coélution ignorée', effet: 'aires exploitées malgré le pic unique éthanol + propan-1-ol : éthanol surestimé d\'environ 30 %' });
-  if (f.leurres) L.push({ quand: null, cause: 'Appareils sans rapport avec la question', effet: `${f.leurres} mesure(s) (IR, réfractomètre, polarimètre, conductimètre) sans information sur la formule ni sur les teneurs : ${f.leurres * 20} minutes perdues` });
+  if (f.cooh != null) L.push({ quand: null, cause: 'Titrage du Carbopol', effet: `${nf(f.cooh, 1)} % de COOH dans ton lot : la quantité de trolamine à prévoir est connue avant la neutralisation` });
+  if (f.leurres) L.push({ quand: null, cause: 'Appareils sans rapport avec la question', effet: `${f.leurres} mesure(s) (IR, réfractomètre, polarimètre, conductimètre, titrage du gel) sans information sur la formule ni sur les teneurs : ${f.leurres * 20} minutes perdues` });
   if (f.errMeth) L.push({ quand: null, cause: 'Choix de techniques', effet: `${f.errMeth} technique(s) inadaptée(s) essayée(s) avant la bonne : de 15 à 25 minutes perdues à chaque fois` });
   if (f.compense) L.push({ quand: null, cause: 'Éthanol manquant', effet: 'compensation par ajout d\'éthanol à 96 % et dosage CPG refait' });
   if (f.secuErr) L.push({ quand: null, cause: 'Sécurité', effet: 'montage chauffant d\'éthanol installé hors hotte : déplacé par la responsable' });

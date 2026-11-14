@@ -14,7 +14,7 @@ import {
 const C = { encre: '#1b2733', doux: '#5b6877', bord: '#dbe4ee', accent: '#0f766e', accentFond: '#e7f5f2', ambre: '#b45309', rouge: '#b91c1c', vert: '#15803d', bleu: '#1e3a8a', carte: '#ffffff', fond: '#f4f8fb' };
 const NIVEAUX = { ok: ['✅', C.vert, 'Maîtrisé'], moyen: ['🟡', C.ambre, 'À consolider'], ko: ['❌', C.rouge, 'À retravailler'], nd: ['⚪', C.doux, 'Non évalué'] };
 const TONS = { ok: C.vert, moyen: C.ambre, ko: C.rouge };
-const ICONES = { leurre_ir: '📈', leurre_refracto: '🔍', leurre_polar: '🔍', leurre_conduc: '🔌', choix_caf: '🧪', choix_eth: '🧪', docs: '📄', obs_video: '🎞️', es_prep: '🔥', es_calc1: '📊', eth1: '⚖️', formule: '📝', eq_base: '⚗️', fab_choix: '⚗️', fab_disp: '🧴', rheoC: '🌀', rheoF: '🌀', hplc_m: '📈', cpg_ei: '🔬', cpg_inj: '🔬', uv_ajouts_plan: '🌈', uv_ext_plan: '🌈', hplc_gamme_plan: '📈', hplc_ei: '📈', verdict: '✅', eq_ines: '✅' };
+const ICONES = { titr_carb_plan: '🧪', leurre_titrgel: '🧪', leurre_ir: '📈', leurre_refracto: '🔍', leurre_polar: '🔍', leurre_conduc: '🔌', choix_caf: '🧪', choix_eth: '🧪', docs: '📄', obs_video: '🎞️', es_prep: '🔥', es_calc1: '📊', eth1: '⚖️', formule: '📝', eq_base: '⚗️', fab_choix: '⚗️', fab_disp: '🧴', rheoC: '🌀', rheoF: '🌀', hplc_m: '📈', cpg_ei: '🔬', cpg_inj: '🔬', uv_ajouts_plan: '🌈', uv_ext_plan: '🌈', hplc_gamme_plan: '📈', hplc_ei: '📈', verdict: '✅', eq_ines: '✅' };
 const FOND_LIEU = { 'Paillasse de formulation': '#ecf7ee', 'Salle de chromatographie': '#e8f1fa', 'Bureau': '#f3eefb', 'Bureau de Mme Dubreuil': '#f3eefb', 'Salle de rhéologie': '#fdf1e7', 'Salle des étuves': '#fdf1e7' };
 const STYLE = `${STYLE_VISUELS}
 @keyframes pc-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -109,6 +109,21 @@ function Droite({ v }) {
     </svg></Cadre>);
 }
 
+function CourbeTitrage({ v }) {
+  const W = 360, x0 = 40, x1 = 346, vmax = Math.max(...v.pts.map(p => p[0])) || 1, dmax = Math.max(0.1, ...v.der.map(d => d[1]));
+  const X = x => x0 + x / vmax * (x1 - x0), Y = y => 124 - (y - 2) / 11 * 104, Yd = y => 196 - Math.max(0, y) / dmax * 40;
+  return (<Cadre titre={v.titre.toUpperCase()}>
+    <svg viewBox={`0 0 ${W} 214`} role="img" aria-label={`${v.titre} : ${v.pts.length} points${v.veq ? `, saut de pH vers ${v.veq} mL` : ''}, et courbe dérivée`} style={{ width: '100%', maxWidth: 640, margin: '0 auto', display: 'block' }}>
+      <line x1={x0} y1="124" x2={x1} y2="124" stroke="#6b8794" /><line x1={x0} y1="12" x2={x0} y2="124" stroke="#6b8794" />
+      {[4, 6, 8, 10, 12].map(h => <g key={h}><line x1={x0 - 3} y1={Y(h)} x2={x0} y2={Y(h)} stroke="#6b8794" /><text x={x0 - 6} y={Y(h) + 3} fontSize="9" textAnchor="end" fill="#9fc3d1">{h}</text></g>)}
+      <polyline points={v.pts.map(p => `${X(p[0])},${Y(p[1])}`).join(' ')} fill="none" stroke="#5eead4" strokeWidth="1.4" />
+      {v.pts.map((p, i) => <circle key={i} cx={X(p[0])} cy={Y(p[1])} r="2.6" fill="#fde68a" />)}
+      <text x={x1} y="138" textAnchor="end" fontSize="10" fill="#9fc3d1">V soude (mL)</text><text x="4" y="14" fontSize="10" fill="#9fc3d1">pH</text>
+      <text x={x0} y="156" fontSize="10" fill="#9fc3d1">Dérivée dpH/dV</text><line x1={x0} y1="196" x2={x1} y2="196" stroke="#6b8794" />
+      {v.der.map((d, i) => <circle key={i} cx={X(d[0])} cy={Yd(d[1])} r="2.6" fill={v.veq != null && d[0] === v.veq ? '#fb923c' : '#93c5fd'} />)}
+    </svg></Cadre>);
+}
+
 function Tableau({ v }) {
   return (<div style={{ margin: '12px 0', overflowX: 'auto' }}><table style={{ borderCollapse: 'collapse', fontSize: 14, width: '100%' }}>
     <caption style={{ textAlign: 'left', fontWeight: 700, paddingBottom: 4 }}>{v.titre}</caption>
@@ -123,7 +138,7 @@ function BalanceVue({ v }) {
         <div style={{ fontFamily: 'ui-monospace,monospace', fontSize: 24, color: '#7ef0d4', letterSpacing: 1 }}>{nf(x, v.dec)} <span style={{ fontSize: 14, color: '#9fc3d1' }}>g</span></div></div>)}
     </div></Cadre>);
 }
-const Visuel = ({ v }) => v.type === 'balance' ? <BalanceVue v={v} /> : v.type === 'chroma' ? <Chroma v={v} /> : v.type === 'rheo' ? <Rheo v={v} /> : v.type === 'droite' ? <Droite v={v} /> : v.type === 'tableau' ? <Tableau v={v} /> : null;
+const Visuel = ({ v }) => v.type === 'balance' ? <BalanceVue v={v} /> : v.type === 'chroma' ? <Chroma v={v} /> : v.type === 'rheo' ? <Rheo v={v} /> : v.type === 'droite' ? <Droite v={v} /> : v.type === 'titrage' ? <CourbeTitrage v={v} /> : v.type === 'tableau' ? <Tableau v={v} /> : null;
 
 
 // ───────────── Briques d'interaction ─────────────
@@ -225,6 +240,7 @@ const POSTES = [
   { id: 'formulation', nom: 'Formulation', vers: ['eq_base', 'fab_choix', 'fab_disp', 'obs_video'] },
   { id: 'optique', nom: 'Réfractomètre, polarimètre', vers: ['leurre_refracto', 'leurre_polar'] },
   { id: 'rheo', nom: 'Rhéologie', vers: ['rheoC', 'rheoF'] },
+  { id: 'titrage', nom: 'Titrage', vers: ['titr_carb_plan', 'leurre_titrgel'] },
   { id: 'conduc', nom: 'Conductimètre', vers: ['leurre_conduc'] },
   { id: 'chroma', nom: 'Chromatographie, UV', vers: ['choix_caf', 'choix_eth', 'hplc_m', 'hplc_ei', 'hplc_gamme_plan', 'cpg_ei', 'cpg_inj', 'uv_ajouts_plan', 'uv_ext_plan'] },
 ];
@@ -252,6 +268,9 @@ function Dessin({ id, actif, termine }) {
   if (id === 'optique') return (<svg viewBox="0 0 100 74" style={cadre} aria-hidden="true">
     <rect x="8" y="34" width="48" height="12" rx="2" fill={L} stroke={T} strokeWidth="2" /><circle cx="14" cy="40" r="7" fill="#fff" stroke={T} /><rect x="56" y="36" width="14" height="8" fill="#f1f5f9" stroke={T} /><circle cx="76" cy="40" r="8" fill="#fff" stroke={T} strokeWidth="2" /><path d="M76 40 L81 36" stroke="#b91c1c" strokeWidth="2" />
     <rect x="12" y="52" width="60" height="8" rx="2" fill={T} /></svg>);
+  if (id === 'titrage') return (<svg viewBox="0 0 100 74" style={cadre} aria-hidden="true">
+    <rect x="30" y="4" width="6" height="30" rx="2" fill="#f1f5f9" stroke={T} strokeWidth="1.5" /><path d="M33 34 V42" stroke={T} strokeWidth="2" /><path d="M26 44 H64 L58 66 H32 Z" fill="#e0f2fe" stroke={T} strokeWidth="2" />
+    <rect x="70" y="18" width="20" height="14" rx="2" fill="#f1f5f9" stroke={T} strokeWidth="1.5" /><text x="80" y="29" textAnchor="middle" fontSize="8" fill={T}>pH</text><path d="M80 32 V54 L64 58" fill="none" stroke={T} strokeWidth="1.5" /></svg>);
   if (id === 'conduc') return (<svg viewBox="0 0 100 74" style={cadre} aria-hidden="true">
     <rect x="12" y="10" width="34" height="20" rx="3" fill="#f1f5f9" stroke={T} strokeWidth="2" /><text x="29" y="24" textAnchor="middle" fontSize="9" fill={T}>µS/cm</text>
     <path d="M46 20 H64 V46" fill="none" stroke={T} strokeWidth="2" /><rect x="58" y="44" width="12" height="14" rx="2" fill="#bae6fd" stroke={T} /><rect x="74" y="40" width="14" height="24" rx="2" fill="#e0f2fe" stroke={T} strokeWidth="2" /></svg>);
@@ -377,7 +396,7 @@ export function SimulationHistoirePercutafeine() {
         <p style={{ margin: 0, lineHeight: 1.6, maxWidth: 640, color: '#d7eef2' }}>Tu es technicien·ne de R&amp;D. Pendant une journée de TP (8 h – 17 h), tu retrouves la formule d'un gel à la caféine, tu en fabriques 200 g, puis tu contrôles sa qualité.</p>
       </div>
       <div className="pc-grille" style={{ marginBottom: 14 }}>
-        {[['⏱️', 'Environ 45 min', 'Tu joues seul·e, sur un temps de TP simulé.'], ['🔥', 'Le temps compte', "L'étuve et le ballon chauffent pendant que tu travailles."], ['🧮', 'Calculs et choix libres', 'Aucune alerte : tes choix ont des conséquences que tu verras plus loin.'], ['🏁', `${FINS.length} fins possibles`, 'Selon tes choix, tes résultats et ton organisation.']].map(([ic, t, d]) => <div key={t} style={{ display: 'flex', gap: 12, background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 14, padding: '11px 14px' }}><span style={{ fontSize: 24 }}>{ic}</span><div><b>{t}</b><div style={{ fontSize: 14, color: C.doux }}>{d}</div></div></div>)}
+        {[['⏱️', 'Environ 1 h', 'Tu joues seul·e, sur une journée de TP simulée. Ta partie est sauvegardée : tu peux t\'arrêter et reprendre.'], ['🔥', 'Le temps compte', "L'étuve et le ballon chauffent pendant que tu travailles."], ['🧮', 'Calculs et choix libres', 'Aucune alerte : tes choix ont des conséquences que tu verras plus loin.'], ['🏁', `${FINS.length} fins possibles`, 'Selon tes choix, tes résultats et ton organisation.']].map(([ic, t, d]) => <div key={t} style={{ display: 'flex', gap: 12, background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 14, padding: '11px 14px' }}><span style={{ fontSize: 24 }}>{ic}</span><div><b>{t}</b><div style={{ fontSize: 14, color: C.doux }}>{d}</div></div></div>)}
       </div>
       <fieldset data-joueur style={{ border: `1.5px dashed ${C.bord}`, borderRadius: 12, padding: '10px 14px', margin: '0 0 16px', maxWidth: 560 }}>
         <legend style={{ fontWeight: 800, padding: '0 6px' }}>Qui es-tu ?</legend>
