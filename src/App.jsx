@@ -244,7 +244,7 @@ const SIMULATIONS = [
     component: SimulationIr },
   { id:112, label:"Ampoule à décanter : extraction liquide-liquide", niveau:"1G", icon:"⚗️", color:"#0369a1",
     component: SimulationExtraction },
-  { id:114, label:"Lentille mince : image, conjugaison et grandissement", niveau:"1G", icon:"🔍", color:"#0e7490",
+  { id:115, label:"Lentille mince : image, conjugaison et grandissement", niveau:"1G", icon:"🔍", color:"#0e7490",
     component: SimulationLentilleMince },
   { id:56, label:"Référentiel et mouvement : décrire un mouvement", niveau:"2GT", icon:"🚃", color:"#4338ca",
     component: SimulationMouvementReferentiel },
