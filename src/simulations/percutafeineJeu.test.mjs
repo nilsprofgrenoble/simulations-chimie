@@ -255,3 +255,8 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   const p = J.texteDe({ ...apres, scene: 'point_dubreuil' }); assert(p.includes('spectrométrie IR') && p.includes('apporté'), 'remarque sur les appareils');
   const p0 = J.texteDe({ ...e, scene: 'point_dubreuil' }); assert(!p0.includes('Je vois que tu es passé'), 'pas de remarque sinon');
   console.log('retour à la paillasse, remarque de midi : OK'); }
+// 15. Observations de la vidéo : ordre mélangé, stable pour une partie, différent d'une partie à l'autre
+{ const o = g => J.observationsDe(J.etatInitial(g)).map(x => x[0]).join(), a = o(1), autres = new Set([2, 3, 4, 5, 6, 7].map(o));
+  assert(a === o(1) && J.observationsDe(J.etatInitial(1)).length === J.OBSERVATIONS.length, 'ordre stable, rien perdu');
+  assert(autres.size > 1 && [...autres].some(x => x !== J.OBSERVATIONS.map(y => y[0]).join()), 'ordre mélangé');
+  console.log('observations mélangées : OK'); }
