@@ -209,6 +209,7 @@ export function SimulationHistoirePercutafeine() {
         {e.f.corrige && <div data-corrige role="status" style={{ background: '#fef3c7', border: '1px solid #f5d98a', borderRadius: 10, padding: '8px 12px', fontSize: 14.5, marginBottom: 10 }}>ℹ️ {e.f.corrige}</div>}
         {paragraphes.map((l, i) => <p key={i} style={{ lineHeight: 1.6, margin: '8px 0', color: l.startsWith('«') ? C.encre : '#374151', fontStyle: l.startsWith('«') ? 'italic' : 'normal' }}>{l}</p>)}
         {sc.formule && <div data-relation style={{ margin: '10px 0' }}>{FORMULES[sc.formule]}</div>}
+        {sc.video && <figure data-video style={{ margin: '12px 0' }}><video controls playsInline preload="metadata" aria-label={sc.video.legende} src={`${import.meta.env.BASE_URL}${sc.video.src}`} style={{ width: '100%', maxWidth: 520, maxHeight: '60vh', display: 'block', margin: '0 auto', borderRadius: 10, background: '#0f2430' }} /><figcaption style={{ fontSize: 13, color: C.doux, textAlign: 'center', marginTop: 4 }}>{sc.video.legende}</figcaption></figure>}
         {vis.map((v, i) => <Visuel key={i} v={v} />)}
         {sc.hyp && <details data-hyp open style={{ margin: '10px 0', background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 10, padding: '8px 12px', fontSize: 14.5, lineHeight: 1.5 }}><summary style={{ cursor: 'pointer', fontWeight: 700 }}>Hypothèses de travail</summary>{sc.hyp}</details>}
 
