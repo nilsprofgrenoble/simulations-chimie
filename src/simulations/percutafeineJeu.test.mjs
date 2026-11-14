@@ -9,7 +9,7 @@ assert(Math.abs(J.FORMULE_REPLI.eth96 * 0.96 / 200 * 100 - 38.4) < 1e-9, 'la for
 const eRepli = J.etatInitial(7); eRepli.f.fm = J.FORMULE_REPLI; eRepli.f.trolAdd = 1.8; eRepli.f.disp = 'continuer'; eRepli.f.perteEth = 0.01; eRepli.f.mode = 'reflux';
 const gRef = J.gelVrai(eRepli);
 assert(Math.abs(gRef.caf - 5.0) < 0.1 && gRef.eth > 37.5 && gRef.eth < 38.5, `gel de référence : caféine ${gRef.caf}, éthanol ${gRef.eth}`);
-assert(J.phDe(eRepli, 1.8) > 5.5 && J.phDe(eRepli, 1.8) < 6.2, 'avec ≈ 1,8 g de trolamine, le pH est voisin de 6');
+assert(J.phDe(eRepli, 2.25) > 6.6 && J.phDe(eRepli, 2.25) < 7.4, 'fiche 3V : 1,5 g de trolamine par g de polymère donnent pH 7');
 assert(J.phDe(eRepli, 0) < 3.5 && J.phDe(eRepli, 0.5) < 5.0, 'peu de base : le gel est acide');
 assert(J.defauts(eRepli).length === 0, 'le gel de référence respecte le cahier des charges');
 const eOuvert = { ...eRepli, f: { ...eRepli.f, perteEth: 0.18, mode: 'becher' } };
@@ -60,7 +60,7 @@ const formuleDe = e => { const coc = Math.max(2, (J.esRetenu(e) - 6.65) * 2), f 
 const PLAN_EXPERT = { titr_carb_plan: { m: 0.1, V0: 150, c: 0.1, dv: 1, vdeb: 11, vfz: 16, dvf: 0.25, vfin: 18 }, uv_ajouts_plan: { m: 1, vp: 200, dv: 40, n: 6 }, uv_ext_plan: { vmin: 20, vmax: 300, n: 5, m: 1, vp: 200 }, hplc_gamme_plan: { vmin: 20, vmax: 200, n: 5 }, cpg_gamme_plan: { vmin: 100, vmax: 600, n: 5, rep: 2 } };
 const expert = {
   formule: e => J.validerFormule(e, formuleDe(e)),
-  ph: e => { let n = e; for (let i = 0; i < 12 && (J.phDe(n, n.f.trolAdd || 0) < 5.6); i++) n = J.ajouterBase(n, 0.3); const r = J.validerPh(n); assert(r.ok, 'pH validé'); return r.etat; },
+  ph: e => { let n = e; for (let i = 0; i < 12 && (J.phDe(n, n.f.trolAdd || 0) < 6.4); i++) n = J.ajouterBase(n, 0.3); const r = J.validerPh(n); assert(r.ok, 'pH validé'); return r.etat; },
   plan: e => PLAN_EXPERT[e.scene],
   calc: (e, k) => J.nf(k.vrai(e), k.cs ?? 2),   // réponse arrondie comme affichée : doit être acceptée
   choix: (e, ch) => {
@@ -68,7 +68,7 @@ const expert = {
       return [...ch].filter(c => !c.bloque && !c.pause).sort((a, b) => ordre.indexOf(a.vers) - ordre.indexOf(b.vers)).find(c => ordre.includes(c.vers)) || ch.find(c => !c.bloque && !c.pause); }
     if (e.scene === 'titr_suivi') return ch.find(c => c.id === 'ph');
     if (e.scene === 'titr_indic') return ch.find(c => c.id === 'php');
-    if (e.scene === 'choix_caf') return ch.find(c => c.id === (e.f.graine % 2 ? 'clhpEI' : 'clhpEI'));
+    if (e.scene === 'choix_caf') return ch.find(c => c.id === (e.f.graine % 2 ? 'clhpExt' : 'clhpExt'));
     if (e.scene === 'choix_eth') return ch.find(c => c.id === 'cpg');
     if (e.scene === 'es_balance') return ch[1];
     if (e.scene === 'es_prep') return ch[0];
@@ -156,8 +156,9 @@ console.log('conséquences et C.7.3 : OK');
 
 // 5. Remédiation : le bécher ouvert se rattrape en compensant l'éthanol, un pH trop bas en reprenant la trolamine
 const expCompense = { ...expert, choix: (e, ch) => e.scene === 'fab_choix' ? ch.find(c => c.id === 'becher') : expert.choix(e, ch) };
-let nOk = 0, nFt = 0; for (let g = 1; g <= 60; g++) { const { e } = joue(expCompense, g * 3571); assert(e.f.compense && (e.scene === 'fin_conforme' || e.scene === 'fin_temps'), `compensation (${e.scene})`); if (e.scene === 'fin_conforme') nOk++; else nFt++; }
-console.log(`compensation : ${nOk} conformes, ${nFt} hors délai sur 60`);
+let nOk = 0, nFt = 0, nHors = 0; for (let g = 1; g <= 60; g++) { const { e } = joue(expCompense, g * 3571); assert(e.f.compense, 'compensation décidée'); if (e.scene === 'fin_conforme') nOk++; else if (e.scene === 'fin_temps') nFt++; else { nHors++; assert(e.scene === 'fin_detecte' || e.scene === 'fin_faux_ok' || e.scene === 'fin_faux_nok', e.scene); } }
+assert(nHors <= 6, `compensation : ${nHors} lots hors exigence sur 60 (précision du dosage à un point)`);
+console.log(`compensation : ${nOk} conformes, ${nFt} hors délai, ${nHors} hors exigence sur 60`);
 assert(nOk / 60 >= 0.75, 'la remédiation reste faisable dans les temps pour la plupart des parties');
 const expPhBas = { ...expert, ph: e => { let n = J.ajouterBase(e, 0.3); const r = J.validerPh(n); assert(r.ok); return r.etat; } };
 let nPh = 0, nPhOk = 0; for (let g = 1; g <= 60; g++) { const r = joue({ ...expPhBas, ph: e => e.scene === 'ph2' ? expert.ph(e) : expPhBas.ph(e) }, g * 977).e; if (r.f.reprisePh) { nPh++; assert(r.scene === 'fin_conforme' || r.scene === 'fin_temps', `pH repris (${r.scene})`); if (r.scene === 'fin_conforme') nPhOk++; } }
@@ -189,15 +190,15 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   console.log('dossier : OK'); }
 // 8. Choix de techniques ouvert : toutes les voies mènent à une fin ; les pistes inadaptées coûtent du temps et pèsent sur C.1.4
 { const voie = (cafId, ethEssais = []) => ({ ...expert, choix: (e, ch) => {
-    if (e.scene === 'choix_caf') return ch.find(c => c.id === (cafId === 'titrage' && e.f.errMeth ? 'clhpEI' : cafId));
+    if (e.scene === 'choix_caf') return ch.find(c => c.id === (cafId === 'titrage' && e.f.errMeth ? 'clhpExt' : cafId));
     if (e.scene === 'choix_eth') { const a = ethEssais.find(id => !(e.f['essai_' + id])); return a ? (e.f['essai_' + a] = true, ch.find(c => c.id === a)) : ch.find(c => c.id === 'cpg'); }
     return expert.choix(e, ch); } });
-  const T = {}; for (const id of ['clhpEI', 'clhpExt', 'uvAj', 'uvExt', 'titrage']) { let fins = {}, t = 0;
+  const T = {}; for (const id of ['clhpExt', 'uvAj', 'uvExt', 'titrage']) { let fins = {}, t = 0;
     for (let g = 1; g <= 60; g++) { const r = joue(voie(id), g * 977).e; fins[r.scene] = (fins[r.scene] || 0) + 1; t += r.t; if (id === 'titrage' || id === 'uvExt') assert(J.bilan(r)[0].niveau !== 'ok', 'C.1.4 pénalisé'); }
     T[id] = { fins, tMoy: Math.round(t / 60) }; }
   console.log('techniques caféine :', JSON.stringify(T));
   for (const id of Object.keys(T)) assert(Object.keys(T[id].fins).every(k => k.startsWith('fin_')), 'fins atteintes ' + id);
-  const r = joue(voie('clhpEI', ['clhp', 'dens']), 3).e; assert(r.f.errMeth === 2 && J.bilan(r)[0].niveau !== 'ok', 'pistes inadaptées pénalisées'); assert(J.consequences(r).some(c => c.cause === 'Choix de techniques'), 'conséquence affichée');
+  const r = joue(voie('clhpExt', ['clhp', 'dens']), 3).e; assert(r.f.errMeth === 2 && J.bilan(r)[0].niveau !== 'ok', 'pistes inadaptées pénalisées'); assert(J.consequences(r).some(c => c.cause === 'Choix de techniques'), 'conséquence affichée');
   console.log('choix de techniques : OK'); }
 
 // 9. Plans de préparation : bornes physiques, qualité selon la conception

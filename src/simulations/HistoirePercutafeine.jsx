@@ -8,7 +8,7 @@ import { useEtatPersistant, Formule } from "../commun";
 import { Avatar as AvatarVisuel, STYLE_VISUELS } from './LaboVisuels';
 import {
   CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_FIN, T_MIDI, T_PAUSE, NB_AVATARS, avatarDe, pn, CHAMPS_FORMULE, FORMULE_REPLI, etatInitial, texteDe, choixDe, visuelsDe, choisir, valider, estFin, peutRevenir, revenirHub,
-  horloge, duree, nf, statutBg, resume, bilan, validerFormule, cliquerPiece, ajouterBase, validerPh, observationsDe, resultatsVus, demanderAide, niveauAide, textesAide, noterObs, pointsRheo, ajusteRheo, MODELES_RHEO, validerRheo, ficheCorrection, cpgModele, CPG_LIM, cpgSimFin, chronologie, consequences, fiche, validerPlan, nombre, donneesTitr, GRANDEUR_TITR, phReel, docsDe,
+  horloge, duree, nf, statutBg, resume, bilan, validerFormule, cliquerPiece, ajouterBase, ajouterPrevu, validerPh, observationsDe, resultatsVus, demanderAide, niveauAide, textesAide, noterObs, pointsRheo, ajusteRheo, MODELES_RHEO, validerRheo, ficheCorrection, cpgModele, CPG_LIM, cpgSimFin, chronologie, consequences, fiche, validerPlan, nombre, donneesTitr, GRANDEUR_TITR, phReel, docsDe,
 } from "./percutafeineJeu";
 
 // ====================================================
@@ -238,8 +238,11 @@ function StationPh({ e, onEtat }) {
         <div style={{ background: '#0f2430', color: '#7ef0d4', borderRadius: 12, padding: '8px 16px', minWidth: 130 }}><div style={{ fontSize: 12, color: '#9fc3d1', letterSpacing: 1 }}>pH-MÈTRE</div><div style={{ fontSize: 32, fontFamily: 'ui-monospace,monospace', fontWeight: 700 }}>{ph == null ? '—' : nf(ph, 2)}</div></div>
         <div style={{ background: '#0f2430', color: '#fde68a', borderRadius: 12, padding: '8px 16px', minWidth: 150 }}><div style={{ fontSize: 12, color: '#9fc3d1', letterSpacing: 1 }}>TROLAMINE AJOUTÉE</div><div style={{ fontSize: 32, fontFamily: 'ui-monospace,monospace', fontWeight: 700 }}>{nf(e.f.trolAdd || 0, 2)} g</div></div>
       </div>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{[0.1, 0.3, 0.5, 1].map(g => <button key={g} type="button" className="pc-btn2" onClick={() => add(g)}>+ {nf(g, 1)} g (2 min)</button>)}
-        <button type="button" className="pc-btn" onClick={() => onEtat(validerPh(e).etat)}>{reprise ? 'Valider et remettre en pot (15 min)' : 'Valider et mettre en pot (10 min)'}</button></div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {e.f.trolAdd == null && !reprise && <button type="button" className="pc-btn" data-prevu onClick={() => onEtat(ajouterPrevu(e))}>Verser les {nf(e.f.fm?.trol ?? 0, 2)} g prévus dans la formule (5 min)</button>}
+        {(e.f.trolAdd != null || reprise) && <>
+          {[0.1, 0.3].map(g => <button key={g} type="button" className="pc-btn2" onClick={() => add(g)}>Corriger : + {nf(g, 1)} g (2 min)</button>)}
+          <button type="button" className="pc-btn" onClick={() => onEtat(validerPh(e).etat)}>{reprise ? 'Valider et remettre en pot (15 min)' : 'Valider et mettre en pot (10 min)'}</button></>}</div>
     </div>);
 }
 

@@ -57,17 +57,17 @@ const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 export const QDISP = { continuer: 1.0, neutraliser: 0.85, chauffer: 0.95, grumeaux: 0.3 };
 export const M_COOH = 45.02, M_TEA = 149.19;
 export const coohLot = e => 45.02 / (73.5 + 5 * unif(e.f?.graine ?? 1, 'lotcooh'));   // fraction massique de COOH du lot de Synthalen K (fiche 3V : masse équivalente d'environ 76 g de polymère par mole de COOH, soit environ 59 %)
-export function phDe(e, m) {      // pH du gel après ajout cumulé de m g de trolamine (modèle simple, pour 1,5 g de Synthalen K par 200 g)
-  const carb = e.f.fm?.carb || 1.5;
-  return 3.0 + 3.6 * (1 - Math.exp(-m / (1.2 * carb / 1.5 * coohLot(e) / 0.72)));
-}
+// pH du gel après ajout cumulé de m g de trolamine. Calé sur la fiche 3V : 0,01 équivalent de base par g de polymère (1,5 g de trolamine) donne pH 7,
+// soit un taux de neutralisation α ≈ 0,77 (masse équivalente 76) ; pH 3 sans base ; plafond vers 8 (la trolamine est une base faible, pKa 7,8).
+export const alphaNeutr = (e, m) => m * M_COOH / (M_TEA * (e.f.fm?.carb || 1.5) * coohLot(e));
+export function phDe(e, m) { return 3.0 + 5.0 * (1 - Math.exp(-alphaNeutr(e, m) / 0.478)); }
 export function gelVrai(e) {
   const fm = e.f.fm || { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 98.7 };
   const l = e.f.perteEth || 0, ethPur = fm.eth96 * 0.96, trol = e.f.trolAdd || 0, ajout = e.f.ethAjout || 0;   // ajout : masse d'éthanol à 96 % réellement ajoutée en compensation
   const total = fm.caf + fm.carb + fm.coc + fm.eth96 + fm.eau + trol - ethPur * l + ajout;
   const carbPct = fm.carb / total * 100;
   const ph = e.f.phFinal ?? phDe(e, trol);
-  const fPH = clamp((ph - 4.0) / 1.5, 0.15, 1);
+  const fPH = clamp((ph - 4.0) / 2.0, 0.15, 1);   // fiche 3V, figure 1 : plateau de viscosité à partir de pH 6
   const q = Math.min(1.1, (QDISP[e.f.disp] ?? 0.85) * fPH * Math.pow(carbPct / COM.carb, 1.3));
   return { caf: fm.caf / total * 100, eth: (ethPur * (1 - l) + 0.96 * ajout) / total * 100, carb: carbPct, ph, q };
 }
@@ -138,9 +138,9 @@ export function donneesHplcGamme(e) {
 export function donneesCpg(e) {
   const g = e.f.graine, gel = gelVrai(e);
   const ratio = r => ({ aE: arr(100 * r / (1 + r), 2), aEI: arr(100 / (1 + r), 2) });
-  const rRef = PENTE_CPG * V_REF * (1 + SIG_CPG * gauss(g, 'cr')), ref = ratio(rRef);
+  const rRef = PENTE_CPG * V_REF * (1 + SIG_CPG / Math.sqrt(3) * gauss(g, 'cr')), ref = ratio(rRef);
   const mP = arr(0.5 + 0.03 * unif(g, 'cm'), 3), vE = mP * gel.eth / 100 / RHO_ETOH * 1000;
-  const ech = ratio(PENTE_CPG * vE * (1 + SIG_CPG * gauss(g, 'ce')));
+  const ech = ratio(PENTE_CPG * vE * (1 + SIG_CPG / Math.sqrt(3) * gauss(g, 'ce')));
   const pg = planDe(e, 'cpg_gamme_plan') || { vmin: 100, vmax: 1000, n: 5, rep: 2 };
   const sig = r => SIG_CPG * (1 + 0.12 / r) * (r > 6 ? 1 + (r - 6) / 6 : 1);   // pic trop petit : intégration bruitée ; pic trop grand : étalon interne noyé
   const gamme = niveaux(pg.vmin, pg.vmax, pg.n).flatMap((v, i) => Array.from({ length: pg.rep }, (_, k) => { const r0 = PENTE_CPG * pip(e, v, `gp${i}_${k}`) * (v > 1000 ? Math.max(0.5, 1 - 0.1 * (v - 1000) / 1000) : 1); return { v, r: arr(r0 * (1 + sig(r0) * gauss(g, `gm${i}_${k}`)), 4) }; }));
@@ -301,7 +301,7 @@ const taches = e => {
   if (F.fab && !F.ph) L.push(['Neutraliser et mettre en pot', `Quand le Synthalen K est dispersé : ajouter la trolamine et contrôler le pH.${e.bg.gel > e.t ? ` Attention : dispersion en cours, prête dans ${duree(e.bg.gel - e.t)}, tu devras attendre.` : ''}`, 'fab_disp']);
   if (F.rheoC && !F.rheoF) L.push(['Comparer les rhéologies', 'Mesurer le gel formulé et le comparer au commercial.', 'rheoF', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
   if (F.hplcPrep && !F.caf && !e.f.rapideCaf) L.push(['Doser la caféine du gel formulé', e.f.methCaf === 'ajouts' ? 'Concevoir les fioles, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'ext' ? 'Concevoir la gamme, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'gamme' ? `Concevoir la gamme, injecter en CLHP.${e.bg.clhp > e.t ? ` Attention : ${statutBg(e).clhp.toLowerCase()}, tu devras attendre.` : ''}` : `CLHP, méthode de l'étalon interne.${e.bg.clhp > e.t ? ` Attention : ${statutBg(e).clhp.toLowerCase()}, tu devras attendre.` : ''}`, e.f.methCaf === 'ajouts' ? 'uv_ajouts_plan' : e.f.methCaf === 'ext' ? 'uv_ext_plan' : e.f.methCaf === 'gamme' ? 'hplc_gamme_plan' : 'hplc_ei', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
-  if (F.cpgPrep && !F.ethQC && !e.f.rapideEth) L.push(['Doser l\'éthanol du gel formulé', 'CPG avec étalon interne, puis avec une gamme d\'étalonnage.', 'cpg_inj', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
+  if (F.cpgPrep && !F.ethQC && !e.f.rapideEth) L.push(['Doser l\'éthanol du gel formulé', 'CPG avec étalon interne : une solution de référence, une solution de gel, le calcul.', 'cpg_inj', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
   if (e.f.rapideCaf && !F.caf) L.push(['Relancer le dosage de la caféine', 'Méthode déjà au point : mêmes manipulations, résultat calculé pour toi (environ 40 min).', 'rapide_caf', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
   if (e.f.rapideEth && !F.ethQC) L.push(['Relancer le dosage de l\'éthanol', 'Méthode déjà au point : mêmes manipulations, résultat calculé pour toi (environ 40 min).', 'rapide_eth', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
   if (!e.f.lot && !e.f.relanceRefusee && defautVu(e) && T_FIN - e.t >= 150) L.push(['Refaire un lot en corrigeant le procédé', 'Un défaut est visible dans tes résultats et il reste du temps : tu peux refaire le gel.', 'relance']);
@@ -639,13 +639,13 @@ export const causeMesure = e => {
   if (E.length) return `ta mesure de ${E.map(d => NOM_CRIT[d]).join(' et de ')} était biaisée`;
   return null; };
 const causeReelle = e => { const g = gelVrai(e), D = defauts(e);
-  return D.map(d => d === 'caf' ? (g.caf < SPEC.caf[0] ? 'il manque de la caféine dans la formule' : 'il y a trop de caféine dans la formule') : d === 'eth' ? 'l\'éthanol s\'est échappé ou a été sous-dosé' : (e.f.disp === 'grumeaux' ? 'des grumeaux ne se redissolvent pas' : g.ph < 5.5 ? 'le gel est mal neutralisé' : 'il manque du Synthalen K dans la formule')).join(' ; '); };
+  return D.map(d => d === 'caf' ? (g.caf < SPEC.caf[0] ? 'il manque de la caféine dans la formule' : 'il y a trop de caféine dans la formule') : d === 'eth' ? 'l\'éthanol s\'est échappé ou a été sous-dosé' : (e.f.disp === 'grumeaux' ? 'des grumeaux ne se redissolvent pas' : g.ph < 6 ? 'le gel est mal neutralisé' : 'il manque du Synthalen K dans la formule')).join(' ; '); };
 add('avis', {
   lieu: 'Bureau', pnj: 'ines', titre: 'Ce que voit Inès',
   texte: e => {
     const D = defauts(e), m = mesures(e), vu = (e.f.obs || []).some(x => x === 'blanc' || x === 'cristaux');
     if (D.includes('eth')) return `Inès relit tes résultats : « L'éthanol est à ${nf(m.eth, 1)} % au lieu de ${nf(ETH_PUR_COM, 1)} %. ${vu ? 'Tu te souviens de la vidéo : ça part très vite. ' : ''}${(e.f.perteEth || 0) > 0.06 ? 'Qu\'est-ce que tu as fait comme chauffage, et avec quel montage ?' : 'Le montage n\'a pas chauffé beaucoup : vérifie plutôt la masse d\'éthanol que tu as mise dans ta formule.'} On peut compenser : ajouter de l'éthanol à 96 % dans le gel, mais il faut calculer la masse puis refaire le dosage CPG. »`;
-    if (D.includes('visco') && gelVrai(e).ph < 5.5) return `Inès relit tes résultats : « Ton gel est trop fluide, sa viscosité est trop faible : rapport des contraintes ${nf(m.q, 2)}. As-tu regardé le pH final ? Si le Synthalen K n'est pas assez neutralisé, on peut reprendre avec de la trolamine (15 min), puis refaire la rhéologie. »`;
+    if (D.includes('visco') && gelVrai(e).ph < 6) return `Inès relit tes résultats : « Ton gel est trop fluide, sa viscosité est trop faible : rapport des contraintes ${nf(m.q, 2)}. As-tu regardé le pH final ? Si le Synthalen K n'est pas assez neutralisé, on peut reprendre avec de la trolamine (15 min), puis refaire la rhéologie. »`;
     if (D.length) return `Inès relit tes résultats : « Je vois un écart, mais il ne se rattrape pas dans le temps qui reste : ${causeReelle(e)}. Écris-le tel quel sur le bon, et on refera un lot. »`;
     const EM = ecartsMes(e);
     if (EM.length) return `Inès relit tes résultats : « ${EM.map(d => d === 'caf' ? `caféine ${nf(m.caf, 1)} %` : d === 'eth' ? `éthanol ${nf(m.eth, 1)} %` : `viscosité ${nf(m.q, 2)}`).join(', ')} : ${EM.length > 1 ? 'ça sort' : 'ça sort'} de la fiche de spécification. Avant de conclure, regarde si ta méthode est fiable : un résultat aberrant n'est pas forcément un gel raté. »`;
@@ -656,7 +656,7 @@ add('avis', {
     if (D.includes('eth')) return [
       { t: 'Compenser : calculer la masse d\'éthanol à ajouter', vers: 'reprise_eth', duree: 5, note: 'Décision de compenser l\'éthanol manquant avec Inès.' },
       { t: 'Laisser le gel tel quel et conclure', vers: 'verdict', duree: 0, note: 'Gel laissé tel quel malgré l\'éthanol bas.' }];
-    if (D.includes('visco') && gelVrai(e).ph < 5.5) return [
+    if (D.includes('visco') && gelVrai(e).ph < 6) return [
       { t: 'Reprendre le pH avec Lucas', vers: 'ph2', duree: 5, note: 'Reprise du pH décidée avec Inès.' },
       { t: 'Laisser le gel tel quel et conclure', vers: 'verdict', duree: 0, note: 'Gel laissé tel quel malgré la viscosité basse.' }];
     return [{ t: 'Passer au bon de contrôle', vers: 'verdict', duree: 0 }];
@@ -696,7 +696,7 @@ add('point_dubreuil', {
 add('fab_choix', {
   fiches: ['synthalen'],
   lieu: 'Paillasse de formulation', pnj: 'moi', titre: 'Comment fabriques-tu le gel ?',
-  texte: () => `D'après la fiche technique, le Synthalen K est long à se disperser (de 30 min à 1 h 30 à froid) ; un léger chauffage accélère la dispersion. Une fois dispersé, c'est la base (la trolamine) qui fait épaissir le milieu.\nComment procèdes-tu ?`,
+  texte: () => `Dans ton expérience du TP, le Synthalen K est long à se disperser (de 30 min à 1 h 30 à froid) ; un léger chauffage accélère la dispersion. Une fois dispersé, c'est la base (la trolamine) qui fait épaissir le milieu.\nComment procèdes-tu ?`,
   hyp: 'Hypothèse : le Synthalen K gonfle et épaissit quand il est neutralisé ; mal dispersé, il forme des grumeaux qui ne se redissolvent pas bien.',
   choix: e => melange(e, 'fabp', [
     { id: 'reflux', t: 'Ballon à reflux sous agitation, chauffage modéré, base ajoutée à la fin', d: '15 min de travail, puis environ 1 h de dispersion.', duree: 15, vers: 'secu', f: { mode: 'reflux', perteEth: 0.01 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 60 } }), note: 'Fabrication : ballon à reflux, chauffage modéré, agitation, base en dernier.' },
@@ -737,6 +737,8 @@ export function ajouterBase(e, g) {
   const m = (e.f.trolAdd || 0) + g;
   return { ...e, t: e.t + 2, f: { ...e.f, trolAdd: arr(m, 2), phMes: arr(phDe(e, m) + 0.04 * gauss(e.f.graine, `ph${Math.round(m * 100)}`), 2) } };
 }
+// Ajout de la quantité prévue dans la formule, en une fois (5 min)
+export function ajouterPrevu(e) { const n = ajouterBase(e, e.f.fm?.trol ?? 0); return { ...n, t: e.t + 5 }; }
 export function validerPh(e) {
   const ph = phDe(e, e.f.trolAdd || 0), reprise = e.scene === 'ph2';
   const run = n => ({ ...marquer(n, 'ph'), fait: { ...n.fait, ph: true, ...(reprise ? { rheoF: false } : {}) } });
@@ -746,8 +748,8 @@ add('ph', {
   fiches: ['synthalen', 'trolamine'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'ph', titre: 'Neutraliser et mettre en pot',
   video: { src: 'videos/neutralisation-carbopol.mp4', legende: 'Enregistrement du TP : le milieu agité s\'épaissit pendant la neutralisation.' },
-  texte: e => `« Ta formule prévoyait ${nf(e.f.fm?.trol ?? 0, 2)} g de trolamine : c'était une estimation. Ajoute-la par petites fractions en agitant et lis le pH au pH-mètre après chaque ajout (2 minutes l'ajout). C'est le pH qui décide de la quantité réelle : vise un pH proche de celui du gel commercial, vers 6. » ${e.f.disp === 'grumeaux' ? 'Le gel contient des grumeaux.' : ''}${e.f.cooh ? `\nD'après ton titrage, ${nf(e.f.fm?.carb || 1.5, 2)} g de Synthalen K contiennent ${nf((e.f.fm?.carb || 1.5) * e.f.cooh / 100 / M_COOH * 1000, 1)} mmol de COOH : les neutraliser tous demanderait ${nf((e.f.fm?.carb || 1.5) * e.f.cooh / 100 / M_COOH * M_TEA, 2)} g de trolamine.` : ''}`,
-  hyp: 'Hypothèse : la viscosité d\'un gel de Synthalen K dépend du pH (elle augmente de pH 4 à 6 environ puis se stabilise) ; la lecture du pH-mètre a une dispersion de ±0,04.',
+  texte: e => `« Ta formule prévoyait ${nf(e.f.fm?.trol ?? 0, 2)} g de trolamine : c'était une estimation. Verse-la en agitant : le milieu s'épaissit (regarde l'enregistrement ci-dessous), puis contrôle le pH au pH-mètre. La fiche du fabricant indique environ 1,5 g de trolamine par gramme de polymère pour un pH de 7 : si le pH est loin de cette valeur, corrige par un petit ajout. » ${e.f.disp === 'grumeaux' ? 'Le gel contient des grumeaux.' : ''}${e.f.cooh ? `\nD'après ton titrage, ${nf(e.f.fm?.carb || 1.5, 2)} g de Synthalen K contiennent ${nf((e.f.fm?.carb || 1.5) * e.f.cooh / 100 / M_COOH * 1000, 1)} mmol de COOH : les neutraliser tous demanderait ${nf((e.f.fm?.carb || 1.5) * e.f.cooh / 100 / M_COOH * M_TEA, 2)} g de trolamine.` : ''}`,
+  hyp: 'Hypothèse : la viscosité d\'un gel de Synthalen K dépend du pH (elle augmente de pH 3 à 6 environ puis reste sur un plateau jusqu\'à pH 11 environ, d\'après la fiche) ; la lecture du pH-mètre a une dispersion de ±0,04.',
   choix: [],
 });
 add('ph2', {
@@ -770,7 +772,7 @@ add('rheoC_faux', {
   texte: e => e.f.rheoFaute === 'seuil' ? `Lucas : « Ton modèle est le bon, mais ton seuil est à côté. Le seuil τ₀ est la contrainte que le modèle donne quand γ̇ tend vers 0 : regarde le paramètre τ₀ de l'ajustement, il est d'environ ${nf(HB.tau0, 0)} Pa. »` : 'Lucas : « Regarde les points à faible gradient : la contrainte ne tend pas vers zéro, il y a un seuil d\'écoulement, et la viscosité diminue quand on cisaille davantage (rhéofluidifiant). Seul le modèle de Herschel-Bulkley, seuil plus loi de puissance, suit tous les points : les autres s\'en écartent d\'au moins 10 % à un bout de la courbe. »',
   choix: [{ t: 'Compris, retour à la paillasse', vers: 'hub' }],
 });
-const causeVisco = e => { const g = gelVrai(e), fDisp = QDISP[e.f.disp] ?? 0.85, fPH = clamp((g.ph - 4) / 1.5, 0.15, 1), fCarb = Math.pow(g.carb / COM.carb, 1.3);
+const causeVisco = e => { const g = gelVrai(e), fDisp = QDISP[e.f.disp] ?? 0.85, fPH = clamp((g.ph - 4) / 2.0, 0.15, 1), fCarb = Math.pow(g.carb / COM.carb, 1.3);
   if (g.q >= 0.9) return 'similaires'; const m = Math.min(fDisp, fPH, fCarb); return m === fDisp ? 'dispersion' : m === fPH ? 'ph' : 'carbopol'; };
 add('rheoF', {
   lieu: 'Salle de rhéologie', pnj: 'lucas', titre: 'Gel formulé et gel commercial',
@@ -789,7 +791,6 @@ add('choix_caf', {
   lieu: 'Salle de chromatographie', pnj: 'moi', titre: 'Contrôler la caféine du gel',
   texte: () => `Il faut vérifier que ton gel contient bien la caféine attendue, avec une incertitude raisonnable. Le laboratoire met à ta disposition les techniques suivantes : aucune n'est imposée, le choix t'appartient.`,
   choix: e => melange(e, 'caf', [
-    { id: 'clhpEI', t: 'Chromatographie liquide (CLHP-UV, 273 nm) avec étalon interne (benzoïne)', d: 'Colonne C18, boucle d\'injection de 20 µL.', duree: 0, vers: 'hplc_m', f: { voieCaf: 'clhp' }, note: 'Caféine : technique choisie, CLHP avec étalon interne.' },
     { id: 'clhpExt', t: 'Chromatographie liquide (CLHP-UV, 273 nm) avec une gamme d\'étalonnage externe', d: 'Fioles de caféine de concentrations croissantes, à injecter une à une (10 min pour sortir la solution mère, puis la préparation et l\'injection de chaque fiole).', duree: 10, vers: 'hplc_m', f: { voieCaf: 'clhp', hplcGamme: true }, note: 'Caféine : technique choisie, CLHP avec gamme d\'étalonnage externe.' },
     { id: 'uvAj', t: 'Spectrophotométrie UV (273 nm) avec ajouts dosés', d: 'Cuve de 1 cm ; cinq fioles à préparer à partir de la solution de gel.', duree: 10, vers: 'hub', f: { voieCaf: 'uv', methCaf: 'ajouts', panne: false }, run: n => marquer(n, 'hplcPrep'), note: 'Caféine : technique choisie, UV avec ajouts dosés.' },
     { id: 'uvExt', t: 'Spectrophotométrie UV (273 nm) avec une gamme d\'étalonnage externe', d: 'Cuve de 1 cm ; gamme de caféine dans l\'éluant.', duree: 10, vers: 'hub', f: { voieCaf: 'uv', methCaf: 'ext', panne: false }, run: n => marquer(n, 'hplcPrep'), note: 'Caféine : technique choisie, UV avec étalonnage externe.' },
@@ -1066,16 +1067,21 @@ add('cpg_ref', {
 });
 add('cpg_inj', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Éthanol du gel formulé : étalon interne',
-  texte: e => { const d = donneesCpg(e); return `Gel formulé : m' = ${nf(d.mP, 3)} g pesés dans la fiole de 20 mL (avec 500 µL de ${eiNom(e)}).\nRéférence : éthanol ${nf(d.ref.aE, 2)} %, ${eiNom(e)} ${nf(d.ref.aEI, 2)} % de l'aire (V_réf = 250 µL).\nÉchantillon : éthanol ${nf(d.ech.aE, 2)} %, ${eiNom(e)} ${nf(d.ech.aEI, 2)} % de l'aire.`; },
+  texte: e => { const d = donneesCpg(e); return `Gel formulé : m' = ${nf(d.mP, 3)} g pesés dans la fiole de 20 mL (avec 500 µL de ${eiNom(e)}).\nRéférence : éthanol ${nf(d.ref.aE, 2)} %, ${eiNom(e)} ${nf(d.ref.aEI, 2)} % de l'aire (V_réf = 250 µL).\nÉchantillon : éthanol ${nf(d.ech.aE, 2)} %, ${eiNom(e)} ${nf(d.ech.aEI, 2)} % de l'aire.\n(Aires moyennées sur trois injections de chaque solution.)`; },
   formule: 'cpgEI',
-  hyp: "Hypothèses : l'aire est proportionnelle à la quantité injectée pour chaque composé ; le facteur de réponse éthanol / EI est constant ; une injection a une dispersion relative d'environ 3 à 4 % (gaussienne), et la méthode à un seul point de référence la porte entièrement.",
+  hyp: "Hypothèses : l'aire est proportionnelle à la quantité injectée pour chaque composé ; le facteur de réponse éthanol / EI est constant ; chaque solution est injectée trois fois et les aires sont moyennées (une injection seule a une dispersion d'environ 3 à 4 %, la moyenne d'environ 2 %) ; la méthode à un seul point de référence porte cette dispersion entièrement.",
   visuels: e => { const d = donneesCpg(e); return [{ type: 'chroma', titre: 'CPG · échantillon (gel formulé)', tmax: 3, pics: e.f.ei === 'butanol' ? [{ tr: 1.36, h: 0.5 * d.rE / d.rR, l: 'éthanol' }, { tr: 2.1, h: 0.9, l: 'butan-1-ol (EI)' }] : [{ tr: 1.36, h: 0.8, l: 'éthanol + propan-1-ol' }, { tr: 1.42, h: 0.6, l: '' }] }]; },
   aide: { pnj: 'ines', textes: [
     () => '« Avec le même étalon interne dans les deux solutions, que te permet de comparer le rapport des aires éthanol / étalon interne ? »',
     () => '« Ce rapport est proportionnel à la quantité d\'éthanol. Compare celui de l\'échantillon à celui de la référence pour trouver le volume d\'éthanol de l\'échantillon. »',
     () => '« V_éch = V_réf × (rapport éch) / (rapport réf). Passe en masse avec 0,789 g/mL, puis divise par m\'. »'] },
   calcul: { q: 'Quel est le pourcentage massique d\'éthanol dans le gel (méthode de l\'étalon interne, un point) ?', unite: '%', vrai: e => donneesCpg(e).pctSimple, tol: 0.03, cs: 1, indice: 'V_éch = V_réf × (%A_EI,réf / %A_EtOH,réf) × (%A_EtOH,éch / %A_EI,éch). Puis m_EtOH = V_éch × 0,789 g/mL, et divise par m\'.',
-    ok: { vers: 'cpg_gamme_plan', duree: 15 }, ko: { vers: 'cpg_gamme_plan', duree: 0 } },
+    ok: { vers: 'cpg_conclu', duree: 10 }, ko: { vers: 'cpg_conclu', duree: 0 } },
+});
+add('cpg_conclu', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Éthanol : résultat',
+  texte: e => { const d = donneesCpg(e); return `Par la méthode de l'étalon interne (référence et échantillon dans les mêmes conditions), le gel contient ${nf(d.pctSimple, 1)} % d'éthanol. Le facteur de réponse n'intervient pas : il est le même dans les deux solutions. Les aires sont des moyennes de trois injections, dispersion d'environ 2 % par solution, soit 3 % sur le résultat : retiens ce résultat avec cette incertitude quand tu le compareras à l'exigence (${nf(SPEC.eth[0], 1)} à ${nf(SPEC.eth[1], 1)} %).`; },
+  choix: [{ t: 'Noter le résultat', duree: 2, vers: 'hub', run: n => marquer(n, 'ethQC'), f: { ethMes: true }, note: 'Éthanol : résultat obtenu par étalon interne.' }],
 });
 add('cpg_gamme_plan', {
   lieu: 'Salle de chromatographie', pnj: 'moi', station: 'plan', titre: 'Éthanol : concevoir ma gamme',
@@ -1305,7 +1311,7 @@ export function causesDe(e) {
     ],
     visco: [
       { t: 'Le Synthalen K n\'a pas été bien dispersé avant d\'ajouter la base (grumeaux)', vrai: f.disp === 'grumeaux' || !!f.errBase },
-      { t: 'Le pH final est resté trop bas : le Synthalen K n\'est pas assez neutralisé', vrai: g.ph < 5.5 },
+      { t: 'Le pH final est resté trop bas : le Synthalen K n\'est pas assez neutralisé', vrai: g.ph < 6 },
       { t: 'La masse de Synthalen K pesée était trop faible', vrai: fm.carb < 1.3 },
       { t: 'L\'éthanol a fluidifié le gel', vrai: false },
     ],
