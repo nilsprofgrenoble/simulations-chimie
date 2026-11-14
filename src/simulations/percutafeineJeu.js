@@ -165,7 +165,8 @@ export const etatInitial = (graine = (Math.random() * 2147483647) | 0, prenom = 
 const nota = (e, texte) => texte ? { ...e, carnet: [...e.carnet, `${horloge(e.t)} : ${texte}`] } : e;
 const marquer = (e, ...cles) => ({ ...e, fait: { ...e.fait, ...Object.fromEntries(cles.map(c => [c, true])) } });
 const pauseDej = n => ({ ...n, t: n.t + T_PAUSE, hist: [...(n.hist || []), { t0: n.t, t1: n.t + T_PAUSE, k: 'pause', l: 'Pause déjeuner' }] });
-const attendre = (e, cle) => { const r = e.bg[cle]; if (r == null || r <= e.t) return e; return nota({ ...e, hist: [...(e.hist || []), { t0: e.t, t1: r, k: 'att', l: cle === 'es' ? 'attente devant l\'étuve' : 'attente devant le ballon' }], t: r, f: { ...e.f, attente: e.f.attente + (r - e.t) } }, `J'attends (${cle === 'es' ? "l'étuve" : 'le ballon'}) pendant ${duree(r - e.t)}.`); };
+const ATT = { es: ['attente devant l\'étuve', 'l\'étuve'], gel: ['attente devant le ballon', 'le ballon'], clhp: ['attente de la réparation de la CLHP', 'la réparation de la CLHP'] };
+const attendre = (e, cle) => { const r = e.bg[cle]; if (r == null || r <= e.t) return e; return nota({ ...e, hist: [...(e.hist || []), { t0: e.t, t1: r, k: 'att', l: ATT[cle][0] }], t: r, f: { ...e.f, attente: e.f.attente + (r - e.t) } }, `J'attends (${ATT[cle][1]}) pendant ${duree(r - e.t)}.`); };
 
 const eqNote = (n, k, id) => ({ ...n, f: { ...n.f, eq: { ...(n.f.eq || {}), [id]: k } } });
 export const SCENES = {};
@@ -231,6 +232,7 @@ export const cer = (cause, effet, remede) => `Cause : ${cause} Effet : ${effet} 
 // ───────────── La paillasse (hub) ─────────────
 export const statutBg = e => ({
   es: e.fait.es && !e.fait.esRes ? (e.bg.es > e.t ? `Étuve en route, prête dans ${duree(e.bg.es - e.t)}` : 'Étuve terminée : les coupelles sont prêtes à peser') : null,
+  clhp: e.f.attendu && e.bg.clhp != null && !e.fait.caf ? (e.bg.clhp > e.t ? `CLHP en réparation, prête dans ${duree(e.bg.clhp - e.t)}` : 'CLHP réparée : elle est prête pour l\'injection') : null,
   gel: e.fait.fab && !e.fait.ph ? (e.bg.gel > e.t ? `Ballon en route, prêt dans ${duree(e.bg.gel - e.t)}` : 'Ballon terminé : le gel est prêt') : null,
 });
 const taches = e => {
@@ -249,7 +251,7 @@ const taches = e => {
   if (e.f.voieEth === 'cpg' && !F.cpgPrep) L.push(['Préparer le dosage de l\'éthanol', 'Masse à peser, solution de référence, première injection.', 'cpg_m']);
   if (F.fab && !F.ph) L.push(['Neutraliser et mettre en pot', 'Quand le Synthalen K est dispersé : ajouter la trolamine et contrôler le pH.', 'fab_disp']);
   if (F.ph && F.rheoC && !F.rheoF) L.push(['Comparer les rhéologies', 'Mesurer le gel formulé et le comparer au commercial.', 'rheoF']);
-  if (F.ph && F.hplcPrep && !F.caf) L.push(['Doser la caféine du gel formulé', e.f.methCaf === 'ajouts' ? 'Concevoir les fioles, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'ext' ? 'Concevoir la gamme, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'gamme' ? 'Concevoir la gamme, injecter en CLHP.' : 'CLHP, méthode de l\'étalon interne.', e.f.methCaf === 'ajouts' ? 'uv_ajouts_plan' : e.f.methCaf === 'ext' ? 'uv_ext_plan' : e.f.methCaf === 'gamme' ? 'hplc_gamme_plan' : 'hplc_ei']);
+  if (F.ph && F.hplcPrep && !F.caf) L.push(['Doser la caféine du gel formulé', e.f.methCaf === 'ajouts' ? 'Concevoir les fioles, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'ext' ? 'Concevoir la gamme, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'gamme' ? 'Concevoir la gamme, injecter en CLHP.' : `CLHP, méthode de l'étalon interne.${e.bg.clhp > e.t ? ` Attention : ${statutBg(e).clhp.toLowerCase()}, tu devras attendre.` : ''}`, e.f.methCaf === 'ajouts' ? 'uv_ajouts_plan' : e.f.methCaf === 'ext' ? 'uv_ext_plan' : e.f.methCaf === 'gamme' ? 'hplc_gamme_plan' : 'hplc_ei']);
   if (F.ph && F.cpgPrep && !F.ethQC) L.push(['Doser l\'éthanol du gel formulé', 'CPG avec étalon interne, puis avec une gamme d\'étalonnage.', 'cpg_inj']);
   if (!F.titrCarb) L.push(['Titrer les acides du Synthalen K (poudre)', 'Titrage par la soude d\'une dispersion du Synthalen K.', 'titr_suivi']);
   if (!F.leurre_titrgel) L.push(['Titrer le gel commercial', 'Titrage d\'une prise de gel par la soude : 30 min.', 'leurre_titrgel']);
@@ -282,7 +284,7 @@ add('docs', {
 });
 add('hub', {
   lieu: 'Paillasse', pnj: 'moi', titre: 'À la paillasse',
-  texte: e => { const s = statutBg(e); return [`${horloge(e.t)}. Il te reste ${duree(T_FIN - e.t)} de TP.`, e.t < 30 && 'Objectif de la journée : déformuler le gel commercial, fabriquer le contretype, puis le contrôler (caféine, éthanol, viscosité).', s.es && `🔥 ${s.es}.`, s.gel && `⚗️ ${s.gel}.`, 'Que fais-tu maintenant ?'].filter(Boolean).join('\n'); },
+  texte: e => { const s = statutBg(e); return [`${horloge(e.t)}. Il te reste ${duree(T_FIN - e.t)} de TP.`, e.t < 30 && 'Objectif de la journée : déformuler le gel commercial, fabriquer le contretype, puis le contrôler (caféine, éthanol, viscosité).', s.es && `🔥 ${s.es}.`, s.gel && `⚗️ ${s.gel}.`, s.clhp && `🔧 ${s.clhp}.`, 'Que fais-tu maintenant ?'].filter(Boolean).join('\n'); },
   choix: e => taches(e).map(([t, d, vers]) => ({ t, d, vers })),
 });
 
@@ -471,7 +473,7 @@ add('eq_base', {
 });
 add('eq_ext', {
   lieu: 'Salle de chromatographie', pnj: 'lucas', titre: 'Lucas passe à la paillasse',
-  texte: () => `Lucas s'arrête devant la CLHP en panne : « Tu devrais faire une gamme en UV, étalonnage externe : c'est ce qu'on a toujours fait, c'est rapide et ça marche très bien. »`,
+  texte: () => `Lucas s'arrête devant la CLHP et jette un œil à tes relevés : « Tu devrais faire une gamme en UV, étalonnage externe : c'est ce qu'on a toujours fait, c'est rapide et ça marche très bien. »`,
   choix: [
     { t: '« Merci du conseil. Je regarde ce que ça donne et je vérifie avec une autre méthode si ça me paraît trop haut. »', tag: 'ok', vers: 'hplc_panne', duree: 2, run: n => eqNote(n, 'ok', 'ext'), note: 'Conseil de Lucas (UV externe) écouté, vérification prévue.' },
     { t: '« Oui, bonne idée, j\'y vais. »', tag: 'moyen', vers: 'hplc_panne', duree: 1, run: n => eqNote(n, 'moyen', 'ext'), note: 'Conseil de Lucas (UV externe) accepté sans discussion.' },
@@ -732,6 +734,10 @@ add('hplc_m', {
   visuels: () => [{ type: 'fioles' }],
   texte: () => `Fiole 1 : environ 51 mg de caféine dans 50 mL d'éluant. Pour la fiole 4 (50 mL), tu veux la même masse de caféine que dans la fiole 1, à partir du gel (à 5 % de caféine en masse).`,
   hyp: "Hypothèse : le gel formulé contient environ 5 % de caféine (c'est la valeur à vérifier) ; la prise d'essai est faite sur balance de précision.",
+  aide: { pnj: 'ines', textes: [
+    () => '« Regarde le schéma des fioles : la solution injectée (fiole 5) est une dilution de la fiole 4, comme la référence (fiole 3) est une dilution de la fiole 1. Qu\'est-ce qui doit être pareil entre la fiole 3 et la fiole 5 pour pouvoir les comparer ? »',
+    () => '« On prélève les mêmes volumes dans les deux cas (100 µL, puis 200 µL d\'étalon interne). Pour que la fiole 5 contienne autant de caféine que la fiole 3, la fiole 4 doit contenir autant de caféine que la fiole 1 : environ 50 mg dans 50 mL. »',
+    () => '« Dans m g de gel à 5 %, il y a 0,05 × m g de caféine. Tu veux environ 50 mg, soit 0,050 g : pose l\'égalité 0,05 × m = 0,050 g. »'] },
   calcul: { q: 'Quelle masse m de gel faut-il peser pour la fiole 4 ?', unite: 'g', vrai: () => 1.0, tol: 0.1, cs: 1, indice: '50 mg de caféine représentent 5 % de la masse m de gel : m = 50 mg / 0,05.',
     ok: { vers: 'hplc_inj', duree: 5 }, ko: { vers: 'hplc_inj', duree: 0 } },
 });
@@ -740,7 +746,19 @@ add('hplc_inj', {
   entree: e => e.f.panne === undefined ? { ...e, f: { ...e.f, panne: unif(e.f.graine, 'panne') < 0.6 } } : e,
   texte: () => `Les solutions sont prêtes (référence avec benzoïne comme étalon interne). Tu passes à l'injection de la solution de référence en CLHP.\nSur le schéma de l'appareil, clique à l'endroit où tu injectes la solution.`,
   station: 'schema', schema: 'clhp', cible: 'injecteur',
-  choix: [{ t: 'Injecter la solution de référence', duree: 10, vers: e => e.f.panne ? (e.f.eq?.ext ? 'hplc_panne' : 'eq_ext') : 'hplc_ref', run: n => marquer(n, 'hplcPrep'), f: {} }],
+  choix: [{ t: 'Injecter la solution de référence', duree: 10, vers: e => e.f.panne ? 'hplc_symptome' : 'hplc_ref', run: n => marquer(n, 'hplcPrep'), f: {} }],
+});
+export const symptomeClhp = e => ['bouchon', 'fuite', 'detecteur'][Math.min(2, Math.floor(unif(e.f.graine, 'sympt') * 3))];
+const RELEVES_CLHP = {
+  bouchon: { txt: 'La pression, qui était de 100 bar environ pendant l\'équilibrage, monte sans s\'arrêter après l\'injection jusqu\'à 380 bar, puis la pompe s\'arrête sur sécurité. Aucun pic n\'est enregistré.', lignes: [['Pression en tête de colonne', 'environ 100 bar', '100 → 380 bar en 3 min, arrêt de la pompe'], ['Débit', '3 mL/min', 'tombe à 0'], ['Chromatogramme', '2 pics', 'aucun pic']] },
+  fuite: { txt: 'La pression chute à 15 bar après l\'injection et ne remonte plus. Le raccord à l\'entrée de la colonne est humide, avec des gouttes d\'éluant. Les pics, très tardifs et étalés, sont inexploitables.', lignes: [['Pression en tête de colonne', 'environ 100 bar', '100 → 15 bar'], ['Débit mesuré en sortie', '3 mL/min', 'environ 0,8 mL/min'], ['Raccord de la colonne', 'sec', 'humide, gouttes d\'éluant']] },
+  detecteur: { txt: 'La pression est stable (98 bar) et le débit est normal. Mais la ligne de base est très bruitée, et la solution de référence, pourtant concentrée, ne donne que des pics minuscules, à peine visibles.', lignes: [['Pression en tête de colonne', 'environ 100 bar', '98 bar, stable'], ['Débit', '3 mL/min', '3 mL/min'], ['Signal du détecteur', 'deux pics hauts', 'pics à peine visibles, ligne de base bruitée']] },
+};
+add('hplc_symptome', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'L\'injection ne donne pas ce qu\'on attend',
+  texte: e => `Tu injectes la solution de référence (boucle de 20 µL). Voici ce que tu relèves.\n${RELEVES_CLHP[symptomeClhp(e)].txt}\nInès : « Ça ne ressemble pas à ce qu'on obtient d'habitude. Regarde bien les relevés. »`,
+  visuels: e => { const s = symptomeClhp(e), L = [{ type: 'tableau', titre: 'Relevés de la CLHP pendant l\'injection', cols: ['Relevé', 'Habituel', 'Mesuré'], lignes: RELEVES_CLHP[s].lignes }]; if (s === 'detecteur') L.push({ type: 'chroma', titre: 'CLHP · référence (signal obtenu)', tmax: 2, bruit: 0.05, pics: [{ tr: 0.82, h: 0.07, l: '' }, { tr: 1.24, h: 0.04, l: '' }] }); return L; },
+  choix: [{ t: 'Chercher l\'origine du problème', duree: 5, vers: e => e.f.eq?.ext ? 'hplc_panne' : 'eq_ext' }],
 });
 add('hplc_ref', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Chromatogramme de référence',
@@ -748,14 +766,19 @@ add('hplc_ref', {
   visuels: () => [{ type: 'chroma', titre: 'CLHP · référence (caféine + benzoïne)', tmax: 2, pics: [{ tr: 0.82, h: 0.9, l: 'caféine' }, { tr: 1.24, h: 0.35, l: 'benzoïne (EI)' }] }],
   choix: e => [{ t: 'Retour à la paillasse', vers: 'hub', f: { methCaf: e.f.hplcGamme ? 'gamme' : 'EI' } }],
 });
+const DIAG_CLHP = {
+  bouchon: 'Inès : « Une pression qui monte sans fin et aucun pic : le circuit est bouché, sans doute des particules dans le fritté de la colonne. Il faut le changer et rincer le circuit : compte une heure et quart.',
+  fuite: 'Inès : « Une pression qui s\'effondre et un raccord humide : c\'est une fuite à l\'entrée de la colonne. Il faut changer la bague du raccord, purger et ré-équilibrer : compte une heure et quart.',
+  detecteur: 'Inès : « Pression et débit normaux, mais un signal presque nul et bruité : la lampe UV du détecteur est en fin de vie. Il faut la changer et attendre qu\'elle se stabilise : compte une heure et quart.',
+};
 add('hplc_panne', {
-  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'La CLHP ne répond plus',
-  texte: () => `Plus de débit : l'erreur de pompe revient à chaque injection. Inès : « Il faut compter une heure et quart de réparation, au moins. Tu peux aussi doser la caféine autrement : elle absorbe fort à 273 nm, on a un spectrophotomètre UV. »\nQue fais-tu ?`,
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'La CLHP est hors service',
+  texte: e => `${DIAG_CLHP[symptomeClhp(e)]} Tu peux aussi doser la caféine autrement : elle absorbe fort à 273 nm, on a un spectrophotomètre UV. »\nQue fais-tu ?`,
   hyp: 'Hypothèse (UV) : loi de Beer-Lambert (A proportionnelle à C) dans la zone de travail, A restant inférieure à 1.',
   choix: [
     { t: 'Ajouts dosés au spectrophotomètre UV : on ajoute des quantités connues de caféine à la solution de gel', d: '5 fioles à préparer', duree: 10, vers: 'hub', f: { methCaf: 'ajouts' }, note: 'Panne de CLHP : dosage par ajouts dosés en UV.' },
     { t: 'Étalonnage externe en UV : gamme de caféine dans l\'éluant, puis lecture de la solution de gel', d: 'Plus simple à préparer', duree: 10, vers: 'hub', f: { methCaf: 'ext' }, note: 'Panne de CLHP : dosage par étalonnage externe en UV.' },
-    { t: 'Attendre la réparation de la CLHP', d: 'Environ 1 h 15 : regarde l\'heure avant de choisir', duree: 75, vers: 'hub', f: { methCaf: 'EI', attendu: true }, run: n => ({ ...n, f: { ...n.f, attente: n.f.attente + 75 } }), note: 'Panne de CLHP : j\'attends la réparation (1 h 15).' },
+    { t: 'Faire réparer la CLHP et m\'occuper d\'autre chose en attendant', d: 'La réparation dure 1 h 15 sans toi : tu peux travailler ailleurs pendant ce temps', duree: 5, vers: 'hub', f: { methCaf: 'EI', attendu: true }, run: n => ({ ...n, bg: { ...n.bg, clhp: n.t + 75 } }), note: 'Panne de CLHP : réparation lancée (1 h 15), je continue autre chose.' },
   ],
 });
 add('hplc_gamme_plan', {
@@ -786,6 +809,7 @@ add('hplc_gamme_calc', {
     ok: { vers: 'hub', duree: 8, run: n => marquer(n, 'caf'), f: { cafMes: true } }, ko: { vers: 'hub', duree: 0, run: n => marquer(n, 'caf'), f: { cafMes: true } } },
 });
 add('hplc_ei', {
+  entree: e => attendre(e, 'clhp'),
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Caféine par CLHP, étalon interne',
   texte: e => { const d = donneesHplc(e); return `Gel formulé : m = ${nf(d.mPes, 3)} g dans 50 mL (fiole 4), puis 100 µL de cette fiole + 200 µL de la solution de benzoïne dans 20 mL (fiole 5). Concentration de la caféine dans la référence : ${nf(d.cRef, 2)} mg/L.\nAires : référence caféine ${nf(d.aRefC, 2)}, benzoïne ${nf(d.aRefB, 2)} ; échantillon caféine ${nf(d.aEchC, 2)}, benzoïne ${nf(d.aEchB, 2)}.`; },
   formule: 'hplcEI', hyp: "Hypothèses : la réponse du détecteur est proportionnelle à la concentration pour chaque composé ; la benzoïne est stable et à la même concentration dans les deux fioles ; le volume injecté est constant (boucle de 20 µL).",

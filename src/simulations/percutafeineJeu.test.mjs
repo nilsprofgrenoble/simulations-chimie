@@ -285,8 +285,8 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   const r = J.validerFormule(e, J.SCENES.formule.aide.valeurs()); assert(r.ok && r.etat.f.repli, 'formule de Lucas retenue');
   const ordres = new Set([1, 2, 3, 4, 5, 6, 7, 8].map(g => J.choixDe({ ...J.etatInitial(g), scene: 'rheoC' }).map(c => c.id).join()));
   assert(ordres.size > 1, 'options de rhéologie mélangées');
-  const pan = J.choixDe({ ...J.etatInitial(5), scene: 'hplc_panne' }); const att = pan && pan.find(c => c.t.startsWith('Attendre la réparation'));
-  if (att) { const n = J.choisir({ ...J.etatInitial(5), scene: 'hplc_panne', t: 100 }, att); assert(n.f.attente >= 75, 'attente CLHP comptée'); }
+  const pan = J.choixDe({ ...J.etatInitial(5), scene: 'hplc_panne' }); const att = pan && pan.find(c => c.t.startsWith('Faire réparer'));
+  if (att) { const n = J.choisir({ ...J.etatInitial(5), scene: 'hplc_panne', t: 100 }, att); assert(n.bg.clhp === n.t + 75 && n.f.attente === 0, 'réparation en tâche de fond : aucune attente immédiate'); const w = J.aller({ ...n, fait: { ...n.fait, hplcPrep: true } }, 'hplc_ei'); assert(w.f.attente === 75 && w.t === n.bg.clhp, 'attente seulement si on revient trop tôt à la CLHP'); const w2 = J.aller({ ...n, t: n.t + 120 }, 'hplc_ei'); assert(w2.f.attente === 0, 'réparation terminée : aucune attente'); }
   console.log('audit Mistral : OK'); }
 // 19. Journée supportable : un élève « moyen » (deux appareils inutiles, un calcul raté, attente de la réparation) finit à l'heure dans la quasi-totalité des cas
 { const unif01 = e => ((e.f.graine * 9301 + e.t * 49297) % 233280) / 233280;
@@ -294,7 +294,7 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
     calc: (e, k) => (e.essais || 0) === 0 && unif01(e) < 0.5 ? '1' : J.nf(k.vrai(e), k.cs ?? 2),
     choix: (e, ch) => {
       if (e.scene === 'hub') { const l = (e.f.leurres || 0) < 2 && ch.find(c => c.vers.startsWith('leurre')); if (l) return l; }
-      if (e.scene === 'hplc_panne') return ch.find(c => c.t.startsWith('Attendre'));
+      if (e.scene === 'hplc_panne') return ch.find(c => c.t.startsWith('Faire réparer'));
       return expert.choix(e, ch); } };
   let ok = 0; const N = 300;
   for (let g = 1; g <= N; g++) { const { e } = joue(moyen, g * 7919); if (e.scene === 'fin_conforme') ok++; }
@@ -350,3 +350,11 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   e = J.aller(e, id3); assert(J.docsDe(e).includes('mo3'), 'CPG : mo3 ajouté');
   assert(!J.SCENES.docs.fiches.includes('mo1') && !J.SCENES.docs.fiches.includes('mo3'), 'l\'écran du dossier ne les contient pas d\'office');
   console.log('dossier progressif : OK'); }
+// 24. Panne de CLHP cohérente : des relevés à interpréter avant tout diagnostic ; aide sur la masse de gel
+{ for (const g of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) { let e = { ...J.etatInitial(g), scene: 'hplc_inj', t: 100 }; e = { ...e, f: { ...e.f, panne: true } };
+    const r = J.choisir(e, J.SCENES.hplc_inj.choix[0]); assert(r.scene === 'hplc_symptome', 'après l\'injection : relevés, pas d\'annonce de panne');
+    const sy = J.symptomeClhp(r); assert(['bouchon', 'fuite', 'detecteur'].includes(sy), 'symptôme'); assert(J.visuelsDe(r).length >= 1 && !/panne/i.test(J.texteDe(r)), 'le symptôme est décrit sans le mot « panne »');
+    const d = J.choisir(r, J.choixDe(r)[0]); assert(['eq_ext', 'hplc_panne'].includes(d.scene)); }
+  const seen = new Set(Array.from({ length: 60 }, (_, g) => J.symptomeClhp({ f: { graine: g + 1 } }))); assert(seen.size === 3, 'trois types de symptômes possibles');
+  const h = { ...J.etatInitial(3), scene: 'hplc_m', t: 100 }; assert(J.SCENES.hplc_m.aide.textes.length === 3, 'aide pour la fiole 4'); let a = h; for (let k = 1; k <= 3; k++) a = J.demanderAide(a); assert(J.textesAide(a).length === 3, 'trois niveaux de conseil');
+  console.log('panne de CLHP cohérente : OK'); }
