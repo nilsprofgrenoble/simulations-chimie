@@ -251,17 +251,16 @@ function StationPh({ e, onEtat }) {
 // ───────────── L'ordinateur de la salle de titrage : simuler son titrage avant de le faire (règles de la simulation de première sur le titrage direct) ─────────────
 function OrdiTitrage({ vals, setVals }) {
   const [ouvert, setOuvert] = useState(false);
-  const [loc, setLoc] = useState({ m: String(vals.m || '0,1'), M: '76', c: String(vals.c || '0,1'), V0: String(vals.V0 || '150') }), [V, setV] = useState(0);
-  const m = nombre(loc.m) || 0, M = nombre(loc.M) || 76, c = nombre(loc.c) || 0, V0 = nombre(loc.V0) || 0;
-  const n0 = M > 0 ? m / M : 0, veq = c > 0 ? n0 / c * 1000 : 0, vmax = Math.max(2, Math.ceil(veq * 2)), v = Math.min(V, vmax);
+  const [loc, setLoc] = useState({ m: String(vals.m || '0,1'), M: '', pred: '', c: String(vals.c || '0,1'), V0: String(vals.V0 || '150') }), [V, setV] = useState(0);
+  const m = nombre(loc.m) || 0, M = nombre(loc.M) || 0, c = nombre(loc.c) || 0, V0 = nombre(loc.V0) || 0;
+  const n0 = M > 0 ? m / M : 0, veq = c > 0 ? n0 / c * 1000 : 0, vmax = 25, v = Math.min(V, vmax), pred = nombre(loc.pred);
   const q = x => { const nb = c * x / 1000, av = Math.min(nb, n0); return { a: n0 - av, b: nb - av, s: av }; };
-  const mmol = x => nf(x * 1000, 2), cur = q(v), eq = q(veq);
-  const champs = [['m', 'Masse de Synthalen K', 'g'], ['M', 'Masse équivalente du polymère (fiche)', 'g/mol'], ['c', 'Concentration de la soude', 'mol/L'], ['V0', 'Volume d\'eau', 'mL']];
+    const champs = [['m', 'Masse de Synthalen K', 'g'], ['M', 'Masse équivalente du polymère (à lire sur la fiche)', 'g/mol'], ['c', 'Concentration de la soude', 'mol/L'], ['V0', 'Volume d\'eau', 'mL']];
   const W = 360, H = 170, x0 = 40, x1 = 348, nMax = Math.max(1e-9, n0, q(vmax).b), X = x => x0 + x / vmax * (x1 - x0), Y = n => 140 - Math.max(0, n) / nMax * 120;
   const ligne = k => Array.from({ length: 61 }, (_, i) => { const x = i * vmax / 60, r = q(x); return `${i ? 'L' : 'M'}${X(x).toFixed(1)} ${Y(r[k]).toFixed(1)}`; }).join('');
   const alertes = [];
-  if (veq > 25) alertes.push(`V_éq = ${nf(veq, 1)} mL dépasse la burette de 25 mL : prends moins de poudre ou une soude plus concentrée.`);
-  else if (veq > 0 && veq < 5) alertes.push(`V_éq = ${nf(veq, 1)} mL est petit : avec une burette graduée tous les 0,05 mL, l'incertitude relative sera grande.`);
+  if (veq > 25) alertes.push('Le volume à l\'équivalence dépasse la burette de 25 mL : prends moins de poudre ou une soude plus concentrée.');
+  else if (veq > 0 && veq < 5) alertes.push('Le volume à l\'équivalence est petit : avec une burette graduée tous les 0,05 mL, l\'incertitude relative sera grande.');
   if (V0 > 0 && m / V0 * 100 > 0.5) alertes.push(`${nf(m / V0 * 100, 2)} g pour 100 mL : la dispersion sera trop épaisse pour que la mesure se stabilise (reste sous 0,5 g pour 100 mL).`);
   const fenetre = { border: `1.5px solid ${C.bord}`, borderRadius: 12, overflow: 'hidden', background: '#fff', margin: '0 0 14px' };
   return (<div data-ordi style={fenetre}>
@@ -269,23 +268,23 @@ function OrdiTitrage({ vals, setVals }) {
       <span aria-hidden="true" style={{ display: 'inline-flex', gap: 5 }}>{['#f87171', '#fbbf24', '#4ade80'].map(k => <i key={k} style={{ width: 10, height: 10, borderRadius: 99, background: k, display: 'block' }} />)}</span>
       <span style={{ flex: 1 }}>💻 Ordinateur : simuler mon titrage</span><span>{ouvert ? '▾' : '▸'}</span></button>
     {ouvert && <div style={{ padding: '12px 14px' }}>
-      <div style={{ fontSize: 14.5, lineHeight: 1.5 }}>R–COOH + HO⁻ → R–COO⁻ + H₂O (un groupe COOH consomme un ion hydroxyde). Entre ta prise d'essai : l'ordinateur en déduit la quantité de matière de groupes COOH, le volume de soude à l'équivalence et la quantité de chaque espèce pendant le titrage.</div>
-      <div style={{ fontSize: 13.5, color: C.doux, margin: '6px 0 10px' }}>La simulation suppose que la fiche technique est exacte (M = 76 g/mol) : c'est précisément ce que ton titrage doit vérifier sur le lot du laboratoire.</div>
+      <div style={{ fontSize: 14.5, lineHeight: 1.5 }}>R–COOH + HO⁻ → R–COO⁻ + H₂O (un groupe COOH consomme un ion hydroxyde). Entre ta prise d'essai et les données de la fiche : l'ordinateur trace l'évolution des quantités de matière pendant le titrage. À toi de calculer le volume à l'équivalence puis de le vérifier sur la courbe.</div>
+      <div style={{ fontSize: 13.5, color: C.doux, margin: '6px 0 10px' }}>La simulation suppose que la fiche technique est exacte pour ce lot : c'est précisément ce que ton titrage réel doit vérifier.</div>
       <div style={{ display: 'grid', gap: 8, gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))' }}>{champs.map(([k, l, u]) => <label key={k} style={{ display: 'grid', gap: 3, fontSize: 13.5 }}>{l} ({u})
         <input value={loc[k]} inputMode="decimal" autoComplete="off" aria-label={l} onChange={ev => setLoc({ ...loc, [k]: ev.target.value })} style={{ font: 'inherit', fontSize: 16, padding: '6px 9px', borderRadius: 8, border: `1.5px solid ${C.bleu}` }} /></label>)}</div>
-      <div data-ordi-calcul style={{ margin: '12px 0 8px', fontSize: 15, lineHeight: 1.7 }}>n(COOH) = m / M = <b>{mmol(n0)} mmol</b><br />À l'équivalence : n(HO⁻) versé = n(COOH), donc V<sub>éq</sub> = n / c = <b>{nf(veq, 2)} mL</b></div>
+      <label style={{ display: 'grid', gap: 3, fontSize: 13.5, margin: '12px 0 4px' }}>Mon calcul : volume de soude à l'équivalence prévu (mL)
+        <input data-ordi-pred value={loc.pred} inputMode="decimal" autoComplete="off" aria-label="Volume à l'équivalence prévu" onChange={ev => setLoc({ ...loc, pred: ev.target.value })} style={{ font: 'inherit', fontSize: 16, padding: '6px 9px', borderRadius: 8, border: `1.5px solid ${C.bleu}` }} /></label>
+      <div style={{ fontSize: 13, color: C.doux }}>Calcule d'abord n(COOH) à partir de ta masse, puis le volume de soude qui lui correspond, et vérifie avec la courbe.</div>
+      {pred != null && veq > 0 && <div data-ordi-verdict style={{ margin: '6px 0', fontSize: 14.5 }}>{Math.abs(pred - veq) <= 0.03 * veq ? '✅ Ton volume prévu coïncide avec la simulation.' : '❌ Ton volume prévu ne coïncide pas avec la simulation : reprends ton calcul de n(COOH), puis de V.'}</div>}
       {alertes.map((a, i) => <div key={i} role="alert" style={{ background: '#fff7ed', border: '1px solid #f5d98a', borderRadius: 8, padding: '6px 10px', fontSize: 14, margin: '4px 0' }}>⚠️ {a}</div>)}
       <label style={{ display: 'block', fontSize: 14, margin: '10px 0 2px' }}>Soude versée : <b>V = {nf(v, 2)} mL</b>
         <input type="range" min={0} max={vmax} step={vmax / 200} value={v} onChange={ev => setV(parseFloat(ev.target.value))} aria-label="Volume de soude versé" style={{ width: '100%' }} /></label>
-      <table style={{ borderCollapse: 'collapse', fontSize: 13.5, width: '100%', margin: '6px 0 8px' }}><thead><tr style={{ textAlign: 'left', color: C.doux }}><th>État</th><th>n(COOH)</th><th>n(HO⁻)</th><th>n(COO⁻)</th></tr></thead><tbody>
-        {[['Initial (V = 0)', q(0)], [`V = ${nf(v, 1)} mL`, cur], [`Équivalence (${nf(veq, 1)} mL)`, eq]].map(([nomL, r]) => <tr key={nomL} style={{ borderTop: `1px solid ${C.bord}` }}><td>{nomL}</td><td>{mmol(r.a)}</td><td>{mmol(r.b)}</td><td>{mmol(r.s)}</td></tr>)}</tbody></table>
-      <div style={{ fontSize: 12.5, color: C.doux }}>Quantités en mmol.</div>
+      <div style={{ fontSize: 12.5, color: C.doux }}>Quantités de matière (échelle arbitraire) en fonction du volume de soude versé : lis le volume à l'équivalence sur la courbe.</div>
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Quantités de matière en fonction du volume de soude versé" style={{ width: '100%', maxWidth: 420, background: '#fff', border: `1px solid ${C.bord}`, borderRadius: 8, margin: '4px 0' }}>
         <path d={ligne('a')} fill="none" stroke="#dc2626" strokeWidth="2.5" /><path d={ligne('b')} fill="none" stroke="#2563eb" strokeWidth="2.5" /><path d={ligne('s')} fill="none" stroke="#16a34a" strokeWidth="2.5" />
-        <line x1={X(veq)} y1="14" x2={X(veq)} y2="140" stroke="#94a3b8" strokeDasharray="5 4" /><text x={X(veq)} y="12" fontSize="10.5" textAnchor="middle" fill="#64748b">V éq</text>
         <line x1={X(v)} y1="14" x2={X(v)} y2="140" stroke="#f59e0b" strokeWidth="2" />
         <line x1={x0} y1="140" x2={x1} y2="140" stroke="#334155" /><line x1={x0} y1="14" x2={x0} y2="140" stroke="#334155" />
-        <text x={x0} y="154" fontSize="10.5" textAnchor="middle" fill="#64748b">0</text><text x={x1} y="154" fontSize="10.5" textAnchor="end" fill="#64748b">{nf(vmax, 0)} mL</text>
+        <text x={x0} y="154" fontSize="10.5" textAnchor="middle" fill="#64748b">0</text><text x={x1} y="154" fontSize="10.5" textAnchor="end" fill="#64748b">25 mL</text>
         <text x={(x0 + x1) / 2} y="166" fontSize="11" textAnchor="middle" fill="#334155">volume de soude versé (mL)</text>
         <text x="46" y="26" fontSize="10.5" fill="#dc2626">COOH</text><text x="86" y="26" fontSize="10.5" fill="#2563eb">HO⁻</text><text x="120" y="26" fontSize="10.5" fill="#16a34a">COO⁻</text></svg>
       <button type="button" className="pc-btn2" data-ordi-report onClick={() => setVals(vv => ({ ...vv, m: String(loc.m), c: String(loc.c), V0: String(loc.V0) }))} style={{ marginTop: 8 }}>Reporter ma masse, mon volume d'eau et ma soude dans mon plan</button>
