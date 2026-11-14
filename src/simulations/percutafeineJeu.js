@@ -184,7 +184,7 @@ export function aller(e, id) {
 const DEBUTS_SURS = new Set(['avant', 'pour', 'comme', 'alors', 'dis', 'voilà', 'plus', 'au', 'un', 'une', 'le', 'la', 'les', 'tu', 'notre', 'bien', 'même', 'sur', 'quand', 'ton', 'ta', 'tes', 'avec', 'après', 'ce', 'cette', 'ça', 'mon', 'il', 'elle', 'on', 'je', 'nous', 'vous', 'si', 'donc', 'mais', 'et', 'ici', 'là', 'ah', 'oui', 'non', 'c', 'l', 'd', 'j', 't', 'n', 's', 'qu', 'comment', 'combien', 'quel', 'quelle', 'est', 'regarde', 'lis', 'pose', 'note', 'tiens', 'écoute', 'attention', 'ok']);
 const nommer = (e, sc, t) => {
   const p = pn(e); if (!p || typeof t !== 'string' || sc.pnj === 'moi') return t;
-  const toujours = sc.fin || e.scene === 'intro' || e.scene === 'verdict' || e.scene === 'point_dubreuil' || e.scene.startsWith('eq_');
+  const toujours = sc.fin || e.scene === 'intro' || e.scene === 'intro2' || e.scene === 'verdict' || e.scene === 'point_dubreuil' || e.scene.startsWith('eq_');
   if (!toujours && hachage(`${e.scene}|${e.f.graine ?? 1}|prenom`) % 100 >= 50) return t;
   const m = t.match(/«\s*([A-Za-zÀ-ÿ]+)/);
   if (!m || m[1][0] !== m[1][0].toUpperCase() || !DEBUTS_SURS.has(m[1].toLowerCase())) return t;
@@ -259,6 +259,13 @@ add('intro', {
   fiches: ['notice'],
   lieu: 'Laboratoire de R&D', pnj: 'dubreuil', titre: 'Contre-typer la Percutaféine',
   texte: () => `« Une cliente veut un gel équivalent à la Percutaféine, un gel à la caféine vendu pour les surcharges adipeuses localisées. Ton travail : retrouver la formule du gel commercial, fabriquer environ 200 g d'un contretype, puis contrôler sa qualité : caféine, éthanol, viscosité. »\n« Tu as la journée, de 8 h à 17 h, avec une heure de pause à midi. L'étuve et le ballon chauffent pendant que tu fais autre chose : organise-toi pour ne pas attendre devant. Les appareils sont fragiles, et une analyse qui ne donne pas ce qu'on attend se discute. »\nDocuments dans ton dossier : liste des constituants (caféine, Carbopol 980, cocoate de macrogol, trolamine, éthanol, eau purifiée) et notice (résumé des caractéristiques du produit).`,
+  visuels: () => [{ type: 'tube' }],
+  choix: [{ t: 'Écouter Inès, qui a préparé quelque chose sur ce gel', vers: 'intro2', duree: 0 }],
+});
+add('intro2', {
+  lieu: 'Laboratoire de R&D', pnj: 'ines', titre: 'Un gel étonnant',
+  video: { src: 'videos/gel-evaporation.mp4', legende: 'Une noisette de gel du pot commercial, étalée sur une plaque noire. Enregistrement accéléré (×8).' },
+  texte: () => '« Regarde ce gel : 5 % de caféine dans un mélange d\'eau et d\'éthanol, alors que la caféine se dissout plutôt mal dans l\'un comme dans l\'autre, et pourtant elle tient dans le pot. Quelqu\'un a vraiment travaillé la formule. »\n« J\'en ai étalé une noisette sur une plaque noire et je l\'ai filmée en accéléré (×8). Regarde ce qui se passe quand ça sèche : ça peut t\'être utile. »',
   choix: [{ t: 'Aller à la paillasse', vers: 'hub', note: 'Début du travail : contre-typer la Percutaféine.' }],
 });
 add('docs', {
@@ -517,7 +524,7 @@ export function noterObs(e, ids) {
 add('obs_video', {
   lieu: 'Paillasse', pnj: 'ines', station: 'obs', titre: 'Une noisette de gel sur une plaque',
   video: { src: 'videos/gel-evaporation.mp4', legende: 'Une noisette de gel du pot commercial, étalée sur une plaque noire. Enregistrement accéléré (×8).' },
-  texte: () => `Inès : « J'ai étalé une noisette de gel du pot sur une plaque noire et j'ai filmé en accéléré (×8). Regarde : ça peut te servir. »\nNote dans ton cahier ce que tu vois.`,
+  texte: () => `Tu revois la vidéo d'Inès : une noisette de gel du pot sur une plaque noire, filmée en accéléré (×8).\nNote dans ton cahier ce que tu vois.`,
   choix: [],
 });
 

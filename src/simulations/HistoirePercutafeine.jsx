@@ -139,7 +139,18 @@ function BalanceVue({ v }) {
         <div style={{ fontFamily: 'ui-monospace,monospace', fontSize: 24, color: '#7ef0d4', letterSpacing: 1 }}>{nf(x, v.dec)} <span style={{ fontSize: 14, color: '#9fc3d1' }}>g</span></div></div>)}
     </div></Cadre>);
 }
-const Visuel = ({ v }) => v.type === 'balance' ? <BalanceVue v={v} /> : v.type === 'chroma' ? <Chroma v={v} /> : v.type === 'rheo' ? <Rheo v={v} /> : v.type === 'droite' ? <Droite v={v} /> : v.type === 'titrage' ? <CourbeTitrage v={v} /> : v.type === 'tableau' ? <Tableau v={v} /> : v.type === 'fioles' ? <SchemaFiolesClhp /> : null;
+// Illustration générique d'un tube de gel (pas la reproduction de l'emballage commercial).
+const TubeGel = () => (<figure style={{ margin: '12px 0', textAlign: 'center' }}>
+  <svg viewBox="0 0 220 130" width="100%" style={{ maxWidth: 300 }} role="img" aria-label="Illustration d'un tube de gel à la caféine">
+    <path d="M30 30 L170 22 Q196 20 196 40 L196 90 Q196 110 170 108 L30 100 Z" fill="#f8fafc" stroke="#94a3b8" strokeWidth="2" />
+    <rect x="12" y="38" width="22" height="54" rx="3" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="2" />
+    <path d="M6 44 L12 44 L12 86 L6 86 Z" fill="#94a3b8" />
+    <rect x="58" y="34" width="120" height="68" rx="8" fill="#fff7ed" stroke="#fdba74" />
+    <text x="118" y="62" textAnchor="middle" fontSize="15" fontWeight="700" fill="#9a3412">Gel à la caféine</text>
+    <text x="118" y="82" textAnchor="middle" fontSize="12" fill="#9a3412">5 % · usage cutané</text>
+  </svg>
+  <figcaption style={{ fontSize: 13.5, color: C.doux }}>Le gel commercial à contre-typer (illustration).</figcaption></figure>);
+const Visuel = ({ v }) => v.type === 'balance' ? <BalanceVue v={v} /> : v.type === 'chroma' ? <Chroma v={v} /> : v.type === 'rheo' ? <Rheo v={v} /> : v.type === 'droite' ? <Droite v={v} /> : v.type === 'titrage' ? <CourbeTitrage v={v} /> : v.type === 'tableau' ? <Tableau v={v} /> : v.type === 'fioles' ? <SchemaFiolesClhp /> : v.type === 'tube' ? <TubeGel /> : null;
 
 
 const TOUS_DOCS = ['notice', 'carbopol', 'trolamine', 'cocoate', 'mo1', 'mo2', 'mo3', 'mo4'];
@@ -464,7 +475,7 @@ export function SimulationHistoirePercutafeine() {
         {e.f.corrige && <div data-corrige role="status" style={{ background: '#fef3c7', border: '1px solid #f5d98a', borderRadius: 12, padding: '9px 13px', fontSize: 14.5, margin: '8px 0' }}>🤝 {e.f.corrige}</div>}
         <Dialogue sc={sc} paragraphes={paragraphes} p={p} e={e} />
         {sc.fiches && <FichesPercutafeine ids={sc.fiches} ouvert={e.scene === 'docs'} />}
-        {!fin && !['hub', 'docs', 'intro'].includes(e.scene) && (() => { const autres = TOUS_DOCS.filter(d => !(sc.fiches || []).includes(d)); return autres.length ? <details data-dossier style={{ margin: '12px 0', background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 12, padding: '8px 14px' }}><summary style={{ cursor: 'pointer', fontWeight: 700, fontSize: 15 }}>📄 Dossier du TP : notice, fiches techniques, modes opératoires</summary><FichesPercutafeine ids={autres} /></details> : null; })()}
+        {!fin && !['hub', 'docs', 'intro', 'intro2'].includes(e.scene) && (() => { const autres = TOUS_DOCS.filter(d => !(sc.fiches || []).includes(d)); return autres.length ? <details data-dossier style={{ margin: '12px 0', background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 12, padding: '8px 14px' }}><summary style={{ cursor: 'pointer', fontWeight: 700, fontSize: 15 }}>📄 Dossier du TP : notice, fiches techniques, modes opératoires</summary><FichesPercutafeine ids={autres} /></details> : null; })()}
         {sc.formule && <div data-relation style={{ margin: '12px 0', background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 12, padding: '8px 12px', overflowX: 'auto' }}>{FORMULES[sc.formule]}</div>}
         {sc.video && <figure data-video style={{ margin: '12px 0' }}><video controls playsInline preload="metadata" aria-label={sc.video.legende} src={`${import.meta.env.BASE_URL}${sc.video.src}`} style={{ width: '100%', maxWidth: 520, maxHeight: '60vh', display: 'block', margin: '0 auto', borderRadius: 14, background: '#0f2430', boxShadow: '0 6px 18px rgba(0,0,0,.2)' }} /><figcaption style={{ fontSize: 13, color: C.doux, textAlign: 'center', marginTop: 6 }}>{sc.video.legende}</figcaption></figure>}
         {vis.map((v, i) => <Visuel key={i} v={v} />)}
