@@ -761,5 +761,9 @@
  "37:prevoir:ext-position": "ANA369",
  "37:prevoir:ext-solvant": "ANA370",
  "37:prevoir:ext-gestes": "ANA371",
- "77:plausible:ext-val-densite": "VAL194"
+ "77:plausible:ext-val-densite": "VAL194",
+ "37:prevoir:dop-sens": "ANA372",
+ "37:prevoir:dop-proportion": "ANA373",
+ "37:prevoir:dop-duree": "ANA374",
+ "77:plausible:dop-val-vitesse": "VAL195"
 }

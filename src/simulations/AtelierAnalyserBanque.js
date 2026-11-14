@@ -2573,6 +2573,27 @@ export const PREVOIR = [
       F('verser la phase organique par le haut de l’ampoule', 'La phase organique est en bas : on la soutire par le robinet.'),
       F('agiter encore sans dégazer', 'Il faut dégazer régulièrement pour éviter la surpression.'),
     ] },
+  { id: 'dop-sens', domaine: 'Ondes', titre: 'Un chariot qui s’éloigne',
+    enonce: 'Sur un rail de laboratoire, un chariot porte un émetteur ultrasonore de fréquence 40 000 Hz. Un récepteur est fixé à une extrémité du rail. On éloigne le chariot du récepteur à vitesse constante et on trace le spectre du signal reçu.', q: 'Le pic du spectre se trouve…', options: [
+      V('à une fréquence inférieure à 40 000 Hz', 'Quand l’émetteur s’éloigne, les fronts d’onde arrivent plus espacés : la longueur d’onde reçue est plus grande et la fréquence reçue plus petite que f_e.'),
+      F('à une fréquence supérieure à 40 000 Hz', 'C’est le cas quand l’émetteur se rapproche du récepteur, pas quand il s’en éloigne.'),
+      F('exactement à 40 000 Hz, car l’émetteur n’a pas changé sa fréquence', 'L’émetteur émet bien toujours 40 000 Hz, mais c’est la fréquence reçue qui diffère dès qu’il y a un mouvement relatif.'),
+      F('à une fréquence inférieure, car l’onde se propage plus lentement', 'La célérité de l’onde ne dépend que du milieu : elle ne change pas quand l’émetteur bouge.'),
+    ] },
+  { id: 'dop-proportion', domaine: 'Ondes', titre: 'Doubler la vitesse du chariot',
+    enonce: 'Un émetteur ultrasonore se rapproche d’un récepteur fixe à la vitesse v ; le décalage Doppler mesuré est δf = 60 Hz. On recommence avec la même fréquence émise, mais à la vitesse 2v (toujours très inférieure à la célérité du son).', q: 'Le décalage vaut alors environ…', options: [
+      V('120 Hz', 'Pour v très inférieure à c, δf = f_e × v / c est proportionnel à v : doubler v double δf.'),
+      F('60 Hz, car la fréquence émise ne change pas', 'La fréquence émise ne change pas, mais le décalage dépend de la vitesse : δf = f_e × v / c.'),
+      F('30 Hz', 'Le décalage augmente avec la vitesse : il ne diminue pas quand v augmente.'),
+      F('240 Hz', 'Il faudrait que δf soit proportionnel à v² ; ici δf est proportionnel à v.'),
+    ] },
+  { id: 'dop-duree', domaine: 'Ondes', titre: 'Deux pics qui se chevauchent',
+    enonce: 'Un chariot émetteur (40 000 Hz) roule très lentement : le décalage Doppler vaut δf = 1,5 Hz. Le signal est enregistré pendant 0,5 s ; sur le spectre, les pics de f_e et de f_r ont chacun une largeur d’environ 1 / T et se chevauchent.', q: 'Pour distinguer nettement les deux pics, on peut…', options: [
+      V('allonger l’enregistrement, par exemple à 4 s', 'La largeur d’un pic est environ 1 / T : elle passe de 2 Hz (T = 0,5 s) à 0,25 Hz (T = 4 s), inférieure à δf = 1,5 Hz.'),
+      F('enregistrer le signal moins longtemps, par exemple 0,1 s', 'Un enregistrement plus court élargit les pics (10 Hz pour 0,1 s) : le chevauchement augmente.'),
+      F('utiliser un son plus aigu pour que l’onde aille plus vite', 'La célérité du son ne dépend pas de la fréquence et ne modifie pas la largeur des pics.'),
+      F('choisir un émetteur de fréquence plus basse', 'Une fréquence f_e plus basse diminue même le décalage (δf = f_e × v / c) sans affiner les pics.'),
+    ] },
   { id: 'ir-nombre-onde', domaine: 'Chimie organique', titre: 'Du micromètre au nombre d’onde',
     enonce: 'Une radiation infrarouge a pour longueur d’onde λ = 5,0 µm (1 µm = 10⁻⁴ cm). On rappelle σ = 1 ÷ λ, avec λ exprimée en cm.', q: 'Son nombre d’onde vaut…', options: [
       V('2000 cm⁻¹', 'λ = 5,0 × 10⁻⁴ cm ; σ = 1 ÷ (5,0 × 10⁻⁴) = 2000 cm⁻¹.'),

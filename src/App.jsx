@@ -73,6 +73,7 @@ const SimulationEchographe2D = paresseux(() => import("./simulations/Echographe2
 const SimulationOptimiserSynthese = paresseux(() => import("./simulations/OptimiserSynthese"), "SimulationOptimiserSynthese");
 const SimulationMachinesThermiques = paresseux(() => import("./simulations/MachinesThermiques"), "SimulationMachinesThermiques");
 const SimulationInterferences = paresseux(() => import("./simulations/Interferences"), "SimulationInterferences");
+const SimulationDoppler = paresseux(() => import("./simulations/Doppler"), "SimulationDoppler");
 const SimulationAcidesBases = paresseux(() => import("./simulations/AcidesBases"), "SimulationAcidesBases");
 const SimulationEsterification = paresseux(() => import("./simulations/Esterification"), "SimulationEsterification");
 const SimulationChampForce = paresseux(() => import("./simulations/ChampForce"), "SimulationChampForce");
@@ -193,6 +194,8 @@ const SIMULATIONS = [
     component: SimulationDiffraction },
   { id:84, label:"Interférences et réseaux", niveau:"TSTL", icon:"🌊", color:"#0e7490",
     component: SimulationInterferences },
+  { id:114, label:"Effet Doppler : du décalage de fréquence à la vitesse", niveau:"TSTL", icon:"🌊", color:"#b45309",
+    component: SimulationDoppler },
   { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",
