@@ -230,7 +230,7 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
 { let e = { ...J.etatInitial(3), scene: 'hub', t: 10 };
   const ids = J.choixDe(e).map(c => c.vers); assert(ids.includes('leurre_ir') && ids.includes('leurre_conduc'), 'appareils disponibles');
   e = J.choisir(e, J.choixDe(e).find(c => c.vers === 'leurre_ir')); assert(e.scene === 'leurre_ir', 'scène IR');
-  const t0 = e.t; e = J.choisir(e, J.choixDe(e)[0]); assert(e.scene === 'hub' && e.t >= t0 + 20 && e.f.leurres === 1, '20 min perdues');
+  const t0 = e.t; e = J.choisir(e, J.choixDe(e)[0]); assert(e.scene === 'hub' && e.t >= t0 + 15 && e.f.leurres === 1, '15 min perdues');
   assert(!J.choixDe(e).some(c => c.vers === 'leurre_ir'), 'mesure faite une fois');
   assert(J.consequences(e).some(c => c.cause.startsWith('Appareils sans rapport')), 'conséquence affichée');
   console.log('appareils sans rapport : OK'); }
@@ -281,5 +281,17 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   const ordres = new Set([1, 2, 3, 4, 5, 6, 7, 8].map(g => J.choixDe({ ...J.etatInitial(g), scene: 'rheoC' }).map(c => c.id).join()));
   assert(ordres.size > 1, 'options de rhéologie mélangées');
   const pan = J.choixDe({ ...J.etatInitial(5), scene: 'hplc_panne' }); const att = pan && pan.find(c => c.t.startsWith('Attendre la réparation'));
-  if (att) { const n = J.choisir({ ...J.etatInitial(5), scene: 'hplc_panne', t: 100 }, att); assert(n.f.attente >= 120, 'attente CLHP comptée'); }
+  if (att) { const n = J.choisir({ ...J.etatInitial(5), scene: 'hplc_panne', t: 100 }, att); assert(n.f.attente >= 75, 'attente CLHP comptée'); }
   console.log('audit Mistral : OK'); }
+// 19. Journée supportable : un élève « moyen » (deux appareils inutiles, un calcul raté, attente de la réparation) finit à l'heure dans la quasi-totalité des cas
+{ const unif01 = e => ((e.f.graine * 9301 + e.t * 49297) % 233280) / 233280;
+  const moyen = { ...expert,
+    calc: (e, k) => (e.essais || 0) === 0 && unif01(e) < 0.5 ? '1' : J.nf(k.vrai(e), k.cs ?? 2),
+    choix: (e, ch) => {
+      if (e.scene === 'hub') { const l = (e.f.leurres || 0) < 2 && ch.find(c => c.vers.startsWith('leurre')); if (l) return l; }
+      if (e.scene === 'hplc_panne') return ch.find(c => c.t.startsWith('Attendre'));
+      return expert.choix(e, ch); } };
+  let ok = 0; const N = 300;
+  for (let g = 1; g <= N; g++) { const { e } = joue(moyen, g * 7919); if (e.scene === 'fin_conforme') ok++; }
+  assert(ok / N >= 0.93, `élève moyen : ${ok}/${N} finissent à l'heure`);
+  console.log(`élève moyen (appareils inutiles, calcul raté, attente CLHP) : ${ok}/${N} finissent à l'heure`); }

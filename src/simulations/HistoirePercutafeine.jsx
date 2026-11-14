@@ -1,3 +1,4 @@
+import SchemaFiolesClhp from './SchemaFiolesClhp';
 import FichesPercutafeine from './FichesPercutafeine';
 import { useState, useEffect, useRef } from "react";
 import { useEtatPersistant, Formule } from "../commun";
@@ -138,7 +139,7 @@ function BalanceVue({ v }) {
         <div style={{ fontFamily: 'ui-monospace,monospace', fontSize: 24, color: '#7ef0d4', letterSpacing: 1 }}>{nf(x, v.dec)} <span style={{ fontSize: 14, color: '#9fc3d1' }}>g</span></div></div>)}
     </div></Cadre>);
 }
-const Visuel = ({ v }) => v.type === 'balance' ? <BalanceVue v={v} /> : v.type === 'chroma' ? <Chroma v={v} /> : v.type === 'rheo' ? <Rheo v={v} /> : v.type === 'droite' ? <Droite v={v} /> : v.type === 'titrage' ? <CourbeTitrage v={v} /> : v.type === 'tableau' ? <Tableau v={v} /> : null;
+const Visuel = ({ v }) => v.type === 'balance' ? <BalanceVue v={v} /> : v.type === 'chroma' ? <Chroma v={v} /> : v.type === 'rheo' ? <Rheo v={v} /> : v.type === 'droite' ? <Droite v={v} /> : v.type === 'titrage' ? <CourbeTitrage v={v} /> : v.type === 'tableau' ? <Tableau v={v} /> : v.type === 'fioles' ? <SchemaFiolesClhp /> : null;
 
 
 const TOUS_DOCS = ['notice', 'carbopol', 'trolamine', 'cocoate', 'mo1', 'mo2', 'mo3', 'mo4'];
@@ -196,7 +197,7 @@ function StationPh({ e, onEtat }) {
         <div style={{ background: '#0f2430', color: '#7ef0d4', borderRadius: 12, padding: '8px 16px', minWidth: 130 }}><div style={{ fontSize: 12, color: '#9fc3d1', letterSpacing: 1 }}>pH-MÈTRE</div><div style={{ fontSize: 32, fontFamily: 'ui-monospace,monospace', fontWeight: 700 }}>{ph == null ? '—' : nf(ph, 2)}</div></div>
         <div style={{ background: '#0f2430', color: '#fde68a', borderRadius: 12, padding: '8px 16px', minWidth: 150 }}><div style={{ fontSize: 12, color: '#9fc3d1', letterSpacing: 1 }}>TROLAMINE AJOUTÉE</div><div style={{ fontSize: 32, fontFamily: 'ui-monospace,monospace', fontWeight: 700 }}>{nf(e.f.trolAdd || 0, 2)} g</div></div>
       </div>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{[0.1, 0.3, 0.5].map(g => <button key={g} type="button" className="pc-btn2" onClick={() => add(g)}>+ {nf(g, 1)} g (2 min)</button>)}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{[0.1, 0.3, 0.5, 1].map(g => <button key={g} type="button" className="pc-btn2" onClick={() => add(g)}>+ {nf(g, 1)} g (2 min)</button>)}
         <button type="button" className="pc-btn" onClick={() => onEtat(validerPh(e).etat)}>{reprise ? 'Valider et remettre en pot (15 min)' : 'Valider et mettre en pot (10 min)'}</button></div>
     </div>);
 }
@@ -321,17 +322,20 @@ function Paillasse({ e, s, choix, onChoix }) {
 
 // ───────────── Le film de la journée (fin de partie) ─────────────
 function Film({ e }) {
-  const ch = chronologie(e), W = 680, x0 = 120, x1 = 664, X = t => x0 + t / T_FIN * (x1 - x0), tmax = Math.min(e.t, T_FIN);
+  const [etroit, setEtroit] = useState(() => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(max-width: 560px)').matches);
+  useEffect(() => { if (!window.matchMedia) return undefined; const m = window.matchMedia('(max-width: 560px)'), f = () => setEtroit(m.matches); m.addEventListener?.('change', f); return () => m.removeEventListener?.('change', f); }, []);
+  const ch = chronologie(e), W = etroit ? 360 : 680, x0 = etroit ? 8 : 120, x1 = W - 16, X = t => x0 + t / T_FIN * (x1 - x0), tmax = Math.min(e.t, T_FIN);
+  const pas = etroit ? 46 : 30, h0 = etroit ? 22 : 14, bh = 18, haut = h0 + 4 * pas - 10, H = haut + 34;
   const rangs = [['Toi (actif)', ch.actif, '#1e3a8a'], ['Étuve', ch.etuve, '#f59e0b'], ['Dispersion gel', ch.gel, '#7c3aed'], ['Attente subie', ch.attentes, '#dc2626']];
-  const barres = a => a.map((b, i) => { const t0 = b.t0, t1 = b.t1 ?? b.t1; return <rect key={i} x={X(t0)} y="0" width={Math.max(2, X(Math.min(t1, T_FIN)) - X(t0))} height="18" rx="3" />; });
-  const ticks = [0, 60, 120, 180, 240, 300, 360, 420, 480, 540].map(t => [t, `${8 + t / 60} h`]);
+  const barres = a => a.map((b, i) => { const t0 = b.t0; return <rect key={i} x={X(t0)} y="0" width={Math.max(2, X(Math.min(b.t1, T_FIN)) - X(t0))} height={bh} rx="3" />; });
+  const ticks = [0, 60, 120, 180, 240, 300, 360, 420, 480, 540].filter(t => !etroit || t % 120 === 0).map(t => [t, `${8 + t / 60} h`]);
   return (<figure data-film style={{ margin: '8px 0' }}>
-    <svg viewBox={`0 0 ${W} 170`} width="100%" role="img" aria-label="Frise horaire de ta journée : ton travail actif, l'étuve, la dispersion du gel et les attentes subies" style={{ display: 'block', background: C.fond, borderRadius: 12, border: `1px solid ${C.bord}` }}>
-      {rangs.map(([nom, a, col], r) => <g key={nom} transform={`translate(0 ${14 + r * 30})`}><text x="8" y="13" fontSize="12" fill={C.encre}>{nom}</text><rect x={x0} y="0" width={x1 - x0} height="18" rx="3" fill="#e8eef4" /><g fill={col}>{barres(a)}</g></g>)}
-      <rect x={X(T_MIDI)} y="8" width={X(T_MIDI + T_PAUSE) - X(T_MIDI)} height="128" fill={C.ambre} opacity=".18" />
-      <rect x={X(tmax)} y="8" width={Math.max(0, x1 - X(tmax))} height="128" fill="#fff" opacity=".6" />
-      {ticks.map(([t, l]) => <g key={t}><line x1={X(t)} y1="136" x2={X(t)} y2="141" stroke={C.doux} /><text x={X(t)} y="154" fontSize="11" textAnchor="middle" fill={C.doux}>{l}</text></g>)}
-      <text x={X(T_MIDI) + 2} y="20" fontSize="10" fill={C.ambre}>déj.</text>
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Frise horaire de ta journée : ton travail actif, l'étuve, la dispersion du gel et les attentes subies" style={{ display: 'block', background: C.fond, borderRadius: 12, border: `1px solid ${C.bord}` }}>
+      {rangs.map(([nom, a, col], r) => <g key={nom} transform={`translate(0 ${h0 + r * pas - (etroit ? 6 : 0)})`}><text x="8" y={etroit ? -4 : 13} fontSize={etroit ? 13 : 12} fill={C.encre}>{nom}</text><rect x={x0} y="0" width={x1 - x0} height={bh} rx="3" fill="#e8eef4" /><g fill={col}>{barres(a)}</g></g>)}
+      <rect x={X(T_MIDI)} y="8" width={X(T_MIDI + T_PAUSE) - X(T_MIDI)} height={haut - 8} fill={C.ambre} opacity=".18" />
+      <rect x={X(tmax)} y="8" width={Math.max(0, x1 - X(tmax))} height={haut - 8} fill="#fff" opacity=".6" />
+      {ticks.map(([t, l]) => <g key={t}><line x1={X(t)} y1={haut} x2={X(t)} y2={haut + 5} stroke={C.doux} /><text x={X(t)} y={haut + 19} fontSize={etroit ? 13 : 11} textAnchor="middle" fill={C.doux}>{l}</text></g>)}
+      <text x={X(T_MIDI) + 2} y="18" fontSize={etroit ? 12 : 10} fill={C.ambre}>déj.</text>
     </svg>
     <figcaption style={{ fontSize: 13.5, color: C.doux, marginTop: 6, lineHeight: 1.5 }}>Un technicien efficace lance d'abord les opérations longues (étuve, dispersion du Carbopol), puis prépare calculs, rhéologie du témoin et analyses pendant qu'elles tournent. Tes attentes subies : <b>{duree(e.f.attente || 0)}</b>.</figcaption>
   </figure>);

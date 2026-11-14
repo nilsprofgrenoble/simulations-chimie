@@ -1,6 +1,7 @@
 // Documents du dossier « Percutaféine » : notice, fiches techniques des matières premières (reproductions simplifiées).
 // Sources : résumé des caractéristiques du produit (ANSM), documentation du fabricant du Carbopol 980 NF (Lubrizol), pages d'usage courant.
 import { Feuille, Tableau } from './Fiches';
+import SchemaFiolesClhp from './SchemaFiolesClhp';
 
 
 const Liste = ({ items }) => <ul style={{ margin: '4px 0 6px', paddingLeft: 20 }}>{items.map((t, i) => <li key={i} style={{ marginBottom: 3 }}>{t}</li>)}</ul>;
@@ -40,33 +41,34 @@ export default function FichesPercutafeine({ ids, ouvert = false }) {
         <Tableau lignes={[['Aspect', 'Liquide limpide à légèrement trouble, peu coloré'], ['Rôle', 'Émollient et agent solubilisant, adoucit le toucher du gel'], ['Solubilité', 'Soluble dans l\'eau et dans l\'éthanol'], ['Volatilité', 'Non volatil : reste dans l\'extrait sec'], ['Remarque du sujet', 'S\'il manque au laboratoire, il peut être remplacé par du glycérol']]} />
       </Feuille>);
     if (id === 'mo1') return (
-      <Feuille key={id} ouvert={ouvert} entete="Mode opératoire · document 1" titre="Dosage de la caféine par CLHP, étalon interne" sous="Préparation des solutions" edition="reproduction simplifiée du sujet">
+      <Feuille key={id} ouvert={ouvert} entete="Mode opératoire · document 1" titre="Dosage de la caféine par CLHP, étalon interne" sous="Colonne Wakosil C18 (250 × 4,6 mm ; 5 µm) · éluant acétonitrile / eau acidifiée 70/30 · 3 mL/min · 273 nm · analyse de 2 min" edition="reproduction du sujet">
         <Liste items={[
-          'Solution de référence : dans une fiole jaugée, introduire des volumes connus de solution étalon de caféine et d\'étalon interne, compléter au trait de jauge avec l\'éluant.',
-          'Solution échantillon : peser avec précision une masse m de gel dans la fiole jaugée, ajouter le même volume d\'étalon interne, dissoudre dans l\'éluant, compléter au trait de jauge.',
-          'Filtrer chaque solution sur filtre de 0,45 µm avant injection.',
-          'Calculer la masse de gel à peser pour que la caféine soit au même niveau de concentration que dans la référence.',
+          'Boucle d\'injection de 20,0 µL, seringue de 25 µL. Le mode repos de la CLHP dure environ 10 min (3 mL/min, même éluant que l\'analyse).',
+          'Solution de référence (fiole 3) : prélever 100 µL de la fiole 1 (caféine ≈ 50 mg dans 50 mL d\'éluant) et 200 µL de la fiole 2 (benzoïne ≈ 100 mg dans 50 mL d\'éluant), compléter à 20 mL avec l\'éluant.',
+          'Solution échantillon : dissoudre environ exactement m g de gel dans environ 30 mL d\'éluant, filtrer sur papier plissé dans une fiole jaugée de 50 mL, rincer le filtre avec 10 mL d\'éluant et compléter au trait : c\'est la fiole 4.',
+          'Fiole 5 : prélever 100 µL de la fiole 4 et 200 µL de la fiole 2, compléter à 20 mL avec l\'éluant. C\'est la solution échantillon injectée.',
+          'Exploitation : relever les aires des pics des fioles 3 et 5, puis calculer la concentration en caféine de l\'échantillon avec le rapport des aires caféine / benzoïne.',
         ]} />
+        <SchemaFiolesClhp />
       </Feuille>);
     if (id === 'mo2') return (
-      <Feuille key={id} ouvert={ouvert} entete="Mode opératoire · document 2" titre="Injecter en CLHP" sous="Colonne C18, détection UV à 273 nm" edition="reproduction simplifiée du sujet">
+      <Feuille key={id} ouvert={ouvert} entete="Mode opératoire · document 2" titre="Comment injecter en CLHP ?" sous="Boucle d'injection de 20 µL, vanne Rheodyne" edition="reproduction du sujet">
         <Liste items={[
-          'Mettre en route la pompe et laisser l\'éluant circuler jusqu\'à stabilisation de la ligne de base (environ 10 min).',
-          'Rincer la seringue avec la solution à injecter, puis prélever sans bulle d\'air.',
-          'Placer la vanne en position « charge », injecter dans la boucle, puis basculer en position « injection » : le chromatogramme démarre.',
-          'Après chaque injection, rincer la boucle et la seringue. Ne jamais injecter une solution non filtrée.',
+          'La boucle d\'injection contient 20 µL. Pour qu\'elle soit bien rincée et contienne effectivement 20 µL de la solution à analyser, il faut la charger avec un volume très supérieur à 20 µL.',
+          'Idéalement, il faudrait une seringue de 200 µL. Au lycée Argouges, la seringue est de 25 µL : on fera donc au minimum 3 chargements, d\'un volume proche de 25 µL, en position « LOAD ».',
+          'Ne jamais injecter la moindre bulle d\'air.',
         ]} />
       </Feuille>);
     if (id === 'mo3') return (
-      <Feuille key={id} ouvert={ouvert} entete="Mode opératoire · document 3" titre="Dosage de l'éthanol par CPG, étalon interne" sous="Colonne polaire, four à 70 °C, analyse de 3 minutes" edition="reproduction simplifiée du sujet">
+      <Feuille key={id} ouvert={ouvert} entete="Mode opératoire · document 3" titre="Dosage de l'éthanol par CPG, étalon interne" sous="Colonne polaire CP Wax · four à 70 °C · injecteur et détecteur à 150 °C · split 15 PSI · analyse de 3 min · 0,1 µL + air" edition="reproduction du sujet">
         <div style={{ fontWeight: 700 }}>Solution de référence (fiole jaugée de 20 mL)</div>
-        <Liste items={['Introduire à la micropipette 500 µL d\'étalon interne (propan-1-ol) et 250 µL d\'éthanol.', 'Compléter au trait de jauge avec de l\'eau distillée, homogénéiser.']} />
+        <Liste items={['Introduire à la micropipette 500 µL d\'étalon interne et 250 µL d\'éthanol (étalon interne mis à disposition : propan-1-ol).', 'Compléter au trait de jauge avec de l\'eau, homogénéiser, injecter en CPG.']} />
         <div style={{ fontWeight: 700 }}>Solution échantillon (fiole jaugée de 20 mL)</div>
-        <Liste items={['Peser avec précision une masse m\' de gel, introduire 500 µL d\'étalon interne, compléter avec de l\'eau, homogénéiser.', 'Injecter environ 0,1 µL de chaque solution (microseringue, injecteur à 200 °C).']} />
-        <div style={{ color: '#475569' }}>Exploitation : comparer les aires de l'éthanol et de l'étalon interne dans la référence puis dans l'échantillon.</div>
+        <Liste items={['Dissoudre environ exactement m\' g de gel avec un peu d\'eau (peser directement dans la fiole), ajouter 500 µL d\'étalon interne, compléter au trait avec de l\'eau.', 'Facultatif, selon l\'allure de l\'échantillon : filtrer avant injection. Injecter en CPG.']} />
+        <div style={{ color: '#475569' }}>Exploitation : relever les aires de pics de la référence et de l\'échantillon, puis calculer le volume d\'éthanol de l\'échantillon avec le rapport des aires éthanol / étalon interne.</div>
       </Feuille>);
     if (id === 'mo4') return (
-      <Feuille key={id} ouvert={ouvert} entete="Mode opératoire · document 4" titre="Utiliser une micropipette" sous="Prélèvement de petits volumes" edition="reproduction simplifiée du sujet">
+      <Feuille key={id} ouvert={ouvert} entete="Mode opératoire · document 4" titre="Utiliser une micropipette" sous="Prélèvement de petits volumes" edition="reproduction du sujet">
         <Liste items={[
           'Régler le volume avec la molette, dans la plage de la pipette (par exemple 100 à 1 000 µL) : ne jamais sortir de cette plage.',
           'Placer un embout neuf. Enfoncer le piston jusqu\'au premier cran, plonger l\'embout de quelques millimètres, relâcher lentement.',
