@@ -226,3 +226,11 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   assert(!J.texteDe(J.etatInitial(5), J.SCENES.intro).includes(','.concat(' une cliente')), 'sans prénom, texte inchangé');
   const p = { ...J.etatInitial(9), t: 250, scene: 'point_dubreuil' }; const r = J.choisir(p, J.choixDe(p)[0]); assert(r.t >= 250 + 60 && r.hist.some(h => h.k === 'pause'), 'pause déjeuner après le point d\'étape');
   console.log('journée 8 h – 17 h, prénom : OK'); }
+// 12. Appareils sans rapport avec la question : choix libres, temps perdu, conséquence au bilan
+{ let e = { ...J.etatInitial(3), scene: 'hub', t: 10 };
+  const ids = J.choixDe(e).map(c => c.vers); assert(ids.includes('leurre_ir') && ids.includes('leurre_conduc'), 'appareils disponibles');
+  e = J.choisir(e, J.choixDe(e).find(c => c.vers === 'leurre_ir')); assert(e.scene === 'leurre_ir', 'scène IR');
+  const t0 = e.t; e = J.choisir(e, J.choixDe(e)[0]); assert(e.scene === 'hub' && e.t >= t0 + 20 && e.f.leurres === 1, '20 min perdues');
+  assert(!J.choixDe(e).some(c => c.vers === 'leurre_ir'), 'mesure faite une fois');
+  assert(J.consequences(e).some(c => c.cause.startsWith('Appareils sans rapport')), 'conséquence affichée');
+  console.log('appareils sans rapport : OK'); }

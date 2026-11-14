@@ -14,7 +14,7 @@ import {
 const C = { encre: '#1b2733', doux: '#5b6877', bord: '#dbe4ee', accent: '#0f766e', accentFond: '#e7f5f2', ambre: '#b45309', rouge: '#b91c1c', vert: '#15803d', bleu: '#1e3a8a', carte: '#ffffff', fond: '#f4f8fb' };
 const NIVEAUX = { ok: ['✅', C.vert, 'Maîtrisé'], moyen: ['🟡', C.ambre, 'À consolider'], ko: ['❌', C.rouge, 'À retravailler'], nd: ['⚪', C.doux, 'Non évalué'] };
 const TONS = { ok: C.vert, moyen: C.ambre, ko: C.rouge };
-const ICONES = { choix_caf: '🧪', choix_eth: '🧪', docs: '📄', obs_video: '🎞️', es_prep: '🔥', es_calc1: '📊', eth1: '⚖️', formule: '📝', eq_base: '⚗️', fab_choix: '⚗️', fab_disp: '🧴', rheoC: '🌀', rheoF: '🌀', hplc_m: '📈', cpg_ei: '🔬', cpg_inj: '🔬', uv_ajouts_plan: '🌈', uv_ext_plan: '🌈', hplc_gamme_plan: '📈', hplc_ei: '📈', verdict: '✅', eq_ines: '✅' };
+const ICONES = { leurre_ir: '📈', leurre_refracto: '🔍', leurre_polar: '🔍', leurre_conduc: '🔌', choix_caf: '🧪', choix_eth: '🧪', docs: '📄', obs_video: '🎞️', es_prep: '🔥', es_calc1: '📊', eth1: '⚖️', formule: '📝', eq_base: '⚗️', fab_choix: '⚗️', fab_disp: '🧴', rheoC: '🌀', rheoF: '🌀', hplc_m: '📈', cpg_ei: '🔬', cpg_inj: '🔬', uv_ajouts_plan: '🌈', uv_ext_plan: '🌈', hplc_gamme_plan: '📈', hplc_ei: '📈', verdict: '✅', eq_ines: '✅' };
 const FOND_LIEU = { 'Paillasse de formulation': '#ecf7ee', 'Salle de chromatographie': '#e8f1fa', 'Bureau': '#f3eefb', 'Bureau de Mme Dubreuil': '#f3eefb', 'Salle de rhéologie': '#fdf1e7', 'Salle des étuves': '#fdf1e7' };
 const STYLE = `${STYLE_VISUELS}
 @keyframes pc-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -221,8 +221,11 @@ function StationObs({ e, onEtat }) {
 const POSTES = [
   { id: 'etuve', nom: 'Étuve et balance', vers: ['es_balance', 'es_prep', 'es_calc1'] },
   { id: 'bureau', nom: 'Bureau', vers: ['docs', 'eth1', 'formule', 'eq_ines', 'verdict'] },
+  { id: 'ir', nom: 'Spectrométrie IR', vers: ['leurre_ir'] },
   { id: 'formulation', nom: 'Formulation', vers: ['eq_base', 'fab_choix', 'fab_disp', 'obs_video'] },
+  { id: 'optique', nom: 'Réfractomètre, polarimètre', vers: ['leurre_refracto', 'leurre_polar'] },
   { id: 'rheo', nom: 'Rhéologie', vers: ['rheoC', 'rheoF'] },
+  { id: 'conduc', nom: 'Conductimètre', vers: ['leurre_conduc'] },
   { id: 'chroma', nom: 'Chromatographie, UV', vers: ['choix_caf', 'choix_eth', 'hplc_m', 'hplc_ei', 'hplc_gamme_plan', 'cpg_ei', 'cpg_inj', 'uv_ajouts_plan', 'uv_ext_plan'] },
 ];
 const posteDe = vers => (POSTES.find(p => p.vers.includes(vers)) || POSTES[1]).id;
@@ -243,6 +246,15 @@ function Dessin({ id, actif, termine }) {
     <rect x="40" y="8" width="8" height="14" fill={L} stroke={T} /><path d="M44 8 V2" stroke={T} strokeWidth="2" />
     {actif && [0, 1, 2].map(i => <circle key={i} className="pc-bull" style={{ animationDelay: `${i * .7}s` }} cx={37 + i * 7} cy="48" r="2" fill="#fff" stroke="#0369a1" strokeWidth=".8" />)}
     <rect x="80" y="30" width="10" height="28" rx="2" fill="#bbf7d0" stroke={T} /></svg>);
+  if (id === 'ir') return (<svg viewBox="0 0 100 74" style={cadre} aria-hidden="true">
+    <rect x="10" y="30" width="54" height="26" rx="3" fill="#e2e8f0" stroke={T} strokeWidth="2" /><rect x="22" y="22" width="18" height="10" fill={L} stroke={T} /><circle cx="31" cy="27" r="3" fill="#94a3b8" stroke={T} />
+    <rect x="68" y="12" width="26" height="22" rx="2" fill="#0f2430" stroke={T} strokeWidth="1.5" /><path d="M71 30 L74 18 L77 28 L80 16 L83 29 L86 22 L91 30" fill="none" stroke="#5eead4" strokeWidth="1.3" /></svg>);
+  if (id === 'optique') return (<svg viewBox="0 0 100 74" style={cadre} aria-hidden="true">
+    <rect x="8" y="34" width="48" height="12" rx="2" fill={L} stroke={T} strokeWidth="2" /><circle cx="14" cy="40" r="7" fill="#fff" stroke={T} /><rect x="56" y="36" width="14" height="8" fill="#f1f5f9" stroke={T} /><circle cx="76" cy="40" r="8" fill="#fff" stroke={T} strokeWidth="2" /><path d="M76 40 L81 36" stroke="#b91c1c" strokeWidth="2" />
+    <rect x="12" y="52" width="60" height="8" rx="2" fill={T} /></svg>);
+  if (id === 'conduc') return (<svg viewBox="0 0 100 74" style={cadre} aria-hidden="true">
+    <rect x="12" y="10" width="34" height="20" rx="3" fill="#f1f5f9" stroke={T} strokeWidth="2" /><text x="29" y="24" textAnchor="middle" fontSize="9" fill={T}>µS/cm</text>
+    <path d="M46 20 H64 V46" fill="none" stroke={T} strokeWidth="2" /><rect x="58" y="44" width="12" height="14" rx="2" fill="#bae6fd" stroke={T} /><rect x="74" y="40" width="14" height="24" rx="2" fill="#e0f2fe" stroke={T} strokeWidth="2" /></svg>);
   if (id === 'rheo') return (<svg viewBox="0 0 100 74" style={cadre} aria-hidden="true">
     <rect x="30" y="8" width="36" height="12" rx="2" fill={L} stroke={T} strokeWidth="2" /><rect x="44" y="20" width="8" height="18" fill={T} /><path d="M32 40 H64 L56 46 H40 Z" fill="#94a3b8" stroke={T} /><rect x="22" y="50" width="52" height="14" rx="3" fill="#e2e8f0" stroke={T} strokeWidth="2" />
     <circle cx="80" cy="30" r="9" fill="#fff" stroke={T} strokeWidth="2" /><path d="M80 30 L85 25" stroke="#b91c1c" strokeWidth="2" /></svg>);
@@ -254,18 +266,16 @@ function Dessin({ id, actif, termine }) {
 function Paillasse({ e, s, choix, onChoix }) {
   const parPoste = Object.fromEntries(POSTES.map(p => [p.id, []]));
   choix.forEach((c, i) => parPoste[posteDe(c.vers)].push({ c, i }));
-  const premier = (POSTES.find(p => parPoste[p.id].length) || POSTES[0]).id;
   const [sel, setSel] = useState(null);
-  const actuel = sel && parPoste[sel] && parPoste[sel].length ? sel : premier;
+  const actuel = sel;   // aucun poste n'est présélectionné : c'est à l'élève de choisir où aller
   const etuveActive = !!s.es && e.bg.es > e.t, etuveFinie = !!s.es && !etuveActive, gelActif = !!s.gel && e.bg.gel > e.t;
   return (<div data-paillasse>
     <div style={{ background: 'linear-gradient(180deg,#e9eef3 0%,#dde5ec 100%)', borderRadius: 16, padding: '12px 8px 0', border: `1px solid ${C.bord}` }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(104px,1fr))', gap: 4 }}>
-        {POSTES.map(p => { const n = parPoste[p.id].length, actif = (p.id === 'etuve' && etuveActive) || (p.id === 'formulation' && gelActif), fini = (p.id === 'etuve' && etuveFinie);
-          return <button key={p.id} type="button" className="pc-poste" aria-pressed={actuel === p.id} onClick={() => setSel(p.id)} aria-label={`${p.nom}, ${n} tâche${n > 1 ? 's' : ''} disponible${n > 1 ? 's' : ''}${actif ? ', un appareil tourne' : ''}`}>
+        {POSTES.map(p => { const actif = (p.id === 'etuve' && etuveActive) || (p.id === 'formulation' && gelActif), fini = (p.id === 'etuve' && etuveFinie);
+          return <button key={p.id} type="button" className="pc-poste" aria-pressed={actuel === p.id} onClick={() => setSel(p.id)} aria-label={`${p.nom}${actif ? ', un appareil tourne' : ''}`}>
             <Dessin id={p.id} actif={actif} termine={fini} />
             <span style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.2, textAlign: 'center' }}>{p.nom}</span>
-            {n > 0 && <span aria-hidden="true" style={{ position: 'absolute', top: 2, right: 6, minWidth: 20, height: 20, borderRadius: 10, background: C.accent, color: '#fff', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 5px' }}>{n}</span>}
             {(actif || fini) && <span aria-hidden="true" style={{ fontSize: 11.5, color: actif ? C.ambre : C.vert, fontWeight: 700 }}>{actif ? (p.id === 'etuve' ? `encore ${duree(e.bg.es - e.t)}` : `encore ${duree(e.bg.gel - e.t)}`) : 'terminé'}</span>}
           </button>; })}
       </div>
@@ -273,7 +283,7 @@ function Paillasse({ e, s, choix, onChoix }) {
     </div>
     <div className="pc-grille" style={{ marginTop: 12 }}>{(parPoste[actuel] || []).map(({ c, i }) => (
       <button key={i} type="button" className="pc-tache" data-choix={i} onClick={() => onChoix(c)}><span style={{ fontSize: 26, lineHeight: 1 }} aria-hidden="true">{ICONES[c.vers] || '▪️'}</span><span><b style={{ fontSize: 16 }}>{c.t}</b>{c.d && <span style={{ display: 'block', fontSize: 13.5, color: C.doux, marginTop: 3, lineHeight: 1.4 }}>{c.d}</span>}</span></button>))}
-      {!(parPoste[actuel] || []).length && <div style={{ color: C.doux, fontSize: 14.5 }}>Rien à faire à ce poste pour l'instant.</div>}</div>
+      {!actuel && <div style={{ color: C.doux, fontSize: 14.5 }}>Choisis un poste de travail.</div>}{actuel && !(parPoste[actuel] || []).length && <div style={{ color: C.doux, fontSize: 14.5 }}>Rien à faire à ce poste pour l'instant.</div>}</div>
   </div>);
 }
 
