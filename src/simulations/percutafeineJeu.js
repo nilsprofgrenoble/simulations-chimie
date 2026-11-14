@@ -174,12 +174,17 @@ export const estFin = id => !!SCENES[id]?.fin;
 
 // Écrans de résultats déjà vus (courbes, chromatogrammes, pesées…) : l'élève peut les relire à tout moment, sans rien engager.
 export const resultatsVus = e => (e.vus || []).filter(id => SCENES[id]);
+// Modes opératoires de dosage : ils n'entrent dans le dossier qu'une fois la technique choisie (écran où ils servent)
+const DOCS_MO = ['mo1', 'mo3'];
+export const DOCS_BASE = ['notice', 'synthalen', 'cocoate', 'trolamine'];
+export const docsDe = e => [...DOCS_BASE, ...(e.docs || [])];
 export function aller(e, id) {
   let cible = id;
   if (cible === 'hub' && e.t >= T_MIDI && !e.f.pointD && e.t < T_FIN) cible = 'point_dubreuil';
   if (!SCENES[cible]) throw new Error(`Scène inconnue : ${cible}`);
   if (!SCENES[cible].fin && e.t >= T_FIN) cible = 'fin_temps';
-  const n = { ...e, scene: cible, essais: 0, ...(SCENES[cible].visuels && !SCENES[cible].fin ? { vus: [...new Set([...(e.vus || []), cible])] } : {}) };
+  const mo = (SCENES[cible].fiches || []).filter(d => DOCS_MO.includes(d));
+  const n = { ...e, scene: cible, essais: 0, ...(mo.length ? { docs: [...new Set([...(e.docs || []), ...mo])] } : {}), ...(SCENES[cible].visuels && !SCENES[cible].fin ? { vus: [...new Set([...(e.vus || []), cible])] } : {}) };
   return SCENES[cible].entree ? SCENES[cible].entree(n) : n;
 }
 const DEBUTS_SURS = new Set(['avant', 'pour', 'comme', 'alors', 'dis', 'voilà', 'plus', 'au', 'un', 'une', 'le', 'la', 'les', 'tu', 'notre', 'bien', 'même', 'sur', 'quand', 'ton', 'ta', 'tes', 'avec', 'après', 'ce', 'cette', 'ça', 'mon', 'il', 'elle', 'on', 'je', 'nous', 'vous', 'si', 'donc', 'mais', 'et', 'ici', 'là', 'ah', 'oui', 'non', 'c', 'l', 'd', 'j', 't', 'n', 's', 'qu', 'comment', 'combien', 'quel', 'quelle', 'est', 'regarde', 'lis', 'pose', 'note', 'tiens', 'écoute', 'attention', 'ok']);
@@ -270,9 +275,9 @@ add('intro2', {
   choix: [{ t: 'Aller à la paillasse', vers: 'hub', note: 'Début du travail : contre-typer la Percutaféine.' }],
 });
 add('docs', {
-  fiches: ['notice', 'synthalen', 'cocoate', 'trolamine', 'mo1', 'mo3'],
+  fiches: ['notice', 'synthalen', 'cocoate', 'trolamine'],
   lieu: 'Bureau', pnj: 'moi', titre: 'Le dossier du TP',
-  texte: () => 'Tu relis la notice du gel commercial, les fiches techniques des matières premières et les modes opératoires du TP. Tout ce que tu y trouves est utilisable pour retrouver la formule ; ce qui n\'y figure pas, il faudra le déduire de tes mesures.',
+  texte: () => 'Tu relis la notice du gel commercial et les fiches techniques des matières premières. Tout ce que tu y trouves est utilisable pour retrouver la formule ; ce qui n\'y figure pas, il faudra le déduire de tes mesures.',
   choix: [{ t: 'Retourner à la paillasse', vers: 'hub', duree: 3, note: 'Relecture du dossier (notice et fiches techniques).' }],
 });
 add('hub', {

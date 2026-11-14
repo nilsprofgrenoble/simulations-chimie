@@ -342,3 +342,11 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   e = { ...J.etatInitial(8), scene: 'titr_indic', t: 100 }; const bbt = J.choisir(e, J.choixDe(e).find(c => c.id === 'bbt')); assert(bbt.f.errSuivi === 1, 'mauvais indicateur noté'); assert(J.choisir(e, J.choixDe(e).find(c => c.id === 'php')).f.errSuivi === undefined, 'bon indicateur : aucune erreur');
   assert(J.choixDe({ ...J.etatInitial(8), scene: 'titr_indic' }).length === 6, 'six indicateurs au laboratoire');
   console.log('titrage : méthodes de suivi : OK'); }
+// 23. Dossier du TP : les modes opératoires de dosage n'y entrent qu'une fois la technique abordée
+{ let e = { ...J.etatInitial(5), scene: 'hub', t: 20 };
+  assert(!J.docsDe(e).includes('mo1') && !J.docsDe(e).includes('mo3'), 'début de journée : pas de mode opératoire de dosage');
+  const id1 = Object.keys(J.SCENES).find(k => (J.SCENES[k].fiches || []).includes('mo1')), id3 = Object.keys(J.SCENES).find(k => (J.SCENES[k].fiches || []).includes('mo3'));
+  e = J.aller(e, id1); assert(J.docsDe(e).includes('mo1') && !J.docsDe(e).includes('mo3'), 'CLHP : mo1 seulement');
+  e = J.aller(e, id3); assert(J.docsDe(e).includes('mo3'), 'CPG : mo3 ajouté');
+  assert(!J.SCENES.docs.fiches.includes('mo1') && !J.SCENES.docs.fiches.includes('mo3'), 'l\'écran du dossier ne les contient pas d\'office');
+  console.log('dossier progressif : OK'); }
