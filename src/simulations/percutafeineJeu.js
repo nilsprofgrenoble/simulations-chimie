@@ -200,8 +200,12 @@ export function choisir(e, c) {
   const avant = n.bg, t0 = n.t;
   if (c.run) n = c.run(n);
   Object.keys(n.bg || {}).forEach(k => { if (n.bg[k] != null && n.bg[k] !== (avant || {})[k]) n = { ...n, spans: [...(n.spans || []), { k, t0, t1: n.bg[k] }] }; });
-  return aller(n, typeof c.vers === 'function' ? c.vers(n) : c.vers);
+  const r = aller(n, typeof c.vers === 'function' ? c.vers(n) : c.vers);
+  return { ...r, retourHub: e.scene === 'hub' && r.scene !== 'hub' ? { scene: r.scene, t: r.t } : undefined };
 }
+// Au premier écran d'une tâche prise à la paillasse, rien n'est encore engagé : on peut changer d'avis.
+export const peutRevenir = e => !!e.retourHub && e.retourHub.scene === e.scene && e.retourHub.t === e.t && !SCENES[e.scene].entree && !SCENES[e.scene].fin;
+export const revenirHub = e => ({ ...e, scene: 'hub', retourHub: undefined, essais: 0 });
 export function valider(e, saisie) {
   const sc = SCENES[e.scene], k = sc.calcul;
   const v = parseFloat(String(saisie).replace(',', '.').replace(/\s/g, ''));
@@ -462,10 +466,11 @@ add('reprise_eth', {
     ko: { vers: 'hub', duree: 15, run: n => ({ ...n, fait: { ...n.fait, ethQC: false } }), f: { perteEth: 0.01, compense: true }, note: 'Éthanol compensé avec l\'aide d\'un collègue ; dosage CPG à refaire.' } },
 });
 
+const appareilsVus = F => { const l = [F.leurre_ir && 'la spectrométrie IR', F.leurre_refracto && 'le réfractomètre', F.leurre_polar && 'le polarimètre', F.leurre_conduc && 'le conductimètre', F.leurre_titrgel && 'le titrage du gel'].filter(Boolean); return l.length ? `\nMme Dubreuil : « Je vois que tu es passé par ${l.join(', ')}. Qu'est-ce que cela t'a apporté pour ton contretype ? »` : ''; };
 add('point_dubreuil', {
   lieu: 'Paillasse', pnj: 'dubreuil', titre: 'Mme Dubreuil passe à la paillasse',
   entree: e => ({ ...e, f: { ...e.f, pointD: true } }),
-  texte: e => { const F = e.fait, fait = [F.esRes && 'l\'extrait sec', F.formule && 'la formule', F.ph && 'le gel formulé', F.rheoC && 'la rhéologie du témoin', (F.caf || F.hplcPrep) && 'la caféine (en cours)', F.ethQC && 'l\'éthanol'].filter(Boolean); return `Mme Dubreuil : « Il est ${horloge(e.t)}, c'est bientôt la pause déjeuner. Où en es-tu ? »\nTu as fait : ${fait.length ? fait.join(', ') : 'peu de choses pour l\'instant'}.`; },
+  texte: e => { const F = e.fait, fait = [F.esRes && 'l\'extrait sec', F.formule && 'la formule', F.ph && 'le gel formulé', F.rheoC && 'la rhéologie du témoin', (F.caf || F.hplcPrep) && 'la caféine (en cours)', F.ethQC && 'l\'éthanol'].filter(Boolean); return `Mme Dubreuil : « Il est ${horloge(e.t)}, c'est bientôt la pause déjeuner. Où en es-tu ? »\nTu as fait : ${fait.length ? fait.join(', ') : 'peu de choses pour l\'instant'}.${appareilsVus(F)}`; },
   choix: [
     { t: '« J\'ai fait ceci, il me reste cela, et je pense finir à telle heure. J\'ai besoin d\'un avis sur un point. »', tag: 'ok', vers: 'hub', duree: 3, run: n => pauseDej(eqNote(n, 'ok', 'dub')), note: 'Point d\'étape précis avec Mme Dubreuil.' },
     { t: '« Ça va, tout est sous contrôle. »', tag: 'moyen', vers: 'hub', duree: 1, run: n => pauseDej(eqNote(n, 'moyen', 'dub')), note: 'Point d\'étape vague avec Mme Dubreuil.' },

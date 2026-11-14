@@ -245,3 +245,13 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   const r = J.valider(tr, J.nf(bon.pctMes, 1)); assert(r.juste && r.etat.f.cooh > 50 && r.etat.fait.titrCarb, 'teneur COOH acceptée et mémorisée');
   const phSans = J.phDe(base, 2), phAvec = J.phDe({ ...base, f: { ...base.f, graine: 5 } }, 2); assert(phSans !== phAvec || true, 'le lot fait varier la courbe');
   console.log(`titrage du Carbopol : OK (lot ${vrai.toFixed(1)} %, mesuré ${bon.pctMes.toFixed(1)} %)`); }
+// 14. Retour à la paillasse au premier écran d'une tâche ; remarque de Mme Dubreuil sur les appareils sans rapport
+{ let e = { ...J.etatInitial(31), scene: 'hub', t: 20 };
+  const bureau = J.choisir(e, J.choixDe(e).find(c => c.vers === 'eth1')); assert(J.peutRevenir(bureau), 'retour possible au premier écran');
+  const retour = J.revenirHub(bureau); assert(retour.scene === 'hub' && retour.t === 20 && !J.peutRevenir(retour), 'retour sans perte de temps');
+  const ir = J.choisir(e, J.choixDe(e).find(c => c.vers === 'leurre_ir')); assert(J.peutRevenir(ir), 'retour possible avant la mesure');
+  const apres = J.choisir(ir, J.choixDe(ir)[0]); assert(apres.scene === 'hub' && !J.peutRevenir(apres), 'plus de retour une fois la mesure faite');
+  const faux = J.valider(bureau, '12').etat; assert(!J.peutRevenir(faux), 'plus de retour après un essai de calcul');
+  const p = J.texteDe({ ...apres, scene: 'point_dubreuil' }); assert(p.includes('spectrométrie IR') && p.includes('apporté'), 'remarque sur les appareils');
+  const p0 = J.texteDe({ ...e, scene: 'point_dubreuil' }); assert(!p0.includes('Je vois que tu es passé'), 'pas de remarque sinon');
+  console.log('retour à la paillasse, remarque de midi : OK'); }
