@@ -65,7 +65,7 @@ const Cadre = ({ titre, children }) => (
 
 function Chroma({ v }) {
   const W = 360, H = 170, x0 = 28, x1 = 346, yb = 138, X = t => x0 + t / v.tmax * (x1 - x0), sg = v.tmax * 0.017;
-  const N = 180, ys = Array.from({ length: N + 1 }, (_, i) => { const t = i / N * v.tmax; return [t, v.pics.reduce((s, p) => s + p.h * Math.exp(-((t - p.tr) ** 2) / (2 * sg * sg)), 0)]; });
+  const N = 180, ys = Array.from({ length: N + 1 }, (_, i) => { const t = i / N * v.tmax; return [t, v.pics.reduce((s, p) => s + p.h * Math.exp(-((t - p.tr) ** 2) / (2 * sg * sg)), 0) + (v.bruit ? v.bruit * (((Math.sin(i * 12.9898) * 43758.5453) % 1 + 1) % 1 - 0.5) : 0)]; });
   const d = ys.map(([t, y], i) => `${i ? 'L' : 'M'}${X(t).toFixed(1)} ${(yb - Math.min(y, 1.15) * 105).toFixed(1)}`).join('');
   return (<Cadre titre={v.titre.toUpperCase()}>
     <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${v.titre} : ${v.pics.map(p => `${p.l || 'pic'} à ${p.tr} min`).join(', ')}`} style={{ width: '100%', maxWidth: 640, margin: '0 auto', display: 'block' }}>
@@ -176,11 +176,19 @@ function Avatar({ pnj, taille = 40, e }) {
   return <span aria-hidden="true" style={{ flex: 'none', display: 'inline-flex' }}><AvatarVisuel id={pnj === 'moi' ? avatarDe(e) : pnj} taille={taille} /></span>;
 }
 
+function BlocAideCalcul({ e, sc, onEtat }) {
+  const aide = niveauAide(e), conseils = textesAide(e), pnjAide = PNJ[sc.aide.pnj];
+  return (<div data-aide style={{ marginBottom: 12 }}>
+    {conseils.map((c, i) => <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '8px 0' }}><Avatar pnj={sc.aide.pnj} e={e} taille={36} /><div style={{ flex: 1, background: '#fff', border: `1.5px solid ${C.bord}`, borderRadius: 12, padding: '8px 12px', fontSize: 15, lineHeight: 1.5 }}>{c}</div></div>)}
+    {aide < 3 && <button type="button" data-aide-btn onClick={() => onEtat(demanderAide(e))} style={{ font: 'inherit', fontSize: 14.5, padding: '7px 14px', borderRadius: 99, border: `1.5px solid ${C.accent}`, background: '#fff', color: C.accent, cursor: 'pointer' }}>{aide === 0 ? `💬 Demander conseil à ${pnjAide.nom}` : aide === 1 ? `💬 Demander plus de précisions à ${pnjAide.nom}` : `💬 Demander à ${pnjAide.nom} ce qu'elle ferait`}</button>}
+  </div>);
+}
 function Calcul({ e, sc, onEtat }) {
   const [saisie, setSaisie] = useState(''), [message, setMessage] = useState('');
   const soumettre = ev => { ev.preventDefault(); const r = valider(e, saisie); onEtat(r.etat); if (!r.juste) setMessage(r.message || ''); };
   return (
     <form onSubmit={soumettre} data-calcul className="pc-inst" style={inst}>
+      {sc.aide && <BlocAideCalcul e={e} sc={sc} onEtat={onEtat} />}
       <div style={{ fontWeight: 700, marginBottom: 10 }}>🧮 {sc.calcul.q}</div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <input value={saisie} onChange={ev => setSaisie(ev.target.value)} inputMode="decimal" autoComplete="off" aria-label="Ta réponse" placeholder="?" style={{ width: 130, fontSize: 18, padding: '7px 11px', border: `1.5px solid ${C.bleu}`, borderRadius: 10, fontFamily: 'inherit', background: '#fff' }} />
@@ -462,6 +470,7 @@ function Instruments({ e, s }) {
       <div style={{ fontSize: 13, color: C.doux }}>{txt}</div></div>; };
   return <div data-attentes className="pc-grille" style={{ margin: '4px 0 14px' }}>
     {s.es && carte('🔥', 'Étuve à 105 °C', e.bg.es, 60, 'Extrait sec en cours')}
+    {s.clhp && carte('🔧', 'Réparation de la CLHP', e.bg.clhp, 75, 'CLHP en réparation')}
     {s.gel && carte('⚗️', 'Dispersion du gel', e.bg.gel, 90, 'Le Synthalen K se disperse')}</div>;
 }
 
