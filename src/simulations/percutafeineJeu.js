@@ -59,7 +59,7 @@ export const M_COOH = 45.02, M_TEA = 149.19;
 export const coohLot = e => 45.02 / (73.5 + 5 * unif(e.f?.graine ?? 1, 'lotcooh'));   // fraction massique de COOH du lot de Synthalen K (fiche 3V : masse équivalente d'environ 76 g de polymère par mole de COOH, soit environ 59 %)
 export function phDe(e, m) {      // pH du gel après ajout cumulé de m g de trolamine (modèle simple, pour 1,5 g de Synthalen K par 200 g)
   const carb = e.f.fm?.carb || 1.5;
-  return 3.0 + 3.6 * (1 - Math.exp(-m / (1.2 * carb / 1.5 * coohLot(e) / 0.592)));
+  return 3.0 + 3.6 * (1 - Math.exp(-m / (1.2 * carb / 1.5 * coohLot(e) / 0.72)));
 }
 export function gelVrai(e) {
   const fm = e.f.fm || { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 98.7 };
@@ -666,12 +666,16 @@ add('reprise_eth', {
 });
 
 const appareilsVus = F => { const l = [F.leurre_ir && 'la spectrométrie IR', F.leurre_refracto && 'le réfractomètre', F.leurre_polar && 'le polarimètre', F.leurre_conduc && 'le conductimètre', F.leurre_titrgel && 'le titrage du gel'].filter(Boolean); return l.length ? `\nMme Dubreuil : « Je vois que tu es passé par ${l.join(', ')}. Qu'est-ce que cela t'a apporté pour ton contretype ? »` : ''; };
+const resteFait = e => { const F = e.fait,
+  fait = [F.esRes && 'l\'extrait sec', F.formule && 'la formule', F.fab && 'le lancement du gel', F.rheoC && 'la rhéologie du témoin', (F.caf || F.hplcPrep) && 'la préparation de la caféine', F.ethQC && 'l\'éthanol'].filter(Boolean),
+  reste = [!F.formule && 'la formule', !F.ph && 'la mise en pot du gel', !F.rheoF && 'la rhéologie du gel formulé', !F.caf && 'le dosage de la caféine', !F.ethQC && 'le dosage de l\'éthanol', 'la conclusion'].filter(Boolean);
+  return { fait: fait.length ? fait.join(', ') : 'peu de choses', reste: reste.join(', '), heure: horloge(Math.min(T_FIN - 20, e.t + T_PAUSE + 40 * reste.length)) }; };
 add('point_dubreuil', {
   lieu: 'Paillasse', pnj: 'dubreuil', titre: 'Mme Dubreuil passe à la paillasse',
   entree: e => ({ ...e, f: { ...e.f, pointD: true } }),
   texte: e => { const F = e.fait, fait = [F.esRes && 'l\'extrait sec', F.formule && 'la formule', F.ph && 'le gel formulé', F.rheoC && 'la rhéologie du témoin', (F.caf || F.hplcPrep) && 'la caféine (en cours)', F.ethQC && 'l\'éthanol'].filter(Boolean); return `Mme Dubreuil : « Il est ${horloge(e.t)}, c'est bientôt la pause déjeuner. Où en es-tu ? »\nTu as fait : ${fait.length ? fait.join(', ') : 'peu de choses pour l\'instant'}.${appareilsVus(F)}`; },
-  choix: [
-    { t: '« J\'ai fait ceci, il me reste cela, et je pense finir à telle heure. J\'ai besoin d\'un avis sur un point. »', tag: 'ok', vers: 'hub', duree: 3, run: n => pauseDej(eqNote(n, 'ok', 'dub')), note: 'Point d\'étape précis avec Mme Dubreuil.' },
+  choix: e => [
+    { t: `« J'ai fait ${resteFait(e).fait}. Il me reste ${resteFait(e).reste}, et je pense finir vers ${resteFait(e).heure}. J'ai besoin d'un avis sur un point. »`, tag: 'ok', vers: 'hub', duree: 3, run: n => pauseDej(eqNote(n, 'ok', 'dub')), note: 'Point d\'étape précis avec Mme Dubreuil.' },
     { t: '« Ça va, tout est sous contrôle. »', tag: 'moyen', vers: 'hub', duree: 1, run: n => pauseDej(eqNote(n, 'moyen', 'dub')), note: 'Point d\'étape vague avec Mme Dubreuil.' },
     { t: '« Laissez-moi travailler, je n\'ai pas le temps. »', tag: 'ko', vers: 'hub', duree: 2, run: n => pauseDej(eqNote(n, 'ko', 'dub')), note: 'Mme Dubreuil écartée sèchement.' },
   ],
