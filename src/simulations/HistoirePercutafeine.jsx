@@ -23,9 +23,9 @@ const FOND_LIEU = { 'Paillasse de formulation': '#ecf7ee', 'Salle de chromatogra
 const STYLE = `${STYLE_VISUELS}
 @keyframes pc-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .pc-scene{animation:pc-in .35s ease-out}
-.pc-choix{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;padding:12px 14px;margin:9px 0;border:1.5px solid ${C.bord};border-radius:14px;background:#fff;color:${C.encre};font:inherit;font-size:16px;line-height:1.45;cursor:pointer;transition:border-color .15s,background .15s,transform .15s,box-shadow .15s}
+.pc-choix{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;padding:12px 14px;margin:9px 0;border:1.5px solid #fdba74;border-radius:14px;background:#fff7ed;color:${C.encre};font:inherit;font-size:16px;line-height:1.45;cursor:pointer;transition:border-color .15s,background .15s,transform .15s,box-shadow .15s}
 .pc-choix:hover,.pc-choix:focus-visible{border-color:${C.accent};background:${C.accentFond};outline:none;transform:translateY(-1px);box-shadow:0 4px 12px rgba(15,118,110,.12)}
-.pc-badge{flex:none;width:26px;height:26px;border-radius:50%;background:${C.fond};border:1.5px solid ${C.bord};color:${C.doux};font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.pc-badge{flex:none;width:26px;height:26px;border-radius:50%;background:#f97316;border:1.5px solid #ea580c;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
 .pc-choix:hover .pc-badge,.pc-choix:focus-visible .pc-badge{background:${C.accent};border-color:${C.accent};color:#fff}
 .pc-tache{display:flex;gap:12px;align-items:flex-start;text-align:left;padding:13px 14px;border:1.5px solid ${C.bord};border-radius:14px;background:#fff;color:${C.encre};font:inherit;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s}
 .pc-tache:hover,.pc-tache:focus-visible{border-color:${C.accent};outline:none;transform:translateY(-1px);box-shadow:0 6px 16px rgba(15,118,110,.14)}
@@ -324,13 +324,13 @@ function StationObs({ e, onEtat }) {
 
 // ───────────── La paillasse : cinq postes de travail illustrés ─────────────
 const POSTES = [
-  { id: 'etuve', nom: 'Étuve et balance', vers: ['es_balance', 'es_prep', 'es_calc1'] },
+  { id: 'etuve', nom: 'Étuve et balance', vers: ['es_balance', 'es_prep', 'es_calc1', 'es_calc2b'] },
   { id: 'bureau', nom: 'Bureau', vers: ['docs', 'eth1', 'formule', 'eq_ines', 'verdict', 'choix_caf', 'choix_eth'] },
   { id: 'ir', nom: 'Spectrométrie IR', vers: ['leurre_ir'] },
   { id: 'formulation', nom: 'Formulation', vers: ['eq_base', 'fab_choix', 'fab_disp', 'obs_video'] },
   { id: 'optique', nom: 'Réfractomètre, polarimètre', vers: ['leurre_refracto', 'leurre_polar'] },
   { id: 'rheo', nom: 'Rhéologie', vers: ['rheoC', 'rheoF'] },
-  { id: 'titrage', nom: 'Titrage', vers: ['titr_carb_plan', 'leurre_titrgel'] },
+  { id: 'titrage', nom: 'Titrage', vers: ['titr_suivi', 'titr_carb_plan', 'leurre_titrgel'] },
   { id: 'conduc', nom: 'Conductimètre', vers: ['leurre_conduc'] },
   { id: 'chroma', nom: 'Chromatographie, UV', vers: ['hplc_m', 'hplc_ei', 'hplc_gamme_plan', 'cpg_m', 'cpg_ei', 'cpg_inj', 'uv_ajouts_plan', 'uv_ext_plan'] },
 ];

@@ -242,7 +242,8 @@ const taches = e => {
   if (!F.obs) L.push(['Regarder la vidéo du gel étalé', 'Une noisette de gel sur une plaque, en accéléré (5 min).', 'obs_video']);
   if (!F.es) L.push(['Lancer l\'extrait sec du gel commercial', 'Peser, étaler, mettre à l\'étuve : 15 min de travail, puis l\'étuve tourne seule.', e.f.bal ? 'es_prep' : 'es_balance']);
   if (!F.eth) L.push(['Raisonner sur l\'éthanol de la notice', 'Quelle masse d\'éthanol faut-il mettre dans 200 g de gel ?', 'eth1']);
-  if (F.es && !F.esRes) L.push(e.f.es3Att ? ['Lire le troisième extrait sec', `Calculer la médiane des trois essais, en déduire le cocoate.${e.bg.es > e.t ? ` Attention : étuve en cours, prête dans ${duree(e.bg.es - e.t)}, tu devras attendre.` : ''}`, 'es_calc3'] : ['Lire l\'extrait sec', `Calculer ES, vérifier la répétabilité, en déduire le cocoate.${e.bg.es > e.t ? ` Attention : étuve en cours, prête dans ${duree(e.bg.es - e.t)}, tu devras attendre.` : ''}`, 'es_calc1']);
+  if (F.es && !F.esLu) L.push(e.f.es3Att ? ['Lire le troisième extrait sec', `Calculer la médiane des trois essais.${e.bg.es > e.t ? ` Attention : étuve en cours, prête dans ${duree(e.bg.es - e.t)}, tu devras attendre.` : ''}`, 'es_calc2b'] : ['Lire l\'extrait sec', `Calculer ES et vérifier la répétabilité.${e.bg.es > e.t ? ` Attention : étuve en cours, prête dans ${duree(e.bg.es - e.t)}, tu devras attendre.` : ''}`, 'es_calc1']);
+  if (F.esLu && !F.esRes) L.push(['Estimer le cocoate de macrogol', 'Déduire sa teneur de l\'extrait sec, avec les fiches techniques.', 'es_calc3']);
   if (F.eth && F.esRes && !F.formule) L.push(['Écrire la formule du contretype', 'Fixer les masses des constituants pour environ 200 g.', 'formule']);
   if (F.formule && !F.fab) L.push(['Fabriquer le gel', 'Choisir le procédé, lancer la dispersion du Synthalen K.', e.f.eq?.base ? 'fab_choix' : 'eq_base']);
   if (!F.rheoC) L.push(['Rhéologie du gel commercial', 'Mesurer la courbe d\'écoulement du témoin (10 min).', 'rheoC']);
@@ -420,27 +421,32 @@ add('es_calc1', {
     () => '« ES = (m₂ − m₀) / m₁ × 100, avec les trois pesées de la coupelle 1. »'] },
   calcul: { q: 'Calcule l\'extrait sec ES₁ de la coupelle 1 (en % massique).', unite: '%', vrai: e => donneesEs(e)[0].ES, tol: 0.02, cs: 2, indice: 'ES = (m₂ − m₀) / m₁ × 100.',
     retour: (v, e) => { const d = donneesEs(e)[0]; return Math.abs(v - d.m2 / d.m1 * 100) < 1 ? cer('tu as divisé m₂ au lieu de (m₂ − m₀).', 'tu trouves une valeur d\'environ 3 000 %.', 'retire la masse de la coupelle vide avant de diviser.') : null; },
-    ok: { vers: e => e.f.es2 ? 'es_calc2' : 'es_calc3', duree: 5 }, ko: { vers: e => e.f.es2 ? 'es_calc2' : 'es_calc3', duree: 0 } },
+    ok: { vers: e => e.f.es2 ? 'es_calc2' : 'hub', duree: 5, run: n => n.f.es2 ? n : marquer(n, 'esLu') }, ko: { vers: e => e.f.es2 ? 'es_calc2' : 'hub', duree: 0, run: n => n.f.es2 ? n : marquer(n, 'esLu') } },
 });
 add('es_calc2', {
   lieu: 'Salle des étuves', pnj: 'moi', titre: 'Les deux essais sont-ils compatibles ?',
   texte: e => { const d = donneesEs(e), dc = BALANCES[e.f.bal || 'prec'].dec; return `Coupelle 2 : m₀ = ${nf(d[1].m0, dc)} g ; m₁ = ${nf(d[1].m1, dc)} g ; m₂ = ${nf(d[1].m2, dc)} g, soit ES₂ = ${nf(d[1].ES, 2)} %. Pour la coupelle 1, ES₁ = ${nf(d[0].ES, 2)} %.\nÉcart |ES₁ − ES₂| = ${nf(ecartEs(e), 2)} %. Critère de répétabilité pour deux essais : écart ≤ 2,8 × S_r = 1,4 %.`; },
   hyp: "Hypothèse : les deux essais suivent la même loi normale d'écart-type S_r = 0,5 % ; le critère 2,8·S_r correspond alors à un niveau de confiance de 95 % pour l'écart de deux essais.",
   choix: e => { const compat = ecartEs(e) <= 1.4; return [
-    { t: 'Les deux résultats sont compatibles : je retiens la moyenne', vers: 'es_calc3', duree: 5, f: compat ? {} : { errEs: true }, note: compat ? `Extrait sec retenu : moyenne de deux essais.` : 'Extrait sec : moyenne retenue malgré un écart trop grand.' },
-    ...(e.f.bal === 'std' ? [{ t: 'La balance au 0,01 g est trop peu précise pour un résidu d\'environ 0,1 g : je refais les deux essais sur la balance de précision', vers: 'es_prep', duree: 5, f: { bal: 'prec', es2: undefined, es3: undefined, refaitBal: true }, run: n => ({ ...n, fait: { ...n.fait, es: false, esRes: false }, bg: { ...n.bg, es: undefined } }), note: 'Extrait sec à refaire : balance de précision nécessaire pour un résidu d\'environ 0,1 g.' }] : []),
+    { t: 'Les deux résultats sont compatibles : je retiens la moyenne', vers: 'hub', duree: 5, run: n => marquer(n, 'esLu'), f: compat ? {} : { errEs: true }, note: compat ? `Extrait sec retenu : moyenne de deux essais.` : 'Extrait sec : moyenne retenue malgré un écart trop grand.' },
+    ...(e.f.bal === 'std' ? [{ t: 'La balance au 0,01 g est trop peu précise pour un résidu d\'environ 0,1 g : je refais les deux essais sur la balance de précision', vers: 'es_prep', duree: 5, f: { bal: 'prec', es2: undefined, es3: undefined, refaitBal: true }, run: n => ({ ...n, fait: { ...n.fait, es: false, esRes: false, esLu: false }, bg: { ...n.bg, es: undefined } }), note: 'Extrait sec à refaire : balance de précision nécessaire pour un résidu d\'environ 0,1 g.' }] : []),
     { t: 'L\'écart est trop grand : je fais un troisième essai et je retiens la médiane', d: '10 min de travail, puis 1 h d\'étuve sans toi : tu reviens à la paillasse.', duree: 10, vers: 'hub', f: { es3: true, es3Att: true, errEs: compat }, run: n => ({ ...n, bg: { ...n.bg, es: n.t + 60 } }), note: 'Troisième essai d\'extrait sec lancé (médiane) : 1 h d\'étuve.' },
   ]; },
 });
+add('es_calc2b', {
+  lieu: 'Salle des étuves', pnj: 'moi', titre: 'Troisième essai d\'extrait sec',
+  entree: e => attendre(e, 'es'),
+  texte: e => { const d = donneesEs(e); return `L'étuve est terminée. Les trois essais donnent ES₁ = ${nf(d[0].ES, 2)} %, ES₂ = ${nf(d[1].ES, 2)} % et ES₃ = ${nf(d[2].ES, 2)} %. La médiane est ${nf(esRetenu(e), 2)} %.`; },
+  choix: [{ t: 'Retenir la médiane', duree: 3, vers: 'hub', run: n => marquer(n, 'esLu'), note: 'Extrait sec retenu : médiane de trois essais.' }],
+});
 add('es_calc3', {
-  lieu: 'Bureau', pnj: 'moi', titre: 'Le tensioactif par différence',
-  entree: e => e.f.es3 ? attendre(e, 'es') : e,
-  texte: e => `Extrait sec retenu : ES = ${nf(esRetenu(e), 2)} %. La fiche donne la caféine à 5 % ; la bibliographie place le Synthalen K à environ 0,75 % (plage 0,5 à 1 %) et la trolamine à environ 0,9 % pour atteindre un pH voisin de 6.`,
-  hyp: 'Hypothèse : le résidu sec est la somme de la caféine, du Synthalen K, de la trolamine et du cocoate de macrogol (seuls constituants non volatils). Incertitude sur ES : environ 0,5 %.',
+  fiches: ['synthalen', 'trolamine', 'cocoate'],
+  lieu: 'Bureau', pnj: 'moi', titre: 'Le cocoate de macrogol par différence',
+  texte: e => `Extrait sec retenu : ES = ${nf(esRetenu(e), 2)} %. Après l'étuve, il reste dans la coupelle la caféine (5 % d'après la notice), le Synthalen K, la trolamine et le cocoate de macrogol. Pour déduire le cocoate, il te faut estimer le Synthalen K et la trolamine : appuie-toi sur les fiches techniques.`,
   aide: { pnj: 'lucas', textes: [
-    () => '« Quels constituants du gel restent dans la coupelle après l\'étuve ? »',
-    () => '« Tout ce qui reste est non volatil : caféine, Synthalen K, trolamine et cocoate. Tu connais les trois premiers, le dernier se déduit. »',
-    () => '« cocoate = ES − caféine − Synthalen K − trolamine, tout en pourcentage massique, avec les valeurs de l\'énoncé. »'] },
+    () => '« Quels constituants du gel restent dans la coupelle après l\'étuve ? Lesquels connais-tu déjà, lesquels peux-tu estimer avec les fiches ? »',
+    () => '« La fiche du Synthalen K donne un taux d\'emploi de 0,1 à 1,5 % : prends une valeur moyenne. La trolamine sert à neutraliser jusqu\'à un pH voisin de 6 : elle représente un peu plus que la masse de Synthalen K. »',
+    () => '« Prends Synthalen K ≈ 0,75 % et trolamine ≈ 0,9 %. Alors cocoate = ES − 5 − 0,75 − 0,9. »'] },
   calcul: { q: 'Quel pourcentage massique de cocoate de macrogol déduis-tu ?', unite: '%', vrai: e => esRetenu(e) - 5 - 0.75 - 0.9, tolAbs: 0.7, cs: 1, indice: 'Cocoate = ES − caféine − Synthalen K − trolamine.',
     ok: { vers: 'hub', duree: 5, run: n => marquer(n, 'esRes'), note: 'Cocoate de macrogol estimé par différence.' }, ko: { vers: 'hub', duree: 0, run: n => marquer(n, 'esRes') } },
 });
@@ -492,7 +498,7 @@ add('eq_ext', {
   lieu: 'Salle de chromatographie', pnj: 'lucas', titre: 'Lucas passe à la paillasse',
   texte: () => `Lucas s'arrête devant la CLHP et jette un œil à tes relevés : « Tu devrais faire une gamme en UV, étalonnage externe : c'est ce qu'on a toujours fait, c'est rapide et ça marche très bien. »`,
   choix: [
-    { t: '« Merci du conseil. Je regarde ce que ça donne et je vérifie avec une autre méthode si ça me paraît trop haut. »', tag: 'ok', vers: 'hplc_panne', duree: 2, run: n => eqNote(n, 'ok', 'ext'), note: 'Conseil de Lucas (UV externe) écouté, vérification prévue.' },
+    { t: '« Merci du conseil. Je regarde ce que ça donne, et je vérifierai le résultat avec une autre méthode ou avec le gel commercial avant de le retenir. »', tag: 'ok', vers: 'hplc_panne', duree: 2, run: n => eqNote(n, 'ok', 'ext'), note: 'Conseil de Lucas (UV externe) écouté, vérification prévue.' },
     { t: '« Oui, bonne idée, j\'y vais. »', tag: 'moyen', vers: 'hplc_panne', duree: 1, run: n => eqNote(n, 'moyen', 'ext'), note: 'Conseil de Lucas (UV externe) accepté sans discussion.' },
     { t: '« Je n\'ai pas besoin de ton avis. »', tag: 'ko', vers: 'hplc_panne', duree: 3, run: n => eqNote(n, 'ko', 'ext'), note: 'Lucas envoyé balader.' },
   ],
@@ -797,7 +803,8 @@ add('hplc_symptome', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'L\'injection ne donne pas ce qu\'on attend',
   texte: e => `Tu injectes la solution de référence (boucle de 20 µL). Voici ce que tu relèves.\n${RELEVES_CLHP[symptomeClhp(e)].txt}\nInès : « Ça ne ressemble pas à ce qu'on obtient d'habitude. Regarde bien les relevés. »`,
   visuels: e => { const s = symptomeClhp(e), L = [{ type: 'tableau', titre: 'Relevés de la CLHP pendant l\'injection', cols: ['Relevé', 'Habituel', 'Mesuré'], lignes: RELEVES_CLHP[s].lignes }]; if (s === 'detecteur') L.push({ type: 'chroma', titre: 'CLHP · référence (signal obtenu)', tmax: 2, bruit: 0.05, pics: [{ tr: 0.82, h: 0.07, l: '' }, { tr: 1.24, h: 0.04, l: '' }] }); return L; },
-  choix: [{ t: 'Chercher l\'origine du problème', duree: 5, vers: e => e.f.eq?.ext ? 'hplc_panne' : 'eq_ext' }],
+  choix: e => { const s = symptomeClhp(e), mk = (id, t, vers = 'hplc_panne') => ({ id, t, duree: id === s ? 3 : id === 'ines' ? 5 : 8, vers, f: { diag: id }, note: id === 'ines' ? 'Relevés de la CLHP : je demande son avis à Inès.' : id === s ? `Relevés de la CLHP : j'identifie correctement la cause (${t.toLowerCase()}).` : `Relevés de la CLHP : j'avais pensé à autre chose (${t.toLowerCase()}), erreur de diagnostic.` });
+    return melange(e, 'diag', [mk('bouchon', 'Le circuit est bouché (particules dans la colonne)'), mk('fuite', 'Il y a une fuite au raccord de la colonne'), mk('detecteur', 'La lampe du détecteur UV est défaillante')]).concat([mk('ines', 'Je ne sais pas : je demande à Inès')]); },
 });
 add('hplc_ref', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Chromatogramme de référence',
@@ -812,11 +819,12 @@ const DIAG_CLHP = {
 };
 add('hplc_panne', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'La CLHP est hors service',
-  texte: e => `${DIAG_CLHP[symptomeClhp(e)]} Tu peux aussi doser la caféine autrement : elle absorbe fort à 273 nm, on a un spectrophotomètre UV. »\nQue fais-tu ?`,
+  texte: e => `${e.f.diag && e.f.diag !== 'ines' && e.f.diag !== symptomeClhp(e) ? 'Inès : « Ce n\'était pas ça, regarde de nouveau les relevés. » ' : ''}${DIAG_CLHP[symptomeClhp(e)]} ${e.f.eq?.ext ? '' : 'Lucas, qui passe par là, jette un œil à tes relevés et te lance un conseil.'} Tu peux aussi doser la caféine autrement : elle absorbe fort à 273 nm, on a un spectrophotomètre UV. »\nQue fais-tu ?`,
   hyp: 'Hypothèse (UV) : loi de Beer-Lambert (A proportionnelle à C) dans la zone de travail, A restant inférieure à 1.',
   choix: e => [
     { t: 'Ajouts dosés au spectrophotomètre UV : on ajoute des quantités connues de caféine à la solution de gel', d: '5 fioles à préparer', duree: 10, vers: 'hub', f: { methCaf: 'ajouts' }, note: 'Panne de CLHP : dosage par ajouts dosés en UV.' },
     { t: 'Étalonnage externe en UV : gamme de caféine dans l\'éluant, puis lecture de la solution de gel', d: 'Plus simple à préparer', duree: 10, vers: 'hub', f: { methCaf: 'ext' }, note: 'Panne de CLHP : dosage par étalonnage externe en UV.' },
+    ...(e.f.eq?.ext ? [] : [{ t: 'Écouter ce que Lucas te conseille', duree: 0, vers: 'eq_ext' }]),
     { t: 'Faire réparer la CLHP et m\'occuper d\'autre chose en attendant', d: 'La réparation dure 1 h 15 sans toi : tu peux travailler ailleurs pendant ce temps', duree: 5, vers: 'hub', f: { methCaf: e.f.hplcGamme ? 'gamme' : 'EI', attendu: true }, run: n => ({ ...n, bg: { ...n.bg, clhp: n.t + 75 } }), note: 'Panne de CLHP : réparation lancée (1 h 15), je continue autre chose.' },
   ],
 });
@@ -951,12 +959,12 @@ add('uv_ext_verif', {
 const eiNom = e => ({ propanol: 'propan-1-ol', butanol: 'butan-1-ol' })[e.f.ei || 'propanol'];
 add('cpg_ei', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Changer d\'étalon interne',
-  texte: () => `En CPG, le volume injecté (≈ 0,1 µL) n'est pas maîtrisé : l'aire d'un pic seul ne permet pas de remonter à la masse injectée, il faut un étalon interne dont le pic soit séparé de celui de l'éthanol. Colonne polaire CP Wax, four à 70 °C, durée d'analyse de 3 minutes. Voici ce que le magasin peut te fournir.`,
+  texte: () => `En CPG, le volume injecté (≈ 0,1 µL) n'est pas maîtrisé : l'aire d'un pic seul ne permet pas de remonter à la masse injectée, il faut un étalon interne dont le pic soit séparé de celui de l'éthanol. Colonne polaire CP Wax, four à 70 °C, durée d'analyse de 3 minutes. Voici les autres étalons internes que l'on peut utiliser et que l'on a en stock :`,
   hyp: "Hypothèse : le facteur de réponse éthanol / étalon interne est constant ; les deux pics doivent être résolus et sortir dans la durée d'analyse.",
   choix: e => melange(e, 'ei', [
     { id: 'butanol', t: 'Le butan-1-ol', d: 'Alcool primaire en C4.', duree: 10, vers: 'cpg_ref', f: { ei: 'butanol' }, note: 'Étalon interne CPG : butan-1-ol (fiole de référence refaite).' },
     { id: 'pentanol', t: 'Le pentan-1-ol', d: 'Alcool primaire en C5.', duree: 15, vers: 'cpg_pentanol', run: essaiInadapte, note: 'Étalon interne CPG : pentan-1-ol essayé.' },
-    { id: 'aucun', t: 'Aucun : j\'injecte la référence seule et je compare les aires', duree: 5, vers: 'cpg_sans', si: x => !x.f.sansEI },
+    { id: 'aucun', t: 'Pas d\'étalon interne : j\'injecte plusieurs fois la même solution d\'éthanol et je compare les aires', duree: 5, vers: 'cpg_sans', si: x => !x.f.sansEI },
   ]),
 });
 add('cpg_pentanol', {
@@ -991,10 +999,10 @@ add('cpg_inj1', {
 add('cpg_ref', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Injection de la référence',
   fiches: ['mo3'],
-  texte: e => { if (e.f.ei === 'butanol') { const d = donneesCpg(e).ref; return `Chromatogramme de la référence : éthanol ${nf(d.aE, 2)} % de l'aire, butan-1-ol ${nf(d.aEI, 2)} %. Les deux pics sont bien séparés.`; }
+  texte: e => { if (e.f.ei === 'butanol') { const d = donneesCpg(e).ref; return `Chromatogramme de la référence : éthanol ${nf(d.aE, 2)} % de l'aire, butan-1-ol ${nf(d.aEI, 2)} %. Les deux pics sont bien séparés. Rapport des aires éthanol / butan-1-ol de la référence : ${nf(d.aE / d.aEI, 3)}. Ce rapport te servira à doser l'éthanol dès que ton gel sera prêt : on injectera alors la solution échantillon dans les mêmes conditions.`; }
     return `Chromatogramme de la référence : un seul pic large et dissymétrique vers 1,4 min. L'éthanol (t_R ≈ 1,36 min) et le propan-1-ol (≈ 1,40 min) sortent presque en même temps : le logiciel ne propose qu'une aire pour l'ensemble.`; },
   visuels: e => e.f.ei === 'butanol' ? [{ type: 'chroma', titre: 'CPG · référence (éthanol + butan-1-ol)', tmax: 3, pics: [{ tr: 1.36, h: 0.5, l: 'éthanol' }, { tr: 2.1, h: 0.9, l: 'butan-1-ol (EI)' }] }] : [{ type: 'chroma', titre: 'CPG · référence (éthanol + propan-1-ol)', tmax: 3, pics: [{ tr: 1.36, h: 0.8, l: 'éthanol + propan-1-ol' }, { tr: 1.42, h: 0.6, l: '' }] }],
-  choix: e => e.f.ei === 'butanol' ? [{ t: 'Retour à la paillasse', duree: 10, vers: 'hub', run: n => marquer(n, 'cpgPrep') }] : [
+  choix: e => e.f.ei === 'butanol' ? [{ t: 'Retour à la paillasse', duree: 10, vers: 'hub', run: n => marquer(n, 'cpgPrep'), note: 'Référence CPG injectée avec le butan-1-ol : rapport des aires relevé.' }] : [
     { t: 'Changer d\'étalon interne', d: 'Il faudra refaire la fiole de référence.', duree: 5, vers: 'cpg_ei', note: 'Référence CPG : coélution éthanol / propan-1-ol constatée.' },
     { t: 'Exploiter quand même ces aires, en séparant les deux pics au logiciel', duree: 10, vers: 'hub', run: n => marquer(n, 'cpgPrep'), f: { coelIgnore: true, errCoel: true }, note: 'Référence CPG : aires exploitées malgré la coélution.' },
   ],
