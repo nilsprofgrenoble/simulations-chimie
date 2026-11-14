@@ -1,11 +1,12 @@
 import SchemaFiolesClhp from './SchemaFiolesClhp';
+import SchemasChromato from './SchemasChromato';
 import FichesPercutafeine from './FichesPercutafeine';
 import { useState, useEffect, useRef } from "react";
 import { useEtatPersistant, Formule } from "../commun";
 import { Avatar as AvatarVisuel, STYLE_VISUELS } from './LaboVisuels';
 import {
   CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_FIN, T_MIDI, T_PAUSE, NB_AVATARS, avatarDe, pn, CHAMPS_FORMULE, FORMULE_REPLI, etatInitial, texteDe, choixDe, visuelsDe, choisir, valider, estFin, peutRevenir, revenirHub,
-  horloge, duree, nf, statutBg, resume, bilan, validerFormule, ajouterBase, validerPh, observationsDe, resultatsVus, demanderAide, niveauAide, textesAide, noterObs, chronologie, consequences, fiche, validerPlan, nombre,
+  horloge, duree, nf, statutBg, resume, bilan, validerFormule, cliquerPiece, ajouterBase, validerPh, observationsDe, resultatsVus, demanderAide, niveauAide, textesAide, noterObs, chronologie, consequences, fiche, validerPlan, nombre,
 } from "./percutafeineJeu";
 
 // ====================================================
@@ -254,6 +255,14 @@ function StationPlan({ e, sc, onEtat }) {
     </div>);
 }
 
+function StationSchema({ e, sc, onEtat }) {
+  const [msg, setMsg] = useState(''), [der, setDer] = useState(null), [ind, setInd] = useState(null);
+  const clic = id => { const r = cliquerPiece(e, id); if (r.ok) { setMsg(''); onEtat(r.etat); } else { setMsg(r.message); setDer(id); setInd(r.indice); onEtat(r.etat); } };
+  return (<div data-schema className="pc-inst" style={inst}>
+    <SchemasChromato type={sc.schema} onClic={clic} derniere={der} indice={ind} />
+    {msg && <div role="alert" style={{ marginTop: 10, fontSize: 14.5, lineHeight: 1.5, color: C.ambre }}>{msg}<br /><span style={{ color: C.doux }}>(Chaque erreur te coûte 2 minutes.)</span></div>}
+  </div>);
+}
 function StationObs({ e, onEtat }) {
   const [sel, setSel] = useState([]);
   const bascule = id => setSel(x => x.includes(id) ? x.filter(i => i !== id) : [...x, id]);
@@ -494,6 +503,7 @@ export function SimulationHistoirePercutafeine() {
         {sc.station === 'ph' && <StationPh e={e} onEtat={setEtat} />}
         {sc.station === 'plan' && <StationPlan key={e.scene + e.t} e={e} sc={sc} onEtat={setEtat} />}
         {sc.station === 'obs' && <StationObs e={e} onEtat={setEtat} />}
+        {sc.station === 'schema' && <StationSchema key={e.scene} e={e} sc={sc} onEtat={setEtat} />}
         {sc.calcul && <Calcul key={e.scene} e={e} sc={sc} onEtat={setEtat} />}
 
         {hub && <Paillasse e={e} s={s} choix={choix} onChoix={avancer} />}
