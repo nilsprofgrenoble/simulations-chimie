@@ -40,6 +40,7 @@ function joue(strat, graine) {
       e = r.etat; continue;
     }
     if (sc.station === 'ph') { e = strat.ph(e); continue; }
+    if (sc.station === 'obs') { e = J.noterObs(e, strat.obs ? strat.obs(e) : ['blanc', 'cristaux', 'fins']); continue; }
     if (sc.calcul) { calculsVus.add(e.scene); const r = J.valider(e, strat.calc(e, sc.calcul)); e = r.etat; continue; }
     const ch = J.choixDe(e);
     assert(ch.length, `scène sans choix : ${e.scene}`);
@@ -66,6 +67,7 @@ const expert = {
     if (e.scene === 'cpg_comp') return ch[0];
     if (e.scene.startsWith('eq_')) return ch.find(c => c.tag === 'ok');
     if (e.scene === 'cause') return ch.find(c => c.f.causeJuste);
+    if (e.scene === 'avis') return ch[0];
     if (e.scene === 'fab_choix' || e.scene === 'fab_disp') return ch[0];
     if (e.scene === 'rheoC') return ch[0];
     if (e.scene === 'rheoF') return ch.find(c => !c.f.errRheo2);
@@ -114,7 +116,7 @@ for (const [id, sc] of Object.entries(J.SCENES)) {
 console.log('OK : scènes', Object.keys(J.SCENES).length);
 
 // 4. Conséquence réelle du procédé : sans reflux, l'éthanol manque ; la cause « fabrication » est la bonne, et seulement elle
-const expBecher = { ...expert, choix: (e, ch) => e.scene === 'fab_choix' ? ch[1] : expert.choix(e, ch) };
+const expBecher = { ...expert, choix: (e, ch) => e.scene === 'fab_choix' ? ch[1] : e.scene === 'avis' ? ch[ch.length - 1] : expert.choix(e, ch) };
 let nDet = 0, nB = 0;
 for (let g = 1; g <= 100; g++) {
   const { e } = joue(expBecher, g * 6571);
@@ -135,3 +137,16 @@ const expSec = { ...expert, choix: (e, ch) => e.scene.startsWith('eq_') ? ch.fin
 const expPassif = { ...expert, choix: (e, ch) => e.scene === 'eq_base' ? ch.find(c => c.tag === 'moyen') : expert.choix(e, ch) };
 { const r = joue(expPassif, 5).e; assert(r.f.mode === 'base' || r.f.errBase, 'conseil faux suivi : grumeaux'); }
 console.log('conséquences et C.7.3 : OK');
+
+// 5. Remédiation : le bécher ouvert se rattrape en compensant l'éthanol, un pH trop bas en reprenant la trolamine
+const expCompense = { ...expert, choix: (e, ch) => e.scene === 'fab_choix' ? ch[1] : expert.choix(e, ch) };
+for (let g = 1; g <= 60; g++) { const { e } = joue(expCompense, g * 3571); assert(e.f.compense && e.scene === 'fin_conforme', `compensation → conforme (${e.scene})`); assert(e.t < J.T_FIN, 'compensation dans les temps'); }
+const expPhBas = { ...expert, ph: e => { let n = J.ajouterBase(e, 0.3); const r = J.validerPh(n); assert(r.ok); return r.etat; } };
+let nPh = 0; for (let g = 1; g <= 60; g++) { const r = joue({ ...expPhBas, ph: e => e.scene === 'ph2' ? expert.ph(e) : expPhBas.ph(e) }, g * 977).e; if (r.f.reprisePh) { nPh++; assert(r.scene === 'fin_conforme', `pH repris → conforme (${r.scene})`); } }
+assert(nPh > 50, `pH bas repris avec Lucas (${nPh}/60)`);
+// la formule n'est jamais jugée : une formule pauvre en macrogol est acceptée telle quelle
+{ const e0 = J.etatInitial(3); const r = J.validerFormule(e0, { caf: 10, carb: 1.5, coc: 2, eth96: 80, trol: 1.8, eau: 104.7 }); assert(r.ok && r.lignes.length === 0, 'formule non jugée'); }
+{ const e0 = J.etatInitial(3); const r1 = J.validerFormule(e0, { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 190 }); assert(!r1.ok && r1.lignes.length === 1, 'somme signalée'); assert(J.validerFormule(r1.etat, { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 190 }).ok, 'puis acceptée'); }
+// observation vidéo : notée dans le cahier, sans verdict
+{ const e0 = J.etatInitial(3); const e1 = J.noterObs({ ...e0, scene: 'obs_video' }, ['blanc', 'cristaux']); assert(e1.fait.obs && e1.carnet.some(l => l.includes('cristaux')), 'observation notée'); }
+console.log('remédiations : OK');
