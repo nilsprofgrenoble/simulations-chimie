@@ -427,3 +427,9 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   const t2 = J.choixDe({ ...h2, scene: 'hub' }).map(c => c.vers); assert(t2.includes('choix_caf') && !t2.includes('rapide_caf'), 'dosages normaux sur le nouveau gel');
   const refus = J.choisir({ ...h, scene: 'relance' }, J.choixDe({ ...h, scene: 'relance' })[1]); assert(!J.choixDe({ ...refus, scene: 'hub' }).some(c => c.vers === 'relance'), 'refus : pas reproposé pour ce lot');
   console.log('v37 : OK'); }
+// 30. v37c : deuxième gel plus rapide (conseil de Lucas)
+{ const b = J.etatInitial(11), h = { ...b, scene: 'hub', t: 230, f: { ...b.f, lot: 2, fm: J.FORMULE_REPLI }, fait: { es: true, esRes: true, eth: true, rheoC: true, formule: true } };
+  assert(J.choixDe(h).some(c => c.vers === 'fab_relance'), 'tâche de fabrication du 2e gel');
+  const c = J.choixDe({ ...h, scene: 'fab_relance' })[0], r = J.choisir({ ...h, scene: 'fab_relance' }, c);
+  assert(r.f.mode === 'reflux' && r.bg.gel - r.t === 35 - 0 + 10 - 10 + 0 || r.bg.gel - h.t === 45, `dispersion du 2e gel : ${r.bg.gel - h.t} min après le début`);
+  console.log('v37c : OK'); }

@@ -391,7 +391,7 @@ const POSTES = [
   { id: 'etuve', nom: 'Étuve et balance', vers: ['es_balance', 'es_prep', 'es_calc1', 'es_calc2b'] },
   { id: 'bureau', nom: 'Bureau', vers: ['docs', 'eth1', 'eq_ines', 'verdict'] },
   { id: 'ir', nom: 'Spectrométrie IR', vers: ['leurre_ir'] },
-  { id: 'formulation', nom: 'Formulation', vers: ['relance', 'formule', 'eq_base', 'fab_choix', 'fab_disp', 'obs_video'] },
+  { id: 'formulation', nom: 'Formulation', vers: ['relance', 'formule', 'eq_base', 'fab_choix', 'fab_relance', 'fab_disp', 'obs_video'] },
   { id: 'optique', nom: 'Réfractomètre, polarimètre', vers: ['leurre_refracto', 'leurre_polar'] },
   { id: 'rheo', nom: 'Rhéologie', vers: ['rheoC', 'rheoF'] },
   { id: 'titrage', nom: 'Titrage', vers: ['titr_suivi', 'titr_carb_plan', 'leurre_titrgel'] },

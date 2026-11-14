@@ -292,7 +292,7 @@ const taches = e => {
   if (F.es && !F.esLu) L.push(e.f.es3Att ? ['Lire le troisième extrait sec', `Calculer la médiane des trois essais.${e.bg.es > e.t ? ` Attention : étuve en cours, prête dans ${duree(e.bg.es - e.t)}, tu devras attendre.` : ''}`, 'es_calc2b'] : ['Lire l\'extrait sec', `Calculer ES et vérifier la répétabilité.${e.bg.es > e.t ? ` Attention : étuve en cours, prête dans ${duree(e.bg.es - e.t)}, tu devras attendre.` : ''}`, 'es_calc1']);
   if (F.esLu && !F.esRes) L.push(['Estimer le cocoate de macrogol', 'Déduire sa teneur de l\'extrait sec, avec les fiches techniques.', 'es_calc3']);
   if (!F.formule) L.push(['Formuler les 200 g de gel', 'Fixer les masses des constituants pour environ 200 g.', 'formule', F.eth && F.esRes ? undefined : { bloque: 'Il te manque encore ' + [!F.eth && 'l\'éthanol de la notice', !F.esRes && 'le cocoate de macrogol (extrait sec)'].filter(Boolean).join(' et ') + '.' }]);
-  if (F.formule && !F.fab) L.push(['Fabriquer le gel', 'Choisir le procédé, lancer la dispersion du Synthalen K.', e.f.eq?.base ? 'fab_choix' : 'eq_base']);
+  if (F.formule && !F.fab) L.push(['Fabriquer le gel', 'Choisir le procédé, lancer la dispersion du Synthalen K.', (e.f.lot || 1) > 1 ? 'fab_relance' : e.f.eq?.base ? 'fab_choix' : 'eq_base']);
   if (!F.rheoC) L.push(['Rhéologie du gel commercial', 'Mesurer la courbe d\'écoulement du témoin (10 min).', 'rheoC']);
   if (!e.f.voieCaf && !e.f.rapideCaf) L.push(['Choisir comment contrôler la caféine du gel', 'Quelle technique utiliser pour vérifier les 5 % de caféine ?', 'choix_caf']);
   if (e.f.voieCaf === 'clhp' && !F.hplcPrep) L.push(['Préparer le dosage de la caféine', 'Masse à peser, solution de référence, première injection.', 'hplc_m']);
@@ -706,6 +706,14 @@ add('fab_choix', {
   ]),
 });
 const tourne = (e, cle, k) => { const L = [...k]; const r = Math.floor(unif(e.f.graine, cle) * L.length); return [...L.slice(r), ...L.slice(0, r)]; };
+add('fab_relance', {
+  lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Un deuxième gel, plus vite',
+  texte: () => `Lucas passe près de ta paillasse : « Puisque tu dois recommencer le gel, autant gagner du temps. Prends le ballon à reflux et chauffe dès le départ : l'eau chaude, le matériel déjà prêt et une formule déjà calculée, tu en as pour environ 35 minutes de dispersion au lieu d'une heure. Et monte le montage sous la hotte comme la première fois. »`,
+  choix: [
+    { t: 'Suivre le conseil : ballon à reflux, chauffage dès le départ', d: '10 min de travail, puis environ 35 min de dispersion.', duree: 10, vers: 'secu', f: { mode: 'reflux', perteEth: 0.01 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 35 } }), note: 'Nouveau gel : ballon à reflux et chauffage dès le départ (conseil de Lucas), dispersion plus courte.' },
+    { t: 'Choisir moi-même le procédé', d: 'Les mêmes choix que la première fois.', duree: 0, vers: 'fab_choix' },
+  ],
+});
 add('secu', {
   lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Où installes-tu le montage ?',
   texte: e => `Lucas : « Ton mélange contient ${nf((e.f.fm || FORMULE_REPLI).eth96 || 0, 0)} g d'éthanol à 96 %${e.f.mode === 'froid' ? ', même sans chauffer il s\'évapore' : ' et tu vas chauffer'}. L'éthanol est inflammable : où installes-tu le montage ? »`,
