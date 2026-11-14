@@ -1,6 +1,6 @@
 // ====================================================
 //  CONTRE-TYPAGE DE LA PERCUTAFÉINE : histoire à choix pour le BTS Métiers de la Chimie (sans React, testable seule avec node).
-//  Support : TP / CCF4 « contre-typage d'un gel de Percutaféine » (déformulation, formulation d'un gel au Carbopol, contrôle qualité :
+//  Support : TP / CCF4 « contre-typage d'un gel de Percutaféine » (déformulation, formulation d'un gel au Synthalen K, contrôle qualité :
 //  extrait sec, rhéologie, caféine par CLHP ou UV, éthanol par CPG). Le joueur est technicien·ne de R&D, sur une journée de 8 h à 17 h (pause déjeuner d'une heure).
 //  Les valeurs sont FICTIVES mais calées sur les mesures réelles des élèves (pentes, bruits, écarts entre méthodes) ;
 //  chaque donnée affichée est celle qui sert au corrigé (les calculs repartent des valeurs arrondies affichées).
@@ -56,10 +56,10 @@ export const FINS = [
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 export const QDISP = { continuer: 1.0, neutraliser: 0.85, chauffer: 0.95, grumeaux: 0.3 };
 export const M_COOH = 45.02, M_TEA = 149.19;
-export const coohLot = e => 0.58 + 0.05 * unif(e.f?.graine ?? 1, 'lotcooh');   // fraction massique de COOH du lot de Carbopol (spécification Lubrizol : 58,0 à 63,0 %)
-export function phDe(e, m) {      // pH du gel après ajout cumulé de m g de trolamine (modèle simple, pour 1,5 g de Carbopol par 200 g)
+export const coohLot = e => 45.02 / (73.5 + 5 * unif(e.f?.graine ?? 1, 'lotcooh'));   // fraction massique de COOH du lot de Synthalen K (fiche 3V : masse équivalente d'environ 76 g de polymère par mole de COOH, soit environ 59 %)
+export function phDe(e, m) {      // pH du gel après ajout cumulé de m g de trolamine (modèle simple, pour 1,5 g de Synthalen K par 200 g)
   const carb = e.f.fm?.carb || 1.5;
-  return 3.0 + 3.6 * (1 - Math.exp(-m / (1.2 * carb / 1.5 * coohLot(e) / 0.605)));
+  return 3.0 + 3.6 * (1 - Math.exp(-m / (1.2 * carb / 1.5 * coohLot(e) / 0.592)));
 }
 export function gelVrai(e) {
   const fm = e.f.fm || { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 98.7 };
@@ -230,23 +230,23 @@ export const statutBg = e => ({
 });
 const taches = e => {
   const F = e.fait, L = [];
-  L.push(['Relire les documents du dossier', 'Notice ANSM et fiches techniques (Carbopol, trolamine, cocoate de macrogol).', 'docs']);
+  L.push(['Relire les documents du dossier', 'Notice ANSM et fiches techniques (Synthalen K, trolamine, cocoate de macrogol).', 'docs']);
   if (!F.obs) L.push(['Regarder la vidéo du gel étalé', 'Une noisette de gel sur une plaque, en accéléré (5 min).', 'obs_video']);
   if (!F.es) L.push(['Lancer l\'extrait sec du gel commercial', 'Peser, étaler, mettre à l\'étuve : 15 min de travail, puis l\'étuve tourne seule.', e.f.bal ? 'es_prep' : 'es_balance']);
   if (!F.eth) L.push(['Raisonner sur l\'éthanol de la notice', 'Quelle masse d\'éthanol faut-il mettre dans 200 g de gel ?', 'eth1']);
   if (F.es && !F.esRes) L.push(['Lire l\'extrait sec', 'Calculer ES, vérifier la répétabilité, en déduire le tensioactif.', 'es_calc1']);
   if (F.eth && F.esRes && !F.formule) L.push(['Écrire la formule du contretype', 'Fixer les masses des constituants pour environ 200 g.', 'formule']);
-  if (F.formule && !F.fab) L.push(['Fabriquer le gel', 'Choisir le procédé, lancer la dispersion du Carbopol.', e.f.eq?.base ? 'fab_choix' : 'eq_base']);
+  if (F.formule && !F.fab) L.push(['Fabriquer le gel', 'Choisir le procédé, lancer la dispersion du Synthalen K.', e.f.eq?.base ? 'fab_choix' : 'eq_base']);
   if (!F.rheoC) L.push(['Rhéologie du gel commercial', 'Mesurer la courbe d\'écoulement du témoin (10 min).', 'rheoC']);
   if (!e.f.voieCaf) L.push(['Choisir comment contrôler la caféine du gel', 'Quelle technique utiliser pour vérifier les 5 % de caféine ?', 'choix_caf']);
   if (e.f.voieCaf === 'clhp' && !F.hplcPrep) L.push(['Préparer le dosage de la caféine', 'Masse à peser, solution de référence, première injection.', 'hplc_m']);
   if (F.eth && !e.f.voieEth) L.push(['Choisir comment contrôler l\'éthanol du gel', 'Quelle technique utiliser pour vérifier l\'éthanol ?', 'choix_eth']);
   if (e.f.voieEth === 'cpg' && !F.cpgPrep) L.push(['Préparer le dosage de l\'éthanol', 'Masse à peser, solution de référence, première injection.', 'cpg_m']);
-  if (F.fab && !F.ph) L.push(['Neutraliser et mettre en pot', 'Quand le Carbopol est dispersé : ajouter la trolamine et contrôler le pH.', 'fab_disp']);
+  if (F.fab && !F.ph) L.push(['Neutraliser et mettre en pot', 'Quand le Synthalen K est dispersé : ajouter la trolamine et contrôler le pH.', 'fab_disp']);
   if (F.ph && F.rheoC && !F.rheoF) L.push(['Comparer les rhéologies', 'Mesurer le gel formulé et le comparer au commercial.', 'rheoF']);
   if (F.ph && F.hplcPrep && !F.caf) L.push(['Doser la caféine du gel formulé', e.f.methCaf === 'ajouts' ? 'Concevoir les fioles, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'ext' ? 'Concevoir la gamme, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'gamme' ? 'Concevoir la gamme, injecter en CLHP.' : 'CLHP, méthode de l\'étalon interne.', e.f.methCaf === 'ajouts' ? 'uv_ajouts_plan' : e.f.methCaf === 'ext' ? 'uv_ext_plan' : e.f.methCaf === 'gamme' ? 'hplc_gamme_plan' : 'hplc_ei']);
   if (F.ph && F.cpgPrep && !F.ethQC) L.push(['Doser l\'éthanol du gel formulé', 'CPG avec étalon interne, puis avec une gamme d\'étalonnage.', 'cpg_inj']);
-  if (!F.titrCarb) L.push(['Titrer les acides du Carbopol (poudre)', 'Titrage par la soude d\'une dispersion du Carbopol 980 NF.', 'titr_suivi']);
+  if (!F.titrCarb) L.push(['Titrer les acides du Synthalen K (poudre)', 'Titrage par la soude d\'une dispersion du Synthalen K.', 'titr_suivi']);
   if (!F.leurre_titrgel) L.push(['Titrer le gel commercial', 'Titrage d\'une prise de gel par la soude : 30 min.', 'leurre_titrgel']);
   if (!F.leurre_ir) L.push(['Spectre infrarouge du gel (réflexion totale atténuée, ATR)', 'Une goutte de gel sur le cristal : 15 min avec le nettoyage.', 'leurre_ir']);
   if (!F.leurre_refracto) L.push(['Indice de réfraction du gel', 'Une goutte sur le prisme du réfractomètre : 15 min.', 'leurre_refracto']);
@@ -259,18 +259,18 @@ const taches = e => {
 add('intro', {
   fiches: ['notice'],
   lieu: 'Laboratoire de R&D', pnj: 'dubreuil', titre: 'Contre-typer la Percutaféine',
-  texte: () => `« Une cliente veut un gel équivalent à la Percutaféine, un gel à la caféine vendu pour les surcharges adipeuses localisées. Ton travail : retrouver la formule du gel commercial, fabriquer environ 200 g d'un contretype, puis contrôler sa qualité : caféine, éthanol, viscosité. »\n« Tu as la journée, de 8 h à 17 h, avec une heure de pause à midi. L'étuve et le ballon chauffent pendant que tu fais autre chose : organise-toi pour ne pas attendre devant. Les appareils sont fragiles, et une analyse qui ne donne pas ce qu'on attend se discute. »\nDocuments dans ton dossier : liste des constituants (caféine, Carbopol 980, cocoate de macrogol, trolamine, éthanol, eau purifiée) et notice (résumé des caractéristiques du produit).`,
-  visuels: () => [{ type: 'tube' }],
+  texte: () => `« Une cliente veut un gel équivalent à la Percutaféine, un gel à la caféine vendu pour les surcharges adipeuses localisées. Ton travail : retrouver la formule du gel commercial, fabriquer environ 200 g d'un contretype, puis contrôler sa qualité : caféine, éthanol, viscosité. »\n« Tu as la journée, de 8 h à 17 h, avec une heure de pause à midi. L'étuve et le ballon chauffent pendant que tu fais autre chose : organise-toi pour ne pas attendre devant. Les appareils sont fragiles, et une analyse qui ne donne pas ce qu'on attend se discute. »\n« Voici la fiche de formulation du contretype : tous les constituants y sont listés, mais aucune teneur n'est connue. Avant de fabriquer quoi que ce soit, il faut d'abord retrouver ces pourcentages massiques. »\nLe dossier contient aussi la notice (résumé des caractéristiques du produit).`,
+  visuels: () => [{ type: 'tableau', titre: 'Fiche de formulation · contretype de la Percutaféine · à compléter', cols: ['Constituant', '% massique'], lignes: [['Caféine', '?'], ['Synthalen K', '?'], ['Cocoate de macrogol 7 glycérol', '?'], ['Éthanol à 96 %', '?'], ['Trolamine', '?'], ['Eau purifiée', '?'], ['Total', '100 %']] }, { type: 'tube' }],
   choix: [{ t: 'Écouter Inès, qui a préparé quelque chose sur ce gel', vers: 'intro2', duree: 0 }],
 });
 add('intro2', {
   lieu: 'Laboratoire de R&D', pnj: 'ines', titre: 'Un gel étonnant',
   video: { src: 'videos/gel-evaporation.mp4', legende: 'Une noisette de gel du pot commercial, étalée sur une plaque noire. Enregistrement accéléré (×8).' },
-  texte: () => '« Regarde ce gel : 5 % de caféine dans un mélange d\'eau et d\'éthanol, alors que la caféine se dissout plutôt mal dans l\'un comme dans l\'autre, et pourtant elle tient dans le pot. Quelqu\'un a vraiment travaillé la formule. »\n« J\'en ai étalé une noisette sur une plaque noire et je l\'ai filmée en accéléré (×8). Regarde ce qui se passe quand ça sèche : ça peut t\'être utile. »',
+  texte: () => '« Regarde ce gel : 5 % de caféine dans un mélange d\'eau et d\'éthanol, alors que la caféine se dissout plutôt mal dans l\'un comme dans l\'autre, et pourtant elle tient dans le pot. La formule est vraiment bien optimisée ! »\n« J\'en ai étalé une noisette sur une plaque noire et je l\'ai filmée en accéléré (×8). Regarde ce qui se passe quand ça sèche : ça peut t\'être utile. »',
   choix: [{ t: 'Aller à la paillasse', vers: 'hub', note: 'Début du travail : contre-typer la Percutaféine.' }],
 });
 add('docs', {
-  fiches: ['notice', 'carbopol', 'synthalen', 'cocoate', 'trolamine', 'mo1', 'mo3'],
+  fiches: ['notice', 'synthalen', 'cocoate', 'trolamine', 'mo1', 'mo3'],
   lieu: 'Bureau', pnj: 'moi', titre: 'Le dossier du TP',
   texte: () => 'Tu relis la notice du gel commercial, les fiches techniques des matières premières et les modes opératoires du TP. Tout ce que tu y trouves est utilisable pour retrouver la formule ; ce qui n\'y figure pas, il faudra le déduire de tes mesures.',
   choix: [{ t: 'Retourner à la paillasse', vers: 'hub', duree: 3, note: 'Relecture du dossier (notice et fiches techniques).' }],
@@ -294,7 +294,7 @@ const CONSEILS = {
   ], [
     '« Je commencerais par l\'extrait sec du gel commercial : l\'étuve demande 1 h et tourne seule. Pendant ce temps, lis le dossier du TP. »',
     '« Il te faut l\'extrait sec et l\'éthanol de la notice pour écrire la formule. Tu peux mesurer la rhéologie du gel commercial en attendant. »',
-    '« Le Carbopol est long à disperser : lance la fabrication, puis occupe-toi de la rhéologie du témoin et du choix des techniques de dosage. »',
+    '« Le Synthalen K est long à disperser : lance la fabrication, puis occupe-toi de la rhéologie du témoin et du choix des techniques de dosage. »',
     '« Il faut vérifier la caféine, l\'éthanol et la viscosité. Choisis tes techniques, prépare les solutions, puis compare la rhéologie du gel formulé à celle du commercial. »',
     '« Compare chaque résultat à l\'exigence correspondante, puis viens me dire ce que tu écris sur le bon de contrôle. »',
   ]],
@@ -314,15 +314,15 @@ const CONSEILS = {
   lucas: [[
     '« Pour la formule, il faut savoir ce que contient le gel : l\'extrait sec te donne ce qui n\'est pas volatil. Lis la notice et les fiches techniques. »',
     '« Écris ta formule avec ce que tu as mesuré et ce que dit la notice. Si tu hésites, demande-moi, on peut la discuter. »',
-    '« Pour la fabrication, lis d\'abord la fiche du Carbopol : l\'ordre d\'ajout compte. Moi j\'ai mes habitudes, mais vérifie. »',
+    '« Pour la fabrication, lis d\'abord la fiche du Synthalen K : l\'ordre d\'ajout compte. Moi j\'ai mes habitudes, mais vérifie. »',
     '« La rhéologie du gel commercial peut se faire pendant que le ballon tourne. Tu compareras ensuite avec ton gel. »',
     '« Si ton gel diffère du commercial, pense au pH et à la trolamine. »',
   ], [
-    '« Je lancerais l\'extrait sec tout de suite, il tourne seul, puis je lirais la fiche du Carbopol. »',
+    '« Je lancerais l\'extrait sec tout de suite, il tourne seul, puis je lirais la fiche du Synthalen K. »',
     '« Il te faut le pourcentage d\'éthanol pur de la notice, converti en éthanol à 96 %, et l\'extrait sec pour estimer le cocoate. »',
-    '« Disperse d\'abord le Carbopol, la trolamine vient à la fin. Demande-moi ce que tu veux sur le montage. »',
+    '« Disperse d\'abord le Synthalen K, la trolamine vient à la fin. Demande-moi ce que tu veux sur le montage. »',
     '« Mesure la courbe d\'écoulement du gel formulé et compare-la à celle du commercial : une différence de viscosité a une cause. »',
-    '« Si les rhéologies diffèrent, regarde le pH final : un Carbopol mal neutralisé donne un gel trop fluide. »',
+    '« Si les rhéologies diffèrent, regarde le pH final : un Synthalen K mal neutralisé donne un gel trop fluide. »',
   ]],
 };
 add('conseil', {
@@ -369,8 +369,8 @@ add('es_balance', {
 add('es_prep', {
   fiches: ['notice'],
   lieu: 'Salle des étuves', pnj: 'moi', titre: 'Extrait sec du gel commercial',
-  texte: () => `Seuls l'eau et l'éthanol s'évaporent à 105 °C : ce qui reste dans la coupelle est le résidu de caféine, de Carbopol, de tensioactif et de trolamine. Le sujet donne un écart-type de répétabilité S_r = 0,5 % pour l'extrait sec.\nCombien de coupelles prépares-tu ?`,
-  hyp: "Hypothèse : les constituants non volatils (caféine, Carbopol, cocoate de macrogol, trolamine) ne se perdent pas à 105 °C ; l'éthanol et l'eau sont évaporés en 1 h.",
+  texte: () => `Seuls l'eau et l'éthanol s'évaporent à 105 °C : ce qui reste dans la coupelle est le résidu de caféine, de Synthalen K, de tensioactif et de trolamine. Le sujet donne un écart-type de répétabilité S_r = 0,5 % pour l'extrait sec.\nCombien de coupelles prépares-tu ?`,
+  hyp: "Hypothèse : les constituants non volatils (caféine, Synthalen K, cocoate de macrogol, trolamine) ne se perdent pas à 105 °C ; l'éthanol et l'eau sont évaporés en 1 h.",
   choix: [
     { t: 'Deux coupelles, à l\'étuve à 105 °C pendant 1 h', duree: 15, vers: 'hub', f: { es2: true }, run: n => ({ ...marquer(n, 'es'), bg: { ...n.bg, es: n.t + 60 } }), note: 'Extrait sec lancé en double (105 °C, 1 h).' },
     { t: 'Une seule coupelle, pour gagner du temps', duree: 10, vers: 'hub', f: { es2: false }, run: n => ({ ...marquer(n, 'es'), bg: { ...n.bg, es: n.t + 60 } }), note: 'Extrait sec lancé avec une seule coupelle.' },
@@ -415,14 +415,14 @@ add('es_calc2', {
 add('es_calc3', {
   lieu: 'Bureau', pnj: 'moi', titre: 'Le tensioactif par différence',
   entree: e => e.f.es3 ? attendre(e, 'es') : e,
-  texte: e => `Extrait sec retenu : ES = ${nf(esRetenu(e), 2)} %. La fiche donne la caféine à 5 % ; la bibliographie place le Carbopol 980 à environ 0,75 % (plage 0,5 à 1 %) et la trolamine à environ 0,9 % pour atteindre un pH voisin de 6.`,
-  hyp: 'Hypothèse : le résidu sec est la somme de la caféine, du Carbopol, de la trolamine et du cocoate de macrogol (seuls constituants non volatils). Incertitude sur ES : environ 0,5 %.',
-  calcul: { q: 'Quel pourcentage massique de cocoate de macrogol déduis-tu ?', unite: '%', vrai: e => esRetenu(e) - 5 - 0.75 - 0.9, tolAbs: 0.7, cs: 1, indice: 'Cocoate = ES − caféine − Carbopol − trolamine.',
+  texte: e => `Extrait sec retenu : ES = ${nf(esRetenu(e), 2)} %. La fiche donne la caféine à 5 % ; la bibliographie place le Synthalen K à environ 0,75 % (plage 0,5 à 1 %) et la trolamine à environ 0,9 % pour atteindre un pH voisin de 6.`,
+  hyp: 'Hypothèse : le résidu sec est la somme de la caféine, du Synthalen K, de la trolamine et du cocoate de macrogol (seuls constituants non volatils). Incertitude sur ES : environ 0,5 %.',
+  calcul: { q: 'Quel pourcentage massique de cocoate de macrogol déduis-tu ?', unite: '%', vrai: e => esRetenu(e) - 5 - 0.75 - 0.9, tolAbs: 0.7, cs: 1, indice: 'Cocoate = ES − caféine − Synthalen K − trolamine.',
     ok: { vers: 'hub', duree: 5, run: n => marquer(n, 'esRes'), note: 'Cocoate de macrogol estimé par différence.' }, ko: { vers: 'hub', duree: 0, run: n => marquer(n, 'esRes') } },
 });
 
 // ───────────── Formulation ─────────────
-export const CHAMPS_FORMULE = [['caf', 'Caféine'], ['carb', 'Carbopol 980'], ['coc', 'Cocoate de macrogol'], ['eth96', 'Éthanol à 96 %'], ['trol', 'Trolamine (estimation)'], ['eau', 'Eau purifiée']];
+export const CHAMPS_FORMULE = [['caf', 'Caféine'], ['carb', 'Synthalen K'], ['coc', 'Cocoate de macrogol'], ['eth96', 'Éthanol à 96 %'], ['trol', 'Trolamine (estimation)'], ['eau', 'Eau purifiée']];
 export const FORMULE_REPLI = { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 98.7 };
 export function controlesFormule(e, fm) {
   const v = Object.fromEntries(Object.entries(fm).map(([k, x]) => [k, parseFloat(String(x).replace(',', '.')) || 0]));
@@ -436,16 +436,16 @@ export function validerFormule(e, fm, repli = false) {
   const rp = repli || (niveauAide(e) === 3 && Object.keys(FORMULE_REPLI).every(k => val[k] === FORMULE_REPLI[k]));
   const n = { ...e, t: e.t + 2, f: { ...e.f, fTent: (e.f.fTent || 0) + 1 } };
   if (lignes.length && !e.f.fAvert) return { ok: false, lignes, etat: { ...n, f: { ...n.f, fAvert: true } } };
-  return { ok: true, lignes: [], etat: choisir({ ...n, f: { ...n.f, fm: val, repli: rp || undefined } }, { vers: 'hub', run: x => marquer(x, 'formule'), note: rp ? 'Formule proposée par Lucas utilisée.' : `Formule retenue (éthanol à 96 % : ${nf(val.eth96, 1)} g, cocoate : ${nf(val.coc, 1)} g, Carbopol : ${nf(val.carb, 2)} g).` }) };
+  return { ok: true, lignes: [], etat: choisir({ ...n, f: { ...n.f, fm: val, repli: rp || undefined } }, { vers: 'hub', run: x => marquer(x, 'formule'), note: rp ? 'Formule proposée par Lucas utilisée.' : `Formule retenue (éthanol à 96 % : ${nf(val.eth96, 1)} g, cocoate : ${nf(val.coc, 1)} g, Synthalen K : ${nf(val.carb, 2)} g).` }) };
 }
 add('formule', {
-  fiches: ['notice', 'carbopol', 'synthalen', 'cocoate', 'trolamine'],
+  fiches: ['notice', 'synthalen', 'cocoate', 'trolamine'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'formule', titre: 'La formule du contretype',
   texte: e => `« Écris les masses pour environ ${M_LOT} g. Je ne juge pas ta formule : elle part telle quelle dans le gel, et c'est le contrôle qualité qui dira si elle tient. » Rappels : ES mesuré ${nf(esRetenu(e), 2)} %, éthanol à 96 % pour ${nf(ETH_PUR_COM, 1)} % d'éthanol pur.`,
   aide: { pnj: 'lucas', textes: [
-    () => '« Pars de tes résultats, pas de la notice seule : pour 200 g de gel, la masse d\'un composant est son pourcentage mesuré multiplié par 2. Occupe-toi d\'abord de la caféine et de l\'éthanol, puis du Carbopol et du cocoate. »',
-    () => '« L\'éthanol de la paillasse est à 96 % : pour une teneur en éthanol pur donnée, il faut peser un peu plus d\'éthanol à 96 %. Ton extrait sec compte la caféine, le Carbopol, le cocoate et la trolamine ensemble. Complète avec l\'eau pour atteindre 200 g au total. »',
-    () => '« Je ferais : caféine 10 g, Carbopol 1,5 g, cocoate 8 g, éthanol à 96 % 80 g, trolamine 1,8 g et eau 98,7 g. Compare avec tes résultats avant de valider. »'],
+    () => '« Pars de tes résultats, pas de la notice seule : pour 200 g de gel, la masse d\'un composant est son pourcentage mesuré multiplié par 2. Occupe-toi d\'abord de la caféine et de l\'éthanol, puis du Synthalen K et du cocoate. »',
+    () => '« L\'éthanol de la paillasse est à 96 % : pour une teneur en éthanol pur donnée, il faut peser un peu plus d\'éthanol à 96 %. Ton extrait sec compte la caféine, le Synthalen K, le cocoate et la trolamine ensemble. Complète avec l\'eau pour atteindre 200 g au total. »',
+    () => '« Je ferais : caféine 10 g, Synthalen K 1,5 g, cocoate 8 g, éthanol à 96 % 80 g, trolamine 1,8 g et eau 98,7 g. Compare avec tes résultats avant de valider. »'],
     valeurs: () => FORMULE_REPLI },
   hyp: "Hypothèse : le volume de gel est la somme des masses (pas de contraction de volume à l'échelle de ce contrôle) ; la trolamine finale est ajustée au pH, la valeur saisie n'est qu'une estimation.",
   choix: [],
@@ -455,12 +455,12 @@ add('formule', {
 // ───────────── Échanges avec les collègues (C.7.3) ─────────────
 // Chaque échange note l'attitude de l'élève (ok : respectueux et argumenté ; moyen : passif ; ko : sec ou fermé) ; les conséquences sont réelles plus loin.
 add('eq_base', {
-  fiches: ['carbopol', 'synthalen'],
+  fiches: ['synthalen'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Le conseil de Lucas',
   texte: () => `Lucas, qui a l'habitude du labo : « Moi je mets tout d'un coup, base comprise, ça fait gagner 20 minutes. J'ai toujours fait comme ça. »`,
   choix: [
     { t: '« D\'accord, je fais comme toi. »', tag: 'moyen', vers: 'fab_grumeaux', duree: 5, f: { mode: 'base', perteEth: 0.01 }, run: n => eqNote(n, 'moyen', 'base'), note: 'Conseil de Lucas suivi sans discussion : tout mélangé, base comprise.' },
-    { t: '« Merci, mais le Carbopol doit être dispersé avant d\'être neutralisé, sinon il fait des grumeaux. Je préfère ajouter la base à la fin. »', tag: 'ok', vers: 'fab_choix', duree: 2, run: n => eqNote(n, 'ok', 'base'), note: 'Conseil de Lucas discuté poliment, procédé choisi par moi.' },
+    { t: '« Merci, mais le Synthalen K doit être dispersé avant d\'être neutralisé, sinon il fait des grumeaux. Je préfère ajouter la base à la fin. »', tag: 'ok', vers: 'fab_choix', duree: 2, run: n => eqNote(n, 'ok', 'base'), note: 'Conseil de Lucas discuté poliment, procédé choisi par moi.' },
     { t: '« Arrête, tu ne sais pas de quoi tu parles. »', tag: 'ko', vers: 'fab_choix', duree: 5, run: n => eqNote(n, 'ko', 'base'), note: 'Lucas rembarré sèchement.' },
   ],
 });
@@ -548,7 +548,7 @@ add('avis', {
   texte: e => {
     const D = defauts(e), m = mesures(e), vu = (e.f.obs || []).some(x => x === 'blanc' || x === 'cristaux');
     if (D.includes('eth')) return `Inès relit tes résultats : « L'éthanol est à ${nf(m.eth, 1)} % au lieu de ${nf(ETH_PUR_COM, 1)} %. ${vu ? 'Tu te souviens de la vidéo : ça part très vite. ' : ''}Qu'est-ce que tu as fait comme chauffage, et avec quel montage ? On peut compenser : ajouter de l'éthanol à 96 % dans le gel, mais il faut calculer la masse puis refaire le dosage CPG. »`;
-    if (D.includes('visco') && gelVrai(e).ph < 5.5) return `Inès relit tes résultats : « Ton gel est trop fluide, sa viscosité est trop faible : rapport des contraintes ${nf(m.q, 2)}. As-tu regardé le pH final ? Si le Carbopol n'est pas assez neutralisé, on peut reprendre avec de la trolamine (15 min), puis refaire la rhéologie. »`;
+    if (D.includes('visco') && gelVrai(e).ph < 5.5) return `Inès relit tes résultats : « Ton gel est trop fluide, sa viscosité est trop faible : rapport des contraintes ${nf(m.q, 2)}. As-tu regardé le pH final ? Si le Synthalen K n'est pas assez neutralisé, on peut reprendre avec de la trolamine (15 min), puis refaire la rhéologie. »`;
     if (D.length) return `Inès relit tes résultats : « Je vois un écart, mais il ne se rattrape pas dans le temps qui reste : ${D.includes('visco') ? 'des grumeaux ne se redissolvent pas' : 'on ne peut pas retirer la caféine en trop'}. Écris-le tel quel sur le bon, et on refera un lot. »`;
     return `Inès relit tes résultats : « Tout me paraît cohérent : caféine, éthanol et viscosité dans les plages. Je ne vois rien à redire. »`;
   },
@@ -587,10 +587,10 @@ add('point_dubreuil', {
 
 // ───────────── Fabrication ─────────────
 add('fab_choix', {
-  fiches: ['carbopol', 'synthalen'],
+  fiches: ['synthalen'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Comment fabriques-tu le gel ?',
-  texte: () => `« Le Carbopol 980 est long à se disperser : à froid, compte 1 h à 1 h 30 ; un chauffage modéré accélère la dispersion. Dès qu'il est dispersé, c'est la base (la trolamine) qui fait épaissir. »\nComment procèdes-tu ?`,
-  hyp: 'Hypothèse : le Carbopol gonfle et épaissit quand il est neutralisé ; mal dispersé, il forme des grumeaux qui ne se redissolvent pas bien.',
+  texte: () => `« Le Synthalen K est long à se disperser : à froid, compte 1 h à 1 h 30 ; un chauffage modéré accélère la dispersion. Dès qu'il est dispersé, c'est la base (la trolamine) qui fait épaissir. »\nComment procèdes-tu ?`,
+  hyp: 'Hypothèse : le Synthalen K gonfle et épaissit quand il est neutralisé ; mal dispersé, il forme des grumeaux qui ne se redissolvent pas bien.',
   choix: [
     { t: 'Ballon à reflux sous agitation, chauffage modéré, base ajoutée à la fin', d: '15 min de travail, puis environ 1 h de dispersion.', duree: 15, vers: 'secu', f: { mode: 'reflux', perteEth: 0.01 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 60 } }), note: 'Fabrication : ballon à reflux, chauffage modéré, agitation, base en dernier.' },
     { t: 'Bécher sur plaque chauffante sous agitation, base ajoutée à la fin', d: '10 min de travail, puis environ 45 min de dispersion.', duree: 10, vers: 'secu', f: { mode: 'becher', perteEth: 0.18 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 45 } }), note: 'Fabrication : bécher sur plaque chauffante, agitation, base en dernier.' },
@@ -609,21 +609,21 @@ add('secu', {
 });
 add('fab_grumeaux', {
   lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Des grumeaux gélifiés',
-  texte: () => `Après 20 minutes, le milieu est trouble et plein de petits grumeaux translucides : le Carbopol a gonflé au contact de la base avant d'être dispersé. Lucas : « Ça ne se redissoudra pas. »`,
+  texte: () => `Après 20 minutes, le milieu est trouble et plein de petits grumeaux translucides : le Synthalen K a gonflé au contact de la base avant d'être dispersé. Lucas : « Ça ne se redissoudra pas. »`,
   choix: [
     { t: 'Tout recommencer avec la base à la fin, en ballon à reflux (45 min de plus)', duree: 45, vers: 'secu', f: { errBase: true, mode: 'reflux', perteEth: 0.01 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 75 } }), note: 'Gel raté (base trop tôt) : fabrication refaite avec reflux.' },
     { t: 'Continuer tel quel et espérer que ça passera', duree: 5, vers: 'hub', f: { errBase: true, disp: 'grumeaux' }, run: n => ({ ...marquer(n, 'fab', 'disp'), bg: { ...n.bg, gel: n.t + 10 } }), note: 'Gel avec grumeaux conservé.' },
   ],
 });
 add('fab_disp', {
-  fiches: ['carbopol', 'synthalen', 'trolamine'],
-  lieu: 'Paillasse de formulation', pnj: 'moi', titre: 'Le Carbopol est-il dispersé ?',
+  fiches: ['synthalen', 'trolamine'],
+  lieu: 'Paillasse de formulation', pnj: 'moi', titre: 'Le Synthalen K est-il dispersé ?',
   entree: e => attendre(e, 'gel'),
-  texte: e => e.fait.disp ? 'Le gel est prêt à être neutralisé.' : `Après le temps prévu, il reste encore des morceaux de Carbopol dans le milieu. Que fais-tu ?`,
+  texte: e => e.fait.disp ? 'Le gel est prêt à être neutralisé.' : `Après le temps prévu, il reste encore des morceaux de Synthalen K dans le milieu. Que fais-tu ?`,
   choix: e => e.fait.disp ? [{ t: 'Passer à la neutralisation', vers: 'ph' }] : [
-    { t: 'Continuer l\'agitation 30 minutes de plus', duree: 30, vers: 'ph', f: { disp: 'continuer' }, run: n => marquer(n, 'disp'), note: 'Dispersion prolongée de 30 min : Carbopol dissous.' },
+    { t: 'Continuer l\'agitation 30 minutes de plus', duree: 30, vers: 'ph', f: { disp: 'continuer' }, run: n => marquer(n, 'disp'), note: 'Dispersion prolongée de 30 min : Synthalen K dissous.' },
     { t: 'Arrêter le chauffage et ajouter la base pour voir si le reste se dissout', duree: 2, vers: 'ph', f: { disp: 'neutraliser' }, run: n => marquer(n, 'disp'), note: 'Dispersion arrêtée avant la fin, base ajoutée ensuite.' },
-    { t: 'Augmenter le chauffage pour accélérer', duree: 15, vers: 'ph', run: n => ({ ...marquer(n, 'disp'), f: { ...n.f, disp: 'chauffer', perteEth: n.f.perteEth + (n.f.mode === 'becher' ? 0.06 : n.f.mode === 'froid' ? 0.05 : 0.03) } }), note: 'Chauffage augmenté : Carbopol dispersé, un peu d\'éthanol perdu.' },
+    { t: 'Augmenter le chauffage pour accélérer', duree: 15, vers: 'ph', run: n => ({ ...marquer(n, 'disp'), f: { ...n.f, disp: 'chauffer', perteEth: n.f.perteEth + (n.f.mode === 'becher' ? 0.06 : n.f.mode === 'froid' ? 0.05 : 0.03) } }), note: 'Chauffage augmenté : Synthalen K dispersé, un peu d\'éthanol perdu.' },
   ],
 });
 export function ajouterBase(e, g) {
@@ -636,18 +636,18 @@ export function validerPh(e) {
   return { ok: true, etat: choisir({ ...e, f: { ...e.f, phFinal: ph, ...(reprise ? { reprisePh: true } : {}) } }, { vers: 'hub', run, duree: reprise ? 15 : 10, note: reprise ? `Gel repris avec Lucas : pH ${nf(e.f.phMes ?? ph, 2)} après ajout de trolamine (${nf(e.f.trolAdd || 0, 2)} g au total).` : `Gel mis en pot : pH ${e.f.phMes != null ? nf(e.f.phMes, 2) : 'non mesuré'}, ${nf(e.f.trolAdd || 0, 2)} g de trolamine.` }) };
 }
 add('ph', {
-  fiches: ['carbopol', 'synthalen', 'trolamine'],
+  fiches: ['synthalen', 'trolamine'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'ph', titre: 'Neutraliser et mettre en pot',
   video: { src: 'videos/neutralisation-carbopol.mp4', legende: 'Enregistrement du TP : le milieu agité s\'épaissit pendant la neutralisation.' },
-  texte: e => `« Ajoute la trolamine par petites fractions en agitant, et lis le pH au pH-mètre après chaque ajout (2 minutes l'ajout). Vise un pH proche de celui du gel commercial, vers 6. Regarde ce que ça donne quand le milieu épaissit. » ${e.f.disp === 'grumeaux' ? 'Le gel contient des grumeaux.' : ''}${e.f.cooh ? `\nD'après ton titrage, ${nf(e.f.fm?.carb || 1.5, 2)} g de Carbopol contiennent ${nf((e.f.fm?.carb || 1.5) * e.f.cooh / 100 / M_COOH * 1000, 1)} mmol de COOH : les neutraliser tous demanderait ${nf((e.f.fm?.carb || 1.5) * e.f.cooh / 100 / M_COOH * M_TEA, 2)} g de trolamine.` : ''}`,
-  hyp: 'Hypothèse : la viscosité d\'un gel de Carbopol dépend du pH (elle augmente de pH 4 à 6 environ puis se stabilise) ; la lecture du pH-mètre a une dispersion de ±0,04.',
+  texte: e => `« Ajoute la trolamine par petites fractions en agitant, et lis le pH au pH-mètre après chaque ajout (2 minutes l'ajout). Vise un pH proche de celui du gel commercial, vers 6. Regarde ce que ça donne quand le milieu épaissit. » ${e.f.disp === 'grumeaux' ? 'Le gel contient des grumeaux.' : ''}${e.f.cooh ? `\nD'après ton titrage, ${nf(e.f.fm?.carb || 1.5, 2)} g de Synthalen K contiennent ${nf((e.f.fm?.carb || 1.5) * e.f.cooh / 100 / M_COOH * 1000, 1)} mmol de COOH : les neutraliser tous demanderait ${nf((e.f.fm?.carb || 1.5) * e.f.cooh / 100 / M_COOH * M_TEA, 2)} g de trolamine.` : ''}`,
+  hyp: 'Hypothèse : la viscosité d\'un gel de Synthalen K dépend du pH (elle augmente de pH 4 à 6 environ puis se stabilise) ; la lecture du pH-mètre a une dispersion de ±0,04.',
   choix: [],
 });
 add('ph2', {
-  fiches: ['carbopol', 'synthalen', 'trolamine'],
+  fiches: ['synthalen', 'trolamine'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'ph', titre: 'Reprendre le pH du gel',
   texte: () => `Lucas rouvre le pot : « On remet de la trolamine par petites fractions, en agitant, et on relit le pH. Compte 15 minutes pour la reprise, et il faudra refaire la mesure de rhéologie. »`,
-  hyp: 'Hypothèse : le Carbopol non encore neutralisé peut encore épaissir ; les grumeaux, eux, ne se rattrapent pas.',
+  hyp: 'Hypothèse : le Synthalen K non encore neutralisé peut encore épaissir ; les grumeaux, eux, ne se rattrapent pas.',
   choix: [],
 });
 
@@ -673,11 +673,11 @@ const causeVisco = e => { const g = gelVrai(e), fDisp = QDISP[e.f.disp] ?? 0.85,
 add('rheoF', {
   lieu: 'Salle de rhéologie', pnj: 'lucas', titre: 'Gel formulé et gel commercial',
   texte: e => { const q = gelVrai(e).q; return `Voici les deux courbes. Rapport des contraintes formulé / commercial : ${nf(q, 2)} (spécification du scénario : au moins ${nf(SPEC.q, 2)}).\nSi les courbes diffèrent, quelle est la cause la plus probable dans ta fabrication ?`; },
-  hyp: 'Hypothèse : à composition proche, la différence de viscosité vient surtout de la dispersion du Carbopol, du pH final ou de la teneur en Carbopol.',
+  hyp: 'Hypothèse : à composition proche, la différence de viscosité vient surtout de la dispersion du Synthalen K, du pH final ou de la teneur en Synthalen K.',
   visuels: e => [{ type: 'rheo', courbes: [{ nom: 'Gel commercial', pts: courbe(1), couleur: '#1e3a8a' }, { nom: 'Gel formulé', pts: courbe(gelVrai(e).q), couleur: '#b45309' }] }],
   choix: e => { const bon = causeVisco(e), ok = c => c === bon;
     const mk = (id, t) => ({ t, duree: 10, vers: 'hub', f: { errRheo2: !ok(id) || undefined }, run: n => marquer(n, 'rheoF'), note: ok(id) ? 'Cause de l\'écart de viscosité correctement identifiée.' : 'Cause de l\'écart de viscosité mal identifiée.' });
-    return [mk('similaires', 'Les deux gels sont très proches : pas de défaut de viscosité'), mk('dispersion', 'Carbopol mal dispersé (morceaux restants)'), mk('ph', 'pH trop bas : le gel n\'a pas fini d\'épaissir'), mk('carbopol', 'Pas assez de Carbopol dans la formule')]; },
+    return [mk('similaires', 'Les deux gels sont très proches : pas de défaut de viscosité'), mk('dispersion', 'Synthalen K mal dispersé (morceaux restants)'), mk('ph', 'pH trop bas : le gel n\'a pas fini d\'épaissir'), mk('Pas assez de Synthalen K dans la formule')]; },
 });
 
 // ───────────── Choix des techniques de contrôle : liste ouverte, présentée sans avis ─────────────
@@ -696,7 +696,7 @@ add('choix_caf', {
 });
 add('caf_titrage', {
   lieu: 'Paillasse', pnj: 'moi', titre: 'Titrage de la caféine : la courbe pH = f(V)',
-  texte: () => `Tu traces la courbe : un seul saut de pH, très étalé, qui apparaît bien avant la quantité de soude attendue pour 5 % de caféine. Dans l'eau, l'acide conjugué de la caféine a un pKa d'environ 0,6 : la caféine est une base bien trop faible pour être dosée par un acide ou une base courants, alors que le Carbopol et la trolamine du gel, eux, réagissent avec la soude. Cette courbe ne renseigne pas sur la caféine.\nTu as perdu 25 minutes.`,
+  texte: () => `Tu traces la courbe : un seul saut de pH, très étalé, qui apparaît bien avant la quantité de soude attendue pour 5 % de caféine. Dans l'eau, l'acide conjugué de la caféine a un pKa d'environ 0,6 : la caféine est une base bien trop faible pour être dosée par un acide ou une base courants, alors que le Synthalen K et la trolamine du gel, eux, réagissent avec la soude. Cette courbe ne renseigne pas sur la caféine.\nTu as perdu 25 minutes.`,
   choix: [{ t: 'Choisir une autre technique', duree: 0, vers: 'choix_caf' }],
 });
 add('choix_eth', {
@@ -716,7 +716,7 @@ add('eth_hplc', {
 });
 add('eth_dens', {
   lieu: 'Paillasse', pnj: 'moi', titre: 'Masse volumique du gel',
-  texte: () => `Tu mesures ρ = 0,94 g/mL à 20 °C. Les tables donnent la masse volumique d'un mélange eau-éthanol, mais ton gel contient aussi de la caféine, du Carbopol, du cocoate de macrogol et de la trolamine, qui modifient ρ : plusieurs compositions différentes conduisent à 0,94 g/mL. Cette valeur ne permet pas de remonter à la teneur en éthanol.\nTu as perdu 20 minutes.`,
+  texte: () => `Tu mesures ρ = 0,94 g/mL à 20 °C. Les tables donnent la masse volumique d'un mélange eau-éthanol, mais ton gel contient aussi de la caféine, du Synthalen K, du cocoate de macrogol et de la trolamine, qui modifient ρ : plusieurs compositions différentes conduisent à 0,94 g/mL. Cette valeur ne permet pas de remonter à la teneur en éthanol.\nTu as perdu 20 minutes.`,
   choix: [{ t: 'Choisir une autre technique', duree: 0, vers: 'choix_eth' }],
 });
 
@@ -959,7 +959,7 @@ add('cpg_comp', {
   ],
 });
 
-// ───────────── Titrage des acides du Carbopol (matière première) ─────────────
+// ───────────── Titrage des acides du Synthalen K (matière première) ─────────────
 // Volumes de soude versés : pas grossier, pas fin dans la zone [vdeb ; vfz] autour de l'équivalence, puis de nouveau le pas grossier.
 export function volumesTitr(P) {
   const vdeb = P.vdeb ?? 0, vfz = P.vfz ?? 0, dvf = P.dvf ?? P.dv, vols = [0]; let v = 0;
@@ -1013,49 +1013,49 @@ export const GRANDEUR_TITR = {
 };
 export const phReel = (e, v) => { const d = donneesTitr(e), a = d.P.c * v / 1000 / d.n, pHw = x => 6 + 2 * Math.log10((x + 0.02) / (1 - x + 0.02)); return a < 0.995 ? Math.max(2.8, pHw(a)) : Math.max(pHw(0.995), 14 + Math.log10(Math.max(1e-9, d.P.c * v / 1000 - d.n) / ((d.P.V0 + v) / 1000))); };
 add('titr_suivi', {
-  fiches: ['carbopol', 'synthalen'],
+  fiches: ['synthalen'],
   lieu: 'Salle de titrage', pnj: 'moi', titre: 'Comment suivre le titrage ?',
-  texte: () => `Tu vas titrer les groupes acide carboxylique du Carbopol par de la soude. Le laboratoire propose plusieurs façons de repérer l'équivalence. Aucune n'est imposée, le choix t'appartient.`,
+  texte: () => `Tu vas titrer les groupes acide carboxylique du Synthalen K par de la soude. Le laboratoire propose plusieurs façons de repérer l'équivalence. Aucune n'est imposée, le choix t'appartient.`,
   choix: e => melange(e, 'suivi', [
-    { id: 'ph', t: 'Électrode de verre combinée et pH-mètre', d: 'Courbe pH = f(V) ; étalonnage préalable avec deux solutions tampons (5 min).', duree: 5, vers: 'titr_carb_plan', f: { suivi: 'ph' }, note: 'Titrage du Carbopol : suivi avec une électrode combinée et un pH-mètre.' },
+    { id: 'ph', t: 'Électrode de verre combinée et pH-mètre', d: 'Courbe pH = f(V) ; étalonnage préalable avec deux solutions tampons (5 min).', duree: 5, vers: 'titr_carb_plan', f: { suivi: 'ph' }, note: 'Titrage du Synthalen K : suivi avec une électrode combinée et un pH-mètre.' },
     { id: 'ind', t: 'Indicateur coloré', d: 'À choisir dans la liste du laboratoire.', duree: 0, vers: 'titr_indic', f: { suivi: 'ind' } },
-    { id: 'cond', t: 'Sonde conductimétrique', d: 'Courbe conductivité = f(V) ; cellule à rincer et à plonger dans la dispersion (3 min).', duree: 3, vers: 'titr_carb_plan', f: { suivi: 'cond' }, note: 'Titrage du Carbopol : suivi avec une sonde conductimétrique.' },
-    { id: 'pt', t: 'Électrode de platine et électrode de référence Ag/AgCl', d: 'Mesure de la tension entre les deux électrodes (3 min de montage).', duree: 3, vers: 'titr_carb_plan', f: { suivi: 'pt' }, run: n => ({ ...n, f: { ...n.f, errSuivi: (n.f.errSuivi || 0) + 1 } }), note: 'Titrage du Carbopol : suivi avec une électrode de platine et une électrode de référence Ag/AgCl.' },
+    { id: 'cond', t: 'Sonde conductimétrique', d: 'Courbe conductivité = f(V) ; cellule à rincer et à plonger dans la dispersion (3 min).', duree: 3, vers: 'titr_carb_plan', f: { suivi: 'cond' }, note: 'Titrage du Synthalen K : suivi avec une sonde conductimétrique.' },
+    { id: 'pt', t: 'Électrode de platine et électrode de référence Ag/AgCl', d: 'Mesure de la tension entre les deux électrodes (3 min de montage).', duree: 3, vers: 'titr_carb_plan', f: { suivi: 'pt' }, run: n => ({ ...n, f: { ...n.f, errSuivi: (n.f.errSuivi || 0) + 1 } }), note: 'Titrage du Synthalen K : suivi avec une électrode de platine et une électrode de référence Ag/AgCl.' },
   ]),
 });
 add('titr_indic', {
-  fiches: ['carbopol'],
+  fiches: ['synthalen'],
   lieu: 'Salle de titrage', pnj: 'moi', titre: 'Quel indicateur coloré ?',
   texte: () => `Voici les indicateurs colorés disponibles au laboratoire, avec leur zone de virage. Tu repéreras l'équivalence au changement de couleur de la dispersion.`,
   choix: e => melange(e, 'indic', INDICATEURS.map(i => ({ id: i.id, t: `${i.nom}${i.id === 'php' ? ' (CMR)' : ''}`, d: `zone de virage de pH ${nf(i.zone[0], 1)} à ${nf(i.zone[1], 1)}`, duree: 0, vers: 'titr_carb_plan', f: { indic: i.id },
-    run: n => INDIC_ADAPTES.includes(i.id) ? n : { ...n, f: { ...n.f, errSuivi: (n.f.errSuivi || 0) + 1 } }, note: `Titrage du Carbopol : suivi avec un indicateur coloré (${i.nom}).` }))),
+    run: n => INDIC_ADAPTES.includes(i.id) ? n : { ...n, f: { ...n.f, errSuivi: (n.f.errSuivi || 0) + 1 } }, note: `Titrage du Synthalen K : suivi avec un indicateur coloré (${i.nom}).` }))),
 });
 add('titr_live', {
-  fiches: ['carbopol', 'synthalen'],
+  fiches: ['synthalen'],
   lieu: 'Salle de titrage', pnj: 'moi', station: 'titrage', titre: 'Le titrage',
   texte: e => { const d = donneesTitr(e), L = { ph: `Tu as étalonné le pH-mètre et plongé l'électrode dans la dispersion agitée.`, ind: `Tu as ajouté quelques gouttes de ${d.ind ? d.ind.nom : 'l\'indicateur'} dans la dispersion agitée.`, cond: `Tu as rincé la cellule et tu l'as plongée dans la dispersion agitée.`, pt: `Tu as monté les deux électrodes et tu les as plongées dans la dispersion agitée.` };
     return `${L[d.suivi]} La burette contient la soude à ${nf(d.P.c, 2)} mol/L. Tu verses selon ton plan, un ajout à la fois : ${d.vols.length - 1} ajouts jusqu'à ${nf(d.P.vfin, 1)} mL.`; },
   choix: [{ t: 'Passer aux résultats', duree: 0, vers: 'titr_carb' }],
 });
 add('titr_carb_plan', {
-  fiches: ['carbopol', 'synthalen'],
-  lieu: 'Salle de titrage', pnj: 'moi', station: 'plan', titre: 'Titrer les acides du Carbopol',
-  texte: () => `Le Carbopol est un polymère de l'acide acrylique réticulé : ses groupes acide carboxylique (–COOH, M = ${nf(M_COOH, 2)} g/mol pour le motif COOH ; teneur indicative sur la fiche technique) sont neutralisés par la trolamine pour former le gel. Connaître leur quantité dans ton lot permet de calculer la base à prévoir. Tu disperses une masse m de poudre dans un volume d'eau, et tu la titres à la soude. À toi de concevoir ce titrage.`,
+  fiches: ['synthalen'],
+  lieu: 'Salle de titrage', pnj: 'moi', station: 'plan', titre: 'Titrer les acides du Synthalen K',
+  texte: () => `Le Synthalen K est un polymère de l'acide acrylique réticulé : ses groupes acide carboxylique (–COOH, M = ${nf(M_COOH, 2)} g/mol pour le motif COOH ; la fiche technique donne la masse équivalente du polymère) sont neutralisés par la trolamine pour former le gel. Connaître leur quantité dans ton lot permet de calculer la base à prévoir. Tu disperses une masse m de poudre dans un volume d'eau, et tu la titres à la soude. À toi de concevoir ce titrage.`,
   hyp: "Hypothèses : tous les groupes COOH sont accessibles à la soude ; le milieu reste assez fluide pour que la mesure se stabilise ; l'équivalence est repérée selon la méthode de suivi choisie (maximum de dpH/dV, cassure des droites de conductivité, virage de l'indicateur).",
   aide: { pnj: 'lucas', textes: [
-    () => '« Commence par une estimation : combien de mmol de COOH dans ta prise d\'essai ? La fiche technique donne la teneur en COOH du Carbopol (58 à 63 %). Et combien de mL de soude cela demandera-t-il ? Il faut que ce volume tienne largement dans la burette. »',
-    () => '« n(COOH) ≈ m × 0,605 / 45 mol. Pour 0,1 g, ça fait environ 1,3 mmol, donc 13 mL de soude à 0,1 mol/L. Verse vite, de 1 mL en 1 mL, loin de l\'équivalence, et resserre les ajouts de 2 mL avant à 2 mL après le volume équivalent attendu. Reste en dessous de 0,5 g de poudre pour 100 mL d\'eau, sinon ça épaissit trop. »',
-    () => '« Je ferais : 0,100 g de Carbopol dans 150 mL d\'eau, soude à 0,1 mol/L, pas de 1 mL, avec des ajouts de 0,25 mL entre 11 et 16 mL, jusqu\'à 18 mL. Je te laisse changer ce que tu veux. »'],
+    () => '« Commence par une estimation : combien de mmol de COOH dans ta prise d\'essai ? La fiche technique donne la masse équivalente du Synthalen K : combien de grammes de polymère par mole de COOH ? Et combien de mL de soude cela demandera-t-il ? Il faut que ce volume tienne largement dans la burette. »',
+    () => '« n(COOH) ≈ m / 76 mol. Pour 0,1 g, ça fait environ 1,3 mmol, donc 13 mL de soude à 0,1 mol/L. Verse vite, de 1 mL en 1 mL, loin de l\'équivalence, et resserre les ajouts de 2 mL avant à 2 mL après le volume équivalent attendu. Reste en dessous de 0,5 g de poudre pour 100 mL d\'eau, sinon ça épaissit trop. »',
+    () => '« Je ferais : 0,100 g de Synthalen K dans 150 mL d\'eau, soude à 0,1 mol/L, pas de 1 mL, avec des ajouts de 0,25 mL entre 11 et 16 mL, jusqu\'à 18 mL. Je te laisse changer ce que tu veux. »'],
     valeurs: () => ({ m: 0.1, V0: 150, c: 0.1, dv: 1, vdeb: 11, vfz: 16, dvf: 0.25, vfin: 18 }) },
-  plan: { infos: ['Balance au 0,1 mg ; soude disponible à 0,1 mol/L et 0,5 mol/L (une autre concentration demande une dilution de 5 min) ; burette de 25 mL graduée tous les 0,05 mL.', 'Le Carbopol se disperse lentement dans l\'eau et épaissit quand il se neutralise : une prise d\'essai trop concentrée rend la mesure difficile. Compte 10 min de dispersion, puis environ 30 s par point de mesure (ajout, agitation, lecture) ; 60 points au plus.'],
-    vers: 'titr_live', duree: v => 10 + Math.round(0.5 * (volumesTitr(v).length - 1)) + ([0.1, 0.5].includes(v.c) ? 0 : 5), note: v => `Titrage du Carbopol : ${nf(v.m, 3)} g dans ${v.V0} mL d'eau, soude à ${nf(v.c, 2)} mol/L, pas de ${nf(v.dv, 2)} mL, pas de ${nf(v.dvf, 2)} mL entre ${nf(v.vdeb, 1)} et ${nf(v.vfz, 1)} mL, jusqu'à ${nf(v.vfin, 1)} mL.`,
-    champs: [{ id: 'm', l: 'Masse de Carbopol', u: 'g', min: 0.02, max: 1.5 }, { id: 'V0', l: 'Volume d\'eau', u: 'mL', min: 50, max: 500 }, { id: 'c', l: 'Concentration de la soude', u: 'mol/L', min: 0.01, max: 1 }, { id: 'dv', l: 'Pas d\'addition (loin de l\'équivalence)', u: 'mL', min: 0.05, max: 2 }, { id: 'vdeb', l: 'Début de la zone d\'ajouts fins', u: 'mL', min: 0, max: 25 }, { id: 'vfz', l: 'Fin de la zone d\'ajouts fins', u: 'mL', min: 0, max: 25 }, { id: 'dvf', l: 'Pas d\'addition dans la zone fine', u: 'mL', min: 0.05, max: 2 }, { id: 'vfin', l: 'Volume final de soude versé', u: 'mL', min: 1, max: 25 }],
+  plan: { infos: ['Balance au 0,1 mg ; soude disponible à 0,1 mol/L et 0,5 mol/L (une autre concentration demande une dilution de 5 min) ; burette de 25 mL graduée tous les 0,05 mL.', 'Le Synthalen K se disperse lentement dans l\'eau et épaissit quand il se neutralise : une prise d\'essai trop concentrée rend la mesure difficile. Compte 10 min de dispersion, puis environ 30 s par point de mesure (ajout, agitation, lecture) ; 60 points au plus.'],
+    vers: 'titr_live', duree: v => 10 + Math.round(0.5 * (volumesTitr(v).length - 1)) + ([0.1, 0.5].includes(v.c) ? 0 : 5), note: v => `Titrage du Synthalen K : ${nf(v.m, 3)} g dans ${v.V0} mL d'eau, soude à ${nf(v.c, 2)} mol/L, pas de ${nf(v.dv, 2)} mL, pas de ${nf(v.dvf, 2)} mL entre ${nf(v.vdeb, 1)} et ${nf(v.vfz, 1)} mL, jusqu'à ${nf(v.vfin, 1)} mL.`,
+    champs: [{ id: 'm', l: 'Masse de Synthalen K', u: 'g', min: 0.02, max: 1.5 }, { id: 'V0', l: 'Volume d\'eau', u: 'mL', min: 50, max: 500 }, { id: 'c', l: 'Concentration de la soude', u: 'mol/L', min: 0.01, max: 1 }, { id: 'dv', l: 'Pas d\'addition (loin de l\'équivalence)', u: 'mL', min: 0.05, max: 2 }, { id: 'vdeb', l: 'Début de la zone d\'ajouts fins', u: 'mL', min: 0, max: 25 }, { id: 'vfz', l: 'Fin de la zone d\'ajouts fins', u: 'mL', min: 0, max: 25 }, { id: 'dvf', l: 'Pas d\'addition dans la zone fine', u: 'mL', min: 0.05, max: 2 }, { id: 'vfin', l: 'Volume final de soude versé', u: 'mL', min: 1, max: 25 }],
     controle: v => v.vfz < v.vdeb ? 'La zone fine doit finir après son début (mets les deux au même volume pour ne pas en faire).' : v.vfz > v.vfin ? 'La zone fine doit se terminer avant le volume final.' : v.dvf > v.dv ? 'Le pas fin doit être inférieur ou égal au pas habituel.' : volumesTitr(v).length - 1 > 60 ? 'Soixante points de mesure au plus : augmente les pas ou réduis la zone fine.' : volumesTitr(v).length - 1 < 4 ? 'Il faut au moins quatre additions.' : null,
-    apercu: v => ({ cols: ['Grandeur', 'Valeur'], lignes: [['Carbopol dans la dispersion', `${nf(v.m / v.V0 * 100, 2)} g pour 100 mL d'eau`], ['Mesures de pH', String(volumesTitr(v).length)], ['Zone d\'ajouts fins', v.vfz > v.vdeb ? `de ${nf(v.vdeb, 1)} à ${nf(v.vfz, 1)} mL, pas de ${nf(v.dvf, 2)} mL` : 'aucune'], ['Soude versée au maximum', `${nf(v.c * v.vfin, 1)} mmol`]] }) },
+    apercu: v => ({ cols: ['Grandeur', 'Valeur'], lignes: [['Synthalen K dans la dispersion', `${nf(v.m / v.V0 * 100, 2)} g pour 100 mL d'eau`], ['Mesures de pH', String(volumesTitr(v).length)], ['Zone d\'ajouts fins', v.vfz > v.vdeb ? `de ${nf(v.vdeb, 1)} à ${nf(v.vfz, 1)} mL, pas de ${nf(v.dvf, 2)} mL` : 'aucune'], ['Soude versée au maximum', `${nf(v.c * v.vfin, 1)} mmol`]] }) },
 });
 add('titr_carb', {
-  lieu: 'Salle de titrage', pnj: 'moi', titre: 'Titrage du Carbopol : ton résultat',
-  texte: e => { const d = donneesTitr(e), debut = `Tu as titré ${nf(d.P.m, 3)} g de Carbopol dans ${d.P.V0} mL d'eau par de la soude à ${nf(d.P.c, 2)} mol/L (${d.pts.length} points).${d.epais ? ' Le milieu est épais : la mesure se stabilise mal et les points sont dispersés.' : ''}`;
+  lieu: 'Salle de titrage', pnj: 'moi', titre: 'Titrage du Synthalen K : ton résultat',
+  texte: e => { const d = donneesTitr(e), debut = `Tu as titré ${nf(d.P.m, 3)} g de Synthalen K dans ${d.P.V0} mL d'eau par de la soude à ${nf(d.P.c, 2)} mol/L (${d.pts.length} points).${d.epais ? ' Le milieu est épais : la mesure se stabilise mal et les points sont dispersés.' : ''}`;
     if (d.suivi === 'ind') { const cc = d.ind ? COULEURS_INDIC[d.ind.id] : ['', '']; return d.atteint
       ? `${debut}\nLe ${d.ind.nom} a viré du ${cc[0]} au ${cc[1]} pour un volume de soude versé V_éq = ${nf(d.vEq, 2)} mL.`
       : `${debut}\nLe ${d.ind ? d.ind.nom : 'l\'indicateur'} n'a pas changé de couleur dans l'intervalle de volumes versés : tu n'as pas repéré l'équivalence.`; }
@@ -1066,20 +1066,20 @@ add('titr_carb', {
     return d.atteint
       ? `${debut}\nLe maximum de la courbe dérivée est à V_éq = ${nf(d.vEq, 2)} mL.`
       : `Tu as versé jusqu'à ${nf(d.P.vfin, 1)} mL de soude à ${nf(d.P.c, 2)} mol/L : le pH monte sans jamais présenter de saut net, ou tu n'as pas assez de points pour le repérer. Tu n'as pas atteint l'équivalence.`; },
-  visuels: e => { const d = donneesTitr(e); if (d.suivi === 'ind') return []; if (d.suivi === 'ph') return [{ type: 'titrage', titre: 'Titrage du Carbopol : pH = f(V soude)', pts: d.pts, der: d.der, veq: d.vEq }];
-    const g = GRANDEUR_TITR[d.suivi]; return [{ type: 'titrage', titre: `Titrage du Carbopol : ${g.y} = f(V soude)`, pts: d.pts, der: [], veq: d.suivi === 'cond' ? d.vEq : null, y: g.y, yr: g.yr, droites: d.cass ? [d.cass.A, d.cass.B] : null }]; },
+  visuels: e => { const d = donneesTitr(e); if (d.suivi === 'ind') return []; if (d.suivi === 'ph') return [{ type: 'titrage', titre: 'Titrage du Synthalen K : pH = f(V soude)', pts: d.pts, der: d.der, veq: d.vEq }];
+    const g = GRANDEUR_TITR[d.suivi]; return [{ type: 'titrage', titre: `Titrage du Synthalen K : ${g.y} = f(V soude)`, pts: d.pts, der: [], veq: d.suivi === 'cond' ? d.vEq : null, y: g.y, yr: g.yr, droites: d.cass ? [d.cass.A, d.cass.B] : null }]; },
   hyp: 'Hypothèse : le saut de pH, très étalé pour un polyélectrolyte, est repéré au maximum de la dérivée ; avec la conductivité, l\'équivalence est à l\'intersection des deux droites ; avec un indicateur, au changement de couleur. L\'incertitude sur V_éq est de l\'ordre du pas d\'addition.',
   choix: e => donneesTitr(e).atteint
     ? [{ t: 'Calculer la teneur en groupes COOH', duree: 0, vers: 'titr_carb_calc' }, { t: 'Refaire le titrage autrement', d: 'Nouvelle prise d\'essai, nouvelle mesure.', duree: 0, vers: 'titr_suivi' }]
-    : [{ t: 'Refaire le titrage autrement', d: 'Nouvelle prise d\'essai, nouvelle mesure.', duree: 0, vers: 'titr_suivi' }, { t: 'Renoncer à ce dosage', duree: 0, vers: 'hub', note: 'Titrage du Carbopol abandonné.' }],
+    : [{ t: 'Refaire le titrage autrement', d: 'Nouvelle prise d\'essai, nouvelle mesure.', duree: 0, vers: 'titr_suivi' }, { t: 'Renoncer à ce dosage', duree: 0, vers: 'hub', note: 'Titrage du Synthalen K abandonné.' }],
 });
 add('titr_carb_calc', {
-  fiches: ['carbopol', 'synthalen'],
+  fiches: ['synthalen'],
   lieu: 'Salle de titrage', pnj: 'moi', titre: 'Teneur en groupes acides',
-  texte: e => { const d = donneesTitr(e); return `Prise d'essai m = ${nf(d.P.m, 3)} g de Carbopol ; soude à c = ${nf(d.P.c, 2)} mol/L ; équivalence à V_éq = ${nf(d.vEq, 2)} mL. Un groupe COOH consomme un ion hydroxyde.`; },
+  texte: e => { const d = donneesTitr(e); return `Prise d'essai m = ${nf(d.P.m, 3)} g de Synthalen K ; soude à c = ${nf(d.P.c, 2)} mol/L ; équivalence à V_éq = ${nf(d.vEq, 2)} mL. Un groupe COOH consomme un ion hydroxyde.`; },
   hyp: "Hypothèse : chaque COOH du polymère réagit avec un seul HO⁻ ; la masse de COOH est calculée avec M = 45,02 g/mol (motif –COOH).",
-  calcul: { q: 'Quel est le pourcentage massique de groupes COOH dans le Carbopol ?', unite: '%', vrai: e => donneesTitr(e).pctMes, tol: 0.04, cs: 1, indice: 'n(COOH) = c × V_éq (en mol, V en litres). Masse de COOH = n × 45,02 g/mol. Divise par la masse m de poudre.',
-    ok: { vers: 'hub', duree: 5, run: n => ({ ...marquer(n, 'titrCarb'), f: { ...n.f, cooh: arr(donneesTitr(n).pctMes, 1) } }), note: 'Titrage du Carbopol : teneur en groupes COOH déterminée.' },
+  calcul: { q: 'Quel est le pourcentage massique de groupes COOH dans le Synthalen K ?', unite: '%', vrai: e => donneesTitr(e).pctMes, tol: 0.04, cs: 1, indice: 'n(COOH) = c × V_éq (en mol, V en litres). Masse de COOH = n × 45,02 g/mol. Divise par la masse m de poudre.',
+    ok: { vers: 'hub', duree: 5, run: n => ({ ...marquer(n, 'titrCarb'), f: { ...n.f, cooh: arr(donneesTitr(n).pctMes, 1) } }), note: 'Titrage du Synthalen K : teneur en groupes COOH déterminée.' },
     ko: { vers: 'hub', duree: 0, run: n => marquer(n, 'titrCarb') } },
 });
 
@@ -1115,9 +1115,9 @@ export function causesDe(e) {
       { t: 'La caféine a été dégradée par la trolamine', vrai: false },
     ],
     visco: [
-      { t: 'Le Carbopol n\'a pas été bien dispersé avant d\'ajouter la base (grumeaux)', vrai: f.disp === 'grumeaux' || !!f.errBase },
-      { t: 'Le pH final est resté trop bas : le Carbopol n\'est pas assez neutralisé', vrai: g.ph < 5.5 },
-      { t: 'La masse de Carbopol pesée était trop faible', vrai: fm.carb < 1.3 },
+      { t: 'Le Synthalen K n\'a pas été bien dispersé avant d\'ajouter la base (grumeaux)', vrai: f.disp === 'grumeaux' || !!f.errBase },
+      { t: 'Le pH final est resté trop bas : le Synthalen K n\'est pas assez neutralisé', vrai: g.ph < 5.5 },
+      { t: 'La masse de Synthalen K pesée était trop faible', vrai: fm.carb < 1.3 },
       { t: 'L\'éthanol a fluidifié le gel', vrai: false },
     ],
   }[f.decl || 'eth'];
@@ -1145,7 +1145,7 @@ fin('fin_temps', 'ko', 'Hors délai', () => `La journée est terminée (17 h) sa
 
 // ───────────── Résumé et bilan par compétence ─────────────
 export const resume = e => [
-  `Formule : ${e.f.fm ? `éthanol à 96 % ${nf(e.f.fm.eth96, 1)} g, Carbopol ${nf(e.f.fm.carb, 2)} g, caféine ${nf(e.f.fm.caf, 1)} g` : 'non fixée'}${e.f.repli ? ' (formule de repli)' : ''}.`,
+  `Formule : ${e.f.fm ? `éthanol à 96 % ${nf(e.f.fm.eth96, 1)} g, Synthalen K ${nf(e.f.fm.carb, 2)} g, caféine ${nf(e.f.fm.caf, 1)} g` : 'non fixée'}${e.f.repli ? ' (formule de repli)' : ''}.`,
   e.f.mode ? `Procédé : ${{ reflux: 'ballon à reflux sous agitation', becher: 'bécher chauffé sans reflux', froid: 'bécher à froid', base: 'base ajoutée dès le début' }[e.f.mode]}${e.f.disp ? `, dispersion : ${{ continuer: 'prolongée', neutraliser: 'arrêtée avant la fin', chauffer: 'chauffage augmenté', grumeaux: 'grumeaux conservés' }[e.f.disp]}` : ''}.` : null,
   e.f.methCaf ? `Caféine : ${e.f.methCaf === 'gamme' ? 'CLHP, gamme d\'étalonnage externe' : e.f.methCaf === 'EI' ? (e.f.attendu ? 'CLHP après réparation' : 'CLHP, étalon interne') : e.f.methCaf === 'ajouts' ? 'UV, ajouts dosés' : 'UV, étalonnage externe'}.` : null,
   e.f.compense ? 'Éthanol compensé après une perte à la fabrication, dosage CPG refait.' : null,
@@ -1165,7 +1165,7 @@ export function bilan(e, finId = e.scene) {
   const att = f.attente || 0, nbErr = f.nbErr || 0;
   const c3 = (finId === 'fin_conforme' || finId === 'fin_detecte') ? (f.secuErr || f.extAccepte ? 'moyen' : 'ok') : finId === 'fin_mauvaise_cause' ? 'moyen' : finId === 'fin_temps' ? 'nd' : 'ko';
   return [
-    { comp: 'C.1.4', titre: 'Sélectionner les méthodes, techniques et matériels', niveau: niv(n1, 0, 1), texte: n1 === 0 ? 'Étalon interne adapté, méthodes cohérentes avec la matrice.' : `À revoir : ${[f.errCoel && 'étalon interne (propan-1-ol coélue avec l\'éthanol)', f.sansEI && 'nécessité d\'un étalon interne en CPG', f.extTente && 'étalonnage externe UV (effet de matrice)', f.extAccepte && 'résultat UV non vérifié avec un témoin', f.errComp && 'comparaison des deux méthodes CPG', f.leurres && 'appareils sans rapport avec la question (IR, réfractomètre, polarimètre, conductimètre, titrage du gel)', f.errSuivi && 'méthode de suivi du titrage du Carbopol (électrode de platine, ou indicateur dont la zone de virage ne contient pas le pH à l\'équivalence)', f.errMeth && 'technique de dosage inadaptée essayée avant la bonne (titrage de la caféine, CLHP-UV ou masse volumique pour l\'éthanol)'].filter(Boolean).join(' ; ')}.` },
+    { comp: 'C.1.4', titre: 'Sélectionner les méthodes, techniques et matériels', niveau: niv(n1, 0, 1), texte: n1 === 0 ? 'Étalon interne adapté, méthodes cohérentes avec la matrice.' : `À revoir : ${[f.errCoel && 'étalon interne (propan-1-ol coélue avec l\'éthanol)', f.sansEI && 'nécessité d\'un étalon interne en CPG', f.extTente && 'étalonnage externe UV (effet de matrice)', f.extAccepte && 'résultat UV non vérifié avec un témoin', f.errComp && 'comparaison des deux méthodes CPG', f.leurres && 'appareils sans rapport avec la question (IR, réfractomètre, polarimètre, conductimètre, titrage du gel)', f.errSuivi && 'méthode de suivi du titrage du Synthalen K (électrode de platine, ou indicateur dont la zone de virage ne contient pas le pH à l\'équivalence)', f.errMeth && 'technique de dosage inadaptée essayée avant la bonne (titrage de la caféine, CLHP-UV ou masse volumique pour l\'éthanol)'].filter(Boolean).join(' ; ')}.` },
     { comp: 'C.2.1', titre: 'Préparer les produits et les calculs', niveau: f.repli ? 'moyen' : niv(nbErr + (f.errEs ? 1 : 0) + (f.aides || 0) + (f.errInj ? 1 : 0), 1, 4), texte: `${nbErr} réponse(s) de calcul fausse(s)${f.aides ? `, dont ${f.aides} refaite(s) avec l'aide d'un collègue` : ''}${f.errEth ? ' (titre de l\'éthanol à 96 %)' : ''}${f.repli ? ' ; formule de repli utilisée' : ''}${f.errInj ? ` ; ${f.errInj} erreur(s) pour repérer l'injecteur sur le schéma de l'appareil` : ''}.` },
     { comp: 'C.3.2', titre: 'Détecter les non-conformités', niveau: c3, texte: c3 === 'nd' ? 'Pas de conclusion rendue.' : f.secuErr && (finId === 'fin_conforme' || finId === 'fin_detecte') ? 'Décision cohérente avec le lot, mais le montage chauffant d\'éthanol a d\'abord été installé hors hotte : la sécurité fait partie de la détection des non-conformités.' : c3 === 'ok' ? 'Décision cohérente avec la réalité du lot.' : 'La décision ne correspond pas aux défauts réels du lot : relis tes résultats critère par critère.' },
     { comp: 'C.4', titre: 'Adapter son protocole face à un imprévu', niveau: c4, texte: c4 === 'nd' ? 'Pas de panne dans cette partie.' : c4 === 'ok' ? 'Panne de CLHP : bascule immédiate vers une méthode adaptée (ajouts dosés).' : c4 === 'moyen' ? 'Panne de CLHP : solution trouvée mais coûteuse ou après un détour.' : 'Résultat biaisé conservé sans vérification.' },
@@ -1179,7 +1179,7 @@ export const chronologie = e => ({ actif: (e.hist || []).filter(h => h.k === 'ac
 export function consequences(e) {
   const f = e.f, d = f.tDec || {}, g = gelVrai(e), L = [], h = k => d[k] != null ? horloge(d[k]) : null;
   if (f.mode) {
-    const txt = { reflux: `ballon à reflux : l'éthanol reste dans le montage (${nf(g.eth, 1)} % dans le gel)`, becher: `bécher chauffé sans reflux : de l'éthanol s'échappe (${nf(g.eth, 1)} % dans le gel au lieu de ${nf(ETH_PUR_COM, 1)} %)`, froid: `bécher à froid : peu de pertes (${nf(g.eth, 1)} % d'éthanol), mais une dispersion plus longue`, base: `base mélangée dès le départ : le Carbopol fait des grumeaux, le gel épaissit mal` }[f.mode];
+    const txt = { reflux: `ballon à reflux : l'éthanol reste dans le montage (${nf(g.eth, 1)} % dans le gel)`, becher: `bécher chauffé sans reflux : de l'éthanol s'échappe (${nf(g.eth, 1)} % dans le gel au lieu de ${nf(ETH_PUR_COM, 1)} %)`, froid: `bécher à froid : peu de pertes (${nf(g.eth, 1)} % d'éthanol), mais une dispersion plus longue`, base: `base mélangée dès le départ : le Synthalen K fait des grumeaux, le gel épaissit mal` }[f.mode];
     L.push({ quand: h('mode'), cause: 'Procédé de fabrication', effet: txt });
   }
   if (f.bal) L.push({ quand: h('bal'), cause: 'Balance pour l\'extrait sec', effet: f.bal === 'std' ? (f.refaitBal ? 'balance au 0,01 g : résidu trop petit, écart trop grand entre les essais, essais à refaire (1 h perdue)' : 'balance au 0,01 g : le résidu d\'environ 0,1 g est connu à ±0,01 g, soit environ 1 point d\'extrait sec d\'incertitude') : 'balance de précision : écart de répétabilité compatible avec S_r' });
@@ -1188,7 +1188,7 @@ export function consequences(e) {
   if (f.ei === 'butanol') L.push({ quand: h('ei'), cause: 'Étalon interne CPG', effet: 'le propan-1-ol du protocole sort en même temps que l\'éthanol (un seul pic) : remplacé par le butan-1-ol, dont le pic est séparé' });
   if (f.coelIgnore) L.push({ quand: null, cause: 'Coélution ignorée', effet: 'aires exploitées malgré le pic unique éthanol + propan-1-ol : éthanol surestimé d\'environ 30 %' });
   if (f.aidesPlan) L.push({ quand: null, cause: 'Conseils de collègues', effet: `${f.aidesPlan} conseil(s) demandé(s) pour concevoir tes préparations : du temps passé (3 à 5 minutes chacun), mais des collègues sollicités à bon escient` });
-  if (f.cooh != null) L.push({ quand: null, cause: 'Titrage du Carbopol', effet: `${nf(f.cooh, 1)} % de COOH dans ton lot : ${f.cooh < 55 || f.cooh > 66 ? `très éloigné des 58 à 63 % de la fiche technique${f.suivi === 'ind' && !INDIC_ADAPTES.includes(f.indic) ? ' (la zone de virage de l\'indicateur choisi ne contient pas le pH à l\'équivalence : le virage ne correspond pas à l\'équivalence)' : ''}, donc quantité de trolamine mal estimée` : 'la quantité de trolamine à prévoir est connue avant la neutralisation'}` });
+  if (f.cooh != null) L.push({ quand: null, cause: 'Titrage du Synthalen K', effet: `${nf(f.cooh, 1)} % de COOH dans ton lot : ${Math.abs(f.cooh - 59) > 6 ? `très éloigné des 59 % environ que donne la fiche technique (masse équivalente de 76)${f.suivi === 'ind' && !INDIC_ADAPTES.includes(f.indic) ? ' (la zone de virage de l\'indicateur choisi ne contient pas le pH à l\'équivalence : le virage ne correspond pas à l\'équivalence)' : ''}, donc quantité de trolamine mal estimée` : 'la quantité de trolamine à prévoir est connue avant la neutralisation'}` });
   if (f.leurres) L.push({ quand: null, cause: 'Appareils sans rapport avec la question', effet: `${f.leurres} mesure(s) (IR, réfractomètre, polarimètre, conductimètre, titrage du gel) sans information sur la formule ni sur les teneurs : ${f.leurres * 20} minutes perdues` });
   if (f.errMeth) L.push({ quand: null, cause: 'Choix de techniques', effet: `${f.errMeth} technique(s) inadaptée(s) essayée(s) avant la bonne : de 15 à 25 minutes perdues à chaque fois` });
   if (f.compense) L.push({ quand: null, cause: 'Éthanol manquant', effet: 'compensation par ajout d\'éthanol à 96 % et dosage CPG refait' });
