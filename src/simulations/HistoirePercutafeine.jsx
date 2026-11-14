@@ -13,7 +13,7 @@ import {
 const C = { encre: '#1b2733', doux: '#5b6877', bord: '#dbe4ee', accent: '#0f766e', accentFond: '#e7f5f2', ambre: '#b45309', rouge: '#b91c1c', vert: '#15803d', bleu: '#1e3a8a', carte: '#ffffff', fond: '#f4f8fb' };
 const NIVEAUX = { ok: ['✅', C.vert, 'Maîtrisé'], moyen: ['🟡', C.ambre, 'À consolider'], ko: ['❌', C.rouge, 'À retravailler'], nd: ['⚪', C.doux, 'Non évalué'] };
 const TONS = { ok: C.vert, moyen: C.ambre, ko: C.rouge };
-const ICONES = { docs: '📄', obs_video: '🎞️', es_prep: '🔥', es_calc1: '📊', eth1: '⚖️', formule: '📝', eq_base: '⚗️', fab_choix: '⚗️', fab_disp: '🧴', rheoC: '🌀', rheoF: '🌀', hplc_m: '📈', cpg_ei: '🔬', cpg_inj: '🔬', uv_ajouts: '🌈', uv_ext: '🌈', hplc_ei: '📈', verdict: '✅', eq_ines: '✅' };
+const ICONES = { choix_caf: '🧪', choix_eth: '🧪', docs: '📄', obs_video: '🎞️', es_prep: '🔥', es_calc1: '📊', eth1: '⚖️', formule: '📝', eq_base: '⚗️', fab_choix: '⚗️', fab_disp: '🧴', rheoC: '🌀', rheoF: '🌀', hplc_m: '📈', cpg_ei: '🔬', cpg_inj: '🔬', uv_ajouts: '🌈', uv_ext: '🌈', hplc_ei: '📈', verdict: '✅', eq_ines: '✅' };
 const FOND_LIEU = { 'Paillasse de formulation': '#ecf7ee', 'Salle de chromatographie': '#e8f1fa', 'Bureau': '#f3eefb', 'Bureau de Mme Dubreuil': '#f3eefb', 'Salle de rhéologie': '#fdf1e7', 'Salle des étuves': '#fdf1e7' };
 const STYLE = `
 @keyframes pc-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -196,7 +196,7 @@ const POSTES = [
   { id: 'bureau', nom: 'Bureau', vers: ['docs', 'eth1', 'formule', 'eq_ines', 'verdict'] },
   { id: 'formulation', nom: 'Formulation', vers: ['eq_base', 'fab_choix', 'fab_disp', 'obs_video'] },
   { id: 'rheo', nom: 'Rhéologie', vers: ['rheoC', 'rheoF'] },
-  { id: 'chroma', nom: 'Chromatographie, UV', vers: ['hplc_m', 'hplc_ei', 'cpg_ei', 'cpg_inj', 'uv_ajouts', 'uv_ext'] },
+  { id: 'chroma', nom: 'Chromatographie, UV', vers: ['choix_caf', 'choix_eth', 'hplc_m', 'hplc_ei', 'cpg_ei', 'cpg_inj', 'uv_ajouts', 'uv_ext'] },
 ];
 const posteDe = vers => (POSTES.find(p => p.vers.includes(vers)) || POSTES[1]).id;
 function Dessin({ id, actif, termine }) {
@@ -339,7 +339,7 @@ export function SimulationHistoirePercutafeine() {
         <p style={{ margin: 0, lineHeight: 1.6, maxWidth: 640, color: '#d7eef2' }}>Tu es technicien·ne de R&amp;D. En 7 h 30 de TP, tu retrouves la formule d'un gel à la caféine, tu en fabriques 200 g, puis tu contrôles sa qualité.</p>
       </div>
       <div className="pc-grille" style={{ marginBottom: 14 }}>
-        {[['⏱️', 'Environ 45 min', 'Tu joues seul·e, sur un temps de TP simulé.'], ['🔥', 'Le temps compte', "L'étuve et le ballon chauffent pendant que tu travailles."], ['🧮', 'Calculs et choix libres', 'Aucune alerte : tes choix ont des conséquences que tu verras plus loin.'], ['🏁', `${FINS.length} fins possibles`, 'Un imprévu (panne de CLHP) survient dans une partie sur deux.']].map(([ic, t, d]) => <div key={t} style={{ display: 'flex', gap: 12, background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 14, padding: '11px 14px' }}><span style={{ fontSize: 24 }}>{ic}</span><div><b>{t}</b><div style={{ fontSize: 14, color: C.doux }}>{d}</div></div></div>)}
+        {[['⏱️', 'Environ 45 min', 'Tu joues seul·e, sur un temps de TP simulé.'], ['🔥', 'Le temps compte', "L'étuve et le ballon chauffent pendant que tu travailles."], ['🧮', 'Calculs et choix libres', 'Aucune alerte : tes choix ont des conséquences que tu verras plus loin.'], ['🏁', `${FINS.length} fins possibles`, 'Selon tes choix, tes résultats et ton organisation.']].map(([ic, t, d]) => <div key={t} style={{ display: 'flex', gap: 12, background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 14, padding: '11px 14px' }}><span style={{ fontSize: 24 }}>{ic}</span><div><b>{t}</b><div style={{ fontSize: 14, color: C.doux }}>{d}</div></div></div>)}
       </div>
       <button type="button" className="pc-btn" data-commencer onClick={() => setEtat(etatInitial())} style={{ fontSize: 17, padding: '12px 28px' }}>Commencer</button>
       {boiteFins}
