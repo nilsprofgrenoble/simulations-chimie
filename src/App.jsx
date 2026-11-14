@@ -97,6 +97,7 @@ const SimulationDilution = paresseux(() => import("./simulations/Dilution"), "Si
 const SimulationMelanges = paresseux(() => import("./simulations/Melanges"), "SimulationMelanges");
 const SimulationRefraction = paresseux(() => import("./simulations/Refraction"), "SimulationRefraction");
 const SimulationLentille = paresseux(() => import("./simulations/Lentille"), "SimulationLentille");
+const SimulationLentilleMince = paresseux(() => import("./simulations/LentilleMince"), "SimulationLentilleMince");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
 const SimulationCircuits = paresseux(() => import("./simulations/Circuits"), "SimulationCircuits");
 const SimulationLoiOhm = paresseux(() => import("./simulations/LoiOhm"), "SimulationLoiOhm");
@@ -243,6 +244,8 @@ const SIMULATIONS = [
     component: SimulationIr },
   { id:112, label:"Ampoule à décanter : extraction liquide-liquide", niveau:"1G", icon:"⚗️", color:"#0369a1",
     component: SimulationExtraction },
+  { id:114, label:"Lentille mince : image, conjugaison et grandissement", niveau:"1G", icon:"🔍", color:"#0e7490",
+    component: SimulationLentilleMince },
   { id:56, label:"Référentiel et mouvement : décrire un mouvement", niveau:"2GT", icon:"🚃", color:"#4338ca",
     component: SimulationMouvementReferentiel },
   { id:57, label:"Atomes, ions et molécules : la quête de l’octet", niveau:"2GT", icon:"⚛️", color:"#16a34a",

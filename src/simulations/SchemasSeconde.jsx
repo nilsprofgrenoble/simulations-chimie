@@ -1,5 +1,6 @@
 import { useId } from "react";
 import { KIT } from "../commun";
+import { Schema as SchemaLentilleMince } from "./lentilleMinceSchema";
 
 // ====================================================
 //  SCHÉMAS DE SECONDE : circuits électriques, optique (miroir, dioptre, lentille), mouvements
@@ -8,7 +9,7 @@ import { KIT } from "../commun";
 // La réponse de l'exercice n'est jamais dessinée avant la correction : le paramètre `reponse` (donné par `apres: { reponse: true }`)
 // ajoute ce qui donne la réponse (rayon réfracté, valeur du second ampèremètre…).
 //   circuit : { montage: 'serie' | 'derivation' | 'voltmetre', … }
-//   optique : { cas: 'miroir' | 'dioptre' | 'lentille-parallele' | 'lentille-centre' | 'lentille-infini', … }
+//   optique : { cas: 'miroir' | 'dioptre' | 'lentille-parallele' | 'lentille-centre' | 'lentille-infini' | 'conjugaison' (d, f en cm), … }
 //   mouvement : { cas: …, … }
 
 const TR = '#334155', BLEU = '#2563eb', ORANGE = '#c2410c', VERT = '#15803d', GRIS = '#94a3b8', JAUNE = '#ca8a04';
@@ -221,7 +222,17 @@ function Lentille({ cas = 'parallele', f = '', reponse = false }) {
     </div>);
 }
 
+// Lentille mince (1G) : objet, foyers, et — après correction seulement — trois rayons et image (positions calculées par le modèle de la simulation 114)
+function BancLentille({ d = 12, f = 8, hObj = 3, reponse = false, ecran = false }) {
+  return (
+    <div style={boite} data-schema="lentille-conjugaison">
+      <SchemaLentilleMince d={d} f={f} hObj={hObj} k={Math.min(10, 125 / Math.max(d, f * 2.2))} x0={Math.max(125, 20 + d * Math.min(10, 125 / Math.max(d, f * 2.2)))} image={reponse} ecran={reponse && ecran} large={360} haut={170} y0={85}
+        label={`Lentille mince convergente de distance focale ${f} cm ; objet à ${d} cm de la lentille`}/>
+    </div>);
+}
+
 function Optique({ cas = 'miroir', ...p }) {
+  if (cas === 'conjugaison') return <BancLentille {...p}/>;
   if (cas === 'dioptre') return <Dioptre {...p}/>;
   if (cas === 'miroir') return <Miroir {...p}/>;
   return <Lentille cas={cas.replace('lentille-', '')} {...p}/>;

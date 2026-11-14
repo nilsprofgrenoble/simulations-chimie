@@ -765,5 +765,12 @@
  "37:prevoir:dop-sens": "ANA372",
  "37:prevoir:dop-proportion": "ANA373",
  "37:prevoir:dop-duree": "ANA374",
- "77:plausible:dop-val-vitesse": "VAL195"
+ "77:plausible:dop-val-vitesse": "VAL195",
+ "37:prevoir:lum1-conjugaison-calcul": "ANA375",
+ "37:prevoir:lum1-grandissement-signe": "ANA376",
+ "37:prevoir:lum1-virtuelle-loupe": "ANA377",
+ "37:prevoir:lum1-objet-au-foyer": "ANA378",
+ "77:plausible:lum1-val-conjugaison": "VAL196",
+ "77:plausible:lum1-val-grandissement": "VAL197",
+ "77:plausible:lum1-val-loupe": "VAL198"
 }
