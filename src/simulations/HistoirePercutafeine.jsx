@@ -298,11 +298,13 @@ function Dessin({ id, actif, termine }) {
 }
 function Paillasse({ e, s, choix, onChoix }) {
   const parPoste = Object.fromEntries(POSTES.map(p => [p.id, []]));
-  choix.forEach((c, i) => parPoste[posteDe(c.vers)].push({ c, i }));
+  const conseil = choix.find(c => c.vers === 'conseil');
+  choix.forEach((c, i) => { if (c.vers !== 'conseil') parPoste[posteDe(c.vers)].push({ c, i }); });
   const [sel, setSel] = useState(null);
   const actuel = sel;   // aucun poste n'est présélectionné : c'est à l'élève de choisir où aller
   const etuveActive = !!s.es && e.bg.es > e.t, etuveFinie = !!s.es && !etuveActive, gelActif = !!s.gel && e.bg.gel > e.t;
   return (<div data-paillasse>
+    {conseil && <button type="button" data-conseil onClick={() => onChoix(conseil)} style={{ font: 'inherit', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 10, borderRadius: 14, border: `1.5px solid ${C.accent}`, background: '#fff', color: C.accent, cursor: 'pointer' }}><span aria-hidden="true" style={{ fontSize: 22 }}>💬</span><span><b>Perdu·e, ou un doute ?</b> Demander conseil à un collègue ou à Mme Dubreuil</span></button>}
     <div style={{ background: 'linear-gradient(180deg,#e9eef3 0%,#dde5ec 100%)', borderRadius: 16, padding: '12px 8px 0', border: `1px solid ${C.bord}` }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(104px,1fr))', gap: 4 }}>
         {POSTES.map(p => { const actif = (p.id === 'etuve' && etuveActive) || (p.id === 'formulation' && gelActif), fini = (p.id === 'etuve' && etuveFinie);
