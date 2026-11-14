@@ -189,6 +189,7 @@ export const statutBg = e => ({
 });
 const taches = e => {
   const F = e.fait, L = [];
+  L.push(['Relire les documents du dossier', 'Notice ANSM et fiches techniques (Carbopol, trolamine, cocoate de macrogol).', 'docs']);
   if (!F.obs) L.push(['Regarder la vidéo du gel étalé', 'Une noisette de gel sur une plaque, en accéléré (5 min).', 'obs_video']);
   if (!F.es) L.push(['Lancer l\'extrait sec du gel commercial', 'Peser, étaler, mettre à l\'étuve : 15 min de travail, puis l\'étuve tourne seule.', e.f.bal ? 'es_prep' : 'es_balance']);
   if (!F.eth) L.push(['Raisonner sur l\'éthanol de la notice', 'Quelle masse d\'éthanol faut-il mettre dans 200 g de gel ?', 'eth1']);
@@ -206,9 +207,16 @@ const taches = e => {
   return L;
 };
 add('intro', {
+  fiches: ['notice'],
   lieu: 'Laboratoire de R&D', pnj: 'dubreuil', titre: 'Contre-typer la Percutaféine',
   texte: () => `« Une cliente veut un gel équivalent à la Percutaféine, un gel à la caféine vendu pour les surcharges adipeuses localisées. Ton travail : retrouver la formule du gel commercial, fabriquer environ 200 g d'un contretype, puis contrôler sa qualité : caféine, éthanol, viscosité. »\n« Tu as deux demi-journées, soit 7 h 30. L'étuve et le ballon chauffent pendant que tu fais autre chose : organise-toi pour ne pas attendre devant. Les appareils sont fragiles, et une analyse qui ne donne pas ce qu'on attend se discute. »\nDocuments dans ton dossier : liste des constituants (caféine, Carbopol 980, cocoate de macrogol, trolamine, éthanol, eau purifiée) et notice (résumé des caractéristiques du produit).`,
   choix: [{ t: 'Aller à la paillasse', vers: 'hub', note: 'Début du travail : contre-typer la Percutaféine.' }],
+});
+add('docs', {
+  fiches: ['notice', 'carbopol', 'cocoate', 'trolamine'],
+  lieu: 'Bureau', pnj: 'moi', titre: 'Le dossier du TP',
+  texte: () => 'Tu relis la notice du gel commercial et les fiches techniques des matières premières. Tout ce que tu y trouves est utilisable pour retrouver la formule ; ce qui n\'y figure pas, il faudra le déduire de tes mesures.',
+  choix: [{ t: 'Retourner à la paillasse', vers: 'hub', duree: 3, note: 'Relecture du dossier (notice et fiches techniques).' }],
 });
 add('hub', {
   lieu: 'Paillasse', pnj: 'moi', titre: 'À la paillasse',
@@ -226,6 +234,7 @@ add('es_balance', {
   ],
 });
 add('es_prep', {
+  fiches: ['notice'],
   lieu: 'Salle des étuves', pnj: 'moi', titre: 'Extrait sec du gel commercial',
   texte: () => `Seuls l'eau et l'éthanol s'évaporent à 105 °C : ce qui reste dans la coupelle est le résidu de caféine, de Carbopol, de tensioactif et de trolamine. Le sujet donne un écart-type de répétabilité S_r = 0,5 % pour l'extrait sec.\nCombien de coupelles prépares-tu ?`,
   hyp: "Hypothèse : les constituants non volatils (caféine, Carbopol, cocoate de macrogol, trolamine) ne se perdent pas à 105 °C ; l'éthanol et l'eau sont évaporés en 1 h.",
@@ -235,6 +244,7 @@ add('es_prep', {
   ],
 });
 add('eth1', {
+  fiches: ['notice'],
   lieu: 'Bureau', pnj: 'moi', titre: 'L\'éthanol de la notice',
   texte: () => `La notice indique : « pour 10 g de gel, 4 g d'éthanol à 96 % (en masse) ». Le gel est un mélange à base d'eau et d'éthanol : c'est l'éthanol pur qui compte pour la spécification.`,
   hyp: "Hypothèse : l'éthanol à 96 % contient 96 g d'éthanol pur pour 100 g de solution (le reste est de l'eau).",
@@ -294,6 +304,7 @@ export function validerFormule(e, fm, repli = false) {
   return { ok: true, lignes: [], etat: choisir({ ...n, f: { ...n.f, fm: val, repli: repli || undefined } }, { vers: 'hub', run: x => marquer(x, 'formule'), note: repli ? 'Formule de repli utilisée.' : `Formule retenue (éthanol à 96 % : ${nf(val.eth96, 1)} g, cocoate : ${nf(val.coc, 1)} g, Carbopol : ${nf(val.carb, 2)} g).` }) };
 }
 add('formule', {
+  fiches: ['notice', 'carbopol', 'cocoate', 'trolamine'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'formule', titre: 'La formule du contretype',
   texte: e => `« Écris les masses pour environ ${M_LOT} g. Je ne juge pas ta formule : elle part telle quelle dans le gel, et c'est le contrôle qualité qui dira si elle tient. » Rappels : ES mesuré ${nf(esRetenu(e), 2)} %, éthanol à 96 % pour ${nf(ETH_PUR_COM, 1)} % d'éthanol pur.`,
   hyp: "Hypothèse : le volume de gel est la somme des masses (pas de contraction de volume à l'échelle de ce contrôle) ; la trolamine finale est ajustée au pH, la valeur saisie n'est qu'une estimation.",
@@ -304,6 +315,7 @@ add('formule', {
 // ───────────── Échanges avec les collègues (C.7.3) ─────────────
 // Chaque échange note l'attitude de l'élève (ok : respectueux et argumenté ; moyen : passif ; ko : sec ou fermé) ; les conséquences sont réelles plus loin.
 add('eq_base', {
+  fiches: ['carbopol'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Le conseil de Lucas',
   texte: () => `Lucas, qui a l'habitude du labo : « Moi je mets tout d'un coup, base comprise, ça fait gagner 20 minutes. J'ai toujours fait comme ça. »`,
   choix: [
@@ -397,6 +409,7 @@ add('point_dubreuil', {
 
 // ───────────── Fabrication ─────────────
 add('fab_choix', {
+  fiches: ['carbopol'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Comment fabriques-tu le gel ?',
   texte: () => `« Le Carbopol 980 est long à se disperser : à froid, compte 1 h à 1 h 30 ; un chauffage modéré accélère la dispersion. Dès qu'il est dispersé, c'est la base (la trolamine) qui fait épaissir. »\nComment procèdes-tu ?`,
   hyp: 'Hypothèse : le Carbopol gonfle et épaissit quand il est neutralisé ; mal dispersé, il forme des grumeaux qui ne se redissolvent pas bien.',
@@ -425,6 +438,7 @@ add('fab_grumeaux', {
   ],
 });
 add('fab_disp', {
+  fiches: ['carbopol', 'trolamine'],
   lieu: 'Paillasse de formulation', pnj: 'moi', titre: 'Le Carbopol est-il dispersé ?',
   entree: e => attendre(e, 'gel'),
   texte: e => e.fait.disp ? 'Le gel est prêt à être neutralisé.' : `Après le temps prévu, il reste encore des morceaux de Carbopol dans le milieu. Que fais-tu ?`,
@@ -444,6 +458,7 @@ export function validerPh(e) {
   return { ok: true, etat: choisir({ ...e, f: { ...e.f, phFinal: ph, ...(reprise ? { reprisePh: true } : {}) } }, { vers: 'hub', run, duree: reprise ? 15 : 10, note: reprise ? `Gel repris avec Lucas : pH ${nf(e.f.phMes ?? ph, 2)} après ajout de trolamine (${nf(e.f.trolAdd || 0, 2)} g au total).` : `Gel mis en pot : pH ${e.f.phMes != null ? nf(e.f.phMes, 2) : 'non mesuré'}, ${nf(e.f.trolAdd || 0, 2)} g de trolamine.` }) };
 }
 add('ph', {
+  fiches: ['carbopol', 'trolamine'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'ph', titre: 'Neutraliser et mettre en pot',
   video: { src: 'videos/neutralisation-carbopol.mp4', legende: 'Enregistrement du TP : le milieu agité s\'épaissit pendant la neutralisation.' },
   texte: e => `« Ajoute la trolamine par petites fractions en agitant, et lis le pH au pH-mètre après chaque ajout (2 minutes l'ajout). Vise un pH proche de celui du gel commercial, vers 6. Regarde ce que ça donne quand le milieu épaissit. » ${e.f.disp === 'grumeaux' ? 'Le gel contient des grumeaux.' : ''}`,
@@ -451,6 +466,7 @@ add('ph', {
   choix: [],
 });
 add('ph2', {
+  fiches: ['carbopol', 'trolamine'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'ph', titre: 'Reprendre le pH du gel',
   texte: () => `Lucas rouvre le pot : « On remet de la trolamine par petites fractions, en agitant, et on relit le pH. Compte 15 minutes pour la reprise, et il faudra refaire la mesure de rhéologie. »`,
   hyp: 'Hypothèse : le Carbopol non encore neutralisé peut encore épaissir ; les grumeaux, eux, ne se rattrapent pas.',
