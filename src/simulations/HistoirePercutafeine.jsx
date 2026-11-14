@@ -141,6 +141,7 @@ function BalanceVue({ v }) {
 const Visuel = ({ v }) => v.type === 'balance' ? <BalanceVue v={v} /> : v.type === 'chroma' ? <Chroma v={v} /> : v.type === 'rheo' ? <Rheo v={v} /> : v.type === 'droite' ? <Droite v={v} /> : v.type === 'titrage' ? <CourbeTitrage v={v} /> : v.type === 'tableau' ? <Tableau v={v} /> : null;
 
 
+const TOUS_DOCS = ['notice', 'carbopol', 'trolamine', 'cocoate', 'mo1', 'mo2', 'mo3', 'mo4'];
 // ───────────── Briques d'interaction ─────────────
 const inst = { background: '#fffaf0', border: '1.5px solid #ecd9a6' };
 function Avatar({ pnj, taille = 40, e }) {
@@ -431,6 +432,7 @@ export function SimulationHistoirePercutafeine() {
         {e.f.corrige && <div data-corrige role="status" style={{ background: '#fef3c7', border: '1px solid #f5d98a', borderRadius: 12, padding: '9px 13px', fontSize: 14.5, margin: '8px 0' }}>🤝 {e.f.corrige}</div>}
         <Dialogue sc={sc} paragraphes={paragraphes} p={p} e={e} />
         {sc.fiches && <FichesPercutafeine ids={sc.fiches} ouvert={e.scene === 'docs'} />}
+        {!fin && !['hub', 'docs', 'intro'].includes(e.scene) && (() => { const autres = TOUS_DOCS.filter(d => !(sc.fiches || []).includes(d)); return autres.length ? <details data-dossier style={{ margin: '12px 0', background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 12, padding: '8px 14px' }}><summary style={{ cursor: 'pointer', fontWeight: 700, fontSize: 15 }}>📄 Dossier du TP : notice, fiches techniques, modes opératoires</summary><FichesPercutafeine ids={autres} /></details> : null; })()}
         {sc.formule && <div data-relation style={{ margin: '12px 0', background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 12, padding: '8px 12px', overflowX: 'auto' }}>{FORMULES[sc.formule]}</div>}
         {sc.video && <figure data-video style={{ margin: '12px 0' }}><video controls playsInline preload="metadata" aria-label={sc.video.legende} src={`${import.meta.env.BASE_URL}${sc.video.src}`} style={{ width: '100%', maxWidth: 520, maxHeight: '60vh', display: 'block', margin: '0 auto', borderRadius: 14, background: '#0f2430', boxShadow: '0 6px 18px rgba(0,0,0,.2)' }} /><figcaption style={{ fontSize: 13, color: C.doux, textAlign: 'center', marginTop: 6 }}>{sc.video.legende}</figcaption></figure>}
         {vis.map((v, i) => <Visuel key={i} v={v} />)}

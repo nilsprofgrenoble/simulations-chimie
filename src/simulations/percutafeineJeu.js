@@ -310,6 +310,7 @@ add('eth1', {
     ok: { vers: 'eth2', duree: 5, note: 'Éthanol pur dans le gel : 38,4 %.' }, ko: { vers: 'eth2', duree: 0, f: { errEth: true } } },
 });
 add('eth2', {
+  fiches: ['notice'],
   lieu: 'Bureau', pnj: 'moi', titre: 'Masse d\'éthanol à peser',
   texte: () => `Tu fabriques 200 g de gel. L'éthanol disponible au laboratoire est de l'éthanol à 96 %.\nLa notice annonce aussi 5 % de caféine : c'est une donnée du fabricant, on ne la dose pas à ce stade (le dosage viendra au contrôle qualité).`,
   calcul: { q: 'Quelle masse d\'éthanol à 96 % faut-il peser pour 200 g de gel ?', unite: 'g', vrai: () => M_LOT * 4 / 10, tol: 0.02, cs: 0, indice: 'La notice donne 4 g d\'éthanol à 96 % pour 10 g de gel : cherche la masse pour 200 g.',
