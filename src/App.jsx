@@ -329,7 +329,7 @@ const MENUS_ENTETE = [
   { key: "JEUX", label: "🎮 Jeux" },
 ];
 // Tant que les jeux ne sont pas aboutis, seul l'administrateur (professeur admin) les voit : menu, cartes, liens directs. Les autres ne voient rien.
-import { JEUX_VISIBLES } from "./simulations/jeuxVisibles";
+import { JEUX_VISIBLES, JEUX_PUBLICS } from "./simulations/jeuxVisibles";
 const JEUX_IDS = [79, 80, 81, 113];   // jeux : affichage immersif (sans en-tête ni pied de page)
 const FONDS_JEUX = {
   79: "radial-gradient(ellipse at 50% 0%, #1b2a5c 0%, #070d24 55%, #03060f 100%)",
@@ -430,7 +430,7 @@ export default function App() {
   const [activeIdBrut, setActiveId] = useState(getInitialId);
   const sessionSb = useSession();
   const jeuxOuverts = JEUX_VISIBLES || !!sessionSb?.profil?.admin;
-  const activeId = !jeuxOuverts && JEUX_IDS.includes(activeIdBrut) ? 0 : activeIdBrut;
+  const activeId = !jeuxOuverts && JEUX_IDS.includes(activeIdBrut) && !JEUX_PUBLICS.includes(activeIdBrut) ? 0 : activeIdBrut;
   const MENUS = jeuxOuverts ? MENUS_TOUS : MENUS_SANS_JEUX;
   useEffect(() => { restaurer(); }, []);
   // Un professeur connecté n'a pas d'écran « Mon compte » intermédiaire : on l'emmène directement au suivi

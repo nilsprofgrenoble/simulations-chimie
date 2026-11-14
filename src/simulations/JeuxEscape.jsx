@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { KIT, styleBouton, styleBoite } from "../commun";
 import { useSession, estProf } from "../serveur";
-import { JEUX_VISIBLES } from "./jeuxVisibles";
+import { JEUX_VISIBLES, JEUX_PUBLICS } from "./jeuxVisibles";
 
 // Les trois jeux « hors menu » : escape games TSTL et histoire à choix BTS.
 // Côté professeur : cartes avec lien direct. Côté élève : champ « code du jeu » (le code est donné par le professeur).
@@ -15,8 +15,8 @@ const JEUX = [
 
 const lien = j => `${window.location.origin}${import.meta.env.BASE_URL}?sim=${j.id}`;
 
-export function JeuxProf(props) { const sess = useSession(); return JEUX_VISIBLES || sess?.profil?.admin ? <JeuxProfCartes {...props} /> : null; }
-function JeuxProfCartes({ naviguer }) {
+export function JeuxProf(props) { const sess = useSession(); const tous = JEUX_VISIBLES || !!sess?.profil?.admin; return tous || JEUX_PUBLICS.length ? <JeuxProfCartes {...props} liste={tous ? JEUX : JEUX.filter(j => JEUX_PUBLICS.includes(j.id))} /> : null; }
+function JeuxProfCartes({ naviguer, liste }) {
   const [copie, setCopie] = useState(null);
   const copier = async j => {
     try { await navigator.clipboard.writeText(lien(j)); setCopie(j.id); setTimeout(() => setCopie(null), 2000); } catch { window.prompt('Copiez ce lien :', lien(j)); }
@@ -25,7 +25,7 @@ function JeuxProfCartes({ naviguer }) {
     <details data-jeux style={{ ...styleBoite, margin: '10px 0' }}>
       <summary style={{ cursor: 'pointer', fontWeight: 800 }}>🎮 Jeux (escape games et histoire à choix)</summary>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: 10, marginTop: 10 }}>
-        {JEUX.map(j => (
+        {liste.map(j => (
           <div key={j.id} style={{ border: `1px solid ${'#d9d2c3'}`, borderRadius: 10, padding: '10px 12px', background: '#fff' }}>
             <div style={{ fontWeight: 800 }}>{j.icone} {j.nom} <span style={{ fontWeight: 500, fontSize: 12, color: KIT.txt2 }}>· {j.niveau}</span></div>
             <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.5, margin: '4px 0 8px' }}>{j.texte}</div>
@@ -42,12 +42,13 @@ function JeuxProfCartes({ naviguer }) {
     </details>);
 }
 
-export function JeuxCode(props) { return JEUX_VISIBLES ? <JeuxCodeChamp {...props} /> : null; }
+export function JeuxCode(props) { return JEUX_VISIBLES || JEUX_PUBLICS.length ? <JeuxCodeChamp {...props} /> : null; }
 function JeuxCodeChamp({ naviguer }) {
+  const sess = useSession(), tous = JEUX_VISIBLES || !!sess?.profil?.admin;
   const [saisie, setSaisie] = useState(''), [rate, setRate] = useState(false);
   const valider = ev => {
     ev.preventDefault();
-    const j = JEUX.find(x => x.code === saisie.trim().toUpperCase());
+    const j = JEUX.find(x => x.code === saisie.trim().toUpperCase() && (tous || JEUX_PUBLICS.includes(x.id)));
     if (j) naviguer(j.id); else setRate(true);
   };
   return (
