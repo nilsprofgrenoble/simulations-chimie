@@ -19,8 +19,6 @@ const TAU = 0.033, MASSE = 0.020, L_PEND = 0.6, ECH = 0.0025;          // s, kg,
 const PX = { pivot: [300, 40], bas: [300, 40 + L_PEND / ECH], etalon: [[60, 372], [260, 372]] };
 const Ind = ({ b, i }) => <>{b}<sub>{i}</sub></>;
 const tel = (v, d) => Number(nbf(v, d).replace(',', '.'));
-const bloqueSi = (ok, msg) => ok ? null : msg;
-const clone = (pts, k) => pts.map(p => ({ ...p, [k]: p[k] }));
 
 // données de référence du parcours guidé : pointage « de qualité » (au millimètre) d'un pendule filmé à 30 images par seconde
 const REF = M.arrondiPointage(M.filmPendule({ L: L_PEND, theta0: 35, tau: TAU, n: 48, amort: 0 }));
@@ -148,7 +146,7 @@ export function SimulationPointage() {
   const tabLignes = (ls) => (
     <table style={{ borderCollapse: 'collapse', fontSize: 13.5, margin: '6px 0' }}><thead><tr>{['image', 't (s)', 'x (m)', 'y (m)'].map(h => <th key={h} style={{ border: `1px solid ${KIT.bord}`, padding: '2px 8px', background: '#f1f5f9' }}>{h}</th>)}</tr></thead>
       <tbody>{ls.map(([lab, r]) => <tr key={lab}>{[lab, nbf(r.t, 3), nbf(r.x, 3), nbf(r.y, 3)].map((c, k) => <td key={k} style={{ border: `1px solid ${KIT.bord}`, padding: '2px 8px', textAlign: 'right', fontFamily: 'monospace' }}>{c}</td>)}</tr>)}</tbody></table>);
-  const rB2 = ligne(REF, I2 - 1), rC2 = ligne(REF, I2), rD2 = ligne(REF, I2 + 1);
+  const rC2 = ligne(REF, I2), rD2 = ligne(REF, I2 + 1);
 
   const ETAPES = [
     { id: 'film', titre: 'Pointer une image', focus: ['scene'],

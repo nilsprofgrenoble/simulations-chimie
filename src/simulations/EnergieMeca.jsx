@@ -63,7 +63,6 @@ function Barres({ T, idx, m, montrer }) {
 }
 
 // ---------- schémas des cartes « À retenir » ----------
-const Mini = ({ x, z, c, nom, x0 = 0 }) => null;
 const SchemaDef = () => (
   <Schema aria="Bille sur une cuvette : en haut, énergie potentielle maximale et énergie cinétique nulle ; au point bas, énergie cinétique maximale ; l'énergie mécanique est la somme des deux" h={160}>
     <path d="M30,40 Q180,260 330,40" fill="none" stroke={NOIR} strokeWidth="3"/>
@@ -114,7 +113,6 @@ export function SimulationEnergieMeca() {
   const idx = Math.round(lec.pos * T.stop);
   const pt = T.pts[Math.min(idx, T.pts.length - 1)];
   const etape = guide.etape;
-  const nbBas = T.bas != null ? T.bas / T.stop : 0.5;
   const aBas = T.bas != null && Math.abs(idx - T.bas) <= 6;
 
   // valeurs du guidé
@@ -304,7 +302,7 @@ export function SimulationEnergieMeca() {
       <LigneMesure nom="Masse m" valeur={`${nbf(par.m * 1000, 0)}${NB}g`}/>
       <LigneMesure nom="Hauteur z de la bille" valeur={`${nbf(pt.z, 3)}${NB}m`}/>
       {(!enGuide || depuis('epp')) && !(enGuide && ['epp', 'emfin'].includes(idE)) && <LigneMesure nom="Énergie potentielle E_pp" valeur={`${nbf(pt.Epp, 3)}${NB}J`} couleur="#16a34a"/>}
-      {(!enGuide || depuis('ec0')) && <LigneMesure nom="Vitesse v (norme)" valeur={`${nbf(v, 2)}${NB}m/s`}/>}
+      {(!enGuide || depuis('ec0')) && <LigneMesure nom="Vitesse v (norme)" valeur={(!enGuide || apres('vbas')) ? `${nbf(v, 2)}${NB}m/s` : '?'}/>}
       {(!enGuide || (apres('ecbas') && !['ecbas1', 'emfin'].includes(idE))) && <LigneMesure nom="Énergie cinétique E_c" valeur={`${nbf(pt.Ec, 3)}${NB}J`} couleur="#2563eb"/>}
       {(!enGuide || (apres('em0') && idE !== 'emfin')) && <LigneMesure nom="Énergie mécanique E_m" valeur={`${nbf(pt.Em, 3)}${NB}J`} couleur="#334155"/>}
       {(!enGuide || depuis('wf')) && par.f > 0 && <LigneMesure nom="Distance parcourue s" valeur={`${nbf(pt.s, 2)}${NB}m`}/>}

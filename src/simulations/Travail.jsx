@@ -106,7 +106,6 @@ function ScenePlan({ alpha, pos, a, flechesPRF, f, m }) {
 
 // ---------- éléments d'affichage ----------
 const Ind = ({ b, i }) => <>{b}<sub>{i}</sub></>;
-const mmlSub = (b, i) => <msub><mi>{b}</mi><mi>{i}</mi></msub>;
 const FWab = <Formule><msub><mi>W</mi><mrow><mi>A</mi><mo>→</mo><mi>B</mi></mrow></msub><mo>(</mo><mover><mi>F</mi><mo>→</mo></mover><mo>)</mo><mo>=</mo><mi>F</mi><mo>×</mo><mi>AB</mi><mo>×</mo><mi>cos</mi><mi>θ</mi></Formule>;
 const FEc = <Formule><msub><mi>E</mi><mi>c</mi></msub><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>×</mo><mi>m</mi><mo>×</mo><msup><mi>v</mi><mn>2</mn></msup></Formule>;
 const FTheo = <Formule><mi>Δ</mi><msub><mi>E</mi><mi>c</mi></msub><mo>=</mo><mi>Σ</mi><mi>W</mi><mo>=</mo><msub><mi>W</mi><mi>1</mi></msub><mo>+</mo><msub><mi>W</mi><mi>2</mi></msub><mo>+</mo><mi>…</mi></Formule>;
@@ -384,7 +383,8 @@ export function SimulationTravail() {
   // ════════════════ DÉFIS ════════════════
   const nouveauFrott = () => { const alpha = tire([10, 12, 15, 18, 20]), m = tire([0.15, 0.2, 0.25, 0.3]), f = tire([0.1, 0.15, 0.2, 0.25, 0.3, 0.35]);
     return { type: 'frott', p: { alpha, m, f }, vrai: f, reps: {}, verifie: false }; };
-  const nouvelArret = () => { const m = tire([1.5, 2, 2.5, 3]), vA = tire([3, 4, 5]), F = tire([4, 5, 6, 8]);
+  const nouvelArret = () => { const combis = []; [1.5, 2, 2.5, 3].forEach(m => [3, 4, 5].forEach(vA => [4, 5, 6, 8].forEach(F => { if (M.ecin(m, vA) / F <= 5.5) combis.push([m, vA, F]); })));   // d ≤ AB = 6 m : le chariot reste dans le cadre
+    const [m, vA, F] = tire(combis);
     return { type: 'arret', p: { m, F, theta: 180, AB: 6, vA }, vrai: M.ecin(m, vA) / F, reps: {}, verifie: false }; };
   const nouveauDefi = t => { setDefi(t === 'frott' ? nouveauFrott() : nouvelArret()); lecT.setPos(0); lecP.setPos(0); };
   function changerMode(md) { setMode(md); if (md === 'defi' && !defi) nouveauDefi(typeDefi); }

@@ -16,7 +16,6 @@ declarerDefis(SIM_ID, [['rendement', 'Calculer le rendement d’une synthèse']]
 //  séchage à masse constante, rendement, lavage, recristallisation, contrôle (point de fusion).
 // ====================================================
 const Chim = ({ f }) => <>{String(f).split(/(\d+)/).map((p, i) => i % 2 ? <sub key={i}>{p}</sub> : p)}</>;
-const Ind = ({ b, i }) => <>{b}<sub>{i}</sub></>;
 const PHASES = [['S', 'Synthèse', '#2563eb'], ['I', 'Isolement', '#0e7490'], ['P', 'Purification', '#7c3aed'], ['C', 'Contrôle', '#15803d']];
 const OPS = [
   ['Broyer anisaldéhyde, 4’-méthylacétophénone et soude dans un mortier', 'S'],

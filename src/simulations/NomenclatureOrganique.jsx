@@ -9,7 +9,7 @@ const SIM_ID = 102;
 declarerDefis(SIM_ID, [['nom', 'Nommer une molécule'], ['formule', 'Retrouver la formule à partir du nom'], ['groupe', 'Groupe caractéristique et famille'], ['brute', 'Écrire la formule brute']]);
 
 // ====================================================
-//  SIM 102 — NOMENCLATURE ET GROUPES CARACTÉRISTIQUES (1re spé, chapitre « La chimie organique »)
+//  SIM 102 — NOMENCLATURE ET GROUPES CARACTÉRISTIQUES (1G, chapitre « La chimie organique »)
 //  Formules brutes et semi-développées, chaîne carbonée saturée, alcanes linéaires et ramifiés, groupes hydroxyle, carbonyle et carboxyle,
 //  familles (alcool, aldéhyde, cétone, acide carboxylique), nom ↔ formule semi-développée. Modèle : organiqueModele.js.
 //  L'infrarouge (4e partie du chapitre) fera l'objet d'une simulation à part.

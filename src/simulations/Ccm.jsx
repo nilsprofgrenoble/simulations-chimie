@@ -11,7 +11,7 @@ export const SIM_ID = 109;
 declarerDefis(SIM_ID, [['rf', 'Identifier une impureté par son Rf']]);
 
 // ====================================================
-//  SIM 110 — CCM ET TEMPÉRATURE DE FUSION (1G, chapitre 6 : contrôler le produit du TP de la chalcone)
+//  SIM 109 (onglet ②) — CCM ET TEMPÉRATURE DE FUSION (1G, chapitre 6 : contrôler le produit du TP de la chalcone)
 //  Plaque CCM virtuelle (dépôt, élution, Rf, comparaison avec les références) et banc Kofler.
 // ====================================================
 const PX_CM = 32, Y0 = 232, XS = [100, 170, 240, 310];
@@ -166,7 +166,7 @@ export function SimulationCcm({ integre = false, modeExt, setModeExt, suite } = 
         expl: 'Le banc atteint plusieurs centaines de degrés à une extrémité : un gant en matière plastique peut fondre au contact et brûler. On garde les lunettes, on éloigne les substances inflammables, et on évite tout contact avec la plaque.', indice: 'Que devient un gant en plastique sur une surface très chaude ?' } },
     { id: 'tfread', titre: 'Lire la température de fusion', focus: ['kofler'],
       texte: <>Les cristaux fondent progressivement : à gauche du curseur ils sont encore solides, à droite ils sont fondus. Le curseur est placé à la limite des deux. Lisez la température indiquée.</>,
-      tache: { type: 'num', q: 'Température de fusion lue sur le banc Kofler', unite: '°C', vrai: TF_MES, tol: 0.03, affiche: v => nbf(v, 0), cs: 2,
+      tache: { type: 'num', q: 'Température de fusion lue sur le banc Kofler', unite: '°C', vrai: TF_MES, tol: 0.04, affiche: v => nbf(v, 0), cs: 2,
         calcul: () => ['Le curseur est entre les graduations 95 et 100 °C, au niveau de 97 °C.', 'Lecture : 97 °C (à ± 2 °C près environ).'], pieges: [],
         expl: 'La limite entre cristaux solides et fondus est à 97 °C.', indice: 'Repérez les deux graduations (en °C) qui encadrent le curseur rouge.' } },
     { id: 'tfcompat', titre: 'Le produit est-il pur ?', focus: ['kofler'],
