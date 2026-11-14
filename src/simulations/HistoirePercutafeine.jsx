@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useEtatPersistant, Formule } from "../commun";
 import {
   CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_FIN, T_S2, CHAMPS_FORMULE, FORMULE_REPLI, etatInitial, texteDe, choixDe, visuelsDe, choisir, valider, estFin,
-  horloge, duree, nf, statutBg, resume, bilan, validerFormule, ajouterBase, validerPh, OBSERVATIONS, noterObs, chronologie, consequences, fiche,
+  horloge, duree, nf, statutBg, resume, bilan, validerFormule, ajouterBase, validerPh, OBSERVATIONS, noterObs, chronologie, consequences, fiche, validerPlan, nombre,
 } from "./percutafeineJeu";
 
 // ====================================================
@@ -13,7 +13,7 @@ import {
 const C = { encre: '#1b2733', doux: '#5b6877', bord: '#dbe4ee', accent: '#0f766e', accentFond: '#e7f5f2', ambre: '#b45309', rouge: '#b91c1c', vert: '#15803d', bleu: '#1e3a8a', carte: '#ffffff', fond: '#f4f8fb' };
 const NIVEAUX = { ok: ['✅', C.vert, 'Maîtrisé'], moyen: ['🟡', C.ambre, 'À consolider'], ko: ['❌', C.rouge, 'À retravailler'], nd: ['⚪', C.doux, 'Non évalué'] };
 const TONS = { ok: C.vert, moyen: C.ambre, ko: C.rouge };
-const ICONES = { choix_caf: '🧪', choix_eth: '🧪', docs: '📄', obs_video: '🎞️', es_prep: '🔥', es_calc1: '📊', eth1: '⚖️', formule: '📝', eq_base: '⚗️', fab_choix: '⚗️', fab_disp: '🧴', rheoC: '🌀', rheoF: '🌀', hplc_m: '📈', cpg_ei: '🔬', cpg_inj: '🔬', uv_ajouts: '🌈', uv_ext: '🌈', hplc_ei: '📈', verdict: '✅', eq_ines: '✅' };
+const ICONES = { choix_caf: '🧪', choix_eth: '🧪', docs: '📄', obs_video: '🎞️', es_prep: '🔥', es_calc1: '📊', eth1: '⚖️', formule: '📝', eq_base: '⚗️', fab_choix: '⚗️', fab_disp: '🧴', rheoC: '🌀', rheoF: '🌀', hplc_m: '📈', cpg_ei: '🔬', cpg_inj: '🔬', uv_ajouts_plan: '🌈', uv_ext_plan: '🌈', hplc_gamme_plan: '📈', hplc_ei: '📈', verdict: '✅', eq_ines: '✅' };
 const FOND_LIEU = { 'Paillasse de formulation': '#ecf7ee', 'Salle de chromatographie': '#e8f1fa', 'Bureau': '#f3eefb', 'Bureau de Mme Dubreuil': '#f3eefb', 'Salle de rhéologie': '#fdf1e7', 'Salle des étuves': '#fdf1e7' };
 const STYLE = `
 @keyframes pc-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -93,12 +93,13 @@ function Rheo({ v }) {
 }
 
 function Droite({ v }) {
-  const W = 360, x0 = 40, x1 = 346, xs = v.pts.map(p => p[0]), ys = v.pts.map(p => p[1]), xmax = Math.max(...xs) * 1.05, ymax = Math.max(...ys) * 1.1;
+  const W = 360, x0 = 40, x1 = 346, xs = v.pts.map(p => p[0]), ys = v.pts.map(p => p[1]), xmax = Math.max(...xs, v.ech ? v.ech[0] : 0) * 1.05, ymax = Math.max(...ys, v.ech ? v.ech[1] : 0) * 1.1;
   const X = x => x0 + x / xmax * (x1 - x0), Y = y => 124 - y / ymax * 104, rmax = Math.max(0.0001, ...v.residus.map(Math.abs));
   return (<Cadre titre={v.titre.toUpperCase()}>
     <svg viewBox={`0 0 ${W} 214`} role="img" aria-label={`${v.titre} : ${v.pts.length} points, droite a = ${v.a}, b = ${v.b}, et graphique des résidus`} style={{ width: '100%', maxWidth: 640, margin: '0 auto', display: 'block' }}>
       <line x1={x0} y1="124" x2={x1} y2="124" stroke="#6b8794" /><line x1={x0} y1="12" x2={x0} y2="124" stroke="#6b8794" />
       <line x1={X(0)} y1={Y(v.b)} x2={X(xmax)} y2={Y(v.a * xmax + v.b)} stroke="#5eead4" strokeWidth="1.6" />
+      {v.ech && <g><line x1={X(v.ech[0])} y1={Y(v.ech[1])} x2={X(v.ech[0])} y2="124" stroke="#fb923c" strokeDasharray="3 3" /><line x1={x0} y1={Y(v.ech[1])} x2={X(v.ech[0])} y2={Y(v.ech[1])} stroke="#fb923c" strokeDasharray="3 3" /><rect x={X(v.ech[0]) - 4} y={Y(v.ech[1]) - 4} width="8" height="8" fill="#fb923c" transform={`rotate(45 ${X(v.ech[0])} ${Y(v.ech[1])})`} /><text x={X(v.ech[0]) + 8} y={Y(v.ech[1]) - 6} fontSize="10" fill="#fdba74">gel</text></g>}
       {v.pts.map((p, i) => <circle key={i} cx={X(p[0])} cy={Y(p[1])} r="3.6" fill="#fde68a" />)}
       <text x={x1} y="138" textAnchor="end" fontSize="10" fill="#9fc3d1">{v.xl}</text><text x="4" y="14" fontSize="10" fill="#9fc3d1">{v.yl}</text>
       <text x={x0} y="156" fontSize="10" fill="#9fc3d1">Résidus (mesure − droite)</text>
@@ -178,6 +179,32 @@ function StationPh({ e, onEtat }) {
     </div>);
 }
 
+
+function StationPlan({ e, sc, onEtat }) {
+  const P = sc.plan, prec = (e.f.plans || {})[e.scene] || {};
+  const [vals, setVals] = useState(() => Object.fromEntries(P.champs.map(c => [c.id, prec[c.id] != null ? String(prec[c.id]).replace('.', ',') : ''])));
+  const [msg, setMsg] = useState('');
+  const num = Object.fromEntries(P.champs.map(c => [c.id, nombre(vals[c.id])]));
+  const complet = P.champs.every(c => num[c.id] != null);
+  let ap = null, dur = null;
+  if (complet) { try { ap = P.apercu(num); dur = P.duree(num); } catch { ap = null; } }
+  const valider = () => { const r = validerPlan(e, vals); if (!r.ok) setMsg(r.message); else { setMsg(''); onEtat(r.etat); } };
+  return (
+    <div data-plan className="pc-inst" style={inst}>
+      <div style={{ fontWeight: 700, marginBottom: 6 }}>🧪 Ma préparation</div>
+      <ul style={{ margin: '0 0 12px', paddingLeft: 18, fontSize: 14, color: C.doux, lineHeight: 1.5 }}>{P.infos.map((t, i) => <li key={i}>{t}</li>)}</ul>
+      <div style={{ display: 'grid', gap: 10 }}>{P.champs.map(c => (
+        <label key={c.id} style={{ display: 'grid', gap: 4, fontSize: 15 }}>
+          <span>{c.l}{c.u ? ` (${c.u})` : ''}</span>
+          <input type="text" inputMode="decimal" autoComplete="off" value={vals[c.id]} data-champ={c.id} onChange={x => { setVals(v => ({ ...v, [c.id]: x.target.value })); setMsg(''); }} style={{ font: 'inherit', fontSize: 17, padding: '9px 12px', borderRadius: 10, border: `1.5px solid ${C.bord}`, background: '#fff', width: '100%', maxWidth: 220, boxSizing: 'border-box' }} />
+        </label>))}
+      </div>
+      {ap && <div data-apercu style={{ marginTop: 12, overflowX: 'auto' }}><table style={{ borderCollapse: 'collapse', fontSize: 14, width: '100%', maxWidth: 480 }}><thead><tr>{ap.cols.map(h => <th key={h} style={{ textAlign: 'left', padding: '4px 8px', borderBottom: `1.5px solid ${C.bord}` }}>{h}</th>)}</tr></thead><tbody>{ap.lignes.map((l, i) => <tr key={i}>{l.map((x, j) => <td key={j} style={{ padding: '3px 8px', borderBottom: `1px solid ${C.bord}` }}>{x}</td>)}</tr>)}</tbody></table></div>}
+      {msg && <div role="alert" data-plan-msg style={{ marginTop: 10, background: '#fff1f0', border: '1px solid #f3b7b0', borderRadius: 10, padding: '8px 12px', fontSize: 14.5 }}>{msg}</div>}
+      <button type="button" className="pc-btn" style={{ marginTop: 12 }} disabled={!complet} onClick={valider}>Préparer et mesurer{dur ? ` (${dur} min)` : ''}</button>
+    </div>);
+}
+
 function StationObs({ e, onEtat }) {
   const [sel, setSel] = useState([]);
   const bascule = id => setSel(x => x.includes(id) ? x.filter(i => i !== id) : [...x, id]);
@@ -196,7 +223,7 @@ const POSTES = [
   { id: 'bureau', nom: 'Bureau', vers: ['docs', 'eth1', 'formule', 'eq_ines', 'verdict'] },
   { id: 'formulation', nom: 'Formulation', vers: ['eq_base', 'fab_choix', 'fab_disp', 'obs_video'] },
   { id: 'rheo', nom: 'Rhéologie', vers: ['rheoC', 'rheoF'] },
-  { id: 'chroma', nom: 'Chromatographie, UV', vers: ['choix_caf', 'choix_eth', 'hplc_m', 'hplc_ei', 'cpg_ei', 'cpg_inj', 'uv_ajouts', 'uv_ext'] },
+  { id: 'chroma', nom: 'Chromatographie, UV', vers: ['choix_caf', 'choix_eth', 'hplc_m', 'hplc_ei', 'hplc_gamme_plan', 'cpg_ei', 'cpg_inj', 'uv_ajouts_plan', 'uv_ext_plan'] },
 ];
 const posteDe = vers => (POSTES.find(p => p.vers.includes(vers)) || POSTES[1]).id;
 function Dessin({ id, actif, termine }) {
@@ -369,6 +396,7 @@ export function SimulationHistoirePercutafeine() {
 
         {sc.station === 'formule' && <StationFormule key={e.scene + e.t} e={e} onEtat={setEtat} />}
         {sc.station === 'ph' && <StationPh e={e} onEtat={setEtat} />}
+        {sc.station === 'plan' && <StationPlan key={e.scene + e.t} e={e} sc={sc} onEtat={setEtat} />}
         {sc.station === 'obs' && <StationObs e={e} onEtat={setEtat} />}
         {sc.calcul && <Calcul key={e.scene} e={e} sc={sc} onEtat={setEtat} />}
 
