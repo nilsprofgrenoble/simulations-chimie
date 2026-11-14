@@ -399,8 +399,10 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   console.log('retours de test v33 : OK'); }
 // 27. Retours de test (v34) : tâches verrouillées visibles, pause isolée, textes
 { const h = { ...J.etatInitial(3), scene: 'hub', t: 10 }, f = J.choixDe(h).find(c => c.vers === 'formule');
-  assert(f && f.bloque && /Formuler les 200 g/.test(f.t), 'formule visible dès le début, verrouillée');
-  const h2 = { ...h, fait: { es: true, esRes: true, eth: true, hplcPrep: true } }; assert(!J.choixDe(h2).find(c => c.vers === 'formule').bloque, 'formule déverrouillée');
+  assert(f && !f.bloque && /Écrire la formule/.test(f.t), 'écrire la formule : proposé dès le début au Bureau, sans prérequis');
+  const fab = J.choixDe(h).find(c => c.vers === 'eq_base'); assert(fab && fab.bloque && /Formuler les 200 g/.test(fab.t) && /valider ta formule au Bureau/.test(fab.bloque) && !/macrogol|extrait sec/.test(fab.bloque), 'formuler les 200 g : grisé, renvoie au Bureau');
+  assert(!J.choixDe({ ...h, fait: { formule: true } }).find(c => c.vers === 'eq_base').bloque, 'formuler les 200 g déverrouillé après la formule');
+  const h2 = { ...h, fait: { es: true, esRes: true, eth: true, hplcPrep: true } };
   const c = J.choixDe(h2).find(c => c.vers === 'hplc_ei'); assert(c && c.bloque, 'dosage verrouillé tant que le gel n\'est pas en pot');
   assert(!J.choixDe({ ...h2, fait: { ...h2.fait, ph: true } }).find(c => c.vers === 'hplc_ei').bloque, 'dosage déverrouillé après la mise en pot');
   const fc = J.choixDe({ ...J.etatInitial(3), scene: 'fab_choix' }); assert(fc.length === 4 && new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(g => J.choixDe({ ...J.etatInitial(g), scene: 'fab_choix' })[0].id)).size > 1, 'options de fabrication mélangées');
