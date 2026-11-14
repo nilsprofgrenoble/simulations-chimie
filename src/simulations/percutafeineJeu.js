@@ -254,18 +254,25 @@ export function choisir(e, c) {
 // Au premier écran d'une tâche prise à la paillasse, rien n'est encore engagé : on peut changer d'avis.
 export const peutRevenir = e => !!e.retourHub && e.retourHub.scene === e.scene && e.retourHub.t === e.t && !SCENES[e.scene].entree && !SCENES[e.scene].fin;
 export const revenirHub = e => ({ ...e, scene: 'hub', retourHub: undefined, essais: 0 });
+// Journal des calculs de l'élève : saisies, valeur attendue, énoncé tel qu'il l'a vu (sert à la fiche de correction)
+const logCalc = (e, v, juste, vrai) => { const calcs = [...(e.f.calcs || [])]; let i = calcs.findIndex(c => c.id === e.scene);
+  if (i < 0) { calcs.push({ id: e.scene, donnees: texteDe(e), saisies: [] }); i = calcs.length - 1; }
+  calcs[i] = { ...calcs[i], saisies: [...calcs[i].saisies, Number.isFinite(v) ? v : null], vrai, juste: juste ? true : calcs[i].juste === true ? true : false, lot: e.f.lot || 1 };
+  return { ...e, f: { ...e.f, calcs } }; };
 export function valider(e, saisie) {
   const sc = SCENES[e.scene], k = sc.calcul;
   const v = parseFloat(String(saisie).replace(',', '.').replace(/\s/g, ''));
   const vrai = k.vrai(e), tol = k.tolAbs ?? Math.abs(vrai) * k.tol;
-  if (Number.isFinite(v) && Math.abs(v - vrai) <= tol) return { etat: choisir(e, k.ok), juste: true, message: '' };
-  const e2 = { ...e, f: { ...e.f, nbErr: e.f.nbErr + 1 } }, essais = e.essais + 1;
+  if (Number.isFinite(v) && Math.abs(v - vrai) <= tol) return { etat: choisir(logCalc(e, v, true, vrai), k.ok), juste: true, message: '' };
+  const e2 = logCalc({ ...e, f: { ...e.f, nbErr: e.f.nbErr + 1 } }, v, false, vrai), essais = e.essais + 1;
   if (essais >= 2) {
     const st = choisir({ ...e2, t: e2.t + 5 }, k.ko);
     return { etat: { ...st, f: { ...st.f, corrige: `${sc.pnj === 'moi' ? 'Lucas' : PNJ[sc.pnj].nom} passe, refait le calcul avec toi et trouve ${nf(vrai, k.cs ?? 2)} ${k.unite}.`, aides: (st.f.aides || 0) + 1 } }, juste: false, message: '' };
   }
   return { etat: { ...e2, t: e2.t + 5, essais }, juste: false, message: (k.retour && Number.isFinite(v) && k.retour(v, e)) || k.indice };
 }
+export const ficheCorrection = e => (e.f.calcs || []).map(c => { const sc = SCENES[c.id], k = sc.calcul; return { id: c.id, titre: sc.titre, q: k.q, donnees: c.donnees, saisies: c.saisies, juste: c.juste, attendu: `${nf(c.vrai, k.cs ?? 2)} ${k.unite}`.trim(),
+  demarche: [k.indice, ...(sc.aide ? sc.aide.textes.slice(1).map(f => f(e).replace(/^« | »$/g, '')) : [])] }; });
 export const cer = (cause, effet, remede) => `Cause : ${cause} Effet : ${effet} Remède : ${remede}`;
 
 // ───────────── La paillasse (hub) ─────────────
@@ -274,6 +281,7 @@ export const statutBg = e => ({
   clhp: e.f.attendu && e.bg.clhp != null && !e.fait.caf ? (e.bg.clhp > e.t ? `CLHP en réparation, prête dans ${duree(e.bg.clhp - e.t)}` : (e.fait.ph ? 'CLHP réparée : elle est prête pour l\'injection' : 'CLHP réparée : tu pourras l\'utiliser quand ton gel sera prêt')) : null,
   gel: e.fait.fab && !e.fait.ph ? (e.bg.gel > e.t ? `Ballon en route, prêt dans ${duree(e.bg.gel - e.t)}` : 'Ballon terminé : le gel est prêt') : null,
 });
+const defautVu = e => { const F = e.fait, m = mesures(e); return !!((F.rheoF && m.q < SPEC.q) || (F.ethQC && ecartsMes(e).includes('eth')) || (F.caf && ecartsMes(e).includes('caf'))); };
 const taches = e => {
   const F = e.fait, L = [];
   const enCours = Object.values(e.bg || {}).some(x => x != null && x > e.t);
@@ -286,14 +294,17 @@ const taches = e => {
   if (!F.formule) L.push(['Formuler les 200 g de gel', 'Fixer les masses des constituants pour environ 200 g.', 'formule', F.eth && F.esRes ? undefined : { bloque: 'Il te manque encore ' + [!F.eth && 'l\'éthanol de la notice', !F.esRes && 'le cocoate de macrogol (extrait sec)'].filter(Boolean).join(' et ') + '.' }]);
   if (F.formule && !F.fab) L.push(['Fabriquer le gel', 'Choisir le procédé, lancer la dispersion du Synthalen K.', e.f.eq?.base ? 'fab_choix' : 'eq_base']);
   if (!F.rheoC) L.push(['Rhéologie du gel commercial', 'Mesurer la courbe d\'écoulement du témoin (10 min).', 'rheoC']);
-  if (!e.f.voieCaf) L.push(['Choisir comment contrôler la caféine du gel', 'Quelle technique utiliser pour vérifier les 5 % de caféine ?', 'choix_caf']);
+  if (!e.f.voieCaf && !e.f.rapideCaf) L.push(['Choisir comment contrôler la caféine du gel', 'Quelle technique utiliser pour vérifier les 5 % de caféine ?', 'choix_caf']);
   if (e.f.voieCaf === 'clhp' && !F.hplcPrep) L.push(['Préparer le dosage de la caféine', 'Masse à peser, solution de référence, première injection.', 'hplc_m']);
-  if (F.eth && !e.f.voieEth) L.push(['Choisir comment contrôler l\'éthanol du gel', 'Quelle technique utiliser pour vérifier l\'éthanol ?', 'choix_eth']);
+  if (F.eth && !e.f.voieEth && !e.f.rapideEth) L.push(['Choisir comment contrôler l\'éthanol du gel', 'Quelle technique utiliser pour vérifier l\'éthanol ?', 'choix_eth']);
   if (e.f.voieEth === 'cpg' && !F.cpgPrep) L.push(['Préparer le dosage de l\'éthanol', 'Masse à peser, solution de référence, première injection.', 'cpg_m']);
   if (F.fab && !F.ph) L.push(['Neutraliser et mettre en pot', `Quand le Synthalen K est dispersé : ajouter la trolamine et contrôler le pH.${e.bg.gel > e.t ? ` Attention : dispersion en cours, prête dans ${duree(e.bg.gel - e.t)}, tu devras attendre.` : ''}`, 'fab_disp']);
   if (F.rheoC && !F.rheoF) L.push(['Comparer les rhéologies', 'Mesurer le gel formulé et le comparer au commercial.', 'rheoF', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
-  if (F.hplcPrep && !F.caf) L.push(['Doser la caféine du gel formulé', e.f.methCaf === 'ajouts' ? 'Concevoir les fioles, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'ext' ? 'Concevoir la gamme, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'gamme' ? `Concevoir la gamme, injecter en CLHP.${e.bg.clhp > e.t ? ` Attention : ${statutBg(e).clhp.toLowerCase()}, tu devras attendre.` : ''}` : `CLHP, méthode de l'étalon interne.${e.bg.clhp > e.t ? ` Attention : ${statutBg(e).clhp.toLowerCase()}, tu devras attendre.` : ''}`, e.f.methCaf === 'ajouts' ? 'uv_ajouts_plan' : e.f.methCaf === 'ext' ? 'uv_ext_plan' : e.f.methCaf === 'gamme' ? 'hplc_gamme_plan' : 'hplc_ei', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
-  if (F.cpgPrep && !F.ethQC) L.push(['Doser l\'éthanol du gel formulé', 'CPG avec étalon interne, puis avec une gamme d\'étalonnage.', 'cpg_inj', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
+  if (F.hplcPrep && !F.caf && !e.f.rapideCaf) L.push(['Doser la caféine du gel formulé', e.f.methCaf === 'ajouts' ? 'Concevoir les fioles, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'ext' ? 'Concevoir la gamme, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'gamme' ? `Concevoir la gamme, injecter en CLHP.${e.bg.clhp > e.t ? ` Attention : ${statutBg(e).clhp.toLowerCase()}, tu devras attendre.` : ''}` : `CLHP, méthode de l'étalon interne.${e.bg.clhp > e.t ? ` Attention : ${statutBg(e).clhp.toLowerCase()}, tu devras attendre.` : ''}`, e.f.methCaf === 'ajouts' ? 'uv_ajouts_plan' : e.f.methCaf === 'ext' ? 'uv_ext_plan' : e.f.methCaf === 'gamme' ? 'hplc_gamme_plan' : 'hplc_ei', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
+  if (F.cpgPrep && !F.ethQC && !e.f.rapideEth) L.push(['Doser l\'éthanol du gel formulé', 'CPG avec étalon interne, puis avec une gamme d\'étalonnage.', 'cpg_inj', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
+  if (e.f.rapideCaf && !F.caf) L.push(['Relancer le dosage de la caféine', 'Méthode déjà au point : mêmes manipulations, résultat calculé pour toi (environ 40 min).', 'rapide_caf', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
+  if (e.f.rapideEth && !F.ethQC) L.push(['Relancer le dosage de l\'éthanol', 'Méthode déjà au point : mêmes manipulations, résultat calculé pour toi (environ 40 min).', 'rapide_eth', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
+  if (!e.f.lot && !e.f.relanceRefusee && defautVu(e) && T_FIN - e.t >= 150) L.push(['Refaire un lot en corrigeant le procédé', 'Un défaut est visible dans tes résultats et il reste du temps : tu peux refaire le gel.', 'relance']);
   if (!F.titrCarb) L.push(['Titrer les acides du Synthalen K (poudre)', 'Titrage par la soude d\'une dispersion du Synthalen K.', 'titr_suivi']);
   if (!F.leurre_titrgel) L.push(['Titrer le gel commercial', 'Titrage d\'une prise de gel par la soude : 30 min.', 'leurre_titrgel']);
   if (!F.leurre_ir) L.push(['Spectre infrarouge du gel (réflexion totale atténuée, ATR)', 'Une goutte de gel sur le cristal : 15 min avec le nettoyage.', 'leurre_ir']);
@@ -1236,6 +1247,29 @@ add('titr_carb_calc', {
   calcul: { q: 'Quel est le pourcentage massique de groupes COOH dans le Synthalen K ?', unite: '%', vrai: e => donneesTitr(e).pctMes, tol: 0.04, cs: 1, indice: 'n(COOH) = c × V_éq (en mol, V en litres). Masse de COOH = n × 45,02 g/mol. Divise par la masse m de poudre.',
     ok: { vers: 'hub', duree: 5, run: n => ({ ...marquer(n, 'titrCarb'), f: { ...n.f, cooh: arr(donneesTitr(n).pctMes, 1) } }), note: 'Titrage du Synthalen K : teneur en groupes COOH déterminée.' },
     ko: { vers: 'hub', duree: 0, run: n => marquer(n, 'titrCarb') } },
+});
+
+// ───────────── Refaire un lot : les méthodes déjà au point ne sont pas à reconstruire ─────────────
+const CAUSES_LOT = e => ecartsMes(e).map(d => ({ caf: 'la caféine', eth: 'l\'éthanol', visco: 'la viscosité' }[d])).join(', ');
+add('relance', {
+  lieu: 'Bureau de Mme Dubreuil', pnj: 'dubreuil', titre: 'Refaire un lot ?',
+  texte: e => `Mme Dubreuil : « Il est ${horloge(e.t)}, il te reste ${duree(T_FIN - e.t)}. Tes résultats montrent un défaut (${CAUSES_LOT(e) || 'à vérifier'}). Tu peux refaire un lot en corrigeant ce qui l'a causé. La formule et la rhéologie du témoin ne sont pas à refaire ; les dosages déjà mis au point seront relancés avec les mêmes méthodes, résultat calculé pour toi. Compte environ 2 h 30 en tout. Que décides-tu ? »`,
+  choix: [
+    { t: 'Refaire un lot : je reprends la formule et la fabrication', d: 'Les dosages au point sont relancés plus vite, sans refaire les calculs.', duree: 5, vers: 'hub',
+      run: n => ({ ...n, fait: { ...n.fait, formule: false, fab: false, ph: false, rheoF: false, caf: false, ethQC: false }, bg: { ...n.bg, gel: undefined },
+        f: { ...n.f, lot: 2, rapideCaf: !!n.fait.caf, rapideEth: !!n.fait.ethQC, trolAdd: undefined, phMes: undefined, phFinal: undefined, disp: undefined, mode: undefined, perteEth: undefined, ethAjout: undefined, compense: undefined, reprisePh: undefined, errBase: undefined, decl: undefined } }), note: 'Défaut constaté : décision de refaire un lot (formule, fabrication, contrôles).' },
+    { t: 'Non : je conclus avec ce lot', duree: 0, vers: 'hub', f: { relanceRefusee: true }, note: 'Pas de nouveau lot : je conclus avec le premier.' },
+  ],
+});
+add('rapide_caf', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Caféine : dosage relancé',
+  texte: e => `Tu relances le dosage avec la méthode déjà mise au point (${{ ajouts: 'UV, ajouts dosés', ext: 'UV, étalonnage externe', gamme: 'CLHP, gamme d\'étalonnage', EI: 'CLHP, étalon interne' }[e.f.methCaf] || 'la même méthode'}). Les solutions sont préparées comme la première fois, les mesures faites et le calcul refait pour toi.\nRésultat : caféine = ${nf(mesures(e).caf, 1)} % (exigence ${nf(SPEC.caf[0], 1)} à ${nf(SPEC.caf[1], 1)} %).`,
+  choix: [{ t: 'Noter le résultat', duree: 40, vers: 'hub', run: n => marquer(n, 'caf'), note: 'Caféine du nouveau lot : dosage relancé avec la méthode déjà au point.' }],
+});
+add('rapide_eth', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Éthanol : dosage relancé',
+  texte: e => `Tu relances le dosage CPG avec la méthode déjà mise au point. Solutions préparées, injections faites, calcul refait pour toi.\nRésultat : éthanol = ${nf(mesures(e).eth, 1)} % (exigence ${nf(SPEC.eth[0], 1)} à ${nf(SPEC.eth[1], 1)} %).`,
+  choix: [{ t: 'Noter le résultat', duree: 40, vers: 'hub', run: n => marquer(n, 'ethQC'), note: 'Éthanol du nouveau lot : dosage relancé avec la méthode déjà au point.' }],
 });
 
 // ───────────── Conclusion ─────────────

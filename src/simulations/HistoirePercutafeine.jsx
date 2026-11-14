@@ -8,7 +8,7 @@ import { useEtatPersistant, Formule } from "../commun";
 import { Avatar as AvatarVisuel, STYLE_VISUELS } from './LaboVisuels';
 import {
   CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_FIN, T_MIDI, T_PAUSE, NB_AVATARS, avatarDe, pn, CHAMPS_FORMULE, FORMULE_REPLI, etatInitial, texteDe, choixDe, visuelsDe, choisir, valider, estFin, peutRevenir, revenirHub,
-  horloge, duree, nf, statutBg, resume, bilan, validerFormule, cliquerPiece, ajouterBase, validerPh, observationsDe, resultatsVus, demanderAide, niveauAide, textesAide, noterObs, pointsRheo, ajusteRheo, MODELES_RHEO, validerRheo, cpgModele, CPG_LIM, cpgSimFin, chronologie, consequences, fiche, validerPlan, nombre, donneesTitr, GRANDEUR_TITR, phReel, docsDe,
+  horloge, duree, nf, statutBg, resume, bilan, validerFormule, cliquerPiece, ajouterBase, validerPh, observationsDe, resultatsVus, demanderAide, niveauAide, textesAide, noterObs, pointsRheo, ajusteRheo, MODELES_RHEO, validerRheo, ficheCorrection, cpgModele, CPG_LIM, cpgSimFin, chronologie, consequences, fiche, validerPlan, nombre, donneesTitr, GRANDEUR_TITR, phReel, docsDe,
 } from "./percutafeineJeu";
 
 // ====================================================
@@ -21,6 +21,7 @@ const TONS = { ok: C.vert, moyen: C.ambre, ko: C.rouge };
 const ICONES = { es_balance: '⚖️', cpg_m: '⚖️', titr_carb_plan: '🧪', leurre_titrgel: '🧪', leurre_ir: '📈', leurre_refracto: '🔍', leurre_polar: '🔍', leurre_conduc: '🔌', choix_caf: '🧪', choix_eth: '🧪', docs: '📄', obs_video: '🎞️', es_prep: '🔥', es_calc1: '📊', eth1: '⚖️', formule: '📝', eq_base: '⚗️', fab_choix: '⚗️', fab_disp: '🧴', rheoC: '🌀', rheoF: '🌀', hplc_m: '📈', cpg_ei: '🔬', cpg_inj: '🔬', uv_ajouts_plan: '🌈', uv_ext_plan: '🌈', hplc_gamme_plan: '📈', hplc_ei: '📈', verdict: '✅', eq_ines: '✅' };
 const FOND_LIEU = { 'Paillasse de formulation': '#ecf7ee', 'Salle de chromatographie': '#e8f1fa', 'Bureau': '#f3eefb', 'Bureau de Mme Dubreuil': '#f3eefb', 'Salle de rhéologie': '#fdf1e7', 'Salle des étuves': '#fdf1e7' };
 const STYLE = `${STYLE_VISUELS}
+@media print{body *{visibility:hidden!important}[data-impression],[data-impression] *{visibility:visible!important}[data-impression]{position:absolute;left:0;top:0;width:100%;padding:0 8mm;box-sizing:border-box;background:#fff}.pc-noprint{display:none!important}}
 @keyframes pc-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .pc-scene{animation:pc-in .35s ease-out}
 .pc-choix{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;padding:12px 14px;margin:9px 0;border:1.5px solid #fdba74;border-radius:14px;background:#fff7ed;color:${C.encre};font:inherit;font-size:16px;line-height:1.45;cursor:pointer;transition:border-color .15s,background .15s,transform .15s,box-shadow .15s}
@@ -387,12 +388,12 @@ const POSTES = [
   { id: 'etuve', nom: 'Étuve et balance', vers: ['es_balance', 'es_prep', 'es_calc1', 'es_calc2b'] },
   { id: 'bureau', nom: 'Bureau', vers: ['docs', 'eth1', 'eq_ines', 'verdict'] },
   { id: 'ir', nom: 'Spectrométrie IR', vers: ['leurre_ir'] },
-  { id: 'formulation', nom: 'Formulation', vers: ['formule', 'eq_base', 'fab_choix', 'fab_disp', 'obs_video'] },
+  { id: 'formulation', nom: 'Formulation', vers: ['relance', 'formule', 'eq_base', 'fab_choix', 'fab_disp', 'obs_video'] },
   { id: 'optique', nom: 'Réfractomètre, polarimètre', vers: ['leurre_refracto', 'leurre_polar'] },
   { id: 'rheo', nom: 'Rhéologie', vers: ['rheoC', 'rheoF'] },
   { id: 'titrage', nom: 'Titrage', vers: ['titr_suivi', 'titr_carb_plan', 'leurre_titrgel'] },
   { id: 'conduc', nom: 'Conductimètre', vers: ['leurre_conduc'] },
-  { id: 'chroma', nom: 'Chromatographie, UV', vers: ['choix_caf', 'choix_eth', 'hplc_m', 'hplc_ei', 'hplc_gamme_plan', 'cpg_m', 'cpg_ei', 'cpg_sim', 'cpg_inj', 'uv_ajouts_plan', 'uv_ext_plan'] },
+  { id: 'chroma', nom: 'Chromatographie, UV', vers: ['choix_caf', 'choix_eth', 'rapide_caf', 'rapide_eth', 'hplc_m', 'hplc_ei', 'hplc_gamme_plan', 'cpg_m', 'cpg_ei', 'cpg_sim', 'cpg_inj', 'uv_ajouts_plan', 'uv_ext_plan'] },
 ];
 const posteDe = vers => (POSTES.find(p => p.vers.includes(vers)) || POSTES[1]).id;
 function Dessin({ id, actif, termine }) {
@@ -457,6 +458,26 @@ function Paillasse({ e, s, choix, onChoix }) {
       <button key={i} type="button" className="pc-tache" data-choix={i} data-bloque={c.bloque ? 'oui' : undefined} disabled={!!c.bloque} aria-disabled={!!c.bloque} style={c.bloque ? { opacity: .55, filter: 'grayscale(1)', cursor: 'not-allowed' } : undefined} onClick={() => !c.bloque && onChoix(c)}><span style={{ fontSize: 26, lineHeight: 1 }} aria-hidden="true">{ICONES[c.vers] || '▪️'}</span><span><b style={{ fontSize: 16 }}>{c.t}</b>{c.bloque ? <span style={{ display: 'block', fontSize: 13.5, color: C.doux, marginTop: 3, lineHeight: 1.4 }}>🔒 {c.bloque}</span> : c.d && <span style={{ display: 'block', fontSize: 13.5, color: C.doux, marginTop: 3, lineHeight: 1.4 }}>{c.d}</span>}</span></button>))}
       {!actuel && <div style={{ color: C.doux, fontSize: 14.5 }}>Choisis un poste de travail.</div>}{actuel && !(parPoste[actuel] || []).length && <div style={{ color: C.doux, fontSize: 14.5 }}>Rien à faire à ce poste pour l'instant.</div>}</div>
   </div>);
+}
+
+function FicheCorrection({ e }) {
+  const L = ficheCorrection(e), nom = pn(e);
+  const fmt = v => v == null ? '—' : nf(v, Math.abs(v) < 10 ? 2 : 1);
+  return (<section data-impression data-fiche-correction>
+    <h4 style={{ margin: '20px 0 8px', fontSize: 17 }}>Fiche de correction{nom ? ` · ${nom}` : ''}</h4>
+    <button type="button" className="pc-btn pc-noprint" data-imprimer onClick={() => window.print()} style={{ marginBottom: 12 }}>🖨️ Imprimer la fiche (ou l'enregistrer en PDF)</button>
+    <div style={{ fontWeight: 700, margin: '8px 0 6px' }}>Les calculs de la journée</div>
+    {!L.length && <div style={{ color: C.doux }}>Aucun calcul saisi pendant cette partie.</div>}
+    {L.map((c, i) => (<div key={c.id + i} style={{ border: `1px solid ${C.bord}`, borderLeft: `5px solid ${c.juste ? C.vert : C.ambre}`, borderRadius: 10, padding: '10px 12px', margin: '8px 0', fontSize: 14.5, lineHeight: 1.5, breakInside: 'avoid', background: '#fff' }}>
+      <div style={{ fontWeight: 700 }}>{i + 1}. {c.titre}{c.juste ? ' ✅' : ' · corrigé avec l\'aide d\'un collègue'}</div>
+      <div style={{ color: C.doux, whiteSpace: 'pre-line' }}>{c.donnees}</div>
+      <div><b>Question :</b> {c.q}</div>
+      <div><b>Ta réponse :</b> {c.saisies.map(fmt).join(' puis ')} · <b>Valeur attendue :</b> {c.attendu}</div>
+      <div><b>Démarche :</b><ul style={{ margin: '2px 0 0', paddingLeft: 20 }}>{c.demarche.map((d, k) => <li key={k}>{d}</li>)}</ul></div>
+    </div>))}
+    <div style={{ fontWeight: 700, margin: '14px 0 6px' }}>Bilan par compétence</div>
+    {bilan(e).map(b => { const [ic, col, lib] = NIVEAUX[b.niveau]; return <div key={b.comp} style={{ margin: '6px 0', fontSize: 14.5, lineHeight: 1.5, breakInside: 'avoid' }}>{ic} <b>{b.comp}</b> · {b.titre} <span style={{ color: col, fontWeight: 700 }}>({lib})</span><div style={{ color: C.doux }}>{b.texte}</div></div>; })}
+  </section>);
 }
 
 // ───────────── Le film de la journée (fin de partie) ─────────────
@@ -652,6 +673,7 @@ export function SimulationHistoirePercutafeine() {
               <span aria-label={lib} title={lib} style={{ fontSize: 20 }}>{ic}</span>
               <div><b>{b.comp}</b> · {b.titre} <span style={{ color: col, fontWeight: 700 }}>({lib})</span><div style={{ color: C.doux }}>{b.texte}</div></div>
             </div>); })}</div>
+          <FicheCorrection e={e} />
           <h4 style={{ margin: '20px 0 8px', fontSize: 17 }}>Ta fiche de fabrication</h4>
           <Fiche e={e} />
           <button type="button" className="pc-btn" data-rejouer onClick={() => { setEtat(null); setCarnetOuvert(false); }} style={{ marginTop: 16 }}>Rejouer</button>
