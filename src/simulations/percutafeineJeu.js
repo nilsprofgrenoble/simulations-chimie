@@ -271,7 +271,7 @@ export const cer = (cause, effet, remede) => `Cause : ${cause} Effet : ${effet} 
 // ───────────── La paillasse (hub) ─────────────
 export const statutBg = e => ({
   es: e.fait.es && !e.fait.esRes ? (e.bg.es > e.t ? `Étuve en route, prête dans ${duree(e.bg.es - e.t)}` : 'Étuve terminée : les coupelles sont prêtes à peser') : null,
-  clhp: e.f.attendu && e.bg.clhp != null && !e.fait.caf ? (e.bg.clhp > e.t ? `CLHP en réparation, prête dans ${duree(e.bg.clhp - e.t)}` : 'CLHP réparée : elle est prête pour l\'injection') : null,
+  clhp: e.f.attendu && e.bg.clhp != null && !e.fait.caf ? (e.bg.clhp > e.t ? `CLHP en réparation, prête dans ${duree(e.bg.clhp - e.t)}` : (e.fait.ph ? 'CLHP réparée : elle est prête pour l\'injection' : 'CLHP réparée : tu pourras l\'utiliser quand ton gel sera prêt')) : null,
   gel: e.fait.fab && !e.fait.ph ? (e.bg.gel > e.t ? `Ballon en route, prêt dans ${duree(e.bg.gel - e.t)}` : 'Ballon terminé : le gel est prêt') : null,
 });
 const taches = e => {
@@ -283,7 +283,7 @@ const taches = e => {
   if (!F.eth) L.push(['Raisonner sur l\'éthanol de la notice', 'Quelle masse d\'éthanol faut-il mettre dans 200 g de gel ?', 'eth1']);
   if (F.es && !F.esLu) L.push(e.f.es3Att ? ['Lire le troisième extrait sec', `Calculer la médiane des trois essais.${e.bg.es > e.t ? ` Attention : étuve en cours, prête dans ${duree(e.bg.es - e.t)}, tu devras attendre.` : ''}`, 'es_calc2b'] : ['Lire l\'extrait sec', `Calculer ES et vérifier la répétabilité.${e.bg.es > e.t ? ` Attention : étuve en cours, prête dans ${duree(e.bg.es - e.t)}, tu devras attendre.` : ''}`, 'es_calc1']);
   if (F.esLu && !F.esRes) L.push(['Estimer le cocoate de macrogol', 'Déduire sa teneur de l\'extrait sec, avec les fiches techniques.', 'es_calc3']);
-  if (F.eth && F.esRes && !F.formule) L.push(['Écrire la formule du contretype', 'Fixer les masses des constituants pour environ 200 g.', 'formule']);
+  if (!F.formule) L.push(['Formuler les 200 g de gel', 'Fixer les masses des constituants pour environ 200 g.', 'formule', F.eth && F.esRes ? undefined : { bloque: 'Il te manque encore ' + [!F.eth && 'l\'éthanol de la notice', !F.esRes && 'le cocoate de macrogol (extrait sec)'].filter(Boolean).join(' et ') + '.' }]);
   if (F.formule && !F.fab) L.push(['Fabriquer le gel', 'Choisir le procédé, lancer la dispersion du Synthalen K.', e.f.eq?.base ? 'fab_choix' : 'eq_base']);
   if (!F.rheoC) L.push(['Rhéologie du gel commercial', 'Mesurer la courbe d\'écoulement du témoin (10 min).', 'rheoC']);
   if (!e.f.voieCaf) L.push(['Choisir comment contrôler la caféine du gel', 'Quelle technique utiliser pour vérifier les 5 % de caféine ?', 'choix_caf']);
@@ -291,9 +291,9 @@ const taches = e => {
   if (F.eth && !e.f.voieEth) L.push(['Choisir comment contrôler l\'éthanol du gel', 'Quelle technique utiliser pour vérifier l\'éthanol ?', 'choix_eth']);
   if (e.f.voieEth === 'cpg' && !F.cpgPrep) L.push(['Préparer le dosage de l\'éthanol', 'Masse à peser, solution de référence, première injection.', 'cpg_m']);
   if (F.fab && !F.ph) L.push(['Neutraliser et mettre en pot', `Quand le Synthalen K est dispersé : ajouter la trolamine et contrôler le pH.${e.bg.gel > e.t ? ` Attention : dispersion en cours, prête dans ${duree(e.bg.gel - e.t)}, tu devras attendre.` : ''}`, 'fab_disp']);
-  if (F.ph && F.rheoC && !F.rheoF) L.push(['Comparer les rhéologies', 'Mesurer le gel formulé et le comparer au commercial.', 'rheoF']);
-  if (F.ph && F.hplcPrep && !F.caf) L.push(['Doser la caféine du gel formulé', e.f.methCaf === 'ajouts' ? 'Concevoir les fioles, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'ext' ? 'Concevoir la gamme, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'gamme' ? `Concevoir la gamme, injecter en CLHP.${e.bg.clhp > e.t ? ` Attention : ${statutBg(e).clhp.toLowerCase()}, tu devras attendre.` : ''}` : `CLHP, méthode de l'étalon interne.${e.bg.clhp > e.t ? ` Attention : ${statutBg(e).clhp.toLowerCase()}, tu devras attendre.` : ''}`, e.f.methCaf === 'ajouts' ? 'uv_ajouts_plan' : e.f.methCaf === 'ext' ? 'uv_ext_plan' : e.f.methCaf === 'gamme' ? 'hplc_gamme_plan' : 'hplc_ei']);
-  if (F.ph && F.cpgPrep && !F.ethQC) L.push(['Doser l\'éthanol du gel formulé', 'CPG avec étalon interne, puis avec une gamme d\'étalonnage.', 'cpg_inj']);
+  if (F.rheoC && !F.rheoF) L.push(['Comparer les rhéologies', 'Mesurer le gel formulé et le comparer au commercial.', 'rheoF', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
+  if (F.hplcPrep && !F.caf) L.push(['Doser la caféine du gel formulé', e.f.methCaf === 'ajouts' ? 'Concevoir les fioles, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'ext' ? 'Concevoir la gamme, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'gamme' ? `Concevoir la gamme, injecter en CLHP.${e.bg.clhp > e.t ? ` Attention : ${statutBg(e).clhp.toLowerCase()}, tu devras attendre.` : ''}` : `CLHP, méthode de l'étalon interne.${e.bg.clhp > e.t ? ` Attention : ${statutBg(e).clhp.toLowerCase()}, tu devras attendre.` : ''}`, e.f.methCaf === 'ajouts' ? 'uv_ajouts_plan' : e.f.methCaf === 'ext' ? 'uv_ext_plan' : e.f.methCaf === 'gamme' ? 'hplc_gamme_plan' : 'hplc_ei', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
+  if (F.cpgPrep && !F.ethQC) L.push(['Doser l\'éthanol du gel formulé', 'CPG avec étalon interne, puis avec une gamme d\'étalonnage.', 'cpg_inj', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
   if (!F.titrCarb) L.push(['Titrer les acides du Synthalen K (poudre)', 'Titrage par la soude d\'une dispersion du Synthalen K.', 'titr_suivi']);
   if (!F.leurre_titrgel) L.push(['Titrer le gel commercial', 'Titrage d\'une prise de gel par la soude : 30 min.', 'leurre_titrgel']);
   if (!F.leurre_ir) L.push(['Spectre infrarouge du gel (réflexion totale atténuée, ATR)', 'Une goutte de gel sur le cristal : 15 min avec le nettoyage.', 'leurre_ir']);
@@ -680,15 +680,15 @@ add('point_dubreuil', {
 // ───────────── Fabrication ─────────────
 add('fab_choix', {
   fiches: ['synthalen'],
-  lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Comment fabriques-tu le gel ?',
-  texte: () => `« Le Synthalen K est long à se disperser : à froid, compte 1 h à 1 h 30 ; un chauffage modéré accélère la dispersion. Dès qu'il est dispersé, c'est la base (la trolamine) qui fait épaissir. »\nComment procèdes-tu ?`,
+  lieu: 'Paillasse de formulation', pnj: 'moi', titre: 'Comment fabriques-tu le gel ?',
+  texte: () => `D'après la fiche technique, le Synthalen K est long à se disperser (de 30 min à 1 h 30 à froid) ; un léger chauffage accélère la dispersion. Une fois dispersé, c'est la base (la trolamine) qui fait épaissir le milieu.\nComment procèdes-tu ?`,
   hyp: 'Hypothèse : le Synthalen K gonfle et épaissit quand il est neutralisé ; mal dispersé, il forme des grumeaux qui ne se redissolvent pas bien.',
-  choix: [
-    { t: 'Ballon à reflux sous agitation, chauffage modéré, base ajoutée à la fin', d: '15 min de travail, puis environ 1 h de dispersion.', duree: 15, vers: 'secu', f: { mode: 'reflux', perteEth: 0.01 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 60 } }), note: 'Fabrication : ballon à reflux, chauffage modéré, agitation, base en dernier.' },
-    { t: 'Bécher sur plaque chauffante sous agitation, base ajoutée à la fin', d: '10 min de travail, puis environ 45 min de dispersion.', duree: 10, vers: 'secu', f: { mode: 'becher', perteEth: 0.18 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 45 } }), note: 'Fabrication : bécher sur plaque chauffante, agitation, base en dernier.' },
-    { t: 'Bécher à température ambiante sous agitation, base ajoutée à la fin', d: '10 min de travail, puis environ 1 h 30 de dispersion.', duree: 10, vers: 'secu', f: { mode: 'froid', perteEth: 0.04 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 90 } }), note: 'Fabrication : bécher à froid, agitation, base en dernier.' },
-    { t: 'Tout mélanger d\'un coup, base comprise, pour gagner du temps', d: '10 min de travail.', duree: 10, vers: 'fab_grumeaux', f: { mode: 'base', perteEth: 0.01 }, note: 'Fabrication : tous les constituants, base comprise, dès le départ.' },
-  ],
+  choix: e => melange(e, 'fabp', [
+    { id: 'reflux', t: 'Ballon à reflux sous agitation, chauffage modéré, base ajoutée à la fin', d: '15 min de travail, puis environ 1 h de dispersion.', duree: 15, vers: 'secu', f: { mode: 'reflux', perteEth: 0.01 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 60 } }), note: 'Fabrication : ballon à reflux, chauffage modéré, agitation, base en dernier.' },
+    { id: 'becher', t: 'Bécher sur plaque chauffante sous agitation, base ajoutée à la fin', d: '10 min de travail, puis environ 45 min de dispersion.', duree: 10, vers: 'secu', f: { mode: 'becher', perteEth: 0.18 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 45 } }), note: 'Fabrication : bécher sur plaque chauffante, agitation, base en dernier.' },
+    { id: 'froid', t: 'Bécher à température ambiante sous agitation, base ajoutée à la fin', d: '10 min de travail, puis environ 1 h 30 de dispersion.', duree: 10, vers: 'secu', f: { mode: 'froid', perteEth: 0.04 }, run: n => ({ ...marquer(n, 'fab'), bg: { ...n.bg, gel: n.t + 90 } }), note: 'Fabrication : bécher à froid, agitation, base en dernier.' },
+    { id: 'base', t: 'Tout mélanger d\'un coup, base comprise, pour gagner du temps', d: '10 min de travail.', duree: 10, vers: 'fab_grumeaux', f: { mode: 'base', perteEth: 0.01 }, note: 'Fabrication : tous les constituants, base comprise, dès le départ.' },
+  ]),
 });
 const tourne = (e, cle, k) => { const L = [...k]; const r = Math.floor(unif(e.f.graine, cle) * L.length); return [...L.slice(r), ...L.slice(0, r)]; };
 add('secu', {
@@ -731,7 +731,7 @@ add('ph', {
   fiches: ['synthalen', 'trolamine'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'ph', titre: 'Neutraliser et mettre en pot',
   video: { src: 'videos/neutralisation-carbopol.mp4', legende: 'Enregistrement du TP : le milieu agité s\'épaissit pendant la neutralisation.' },
-  texte: e => `« Ajoute la trolamine par petites fractions en agitant, et lis le pH au pH-mètre après chaque ajout (2 minutes l'ajout). Vise un pH proche de celui du gel commercial, vers 6. Regarde ce que ça donne quand le milieu épaissit. » ${e.f.disp === 'grumeaux' ? 'Le gel contient des grumeaux.' : ''}${e.f.cooh ? `\nD'après ton titrage, ${nf(e.f.fm?.carb || 1.5, 2)} g de Synthalen K contiennent ${nf((e.f.fm?.carb || 1.5) * e.f.cooh / 100 / M_COOH * 1000, 1)} mmol de COOH : les neutraliser tous demanderait ${nf((e.f.fm?.carb || 1.5) * e.f.cooh / 100 / M_COOH * M_TEA, 2)} g de trolamine.` : ''}`,
+  texte: e => `« Ta formule prévoyait ${nf(e.f.fm?.trol ?? 0, 2)} g de trolamine : c'était une estimation. Ajoute-la par petites fractions en agitant et lis le pH au pH-mètre après chaque ajout (2 minutes l'ajout). C'est le pH qui décide de la quantité réelle : vise un pH proche de celui du gel commercial, vers 6. » ${e.f.disp === 'grumeaux' ? 'Le gel contient des grumeaux.' : ''}${e.f.cooh ? `\nD'après ton titrage, ${nf(e.f.fm?.carb || 1.5, 2)} g de Synthalen K contiennent ${nf((e.f.fm?.carb || 1.5) * e.f.cooh / 100 / M_COOH * 1000, 1)} mmol de COOH : les neutraliser tous demanderait ${nf((e.f.fm?.carb || 1.5) * e.f.cooh / 100 / M_COOH * M_TEA, 2)} g de trolamine.` : ''}`,
   hyp: 'Hypothèse : la viscosité d\'un gel de Synthalen K dépend du pH (elle augmente de pH 4 à 6 environ puis se stabilise) ; la lecture du pH-mètre a une dispersion de ±0,04.',
   choix: [],
 });
@@ -854,7 +854,7 @@ const DIAG_CLHP = {
 };
 add('hplc_panne', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'La CLHP est hors service',
-  texte: e => `${e.f.diag && e.f.diag !== 'ines' && e.f.diag !== symptomeClhp(e) ? 'Inès : « Ce n\'était pas ça, regarde de nouveau les relevés. » ' : ''}${DIAG_CLHP[symptomeClhp(e)]} ${e.f.eq?.ext ? '' : 'Lucas, qui passe par là, jette un œil à tes relevés et te lance un conseil.'} Tu peux aussi doser la caféine autrement : elle absorbe fort à 273 nm, on a un spectrophotomètre UV. »\nQue fais-tu ?`,
+  texte: e => `${e.f.diag && e.f.diag !== 'ines' && e.f.diag !== symptomeClhp(e) ? 'Inès : « Ce n\'était pas ça, regarde de nouveau les relevés. » ' : ''}${DIAG_CLHP[symptomeClhp(e)]} ${e.f.eq?.ext ? '' : 'Lucas, qui passe par là, jette un œil à tes relevés et te lance un conseil.'} Mais la CLHP n'est pas obligatoire : à 273 nm, la caféine est sans doute la seule espèce du gel qui absorbe, donc on peut simplement mesurer l'absorbance des solutions au spectrophotomètre UV, sans passer par une colonne. »\nQue fais-tu ?`,
   hyp: 'Hypothèse (UV) : loi de Beer-Lambert (A proportionnelle à C) dans la zone de travail, A restant inférieure à 1.',
   choix: e => [
     { t: 'Ajouts dosés au spectrophotomètre UV : on ajoute des quantités connues de caféine à la solution de gel', d: '5 fioles à préparer', duree: 10, vers: 'hub', f: { methCaf: 'ajouts' }, note: 'Panne de CLHP : dosage par ajouts dosés en UV.' },
@@ -1221,6 +1221,7 @@ add('titr_carb', {
 });
 add('titr_carb_calc', {
   fiches: ['synthalen'],
+  visuels: e => SCENES.titr_carb.visuels(e),
   lieu: 'Salle de titrage', pnj: 'moi', titre: 'Teneur en groupes acides',
   texte: e => { const d = donneesTitr(e); return `Prise d'essai m = ${nf(d.P.m, 3)} g de Synthalen K ; soude à c = ${nf(d.P.c, 2)} mol/L ; équivalence à V_éq = ${nf(d.vEq, 2)} mL. Un groupe COOH consomme un ion hydroxyde.`; },
   hyp: "Hypothèse : chaque COOH du polymère réagit avec un seul HO⁻ ; la masse de COOH est calculée avec M = 45,02 g/mol (motif –COOH).",

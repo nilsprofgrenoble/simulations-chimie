@@ -65,7 +65,7 @@ const expert = {
   calc: (e, k) => J.nf(k.vrai(e), k.cs ?? 2),   // réponse arrondie comme affichée : doit être acceptée
   choix: (e, ch) => {
     if (e.scene === 'hub') { const ordre = ['es_balance', 'es_prep', 'eth1', 'choix_caf', 'hplc_m', 'choix_eth', 'cpg_m', 'rheoC', 'es_calc1', 'es_calc2b', 'es_calc3', 'formule', 'eq_base', 'fab_choix', 'fab_disp', 'rheoF', 'uv_ajouts_plan', 'uv_ext_plan', 'hplc_gamme_plan', 'hplc_ei', 'cpg_inj', 'eq_ines', 'verdict'];
-      return [...ch].sort((a, b) => ordre.indexOf(a.vers) - ordre.indexOf(b.vers)).find(c => ordre.includes(c.vers)) || ch[0]; }
+      return [...ch].filter(c => !c.bloque && !c.pause).sort((a, b) => ordre.indexOf(a.vers) - ordre.indexOf(b.vers)).find(c => ordre.includes(c.vers)) || ch.find(c => !c.bloque && !c.pause); }
     if (e.scene === 'titr_suivi') return ch.find(c => c.id === 'ph');
     if (e.scene === 'titr_indic') return ch.find(c => c.id === 'php');
     if (e.scene === 'choix_caf') return ch.find(c => c.id === (e.f.graine % 2 ? 'clhpEI' : 'clhpEI'));
@@ -81,7 +81,8 @@ const expert = {
     if (e.scene.startsWith('eq_') || e.scene === 'point_dubreuil' || e.scene === 'secu') return ch.find(c => c.tag === 'ok');
     if (e.scene === 'cause') return ch.find(c => c.f.causeJuste);
     if (e.scene === 'avis') return ch[0];
-    if (e.scene === 'fab_choix' || e.scene === 'fab_disp') return ch[0];
+    if (e.scene === 'fab_choix') return ch.find(c => c.id === 'reflux');
+    if (e.scene === 'fab_disp') return ch[0];
     if (e.scene === 'rheoF') return ch.find(c => !c.f.errRheo2);
     if (e.scene === 'verdict') { const D = J.defauts(e); return ch[D.length ? 1 + ['caf', 'eth', 'visco'].indexOf(D[0]) : 0]; }
     return ch[0];
@@ -131,7 +132,7 @@ for (const [id, sc] of Object.entries(J.SCENES)) if (sc.plan) { assert(J.SCENES[
 console.log('OK : scènes', Object.keys(J.SCENES).length);
 
 // 4. Conséquence réelle du procédé : sans reflux, l'éthanol manque ; la cause « fabrication » est la bonne, et seulement elle
-const expBecher = { ...expert, choix: (e, ch) => e.scene === 'fab_choix' ? ch[1] : e.scene === 'avis' ? ch[ch.length - 1] : expert.choix(e, ch) };
+const expBecher = { ...expert, choix: (e, ch) => e.scene === 'fab_choix' ? ch.find(c => c.id === 'becher') : e.scene === 'avis' ? ch[ch.length - 1] : expert.choix(e, ch) };
 let nDet = 0, nB = 0;
 for (let g = 1; g <= 100; g++) {
   const { e } = joue(expBecher, g * 6571);
@@ -144,7 +145,7 @@ assert(nDet === nB, `bécher ouvert, bon diagnostic et bonne cause : ${nDet}/${n
 const expMauvaise = { ...expBecher, choix: (e, ch) => e.scene === 'cause' ? ch.find(c => !c.f.causeJuste) : expBecher.choix(e, ch) };
 assert(joue(expMauvaise, 99).e.scene === 'fin_mauvaise_cause', 'mauvaise cause → fin_mauvaise_cause');
 // froid : long mais sans défaut ; conseils de collègues : bilan C.7.3
-const expFroid = { ...expert, choix: (e, ch) => e.scene === 'fab_choix' ? ch[2] : expert.choix(e, ch) };
+const expFroid = { ...expert, choix: (e, ch) => e.scene === 'fab_choix' ? ch.find(c => c.id === 'froid') : expert.choix(e, ch) };
 { const r = joue(expFroid, 5).e; assert(!J.defauts(r).includes('eth'), 'à froid : éthanol conforme'); }
 { const r = joue(expert, 5).e; assert(J.bilan(r)[5].niveau === 'ok', 'C.7.3 ok pour un échange respectueux'); }
 const expSec = { ...expert, choix: (e, ch) => e.scene.startsWith('eq_') || e.scene === 'point_dubreuil' ? ch.find(c => c.tag === 'ko') : expert.choix(e, ch) };
@@ -154,7 +155,7 @@ const expPassif = { ...expert, choix: (e, ch) => e.scene === 'eq_base' ? ch.find
 console.log('conséquences et C.7.3 : OK');
 
 // 5. Remédiation : le bécher ouvert se rattrape en compensant l'éthanol, un pH trop bas en reprenant la trolamine
-const expCompense = { ...expert, choix: (e, ch) => e.scene === 'fab_choix' ? ch[1] : expert.choix(e, ch) };
+const expCompense = { ...expert, choix: (e, ch) => e.scene === 'fab_choix' ? ch.find(c => c.id === 'becher') : expert.choix(e, ch) };
 let nOk = 0, nFt = 0; for (let g = 1; g <= 60; g++) { const { e } = joue(expCompense, g * 3571); assert(e.f.compense && (e.scene === 'fin_conforme' || e.scene === 'fin_temps'), `compensation (${e.scene})`); if (e.scene === 'fin_conforme') nOk++; else nFt++; }
 console.log(`compensation : ${nOk} conformes, ${nFt} hors délai sur 60`);
 assert(nOk / 60 >= 0.75, 'la remédiation reste faisable dans les temps pour la plupart des parties');
@@ -395,3 +396,13 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   const h0 = { ...J.etatInitial(2), scene: 'hub', t: 100 }; assert(!J.choixDe(h0).some(c => c.pause), 'pas de pause sans appareil en route');
   const h1 = { ...h0, fait: { es: true }, bg: { es: 200 } }; const ps = J.choixDe(h1).find(c => c.pause); assert(ps, 'pause proposée'); const h2 = J.choisir(h1, ps); assert(h2.t === 110 && h2.f.attente === 0 && h2.scene === 'hub');
   console.log('retours de test v33 : OK'); }
+// 27. Retours de test (v34) : tâches verrouillées visibles, pause isolée, textes
+{ const h = { ...J.etatInitial(3), scene: 'hub', t: 10 }, f = J.choixDe(h).find(c => c.vers === 'formule');
+  assert(f && f.bloque && /Formuler les 200 g/.test(f.t), 'formule visible dès le début, verrouillée');
+  const h2 = { ...h, fait: { es: true, esRes: true, eth: true, hplcPrep: true } }; assert(!J.choixDe(h2).find(c => c.vers === 'formule').bloque, 'formule déverrouillée');
+  const c = J.choixDe(h2).find(c => c.vers === 'hplc_ei'); assert(c && c.bloque, 'dosage verrouillé tant que le gel n\'est pas en pot');
+  assert(!J.choixDe({ ...h2, fait: { ...h2.fait, ph: true } }).find(c => c.vers === 'hplc_ei').bloque, 'dosage déverrouillé après la mise en pot');
+  const fc = J.choixDe({ ...J.etatInitial(3), scene: 'fab_choix' }); assert(fc.length === 4 && new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(g => J.choixDe({ ...J.etatInitial(g), scene: 'fab_choix' })[0].id)).size > 1, 'options de fabrication mélangées');
+  assert(!/Lucas/.test(J.texteDe({ ...J.etatInitial(3), scene: 'fab_choix' })), 'pas de citation de Lucas sur la dispersion');
+  assert(/seule espèce/.test(J.texteDe({ ...J.etatInitial(3), scene: 'hplc_panne', f: { ...J.etatInitial(3).f } })), 'UV : seule espèce qui absorbe');
+  console.log('retours de test v34 : OK'); }
