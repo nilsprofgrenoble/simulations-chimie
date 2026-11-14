@@ -110,7 +110,7 @@ export function SchemaBurette({ V2, ouvert, coul, indicateur, hl = () => false, 
         <path d="M 350 190 Q 330 232 276 262 L 270 302" fill="none" stroke={KIT.txt2} strokeWidth="2.5" strokeLinecap="round"/>
         <rect x="266" y="296" width="8" height="16" rx="3" fill="#fde68a" stroke={KIT.txt}/>
         <rect x="350" y="168" width="150" height="46" rx="6" fill="#0f172a"/>
-        <text x="425" y="188" fontSize="11" textAnchor="middle" fill="#94a3b8">pH-mètre</text>
+        <text x="425" y="188" fontSize="11" textAnchor="middle" fill="#94a3b8">{sonde.nom || 'pH-mètre'}</text>
         <text x="425" y="207" fontSize="18" fontWeight="700" textAnchor="middle" fill="#86efac" fontFamily="ui-monospace, monospace">{sonde.valeur}</text>
       </g>}
       {/* légende de couleur */}

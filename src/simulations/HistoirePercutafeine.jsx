@@ -1,12 +1,14 @@
 import SchemaFiolesClhp from './SchemaFiolesClhp';
 import SchemasChromato from './SchemasChromato';
+import { SchemaBurette } from './titrageCommun';
+import { couleurIndicateur } from './acidesBasesModele.js';
 import FichesPercutafeine from './FichesPercutafeine';
 import { useState, useEffect, useRef } from "react";
 import { useEtatPersistant, Formule } from "../commun";
 import { Avatar as AvatarVisuel, STYLE_VISUELS } from './LaboVisuels';
 import {
   CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_FIN, T_MIDI, T_PAUSE, NB_AVATARS, avatarDe, pn, CHAMPS_FORMULE, FORMULE_REPLI, etatInitial, texteDe, choixDe, visuelsDe, choisir, valider, estFin, peutRevenir, revenirHub,
-  horloge, duree, nf, statutBg, resume, bilan, validerFormule, cliquerPiece, ajouterBase, validerPh, observationsDe, resultatsVus, demanderAide, niveauAide, textesAide, noterObs, chronologie, consequences, fiche, validerPlan, nombre,
+  horloge, duree, nf, statutBg, resume, bilan, validerFormule, cliquerPiece, ajouterBase, validerPh, observationsDe, resultatsVus, demanderAide, niveauAide, textesAide, noterObs, chronologie, consequences, fiche, validerPlan, nombre, donneesTitr, GRANDEUR_TITR, phReel,
 } from "./percutafeineJeu";
 
 // ====================================================
@@ -121,17 +123,22 @@ function Droite({ v }) {
 }
 
 function CourbeTitrage({ v }) {
-  const W = 360, x0 = 40, x1 = 346, vmax = Math.max(...v.pts.map(p => p[0])) || 1, dmax = Math.max(0.1, ...v.der.map(d => d[1]));
-  const X = x => x0 + x / vmax * (x1 - x0), Y = y => 124 - (y - 2) / 11 * 104, Yd = y => 196 - Math.max(0, y) / dmax * 40;
+  const W = 360, x0 = 40, x1 = 346, vmax = v.vmax || Math.max(...v.pts.map(p => p[0])) || 1, avecDer = v.der && v.der.length > 0, dmax = Math.max(0.1, ...(v.der || []).map(d => d[1]));
+  const ys = v.pts.map(p => p[1]), yr = v.yr || [Math.min(...ys, 0), Math.max(...ys) * 1.1 || 1], [y0, y1] = yr, yl = v.y || 'pH';
+  const X = x => x0 + x / vmax * (x1 - x0), Y = y => 124 - (y - y0) / (y1 - y0) * 112, Yd = y => 196 - Math.max(0, y) / dmax * 40;
+  const pas = (y1 - y0) / 4, graduations = yl === 'pH' ? [4, 6, 8, 10, 12] : [0, 1, 2, 3, 4].map(k => y0 + k * pas);
+  const fmtG = g => Math.abs(g) >= 10 ? String(Math.round(g)) : String(Math.round(g * 100) / 100).replace('.', ',');
   return (<Cadre titre={v.titre.toUpperCase()}>
-    <svg viewBox={`0 0 ${W} 214`} role="img" aria-label={`${v.titre} : ${v.pts.length} points${v.veq ? `, saut de pH vers ${v.veq} mL` : ''}, et courbe dérivée`} style={{ width: '100%', maxWidth: 640, margin: '0 auto', display: 'block' }}>
+    <svg viewBox={`0 0 ${W} ${avecDer ? 214 : 154}`} role="img" aria-label={`${v.titre} : ${v.pts.length} points${v.veq ? `, équivalence vers ${v.veq} mL` : ''}`} style={{ width: '100%', maxWidth: 640, margin: '0 auto', display: 'block' }}>
       <line x1={x0} y1="124" x2={x1} y2="124" stroke="#6b8794" /><line x1={x0} y1="12" x2={x0} y2="124" stroke="#6b8794" />
-      {[4, 6, 8, 10, 12].map(h => <g key={h}><line x1={x0 - 3} y1={Y(h)} x2={x0} y2={Y(h)} stroke="#6b8794" /><text x={x0 - 6} y={Y(h) + 3} fontSize="9" textAnchor="end" fill="#9fc3d1">{h}</text></g>)}
-      <polyline points={v.pts.map(p => `${X(p[0])},${Y(p[1])}`).join(' ')} fill="none" stroke="#5eead4" strokeWidth="1.4" />
+      {graduations.map(h => <g key={h}><line x1={x0 - 3} y1={Y(h)} x2={x0} y2={Y(h)} stroke="#6b8794" /><text x={x0 - 6} y={Y(h) + 3} fontSize="9" textAnchor="end" fill="#9fc3d1">{fmtG(h)}</text></g>)}
+      {v.droites && v.droites.map((r, i) => { const xa = i ? v.veq : 0, xb = i ? vmax : v.veq; return xa != null && xb != null ? <line key={i} x1={X(xa)} y1={Y(r.a + r.b * xa)} x2={X(xb)} y2={Y(r.a + r.b * xb)} stroke="#fb923c" strokeWidth="1.2" strokeDasharray="4 3" /> : null; })}
+      {v.pts.length > 1 && <polyline points={v.pts.map(p => `${X(p[0])},${Y(p[1])}`).join(' ')} fill="none" stroke="#5eead4" strokeWidth="1.4" />}
       {v.pts.map((p, i) => <circle key={i} cx={X(p[0])} cy={Y(p[1])} r="2.6" fill="#fde68a" />)}
-      <text x={x1} y="138" textAnchor="end" fontSize="10" fill="#9fc3d1">V soude (mL)</text><text x="4" y="14" fontSize="10" fill="#9fc3d1">pH</text>
-      <text x={x0} y="156" fontSize="10" fill="#9fc3d1">Dérivée dpH/dV</text><line x1={x0} y1="196" x2={x1} y2="196" stroke="#6b8794" />
-      {v.der.map((d, i) => <circle key={i} cx={X(d[0])} cy={Yd(d[1])} r="2.6" fill={v.veq != null && d[0] === v.veq ? '#fb923c' : '#93c5fd'} />)}
+      {Array.from({ length: Math.floor(vmax / (vmax > 12 ? 2 : 1)) + 1 }, (_, q) => q * (vmax > 12 ? 2 : 1)).filter(q => q <= vmax).map(q => <g key={q}><line x1={X(q)} y1="124" x2={X(q)} y2="127" stroke="#6b8794" /><text x={X(q)} y="136" fontSize="8.5" textAnchor="middle" fill="#9fc3d1">{q}</text></g>)}
+      <text x={x1} y="147" textAnchor="end" fontSize="10" fill="#9fc3d1">V soude (mL)</text><text x="4" y="8" fontSize="10" fill="#9fc3d1">{yl}</text>
+      {avecDer && <g><text x={x0} y="164" fontSize="10" fill="#9fc3d1">Dérivée dpH/dV</text><line x1={x0} y1="196" x2={x1} y2="196" stroke="#6b8794" />
+        {v.der.map((d, i) => <circle key={i} cx={X(d[0])} cy={Yd(d[1])} r="2.6" fill={v.veq != null && d[0] === v.veq ? '#fb923c' : '#93c5fd'} />)}</g>}
     </svg></Cadre>);
 }
 
@@ -261,6 +268,34 @@ function StationSchema({ e, sc, onEtat }) {
   return (<div data-schema className="pc-inst" style={inst}>
     <SchemasChromato type={sc.schema} onClic={clic} derniere={der} indice={ind} />
     {msg && <div role="alert" style={{ marginTop: 10, fontSize: 14.5, lineHeight: 1.5, color: C.ambre }}>{msg}<br /><span style={{ color: C.doux }}>(Chaque erreur te coûte 2 minutes.)</span></div>}
+  </div>);
+}
+function StationTitrage({ e, sc, onEtat }) {
+  const d = donneesTitr(e), ind = d.ind, g = GRANDEUR_TITR[d.suivi], N = d.pts.length, [i, setI] = useState(0), [auto, setAuto] = useState(false);
+  const virage = ind && d.iVirage != null && i >= d.iVirage, fini = i >= N - 1 || (!!ind && virage);
+  const marche = auto && !fini;
+  useEffect(() => {
+    if (!marche) return undefined;
+    const h = setInterval(() => setI(k => k + 1), 380); return () => clearInterval(h);
+  }, [marche]);
+  const k = Math.min(i, N - 1), v = d.pts[k][0], lecture = ind ? null : `${nf(d.pts[k][1], g.dec)}${g.unite ? ' ' + g.unite : ''}`;
+  const coul = ind ? couleurIndicateur(ind, phReel(e, v)) : '#eef2f7';
+  const prochain = k < N - 1 ? d.pts[k + 1][0] - v : 0;
+  const bt = (actif) => ({ padding: '10px 14px', borderRadius: 10, border: `1px solid ${actif ? C.accent : C.bord}`, background: actif ? C.accent : '#fff', color: actif ? '#fff' : C.encre, fontSize: 15, cursor: 'pointer', minHeight: 44, font: 'inherit' });
+  return (<div data-titrage className="pc-inst" style={inst}>
+    <SchemaBurette V2={v} ouvert={marche} coul={coul} indicateur={ind ? ind.nom : null} legendeCouleur={!!ind} reperes={false} etiquetteBurette={`NaOH ${nf(d.P.c, 2)} M`} sonde={ind ? null : { nom: g.nom, valeur: lecture }} />
+    <div role="status" aria-live="polite" style={{ margin: '8px 2px', fontSize: 16, lineHeight: 1.5 }}>
+      Volume de soude versé : <strong>{nf(v, 2)} mL</strong>{lecture && <> · {g.nom} : <strong>{lecture}</strong></>}
+      {ind && <> · couleur de la dispersion : <span style={{ display: 'inline-block', width: 16, height: 16, borderRadius: 4, background: coul, border: '1px solid #475569', verticalAlign: 'middle' }} /></>}
+      {virage && <div style={{ color: C.ambre, marginTop: 4 }}>La couleur a viré : tu notes V = {nf(d.vEq, 2)} mL.</div>}
+    </div>
+    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '6px 0 10px' }}>
+      {!fini && <button type="button" style={bt(false)} onClick={() => { setAuto(false); setI(k + 1); }}>Verser {nf(prochain, 2)} mL</button>}
+      {!fini && <button type="button" style={bt(marche)} onClick={() => setAuto(a => !a)}>{marche ? '⏸ Pause' : '▶ Verser en continu'}</button>}
+      {!fini && <button type="button" style={bt(false)} onClick={() => { setAuto(false); setI(ind && d.iVirage != null ? d.iVirage : N - 1); }}>{ind && d.iVirage != null ? 'Verser jusqu\'au virage' : 'Tout verser'}</button>}
+      {fini && <button type="button" style={bt(true)} onClick={() => onEtat(choisir(e, sc.choix[0]))}>Terminer le titrage</button>}
+    </div>
+    {!ind && <CourbeTitrage v={{ titre: 'Courbe de titrage en direct', pts: d.pts.slice(0, k + 1), der: [], veq: null, vmax: d.P.vfin, y: g.y, yr: g.yr || [0, Math.max(...d.pts.map(p => p[1])) * 1.1] }} />}
   </div>);
 }
 function StationObs({ e, onEtat }) {
@@ -503,6 +538,7 @@ export function SimulationHistoirePercutafeine() {
         {sc.station === 'ph' && <StationPh e={e} onEtat={setEtat} />}
         {sc.station === 'plan' && <StationPlan key={e.scene + e.t} e={e} sc={sc} onEtat={setEtat} />}
         {sc.station === 'obs' && <StationObs e={e} onEtat={setEtat} />}
+        {sc.station === 'titrage' && <StationTitrage key={e.scene} e={e} sc={sc} onEtat={setEtat} />}
         {sc.station === 'schema' && <StationSchema key={e.scene} e={e} sc={sc} onEtat={setEtat} />}
         {sc.calcul && <Calcul key={e.scene} e={e} sc={sc} onEtat={setEtat} />}
 
