@@ -644,9 +644,9 @@ add('rheoC', {
   hyp: "Hypothèse : les points suivent le modèle d'Herschel-Bulkley (seuil + loi de puissance) ; les valeurs sont des données de scénario inspirées des mesures des élèves.",
   visuels: () => [{ type: 'rheo', courbes: [{ nom: 'Gel commercial', pts: courbe(1), couleur: '#1e3a8a' }] }],
   choix: e => melange(e, 'rheoC', [
-    { id: 'a', t: 'Le gel est rhéofluidifiant : la viscosité diminue quand le gradient augmente', duree: 10, vers: 'hub', run: n => marquer(n, 'rheoC'), note: 'Rhéologie du commercial : rhéofluidifiant avec seuil.' },
-    { id: 'b', t: 'Le gel est newtonien : sa viscosité ne dépend pas du gradient', duree: 10, vers: 'rheoC_faux', run: n => marquer(n, 'rheoC'), f: { errRheo: true } },
-    { id: 'c', t: 'Le gel est rhéoépaississant : la viscosité augmente avec le gradient', duree: 10, vers: 'rheoC_faux', run: n => marquer(n, 'rheoC'), f: { errRheo: true } },
+    { id: 'a', t: 'Le gel est rhéofluidifiant', duree: 10, vers: 'hub', run: n => marquer(n, 'rheoC'), note: 'Rhéologie du commercial : rhéofluidifiant avec seuil.' },
+    { id: 'b', t: 'Le gel est newtonien', duree: 10, vers: 'rheoC_faux', run: n => marquer(n, 'rheoC'), f: { errRheo: true } },
+    { id: 'c', t: 'Le gel est rhéoépaississant', duree: 10, vers: 'rheoC_faux', run: n => marquer(n, 'rheoC'), f: { errRheo: true } },
   ]),
 });
 add('rheoC_faux', {
