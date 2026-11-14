@@ -6,6 +6,7 @@
 //  chaque donnée affichée est celle qui sert au corrigé (les calculs repartent des valeurs arrondies affichées).
 //  Hypothèses de mesure : voir les champs « hyp » de chaque scène (toujours affichées à l'élève).
 // ====================================================
+import { INDICATEURS } from './acidesBasesModele.js';
 export const ID_PERCU = 113;
 export const CLE_ETAT = 'percu-histoire-v1';
 export const CLE_FINS = 'percu-fins-v1';
@@ -245,8 +246,8 @@ const taches = e => {
   if (F.ph && F.rheoC && !F.rheoF) L.push(['Comparer les rhéologies', 'Mesurer le gel formulé et le comparer au commercial.', 'rheoF']);
   if (F.ph && F.hplcPrep && !F.caf) L.push(['Doser la caféine du gel formulé', e.f.methCaf === 'ajouts' ? 'Concevoir les fioles, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'ext' ? 'Concevoir la gamme, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'gamme' ? 'Concevoir la gamme, injecter en CLHP.' : 'CLHP, méthode de l\'étalon interne.', e.f.methCaf === 'ajouts' ? 'uv_ajouts_plan' : e.f.methCaf === 'ext' ? 'uv_ext_plan' : e.f.methCaf === 'gamme' ? 'hplc_gamme_plan' : 'hplc_ei']);
   if (F.ph && F.cpgPrep && !F.ethQC) L.push(['Doser l\'éthanol du gel formulé', 'CPG avec étalon interne, puis avec une gamme d\'étalonnage.', 'cpg_inj']);
-  if (!F.titrCarb) L.push(['Titrer les acides du Carbopol (poudre)', 'Titrage pH-métrique par la soude d\'une dispersion du Carbopol 980 NF.', 'titr_carb_plan']);
-  if (!F.leurre_titrgel) L.push(['Titrer le gel commercial', 'Titrage pH-métrique d\'une prise de gel par la soude : 30 min.', 'leurre_titrgel']);
+  if (!F.titrCarb) L.push(['Titrer les acides du Carbopol (poudre)', 'Titrage par la soude d\'une dispersion du Carbopol 980 NF.', 'titr_suivi']);
+  if (!F.leurre_titrgel) L.push(['Titrer le gel commercial', 'Titrage d\'une prise de gel par la soude : 30 min.', 'leurre_titrgel']);
   if (!F.leurre_ir) L.push(['Spectre infrarouge du gel (réflexion totale atténuée, ATR)', 'Une goutte de gel sur le cristal : 15 min avec le nettoyage.', 'leurre_ir']);
   if (!F.leurre_refracto) L.push(['Indice de réfraction du gel', 'Une goutte sur le prisme du réfractomètre : 15 min.', 'leurre_refracto']);
   if (!F.leurre_polar) L.push(['Pouvoir rotatoire du gel', 'Remplir la cuve du polarimètre avec une solution de gel : 15 min.', 'leurre_polar']);
@@ -966,44 +967,111 @@ export function volumesTitr(P) {
   jusque(vdeb, P.dv); jusque(vfz, dvf); jusque(P.vfin, P.dv);
   return [...new Set(vols.map(x => arr(x, 2)))];
 }
+// Méthodes de suivi du titrage et indicateurs colorés du laboratoire (liste de la simulation « Acides et bases »)
+export const INDIC_ADAPTES = ['bth', 'php'];   // zone de virage contenant le pH à l'équivalence (acide faible titré par une base forte)
+export const COULEURS_INDIC = { jm: ['rouge', 'jaune'], vbc: ['jaune', 'bleu'], bbt: ['jaune', 'bleu'], bth: ['jaune', 'bleu'], php: ['incolore', 'rose'], jar: ['jaune', 'brun'] };
+const regL = P => { const n = P.length, sx = P.reduce((s, p) => s + p[0], 0), sy = P.reduce((s, p) => s + p[1], 0), sxx = P.reduce((s, p) => s + p[0] * p[0], 0), sxy = P.reduce((s, p) => s + p[0] * p[1], 0), b = (n * sxy - sx * sy) / (n * sxx - sx * sx); return { a: (sy - b * sx) / n, b }; };
+const sseL = (P, r) => P.reduce((s, p) => s + (p[1] - r.a - r.b * p[0]) ** 2, 0);
+// Cassure de la courbe de conductivité : meilleure paire de droites (somme des carrés des écarts minimale), abscisse de leur intersection
+export function cassure(pts) {
+  let best = null;
+  for (let k = 2; k <= pts.length - 3; k++) { const A = regL(pts.slice(0, k + 1)), B = regL(pts.slice(k)), s = sseL(pts.slice(0, k + 1), A) + sseL(pts.slice(k), B); if (!best || s < best.s) best = { s, A, B }; }
+  if (!best || Math.abs(best.A.b - best.B.b) < 1e-9) return null;
+  const v = (best.B.a - best.A.a) / (best.A.b - best.B.b); return v > pts[0][0] && v < pts[pts.length - 1][0] ? { v, A: best.A, B: best.B } : null;
+}
 export function donneesTitr(e) {
-  const P = planDe(e, 'titr_carb_plan') || { m: 0.2, V0: 100, c: 0.1, vfin: 12, dv: 0.5 }, w = coohLot(e);
+  const P = planDe(e, 'titr_carb_plan') || { m: 0.2, V0: 100, c: 0.1, vfin: 12, dv: 0.5 }, w = coohLot(e), suivi = e.f?.suivi || 'ph', ind = suivi === 'ind' ? INDICATEURS.find(i => i.id === e.f.indic) : null;
   const n = P.m * w / M_COOH, veq = n / P.c * 1000;           // mol ; mL
   const epais = P.m / P.V0 * 100 > 0.6, sig = epais ? 0.22 : 0.04, vols = volumesTitr(P), N = vols.length - 1;
   const pHw = a => 6 + 2 * Math.log10((a + 0.02) / (1 - a + 0.02));
   const pH = v => { const a = P.c * v / 1000 / n; if (a < 0.995) return Math.max(2.8, pHw(a)); return Math.max(pHw(0.995), 14 + Math.log10(Math.max(1e-9, P.c * v / 1000 - n) / ((P.V0 + v) / 1000))); };
+  const base = { P, w, n, veq, epais, N, suivi, ind, vols };
+  const fin = (pts, extra) => ({ ...base, pts, der: [], iVirage: null, atteint: false, vEq: null, pctMes: null, ...extra, ...(extra.vEq ? { pctMes: P.c * extra.vEq / 1000 * M_COOH / P.m * 100 } : {}) });
+  if (suivi === 'ind') {
+    const pts = vols.map(v => [v, arr(pH(v), 2)]), iV = ind ? pts.findIndex((p, i) => i > 0 && pH(p[0]) >= ind.pKa) : -1;
+    return fin(pts, { iVirage: iV >= 0 ? iV : null, atteint: iV >= 0, vEq: iV >= 0 ? pts[iV][0] : null });
+  }
+  if (suivi === 'cond') {
+    // σ (mS/cm) = (0,04·V₀ + 10·λ·n_ajouté) / (V₀ + V) : Na⁺ avec le polyanion avant l'équivalence (λ ≈ 3), Na⁺ et HO⁻ en excès après (λ ≈ 24,9 mS·m²/mol) ; n en mmol
+    const nmm = n * 1000, kk = v => (0.04 * P.V0 + 10 * 3 * Math.min(P.c * v, nmm) + 10 * 24.9 * Math.max(0, P.c * v - nmm)) / (P.V0 + v);
+    const pts = vols.map((v, i) => [v, arr(kk(v) + 0.004 * (epais ? 3 : 1) * gauss(e.f.graine, `cd${i}`), 3)]);
+    const avant = pts.filter(p => p[0] < veq * 0.95).length, apres = pts.filter(p => p[0] > veq * 1.05).length, c = avant >= 3 && apres >= 3 ? cassure(pts) : null;
+    return fin(pts, { atteint: !!c, vEq: c ? arr(c.v, 2) : null, cass: c });
+  }
+  if (suivi === 'pt') return fin(vols.map((v, i) => [v, arr(248 + 0.25 * v + 3.5 * gauss(e.f.graine, `pt${i}`), 0)]), {});
   const pts = vols.map((v, i) => [v, arr(Math.min(12.4, pH(v) + sig * gauss(e.f.graine, `tc${i}`)), 2)]);
   const der = pts.slice(1).map((p, i) => [arr((p[0] + pts[i][0]) / 2, 2), arr((p[1] - pts[i][1]) / (p[0] - pts[i][0]), 2)]);
   let k = 0; der.forEach((d, i) => { if (d[1] > der[k][1]) k = i; });
   const atteint = P.vfin >= veq * 1.03 && N >= 4, vEq = atteint ? der[k][0] : null;
-  return { P, w, n, veq, pts, der, atteint, vEq, pctMes: vEq ? P.c * vEq / 1000 * M_COOH / P.m * 100 : null, epais, N };
+  return { ...base, pts, der, iVirage: null, atteint, vEq, pctMes: vEq ? P.c * vEq / 1000 * M_COOH / P.m * 100 : null };
 }
+// Grandeurs affichées selon la méthode de suivi (courbe, appareil de mesure)
+export const GRANDEUR_TITR = {
+  ph: { nom: 'pH-mètre', y: 'pH', unite: '', dec: 2, yr: [2, 13] },
+  cond: { nom: 'conductimètre', y: 'σ (mS/cm)', unite: 'mS/cm', dec: 3, yr: null },
+  pt: { nom: 'voltmètre', y: 'E (mV)', unite: 'mV', dec: 0, yr: [150, 350] },
+};
+export const phReel = (e, v) => { const d = donneesTitr(e), a = d.P.c * v / 1000 / d.n, pHw = x => 6 + 2 * Math.log10((x + 0.02) / (1 - x + 0.02)); return a < 0.995 ? Math.max(2.8, pHw(a)) : Math.max(pHw(0.995), 14 + Math.log10(Math.max(1e-9, d.P.c * v / 1000 - d.n) / ((d.P.V0 + v) / 1000))); };
+add('titr_suivi', {
+  fiches: ['carbopol', 'synthalen'],
+  lieu: 'Salle de titrage', pnj: 'moi', titre: 'Comment suivre le titrage ?',
+  texte: () => `Tu vas titrer les groupes acide carboxylique du Carbopol par de la soude. Le laboratoire propose plusieurs façons de repérer l'équivalence. Aucune n'est imposée, le choix t'appartient.`,
+  choix: e => melange(e, 'suivi', [
+    { id: 'ph', t: 'Électrode de verre combinée et pH-mètre', d: 'Courbe pH = f(V) ; étalonnage préalable avec deux solutions tampons (5 min).', duree: 5, vers: 'titr_carb_plan', f: { suivi: 'ph' }, note: 'Titrage du Carbopol : suivi avec une électrode combinée et un pH-mètre.' },
+    { id: 'ind', t: 'Indicateur coloré', d: 'À choisir dans la liste du laboratoire.', duree: 0, vers: 'titr_indic', f: { suivi: 'ind' } },
+    { id: 'cond', t: 'Sonde conductimétrique', d: 'Courbe conductivité = f(V) ; cellule à rincer et à plonger dans la dispersion (3 min).', duree: 3, vers: 'titr_carb_plan', f: { suivi: 'cond' }, note: 'Titrage du Carbopol : suivi avec une sonde conductimétrique.' },
+    { id: 'pt', t: 'Électrode de platine et électrode de référence Ag/AgCl', d: 'Mesure de la tension entre les deux électrodes (3 min de montage).', duree: 3, vers: 'titr_carb_plan', f: { suivi: 'pt' }, run: n => ({ ...n, f: { ...n.f, errSuivi: (n.f.errSuivi || 0) + 1 } }), note: 'Titrage du Carbopol : suivi avec une électrode de platine et une électrode de référence Ag/AgCl.' },
+  ]),
+});
+add('titr_indic', {
+  fiches: ['carbopol'],
+  lieu: 'Salle de titrage', pnj: 'moi', titre: 'Quel indicateur coloré ?',
+  texte: () => `Voici les indicateurs colorés disponibles au laboratoire, avec leur zone de virage. Tu repéreras l'équivalence au changement de couleur de la dispersion.`,
+  choix: e => melange(e, 'indic', INDICATEURS.map(i => ({ id: i.id, t: `${i.nom}${i.id === 'php' ? ' (CMR)' : ''}`, d: `zone de virage de pH ${nf(i.zone[0], 1)} à ${nf(i.zone[1], 1)}`, duree: 0, vers: 'titr_carb_plan', f: { indic: i.id },
+    run: n => INDIC_ADAPTES.includes(i.id) ? n : { ...n, f: { ...n.f, errSuivi: (n.f.errSuivi || 0) + 1 } }, note: `Titrage du Carbopol : suivi avec un indicateur coloré (${i.nom}).` }))),
+});
+add('titr_live', {
+  fiches: ['carbopol', 'synthalen'],
+  lieu: 'Salle de titrage', pnj: 'moi', station: 'titrage', titre: 'Le titrage',
+  texte: e => { const d = donneesTitr(e), L = { ph: `Tu as étalonné le pH-mètre et plongé l'électrode dans la dispersion agitée.`, ind: `Tu as ajouté quelques gouttes de ${d.ind ? d.ind.nom : 'l\'indicateur'} dans la dispersion agitée.`, cond: `Tu as rincé la cellule et tu l'as plongée dans la dispersion agitée.`, pt: `Tu as monté les deux électrodes et tu les as plongées dans la dispersion agitée.` };
+    return `${L[d.suivi]} La burette contient la soude à ${nf(d.P.c, 2)} mol/L. Tu verses selon ton plan, un ajout à la fois : ${d.vols.length - 1} ajouts jusqu'à ${nf(d.P.vfin, 1)} mL.`; },
+  choix: [{ t: 'Passer aux résultats', duree: 0, vers: 'titr_carb' }],
+});
 add('titr_carb_plan', {
   fiches: ['carbopol', 'synthalen'],
   lieu: 'Salle de titrage', pnj: 'moi', station: 'plan', titre: 'Titrer les acides du Carbopol',
-  texte: () => `Le Carbopol est un polymère de l'acide acrylique réticulé : ses groupes acide carboxylique (–COOH, M = ${nf(M_COOH, 2)} g/mol pour le motif COOH ; teneur indicative sur la fiche technique) sont neutralisés par la trolamine pour former le gel. Connaître leur quantité dans ton lot permet de calculer la base à prévoir. Tu disperses une masse m de poudre dans un volume d'eau, et tu la titres à la soude, avec suivi du pH. À toi de concevoir ce titrage.`,
-  hyp: "Hypothèses : tous les groupes COOH sont accessibles à la soude ; le milieu reste assez fluide pour que le pH-mètre se stabilise ; l'équivalence est repérée au maximum de la courbe dérivée dpH/dV.",
+  texte: () => `Le Carbopol est un polymère de l'acide acrylique réticulé : ses groupes acide carboxylique (–COOH, M = ${nf(M_COOH, 2)} g/mol pour le motif COOH ; teneur indicative sur la fiche technique) sont neutralisés par la trolamine pour former le gel. Connaître leur quantité dans ton lot permet de calculer la base à prévoir. Tu disperses une masse m de poudre dans un volume d'eau, et tu la titres à la soude. À toi de concevoir ce titrage.`,
+  hyp: "Hypothèses : tous les groupes COOH sont accessibles à la soude ; le milieu reste assez fluide pour que la mesure se stabilise ; l'équivalence est repérée selon la méthode de suivi choisie (maximum de dpH/dV, cassure des droites de conductivité, virage de l'indicateur).",
   aide: { pnj: 'lucas', textes: [
     () => '« Commence par une estimation : combien de mmol de COOH dans ta prise d\'essai ? La fiche technique donne la teneur en COOH du Carbopol (58 à 63 %). Et combien de mL de soude cela demandera-t-il ? Il faut que ce volume tienne largement dans la burette. »',
     () => '« n(COOH) ≈ m × 0,605 / 45 mol. Pour 0,1 g, ça fait environ 1,3 mmol, donc 13 mL de soude à 0,1 mol/L. Verse vite, de 1 mL en 1 mL, loin de l\'équivalence, et resserre les ajouts de 2 mL avant à 2 mL après le volume équivalent attendu. Reste en dessous de 0,5 g de poudre pour 100 mL d\'eau, sinon ça épaissit trop. »',
     () => '« Je ferais : 0,100 g de Carbopol dans 150 mL d\'eau, soude à 0,1 mol/L, pas de 1 mL, avec des ajouts de 0,25 mL entre 11 et 16 mL, jusqu\'à 18 mL. Je te laisse changer ce que tu veux. »'],
     valeurs: () => ({ m: 0.1, V0: 150, c: 0.1, dv: 1, vdeb: 11, vfz: 16, dvf: 0.25, vfin: 18 }) },
-  plan: { infos: ['Balance au 0,1 mg ; soude disponible à 0,1 mol/L et 0,5 mol/L (une autre concentration demande une dilution de 5 min) ; burette de 25 mL graduée tous les 0,05 mL.', 'Le Carbopol se disperse lentement dans l\'eau et épaissit quand il se neutralise : une prise d\'essai trop concentrée rend la lecture du pH difficile. Compte 10 min de dispersion, puis environ 30 s par point de mesure (ajout, agitation, lecture) ; 60 points au plus.'],
-    vers: 'titr_carb', duree: v => 10 + Math.round(0.5 * (volumesTitr(v).length - 1)) + ([0.1, 0.5].includes(v.c) ? 0 : 5), note: v => `Titrage du Carbopol : ${nf(v.m, 3)} g dans ${v.V0} mL d'eau, soude à ${nf(v.c, 2)} mol/L, pas de ${nf(v.dv, 2)} mL, pas de ${nf(v.dvf, 2)} mL entre ${nf(v.vdeb, 1)} et ${nf(v.vfz, 1)} mL, jusqu'à ${nf(v.vfin, 1)} mL.`,
+  plan: { infos: ['Balance au 0,1 mg ; soude disponible à 0,1 mol/L et 0,5 mol/L (une autre concentration demande une dilution de 5 min) ; burette de 25 mL graduée tous les 0,05 mL.', 'Le Carbopol se disperse lentement dans l\'eau et épaissit quand il se neutralise : une prise d\'essai trop concentrée rend la mesure difficile. Compte 10 min de dispersion, puis environ 30 s par point de mesure (ajout, agitation, lecture) ; 60 points au plus.'],
+    vers: 'titr_live', duree: v => 10 + Math.round(0.5 * (volumesTitr(v).length - 1)) + ([0.1, 0.5].includes(v.c) ? 0 : 5), note: v => `Titrage du Carbopol : ${nf(v.m, 3)} g dans ${v.V0} mL d'eau, soude à ${nf(v.c, 2)} mol/L, pas de ${nf(v.dv, 2)} mL, pas de ${nf(v.dvf, 2)} mL entre ${nf(v.vdeb, 1)} et ${nf(v.vfz, 1)} mL, jusqu'à ${nf(v.vfin, 1)} mL.`,
     champs: [{ id: 'm', l: 'Masse de Carbopol', u: 'g', min: 0.02, max: 1.5 }, { id: 'V0', l: 'Volume d\'eau', u: 'mL', min: 50, max: 500 }, { id: 'c', l: 'Concentration de la soude', u: 'mol/L', min: 0.01, max: 1 }, { id: 'dv', l: 'Pas d\'addition (loin de l\'équivalence)', u: 'mL', min: 0.05, max: 2 }, { id: 'vdeb', l: 'Début de la zone d\'ajouts fins', u: 'mL', min: 0, max: 25 }, { id: 'vfz', l: 'Fin de la zone d\'ajouts fins', u: 'mL', min: 0, max: 25 }, { id: 'dvf', l: 'Pas d\'addition dans la zone fine', u: 'mL', min: 0.05, max: 2 }, { id: 'vfin', l: 'Volume final de soude versé', u: 'mL', min: 1, max: 25 }],
     controle: v => v.vfz < v.vdeb ? 'La zone fine doit finir après son début (mets les deux au même volume pour ne pas en faire).' : v.vfz > v.vfin ? 'La zone fine doit se terminer avant le volume final.' : v.dvf > v.dv ? 'Le pas fin doit être inférieur ou égal au pas habituel.' : volumesTitr(v).length - 1 > 60 ? 'Soixante points de mesure au plus : augmente les pas ou réduis la zone fine.' : volumesTitr(v).length - 1 < 4 ? 'Il faut au moins quatre additions.' : null,
     apercu: v => ({ cols: ['Grandeur', 'Valeur'], lignes: [['Carbopol dans la dispersion', `${nf(v.m / v.V0 * 100, 2)} g pour 100 mL d'eau`], ['Mesures de pH', String(volumesTitr(v).length)], ['Zone d\'ajouts fins', v.vfz > v.vdeb ? `de ${nf(v.vdeb, 1)} à ${nf(v.vfz, 1)} mL, pas de ${nf(v.dvf, 2)} mL` : 'aucune'], ['Soude versée au maximum', `${nf(v.c * v.vfin, 1)} mmol`]] }) },
 });
 add('titr_carb', {
-  lieu: 'Salle de titrage', pnj: 'moi', titre: 'Titrage du Carbopol : ta courbe',
-  texte: e => { const d = donneesTitr(e); return d.atteint
-    ? `Tu as titré ${nf(d.P.m, 3)} g de Carbopol dans ${d.P.V0} mL d'eau par de la soude à ${nf(d.P.c, 2)} mol/L (${d.pts.length} points).${d.epais ? ' Le milieu est épais : le pH se stabilise mal et la courbe est bruitée.' : ''}\nLe maximum de la courbe dérivée est à V_éq = ${nf(d.vEq, 2)} mL.`
-    : `Tu as versé jusqu'à ${nf(d.P.vfin, 1)} mL de soude à ${nf(d.P.c, 2)} mol/L : le pH monte sans jamais présenter de saut net, ou tu n'as pas assez de points pour le repérer. Tu n'as pas atteint l'équivalence.`; },
-  visuels: e => { const d = donneesTitr(e); return [{ type: 'titrage', titre: 'Titrage du Carbopol : pH = f(V soude)', pts: d.pts, der: d.der, veq: d.vEq }]; },
-  hyp: 'Hypothèse : le saut de pH, très étalé pour un polyélectrolyte, est repéré au maximum de la dérivée ; l\'incertitude sur V_éq est de l\'ordre du pas d\'addition.',
+  lieu: 'Salle de titrage', pnj: 'moi', titre: 'Titrage du Carbopol : ton résultat',
+  texte: e => { const d = donneesTitr(e), debut = `Tu as titré ${nf(d.P.m, 3)} g de Carbopol dans ${d.P.V0} mL d'eau par de la soude à ${nf(d.P.c, 2)} mol/L (${d.pts.length} points).${d.epais ? ' Le milieu est épais : la mesure se stabilise mal et les points sont dispersés.' : ''}`;
+    if (d.suivi === 'ind') { const cc = d.ind ? COULEURS_INDIC[d.ind.id] : ['', '']; return d.atteint
+      ? `${debut}\nLe ${d.ind.nom} a viré du ${cc[0]} au ${cc[1]} pour un volume de soude versé V_éq = ${nf(d.vEq, 2)} mL.`
+      : `${debut}\nLe ${d.ind ? d.ind.nom : 'l\'indicateur'} n'a pas changé de couleur dans l'intervalle de volumes versés : tu n'as pas repéré l'équivalence.`; }
+    if (d.suivi === 'cond') return d.atteint
+      ? `${debut}\nLes deux portions de droite de la courbe σ = f(V) se coupent à V_éq = ${nf(d.vEq, 2)} mL.`
+      : `${debut}\nTu n'as pas assez de points de part et d'autre de la cassure de la courbe de conductivité pour la repérer.`;
+    if (d.suivi === 'pt') return `${debut}\nLa tension mesurée reste voisine de 250 mV pendant tout le titrage, sans saut ni changement de pente.`;
+    return d.atteint
+      ? `${debut}\nLe maximum de la courbe dérivée est à V_éq = ${nf(d.vEq, 2)} mL.`
+      : `Tu as versé jusqu'à ${nf(d.P.vfin, 1)} mL de soude à ${nf(d.P.c, 2)} mol/L : le pH monte sans jamais présenter de saut net, ou tu n'as pas assez de points pour le repérer. Tu n'as pas atteint l'équivalence.`; },
+  visuels: e => { const d = donneesTitr(e); if (d.suivi === 'ind') return []; if (d.suivi === 'ph') return [{ type: 'titrage', titre: 'Titrage du Carbopol : pH = f(V soude)', pts: d.pts, der: d.der, veq: d.vEq }];
+    const g = GRANDEUR_TITR[d.suivi]; return [{ type: 'titrage', titre: `Titrage du Carbopol : ${g.y} = f(V soude)`, pts: d.pts, der: [], veq: d.suivi === 'cond' ? d.vEq : null, y: g.y, yr: g.yr, droites: d.cass ? [d.cass.A, d.cass.B] : null }]; },
+  hyp: 'Hypothèse : le saut de pH, très étalé pour un polyélectrolyte, est repéré au maximum de la dérivée ; avec la conductivité, l\'équivalence est à l\'intersection des deux droites ; avec un indicateur, au changement de couleur. L\'incertitude sur V_éq est de l\'ordre du pas d\'addition.',
   choix: e => donneesTitr(e).atteint
-    ? [{ t: 'Calculer la teneur en groupes COOH', duree: 0, vers: 'titr_carb_calc' }, { t: 'Refaire le titrage autrement', d: 'Nouvelle prise d\'essai, nouvelle mesure.', duree: 0, vers: 'titr_carb_plan' }]
-    : [{ t: 'Refaire le titrage autrement', d: 'Nouvelle prise d\'essai, nouvelle mesure.', duree: 0, vers: 'titr_carb_plan' }, { t: 'Renoncer à ce dosage', duree: 0, vers: 'hub', note: 'Titrage du Carbopol abandonné.' }],
+    ? [{ t: 'Calculer la teneur en groupes COOH', duree: 0, vers: 'titr_carb_calc' }, { t: 'Refaire le titrage autrement', d: 'Nouvelle prise d\'essai, nouvelle mesure.', duree: 0, vers: 'titr_suivi' }]
+    : [{ t: 'Refaire le titrage autrement', d: 'Nouvelle prise d\'essai, nouvelle mesure.', duree: 0, vers: 'titr_suivi' }, { t: 'Renoncer à ce dosage', duree: 0, vers: 'hub', note: 'Titrage du Carbopol abandonné.' }],
 });
 add('titr_carb_calc', {
   fiches: ['carbopol', 'synthalen'],
@@ -1092,12 +1160,12 @@ const eqNiveau = f => {
 };
 export function bilan(e, finId = e.scene) {
   const f = e.f, niv = (n, a, b) => n <= a ? 'ok' : n <= b ? 'moyen' : 'ko';
-  const n1 = (f.errCoel ? 1 : 0) + (f.sansEI ? 1 : 0) + (f.extTente ? 1 : 0) + (f.extAccepte ? 2 : 0) + (f.errComp ? 1 : 0) + (f.errMeth || 0) + (f.leurres || 0);
+  const n1 = (f.errCoel ? 1 : 0) + (f.sansEI ? 1 : 0) + (f.extTente ? 1 : 0) + (f.extAccepte ? 2 : 0) + (f.errComp ? 1 : 0) + (f.errMeth || 0) + (f.leurres || 0) + (f.errSuivi ? 1 : 0);
   const c4 = f.panne === false || f.panne === undefined ? 'nd' : f.methCaf === 'ajouts' && !f.extTente ? 'ok' : f.attendu ? 'moyen' : f.extAccepte ? 'ko' : 'moyen';
   const att = f.attente || 0, nbErr = f.nbErr || 0;
   const c3 = (finId === 'fin_conforme' || finId === 'fin_detecte') ? (f.secuErr || f.extAccepte ? 'moyen' : 'ok') : finId === 'fin_mauvaise_cause' ? 'moyen' : finId === 'fin_temps' ? 'nd' : 'ko';
   return [
-    { comp: 'C.1.4', titre: 'Sélectionner les méthodes, techniques et matériels', niveau: niv(n1, 0, 1), texte: n1 === 0 ? 'Étalon interne adapté, méthodes cohérentes avec la matrice.' : `À revoir : ${[f.errCoel && 'étalon interne (propan-1-ol coélue avec l\'éthanol)', f.sansEI && 'nécessité d\'un étalon interne en CPG', f.extTente && 'étalonnage externe UV (effet de matrice)', f.extAccepte && 'résultat UV non vérifié avec un témoin', f.errComp && 'comparaison des deux méthodes CPG', f.leurres && 'appareils sans rapport avec la question (IR, réfractomètre, polarimètre, conductimètre, titrage du gel)', f.errMeth && 'technique de dosage inadaptée essayée avant la bonne (titrage de la caféine, CLHP-UV ou masse volumique pour l\'éthanol)'].filter(Boolean).join(' ; ')}.` },
+    { comp: 'C.1.4', titre: 'Sélectionner les méthodes, techniques et matériels', niveau: niv(n1, 0, 1), texte: n1 === 0 ? 'Étalon interne adapté, méthodes cohérentes avec la matrice.' : `À revoir : ${[f.errCoel && 'étalon interne (propan-1-ol coélue avec l\'éthanol)', f.sansEI && 'nécessité d\'un étalon interne en CPG', f.extTente && 'étalonnage externe UV (effet de matrice)', f.extAccepte && 'résultat UV non vérifié avec un témoin', f.errComp && 'comparaison des deux méthodes CPG', f.leurres && 'appareils sans rapport avec la question (IR, réfractomètre, polarimètre, conductimètre, titrage du gel)', f.errSuivi && 'méthode de suivi du titrage du Carbopol (électrode de platine, ou indicateur dont la zone de virage ne contient pas le pH à l\'équivalence)', f.errMeth && 'technique de dosage inadaptée essayée avant la bonne (titrage de la caféine, CLHP-UV ou masse volumique pour l\'éthanol)'].filter(Boolean).join(' ; ')}.` },
     { comp: 'C.2.1', titre: 'Préparer les produits et les calculs', niveau: f.repli ? 'moyen' : niv(nbErr + (f.errEs ? 1 : 0) + (f.aides || 0) + (f.errInj ? 1 : 0), 1, 4), texte: `${nbErr} réponse(s) de calcul fausse(s)${f.aides ? `, dont ${f.aides} refaite(s) avec l'aide d'un collègue` : ''}${f.errEth ? ' (titre de l\'éthanol à 96 %)' : ''}${f.repli ? ' ; formule de repli utilisée' : ''}${f.errInj ? ` ; ${f.errInj} erreur(s) pour repérer l'injecteur sur le schéma de l'appareil` : ''}.` },
     { comp: 'C.3.2', titre: 'Détecter les non-conformités', niveau: c3, texte: c3 === 'nd' ? 'Pas de conclusion rendue.' : f.secuErr && (finId === 'fin_conforme' || finId === 'fin_detecte') ? 'Décision cohérente avec le lot, mais le montage chauffant d\'éthanol a d\'abord été installé hors hotte : la sécurité fait partie de la détection des non-conformités.' : c3 === 'ok' ? 'Décision cohérente avec la réalité du lot.' : 'La décision ne correspond pas aux défauts réels du lot : relis tes résultats critère par critère.' },
     { comp: 'C.4', titre: 'Adapter son protocole face à un imprévu', niveau: c4, texte: c4 === 'nd' ? 'Pas de panne dans cette partie.' : c4 === 'ok' ? 'Panne de CLHP : bascule immédiate vers une méthode adaptée (ajouts dosés).' : c4 === 'moyen' ? 'Panne de CLHP : solution trouvée mais coûteuse ou après un détour.' : 'Résultat biaisé conservé sans vérification.' },
@@ -1120,7 +1188,7 @@ export function consequences(e) {
   if (f.ei === 'butanol') L.push({ quand: h('ei'), cause: 'Étalon interne CPG', effet: 'le propan-1-ol du protocole sort en même temps que l\'éthanol (un seul pic) : remplacé par le butan-1-ol, dont le pic est séparé' });
   if (f.coelIgnore) L.push({ quand: null, cause: 'Coélution ignorée', effet: 'aires exploitées malgré le pic unique éthanol + propan-1-ol : éthanol surestimé d\'environ 30 %' });
   if (f.aidesPlan) L.push({ quand: null, cause: 'Conseils de collègues', effet: `${f.aidesPlan} conseil(s) demandé(s) pour concevoir tes préparations : du temps passé (3 à 5 minutes chacun), mais des collègues sollicités à bon escient` });
-  if (f.cooh != null) L.push({ quand: null, cause: 'Titrage du Carbopol', effet: `${nf(f.cooh, 1)} % de COOH dans ton lot : la quantité de trolamine à prévoir est connue avant la neutralisation` });
+  if (f.cooh != null) L.push({ quand: null, cause: 'Titrage du Carbopol', effet: `${nf(f.cooh, 1)} % de COOH dans ton lot : ${f.cooh < 55 || f.cooh > 66 ? `très éloigné des 58 à 63 % de la fiche technique${f.suivi === 'ind' && !INDIC_ADAPTES.includes(f.indic) ? ' (la zone de virage de l\'indicateur choisi ne contient pas le pH à l\'équivalence : le virage ne correspond pas à l\'équivalence)' : ''}, donc quantité de trolamine mal estimée` : 'la quantité de trolamine à prévoir est connue avant la neutralisation'}` });
   if (f.leurres) L.push({ quand: null, cause: 'Appareils sans rapport avec la question', effet: `${f.leurres} mesure(s) (IR, réfractomètre, polarimètre, conductimètre, titrage du gel) sans information sur la formule ni sur les teneurs : ${f.leurres * 20} minutes perdues` });
   if (f.errMeth) L.push({ quand: null, cause: 'Choix de techniques', effet: `${f.errMeth} technique(s) inadaptée(s) essayée(s) avant la bonne : de 15 à 25 minutes perdues à chaque fois` });
   if (f.compense) L.push({ quand: null, cause: 'Éthanol manquant', effet: 'compensation par ajout d\'éthanol à 96 % et dosage CPG refait' });

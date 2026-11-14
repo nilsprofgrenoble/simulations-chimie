@@ -41,6 +41,7 @@ function joue(strat, graine) {
     }
     if (sc.station === 'ph') { e = strat.ph(e); continue; }
     if (sc.station === 'plan') { const r = J.validerPlan(e, strat.plan(e)); assert(r.ok, `plan refusé (${e.scene}) : ${r.message}`); e = r.etat; continue; }
+    if (sc.station === 'titrage') { e = J.choisir(e, sc.choix[0]); continue; }
     if (sc.station === 'schema') { e = J.cliquerPiece(e, strat.clic ? strat.clic(e, sc) : sc.cible).etat; continue; }
     if (sc.station === 'obs') { e = J.noterObs(e, strat.obs ? strat.obs(e) : ['blanc', 'cristaux', 'fins']); continue; }
     if (sc.calcul) { calculsVus.add(e.scene); const r = J.valider(e, strat.calc(e, sc.calcul)); e = r.etat; continue; }
@@ -63,6 +64,8 @@ const expert = {
   choix: (e, ch) => {
     if (e.scene === 'hub') { const ordre = ['es_balance', 'es_prep', 'eth1', 'choix_caf', 'hplc_m', 'choix_eth', 'cpg_m', 'rheoC', 'es_calc1', 'formule', 'eq_base', 'fab_choix', 'fab_disp', 'rheoF', 'uv_ajouts_plan', 'uv_ext_plan', 'hplc_gamme_plan', 'hplc_ei', 'cpg_inj', 'eq_ines', 'verdict'];
       return [...ch].sort((a, b) => ordre.indexOf(a.vers) - ordre.indexOf(b.vers)).find(c => ordre.includes(c.vers)) || ch[0]; }
+    if (e.scene === 'titr_suivi') return ch.find(c => c.id === 'ph');
+    if (e.scene === 'titr_indic') return ch.find(c => c.id === 'php');
     if (e.scene === 'choix_caf') return ch.find(c => c.id === (e.f.graine % 2 ? 'clhpEI' : 'clhpEI'));
     if (e.scene === 'choix_eth') return ch.find(c => c.id === 'cpg');
     if (e.scene === 'es_balance') return ch[1];
@@ -321,3 +324,21 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
     const r3 = J.cliquerPiece(r2.etat, 'injecteur'); assert(r3.ok && r3.etat.scene !== id && r3.etat.f.errInj === 2, 'bon clic : on avance, erreurs mémorisées');
     assert(J.bilan({ ...r3.etat, scene: 'fin_conforme' }, 'fin_conforme').find(b => b.comp === 'C.2.1').texte.includes('injecteur'), 'erreur citée au bilan C.2.1'); }
   console.log('schémas cliquables : OK'); }
+// 22. Titrage du Carbopol : méthodes de suivi (pH-mètre, conductimètre, indicateur, Pt/Ag-AgCl)
+{ const base = J.etatInitial(21), plan = { m: 0.1, V0: 150, c: 0.1, dv: 1, vdeb: 11, vfz: 16, dvf: 0.25, vfin: 18 };
+  const avec = (suivi, indic, p = plan, g = 21) => { const b = J.etatInitial(g); return { ...b, scene: 'titr_carb', f: { ...b.f, suivi, indic, plans: { titr_carb_plan: p } } }; };
+  const err = d => Math.abs(d.vEq - d.veq) / d.veq;
+  let pire = { ph: 0, cond: 0, php: 0, bth: 0 };
+  for (let g = 1; g <= 200; g++) { for (const [k, s, i] of [['ph', 'ph'], ['cond', 'cond'], ['php', 'ind', 'php'], ['bth', 'ind', 'bth']]) { const d = J.donneesTitr(avec(s, i, plan, g)); assert(d.atteint, `${k} atteint (graine ${g})`); pire[k] = Math.max(pire[k], err(d)); } }
+  console.log('écart relatif maximal sur V_éq (200 lots) :', Object.entries(pire).map(([k, x]) => `${k} ${(100 * x).toFixed(1)} %`).join(', '));
+  assert(pire.ph < 0.04 && pire.cond < 0.06 && pire.php < 0.04 && pire.bth < 0.05, 'méthodes adaptées : V_éq à quelques % près');
+  for (const i of ['bbt', 'vbc', 'jm', 'jar']) assert(err(J.donneesTitr(avec('ind', i))) > 0.08, `indicateur ${i} inadapté : V_éq faux`);
+  const pt = J.donneesTitr(avec('pt')); assert(!pt.atteint && pt.pts.every(p => p[1] > 200 && p[1] < 300), 'Pt/Ag-AgCl : tension sans saut');
+  assert(!J.donneesTitr(avec('cond', undefined, { ...plan, vfz: 12.5, vfin: 13 })).atteint, 'conductimétrie : il faut dépasser l\'équivalence');
+  assert(!J.donneesTitr(avec('ind', 'php', { ...plan, vdeb: 8, vfz: 9, vfin: 10 })).atteint, 'indicateur : pas de virage avant l\'équivalence');
+  assert(J.SCENES.titr_live.station === 'titrage' && J.SCENES.titr_carb_plan.plan.vers === 'titr_live', 'enchaînement plan → titrage en direct');
+  let e = { ...J.etatInitial(8), scene: 'titr_suivi', t: 100 };
+  e = J.choisir(e, J.choixDe(e).find(c => c.id === 'pt')); assert(e.scene === 'titr_carb_plan' && e.f.errSuivi === 1, 'Pt choisie : erreur de méthode notée');
+  e = { ...J.etatInitial(8), scene: 'titr_indic', t: 100 }; const bbt = J.choisir(e, J.choixDe(e).find(c => c.id === 'bbt')); assert(bbt.f.errSuivi === 1, 'mauvais indicateur noté'); assert(J.choisir(e, J.choixDe(e).find(c => c.id === 'php')).f.errSuivi === undefined, 'bon indicateur : aucune erreur');
+  assert(J.choixDe({ ...J.etatInitial(8), scene: 'titr_indic' }).length === 6, 'six indicateurs au laboratoire');
+  console.log('titrage : méthodes de suivi : OK'); }
