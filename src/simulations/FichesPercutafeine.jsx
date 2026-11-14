@@ -30,10 +30,10 @@ export default function FichesPercutafeine({ ids, ouvert = false }) {
           ['Taux d\'emploi habituel', '0,1 à 1,5 %, selon la formule et la viscosité voulue'],
         ]} />
         <Liste items={[
-          'Poudre blanche, très légère. Disperser par addition lente de la poudre en pluie, sous agitation, jusqu\'à hydratation complète. La dispersion est lente (de 30 min à 1 h 30 à froid) ; une légère élévation de température l\'accélère. Éviter l\'agitation turbulente, qui piège de l\'air.',
-          'En milieu acide le polymère est enroulé et la dispersion est fluide ; la neutralisation par une base déroule les chaînes et forme le gel. La viscosité est maximale pour un pH d\'environ 6 à 7.',
+          'Poudre blanche, très légère. Disperser par addition lente de la poudre, sous agitation, pour éviter les grumeaux, jusqu\'à ce que toutes les particules soient hydratées. Éviter l\'agitation turbulente, qui piège de l\'air difficile à éliminer ensuite.',
+          'En milieu acide le polymère est enroulé et la dispersion est fluide ; la neutralisation par une base déroule les chaînes et forme le gel. D\'après la courbe viscosité en fonction du pH (figure 1 de la fiche), la viscosité monte fortement entre pH 3 et 6, puis reste sur un large plateau jusqu\'à pH 11 environ.',
           'Neutralisation : pour amener 1 g de polymère à pH 7, il faut environ 0,01 équivalent de base (0,4 g de soude ou 1,5 g de trolamine).',
-          'Éviter un fort cisaillement prolongé pendant et après la neutralisation : la perte de viscosité peut être définitive.',
+          'Éviter un fort cisaillement prolongé pendant et après la neutralisation : la perte de viscosité peut être définitive. L\'ajout d\'électrolytes (sels, surtout de cations bi- ou trivalents) fait chuter la viscosité. Les UV dégradent le gel. Une base forte s\'ajoute pré-diluée dans l\'eau (10 % au maximum).',
         ]} />
       </Feuille>);
     if (id === 'trolamine') return (
