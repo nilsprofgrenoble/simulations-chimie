@@ -153,7 +153,7 @@ const TubeGel = () => (<figure style={{ margin: '12px 0', textAlign: 'center' }}
 const Visuel = ({ v }) => v.type === 'balance' ? <BalanceVue v={v} /> : v.type === 'chroma' ? <Chroma v={v} /> : v.type === 'rheo' ? <Rheo v={v} /> : v.type === 'droite' ? <Droite v={v} /> : v.type === 'titrage' ? <CourbeTitrage v={v} /> : v.type === 'tableau' ? <Tableau v={v} /> : v.type === 'fioles' ? <SchemaFiolesClhp /> : v.type === 'tube' ? <TubeGel /> : null;
 
 
-const TOUS_DOCS = ['notice', 'carbopol', 'synthalen', 'trolamine', 'cocoate', 'mo1', 'mo2', 'mo3', 'mo4'];
+const TOUS_DOCS = ['notice', 'carbopol', 'synthalen', 'trolamine', 'cocoate', 'mo1', 'mo3'];
 // ───────────── Briques d'interaction ─────────────
 const inst = { background: '#fffaf0', border: '1.5px solid #ecd9a6' };
 function Avatar({ pnj, taille = 40, e }) {
