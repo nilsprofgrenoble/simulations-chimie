@@ -237,6 +237,10 @@ const taches = e => {
   if (F.ph && F.rheoC && !F.rheoF) L.push(['Comparer les rhéologies', 'Mesurer le gel formulé et le comparer au commercial.', 'rheoF']);
   if (F.ph && F.hplcPrep && !F.caf) L.push(['Doser la caféine du gel formulé', e.f.methCaf === 'ajouts' ? 'Concevoir les fioles, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'ext' ? 'Concevoir la gamme, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'gamme' ? 'Concevoir la gamme, injecter en CLHP.' : 'CLHP, méthode de l\'étalon interne.', e.f.methCaf === 'ajouts' ? 'uv_ajouts_plan' : e.f.methCaf === 'ext' ? 'uv_ext_plan' : e.f.methCaf === 'gamme' ? 'hplc_gamme_plan' : 'hplc_ei']);
   if (F.ph && F.cpgPrep && !F.ethQC) L.push(['Doser l\'éthanol du gel formulé', 'CPG avec étalon interne, puis avec une gamme d\'étalonnage.', 'cpg_inj']);
+  if (!F.leurre_ir) L.push(['Spectre infrarouge du gel (ATR)', 'Une goutte de gel sur le cristal : 20 min avec le nettoyage.', 'leurre_ir']);
+  if (!F.leurre_refracto) L.push(['Indice de réfraction du gel', 'Une goutte sur le prisme du réfractomètre : 20 min.', 'leurre_refracto']);
+  if (!F.leurre_polar) L.push(['Pouvoir rotatoire du gel', 'Remplir la cuve du polarimètre avec une solution de gel : 20 min.', 'leurre_polar']);
+  if (!F.leurre_conduc) L.push(['Conductivité du gel', 'Plonger la cellule du conductimètre dans le gel : 20 min.', 'leurre_conduc']);
   if (F.caf && F.ethQC && F.rheoF) L.push(['Conclure : le contretype est-il conforme ?', 'Comparer aux exigences et décider.', e.f.eq?.ines ? 'verdict' : 'eq_ines']);
   return L;
 };
@@ -257,6 +261,16 @@ add('hub', {
   texte: e => { const s = statutBg(e); return [`${horloge(e.t)}. Il te reste ${duree(T_FIN - e.t)} de TP.`, s.es && `🔥 ${s.es}.`, s.gel && `⚗️ ${s.gel}.`, 'Que fais-tu maintenant ?'].filter(Boolean).join('\n'); },
   choix: e => taches(e).map(([t, d, vers]) => ({ t, d, vers })),
 });
+
+// ───────────── Appareils du laboratoire qui ne répondent pas à la question ─────────────
+const leurre = (id, titre, texte, note) => add(id, {
+  lieu: 'Laboratoire', pnj: 'moi', titre, texte: () => texte,
+  choix: [{ t: 'Retour à la paillasse', duree: 20, vers: 'hub', run: n => ({ ...marquer(n, id), f: { ...n.f, leurres: (n.f.leurres || 0) + 1 } }), note }],
+});
+leurre('leurre_ir', 'Spectre IR du gel', 'Le spectre est dominé par une large bande O–H (eau, éthanol, groupes acides du Carbopol) et par les bandes C–O de l\'éthanol et du cocoate. Les bandes de la caféine (C=O vers 1 700 et 1 660 cm⁻¹) sont à peine visibles, noyées dans le reste. Tu ne peux ni remonter à la formule, ni doser quoi que ce soit avec ce spectre.', 'Spectre IR du gel : bandes de l\'eau et de l\'éthanol, rien d\'exploitable.');
+leurre('leurre_refracto', 'Indice de réfraction du gel', 'Le réfractomètre affiche n = 1,36. C\'est une valeur globale pour un mélange d\'eau, d\'éthanol, de polymère et de tensioactif : elle ne se décompose pas en teneurs. Tu n\'as rien appris de plus sur la formule.', 'Indice de réfraction du gel : n = 1,36, non exploitable.');
+leurre('leurre_polar', 'Pouvoir rotatoire du gel', 'Le polarimètre indique une rotation nulle, à la précision de l\'appareil. La caféine n\'est pas chirale, et les autres constituants ne tournent pas non plus le plan de polarisation de la lumière. La mesure ne t\'apprend rien sur la composition.', 'Polarimétrie du gel : rotation nulle, sans intérêt.');
+leurre('leurre_conduc', 'Conductivité du gel', 'Le conductimètre donne une valeur stable, de l\'ordre de quelques centaines de µS/cm. Elle dépend du Carbopol neutralisé et des traces d\'ions, pas de la caféine (non ionique) : ce chiffre ne se relie à aucune teneur que tu cherches.', 'Conductivité du gel : valeur sans lien avec les teneurs recherchées.');
 
 // ───────────── Déformulation ─────────────
 add('es_balance', {
@@ -877,12 +891,12 @@ const eqNiveau = f => {
 };
 export function bilan(e, finId = e.scene) {
   const f = e.f, niv = (n, a, b) => n <= a ? 'ok' : n <= b ? 'moyen' : 'ko';
-  const n1 = (f.errCoel ? 1 : 0) + (f.sansEI ? 1 : 0) + (f.extTente ? 1 : 0) + (f.extAccepte ? 2 : 0) + (f.errComp ? 1 : 0) + (f.errMeth || 0);
+  const n1 = (f.errCoel ? 1 : 0) + (f.sansEI ? 1 : 0) + (f.extTente ? 1 : 0) + (f.extAccepte ? 2 : 0) + (f.errComp ? 1 : 0) + (f.errMeth || 0) + (f.leurres || 0);
   const c4 = f.panne === false || f.panne === undefined ? 'nd' : f.methCaf === 'ajouts' && !f.extTente ? 'ok' : f.attendu ? 'moyen' : f.extAccepte ? 'ko' : 'moyen';
   const att = f.attente || 0, nbErr = f.nbErr || 0;
   const c3 = (finId === 'fin_conforme' || finId === 'fin_detecte') ? (f.secuErr ? 'moyen' : 'ok') : finId === 'fin_mauvaise_cause' ? 'moyen' : finId === 'fin_temps' ? 'nd' : 'ko';
   return [
-    { comp: 'C.1.4', titre: 'Sélectionner les méthodes, techniques et matériels', niveau: niv(n1, 0, 1), texte: n1 === 0 ? 'Étalon interne adapté, méthodes cohérentes avec la matrice.' : `À revoir : ${[f.errCoel && 'étalon interne (propan-1-ol coélue avec l\'éthanol)', f.sansEI && 'nécessité d\'un étalon interne en CPG', f.extTente && 'étalonnage externe UV (effet de matrice)', f.extAccepte && 'résultat UV non vérifié avec un témoin', f.errComp && 'comparaison des deux méthodes CPG', f.errMeth && 'technique de dosage inadaptée essayée avant la bonne (titrage de la caféine, CLHP-UV ou masse volumique pour l\'éthanol)'].filter(Boolean).join(' ; ')}.` },
+    { comp: 'C.1.4', titre: 'Sélectionner les méthodes, techniques et matériels', niveau: niv(n1, 0, 1), texte: n1 === 0 ? 'Étalon interne adapté, méthodes cohérentes avec la matrice.' : `À revoir : ${[f.errCoel && 'étalon interne (propan-1-ol coélue avec l\'éthanol)', f.sansEI && 'nécessité d\'un étalon interne en CPG', f.extTente && 'étalonnage externe UV (effet de matrice)', f.extAccepte && 'résultat UV non vérifié avec un témoin', f.errComp && 'comparaison des deux méthodes CPG', f.leurres && 'appareils sans rapport avec la question (IR, réfractomètre, polarimètre, conductimètre)', f.errMeth && 'technique de dosage inadaptée essayée avant la bonne (titrage de la caféine, CLHP-UV ou masse volumique pour l\'éthanol)'].filter(Boolean).join(' ; ')}.` },
     { comp: 'C.2.1', titre: 'Préparer les produits et les calculs', niveau: f.repli ? 'moyen' : niv(nbErr + (f.errEs ? 1 : 0) + (f.aides || 0), 1, 4), texte: `${nbErr} réponse(s) de calcul fausse(s)${f.aides ? `, dont ${f.aides} refaite(s) avec l'aide d'un collègue` : ''}${f.errEth ? ' (titre de l\'éthanol à 96 %)' : ''}${f.repli ? ' ; formule de repli utilisée' : ''}.` },
     { comp: 'C.3.2', titre: 'Détecter les non-conformités', niveau: c3, texte: c3 === 'nd' ? 'Pas de conclusion rendue.' : f.secuErr && (finId === 'fin_conforme' || finId === 'fin_detecte') ? 'Décision cohérente avec le lot, mais le montage chauffant d\'éthanol a d\'abord été installé hors hotte : la sécurité fait partie de la détection des non-conformités.' : c3 === 'ok' ? 'Décision cohérente avec la réalité du lot.' : 'La décision ne correspond pas aux défauts réels du lot : relis tes résultats critère par critère.' },
     { comp: 'C.4', titre: 'Adapter son protocole face à un imprévu', niveau: c4, texte: c4 === 'nd' ? 'Pas de panne dans cette partie.' : c4 === 'ok' ? 'Panne de CLHP : bascule immédiate vers une méthode adaptée (ajouts dosés).' : c4 === 'moyen' ? 'Panne de CLHP : solution trouvée mais coûteuse ou après un détour.' : 'Résultat biaisé conservé sans vérification.' },
@@ -904,6 +918,7 @@ export function consequences(e) {
   if (f.methCaf) L.push({ quand: h('methCaf'), cause: 'Dosage de la caféine', effet: f.methCaf === 'gamme' ? 'CLHP, gamme d\'étalonnage externe : volume injecté maîtrisé par la boucle, pas d\'effet de matrice' : f.methCaf === 'ext' ? (f.extAccepte ? 'UV, étalonnage externe : effet de matrice, caféine surestimée d\'environ 40 %, résultat retenu sans vérification' : 'UV, étalonnage externe : surestimation détectée et corrigée par une autre méthode') : f.methCaf === 'ajouts' ? 'UV, ajouts dosés : l\'effet de matrice est compensé' : 'CLHP, étalon interne : volume injecté sans influence' });
   if (f.ei === 'butanol') L.push({ quand: h('ei'), cause: 'Étalon interne CPG', effet: 'le propan-1-ol du protocole sort en même temps que l\'éthanol (un seul pic) : remplacé par le butan-1-ol, dont le pic est séparé' });
   if (f.coelIgnore) L.push({ quand: null, cause: 'Coélution ignorée', effet: 'aires exploitées malgré le pic unique éthanol + propan-1-ol : éthanol surestimé d\'environ 30 %' });
+  if (f.leurres) L.push({ quand: null, cause: 'Appareils sans rapport avec la question', effet: `${f.leurres} mesure(s) (IR, réfractomètre, polarimètre, conductimètre) sans information sur la formule ni sur les teneurs : ${f.leurres * 20} minutes perdues` });
   if (f.errMeth) L.push({ quand: null, cause: 'Choix de techniques', effet: `${f.errMeth} technique(s) inadaptée(s) essayée(s) avant la bonne : de 15 à 25 minutes perdues à chaque fois` });
   if (f.compense) L.push({ quand: null, cause: 'Éthanol manquant', effet: 'compensation par ajout d\'éthanol à 96 % et dosage CPG refait' });
   if (f.secuErr) L.push({ quand: null, cause: 'Sécurité', effet: 'montage chauffant d\'éthanol installé hors hotte : déplacé par la responsable' });
