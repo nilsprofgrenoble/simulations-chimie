@@ -157,6 +157,44 @@ export const GAMMAS = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100];
 export const HB = { tau0: 18, K: 9, n: 0.45 };
 export const courbe = q => GAMMAS.map(g => { const s = q * (HB.tau0 + HB.K * Math.pow(g, HB.n)); return { g, s, eta: s / g }; });
 
+// Points de mesure (bruit de 3 % sur la contrainte) : l'élève ne reçoit que des points, pas la courbe du modèle
+export const pointsRheo = (e, q, cle) => GAMMAS.map((g, i) => { const s = q * (HB.tau0 + HB.K * Math.pow(g, HB.n)) * (1 + 0.03 * gauss(e.f.graine, `${cle}${i}`)); return { g, s, eta: s / g }; });
+export const MODELES_RHEO = [
+  { id: 'newton', nom: 'Newtonien', eq: 'σ = η · γ̇' },
+  { id: 'ostwald', nom: 'Loi de puissance (Ostwald)', eq: 'σ = K · γ̇ⁿ' },
+  { id: 'bingham', nom: 'Bingham', eq: 'σ = τ₀ + ηₚ · γ̇' },
+  { id: 'hb', nom: 'Herschel-Bulkley', eq: 'σ = τ₀ + K · γ̇ⁿ' },
+];
+// Ajustement par moindres carrés sur l'écart relatif (poids 1/σ) ; rms en %
+const moco = (A, y) => { const a = A.reduce((s, r) => s + r[0] * r[0], 0), b = A.reduce((s, r) => s + r[0] * r[1], 0), c = A.reduce((s, r) => s + r[1] * r[1], 0), u = A.reduce((s, r, i) => s + r[0] * y[i], 0), v = A.reduce((s, r, i) => s + r[1] * y[i], 0), d = a * c - b * b; return [(u * c - v * b) / d, (a * v - b * u) / d]; };
+export function ajusteRheo(pts, id) {
+  const rms = f => 100 * Math.sqrt(pts.reduce((s, p) => s + ((p.s - f(p.g)) / p.s) ** 2, 0) / pts.length);
+  if (id === 'newton') { const x = pts.map(p => p.g / p.s), eta = x.reduce((s, v) => s + v, 0) / x.reduce((s, v) => s + v * v, 0), f = g => eta * g; return { id, p: { eta }, f, rms: rms(f) }; }
+  if (id === 'ostwald') { const n = pts.length, lx = pts.map(p => Math.log(p.g)), ly = pts.map(p => Math.log(p.s)), mx = lx.reduce((s, v) => s + v, 0) / n, my = ly.reduce((s, v) => s + v, 0) / n, ex = lx.reduce((s, v, i) => s + (v - mx) * (ly[i] - my), 0) / lx.reduce((s, v) => s + (v - mx) ** 2, 0), K = Math.exp(my - ex * mx), f = g => K * Math.pow(g, ex); return { id, p: { K, n: ex }, f, rms: rms(f) }; }
+  const un = pts.map(p => 1 / p.s), ajuste = ex => { const [t0, K] = moco(pts.map(p => [1 / p.s, Math.pow(p.g, ex) / p.s]), pts.map(() => 1)); const f = g => t0 + K * Math.pow(g, ex); return { t0, K, f, r: rms(f) }; };
+  if (id === 'bingham') { const r = ajuste(1); return { id, p: { tau0: r.t0, etap: r.K }, f: r.f, rms: r.r }; }
+  let best = null; for (let ex = 0.2; ex <= 1.0001; ex += 0.005) { const r = ajuste(ex); if (!best || r.r < best.r) best = { ...r, ex }; }
+  void un; return { id, p: { tau0: best.t0, K: best.K, n: best.ex }, f: best.f, rms: best.r };
+}
+export function validerRheo(e, retenu, tau0, nTests) {
+  const pts = pointsRheo(e, 1, 'rc'), rm = Object.fromEntries(MODELES_RHEO.map(m => [m.id, ajusteRheo(pts, m.id).rms])), meilleur = Math.min(...Object.values(rm));
+  const modeleOk = rm[retenu] <= Math.max(meilleur * 1.5, 0.02 * 100), seuilOk = Math.abs(tau0 - HB.tau0) <= 0.25 * HB.tau0, ok = modeleOk && seuilOk;
+  const faute = !modeleOk ? 'modele' : !seuilOk ? 'seuil' : null;
+  return choisir({ ...e, f: { ...e.f, rheoFaute: faute || undefined, rheoModele: retenu } }, { vers: ok ? 'hub' : 'rheoC_faux', duree: Math.min(20, 8 + 2 * nTests), run: n => marquer(n, 'rheoC'), f: ok ? {} : { errRheo: true }, note: ok ? `Rhéologie du commercial : modèle ${MODELES_RHEO.find(m => m.id === retenu).nom} retenu, seuil τ₀ ≈ ${nf(tau0, 0)} Pa.` : `Rhéologie du commercial : modèle ${MODELES_RHEO.find(m => m.id === retenu).nom} retenu, τ₀ ≈ ${nf(tau0, 0)} Pa (à revoir).` });
+}
+
+// ───────────── CPG simplifiée : peut-on séparer éthanol et propan-1-ol en réglant l'appareil ? ─────────────
+export const CPG_LIM = { Tinj: [120, 300, 250], Tfour: [40, 150, 70], Tdet: [100, 350, 250], P: [50, 200, 100] };   // min, max, valeur de départ
+export function cpgModele({ Tinj, Tfour, Tdet, P }) {
+  const T = Tfour + 273.15, u = P / 100, t0 = 0.55 / u, fvd = 0.4 + 0.3 / u + 0.3 * u;
+  const kE = 1.47 * Math.exp(4570 * (1 / T - 1 / 343.15)), kP = 1.55 * Math.exp(4650 * (1 / T - 1 / 343.15));
+  const nInj = Tinj >= 200 ? 1 : Math.max(0.2, (Tinj - 100) / 100), N = 4000 / fvd * nInj;
+  const tE = t0 * (1 + kE), tP = t0 * (1 + kP), wE = 4 * tE / Math.sqrt(N), wP = 4 * tP / Math.sqrt(N), Rs = 2 * (tP - tE) / (wE + wP);
+  const bruit = Tdet < 120 ? 0.12 : Tdet < Tfour + 30 ? 0.06 : 0.015;
+  return { t0, tE, tP, N, Rs, wE, wP, bruit, horsFenetre: tP > 3, tailing: Tinj < 180, condens: Tdet < 120 };
+}
+export function cpgSimFin(e, nEssais, concl) { return choisir({ ...e, f: { ...e.f, cpgSimEssais: (e.f.cpgSimEssais || 0) + nEssais } }, { vers: concl ? 'cpg_ei' : 'cpg_ref', duree: 3 * nEssais, note: concl ? `CPG : ${nEssais} réglage(s) essayé(s) (températures, pression) : éthanol et propan-1-ol restent confondus, je change d'étalon interne.` : `CPG : ${nEssais} réglage(s) essayé(s), retour à la référence.` }); }
+
 // ───────────── Moteur ─────────────
 export const NB_AVATARS = 6;
 export const nettoyerPrenom = x => String(x ?? '').replace(/[<>«»\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 20);
@@ -205,7 +243,7 @@ export const visuelsDe = (e, sc = SCENES[e.scene]) => (sc.visuels ? sc.visuels(e
 const DATEES = ['mode', 'bal', 'ei', 'voieCaf', 'methCaf', 'disp', 'decl'];
 export function choisir(e, c) {
   const tDec = { ...(e.f.tDec || {}) }; DATEES.forEach(k => { if (c.f && k in c.f) tDec[k] = e.t; });
-  let n = { ...e, t: e.t + (c.duree || 0), f: { ...e.f, ...(c.f || {}), tDec, corrige: undefined }, hist: [...(e.hist || []), ...(c.duree ? [{ t0: e.t, t1: e.t + c.duree, k: c.f && c.f.attendu ? 'att' : 'act', l: c.note || c.t || '' }] : [])] };
+  let n = { ...e, t: e.t + (c.duree || 0), f: { ...e.f, ...(c.f || {}), tDec, corrige: undefined }, hist: [...(e.hist || []), ...(c.duree ? [{ t0: e.t, t1: e.t + c.duree, k: c.pause || (c.f && c.f.attendu) ? 'att' : 'act', l: c.note || c.t || '' }] : [])] };
   n = nota(n, c.note);
   const avant = n.bg, t0 = n.t;
   if (c.run) n = c.run(n);
@@ -238,6 +276,7 @@ export const statutBg = e => ({
 });
 const taches = e => {
   const F = e.fait, L = [];
+  const enCours = Object.values(e.bg || {}).some(x => x != null && x > e.t);
   L.push(['Relire les documents du dossier', 'Notice ANSM et fiches techniques (Synthalen K, trolamine, cocoate de macrogol).', 'docs']);
   if (!F.obs) L.push(['Regarder la vidéo du gel étalé', 'Une noisette de gel sur une plaque, en accéléré (5 min).', 'obs_video']);
   if (!F.es) L.push(['Lancer l\'extrait sec du gel commercial', 'Peser, étaler, mettre à l\'étuve : 15 min de travail, puis l\'étuve tourne seule.', e.f.bal ? 'es_prep' : 'es_balance']);
@@ -263,6 +302,7 @@ const taches = e => {
   if (!F.leurre_conduc) L.push(['Conductivité du gel', 'Plonger la cellule du conductimètre dans le gel : 15 min.', 'leurre_conduc']);
   L.push(['Demander conseil à un collègue ou à Mme Dubreuil', 'Tu hésites sur la suite, sur où aller ou par quoi commencer ? Demande : quelques minutes.', 'conseil']);
   if (F.caf && F.ethQC && F.rheoF) L.push(['Conclure : le contretype est-il conforme ?', 'Comparer aux exigences et décider.', e.f.eq?.ines ? 'verdict' : 'eq_ines']);
+  if (enCours) L.push(['Prendre une pause de 10 minutes', 'Un café, un tour dehors : les appareils continuent de tourner pendant ce temps.', 'hub', { duree: 10, pause: true, note: 'Pause de 10 minutes pendant que les appareils tournent.' }]);
   return L;
 };
 add('intro', {
@@ -287,7 +327,7 @@ add('docs', {
 add('hub', {
   lieu: 'Paillasse', pnj: 'moi', titre: 'À la paillasse',
   texte: e => { const s = statutBg(e); return [`${horloge(e.t)}. Il te reste ${duree(T_FIN - e.t)} de TP.`, e.t < 30 && 'Objectif de la journée : déformuler le gel commercial, fabriquer le contretype, puis le contrôler (caféine, éthanol, viscosité).', s.es && `🔥 ${s.es}.`, s.gel && `⚗️ ${s.gel}.`, s.clhp && `🔧 ${s.clhp}.`, 'Que fais-tu maintenant ?'].filter(Boolean).join('\n'); },
-  choix: e => taches(e).map(([t, d, vers]) => ({ t, d, vers })),
+  choix: e => taches(e).map(([t, d, vers, x]) => ({ t, d, vers, ...(x || {}) })),
 });
 
 
@@ -705,19 +745,14 @@ add('ph2', {
 
 // ───────────── Rhéologie ─────────────
 add('rheoC', {
-  lieu: 'Salle de rhéologie', pnj: 'lucas', titre: 'Rhéologie du gel commercial',
-  texte: () => `Lucas lance le rhéomètre sur le gel commercial et te montre la courbe d'écoulement (contrainte σ) et la viscosité η en fonction du gradient de vitesse γ̇.`,
-  hyp: "Hypothèse : les points suivent le modèle d'Herschel-Bulkley (seuil + loi de puissance) ; les valeurs sont des données de scénario inspirées des mesures des élèves.",
-  visuels: () => [{ type: 'rheo', courbes: [{ nom: 'Gel commercial', pts: courbe(1), couleur: '#1e3a8a' }] }],
-  choix: e => melange(e, 'rheoC', [
-    { id: 'a', t: 'Le gel est rhéofluidifiant', duree: 10, vers: 'hub', run: n => marquer(n, 'rheoC'), note: 'Rhéologie du commercial : rhéofluidifiant avec seuil.' },
-    { id: 'b', t: 'Le gel est newtonien', duree: 10, vers: 'rheoC_faux', run: n => marquer(n, 'rheoC'), f: { errRheo: true } },
-    { id: 'c', t: 'Le gel est rhéoépaississant', duree: 10, vers: 'rheoC_faux', run: n => marquer(n, 'rheoC'), f: { errRheo: true } },
-  ]),
+  lieu: 'Salle de rhéologie', pnj: 'lucas', station: 'rheo', titre: 'Rhéologie du gel commercial',
+  texte: () => `Lucas lance le rhéomètre sur le gel commercial et te laisse les points de mesure : contrainte σ en fonction du gradient de vitesse γ̇. Teste des modèles d'écoulement, garde celui dont la courbe suit les points, puis donne le seuil d'écoulement τ₀ (contrainte minimale pour que le gel s'écoule).`,
+  hyp: "Hypothèse : chaque modèle est une loi empirique ; on garde le plus simple qui suit tous les points (écart relatif de quelques %). Les valeurs sont des données de scénario inspirées des mesures des élèves.",
+  choix: [],
 });
 add('rheoC_faux', {
   lieu: 'Salle de rhéologie', pnj: 'lucas', titre: 'Relis la courbe',
-  texte: () => 'Lucas : « Regarde la pente de η = f(γ̇) : elle descend. La viscosité diminue quand on cisaille davantage, c\'est un comportement rhéofluidifiant, et la contrainte ne tend pas vers zéro à faible gradient : il y a un seuil d\'écoulement. »',
+  texte: e => e.f.rheoFaute === 'seuil' ? `Lucas : « Ton modèle est le bon, mais ton seuil est à côté. Le seuil τ₀ est la contrainte que le modèle donne quand γ̇ tend vers 0 : regarde le paramètre τ₀ de l'ajustement, il est d'environ ${nf(HB.tau0, 0)} Pa. »` : 'Lucas : « Regarde les points à faible gradient : la contrainte ne tend pas vers zéro, il y a un seuil d\'écoulement, et la viscosité diminue quand on cisaille davantage (rhéofluidifiant). Seul le modèle de Herschel-Bulkley, seuil plus loi de puissance, suit tous les points : les autres s\'en écartent d\'au moins 10 % à un bout de la courbe. »',
   choix: [{ t: 'Compris, retour à la paillasse', vers: 'hub' }],
 });
 const causeVisco = e => { const g = gelVrai(e), fDisp = QDISP[e.f.disp] ?? 0.85, fPH = clamp((g.ph - 4) / 1.5, 0.15, 1), fCarb = Math.pow(g.carb / COM.carb, 1.3);
@@ -726,7 +761,7 @@ add('rheoF', {
   lieu: 'Salle de rhéologie', pnj: 'lucas', titre: 'Gel formulé et gel commercial',
   texte: e => { const q = gelVrai(e).q; return `Voici les deux courbes. Rapport des contraintes formulé / commercial : ${nf(q, 2)} (spécification du scénario : au moins ${nf(SPEC.q, 2)}).\nSi les courbes diffèrent, quelle est la cause la plus probable dans ta fabrication ?`; },
   hyp: 'Hypothèse : à composition proche, la différence de viscosité vient surtout de la dispersion du Synthalen K, du pH final ou de la teneur en Synthalen K.',
-  visuels: e => [{ type: 'rheo', courbes: [{ nom: 'Gel commercial', pts: courbe(1), couleur: '#1e3a8a' }, { nom: 'Gel formulé', pts: courbe(gelVrai(e).q), couleur: '#b45309' }] }],
+  visuels: e => [{ type: 'rheo', courbes: [{ nom: 'Gel commercial', pts: pointsRheo(e, 1, 'rc'), couleur: '#1e3a8a', points: true }, { nom: 'Gel formulé', pts: pointsRheo(e, gelVrai(e).q, 'rf'), couleur: '#b45309', points: true }] }],
   choix: e => { const bon = causeVisco(e), ok = c => c === bon;
     const mk = (id, t) => ({ t, duree: 10, vers: 'hub', f: { errRheo2: !ok(id) || undefined }, run: n => marquer(n, 'rheoF'), note: ok(id) ? 'Cause de l\'écart de viscosité correctement identifiée.' : 'Cause de l\'écart de viscosité mal identifiée.' });
     return [mk('similaires', 'Les deux gels sont très proches : pas de défaut de viscosité'), mk('dispersion', 'Synthalen K mal dispersé (morceaux restants)'), mk('ph', 'pH trop bas : le gel n\'a pas fini d\'épaissir'), mk('carbopol', 'Pas assez de Synthalen K dans la formule')]; },
@@ -967,6 +1002,12 @@ add('cpg_ei', {
     { id: 'aucun', t: 'Pas d\'étalon interne : j\'injecte plusieurs fois la même solution d\'éthanol et je compare les aires', duree: 5, vers: 'cpg_sans', si: x => !x.f.sansEI },
   ]),
 });
+add('cpg_sim', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', station: 'cpgsim', titre: 'Régler le chromatographe',
+  texte: () => `Inès : « Avant de changer d'étalon, regarde ce que l'appareil peut faire. Tu peux régler la température de l'injecteur, celle du four (isotherme), celle du détecteur et la pression du gaz vecteur. Chaque injection dure environ 3 minutes. Une résolution Rₛ d'au moins 1,5 correspond à des pics séparés jusqu'à la ligne de base. »`,
+  hyp: "Hypothèse : modèle simplifié : le temps de rétention suit une loi de van 't Hoff, l'efficacité de la colonne une loi de van Deemter ; les constantes sont des données de scénario.",
+  choix: [],
+});
 add('cpg_pentanol', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Pentan-1-ol : pas de pic',
   texte: () => `Tu injectes la référence : le pic de l'éthanol est là, mais aucun pic d'étalon interne avant la fin des 3 minutes d'analyse. Le pentan-1-ol, plus lourd, est encore dans la colonne quand l'enregistrement s'arrête.\nTu as perdu 15 minutes.`,
@@ -1003,6 +1044,7 @@ add('cpg_ref', {
     return `Chromatogramme de la référence : un seul pic large et dissymétrique vers 1,4 min. L'éthanol (t_R ≈ 1,36 min) et le propan-1-ol (≈ 1,40 min) sortent presque en même temps : le logiciel ne propose qu'une aire pour l'ensemble.`; },
   visuels: e => e.f.ei === 'butanol' ? [{ type: 'chroma', titre: 'CPG · référence (éthanol + butan-1-ol)', tmax: 3, pics: [{ tr: 1.36, h: 0.5, l: 'éthanol' }, { tr: 2.1, h: 0.9, l: 'butan-1-ol (EI)' }] }] : [{ type: 'chroma', titre: 'CPG · référence (éthanol + propan-1-ol)', tmax: 3, pics: [{ tr: 1.36, h: 0.8, l: 'éthanol + propan-1-ol' }, { tr: 1.42, h: 0.6, l: '' }] }],
   choix: e => e.f.ei === 'butanol' ? [{ t: 'Retour à la paillasse', duree: 10, vers: 'hub', run: n => marquer(n, 'cpgPrep'), note: 'Référence CPG injectée avec le butan-1-ol : rapport des aires relevé.' }] : [
+    { t: 'Essayer de séparer les deux pics en réglant l\'appareil', d: 'Températures de l\'injecteur, du four et du détecteur, pression du gaz vecteur.', duree: 0, vers: 'cpg_sim' },
     { t: 'Changer d\'étalon interne', d: 'Il faudra refaire la fiole de référence.', duree: 5, vers: 'cpg_ei', note: 'Référence CPG : coélution éthanol / propan-1-ol constatée.' },
     { t: 'Exploiter quand même ces aires, en séparant les deux pics au logiciel', duree: 10, vers: 'hub', run: n => marquer(n, 'cpgPrep'), f: { coelIgnore: true, errCoel: true }, note: 'Référence CPG : aires exploitées malgré la coélution.' },
   ],

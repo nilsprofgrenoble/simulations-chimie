@@ -41,6 +41,8 @@ function joue(strat, graine) {
     }
     if (sc.station === 'ph') { e = strat.ph(e); continue; }
     if (sc.station === 'plan') { const r = J.validerPlan(e, strat.plan(e)); assert(r.ok, `plan refusé (${e.scene}) : ${r.message}`); e = r.etat; continue; }
+    if (sc.station === 'rheo') { e = J.validerRheo(e, 'hb', 16, 3); continue; }
+    if (sc.station === 'cpgsim') { e = J.cpgSimFin(e, 2, true); continue; }
     if (sc.station === 'titrage') { e = J.choisir(e, sc.choix[0]); continue; }
     if (sc.station === 'schema') { e = J.cliquerPiece(e, strat.clic ? strat.clic(e, sc) : sc.cible).etat; continue; }
     if (sc.station === 'obs') { e = J.noterObs(e, strat.obs ? strat.obs(e) : ['blanc', 'cristaux', 'fins']); continue; }
@@ -80,7 +82,6 @@ const expert = {
     if (e.scene === 'cause') return ch.find(c => c.f.causeJuste);
     if (e.scene === 'avis') return ch[0];
     if (e.scene === 'fab_choix' || e.scene === 'fab_disp') return ch[0];
-    if (e.scene === 'rheoC') return ch.find(c => c.id === 'a');
     if (e.scene === 'rheoF') return ch.find(c => !c.f.errRheo2);
     if (e.scene === 'verdict') { const D = J.defauts(e); return ch[D.length ? 1 + ['caf', 'eth', 'visco'].indexOf(D[0]) : 0]; }
     return ch[0];
@@ -215,11 +216,11 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   console.log('plans de préparation : OK'); }
 // 10. CPG : le protocole du sujet donne le propan-1-ol (coélué) ; l'élève change d'étalon interne ou exploite quand même
 { const e0 = { ...J.etatInitial(11), scene: 'cpg_ref', f: { ...J.etatInitial(11).f, ei: 'propanol', voieEth: 'cpg' } };
-  assert(J.choixDe(e0).length === 2 && J.texteDe(e0).includes('un seul pic'), 'coélution visible sur la référence');
-  const e1 = J.choisir(e0, J.choixDe(e0)[0]); assert(e1.scene === 'cpg_ei' && J.choixDe(e1).some(c => c.id === 'butanol'), 'changer d\'étalon interne');
+  assert(J.choixDe(e0).length === 3 && J.texteDe(e0).includes('un seul pic'), 'coélution visible sur la référence');
+  const e1 = J.choisir(e0, J.choixDe(e0).find(c => c.vers === 'cpg_ei')); assert(e1.scene === 'cpg_ei' && J.choixDe(e1).some(c => c.id === 'butanol'), 'changer d\'étalon interne');
   const e2 = J.choisir(e1, J.choixDe(e1).find(c => c.id === 'butanol')); assert(e2.scene === 'cpg_ref' && e2.f.ei === 'butanol' && J.texteDe(e2).includes('bien séparés'), 'butan-1-ol : pics séparés');
   const e3 = J.choisir(e1, J.choixDe(e1).find(c => c.id === 'pentanol')); assert(e3.scene === 'cpg_pentanol' && e3.f.errMeth === 1, 'pentan-1-ol : pas de pic');
-  const ign = J.choisir(e0, J.choixDe(e0)[1]); assert(ign.f.coelIgnore && ign.f.errCoel, 'coélution ignorée');
+  const ign = J.choisir(e0, J.choixDe(e0).find(c => c.f && c.f.coelIgnore)); assert(ign.f.coelIgnore && ign.f.errCoel, 'coélution ignorée');
   const ok = { ...ign, f: { ...ign.f, coelIgnore: false } }; ok.f.fm = J.FORMULE_REPLI; ign.f.fm = J.FORMULE_REPLI;
   const r = J.donneesCpg(ign).pctGamme / J.donneesCpg(ok).pctGamme; assert(Math.abs(r - 1.3) < 1e-9, 'éthanol surestimé de 30 %');
   assert(J.consequences(ign).some(c => c.cause === 'Coélution ignorée'), 'conséquence affichée');
@@ -267,8 +268,8 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   console.log('observations mélangées : OK'); }
 // 16. Résultats déjà vus : relisibles à tout moment
 { let e = { ...J.etatInitial(8), scene: 'hub', t: 5 };
-  e = J.choisir(e, J.choixDe(e).find(c => c.vers === 'rheoC')); assert(J.resultatsVus(e).includes('rheoC'), 'courbe de rhéologie mémorisée');
-  const r = J.choisir(e, J.choixDe(e).find(c => c.id === 'a')); assert(r.scene === 'hub' && J.resultatsVus(r).includes('rheoC') && J.visuelsDe({ ...r, scene: 'rheoC' }).length, 'relisible après la conclusion');
+  e = J.aller(e, 'rheoF'); assert(J.resultatsVus(e).includes('rheoF'), 'courbes de rhéologie mémorisées');
+  const r = J.choisir(e, J.choixDe(e)[0]); assert(r.scene === 'hub' && J.resultatsVus(r).includes('rheoF') && J.visuelsDe({ ...r, scene: 'rheoF' }).length, 'relisible après la conclusion');
   console.log('résultats relisibles : OK'); }
 // 17. Conseils graduels des collègues sur les stations de conception
 { for (const id of ['titr_carb_plan', 'uv_ajouts_plan', 'uv_ext_plan', 'hplc_gamme_plan', 'cpg_gamme_plan']) {
@@ -283,8 +284,6 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   for (let k = 0; k < 3; k++) e = J.demanderAide(e);
   assert(J.niveauAide(e) === 3 && J.textesAide(e).length === 3, 'trois niveaux d\'aide à la formule');
   const r = J.validerFormule(e, J.SCENES.formule.aide.valeurs()); assert(r.ok && r.etat.f.repli, 'formule de Lucas retenue');
-  const ordres = new Set([1, 2, 3, 4, 5, 6, 7, 8].map(g => J.choixDe({ ...J.etatInitial(g), scene: 'rheoC' }).map(c => c.id).join()));
-  assert(ordres.size > 1, 'options de rhéologie mélangées');
   const pan = J.choixDe({ ...J.etatInitial(5), scene: 'hplc_panne' }); const att = pan && pan.find(c => c.t.startsWith('Faire réparer'));
   if (att) { const n = J.choisir({ ...J.etatInitial(5), scene: 'hplc_panne', t: 100 }, att); assert(n.bg.clhp === n.t + 75 && n.f.attente === 0, 'réparation en tâche de fond : aucune attente immédiate'); const w = J.aller({ ...n, fait: { ...n.fait, hplcPrep: true } }, 'hplc_ei'); assert(w.f.attente === 75 && w.t === n.bg.clhp, 'attente seulement si on revient trop tôt à la CLHP'); const w2 = J.aller({ ...n, t: n.t + 120 }, 'hplc_ei'); assert(w2.f.attente === 0, 'réparation terminée : aucune attente'); }
   console.log('audit Mistral : OK'); }
@@ -378,3 +377,21 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   { const e = { ...J.etatInitial(8), scene: 'avis', t: 400, f: { ...J.etatInitial(8).f, fm: J.FORMULE_REPLI, trolAdd: 1.8, disp: 'continuer', perteEth: 0.01, mode: 'reflux', errCoel: true, coelIgnore: true } };
     if (J.ecartsMes(e).includes('eth') && !J.defauts(e).includes('eth')) { assert(!/cohérent/.test(J.texteDe(e)), 'Inès voit l\'éthanol hors plage'); assert(/coélution/.test(J.causeMesure(e)), 'cause nommée'); } }
   console.log('audit Opus v31 : OK'); }
+// 26. Retours de test (v33) : rhéologie par ajustement de modèles, CPG simplifiée, pause
+{ const e = J.etatInitial(3), pts = J.pointsRheo(e, 1, 'rc'), rm = Object.fromEntries(J.MODELES_RHEO.map(m => [m.id, J.ajusteRheo(pts, m.id).rms]));
+  assert(rm.hb < 5 && rm.newton > 30 && rm.ostwald > 5 && rm.bingham > 8, `ajustements : ${JSON.stringify(rm)}`);
+  for (let g = 1; g <= 60; g++) { const x = { ...J.etatInitial(g), scene: 'rheoC', t: 100 };
+    assert(J.validerRheo(x, 'hb', 17, 3).scene === 'hub', 'HB + seuil juste accepté');
+    const a = J.validerRheo(x, 'newton', 17, 1); assert(a.scene === 'rheoC_faux' && a.f.errRheo && /Herschel/.test(J.texteDe(a)), 'Newton refusé avec explication');
+    const b = J.validerRheo(x, 'hb', 40, 2); assert(b.scene === 'rheoC_faux' && b.f.rheoFaute === 'seuil', 'seuil faux'); }
+  // CPG : aucun réglage ne sépare les deux pics à la ligne de base
+  let mx = 0; for (let T = 40; T <= 150; T += 5) for (let P = 50; P <= 200; P += 10) for (const Ti of [120, 200, 300]) mx = Math.max(mx, J.cpgModele({ Tinj: Ti, Tfour: T, Tdet: 250, P }).Rs);
+  assert(mx < 1.3, `résolution maximale ${mx}`); const dflt = J.cpgModele({ Tinj: 250, Tfour: 70, Tdet: 250, P: 100 }); assert(dflt.Rs < 0.7 && Math.abs(dflt.tE - 1.36) < 0.02 && Math.abs(dflt.tP - 1.40) < 0.03, 'réglage par défaut = chromatogramme de la référence');
+  assert(J.cpgModele({ Tinj: 150, Tfour: 70, Tdet: 250, P: 100 }).tailing && J.cpgModele({ Tinj: 250, Tfour: 40, Tdet: 250, P: 100 }).horsFenetre, 'alertes injecteur froid et fenêtre dépassée');
+  const r = { ...J.etatInitial(2), scene: 'cpg_sim', t: 100, f: { ...J.etatInitial(2).f, ei: 'propanol' } }; assert(J.SCENES.cpg_sim.station === 'cpgsim');
+  const f = J.cpgSimFin(r, 3, true); assert(f.scene === 'cpg_ei' && f.t === 109 && J.cpgSimFin(r, 1, false).scene === 'cpg_ref', 'sortie de la simulation CPG');
+  const ref = { ...J.etatInitial(2), scene: 'cpg_ref', f: { ...J.etatInitial(2).f, ei: 'propanol' } }; assert(J.choixDe(ref).some(c => c.vers === 'cpg_sim'), 'accès à la simulation depuis la référence');
+  // pause : proposée seulement quand un appareil tourne, 10 min, sans compter comme attente subie
+  const h0 = { ...J.etatInitial(2), scene: 'hub', t: 100 }; assert(!J.choixDe(h0).some(c => c.pause), 'pas de pause sans appareil en route');
+  const h1 = { ...h0, fait: { es: true }, bg: { es: 200 } }; const ps = J.choixDe(h1).find(c => c.pause); assert(ps, 'pause proposée'); const h2 = J.choisir(h1, ps); assert(h2.t === 110 && h2.f.attente === 0 && h2.scene === 'hub');
+  console.log('retours de test v33 : OK'); }

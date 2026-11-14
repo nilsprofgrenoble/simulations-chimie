@@ -8,7 +8,7 @@ import { useEtatPersistant, Formule } from "../commun";
 import { Avatar as AvatarVisuel, STYLE_VISUELS } from './LaboVisuels';
 import {
   CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_FIN, T_MIDI, T_PAUSE, NB_AVATARS, avatarDe, pn, CHAMPS_FORMULE, FORMULE_REPLI, etatInitial, texteDe, choixDe, visuelsDe, choisir, valider, estFin, peutRevenir, revenirHub,
-  horloge, duree, nf, statutBg, resume, bilan, validerFormule, cliquerPiece, ajouterBase, validerPh, observationsDe, resultatsVus, demanderAide, niveauAide, textesAide, noterObs, chronologie, consequences, fiche, validerPlan, nombre, donneesTitr, GRANDEUR_TITR, phReel, docsDe,
+  horloge, duree, nf, statutBg, resume, bilan, validerFormule, cliquerPiece, ajouterBase, validerPh, observationsDe, resultatsVus, demanderAide, niveauAide, textesAide, noterObs, pointsRheo, ajusteRheo, MODELES_RHEO, validerRheo, cpgModele, CPG_LIM, cpgSimFin, chronologie, consequences, fiche, validerPlan, nombre, donneesTitr, GRANDEUR_TITR, phReel, docsDe,
 } from "./percutafeineJeu";
 
 // ====================================================
@@ -95,10 +95,10 @@ function Rheo({ v }) {
     <svg viewBox={`0 0 ${W} ${2 * Hh + 20}`} role="img" aria-label={`Viscosité et contrainte en fonction du gradient de vitesse (${ech}) pour : ${v.courbes.map(c => c.nom).join(', ')}`} style={{ width: '100%', maxWidth: 640, margin: '0 auto', display: 'block' }}>
       <g>{axes}<text x="4" y="14" fontSize="10" fill="#9fc3d1">η (Pa·s, {ech})</text>
         {eTicks.map(e => <text key={e} x={x0 - 4} y={ly(e) + 3} textAnchor="end" fontSize="9" fill="#9fc3d1">{nf(e, e < 1 ? 1 : 0)}</text>)}
-        {v.courbes.map(c => <path key={c.nom} d={tr(c, p => ly(p.eta))} fill="none" stroke={c.couleur === '#1e3a8a' ? '#93c5fd' : '#fcd34d'} strokeWidth="2.2" />)}</g>
+        {v.courbes.map(c => { const col = c.couleur === '#1e3a8a' ? '#93c5fd' : '#fcd34d'; return c.points ? <g key={c.nom}>{c.pts.map((p, i) => <circle key={i} cx={lx(p.g)} cy={ly(p.eta)} r="3" fill={col} />)}</g> : <path key={c.nom} d={tr(c, p => ly(p.eta))} fill="none" stroke={col} strokeWidth="2.2" />; })}</g>
       <g transform={`translate(0 ${Hh + 6})`}>{axes}<text x="4" y="14" fontSize="10" fill="#9fc3d1">σ (Pa, {ech})</text>
         {sTicks.map(s => <text key={s} x={x0 - 4} y={sy(s) + 3} textAnchor="end" fontSize="9" fill="#9fc3d1">{nf(s, s < 1 ? 1 : 0)}</text>)}
-        {v.courbes.map(c => <path key={c.nom} d={tr(c, p => sy(p.s))} fill="none" stroke={c.couleur === '#1e3a8a' ? '#93c5fd' : '#fcd34d'} strokeWidth="2.2" />)}
+        {v.courbes.map(c => { const col = c.couleur === '#1e3a8a' ? '#93c5fd' : '#fcd34d'; return c.points ? <g key={c.nom}>{c.pts.map((p, i) => <circle key={i} cx={lx(p.g)} cy={sy(p.s)} r="3" fill={col} />)}</g> : <path key={c.nom} d={tr(c, p => sy(p.s))} fill="none" stroke={col} strokeWidth="2.2" />; })}
         <text x={x1} y="156" textAnchor="end" fontSize="10" fill="#9fc3d1">γ̇ (s⁻¹, {ech})</text></g>
     </svg>
     <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center', fontSize: 13 }}>{v.courbes.map(c => <span key={c.nom}><span style={{ color: c.couleur === '#1e3a8a' ? '#93c5fd' : '#fcd34d' }}>━</span> {c.nom}</span>)}
@@ -282,6 +282,65 @@ function StationSchema({ e, sc, onEtat }) {
     {msg && <div role="alert" style={{ marginTop: 10, fontSize: 14.5, lineHeight: 1.5, color: C.ambre }}>{msg}<br /><span style={{ color: C.doux }}>(Chaque erreur te coûte 2 minutes.)</span></div>}
   </div>);
 }
+const btn = (actif) => ({ padding: '9px 13px', borderRadius: 10, border: `1px solid ${actif ? C.accent : C.bord}`, background: actif ? C.accent : '#fff', color: actif ? '#fff' : C.encre, fontSize: 14.5, cursor: 'pointer', minHeight: 44, font: 'inherit' });
+function StationRheo({ e, onEtat }) {
+  const pts = pointsRheo(e, 1, 'rc'), [essais, setEssais] = useState([]), [cur, setCur] = useState(null), [retenu, setRetenu] = useState(null), [tau, setTau] = useState(''), [msg, setMsg] = useState('');
+  const fits = Object.fromEntries(MODELES_RHEO.map(m => [m.id, ajusteRheo(pts, m.id)]));
+  const W = 360, H = 190, x0 = 38, x1 = 346, sMax = Math.max(...pts.map(p => p.s)) * 1.4, sMin = Math.min(...pts.map(p => p.s)) / 1.8;
+  const lx = g => x0 + (Math.log10(g) + 1) / 3 * (x1 - x0), sy = s => 160 - (Math.log10(s) - Math.log10(sMin)) / (Math.log10(sMax) - Math.log10(sMin)) * 140;
+  const f = cur && fits[cur].f, tr = f && Array.from({ length: 61 }, (_, i) => { const g = Math.pow(10, -1 + i / 20); return `${i ? 'L' : 'M'}${lx(g).toFixed(1)} ${sy(Math.max(f(g), sMin)).toFixed(1)}`; }).join('');
+  const valeurs = p => Object.entries(p).map(([k, v]) => `${{ eta: 'η', K: 'K', n: 'n', tau0: 'τ₀', etap: 'ηₚ' }[k]} = ${nf(v, k === 'n' ? 2 : 1)}`).join(' ; ');
+  const tester = id => { setCur(id); if (!essais.includes(id)) setEssais([...essais, id]); setMsg(''); };
+  const valider = () => { const x = nombre(tau); if (!retenu) return setMsg('Choisis le modèle que tu retiens.'); if (x === null || x < 0) return setMsg('Donne la valeur du seuil τ₀ en pascals.'); onEtat(validerRheo(e, retenu, x, essais.length)); };
+  return (<div data-station-rheo className="pc-inst" style={inst}>
+    <Cadre titre="RHÉOMÈTRE · POINTS DE MESURE">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Contrainte en fonction du gradient de vitesse, échelles logarithmiques, points de mesure du gel commercial" style={{ width: '100%', maxWidth: 640, margin: '0 auto', display: 'block' }}>
+        <line x1={x0} y1="160" x2={x1} y2="160" stroke="#6b8794" /><line x1={x0} y1="16" x2={x0} y2="160" stroke="#6b8794" />
+        {[0.1, 1, 10, 100].map(g => <text key={g} x={lx(g)} y="175" textAnchor="middle" fontSize="10" fill="#9fc3d1">{nf(g, g < 1 ? 1 : 0)}</text>)}
+        {[20, 50, 100, 200].filter(s => s >= sMin && s <= sMax).map(s => <text key={s} x={x0 - 4} y={sy(s) + 3} textAnchor="end" fontSize="9" fill="#9fc3d1">{s}</text>)}
+        <text x="4" y="12" fontSize="10" fill="#9fc3d1">σ (Pa, échelle log)</text><text x={x1} y="188" textAnchor="end" fontSize="10" fill="#9fc3d1">γ̇ (s⁻¹, échelle log)</text>
+        {tr && <path d={tr} fill="none" stroke="#fcd34d" strokeWidth="2.2" />}
+        {pts.map((p, i) => <circle key={i} cx={lx(p.g)} cy={sy(p.s)} r="3.4" fill="#93c5fd" />)}
+      </svg></Cadre>
+    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5, margin: '8px 0' }}><thead><tr style={{ textAlign: 'left', color: C.doux }}><th>γ̇ (s⁻¹)</th><th>σ (Pa)</th></tr></thead><tbody>{pts.map((p, i) => <tr key={i}><td>{nf(p.g, p.g < 1 ? 1 : 0)}</td><td>{nf(p.s, 1)}</td></tr>)}</tbody></table>
+    <div style={{ fontWeight: 700, margin: '10px 0 4px' }}>1. Teste des modèles</div>
+    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{MODELES_RHEO.map(m => <button key={m.id} type="button" data-modele={m.id} style={btn(cur === m.id)} onClick={() => tester(m.id)}>{m.nom}<span style={{ display: 'block', fontSize: 12.5, opacity: .85 }}>{m.eq}</span></button>)}</div>
+    {cur && <div role="status" style={{ margin: '8px 2px', fontSize: 14.5, lineHeight: 1.5 }}>Ajustement « {MODELES_RHEO.find(m => m.id === cur).nom} » : {valeurs(fits[cur].p)} · écart relatif moyen entre le modèle et les points : <strong>{nf(fits[cur].rms, 1)} %</strong>.</div>}
+    <div style={{ fontWeight: 700, margin: '12px 0 4px' }}>2. Retiens un modèle et donne le seuil</div>
+    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{MODELES_RHEO.filter(m => essais.includes(m.id)).map(m => <button key={m.id} type="button" data-retenu={m.id} aria-pressed={retenu === m.id} style={btn(retenu === m.id)} onClick={() => setRetenu(m.id)}>Je retiens : {m.nom}</button>)}{!essais.length && <span style={{ color: C.doux, fontSize: 14 }}>Teste au moins un modèle pour pouvoir le retenir.</span>}</div>
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 10 }}><label>Seuil d'écoulement τ₀ ≈ <input data-tau inputMode="decimal" value={tau} onChange={ev => setTau(ev.target.value)} style={{ font: 'inherit', width: 90, padding: '8px 10px', borderRadius: 8, border: `1.5px solid ${C.bord}` }} /> Pa</label>
+      <button type="button" data-valider-rheo style={btn(true)} onClick={valider}>Valider</button></div>
+    {msg && <div role="alert" style={{ marginTop: 8, color: C.ambre, fontSize: 14.5 }}>{msg}</div>}
+  </div>);
+}
+function StationCpgSim({ e, sc, onEtat }) {
+  const L = CPG_LIM, [r, setR] = useState({ Tinj: L.Tinj[2], Tfour: L.Tfour[2], Tdet: L.Tdet[2], P: L.P[2] }), [n, setN] = useState(0), [m, setM] = useState(null);
+  void sc;
+  const inj = () => { setM(cpgModele(r)); setN(k => k + 1); };
+  const W = 360, H = 170, x0 = 28, x1 = 346, yb = 138, X = t => x0 + t / 3 * (x1 - x0);
+  const gauss = (t, c, w, a) => a / (w / 4 * Math.sqrt(2 * Math.PI)) * Math.exp(-((t - c) ** 2) / (2 * (w / 4) ** 2));
+  const trace = m && Array.from({ length: 241 }, (_, i) => { const t = i / 80, y = gauss(t, m.tE, m.wE, 0.5) + gauss(t, m.tP, m.wP, 1.0) + m.bruit * Math.sin(i * 12.9898 + 4.1) * Math.cos(i * 3.7); return [t, y]; });
+  const ymax = trace ? Math.max(...trace.map(p => p[1]), 0.6) : 1;
+  const d = trace && trace.map(([t, y], i) => `${i ? 'L' : 'M'}${X(t).toFixed(1)} ${(yb - Math.max(y, 0) / ymax * 105).toFixed(1)}`).join('');
+  const reglages = [['Tinj', 'Température de l\'injecteur', '°C', 10], ['Tfour', 'Température du four (isotherme)', '°C', 5], ['Tdet', 'Température du détecteur (FID)', '°C', 10], ['P', 'Pression du gaz vecteur', 'kPa', 10]];
+  return (<div data-station-cpgsim className="pc-inst" style={inst}>
+    <div style={{ display: 'grid', gap: 10, margin: '4px 0 10px' }}>{reglages.map(([k, nom, u, pas]) => <label key={k} style={{ fontSize: 14.5 }}>{nom} : <strong>{r[k]} {u}</strong>
+      <input type="range" data-reglage={k} min={L[k][0]} max={L[k][1]} step={pas} value={r[k]} onChange={ev => setR({ ...r, [k]: +ev.target.value })} style={{ width: '100%' }} /></label>)}</div>
+    <button type="button" data-injecter style={btn(true)} onClick={inj}>Injecter (3 min)</button>
+    {m && <><Cadre titre="CPG · ÉTHANOL + PROPAN-1-OL">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Chromatogramme : résolution ${nf(m.Rs, 2)}`} style={{ width: '100%', maxWidth: 640, margin: '0 auto', display: 'block' }}>
+        <line x1={x0} y1={yb} x2={x1} y2={yb} stroke="#6b8794" /><path d={d} fill="none" stroke="#5eead4" strokeWidth="2" />
+        {[0, 1, 2, 3].map(i => <g key={i}><line x1={X(i)} y1={yb} x2={X(i)} y2={yb + 4} stroke="#6b8794" /><text x={X(i)} y={yb + 16} textAnchor="middle" fontSize="10" fill="#9fc3d1">{i}</text></g>)}
+        <text x={x1} y={yb + 30} textAnchor="end" fontSize="10" fill="#9fc3d1">temps (min), durée d'analyse 3 min</text></svg></Cadre>
+      <div role="status" style={{ fontSize: 14.5, lineHeight: 1.55, margin: '6px 2px' }}>Résolution entre les deux pics : <strong>R<sub>s</sub> = {nf(m.Rs, 2)}</strong> (≥ 1,5 pour des pics séparés). Temps de rétention : éthanol {nf(m.tE, 2)} min, propan-1-ol {nf(m.tP, 2)} min.
+        {m.horsFenetre && <div style={{ color: C.ambre }}>Le propan-1-ol sort après la fin des 3 minutes d'analyse : son pic est coupé.</div>}
+        {m.tailing && <div style={{ color: C.ambre }}>Injecteur trop froid : l'échantillon se vaporise mal, les pics s'élargissent et traînent.</div>}
+        {m.condens && <div style={{ color: C.ambre }}>Détecteur trop froid : de l'eau peut condenser, le signal est instable.</div>}</div></>}
+    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+      <button type="button" data-conclure style={btn(false)} disabled={!n} onClick={() => onEtat(cpgSimFin(e, n, true))}>Les deux pics ne se séparent pas : je change d'étalon interne</button>
+      <button type="button" data-retour-ref style={btn(false)} onClick={() => onEtat(cpgSimFin(e, n, false))}>Retour à la référence</button></div>
+  </div>);
+}
 function StationTitrage({ e, sc, onEtat }) {
   const d = donneesTitr(e), ind = d.ind, g = GRANDEUR_TITR[d.suivi], N = d.pts.length, [i, setI] = useState(0), [auto, setAuto] = useState(false);
   const virage = ind && d.iVirage != null && i >= d.iVirage, fini = i >= N - 1 || (!!ind && virage);
@@ -332,7 +391,7 @@ const POSTES = [
   { id: 'rheo', nom: 'Rhéologie', vers: ['rheoC', 'rheoF'] },
   { id: 'titrage', nom: 'Titrage', vers: ['titr_suivi', 'titr_carb_plan', 'leurre_titrgel'] },
   { id: 'conduc', nom: 'Conductimètre', vers: ['leurre_conduc'] },
-  { id: 'chroma', nom: 'Chromatographie, UV', vers: ['hplc_m', 'hplc_ei', 'hplc_gamme_plan', 'cpg_m', 'cpg_ei', 'cpg_inj', 'uv_ajouts_plan', 'uv_ext_plan'] },
+  { id: 'chroma', nom: 'Chromatographie, UV', vers: ['hplc_m', 'hplc_ei', 'hplc_gamme_plan', 'cpg_m', 'cpg_ei', 'cpg_sim', 'cpg_inj', 'uv_ajouts_plan', 'uv_ext_plan'] },
 ];
 const posteDe = vers => (POSTES.find(p => p.vers.includes(vers)) || POSTES[1]).id;
 function Dessin({ id, actif, termine }) {
@@ -569,6 +628,8 @@ export function SimulationHistoirePercutafeine() {
         {sc.station === 'plan' && <StationPlan key={e.scene + e.t} e={e} sc={sc} onEtat={setEtat} />}
         {sc.station === 'obs' && <StationObs e={e} onEtat={setEtat} />}
         {sc.station === 'titrage' && <StationTitrage key={e.scene} e={e} sc={sc} onEtat={setEtat} />}
+        {sc.station === 'rheo' && <StationRheo key={e.scene} e={e} onEtat={setEtat} />}
+        {sc.station === 'cpgsim' && <StationCpgSim key={e.scene} e={e} sc={sc} onEtat={setEtat} />}
         {sc.station === 'schema' && <StationSchema key={e.scene} e={e} sc={sc} onEtat={setEtat} />}
         {sc.calcul && <Calcul key={e.scene} e={e} sc={sc} onEtat={setEtat} />}
 
