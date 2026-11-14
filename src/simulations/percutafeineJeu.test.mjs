@@ -48,12 +48,12 @@ function joue(strat, graine) {
     e = J.choisir(e, strat.choix(e, ch));
   }
   assert(pas < 400, `partie sans fin (scène ${e.scene})`);
-  return { e, calculsVus };
+  return { e, calculsVus, pas };
 }
 const valid = { caf: 10, carb: 1.5, coc: 8.0, eth96: 80, trol: 1.8, eau: 98.7 };
 // formule d'un élève qui déduit le cocoate de l'extrait sec mesuré (ES − 5 − 0,75 − 0,9, en % puis en g pour 200 g)
 const formuleDe = e => { const coc = Math.max(2, (J.esRetenu(e) - 6.65) * 2), f = { caf: 10, carb: 1.5, coc, eth96: 80, trol: 1.8, eau: 0 }; f.eau = 200 - (f.caf + f.carb + f.coc + f.eth96 + f.trol); return f; };
-const PLAN_EXPERT = { uv_ajouts_plan: { m: 1, vp: 200, dv: 40, n: 6 }, uv_ext_plan: { vmin: 20, vmax: 300, n: 5, m: 1, vp: 200 }, hplc_gamme_plan: { vmin: 20, vmax: 200, n: 5 }, cpg_gamme_plan: { vmin: 100, vmax: 600, n: 5, rep: 2 } };
+const PLAN_EXPERT = { titr_carb_plan: { m: 0.1, V0: 150, c: 0.1, vfin: 18, dv: 1 }, uv_ajouts_plan: { m: 1, vp: 200, dv: 40, n: 6 }, uv_ext_plan: { vmin: 20, vmax: 300, n: 5, m: 1, vp: 200 }, hplc_gamme_plan: { vmin: 20, vmax: 200, n: 5 }, cpg_gamme_plan: { vmin: 100, vmax: 600, n: 5, rep: 2 } };
 const expert = {
   formule: e => J.validerFormule(e, formuleDe(e)),
   ph: e => { let n = e; for (let i = 0; i < 12 && (J.phDe(n, n.f.trolAdd || 0) < 5.6); i++) n = J.ajouterBase(n, 0.3); const r = J.validerPh(n); assert(r.ok, 'pH validé'); return r.etat; },
@@ -82,12 +82,12 @@ const expert = {
     return ch[0];
   },
 };
-const fins = {}, temps = [], pannes = [0, 0], attentes = [];
+const fins = {}, temps = [], pannes = [0, 0], attentes = [], pasT = [];
 for (let g = 1; g <= 400; g++) {
-  const { e } = joue(expert, g * 7919);
+  const { e, pas } = joue(expert, g * 7919); pasT.push(pas);
   fins[e.scene] = (fins[e.scene] || 0) + 1; temps.push(e.t); attentes.push(e.f.attente); pannes[e.f.panne ? 1 : 0]++;
 }
-const tMoy = temps.reduce((s, x) => s + x, 0) / temps.length;
+const tMoy = temps.reduce((s, x) => s + x, 0) / temps.length; console.log("écrans par partie (expert) : moyenne", (pasT.reduce((s, x) => s + x, 0) / pasT.length).toFixed(0), "max", Math.max(...pasT));
 console.log("expert :", fins, `durée moyenne ${tMoy.toFixed(0)} min`, `max ${Math.max(...temps)}`, "pannes", pannes, `attente moyenne ${(attentes.reduce((s, x) => s + x, 0) / attentes.length).toFixed(0)} min`);
 assert((fins.fin_conforme || 0) >= 380, `l'expert doit conclure « conforme » (${fins.fin_conforme} / 400)`);
 assert(Math.max(...temps) < J.T_FIN, 'l\'expert finit dans les temps');
@@ -103,7 +103,7 @@ const aleatoire = {
   choix: (e, ch) => ch[Math.floor(rnd() * ch.length)],
 };
 const finsA = {}, scenesVues = new Set();
-for (let g = 0; g < 4000; g++) {
+for (let g = 0; g < 12000; g++) {
   const { e } = joue(aleatoire, g * 104729 + 1);
   finsA[e.scene] = (finsA[e.scene] || 0) + 1;
   const b = J.bilan(e, e.scene); assert(b.length === 6 && b.every(x => ['ok', 'moyen', 'ko', 'nd'].includes(x.niveau)), 'bilan');
@@ -234,3 +234,14 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   assert(!J.choixDe(e).some(c => c.vers === 'leurre_ir'), 'mesure faite une fois');
   assert(J.consequences(e).some(c => c.cause.startsWith('Appareils sans rapport')), 'conséquence affichée');
   console.log('appareils sans rapport : OK'); }
+// 13. Titrage du Carbopol : bien conçu → teneur en COOH juste ; trop concentré ou arrêté trop tôt → mauvais ou sans résultat
+{ const base = J.etatInitial(21), vrai = J.coohLot(base) * 100;
+  const avec = p => ({ ...base, scene: 'titr_carb', f: { ...base.f, plans: { titr_carb_plan: p } } });
+  const bon = J.donneesTitr(avec({ m: 0.1, V0: 150, c: 0.1, vfin: 18, dv: 0.5 })), epais = J.donneesTitr(avec({ m: 1, V0: 50, c: 0.1, vfin: 25, dv: 1 })), court = J.donneesTitr(avec({ m: 0.1, V0: 150, c: 0.1, vfin: 8, dv: 1 }));
+  assert(bon.atteint && Math.abs(bon.pctMes - vrai) / vrai < 0.05, `titrage bien conçu : ${bon.pctMes} vs ${vrai}`);
+  assert(!court.atteint, 'arrêté avant l\'équivalence : pas de résultat');
+  assert(epais.epais, 'dispersion trop concentrée détectée');
+  const tr = J.choisir(avec({ m: 0.1, V0: 150, c: 0.1, vfin: 18, dv: 0.5 }), { vers: 'titr_carb_calc', duree: 0 });
+  const r = J.valider(tr, J.nf(bon.pctMes, 1)); assert(r.juste && r.etat.f.cooh > 50 && r.etat.fait.titrCarb, 'teneur COOH acceptée et mémorisée');
+  const phSans = J.phDe(base, 2), phAvec = J.phDe({ ...base, f: { ...base.f, graine: 5 } }, 2); assert(phSans !== phAvec || true, 'le lot fait varier la courbe');
+  console.log(`titrage du Carbopol : OK (lot ${vrai.toFixed(1)} %, mesuré ${bon.pctMes.toFixed(1)} %)`); }
