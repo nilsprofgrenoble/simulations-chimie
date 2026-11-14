@@ -286,7 +286,7 @@ const taches = e => {
   const F = e.fait, L = [];
   const enCours = Object.values(e.bg || {}).some(x => x != null && x > e.t);
   L.push(['Relire les documents du dossier', 'Notice ANSM et fiches techniques (Synthalen K, trolamine, cocoate de macrogol).', 'docs']);
-  if (!F.obs) L.push(['Regarder la vidéo du gel étalé', 'Une noisette de gel sur une plaque, en accéléré (5 min).', 'obs_video']);
+  if (!F.obs) L.push(['Noter mes observations sur le gel étalé', 'Ce que tu as vu dans la vidéo d\'Inès à ton arrivée ; tu peux la revoir si besoin (5 min).', 'obs_video']);
   if (!F.es) L.push(['Lancer l\'extrait sec du gel commercial', 'Peser, étaler, mettre à l\'étuve : 15 min de travail, puis l\'étuve tourne seule.', e.f.bal ? 'es_prep' : 'es_balance']);
   if (!F.eth) L.push(['Raisonner sur l\'éthanol de la notice', 'Quelle masse d\'éthanol faut-il mettre dans 200 g de gel ?', 'eth1']);
   if (F.es && !F.esLu) L.push(e.f.es3Att ? ['Lire le troisième extrait sec', `Calculer la médiane des trois essais.${e.bg.es > e.t ? ` Attention : étuve en cours, prête dans ${duree(e.bg.es - e.t)}, tu devras attendre.` : ''}`, 'es_calc2b'] : ['Lire l\'extrait sec', `Calculer ES et vérifier la répétabilité.${e.bg.es > e.t ? ` Attention : étuve en cours, prête dans ${duree(e.bg.es - e.t)}, tu devras attendre.` : ''}`, 'es_calc1']);
@@ -617,9 +617,9 @@ export function noterObs(e, ids) {
   return choisir(n, { vers: 'hub', run: x => marquer(x, 'obs'), note: noms.length ? `Vidéo d'une noisette de gel étalée (×8) : j'ai noté — ${noms.join(' ; ')}.` : 'Vidéo d\'une noisette de gel étalée (×8) : rien noté.' });
 }
 add('obs_video', {
-  lieu: 'Paillasse', pnj: 'ines', station: 'obs', titre: 'Une noisette de gel sur une plaque',
+  lieu: 'Bureau', pnj: 'ines', station: 'obs', titre: 'Ce que montre le gel étalé',
   video: { src: 'videos/gel-evaporation.mp4', legende: 'Une noisette de gel du pot commercial, étalée sur une plaque noire. Enregistrement accéléré (×8).' },
-  texte: () => `Tu revois la vidéo d'Inès : une noisette de gel du pot sur une plaque noire, filmée en accéléré (×8).\nNote dans ton cahier ce que tu vois.`,
+  texte: () => `Tu as vu la vidéo d'Inès à ton arrivée : une noisette de gel du pot sur une plaque noire, filmée en accéléré (×8). Tu peux la revoir ci-dessous si tu as un doute.\nNote dans ton cahier ce que tu as observé.`,
   choix: [],
 });
 
