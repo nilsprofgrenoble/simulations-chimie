@@ -251,8 +251,8 @@ function Paillasse({ e, s, choix, onChoix }) {
 
 // ───────────── Le film de la journée (fin de partie) ─────────────
 function Film({ e }) {
-  const ch = chronologie(e), W = 680, x0 = 96, x1 = 664, X = t => x0 + t / T_FIN * (x1 - x0), tmax = Math.min(e.t, T_FIN);
-  const rangs = [['Toi (actif)', ch.actif, '#1e3a8a'], ['Étuve', ch.etuve, '#f59e0b'], ['Dispersion du gel', ch.gel, '#7c3aed'], ['Attente subie', ch.attentes, '#dc2626']];
+  const ch = chronologie(e), W = 680, x0 = 120, x1 = 664, X = t => x0 + t / T_FIN * (x1 - x0), tmax = Math.min(e.t, T_FIN);
+  const rangs = [['Toi (actif)', ch.actif, '#1e3a8a'], ['Étuve', ch.etuve, '#f59e0b'], ['Dispersion gel', ch.gel, '#7c3aed'], ['Attente subie', ch.attentes, '#dc2626']];
   const barres = a => a.map((b, i) => { const t0 = b.t0, t1 = b.t1 ?? b.t1; return <rect key={i} x={X(t0)} y="0" width={Math.max(2, X(Math.min(t1, T_FIN)) - X(t0))} height="18" rx="3" />; });
   const ticks = [0, 60, 120, 180, 240, 300, 360, 420].map(t => [t, t < T_S2 ? `${13 + t / 60} h` : `${8 + (t - T_S2) / 60} h`]);
   return (<figure data-film style={{ margin: '8px 0' }}>
