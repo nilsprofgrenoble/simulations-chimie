@@ -8,7 +8,7 @@ import { useEtatPersistant, Formule } from "../commun";
 import { Avatar as AvatarVisuel, STYLE_VISUELS } from './LaboVisuels';
 import {
   CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_FIN, T_MIDI, T_PAUSE, NB_AVATARS, avatarDe, pn, CHAMPS_FORMULE, FORMULE_REPLI, etatInitial, texteDe, choixDe, visuelsDe, choisir, valider, estFin, peutRevenir, revenirHub,
-  horloge, duree, nf, statutBg, resume, bilan, validerFormule, cliquerPiece, ajouterBase, validerPh, observationsDe, resultatsVus, demanderAide, niveauAide, textesAide, noterObs, chronologie, consequences, fiche, validerPlan, nombre, donneesTitr, GRANDEUR_TITR, phReel,
+  horloge, duree, nf, statutBg, resume, bilan, validerFormule, cliquerPiece, ajouterBase, validerPh, observationsDe, resultatsVus, demanderAide, niveauAide, textesAide, noterObs, chronologie, consequences, fiche, validerPlan, nombre, donneesTitr, GRANDEUR_TITR, phReel, docsDe,
 } from "./percutafeineJeu";
 
 // ====================================================
@@ -170,7 +170,6 @@ const TubeGel = () => (<figure style={{ margin: '12px 0', textAlign: 'center' }}
 const Visuel = ({ v }) => v.type === 'balance' ? <BalanceVue v={v} /> : v.type === 'chroma' ? <Chroma v={v} /> : v.type === 'rheo' ? <Rheo v={v} /> : v.type === 'droite' ? <Droite v={v} /> : v.type === 'titrage' ? <CourbeTitrage v={v} /> : v.type === 'tableau' ? <Tableau v={v} /> : v.type === 'fioles' ? <SchemaFiolesClhp /> : v.type === 'tube' ? <TubeGel /> : null;
 
 
-const TOUS_DOCS = ['notice', 'synthalen', 'trolamine', 'cocoate', 'mo1', 'mo3'];
 // ───────────── Briques d'interaction ─────────────
 const inst = { background: '#fffaf0', border: '1.5px solid #ecd9a6' };
 function Avatar({ pnj, taille = 40, e }) {
@@ -527,8 +526,8 @@ export function SimulationHistoirePercutafeine() {
         {!fin && <h3 ref={refTitre} tabIndex={-1} data-titre style={{ margin: '10px 0 6px', fontSize: 'clamp(21px,4.5vw,26px)', outline: 'none', color: C.encre }}>{sc.titre}</h3>}
         {e.f.corrige && <div data-corrige role="status" style={{ background: '#fef3c7', border: '1px solid #f5d98a', borderRadius: 12, padding: '9px 13px', fontSize: 14.5, margin: '8px 0' }}>🤝 {e.f.corrige}</div>}
         <Dialogue sc={sc} paragraphes={paragraphes} p={p} e={e} />
-        {sc.fiches && <FichesPercutafeine ids={sc.fiches} ouvert={e.scene === 'docs'} />}
-        {!fin && !['hub', 'docs', 'intro', 'intro2'].includes(e.scene) && (() => { const autres = TOUS_DOCS.filter(d => !(sc.fiches || []).includes(d)); return autres.length ? <details data-dossier style={{ margin: '12px 0', background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 12, padding: '8px 14px' }}><summary style={{ cursor: 'pointer', fontWeight: 700, fontSize: 15 }}>📄 Dossier du TP : notice, fiches techniques, modes opératoires</summary><FichesPercutafeine ids={autres} /></details> : null; })()}
+        {sc.fiches && <FichesPercutafeine ids={e.scene === 'docs' ? docsDe(e) : sc.fiches} ouvert={e.scene === 'docs'} />}
+        {!fin && !['hub', 'docs', 'intro', 'intro2'].includes(e.scene) && (() => { const autres = docsDe(e).filter(d => !(sc.fiches || []).includes(d)); return autres.length ? <details data-dossier style={{ margin: '12px 0', background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 12, padding: '8px 14px' }}><summary style={{ cursor: 'pointer', fontWeight: 700, fontSize: 15 }}>📄 Dossier du TP : notice, fiches techniques, modes opératoires</summary><FichesPercutafeine ids={autres} /></details> : null; })()}
         {sc.formule && <div data-relation style={{ margin: '12px 0', background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 12, padding: '8px 12px', overflowX: 'auto' }}>{FORMULES[sc.formule]}</div>}
         {sc.video && <figure data-video style={{ margin: '12px 0' }}><video controls playsInline preload="metadata" aria-label={sc.video.legende} src={`${import.meta.env.BASE_URL}${sc.video.src}`} style={{ width: '100%', maxWidth: 520, maxHeight: '60vh', display: 'block', margin: '0 auto', borderRadius: 14, background: '#0f2430', boxShadow: '0 6px 18px rgba(0,0,0,.2)' }} /><figcaption style={{ fontSize: 13, color: C.doux, textAlign: 'center', marginTop: 6 }}>{sc.video.legende}</figcaption></figure>}
         {vis.map((v, i) => <Visuel key={i} v={v} />)}
