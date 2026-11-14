@@ -167,7 +167,7 @@ export function valider(e, saisie) {
   const e2 = { ...e, f: { ...e.f, nbErr: e.f.nbErr + 1 } }, essais = e.essais + 1;
   if (essais >= 2) {
     const st = choisir({ ...e2, t: e2.t + 5 }, k.ko);
-    return { etat: { ...st, f: { ...st.f, corrige: `Valeur attendue à l'étape précédente : ${nf(vrai, k.cs ?? 2)} ${k.unite}.` } }, juste: false, message: '' };
+    return { etat: { ...st, f: { ...st.f, corrige: `${sc.pnj === 'moi' ? 'Lucas' : PNJ[sc.pnj].nom} passe, refait le calcul avec toi et trouve ${nf(vrai, k.cs ?? 2)} ${k.unite}.`, aides: (st.f.aides || 0) + 1 } }, juste: false, message: '' };
   }
   return { etat: { ...e2, t: e2.t + 5, essais }, juste: false, message: (k.retour && Number.isFinite(v) && k.retour(v, e)) || k.indice };
 }
@@ -180,6 +180,7 @@ export const statutBg = e => ({
 });
 const taches = e => {
   const F = e.fait, L = [];
+  if (!F.obs) L.push(['Regarder la vidéo du gel étalé', 'Une noisette de gel sur une plaque, en accéléré (5 min).', 'obs_video']);
   if (!F.es) L.push(['Lancer l\'extrait sec du gel commercial', 'Peser, étaler, mettre à l\'étuve : 15 min de travail, puis l\'étuve tourne seule.', 'es_prep']);
   if (!F.eth) L.push(['Raisonner sur l\'éthanol de la notice', 'Quelle masse d\'éthanol faut-il mettre dans 200 g de gel ?', 'eth1']);
   if (F.es && !F.esRes) L.push(['Lire l\'extrait sec', 'Calculer ES, vérifier la répétabilité, en déduire le tensioactif.', 'es_calc1']);
@@ -262,26 +263,20 @@ export const CHAMPS_FORMULE = [['caf', 'Caféine'], ['carb', 'Carbopol 980'], ['
 export const FORMULE_REPLI = { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 98.7 };
 export function controlesFormule(e, fm) {
   const v = Object.fromEntries(Object.entries(fm).map(([k, x]) => [k, parseFloat(String(x).replace(',', '.')) || 0]));
-  const tot = Object.values(v).reduce((s, x) => s + x, 0), pct = k => v[k] / tot * 100, esTh = (v.caf + v.carb + v.coc + v.trol) / tot * 100, ethP = v.eth96 * 0.96 / tot * 100;
-  return [
-    { ok: Math.abs(tot - M_LOT) <= 4, t: `Masse totale : ${nf(tot, 1)} g (attendu : environ ${M_LOT} g).` },
-    { ok: pct('caf') >= 4.5 && pct('caf') <= 5.5, t: `Caféine : ${nf(pct('caf'), 2)} % (attendu : 5 %).` },
-    { ok: pct('carb') >= 0.5 && pct('carb') <= 1.0, t: `Carbopol : ${nf(pct('carb'), 2)} % (plage de la fiche : 0,5 à 1 %).` },
-    { ok: ethP >= 36.5 && ethP <= 40.5, t: `Éthanol pur : ${nf(ethP, 1)} % (attendu : ${nf(ETH_PUR_COM, 1)} %).` },
-    { ok: v.trol >= 1.2 && v.trol <= 2.4, t: `Trolamine : ${nf(pct('trol'), 2)} % (ordre de grandeur : 0,6 à 1,2 %).` },
-    { ok: Math.abs(esTh - esRetenu(e)) <= 1.0, t: `Extrait sec calculé de ta formule : ${nf(esTh, 2)} % ; mesuré sur le commercial : ${nf(esRetenu(e), 2)} % (écart toléré : 1 %).` },
-  ];
+  const tot = Object.values(v).reduce((s, x) => s + x, 0);
+  return Math.abs(tot - M_LOT) <= 8 ? [] : [{ ok: false, t: `Lucas : « Ça fait ${nf(tot, 1)} g au total, tu voulais bien environ ${M_LOT} g ? Tu peux garder ta formule telle quelle ou la reprendre. »` }];
 }
+// Aucun verdict sur le contenu : la formule part telle quelle dans le gel, et c'est le contrôle qualité qui dira ce qu'elle vaut.
 export function validerFormule(e, fm, repli = false) {
   const val = repli ? FORMULE_REPLI : Object.fromEntries(Object.entries(fm).map(([k, x]) => [k, parseFloat(String(x).replace(',', '.')) || 0]));
-  const lignes = controlesFormule(e, val), tous = lignes.every(l => l.ok);
-  const n = { ...e, t: e.t + 3, f: { ...e.f, fTent: (e.f.fTent || 0) + 1 } };
-  if (tous || repli) return { ok: true, lignes, etat: choisir({ ...n, f: { ...n.f, fm: val, repli: repli || undefined, nbErr: n.f.nbErr + (repli ? 2 : 0) } }, { vers: 'hub', run: x => marquer(x, 'formule'), note: repli ? 'Formule de repli utilisée.' : `Formule validée (éthanol à 96 % : ${nf(val.eth96, 1)} g).` }) };
-  return { ok: false, lignes, etat: n };
+  const lignes = repli ? [] : controlesFormule(e, val);
+  const n = { ...e, t: e.t + 2, f: { ...e.f, fTent: (e.f.fTent || 0) + 1 } };
+  if (lignes.length && !e.f.fAvert) return { ok: false, lignes, etat: { ...n, f: { ...n.f, fAvert: true } } };
+  return { ok: true, lignes: [], etat: choisir({ ...n, f: { ...n.f, fm: val, repli: repli || undefined } }, { vers: 'hub', run: x => marquer(x, 'formule'), note: repli ? 'Formule de repli utilisée.' : `Formule retenue (éthanol à 96 % : ${nf(val.eth96, 1)} g, cocoate : ${nf(val.coc, 1)} g, Carbopol : ${nf(val.carb, 2)} g).` }) };
 }
 add('formule', {
   lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'formule', titre: 'La formule du contretype',
-  texte: e => `« Écris les masses pour environ ${M_LOT} g. Je te dis ce qui cloche, mais chaque vérification me prend 3 minutes. » Rappels : ES mesuré ${nf(esRetenu(e), 2)} %, éthanol à 96 % pour ${nf(ETH_PUR_COM, 1)} % d'éthanol pur.`,
+  texte: e => `« Écris les masses pour environ ${M_LOT} g. Je ne juge pas ta formule : elle part telle quelle dans le gel, et c'est le contrôle qualité qui dira si elle tient. » Rappels : ES mesuré ${nf(esRetenu(e), 2)} %, éthanol à 96 % pour ${nf(ETH_PUR_COM, 1)} % d'éthanol pur.`,
   hyp: "Hypothèse : le volume de gel est la somme des masses (pas de contraction de volume à l'échelle de ce contrôle) ; la trolamine finale est ajustée au pH, la valeur saisie n'est qu'une estimation.",
   choix: [],
 });
@@ -312,10 +307,63 @@ add('eq_ines', {
   lieu: 'Bureau', pnj: 'ines', titre: 'Inès relit tes résultats',
   texte: e => { const D = defauts(e), m = mesures(e); return D.includes('eth') ? `Inès regarde ton cahier : « Ton éthanol est à ${nf(m.eth, 1)} % ; la notice en annonce 38,4 %. Tu veux qu'on regarde ça ensemble avant que tu rendes ton bon ? »` : `Inès regarde ton cahier : « Tes résultats me paraissent cohérents entre eux. Tu veux que je relise un calcul avant que tu rendes ton bon ? »`; },
   choix: [
-    { t: '« Oui, volontiers : montre-moi ce qui te gêne, on regarde ça ensemble. »', tag: 'ok', vers: 'verdict', duree: 5, run: n => eqNote(n, 'ok', 'ines'), note: 'Relecture avec Inès acceptée.' },
+    { t: '« Oui, volontiers : montre-moi ce qui te gêne, on regarde ça ensemble. »', tag: 'ok', vers: 'avis', duree: 5, run: n => eqNote(n, 'ok', 'ines'), note: 'Relecture avec Inès acceptée.' },
     { t: '« Ça va, je gère. »', tag: 'moyen', vers: 'verdict', duree: 0, run: n => eqNote(n, 'moyen', 'ines'), note: 'Aide d\'Inès déclinée sans explication.' },
     { t: '« Tu n\'as pas à relire mon travail. »', tag: 'ko', vers: 'verdict', duree: 2, run: n => eqNote(n, 'ko', 'ines'), note: 'Inès envoyée balader.' },
   ],
+});
+
+
+// ───────────── Observation filmée de l'évaporation (début de parcours, facultative) ─────────────
+export const OBSERVATIONS = [
+  ['blanc', 'Le gel, d\'abord transparent, devient blanc et opaque'],
+  ['cristaux', 'Des filaments de cristaux apparaissent'],
+  ['fins', 'Le blanchiment commence par les parties les plus fines'],
+  ['fluide', 'Le gel devient plus fluide'],
+  ['bout', 'Le gel se met à bouillir'],
+  ['stable', 'Le gel ne change pas'],
+];
+export function noterObs(e, ids) {
+  const noms = OBSERVATIONS.filter(([id]) => ids.includes(id)).map(([, t]) => t.charAt(0).toLowerCase() + t.slice(1));
+  const n = { ...e, t: e.t + 5, f: { ...e.f, obs: ids } };
+  return choisir(n, { vers: 'hub', run: x => marquer(x, 'obs'), note: noms.length ? `Vidéo d'une noisette de gel étalée (×8) : j'ai noté — ${noms.join(' ; ')}.` : 'Vidéo d\'une noisette de gel étalée (×8) : rien noté.' });
+}
+add('obs_video', {
+  lieu: 'Paillasse', pnj: 'ines', station: 'obs', titre: 'Une noisette de gel sur une plaque',
+  video: { src: 'videos/gel-evaporation.mp4', legende: 'Une noisette de gel du pot commercial, étalée sur une plaque noire. Enregistrement accéléré (×8).' },
+  texte: () => `Inès : « J'ai étalé une noisette de gel du pot sur une plaque noire et j'ai filmé en accéléré (×8). Regarde : ça peut te servir. »\nNote dans ton cahier ce que tu vois.`,
+  choix: [],
+});
+
+// ───────────── Avis d'un collègue et remédiation (si l'élève a accepté la relecture) ─────────────
+add('avis', {
+  lieu: 'Bureau', pnj: 'ines', titre: 'Ce que voit Inès',
+  texte: e => {
+    const D = defauts(e), m = mesures(e), vu = (e.f.obs || []).some(x => x === 'blanc' || x === 'cristaux');
+    if (D.includes('eth')) return `Inès relit tes résultats : « L'éthanol est à ${nf(m.eth, 1)} % au lieu de ${nf(ETH_PUR_COM, 1)} %. ${vu ? 'Tu te souviens de la vidéo : ça part très vite. ' : ''}Qu'est-ce que tu as fait comme chauffage, et avec quel montage ? On peut compenser : ajouter de l'éthanol à 96 % dans le gel, mais il faut calculer la masse puis refaire le dosage CPG. »`;
+    if (D.includes('visco') && gelVrai(e).ph < 5.5) return `Inès relit tes résultats : « Ton gel est fluide : rapport des contraintes ${nf(m.q, 2)}. As-tu regardé le pH final ? Si le Carbopol n'est pas assez neutralisé, on peut reprendre avec de la trolamine (15 min), puis refaire la rhéologie. »`;
+    if (D.length) return `Inès relit tes résultats : « Je vois un écart, mais il ne se rattrape pas dans le temps qui reste : ${D.includes('visco') ? 'des grumeaux ne se redissolvent pas' : 'on ne peut pas retirer la caféine en trop'}. Écris-le tel quel sur le bon, et on refera un lot. »`;
+    return `Inès relit tes résultats : « Tout me paraît cohérent : caféine, éthanol et viscosité dans les plages. Je ne vois rien à redire. »`;
+  },
+  choix: e => {
+    const D = defauts(e);
+    if (D.includes('eth')) return [
+      { t: 'Compenser : calculer la masse d\'éthanol à ajouter', vers: 'reprise_eth', duree: 5, note: 'Décision de compenser l\'éthanol manquant avec Inès.' },
+      { t: 'Laisser le gel tel quel et conclure', vers: 'verdict', duree: 0, note: 'Gel laissé tel quel malgré l\'éthanol bas.' }];
+    if (D.includes('visco') && gelVrai(e).ph < 5.5) return [
+      { t: 'Reprendre le pH avec Lucas', vers: 'ph2', duree: 5, note: 'Reprise du pH décidée avec Inès.' },
+      { t: 'Laisser le gel tel quel et conclure', vers: 'verdict', duree: 0, note: 'Gel laissé tel quel malgré la viscosité basse.' }];
+    return [{ t: 'Passer au bon de contrôle', vers: 'verdict', duree: 0 }];
+  },
+});
+const DELTA_ETH = e => (ETH_PUR_COM / 100 * M_LOT - mesures(e).eth / 100 * M_LOT) / (0.96 - ETH_PUR_COM / 100);
+add('reprise_eth', {
+  lieu: 'Paillasse de formulation', pnj: 'ines', titre: 'Compenser l\'éthanol manquant',
+  texte: e => `Gel : environ ${M_LOT} g ; éthanol mesuré : ${nf(mesures(e).eth, 1)} % ; objectif : ${nf(ETH_PUR_COM, 1)} %. L'éthanol disponible est à 96 % (en masse). On suppose que l'éthanol ajouté se mélange sans autre perte.`,
+  hyp: 'Hypothèse : le gel pèse environ 200 g ; la teneur finale visée est celle du gel commercial ; le mélange est homogène.',
+  calcul: { q: 'Quelle masse d\'éthanol à 96 % faut-il ajouter ?', unite: 'g', vrai: DELTA_ETH, tol: 0.2, cs: 0, indice: 'Bilan sur l\'éthanol pur : (masse présente + 0,96 × masse ajoutée) / (200 + masse ajoutée) = teneur visée.',
+    ok: { vers: 'hub', duree: 15, run: n => ({ ...n, fait: { ...n.fait, ethQC: false } }), f: { perteEth: 0.01, compense: true }, note: 'Éthanol compensé par ajout d\'éthanol à 96 % ; dosage CPG à refaire.' },
+    ko: { vers: 'hub', duree: 15, run: n => ({ ...n, fait: { ...n.fait, ethQC: false } }), f: { perteEth: 0.01, compense: true }, note: 'Éthanol compensé avec l\'aide d\'un collègue ; dosage CPG à refaire.' } },
 });
 
 // ───────────── Fabrication ─────────────
@@ -353,16 +401,21 @@ export function ajouterBase(e, g) {
   return { ...e, t: e.t + 2, f: { ...e.f, trolAdd: arr(m, 2), phMes: arr(phDe(e, m) + 0.04 * gauss(e.f.graine, `ph${Math.round(m * 100)}`), 2) } };
 }
 export function validerPh(e) {
-  const ph = phDe(e, e.f.trolAdd || 0);
-  if (!(e.f.trolAdd > 0)) return { ok: false, message: 'Tu n\'as pas encore ajouté de trolamine.' };
-  if (ph < 5.0) return { ok: false, message: `pH mesuré ${nf(e.f.phMes, 2)} : encore trop acide, le gel n'a pas fini d'épaissir (le gel commercial est vers 6).` };
-  return { ok: true, etat: choisir({ ...e, f: { ...e.f, phFinal: ph } }, { vers: 'hub', run: n => marquer(n, 'ph'), note: `Gel neutralisé : pH ${nf(e.f.phMes, 2)}, ${nf(e.f.trolAdd, 2)} g de trolamine, mis en pot.`, duree: 10 }) };
+  const ph = phDe(e, e.f.trolAdd || 0), reprise = e.scene === 'ph2';
+  const run = n => ({ ...marquer(n, 'ph'), fait: { ...n.fait, ph: true, ...(reprise ? { rheoF: false } : {}) } });
+  return { ok: true, etat: choisir({ ...e, f: { ...e.f, phFinal: ph, ...(reprise ? { reprisePh: true } : {}) } }, { vers: 'hub', run, duree: reprise ? 15 : 10, note: reprise ? `Gel repris avec Lucas : pH ${nf(e.f.phMes ?? ph, 2)} après ajout de trolamine (${nf(e.f.trolAdd || 0, 2)} g au total).` : `Gel mis en pot : pH ${e.f.phMes != null ? nf(e.f.phMes, 2) : 'non mesuré'}, ${nf(e.f.trolAdd || 0, 2)} g de trolamine.` }) };
 }
 add('ph', {
   lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'ph', titre: 'Neutraliser et mettre en pot',
   video: { src: 'videos/neutralisation-carbopol.mp4', legende: 'Enregistrement du TP : le milieu agité s\'épaissit pendant la neutralisation.' },
   texte: e => `« Ajoute la trolamine par petites fractions en agitant, et lis le pH au pH-mètre après chaque ajout (2 minutes l'ajout). Vise un pH proche de celui du gel commercial, vers 6. Regarde ce que ça donne quand le milieu épaissit. » ${e.f.disp === 'grumeaux' ? 'Le gel contient des grumeaux.' : ''}`,
   hyp: 'Hypothèse : la viscosité d\'un gel de Carbopol dépend du pH (elle augmente de pH 4 à 6 environ puis se stabilise) ; la lecture du pH-mètre a une dispersion de ±0,04.',
+  choix: [],
+});
+add('ph2', {
+  lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'ph', titre: 'Reprendre le pH du gel',
+  texte: () => `Lucas rouvre le pot : « On remet de la trolamine par petites fractions, en agitant, et on relit le pH. Compte 15 minutes pour la reprise, et il faudra refaire la mesure de rhéologie. »`,
+  hyp: 'Hypothèse : le Carbopol non encore neutralisé peut encore épaissir ; les grumeaux, eux, ne se rattrapent pas.',
   choix: [],
 });
 
@@ -592,6 +645,8 @@ export const resume = e => [
   `Formule : ${e.f.fm ? `éthanol à 96 % ${nf(e.f.fm.eth96, 1)} g, Carbopol ${nf(e.f.fm.carb, 2)} g, caféine ${nf(e.f.fm.caf, 1)} g` : 'non fixée'}${e.f.repli ? ' (formule de repli)' : ''}.`,
   e.f.mode ? `Procédé : ${{ reflux: 'ballon à reflux sous agitation', becher: 'bécher chauffé sans reflux', froid: 'bécher à froid', base: 'base ajoutée dès le début' }[e.f.mode]}${e.f.disp ? `, dispersion : ${{ continuer: 'prolongée', neutraliser: 'arrêtée avant la fin', chauffer: 'chauffage augmenté', grumeaux: 'grumeaux conservés' }[e.f.disp]}` : ''}.` : null,
   e.f.methCaf ? `Caféine : ${e.f.methCaf === 'EI' ? (e.f.attendu ? 'CLHP après réparation' : 'CLHP, étalon interne') : e.f.methCaf === 'ajouts' ? 'UV, ajouts dosés' : 'UV, étalonnage externe'}.` : null,
+  e.f.compense ? 'Éthanol compensé après une perte à la fabrication, dosage CPG refait.' : null,
+  e.f.reprisePh ? 'pH du gel repris après la mesure de rhéologie.' : null,
   `Temps d'attente subi : ${duree(e.f.attente)}.`,
 ].filter(Boolean);
 const eqNiveau = f => {
@@ -608,7 +663,7 @@ export function bilan(e, finId = e.scene) {
   const c3 = finId === 'fin_conforme' || finId === 'fin_detecte' ? 'ok' : finId === 'fin_mauvaise_cause' ? 'moyen' : finId === 'fin_temps' ? 'nd' : 'ko';
   return [
     { comp: 'C.1.4', titre: 'Sélectionner les méthodes, techniques et matériels', niveau: niv(n1, 0, 1), texte: n1 === 0 ? 'Étalon interne adapté, méthodes cohérentes avec la matrice.' : `À revoir : ${[f.errCoel && 'étalon interne (propan-1-ol coélue avec l\'éthanol)', f.sansEI && 'nécessité d\'un étalon interne en CPG', f.extTente && 'étalonnage externe UV (effet de matrice)', f.extAccepte && 'résultat UV non vérifié avec un témoin', f.errComp && 'comparaison des deux méthodes CPG'].filter(Boolean).join(' ; ')}.` },
-    { comp: 'C.2.1', titre: 'Préparer les produits et les calculs', niveau: f.repli ? 'moyen' : niv(nbErr + (f.errEs ? 1 : 0), 1, 4), texte: `${nbErr} réponse(s) de calcul fausse(s)${f.errEth ? ' (titre de l\'éthanol à 96 %)' : ''}${f.repli ? ' ; formule de repli utilisée' : ''}.` },
+    { comp: 'C.2.1', titre: 'Préparer les produits et les calculs', niveau: f.repli ? 'moyen' : niv(nbErr + (f.errEs ? 1 : 0) + (f.aides || 0), 1, 4), texte: `${nbErr} réponse(s) de calcul fausse(s)${f.aides ? `, dont ${f.aides} refaite(s) avec l'aide d'un collègue` : ''}${f.errEth ? ' (titre de l\'éthanol à 96 %)' : ''}${f.repli ? ' ; formule de repli utilisée' : ''}.` },
     { comp: 'C.3.2', titre: 'Détecter les non-conformités', niveau: c3, texte: c3 === 'nd' ? 'Pas de conclusion rendue.' : c3 === 'ok' ? 'Décision cohérente avec la réalité du lot.' : 'La décision ne correspond pas aux défauts réels du lot : relis tes résultats critère par critère.' },
     { comp: 'C.4', titre: 'Adapter son protocole face à un imprévu', niveau: c4, texte: c4 === 'nd' ? 'Pas de panne dans cette partie.' : c4 === 'ok' ? 'Panne de CLHP : bascule immédiate vers une méthode adaptée (ajouts dosés).' : c4 === 'moyen' ? 'Panne de CLHP : solution trouvée mais coûteuse ou après un détour.' : 'Résultat biaisé conservé sans vérification.' },
     { comp: 'C.6.1', titre: 'Organiser le travail dans le respect des délais', niveau: finId === 'fin_temps' ? 'ko' : niv(att, 70, 130), texte: `${duree(att)} d'attente subie devant l'étuve, le ballon ou la CLHP en panne (environ 1 h est incompressible)${att > 70 ? ' : lance les opérations longues en premier et prépare les analyses pendant ce temps' : ''}.` },
