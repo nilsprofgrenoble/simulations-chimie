@@ -269,7 +269,7 @@ add('intro2', {
   choix: [{ t: 'Aller à la paillasse', vers: 'hub', note: 'Début du travail : contre-typer la Percutaféine.' }],
 });
 add('docs', {
-  fiches: ['notice', 'carbopol', 'cocoate', 'trolamine', 'mo1', 'mo2', 'mo3', 'mo4'],
+  fiches: ['notice', 'carbopol', 'synthalen', 'cocoate', 'trolamine', 'mo1', 'mo2', 'mo3', 'mo4'],
   lieu: 'Bureau', pnj: 'moi', titre: 'Le dossier du TP',
   texte: () => 'Tu relis la notice du gel commercial, les fiches techniques des matières premières et les modes opératoires du TP. Tout ce que tu y trouves est utilisable pour retrouver la formule ; ce qui n\'y figure pas, il faudra le déduire de tes mesures.',
   choix: [{ t: 'Retourner à la paillasse', vers: 'hub', duree: 3, note: 'Relecture du dossier (notice et fiches techniques).' }],
@@ -438,7 +438,7 @@ export function validerFormule(e, fm, repli = false) {
   return { ok: true, lignes: [], etat: choisir({ ...n, f: { ...n.f, fm: val, repli: rp || undefined } }, { vers: 'hub', run: x => marquer(x, 'formule'), note: rp ? 'Formule proposée par Lucas utilisée.' : `Formule retenue (éthanol à 96 % : ${nf(val.eth96, 1)} g, cocoate : ${nf(val.coc, 1)} g, Carbopol : ${nf(val.carb, 2)} g).` }) };
 }
 add('formule', {
-  fiches: ['notice', 'carbopol', 'cocoate', 'trolamine'],
+  fiches: ['notice', 'carbopol', 'synthalen', 'cocoate', 'trolamine'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'formule', titre: 'La formule du contretype',
   texte: e => `« Écris les masses pour environ ${M_LOT} g. Je ne juge pas ta formule : elle part telle quelle dans le gel, et c'est le contrôle qualité qui dira si elle tient. » Rappels : ES mesuré ${nf(esRetenu(e), 2)} %, éthanol à 96 % pour ${nf(ETH_PUR_COM, 1)} % d'éthanol pur.`,
   aide: { pnj: 'lucas', textes: [
@@ -454,7 +454,7 @@ add('formule', {
 // ───────────── Échanges avec les collègues (C.7.3) ─────────────
 // Chaque échange note l'attitude de l'élève (ok : respectueux et argumenté ; moyen : passif ; ko : sec ou fermé) ; les conséquences sont réelles plus loin.
 add('eq_base', {
-  fiches: ['carbopol'],
+  fiches: ['carbopol', 'synthalen'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Le conseil de Lucas',
   texte: () => `Lucas, qui a l'habitude du labo : « Moi je mets tout d'un coup, base comprise, ça fait gagner 20 minutes. J'ai toujours fait comme ça. »`,
   choix: [
@@ -573,7 +573,7 @@ add('point_dubreuil', {
 
 // ───────────── Fabrication ─────────────
 add('fab_choix', {
-  fiches: ['carbopol'],
+  fiches: ['carbopol', 'synthalen'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', titre: 'Comment fabriques-tu le gel ?',
   texte: () => `« Le Carbopol 980 est long à se disperser : à froid, compte 1 h à 1 h 30 ; un chauffage modéré accélère la dispersion. Dès qu'il est dispersé, c'est la base (la trolamine) qui fait épaissir. »\nComment procèdes-tu ?`,
   hyp: 'Hypothèse : le Carbopol gonfle et épaissit quand il est neutralisé ; mal dispersé, il forme des grumeaux qui ne se redissolvent pas bien.',
@@ -602,7 +602,7 @@ add('fab_grumeaux', {
   ],
 });
 add('fab_disp', {
-  fiches: ['carbopol', 'trolamine'],
+  fiches: ['carbopol', 'synthalen', 'trolamine'],
   lieu: 'Paillasse de formulation', pnj: 'moi', titre: 'Le Carbopol est-il dispersé ?',
   entree: e => attendre(e, 'gel'),
   texte: e => e.fait.disp ? 'Le gel est prêt à être neutralisé.' : `Après le temps prévu, il reste encore des morceaux de Carbopol dans le milieu. Que fais-tu ?`,
@@ -622,7 +622,7 @@ export function validerPh(e) {
   return { ok: true, etat: choisir({ ...e, f: { ...e.f, phFinal: ph, ...(reprise ? { reprisePh: true } : {}) } }, { vers: 'hub', run, duree: reprise ? 15 : 10, note: reprise ? `Gel repris avec Lucas : pH ${nf(e.f.phMes ?? ph, 2)} après ajout de trolamine (${nf(e.f.trolAdd || 0, 2)} g au total).` : `Gel mis en pot : pH ${e.f.phMes != null ? nf(e.f.phMes, 2) : 'non mesuré'}, ${nf(e.f.trolAdd || 0, 2)} g de trolamine.` }) };
 }
 add('ph', {
-  fiches: ['carbopol', 'trolamine'],
+  fiches: ['carbopol', 'synthalen', 'trolamine'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'ph', titre: 'Neutraliser et mettre en pot',
   video: { src: 'videos/neutralisation-carbopol.mp4', legende: 'Enregistrement du TP : le milieu agité s\'épaissit pendant la neutralisation.' },
   texte: e => `« Ajoute la trolamine par petites fractions en agitant, et lis le pH au pH-mètre après chaque ajout (2 minutes l'ajout). Vise un pH proche de celui du gel commercial, vers 6. Regarde ce que ça donne quand le milieu épaissit. » ${e.f.disp === 'grumeaux' ? 'Le gel contient des grumeaux.' : ''}${e.f.cooh ? `\nD'après ton titrage, ${nf(e.f.fm?.carb || 1.5, 2)} g de Carbopol contiennent ${nf((e.f.fm?.carb || 1.5) * e.f.cooh / 100 / M_COOH * 1000, 1)} mmol de COOH : les neutraliser tous demanderait ${nf((e.f.fm?.carb || 1.5) * e.f.cooh / 100 / M_COOH * M_TEA, 2)} g de trolamine.` : ''}`,
@@ -630,7 +630,7 @@ add('ph', {
   choix: [],
 });
 add('ph2', {
-  fiches: ['carbopol', 'trolamine'],
+  fiches: ['carbopol', 'synthalen', 'trolamine'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'ph', titre: 'Reprendre le pH du gel',
   texte: () => `Lucas rouvre le pot : « On remet de la trolamine par petites fractions, en agitant, et on relit le pH. Compte 15 minutes pour la reprise, et il faudra refaire la mesure de rhéologie. »`,
   hyp: 'Hypothèse : le Carbopol non encore neutralisé peut encore épaissir ; les grumeaux, eux, ne se rattrapent pas.',
@@ -959,7 +959,7 @@ export function donneesTitr(e) {
   return { P, w, n, veq, pts, der, atteint, vEq, pctMes: vEq ? P.c * vEq / 1000 * M_COOH / P.m * 100 : null, epais, N };
 }
 add('titr_carb_plan', {
-  fiches: ['carbopol'],
+  fiches: ['carbopol', 'synthalen'],
   lieu: 'Salle de titrage', pnj: 'moi', station: 'plan', titre: 'Titrer les acides du Carbopol',
   texte: () => `Le Carbopol est un polymère de l'acide acrylique réticulé : ses groupes acide carboxylique (–COOH, M = ${nf(M_COOH, 2)} g/mol pour le motif COOH ; teneur indicative sur la fiche technique) sont neutralisés par la trolamine pour former le gel. Connaître leur quantité dans ton lot permet de calculer la base à prévoir. Tu disperses une masse m de poudre dans un volume d'eau, et tu la titres à la soude, avec suivi du pH. À toi de concevoir ce titrage.`,
   hyp: "Hypothèses : tous les groupes COOH sont accessibles à la soude ; le milieu reste assez fluide pour que le pH-mètre se stabilise ; l'équivalence est repérée au maximum de la courbe dérivée dpH/dV.",
@@ -986,7 +986,7 @@ add('titr_carb', {
     : [{ t: 'Refaire le titrage autrement', d: 'Nouvelle prise d\'essai, nouvelle mesure.', duree: 0, vers: 'titr_carb_plan' }, { t: 'Renoncer à ce dosage', duree: 0, vers: 'hub', note: 'Titrage du Carbopol abandonné.' }],
 });
 add('titr_carb_calc', {
-  fiches: ['carbopol'],
+  fiches: ['carbopol', 'synthalen'],
   lieu: 'Salle de titrage', pnj: 'moi', titre: 'Teneur en groupes acides',
   texte: e => { const d = donneesTitr(e); return `Prise d'essai m = ${nf(d.P.m, 3)} g de Carbopol ; soude à c = ${nf(d.P.c, 2)} mol/L ; équivalence à V_éq = ${nf(d.vEq, 2)} mL. Un groupe COOH consomme un ion hydroxyde.`; },
   hyp: "Hypothèse : chaque COOH du polymère réagit avec un seul HO⁻ ; la masse de COOH est calculée avec M = 45,02 g/mol (motif –COOH).",
