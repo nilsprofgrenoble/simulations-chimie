@@ -414,6 +414,16 @@ export const OBSERVATIONS = [
   ['bout', 'Le gel se met à bouillir'],
   ['stable', 'Le gel ne change pas'],
 ];
+// Conseils graduels d'un collègue sur une station de conception : 1 = une question qui oriente, 2 = la démarche chiffrée, 3 = « voilà ce que je ferais ».
+export const niveauAide = e => (e.f.aidePlan || {})[e.scene] || 0;
+export function demanderAide(e) {
+  const sc = SCENES[e.scene], k = niveauAide(e);
+  if (!sc.aide || k >= 3) return e;
+  const cout = k === 2 ? 5 : 3, nom = PNJ[sc.aide.pnj].nom;
+  const n = { ...e, t: e.t + cout, f: { ...e.f, aidePlan: { ...(e.f.aidePlan || {}), [e.scene]: k + 1 }, aidesPlan: (e.f.aidesPlan || 0) + 1 }, hist: [...(e.hist || []), { t0: e.t, t1: e.t + cout, k: 'act', l: `Conseil de ${nom} : ${sc.titre}` }] };
+  return nota(n, `Conseil de ${nom} sur : ${sc.titre.charAt(0).toLowerCase() + sc.titre.slice(1)}.`);
+}
+export const textesAide = e => { const sc = SCENES[e.scene]; return sc.aide ? sc.aide.textes.slice(0, niveauAide(e)).map(f => f(e)) : []; };
 export function validerPlan(e, vals) {
   const P = SCENES[e.scene].plan, v = {};
   for (const c of P.champs) {
@@ -652,6 +662,11 @@ add('hplc_gamme_plan', {
   lieu: 'Salle de chromatographie', pnj: 'moi', station: 'plan', titre: 'CLHP, étalonnage externe : concevoir ma gamme',
   texte: e => { const d = donneesHplc(e); return `Solution mère de caféine : fiole 1, 1,018 g/L. Tu prépares une gamme en diluant un volume X de cette solution dans 20 mL d'éluant. La solution du gel formulé est celle de la fiole 5 (m = ${nf(d.mPes, 3)} g dans 50 mL, puis 100 µL dans 20 mL, benzoïne comprise : elle ne gêne pas). Il faut que la caféine du gel « tombe » dans la gamme.`; },
   hyp: "Hypothèse de travail : l'aire du pic est proportionnelle à la concentration dans la zone choisie ; le volume injecté est fixé par la boucle de 20 µL.",
+  aide: { pnj: 'ines', textes: [
+    () => '« Estime d\'abord la concentration de la fiole 5 : combien de caféine y a-t-il, si le gel est conforme ? Ta gamme doit encadrer cette valeur, sans aller beaucoup au-delà. »',
+    () => '« Fiole 5 : environ 5 × m mg/L (m en grammes). Une fiole de gamme avec X µL de la fiole 1 contient X × 1,018 / 20 mg/L. Cinq fioles, par exemple, qui vont d\'un peu moins de la moitié à environ deux fois la valeur attendue. »',
+    () => '« Je ferais : 5 fioles, de 20 à 200 µL de la fiole 1. »'],
+    valeurs: () => ({ vmin: 20, vmax: 200, n: 5 }) },
   plan: { infos: ['Micropipettes disponibles : 20 à 200 µL, 100 à 1 000 µL. Huit fioles de 20 mL au plus.', 'Détecteur UV à 273 nm ; une injection dure environ 4 minutes.'], vers: 'hplc_gamme', duree: v => 8 + 4 * v.n, note: v => `CLHP, étalonnage externe : gamme de ${v.n} fioles de ${v.vmin} à ${v.vmax} µL de la fiole 1.`,
     champs: [{ id: 'vmin', l: 'Plus petit volume de la fiole 1', u: 'µL', min: 10, max: 1000 }, { id: 'vmax', l: 'Plus grand volume de la fiole 1', u: 'µL', min: 10, max: 1000 }, { id: 'n', l: 'Nombre de fioles de la gamme', u: '', min: 3, max: 8, entier: true }],
     controle: v => v.vmax <= v.vmin ? 'Le plus grand volume doit dépasser le plus petit.' : null,
@@ -685,6 +700,11 @@ add('uv_ajouts_plan', {
   lieu: 'Salle des spectrophotomètres', pnj: 'moi', station: 'plan', titre: 'Ajouts dosés : concevoir mes fioles',
   texte: () => `Tu dissous une masse de gel dans la fiole mère de 50 mL. Dans chaque fiole de 20 mL, tu mets la même prise de fiole mère, plus un volume croissant de solution étalon (0, Δ, 2Δ…), puis tu complètes au trait. C'est à toi de fixer les quantités.`,
   hyp: "Hypothèse de travail : l'absorbance est proportionnelle à la concentration (loi de Beer-Lambert) dans la zone que tu choisis ; toutes les fioles ont la même matrice.",
+  aide: { pnj: 'ines', textes: [
+    () => '« Vise une absorbance entre 0,2 et 0,8 pour toutes les fioles, y compris la plus chargée en étalon. Tu as un essai préalable : 10 mg/L donne A = 0,33. Quelle concentration de caféine veux-tu dans la fiole sans ajout ? »',
+    () => '« Le gel contient environ 5 % de caféine : m grammes de gel dans 50 mL donnent environ 1 000 × m mg/L dans la fiole mère. Prélève une prise pour avoir à peu près 10 mg/L dans la fiole de 20 mL, puis ajoute de l\'étalon (1,003 g/L) pour doubler la concentration environ, sans dépasser A = 0,8. Évite de pipeter moins de 50 µL : l\'erreur relative devient grosse. »',
+    () => '« Je ferais : 1 g de gel dans 50 mL, une prise de 200 µL, des ajouts de 40 µL, 6 fioles. »'],
+    valeurs: () => ({ m: 1, vp: 200, dv: 40, n: 6 }) },
   plan: { infos: INFOS_UV, vers: 'uv_ajouts', duree: v => 8 + 3 * v.n, note: v => `Ajouts dosés UV : ${nf(v.m, 3)} g de gel dans 50 mL, prise de ${v.vp} µL, ajouts de ${v.dv} µL en ${v.n} fioles.`,
     champs: [{ id: 'm', l: 'Masse de gel dans la fiole mère de 50 mL', u: 'g', min: 0.05, max: 2.5 }, { id: 'vp', l: 'Prise de fiole mère dans chaque fiole de 20 mL', u: 'µL', min: 20, max: 5000 }, { id: 'dv', l: 'Pas d\'ajout de solution étalon (Δ)', u: 'µL', min: 20, max: 5000 }, { id: 'n', l: 'Nombre de fioles (la première sans ajout)', u: '', min: 3, max: 8, entier: true }],
     controle: v => volTotal(v.vp + (v.n - 1) * v.dv),
@@ -710,6 +730,11 @@ add('uv_ext_plan', {
   lieu: 'Salle des spectrophotomètres', pnj: 'moi', station: 'plan', titre: 'Étalonnage externe : concevoir ma gamme',
   texte: () => `Tu prépares une gamme de solutions de caféine dans l'éluant (en prélevant de la solution étalon), puis une solution de gel (masse dans la fiole mère de 50 mL, puis une prise dans une fiole de 20 mL). À toi de fixer les volumes.`,
   hyp: "Hypothèse de travail : l'absorbance est proportionnelle à la concentration dans la gamme ; la solution de gel est lue sur la droite d'étalonnage.",
+  aide: { pnj: 'ines', textes: [
+    () => '« Ta gamme doit encadrer la concentration attendue pour la solution de gel, avec des absorbances entre 0,1 et 0,8. Commence par estimer la concentration de caféine dans ta fiole de gel. »',
+    () => '« Avec 5 % de caféine : m g de gel dans 50 mL, puis une prise de vp µL dans 20 mL, donnent environ 0,05 × m × vp mg/L. Pour la gamme, une fiole avec V µL d\'étalon contient V × 1,003 / 20 mg/L. Prends cinq fioles qui encadrent la valeur du gel. »',
+    () => '« Je ferais : 1 g de gel dans 50 mL, une prise de 200 µL ; gamme de 5 fioles de 20 à 300 µL d\'étalon. »'],
+    valeurs: () => ({ vmin: 20, vmax: 300, n: 5, m: 1, vp: 200 }) },
   plan: { infos: INFOS_UV, vers: 'uv_ext', duree: v => 10 + 3 * v.n, note: v => `Étalonnage externe UV : gamme de ${v.n} fioles de ${v.vmin} à ${v.vmax} µL d'étalon ; gel ${nf(v.m, 3)} g dans 50 mL, prise de ${v.vp} µL.`,
     champs: [{ id: 'vmin', l: 'Plus petit volume de solution étalon', u: 'µL', min: 20, max: 5000 }, { id: 'vmax', l: 'Plus grand volume de solution étalon', u: 'µL', min: 20, max: 5000 }, { id: 'n', l: 'Nombre de fioles de la gamme', u: '', min: 3, max: 8, entier: true }, { id: 'm', l: 'Masse de gel dans la fiole mère de 50 mL', u: 'g', min: 0.05, max: 2.5 }, { id: 'vp', l: 'Prise de fiole mère dans la fiole de 20 mL', u: 'µL', min: 20, max: 5000 }],
     controle: v => v.vmax <= v.vmin ? 'Le plus grand volume doit dépasser le plus petit.' : volTotal(v.vmax),
@@ -798,6 +823,11 @@ add('cpg_gamme_plan', {
   lieu: 'Salle de chromatographie', pnj: 'moi', station: 'plan', titre: 'Éthanol : concevoir ma gamme',
   texte: e => `Pour une méthode plus fiable que le point unique, tu prépares une gamme de fioles de 20 mL contenant chacune 500 µL de ${eiNom(e)} et un volume V d'éthanol, et tu traces r = %A(éthanol) / %A(étalon interne) en fonction de V. Ton échantillon contient environ ${nf(donneesCpg(e).mP * ETH_PUR_COM / 100 / RHO_ETOH * 1000, 0)} µL d'éthanol si le gel est conforme. À toi de fixer la gamme.`,
   hyp: "Hypothèse de travail : r est proportionnelle au volume d'éthanol sur la plage choisie.",
+  aide: { pnj: 'ines', textes: [
+    () => '« Ton échantillon contient environ la même quantité d\'éthanol que la référence. Ta gamme doit l\'encadrer, et mieux vaut prévoir plusieurs fioles par niveau pour voir la dispersion des injections. »',
+    () => '« Prends des volumes allant d\'environ 0,4 à 2 fois la quantité attendue, avec cinq niveaux et deux fioles par niveau. La micropipette de 100 à 1 000 µL est plus juste que celle de 20 à 200 µL pour ces volumes. »',
+    () => '« Je ferais : 5 niveaux de 100 à 600 µL d\'éthanol, deux fioles par niveau. »'],
+    valeurs: () => ({ vmin: 100, vmax: 600, n: 5, rep: 2 }) },
   plan: { infos: ['Micropipettes disponibles : 20 à 200 µL, 100 à 1 000 µL, 1 à 5 mL. Une injection dure environ 3 minutes ; vingt fioles de 20 mL au plus.', 'Éthanol absolu pour la gamme ; étalon interne : 500 µL de propan-1-ol ou de butan-1-ol par fiole, selon ton choix.'], vers: 'cpg_gamme', duree: v => 8 + 3 * v.n * v.rep, note: v => `CPG, gamme : ${v.n} niveaux de ${v.vmin} à ${v.vmax} µL d'éthanol, ${v.rep} fiole(s) par niveau.`,
     champs: [{ id: 'vmin', l: 'Plus petit volume d\'éthanol', u: 'µL', min: 20, max: 5000 }, { id: 'vmax', l: 'Plus grand volume d\'éthanol', u: 'µL', min: 20, max: 5000 }, { id: 'n', l: 'Nombre de niveaux', u: '', min: 3, max: 8, entier: true }, { id: 'rep', l: 'Fioles par niveau', u: '', min: 1, max: 3, entier: true }],
     controle: v => v.vmax <= v.vmin ? 'Le plus grand volume doit dépasser le plus petit.' : v.n * v.rep > 20 ? 'Vingt fioles de 20 mL au plus.' : null,
@@ -844,8 +874,13 @@ export function donneesTitr(e) {
 add('titr_carb_plan', {
   fiches: ['carbopol'],
   lieu: 'Salle de titrage', pnj: 'moi', station: 'plan', titre: 'Titrer les acides du Carbopol',
-  texte: () => `Le Carbopol est un polymère de l'acide acrylique réticulé : ses groupes acide carboxylique (–COOH, M = ${nf(M_COOH, 2)} g/mol pour le motif COOH) sont neutralisés par la trolamine pour former le gel. Connaître leur quantité dans ton lot permet de calculer la base à prévoir. Tu disperses une masse m de poudre dans un volume d'eau, et tu la titres à la soude, avec suivi du pH. À toi de concevoir ce titrage.`,
+  texte: () => `Le Carbopol est un polymère de l'acide acrylique réticulé : ses groupes acide carboxylique (–COOH, M = ${nf(M_COOH, 2)} g/mol pour le motif COOH ; teneur indicative sur la fiche technique) sont neutralisés par la trolamine pour former le gel. Connaître leur quantité dans ton lot permet de calculer la base à prévoir. Tu disperses une masse m de poudre dans un volume d'eau, et tu la titres à la soude, avec suivi du pH. À toi de concevoir ce titrage.`,
   hyp: "Hypothèses : tous les groupes COOH sont accessibles à la soude ; le milieu reste assez fluide pour que le pH-mètre se stabilise ; l'équivalence est repérée au maximum de la courbe dérivée dpH/dV.",
+  aide: { pnj: 'lucas', textes: [
+    () => '« Commence par une estimation : combien de mmol de COOH dans ta prise d\'essai ? La fiche technique donne la teneur en COOH du Carbopol (56 à 68 %). Et combien de mL de soude cela demandera-t-il ? Il faut que ce volume tienne largement dans la burette. »',
+    () => '« n(COOH) ≈ m × 0,62 / 45 mol. Pour 0,1 g, ça fait environ 1,4 mmol, donc 14 mL de soude à 0,1 mol/L. Vise un volume final un peu au-dessus de l\'équivalence attendue, 20 % de plus environ. Reste en dessous de 0,5 g de poudre pour 100 mL d\'eau, sinon ça épaissit trop. Un pas de 1 mL suffit pour un premier titrage. »',
+    () => '« Je ferais : 0,100 g de Carbopol dans 150 mL d\'eau, soude à 0,1 mol/L, pas de 1 mL jusqu\'à 18 mL. Je te laisse changer ce que tu veux. »'],
+    valeurs: () => ({ m: 0.1, V0: 150, c: 0.1, vfin: 18, dv: 1 }) },
   plan: { infos: ['Balance au 0,1 mg ; soude disponible à 0,1 mol/L et 0,5 mol/L (une autre concentration demande une dilution de 5 min) ; burette de 25 mL graduée tous les 0,05 mL.', 'Le Carbopol se disperse lentement dans l\'eau et épaissit quand il se neutralise : une prise d\'essai trop concentrée rend la lecture du pH difficile. Compte 10 min de dispersion, puis 1,5 min par point de mesure ; 60 points au plus.'],
     vers: 'titr_carb', duree: v => 10 + Math.round(1.5 * Math.floor(v.vfin / v.dv + 1e-9)) + ([0.1, 0.5].includes(v.c) ? 0 : 5), note: v => `Titrage du Carbopol : ${nf(v.m, 3)} g dans ${v.V0} mL d'eau, soude à ${nf(v.c, 2)} mol/L, pas de ${nf(v.dv, 2)} mL jusqu'à ${nf(v.vfin, 1)} mL.`,
     champs: [{ id: 'm', l: 'Masse de Carbopol', u: 'g', min: 0.02, max: 1.5 }, { id: 'V0', l: 'Volume d\'eau', u: 'mL', min: 50, max: 500 }, { id: 'c', l: 'Concentration de la soude', u: 'mol/L', min: 0.01, max: 1 }, { id: 'vfin', l: 'Volume final de soude versé', u: 'mL', min: 1, max: 25 }, { id: 'dv', l: 'Pas d\'addition', u: 'mL', min: 0.05, max: 2 }],
@@ -977,6 +1012,7 @@ export function consequences(e) {
   if (f.methCaf) L.push({ quand: h('methCaf'), cause: 'Dosage de la caféine', effet: f.methCaf === 'gamme' ? 'CLHP, gamme d\'étalonnage externe : volume injecté maîtrisé par la boucle, pas d\'effet de matrice' : f.methCaf === 'ext' ? (f.extAccepte ? 'UV, étalonnage externe : effet de matrice, caféine surestimée d\'environ 40 %, résultat retenu sans vérification' : 'UV, étalonnage externe : surestimation détectée et corrigée par une autre méthode') : f.methCaf === 'ajouts' ? 'UV, ajouts dosés : l\'effet de matrice est compensé' : 'CLHP, étalon interne : volume injecté sans influence' });
   if (f.ei === 'butanol') L.push({ quand: h('ei'), cause: 'Étalon interne CPG', effet: 'le propan-1-ol du protocole sort en même temps que l\'éthanol (un seul pic) : remplacé par le butan-1-ol, dont le pic est séparé' });
   if (f.coelIgnore) L.push({ quand: null, cause: 'Coélution ignorée', effet: 'aires exploitées malgré le pic unique éthanol + propan-1-ol : éthanol surestimé d\'environ 30 %' });
+  if (f.aidesPlan) L.push({ quand: null, cause: 'Conseils de collègues', effet: `${f.aidesPlan} conseil(s) demandé(s) pour concevoir tes préparations : du temps passé (3 à 5 minutes chacun), mais des collègues sollicités à bon escient` });
   if (f.cooh != null) L.push({ quand: null, cause: 'Titrage du Carbopol', effet: `${nf(f.cooh, 1)} % de COOH dans ton lot : la quantité de trolamine à prévoir est connue avant la neutralisation` });
   if (f.leurres) L.push({ quand: null, cause: 'Appareils sans rapport avec la question', effet: `${f.leurres} mesure(s) (IR, réfractomètre, polarimètre, conductimètre, titrage du gel) sans information sur la formule ni sur les teneurs : ${f.leurres * 20} minutes perdues` });
   if (f.errMeth) L.push({ quand: null, cause: 'Choix de techniques', effet: `${f.errMeth} technique(s) inadaptée(s) essayée(s) avant la bonne : de 15 à 25 minutes perdues à chaque fois` });

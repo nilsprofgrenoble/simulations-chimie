@@ -4,7 +4,7 @@ import { useEtatPersistant, Formule } from "../commun";
 import { Avatar as AvatarVisuel, STYLE_VISUELS } from './LaboVisuels';
 import {
   CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_FIN, T_MIDI, T_PAUSE, NB_AVATARS, avatarDe, pn, CHAMPS_FORMULE, FORMULE_REPLI, etatInitial, texteDe, choixDe, visuelsDe, choisir, valider, estFin, peutRevenir, revenirHub,
-  horloge, duree, nf, statutBg, resume, bilan, validerFormule, ajouterBase, validerPh, observationsDe, resultatsVus, noterObs, chronologie, consequences, fiche, validerPlan, nombre,
+  horloge, duree, nf, statutBg, resume, bilan, validerFormule, ajouterBase, validerPh, observationsDe, resultatsVus, demanderAide, niveauAide, textesAide, noterObs, chronologie, consequences, fiche, validerPlan, nombre,
 } from "./percutafeineJeu";
 
 // ====================================================
@@ -200,6 +200,8 @@ function StationPlan({ e, sc, onEtat }) {
   const P = sc.plan, prec = (e.f.plans || {})[e.scene] || {};
   const [vals, setVals] = useState(() => Object.fromEntries(P.champs.map(c => [c.id, prec[c.id] != null ? String(prec[c.id]).replace('.', ',') : ''])));
   const [msg, setMsg] = useState('');
+  const aide = niveauAide(e), conseils = textesAide(e), pnjAide = sc.aide && PNJ[sc.aide.pnj];
+  const demander = () => { const n = demanderAide(e); if (niveauAide(n) === 3 && sc.aide.valeurs) setVals(Object.fromEntries(P.champs.map(c => [c.id, String(sc.aide.valeurs(n)[c.id]).replace('.', ',')]))); setMsg(''); onEtat(n); };
   const num = Object.fromEntries(P.champs.map(c => [c.id, nombre(vals[c.id])]));
   const complet = P.champs.every(c => num[c.id] != null);
   let ap = null, dur = null;
@@ -207,6 +209,10 @@ function StationPlan({ e, sc, onEtat }) {
   const valider = () => { const r = validerPlan(e, vals); if (!r.ok) setMsg(r.message); else { setMsg(''); onEtat(r.etat); } };
   return (
     <div data-plan className="pc-inst" style={inst}>
+      {sc.aide && <div data-aide style={{ marginBottom: 12 }}>
+        {conseils.map((c, i) => <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '8px 0' }}><Avatar pnj={sc.aide.pnj} e={e} taille={36} /><div style={{ flex: 1, background: '#fff', border: `1.5px solid ${C.bord}`, borderRadius: 12, padding: '8px 12px', fontSize: 15, lineHeight: 1.5 }}>{c}</div></div>)}
+        {aide < 3 && <button type="button" data-aide-btn onClick={demander} style={{ font: 'inherit', fontSize: 14.5, padding: '7px 14px', borderRadius: 99, border: `1.5px solid ${C.accent}`, background: '#fff', color: C.accent, cursor: 'pointer' }}>{aide === 0 ? `💬 Demander conseil à ${pnjAide.nom}` : aide === 1 ? `💬 Demander plus de précisions à ${pnjAide.nom}` : `💬 Demander à ${pnjAide.nom} ce qu'${sc.aide.pnj === 'ines' ? 'elle' : 'il'} ferait`}<span style={{ color: C.doux }}> ({aide === 2 ? 5 : 3} min)</span></button>}
+      </div>}
       <div style={{ fontWeight: 700, marginBottom: 6 }}>🧪 Ma préparation</div>
       <ul style={{ margin: '0 0 12px', paddingLeft: 18, fontSize: 14, color: C.doux, lineHeight: 1.5 }}>{P.infos.map((t, i) => <li key={i}>{t}</li>)}</ul>
       <div style={{ display: 'grid', gap: 10 }}>{P.champs.map(c => (

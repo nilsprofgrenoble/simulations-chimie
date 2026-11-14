@@ -265,3 +265,11 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   e = J.choisir(e, J.choixDe(e).find(c => c.vers === 'rheoC')); assert(J.resultatsVus(e).includes('rheoC'), 'courbe de rhéologie mémorisée');
   const r = J.choisir(e, J.choixDe(e)[0]); assert(r.scene === 'hub' && J.resultatsVus(r).includes('rheoC') && J.visuelsDe({ ...r, scene: 'rheoC' }).length, 'relisible après la conclusion');
   console.log('résultats relisibles : OK'); }
+// 17. Conseils graduels des collègues sur les stations de conception
+{ for (const id of ['titr_carb_plan', 'uv_ajouts_plan', 'uv_ext_plan', 'hplc_gamme_plan', 'cpg_gamme_plan']) {
+    let e = { ...J.etatInitial(41), scene: id, t: 100 }; const sc = J.SCENES[id]; assert(sc.aide && sc.aide.textes.length === 3, `aide prévue pour ${id}`);
+    const t0 = e.t; for (let k = 1; k <= 3; k++) { e = J.demanderAide(e); assert(J.niveauAide(e) === k && J.textesAide(e).length === k, `niveau ${k}`); }
+    assert(e.t === t0 + 11 && e.f.aidesPlan === 3, 'coût de 3 + 3 + 5 min'); assert(J.demanderAide(e) === e, 'pas de quatrième niveau');
+    const v = sc.aide.valeurs(e), r = J.validerPlan(e, Object.fromEntries(Object.entries(v).map(([k, x]) => [k, String(x)]))); assert(r.ok, `les valeurs proposées par le collègue sont acceptées (${id}) : ${r.message}`);
+  }
+  console.log('conseils graduels : OK'); }
