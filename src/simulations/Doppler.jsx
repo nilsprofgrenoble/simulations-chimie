@@ -124,9 +124,10 @@ function Spectre({ fe, fr, T, fen, cur, setCur, aMontrerRef, aMontrerCurseur, ar
       {ticks.map(f => <g key={f}><line x1={X(f)} y1={yB} x2={X(f)} y2={yB + 5} stroke="#475569"/><text x={X(f)} y={yB + 18} fontSize="11" textAnchor="middle" fill="#334155">{milliers(f)}</text></g>)}
       <text x={SP.W - SP.R} y={SP.H - 3} fontSize="11" textAnchor="end" fill="#334155">fréquence (Hz)</text>
       {aMontrerRef && separe && <g><path d={chemin(fe, true)} fill="#e2e8f0" opacity="0.9"/><path d={chemin(fe, false)} fill="none" stroke="#64748b" strokeWidth="1.6" strokeDasharray="5 3"/>
-        {X(fe) > SP.L + 20 && X(fe) < SP.W - SP.R - 20 && <text x={X(fe)} y={SP.T + 4} fontSize="12" fontWeight="700" fill="#475569" textAnchor="middle">{nomRef}</text>}</g>}
+        <text x={X(fe) + (fr > fe ? -8 : 8)} y={SP.T + 14} fontSize="12" fontWeight="700" fill="#475569" textAnchor={fr > fe ? 'end' : 'start'}>émise {FE}</text></g>}
       <path d={chemin(fr, true)} fill="#bae6fd" opacity="0.85"/><path d={chemin(fr, false)} fill="none" stroke="#0369a1" strokeWidth="2"/>
-      {!separe && <text x={X(fe)} y={SP.T + 4} fontSize="12" fontWeight="700" fill="#0369a1" textAnchor="middle">{nomRef}</text>}
+      {separe ? <text x={X(fr) + (fr > fe ? 8 : -8)} y={SP.T + 14} fontSize="12" fontWeight="700" fill="#0369a1" textAnchor={fr > fe ? 'start' : 'end'}>reçue {FR}</text>
+        : <text x={X(fe) + 8} y={SP.T + 14} fontSize="12" fontWeight="700" fill="#0369a1">émise = reçue</text>}
       {aMontrerCurseur && cur >= f0 && cur <= f1 && <g style={{ cursor: 'ew-resize' }} onPointerDown={e => { glisse.current = true; e.currentTarget.ownerSVGElement.setPointerCapture?.(e.pointerId); setCur(versF(e)); }}>
         <rect x={X(cur) - 16} y={SP.T - 8} width="32" height={yB - SP.T + 8} fill="transparent"/>
         <line x1={X(cur)} y1={SP.T - 4} x2={X(cur)} y2={yB} stroke="#f59e0b" strokeWidth="2.5"/>
@@ -496,6 +497,10 @@ export function SimulationDoppler({ naviguer }) {
       <Rail montage={m.montage} sens={m.sens} v={vEff} fe={fe}/>
       <div style={cadre('scene')}><Spectre fe={fe} fr={fr} T={T} fen={fen} cur={cur} setCur={setCur} aMontrerRef={vEff > 0} aMontrerCurseur={montrerCurseur} nomRef={vEff > 0 ? FE : <>{FE} = {FR}</>}
         aria={vEff > 0 ? `Spectre du signal reçu : un pic gris pour la fréquence émise ${milliers(fe)} hertz et un pic bleu décalé pour la fréquence reçue` : `Spectre du signal reçu : un seul pic à la fréquence émise ${milliers(fe)} hertz`}/></div>
+      <div style={{ fontSize: 13.5, lineHeight: 1.55, color: KIT.txt }}>
+        <span style={{ color: '#475569', fontWeight: 700 }}>▭ Pic gris en tirets : fréquence émise <em>f</em><sub>e</sub></span> = celle que l’émetteur envoie (elle ne change jamais).{' '}
+        <span style={{ color: '#0369a1', fontWeight: 700 }}>▬ Pic bleu : fréquence reçue <em>f</em><sub>r</sub></span> = celle que le récepteur entend, décalée parce que ça bouge. {vEff > 0 ? <>Écart entre les deux : <strong><em>δf</em></strong>.</> : <>À l’arrêt, les deux pics sont confondus : réglez une vitesse.</>}
+      </div>
       {mode === 'explore' && reglages}
       {montrerCurseur && <div role="group" aria-label="Curseur de lecture de la fréquence" style={{ background: '#f1f5f9', borderRadius: 10, padding: '6px 10px', ...cadre('curseur') }}>
         <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700 }}>Curseur : {hz(cur)}</div>
