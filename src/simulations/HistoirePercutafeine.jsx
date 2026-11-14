@@ -14,7 +14,7 @@ import {
 const C = { encre: '#1b2733', doux: '#5b6877', bord: '#dbe4ee', accent: '#0f766e', accentFond: '#e7f5f2', ambre: '#b45309', rouge: '#b91c1c', vert: '#15803d', bleu: '#1e3a8a', carte: '#ffffff', fond: '#f4f8fb' };
 const NIVEAUX = { ok: ['✅', C.vert, 'Maîtrisé'], moyen: ['🟡', C.ambre, 'À consolider'], ko: ['❌', C.rouge, 'À retravailler'], nd: ['⚪', C.doux, 'Non évalué'] };
 const TONS = { ok: C.vert, moyen: C.ambre, ko: C.rouge };
-const ICONES = { titr_carb_plan: '🧪', leurre_titrgel: '🧪', leurre_ir: '📈', leurre_refracto: '🔍', leurre_polar: '🔍', leurre_conduc: '🔌', choix_caf: '🧪', choix_eth: '🧪', docs: '📄', obs_video: '🎞️', es_prep: '🔥', es_calc1: '📊', eth1: '⚖️', formule: '📝', eq_base: '⚗️', fab_choix: '⚗️', fab_disp: '🧴', rheoC: '🌀', rheoF: '🌀', hplc_m: '📈', cpg_ei: '🔬', cpg_inj: '🔬', uv_ajouts_plan: '🌈', uv_ext_plan: '🌈', hplc_gamme_plan: '📈', hplc_ei: '📈', verdict: '✅', eq_ines: '✅' };
+const ICONES = { es_balance: '⚖️', cpg_m: '⚖️', titr_carb_plan: '🧪', leurre_titrgel: '🧪', leurre_ir: '📈', leurre_refracto: '🔍', leurre_polar: '🔍', leurre_conduc: '🔌', choix_caf: '🧪', choix_eth: '🧪', docs: '📄', obs_video: '🎞️', es_prep: '🔥', es_calc1: '📊', eth1: '⚖️', formule: '📝', eq_base: '⚗️', fab_choix: '⚗️', fab_disp: '🧴', rheoC: '🌀', rheoF: '🌀', hplc_m: '📈', cpg_ei: '🔬', cpg_inj: '🔬', uv_ajouts_plan: '🌈', uv_ext_plan: '🌈', hplc_gamme_plan: '📈', hplc_ei: '📈', verdict: '✅', eq_ines: '✅' };
 const FOND_LIEU = { 'Paillasse de formulation': '#ecf7ee', 'Salle de chromatographie': '#e8f1fa', 'Bureau': '#f3eefb', 'Bureau de Mme Dubreuil': '#f3eefb', 'Salle de rhéologie': '#fdf1e7', 'Salle des étuves': '#fdf1e7' };
 const STYLE = `${STYLE_VISUELS}
 @keyframes pc-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -167,9 +167,15 @@ function StationFormule({ e, onEtat }) {
   const [fm, setFm] = useState(() => Object.fromEntries(CHAMPS_FORMULE.map(([k]) => [k, ''])));
   const [lignes, setLignes] = useState([]);
   const verifier = ev => { ev.preventDefault(); const r = validerFormule(e, fm); setLignes(r.lignes); onEtat(r.etat); };
+  const sc = SCENES[e.scene], aide = niveauAide(e), conseils = textesAide(e), pnjAide = PNJ[sc.aide.pnj];
+  const demander = () => { const n = demanderAide(e); if (niveauAide(n) === 3) setFm(Object.fromEntries(CHAMPS_FORMULE.map(([k]) => [k, String(sc.aide.valeurs()[k]).replace('.', ',')]))); onEtat(n); };
   const tot = CHAMPS_FORMULE.reduce((s, [k]) => s + (parseFloat(String(fm[k]).replace(',', '.')) || 0), 0);
   return (
     <form onSubmit={verifier} data-formule className="pc-inst" style={inst}>
+      <div data-aide style={{ marginBottom: 10 }}>
+        {conseils.map((c, i) => <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '8px 0' }}><Avatar pnj={sc.aide.pnj} e={e} taille={36} /><div style={{ flex: 1, background: '#fff', border: `1.5px solid ${C.bord}`, borderRadius: 12, padding: '8px 12px', fontSize: 15, lineHeight: 1.5 }}>{c}</div></div>)}
+        {aide < 3 && <button type="button" data-aide-btn onClick={demander} style={{ font: 'inherit', fontSize: 14.5, padding: '7px 14px', borderRadius: 99, border: `1.5px solid ${C.accent}`, background: '#fff', color: C.accent, cursor: 'pointer' }}>{aide === 0 ? `💬 Demander conseil à ${pnjAide.nom}` : aide === 1 ? `💬 Demander plus de précisions à ${pnjAide.nom}` : `💬 Demander à ${pnjAide.nom} ce qu'il ferait`}</button>}
+      </div>
       <div style={{ fontWeight: 700, marginBottom: 10 }}>📝 Masses à peser pour environ 200 g (en g)</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(230px,1fr))', gap: 8 }}>
         {CHAMPS_FORMULE.map(([k, nom]) => <label key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, fontSize: 15, background: '#fff', border: `1px solid ${C.bord}`, borderRadius: 10, padding: '6px 10px' }}>{nom}
@@ -249,7 +255,7 @@ const POSTES = [
   { id: 'rheo', nom: 'Rhéologie', vers: ['rheoC', 'rheoF'] },
   { id: 'titrage', nom: 'Titrage', vers: ['titr_carb_plan', 'leurre_titrgel'] },
   { id: 'conduc', nom: 'Conductimètre', vers: ['leurre_conduc'] },
-  { id: 'chroma', nom: 'Chromatographie, UV', vers: ['hplc_m', 'hplc_ei', 'hplc_gamme_plan', 'cpg_ei', 'cpg_inj', 'uv_ajouts_plan', 'uv_ext_plan'] },
+  { id: 'chroma', nom: 'Chromatographie, UV', vers: ['hplc_m', 'hplc_ei', 'hplc_gamme_plan', 'cpg_m', 'cpg_ei', 'cpg_inj', 'uv_ajouts_plan', 'uv_ext_plan'] },
 ];
 const posteDe = vers => (POSTES.find(p => p.vers.includes(vers)) || POSTES[1]).id;
 function Dessin({ id, actif, termine }) {
