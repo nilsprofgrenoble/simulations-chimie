@@ -295,3 +295,17 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   for (let g = 1; g <= N; g++) { const { e } = joue(moyen, g * 7919); if (e.scene === 'fin_conforme') ok++; }
   assert(ok / N >= 0.93, `élève moyen : ${ok}/${N} finissent à l'heure`);
   console.log(`élève moyen (appareils inutiles, calcul raté, attente CLHP) : ${ok}/${N} finissent à l'heure`); }
+// 20. Demander conseil depuis la paillasse : pistes graduées, coût en temps, évalué en C.7.3
+{ let e = { ...J.etatInitial(40), scene: 'hub', t: 10 };
+  assert(J.choixDe(e).some(c => c.vers === 'conseil'), 'le hub propose de demander conseil');
+  e = J.choisir(e, J.choixDe(e).find(c => c.vers === 'conseil'));
+  for (const qui of ['dubreuil', 'ines', 'lucas']) {
+    let n = J.choisir(e, J.choixDe(e).find(c => c.vers === 'conseil_' + qui));
+    const t0 = J.texteDe(n); assert(t0.length > 40 && !t0.includes('undefined'), `conseil de ${qui}`);
+    const prec = J.choixDe(n).find(c => c.t.includes('préciser')); assert(prec, 'on peut demander des précisions');
+    n = J.choisir(n, prec); assert(J.texteDe(n) !== t0 && !J.choixDe(n).some(c => c.t.includes('préciser')), 'précisions différentes, une seule fois');
+    const f = J.choisir(n, J.choixDe(n)[0]); assert(f.scene === 'hub' && f.t >= 10 + 6 && f.f.eq.conseil === 'ok' && f.f.nbConseils === 1, 'coût en temps et note C.7.3');
+    assert(J.bilan({ ...f, scene: 'fin_conforme' }, 'fin_conforme').find(b => b.comp === 'C.7.3').niveau === 'ok', 'demander conseil valorise C.7.3'); }
+  for (const f of [{}, { es: true }, { es: true, formule: true }, { es: true, formule: true, fab: true }, { es: true, formule: true, fab: true, caf: true, ethQC: true }]) for (const qui of ['dubreuil', 'ines', 'lucas'])
+    assert(J.texteDe({ ...J.etatInitial(1), scene: 'conseil_' + qui, fait: f }).length > 30, 'conseil à chaque étape');
+  console.log('demander conseil : OK'); }

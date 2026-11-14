@@ -251,6 +251,7 @@ const taches = e => {
   if (!F.leurre_refracto) L.push(['Indice de réfraction du gel', 'Une goutte sur le prisme du réfractomètre : 15 min.', 'leurre_refracto']);
   if (!F.leurre_polar) L.push(['Pouvoir rotatoire du gel', 'Remplir la cuve du polarimètre avec une solution de gel : 15 min.', 'leurre_polar']);
   if (!F.leurre_conduc) L.push(['Conductivité du gel', 'Plonger la cellule du conductimètre dans le gel : 15 min.', 'leurre_conduc']);
+  L.push(['Demander conseil à un collègue ou à Mme Dubreuil', 'Tu hésites sur la suite, sur où aller ou par quoi commencer ? Demande : quelques minutes.', 'conseil']);
   if (F.caf && F.ethQC && F.rheoF) L.push(['Conclure : le contretype est-il conforme ?', 'Comparer aux exigences et décider.', e.f.eq?.ines ? 'verdict' : 'eq_ines']);
   return L;
 };
@@ -271,6 +272,71 @@ add('hub', {
   texte: e => { const s = statutBg(e); return [`${horloge(e.t)}. Il te reste ${duree(T_FIN - e.t)} de TP.`, e.t < 30 && 'Objectif de la journée : déformuler le gel commercial, fabriquer le contretype, puis le contrôler (caféine, éthanol, viscosité).', s.es && `🔥 ${s.es}.`, s.gel && `⚗️ ${s.gel}.`, 'Que fais-tu maintenant ?'].filter(Boolean).join('\n'); },
   choix: e => taches(e).map(([t, d, vers]) => ({ t, d, vers })),
 });
+
+
+// ───────────── Demander conseil (C.7.3) : à Mme Dubreuil, Inès ou Lucas ; aucun verdict, des pistes graduées selon l'avancement ─────────────
+const etapeTP = F => !F.es ? 0 : !F.formule ? 1 : !F.fab ? 2 : !(F.caf && F.ethQC) ? 3 : 4;
+const CONSEILS = {
+  dubreuil: [[
+    '« Le but : contre-typer le gel, puis le contrôler. Commence par ce qui est long et qui tourne tout seul, ça évite de perdre du temps plus tard. »',
+    '« Pendant que ça tourne, avance ce qui ne demande pas d\'appareil. De quoi as-tu besoin pour écrire la formule ? »',
+    '« Ta formule est prête. Fabriquer le gel prend du temps : lance-le avant de t\'occuper du reste. »',
+    '« Pendant que le gel se disperse, prépare le contrôle qualité : on vérifie le gel au regard du cahier des charges du produit. Prévois tes manipulations pour bien occuper les appareils. »',
+    '« Il te reste à conclure. Qu\'est-ce qui te manque pour pouvoir dire si le gel est conforme ? »',
+  ], [
+    '« Je commencerais par l\'extrait sec du gel commercial : l\'étuve demande 1 h et tourne seule. Pendant ce temps, lis le dossier du TP. »',
+    '« Il te faut l\'extrait sec et l\'éthanol de la notice pour écrire la formule. Tu peux mesurer la rhéologie du gel commercial en attendant. »',
+    '« Le Carbopol est long à disperser : lance la fabrication, puis occupe-toi de la rhéologie du témoin et du choix des techniques de dosage. »',
+    '« Il faut vérifier la caféine, l\'éthanol et la viscosité. Choisis tes techniques, prépare les solutions, puis compare la rhéologie du gel formulé à celle du commercial. »',
+    '« Compare chaque résultat à l\'exigence correspondante, puis viens me dire ce que tu écris sur le bon de contrôle. »',
+  ]],
+  ines: [[
+    '« Mes dosages servent à contrôler ton gel une fois fabriqué. Au début, on déformule : plutôt des mesures simples et rapides sur le gel commercial. »',
+    '« Les analyses de contrôle, c\'est pour quand le gel sera fabriqué. Pour avancer maintenant, vois plutôt Lucas pour la formule. »',
+    '« Pour contrôler, demande-toi ce que tu veux mesurer et si l\'appareil peut le voir : tous ne répondent pas à toutes les questions. »',
+    '« Prévois tout ce que tu dois injecter avant de lancer l\'appareil, pour ne pas le monopoliser. Relis les modes opératoires du dossier. »',
+    '« Relis tes résultats un par un : sont-ils cohérents avec ce que tu attendais ? Au moindre doute, on en discute. »',
+  ], [
+    '« Je ne peux pas t\'en dire plus : dans cette phase on déformule, on ne dose pas encore la caféine. Demande à Mme Dubreuil comment t\'organiser. »',
+    '« Garde les appareils de dosage de côté pour l\'instant. L\'extrait sec et la notice te donnent déjà beaucoup. »',
+    '« Quand tu seras au contrôle de ton gel, relis les documents 1 et 3 du dossier : ce sont nos méthodes pour ce TP. »',
+    '« Pour chaque méthode, vois si tu as besoin d\'un étalon interne et de combien de fioles : fais un petit plan avant de t\'y mettre. »',
+    '« Tu as tous les résultats : compare chacun à l\'exigence de la fiche, puis conclus. »',
+  ]],
+  lucas: [[
+    '« Pour la formule, il faut savoir ce que contient le gel : l\'extrait sec te donne ce qui n\'est pas volatil. Lis la notice et les fiches techniques. »',
+    '« Écris ta formule avec ce que tu as mesuré et ce que dit la notice. Si tu hésites, demande-moi, on peut la discuter. »',
+    '« Pour la fabrication, lis d\'abord la fiche du Carbopol : l\'ordre d\'ajout compte. Moi j\'ai mes habitudes, mais vérifie. »',
+    '« La rhéologie du gel commercial peut se faire pendant que le ballon tourne. Tu compareras ensuite avec ton gel. »',
+    '« Si ton gel diffère du commercial, pense au pH et à la trolamine. »',
+  ], [
+    '« Je lancerais l\'extrait sec tout de suite, il tourne seul, puis je lirais la fiche du Carbopol. »',
+    '« Il te faut le pourcentage d\'éthanol pur de la notice, converti en éthanol à 96 %, et l\'extrait sec pour estimer le cocoate. »',
+    '« Disperse d\'abord le Carbopol, la trolamine vient à la fin. Demande-moi ce que tu veux sur le montage. »',
+    '« Mesure la courbe d\'écoulement du gel formulé et compare-la à celle du commercial : une différence de viscosité a une cause. »',
+    '« Si les rhéologies diffèrent, regarde le pH final : un Carbopol mal neutralisé donne un gel trop fluide. »',
+  ]],
+};
+add('conseil', {
+  lieu: 'Paillasse', pnj: 'moi', titre: 'Demander conseil',
+  texte: () => 'Tu hésites sur la suite. Autour de toi, on peut t\'aider, sans faire le travail à ta place. À qui t\'adresses-tu ?',
+  choix: [
+    { t: 'À Mme Dubreuil, la responsable du laboratoire', vers: 'conseil_dubreuil', duree: 0 },
+    { t: 'À Inès, qui s\'occupe des analyses', vers: 'conseil_ines', duree: 0 },
+    { t: 'À Lucas, qui s\'occupe de la formulation et de la rhéologie', vers: 'conseil_lucas', duree: 0 },
+    { t: 'Finalement, je me débrouille', vers: 'hub', duree: 0 },
+  ],
+});
+for (const [qui, lieu] of [['dubreuil', 'Bureau de Mme Dubreuil'], ['ines', 'Salle de chromatographie'], ['lucas', 'Paillasse de formulation']]) {
+  add('conseil_' + qui, {
+    lieu, pnj: qui, titre: 'Un conseil',
+    texte: e => CONSEILS[qui][(e.f.conseils || {})[qui] || 0][etapeTP(e.fait)],
+    choix: e => [
+      { t: '« Merci, je m\'organise comme ça. »', vers: 'hub', duree: 3, run: n => eqNote({ ...n, f: { ...n.f, nbConseils: (n.f.nbConseils || 0) + 1 } }, 'ok', 'conseil'), note: `Conseil demandé à ${PNJ[qui].nom}.` },
+      ...(((e.f.conseils || {})[qui] || 0) < 1 ? [{ t: '« Je ne vois pas bien. Peux-tu me préciser ? »', vers: 'conseil_' + qui, duree: 3, run: n => ({ ...n, f: { ...n.f, conseils: { ...(n.f.conseils || {}), [qui]: 1 } } }), note: `Précisions demandées à ${PNJ[qui].nom}.` }] : []),
+    ],
+  });
+}
 
 // ───────────── Appareils du laboratoire qui ne répondent pas à la question ─────────────
 const leurre = (id, titre, texte, note, d = 15) => add(id, {
@@ -995,7 +1061,7 @@ const eqNiveau = f => {
   const v = Object.values(f.eq || {}), ko = v.filter(x => x === 'ko').length, moy = v.filter(x => x === 'moyen').length;
   if (!v.length) return { niveau: 'nd', texte: 'Pas d\'échange avec les collègues dans cette partie.' };
   const niveau = ko >= 2 ? 'ko' : ko + moy === 0 ? 'ok' : 'moyen';
-  return { niveau, texte: niveau === 'ok' ? 'Conseils écoutés, désaccords exprimés avec tact, aide acceptée : une équipe de labo fonctionne ainsi.' : `${ko ? `${ko} échange(s) sec(s) ou fermé(s) avec un collègue. ` : ''}${moy ? `${moy} fois, tu as suivi un avis ou refusé une aide sans en discuter. ` : ''}Un désaccord technique s'exprime avec un argument, sur un ton qui laisse la porte ouverte.` };
+  return { niveau, texte: niveau === 'ok' ? `${f.nbConseils ? 'Tu as demandé conseil quand tu en avais besoin. ' : ''}Conseils écoutés, désaccords exprimés avec tact, aide acceptée : une équipe de labo fonctionne ainsi.` : `${ko ? `${ko} échange(s) sec(s) ou fermé(s) avec un collègue. ` : ''}${moy ? `${moy} fois, tu as suivi un avis ou refusé une aide sans en discuter. ` : ''}Un désaccord technique s'exprime avec un argument, sur un ton qui laisse la porte ouverte.` };
 };
 export function bilan(e, finId = e.scene) {
   const f = e.f, niv = (n, a, b) => n <= a ? 'ok' : n <= b ? 'moyen' : 'ko';
