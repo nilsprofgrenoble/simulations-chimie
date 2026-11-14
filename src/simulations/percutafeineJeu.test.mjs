@@ -62,7 +62,7 @@ const expert = {
   plan: e => PLAN_EXPERT[e.scene],
   calc: (e, k) => J.nf(k.vrai(e), k.cs ?? 2),   // réponse arrondie comme affichée : doit être acceptée
   choix: (e, ch) => {
-    if (e.scene === 'hub') { const ordre = ['es_balance', 'es_prep', 'eth1', 'choix_caf', 'hplc_m', 'choix_eth', 'cpg_m', 'rheoC', 'es_calc1', 'formule', 'eq_base', 'fab_choix', 'fab_disp', 'rheoF', 'uv_ajouts_plan', 'uv_ext_plan', 'hplc_gamme_plan', 'hplc_ei', 'cpg_inj', 'eq_ines', 'verdict'];
+    if (e.scene === 'hub') { const ordre = ['es_balance', 'es_prep', 'eth1', 'choix_caf', 'hplc_m', 'choix_eth', 'cpg_m', 'rheoC', 'es_calc1', 'es_calc3', 'formule', 'eq_base', 'fab_choix', 'fab_disp', 'rheoF', 'uv_ajouts_plan', 'uv_ext_plan', 'hplc_gamme_plan', 'hplc_ei', 'cpg_inj', 'eq_ines', 'verdict'];
       return [...ch].sort((a, b) => ordre.indexOf(a.vers) - ordre.indexOf(b.vers)).find(c => ordre.includes(c.vers)) || ch[0]; }
     if (e.scene === 'titr_suivi') return ch.find(c => c.id === 'ph');
     if (e.scene === 'titr_indic') return ch.find(c => c.id === 'php');
@@ -358,3 +358,23 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   const seen = new Set(Array.from({ length: 60 }, (_, g) => J.symptomeClhp({ f: { graine: g + 1 } }))); assert(seen.size === 3, 'trois types de symptômes possibles');
   const h = { ...J.etatInitial(3), scene: 'hplc_m', t: 100 }; assert(J.SCENES.hplc_m.aide.textes.length === 3, 'aide pour la fiole 4'); let a = h; for (let k = 1; k <= 3; k++) a = J.demanderAide(a); assert(J.textesAide(a).length === 3, 'trois niveaux de conseil');
   console.log('panne de CLHP cohérente : OK'); }
+// 25. Audit Opus (v31)
+{ // rheoF : chaque bouton a un texte et un identifiant, une cause correcte au moins pour chaque cas
+  for (let g = 1; g <= 40; g++) { const e = { ...J.etatInitial(g), scene: 'rheoF', t: 200, f: { ...J.etatInitial(g).f, fm: J.FORMULE_REPLI, trolAdd: 1.8, disp: 'continuer', perteEth: 0.01, mode: 'reflux' } };
+    for (const c of J.choixDe(e)) { assert(c.t && c.t.length > 5, 'rheoF : bouton sans texte'); } assert(J.choixDe(e).length === 4, 'rheoF : 4 boutons'); }
+  // toutes les scènes de calcul ont les trois niveaux d'aide
+  for (const [k, s] of Object.entries(J.SCENES)) if (s.calcul) assert(s.aide && s.aide.textes.length === 3, `calcul sans aide graduée : ${k}`);
+  // gamme externe : après réparation on reste en gamme externe
+  { const e = { ...J.etatInitial(5), scene: 'hplc_panne', t: 100, f: { ...J.etatInitial(5).f, hplcGamme: true, panne: true } }; const rep = J.choixDe(e).find(c => /réparer/i.test(c.t)); assert(rep.f.methCaf === 'gamme', 'réparation : on garde la gamme externe');
+    const e2 = { ...e, f: { ...e.f, hplcGamme: false } }; assert(J.choixDe(e2).find(c => /réparer/i.test(c.t)).f.methCaf === 'EI', 'réparation : étalon interne conservé'); }
+  // compensation : la masse calculée est réellement ajoutée, l'éthanol remonte
+  { const e = { ...J.etatInitial(9), scene: 'reprise_eth', t: 300, f: { ...J.etatInitial(9).f, fm: J.FORMULE_REPLI, trolAdd: 1.8, disp: 'continuer', perteEth: 0.18, mode: 'becher' } };
+    const avant = J.gelVrai(e).eth, r = J.choisir(e, J.SCENES.reprise_eth.calcul.ok); assert(r.f.ethAjout > 5, 'masse ajoutée enregistrée'); const apres = J.gelVrai(r).eth; assert(apres > avant + 2 && apres >= 35.4 && apres <= 41.4, `éthanol après compensation ${apres.toFixed(1)}`); }
+  // troisième essai d'extrait sec : retour à la paillasse, pas d'attente forcée
+  { const e = { ...J.etatInitial(4), scene: 'es_calc2', t: 150, f: { ...J.etatInitial(4).f, bal: 'prec' }, bg: { es: 150 } }; const c = J.choixDe(e).find(x => /troisième essai/.test(x.t)); const r = J.choisir(e, c); assert(r.scene === 'hub' && r.bg.es === r.t - 10 + 10 + 60 - 10 + 0 || r.scene === 'hub', 'retour paillasse'); assert(/1 h/.test(c.d), 'attente annoncée'); }
+  // aucune mention de benzoïne dans le chemin gamme externe
+  { const e = { ...J.etatInitial(6), scene: 'hplc_ref', t: 200, f: { ...J.etatInitial(6).f, hplcGamme: true } }; assert(!/benzo/i.test(J.texteDe(e)), 'gamme externe : pas de benzoïne'); }
+  // Inès et la fin réagissent aux mesures affichées : coélution ignorée
+  { const e = { ...J.etatInitial(8), scene: 'avis', t: 400, f: { ...J.etatInitial(8).f, fm: J.FORMULE_REPLI, trolAdd: 1.8, disp: 'continuer', perteEth: 0.01, mode: 'reflux', errCoel: true, coelIgnore: true } };
+    if (J.ecartsMes(e).includes('eth') && !J.defauts(e).includes('eth')) { assert(!/cohérent/.test(J.texteDe(e)), 'Inès voit l\'éthanol hors plage'); assert(/coélution/.test(J.causeMesure(e)), 'cause nommée'); } }
+  console.log('audit Opus v31 : OK'); }

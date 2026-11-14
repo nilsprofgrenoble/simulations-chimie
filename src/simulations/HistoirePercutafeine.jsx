@@ -180,7 +180,7 @@ function BlocAideCalcul({ e, sc, onEtat }) {
   const aide = niveauAide(e), conseils = textesAide(e), pnjAide = PNJ[sc.aide.pnj];
   return (<div data-aide style={{ marginBottom: 12 }}>
     {conseils.map((c, i) => <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '8px 0' }}><Avatar pnj={sc.aide.pnj} e={e} taille={36} /><div style={{ flex: 1, background: '#fff', border: `1.5px solid ${C.bord}`, borderRadius: 12, padding: '8px 12px', fontSize: 15, lineHeight: 1.5 }}>{c}</div></div>)}
-    {aide < 3 && <button type="button" data-aide-btn onClick={() => onEtat(demanderAide(e))} style={{ font: 'inherit', fontSize: 14.5, padding: '7px 14px', borderRadius: 99, border: `1.5px solid ${C.accent}`, background: '#fff', color: C.accent, cursor: 'pointer' }}>{aide === 0 ? `💬 Demander conseil à ${pnjAide.nom}` : aide === 1 ? `💬 Demander plus de précisions à ${pnjAide.nom}` : `💬 Demander à ${pnjAide.nom} ce qu'elle ferait`}</button>}
+    {aide < 3 && <button type="button" data-aide-btn onClick={() => onEtat(demanderAide(e))} style={{ font: 'inherit', fontSize: 14.5, padding: '7px 14px', borderRadius: 99, border: `1.5px solid ${C.accent}`, background: '#fff', color: C.accent, cursor: 'pointer' }}>{aide === 0 ? `💬 Demander conseil à ${pnjAide.nom}` : aide === 1 ? `💬 Demander plus de précisions à ${pnjAide.nom}` : `💬 Demander à ${pnjAide.nom} comment poser le calcul`}</button>}
   </div>);
 }
 function Calcul({ e, sc, onEtat }) {
