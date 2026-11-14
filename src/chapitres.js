@@ -16,7 +16,7 @@ export const NIVEAUX_CHAPITRES = [
 ];
 
 // Simulations en cours de relecture : accessibles par ?sim=N, absentes du menu et de l'accueil
-export const SIMS_HORS_MENU = new Set([109, 110, 111, 112]);
+export const SIMS_HORS_MENU = new Set([109, 111, 112]);
 
 export const CHAPITRES = [
   { id: '2gt-microscopique', niveau: '2GT', label: '⚛️ Modéliser la matière à l’échelle microscopique', sims: [57, 58], domaines: ['Matière à l’échelle microscopique'] },
