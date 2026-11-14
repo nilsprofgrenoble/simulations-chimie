@@ -1,3 +1,4 @@
+import FichesPercutafeine from './FichesPercutafeine';
 import { useState, useEffect, useRef } from "react";
 import { useEtatPersistant, Formule } from "../commun";
 import {
@@ -12,7 +13,7 @@ import {
 const C = { encre: '#1b2733', doux: '#5b6877', bord: '#dbe4ee', accent: '#0f766e', accentFond: '#e7f5f2', ambre: '#b45309', rouge: '#b91c1c', vert: '#15803d', bleu: '#1e3a8a', carte: '#ffffff', fond: '#f4f8fb' };
 const NIVEAUX = { ok: ['✅', C.vert, 'Maîtrisé'], moyen: ['🟡', C.ambre, 'À consolider'], ko: ['❌', C.rouge, 'À retravailler'], nd: ['⚪', C.doux, 'Non évalué'] };
 const TONS = { ok: C.vert, moyen: C.ambre, ko: C.rouge };
-const ICONES = { obs_video: '🎞️', es_prep: '🔥', es_calc1: '📊', eth1: '⚖️', formule: '📝', eq_base: '⚗️', fab_choix: '⚗️', fab_disp: '🧴', rheoC: '🌀', rheoF: '🌀', hplc_m: '📈', cpg_ei: '🔬', cpg_inj: '🔬', uv_ajouts: '🌈', uv_ext: '🌈', hplc_ei: '📈', verdict: '✅', eq_ines: '✅' };
+const ICONES = { docs: '📄', obs_video: '🎞️', es_prep: '🔥', es_calc1: '📊', eth1: '⚖️', formule: '📝', eq_base: '⚗️', fab_choix: '⚗️', fab_disp: '🧴', rheoC: '🌀', rheoF: '🌀', hplc_m: '📈', cpg_ei: '🔬', cpg_inj: '🔬', uv_ajouts: '🌈', uv_ext: '🌈', hplc_ei: '📈', verdict: '✅', eq_ines: '✅' };
 const FOND_LIEU = { 'Paillasse de formulation': '#ecf7ee', 'Salle de chromatographie': '#e8f1fa', 'Bureau': '#f3eefb', 'Bureau de Mme Dubreuil': '#f3eefb', 'Salle de rhéologie': '#fdf1e7', 'Salle des étuves': '#fdf1e7' };
 const STYLE = `
 @keyframes pc-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -192,7 +193,7 @@ function StationObs({ e, onEtat }) {
 // ───────────── La paillasse : cinq postes de travail illustrés ─────────────
 const POSTES = [
   { id: 'etuve', nom: 'Étuve et balance', vers: ['es_balance', 'es_prep', 'es_calc1'] },
-  { id: 'bureau', nom: 'Bureau', vers: ['eth1', 'formule', 'eq_ines', 'verdict'] },
+  { id: 'bureau', nom: 'Bureau', vers: ['docs', 'eth1', 'formule', 'eq_ines', 'verdict'] },
   { id: 'formulation', nom: 'Formulation', vers: ['eq_base', 'fab_choix', 'fab_disp', 'obs_video'] },
   { id: 'rheo', nom: 'Rhéologie', vers: ['rheoC', 'rheoF'] },
   { id: 'chroma', nom: 'Chromatographie, UV', vers: ['hplc_m', 'hplc_ei', 'cpg_ei', 'cpg_inj', 'uv_ajouts', 'uv_ext'] },
@@ -360,6 +361,7 @@ export function SimulationHistoirePercutafeine() {
         {!fin && <h3 ref={refTitre} tabIndex={-1} data-titre style={{ margin: '10px 0 6px', fontSize: 'clamp(21px,4.5vw,26px)', outline: 'none', color: C.encre }}>{sc.titre}</h3>}
         {e.f.corrige && <div data-corrige role="status" style={{ background: '#fef3c7', border: '1px solid #f5d98a', borderRadius: 12, padding: '9px 13px', fontSize: 14.5, margin: '8px 0' }}>🤝 {e.f.corrige}</div>}
         <Dialogue sc={sc} paragraphes={paragraphes} p={p} />
+        {sc.fiches && <FichesPercutafeine ids={sc.fiches} ouvert={e.scene === 'docs'} />}
         {sc.formule && <div data-relation style={{ margin: '12px 0', background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 12, padding: '8px 12px', overflowX: 'auto' }}>{FORMULES[sc.formule]}</div>}
         {sc.video && <figure data-video style={{ margin: '12px 0' }}><video controls playsInline preload="metadata" aria-label={sc.video.legende} src={`${import.meta.env.BASE_URL}${sc.video.src}`} style={{ width: '100%', maxWidth: 520, maxHeight: '60vh', display: 'block', margin: '0 auto', borderRadius: 14, background: '#0f2430', boxShadow: '0 6px 18px rgba(0,0,0,.2)' }} /><figcaption style={{ fontSize: 13, color: C.doux, textAlign: 'center', marginTop: 6 }}>{sc.video.legende}</figcaption></figure>}
         {vis.map((v, i) => <Visuel key={i} v={v} />)}

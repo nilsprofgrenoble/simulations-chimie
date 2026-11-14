@@ -23,7 +23,7 @@ const FAB = [['1', 'Dans la cuve, introduire 70 % de l\'eau, le Foamex et le Coa
   ['3', 'Disperser à vitesse maximale. Contrôle : finesse au grindomètre ≥ 7 Hegman.', '15 min'], ['4', 'Ajouter la résine, puis le coalescent éventuel, le Thixol et le Coapur.', 'Agitation lente, 200 tr/min'],
   ['5', 'Ajuster avec le reste de l\'eau. Contrôler l\'aspect, le pH et l\'extrait sec.', '5 min'], ['6', 'Noter le lot, les masses réellement pesées et les observations.', '']];
 
-function Feuille({ entete, titre, sous, edition, ouvert = true, children }) {
+export function Feuille({ entete, titre, sous, edition, ouvert = true, children }) {
   return (
     <details open={ouvert} className="fiche-doc" style={{ background: '#fff', color: '#1f2937', fontFamily: SANS, fontSize: 13.5, lineHeight: 1.45, border: '1px solid #cfd6df', boxShadow: '0 2px 8px rgba(0,0,0,.18)', margin: '14px 0', borderRadius: 2 }}>
       <summary style={{ cursor: 'pointer', padding: '8px 12px', background: '#eef2f6', fontWeight: 700, fontSize: 13, color: '#334155' }}>📄 {entete} · {titre}</summary>
@@ -41,7 +41,7 @@ function Feuille({ entete, titre, sous, edition, ouvert = true, children }) {
 const cell = { padding: '4px 8px', border: '1px solid #d5dce5', verticalAlign: 'top' };
 const th = { ...cell, background: '#f1f5f9', textAlign: 'left', fontWeight: 700 };
 
-function Tableau({ tetes, lignes }) {
+export function Tableau({ tetes, lignes }) {
   return (
     <table style={{ borderCollapse: 'collapse', width: '100%', margin: '4px 0 8px' }}>
       {tetes && <thead><tr>{tetes.map(h => <th key={h} style={th}>{h}</th>)}</tr></thead>}

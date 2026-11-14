@@ -168,3 +168,7 @@ const expHors = { ...expert, choix: (e, ch) => e.scene === 'secu' ? ch.find(c =>
 // point de Mme Dubreuil : une fois, en début de séance 2 ; chronologie et conséquences disponibles
 { const r = joue(expert, 9).e; assert(r.f.pointD && r.f.eq.dub === 'ok', 'point de Mme Dubreuil'); const ch = J.chronologie(r); assert(ch.actif.length > 5 && ch.etuve.length >= 1 && ch.gel.length >= 1, 'chronologie'); assert(J.consequences(r).length >= 3, 'conséquences'); assert(J.fiche(r).length >= 4, 'fiche'); }
 console.log('balance, sécurité, point d\'étape, film de la journée : OK');
+// 7. Dossier : toute fiche citée par une scène existe dans le composant de documents
+{ const src = (await import('node:fs')).readFileSync(new URL('./FichesPercutafeine.jsx', import.meta.url), 'utf8');
+  for (const [id, sc] of Object.entries(J.SCENES)) for (const f of sc.fiches || []) assert(src.includes(`id === '${f}'`), `fiche inconnue ${f} (scène ${id})`);
+  console.log('dossier : OK'); }
