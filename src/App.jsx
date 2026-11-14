@@ -328,7 +328,7 @@ const MENUS_ENTETE = [
   { key: "COMP", label: "Travail par compétence" },
   { key: "JEUX", label: "🎮 Jeux" },
 ];
-// Interrupteur : tant que les jeux ne sont pas aboutis, personne ne les voit (ni menu, ni cartes professeur, ni saisie de code, ni lien direct).
+// Tant que les jeux ne sont pas aboutis, seul l'administrateur (professeur admin) les voit : menu, cartes, liens directs. Les autres ne voient rien.
 import { JEUX_VISIBLES } from "./simulations/jeuxVisibles";
 const JEUX_IDS = [79, 80, 81, 113];   // jeux : affichage immersif (sans en-tête ni pied de page)
 const FONDS_JEUX = {
@@ -340,7 +340,7 @@ const FONDS_JEUX = {
 const ORDRE_COMP = [38, 34, 35, 37, 36, 77];
 function construireMenus() {
   const fiche = s => ({ id: s.id, icon: s.icon, label: s.label, desc: DESCRIPTIONS[s.label] });
-  return MENUS_ENTETE.filter(m => JEUX_VISIBLES || m.key !== "JEUX").map(m => {
+  return MENUS_ENTETE.map(m => {
     if (m.key === "JEUX") return { ...m, groupes: [{ sims: [], contenu: ({ aller }) => <EnChargement><JeuxMenu aller={aller} /></EnChargement> }] };
     if (m.key === "COMP") {
       const sims = SIMULATIONS.filter(s => s.niveau === "COMP").sort((a, b) => ORDRE_COMP.indexOf(a.id) - ORDRE_COMP.indexOf(b.id)).map(fiche);
@@ -356,7 +356,8 @@ function construireMenus() {
     return { ...m, groupes };
   });
 }
-const MENUS = construireMenus();
+const MENUS_TOUS = construireMenus();
+const MENUS_SANS_JEUX = MENUS_TOUS.filter(m => m.key !== "JEUX");
 
 
 // ============================================================
@@ -415,19 +416,22 @@ export default function App() {
     }
     // adresse propre : /sim/2-titrage-direct/ (le « ?sim=N » des anciennes adresses reste prioritaire et fonctionne toujours)
     const idChemin = params.get('sim') ? null : idDepuisChemin(window.location.pathname, BASE_SITE);
-    if (idChemin !== null && SIMULATIONS.find(s => s.id === idChemin) && (JEUX_VISIBLES || !JEUX_IDS.includes(idChemin))) return idChemin;
+    if (idChemin !== null && SIMULATIONS.find(s => s.id === idChemin)) return idChemin;
     const simParam = params.get('sim');
     if (simParam) {
       const id = parseInt(simParam);
-      if (SIMULATIONS.find(s => s.id === id) && (JEUX_VISIBLES || !JEUX_IDS.includes(id))) return id;
+      if (SIMULATIONS.find(s => s.id === id)) return id;
       const ancien = { 18: 'hydrogene', 19: 'production-1', 20: 'production-2', 21: 'production-3', 22: 'transport', 23: 'stockage', 24: '' };
       if (id in ancien) window.location.replace(ancien[id] ? `${ENERGY_URL}?atelier=${ancien[id]}` : ENERGY_URL);
     }
     return 0;
   };
 
-  const [activeId, setActiveId] = useState(getInitialId);
+  const [activeIdBrut, setActiveId] = useState(getInitialId);
   const sessionSb = useSession();
+  const jeuxOuverts = JEUX_VISIBLES || !!sessionSb?.profil?.admin;
+  const activeId = !jeuxOuverts && JEUX_IDS.includes(activeIdBrut) ? 0 : activeIdBrut;
+  const MENUS = jeuxOuverts ? MENUS_TOUS : MENUS_SANS_JEUX;
   useEffect(() => { restaurer(); }, []);
   // Un professeur connecté n'a pas d'écran « Mon compte » intermédiaire : on l'emmène directement au suivi
   const idAffiche = activeId === 39 && sessionSb?.profil?.role === 'prof' ? 40 : activeId;
@@ -528,7 +532,7 @@ export default function App() {
       if (duDevoir) u.searchParams.set('devoir', '1'); else u.searchParams.delete('devoir');
       window.history.replaceState(null, '', u.toString());
     } catch { /* adresse non modifiable */ }
-    setActiveId(!JEUX_VISIBLES && JEUX_IDS.includes(id) ? 0 : id);
+    setActiveId(id);
   }
 
   const mission = activeId > 0 ? missionEnCours(activeId) : null;

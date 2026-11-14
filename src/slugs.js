@@ -5,7 +5,7 @@
 
 // Simulations SANS adresse propre : elles restent sur « ?sim=N » (pages de compte, du professeur, ou qui ne montrent rien sans paramètre).
 // 39 Mon compte, 40 Suivi professeur, 82 Page d'un chapitre (&chap=…), 103 Mes fiches. Toutes sont en « noindex ».
-export const SANS_ADRESSE_PROPRE = new Set([39, 40, 82, 103, 79, 80, 81, 113]);   // 79, 80, 81, 113 : jeux masqués (voir src/simulations/jeuxVisibles.js)
+export const SANS_ADRESSE_PROPRE = new Set([39, 40, 82, 103, 79, 80, 81, 113]);   // 79, 80, 81, 113 : jeux non publics (voir src/simulations/jeuxVisibles.js)
 
 export const aAdressePropre = id => Number.isInteger(id) && id > 0 && !SANS_ADRESSE_PROPRE.has(id);
 

@@ -15,7 +15,7 @@ const JEUX = [
 
 const lien = j => `${window.location.origin}${import.meta.env.BASE_URL}?sim=${j.id}`;
 
-export function JeuxProf(props) { return JEUX_VISIBLES ? <JeuxProfCartes {...props} /> : null; }
+export function JeuxProf(props) { const sess = useSession(); return JEUX_VISIBLES || sess?.profil?.admin ? <JeuxProfCartes {...props} /> : null; }
 function JeuxProfCartes({ naviguer }) {
   const [copie, setCopie] = useState(null);
   const copier = async j => {
