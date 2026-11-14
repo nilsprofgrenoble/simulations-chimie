@@ -291,8 +291,8 @@ const taches = e => {
   if (!F.eth) L.push(['Raisonner sur l\'éthanol de la notice', 'Quelle masse d\'éthanol faut-il mettre dans 200 g de gel ?', 'eth1']);
   if (F.es && !F.esLu) L.push(e.f.es3Att ? ['Lire le troisième extrait sec', `Calculer la médiane des trois essais.${e.bg.es > e.t ? ` Attention : étuve en cours, prête dans ${duree(e.bg.es - e.t)}, tu devras attendre.` : ''}`, 'es_calc2b'] : ['Lire l\'extrait sec', `Calculer ES et vérifier la répétabilité.${e.bg.es > e.t ? ` Attention : étuve en cours, prête dans ${duree(e.bg.es - e.t)}, tu devras attendre.` : ''}`, 'es_calc1']);
   if (F.esLu && !F.esRes) L.push(['Estimer le cocoate de macrogol', 'Déduire sa teneur de l\'extrait sec, avec les fiches techniques.', 'es_calc3']);
-  if (!F.formule) L.push(['Formuler les 200 g de gel', 'Fixer les masses des constituants pour environ 200 g.', 'formule', F.eth && F.esRes ? undefined : { bloque: 'Il te manque encore ' + [!F.eth && 'l\'éthanol de la notice', !F.esRes && 'le cocoate de macrogol (extrait sec)'].filter(Boolean).join(' et ') + '.' }]);
-  if (F.formule && !F.fab) L.push(['Fabriquer le gel', 'Choisir le procédé, lancer la dispersion du Synthalen K.', (e.f.lot || 1) > 1 ? 'fab_relance' : e.f.eq?.base ? 'fab_choix' : 'eq_base']);
+  if (!F.formule) L.push(['Écrire la formule du contretype', 'Fixer les masses des constituants pour environ 200 g de gel : la formule est à faire valider avant de formuler.', 'formule']);
+  if (!F.fab) L.push(['Formuler les 200 g de gel', 'Choisir le procédé, lancer la dispersion du Synthalen K.', (e.f.lot || 1) > 1 ? 'fab_relance' : e.f.eq?.base ? 'fab_choix' : 'eq_base', F.formule ? undefined : { bloque: 'Fais d\'abord valider ta formule au Bureau.' }]);
   if (!F.rheoC) L.push(['Rhéologie du gel commercial', 'Mesurer la courbe d\'écoulement du témoin (10 min).', 'rheoC']);
   if (!e.f.voieCaf && !e.f.rapideCaf) L.push(['Choisir comment contrôler la caféine du gel', 'Quelle technique utiliser pour vérifier les 5 % de caféine ?', 'choix_caf']);
   if (e.f.voieCaf === 'clhp' && !F.hplcPrep) L.push(['Préparer le dosage de la caféine', 'Masse à peser, solution de référence, première injection.', 'hplc_m']);
@@ -521,8 +521,8 @@ export function validerFormule(e, fm, repli = false) {
 }
 add('formule', {
   fiches: ['notice', 'synthalen', 'cocoate', 'trolamine'],
-  lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'formule', titre: 'La formule du contretype',
-  texte: e => `« Écris les masses pour environ ${M_LOT} g. Je ne juge pas ta formule : elle part telle quelle dans le gel, et c'est le contrôle qualité qui dira si elle tient. » Rappels : ES mesuré ${nf(esRetenu(e), 2)} %, éthanol à 96 % pour ${nf(ETH_PUR_COM, 1)} % d'éthanol pur.`,
+  lieu: 'Bureau', pnj: 'lucas', station: 'formule', titre: 'La formule du contretype',
+  texte: e => `« Écris les masses pour environ ${M_LOT} g. Je ne juge pas ta formule : elle part telle quelle dans le gel, et c'est le contrôle qualité qui dira si elle tient. » Rappels : ${e.fait.esLu ? `ES mesuré ${nf(esRetenu(e), 2)} %, ` : ''}éthanol à 96 % pour ${nf(ETH_PUR_COM, 1)} % d'éthanol pur.`,
   aide: { pnj: 'lucas', textes: [
     () => '« Pars de tes résultats, pas de la notice seule : pour 200 g de gel, la masse d\'un composant est son pourcentage mesuré multiplié par 2. Occupe-toi d\'abord de la caféine et de l\'éthanol, puis du Synthalen K et du cocoate. »',
     () => '« L\'éthanol de la paillasse est à 96 % : pour une teneur en éthanol pur donnée, il faut peser un peu plus d\'éthanol à 96 %. Ton extrait sec compte la caféine, le Synthalen K, le cocoate et la trolamine ensemble. Complète avec l\'eau pour atteindre 200 g au total. »',
