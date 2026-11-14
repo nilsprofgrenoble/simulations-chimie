@@ -406,3 +406,13 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   assert(!/Lucas/.test(J.texteDe({ ...J.etatInitial(3), scene: 'fab_choix' })), 'pas de citation de Lucas sur la dispersion');
   assert(/seule espèce/.test(J.texteDe({ ...J.etatInitial(3), scene: 'hplc_panne', f: { ...J.etatInitial(3).f } })), 'UV : seule espèce qui absorbe');
   console.log('retours de test v34 : OK'); }
+// 28. v36 : fiche de correction et relance de lot
+{ const { e } = joue(expert, 5);
+  const L = J.ficheCorrection(e); assert(L.length >= 6, `calculs journalisés : ${L.length}`);
+  for (const c of L) { assert(c.saisies.length >= 1 && c.attendu && c.demarche.length >= 1 && c.titre, 'fiche complète ' + c.id); }
+  // relance : remise à zéro des fabrications, dosages rapides, calculs non refaits
+  const h = { ...J.etatInitial(7), scene: 'relance', t: 300, fait: { es: true, esRes: true, eth: true, formule: true, fab: true, ph: true, caf: true, ethQC: true, rheoF: true } };
+  const r = J.choisir(h, J.choixDe(h)[0]); assert(['hub', 'point_dubreuil'].includes(r.scene) && r.f.lot === 2 && !r.fait.ph && !r.fait.caf && r.fait.es && r.f.rapideCaf && r.f.rapideEth, 'relance : état');
+  const t = J.choixDe({ ...r, scene: 'hub' }).map(c => c.vers); assert(t.includes('rapide_caf') && !t.includes('choix_caf') && !t.includes('relance'), `tâches après relance : ${t}`);
+  const rc = J.choixDe({ ...r, scene: 'rapide_caf' })[0]; assert(J.choisir({ ...r, scene: 'rapide_caf' }, rc).fait.caf, 'dosage rapide validé');
+  console.log('v36 : OK'); }
