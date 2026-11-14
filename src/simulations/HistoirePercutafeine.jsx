@@ -164,13 +164,13 @@ const TubeGel = () => (<figure style={{ margin: '12px 0', textAlign: 'center' }}
     <path d="M6 44 L12 44 L12 86 L6 86 Z" fill="#94a3b8" />
     <rect x="58" y="34" width="120" height="68" rx="8" fill="#fff7ed" stroke="#fdba74" />
     <text x="118" y="62" textAnchor="middle" fontSize="15" fontWeight="700" fill="#9a3412">Gel à la caféine</text>
-    <text x="118" y="82" textAnchor="middle" fontSize="12" fill="#9a3412">5 % · usage cutané</text>
+    <text x="118" y="82" textAnchor="middle" fontSize="12" fill="#9a3412">usage cutané</text>
   </svg>
   <figcaption style={{ fontSize: 13.5, color: C.doux }}>Le gel commercial à contre-typer (illustration).</figcaption></figure>);
 const Visuel = ({ v }) => v.type === 'balance' ? <BalanceVue v={v} /> : v.type === 'chroma' ? <Chroma v={v} /> : v.type === 'rheo' ? <Rheo v={v} /> : v.type === 'droite' ? <Droite v={v} /> : v.type === 'titrage' ? <CourbeTitrage v={v} /> : v.type === 'tableau' ? <Tableau v={v} /> : v.type === 'fioles' ? <SchemaFiolesClhp /> : v.type === 'tube' ? <TubeGel /> : null;
 
 
-const TOUS_DOCS = ['notice', 'carbopol', 'synthalen', 'trolamine', 'cocoate', 'mo1', 'mo3'];
+const TOUS_DOCS = ['notice', 'synthalen', 'trolamine', 'cocoate', 'mo1', 'mo3'];
 // ───────────── Briques d'interaction ─────────────
 const inst = { background: '#fffaf0', border: '1.5px solid #ecd9a6' };
 function Avatar({ pnj, taille = 40, e }) {
@@ -403,7 +403,7 @@ function Film({ e }) {
       {ticks.map(([t, l]) => <g key={t}><line x1={X(t)} y1={haut} x2={X(t)} y2={haut + 5} stroke={C.doux} /><text x={X(t)} y={haut + 19} fontSize={etroit ? 13 : 11} textAnchor="middle" fill={C.doux}>{l}</text></g>)}
       <text x={X(T_MIDI) + 2} y="18" fontSize={etroit ? 12 : 10} fill={C.ambre}>déj.</text>
     </svg>
-    <figcaption style={{ fontSize: 13.5, color: C.doux, marginTop: 6, lineHeight: 1.5 }}>Un technicien efficace lance d'abord les opérations longues (étuve, dispersion du Carbopol), puis prépare calculs, rhéologie du témoin et analyses pendant qu'elles tournent. Tes attentes subies : <b>{duree(e.f.attente || 0)}</b>.</figcaption>
+    <figcaption style={{ fontSize: 13.5, color: C.doux, marginTop: 6, lineHeight: 1.5 }}>Un technicien efficace lance d'abord les opérations longues (étuve, dispersion du Synthalen K), puis prépare calculs, rhéologie du témoin et analyses pendant qu'elles tournent. Tes attentes subies : <b>{duree(e.f.attente || 0)}</b>.</figcaption>
   </figure>);
 }
 function Conseq({ e }) {
@@ -458,7 +458,7 @@ function Instruments({ e, s }) {
       <div style={{ fontSize: 13, color: C.doux }}>{txt}</div></div>; };
   return <div data-attentes className="pc-grille" style={{ margin: '4px 0 14px' }}>
     {s.es && carte('🔥', 'Étuve à 105 °C', e.bg.es, 60, 'Extrait sec en cours')}
-    {s.gel && carte('⚗️', 'Dispersion du gel', e.bg.gel, 90, 'Le Carbopol se disperse')}</div>;
+    {s.gel && carte('⚗️', 'Dispersion du gel', e.bg.gel, 90, 'Le Synthalen K se disperse')}</div>;
 }
 
 function Dialogue({ sc, paragraphes, p, e }) {

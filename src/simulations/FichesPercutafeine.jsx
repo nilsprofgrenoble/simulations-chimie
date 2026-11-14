@@ -1,5 +1,5 @@
 // Documents du dossier « Percutaféine » : notice, fiches techniques des matières premières (reproductions simplifiées).
-// Sources : résumé des caractéristiques du produit (ANSM), documentation du fabricant du Carbopol 980 NF (Lubrizol), pages d'usage courant.
+// Sources : résumé des caractéristiques du produit (ANSM), documentation du fabricant du Synthalen K (3V), pages d'usage courant.
 import { Feuille, Tableau } from './Fiches';
 import SchemaFiolesClhp from './SchemaFiolesClhp';
 
@@ -21,19 +21,8 @@ export default function FichesPercutafeine({ ids, ouvert = false }) {
         <Tableau tetes={['Tube', 'Éthanol à 96 %']} lignes={[['20 g', 'environ 8 g'], ['96 g', 'environ 38,5 g'], ['192 g', 'environ 77 g']]} />
         <div style={{ color: '#475569' }}>Les quantités des autres excipients ne sont pas indiquées.</div>
       </Feuille>);
-    if (id === 'carbopol') return (
-      <Feuille key={id} ouvert={ouvert} entete="Fiche technique" titre="Carbopol 980 NF" sous="Carbomère : polymère de l'acide acrylique réticulé" edition="remplace le Synthalène K du produit commercial">
-        <Liste items={[
-          'Poudre blanche, très légère. Gélifiant très efficace, donne des gels limpides, y compris hydroalcooliques.',
-          <>Dispersion : verser la poudre <b>en pluie</b> dans le liquide en agitation (vortex), sans former de grumeaux. La dispersion est lente : prévoir 30 min à 1 h. Une légère élévation de température aide à la dissoudre.</>,
-          <>Épaississement : en milieu acide le polymère est enroulé et la dispersion est fluide. La <b>neutralisation par une base</b> (amine, soude…) déroule les chaînes : le gel se forme. La viscosité est maximale pour un pH d'environ <b>6 à 7</b>.</>,
-          'Après neutralisation, éviter une agitation forte et prolongée (perte de viscosité) et la formation de bulles : utiliser une agitation lente.',
-          <>Spécification du fabricant (Lubrizol, édition du 27 octobre 2017) : <b>teneur en acide carboxylique de 58,0 à 63,0 %</b> (la valeur exacte dépend du lot ; masse molaire du groupe –COOH : 45,02 g/mol) ; perte à la dessiccation 7,0 % au plus ; pH d'une dispersion à 0,2 % compris entre 2,5 et 4,0 ; viscosité d'un mucilage à 0,2 %, neutralisé à pH 7,0 – 7,5 : de 1 500 à 50 000 cP.</>,
-          'Exemples de formules du fabricant (gels hydroalcooliques) : de 0,5 % à 2,5 % de Carbopol 980 NF.',
-        ]} />
-      </Feuille>);
     if (id === 'synthalen') return (
-      <Feuille key={id} ouvert={ouvert} entete="Fiche technique" titre="Synthalen K" sous="Carbomère du produit commercial : polymère carboxyvinylique, agent épaississant" edition="fabricant 3V, valeurs typiques">
+      <Feuille key={id} ouvert={ouvert} entete="Fiche technique" titre="Synthalen K" sous="Carbomère : polymère carboxyvinylique, agent épaississant" edition="fabricant 3V, valeurs typiques">
         <Tableau lignes={[
           ['pH d\'une dispersion à 0,5 % dans l\'eau', '2,7 à 3,5'],
           ['Masse équivalente moyenne', 'environ 76 (en g de polymère par mole de groupes acide)'],
@@ -41,7 +30,8 @@ export default function FichesPercutafeine({ ids, ouvert = false }) {
           ['Taux d\'emploi habituel', '0,1 à 1,5 %, selon la formule et la viscosité voulue'],
         ]} />
         <Liste items={[
-          'Disperser par addition lente de la poudre, sous agitation, jusqu\'à hydratation complète. Éviter l\'agitation turbulente, qui piège de l\'air.',
+          'Poudre blanche, très légère. Disperser par addition lente de la poudre en pluie, sous agitation, jusqu\'à hydratation complète. La dispersion est lente (de 30 min à 1 h 30 à froid) ; une légère élévation de température l\'accélère. Éviter l\'agitation turbulente, qui piège de l\'air.',
+          'En milieu acide le polymère est enroulé et la dispersion est fluide ; la neutralisation par une base déroule les chaînes et forme le gel. La viscosité est maximale pour un pH d\'environ 6 à 7.',
           'Neutralisation : pour amener 1 g de polymère à pH 7, il faut environ 0,01 équivalent de base (0,4 g de soude ou 1,5 g de trolamine).',
           'Éviter un fort cisaillement prolongé pendant et après la neutralisation : la perte de viscosité peut être définitive.',
         ]} />

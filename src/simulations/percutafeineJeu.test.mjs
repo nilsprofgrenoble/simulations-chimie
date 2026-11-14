@@ -239,7 +239,7 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   assert(!J.choixDe(e).some(c => c.vers === 'leurre_ir'), 'mesure faite une fois');
   assert(J.consequences(e).some(c => c.cause.startsWith('Appareils sans rapport')), 'conséquence affichée');
   console.log('appareils sans rapport : OK'); }
-// 13. Titrage du Carbopol : bien conçu → teneur en COOH juste ; trop concentré ou arrêté trop tôt → mauvais ou sans résultat
+// 13. Titrage du Synthalen K : bien conçu → teneur en COOH juste ; trop concentré ou arrêté trop tôt → mauvais ou sans résultat
 { const base = J.etatInitial(21), vrai = J.coohLot(base) * 100;
   const avec = p => ({ ...base, scene: 'titr_carb', f: { ...base.f, plans: { titr_carb_plan: p } } });
   const bon = J.donneesTitr(avec({ m: 0.1, V0: 150, c: 0.1, dv: 1, vdeb: 11, vfz: 16, dvf: 0.25, vfin: 18 })), epais = J.donneesTitr(avec({ m: 1, V0: 50, c: 0.1, vfin: 25, dv: 1 })), court = J.donneesTitr(avec({ m: 0.1, V0: 150, c: 0.1, vfin: 8, dv: 1 }));
@@ -249,7 +249,7 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   const tr = J.choisir(avec({ m: 0.1, V0: 150, c: 0.1, dv: 1, vdeb: 11, vfz: 16, dvf: 0.25, vfin: 18 }), { vers: 'titr_carb_calc', duree: 0 });
   const r = J.valider(tr, J.nf(bon.pctMes, 1)); assert(r.juste && r.etat.f.cooh > 50 && r.etat.fait.titrCarb, 'teneur COOH acceptée et mémorisée');
   const phSans = J.phDe(base, 2), phAvec = J.phDe({ ...base, f: { ...base.f, graine: 5 } }, 2); assert(phSans !== phAvec || true, 'le lot fait varier la courbe');
-  console.log(`titrage du Carbopol : OK (lot ${vrai.toFixed(1)} %, mesuré ${bon.pctMes.toFixed(1)} %)`); }
+  console.log(`titrage du Synthalen K : OK (lot ${vrai.toFixed(1)} %, mesuré ${bon.pctMes.toFixed(1)} %)`); }
 // 14. Retour à la paillasse au premier écran d'une tâche ; remarque de Mme Dubreuil sur les appareils sans rapport
 { let e = { ...J.etatInitial(31), scene: 'hub', t: 20 };
   const bureau = J.choisir(e, J.choixDe(e).find(c => c.vers === 'eth1')); assert(J.peutRevenir(bureau), 'retour possible au premier écran');
@@ -324,7 +324,7 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
     const r3 = J.cliquerPiece(r2.etat, 'injecteur'); assert(r3.ok && r3.etat.scene !== id && r3.etat.f.errInj === 2, 'bon clic : on avance, erreurs mémorisées');
     assert(J.bilan({ ...r3.etat, scene: 'fin_conforme' }, 'fin_conforme').find(b => b.comp === 'C.2.1').texte.includes('injecteur'), 'erreur citée au bilan C.2.1'); }
   console.log('schémas cliquables : OK'); }
-// 22. Titrage du Carbopol : méthodes de suivi (pH-mètre, conductimètre, indicateur, Pt/Ag-AgCl)
+// 22. Titrage du Synthalen K : méthodes de suivi (pH-mètre, conductimètre, indicateur, Pt/Ag-AgCl)
 { const base = J.etatInitial(21), plan = { m: 0.1, V0: 150, c: 0.1, dv: 1, vdeb: 11, vfz: 16, dvf: 0.25, vfin: 18 };
   const avec = (suivi, indic, p = plan, g = 21) => { const b = J.etatInitial(g); return { ...b, scene: 'titr_carb', f: { ...b.f, suivi, indic, plans: { titr_carb_plan: p } } }; };
   const err = d => Math.abs(d.vEq - d.veq) / d.veq;
