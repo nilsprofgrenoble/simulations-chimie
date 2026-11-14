@@ -57,8 +57,10 @@ const expert = {
   ph: e => { let n = e; for (let i = 0; i < 12 && (J.phDe(n, n.f.trolAdd || 0) < 5.6); i++) n = J.ajouterBase(n, 0.3); const r = J.validerPh(n); assert(r.ok, 'pH validé'); return r.etat; },
   calc: (e, k) => J.nf(k.vrai(e), k.cs ?? 2),   // réponse arrondie comme affichée : doit être acceptée
   choix: (e, ch) => {
-    if (e.scene === 'hub') { const ordre = ['es_balance', 'es_prep', 'eth1', 'hplc_m', 'cpg_ei', 'rheoC', 'es_calc1', 'formule', 'eq_base', 'fab_choix', 'fab_disp', 'rheoF', 'uv_ajouts', 'uv_ext', 'hplc_ei', 'cpg_inj', 'eq_ines', 'verdict'];
+    if (e.scene === 'hub') { const ordre = ['es_balance', 'es_prep', 'eth1', 'choix_caf', 'hplc_m', 'choix_eth', 'cpg_ei', 'rheoC', 'es_calc1', 'formule', 'eq_base', 'fab_choix', 'fab_disp', 'rheoF', 'uv_ajouts', 'uv_ext', 'hplc_ei', 'cpg_inj', 'eq_ines', 'verdict'];
       return [...ch].sort((a, b) => ordre.indexOf(a.vers) - ordre.indexOf(b.vers)).find(c => ordre.includes(c.vers)) || ch[0]; }
+    if (e.scene === 'choix_caf') return ch.find(c => c.id === (e.f.graine % 2 ? 'clhpEI' : 'clhpEI'));
+    if (e.scene === 'choix_eth') return ch.find(c => c.id === 'cpg');
     if (e.scene === 'es_balance') return ch[1];
     if (e.scene === 'es_prep') return ch[0];
     if (e.scene === 'es_calc2') return J.ecartEs(e) <= 1.4 ? ch[0] : ch[1];
@@ -172,3 +174,15 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
 { const src = (await import('node:fs')).readFileSync(new URL('./FichesPercutafeine.jsx', import.meta.url), 'utf8');
   for (const [id, sc] of Object.entries(J.SCENES)) for (const f of sc.fiches || []) assert(src.includes(`id === '${f}'`), `fiche inconnue ${f} (scène ${id})`);
   console.log('dossier : OK'); }
+// 8. Choix de techniques ouvert : toutes les voies mènent à une fin ; les pistes inadaptées coûtent du temps et pèsent sur C.1.4
+{ const voie = (cafId, ethEssais = []) => ({ ...expert, choix: (e, ch) => {
+    if (e.scene === 'choix_caf') return ch.find(c => c.id === (cafId === 'titrage' && e.f.errMeth ? 'clhpEI' : cafId));
+    if (e.scene === 'choix_eth') { const a = ethEssais.find(id => !(e.f['essai_' + id])); return a ? (e.f['essai_' + a] = true, ch.find(c => c.id === a)) : ch.find(c => c.id === 'cpg'); }
+    return expert.choix(e, ch); } });
+  const T = {}; for (const id of ['clhpEI', 'clhpExt', 'uvAj', 'uvExt', 'titrage']) { let fins = {}, t = 0;
+    for (let g = 1; g <= 60; g++) { const r = joue(voie(id), g * 977).e; fins[r.scene] = (fins[r.scene] || 0) + 1; t += r.t; if (id === 'titrage' || id === 'uvExt') assert(J.bilan(r)[0].niveau !== 'ok', 'C.1.4 pénalisé'); }
+    T[id] = { fins, tMoy: Math.round(t / 60) }; }
+  console.log('techniques caféine :', JSON.stringify(T));
+  for (const id of Object.keys(T)) assert(Object.keys(T[id].fins).every(k => k.startsWith('fin_')), 'fins atteintes ' + id);
+  const r = joue(voie('clhpEI', ['clhp', 'dens']), 3).e; assert(r.f.errMeth === 2 && J.bilan(r)[0].niveau !== 'ok', 'pistes inadaptées pénalisées'); assert(J.consequences(r).some(c => c.cause === 'Choix de techniques'), 'conséquence affichée');
+  console.log('choix de techniques : OK'); }

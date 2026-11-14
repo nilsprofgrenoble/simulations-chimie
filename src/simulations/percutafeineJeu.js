@@ -158,7 +158,7 @@ export function aller(e, id) {
 export const texteDe = (e, sc = SCENES[e.scene]) => typeof sc.texte === 'function' ? sc.texte(e) : sc.texte;
 export const choixDe = (e, sc = SCENES[e.scene]) => (typeof sc.choix === 'function' ? sc.choix(e) : sc.choix || []).filter(c => !c.si || c.si(e));
 export const visuelsDe = (e, sc = SCENES[e.scene]) => (sc.visuels ? sc.visuels(e) : []) || [];
-const DATEES = ['mode', 'bal', 'methCaf', 'disp', 'decl'];
+const DATEES = ['mode', 'bal', 'voieCaf', 'methCaf', 'disp', 'decl'];
 export function choisir(e, c) {
   const tDec = { ...(e.f.tDec || {}) }; DATEES.forEach(k => { if (c.f && k in c.f) tDec[k] = e.t; });
   let n = { ...e, t: e.t + (c.duree || 0), f: { ...e.f, ...(c.f || {}), tDec, corrige: undefined }, hist: [...(e.hist || []), ...(c.duree ? [{ t0: e.t, t1: e.t + c.duree, k: c.f && c.f.attendu ? 'att' : 'act', l: c.note || c.t || '' }] : [])] };
@@ -197,8 +197,10 @@ const taches = e => {
   if (F.eth && F.esRes && !F.formule) L.push(['Écrire la formule du contretype', 'Fixer les masses des constituants pour environ 200 g.', 'formule']);
   if (F.formule && !F.fab) L.push(['Fabriquer le gel', 'Choisir le procédé, lancer la dispersion du Carbopol.', e.f.eq?.base ? 'fab_choix' : 'eq_base']);
   if (!F.rheoC) L.push(['Rhéologie du gel commercial', 'Mesurer la courbe d\'écoulement du témoin (15 min).', 'rheoC']);
-  if (!F.hplcPrep) L.push(['Préparer le dosage de la caféine (CLHP)', 'Masse à peser, solution de référence, première injection.', 'hplc_m']);
-  if (F.eth && !F.cpgPrep) L.push(['Préparer le dosage de l\'éthanol (CPG)', 'Choix de l\'étalon interne, masse à peser, injection de la référence.', 'cpg_ei']);
+  if (!e.f.voieCaf) L.push(['Choisir comment contrôler la caféine du gel', 'Quelle technique utiliser pour vérifier les 5 % de caféine ?', 'choix_caf']);
+  if (e.f.voieCaf === 'clhp' && !F.hplcPrep) L.push(['Préparer le dosage de la caféine', 'Masse à peser, solution de référence, première injection.', 'hplc_m']);
+  if (F.eth && !e.f.voieEth) L.push(['Choisir comment contrôler l\'éthanol du gel', 'Quelle technique utiliser pour vérifier l\'éthanol ?', 'choix_eth']);
+  if (e.f.voieEth === 'cpg' && !F.cpgPrep) L.push(['Préparer le dosage de l\'éthanol', 'Choix de l\'étalon interne, masse à peser, injection de la référence.', 'cpg_ei']);
   if (F.fab && !F.ph) L.push(['Neutraliser et mettre en pot', 'Quand le Carbopol est dispersé : ajouter la trolamine et contrôler le pH.', 'fab_disp']);
   if (F.ph && F.rheoC && !F.rheoF) L.push(['Comparer les rhéologies', 'Mesurer le gel formulé et le comparer au commercial.', 'rheoF']);
   if (F.ph && F.hplcPrep && !F.caf) L.push(['Doser la caféine du gel formulé', e.f.methCaf === 'ajouts' ? 'Ajouts dosés au spectrophotomètre UV.' : e.f.methCaf === 'ext' ? 'Étalonnage externe au spectrophotomètre UV.' : 'CLHP, méthode de l\'étalon interne.', e.f.methCaf === 'ajouts' ? 'uv_ajouts' : e.f.methCaf === 'ext' ? 'uv_ext' : 'hplc_ei']);
@@ -502,6 +504,46 @@ add('rheoF', {
     return [mk('similaires', 'Les deux gels sont très proches : pas de défaut de viscosité'), mk('dispersion', 'Carbopol mal dispersé (morceaux restants)'), mk('ph', 'pH trop bas : le gel n\'a pas fini d\'épaissir'), mk('carbopol', 'Pas assez de Carbopol dans la formule')]; },
 });
 
+// ───────────── Choix des techniques de contrôle : liste ouverte, présentée sans avis ─────────────
+const melange = (e, etiq, L) => [...L].sort((a, b) => unif(e.f.graine, etiq + a.id) - unif(e.f.graine, etiq + b.id));
+const essaiInadapte = n => ({ ...n, f: { ...n.f, errMeth: (n.f.errMeth || 0) + 1 } });
+add('choix_caf', {
+  lieu: 'Salle de chromatographie', pnj: 'moi', titre: 'Contrôler la caféine du gel',
+  texte: () => `Il faut vérifier que ton gel contient bien la caféine attendue, avec une incertitude raisonnable. Le laboratoire met à ta disposition les techniques suivantes : aucune n'est imposée, le choix t'appartient.`,
+  choix: e => melange(e, 'caf', [
+    { id: 'clhpEI', t: 'Chromatographie liquide (CLHP-UV, 273 nm) avec étalon interne (benzoïne)', d: 'Colonne C18, boucle d\'injection de 20 µL.', duree: 0, vers: 'hplc_m', f: { voieCaf: 'clhp' }, note: 'Caféine : technique choisie, CLHP avec étalon interne.' },
+    { id: 'clhpExt', t: 'Chromatographie liquide (CLHP-UV, 273 nm) avec une gamme d\'étalonnage externe', d: 'Fioles de caféine de concentrations croissantes, à injecter une à une.', duree: 25, vers: 'hplc_m', f: { voieCaf: 'clhp', hplcGamme: true }, note: 'Caféine : technique choisie, CLHP avec gamme d\'étalonnage externe.' },
+    { id: 'uvAj', t: 'Spectrophotométrie UV (273 nm) avec ajouts dosés', d: 'Cuve de 1 cm ; cinq fioles à préparer à partir de la solution de gel.', duree: 10, vers: 'hub', f: { voieCaf: 'uv', methCaf: 'ajouts', panne: false }, run: n => marquer(n, 'hplcPrep'), note: 'Caféine : technique choisie, UV avec ajouts dosés.' },
+    { id: 'uvExt', t: 'Spectrophotométrie UV (273 nm) avec une gamme d\'étalonnage externe', d: 'Cuve de 1 cm ; gamme de caféine dans l\'éluant.', duree: 10, vers: 'hub', f: { voieCaf: 'uv', methCaf: 'ext', panne: false }, run: n => marquer(n, 'hplcPrep'), note: 'Caféine : technique choisie, UV avec étalonnage externe.' },
+    { id: 'titrage', t: 'Titrage acido-basique de la caféine par la soude', d: 'pH-mètre et burette.', duree: 25, vers: 'caf_titrage', run: essaiInadapte, note: 'Caféine : titrage acido-basique essayé.' },
+  ]),
+});
+add('caf_titrage', {
+  lieu: 'Paillasse', pnj: 'moi', titre: 'Titrage de la caféine : la courbe pH = f(V)',
+  texte: () => `Tu traces la courbe : un seul saut de pH, très étalé, qui apparaît bien avant la quantité de soude attendue pour 5 % de caféine. Dans l'eau, l'acide conjugué de la caféine a un pKa d'environ 0,6 : la caféine est une base bien trop faible pour être dosée par un acide ou une base courants, alors que le Carbopol et la trolamine du gel, eux, réagissent avec la soude. Cette courbe ne renseigne pas sur la caféine.\nTu as perdu 25 minutes.`,
+  choix: [{ t: 'Choisir une autre technique', duree: 0, vers: 'choix_caf' }],
+});
+add('choix_eth', {
+  lieu: 'Salle de chromatographie', pnj: 'moi', titre: 'Contrôler l\'éthanol du gel',
+  texte: () => `Il faut maintenant vérifier la teneur en éthanol du gel formulé. Voici ce que le laboratoire peut te proposer ; le choix t'appartient.`,
+  choix: e => melange(e, 'eth', [
+    { id: 'cpg', t: 'Chromatographie en phase gazeuse (CPG, détecteur FID)', d: 'Colonne polaire, four à 70 °C, injection de 0,1 µL.', duree: 0, vers: 'cpg_ei', f: { voieEth: 'cpg' }, note: 'Éthanol : technique choisie, CPG.' },
+    { id: 'clhp', t: 'Chromatographie liquide (CLHP-UV, 273 nm)', d: 'Mêmes colonne et détecteur que pour la caféine.', duree: 15, vers: 'eth_hplc', run: essaiInadapte, note: 'Éthanol : CLHP-UV essayée.' },
+    { id: 'dens', t: 'Masse volumique du gel au pycnomètre', d: 'Pesée d\'un volume connu de gel à 20 °C.', duree: 20, vers: 'eth_dens', run: essaiInadapte, note: 'Éthanol : masse volumique essayée.' },
+  ]),
+});
+add('eth_hplc', {
+  lieu: 'Salle de chromatographie', pnj: 'moi', titre: 'CLHP-UV : où est l\'éthanol ?',
+  texte: () => `Tu injectes la solution de gel : un pic de caféine, un front de solvant, et rien d'autre. L'éthanol n'absorbe pas à 273 nm : le détecteur UV ne le voit pas.\nTu as perdu 15 minutes.`,
+  visuels: () => [{ type: 'chroma', titre: 'CLHP-UV 273 nm · solution de gel', tmax: 2, pics: [{ tr: 0.3, h: 0.15, l: 'front de solvant' }, { tr: 0.82, h: 0.9, l: 'caféine' }] }],
+  choix: [{ t: 'Choisir une autre technique', duree: 0, vers: 'choix_eth' }],
+});
+add('eth_dens', {
+  lieu: 'Paillasse', pnj: 'moi', titre: 'Masse volumique du gel',
+  texte: () => `Tu mesures ρ = 0,94 g/mL à 20 °C. Les tables donnent la masse volumique d'un mélange eau-éthanol, mais ton gel contient aussi de la caféine, du Carbopol, du cocoate de macrogol et de la trolamine, qui modifient ρ : plusieurs compositions différentes conduisent à 0,94 g/mL. Cette valeur ne permet pas de remonter à la teneur en éthanol.\nTu as perdu 20 minutes.`,
+  choix: [{ t: 'Choisir une autre technique', duree: 0, vers: 'choix_eth' }],
+});
+
 // ───────────── Caféine : CLHP, ou UV si la CLHP tombe en panne ─────────────
 add('hplc_m', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Préparer le dosage de la caféine',
@@ -711,12 +753,12 @@ const eqNiveau = f => {
 };
 export function bilan(e, finId = e.scene) {
   const f = e.f, niv = (n, a, b) => n <= a ? 'ok' : n <= b ? 'moyen' : 'ko';
-  const n1 = (f.errCoel ? 1 : 0) + (f.sansEI ? 1 : 0) + (f.extTente ? 1 : 0) + (f.extAccepte ? 2 : 0) + (f.errComp ? 1 : 0);
+  const n1 = (f.errCoel ? 1 : 0) + (f.sansEI ? 1 : 0) + (f.extTente ? 1 : 0) + (f.extAccepte ? 2 : 0) + (f.errComp ? 1 : 0) + (f.errMeth || 0);
   const c4 = f.panne === false || f.panne === undefined ? 'nd' : f.methCaf === 'ajouts' && !f.extTente ? 'ok' : f.attendu ? 'moyen' : f.extAccepte ? 'ko' : 'moyen';
   const att = f.attente || 0, nbErr = f.nbErr || 0;
   const c3 = (finId === 'fin_conforme' || finId === 'fin_detecte') ? (f.secuErr ? 'moyen' : 'ok') : finId === 'fin_mauvaise_cause' ? 'moyen' : finId === 'fin_temps' ? 'nd' : 'ko';
   return [
-    { comp: 'C.1.4', titre: 'Sélectionner les méthodes, techniques et matériels', niveau: niv(n1, 0, 1), texte: n1 === 0 ? 'Étalon interne adapté, méthodes cohérentes avec la matrice.' : `À revoir : ${[f.errCoel && 'étalon interne (propan-1-ol coélue avec l\'éthanol)', f.sansEI && 'nécessité d\'un étalon interne en CPG', f.extTente && 'étalonnage externe UV (effet de matrice)', f.extAccepte && 'résultat UV non vérifié avec un témoin', f.errComp && 'comparaison des deux méthodes CPG'].filter(Boolean).join(' ; ')}.` },
+    { comp: 'C.1.4', titre: 'Sélectionner les méthodes, techniques et matériels', niveau: niv(n1, 0, 1), texte: n1 === 0 ? 'Étalon interne adapté, méthodes cohérentes avec la matrice.' : `À revoir : ${[f.errCoel && 'étalon interne (propan-1-ol coélue avec l\'éthanol)', f.sansEI && 'nécessité d\'un étalon interne en CPG', f.extTente && 'étalonnage externe UV (effet de matrice)', f.extAccepte && 'résultat UV non vérifié avec un témoin', f.errComp && 'comparaison des deux méthodes CPG', f.errMeth && 'technique de dosage inadaptée essayée avant la bonne (titrage de la caféine, CLHP-UV ou masse volumique pour l\'éthanol)'].filter(Boolean).join(' ; ')}.` },
     { comp: 'C.2.1', titre: 'Préparer les produits et les calculs', niveau: f.repli ? 'moyen' : niv(nbErr + (f.errEs ? 1 : 0) + (f.aides || 0), 1, 4), texte: `${nbErr} réponse(s) de calcul fausse(s)${f.aides ? `, dont ${f.aides} refaite(s) avec l'aide d'un collègue` : ''}${f.errEth ? ' (titre de l\'éthanol à 96 %)' : ''}${f.repli ? ' ; formule de repli utilisée' : ''}.` },
     { comp: 'C.3.2', titre: 'Détecter les non-conformités', niveau: c3, texte: c3 === 'nd' ? 'Pas de conclusion rendue.' : f.secuErr && (finId === 'fin_conforme' || finId === 'fin_detecte') ? 'Décision cohérente avec le lot, mais le montage chauffant d\'éthanol a d\'abord été installé hors hotte : la sécurité fait partie de la détection des non-conformités.' : c3 === 'ok' ? 'Décision cohérente avec la réalité du lot.' : 'La décision ne correspond pas aux défauts réels du lot : relis tes résultats critère par critère.' },
     { comp: 'C.4', titre: 'Adapter son protocole face à un imprévu', niveau: c4, texte: c4 === 'nd' ? 'Pas de panne dans cette partie.' : c4 === 'ok' ? 'Panne de CLHP : bascule immédiate vers une méthode adaptée (ajouts dosés).' : c4 === 'moyen' ? 'Panne de CLHP : solution trouvée mais coûteuse ou après un détour.' : 'Résultat biaisé conservé sans vérification.' },
@@ -736,6 +778,7 @@ export function consequences(e) {
   if (f.bal) L.push({ quand: h('bal'), cause: 'Balance pour l\'extrait sec', effet: f.bal === 'std' ? (f.refaitBal ? 'balance au 0,01 g : résidu trop petit, écart trop grand entre les essais, essais à refaire (1 h perdue)' : 'balance au 0,01 g : le résidu d\'environ 0,1 g est connu à ±0,01 g, soit environ 1 point d\'extrait sec d\'incertitude') : 'balance de précision : écart de répétabilité compatible avec S_r' });
   if (f.phFinal != null) L.push({ quand: null, cause: 'pH final du gel', effet: `pH ${nf(f.phFinal, 2)} : rapport des contraintes ${nf(g.q, 2)} (exigence : au moins ${nf(SPEC.q, 2)})${f.reprisePh ? ', après reprise de la trolamine' : ''}` });
   if (f.methCaf) L.push({ quand: h('methCaf'), cause: 'Dosage de la caféine', effet: f.methCaf === 'ext' ? (f.extAccepte ? 'UV, étalonnage externe : effet de matrice, caféine surestimée d\'environ 40 %, résultat retenu sans vérification' : 'UV, étalonnage externe : surestimation détectée et corrigée par une autre méthode') : f.methCaf === 'ajouts' ? 'UV, ajouts dosés : l\'effet de matrice est compensé' : 'CLHP, étalon interne : volume injecté sans influence' });
+  if (f.errMeth) L.push({ quand: null, cause: 'Choix de techniques', effet: `${f.errMeth} technique(s) inadaptée(s) essayée(s) avant la bonne : de 15 à 25 minutes perdues à chaque fois` });
   if (f.compense) L.push({ quand: null, cause: 'Éthanol manquant', effet: 'compensation par ajout d\'éthanol à 96 % et dosage CPG refait' });
   if (f.secuErr) L.push({ quand: null, cause: 'Sécurité', effet: 'montage chauffant d\'éthanol installé hors hotte : déplacé par la responsable' });
   return L;
