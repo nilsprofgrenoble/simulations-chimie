@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { KIT, styleBouton, styleBoite } from "../commun";
 import { useSession, estProf } from "../serveur";
+import { JEUX_VISIBLES } from "./jeuxVisibles";
 
 // Les trois jeux « hors menu » : escape games TSTL et histoire à choix BTS.
 // Côté professeur : cartes avec lien direct. Côté élève : champ « code du jeu » (le code est donné par le professeur).
@@ -14,7 +15,8 @@ const JEUX = [
 
 const lien = j => `${window.location.origin}${import.meta.env.BASE_URL}?sim=${j.id}`;
 
-export function JeuxProf({ naviguer }) {
+export function JeuxProf(props) { return JEUX_VISIBLES ? <JeuxProfCartes {...props} /> : null; }
+function JeuxProfCartes({ naviguer }) {
   const [copie, setCopie] = useState(null);
   const copier = async j => {
     try { await navigator.clipboard.writeText(lien(j)); setCopie(j.id); setTimeout(() => setCopie(null), 2000); } catch { window.prompt('Copiez ce lien :', lien(j)); }
@@ -40,7 +42,8 @@ export function JeuxProf({ naviguer }) {
     </details>);
 }
 
-export function JeuxCode({ naviguer }) {
+export function JeuxCode(props) { return JEUX_VISIBLES ? <JeuxCodeChamp {...props} /> : null; }
+function JeuxCodeChamp({ naviguer }) {
   const [saisie, setSaisie] = useState(''), [rate, setRate] = useState(false);
   const valider = ev => {
     ev.preventDefault();

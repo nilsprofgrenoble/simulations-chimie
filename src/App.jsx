@@ -328,6 +328,8 @@ const MENUS_ENTETE = [
   { key: "COMP", label: "Travail par compétence" },
   { key: "JEUX", label: "🎮 Jeux" },
 ];
+// Interrupteur : tant que les jeux ne sont pas aboutis, personne ne les voit (ni menu, ni cartes professeur, ni saisie de code, ni lien direct).
+import { JEUX_VISIBLES } from "./simulations/jeuxVisibles";
 const JEUX_IDS = [79, 80, 81, 113];   // jeux : affichage immersif (sans en-tête ni pied de page)
 const FONDS_JEUX = {
   79: "radial-gradient(ellipse at 50% 0%, #1b2a5c 0%, #070d24 55%, #03060f 100%)",
@@ -338,7 +340,7 @@ const FONDS_JEUX = {
 const ORDRE_COMP = [38, 34, 35, 37, 36, 77];
 function construireMenus() {
   const fiche = s => ({ id: s.id, icon: s.icon, label: s.label, desc: DESCRIPTIONS[s.label] });
-  return MENUS_ENTETE.map(m => {
+  return MENUS_ENTETE.filter(m => JEUX_VISIBLES || m.key !== "JEUX").map(m => {
     if (m.key === "JEUX") return { ...m, groupes: [{ sims: [], contenu: ({ aller }) => <EnChargement><JeuxMenu aller={aller} /></EnChargement> }] };
     if (m.key === "COMP") {
       const sims = SIMULATIONS.filter(s => s.niveau === "COMP").sort((a, b) => ORDRE_COMP.indexOf(a.id) - ORDRE_COMP.indexOf(b.id)).map(fiche);
@@ -413,11 +415,11 @@ export default function App() {
     }
     // adresse propre : /sim/2-titrage-direct/ (le « ?sim=N » des anciennes adresses reste prioritaire et fonctionne toujours)
     const idChemin = params.get('sim') ? null : idDepuisChemin(window.location.pathname, BASE_SITE);
-    if (idChemin !== null && SIMULATIONS.find(s => s.id === idChemin)) return idChemin;
+    if (idChemin !== null && SIMULATIONS.find(s => s.id === idChemin) && (JEUX_VISIBLES || !JEUX_IDS.includes(idChemin))) return idChemin;
     const simParam = params.get('sim');
     if (simParam) {
       const id = parseInt(simParam);
-      if (SIMULATIONS.find(s => s.id === id)) return id;
+      if (SIMULATIONS.find(s => s.id === id) && (JEUX_VISIBLES || !JEUX_IDS.includes(id))) return id;
       const ancien = { 18: 'hydrogene', 19: 'production-1', 20: 'production-2', 21: 'production-3', 22: 'transport', 23: 'stockage', 24: '' };
       if (id in ancien) window.location.replace(ancien[id] ? `${ENERGY_URL}?atelier=${ancien[id]}` : ENERGY_URL);
     }
@@ -526,7 +528,7 @@ export default function App() {
       if (duDevoir) u.searchParams.set('devoir', '1'); else u.searchParams.delete('devoir');
       window.history.replaceState(null, '', u.toString());
     } catch { /* adresse non modifiable */ }
-    setActiveId(id);
+    setActiveId(!JEUX_VISIBLES && JEUX_IDS.includes(id) ? 0 : id);
   }
 
   const mission = activeId > 0 ? missionEnCours(activeId) : null;
