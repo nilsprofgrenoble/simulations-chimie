@@ -885,7 +885,7 @@ add('titr_carb_plan', {
     vers: 'titr_carb', duree: v => 10 + Math.round(1.5 * Math.floor(v.vfin / v.dv + 1e-9)) + ([0.1, 0.5].includes(v.c) ? 0 : 5), note: v => `Titrage du Carbopol : ${nf(v.m, 3)} g dans ${v.V0} mL d'eau, soude à ${nf(v.c, 2)} mol/L, pas de ${nf(v.dv, 2)} mL jusqu'à ${nf(v.vfin, 1)} mL.`,
     champs: [{ id: 'm', l: 'Masse de Carbopol', u: 'g', min: 0.02, max: 1.5 }, { id: 'V0', l: 'Volume d\'eau', u: 'mL', min: 50, max: 500 }, { id: 'c', l: 'Concentration de la soude', u: 'mol/L', min: 0.01, max: 1 }, { id: 'vfin', l: 'Volume final de soude versé', u: 'mL', min: 1, max: 25 }, { id: 'dv', l: 'Pas d\'addition', u: 'mL', min: 0.05, max: 2 }],
     controle: v => Math.floor(v.vfin / v.dv + 1e-9) > 60 ? 'Soixante points de mesure au plus : augmente le pas ou diminue le volume final.' : v.dv > v.vfin / 4 ? 'Il faut au moins quatre additions.' : null,
-    apercu: v => ({ cols: ['Grandeur', 'Valeur'], lignes: [['Concentration de la dispersion', `${nf(v.m / v.V0 * 100, 2)} g pour 100 mL`], ['Points de mesure', String(Math.floor(v.vfin / v.dv + 1e-9) + 1)], ['Prise de soude maximale', `${nf(v.c * v.vfin, 1)} mmol`]] }) },
+    apercu: v => ({ cols: ['Grandeur', 'Valeur'], lignes: [['Carbopol dans la dispersion', `${nf(v.m / v.V0 * 100, 2)} g pour 100 mL d'eau`], ['Mesures de pH', String(Math.floor(v.vfin / v.dv + 1e-9) + 1)], ['Soude versée au maximum', `${nf(v.c * v.vfin, 1)} mmol`]] }) },
 });
 add('titr_carb', {
   lieu: 'Salle de titrage', pnj: 'moi', titre: 'Titrage du Carbopol : ta courbe',
