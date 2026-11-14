@@ -76,7 +76,7 @@ const expert = {
     if (e.scene === 'cause') return ch.find(c => c.f.causeJuste);
     if (e.scene === 'avis') return ch[0];
     if (e.scene === 'fab_choix' || e.scene === 'fab_disp') return ch[0];
-    if (e.scene === 'rheoC') return ch[0];
+    if (e.scene === 'rheoC') return ch.find(c => c.id === 'a');
     if (e.scene === 'rheoF') return ch.find(c => !c.f.errRheo2);
     if (e.scene === 'verdict') { const D = J.defauts(e); return ch[D.length ? 1 + ['caf', 'eth', 'visco'].indexOf(D[0]) : 0]; }
     return ch[0];
@@ -263,7 +263,7 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
 // 16. Résultats déjà vus : relisibles à tout moment
 { let e = { ...J.etatInitial(8), scene: 'hub', t: 5 };
   e = J.choisir(e, J.choixDe(e).find(c => c.vers === 'rheoC')); assert(J.resultatsVus(e).includes('rheoC'), 'courbe de rhéologie mémorisée');
-  const r = J.choisir(e, J.choixDe(e)[0]); assert(r.scene === 'hub' && J.resultatsVus(r).includes('rheoC') && J.visuelsDe({ ...r, scene: 'rheoC' }).length, 'relisible après la conclusion');
+  const r = J.choisir(e, J.choixDe(e).find(c => c.id === 'a')); assert(r.scene === 'hub' && J.resultatsVus(r).includes('rheoC') && J.visuelsDe({ ...r, scene: 'rheoC' }).length, 'relisible après la conclusion');
   console.log('résultats relisibles : OK'); }
 // 17. Conseils graduels des collègues sur les stations de conception
 { for (const id of ['titr_carb_plan', 'uv_ajouts_plan', 'uv_ext_plan', 'hplc_gamme_plan', 'cpg_gamme_plan']) {
@@ -273,3 +273,13 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
     const v = sc.aide.valeurs(e), r = J.validerPlan(e, Object.fromEntries(Object.entries(v).map(([k, x]) => [k, String(x)]))); assert(r.ok, `les valeurs proposées par le collègue sont acceptées (${id}) : ${r.message}`);
   }
   console.log('conseils graduels : OK'); }
+// 18. Audit : aide de Lucas à la formule, attente CLHP comptée, verdict UV externe, rhéologie mélangée
+{ let e = { ...J.etatInitial(31), scene: 'formule', t: 100 };
+  for (let k = 0; k < 3; k++) e = J.demanderAide(e);
+  assert(J.niveauAide(e) === 3 && J.textesAide(e).length === 3, 'trois niveaux d\'aide à la formule');
+  const r = J.validerFormule(e, J.SCENES.formule.aide.valeurs()); assert(r.ok && r.etat.f.repli, 'formule de Lucas retenue');
+  const ordres = new Set([1, 2, 3, 4, 5, 6, 7, 8].map(g => J.choixDe({ ...J.etatInitial(g), scene: 'rheoC' }).map(c => c.id).join()));
+  assert(ordres.size > 1, 'options de rhéologie mélangées');
+  const pan = J.choixDe({ ...J.etatInitial(5), scene: 'hplc_panne' }); const att = pan && pan.find(c => c.t.startsWith('Attendre la réparation'));
+  if (att) { const n = J.choisir({ ...J.etatInitial(5), scene: 'hplc_panne', t: 100 }, att); assert(n.f.attente >= 120, 'attente CLHP comptée'); }
+  console.log('audit Mistral : OK'); }
