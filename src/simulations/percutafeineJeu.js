@@ -55,10 +55,10 @@ export const FINS = [
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
 export const QDISP = { continuer: 1.0, neutraliser: 0.85, chauffer: 0.95, grumeaux: 0.3 };
 export const M_COOH = 45.02, M_TEA = 149.19;
-export const coohLot = e => 0.56 + 0.12 * unif(e.f?.graine ?? 1, 'lotcooh');   // fraction massique de COOH du lot de Carbopol (monographie : 56 à 68 %)
+export const coohLot = e => 0.58 + 0.05 * unif(e.f?.graine ?? 1, 'lotcooh');   // fraction massique de COOH du lot de Carbopol (spécification Lubrizol : 58,0 à 63,0 %)
 export function phDe(e, m) {      // pH du gel après ajout cumulé de m g de trolamine (modèle simple, pour 1,5 g de Carbopol par 200 g)
   const carb = e.f.fm?.carb || 1.5;
-  return 3.0 + 3.6 * (1 - Math.exp(-m / (1.2 * carb / 1.5 * coohLot(e) / 0.62)));
+  return 3.0 + 3.6 * (1 - Math.exp(-m / (1.2 * carb / 1.5 * coohLot(e) / 0.605)));
 }
 export function gelVrai(e) {
   const fm = e.f.fm || { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 98.7 };
@@ -877,8 +877,8 @@ add('titr_carb_plan', {
   texte: () => `Le Carbopol est un polymère de l'acide acrylique réticulé : ses groupes acide carboxylique (–COOH, M = ${nf(M_COOH, 2)} g/mol pour le motif COOH ; teneur indicative sur la fiche technique) sont neutralisés par la trolamine pour former le gel. Connaître leur quantité dans ton lot permet de calculer la base à prévoir. Tu disperses une masse m de poudre dans un volume d'eau, et tu la titres à la soude, avec suivi du pH. À toi de concevoir ce titrage.`,
   hyp: "Hypothèses : tous les groupes COOH sont accessibles à la soude ; le milieu reste assez fluide pour que le pH-mètre se stabilise ; l'équivalence est repérée au maximum de la courbe dérivée dpH/dV.",
   aide: { pnj: 'lucas', textes: [
-    () => '« Commence par une estimation : combien de mmol de COOH dans ta prise d\'essai ? La fiche technique donne la teneur en COOH du Carbopol (56 à 68 %). Et combien de mL de soude cela demandera-t-il ? Il faut que ce volume tienne largement dans la burette. »',
-    () => '« n(COOH) ≈ m × 0,62 / 45 mol. Pour 0,1 g, ça fait environ 1,4 mmol, donc 14 mL de soude à 0,1 mol/L. Vise un volume final un peu au-dessus de l\'équivalence attendue, 20 % de plus environ. Reste en dessous de 0,5 g de poudre pour 100 mL d\'eau, sinon ça épaissit trop. Un pas de 1 mL suffit pour un premier titrage. »',
+    () => '« Commence par une estimation : combien de mmol de COOH dans ta prise d\'essai ? La fiche technique donne la teneur en COOH du Carbopol (58 à 63 %). Et combien de mL de soude cela demandera-t-il ? Il faut que ce volume tienne largement dans la burette. »',
+    () => '« n(COOH) ≈ m × 0,605 / 45 mol. Pour 0,1 g, ça fait environ 1,3 mmol, donc 13 mL de soude à 0,1 mol/L. Vise un volume final un peu au-dessus de l\'équivalence attendue, 20 % de plus environ. Reste en dessous de 0,5 g de poudre pour 100 mL d\'eau, sinon ça épaissit trop. Un pas de 1 mL suffit pour un premier titrage. »',
     () => '« Je ferais : 0,100 g de Carbopol dans 150 mL d\'eau, soude à 0,1 mol/L, pas de 1 mL jusqu\'à 18 mL. Je te laisse changer ce que tu veux. »'],
     valeurs: () => ({ m: 0.1, V0: 150, c: 0.1, vfin: 18, dv: 1 }) },
   plan: { infos: ['Balance au 0,1 mg ; soude disponible à 0,1 mol/L et 0,5 mol/L (une autre concentration demande une dilution de 5 min) ; burette de 25 mL graduée tous les 0,05 mL.', 'Le Carbopol se disperse lentement dans l\'eau et épaissit quand il se neutralise : une prise d\'essai trop concentrée rend la lecture du pH difficile. Compte 10 min de dispersion, puis 1,5 min par point de mesure ; 60 points au plus.'],

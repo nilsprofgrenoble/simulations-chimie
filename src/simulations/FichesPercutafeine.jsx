@@ -27,7 +27,7 @@ export default function FichesPercutafeine({ ids, ouvert = false }) {
           <>Dispersion : verser la poudre <b>en pluie</b> dans le liquide en agitation (vortex), sans former de grumeaux. La dispersion est lente : prévoir 30 min à 1 h. Une légère élévation de température aide à la dissoudre.</>,
           <>Épaississement : en milieu acide le polymère est enroulé et la dispersion est fluide. La <b>neutralisation par une base</b> (amine, soude…) déroule les chaînes : le gel se forme. La viscosité est maximale pour un pH d'environ <b>6 à 7</b>.</>,
           'Après neutralisation, éviter une agitation forte et prolongée (perte de viscosité) et la formation de bulles : utiliser une agitation lente.',
-          <>Teneur en groupes acide carboxylique (–COOH) : <b>de 56 à 68 % en masse</b> (spécification de la monographie des carbomères), la valeur exacte dépend du lot. Masse molaire du groupe –COOH : 45,02 g/mol.</>,
+          <>Spécification du fabricant (Lubrizol, édition du 27 octobre 2017) : <b>teneur en acide carboxylique de 58,0 à 63,0 %</b> (la valeur exacte dépend du lot ; masse molaire du groupe –COOH : 45,02 g/mol) ; perte à la dessiccation 7,0 % au plus ; pH d'une dispersion à 0,2 % compris entre 2,5 et 4,0 ; viscosité d'un mucilage à 0,2 %, neutralisé à pH 7,0 – 7,5 : de 1 500 à 50 000 cP.</>,
           'Exemples de formules du fabricant (gels hydroalcooliques) : de 0,5 % à 2,5 % de Carbopol 980 NF.',
         ]} />
       </Feuille>);
