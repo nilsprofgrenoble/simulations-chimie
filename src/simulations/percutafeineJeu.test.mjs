@@ -59,7 +59,7 @@ const valid = { caf: 10, carb: 1.5, coc: 8.0, eth96: 80, trol: 1.8, eau: 98.7 };
 const formuleDe = e => { const coc = Math.max(2, (J.esRetenu(e) - 6.65) * 2), f = { caf: 10, carb: 1.5, coc, eth96: 80, trol: 1.8, eau: 0 }; f.eau = 200 - (f.caf + f.carb + f.coc + f.eth96 + f.trol); return f; };
 const PLAN_EXPERT = { titr_carb_plan: { m: 0.1, V0: 150, c: 0.1, dv: 1, vdeb: 11, vfz: 16, dvf: 0.25, vfin: 18 }, uv_ajouts_plan: { m: 1, vp: 200, dv: 40, n: 6 }, uv_ext_plan: { vmin: 20, vmax: 300, n: 5, m: 1, vp: 200 }, hplc_gamme_plan: { vmin: 20, vmax: 200, n: 5 }, cpg_gamme_plan: { vmin: 100, vmax: 600, n: 5, rep: 2 } };
 const expert = {
-  formule: e => J.validerFormule(e, formuleDe(e)),
+  formule: e => { const r = J.validerFormule(e, formuleDe(e)); if (!r.ok && process.env.DBGF) console.log(JSON.stringify(r.lignes), Object.keys(e.fait).join()); return r; },
   ph: e => { let n = e; for (let i = 0; i < 12 && (J.phDe(n, n.f.trolAdd || 0) < 6.4); i++) n = J.ajouterBase(n, 0.3); const r = J.validerPh(n); assert(r.ok, 'pH validé'); return r.etat; },
   plan: e => PLAN_EXPERT[e.scene],
   calc: (e, k) => J.nf(k.vrai(e), k.cs ?? 2),   // réponse arrondie comme affichée : doit être acceptée
@@ -163,9 +163,20 @@ assert(nOk / 60 >= 0.75, 'la remédiation reste faisable dans les temps pour la 
 const expPhBas = { ...expert, ph: e => { let n = J.ajouterBase(e, 0.3); const r = J.validerPh(n); assert(r.ok); return r.etat; } };
 let nPh = 0, nPhOk = 0; for (let g = 1; g <= 60; g++) { const r = joue({ ...expPhBas, ph: e => e.scene === 'ph2' ? expert.ph(e) : expPhBas.ph(e) }, g * 977).e; if (r.f.reprisePh) { nPh++; assert(r.scene === 'fin_conforme' || r.scene === 'fin_temps', `pH repris (${r.scene})`); if (r.scene === 'fin_conforme') nPhOk++; } }
 assert(nPh > 50 && nPhOk / nPh >= 0.75, `pH bas repris avec Lucas (${nPh}/60, ${nPhOk} dans les temps)`);
-// la formule n'est jamais jugée : une formule pauvre en macrogol est acceptée telle quelle
-{ const e0 = J.etatInitial(3); const r = J.validerFormule(e0, { caf: 10, carb: 1.5, coc: 2, eth96: 80, trol: 1.8, eau: 104.7 }); assert(r.ok && r.lignes.length === 0, 'formule non jugée'); }
-{ const e0 = J.etatInitial(3); const r1 = J.validerFormule(e0, { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 190 }); assert(!r1.ok && r1.lignes.length === 1, 'somme signalée'); assert(J.validerFormule(r1.etat, { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 190 }).ok, 'puis acceptée'); }
+// la formule est relue par Mme Dubreuil : mesures manquantes signalées, masses incohérentes refusées avec explication, valeurs conservées
+{ const e0 = { ...J.etatInitial(3), scene: 'formule' }, ok = { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 98.7 };
+  const r0 = J.validerFormule(e0, ok); assert(!r0.ok && r0.etat.f.formuleMsg.some(m => /extrait sec/.test(m)) && r0.etat.f.formuleMsg.some(m => /éthanol/.test(m)) && r0.etat.f.fmBrouillon.coc === '8', 'formule sans extrait sec ni éthanol : refusée avec consignes, valeurs gardées');
+  const prets = { ...e0, fait: { es: true, esLu: true, esRes: true, eth: true }, f: { ...e0.f, es2: true } };
+  const bas = J.validerFormule(prets, { ...ok, coc: 1, caf: 30 }); assert(!bas.ok && bas.etat.f.formuleMsg.length >= 2 && bas.etat.f.formuleMsg.some(m => /caféine/.test(m)), 'masses fausses : refusées avec explications');
+  const r1 = J.validerFormule(prets, { ...ok, coc: Math.max(2 * (J.esRetenu(prets) - 6.65), 3) , eau: 0 }); assert(!r1.ok && r1.etat.f.formuleMsg.some(m => /total/.test(m)), 'somme signalée');
+  const bon = J.validerFormule(prets, { ...ok, coc: Math.round(2 * (J.esRetenu(prets) - 6.65) * 10) / 10, eau: 98.7 + 8 - Math.round(2 * (J.esRetenu(prets) - 6.65) * 10) / 10 }); assert(bon.ok && bon.etat.scene === 'formule_ok' && bon.etat.fait.formule, 'bonne formule : validée, écran de confirmation');
+  const aide = J.validerFormule({ ...prets, f: { ...prets.f, aidePlan: { formule: 3 } } }, J.FORMULE_REPLI); assert(aide.ok && aide.etat.f.repli, 'formule de départ donnée par un collègue');
+  assert(J.ficheFormule(bon.etat).lignes.length === 6, 'correction de la formule');
+  // suspendre / reprendre une analyse, solution complète d'un calcul
+  const c = { ...J.etatInitial(3), scene: 'es_calc3', t: 100, fait: { es: true, esLu: true } }; assert(J.peutSuspendre(c), 'suspension possible');
+  const s = J.suspendre(c); assert(s.scene === 'hub' && s.t === 100 && J.choixDe(s)[0].vers === 'es_calc3' && /Reprendre/.test(J.choixDe(s)[0].t), 'reprise proposée en premier'); assert(J.aller(s, 'es_calc3').f.suspendu === undefined, 'reprise effacée');
+  const sol = J.valider({ ...c, f: { ...c.f, es2: true } }, '', true); assert(sol.etat.f.calcs[0].solution && sol.etat.t === 105 && !sol.juste, 'solution complète demandée');
+  console.log('formule relue, suspension, solution : OK'); }
 // observation vidéo : notée dans le cahier, sans verdict
 { const e0 = J.etatInitial(3); const e1 = J.noterObs({ ...e0, scene: 'obs_video' }, ['blanc', 'cristaux']); assert(e1.fait.obs && e1.carnet.some(l => l.includes('cristaux')), 'observation notée'); }
 console.log('remédiations : OK');

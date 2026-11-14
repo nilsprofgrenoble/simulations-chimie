@@ -224,7 +224,7 @@ export function aller(e, id) {
   if (!SCENES[cible]) throw new Error(`Scène inconnue : ${cible}`);
   if (!SCENES[cible].fin && e.t >= T_FIN) cible = 'fin_temps';
   const mo = (SCENES[cible].fiches || []).filter(d => DOCS_MO.includes(d));
-  const n = { ...e, scene: cible, essais: 0, ...(mo.length ? { docs: [...new Set([...(e.docs || []), ...mo])] } : {}), ...(SCENES[cible].visuels && !SCENES[cible].fin ? { vus: [...new Set([...(e.vus || []), cible])] } : {}) };
+  const n = { ...e, scene: cible, essais: 0, ...(e.f.suspendu && e.f.suspendu === cible ? { f: { ...e.f, suspendu: undefined } } : {}), ...(mo.length ? { docs: [...new Set([...(e.docs || []), ...mo])] } : {}), ...(SCENES[cible].visuels && !SCENES[cible].fin ? { vus: [...new Set([...(e.vus || []), cible])] } : {}) };
   return SCENES[cible].entree ? SCENES[cible].entree(n) : n;
 }
 const DEBUTS_SURS = new Set(['avant', 'pour', 'comme', 'alors', 'dis', 'voilà', 'plus', 'au', 'un', 'une', 'le', 'la', 'les', 'tu', 'notre', 'bien', 'même', 'sur', 'quand', 'ton', 'ta', 'tes', 'avec', 'après', 'ce', 'cette', 'ça', 'mon', 'il', 'elle', 'on', 'je', 'nous', 'vous', 'si', 'donc', 'mais', 'et', 'ici', 'là', 'ah', 'oui', 'non', 'c', 'l', 'd', 'j', 't', 'n', 's', 'qu', 'comment', 'combien', 'quel', 'quelle', 'est', 'regarde', 'lis', 'pose', 'note', 'tiens', 'écoute', 'attention', 'ok']);
@@ -254,25 +254,38 @@ export function choisir(e, c) {
 // Au premier écran d'une tâche prise à la paillasse, rien n'est encore engagé : on peut changer d'avis.
 export const peutRevenir = e => !!e.retourHub && e.retourHub.scene === e.scene && e.retourHub.t === e.t && !SCENES[e.scene].entree && !SCENES[e.scene].fin;
 export const revenirHub = e => ({ ...e, scene: 'hub', retourHub: undefined, essais: 0 });
+// Quitter une analyse en cours pour y revenir plus tard : aucun coût, la tâche « Reprendre » apparaît à la paillasse
+const SANS_SUSPENSION = ['hub', 'intro', 'intro2', 'point_dubreuil', 'verdict', 'avis', 'relance', 'formule_ok'];
+export const peutSuspendre = e => !SANS_SUSPENSION.includes(e.scene) && !SCENES[e.scene].fin && !SCENES[e.scene].entree;
+export const suspendre = e => ({ ...e, scene: 'hub', retourHub: undefined, essais: 0, f: { ...e.f, suspendu: e.scene, suspenduFaits: Object.keys(e.fait).length } });
 // Journal des calculs de l'élève : saisies, valeur attendue, énoncé tel qu'il l'a vu (sert à la fiche de correction)
-const logCalc = (e, v, juste, vrai) => { const calcs = [...(e.f.calcs || [])]; let i = calcs.findIndex(c => c.id === e.scene);
+const logCalc = (e, v, juste, vrai, solution = false) => { const calcs = [...(e.f.calcs || [])]; let i = calcs.findIndex(c => c.id === e.scene);
   if (i < 0) { calcs.push({ id: e.scene, donnees: texteDe(e), saisies: [] }); i = calcs.length - 1; }
-  calcs[i] = { ...calcs[i], saisies: [...calcs[i].saisies, Number.isFinite(v) ? v : null], vrai, juste: juste ? true : calcs[i].juste === true ? true : false, lot: e.f.lot || 1 };
+  calcs[i] = { ...calcs[i], saisies: v == null && solution ? calcs[i].saisies : [...calcs[i].saisies, Number.isFinite(v) ? v : null], vrai, juste: juste ? true : calcs[i].juste === true ? true : false, solution: calcs[i].solution || solution, lot: e.f.lot || 1 };
   return { ...e, f: { ...e.f, calcs } }; };
-export function valider(e, saisie) {
+export function valider(e, saisie, abandon = false) {
   const sc = SCENES[e.scene], k = sc.calcul;
   const v = parseFloat(String(saisie).replace(',', '.').replace(/\s/g, ''));
   const vrai = k.vrai(e), tol = k.tolAbs ?? Math.abs(vrai) * k.tol;
   if (Number.isFinite(v) && Math.abs(v - vrai) <= tol) return { etat: choisir(logCalc(e, v, true, vrai), k.ok), juste: true, message: '' };
-  const e2 = logCalc({ ...e, f: { ...e.f, nbErr: e.f.nbErr + 1 } }, v, false, vrai), essais = e.essais + 1;
+  const e2 = logCalc({ ...e, f: { ...e.f, nbErr: e.f.nbErr + 1 } }, abandon ? null : v, false, vrai, abandon), essais = abandon ? 2 : e.essais + 1;
   if (essais >= 2) {
     const st = choisir({ ...e2, t: e2.t + 5 }, k.ko);
     return { etat: { ...st, f: { ...st.f, corrige: `${sc.pnj === 'moi' ? 'Lucas' : PNJ[sc.pnj].nom} passe, refait le calcul avec toi et trouve ${nf(vrai, k.cs ?? 2)} ${k.unite}.`, aides: (st.f.aides || 0) + 1 } }, juste: false, message: '' };
   }
   return { etat: { ...e2, t: e2.t + 5, essais }, juste: false, message: (k.retour && Number.isFinite(v) && k.retour(v, e)) || k.indice };
 }
-export const ficheCorrection = e => (e.f.calcs || []).map(c => { const sc = SCENES[c.id], k = sc.calcul; return { id: c.id, titre: sc.titre, q: k.q, donnees: c.donnees, saisies: c.saisies, juste: c.juste, attendu: `${nf(c.vrai, k.cs ?? 2)} ${k.unite}`.trim(),
+export const ficheCorrection = e => (e.f.calcs || []).map(c => { const sc = SCENES[c.id], k = sc.calcul; return { id: c.id, titre: sc.titre, q: k.q, donnees: c.donnees, saisies: c.saisies, juste: c.juste, solution: !!c.solution, attendu: `${nf(c.vrai, k.cs ?? 2)} ${k.unite}`.trim(),
   demarche: [k.indice, ...(sc.aide ? sc.aide.textes.slice(1).map(f => f(e).replace(/^« | »$/g, '')) : [])] }; });
+// Correction de la formule : ta formule, la référence, et le raisonnement qui y conduit
+export const ficheFormule = e => { const h = e.f.formuleHist || []; if (!h.length || !e.f.fm) return null; const f = e.f.fm, r = REF_FORMULE;
+  return { tentatives: h.length, refus: e.f.fRefus || 0, aide: !!e.f.repli, lignes: [
+    ['Caféine', f.caf, r.caf, `5 % (notice) × ${M_LOT} g = ${nf(r.caf, 0)} g`],
+    ['Synthalen K', f.carb, r.carb, `La fiche donne 0,1 à 1,5 % ; une valeur moyenne vers ${nf(COM.carb, 2)} % donne un gel à la bonne viscosité : ${nf(r.carb, 1)} g`],
+    ['Cocoate de macrogol', f.coc, r.coc, `Extrait sec − caféine − Synthalen K − trolamine ≈ ${nf(COM.coc, 0)} % : ${nf(r.coc, 0)} g`],
+    ['Éthanol à 96 %', f.eth96, r.eth96, `${nf(ETH_PUR_COM, 1)} % d'éthanol pur (notice) ÷ 0,96 = ${nf(COM.eth96, 0)} % d'éthanol à 96 % : ${nf(r.eth96, 0)} g`],
+    ['Trolamine (estimation)', f.trol, r.trol, `Fiche : 1,5 g par g de polymère pour pH 7 (soit ${nf(1.5 * r.carb, 1)} g ici) ; ajustée au pH-mètre`],
+    ['Eau purifiée', f.eau, M_LOT - r.caf - r.carb - r.coc - r.eth96 - r.trol, `Complément pour atteindre ${M_LOT} g`]] }; };
 export const cer = (cause, effet, remede) => `Cause : ${cause} Effet : ${effet} Remède : ${remede}`;
 
 // ───────────── La paillasse (hub) ─────────────
@@ -285,6 +298,7 @@ const defautVu = e => { const F = e.fait, m = mesures(e); return !!((F.rheoF && 
 const taches = e => {
   const F = e.fait, L = [];
   const enCours = Object.values(e.bg || {}).some(x => x != null && x > e.t);
+  if (e.f.suspendu && SCENES[e.f.suspendu] && e.f.suspenduFaits === Object.keys(F).length) L.push([`Reprendre : ${SCENES[e.f.suspendu].titre}`, 'Tu avais laissé cette étape en cours : tu la reprends là où tu t\'étais arrêté(e).', e.f.suspendu]);
   L.push(['Relire les documents du dossier', 'Notice ANSM et fiches techniques (Synthalen K, trolamine, cocoate de macrogol).', 'docs']);
   if (!F.obs) L.push(['Noter mes observations sur le gel étalé', 'Ce que tu as vu dans la vidéo d\'Inès à ton arrivée ; tu peux la revoir si besoin (5 min).', 'obs_video']);
   if (!F.es) L.push(['Lancer l\'extrait sec du gel commercial', 'Peser, étaler, mettre à l\'étuve : 15 min de travail, puis l\'étuve tourne seule.', e.f.bal ? 'es_prep' : 'es_balance']);
@@ -505,24 +519,52 @@ add('es_calc3', {
 // ───────────── Formulation ─────────────
 export const CHAMPS_FORMULE = [['caf', 'Caféine'], ['carb', 'Synthalen K'], ['coc', 'Cocoate de macrogol'], ['eth96', 'Éthanol à 96 %'], ['trol', 'Trolamine (estimation)'], ['eau', 'Eau purifiée']];
 export const FORMULE_REPLI = { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 98.7 };
-export function controlesFormule(e, fm) {
-  const v = Object.fromEntries(Object.entries(fm).map(([k, x]) => [k, parseFloat(String(x).replace(',', '.')) || 0]));
-  const tot = Object.values(v).reduce((s, x) => s + x, 0);
-  return Math.abs(tot - M_LOT) <= 8 ? [] : [{ ok: false, t: `Lucas : « Ça fait ${nf(tot, 1)} g au total, tu voulais bien environ ${M_LOT} g ? Tu peux garder ta formule telle quelle ou la reprendre. »` }];
+// Valeurs de référence pour 200 g (gel commercial : caféine 5 %, Synthalen K 0,75 %, cocoate 4 %, éthanol à 96 % pour 40 %, trolamine 0,9 %)
+export const REF_FORMULE = { caf: COM.caf * M_LOT / 100, carb: COM.carb * M_LOT / 100, coc: COM.coc * M_LOT / 100, eth96: COM.eth96 * M_LOT / 100, trol: COM.trol * M_LOT / 100 };
+const gNum = x => parseFloat(String(x).replace(',', '.')) || 0;
+// Mme Dubreuil relit la formule : d'abord ce qui manque (mesures non faites), puis chaque masse par rapport à ce que les mesures et les fiches permettent d'établir
+export function relectureFormule(e, fm) {
+  const v = Object.fromEntries(Object.keys(FORMULE_REPLI).map(k => [k, gNum(fm[k])])), F = e.fait, manques = [], ecarts = [], tot = Object.values(v).reduce((s, x) => s + x, 0);
+  if (!F.es) manques.push('Tu n\'as pas encore lancé l\'extrait sec du gel commercial : sans lui tu ne peux pas connaître la part de cocoate de macrogol. Va le faire d\'abord.');
+  else if (!F.esLu) manques.push('L\'extrait sec est lancé, mais tu ne l\'as pas encore lu et calculé : il te faut ce résultat pour le cocoate de macrogol.');
+  else if (!F.esRes) manques.push('Tu as l\'extrait sec, mais tu n\'as pas encore estimé la teneur en cocoate de macrogol : fais le calcul avec les fiches techniques.');
+  if (!F.eth) manques.push('Tu n\'as pas encore raisonné sur l\'éthanol de la notice : quelle masse d\'éthanol à 96 % faut-il peser pour 200 g de gel ?');
+  if (manques.length) return { manques, ecarts: Math.abs(tot - M_LOT) > 6 ? [{ k: 'tot', t: `Le total fait ${nf(tot, 1)} g alors que tu fabriques ${M_LOT} g : complète ou corrige avec l'eau purifiée.` }] : [], v, tot };   // tant que des mesures manquent, on ne juge pas les masses
+  const r = REF_FORMULE;
+  if (Math.abs(tot - M_LOT) > 6) ecarts.push({ k: 'tot', t: `Le total fait ${nf(tot, 1)} g alors que tu fabriques ${M_LOT} g : complète ou corrige avec l'eau purifiée.` });
+  if (v.caf < 9 || v.caf > 11) ecarts.push({ k: 'caf', t: `La notice indique 5 % de caféine : pour ${M_LOT} g de gel, cela fait environ ${nf(r.caf, 0)} g, et tu en as mis ${nf(v.caf, 1)} g.` });
+  if (v.eth96 < 74 || v.eth96 > 86) ecarts.push({ k: 'eth96', t: `L'éthanol pur représente environ ${nf(ETH_PUR_COM, 1)} % du gel (notice). Ton éthanol de paillasse est à 96 % : pour ${M_LOT} g il en faut environ ${nf(r.eth96, 0)} g, et tu en as mis ${nf(v.eth96, 1)} g.` });
+  if (F.esRes) { const cocES = Math.max(0, 2 * (esRetenu(e) - 5 - 0.75 - 0.9)), prochesES = Math.abs(v.coc - cocES) <= 2.4, prochesRef = v.coc >= 5.8 && v.coc <= 10.2;   // cohérent avec SON extrait sec, ou avec la valeur du gel
+    if (!prochesES && !prochesRef) ecarts.push({ k: 'coc', t: `Avec ton extrait sec (ES = ${nf(esRetenu(e), 2)} %), il reste, une fois retirés la caféine (5 %), le Synthalen K et la trolamine, environ ${nf(cocES / 2, 1)} % de cocoate de macrogol, soit à peu près ${nf(cocES, 1)} g pour ${M_LOT} g ; tu en as mis ${nf(v.coc, 1)} g.` }); }
+  if (v.carb < 0.8 || v.carb > 2.4) ecarts.push({ k: 'carb', t: `Le Synthalen K ne se déduit pas d'une mesure directe : la fiche donne 0,1 à 1,5 % d'emploi. Une valeur moyenne, vers ${nf(COM.carb, 2)} % (environ ${nf(r.carb, 1)} g pour ${M_LOT} g), donne un gel à la bonne viscosité ; ${nf(v.carb, 2)} g ${v.carb < 0.8 ? 'donnerait un gel trop fluide' : 'donnerait un gel trop épais et inutilement cher'}.` });
+  if (v.carb > 0 && (v.trol / v.carb < 0.8 || v.trol / v.carb > 1.9)) ecarts.push({ k: 'trol', t: `D'après la fiche du Synthalen K, il faut environ 1,5 g de trolamine par gramme de polymère pour atteindre pH 7. Pour ${nf(v.carb, 2)} g de Synthalen K, cela fait de l'ordre de ${nf(1.5 * v.carb, 1)} g ; tu en as prévu ${nf(v.trol, 1)} g (c'est une estimation, ajustée ensuite au pH-mètre).` });
+  return { manques, ecarts, v, tot };
 }
-// Aucun verdict sur le contenu : la formule part telle quelle dans le gel, et c'est le contrôle qualité qui dira ce qu'elle vaut.
+export function controlesFormule(e, fm) { const r = relectureFormule(e, fm); return [...r.manques, ...r.ecarts.map(x => x.t)].map(t => ({ ok: false, t })); }
+// Mme Dubreuil ne laisse partir en fabrication qu'une formule cohérente avec les mesures et les fiches, à quelques incertitudes près.
 export function validerFormule(e, fm, repli = false) {
-  const val = repli ? FORMULE_REPLI : Object.fromEntries(Object.entries(fm).map(([k, x]) => [k, parseFloat(String(x).replace(',', '.')) || 0]));
-  const lignes = repli ? [] : controlesFormule(e, val);
+  const val = repli ? FORMULE_REPLI : Object.fromEntries(Object.entries(fm).map(([k, x]) => [k, gNum(x)]));
   const rp = repli || (niveauAide(e) === 3 && Object.keys(FORMULE_REPLI).every(k => val[k] === FORMULE_REPLI[k]));
-  const n = { ...e, t: e.t + 2, f: { ...e.f, fTent: (e.f.fTent || 0) + 1 } };
-  if (lignes.length && !e.f.fAvert) return { ok: false, lignes, etat: { ...n, f: { ...n.f, fAvert: true } } };
-  return { ok: true, lignes: [], etat: choisir({ ...n, f: { ...n.f, fm: val, repli: rp || undefined } }, { vers: 'hub', run: x => marquer(x, 'formule'), note: rp ? 'Formule proposée par Lucas utilisée.' : `Formule retenue (éthanol à 96 % : ${nf(val.eth96, 1)} g, cocoate : ${nf(val.coc, 1)} g, Synthalen K : ${nf(val.carb, 2)} g).` }) };
+  const rel = rp ? { manques: [], ecarts: [], tot: M_LOT } : relectureFormule(e, val);
+  const n = { ...e, t: e.t + 2, f: { ...e.f, fTent: (e.f.fTent || 0) + 1, fmBrouillon: Object.fromEntries(Object.keys(FORMULE_REPLI).map(k => [k, String(fm?.[k] ?? val[k] ?? '')])) } };
+  const hist = [...(n.f.formuleHist || []), { fm: val, manques: rel.manques.length, ecarts: rel.ecarts.map(x => x.k) }];
+  if (rel.manques.length || rel.ecarts.length) {
+    const msg = [...rel.manques, ...rel.ecarts.map(x => x.t)];
+    return { ok: false, lignes: msg.map(t => ({ ok: false, t })), etat: { ...n, f: { ...n.f, formuleHist: hist, formuleMsg: msg, formuleOk: undefined, fRefus: (n.f.fRefus || 0) + 1 } } };
+  }
+  const nbEcarts = rp ? 0 : Math.abs(val.caf - REF_FORMULE.caf) > 0.5 || Math.abs(val.eth96 - REF_FORMULE.eth96) > 3 || Math.abs(val.coc - REF_FORMULE.coc) > 1 ? 1 : 0;
+  const msgOk = rp ? ['La formule de départ est validée avec l\'aide d\'un collègue.'] : [nbEcarts ? 'Tes masses sont proches de ce que les mesures et les fiches permettent d\'établir, avec les incertitudes habituelles.' : 'Tes masses sont cohérentes avec tes mesures et les fiches.'];
+  return { ok: true, lignes: [], etat: choisir({ ...n, f: { ...n.f, fm: val, repli: rp || undefined, formuleHist: hist, formuleMsg: undefined, formuleOk: msgOk } }, { vers: 'formule_ok', run: x => marquer(x, 'formule'), note: rp ? 'Formule proposée par Lucas utilisée.' : `Formule validée par Mme Dubreuil (éthanol à 96 % : ${nf(val.eth96, 1)} g, cocoate : ${nf(val.coc, 1)} g, Synthalen K : ${nf(val.carb, 2)} g).` }) };
 }
+add('formule_ok', {
+  lieu: 'Bureau', pnj: 'dubreuil', titre: 'Formule validée',
+  texte: e => `Mme Dubreuil relit ta formule : « ${(e.f.formuleOk || ['C\'est validé.']).join(' ')} Tu peux passer à la paillasse de formulation et lancer la fabrication des ${M_LOT} g. Le reste dépendra de la qualité de ta fabrication et du contrôle. »`,
+  choix: [{ t: 'Retourner à la paillasse', vers: 'hub', duree: 0 }],
+});
 add('formule', {
   fiches: ['notice', 'synthalen', 'cocoate', 'trolamine'],
-  lieu: 'Bureau', pnj: 'lucas', station: 'formule', titre: 'La formule du contretype',
-  texte: e => `« Écris les masses pour environ ${M_LOT} g. Je ne juge pas ta formule : elle part telle quelle dans le gel, et c'est le contrôle qualité qui dira si elle tient. » Rappels : ${e.fait.esLu ? `ES mesuré ${nf(esRetenu(e), 2)} %, ` : ''}éthanol à 96 % pour ${nf(ETH_PUR_COM, 1)} % d'éthanol pur.`,
+  lieu: 'Bureau', pnj: 'dubreuil', station: 'formule', titre: 'La formule du contretype',
+  texte: e => `« Écris les masses pour environ ${M_LOT} g. Je relirai ta formule avant que tu ne fabriques : elle doit être cohérente avec tes mesures et les fiches, à quelques incertitudes près. » Rappels : ${e.fait.esLu ? `ES mesuré ${nf(esRetenu(e), 2)} %, ` : ''}éthanol à 96 % pour ${nf(ETH_PUR_COM, 1)} % d'éthanol pur.`,
   aide: { pnj: 'lucas', textes: [
     () => '« Pars de tes résultats, pas de la notice seule : pour 200 g de gel, la masse d\'un composant est son pourcentage mesuré multiplié par 2. Occupe-toi d\'abord de la caféine et de l\'éthanol, puis du Synthalen K et du cocoate. »',
     () => '« L\'éthanol de la paillasse est à 96 % : pour une teneur en éthanol pur donnée, il faut peser un peu plus d\'éthanol à 96 %. Ton extrait sec compte la caféine, le Synthalen K, le cocoate et la trolamine ensemble. Complète avec l\'eau pour atteindre 200 g au total. »',
@@ -1271,7 +1313,7 @@ add('relance', {
   choix: [
     { t: 'Refaire un lot : je reprends la formule et la fabrication', d: 'Les dosages au point sont relancés plus vite, sans refaire les calculs.', duree: 5, vers: 'hub',
       run: n => ({ ...n, fait: { ...n.fait, formule: false, fab: false, ph: false, rheoF: false, caf: false, ethQC: false }, bg: { ...n.bg, gel: undefined },
-        f: { ...n.f, lot: (n.f.lot || 1) + 1, rapideCaf: !!(n.fait.caf || n.f.rapideCaf), rapideEth: !!(n.fait.ethQC || n.f.rapideEth), trolAdd: undefined, phMes: undefined, phFinal: undefined, disp: undefined, mode: undefined, perteEth: undefined, ethAjout: undefined, compense: undefined, reprisePh: undefined, errBase: undefined, decl: undefined } }), note: 'Défaut constaté : décision de refaire un lot (formule, fabrication, contrôles).' },
+        f: { ...n.f, lot: (n.f.lot || 1) + 1, rapideCaf: !!(n.fait.caf || n.f.rapideCaf), rapideEth: !!(n.fait.ethQC || n.f.rapideEth), formuleMsg: undefined, fmBrouillon: n.f.fm ? Object.fromEntries(Object.entries(n.f.fm).map(([k, x]) => [k, String(x)])) : undefined, suspendu: undefined, trolAdd: undefined, phMes: undefined, phFinal: undefined, disp: undefined, mode: undefined, perteEth: undefined, ethAjout: undefined, compense: undefined, reprisePh: undefined, errBase: undefined, decl: undefined } }), note: 'Défaut constaté : décision de refaire un lot (formule, fabrication, contrôles).' },
     { t: 'Non : je conclus avec ce lot', duree: 0, vers: 'hub', run: n => ({ ...n, f: { ...n.f, relanceRefusee: n.f.lot || 1 } }), note: 'Pas de nouveau lot : je conclus avec le premier.' },
   ],
 });

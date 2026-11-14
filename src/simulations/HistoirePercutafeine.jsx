@@ -8,7 +8,7 @@ import { useEtatPersistant, Formule } from "../commun";
 import { Avatar as AvatarVisuel, STYLE_VISUELS } from './LaboVisuels';
 import {
   CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_FIN, T_MIDI, T_PAUSE, NB_AVATARS, avatarDe, pn, CHAMPS_FORMULE, FORMULE_REPLI, etatInitial, texteDe, choixDe, visuelsDe, choisir, valider, estFin, peutRevenir, revenirHub,
-  horloge, duree, nf, statutBg, resume, bilan, validerFormule, cliquerPiece, ajouterBase, ajouterPrevu, validerPh, observationsDe, resultatsVus, demanderAide, niveauAide, textesAide, noterObs, pointsRheo, ajusteRheo, MODELES_RHEO, validerRheo, ficheCorrection, cpgModele, CPG_LIM, cpgSimFin, chronologie, consequences, fiche, validerPlan, nombre, donneesTitr, GRANDEUR_TITR, phReel, docsDe,
+  horloge, duree, nf, statutBg, resume, bilan, validerFormule, cliquerPiece, ajouterBase, ajouterPrevu, validerPh, observationsDe, resultatsVus, demanderAide, niveauAide, textesAide, noterObs, pointsRheo, ajusteRheo, MODELES_RHEO, validerRheo, ficheCorrection, ficheFormule, peutSuspendre, suspendre, cpgModele, CPG_LIM, cpgSimFin, chronologie, consequences, fiche, validerPlan, nombre, donneesTitr, GRANDEUR_TITR, phReel, docsDe,
 } from "./percutafeineJeu";
 
 // ====================================================
@@ -196,6 +196,7 @@ function Calcul({ e, sc, onEtat }) {
         <span style={{ color: C.doux }}>{sc.calcul.unite}</span>
         <button type="submit" className="pc-btn" disabled={!saisie.trim()}>Vérifier</button>
       </div>
+      <button type="button" data-solution onClick={() => onEtat(valider(e, '', true).etat)} style={{ marginTop: 10, background: 'none', border: 'none', color: C.accent, font: 'inherit', fontSize: 14.5, cursor: 'pointer', padding: '4px 0', textDecoration: 'underline' }}>Je ne sais pas : demander la solution complète à un collègue (5 min)</button>
       {message && <div role="alert" style={{ marginTop: 10, color: C.ambre, fontSize: 14.5, lineHeight: 1.5 }}>Pas tout à fait. {message}<br /><span style={{ color: C.doux }}>(Chaque essai te coûte 5 minutes. Au deuxième, un collègue refait le calcul avec toi et on avance.)</span></div>}
     </form>);
 }
@@ -204,10 +205,10 @@ function StationFormule({ e, onEtat }) {
   // Pré-remplissage d'après la fiche de formulation de l'élève : pour 200 g de gel, la masse en g est le pourcentage × 2
   const DE_FICHE = { caf: 'caf', carb: 'carb', coc: 'coc', eth96: 'eth', trol: 'trol', eau: 'eau' };
   const gDeFiche = k => { const v = lireTeneur((e.fichePct || {})[DE_FICHE[k]]); return v === null ? '' : String(Math.round(v * 2 * 100) / 100).replace('.', ','); };
-  const [fm, setFm] = useState(() => Object.fromEntries(CHAMPS_FORMULE.map(([k]) => [k, gDeFiche(k)])));
+  const [fm, setFm] = useState(() => e.f.fmBrouillon ? { ...e.f.fmBrouillon } : Object.fromEntries(CHAMPS_FORMULE.map(([k]) => [k, gDeFiche(k)])));
   const prerempli = CHAMPS_FORMULE.some(([k]) => gDeFiche(k) !== '');
-  const [lignes, setLignes] = useState([]);
-  const verifier = ev => { ev.preventDefault(); const r = validerFormule(e, fm); setLignes(r.lignes); onEtat(r.etat); };
+  const lignes = (e.f.formuleMsg || []).map(t => ({ t }));
+  const verifier = ev => { ev.preventDefault(); const r = validerFormule(e, fm); onEtat(r.etat); };
   const sc = SCENES[e.scene], aide = niveauAide(e), conseils = textesAide(e), pnjAide = PNJ[sc.aide.pnj];
   const demander = () => { const n = demanderAide(e); if (niveauAide(n) === 3) setFm(Object.fromEntries(CHAMPS_FORMULE.map(([k]) => [k, String(sc.aide.valeurs()[k]).replace('.', ',')]))); onEtat(n); };
   const tot = CHAMPS_FORMULE.reduce((s, [k]) => s + (parseFloat(String(fm[k]).replace(',', '.')) || 0), 0);
@@ -225,7 +226,7 @@ function StationFormule({ e, onEtat }) {
       </div>
       <div style={{ margin: '10px 0', fontSize: 14.5, color: C.doux }}>Total : <b style={{ color: C.encre, fontSize: 17 }}>{nf(tot, 1)} g</b></div>
       <button type="submit" className="pc-btn" disabled={tot <= 0}>Valider ma formule</button>
-      {lignes.length > 0 && <div data-controles role="status" style={{ marginTop: 10, fontSize: 14.5, lineHeight: 1.5, color: C.ambre }}>{lignes.map((l, i) => <div key={i}>{l.t}</div>)}</div>}
+      {lignes.length > 0 && <div data-controles role="status" style={{ marginTop: 12, display: 'flex', gap: 10, alignItems: 'flex-start' }}><Avatar pnj="dubreuil" e={e} taille={36} /><div style={{ flex: 1, background: '#fff', border: `1.5px solid ${C.ambre}`, borderRadius: 12, padding: '10px 14px', fontSize: 15, lineHeight: 1.55 }}><b>Mme Dubreuil relit ta formule : ce n'est pas encore bon.</b><ul style={{ margin: '6px 0 4px', paddingLeft: 20 }}>{lignes.map((l, i) => <li key={i}>{l.t}</li>)}</ul><span style={{ color: C.doux }}>Tes valeurs sont conservées : corrige ce qui est signalé et valide à nouveau. Si tu bloques, demande conseil à Lucas ci-dessus.</span></div></div>}
     </form>);
 }
 
@@ -398,7 +399,8 @@ const POSTES = [
   { id: 'conduc', nom: 'Conductimètre', vers: ['leurre_conduc'] },
   { id: 'chroma', nom: 'Chromatographie, UV', vers: ['choix_caf', 'choix_eth', 'rapide_caf', 'rapide_eth', 'hplc_m', 'hplc_ei', 'hplc_gamme_plan', 'cpg_m', 'cpg_ei', 'cpg_sim', 'cpg_inj', 'uv_ajouts_plan', 'uv_ext_plan'] },
 ];
-const posteDe = vers => (POSTES.find(p => p.vers.includes(vers)) || POSTES[1]).id;
+const PREFIXES = [[/^(hplc|cpg|uv|caf|eth_|choix_)/, 'chroma'], [/^titr/, 'titrage'], [/^es_/, 'etuve'], [/^rheo/, 'rheo'], [/^(fab|eq_base|ph)/, 'formulation']];
+const posteDe = vers => (POSTES.find(p => p.vers.includes(vers)) || { id: (PREFIXES.find(([re]) => re.test(vers)) || [0, 'bureau'])[1] }).id;
 function Dessin({ id, actif, termine }) {
   const T = '#334155', L = '#cbd5e1', O = '#f59e0b';
   const cadre = { width: 92, height: 68, display: 'block' };
@@ -438,12 +440,15 @@ function Dessin({ id, actif, termine }) {
 }
 function Paillasse({ e, s, choix, onChoix }) {
   const parPoste = Object.fromEntries(POSTES.map(p => [p.id, []]));
-  const conseil = choix.find(c => c.vers === 'conseil'), pause = choix.find(c => c.pause);
-  choix.forEach((c, i) => { if (c.vers !== 'conseil' && !c.pause) parPoste[posteDe(c.vers)].push({ c, i }); });
+  const conseil = choix.find(c => c.vers === 'conseil'), pause = choix.find(c => c.pause), reprise = e.f.suspendu ? choix.find(c => c.vers === e.f.suspendu && /^Reprendre/.test(c.t)) : null;
+  choix.forEach((c, i) => { if (c.vers !== 'conseil' && !c.pause && c !== reprise) parPoste[posteDe(c.vers)].push({ c, i }); });
   const [sel, setSel] = useState(null);
   const actuel = sel;   // aucun poste n'est présélectionné : c'est à l'élève de choisir où aller
   const etuveActive = !!s.es && e.bg.es > e.t, etuveFinie = !!s.es && !etuveActive, gelActif = !!s.gel && e.bg.gel > e.t;
+  const derniere = e.carnet && e.carnet.length ? e.carnet[e.carnet.length - 1] : null;
   return (<div data-paillasse>
+    {derniere && <div data-derniere role="status" style={{ fontSize: 14, color: C.doux, background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 10, padding: '7px 12px', marginBottom: 10 }}>📓 Dernière note : {derniere}</div>}
+    {reprise && <button type="button" data-reprise onClick={() => onChoix(reprise)} className="pc-btn" style={{ display: 'block', width: '100%', textAlign: 'left', marginBottom: 10 }}>▶ {reprise.t}</button>}
     {conseil && <button type="button" data-conseil onClick={() => onChoix(conseil)} style={{ font: 'inherit', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 10, borderRadius: 14, border: `1.5px solid ${C.accent}`, background: '#fff', color: C.accent, cursor: 'pointer' }}><span aria-hidden="true" style={{ fontSize: 22 }}>💬</span><span><b>Perdu·e, ou un doute ?</b> Demander conseil à un collègue ou à Mme Dubreuil</span></button>}
     {pause && <button type="button" data-pause onClick={() => onChoix(pause)} style={{ font: 'inherit', fontSize: 15, display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 10, borderRadius: 14, border: `1.5px solid ${C.bord}`, background: '#fff', color: C.encre, cursor: 'pointer' }}><span aria-hidden="true" style={{ fontSize: 22 }}>☕</span><span><b>Prendre une pause de 10 minutes</b><span style={{ display: 'block', fontSize: 13.5, color: C.doux }}>Les appareils continuent de tourner pendant ce temps.</span></span></button>}
     <div style={{ background: 'linear-gradient(180deg,#e9eef3 0%,#dde5ec 100%)', borderRadius: 16, padding: '12px 8px 0', border: `1px solid ${C.bord}` }}>
@@ -469,10 +474,13 @@ function FicheCorrection({ e }) {
   return (<section data-impression data-fiche-correction>
     <h4 style={{ margin: '20px 0 8px', fontSize: 17 }}>Fiche de correction{nom ? ` · ${nom}` : ''}</h4>
     <button type="button" className="pc-btn pc-noprint" data-imprimer onClick={() => window.print()} style={{ marginBottom: 12 }}>🖨️ Imprimer la fiche (ou l'enregistrer en PDF)</button>
+    {ficheFormule(e) && (() => { const F = ficheFormule(e); return (<div style={{ border: `1px solid ${C.bord}`, borderLeft: `5px solid ${F.refus || F.aide ? C.ambre : C.vert}`, borderRadius: 10, padding: '10px 12px', margin: '8px 0', fontSize: 14.5, lineHeight: 1.5, breakInside: 'avoid', background: '#fff' }}>
+      <div style={{ fontWeight: 700 }}>La formule du contretype ({F.tentatives} relecture{F.tentatives > 1 ? 's' : ''} par Mme Dubreuil{F.aide ? ', formule de départ donnée par un collègue' : ''})</div>
+      <table style={{ width: '100%', borderCollapse: 'collapse', margin: '6px 0', fontSize: 14 }}><thead><tr style={{ textAlign: 'left', color: C.doux }}><th>Constituant</th><th>Ta formule</th><th>Référence</th></tr></thead>{F.lignes.map(([nomL, a, b, why]) => <tbody key={nomL} style={{ breakInside: 'avoid' }}><tr style={{ borderTop: `1px solid ${C.bord}` }}><td><b>{nomL}</b></td><td>{nf(a, 1)} g</td><td>{nf(b, 1)} g</td></tr><tr><td colSpan={3} style={{ color: C.doux, paddingBottom: 4 }}>{why}</td></tr></tbody>)}</table></div>); })()}
     <div style={{ fontWeight: 700, margin: '8px 0 6px' }}>Les calculs de la journée</div>
     {!L.length && <div style={{ color: C.doux }}>Aucun calcul saisi pendant cette partie.</div>}
     {L.map((c, i) => (<div key={c.id + i} style={{ border: `1px solid ${C.bord}`, borderLeft: `5px solid ${c.juste ? C.vert : C.ambre}`, borderRadius: 10, padding: '10px 12px', margin: '8px 0', fontSize: 14.5, lineHeight: 1.5, breakInside: 'avoid', background: '#fff' }}>
-      <div style={{ fontWeight: 700 }}>{i + 1}. {c.titre}{c.juste ? ' ✅' : ' · corrigé avec l\'aide d\'un collègue'}</div>
+      <div style={{ fontWeight: 700 }}>{i + 1}. {c.titre}{c.juste ? ' ✅' : c.solution ? ' · solution donnée par un collègue' : ' · corrigé avec l\'aide d\'un collègue'}</div>
       <div style={{ color: C.doux, whiteSpace: 'pre-line' }}>{c.donnees}</div>
       <div><b>Question :</b> {c.q}</div>
       <div><b>Ta réponse :</b> {c.saisies.map(fmt).join(' puis ')} · <b>Valeur attendue :</b> {c.attendu}</div>
@@ -636,6 +644,7 @@ export function SimulationHistoirePercutafeine() {
       <div key={e.scene} className="pc-scene">
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: C.doux, background: FOND_LIEU[sc.lieu] || C.fond, borderRadius: 99, padding: '4px 12px 4px 6px' }}>
           <Avatar pnj={sc.pnj} taille={24} e={e} /><span>{sc.lieu} · {sc.pnj === 'moi' && pn(e) ? pn(e) : p.nom}</span></div>
+        {!peutRevenir(e) && peutSuspendre(e) && <div><button type="button" data-suspendre onClick={() => setEtat(suspendre(e))} style={{ marginTop: 8, background: 'none', border: 'none', color: C.accent, font: 'inherit', fontSize: 14.5, cursor: 'pointer', padding: '4px 0', textDecoration: 'underline' }}>↩ Revenir à la paillasse (je reprendrai cette étape plus tard)</button></div>}
         {peutRevenir(e) && <div><button type="button" data-retour onClick={() => setEtat(revenirHub(e))} style={{ marginTop: 8, background: 'none', border: 'none', color: C.accent, font: 'inherit', fontSize: 14.5, cursor: 'pointer', padding: '4px 0', textDecoration: 'underline' }}>← Revenir à la paillasse, sans rien faire</button></div>}
         {fin && <div style={{ marginTop: 10, borderRadius: 14, padding: '14px 18px', background: TONS[sc.fin.ton] + '14', border: `1.5px solid ${TONS[sc.fin.ton]}55` }}><div style={{ fontSize: 12, letterSpacing: 1.5, color: TONS[sc.fin.ton], fontWeight: 700 }}>FIN DU TP</div>
           <h3 ref={refTitre} tabIndex={-1} data-titre style={{ margin: '2px 0 0', fontSize: 'clamp(22px,5vw,28px)', outline: 'none', color: TONS[sc.fin.ton] }}>{sc.titre}</h3></div>}
@@ -649,7 +658,7 @@ export function SimulationHistoirePercutafeine() {
         {vis.map((v, i) => <Visuel key={i} v={v} />)}
         {sc.hyp && <details data-hyp open style={{ margin: '12px 0', background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 12, padding: '9px 14px', fontSize: 14.5, lineHeight: 1.55 }}><summary style={{ cursor: 'pointer', fontWeight: 700 }}>Hypothèses de travail</summary>{sc.hyp}</details>}
 
-        {sc.station === 'formule' && <StationFormule key={e.scene + e.t} e={e} onEtat={setEtat} />}
+        {sc.station === 'formule' && <StationFormule key={e.scene} e={e} onEtat={setEtat} />}
         {sc.station === 'ph' && <StationPh e={e} onEtat={setEtat} />}
         {sc.station === 'plan' && <StationPlan key={e.scene + e.t} e={e} sc={sc} onEtat={setEtat} />}
         {sc.station === 'obs' && <StationObs e={e} onEtat={setEtat} />}
