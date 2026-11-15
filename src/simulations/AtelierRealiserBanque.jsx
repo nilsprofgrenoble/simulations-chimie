@@ -690,6 +690,34 @@ function genDopplerTG() {
     retenir: ['Devant : λ_A = (c − v) T_e, donc f_A = f_e / (1 − v / c) ; derrière : f_B = f_e / (1 + v / c).', 'Si v ≪ c : δf ≈ f_e × v / c, donc δf / f_e = v / c.', 'Même méthode pour le son et la lumière : seule la célérité c change.'] };
 }
 
+// ───────────── Titrage pH-métrique (TG) : quantités de matière et équivalence ─────────────
+function genTitrageTG() {
+  const CB = 0.100, CA = tire([0.050, 0.060, 0.080, 0.100]), VA = tire([10.0, 20.0, 25.0]);
+  const n0 = CA * VA, VE = n0 / CB;   // mmol, mL
+  const VB1 = Math.round(VE * tire([0.25, 0.75]) * 10) / 10, nB1 = CB * VB1;
+  const q1 = { id: 't0', type: 'num', q: <>On titre <b>{nb(VA, 1)}{NB}mL</b> d’acide éthanoïque de concentration <b>{nb(CA, 3)}{NB}mol/L</b> par de la soude de concentration <b>0,100{NB}mol/L</b>. On a versé <b>{nb(VB1, 1)}{NB}mL</b> de soude. Calculez la quantité n<sub>B</sub> d’ions HO⁻ versée, en <b>mmol</b>.</>, unite: 'mmol', vrai: nB1, csMin: 2,
+    aide: 'n_B = C_B × V_B ; avec C en mol/L et V en mL, le résultat est en mmol.',
+    pieges: [[nB1 / 1000, 'Le résultat est demandé en millimoles : 1 mmol = 10⁻³ mol, donc ne divisez pas par 1000.'], [VB1 / CB, 'Le rapport est inversé : n = C × V.']],
+    expl: <>n<sub>B</sub> = C<sub>B</sub> × V<sub>B</sub> = 0,100 × {nb(VB1, 1)} = <b>{avecU(nB1, 'mmol', 3)}</b>.</> };
+  const nR = n0 - nB1;
+  const q2 = { id: 't1', type: 'num', q: <>La quantité initiale d’acide est n<sub>0</sub> = C<sub>A</sub> × V<sub>A</sub> = <b>{nb(n0, 2)}{NB}mmol</b>. La transformation est totale et HO⁻ est le réactif limitant (on est avant l’équivalence). Calculez la quantité d’acide restant après l’ajout de {nb(VB1, 1)}{NB}mL de soude (n<sub>B</sub> = {nb(nB1, 2)}{NB}mmol), en <b>mmol</b>.</>, unite: 'mmol', vrai: nR, csMin: 2,
+    aide: 'n(acide) restant = n_0 − n_B (coefficients stœchiométriques égaux à 1).',
+    pieges: [[nB1, 'C’est la quantité de base conjuguée formée, pas celle d’acide restant.'], [n0 + nB1, 'Il faut soustraire : l’acide disparaît quand on verse HO⁻.']],
+    expl: <>n(acide) restant = n<sub>0</sub> − n<sub>B</sub> = {nb(n0, 2)} − {nb(nB1, 2)} = <b>{avecU(nR, 'mmol', 3)}</b>.</> };
+  const q3 = { id: 't2', type: 'num', q: <>À l’équivalence, l’acide et les ions HO⁻ sont consommés ensemble : C<sub>A</sub> × V<sub>A</sub> = C<sub>B</sub> × V<sub>E</sub>. Avec C<sub>A</sub> = {nb(CA, 3)}{NB}mol/L, V<sub>A</sub> = {nb(VA, 1)}{NB}mL et C<sub>B</sub> = 0,100{NB}mol/L, calculez le volume équivalent V<sub>E</sub>, en <b>mL</b>.</>, unite: 'mL', vrai: VE, csMin: 2,
+    aide: 'V_E = C_A × V_A / C_B.',
+    pieges: [[CB * VA / CA, 'Le rapport est inversé : V_E = C_A × V_A / C_B.'], [CA * VA, 'C’est la quantité d’acide en mmol ; il faut encore diviser par C_B.']],
+    expl: <>V<sub>E</sub> = C<sub>A</sub> V<sub>A</sub> / C<sub>B</sub> = {nb(CA, 3)} × {nb(VA, 1)} / 0,100 = <b>{avecU(VE, 'mL', 3)}</b>.</> };
+  const VEm = Math.round(VE * 10) / 10, CAvrai = CB * VEm / VA;
+  const q4 = { id: 't3', type: 'num', q: <>On titre <b>{nb(VA, 1)}{NB}mL</b> d’une solution d’acide faible de concentration inconnue par de la soude à <b>0,100{NB}mol/L</b>. Le maximum de la dérivée du pH correspond à V<sub>E</sub> = <b>{nb(VEm, 1)}{NB}mL</b>. Calculez la concentration C<sub>A</sub> de l’acide, en <b>mol/L</b>.</>, unite: 'mol/L', vrai: CAvrai, csMin: 2,
+    aide: 'C_A = C_B × V_E / V_A ; V_E et V_A dans la même unité (ici mL).',
+    pieges: [[CB * VA / VEm, 'Le rapport est inversé : C_A = C_B × V_E / V_A.'], [CAvrai * 1000, 'La concentration est demandée en mol/L, pas en mmol/L.']],
+    expl: <>C<sub>A</sub> = C<sub>B</sub> V<sub>E</sub> / V<sub>A</sub> = 0,100 × {nb(VEm, 1)} / {nb(VA, 1)} = <b>{avecU(CAvrai, 'mol/L', 3)}</b>.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > 1e-9); });
+  return { intro: 'Titrage acide-base : quantités de matière avant l’équivalence, volume équivalent et concentration de l’acide.', questions: [q1, q2, q3, q4],
+    retenir: ['n(HO⁻) versé = C_B × V_B ; avant l’équivalence, n(acide) restant = n_0 − n_B.', 'À l’équivalence : C_A × V_A = C_B × V_E.', 'Garder V_E et V_A dans la même unité ; C en mol/L, V en mL donne des mmol.'] };
+}
+
 export const FAMILLES = [
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
   { id: 'vecteur-difference', groupe: 'Vecteurs', titre: 'Différence de deux vecteurs (variation de vitesse)', gen: genDifference },
@@ -702,6 +730,7 @@ export const FAMILLES = [
   { id: 'lum1-conjugaison', groupe: 'Formules', titre: 'Lentille mince : conjugaison et grandissement (1re spé)', gen: genLentille, domaine: 'Lentille mince' },
   { id: 'dop-calcul', groupe: 'Formules', titre: 'Effet Doppler : du décalage à la vitesse (TSTL)', gen: genDoppler, domaine: 'Ondes' },
   { id: 'dopg-calcul', groupe: 'Formules', titre: 'Effet Doppler : établir l’expression, son et lumière (TG)', gen: genDopplerTG, domaine: 'Ondes' },
+  { id: 'titph-calcul', groupe: 'Formules', titre: 'Titrage pH-métrique : quantités de matière, V_E et C_A (TG)', gen: genTitrageTG, domaine: 'Titrage pH-métrique' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },
   { id: 'simple', groupe: 'Unités', titre: 'Changement d’unité simple', gen: genSimple },
   { id: 'prefixes', groupe: 'Unités', titre: 'Préfixes et puissances de 10', gen: genPrefixes },

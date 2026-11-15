@@ -56,6 +56,7 @@ export const EXOS_DE_SIM = {
   72: [/ene-(loi-mailles|pente|pile-reelle)/],
   114: [/(^|\.)dop-/, /plausible\.dop-/],
   116: [/(^|\.)dopg-/, /plausible\.dopg-/],
+  119: [/(^|\.)titph-/, /plausible\.titph-/],
   112: [/(^|\.)ext-/, /plausible\.ext-/],
   111: [/(^|\.)ir-/, /plausible\.ir-/],
   109: [/(^|\.)syn-/, /plausible\.syn-/, /(^|\.)ccm-/, /plausible\.ccm-/],
