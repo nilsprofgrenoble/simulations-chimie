@@ -99,6 +99,7 @@ const SimulationMelanges = paresseux(() => import("./simulations/Melanges"), "Si
 const SimulationRefraction = paresseux(() => import("./simulations/Refraction"), "SimulationRefraction");
 const SimulationLentille = paresseux(() => import("./simulations/Lentille"), "SimulationLentille");
 const SimulationLentilleMince = paresseux(() => import("./simulations/LentilleMince"), "SimulationLentilleMince");
+const SimulationOeilLoupe = paresseux(() => import("./simulations/OeilLoupe"), "SimulationOeilLoupe");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
 const SimulationCircuits = paresseux(() => import("./simulations/Circuits"), "SimulationCircuits");
 const SimulationLoiOhm = paresseux(() => import("./simulations/LoiOhm"), "SimulationLoiOhm");
@@ -200,6 +201,8 @@ const SIMULATIONS = [
     component: SimulationDoppler },
   { id:116, label:"Effet Doppler : établir l’expression du décalage et mesurer une vitesse", niveau:"TG", icon:"🌊", color:"#b45309",
     component: SimulationDopplerTG },
+  { id:117, label:"L’œil et la loupe : accommodation, diamètre apparent, grossissement", niveau:"TSTL", icon:"👁️", color:"#0e7490",
+    component: SimulationOeilLoupe },
   { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",
