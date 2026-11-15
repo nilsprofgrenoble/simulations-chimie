@@ -53,7 +53,7 @@ function FrontsOnde({ beta, anim, relance, annot }) {
       ctx.fillStyle = '#b45309'; ctx.beginPath(); ctx.arc(xs, Y0, 8, 0, 2 * Math.PI); ctx.fill();
       if (beta > 0) { ctx.strokeStyle = '#b45309'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(xs + 12, Y0 - 16); ctx.lineTo(xs + 12 + 70 * beta, Y0 - 16); ctx.stroke(); ctx.beginPath(); ctx.moveTo(xs + 12 + 70 * beta, Y0 - 22); ctx.lineTo(xs + 22 + 70 * beta, Y0 - 16); ctx.lineTo(xs + 12 + 70 * beta, Y0 - 10); ctx.fillStyle = '#b45309'; ctx.fill(); }
       ctx.fillStyle = '#0f172a'; ctx.font = '700 13px sans-serif'; ctx.textAlign = 'center';
-      for (const [x, txt] of [[XR - 4, 'récepteur A'], [XL + 16, 'récepteur B']]) { ctx.fillRect(x - 6, Y0 + 100, 12, 12); ctx.fillText(txt, x, Y0 + 128); }
+      for (const [x, txt] of [[SC.W - 46, 'récepteur A'], [46, 'récepteur B']]) { ctx.fillRect(x - 6, Y0 + 100, 12, 12); ctx.fillText(txt, x, Y0 + 128); }
       ctx.textAlign = 'left'; ctx.font = '12px sans-serif'; ctx.fillStyle = '#475569'; ctx.fillText('vue de dessus (schéma : vitesse de l’émetteur exagérée)', 8, 16);
     };
     let raf, dernier = performance.now();
@@ -214,6 +214,24 @@ export function SimulationDoppler({ naviguer }) {
   const [beta, setBeta] = useState(0), [anim, setAnim] = useState(() => { try { return !window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return true; } }), [relance, setRelance] = useState(0);
   const [mes, setMes] = useState(REPOS_MES), [cur, setCurBrut] = useState(40000), [zoomC, setZoomC] = useState(null);
   const enGuide = mode === 'guide', enDefi = mode === 'defi';
+  // ---------- écoute (Web Audio) : deux notes alternées, fréquence entendue selon la position ----------
+  const [ecoute, setEcoute] = useState(null);
+  const ratioEcoute = (pos, bt) => pos === 'A' ? 1 / (1 - bt) : pos === 'B' ? 1 / (1 + bt) : 1;
+  const refAudio = useRef({ ratio: 1 });
+  const NOTES = [440, 554];
+  useEffect(() => {
+    if (!ecoute) return undefined;
+    let ctx, osc, gain, minuterie, k = 0;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext; ctx = new AC();
+      osc = ctx.createOscillator(); gain = ctx.createGain(); osc.type = 'triangle'; gain.gain.value = 0.12;
+      osc.connect(gain); gain.connect(ctx.destination); osc.start();
+      const joue = () => { osc.frequency.setTargetAtTime(NOTES[k % 2] * refAudio.current.ratio, ctx.currentTime, 0.01); k++; };
+      joue(); minuterie = setInterval(joue, 650);
+    } catch { setEcoute(null); }
+    return () => { clearInterval(minuterie); try { osc && osc.stop(); ctx && ctx.close(); } catch { /* déjà arrêté */ } };
+  }, [ecoute]);
+
   const setM = f => setMes(m => ({ ...m, ...f }));
   const dd = enDefi && defi ? defi : null;
 
@@ -228,6 +246,8 @@ export function SimulationDoppler({ naviguer }) {
   const echo = m.montage === 'echo', sg = m.sens === 'approche' ? 1 : -1, fe = m.fe, T = m.T;
   const vEff = enGuide && idE === 'rail' ? 0 : m.v;
   const betaEff = enGuide && idE === 'fixe' ? 0 : beta;
+  refAudio.current.ratio = ratioEcoute(ecoute, betaEff);
+  useEffect(() => { if (mode !== 'explore' && !(enGuide && etape >= IDS.indexOf('rapport'))) setEcoute(null); }, [mode, etape]);   // eslint-disable-line react-hooks/exhaustive-deps
   const fr = vEff === 0 ? fe : echo ? D.frequenceEcho(fe, vEff, C, sg) : D.frequenceRecue(fe, vEff, C, sg);
   const W0 = echo ? 400 : 200;
   const fen = zoomC != null ? [zoomC - 30, zoomC + 30] : [fe - W0, fe + W0];
@@ -459,6 +479,17 @@ export function SimulationDoppler({ naviguer }) {
         <button onClick={() => setAnim(a => !a)} aria-pressed={!anim} style={stylePetitBouton(!anim, '#475569')}>{anim ? 'Figer l’animation' : 'Relancer l’animation'}</button>
         <button onClick={() => setRelance(r => r + 1)} style={stylePetitBouton(false, '#475569')}><Pic n="refresh"/>Recommencer</button>
       </div>
+      {(mode === 'explore' || (enGuide && deja('rapport'))) && <div role="group" aria-label="Écouter le son" style={{ marginTop: 10, background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 10, padding: '8px 10px' }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>🔊 Écouter la source (une sirène à deux notes)</div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {[['em', 'Dans le véhicule (émetteur)'], ['A', 'Récepteur A (devant)'], ['B', 'Récepteur B (derrière)']].map(([k, l]) => <button key={k} onClick={() => setEcoute(e => e === k ? null : k)} aria-pressed={ecoute === k} style={stylePetitBouton(ecoute === k, '#b45309')}>{l}</button>)}
+          {ecoute && <button onClick={() => setEcoute(null)} style={stylePetitBouton(false, '#475569')}>■ Arrêter</button>}
+        </div>
+        <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>
+          {ecoute ? <>Notes entendues : <strong>{hz(NOTES[0] * ratioEcoute(ecoute, betaEff))}</strong> et <strong>{hz(NOTES[1] * ratioEcoute(ecoute, betaEff))}</strong>{ecoute === 'em' ? ' : celles de la source, jamais décalées pour qui la porte.' : ecoute === 'A' ? ' : plus aiguës que celles émises (440 et 554 Hz) quand la source avance.' : ' : plus graves que celles émises (440 et 554 Hz) quand la source avance.'}</>
+            : <>Choisissez où vous vous placez, puis changez la vitesse de la source pendant que vous écoutez. Notes émises : 440 et 554 Hz. Le son joue tant que vous ne l’arrêtez pas.</>}
+        </div>
+      </div>}
     </div>
   ) : (
     <div style={{ ...styleBoite, ...cadre('reglages') }}>
