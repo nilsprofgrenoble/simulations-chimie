@@ -79,17 +79,17 @@ function CarteGammaSVG() {
       <g fontSize="11.5" fontWeight="800"><text x={x1} y="14" textAnchor="middle" fill={C.lent}>objectif</text><text x={x2} y="14" textAnchor="middle" fill={C.lent}>oculaire</text>
         <text x={xF1} y={y0 - 10} textAnchor="middle" fill={C.foyer}>F₁′</text><text x={xF2} y={y0 - 10} textAnchor="middle" fill={C.foyer}>F₂</text>
         <text x={(xF1 + xF2) / 2} y={y0 + 76} textAnchor="middle" fill={COUL.theta}>Δ = F₁′F₂ = 160 mm</text><text x={xF2 + 8} y={y0 + 34} fill={COUL.inter}>A₁B₁</text></g>
-      <text x="190" y="170" textAnchor="middle" fontSize="11.5" fontWeight="800" fill={C.txt}>γ₁ = −Δ / f₁′ : f₁′ = 10 mm donne γ₁ = −16</text>
+      <text x="190" y="170" textAnchor="middle" fontSize="11.5" fontWeight="800" fill={C.txt}>γ₁ = −Δ / f₁′ : f₁′ = 20 mm donne γ₁ = −8</text>
     </svg>);
 }
 function CarteGrossSVG() {
   return (
-    <svg viewBox="0 0 380 150" role="img" aria-label="Le grossissement du microscope est le produit du grandissement de l’objectif et du grossissement de l’oculaire : 16 fois 10 donne 160" style={svgStyle}>
-      {boite(6, 24, 100, '|γ₁| objectif', '16', COUL.inter, 56)}
+    <svg viewBox="0 0 380 150" role="img" aria-label="Le grossissement du microscope est le produit du grandissement de l’objectif et du grossissement de l’oculaire : 8 fois 5 donne 40" style={svgStyle}>
+      {boite(6, 24, 100, '|γ₁| objectif', '8', COUL.inter, 56)}
       <text x="122" y="58" textAnchor="middle" fontSize="22" fontWeight="800" fill="#475569">×</text>
-      {boite(136, 24, 110, 'G oculaire', 'dm / f₂′ = 10', C.lent, 56)}
+      {boite(136, 24, 110, 'G oculaire', 'dm / f₂′ = 5', C.lent, 56)}
       <text x="262" y="58" textAnchor="middle" fontSize="22" fontWeight="800" fill="#475569">=</text>
-      {boite(276, 24, 98, 'G microscope', '160', C.img, 56)}
+      {boite(276, 24, 98, 'G microscope', '40', C.img, 56)}
       <text x="190" y="116" textAnchor="middle" fontSize="12" fontWeight="800" fill={COUL.theta}>G = θ₂ / θ₀ = |γ₁| × dm / f₂′</text>
       <text x="190" y="136" textAnchor="middle" fontSize="11" fontWeight="700" fill="#64748b">les deux facteurs se multiplient</text>
     </svg>);
@@ -144,14 +144,14 @@ const FICHES = {
     <CarteGammaSVG/>
     {FGamma}
     {puces(<>Quand le microscope est mis au point, A₁ est en F₂ : O₁A₁ = f₁′ + Δ, où <strong>Δ = F₁′F₂ = 160{NB}mm</strong> (intervalle optique).</>,
-      <><strong>Exemple</strong> : f₁′ = 10{NB}mm : O₁A₁ = 170{NB}mm, l’objet est à 10,6{NB}mm de l’objectif, γ₁ = −16 : un objet de 20{NB}µm donne A₁B₁ = 0,32{NB}mm.</>,
+      <><strong>Exemple</strong> : f₁′ = 20{NB}mm : O₁A₁ = 180{NB}mm, l’objet est à 22,5{NB}mm de l’objectif, γ₁ = −8 : un objet de 30{NB}µm donne A₁B₁ = 0,24{NB}mm.</>,
       <>γ₁ &lt; 0 : l’image intermédiaire est <strong>renversée</strong> ; plus f₁′ est petite, plus |γ₁| est grand.</>)}
   </>,
   gross: <>
     <CarteGrossSVG/>
     {FG}
     {puces(<>Le grossissement compare l’angle θ₂ sous lequel on voit l’image définitive à l’angle θ₀ sous lequel on verrait l’objet à l’œil nu à d<sub>m</sub> = 25{NB}cm.</>,
-      <><strong>Exemple</strong> : f₁′ = 10{NB}mm et f₂′ = 25{NB}mm donnent |γ₁| = 16, G<sub>oculaire</sub> = 10, donc G = 160.</>,
+      <><strong>Exemple</strong> : f₁′ = 20{NB}mm et f₂′ = 50{NB}mm donnent |γ₁| = 8, G<sub>oculaire</sub> = 5, donc G = 40.</>,
       <>Pour augmenter G : objectif de f₁′ <strong>plus petite</strong> et/ou oculaire de f₂′ <strong>plus petite</strong>.</>)}
   </>,
   refaire: <>

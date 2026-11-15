@@ -581,6 +581,47 @@ function genMicroMiseAuPoint() {
     retenir: ['Mise au point : A₁ en F₂ ; O₁A₁ = f₁′ + Δ.', 'La distance objet–objectif se déduit de la relation de conjugaison : elle dépend de f₁′.', 'A₁B₁ = |γ₁| × AB avec |γ₁| = Δ / f₁′.'] };
 }
 
+// ──────────────────────── Familles « La lunette astronomique » (terminale STL) ────────────────────────
+function genLunetteGrossissement() {
+  const f1 = tire([600, 800, 1000, 1200]), f2 = tire([10, 20, 25, 40]), G = f1 / f2, th = tire([1.5, 2, 3, 4]);
+  const q1 = { id: 'u0', type: 'num', q: <>Une lunette afocale a un objectif de distance focale f₁′ = <b>{f1}{NB}mm</b> et un oculaire de distance focale f₂′ = <b>{f2}{NB}mm</b>. Calculez son grossissement G = f₁′ / f₂′ (sans unité).</>, unite: '', vrai: G, csMin: 2,
+    aide: 'Les deux focales sont en mm : le rapport est sans unité.',
+    pieges: [[f2 / f1, 'Vous avez calculé f₂′ / f₁′ : le grossissement est f₁′ / f₂′.'], [f1 + f2, 'f₁′ + f₂′ est la distance O₁O₂ entre les lentilles, pas le grossissement.']],
+    expl: <>G = f₁′ / f₂′ = {f1} / {f2} = <b>{nb(G, 2)}</b>.</> };
+  const q2 = { id: 'u1', type: 'num', q: <>Pour que cette lunette soit afocale (F₁′ et F₂ confondus), quelle distance O₁O₂ doit séparer l’objectif et l’oculaire ? En <b>mm</b>.</>, unite: 'mm', vrai: f1 + f2, csMin: 3,
+    aide: 'O₁O₂ = O₁F₁′ + F₂O₂ = f₁′ + f₂′.',
+    pieges: [[f1 - f2, 'Vous avez soustrait : F₁′ est entre les deux lentilles, on additionne.'], [f1, 'Vous avez oublié f₂′ : O₁O₂ = f₁′ + f₂′.']],
+    expl: <>O₁O₂ = f₁′ + f₂′ = {f1} + {f2} = <b>{avecU(f1 + f2, 'mm', 4)}</b>.</> };
+  const th2 = th * G;
+  const q3 = { id: 'u2', type: 'num', q: <>L’astre observé a un diamètre apparent θ₀ = <b>{nb(th, 1)}{NB}mrad</b>. Calculez le diamètre apparent θ₂ de l’image définitive, θ₂ = G × θ₀, en <b>mrad</b>.</>, unite: 'mrad', vrai: th2, csMin: 2,
+    aide: 'θ₂ = G × θ₀ avec G = f₁′ / f₂′ ; gardez l’unité mrad.',
+    pieges: [[th / G, 'Vous avez divisé θ₀ par G : l’image est vue sous un angle plus grand, on multiplie.'], [th2 / 1000, 'Valeur correcte en radian ; l’énoncé demande des mrad.']],
+    expl: <>θ₂ = G × θ₀ = {nb(G, 2)} × {nb(th, 1)} = <b>{avecU(th2, 'mrad', 2)}</b>.</> };
+  [q1, q2, q3].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) / Math.abs(q.vrai) > 1e-3); });
+  return { intro: 'La lunette astronomique : grossissement, distance entre les lentilles, diamètre apparent de l’image.', questions: [q1, q2, q3],
+    retenir: ['Lunette afocale : F₁′ = F₂, O₁O₂ = f₁′ + f₂′.', 'G = θ₂ / θ₀ = f₁′ / f₂′ : objectif de grande focale, oculaire de petite focale.', 'θ₂ = G × θ₀ : même unité d’angle pour θ₀ et θ₂.'] };
+}
+function genLunetteImage() {
+  const f1 = tire([600, 800, 1000, 1200]), f2 = tire([10, 20, 25, 40]), th = tire([1.5, 2, 3, 4]), A = f1 * th / 1000;
+  const q1 = { id: 'w0', type: 'num', q: <>Un astre de diamètre apparent θ₀ = <b>{nb(th, 1)}{NB}mrad</b> est observé avec un objectif de distance focale f₁′ = <b>{f1}{NB}mm</b>. Calculez la taille de l’image intermédiaire A₁B₁ = f₁′ × θ₀ (θ₀ en radian), en <b>mm</b>.</>, unite: 'mm', vrai: A, csMin: 2,
+    aide: 'Convertissez θ₀ en radian : 1 mrad = 0,001 rad. Puis multipliez par f₁′ (en mm).',
+    pieges: [[A * 1000, 'Vous avez oublié de convertir θ₀ de mrad en rad (facteur 1000).'], [th / 1000 / f1, 'Vous avez divisé : A₁B₁ = f₁′ × θ₀.']],
+    expl: <>θ₀ = {nb(th, 1)} mrad = {nb(th / 1000, 4)} rad ; A₁B₁ = {f1} × {nb(th / 1000, 4)} = <b>{avecU(A, 'mm', 2)}</b>.</> };
+  const t2 = A / f2 * 1000;
+  const q2 = { id: 'w1', type: 'num', q: <>L’oculaire a une distance focale f₂′ = <b>{f2}{NB}mm</b> et l’image intermédiaire est dans son plan focal objet. Calculez le diamètre apparent θ₂ ≈ A₁B₁ / f₂′ de l’image définitive (A₁B₁ = {nb(A, 2)} mm), en <b>mrad</b>.</>, unite: 'mrad', vrai: t2, csMin: 2,
+    aide: 'A₁B₁ et f₂′ en mm : le résultat est en radian, puis × 1000 pour des mrad.',
+    pieges: [[t2 / 1000, 'Valeur correcte en radian ; l’énoncé demande des mrad.'], [A / f1 * 1000, 'Vous avez divisé par f₁′ : c’est θ₀. Avec l’oculaire, on divise par f₂′.']],
+    expl: <>θ₂ ≈ {nb(A, 2)} / {f2} = {nb(A / f2, 4)} rad = <b>{avecU(t2, 'mrad', 2)}</b>.</> };
+  const pp = f2 * 400 / (400 + f2);
+  const q3 = { id: 'w2', type: 'num', q: <>Un observateur myope veut que l’image définitive soit virtuelle à <b>40{NB}cm</b> de l’oculaire (O₂A₂ = −400{NB}mm), avec f₂′ = {f2}{NB}mm. Calculez la distance |O₂A₁| de l’image intermédiaire à l’oculaire (relation de conjugaison 1/O₂A₂ − 1/O₂A₁ = 1/f₂′, avec O₂A₁ négatif), en <b>mm</b>.</>, unite: 'mm', vrai: pp, csMin: 3,
+    aide: '1/O₂A₁ = 1/O₂A₂ − 1/f₂′ = −1/400 − 1/{f2} : le résultat est négatif ; donnez la distance (valeur positive).',
+    pieges: [[f2, 'C’est la valeur pour une image à l’infini (lunette afocale). Pour une image à 40 cm, A₁ est un peu plus près de l’oculaire.'], [f2 * 400 / (400 - f2), 'Vous avez pris O₂A₂ = +400 mm : l’image est virtuelle, O₂A₂ est négatif.']],
+    expl: <>1/O₂A₁ = −1/400 − 1/{f2}, donc O₂A₁ = −{nb(pp, 2)} mm : A₁ est à <b>{avecU(pp, 'mm', 3)}</b> de l’oculaire, un peu moins que f₂′ = {f2} mm : on rapproche l’oculaire de {nb(f2 - pp, 2)} mm par rapport au réglage afocale.</> };
+  [q1, q2, q3].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) / Math.abs(q.vrai) > 1e-3); });
+  return { intro: 'La lunette astronomique : image intermédiaire, diamètre apparent de l’image, réglage pour un œil myope.', questions: [q1, q2, q3],
+    retenir: ['Objet à l’infini : A₁B₁ = f₁′ × θ₀ dans le plan focal image de l’objectif (θ₀ en rad).', 'θ₂ ≈ A₁B₁ / f₂′ (A₁ en F₂).', 'Image virtuelle à distance finie : A₁ est plus près de l’oculaire que F₂ (relation de conjugaison).'] };
+}
+
 // ──────────────────────── Familles « Vecteurs » : somme et différence ────────────────────────
 const sg = x => (x < 0 ? '−' + Math.abs(x) : String(x));
 function vecAleatoires() {
@@ -726,6 +767,8 @@ export const FAMILLES = [
   { id: 'oeil-accommodation', groupe: 'Formules', titre: 'L’œil réduit : accommodation et diamètre apparent (terminale STL)', gen: genOeilAccomm, domaine: 'Œil et loupe' },
   { id: 'oeil-loupe', groupe: 'Formules', titre: 'La loupe : grossissement et position de l’image (terminale STL)', gen: genOeilLoupe, domaine: 'Œil et loupe' },
   { id: 'microsc-grossissement', groupe: 'Formules', titre: 'Le microscope : grandissement et grossissement (terminale STL)', gen: genMicroGrossissement, domaine: 'Microscope' },
+  { id: 'lunet-grossissement', groupe: 'Formules', titre: 'La lunette astronomique : grossissement et distance entre les lentilles (terminale STL)', gen: genLunetteGrossissement, domaine: 'Lunette astronomique' },
+  { id: 'lunet-image', groupe: 'Formules', titre: 'La lunette astronomique : image intermédiaire et œil myope (terminale STL)', gen: genLunetteImage, domaine: 'Lunette astronomique' },
   { id: 'microsc-mise-au-point', groupe: 'Formules', titre: 'Le microscope mis au point : positions et taille de l’image intermédiaire (terminale STL)', gen: genMicroMiseAuPoint, domaine: 'Microscope' },
   { id: 'lum1-conjugaison', groupe: 'Formules', titre: 'Lentille mince : conjugaison et grandissement (1re spé)', gen: genLentille, domaine: 'Lentille mince' },
   { id: 'dop-calcul', groupe: 'Formules', titre: 'Effet Doppler : du décalage à la vitesse (TSTL)', gen: genDoppler, domaine: 'Ondes' },

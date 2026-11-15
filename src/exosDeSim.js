@@ -63,6 +63,7 @@ export const EXOS_DE_SIM = {
   108: [/mec-pointage/, /plausible\.mec-pointage/],
   117: [/oeil-/, /plausible\.oeil-/],                                                                                // L'œil et la loupe (TSTL)
   118: [/microsc-/, /plausible\.microsc-/],                                                                              // Le microscope (TSTL)
+  120: [/lunet-/, /plausible\.lunet-/],                                                                              // La lunette astronomique (TSTL)
   115: [/lum1-/, /plausible\.lum1-/],                                                                                  // Lentille mince (1G)
   107: [/mec-(em|epp|chute)/, /plausible\.mec-(epp|em)/],
   106: [/mec-(theoreme|travail|barriere|ec-)/, /plausible\.mec-/],
