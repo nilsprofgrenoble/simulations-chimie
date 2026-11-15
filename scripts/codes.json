@@ -796,5 +796,17 @@
  "77:plausible:oeil-val-grossissement": "VAL200",
  "77:plausible:oeil-val-separateur": "VAL201",
  "36:oeil-accommodation": "REA21",
- "36:oeil-loupe": "REA22"
+ "36:oeil-loupe": "REA22",
+ "34:microsc-fibre.0": "SAPP191",
+ "34:microsc-fibre.1": "SAPP192",
+ "34:microsc-mise-au-point-reglage.0": "SAPP193",
+ "34:microsc-mise-au-point-reglage.1": "SAPP194",
+ "37:prevoir:microsc-role-oculaire": "ANA386",
+ "37:prevoir:microsc-mise-au-point": "ANA387",
+ "37:prevoir:microsc-changer-objectif": "ANA388",
+ "37:prevoir:microsc-grossissement-objectif": "ANA389",
+ "77:plausible:microsc-val-grossissement": "VAL202",
+ "77:plausible:microsc-val-image-intermediaire": "VAL203",
+ "36:microsc-grossissement": "REA23",
+ "36:microsc-mise-au-point": "REA24"
 }

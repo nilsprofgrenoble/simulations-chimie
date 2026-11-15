@@ -25,7 +25,7 @@ const PREFIXE = { "S'APP": 'SAPP', ANA: 'ANA', REA: 'REA', VAL: 'VAL' }
 // Toute étiquette hors de ce vocabulaire fait échouer le script ; tout exercice doit en avoir au moins une.
 const TACHES_VOC = ['effet Doppler', 'extraire les données', 'lire un graphique', 'tracer une courbe', 'pente et ordonnée à l’origine', 'prévoir sans calculer', 'choisir la relation', 'hypothèses d’un modèle',
   'construire une démarche', 'reconnaître un champ', 'reconnaître un mouvement', 'algorithme à seuils', 'plausibilité', 'compatibilité avec une référence', 'choisir un modèle',
-  'conformité cahier des charges', 'somme de vecteurs', 'différence de vecteurs', 'forces et champs', 'lentille mince', 'œil et loupe', 'conversion d’unités', 'isoler une grandeur', 'chiffres significatifs',
+  'conformité cahier des charges', 'microscope', 'somme de vecteurs', 'différence de vecteurs', 'forces et champs', 'lentille mince', 'œil et loupe', 'conversion d’unités', 'isoler une grandeur', 'chiffres significatifs',
   'fonctions usuelles', 'saisie calculatrice', 'pont diviseur', 'temps de réponse', 'conversion analogique-numérique', 'instruction Arduino', 'incertitudes', 'bilan et rendement', 'décrire une évolution', 'compléter un tableau bilan', 'importance du temps de réponse']
 const TACHES_FAMILLE = {
   34: id => (/^arduino/.test(id) ? ['instruction Arduino'] : /^reponse-/.test(id) ? ['temps de réponse', 'importance du temps de réponse'] : /^bilan-/.test(id) ? ['compléter un tableau bilan'] : ['extraire les données']),
@@ -34,7 +34,7 @@ const TACHES_FAMILLE = {
   '37:champ': () => ['reconnaître un champ'], '37:mouvement': () => ['reconnaître un mouvement'], '37:algorithme': () => ['algorithme à seuils'],
   '77:plausible': () => ['plausibilité'], '77:compat': () => ['compatibilité avec une référence'],
   '77:decision': id => [/^modele/.test(id) ? 'choisir un modèle' : 'conformité cahier des charges'],
-  '36:vecteur-somme': () => ['somme de vecteurs'], '36:vecteur-difference': () => ['différence de vecteurs'], '36:interactions': () => ['forces et champs'], '36:lum1-conjugaison': () => ['lentille mince'], '36:lum1-signes': () => ['lentille mince'], '36:oeil-accommodation': () => ['œil et loupe'], '36:oeil-loupe': () => ['œil et loupe'],
+  '36:vecteur-somme': () => ['somme de vecteurs'], '36:vecteur-difference': () => ['différence de vecteurs'], '36:interactions': () => ['forces et champs'], '36:lum1-conjugaison': () => ['lentille mince'], '36:lum1-signes': () => ['lentille mince'], '36:oeil-accommodation': () => ['œil et loupe'], '36:oeil-loupe': () => ['œil et loupe'], '36:microsc-grossissement': () => ['microscope'], '36:microsc-mise-au-point': () => ['microscope'],
   '36:vitesses': () => ['conversion d’unités'], '36:simple': () => ['conversion d’unités'], '36:prefixes': () => ['conversion d’unités'], '36:puissances': () => ['conversion d’unités'],
   '36:composees': () => ['conversion d’unités'], '36:mixte': () => ['conversion d’unités'], '36:isoler': () => ['isoler une grandeur'], '36:cs': () => ['chiffres significatifs'],
   '36:fonctions': () => ['fonctions usuelles'], '36:calculatrice': () => ['saisie calculatrice'], '36:trace-courbe': () => ['tracer une courbe'],
