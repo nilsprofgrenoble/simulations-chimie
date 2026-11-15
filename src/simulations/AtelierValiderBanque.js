@@ -935,9 +935,9 @@ export const PLAUSIBLES = [
     ver: 'Le becquerel est une désintégration par seconde : λ doit être en s⁻¹. Avec λ en j⁻¹, A = 3,5 × 10⁶ est un nombre de désintégrations par jour. En s⁻¹ : λ = 0,0866 / 86 400 = 1,0 × 10⁻⁶ s⁻¹, donc A = 1,0 × 10⁻⁶ × 4,0 × 10⁷ = 40 Bq. Le résultat annoncé est 86 400 fois trop grand.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
-      V('il a utilisé λ en j⁻¹ : le résultat est par jour, pas par seconde ; en s⁻¹ on trouve 40 Bq', 'Pour avoir des becquerels, il faut diviser λ (en j⁻¹) par 86 400 : A = 40 Bq.'),
-      F('il aurait dû multiplier par la demi-vie', 'L’activité est A = λ·N ; la demi-vie est déjà contenue dans λ (t½ = ln 2 / λ).'),
-      F('il aurait dû diviser par le nombre de noyaux', 'A = λ·N est proportionnelle à N ; diviser par N donnerait λ, pas une activité.'),
+      V('il a laissé λ en j⁻¹ : son résultat est en désintégrations par jour', 'Pour avoir des becquerels, il faut diviser λ (en j⁻¹) par 86 400 : A = 40 Bq.'),
+      F('il aurait dû multiplier le résultat par la demi-vie de l’iode 131', 'L’activité est A = λ·N ; la demi-vie est déjà contenue dans λ (t½ = ln 2 / λ).'),
+      F('il aurait dû diviser le résultat par le nombre de noyaux N', 'A = λ·N est proportionnelle à N ; diviser par N donnerait λ, pas une activité.'),
     ] }),
   P({ id: 'rad-val-age', domaine: 'Radioactivité : décroissance et demi-vie', niveau: 2, titre: 'Âge d’un os qui contient encore 70 % de carbone 14', plausible: false,
     enonce: 'Un os contient 70 % du carbone 14 d’un os vivant (demi-vie du carbone 14 : 5 730 ans). Un élève annonce : « l’os a 17 190 ans ».',
@@ -945,8 +945,8 @@ export const PLAUSIBLES = [
     ver: 'Il reste 70 %, plus de la moitié : moins d’une demi-vie s’est écoulée, donc l’âge est inférieur à 5 730 ans. 17 190 ans = 3 demi-vies correspond à 12,5 % restant. Avec t = (t½ / ln 2) × ln(1/0,70), on trouve environ 2 950 ans.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
-      V('il a pris 3 demi-vies (cas de 12,5 %) : avec 70 % restant, l’âge est inférieur à 5 730 ans', '70 % > 50 % : moins d’une demi-vie ; t = (5 730 / ln 2) × ln(1/0,70) ≈ 2 950 ans.'),
-      F('il aurait dû trouver exactement 5 730 ans', '5 730 ans correspond à 50 % restant ; ici il reste 70 %, donc l’âge est plus petit, sans être égal à t½.'),
+      V('il a pris 3 demi-vies, valable pour 12,5 % restant, pas pour 70 %', '70 % > 50 % : moins d’une demi-vie ; t = (5 730 / ln 2) × ln(1/0,70) ≈ 2 950 ans.'),
+      F('il aurait dû trouver exactement une demi-vie, soit 5 730 ans', '5 730 ans correspond à 50 % restant ; ici il reste 70 %, donc l’âge est plus petit, sans être égal à t½.'),
       F('il a oublié que l’âge augmente quand la fraction restante augmente', 'C’est l’inverse : plus il reste de carbone 14, plus l’échantillon est récent.'),
     ] }),
   P({ id: 'rad-val-activite-24j', domaine: 'Radioactivité : décroissance et demi-vie', niveau: 2, titre: 'Activité d’un échantillon après trois demi-vies', plausible: true,
