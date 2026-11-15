@@ -64,4 +64,17 @@ assert.ok(D.separes(5.9, 0.5) && !D.separes(1.2, 0.5) && D.separes(1.2, 2), 'ré
   assert.ok(pt.rel > inc.rel && pt.part[0] > 0.5, 'petit décalage : la lecture domine');
 }
 assert.equal(D.demiPointe(1), 0.5); assert.equal(D.demiPointe(0.5), 0.5); assert.equal(D.demiPointe(0.25), 1);
+
+// récepteur au passage : sur l'axe, loin devant / loin derrière on retrouve 1/(1∓β) ; à l'écart, le rapport est plus doux
+{
+  const beta = 0.4;
+  assert.ok(Math.abs(D.rapportAuPassage({ beta, xs: 0, xr: 50, d: 0 }) - 1 / (1 - beta)) < 1e-9);
+  assert.ok(Math.abs(D.rapportAuPassage({ beta, xs: 50, xr: 0, d: 0 }) - 1 / (1 + beta)) < 1e-9);
+  const r0 = D.rapportAuPassage({ beta, xs: 2.9, xr: 2.9, d: 1.2 });
+  assert.ok(r0 > 1 && r0 < 1.3);                  // quand la source est à hauteur du récepteur, on entend encore le son émis un peu plus tôt (source alors en approche) : plus aigu que la note émise
+  assert.ok(Math.abs(D.rapportAuPassagePresent({ beta, xs: 2.9, xr: 2.9, d: 1.2 }) - 1) < 1e-12);   // l'approximation donnerait exactement 1
+  // erreur de l'approximation « position présente » : grande à β = 0,4, négligeable à β = 0,03
+  const ecart = b => Math.abs(D.rapportAuPassage({ beta: b, xs: 1.5, xr: 2.9, d: 1.2 }) / D.rapportAuPassagePresent({ beta: b, xs: 1.5, xr: 2.9, d: 1.2 }) - 1);
+  assert.ok(ecart(0.4) > 0.05 && ecart(0.03) < 0.01);
+}
 console.log('dopplerModele : tous les tests passent');
