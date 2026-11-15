@@ -177,7 +177,7 @@ export function SimulationMicroscope() {
   const [suiviM, noterM] = useCompteurDefi(), [suiviI, noterI] = useCompteurDefi(), [suiviG, noterG] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant('microscope-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('map');
-  const [hypoOuv, setHypoOuv] = useState(false);
+  const [hypoOuv, setHypoOuv] = useState(false), [cotesOn, setCotesOn] = useState(true);
   const [P, setP] = useState(P0);
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const PE = enDefi && defi ? defi.p : P;
@@ -393,6 +393,7 @@ export function SimulationMicroscope() {
       {boutonsObj('io', M.OBJECTIFS, 'f₁')}{boutonsObj('ioc', M.OCULAIRES, 'f₂')}
       {curG}{curF}{curAB}
       <div style={{ marginTop: 6 }}>{boutonAuto}</div>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 14, color: KIT.txt, cursor: 'pointer' }}><input type="checkbox" checked={cotesOn} onChange={e => setCotesOn(e.target.checked)}/>Afficher les cotes sur le schéma (AB, |OA|, A₁B₁)</label>
     </div>);
   const reglagesDefi = defi && (defi.type === 'map' ? (
     <div style={styleBoite}><div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>{curG}{curF}</div>
@@ -401,7 +402,7 @@ export function SimulationMicroscope() {
   // ════════════════ SCÈNE ════════════════
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      <SchemaMicroscope s={s} f1={f1} f2={f2} montre={{ inter: !enGuide || depuis('inter'), F2: !enGuide || depuis('map'), statut: !enGuide || depuis('map'), theta: enExplore || (enGuide && depuis('theta2')), noms: true }}/>
+      <SchemaMicroscope s={s} f1={f1} f2={f2} AB={PE.AB} cotes={enExplore && cotesOn ? { p, A1B1 } : null} montre={{ inter: !enGuide || depuis('inter'), F2: !enGuide || depuis('map'), statut: !enGuide || depuis('map'), theta: enExplore || (enGuide && depuis('theta2')), noms: true }}/>
     </div>);
   const aEssayer = indicesProfond(
     <div style={styleBoite}>

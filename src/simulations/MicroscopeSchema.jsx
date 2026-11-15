@@ -12,11 +12,13 @@ const fl = (x, y, ang, c, t = 6) => <polygon points={`0,0 ${-2 * t},${-t * 0.8} 
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 export const COUL = { obj: '#0f172a', inter: '#b45309', rayon1: '#0072b2', rayon2: '#d55e00', ok: '#15803d', ko: '#dc2626', theta: '#7c3aed' };
 
-const LV = 350, X1 = 160, H0 = 8, KS = 6;
+const LV = 350, X1 = 190, KS = 6;
 
-export function SchemaMicroscope({ s = 0, f1 = 10, f2 = 25, montre = {}, large = 700, label }) {
+// AB : taille réelle de l'objet (µm) → hauteur dessinée (5 à 14 px, non à l'échelle) ; cotes : { p (mm), A1B1 (mm) } ou null pour alléger le schéma.
+export function SchemaMicroscope({ s = 0, f1 = 10, f2 = 25, AB = 20, cotes = null, montre = {}, large = 740, label }) {
   const { inter = true, F2 = true, statut = true, theta = false, noms = true } = montre;
-  const fk = etroit() ? 2.1 : 1, fs = 13.5 * fk, haut = fk > 1 ? 400 : 260, y0 = haut / 2;
+  const H0 = 5 + (clamp(AB, M.AB_MIN, M.AB_MAX) - M.AB_MIN) / (M.AB_MAX - M.AB_MIN) * 9;
+  const fk = etroit() ? 2.1 : 1, fs = 13.5 * fk, haut = fk > 1 ? (cotes ? 440 : 400) : (cotes ? 285 : 260), y0 = haut / 2;
   const X2 = X1 + LV, f1v = 40 + 1.5 * f1, f2v = 40 + 1.6 * f2, qF = LV - f2v;
   const sv = clamp(s * KS, -60, Math.min(60, f2v - 22)), q = qF + sv, p = f1v * q / (q - f1v);
   const X0 = X1 - p, XA1 = X1 + q, XF2 = X2 - f2v, XE = X2 + f2v;
@@ -56,9 +58,17 @@ export function SchemaMicroscope({ s = 0, f1 = 10, f2 = 25, montre = {}, large =
       {/* objet A0B0 */}
       <line x1={X0} y1={y0} x2={X0} y2={Y(H0) + 5} stroke={COUL.obj} strokeWidth="4"/>{fl(X0, Y(H0) - 1, -90, COUL.obj, 6)}
       {noms && <text x={X0} y={y0 + 20 * fk} textAnchor="middle" fontSize={fs} fontWeight="800" fill={COUL.obj}>{fk > 1 ? 'objet' : 'objet A₀B₀'}</text>}
+      {/* cotes (facultatives) : taille de l'objet, distance objet–objectif, taille de l'image intermédiaire */}
+      {cotes && <g fontSize={fs} fontWeight="800" style={{ paintOrder: 'stroke', stroke: '#fff', strokeWidth: 4, strokeLinejoin: 'round' }}>
+        <text x="12" y={y0 - 30 * fk} fill={COUL.obj}>AB = {fr(AB, 0)}{' '}µm</text>
+        <line x1={X0} y1={y0 + 92} x2={X1} y2={y0 + 92} style={{ stroke: COUL.theta }} strokeWidth="1.8"/>
+        <line x1={X0} y1={y0 + 86} x2={X0} y2={y0 + 98} style={{ stroke: COUL.theta }} strokeWidth="1.8"/><line x1={X1} y1={y0 + 86} x2={X1} y2={y0 + 98} style={{ stroke: COUL.theta }} strokeWidth="1.8"/>
+        <text x="12" y={y0 + 92 + 18 * fk} fill={COUL.theta}>|OA| = {fr(cotes.p, 3)}{' '}mm</text>
+        {inter && <text x={X2 - 10} y={y0 - 20 * fk} textAnchor="end" fill={COUL.inter}>A₁B₁ = {fr(cotes.A1B1, 3)}{' '}mm</text>}
+      </g>}
       {/* image intermédiaire A1B1 (réelle, renversée) */}
       {inter && <g><line x1={XA1} y1={y0} x2={XA1} y2={Y(-h1) - 4} stroke={COUL.inter} strokeWidth="4"/>{fl(XA1, Y(-h1) + 1, 90, COUL.inter, 6)}
-        {noms && <text x={XA1 + (fk > 1 ? -4 : 0)} y={y0 - 34 * fk} textAnchor="middle" fontSize={fs} fontWeight="800" fill={COUL.inter}>{fk > 1 ? 'A₁B₁' : 'image intermédiaire A₁B₁'}</text>}</g>}
+        {noms && !cotes && <text x={XA1 + (fk > 1 ? -4 : 0)} y={y0 - 34 * fk} textAnchor="middle" fontSize={fs} fontWeight="800" fill={COUL.inter}>{fk > 1 ? 'A₁B₁' : 'image intermédiaire A₁B₁'}</text>}</g>}
       {/* œil */}
       <FormeOeil xL={XE} y0={y0} k={Ke} fe={17}/>
       <text x={XE + 6} y={y0 - 6.8 * Ke - 6} textAnchor="middle" fontSize={fs} fontWeight="800" fill={C.txt}>œil</text>
@@ -73,6 +83,6 @@ export function SchemaMicroscope({ s = 0, f1 = 10, f2 = 25, montre = {}, large =
       {theta && mapOk && <g><line x1={XE} y1={y0} x2={XE - 120} y2={Y(-chef * 120)} stroke={COUL.theta} strokeWidth="1.8" strokeDasharray="2 3"/>
         <text x={XE - 128} y={Y(-chef * 120) - 6} textAnchor="end" fontSize={fs + 2} fontWeight="800" fill={COUL.theta}>θ₂</text></g>}
       {statut && <text x={large / 2} y={fk > 1 ? 30 : 22} textAnchor="middle" fontSize={fs} fontWeight="800" fill={mapOk ? COUL.ok : COUL.ko}>{fk > 1 ? (mapOk ? 'image à l’infini : au point' : 'image floue : pas au point') : txtStatut}</text>}
-      <text x="12" y={haut - 10} fontSize={11 * (fk > 1 ? 1.9 : 1)} fontWeight="700" fill="#64748b">{fk > 1 ? 'schéma non à l’échelle' : 'schéma non à l’échelle : objet, images et angles agrandis'}</text>
+      <text x="12" y={haut - 10} fontSize={11 * (fk > 1 ? 1.9 : 1)} fontWeight="700" fill="#64748b">{fk > 1 ? 'schéma non à l’échelle' : 'schéma non à l’échelle : objet, images, angles et distances modifiés pour la lisibilité'}</text>
     </svg>);
 }
