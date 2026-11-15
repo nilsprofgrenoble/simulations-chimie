@@ -116,6 +116,30 @@ export const ENONCES = [
         manque: null, solution: { txt: 'f_e = c / λ puis v = c × δf / f_e', val: c * dfAff * 1e6 / fe, u: 'm/s' } };
     },
   },
+  // ───────────────────────────── 0 bis. Examen d'un objet à la loupe (TSTL : œil et loupe)
+  {
+    id: 'oeil-loupe-timbre', domaine: 'Œil et loupe', titre: 'Un philatéliste examine un timbre', noms: ['Grossissement', 'Diamètre apparent'],
+    gen: () => ({ f: tire([2.5, 4, 5, 8]), AB: tire([0.3, 0.5, 0.8]), prix: tire([12, 18, 25]) }),
+    build: (p, q) => {
+      const f = p.f / 100, dm = 0.25, AB = p.AB / 100, G = dm / f, thp = AB / f;
+      const tokens = {
+        f: tok(`${p.f} cm`, 'Distance focale de la loupe', f, 'm'),
+        dm: tok('25 cm', 'Distance minimale de vision distincte de l’œil', dm, 'm'),
+        prix: tok(`${p.prix} €`, 'Prix de la loupe', p.prix, '€'),
+      };
+      const debut = ['Un philatéliste utilise une loupe, modélisée par une lentille mince convergente de distance focale ', T('f'), ', achetée ', T('prix'),
+        '. Il place le timbre dans le plan focal objet de la loupe et l’observe avec un œil sans défaut de vision ; sans loupe, il le regarderait à la distance minimale de vision distincte ', T('dm'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'De combien l’angle sous lequel il voit le timbre est-il multiplié grâce à la loupe ?'],
+        utiles: ['f', 'dm'], raisons: { prix: 'Le prix n’intervient pas dans la physique de la loupe.' },
+        cherche: { bonne: 'Le grossissement G de la loupe (sans unité)', faux: ['La position OA′ de l’image (en m)', 'Le diamètre apparent θ′ de l’image (en rad)', 'La vergence de la loupe (en δ)'] },
+        manque: null, solution: { txt: 'G = dm / f′', val: G, u: '' } };
+      tokens.AB = tok(`${p.AB} cm`, 'Hauteur du détail observé sur le timbre', AB, 'm');
+      return { tokens, derivees: [], texte: [...debut, 'Le détail observé mesure ', T('AB'), ' de haut. Sous quel angle le philatéliste voit-il ce détail à travers la loupe ?'],
+        utiles: ['f', 'AB'], raisons: { prix: 'Le prix n’intervient pas dans la physique de la loupe.', dm: 'La distance minimale de vision distincte sert pour l’œil nu, pas pour l’image à l’infini donnée par la loupe.' },
+        cherche: { bonne: 'Le diamètre apparent θ′ de l’image (en rad)', faux: ['Le grossissement G de la loupe (sans unité)', 'La position OA′ de l’image (en m)', 'La hauteur A′B′ de l’image (en m)'] },
+        manque: null, solution: { txt: 'θ′ ≈ AB / f′ (petits angles)', val: thp, u: 'rad' } };
+    },
+  },
   // ───────────────────────────── 1. Mur (transferts thermiques)
   {
     id: 'paroi', domaine: 'Transferts thermiques', titre: 'Les pertes thermiques d’un mur', noms: ['Puissance perdue', 'Coût de l’énergie perdue'],

@@ -786,5 +786,15 @@
  "34:dopg-laser.0": "SAPP187",
  "34:dopg-laser.1": "SAPP188",
  "36:dop-calcul": "REA19",
- "36:dopg-calcul": "REA20"
+ "36:dopg-calcul": "REA20",
+ "34:oeil-loupe-timbre.0": "SAPP189",
+ "34:oeil-loupe-timbre.1": "SAPP190",
+ "37:prevoir:oeil-accommodation-sens": "ANA382",
+ "37:prevoir:oeil-diametre-distance": "ANA383",
+ "37:prevoir:oeil-loupe-position": "ANA384",
+ "37:prevoir:oeil-grossissement-focale": "ANA385",
+ "77:plausible:oeil-val-grossissement": "VAL200",
+ "77:plausible:oeil-val-separateur": "VAL201",
+ "36:oeil-accommodation": "REA21",
+ "36:oeil-loupe": "REA22"
 }

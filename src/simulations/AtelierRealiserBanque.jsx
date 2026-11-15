@@ -501,6 +501,48 @@ function genLentille() {
     retenir: ['Relation de conjugaison : 1/OA′ − 1/OA = 1/f′, avec des grandeurs ALGÉBRIQUES (origine O, sens de la lumière positif).', 'Un objet réel est avant la lentille : OA est NÉGATIF.', 'Grandissement γ = OA′ / OA = A′B′ / AB : γ < 0 image renversée, γ > 0 image droite ; |γ| > 1 agrandie.', 'On additionne les INVERSES des distances, jamais les distances.'] };
 }
 
+// ──────────────────────── Familles « L'œil et la loupe » (terminale STL) ────────────────────────
+function genOeilAccomm() {
+  const D = tire([25, 30, 50, 80]), Dmm = D * 10, f = 1 / (1 / 17 + 1 / Dmm);
+  const q1 = { id: 'o0', type: 'num', q: <>Dans le modèle de l’œil réduit, la rétine est à <b>L = 17,0{NB}mm</b> du cristallin. L’œil voit net un objet situé à <b>{D}{NB}cm</b> (soit {Dmm}{NB}mm) : OA = −{Dmm}{NB}mm et OA′ = +17,0{NB}mm. Calculez la distance focale f′ du cristallin (relation de conjugaison 1/OA′ − 1/OA = 1/f′), en <b>mm</b>.</>, unite: 'mm', vrai: f, csMin: 3,
+    aide: '1/f′ = 1/OA′ − 1/OA = 1/17,0 + 1/OA en valeur absolue : additionnez les inverses, puis inversez.',
+    pieges: [[1 / (1 / 17 - 1 / Dmm), 'Vous avez pris OA = +' + Dmm + ' mm : l’objet est avant le cristallin, OA est négatif ; on additionne 1/17,0 et 1/' + Dmm + '.'], [17, 'C’est la valeur pour un objet à l’infini (œil au repos). Ici l’objet est à ' + D + ' cm : f′ est un peu plus petite.']],
+    expl: <>1/f′ = 1/17,0 + 1/{Dmm}, donc f′ = <b>{avecU(f, 'mm', 3)}</b> : inférieure à 17,0 mm, le cristallin s’est bombé (accommodation).</> };
+  const AB = tire([10, 20, 30]), th = AB / Dmm * 1000;
+  const q2 = { id: 'o1', type: 'num', q: <>Cet objet mesure AB = <b>{AB}{NB}mm</b>. Calculez son diamètre apparent θ ≈ AB / D (petits angles), en <b>mrad</b>.</>, unite: 'mrad', vrai: th, csMin: 2,
+    aide: 'AB et D doivent être dans la même unité (mm). Le résultat est en radian : 1 rad = 1000 mrad.',
+    pieges: [[AB / D * 1000, 'Vous avez divisé des mm par des cm sans convertir : AB et D dans la même unité.'], [AB / Dmm, 'Valeur correcte, mais en radian : multipliez par 1000 pour des mrad.']],
+    expl: <>θ ≈ AB / D = {AB} / {Dmm} = {nb(AB / Dmm, 3)} rad = <b>{avecU(th, 'mrad', 2)}</b>.</> };
+  const ok = 0.10 / Dmm >= 3e-4, o3 = melange(['oui : θ est supérieur ou égal à ε ≈ 0,3 mrad', 'non : θ est inférieur à ε ≈ 0,3 mrad', 'oui : l’œil accommode et sépare tout', 'on ne peut pas savoir']);
+  const bonne3 = ok ? 'oui : θ est supérieur ou égal à ε ≈ 0,3 mrad' : 'non : θ est inférieur à ε ≈ 0,3 mrad';
+  const q3 = { id: 'o2', type: 'qcm', q: <>Deux traits sont séparés de 0,10{NB}mm. Le pouvoir séparateur de l’œil est ε ≈ 3×10⁻⁴{NB}rad = 0,3{NB}mrad. À {D}{NB}cm, l’œil les voit-il séparés ? (θ = 0,10 ÷ {Dmm} = {nb(0.10 / Dmm * 1000, 2)} mrad)</>, options: o3, bonne: o3.indexOf(bonne3),
+    aide: 'Deux détails sont séparés si l’angle θ qui les sépare est au moins égal à ε.',
+    expl: <>θ = {nb(0.10 / Dmm * 1000, 2)} mrad {ok ? '≥' : '<'} 0,3 mrad : {ok ? 'les traits sont vus séparés.' : 'les traits se confondent ; pour les séparer, il faut se rapprocher (au mieux 25 cm) ou utiliser un instrument.'}</> };
+  [q1, q2].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) / Math.abs(q.vrai) > 1e-3); });
+  return { intro: 'L’œil réduit : accommodation, diamètre apparent et pouvoir séparateur.', questions: [q1, q2, q3],
+    retenir: ['Œil réduit : lentille de focale f′ variable, rétine à L = 17,0 mm ; image nette ⇔ OA′ = L.', 'Objet proche ⇒ f′ diminue (accommodation) : 1/f′ = 1/L + 1/D.', 'θ ≈ AB / D (rad, mêmes unités) ; détails séparés si θ ≥ ε ≈ 3×10⁻⁴ rad.'] };
+}
+function genOeilLoupe() {
+  const [f, d] = tire([[2.5, 2.25], [4, 3.6], [5, 4.5], [8, 7.2]]), G = 25 / f;
+  const q1 = { id: 'p0', type: 'num', q: <>Une loupe a une distance focale f′ = <b>{f}{NB}cm</b> ; l’objet est dans son plan focal objet. Calculez son grossissement commercial G = d<sub>m</sub> / f′, avec d<sub>m</sub> = 25{NB}cm (sans unité).</>, unite: '', vrai: G, csMin: 2,
+    aide: 'G = dm / f′ : mêmes unités pour d_m et f′ (cm).',
+    pieges: [[f / 25, 'Vous avez calculé f′ / dm : le grossissement est dm / f′.']],
+    expl: <>G = 25 / {f} = <b>{nb(G, 2)}</b>. Plus f′ est petite, plus G est grand.</> };
+  const AB = tire([0.3, 0.5, 0.8]), thp = AB / f;
+  const q2 = { id: 'p1', type: 'num', q: <>Le détail observé mesure AB = <b>{AB}{NB}cm</b>, placé dans le plan focal objet. Calculez le diamètre apparent θ′ ≈ AB / f′ de l’image, en <b>rad</b>.</>, unite: 'rad', vrai: thp, csMin: 2,
+    aide: 'θ′ ≈ AB / f′, AB et f′ en cm.',
+    pieges: [[AB / 25, 'Vous avez divisé par dm = 25 cm : c’est le diamètre apparent à l’œil nu, sans loupe.']],
+    expl: <>θ′ ≈ {AB} / {f} = <b>{avecU(thp, 'rad', 2)}</b>. Sans loupe, à 25 cm : θ = {nb(AB / 25, 3)} rad.</> };
+  const Op = -d * f / (f - d);
+  const q3 = { id: 'p2', type: 'num', q: <>On éloigne un peu l’objet : OA = <b>−{d}{NB}cm</b>, avec f′ = {f}{NB}cm. Calculez la position OA′ de l’image (1/OA′ − 1/OA = 1/f′), en <b>cm</b> (avec son signe).</>, unite: 'cm', vrai: Op, csMin: 2,
+    aide: '1/OA′ = 1/f′ + 1/OA avec OA négatif : le résultat est négatif, image virtuelle. Pensez à inverser.',
+    pieges: [[-Op, 'Le signe : 1/OA′ est négatif, donc OA′ aussi (image virtuelle, du côté de l’objet).'], [1 / (1 / f + 1 / d), 'Vous avez pris OA = +' + d + ' cm : l’objet est avant la loupe, OA est négatif.']],
+    expl: <>1/OA′ = 1/{f} − 1/{d}, donc OA′ = <b>{avecU(Op, 'cm', 2)}</b> : image virtuelle, du côté de l’objet, plus loin que 25 cm : l’œil peut la voir nette en accommodant.</> };
+  [q1, q2, q3].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) / Math.abs(q.vrai) > 1e-3); });
+  return { intro: 'La loupe : grossissement, diamètre apparent de l’image, position de l’image.', questions: [q1, q2, q3],
+    retenir: ['Objet dans le plan focal objet : image à l’infini, œil au repos.', 'G = θ′ / θ = dm / f′ (dm = 25 cm) : plus f′ est petite, plus G est grand.', 'Objet entre O et F : OA′ < 0, image virtuelle ; l’œil la voit nette si |OA′| ≥ 25 cm.'] };
+}
+
 // ──────────────────────── Familles « Vecteurs » : somme et différence ────────────────────────
 const sg = x => (x < 0 ? '−' + Math.abs(x) : String(x));
 function vecAleatoires() {
@@ -615,6 +657,8 @@ export const FAMILLES = [
   { id: 'vecteur-difference', groupe: 'Vecteurs', titre: 'Différence de deux vecteurs (variation de vitesse)', gen: genDifference },
   { id: 'interactions', groupe: 'Unités', titre: 'Forces et champs : Coulomb, gravitation (1re spé)', gen: genInteractions, domaine: 'Interactions et champs' },
   { id: 'lum1-signes', groupe: 'Formules', titre: 'Lentille mince : les signes des distances algébriques, pas à pas (1re spé)', gen: genLentilleSignes, domaine: 'Lentille mince' },
+  { id: 'oeil-accommodation', groupe: 'Formules', titre: 'L’œil réduit : accommodation et diamètre apparent (terminale STL)', gen: genOeilAccomm, domaine: 'Œil et loupe' },
+  { id: 'oeil-loupe', groupe: 'Formules', titre: 'La loupe : grossissement et position de l’image (terminale STL)', gen: genOeilLoupe, domaine: 'Œil et loupe' },
   { id: 'lum1-conjugaison', groupe: 'Formules', titre: 'Lentille mince : conjugaison et grandissement (1re spé)', gen: genLentille, domaine: 'Lentille mince' },
   { id: 'dop-calcul', groupe: 'Formules', titre: 'Effet Doppler : du décalage à la vitesse (TSTL)', gen: genDoppler, domaine: 'Ondes' },
   { id: 'dopg-calcul', groupe: 'Formules', titre: 'Effet Doppler : établir l’expression, son et lumière (TG)', gen: genDopplerTG, domaine: 'Ondes' },
