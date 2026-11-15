@@ -136,7 +136,7 @@ export function SimulationVitesseOrdre1() {
   const [suiviV, noterV] = useCompteurDefi(), [suiviO, noterO] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('vit');
-  const [hypoOuv, setHypoOuv] = useState(false), [pyOuv, setPyOuv] = useState(false);
+  const [hypoOuv, setHypoOuv] = useState(false), [pyOuv, setPyOuv] = useState(false), [optOuv, setOptOuv] = useState(false);
   const [ti, setTi] = useState(PRESET);
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const dd = enDefi && defi ? defi : null;
@@ -184,7 +184,7 @@ export function SimulationVitesseOrdre1() {
   const v6 = M.vit({ type: 'A', c0: 40, k: 0.15 }, 6);
   const ETAPES = [
     { id: 'montage', titre: 'La transformation suivie', focus: ['scene'],
-      texte: <>On étudie l’<strong>hydrolyse du 2-chloro-2-méthylpropane</strong> (CH₃)₃C–Cl, noté RCl, dans un mélange d’eau et de propanone maintenu à température constante : (CH₃)₃C–Cl + 2 H₂O → (CH₃)₃C–OH + H₃O⁺ + Cl⁻. La transformation est totale. À <em>t</em> = 0, la concentration en RCl est <em>c</em><sub>0</sub> = 40,0{NB}mmol·L⁻¹ (soit 0,0400{NB}mol·L⁻¹). Une cellule de conductimétrie plonge dans le bécher : le schéma montre le même bécher à <em>t</em> = 0 et à <em>t</em> = 10{NB}min.</>,
+      texte: <>On étudie l’<strong>hydrolyse du 2-chloro-2-méthylpropane</strong> (CH₃)₃C–Cl, noté RCl, dans un mélange d’eau et de propanone maintenu à température constante ; son équation est écrite en haut de l’écran. La transformation est totale. À <em>t</em> = 0, la concentration en RCl est <em>c</em><sub>0</sub> = 40,0{NB}mmol·L⁻¹ (soit 0,0400{NB}mol·L⁻¹). Une cellule de conductimétrie plonge dans le bécher : le schéma montre le même bécher à <em>t</em> = 0 et à <em>t</em> = 10{NB}min.</>,
       tache: { type: 'qcm', q: 'Pourquoi la conductimétrie convient-elle pour suivre cette transformation ?', options: ['la conductivité augmente, car des ions H₃O⁺ et Cl⁻ se forment au fur et à mesure que RCl disparaît', 'la conductivité diminue, car le réactif RCl disparaît', 'la conductivité ne change pas : elle sert seulement à contrôler la température'], bonne: 0,
         expl: 'RCl est une molécule neutre : elle ne conduit pas le courant. La transformation forme des ions (un H₃O⁺ et un Cl⁻ pour chaque RCl consommé) : la conductivité augmente avec leur concentration. Après étalonnage, on en déduit la concentration c(t) du réactif, qui est la grandeur étudiée dans la suite.',
         indice: 'Cherchez les espèces chargées dans l’équation : qui permet le passage du courant dans une solution ?' } },
@@ -422,6 +422,15 @@ export function SimulationVitesseOrdre1() {
   const montrerBruit = (enGuide && deja('bruit')) || enExplore;
   const montrerFen = (enGuide && idE === 'bruit') || enExplore || (dd && dd.type === 'vit');
   const pasT = ideal ? 0.1 : M.PAS;
+  const optionsExplore = enExplore && (<>
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
+      {[0, 0.2, 0.4, 0.8].map(sg => <button key={sg} onClick={() => setT({ sigma: sg })} aria-pressed={ti.sigma === sg} style={stylePetitBouton(ti.sigma === sg, '#b91c1c')}>{sg ? `σ = ${nbf(sg, 1)}` : 'sans bruit'}</button>)}
+      {ti.sigma > 0 && <button onClick={() => setT({ graine: nouvelleGraine() })} style={stylePetitBouton(false, '#475569')}><Pic n="refresh"/>Nouvelle série</button>}
+    </div>
+    <div role="group" aria-label="Intervalle Δt" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
+      <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Intervalle Δt</span>
+      {M.DT_OPTIONS.map(d => <button key={d} onClick={() => setT({ dt: d })} aria-pressed={ti.dt === d} style={stylePetitBouton(ti.dt === d, COL.violet)}>{d} min</button>)}
+    </div></>);
   const controles = (
     <div style={{ marginTop: 8 }}>
       <Curseur nom="Temps t" valeur={tc} onChange={v => setT({ t: Math.max(0, Math.min(M.DUREE, Math.round(v / pasT) * pasT)) })} min={0} max={M.DUREE} pas={pasT} unite="min" decimales={1} couleur="#b45309"/>
@@ -432,20 +441,20 @@ export function SimulationVitesseOrdre1() {
         {dd && dd.type === 'ordre' && <span role="group" aria-label="Série affichée" style={{ display: 'inline-flex', gap: 6 }}>
           {[0, 1, 2].map(i => <button key={i} onClick={() => setT({ sel: i })} aria-pressed={ti.sel === i} style={stylePetitBouton(ti.sel === i, '#0f766e')}>Série {i + 1}</button>)}</span>}
         {dd && dd.type === 'ordre' && <button onClick={() => setT({ niv: !ti.niv })} aria-pressed={ti.niv} style={stylePetitBouton(ti.niv, '#475569')}>Traits de demi-réaction</button>}
-        {enExplore && <button onClick={() => setT({ niv: !ti.niv })} aria-pressed={ti.niv} style={stylePetitBouton(ti.niv, '#475569')}>Demi-réactions</button>}
-        {enExplore && <button onClick={() => setT({ modele: !ti.modele })} aria-pressed={ti.modele} style={stylePetitBouton(ti.modele, '#475569')}>Courbe du modèle</button>}
       </div>
-      {montrerBruit && !dd && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
-        {enGuide ? <button onClick={() => setT({ sigma: ti.sigma ? 0 : SIGMA_GUIDE })} aria-pressed={ti.sigma > 0} style={stylePetitBouton(ti.sigma > 0, '#b91c1c')}>{ti.sigma ? 'Mesures bruitées' : 'Rendre les mesures bruitées'}</button>
-          : [0, 0.2, 0.4, 0.8].map(s => <button key={s} onClick={() => setT({ sigma: s })} aria-pressed={ti.sigma === s} style={stylePetitBouton(ti.sigma === s, '#b91c1c')}>{s ? `σ = ${nbf(s, 1)}` : 'sans bruit'}</button>)}
+      {enExplore && <div style={{ marginTop: 8 }}><Section titre="Plus d’options : demi-réactions, modèle, bruit, intervalle Δt" ouvert={optOuv} onBascule={() => setOptOuv(o => !o)}>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+          <button onClick={() => setT({ niv: !ti.niv })} aria-pressed={ti.niv} style={stylePetitBouton(ti.niv, '#475569')}>Demi-réactions</button>
+          <button onClick={() => setT({ modele: !ti.modele })} aria-pressed={ti.modele} style={stylePetitBouton(ti.modele, '#475569')}>Courbe du modèle</button>
+        </div>
+        {optionsExplore}
+      </Section></div>}
+      {!enExplore && montrerBruit && !dd && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
+        <button onClick={() => setT({ sigma: ti.sigma ? 0 : SIGMA_GUIDE })} aria-pressed={ti.sigma > 0} style={stylePetitBouton(ti.sigma > 0, '#b91c1c')}>{ti.sigma ? 'Mesures bruitées' : 'Rendre les mesures bruitées'}</button>
         {ti.sigma > 0 && <button onClick={() => setT({ graine: nouvelleGraine() })} style={stylePetitBouton(false, '#475569')}><Pic n="refresh"/>Nouvelle série</button>}
       </div>}
-      {montrerFen && !ideal && <div role="group" aria-label="Intervalle Δt" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
+      {!enExplore && montrerFen && !ideal && <div role="group" aria-label="Intervalle Δt" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
         <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Intervalle Δt</span>
-        {M.DT_OPTIONS.map(d => <button key={d} onClick={() => setT({ dt: d })} aria-pressed={ti.dt === d} style={stylePetitBouton(ti.dt === d, COL.violet)}>{d} min</button>)}
-      </div>}
-      {enExplore && ideal && <div role="group" aria-label="Intervalle Δt" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
-        <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Intervalle Δt (pour les graphiques de v)</span>
         {M.DT_OPTIONS.map(d => <button key={d} onClick={() => setT({ dt: d })} aria-pressed={ti.dt === d} style={stylePetitBouton(ti.dt === d, COL.violet)}>{d} min</button>)}
       </div>}
     </div>);
@@ -461,9 +470,18 @@ export function SimulationVitesseOrdre1() {
     </div>);
 
   // ---------- zones ----------
+  const equation = (
+    <div style={{ marginBottom: 10 }}>
+      <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2, marginBottom: 2 }}>Transformation étudiée (totale, à température constante)</div>
+      <div role="math" aria-label="2-chloro-2-méthylpropane plus deux eau donne 2-méthylpropan-2-ol plus ion oxonium plus ion chlorure" style={{ fontSize: 17, fontWeight: 600, color: KIT.txt, lineHeight: 1.7, margin: '4px 0 6px' }}>
+        <span style={{ whiteSpace: 'nowrap' }}>(CH<sub>3</sub>)<sub>3</sub>C–Cl + 2{NB}H<sub>2</sub>O</span>{' '}<span style={{ whiteSpace: 'nowrap' }}>→ (CH<sub>3</sub>)<sub>3</sub>C–OH</span>{' '}<span style={{ whiteSpace: 'nowrap' }}>+ H<sub>3</sub>O<sup>+</sup> + Cl<sup>−</sup></span>
+      </div>
+      <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.5 }}>Le réactif suivi, (CH₃)₃C–Cl, est noté RCl ; sa concentration initiale est c<sub>0</sub> = {nbf(dd ? P.c0 : ti.c0, 1)}{NB}mmol/L.</div>
+    </div>);
   const sceneBox = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Le montage : hydrolyse suivie par conductimétrie</div>
+      {equation}
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Le montage : suivi par conductimétrie</div>
       <SvgMontage/>
     </div>);
   const graphiqueCourbe = (!enGuide || deja('courbe')) && (
@@ -598,7 +616,7 @@ plt.tight_layout(); plt.show()`;
         {enGuide ? <div className="vo-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="vo-carte">{panneauHypo}</div> : null}
         <div className="vo-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'vit' ? suiviV : suiviO}/></div>}
-          {!dd && <div style={{ marginBottom: 12 }}>{sceneBox}</div>}
+          {dd ? <div style={{ ...styleBoite, marginBottom: 12 }}>{equation}</div> : <div style={{ marginBottom: 12 }}>{sceneBox}</div>}
           <div className={`vo-pri${!enExplore ? ' pile' : ''}`}>
             {graphiqueCourbe && <div className="vo-in">{graphiqueCourbe}</div>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
