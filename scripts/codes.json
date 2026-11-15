@@ -772,5 +772,8 @@
  "37:prevoir:lum1-objet-au-foyer": "ANA378",
  "77:plausible:lum1-val-conjugaison": "VAL196",
  "77:plausible:lum1-val-grandissement": "VAL197",
- "77:plausible:lum1-val-loupe": "VAL198"
+ "77:plausible:lum1-val-loupe": "VAL198",
+ "34:lum1-projecteur.0": "SAPP183",
+ "34:lum1-projecteur.1": "SAPP184",
+ "36:lum1-conjugaison": "REA17"
 }

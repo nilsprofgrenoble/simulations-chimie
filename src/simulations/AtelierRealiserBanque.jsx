@@ -445,6 +445,33 @@ function genInteractions() {
     retenir: ['Convertir toutes les grandeurs en unités SI AVANT de calculer : nC → C (×10⁻⁹), cm → m (×10⁻²), km → m (×10³), t → kg (×10³).', 'La distance est élevée au carré : une erreur de conversion sur d est élevée au carré, elle aussi.', '1 N·kg⁻¹ = 1 m·s⁻².'] };
 }
 
+// ──────────────────────── Famille « Lentille mince » (1re spécialité) ────────────────────────
+function genLentille() {
+  const [d, f, Op] = tire([[30, 10, 15], [20, 10, 20], [60, 10, 12], [24, 12, 24], [36, 12, 18], [40, 8, 10], [15, 10, 30]]);
+  const q1 = { id: 'l0', type: 'num', q: <>Une lentille mince convergente a une distance focale f′ = <b>{f}{NB}cm</b>. Un objet est placé à <b>{d}{NB}cm</b> devant la lentille (OA = <b>−{d}{NB}cm</b>). Calculez la position OA′ de l’image (relation de conjugaison 1/OA′ − 1/OA = 1/f′), en <b>cm</b>.</>, unite: 'cm', vrai: Op, csMin: 2,
+    aide: 'Isolez 1/OA′ : 1/OA′ = 1/f′ + 1/OA, en gardant le signe négatif de OA. Puis prenez l’inverse.',
+    pieges: [[f * d / (f + d), 'Vous avez pris OA = +' + d + ' cm. L’objet est AVANT la lentille : OA est négatif, donc 1/OA′ = 1/f′ − 1/' + d + '.'], [d - f, 'Vous avez soustrait les distances : la relation porte sur les INVERSES, 1/OA′ = 1/f′ + 1/OA.'], [1 / (1 / f - 1 / d) * -1, 'Le signe est faux : ici 1/OA′ est positif, l’image est réelle, de l’autre côté de la lentille.']],
+    expl: <>1/OA′ = 1/f′ + 1/OA = 1/{f} − 1/{d}, donc OA′ = <b>{avecU(Op, 'cm', 2)}</b>. Positif : image réelle, derrière la lentille.</> };
+  const AB = tire([12, 15, 20, 24]), g = Op / -d;
+  const q2 = { id: 'l1', type: 'num', q: <>Pour ce même montage (OA = −{d}{NB}cm ; OA′ = +{Op}{NB}cm), calculez le grandissement <b>γ = OA′ / OA</b> (sans unité, avec son signe).</>, unite: '', vrai: g, csMin: 2,
+    aide: 'Divisez OA′ par OA en gardant les signes : un résultat négatif signifie « image renversée ».',
+    pieges: [[-g, 'Le signe est faux : OA′ est positif et OA négatif, donc γ est négatif (image renversée).'], [1 / g, 'Vous avez calculé OA / OA′ : le grandissement est OA′ / OA.']],
+    expl: <>γ = OA′ / OA = {Op} / (−{d}) = <b>{nb(g, 2)}</b>. Négatif : image renversée ; |γ| = {nb(Math.abs(g), 2)} {Math.abs(g) < 1 ? '< 1 : image plus petite que l’objet' : '> 1 : image plus grande que l’objet'}.</> };
+  const hImg = g * AB;
+  const q3 = { id: 'l2', type: 'num', q: <>L’objet mesure AB = <b>{AB}{NB}mm</b>. Quelle est la hauteur algébrique A′B′ de l’image (A′B′ = γ × AB), en <b>mm</b> ?</>, unite: 'mm', vrai: hImg, csMin: 2,
+    aide: 'A′B′ = γ × AB, avec le γ calculé à la question précédente (signe compris).',
+    pieges: [[-hImg, 'Le signe est faux : γ est négatif, donc A′B′ aussi (image renversée).']],
+    expl: <>A′B′ = γ × AB = {nb(g, 2)} × {AB} = <b>{avecU(hImg, 'mm', 2)}</b>. Le signe négatif indique que l’image est renversée.</> };
+  const [d2, Op2, f2] = tire([[30, 15, 10], [20, 20, 10], [60, 12, 10], [24, 24, 12], [36, 18, 12], [40, 10, 8], [15, 30, 10]]);
+  const q4 = { id: 'l3', type: 'num', q: <>Au banc d’optique, un objet est à <b>{d2}{NB}cm</b> devant une lentille (OA = −{d2}{NB}cm) et son image nette se forme à <b>{Op2}{NB}cm</b> derrière (OA′ = +{Op2}{NB}cm). Calculez la distance focale f′ de la lentille, en <b>cm</b>.</>, unite: 'cm', vrai: f2, csMin: 2,
+    aide: 'Relation de conjugaison : 1/f′ = 1/OA′ − 1/OA. Attention : OA est négatif.',
+    pieges: [[d2 === Op2 ? -1 : Op2 * d2 / (d2 - Op2), 'Vous avez pris OA = +' + d2 + ' cm : il est négatif (objet avant la lentille), donc 1/f′ = 1/OA′ + 1/' + d2 + '.'], [(d2 + Op2) / 2, 'Une moyenne ne convient pas : il faut additionner les INVERSES, 1/f′ = 1/OA′ + 1/' + d2 + '.']],
+    expl: <>1/f′ = 1/OA′ − 1/OA = 1/{Op2} + 1/{d2}, donc f′ = <b>{avecU(f2, 'cm', 2)}</b>.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > 1e-9); });      // un piège égal à la bonne réponse n'a pas de sens
+  return { intro: 'Lentille mince : appliquer la relation de conjugaison et le grandissement avec les bons signes.', questions: [q1, q2, q3, q4],
+    retenir: ['Relation de conjugaison : 1/OA′ − 1/OA = 1/f′, avec des grandeurs ALGÉBRIQUES (origine O, sens de la lumière positif).', 'Un objet réel est avant la lentille : OA est NÉGATIF.', 'Grandissement γ = OA′ / OA = A′B′ / AB : γ < 0 image renversée, γ > 0 image droite ; |γ| > 1 agrandie.', 'On additionne les INVERSES des distances, jamais les distances.'] };
+}
+
 // ──────────────────────── Familles « Vecteurs » : somme et différence ────────────────────────
 const sg = x => (x < 0 ? '−' + Math.abs(x) : String(x));
 function vecAleatoires() {
@@ -497,6 +524,7 @@ export const FAMILLES = [
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
   { id: 'vecteur-difference', groupe: 'Vecteurs', titre: 'Différence de deux vecteurs (variation de vitesse)', gen: genDifference },
   { id: 'interactions', groupe: 'Unités', titre: 'Forces et champs : Coulomb, gravitation (1re spé)', gen: genInteractions, domaine: 'Interactions et champs' },
+  { id: 'lum1-conjugaison', groupe: 'Formules', titre: 'Lentille mince : conjugaison et grandissement (1re spé)', gen: genLentille, domaine: 'Lentille mince' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },
   { id: 'simple', groupe: 'Unités', titre: 'Changement d’unité simple', gen: genSimple },
   { id: 'prefixes', groupe: 'Unités', titre: 'Préfixes et puissances de 10', gen: genPrefixes },
