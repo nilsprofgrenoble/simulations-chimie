@@ -361,10 +361,13 @@ const MENUS_ENTETE = [
   { key: "BTS", label: "BTS MDC" },
   { key: "COMP", label: "Travail par compétence" },
   { key: "JEUX", label: "🎮 Jeux" },
+  { key: "OUTILS", label: "🛠️ Outils" },
 ];
 // Tant que les jeux ne sont pas aboutis, seul l'administrateur (professeur admin) les voit : menu, cartes, liens directs. Les autres ne voient rien.
 import { JEUX_VISIBLES, JEUX_PUBLICS } from "./simulations/jeuxVisibles";
 const JEUX_IDS = [79, 80, 81, 113];   // jeux : affichage immersif (sans en-tête ni pied de page)
+// Outils en préparation : visibles seulement du professeur administrateur (menu « Outils » et lien direct). 124 : Grapheur de mesures.
+const OUTILS_ADMIN_IDS = [124];
 const FONDS_JEUX = {
   79: "radial-gradient(ellipse at 50% 0%, #1b2a5c 0%, #070d24 55%, #03060f 100%)",
   80: "linear-gradient(180deg, #0b3b5e 0%, #082a45 50%, #04182a 100%)",
@@ -376,6 +379,7 @@ function construireMenus() {
   const fiche = s => ({ id: s.id, icon: s.icon, label: s.label, desc: DESCRIPTIONS[s.label] });
   return MENUS_ENTETE.map(m => {
     if (m.key === "JEUX") return { ...m, groupes: [{ sims: [], contenu: ({ aller }) => <EnChargement><JeuxMenu aller={aller} /></EnChargement> }] };
+    if (m.key === "OUTILS") return { ...m, groupes: [{ sims: OUTILS_ADMIN_IDS.map(id => SIMULATIONS.find(x => x.id === id)).filter(Boolean).map(fiche) }] };
     if (m.key === "COMP") {
       const sims = SIMULATIONS.filter(s => s.niveau === "COMP").sort((a, b) => ORDRE_COMP.indexOf(a.id) - ORDRE_COMP.indexOf(b.id)).map(fiche);
       return { ...m, groupes: [{ sims }] };
@@ -391,7 +395,7 @@ function construireMenus() {
   });
 }
 const MENUS_TOUS = construireMenus();
-const MENUS_SANS_JEUX = MENUS_TOUS.filter(m => m.key !== "JEUX");
+const menusVisibles = (jeux, admin) => MENUS_TOUS.filter(m => (m.key !== "JEUX" || jeux) && (m.key !== "OUTILS" || admin));
 
 
 // ============================================================
@@ -464,8 +468,9 @@ export default function App() {
   const [activeIdBrut, setActiveId] = useState(getInitialId);
   const sessionSb = useSession();
   const jeuxOuverts = JEUX_VISIBLES || !!sessionSb?.profil?.admin;
-  const activeId = !jeuxOuverts && JEUX_IDS.includes(activeIdBrut) && !JEUX_PUBLICS.includes(activeIdBrut) ? 0 : activeIdBrut;
-  const MENUS = jeuxOuverts ? MENUS_TOUS : MENUS_SANS_JEUX;
+  const adminConnecte = !!sessionSb?.profil?.admin;
+  const activeId = (!jeuxOuverts && JEUX_IDS.includes(activeIdBrut) && !JEUX_PUBLICS.includes(activeIdBrut)) || (!adminConnecte && OUTILS_ADMIN_IDS.includes(activeIdBrut)) ? 0 : activeIdBrut;
+  const MENUS = menusVisibles(jeuxOuverts, adminConnecte);
   useEffect(() => { restaurer(); }, []);
   // Un professeur connecté n'a pas d'écran « Mon compte » intermédiaire : on l'emmène directement au suivi
   const idAffiche = activeId === 39 && sessionSb?.profil?.role === 'prof' ? 40 : activeId;
