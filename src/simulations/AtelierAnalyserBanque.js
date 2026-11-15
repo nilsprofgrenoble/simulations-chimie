@@ -3547,6 +3547,28 @@ export const PREVOIR = [
       F('2-méthylpentane', 'La chaîne de 5 carbones est la bonne, mais le méthyle est porté par le carbone central (n° 3), pas par le n° 2 : le carbone n° 2 est un CH₂.'),
       F('hexane', 'Il y a bien 6 atomes de carbone en tout, mais la chaîne est ramifiée : la plus longue chaîne n’en compte que 5, le sixième est un substituant.'),
     ] },
+  // ───────────── pH et concentration en ions oxonium (TG) ─────────────
+  { id: 'phc-dilution-facteur', domaine: 'pH et concentration en ions oxonium', titre: 'Dilution d’un facteur 10 : que devient le pH ?',
+    enonce: 'Une solution d’acide chlorhydrique a un pH égal à 3,2. On en prélève 10,0 mL qu’on introduit dans une fiole jaugée de 100 mL, puis on complète avec de l’eau distillée jusqu’au trait de jauge.', q: 'Le pH de la solution obtenue est…', options: [
+      V('4,2 : la solution est diluée d’un facteur 10, donc le pH augmente de 1', 'Facteur de dilution F = 100 / 10,0 = 10 : [H₃O⁺] est divisée par 10, donc pH final = pH initial + log 10 = 3,2 + 1 = 4,2.'),
+      F('3,3 : le pH augmente d’un dixième car on dilue 10 fois la solution', 'Le pH est un logarithme : diviser [H₃O⁺] par 10 ajoute 1 (et non 0,1) au pH.'),
+      F('0,32 : le pH est divisé par 10 car la solution est 10 fois moins concentrée', 'La dilution agit sur [H₃O⁺], pas directement sur le pH ; et diluer un acide fait augmenter son pH.'),
+      F('2,2 : le pH diminue de 1 car il y a davantage d’eau et moins d’acide', 'Diluer un acide diminue [H₃O⁺] donc augmente le pH : la solution devient moins acide.'),
+    ] },
+  { id: 'phc-comparer-ph', domaine: 'pH et concentration en ions oxonium', titre: 'Comparer deux solutions d’après leur pH',
+    enonce: 'Deux solutions d’acide chlorhydrique ont pour pH : solution A, pH = 3,0 ; solution B, pH = 5,0.', q: 'La concentration en ions oxonium de A est, par rapport à celle de B…', options: [
+      V('100 fois plus grande : 2 unités de pH d’écart correspondent à un facteur 10² = 100', '[H₃O⁺]ₐ = 10⁻³ mol/L et [H₃O⁺]ᵦ = 10⁻⁵ mol/L : le rapport vaut 10⁻³ / 10⁻⁵ = 100.'),
+      F('2 fois plus grande, car 3,0 et 5,0 diffèrent de 2 unités', 'Un écart de pH correspond à un rapport de concentrations égal à 10 puissance cet écart, et non à l’écart lui-même.'),
+      F('1,7 fois plus petite, car le rapport 3,0 / 5,0 vaut 0,6', 'On ne divise pas des pH : la relation entre pH et concentration est logarithmique.'),
+      F('100 fois plus petite, car la solution A a le pH le plus petit', 'Le pH le plus petit correspond à la concentration la plus grande : A contient davantage d’ions H₃O⁺ que B.'),
+    ] },
+  { id: 'phc-ecrire-resultat', domaine: 'pH et concentration en ions oxonium', titre: 'Écrire [H₃O⁺] avec le bon nombre de chiffres significatifs',
+    enonce: 'Un pH-mètre indique pH = 4,60 pour une solution d’acide chlorhydrique. La calculatrice donne 10^(−4,60) = 2,5118864 × 10⁻⁵ pour [H₃O⁺] en mol/L.', q: 'Comment écrire le résultat ?', options: [
+      V('[H₃O⁺] = 2,5 × 10⁻⁵ mol/L : 2 chiffres significatifs, comme le pH a 2 décimales', 'Une incertitude de 0,01 sur le pH correspond à environ 2 % sur [H₃O⁺] : on garde 2 chiffres significatifs.'),
+      F('[H₃O⁺] = 2,5118864 × 10⁻⁵ mol/L : tous les chiffres de la calculatrice', 'Un résultat ne peut pas être plus précis que la donnée : le pH n’a que 2 décimales.'),
+      F('[H₃O⁺] = 3 × 10⁻⁵ mol/L : un seul chiffre significatif', 'Un seul chiffre est trop peu : 3 × 10⁻⁵ s’écarte de près de 20 % de la valeur calculée, bien plus que l’incertitude due au pH.'),
+      F('[H₃O⁺] = 4,60 × 10⁻⁵ mol/L : on reprend le nombre du pH', 'Le 4,60 du pH n’est pas la mantisse de [H₃O⁺] : il faut calculer 10^(−4,60).'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

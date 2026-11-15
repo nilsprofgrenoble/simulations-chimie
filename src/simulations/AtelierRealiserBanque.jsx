@@ -759,6 +759,35 @@ function genTitrageTG() {
     retenir: ['n(HO⁻) versé = C_B × V_B ; avant l’équivalence, n(acide) restant = n_0 − n_B.', 'À l’équivalence : C_A × V_A = C_B × V_E.', 'Garder V_E et V_A dans la même unité ; C en mol/L, V en mL donne des mmol.'] };
 }
 
+// ───────────── pH et concentration en ions oxonium (TG) : relation, dilution ─────────────
+function genPhConcTG() {
+  const m = tire([1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0]), n = tire([2, 3, 4, 5]), C = Number(`${m}e-${n}`);
+  const sci = (x, cs = 2) => { const [a, e] = Number(x).toExponential(cs - 1).split('e'); return `${a.replace('.', ',')}${NB}×${NB}10${[...String(Number(e))].map(c => ({ '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' })[c]).join('')}`; };
+  const ph1 = -Math.log10(C);
+  const q1 = { id: 'p0', type: 'num', q: <>Une solution d’acide chlorhydrique (acide fort) a une concentration en ions oxonium [H₃O⁺] = <b>{sci(C)}{NB}mol/L</b>. Calculez son pH (c° = 1{NB}mol/L), avec 2 décimales.</>, unite: '', vrai: ph1, tolRel: 0.006, csMin: 3,
+    aide: 'pH = −log([H₃O⁺] / c°), avec le logarithme décimal (touche log) ; ne pas oublier le signe moins.',
+    pieges: [[-ph1, 'Le pH est −log([H₃O⁺]/c°) : il est positif pour une concentration inférieure à 1 mol/L.'], [Math.log(C) * -1, 'Vous avez utilisé le logarithme népérien ln ; il faut log (décimal).'], [n, 'Vous avez gardé l’exposant seul : il faut aussi tenir compte de la mantisse, pH = n − log m.']],
+    expl: <>pH = −log({sci(C)}) = <b>{nb(ph1, 3)}</b>, soit {nb(ph1, 2)} à 2 décimales.</> };
+  const pH2 = Math.round((1.5 + Math.random() * 3.5) * 100) / 100, h2 = 10 ** -pH2;
+  const q2 = { id: 'p1', type: 'num', q: <>Un pH-mètre indique <b>pH = {nb(pH2, 2)}</b> pour une solution aqueuse. Calculez [H₃O⁺] en mol/L, avec 2 chiffres significatifs.</>, unite: 'mol/L', vrai: h2, tolRel: 0.06, csMin: 2,
+    aide: '[H₃O⁺] = c° × 10^(−pH), touche 10ˣ avec x = −pH.',
+    pieges: [[10 ** pH2, 'Le signe de l’exposant est faux : [H₃O⁺] = 10^(−pH).'], [10 ** -Math.round(pH2), 'Vous avez arrondi le pH à l’entier : gardez les 2 décimales du pH pour calculer 10^(−pH).']],
+    expl: <>[H₃O⁺] = 10<sup>−{nb(pH2, 2)}</sup> = <b>{sci(h2)}{NB}mol/L</b>.</> };
+  const pH0 = Math.round((1.8 + Math.random() * 1.7) * 100) / 100, V1 = tire([1.0, 5.0, 10.0]), V2 = tire([100, 250, 500]), F = V2 / V1, pH3 = pH0 + Math.log10(F);
+  const q3 = { id: 'p2', type: 'num', q: <>Une solution d’acide chlorhydrique a pour pH <b>{nb(pH0, 2)}</b>. On en prélève <b>{nb(V1, 1)}{NB}mL</b> et on complète à <b>{V2}{NB}mL</b> avec de l’eau distillée dans une fiole jaugée. Calculez le pH de la solution diluée, avec 2 décimales.</>, unite: '', vrai: pH3, tolRel: 0.006, csMin: 3,
+    aide: 'Facteur de dilution F = V₂ / V₁ ; pH final = pH initial + log F.',
+    pieges: [[pH0 + 1, 'Vous avez ajouté 1 quel que soit le facteur : on ajoute log F (1 seulement pour F = 10).'], [pH0 - Math.log10(F), 'Diluer un acide augmente le pH : il faut ajouter log F, pas le retrancher.'], [pH0 * F, 'Vous avez multiplié le pH par F : la dilution agit sur [H₃O⁺], le pH augmente de log F.']],
+    expl: <>F = {V2} / {nb(V1, 1)} = {nb(F, 3)} ; pH final = {nb(pH0, 2)} + log {nb(F, 3)} = <b>{nb(pH3, 3)}</b>.</> };
+  const pHf = Math.round((4.2 + Math.random() * 1.6) * 100) / 100, k = tire([2, 3]), C0 = 10 ** -(pHf - k);
+  const q4 = { id: 'p3', type: 'num', q: <>Une solution mère d’acide chlorhydrique est diluée d’un facteur 10 à <b>{k}</b> reprises successives ; le pH de la dernière solution est <b>{nb(pHf, 2)}</b>. Calculez la concentration en ions oxonium de la solution mère, en mol/L, avec 2 chiffres significatifs.</>, unite: 'mol/L', vrai: C0, tolRel: 0.06, csMin: 2,
+    aide: 'Chaque dilution d’un facteur 10 ajoute 1 au pH : pH(mère) = pH(finale) − k, puis [H₃O⁺] = 10^(−pH).',
+    pieges: [[10 ** -(pHf + k), 'Vous avez ajouté k au pH de la solution finale : la solution mère est plus concentrée, son pH est plus petit.'], [10 ** -pHf, 'C’est la concentration de la solution diluée, pas celle de la solution mère.']],
+    expl: <>pH(mère) = {nb(pHf, 2)} − {k} = {nb(pHf - k, 2)} ; [H₃O⁺] = 10<sup>−{nb(pHf - k, 2)}</sup> = <b>{sci(C0)}{NB}mol/L</b>.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'pH et concentration en ions oxonium : relation dans les deux sens, effet d’une dilution.', questions: [q1, q2, q3, q4],
+    retenir: ['pH = −log([H₃O⁺] / c°) et [H₃O⁺] = c° × 10^(−pH), avec c° = 1 mol/L.', 'Dilution d’un facteur F : pH final = pH initial + log F (facteur 10 : + 1).', 'Autant de décimales pour le pH que de chiffres significatifs pour [H₃O⁺].'] };
+}
+
 export const FAMILLES = [
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
   { id: 'vecteur-difference', groupe: 'Vecteurs', titre: 'Différence de deux vecteurs (variation de vitesse)', gen: genDifference },
@@ -774,6 +803,7 @@ export const FAMILLES = [
   { id: 'dop-calcul', groupe: 'Formules', titre: 'Effet Doppler : du décalage à la vitesse (TSTL)', gen: genDoppler, domaine: 'Ondes' },
   { id: 'dopg-calcul', groupe: 'Formules', titre: 'Effet Doppler : établir l’expression, son et lumière (TG)', gen: genDopplerTG, domaine: 'Ondes' },
   { id: 'titph-calcul', groupe: 'Formules', titre: 'Titrage pH-métrique : quantités de matière, V_E et C_A (TG)', gen: genTitrageTG, domaine: 'Titrage pH-métrique' },
+  { id: 'phc-calcul', groupe: 'Formules', titre: 'pH et concentration en ions oxonium : relation et dilution (TG)', gen: genPhConcTG, domaine: 'pH et concentration en ions oxonium' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },
   { id: 'simple', groupe: 'Unités', titre: 'Changement d’unité simple', gen: genSimple },
   { id: 'prefixes', groupe: 'Unités', titre: 'Préfixes et puissances de 10', gen: genPrefixes },
