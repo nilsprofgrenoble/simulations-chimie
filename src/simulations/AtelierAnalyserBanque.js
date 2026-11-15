@@ -2626,6 +2626,27 @@ export const PREVOIR = [
       F('utiliser un son plus aigu pour que l’onde aille plus vite', 'La célérité du son ne dépend pas de la fréquence et ne modifie pas la largeur des pics.'),
       F('choisir un émetteur de fréquence plus basse', 'Une fréquence f_e plus basse diminue même le décalage (δf = f_e × v / c) sans affiner les pics.'),
     ] },
+  { id: 'dopg-derriere', domaine: 'Ondes', titre: 'Fréquence reçue derrière un émetteur mobile',
+    enonce: 'Un émetteur sonore de fréquence f_e se déplace en ligne droite à la vitesse v = c / 4, c étant la célérité de l’onde dans le milieu. Un observateur fixe est placé sur la même droite, derrière l’émetteur (l’émetteur s’en éloigne).', q: 'La fréquence qu’il reçoit vaut…', options: [
+      V('0,80 f_e', 'Derrière l’émetteur, λ_B = (c + v) T_e, donc f_B = f_e / (1 + v / c) = f_e / 1,25 = 0,80 f_e.'),
+      F('0,75 f_e', 'C’est f_e × (1 − v / c), une approximation qui n’est pas l’expression établie ; ici v n’est pas très inférieure à c.'),
+      F('1,25 f_e', 'La fréquence reçue est plus grande que f_e seulement devant l’émetteur ; derrière, elle est plus petite.'),
+      F('f_e, car l’émetteur n’a pas changé sa fréquence d’émission', 'La fréquence d’émission ne change pas, mais la fréquence reçue dépend du mouvement relatif.'),
+    ] },
+  { id: 'dopg-limite', domaine: 'Ondes', titre: 'Quand v n’est plus négligeable devant c',
+    enonce: 'Un émetteur se rapproche d’un observateur fixe, sur la même droite, à la vitesse v = c / 2 (cas théorique). On dispose de l’expression exacte f_r = f_e / (1 − v / c) et de l’expression approchée δf = f_e × v / c valable si v est très inférieure à c.', q: 'La fréquence reçue est…', options: [
+      V('2 f_e, calculée avec l’expression exacte', 'f_r = f_e / (1 − 1/2) = 2 f_e. Ici v n’est pas très inférieure à c, l’approximation n’est pas applicable.'),
+      F('1,5 f_e, en ajoutant le décalage approché f_e × v / c', 'L’approximation δf = f_e v / c suppose v très inférieure à c, ce qui n’est pas le cas à c / 2.'),
+      F('0,5 f_e, car l’émetteur est rapide', 'Un émetteur qui se rapproche donne une fréquence reçue plus grande que f_e.'),
+      F('f_e, car le milieu ne change pas', 'La célérité ne change pas, mais la longueur d’onde devant l’émetteur est divisée par 2 : la fréquence reçue double.'),
+    ] },
+  { id: 'dopg-lumiere', domaine: 'Ondes', titre: 'Son et lumière : même vitesse, quel décalage relatif ?',
+    enonce: 'Un émetteur d’ultrasons et un laser, fixés chacun sur un chariot, se déplacent à la même vitesse v = 0,50 m/s vers un récepteur fixe (c = 340 m/s dans l’air pour le son ; c = 3,00 × 10⁸ m/s pour la lumière). On compare le décalage relatif δf / f_e dans les deux cas.', q: 'Le décalage relatif δf / f_e est…', options: [
+      V('environ un million de fois plus petit pour la lumière', 'δf / f_e = v / c : c est environ 10⁶ fois plus grande pour la lumière (3,00 × 10⁸ / 340 ≈ 9 × 10⁵), donc le rapport est environ 10⁶ fois plus petit.'),
+      F('identique, car il ne dépend que de la vitesse', 'Il dépend de v / c : la célérité intervient et diffère beaucoup entre le son et la lumière.'),
+      F('plus grand pour la lumière, car sa fréquence est plus grande', 'La fréquence f_e s’élimine dans le rapport δf / f_e = v / c.'),
+      F('nul pour la lumière, car la lumière ne subit pas l’effet Doppler', 'Les ondes lumineuses subissent aussi l’effet Doppler ; il est seulement très petit en valeur relative.'),
+    ] },
   { id: 'ir-nombre-onde', domaine: 'Chimie organique', titre: 'Du micromètre au nombre d’onde',
     enonce: 'Une radiation infrarouge a pour longueur d’onde λ = 5,0 µm (1 µm = 10⁻⁴ cm). On rappelle σ = 1 ÷ λ, avec λ exprimée en cm.', q: 'Son nombre d’onde vaut…', options: [
       V('2000 cm⁻¹', 'λ = 5,0 × 10⁻⁴ cm ; σ = 1 ÷ (5,0 × 10⁻⁴) = 2000 cm⁻¹.'),

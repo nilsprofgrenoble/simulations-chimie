@@ -74,6 +74,7 @@ const SimulationOptimiserSynthese = paresseux(() => import("./simulations/Optimi
 const SimulationMachinesThermiques = paresseux(() => import("./simulations/MachinesThermiques"), "SimulationMachinesThermiques");
 const SimulationInterferences = paresseux(() => import("./simulations/Interferences"), "SimulationInterferences");
 const SimulationDoppler = paresseux(() => import("./simulations/Doppler"), "SimulationDoppler");
+const SimulationDopplerTG = paresseux(() => import("./simulations/Doppler"), "SimulationDopplerTG");
 const SimulationAcidesBases = paresseux(() => import("./simulations/AcidesBases"), "SimulationAcidesBases");
 const SimulationEsterification = paresseux(() => import("./simulations/Esterification"), "SimulationEsterification");
 const SimulationChampForce = paresseux(() => import("./simulations/ChampForce"), "SimulationChampForce");
@@ -197,6 +198,8 @@ const SIMULATIONS = [
     component: SimulationInterferences },
   { id:114, label:"Effet Doppler : du décalage de fréquence à la vitesse", niveau:"TSTL", icon:"🌊", color:"#b45309",
     component: SimulationDoppler },
+  { id:116, label:"Effet Doppler : établir l’expression du décalage et mesurer une vitesse", niveau:"TG", icon:"🌊", color:"#b45309",
+    component: SimulationDopplerTG },
   { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",
@@ -329,6 +332,7 @@ SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; if (s.niveau === 'COMPTE') s
 const MENUS_ENTETE = [
   { key: "2GT", label: "2GT" },
   { key: "1G", label: "1G" },
+  { key: "TG", label: "TG" },
   { key: "TSTL", label: "TSTL" },
   { key: "BTS", label: "BTS MDC" },
   { key: "COMP", label: "Travail par compétence" },

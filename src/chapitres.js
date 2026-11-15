@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 //  CHAPITRES PAR NIVEAU : source unique du menu, du « chapitre en cours » d'une classe et des devoirs.
 //
-//  Un chapitre = un groupe du menu (2GT, 1G, TSTL, BTS) avec :
+//  Un chapitre = un groupe du menu (2GT, 1G, TG, TSTL, BTS) avec :
 //   • (facultatif) une « rubrique » : intitulé qui regroupe plusieurs chapitres dans le menu (ex. TSTL : « Systèmes et procédés », « Ondes ») ;
 //   • ses simulations (identifiants de src/App.jsx) ;
 //   • les thèmes de la banque d'exercices « Je m'entraîne » qui s'y rattachent (champ « domaine » des exercices).
@@ -12,7 +12,7 @@
 //  Les identifiants (« tstl-fluides »…) sont enregistrés tels quels dans classes.chapitres (supabase/07) : ne pas les renommer.
 // ═══════════════════════════════════════════════════════════════════════════
 export const NIVEAUX_CHAPITRES = [
-  { key: '2GT', label: '2GT' }, { key: '1G', label: '1G spé PC' }, { key: 'TSTL', label: 'TSTL' }, { key: 'BTS', label: 'BTS' },
+  { key: '2GT', label: '2GT' }, { key: '1G', label: '1G spé PC' }, { key: 'TG', label: 'TG spé PC' }, { key: 'TSTL', label: 'TSTL' }, { key: 'BTS', label: 'BTS' },
 ];
 
 // Simulations temporairement masquées du menu et de l'accueil (accessibles par ?sim=N) ; vide = tout est visible
@@ -36,6 +36,7 @@ export const CHAPITRES = [
   { id: '1g-mouvement', niveau: '1G', label: '🚀 Mouvement d’un système', sims: [52], domaines: ['Mécanique'] },
   { id: '1g-lentille', niveau: '1G', label: '🔍 Image donnée par une lentille mince', sims: [115], domaines: ['Lentille mince'] },
 
+  { id: 'tg-ondes', niveau: 'TG', label: '🌊 Ondes et signaux : effet Doppler', sims: [116], domaines: ['Ondes'] },
   { id: 'tstl-signaux', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '📡 Transmission de signaux numériques', sims: [8, 15, 33], domaines: ['Transmission de signaux numériques'] },
   { id: 'tstl-fluides', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '💧 Transport des fluides', sims: [26, 27, 28, 17], domaines: ['Transport des fluides'] },
   { id: 'tstl-regulation', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '⚙️ Régulation', sims: [5, 6], domaines: ['Régulation'] },
