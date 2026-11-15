@@ -788,6 +788,34 @@ function genPhConcTG() {
     retenir: ['pH = −log([H₃O⁺] / c°) et [H₃O⁺] = c° × 10^(−pH), avec c° = 1 mol/L.', 'Dilution d’un facteur F : pH final = pH initial + log F (facteur 10 : + 1).', 'Autant de décimales pour le pH que de chiffres significatifs pour [H₃O⁺].'] };
 }
 
+// ───────────── Cinétique (TG) : vitesse volumique, temps de demi-réaction, constante d’ordre 1 ─────────────
+function genCinetiqueTG() {
+  const c1 = tire([60.0, 50.0, 40.0]), t1 = tire([2, 4, 6]), dt = tire([2, 3, 4, 5]), kk = tire([0.10, 0.15, 0.20]);
+  const c2 = Math.round(c1 * Math.exp(-kk * dt) * 10) / 10, t2 = t1 + dt, v = (c1 - c2) / dt;
+  const q1 = { id: 'c0', type: 'num', q: <>On suit la disparition d’un réactif : sa concentration vaut <b>{nb(c1, 3)}{NB}mmol/L</b> à <b>t<sub>1</sub> = {t1},0{NB}min</b> et <b>{nb(c2, 3)}{NB}mmol/L</b> à <b>t<sub>2</sub> = {t2},0{NB}min</b>. Calculez la vitesse volumique moyenne de disparition entre ces deux instants, en <b>mmol·L⁻¹·min⁻¹</b>.</>, unite: 'mmol·L⁻¹·min⁻¹', vrai: v, csMin: 3,
+    aide: 'v = −Δc / Δt avec Δc = c_2 − c_1 (négatif pour un réactif) et Δt = t_2 − t_1.',
+    pieges: [[-v, 'Pour un réactif, Δc est négatif : le signe moins de v = −Δc / Δt rend la vitesse volumique de disparition positive.'], [dt / (c1 - c2), 'Le rapport est inversé : v = −Δc / Δt.'], [(c1 - c2) / t2, 'Il faut diviser par la durée Δt = t₂ − t₁, pas par t₂.'], [c1 - c2, 'Il faut encore diviser par Δt.']],
+    expl: <>Δc = {nb(c2, 3)} − {nb(c1, 3)} = {nb(c2 - c1, 3)}{NB}mmol/L ; Δt = {t2},0 − {t1},0 = {dt},0{NB}min ; v = −Δc / Δt = <b>{avecU(v, 'mmol·L⁻¹·min⁻¹', 3)}</b>.</> };
+  const vv = tire([2.4, 3.6, 4.8, 1.8, 6.0]), vs = vv / 1000 / 60;
+  const q2 = { id: 'c1', type: 'num', q: <>Une vitesse volumique de disparition vaut <b>{nb(vv, 2)}{NB}mmol·L⁻¹·min⁻¹</b>. Exprimez-la en <b>mol·L⁻¹·s⁻¹</b>.</>, unite: 'mol·L⁻¹·s⁻¹', vrai: vs, csMin: 2,
+    aide: '1 mmol = 10⁻³ mol et 1 min = 60 s, donc il faut diviser par 1000 puis par 60.',
+    pieges: [[vv / 1000, 'Vous avez converti les mmol en mol, mais il reste à passer de min⁻¹ à s⁻¹ : diviser par 60.'], [vv / 60, 'Vous avez converti min⁻¹ en s⁻¹, mais il reste à passer des mmol aux mol : diviser par 1000.'], [vv * 60 / 1000, 'Pour passer de min⁻¹ à s⁻¹ on divise par 60 (une seconde est plus courte qu’une minute).']],
+    expl: <>v = {nb(vv, 2)} × 10⁻³ mol·L⁻¹ / 60 s = <b>{avecU(vs, 'mol·L⁻¹·s⁻¹', 3)}</b>.</> };
+  const c0 = tire([0.080, 0.120, 0.160, 0.200]), th = tire([5, 8, 12, 15]), n = tire([2, 3, 4]), cn = c0 / 2 ** n;
+  const q3 = { id: 'c2', type: 'num', q: <>Un réactif dont la disparition suit une loi d’ordre 1 a une concentration initiale <b>{nb(c0, 3)}{NB}mol/L</b> et un temps de demi-réaction <b>t<sub>½</sub> = {th}{NB}min</b>. Calculez sa concentration au bout de <b>{n * th}{NB}min</b>, en <b>mol/L</b>.</>, unite: 'mol/L', vrai: cn, csMin: 3,
+    aide: `${n * th} min = ${n} × t_½ : la concentration est divisée par 2 à chaque demi-réaction, soit c = c_0 / 2^n.`,
+    pieges: [[c0 / n, 'La concentration n’est pas divisée par n : elle est divisée par 2 à chaque demi-réaction, soit par 2ⁿ.'], [c0 / 2 ** (n - 1), `Il y a ${n} demi-réactions (${n * th} / ${th}) : c = c₀ / 2${['', '', '²', '³', '⁴'][n]}.`], [c0 / (2 * n), 'Chaque demi-réaction divise la concentration par 2 : après n demi-réactions, c = c₀ / 2ⁿ.']],
+    expl: <>{n * th} / {th} = {n} demi-réactions : c = c<sub>0</sub> / 2<sup>{n}</sup> = {nb(c0, 3)} / {2 ** n} = <b>{avecU(cn, 'mol/L', 3)}</b>.</> };
+  const th2 = tire([6, 10, 16, 20]), k = Math.LN2 / th2;
+  const q4 = { id: 'c3', type: 'num', q: <>Pour une loi d’ordre 1, le temps de demi-réaction est lié à la constante de vitesse par <b>t<sub>½</sub> = ln 2 / k</b>. On mesure <b>t<sub>½</sub> = {th2}{NB}min</b>. Calculez la constante de vitesse k, en <b>min⁻¹</b>.</>, unite: 'min⁻¹', vrai: k, csMin: 3,
+    aide: 'k = ln 2 / t_½ avec ln 2 ≈ 0,693 ; le résultat est l’inverse d’un temps.',
+    pieges: [[1 / th2, 'La relation contient ln 2 : k = ln 2 / t½, pas 1 / t½.'], [th2 / Math.LN2, 'Le rapport est inversé : k = ln 2 / t½.'], [0.5 / th2, 'Le facteur est ln 2 ≈ 0,693, pas 0,5.']],
+    expl: <>k = ln 2 / t<sub>½</sub> = 0,693 / {th2} = <b>{avecU(k, 'min⁻¹', 3)}</b>.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > 1e-9); });
+  return { intro: 'Cinétique : vitesse volumique moyenne, changement d’unité, concentration après n demi-réactions et constante de vitesse d’ordre 1.', questions: [q1, q2, q3, q4],
+    retenir: ['v = −Δc / Δt pour un réactif (positive) ; v = Δc / Δt pour un produit.', 'Après n demi-réactions (ordre 1) : c = c_0 / 2ⁿ.', 't½ = ln 2 / k ; k s’exprime en min⁻¹ ou s⁻¹ (inverse d’un temps).'] };
+}
+
 export const FAMILLES = [
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
   { id: 'vecteur-difference', groupe: 'Vecteurs', titre: 'Différence de deux vecteurs (variation de vitesse)', gen: genDifference },
@@ -804,6 +832,7 @@ export const FAMILLES = [
   { id: 'dopg-calcul', groupe: 'Formules', titre: 'Effet Doppler : établir l’expression, son et lumière (TG)', gen: genDopplerTG, domaine: 'Ondes' },
   { id: 'titph-calcul', groupe: 'Formules', titre: 'Titrage pH-métrique : quantités de matière, V_E et C_A (TG)', gen: genTitrageTG, domaine: 'Titrage pH-métrique' },
   { id: 'phc-calcul', groupe: 'Formules', titre: 'pH et concentration en ions oxonium : relation et dilution (TG)', gen: genPhConcTG, domaine: 'pH et concentration en ions oxonium' },
+  { id: 'cinv-calcul', groupe: 'Formules', titre: 'Cinétique : vitesse volumique, demi-réactions et constante d’ordre 1 (TG)', gen: genCinetiqueTG, domaine: 'Cinétique : vitesse volumique et ordre 1' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },
   { id: 'simple', groupe: 'Unités', titre: 'Changement d’unité simple', gen: genSimple },
   { id: 'prefixes', groupe: 'Unités', titre: 'Préfixes et puissances de 10', gen: genPrefixes },

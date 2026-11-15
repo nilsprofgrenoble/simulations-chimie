@@ -77,6 +77,7 @@ const SimulationDoppler = paresseux(() => import("./simulations/Doppler"), "Simu
 const SimulationDopplerTG = paresseux(() => import("./simulations/Doppler"), "SimulationDopplerTG");
 const SimulationTitragePH = paresseux(() => import("./simulations/TitragePH"), "SimulationTitragePH");
 const SimulationPhConcentration = paresseux(() => import("./simulations/PhConcentration"), "SimulationPhConcentration");
+const SimulationVitesseOrdre1 = paresseux(() => import("./simulations/VitesseOrdre1"), "SimulationVitesseOrdre1");
 const SimulationAcidesBases = paresseux(() => import("./simulations/AcidesBases"), "SimulationAcidesBases");
 const SimulationEsterification = paresseux(() => import("./simulations/Esterification"), "SimulationEsterification");
 const SimulationChampForce = paresseux(() => import("./simulations/ChampForce"), "SimulationChampForce");
@@ -209,6 +210,8 @@ const SIMULATIONS = [
     component: SimulationTitragePH },
   { id:121, label:"pH et concentration en ions oxonium : calculer, diluer, mesurer", niveau:"TG", icon:"💧", color:"#0f766e",
     component: SimulationPhConcentration },
+  { id:122, label:"Cinétique : vitesse volumique, temps de demi-réaction et loi d’ordre 1", niveau:"TG", icon:"⏱️", color:"#0f766e",
+    component: SimulationVitesseOrdre1 },
   { id:117, label:"L’œil et la loupe : accommodation, diamètre apparent, grossissement", niveau:"TSTL", icon:"👁️", color:"#0e7490",
     component: SimulationOeilLoupe },
   { id:118, label:"Le microscope : image intermédiaire, mise au point, grossissement", niveau:"TSTL", icon:"🔬", color:"#0e7490",

@@ -841,5 +841,17 @@
  "77:plausible:phc-val-signe": "VAL208",
  "77:plausible:phc-val-dilution": "VAL209",
  "77:plausible:phc-val-limite": "VAL210",
- "36:phc-calcul": "REA28"
+ "36:phc-calcul": "REA28",
+ "34:cinv-vitesse.0": "SAPP207",
+ "34:cinv-vitesse.1": "SAPP208",
+ "34:cinv-k.0": "SAPP209",
+ "34:cinv-k.1": "SAPP210",
+ "37:prevoir:cinv-moyenne": "ANA400",
+ "37:prevoir:cinv-demi-const": "ANA401",
+ "37:prevoir:cinv-ln-pente": "ANA402",
+ "37:prevoir:cinv-v-sur-c": "ANA403",
+ "77:plausible:cinv-val-signe": "VAL211",
+ "77:plausible:cinv-val-ordre1": "VAL212",
+ "77:plausible:cinv-val-k": "VAL213",
+ "36:cinv-calcul": "REA29"
 }
