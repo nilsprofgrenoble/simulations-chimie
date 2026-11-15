@@ -143,7 +143,7 @@ export function SimulationVitesseOrdre1() {
   const setT = f => setTi(s => ({ ...s, ...f }));
 
   // ---------- étapes du parcours ----------
-  const IDS = ['montage', 'courbe', 'deltac', 'signe', 'tangente', 'pente', 'pente12', 'diminue', 'demi', 'demi2', 'demi3', 'vc', 'kconst', 'ln', 'autre', 'compB', 'conclB', 'bruit', 'bravo'];
+  const IDS = ['montage', 'courbe', 'deltac', 'signe', 'tangente', 'pente', 'pente12', 'diminue', 'demi', 'demi2', 'demi3', 'vc', 'kconst', 'ln', 'compB', 'conclB', 'bruit', 'bravo'];
   const etape = guide.etape, idE = enGuide ? IDS[Math.min(etape, IDS.length - 1)] : null;
   const apres = id => !enGuide || etape > IDS.indexOf(id), deja = id => !enGuide || etape >= IDS.indexOf(id);
 
@@ -165,7 +165,7 @@ export function SimulationVitesseOrdre1() {
   const niveaux = (() => {
     const L = [];
     const regle = [['demi', 1], ['demi2', 2], ['demi3', 3]];
-    if (enGuide) { regle.forEach(([id, n]) => { if (deja(id)) L.push({ n, c: P.c0 / 2 ** n, hz: true, vert: apres(id) }); }); }
+    if (enGuide) { regle.forEach(([id, n]) => { if (deja(id)) L.push({ n, c: P.c0 / 2 ** n, hz: true, vert: apres(id) && !(P.type === 'B' && idE === 'compB') }); }); }
     else if (ti.niv && !(dd && dd.type === 'vit')) [1, 2, 3].forEach(n => L.push({ n, c: P.c0 / 2 ** n, hz: true, vert: !dd || dd.type !== 'ordre' }));
     return L;
   })();
@@ -179,7 +179,7 @@ export function SimulationVitesseOrdre1() {
   const conforme = !attendu || ((attendu.t == null || Math.abs(ti.t - attendu.t) < 0.05) && (attendu.tang == null || ti.tang === attendu.tang) && (!attendu.type || ti.type === attendu.type) && (attendu.sigma == null || ti.sigma === attendu.sigma));
   const bloque = conforme ? null : 'Rétablissez d’abord la situation avec le bouton au-dessus du graphique.';
   const retablir = () => setT({ ...attendu, ...(attendu.sigma != null ? { graine: 7 } : {}) });
-  const libelleRetablir = attendu && `Rétablir : ${attendu.type === 'B' ? 'réaction B' : attendu.type === 'A' ? 'réaction A avec mesures bruitées' : ''}${attendu.t != null && !attendu.type ? `curseur à t = ${nbf(attendu.t, 1)} min` : ''}${attendu.tang ? ', tangente tracée' : ''}`;
+  const libelleRetablir = attendu && `Rétablir : ${attendu.type === 'B' ? 'transformation B' : attendu.type === 'A' ? 'RCl avec mesures bruitées' : ''}${attendu.t != null && !attendu.type ? `curseur à t = ${nbf(attendu.t, 1)} min` : ''}${attendu.tang ? ', tangente tracée' : ''}`;
 
   const v6 = M.vit({ type: 'A', c0: 40, k: 0.15 }, 6);
   const ETAPES = [
@@ -272,9 +272,13 @@ export function SimulationVitesseOrdre1() {
         calcul: () => ['Pente = [ln(c/c°) à 10,0 min − ln(c/c°) à 0] / (10,0 − 0) = (−4,72 − (−3,22)) / 10,0.', 'Pente = −1,50 / 10,0 = −0,150 min⁻¹ : la pente est négative. Donc k = 0,150 min⁻¹, comme avec v / c.'],
         pieges: [[0.150, 'ln c diminue quand t augmente : la pente est négative (elle vaut −k).'], [-6.67, 'Le rapport est inversé : pente = Δ(ln c) / Δt.'], [-1.5, 'Il faut diviser par Δt = 10,0 min.']],
         expl: 'Pente = −0,150 min⁻¹, donc k = 0,150 min⁻¹ : la même valeur que par le rapport v / c. Les points sont alignés : c’est la signature d’une loi d’ordre 1.', indice: 'Pente = (variation de ln(c/c°)) / (variation de t) entre les deux points donnés.' } },
-    { id: 'autre', titre: 'Un autre comportement', focus: ['courbe'],
-      texte: <>Toutes les transformations ne suivent pas une loi d’ordre 1. Une autre transformation, <strong>B</strong>, part de la même concentration <em>c</em><sub>0</sub> = 40,0{NB}mmol·L⁻¹ et sa première demi-réaction dure aussi 4,6{NB}min. Choisissez la <strong>réaction B</strong> (boutons sous le graphique) et comparez.</>,
-      tache: { type: 'action', ok: ti.type === 'B', label: 'Choisir la réaction B', faire: () => setT({ type: 'B' }), consigne: 'Choisissez la réaction B (boutons sous le graphique)' },
+    { id: 'compB', titre: 'Une autre transformation : B', focus: ['courbe'],
+      texte: <>Toutes les transformations ne suivent pas une loi d’ordre 1. Pour le savoir, on applique les mêmes tests à leurs mesures. Voici une <strong>autre transformation, notée B</strong> : un autre réactif, suivi de la même façon, avec la même concentration initiale <em>c</em><sub>0</sub> = 40,0{NB}mmol·L⁻¹. Sa loi de vitesse n’est pas donnée. Sa première demi-réaction dure 4,6{NB}min, comme pour RCl : <em>c</em> = 20,0{NB}mmol·L⁻¹ à <em>t</em> = 4,6{NB}min.
+        <br/>Affichez ses mesures avec le bouton « Transformation B » sous le graphique. Cherchez l’instant où <em>c</em> atteint 10,0{NB}mmol·L⁻¹ (deuxième trait), puis calculez la durée de la <strong>deuxième</strong> demi-réaction (de 20,0 à 10,0{NB}mmol·L⁻¹).</>,
+      tache: { type: 'num', q: 'Durée de la deuxième demi-réaction de B (de 20,0 à 10,0 mmol/L)', unite: 'min', vrai: 9.24, tol: 0.04, affiche: v => nbf(v, 1), cs: 2, bloque,
+        calcul: () => ['Pour B, c = 10,0 mmol/L à t ≈ 13,9 min.', 'Durée = 13,9 − 4,6 = 9,3 min environ (9,24 min avec les valeurs exactes) : le double de la première.'],
+        pieges: [[13.86, '13,9 min est l’instant où c = c₀/4 ; la durée est la différence avec 4,6 min.'], [4.62, '4,6 min est la durée de la première demi-réaction. Lisez la deuxième sur la courbe de B.']],
+        expl: 'Pour B : 4,6 min puis 9,2 min : t½ n’est pas constant, il double à chaque fois.', indice: 'Durée = (instant où c = 10,0) − 4,6 min.' },
       retenirTitre: 'À RETENIR : LA LOI DE VITESSE D’ORDRE 1',
       retenir: <>
         <SvgLoiOrdre1/>
@@ -283,18 +287,12 @@ export function SimulationVitesseOrdre1() {
           <li>Exemple de la simulation : k = 0,150 min⁻¹, t½ = ln 2 / 0,150 = 4,6 min, trouvé aussi sur la courbe.</li>
           <li>Moyen de s’en souvenir : <strong>« ordre 1 : v ∝ c, ln c affine, t½ constant »</strong>.</li>
         </ul></> },
-    { id: 'compB', titre: 'Les demi-réactions de B', focus: ['courbe'],
-      texte: <>Pour la réaction B, <em>c</em> = 20,0{NB}mmol·L⁻¹ à <em>t</em> = 4,6{NB}min. Cherchez l’instant où <em>c</em> atteint 10,0{NB}mmol·L⁻¹ (second trait) et calculez la durée de la deuxième demi-réaction.</>,
-      tache: { type: 'num', q: 'Durée de la deuxième demi-réaction de B (de 20,0 à 10,0 mmol/L)', unite: 'min', vrai: 9.24, tol: 0.04, affiche: v => nbf(v, 1), cs: 2, bloque,
-        calcul: () => ['Pour B, c = 10,0 mmol/L à t ≈ 13,9 min.', 'Durée = 13,9 − 4,6 = 9,3 min environ (9,24 min avec les valeurs exactes) : le double de la première.'],
-        pieges: [[13.86, '13,9 min est l’instant où c = c₀/4 ; la durée est la différence avec 4,6 min.'], [4.62, '4,6 min est la durée de la première demi-réaction. Lisez la deuxième sur la courbe de B.']],
-        expl: 'Pour B : 4,6 min puis 9,2 min : t½ n’est pas constant, il double à chaque fois.', indice: 'Durée = (instant où c = 10,0) − 4,6 min.' } },
     { id: 'conclB', titre: 'B suit-elle l’ordre 1 ?', focus: ['graphes'],
-      texte: <>Pour la réaction B : les durées de demi-réaction valent 4,6{NB}min puis 9,2{NB}min, le rapport <em>v</em> / <em>c</em> diminue (0,216 puis 0,108{NB}min⁻¹ quand <em>c</em> passe de 40,0 à 20,0{NB}mmol·L⁻¹) et les points de ln(<em>c</em> / <em>c</em>°) = f(<em>t</em>) ne sont pas alignés.</>,
-      tache: { type: 'qcm', q: 'La réaction B suit-elle une loi de vitesse d’ordre 1 ?', options: ['non : t½ n’est pas constant, v / c n’est pas constant et ln c n’est pas une droite', 'oui : sa première demi-réaction dure 4,6 min, comme pour A', 'oui : sa concentration décroît au cours du temps'], bonne: 0,
-        expl: 'Un seul test négatif suffit pour écarter l’ordre 1, et ici les trois le sont. La première demi-réaction de B est identique à celle de A : il faut comparer plusieurs demi-réactions, pas une seule. (Pour B, v est proportionnelle à c² : ce n’est pas au programme.)', indice: 'Comparez, pour A et pour B, la constance de t½, celle de v / c et l’allure de ln c.' } },
+      texte: <>Pour la transformation B : les durées de demi-réaction valent 4,6{NB}min puis 9,2{NB}min, le rapport <em>v</em> / <em>c</em> diminue (0,216 puis 0,108{NB}min⁻¹ quand <em>c</em> passe de 40,0 à 20,0{NB}mmol·L⁻¹) et les points de ln(<em>c</em> / <em>c</em>°) = f(<em>t</em>) ne sont pas alignés.</>,
+      tache: { type: 'qcm', q: 'La transformation B suit-elle une loi de vitesse d’ordre 1 ?', options: ['non : t½ n’est pas constant, v / c n’est pas constant et ln c n’est pas une droite', 'oui : sa première demi-réaction dure 4,6 min, comme pour A', 'oui : sa concentration décroît au cours du temps'], bonne: 0,
+        expl: 'Un seul test négatif suffit pour écarter l’ordre 1, et ici les trois le sont. La première demi-réaction de B est identique à celle de A : il faut comparer plusieurs demi-réactions, pas une seule.', indice: 'Comparez, pour A et pour B, la constance de t½, celle de v / c et l’allure de ln c.' } },
     { id: 'bruit', titre: 'Des mesures bruitées', focus: ['courbe', 'mesures'],
-      texte: <>Dans une vraie expérience, chaque mesure est entachée d’un petit écart aléatoire (ici σ = 0,4{NB}mmol·L⁻¹). Revenez à la <strong>réaction A</strong> et à <em>t</em> = 6,0{NB}min (bouton ci-dessus). On estime <em>v</em> avec deux points écartés de Δ<em>t</em> et centrés sur <em>t</em> : <em>v</em> ≈ −(<em>c</em><sub>2</sub> − <em>c</em><sub>1</sub>) / Δ<em>t</em>. Le tableau donne l’estimation pour quatre valeurs de Δ<em>t</em> ; « Nouvelle série » refait l’expérience. Valeur exacte du modèle, inconnue en pratique : {nbf(v6, 2)}{NB}mmol·L⁻¹·min⁻¹.</>,
+      texte: <>Dans une vraie expérience, chaque mesure est entachée d’un petit écart aléatoire (ici σ = 0,4{NB}mmol·L⁻¹). Revenez à la <strong>transformation A (RCl)</strong> et à <em>t</em> = 6,0{NB}min (bouton ci-dessus). On estime <em>v</em> avec deux points écartés de Δ<em>t</em> et centrés sur <em>t</em> : <em>v</em> ≈ −(<em>c</em><sub>2</sub> − <em>c</em><sub>1</sub>) / Δ<em>t</em>. Le tableau donne l’estimation pour quatre valeurs de Δ<em>t</em> ; « Nouvelle série » refait l’expérience. Valeur exacte du modèle, inconnue en pratique : {nbf(v6, 2)}{NB}mmol·L⁻¹·min⁻¹.</>,
       tache: { type: 'qcm', q: 'Quel intervalle Δt donne le meilleur compromis ?', options: ['Δt = 4 min : assez grand pour que le bruit compte peu, assez petit pour que la courbe reste presque une droite', 'Δt = 1 min : plus l’intervalle est petit, plus on se rapproche de la tangente', 'Δt = 8 min : plus l’intervalle est grand, plus la mesure est précise'], bonne: 0, bloque,
         expl: 'Avec Δt = 1 min, l’écart dû au bruit atteint environ 23 % : les estimations varient beaucoup d’une série à l’autre. Avec Δt = 8 min, le bruit pèse peu (3 %) mais la courbure fausse la sécante d’environ 6 %. Δt = 4 min : environ 6 % de bruit et 1,5 % de courbure.', indice: 'Refaites plusieurs séries et regardez comment varient les estimations pour chaque Δt, et si elles s’écartent systématiquement de 2,44.' },
       retenirTitre: 'À RETENIR : TESTER L’ORDRE 1',
@@ -403,7 +401,7 @@ export function SimulationVitesseOrdre1() {
       <li><strong>Réaction unique et totale</strong> : on néglige toute réaction parasite (une élimination est possible en réalité). Le réactif limitant est RCl ; l’eau, solvant en grand excès, a une concentration quasi constante : c’est pourquoi la loi est d’ordre 1 par rapport à RCl.</li>
       <li><strong>Suivi idéal</strong> : la conductivité est supposée proportionnelle à la concentration des ions formés (loi de Kohlrausch, solution diluée) et l’étalonnage supposé parfait : on dispose directement de <em>c</em>(<em>t</em>) = <em>c</em><sub>0</sub> (σ<sub>∞</sub> − σ) / (σ<sub>∞</sub> − σ<sub>0</sub>). Un vrai conductimètre dérive et dépend de la température.</li>
       <li><strong>Bruit éventuel</strong> : écart aléatoire centré, de même écart-type σ pour tous les points, indépendant d’un point à l’autre (loi normale) ; mesures arrondies au 0,1{NB}mmol·L⁻¹. En réalité, le bruit peut varier avec la concentration ou présenter des dérives. Les premières étapes du parcours utilisent des données sans bruit pour isoler la notion.</li>
-      <li><strong>Validité de la loi d’ordre 1</strong> : pour la réaction A, <em>v</em> = <em>k</em> · <em>c</em> est supposée vraie pendant tout le suivi, avec <em>k</em> constante (le milieu ne change pas de polarité au fur et à mesure que les ions se forment). La réaction B est un <strong>contre-exemple construit</strong> (vitesse proportionnelle à <em>c</em>² ; sa première demi-réaction dure autant que celle de A) pour montrer qu’une courbe décroissante ne suffit pas à conclure.</li>
+      <li><strong>Validité de la loi d’ordre 1</strong> : pour la transformation A, <em>v</em> = <em>k</em> · <em>c</em> est supposée vraie pendant tout le suivi, avec <em>k</em> constante (le milieu ne change pas de polarité au fur et à mesure que les ions se forment). La transformation B est un <strong>exemple construit</strong> pour la simulation (pas une réaction réelle identifiée) : sa loi de vitesse n’est volontairement pas donnée et n’est pas d’ordre 1 ; sa première demi-réaction dure autant que celle de A, pour montrer qu’une courbe décroissante, ou une seule demi-réaction, ne suffit pas à conclure.</li>
       <li><strong>Temps de demi-réaction</strong> : défini pour une transformation totale par <em>c</em> = <em>c</em><sub>0</sub>/2 ; il ne se lit pas de la même façon pour une transformation non totale.</li>
       <li><strong>Vitesse volumique</strong> : c’est la dérivée temporelle de la concentration, −d<em>c</em>/d<em>t</em> ; la « vitesse de réaction » (dérivée de l’avancement) n’est pas utilisée ici. En pratique on l’estime par une sécante sur un intervalle Δ<em>t</em> : un petit Δ<em>t</em> amplifie le bruit (u(<em>v</em>) ≈ √2 σ / Δ<em>t</em>), un grand Δ<em>t</em> écarte la sécante de la tangente.</li>
       <li><strong>Limites du modèle</strong> : durée de 20{NB}min, un point toutes les 0,5{NB}min, un seul réactif suivi ; les facteurs cinétiques, la catalyse et le mécanisme réactionnel ne sont pas traités ici. Le test de l’ordre 1 se fait sur la durée du suivi : il ne prouve pas la validité de la loi hors de cette plage.</li>
@@ -418,7 +416,7 @@ export function SimulationVitesseOrdre1() {
   // ---------- contrôles sous le graphique ----------
   const boutonRetablir = (txt, f) => <button onClick={f} style={{ ...styleBouton(true, '#b45309'), marginBottom: 8 }}>{txt}</button>;
   const montrerTang = (enGuide && deja('tangente')) || enExplore;
-  const montrerType = (enGuide && deja('autre')) || enExplore;
+  const montrerType = (enGuide && deja('compB')) || enExplore;
   const montrerBruit = (enGuide && deja('bruit')) || enExplore;
   const montrerFen = (enGuide && idE === 'bruit') || enExplore || (dd && dd.type === 'vit');
   const pasT = ideal ? 0.1 : M.PAS;
@@ -436,8 +434,8 @@ export function SimulationVitesseOrdre1() {
       <Curseur nom="Temps t" valeur={tc} onChange={v => setT({ t: Math.max(0, Math.min(M.DUREE, Math.round(v / pasT) * pasT)) })} min={0} max={M.DUREE} pas={pasT} unite="min" decimales={1} couleur="#b45309"/>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
         {montrerTang && !dd && <button onClick={() => setT({ tang: !ti.tang })} aria-pressed={ti.tang} style={stylePetitBouton(ti.tang, '#b45309')}>{ti.tang ? 'Masquer la tangente' : 'Tracer la tangente'}</button>}
-        {montrerType && !dd && <span role="group" aria-label="Réaction étudiée" style={{ display: 'inline-flex', gap: 6 }}>
-          {[['A', 'Réaction A'], ['B', 'Réaction B']].map(([k, l]) => <button key={k} onClick={() => setT({ type: k })} aria-pressed={ti.type === k} style={stylePetitBouton(ti.type === k, '#0f766e')}>{l}</button>)}</span>}
+        {montrerType && !dd && <span role="group" aria-label="Transformation étudiée" style={{ display: 'inline-flex', gap: 6 }}>
+          {[['A', 'Transformation A (RCl)'], ['B', 'Transformation B (autre réactif)']].map(([k, l]) => <button key={k} onClick={() => setT({ type: k })} aria-pressed={ti.type === k} style={stylePetitBouton(ti.type === k, '#0f766e')}>{l}</button>)}</span>}
         {dd && dd.type === 'ordre' && <span role="group" aria-label="Série affichée" style={{ display: 'inline-flex', gap: 6 }}>
           {[0, 1, 2].map(i => <button key={i} onClick={() => setT({ sel: i })} aria-pressed={ti.sel === i} style={stylePetitBouton(ti.sel === i, '#0f766e')}>Série {i + 1}</button>)}</span>}
         {dd && dd.type === 'ordre' && <button onClick={() => setT({ niv: !ti.niv })} aria-pressed={ti.niv} style={stylePetitBouton(ti.niv, '#475569')}>Traits de demi-réaction</button>}
@@ -472,11 +470,12 @@ export function SimulationVitesseOrdre1() {
   // ---------- zones ----------
   const equation = (
     <div style={{ marginBottom: 10 }}>
+      {dd && dd.type === 'ordre' ? <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, marginBottom: 6 }}><strong>Trois transformations différentes</strong> (réactifs non précisés), suivies de la même façon, avec la même concentration initiale c<sub>0</sub> = {nbf(P.c0, 1)}{NB}mmol/L. Leurs équations ne sont pas données : on ne dispose que des mesures.</div> : !dd && ti.type === 'B' ? <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, marginBottom: 6 }}><strong>Transformation B</strong> : un autre réactif, noté R′, suivi de la même façon (même c<sub>0</sub>). Son équation et sa loi de vitesse ne sont pas données. Pour revenir à l’hydrolyse de RCl, choisissez la transformation A.</div> : <>
       <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2, marginBottom: 2 }}>Transformation étudiée (totale, à température constante)</div>
       <div role="math" aria-label="2-chloro-2-méthylpropane plus deux eau donne 2-méthylpropan-2-ol plus ion oxonium plus ion chlorure" style={{ fontSize: 17, fontWeight: 600, color: KIT.txt, lineHeight: 1.7, margin: '4px 0 6px' }}>
         <span style={{ whiteSpace: 'nowrap' }}>(CH<sub>3</sub>)<sub>3</sub>C–Cl + 2{NB}H<sub>2</sub>O</span>{' '}<span style={{ whiteSpace: 'nowrap' }}>→ (CH<sub>3</sub>)<sub>3</sub>C–OH</span>{' '}<span style={{ whiteSpace: 'nowrap' }}>+ H<sub>3</sub>O<sup>+</sup> + Cl<sup>−</sup></span>
       </div>
-      <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.5 }}>Le réactif suivi, (CH₃)₃C–Cl, est noté RCl ; sa concentration initiale est c<sub>0</sub> = {nbf(dd ? P.c0 : ti.c0, 1)}{NB}mmol/L.</div>
+      <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.5 }}>Le réactif suivi, (CH₃)₃C–Cl, est noté RCl ; sa concentration initiale est c<sub>0</sub> = {nbf(dd ? P.c0 : ti.c0, 1)}{NB}mmol/L.</div></>}
     </div>);
   const sceneBox = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
@@ -487,7 +486,7 @@ export function SimulationVitesseOrdre1() {
   const graphiqueCourbe = (!enGuide || deja('courbe')) && (
     <div style={{ ...styleBoite, ...cadre('courbe') }}>
       {enGuide && attendu && !conforme && boutonRetablir(libelleRetablir, retablir)}
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Concentration du réactif RCl : c = f(t){dd ? '' : P.type === 'B' ? ' (réaction B)' : ''}{dd && dd.type === 'ordre' ? ` (série ${ti.sel + 1})` : ''}</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Concentration du réactif RCl : c = f(t){dd ? '' : P.type === 'B' ? ' (transformation B)' : ''}{dd && dd.type === 'ordre' ? ` (série ${ti.sel + 1})` : ''}</div>
       <CourbeC pts={pts} P={P} t={tc} cLu={cLu} ideal={ideal} tang={tangObj} fen={montrerFen && !ideal ? fen : null} niv={niv} modele={enExplore && ti.modele}/>
       {controles}
       {tableEstim}
@@ -540,15 +539,15 @@ export function SimulationVitesseOrdre1() {
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages de l’expérience</div>
       <Curseur nom="Concentration initiale c₀" valeur={ti.c0} onChange={v => setT({ c0: v })} min={20} max={60} pas={5} unite="mmol/L" decimales={1} couleur="#475569"/>
-      <Curseur nom={ti.type === 'A' ? 'Constante de vitesse k' : 'k équivalent (t½ de la 1ʳᵉ demi-réaction = ln 2 / k)'} valeur={ti.k} onChange={v => setT({ k: Math.round(v * 100) / 100 })} min={0.06} max={0.20} pas={0.01} unite="min⁻¹" decimales={2} couleur="#475569"/>
-      <div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.5 }}>Réaction A : v = k × c. Réaction B : v = c² / (c₀ · t<sub>½,1</sub>), c’est-à-dire proportionnelle à c² ; sa 1ʳᵉ demi-réaction dure autant que celle de A.</div>
+      <Curseur nom={ti.type === 'A' ? 'Constante de vitesse k' : 'Réglage de la vitesse : k équivalent'} valeur={ti.k} onChange={v => setT({ k: Math.round(v * 100) / 100 })} min={0.06} max={0.20} pas={0.01} unite="min⁻¹" decimales={2} couleur="#475569"/>
+      <div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.5 }}>Transformation A (RCl) : v = k × c, loi d’ordre 1. Transformation B : exemple construit pour la simulation, dont la loi n’est pas d’ordre 1 ; sa 1ʳᵉ demi-réaction dure autant que celle de A.</div>
     </div>);
   const aEssayer = (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
       <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
-        <li>Réaction A : doublez c₀ (20 → 40 mmol/L) en laissant k fixe. Que deviennent t½ et la vitesse initiale ? Que concluez-vous sur t½ pour l’ordre 1 ?</li>
-        <li>Même chose avec la réaction B : t½ ne dépend-il pas de c₀ ?</li>
+        <li>Transformation A : doublez c₀ (20 → 40 mmol/L) en laissant k fixe. Que deviennent t½ et la vitesse initiale ? Que concluez-vous sur t½ pour l’ordre 1 ?</li>
+        <li>Même chose avec la transformation B : t½ change-t-il quand on double c₀ ?</li>
         <li>Augmentez k de 0,10 à 0,20 min⁻¹ : comment varient t½ et la pente de la droite ln c ?</li>
         <li>Activez le bruit (σ = 0,8) et estimez v à t = 6 min pour Δt = 1, 4 et 8 min. Refaites plusieurs séries : quelle valeur de Δt est la plus stable ? la moins biaisée ?</li>
         <li>Avec du bruit, la droite ln c reste-t-elle une droite ? À partir de quelle concentration les points s’écartent-ils ? Pourquoi les derniers points sont-ils les plus dispersés ?</li>
