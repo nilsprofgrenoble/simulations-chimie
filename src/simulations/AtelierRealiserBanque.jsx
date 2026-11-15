@@ -816,6 +816,34 @@ function genCinetiqueTG() {
     retenir: ['v = −Δc / Δt pour un réactif (positive) ; v = Δc / Δt pour un produit.', 'Après n demi-réactions (ordre 1) : c = c_0 / 2ⁿ.', 't½ = ln 2 / k ; k s’exprime en min⁻¹ ou s⁻¹ (inverse d’un temps).'] };
 }
 
+// ───────────── Radioactivité (TG) : λ, noyaux restants, activité (conversion jour → seconde), datation ─────────────
+function genRadioactiviteTG() {
+  const sciR = (x, cs = 2) => { const [a, e] = Number(x).toExponential(cs - 1).split('e'); return `${a.replace('.', ',')}${NB}×${NB}10${[...String(Number(e))].map(c => ({ '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' })[c]).join('')}`; };
+  const th = tire([2.0, 4.0, 5.0, 8.0, 12.0]), lam = Math.LN2 / th;
+  const q1 = { id: 'r0', type: 'num', q: <>Un noyau radioactif a pour demi-vie <b>t<sub>½</sub> = {nb(th, 2)}{NB}jours</b>. Calculez sa constante radioactive λ, en <b>j⁻¹</b>.</>, unite: 'j⁻¹', vrai: lam, csMin: 3,
+    aide: 'λ = ln 2 / t_½ avec ln 2 ≈ 0,693 ; le résultat est l’inverse d’un temps.',
+    pieges: [[1 / th, 'La relation contient ln 2 : λ = ln 2 / t½, pas 1 / t½.'], [th / Math.LN2, 'Le rapport est inversé : λ = ln 2 / t½.'], [0.5 / th, 'Le facteur est ln 2 ≈ 0,693, pas 0,5.']],
+    expl: <>λ = ln 2 / t<sub>½</sub> = 0,693 / {nb(th, 2)} = <b>{avecU(lam, 'j⁻¹', 3)}</b>.</> };
+  const N0 = tire([20, 40, 60, 80]), th2 = tire([4.0, 5.0, 8.0]), t2 = tire([10, 15, 20, 30]), l2 = Math.LN2 / th2, N = N0 * Math.exp(-l2 * t2);
+  const q2 = { id: 'r1', type: 'num', q: <>Un échantillon contient <b>{N0}{NB}millions</b> de noyaux radioactifs à l’instant initial ; leur demi-vie est <b>{nb(th2, 2)}{NB}jours</b>. Calculez le nombre de noyaux restants au bout de <b>{t2}{NB}jours</b>, en <b>millions de noyaux</b> (N = N<sub>0</sub>·e<sup>−λt</sup>).</>, unite: 'millions de noyaux', vrai: N, csMin: 3, tolRel: 0.01,
+    aide: 'Calculez d’abord λ = ln 2 / t_½ (en j⁻¹), puis l’exposant sans unité λ·t, puis N = N_0·e^(−λt).',
+    pieges: [[N0 * Math.exp(-t2 / th2), 'Il manque ln 2 : λ = ln 2 / t½, donc l’exposant est ln 2 × t / t½.'], [N0 * Math.exp(-l2), 'Il manque le facteur t dans l’exponentielle : c’est e^(−λ·t).'], [N0 * Math.exp(l2 * t2), 'Le signe de l’exponentielle est faux : N décroît, donc e^(−λt).'], [N0 * 0.5 ** Math.floor(t2 / th2), 'Le nombre de demi-vies n’est pas entier ici : utilisez N = N₀·e^(−λt), qui vaut pour toute durée.']],
+    expl: <>λ = 0,693 / {nb(th2, 2)} = {nb(l2, 3)}{NB}j⁻¹ ; λ·t = {nb(l2 * t2, 3)} ; N = {N0} × e<sup>−{nb(l2 * t2, 3)}</sup> = <b>{avecU(N, 'millions de noyaux', 3)}</b>.</> };
+  const th3 = tire([4.0, 6.0, 8.0, 10.0]), N3 = tire([2.0, 4.0, 5.0, 8.0]), A0 = Math.LN2 / (th3 * 86400) * N3 * 1e7;
+  const q3 = { id: 'r2', type: 'num', q: <>Un échantillon contient <b>{sciR(N3 * 1e7)}{NB}noyaux</b> radioactifs de demi-vie <b>{nb(th3, 2)}{NB}jours</b>. Calculez son activité initiale A<sub>0</sub> = λ·N<sub>0</sub>, en <b>becquerels</b> (1{NB}Bq = 1 désintégration par seconde ; 1{NB}j = 86 400{NB}s).</>, unite: 'Bq', vrai: A0, csMin: 3, tolRel: 0.01,
+    aide: 'Convertissez d’abord t_½ en secondes (× 86 400), puis λ = ln 2 / t_½ en s⁻¹, puis A_0 = λ·N_0.',
+    pieges: [[A0 * 86400, 'Vous avez gardé λ en j⁻¹ : le résultat est un nombre de désintégrations par jour. Pour des becquerels, λ doit être en s⁻¹.'], [N3 * 1e7 / (th3 * 86400), 'Il manque ln 2 : λ = ln 2 / t½.'], [A0 / 86400, 'Vous avez divisé deux fois par 86 400 : la conversion jour → seconde se fait une seule fois.'], [A0 * Math.LN2, 'Vous avez multiplié par ln 2 au lieu de diviser : λ = ln 2 / t½ avec t½ en secondes.']],
+    expl: <>t<sub>½</sub> = {nb(th3, 2)} × 86 400 = {nb(th3 * 86400, 3)}{NB}s ; λ = 0,693 / {nb(th3 * 86400, 3)} = {sciR(Math.LN2 / (th3 * 86400), 3)}{NB}s⁻¹ ; A<sub>0</sub> = λ·N<sub>0</sub> = <b>{avecU(A0, 'Bq', 3)}</b>.</> };
+  const f = tire([80, 70, 60, 45, 35, 15]), age = 5730 / Math.LN2 * Math.log(100 / f);
+  const q4 = { id: 'r3', type: 'num', q: <>Un échantillon organique contient <b>{f}{NB}%</b> du carbone 14 d’un échantillon vivant. La demi-vie du carbone 14 est <b>5 730{NB}ans</b>. Calculez l’âge de l’échantillon avec t = (t<sub>½</sub> / ln 2) × ln(N<sub>0</sub> / N), en <b>ans</b>.</>, unite: 'ans', vrai: age, csMin: 3, tolRel: 0.01,
+    aide: 'N_0 / N = 100 / pourcentage restant. Utilisez la touche ln (logarithme népérien) de la calculatrice, pas log.',
+    pieges: [[5730 / Math.LN2 * Math.log10(100 / f), 'Vous avez utilisé log (décimal) : la formule demande le logarithme népérien ln.'], [5730 * Math.log(100 / f), 'Il manque la division par ln 2 : t = (t½ / ln 2) × ln(N₀ / N).'], [(100 - f) / 50 * 5730, 'La décroissance est exponentielle : l’âge n’est pas proportionnel au pourcentage disparu (pas de règle de trois).'], [5730 / Math.LN2 * Math.log(f / 100), 'Le rapport est inversé : c’est ln(N₀ / N), qui est positif (N₀ > N).']],
+    expl: <>N<sub>0</sub> / N = 100 / {f} = {nb(100 / f, 3)} ; ln({nb(100 / f, 3)}) = {nb(Math.log(100 / f), 3)} ; t = (5 730 / 0,693) × {nb(Math.log(100 / f), 3)} = <b>{avecU(age, 'ans', 3)}</b>.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'Radioactivité : constante radioactive, noyaux restants, activité (avec conversion jour → seconde) et datation au carbone 14.', questions: [q1, q2, q3, q4],
+    retenir: ['λ = ln 2 / t½ et N(t) = N₀·e^(−λt) ; après n demi-vies, N = N₀ / 2ⁿ.', 'A = λ·N en becquerels : λ en s⁻¹ (1 j = 86 400 s).', 'Datation : t = (t½ / ln 2) × ln(N₀ / N) ; plus de 50 % restant ⇒ âge inférieur à t½.'] };
+}
+
 export const FAMILLES = [
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
   { id: 'vecteur-difference', groupe: 'Vecteurs', titre: 'Différence de deux vecteurs (variation de vitesse)', gen: genDifference },
@@ -833,6 +861,7 @@ export const FAMILLES = [
   { id: 'titph-calcul', groupe: 'Formules', titre: 'Titrage pH-métrique : quantités de matière, V_E et C_A (TG)', gen: genTitrageTG, domaine: 'Titrage pH-métrique' },
   { id: 'phc-calcul', groupe: 'Formules', titre: 'pH et concentration en ions oxonium : relation et dilution (TG)', gen: genPhConcTG, domaine: 'pH et concentration en ions oxonium' },
   { id: 'cinv-calcul', groupe: 'Formules', titre: 'Cinétique : vitesse volumique, demi-réactions et constante d’ordre 1 (TG)', gen: genCinetiqueTG, domaine: 'Cinétique : vitesse volumique et ordre 1' },
+  { id: 'rad-calcul', groupe: 'Formules', titre: 'Radioactivité : constante λ, noyaux restants, activité et datation (TG)', gen: genRadioactiviteTG, domaine: 'Radioactivité : décroissance et demi-vie' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },
   { id: 'simple', groupe: 'Unités', titre: 'Changement d’unité simple', gen: genSimple },
   { id: 'prefixes', groupe: 'Unités', titre: 'Préfixes et puissances de 10', gen: genPrefixes },
