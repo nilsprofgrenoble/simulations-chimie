@@ -26,6 +26,9 @@ const PRESET = { acide: 'etha', C0: 0.080, V0: 20.0, Cb: 0.100, Vb: 0, ind: null
 const IND = id => M.INDICATEURS.find(i => i.id === id);
 const FORM_ACIDE = { hcl: 'HCl', benz: 'C₆H₅COOH', etha: 'CH₃COOH', form: 'HCOOH' };
 
+const NOMS_COUL = { '#dc2626': 'rouge', '#facc15': 'jaune', '#2563eb': 'bleu', '#f8fafc': 'incolore', '#db2777': 'rose', '#b45309': 'brun-orangé' };
+const nomCouleur = c => NOMS_COUL[c] || 'colorée';
+
 // ---------- graphe pH = f(V) ----------
 function CourbePH({ pts, ptsCmp, Vb, ph, VE, montrerVE, deriv, ind }) {
   const W = 480, H = 310, mx = 40, my = 12, bas = H - 46;
@@ -41,8 +44,14 @@ function CourbePH({ pts, ptsCmp, Vb, ph, VE, montrerVE, deriv, ind }) {
       {[0, 2, 4, 6, 8, 10, 12, 14].map(p => <g key={p}><line x1={mx} y1={Y(p)} x2={W - 12} y2={Y(p)} stroke="#eef2f7"/><text x={mx - 6} y={Y(p) + 4} fontSize="12.5" textAnchor="end" fill="#334155">{p}</text></g>)}
       <text x={(mx + W) / 2} y={H - 8} fontSize="12.5" textAnchor="middle" fill="#334155">volume de soude versé V<tspan baselineShift="sub" fontSize="0.75em">B</tspan> (mL)</text>
       <text x="13" y={(my + bas) / 2} fontSize="12.5" fill="#334155" transform={`rotate(-90 13 ${(my + bas) / 2})`} textAnchor="middle">pH</text>
-      {ind && <><rect x={mx} y={Y(ind.zone[1])} width={W - mx - 12} height={Y(ind.zone[0]) - Y(ind.zone[1])} fill={ind.base} opacity="0.2"/>
-        <text x={W - 16} y={Y(ind.zone[1]) + 14} fontSize="11.5" textAnchor="end" fill="#334155">zone de virage : {ind.nom}</text></>}
+      {ind && <><defs><linearGradient id="tph-grad" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stopColor={ind.acide}/><stop offset="1" stopColor={ind.base}/></linearGradient></defs>
+        <rect x={mx} y={Y(ind.zone[1])} width={W - mx - 12} height={Y(ind.zone[0]) - Y(ind.zone[1])} fill="url(#tph-grad)" opacity="0.55"/>
+        <rect x={mx} y={Y(ind.zone[1])} width={W - mx - 12} height={Y(ind.zone[0]) - Y(ind.zone[1])} fill="none" stroke="#475569" strokeDasharray="4 3"/>
+        <text x={W - 16} y={(Y(ind.zone[0]) + Y(ind.zone[1])) / 2 + 4} fontSize="11.5" fontWeight="700" textAnchor="end" fill="#0f172a" stroke="white" strokeWidth="3" paintOrder="stroke">zone de virage ({nbf(ind.zone[0], 1)} – {nbf(ind.zone[1], 1)})</text>
+        <rect x={mx + 6} y={Y(ind.zone[0]) + 5} width="12" height="12" rx="2" fill={ind.acide} stroke="#475569"/>
+        <text x={mx + 23} y={Y(ind.zone[0]) + 15} fontSize="11.5" fill="#334155">pH &lt; {nbf(ind.zone[0], 1)} : {nomCouleur(ind.acide)} (forme acide)</text>
+        <rect x={mx + 6} y={Y(ind.zone[1]) - 19} width="12" height="12" rx="2" fill={ind.base} stroke="#475569"/>
+        <text x={mx + 23} y={Y(ind.zone[1]) - 9} fontSize="11.5" fill="#334155">pH &gt; {nbf(ind.zone[1], 1)} : {nomCouleur(ind.base)} (forme basique)</text></>}
       {ptsCmp && <path d={trace(ptsCmp, p => Y(p.pH))} fill="none" stroke="#94a3b8" strokeWidth="2" strokeDasharray="6 4"/>}
       {ptsCmp && <text x={X(20.5)} y={Y(2.2)} fontSize="11.5" fill="#64748b">acide fort (HCl)</text>}
       {deriv && <path d={trace(pts, p => Yd(p.d))} fill="none" stroke="#15803d" strokeWidth="1.8" strokeDasharray="5 3"/>}
@@ -470,6 +479,10 @@ export function SimulationTitragePH() {
     <div style={{ ...styleBoite, ...cadre('scene') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Courbe de titrage pH = f(V<sub>B</sub>)</div>
       <CourbePH pts={pts} ptsCmp={ptsCmp} Vb={Vb} ph={ph} VE={VE} montrerVE={montrerVE} deriv={ti.deriv && (peutDeriv)} ind={indEff}/>
+      {mode === 'explore' && indEff && (() => {
+        const v = M.virage(indEff, P), etat = (x, acide, base) => (x < indEff.zone[0] ? `${nomCouleur(acide)}` : x > indEff.zone[1] ? `${nomCouleur(base)}` : 'de teinte intermédiaire (dans la zone de virage)');
+        return <div style={{ fontSize: 13, color: KIT.txt, marginTop: 6, lineHeight: 1.5 }}>Indicateur choisi : {indEff.nom}. Au début du titrage (pH = {nbf(M.pHa(P, 0), 2)}), la solution est <strong>{etat(M.pHa(P, 0), indEff.acide, indEff.base)}</strong> ; après l’équivalence (V<sub>B</sub> = {VMAX} mL, pH = {nbf(M.pHa(P, VMAX), 2)}), elle est <strong>{etat(M.pHa(P, VMAX), indEff.acide, indEff.base)}</strong>. Le virage {v.v1 == null || v.v2 == null ? 'a lieu hors de la plage 0 – 25 mL' : <>s’étend de {nbf(v.v1, 2)} à {nbf(v.v2, 2)} mL</>}, pour V<sub>E</sub> = {nbf(VE, 1)} mL : {M.convient(indEff, P) ? <strong style={{ color: '#15803d' }}>l’indicateur convient (sa zone contient pH<sub>E</sub> = {nbf(phE, 2)})</strong> : <strong style={{ color: '#b91c1c' }}>il ne convient pas (pH<sub>E</sub> = {nbf(phE, 2)} est hors de sa zone)</strong>}.</div>;
+      })()}
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Bleu : pH. Le point orange suit le curseur de volume.{ti.deriv ? ' Vert pointillé : dérivée dpH/dV_B (échelle libre).' : ''}</div>
     </div>);
   const graphiqueQuantites = (!enGuide || deja('equiv')) && !enDefi && (
