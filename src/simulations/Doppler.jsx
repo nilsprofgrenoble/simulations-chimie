@@ -24,8 +24,9 @@ const hz = n => `${milliers(n)}${NB}Hz`;
 const C = D.C_AIR;
 
 // ---------- fronts d’onde (scène 1) ----------
+const XC = 2.9, DC = 1.2;   // récepteur C : abscisse (en λ depuis le départ) et distance à la trajectoire
 const SC = { W: 600, H: 275, U: 60, X0: 100, Y0: 125, XR: 572, XL: 28 };      // U : pixels par longueur d’onde ; la source part de X0
-function FrontsOnde({ beta, anim, relance, annot }) {
+function FrontsOnde({ beta, anim, relance, annot, posRef, recC }) {
   const ref = useRef(null), t = useRef(0);
   useEffect(() => {
     const cv = ref.current; if (!cv) return undefined;
@@ -38,6 +39,7 @@ function FrontsOnde({ beta, anim, relance, annot }) {
       const F = D.fronts({ beta, t: tt });
       ctx.lineWidth = 2; ctx.strokeStyle = '#0e7490';
       for (const f of F) { if (f.r * U > 560) continue; ctx.beginPath(); ctx.arc(X0 + f.cx * U, Y0, f.r * U, 0, 2 * Math.PI); ctx.stroke(); }
+      if (posRef) posRef.current = D.positionSource({ beta, t: tt });
       const xs = X0 + D.positionSource({ beta, t: tt }) * U;
       if (annot) {
         const devant = F.map(f => X0 + (f.cx + f.r) * U).filter(x => x > xs + 22 && x < XR - 14).sort((a, b) => a - b);
@@ -48,12 +50,13 @@ function FrontsOnde({ beta, anim, relance, annot }) {
           ctx.font = '700 14px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = '#f8fafc'; ctx.strokeText(txt, (x1 + x2) / 2, y - 9); ctx.fillText(txt, (x1 + x2) / 2, y - 9);
         };
         if (devant.length > 1) fleche(devant[0], devant[1], Y0 - 62, beta > 0 ? 'λ devant' : 'λ');
-        if (derriere.length > 1) fleche(derriere[1], derriere[0], Y0 + 78, beta > 0 ? 'λ derrière' : 'λ');
+        if (derriere.length > 1) fleche(derriere[1], derriere[0], Y0 + 92, beta > 0 ? 'λ derrière' : 'λ');
       }
       ctx.fillStyle = '#b45309'; ctx.beginPath(); ctx.arc(xs, Y0, 8, 0, 2 * Math.PI); ctx.fill();
       if (beta > 0) { ctx.strokeStyle = '#b45309'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(xs + 12, Y0 - 16); ctx.lineTo(xs + 12 + 70 * beta, Y0 - 16); ctx.stroke(); ctx.beginPath(); ctx.moveTo(xs + 12 + 70 * beta, Y0 - 22); ctx.lineTo(xs + 22 + 70 * beta, Y0 - 16); ctx.lineTo(xs + 12 + 70 * beta, Y0 - 10); ctx.fillStyle = '#b45309'; ctx.fill(); }
       ctx.fillStyle = '#0f172a'; ctx.font = '700 13px sans-serif'; ctx.textAlign = 'center';
       for (const [x, txt] of [[SC.W - 46, 'récepteur A'], [46, 'récepteur B']]) { ctx.fillRect(x - 6, Y0 + 100, 12, 12); ctx.fillText(txt, x, Y0 + 128); }
+      if (recC) { ctx.fillStyle = '#0f172a'; ctx.fillRect(X0 + XC * U - 6, Y0 + DC * U - 6, 12, 12); ctx.textAlign = 'left'; ctx.font = '700 13px sans-serif'; ctx.fillText('récepteur C', X0 + XC * U + 12, Y0 + DC * U + 5); }
       ctx.textAlign = 'left'; ctx.font = '12px sans-serif'; ctx.fillStyle = '#475569'; ctx.fillText('vue de dessus (schéma : vitesse de l’émetteur exagérée)', 8, 16);
     };
     let raf, dernier = performance.now();
@@ -64,7 +67,7 @@ function FrontsOnde({ beta, anim, relance, annot }) {
     };
     if (anim) { raf = requestAnimationFrame(boucle); } else { t.current = beta > 0 ? 3.6 : 3.2; dessine(); }
     return () => raf && cancelAnimationFrame(raf);
-  }, [beta, anim, relance, annot]);
+  }, [beta, anim, relance, annot, recC]);
   return <canvas ref={ref} width={SC.W} height={SC.H} style={{ width: '100%', borderRadius: 8, display: 'block', background: '#f8fafc' }}
     role="img" aria-label={beta > 0 ? 'Fronts d’onde circulaires émis par une source en mouvement vers la droite : ils sont resserrés devant la source et espacés derrière elle' : 'Fronts d’onde circulaires concentriques émis par une source immobile, régulièrement espacés'}/>;
 }
@@ -217,7 +220,9 @@ export function SimulationDoppler({ naviguer }) {
   // ---------- écoute (Web Audio) : deux notes alternées, fréquence entendue selon la position ----------
   const [ecoute, setEcoute] = useState(null);
   const ratioEcoute = (pos, bt) => pos === 'A' ? 1 / (1 - bt) : pos === 'B' ? 1 / (1 + bt) : 1;
-  const refAudio = useRef({ ratio: 1 });
+  const refAudio = useRef({ ratio: 1, beta: 0, pos: 0 });
+  const posRef = useRef(0);
+  const ratioC = (bt, xs) => { const dx = XC - xs, d = Math.sqrt(dx * dx + DC * DC); return 1 / (1 - bt * dx / d); };
   const NOTES = [440, 554];
   useEffect(() => {
     if (!ecoute) return undefined;
@@ -226,8 +231,13 @@ export function SimulationDoppler({ naviguer }) {
       const AC = window.AudioContext || window.webkitAudioContext; ctx = new AC();
       osc = ctx.createOscillator(); gain = ctx.createGain(); osc.type = 'triangle'; gain.gain.value = 0.12;
       osc.connect(gain); gain.connect(ctx.destination); osc.start();
-      const joue = () => { osc.frequency.setTargetAtTime(NOTES[k % 2] * refAudio.current.ratio, ctx.currentTime, 0.01); k++; };
-      joue(); minuterie = setInterval(joue, 650);
+      let dernier = 0;
+      const joue = () => {
+        const now = performance.now(); if (now - dernier > 650) { k++; dernier = now; }
+        const r = ecoute === 'C' ? ratioC(refAudio.current.beta, posRef.current) : refAudio.current.ratio;
+        osc.frequency.setTargetAtTime(NOTES[k % 2] * r, ctx.currentTime, 0.02);
+      };
+      joue(); minuterie = setInterval(joue, 40);
     } catch { setEcoute(null); }
     return () => { clearInterval(minuterie); try { osc && osc.stop(); ctx && ctx.close(); } catch { /* déjà arrêté */ } };
   }, [ecoute]);
@@ -246,7 +256,7 @@ export function SimulationDoppler({ naviguer }) {
   const echo = m.montage === 'echo', sg = m.sens === 'approche' ? 1 : -1, fe = m.fe, T = m.T;
   const vEff = enGuide && idE === 'rail' ? 0 : m.v;
   const betaEff = enGuide && idE === 'fixe' ? 0 : beta;
-  refAudio.current.ratio = ratioEcoute(ecoute, betaEff);
+  refAudio.current.ratio = ratioEcoute(ecoute, betaEff); refAudio.current.beta = betaEff;
   useEffect(() => { if (mode !== 'explore' && !(enGuide && etape >= IDS.indexOf('rapport'))) setEcoute(null); }, [mode, etape]);   // eslint-disable-line react-hooks/exhaustive-deps
   const fr = vEff === 0 ? fe : echo ? D.frequenceEcho(fe, vEff, C, sg) : D.frequenceRecue(fe, vEff, C, sg);
   const W0 = echo ? 400 : 200;
@@ -482,11 +492,11 @@ export function SimulationDoppler({ naviguer }) {
       {(mode === 'explore' || (enGuide && deja('rapport'))) && <div role="group" aria-label="Écouter le son" style={{ marginTop: 10, background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 10, padding: '8px 10px' }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>🔊 Écouter la source (une sirène à deux notes)</div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {[['em', 'Dans le véhicule (émetteur)'], ['A', 'Récepteur A (devant)'], ['B', 'Récepteur B (derrière)']].map(([k, l]) => <button key={k} onClick={() => setEcoute(e => e === k ? null : k)} aria-pressed={ecoute === k} style={stylePetitBouton(ecoute === k, '#b45309')}>{l}</button>)}
+          {[['em', 'Dans le véhicule (émetteur)'], ['A', 'Récepteur A (devant)'], ['B', 'Récepteur B (derrière)'], ['C', 'Récepteur C (au passage)']].map(([k, l]) => <button key={k} onClick={() => setEcoute(e => e === k ? null : k)} aria-pressed={ecoute === k} style={stylePetitBouton(ecoute === k, '#b45309')}>{l}</button>)}
           {ecoute && <button onClick={() => setEcoute(null)} style={stylePetitBouton(false, '#475569')}>■ Arrêter</button>}
         </div>
         <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>
-          {ecoute ? <>Notes entendues : <strong>{hz(NOTES[0] * ratioEcoute(ecoute, betaEff))}</strong> et <strong>{hz(NOTES[1] * ratioEcoute(ecoute, betaEff))}</strong>{ecoute === 'em' ? ' : celles de la source, jamais décalées pour qui la porte.' : ecoute === 'A' ? ' : plus aiguës que celles émises (440 et 554 Hz) quand la source avance.' : ' : plus graves que celles émises (440 et 554 Hz) quand la source avance.'}</>
+          {ecoute === 'C' ? <>Le récepteur C est au bord de la trajectoire. La source arrive vers lui, le dépasse puis s’éloigne : la hauteur des notes <strong>glisse en continu</strong> de {hz(NOTES[0] / (1 - betaEff))} (source qui approche) à {hz(NOTES[0] / (1 + betaEff))} (source qui s’éloigne), pour la note de 440 Hz. L’autre note (554 Hz) varie de la même façon.</> : ecoute ? <>Notes entendues : <strong>{hz(NOTES[0] * ratioEcoute(ecoute, betaEff))}</strong> et <strong>{hz(NOTES[1] * ratioEcoute(ecoute, betaEff))}</strong>{ecoute === 'em' ? ' : celles de la source, jamais décalées pour qui la porte.' : ecoute === 'A' ? ' : plus aiguës que celles émises (440 et 554 Hz) quand la source avance.' : ' : plus graves que celles émises (440 et 554 Hz) quand la source avance.'}</>
             : <>Choisissez où vous vous placez, puis changez la vitesse de la source pendant que vous écoutez. Notes émises : 440 et 554 Hz. Le son joue tant que vous ne l’arrêtez pas.</>}
         </div>
       </div>}
@@ -548,7 +558,7 @@ export function SimulationDoppler({ naviguer }) {
       {mode === 'explore' && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {[['fronts', 'Fronts d’onde'], ['mesure', 'Mesure de vitesse']].map(([k, l]) => <button key={k} onClick={() => setScene(k)} aria-pressed={scene === k} style={stylePetitBouton(scene === k, '#0e7490')}>{l}</button>)}
       </div>}
-      {sceneEff === 'fronts' ? <>{retablirFronts}<FrontsOnde beta={betaEff} anim={anim} relance={relance} annot={apres('derriere') || mode === 'explore'}/></> : <>{retablirMes}{sceneMesure}</>}
+      {sceneEff === 'fronts' ? <>{retablirFronts}<FrontsOnde beta={betaEff} anim={anim} relance={relance} annot={apres('derriere') || mode === 'explore'} posRef={posRef} recC={mode === 'explore' || (enGuide && deja('rapport'))}/></> : <>{retablirMes}{sceneMesure}</>}
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>{sceneEff === 'fronts'
         ? 'Chaque cercle est un front d’onde ; l’émetteur (orange) part de la gauche et recommence quand il atteint le bord. Vitesse exagérée pour la lisibilité.'
         : montrerCurseur ? 'Glissez le curseur orange sur le spectre, ou utilisez le curseur et les boutons en dessous. En vue d’ensemble, la fenêtre est large de ' + (2 * W0) + ' Hz.' : 'Le spectre montre les fréquences présentes dans le signal reçu (échelle en hertz).'}</div>
