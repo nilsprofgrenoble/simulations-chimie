@@ -780,5 +780,11 @@
  "37:prevoir:dopg-derriere": "ANA379",
  "37:prevoir:dopg-limite": "ANA380",
  "37:prevoir:dopg-lumiere": "ANA381",
- "77:plausible:dopg-val-laser": "VAL199"
+ "77:plausible:dopg-val-laser": "VAL199",
+ "34:dop-chariot.0": "SAPP185",
+ "34:dop-chariot.1": "SAPP186",
+ "34:dopg-laser.0": "SAPP187",
+ "34:dopg-laser.1": "SAPP188",
+ "36:dop-calcul": "REA19",
+ "36:dopg-calcul": "REA20"
 }
