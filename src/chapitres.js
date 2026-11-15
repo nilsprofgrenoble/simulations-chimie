@@ -47,6 +47,7 @@ export const CHAPITRES = [
   { id: 'tstl-controle', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '🧲 Contrôle des systèmes', sims: [46, 44, 45], domaines: ['Contrôle des systèmes'] },
   { id: 'tstl-ondes', niveau: 'TSTL', rubrique: 'Ondes', label: '🌊 Ondes', sims: [83, 84, 87, 88, 91, 114], domaines: ['Ondes'] },
   { id: 'tstl-oeil-loupe', niveau: 'TSTL', rubrique: 'Ondes', label: '👁️ L’œil et la loupe', sims: [117], domaines: ['Œil et loupe'] },
+  { id: 'tstl-microscope', niveau: 'TSTL', rubrique: 'Ondes', label: '🔬 Le microscope', sims: [118], domaines: ['Microscope'] },
   { id: 'tstl-acides-bases', niveau: 'TSTL', rubrique: 'Chimie et développement durable', label: '🧪 Acides et bases', sims: [85], domaines: ['Acides et bases'] },
   { id: 'tstl-synthese-organique', niveau: 'TSTL', rubrique: 'Chimie et développement durable', label: '⚗️ Synthèse organique', sims: [86, 92], domaines: ['Synthèse organique', 'Mécanismes réactionnels'] },
   { id: 'tstl-synthese-optimiser', niveau: 'TSTL', rubrique: 'Chimie et développement durable', label: '📈 Optimiser une synthèse', sims: [90], domaines: ['Optimiser une synthèse'] },

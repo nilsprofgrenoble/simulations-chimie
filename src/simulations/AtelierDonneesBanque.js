@@ -140,6 +140,55 @@ export const ENONCES = [
         manque: null, solution: { txt: 'θ′ ≈ AB / f′ (petits angles)', val: thp, u: 'rad' } };
     },
   },
+  // ───────────────────────────── 0 ter. Observation au microscope (TSTL)
+  {
+    id: 'microsc-fibre', domaine: 'Microscope', titre: 'Un technicien observe une fibre', noms: ['Grossissement', 'Taille de l’image intermédiaire'],
+    gen: () => ({ f1: tire([20, 10, 8]), f2: tire([25, 20, 50]), AB: tire([10, 20, 30, 40]), prix: tire([450, 900, 1500]) }),
+    build: (p, q) => {
+      const D = 160, dm = 250, G = D * dm / (p.f1 * p.f2), A1B1 = D / p.f1 * p.AB / 1000;
+      const tokens = {
+        f1: tok(`${p.f1} mm`, 'Distance focale de l’objectif', p.f1 / 1000, 'm'),
+        f2: tok(`${p.f2} mm`, 'Distance focale de l’oculaire', p.f2 / 1000, 'm'),
+        D: tok('160 mm', 'Intervalle optique F₁′F₂', 0.16, 'm'),
+        dm: tok('250 mm', 'Distance minimale de vision distincte', 0.25, 'm'),
+        prix: tok(`${p.prix} €`, 'Prix du microscope', p.prix, '€'),
+      };
+      const debut = ['Un technicien examine une fibre au microscope, modélisé par deux lentilles minces convergentes : un objectif de distance focale ', T('f1'), ' et un oculaire de distance focale ', T('f2'),
+        '. L’intervalle optique est ', T('D'), ' ; le microscope, acheté ', T('prix'), ', est mis au point (image définitive à l’infini). L’œil nu verrait la fibre à ', T('dm'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'De combien l’angle sous lequel il voit la fibre est-il multiplié grâce au microscope ?'],
+        utiles: ['f1', 'f2', 'D', 'dm'], raisons: { prix: 'Le prix n’intervient pas dans la physique du microscope.' },
+        cherche: { bonne: 'Le grossissement G du microscope (sans unité)', faux: ['Le grandissement γ₁ de l’objectif seul', 'La distance O₁A₁ entre objectif et image intermédiaire (en m)', 'Le diamètre apparent θ₂ de l’image (en rad)'] },
+        manque: null, solution: { txt: 'G = Δ·dm / (f₁′ f₂′)', val: G, u: '' } };
+      tokens.AB = tok(`${p.AB} µm`, 'Taille du détail observé sur la fibre', p.AB * 1e-6, 'm');
+      return { tokens, derivees: [], texte: [...debut, 'Le détail observé mesure ', T('AB'), '. Quelle est la taille de l’image intermédiaire qu’en donne l’objectif ?'],
+        utiles: ['f1', 'D', 'AB'], raisons: { f2: 'L’oculaire n’intervient pas dans la taille de l’image intermédiaire.', dm: 'La distance minimale de vision distincte sert pour l’œil nu, pas pour l’image donnée par l’objectif.', prix: 'Le prix n’intervient pas dans la physique du microscope.' },
+        cherche: { bonne: 'La taille A₁B₁ de l’image intermédiaire (en mm)', faux: ['Le grossissement G du microscope (sans unité)', 'Le diamètre apparent θ₂ de l’image définitive (en rad)', 'La distance objet–objectif (en mm)'] },
+        manque: null, solution: { txt: 'A₁B₁ = |γ₁| × AB = (Δ / f₁′) × AB', val: A1B1, u: 'mm' } };
+    },
+  },
+  {
+    id: 'microsc-mise-au-point-reglage', domaine: 'Microscope', titre: 'Un étudiant règle son microscope', noms: ['Position de l’image intermédiaire', 'Grandissement de l’objectif'],
+    gen: () => ({ f1: tire([20, 10, 8]), f2: tire([25, 20, 50]), grad: tire([4, 6, 8]), nom: tire([100, 200, 300]) }),
+    build: (p, q) => {
+      const D = 160, g = D / p.f1, O1A1 = p.f1 + D;
+      const tokens = {
+        f1: tok(`${p.f1} mm`, 'Distance focale de l’objectif', p.f1 / 1000, 'm'),
+        f2: tok(`${p.f2} mm`, 'Distance focale de l’oculaire', p.f2 / 1000, 'm'),
+        D: tok('160 mm', 'Intervalle optique F₁′F₂', 0.16, 'm'),
+        nom: tok(`${p.nom} g`, 'Masse du microscope', p.nom / 1000, 'kg'),
+      };
+      const debut = ['Un étudiant règle un microscope formé d’un objectif de distance focale ', T('f1'), ' et d’un oculaire de distance focale ', T('f2'), '. L’intervalle optique est ', T('D'),
+        ' et la masse du microscope vaut ', T('nom'), '. Il tourne la molette jusqu’à ce que l’image définitive soit à l’infini. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'À quelle distance de l’objectif se forme alors l’image intermédiaire ?'],
+        utiles: ['f1', 'D'], raisons: { f2: 'Une fois A₁ en F₂, la distance O₁A₁ ne dépend que de f₁′ et de Δ.', nom: 'La masse du microscope n’intervient pas.' },
+        cherche: { bonne: 'La distance O₁A₁ (en m)', faux: ['Le grossissement G du microscope (sans unité)', 'La distance objet–objectif (en m)', 'La taille de l’image intermédiaire (en m)'] },
+        manque: null, solution: { txt: 'O₁A₁ = f₁′ + Δ', val: O1A1 / 1000, u: 'm' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quel est le grandissement de l’objectif ?'],
+        utiles: ['f1', 'D'], raisons: { f2: 'L’oculaire n’intervient pas dans le grandissement de l’objectif.', nom: 'La masse du microscope n’intervient pas.' },
+        cherche: { bonne: 'Le grandissement γ₁ de l’objectif (sans unité, avec son signe)', faux: ['Le grossissement G du microscope (sans unité)', 'La distance O₁A₁ (en m)', 'La vergence de l’objectif (en δ)'] },
+        manque: null, solution: { txt: 'γ₁ = −Δ / f₁′', val: -g, u: '' } };
+    },
+  },
   // ───────────────────────────── 1. Mur (transferts thermiques)
   {
     id: 'paroi', domaine: 'Transferts thermiques', titre: 'Les pertes thermiques d’un mur', noms: ['Puissance perdue', 'Coût de l’énergie perdue'],

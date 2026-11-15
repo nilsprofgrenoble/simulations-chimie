@@ -100,6 +100,7 @@ const SimulationRefraction = paresseux(() => import("./simulations/Refraction"),
 const SimulationLentille = paresseux(() => import("./simulations/Lentille"), "SimulationLentille");
 const SimulationLentilleMince = paresseux(() => import("./simulations/LentilleMince"), "SimulationLentilleMince");
 const SimulationOeilLoupe = paresseux(() => import("./simulations/OeilLoupe"), "SimulationOeilLoupe");
+const SimulationMicroscope = paresseux(() => import("./simulations/Microscope"), "SimulationMicroscope");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
 const SimulationCircuits = paresseux(() => import("./simulations/Circuits"), "SimulationCircuits");
 const SimulationLoiOhm = paresseux(() => import("./simulations/LoiOhm"), "SimulationLoiOhm");
@@ -203,6 +204,8 @@ const SIMULATIONS = [
     component: SimulationDopplerTG },
   { id:117, label:"L’œil et la loupe : accommodation, diamètre apparent, grossissement", niveau:"TSTL", icon:"👁️", color:"#0e7490",
     component: SimulationOeilLoupe },
+  { id:118, label:"Le microscope : image intermédiaire, mise au point, grossissement", niveau:"TSTL", icon:"🔬", color:"#0e7490",
+    component: SimulationMicroscope },
   { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",

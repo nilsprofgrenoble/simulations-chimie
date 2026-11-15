@@ -543,6 +543,44 @@ function genOeilLoupe() {
     retenir: ['Objet dans le plan focal objet : image à l’infini, œil au repos.', 'G = θ′ / θ = dm / f′ (dm = 25 cm) : plus f′ est petite, plus G est grand.', 'Objet entre O et F : OA′ < 0, image virtuelle ; l’œil la voit nette si |OA′| ≥ 25 cm.'] };
 }
 
+// ──────────────────────── Familles « Le microscope » (terminale STL) ────────────────────────
+function genMicroGrossissement() {
+  const f1 = tire([20, 10, 8, 5]), f2 = tire([50, 25, 20]), g = 160 / f1, go = 250 / f2, G = g * go;
+  const q1 = { id: 'm0', type: 'num', q: <>Un microscope a un intervalle optique Δ = 160{NB}mm et un objectif de distance focale f₁′ = <b>{f1}{NB}mm</b> ; il est mis au point. Calculez la valeur absolue du grandissement de l’objectif |γ₁| = Δ / f₁′ (sans unité).</>, unite: '', vrai: g, csMin: 2,
+    aide: 'Δ et f₁′ sont en mm : le rapport est sans unité.',
+    pieges: [[f1 / 160, 'Vous avez calculé f₁′ / Δ : le grandissement est Δ / f₁′.']],
+    expl: <>|γ₁| = Δ / f₁′ = 160 / {f1} = <b>{nb(g, 2)}</b> : l’image intermédiaire est {nb(g, 2)} fois plus grande que l’objet, et renversée.</> };
+  const q2 = { id: 'm1', type: 'num', q: <>L’oculaire a une distance focale f₂′ = <b>{f2}{NB}mm</b>. Calculez son grossissement G<sub>oc</sub> = d<sub>m</sub> / f₂′, avec d<sub>m</sub> = 250{NB}mm (sans unité).</>, unite: '', vrai: go, csMin: 2,
+    aide: 'L’oculaire est une loupe : G = dm / f′, dm et f₂′ dans la même unité.',
+    pieges: [[f2 / 250, 'Vous avez calculé f₂′ / dm : le grossissement est dm / f₂′.'], [25 / f2, 'Vous avez pris dm = 25 mm : dm vaut 250 mm (25 cm).']],
+    expl: <>G<sub>oc</sub> = 250 / {f2} = <b>{nb(go, 2)}</b>.</> };
+  const q3 = { id: 'm2', type: 'num', q: <>Avec |γ₁| = {nb(g, 2)} et G<sub>oc</sub> = {nb(go, 2)}, calculez le grossissement du microscope G = |γ₁| × G<sub>oc</sub> (sans unité).</>, unite: '', vrai: G, csMin: 2,
+    aide: 'Les deux étages se multiplient : G = |γ₁| × dm / f₂′.',
+    pieges: [[g + go, 'Vous avez additionné : les deux grossissements se multiplient.'], [g, 'Vous avez oublié l’oculaire : il faut multiplier par G_oc.']],
+    expl: <>G = {nb(g, 2)} × {nb(go, 2)} = <b>{nb(G, 2)}</b>. On retrouve G = Δ·dm / (f₁′ f₂′) = 160 × 250 / ({f1} × {f2}).</> };
+  [q1, q2, q3].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) / Math.abs(q.vrai) > 1e-3); });
+  return { intro: 'Le microscope : grandissement de l’objectif, grossissement de l’oculaire, grossissement total.', questions: [q1, q2, q3],
+    retenir: ['|γ₁| = Δ / f₁′ (mise au point faite), Δ = 160 mm.', 'Oculaire = loupe : G<sub>oc</sub> = dm / f₂′, dm = 250 mm.', 'G = |γ₁| × dm / f₂′ = Δ·dm / (f₁′ f₂′) : les deux étages se multiplient.'] };
+}
+function genMicroMiseAuPoint() {
+  const f1 = tire([20, 10, 8, 5]), O1A1 = f1 + 160, p = f1 * O1A1 / 160, AB = tire([10, 20, 30, 40]), A = 160 / f1 * AB / 1000;
+  const q1 = { id: 'n0', type: 'num', q: <>Un microscope (Δ = 160{NB}mm) a un objectif de distance focale f₁′ = <b>{f1}{NB}mm</b>. Il est mis au point : A₁ est en F₂, donc F₁′F₂ = Δ. Calculez la distance O₁A₁ entre l’objectif et l’image intermédiaire, en <b>mm</b>.</>, unite: 'mm', vrai: O1A1, csMin: 2,
+    aide: 'O₁A₁ = O₁F₁′ + F₁′F₂ = f₁′ + Δ.',
+    pieges: [[160, 'Vous avez oublié O₁F₁′ : Δ se mesure à partir de F₁′, pas de O₁.'], [160 - f1, 'Vous avez soustrait f₁′ : F₁′ est entre O₁ et F₂, on additionne.']],
+    expl: <>O₁A₁ = f₁′ + Δ = {f1} + 160 = <b>{avecU(O1A1, 'mm', 3)}</b>.</> };
+  const q2 = { id: 'n1', type: 'num', q: <>L’objectif (f₁′ = {f1}{NB}mm) doit donner une image à OA′ = +{O1A1}{NB}mm. Calculez la distance objet–objectif |OA| avec la relation de conjugaison 1/OA′ − 1/OA = 1/f′ (OA est négatif ; donnez |OA|), en <b>mm</b>.</>, unite: 'mm', vrai: p, csMin: 3,
+    aide: '1/OA = 1/OA′ − 1/f′ : le résultat est négatif ; la distance est sa valeur absolue.',
+    pieges: [[O1A1 * f1 / (O1A1 + f1), 'Vous avez additionné 1/OA′ et 1/f′ : 1/OA = 1/OA′ − 1/f′.'], [-p, 'Le signe : OA est négatif, mais la question demande la distance, positive.']],
+    expl: <>1/OA = 1/{O1A1} − 1/{f1}, donc OA = −{nb(p, 3)} mm : l’objet est à <b>{avecU(p, 'mm', 3)}</b> de l’objectif, juste au-delà de son foyer objet ({f1} mm).</> };
+  const q3 = { id: 'n2', type: 'num', q: <>L’objet observé mesure <b>{AB}{NB}µm</b>. Calculez la taille de l’image intermédiaire A₁B₁ = (Δ / f₁′) × AB, en <b>mm</b>.</>, unite: 'mm', vrai: A, csMin: 2,
+    aide: '|γ₁| = Δ / f₁′ ; convertissez AB en mm (1 mm = 1000 µm).',
+    pieges: [[A * 1000, 'Valeur correcte en µm ; l’énoncé demande des mm.'], [AB / 1000 * f1 / 160, 'Vous avez divisé par |γ₁| : l’image est agrandie, on multiplie.']],
+    expl: <>|γ₁| = 160 / {f1} = {nb(160 / f1, 2)} ; A₁B₁ = {nb(160 / f1, 2)} × {AB} µm = <b>{avecU(A, 'mm', 2)}</b>.</> };
+  [q1, q2, q3].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) / Math.abs(q.vrai) > 1e-3); });
+  return { intro: 'Le microscope mis au point : position de l’image intermédiaire, position de l’objet, taille de l’image intermédiaire.', questions: [q1, q2, q3],
+    retenir: ['Mise au point : A₁ en F₂ ; O₁A₁ = f₁′ + Δ.', 'La distance objet–objectif se déduit de la relation de conjugaison : elle dépend de f₁′.', 'A₁B₁ = |γ₁| × AB avec |γ₁| = Δ / f₁′.'] };
+}
+
 // ──────────────────────── Familles « Vecteurs » : somme et différence ────────────────────────
 const sg = x => (x < 0 ? '−' + Math.abs(x) : String(x));
 function vecAleatoires() {
@@ -659,6 +697,8 @@ export const FAMILLES = [
   { id: 'lum1-signes', groupe: 'Formules', titre: 'Lentille mince : les signes des distances algébriques, pas à pas (1re spé)', gen: genLentilleSignes, domaine: 'Lentille mince' },
   { id: 'oeil-accommodation', groupe: 'Formules', titre: 'L’œil réduit : accommodation et diamètre apparent (terminale STL)', gen: genOeilAccomm, domaine: 'Œil et loupe' },
   { id: 'oeil-loupe', groupe: 'Formules', titre: 'La loupe : grossissement et position de l’image (terminale STL)', gen: genOeilLoupe, domaine: 'Œil et loupe' },
+  { id: 'microsc-grossissement', groupe: 'Formules', titre: 'Le microscope : grandissement et grossissement (terminale STL)', gen: genMicroGrossissement, domaine: 'Microscope' },
+  { id: 'microsc-mise-au-point', groupe: 'Formules', titre: 'Le microscope mis au point : positions et taille de l’image intermédiaire (terminale STL)', gen: genMicroMiseAuPoint, domaine: 'Microscope' },
   { id: 'lum1-conjugaison', groupe: 'Formules', titre: 'Lentille mince : conjugaison et grandissement (1re spé)', gen: genLentille, domaine: 'Lentille mince' },
   { id: 'dop-calcul', groupe: 'Formules', titre: 'Effet Doppler : du décalage à la vitesse (TSTL)', gen: genDoppler, domaine: 'Ondes' },
   { id: 'dopg-calcul', groupe: 'Formules', titre: 'Effet Doppler : établir l’expression, son et lumière (TG)', gen: genDopplerTG, domaine: 'Ondes' },
