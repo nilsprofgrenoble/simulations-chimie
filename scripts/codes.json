@@ -776,5 +776,9 @@
  "34:lum1-projecteur.0": "SAPP183",
  "34:lum1-projecteur.1": "SAPP184",
  "36:lum1-conjugaison": "REA17",
- "36:lum1-signes": "REA18"
+ "36:lum1-signes": "REA18",
+ "37:prevoir:dopg-derriere": "ANA379",
+ "37:prevoir:dopg-limite": "ANA380",
+ "37:prevoir:dopg-lumiere": "ANA381",
+ "77:plausible:dopg-val-laser": "VAL199"
 }

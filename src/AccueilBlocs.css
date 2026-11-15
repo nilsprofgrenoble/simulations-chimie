@@ -20,8 +20,9 @@
 .ab-puces button:focus-visible { outline: 3px solid #0c1a2e; outline-offset: 2px; }
 .ab-t2gt { --ab-fond: #f5a31a; --ab-ink: #3a2500; grid-column: span 5; }
 .ab-t1g { --ab-fond: #2cc4ae; --ab-ink: #04352d; grid-column: span 7; }
+.ab-ttg { --ab-fond: #f26b5b; --ab-ink: #3b0d08; grid-column: span 5; }
 .ab-ttstl { --ab-fond: #2563eb; --ab-ink: #ffffff; grid-column: span 7; }
-.ab-tbts { --ab-fond: #5b4bdb; --ab-ink: #ffffff; grid-column: span 5; }
+.ab-tbts { --ab-fond: #5b4bdb; --ab-ink: #ffffff; grid-column: span 12; }
 .ab-une { grid-column: span 12; background: #fff; border: 1px solid #d5dfeb; border-radius: 28px; padding: 26px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 22px; align-items: center; }
 .ab-une .ab-ico { width: 72px; height: 72px; border-radius: 20px; background: #f5a31a; display: grid; place-items: center; }
 .ab-une .ab-ico { color: #14304f; --ia: #ffffff; }   /* trait bleu nuit + touche blanche sur la pastille orange */
@@ -39,7 +40,7 @@
 .ab-compte { text-align: center; color: #3d4d63; font-size: 14.5px; margin: 10px 0 0; }
 @media (max-width: 900px) {
   .ab-hero { grid-template-columns: minmax(0, 1fr); align-items: start; }
-  .ab-t2gt, .ab-t1g, .ab-ttstl, .ab-tbts, .ab-carte { grid-column: span 12; }
+  .ab-t2gt, .ab-t1g, .ab-ttg, .ab-ttstl, .ab-tbts, .ab-carte { grid-column: span 12; }
   .ab-une { grid-template-columns: minmax(0, 1fr); }
   .ab-une .ab-ico { width: 56px; height: 56px; }
 }
