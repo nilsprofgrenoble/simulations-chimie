@@ -23,30 +23,38 @@ function Becher({ x, restants }) {
         ? <circle key={i} cx={cx + 6} cy={cy} r="7" fill={COL.rcl} stroke="#334155"/>
         : <g key={i}><circle cx={cx - 2} cy={cy} r="6" fill={COL.h3o}/><text x={cx - 2} y={cy + 3.5} fontSize="10" fill="white" fontWeight="700" textAnchor="middle">+</text>
           <circle cx={cx + 12} cy={cy + 6} r="6" fill={COL.cl}/><text x={cx + 12} y={cy + 9.5} fontSize="10" fill="white" fontWeight="700" textAnchor="middle">−</text></g>))}
-      {/* cellule conductimétrique */}
-      <rect x="62" y="6" width="16" height="70" rx="3" fill="#f1f5f9" stroke="#334155" strokeWidth="1.6"/>
-      <rect x="64" y="64" width="12" height="14" fill="#94a3b8" stroke="#334155"/>
+      {/* cellule de conductimétrie : câble, poignée, manchon de verre avec deux plaques de platine */}
+      <path d="M70 -26 L70 -8" stroke="#1f2937" strokeWidth="3.2" fill="none"/>
+      <rect x="61" y="-8" width="18" height="30" rx="5" fill="#475569" stroke="#1f2937" strokeWidth="1.4"/>
+      <rect x="64" y="-2" width="12" height="4" rx="2" fill="#94a3b8"/>
+      <rect x="59" y="22" width="22" height="5" rx="2" fill="#1f2937"/>
+      <rect x="62" y="27" width="16" height="48" rx="2" fill="#ffffff" fillOpacity="0.75" stroke="#334155" strokeWidth="1.5"/>
+      <rect x="65.5" y="33" width="3.6" height="32" fill="#111827"/><rect x="70.9" y="33" width="3.6" height="32" fill="#111827"/>
+      <line x1="62" y1="69" x2="78" y2="69" stroke="#334155" strokeDasharray="2 2"/>
     </g>);
 }
 export function SvgMontage() {
   return (
-    <svg viewBox="0 0 400 214" style={{ ...stl, maxWidth: 440 }} role="img"
+    <svg viewBox="0 -34 400 248" style={{ ...stl, maxWidth: 440 }} role="img"
       aria-label="Deux béchers avec une cellule de conductimétrie. À t égal 0, douze molécules de réactif RCl, aucun ion, conductivité faible. À t égal 10 minutes, il reste trois molécules de RCl et neuf paires d’ions H3O plus et Cl moins, la conductivité est plus grande.">
       <Becher x={10} restants={12}/><Becher x={216} restants={3}/>
+      <text x="92" y="-16" fontSize="12.5" fontWeight="700" fill="#334155">cellule de conductimétrie</text>
+      <path d="M88 -12 L82 -2" stroke="#334155" strokeWidth="1.2"/>
+      <text x="298" y="-16" fontSize="12" fill="#475569">câble vers</text><text x="298" y="-3" fontSize="12" fill="#475569">le conductimètre</text>
       <text x="80" y="182" fontSize="13" fontWeight="700" fill="#0f172a" textAnchor="middle">t = 0</text>
       <text x="286" y="182" fontSize="13" fontWeight="700" fill="#0f172a" textAnchor="middle">t = 10 min</text>
       <path d="M152 90 L206 90" stroke={COL.orange} strokeWidth="2.6" markerEnd="url(#fm)"/>
       <defs><marker id="fm" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill={COL.orange}/></marker></defs>
-      <text x="180" y="78" fontSize="10.5" fill={COL.orange} fontWeight="700" textAnchor="middle">temps</text>
+      <text x="180" y="78" fontSize="12" fill={COL.orange} fontWeight="700" textAnchor="middle">temps</text>
       {/* barres de conductivité */}
       <rect x="22" y="192" width="116" height="9" rx="4" fill="#e2e8f0"/><rect x="22" y="192" width="9" height="9" rx="4" fill={COL.bleu}/>
       <rect x="228" y="192" width="116" height="9" rx="4" fill="#e2e8f0"/><rect x="228" y="192" width="87" height="9" rx="4" fill={COL.bleu}/>
-      <text x="80" y="211" fontSize="11" fill="#334155" textAnchor="middle">conductivité σ faible</text>
-      <text x="286" y="211" fontSize="11" fill="#334155" textAnchor="middle">σ plus grande</text>
+      <text x="80" y="211" fontSize="12.5" fill="#334155" textAnchor="middle">conductivité σ faible</text>
+      <text x="286" y="211" fontSize="12.5" fill="#334155" textAnchor="middle">σ plus grande</text>
       {/* légende */}
-      <circle cx="160" cy="130" r="6" fill={COL.rcl} stroke="#334155"/><text x="170" y="134" fontSize="11" fill="#334155">RCl</text>
-      <circle cx="160" cy="148" r="6" fill={COL.h3o}/><text x="157" y="151.5" fontSize="10" fill="white" fontWeight="700">+</text><text x="170" y="152" fontSize="11" fill="#334155">H<Sub>3</Sub>O⁺</text>
-      <circle cx="160" cy="166" r="6" fill={COL.cl}/><text x="157" y="169.5" fontSize="10" fill="white" fontWeight="700">−</text><text x="170" y="170" fontSize="11" fill="#334155">Cl⁻</text>
+      <circle cx="160" cy="130" r="6" fill={COL.rcl} stroke="#334155"/><text x="170" y="134" fontSize="13" fill="#334155">RCl</text>
+      <circle cx="160" cy="148" r="6" fill={COL.h3o}/><text x="157" y="151.5" fontSize="10" fill="white" fontWeight="700">+</text><text x="170" y="152" fontSize="13" fill="#334155">H<Sub>3</Sub>O⁺</text>
+      <circle cx="160" cy="166" r="6" fill={COL.cl}/><text x="157" y="169.5" fontSize="10" fill="white" fontWeight="700">−</text><text x="170" y="170" fontSize="13" fill="#334155">Cl⁻</text>
     </svg>);
 }
 

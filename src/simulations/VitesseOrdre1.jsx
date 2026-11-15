@@ -29,7 +29,7 @@ const cadreGraphe = { width: '100%', display: 'block', background: 'white', bord
 
 // ---------- graphe c = f(t) ----------
 function CourbeC({ pts, P, t, cLu, ideal, tang, fen, niv, modele }) {
-  const W = 480, H = 300, mx = 46, my = 14, bas = H - 44, ymax = Math.ceil(P.c0 / 10) * 10;
+  const W = 480, H = 340, mx = 56, my = 16, bas = H - 56, ymax = Math.ceil(P.c0 / 10) * 10;
   const X = u => mx + (W - mx - 12) * u / M.DUREE, Y = c => bas - (bas - my) * c / ymax;
   const ligne = (f, n = 80) => Array.from({ length: n + 1 }, (_, i) => { const u = M.DUREE * i / n; return `${i ? 'L' : 'M'}${X(u).toFixed(1)},${Y(f(u)).toFixed(1)}`; }).join('');
   const ticksC = []; for (let c = 0; c <= ymax; c += 10) ticksC.push(c);
@@ -39,18 +39,18 @@ function CourbeC({ pts, P, t, cLu, ideal, tang, fen, niv, modele }) {
       aria-label={`Concentration du réactif en fonction du temps, de ${nbf(P.c0, 1)} millimoles par litre à t égal 0 jusqu’à ${nbf(pts[pts.length - 1].cm, 1)} à ${M.DUREE} minutes. Le point orange est à t égal ${nbf(t, 1)} minutes, c égal ${nbf(cLu, 1)}${tang ? ' ; la tangente en ce point est tracée' : ''}${fen ? ' ; une sécante entre deux points est tracée' : ''}.`}>
       <defs><clipPath id="vo-clip"><rect x={mx} y={my - 4} width={W - mx - 10} height={bas - my + 4}/></clipPath></defs>
       <line x1={mx} y1={bas} x2={W - 10} y2={bas} stroke="#94a3b8"/><line x1={mx} y1={my} x2={mx} y2={bas} stroke="#94a3b8"/>
-      {[0, 5, 10, 15, 20].map(u => <text key={u} x={X(u)} y={bas + 16} fontSize="12.5" textAnchor="middle" fill="#334155">{u}</text>)}
-      {ticksC.map(c => <g key={c}><line x1={mx} y1={Y(c)} x2={W - 10} y2={Y(c)} stroke="#eef2f7"/><text x={mx - 6} y={Y(c) + 4} fontSize="12.5" textAnchor="end" fill="#334155">{c}</text></g>)}
-      <text x={(mx + W) / 2} y={H - 8} fontSize="12.5" textAnchor="middle" fill="#334155">temps t (min)</text>
-      <text x="13" y={(my + bas) / 2} fontSize="12.5" fill="#334155" transform={`rotate(-90 13 ${(my + bas) / 2})`} textAnchor="middle">c (mmol/L)</text>
+      {[0, 5, 10, 15, 20].map(u => <text key={u} x={X(u)} y={bas + 20} fontSize="16" textAnchor="middle" fill="#334155">{u}</text>)}
+      {ticksC.map(c => <g key={c}><line x1={mx} y1={Y(c)} x2={W - 10} y2={Y(c)} stroke="#eef2f7"/><text x={mx - 6} y={Y(c) + 4} fontSize="16" textAnchor="end" fill="#334155">{c}</text></g>)}
+      <text x={(mx + W) / 2} y={H - 8} fontSize="16" textAnchor="middle" fill="#334155">temps t (min)</text>
+      <text x="16" y={(my + bas) / 2} fontSize="16" fill="#334155" transform={`rotate(-90 13 ${(my + bas) / 2})`} textAnchor="middle">c (mmol/L)</text>
       {niv.map(({ c, vert: v0, hz, n }) => { const tn = M.tempsPour(P, c), vert = v0 && tn <= M.DUREE; return (
         <g key={n}>
           {hz && <><line x1={mx} y1={Y(c)} x2={vert ? X(tn) : W - 10} y2={Y(c)} stroke={COL.gris} strokeDasharray="4 3"/>
-            <text x={W - 14} y={Y(c) - 4} fontSize="11.5" textAnchor="end" fill="#475569">{n === 0 ? '' : <>c<tspan baselineShift="sub" fontSize="0.75em">0</tspan>/{2 ** n} = {nbf(c, 1)}</>}</text></>}
+            <text x={W - 14} y={Y(c) - 5} fontSize="15" textAnchor="end" fill="#475569">{n === 0 ? '' : `c₀/${2 ** n}`}</text></>}
           {vert && <line x1={X(tn)} y1={Y(c)} x2={X(tn)} y2={bas} stroke={COL.gris} strokeDasharray="4 3"/>}
         </g>); })}
       {niv.filter(q => q.vert && M.tempsPour(P, q.c) <= M.DUREE).map((q, i, l) => { const t0 = i ? M.tempsPour(P, l[i - 1].c) : 0, t1 = M.tempsPour(P, q.c); return (
-        <g key={q.n}><line x1={X(t0) + 2} y1={bas - 4} x2={X(t1) - 2} y2={bas - 4} stroke={COL.vert} strokeWidth="2.6"/><text x={(X(t0) + X(t1)) / 2} y={bas - 10} fontSize="12" fontWeight="700" fill={COL.vert} textAnchor="middle">t<Sub>½</Sub></text></g>); })}
+        <g key={q.n}><line x1={X(t0) + 2} y1={bas - 4} x2={X(t1) - 2} y2={bas - 4} stroke={COL.vert} strokeWidth="2.6"/><text x={(X(t0) + X(t1)) / 2} y={bas - 10} fontSize="15" fontWeight="700" fill={COL.vert} textAnchor="middle">t½</text></g>); })}
       {(modele || ideal) && <path d={ligne(u => M.conc(P, u))} fill="none" stroke={COL.bleu} strokeWidth={ideal ? 2.4 : 1.6} opacity={ideal ? 1 : 0.7} strokeDasharray={ideal ? undefined : '5 3'}/>}
       {pts.map(p => <circle key={p.t} cx={X(p.t)} cy={Y(p.cm)} r={ideal ? 2.4 : 3.2} fill={COL.bleu} opacity={ideal ? 0.8 : 0.9}/>)}
       {tang && <g clipPath="url(#vo-clip)">
@@ -58,8 +58,8 @@ function CourbeC({ pts, P, t, cLu, ideal, tang, fen, niv, modele }) {
         <circle cx={X(0)} cy={Y(tang.cA)} r="4.5" fill="white" stroke={COL.orange} strokeWidth="2"/>
         {tang.tB <= M.DUREE && <circle cx={X(tang.tB)} cy={bas} r="4.5" fill="white" stroke={COL.orange} strokeWidth="2"/>}
       </g>}
-      {tang && tang.cA <= ymax && <text x={X(0) + 9} y={Y(tang.cA) < my + 14 ? Y(tang.cA) + 16 : Y(tang.cA) - 7} fontSize="12" fontWeight="700" fill={COL.orange}>A (0 ; {nbf(tang.cA, 1)})</text>}
-      {tang && tang.tB <= M.DUREE && <text x={Math.min(X(tang.tB), W - 62)} y={bas - 8} fontSize="12" fontWeight="700" fill={COL.orange} textAnchor="middle">B ({nbf(tang.tB, 1)} ; 0)</text>}
+      {tang && tang.cA <= ymax && <text x={X(0) + 9} y={Y(tang.cA) < my + 14 ? Y(tang.cA) + 16 : Y(tang.cA) - 7} fontSize="15" fontWeight="700" fill={COL.orange}>A (0 ; {nbf(tang.cA, 1)})</text>}
+      {tang && tang.tB <= M.DUREE && <text x={Math.min(X(tang.tB), W - 62)} y={bas - 30} fontSize="15" fontWeight="700" fill={COL.orange} textAnchor="middle">B ({nbf(tang.tB, 1)} ; 0)</text>}
       {fen && <g>
         <line x1={X(fen.a.t)} y1={Y(fen.a.cm)} x2={X(fen.b.t)} y2={Y(fen.b.cm)} stroke={COL.violet} strokeWidth="2"/>
         <circle cx={X(fen.a.t)} cy={Y(fen.a.cm)} r="6.5" fill="none" stroke={COL.violet} strokeWidth="2"/><circle cx={X(fen.b.t)} cy={Y(fen.b.cm)} r="6.5" fill="none" stroke={COL.violet} strokeWidth="2"/>
@@ -81,10 +81,10 @@ function GrapheVC({ pts, P, exact, dt, t }) {
     <svg viewBox={`0 0 ${W} ${H}`} style={cadreGraphe} role="img"
       aria-label="Vitesse volumique de disparition en fonction de la concentration. La droite en pointillés passe par l’origine et par le premier point : si les points s’alignent sur elle, v est proportionnelle à c.">
       <line x1={mx} y1={bas} x2={W - 8} y2={bas} stroke="#94a3b8"/><line x1={mx} y1={my} x2={mx} y2={bas} stroke="#94a3b8"/>
-      {[0, 10, 20, 30, 40, 50, 60].filter(c => c <= cmax).map(c => <text key={c} x={X(c)} y={bas + 15} fontSize="12" textAnchor="middle" fill="#334155">{c}</text>)}
-      {ticks.map(v => <g key={v}><line x1={mx} y1={Y(v)} x2={W - 8} y2={Y(v)} stroke="#eef2f7"/><text x={mx - 6} y={Y(v) + 4} fontSize="12" textAnchor="end" fill="#334155">{v}</text></g>)}
-      <text x={(mx + W) / 2} y={H - 6} fontSize="12" textAnchor="middle" fill="#334155">c (mmol/L)</text>
-      <text x="12" y={(my + bas) / 2} fontSize="12" fill="#334155" transform={`rotate(-90 12 ${(my + bas) / 2})`} textAnchor="middle">v (mmol·L⁻¹·min⁻¹)</text>
+      {[0, 10, 20, 30, 40, 50, 60].filter(c => c <= cmax).map(c => <text key={c} x={X(c)} y={bas + 15} fontSize="13.5" textAnchor="middle" fill="#334155">{c}</text>)}
+      {ticks.map(v => <g key={v}><line x1={mx} y1={Y(v)} x2={W - 8} y2={Y(v)} stroke="#eef2f7"/><text x={mx - 6} y={Y(v) + 4} fontSize="13.5" textAnchor="end" fill="#334155">{v}</text></g>)}
+      <text x={(mx + W) / 2} y={H - 6} fontSize="13.5" textAnchor="middle" fill="#334155">c (mmol/L)</text>
+      <text x="12" y={(my + bas) / 2} fontSize="13.5" fill="#334155" transform={`rotate(-90 12 ${(my + bas) / 2})`} textAnchor="middle">v (mmol·L⁻¹·min⁻¹)</text>
       <line x1={X(0)} y1={Y(0)} x2={X(P.c0)} y2={Y(v0)} stroke={COL.gris} strokeWidth="1.6" strokeDasharray="5 3"/>
       {donnees.map(q => <circle key={q.t} cx={X(q.c)} cy={Y(q.v)} r="3" fill={COL.bleu} opacity="0.85"/>)}
       {cur && <circle cx={X(cur.c)} cy={Y(cur.v)} r="6" fill="#f59e0b" stroke="#0f172a" strokeWidth="1.5"/>}
@@ -101,10 +101,10 @@ function GrapheV({ pts, P, dt, t, exact }) {
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={cadreGraphe} role="img" aria-label="Vitesse volumique de disparition en fonction du temps : elle diminue au cours du temps. Les points sont estimés par sécantes ; la courbe en pointillés est celle du modèle.">
       <line x1={mx} y1={bas} x2={W - 8} y2={bas} stroke="#94a3b8"/><line x1={mx} y1={my} x2={mx} y2={bas} stroke="#94a3b8"/>
-      {[0, 5, 10, 15, 20].map(u => <text key={u} x={X(u)} y={bas + 15} fontSize="12" textAnchor="middle" fill="#334155">{u}</text>)}
-      {ticks.map(v => <g key={v}><line x1={mx} y1={Y(v)} x2={W - 8} y2={Y(v)} stroke="#eef2f7"/><text x={mx - 6} y={Y(v) + 4} fontSize="12" textAnchor="end" fill="#334155">{v}</text></g>)}
-      <text x={(mx + W) / 2} y={H - 6} fontSize="12" textAnchor="middle" fill="#334155">t (min)</text>
-      <text x="12" y={(my + bas) / 2} fontSize="12" fill="#334155" transform={`rotate(-90 12 ${(my + bas) / 2})`} textAnchor="middle">v (mmol·L⁻¹·min⁻¹)</text>
+      {[0, 5, 10, 15, 20].map(u => <text key={u} x={X(u)} y={bas + 15} fontSize="13.5" textAnchor="middle" fill="#334155">{u}</text>)}
+      {ticks.map(v => <g key={v}><line x1={mx} y1={Y(v)} x2={W - 8} y2={Y(v)} stroke="#eef2f7"/><text x={mx - 6} y={Y(v) + 4} fontSize="13.5" textAnchor="end" fill="#334155">{v}</text></g>)}
+      <text x={(mx + W) / 2} y={H - 6} fontSize="13.5" textAnchor="middle" fill="#334155">t (min)</text>
+      <text x="12" y={(my + bas) / 2} fontSize="13.5" fill="#334155" transform={`rotate(-90 12 ${(my + bas) / 2})`} textAnchor="middle">v (mmol·L⁻¹·min⁻¹)</text>
       <path d={ligne} fill="none" stroke={COL.gris} strokeWidth="1.6" strokeDasharray="5 3"/>
       {donnees.map(q => <circle key={q.t} cx={X(q.t)} cy={Y(q.v)} r="3" fill={COL.bleu} opacity="0.85"/>)}
       <line x1={X(t)} y1={my} x2={X(t)} y2={bas} stroke={COL.orange} strokeWidth="1.2" strokeDasharray="3 3"/>
@@ -119,10 +119,10 @@ function GrapheLn({ pts, P, ajust, montrerAjust, t }) {
     <svg viewBox={`0 0 ${W} ${H}`} style={cadreGraphe} role="img"
       aria-label={`Logarithme népérien de c sur c° en fonction du temps, avec c° égal 1 mole par litre. ${montrerAjust && ajust ? `La droite d’ajustement a pour pente ${nbf(ajust.pente, 3)} par minute.` : ''} Les points qui sont des droites traduisent une loi d’ordre 1.`}>
       <line x1={mx} y1={bas} x2={W - 8} y2={bas} stroke="#94a3b8"/><line x1={mx} y1={my} x2={mx} y2={bas} stroke="#94a3b8"/>
-      {[0, 5, 10, 15, 20].map(u => <text key={u} x={X(u)} y={bas + 15} fontSize="12" textAnchor="middle" fill="#334155">{u}</text>)}
-      {ticks.map(y => <g key={y}><line x1={mx} y1={Y(y)} x2={W - 8} y2={Y(y)} stroke="#eef2f7"/><text x={mx - 6} y={Y(y) + 4} fontSize="12" textAnchor="end" fill="#334155">{nbf(y, 1).replace('-', '−')}</text></g>)}
-      <text x={(mx + W) / 2} y={H - 6} fontSize="12" textAnchor="middle" fill="#334155">t (min)</text>
-      <text x="12" y={(my + bas) / 2} fontSize="12" fill="#334155" transform={`rotate(-90 12 ${(my + bas) / 2})`} textAnchor="middle">ln(c / c°), c° = 1 mol/L</text>
+      {[0, 5, 10, 15, 20].map(u => <text key={u} x={X(u)} y={bas + 15} fontSize="13.5" textAnchor="middle" fill="#334155">{u}</text>)}
+      {ticks.map(y => <g key={y}><line x1={mx} y1={Y(y)} x2={W - 8} y2={Y(y)} stroke="#eef2f7"/><text x={mx - 6} y={Y(y) + 4} fontSize="13.5" textAnchor="end" fill="#334155">{nbf(y, 1).replace('-', '−')}</text></g>)}
+      <text x={(mx + W) / 2} y={H - 6} fontSize="13.5" textAnchor="middle" fill="#334155">t (min)</text>
+      <text x="12" y={(my + bas) / 2} fontSize="13.5" fill="#334155" transform={`rotate(-90 12 ${(my + bas) / 2})`} textAnchor="middle">ln(c / c°), c° = 1 mol/L</text>
       {montrerAjust && ajust && <line x1={X(0)} y1={Y(ajust.ordonnee)} x2={X(M.DUREE)} y2={Y(ajust.ordonnee + ajust.pente * M.DUREE)} stroke={COL.orange} strokeWidth="1.8" strokeDasharray="5 3"/>}
       {vis.map(p => <circle key={p.t} cx={X(p.t)} cy={Y(M.lnc(p.cm))} r="3" fill={COL.bleu} opacity="0.85"/>)}
       <line x1={X(t)} y1={my} x2={X(t)} y2={bas} stroke={COL.orange} strokeWidth="1.2" strokeDasharray="3 3"/>
