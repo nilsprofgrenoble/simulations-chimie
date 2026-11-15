@@ -248,6 +248,51 @@ export const ENONCES = [
         manque: null, solution: { txt: 'γ₁ = −Δ / f₁′', val: -g, u: '' } };
     },
   },
+  // ───────────────────────────── 0 quater. Lunette astronomique (TSTL)
+  {
+    id: 'lunet-astre', domaine: 'Lunette astronomique', titre: 'Un amateur observe un astre', noms: ['Grossissement', 'Image intermédiaire'],
+    gen: () => ({ f1: tire([600, 800, 1000, 1200]), f2: tire([10, 20, 25, 40]), th: tire([1.5, 2, 3, 4]), D: tire([80, 100, 150]) }),
+    build: (p, q) => {
+      const G = p.f1 / p.f2, A1B1 = p.f1 * p.th / 1000;
+      const tokens = {
+        f1: tok(`${p.f1} mm`, 'Distance focale de l’objectif', p.f1 / 1000, 'm'),
+        f2: tok(`${p.f2} mm`, 'Distance focale de l’oculaire', p.f2 / 1000, 'm'),
+        D: tok(`${p.D} mm`, 'Diamètre de l’objectif', p.D / 1000, 'm'),
+      };
+      const debut = ['Un amateur observe un astre avec une lunette afocale, modélisée par deux lentilles minces convergentes : un objectif de distance focale ', T('f1'), ' et de diamètre ', T('D'), ', et un oculaire de distance focale ', T('f2'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'De combien l’angle sous lequel il voit l’astre est-il multiplié grâce à la lunette ?'],
+        utiles: ['f1', 'f2'], raisons: { D: 'Le diamètre de l’objectif joue sur la luminosité et la résolution, pas sur le grossissement.' },
+        cherche: { bonne: 'Le grossissement G de la lunette (sans unité)', faux: ['La distance O₁O₂ entre les lentilles (en m)', 'La taille A₁B₁ de l’image intermédiaire (en m)', 'Le diamètre apparent θ₂ de l’image (en rad)'] },
+        manque: null, solution: { txt: 'G = f₁′ / f₂′', val: G, u: '' } };
+      tokens.th = tok(`${p.th} mrad`, 'Diamètre apparent de l’astre', p.th / 1000, 'rad');
+      return { tokens, derivees: [], texte: [...debut, 'L’astre a un diamètre apparent de ', T('th'), '. Quelle est la taille de l’image intermédiaire formée par l’objectif ?'],
+        utiles: ['f1', 'th'], raisons: { f2: 'L’oculaire n’intervient pas dans la taille de l’image intermédiaire.', D: 'Le diamètre de l’objectif ne change pas la taille de l’image intermédiaire.' },
+        cherche: { bonne: 'La taille A₁B₁ de l’image intermédiaire (en mm)', faux: ['Le grossissement G de la lunette (sans unité)', 'Le diamètre apparent θ₂ de l’image définitive (en rad)', 'La distance O₁O₂ entre les lentilles (en mm)'] },
+        manque: null, solution: { txt: 'A₁B₁ = f₁′ × θ₀ (petits angles)', val: A1B1, u: 'mm' } };
+    },
+  },
+  {
+    id: 'lunet-reglage', domaine: 'Lunette astronomique', titre: 'Un élève règle sa lunette', noms: ['Distance entre les lentilles', 'Diamètre apparent de l’image'],
+    gen: () => ({ f1: tire([600, 800, 1000, 1200]), f2: tire([10, 20, 25, 40]), th: tire([1.5, 2, 3, 4]), m: tire([300, 450, 600]) }),
+    build: (p, q) => {
+      const d = p.f1 + p.f2, th2 = p.th * p.f1 / p.f2;
+      const tokens = {
+        f1: tok(`${p.f1} mm`, 'Distance focale de l’objectif', p.f1 / 1000, 'm'),
+        f2: tok(`${p.f2} mm`, 'Distance focale de l’oculaire', p.f2 / 1000, 'm'),
+        m: tok(`${p.m} g`, 'Masse de l’oculaire et de son support', p.m / 1000, 'kg'),
+      };
+      const debut = ['Un élève monte une lunette avec un objectif de distance focale ', T('f1'), ' et un oculaire de distance focale ', T('f2'), ' (l’oculaire et son support pèsent ', T('m'), '). Il vise un astre lointain et règle la lunette pour observer sans accommoder. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle distance sépare alors l’objectif et l’oculaire ?'],
+        utiles: ['f1', 'f2'], raisons: { m: 'La masse de l’oculaire n’intervient pas.' },
+        cherche: { bonne: 'La distance O₁O₂ entre l’objectif et l’oculaire (en m)', faux: ['Le grossissement G de la lunette (sans unité)', 'La taille A₁B₁ de l’image intermédiaire (en m)', 'La vergence de l’oculaire (en δ)'] },
+        manque: null, solution: { txt: 'O₁O₂ = f₁′ + f₂′', val: d / 1000, u: 'm' } };
+      tokens.th = tok(`${p.th} mrad`, 'Diamètre apparent de l’astre', p.th / 1000, 'rad');
+      return { tokens, derivees: [], texte: [...debut, 'L’astre a un diamètre apparent de ', T('th'), '. Sous quel angle voit-il l’image définitive ?'],
+        utiles: ['f1', 'f2', 'th'], raisons: { m: 'La masse de l’oculaire n’intervient pas.' },
+        cherche: { bonne: 'Le diamètre apparent θ₂ de l’image définitive (en rad)', faux: ['Le grossissement G de la lunette (sans unité)', 'La taille A₁B₁ de l’image intermédiaire (en m)', 'La distance O₁O₂ (en m)'] },
+        manque: null, solution: { txt: 'θ₂ = G × θ₀ = (f₁′ / f₂′) × θ₀', val: th2 / 1000, u: 'rad' } };
+    },
+  },
   // ───────────────────────────── 1. Mur (transferts thermiques)
   {
     id: 'paroi', domaine: 'Transferts thermiques', titre: 'Les pertes thermiques d’un mur', noms: ['Puissance perdue', 'Coût de l’énergie perdue'],

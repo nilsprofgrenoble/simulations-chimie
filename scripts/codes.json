@@ -818,5 +818,17 @@
  "37:prevoir:titph-indic-benz": "ANA392",
  "77:plausible:titph-val-phe": "VAL204",
  "77:plausible:titph-val-ca": "VAL205",
- "36:titph-calcul": "REA25"
+ "36:titph-calcul": "REA25",
+ "34:lunet-astre.0": "SAPP199",
+ "34:lunet-astre.1": "SAPP200",
+ "34:lunet-reglage.0": "SAPP201",
+ "34:lunet-reglage.1": "SAPP202",
+ "37:prevoir:lunet-image-intermediaire": "ANA393",
+ "37:prevoir:lunet-distance-afocale": "ANA394",
+ "37:prevoir:lunet-grossissement-oculaire": "ANA395",
+ "37:prevoir:lunet-oculaire-court": "ANA396",
+ "77:plausible:lunet-val-grossissement": "VAL206",
+ "77:plausible:lunet-val-reglage-myope": "VAL207",
+ "36:lunet-grossissement": "REA26",
+ "36:lunet-image": "REA27"
 }
