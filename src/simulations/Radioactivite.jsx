@@ -32,7 +32,6 @@ const PRESET = { th: 8, N0: 4.0e7, t: 0, age: 0, tn: 0, graines: [], nSc: 100, d
 // nombre de noyaux restants (sur n) à l’instant t pour un essai de graine g : individus pour n = 100, tirage global au-delà
 const compte = (n, g, th, t) => (n === 100 ? M.restantsA(M.instantsDeces(100, th, g), t) : M.restantsApres(n, th, t, g));
 const pctTxt = (k, n) => `${nbf(100 * k / n, n >= 10000 ? 2 : 0)}${NB}%`;
-const Sub = ({ children }) => <tspan baselineShift="sub" fontSize="0.75em">{children}</tspan>;
 
 // ---------- formules (MathML) ----------
 const FdN = <Formule><mfrac><mrow><mi mathvariant="normal">d</mi><mi>N</mi></mrow><mrow><mi mathvariant="normal">d</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mo>−</mo><mi>λ</mi><mo>·</mo><mi>N</mi></Formule>;
@@ -65,7 +64,7 @@ function Noyaux({ n, restants, inst, tn }) {
 // ---------- graphe N(t) / A(t) ----------
 function CourbeN({ P, th, ctx, tmax, t, pts, afficherA, niv, tang, modele, ligneF, masque }) {
   const dat = ctx === 'dat';
-  const W = 480, H = 300, mx = 50, mr = afficherA && !dat ? 46 : 14, my = 14, bas = H - 44;
+  const W = 480, H = 340, mx = masque ? 22 : 66, mr = afficherA && !dat ? 70 : 16, my = 16, bas = H - 56;
   const lS = M.lambdaS(P), ech = dat ? 1 : 1e-6, ymax = dat ? 100 : Math.ceil(P.c0 / 1e7) * 10;
   const X = u => mx + (W - mx - mr) * u / tmax, Y = v => bas - (bas - my) * v / ymax;     // v : millions de noyaux (ech) ou % (dat)
   const Nv = u => M.N(P, u) * ech;
@@ -81,18 +80,18 @@ function CourbeN({ P, th, ctx, tmax, t, pts, afficherA, niv, tang, modele, ligne
       aria-label={`${dat ? 'Pourcentage de carbone 14 restant' : 'Nombre de noyaux restants (en millions)'} en fonction du temps, de ${dat ? '100 pour cent' : nbf(P.c0 / 1e6, 0) + ' millions'} à t égal 0, divisé par 2 toutes les demi-vies de ${nbf(th, dat ? 0 : 1)} ${unite}. ${pts ? 'Des points de mesure de l’activité, dispersés autour de la courbe, sont tracés.' : ''} Le curseur est à t égal ${nbf(t, dat ? 0 : 1)} ${unite}.`}>
       <defs><clipPath id="ra-clip"><rect x={mx} y={my - 4} width={W - mx - mr + 2} height={bas - my + 4}/></clipPath></defs>
       <line x1={mx} y1={bas} x2={W - mr} y2={bas} stroke="#94a3b8"/><line x1={mx} y1={my} x2={mx} y2={bas} stroke="#94a3b8"/>
-      {ticksX.map((u, i) => <text key={u} x={X(u)} y={bas + 16} fontSize="12" textAnchor={i === ticksX.length - 1 ? 'end' : 'middle'} fill="#334155">{dat ? fmtMilliers(u) : nbf(u, th % 1 ? 1 : 0)}</text>)}
+      {ticksX.map((u, i) => <text key={u} x={X(u)} y={bas + 20} fontSize="16" textAnchor={i === ticksX.length - 1 ? 'end' : 'middle'} fill="#334155">{dat ? fmtMilliers(u) : nbf(u, th % 1 ? 1 : 0)}</text>)}
       {ticksY.map(v => <g key={v}><line x1={mx} y1={Y(v)} x2={W - mr} y2={Y(v)} stroke="#eef2f7"/>
-        {!masque && <text x={mx - 6} y={Y(v) + 4} fontSize="12" textAnchor="end" fill="#334155">{nbf(v, 0)}</text>}
-        {afficherA && !dat && <text x={W - mr + 6} y={Y(v) + 4} fontSize="12" fill={COL.violet}>{fmtA(v * 1e6 * lS)}</text>}</g>)}
-      <text x={(mx + W - mr) / 2} y={H - 8} fontSize="12.5" textAnchor="middle" fill="#334155">{dat ? 'temps écoulé depuis la mort (ans)' : 'temps t (jours)'}</text>
-      {!masque && <text x="13" y={(my + bas) / 2} fontSize="12.5" fill="#334155" transform={`rotate(-90 13 ${(my + bas) / 2})`} textAnchor="middle">{dat ? 'carbone 14 restant (%)' : 'N (millions de noyaux)'}</text>}
-      {afficherA && !dat && <text x={W - 6} y={(my + bas) / 2} fontSize="12.5" fill={COL.violet} transform={`rotate(90 ${W - 6} ${(my + bas) / 2})`} textAnchor="middle">A (Bq)</text>}
+        {!masque && <text x={mx - 6} y={Y(v) + 5} fontSize="16" textAnchor="end" fill="#334155">{nbf(v, 0)}</text>}
+        {afficherA && !dat && <text x={W - mr + 6} y={Y(v) + 5} fontSize="16" fill={COL.violet}>{fmtA(v * 1e6 * lS)}</text>}</g>)}
+      <text x={(mx + W - mr) / 2} y={H - 10} fontSize="16" textAnchor="middle" fill="#334155">{dat ? 'temps écoulé depuis la mort (ans)' : 'temps t (jours)'}</text>
+      {!masque && <text x="18" y={(my + bas) / 2} fontSize="16" fill="#334155" transform={`rotate(-90 18 ${(my + bas) / 2})`} textAnchor="middle">{dat ? 'carbone 14 restant (%)' : 'N (millions de noyaux)'}</text>}
+      {afficherA && !dat && <text x={W - 12} y={(my + bas) / 2} fontSize="16" fill={COL.violet} transform={`rotate(90 ${W - 12} ${(my + bas) / 2})`} textAnchor="middle">A (Bq)</text>}
       {niv.map(({ n, c, vert }) => { const tn = n * th; return (
         <g key={n}><line x1={mx} y1={Y(c)} x2={vert ? X(tn) : W - mr} y2={Y(c)} stroke={COL.gris} strokeDasharray="4 3"/>
           {vert && <line x1={X(tn)} y1={Y(c)} x2={X(tn)} y2={bas} stroke={COL.gris} strokeDasharray="4 3"/>}
-          {vert && <text x={X(tn) + 4} y={bas - 6} fontSize="11.5" fontWeight="700" fill={COL.vert}>{n} t<tspan baselineShift="sub" fontSize="0.75em">½</tspan></text>}
-          {!vert && <text x={W - mr - 4} y={Y(c) - 4} fontSize="11.5" fill="#475569" textAnchor="end">A₀/{2 ** n}</text>}</g>); })}
+          {vert && <text x={X(tn) + 4} y={bas - 6} fontSize="15" fontWeight="700" fill={COL.vert}>{n} t½</text>}
+          {!vert && <text x={W - mr - 4} y={Y(c) - 4} fontSize="15" fill="#475569" textAnchor="end">A₀/{2 ** n}</text>}</g>); })}
       {ligneF != null && <line x1={mx} y1={Y(ligneF)} x2={W - mr} y2={Y(ligneF)} stroke={COL.rouge} strokeDasharray="5 3"/>}
       {modele && <path d={ligne()} fill="none" stroke={COL.bleu} strokeWidth={pts ? 1.4 : 2.4} opacity={pts ? 0.65 : 1} strokeDasharray={pts ? '5 3' : undefined}/>}
       {pts && pts.map(p => <circle key={p.t} cx={X(p.t)} cy={Y(p.am / lS / 1e6)} r="3.4" fill={COL.violet} opacity="0.9"/>)}
