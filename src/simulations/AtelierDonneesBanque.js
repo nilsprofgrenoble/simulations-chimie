@@ -52,6 +52,70 @@ export const ENONCES = [
         manque: null, solution: { txt: 'A′B′ = γ × AB avec γ = OA′ / OA', val: gam * AB, u: 'm' } };
     },
   },
+  // ───────────────────────────── Effet Doppler (TSTL) : un chariot sur un rail
+  {
+    id: 'dop-chariot', domaine: 'Ondes', titre: 'Un chariot sur un rail', noms: ['Vitesse du chariot', 'Décalage Doppler prévu'],
+    gen: () => { const fe = tire([25000, 40000]), v = tire([0.2, 0.3, 0.4, 0.6, 0.8, 1.0]); return { fe, v, df: Math.round(fe * v / 340), L: tire([1.2, 1.5, 2.0]), m: tire([250, 400, 500]) }; },
+    build: (p, q) => {
+      const c = 340;
+      const tokens = {
+        fe: tok(`${nb(p.fe / 1000, 0)} kHz`, 'Fréquence de l’onde émise par l’émetteur', p.fe, 'Hz'),
+        c: tok(`${c} m/s`, 'Célérité du son dans l’air du laboratoire', c, 'm·s⁻¹'),
+        L: tok(`${nb(p.L, 1)} m`, 'Longueur du rail', p.L, 'm'),
+        m: tok(`${p.m} g`, 'Masse du chariot', p.m / 1000, 'kg'),
+      };
+      const debut = ['Un chariot de masse ', T('m'), ' roule à vitesse constante sur un rail de ', T('L'), ' de long. Il porte un émetteur ultrasonore de fréquence ', T('fe'),
+        ', et se rapproche d’un récepteur fixe. La célérité du son dans l’air est ', T('c'), '. '];
+      if (q === 0) {
+        tokens.df = tok(`${p.df} Hz`, 'Décalage Doppler lu sur le spectre (écart entre la fréquence reçue et la fréquence émise)', p.df, 'Hz');
+        return { tokens, derivees: [{ id: 'rap', nom: 'Rapport δf / f_e (égal à v / c)', expr: 'δf / f_e', val: p.df / p.fe, u: '' }],
+          texte: [...debut, 'Sur le spectre du signal reçu, le décalage Doppler lu vaut ', T('df'), '. À quelle vitesse roule le chariot ?'],
+          utiles: ['fe', 'c', 'df'],
+          raisons: { L: 'La longueur du rail ne joue pas dans l’effet Doppler : seule la vitesse compte, pas la distance parcourue.', m: 'La masse du chariot n’intervient pas dans le décalage de fréquence.' },
+          cherche: { bonne: 'La vitesse v du chariot (en m/s)', faux: ['La fréquence reçue f_r (en Hz)', 'La longueur d’onde émise λ (en m)', 'La durée de l’enregistrement T (en s)'] },
+          manque: null, solution: { txt: 'v = c × δf / f_e (v très inférieure à c)', val: 340 * p.df / p.fe, u: 'm/s' } };
+      }
+      tokens.v = tok(`${nb(p.v, 2)} m/s`, 'Vitesse du chariot', p.v, 'm·s⁻¹');
+      return { tokens, derivees: [{ id: 'rap', nom: 'Rapport v / c', expr: 'v / c', val: p.v / c, u: '' }],
+        texte: [...debut, 'Le chariot roule à ', T('v'), '. Quel décalage Doppler s’attend-on à lire sur le spectre ?'],
+        utiles: ['fe', 'c', 'v'],
+        raisons: { L: 'La longueur du rail ne joue pas dans l’effet Doppler.', m: 'La masse du chariot n’intervient pas dans le décalage de fréquence.' },
+        cherche: { bonne: 'Le décalage Doppler δf (en Hz)', faux: ['La vitesse v du chariot (en m/s)', 'La fréquence reçue f_r (en Hz)', 'La durée du trajet sur le rail (en s)'] },
+        manque: null, solution: { txt: 'δf = f_e × v / c (v très inférieure à c)', val: p.fe * p.v / c, u: 'Hz' } };
+    },
+  },
+  // ───────────────────────────── Effet Doppler (TG) : un laser sur un chariot
+  {
+    id: 'dopg-laser', domaine: 'Ondes', titre: 'Un laser sur un chariot', noms: ['Décalage Doppler du laser', 'Vitesse du chariot'],
+    gen: () => ({ lam: tire([532, 633, 650]), v: tire([0.2, 0.5, 1.0, 2.0]), P: tire([1, 5]), m: tire([250, 400, 500]) }),
+    build: (p, q) => {
+      const c = 3e8, lam = p.lam * 1e-9, fe = c / lam, df = fe * p.v / c;
+      const tokens = {
+        lam: tok(`${p.lam} nm`, 'Longueur d’onde de la lumière émise', lam, 'm'),
+        c: tok('3,00 × 10⁸ m/s', 'Célérité de la lumière', c, 'm·s⁻¹'),
+        P: tok(`${p.P} mW`, 'Puissance du laser', p.P / 1000, 'W'),
+        m: tok(`${p.m} g`, 'Masse du chariot', p.m / 1000, 'kg'),
+      };
+      const debut = ['Une diode laser de puissance ', T('P'), ' est fixée sur un chariot de masse ', T('m'), ' qui roule à vitesse constante vers un récepteur fixe. La lumière émise a pour longueur d’onde ', T('lam'),
+        ' ; la célérité de la lumière est ', T('c'), '. La vitesse du chariot est très inférieure à celle de la lumière. '];
+      const derivees = [{ id: 'fe', nom: 'Fréquence émise f_e', expr: 'f_e = c / λ', val: fe, u: 'Hz' }];
+      if (q === 0) {
+        tokens.v = tok(`${nb(p.v, 1)} m/s`, 'Vitesse du chariot', p.v, 'm·s⁻¹');
+        return { tokens, derivees, texte: [...debut, 'Le chariot roule à ', T('v'), '. Quel décalage Doppler observe-t-on sur la fréquence de la lumière reçue ?'],
+          utiles: ['lam', 'c', 'v'],
+          raisons: { P: 'La puissance du laser donne l’intensité lumineuse, pas la fréquence : elle n’intervient pas dans le décalage.', m: 'La masse du chariot n’intervient pas dans le décalage de fréquence.' },
+          cherche: { bonne: 'Le décalage Doppler δf (en Hz)', faux: ['La fréquence émise f_e uniquement (en Hz)', 'La vitesse du chariot (en m/s)', 'Le décalage relatif δf / f_e (sans unité)'] },
+          manque: null, solution: { txt: 'f_e = c / λ puis δf = f_e × v / c', val: df, u: 'Hz' } };
+      }
+      const dfAff = Number((df / 1e6).toFixed(2));
+      tokens.df = tok(`${nb(dfAff, 2)} MHz`, 'Décalage Doppler mesuré sur la lumière reçue', dfAff * 1e6, 'Hz');
+      return { tokens, derivees, texte: [...debut, 'On mesure un décalage Doppler de ', T('df'), '. À quelle vitesse roule le chariot ?'],
+        utiles: ['lam', 'c', 'df'],
+        raisons: { P: 'La puissance du laser n’intervient pas dans le décalage de fréquence.', m: 'La masse du chariot n’intervient pas dans le décalage de fréquence.' },
+        cherche: { bonne: 'La vitesse v du chariot (en m/s)', faux: ['La fréquence émise f_e (en Hz)', 'La fréquence reçue f_r (en Hz)', 'L’énergie d’un photon (en J)'] },
+        manque: null, solution: { txt: 'f_e = c / λ puis v = c × δf / f_e', val: c * dfAff * 1e6 / fe, u: 'm/s' } };
+    },
+  },
   // ───────────────────────────── 1. Mur (transferts thermiques)
   {
     id: 'paroi', domaine: 'Transferts thermiques', titre: 'Les pertes thermiques d’un mur', noms: ['Puissance perdue', 'Coût de l’énergie perdue'],
