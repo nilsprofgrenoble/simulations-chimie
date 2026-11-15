@@ -222,7 +222,7 @@ export function SimulationDoppler({ naviguer }) {
   const ratioEcoute = (pos, bt) => pos === 'A' ? 1 / (1 - bt) : pos === 'B' ? 1 / (1 + bt) : 1;
   const refAudio = useRef({ ratio: 1, beta: 0, pos: 0 });
   const posRef = useRef(0);
-  const ratioC = (bt, xs) => { const dx = XC - xs, d = Math.sqrt(dx * dx + DC * DC); return 1 / (1 - bt * dx / d); };
+  const ratioC = (bt, xs) => D.rapportAuPassage({ beta: bt, xs, xr: XC, d: DC });   // temps retardé : le son reçu a été émis plus tôt
   const NOTES = [440, 554];
   useEffect(() => {
     if (!ecoute) return undefined;
@@ -463,6 +463,7 @@ export function SimulationDoppler({ naviguer }) {
       <li><strong>Célérité</strong> : <em>c</em> = 340 m/s dans l’air du laboratoire, <strong>indépendante de la vitesse de l’émetteur</strong> (elle ne dépend que du milieu). La température n’est pas contrôlée : <em>c</em> est connue à ± 3 m/s.</li>
       <li><strong>Mouvement</strong> : rectiligne uniforme, sur la droite qui joint l’émetteur et le récepteur ; récepteur fixe dans le laboratoire. L’effet n’est calculé que dans une seule dimension.</li>
       <li><strong>Formule du décalage</strong> : <em>δf</em> = <em>f</em><sub>e</sub> <em>v</em> / <em>c</em> pour un émetteur mobile, valable si <em>v</em> ≪ <em>c</em> (ici <em>v</em> / <em>c</em> ≤ 5 × 10⁻³). Le spectre est calculé avec la formule <strong>exacte</strong> <em>f</em><sub>r</sub> = <em>f</em><sub>e</sub> <em>c</em> / (<em>c</em> ∓ <em>v</em>) ; l’écart avec la formule approchée est de l’ordre de <em>v</em> / <em>c</em> (moins de 0,5 %). Pour l’écho sur une plaque mobile : <em>δf</em> = 2 <em>f</em><sub>e</sub> <em>v</em> / <em>c</em> (même hypothèse).</li>
+      <li><strong>Son au récepteur C</strong> : la hauteur est calculée avec la position et la direction de la source <strong>au moment de l’émission</strong> (le son met du temps à arriver), pas avec sa position visible à l’écran. Le glissement entendu est donc un peu en retard sur l’image : la note émise est entendue seulement quand la source a déjà dépassé C. Le calcul est la relation exacte pour une source en mouvement rectiligne uniforme et un récepteur fixe, sans vent ni réflexion, avec une célérité constante. Les sons des récepteurs A, B et du véhicule sont des cas particuliers (alignés avec la trajectoire).</li>
       <li><strong>Scène des fronts d’onde</strong> : schéma qualitatif où la vitesse de l’émetteur est volontairement <strong>exagérée</strong> (jusqu’à 0,6 <em>c</em>) pour que l’effet se voie ; les mesures de la scène 2 utilisent des valeurs réalistes.</li>
       <li><strong>Spectre</strong> : transformée de Fourier d’un enregistrement de durée <em>T</em> ; chaque pic a la forme sinc² et une largeur d’environ 1 / <em>T</em>. On ne tient pas compte du bruit ni de la fenêtre d’enregistrement réelle. Les deux pics (<em>f</em><sub>e</sub> et <em>f</em><sub>r</sub>) sont tracés séparément.</li>
       <li><strong>Incertitudes</strong> (type B, loi rectangulaire, <em>u</em> = demi-étendue / √3, sources indépendantes) : pointé du sommet du pic à ± 0,5 Hz (ou 1 / 4T si c’est plus grand), <em>f</em><sub>e</sub> et <em>f</em><sub>r</sub> lues avec le même instrument donc <em>u</em>(<em>δf</em>) = √2 <em>u</em>(<em>f</em>), et <em>c</em> à ± 3 m/s. L’incertitude sur <em>f</em><sub>e</sub> seule est négligée devant celle de <em>δf</em>.</li>
