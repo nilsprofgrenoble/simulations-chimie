@@ -1,5 +1,5 @@
 import { BoutonMail } from "./contact";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState, useEffect, useRef, useCallback } from "react";
 const SimulationClassement = lazy(() => import("./simulations/Classement").then(m => ({ default: m.SimulationClassement })));
 import { ACCENT } from "./theme";
 import "./AccueilBlocs.css";
@@ -16,6 +16,96 @@ const lien = { all: 'unset', cursor: 'pointer', color: ACCENT, fontWeight: 700, 
 
 import { SaisieCode } from "./SaisieCode";
 import { InstallerAppli } from "./InstallerAppli";
+
+// Niveau mémorisé sur l'appareil : celui déjà consulté sur l'accueil, sinon celui choisi dans « Je m'entraîne »
+function niveauMemorise(cles) {
+  try {
+    for (const k of ['accueil-niveau-v1', 'entrainement-niveau-v1']) {
+      const v = JSON.parse(window.localStorage.getItem(k) || 'null');
+      if (cles.includes(v)) return v;
+    }
+  } catch { /* stockage indisponible : on part du premier niveau */ }
+  return cles[0];
+}
+
+// Les niveaux : grille de blocs sur grand écran ; sur téléphone, une seule « lame » par niveau,
+// qu'on fait glisser sur le côté ou qu'on choisit avec les pastilles (la carte suivante dépasse un peu).
+function NiveauxParNiveau({ onStart, niveaux, classes, sansEmoji }) {
+  const cles = NIVEAUX_CHAPITRES.map(n => n.key);
+  const [actif, setActif] = useState(() => niveauMemorise(cles));
+  const piste = useRef(null);
+  const minuteur = useRef(null);
+  const calme = () => typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const defiler = useCallback((cle, doux) => {
+    const p = piste.current, carte = p?.querySelector(`[data-niv="${cle}"]`);
+    if (!p || !carte || p.scrollWidth <= p.clientWidth + 1) return;   // grille de grand écran : rien à faire glisser
+    p.scrollTo({ left: carte.offsetLeft, behavior: doux && !calme() ? 'smooth' : 'auto' });
+  }, []);
+
+  // Au premier affichage : se placer sur le niveau mémorisé, sans animation
+  const actifInitial = useRef(actif);
+  useEffect(() => { defiler(actifInitial.current, false); }, [defiler]);
+  useEffect(() => () => clearTimeout(minuteur.current), []);
+
+  // Sur téléphone, la lame prend la hauteur du niveau affiché (les niveaux n'ont pas tous autant de chapitres)
+  useEffect(() => {
+    const p = piste.current, carte = p?.querySelector(`[data-niv="${actif}"]`);
+    if (!p || !carte) return undefined;
+    const mesurer = () => p.style.setProperty('--ab-h', `${carte.offsetHeight}px`);
+    mesurer();
+    if (typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(mesurer);
+    ro.observe(carte);
+    return () => ro.disconnect();
+  }, [actif]);
+
+  const choisir = cle => {
+    setActif(cle);
+    try { window.localStorage.setItem('accueil-niveau-v1', JSON.stringify(cle)); } catch { /* sans importance */ }
+  };
+  // Pendant le balayage, la pastille suit la carte la plus proche
+  const surDefilement = () => {
+    clearTimeout(minuteur.current);
+    minuteur.current = setTimeout(() => {
+      const p = piste.current;
+      if (!p || p.scrollWidth <= p.clientWidth + 1) return;
+      let meilleur = actif, ecart = Infinity;
+      p.querySelectorAll('[data-niv]').forEach(c => {
+        const e = Math.abs(c.offsetLeft - p.scrollLeft);
+        if (e < ecart) { ecart = e; meilleur = c.dataset.niv; }
+      });
+      if (meilleur !== actif) choisir(meilleur);
+    }, 80);
+  };
+  const toucher = cle => { choisir(cle); defiler(cle, true); };
+
+  return (
+    <div className="ab-niveaux">
+      <div className="ab-ongl" role="group" aria-label="Choisir un niveau">
+        {NIVEAUX_CHAPITRES.map(n => (
+          <button key={n.key} type="button" className={`ab-ong ${classes[n.key]}`} aria-current={actif === n.key ? 'true' : undefined} onClick={() => toucher(n.key)}>{n.key}</button>
+        ))}
+      </div>
+      <div className="ab-piste" ref={piste} onScroll={surDefilement}>
+        {NIVEAUX_CHAPITRES.map(n => {
+          const chaps = CHAPITRES.filter(c => c.niveau === n.key);
+          const nb = chaps.reduce((t, c) => t + c.sims.length, 0);
+          return (
+            <section key={n.key} data-niv={n.key} className={`ab-niv ${classes[n.key]}`} aria-label={niveaux[n.key]}>
+              <span className="ab-abbr" aria-hidden="true">{n.key}</span>
+              <h3>{niveaux[n.key]}</h3>
+              <p className="ab-nb">{nb} simulation{nb > 1 ? 's' : ''} · {chaps.length} chapitre{chaps.length > 1 ? 's' : ''}</p>
+              <ul className="ab-puces">
+                {chaps.map(c => <li key={c.id}><button type="button" onClick={() => onStart(c.sims[0])}>{sansEmoji(c.label)}</button></li>)}
+              </ul>
+            </section>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export function AccueilSite({ onStart, onCode, session, simulations, energyUrl }) {
   const profil = session?.profil;
@@ -37,22 +127,9 @@ export function AccueilSite({ onStart, onCode, session, simulations, energyUrl }
 
       {/* Les niveaux et leurs chapitres : chaque chapitre ouvre sa première simulation */}
       <div className="ab-titre-section"><h2 id="titre-niveaux">Les simulations, par niveau</h2><span>{totalSims} simulations · {CHAPITRES.length} chapitres</span></div>
-      <div className="ab-bento">
-        {NIVEAUX_CHAPITRES.map(n => {
-          const chaps = CHAPITRES.filter(c => c.niveau === n.key);
-          const nb = chaps.reduce((t, c) => t + c.sims.length, 0);
-          return (
-            <section key={n.key} className={`ab-niv ${classes[n.key]}`} aria-label={niveaux[n.key]}>
-              <span className="ab-abbr" aria-hidden="true">{n.key}</span>
-              <h3>{niveaux[n.key]}</h3>
-              <p className="ab-nb">{nb} simulation{nb > 1 ? 's' : ''} · {chaps.length} chapitre{chaps.length > 1 ? 's' : ''}</p>
-              <ul className="ab-puces">
-                {chaps.map(c => <li key={c.id}><button type="button" onClick={() => onStart(c.sims[0])}>{sansEmoji(c.label)}</button></li>)}
-              </ul>
-            </section>
-          );
-        })}
+      <NiveauxParNiveau onStart={onStart} niveaux={niveaux} classes={classes} sansEmoji={sansEmoji} />
 
+      <div className="ab-bento">
         {/* Classement public : les 5 premiers de chaque lame */}
         <section className="ab-classement" aria-labelledby="titre-classement">
           <span className="ab-pill">Nouveau</span>

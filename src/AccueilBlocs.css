@@ -10,6 +10,8 @@
 .ab-titre-section h2 { font: 800 clamp(26px, 3.6vw, 36px)/1.1 'Outfit', sans-serif; letter-spacing: -.02em; margin: 0; color: #0c1a2e; }
 .ab-titre-section span { color: #3d4d63; font-size: 14.5px; }
 .ab-bento { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 14px; }
+.ab-piste { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 14px; }
+.ab-ongl { display: none; }
 .ab-niv { border-radius: 28px; padding: 26px 26px 24px; display: flex; flex-direction: column; gap: 6px; min-width: 0; background: var(--ab-fond); color: var(--ab-ink); }
 .ab-niv .ab-abbr { font: 800 clamp(44px, 7vw, 76px)/.9 'Outfit', sans-serif; letter-spacing: -.04em; }
 .ab-niv h3 { font: 700 20px/1.2 'Outfit', sans-serif; margin: 6px 0 0; }
@@ -39,6 +41,15 @@
 .ab-bouton:hover { background: #093f78; }
 .ab-compte { text-align: center; color: #3d4d63; font-size: 14.5px; margin: 10px 0 0; }
 @media (max-width: 900px) {
+  /* Téléphone et tablette : une lame par niveau, à faire glisser ; la suivante dépasse un peu pour le suggérer */
+  .ab-ongl { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 0 0 12px; }
+  .ab-ongl::-webkit-scrollbar { display: none; }
+  .ab-ong { all: unset; cursor: pointer; flex: 0 0 auto; box-sizing: border-box; min-height: 44px; display: inline-flex; align-items: center; padding: 0 18px; border-radius: 999px; background: #fff; border: 2px solid #d5dfeb; color: #0c1a2e; font: 800 15px Inter, system-ui, sans-serif; }
+  .ab-ong[aria-current="true"] { background: var(--ab-fond); border-color: var(--ab-fond); color: var(--ab-ink); }
+  .ab-ong:focus-visible { outline: 3px solid #0c1a2e; outline-offset: 2px; }
+  .ab-piste { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; position: relative; scrollbar-width: none; overscroll-behavior-x: contain; align-items: flex-start; overflow-y: hidden; height: var(--ab-h, auto); transition: height .25s ease; }
+  .ab-piste::-webkit-scrollbar { display: none; }
+  .ab-piste > .ab-niv { box-sizing: border-box; flex: 0 0 88%; scroll-snap-align: start; grid-column: auto; }
   .ab-hero { grid-template-columns: minmax(0, 1fr); align-items: start; }
   .ab-t2gt, .ab-t1g, .ab-ttg, .ab-ttstl, .ab-tbts, .ab-carte { grid-column: span 12; }
   .ab-une { grid-template-columns: minmax(0, 1fr); }
