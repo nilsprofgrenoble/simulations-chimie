@@ -1,0 +1,81 @@
+/* Grapheur (page 124) : mise en page sobre, lisible sur téléphone (390 px), sans dépendance externe */
+.gr-haut { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.gr-l1 { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
+.gr-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); }
+.gr-col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.gr-carte { align-self: stretch; min-width: 0; }
+@media (max-width: 900px) { .gr-l1, .gr-l2 { grid-template-columns: minmax(0, 1fr); } .gr-carte { order: -1; } }
+.gr-details-tab > summary { cursor: pointer; margin-bottom: 0; }
+.gr-details-tab[open] > summary { margin-bottom: 8px; }
+
+.gr-titre-bloc { font-weight: 700; font-size: 15px; color: #0f172a; margin-bottom: 6px; }
+.gr-note { font-size: 13px; color: #334155; margin: 6px 0; line-height: 1.5; }
+.gr-avert { font-size: 13.5px; color: #92400e; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 4px 8px; margin: 6px 0; }
+.gr-erreur { font-size: 14px; color: #991b1b; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; padding: 6px 10px; margin-top: 8px; }
+.gr-vide { padding: 28px 12px; text-align: center; color: #475569; font-size: 14px; }
+.gr-bas { font-size: 12.5px; color: #475569; margin: 12px 0 0; }
+.gr-label { display: block; font-size: 13.5px; font-weight: 600; color: #334155; margin-bottom: 4px; }
+
+/* Graphiques : le texte du SVG reste lisible, car il est dessiné en 13–14 dans un viewBox de 400 */
+.gr-svg { width: 100%; max-width: 560px; height: auto; display: block; border: 1px solid #d5dfeb; border-radius: 12px; background: white; }
+.gr-svg-res { max-width: 560px; }
+
+/* Tableau */
+.gr-tableau-zone { overflow-x: auto; }
+.gr-tableau { border-collapse: collapse; width: 100%; font-size: 14px; margin-bottom: 8px; }
+.gr-tableau th, .gr-tableau td { border: 1px solid #d5dfeb; padding: 4px 6px; text-align: center; color: #0f172a; }
+.gr-tableau th { background: #eef4fb; font-weight: 700; vertical-align: bottom; }
+.gr-unite { font-weight: 400; color: #334155; }
+.gr-th-vide { border: none !important; background: none !important; width: 28px; }
+.gr-td-sup { border: none !important; padding: 0 !important; }
+.gr-in { font: inherit; font-size: 14px; padding: 5px 6px; border: 1.5px solid #cbd5e1; border-radius: 8px; color: #0f172a; background: white; min-width: 0; }
+.gr-in:focus-visible { outline: 2px solid #1a7abf; outline-offset: 1px; }
+.gr-in-cel { width: 100%; max-width: 120px; text-align: right; font-variant-numeric: tabular-nums; }
+.gr-in-nom { width: 64px; font-weight: 700; text-align: center; }
+.gr-in-unite { width: 78px; text-align: center; }
+.gr-entete { display: flex; flex-direction: column; gap: 3px; align-items: center; }
+.gr-invalide { border-color: #dc2626; background: #fef2f2; }
+.gr-sup { border: none; background: none; cursor: pointer; color: #64748b; font-size: 14px; padding: 6px; border-radius: 6px; min-width: 32px; min-height: 32px; }
+.gr-sup:hover, .gr-sup:focus-visible { color: #b91c1c; background: #fef2f2; }
+.gr-choix-axes { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; font-size: 13.5px; color: #334155; }
+.gr-choix-axes select { font: inherit; padding: 4px 6px; border-radius: 8px; border: 1.5px solid #cbd5e1; }
+
+/* Import / export */
+.gr-bascule { width: 100%; display: flex; justify-content: space-between; align-items: center; background: none; border: none; cursor: pointer; font-weight: 700; font-size: 15px; color: #0f172a; padding: 2px 0; text-align: left; }
+.gr-import { margin-top: 10px; }
+.gr-zone-texte { width: 100%; box-sizing: border-box; font-family: monospace; font-size: 13.5px; padding: 8px; border: 1.5px solid #cbd5e1; border-radius: 10px; resize: vertical; }
+.gr-ligne-btn { margin: 8px 0; }
+.gr-fichier { display: inline-block; padding: 6px 12px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 13.5px; font-weight: 700; color: #334155; cursor: pointer; background: white; }
+.gr-fichier:focus-within { outline: 2px solid #1a7abf; outline-offset: 1px; }
+.gr-fichier input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.gr-apercu { margin-top: 8px; }
+.gr-export { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+
+/* Modèles, résultat, hypothèses */
+.gr-modeles { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.gr-eq { font-size: 17px; font-weight: 700; color: #0f172a; margin: 4px 0 6px; font-family: Georgia, serif; }
+.gr-lecture { margin-top: 12px; padding-top: 10px; border-top: 1px dashed #d5dfeb; }
+.gr-hyp-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.gr-hyp-liste details { background: white; border: 1px solid #d5dfeb; border-radius: 10px; padding: 6px 10px; }
+.gr-hyp-liste summary { cursor: pointer; font-size: 14px; color: #0f172a; }
+.gr-hyp-liste p { margin: 6px 0 2px; font-size: 13.5px; line-height: 1.5; color: #334155; }
+.gr-etat { font-size: 12.5px; font-weight: 600; }
+
+@media (max-width: 600px) {
+  .gr-racine { padding: 10px 6px !important; }
+  .gr-l1 .gr-col > div, .gr-l2 .gr-col > div { padding: 10px 8px !important; border-radius: 14px !important; }
+}
+@media (max-width: 480px) {
+  .gr-in-cel { max-width: 96px; }
+  .gr-tableau { font-size: 13.5px; }
+}
+
+/* Impression : seuls les résultats sont imprimés */
+@media print {
+  .gr-haut button, .gr-bascule, .gr-export, .gr-import, .gr-sup, .gr-modeles, .gr-choix-axes, [data-carte-parcours] { display: none !important; }
+  .gr-l1, .gr-l2 { grid-template-columns: 1fr !important; }
+  .gr-hyp-liste details { break-inside: avoid; }
+  .gr-hyp-liste details > p { display: block !important; }
+}
+
+@media (prefers-reduced-motion: reduce) { .gr-svg, .gr-hyp-liste details { transition: none; } }
