@@ -23,8 +23,10 @@ const sup = n => String(n).split('').map(c => SUPC[c] ?? c).join('');
 const nbf = (v, d) => Number(v).toFixed(d).replace('.', ',');
 // Concentration en notation scientifique à cs chiffres significatifs : « 4,0 × 10⁻³ »
 const sciC = (x, cs = 2) => { const [m, e] = Number(x).toExponential(cs - 1).split('e'); return `${m.replace('.', ',')}${NB}×${NB}10${sup(Number(e))}`; };
+const concTxt = c => (c >= 9.99e-5 ? nbf(c, Math.min(5, Math.max(2, 1 - Math.floor(Math.log10(c) + 1e-9)))) : sciC(c));   // 0,010 ou 0,0050 (décimal) tant que c'est lisible, sinon notation scientifique
 const tire = t => t[Math.floor(Math.random() * t.length)];
-const PRESET = { m: 1.0, n: 2, k: 0 };
+const CONCS = [0.1, 0.05, 0.03, 0.02, 0.01, 0.005, 0.003, 0.002, 0.001, 0.0005, 0.0001];   // concentrations de départ proposées (mol/L)
+const PRESET = { i: 4, k: 0 };
 const IDS = ['solution', 'def', 'ph1', 'mant', 'inverse', 'dil', 'prevoir', 'serie', 'protocole', 'fact100', 'graphe', 'limite1', 'limite2', 'bravo'];
 const SCENES = { solution: 1e-2, def: 1e-2, ph1: 1e-2, mant: 4.0e-3, inverse: M.concDePH(3.40) };    // concentration de S₀ imposée aux premières étapes
 const Sk = k => <>S<sub>{k}</sub></>;
@@ -129,7 +131,7 @@ export function SimulationPhConcentration() {
   const suitSerie = !enGuide || IDS.indexOf(idE) >= IDS.indexOf('dil');
 
   // ---------- grandeurs effectives ----------
-  const C0 = enGuide ? (SCENES[idE] ?? 1e-2) : Number(`${ti.m}e-${ti.n}`);
+  const C0 = enGuide ? (SCENES[idE] ?? 1e-2) : CONCS[ti.i];
   const k = dd ? 0 : (suitSerie ? ti.k : 0);
   const Ck = M.concApres(C0, k), lignes = M.serie(C0, k);
   const pHlu = M.pHMesure(Ck), logC = M.pHDeConc(Ck);
@@ -341,8 +343,10 @@ export function SimulationPhConcentration() {
     <div style={{ ...styleBoite, ...cadre('reglages') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
       {explore && <>
-        <Curseur nom="Mantisse m (C₀ = m × 10⁻ⁿ)" valeur={ti.m} onChange={v => setT({ m: Math.round(v * 10) / 10 })} min={1} max={9.9} pas={0.1} decimales={1} couleur="#475569"/>
-        <Curseur nom="Exposant n (C₀ = m × 10⁻ⁿ)" valeur={ti.n} onChange={v => setT({ n: v })} min={1} max={4} pas={1} decimales={0} couleur="#475569"/>
+        <div style={{ fontSize: 13.5, color: KIT.txt, marginBottom: 4 }}>Concentration de départ <em>C</em><sub>0</sub> de {Sk(0)} (mol/L) :</div>
+        <div role="group" aria-label="Concentration de départ" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+          {CONCS.map((c, i) => <button key={c} onClick={() => setT({ i })} aria-pressed={ti.i === i} style={stylePetitBouton(ti.i === i, '#475569')}>{nbf(c, c < 0.001 ? 4 : c < 0.01 ? 3 : 2)}</button>)}
+        </div>
         <Curseur nom="Nombre de dilutions successives (facteur 10)" valeur={ti.k} onChange={v => setT({ k: v })} min={0} max={M.K_MAX} pas={1} decimales={0} couleur="#b45309"/>
       </>}
       {enGuide && peutDiluer && <>
@@ -357,8 +361,8 @@ export function SimulationPhConcentration() {
   const mesures = (
     <div style={{ ...styleBoite, ...cadre('mesures') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
-      {montrerC && !dd && <LigneMesure nom="Concentration apportée C" valeur={`${sciC(Ck)}${NB}mol/L`}/>}
-      {(!enGuide || (apres('solution') && montrerC)) && !dd && <LigneMesure nom="[H₃O⁺] (acide fort : = C)" valeur={`${sciC(Ck)}${NB}mol/L`}/>}
+      {montrerC && !dd && <LigneMesure nom="Concentration apportée C" valeur={`${explore ? concTxt(Ck) : sciC(Ck)}${NB}mol/L`}/>}
+      {(!enGuide || (apres('solution') && montrerC)) && !dd && <LigneMesure nom="[H₃O⁺] (acide fort : = C)" valeur={`${explore ? concTxt(Ck) : sciC(Ck)}${NB}mol/L`}/>}
       {(montrerPH || dd) && <LigneMesure nom="pH lu" valeur={nbf(dd ? dd.pH : pHlu, 2)} couleur="#b45309"/>}
       {!dd && suitSerie && (!enGuide || deja('dil')) && <LigneMesure nom="Dilutions réalisées" valeur={`${k}`}/>}
       {!dd && suitSerie && (!enGuide || deja('dil')) && k > 0 && <LigneMesure nom="Facteur de dilution total" valeur={`10${sup(k)}`}/>}
@@ -386,7 +390,7 @@ export function SimulationPhConcentration() {
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
       <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
-        <li>Choisissez <em>C</em><sub>0</sub> = 3,0 × 10⁻² mol/L : prévoyez le pH de S<sub>0</sub>, S<sub>2</sub> et S<sub>3</sub> avant de lire le pH-mètre.</li>
+        <li>Choisissez <em>C</em><sub>0</sub> = 0,03 mol/L : prévoyez le pH de S<sub>0</sub>, S<sub>2</sub> et S<sub>3</sub> avant de lire le pH-mètre.</li>
         <li>Quelle que soit <em>C</em><sub>0</sub>, de combien le pH change-t-il à chaque dilution tant que la relation est valable ?</li>
         <li>Diluez jusqu’à S<sub>8</sub> : à partir de quelle solution l’écart avec la relation dépasse-t-il 0,05 ? Que devient le pH lu quand on dilue encore ?</li>
         <li>Comparez deux solutions dont les concentrations diffèrent d’un facteur 1000 : de combien diffèrent leurs pH ?</li>
