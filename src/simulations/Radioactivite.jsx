@@ -420,6 +420,7 @@ export function SimulationRadioactivite() {
         {((enGuide && deja('mesure')) || (enExplore && ti.bruit)) && ctx === 'ech' && <button onClick={() => setT({ grB: nouvelleGraine() })} style={stylePetitBouton(false, '#475569')}><Pic n="refresh"/>Nouvelle série</button>}
       </div>
       {((enGuide && deja('compter') && ctx === 'ech') || (enExplore && ti.bruit)) && <div role="group" aria-label="Durée de comptage" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
+        <span style={{ flexBasis: '100%', fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>Un compteur ne voit pas l’activité d’un coup : il <strong>compte les désintégrations pendant une durée Δt</strong>, puis calcule A ≈ n / Δt. Essayez 1 s, 10 s ou 60 s : plus on compte longtemps, moins les points violets s’écartent de la courbe.</span>
         <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Durée de comptage Δt</span>
         {[1, 10, 60].map(d => <button key={d} onClick={() => setT({ dtS: d })} aria-pressed={ti.dtS === d} style={stylePetitBouton(ti.dtS === d, COL.violet)}>{d} s</button>)}
       </div>}
