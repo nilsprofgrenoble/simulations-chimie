@@ -24,6 +24,34 @@ const T = id => ({ t: id });
 const tok = (aff, quoi, val, u) => ({ aff: NB(aff), quoi, use: { val, u } });
 
 export const ENONCES = [
+  // ───────────────────────────── 0. Projecteur de diapositives (1G : lentille mince)
+  {
+    id: 'lum1-projecteur', domaine: 'Lentille mince', titre: 'Un projecteur de diapositives', noms: ['Position de l’écran', 'Hauteur de l’image'],
+    gen: () => { const f = tire([80, 100, 120]), k = tire([1.5, 2, 3]); return { f, d: Math.round(f * k / 10), AB: tire([24, 36]), P: tire([150, 250]) }; },
+    build: (p, q) => {
+      const f = p.f / 1000, d = p.d / 100, OA = -d, OAp = 1 / (1 / f + 1 / OA), gam = OAp / OA, AB = p.AB / 1000;
+      const tokens = {
+        f: tok(`${p.f} mm`, 'Distance focale de la lentille', f, 'm'),
+        d: tok(`${p.d} cm`, 'Distance entre la diapositive et la lentille (diapositive avant la lentille : OA = −d)', d, 'm'),
+        P: tok(`${p.P} W`, 'Puissance de la lampe', p.P, 'W'),
+      };
+      const debut = ['Un projecteur contient une lentille mince convergente de distance focale ', T('f'), '. La diapositive est placée à ', T('d'),
+        ' devant la lentille, et la lampe qui l’éclaire a une puissance de ', T('P'), '. On cherche à obtenir une image nette sur un écran, de l’autre côté de la lentille. '];
+      const derivees = [{ id: 'OA', nom: 'Position OA de la diapositive (algébrique, origine O)', expr: 'OA = −d', val: OA, u: 'm' }];
+      if (q === 0) return { tokens, derivees, texte: [...debut, 'À quelle distance de la lentille faut-il placer l’écran ?'],
+        utiles: ['f', 'd'],
+        raisons: { P: 'La puissance de la lampe donne la luminosité de l’image, pas sa position.' },
+        cherche: { bonne: 'La position OA′ de l’image (en m)', faux: ['Le grandissement γ de la lentille (sans unité)', 'La vergence C de la lentille (en δ)', 'La hauteur de l’image A′B′ (en m)'] },
+        manque: null, solution: { txt: '1/OA′ = 1/f′ + 1/OA (relation de conjugaison)', val: OAp, u: 'm' } };
+      tokens.AB = tok(`${p.AB} mm`, 'Hauteur de la diapositive', AB, 'm');
+      return { tokens, derivees: [...derivees, { id: 'OAp', nom: 'Position OA′ de l’image', expr: '1/OA′ = 1/f′ + 1/OA', val: OAp, u: 'm' }],
+        texte: [...debut, 'Les diapositives mesurent ', T('AB'), ' de haut. Quelle est la hauteur de l’image sur l’écran ?'],
+        utiles: ['f', 'd', 'AB'],
+        raisons: { P: 'La puissance de la lampe donne la luminosité de l’image, pas sa taille.' },
+        cherche: { bonne: 'La hauteur algébrique A′B′ de l’image (en m)', faux: ['La position OA′ de l’image (en m)', 'La vergence C de la lentille (en δ)', 'Le grandissement γ de la lentille (sans unité)'] },
+        manque: null, solution: { txt: 'A′B′ = γ × AB avec γ = OA′ / OA', val: gam * AB, u: 'm' } };
+    },
+  },
   // ───────────────────────────── 1. Mur (transferts thermiques)
   {
     id: 'paroi', domaine: 'Transferts thermiques', titre: 'Les pertes thermiques d’un mur', noms: ['Puissance perdue', 'Coût de l’énergie perdue'],
