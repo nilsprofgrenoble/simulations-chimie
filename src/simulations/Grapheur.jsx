@@ -1,126 +1,250 @@
-import { useState, useRef } from "react";
-import { useSignalerMode, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, styleBouton, stylePetitBouton, styleBoite, LigneMesure,
-  ORANGE_GUIDE, avecIndices, BoutonsModes } from "../commun";
+import { useState, useRef, useMemo } from "react";
+import { cardStyle, useEtatPersistant, styleBouton, stylePetitBouton, styleBoite, LigneMesure, avecIndices } from "../commun";
 import {
-  lireNombre, ecrire, regressionAffine, regressionProportionnelle, lectureInverse, ecrireAvecIncertitude, arrondirResultat,
-  uniteQuotient, diagnostics, analyserTexte, serieXY, versCSV, versTexteTableur, echelle,
+  lireNombre, ecrire, lectureInverse, ecrireAvecIncertitude, uniteQuotient, diagnostics, testDispersion, analyserTexte,
+  versCSV, versTexteTableur, echelle,
 } from "./grapheurModele";
+import { evaluerColonnes, serieDe, ajuster, NB_PARAMETRES, echelleLog, penteLocale, penteFonction } from "./grapheurCalculs";
 import "./Grapheur.css";
 
 // ====================================================
-//  GRAPHEUR (page 124, hors menu : ouverte par ?sim=124)
-//  Outil de traitement de mesures pour les lycéens : tableau → nuage de points → modèle (proportionnel ou affine) →
-//  écarts au modèle (résidus) et hypothèses → lecture inverse. Fonctionne sans réseau, sans compte ; les données restent sur l'appareil.
-//  Parcours guidé : l'étalonnage d'un spectrophotomètre (loi de Beer-Lambert, 1re spé PC). Exploration libre : ses propres données.
-//  Les calculs sont dans grapheurModele.js (testé contre les valeurs certifiées NIST).
+//  GRAPHEUR DE MESURES (page 124 : réservé à l'administrateur pour l'instant, menu « Outils »)
+//  Un outil de traitement de mesures pour les lycéens, dans l'esprit de Regressi / LatisPro : tableau de mesures (colonnes saisies ou calculées
+//  par une formule) → graphique (réticule, tangente, barres d'incertitude, échelles linéaires ou logarithmiques) → modèle
+//  (proportionnel, affine, parabole, exponentielles) avec incertitudes-types, écarts au modèle et hypothèses du calcul.
+//  Fonctionne sans réseau, sans compte ; les données restent sur l'appareil. Calculs : grapheurModele.js et grapheurCalculs.js (testés).
 // ====================================================
 
-const CLE_GUIDE = 'grapheur-guide-v1';
-const CLE_LIBRE = 'grapheur-libre-v1';
+const CLE_OUTIL = 'grapheur-outil-v1';
 const NBSP = ' ';
+const BLEU = '#1d4ed8', ORANGE = '#d9730d', VERT = '#15803d', GRIS = '#64748b', VIOLET = '#7c3aed';
 
-// Gamme étalon du parcours : permanganate de potassium à 525 nm, cuve de 1 cm. Données simulées (mesures fictives, bruit réaliste de quelques millièmes).
-const COLONNES_BEER = [{ nom: 'C', unite: 'mmol/L' }, { nom: 'A', unite: '' }];
-const LIGNES_BEER = [['0,050', '0,112'], ['0,100', '0,218'], ['0,200', '0,447'], ['0,300', '0,655'], ['0,400', '0,884']];
-const A_ECHANTILLON = 0.536;
+// Exemples (mesures fictives, bruit réaliste) pour essayer l'outil
+const EXEMPLES = {
+  beer: { nom: 'Étalonnage au spectrophotomètre (loi de Beer-Lambert)', colonnes: [{ nom: 'C', unite: 'mmol/L' }, { nom: 'A', unite: '' }],
+    lignes: [['0,050', '0,112'], ['0,100', '0,218'], ['0,200', '0,447'], ['0,300', '0,655'], ['0,400', '0,884']], modele: 'proportionnel' },
+  condo: { nom: 'Décharge d’un condensateur (avec une colonne calculée ln U)', colonnes: [{ nom: 't', unite: 's' }, { nom: 'U', unite: 'V' }, { nom: 'lnU', unite: '', formule: 'ln(U)' }],
+    lignes: [['0,0', '6,00'], ['0,5', '3,62'], ['1,0', '2,16'], ['1,5', '1,29'], ['2,0', '0,82'], ['2,5', '0,52'], ['3,0', '0,27'], ['3,5', '0,16'], ['4,0', '0,13']], modele: 'exponentielle' },
+  chute: { nom: 'Chute libre (position en fonction du temps)', colonnes: [{ nom: 't', unite: 's' }, { nom: 'z', unite: 'm' }],
+    lignes: [['0,1', '0,045'], ['0,2', '0,201'], ['0,3', '0,452'], ['0,4', '0,775'], ['0,5', '1,223'], ['0,6', '1,767']], modele: 'parabole' },
+};
+const VIDE = { colonnes: [{ nom: 'x', unite: '' }, { nom: 'y', unite: '' }], lignes: Array.from({ length: 6 }, () => ['', '']), modele: 'aucun' };
+const MODELES = [['aucun', 'Aucun modèle'], ['proportionnel', 'Proportionnel'], ['affine', 'Affine'], ['parabole', 'Parabole'], ['exponentielle', 'Exponentielle'], ['exponentielle-asymptote', 'Expo. avec asymptote']];
 
-const BLEU = '#1d4ed8', ORANGE = '#d9730d', VERT = '#15803d', GRIS = '#64748b';
-
-// ── Graphique ──────────────────────────────────────────────────────────────────────────────────
-const nomAxe = (c) => c.unite ? `${c.nom} (${c.unite})` : c.nom;
-
-function geometrie(x, y, modele) {
-  let xmin = Math.min(...x), xmax = Math.max(...x), ymin = Math.min(...y), ymax = Math.max(...y);
-  if (modele) { ymin = Math.min(ymin, modele.b); }
-  const ex = echelle(xmin, xmax, 5), ey = echelle(ymin, ymax, 5);
-  return { ex, ey };
+const nomAxe = c => c.unite ? `${c.nom} (${c.unite})` : c.nom;
+const SUPER = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '-': '⁻' };
+// unité « uy · ux^(−p) » : « m·s⁻² », « s⁻¹ »…
+function unitePuissance(uy, ux, p) {
+  const sup = n => String(n).split('').map(c => SUPER[c] || c).join('');
+  const bas = ux ? (p === 0 ? '' : ux + sup(-p)) : '';
+  return [uy, bas].filter(Boolean).join('·');
 }
 
-function Graphique({ x, y, cx, cy, modele, lecture, svgRef }) {
-  const W = 360, H = 270, ml = 58, mr = 12, mt = 14, mb = 52;
-  if (x.length === 0) return <div className="gr-vide">Aucun point à tracer : complétez le tableau.</div>;
-  const { ex, ey } = geometrie(x, y, modele);
-  const px = v => ml + (v - ex.min) / (ex.max - ex.min) * (W - ml - mr);
-  const py = v => H - mb - (v - ey.min) / (ey.max - ey.min) * (H - mt - mb);
-  const yModele = v => modele.a * v + modele.b;
-  const lecY = lecture && isFinite(lecture.y0) && lecture.y0 >= ey.min && lecture.y0 <= ey.max;
-  const resume = `Nuage de ${x.length} points : ${nomAxe(cy)} en fonction de ${nomAxe(cx)}.${modele ? ' Une droite modèle est tracée.' : ''}`;
+// ── Axes ────────────────────────────────────────────────────────────────────────────────────────
+// Un axe : bornes (en unités de position : valeur, ou log10(valeur)), graduations, conversions
+function axe(vals, log) {
+  const lo0 = Math.min(...vals), hi0 = Math.max(...vals);
+  if (log) {
+    const l = echelleLog(lo0, hi0);
+    return { log: true, lo: l.min, hi: l.max, tr: Math.log10, inv: v => 10 ** v,
+      ticks: l.graduations.map(g => ({ pos: Math.log10(g.v), label: g.principale || l.max - l.min <= 1 ? ecrire(g.v, 3) : null })) };
+  }
+  const e = echelle(lo0, hi0, 5);
+  return { log: false, lo: e.min, hi: e.max, tr: v => v, inv: v => v, ticks: e.graduations.map(g => ({ pos: g, label: ecrire(g, 3) })) };
+}
+
+// ── Graphique ──────────────────────────────────────────────────────────────────────────────────
+const W = 360, H = 270, ML = 58, MR = 12, MT = 14, MB = 52;
+function Graphique({ s, cx, cy, modele, logx, logy, outil, ret, tang, lecture, onPoser, svgRef }) {
+  const idx = s.x.map((_, i) => i).filter(i => (!logx || s.x[i] > 0) && (!logy || s.y[i] > 0));
+  if (idx.length === 0) return <div className="gr-vide">Aucun point à tracer : complétez le tableau{(logx || logy) ? ' (une échelle logarithmique n’accepte que des valeurs positives)' : ''}.</div>;
+  const bas = i => (logy && s.y[i] - s.u[i] <= 0 ? s.y[i] : s.y[i] - s.u[i]);
+  const ax = axe(idx.map(i => s.x[i]), logx), ay = axe(idx.flatMap(i => [bas(i), s.y[i] + s.u[i]]), logy);
+  const px = v => ML + (ax.tr(v) - ax.lo) / (ax.hi - ax.lo) * (W - ML - MR);
+  const py = v => H - MB - (ay.tr(v) - ay.lo) / (ay.hi - ay.lo) * (H - MT - MB);
+  const borne = v => Math.max(-5000, Math.min(5000, v));
+  let trace = '';
+  if (modele) {
+    let debut = true;
+    for (let i = 0; i <= 160; i++) {
+      const xv = ax.inv(ax.lo + (ax.hi - ax.lo) * i / 160), yv = modele.f(xv);
+      if (!isFinite(yv) || (logy && yv <= 0)) { debut = true; continue; }
+      trace += `${debut ? 'M' : 'L'}${px(xv).toFixed(1)} ${borne(py(yv)).toFixed(1)} `; debut = false;
+    }
+  }
+  const cliquer = ev => {
+    const el = svgRef.current; if (!el || !outil) return;
+    const r = el.getBoundingClientRect(), vx = (ev.clientX - r.left) / r.width * W, vy = (ev.clientY - r.top) / r.height * H;
+    if (vx < ML || vx > W - MR || vy < MT || vy > H - MB) return;
+    const x = ax.inv(ax.lo + (vx - ML) / (W - ML - MR) * (ax.hi - ax.lo)), y = ay.inv(ay.hi - (vy - MT) / (H - MT - MB) * (ay.hi - ay.lo));
+    let proche = idx[0], dmin = Infinity;
+    idx.forEach(i => { const d = (px(s.x[i]) - vx) ** 2 + (py(s.y[i]) - vy) ** 2; if (d < dmin) { dmin = d; proche = i; } });
+    onPoser({ x, y, i: proche });
+  };
+  const lecY = lecture && isFinite(lecture.y0) && lecture.y0 >= ay.lo && lecture.y0 <= ay.hi;
+  const resume = `Nuage de ${idx.length} points : ${nomAxe(cy)} en fonction de ${nomAxe(cx)}.${modele ? ' Une courbe modèle est tracée.' : ''}`;
   return (
-    <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={resume} className="gr-svg" xmlns="http://www.w3.org/2000/svg" fontFamily="sans-serif">
+    <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={resume} className={`gr-svg${outil ? ' gr-svg-actif' : ''}`} xmlns="http://www.w3.org/2000/svg" fontFamily="sans-serif"
+      onPointerDown={cliquer} onPointerMove={ev => { if (ev.pointerType === 'mouse' && outil === 'reticule') cliquer(ev); }}>
       <rect x="0" y="0" width={W} height={H} fill="white"/>
-      {ex.graduations.map(g => <g key={`x${g}`}>
-        <line x1={px(g)} x2={px(g)} y1={mt} y2={H - mb} stroke="#e2e8f0" strokeWidth="1"/>
-        <text x={px(g)} y={H - mb + 19} fontSize="15" fill="#334155" textAnchor="middle">{ecrire(g, 3)}</text></g>)}
-      {ey.graduations.map(g => <g key={`y${g}`}>
-        <line x1={ml} x2={W - mr} y1={py(g)} y2={py(g)} stroke="#e2e8f0" strokeWidth="1"/>
-        <text x={ml - 6} y={py(g) + 4.5} fontSize="15" fill="#334155" textAnchor="end">{ecrire(g, 3)}</text></g>)}
-      <line x1={ml} x2={W - mr} y1={H - mb} y2={H - mb} stroke="#334155" strokeWidth="1.5"/>
-      <line x1={ml} x2={ml} y1={mt} y2={H - mb} stroke="#334155" strokeWidth="1.5"/>
-      <text x={(ml + W - mr) / 2} y={H - 6} fontSize="16" fontWeight="700" fill="#0f172a" textAnchor="middle">{nomAxe(cx)}</text>
-      <text transform={`translate(15 ${(mt + H - mb) / 2}) rotate(-90)`} fontSize="16" fontWeight="700" fill="#0f172a" textAnchor="middle">{nomAxe(cy)}</text>
-      {modele && <line x1={px(ex.min)} y1={py(yModele(ex.min))} x2={px(ex.max)} y2={py(yModele(ex.max))} stroke={ORANGE} strokeWidth="2.5" clipPath="url(#gr-zone)"/>}
-      <clipPath id="gr-zone"><rect x={ml} y={mt} width={W - ml - mr} height={H - mt - mb}/></clipPath>
+      <clipPath id="gr-zone"><rect x={ML} y={MT} width={W - ML - MR} height={H - MT - MB}/></clipPath>
+      {ax.ticks.map((g, k) => <g key={`x${k}`}>
+        <line x1={px(ax.inv(g.pos))} x2={px(ax.inv(g.pos))} y1={MT} y2={H - MB} stroke={g.label ? '#e2e8f0' : '#f1f5f9'} strokeWidth="1"/>
+        {g.label && <text x={px(ax.inv(g.pos))} y={H - MB + 19} fontSize="15" fill="#334155" textAnchor="middle">{g.label}</text>}</g>)}
+      {ay.ticks.map((g, k) => <g key={`y${k}`}>
+        <line x1={ML} x2={W - MR} y1={py(ay.inv(g.pos))} y2={py(ay.inv(g.pos))} stroke={g.label ? '#e2e8f0' : '#f1f5f9'} strokeWidth="1"/>
+        {g.label && <text x={ML - 6} y={py(ay.inv(g.pos)) + 4.5} fontSize="15" fill="#334155" textAnchor="end">{g.label}</text>}</g>)}
+      <line x1={ML} x2={W - MR} y1={H - MB} y2={H - MB} stroke="#334155" strokeWidth="1.5"/>
+      <line x1={ML} x2={ML} y1={MT} y2={H - MB} stroke="#334155" strokeWidth="1.5"/>
+      <text x={(ML + W - MR) / 2} y={H - 6} fontSize="16" fontWeight="700" fill="#0f172a" textAnchor="middle">{nomAxe(cx)}{logx ? ' — échelle log' : ''}</text>
+      <text transform={`translate(15 ${(MT + H - MB) / 2}) rotate(-90)`} fontSize="16" fontWeight="700" fill="#0f172a" textAnchor="middle">{nomAxe(cy)}{logy ? ' — log' : ''}</text>
+      {modele && <path d={trace} fill="none" stroke={ORANGE} strokeWidth="2.5" clipPath="url(#gr-zone)"/>}
+      {tang && !logx && !logy && <line x1={px(ax.inv(ax.lo))} y1={borne(py(tang.y0 + tang.pente * (ax.inv(ax.lo) - tang.x0)))} x2={px(ax.inv(ax.hi))} y2={borne(py(tang.y0 + tang.pente * (ax.inv(ax.hi) - tang.x0)))}
+        stroke={VIOLET} strokeWidth="2" strokeDasharray="6 4" clipPath="url(#gr-zone)"/>}
+      {tang && <circle cx={px(tang.x0)} cy={py(tang.y0)} r="6" fill="none" stroke={VIOLET} strokeWidth="2.5"/>}
       {lecY && <g>
-        <line x1={ml} x2={lecture.x0 != null ? px(lecture.x0) : W - mr} y1={py(lecture.y0)} y2={py(lecture.y0)} stroke={VERT} strokeWidth="1.8" strokeDasharray="5 4"/>
-        {lecture.x0 != null && isFinite(lecture.x0) && <line x1={px(lecture.x0)} x2={px(lecture.x0)} y1={py(lecture.y0)} y2={H - mb} stroke={VERT} strokeWidth="1.8" strokeDasharray="5 4"/>}
-        {lecture.x0 != null && isFinite(lecture.x0)
-          ? (() => {
-            const lignesEt = String(lecture.etiquette).split('\n');
-            const droite = px(lecture.x0) + 8 + 84 <= W - mr;
-            return <text x={droite ? px(lecture.x0) + 8 : px(lecture.x0) - 8} y={H - mb - 12 - 18 * (lignesEt.length - 1)} fontSize="15" fontWeight="700" fill={VERT} textAnchor={droite ? 'start' : 'end'}>
-              {lignesEt.map((l, i) => <tspan key={i} x={droite ? px(lecture.x0) + 8 : px(lecture.x0) - 8} dy={i === 0 ? 0 : 18}>{l}</tspan>)}</text>;
-          })()
-          : <text x={ml + 8} y={py(lecture.y0) - 7} fontSize="15" fontWeight="700" fill={VERT}>{lecture.etiquette}</text>}
-        </g>}
-      {x.map((v, i) => <g key={i}>
-        <circle cx={px(v)} cy={py(y[i])} r="5" fill={BLEU} stroke="white" strokeWidth="1.5"/>
-        <title>{`${cx.nom} = ${ecrire(v, 4)} ; ${cy.nom} = ${ecrire(y[i], 4)}`}</title></g>)}
+        <line x1={ML} x2={lecture.x0 != null ? px(lecture.x0) : W - MR} y1={py(lecture.y0)} y2={py(lecture.y0)} stroke={VERT} strokeWidth="1.8" strokeDasharray="5 4"/>
+        {lecture.x0 != null && isFinite(lecture.x0) && <line x1={px(lecture.x0)} x2={px(lecture.x0)} y1={py(lecture.y0)} y2={H - MB} stroke={VERT} strokeWidth="1.8" strokeDasharray="5 4"/>}
+      </g>}
+      {ret && ret.x >= ax.inv(ax.lo) && ret.x <= ax.inv(ax.hi) && <g stroke={GRIS} strokeWidth="1.2" strokeDasharray="3 3">
+        <line x1={px(ret.x)} x2={px(ret.x)} y1={MT} y2={H - MB}/><line x1={ML} x2={W - MR} y1={py(ret.y)} y2={py(ret.y)}/></g>}
+      {idx.map(i => <g key={i}>
+        {s.u[i] > 0 && <g stroke={BLEU} strokeWidth="1.6">
+          <line x1={px(s.x[i])} x2={px(s.x[i])} y1={borne(py(s.y[i] + s.u[i]))} y2={borne(py(bas(i)))}/>
+          <line x1={px(s.x[i]) - 4} x2={px(s.x[i]) + 4} y1={borne(py(s.y[i] + s.u[i]))} y2={borne(py(s.y[i] + s.u[i]))}/>
+          <line x1={px(s.x[i]) - 4} x2={px(s.x[i]) + 4} y1={borne(py(bas(i)))} y2={borne(py(bas(i)))}/></g>}
+        <circle cx={px(s.x[i])} cy={py(s.y[i])} r="5" fill={BLEU} stroke="white" strokeWidth="1.5"/>
+        <title>{`${cx.nom} = ${ecrire(s.x[i], 4)} ; ${cy.nom} = ${ecrire(s.y[i], 4)}`}</title></g>)}
     </svg>
   );
 }
 
-// Écarts au modèle : un bâton par point, à la même échelle horizontale que le graphique ; bande ±2·s_r
-function Residus({ x, modele, cx, cy }) {
-  const W = 360, H = 152, ml = 66, mr = 12, mt = 12, mb = 42;
-  const { ex } = geometrie(x, x, null);
+// Écarts au modèle : un bâton par point, même échelle horizontale que le graphique ; bande ±2·s
+function Residus({ s, modele, cx, cy, logx }) {
+  const Wr = 360, Hr = 152, ml = 66, mr = 12, mt = 12, mb = 42;
+  const idx = s.x.map((_, i) => i).filter(i => !logx || s.x[i] > 0);
+  if (!idx.length) return null;
+  const ex = axe(idx.map(i => s.x[i]), logx);
   const r = modele.residus;
   const rmax = Math.max(...r.map(Math.abs), 2 * modele.sr, 1e-12) * 1.15;
-  const px = v => ml + (v - ex.min) / (ex.max - ex.min) * (W - ml - mr);
-  const py = v => mt + (rmax - v) / (2 * rmax) * (H - mt - mb);
+  const px = v => ml + (ex.tr(v) - ex.lo) / (ex.hi - ex.lo) * (Wr - ml - mr);
+  const py = v => mt + (rmax - v) / (2 * rmax) * (Hr - mt - mb);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Écarts entre les mesures de ${cy.nom} et le modèle, en fonction de ${cx.nom}`} className="gr-svg gr-svg-res" xmlns="http://www.w3.org/2000/svg" fontFamily="sans-serif">
-      <rect x="0" y="0" width={W} height={H} fill="white"/>
-      <rect x={ml} y={py(2 * modele.sr)} width={W - ml - mr} height={py(-2 * modele.sr) - py(2 * modele.sr)} fill="#fef3c7"/>
-      <text x={W - mr - 4} y={py(2 * modele.sr) + 13} fontSize="14.5" fill="#92400e" textAnchor="end">bande ±2 s</text>
-      <line x1={ml} x2={W - mr} y1={py(0)} y2={py(0)} stroke="#334155" strokeWidth="1.5"/>
-      <line x1={ml} x2={ml} y1={mt} y2={H - mb} stroke="#334155" strokeWidth="1.5"/>
+    <svg viewBox={`0 0 ${Wr} ${Hr}`} role="img" aria-label={`Écarts entre les mesures de ${cy.nom} et le modèle, en fonction de ${cx.nom}`} className="gr-svg gr-svg-res" xmlns="http://www.w3.org/2000/svg" fontFamily="sans-serif">
+      <rect x="0" y="0" width={Wr} height={Hr} fill="white"/>
+      <rect x={ml} y={py(2 * modele.sr)} width={Wr - ml - mr} height={py(-2 * modele.sr) - py(2 * modele.sr)} fill="#fef3c7"/>
+      <text x={Wr - mr - 4} y={py(2 * modele.sr) + 13} fontSize="14.5" fill="#92400e" textAnchor="end">bande ±2 s</text>
+      <line x1={ml} x2={Wr - mr} y1={py(0)} y2={py(0)} stroke="#334155" strokeWidth="1.5"/>
+      <line x1={ml} x2={ml} y1={mt} y2={Hr - mb} stroke="#334155" strokeWidth="1.5"/>
       <text x={ml - 6} y={py(0) + 4.5} fontSize="15" fill="#334155" textAnchor="end">0</text>
       <text x={ml - 6} y={mt + 10} fontSize="15" fill="#334155" textAnchor="end">+{ecrire(rmax / 1.15, 2)}</text>
-      <text x={ml - 6} y={H - mb} fontSize="15" fill="#334155" textAnchor="end">−{ecrire(rmax / 1.15, 2)}</text>
-      {ex.graduations.map(g => <text key={g} x={px(g)} y={H - mb + 18} fontSize="15" fill="#334155" textAnchor="middle">{ecrire(g, 3)}</text>)}
-      <text x={(ml + W - mr) / 2} y={H - 4} fontSize="15" fontWeight="700" fill="#0f172a" textAnchor="middle">{nomAxe(cx)}</text>
-      {x.map((v, i) => <g key={i}>
-        <line x1={px(v)} x2={px(v)} y1={py(0)} y2={py(r[i])} stroke={ORANGE} strokeWidth="2"/>
-        <circle cx={px(v)} cy={py(r[i])} r="4.5" fill={ORANGE} stroke="white" strokeWidth="1.2"/>
+      <text x={ml - 6} y={Hr - mb} fontSize="15" fill="#334155" textAnchor="end">−{ecrire(rmax / 1.15, 2)}</text>
+      {ex.ticks.filter(g => g.label).map((g, k) => <text key={k} x={px(ex.inv(g.pos))} y={Hr - mb + 18} fontSize="15" fill="#334155" textAnchor="middle">{g.label}</text>)}
+      <text x={(ml + Wr - mr) / 2} y={Hr - 4} fontSize="15" fontWeight="700" fill="#0f172a" textAnchor="middle">{nomAxe(cx)}</text>
+      {idx.map(i => <g key={i}>
+        <line x1={px(s.x[i])} x2={px(s.x[i])} y1={py(0)} y2={py(r[i])} stroke={ORANGE} strokeWidth="2"/>
+        <circle cx={px(s.x[i])} cy={py(r[i])} r="4.5" fill={ORANGE} stroke="white" strokeWidth="1.2"/>
         <title>{`écart = ${ecrire(r[i], 3)}`}</title></g>)}
     </svg>
   );
 }
 
-// ── Résultat et hypothèses ─────────────────────────────────────────────────────────────────────
-function PanneauResultat({ modele, cx, cy, avecR2 }) {
-  const prop = modele.type === 'proportionnel';
-  const uA = uniteQuotient(cy.unite, cx.unite);
+// ── Résultat de l'ajustement ───────────────────────────────────────────────────────────────────
+function parametres(id, m, cx, cy) {
+  const uy = cy.unite, ux = cx.unite;
+  if (id === 'proportionnel') return { eq: `${cy.nom}${NBSP}=${NBSP}k${NBSP}×${NBSP}${cx.nom}`, liste: [{ nom: 'k', val: m.a, u: m.ua, unite: uniteQuotient(uy, ux) }] };
+  if (id === 'affine') return { eq: `${cy.nom}${NBSP}=${NBSP}a${NBSP}×${NBSP}${cx.nom}${NBSP}+${NBSP}b`, liste: [{ nom: 'a', val: m.a, u: m.ua, unite: uniteQuotient(uy, ux) }, { nom: 'b', val: m.b, u: m.ub, unite: uy }] };
+  if (id === 'parabole') return { eq: `${cy.nom}${NBSP}=${NBSP}a${NBSP}×${NBSP}${cx.nom}²${NBSP}+${NBSP}b${NBSP}×${NBSP}${cx.nom}${NBSP}+${NBSP}c`,
+    liste: [{ nom: 'a', val: m.p[0], u: m.u[0], unite: unitePuissance(uy, ux, 2) }, { nom: 'b', val: m.p[1], u: m.u[1], unite: unitePuissance(uy, ux, 1) }, { nom: 'c', val: m.p[2], u: m.u[2], unite: uy }] };
+  const tau = { nom: 'τ = 1/|k|', val: m.tau, u: m.utau, unite: ux };
+  if (id === 'exponentielle') return { eq: `${cy.nom}${NBSP}=${NBSP}A${NBSP}×${NBSP}exp(k${NBSP}×${NBSP}${cx.nom})`,
+    liste: [{ nom: 'A', val: m.A, u: m.uA, unite: uy }, { nom: 'k', val: m.k, u: m.uk, unite: unitePuissance('', ux, 1) }, tau] };
+  return { eq: `${cy.nom}${NBSP}=${NBSP}y₀${NBSP}+${NBSP}A${NBSP}×${NBSP}exp(k${NBSP}×${NBSP}${cx.nom})`,
+    liste: [{ nom: 'y₀', val: m.y0, u: m.uy0, unite: uy }, { nom: 'A', val: m.A, u: m.uA, unite: uy }, { nom: 'k', val: m.k, u: m.uk, unite: unitePuissance('', ux, 1) }, tau] };
+}
+function PanneauResultat({ id, modele, cx, cy }) {
+  const { eq, liste } = parametres(id, modele, cx, cy);
   return (
     <div className="gr-resultat" data-resultat="1">
       <div className="gr-titre-bloc">Résultat de l’ajustement</div>
-      <div className="gr-eq">{prop ? <>{cy.nom}{NBSP}={NBSP}k{NBSP}×{NBSP}{cx.nom}</> : <>{cy.nom}{NBSP}={NBSP}a{NBSP}×{NBSP}{cx.nom}{NBSP}+{NBSP}b</>}</div>
-      <LigneMesure nom={prop ? 'k' : 'a'} valeur={ecrireAvecIncertitude(modele.a, modele.ua, uA)} couleur={ORANGE}/>
-      {!prop && <LigneMesure nom="b" valeur={ecrireAvecIncertitude(modele.b, modele.ub, cy.unite)} couleur={ORANGE}/>}
+      <div className="gr-eq">{eq}</div>
+      {liste.map(p => <LigneMesure key={p.nom} nom={p.nom} valeur={ecrireAvecIncertitude(p.val, p.u, p.unite)} couleur={ORANGE}/>)}
       <LigneMesure nom="s (écart-type des écarts)" valeur={`${ecrire(modele.sr, 2)}${cy.unite ? NBSP + cy.unite : ''}`}/>
-      {avecR2 && !prop && isFinite(modele.r2) && <LigneMesure nom="R²" valeur={ecrire(modele.r2, 5)}/>}
-      <div className="gr-note">Les valeurs après « ± » sont des incertitudes-types u. {avecR2 && !prop ? 'Un R² proche de 1 ne prouve pas que le modèle convient : regardez les écarts.' : ''}</div>
+      {id !== 'proportionnel' && isFinite(modele.r2) && <LigneMesure nom="R²" valeur={ecrire(modele.r2, 5)}/>}
+      <div className="gr-note">Les valeurs après « ± » sont des incertitudes-types u. Un R² proche de 1 ne prouve pas que le modèle convient : regardez les écarts.</div>
+    </div>
+  );
+}
+
+// Hypothèses : modèles linéaires → diagnostics testés (grapheurModele) ; autres modèles → liste adaptée
+function hypotheses(id, s, m) {
+  let L;
+  if (id === 'proportionnel' || id === 'affine') L = diagnostics(s.x, s.y, m);
+  else {
+    L = [{ id: 'independance', statut: 'info', titre: 'Mesures indépendantes', texte: 'Chaque mesure est supposée ne pas dépendre des précédentes. Le grapheur ne peut pas le vérifier.' }];
+    if (m.ddl <= 2) L.push({ id: 'points', statut: 'doute', titre: 'Assez de points pour ce modèle', texte: `Il y a ${m.n} points pour ${NB_PARAMETRES[id]} paramètres : seulement ${m.ddl} degré${m.ddl > 1 ? 's' : ''} de liberté. Le modèle passe presque par tous les points, quelle que soit sa pertinence ; les incertitudes sont très peu fiables.` });
+    else L.push({ id: 'points', statut: 'ok', titre: 'Assez de points pour ce modèle', texte: `${m.n} points pour ${NB_PARAMETRES[id]} paramètres : ${m.ddl} degrés de liberté.` });
+    L.push({ id: 'modele', statut: 'info', titre: 'Le modèle est le bon', texte: 'Le grapheur ne sait pas dire si ce modèle est le bon. Regardez les écarts : un motif régulier (une courbe, des signes qui alternent) trahit un mauvais choix. Le choix doit aussi être justifié par la physique, pas seulement par la valeur de s.' });
+    const d = testDispersion(s.x, m.residus);
+    L.push(d ? { id: 'dispersion', statut: d.inegale ? 'doute' : 'ok', titre: 'Même dispersion pour tous les points', texte: d.inegale ? `Les écarts semblent plus grands d’un côté de la gamme que de l’autre (rapport ≈ ${ecrire(d.rapport, 2)}). Les incertitudes sont à prendre avec prudence.` : `Les écarts ont des tailles comparables sur toute la gamme (rapport ≈ ${ecrire(d.rapport, 2)}).` }
+      : { id: 'dispersion', statut: 'info', titre: 'Même dispersion pour tous les points', texte: 'Avec moins de 6 points, on ne peut pas tester que tous les points sont aussi précis.' });
+    L.push({ id: 'abscisse', statut: 'info', titre: 'L’incertitude sur x est négligeable', texte: 'Seules les incertitudes sur y sont prises en compte, ce qui suppose x connu bien plus précisément que y.' });
+    if (id !== 'parabole') L.push({ id: 'lineaire', statut: 'info', titre: 'Incertitudes des paramètres : approximation', texte: 'Pour une exponentielle, les incertitudes viennent d’une linéarisation autour de la solution trouvée (comme dans Regressi ou Python/scipy). Elles sont fiables si le modèle est bon et le bruit faible ; sinon, elles sont indicatives.' });
+    L.push({ id: 'loi', statut: 'info', titre: 'Les écarts suivent une loi normale', texte: 'Lire « ± » comme « environ 68 % de confiance » suppose des écarts normaux ; avec ' + m.n + ' points, cela reste approximatif.' });
+  }
+  if (s.u.some(v => v > 0)) {
+    L.push({ id: 'ajustement', statut: 'info', titre: 'Barres d’incertitude et ajustement', texte: 'Les barres d’incertitude sont tracées mais n’interviennent pas dans le calcul : l’ajustement donne le même poids à tous les points (moindres carrés ordinaires). Un ajustement pondéré n’est pas encore proposé.' });
+    const pairs = m.residus.map((r, i) => [r, s.u[i]]).filter(([, u]) => u > 0);
+    const hors = pairs.filter(([r, u]) => Math.abs(r) > 2 * u).length;
+    const admis = pairs.length >= 10 ? 1 : 0;
+    L.push({ id: 'barres', statut: hors > admis ? 'doute' : 'ok', titre: 'Écarts au modèle compatibles avec les barres',
+      texte: hors > admis ? `${hors} point${hors > 1 ? 's' : ''} sur ${pairs.length} s’écarte${hors > 1 ? 'nt' : ''} du modèle de plus de 2 fois son incertitude (seuil de 2 : convention). Soit le modèle ne convient pas, soit les incertitudes sont sous-estimées.`
+        : `Les écarts au modèle sont, pour presque tous les points, inférieurs à 2 fois l’incertitude indiquée (seuil de 2 : convention). Si tous les écarts sont bien plus petits que les barres, ces dernières sont peut-être surestimées.` });
+  }
+  return L;
+}
+
+// ── Tableau de données ─────────────────────────────────────────────────────────────────────────
+function Tableau({ colonnes, lignes, valeurs, erreurs, editable, onCellule, onEntete, onAjouter, onSupprimer, onAjouterColonne, onSupprimerColonne }) {
+  return (
+    <div className="gr-tableau-zone">
+      <table className="gr-tableau" data-tableau-donnees="1">
+        <thead>
+          <tr>
+            {colonnes.map((c, j) => <th key={j} scope="col">
+              {editable
+                ? <div className="gr-entete">
+                  <div className="gr-entete-l">
+                    <input aria-label={`Nom de la colonne ${j + 1}`} value={c.nom} onChange={e => onEntete(j, { nom: e.target.value })} className="gr-in gr-in-nom"/>
+                    {colonnes.length > 2 && <button onClick={() => onSupprimerColonne(j)} aria-label={`Supprimer la colonne ${c.nom || j + 1}`} className="gr-sup" title="Supprimer cette colonne">✕</button>}
+                  </div>
+                  <input aria-label={`Unité de la colonne ${j + 1}`} value={c.unite} placeholder="unité" onChange={e => onEntete(j, { unite: e.target.value })} className="gr-in gr-in-unite"/>
+                  {c.formule !== undefined && <input aria-label={`Formule de la colonne ${c.nom || j + 1}`} value={c.formule} placeholder="formule, ex. ln(U)" onChange={e => onEntete(j, { formule: e.target.value })} className={`gr-in gr-in-formule${erreurs[j] ? ' gr-invalide' : ''}`} spellCheck={false}/>}
+                  {erreurs[j] && <div className="gr-err-formule" role="alert">{erreurs[j]}</div>}
+                </div>
+                : <>{avecIndices(c.nom)}{c.unite && <span className="gr-unite"> ({c.unite})</span>}</>}
+            </th>)}
+            {editable && <th aria-hidden="true" className="gr-th-vide"/>}
+          </tr>
+        </thead>
+        <tbody>
+          {lignes.map((l, i) => <tr key={i}>
+            {colonnes.map((c, j) => <td key={j}>
+              {!editable ? l[j]
+                : c.formule !== undefined
+                  ? <span className="gr-calcule" title="Valeur calculée par la formule">{Number.isFinite(valeurs[j][i]) ? ecrire(valeurs[j][i], 5) : '—'}</span>
+                  : <input inputMode="decimal" aria-label={`${c.nom || 'colonne ' + (j + 1)}, ligne ${i + 1}`} value={l[j] ?? ''} onChange={e => onCellule(i, j, e.target.value)}
+                    className={`gr-in gr-in-cel${(l[j] ?? '') !== '' && !isFinite(lireNombre(l[j])) ? ' gr-invalide' : ''}`}/>}
+            </td>)}
+            {editable && <td className="gr-td-sup"><button onClick={() => onSupprimer(i)} aria-label={`Supprimer la ligne ${i + 1}`} className="gr-sup" title="Supprimer cette ligne">✕</button></td>}
+          </tr>)}
+        </tbody>
+      </table>
+      {editable && <div className="gr-ligne-btn">
+        <button onClick={onAjouter} style={stylePetitBouton(false, '#1a7abf')}>+ Ligne</button>
+        <button onClick={() => onAjouterColonne(false)} style={stylePetitBouton(false, '#1a7abf')}>+ Colonne</button>
+        <button onClick={() => onAjouterColonne(true)} style={stylePetitBouton(false, VIOLET)} title="Une colonne calculée à partir des autres, par une formule">+ Colonne calculée</button>
+      </div>}
     </div>
   );
 }
@@ -143,39 +267,6 @@ function BandeauHypotheses({ liste }) {
             </li>);
         })}
       </ul>
-    </div>
-  );
-}
-
-// ── Tableau de données ─────────────────────────────────────────────────────────────────────────
-function Tableau({ colonnes, lignes, editable, onCellule, onEntete, onAjouter, onSupprimer }) {
-  return (
-    <div className="gr-tableau-zone">
-      <table className="gr-tableau" data-tableau-donnees="1">
-        <thead>
-          <tr>
-            {colonnes.map((c, j) => <th key={j} scope="col">
-              {editable
-                ? <div className="gr-entete"><input aria-label={`Nom de la colonne ${j + 1}`} value={c.nom} onChange={e => onEntete(j, { nom: e.target.value })} className="gr-in gr-in-nom"/>
-                  <input aria-label={`Unité de la colonne ${j + 1}`} value={c.unite} placeholder="unité" onChange={e => onEntete(j, { unite: e.target.value })} className="gr-in gr-in-unite"/></div>
-                : <>{avecIndices(c.nom)}{c.unite && <span className="gr-unite"> ({c.unite})</span>}</>}
-            </th>)}
-            {editable && <th aria-hidden="true" className="gr-th-vide"/>}
-          </tr>
-        </thead>
-        <tbody>
-          {lignes.map((l, i) => <tr key={i}>
-            {colonnes.map((c, j) => <td key={j}>
-              {editable
-                ? <input inputMode="decimal" aria-label={`${c.nom || 'colonne ' + (j + 1)}, ligne ${i + 1}`} value={l[j] ?? ''} onChange={e => onCellule(i, j, e.target.value)}
-                  className={`gr-in gr-in-cel${(l[j] ?? '') !== '' && !isFinite(lireNombre(l[j])) ? ' gr-invalide' : ''}`}/>
-                : l[j]}
-            </td>)}
-            {editable && <td className="gr-td-sup"><button onClick={() => onSupprimer(i)} aria-label={`Supprimer la ligne ${i + 1}`} className="gr-sup" title="Supprimer cette ligne">✕</button></td>}
-          </tr>)}
-        </tbody>
-      </table>
-      {editable && <button onClick={onAjouter} style={stylePetitBouton(false, '#1a7abf')}>+ Ajouter une ligne</button>}
     </div>
   );
 }
@@ -235,166 +326,167 @@ function telechargerPNG(svg, nom) {
   img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
 }
 
-// ════════════════ PARCOURS GUIDÉ : étalonnage d'un spectrophotomètre ════════════════
-function construireEtapes({ k, uk, eps, cEch, uEch, ajuste, ajuster, aEch }) {
-  const kTxt = arrondirResultat(k, uk).valeur;
-  const aTxt = ecrire(aEch, 3);
-  return [
-    { titre: 'Les mesures', texte: 'Au TP, on a préparé cinq solutions de permanganate de potassium dont on connaît la concentration C, puis on a mesuré l’absorbance A de chacune à 525 nm, dans une cuve de 1 cm. Voici le tableau de mesures.',
-      tache: { type: 'num', q: 'Quelle absorbance A a-t-on mesurée pour la solution la plus concentrée ?', vrai: 0.884, tol: 0.003, unite: '', carnet: false,
-        aide: 'Cherchez la plus grande valeur de C, et lisez A sur la même ligne.',
-        indice: 'La solution la plus concentrée est celle qui a la plus grande valeur de C : regardez la dernière ligne du tableau.',
-        expl: 'C = 0,400 mmol/L est la plus grande concentration ; son absorbance est A = 0,884.',
-        pieges: [[0.4, 'C’est la concentration (0,400 mmol/L) ; on cherche l’absorbance A, dans l’autre colonne.']] } },
-    { titre: 'Le nuage de points', texte: 'Chaque ligne du tableau devient un point du graphique : la concentration C est en abscisse, l’absorbance A en ordonnée.',
-      tache: { type: 'qcm', q: 'Que remarque-t-on sur la disposition des points ?', bonne: 0,
-        options: ['Ils sont presque alignés, le long d’une droite qui passe près de l’origine', 'Ils dessinent une courbe qui s’aplatit vers la droite', 'Ils sont dispersés : A ne dépend pas de C'],
-        indice: 'Imaginez une règle posée sur le graphique : les points restent-ils proches de la règle ?',
-        expl: 'Plus C augmente, plus A augmente, et les points sont presque alignés : A semble proportionnelle à C.' } },
-    { titre: 'Choisir un modèle', texte: 'On choisit le modèle avant de demander à l’ordinateur de calculer, et on sait dire pourquoi. Ici, la loi de Beer-Lambert relie A et C : A = ε × ℓ × C, où ℓ = 1 cm est la largeur de la cuve.',
-      tache: { type: 'qcm', q: 'Quel modèle choisir pour A en fonction de C ?', bonne: 0,
-        options: ['Proportionnel : A = k × C', 'Affine : A = k × C + b, avec b quelconque', 'Exponentiel : A = A₀ × e^(−C/τ)'],
-        indice: 'Que vaut l’absorbance d’une solution qui ne contient aucune espèce colorée (C = 0) ?',
-        expl: 'Sans espèce colorée, A = 0 : la droite passe par l’origine. On choisit donc A = k × C, ce qui est aussi ce que prévoit la loi de Beer-Lambert.' } },
-    { titre: 'Ajuster le modèle', texte: 'L’ordinateur cherche la droite A = k × C qui passe au plus près des points : c’est la méthode des moindres carrés. Elle minimise la somme des carrés des écarts verticaux entre les points et la droite.',
-      tache: { type: 'action', label: 'Ajuster A = k × C', faire: ajuster, ok: ajuste, consigne: ajuste ? 'La droite est tracée : elle passe près des cinq points.' : undefined } },
-    { titre: 'Le coefficient k', texte: `L’ordinateur donne k = (${kTxt} ± ${arrondirResultat(k, uk).u}) L·mmol⁻¹, avec son incertitude-type. Ce coefficient regroupe ε et ℓ : k = ε × ℓ.`,
-      tache: { type: 'num', q: 'Calculez ε, en L·mol⁻¹·cm⁻¹, sachant que k = ' + kTxt + ' L·mmol⁻¹ et ℓ = 1 cm', vrai: eps, tol: 0.02, unite: 'L·mol⁻¹·cm⁻¹',
-        carnet: 'Coefficient d’absorption molaire ε', indice: 'ε = k / ℓ. Attention aux unités : 1 mmol = 10⁻³ mol, donc 1 L·mmol⁻¹ = 1000 L·mol⁻¹.',
-        expl: 'ε = k / ℓ ≈ ' + ecrire(eps, 3) + ' L·mol⁻¹·cm⁻¹.',
-        calcul: () => ['k = ε × ℓ, donc ε = k / ℓ', `ε = ${kTxt} L·mmol⁻¹ / 1 cm = ${kTxt} L·mmol⁻¹·cm⁻¹`, `1 L·mmol⁻¹ = 1000 L·mol⁻¹, donc ε ≈ ${ecrire(eps, 3)} L·mol⁻¹·cm⁻¹`],
-        pieges: [[k, 'Il manque la conversion des mmol en mol : multipliez par 1000.']] } },
-    { titre: 'Vérifier le modèle', texte: 'Un bon ajustement ne se juge pas seulement à l’œil. Sous le graphique, un bâton montre pour chaque point l’écart entre la mesure et la droite. Le bandeau « Hypothèses » liste ce que le calcul suppose et ce que le logiciel a pu vérifier.',
-      tache: { type: 'qcm', q: 'Les écarts sont-ils répartis au hasard de part et d’autre de 0 ?', bonne: 0,
-        options: ['Oui : des écarts positifs et négatifs se mélangent, sans courbe ni tendance', 'Non : les écarts dessinent une courbe en arc', 'Non : les écarts grandissent régulièrement quand C augmente'],
-        indice: 'Si le modèle était mauvais, les écarts auraient un motif (tous positifs au milieu, négatifs aux extrémités…).',
-        expl: 'Les écarts changent de signe et restent de l’ordre de quelques millièmes d’absorbance : aucun motif net. Le modèle A = k × C convient pour cette gamme.' } },
-    { titre: 'Lire la concentration inconnue', texte: `On mesure, dans les mêmes conditions, l’absorbance d’une solution de permanganate de concentration inconnue : A = ${aTxt}. On cherche la concentration C pour laquelle la droite donne cette absorbance (trait vert).`,
-      tache: { type: 'num', q: 'Quelle est la concentration C de cette solution, en mmol/L ?', vrai: cEch, tol: 0.03, unite: 'mmol/L', cs: 2, carnet: 'Concentration de la solution inconnue C',
-        indice: `A = k × C, donc C = A / k, avec A = ${aTxt} et k = ${kTxt} L·mmol⁻¹.`,
-        expl: `C = A / k ≈ ${ecrire(cEch, 3)} mmol/L.`,
-        calcul: () => ['A = k × C, donc C = A / k', `C = ${aTxt} / ${kTxt} L·mmol⁻¹ = ${ecrire(cEch, 3)} mmol/L`],
-        pieges: [[aEch * k, 'Vous avez multiplié A par k : il faut diviser, car A = k × C.']] } },
-    { titre: 'Bilan', texte: `Résultat : C = ${ecrireAvecIncertitude(cEch, uEch, 'mmol/L')}, où ce qui suit ± est l’incertitude-type. Elle vient de deux causes : la dispersion des points autour de la droite, et l’incertitude sur k. Ce résultat vaut si les hypothèses du bandeau sont acceptables : la droite passe par l’origine, les mesures sont indépendantes et l’absorbance reste dans la zone où la loi de Beer-Lambert s’applique (A ≲ 1). Vous pouvez maintenant essayer vos propres données dans l’exploration libre.` },
-  ];
+
+// ── Comparaison de modèles ─────────────────────────────────────────────────────────────────────
+function Comparaison({ s, cy, courant, onChoisir }) {
+  const lignes = ['proportionnel', 'affine', 'parabole', 'exponentielle', 'exponentielle-asymptote'].map(id => ({ id, nom: MODELES.find(m => m[0] === id)[1], m: ajuster(id, s.x, s.y) }));
+  return (
+    <div>
+      <div className="gr-titre-bloc">Comparer les modèles sur ces mêmes points</div>
+      <div className="gr-tableau-zone">
+        <table className="gr-tableau"><thead><tr><th>Modèle</th><th>Paramètres</th><th>s{cy.unite ? ` (${cy.unite})` : ''}</th><th/></tr></thead>
+          <tbody>{lignes.map(l => <tr key={l.id} className={l.id === courant ? 'gr-ligne-courante' : ''}>
+            <td style={{ textAlign: 'left' }}>{l.nom}</td><td>{NB_PARAMETRES[l.id]}</td><td>{l.m ? ecrire(l.m.sr, 2) : '—'}</td>
+            <td>{l.m && l.id !== courant && <button onClick={() => onChoisir(l.id)} style={stylePetitBouton(false, ORANGE)}>Utiliser</button>}</td></tr>)}</tbody></table>
+      </div>
+      <div className="gr-note">Attention : un modèle avec plus de paramètres colle presque toujours mieux aux points, sans être meilleur. Le choix du modèle se justifie d’abord par la physique (quelle loi attend-on ?), puis par les écarts ; un s plus petit ne suffit pas.</div>
+    </div>
+  );
 }
 
-// ════════════════ PAGE ════════════════
+const PREMIERES_LETTRES = ['x', 'y', 'z', 't', 'u', 'v', 'w', 'p', 'q', 'r', 's', 'a', 'b', 'c'];
+const departDe = ex => ({ colonnes: ex.colonnes, lignes: ex.lignes, modele: ex.modele, ix: 0, iy: 1, iu: -1, logx: false, logy: false, yEch: '' });
+
 export function SimulationGrapheur() {
-  const [mode, setMode] = useState(() => modeOuverture(CLE_GUIDE));
-  useSignalerMode(mode);
-  const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
-  const [libre, setLibre] = useEtatPersistant(CLE_LIBRE, { colonnes: COLONNES_BEER, lignes: LIGNES_BEER, modele: 'aucun', ix: 0, iy: 1, yEch: '' });
-  const [ouvert, setOuvert] = useState({ import: false, export: false });
+  const [etat, setEtat] = useEtatPersistant(CLE_OUTIL, departDe(EXEMPLES.beer));
+  const [outil, setOutil] = useState(null);
+  const [retBrut, setRet] = useState(null), [tangBrut, setTang] = useState(null);
+  const [onglet, setOnglet] = useState('resultat');
+  const [ouvert, setOuvert] = useState({ import: false, export: false, aide: false });
   const svgRef = useRef(null);
-  const enGuide = mode === 'guide';
+  const { colonnes, lignes } = etat;
+  const maj = f => setEtat(e => ({ ...e, ...f(e) }));
+  const { valeurs, erreurs } = useMemo(() => evaluerColonnes(colonnes, lignes), [colonnes, lignes]);
+  const nc = colonnes.length;
+  const ix = Math.min(etat.ix, nc - 1), iy = Math.min(etat.iy, nc - 1), iu = etat.iu >= 0 && etat.iu < nc ? etat.iu : -1;
+  const s = useMemo(() => serieDe(valeurs, ix, iy, iu), [valeurs, ix, iy, iu]);
+  const id = etat.modele;
+  const m = useMemo(() => (id === 'aucun' || s.x.length === 0 ? null : ajuster(id, s.x, s.y)), [id, s]);
+  const cx = colonnes[ix], cy = colonnes[iy];
+  const lineaire = id === 'proportionnel' || id === 'affine';
+  const yEch = lireNombre(etat.yEch);
+  const lec = m && lineaire && isFinite(yEch) ? lectureInverse(m, yEch) : null;
+  // le réticule et la tangente n'ont de sens que pour les axes et le modèle avec lesquels ils ont été posés
+  const cle = `${ix}|${iy}|${id}|${!!etat.logx}|${!!etat.logy}`;
+  const ret = retBrut && retBrut.cle === cle ? retBrut : null, tang = tangBrut && tangBrut.cle === cle ? tangBrut : null;
 
-  // ── Parcours guidé : modèle proportionnel sur la gamme étalon ──
-  const gx = LIGNES_BEER.map(l => lireNombre(l[0])), gy = LIGNES_BEER.map(l => lireNombre(l[1]));
-  const mG = regressionProportionnelle(gx, gy);
-  const lecG = lectureInverse(mG, A_ECHANTILLON);
-  const e = Math.min(guide.etape, 7);
-  const ajuste = !!(guide.reps && guide.reps.aj);
-  const etapes = construireEtapes({ k: mG.a, uk: mG.ua, eps: mG.a * 1000, cEch: lecG.x0, uEch: lecG.u, aEch: A_ECHANTILLON, ajuste,
-    ajuster: () => setGuide(g => ({ ...g, reps: { ...g.reps, aj: true } })) });
-  const finParcours = <button onClick={() => setMode('explore')} style={styleBouton(true, ORANGE_GUIDE)}>Explorer avec mes données ▶</button>;
-  const modeleVu = e >= 4 || (e === 3 && ajuste);
+  const poser = ({ x, y, i }) => {
+    if (outil === 'reticule') setRet({ cle, x, y });
+    else if (outil === 'tangente') {
+      if (m) { const p = penteFonction(m.f, x, (Math.max(...s.x) - Math.min(...s.x)) * 1e-4); if (p != null) setTang({ cle, x0: x, y0: m.f(x), pente: p, source: 'modèle' }); }
+      else { const p = penteLocale(s.x, s.y, i); if (p != null) setTang({ cle, x0: s.x[i], y0: s.y[i], pente: p, source: 'points' }); }
+    }
+  };
+  const choisirOutil = o => { setOutil(prev => (prev === o ? null : o)); setRet(null); setTang(null); };
 
-  // ── Exploration libre : données de l'élève ──
-  const { colonnes, lignes } = libre;
-  const ix = Math.min(libre.ix, colonnes.length - 1), iy = Math.min(libre.iy, colonnes.length - 1);
-  const { x, y } = serieXY(lignes, ix, iy);
-  const mL = libre.modele === 'proportionnel' ? regressionProportionnelle(x, y) : libre.modele === 'affine' ? regressionAffine(x, y) : null;
-  const yEch = lireNombre(libre.yEch);
-  const lecL = mL && isFinite(yEch) ? lectureInverse(mL, yEch) : null;
-  const majLibre = f => setLibre(l => ({ ...l, ...f(l) }));
-  const utiliser = lu => majLibre(() => ({ colonnes: lu.colonnes, lignes: lu.brutes, ix: 0, iy: 1, modele: 'aucun', yEch: '' }));
-  const nomFichier = (ext) => `grapheur-${(colonnes[iy]?.nom || 'y')}-${(colonnes[ix]?.nom || 'x')}.${ext}`.replace(/[^\w.-]+/g, '_');
+  const lignesCompletes = lignes.map((_, i) => colonnes.map((_c, j) => (Number.isFinite(valeurs[j][i]) ? String(valeurs[j][i]) : '')));
+  const nomFichier = ext => `grapheur-${cy?.nom || 'y'}-${cx?.nom || 'x'}.${ext}`.replace(/[^\w.-]+/g, '_');
+  const ajouterColonne = calculee => maj(e => {
+    const pris = new Set(e.colonnes.map(c => c.nom));
+    const nom = PREMIERES_LETTRES.find(n => !pris.has(n)) || `c${e.colonnes.length + 1}`;
+    return { colonnes: [...e.colonnes, calculee ? { nom, unite: '', formule: '' } : { nom, unite: '' }], lignes: e.lignes.map(l => [...l, '']) };
+  });
+  const supprimerColonne = j => maj(e => ({ colonnes: e.colonnes.filter((_, a) => a !== j), lignes: e.lignes.map(l => l.filter((_, a) => a !== j)), ix: 0, iy: Math.min(1, e.colonnes.length - 2), iu: -1, modele: 'aucun' }));
+  const charger = ex => maj(() => departDe(ex));
+  const unitePente = uniteQuotient(cy.unite, cx.unite);
+  const optionsCol = (avecAucune) => <>{avecAucune && <option value={-1}>aucune</option>}{colonnes.map((c, j) => <option key={j} value={j}>{c.nom || `colonne ${j + 1}`}</option>)}</>;
 
   return (
     <div className="gr-racine" style={{ ...cardStyle, textAlign: 'left' }}>
       <div className="gr-haut">
-        <BoutonsModes mode={mode} setMode={setMode} modes={['guide', 'explore']}/>
+        <select aria-label="Charger un exemple" value="" onChange={ev => { const k = ev.target.value; if (k === 'vide') charger(VIDE); else if (EXEMPLES[k]) charger(EXEMPLES[k]); }} className="gr-select">
+          <option value="">Charger un exemple…</option>
+          {Object.entries(EXEMPLES).map(([k, ex]) => <option key={k} value={k}>{ex.nom}</option>)}
+          <option value="vide">Tableau vide</option>
+        </select>
+        <button className="gr-bascule gr-aide-btn" aria-expanded={ouvert.aide} onClick={() => setOuvert(o => ({ ...o, aide: !o.aide }))}>? Aide</button>
       </div>
+      {ouvert.aide && <div className="gr-aide">
+        <p><strong>Colonne calculée</strong> : cliquez sur « + Colonne calculée » puis écrivez une formule avec les noms des colonnes situées à sa gauche, par exemple <code>ln(U)</code>, <code>m*g*h</code> ou <code>sqrt(x^2+y^2)</code>.</p>
+        <p>Opérations : <code>+ − * / ^</code> et parenthèses. Fonctions : <code>log</code> (décimal), <code>ln</code>, <code>exp</code>, <code>sqrt</code>, <code>abs</code>, <code>sin</code>, <code>cos</code>, <code>tan</code> (en radians), constante <code>pi</code>. La virgule ou le point sont acceptés pour les décimales.</p>
+        <p><strong>Graphique</strong> : « Réticule » donne les coordonnées du point touché ; « Tangente » trace la tangente au modèle (ou aux points voisins s’il n’y a pas de modèle). Pour afficher des barres d’incertitude, mettez les incertitudes dans une colonne et choisissez-la sous le tableau.</p>
+      </div>}
 
-      {enGuide ? (
-        <div className="gr-l1">
-          <div className="gr-col">
-            <div style={styleBoite}>
-              <details key={e >= 1 ? 'replie' : 'ouvert'} open={e === 0} className="gr-details-tab">
-                <summary className="gr-titre-bloc">Gamme étalon de permanganate de potassium (525 nm, cuve de 1 cm)</summary>
-                <Tableau colonnes={COLONNES_BEER} lignes={LIGNES_BEER} editable={false}/>
-              </details>
-            </div>
-            {e >= 1 && <div style={styleBoite}>
-              <Graphique x={gx} y={gy} cx={COLONNES_BEER[0]} cy={COLONNES_BEER[1]} modele={modeleVu ? mG : null}
-                lecture={e >= 6 ? { y0: A_ECHANTILLON, x0: e >= 7 ? lecG.x0 : null, etiquette: e >= 7 ? `C ≈ ${ecrire(lecG.x0, 3)}\nmmol/L` : `A = ${ecrire(A_ECHANTILLON, 3)}` } : null}/>
-              {e >= 5 && <div style={{ marginTop: 8 }}>
-                <div className="gr-titre-bloc">Écarts entre les mesures et la droite</div>
-                <Residus x={gx} modele={mG} cx={COLONNES_BEER[0]} cy={COLONNES_BEER[1]}/></div>}
-            </div>}
-            {e >= 4 && <div style={styleBoite}><PanneauResultat modele={mG} cx={COLONNES_BEER[0]} cy={COLONNES_BEER[1]}/></div>}
-            {e >= 5 && <div style={styleBoite}><BandeauHypotheses liste={diagnostics(gx, gy, mG)}/></div>}
-          </div>
-          <div className="gr-carte"><CarteParcours etapes={etapes} etat={guide} setEtat={setGuide} fin={finParcours}/></div>
-        </div>
-      ) : (
-        <div className="gr-l2">
-          <div className="gr-col">
-            <div style={styleBoite}>
-              <div className="gr-titre-bloc">Mes mesures</div>
-              <Tableau colonnes={colonnes} lignes={lignes} editable
-                onCellule={(i, j, v) => majLibre(l => ({ lignes: l.lignes.map((r, a) => a === i ? r.map((c, b) => b === j ? v : c) : r) }))}
-                onEntete={(j, p) => majLibre(l => ({ colonnes: l.colonnes.map((c, a) => a === j ? { ...c, ...p } : c) }))}
-                onAjouter={() => majLibre(l => ({ lignes: [...l.lignes, l.colonnes.map(() => '')] }))}
-                onSupprimer={i => majLibre(l => ({ lignes: l.lignes.filter((_, a) => a !== i) }))}/>
-              {colonnes.length > 2 && <div className="gr-choix-axes">
-                <label>En abscisse : <select value={ix} onChange={ev => majLibre(() => ({ ix: Number(ev.target.value) }))}>{colonnes.map((c, j) => <option key={j} value={j}>{c.nom || `colonne ${j + 1}`}</option>)}</select></label>
-                <label>En ordonnée : <select value={iy} onChange={ev => majLibre(() => ({ iy: Number(ev.target.value) }))}>{colonnes.map((c, j) => <option key={j} value={j}>{c.nom || `colonne ${j + 1}`}</option>)}</select></label>
+      <div className="gr-l2">
+        <div className="gr-col">
+          <div style={styleBoite}>
+            <details open className="gr-details-tab">
+              <summary className="gr-titre-bloc">Tableau de mesures ({s.x.length} point{s.x.length > 1 ? 's' : ''} exploitable{s.x.length > 1 ? 's' : ''})</summary>
+              <Tableau colonnes={colonnes} lignes={lignes} valeurs={valeurs} erreurs={erreurs} editable
+                onCellule={(i, j, v) => maj(e => ({ lignes: e.lignes.map((r, a) => (a === i ? r.map((c, b) => (b === j ? v : c)) : r)) }))}
+                onEntete={(j, p) => maj(e => ({ colonnes: e.colonnes.map((c, a) => (a === j ? { ...c, ...p } : c)) }))}
+                onAjouter={() => maj(e => ({ lignes: [...e.lignes, e.colonnes.map(() => '')] }))}
+                onSupprimer={i => maj(e => ({ lignes: e.lignes.filter((_, a) => a !== i) }))}
+                onAjouterColonne={ajouterColonne} onSupprimerColonne={supprimerColonne}/>
+              {nc > 2 && <div className="gr-choix-axes">
+                <label>Abscisse : <select value={ix} onChange={ev => maj(() => ({ ix: Number(ev.target.value) }))}>{optionsCol(false)}</select></label>
+                <label>Ordonnée : <select value={iy} onChange={ev => maj(() => ({ iy: Number(ev.target.value) }))}>{optionsCol(false)}</select></label>
+                <label>Incertitude sur y : <select value={iu} onChange={ev => maj(() => ({ iu: Number(ev.target.value) }))}>{optionsCol(true)}</select></label>
               </div>}
-            </div>
-            <div style={styleBoite}>
-              <button className="gr-bascule" aria-expanded={ouvert.import} onClick={() => setOuvert(o => ({ ...o, import: !o.import }))}><span>Importer ou coller des données</span><span aria-hidden="true">{ouvert.import ? '▲' : '▼'}</span></button>
-              {ouvert.import && <Import onUtiliser={utiliser}/>}
-            </div>
+            </details>
           </div>
-          <div className="gr-col">
-            <div style={styleBoite}>
-              <div className="gr-modeles" role="group" aria-label="Choix du modèle">
-                {[['aucun', 'Aucun modèle'], ['proportionnel', 'Proportionnel y = k·x'], ['affine', 'Affine y = a·x + b']].map(([id, nom]) =>
-                  <button key={id} onClick={() => majLibre(() => ({ modele: id }))} aria-pressed={libre.modele === id} style={stylePetitBouton(libre.modele === id, ORANGE)}>{nom}</button>)}
-              </div>
-              {libre.modele === 'aucun' && x.length > 0 && <div className="gr-note">Regardez d’abord le nuage de points : les points semblent-ils alignés ? Sur une droite qui passe par l’origine ? Puis choisissez un modèle.</div>}
-              {x.length > 0 && x.length < (libre.modele === 'affine' ? 3 : 2) && libre.modele !== 'aucun' && <div className="gr-avert">⚠ Pas assez de points pour ce modèle.</div>}
-              <Graphique x={x} y={y} cx={colonnes[ix]} cy={colonnes[iy]} modele={mL} svgRef={svgRef}
-                lecture={lecL ? { y0: yEch, x0: lecL.x0, etiquette: `${colonnes[ix].nom} ≈ ${ecrire(lecL.x0, 3)}${colonnes[ix].unite ? '\n' + colonnes[ix].unite : ''}` } : null}/>
-              {mL && <div style={{ marginTop: 8 }}>
-                <div className="gr-titre-bloc">Écarts entre les mesures et le modèle</div>
-                <Residus x={x} modele={mL} cx={colonnes[ix]} cy={colonnes[iy]}/></div>}
-            </div>
-            {mL && <div style={styleBoite}>
-              <PanneauResultat modele={mL} cx={colonnes[ix]} cy={colonnes[iy]} avecR2/>
-              <div className="gr-lecture">
-                <label htmlFor="gr-yech" className="gr-label">Lecture sur le modèle : valeur mesurée de {colonnes[iy].nom}{colonnes[iy].unite ? ` (${colonnes[iy].unite})` : ''}</label>
-                <input id="gr-yech" inputMode="decimal" value={libre.yEch} onChange={ev => majLibre(() => ({ yEch: ev.target.value }))} placeholder="ex. 0,536" className="gr-in gr-in-cel"/>
-                {lecL && <div className="gr-eq" data-lecture-resultat="1">{colonnes[ix].nom}{NBSP}={NBSP}{ecrireAvecIncertitude(lecL.x0, lecL.u, colonnes[ix].unite)}</div>}
-                {libre.yEch && !isFinite(yEch) && <div className="gr-avert">⚠ Ce n’est pas un nombre.</div>}
-              </div>
+          <div style={styleBoite}>
+            <button className="gr-bascule" aria-expanded={ouvert.import} onClick={() => setOuvert(o => ({ ...o, import: !o.import }))}><span>Importer ou coller des données</span><span aria-hidden="true">{ouvert.import ? '▲' : '▼'}</span></button>
+            {ouvert.import && <Import onUtiliser={lu => maj(() => ({ colonnes: lu.colonnes, lignes: lu.brutes, ix: 0, iy: Math.min(1, lu.colonnes.length - 1), iu: -1, modele: 'aucun', yEch: '', logx: false, logy: false }))}/>}
+          </div>
+          <div style={styleBoite}>
+            <button className="gr-bascule" aria-expanded={ouvert.export} onClick={() => setOuvert(o => ({ ...o, export: !o.export }))}><span>Enregistrer, copier, imprimer</span><span aria-hidden="true">{ouvert.export ? '▲' : '▼'}</span></button>
+            {ouvert.export && <div className="gr-export">
+              <button onClick={() => telecharger(nomFichier('csv'), '\uFEFF' + versCSV(colonnes, lignesCompletes, true), 'text/csv;charset=utf-8')} style={stylePetitBouton(false, '#1a7abf')}>CSV (français : ; et virgule)</button>
+              <button onClick={() => telecharger(nomFichier('csv'), versCSV(colonnes, lignesCompletes, false), 'text/csv;charset=utf-8')} style={stylePetitBouton(false, '#1a7abf')}>CSV (international : , et point)</button>
+              <button onClick={() => { try { navigator.clipboard.writeText(versTexteTableur(colonnes, lignesCompletes)); } catch { /* copie impossible */ } }} style={stylePetitBouton(false, '#1a7abf')}>Copier pour un tableur</button>
+              <button onClick={() => telechargerPNG(svgRef.current, nomFichier('png'))} style={stylePetitBouton(false, '#1a7abf')}>Image du graphique (PNG)</button>
+              <button onClick={() => window.print()} style={stylePetitBouton(false, '#1a7abf')}>Imprimer / PDF</button>
             </div>}
-            {mL && <div style={styleBoite}><BandeauHypotheses liste={diagnostics(x, y, mL)}/></div>}
-            <div style={styleBoite}>
-              <button className="gr-bascule" aria-expanded={ouvert.export} onClick={() => setOuvert(o => ({ ...o, export: !o.export }))}><span>Enregistrer, copier, imprimer</span><span aria-hidden="true">{ouvert.export ? '▲' : '▼'}</span></button>
-              {ouvert.export && <div className="gr-export">
-                <button onClick={() => telecharger(nomFichier('csv'), '﻿' + versCSV(colonnes, lignes, true), 'text/csv;charset=utf-8')} style={stylePetitBouton(false, '#1a7abf')}>CSV (français : ; et virgule)</button>
-                <button onClick={() => telecharger(nomFichier('csv'), versCSV(colonnes, lignes, false), 'text/csv;charset=utf-8')} style={stylePetitBouton(false, '#1a7abf')}>CSV (international : , et point)</button>
-                <button onClick={() => { try { navigator.clipboard.writeText(versTexteTableur(colonnes, lignes)); } catch { /* copie impossible */ } }} style={stylePetitBouton(false, '#1a7abf')}>Copier pour un tableur</button>
-                <button onClick={() => telechargerPNG(svgRef.current, nomFichier('png'))} style={stylePetitBouton(false, '#1a7abf')}>Image du graphique (PNG)</button>
-                <button onClick={() => window.print()} style={stylePetitBouton(false, '#1a7abf')}>Imprimer / PDF</button>
-              </div>}
-            </div>
           </div>
         </div>
-      )}
+
+        <div className="gr-col">
+          <div style={styleBoite}>
+            <div className="gr-modeles" role="group" aria-label="Choix du modèle">
+              {MODELES.map(([k, nom]) => <button key={k} onClick={() => maj(() => ({ modele: k }))} aria-pressed={id === k} style={stylePetitBouton(id === k, ORANGE)}>{nom}</button>)}
+            </div>
+            {id === 'aucun' && s.x.length > 0 && <div className="gr-note">Regardez d’abord le nuage de points : quelle forme dessinent-ils ? Puis choisissez un modèle, en vous appuyant sur la physique.</div>}
+            {id !== 'aucun' && s.x.length > 0 && !m && <div className="gr-avert">⚠ Impossible d’ajuster ce modèle : pas assez de points ({NB_PARAMETRES[id] + 1} au minimum), ou ils ne permettent pas ce calcul (par exemple tous les x sont égaux).</div>}
+            <Graphique s={s} cx={cx} cy={cy} modele={m} logx={etat.logx} logy={etat.logy} outil={outil} ret={ret} tang={tang} svgRef={svgRef} onPoser={poser}
+              lecture={lec ? { y0: yEch, x0: lec.x0 } : null}/>
+            <div className="gr-barre-outils">
+              <button onClick={() => choisirOutil('reticule')} aria-pressed={outil === 'reticule'} style={stylePetitBouton(outil === 'reticule', GRIS)}>✛ Réticule</button>
+              <button onClick={() => choisirOutil('tangente')} aria-pressed={outil === 'tangente'} style={stylePetitBouton(outil === 'tangente', VIOLET)}>⟋ Tangente</button>
+              <label className="gr-case"><input type="checkbox" checked={!!etat.logx} onChange={ev => maj(() => ({ logx: ev.target.checked }))}/> x en log</label>
+              <label className="gr-case"><input type="checkbox" checked={!!etat.logy} onChange={ev => maj(() => ({ logy: ev.target.checked }))}/> y en log</label>
+            </div>
+            {outil === 'reticule' && <div className="gr-lecture-outil" aria-live="polite">{ret
+              ? <>{cx.nom}{NBSP}={NBSP}{ecrire(ret.x, 4)}{cx.unite ? NBSP + cx.unite : ''} ; {cy.nom}{NBSP}={NBSP}{ecrire(ret.y, 4)}{cy.unite ? NBSP + cy.unite : ''}{m && isFinite(m.f(ret.x)) && <> ; modèle en {cx.nom}{NBSP}={NBSP}{ecrire(ret.x, 4)} : {ecrire(m.f(ret.x), 4)}{cy.unite ? NBSP + cy.unite : ''}</>}</>
+              : 'Touchez ou survolez le graphique pour lire des coordonnées.'}</div>}
+            {outil === 'tangente' && <div className="gr-lecture-outil" aria-live="polite">{(etat.logx || etat.logy)
+              ? 'La tangente n’est pas tracée en échelle logarithmique : décochez « en log ».'
+              : tang ? <>Tangente en {cx.nom}{NBSP}={NBSP}{ecrire(tang.x0, 4)} : pente{NBSP}={NBSP}{ecrire(tang.pente, 4)}{unitePente ? NBSP + unitePente : ''} <span className="gr-note">({tang.source === 'modèle' ? 'dérivée du modèle' : 'calculée avec le point et ses deux voisins'})</span></>
+                : `Touchez le graphique${m ? '' : ' près d’un point'} pour tracer la tangente.`}</div>}
+          </div>
+
+          {m && <div style={styleBoite}>
+            <div className="gr-modeles" role="group" aria-label="Affichage">
+              {[['resultat', 'Résultat'], ['ecarts', 'Écarts'], ['hypotheses', 'Hypothèses'], ['comparer', 'Comparer']].map(([k, nom]) =>
+                <button key={k} onClick={() => setOnglet(k)} aria-pressed={onglet === k} style={stylePetitBouton(onglet === k, '#1a7abf')}>{nom}</button>)}
+            </div>
+            {onglet === 'resultat' && <>
+              <PanneauResultat id={id} modele={m} cx={cx} cy={cy}/>
+              {lineaire && <div className="gr-lecture">
+                <label htmlFor="gr-yech" className="gr-label">Lecture sur le modèle : valeur mesurée de {cy.nom}{cy.unite ? ` (${cy.unite})` : ''}</label>
+                <input id="gr-yech" inputMode="decimal" value={etat.yEch} onChange={ev => maj(() => ({ yEch: ev.target.value }))} placeholder="ex. 0,536" className="gr-in gr-in-cel"/>
+                {lec && <div className="gr-eq" data-lecture-resultat="1">{cx.nom}{NBSP}={NBSP}{ecrireAvecIncertitude(lec.x0, lec.u, cx.unite)}</div>}
+                {etat.yEch && !isFinite(yEch) && <div className="gr-avert">⚠ Ce n’est pas un nombre.</div>}
+              </div>}
+            </>}
+            {onglet === 'ecarts' && <>
+              <div className="gr-titre-bloc">Écarts entre les mesures et le modèle</div>
+              <Residus s={s} modele={m} cx={cx} cy={cy} logx={etat.logx}/></>}
+            {onglet === 'hypotheses' && <BandeauHypotheses liste={hypotheses(id, s, m)}/>}
+            {onglet === 'comparer' && <Comparaison s={s} cy={cy} courant={id} onChoisir={k => maj(() => ({ modele: k }))}/>}
+          </div>}
+        </div>
+      </div>
       <p className="gr-bas">Vos données restent sur cet appareil : rien n’est envoyé sur Internet.</p>
     </div>
   );
