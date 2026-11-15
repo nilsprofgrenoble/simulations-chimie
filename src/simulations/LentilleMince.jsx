@@ -433,7 +433,12 @@ export function SimulationLentilleMince() {
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
           <span style={{ fontSize: 12.5, color: KIT.txt2 }}>Aides :</span>
           {[['signes', 'repère des signes (+ / −)'], ['mesure', 'deux repères de mesure']].map(([k, l]) => <button key={k} onClick={() => setAides(a => ({ ...a, [k]: !a[k] }))} aria-pressed={aides[k]} style={stylePetitBouton(aides[k], TEAL)}>{aides[k] ? '☑' : '☐'} {l}</button>)}
-          {aides.mesure && <span style={{ fontSize: 12.5, color: KIT.txt2 }}>Faites glisser les repères 1 et 2 (ou touches ← →).</span>}
+        </div>)}
+      {aidesVisibles && aides.mesure && (
+        <div style={{ marginTop: 8 }}>
+          <Curseur nom="Repère 1" valeur={mes.a} onChange={v => setMes(m => ({ ...m, a: v }))} min={X_MIN} max={X_MAX} pas={0.5} unite="cm" decimales={1} couleur={TEAL}/>
+          <Curseur nom="Repère 2" valeur={mes.b} onChange={v => setMes(m => ({ ...m, b: v }))} min={X_MIN} max={X_MAX} pas={0.5} unite="cm" decimales={1} couleur={TEAL}/>
+          <div style={{ fontSize: 12.5, color: KIT.txt2 }}>Réglez les repères avec les curseurs, ou faites-les glisser sur le schéma. Distance entre les repères : <strong>{cm(Math.abs(mes.b - mes.a))}{NB}cm</strong>.</div>
         </div>)}
     </div>);
   const aEssayer = indicesProfond(
