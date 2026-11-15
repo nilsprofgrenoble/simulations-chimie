@@ -786,6 +786,8 @@ function genPhConcTG() {
   [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
   return { intro: 'pH et concentration en ions oxonium : relation dans les deux sens, effet d’une dilution.', questions: [q1, q2, q3, q4],
     retenir: ['pH = −log([H₃O⁺] / c°) et [H₃O⁺] = c° × 10^(−pH), avec c° = 1 mol/L.', 'Dilution d’un facteur F : pH final = pH initial + log F (facteur 10 : + 1).', 'Autant de décimales pour le pH que de chiffres significatifs pour [H₃O⁺].'] };
+}
+
 // ───────────── Cinétique (TG) : vitesse volumique, temps de demi-réaction, constante d’ordre 1 ─────────────
 function genCinetiqueTG() {
   const c1 = tire([60.0, 50.0, 40.0]), t1 = tire([2, 4, 6]), dt = tire([2, 3, 4, 5]), kk = tire([0.10, 0.15, 0.20]);
