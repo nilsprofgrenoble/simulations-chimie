@@ -55,12 +55,13 @@ export const positionSource = ({ beta, t, x0 = 0, c = 1 }) => x0 + beta * c * t;
 // Rapport f_reçue / f_émise pour un récepteur fixe en (xr, d) (d : distance à la droite de la trajectoire) et une source qui est en xs
 // à l'instant t. Le son reçu à l'instant t a été émis plus tôt (temps de propagation) : on utilise la position et la direction de la source
 // à l'instant d'émission (temps retardé), pas celles de l'instant présent. Unités : longueurs en λ, c = 1.
-export function rapportAuPassage({ beta, xs, xr, d }) {
+export function ecouteAuPassage({ beta, xs, xr, d }) {
   const a = xr - xs, g = 1 - beta * beta;
-  const u = (a * beta + Math.sqrt(a * a * beta * beta + g * (a * a + d * d))) / g;   // durée de propagation (en périodes)
+  const u = (a * beta + Math.sqrt(a * a * beta * beta + g * (a * a + d * d))) / g;   // durée de propagation (en périodes) = distance à l'émission (en λ)
   const dx = a + beta * u;                                                          // xr - position de la source à l'émission
-  return 1 / (1 - beta * dx / u);
+  return { rapport: 1 / (1 - beta * dx / u), distance: u };
 }
+export const rapportAuPassage = args => ecouteAuPassage(args).rapport;
 // Version « position présente » (approximation) : sert seulement à mesurer l'erreur commise quand on néglige le temps de propagation
 export function rapportAuPassagePresent({ beta, xs, xr, d }) { const a = xr - xs; return 1 / (1 - beta * a / Math.sqrt(a * a + d * d)); }
 

@@ -25,7 +25,10 @@ const C = D.C_AIR;
 
 // ---------- fronts d’onde (scène 1) ----------
 const XC = 2.9, DC = 1.2;   // récepteur C : abscisse (en λ depuis le départ) et distance à la trajectoire
-const SC = { W: 600, H: 275, U: 60, X0: 100, Y0: 125, XR: 572, XL: 28 };      // U : pixels par longueur d’onde ; la source part de X0
+const SC = { W: 600, H: 275, U: 60, X0: 100, Y0: 125, XR: 572, XL: 28 };
+// récepteurs (abscisse en λ depuis le départ de la source, distance d à l'axe) : A et B sont SUR l'axe du mouvement, C est au bord
+const REC = { A: { x: (SC.W - 46 - SC.X0) / SC.U, d: 0 }, B: { x: (46 - SC.X0) / SC.U, d: 0 }, C: { x: XC, d: DC } };
+const XFIN = (450 - SC.X0) / SC.U;   // abscisse où l'animation recommence      // U : pixels par longueur d’onde ; la source part de X0
 function FrontsOnde({ beta, anim, relance, annot, posRef, recC }) {
   const ref = useRef(null), t = useRef(0);
   useEffect(() => {
@@ -55,7 +58,7 @@ function FrontsOnde({ beta, anim, relance, annot, posRef, recC }) {
       ctx.fillStyle = '#b45309'; ctx.beginPath(); ctx.arc(xs, Y0, 8, 0, 2 * Math.PI); ctx.fill();
       if (beta > 0) { ctx.strokeStyle = '#b45309'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(xs + 12, Y0 - 16); ctx.lineTo(xs + 12 + 70 * beta, Y0 - 16); ctx.stroke(); ctx.beginPath(); ctx.moveTo(xs + 12 + 70 * beta, Y0 - 22); ctx.lineTo(xs + 22 + 70 * beta, Y0 - 16); ctx.lineTo(xs + 12 + 70 * beta, Y0 - 10); ctx.fillStyle = '#b45309'; ctx.fill(); }
       ctx.fillStyle = '#0f172a'; ctx.font = '700 13px sans-serif'; ctx.textAlign = 'center';
-      for (const [x, txt] of [[SC.W - 46, 'récepteur A'], [46, 'récepteur B']]) { ctx.fillRect(x - 6, Y0 + 100, 12, 12); ctx.fillText(txt, x, Y0 + 128); }
+      for (const [x, txt] of [[SC.W - 46, 'récepteur A'], [46, 'récepteur B']]) { ctx.fillRect(x - 6, Y0 - 6, 12, 12); ctx.fillText(txt, x, Y0 + 26); }
       if (recC) { ctx.fillStyle = '#0f172a'; ctx.fillRect(X0 + XC * U - 6, Y0 + DC * U - 6, 12, 12); ctx.textAlign = 'left'; ctx.font = '700 13px sans-serif'; ctx.fillText('récepteur C', X0 + XC * U + 12, Y0 + DC * U + 5); }
       ctx.textAlign = 'left'; ctx.font = '12px sans-serif'; ctx.fillStyle = '#475569'; ctx.fillText('vue de dessus (schéma : vitesse de l’émetteur exagérée)', 8, 16);
     };
@@ -222,7 +225,6 @@ export function SimulationDoppler({ naviguer }) {
   const ratioEcoute = (pos, bt) => pos === 'A' ? 1 / (1 - bt) : pos === 'B' ? 1 / (1 + bt) : 1;
   const refAudio = useRef({ ratio: 1, beta: 0, pos: 0 });
   const posRef = useRef(0);
-  const ratioC = (bt, xs) => D.rapportAuPassage({ beta: bt, xs, xr: XC, d: DC });   // temps retardé : le son reçu a été émis plus tôt
   const NOTES = [440, 554];
   useEffect(() => {
     if (!ecoute) return undefined;
@@ -234,8 +236,12 @@ export function SimulationDoppler({ naviguer }) {
       let dernier = 0;
       const joue = () => {
         const now = performance.now(); if (now - dernier > 650) { k++; dernier = now; }
-        const r = ecoute === 'C' ? ratioC(refAudio.current.beta, posRef.current) : refAudio.current.ratio;
+        const bt = refAudio.current.beta, xs = posRef.current, rec = REC[ecoute];
+        let r = 1, vol = 1;
+        if (rec) { const e = D.ecouteAuPassage({ beta: bt, xs, xr: rec.x, d: rec.d }); r = e.rapport; vol = Math.min(1, 1.2 / Math.max(e.distance, 0.2)); }   // volume ~ 1 / distance à l'émission
+        const fondu = bt > 0 ? Math.max(0, Math.min(1, xs / 0.5, (XFIN - xs) / 0.5)) : 1;   // son coupé en douceur quand l'animation recommence
         osc.frequency.setTargetAtTime(NOTES[k % 2] * r, ctx.currentTime, 0.02);
+        gain.gain.setTargetAtTime(0.14 * vol * fondu, ctx.currentTime, 0.03);
       };
       joue(); minuterie = setInterval(joue, 40);
     } catch { setEcoute(null); }
@@ -463,7 +469,8 @@ export function SimulationDoppler({ naviguer }) {
       <li><strong>Célérité</strong> : <em>c</em> = 340 m/s dans l’air du laboratoire, <strong>indépendante de la vitesse de l’émetteur</strong> (elle ne dépend que du milieu). La température n’est pas contrôlée : <em>c</em> est connue à ± 3 m/s.</li>
       <li><strong>Mouvement</strong> : rectiligne uniforme, sur la droite qui joint l’émetteur et le récepteur ; récepteur fixe dans le laboratoire. L’effet n’est calculé que dans une seule dimension.</li>
       <li><strong>Formule du décalage</strong> : <em>δf</em> = <em>f</em><sub>e</sub> <em>v</em> / <em>c</em> pour un émetteur mobile, valable si <em>v</em> ≪ <em>c</em> (ici <em>v</em> / <em>c</em> ≤ 5 × 10⁻³). Le spectre est calculé avec la formule <strong>exacte</strong> <em>f</em><sub>r</sub> = <em>f</em><sub>e</sub> <em>c</em> / (<em>c</em> ∓ <em>v</em>) ; l’écart avec la formule approchée est de l’ordre de <em>v</em> / <em>c</em> (moins de 0,5 %). Pour l’écho sur une plaque mobile : <em>δf</em> = 2 <em>f</em><sub>e</sub> <em>v</em> / <em>c</em> (même hypothèse).</li>
-      <li><strong>Son au récepteur C</strong> : la hauteur est calculée avec la position et la direction de la source <strong>au moment de l’émission</strong> (le son met du temps à arriver), pas avec sa position visible à l’écran. Le glissement entendu est donc un peu en retard sur l’image : la note émise est entendue seulement quand la source a déjà dépassé C. Le calcul est la relation exacte pour une source en mouvement rectiligne uniforme et un récepteur fixe, sans vent ni réflexion, avec une célérité constante. Les sons des récepteurs A, B et du véhicule sont des cas particuliers (alignés avec la trajectoire).</li>
+      <li><strong>Son au récepteur C</strong> : la hauteur est calculée avec la position et la direction de la source <strong>au moment de l’émission</strong> (le son met du temps à arriver), pas avec sa position visible à l’écran. Le glissement entendu est donc un peu en retard sur l’image : la note émise est entendue seulement quand la source a déjà dépassé C. Le calcul est la relation exacte pour une source en mouvement rectiligne uniforme et un récepteur fixe, sans vent ni réflexion, avec une célérité constante. Les récepteurs A et B sont sur l’axe du mouvement : leur hauteur est constante (f<sub>e</sub>/(1 − v/c) pour A, f<sub>e</sub>/(1 + v/c) pour B).</li>
+      <li><strong>Volume du son</strong> : il décroît comme 1 / distance entre la source (au moment de l’émission) et le récepteur, avec un plafond près de la source ; dans le véhicule il est constant. Ce n’est pas un effet Doppler mais ce qu’on entend vraiment. On néglige l’absorption, la directivité de la source et le fait que l’amplitude reçue dépend aussi de la vitesse. Le son s’atténue brièvement quand l’animation recommence, pour ne pas entendre un saut de hauteur sans signification physique.</li>
       <li><strong>Scène des fronts d’onde</strong> : schéma qualitatif où la vitesse de l’émetteur est volontairement <strong>exagérée</strong> (jusqu’à 0,6 <em>c</em>) pour que l’effet se voie ; les mesures de la scène 2 utilisent des valeurs réalistes.</li>
       <li><strong>Spectre</strong> : transformée de Fourier d’un enregistrement de durée <em>T</em> ; chaque pic a la forme sinc² et une largeur d’environ 1 / <em>T</em>. On ne tient pas compte du bruit ni de la fenêtre d’enregistrement réelle. Les deux pics (<em>f</em><sub>e</sub> et <em>f</em><sub>r</sub>) sont tracés séparément.</li>
       <li><strong>Incertitudes</strong> (type B, loi rectangulaire, <em>u</em> = demi-étendue / √3, sources indépendantes) : pointé du sommet du pic à ± 0,5 Hz (ou 1 / 4T si c’est plus grand), <em>f</em><sub>e</sub> et <em>f</em><sub>r</sub> lues avec le même instrument donc <em>u</em>(<em>δf</em>) = √2 <em>u</em>(<em>f</em>), et <em>c</em> à ± 3 m/s. L’incertitude sur <em>f</em><sub>e</sub> seule est négligée devant celle de <em>δf</em>.</li>
@@ -497,7 +504,7 @@ export function SimulationDoppler({ naviguer }) {
           {ecoute && <button onClick={() => setEcoute(null)} style={stylePetitBouton(false, '#475569')}>■ Arrêter</button>}
         </div>
         <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>
-          {ecoute === 'C' ? <>Le récepteur C est au bord de la trajectoire. La source arrive vers lui, le dépasse puis s’éloigne : la hauteur des notes <strong>glisse en continu</strong> de {hz(NOTES[0] / (1 - betaEff))} (source qui approche) à {hz(NOTES[0] / (1 + betaEff))} (source qui s’éloigne), pour la note de 440 Hz. L’autre note (554 Hz) varie de la même façon.</> : ecoute ? <>Notes entendues : <strong>{hz(NOTES[0] * ratioEcoute(ecoute, betaEff))}</strong> et <strong>{hz(NOTES[1] * ratioEcoute(ecoute, betaEff))}</strong>{ecoute === 'em' ? ' : celles de la source, jamais décalées pour qui la porte.' : ecoute === 'A' ? ' : plus aiguës que celles émises (440 et 554 Hz) quand la source avance.' : ' : plus graves que celles émises (440 et 554 Hz) quand la source avance.'}</>
+          {ecoute === 'C' ? <>Le récepteur C est au bord de la trajectoire. La source arrive vers lui, le dépasse puis s’éloigne : la hauteur des notes <strong>glisse en continu</strong> de {hz(NOTES[0] / (1 - betaEff))} (source qui approche) à {hz(NOTES[0] / (1 + betaEff))} (source qui s’éloigne), pour la note de 440 Hz. L’autre note (554 Hz) varie de la même façon.</> : ecoute ? <>Notes entendues : <strong>{hz(NOTES[0] * ratioEcoute(ecoute, betaEff))}</strong> et <strong>{hz(NOTES[1] * ratioEcoute(ecoute, betaEff))}</strong>{ecoute === 'em' ? ' : celles de la source, jamais décalées pour qui la porte.' : ecoute === 'A' ? ' : plus aiguës que celles émises (440 et 554 Hz), et de plus en plus fortes quand la source approche.' : ' : plus graves que celles émises (440 et 554 Hz), et de moins en moins fortes quand la source s’éloigne.'}</>
             : <>Choisissez où vous vous placez, puis changez la vitesse de la source pendant que vous écoutez. Notes émises : 440 et 554 Hz. Le son joue tant que vous ne l’arrêtez pas.</>}
         </div>
       </div>}
