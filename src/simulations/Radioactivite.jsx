@@ -148,10 +148,11 @@ export function SimulationRadioactivite() {
   const dernier = ti.graines[ti.graines.length - 1];
   const nS = dernier ? dernier.n : ti.nSc, gS = dernier ? dernier.g : 1, thS = enGuide ? M.TH_DEFAUT : ti.th;
   const inst = useMemo(() => (nS === 100 ? M.instantsDeces(100, thS, gS) : null), [nS, thS, gS]);
-  const { graines, tn: tnS } = ti;
+  const { graines } = ti;
+  const tnEff = enExplore ? thS : ti.tn, tnS = enExplore && !dernier ? 0 : tnEff;     // exploration : toujours une demi-vie ; 0 tant qu'aucun essai
   const restS = useMemo(() => (nS === 100 ? M.restantsA(inst, tnS) : M.restantsApres(nS, thS, tnS, gS)), [nS, inst, thS, tnS, gS]);
   const essais = useMemo(() => graines.map(e => ({ ...e, k: compte(e.n, e.g, thS, e.t) })), [graines, thS]);
-  const nouvelEssai = (n = ti.nSc) => setT({ graines: [...ti.graines.slice(-5), { g: nouvelleGraine(), n, t: ti.tn }] });
+  const nouvelEssai = (n = ti.nSc) => setT({ graines: [...ti.graines.slice(-5), { g: nouvelleGraine(), n, t: tnEff }] });
 
   const bloqueRepetes = ti.graines.length >= 3 ? null : 'Cliquez d’abord sur « Nouvel essai » pour avoir au moins trois résultats dans le tableau.';
   const bloqueGrands = ti.graines.some(e => e.n > 100) ? null : 'Choisissez 10 000 noyaux, puis cliquez sur « Nouvel essai » pour obtenir un résultat.';
@@ -369,11 +370,17 @@ export function SimulationRadioactivite() {
   const montrerEssais = (enGuide && deja('repetes')) || enExplore;
   const montrerChoixN = (enGuide && deja('grands')) || enExplore;
   const sceneOuverte = ti.scene === undefined ? !(enGuide && deja('equation')) : ti.scene;
-  const tableEssais = montrerEssais && essais.length > 0 && (
+  const memes = essais.filter(e => e.n === nS), pcts = memes.map(e => 100 * e.k / e.n);
+  const synthese = enExplore && memes.length > 0 && (
+    <div role="status" style={{ marginTop: 10, fontSize: 14, color: KIT.txt, lineHeight: 1.55, background: '#f1f5f9', borderRadius: 8, padding: '8px 10px' }}>
+      <strong>{fmtMilliers(restS)} noyaux restants sur {fmtMilliers(nS)}</strong> ({pctTxt(restS, nS)}). La loi prévoit la moitié : 50{NB}%.
+      {memes.length > 1 && <> Sur les {memes.length} essais avec {fmtMilliers(nS)} noyaux, le résultat varie de <strong>{nbf(Math.min(...pcts), nS >= 10000 ? 2 : 0)}{NB}%</strong> à <strong>{nbf(Math.max(...pcts), nS >= 10000 ? 2 : 0)}{NB}%</strong>.</>}
+    </div>);
+  const tableEssais = enGuide && montrerEssais && essais.length > 0 && (
     <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse', marginTop: 8 }}>
-      <thead><tr style={{ textAlign: 'left', color: KIT.txt2 }}><th style={{ padding: '2px 4px' }}>Essai</th><th style={{ padding: '2px 4px' }}>Noyaux</th><th style={{ padding: '2px 4px' }}>Durée</th><th style={{ padding: '2px 4px' }}>Restants</th>{(enGuide ? deja('grands') : true) && <th style={{ padding: '2px 4px' }}>Pourcentage</th>}</tr></thead>
+      <thead><tr style={{ textAlign: 'left', color: KIT.txt2 }}><th style={{ padding: '2px 4px' }}>Essai</th><th style={{ padding: '2px 4px' }}>Noyaux</th><th style={{ padding: '2px 4px' }}>Restants</th>{(enGuide ? deja('grands') : true) && <th style={{ padding: '2px 4px' }}>Pourcentage</th>}</tr></thead>
       <tbody>{essais.map((e, i) => (
-        <tr key={e.g} style={{ borderTop: `1px dashed ${KIT.bord}` }}><td style={{ padding: '2px 4px' }}>{i + 1}</td><td style={{ padding: '2px 4px' }}>{fmtMilliers(e.n)}</td><td style={{ padding: '2px 4px' }}>{nbf(e.t, 0)}{NB}j</td>
+        <tr key={e.g} style={{ borderTop: `1px dashed ${KIT.bord}` }}><td style={{ padding: '2px 4px' }}>{i + 1}</td><td style={{ padding: '2px 4px' }}>{fmtMilliers(e.n)}</td>
           <td style={{ padding: '2px 4px', fontFamily: 'monospace', fontWeight: 700 }}>{fmtMilliers(e.k)}</td>{(enGuide ? deja('grands') : true) && <td style={{ padding: '2px 4px', fontFamily: 'monospace' }}>{pctTxt(e.k, e.n)}</td>}</tr>))}</tbody>
     </table>);
   const controlesScene = (
@@ -382,17 +389,18 @@ export function SimulationRadioactivite() {
       {((enGuide && deja('repetes')) || enExplore) && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
         <button onClick={() => nouvelEssai()} style={styleBouton(true, '#b45309')}><Pic n="refresh"/>Nouvel essai</button>
         {montrerChoixN && <span role="group" aria-label="Nombre de noyaux" style={{ display: 'inline-flex', gap: 6, flexWrap: 'wrap' }}>
-          {[100, 10000, 1000000].map(n => <button key={n} onClick={() => setT({ nSc: n, graines: [...ti.graines.slice(-5), { g: nouvelleGraine(), n, t: ti.tn }] })} aria-pressed={ti.nSc === n} style={stylePetitBouton(ti.nSc === n, '#475569')}>{fmtMilliers(n)}{NB}noyaux</button>)}</span>}
+          {[100, 10000, 1000000].map(n => <button key={n} onClick={() => setT({ nSc: n, graines: [...ti.graines.slice(-5), { g: nouvelleGraine(), n, t: tnEff }] })} aria-pressed={ti.nSc === n} style={stylePetitBouton(ti.nSc === n, '#475569')}>{fmtMilliers(n)}{NB}noyaux</button>)}</span>}
       </div>}
-      {enExplore && <div style={{ marginTop: 8 }}><Curseur nom="Temps écoulé" valeur={ti.tn} onChange={v => setT({ tn: Math.round(v) })} min={0} max={40} pas={1} unite="j" decimales={0} couleur="#b45309"/></div>}
     </div>);
   const sceneBox = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      <Section titre={`Un petit échantillon : ${fmtMilliers(nS)} noyaux d’iode 131`} ouvert={sceneOuverte} onBascule={() => setT({ scene: !sceneOuverte })}>
+      <Section titre={enExplore ? 'Le hasard et la loi : que reste-t-il après une demi-vie ?' : `Un petit échantillon : ${fmtMilliers(nS)} noyaux d’iode 131`} ouvert={sceneOuverte} onBascule={() => setT({ scene: !sceneOuverte })}>
+        {enExplore && <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 6, lineHeight: 1.5 }}>Choisissez un nombre de noyaux puis cliquez sur « Nouvel essai » : on laisse passer <strong>une demi-vie ({nbf(thS, 1)}{NB}jours)</strong> et on compte les noyaux restants. Chaque essai donne un résultat un peu différent, d’autant moins que les noyaux sont nombreux.</div>}
         <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6, lineHeight: 1.5 }}>{nS === 100 ? 'Rond gris : noyau intact ; rond orange barré : noyau désintégré.' : 'Chaque essai tire au hasard le sort des noyaux ; la barre montre la proportion de noyaux intacts.'} Demi-vie : {nbf(thS, 1)}{NB}jours.</div>
-        <Noyaux n={nS} restants={restS} inst={inst} tn={ti.tn}/>
+        <Noyaux n={nS} restants={restS} inst={inst} tn={tnS}/>
         {controlesScene}
         {tableEssais}
+        {synthese}
       </Section>
     </div>);
 
@@ -429,7 +437,7 @@ export function SimulationRadioactivite() {
   const mesures = (
     <div style={{ ...styleBoite, ...cadre('mesures') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
-      {(!dd) && ctx === 'ech' && ((enGuide && deja('essai') && ti.graines.length > 0) || (enExplore && ti.graines.length > 0)) && <LigneMesure nom={`Noyaux restants (essai de ${fmtMilliers(nS)})`} valeur={`${fmtMilliers(restS)} sur ${fmtMilliers(nS)}`} couleur="#475569"/>}
+      {(!dd) && ctx === 'ech' && (enGuide && deja('essai') && ti.graines.length > 0) && <LigneMesure nom={`Noyaux restants (essai de ${fmtMilliers(nS)})`} valeur={`${fmtMilliers(restS)} sur ${fmtMilliers(nS)}`} couleur="#475569"/>}
       {montrerCourbe && <LigneMesure nom={ctx === 'dat' ? 'Temps écoulé' : 'Temps t'} valeur={`${ctx === 'dat' ? fmtMilliers(tc) : nbf(tc, 1)}${NB}${ctx === 'dat' ? 'ans' : 'j'}`}/>}
       {montrerCourbe && !(dd && dd.type === 'th') && ctx === 'ech' && !(enGuide && idE === 'nrest') && <LigneMesure nom="Noyaux restants N" valeur={`${nbf(Nlu / 1e6, 1)}${NB}millions`} couleur="#b45309"/>}
       {montrerCourbe && !(dd && dd.type === 'th') && !(enGuide && idE === 'nrest') && <LigneMesure nom={ctx === 'dat' ? 'Carbone 14 restant' : 'Fraction N / N₀'} valeur={`${nbf(100 * fracLu, ctx === 'dat' ? 1 : 1)}${NB}%`}/>}
@@ -452,7 +460,7 @@ export function SimulationRadioactivite() {
       {ti.ctx === 'ech' ? <>
         <div role="group" aria-label="Demi-vie" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8 }}>
           <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Demi-vie</span>
-          {M.TH_OPTIONS.map(v => <button key={v} onClick={() => setT({ th: v, t: Math.min(ti.t, 5 * v), tn: Math.min(ti.tn, 40) })} aria-pressed={ti.th === v} style={stylePetitBouton(ti.th === v, '#475569')}>{v},0 j{v === 8 ? ' (iode 131)' : ''}</button>)}
+          {M.TH_OPTIONS.map(v => <button key={v} onClick={() => setT({ th: v, t: Math.min(ti.t, 5 * v), graines: [] })} aria-pressed={ti.th === v} style={stylePetitBouton(ti.th === v, '#475569')}>{v},0 j{v === 8 ? ' (iode 131)' : ''}</button>)}
         </div>
         <div role="group" aria-label="Nombre de noyaux au départ" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
           <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Noyaux au départ</span>
@@ -466,7 +474,7 @@ export function SimulationRadioactivite() {
       <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
         <li>Doublez le nombre de noyaux au départ, sans changer la demi-vie. Que deviennent l’activité initiale A₀ et la demi-vie ?</li>
         <li>Passez la demi-vie de 8 à 2 jours : comment varient λ, la pente de la courbe et l’activité initiale pour le même nombre de noyaux ?</li>
-        <li>Dans « Un petit échantillon », comparez 100, 10 000 et 1 000 000 noyaux : après une demi-vie, quel nombre de noyaux restants peut-on prévoir pour chacun, et avec quelle dispersion ?</li>
+        <li>Dans « Le hasard et la loi », faites plusieurs essais avec 100, 10 000 puis 1 000 000 noyaux : le résultat est-il toujours le même ? Autour de quelle valeur varie-t-il ?</li>
         <li>Affichez des mesures d’activité et comparez Δt = 1 s et Δt = 60 s : à partir de quel instant les points s’écartent-ils le plus de la courbe ? Pourquoi ?</li>
         <li>Datation : à quelle fraction de carbone 14 correspond un âge de 10 000 ans ? Vérifiez avec la formule.</li>
       </ul>
@@ -501,7 +509,7 @@ export function SimulationRadioactivite() {
         {enGuide ? <div className="ra-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="ra-carte">{panneauHypo}</div> : null}
         <div className="ra-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'th' ? suiviT : suiviA}/></div>}
-          {!dd && ctx === 'ech' && <div className="ra-in" style={{ marginBottom: 12 }}>{sceneBox}</div>}
+          {!dd && !enExplore && ctx === 'ech' && <div className="ra-in" style={{ marginBottom: 12 }}>{sceneBox}</div>}
           <div className="ra-l2">
             {graphique && <div className="ra-in">{graphique}</div>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -511,6 +519,7 @@ export function SimulationRadioactivite() {
           </div>
         </div>
       </div>
+      {enExplore && ctx === 'ech' && <div style={{ marginBottom: 12 }}>{sceneBox}</div>}
       {enExplore && <div className="ra-l2">{aEssayer}{retenirExplore}</div>}
       {!enDefi && (!enGuide || deja('bravo')) && <div className="ra-l2">{panneauHypo}</div>}
     </div>
