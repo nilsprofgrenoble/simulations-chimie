@@ -38,6 +38,7 @@ export const CHAPITRES = [
 
   { id: 'tg-ph', niveau: 'TG', label: '💧 Constitution et transformations de la matière : pH et concentration en ions oxonium', sims: [121], domaines: ['pH et concentration en ions oxonium'] },
   { id: 'tg-titrage', niveau: 'TG', label: '🧪 Constitution et transformations de la matière : titrage pH-métrique', sims: [119], domaines: ['Titrage pH-métrique'] },
+  { id: 'tg-cinetique', niveau: 'TG', label: '⏱️ Constitution et transformations de la matière : cinétique, vitesse volumique et loi d’ordre 1', sims: [122], domaines: ['Cinétique : vitesse volumique et ordre 1'] },
   { id: 'tg-ondes', niveau: 'TG', label: '🌊 Ondes et signaux : effet Doppler', sims: [116], domaines: ['Ondes'] },
   { id: 'tstl-signaux', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '📡 Transmission de signaux numériques', sims: [8, 15, 33], domaines: ['Transmission de signaux numériques'] },
   { id: 'tstl-fluides', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '💧 Transport des fluides', sims: [26, 27, 28, 17], domaines: ['Transport des fluides'] },

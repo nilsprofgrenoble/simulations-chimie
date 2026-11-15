@@ -116,6 +116,57 @@ export const ENONCES = [
         manque: null, solution: { txt: 'f_e = c / λ puis v = c × δf / f_e', val: c * dfAff * 1e6 / fe, u: 'm/s' } };
     },
   },
+  // ───────────────────────────── Cinétique (TG) : vitesse volumique et loi d’ordre 1
+  {
+    id: 'cinv-vitesse', domaine: 'Cinétique : vitesse volumique et ordre 1', titre: 'Vitesse volumique à partir d’un tableau de mesures', noms: ['Disparition d’un réactif', 'Apparition d’un produit'],
+    gen: () => { const c1 = tire([0.080, 0.100, 0.120, 0.150]), t1 = tire([2, 4, 5]), dt = tire([3, 4, 5, 6]), kk = tire([0.05, 0.08, 0.10]);
+      const c2 = Number((c1 * Math.exp(-kk * dt)).toFixed(3)); return { c1, c2, t1, t2: t1 + dt, V: tire([100, 250, 500]), T: tire([25, 30, 35]) }; },
+    build: (p, q) => {
+      const tokens = {
+        t1: tok(`${p.t1},0 min`, 'Premier instant de mesure', p.t1, 'min'), t2: tok(`${p.t2},0 min`, 'Second instant de mesure', p.t2, 'min'),
+        V: tok(`${p.V} mL`, 'Volume du mélange réactionnel', p.V, 'mL'), T: tok(`${p.T} °C`, 'Température du bain thermostaté', p.T, '°C'),
+      };
+      const debut = ['Une transformation totale est suivie dans un bain thermostaté à ', T('T'), ' ; le mélange réactionnel a un volume de ', T('V'), '. '];
+      const raisons = { V: 'Le volume n’intervient pas : la vitesse volumique se calcule avec des concentrations (déjà ramenées au litre).', T: 'La température est constante : elle ne sert pas à calculer la vitesse volumique entre deux instants.' };
+      if (q === 0) {
+        tokens.c1 = tok(`${nb(p.c1, 3)} mol/L`, 'Concentration du réactif au premier instant', p.c1, 'mol·L⁻¹');
+        tokens.c2 = tok(`${nb(p.c2, 3)} mol/L`, 'Concentration du réactif au second instant', p.c2, 'mol·L⁻¹');
+        return { tokens, derivees: ['Δc = c₂ − c₁', 'Δt = t₂ − t₁'], texte: [...debut, 'La concentration du réactif vaut ', T('c1'), ' à l’instant ', T('t1'), ' et ', T('c2'), ' à l’instant ', T('t2'), '. Quelle est la vitesse volumique moyenne de disparition du réactif entre ces deux instants ?'],
+          utiles: ['c1', 'c2', 't1', 't2'], raisons,
+          cherche: { bonne: 'La vitesse volumique moyenne de disparition v (en mol·L⁻¹·min⁻¹)', faux: ['La constante de vitesse k (en min⁻¹)', 'Le temps de demi-réaction (en min)', 'La quantité de réactif consommée (en mol)'] },
+          manque: null, solution: { txt: 'v = −Δc / Δt = (c₁ − c₂) / (t₂ − t₁)', val: (p.c1 - p.c2) / (p.t2 - p.t1), u: 'mol·L⁻¹·min⁻¹' } };
+      }
+      tokens.p1 = tok(`${nb(p.c1, 3)} mol/L`, 'Concentration du produit au premier instant', p.c1, 'mol·L⁻¹');
+      tokens.p2 = tok(`${nb(p.c1 + p.c1 - p.c2, 3)} mol/L`, 'Concentration du produit au second instant', p.c1 + p.c1 - p.c2, 'mol·L⁻¹');
+      return { tokens, derivees: ['Δc = c₂ − c₁', 'Δt = t₂ − t₁'], texte: [...debut, 'La concentration d’un produit vaut ', T('p1'), ' à l’instant ', T('t1'), ' et ', T('p2'), ' à l’instant ', T('t2'), '. Quelle est la vitesse volumique moyenne d’apparition de ce produit entre ces deux instants ?'],
+        utiles: ['p1', 'p2', 't1', 't2'], raisons,
+        cherche: { bonne: 'La vitesse volumique moyenne d’apparition v (en mol·L⁻¹·min⁻¹)', faux: ['La constante de vitesse k (en min⁻¹)', 'Le temps de demi-réaction (en min)', 'La quantité de produit formée (en mol)'] },
+        manque: null, solution: { txt: 'v = Δc / Δt = (c₂ − c₁) / (t₂ − t₁)', val: (p.c1 - p.c2) / (p.t2 - p.t1), u: 'mol·L⁻¹·min⁻¹' } };
+    },
+  },
+  {
+    id: 'cinv-k', domaine: 'Cinétique : vitesse volumique et ordre 1', titre: 'Constante k d’une loi d’ordre 1', noms: ['Avec le graphique de ln c', 'Avec v et c à un instant'],
+    gen: () => ({ l1: tire([-3.22, -3.00, -2.53]), k: tire([0.05, 0.08, 0.10, 0.15]), t2: tire([6, 8, 10]), c: tire([20, 30, 40, 50]), kv: tire([0.08, 0.12, 0.15, 0.20]), V: tire([100, 250, 500]), T: tire([25, 30, 35]) }),
+    build: (p, q) => {
+      const debut = ['La disparition d’un réactif suit une loi de vitesse d’ordre 1 (v = k × c) dans un bain thermostaté à ', T('T'), ', le volume du mélange étant de ', T('V'), '. '];
+      const tokens = { T: tok(`${p.T} °C`, 'Température du bain', p.T, '°C'), V: tok(`${p.V} mL`, 'Volume du mélange', p.V, 'mL') };
+      const raisons = { T: 'La température est constante pendant le suivi : elle fixe la valeur de k mais ne sert pas à la calculer ici.', V: 'Le volume du mélange n’intervient pas dans le calcul de k.' };
+      if (q === 0) {
+        const l2 = Number((p.l1 - p.k * p.t2).toFixed(2));
+        tokens.l1 = tok(`${nb(p.l1, 2)}`, 'ln(c / c°) à t = 0', p.l1, ''); tokens.l2 = tok(`${nb(l2, 2)}`, 'ln(c / c°) au second instant', l2, ''); tokens.t2 = tok(`${p.t2},0 min`, 'Second instant', p.t2, 'min');
+        return { tokens, derivees: ['pente = Δ ln(c / c°) / Δt'], texte: [...debut, 'Sur le graphique de ln(c / c°) en fonction du temps, la droite passe par le point (0 ; ', T('l1'), ') et par le point (', T('t2'), ' ; ', T('l2'), '). Quelle est la constante de vitesse k ?'],
+          utiles: ['l1', 'l2', 't2'], raisons,
+          cherche: { bonne: 'La constante de vitesse k (en min⁻¹), opposée de la pente de la droite', faux: ['La vitesse volumique v (en mol·L⁻¹·min⁻¹)', 'La concentration initiale c₀ (en mol/L)', 'Le temps de demi-réaction (en min)'] },
+          manque: null, solution: { txt: 'k = −pente = −(l₂ − l₁) / t₂', val: (p.l1 - l2) / p.t2, u: 'min⁻¹' } };
+      }
+      const v = Number((p.kv * p.c).toFixed(2));
+      tokens.c = tok(`${p.c},0 mmol/L`, 'Concentration à un instant', p.c, 'mmol·L⁻¹'); tokens.v = tok(`${nb(v, 2)} mmol·L⁻¹·min⁻¹`, 'Vitesse volumique de disparition au même instant', v, 'mmol·L⁻¹·min⁻¹');
+      return { tokens, derivees: [], texte: [...debut, 'À un instant donné, la concentration du réactif est ', T('c'), ' et la vitesse volumique de disparition vaut ', T('v'), '. Quelle est la constante de vitesse k ?'],
+        utiles: ['c', 'v'], raisons,
+        cherche: { bonne: 'La constante de vitesse k (en min⁻¹)', faux: ['Le temps de demi-réaction (en min)', 'La concentration initiale c₀ (en mol/L)', 'La pente de la tangente à la courbe c(t)'] },
+        manque: null, solution: { txt: 'k = v / c', val: v / p.c, u: 'min⁻¹' } };
+    },
+  },
   // ───────────────────────────── Titrage pH-métrique (TG) : concentration et composition
   {
     id: 'titph-ca', domaine: 'Titrage pH-métrique', titre: 'Contrôle d’une solution d’acide', noms: ['Concentration de l’acide', 'Volume équivalent attendu'],
