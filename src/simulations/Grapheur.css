@@ -1,10 +1,8 @@
 /* Grapheur (page 124) : mise en page sobre, lisible sur téléphone (390 px), sans dépendance externe */
 .gr-haut { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
-.gr-l1 { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
 .gr-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); }
 .gr-col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.gr-carte { align-self: stretch; min-width: 0; }
-@media (max-width: 900px) { .gr-l1, .gr-l2 { grid-template-columns: minmax(0, 1fr); } .gr-carte { order: -1; } }
+@media (max-width: 900px) { .gr-l2 { grid-template-columns: minmax(0, 1fr); } }
 .gr-details-tab > summary { cursor: pointer; margin-bottom: 0; }
 .gr-details-tab[open] > summary { margin-bottom: 8px; }
 
@@ -63,19 +61,39 @@
 
 @media (max-width: 600px) {
   .gr-racine { padding: 10px 6px !important; }
-  .gr-l1 .gr-col > div, .gr-l2 .gr-col > div { padding: 10px 8px !important; border-radius: 14px !important; }
+  .gr-l2 .gr-col > div { padding: 10px 8px !important; border-radius: 14px !important; }
 }
 @media (max-width: 480px) {
-  .gr-in-cel { max-width: 96px; }
+  .gr-in-cel { max-width: 74px; padding: 5px 4px; }
+  .gr-in-nom { width: 50px; } .gr-in-unite { width: 62px; } .gr-in-formule { width: 86px; }
+  .gr-tableau th, .gr-tableau td { padding: 3px 2px; }
+  .gr-err-formule { max-width: 90px; }
   .gr-tableau { font-size: 13.5px; }
 }
 
 /* Impression : seuls les résultats sont imprimés */
 @media print {
-  .gr-haut button, .gr-bascule, .gr-export, .gr-import, .gr-sup, .gr-modeles, .gr-choix-axes, [data-carte-parcours] { display: none !important; }
-  .gr-l1, .gr-l2 { grid-template-columns: 1fr !important; }
+  .gr-haut button, .gr-bascule, .gr-export, .gr-import, .gr-sup, .gr-modeles, .gr-choix-axes , .gr-barre-outils, .gr-aide, .gr-select { display: none !important; }
+  .gr-l2 { grid-template-columns: 1fr !important; }
   .gr-hyp-liste details { break-inside: avoid; }
   .gr-hyp-liste details > p { display: block !important; }
 }
 
 @media (prefers-reduced-motion: reduce) { .gr-svg, .gr-hyp-liste details { transition: none; } }
+
+/* Outil : en-tête, aide, barre d'outils du graphique, colonnes calculées */
+.gr-select { font: inherit; font-size: 14px; padding: 6px 8px; border: 1.5px solid #cbd5e1; border-radius: 10px; background: white; color: #0f172a; max-width: 100%; }
+.gr-aide-btn { width: auto; padding: 6px 12px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 14px; }
+.gr-aide { background: #f8fafc; border: 1px solid #d5dfeb; border-radius: 12px; padding: 4px 12px; margin-bottom: 12px; font-size: 14px; line-height: 1.55; color: #334155; }
+.gr-aide code { background: #e2e8f0; border-radius: 4px; padding: 0 4px; font-size: 13.5px; }
+.gr-barre-outils { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; }
+.gr-case { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; color: #334155; min-height: 32px; }
+.gr-case input { width: 18px; height: 18px; }
+.gr-lecture-outil { margin-top: 8px; font-size: 14.5px; font-weight: 600; color: #0f172a; background: #f1f5f9; border-radius: 10px; padding: 6px 10px; line-height: 1.5; }
+.gr-svg-actif { cursor: crosshair; }
+.gr-entete-l { display: flex; align-items: center; gap: 2px; }
+.gr-in-formule { width: 120px; font-family: monospace; font-size: 13px; border-color: #7c3aed; text-align: left; }
+.gr-err-formule { font-size: 12px; font-weight: 400; color: #b91c1c; max-width: 150px; line-height: 1.3; }
+.gr-calcule { display: block; text-align: right; padding: 5px 6px; color: #5b21b6; font-variant-numeric: tabular-nums; background: #f5f3ff; border-radius: 8px; }
+.gr-ligne-courante td { background: #fff7ed; font-weight: 700; }
+.gr-ligne-btn { display: flex; flex-wrap: wrap; gap: 6px; }
