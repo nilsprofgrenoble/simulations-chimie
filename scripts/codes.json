@@ -865,5 +865,18 @@
  "77:plausible:rad-val-lambda": "VAL214",
  "77:plausible:rad-val-age": "VAL215",
  "77:plausible:rad-val-activite-24j": "VAL216",
- "36:rad-calcul": "REA30"
+ "36:rad-calcul": "REA30",
+ "34:equ-sapp-qr.0": "SAPP215",
+ "34:equ-sapp-qr.1": "SAPP216",
+ "34:equ-sapp-etat.0": "SAPP217",
+ "34:equ-sapp-etat.1": "SAPP218",
+ "37:prevoir:equ-ana-non-totale": "ANA408",
+ "37:prevoir:equ-ana-sens": "ANA409",
+ "37:prevoir:equ-ana-ajout": "ANA410",
+ "37:prevoir:equ-ana-qr-final": "ANA411",
+ "37:prevoir:equ-ana-tau": "ANA412",
+ "77:plausible:equ-val-qr": "VAL217",
+ "77:plausible:equ-val-tau": "VAL218",
+ "77:plausible:equ-val-sens": "VAL219",
+ "36:equ-calcul": "REA31"
 }

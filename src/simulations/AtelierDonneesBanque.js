@@ -219,6 +219,57 @@ export const ENONCES = [
         manque: null, solution: { txt: 't = (t½ / ln 2) × ln(N₀ / N)', val: (5730 / Math.LN2) * Math.log(100 / p.f), u: 'ans' } };
     },
   },
+  // ───────────────────────────── Équilibre chimique (TG) : Qr, K, taux d'avancement final
+  {
+    id: 'equ-sapp-qr', domaine: 'Équilibre chimique : Qr, K et taux d’avancement', titre: 'Quotient de réaction et taux d’avancement d’un mélange acide-base', noms: ['Quotient de réaction du mélange', 'Taux d’avancement final'],
+    gen: () => { const v = [0.050, 0.10, 0.20, 0.40], c0 = tire([0.10, 0.20, 0.40]); return { a: tire(v), b: tire(v), c: tire(v), d: tire(v), K: tire([0.10, 5.0, 25]), V: tire([100, 250, 500]), c0, cf: c0 * tire([0.25, 0.5, 0.75]) }; },
+    build: (p, q) => {
+      const tokens = {
+        K: tok(`${nb(p.K)}`, 'Constante d’équilibre de la réaction à la température de l’expérience', p.K, ''),
+        V: tok(`${p.V} mL`, 'Volume de la solution', p.V, 'mL'),
+      };
+      const rK = 'K sert à comparer Qr au système (sens d’évolution) ; elle n’intervient pas dans le calcul de Qr ni dans celui de τ.';
+      const rV = 'Les concentrations sont déjà données : le volume de la solution n’intervient ni dans Qr ni dans τ.';
+      const debut = ['On étudie la réaction CH₃COOH + HCOO⁻ ⇌ CH₃COO⁻ + HCOOH dans ', T('V'), ' d’eau, de constante d’équilibre ', T('K'), '. '];
+      if (q === 0) {
+        tokens.a = tok(`${nb(p.a, 3)} mol/L`, 'Concentration de CH₃COOH', p.a, 'mol/L'); tokens.b = tok(`${nb(p.b, 3)} mol/L`, 'Concentration de HCOO⁻', p.b, 'mol/L');
+        tokens.c = tok(`${nb(p.c, 3)} mol/L`, 'Concentration de CH₃COO⁻', p.c, 'mol/L'); tokens.d = tok(`${nb(p.d, 3)} mol/L`, 'Concentration de HCOOH', p.d, 'mol/L');
+        return { tokens, derivees: [], texte: [...debut, 'Dans un mélange, [CH₃COOH] = ', T('a'), ', [HCOO⁻] = ', T('b'), ', [CH₃COO⁻] = ', T('c'), ' et [HCOOH] = ', T('d'), '. Quel est le quotient de réaction du mélange ?'],
+          utiles: ['a', 'b', 'c', 'd'], raisons: { K: rK, V: rV },
+          cherche: { bonne: 'Le quotient de réaction Qr (sans unité)', faux: ['La constante d’équilibre K', 'Le taux d’avancement final τ', 'L’avancement maximal (en mol)'] },
+          manque: null, solution: { txt: 'Qr = ([CH₃COO⁻] × [HCOOH]) / ([CH₃COOH] × [HCOO⁻])', val: p.c * p.d / (p.a * p.b), u: '' } };
+      }
+      tokens.c0 = tok(`${nb(p.c0, 3)} mol/L`, 'Concentration initiale de CH₃COOH et de HCOO⁻ (identiques, sans produit au départ)', p.c0, 'mol/L');
+      tokens.cf = tok(`${nb(p.cf, 3)} mol/L`, 'Concentration de CH₃COO⁻ à l’état final', p.cf, 'mol/L');
+      return { tokens, derivees: ['avancement maximal : x_max = c₀ × V (réactif limitant), avancement final : x_f = [CH₃COO⁻] × V'], texte: [...debut, 'On part de ', T('c0'), ' de CH₃COOH et de HCOO⁻, sans produit. À l’état final, [CH₃COO⁻] = ', T('cf'), '. Quel est le taux d’avancement final ?'],
+        utiles: ['c0', 'cf'], raisons: { K: rK, V: 'Le volume se simplifie : τ = x_f / x_max = ([CH₃COO⁻] × V) / (c₀ × V).' },
+        cherche: { bonne: 'Le taux d’avancement final τ (sans unité)', faux: ['Le quotient de réaction à l’état final', 'La concentration finale en CH₃COOH (en mol/L)', 'L’avancement final x_f (en mol)'] },
+        manque: null, solution: { txt: 'τ = x_f / x_max = [CH₃COO⁻]_f / c₀', val: p.cf / p.c0, u: '' } };
+    },
+  },
+  {
+    id: 'equ-sapp-etat', domaine: 'Équilibre chimique : Qr, K et taux d’avancement', titre: 'État initial ou état final : quelles données pour K et pour le sens ?', noms: ['Constante d’équilibre K', 'Quotient de réaction au départ'],
+    gen: () => { const mel = tire([[0.20, 0.10, 0.10, 0.050], [0.10, 0.10, 0.20, 0.20], [0.40, 0.20, 0.050, 0.050], [0.40, 0.10, 0.10, 0.20]]), T25 = tire([20, 25, 30]); return { mel, T25 }; },
+    build: (p, q) => {
+      const [a0, b0, c0, d0] = p.mel;
+      // état final de la réaction CH₃COOH + HCOO⁻ ⇌ CH₃COO⁻ + HCOOH (K = 0,10) : (c0 + x)(d0 + x) = K (a0 − x)(b0 − x), soit (1 − K) x² + (c0 + d0 + K (a0 + b0)) x + c0 d0 − K a0 b0 = 0
+      const K = 0.10, A2 = 1 - K, B2 = c0 + d0 + K * (a0 + b0), C2 = c0 * d0 - K * a0 * b0, x = (-B2 + Math.sqrt(B2 * B2 - 4 * A2 * C2)) / (2 * A2);
+      const r3 = v => Math.round(v * 1000) / 1000, fin = [a0 - x, b0 - x, c0 + x, d0 + x].map(r3);
+      const noms = ['CH₃COOH', 'HCOO⁻', 'CH₃COO⁻', 'HCOOH'], ini = [a0, b0, c0, d0];
+      const tokens = { T: tok(`${p.T25} °C`, 'Température du mélange (constante)', p.T25, '°C') };
+      ['a', 'b', 'c', 'd'].forEach((k, i) => { tokens[k + 'i'] = tok(`${nb(ini[i], 3)} mol/L`, `Concentration initiale de ${noms[i]}`, ini[i], 'mol/L'); tokens[k + 'f'] = tok(`${nb(fin[i], 3)} mol/L`, `Concentration de ${noms[i]} à l’état final`, fin[i], 'mol/L'); });
+      const debut = ['On étudie CH₃COOH + HCOO⁻ ⇌ CH₃COO⁻ + HCOOH à la température constante de ', T('T'), '. Concentrations initiales : [CH₃COOH] = ', T('ai'), ', [HCOO⁻] = ', T('bi'), ', [CH₃COO⁻] = ', T('ci'), ', [HCOOH] = ', T('di'),
+        '. Concentrations à l’état final : [CH₃COOH] = ', T('af'), ', [HCOO⁻] = ', T('bf'), ', [CH₃COO⁻] = ', T('cf'), ', [HCOOH] = ', T('df'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la constante d’équilibre K de cette réaction ?'],
+        utiles: ['af', 'bf', 'cf', 'df'], raisons: { T: 'La température est constante : elle n’intervient pas dans le calcul, elle indique seulement que K ne change pas.', ai: 'À l’état final, K = Qr : seules les concentrations finales servent ; les concentrations initiales donnent un Qr de départ, qui n’est pas K.', bi: 'Les concentrations initiales ne donnent pas K : à l’état final, K = Qr calculé avec la composition finale.', ci: 'Les concentrations initiales ne donnent pas K : à l’état final, K = Qr calculé avec la composition finale.', di: 'Les concentrations initiales ne donnent pas K : à l’état final, K = Qr calculé avec la composition finale.' },
+        cherche: { bonne: 'La constante d’équilibre K (sans unité)', faux: ['Le quotient de réaction au départ', 'Le taux d’avancement final', 'La température d’équilibre'] },
+        manque: null, solution: { txt: 'K = Qr à l’état final = ([CH₃COO⁻] × [HCOOH]) / ([CH₃COOH] × [HCOO⁻]), concentrations finales', val: (fin[2] * fin[3]) / (fin[0] * fin[1]), u: '' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quel est le quotient de réaction du mélange au départ (pour prévoir son sens d’évolution) ?'],
+        utiles: ['ai', 'bi', 'ci', 'di'], raisons: { T: 'La température est constante : elle n’intervient pas dans le calcul de Qr.', af: 'L’état final est celui où Qr = K : il ne sert pas à prévoir le sens d’évolution du mélange de départ.', bf: 'L’état final est celui où Qr = K : il ne sert pas à prévoir le sens d’évolution du mélange de départ.', cf: 'L’état final est celui où Qr = K : il ne sert pas à prévoir le sens d’évolution du mélange de départ.', df: 'L’état final est celui où Qr = K : il ne sert pas à prévoir le sens d’évolution du mélange de départ.' },
+        cherche: { bonne: 'Le quotient de réaction Qr du mélange de départ (sans unité)', faux: ['La constante d’équilibre K', 'Le quotient de réaction à l’état final', 'Le taux d’avancement final'] },
+        manque: null, solution: { txt: 'Qr = ([CH₃COO⁻] × [HCOOH]) / ([CH₃COOH] × [HCOO⁻]), concentrations initiales', val: (c0 * d0) / (a0 * b0), u: '' } };
+    },
+  },
   // ───────────────────────────── Titrage pH-métrique (TG) : concentration et composition
   {
     id: 'titph-ca', domaine: 'Titrage pH-métrique', titre: 'Contrôle d’une solution d’acide', noms: ['Concentration de l’acide', 'Volume équivalent attendu'],

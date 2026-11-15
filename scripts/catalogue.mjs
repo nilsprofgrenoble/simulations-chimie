@@ -23,7 +23,7 @@ const PREFIXE = { "S'APP": 'SAPP', ANA: 'ANA', REA: 'REA', VAL: 'VAL' }
 // Mots-clés « type de tâche » (colonne taches) : vocabulaire FIXE, pour que la remédiation choisisse par tâche et non seulement par titre.
 // Règles : (1) une ou deux étiquettes selon la famille d'exercice ; (2) étiquettes ajoutées d'après des mots du titre ou de la description.
 // Toute étiquette hors de ce vocabulaire fait échouer le script ; tout exercice doit en avoir au moins une.
-const TACHES_VOC = ['constante radioactive', 'décroissance radioactive', 'activité', 'datation', 'relation pH et concentration', 'dilution', 'effet Doppler', 'extraire les données', 'lire un graphique', 'tracer une courbe', 'pente et ordonnée à l’origine', 'prévoir sans calculer', 'choisir la relation', 'hypothèses d’un modèle',
+const TACHES_VOC = ['quotient de réaction', 'constante d’équilibre', 'taux d’avancement', 'sens d’évolution', 'constante radioactive', 'décroissance radioactive', 'activité', 'datation', 'relation pH et concentration', 'dilution', 'effet Doppler', 'extraire les données', 'lire un graphique', 'tracer une courbe', 'pente et ordonnée à l’origine', 'prévoir sans calculer', 'choisir la relation', 'hypothèses d’un modèle',
   'construire une démarche', 'reconnaître un champ', 'reconnaître un mouvement', 'algorithme à seuils', 'plausibilité', 'compatibilité avec une référence', 'choisir un modèle',
   'conformité cahier des charges', 'microscope', 'lunette astronomique', 'somme de vecteurs', 'différence de vecteurs', 'forces et champs', 'lentille mince', 'œil et loupe', 'conversion d’unités', 'isoler une grandeur', 'chiffres significatifs',
   'vitesse volumique', 'temps de demi-réaction', 'loi d’ordre 1', 'fonctions usuelles', 'saisie calculatrice', 'pont diviseur', 'temps de réponse', 'conversion analogique-numérique', 'instruction Arduino', 'incertitudes', 'bilan et rendement', 'décrire une évolution', 'compléter un tableau bilan', 'importance du temps de réponse', 'titrage pH-métrique', 'quantités de matière']
@@ -40,6 +40,7 @@ const TACHES_FAMILLE = {
   '36:fonctions': () => ['fonctions usuelles'], '36:calculatrice': () => ['saisie calculatrice'], '36:trace-courbe': () => ['tracer une courbe'],
   '36:dop-calcul': () => ['effet Doppler', 'conversion d’unités'], '36:dopg-calcul': () => ['effet Doppler', 'conversion d’unités'], '36:titph-calcul': () => ['titrage pH-métrique', 'quantités de matière'], '36:phc-calcul': () => ['relation pH et concentration', 'dilution'],
   '36:cinv-calcul': () => ['vitesse volumique', 'temps de demi-réaction', 'loi d’ordre 1'],
+  '36:equ-calcul': () => ['quotient de réaction', 'constante d’équilibre', 'taux d’avancement', 'sens d’évolution'],
   '36:rad-calcul': () => ['constante radioactive', 'décroissance radioactive', 'activité', 'datation', 'conversion d’unités'],
   '36:pont-diviseur': () => ['pont diviseur'], '36:temps-reponse': () => ['temps de réponse'],
 }
