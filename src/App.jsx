@@ -78,6 +78,7 @@ const SimulationDopplerTG = paresseux(() => import("./simulations/Doppler"), "Si
 const SimulationTitragePH = paresseux(() => import("./simulations/TitragePH"), "SimulationTitragePH");
 const SimulationPhConcentration = paresseux(() => import("./simulations/PhConcentration"), "SimulationPhConcentration");
 const SimulationVitesseOrdre1 = paresseux(() => import("./simulations/VitesseOrdre1"), "SimulationVitesseOrdre1");
+const SimulationRadioactivite = paresseux(() => import("./simulations/Radioactivite"), "SimulationRadioactivite");
 const SimulationAcidesBases = paresseux(() => import("./simulations/AcidesBases"), "SimulationAcidesBases");
 const SimulationEsterification = paresseux(() => import("./simulations/Esterification"), "SimulationEsterification");
 const SimulationChampForce = paresseux(() => import("./simulations/ChampForce"), "SimulationChampForce");
@@ -212,6 +213,8 @@ const SIMULATIONS = [
     component: SimulationPhConcentration },
   { id:122, label:"Cinétique : vitesse volumique, temps de demi-réaction et loi d’ordre 1", niveau:"TG", icon:"⏱️", color:"#0f766e",
     component: SimulationVitesseOrdre1 },
+  { id:123, label:"Radioactivité : loi de décroissance, demi-vie et activité", niveau:"TG", icon:"☢️", color:"#0f766e",
+    component: SimulationRadioactivite },
   { id:117, label:"L’œil et la loupe : accommodation, diamètre apparent, grossissement", niveau:"TSTL", icon:"👁️", color:"#0e7490",
     component: SimulationOeilLoupe },
   { id:118, label:"Le microscope : image intermédiaire, mise au point, grossissement", niveau:"TSTL", icon:"🔬", color:"#0e7490",

@@ -21,6 +21,7 @@ export const nb = (x, d = null) => (d == null
 const NB = s => s.replace(/ /g, ' ');                       // espace insécable : une donnée ne se coupe pas en fin de ligne
 const sg = x => (x < 0 ? '−' + nb(Math.abs(x)) : nb(x));          // nombre avec « vrai » signe moins
 const T = id => ({ t: id });
+const sciR = x => { const [m, e] = Number(x).toExponential(1).split('e'); return `${m.replace('.', ',')} × 10${[...String(Number(e))].map(c => SUP[c]).join('')}`; };   // 2 chiffres significatifs, notation scientifique
 const tok = (aff, quoi, val, u) => ({ aff: NB(aff), quoi, use: { val, u } });
 
 export const ENONCES = [
@@ -165,6 +166,57 @@ export const ENONCES = [
         utiles: ['c', 'v'], raisons,
         cherche: { bonne: 'La constante de vitesse k (en min⁻¹)', faux: ['Le temps de demi-réaction (en min)', 'La concentration initiale c₀ (en mol/L)', 'La pente de la tangente à la courbe c(t)'] },
         manque: null, solution: { txt: 'k = v / c', val: v / p.c, u: 'min⁻¹' } };
+    },
+  },
+  // ───────────────────────────── Radioactivité (TG) : activité et datation
+  {
+    id: 'rad-activite', domaine: 'Radioactivité : décroissance et demi-vie', titre: 'Activité d’un échantillon d’iode 131', noms: ['Activité initiale', 'Constante radioactive λ'],
+    gen: () => { const th = tire([4, 6, 8, 10]), N0 = tire([2.0e7, 4.0e7, 5.0e7, 8.0e7]); return { th, N0, lam: Number((Math.LN2 / (th * 86400)).toPrecision(2)), m: tire([12, 25, 40]) }; },
+    build: (p, q) => {
+      const tokens = {
+        th: tok(`${p.th},0 jours`, 'Demi-vie de l’iode 131 (valeur utilisée)', p.th, 'j'),
+        N0: tok(`${sciR(p.N0)} noyaux`, 'Nombre de noyaux radioactifs à l’instant initial', p.N0, ''),
+        m: tok(`${p.m} g`, 'Masse du flacon qui contient l’échantillon', p.m, 'g'),
+      };
+      const raisons = { m: 'La masse du flacon n’intervient ni dans λ ni dans l’activité : l’activité dépend du nombre de noyaux et de λ.' };
+      const debut = ['Un échantillon d’iode 131 est conservé dans un flacon de masse ', T('m'), '. À l’instant initial, il contient ', T('N0'), '. '];
+      if (q === 0) {
+        tokens.lam = tok(`${sciR(p.lam)} s⁻¹`, 'Constante radioactive de l’iode 131', p.lam, 's⁻¹');
+        return { tokens, derivees: [], texte: [...debut, 'La constante radioactive de l’iode 131 vaut ', T('lam'), ' (sa demi-vie est de ', T('th'), '). Quelle est l’activité initiale de l’échantillon ?'],
+          utiles: ['N0', 'lam'], raisons: { ...raisons, th: 'λ est déjà donnée en s⁻¹ : la demi-vie n’est pas nécessaire pour calculer A₀.' },
+          cherche: { bonne: 'L’activité initiale A₀ (en Bq)', faux: ['La demi-vie de l’échantillon (en jours)', 'Le nombre de noyaux restant après une demi-vie', 'L’âge de l’échantillon (en années)'] },
+          manque: null, solution: { txt: 'A₀ = λ·N₀', val: p.lam * p.N0, u: 'Bq' } };
+      }
+      return { tokens, derivees: ['t½ en secondes : t½ × 86 400 s par jour'], texte: [...debut, 'La demi-vie de l’iode 131 vaut ', T('th'), '. On veut calculer sa constante radioactive λ, en s⁻¹.'],
+        utiles: ['th'], raisons: { ...raisons, N0: 'λ est une caractéristique du noyau : elle ne dépend pas du nombre de noyaux de l’échantillon.' },
+        cherche: { bonne: 'La constante radioactive λ (en s⁻¹)', faux: ['L’activité initiale A₀ (en Bq)', 'Le nombre de noyaux restant après une demi-vie', 'L’âge de l’échantillon (en années)'] },
+        manque: null, solution: { txt: 'λ = ln 2 / t½, avec t½ converti en secondes', val: Math.LN2 / (p.th * 86400), u: 's⁻¹' } };
+    },
+  },
+  {
+    id: 'rad-age', domaine: 'Radioactivité : décroissance et demi-vie', titre: 'Dater un échantillon avec le carbone 14', noms: ['Avec le nombre de noyaux', 'Avec le pourcentage restant'],
+    gen: () => { const N0 = tire([8.0e6, 6.4e6, 9.6e6]), n = tire([2, 3, 4]); return { N0, n, N: N0 / 2 ** n, f: tire([80, 70, 60, 45, 35]), m: tire([15, 30, 50]), z: tire([1.5, 2.0, 3.0]) }; },
+    build: (p, q) => {
+      const tokens = {
+        th: tok('5 730 ans', 'Demi-vie du carbone 14', 5730, 'ans'),
+        m: tok(`${p.m} g`, 'Masse de l’échantillon prélevé', p.m, 'g'),
+        z: tok(`${nb(p.z, 1)} m`, 'Profondeur de la fouille où l’échantillon a été trouvé', p.z, 'm'),
+      };
+      const raisons = { m: 'La masse prélevée n’intervient pas : seule la fraction de carbone 14 restante compte.', z: 'La profondeur de la fouille ne sert pas à calculer l’âge avec la décroissance du carbone 14.' };
+      const debut = ['Un échantillon organique de masse ', T('m'), ' a été trouvé à ', T('z'), ' de profondeur. La demi-vie du carbone 14 est de ', T('th'), '. '];
+      if (q === 0) {
+        tokens.N0 = tok(`${sciR(p.N0)} noyaux`, 'Nombre de noyaux de carbone 14 dans un échantillon vivant de même masse', p.N0, '');
+        tokens.N = tok(`${sciR(p.N)} noyaux`, 'Nombre de noyaux de carbone 14 mesuré dans l’échantillon', p.N, '');
+        return { tokens, derivees: ['nombre de demi-vies : n tel que N₀ / N = 2ⁿ'], texte: [...debut, 'Un échantillon vivant de même masse contient ', T('N0'), ' de carbone 14 ; on en mesure ', T('N'), ' dans l’échantillon. Quel est l’âge de l’échantillon ?'],
+          utiles: ['th', 'N0', 'N'], raisons,
+          cherche: { bonne: 'L’âge de l’échantillon (en années)', faux: ['La constante radioactive λ (en s⁻¹)', 'L’activité de l’échantillon (en Bq)', 'Le nombre de noyaux disparus (en nombre de noyaux)'] },
+          manque: null, solution: { txt: 'N₀ / N = 2ⁿ, âge = n × t½', val: p.n * 5730, u: 'ans' } };
+      }
+      tokens.f = tok(`${p.f} %`, 'Pourcentage de carbone 14 restant par rapport à un échantillon vivant', p.f, '%');
+      return { tokens, derivees: ['λ = ln 2 / t½', 'rapport N₀ / N = 100 / pourcentage restant'], texte: [...debut, 'On mesure ', T('f'), ' du carbone 14 d’un échantillon vivant. Quel est l’âge de l’échantillon ?'],
+        utiles: ['th', 'f'], raisons,
+        cherche: { bonne: 'L’âge de l’échantillon (en années)', faux: ['La constante radioactive λ (en s⁻¹)', 'L’activité de l’échantillon (en Bq)', 'Le nombre de noyaux disparus (en nombre de noyaux)'] },
+        manque: null, solution: { txt: 't = (t½ / ln 2) × ln(N₀ / N)', val: (5730 / Math.LN2) * Math.log(100 / p.f), u: 'ans' } };
     },
   },
   // ───────────────────────────── Titrage pH-métrique (TG) : concentration et composition

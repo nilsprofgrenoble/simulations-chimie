@@ -853,5 +853,17 @@
  "77:plausible:cinv-val-signe": "VAL211",
  "77:plausible:cinv-val-ordre1": "VAL212",
  "77:plausible:cinv-val-k": "VAL213",
- "36:cinv-calcul": "REA29"
+ "36:cinv-calcul": "REA29",
+ "34:rad-activite.0": "SAPP211",
+ "34:rad-activite.1": "SAPP212",
+ "34:rad-age.0": "SAPP213",
+ "34:rad-age.1": "SAPP214",
+ "37:prevoir:rad-n-demi": "ANA404",
+ "37:prevoir:rad-lambda": "ANA405",
+ "37:prevoir:rad-activite": "ANA406",
+ "37:prevoir:rad-hasard": "ANA407",
+ "77:plausible:rad-val-lambda": "VAL214",
+ "77:plausible:rad-val-age": "VAL215",
+ "77:plausible:rad-val-activite-24j": "VAL216",
+ "36:rad-calcul": "REA30"
 }
