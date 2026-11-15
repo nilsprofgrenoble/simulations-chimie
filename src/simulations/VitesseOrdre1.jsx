@@ -344,6 +344,7 @@ export function SimulationVitesseOrdre1() {
     setMode(md);
     if (md === 'defi' && !defi) nouveauDefi(typeDefi);
     if (md === 'guide') setTi(PRESET);
+    if (md === 'explore') setTi(s => ({ ...s, type: 'A' }));
   }
   function choisirDefi(t) { setTypeDefi(t); nouveauDefi(t); }
   const vVraiDefi = defi && defi.type === 'vit' ? M.vit(defi.P, defi.tc) : null;
@@ -416,7 +417,7 @@ export function SimulationVitesseOrdre1() {
   // ---------- contrôles sous le graphique ----------
   const boutonRetablir = (txt, f) => <button onClick={f} style={{ ...styleBouton(true, '#b45309'), marginBottom: 8 }}>{txt}</button>;
   const montrerTang = (enGuide && deja('tangente')) || enExplore;
-  const montrerType = (enGuide && deja('compB')) || enExplore;
+  const montrerType = enGuide && deja('compB');
   const montrerBruit = (enGuide && deja('bruit')) || enExplore;
   const montrerFen = (enGuide && idE === 'bruit') || enExplore || (dd && dd.type === 'vit');
   const pasT = ideal ? 0.1 : M.PAS;
@@ -539,15 +540,14 @@ export function SimulationVitesseOrdre1() {
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages de l’expérience</div>
       <Curseur nom="Concentration initiale c₀" valeur={ti.c0} onChange={v => setT({ c0: v })} min={20} max={60} pas={5} unite="mmol/L" decimales={1} couleur="#475569"/>
-      <Curseur nom={ti.type === 'A' ? 'Constante de vitesse k' : 'Réglage de la vitesse : k équivalent'} valeur={ti.k} onChange={v => setT({ k: Math.round(v * 100) / 100 })} min={0.06} max={0.20} pas={0.01} unite="min⁻¹" decimales={2} couleur="#475569"/>
-      <div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.5 }}>Transformation A (RCl) : v = k × c, loi d’ordre 1. Transformation B : exemple construit pour la simulation, dont la loi n’est pas d’ordre 1 ; sa 1ʳᵉ demi-réaction dure autant que celle de A.</div>
+      <Curseur nom="Constante de vitesse k" valeur={ti.k} onChange={v => setT({ k: Math.round(v * 100) / 100 })} min={0.06} max={0.20} pas={0.01} unite="min⁻¹" decimales={2} couleur="#475569"/>
+      <div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.5 }}>Hydrolyse de RCl : v = k × c (loi d’ordre 1), avec k constante.</div>
     </div>);
   const aEssayer = (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
       <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
-        <li>Transformation A : doublez c₀ (20 → 40 mmol/L) en laissant k fixe. Que deviennent t½ et la vitesse initiale ? Que concluez-vous sur t½ pour l’ordre 1 ?</li>
-        <li>Même chose avec la transformation B : t½ change-t-il quand on double c₀ ?</li>
+        <li>Doublez c₀ (20 → 40 mmol/L) en laissant k fixe. Que deviennent t½ et la vitesse initiale ? Que concluez-vous sur t½ pour l’ordre 1 ?</li>
         <li>Augmentez k de 0,10 à 0,20 min⁻¹ : comment varient t½ et la pente de la droite ln c ?</li>
         <li>Activez le bruit (σ = 0,8) et estimez v à t = 6 min pour Δt = 1, 4 et 8 min. Refaites plusieurs séries : quelle valeur de Δt est la plus stable ? la moins biaisée ?</li>
         <li>Avec du bruit, la droite ln c reste-t-elle une droite ? À partir de quelle concentration les points s’écartent-ils ? Pourquoi les derniers points sont-ils les plus dispersés ?</li>
