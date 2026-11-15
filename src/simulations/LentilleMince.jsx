@@ -1,5 +1,5 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, avecIndices, indicesProfond } from "../commun";
 import { NB } from "./Distillation";
@@ -27,8 +27,24 @@ const bloqueSi = (ok, msg) => ok ? null : msg;
 const fleche = (x, y, ang, c, t = 7) => <polygon points={`0,0 ${-2 * t},${-t * 0.8} ${-2 * t},${t * 0.8}`} fill={c} transform={`translate(${x},${y}) rotate(${ang})`}/>;
 
 // ---------- le banc d'optique (scène principale) ----------
-function Banc({ d, f, s, rayons = false, foyers = false, regle = false, etiquettes = false, ecran = true, identifiant = 'a' }) {
+const X_MIN = -32, X_MAX = 50, TEAL = '#0f766e', NEG = '#b91c1c', POS = '#15803d';
+// Banc d'optique. Deux aides facultatives, désactivées par défaut :
+//   signes : repère algébrique (axe orienté dans le sens de la lumière : avant la lentille −, après +), avec les cotes OA, f′ et, si valeursImage, OA′ ;
+//   mesure : { a, b } deux repères verticaux déplaçables (souris, doigt ou flèches du clavier) qui affichent la distance qui les sépare.
+function Banc({ d, f, s, rayons = false, foyers = false, regle = false, etiquettes = false, ecran = true, identifiant = 'a',
+  signes = false, coteF = true, valeursImage = false, mesure = null, onMesure = null }) {
   const im = M.image(d, f), R = M.rayons(d, f);
+  const svgRef = useRef(null);
+  const fk = typeof window !== 'undefined' && window.innerWidth < 600 ? 1.45 : 1;      // textes des aides plus grands sur téléphone (la scène y est réduite à ~40 %)
+  const arrondi = x => Math.round(Math.max(X_MIN, Math.min(X_MAX, x)) * 10) / 10;
+  const xDepuisEvt = e => { const r = svgRef.current.getBoundingClientRect(); return arrondi(((e.clientX - r.left) * LARG / r.width - X0) / KX); };
+  const saisir = () => e => { e.currentTarget.setPointerCapture?.(e.pointerId); };
+  const deplacer = k => e => { if (!e.currentTarget.hasPointerCapture?.(e.pointerId)) return; onMesure?.({ [k]: xDepuisEvt(e) }); };
+  const clavier = (k, x) => e => {
+    const pas = e.shiftKey ? 0.1 : 0.5;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); onMesure?.({ [k]: arrondi(x + pas) }); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); onMesure?.({ [k]: arrondi(x - pas) }); }
+  };
   const aff = isFinite(im.OAp) && px(im.OAp) > 10 && px(im.OAp) < LARG - 10;
   const dist = im.nature === 'reelle' ? Math.abs(s - im.OAp) : null;
   const flou = dist == null ? 0 : Math.min(9, dist * 0.9);
@@ -46,7 +62,7 @@ function Banc({ d, f, s, rayons = false, foyers = false, regle = false, etiquett
   };
   const hImgPx = hClamp(im.hImg * KY);
   return (
-    <svg viewBox={`0 0 ${LARG} ${HAUT}`} width="100%" role="img" aria-label={`Banc d’optique : objet à ${cm(d)} cm d’une lentille convergente de distance focale ${cm(f)} cm, écran à ${cm(s)} cm`}
+    <svg ref={svgRef} viewBox={`0 0 ${LARG} ${HAUT}`} width="100%" role="img" aria-label={`Banc d’optique : objet à ${cm(d)} cm d’une lentille convergente de distance focale ${cm(f)} cm, écran à ${cm(s)} cm`}
       style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
       <defs>
         <clipPath id={`lm-clip-${identifiant}`}><rect x="0" y="0" width={LARG} height={HAUT}/></clipPath>
@@ -54,6 +70,13 @@ function Banc({ d, f, s, rayons = false, foyers = false, regle = false, etiquett
         <filter id={`lm-lueur-${identifiant}`} x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
       </defs>
       <g clipPath={`url(#lm-clip-${identifiant})`}>
+        {signes && <g>
+          <rect x="0" y="0" width={px(0)} height={HAUT} fill="#fef2f2" opacity="0.75"/><rect x={px(0)} y="0" width={LARG - px(0)} height={HAUT} fill="#f0fdf4" opacity="0.75"/>
+          <text x={px(0) - 10} y="18" textAnchor="end" fontSize={16 * fk} fontWeight="800" fill={NEG}>avant la lentille : −</text>
+          <text x={px(0) + 10} y="18" fontSize={16 * fk} fontWeight="800" fill={POS}>après : +</text>
+          <g stroke="#334155" fill="#334155"><line x1="14" y1="40" x2="74" y2="40" strokeWidth="2"/>{fleche(76, 40, 0, '#334155', 6)}</g>
+          <text x="84" y="45" fontSize={13.5 * fk} fontWeight="700" fill="#334155">sens de la lumière</text>
+        </g>}
         <line x1="8" y1={YA} x2={LARG - 8} y2={YA} stroke="#0f172a" strokeWidth="1.5" strokeDasharray="10 5"/>
         {regle && <g>
           <line x1={px(-30)} y1="292" x2={px(50)} y2="292" stroke="#0f172a" strokeWidth="2.5"/>
@@ -71,7 +94,7 @@ function Banc({ d, f, s, rayons = false, foyers = false, regle = false, etiquett
         {/* objet AB */}
         <line x1={px(-d)} y1={YA} x2={px(-d)} y2={py(M.H_OBJ) + 6} stroke={COUL.obj} strokeWidth="4"/>{fleche(px(-d), py(M.H_OBJ), -90, COUL.obj, 8)}
         {etiquettes && <g fontSize="13.5" fontWeight="800" fill={COUL.obj}><text x={px(-d) + (px(-d) < 30 ? 8 : -6)} y={py(M.H_OBJ) - 6} textAnchor={px(-d) < 30 ? 'start' : 'end'}>B</text><text x={px(-d) + (px(-d) < 30 ? 8 : -6)} y={YA + 18} textAnchor={px(-d) < 30 ? 'start' : 'end'}>A</text></g>}
-        <text x={Math.max(px(-d), 44)} y={YA + 44} textAnchor="middle" fontSize="12.5" fontWeight="700" fill={COUL.obj}>objet AB</text>
+        {!signes && <text x={Math.max(px(-d), 44)} y={YA + 44} textAnchor="middle" fontSize="12.5" fontWeight="700" fill={COUL.obj}>objet AB</text>}
         {/* image calculée par les rayons */}
         {rayons && aff && <g>
           <line x1={px(im.OAp)} y1={YA} x2={px(im.OAp)} y2={YA - hImgPx} stroke={COUL.img} strokeWidth="3.5" strokeDasharray={im.nature === 'virtuelle' ? '6 4' : undefined}/>
@@ -86,6 +109,40 @@ function Banc({ d, f, s, rayons = false, foyers = false, regle = false, etiquett
             <line x1={px(s) + 8} y1={YA} x2={px(s) + 8} y2={YA - hImgPx} stroke={COUL.img} strokeWidth="4"/>{fleche(px(s) + 8, YA - hImgPx, hImgPx > 0 ? -90 : 90, COUL.img, 8)}</g>}
           {im.nature !== 'reelle' && <ellipse cx={px(s) + 8} cy={YA} rx="22" ry="34" fill="#fde68a" opacity="0.55" filter={`url(#lm-lueur-${identifiant})`}/>}
         </g>}
+        {signes && (() => {
+          const cote = (x, y, nom, col, k) => {
+            const v = x < 0 ? `−${cm(-x)}` : `+${cm(x)}`;
+            return (<g key={k} fontSize={15 * fk} fontWeight="800" fill={col} stroke="none">
+              <line x1={px(0)} y1={y} x2={px(x)} y2={y} stroke={col} strokeWidth="2.2"/>{fleche(px(x), y, x < 0 ? 180 : 0, col, 6)}
+              <circle cx={px(0)} cy={y} r="2.6"/>
+              <text x={(px(0) + px(x)) / 2} y={y - 6} textAnchor="middle" stroke="#fff" strokeWidth="4" paintOrder="stroke">{nom} = {v}{NB}cm</text></g>);
+          };
+          return (<g>
+            {cote(-d, YA + 46, 'OA', NEG, 'oa')}
+            {coteF && cote(f, YA + 46 + 20 * fk, 'f′', POS, 'f')}
+            {valeursImage && isFinite(im.OAp) && Math.abs(im.OAp) <= 45 && cote(im.OAp, YA + 46 + 40 * fk, 'OA′', im.OAp < 0 ? NEG : POS, 'oap')}
+          </g>);
+        })()}
+        {mesure && (() => {
+          const xa = Math.min(mesure.a, mesure.b), xb = Math.max(mesure.a, mesure.b), dist = Math.abs(mesure.b - mesure.a);
+          const rep = (k, x, n) => (
+            <g key={k}>
+              <line x1={px(x)} y1="40" x2={px(x)} y2="300" stroke={TEAL} strokeWidth="2" strokeDasharray="7 4"/>
+              <g tabIndex={onMesure ? 0 : -1} role="slider" aria-label={`Repère ${n} (position sur l’axe, en cm)`} aria-valuemin={X_MIN} aria-valuemax={X_MAX} aria-valuenow={x}
+                aria-valuetext={`${cm(x)} cm`} onKeyDown={clavier(k, x)} onPointerDown={saisir()} onPointerMove={deplacer(k)}
+                style={{ cursor: 'ew-resize', touchAction: 'none', outline: 'none' }}>
+                <rect x={px(x) - 20} y="36" width="40" height="40" fill="transparent"/>
+                <path d={`M${px(x) - 11},40 h22 v13 l-11,10 l-11,-10 z`} fill={TEAL} stroke="#fff" strokeWidth="1.5"/>
+                <text x={px(x)} y="52" textAnchor="middle" fontSize="12" fontWeight="800" fill="#fff">{n}</text>
+              </g>
+              <text x={px(x) + (n === '1' ? -4 : 4)} y="84" textAnchor={n === '1' ? 'end' : 'start'} fontSize={15 * fk} fontWeight="800" fill={TEAL} stroke="#fff" strokeWidth="4" paintOrder="stroke">{cm(x)}</text>
+            </g>);
+          return (<g>
+            <line x1={px(xa)} y1="112" x2={px(xb)} y2="112" stroke={TEAL} strokeWidth="2.4"/>{fleche(px(xb), 112, 0, TEAL, 6)}{fleche(px(xa), 112, 180, TEAL, 6)}
+            <text x={(px(xa) + px(xb)) / 2} y="104" textAnchor="middle" fontSize={16 * fk} fontWeight="800" fill={TEAL} stroke="#fff" strokeWidth="5" paintOrder="stroke">distance = {cm(dist)}{NB}cm</text>
+            {rep('a', mesure.a, '1')}{rep('b', mesure.b, '2')}
+          </g>);
+        })()}
       </g>
     </svg>);
 }
@@ -162,6 +219,7 @@ export function SimulationLentilleMince() {
   const [hypoOuv, setHypoOuv] = useState(false);
   const [P, setP] = useState(P0);
   const [opt, setOpt] = useState({ rayons: true, foyers: true, etiquettes: true });
+  const [aides, setAides] = useState({ signes: false, mesure: false }), [mes, setMes] = useState({ a: 5, b: 15 });      // aides facultatives, éteintes par défaut
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const PE = enDefi && defi ? defi.p : P;                       // paramètres affichés (en défi, ceux du tirage)
   const im = M.image(PE.d, PE.f);
@@ -366,9 +424,17 @@ export function SimulationLentilleMince() {
     : enDefi ? { rayons: defi?.type === 'position' && !!defi?.ok, foyers: defi?.type === 'position', regle: true, etiquettes: false, ecran: defi?.type !== 'position' || !!defi?.ok }
       : { rayons: opt.rayons, foyers: opt.foyers, regle: true, etiquettes: opt.etiquettes, ecran: true };
   const sEff = enDefi && defi?.type === 'position' && defi.ok ? Math.max(M.S_MIN, Math.min(M.S_MAX, im.OAp)) : PE.s;
+  const aidesVisibles = enExplore || enDefi || (enGuide && depuis('lire'));
   const sceneBox = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      <Banc d={PE.d} f={PE.f} s={sEff} {...scene} identifiant="p"/>
+      <Banc d={PE.d} f={PE.f} s={sEff} {...scene} identifiant="p" signes={aides.signes && aidesVisibles} coteF={!(enDefi && defi?.type === 'focale')} valeursImage={enExplore}
+        mesure={aides.mesure && aidesVisibles ? mes : null} onMesure={patch => setMes(m => ({ ...m, ...patch }))}/>
+      {aidesVisibles && (
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
+          <span style={{ fontSize: 12.5, color: KIT.txt2 }}>Aides :</span>
+          {[['signes', 'repère des signes (+ / −)'], ['mesure', 'deux repères de mesure']].map(([k, l]) => <button key={k} onClick={() => setAides(a => ({ ...a, [k]: !a[k] }))} aria-pressed={aides[k]} style={stylePetitBouton(aides[k], TEAL)}>{aides[k] ? '☑' : '☐'} {l}</button>)}
+          {aides.mesure && <span style={{ fontSize: 12.5, color: KIT.txt2 }}>Faites glisser les repères 1 et 2 (ou touches ← →).</span>}
+        </div>)}
     </div>);
   const aEssayer = indicesProfond(
     <div style={styleBoite}>
