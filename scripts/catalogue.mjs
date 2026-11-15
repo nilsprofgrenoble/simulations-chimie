@@ -34,7 +34,7 @@ const TACHES_FAMILLE = {
   '37:champ': () => ['reconnaître un champ'], '37:mouvement': () => ['reconnaître un mouvement'], '37:algorithme': () => ['algorithme à seuils'],
   '77:plausible': () => ['plausibilité'], '77:compat': () => ['compatibilité avec une référence'],
   '77:decision': id => [/^modele/.test(id) ? 'choisir un modèle' : 'conformité cahier des charges'],
-  '36:vecteur-somme': () => ['somme de vecteurs'], '36:vecteur-difference': () => ['différence de vecteurs'], '36:interactions': () => ['forces et champs'], '36:lum1-conjugaison': () => ['lentille mince'],
+  '36:vecteur-somme': () => ['somme de vecteurs'], '36:vecteur-difference': () => ['différence de vecteurs'], '36:interactions': () => ['forces et champs'], '36:lum1-conjugaison': () => ['lentille mince'], '36:lum1-signes': () => ['lentille mince'],
   '36:vitesses': () => ['conversion d’unités'], '36:simple': () => ['conversion d’unités'], '36:prefixes': () => ['conversion d’unités'], '36:puissances': () => ['conversion d’unités'],
   '36:composees': () => ['conversion d’unités'], '36:mixte': () => ['conversion d’unités'], '36:isoler': () => ['isoler une grandeur'], '36:cs': () => ['chiffres significatifs'],
   '36:fonctions': () => ['fonctions usuelles'], '36:calculatrice': () => ['saisie calculatrice'], '36:trace-courbe': () => ['tracer une courbe'],

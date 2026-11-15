@@ -445,6 +445,35 @@ function genInteractions() {
     retenir: ['Convertir toutes les grandeurs en unités SI AVANT de calculer : nC → C (×10⁻⁹), cm → m (×10⁻²), km → m (×10³), t → kg (×10³).', 'La distance est élevée au carré : une erreur de conversion sur d est élevée au carré, elle aussi.', '1 N·kg⁻¹ = 1 m·s⁻².'] };
 }
 
+// ──────────────────────── Famille « Lentille mince : les signes » (1re spécialité) : les distances algébriques, pas à pas ────────────────────────
+function genLentilleSignes() {
+  const [d, Op, f] = tire([[30, 15, 10], [20, 20, 10], [60, 12, 10], [24, 24, 12], [36, 18, 12], [40, 10, 8], [15, 30, 10]]);
+  const o0 = melange([`OA = −${d} cm`, `OA = +${d} cm`, `OA = ${d} cm, sans signe : on ne s’occupe pas du sens`, `OA = −1/${d} cm⁻¹`]);
+  const q0 = { id: 's0', type: 'qcm', q: <>Un objet est placé <b>{d}{NB}cm avant</b> la lentille (la lumière va de l’objet vers la lentille, puis vers l’écran). Quelle est la valeur algébrique de OA ?</>, options: o0, bonne: o0.indexOf(`OA = −${d} cm`),
+    aide: 'Les grandeurs sont algébriques : on part de O (le centre de la lentille) et on compte positivement dans le sens de la lumière. Un objet avant la lentille est donc à gauche de O.',
+    expl: <>La lumière se propage de l’objet vers la lentille : l’objet est à contre-sens de la lumière par rapport à O, donc OA = <b>−{d}{NB}cm</b>. Un objet réel est toujours avant la lentille : OA est toujours négatif.</> };
+  const o1 = melange([`OA′ = +${Op} cm`, `OA′ = −${Op} cm`, `OA′ = ${Op} cm − ${d} cm`, `OA′ = +1/${Op} cm⁻¹`]);
+  const q1 = { id: 's1', type: 'qcm', q: <>L’image nette se forme sur un écran placé <b>{Op}{NB}cm après</b> la lentille. Quelle est la valeur algébrique de OA′ ?</>, options: o1, bonne: o1.indexOf(`OA′ = +${Op} cm`),
+    aide: 'Après la lentille, c’est dans le sens de la lumière : le signe est positif.',
+    expl: <>L’image est de l’autre côté de la lentille, dans le sens de la lumière : OA′ = <b>+{Op}{NB}cm</b>. Une image qu’on peut recueillir sur un écran (image réelle) a toujours OA′ positif.</> };
+  const v = 1 / f;
+  const q2 = { id: 's2', type: 'num', q: <>On a OA = <b>−{d}{NB}cm</b> et OA′ = <b>+{Op}{NB}cm</b>. Remplacez dans la relation de conjugaison et calculez <b>1/f′ = 1/OA′ − 1/OA</b>, en <b>cm⁻¹</b> (c’est un nombre petit, comme 0,05).</>, unite: 'cm⁻¹', vrai: v, csMin: 2,
+    aide: <>Écrivez d’abord 1/f′ = 1/(+{Op}) − 1/(−{d}). Soustraire un nombre négatif revient à AJOUTER : − (−x) = + x.</>,
+    pieges: [[1 / Op - 1 / d, 'Vous avez remplacé OA par +' + d + ' : il est NÉGATIF (objet avant la lentille). 1/OA′ − 1/OA = 1/' + Op + ' − 1/(−' + d + ') : le signe moins devant un négatif donne un plus.']],
+    expl: <>1/f′ = 1/(+{Op}) − 1/(−{d}) = 1/{Op} + 1/{d} = <b>{nb(v, 2)}{NB}cm⁻¹</b>. Le − devant le OA négatif devient un +.</> };
+  const q3 = { id: 's3', type: 'num', q: <>Avec 1/f′ = {nb(v, 2)}{NB}cm⁻¹, quelle est la distance focale f′ de la lentille, en <b>cm</b> ?</>, unite: 'cm', vrai: f, csMin: 2,
+    aide: 'f′ est l’inverse de 1/f′ : f′ = 1 / (1/f′).',
+    pieges: [[v, 'Vous avez donné 1/f′ : il faut prendre l’inverse pour obtenir f′.']],
+    expl: <>f′ = 1 / {nb(v, 2)} = <b>{f}{NB}cm</b>. Positif : c’est bien une lentille convergente.</> };
+  const o4 = melange(['virtuelle : elle est du même côté que l’objet, on ne peut pas la recueillir sur un écran', 'réelle : elle se forme derrière la lentille et se recueille sur un écran', 'réelle : une valeur négative signifie seulement que l’image est renversée', 'impossible : une distance ne peut pas être négative']);
+  const q4 = { id: 's4', type: 'qcm', q: <>Dans un autre montage, on trouve <b>OA′ = −{Op}{NB}cm</b>. Que peut-on dire de l’image ?</>, options: o4, bonne: o4.indexOf('virtuelle : elle est du même côté que l’objet, on ne peut pas la recueillir sur un écran'),
+    aide: 'Le signe de OA′ dit de quel côté de la lentille se trouve l’image. Ne confondez pas avec le signe de γ, qui dit si elle est renversée.',
+    expl: <>OA′ négatif : l’image est avant la lentille, du même côté que l’objet. C’est une <b>image virtuelle</b> (comme avec une loupe) : aucun écran ne peut la recueillir. Le « renversée ou droite » est donné par le signe de γ, pas par celui de OA′.</> };
+  [q2, q3].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > 1e-9); });
+  return { intro: 'Lentille mince : les distances algébriques, pas à pas. D’abord le signe, puis le remplacement dans la relation, puis la conclusion.', questions: [q0, q1, q2, q3, q4],
+    retenir: ['Repère : origine O (centre de la lentille), axe orienté dans le sens de la lumière.', 'Avant la lentille : négatif (OA < 0 pour un objet réel). Après la lentille : positif (OA′ > 0 pour une image réelle).', 'Remplacer AVEC les parenthèses et les signes : 1/f′ = 1/(+OA′) − 1/(−|OA|) = 1/OA′ + 1/|OA|.', 'OA′ < 0 : image virtuelle (même côté que l’objet). γ < 0 : image renversée.'] };
+}
+
 // ──────────────────────── Famille « Lentille mince » (1re spécialité) ────────────────────────
 function genLentille() {
   const [d, f, Op] = tire([[30, 10, 15], [20, 10, 20], [60, 10, 12], [24, 12, 24], [36, 12, 18], [40, 8, 10], [15, 10, 30]]);
@@ -524,6 +553,7 @@ export const FAMILLES = [
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
   { id: 'vecteur-difference', groupe: 'Vecteurs', titre: 'Différence de deux vecteurs (variation de vitesse)', gen: genDifference },
   { id: 'interactions', groupe: 'Unités', titre: 'Forces et champs : Coulomb, gravitation (1re spé)', gen: genInteractions, domaine: 'Interactions et champs' },
+  { id: 'lum1-signes', groupe: 'Formules', titre: 'Lentille mince : les signes des distances algébriques, pas à pas (1re spé)', gen: genLentilleSignes, domaine: 'Lentille mince' },
   { id: 'lum1-conjugaison', groupe: 'Formules', titre: 'Lentille mince : conjugaison et grandissement (1re spé)', gen: genLentille, domaine: 'Lentille mince' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },
   { id: 'simple', groupe: 'Unités', titre: 'Changement d’unité simple', gen: genSimple },

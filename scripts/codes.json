@@ -775,5 +775,6 @@
  "77:plausible:lum1-val-loupe": "VAL198",
  "34:lum1-projecteur.0": "SAPP183",
  "34:lum1-projecteur.1": "SAPP184",
- "36:lum1-conjugaison": "REA17"
+ "36:lum1-conjugaison": "REA17",
+ "36:lum1-signes": "REA18"
 }
