@@ -36,6 +36,7 @@ export const CHAPITRES = [
   { id: '1g-mouvement', niveau: '1G', label: '🚀 Mouvement d’un système', sims: [52], domaines: ['Mécanique'] },
   { id: '1g-lentille', niveau: '1G', label: '🔍 Image donnée par une lentille mince', sims: [115], domaines: ['Lentille mince'] },
 
+  { id: 'tg-titrage', niveau: 'TG', label: '🧪 Constitution et transformations de la matière : titrage pH-métrique', sims: [119], domaines: ['Titrage pH-métrique'] },
   { id: 'tg-ondes', niveau: 'TG', label: '🌊 Ondes et signaux : effet Doppler', sims: [116], domaines: ['Ondes'] },
   { id: 'tstl-signaux', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '📡 Transmission de signaux numériques', sims: [8, 15, 33], domaines: ['Transmission de signaux numériques'] },
   { id: 'tstl-fluides', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '💧 Transport des fluides', sims: [26, 27, 28, 17], domaines: ['Transport des fluides'] },

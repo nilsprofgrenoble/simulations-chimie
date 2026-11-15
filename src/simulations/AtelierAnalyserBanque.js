@@ -2703,6 +2703,27 @@ export const PREVOIR = [
       F('plus grand pour la lumière, car sa fréquence est plus grande', 'La fréquence f_e s’élimine dans le rapport δf / f_e = v / c.'),
       F('nul pour la lumière, car la lumière ne subit pas l’effet Doppler', 'Les ondes lumineuses subissent aussi l’effet Doppler ; il est seulement très petit en valeur relative.'),
     ] },
+  { id: 'titph-apres-eq', domaine: 'Titrage pH-métrique', titre: 'Après l’équivalence : qui fixe le pH ?',
+    enonce: 'On titre V_A = 20,0 mL d’une solution d’acide éthanoïque de concentration C_A = 0,080 mol/L par une solution d’hydroxyde de sodium de concentration C_B = 0,100 mol/L. On a versé V_B = 20,0 mL de soude, soit plus que le volume équivalent V_E = 16,0 mL. La transformation est supposée totale.', q: 'Dans l’erlenmeyer, juste après cet ajout…', options: [
+      V('l’acide est entièrement consommé et il reste 0,40 mmol d’ions HO⁻ en excès, qui fixent le pH', 'n(acide) = 0,080 × 20,0 = 1,60 mmol ; n(HO⁻) versé = 0,100 × 20,0 = 2,00 mmol. L’acide est le réactif limitant : il reste 2,00 − 1,60 = 0,40 mmol de HO⁻ (soit 0,010 mol/L dans 40,0 mL, pH = 12).'),
+      F('il reste 0,40 mmol d’acide éthanoïque, car la soude est le réactif limitant', 'C’est avant l’équivalence que HO⁻ est le réactif limitant. Ici n(HO⁻) versé (2,00 mmol) dépasse n(acide) (1,60 mmol).'),
+      F('l’acide et HO⁻ sont tous deux entièrement consommés, comme à l’équivalence', 'Cela n’arrive qu’à V_B = V_E = 16,0 mL. À 20,0 mL, on a versé plus de HO⁻ que d’acide.'),
+      F('il reste 2,00 mmol de HO⁻, car les ions HO⁻ versés ne réagissent plus', 'Une partie des ions HO⁻ (1,60 mmol) a réagi avec l’acide ; seul l’excès (0,40 mmol) reste.'),
+    ] },
+  { id: 'titph-phe-benz', domaine: 'Titrage pH-métrique', titre: 'Titrage d’un acide faible : pH à l’équivalence',
+    enonce: 'On titre une solution d’acide benzoïque C₆H₅COOH (acide faible, pK_A = 4,2) par une solution d’hydroxyde de sodium. À l’équivalence, l’acide et les ions HO⁻ ont été introduits dans les proportions stœchiométriques.', q: 'Le pH de la solution à l’équivalence est…', options: [
+      V('supérieur à 7 : la base conjuguée C₆H₅COO⁻ formée prédomine (pH > pK_A) et rend la solution basique', 'À l’équivalence il ne reste que C₆H₅COO⁻ (base faible) et Na⁺ (spectateur). C₆H₅COO⁻ + H₂O ⇌ C₆H₅COOH + HO⁻ : la solution est basique.'),
+      F('égal à 7, car l’équivalence correspond à la neutralisation exacte', 'Équivalence signifie réactifs en proportions stœchiométriques, pas solution neutre. Le pH dépend de l’espèce formée.'),
+      F('égal à pK_A = 4,2, car il y a autant d’acide que de base', 'pH = pK_A correspond à n(acide) = n(base), soit la demi-équivalence. À l’équivalence il ne reste plus d’acide.'),
+      F('inférieur à 7, car on a titré un acide', 'On a ajouté exactement la quantité de HO⁻ qui consomme l’acide : le pH est fixé par la base conjuguée formée, pas par l’acide initial.'),
+    ] },
+  { id: 'titph-indic-benz', domaine: 'Titrage pH-métrique', titre: 'Quel indicateur pour titrer l’acide benzoïque ?',
+    enonce: 'On titre 20,0 mL d’acide benzoïque à 0,080 mol/L par de la soude à 0,100 mol/L : V_E = 16,0 mL et pH_E ≈ 8,4. Zones de virage : jaune de méthyle 2,9 – 4,0 ; bleu de bromothymol 6,0 – 7,6 ; bleu de thymol 8,0 – 9,6 ; jaune d’alizarine R 10,1 – 12,0.', q: 'Pour repérer l’équivalence, on choisit…', options: [
+      V('le bleu de thymol, car sa zone de virage contient pH_E ≈ 8,4', 'Un indicateur convient si sa zone de virage contient le pH à l’équivalence : 8,0 < 8,4 < 9,6.'),
+      F('le bleu de bromothymol, car il vire autour de 7, valeur « neutre »', 'pH_E n’est pas 7 pour un acide faible. La zone 6,0 – 7,6 ne contient pas 8,4 : le virage a lieu avant V_E et est progressif.'),
+      F('le jaune de méthyle, car l’acide est initialement à pH acide', 'Le choix dépend de pH_E, pas du pH initial. La zone 2,9 – 4,0 est très loin de 8,4.'),
+      F('le jaune d’alizarine R, car la soude est une base forte', 'C’est le pH à l’équivalence qui compte, pas la force de la base. La zone 10,1 – 12,0 ne contient pas 8,4 : le virage a lieu après V_E.'),
+    ] },
   { id: 'ir-nombre-onde', domaine: 'Chimie organique', titre: 'Du micromètre au nombre d’onde',
     enonce: 'Une radiation infrarouge a pour longueur d’onde λ = 5,0 µm (1 µm = 10⁻⁴ cm). On rappelle σ = 1 ÷ λ, avec λ exprimée en cm.', q: 'Son nombre d’onde vaut…', options: [
       V('2000 cm⁻¹', 'λ = 5,0 × 10⁻⁴ cm ; σ = 1 ÷ (5,0 × 10⁻⁴) = 2000 cm⁻¹.'),

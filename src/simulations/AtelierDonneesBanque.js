@@ -116,6 +116,65 @@ export const ENONCES = [
         manque: null, solution: { txt: 'f_e = c / λ puis v = c × δf / f_e', val: c * dfAff * 1e6 / fe, u: 'm/s' } };
     },
   },
+  // ───────────────────────────── Titrage pH-métrique (TG) : concentration et composition
+  {
+    id: 'titph-ca', domaine: 'Titrage pH-métrique', titre: 'Contrôle d’une solution d’acide', noms: ['Concentration de l’acide', 'Volume équivalent attendu'],
+    gen: () => ({ CA: tire([0.050, 0.060, 0.080, 0.100]), VA: tire([10.0, 20.0, 25.0]), pKa: tire([3.75, 4.2, 4.8]), prix: tire([12, 18, 25]) }),
+    build: (p, q) => {
+      const CB = 0.100, VE = p.CA * p.VA / CB;
+      const tokens = {
+        CB: tok('0,100 mol/L', 'Concentration de la solution de soude', CB, 'mol·L⁻¹'),
+        VA: tok(`${nb(p.VA, 1)} mL`, 'Volume d’acide prélevé à la pipette', p.VA, 'mL'),
+        pKa: tok(nb(p.pKa, 2), 'pK_A du couple de l’acide', p.pKa, ''),
+        prix: tok(`${p.prix} €`, 'Prix de la burette', p.prix, '€'),
+      };
+      const debut = ['Un technicien contrôle une solution d’acide monoprotique faible (réaction totale avec les ions HO⁻). Il prélève ', T('VA'), ' d’acide (burette achetée ', T('prix'), ') et le titre par une solution d’hydroxyde de sodium de concentration ', T('CB'), ' ; le pK_A du couple est ', T('pKa'), '. '];
+      const raisons = { pKa: 'Le pK_A ne sert ni à relier les quantités à l’équivalence ni à calculer V_E ou C_A ; il sert à prévoir le pH.', prix: 'Le prix du matériel n’intervient pas dans le calcul.' };
+      if (q === 0) {
+        const VEaff = Number(VE.toFixed(1));
+        tokens.VE = tok(`${nb(VEaff, 1)} mL`, 'Volume équivalent repéré sur la courbe', VEaff, 'mL');
+        return { tokens, derivees: [], texte: [...debut, 'Le maximum de la dérivée du pH est obtenu pour un volume de soude ', T('VE'), '. Quelle est la concentration de la solution d’acide ?'],
+          utiles: ['CB', 'VA', 'VE'], raisons,
+          cherche: { bonne: 'La concentration C_A de l’acide (en mol/L)', faux: ['La quantité de soude versée (en mmol)', 'Le pH à l’équivalence', 'La constante K de la réaction de titrage'] },
+          manque: null, solution: { txt: 'C_A × V_A = C_B × V_E, donc C_A = C_B × V_E / V_A', val: CB * VEaff / p.VA, u: 'mol/L' } };
+      }
+      tokens.CA = tok(`${nb(p.CA, 3)} mol/L`, 'Concentration annoncée sur l’étiquette', p.CA, 'mol·L⁻¹');
+      return { tokens, derivees: [], texte: [...debut, 'L’étiquette annonce une concentration ', T('CA'), '. Quel volume de soude doit-on verser pour atteindre l’équivalence ?'],
+        utiles: ['CB', 'VA', 'CA'], raisons,
+        cherche: { bonne: 'Le volume équivalent V_E (en mL)', faux: ['Le pH à l’équivalence', 'La quantité d’acide restant à V_E (en mmol)', 'Le volume d’eau à ajouter'] },
+        manque: null, solution: { txt: 'V_E = C_A × V_A / C_B', val: VE, u: 'mL' } };
+    },
+  },
+  {
+    id: 'titph-compo', domaine: 'Titrage pH-métrique', titre: 'Composition en cours de titrage', noms: ['Acide restant', 'Excès de soude'],
+    gen: () => ({ CA: tire([0.050, 0.080, 0.100]), VA: tire([10.0, 20.0]), T: tire([20, 25, 30]), Ka: tire([3.75, 4.2, 4.8]) }),
+    build: (p, q) => {
+      const CB = 0.100, n0 = p.CA * p.VA, VE = n0 / CB;
+      const tokens = {
+        CA: tok(`${nb(p.CA, 3)} mol/L`, 'Concentration de l’acide', p.CA, 'mol·L⁻¹'),
+        VA: tok(`${nb(p.VA, 1)} mL`, 'Volume d’acide dans l’erlenmeyer', p.VA, 'mL'),
+        CB: tok('0,100 mol/L', 'Concentration de la soude', CB, 'mol·L⁻¹'),
+        T: tok(`${p.T} °C`, 'Température du laboratoire', p.T, '°C'),
+        Ka: tok(nb(p.Ka, 2), 'pK_A du couple de l’acide', p.Ka, ''),
+      };
+      const debut = ['Dans un erlenmeyer, ', T('VA'), ' d’une solution d’acide faible de concentration ', T('CA'), ' est titré par une solution d’hydroxyde de sodium de concentration ', T('CB'), '. La température du laboratoire est ', T('T'), ' et le pK_A du couple vaut ', T('Ka'), '. La transformation est totale. '];
+      const raisons = { T: 'La température n’intervient pas dans un bilan de quantités de matière pour une transformation totale.', Ka: 'Le pK_A permet de prévoir le pH, pas de faire le bilan des quantités de matière.' };
+      if (q === 0) {
+        const VB = Number((VE / 2).toFixed(1));
+        tokens.VB = tok(`${nb(VB, 1)} mL`, 'Volume de soude versé', VB, 'mL');
+        return { tokens, derivees: [], texte: [...debut, 'On a versé ', T('VB'), ' de soude, soit moins que le volume équivalent. Quelle quantité d’acide reste-t-il dans l’erlenmeyer ?'],
+          utiles: ['CA', 'VA', 'CB', 'VB'], raisons,
+          cherche: { bonne: 'La quantité d’acide restant (en mmol)', faux: ['Le pH de la solution', 'La quantité d’ions HO⁻ en excès (en mmol)', 'Le volume équivalent V_E (en mL)'] },
+          manque: null, solution: { txt: 'n(acide) restant = C_A V_A − C_B V_B', val: n0 - CB * VB, u: 'mmol' } };
+      }
+      const VB = Number((VE + 5).toFixed(1));
+      tokens.VB = tok(`${nb(VB, 1)} mL`, 'Volume de soude versé', VB, 'mL');
+      return { tokens, derivees: [], texte: [...debut, 'On a versé ', T('VB'), ' de soude, soit plus que le volume équivalent. Quelle quantité d’ions HO⁻ est en excès ?'],
+        utiles: ['CA', 'VA', 'CB', 'VB'], raisons,
+        cherche: { bonne: 'La quantité d’ions HO⁻ en excès (en mmol)', faux: ['La quantité d’acide restant (en mmol)', 'Le pH de la solution', 'La concentration de l’acide (en mol/L)'] },
+        manque: null, solution: { txt: 'n(HO⁻) en excès = C_B V_B − C_A V_A', val: CB * VB - n0, u: 'mmol' } };
+    },
+  },
   // ───────────────────────────── 0 bis. Examen d'un objet à la loupe (TSTL : œil et loupe)
   {
     id: 'oeil-loupe-timbre', domaine: 'Œil et loupe', titre: 'Un philatéliste examine un timbre', noms: ['Grossissement', 'Diamètre apparent'],

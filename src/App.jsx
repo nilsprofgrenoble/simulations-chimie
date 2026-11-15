@@ -75,6 +75,7 @@ const SimulationMachinesThermiques = paresseux(() => import("./simulations/Machi
 const SimulationInterferences = paresseux(() => import("./simulations/Interferences"), "SimulationInterferences");
 const SimulationDoppler = paresseux(() => import("./simulations/Doppler"), "SimulationDoppler");
 const SimulationDopplerTG = paresseux(() => import("./simulations/Doppler"), "SimulationDopplerTG");
+const SimulationTitragePH = paresseux(() => import("./simulations/TitragePH"), "SimulationTitragePH");
 const SimulationAcidesBases = paresseux(() => import("./simulations/AcidesBases"), "SimulationAcidesBases");
 const SimulationEsterification = paresseux(() => import("./simulations/Esterification"), "SimulationEsterification");
 const SimulationChampForce = paresseux(() => import("./simulations/ChampForce"), "SimulationChampForce");
@@ -202,6 +203,8 @@ const SIMULATIONS = [
     component: SimulationDoppler },
   { id:116, label:"Effet Doppler : établir l’expression du décalage et mesurer une vitesse", niveau:"TG", icon:"🌊", color:"#b45309",
     component: SimulationDopplerTG },
+  { id:119, label:"Titrage pH-métrique : équivalence, pH et choix de l’indicateur", niveau:"TG", icon:"🧪", color:"#0f766e",
+    component: SimulationTitragePH },
   { id:117, label:"L’œil et la loupe : accommodation, diamètre apparent, grossissement", niveau:"TSTL", icon:"👁️", color:"#0e7490",
     component: SimulationOeilLoupe },
   { id:118, label:"Le microscope : image intermédiaire, mise au point, grossissement", niveau:"TSTL", icon:"🔬", color:"#0e7490",

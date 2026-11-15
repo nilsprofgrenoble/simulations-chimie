@@ -808,5 +808,15 @@
  "77:plausible:microsc-val-grossissement": "VAL202",
  "77:plausible:microsc-val-image-intermediaire": "VAL203",
  "36:microsc-grossissement": "REA23",
- "36:microsc-mise-au-point": "REA24"
+ "36:microsc-mise-au-point": "REA24",
+ "34:titph-ca.0": "SAPP195",
+ "34:titph-ca.1": "SAPP196",
+ "34:titph-compo.0": "SAPP197",
+ "34:titph-compo.1": "SAPP198",
+ "37:prevoir:titph-apres-eq": "ANA390",
+ "37:prevoir:titph-phe-benz": "ANA391",
+ "37:prevoir:titph-indic-benz": "ANA392",
+ "77:plausible:titph-val-phe": "VAL204",
+ "77:plausible:titph-val-ca": "VAL205",
+ "36:titph-calcul": "REA25"
 }
