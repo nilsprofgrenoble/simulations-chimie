@@ -1766,6 +1766,36 @@ export const PLAUSIBLES = [
       F('Un atome de carbone de trop a été compté', 'La chaîne compte bien 4 atomes de carbone : « but » est correct. L’erreur est dans le suffixe.'),
       F('Le composé a été pris pour un alcool', 'Le suffixe d’un alcool serait « -ol » : l’élève a écrit « -al », celui des aldéhydes.'),
     ] }),
+  P({ id: 'phc-val-signe', domaine: 'pH et concentration en ions oxonium', niveau: 2, titre: 'pH d’une solution d’acide chlorhydrique : signe du résultat', plausible: false,
+    enonce: 'Un élève calcule le pH d’une solution d’acide chlorhydrique de concentration C = 2,0 × 10⁻³ mol/L et écrit : « pH = log(2,0 × 10⁻³) = −2,70 ».',
+    reperes: [['Définition', 'pH = −log([H₃O⁺] / c°)'], ['Solution d’acide de concentration 10⁻⁶ à 10⁻¹ mol/L', 'pH compris entre 1 et 6'], ['Eau pure à 25 °C', 'pH = 7,0']],
+    ver: 'Un pH négatif correspondrait à une solution plus concentrée que 1 mol/L ; pour C = 2,0 × 10⁻³ mol/L, le pH est compris entre 2 et 3. L’élève a oublié le signe moins de la définition : pH = −log(2,0 × 10⁻³) = +2,70.',
+    q2: 'Quelle erreur explique le mieux ce résultat ?',
+    options: [
+      V('il a oublié le signe moins : pH = −log([H₃O⁺]/c°), donc pH = +2,70', 'log(2,0 × 10⁻³) = −2,70 ; le pH est l’opposé de cette valeur.'),
+      F('il aurait dû utiliser le logarithme népérien ln', 'Le pH se définit avec le logarithme décimal ; ln(2,0 × 10⁻³) vaut environ −6,2.'),
+      F('il a oublié de diviser [H₃O⁺] par c° = 1 mol/L', 'Diviser par c° = 1 mol/L ne change pas la valeur numérique : ce n’est pas l’origine de l’erreur.'),
+    ] }),
+  P({ id: 'phc-val-dilution', domaine: 'pH et concentration en ions oxonium', niveau: 2, titre: 'pH après une dilution d’un facteur 100', plausible: true,
+    enonce: 'Une solution d’acide chlorhydrique a un pH égal à 2,80. On la dilue d’un facteur 100 : on en prélève 1,0 mL qu’on complète à 100 mL avec de l’eau distillée. Un élève annonce que le pH de la solution obtenue est 4,80.',
+    reperes: [['Effet d’une dilution', 'pH final = pH initial + log F'], ['Facteur 10, 100, 1000', 'pH + 1, + 2, + 3'], ['Solution d’acide', 'pH inférieur à 7 à 25 °C']],
+    ver: 'F = 100 / 1,0 = 100 et log 100 = 2 : pH = 2,80 + 2 = 4,80. Le résultat est cohérent : le pH augmente de 2 unités, et il reste inférieur à 7 comme il se doit pour une solution d’acide.',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('Cohérent : un facteur 100 ajoute 2 au pH, soit 2,80 + 2 = 4,80, valeur encore inférieure à 7', 'pH final = pH initial + log 100 = 2,80 + 2.'),
+      F('Pas cohérent : le pH devrait diminuer, puisque la solution contient davantage d’eau', 'Diluer un acide diminue [H₃O⁺] : le pH augmente.'),
+      F('Pas cohérent : il aurait fallu ajouter 1, puisque le prélèvement est de 1,0 mL', 'Le volume prélevé intervient par le rapport 100 / 1,0 = 100 ; c’est log 100 = 2 qu’on ajoute, pas 1.'),
+    ] }),
+  P({ id: 'phc-val-limite', domaine: 'pH et concentration en ions oxonium', niveau: 2, titre: 'Une solution d’acide de pH supérieur à 7 ?', plausible: false,
+    enonce: 'Un élève prépare par dilutions successives une solution d’acide chlorhydrique de concentration C = 1,0 × 10⁻⁹ mol/L. Il calcule pH = −log(1,0 × 10⁻⁹) = 9,0 et conclut : « cette solution d’acide est basique ».',
+    reperes: [['Eau pure à 25 °C', 'pH = 7,0 ; [H₃O⁺] = 1,0 × 10⁻⁷ mol/L'], ['Solution d’un acide', 'pH inférieur à 7 à 25 °C'], ['pH = −log C pour un acide fort', 'valable pour C de 10⁻⁶ à 10⁻¹ mol/L']],
+    ver: 'Ajouter un acide à l’eau ne peut qu’augmenter [H₃O⁺] : le pH reste inférieur à 7. À 1,0 × 10⁻⁹ mol/L, l’eau fournit déjà 10⁻⁷ mol/L d’ions H₃O⁺ (autoprotolyse), qu’on ne peut pas négliger : la relation pH = −log C n’est plus valable et le pH réel est très légèrement inférieur à 7.',
+    q2: 'Quelle erreur explique le mieux cette conclusion ?',
+    options: [
+      V('il applique pH = −log C hors de son domaine : l’eau apporte déjà 10⁻⁷ mol/L d’ions H₃O⁺', 'Pour C très inférieure à 10⁻⁷ mol/L, [H₃O⁺] ≈ 10⁻⁷ mol/L et le pH reste voisin de 7, inférieur à 7.'),
+      F('il a mal calculé le logarithme : −log(10⁻⁹) ne vaut pas 9', 'Le calcul numérique est juste : −log(1,0 × 10⁻⁹) = 9,0. C’est le modèle qui n’est pas applicable ici.'),
+      F('il aurait dû diviser C par c° = 1 mol/L avant de calculer', 'Diviser par c° = 1 mol/L ne change pas la valeur numérique ; l’erreur est ailleurs.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────

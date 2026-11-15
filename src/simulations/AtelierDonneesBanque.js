@@ -1622,6 +1622,59 @@ export const ENONCES = [
         manque: null, solution: { txt: 'η = n(ester obtenu) / n(réactif limitant)', val: ne / nlim * 100, u: '%' } };
     },
   },
+  // ───────────────────────────── pH et concentration en ions oxonium (TG)
+  {
+    id: 'phc-ph-hcl', domaine: 'pH et concentration en ions oxonium', titre: 'Une solution d’acide chlorhydrique', noms: ['pH de la solution', 'Concentration en ions oxonium'],
+    gen: () => ({ m: tire([1.5, 2.0, 2.5, 4.0, 5.0, 8.0]), n: tire([2, 3, 4]), pH: Math.round((1.2 + Math.random() * 4.3) * 100) / 100, V: tire([100, 250, 500]), prix: tire([8, 12, 15]) }),
+    build: (p, q) => {
+      const C = Number(`${p.m}e-${p.n}`), c0 = 1;
+      const tokens = {
+        V: tok(`${p.V} mL`, 'Volume de la solution', p.V, 'mL'),
+        prix: tok(`${p.prix} €`, 'Prix du flacon d’acide', p.prix, '€'),
+        c0: tok('1 mol/L', 'Concentration standard c°', c0, 'mol·L⁻¹'),
+      };
+      const raisons = { V: 'Le pH ne dépend que de la concentration en ions oxonium, pas du volume de solution.', prix: 'Le prix du flacon n’intervient pas dans le calcul.' };
+      if (q === 0) {
+        tokens.C = tok(`${nb(p.m, 1)} × 10${p.n === 2 ? '⁻²' : p.n === 3 ? '⁻³' : '⁻⁴'} mol/L`, 'Concentration en soluté apporté (acide fort : [H₃O⁺] = C)', C, 'mol·L⁻¹');
+        return { tokens, derivees: [], texte: ['Un technicien prépare ', T('V'), ' d’une solution d’acide chlorhydrique (acide fort, totalement dissocié) de concentration en soluté apporté ', T('C'), ', à partir d’un flacon payé ', T('prix'), '. La concentration standard est ', T('c0'), '. Quel est le pH de la solution ?'],
+          utiles: ['C', 'c0'], raisons,
+          cherche: { bonne: 'Le pH de la solution', faux: ['La concentration en ions oxonium (en mol/L)', 'Le volume d’acide à prélever (en mL)', 'La quantité de matière de HCl (en mmol)'] },
+          manque: null, solution: { txt: 'pH = −log([H₃O⁺] / c°) avec [H₃O⁺] = C', val: -Math.log10(C / c0), u: '' } };
+      }
+      tokens.pH = tok(nb(p.pH, 2), 'pH lu sur le pH-mètre', p.pH, '');
+      return { tokens, derivees: [], texte: ['Un pH-mètre plongé dans ', T('V'), ' d’une solution d’acide chlorhydrique (flacon payé ', T('prix'), ') indique pH = ', T('pH'), '. La concentration standard est ', T('c0'), '. Quelle est la concentration en ions oxonium de la solution ?'],
+        utiles: ['pH', 'c0'], raisons,
+        cherche: { bonne: 'La concentration en ions oxonium [H₃O⁺] (en mol/L)', faux: ['Le pH de la solution', 'Le volume d’acide chlorhydrique (en mL)', 'La concentration en ions chlorure après dilution'] },
+        manque: null, solution: { txt: '[H₃O⁺] = c° × 10^(−pH)', val: c0 * 10 ** -p.pH, u: 'mol/L' } };
+    },
+  },
+  {
+    id: 'phc-dilution-ph', domaine: 'pH et concentration en ions oxonium', titre: 'Dilution d’une solution d’acide chlorhydrique', noms: ['pH après dilution', 'Facteur de dilution'],
+    gen: () => { const [V1, V2] = tire([[10.0, 100], [1.0, 100], [5.0, 500], [10.0, 1000], [1.0, 1000], [2.0, 200]]); return { pH0: Math.round((1.5 + Math.random() * 2) * 100) / 100, V1, V2, duree: tire([2, 5, 10]), prix: tire([6, 9, 14]) }; },
+    build: (p, q) => {
+      const F = p.V2 / p.V1;
+      const tokens = {
+        V1: tok(`${nb(p.V1, 1)} mL`, 'Volume de solution prélevé à la pipette jaugée', p.V1, 'mL'),
+        V2: tok(`${p.V2} mL`, 'Volume de la fiole jaugée', p.V2, 'mL'),
+        duree: tok(`${p.duree} min`, 'Durée d’agitation de la fiole', p.duree, 'min'),
+        prix: tok(`${p.prix} €`, 'Prix de la pipette', p.prix, '€'),
+      };
+      const debut = ['On prélève ', T('V1'), ' d’une solution d’acide chlorhydrique avec une pipette jaugée (', T('prix'), '), qu’on place dans une fiole jaugée de ', T('V2'), ' ; on complète avec de l’eau distillée puis on agite pendant ', T('duree'), '. '];
+      const raisons = { duree: 'La durée d’agitation n’intervient pas dans le calcul du facteur de dilution ni du pH.', prix: 'Le prix du matériel n’intervient pas dans le calcul.' };
+      if (q === 0) {
+        tokens.pH0 = tok(nb(p.pH0, 2), 'pH de la solution avant dilution', p.pH0, '');
+        return { tokens, derivees: [{ id: 'F', nom: 'Facteur de dilution F', expr: 'F = V₂ / V₁', val: F, u: '' }], texte: [...debut, 'Avant la dilution, le pH de la solution vaut ', T('pH0'), '. Quel est le pH de la solution diluée ?'],
+          utiles: ['pH0', 'V1', 'V2'], raisons,
+          cherche: { bonne: 'Le pH de la solution diluée', faux: ['Le facteur de dilution F', 'La concentration en ions oxonium avant dilution (en mol/L)', 'Le volume d’eau ajouté (en mL)'] },
+          manque: null, solution: { txt: 'pH final = pH initial + log F, avec F = V₂ / V₁', val: p.pH0 + Math.log10(F), u: '' } };
+      }
+      tokens.pH0 = tok(nb(p.pH0, 2), 'pH de la solution avant dilution', p.pH0, '');
+      return { tokens, derivees: [], texte: [...debut, 'Le pH de la solution avant dilution vaut ', T('pH0'), '. Quel est le facteur de dilution ?'],
+        utiles: ['V1', 'V2'], raisons: { ...raisons, pH0: 'Le facteur de dilution ne dépend que des volumes prélevé et final, pas du pH.' },
+        cherche: { bonne: 'Le facteur de dilution F (sans unité)', faux: ['Le pH de la solution diluée', 'La concentration finale en ions oxonium (en mol/L)', 'Le volume d’eau ajouté (en mL)'] },
+        manque: null, solution: { txt: 'F = V₂ / V₁', val: F, u: '' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)

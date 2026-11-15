@@ -830,5 +830,16 @@
  "77:plausible:lunet-val-grossissement": "VAL206",
  "77:plausible:lunet-val-reglage-myope": "VAL207",
  "36:lunet-grossissement": "REA26",
- "36:lunet-image": "REA27"
+ "36:lunet-image": "REA27",
+ "34:phc-ph-hcl.0": "SAPP203",
+ "34:phc-ph-hcl.1": "SAPP204",
+ "34:phc-dilution-ph.0": "SAPP205",
+ "34:phc-dilution-ph.1": "SAPP206",
+ "37:prevoir:phc-dilution-facteur": "ANA397",
+ "37:prevoir:phc-comparer-ph": "ANA398",
+ "37:prevoir:phc-ecrire-resultat": "ANA399",
+ "77:plausible:phc-val-signe": "VAL208",
+ "77:plausible:phc-val-dilution": "VAL209",
+ "77:plausible:phc-val-limite": "VAL210",
+ "36:phc-calcul": "REA28"
 }
