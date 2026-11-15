@@ -26,7 +26,7 @@ export function FormeOeil({ xL, y0, k, fe = M.L_OEIL, nomRetine = true, couleurR
 
 // ────────────────────────── L'œil réduit (échelle réelle dans l'œil) ──────────────────────────
 export function SchemaOeil({ D = 25, fe = M.L_OEIL, large = 700, haut: hautProp = 300, k = 10.5, xL = 395, rayons = true, etiquettes = true, label, compact = false, dp = 5 }) {
-  const haut = !compact && large === 700 && etroit() ? 335 : hautProp;
+  const haut = !compact && large === 700 && etroit() ? 390 : hautProp;
   const y0 = haut / 2, X = x => xL + k * x, Y = y => y0 - k * y, XR = X(M.L_OEIL);
   const inf = !isFinite(D), Dmm = D * 10, AB = M.AB_OEIL;
   const OAp = inf ? fe : M.positionImageOeil(Dmm, fe), yBp = inf ? -fe * THETA_INF : M.grandissementOeil(Dmm, fe) * AB;
@@ -78,6 +78,19 @@ export function SchemaOeil({ D = 25, fe = M.L_OEIL, large = 700, haut: hautProp 
         {!nette && rayons && <text x={fk > 1 ? large - 8 : XR + 10} textAnchor={fk > 1 ? 'end' : 'start'} y={y0 + 6.4 * k + 4 + (fk > 1 ? 14 : 0)} fill={C.flou} fontSize={fs} fontWeight="800">image floue</text>}
         {nette && rayons && <text x={fk > 1 ? large - 8 : XR + 10} textAnchor={fk > 1 ? 'end' : 'start'} y={y0 + 6.4 * k + 4 + (fk > 1 ? 14 : 0)} fill={C.img} fontSize={fs} fontWeight="800">image nette</text>}
       </g>}
+      {/* zoom sur la rétine : ce qu'on y verrait en la regardant de face (tache nette ou floue) */}
+      {rayons && !compact && large === 700 && (() => {
+        const sp = Math.abs(yh - yb2), bw = fk > 1 ? 300 : 230, bh = fk > 1 ? 150 : 104, cx = 10 + bw - bh / 2 - 6, cy = 10 + bh / 2, R0 = bh / 2 - 8;
+        const r = nette ? 7 : Math.max(14, Math.min(R0 - 2, 12 + sp * 55));
+        return (<g>
+          <rect x="10" y="10" width={bw} height={bh} rx="10" fill="#fffbeb" stroke={C.ret} strokeWidth="1.4"/>
+          <text x="20" y={10 + 16 * fk} fontSize={fs - 1} fontWeight="800" fill={C.ret}>zoom rétine</text>
+          <text x="20" y={10 + 36 * fk} fontSize={fs} fontWeight="800" fill={nette ? C.img : C.flou}>{nette ? 'point net' : 'tache floue'}</text>
+          <circle cx={cx} cy={cy} r={R0} fill="#fef3c7" stroke={C.ret} strokeWidth="1.5"/>
+          <defs><radialGradient id={'flouRet' + (nette ? 'n' : 'f')}><stop offset="0%" stopColor={C.flou} stopOpacity="0.85"/><stop offset="100%" stopColor={C.flou} stopOpacity="0.05"/></radialGradient></defs>
+          {nette ? <circle cx={cx} cy={cy} r={r} fill={C.img} stroke="#fff" strokeWidth="1.5"/> : <circle cx={cx} cy={cy} r={r} fill="url(#flouRetf)"/>}
+        </g>);
+      })()}
     </svg>);
 }
 
@@ -113,6 +126,7 @@ export function SchemaAngle({ D = 50, AB = 2, fantome = false, label, large = 70
 
 // ────────────────────────── Loupe : banc d'optique + œil derrière la loupe ──────────────────────────
 const LARG = 700, HAUT = 330, KX = 22, X0 = 330, YA = 172, KY = 50;
+const KO = 4.8;                                    // échelle de l'œil (px par mm) derrière la loupe
 const px = x => X0 + KX * x, py = y => YA - KY * y;
 export function SchemaLoupe({ d, f, AB = M.AB_LOUPE, rayons = true, foyers = true, etiquettes = true, theta = true, oeil = true, label }) {
   const fk = etroit() ? 2.1 : 1;
@@ -154,13 +168,30 @@ export function SchemaLoupe({ d, f, AB = M.AB_LOUPE, rayons = true, foyers = tru
       {rayons && !inf && virt && !aff && <text x="12" y="44" fontSize={13 * fk} fontWeight="800" fill={C.img}>{fk > 1 ? `image à ${fr(-im.OAp, 0)} cm` : `image virtuelle à ${fr(-im.OAp)} cm (hors cadre)`}</text>}
       {/* œil juste derrière la loupe */}
       {oeilVisible && <g>
-        <FormeOeil xL={px(e)} y0={YA} k={3.1} fe={M.L_OEIL}/>
-        <text x={px(e) + 28} y={YA - 64} textAnchor="middle" fontSize={12.5 * fk} fontWeight="800" fill={C.txt}>œil</text>
+        <FormeOeil xL={px(e)} y0={YA} k={KO} fe={M.L_OEIL}/>
+        <text x={px(e) + 6 * KO} y={YA - 8.2 * KO - 6} textAnchor="middle" fontSize={12.5 * fk} fontWeight="800" fill={C.txt}>œil</text>
         {theta && rayons && (() => {
           const s = AB / d, L1 = 150;
           return (<g>
             <line x1={px(e)} y1={YA} x2={px(e) - L1} y2={YA - s * KY * L1 / KX} stroke={C.theta} strokeWidth="1.8" strokeDasharray="2 3"/>
-            <text x={px(e) + 30} y={YA + 54} textAnchor="start" fontSize={13.5 * fk} fontWeight="800" fill={C.theta}>{`θ′ ≈ ${fr(M.thetaPrime(AB, d) * 1000, 0)}${NB}mrad`}</text>
+            <g stroke={C.theta} strokeWidth="1.7" fill="none" opacity="0.85">
+              <line x1={px(e)} y1={YA - 2.4 * KO} x2={px(e) + M.L_OEIL * KO} y2={YA + M.L_OEIL * KO * M.thetaPrime(AB, d)}/>
+              <line x1={px(e)} y1={YA + 2.4 * KO} x2={px(e) + M.L_OEIL * KO} y2={YA + M.L_OEIL * KO * M.thetaPrime(AB, d)}/>
+            </g>
+            <circle cx={px(e) + M.L_OEIL * KO} cy={YA + M.L_OEIL * KO * M.thetaPrime(AB, d)} r="4.2" fill={C.img} stroke="#fff" strokeWidth="1.2"/>
+            <text x={px(e) + 30} y={YA + 7.8 * KO + 20 * fk} textAnchor="start" fontSize={13.5 * fk} fontWeight="800" fill={C.theta}>{`θ′ ≈ ${fr(M.thetaPrime(AB, d) * 1000, 0)}${NB}mrad`}</text>
+          </g>);
+        })()}
+        {theta && rayons && (() => {
+          const KZ = 4.6, bx = 410, by = 4, bw = 282, bh = 118, xl = bx + 84, y0 = by + 64, XRz = xl + M.L_OEIL * KZ, yr = y0 + M.L_OEIL * KZ * M.thetaPrime(AB, d);
+          return (<g>
+            <rect x={bx} y={by} width={bw} height={bh} rx="10" fill="#fff" stroke={C.ret} strokeWidth="1.4"/>
+            <text x={bx + 10} y={by + 13 * fk} fontSize={11.5 * fk} fontWeight="800" fill={C.ret}>zoom</text>
+            <FormeOeil xL={xl} y0={y0} k={KZ} fe={M.L_OEIL}/>
+            <g stroke={C.theta} strokeWidth="2" opacity="0.9"><line x1={xl - 60} y1={y0 - 2.4 * KZ + 60 * M.thetaPrime(AB, d)} x2={xl} y2={y0 - 2.4 * KZ}/><line x1={xl - 60} y1={y0 + 2.4 * KZ + 60 * M.thetaPrime(AB, d)} x2={xl} y2={y0 + 2.4 * KZ}/>
+              <line x1={xl} y1={y0 - 2.4 * KZ} x2={XRz} y2={yr}/><line x1={xl} y1={y0 + 2.4 * KZ} x2={XRz} y2={yr}/></g>
+            <circle cx={XRz} cy={yr} r="5" fill={C.img} stroke="#fff" strokeWidth="1.3"/>
+            <text x={XRz + 10} y={yr + 5 * fk} fontSize={11.5 * fk} fontWeight="800" fill={C.img}>image</text>
           </g>);
         })()}
       </g>}
