@@ -137,6 +137,7 @@ const SimulationEscapeKepler = paresseux(() => import("./simulations/EscapeKeple
 const SimulationEscapeAqua = paresseux(() => import("./simulations/EscapeAqua"), "SimulationEscapeAqua");
 const SimulationHistoireLabo = paresseux(() => import("./simulations/HistoireLabo"), "SimulationHistoireLabo");
 const SimulationHistoirePercutafeine = paresseux(() => import("./simulations/HistoirePercutafeine"), "SimulationHistoirePercutafeine");
+const SimulationGrapheur = paresseux(() => import("./simulations/Grapheur"), "SimulationGrapheur");
 
 // ============================================================
 //  MENU — modifiez les noms et icônes ici
@@ -346,6 +347,8 @@ const SIMULATIONS = [
   { id:81, label:"Une journée au labo (histoire à choix, BTS)", niveau:"COMPTE", icon:"🧪", color:"#0f766e", component: SimulationHistoireLabo },
   // Histoire à choix « Contre-typer la Percutaféine » (BTS, d'après le TP / CCF4 gel à la caféine) : hors menu, ?sim=113
   { id:113, label:"Contre-typage de la Percutaféine (histoire à choix, BTS)", niveau:"COMPTE", icon:"🧴", color:"#0f766e", component: SimulationHistoirePercutafeine },
+  // Grapheur (tableau → nuage de points → modèle → écarts → hypothèses) : outil hors menu, ouvert par son lien (?sim=124), en attendant la relecture de Nils
+  { id:124, label:"Grapheur de mesures", niveau:"COMPTE", icon:"📈", color:"#1d4ed8", component: SimulationGrapheur },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
 
