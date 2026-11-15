@@ -844,6 +844,36 @@ function genRadioactiviteTG() {
     retenir: ['λ = ln 2 / t½ et N(t) = N₀·e^(−λt) ; après n demi-vies, N = N₀ / 2ⁿ.', 'A = λ·N en becquerels : λ en s⁻¹ (1 j = 86 400 s).', 'Datation : t = (t½ / ln 2) × ln(N₀ / N) ; plus de 50 % restant ⇒ âge inférieur à t½.'] };
 }
 
+// ───────────── Équilibre chimique (TG) : Qr, K, taux d’avancement final, Qr après un ajout ─────────────
+function genEquilibreTG() {
+  const v = [0.050, 0.10, 0.20, 0.40];
+  const a = tire(v), b = tire(v), c = tire(v), d = tire(v), Q = c * d / (a * b);
+  const q1 = { id: 'e0', type: 'num', q: <>Pour la réaction A + B ⇌ C + D en solution, un mélange a pour concentrations [A] = <b>{nb(a, 3)}{NB}mol/L</b>, [B] = <b>{nb(b, 3)}{NB}mol/L</b>, [C] = <b>{nb(c, 3)}{NB}mol/L</b> et [D] = <b>{nb(d, 3)}{NB}mol/L</b>. Calculez son quotient de réaction Qr (sans unité).</>, unite: '', vrai: Q, csMin: 3, tolRel: 0.01,
+    aide: 'Qr = [C]·[D] / ([A]·[B]) : produits au numérateur, réactifs au dénominateur, concentrations en mol/L divisées par 1 mol/L.',
+    pieges: [[1 / Q, 'Le rapport est inversé : les produits (C et D) sont au numérateur, les réactifs (A et B) au dénominateur.'], [(c + d) / (a + b), 'On multiplie les concentrations de deux espèces, on ne les additionne pas.'], [c * d, 'Il manque le dénominateur : Qr est un rapport, produits sur réactifs.']],
+    expl: <>Qr = ({nb(c, 3)} × {nb(d, 3)}) / ({nb(a, 3)} × {nb(b, 3)}) = <b>{nb(Q, 3)}</b>.</> };
+  const c0 = tire([0.10, 0.20]), x = tire([0.020, 0.030, 0.040, 0.050]), K = (x / (c0 - x)) ** 2;
+  const q2 = { id: 'e1', type: 'num', q: <>On part de <b>{nb(c0, 3)}{NB}mol/L</b> de A et de B, sans produit. À l’état final, [C] = [D] = <b>{nb(x, 3)}{NB}mol/L</b>. Calculez la constante d’équilibre K de la réaction A + B ⇌ C + D (sans unité).</>, unite: '', vrai: K, csMin: 3, tolRel: 0.01,
+    aide: 'À l’état final, K = Qr avec les concentrations finales : [C] = [D] = x et [A] = [B] = c₀ − x.',
+    pieges: [[(x / c0) ** 2, 'Il faut les concentrations de l’état final : [A] = [B] = c₀ − x, pas la concentration initiale.'], [1 / K, 'Le rapport est inversé : produits au numérateur, réactifs au dénominateur.'], [x / (c0 - x), 'Il manque le carré : K = ([C] × [D]) / ([A] × [B]) = x² / (c₀ − x)².']],
+    expl: <>[A] = [B] = {nb(c0, 3)} − {nb(x, 3)} = {nb(c0 - x, 3)}{NB}mol/L ; K = {nb(x, 3)}² / {nb(c0 - x, 3)}² = <b>{nb(K, 3)}</b>.</> };
+  const c1 = tire([0.10, 0.20, 0.40]), x1 = c1 * tire([0.10, 0.25, 0.40, 0.60, 0.80]), V1 = tire([0.50, 1.00, 2.00]);
+  const tau = x1 / c1;
+  const q3 = { id: 'e2', type: 'num', q: <>Dans <b>{nb(V1, 3)}{NB}L</b> d’eau, on part de <b>{nb(c1, 3)}{NB}mol/L</b> de A et de B, sans produit. À l’état final, [C] = <b>{nb(x1, 3)}{NB}mol/L</b>. Calculez le taux d’avancement final τ = x<sub>f</sub> / x<sub>max</sub> (sans unité).</>, unite: '', vrai: tau, csMin: 2, tolRel: 0.01,
+    aide: 'x_max correspond à la disparition du réactif limitant : x_max = c₀ × V. L’avancement final est x_f = [C] × V. Le volume se simplifie.',
+    pieges: [[1 / tau, 'Le rapport est inversé : τ = x_f / x_max, et x_f ne dépasse pas x_max.'], [1 - tau, 'Vous avez calculé la part de réactif restante ; τ est la part de l’avancement maximal atteinte, x_f / x_max.'], [100 * tau, 'τ est sans unité : 40 % s’écrit 0,40.'], [x1 / V1 / c1 * V1 * V1, 'Le volume se simplifie : τ = ([C] × V) / (c₀ × V) = [C] / c₀.']],
+    expl: <>x<sub>f</sub> = {nb(x1, 3)} × {nb(V1, 3)} = {nb(x1 * V1, 3)}{NB}mol ; x<sub>max</sub> = {nb(c1, 3)} × {nb(V1, 3)} = {nb(c1 * V1, 3)}{NB}mol ; τ = <b>{nb(tau, 2)}</b>.</> };
+  const Kq = 0.10, [a4, b4, c4, d4] = tire([[0.20, 0.10, 0.050, 0.040], [0.40, 0.10, 0.10, 0.040], [0.20, 0.20, 0.20, 0.020], [0.40, 0.20, 0.10, 0.080], [0.10, 0.10, 0.050, 0.020]]), dA = tire([0.050, 0.10, 0.20]);
+  const Q4 = c4 * d4 / ((a4 + dA) * b4);
+  const q4 = { id: 'e3', type: 'num', q: <>Un système A + B ⇌ C + D est à l’équilibre, de constante K = {nb(Kq, 3)} ; ses concentrations sont [A] = <b>{nb(a4, 3)}{NB}mol/L</b>, [B] = <b>{nb(b4, 3)}{NB}mol/L</b>, [C] = <b>{nb(c4, 3)}{NB}mol/L</b> et [D] = <b>{nb(d4, 3)}{NB}mol/L</b>. On ajoute <b>{nb(dA, 3)}{NB}mol/L</b> de A (volume et température inchangés). Calculez le quotient de réaction Qr juste après l’ajout (sans unité).</>, unite: '', vrai: Q4, csMin: 3, tolRel: 0.01,
+    aide: 'Après l’ajout, [A] vaut [A] + ajout ; les autres concentrations n’ont pas encore changé. Qr = [C]·[D] / ([A]·[B]).',
+    pieges: [[Kq, 'C’est le quotient avant l’ajout (il vaut K). Après l’ajout, [A] a augmenté.'], [c4 * d4 / ((a4 - dA) * b4), 'On ajoute A : sa concentration augmente de l’ajout, elle ne diminue pas.'], [(a4 + dA) * b4 / (c4 * d4), 'Le rapport est inversé : produits au numérateur, réactifs au dénominateur.']],
+    expl: <>[A] = {nb(a4, 3)} + {nb(dA, 3)} = {nb(a4 + dA, 3)}{NB}mol/L ; Qr = ({nb(c4, 3)} × {nb(d4, 3)}) / ({nb(a4 + dA, 3)} × {nb(b4, 3)}) = <b>{nb(Q4, 3)}</b> : inférieur à K, le système évolue dans le sens direct.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([y]) => isFinite(y) && Math.abs(y - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'Équilibre chimique : quotient de réaction, constante d’équilibre, taux d’avancement final et Qr après un ajout.', questions: [q1, q2, q3, q4],
+    retenir: ['Qr = [C]·[D] / ([A]·[B]), sans unité ; Qr < K : sens direct ; Qr > K : sens inverse.', 'À l’état final, Qr = K : on calcule K avec les concentrations de l’état final.', 'τ = x_f / x_max, sans unité, compris entre 0 et 1 ; τ < 1 : transformation non totale.'] };
+}
+
 export const FAMILLES = [
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
   { id: 'vecteur-difference', groupe: 'Vecteurs', titre: 'Différence de deux vecteurs (variation de vitesse)', gen: genDifference },
@@ -862,6 +892,7 @@ export const FAMILLES = [
   { id: 'phc-calcul', groupe: 'Formules', titre: 'pH et concentration en ions oxonium : relation et dilution (TG)', gen: genPhConcTG, domaine: 'pH et concentration en ions oxonium' },
   { id: 'cinv-calcul', groupe: 'Formules', titre: 'Cinétique : vitesse volumique, demi-réactions et constante d’ordre 1 (TG)', gen: genCinetiqueTG, domaine: 'Cinétique : vitesse volumique et ordre 1' },
   { id: 'rad-calcul', groupe: 'Formules', titre: 'Radioactivité : constante λ, noyaux restants, activité et datation (TG)', gen: genRadioactiviteTG, domaine: 'Radioactivité : décroissance et demi-vie' },
+  { id: 'equ-calcul', groupe: 'Formules', titre: 'Équilibre chimique : Qr, K, taux d’avancement final et ajout d’un réactif (TG)', gen: genEquilibreTG, domaine: 'Équilibre chimique : Qr, K et taux d’avancement' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },
   { id: 'simple', groupe: 'Unités', titre: 'Changement d’unité simple', gen: genSimple },
   { id: 'prefixes', groupe: 'Unités', titre: 'Préfixes et puissances de 10', gen: genPrefixes },
