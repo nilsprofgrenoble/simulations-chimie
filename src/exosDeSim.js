@@ -9,6 +9,7 @@ export const EXOS_DE_SIM = {
   // ── BTS · Formulation ──
   4: [/for-hansen-/],                                                                                                 // Hansen
   14: [/for-(extrait-sec|cpv|cpvc|aspect-cpv|tmff|coalescent|sechage-latex|prise-huile)/, /for-val-extrait-sec/],         // Peinture à l'eau
+  126: [/^pmel-/],
   100: [/^rheo-/],                                                                                                      // Épaississants associatifs
   101: [/for-lasure-/],                                                                                                 // Lasure alkyde
   // ── BTS · Synthèse organique (un thème d'exercices par simulation) ──
