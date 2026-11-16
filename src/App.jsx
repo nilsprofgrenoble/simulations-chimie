@@ -78,6 +78,7 @@ const SimulationDopplerTG = paresseux(() => import("./simulations/Doppler"), "Si
 const SimulationTitragePH = paresseux(() => import("./simulations/TitragePH"), "SimulationTitragePH");
 const SimulationPhConcentration = paresseux(() => import("./simulations/PhConcentration"), "SimulationPhConcentration");
 const SimulationVitesseOrdre1 = paresseux(() => import("./simulations/VitesseOrdre1"), "SimulationVitesseOrdre1");
+const SimulationPlanMelange = paresseux(() => import("./simulations/PlanMelange"), "SimulationPlanMelange");
 const SimulationRadioactivite = paresseux(() => import("./simulations/Radioactivite"), "SimulationRadioactivite");
 const SimulationEquilibre = paresseux(() => import("./simulations/Equilibre"), "SimulationEquilibre");
 const SimulationAcidesBases = paresseux(() => import("./simulations/AcidesBases"), "SimulationAcidesBases");
@@ -215,6 +216,8 @@ const SIMULATIONS = [
     component: SimulationPhConcentration },
   { id:122, label:"Cinétique : vitesse volumique, temps de demi-réaction et loi d’ordre 1", niveau:"TG", icon:"⏱️", color:"#0f766e",
     component: SimulationVitesseOrdre1 },
+  { id:126, label:"Plan de mélange ternaire : lire un diagramme ternaire, concevoir un plan, exploiter le modèle", niveau:"BTS", icon:"🔺", color:"#b45309",
+    component: SimulationPlanMelange },
   { id:123, label:"Radioactivité : loi de décroissance, demi-vie et activité", niveau:"TG", icon:"☢️", color:"#0f766e",
     component: SimulationRadioactivite },
   { id:125, label:"Équilibre chimique : quotient de réaction Qr, constante K et taux d’avancement final", niveau:"TG", icon:"⚖️", color:"#0f766e",
