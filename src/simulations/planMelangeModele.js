@@ -14,10 +14,10 @@ export const COMPOSANTS = [
   { id: 'C', nom: "Cire d'abeille", court: "cire d'abeille", coul: '#7c3aed' },
 ];
 
-// Formule de référence du TP (masses des trois corps gras, en g, pour une formule de 7 g)
-export const MASSES_REF = [0.56, 0.35, 0.70];
+// Formule de référence du TP (masses des trois corps gras, en g : fichier « CORRECTION », formule 7, soit 3,2 g de corps gras)
+export const MASSES_REF = [1.088, 0.704, 1.408];
 export const fractionsDe = m => { const t = m.reduce((a, b) => a + b, 0); return m.map(x => x / t); };
-export const FREF = fractionsDe(MASSES_REF);                 // ≈ 0,348 ; 0,217 ; 0,435
+export const FREF = fractionsDe(MASSES_REF);                 // 0,34 ; 0,22 ; 0,44
 
 // ---------- plus grand simplexe de même orientation dont la formule de référence est le centre ----------
 // Au centre d'un simplexe de bornes basses Lᵢ et de côté s : xᵢ = Lᵢ + s/3. Avec Lᵢ ≥ 0, on a s ≤ 3·xᵢ pour tout i : s = 3·min(xᵢ).
@@ -47,9 +47,12 @@ export const AXIAUX = [
   { n: 10, z: [1 / 6, 1 / 6, 2 / 3], nom: 'axe C' },
 ];
 
-// Mesures réelles du TP (texturomètre, mobile « guillotine », paramètres « fruit pénétro ») : fermeté en g, une mesure par essai
-// (fichier « TPF RaL résultats collectifs », échantillons 1 à 7 dans l'ordre du plan ci-dessus)
-export const FERMETE = [288, 141, 407, 377, 822, 254, 479];
+// Mesures réelles du TP, une mesure par essai (fichier « TPF RaL résultats CORRECTION 24-25 », formules 1 à 7 réordonnées dans l'ordre du plan ci-dessus :
+// sommet A = formule 3, sommet B = formule 2, sommet C = formule 1, milieu AB = formule 6, milieu AC = formule 5, milieu BC = formule 4, centre = formule 7)
+// Fermeté = premier pic de force du texturomètre, en g
+export const FERMETE = [752, 146, 346, 443, 536, 154, 348];
+// Note d'analyse sensorielle (0 à 10 ; échelle relative propre au jury, le moins apprécié a 0, le plus apprécié 10)
+export const NOTE = [5, 2, 8, 8, 6, 0, 10];
 
 // ---------- algèbre linéaire minimale ----------
 function inverse(M) {
@@ -180,6 +183,6 @@ const T95 = [NaN, 12.706, 4.303, 3.182, 2.776, 2.571, 2.447, 2.365, 2.306, 2.262
 export const student95 = ddl => (ddl <= 20 ? T95[ddl] : ddl <= 30 ? 2.042 : 1.96);
 
 // ---------- coût matière (réponse linéaire : exemple de mélange sans interaction) ----------
-// Prix INDICATIFS en €/kg, choisis pour la simulation (à remplacer par les prix relevés par les élèves)
-export const PRIX = [28, 12, 34];
+// Prix réels du stock du TP (fichier « CORRECTION ») en €/kg : candelilla 3 € les 30 g ; huile de ricin 7,3 € les 250 mL (d = 0,96) ; cire d'abeille 9,5 € les 250 g
+export const PRIX = [100, 7.3 / (250 * 0.96) * 1000, 38];
 export const coutKg = x => x.reduce((s, xi, i) => s + xi * PRIX[i], 0);
