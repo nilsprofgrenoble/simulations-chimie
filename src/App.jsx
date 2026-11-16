@@ -79,6 +79,7 @@ const SimulationTitragePH = paresseux(() => import("./simulations/TitragePH"), "
 const SimulationPhConcentration = paresseux(() => import("./simulations/PhConcentration"), "SimulationPhConcentration");
 const SimulationVitesseOrdre1 = paresseux(() => import("./simulations/VitesseOrdre1"), "SimulationVitesseOrdre1");
 const SimulationPlanMelange = paresseux(() => import("./simulations/PlanMelange"), "SimulationPlanMelange");
+const SimulationPlanFactoriel = paresseux(() => import("./simulations/PlanFactoriel"), "SimulationPlanFactoriel");
 const SimulationRadioactivite = paresseux(() => import("./simulations/Radioactivite"), "SimulationRadioactivite");
 const SimulationEquilibre = paresseux(() => import("./simulations/Equilibre"), "SimulationEquilibre");
 const SimulationAcidesBases = paresseux(() => import("./simulations/AcidesBases"), "SimulationAcidesBases");
@@ -218,6 +219,8 @@ const SIMULATIONS = [
     component: SimulationVitesseOrdre1 },
   { id:126, label:"Plan de mélange ternaire : lire un diagramme ternaire, concevoir un plan, exploiter le modèle", niveau:"BTS", icon:"🔺", color:"#b45309",
     component: SimulationPlanMelange },
+  { id:127, label:"Plans factoriels : coder les niveaux, calculer les effets, lire les interactions, exploiter le modèle", niveau:"BTS", icon:"🧊", color:"#b45309",
+    component: SimulationPlanFactoriel },
   { id:123, label:"Radioactivité : loi de décroissance, demi-vie et activité", niveau:"TG", icon:"☢️", color:"#0f766e",
     component: SimulationRadioactivite },
   { id:125, label:"Équilibre chimique : quotient de réaction Qr, constante K et taux d’avancement final", niveau:"TG", icon:"⚖️", color:"#0f766e",

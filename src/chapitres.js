@@ -77,6 +77,7 @@ export const CHAPITRES = [
   { id: 'bts-films', niveau: 'BTS', rubrique: 'Formulation', label: '🎨 Films et séchage', sims: [14, 101], domaines: ['Formulation', 'Séchage'] },
   { id: 'bts-rheologie', niveau: 'BTS', rubrique: 'Formulation', label: '🧴 Rhéologie', sims: [100], domaines: ['Formulation', 'Rhéologie'] },
   { id: 'bts-plans-melange', niveau: 'BTS', rubrique: 'Formulation', label: '🔺 Plans de mélange', sims: [126], domaines: ['Formulation', 'Plans'] },
+  { id: 'bts-plans-factoriels', niveau: 'BTS', rubrique: 'Formulation', label: '🧊 Plans factoriels', sims: [127], domaines: ['Formulation', 'Plans'] },
 ];
 
 export const MAX_CHAPITRES = 3;
