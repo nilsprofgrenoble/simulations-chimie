@@ -12,7 +12,6 @@ const tri = (ox, oy, cote) => {
   return { P, pts };
 };
 const svgStyle = { width: '100%', maxWidth: 400, height: 'auto', display: 'block', margin: '0 auto 6px' };
-const nf = (v, d = 0) => Number(v).toFixed(d).replace('.', ',');
 const DOM = simplexeCentre(FREF);
 
 // 1. Lire un diagramme ternaire : un point, trois lectures, total 100 %
@@ -58,25 +57,25 @@ export function CartePlan() {
   );
 }
 
-// 3. Mélange plus ferme que la moyenne : synergie (valeurs réelles du TP)
-export function CarteSynergie() {
-  const y1 = FERMETE[0], y3 = FERMETE[2], y5 = FERMETE[4], moy = (y1 + y3) / 2, k = 120 / 850, base = 196;
+// 3. S'écarter de la moyenne : antagonisme (valeurs réelles du TP, côté sommet 2 – sommet 3, essai 6)
+export function CarteEcart() {
+  const y2 = FERMETE[1], y3 = FERMETE[2], y6 = FERMETE[5], moy = (y2 + y3) / 2, k = 130 / 400, base = 196;
   const barre = (x, v, coul, txt, dash) => (
     <g>
       <rect x={x} y={base - v * k} width="62" height={v * k} fill={dash ? 'none' : coul} fillOpacity={dash ? 1 : 0.85} stroke={coul} strokeWidth="2.2" strokeDasharray={dash ? '6 4' : undefined}/>
-      <text x={x + 31} y={base - v * k - 6} textAnchor="middle" fontSize="14" fontWeight="800" fill="#0f172a">{v === moy ? nf(v, 1) : v}</text>
+      <text x={x + 31} y={base - v * k - 6} textAnchor="middle" fontSize="14" fontWeight="800" fill="#0f172a">{v}</text>
       <text x={x + 31} y={base + 18} textAnchor="middle" fontSize="13" fill="#334155">{txt[0]}</text>
       <text x={x + 31} y={base + 34} textAnchor="middle" fontSize="13" fill="#334155">{txt[1]}</text>
     </g>);
   return (
-    <svg viewBox="0 0 380 250" role="img" aria-label={`Fermeté en grammes : sommet 1 ${y1}, sommet 3 ${y3}, moyenne attendue ${nf(moy, 1)}, essai 5 mesuré ${y5} : le mélange est bien plus ferme que la moyenne, c'est une synergie`} style={svgStyle}>
+    <svg viewBox="0 0 380 250" role="img" aria-label={`Fermeté en grammes : sommet 2 ${y2}, sommet 3 ${y3}, moyenne attendue ${moy}, essai 6 mesuré ${y6} : le mélange est bien moins ferme que la moyenne, c'est un antagonisme`} style={svgStyle}>
       <line x1="14" y1={base} x2="366" y2={base} stroke="#334155" strokeWidth="2"/>
-      {barre(22, y1, '#64748b', ['sommet 1', 'mesuré'])}
+      {barre(22, y2, '#64748b', ['sommet 2', 'mesuré'])}
       {barre(100, y3, '#64748b', ['sommet 3', 'mesuré'])}
       {barre(178, moy, '#0369a1', ['moyenne', 'attendue'], true)}
-      {barre(256, y5, '#b91c1c', ['essai 5', 'mesuré'])}
+      {barre(256, y6, '#b91c1c', ['essai 6', 'mesuré'])}
       <text x="190" y="24" textAnchor="middle" fontSize="14.5" fontWeight="800" fill="#0f172a">fermeté (g)</text>
-      <text x="190" y="44" textAnchor="middle" fontSize="13.5" fill="#b91c1c" fontWeight="700">mesuré ≫ moyenne  ⇒  synergie</text>
+      <text x="190" y="44" textAnchor="middle" fontSize="13.5" fill="#b91c1c" fontWeight="700">mesuré ≪ moyenne  ⇒  antagonisme</text>
     </svg>
   );
 }
@@ -100,20 +99,20 @@ export function CarteDomaine() {
   );
 }
 
-// 5. Coefficient d'interaction : quatre fois l'écart au milieu (valeurs réelles du TP, côté sommet 1 – sommet 3, essai 5)
+// 5. Coefficient d'interaction : quatre fois l'écart au milieu (valeurs réelles du TP, côté sommet 2 – sommet 3, essai 6)
 export function CarteBeta() {
-  const y1 = FERMETE[0], y3 = FERMETE[2], y5 = FERMETE[4], moy = (y1 + y3) / 2, k = 125 / 850, base = 196, X = z => 60 + z * 250;
+  const y2 = FERMETE[1], y3 = FERMETE[2], y6 = FERMETE[5], moy = (y2 + y3) / 2, k = 130 / 400, base = 196, X = z => 60 + z * 250;
   const Y = v => base - v * k;
   return (
-    <svg viewBox="0 0 380 250" role="img" aria-label={`Sur le côté sommet 1 – sommet 3, la fermeté passe de ${y1} à ${y3} g ; au milieu on attendrait ${nf(moy, 1)} g, on mesure ${y5} g : le coefficient d'interaction est quatre fois cet écart`} style={svgStyle}>
+    <svg viewBox="0 0 380 250" role="img" aria-label={`Sur le côté sommet 2 – sommet 3, la fermeté passe de ${y2} à ${y3} g ; au milieu on attendrait ${moy} g, on mesure ${y6} g : le coefficient d'interaction est quatre fois cet écart, soit ${4 * (y6 - moy)} g`} style={svgStyle}>
       <line x1="40" y1={base} x2="340" y2={base} stroke="#334155" strokeWidth="2"/>
-      <line x1={X(0)} y1={Y(y1)} x2={X(1)} y2={Y(y3)} stroke="#0369a1" strokeWidth="2.2" strokeDasharray="6 4"/>
-      <path d={`M${X(0)},${Y(y1)} Q${X(0.5)},${Y(y5 * 2 - (y1 + y3) / 2)} ${X(1)},${Y(y3)}`} fill="none" stroke="#b91c1c" strokeWidth="2.6"/>
-      {[[0, y1, '#64748b'], [0.5, y5, '#b91c1c'], [1, y3, '#64748b']].map(([z, v, c], i) => <circle key={i} cx={X(z)} cy={Y(v)} r="6" fill={c} stroke="#fff" strokeWidth="1.5"/>)}
+      <line x1={X(0)} y1={Y(y2)} x2={X(1)} y2={Y(y3)} stroke="#0369a1" strokeWidth="2.2" strokeDasharray="6 4"/>
+      <path d={`M${X(0)},${Y(y2)} Q${X(0.5)},${Y(y6 * 2 - moy)} ${X(1)},${Y(y3)}`} fill="none" stroke="#b91c1c" strokeWidth="2.6"/>
+      {[[0, y2, '#64748b'], [0.5, y6, '#b91c1c'], [1, y3, '#64748b']].map(([z, v, c], i) => <circle key={i} cx={X(z)} cy={Y(v)} r="6" fill={c} stroke="#fff" strokeWidth="1.5"/>)}
       <circle cx={X(0.5)} cy={Y(moy)} r="5" fill="white" stroke="#0369a1" strokeWidth="2"/>
-      <line x1={X(0.5) + 12} y1={Y(moy)} x2={X(0.5) + 12} y2={Y(y5)} stroke="#0f172a" strokeWidth="2"/>
-      <text x={X(0.5) + 18} y={(Y(moy) + Y(y5)) / 2 + 5} fontSize="14" fontWeight="800" fill="#0f172a">écart</text>
-      <text x={X(0)} y={base + 19} textAnchor="middle" fontSize="13" fill="#334155">sommet 1</text>
+      <line x1={X(0.5) + 12} y1={Y(moy)} x2={X(0.5) + 12} y2={Y(y6)} stroke="#0f172a" strokeWidth="2"/>
+      <text x={X(0.5) + 18} y={(Y(moy) + Y(y6)) / 2 + 5} fontSize="14" fontWeight="800" fill="#0f172a">écart</text>
+      <text x={X(0)} y={base + 19} textAnchor="middle" fontSize="13" fill="#334155">sommet 2</text>
       <text x={X(1)} y={base + 19} textAnchor="middle" fontSize="13" fill="#334155">sommet 3</text>
       <text x={X(0.5)} y={base + 19} textAnchor="middle" fontSize="13" fill="#334155">milieu</text>
       <text x="190" y="22" textAnchor="middle" fontSize="14.5" fontWeight="800" fill="#b91c1c">βᵢⱼ = 4 × écart au milieu</text>
