@@ -11,6 +11,7 @@ export const EXOS_DE_SIM = {
   14: [/for-(extrait-sec|cpv|cpvc|aspect-cpv|tmff|coalescent|sechage-latex|prise-huile)/, /for-val-extrait-sec/],         // Peinture à l'eau
   126: [/pmel-/],
   127: [/pfac-/],
+  128: [/pfac-parallele/, /pmel-ecart-milieu-sens/],     // introduction : seuls les exercices sur l’interaction
   100: [/^rheo-/],                                                                                                      // Épaississants associatifs
   101: [/for-lasure-/],                                                                                                 // Lasure alkyde
   // ── BTS · Synthèse organique (un thème d'exercices par simulation) ──
