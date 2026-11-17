@@ -19,6 +19,9 @@ export const additif = s => r1(s.A + s.B - s.base);          // réponse prévue
 export const effetA = s => r1(s.A - s.base);
 export const effetB = s => r1(s.B - s.base);
 export const interaction = s => r1(s.AB - additif(s));         // mesuré − prévu additif
+// Modèle du plan 2² en niveaux codés xA, xB ∈ {−1 ; +1} : Y = a0 + aA·xA + aB·xB + aAB·xA·xB
+export const modele = s => ({ a0: (s.base + s.A + s.B + s.AB) / 4, aA: (s.A + s.AB - s.base - s.B) / 4, aB: (s.B + s.AB - s.base - s.A) / 4, aAB: (s.base + s.AB - s.A - s.B) / 4 });
+export const predit = (c, xA, xB) => c.a0 + c.aA * xA + c.aB * xB + c.aAB * xA * xB;
 export const verdict = (i, tol = 0.05) => (Math.abs(i) <= tol ? 'aucune' : i > 0 ? 'synergie' : 'antagonisme');
 
 // Rouge à lèvres (plan de mélange) : deux corps purs et leur mélange à parts égales

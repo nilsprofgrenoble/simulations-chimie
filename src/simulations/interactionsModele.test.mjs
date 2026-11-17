@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { SCEN, additif, interaction, verdict, ROUGE, ecartRouge, moyenneRouge, tirage, r1 } from './interactionsModele.js';
+import { modele, predit, SCEN, additif, interaction, verdict, ROUGE, ecartRouge, moyenneRouge, tirage, r1 } from './interactionsModele.js';
 import { JEUX } from './planFactorielModele.js';
 
 assert.equal(additif(SCEN.vedettes), 3.6); assert.equal(interaction(SCEN.vedettes), -2);
@@ -20,4 +20,10 @@ import('./planMelangeModele.js').then(m => { assert.equal(m.NOTE[0], ROUGE.A); a
 const vus = new Set();
 for (let i = 0; i < 2000; i++) { const t = tirage(); assert.ok(t.AB >= 0 && t.AB <= 10); vus.add(verdict(interaction(t))); }
 assert.equal(vus.size, 3);
+// Modèle codé : il retrouve exactement les 4 mesures, et aAB = interaction / 4
+for (const s of [SCEN.vedettes, SCEN.moyens, SCEN.vinaigrette, tirage()]) {
+  const c = modele(s);
+  assert.ok(Math.abs(predit(c, -1, -1) - s.base) < 1e-9 && Math.abs(predit(c, 1, -1) - s.A) < 1e-9 && Math.abs(predit(c, -1, 1) - s.B) < 1e-9 && Math.abs(predit(c, 1, 1) - s.AB) < 1e-9);
+  assert.ok(Math.abs(c.aAB - (s.AB - (s.A + s.B - s.base)) / 4) < 1e-9);
+}
 console.log('interactionsModele : tous les tests passent');
