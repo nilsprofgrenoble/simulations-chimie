@@ -1,4 +1,4 @@
-import { additif, effetA, ROUGE, moyenneRouge, nf } from "./interactionsModele";
+import { additif, effetA, ROUGE, moyenneRouge, nf, SCEN, modele } from "./interactionsModele";
 
 // Schémas de la mini-simulation « Pourquoi un plan d'expériences ? » : barres, droites d'interaction, rouge à lèvres, cartes « À retenir ».
 // Tous les textes font au moins 13 dans un viewBox de 380 de large (lisibles à 390 px).
@@ -175,3 +175,24 @@ export function CartePlanExp() {
     </svg>);
 }
 
+
+export function CarteModele() {
+  const s = SCEN.vedettes, c = modele(s), sg = v => (v < 0 ? '−' : '+');
+  const co = v => nf(Math.abs(v), 2);
+  const pt = (x, y, v, col, lx) => <g><circle cx={x} cy={y} r="7" fill={col} stroke="#fff" strokeWidth="1.5"/><text x={lx} y={y + 5} textAnchor={lx < x ? 'end' : 'start'} fontSize="14" fontWeight="800" fill={C.txt}>{nf(v)}</text></g>;
+  return (
+    <svg viewBox="0 0 380 250" role="img" aria-label={`Le modèle du plan 2² : Buts = ${nf(c.a0, 2)} ${sg(c.aA)} ${co(c.aA)} xA ${sg(c.aB)} ${co(c.aB)} xB ${sg(c.aAB)} ${co(c.aAB)} xA xB ; le coefficient d'interaction vaut l'interaction divisée par 4`} style={svgStyle}>
+      <text x="8" y="22" fontSize="14.5" fontWeight="800" fill={C.rouge}>Un plan 2² = une équation</text>
+      <rect x="60" y="62" width="90" height="80" fill="none" stroke="#94a3b8" strokeWidth="1.5"/>
+      {pt(60, 142, s.base, C.base, 50)}{pt(150, 142, s.A, C.A, 160)}{pt(60, 62, s.B, C.B, 50)}{pt(150, 62, s.AB, C.AB, 160)}
+      <text x="105" y="168" textAnchor="middle" fontSize="13.5" fill={C.gris}>xA : −1 → +1</text>
+      <text x="105" y="52" textAnchor="middle" fontSize="13.5" fill={C.gris}>xB : −1 en bas, +1 en haut</text>
+      <text x="196" y="86" fontSize="13.5" fill={C.txt}>a₀ = moyenne des 4</text>
+      <text x="196" y="106" fontSize="13.5" fill={C.A} fontWeight="700">aA, aB : effets</text>
+      <text x="196" y="126" fontSize="13.5" fill={C.AB} fontWeight="700">aAB = interaction ÷ 4</text>
+      <text x="196" y="146" fontSize="13.5" fill={C.gris}>= {nf(s.AB - additif(s), 1)} ÷ 4 = {nf(c.aAB, 2)}</text>
+      <text x="8" y="196" fontSize="13.5" fontWeight="800" fill={C.txt}>Buts = a₀ + aA·xA + aB·xB + aAB·xA·xB</text>
+      <text x="8" y="218" fontSize="13.5" fontWeight="700" fill="#0369a1">Buts = {nf(c.a0, 2)} {sg(c.aA)} {co(c.aA)}·xA {sg(c.aB)} {co(c.aB)}·xB {sg(c.aAB)} {co(c.aAB)}·xA·xB</text>
+      <text x="8" y="240" fontSize="13.5" fill={C.gris}>−1 : sans le joueur ; +1 : avec le joueur</text>
+    </svg>);
+}
