@@ -6,9 +6,9 @@ import { cheminSimulation } from './slugs.js'
 
 export const NOM_SITE = 'Paillasse virtuelle'
 export const ADRESSE_SITE = 'https://paillasse-virtuelle.fr/'
-export const TITRE_ACCUEIL = `${NOM_SITE} — simulations de chimie et de physique (lycée, BTS)`
-export const DESCRIPTION_ACCUEIL = 'Simulations interactives de chimie et de physique pour la Première, la Terminale STL et le BTS Métiers de la chimie : parcours guidés, exploration libre, défis et exercices par compétence.'
-const NIVEAUX = { '2GT': 'Seconde', '1G': 'Première', TG: 'Terminale générale', TSTL: 'Terminale STL', BTS: 'BTS Métiers de la chimie' }
+export const TITRE_ACCUEIL = `${NOM_SITE} — simulations de chimie et de physique (lycée, BTS, IUT)`
+export const DESCRIPTION_ACCUEIL = 'Simulations interactives de chimie et de physique pour la Première, la Terminale STL et le post-bac (BTS Métiers de la chimie, IUT) : parcours guidés, exploration libre, défis et exercices par compétence.'
+const NIVEAUX = { '2GT': 'Seconde', '1G': 'Première', TG: 'Terminale générale', TSTL: 'Terminale STL', BTS: 'BTS Métiers de la chimie (post-bac, utilisable en IUT)' }
 
 // Description coupée à la fin d'une phrase (ou d'une virgule) vers 155 caractères
 export const resume = t => {

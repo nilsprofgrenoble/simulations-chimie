@@ -16,7 +16,7 @@ const EXEMPLES = [
   { id: 61, niveau: '2GT · Seconde', texte: 'Dissoudre, peser, remplir une fiole jaugée : le protocole se reconstitue étape par étape.' },
   { id: 2, niveau: '1G · Première spé PC', texte: 'Un titrage direct à conduire soi-même : équivalence, volume versé, concentration.' },
   { id: 8, niveau: 'TSTL · Terminale STL', texte: 'Un capteur de lumière Arduino : photorésistance, conditionneur, convertisseur et algorithme de contrôle.' },
-  { id: 11, niveau: 'BTS Métiers de la chimie', texte: 'Concevoir la gamme d’étalonnage, exploiter la droite (résidus, limites de détection) et doser un échantillon.' },
+  { id: 11, niveau: 'Post-bac · BTS MDC / IUT', texte: 'Concevoir la gamme d’étalonnage, exploiter la droite (résidus, limites de détection) et doser un échantillon.' },
 ];
 
 export function SimulationPourEnseignants({ naviguer }) {

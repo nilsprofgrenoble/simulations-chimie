@@ -14,7 +14,7 @@
 //  Règle : un chapitre = une partie du programme du niveau, pas une simulation ; une nouvelle simulation rejoint le chapitre existant du programme.
 // ═══════════════════════════════════════════════════════════════════════════
 export const NIVEAUX_CHAPITRES = [
-  { key: '2GT', label: '2GT' }, { key: '1G', label: '1G spé PC' }, { key: 'TG', label: 'TG spé PC' }, { key: 'TSTL', label: 'TSTL' }, { key: 'BTS', label: 'BTS' },
+  { key: '2GT', label: '2GT' }, { key: '1G', label: '1G spé PC' }, { key: 'TG', label: 'TG spé PC' }, { key: 'TSTL', label: 'TSTL' }, { key: 'BTS', label: 'Post-bac (BTS MDC / IUT)' },
 ];
 
 // Simulations temporairement masquées du menu et de l'accueil (accessibles par ?sim=N) ; vide = tout est visible

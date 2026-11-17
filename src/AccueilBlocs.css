@@ -15,6 +15,7 @@
 .ab-niv { border-radius: 28px; padding: 26px 26px 24px; display: flex; flex-direction: column; gap: 6px; min-width: 0; background: var(--ab-fond); color: var(--ab-ink); }
 .ab-niv .ab-abbr { font: 800 clamp(44px, 7vw, 76px)/.9 'Outfit', sans-serif; letter-spacing: -.04em; }
 .ab-niv h3 { font: 700 20px/1.2 'Outfit', sans-serif; margin: 6px 0 0; }
+.ab-niv .ab-precis { margin: 2px 0 6px; font-size: 13.5px; font-weight: 500; opacity: .92; }
 .ab-niv .ab-nb { margin: 0 0 14px; font-size: 13.5px; font-weight: 600; opacity: .88; }
 .ab-puces { display: flex; flex-wrap: wrap; gap: 7px; margin: 0; padding: 0; list-style: none; }
 .ab-puces button { all: unset; cursor: pointer; display: block; box-sizing: border-box; padding: 7px 13px; border-radius: 999px; background: rgba(255,255,255,.26); color: inherit; font: 600 13.5px/1.3 Inter, system-ui, sans-serif; text-align: left; }
