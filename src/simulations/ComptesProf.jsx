@@ -9,6 +9,15 @@ const ROLES = [
   ['prof', 'Professeur', 'Comme un invité, et peut en plus créer ses propres classes et ses comptes élèves.'],
   ['admin', 'Administrateur', 'Tout, y compris gérer les comptes professeur (comme vous).'],
 ];
+const jours = d => Math.floor((Date.now() - new Date(d).getTime()) / 86400000);
+const libelleActivite = a => {
+  if (!a) return '';
+  const cl = `${a.nb_classes} classe${a.nb_classes > 1 ? 's' : ''} · ${a.nb_eleves} élève${a.nb_eleves > 1 ? 's' : ''}`;
+  if (!a.derniere_connexion) return `Jamais connecté·e · ${cl}`;
+  const j = jours(a.derniere_connexion), d = new Date(a.derniere_connexion);
+  const quand = j <= 0 ? 'aujourd’hui' : j === 1 ? 'hier' : `il y a ${j} jours`;
+  return `Dernière connexion : ${quand} (${d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}) · ${cl}`;
+};
 const roleDe = p => (p.admin ? 'admin' : p.invite ? 'invite' : 'prof');
 const nomRole = r => (ROLES.find(x => x[0] === r) || [])[1] || r;
 
@@ -18,7 +27,14 @@ export function ComptesProf({ occupe, proteger, setMsg }) {
   const [ouvert, setOuvert] = useState(false), [profs, setProfs] = useState(null);
   const [email, setEmail] = useState(''), [nom, setNom] = useState(''), [role, setRole] = useState('invite'), [energy, setEnergy] = useState(false);
   const [cree, setCree] = useState(null), [copie, setCopie] = useState(false);
-  const charger = useCallback(async () => { const r = await fonctionComptes('lister_profs'); setProfs(r.profs || []); }, []);
+  const charger = useCallback(async () => {
+    const r = await fonctionComptes('lister_profs');
+    // activité (supabase/20-activite-profs.sql) : facultative, sans ce script la liste s'affiche comme avant
+    let act = [];
+    try { act = await rest('rpc/profs_activite', { method: 'POST', corps: {} }); } catch { /* script pas encore exécuté */ }
+    const parEmail = new Map(act.map(a => [String(a.email || '').toLowerCase(), a]));
+    setProfs((r.profs || []).map(p => ({ ...p, activite: parEmail.get(String(p.email || '').toLowerCase()) || null })));
+  }, []);
   useEffect(() => { if (ouvert && !profs) proteger(charger); }, [ouvert, profs, proteger, charger]);
 
   const montrer = (r, texte) => { setCree(r); setCopie(false); setMsg(texte); };
@@ -91,7 +107,7 @@ export function ComptesProf({ occupe, proteger, setMsg }) {
             const soi = !!p.moi;
             return (
               <div key={p.email} data-prof={p.email} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', fontSize: 13.5, padding: '6px 0', borderTop: `1px solid ${KIT.bord}` }}>
-                <span style={{ flex: '1 1 220px', minWidth: 0, overflowWrap: 'anywhere' }}><b>{p.nom}</b>{soi ? ' (vous)' : ''}<br /><span style={{ color: KIT.txt2 }}>{p.email}</span></span>
+                <span style={{ flex: '1 1 220px', minWidth: 0, overflowWrap: 'anywhere' }}><b>{p.nom}</b>{soi ? ' (vous)' : ''}<br /><span style={{ color: KIT.txt2 }}>{p.email}</span>{p.activite && <><br /><span data-activite style={{ color: p.activite.derniere_connexion ? KIT.txt2 : '#b45309', fontSize: 12.5 }}>{libelleActivite(p.activite)}</span></>}</span>
                 {p.admin
                   ? <span style={{ color: KIT.txt2, fontSize: 12.5 }}>Energy@School ✓</span>
                   : <label style={{ fontSize: 13, color: KIT.txt, cursor: 'pointer' }}><input type="checkbox" checked={!!p.acces_energy} disabled={occupe} onChange={e => basculerEnergy(p, e.target.checked)} style={{ accentColor: '#ea580c' }} /> Energy@School</label>}

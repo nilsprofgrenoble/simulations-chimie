@@ -214,3 +214,7 @@ Règles à connaître :
 - Les élèves d'une classe « les deux sites » se connectent avec les mêmes identifiants sur les deux sites (progressions séparées). Le classement public de la Paillasse compte ces classes (élèves volontaires seulement).
 - L'administrateur voit toutes les classes et peut régler leur site : Mon compte → « Site des classes de tous les professeurs » (`18-classes-admin.sql`).
 - Scripts : `17-classe-deux-sites.sql` (troisième valeur « deux » + classement), `18-classes-admin.sql` (liste admin), `19-acces-energy.sql` (autorisation par professeur ; remplace le verrou « administrateur seul » du 17). Déjà appliqués sur le projet ; relançables sans risque. La fonction « comptes » doit être redéployée après chaque changement de `functions/comptes/index.ts`.
+
+## Activité des professeurs (administrateur) — `20-activite-profs.sql`
+
+« Gérer les professeurs » affiche, sous chaque professeur, sa dernière connexion, son nombre de classes et d'élèves (rien d'autre n'est suivi : ni temps passé, ni pages vues). Réservé à l'administrateur ; déjà appliqué sur le projet.
