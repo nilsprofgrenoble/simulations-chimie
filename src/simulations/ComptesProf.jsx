@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { KIT, styleBouton, styleBoite } from "../commun";
-import { fonctionComptes } from "../serveur";
+import { fonctionComptes, rest } from "../serveur";
 
 const champ = { padding: '7px 9px', fontSize: 14, borderRadius: 8, border: `1px solid ${KIT.bord}`, boxSizing: 'border-box' };
 
@@ -99,5 +99,42 @@ export function ComptesProf({ occupe, proteger, setMsg }) {
           })}
         </div>)}
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 8, lineHeight: 1.5 }}>Un professeur voit uniquement ses propres classes ; partagez-lui ensuite une classe (« Gérer la classe »). Supprimer un professeur qui possède des classes supprime aussi ces classes et les comptes de leurs élèves : une confirmation supplémentaire vous sera demandée.</div>
+    </details>);
+}
+
+const SITES = [['paillasse', 'Paillasse'], ['energy', 'Energy@School'], ['deux', 'Les deux']];
+
+// Toutes les classes du site, réservé à l'administrateur (supabase/18-classes-admin.sql) : règle le « site » d'une classe sans qu'elle soit partagée.
+// Replié par défaut, chargé à l'ouverture ; classes regroupées par professeur ; ni nom d'élève ni résultat.
+export function ClassesAdmin({ occupe, proteger, setMsg, onChange }) {
+  const [ouvert, setOuvert] = useState(false), [classes, setClasses] = useState(null);
+  const charger = useCallback(async () => { setClasses(await rest('rpc/classes_admin', { method: 'POST', corps: {} })); }, []);
+  useEffect(() => { if (ouvert && !classes) proteger(charger); }, [ouvert, classes, proteger, charger]);
+  const regler = (c, site) => {
+    if (site === c.site) return;
+    proteger(async () => {
+      await rest('rpc/definir_site_classe', { method: 'POST', corps: { c: c.id, s: site } });
+      setClasses(l => l.map(x => (x.id === c.id ? { ...x, site } : x)));
+      setMsg(`« ${c.nom} » (${c.prof_nom}) : ${site === 'deux' ? 'les deux sites' : site === 'energy' ? 'Energy@School' : 'Paillasse virtuelle'}.`);
+      if (onChange) onChange();
+    });
+  };
+  const parProf = (classes || []).reduce((m, c) => { (m[c.prof_nom] = m[c.prof_nom] || []).push(c); return m; }, {});
+  return (
+    <details data-classes-admin open={ouvert} onToggle={e => setOuvert(e.currentTarget.open)} style={{ ...styleBoite, margin: '8px 0' }}>
+      <summary style={{ cursor: 'pointer', fontWeight: 700, color: KIT.txt }}>🌐 Site des classes de tous les professeurs <span style={{ fontWeight: 500, color: KIT.txt2, fontSize: 13 }}>(administrateur)</span></summary>
+      {!classes && <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 8 }}>Chargement…</div>}
+      {classes && !classes.length && <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 8 }}>Aucune classe pour l’instant.</div>}
+      {classes && Object.entries(parProf).map(([prof, liste]) => (
+        <div key={prof} style={{ marginTop: 10 }}>
+          <div style={{ fontWeight: 700, fontSize: 13.5, color: KIT.txt }}>{prof}</div>
+          {liste.map(c => (
+            <div key={c.id} data-classe-admin={c.id} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', fontSize: 13.5, padding: '5px 0', borderTop: `1px solid ${KIT.bord}` }}>
+              <span style={{ flex: '1 1 110px', minWidth: 0, overflowWrap: 'anywhere' }}>{c.nom} <span style={{ color: KIT.txt2 }}>· {c.nb_eleves} élève{c.nb_eleves > 1 ? 's' : ''}</span></span>
+              <select value={c.site} onChange={e => regler(c, e.target.value)} disabled={occupe} style={{ ...champ, flex: '0 0 auto', padding: '4px 6px', fontSize: 13 }} aria-label={`Site de la classe ${c.nom}`}>
+                {SITES.map(([id, libelle]) => <option key={id} value={id}>{libelle}</option>)}
+              </select>
+            </div>))}
+        </div>))}
     </details>);
 }
