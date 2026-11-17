@@ -679,7 +679,7 @@ export function SimulationAcidesBases({ naviguer }) {
       {sceneEff === 'tampon' && <>
         <LigneMesure nom="pH de la solution" valeur={nbf(phTp, 2)} couleur="#b45309"/>
         {!enDefi && depuis('ajout') && <LigneMesure nom={`pH de ${tp.V} mL d’eau pure, même ajout`} valeur={nbf(phEau, 2)}/>}
-        {!enDefi && depuis('ajout') && <LigneMesure nom="Variation de pH du tampon" valeur={nbf(phTp - phTp0, 2)} couleur="#15803d"/>}
+        {!enDefi && apres('delta') && <LigneMesure nom="Variation de pH du tampon" valeur={nbf(phTp - phTp0, 2)} couleur="#15803d"/>}
         {!enDefi && (!enGuide || apres('ajout')) && <LigneMesure nom="Rapport [A⁻] / [AH]" valeur={tp.nAH > 0 ? nbf(tp.nA / tp.nAH, 2) : '–'}/>}
         {!enDefi && (!enGuide || apres('ajout')) && <LigneMesure nom="Pouvoir tampon β" valeur={isFinite(betaTp) ? `${nbf(betaTp, 3)}${NB}mol·L⁻¹ par unité de pH` : '–'}/>}
         {!enDefi && (!enGuide || apres('ajout')) && tp.nAH > 0 && tp.nA > 0 && <LigneMesure nom="pH dans l’intervalle pKa ± 1 ?" valeur={Math.abs(phTp0 - 4.8) <= 1 ? 'oui : tampon efficace' : 'non : peu efficace'} couleur={Math.abs(phTp0 - 4.8) <= 1 ? '#15803d' : '#b91c1c'}/>}

@@ -339,7 +339,7 @@ export function SimulationOeilLoupe() {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
       {vue === 'oeil' && <>
         <LigneMesure nom="Distance de l’objet D" valeur={PE.inf ? 'à l’infini' : `${fm(PE.D, 0)}${NB}cm`} couleur={C.obj}/>
-        {depuis('accomm') && <LigneMesure nom="Distance focale du cristallin f′" valeur={`${fm(feEff, 2)}${NB}mm`} couleur={C.lent}/>}
+        {(!enGuide || idE === 'accomm') && <LigneMesure nom="Distance focale du cristallin f′" valeur={`${fm(feEff, 2)}${NB}mm`} couleur={C.lent}/>}
         {enExplore && <LigneMesure nom="Position de l’image OA′" valeur={`${fm(imO, 2)}${NB}mm`} couleur={C.img}/>}
         <LigneMesure nom="Image sur la rétine" valeur={nette ? 'nette' : imO > M.L_OEIL ? 'floue (image derrière la rétine)' : 'floue (image devant la rétine)'} couleur={nette ? '#15803d' : '#dc2626'}/>
       </>}

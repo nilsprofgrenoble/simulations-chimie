@@ -1,5 +1,5 @@
 // ====================================================
-//  MODÈLE « TITRAGE pH-MÉTRIQUE » (sim 118, niveau TG) — titrage d'un acide par la soude, à 25 °C
+//  MODÈLE « TITRAGE pH-MÉTRIQUE » (sim 119, niveau TG) — titrage d'un acide par la soude, à 25 °C
 //  Hypothèses de travail (rappelées dans la simulation) :
 //   - activités assimilées aux concentrations (solutions diluées, C ≤ 0,1 mol/L) ; Ke = 1,0·10⁻¹⁴ à 25 °C ;
 //   - volumes additifs ; titrage supposé rapide ; réaction de titrage supposée TOTALE pour la composition en quantités de matière ;

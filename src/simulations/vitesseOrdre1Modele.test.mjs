@@ -1,4 +1,4 @@
-// Tests du modèle « vitesse volumique et loi d'ordre 1 » (sim 121) : node src/simulations/vitesseOrdre1Modele.test.mjs
+// Tests du modèle « vitesse volumique et loi d'ordre 1 » (sim 122) : node src/simulations/vitesseOrdre1Modele.test.mjs
 import * as M from './vitesseOrdre1Modele.js';
 
 let ko = 0;

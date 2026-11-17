@@ -1,4 +1,4 @@
-// Tests du modèle « titrage pH-métrique » (sim 118) : node src/simulations/titragePhModele.test.mjs
+// Tests du modèle « titrage pH-métrique » (sim 119) : node src/simulations/titragePhModele.test.mjs
 import * as M from './titragePhModele.js';
 
 let ko = 0;

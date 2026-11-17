@@ -1,5 +1,5 @@
 // ====================================================
-//  MODÈLE « CINÉTIQUE : VITESSE VOLUMIQUE, TEMPS DE DEMI-RÉACTION ET LOI D'ORDRE 1 » (sim 121, niveau TG)
+//  MODÈLE « CINÉTIQUE : VITESSE VOLUMIQUE, TEMPS DE DEMI-RÉACTION ET LOI D'ORDRE 1 » (sim 122, niveau TG)
 //  Situation : hydrolyse du 2-chloro-2-méthylpropane (CH3)3C–Cl dans un mélange eau–propanone, suivie par conductimétrie.
 //  Hypothèses de travail (rappelées dans la simulation) :
 //   - température et volume constants, une seule réaction totale, réactif limitant = le dérivé chloré (l'eau est le solvant, en grand excès) ;

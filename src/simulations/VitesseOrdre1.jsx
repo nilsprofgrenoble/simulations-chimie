@@ -11,7 +11,7 @@ const SIM_ID = 122, CLE_GUIDE = 'vitesse-ordre1-tg-guide-v1';
 declarerDefis(SIM_ID, [['vit', 'Quelle est la vitesse volumique à un instant donné ?'], ['ordre', 'Quelle série suit une loi d’ordre 1, et quelle est sa constante k ?']]);
 
 // ====================================================
-//  SIM 121 — CINÉTIQUE : VITESSE VOLUMIQUE, TEMPS DE DEMI-RÉACTION ET LOI D’ORDRE 1 (TG spé PC, thème « Constitution et transformations de la matière »)
+//  SIM 122 — CINÉTIQUE : VITESSE VOLUMIQUE, TEMPS DE DEMI-RÉACTION ET LOI D’ORDRE 1 (TG spé PC, thème « Constitution et transformations de la matière »)
 //  Une seule idée : exploiter l’évolution temporelle d’une concentration c(t). (1) vitesse volumique = −dc/dt (tangente), (2) temps de demi-réaction,
 //  (3) test de la loi d’ordre 1 (v/c constant, ln c affine, t½ constant), (4) honnêteté sur les mesures bruitées.
 //  Situation : hydrolyse du 2-chloro-2-méthylpropane suivie par conductimétrie. Modèle : vitesseOrdre1Modele.js. Situations originales.
