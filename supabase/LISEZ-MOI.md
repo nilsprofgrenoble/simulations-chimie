@@ -218,3 +218,8 @@ Classement SÉPARÉ de celui de la Paillasse, réservé aux classes réglées su
 
 À faire **une fois**, après 11, 13, 14 et 17 : SQL Editor → coller `18-classement-energy.sql` → Run (relançable sans risque). Vérification : quatre lignes « classement », « exclu », « fini », « classement_public_energy ». Sans ce script, Energy@School fonctionne comme avant (le classement affiche « pas disponible », la case n'apparaît pas).
 Une classe n'apparaît que si son professeur a renseigné l'établissement (comme pour la Paillasse). Un professeur peut retirer un élève du classement depuis « Suivi » d'Energy@School.
+
+
+## Anti-triche du classement Energy@School — `19-energy-anti-triche.sql`
+
+À lancer après 18 (relançable). Le nombre d'étapes de chaque parcours est fixé par le serveur (table `energy_cles` : **à mettre à jour si on ajoute des étapes à un parcours d'Energy@School**), et le classement public ne compte que les parcours et défis que le serveur a vus se dérouler à un rythme humain (8 s par étape au minimum, 40 s pour un défi). Le reste compte pour les niveaux de l'élève, pas pour le classement. Vérification : « 15 », « debut », « debut_etape ».
