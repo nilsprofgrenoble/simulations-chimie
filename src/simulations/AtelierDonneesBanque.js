@@ -1804,7 +1804,7 @@ export const ENONCES = [
   },
   {
     id: 'phc-dilution-ph', domaine: 'pH et concentration en ions oxonium', titre: 'Dilution d’une solution d’acide chlorhydrique', noms: ['pH après dilution', 'Facteur de dilution'],
-    gen: () => { const [V1, V2] = tire([[10.0, 100], [1.0, 100], [5.0, 500], [10.0, 1000], [1.0, 1000], [2.0, 200]]); return { pH0: Math.round((1.5 + Math.random() * 2) * 100) / 100, V1, V2, duree: tire([2, 5, 10]), prix: tire([6, 9, 14]) }; },
+    gen: () => { const [V1, V2] = tire([[10.0, 100], [1.0, 100], [5.0, 500], [10.0, 1000], [1.0, 1000], [2.0, 200]]); const pHmax = Math.min(3.5, 6 - Math.log10(V2 / V1)); /* pH final ≤ 6 : au-delà, l’autoprotolyse de l’eau fausse pH = −log c */ return { pH0: Math.round((1.5 + Math.random() * (pHmax - 1.5)) * 100) / 100, V1, V2, duree: tire([2, 5, 10]), prix: tire([6, 9, 14]) }; },
     build: (p, q) => {
       const F = p.V2 / p.V1;
       const tokens = {
