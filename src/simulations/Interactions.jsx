@@ -4,8 +4,8 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
   BoutonsModes, ORANGE_GUIDE, lireNombre, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
-import { SCEN, additif, interaction, verdict, modele, ROUGE, ecartRouge, tirage, nf } from "./interactionsModele";
-import { BarresVue, LignesVue, MelangeVue, CarteAdditif, CarteSigne, CarteUnSeul, CartePlanExp } from "./InteractionsVues";
+import { SCEN, additif, interaction, verdict, modele, predit, ROUGE, ecartRouge, tirage, nf } from "./interactionsModele";
+import { BarresVue, LignesVue, MelangeVue, CarteAdditif, CarteSigne, CarteUnSeul, CartePlanExp, CarteModele } from "./InteractionsVues";
 
 const SIM_ID = 128;
 declarerDefis(SIM_ID, [['ecart', 'Calculer l’interaction d’un plan 2²'], ['verdict', 'Reconnaître synergie, antagonisme ou absence d’interaction']]);
@@ -18,11 +18,23 @@ declarerDefis(SIM_ID, [['ecart', 'Calculer l’interaction d’un plan 2²'], ['
 // ====================================================
 
 const ETAT0 = { etape: 0, reps: {}, verifs: {}, reussies: {} };
-const IDS = ['vedettes', 'mesure', 'interaction', 'moyens', 'pont', 'vin', 'vininter', 'lecture', 'piege', 'rouge', 'plan', 'bilan'];
+const IDS = ['vedettes', 'mesure', 'interaction', 'moyens', 'pont', 'vin', 'vininter', 'modele', 'predit', 'lecture', 'piege', 'rouge', 'plan', 'bilan'];
 const sg = v => (v > 0 ? '+' : v < 0 ? '−' : '');
 const liste = (...l) => <ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>{l.map((t, i) => <li key={i}>{t}</li>)}</ul>;
 const { vedettes: V, moyens: Mo, vinaigrette: Vi } = SCEN;
 const VERDICTS = { aucune: 'Aucune interaction : les effets s’additionnent.', synergie: 'Synergie : ensemble, ils font mieux que la somme de leurs effets.', antagonisme: 'Antagonisme : ensemble, ils font moins bien que la somme de leurs effets.' };
+
+// Équation du modèle d'un plan 2² : forme littérale et, si c est fourni, forme chiffrée
+function Equation({ y, a, b, c }) {
+  const co = v => nf(Math.abs(v), 2);
+  const xa = <><em>x</em><sub>{a}</sub></>, xb = <><em>x</em><sub>{b}</sub></>, xab = <><em>x</em><sub>{a}</sub><em>x</em><sub>{b}</sub></>;
+  const terme = (v, x) => <> {v < -1e-9 ? '−' : '+'} {co(v)}{x}</>;
+  return (
+    <div style={{ overflowWrap: 'anywhere', lineHeight: 1.7 }}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{y} = <em>a</em><sub>0</sub> + <em>a</em><sub>{a}</sub>{xa} + <em>a</em><sub>{b}</sub>{xb} + <em>a</em><sub>{a}{b}</sub>{xab}</div>
+      {c && <div style={{ fontSize: 15, fontWeight: 700, color: '#0369a1' }}>{y} = {nf(c.a0, 2)}{terme(c.aA, xa)}{terme(c.aB, xb)}{terme(c.aAB, xab)}</div>}
+    </div>);
+}
 
 // Correspondance football ↔ chimie : le pont entre la métaphore et l'exemple
 function TablePont() {
@@ -114,9 +126,22 @@ export function SimulationInteractions() {
         calcul: () => ['Interaction = mesuré − prévu = 7,1 − 10,3 = −3,2.', 'Négative : antagonisme. Avec les deux amidons hauts (7,1), la note est même plus faible qu’avec N haut seul (7,6).'],
         pieges: [[3.2, 'Attention au signe : mesuré − prévu = 7,1 − 10,3, négatif.']],
         expl: '−3,2 points : un antagonisme, comme pour les deux attaquants vedettes.', indice: 'Interaction = mesuré − prévu = 7,1 − 10,3.' } },
+    { id: 'modele', titre: 'Le modèle : une équation', focus: ['scene', 'equation'],
+      texte: <>Un plan 2² se résume par une <strong>équation</strong>. On <strong>code</strong> chaque niveau : −1 (bas) et +1 (haut). Le modèle s’écrit Note = <em>a</em><sub>0</sub> + <em>a</em><sub>U</sub><em>x</em><sub>U</sub> + <em>a</em><sub>N</sub><em>x</em><sub>N</sub> + <em>a</em><sub>UN</sub><em>x</em><sub>U</sub><em>x</em><sub>N</sub>. Ici, <em>a</em><sub>0</sub> est la moyenne des quatre notes, <em>a</em><sub>U</sub> et <em>a</em><sub>N</sub> sont les effets des amidons, et <em>a</em><sub>UN</sub>, devant le produit <em>x</em><sub>U</sub><em>x</em><sub>N</sub>, est le terme d’<strong>interaction</strong> : il vaut l’interaction <strong>divisée par 4</strong>. Pour la vinaigrette, l’interaction vaut −3,2 (étape 7).</>,
+      tache: { type: 'num', q: 'Coefficient d’interaction aUN', unite: '/ 10', vrai: modele(Vi).aAB, tol: 0.02, affiche: v => nf(v, 2),
+        calcul: () => ['aUN = interaction ÷ 4 = −3,2 ÷ 4 = −0,80.'],
+        pieges: [[-3.2, 'C’est l’interaction elle-même. Le coefficient aUN en est le quart : divisez par 4.'], [0.8, 'Attention au signe : l’interaction est négative, donc aUN aussi.']],
+        expl: 'aUN = −0,80. Les autres coefficients sont a₀ = 5,55 (moyenne des quatre notes), aU = 0,55 et aN = 1,80.', indice: 'aUN = interaction ÷ 4, avec une interaction de −3,2.' } },
+    { id: 'predit', titre: 'Prévoir avec l’équation', focus: ['scene', 'equation'],
+      retenirTitre: 'À RETENIR : L’ÉQUATION DU MODÈLE', retenir: <><CarteModele/>{liste('niveaux codés : −1 (bas) et +1 (haut)', 'a₀ = moyenne ; aA, aB = effets ; aAB = interaction ÷ 4', 'avec 4 essais et 4 coefficients, le modèle retrouve les 4 mesures')}</>,
+      texte: <>Les quatre coefficients de la vinaigrette : <em>a</em><sub>0</sub> = 5,55 ; <em>a</em><sub>U</sub> = 0,55 ; <em>a</em><sub>N</sub> = 1,80 ; <em>a</em><sub>UN</sub> = −0,80 (calculé à l’étape précédente). Prévoyez la note avec <strong>U haut</strong> (<em>x</em><sub>U</sub> = +1) et <strong>N bas</strong> (<em>x</em><sub>N</sub> = −1).</>,
+      tache: { type: 'num', q: 'Note prévue avec U haut et N bas', unite: '/ 10', vrai: predit(modele(Vi), 1, -1), tol: 0.05, affiche: v => nf(v),
+        calcul: () => ['Note = 5,55 + 0,55 × (+1) + 1,80 × (−1) − 0,80 × (+1) × (−1).', 'Note = 5,55 + 0,55 − 1,80 + 0,80 = 5,10.'],
+        pieges: [[3.5, 'Le produit xU·xN vaut (+1) × (−1) = −1 : le terme d’interaction −0,80 × (−1) vaut donc +0,80.']],
+        expl: '5,1 : exactement la note mesurée avec U haut seul. Avec 4 coefficients pour 4 essais, le modèle retrouve les quatre mesures.', indice: 'Remplacez xU par +1 et xN par −1, puis calculez le produit xU·xN avant de multiplier par aUN.' } },
     { id: 'lecture', titre: 'La lire sur un graphique', focus: ['scene'],
       retenirTitre: 'À RETENIR : LIRE L’INTERACTION', retenir: <><CarteSigne/>{liste('droites parallèles : pas d’interaction', 'droites qui se rapprochent : antagonisme', 'droites qui s’écartent : synergie')}</>,
-      texte: <>Le graphique montre la note selon le niveau de U, une droite sans N (bleue) et une avec N (orange). L’interaction est de −3,2 point (étape précédente). La droite pointillée rouge montre ce que donnerait la droite orange <strong>sans interaction</strong>.</>,
+      texte: <>Le graphique montre la note selon le niveau de U, une droite sans N (bleue) et une avec N (orange). L’interaction de la vinaigrette vaut −3,2 point. La droite pointillée rouge montre ce que donnerait la droite orange <strong>sans interaction</strong>.</>,
       tache: { type: 'qcm', q: 'Sans interaction entre U et N, comment seraient les deux droites ?', options: ['Parallèles', 'Qui se croisent', 'Qui se rapprochent'], bonne: 0,
         expl: 'Sans interaction, U a le même effet quel que soit le niveau de N : les deux droites ont la même pente, elles sont parallèles.', indice: 'Si l’effet de U ne dépend pas de N, la pente est la même.' } },
     { id: 'piege', titre: 'Le piège d’un seul facteur à la fois', focus: ['scene'],
@@ -136,7 +161,7 @@ export function SimulationInteractions() {
       tache: { type: 'qcm', q: 'Pour détecter les interactions entre 3 facteurs à 2 niveaux, que faut-il faire ?', options: ['Tester toutes les combinaisons : 8 essais', 'Tester chaque facteur séparément : 4 essais', 'Choisir les niveaux au hasard'], bonne: 0,
         expl: 'Il faut 2 × 2 × 2 = 8 essais, un par combinaison : c’est le plan factoriel complet.', indice: 'Pour chaque niveau du premier facteur, on teste les deux niveaux du deuxième, puis du troisième.' } },
     { id: 'bilan', titre: 'Bilan', focus: ['scene'],
-      texte: <>Vous savez ce qu’est une <strong>interaction</strong> (mesuré − prévu additif), son signe (synergie ou antagonisme), comment la lire sur des droites, et pourquoi il faut tester les combinaisons. Pour le faire en vrai, passez au <strong>plan factoriel</strong> ; pour les formulations dont les proportions font 100 %, au <strong>plan de mélange</strong>.</>, tache: null },
+      texte: <>Vous savez ce qu’est une <strong>interaction</strong> (mesuré − prévu additif), son signe (synergie ou antagonisme), comment l’écrire dans l’équation du modèle (a<sub>AB</sub> = interaction ÷ 4), comment la lire sur des droites, et pourquoi il faut tester les combinaisons. Pour le faire en vrai, passez au <strong>plan factoriel</strong> ; pour les formulations dont les proportions font 100 %, au <strong>plan de mélange</strong>.</>, tache: null },
   ];
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
   const cadre = id => (hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {});
@@ -157,6 +182,8 @@ export function SimulationInteractions() {
         <MelangeVue montrerMoyenne={apres('rouge')} cacherMelange={false}/>
       </>}
     </div>);
+  const eqBox = enGuide && des('modele') && (
+    <div style={{ ...styleBoite, ...cadre('equation') }}>{titreP('Le modèle de la vinaigrette')}<Equation y="Note" a="U" b="N" c={apres('modele') ? modele(Vi) : null}/></div>);
   const pontBox = enGuide && des('pont') && (
     <div style={{ ...styleBoite, ...cadre('pont') }}>{titreP('Du football à la chimie')}<TablePont/></div>);
 
@@ -164,9 +191,6 @@ export function SimulationInteractions() {
   const setE = f => setExplo(e => ({ ...e, ...f }));
   const sx = { id: 'perso', titre: 'Mon cas', unite: 'buts / match', dec: 1, ...explo.perso, cA: 'A', cB: 'B', etiq: [['ni A', 'ni B'], ['A', 'seul'], ['B', 'seul'], ['A et B', 'ensemble']] };
   const iX = interaction(sx), prevX = additif(sx), cm = modele(sx);
-  const co = v => nf(Math.abs(v), 2);
-  const terme = (v, x) => <> {v < -1e-9 ? '−' : '+'} {co(v)}{x}</>;
-  const xA = <><em>x</em><sub>A</sub></>, xB = <><em>x</em><sub>B</sub></>, xAB = <><em>x</em><sub>A</sub><em>x</em><sub>B</sub></>;
   const exploControles = enExplo && (
     <div style={styleBoite}>
       {titreP('Mon cas : une équipe avec deux attaquants A et B')}
@@ -179,8 +203,7 @@ export function SimulationInteractions() {
     <div style={styleBoite}>
       {titreP('Le modèle du plan 2²')}
       <div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.5, marginBottom: 6 }}>On code chaque niveau : <strong>−1</strong> sans le joueur, <strong>+1</strong> avec le joueur. Le modèle prévoit alors les buts dans chaque situation :</div>
-      <div style={{ fontSize: 15.5, fontWeight: 700, color: KIT.txt, margin: '4px 0 8px', overflowWrap: 'anywhere', lineHeight: 1.7 }}>Buts = <em>a</em><sub>0</sub> + <em>a</em><sub>A</sub>{xA} + <em>a</em><sub>B</sub>{xB} + <em>a</em><sub>AB</sub>{xAB}</div>
-      <div style={{ fontSize: 15, fontWeight: 700, color: '#0369a1', margin: '0 0 8px', overflowWrap: 'anywhere', lineHeight: 1.7 }}>Buts = {nf(cm.a0, 2)}{terme(cm.aA, xA)}{terme(cm.aB, xB)}{terme(cm.aAB, xAB)}</div>
+      <div style={{ margin: '4px 0 8px' }}><Equation y="Buts" a="A" b="B" c={cm}/></div>
       <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, lineHeight: 1.6, color: KIT.txt }}>
         <li><em>a</em><sub>0</sub> = {nf(cm.a0, 2)} : moyenne des quatre situations.</li>
         <li><em>a</em><sub>A</sub> = {nf(cm.aA, 2)} et <em>a</em><sub>B</sub> = {nf(cm.aB, 2)} : effets de A et de B.</li>
@@ -203,6 +226,7 @@ export function SimulationInteractions() {
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Football</strong> : chiffres <strong>inventés</strong> pour illustrer l’idée, pas des statistiques réelles.</li>
       <li><strong>Vinaigrette</strong> : notes de jury <strong>réelles</strong> d’un plan complet à 4 facteurs ; chaque valeur est la <strong>moyenne de 4 essais</strong> (les deux autres facteurs sont moyennés), arrondie au dixième. Une seule mesure par essai : la répétabilité n’est pas connue, donc une petite interaction pourrait n’être que du bruit.</li>
+      <li><strong>Modèle codé</strong> : les niveaux −1 / +1 supposent deux états seulement ; le modèle à 4 coefficients pour 4 essais passe exactement par les mesures (aucun écart, donc aucun test possible).</li>
       <li><strong>Additivité</strong> : le « prévu » suppose que l’effet de chaque facteur est le même quel que soit le niveau de l’autre. L’interaction mesure l’écart à cette hypothèse.</li>
       <li><strong>Notes bornées</strong> : un jury note entre 0 et 10 ; ce plafond peut créer un antagonisme apparent (le prévu dépasse 10), propre à l’échelle de notation.</li>
       <li><strong>Rouge à lèvres</strong> : données réelles d’un plan de mélange ; avec des proportions qui font 100 %, on compare au mélange idéal sans interaction, la moyenne des deux corps purs. L’échelle de notes est relative au lot présenté.</li>
@@ -282,7 +306,7 @@ export function SimulationInteractions() {
         {enGuide ? <div className="int-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="int-carte">{panneauHypo}</div> : null}
         <div className="int-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'ecart' ? sE : sV}/></div>}
-          {enGuide && <div className="int-col">{guideScene}{pontBox}</div>}
+          {enGuide && <div className="int-col">{guideScene}{eqBox}{pontBox}</div>}
           {enExplo && <div className="int-col">{exploControles}{modeleBox}{exploScene}</div>}
         </div>
       </div>
