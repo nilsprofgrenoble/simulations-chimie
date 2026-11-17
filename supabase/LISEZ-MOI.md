@@ -206,3 +206,7 @@ Règles à connaître :
 - supprimer un professeur qui possède des classes supprime aussi ces classes, les comptes de leurs élèves et leurs résultats : le site demande une seconde confirmation ;
 - la fermeture est faite **côté serveur** (fonction « comptes » et règles de la base), pas seulement en cachant les boutons.
 
+
+## Classe sur les deux sites (Energy@School + Paillasse virtuelle) — `17-classe-deux-sites.sql`
+
+Une classe peut être réglée sur « les deux sites » : ses élèves se connectent, avec les mêmes identifiants, sur Energy@School **et** sur la Paillasse virtuelle (progressions séparées). Seul l'administrateur peut choisir ce réglage (Suivi professeur → Réglages de la classe → Site des élèves) ; le verrou est dans la base. Pour une classe d'un collègue, la lui faire partager avec l'administrateur. Le classement public compte aussi ces classes (élèves volontaires seulement). Script déjà appliqué sur le projet ; relançable sans risque.

@@ -198,6 +198,7 @@ export function SimulationSuiviProf({ naviguer }) {
   }
 
   const classe = classes.find(c => c.id === classeId);
+  const admin = !!sess.profil.admin;
   const invite = !!sess.profil.invite;   // compte invité (supabase/16-profs-invites.sql) : ni création de classe, ni création de comptes élèves
   const moiId = sess.user?.id, proprio = !classe?.prof_id || !moiId || classe.prof_id === moiId;   // co-professeur : ni suppression, ni partage (09-partage-classe.sql)
   // exercices « je m'entraîne » seuls (pour les compteurs), et exercices + défis des simulations (pour le détail et l'export)
@@ -237,7 +238,7 @@ export function SimulationSuiviProf({ naviguer }) {
   const choisirSite = site => proteger(async () => {
     await rest(`classes?id=eq.${classeId}`, { method: 'PATCH', corps: { site } });
     setClasses(cs => cs.map(c => (c.id === classeId ? { ...c, site } : c)));
-    setMsg(site === 'energy' ? 'Classe réservée à Energy@School : ses élèves se connectent sur le site Energy@School.' : 'Classe de la Paillasse virtuelle.');
+    setMsg(site === 'energy' ? 'Classe réservée à Energy@School : ses élèves se connectent sur le site Energy@School.' : site === 'deux' ? 'Classe sur les deux sites : ses élèves se connectent, avec les mêmes identifiants, sur Energy@School et sur la Paillasse virtuelle.' : 'Classe de la Paillasse virtuelle.');
   });
   const choisirChapitres = liste => proteger(async () => {
     await rest(`classes?id=eq.${classeId}`, { method: 'PATCH', corps: { chapitres: liste } });
@@ -409,9 +410,11 @@ export function SimulationSuiviProf({ naviguer }) {
               {siteDispo && (
           <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }}>
             <b>🌐 Site des élèves</b> : les élèves de « {classe.nom} » se connectent sur
-            <label style={{ margin: '0 10px 0 8px', cursor: 'pointer' }}><input type="radio" name="site-classe" checked={classe.site !== 'energy'} disabled={occupe} onChange={() => choisirSite('paillasse')} style={{ accentColor: '#0b4f94' }} /> la Paillasse virtuelle</label>
-            <label style={{ cursor: 'pointer' }}><input type="radio" name="site-classe" checked={classe.site === 'energy'} disabled={occupe} onChange={() => choisirSite('energy')} style={{ accentColor: '#ea580c' }} /> Energy@School</label>
-            <div style={{ color: KIT.txt2, marginTop: 3 }}>Les comptes sont les mêmes ; ce réglage sépare les deux sites. Le suivi de l’avancement Energy@School se consulte sur le site Energy@School (avec votre compte professeur).</div>
+            <label style={{ margin: '0 10px 0 8px', cursor: 'pointer' }}><input type="radio" name="site-classe" checked={classe.site === 'paillasse' || !classe.site} disabled={occupe || (classe.site === 'deux' && !admin)} onChange={() => choisirSite('paillasse')} style={{ accentColor: '#0b4f94' }} /> la Paillasse virtuelle</label>
+            <label style={{ margin: '0 10px 0 0', cursor: 'pointer' }}><input type="radio" name="site-classe" checked={classe.site === 'energy'} disabled={occupe || (classe.site === 'deux' && !admin)} onChange={() => choisirSite('energy')} style={{ accentColor: '#ea580c' }} /> Energy@School</label>
+            {(admin || classe.site === 'deux') && <label style={{ cursor: admin ? 'pointer' : 'default' }}><input type="radio" name="site-classe" checked={classe.site === 'deux'} disabled={occupe || !admin} onChange={() => choisirSite('deux')} style={{ accentColor: '#7c3aed' }} /> les deux sites</label>}
+            {classe.site === 'deux' && !admin && <div style={{ color: KIT.txt2, marginTop: 3 }}>Cette classe peut utiliser les deux sites. Ce réglage est géré par l’administrateur du site.</div>}
+            <div style={{ color: KIT.txt2, marginTop: 3 }}>Les comptes sont les mêmes sur les deux sites ; ce réglage indique sur quel(s) site(s) les élèves de la classe peuvent se connecter. Le suivi de l’avancement Energy@School se consulte sur le site Energy@School (avec votre compte professeur).</div>
           </div>)}
               </section>
               <section className="sp-carte">
