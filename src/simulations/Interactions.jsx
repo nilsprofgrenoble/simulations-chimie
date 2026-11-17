@@ -4,7 +4,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
   BoutonsModes, ORANGE_GUIDE, lireNombre, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
-import { SCEN, additif, interaction, verdict, ROUGE, ecartRouge, moyenneRouge, tirage, nf } from "./interactionsModele";
+import { SCEN, additif, interaction, verdict, modele, ROUGE, ecartRouge, tirage, nf } from "./interactionsModele";
 import { BarresVue, LignesVue, MelangeVue, CarteAdditif, CarteSigne, CarteUnSeul, CartePlanExp } from "./InteractionsVues";
 
 const SIM_ID = 128;
@@ -22,7 +22,6 @@ const IDS = ['vedettes', 'mesure', 'interaction', 'moyens', 'pont', 'vin', 'vini
 const sg = v => (v > 0 ? '+' : v < 0 ? '−' : '');
 const liste = (...l) => <ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>{l.map((t, i) => <li key={i}>{t}</li>)}</ul>;
 const { vedettes: V, moyens: Mo, vinaigrette: Vi } = SCEN;
-const SC_LISTE = [['vedettes', 'Deux vedettes'], ['moyens', 'Deux joueurs moyens'], ['vinaigrette', 'Vinaigrette'], ['rouge', 'Rouge à lèvres'], ['perso', 'Mon cas']];
 const VERDICTS = { aucune: 'Aucune interaction : les effets s’additionnent.', synergie: 'Synergie : ensemble, ils font mieux que la somme de leurs effets.', antagonisme: 'Antagonisme : ensemble, ils font moins bien que la somme de leurs effets.' };
 
 // Correspondance football ↔ chimie : le pont entre la métaphore et l'exemple
@@ -39,7 +38,7 @@ export function SimulationInteractions() {
   const [mode, setMode] = useState(() => modeOuverture('interactions-guide-v1'));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant('interactions-guide-v1', ETAT0);
-  const [explo, setExplo] = useState({ scen: 'vedettes', lignes: false, perso: { base: 1, A: 2, B: 2, AB: 1 } });
+  const [explo, setExplo] = useState({ lignes: true, perso: { base: 1, A: 2, B: 2, AB: 1 } });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('ecart');
   const [sE, noterE] = useCompteurDefi(), [sV, noterV] = useCompteurDefi();
   const [hypoOuv, setHypoOuv] = useState(false);
@@ -161,39 +160,43 @@ export function SimulationInteractions() {
   const pontBox = enGuide && des('pont') && (
     <div style={{ ...styleBoite, ...cadre('pont') }}>{titreP('Du football à la chimie')}<TablePont/></div>);
 
-  // ---------- exploration ----------
+  // ---------- exploration : « Mon cas » ----------
   const setE = f => setExplo(e => ({ ...e, ...f }));
-  const sx = explo.scen === 'perso' ? { id: 'perso', titre: 'Mon cas', unite: 'points', dec: 1, ...explo.perso, cA: 'A', cB: 'B', etiq: [['ni A', 'ni B'], ['A', 'seul'], ['B', 'seul'], ['A et B', 'ensemble']] } : SCEN[explo.scen];
-  const iX = explo.scen === 'rouge' ? ecartRouge(ROUGE) : sx ? interaction(sx) : 0;
-  const prevX = explo.scen === 'rouge' ? moyenneRouge(ROUGE) : sx ? additif(sx) : 0;
-  const mesX = explo.scen === 'rouge' ? ROUGE.AB : sx?.AB;
-  const unX = explo.scen === 'rouge' ? '/ 10' : sx?.unite;
+  const sx = { id: 'perso', titre: 'Mon cas', unite: 'buts / match', dec: 1, ...explo.perso, cA: 'A', cB: 'B', etiq: [['ni A', 'ni B'], ['A', 'seul'], ['B', 'seul'], ['A et B', 'ensemble']] };
+  const iX = interaction(sx), prevX = additif(sx), cm = modele(sx);
+  const co = v => nf(Math.abs(v), 2);
+  const terme = (v, x) => <> {v < -1e-9 ? '−' : '+'} {co(v)}{x}</>;
+  const xA = <><em>x</em><sub>A</sub></>, xB = <><em>x</em><sub>B</sub></>, xAB = <><em>x</em><sub>A</sub><em>x</em><sub>B</sub></>;
   const exploControles = enExplo && (
     <div style={styleBoite}>
-      {titreP('Choisir un cas')}
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
-        {SC_LISTE.map(([c, l]) => <button key={c} onClick={() => setE({ scen: c })} aria-pressed={explo.scen === c} style={stylePetitBouton(explo.scen === c, '#0369a1')}>{l}</button>)}
-      </div>
-      <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>{explo.scen === 'perso' ? 'Réglez les quatre résultats et observez l’interaction.' : explo.scen === 'rouge' ? 'Données réelles d’un plan de mélange : candelilla, huile de ricin et leur mélange 50 / 50.' : sx.imag ? 'Football : chiffres inventés pour l’exemple.' : 'Chimie : moyennes arrondies des essais d’un plan réel.'}</div>
-      {explo.scen === 'perso' && <>
-        {[['base', 'Sans A ni B', '#64748b'], ['A', 'A seul', '#b45309'], ['B', 'B seul', '#0f766e'], ['AB', 'A et B ensemble', '#0369a1']].map(([c, l, col]) =>
-          <Curseur key={c} nom={l} valeur={explo.perso[c]} onChange={v => setE({ perso: { ...explo.perso, [c]: v } })} min={0} max={10} pas={0.1} decimales={1} couleur={col}/>)}
-      </>}
-      {explo.scen !== 'rouge' && <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13.5, marginTop: 6 }}><input type="checkbox" checked={explo.lignes} onChange={e => setE({ lignes: e.target.checked })}/>Voir les droites d’interaction</label>}
+      {titreP('Mon cas : une équipe avec deux attaquants A et B')}
+      <div style={{ fontSize: 13.5, color: KIT.txt, marginBottom: 6, lineHeight: 1.5 }}>Réglez le nombre de buts par match dans les quatre situations. Le modèle, le graphique et l’interaction se mettent à jour.</div>
+      {[['base', 'Sans A ni B', '#64748b'], ['A', 'A seul', '#b45309'], ['B', 'B seul', '#0f766e'], ['AB', 'A et B ensemble', '#0369a1']].map(([c, l, col]) =>
+        <Curseur key={c} nom={l} valeur={explo.perso[c]} onChange={v => setE({ perso: { ...explo.perso, [c]: v } })} min={0} max={5} pas={0.1} decimales={1} unite={`${NB}buts / match`} couleur={col}/>)}
+      <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13.5, marginTop: 6 }}><input type="checkbox" checked={explo.lignes} onChange={e => setE({ lignes: e.target.checked })}/>Afficher les droites d’interaction (sinon : les barres)</label>
+    </div>);
+  const modeleBox = enExplo && (
+    <div style={styleBoite}>
+      {titreP('Le modèle du plan 2²')}
+      <div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.5, marginBottom: 6 }}>On code chaque niveau : <strong>−1</strong> sans le joueur, <strong>+1</strong> avec le joueur. Le modèle prévoit alors les buts dans chaque situation :</div>
+      <div style={{ fontSize: 15.5, fontWeight: 700, color: KIT.txt, margin: '4px 0 8px', overflowWrap: 'anywhere', lineHeight: 1.7 }}>Buts = <em>a</em><sub>0</sub> + <em>a</em><sub>A</sub>{xA} + <em>a</em><sub>B</sub>{xB} + <em>a</em><sub>AB</sub>{xAB}</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: '#0369a1', margin: '0 0 8px', overflowWrap: 'anywhere', lineHeight: 1.7 }}>Buts = {nf(cm.a0, 2)}{terme(cm.aA, xA)}{terme(cm.aB, xB)}{terme(cm.aAB, xAB)}</div>
+      <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, lineHeight: 1.6, color: KIT.txt }}>
+        <li><em>a</em><sub>0</sub> = {nf(cm.a0, 2)} : moyenne des quatre situations.</li>
+        <li><em>a</em><sub>A</sub> = {nf(cm.aA, 2)} et <em>a</em><sub>B</sub> = {nf(cm.aB, 2)} : effets de A et de B.</li>
+        <li><em>a</em><sub>AB</sub> = {nf(cm.aAB, 2)} : le terme d’<strong>interaction</strong>, égal à l’interaction ÷ 4 ({nf(iX, 2)} ÷ 4). Il est nul si les effets s’additionnent.</li>
+      </ul>
     </div>);
   const exploScene = enExplo && (
     <div style={styleBoite}>
-      {explo.scen === 'rouge' ? <>{titreP('Rouge à lèvres : note du jury')}<MelangeVue/></>
-        : explo.lignes ? <>{titreP('Droites d’interaction')}<LignesVue s={sx} prevu/></>
-          : <>{titreP(`${sx.titre} : réponse`)}<BarresVue s={sx} prevu/></>}
+      {explo.lignes ? <>{titreP('Droites d’interaction')}<LignesVue s={sx} prevu/></> : <>{titreP('Buts par match')}<BarresVue s={sx} prevu/></>}
       <div style={{ marginTop: 6 }}>
-        <LigneMesure nom={explo.scen === 'rouge' ? 'Prévu (moyenne des purs)' : 'Prévu si les effets s’additionnent'} valeur={`${nf(prevX)}${NB}${unX}`} couleur="#dc2626"/>
-        <LigneMesure nom="Mesuré" valeur={`${nf(mesX)}${NB}${unX}`} couleur="#0369a1"/>
-        <LigneMesure nom="Interaction (mesuré − prévu)" valeur={`${sg(iX)}${nf(Math.abs(iX))}${NB}${unX}`} couleur="#b45309"/>
+        <LigneMesure nom="Prévu si les effets s’additionnent" valeur={`${nf(prevX)}${NB}buts / match`} couleur="#dc2626"/>
+        <LigneMesure nom="Mesuré (A et B ensemble)" valeur={`${nf(sx.AB)}${NB}buts / match`} couleur="#0369a1"/>
+        <LigneMesure nom="Interaction (mesuré − prévu)" valeur={`${sg(iX)}${nf(Math.abs(iX))}${NB}buts / match`} couleur="#b45309"/>
       </div>
       <div role="status" aria-live="polite" style={{ marginTop: 6, fontSize: 14, fontWeight: 700, color: KIT.txt }}>{VERDICTS[verdict(iX)]}</div>
     </div>);
-  const pontExplo = enExplo && <div style={styleBoite}>{titreP('Du football à la chimie')}<TablePont/></div>;
 
   // ---------- hypothèses ----------
   const hypotheses = (
@@ -244,14 +247,15 @@ export function SimulationInteractions() {
     <div style={styleBoite}>
       <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>À essayer</div>
       <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, lineHeight: 1.6, color: KIT.txt }}>
-        <li>« Mon cas » : réglez A seul et B seul, puis cherchez la valeur de « A et B ensemble » qui donne une interaction <strong>nulle</strong>. Que deviennent les droites ?</li>
-        <li>Imaginez deux ingrédients qui se complètent, puis deux qui se gênent : où se place « A et B ensemble » ?</li>
-        <li>Rouge à lèvres : pourquoi compare-t-on le mélange à la moyenne des deux corps purs ?</li>
+        <li>Fabriquez une <strong>synergie</strong>, puis un <strong>antagonisme</strong> : où se place « A et B ensemble » ? Que fait le terme <em>a</em><sub>AB</sub> ?</li>
+        <li>Cherchez la valeur de « A et B ensemble » qui donne une interaction <strong>nulle</strong>. Que deviennent les droites ? Et <em>a</em><sub>AB</sub> ?</li>
+        <li>Réglez A seul = B seul = « sans A ni B » : les deux joueurs n’apportent rien seuls. Peuvent-ils quand même apporter ensemble ?</li>
       </ul>
     </div>);
   const retenir = (
     <ARetenir>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
+        <li>Buts = a₀ + a<sub>A</sub>x<sub>A</sub> + a<sub>B</sub>x<sub>B</sub> + a<sub>AB</sub>x<sub>A</sub>x<sub>B</sub> ; a<sub>AB</sub> = interaction ÷ 4</li>
         <li>interaction = mesuré − prévu (effets additionnés)</li>
         <li>positive : synergie ; négative : antagonisme</li>
         <li>droites parallèles : pas d’interaction</li>
@@ -279,7 +283,7 @@ export function SimulationInteractions() {
         <div className="int-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'ecart' ? sE : sV}/></div>}
           {enGuide && <div className="int-col">{guideScene}{pontBox}</div>}
-          {enExplo && <div className="int-col">{exploControles}{exploScene}{pontExplo}</div>}
+          {enExplo && <div className="int-col">{exploControles}{modeleBox}{exploScene}</div>}
         </div>
       </div>
       {enGuide && etape >= ETAPES.length - 1 && <div style={{ marginBottom: 12 }}>{panneauHypo}</div>}
