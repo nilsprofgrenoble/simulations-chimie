@@ -52,5 +52,6 @@ for (const d of [20, 24, 30]) for (const f of [6, 8, 10, 12, 15]) {
   const e = M.pireEcartFocale(d, f);
   if (e > pire) { pire = e; pireCas = [d, f]; }
 }
+assert(pire < 0.08, 'défi « trouver f′ » : le pire écart dû à la mise au point reste sous la tolérance de 8 % de LentilleMince.jsx');
 console.log(`Défi « trouver f′ » : écart relatif maximal sur f′ = ${(pire * 100).toFixed(1)} % (d, f′ = ${pireCas}).`);
 console.log('lentilleMinceModele : tests OK');

@@ -6,8 +6,7 @@
 //  mêmes bilans, énergie utile différente.
 //
 //  ⚠️ INTÉGRATION (à la charge de Claude) :
-//   • choisir un identifiant SIM_ID libre dans src/App.jsx (ce fichier utilise 84,
-//     à vérifier) et y ajouter le composant SimulationMachinesThermiques ;
+//   • choisir un identifiant SIM_ID libre dans src/App.jsx (ce fichier utilise 89) et y ajouter le composant SimulationMachinesThermiques ;
 //   • ajouter la simulation au chapitre TSTL « Systèmes et procédés » dans src/chapitres.js ;
 //   • vérifier src/descriptions.js (fiche élève) si une description est requise ;
 //   • modèle pur exporté en bas (copMax, copReel, bilanCycle) : un fichier

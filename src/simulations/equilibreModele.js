@@ -1,5 +1,5 @@
 // ====================================================
-//  MODÈLE « ÉQUILIBRE CHIMIQUE : QUOTIENT DE RÉACTION Qr, CONSTANTE K, SENS D'ÉVOLUTION, TAUX D'AVANCEMENT FINAL » (sim 124, niveau TG)
+//  MODÈLE « ÉQUILIBRE CHIMIQUE : QUOTIENT DE RÉACTION Qr, CONSTANTE K, SENS D'ÉVOLUTION, TAUX D'AVANCEMENT FINAL » (sim 125, niveau TG)
 //  Réaction modèle  A + B ⇌ C + D  (ou A + B ⇌ C + solvant) en solution aqueuse, 1,00 L, T constante.
 //  Hypothèses de travail (rappelées dans la simulation) :
 //   - espèces dissoutes uniquement (le solvant, l'eau, n'est pas écrit dans Qr) ; activités ≈ concentrations / c° (c° = 1 mol/L), donc Qr sans dimension ;

@@ -13,7 +13,7 @@
 //  PAS sur x_eq (piège pédagogique central).
 //
 //  ⚠️ INTÉGRATION (à la charge de Claude) :
-//   • SIM_ID libre (90 semble disponible : vérifier), App.jsx, chapitres.js
+//   • SIM_ID libre (c'est 90), App.jsx, chapitres.js
 //     (chapitre TSTL « Synthèses chimiques » à créer ou rattacher au chapitre
 //     existant adéquat — vérifier src/chapitres.js), descriptions.js,
 //     titre unique (audit SEO).

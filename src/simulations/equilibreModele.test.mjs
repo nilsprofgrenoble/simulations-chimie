@@ -1,4 +1,4 @@
-// Tests du modèle « équilibre chimique » (sim 124) : node src/simulations/equilibreModele.test.mjs
+// Tests du modèle « équilibre chimique » (sim 125) : node src/simulations/equilibreModele.test.mjs
 import * as M from './equilibreModele.js';
 let ko = 0;
 const proche = (nom, x, ref, tol) => { const ok = Math.abs(x - ref) <= tol; if (!ok) { ko++; console.log(`✗ ${nom} : ${x} au lieu de ${ref} (± ${tol})`); } else console.log(`✓ ${nom}`); };

@@ -11,7 +11,7 @@ declarerDefis(SIM_ID_TG, [['emetteur', 'Quelle est la vitesse du chariot émette
 declarerDefis(SIM_ID, [['emetteur', 'Quelle est la vitesse du chariot émetteur ?'], ['echo', 'Quelle est la vitesse de la plaque qui renvoie l’onde ?']]);
 
 // ====================================================
-//  SIM 114 — EFFET DOPPLER : DU DÉCALAGE DE FRÉQUENCE À LA VITESSE (TSTL, thème Ondes)
+//  SIM 114 — EFFET DOPPLER : DU DÉCALAGE DE FRÉQUENCE À LA VITESSE (TSTL, thème Ondes) ; réutilisée par le parcours TG (sim 116)
 //  Deux scènes : (1) fronts d’onde d’un émetteur mobile (vue schématique, vitesse exagérée) ; (2) mesure sur un rail : spectre, curseur, décalage, vitesse.
 //  Montage 1 : émetteur ultrasonore sur un chariot, récepteur fixe (programme). Montage 2 : plaque mobile qui renvoie l’onde, émetteur et récepteur fixes (pour aller plus loin).
 //  Les situations de cette simulation sont originales (rail de laboratoire, plaque réfléchissante).
