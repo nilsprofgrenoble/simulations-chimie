@@ -367,7 +367,7 @@ const MENUS_ENTETE = [
   { key: "1G", label: "1G" },
   { key: "TG", label: "TG" },
   { key: "TSTL", label: "TSTL" },
-  { key: "BTS", label: "BTS MDC" },
+  { key: "BTS", label: "Post-bac" },
   { key: "COMP", label: "Travail par compétence" },
   { key: "JEUX", label: "🎮 Jeux" },
   { key: "OUTILS", label: "🛠️ Outils" },

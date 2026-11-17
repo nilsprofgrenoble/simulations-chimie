@@ -84,7 +84,7 @@ function NiveauxParNiveau({ onStart, niveaux, classes, sansEmoji }) {
     <div className="ab-niveaux">
       <div className="ab-ongl" role="group" aria-label="Choisir un niveau">
         {NIVEAUX_CHAPITRES.map(n => (
-          <button key={n.key} type="button" className={`ab-ong ${classes[n.key]}`} aria-current={actif === n.key ? 'true' : undefined} onClick={() => toucher(n.key)}>{n.key}</button>
+          <button key={n.key} type="button" className={`ab-ong ${classes[n.key]}`} aria-current={actif === n.key ? 'true' : undefined} onClick={() => toucher(n.key)}>{n.key === 'BTS' ? 'Post-bac' : n.key}</button>
         ))}
       </div>
       <div className="ab-piste" ref={piste} onScroll={surDefilement}>
@@ -93,8 +93,9 @@ function NiveauxParNiveau({ onStart, niveaux, classes, sansEmoji }) {
           const nb = chaps.reduce((t, c) => t + c.sims.length, 0);
           return (
             <section key={n.key} data-niv={n.key} className={`ab-niv ${classes[n.key]}`} aria-label={niveaux[n.key]}>
-              <span className="ab-abbr" aria-hidden="true">{n.key}</span>
-              <h3>{niveaux[n.key]}</h3>
+              <span className="ab-abbr" aria-hidden="true">{n.key === 'BTS' ? 'Post-bac' : n.key}</span>
+              <h3>{n.key === 'BTS' ? 'BTS MDC / IUT' : niveaux[n.key]}</h3>
+              {n.key === 'BTS' && <p className="ab-precis">Référentiel du BTS Métiers de la chimie ; utilisable en IUT selon vos programmes locaux.</p>}
               <p className="ab-nb">{nb} simulation{nb > 1 ? 's' : ''} · {chaps.length} chapitre{chaps.length > 1 ? 's' : ''}</p>
               <ul className="ab-puces">
                 {chaps.map(c => <li key={c.id}><button type="button" onClick={() => onStart(c.sims[0])}>{sansEmoji(c.label)}</button></li>)}
@@ -109,7 +110,7 @@ function NiveauxParNiveau({ onStart, niveaux, classes, sansEmoji }) {
 
 export function AccueilSite({ onStart, onCode, session, simulations, energyUrl }) {
   const profil = session?.profil;
-  const niveaux = { '2GT': 'Seconde', '1G': 'Première spé PC', TG: 'Terminale spé PC', TSTL: 'Terminale STL', BTS: 'BTS Métiers de la chimie' };
+  const niveaux = { '2GT': 'Seconde', '1G': 'Première spé PC', TG: 'Terminale spé PC', TSTL: 'Terminale STL', BTS: 'Post-bac (BTS MDC / IUT)' };
   const classes = { '2GT': 'ab-t2gt', '1G': 'ab-t1g', TG: 'ab-ttg', TSTL: 'ab-ttstl', BTS: 'ab-tbts' };
   const sansEmoji = s => s.replace(/^[^\p{L}\d]+/u, '');
   const totalSims = CHAPITRES.reduce((t, c) => t + c.sims.length, 0);
@@ -120,7 +121,7 @@ export function AccueilSite({ onStart, onCode, session, simulations, energyUrl }
       <section className="ab-hero" aria-label="Présentation">
         <div>
           <h1><span className="ab-etiquette">Paillasse virtuelle</span>Manipuler, se tromper, <mark>recommencer.</mark></h1>
-          <p className="ab-lead">La paillasse du labo, sans la verrerie. Des simulations de chimie et de physique pour la Seconde, la Première spé PC, la Terminale spé PC, la Terminale STL et le BTS Métiers de la chimie : parcours guidés, exploration libre, défis et exercices par compétence.</p>
+          <p className="ab-lead">La paillasse du labo, sans la verrerie. Des simulations de chimie et de physique pour la Seconde, la Première spé PC, la Terminale spé PC, la Terminale STL et le post-bac (BTS Métiers de la chimie, IUT) : parcours guidés, exploration libre, défis et exercices par compétence.</p>
         </div>
         <div className="ab-code"><SaisieCode onCode={onCode} simulations={simulations} sombre /></div>
       </section>
