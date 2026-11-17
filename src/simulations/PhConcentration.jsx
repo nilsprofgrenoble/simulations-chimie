@@ -25,7 +25,7 @@ const nbf = (v, d) => Number(v).toFixed(d).replace('.', ',');
 const sciC = (x, cs = 2) => { const [m, e] = Number(x).toExponential(cs - 1).split('e'); return `${m.replace('.', ',')}${NB}×${NB}10${sup(Number(e))}`; };
 const concTxt = c => (c >= 9.99e-5 ? nbf(c, Math.min(5, Math.max(2, 1 - Math.floor(Math.log10(c) + 1e-9)))) : sciC(c));   // 0,010 ou 0,0050 (décimal) tant que c'est lisible, sinon notation scientifique
 const tire = t => t[Math.floor(Math.random() * t.length)];
-const CONCS = [0.1, 0.05, 0.03, 0.02, 0.01, 0.005, 0.003, 0.002, 0.001, 0.0005, 0.0001];   // concentrations de départ proposées (mol/L)
+const CONCS = [0.1, 0.05, 0.03, 0.02, 0.01, 0.005, 0.003, 0.002, 0.001, 0.0005, 0.0001];   // concentrations de départ proposées (mol·L⁻¹)
 const PRESET = { i: 4, k: 0 };
 const IDS = ['solution', 'def', 'ph1', 'mant', 'inverse', 'dil', 'prevoir', 'serie', 'protocole', 'fact100', 'graphe', 'limite1', 'limite2', 'bravo'];
 const SCENES = { solution: 1e-2, def: 1e-2, ph1: 1e-2, mant: 4.0e-3, inverse: M.concDePH(3.40) };    // concentration de S₀ imposée aux premières étapes
@@ -40,7 +40,7 @@ const FORM_DIL = <Formule><msub><mi>pH</mi><mi>final</mi></msub><mo>=</mo><msub>
 // ---------- scène : fiole, pH-mètre, dilution ----------
 function Scene({ C0, k, montrerPH, montrerC, pHForce }) {
   const Ck = M.concApres(C0, k), ph = pHForce ?? M.pHMesure(Ck);
-  const etiqC = c => (montrerC ? `C = ${sciC(c)} mol/L` : 'C = ? mol/L');
+  const etiqC = c => (montrerC ? `C = ${sciC(c)} mol·L⁻¹` : 'C = ? mol·L⁻¹');
   return (
     <svg viewBox="0 0 440 262" style={{ width: '100%', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }} role="img"
       aria-label={`Paillasse : ${k > 0 ? `la solution S${k - 1} est diluée d’un facteur 10 pour donner la solution S${k} ; ` : 'une solution d’acide chlorhydrique '}le pH-mètre plongé dans la solution affiche ${montrerPH ? nbf(ph, 2) : 'une valeur encore masquée'}`}>
@@ -74,7 +74,7 @@ function TableSerie({ lignes, colLog, colPH, kSel, choix }) {
   return (
     <div role="group" aria-label="Solutions de la série" style={{ fontSize: 13.5 }}>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead><tr style={{ textAlign: 'left', color: KIT.txt2 }}><th style={{ padding: '3px 3px' }}>Solution</th><th style={{ padding: '3px 3px' }}><em>C</em> (mol/L)</th>
+        <thead><tr style={{ textAlign: 'left', color: KIT.txt2 }}><th style={{ padding: '3px 3px' }}>Solution</th><th style={{ padding: '3px 3px' }}><em>C</em> (mol·L⁻¹)</th>
           {colLog && <th style={{ padding: '3px 3px' }}>−log(<em>C</em>/c°)</th>}{colPH && <th style={{ padding: '3px 3px' }}>pH lu</th>}{choix && <th style={{ padding: '3px 3px' }}>Aberrante ?</th>}</tr></thead>
         <tbody>{lignes.map(l => (
           <tr key={l.k} style={{ borderTop: `1px dashed ${KIT.bord}`, background: kSel === l.k ? '#fff7ed' : 'transparent' }}>
@@ -159,37 +159,37 @@ export function SimulationPhConcentration() {
         indice: 'Quelle condition doit remplir le nombre dont on prend le logarithme ?' } },
     { id: 'ph1', titre: 'Calculer un pH', focus: ['scene', 'mesures'],
       texte: <>La solution de l’étape 1 a pour concentration en ions oxonium [H₃O⁺] = 1,0{NB}×{NB}10⁻²{NB}mol·L⁻¹. Calculez son pH ; le pH-mètre indiquera la valeur après votre réponse.</>,
-      tache: { type: 'num', q: 'pH de la solution', unite: '', vrai: 2.0, tol: 0.02, affiche: v => nbf(v, 1), carnet: 'pH de la solution à 1,0 × 10⁻² mol/L',
+      tache: { type: 'num', q: 'pH de la solution', unite: '', vrai: 2.0, tol: 0.02, affiche: v => nbf(v, 1), carnet: 'pH de la solution à 1,0 × 10⁻² mol·L⁻¹',
         calcul: () => ['[H₃O⁺] / c° = 1,0 × 10⁻² / 1 = 1,0 × 10⁻² (nombre sans unité).', 'log(10⁻²) = −2, donc pH = −(−2) = 2,0.'],
         pieges: [[-2, 'Le pH est −log([H₃O⁺]/c°) : il y a un signe moins devant le logarithme.'], [0.01, 'Vous avez recopié [H₃O⁺] : le pH est −log de cette valeur.']],
         expl: 'pH = −log(1,0 × 10⁻²) = 2,0.', indice: 'log(10ⁿ) = n : quel est l’exposant de 10 dans 1,0 × 10⁻² ?' } },
     { id: 'mant', titre: 'Quand ce n’est pas une puissance de 10', focus: ['scene', 'mesures'],
       texte: <>Une autre solution d’acide chlorhydrique a pour concentration [H₃O⁺] = 4,0{NB}×{NB}10⁻³{NB}mol·L⁻¹. Le nombre n’est plus une puissance de dix exacte : utilisez la touche <em>log</em> de la calculatrice. Donnez le pH avec <strong>2 décimales</strong> (autant que [H₃O⁺] a de chiffres significatifs).</>,
-      tache: { type: 'num', q: 'pH de la solution', unite: '', vrai: M.pHDeConc(4.0e-3), tol: 0.01, affiche: v => nbf(v, 2), cs: 3, carnet: 'pH de la solution à 4,0 × 10⁻³ mol/L',
+      tache: { type: 'num', q: 'pH de la solution', unite: '', vrai: M.pHDeConc(4.0e-3), tol: 0.01, affiche: v => nbf(v, 2), cs: 3, carnet: 'pH de la solution à 4,0 × 10⁻³ mol·L⁻¹',
         calcul: () => ['[H₃O⁺] / c° = 4,0 × 10⁻³ (sans unité).', 'log(4,0 × 10⁻³) = log 4,0 + log 10⁻³ = 0,60 − 3 = −2,40.', 'pH = −(−2,40) = 2,40 (2 décimales, car [H₃O⁺] a 2 chiffres significatifs).'],
-        pieges: [[3.60, 'Vous avez calculé 3 + log 4,0 : le pH est −(log 4,0 − 3) = 3 − 0,60.'], [-2.40, 'Le pH est l’opposé du logarithme : il est positif ici.'], [0.60, 'log 4,0 = 0,60 ne donne que la mantisse : il faut aussi tenir compte du 10⁻³.'],
+        pieges: [[3.60, 'Vous avez calculé 3 + log 4,0 : le pH est −(log 4,0 − 3) = 3 − 0,60.'], [-2.40, 'Le pH est l’opposé du logarithme : il est positif ici.'], [0.60, 'log 4,0 = 0,60 ne donne qu’une partie du résultat : il faut aussi tenir compte du 10⁻³.'],
           [3.0, 'Vous avez ignoré le facteur 4,0 : log(4,0 × 10⁻³) n’est pas égal à −3.'], [5.52, 'Vous avez utilisé la touche ln (logarithme népérien) ; il faut la touche log (logarithme décimal).']],
         expl: 'pH = −log(4,0 × 10⁻³) = 2,40.', indice: 'À la calculatrice : −log(4,0 × 10⁻³). Ou log(a × b) = log a + log b, avec log 4,0 ≈ 0,60 et log 10⁻³ = −3.' } },
     { id: 'inverse', titre: 'Du pH à la concentration', focus: ['scene', 'mesures'],
       texte: <>Un pH-mètre plongé dans une troisième solution d’acide chlorhydrique indique <strong>pH = 3,40</strong>. On cherche sa concentration en ions oxonium : la relation s’inverse (touche <em>10<sup>x</sup></em> de la calculatrice, avec x = −3,40).{FORM_INV}</>,
-      tache: { type: 'num', q: 'Concentration en ions oxonium [H₃O⁺]', unite: 'mol/L', vrai: M.concDePH(3.40), tol: 0.06, affiche: v => sciC(v), cs: 2, carnet: '[H₃O⁺] pour pH = 3,40',
-        calcul: () => ['[H₃O⁺] = c° × 10^(−pH) = 1 × 10^(−3,40).', '10^(−3,40) = 10^0,60 × 10⁻⁴ = 3,98 × 10⁻⁴ (touche 10ˣ avec −3,40).', 'Le pH a 2 décimales : [H₃O⁺] s’écrit avec 2 chiffres significatifs, 4,0 × 10⁻⁴ mol/L.'],
-        pieges: [[10 ** 3.4, 'Le signe de l’exposant est faux : [H₃O⁺] = 10^(−pH), pas 10^(+pH).'], [3.4e-3, 'Le « 3,40 » du pH n’est pas la mantisse : il faut calculer 10^(−3,40).'], [1.0e-3, 'Vous avez arrondi le pH à 3 : 10^(−3,40) est plus petit que 10⁻³.']],
-        expl: '[H₃O⁺] = 10^(−3,40) = 3,98 × 10⁻⁴ ≈ 4,0 × 10⁻⁴ mol/L (2 chiffres significatifs, comme le pH a 2 décimales).', indice: 'Calculatrice : 10^x avec x = −3,40. Le résultat est de l’ordre de 10⁻⁴.' } },
+      tache: { type: 'num', q: 'Concentration en ions oxonium [H₃O⁺]', unite: 'mol·L⁻¹', vrai: M.concDePH(3.40), tol: 0.06, affiche: v => sciC(v), cs: 2, carnet: '[H₃O⁺] pour pH = 3,40',
+        calcul: () => ['[H₃O⁺] = c° × 10^(−pH) = 1 × 10^(−3,40).', '10^(−3,40) = 10^0,60 × 10⁻⁴ = 3,98 × 10⁻⁴ (touche 10ˣ avec −3,40).', 'Le pH a 2 décimales : [H₃O⁺] s’écrit avec 2 chiffres significatifs, 4,0 × 10⁻⁴ mol·L⁻¹.'],
+        pieges: [[10 ** 3.4, 'Le signe de l’exposant est faux : [H₃O⁺] = 10^(−pH), pas 10^(+pH).'], [3.4e-3, 'Le « 3,40 » du pH n’est pas à recopier : il faut calculer 10^(−3,40).'], [1.0e-3, 'Vous avez arrondi le pH à 3 : 10^(−3,40) est plus petit que 10⁻³.']],
+        expl: '[H₃O⁺] = 10^(−3,40) = 3,98 × 10⁻⁴ ≈ 4,0 × 10⁻⁴ mol·L⁻¹ (2 chiffres significatifs, comme le pH a 2 décimales).', indice: 'Calculatrice : 10^x avec x = −3,40. Le résultat est de l’ordre de 10⁻⁴.' } },
     { id: 'dil', titre: 'Diluer d’un facteur 10', focus: ['reglages', 'scene'],
       retenirTitre: 'À RETENIR : DU [H₃O⁺] AU pH, ET INVERSEMENT',
       retenir: <><SvgRelation/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>[H₃O⁺] = 10⁻ⁿ mol/L ⇒ pH = n</strong> ; pour un nombre quelconque, on utilise la touche <em>log</em> (et <em>10<sup>x</sup></em> dans l’autre sens).</li>
-          <li><strong>Plus [H₃O⁺] est grande, plus le pH est petit</strong> : 2,5 × 10⁻⁵ mol/L ↔ pH 4,60.</li>
+          <li><strong>[H₃O⁺] = 10⁻ⁿ mol·L⁻¹ ⇒ pH = n</strong> ; pour un nombre quelconque, on utilise la touche <em>log</em> (et <em>10<sup>x</sup></em> dans l’autre sens).</li>
+          <li><strong>Plus [H₃O⁺] est grande, plus le pH est petit</strong> : 2,5 × 10⁻⁵ mol·L⁻¹ ↔ pH 4,60.</li>
           <li><strong>Règle d’écriture</strong> : autant de décimales pour le pH que de chiffres significatifs pour [H₃O⁺].</li></ul></>,
-      texte: <>Pour <strong>tester</strong> la relation, on prépare des solutions par <strong>dilutions successives d’un facteur 10</strong> : on prélève 10,0{NB}mL de la solution à la pipette jaugée, on les place dans une fiole jaugée de 100{NB}mL et on complète avec de l’eau distillée. Partez de {Sk(0)} (<em>C</em> = 1,0{NB}×{NB}10⁻²{NB}mol·L⁻¹, pH = 2,0). Le bouton de dilution est apparu dans les réglages : préparez {Sk(1)}.</>,
+      texte: <>Pour <strong>tester</strong> la relation, on prépare des solutions par <strong>dilutions successives d’un facteur 10</strong> : on prélève 10,0{NB}mL de la solution à la pipette jaugée, on les place dans une fiole jaugée de 100{NB}mL et on complète avec de l’eau distillée. Appelons {Sk(0)} la solution de départ (<em>C</em> = 1,0{NB}×{NB}10⁻²{NB}mol·L⁻¹, pH = 2,0). Le bouton de dilution est apparu dans les réglages : préparez {Sk(1)}, obtenue en diluant {Sk(0)}.</>,
       tache: { type: 'action', ok: ti.k >= 1, label: 'Préparer S₁ (diluer d’un facteur 10)', faire: () => setT({ k: 1 }), consigne: 'Diluez une fois d’un facteur 10 pour obtenir S1' } },
     { id: 'prevoir', titre: 'Prévoir le pH après dilution', focus: ['scene'],
       texte: <>{Sk(1)} est dix fois moins concentrée que {Sk(0)} : [H₃O⁺] est passée de 1,0{NB}×{NB}10⁻² à 1,0{NB}×{NB}10⁻³{NB}mol·L⁻¹. Avant de lire le pH-mètre, faites une prévision. Rappel : le pH de {Sk(0)} est 2,0.</>,
       tache: { type: 'qcm', q: 'Le pH de S₁ sera…', options: ['3,0 : le pH a augmenté de 1 unité', '2,1 : le pH a augmenté de 0,1 unité', '0,20 : le pH a été divisé par 10', '20 : le pH a été multiplié par 10'], bonne: 0, bloque,
         expl: `pH(S₁) = −log(1,0 × 10⁻³) = ${nbf(phS1, 1)} : diluer d’un facteur 10 divise [H₃O⁺] par 10, ce qui augmente le pH de 1 (log 10 = 1). Le pH-mètre le confirme.`,
-        indice: 'Calculez le pH de S₁ à partir de [H₃O⁺] = 1,0 × 10⁻³ mol/L et comparez-le à celui de S₀.' } },
+        indice: 'Calculez le pH de S₁ à partir de [H₃O⁺] = 1,0 × 10⁻³ mol·L⁻¹ et comparez-le à celui de S₀.' } },
     { id: 'serie', titre: 'La série de dilutions', focus: ['reglages', 'scene'],
       retenirTitre: 'À RETENIR : DILUER D’UN FACTEUR 10 AJOUTE 1 AU pH',
       retenir: <><SvgDilution10/>
@@ -212,7 +212,7 @@ export function SimulationPhConcentration() {
           <li>Lire le pH <strong>quand la valeur est stable</strong>, au centième ; la précision d’un pH-mètre courant est de l’ordre de 0,05 unité de pH.</li></ul></>,
       texte: <>Reprenez la solution de l’étape 4 : [H₃O⁺] = 4,0{NB}×{NB}10⁻³{NB}mol·L⁻¹ et pH = 2,40. On en prélève 1,0{NB}mL qu’on place dans une fiole jaugée de 100{NB}mL, complétée avec de l’eau distillée : la solution est diluée d’un facteur <strong>100</strong>, soit deux dilutions successives d’un facteur 10.</>,
       tache: { type: 'num', q: 'pH de la solution diluée', unite: '', vrai: M.pHDeConc(4.0e-3) + 2, tol: 0.01, affiche: v => nbf(v, 2), cs: 3, carnet: 'pH après dilution d’un facteur 100',
-        calcul: () => ['Facteur 100 : [H₃O⁺] est divisée par 100, soit 4,0 × 10⁻³ / 100 = 4,0 × 10⁻⁵ mol/L.', 'pH = −log(4,0 × 10⁻⁵) = 4,40.', 'Autre méthode : pH final = pH initial + log F = 2,40 + log 100 = 2,40 + 2 = 4,40.'],
+        calcul: () => ['Facteur 100 : [H₃O⁺] est divisée par 100, soit 4,0 × 10⁻³ / 100 = 4,0 × 10⁻⁵ mol·L⁻¹.', 'pH = −log(4,0 × 10⁻⁵) = 4,40.', 'Autre méthode : pH final = pH initial + log F = 2,40 + log 100 = 2,40 + 2 = 4,40.'],
         pieges: [[3.40, 'Vous avez ajouté 1 : un facteur 100 correspond à deux dilutions d’un facteur 10, donc à +2.'], [0.40, 'Le pH augmente quand on dilue : il faut ajouter 2, pas retrancher.'], [240, 'Vous avez multiplié le pH par 100 : la dilution agit sur [H₃O⁺], le pH augmente de log 100 = 2.']],
         expl: 'pH = 2,40 + log 100 = 4,40.', indice: 'Un facteur 100 = deux dilutions d’un facteur 10 : de combien le pH change-t-il à chaque dilution ?' } },
     { id: 'graphe', titre: 'Tester la relation', focus: ['graphe'],
@@ -235,15 +235,15 @@ export function SimulationPhConcentration() {
       tache: { type: 'action', ok: ti.k >= 6, label: 'Préparer S₅ et S₆', faire: () => setT({ k: 6 }), consigne: 'Diluez jusqu’à S6 (6 dilutions au total)' } },
     { id: 'limite2', titre: 'Les limites de la relation', focus: ['graphe', 'mesures'],
       texte: <>Pour {Sk(6)} (<em>C</em> = 1,0{NB}×{NB}10⁻⁸{NB}mol·L⁻¹), la relation donnerait pH = 8,00 ; or le pH-mètre indique {nbf(M.pHMesure(1e-8), 2)}. Une solution d’acide ne peut pas avoir un pH supérieur à 7.</>,
-      tache: { type: 'qcm', q: 'Pourquoi la relation pH = −log(C/c°) ne s’applique-t-elle plus à S₆ ?', options: ['l’eau apporte déjà environ 10⁻⁷ mol/L d’ions H₃O⁺, non négligeables devant 10⁻⁸ mol/L', 'le pH-mètre s’est déréglé en cours de série : il faudrait le réétalonner avant de poursuivre', 'l’acide chlorhydrique devient une base lorsqu’il est trop dilué, ce qui fait monter le pH'], bonne: 0, bloque,
-        expl: 'Dans l’eau pure à 25 °C, [H₃O⁺] = 10⁻⁷ mol/L (autoprotolyse de l’eau). Quand C devient comparable à cette valeur, ces ions ne sont plus négligeables : [H₃O⁺] ≠ C et pH = −log C n’est plus valable. Une solution d’acide garde un pH inférieur à 7.',
-        indice: 'Combien d’ions H₃O⁺ contient déjà l’eau pure ? Comparez à 1,0 × 10⁻⁸ mol/L.' } },
+      tache: { type: 'qcm', q: 'Pourquoi la relation pH = −log(C/c°) ne s’applique-t-elle plus à S₆ ?', options: ['l’eau apporte déjà environ 10⁻⁷ mol·L⁻¹ d’ions H₃O⁺, non négligeables devant 10⁻⁸ mol·L⁻¹', 'le pH-mètre s’est déréglé en cours de série : il faudrait le réétalonner avant de poursuivre', 'l’acide chlorhydrique devient une base lorsqu’il est trop dilué, ce qui fait monter le pH'], bonne: 0, bloque,
+        expl: 'Dans l’eau pure à 25 °C, [H₃O⁺] = 10⁻⁷ mol·L⁻¹ (autoprotolyse de l’eau). Quand C devient comparable à cette valeur, ces ions ne sont plus négligeables : [H₃O⁺] ≠ C et pH = −log C n’est plus valable. Une solution d’acide garde un pH inférieur à 7.',
+        indice: 'Combien d’ions H₃O⁺ contient déjà l’eau pure ? Comparez à 1,0 × 10⁻⁸ mol·L⁻¹.' } },
     { id: 'bravo', titre: 'Bilan', focus: [],
       retenirTitre: 'À RETENIR : DOMAINE DE VALIDITÉ',
       retenir: <><SvgValidite/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>pH = −log(C/c°)</strong> pour un acide fort est valable pour <strong>10⁻⁶ ≤ C ≤ 10⁻¹ mol/L</strong> (25 °C).</li>
-          <li><strong>Trop diluée</strong> : l’eau apporte 10⁻⁷ mol/L d’ions H₃O⁺, le pH reste inférieur à 7. <strong>Trop concentrée</strong> : les activités ne sont plus égales aux concentrations.</li></ul></>,
+          <li><strong>pH = −log(C/c°)</strong> pour un acide fort est valable pour <strong>10⁻⁶ ≤ C ≤ 10⁻¹ mol·L⁻¹</strong> (25 °C).</li>
+          <li><strong>Trop diluée</strong> : l’eau apporte 10⁻⁷ mol·L⁻¹ d’ions H₃O⁺, le pH reste inférieur à 7. <strong>Trop concentrée</strong> : les activités ne sont plus égales aux concentrations.</li></ul></>,
       texte: <>Vous savez passer de [H₃O⁺] au pH et inversement, prévoir l’effet d’une dilution d’un facteur 10 (pH + 1), tester la relation avec une série de solutions et reconnaître ses limites. Passez à l’exploration ou tentez les deux défis.</>, tache: null },
   ];
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
@@ -287,8 +287,8 @@ export function SimulationPhConcentration() {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>{defi.type === 'conc' ? 'Défi : quelle est la concentration en ions oxonium ?' : 'Défi : quelle mesure de la série est aberrante ?'}</div>
       {defi.type === 'conc' ? <>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>Le pH-mètre plongé dans une solution d’acide chlorhydrique indique <strong>pH = {nbf(defi.pH, 2)}</strong>. Calculez la concentration en ions oxonium [H₃O⁺] de la solution, en mol·L⁻¹, avec <strong>2 chiffres significatifs</strong>.</div>
-        {champ('[H₃O⁺] =', 'mol/L')}
-        <IndiceDefi cache={false}>[H₃O⁺] = c° × 10<sup>−pH</sup> avec c° = 1 mol/L. À la calculatrice : touche <em>10<sup>x</sup></em> avec x = −pH (le signe moins compte). Le résultat s’écrit a × 10<sup>−n</sup>.</IndiceDefi>
+        {champ('[H₃O⁺] =', 'mol·L⁻¹')}
+        <IndiceDefi cache={false}>[H₃O⁺] = c° × 10<sup>−pH</sup> avec c° = 1 mol·L⁻¹. À la calculatrice : touche <em>10<sup>x</sup></em> avec x = −pH (le signe moins compte). Le résultat s’écrit a × 10<sup>−n</sup>.</IndiceDefi>
       </> : <>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>Un élève a préparé cinq solutions d’acide chlorhydrique par dilutions successives d’un facteur 10 et mesuré leur pH. <strong>Une seule mesure est aberrante.</strong> Choisissez-la dans le tableau, puis donnez le pH qu’on aurait dû lire pour cette solution (2 décimales).</div>
         <TableSerie lignes={defi.lignes} colPH choix={{ sel: defi.sel, onSel: s => setDefi(d => ({ ...d, sel: s, verifie: false })) }}/>
@@ -302,7 +302,7 @@ export function SimulationPhConcentration() {
       </div>
       {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>
         {defi.type === 'conc'
-          ? (defi.ok ? `✓ Correct. [H₃O⁺] = 10^(−${nbf(defi.pH, 2)}) = ${sciC(M.concDePH(defi.pH))} mol/L.` : (proche(lireNombre(defi.reps.v), 10 ** defi.pH, 0.06) ? '✗ Le signe de l’exposant est faux : [H₃O⁺] = 10^(−pH).' : '✗ Vérifiez : [H₃O⁺] = c° × 10^(−pH), avec c° = 1 mol/L et le signe moins devant le pH.'))
+          ? (defi.ok ? `✓ Correct. [H₃O⁺] = 10^(−${nbf(defi.pH, 2)}) = ${sciC(M.concDePH(defi.pH))} mol·L⁻¹.` : (proche(lireNombre(defi.reps.v), 10 ** defi.pH, 0.06) ? '✗ Le signe de l’exposant est faux : [H₃O⁺] = 10^(−pH).' : '✗ Vérifiez : [H₃O⁺] = c° × 10^(−pH), avec c° = 1 mol·L⁻¹ et le signe moins devant le pH.'))
           : <>{defi.okLigne ? '✓ Bonne mesure repérée.' : '✗ Cherchez la mesure qui ne respecte pas « dilution × 10 ⇒ pH + 1 ».'}{' '}{defi.okPh ? `✓ pH attendu correct (${nbf(defi.vrai, 2)}).` : '✗ pH attendu : calculez −log(C/c°) pour la solution choisie.'}</>}
       </div>}
     </div>);
@@ -311,13 +311,13 @@ export function SimulationPhConcentration() {
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Température</strong> : 25 °C, avec <em>K</em><sub>e</sub> = 1,0 × 10⁻¹⁴ et un pH-mètre étalonné à cette température. Une autre température change <em>K</em><sub>e</sub> : le pH de l’eau pure n’est plus 7.</li>
-      <li><strong>Activités = concentrations</strong> : le pH est défini avec l’activité de H₃O⁺ ; au lycée on la remplace par [H₃O⁺] / c°. C’est valable pour des solutions diluées (C ≤ 0,1 mol/L) ; au-delà, les interactions entre ions rendent la relation moins bonne.</li>
+      <li><strong>Activités = concentrations</strong> : le pH est défini avec l’activité de H₃O⁺ ; au lycée on la remplace par [H₃O⁺] / c°. C’est valable pour des solutions diluées (C ≤ 0,1 mol·L⁻¹) ; au-delà, les interactions entre ions rendent la relation moins bonne.</li>
       <li><strong>Acide fort</strong> : l’acide chlorhydrique réagit totalement avec l’eau, donc [H₃O⁺] = C. Pour un <em>acide faible</em>, [H₃O⁺] &lt; C : une dilution d’un facteur 10 n’ajoute plus 1 au pH (voir la simulation sur les acides et les bases).</li>
-      <li><strong>Autoprotolyse de l’eau</strong> : <em>négligée</em> dans la relation du cours pH = −log(C/c°), mais <em>prise en compte</em> par le pH-mètre simulé (calcul complet avec <em>K</em><sub>e</sub>). L’écart reste inférieur à 0,01 unité de pH pour C ≥ 10⁻⁶ mol/L et devient grand en dessous (pH lu 6,79 pour 10⁻⁷ mol/L au lieu de 7,00).</li>
-      <li><strong>Domaine de validité</strong> : pH = −log(C/c°) pour un acide fort est valable pour 10⁻⁶ ≤ C ≤ 10⁻¹ mol/L. Une solution d’acide a toujours un pH &lt; 7 à 25 °C : un résultat supérieur à 7 est invraisemblable.</li>
+      <li><strong>Autoprotolyse de l’eau</strong> : <em>négligée</em> dans la relation du cours pH = −log(C/c°), mais <em>prise en compte</em> par le pH-mètre simulé (calcul complet avec <em>K</em><sub>e</sub>). L’écart reste inférieur à 0,01 unité de pH pour C ≥ 10⁻⁶ mol·L⁻¹ et devient grand en dessous (pH lu 6,79 pour 10⁻⁷ mol·L⁻¹ au lieu de 7,00).</li>
+      <li><strong>Domaine de validité</strong> : pH = −log(C/c°) pour un acide fort est valable pour 10⁻⁶ ≤ C ≤ 10⁻¹ mol·L⁻¹. Une solution d’acide a toujours un pH &lt; 7 à 25 °C : un résultat supérieur à 7 est invraisemblable.</li>
       <li><strong>Dilutions parfaites</strong> : pipette jaugée de 10,0 mL et fiole jaugée de 100 mL sans incertitude, volumes additifs : le facteur de dilution est exactement 10. Pas de CO₂ dissous (sinon l’eau distillée a un pH voisin de 5,6).</li>
       <li><strong>pH-mètre idéal</strong> : lecture stable au centième ; un vrai pH-mètre fluctue et a une précision de l’ordre de 0,05 unité de pH. Un écart de 0,02 entre pH lu et pH calculé n’est donc pas significatif.</li>
-      <li><strong>Chiffres significatifs</strong> : pH et logarithme se lisent ainsi — le nombre de décimales du pH est égal au nombre de chiffres significatifs de [H₃O⁺] (pH = 2,40 ↔ 4,0 × 10⁻³ mol/L).</li>
+      <li><strong>Chiffres significatifs</strong> : pH et logarithme se lisent ainsi — le nombre de décimales du pH est égal au nombre de chiffres significatifs de [H₃O⁺] (pH = 2,40 ↔ 4,0 × 10⁻³ mol·L⁻¹).</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>);
   const finParcours = (
@@ -343,7 +343,7 @@ export function SimulationPhConcentration() {
     <div style={{ ...styleBoite, ...cadre('reglages') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
       {explore && <>
-        <div style={{ fontSize: 13.5, color: KIT.txt, marginBottom: 4 }}>Concentration de départ <em>C</em><sub>0</sub> de {Sk(0)} (mol/L) :</div>
+        <div style={{ fontSize: 13.5, color: KIT.txt, marginBottom: 4 }}>Concentration de départ <em>C</em><sub>0</sub> de {Sk(0)} (mol·L⁻¹) :</div>
         <div role="group" aria-label="Concentration de départ" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
           {CONCS.map((c, i) => <button key={c} onClick={() => setT({ i })} aria-pressed={ti.i === i} style={stylePetitBouton(ti.i === i, '#475569')}>{nbf(c, c < 0.001 ? 4 : c < 0.01 ? 3 : 2)}</button>)}
         </div>
@@ -361,8 +361,8 @@ export function SimulationPhConcentration() {
   const mesures = (
     <div style={{ ...styleBoite, ...cadre('mesures') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
-      {montrerC && !dd && <LigneMesure nom="Concentration apportée C" valeur={`${explore ? concTxt(Ck) : sciC(Ck)}${NB}mol/L`}/>}
-      {(!enGuide || (apres('solution') && montrerC)) && !dd && <LigneMesure nom="[H₃O⁺] (acide fort : = C)" valeur={`${explore ? concTxt(Ck) : sciC(Ck)}${NB}mol/L`}/>}
+      {montrerC && !dd && <LigneMesure nom="Concentration apportée C" valeur={`${explore ? concTxt(Ck) : sciC(Ck)}${NB}mol·L⁻¹`}/>}
+      {(!enGuide || (apres('solution') && montrerC)) && !dd && <LigneMesure nom="[H₃O⁺] (acide fort : = C)" valeur={`${explore ? concTxt(Ck) : sciC(Ck)}${NB}mol·L⁻¹`}/>}
       {(montrerPH || dd) && <LigneMesure nom="pH lu" valeur={nbf(dd ? dd.pH : pHlu, 2)} couleur="#b45309"/>}
       {!dd && suitSerie && (!enGuide || deja('dil')) && <LigneMesure nom="Dilutions réalisées" valeur={`${k}`}/>}
       {!dd && suitSerie && (!enGuide || deja('dil')) && k > 0 && <LigneMesure nom="Facteur de dilution total" valeur={`10${sup(k)}`}/>}
@@ -390,7 +390,7 @@ export function SimulationPhConcentration() {
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
       <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
-        <li>Choisissez <em>C</em><sub>0</sub> = 0,03 mol/L : prévoyez le pH de S<sub>0</sub>, S<sub>2</sub> et S<sub>3</sub> avant de lire le pH-mètre.</li>
+        <li>Choisissez <em>C</em><sub>0</sub> = 0,03 mol·L⁻¹ : prévoyez le pH de S<sub>0</sub>, S<sub>2</sub> et S<sub>3</sub> avant de lire le pH-mètre.</li>
         <li>Quelle que soit <em>C</em><sub>0</sub>, de combien le pH change-t-il à chaque dilution tant que la relation est valable ?</li>
         <li>Diluez jusqu’à S<sub>8</sub> : à partir de quelle solution l’écart avec la relation dépasse-t-il 0,05 ? Que devient le pH lu quand on dilue encore ?</li>
         <li>Comparez deux solutions dont les concentrations diffèrent d’un facteur 1000 : de combien diffèrent leurs pH ?</li>
@@ -400,9 +400,9 @@ export function SimulationPhConcentration() {
   const retenirExplore = (
     <ARetenir sansFiche>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
-        <li>pH = −log([H₃O⁺]/c°), c° = 1 mol/L ; [H₃O⁺] = 10<sup>−pH</sup> mol/L</li>
+        <li>pH = −log([H₃O⁺]/c°), c° = 1 mol·L⁻¹ ; [H₃O⁺] = 10<sup>−pH</sup> mol·L⁻¹</li>
         <li>dilution d’un facteur F : pH + log F (facteur 10 : +1)</li>
-        <li>acide fort : valable pour 10⁻⁶ ≤ C ≤ 10⁻¹ mol/L ; pH &lt; 7 pour un acide</li>
+        <li>acide fort : valable pour 10⁻⁶ ≤ C ≤ 10⁻¹ mol·L⁻¹ ; pH &lt; 7 pour un acide</li>
         <li>décimales du pH = chiffres significatifs de [H₃O⁺]</li>
       </ul>
     </ARetenir>);
