@@ -1,4 +1,5 @@
 import { Children, Fragment, cloneElement, isValidElement, useState, useEffect, useLayoutEffect, useRef, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { compter } from "./stats";
 import { Pic, Emo } from "./Pictos";
 import { missionEnCours } from "./mission";
@@ -447,7 +448,14 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
 export function ARetenir({ titre = 'À RETENIR', children, sansFiche = false, titreEtape, capture = true, rangee = null, ordre }) {
   const contenu = useRef(null);
   const [, relire] = useState(0);
+  const [zoom, setZoom] = useState(null);   // schéma agrandi (code SVG) : sur téléphone, les textes des schémas sont petits, on les agrandit au toucher
   const minuterie = useRef(null), derniere = useRef(null);
+  useEffect(() => {
+    if (!zoom) return undefined;
+    const touche = e => { if (e.key === 'Escape') setZoom(null); };
+    window.addEventListener('keydown', touche);
+    return () => window.removeEventListener('keydown', touche);
+  }, [zoom]);
   // Si la page se redessine en continu (animation), on ne remet pas la minuterie à zéro à chaque image : un seul instantané est programmé, il lit le contenu le plus récent.
   useEffect(() => () => { if (minuterie.current) clearTimeout(minuterie.current); }, []);
   useEffect(() => {
@@ -471,7 +479,16 @@ export function ARetenir({ titre = 'À RETENIR', children, sansFiche = false, ti
   return (
     <div data-retenir="1" style={{ background: '#eaf2fb', border: '2px solid #7aa6d6', borderRadius: 10, padding: '8px 12px', color: '#0f172a' }}>
       <div style={{ fontWeight: 800, fontSize: 14, color: '#be123c', letterSpacing: 0.4, marginBottom: 4 }}>{titre} ❤️</div>
-      <div ref={contenu} style={{ fontSize: 15, lineHeight: 1.6 }}>{indicesProfond(children)}</div>
+      <div ref={contenu} style={{ fontSize: 15, lineHeight: 1.6 }} onClick={e => { const sv = e.target.closest && e.target.closest('svg[role="img"]'); if (sv && contenu.current && contenu.current.contains(sv)) setZoom(sv.outerHTML); }}>{indicesProfond(children)}</div>
+      {!EN_RECOLTE && <div data-zoom-indice="1" style={{ fontSize: 12, color: '#475569', textAlign: 'right', marginTop: 2 }}>🔍 Touche le schéma pour l’agrandir</div>}
+      {zoom && createPortal(
+        <div role="dialog" aria-modal="true" aria-label="Schéma agrandi" onClick={() => setZoom(null)} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(15,23,42,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 6, overflow: 'auto' }}>
+          <style>{'[data-zoom-schema] svg { width: 100% !important; max-width: none !important; height: auto !important; margin: 0 !important; }'}</style>
+          <div data-zoom-schema="1" style={{ background: '#fff', borderRadius: 10, width: '100%', maxWidth: 760, padding: '34px 6px 6px', boxSizing: 'border-box', position: 'relative' }}>
+            <button type="button" onClick={() => setZoom(null)} aria-label="Fermer le schéma" style={{ position: 'absolute', top: 4, right: 4, zIndex: 1, padding: '2px 9px', borderRadius: 8, border: '1px solid #9fb8d4', background: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14 }}>✕</button>
+            <div dangerouslySetInnerHTML={{ __html: zoom }}/>
+          </div>
+        </div>, document.body)}
       {!sansFiche && !EN_RECOLTE && (rangee === false
         ? <div data-retenir-rangee="attente" style={{ marginTop: 6, fontSize: 12, color: '#475569', textAlign: 'right' }}><Pic n="clipboard"/>Cette carte rejoindra tes fiches quand tu auras terminé le parcours.</div>
         : <div data-retenir-rangee="1" style={{ marginTop: 6, fontSize: 12, color: '#475569', textAlign: 'right' }}>
