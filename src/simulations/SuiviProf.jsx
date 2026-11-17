@@ -305,7 +305,7 @@ export function SimulationSuiviProf({ naviguer }) {
           <MotDePasse />
           <button onClick={deconnexion} style={{ ...styleBouton(false, '#475569'), fontSize: 14 }}>Se déconnecter</button>
         </div>
-        {sess.profil.admin && <div style={{ marginTop: 12 }}><ComptesProf occupe={occupe} proteger={proteger} setMsg={setMsg} /><ClassesAdmin occupe={occupe} proteger={proteger} setMsg={setMsg} onChange={() => chargerClasses()} /></div>}
+        {sess.profil.admin && <div style={{ marginTop: 12 }}><ComptesProf occupe={occupe} proteger={proteger} setMsg={setMsg} /><ClassesAdmin occupe={occupe} proteger={proteger} setMsg={setMsg} onChange={() => chargerClasses()} onCreee={(nom, liste) => setComptes({ classe: nom, liste })} /></div>}
       </section>);
   const carteCompte = (
     <>

@@ -6,7 +6,8 @@
 //
 //  Seul un professeur connecté (présent dans la table « professeurs ») peut l'appeler,
 //  et seulement pour SES classes. Actions (corps JSON, champ « action ») :
-//    creer_classe     { nom, prefixe, nombre }  → crée la classe et « nombre » comptes
+//    creer_classe     { nom, prefixe, nombre, site?, prof_email? } → crée la classe et « nombre » comptes ; « site » : paillasse | energy | deux (« deux » : administrateur seul) ;
+//                                                 « prof_email » : l'ADMINISTRATEUR crée la classe au nom d'un collègue (même invité)
 //    ajouter_eleves   { classe_id, nombre }     → ajoute des comptes à la suite
 //    reinitialiser    { identifiant }           → nouveau mot de passe pour un élève
 //    supprimer_eleve  { identifiant }           → supprime le compte et toutes ses données
@@ -154,15 +155,28 @@ Deno.serve(async (req) => {
   try {
   switch (corps.action) {
     case 'creer_classe': {
-      if (estInvite) return rep(403, { erreur: 'Un compte invité ne peut pas créer de classe. Demandez à l’administrateur de vous en partager une.' });
+      // « prof_email » : l'ADMINISTRATEUR crée la classe au nom d'un collègue (même invité) ; « site » : « deux » est réservé à l'administrateur
+      const estAdminProf = !!(prof as { admin?: boolean }).admin;
+      const pourAutre = typeof corps.prof_email === 'string' && corps.prof_email.trim() !== '';
+      if (pourAutre && !estAdminProf) return rep(403, { erreur: 'Seul l’administrateur peut créer une classe pour un autre professeur.' });
+      if (!pourAutre && estInvite) return rep(403, { erreur: 'Un compte invité ne peut pas créer de classe. Demandez à l’administrateur de vous en partager une.' });
+      const site = corps.site === undefined ? 'paillasse' : String(corps.site);
+      if (!['paillasse', 'energy', 'deux'].includes(site)) return rep(400, { erreur: 'Site inconnu.' });
+      if (site === 'deux' && !estAdminProf) return rep(403, { erreur: 'Seul l’administrateur peut mettre une classe sur les deux sites.' });
+      let proprioId = profId;
+      if (pourAutre) {
+        const trouve = await profParEmail(corps.prof_email);
+        if (!trouve) return rep(404, { erreur: 'Aucun compte professeur avec cette adresse.' });
+        proprioId = trouve;
+      }
       const nom = String(corps.nom ?? '').trim(), prefixe = String(corps.prefixe ?? '').trim().toLowerCase();
       if (nom.length < 1 || nom.length > 40) return rep(400, { erreur: 'Nom de classe : 1 à 40 caractères.' });
       if (!/^[a-z0-9]{2,12}$/.test(prefixe)) return rep(400, { erreur: 'Préfixe : 2 à 12 lettres minuscules ou chiffres, sans espace ni accent (ex. tstl1).' });
       if (!nombreValide(corps.nombre)) return rep(400, { erreur: `Nombre d’élèves : entre 1 et ${MAX_PAR_APPEL}.` });
-      const { count: nbClasses, error: errNb } = await admin.from('classes').select('id', { count: 'exact', head: true }).eq('prof_id', profId);
+      const { count: nbClasses, error: errNb } = await admin.from('classes').select('id', { count: 'exact', head: true }).eq('prof_id', proprioId);
       if (errNb) throw new Error(errNb.message);
-      if ((nbClasses ?? 0) >= MAX_CLASSES) return rep(400, { erreur: `Vous avez déjà ${MAX_CLASSES} classes : supprimez-en une avant d’en créer une autre.` });
-      const { data: classe, error } = await admin.from('classes').insert({ nom, prefixe, prof_id: profId }).select('id, prefixe, nom').single();
+      if ((nbClasses ?? 0) >= MAX_CLASSES) return rep(400, { erreur: `${pourAutre ? 'Ce professeur a' : 'Vous avez'} déjà ${MAX_CLASSES} classes : supprimez-en une avant d’en créer une autre.` });
+      const { data: classe, error } = await admin.from('classes').insert({ nom, prefixe, prof_id: proprioId, site }).select('id, prefixe, nom').single();
       if (error) return rep(409, { erreur: error.code === '23505' ? 'Ce préfixe est déjà utilisé : choisissez-en un autre.' : error.message });
       return rep(200, { classe, comptes: await creerComptes(classe, corps.nombre as number) });
     }

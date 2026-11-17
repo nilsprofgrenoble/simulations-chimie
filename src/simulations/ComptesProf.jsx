@@ -106,10 +106,22 @@ const SITES = [['paillasse', 'Paillasse'], ['energy', 'Energy@School'], ['deux',
 
 // Toutes les classes du site, réservé à l'administrateur (supabase/18-classes-admin.sql) : règle le « site » d'une classe sans qu'elle soit partagée.
 // Replié par défaut, chargé à l'ouverture ; classes regroupées par professeur ; ni nom d'élève ni résultat.
-export function ClassesAdmin({ occupe, proteger, setMsg, onChange }) {
+export function ClassesAdmin({ occupe, proteger, setMsg, onChange, onCreee }) {
   const [ouvert, setOuvert] = useState(false), [classes, setClasses] = useState(null);
+  const [form, setForm] = useState(false), [profs, setProfs] = useState(null), [nc, setNc] = useState({ email: '', nom: '', prefixe: '', nombre: 30, site: 'deux' });
   const charger = useCallback(async () => { setClasses(await rest('rpc/classes_admin', { method: 'POST', corps: {} })); }, []);
   useEffect(() => { if (ouvert && !classes) proteger(charger); }, [ouvert, classes, proteger, charger]);
+  useEffect(() => { if (form && !profs) proteger(async () => { const r = await fonctionComptes('lister_profs'); setProfs(r.profs || []); }); }, [form, profs, proteger]);
+  const creer = e => {
+    e.preventDefault();
+    proteger(async () => {
+      const r = await fonctionComptes('creer_classe', { prof_email: nc.email, nom: nc.nom, prefixe: nc.prefixe, nombre: Number(nc.nombre), site: nc.site });
+      setForm(false); setNc(n => ({ ...n, nom: '', prefixe: '', nombre: 30 }));
+      setMsg(`Classe « ${r.classe.nom} » créée pour ${(profs || []).find(p => p.email === nc.email)?.nom || 'le professeur'} : notez ou imprimez les mots de passe ci-dessus, ils ne seront plus affichés.`);
+      if (onCreee) onCreee(r.classe.nom, r.comptes);
+      await charger(); if (onChange) onChange();
+    });
+  };
   const regler = (c, site) => {
     if (site === c.site) return;
     proteger(async () => {
@@ -136,5 +148,24 @@ export function ClassesAdmin({ occupe, proteger, setMsg, onChange }) {
               </select>
             </div>))}
         </div>))}
+      <div style={{ marginTop: 12, borderTop: `1px solid ${KIT.bord}`, paddingTop: 10 }}>
+        {!form
+          ? <button type="button" onClick={() => setForm(true)} disabled={occupe} style={{ ...styleBouton(false, '#475569'), fontSize: 13.5 }}>＋ Créer une classe pour un professeur</button>
+          : (
+            <form onSubmit={creer} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+              <select value={nc.email} onChange={e => setNc({ ...nc, email: e.target.value })} style={champ} aria-label="Professeur propriétaire de la classe" required>
+                <option value="">Professeur…</option>
+                {(profs || []).map(p => <option key={p.email} value={p.email}>{p.nom}{p.moi ? ' (vous)' : ''}</option>)}
+              </select>
+              <input value={nc.nom} onChange={e => setNc({ ...nc, nom: e.target.value })} placeholder="nom de la classe (ex. 2nde 4)" style={{ ...champ, minWidth: 200 }} aria-label="Nom de la classe" maxLength={40} required />
+              <input value={nc.prefixe} onChange={e => setNc({ ...nc, prefixe: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '') })} placeholder="préfixe (ex. 2nde4)" style={{ ...champ, width: 140 }} aria-label="Préfixe des identifiants élèves" maxLength={12} required />
+              <label style={{ fontSize: 13.5, color: KIT.txt }}>Élèves <input type="number" min={1} max={40} value={nc.nombre} onChange={e => setNc({ ...nc, nombre: e.target.value })} style={{ ...champ, width: 70 }} /></label>
+              <select value={nc.site} onChange={e => setNc({ ...nc, site: e.target.value })} style={champ} aria-label="Site des élèves">
+                {SITES.map(([id, libelle]) => <option key={id} value={id}>{id === 'deux' ? 'Les deux sites' : libelle}</option>)}
+              </select>
+              <button type="submit" style={styleBouton(true, '#16a34a')} disabled={occupe || !nc.email || !nc.nom.trim() || nc.prefixe.length < 2}>Créer la classe et les comptes</button>
+              <button type="button" onClick={() => setForm(false)} style={styleBouton(false, '#475569')}>Annuler</button>
+            </form>)}
+      </div>
     </details>);
 }
