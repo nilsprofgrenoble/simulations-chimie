@@ -3660,6 +3660,64 @@ export const PREVOIR = [
       F('[H₃O⁺] = 3 × 10⁻⁵ mol/L : un seul chiffre significatif', 'Un seul chiffre est trop peu : 3 × 10⁻⁵ s’écarte de près de 20 % de la valeur calculée, bien plus que l’incertitude due au pH.'),
       F('[H₃O⁺] = 4,60 × 10⁻⁵ mol/L : on reprend le nombre du pH', 'Le 4,60 du pH n’est pas la mantisse de [H₃O⁺] : il faut calculer 10^(−4,60).'),
     ] },
+  // ───────────────────────────── Plans d'expériences (BTS) : plan de mélange
+  { id: 'pmel-pas-de-constante', domaine: 'Plans', titre: 'Pourquoi pas de constante dans un modèle de mélange ?',
+    enonce: 'Dans un mélange de trois corps gras A, B et C, les fractions massiques vérifient x_A + x_B + x_C = 1. Le modèle de Scheffé s’écrit y = β_A·x_A + β_B·x_B + β_C·x_C + … et ne comporte pas de terme constant β₀.', q: 'Pourquoi n’écrit-on pas de constante β₀ ?', options: [
+      V('elle est déjà contenue dans les autres termes, car x_A + x_B + x_C = 1', 'Une constante β₀ peut s’écrire β₀·(x_A + x_B + x_C) : elle est absorbée dans les coefficients des composants purs β_A, β_B et β_C.'),
+      F('parce que la réponse est toujours nulle quand il n’y a aucun composant', 'Il y a toujours de la matière : les fractions somment à 1, on ne peut pas « n’avoir aucun composant ».'),
+      F('parce que la constante serait trop petite pour être mesurée précisément', 'Ce n’est pas une question de taille : c’est une conséquence algébrique de la somme des fractions égale à 1.'),
+      F('parce qu’on suppose que les composants n’interagissent jamais entre eux', 'Les interactions sont portées par les termes x_A·x_B ; elles n’ont aucun rapport avec l’absence de constante.'),
+    ] },
+  { id: 'pmel-ecart-milieu-sens', domaine: 'Plans', titre: 'Mélange à parts égales : synergie ou antagonisme ?',
+    enonce: 'Au TP rouge à lèvres, la note du jury est 5 pour la cire de candelilla seule (A) et 2 pour l’huile de ricin seule (B). Le mélange à parts égales de A et B obtient la note 8.', q: 'Que dit cette mesure sur l’interaction entre A et B ?', options: [
+      V('synergie : 8 dépasse la moyenne des deux corps purs, 3,5', 'Sans interaction, le mélange 50/50 aurait la note (5 + 2)/2 = 3,5. L’écart +4,5 est positif, donc le coefficient β_AB = 4×8 − 2×5 − 2×2 = 18 est positif.'),
+      F('antagonisme : un mélange de deux corps purs est toujours moins bon que le meilleur', 'Un antagonisme se lit par un écart négatif par rapport à la moyenne ; ici 8 est au-dessus de 3,5 et même de la meilleure note pure (5).'),
+      F('aucune interaction : la note du mélange est comprise entre celles des deux purs', 'Ici 8 n’est pas compris entre 2 et 5. Sans interaction, le mélange suivrait la moyenne, soit 3,5.'),
+      F('aucune conclusion possible sans mesurer le mélange des trois corps gras', 'Un seul mélange binaire suffit à estimer l’interaction entre deux composants : β_AB = 18 ici.'),
+    ] },
+  { id: 'pmel-composant-seul', domaine: 'Plans', titre: 'Ajouter un composant « toutes choses égales par ailleurs »',
+    enonce: 'Pour étudier l’effet de la cire d’abeille (C) sur la fermeté, un élève part de la formule de référence et ajoute 1 g de cire d’abeille sans rien changer d’autre.', q: 'Que change cet ajout dans l’étude ?', options: [
+      V('les fractions de A et B diminuent : on ne fait pas varier C seul', 'La somme des fractions reste égale à 1 : augmenter x_C diminue forcément x_A et x_B. L’effet de C ne se lit qu’en comparant des formules différentes.'),
+      F('rien d’autre : seule la fraction de C change, celles de A et B restent identiques', 'Les fractions sont des parts d’un tout : si la masse totale augmente, la part de chaque autre composant diminue.'),
+      F('rien de gênant : on raisonne sur les masses, la contrainte de somme ne compte pas', 'Les propriétés d’un mélange dépendent des proportions. C’est précisément la contrainte sur les fractions qui impose un plan de mélange.'),
+      F('le plan de mélange devient impossible à construire avec cet essai en plus', 'Au contraire : les essais d’un plan de mélange ont tous des fractions de somme 1, c’est ce qui le distingue d’un plan factoriel.'),
+    ] },
+  { id: 'pmel-centre-controle', domaine: 'Plans', titre: 'À quoi sert l’essai au centre ?',
+    enonce: 'Le plan de mélange à 7 essais comporte les 3 sommets (corps purs), les 3 milieux d’arêtes et le centre. Le modèle quadratique comporte 6 coefficients : 3 pour les corps purs et 3 interactions binaires. Sur la note du jury, ce modèle prévoit 4,6 au centre ; on a mesuré 10.', q: 'Que permet l’essai au centre ?', options: [
+      V('contrôler le modèle : il reste 1 degré de liberté (7 − 6)', 'Les 6 autres essais suffisent à calculer les 6 coefficients ; le centre sert à comparer prévision et mesure. Ici l’écart 10 − 4,6 est grand : le modèle est insuffisant, il faut ajouter un terme d’ordre 3.'),
+      F('calculer le coefficient du corps gras le plus abondant dans la formule', 'Les trois coefficients de corps purs se lisent aux sommets du triangle, pas au centre.'),
+      F('remplacer l’un des milieux d’arêtes quand une mesure est ratée', 'Chaque milieu d’arête apporte un coefficient d’interaction différent : le centre ne le remplace pas.'),
+      F('mesurer le bruit expérimental en le répétant sept fois', 'Un seul essai au centre ne donne aucune estimation de la dispersion ; il faudrait le répéter.'),
+    ] },
+  // ───────────────────────────── Plans d'expériences (BTS) : plan factoriel
+  { id: 'pfac-niveau-central', domaine: 'Plans', titre: 'Coder un niveau intermédiaire',
+    enonce: 'Dans le plan 2³ du flan au chocolat, la température de travail prend deux niveaux : 75 °C (codé −1) et 102 °C (codé +1).', q: 'Quelle valeur codée correspond à un essai à 88,5 °C ?', options: [
+      V('0 : le milieu des deux niveaux, soit 88,5 °C', 'Le codage est une droite : −1 en 75 °C, +1 en 102 °C, donc 0 au point central 88,5 °C. Un essai au centre sert à repérer une courbure.'),
+      F('+0,5 : on est un peu au-dessus du niveau bas', 'Le milieu des deux niveaux est codé 0 ; +0,5 serait 95,25 °C.'),
+      F('−0,5 : on est un peu en dessous du niveau haut', 'Ce n’est pas le milieu : −0,5 correspond à 81,75 °C.'),
+      F('88,5 : on conserve la valeur réelle dans le modèle', 'Le modèle utilise les valeurs codées, sans unité ; c’est ce qui rend les coefficients comparables entre facteurs.'),
+    ] },
+  { id: 'pfac-parallele', domaine: 'Plans', titre: 'Lire une interaction sur un graphique',
+    enonce: 'On trace la réponse en fonction du niveau du facteur A, avec deux segments : l’un pour B = −1, l’autre pour B = +1. Les deux segments sont parallèles.', q: 'Que peut-on dire de l’interaction A·B ?', options: [
+      V('elle est nulle : l’effet de A ne dépend pas de B', 'Des segments parallèles ont la même pente : passer de A = −1 à A = +1 fait varier la réponse pareil pour B = −1 et B = +1.'),
+      F('elle est maximale, car les deux segments sont proches l’un de l’autre', 'Leur écart vertical traduit l’effet principal de B ; l’interaction se lit sur la différence de pente.'),
+      F('elle est négative, car le segment de B = +1 est plus bas que l’autre', 'Un décalage vertical entre les segments est l’effet principal de B, pas une interaction.'),
+      F('on ne peut rien dire sans connaître l’écart-type de la mesure', 'Le parallélisme se lit sur le graphique ; l’écart-type ne servirait qu’à juger un petit défaut de parallélisme.'),
+    ] },
+  { id: 'pfac-fraction-essais', domaine: 'Plans', titre: 'Combien d’essais dans un plan fractionnaire ?',
+    enonce: 'Pour étudier 5 facteurs à deux niveaux, un plan complet demande 2⁵ = 32 essais. On choisit à la place un plan fractionnaire 2⁵⁻¹ avec le générateur E = ABCD.', q: 'Combien d’essais réalise-t-on ?', options: [
+      V('16 essais : la moitié du plan complet', 'On réalise 2⁵⁻¹ = 2⁴ = 16 essais : les niveaux de E se déduisent de ceux de A, B, C et D.'),
+      F('31 essais : un de moins que le plan complet', 'Le « −1 » est dans l’exposant : 2⁵⁻¹ = 2⁴ = 16, et non 2⁵ − 1.'),
+      F('4 essais : 5 facteurs moins 1 générateur', 'Le nombre d’essais est une puissance de 2 : on retire 1 à l’exposant, pas au nombre de facteurs.'),
+      F('8 essais : un quart du plan complet', 'Un quart correspondrait à un plan 2⁵⁻² avec deux générateurs ; ici il n’y en a qu’un.'),
+    ] },
+  { id: 'pfac-alias-hierarchie', domaine: 'Plans', titre: 'Accepter un effet confondu',
+    enonce: 'Dans le plan 2⁵⁻¹ (E = ABCD), la colonne de l’effet principal E est identique à celle de l’interaction A·B·C·D : les deux effets sont confondus (aliasés). On attribue le coefficient trouvé à E.', q: 'Pourquoi accepte-t-on ce confondu ?', options: [
+      V('l’interaction d’ordre 4 est le plus souvent négligeable', 'C’est le principe de hiérarchie : en résolution V, un effet principal n’est confondu qu’avec une interaction d’ordre 4, très rarement notable.'),
+      F('parce qu’un calcul supplémentaire permet de séparer les deux effets', 'Les colonnes sont identiques : aucun calcul ne peut les séparer, seule une hypothèse permet de choisir.'),
+      F('parce qu’on suppose que le facteur E n’a aucun effet sur la réponse', 'On suppose l’inverse : c’est l’interaction A·B·C·D que l’on juge négligeable, pas l’effet de E.'),
+      F('parce que les 16 essais sont répétés pour estimer chaque effet à part', 'Répéter les essais précise la mesure mais ne sépare pas des colonnes identiques.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

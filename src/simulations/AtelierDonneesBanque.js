@@ -1829,6 +1829,71 @@ export const ENONCES = [
         manque: null, solution: { txt: 'F = V₂ / V₁', val: F, u: '' } };
     },
   },
+  // ───────────────────────────── Plans d'expériences (BTS) : plan de mélange, rouge à lèvres
+  {
+    id: 'pmel-melange', domaine: 'Plans', titre: 'Un rouge à lèvres à trois corps gras', noms: ['Fraction de cire d’abeille', 'Écart au milieu du mélange AB'],
+    gen: () => {
+      const m = tire([[1.088, 0.704, 1.408], [1.2, 0.8, 1.0], [0.9, 1.1, 1.0], [1.5, 0.5, 1.0]]);
+      const y = tire([[5, 2, 8], [5, 3, 7], [4, 2, 6]]);
+      return { mA: m[0], mB: m[1], mC: m[2], T: tire([70, 80, 85]), yA: y[0], yB: y[1], yAB: y[2] };
+    },
+    build: (p, q) => {
+      const tot = p.mA + p.mB + p.mC, xC = p.mC / tot, ecart = p.yAB - (p.yA + p.yB) / 2;
+      const tokens = {
+        mA: tok(`${nb(p.mA)} g`, 'Masse de cire de candelilla (A)', p.mA, 'g'),
+        mB: tok(`${nb(p.mB)} g`, 'Masse d’huile de ricin (B)', p.mB, 'g'),
+        mC: tok(`${nb(p.mC)} g`, 'Masse de cire d’abeille (C)', p.mC, 'g'),
+        T: tok(`${p.T} °C`, 'Température de coulée', p.T, '°C'),
+      };
+      const debut = ['Pour un rouge à lèvres, on mélange ', T('mA'), ' de cire de candelilla (A), ', T('mB'), ' d’huile de ricin (B) et ', T('mC'), ' de cire d’abeille (C), coulés à ', T('T'), '. '];
+      if (q === 0) return { tokens, derivees: [{ id: 'tot', nom: 'Masse totale des corps gras', expr: 'm_A + m_B + m_C', val: tot, u: 'g' }],
+        texte: [...debut, 'On veut décrire la composition par les fractions massiques. Quelle est la fraction de cire d’abeille ?'],
+        utiles: ['mA', 'mB', 'mC'],
+        raisons: { T: 'La température de coulée ne change pas la composition du mélange.' },
+        cherche: { bonne: 'La fraction massique x_C de cire d’abeille (sans unité)', faux: ['La masse totale des corps gras (en g)', 'Le rapport m_C / m_B (sans unité)', 'La masse de cire d’abeille à ajouter (en g)'] },
+        manque: null, solution: { txt: 'x_C = m_C / (m_A + m_B + m_C)', val: xC, u: '' } };
+      tokens.yA = tok(`${p.yA}`, 'Note du jury pour A pur (sur 10)', p.yA, '');
+      tokens.yB = tok(`${p.yB}`, 'Note du jury pour B pur (sur 10)', p.yB, '');
+      tokens.yAB = tok(`${p.yAB}`, 'Note du jury pour le mélange à parts égales de A et B (sur 10)', p.yAB, '');
+      return { tokens, derivees: [{ id: 'moy', nom: 'Moyenne des notes de A et B purs', expr: '(y_A + y_B) / 2', val: (p.yA + p.yB) / 2, u: '' }],
+        texte: ['Le jury note les mélanges sur 10. La cire de candelilla seule (A) obtient ', T('yA'), ', l’huile de ricin seule (B) obtient ', T('yB'), ', et le mélange à parts égales de A et B obtient ', T('yAB'), '. La formule de référence utilise ', T('mA'), ' de A, ', T('mB'), ' de B et ', T('mC'), ' de C, coulés à ', T('T'), '. On cherche l’écart au milieu pour savoir si A et B interagissent.'],
+        utiles: ['yA', 'yB', 'yAB'],
+        raisons: { mA: 'Les masses de la formule de référence donnent sa composition ; l’écart au milieu n’utilise que les trois notes.', mB: 'Les masses de la formule de référence donnent sa composition ; l’écart au milieu n’utilise que les trois notes.', mC: 'Les masses de la formule de référence donnent sa composition ; l’écart au milieu n’utilise que les trois notes.', T: 'La température de coulée est la même pour tous les essais : elle n’intervient pas.' },
+        cherche: { bonne: 'L’écart au milieu : note du mélange moins moyenne des notes des deux corps purs (en points)', faux: ['La moyenne des trois notes (en points)', 'La somme des notes de A et de B (en points)', 'Le rapport de la note du mélange à celle de A (sans unité)'] },
+        manque: null, solution: { txt: 'écart = y_AB − (y_A + y_B) / 2', val: ecart, u: '' } };
+    },
+  },
+  // ───────────────────────────── Plans d'expériences (BTS) : plan factoriel 2^k, flan au chocolat
+  {
+    id: 'pfac-flan', domaine: 'Plans', titre: 'Un plan factoriel sur un flan au chocolat', noms: ['Nombre d’essais du plan complet', 'Coefficient d’un facteur'],
+    gen: () => {
+      const c = tire([{ nom: 'la recette végétale (+1)', nomm: 'la recette animale (−1)', rep: 'la note moyenne du jury', mp: 2.375, mm: 6.25, d: 3 },
+        { nom: 'la température de 102 °C (+1)', nomm: 'la température de 75 °C (−1)', rep: 'la viscosité moyenne', mp: 5309.5, mm: 1486.25, d: 2 }]);
+      return { k: tire([3, 4]), c };
+    },
+    build: (p, q) => {
+      const N = 2 ** p.k, a = (p.c.mp - p.c.mm) / 2;
+      const tokens = {
+        k: tok(`${p.k} facteurs`, 'Nombre de facteurs étudiés', p.k, ''),
+        niv: tok('deux niveaux', 'Nombre de niveaux de chaque facteur', 2, ''),
+        duree: tok('20 min', 'Durée de cuisson, identique pour tous les essais', 20, 'min'),
+      };
+      if (q === 0) return { tokens, derivees: [],
+        texte: ['On étudie ', T('k'), ' sur un flan au chocolat. Chaque facteur est testé à ', T('niv'), ' (niveau bas −1, niveau haut +1) et la cuisson dure toujours ', T('duree'), '. On réalise toutes les combinaisons de niveaux. Combien d’essais comporte ce plan complet ?'],
+        utiles: ['k', 'niv'],
+        raisons: { duree: 'La durée de cuisson est fixée, elle ne change pas le nombre de combinaisons.' },
+        cherche: { bonne: 'Le nombre d’essais du plan complet (sans unité)', faux: ['Le nombre de degrés de liberté du modèle (sans unité)', 'Le nombre d’interactions doubles (sans unité)', 'La durée totale de cuisson (en min)'] },
+        manque: null, solution: { txt: 'N = 2^k (niveaux^facteurs)', val: N, u: '' } };
+      tokens.mp = tok(`${nb(p.c.mp, p.c.d === 3 ? 3 : 1)}`, `Moyenne de ${p.c.rep} sur les 4 essais où le facteur est au niveau haut (+1)`, p.c.mp, '');
+      tokens.mm = tok(`${nb(p.c.mm, p.c.d === 3 ? 2 : 2)}`, `Moyenne de ${p.c.rep} sur les 4 essais où le facteur est au niveau bas (−1)`, p.c.mm, '');
+      return { tokens, derivees: [],
+        texte: ['Dans le plan complet à ', T('k'), ' (', T('niv'), '), on regroupe les essais selon le niveau d’un facteur. ', T('mp'), ' est la moyenne de ' + p.c.rep + ' pour ' + p.c.nom + ', et ', T('mm'), ' la moyenne pour ' + p.c.nomm + '. La cuisson dure ', T('duree'), '. Quel est le coefficient de ce facteur dans le modèle ?'],
+        utiles: ['mp', 'mm'],
+        raisons: { k: 'Le nombre de facteurs ne sert pas : le coefficient se calcule à partir des deux moyennes.', niv: 'Le nombre de niveaux (2) est déjà pris en compte dans le codage −1 / +1.', duree: 'La durée de cuisson est identique pour tous les essais.' },
+        cherche: { bonne: 'Le coefficient du facteur : demi-écart entre les deux moyennes', faux: ['L’effet total du facteur : écart entre les deux moyennes', 'La moyenne générale de tous les essais', 'Le nombre d’essais du plan'] },
+        manque: null, solution: { txt: 'a = (Moy⁺ − Moy⁻) / 2', val: a, u: '' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
