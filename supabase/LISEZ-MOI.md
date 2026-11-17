@@ -207,19 +207,10 @@ Règles à connaître :
 - la fermeture est faite **côté serveur** (fonction « comptes » et règles de la base), pas seulement en cachant les boutons.
 
 
-## Classe sur les deux sites (Energy@School + Paillasse virtuelle) — `17-classe-deux-sites.sql`
+## Classes sur Energy@School, la Paillasse ou les deux — `17`, `18`, `19`
 
-Une classe peut être réglée sur « les deux sites » : ses élèves se connectent, avec les mêmes identifiants, sur Energy@School **et** sur la Paillasse virtuelle (progressions séparées). Seul l'administrateur peut choisir ce réglage (Suivi professeur → Réglages de la classe → Site des élèves) ; le verrou est dans la base. Pour une classe d'un collègue, la lui faire partager avec l'administrateur. Le classement public compte aussi ces classes (élèves volontaires seulement). Script déjà appliqué sur le projet ; relançable sans risque.
-
-
-## Classement public d'Energy@School — `18-classement-energy.sql`
-
-Classement SÉPARÉ de celui de la Paillasse, réservé aux classes réglées sur Energy@School (ou « les deux sites »). L'élève choisit d'apparaître (case dans « Mon profil » d'Energy@School, éteinte par défaut) ; seuls le pseudo, l'établissement, la classe et le score deviennent publics. Trois classements : Points (parcours terminés + défis relevés, 15 au maximum), Défis relevés, Cette semaine.
-
-À faire **une fois**, après 11, 13, 14 et 17 : SQL Editor → coller `18-classement-energy.sql` → Run (relançable sans risque). Vérification : quatre lignes « classement », « exclu », « fini », « classement_public_energy ». Sans ce script, Energy@School fonctionne comme avant (le classement affiche « pas disponible », la case n'apparaît pas).
-Une classe n'apparaît que si son professeur a renseigné l'établissement (comme pour la Paillasse). Un professeur peut retirer un élève du classement depuis « Suivi » d'Energy@School.
-
-
-## Anti-triche du classement Energy@School — `19-energy-anti-triche.sql`
-
-À lancer après 18 (relançable). Le nombre d'étapes de chaque parcours est fixé par le serveur (table `energy_cles` : **à mettre à jour si on ajoute des étapes à un parcours d'Energy@School**), et le classement public ne compte que les parcours et défis que le serveur a vus se dérouler à un rythme humain (8 s par étape au minimum, 40 s pour un défi). Le reste compte pour les niveaux de l'élève, pas pour le classement. Vérification : « 15 », « debut », « debut_etape ».
+- **Par défaut**, un professeur utilise la Paillasse virtuelle seulement. L'administrateur peut cocher « Energy@School » pour un professeur (à la création du compte, ou plus tard dans « Gérer les professeurs ») : il choisit alors, pour chacune de ses classes, *Paillasse seule*, *Energy@School seule* ou *les deux sites* (à la création de la classe, et ensuite dans « Réglages de la classe »).
+- Sans cette autorisation, le professeur ne voit aucun choix de site, et le serveur refuse tout autre site que la Paillasse (contrôle dans la base et dans la fonction « comptes »). L'administrateur a toujours l'accès.
+- Les élèves d'une classe « les deux sites » se connectent avec les mêmes identifiants sur les deux sites (progressions séparées). Le classement public de la Paillasse compte ces classes (élèves volontaires seulement).
+- L'administrateur voit toutes les classes et peut régler leur site : Mon compte → « Site des classes de tous les professeurs » (`18-classes-admin.sql`).
+- Scripts : `17-classe-deux-sites.sql` (troisième valeur « deux » + classement), `18-classes-admin.sql` (liste admin), `19-acces-energy.sql` (autorisation par professeur ; remplace le verrou « administrateur seul » du 17). Déjà appliqués sur le projet ; relançables sans risque. La fonction « comptes » doit être redéployée après chaque changement de `functions/comptes/index.ts`.

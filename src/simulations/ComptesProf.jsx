@@ -16,7 +16,7 @@ const nomRole = r => (ROLES.find(x => x[0] === r) || [])[1] || r;
 // Créer, changer le rôle, nouveau mot de passe, supprimer. Un mot de passe n'est affiché qu'une fois : l'administrateur le transmet lui-même (aucun email n'est envoyé).
 export function ComptesProf({ occupe, proteger, setMsg }) {
   const [ouvert, setOuvert] = useState(false), [profs, setProfs] = useState(null);
-  const [email, setEmail] = useState(''), [nom, setNom] = useState(''), [role, setRole] = useState('invite');
+  const [email, setEmail] = useState(''), [nom, setNom] = useState(''), [role, setRole] = useState('invite'), [energy, setEnergy] = useState(false);
   const [cree, setCree] = useState(null), [copie, setCopie] = useState(false);
   const charger = useCallback(async () => { const r = await fonctionComptes('lister_profs'); setProfs(r.profs || []); }, []);
   useEffect(() => { if (ouvert && !profs) proteger(charger); }, [ouvert, profs, proteger, charger]);
@@ -26,10 +26,10 @@ export function ComptesProf({ occupe, proteger, setMsg }) {
   const creer = e => {
     e.preventDefault();
     proteger(async () => {
-      const r = await fonctionComptes('creer_prof', { email, nom, invite: role === 'invite' });
+      const r = await fonctionComptes('creer_prof', { email, nom, invite: role === 'invite', energy });
       if (role === 'admin') await fonctionComptes('changer_role', { email: r.email, role: 'admin' });
       montrer(r, `Compte créé pour ${r.nom}. Notez le mot de passe ci-dessous : il ne sera plus affiché.`);
-      setEmail(''); setNom(''); await charger();
+      setEmail(''); setNom(''); setEnergy(false); await charger();
     });
   };
   const changerRole = (p, nouveau) => {
@@ -38,6 +38,11 @@ export function ComptesProf({ occupe, proteger, setMsg }) {
     if (!window.confirm(avertissement)) return;
     proteger(async () => { await fonctionComptes('changer_role', { email: p.email, role: nouveau }); await charger(); setMsg(`${p.nom} : rôle « ${nomRole(nouveau)} ».`); });
   };
+  const basculerEnergy = (p, valeur) => proteger(async () => {
+    await fonctionComptes('acces_energy', { email: p.email, valeur });
+    setProfs(l => l.map(x => (x.email === p.email ? { ...x, acces_energy: valeur } : x)));
+    setMsg(`${p.nom} ${valeur ? 'peut maintenant utiliser aussi Energy@School' : 'utilise la Paillasse virtuelle seulement'}.`);
+  });
   const nouveauMotDePasse = p => {
     if (!window.confirm(`Générer un nouveau mot de passe pour ${p.nom} ? L’ancien ne fonctionnera plus.`)) return;
     proteger(async () => { const r = await fonctionComptes('reinitialiser_prof', { email: p.email }); montrer({ ...r, nom: p.nom }, `Nouveau mot de passe pour ${p.nom}. Notez-le : il ne sera plus affiché.`); });
@@ -69,9 +74,10 @@ export function ComptesProf({ occupe, proteger, setMsg }) {
         <select value={role} onChange={e => setRole(e.target.value)} style={champ} aria-label="Rôle du nouveau compte">
           {ROLES.map(([id, libelle]) => <option key={id} value={id}>{libelle}</option>)}
         </select>
+        <label style={{ fontSize: 13.5, color: KIT.txt, cursor: 'pointer' }}><input type="checkbox" checked={energy} onChange={e => setEnergy(e.target.checked)} style={{ accentColor: '#ea580c' }} /> Autoriser aussi Energy@School</label>
         <button type="submit" style={styleBouton(true, '#475569')} disabled={occupe || !email.trim() || !nom.trim()}>Créer le compte</button>
       </form>
-      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>{(ROLES.find(r => r[0] === role) || [])[2]}</div>
+      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>{(ROLES.find(r => r[0] === role) || [])[2]} Tout compte utilise la Paillasse virtuelle ; « Energy@School » permet en plus à ce professeur de choisir ce site pour ses classes.</div>
       {cree && (
         <div role="status" style={{ ...styleBoite, background: '#fffbeb', border: '2px solid #f59e0b', margin: '8px 0', fontSize: 14, color: KIT.txt }}>
           <div><b>{cree.nom}</b> peut se connecter avec :</div>
@@ -86,6 +92,9 @@ export function ComptesProf({ occupe, proteger, setMsg }) {
             return (
               <div key={p.email} data-prof={p.email} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', fontSize: 13.5, padding: '6px 0', borderTop: `1px solid ${KIT.bord}` }}>
                 <span style={{ flex: '1 1 220px', minWidth: 0, overflowWrap: 'anywhere' }}><b>{p.nom}</b>{soi ? ' (vous)' : ''}<br /><span style={{ color: KIT.txt2 }}>{p.email}</span></span>
+                {p.admin
+                  ? <span style={{ color: KIT.txt2, fontSize: 12.5 }}>Energy@School ✓</span>
+                  : <label style={{ fontSize: 13, color: KIT.txt, cursor: 'pointer' }}><input type="checkbox" checked={!!p.acces_energy} disabled={occupe} onChange={e => basculerEnergy(p, e.target.checked)} style={{ accentColor: '#ea580c' }} /> Energy@School</label>}
                 {soi
                   ? <span style={{ color: KIT.txt2 }}>{nomRole(roleDe(p))}</span>
                   : <>
@@ -106,22 +115,10 @@ const SITES = [['paillasse', 'Paillasse'], ['energy', 'Energy@School'], ['deux',
 
 // Toutes les classes du site, réservé à l'administrateur (supabase/18-classes-admin.sql) : règle le « site » d'une classe sans qu'elle soit partagée.
 // Replié par défaut, chargé à l'ouverture ; classes regroupées par professeur ; ni nom d'élève ni résultat.
-export function ClassesAdmin({ occupe, proteger, setMsg, onChange, onCreee }) {
+export function ClassesAdmin({ occupe, proteger, setMsg, onChange }) {
   const [ouvert, setOuvert] = useState(false), [classes, setClasses] = useState(null);
-  const [form, setForm] = useState(false), [profs, setProfs] = useState(null), [nc, setNc] = useState({ email: '', nom: '', prefixe: '', nombre: 30, site: 'deux' });
   const charger = useCallback(async () => { setClasses(await rest('rpc/classes_admin', { method: 'POST', corps: {} })); }, []);
   useEffect(() => { if (ouvert && !classes) proteger(charger); }, [ouvert, classes, proteger, charger]);
-  useEffect(() => { if (form && !profs) proteger(async () => { const r = await fonctionComptes('lister_profs'); setProfs(r.profs || []); }); }, [form, profs, proteger]);
-  const creer = e => {
-    e.preventDefault();
-    proteger(async () => {
-      const r = await fonctionComptes('creer_classe', { prof_email: nc.email, nom: nc.nom, prefixe: nc.prefixe, nombre: Number(nc.nombre), site: nc.site });
-      setForm(false); setNc(n => ({ ...n, nom: '', prefixe: '', nombre: 30 }));
-      setMsg(`Classe « ${r.classe.nom} » créée pour ${(profs || []).find(p => p.email === nc.email)?.nom || 'le professeur'} : notez ou imprimez les mots de passe ci-dessus, ils ne seront plus affichés.`);
-      if (onCreee) onCreee(r.classe.nom, r.comptes);
-      await charger(); if (onChange) onChange();
-    });
-  };
   const regler = (c, site) => {
     if (site === c.site) return;
     proteger(async () => {
@@ -148,24 +145,5 @@ export function ClassesAdmin({ occupe, proteger, setMsg, onChange, onCreee }) {
               </select>
             </div>))}
         </div>))}
-      <div style={{ marginTop: 12, borderTop: `1px solid ${KIT.bord}`, paddingTop: 10 }}>
-        {!form
-          ? <button type="button" onClick={() => setForm(true)} disabled={occupe} style={{ ...styleBouton(false, '#475569'), fontSize: 13.5 }}>＋ Créer une classe pour un professeur</button>
-          : (
-            <form onSubmit={creer} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-              <select value={nc.email} onChange={e => setNc({ ...nc, email: e.target.value })} style={champ} aria-label="Professeur propriétaire de la classe" required>
-                <option value="">Professeur…</option>
-                {(profs || []).map(p => <option key={p.email} value={p.email}>{p.nom}{p.moi ? ' (vous)' : ''}</option>)}
-              </select>
-              <input value={nc.nom} onChange={e => setNc({ ...nc, nom: e.target.value })} placeholder="nom de la classe (ex. 2nde 4)" style={{ ...champ, minWidth: 200 }} aria-label="Nom de la classe" maxLength={40} required />
-              <input value={nc.prefixe} onChange={e => setNc({ ...nc, prefixe: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '') })} placeholder="préfixe (ex. 2nde4)" style={{ ...champ, width: 140 }} aria-label="Préfixe des identifiants élèves" maxLength={12} required />
-              <label style={{ fontSize: 13.5, color: KIT.txt }}>Élèves <input type="number" min={1} max={40} value={nc.nombre} onChange={e => setNc({ ...nc, nombre: e.target.value })} style={{ ...champ, width: 70 }} /></label>
-              <select value={nc.site} onChange={e => setNc({ ...nc, site: e.target.value })} style={champ} aria-label="Site des élèves">
-                {SITES.map(([id, libelle]) => <option key={id} value={id}>{id === 'deux' ? 'Les deux sites' : libelle}</option>)}
-              </select>
-              <button type="submit" style={styleBouton(true, '#16a34a')} disabled={occupe || !nc.email || !nc.nom.trim() || nc.prefixe.length < 2}>Créer la classe et les comptes</button>
-              <button type="button" onClick={() => setForm(false)} style={styleBouton(false, '#475569')}>Annuler</button>
-            </form>)}
-      </div>
     </details>);
 }

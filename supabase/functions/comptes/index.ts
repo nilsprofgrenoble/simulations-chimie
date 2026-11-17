@@ -6,8 +6,8 @@
 //
 //  Seul un professeur connecté (présent dans la table « professeurs ») peut l'appeler,
 //  et seulement pour SES classes. Actions (corps JSON, champ « action ») :
-//    creer_classe     { nom, prefixe, nombre, site?, prof_email? } → crée la classe et « nombre » comptes ; « site » : paillasse | energy | deux (« deux » : administrateur seul) ;
-//                                                 « prof_email » : l'ADMINISTRATEUR crée la classe au nom d'un collègue (même invité)
+//    creer_classe     { nom, prefixe, nombre, site? } → crée la classe et « nombre » comptes ; « site » : paillasse (défaut) | energy | deux ; energy et deux demandent
+//                                                 l'accès à Energy@School (accordé par l'administrateur, voir « acces_energy »)
 //    ajouter_eleves   { classe_id, nombre }     → ajoute des comptes à la suite
 //    reinitialiser    { identifiant }           → nouveau mot de passe pour un élève
 //    supprimer_eleve  { identifiant }           → supprime le compte et toutes ses données
@@ -15,7 +15,8 @@
 //    partager         { classe_id, email }      → ajoute un co-professeur (déjà professeur sur le site) à la classe
 //    retirer_prof     { classe_id, prof_id }    → retire un co-professeur
 //    quitter_classe   { classe_id }             → un co-professeur quitte la classe
-//    creer_prof       { email, nom }            → ADMINISTRATEUR seul : crée un compte professeur (mot de passe affiché une seule fois)
+//    creer_prof       { email, nom, invite?, energy? } → ADMINISTRATEUR seul : crée un compte professeur (mot de passe affiché une seule fois) ; « energy » : accès Energy@School
+//    acces_energy     { email, valeur }         → ADMINISTRATEUR seul : accorde ou retire à un professeur l'accès à Energy@School
 //    lister_profs     {}                        → ADMINISTRATEUR seul : liste des professeurs (nom, email, rôle)
 //    changer_role     { email, role }           → ADMINISTRATEUR seul : « admin », « prof » ou « invite » (jamais pour soi-même)
 //    reinitialiser_prof { email }               → ADMINISTRATEUR seul : nouveau mot de passe d'un professeur (affiché une seule fois)
@@ -155,28 +156,20 @@ Deno.serve(async (req) => {
   try {
   switch (corps.action) {
     case 'creer_classe': {
-      // « prof_email » : l'ADMINISTRATEUR crée la classe au nom d'un collègue (même invité) ; « site » : « deux » est réservé à l'administrateur
-      const estAdminProf = !!(prof as { admin?: boolean }).admin;
-      const pourAutre = typeof corps.prof_email === 'string' && corps.prof_email.trim() !== '';
-      if (pourAutre && !estAdminProf) return rep(403, { erreur: 'Seul l’administrateur peut créer une classe pour un autre professeur.' });
-      if (!pourAutre && estInvite) return rep(403, { erreur: 'Un compte invité ne peut pas créer de classe. Demandez à l’administrateur de vous en partager une.' });
+      if (estInvite) return rep(403, { erreur: 'Un compte invité ne peut pas créer de classe. Demandez à l’administrateur de vous en partager une.' });
+      // Site des élèves : Paillasse par défaut ; « energy » et « deux » demandent l'accès à Energy@School (administrateur : toujours)
       const site = corps.site === undefined ? 'paillasse' : String(corps.site);
       if (!['paillasse', 'energy', 'deux'].includes(site)) return rep(400, { erreur: 'Site inconnu.' });
-      if (site === 'deux' && !estAdminProf) return rep(403, { erreur: 'Seul l’administrateur peut mettre une classe sur les deux sites.' });
-      let proprioId = profId;
-      if (pourAutre) {
-        const trouve = await profParEmail(corps.prof_email);
-        if (!trouve) return rep(404, { erreur: 'Aucun compte professeur avec cette adresse.' });
-        proprioId = trouve;
-      }
+      const accesEnergy = !!(prof as { admin?: boolean }).admin || !!(prof as { acces_energy?: boolean }).acces_energy;
+      if (site !== 'paillasse' && !accesEnergy) return rep(403, { erreur: 'Votre compte n’est pas autorisé à utiliser Energy@School : demandez-le à l’administrateur du site.' });
       const nom = String(corps.nom ?? '').trim(), prefixe = String(corps.prefixe ?? '').trim().toLowerCase();
       if (nom.length < 1 || nom.length > 40) return rep(400, { erreur: 'Nom de classe : 1 à 40 caractères.' });
       if (!/^[a-z0-9]{2,12}$/.test(prefixe)) return rep(400, { erreur: 'Préfixe : 2 à 12 lettres minuscules ou chiffres, sans espace ni accent (ex. tstl1).' });
       if (!nombreValide(corps.nombre)) return rep(400, { erreur: `Nombre d’élèves : entre 1 et ${MAX_PAR_APPEL}.` });
-      const { count: nbClasses, error: errNb } = await admin.from('classes').select('id', { count: 'exact', head: true }).eq('prof_id', proprioId);
+      const { count: nbClasses, error: errNb } = await admin.from('classes').select('id', { count: 'exact', head: true }).eq('prof_id', profId);
       if (errNb) throw new Error(errNb.message);
-      if ((nbClasses ?? 0) >= MAX_CLASSES) return rep(400, { erreur: `${pourAutre ? 'Ce professeur a' : 'Vous avez'} déjà ${MAX_CLASSES} classes : supprimez-en une avant d’en créer une autre.` });
-      const { data: classe, error } = await admin.from('classes').insert({ nom, prefixe, prof_id: proprioId, site }).select('id, prefixe, nom').single();
+      if ((nbClasses ?? 0) >= MAX_CLASSES) return rep(400, { erreur: `Vous avez déjà ${MAX_CLASSES} classes : supprimez-en une avant d’en créer une autre.` });
+      const { data: classe, error } = await admin.from('classes').insert({ nom, prefixe, prof_id: profId, site }).select('id, prefixe, nom').single();
       if (error) return rep(409, { erreur: error.code === '23505' ? 'Ce préfixe est déjà utilisé : choisissez-en un autre.' : error.message });
       return rep(200, { classe, comptes: await creerComptes(classe, corps.nombre as number) });
     }
@@ -254,13 +247,13 @@ Deno.serve(async (req) => {
       const mot_de_passe = motDePasseProf();
       const { data: cree, error } = await admin.auth.admin.createUser({ email, password: mot_de_passe, email_confirm: true });
       if (error || !cree?.user) return rep(409, { erreur: /already|registered|exists/i.test(error?.message ?? '') ? 'Un compte existe déjà avec cette adresse.' : (error?.message ?? 'Création impossible.') });
-      const { error: errIns } = await admin.from('professeurs').insert({ user_id: cree.user.id, nom, admin: false, invite });
+      const { error: errIns } = await admin.from('professeurs').insert({ user_id: cree.user.id, nom, admin: false, invite, ...(corps.energy === true ? { acces_energy: true } : {}) });
       if (errIns) {
         await admin.auth.admin.deleteUser(cree.user.id);
         if (/invite/i.test(errIns.message)) return rep(409, { erreur: 'Le rôle « invité » n’est pas encore activé : exécutez le fichier 16-profs-invites.sql dans Supabase (une seule fois).' });
         throw new Error(errIns.message);
       }
-      return rep(200, { email, nom, mot_de_passe, invite });
+      return rep(200, { email, nom, mot_de_passe, invite, energy: corps.energy === true });
     }
     case 'lister_profs': {
       if (!prof.admin) return rep(403, { erreur: 'Réservé à l’administrateur.' });
@@ -269,7 +262,16 @@ Deno.serve(async (req) => {
       const { data: liste, error: errU } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
       if (errU) throw new Error(errU.message);
       const emails = new Map((liste?.users ?? []).map((u) => [u.id, u.email]));
-      return rep(200, { profs: (data ?? []).map((p) => ({ nom: p.nom, admin: !!p.admin, invite: !!p.invite, moi: p.user_id === profId, email: emails.get(p.user_id) ?? '' })) });
+      return rep(200, { profs: (data ?? []).map((p) => ({ nom: p.nom, admin: !!p.admin, invite: !!p.invite, acces_energy: !!p.acces_energy, moi: p.user_id === profId, email: emails.get(p.user_id) ?? '' })) });
+    }
+    case 'acces_energy': {
+      if (!prof.admin) return rep(403, { erreur: 'Réservé à l’administrateur.' });
+      const cible = await profParEmail(corps.email);
+      if (!cible) return rep(404, { erreur: 'Aucun professeur avec cette adresse.' });
+      if (typeof corps.valeur !== 'boolean') return rep(400, { erreur: 'Valeur invalide.' });
+      const { error } = await admin.from('professeurs').update({ acces_energy: corps.valeur }).eq('user_id', cible);
+      if (error) return rep(409, { erreur: /acces_energy/i.test(error.message) ? 'L’accès Energy@School n’est pas encore activé : exécutez le fichier 19-acces-energy.sql dans Supabase (une seule fois).' : error.message });
+      return rep(200, { ok: true });
     }
     case 'changer_role': {
       if (!prof.admin) return rep(403, { erreur: 'Réservé à l’administrateur.' });

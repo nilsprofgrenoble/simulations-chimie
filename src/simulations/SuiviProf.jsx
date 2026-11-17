@@ -155,7 +155,7 @@ export function SimulationSuiviProf({ naviguer }) {
   const [msg, setMsg] = useState(''), [erreur, setErreur] = useState(''), [occupe, setOccupe] = useState(false);
   const [comptes, setComptes] = useState(null), [formClasse, setFormClasse] = useState(false);
   const [siteDispo, setSiteDispo] = useState(false), [etabDispo, setEtabDispo] = useState(false), [vieDispo, setVieDispo] = useState(true), [chapDispo, setChapDispo] = useState(true), [apercu, setApercu] = useState(false), [preset, setPreset] = useState(presetInit);
-  const [nc, setNc] = useState({ nom: '', prefixe: '', nombre: 30 }), [prefixeSaisi, setPrefixeSaisi] = useState(false), [ajout, setAjout] = useState(5), [exosTous, setExosTous] = useState(false);
+  const [nc, setNc] = useState({ nom: '', prefixe: '', nombre: 30, site: 'paillasse' }), [prefixeSaisi, setPrefixeSaisi] = useState(false), [ajout, setAjout] = useState(5), [exosTous, setExosTous] = useState(false);
   const etq = useMemo(() => etiquettes(), []), exos = useMemo(() => tousLesExercices(), []), defis = useMemo(() => etiquettesDefis(), []);
 
   const chargerClasses = useCallback(async (choisir) => {
@@ -202,7 +202,7 @@ export function SimulationSuiviProf({ naviguer }) {
   }
 
   const classe = classes.find(c => c.id === classeId);
-  const admin = !!sess.profil.admin;
+  const admin = !!sess.profil.admin, energy = !!sess.profil.energy;   // energy : accès à Energy@School (accordé par l'administrateur)
   const invite = !!sess.profil.invite;   // compte invité (supabase/16-profs-invites.sql) : ni création de classe, ni création de comptes élèves
   const moiId = sess.user?.id, proprio = !classe?.prof_id || !moiId || classe.prof_id === moiId;   // co-professeur : ni suppression, ni partage (09-partage-classe.sql)
   // exercices « je m'entraîne » seuls (pour les compteurs), et exercices + défis des simulations (pour le détail et l'export)
@@ -213,8 +213,8 @@ export function SimulationSuiviProf({ naviguer }) {
   const creerClasse = e => {
     e.preventDefault();
     proteger(async () => {
-      const r = await fonctionComptes('creer_classe', { nom: nc.nom, prefixe: nc.prefixe, nombre: Number(nc.nombre) });
-      await chargerClasses(r.classe.id); setComptes({ classe: r.classe.nom, liste: r.comptes }); setFormClasse(false); setNc({ nom: '', prefixe: '', nombre: 30 }); setPrefixeSaisi(false);
+      const r = await fonctionComptes('creer_classe', { nom: nc.nom, prefixe: nc.prefixe, nombre: Number(nc.nombre), ...(energy ? { site: nc.site } : {}) });
+      await chargerClasses(r.classe.id); setComptes({ classe: r.classe.nom, liste: r.comptes }); setFormClasse(false); setNc({ nom: '', prefixe: '', nombre: 30, site: 'paillasse' }); setPrefixeSaisi(false);
     });
   };
   const ajouter = () => proteger(async () => {
@@ -305,7 +305,7 @@ export function SimulationSuiviProf({ naviguer }) {
           <MotDePasse />
           <button onClick={deconnexion} style={{ ...styleBouton(false, '#475569'), fontSize: 14 }}>Se déconnecter</button>
         </div>
-        {sess.profil.admin && <div style={{ marginTop: 12 }}><ComptesProf occupe={occupe} proteger={proteger} setMsg={setMsg} /><ClassesAdmin occupe={occupe} proteger={proteger} setMsg={setMsg} onChange={() => chargerClasses()} onCreee={(nom, liste) => setComptes({ classe: nom, liste })} /></div>}
+        {sess.profil.admin && <div style={{ marginTop: 12 }}><ComptesProf occupe={occupe} proteger={proteger} setMsg={setMsg} /><ClassesAdmin occupe={occupe} proteger={proteger} setMsg={setMsg} onChange={() => chargerClasses()} /></div>}
       </section>);
   const carteCompte = (
     <>
@@ -350,6 +350,13 @@ export function SimulationSuiviProf({ naviguer }) {
             <input value={nc.prefixe} onChange={e => { setPrefixeSaisi(true); setNc({ ...nc, prefixe: e.target.value.toLowerCase() }); }} placeholder="tstl1" style={champ} aria-label="Préfixe" /></label>
           <label style={{ fontSize: 13, fontWeight: 700 }}>Nombre d’élèves<br />
             <input type="number" min={1} max={40} value={nc.nombre} onChange={e => setNc({ ...nc, nombre: e.target.value })} style={{ ...champ, width: 80 }} aria-label="Nombre d’élèves" /></label>
+          {energy && (
+            <label style={{ fontSize: 13, fontWeight: 700 }}>Site des élèves<br />
+              <select value={nc.site} onChange={e => setNc({ ...nc, site: e.target.value })} style={champ} aria-label="Site des élèves">
+                <option value="paillasse">Paillasse virtuelle seulement</option>
+                <option value="energy">Energy@School seulement</option>
+                <option value="deux">Les deux sites</option>
+              </select></label>)}
           <button type="submit" style={styleBouton(true, '#16a34a')} disabled={occupe || !nc.nom.trim() || !nc.prefixe.trim()}>Créer la classe et les comptes</button>
           <div style={{ fontSize: 12.5, color: KIT.txt2, flexBasis: '100%' }}>Les identifiants seront <b>{nc.prefixe || 'tstl1'}-01, {nc.prefixe || 'tstl1'}-02…</b> (préfixe : 2 à 12 lettres minuscules ou chiffres, sans espace ni accent).
             Aucun nom d’élève n’est saisi ici : gardez vous-même la correspondance identifiant ↔ élève.</div>
@@ -414,18 +421,20 @@ export function SimulationSuiviProf({ naviguer }) {
         </div>
                 <EtablissementClasse key={`${classe.id}|${classe.etablissement || ''}`} classe={classe} dispo={etabDispo} occupe={occupe} onEnregistrer={enregistrerEtab} />
               </section>
+              {siteDispo && (energy || (classe.site && classe.site !== 'paillasse')) && (
               <section className="sp-carte">
                 <h3>🌐 Site des élèves</h3>
-              {siteDispo && (
+              {(
           <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }}>
             <b>🌐 Site des élèves</b> : les élèves de « {classe.nom} » se connectent sur
-            <label style={{ margin: '0 10px 0 8px', cursor: 'pointer' }}><input type="radio" name="site-classe" checked={classe.site === 'paillasse' || !classe.site} disabled={occupe || (classe.site === 'deux' && !admin)} onChange={() => choisirSite('paillasse')} style={{ accentColor: '#0b4f94' }} /> la Paillasse virtuelle</label>
-            <label style={{ margin: '0 10px 0 0', cursor: 'pointer' }}><input type="radio" name="site-classe" checked={classe.site === 'energy'} disabled={occupe || (classe.site === 'deux' && !admin)} onChange={() => choisirSite('energy')} style={{ accentColor: '#ea580c' }} /> Energy@School</label>
-            {(admin || classe.site === 'deux') && <label style={{ cursor: admin ? 'pointer' : 'default' }}><input type="radio" name="site-classe" checked={classe.site === 'deux'} disabled={occupe || !admin} onChange={() => choisirSite('deux')} style={{ accentColor: '#7c3aed' }} /> les deux sites</label>}
-            {classe.site === 'deux' && !admin && <div style={{ color: KIT.txt2, marginTop: 3 }}>Cette classe peut utiliser les deux sites. Ce réglage est géré par l’administrateur du site.</div>}
+            <label style={{ margin: '0 10px 0 8px', cursor: 'pointer' }}><input type="radio" name="site-classe" checked={classe.site === 'paillasse' || !classe.site} disabled={occupe} onChange={() => choisirSite('paillasse')} style={{ accentColor: '#0b4f94' }} /> la Paillasse virtuelle seulement</label>
+            <label style={{ margin: '0 10px 0 0', cursor: energy ? 'pointer' : 'default' }}><input type="radio" name="site-classe" checked={classe.site === 'energy'} disabled={occupe || !energy} onChange={() => choisirSite('energy')} style={{ accentColor: '#ea580c' }} /> Energy@School seulement</label>
+            <label style={{ cursor: energy ? 'pointer' : 'default' }}><input type="radio" name="site-classe" checked={classe.site === 'deux'} disabled={occupe || !energy} onChange={() => choisirSite('deux')} style={{ accentColor: '#7c3aed' }} /> les deux sites</label>
+            {!energy && <div style={{ color: KIT.txt2, marginTop: 3 }}>Votre compte n’est plus autorisé à utiliser Energy@School : vous pouvez seulement revenir à la Paillasse. Demandez l’accès à l’administrateur du site.</div>}
             <div style={{ color: KIT.txt2, marginTop: 3 }}>Les comptes sont les mêmes sur les deux sites ; ce réglage indique sur quel(s) site(s) les élèves de la classe peuvent se connecter. Le suivi de l’avancement Energy@School se consulte sur le site Energy@School (avec votre compte professeur).</div>
           </div>)}
               </section>
+              )}
               <section className="sp-carte">
                 <h3>🤝 Partager la classe avec un collègue</h3>
                 <PartageClasse classe={classe} proprio={proprio} occupe={occupe} proteger={proteger} setMsg={setMsg} onQuitte={async () => { setClasseId(''); await chargerClasses(); }} />
