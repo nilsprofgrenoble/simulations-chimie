@@ -1,4 +1,5 @@
-import { KIT } from "../commun";
+import { KIT, styleBouton, styleBoite } from "../commun";
+import { Pic } from "../Pictos";
 import { ACCENT, TEXTE, TEXTE2 } from "../theme";
 
 // Guide express du suivi professeur : le parcours d'une classe en 5 minutes. Ouvert tant qu'il n'y a aucune classe, replié ensuite.
@@ -23,4 +24,18 @@ export function GuideProf({ ouvertParDefaut }) {
           </li>))}
       </ol>
     </details>);
+}
+
+
+// Guide de prise en main à distribuer aux élèves : PDF prêt à imprimer + version Word modifiable (fichiers dans public/guides/)
+export function GuideEleveProf() {
+  const base = `${import.meta.env.BASE_URL}guides/`;
+  const lien = { textDecoration: 'none', display: 'inline-block' };
+  return (
+    <div data-guide-eleve-prof style={{ ...styleBoite, margin: '10px 0', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+      <span style={{ fontWeight: 800 }}><Pic n="book"/>Guide de prise en main pour les élèves</span>
+      <span style={{ fontSize: 13.5, color: '#475569', flex: '1 1 260px' }}>Une page à distribuer ou à déposer sur Moodle : connexion, trois modes d’une simulation, exercices, niveaux, classement.</span>
+      <a href={`${base}guide-eleve-paillasse.pdf`} target="_blank" rel="noopener" style={{ ...styleBouton(true, '#0b4f94'), ...lien }}>PDF à imprimer</a>
+      <a href={`${base}guide-eleve-paillasse.docx`} download style={{ ...styleBouton(false, '#475569'), ...lien }}>Version Word modifiable</a>
+    </div>);
 }

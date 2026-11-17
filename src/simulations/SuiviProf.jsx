@@ -17,7 +17,7 @@ import { EtablissementClasse } from "./EtablissementClasse";
 import { synchroniserClesValides } from "../syncCles";
 import { ComptesProf, ClassesAdmin } from "./ComptesProf";
 import { ApercuEleve } from "./ApercuEleve";
-import { GuideProf } from "./GuideProf";
+import { GuideProf, GuideEleveProf } from "./GuideProf";
 import { Pic } from "../Pictos";
 import { ElevesProf } from "./ElevesProf";
 
@@ -116,7 +116,7 @@ const AIDES = {
   eleves: 'Un élève par ligne : ses résultats, ses séances, et les actions sur son compte (mot de passe perdu, suppression).',
   stats: 'Les chiffres détaillés : par exercice, par défi de simulation, et le temps passé sur chaque simulation.',
   reglages: 'Tout ce qui se règle une fois pour la classe : élèves, chapitre en cours, vie de classe, classement, partage.',
-  compte: 'Votre mot de passe, la déconnexion, le guide de prise en main et les jeux.',
+  compte: 'Votre mot de passe, la déconnexion, le guide de prise en main (pour vous et pour vos élèves) et les jeux.',
 };
 
 
@@ -307,6 +307,7 @@ export function SimulationSuiviProf({ naviguer }) {
     <>
       {carteMonCompte}
       <GuideProf ouvertParDefaut={false} />
+      <GuideEleveProf />
       <FichesProf naviguer={naviguer} /><TrajectoireProf />
       <JeuxProf naviguer={naviguer} />
     </>);
