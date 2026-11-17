@@ -74,7 +74,7 @@ export const CHAPITRES = [
   { id: 'bts-solubilite', niveau: 'BTS', rubrique: 'Formulation', label: '🔵 Solubilité et solvants', sims: [4], domaines: ['Formulation'] },
   { id: 'bts-films', niveau: 'BTS', rubrique: 'Formulation', label: '🎨 Films et séchage', sims: [14, 101], domaines: ['Formulation', 'Séchage'] },
   { id: 'bts-rheologie', niveau: 'BTS', rubrique: 'Formulation', label: '🧴 Rhéologie', sims: [100], domaines: ['Formulation', 'Rhéologie'] },
-  { id: 'bts-plans', niveau: 'BTS', rubrique: 'Formulation', label: '🔺 Plans d’expériences : plans de mélange et plans factoriels', sims: [126, 127], domaines: ['Formulation', 'Plans'] },
+  { id: 'bts-plans', niveau: 'BTS', rubrique: 'Formulation', label: '🔺 Plans d’expériences : plans de mélange et plans factoriels', sims: [128, 127, 126], domaines: ['Formulation', 'Plans'] },
 ];
 
 export const MAX_CHAPITRES = 3;
