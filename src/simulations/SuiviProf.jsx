@@ -17,7 +17,7 @@ import { EtablissementClasse } from "./EtablissementClasse";
 import { synchroniserClesValides } from "../syncCles";
 import { ComptesProf, ClassesAdmin } from "./ComptesProf";
 import { ApercuEleve } from "./ApercuEleve";
-import { GuideProf, GuideEleveProf } from "./GuideProf";
+import { GuideProf, GuideEleveProf, BoutonsGuideEleve } from "./GuideProf";
 import { Pic } from "../Pictos";
 import { ElevesProf } from "./ElevesProf";
 
@@ -79,6 +79,10 @@ function Comptes({ classe, comptes, onFermer }) {
         <button onClick={() => imprimerFiches(classe, comptes)} style={styleBouton(true, '#16a34a')}>🖨️ Imprimer les fiches</button>
         <button onClick={copier} style={styleBouton(false, '#475569')}><Pic n="clipboard"/>Copier (tableur)</button>
         <button onClick={onFermer} style={styleBouton(false, '#475569')}>J’ai noté les mots de passe, fermer</button>
+      </div>
+      <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid #fde68a', fontSize: 13.5, color: '#92400e' }}>
+        <div style={{ fontWeight: 700, marginBottom: 6 }}><Pic n="book"/>À distribuer avec les fiches : le guide de prise en main pour les élèves</div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}><BoutonsGuideEleve taille="petit" /></div>
       </div>
     </div>
     </div>
@@ -387,6 +391,10 @@ export function SimulationSuiviProf({ naviguer }) {
                     <input type="number" min={1} max={40} value={ajout} onChange={e => setAjout(e.target.value)} style={{ ...champ, width: 64 }} aria-label="Nombre d’élèves à ajouter" /></label>}
                   {!invite && <button onClick={ajouter} style={styleBouton(true, '#16a34a')} disabled={occupe || !(Number(ajout) >= 1)}>＋ Créer {Number(ajout) >= 1 ? Number(ajout) : ''} compte{Number(ajout) > 1 ? 's' : ''} élève</button>}
                   <button onClick={exporter} style={styleBouton(false, '#475569')}>⬇️ Télécharger les résultats (CSV)</button>
+                </div>
+                <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${KIT.bord}` }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="book"/>Guide de prise en main à donner aux élèves</div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}><BoutonsGuideEleve /></div>
                 </div>
               </section>
               <section className="sp-carte">
