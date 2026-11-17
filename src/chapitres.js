@@ -10,6 +10,8 @@
 //  Chaque thème avec des exercices doit figurer dans au moins un chapitre (vérifié par le test de src/chapitres.test.mjs).
 //
 //  Les identifiants (« tstl-fluides »…) sont enregistrés tels quels dans classes.chapitres (supabase/07) : ne pas les renommer.
+//  Un identifiant retiré (chapitres fusionnés) est simplement ignoré : le professeur rechoisit le chapitre de sa classe.
+//  Règle : un chapitre = une partie du programme du niveau, pas une simulation ; une nouvelle simulation rejoint le chapitre existant du programme.
 // ═══════════════════════════════════════════════════════════════════════════
 export const NIVEAUX_CHAPITRES = [
   { key: '2GT', label: '2GT' }, { key: '1G', label: '1G spé PC' }, { key: 'TG', label: 'TG spé PC' }, { key: 'TSTL', label: 'TSTL' }, { key: 'BTS', label: 'BTS' },
@@ -36,12 +38,11 @@ export const CHAPITRES = [
   { id: '1g-mouvement', niveau: '1G', label: '🚀 Mouvement d’un système', sims: [52], domaines: ['Mécanique'] },
   { id: '1g-lentille', niveau: '1G', label: '🔍 Image donnée par une lentille mince', sims: [115], domaines: ['Lentille mince'] },
 
-  { id: 'tg-ph', niveau: 'TG', label: '💧 Constitution et transformations de la matière : pH et concentration en ions oxonium', sims: [121], domaines: ['pH et concentration en ions oxonium'] },
-  { id: 'tg-titrage', niveau: 'TG', label: '🧪 Constitution et transformations de la matière : titrage pH-métrique', sims: [119], domaines: ['Titrage pH-métrique'] },
-  { id: 'tg-cinetique', niveau: 'TG', label: '⏱️ Constitution et transformations de la matière : cinétique, vitesse volumique et loi d’ordre 1', sims: [122], domaines: ['Cinétique : vitesse volumique et ordre 1'] },
-  { id: 'tg-radioactivite', niveau: 'TG', label: '☢️ Constitution et transformations de la matière : radioactivité, décroissance et demi-vie', sims: [123], domaines: ['Radioactivité : décroissance et demi-vie'] },
-  { id: 'tg-equilibre', niveau: 'TG', label: '⚖️ Constitution et transformations de la matière : équilibre chimique, Qr, K et taux d’avancement', sims: [125], domaines: ['Équilibre chimique : Qr, K et taux d’avancement'] },
-  { id: 'tg-ondes', niveau: 'TG', label: '🌊 Ondes et signaux : effet Doppler', sims: [116], domaines: ['Ondes'] },
+  // TG : un chapitre = une partie numérotée du programme de terminale (la rubrique est le thème du programme) ; plusieurs simulations par chapitre.
+  { id: 'tg-composition', niveau: 'TG', rubrique: 'Constitution et transformations de la matière', label: '🧪 Déterminer la composition d’un système par des méthodes physiques et chimiques', sims: [121, 119], domaines: ['pH et concentration en ions oxonium', 'Titrage pH-métrique'] },
+  { id: 'tg-evolution-temporelle', niveau: 'TG', rubrique: 'Constitution et transformations de la matière', label: '⏱️ Modéliser l’évolution temporelle d’un système, siège d’une transformation', sims: [122, 123], domaines: ['Cinétique : vitesse volumique et ordre 1', 'Radioactivité : décroissance et demi-vie'] },
+  { id: 'tg-etat-final', niveau: 'TG', rubrique: 'Constitution et transformations de la matière', label: '⚖️ Prévoir l’état final d’un système, siège d’une transformation chimique', sims: [125], domaines: ['Équilibre chimique : Qr, K et taux d’avancement'] },
+  { id: 'tg-ondes', niveau: 'TG', rubrique: 'Ondes et signaux', label: '🌊 Caractériser les phénomènes ondulatoires', sims: [116], domaines: ['Ondes'] },
   { id: 'tstl-signaux', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '📡 Transmission de signaux numériques', sims: [8, 15, 33], domaines: ['Transmission de signaux numériques'] },
   { id: 'tstl-fluides', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '💧 Transport des fluides', sims: [26, 27, 28, 17], domaines: ['Transport des fluides'] },
   { id: 'tstl-regulation', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '⚙️ Régulation', sims: [5, 6], domaines: ['Régulation'] },
@@ -51,12 +52,9 @@ export const CHAPITRES = [
   { id: 'tstl-mesure', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '📏 Mesure et incertitudes', sims: [78], domaines: ['Mesure et incertitudes'] },
   { id: 'tstl-controle', niveau: 'TSTL', rubrique: 'Systèmes et procédés', label: '🧲 Contrôle des systèmes', sims: [46, 44, 45], domaines: ['Contrôle des systèmes'] },
   { id: 'tstl-ondes', niveau: 'TSTL', rubrique: 'Ondes', label: '🌊 Ondes', sims: [83, 84, 87, 88, 91, 114], domaines: ['Ondes'] },
-  { id: 'tstl-oeil-loupe', niveau: 'TSTL', rubrique: 'Ondes', label: '👁️ L’œil et la loupe', sims: [117], domaines: ['Œil et loupe'] },
-  { id: 'tstl-microscope', niveau: 'TSTL', rubrique: 'Ondes', label: '🔬 Le microscope', sims: [118], domaines: ['Microscope'] },
-  { id: 'tstl-lunette', niveau: 'TSTL', rubrique: 'Ondes', label: '🔭 La lunette astronomique', sims: [120], domaines: ['Lunette astronomique'] },
+  { id: 'tstl-ondes-observer', niveau: 'TSTL', rubrique: 'Ondes', label: '👁️ Des ondes pour observer : l’œil, la loupe, le microscope et la lunette', sims: [117, 118, 120], domaines: ['Œil et loupe', 'Microscope', 'Lunette astronomique'] },
   { id: 'tstl-acides-bases', niveau: 'TSTL', rubrique: 'Chimie et développement durable', label: '🧪 Acides et bases', sims: [85], domaines: ['Acides et bases'] },
-  { id: 'tstl-synthese-organique', niveau: 'TSTL', rubrique: 'Chimie et développement durable', label: '⚗️ Synthèse organique', sims: [86, 92], domaines: ['Synthèse organique', 'Mécanismes réactionnels'] },
-  { id: 'tstl-synthese-optimiser', niveau: 'TSTL', rubrique: 'Chimie et développement durable', label: '📈 Optimiser une synthèse', sims: [90], domaines: ['Optimiser une synthèse'] },
+  { id: 'tstl-synthese-organique', niveau: 'TSTL', rubrique: 'Chimie et développement durable', label: '⚗️ Synthèse organique : mécanismes et optimisation', sims: [86, 92, 90], domaines: ['Synthèse organique', 'Mécanismes réactionnels', 'Optimiser une synthèse'] },
 
   // BTS : trois rubriques (Analyse, Synthèse, Formulation), chacune découpée en chapitres. Les anciens identifiants
   // « bts-analyse », « bts-organique », « bts-rmn », « bts-cristallo » et « bts-formulation » ont été retirés (ils restent
@@ -76,8 +74,7 @@ export const CHAPITRES = [
   { id: 'bts-solubilite', niveau: 'BTS', rubrique: 'Formulation', label: '🔵 Solubilité et solvants', sims: [4], domaines: ['Formulation'] },
   { id: 'bts-films', niveau: 'BTS', rubrique: 'Formulation', label: '🎨 Films et séchage', sims: [14, 101], domaines: ['Formulation', 'Séchage'] },
   { id: 'bts-rheologie', niveau: 'BTS', rubrique: 'Formulation', label: '🧴 Rhéologie', sims: [100], domaines: ['Formulation', 'Rhéologie'] },
-  { id: 'bts-plans-melange', niveau: 'BTS', rubrique: 'Formulation', label: '🔺 Plans de mélange', sims: [126], domaines: ['Formulation', 'Plans'] },
-  { id: 'bts-plans-factoriels', niveau: 'BTS', rubrique: 'Formulation', label: '🧊 Plans factoriels', sims: [127], domaines: ['Formulation', 'Plans'] },
+  { id: 'bts-plans', niveau: 'BTS', rubrique: 'Formulation', label: '🔺 Plans d’expériences : plans de mélange et plans factoriels', sims: [126, 127], domaines: ['Formulation', 'Plans'] },
 ];
 
 export const MAX_CHAPITRES = 3;
