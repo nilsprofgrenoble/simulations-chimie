@@ -29,7 +29,7 @@ export function simplexeCentre(fref) {
 export const pseudoVersReel = (z, dom) => z.map((zi, i) => dom.L[i] + dom.s * zi);
 export const reelVersPseudo = (x, dom) => x.map((xi, i) => (xi - dom.L[i]) / dom.s);
 
-// ---------- plan à 7 essais (ordre du plan de mélange centré, JMP, sans randomisation) ----------
+// ---------- plan à 7 essais (ordre du plan de mélange centré, sans randomisation) ----------
 // Coordonnées en pseudo-composants (somme = 1) : A, B, C
 export const PLAN7 = [
   { n: 1, z: [1, 0, 0], nom: 'sommet A' },
