@@ -156,7 +156,7 @@ export function SimulationTitragePH() {
   const [suiviC, noterC] = useCompteurDefi(), [suiviI, noterI] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('conc');
-  const [hypoOuv, setHypoOuv] = useState(false);
+  const [hypoOuv, setHypoOuv] = useState(false), [revoirScene, setRevoirScene] = useState(false);
   const [ti, setTi] = useState(PRESET);
   const enGuide = mode === 'guide', enDefi = mode === 'defi';
   const dd = enDefi && defi ? defi : null;
@@ -217,7 +217,7 @@ export function SimulationTitragePH() {
           <li>Constante de la réaction : <em>K</em> = <em>K</em><sub>A</sub> / <em>K</em><sub>e</sub> ≈ 1,6 × 10⁹ ≫ 1 ⇒ on la considère comme <strong>totale</strong>.</li>
           <li><strong>Idée fausse</strong> : « les ions HO⁻ versés restent dans le bécher ». <strong>Vrai</strong> : tant qu’il reste de l’acide, chaque HO⁻ versé est consommé.</li>
         </ul></>,
-      texte: <>Au contact de l’acide, les ions HO⁻ réagissent. La constante de la réaction est très grande :
+      texte: <>Au contact de l’acide, les ions HO⁻ réagissent. La constante de la réaction, <em>K</em>, se calcule avec la constante d’acidité <em>K</em><sub>A</sub> du couple CH₃COOH / CH₃COO⁻ (p<em>K</em><sub>A</sub> = 4,8) et le produit ionique de l’eau <em>K</em><sub>e</sub> (10⁻¹⁴ à 25 °C). Elle est très grande :
         <Formule><mi>K</mi><mo>=</mo><mfrac><msub><mi>K</mi><mi>A</mi></msub><msub><mi>K</mi><mi>e</mi></msub></mfrac><mo>=</mo><msup><mn>10</mn><mrow><mn>14</mn><mo>−</mo><mn>4,8</mn></mrow></msup><mo>≈</mo><mn>1,6</mn><mo>×</mo><msup><mn>10</mn><mn>9</mn></msup></Formule>
         On modélise donc la transformation comme <strong>totale</strong> (et rapide).</>,
       tache: { type: 'qcm', q: 'Avant l’équivalence, que deviennent les ions HO⁻ versés ?', options: ['ils sont entièrement consommés par l’acide : HO⁻ est le réactif limitant', 'ils s’accumulent dans l’erlenmeyer', 'la moitié reste en solution'], bonne: 0, bloque,
@@ -239,9 +239,9 @@ export function SimulationTitragePH() {
       retenir: <>
         <SvgComposition/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Avant V<sub>E</sub> : HO⁻ versé = HO⁻ consommé</strong> : n(acide) = n<sub>0</sub> − n<sub>B</sub> et n(base conjuguée) = n<sub>B</sub>.</li>
-          <li><strong>À l’équivalence, il ne reste ni acide ni HO⁻</strong> : réactifs en proportions stœchiométriques, n<sub>B</sub> = n<sub>0</sub>.</li>
-          <li><strong>Après V<sub>E</sub></strong> : HO⁻ en excès, n(HO⁻) = n<sub>B</sub> − n<sub>0</sub>.</li>
+          <li><strong>Avant V<sub>E</sub> : HO⁻ versé = HO⁻ consommé</strong> : n(acide) = n<sub>A</sub> − n<sub>B</sub> (n<sub>A</sub> : quantité initiale d’acide) et n(base conjuguée) = n<sub>B</sub>.</li>
+          <li><strong>À l’équivalence, il ne reste ni acide ni HO⁻</strong> : réactifs en proportions stœchiométriques, n<sub>B</sub> = n<sub>A</sub>.</li>
+          <li><strong>Après V<sub>E</sub></strong> : HO⁻ en excès, n(HO⁻) = n<sub>B</sub> − n<sub>A</sub>.</li>
           <li>Notation : <strong>E = équivalence</strong> (V<sub>E</sub>, pH<sub>E</sub>) ; <strong>éq = équilibre</strong> (ne pas confondre).</li>
         </ul></>,
       texte: <>Le tableau de composition donne, à chaque volume versé, les quantités des espèces (transformation totale). Déplacez le curseur de 0 à 22{NB}mL. Il existe un volume <em>V</em><sub>E</sub> pour lequel l’acide et les ions HO⁻ ont tous deux disparu : c’est l’<strong>équivalence</strong>.</>,
@@ -268,7 +268,7 @@ export function SimulationTitragePH() {
       texte: <>À l’équivalence, la quantité d’ions HO⁻ versée est égale à la quantité d’acide initiale :
         <Formule><msub><mi>C</mi><mi>A</mi></msub><mo>×</mo><msub><mi>V</mi><mi>A</mi></msub><mo>=</mo><msub><mi>C</mi><mi>B</mi></msub><mo>×</mo><msub><mi>V</mi><mi>E</mi></msub></Formule>
         Vous avez repéré <em>V</em><sub>E</sub> = 16,0{NB}mL ; on a <em>V</em><sub>A</sub> = 20,0{NB}mL et <em>C</em><sub>B</sub> = 0,100{NB}mol·L⁻¹.</>,
-      tache: { type: 'num', q: 'Concentration C_A de la solution d’acide', unite: 'mol/L', vrai: 0.0800, tol: 0.04, affiche: v => nbf(v, 4), cs: 3,
+      tache: { type: 'num', q: 'Concentration C_A de la solution d’acide', unite: 'mol·L⁻¹', vrai: 0.0800, tol: 0.04, affiche: v => nbf(v, 4), cs: 3,
         calcul: () => ['C_A = C_B × V_E / V_A : V_E et V_A sont dans la même unité (mL), le rapport V_E / V_A est sans unité.', 'C_A = 0,100 × 16,0 / 20,0 = 0,0800 mol·L⁻¹.', 'Comparaison avec l’étiquette (0,080 mol·L⁻¹) : la solution est conforme.'],
         pieges: [[0.125, 'Le rapport est inversé : C_A = C_B × V_E / V_A.'], [0.0800 * 1000, 'La concentration est demandée en mol·L⁻¹, pas en mmol·L⁻¹.']],
         expl: 'C_A = 0,0800 mol·L⁻¹ : la solution est conforme à l’étiquette (0,080 mol·L⁻¹).', indice: 'C_A × V_A = C_B × V_E, donc C_A = C_B × V_E / V_A.' } },
@@ -278,7 +278,7 @@ export function SimulationTitragePH() {
         calcul: () => ['Lecture du pH-mètre à V_B = V_E = 16,0 mL : pH_E ≈ 8,72 ; on retient pH_E ≈ 8,7.'],
         expl: 'pH_E ≈ 8,7 : supérieur à 7. À l’équivalence, la solution n’est pas neutre.', indice: 'Mettez le curseur sur 16,0 mL et lisez le pH affiché.' } },
     { id: 'predom', titre: 'Pourquoi un pH basique ?', focus: ['scene'],
-      texte: <>À l’équivalence, il ne reste plus d’acide CH₃COOH : l’erlenmeyer contient surtout des ions éthanoate CH₃COO⁻ (formés) et des ions Na⁺ (spectateurs). Le <strong>diagramme de prédominance</strong> du couple CH₃COOH / CH₃COO⁻ (p<em>K</em><sub>A</sub> = 4,8) place le pH lu : pH<sub>E</sub> ≈ 8,7.</>,
+      texte: <>À l’équivalence, il ne reste plus d’acide CH₃COOH : l’erlenmeyer contient surtout des ions éthanoate CH₃COO⁻ (formés) et des ions Na⁺ (spectateurs). Le <strong>diagramme de prédominance</strong> du couple CH₃COOH / CH₃COO⁻ indique quelle forme domine selon le pH : l’acide si pH &lt; p<em>K</em><sub>A</sub>, la base si pH &gt; p<em>K</em><sub>A</sub> (p<em>K</em><sub>A</sub> = −log <em>K</em><sub>A</sub> = 4,8 pour ce couple). Il place le pH lu : pH<sub>E</sub> ≈ 8,7.</>,
       tache: { type: 'qcm', q: 'Au pH de l’équivalence (≈ 8,7), l’espèce qui prédomine dans le couple est…', options: ['CH₃COO⁻, car pH > pKA', 'CH₃COOH, car pH > pKA', 'les deux à égalité, car pH = pKA'], bonne: 0, bloque,
         expl: 'pH > pK_A : la base CH₃COO⁻ prédomine. C’est une base faible : elle réagit un peu avec l’eau (CH₃COO⁻ + H₂O ⇌ CH₃COOH + HO⁻), ce qui rend la solution basique : pH_E > 7.', indice: 'Pour pH > pKA, l’espèce basique du couple prédomine ; pour pH < pKA, c’est l’espèce acide.' } },
     { id: 'fort', titre: 'Et avec un acide fort ?', focus: ['reglages'],
@@ -368,7 +368,7 @@ export function SimulationTitragePH() {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>{defi.type === 'conc' ? 'Défi : quelle est la concentration de l’acide ?' : 'Défi : pH à l’équivalence et choix de l’indicateur'}</div>
       {defi.type === 'conc' ? <>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>On titre <strong>20,0{NB}mL</strong> d’une solution d’un acide (fort ou faible) de concentration inconnue <em>C</em><sub>A</sub> par de la soude de concentration <em>C</em><sub>B</sub> = <strong>0,100{NB}mol·L⁻¹</strong>. Faites varier le volume versé, repérez l’équivalence sur la courbe, puis calculez <em>C</em><sub>A</sub>. Donnez le résultat avec 3 chiffres significatifs.</div>
-        {champ('c', 'Concentration C_A', 'mol/L', 110)}
+        {champ('c', 'Concentration C_A', 'mol·L⁻¹', 110)}
         <IndiceDefi cache={false}>Repérez <em>V</em><sub>E</sub> au maximum de la dérivée (bouton « Afficher la dérivée »), puis <em>C</em><sub>A</sub> = <em>C</em><sub>B</sub> × <em>V</em><sub>E</sub> / <em>V</em><sub>A</sub> avec <em>V</em><sub>E</sub> et <em>V</em><sub>A</sub> en mL.</IndiceDefi>
       </> : <>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>On titre <strong>20,0{NB}mL</strong> d’<strong>{M.ACIDES[defi.acide].nom}</strong> de concentration <em>C</em><sub>A</sub> = <strong>{nbf(defi.C0, 3)}{NB}mol·L⁻¹</strong> par de la soude de concentration <em>C</em><sub>B</sub> = <strong>0,100{NB}mol·L⁻¹</strong>. 1) Calculez <em>V</em><sub>E</sub>, placez le curseur à ce volume et lisez le pH à l’équivalence (à 0,1 près). 2) Choisissez l’indicateur coloré qui convient.</div>
@@ -385,7 +385,7 @@ export function SimulationTitragePH() {
       </div>
       {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>
         {defi.type === 'conc'
-          ? (defi.ok ? `✓ Correct. C_A = ${nbf(defi.C0, 3)} mol/L (V_E = ${nbf(VE, 1)} mL).` : '✗ Vérifiez : V_E est l’abscisse du maximum de la dérivée ; puis C_A = C_B × V_E / V_A avec V_A = 20,0 mL et C_B = 0,100 mol/L.')
+          ? (defi.ok ? `✓ Correct. C_A = ${nbf(defi.C0, 3)} mol·L⁻¹ (V_E = ${nbf(VE, 1)} mL).` : '✗ Vérifiez : V_E est l’abscisse du maximum de la dérivée ; puis C_A = C_B × V_E / V_A avec V_A = 20,0 mL et C_B = 0,100 mol·L⁻¹.')
           : (defi.ok ? `✓ Correct. V_E = ${nbf(VE, 1)} mL, pH_E = ${nbf(phE, 2)} ; ${IND(defi.bon).nom} (zone ${nbf(IND(defi.bon).zone[0], 1)} – ${nbf(IND(defi.bon).zone[1], 1)}) contient pH_E.`
             : <>{defi.okPh ? '✓ pH à l’équivalence correct.' : `✗ pH : calculez V_E = C_A × V_A / C_B = ${nbf(VE, 1)} mL, placez le curseur à ce volume et lisez le pH.`}{' '}{defi.okInd ? '✓ Indicateur correct.' : '✗ Indicateur : sa zone de virage doit contenir le pH à l’équivalence.'}</>)}
       </div>}
@@ -413,15 +413,18 @@ export function SimulationTitragePH() {
 
   // ---------- schéma du montage ----------
   const boutonRetablir = (txt, f) => <button onClick={f} style={{ ...styleBouton(true, '#b45309'), marginBottom: 8 }}>{txt}</button>;
+  // Le schéma du montage n'est utile qu'aux deux premières étapes et à celles où l'on regarde la couleur de l'indicateur : ailleurs il est replié (il séparait la consigne des graphiques).
+  const sceneRepliee = enGuide && etape > 1 && !(etape >= IDS.indexOf('indic') && etape <= IDS.indexOf('choix')) && !revoirScene;
   const sceneBox = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
       {enGuide && attendu && !conforme && boutonRetablir(libelleRetablir, retablir)}
-      <div style={{ maxWidth: 560, margin: '0 auto' }}>
+      {enGuide && etape > 1 && <button onClick={() => setRevoirScene(r => !r)} aria-expanded={!sceneRepliee} style={{ ...styleBouton(false), marginBottom: sceneRepliee ? 0 : 8 }}>{sceneRepliee ? 'Revoir le schéma du montage' : 'Masquer le schéma'}</button>}
+      {!sceneRepliee && <><div style={{ maxWidth: 560, margin: '0 auto' }}>
         <SchemaBurette V2={Vb} ouvert={false} coul={coulSol} indicateur={indEff ? indEff.nom : null} reperes={false} legendeCouleur={false} sonde={{ valeur: nbf(ph, 2) }}
-          etiquetteBurette={<><strong>Burette : soude</strong><br/>C<sub>B</sub> = {nbf(P.Cb, 3)} mol/L</>}
+          etiquetteBurette={<><strong>Burette : soude</strong><br/>C<sub>B</sub> = {nbf(P.Cb, 3)} mol·L⁻¹</>}
           etiquetteErlen={<><strong>Erlenmeyer</strong><br/>{nbf(P.V0, 1)} mL {dd && dd.type === 'conc' ? 'd’acide inconnu' : `d’${ac.nom}`}{indEff ? <> + {indEff.nom}</> : null}</>}/>
       </div>
-      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>V<sub>B</sub> versé : <strong>{nbf(Vb, 1)} mL</strong>. Le pH-mètre indique le pH de l’erlenmeyer.</div>
+      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>V<sub>B</sub> versé : <strong>{nbf(Vb, 1)} mL</strong>. Le pH-mètre indique le pH de l’erlenmeyer.</div></>}
     </div>);
 
   // ---------- réglages ----------
@@ -435,13 +438,13 @@ export function SimulationTitragePH() {
         {Object.entries(M.ACIDES).filter(([k]) => mode === 'explore' || k === 'hcl' || k === 'etha').map(([k, a]) => <button key={k} onClick={() => setT({ acide: k })} aria-pressed={ti.acide === k} style={stylePetitBouton(ti.acide === k, '#0f766e')}>{a.nom}</button>)}
       </div>}
       {mode === 'explore' && <>
-        <Curseur nom="Concentration de l’acide C_A" valeur={ti.C0} onChange={v => setT({ C0: Math.round(v * 1000) / 1000 })} min={0.02} max={0.1} pas={0.005} unite="mol/L" decimales={3} couleur="#475569"/>
+        <Curseur nom="Concentration de l’acide C_A" valeur={ti.C0} onChange={v => setT({ C0: Math.round(v * 1000) / 1000 })} min={0.02} max={0.1} pas={0.005} unite="mol·L⁻¹" decimales={3} couleur="#475569"/>
         <Curseur nom="Prise d’essai V_A (pipette)" valeur={ti.V0} onChange={v => setT({ V0: v })} min={10} max={25} pas={5} unite="mL" decimales={1} couleur="#475569"/>
-        <Curseur nom="Concentration de la soude C_B" valeur={ti.Cb} onChange={v => setT({ Cb: Math.round(v * 1000) / 1000 })} min={0.05} max={0.2} pas={0.01} unite="mol/L" decimales={3} couleur="#475569"/>
+        <Curseur nom="Concentration de la soude C_B" valeur={ti.Cb} onChange={v => setT({ Cb: Math.round(v * 1000) / 1000 })} min={0.05} max={0.2} pas={0.01} unite="mol·L⁻¹" decimales={3} couleur="#475569"/>
         {VE > VMAX && <div role="alert" style={{ fontSize: 13, color: '#b91c1c', marginBottom: 6 }}>V_E ({nbf(VE, 1)} mL) dépasse la burette de {VMAX} mL : prélevez moins d’acide ou prenez une soude plus concentrée.</div>}
       </>}
-      {enGuide && !deja('fort') && <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>20,0 mL d’acide éthanoïque (0,080 mol/L) ; soude à 0,100 mol/L.</div>}
-      {dd && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6 }}>20,0 mL d’acide ; soude à 0,100 mol/L.</div>}
+      {enGuide && !deja('fort') && <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>20,0 mL d’acide éthanoïque (0,080 mol·L⁻¹) ; soude à 0,100 mol·L⁻¹.</div>}
+      {dd && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6 }}>20,0 mL d’acide ; soude à 0,100 mol·L⁻¹.</div>}
       <Curseur nom="Volume de soude versé V_B" valeur={Vb} onChange={setV} min={0} max={VMAX} pas={0.1} unite="mL" decimales={1} couleur="#b45309"/>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
         {peutDeriv && (!enGuide || deja('derivee')) && <button onClick={() => setT({ deriv: !ti.deriv })} aria-pressed={ti.deriv} style={stylePetitBouton(ti.deriv, '#15803d')}>{ti.deriv ? 'Masquer la dérivée' : 'Afficher la dérivée'}</button>}
@@ -502,10 +505,10 @@ export function SimulationTitragePH() {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
       <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
         <li>Titrez l’acide chlorhydrique, puis un acide faible : comparez le pH initial, le pH à l’équivalence et la largeur du saut (bouton « Comparer avec l’acide fort »).</li>
-        <li>Diminuez la concentration de l’acide de 0,10 à 0,02 mol/L : que deviennent V<sub>E</sub>, le saut de pH et pH<sub>E</sub> ?</li>
+        <li>Diminuez la concentration de l’acide de 0,10 à 0,02 mol·L⁻¹ : que deviennent V<sub>E</sub>, le saut de pH et pH<sub>E</sub> ?</li>
         <li>Pour trois acides faibles, lisez le pH à V<sub>E</sub> / 2 et comparez-le au p<em>K</em><sub>A</sub> du couple.</li>
         <li>Dans le tableau des indicateurs, trouvez ceux qui conviennent pour l’acide benzoïque, puis pour l’acide chlorhydrique. Vérifiez la couleur obtenue autour de V<sub>E</sub>.</li>
-        <li>Mettez la soude à 0,05 mol/L avec 25 mL d’acide à 0,10 mol/L : que se passe-t-il pour V<sub>E</sub> ? Quelle solution ?</li>
+        <li>Mettez la soude à 0,05 mol·L⁻¹ avec 25 mL d’acide à 0,10 mol·L⁻¹ : que se passe-t-il pour V<sub>E</sub> ? Quelle solution ?</li>
       </ul>
     </div>);
   const retenirExplore = (
@@ -547,8 +550,8 @@ export function SimulationTitragePH() {
             </div>
           </div>
           <div className="tph-l2">
-            {graphiqueQuantites && <div className="tph-in">{graphiqueQuantites}</div>}
             {graphiqueCourbe && <div className="tph-in">{graphiqueCourbe}</div>}
+            {graphiqueQuantites && <div className="tph-in">{graphiqueQuantites}</div>}
           </div>
           {predom && <div className="tph-in" style={{ marginBottom: 12 }}>{predom}</div>}
         </div>
