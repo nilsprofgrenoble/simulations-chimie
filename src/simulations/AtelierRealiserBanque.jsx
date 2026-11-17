@@ -874,6 +874,64 @@ function genEquilibreTG() {
     retenir: ['Qr = [C]·[D] / ([A]·[B]), sans unité ; Qr < K : sens direct ; Qr > K : sens inverse.', 'À l’état final, Qr = K : on calcule K avec les concentrations de l’état final.', 'τ = x_f / x_max, sans unité, compris entre 0 et 1 ; τ < 1 : transformation non totale.'] };
 }
 
+// ──────────────────────── Familles « Plans d'expériences » (BTS) ────────────────────────
+function genPlanMelange() {
+  const comp = ['cire de candelilla (A)', 'huile de ricin (B)', 'cire d’abeille (C)'];
+  const i = Math.floor(Math.random() * 3), m = tire([[1.088, 0.704, 1.408], [1.2, 0.8, 1.0], [0.9, 1.1, 1.0], [1.5, 0.5, 1.0]]);
+  const tot = m[0] + m[1] + m[2], x = m[i] / tot;
+  const q1 = { id: 'm0', type: 'num', q: <>Une formule contient <b>{nb(m[0], 4)}{NB}g</b> de {comp[0]}, <b>{nb(m[1], 4)}{NB}g</b> de {comp[1]} et <b>{nb(m[2], 4)}{NB}g</b> de {comp[2]}. Calculez la fraction massique de {comp[i]} (nombre sans unité, entre 0 et 1).</>, unite: '', vrai: x, csMin: 2,
+    aide: 'La fraction est la masse du composant divisée par la masse TOTALE des trois corps gras.',
+    pieges: [[m[i] / (tot - m[i]), 'Vous avez divisé par la masse des deux AUTRES composants : le dénominateur est la masse totale, composant compris.'], [x * 100, 'Valeur juste en pourcentage ; ici on demande une fraction (entre 0 et 1).']],
+    expl: <>Masse totale = {nb(m[0], 4)} + {nb(m[1], 4)} + {nb(m[2], 4)} = {nb(tot, 4)}{NB}g, donc x = {nb(m[i], 4)} / {nb(tot, 4)} = <b>{nb(x, 2)}</b>. Les trois fractions somment à 1.</> };
+  const cas = tire([{ n: [5, 2, 8], noms: ['candelilla (A)', 'huile de ricin (B)'] }, { n: [5, 8, 6], noms: ['candelilla (A)', 'cire d’abeille (C)'] }, { n: [2, 8, 0], noms: ['huile de ricin (B)', 'cire d’abeille (C)'] }]);
+  const noms = cas.noms, [p1, p2, y3] = cas.n;
+  const yA = p1, yB = p2, yAB = y3, ec = yAB - (yA + yB) / 2, beta = 4 * ec;
+  const q2 = { id: 'm1', type: 'num', q: <>Notes du jury (sur 10) : {noms[0]} seul <b>{yA}</b>, {noms[1]} seul <b>{yB}</b>, mélange à parts égales des deux <b>{yAB}</b>. Calculez l’écart au milieu : note du mélange moins moyenne des notes des deux corps purs.</>, unite: '', vrai: ec, csMin: 2,
+    aide: 'Sans interaction, le mélange 50/50 aurait la moyenne des deux notes pures. L’écart au milieu = y_AB − (y_A + y_B)/2, avec son signe.',
+    pieges: [[-ec, 'Le signe est inversé : on retranche la moyenne des purs à la note du mélange (pas l’inverse).'], [yAB - yA, 'Vous avez comparé le mélange à un seul des deux corps purs : il faut leur moyenne.']],
+    expl: <>Moyenne des purs = ({yA} + {yB}) / 2 = {nb((yA + yB) / 2, 3)} ; écart = {yAB} − {nb((yA + yB) / 2, 3)} = <b>{nb(ec, 3)}</b>. {ec > 0 ? 'Positif : synergie, le mélange est meilleur que prévu.' : 'Négatif : le mélange est moins bon que prévu.'}</> };
+  const q3 = { id: 'm2', type: 'num', q: <>Pour ce mélange, l’écart au milieu vaut {nb(ec, 3)}. Calculez le coefficient d’interaction binaire β (modèle de Scheffé), sachant que β = 4 × (écart au milieu).</>, unite: '', vrai: beta, csMin: 2,
+    aide: 'Au milieu, x_A·x_B = 0,25 : l’écart au milieu vaut β / 4, donc β = 4 × écart.',
+    pieges: [[ec, 'Vous avez gardé l’écart au milieu : il vaut β·x_A·x_B = β / 4, donc β est 4 fois plus grand.'], [2 * ec, 'Le facteur est 4 (car x_A·x_B = 0,5 × 0,5 = 1/4), pas 2.']],
+    expl: <>β = 4 × {nb(ec, 3)} = <b>{nb(beta, 3)}</b>. Vérification : 4·y_AB − 2·y_A − 2·y_B = {4 * yAB} − {2 * yA} − {2 * yB} = {nb(beta, 3)}.</> };
+  const [xa, xb] = tire([[0.75, 0.25], [0.25, 0.75]]), y = yA * xa + yB * xb + beta * xa * xb;
+  const q4 = { id: 'm3', type: 'num', q: <>Avec le même modèle y = {yA}·x_A + {yB}·x_B + ({nb(beta, 3)})·x_A·x_B, calculez la note prévue pour un mélange de fractions x_A = <b>{nb(xa, 2)}</b> et x_B = <b>{nb(xb, 2)}</b> (les deux composants seuls, pas de troisième).</>, unite: '', vrai: y, csMin: 2,
+    aide: 'Calculez les deux termes linéaires, puis le terme d’interaction avec le PRODUIT x_A·x_B, et additionnez. Pas de constante.',
+    pieges: [[yA * xa + yB * xb + beta * xa, 'Dans le terme d’interaction, il faut le produit x_A·x_B, pas x_A seul.'], [yA * xa + yB * xb, 'Vous avez oublié le terme d’interaction β·x_A·x_B.']],
+    expl: <>y = {yA} × {nb(xa, 2)} + {yB} × {nb(xb, 2)} + ({nb(beta, 3)}) × {nb(xa, 2)} × {nb(xb, 2)} = <b>{nb(y, 3)}</b>.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([v]) => isFinite(v) && Math.abs(v - q.vrai) > 1e-9); });
+  return { intro: 'Plan de mélange du rouge à lèvres : fractions, écart au milieu, coefficient d’interaction et prévision.', questions: [q1, q2, q3, q4],
+    retenir: ['Les fractions d’un mélange vérifient x_A + x_B + x_C = 1 : on divise par la masse TOTALE.', 'Écart au milieu = y_AB − (y_A + y_B)/2 : positif = synergie, négatif = antagonisme.', 'Coefficient binaire : β_AB = 4·y_AB − 2·y_A − 2·y_B = 4 × écart au milieu.', 'Modèle de mélange : pas de constante ; le terme d’interaction contient le PRODUIT x_A·x_B.'] };
+}
+
+function genPlanFactoriel() {
+  const f = tire([{ nom: 'la température de travail', u: '°C', bas: 75, haut: 102, vals: [82, 95, 100] }, { nom: 'la masse de sel', u: 'g', bas: 1, haut: 2, vals: [1.25, 1.75] }, { nom: 'la masse de xanthane', u: 'g', bas: 0.2, haut: 0.4, vals: [0.25, 0.35] }, { nom: 'la masse d’amidon Ultratech', u: 'g', bas: 0.9, haut: 2.2, vals: [1.8, 1.2] }]);
+  const v = tire(f.vals), c = (f.bas + f.haut) / 2, dem = (f.haut - f.bas) / 2, xc = (v - c) / dem;
+  const q1 = { id: 'f0', type: 'num', q: <>Pour {f.nom}, le niveau bas (codé −1) vaut <b>{nb(f.bas, 3)}{NB}{f.u}</b> et le niveau haut (codé +1) vaut <b>{nb(f.haut, 3)}{NB}{f.u}</b>. Quelle est la valeur codée d’un essai à <b>{nb(v, 3)}{NB}{f.u}</b> ?</>, unite: '', vrai: xc, csMin: 2,
+    aide: 'Valeur codée = (valeur réelle − centre) / demi-étendue, avec centre = (bas + haut)/2 et demi-étendue = (haut − bas)/2.',
+    pieges: [[(v - f.bas) / (f.haut - f.bas), 'Ce codage va de 0 à 1 ; le codage du plan est symétrique, de −1 à +1 : on soustrait le CENTRE et on divise par la DEMI-étendue.'], [(v - c) / (f.haut - f.bas), 'Il faut diviser par la demi-étendue (haut − bas)/2, pas par l’étendue totale.']],
+    expl: <>Centre = ({nb(f.bas, 3)} + {nb(f.haut, 3)}) / 2 = {nb(c, 4)} ; demi-étendue = ({nb(f.haut, 3)} − {nb(f.bas, 3)}) / 2 = {nb(dem, 3)}. Valeur codée = ({nb(v, 3)} − {nb(c, 4)}) / {nb(dem, 3)} = <b>{nb(xc, 3)}</b>.</> };
+  const cas = tire([{ r: 'la note moyenne du jury', f: 'la recette végétale', mp: 2.375, mm: 6.25, d: 3 }, { r: 'la viscosité moyenne', f: 'la température de 102 °C', mp: 5309.5, mm: 1486.25, d: 2 }, { r: 'la note moyenne du jury', f: 'l’amidon Novation', mp: 7.3375, mm: 3.7625, d: 4 }]);
+  const a = (cas.mp - cas.mm) / 2;
+  const q2 = { id: 'f1', type: 'num', q: <>Plan factoriel du TP. Pour {cas.f}, {cas.r} vaut <b>{nb(cas.mp, 5)}</b> sur les essais au niveau +1 et <b>{nb(cas.mm, 5)}</b> sur les essais au niveau −1. Calculez le coefficient de ce facteur dans le modèle (avec son signe).</>, unite: '', vrai: a, csMin: 3,
+    aide: 'Le coefficient est la moitié de l’écart entre les deux moyennes : a = (Moy⁺ − Moy⁻) / 2, car x passe de −1 à +1.',
+    pieges: [[2 * a, 'Vous avez calculé l’effet total (Moy⁺ − Moy⁻) ; le coefficient est la moitié, car le codage va de −1 à +1 (2 unités).'], [-a, 'Le signe est inversé : on retranche la moyenne du niveau −1 à celle du niveau +1.']],
+    expl: <>a = ({nb(cas.mp, 5)} − {nb(cas.mm, 5)}) / 2 = <b>{nb(a, 4)}</b>.</> };
+  const [xU, xN] = tire([[1, 1], [1, -1], [-1, 1], [-1, -1]]), a0 = 5.55, aU = 0.5375, aN = 1.7875, aUN = -0.825, y = a0 + aU * xU + aN * xN + aUN * xU * xN;
+  const q3 = { id: 'f2', type: 'num', q: <>Pour la vinaigrette, on garde le modèle réduit y = {nb(a0, 3)} + {nb(aU, 4)}·x_U + {nb(aN, 4)}·x_N − {nb(-aUN, 3)}·x_U·x_N (U : amidon Ultratech, N : amidon Novation ; note sur 10). Calculez la note prévue pour <b>x_U = {xU > 0 ? '+1' : '−1'}</b> et <b>x_N = {xN > 0 ? '+1' : '−1'}</b>.</>, unite: '', vrai: y, csMin: 3,
+    aide: 'Remplacez x_U et x_N par ±1 (avec leur signe), sans oublier le produit x_U·x_N dans le dernier terme.',
+    pieges: [[a0 + aU * xU + aN * xN, 'Vous avez oublié le terme d’interaction x_U·x_N : son coefficient est négatif ici.'], [a0 + aU * xU + aN * xN - aUN * xU * xN, 'Le signe du terme d’interaction est inversé : le coefficient est −0,825 et le produit x_U·x_N vaut ' + xU * xN + '.']],
+    expl: <>y = {nb(a0, 3)} + {nb(aU, 4)} × ({xU}) + {nb(aN, 4)} × ({xN}) + ({nb(aUN, 3)}) × ({xU * xN}) = <b>{nb(y, 3)}</b>.</> };
+  const [k, p] = tire([[3, 5], [3, 6], [4, 8], [4, 11], [4, 7]]), n = 2 ** k, ddl = n - p;
+  const q4 = { id: 'f3', type: 'num', q: <>On réalise un plan factoriel complet à <b>{k}</b> facteurs à deux niveaux (sans répétition). Le modèle ajusté comporte <b>{p}</b> coefficients (constante comprise). Combien de degrés de liberté reste-t-il pour estimer l’écart-type ?</>, unite: '', vrai: ddl, csMin: 1,
+    aide: 'Nombre d’essais n = 2^k ; degrés de liberté = n − p.',
+    pieges: [[n - p - 1, 'Vous avez retiré un degré de plus : la constante est déjà comptée parmi les p coefficients, ddl = n − p.'], [n, 'Vous avez donné le nombre d’essais ; il faut retirer le nombre de coefficients.']],
+    expl: <>n = 2<sup>{k}</sup> = {n} essais ; ddl = n − p = {n} − {p} = <b>{ddl}</b>.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > 1e-9); });
+  return { intro: 'Plan factoriel à deux niveaux : coder, calculer un coefficient, prévoir une réponse, compter les degrés de liberté.', questions: [q1, q2, q3, q4],
+    retenir: ['Codage : x = (valeur − centre) / demi-étendue ; −1 au niveau bas, +1 au niveau haut, 0 au centre.', 'Coefficient = moitié de l’écart entre les moyennes des niveaux +1 et −1 : a = (Moy⁺ − Moy⁻) / 2.', 'Prévision : on remplace les x par leurs valeurs codées, interactions comprises (produits des x).', 'Degrés de liberté = n − p : sans eux, on ne peut ni estimer σ ni tester.'] };
+}
+
 export const FAMILLES = [
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
   { id: 'vecteur-difference', groupe: 'Vecteurs', titre: 'Différence de deux vecteurs (variation de vitesse)', gen: genDifference },
@@ -886,6 +944,8 @@ export const FAMILLES = [
   { id: 'lunet-image', groupe: 'Formules', titre: 'La lunette astronomique : image intermédiaire et œil myope (terminale STL)', gen: genLunetteImage, domaine: 'Lunette astronomique' },
   { id: 'microsc-mise-au-point', groupe: 'Formules', titre: 'Le microscope mis au point : positions et taille de l’image intermédiaire (terminale STL)', gen: genMicroMiseAuPoint, domaine: 'Microscope' },
   { id: 'lum1-conjugaison', groupe: 'Formules', titre: 'Lentille mince : conjugaison et grandissement (1re spé)', gen: genLentille, domaine: 'Lentille mince' },
+  { id: 'pmel-calcul', groupe: 'Formules', titre: 'Plan de mélange : fractions, écart au milieu, coefficient binaire et prévision (BTS)', gen: genPlanMelange, domaine: 'Plans' },
+  { id: 'pfac-calcul', groupe: 'Formules', titre: 'Plan factoriel : codage, coefficient, prévision et degrés de liberté (BTS)', gen: genPlanFactoriel, domaine: 'Plans' },
   { id: 'dop-calcul', groupe: 'Formules', titre: 'Effet Doppler : du décalage à la vitesse (TSTL)', gen: genDoppler, domaine: 'Ondes' },
   { id: 'dopg-calcul', groupe: 'Formules', titre: 'Effet Doppler : établir l’expression, son et lumière (TG)', gen: genDopplerTG, domaine: 'Ondes' },
   { id: 'titph-calcul', groupe: 'Formules', titre: 'Titrage pH-métrique : quantités de matière, V_E et C_A (TG)', gen: genTitrageTG, domaine: 'Titrage pH-métrique' },
