@@ -42,7 +42,7 @@ function CourbeC({ pts, P, t, cLu, ideal, tang, fen, niv, modele }) {
       {[0, 5, 10, 15, 20].map(u => <text key={u} x={X(u)} y={bas + 20} fontSize="16" textAnchor="middle" fill="#334155">{u}</text>)}
       {ticksC.map(c => <g key={c}><line x1={mx} y1={Y(c)} x2={W - 10} y2={Y(c)} stroke="#eef2f7"/><text x={mx - 6} y={Y(c) + 4} fontSize="16" textAnchor="end" fill="#334155">{c}</text></g>)}
       <text x={(mx + W) / 2} y={H - 8} fontSize="16" textAnchor="middle" fill="#334155">temps t (min)</text>
-      <text x="16" y={(my + bas) / 2} fontSize="16" fill="#334155" transform={`rotate(-90 13 ${(my + bas) / 2})`} textAnchor="middle">c (mmol/L)</text>
+      <text x="16" y={(my + bas) / 2} fontSize="16" fill="#334155" transform={`rotate(-90 13 ${(my + bas) / 2})`} textAnchor="middle">c (mmol·L⁻¹)</text>
       {niv.map(({ c, vert: v0, hz, n }) => { const tn = M.tempsPour(P, c), vert = v0 && tn <= M.DUREE; return (
         <g key={n}>
           {hz && <><line x1={mx} y1={Y(c)} x2={vert ? X(tn) : W - 10} y2={Y(c)} stroke={COL.gris} strokeDasharray="4 3"/>
@@ -58,8 +58,8 @@ function CourbeC({ pts, P, t, cLu, ideal, tang, fen, niv, modele }) {
         <circle cx={X(0)} cy={Y(tang.cA)} r="4.5" fill="white" stroke={COL.orange} strokeWidth="2"/>
         {tang.tB <= M.DUREE && <circle cx={X(tang.tB)} cy={bas} r="4.5" fill="white" stroke={COL.orange} strokeWidth="2"/>}
       </g>}
-      {tang && tang.cA <= ymax && <text x={X(0) + 9} y={Y(tang.cA) < my + 14 ? Y(tang.cA) + 16 : Y(tang.cA) - 7} fontSize="15" fontWeight="700" fill={COL.orange}>A (0 ; {nbf(tang.cA, 1)})</text>}
-      {tang && tang.tB <= M.DUREE && <text x={Math.min(X(tang.tB), W - 62)} y={bas - 30} fontSize="15" fontWeight="700" fill={COL.orange} textAnchor="middle">B ({nbf(tang.tB, 1)} ; 0)</text>}
+      {tang && tang.cA <= ymax && <text x={X(0) + 9} y={Y(tang.cA) < my + 14 ? Y(tang.cA) + 16 : Y(tang.cA) - 7} fontSize="15" fontWeight="700" fill={COL.orange}>M (0 ; {nbf(tang.cA, 1)})</text>}
+      {tang && tang.tB <= M.DUREE && <text x={Math.min(X(tang.tB), W - 62)} y={bas - 30} fontSize="15" fontWeight="700" fill={COL.orange} textAnchor="middle">N ({nbf(tang.tB, 1)} ; 0)</text>}
       {fen && <g>
         <line x1={X(fen.a.t)} y1={Y(fen.a.cm)} x2={X(fen.b.t)} y2={Y(fen.b.cm)} stroke={COL.violet} strokeWidth="2"/>
         <circle cx={X(fen.a.t)} cy={Y(fen.a.cm)} r="6.5" fill="none" stroke={COL.violet} strokeWidth="2"/><circle cx={X(fen.b.t)} cy={Y(fen.b.cm)} r="6.5" fill="none" stroke={COL.violet} strokeWidth="2"/>
@@ -83,7 +83,7 @@ function GrapheVC({ pts, P, exact, dt, t }) {
       <line x1={mx} y1={bas} x2={W - 8} y2={bas} stroke="#94a3b8"/><line x1={mx} y1={my} x2={mx} y2={bas} stroke="#94a3b8"/>
       {[0, 10, 20, 30, 40, 50, 60].filter(c => c <= cmax).map(c => <text key={c} x={X(c)} y={bas + 15} fontSize="13.5" textAnchor="middle" fill="#334155">{c}</text>)}
       {ticks.map(v => <g key={v}><line x1={mx} y1={Y(v)} x2={W - 8} y2={Y(v)} stroke="#eef2f7"/><text x={mx - 6} y={Y(v) + 4} fontSize="13.5" textAnchor="end" fill="#334155">{v}</text></g>)}
-      <text x={(mx + W) / 2} y={H - 6} fontSize="13.5" textAnchor="middle" fill="#334155">c (mmol/L)</text>
+      <text x={(mx + W) / 2} y={H - 6} fontSize="13.5" textAnchor="middle" fill="#334155">c (mmol·L⁻¹)</text>
       <text x="12" y={(my + bas) / 2} fontSize="13.5" fill="#334155" transform={`rotate(-90 12 ${(my + bas) / 2})`} textAnchor="middle">v (mmol·L⁻¹·min⁻¹)</text>
       <line x1={X(0)} y1={Y(0)} x2={X(P.c0)} y2={Y(v0)} stroke={COL.gris} strokeWidth="1.6" strokeDasharray="5 3"/>
       {donnees.map(q => <circle key={q.t} cx={X(q.c)} cy={Y(q.v)} r="3" fill={COL.bleu} opacity="0.85"/>)}
@@ -117,12 +117,12 @@ function GrapheLn({ pts, P, ajust, montrerAjust, t }) {
   const vis = pts.filter(p => p.cm >= 1.0), ticks = []; for (let y = bot + 0.5; y <= haut + 1e-9; y += 1) ticks.push(y);
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={cadreGraphe} role="img"
-      aria-label={`Logarithme népérien de c sur c° en fonction du temps, avec c° égal 1 mole par litre. ${montrerAjust && ajust ? `La droite d’ajustement a pour pente ${nbf(ajust.pente, 3)} par minute.` : ''} Les points qui sont des droites traduisent une loi d’ordre 1.`}>
+      aria-label={`Logarithme népérien de c sur c° en fonction du temps, avec c° égal 1 mole par litre. ${montrerAjust && ajust ? 'Une droite d’ajustement est tracée.' : ''} Les points qui sont des droites traduisent une loi d’ordre 1.`}>
       <line x1={mx} y1={bas} x2={W - 8} y2={bas} stroke="#94a3b8"/><line x1={mx} y1={my} x2={mx} y2={bas} stroke="#94a3b8"/>
       {[0, 5, 10, 15, 20].map(u => <text key={u} x={X(u)} y={bas + 15} fontSize="13.5" textAnchor="middle" fill="#334155">{u}</text>)}
       {ticks.map(y => <g key={y}><line x1={mx} y1={Y(y)} x2={W - 8} y2={Y(y)} stroke="#eef2f7"/><text x={mx - 6} y={Y(y) + 4} fontSize="13.5" textAnchor="end" fill="#334155">{nbf(y, 1).replace('-', '−')}</text></g>)}
       <text x={(mx + W) / 2} y={H - 6} fontSize="13.5" textAnchor="middle" fill="#334155">t (min)</text>
-      <text x="12" y={(my + bas) / 2} fontSize="13.5" fill="#334155" transform={`rotate(-90 12 ${(my + bas) / 2})`} textAnchor="middle">ln(c / c°), c° = 1 mol/L</text>
+      <text x="12" y={(my + bas) / 2} fontSize="13.5" fill="#334155" transform={`rotate(-90 12 ${(my + bas) / 2})`} textAnchor="middle">ln(c / c°), c° = 1 mol·L⁻¹</text>
       {montrerAjust && ajust && <line x1={X(0)} y1={Y(ajust.ordonnee)} x2={X(M.DUREE)} y2={Y(ajust.ordonnee + ajust.pente * M.DUREE)} stroke={COL.orange} strokeWidth="1.8" strokeDasharray="5 3"/>}
       {vis.map(p => <circle key={p.t} cx={X(p.t)} cy={Y(M.lnc(p.cm))} r="3" fill={COL.bleu} opacity="0.85"/>)}
       <line x1={X(t)} y1={my} x2={X(t)} y2={bas} stroke={COL.orange} strokeWidth="1.2" strokeDasharray="3 3"/>
@@ -136,7 +136,7 @@ export function SimulationVitesseOrdre1() {
   const [suiviV, noterV] = useCompteurDefi(), [suiviO, noterO] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('vit');
-  const [hypoOuv, setHypoOuv] = useState(false), [pyOuv, setPyOuv] = useState(false), [optOuv, setOptOuv] = useState(false);
+  const [hypoOuv, setHypoOuv] = useState(false), [pyOuv, setPyOuv] = useState(false), [optOuv, setOptOuv] = useState(false), [revoirScene, setRevoirScene] = useState(false);
   const [ti, setTi] = useState(PRESET);
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const dd = enDefi && defi ? defi : null;
@@ -209,17 +209,17 @@ export function SimulationVitesseOrdre1() {
         c’est-à-dire l’<strong>opposée de la pente de la tangente</strong> à la courbe en ce point. Cliquez sur « Tracer la tangente » sous le graphique : elle est tracée à <em>t</em> = 4,0{NB}min.</>,
       tache: { type: 'action', ok: ti.tang && Math.abs(ti.t - 4) < 0.05, label: 'Tracer la tangente à 4,0 min', faire: () => setT({ t: 4, tang: true }), consigne: 'Tracez la tangente à t = 4,0 min (bouton sous le graphique)' } },
     { id: 'pente', titre: 'Lire la pente de la tangente', focus: ['courbe'],
-      texte: <>La tangente à <em>t</em> = 4,0{NB}min coupe l’axe des concentrations au point A (<em>t</em> = 0 ; <em>c</em> = 35,1{NB}mmol·L⁻¹) et l’axe des temps au point B (<em>t</em> = 10,7{NB}min ; <em>c</em> = 0). Sa pente vaut (0 − 35,1) / (10,7 − 0).</>,
+      texte: <>La tangente à <em>t</em> = 4,0{NB}min coupe l’axe des concentrations au point M (<em>t</em> = 0 ; <em>c</em> = 35,1{NB}mmol·L⁻¹) et l’axe des temps au point N (<em>t</em> = 10,7{NB}min ; <em>c</em> = 0). Sa pente vaut (0 − 35,1) / (10,7 − 0).</>,
       tache: { type: 'num', q: 'Vitesse volumique de disparition de RCl à t = 4,0 min', unite: 'mmol·L⁻¹·min⁻¹', vrai: 3.29, tol: 0.04, affiche: v => nbf(v, 1), cs: 2, bloque,
         calcul: () => ['Pente de la tangente = (0 − 35,1) / (10,7 − 0) = −3,28 mmol·L⁻¹·min⁻¹ : elle est négative car c diminue.', 'v = −(pente) = +3,3 mmol·L⁻¹·min⁻¹ (3,29 avec les valeurs non arrondies).'],
-        pieges: [[-3.29, 'La pente de la tangente est négative, mais la vitesse volumique de disparition est positive : v = −(pente).'], [0.305, 'Le rapport est inversé : la pente est (variation de c) / (variation de t).'], [35.1, '35,1 mmol/L est la concentration en A (ordonnée à l’origine de la tangente), pas la pente.']],
+        pieges: [[-3.29, 'La pente de la tangente est négative, mais la vitesse volumique de disparition est positive : v = −(pente).'], [0.305, 'Le rapport est inversé : la pente est (variation de c) / (variation de t).'], [35.1, '35,1 mmol·L⁻¹ est la concentration en M (ordonnée à l’origine de la tangente), pas la pente.']],
         expl: 'v = −(0 − 35,1) / (10,7 − 0) ≈ 3,3 mmol·L⁻¹·min⁻¹ : c’est plus que la valeur moyenne 2,9 entre 4 et 6 min, car on est au début de l’intervalle, où la courbe est plus raide.', indice: 'La pente d’une droite vaut (variation de c) / (variation de t) entre deux de ses points ; v est l’opposée de cette pente.' } },
     { id: 'pente12', titre: 'Et plus tard ?', focus: ['courbe'],
-      texte: <>Placez le curseur à <em>t</em> = 12,0{NB}min : la tangente est bien moins inclinée. Elle coupe l’axe des concentrations en A (0 ; 18,5{NB}mmol·L⁻¹) et l’axe des temps en B (18,7{NB}min ; 0).</>,
+      texte: <>Placez le curseur à <em>t</em> = 12,0{NB}min : la tangente est bien moins inclinée. Elle coupe l’axe des concentrations en M (0 ; 18,5{NB}mmol·L⁻¹) et l’axe des temps en N (18,7{NB}min ; 0).</>,
       tache: { type: 'num', q: 'Vitesse volumique de disparition de RCl à t = 12,0 min', unite: 'mmol·L⁻¹·min⁻¹', vrai: 0.992, tol: 0.04, affiche: v => nbf(v, 2), cs: 2, bloque,
         calcul: () => ['Pente de la tangente = (0 − 18,5) / (18,7 − 0) = −0,989 mmol·L⁻¹·min⁻¹.', 'v = −(pente) = 0,99 mmol·L⁻¹·min⁻¹.'],
-        pieges: [[-0.992, 'La vitesse volumique de disparition est positive : v = −(pente de la tangente).'], [1.01, 'Le rapport est inversé.'], [18.5, '18,5 mmol/L est la concentration en A, pas la pente.']],
-        expl: 'v = 18,5 / 18,7 ≈ 0,99 mmol·L⁻¹·min⁻¹ : plus de trois fois plus petite qu’à 4 min.', indice: 'Même méthode qu’à 4,0 min : v est l’opposée de la pente (variation de c) / (variation de t) entre A et B.' } },
+        pieges: [[-0.992, 'La vitesse volumique de disparition est positive : v = −(pente de la tangente).'], [1.01, 'Le rapport est inversé.'], [18.5, '18,5 mmol·L⁻¹ est la concentration en M, pas la pente.']],
+        expl: 'v = 18,5 / 18,7 ≈ 0,99 mmol·L⁻¹·min⁻¹ : plus de trois fois plus petite qu’à 4 min.', indice: 'Même méthode qu’à 4,0 min : v est l’opposée de la pente (variation de c) / (variation de t) entre M et N.' } },
     { id: 'diminue', titre: 'Comment la vitesse évolue-t-elle ?', focus: [],
       texte: <>À <em>t</em> = 4,0{NB}min, <em>v</em> = 3,3{NB}mmol·L⁻¹·min⁻¹ et <em>c</em> = 22,0{NB}mmol·L⁻¹. À <em>t</em> = 12,0{NB}min, <em>v</em> = 0,99{NB}mmol·L⁻¹·min⁻¹ et <em>c</em> = 6,6{NB}mmol·L⁻¹.</>,
       tache: { type: 'qcm', q: 'Comment la vitesse volumique de disparition évolue-t-elle au cours du temps ?', options: ['elle diminue, en même temps que la concentration du réactif', 'elle reste constante : la transformation avance au même rythme', 'elle augmente, car il se forme de plus en plus d’ions'], bonne: 0,
@@ -236,34 +236,34 @@ export function SimulationVitesseOrdre1() {
       texte: <>Le <strong>temps de demi-réaction</strong> <em>t</em><sub>½</sub> est la durée au bout de laquelle la concentration du réactif limitant a diminué de moitié (transformation totale). Ici <em>c</em><sub>0</sub> = 40,0{NB}mmol·L⁻¹ : un trait en pointillés marque <em>c</em><sub>0</sub>/2 = 20,0{NB}mmol·L⁻¹. Déplacez le curseur de temps jusqu’à ce trait.</>,
       tache: { type: 'num', q: 'Temps de demi-réaction t½', unite: 'min', vrai: 4.62, tol: 0.05, affiche: v => nbf(v, 1), cs: 2,
         calcul: () => ['t½ est l’instant où c = c₀/2 = 20,0 mmol·L⁻¹ (en partant de t = 0).', 'Lecture : c = 20,0 mmol·L⁻¹ pour t ≈ 4,6 min.'],
-        pieges: [[20, '20,0 mmol/L est la concentration c₀/2, pas la durée.'], [9.24, 'À 9,2 min, la concentration est c₀/4 : il y a eu deux demi-réactions. t½ correspond à la première.']],
-        expl: 't½ ≈ 4,6 min : au bout de 4,6 min, il reste la moitié de RCl.', indice: 'Déplacez le curseur de temps jusqu’à ce que le point orange touche le trait c₀/2 = 20,0 mmol/L, puis lisez t.' } },
+        pieges: [[20, '20,0 mmol·L⁻¹ est la concentration c₀/2, pas la durée.'], [9.24, 'À 9,2 min, la concentration est c₀/4 : il y a eu deux demi-réactions. t½ correspond à la première.']],
+        expl: 't½ ≈ 4,6 min : au bout de 4,6 min, il reste la moitié de RCl.', indice: 'Déplacez le curseur de temps jusqu’à ce que le point orange touche le trait c₀/2 = 20,0 mmol·L⁻¹, puis lisez t.' } },
     { id: 'demi2', titre: 'La deuxième demi-réaction', focus: ['courbe'],
       texte: <>À <em>t</em> = 4,6{NB}min, <em>c</em> = 20,0{NB}mmol·L⁻¹ (= <em>c</em><sub>0</sub>/2). Un second trait marque <em>c</em><sub>0</sub>/4 = 10,0{NB}mmol·L⁻¹. Cherchez l’instant où la concentration l’atteint, puis calculez la durée de cette <strong>deuxième</strong> demi-réaction (de <em>c</em><sub>0</sub>/2 à <em>c</em><sub>0</sub>/4).</>,
-      tache: { type: 'num', q: 'Durée de la deuxième demi-réaction (de 20,0 à 10,0 mmol/L)', unite: 'min', vrai: 4.62, tol: 0.05, affiche: v => nbf(v, 1), cs: 2,
-        calcul: () => ['La concentration atteint 10,0 mmol/L à t ≈ 9,2 min.', 'Durée = 9,2 − 4,6 = 4,6 min.'],
+      tache: { type: 'num', q: 'Durée de la deuxième demi-réaction (de 20,0 à 10,0 mmol·L⁻¹)', unite: 'min', vrai: 4.62, tol: 0.05, affiche: v => nbf(v, 1), cs: 2,
+        calcul: () => ['La concentration atteint 10,0 mmol·L⁻¹ à t ≈ 9,2 min.', 'Durée = 9,2 − 4,6 = 4,6 min.'],
         pieges: [[9.24, '9,2 min est l’instant où c = c₀/4 ; la durée est la différence avec l’instant précédent (4,6 min).']],
         expl: 'La durée est 9,2 − 4,6 = 4,6 min : la même que pour la première demi-réaction.', indice: 'Durée = (instant où c = 10,0) − (instant où c = 20,0, soit 4,6 min).' } },
     { id: 'demi3', titre: 'Prévoir la suite', focus: ['courbe'],
       texte: <>Les deux premières demi-réactions durent chacune 4,6{NB}min. Un troisième trait marque <em>c</em><sub>0</sub>/8 = 5,0{NB}mmol·L⁻¹ ; la concentration vaut 10,0{NB}mmol·L⁻¹ à <em>t</em> = 9,2{NB}min.</>,
-      tache: { type: 'qcm', q: 'Combien de temps faut-il, à partir de là, pour passer de 10,0 à 5,0 mmol/L ?', options: ['4,6 min, comme pour les deux premières : t½ est constant', '9,2 min : il faut deux fois plus de temps, car la réaction ralentit', '2,3 min : il reste moins de réactif à consommer'], bonne: 0,
-        expl: 'Pour cette transformation, t½ ne dépend pas de la concentration de départ : chaque demi-réaction dure 4,6 min (on lit c = 5,0 mmol/L à 13,9 min = 3 × 4,6). La vitesse diminue, mais la quantité à consommer diminue dans la même proportion.', indice: 'Comparez la durée des deux demi-réactions que vous venez de mesurer.' } },
+      tache: { type: 'qcm', q: 'Combien de temps faut-il, à partir de là, pour passer de 10,0 à 5,0 mmol·L⁻¹ ?', options: ['4,6 min, comme pour les deux premières : t½ est constant', '9,2 min : il faut deux fois plus de temps, car la réaction ralentit', '2,3 min : il reste moins de réactif à consommer'], bonne: 0,
+        expl: 'Pour cette transformation, t½ ne dépend pas de la concentration de départ : chaque demi-réaction dure 4,6 min (on lit c = 5,0 mmol·L⁻¹ à 13,9 min = 3 × 4,6). La vitesse diminue, mais la quantité à consommer diminue dans la même proportion.', indice: 'Comparez la durée des deux demi-réactions que vous venez de mesurer.' } },
     { id: 'vc', titre: 'Un lien entre v et c ?', focus: ['graphes'],
-      texte: <>Un graphique v = f(c) apparaît (un point par instant). On donne la relation à tester <strong>v = k × c</strong>, où k est une constante. Si elle est vraie, le rapport v / c est constant. À <em>t</em> = 4,0{NB}min : <em>v</em> = 3,29{NB}mmol·L⁻¹·min⁻¹ et <em>c</em> = 22,0{NB}mmol·L⁻¹.</>,
+      texte: <>Un graphique v = f(c) apparaît (un point par instant). On donne la relation à tester <strong>v = k × c</strong>, où k est une constante. Si elle est vraie, le rapport v / c est constant. À <em>t</em> = 4,0{NB}min : <em>v</em> = 3,3{NB}mmol·L⁻¹·min⁻¹ (valeur de l’étape précédente) et <em>c</em> = 22,0{NB}mmol·L⁻¹.</>,
       tache: { type: 'num', q: 'Rapport v / c à t = 4,0 min', unite: 'min⁻¹', vrai: 0.150, tol: 0.03, affiche: v => nbf(v, 3), cs: 3,
-        calcul: () => ['v / c = 3,29 / 22,0 = 0,1495 (mmol·L⁻¹·min⁻¹ divisé par mmol·L⁻¹ : l’unité restante est min⁻¹).', 'v / c ≈ 0,150 min⁻¹.'],
-        pieges: [[6.69, 'Le rapport est inversé : on demande v / c.'], [3.29 * 22.0, 'On divise v par c, on ne les multiplie pas.']],
-        expl: 'v / c = 3,29 / 22,0 ≈ 0,150 min⁻¹.', indice: 'Divisez v par c : l’unité du résultat est min⁻¹.' },
+        calcul: () => ['v / c = 3,3 / 22,0 = 0,150 (mmol·L⁻¹·min⁻¹ divisé par mmol·L⁻¹ : l’unité restante est min⁻¹).', 'v / c ≈ 0,150 min⁻¹.'],
+        pieges: [[6.67, 'Le rapport est inversé : on demande v / c.'], [3.3 * 22.0, 'On divise v par c, on ne les multiplie pas.']],
+        expl: 'v / c = 3,3 / 22,0 = 0,150 min⁻¹.', indice: 'Divisez v par c : l’unité du résultat est min⁻¹.' },
       retenirTitre: 'À RETENIR : LE TEMPS DE DEMI-RÉACTION',
       retenir: <>
         <SvgDemiReaction/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
           <li><strong>t½ : durée au bout de laquelle la concentration du réactif limitant est divisée par 2</strong> (transformation totale).</li>
-          <li>Ici : 40,0 → 20,0 → 10,0 → 5,0 mmol/L, <strong>chaque fois en 4,6 min</strong>. Pour cette loi, t½ ne dépend pas de la concentration de départ.</li>
+          <li>Ici : 40,0 → 20,0 → 10,0 → 5,0 mmol·L⁻¹, <strong>chaque fois en 4,6 min</strong>. Pour cette loi, t½ ne dépend pas de la concentration de départ.</li>
           <li>Moyen de s’en souvenir : <strong>« ordre 1 : même durée pour chaque division par 2 »</strong>. Après n demi-réactions, il reste c₀ / 2ⁿ.</li>
         </ul></> },
     { id: 'kconst', titre: 'Le test se poursuit', focus: ['graphes'],
-      texte: <>À <em>t</em> = 12,0{NB}min : <em>v</em> = 0,992{NB}mmol·L⁻¹·min⁻¹ et <em>c</em> = 6,61{NB}mmol·L⁻¹, donc <em>v</em> / <em>c</em> = 0,150{NB}min⁻¹ : la même valeur qu’à 4,0{NB}min. Les points du graphique v = f(c) sont alignés sur une droite qui passe par l’origine.</>,
+      texte: <>À <em>t</em> = 12,0{NB}min : <em>v</em> = 0,99{NB}mmol·L⁻¹·min⁻¹ et <em>c</em> = 6,6{NB}mmol·L⁻¹, donc <em>v</em> / <em>c</em> = 0,150{NB}min⁻¹ : la même valeur qu’à 4,0{NB}min. Les points du graphique v = f(c) sont alignés sur une droite qui passe par l’origine.</>,
       tache: { type: 'qcm', q: 'Que conclure ?', options: ['v est proportionnelle à c : v = k × c avec k = 0,150 min⁻¹ ; la loi de vitesse est d’ordre 1', 'la vitesse est constante au cours du temps', 'la concentration est proportionnelle au temps'], bonne: 0,
         expl: 'Le rapport v / c reste égal à 0,150 min⁻¹ à des instants très différents : la vitesse volumique est proportionnelle à la concentration. C’est une loi de vitesse d’ordre 1, v = k × c ; k est la constante de vitesse (en min⁻¹).', indice: 'Si v / c est constant, que peut-on dire de v par rapport à c ?' } },
     { id: 'ln', titre: 'Un autre test : ln c en fonction de t', focus: ['graphes'],
@@ -275,8 +275,8 @@ export function SimulationVitesseOrdre1() {
     { id: 'compB', titre: 'Une autre transformation : B', focus: ['courbe'],
       texte: <>Toutes les transformations ne suivent pas une loi d’ordre 1. Pour le savoir, on applique les mêmes tests à leurs mesures. Voici une <strong>autre transformation, notée B</strong> : un autre réactif, suivi de la même façon, avec la même concentration initiale <em>c</em><sub>0</sub> = 40,0{NB}mmol·L⁻¹. Sa loi de vitesse n’est pas donnée. Sa première demi-réaction dure 4,6{NB}min, comme pour RCl : <em>c</em> = 20,0{NB}mmol·L⁻¹ à <em>t</em> = 4,6{NB}min.
         <br/>Affichez ses mesures avec le bouton « Transformation B » sous le graphique. Cherchez l’instant où <em>c</em> atteint 10,0{NB}mmol·L⁻¹ (deuxième trait), puis calculez la durée de la <strong>deuxième</strong> demi-réaction (de 20,0 à 10,0{NB}mmol·L⁻¹).</>,
-      tache: { type: 'num', q: 'Durée de la deuxième demi-réaction de B (de 20,0 à 10,0 mmol/L)', unite: 'min', vrai: 9.24, tol: 0.04, affiche: v => nbf(v, 1), cs: 2, bloque,
-        calcul: () => ['Pour B, c = 10,0 mmol/L à t ≈ 13,9 min.', 'Durée = 13,9 − 4,6 = 9,3 min environ (9,24 min avec les valeurs exactes) : le double de la première.'],
+      tache: { type: 'num', q: 'Durée de la deuxième demi-réaction de B (de 20,0 à 10,0 mmol·L⁻¹)', unite: 'min', vrai: 9.24, tol: 0.04, affiche: v => nbf(v, 1), cs: 2, bloque,
+        calcul: () => ['Pour B, c = 10,0 mmol·L⁻¹ à t ≈ 13,9 min.', 'Durée = 13,9 − 4,6 = 9,3 min environ (9,24 min avec les valeurs exactes) : le double de la première.'],
         pieges: [[13.86, '13,9 min est l’instant où c = c₀/4 ; la durée est la différence avec 4,6 min.'], [4.62, '4,6 min est la durée de la première demi-réaction. Lisez la deuxième sur la courbe de B.']],
         expl: 'Pour B : 4,6 min puis 9,2 min : t½ n’est pas constant, il double à chaque fois.', indice: 'Durée = (instant où c = 10,0) − 4,6 min.' },
       retenirTitre: 'À RETENIR : LA LOI DE VITESSE D’ORDRE 1',
@@ -292,7 +292,7 @@ export function SimulationVitesseOrdre1() {
       tache: { type: 'qcm', q: 'La transformation B suit-elle une loi de vitesse d’ordre 1 ?', options: ['non : t½ n’est pas constant, v / c n’est pas constant et ln c n’est pas une droite', 'oui : sa première demi-réaction dure 4,6 min, comme pour A', 'oui : sa concentration décroît au cours du temps'], bonne: 0,
         expl: 'Un seul test négatif suffit pour écarter l’ordre 1, et ici les trois le sont. La première demi-réaction de B est identique à celle de A : il faut comparer plusieurs demi-réactions, pas une seule.', indice: 'Comparez, pour A et pour B, la constance de t½, celle de v / c et l’allure de ln c.' } },
     { id: 'bruit', titre: 'Des mesures bruitées', focus: ['courbe', 'mesures'],
-      texte: <>Dans une vraie expérience, chaque mesure est entachée d’un petit écart aléatoire (ici σ = 0,4{NB}mmol·L⁻¹). Revenez à la <strong>transformation A (RCl)</strong> et à <em>t</em> = 6,0{NB}min (bouton ci-dessus). On estime <em>v</em> avec deux points écartés de Δ<em>t</em> et centrés sur <em>t</em> : <em>v</em> ≈ −(<em>c</em><sub>2</sub> − <em>c</em><sub>1</sub>) / Δ<em>t</em>. Le tableau donne l’estimation pour quatre valeurs de Δ<em>t</em> ; « Nouvelle série » refait l’expérience. Valeur exacte du modèle, inconnue en pratique : {nbf(v6, 2)}{NB}mmol·L⁻¹·min⁻¹.</>,
+      texte: <>Dans une vraie expérience, chaque mesure est entachée d’un petit écart aléatoire, dont l’<strong>écart-type</strong> est noté σ (ici σ = 0,4{NB}mmol·L⁻¹). Revenez à la <strong>transformation A (RCl)</strong> et à <em>t</em> = 6,0{NB}min (bouton ci-dessus). On estime <em>v</em> avec deux points écartés de Δ<em>t</em> et centrés sur <em>t</em> : <em>v</em> ≈ −(<em>c</em><sub>2</sub> − <em>c</em><sub>1</sub>) / Δ<em>t</em>. Le tableau donne l’estimation pour quatre valeurs de Δ<em>t</em> ; « Nouvelle série » refait l’expérience. Valeur exacte du modèle, inconnue en pratique : {nbf(v6, 2)}{NB}mmol·L⁻¹·min⁻¹.</>,
       tache: { type: 'qcm', q: 'Quel intervalle Δt donne le meilleur compromis ?', options: ['Δt = 4 min : assez grand pour que le bruit compte peu, assez petit pour que la courbe reste presque une droite', 'Δt = 1 min : plus l’intervalle est petit, plus on se rapproche de la tangente', 'Δt = 8 min : plus l’intervalle est grand, plus la mesure est précise'], bonne: 0, bloque,
         expl: 'Avec Δt = 1 min, l’écart dû au bruit atteint environ 23 % : les estimations varient beaucoup d’une série à l’autre. Avec Δt = 8 min, le bruit pèse peu (3 %) mais la courbure fausse la sécante d’environ 6 %. Δt = 4 min : environ 6 % de bruit et 1,5 % de courbure.', indice: 'Refaites plusieurs séries et regardez comment varient les estimations pour chaque Δt, et si elles s’écartent systématiquement de 2,44.' },
       retenirTitre: 'À RETENIR : TESTER L’ORDRE 1',
@@ -309,8 +309,8 @@ export function SimulationVitesseOrdre1() {
       retenir: <>
         <SvgIntervalle/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Mesures bruitées : v ≈ −Δc/Δt sur un intervalle ni trop petit, ni trop grand.</strong> Δt petit : le bruit domine (u(v) ≈ √2·σ / Δt). Δt grand : la courbure fausse la valeur.</li>
-          <li>Exemple (σ = 0,4 mmol/L, v = 2,4 à 6 min) : Δt = 1 min → ± 23 %, Δt = 4 min → ± 6 %.</li>
+          <li><strong>Mesures bruitées : v ≈ −Δc/Δt sur un intervalle ni trop petit, ni trop grand.</strong> Δt petit : le bruit domine (incertitude sur v : u(v) ≈ √2·σ / Δt, σ étant l’écart-type du bruit). Δt grand : la courbure fausse la valeur.</li>
+          <li>Exemple (σ = 0,4 mmol·L⁻¹, v = 2,4 à 6 min) : Δt = 1 min → ± 23 %, Δt = 4 min → ± 6 %.</li>
           <li><strong>Une valeur sans incertitude est incomplète</strong> : donner v avec 2 chiffres significatifs et une marge de quelques pour cent.</li>
         </ul></> },
   ];
@@ -370,11 +370,11 @@ export function SimulationVitesseOrdre1() {
       </div>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>{defi.type === 'vit' ? 'Défi : vitesse volumique de disparition à un instant donné' : 'Défi : quelle série suit une loi d’ordre 1 ?'}</div>
       {defi.type === 'vit' ? <>
-        <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>La concentration d’un réactif est suivie au cours du temps ; les mesures sont <strong>bruitées</strong> (σ = 0,3{NB}mmol·L⁻¹). Estimez la vitesse volumique de disparition à <strong><em>t</em> = {defi.tc},0{NB}min</strong> : choisissez l’intervalle Δ<em>t</em> (boutons sous le graphique), relevez les deux points entourés de la sécante dans « Mesures », puis calculez <em>v</em> = −Δ<em>c</em>/Δ<em>t</em>. Donnez le résultat avec 2 chiffres significatifs ; une marge de ± 15 % est acceptée à cause du bruit.</div>
+        <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>La concentration d’un réactif est suivie au cours du temps ; les mesures sont <strong>bruitées</strong> (écart-type σ = 0,3{NB}mmol·L⁻¹). Estimez la vitesse volumique de disparition à <strong><em>t</em> = {defi.tc},0{NB}min</strong> : choisissez l’intervalle Δ<em>t</em> (boutons sous le graphique), relevez les deux points entourés de la sécante dans « Mesures », puis calculez <em>v</em> = −Δ<em>c</em>/Δ<em>t</em>. Donnez le résultat avec 2 chiffres significatifs ; une marge de ± 15 % est acceptée à cause du bruit.</div>
         {champ('v', 'Vitesse volumique v', 'mmol·L⁻¹·min⁻¹', 100)}
         <IndiceDefi cache={false}>Choisissez Δ<em>t</em> de 4 min environ (ni trop petit : le bruit domine, ni trop grand : la courbure fausse la valeur). Relevez <em>c</em><sub>1</sub> à <em>t</em><sub>1</sub> = <em>t</em> − Δ<em>t</em>/2 et <em>c</em><sub>2</sub> à <em>t</em><sub>2</sub> = <em>t</em> + Δ<em>t</em>/2, puis <em>v</em> = (<em>c</em><sub>1</sub> − <em>c</em><sub>2</sub>) / (<em>t</em><sub>2</sub> − <em>t</em><sub>1</sub>).</IndiceDefi>
       </> : <>
-        <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>Trois séries de mesures bruitées (σ = 0,3{NB}mmol·L⁻¹) de la même concentration initiale <em>c</em><sub>0</sub> = <strong>{nbf(defi.series[0].c0, 1)}{NB}mmol·L⁻¹</strong> : une seule suit une loi de vitesse d’ordre 1. Affichez chaque série (boutons sous le graphique), utilisez les traits de demi-réaction et le graphique de ln(<em>c</em> / <em>c</em>°), puis indiquez la série d’ordre 1 et sa constante <em>k</em> (2 chiffres significatifs, marge de ± 8 %).</div>
+        <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>Trois séries de mesures bruitées (écart-type σ = 0,3{NB}mmol·L⁻¹) de la même concentration initiale <em>c</em><sub>0</sub> = <strong>{nbf(defi.series[0].c0, 1)}{NB}mmol·L⁻¹</strong> : une seule suit une loi de vitesse d’ordre 1. Affichez chaque série (boutons sous le graphique), utilisez les traits de demi-réaction et le graphique de ln(<em>c</em> / <em>c</em>°), puis indiquez la série d’ordre 1 et sa constante <em>k</em> (2 chiffres significatifs, marge de ± 8 %).</div>
         <div role="group" aria-label="Série d’ordre 1" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}>
           <span style={{ fontSize: 14 }}>La série d’ordre 1 est :</span>
           {[0, 1, 2].map(i => <button key={i} onClick={() => setDefi(d => ({ ...d, choix: i, verifie: false }))} aria-pressed={defi.choix === i} style={stylePetitBouton(defi.choix === i, '#475569')}>n° {i + 1}</button>)}
@@ -400,7 +400,7 @@ export function SimulationVitesseOrdre1() {
       <li><strong>Réaction et suivi</strong> : hydrolyse du 2-chloro-2-méthylpropane, (CH₃)₃C–Cl + 2 H₂O → (CH₃)₃C–OH + H₃O⁺ + Cl⁻, dans un mélange eau–propanone ; suivi par conductimétrie. La valeur de <em>k</em> est choisie pour la simulation (ordre de grandeur plausible pour une séance de quelques dizaines de minutes), ce n’est pas une valeur mesurée sur un montage précis.</li>
       <li><strong>Température constante</strong> (bain thermostaté) et <strong>volume constant</strong> : <em>k</em> dépend de la température ; une dérive changerait <em>k</em> au cours de l’expérience. Pas d’évaporation de la propanone.</li>
       <li><strong>Réaction unique et totale</strong> : on néglige toute réaction parasite (une élimination est possible en réalité). Le réactif limitant est RCl ; l’eau, solvant en grand excès, a une concentration quasi constante : c’est pourquoi la loi est d’ordre 1 par rapport à RCl.</li>
-      <li><strong>Suivi idéal</strong> : la conductivité est supposée proportionnelle à la concentration des ions formés (loi de Kohlrausch, solution diluée) et l’étalonnage supposé parfait : on dispose directement de <em>c</em>(<em>t</em>) = <em>c</em><sub>0</sub> (σ<sub>∞</sub> − σ) / (σ<sub>∞</sub> − σ<sub>0</sub>). Un vrai conductimètre dérive et dépend de la température.</li>
+      <li><strong>Suivi idéal</strong> : la conductivité est supposée proportionnelle à la concentration des ions formés (loi de Kohlrausch, solution diluée) et l’étalonnage supposé parfait : on dispose directement de <em>c</em>(<em>t</em>) = <em>c</em><sub>0</sub> × (conductivité finale − conductivité à l’instant <em>t</em>) / (conductivité finale − conductivité initiale). Un vrai conductimètre dérive et dépend de la température.</li>
       <li><strong>Bruit éventuel</strong> : écart aléatoire centré, de même écart-type σ pour tous les points, indépendant d’un point à l’autre (loi normale) ; mesures arrondies au 0,1{NB}mmol·L⁻¹. En réalité, le bruit peut varier avec la concentration ou présenter des dérives. Les premières étapes du parcours utilisent des données sans bruit pour isoler la notion.</li>
       <li><strong>Validité de la loi d’ordre 1</strong> : pour la transformation A, <em>v</em> = <em>k</em> · <em>c</em> est supposée vraie pendant tout le suivi, avec <em>k</em> constante (le milieu ne change pas de polarité au fur et à mesure que les ions se forment). La transformation B est un <strong>exemple construit</strong> pour la simulation (pas une réaction réelle identifiée) : sa loi de vitesse n’est volontairement pas donnée et n’est pas d’ordre 1 ; sa première demi-réaction dure autant que celle de A, pour montrer qu’une courbe décroissante, ou une seule demi-réaction, ne suffit pas à conclure.</li>
       <li><strong>Temps de demi-réaction</strong> : défini pour une transformation totale par <em>c</em> = <em>c</em><sub>0</sub>/2 ; il ne se lit pas de la même façon pour une transformation non totale.</li>
@@ -423,6 +423,7 @@ export function SimulationVitesseOrdre1() {
   const pasT = ideal ? 0.1 : M.PAS;
   const optionsExplore = enExplore && (<>
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
+      <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Bruit (écart-type σ, en mmol·L⁻¹)</span>
       {[0, 0.2, 0.4, 0.8].map(sg => <button key={sg} onClick={() => setT({ sigma: sg })} aria-pressed={ti.sigma === sg} style={stylePetitBouton(ti.sigma === sg, '#b91c1c')}>{sg ? `σ = ${nbf(sg, 1)}` : 'sans bruit'}</button>)}
       {ti.sigma > 0 && <button onClick={() => setT({ graine: nouvelleGraine() })} style={stylePetitBouton(false, '#475569')}><Pic n="refresh"/>Nouvelle série</button>}
     </div>
@@ -471,18 +472,26 @@ export function SimulationVitesseOrdre1() {
   // ---------- zones ----------
   const equation = (
     <div style={{ marginBottom: 10 }}>
-      {dd && dd.type === 'ordre' ? <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, marginBottom: 6 }}><strong>Trois transformations différentes</strong> (réactifs non précisés), suivies de la même façon, avec la même concentration initiale c<sub>0</sub> = {nbf(P.c0, 1)}{NB}mmol/L. Leurs équations ne sont pas données : on ne dispose que des mesures.</div> : !dd && ti.type === 'B' ? <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, marginBottom: 6 }}><strong>Transformation B</strong> : un autre réactif, noté R′, suivi de la même façon (même c<sub>0</sub>). Son équation et sa loi de vitesse ne sont pas données. Pour revenir à l’hydrolyse de RCl, choisissez la transformation A.</div> : <>
+      {dd && dd.type === 'ordre' ? <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, marginBottom: 6 }}><strong>Trois transformations différentes</strong> (réactifs non précisés), suivies de la même façon, avec la même concentration initiale c<sub>0</sub> = {nbf(P.c0, 1)}{NB}mmol·L⁻¹. Leurs équations ne sont pas données : on ne dispose que des mesures.</div> : !dd && ti.type === 'B' ? <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, marginBottom: 6 }}><strong>Transformation B</strong> : un autre réactif, noté R′, suivi de la même façon (même c<sub>0</sub>). Son équation et sa loi de vitesse ne sont pas données. Pour revenir à l’hydrolyse de RCl, choisissez la transformation A.</div> : <>
       <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2, marginBottom: 2 }}>Transformation étudiée (totale, à température constante)</div>
       <div role="math" aria-label="2-chloro-2-méthylpropane plus deux eau donne 2-méthylpropan-2-ol plus ion oxonium plus ion chlorure" style={{ fontSize: 17, fontWeight: 600, color: KIT.txt, lineHeight: 1.7, margin: '4px 0 6px' }}>
         <span style={{ whiteSpace: 'nowrap' }}>(CH<sub>3</sub>)<sub>3</sub>C–Cl + 2{NB}H<sub>2</sub>O</span>{' '}<span style={{ whiteSpace: 'nowrap' }}>→ (CH<sub>3</sub>)<sub>3</sub>C–OH</span>{' '}<span style={{ whiteSpace: 'nowrap' }}>+ H<sub>3</sub>O<sup>+</sup> + Cl<sup>−</sup></span>
       </div>
-      <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.5 }}>Le réactif suivi, (CH₃)₃C–Cl, est noté RCl ; sa concentration initiale est c<sub>0</sub> = {nbf(dd ? P.c0 : ti.c0, 1)}{NB}mmol/L.</div></>}
+      <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.5 }}>Le réactif suivi, (CH₃)₃C–Cl, est noté RCl ; sa concentration initiale est c<sub>0</sub> = {nbf(dd ? P.c0 : ti.c0, 1)}{NB}mmol·L⁻¹.</div></>}
     </div>);
+  // Dans le parcours guidé, le schéma du montage n'est utile qu'à la première étape : ensuite on garde l'équation et on le replie,
+  // pour que le graphique, objet des étapes suivantes, remonte sous la consigne. Un bouton permet de le revoir.
+  const sceneRepliee = enGuide && etape > 0 && !revoirScene;
   const sceneBox = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
       {equation}
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Le montage : suivi par conductimétrie</div>
-      <SvgMontage/>
+      {sceneRepliee
+        ? <button onClick={() => setRevoirScene(true)} style={stylePetitBouton(false, '#475569')}>Revoir le schéma du montage</button>
+        : <>
+          <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Le montage : suivi par conductimétrie</div>
+          <SvgMontage/>
+          {enGuide && etape > 0 && <button onClick={() => setRevoirScene(false)} style={{ ...stylePetitBouton(false, '#475569'), marginTop: 6 }}>Masquer le schéma</button>}
+        </>}
     </div>);
   const graphiqueCourbe = (!enGuide || deja('courbe')) && (
     <div style={{ ...styleBoite, ...cadre('courbe') }}>
@@ -491,7 +500,7 @@ export function SimulationVitesseOrdre1() {
       <CourbeC pts={pts} P={P} t={tc} cLu={cLu} ideal={ideal} tang={tangObj} fen={montrerFen && !ideal ? fen : null} niv={niv} modele={enExplore && ti.modele}/>
       {controles}
       {tableEstim}
-      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>{ideal ? 'Données sans bruit : un point toutes les 0,5 min.' : `Points mesurés bruités (σ = ${nbf(sigma, 1)} mmol/L).`} Le point orange suit le curseur de temps.{!ideal && montrerFen ? ' Sécante en violet.' : ''}</div>
+      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6 }}>{ideal ? 'Données sans bruit : un point toutes les 0,5 min.' : `Points mesurés bruités (σ = ${nbf(sigma, 1)} mmol·L⁻¹).`} Le point orange suit le curseur de temps.{!ideal && montrerFen ? ' Sécante en violet.' : ''}</div>
     </div>);
   const montrerGraphes = (!enGuide || deja('vc')) && !(dd && dd.type === 'vit');
   const exactVC = ideal;
@@ -505,7 +514,7 @@ export function SimulationVitesseOrdre1() {
     <div style={{ ...styleBoite, ...cadre('graphes') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Test : ln(c / c°) = f(t)</div>
       <GrapheLn pts={pts} P={P} ajust={ajust} montrerAjust={!dd} t={tc}/>
-      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>c° = 1 mol/L ; c est converti en mol/L. {dd ? 'Points alignés ⇒ loi d’ordre 1.' : 'Pointillés orange : droite d’ajustement (moindres carrés).'} {!ideal ? 'Les points de concentration inférieure à 1 mmol/L ne sont pas tracés (bruit relatif trop grand).' : ''}</div>
+      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>c° = 1 mol·L⁻¹ ; c est converti en mol·L⁻¹. {dd ? 'Points alignés ⇒ loi d’ordre 1.' : 'Pointillés orange : droite d’ajustement (moindres carrés).'} {!ideal ? 'Les points de concentration inférieure à 1 mmol·L⁻¹ ne sont pas tracés (bruit relatif trop grand).' : ''}</div>
     </div>);
   const graphiqueV = enExplore && (
     <div style={styleBoite}>
@@ -520,16 +529,16 @@ export function SimulationVitesseOrdre1() {
     <div style={{ ...styleBoite, ...cadre('mesures') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
       <LigneMesure nom="Temps t" valeur={`${nbf(tc, 1)}${NB}min`}/>
-      <LigneMesure nom="Concentration c" valeur={`${nbf(cLu, 1)}${NB}mmol/L`} couleur="#b45309"/>
+      <LigneMesure nom="Concentration c" valeur={`${nbf(cLu, 1)}${NB}mmol·L⁻¹`} couleur="#b45309"/>
       {dd && dd.type === 'vit' && fen && <>
-        <LigneMesure nom="Point 1 : t₁ ; c₁" valeur={`${nbf(fen.a.t, 1)}${NB}min ; ${nbf(fen.a.cm, 1)}${NB}mmol/L`} couleur={COL.violet}/>
-        <LigneMesure nom="Point 2 : t₂ ; c₂" valeur={`${nbf(fen.b.t, 1)}${NB}min ; ${nbf(fen.b.cm, 1)}${NB}mmol/L`} couleur={COL.violet}/></>}
+        <LigneMesure nom="Point 1 : t₁ ; c₁" valeur={`${nbf(fen.a.t, 1)}${NB}min ; ${nbf(fen.a.cm, 1)}${NB}mmol·L⁻¹`} couleur={COL.violet}/>
+        <LigneMesure nom="Point 2 : t₂ ; c₂" valeur={`${nbf(fen.b.t, 1)}${NB}min ; ${nbf(fen.b.cm, 1)}${NB}mmol·L⁻¹`} couleur={COL.violet}/></>}
       {!dd && ((enGuide && apres('pente12')) || enExplore) && (ideal || enExplore) && <LigneMesure nom={ideal ? 'v = −dc/dt (tangente)' : 'v exacte du modèle'} valeur={`${nbf(vLu, 2)}${NB}mmol·L⁻¹·min⁻¹`} couleur="#15803d"/>}
       {!dd && !ideal && fen && ((enGuide && deja('bruit')) || enExplore) && <LigneMesure nom={`v estimée (sécante, Δt = ${dt} min)`} valeur={`${nbf(fen.v, 2)}${NB}mmol·L⁻¹·min⁻¹`} couleur={COL.violet}/>}
       {!dd && !ideal && enExplore && <LigneMesure nom="incertitude due au bruit √2·σ/Δt" valeur={`± ${nbf(M.incertitudeVitesse(sigma, dt), 2)}${NB}mmol·L⁻¹·min⁻¹`}/>}
       {!dd && ((enGuide && apres('demi')) || enExplore) && <LigneMesure nom="t½ de la 1ʳᵉ demi-réaction" valeur={`${nbf(thP, 2)}${NB}min`} couleur="#15803d"/>}
       {!dd && ((enGuide && apres('kconst')) || enExplore) && ideal && <LigneMesure nom="Rapport v / c" valeur={`${nbf(vLu / M.conc(P, tc), 3)}${NB}min⁻¹`}/>}
-      {!dd && ((enGuide && apres('ln')) || enExplore) && <LigneMesure nom="ln(c / c°), c° = 1 mol/L" valeur={nbf(ln, 2).replace('-', '−')}/>}
+      {!dd && ((enGuide && apres('ln')) || enExplore) && <LigneMesure nom="ln(c / c°), c° = 1 mol·L⁻¹" valeur={nbf(ln, 2).replace('-', '−')}/>}
       {!dd && ((enGuide && apres('ln')) || enExplore) && ajust && <LigneMesure nom="Pente de la droite d’ajustement" valeur={`${nbf(ajust.pente, 3).replace('-', '−')}${NB}min⁻¹`}/>}
       {enExplore && ajust && <LigneMesure nom="Qualité de l’alignement r²" valeur={nbf(ajust.r2, 4)}/>}
       {enExplore && P.type === 'A' && <LigneMesure nom="Constante k = ln 2 / t½" valeur={`${nbf(P.k, 3)}${NB}min⁻¹`}/>}
@@ -539,7 +548,7 @@ export function SimulationVitesseOrdre1() {
   const reglages = (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages de l’expérience</div>
-      <Curseur nom="Concentration initiale c₀" valeur={ti.c0} onChange={v => setT({ c0: v })} min={20} max={60} pas={5} unite="mmol/L" decimales={1} couleur="#475569"/>
+      <Curseur nom="Concentration initiale c₀" valeur={ti.c0} onChange={v => setT({ c0: v })} min={20} max={60} pas={5} unite="mmol·L⁻¹" decimales={1} couleur="#475569"/>
       <Curseur nom="Constante de vitesse k" valeur={ti.k} onChange={v => setT({ k: Math.round(v * 100) / 100 })} min={0.06} max={0.20} pas={0.01} unite="min⁻¹" decimales={2} couleur="#475569"/>
       <div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.5 }}>Hydrolyse de RCl : v = k × c (loi d’ordre 1), avec k constante.</div>
     </div>);
@@ -547,7 +556,7 @@ export function SimulationVitesseOrdre1() {
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
       <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
-        <li>Doublez c₀ (20 → 40 mmol/L) en laissant k fixe. Que deviennent t½ et la vitesse initiale ? Que concluez-vous sur t½ pour l’ordre 1 ?</li>
+        <li>Doublez c₀ (20 → 40 mmol·L⁻¹) en laissant k fixe. Que deviennent t½ et la vitesse initiale ? Que concluez-vous sur t½ pour l’ordre 1 ?</li>
         <li>Augmentez k de 0,10 à 0,20 min⁻¹ : comment varient t½ et la pente de la droite ln c ?</li>
         <li>Activez le bruit (σ = 0,8) et estimez v à t = 6 min pour Δt = 1, 4 et 8 min. Refaites plusieurs séries : quelle valeur de Δt est la plus stable ? la moins biaisée ?</li>
         <li>Avec du bruit, la droite ln c reste-t-elle une droite ? À partir de quelle concentration les points s’écartent-ils ? Pourquoi les derniers points sont-ils les plus dispersés ?</li>
