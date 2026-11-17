@@ -9,7 +9,7 @@ const nf = (v, d = 0) => Number(v).toFixed(d).replace(/^-(0(\.0*)?)$/, '$1').rep
 const COUL = ['#b45309', '#0f766e', '#7c3aed', '#be185d', '#0369a1'];
 
 // ---------- cube : 8 essais d'un plan 2³ ----------
-export function CubeVue({ X, y, dec = 0, facteurs, surligne = null, noms = true }) {
+export function CubeVue({ X, y, dec = 0, facteurs, surligne = null, noms = true, axes = true }) {
   const P = (x1, x2, x3) => [210 + 82 * x1 + 46 * x3, 140 - 62 * x2 - 30 * x3];
   const sommets = X.map((r, i) => ({ i, r, p: P(...r) }));
   const aretes = [];
@@ -17,7 +17,7 @@ export function CubeVue({ X, y, dec = 0, facteurs, surligne = null, noms = true 
   const couleurSommet = r => (surligne ? (r[surligne.f] === surligne.niveau ? COUL[surligne.f] : '#cbd5e1') : '#ffffff');
   const lib = (f, n) => { const v = n < 0 ? f.bas : f.haut; return typeof v === 'number' ? `${nf(v, 1 * (v % 1 !== 0))}${f.unite ? ' ' + f.unite : ''}` : v; };
   return (
-    <><svg viewBox="50 6 320 254" role="img" aria-label={`Cube des huit essais du plan 2³ : chaque sommet est un essai, avec sa réponse mesurée${surligne ? ` ; sommets surlignés : ${facteurs[surligne.f].nom} au niveau ${surligne.niveau > 0 ? 'haut' : 'bas'}` : ''}`} style={{ width: '100%', maxWidth: 480, height: 'auto', display: 'block', margin: '0 auto' }}>
+    <><svg viewBox="10 -4 380 306" role="img" aria-label={`Cube des huit essais du plan 2³ : chaque sommet est un essai, avec sa réponse mesurée${surligne ? ` ; sommets surlignés : ${facteurs[surligne.f].nom} au niveau ${surligne.niveau > 0 ? 'haut' : 'bas'}` : ''}`} style={{ width: '100%', maxWidth: 480, height: 'auto', display: 'block', margin: '0 auto' }}>
       {aretes.map(([a, b], k) => <line key={k} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke="#64748b" strokeWidth="2"/>)}
       {sommets.map(({ i, r, p }) => (
         <g key={i}>
@@ -25,6 +25,24 @@ export function CubeVue({ X, y, dec = 0, facteurs, surligne = null, noms = true 
           <text x={p[0]} y={p[1] + 5} textAnchor="middle" fontSize="15.5" fontWeight="800" fill="#0f172a">{y ? nf(y[i], dec) : i + 1}</text>
           {y && <text x={p[0]} y={p[1] - 26} textAnchor="middle" fontSize="15.3" fill="#475569" stroke="#f8fafc" strokeWidth="3.5" paintOrder="stroke">n°{i + 1}</text>}
         </g>))}
+      {axes && facteurs.length === 3 && (() => {
+        const etiq = (f, k) => `${f.id} : ${lib(f, -1)} → ${lib(f, 1)}`;
+        const defs = facteurs.map((f, k) => <marker key={k} id={`cubeFl${k}`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill={COUL[k]}/></marker>);
+        const fl = (k, x1, y1, x2, y2) => <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={COUL[k]} strokeWidth="3" markerEnd={`url(#cubeFl${k})`}/>;
+        return (<g>
+          <defs>{defs}</defs>
+          {fl(0, 82, 270, 246, 270)}
+          <text x="74" y="275" textAnchor="end" fontSize="14" fontWeight="800" fill={COUL[0]}>−1</text>
+          <text x="256" y="275" textAnchor="start" fontSize="14" fontWeight="800" fill={COUL[0]}>+1</text>
+          <text x="164" y="292" textAnchor="middle" fontSize="13.5" fontWeight="700" fill={COUL[0]}>{etiq(facteurs[0])}</text>
+          {fl(1, 34, 232, 34, 108)}
+          <text x="34" y="249" textAnchor="middle" fontSize="14" fontWeight="800" fill={COUL[1]}>−1</text>
+          <text x="34" y="98" textAnchor="middle" fontSize="14" fontWeight="800" fill={COUL[1]}>+1</text>
+          <text transform="translate(21 170) rotate(-90)" textAnchor="middle" fontSize="13.5" fontWeight="700" fill={COUL[1]}>{etiq(facteurs[1])}</text>
+          {fl(2, 278, 256, 368, 197)}
+          <text transform="translate(338 247) rotate(-33)" textAnchor="middle" fontSize="13.5" fontWeight="700" fill={COUL[2]}>{etiq(facteurs[2])}</text>
+        </g>);
+      })()}
     </svg>
       {noms && <div style={{ fontSize: 13.5, lineHeight: 1.5, marginTop: 4 }}>{facteurs.map((f, k) => <div key={f.id} style={{ fontWeight: 700, color: COUL[k] }}>{f.id} = {f.court || f.nom} : {lib(f, -1)} (−1), {lib(f, 1)} (+1)</div>)}</div>}</>);
 }
