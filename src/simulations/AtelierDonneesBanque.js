@@ -332,14 +332,14 @@ export const ENONCES = [
       };
       const debut = ['Un couple acide-base AH / A⁻ de pKA égal à ', T('pKa'), ' est en solution à pH = ', T('pH'), ' ; sa concentration totale (AH + A⁻) est ', T('C'), ', dans un volume de ', T('V'), ' à ', T('T'), '. '];
       const r = 10 ** (p.pH - p.pKa);
-      if (q === 0) return { tokens, derivees: ['[A⁻] / [AH] = 10^(pH − pKA)'], texte: [...debut, 'Quel est le rapport [A⁻] / [AH] ?'],
+      if (q === 0) return { tokens, derivees: ['frac([A⁻]|[AH]) = 10^(pH − pK_A)'], texte: [...debut, 'Quel est le rapport frac([A⁻]|[AH]) ?'],
         utiles: ['pKa', 'pH'], raisons: { C: 'La concentration totale ne change pas le rapport des deux formes : elle fixe seulement leurs valeurs.', V: 'Le volume n’intervient pas dans le rapport de deux concentrations.', T: 'La température est constante : elle n’intervient pas dans le calcul, elle suppose que pKA garde sa valeur.' },
-        cherche: { bonne: 'Le rapport [A⁻] / [AH] (sans unité)', faux: ['La concentration de A⁻ (en mol/L)', 'Le pourcentage de la forme AH (en %)', 'Le produit ionique de l’eau Ke (sans unité)'] },
-        manque: null, solution: { txt: '[A⁻] / [AH] = 10^(pH − pKA)', val: r, u: '' } };
-      return { tokens, derivees: ['[A⁻] = C · r / (1 + r) avec r = 10^(pH − pKA)'], texte: [...debut, 'Quelle est la concentration de la forme basique A⁻ ?'],
+        cherche: { bonne: 'Le rapport frac([A⁻]|[AH]) (sans unité)', faux: ['La concentration de A⁻ (en mol/L)', 'Le pourcentage de la forme AH (en %)', 'Le produit ionique de l’eau Ke (sans unité)'] },
+        manque: null, solution: { txt: 'frac([A⁻]|[AH]) = 10^(pH − pK_A)', val: r, u: '' } };
+      return { tokens, derivees: ['[A⁻] = frac(C · r|1 + r) avec r = 10^(pH − pK_A)'], texte: [...debut, 'Quelle est la concentration de la forme basique A⁻ ?'],
         utiles: ['pKa', 'pH', 'C'], raisons: { V: 'Le volume ne change pas les concentrations : il n’intervient pas ici.', T: 'La température est constante : elle n’intervient pas dans le calcul.' },
-        cherche: { bonne: 'Concentration de la forme basique A⁻ (mol/L)', faux: ['Le rapport [A⁻] / [AH] des deux formes (sans unité)', 'La concentration en ions oxonium (en mol/L)', 'Le pourcentage de forme basique (en %)'] },
-        manque: null, solution: { txt: '[A⁻] = C · r / (1 + r), avec r = 10^(pH − pKA)', val: p.C * r / (1 + r), u: 'mol/L' } };
+        cherche: { bonne: 'Concentration de la forme basique A⁻ (mol/L)', faux: ['Le rapport frac([A⁻]|[AH]) des deux formes (sans unité)', 'La concentration en ions oxonium (en mol/L)', 'Le pourcentage de forme basique (en %)'] },
+        manque: null, solution: { txt: '[A⁻] = frac(C · r|1 + r), avec r = 10^(pH − pK_A)', val: p.C * r / (1 + r), u: 'mol/L' } };
     },
   },
   {
@@ -355,14 +355,14 @@ export const ENONCES = [
       };
       const debut = ['Un indicateur coloré HIn / In⁻ de pKA égal à ', T('pKa'), ' est ajouté (', T('mi'), ') à ', T('V'), ' d’une solution de pH ', T('pH'), ' à ', T('T'), '. '];
       const r = 10 ** (p.pH - p.pKa);
-      if (q === 0) return { tokens, derivees: ['[In⁻] / [HIn] = 10^(pH − pKA)'], texte: [...debut, 'Quel est le rapport [In⁻] / [HIn] ?'],
+      if (q === 0) return { tokens, derivees: ['frac([In⁻]|[HIn]) = 10^(pH − pK_A)'], texte: [...debut, 'Quel est le rapport frac([In⁻]|[HIn]) ?'],
         utiles: ['pKa', 'pH'], raisons: { mi: 'Le nombre de gouttes fixe la quantité d’indicateur, pas le rapport de ses deux formes.', V: 'Le volume ne change pas un rapport de concentrations : il n’intervient pas.', T: 'La température est constante : elle n’intervient pas dans le calcul.' },
-        cherche: { bonne: 'Le rapport [In⁻] / [HIn] (sans unité)', faux: ['Le pourcentage de la forme HIn (en %)', 'La largeur de la zone de virage (en unités de pH)', 'La concentration de In⁻ (en mol/L)'] },
-        manque: null, solution: { txt: '[In⁻] / [HIn] = 10^(pH − pKA)', val: r, u: '' } };
-      return { tokens, derivees: ['r = [In⁻] / [HIn] = 10^(pH − pKA)'], texte: [...debut, 'Quel est le pourcentage de la forme basique In⁻ ?'],
+        cherche: { bonne: 'Le rapport frac([In⁻]|[HIn]) (sans unité)', faux: ['Le pourcentage de la forme HIn (en %)', 'La largeur de la zone de virage (en unités de pH)', 'La concentration de In⁻ (en mol/L)'] },
+        manque: null, solution: { txt: 'frac([In⁻]|[HIn]) = 10^(pH − pK_A)', val: r, u: '' } };
+      return { tokens, derivees: ['r = frac([In⁻]|[HIn]) = 10^(pH − pK_A)'], texte: [...debut, 'Quel est le pourcentage de la forme basique In⁻ ?'],
         utiles: ['pKa', 'pH'], raisons: { mi: 'Le nombre de gouttes ne modifie pas la proportion entre les deux formes.', V: 'Le volume n’intervient pas dans un pourcentage.', T: 'La température est constante : elle n’intervient pas dans le calcul.' },
-        cherche: { bonne: 'Le pourcentage de forme basique In⁻ (en %)', faux: ['Le rapport [In⁻] / [HIn] (sans unité)', 'Le pourcentage de la forme acide HIn (en %)', 'Le pH de début de virage (sans unité)'] },
-        manque: null, solution: { txt: '% In⁻ = 100 × r / (1 + r), avec r = 10^(pH − pKA)', val: 100 * r / (1 + r), u: '%' } };
+        cherche: { bonne: 'Le pourcentage de forme basique In⁻ (en %)', faux: ['Le rapport frac([In⁻]|[HIn]) (sans unité)', 'Le pourcentage de la forme acide HIn (en %)', 'Le pH de début de virage (sans unité)'] },
+        manque: null, solution: { txt: '% In⁻ = 100 × r / (1 + r), avec r = 10^(pH − pK_A)', val: 100 * r / (1 + r), u: '%' } };
     },
   },
   // ───────────────────────────── Solution tampon (TG) : ajout d'acide, composition à préparer

@@ -78,9 +78,9 @@ export function SimulationPredominance() {
 
   const ETAPES = [
     { id: 'pred', titre: 'Quelle forme du couple domine ?', focus: ['pred'],
-      texte: <>Un couple acide-base AH / A⁻ a une constante d’acidité K<sub>A</sub> = [A⁻]·[H₃O⁺] / [AH]. Comme K<sub>A</sub> = 10<sup>−pK<sub>A</sub></sup> et [H₃O⁺] = 10<sup>−pH</sup>{NB}mol·L⁻¹, on en déduit le rapport des deux formes : {FRapport}Le <strong>diagramme de prédominance</strong> place sur un axe de pH la forme la plus abondante ; sa frontière est à pH = pK<sub>A</sub>. Ici : couple CH₃COOH / CH₃COO⁻ (pK<sub>A</sub> = 4,76), solution de pH = 2,0 (repère rouge).</>,
+      texte: <>Un couple acide-base AH / A⁻ a une constante d’acidité K<sub>A</sub> = {avecIndices('frac([A⁻]·[H₃O⁺]|[AH])')}. Comme K<sub>A</sub> = 10<sup>−pK<sub>A</sub></sup> et [H₃O⁺] = 10<sup>−pH</sup>{NB}mol·L⁻¹, on en déduit le rapport des deux formes : {FRapport}Le <strong>diagramme de prédominance</strong> place sur un axe de pH la forme la plus abondante ; sa frontière est à pH = pK<sub>A</sub>. Ici : couple CH₃COOH / CH₃COO⁻ (pK<sub>A</sub> = 4,76), solution de pH = 2,0 (repère rouge).</>,
       tache: { type: 'qcm', q: 'À pH = 2,0, quelle forme du couple prédomine ?', ...Q.pred,
-        expl: 'Le pH (2,0) est inférieur au pK_A (4,76) : [A⁻] / [AH] = 10^(2,0 − 4,76) ≈ 1,7×10⁻³, très inférieur à 1. La forme acide CH₃COOH est la plus abondante (le domaine de gauche du diagramme).', indice: 'Calculez 10^(pH − pK_A) : si le résultat est inférieur à 1, il y a plus de AH que de A⁻.' } },
+        expl: 'Le pH (2,0) est inférieur au pK_A (4,76) : frac([A⁻]|[AH]) = 10^(2,0 − 4,76) ≈ 1,7×10⁻³, très inférieur à 1. La forme acide CH₃COOH est la plus abondante (le domaine de gauche du diagramme).', indice: 'Calculez 10^(pH − pK_A) : si le résultat est inférieur à 1, il y a plus de AH que de A⁻.' } },
     { id: 'ratio', titre: 'Le rapport des deux formes', focus: ['pred', 'mesures'],
       retenirTitre: 'À RETENIR : LE DIAGRAMME DE PRÉDOMINANCE',
       retenir: <>
@@ -91,28 +91,28 @@ export function SimulationPredominance() {
           <li>Moyen de s’en souvenir : <strong>« pH bas : l’acide garde son H⁺ ; pH haut : il le perd »</strong>. Idée fausse : « un pH acide veut dire qu’il n’y a que de l’acide ». Vrai : l’autre forme est présente, mais en moindre quantité.</li>
         </ul></>,
       texte: <>On se place à pH = 5,76, soit pH = pK<sub>A</sub> + 1,00 pour le couple CH₃COOH / CH₃COO⁻ (pK<sub>A</sub> = 4,76). Le repère du diagramme se déplace à droite de la frontière. Rappel : {FRapport}</>,
-      tache: { type: 'num', q: 'Rapport [A⁻] / [AH] à pH = 5,76', unite: '(sans unité)', vrai: 10, tol: 0.02, affiche: v => nbf(v, 1), cs: 2,
-        calcul: () => ['pH − pK_A = 5,76 − 4,76 = 1,00.', '[A⁻] / [AH] = 10^(1,00) = 10 (sans unité) : il y a 10 fois plus de CH₃COO⁻ que de CH₃COOH.'],
+      tache: { type: 'num', q: 'Rapport frac([A⁻]|[AH]) à pH = 5,76', unite: '(sans unité)', vrai: 10, tol: 0.02, affiche: v => nbf(v, 1), cs: 2,
+        calcul: () => ['pH − pK_A = 5,76 − 4,76 = 1,00.', 'frac([A⁻]|[AH]) = 10^(1,00) = 10 (sans unité) : il y a 10 fois plus de CH₃COO⁻ que de CH₃COOH.'],
         pieges: [[1, 'C’est la différence pH − pK_A ; le rapport est 10 puissance cette différence.'], [0.1, 'Le rapport est inversé : A⁻ est au numérateur, et A⁻ domine à droite de la frontière.'], [1.21, 'Vous avez divisé les deux nombres au lieu de calculer 10^(pH − pK_A).'], [100, 'La différence pH − pK_A vaut 1, pas 2.']],
-        expl: '[A⁻] / [AH] = 10^(5,76 − 4,76) = 10^1 = 10.', indice: 'pH − pK_A = 1,00 : calculez 10 puissance cette valeur (touche 10^x).' } },
+        expl: 'frac([A⁻]|[AH]) = 10^(5,76 − 4,76) = 10^(1) = 10.', indice: 'pH − pK_A = 1,00 : calculez 10 puissance cette valeur (touche 10^x).' } },
     { id: 'pourcent', titre: 'Les pourcentages des deux formes', focus: ['mesures'],
-      texte: <>Le rapport vaut [A⁻] / [AH] = 10 à pH = 5,76 : pour 10 parties de A⁻, il y a 1 partie de AH. Le pourcentage de forme basique est la part de A⁻ dans le total des deux formes : {FPct}</>,
+      texte: <>Le rapport vaut {avecIndices('frac([A⁻]|[AH])')} = 10 à pH = 5,76 : pour 10 parties de A⁻, il y a 1 partie de AH. Le pourcentage de forme basique est la part de A⁻ dans le total des deux formes : {FPct}</>,
       tache: { type: 'num', q: 'Pourcentage de forme basique CH₃COO⁻ à pH = 5,76', unite: '%', vrai: 90.909, tol: 0.01, affiche: v => nbf(v, 1), cs: 3,
         calcul: () => ['[A⁻] = 10 parties et [AH] = 1 partie, soit 11 parties au total.', '% A⁻ = 100 × 10 / 11 = 90,9 % (et 9,1 % de AH).'],
-        pieges: [[10, 'C’est le rapport [A⁻] / [AH], pas un pourcentage de la totalité des deux formes.'], [9.09, 'C’est le pourcentage de la forme acide AH ; on demande celui de A⁻.'], [0.909, 'Une fraction s’exprime entre 0 et 1 ; en pourcentage, multipliez par 100.'], [100, 'AH est présent en petite quantité : le pourcentage de A⁻ est proche de 100 % sans l’atteindre.']],
+        pieges: [[10, 'C’est le rapport frac([A⁻]|[AH]), pas un pourcentage de la totalité des deux formes.'], [9.09, 'C’est le pourcentage de la forme acide AH ; on demande celui de A⁻.'], [0.909, 'Une fraction s’exprime entre 0 et 1 ; en pourcentage, multipliez par 100.'], [100, 'AH est présent en petite quantité : le pourcentage de A⁻ est proche de 100 % sans l’atteindre.']],
         expl: '% A⁻ = 100 × 10 / (10 + 1) = 90,9 %.', indice: 'Au total il y a 10 + 1 = 11 parties : divisez la part de A⁻ par ce total, puis multipliez par 100.' } },
     { id: 'dist', titre: 'Le diagramme de distribution', focus: ['dist'],
       retenirTitre: 'À RETENIR : LE RAPPORT ET LES POURCENTAGES',
       retenir: <>
         <SvgRapportCarte/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>[A⁻] / [AH] = 10<sup>pH − pK<sub>A</sub></sup></strong> : rapport 1 (50 % / 50 %) à pH = pK<sub>A</sub> ; rapport 10 (91 % de A⁻) à pK<sub>A</sub> + 1 ; rapport 0,1 (9 % de A⁻) à pK<sub>A</sub> − 1.</li>
+          <li><strong>{avecIndices('frac([A⁻]|[AH]) = 10^(pH − pK_A)')}</strong> : rapport 1 (50 % / 50 %) à pH = pK<sub>A</sub> ; rapport 10 (91 % de A⁻) à pK<sub>A</sub> + 1 ; rapport 0,1 (9 % de A⁻) à pK<sub>A</sub> − 1.</li>
           <li>Exemple de la simulation : à pH = 5,76, 91 % de CH₃COO⁻ et 9 % de CH₃COOH.</li>
           <li>Moyen de s’en souvenir : <strong>« une unité de pH, un facteur 10 »</strong>. Piège : « le pH = pK<sub>A</sub> + 1 donne 100 % de A⁻ ». Vrai : 91 %, il reste 9 % de AH.</li>
         </ul></>,
       texte: <>Le <strong>diagramme de distribution</strong> trace, en fonction du pH, le pourcentage de chaque forme : la courbe bleue pour la forme acide AH, la courbe orange pour la forme basique A⁻. Le repère rouge indique le pH de la solution (5,76) ; les pourcentages 0, 50 et 100 sont gradués sur l’axe de gauche.</>,
       tache: { type: 'qcm', q: 'À quel pH les deux courbes se croisent-elles ?', ...Q.dist,
-        expl: 'Au croisement, [A⁻] = [AH], donc le rapport vaut 1, soit 10^(pH − pK_A) = 1 et pH = pK_A = 4,76 : chaque forme représente 50 % du couple.', indice: 'Au croisement, les deux pourcentages sont égaux (50 %). Que vaut alors le rapport [A⁻] / [AH], et donc pH − pK_A ?' } },
+        expl: 'Au croisement, [A⁻] = [AH], donc le rapport vaut 1, soit 10^(pH − pK_A) = 1 et pH = pK_A = 4,76 : chaque forme représente 50 % du couple.', indice: 'Au croisement, les deux pourcentages sont égaux (50 %). Que vaut alors le rapport frac([A⁻]|[AH]), et donc pH − pK_A ?' } },
     { id: 'couple', titre: 'Un autre couple : NH₄⁺ / NH₃', focus: ['reglage', 'pred'],
       retenirTitre: 'À RETENIR : LE DIAGRAMME DE DISTRIBUTION',
       retenir: <>
@@ -124,17 +124,17 @@ export function SimulationPredominance() {
         </ul></>,
       texte: <>Le couple de l’ion ammonium NH₄⁺ (acide) et de l’ammoniac NH₃ (base) a un pK<sub>A</sub> bien plus élevé : 9,20. Avec le bouton « Couple étudié », choisissez l’ion ammonium : le diagramme se déplace. Le pH est fixé à 7,0 (eau pure).</>,
       tache: { type: 'qcm', q: 'À pH = 7,0, quelle forme du couple NH₄⁺ / NH₃ prédomine ?', ...Q.couple, bloque: bloqueCouple,
-        expl: 'pH = 7,0 est inférieur à pK_A = 9,20 : [NH₃] / [NH₄⁺] = 10^(7,0 − 9,20) ≈ 6,3×10⁻³. L’acide NH₄⁺ domine (99,4 %). Il faut un pH supérieur à 9,20 pour que NH₃ l’emporte.', indice: 'Comparez pH = 7,0 à pK_A = 9,20 : le repère est à gauche ou à droite de la frontière ?' } },
+        expl: 'pH = 7,0 est inférieur à pK_A = 9,20 : frac([NH₃]|[NH₄⁺]) = 10^(7,0 − 9,20) ≈ 6,3×10⁻³. L’acide NH₄⁺ domine (99,4 %). Il faut un pH supérieur à 9,20 pour que NH₃ l’emporte.', indice: 'Comparez pH = 7,0 à pK_A = 9,20 : le repère est à gauche ou à droite de la frontière ?' } },
     { id: 'indic', titre: 'Un indicateur coloré est un couple coloré', focus: ['reglage', 'pred'],
       texte: <>Un <strong>indicateur coloré</strong> est un couple acide-base HIn / In⁻ dont les deux formes ont des couleurs différentes. Le bleu de bromothymol (BBT, pK<sub>A</sub> = 6,8) est <strong>jaune</strong> sous la forme HIn et <strong>bleu</strong> sous la forme In⁻. La couleur vue est celle de la forme prédominante. Avec les boutons sous le diagramme, placez le repère à pH = 3 puis à pH = 10.</>,
       tache: { type: 'qcm', q: 'À pH = 10, de quelle couleur est la solution de BBT ?', ...Q.indic, bloque: bloqueIndic,
-        expl: 'pH = 10 est supérieur à pK_A = 6,8 : [In⁻] / [HIn] = 10^(10 − 6,8) ≈ 1,6×10³, la forme In⁻ domine très largement. La solution est bleue.', indice: 'Comparez 10 à pK_A = 6,8 : quelle forme prédomine, et de quelle couleur est-elle ?' } },
+        expl: 'pH = 10 est supérieur à pK_A = 6,8 : frac([In⁻]|[HIn]) = 10^(10 − 6,8) ≈ 1,6×10³, la forme In⁻ domine très largement. La solution est bleue.', indice: 'Comparez 10 à pK_A = 6,8 : quelle forme prédomine, et de quelle couleur est-elle ?' } },
     { id: 'virage', titre: 'La zone de virage', focus: ['indic', 'reglage'],
       texte: <>Le flacon montre maintenant la couleur de la solution : changez le pH avec les boutons. L’œil voit la teinte d’une forme lorsqu’elle est au moins <strong>10 fois plus abondante</strong> que l’autre ; entre les deux, la teinte est un mélange : c’est la <strong>zone de virage</strong>, de pK<sub>A</sub> − 1 à pK<sub>A</sub> + 1 (modèle simple). Pour le BBT, pK<sub>A</sub> = 6,8.</>,
       tache: { type: 'num', q: 'pH de fin de la zone de virage du BBT (côté basique)', unite: '(sans unité)', vrai: 7.8, tol: 0.01, affiche: v => nbf(v, 1), cs: 2,
-        calcul: () => ['Fin de virage côté basique : [In⁻] / [HIn] = 10, soit 10^(pH − pK_A) = 10.', 'pH − pK_A = 1, donc pH = pK_A + 1 = 6,8 + 1 = 7,8.'],
+        calcul: () => ['Fin de virage côté basique : frac([In⁻]|[HIn]) = 10, soit 10^(pH − pK_A) = 10.', 'pH − pK_A = 1, donc pH = pK_A + 1 = 6,8 + 1 = 7,8.'],
         pieges: [[5.8, 'C’est le début du virage (pK_A − 1), côté acide.'], [6.8, 'C’est le pK_A, au milieu de la zone de virage.'], [16.8, 'On ajoute 1 unité de pH (facteur 10), pas 10 unités.'], [68, 'Vous avez multiplié le pK_A par 10 ; on ajoute 1 à pK_A.']],
-        expl: '[In⁻] / [HIn] = 10 pour pH = pK_A + 1 = 7,8 : au-delà, la teinte bleue de In⁻ domine nettement.', indice: 'Au bout du virage, [In⁻] / [HIn] = 10 = 10^(pH − pK_A) : que vaut pH − pK_A ?' } },
+        expl: 'frac([In⁻]|[HIn]) = 10 pour pH = pK_A + 1 = 7,8 : au-delà, la teinte bleue de In⁻ domine nettement.', indice: 'Au bout du virage, frac([In⁻]|[HIn]) = 10 = 10^(pH − pK_A) : que vaut pH − pK_A ?' } },
     { id: 'choix', titre: 'Choisir un indicateur pour un titrage', focus: [],
       retenirTitre: 'À RETENIR : UN INDICATEUR EST UN COUPLE COLORÉ',
       retenir: <>
@@ -194,7 +194,7 @@ export function SimulationPredominance() {
           <input value={defi.reps.pct} aria-label="Pourcentage de forme basique" onKeyDown={e => e.key === 'Enter' && document.getElementById('pd-verif')?.click()} onChange={e => setDefi(d => ({ ...d, reps: { ...d.reps, pct: e.target.value }, verifie: false }))} inputMode="decimal"
             style={{ width: 90, padding: '5px 8px', borderRadius: 6, border: `1.5px solid ${defi.verifie ? (defi.ok ? '#15803d' : '#dc2626') : KIT.bord}`, fontSize: 14 }}/><span>%</span>
         </div>
-        <IndiceDefi cache={false}>Le rapport [A⁻] / [AH] vaut 10<sup>pH − pK<sub>A</sub></sup>. La forme basique domine si ce rapport dépasse 1 (pH &gt; pK<sub>A</sub>). Le pourcentage de A⁻ est 100 × r / (1 + r), avec r = [A⁻] / [AH].</IndiceDefi>
+        <IndiceDefi cache={false}>Le rapport frac([A⁻]|[AH]) vaut 10<sup>pH − pK<sub>A</sub></sup>. La forme basique domine si ce rapport dépasse 1 (pH &gt; pK<sub>A</sub>). Le pourcentage de A⁻ est 100 × r / (1 + r), avec r = frac([A⁻]|[AH]).</IndiceDefi>
       </> : <>
         <div style={{ ...lbl, marginBottom: 8 }}>On réalise un titrage dont le pH à l’équivalence vaut <strong>{nbf(defi.pHeq, 1)}</strong>. Trois indicateurs colorés sont disponibles, chacun défini par son {avecIndices('pK_A')}. Rappel : la zone de virage va de {avecIndices('pK_A')} − 1 à {avecIndices('pK_A')} + 1. Quel indicateur permet de repérer l’équivalence ?</div>
         <div role="group" aria-label="Indicateur choisi" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
@@ -209,7 +209,7 @@ export function SimulationPredominance() {
       </div>
       {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>
         {defi.type === 'pred'
-          ? (defi.ok ? '✓ Correct. ' : '✗ Pas tout à fait. ') + `pH − pK_A = ${nbf(defi.pH - defi.pKa, 2)}, donc [A⁻] / [AH] = ${fmtR(M.rapport(defi.pH, defi.pKa))} : ${defi.prod === 'A' ? defi.couple.A : defi.couple.AH} prédomine, avec ${fmtP(defi.pctBase)} % de ${defi.couple.A} (marge acceptée : ± 1,5 point).`
+          ? (defi.ok ? '✓ Correct. ' : '✗ Pas tout à fait. ') + `pH − pK_A = ${nbf(defi.pH - defi.pKa, 2)}, donc frac([A⁻]|[AH]) = ${fmtR(M.rapport(defi.pH, defi.pKa))} : ${defi.prod === 'A' ? defi.couple.A : defi.couple.AH} prédomine, avec ${fmtP(defi.pctBase)} % de ${defi.couple.A} (marge acceptée : ± 1,5 point).`
           : (defi.ok ? '✓ Correct. ' : '✗ Ce n’est pas le bon indicateur. ') + defi.ind.map(i => `${i.nom} : zone ${nbf(i.zone[0], 1)} – ${nbf(i.zone[1], 1)}.`).join(' ') + ` Seule la zone de « ${defi.ind[defi.vrai].nom} » contient pH = ${nbf(defi.pHeq, 1)}.`}
       </div>}
     </div>);
@@ -219,7 +219,7 @@ export function SimulationPredominance() {
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Température constante : 25 °C</strong> (K<sub>A</sub> et donc pK<sub>A</sub> ne dépendent que de T) ; la simulation ne fait pas varier T.</li>
       <li><strong>Activités ≈ concentrations</strong> : solutions diluées, concentrations divisées par c° = 1 mol·L⁻¹ ; K<sub>A</sub>, rapports et pourcentages n’ont pas d’unité.</li>
-      <li><strong>Le pH est imposé</strong> : on suppose que le pH de la solution est fixé (par exemple par une solution tampon) ; le couple étudié n’en modifie pas la valeur. On ne calcule que la répartition entre AH et A⁻ : [A⁻] / [AH] = 10<sup>pH − pK<sub>A</sub></sup>.</li>
+      <li><strong>Le pH est imposé</strong> : on suppose que le pH de la solution est fixé (par exemple par une solution tampon) ; le couple étudié n’en modifie pas la valeur. On ne calcule que la répartition entre AH et A⁻ : {avecIndices('frac([A⁻]|[AH]) = 10^(pH − pK_A)')}.</li>
       <li><strong>Prédominance</strong> : une forme « prédomine » quand elle est plus abondante que l’autre (pH de part et d’autre de pK<sub>A</sub>) ; elle n’est « presque seule » qu’à partir de pK<sub>A</sub> ± 1 (au moins 91 %).</li>
       <li><strong>Indicateurs colorés</strong> : modèle d’un couple HIn / In⁻ de teintes différentes ; zone de virage idéalisée de pK<sub>A</sub> − 1 à pK<sub>A</sub> + 1, arrondie. Les tables donnent des bornes un peu différentes (par exemple 6,0 – 7,6 pour le BBT) car l’œil perçoit la teinte autrement selon les couleurs. On suppose en outre que l’indicateur, en très faible quantité, ne modifie pas le pH.</li>
       <li><strong>Valeurs de pK<sub>A</sub></strong> : valeurs usuelles à 25 °C arrondies (méthanoïque 3,75 ; benzoïque 4,20 ; éthanoïque 4,76 ; ion ammonium 9,20), données du problème, non à retrouver.</li>
@@ -289,7 +289,7 @@ export function SimulationPredominance() {
       <LigneMesure nom="pH de la solution" valeur={nbf(pH, Number.isInteger(Math.round(pH * 100) / 10) ? 1 : 2)} couleur={COL.rouge}/>
       <LigneMesure nom="pK_A du couple" valeur={nbf(cp.pKa, 2)} couleur={COL.orange}/>
       {(enExplore || apres('pred')) && <LigneMesure nom="Forme prédominante" valeur={Math.abs(pH - cp.pKa) < 1e-9 ? 'égalité (50 % / 50 %)' : pH < cp.pKa ? `${cp.AH} (acide)` : `${cp.A} (base)`} couleur={COL.vert}/>}
-      {(enExplore || apres('ratio')) && <LigneMesure nom={`Rapport [${cp.A}] / [${cp.AH}]`} valeur={fmtR(rap)}/>}
+      {(enExplore || apres('ratio')) && <LigneMesure nom={`Rapport frac([${cp.A}]|[${cp.AH}])`} valeur={fmtR(rap)}/>}
       {(enExplore || apres('pourcent')) && <>
         <LigneMesure nom={`% de ${cp.AH}`} valeur={`${fmtP(pa)}${NB}%`} couleur={COL.bleu}/>
         <LigneMesure nom={`% de ${cp.A}`} valeur={`${fmtP(pb)}${NB}%`} couleur={COL.orange}/></>}
@@ -310,7 +310,7 @@ export function SimulationPredominance() {
   const retenirExplore = (
     <ARetenir>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
-        <li>[A⁻] / [AH] = 10^(pH − pK_A) : pH &lt; pK_A ⇒ AH domine ; pH &gt; pK_A ⇒ A⁻ domine</li>
+        <li>{avecIndices('frac([A⁻]|[AH]) = 10^(pH − pK_A)')} : pH &lt; pK<sub>A</sub> ⇒ AH domine ; pH &gt; pK<sub>A</sub> ⇒ A⁻ domine</li>
         <li>À pH = pK_A : 50 % de chaque forme (croisement des courbes de distribution)</li>
         <li>À pK_A ± 1 : rapport 10 ou 0,1, soit 91 % / 9 %</li>
         <li>Indicateur coloré : couple HIn / In⁻ ; teinte de la forme prédominante ; virage autour de pK_A ± 1</li>

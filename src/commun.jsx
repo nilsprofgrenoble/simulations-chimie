@@ -190,7 +190,47 @@ const RE_INDICE = /_([A-Za-zÀ-ÿ0-9−]+(?:,[A-Za-zÀ-ÿ]+)?)/g;
 // Notation vectorielle dans les textes : « vec(F) » s'affiche F avec une flèche au-dessus (MathML), « W(vec(P)) » pour W(P⃗).
 const RE_VEC = /vec\(([A-Za-zΔ]{1,2})\)/g;
 export const Vec = ({ n }) => <math style={{ fontSize: '1.05em' }}><mover><mi>{n}</mi><mo stretchy="false">→</mo></mover></math>;
+// Fractions et puissances de 10 dans les textes : « frac(haut|bas) » s'affiche avec une vraie barre de fraction (MathML), « 10^(pH − pK_A) » avec un vrai exposant.
+// Les indices « pK_A » y sont aussi transformés. Les textes de part et d'autre restent du texte normal.
+function fermante(t, i) { let d = 0; for (let k = i; k < t.length; k++) { if (t[k] === '(') d++; else if (t[k] === ')' && --d === 0) return k; } return -1; }
+function mathTexte(t, cle = 'm') {
+  const out = []; let dernier = 0, k = 0, m; const re = /10\^\(|([A-Za-zΔ]+)_([A-Za-zÀ-ÿ0-9−]+)/g;
+  const txt = (x) => { if (x) out.push(<mtext key={`${cle}t${k++}`}>{x.replace(/ /g, '\u00a0')}</mtext>); };
+  while ((m = re.exec(t))) {
+    if (m[0] === '10^(') {
+      const f = fermante(t, m.index + 3); if (f < 0) continue;
+      txt(t.slice(dernier, m.index));
+      out.push(<msup key={`${cle}p${k++}`}><mn>10</mn><mrow>{mathTexte(t.slice(m.index + 4, f), `${cle}e${k}`)}</mrow></msup>);
+      dernier = f + 1; re.lastIndex = dernier;
+    } else {
+      txt(t.slice(dernier, m.index));
+      out.push(<msub key={`${cle}s${k++}`}><mi>{m[1]}</mi><mi>{m[2]}</mi></msub>); dernier = m.index + m[0].length;
+    }
+  }
+  txt(t.slice(dernier));
+  return out;
+}
+const RE_MATHS = /frac\(|10\^\(/;
+function avecMaths(t) {
+  const out = []; let reste = t, k = 0;
+  while (reste) {
+    const m = RE_MATHS.exec(reste); if (!m) { out.push(<span key={`r${k++}`}>{avecIndices(reste)}</span>); break; }
+    const ouvre = m.index + (m[0] === 'frac(' ? 4 : 3), f = fermante(reste, ouvre);
+    if (f < 0) { out.push(<span key={`r${k++}`}>{avecIndices(reste)}</span>); break; }
+    if (m.index > 0) out.push(<span key={`r${k++}`}>{avecIndices(reste.slice(0, m.index))}</span>);
+    if (m[0] === 'frac(') {
+      const dedans = reste.slice(ouvre + 1, f); let d = 0, coupe = -1;
+      for (let i = 0; i < dedans.length; i++) { if (dedans[i] === '(') d++; else if (dedans[i] === ')') d--; else if (dedans[i] === '|' && d === 0) { coupe = i; break; } }
+      out.push(<math key={`f${k++}`} style={{ fontSize: '1.05em', whiteSpace: 'nowrap', mathStyle: 'normal' }}><mfrac><mrow>{mathTexte(dedans.slice(0, coupe))}</mrow><mrow>{mathTexte(dedans.slice(coupe + 1))}</mrow></mfrac></math>);
+    } else {
+      out.push(<math key={`p${k++}`} style={{ fontSize: '1.05em', whiteSpace: 'nowrap' }}>{mathTexte(reste.slice(m.index, f + 1))}</math>);
+    }
+    reste = reste.slice(f + 1);
+  }
+  return <>{out}</>;
+}
 export function avecIndices(t) {
+  if (typeof t === 'string' && RE_MATHS.test(t)) return avecMaths(t);
   if (typeof t === 'string' && t.includes('vec(')) {
     const out = []; let dernier = 0, m; RE_VEC.lastIndex = 0;
     while ((m = RE_VEC.exec(t))) {
