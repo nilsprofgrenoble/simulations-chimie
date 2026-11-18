@@ -996,6 +996,38 @@ export function genPileTG() {
     retenir: ['Quantités initiales : n = c × V pour l’ion du pôle +, n = frac(m|M) pour le métal du pôle −.', 'Le réactif limitant fixe la quantité d’électrons échangés, compte tenu des demi-équations : n(e⁻) = z × n.', 'Capacité : Q = n(e⁻) × F (n(e⁻) en mol) ; durée de fonctionnement : Δt = frac(Q|I).'] };
 }
 
+// Électrolyse (TG, sim 133) : charge passée, électrons échangés, métal déposé, masse, durée pour un dépôt donné.
+export function genElectrolyseTG() {
+  const id = tire(['zn', 'fe', 'cu', 'ag']), X = PILE_M[id];
+  const I = tire([0.200, 0.500, 1.00, 1.50]), tmin = tire([10.0, 15.0, 20.0, 30.0, 45.0]), mCible = tire([0.500, 1.00, 2.00]);
+  const dts = tmin * 60, Q = I * dts, ne = Q / 96500 * 1000, n = ne / X.z, m = n / 1000 * X.M;    // ne et n en mmol
+  const dtCible = X.z * 96500 * mCible / (X.M * I) / 60;                                           // min
+  const intro = <>Électrolyse d’une solution de {X.sol} : sur la cathode reliée à la borne − du générateur, {pileRed(id)}. Le générateur fait passer un courant d’intensité constante <b>I = {nb(I, 3)}{NB}A</b> pendant <b>Δt = {nb(tmin, 3)}{NB}min</b>. M({X.m}) = {nb(X.M, 3)}{NB}g/mol ; F = 9,65{NB}×{NB}10⁴{NB}C/mol.</>;
+  const q1 = { id: 'e0', type: 'num', q: <>{intro} Calculez la charge électrique Q qui a traversé le circuit (en C, 3 chiffres significatifs).</>, unite: 'C', vrai: Q, tolRel: 0.01, csMin: 3,
+    aide: 'Q = I × Δt avec I en A et Δt en s (1 min = 60 s).',
+    pieges: [[I * tmin, 'Vous avez laissé Δt en minutes : convertissez en secondes (× 60).'], [I * tmin / 60, 'Vous avez exprimé Δt en heures : il faut des secondes pour obtenir des coulombs.'], [dts / I, 'Il faut multiplier I par Δt, pas diviser.']],
+    expl: <>Δt = {nb(tmin, 3)} × 60 = {nb(dts, 3)}{NB}s ; Q = {nb(I, 3)}{NB}A × {nb(dts, 3)}{NB}s = <b>{nb(Q, 3)}{NB}C</b>.</> };
+  const q2 = { id: 'e1', type: 'num', q: <>Toujours pour cette électrolyse (Q = {nb(Q, 3)}{NB}C), calculez la quantité d’électrons échangés n(e⁻) (en mmol, 3 chiffres significatifs).</>, unite: 'mmol', vrai: ne, tolRel: 0.01, csMin: 3,
+    aide: 'n(e⁻) = frac(Q|F) donne des moles ; multipliez par 1000 pour obtenir des mmol.',
+    pieges: [[ne / 1000, 'Valeur en mol : la réponse est demandée en mmol (× 1000).'], [Q * 96500, 'Il faut diviser la charge par F, pas la multiplier.'], [Q / 96.5, 'F vaut 9,65 × 10⁴ C/mol, pas 96,5.']],
+    expl: <>n(e⁻) = <Frac haut={`${nb(Q, 3)} C`} bas="9,65 × 10⁴ C/mol"/> = {nb(ne / 1000, 3)}{NB}mol = <b>{nb(ne, 3)}{NB}mmol</b>.</> };
+  const q3 = { id: 'e2', type: 'num', q: <>Avec n(e⁻) = {nb(ne, 3)}{NB}mmol, calculez la quantité de {X.nom} déposé sur la cathode (en mmol, 3 chiffres significatifs).</>, unite: 'mmol', vrai: n, tolRel: 0.01, csMin: 3,
+    aide: `Demi-équation : ${pileRed(id)}. Il faut ${X.z} électron${X.z > 1 ? 's' : ''} pour déposer un atome de ${X.nom}.`,
+    pieges: [[ne, `C’est la quantité d’électrons : divisez-la par ${X.z} (demi-équation).`], [ne * X.z, `Il faut diviser par ${X.z}, pas multiplier.`]],
+    expl: <>n({X.m}) = <Frac haut="n(e⁻)" bas={String(X.z)}/> = <b>{nb(n, 3)}{NB}mmol</b>.</> };
+  const q4 = { id: 'e3', type: 'num', q: <>Calculez la masse de {X.nom} déposé (en g, 3 chiffres significatifs), à partir de n({X.m}) = {nb(n, 3)}{NB}mmol.</>, unite: 'g', vrai: m, tolRel: 0.01, csMin: 3,
+    aide: 'm = n × M, avec n en mol (1 mmol = 10⁻³ mol).',
+    pieges: [[n * X.M, 'Vous avez utilisé n en mmol : le résultat serait en mg. Convertissez n en mol.'], [n / 1000 / X.M, 'Il faut multiplier par la masse molaire, pas diviser.'], [ne / 1000 * X.M, 'Vous êtes parti de n(e⁻) au lieu de n(métal).']],
+    expl: <>m = {nb(n / 1000, 3)}{NB}mol × {nb(X.M, 3)}{NB}g/mol = <b>{nb(m, 3)}{NB}g</b>.</> };
+  const q5 = { id: 'e4', type: 'num', q: <>Avec la même intensité ({nb(I, 3)}{NB}A), combien de temps faut-il pour déposer <b>{nb(mCible, 3)}{NB}g</b> de {X.nom} ? (en min, 3 chiffres significatifs)</>, unite: 'min', vrai: dtCible, tolRel: 0.01, csMin: 3,
+    aide: `n = frac(m|M) ; n(e⁻) = ${X.z} × n ; Q = n(e⁻) × F ; Δt = frac(Q|I) en s, puis divisez par 60.`,
+    pieges: [[dtCible * 60, 'Durée en secondes : divisez par 60 pour l’obtenir en minutes.'], [dtCible / X.z, `Vous avez oublié les ${X.z} électrons par atome déposé.`], [dtCible * X.z * X.z, 'Multipliez par le nombre d’électrons une seule fois.']],
+    expl: <>n = <Frac haut={`${nb(mCible, 3)} g`} bas={`${nb(X.M, 3)} g/mol`}/> = {nb(mCible / X.M, 3)}{NB}mol ; Q = {X.z} × {nb(mCible / X.M, 3)} × 9,65{NB}×{NB}10⁴ = {nb(X.z * 96500 * mCible / X.M, 3)}{NB}C ; Δt = <Frac haut={`${nb(X.z * 96500 * mCible / X.M, 3)} C`} bas={`${nb(I, 3)} A`}/> = {nb(dtCible * 60, 3)}{NB}s = <b>{nb(dtCible, 3)}{NB}min</b>.</> };
+  [q1, q2, q3, q4, q5].forEach(q => { q.pieges = q.pieges.filter(([y]) => isFinite(y) && y > 0 && Math.abs(y - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'Électrolyse : charge électrique passée, quantité d’électrons échangés, quantité et masse de métal déposé, durée nécessaire pour un dépôt donné.', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Charge passée : Q = I × Δt (I en A, Δt en s).', 'Quantité d’électrons : n(e⁻) = frac(Q|F), avec F = 9,65 × 10⁴ C/mol.', 'La demi-équation donne la quantité de produit : n(métal) = frac(n(e⁻)|z) ; puis m = n × M.'] };
+}
+
 // ──────────────────────── Familles « Plans d'expériences » (BTS) ────────────────────────
 function genPlanMelange() {
   const comp = ['cire de candelilla (A)', 'huile de ricin (B)', 'cire d’abeille (C)'];
@@ -1079,6 +1111,7 @@ export const FAMILLES = [
   { id: 'pdi-calcul', groupe: 'Formules', titre: 'Couples acide-base : rapport des formes, pourcentage, concentration et pH (TG)', gen: genPredominanceTG, domaine: 'Force des acides et des bases : Ka et tampon' },
   { id: 'tmp-calcul', groupe: 'Formules', titre: 'Solution tampon : ajout d’acide, bilan de matière et pH du tampon (TG)', gen: genTamponTG, domaine: 'Force des acides et des bases : Ka et tampon' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
+  { id: 'ely-calcul', groupe: 'Formules', titre: 'Électrolyse : charge passée, électrons échangés, métal déposé et durée (TG)', gen: genElectrolyseTG, domaine: 'Électrolyse : forcer le sens d’évolution' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },
   { id: 'simple', groupe: 'Unités', titre: 'Changement d’unité simple', gen: genSimple },
   { id: 'prefixes', groupe: 'Unités', titre: 'Préfixes et puissances de 10', gen: genPrefixes },

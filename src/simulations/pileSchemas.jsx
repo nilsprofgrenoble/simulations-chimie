@@ -16,7 +16,7 @@ const couleurSol = id => (id === 'cu' ? '#0ea5e9' : id === 'fe' ? '#86efac' : '#
 let _id = 0;
 
 // ---------- bécher (paroi + liquide découpé par la paroi) ----------
-function Becher({ x1, x2, yTop = 150, yBas = 300, yLiq = 190, sol, op, id }) {
+export function Becher({ x1, x2, yTop = 150, yBas = 300, yLiq = 190, sol, op, id }) {
   const paroi = `M${x1} ${yTop} V${yBas - 10} Q${x1} ${yBas} ${x1 + 10} ${yBas} H${x2 - 10} Q${x2} ${yBas} ${x2} ${yBas - 10} V${yTop}`;
   return <g>
     <clipPath id={id}><path d={paroi + ' Z'}/></clipPath>
@@ -28,7 +28,7 @@ function Becher({ x1, x2, yTop = 150, yBas = 300, yLiq = 190, sol, op, id }) {
   </g>;
 }
 // ---------- lame métallique avec pince crocodile ; « fraction » rétrécit la partie immergée, « depot » épaissit (dépôt de métal) ----------
-function Lame({ cx, yHaut = 92, yBas = 270, yLiq = 190, metal, fraction = 1, depot = 0, couleurDepot }) {
+export function Lame({ cx, yHaut = 92, yBas = 270, yLiq = 190, metal, fraction = 1, depot = 0, couleurDepot }) {
   const w = 18, wi = Math.max(5, w * Math.max(0.3, fraction));
   return <g>
     <rect x={cx - w / 2} y={yHaut} width={w} height={yLiq - yHaut} fill={metal} stroke={COL.txt} strokeWidth="1.5"/>
@@ -39,10 +39,10 @@ function Lame({ cx, yHaut = 92, yBas = 270, yLiq = 190, metal, fraction = 1, dep
     <rect x={cx - 7} y={yHaut - 12} width="14" height="16" rx="2" fill="#1f2937"/>
   </g>;
 }
-function Signe({ x, y, plus }) {
+export function Signe({ x, y, plus }) {
   return <g><circle cx={x} cy={y} r="14" fill={plus ? COL.rouge : COL.txt}/><text x={x} y={y + 7} fontSize="22" fontWeight="800" textAnchor="middle" fill="white">{plus ? '+' : '−'}</text></g>;
 }
-function Fleche({ x1, x2, y, c, w = 2.5 }) {
+export function Fleche({ x1, x2, y, c, w = 2.5 }) {
   const s = Math.sign(x2 - x1);
   return <g><line x1={x1} y1={y} x2={x2 - 8 * s} y2={y} stroke={c} strokeWidth={w}/><polygon points={`${x2},${y} ${x2 - 10 * s},${y - 6} ${x2 - 10 * s},${y + 6}`} fill={c}/></g>;
 }
