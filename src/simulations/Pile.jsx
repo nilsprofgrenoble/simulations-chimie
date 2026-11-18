@@ -39,6 +39,7 @@ export function SimulationPile() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);
+  const [ouv, setOuv] = useState({ g: false, d: false, essayer: false, retenir: false });
   const [ti, setTi] = useState(PRESET);
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const dd = enDefi && defi ? defi : null;
@@ -286,45 +287,48 @@ export function SimulationPile() {
     || (idE === 'polarite' && bouton('Inverser les branchements', () => setGv({ inv: !gv.inv, invVu: true }), true, '#0369a1'))
     || (idE === 'electrodes' && !gv.debit && bouton('Brancher un conducteur ohmique', () => setGv({ debit: true }), true))
     || null);
-  const metalBoutons = cote => (
-    <div role="group" aria-label={`Métal de la demi-pile de ${cote === 'g' ? 'gauche' : 'droite'}`} style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 4 }}>
-      {M.ORDRE.map(id => { const autre = cote === 'g' ? ti.d.id : ti.g.id; return <button key={id} disabled={id === autre} onClick={() => setT({ [cote]: { ...ti[cote], id }, t: 0 })} aria-pressed={ti[cote].id === id}
-        style={{ ...stylePetitBouton(ti[cote].id === id, '#0f766e'), opacity: id === autre ? 0.35 : 1 }}>{M.METAUX[id].ion} / {M.METAUX[id].m}</button>; })}
-    </div>);
-  const reglesCote = cote => <div style={{ flex: '1 1 260px', minWidth: 0 }}>
-    <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Demi-pile de {cote === 'g' ? 'gauche' : 'droite'}</div>
-    {metalBoutons(cote)}
-    <div style={{ fontSize: 13, color: KIT.txt2, margin: '2px 0' }}>Concentration de la solution en ions {M.METAUX[ti[cote].id].ion} :</div>
-    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 4 }}>{[0.01, 0.05, 0.10, 0.50, 1.0].map(c => <button key={c} onClick={() => setT({ [cote]: { ...ti[cote], c }, t: 0 })} aria-pressed={ti[cote].c === c} style={stylePetitBouton(ti[cote].c === c, '#0369a1')}>{nbf(c, c < 0.1 ? 2 : c < 1 ? 2 : 1)} mol/L</button>)}</div>
-    <div style={{ fontSize: 13, color: KIT.txt2, margin: '2px 0' }}>Volume de solution :</div>
-    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 4 }}>{[50, 100, 200].map(V => <button key={V} onClick={() => setT({ [cote]: { ...ti[cote], V }, t: 0 })} aria-pressed={ti[cote].V === V} style={stylePetitBouton(ti[cote].V === V, '#0369a1')}>{V} mL</button>)}</div>
-    <div style={{ fontSize: 13, color: KIT.txt2, margin: '2px 0' }}>Masse de la partie immergée de la lame :</div>
-    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>{[0.5, 1.0, 2.0, 5.0].map(m => <button key={m} onClick={() => setT({ [cote]: { ...ti[cote], m }, t: 0 })} aria-pressed={ti[cote].m === m} style={stylePetitBouton(ti[cote].m === m, '#0369a1')}>{nbf(m, 1)} g</button>)}</div>
-  </div>;
+  // ---------- exploration : réglages dans des menus déroulants, blocs repliables ----------
+  const ouvre = k => ouv[k], bascule = k => setOuv(o => ({ ...o, [k]: !o[k] }));
+  const menu = { font: 'inherit', fontSize: 15, padding: '8px 10px', minHeight: 42, borderRadius: 10, border: `1px solid ${KIT.bord}`, background: '#fff', color: KIT.txt, width: '100%', boxSizing: 'border-box' };
+  const liste = (nom, valeur, options, onChange, large) => (
+    <label style={{ display: 'block', fontSize: 13, color: KIT.txt2, gridColumn: large ? '1 / -1' : undefined, minWidth: 0 }}>{nom}
+      <select value={valeur} onChange={e => onChange(e.target.value)} style={{ ...menu, marginTop: 2 }}>
+        {options.map(o => <option key={o.v} value={o.v} disabled={o.off}>{o.t}</option>)}
+      </select>
+    </label>);
+  const resume = cote => { const x = ti[cote]; return `${M.METAUX[x.id].ion} / ${M.METAUX[x.id].m} · ${nbf(x.c, x.c < 1 ? 2 : 1)}${NB}mol/L · ${x.V}${NB}mL · ${nbf(x.m, 1)}${NB}g`; };
+  const reglesCote = cote => {
+    const x = ti[cote], autre = cote === 'g' ? ti.d.id : ti.g.id, maj = f => setT({ [cote]: { ...x, ...f }, t: 0 });
+    return (
+      <Section key={cote} titre={<span><span style={{ display: 'block' }}>Demi-pile de {cote === 'g' ? 'gauche' : 'droite'}</span><span style={{ display: 'block', fontSize: 13, fontWeight: 400, color: KIT.txt2, marginTop: 2 }}>{resume(cote)}</span></span>}
+        ouvert={ouvre(cote)} onBascule={() => bascule(cote)}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8 }}>
+          {liste('Couple (lame et solution)', x.id, M.ORDRE.map(id => ({ v: id, t: `${M.METAUX[id].ion} / ${M.METAUX[id].m}`, off: id === autre })), v => maj({ id: v }), true)}
+          {liste(`Concentration en ions ${M.METAUX[x.id].ion}`, String(x.c), [0.01, 0.05, 0.10, 0.50, 1.0].map(c => ({ v: String(c), t: `${nbf(c, c < 1 ? 2 : 1)} mol/L` })), v => maj({ c: Number(v) }), true)}
+          {liste('Volume de solution', String(x.V), [50, 100, 200].map(V => ({ v: String(V), t: `${V} mL` })), v => maj({ V: Number(v) }))}
+          {liste('Masse de lame immergée', String(x.m), [0.5, 1.0, 2.0, 5.0].map(m => ({ v: String(m), t: `${nbf(m, 1)} g` })), v => maj({ m: Number(v) }))}
+        </div>
+      </Section>);
+  };
   const reglagesExplore = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>1. Construisez la pile</div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6, lineHeight: 1.5 }}>Chaque demi-pile est une lame de métal plongée dans une solution de ses ions. Choisissez deux métaux différents, la concentration, le volume de solution et la masse de métal qui plonge.</div>
-      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>{reglesCote('g')}{reglesCote('d')}</div>
+    <div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 2 }}>Construire la pile</div>
+      <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6, lineHeight: 1.4 }}>Touchez une demi-pile pour changer le métal, la concentration, le volume ou la masse.</div>
+      {reglesCote('g')}{reglesCote('d')}
     </div>);
   const commandesExplore = enExplore && (
     <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>2. Branchez et faites fonctionner</div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 4, lineHeight: 1.5 }}>Le pont salin relie les deux solutions : sans lui, le circuit est ouvert.</div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>{bouton(ti.pont ? 'Retirer le pont salin' : 'Ajouter le pont salin', () => setT({ pont: !ti.pont }), ti.pont, '#b45309', ti.pont)}</div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 4, lineHeight: 1.5 }}>Le voltmètre mesure la tension à vide (la pile ne débite pas) ; le conducteur ohmique fait débiter la pile (électrons en vert).</div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-        {bouton('Voltmètre', () => setT({ app: 'volt' }), ti.app === 'volt', '#0369a1', ti.app === 'volt')}
-        {bouton('Conducteur ohmique', () => setT({ app: 'res' }), ti.app === 'res', '#15803d', ti.app === 'res')}
-        {ti.app === 'volt' && bouton('Inverser les branchements', () => setT({ borneV: ti.borneV === 'd' ? 'g' : 'd' }), false)}
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 2 }}>Brancher et faire fonctionner</div>
+      <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 8, lineHeight: 1.4 }}>Sans pont salin, le circuit est ouvert. Le voltmètre mesure la tension à vide ; le conducteur ohmique fait débiter la pile.</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8 }}>
+        {liste('Pont salin', ti.pont ? 'oui' : 'non', [{ v: 'oui', t: 'Présent' }, { v: 'non', t: 'Retiré' }], v => setT({ pont: v === 'oui' }))}
+        {liste('Appareil branché', ti.app, [{ v: 'volt', t: 'Voltmètre' }, { v: 'res', t: 'Conducteur ohmique' }], v => setT({ app: v }))}
+        {ti.app === 'volt' && liste('Borne V reliée au pôle', ti.borneV, [{ v: 'd', t: 'de droite' }, { v: 'g', t: 'de gauche' }], v => setT({ borneV: v }))}
+        {liste('Intensité du courant I', String(ti.I), [20, 50, 100].map(i => ({ v: String(i), t: `${i} mA` })), v => setT({ I: Number(v), t: 0 }))}
       </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 4, lineHeight: 1.5 }}>La pile débite un courant d’intensité constante I ; le curseur règle depuis combien de temps elle fonctionne (la tension à vide est mesurée à cet instant).</div>
-      <div role="group" aria-label="Intensité du courant" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 4, alignItems: 'center' }}>
-        <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>I =</span>
-        {[20, 50, 100].map(i => bouton(`${i} mA`, () => setT({ I: i, t: 0 }), ti.I === i, '#0369a1', ti.I === i))}
-      </div>
+      <div style={{ fontSize: 13, color: KIT.txt2, margin: '10px 0 2px', lineHeight: 1.4 }}>Le curseur règle depuis combien de temps la pile débite I.</div>
       <Curseur nom="Durée de fonctionnement" valeur={ti.t} onChange={t => setT({ t })} min={0} max={tCurseurMax} pas={tCurseurMax > 40 ? 1 : 0.5} decimales={tCurseurMax > 40 ? 0 : 1} unite="h"/>
-      {!ti.pont && <div style={{ fontSize: 13.5, color: COL.rouge }}>Sans pont salin, la pile ne débite pas : la durée de fonctionnement n’a pas d’effet.</div>}
+      {!ti.pont && <div style={{ fontSize: 13.5, color: COL.rouge }}>Sans pont salin, la pile ne débite pas : la durée n’a pas d’effet.</div>}
     </div>);
   const reglageUsure = enGuide && deja('usure') && (
     <div style={{ ...styleBoite, ...cadre('reglage') }}>
@@ -345,7 +349,7 @@ export function SimulationPile() {
   const boxScene = !dd && (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{idE === 'contact' ? 'Le bécher' : 'La pile'}</div>
-      {enExplore && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6, lineHeight: 1.5 }}>Deux demi-piles, un pont salin et un appareil branché entre les lames. Les signes + et − indiquent la polarité ; les flèches du pont montrent les ions qui migrent quand la pile débite.</div>}
+      {enExplore && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6, lineHeight: 1.5 }}>Les signes + et − donnent la polarité ; les flèches du pont montrent les ions qui migrent quand la pile débite.</div>}
       {idE === 'contact' ? <SceneContact plonge={gv.plonge}/>
         : <ScenePile g={g} d={d} et={et} pont={pont} appareil={app} borneV={borneV} affichage={affichage}
           polarite={enExplore ? pont : apres('polarite')} debit={app === 'res' && pont && !et.use && (enExplore || debitPossible)} ions={app === 'res' && pont && (enExplore || apres('ions'))}/>}
@@ -354,7 +358,7 @@ export function SimulationPile() {
   const boxCourbe = !dd && (enExplore || deja('usure')) && (
     <div style={{ ...styleBoite, ...cadre('courbe') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>La tension à vide au fil de l’usure</div>
-      {enExplore && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6, lineHeight: 1.5 }}>Tension à vide selon la charge déjà débitée Q = I × Δt ; le point bleu suit le curseur. La chute finale marque l’épuisement du réactif limitant.</div>}
+      {enExplore && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6, lineHeight: 1.5 }}>Le point bleu suit le curseur ; la chute finale marque l’épuisement du réactif limitant.</div>}
       {pont ? <CourbeUsure pts={M.courbeUsure(g, d)} Q={et.Q} U={et.U} Qmax={et0.Qmax}/> : <div style={{ fontSize: 14, color: COL.rouge }}>Sans pont salin, la pile ne fonctionne pas.</div>}
     </div>);
 
@@ -386,8 +390,7 @@ export function SimulationPile() {
     </div>);
 
   const aEssayer = (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
+    <Section titre="À essayer (questions pour explorer)" ouvert={ouvre('essayer')} onBascule={() => bascule('essayer')}>
       <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>{indicesProfond(<>
         <li>Retirez le pont salin : que devient la tension ? Les électrons peuvent-ils encore circuler ?</li>
         <li>Construisez les piles zinc-cuivre, fer-cuivre et cuivre-argent : quel métal est le pôle + dans chacune ? Le cuivre est-il toujours au même pôle ?</li>
@@ -396,9 +399,10 @@ export function SimulationPile() {
         <li>Passez de 20 mA à 100 mA : la capacité change-t-elle ? Et la durée de fonctionnement ?</li>
         <li>Faites fonctionner la pile jusqu’au bout : quand la tension s’annule, que vaut le quotient de réaction Q_r ?</li></>)}
       </ul>
-    </div>);
+    </Section>);
   const retenirExplore = (
-    <ARetenir>
+    <Section titre="À retenir (idées et formules clés)" ouvert={ouvre('retenir')} onBascule={() => bascule('retenir')}>
+    <ARetenir titre="IDÉES CLÉS">
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>Pile = oxydant et réducteur séparés dans deux demi-piles, reliées par un pont salin et un circuit extérieur</li>
         <li>Électrons dans les fils (du pôle − au pôle +), ions dans les solutions et le pont salin</li>
@@ -406,7 +410,8 @@ export function SimulationPile() {
         <li>Capacité Q = n(e⁻) × F, n(e⁻) fixé par le réactif limitant ; durée Δt = frac(Q|I)</li>
         <li>Pile usée : réactif limitant épuisé, Q_r = K</li>
       </ul>
-    </ARetenir>);
+    </ARetenir>
+    </Section>);
 
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
@@ -415,6 +420,8 @@ export function SimulationPile() {
         .pl-l1.cote { grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
         .pl-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 12px; }
         .pl-col { display: flex; flex-direction: column; gap: 12px; }
+        .pl-ex { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 1fr); }
+        @media (min-width: 901px) { .pl-ex { grid-template-columns: minmax(0, 3fr) minmax(300px, 2fr); } .pl-ex > * { grid-column: 1; } .pl-ex > .pl-ctrl { grid-column: 2; grid-row: 1 / span 5; } }
         @media (min-width: 901px) { .pl-l1.cote .pl-carte { order: 2; } .pl-l1.cote .pl-main { order: 1; } }
         @media (max-width: 900px) { .pl-l1.cote { grid-template-columns: minmax(0, 1fr); } }
         @media (prefers-reduced-motion: no-preference) { .pl-in { animation: pl-fondu 0.35s ease-out; } @keyframes pl-fondu { from { opacity: 0; } to { opacity: 1; } } }
@@ -424,22 +431,21 @@ export function SimulationPile() {
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Une <strong>pile</strong> convertit l’énergie d’une réaction d’oxydo-réduction spontanée en énergie électrique : l’oxydant et le réducteur sont séparés, et les électrons passent par un circuit extérieur.</div>
-      <div className={`pl-l1${!enExplore ? ' cote' : ''}`}>
+      <div className={`pl-l1${enExplore ? '' : ' cote'}`}>
         {enGuide ? <div className="pl-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="pl-carte">{panneauHypo}</div> : null}
         <div className="pl-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'polarite' ? suiviP : suiviC}/></div>}
-          {!dd && <div className="pl-col">
-            {reglagesExplore && <div className="pl-in">{reglagesExplore}</div>}
-            {boxEquation && <div className="pl-in">{boxEquation}</div>}
+          {!dd && <div className={enExplore ? 'pl-ex' : 'pl-col'}>
+            {!enExplore && boxEquation && <div className="pl-in">{boxEquation}</div>}
             {boxScene && <div className="pl-in">{boxScene}</div>}
-            {commandesExplore && <div className="pl-in">{commandesExplore}</div>}
+            {enExplore && <div className="pl-ctrl pl-col">{reglagesExplore}{commandesExplore}{aEssayer}{retenirExplore}</div>}
+            {enExplore && boxEquation && <div className="pl-in">{boxEquation}</div>}
             {reglageUsure && <div className="pl-in">{reglageUsure}</div>}
             {mesures && <div className="pl-in">{mesures}</div>}
             {boxCourbe && <div className="pl-in">{boxCourbe}</div>}
           </div>}
         </div>
       </div>
-      {enExplore && <div className="pl-l2">{aEssayer}{retenirExplore}</div>}
       {!enDefi && (!enGuide || deja('bilan')) && <div className="pl-l2">{panneauHypo}</div>}
     </div>
   );
