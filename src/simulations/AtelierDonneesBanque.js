@@ -318,6 +318,53 @@ export const ENONCES = [
         manque: null, solution: { txt: 'τ = [H₃O⁺] / C, avec [H₃O⁺] = 10^(−pH) de l’acide B', val: hB / p.CB, u: '' } };
     },
   },
+  // ───────────────────────────── Couples acide-base (TG) : rapport des formes, pourcentages
+  {
+    id: 'pdi-sapp-couple', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Composition d’un couple acide-base à un pH donné', noms: ['Rapport des deux formes', 'Concentration de la forme basique'],
+    gen: () => { const pKa = tire([3.75, 4.20, 4.76, 9.20]), d = tire([-1, -0.5, 0.5, 1, 1.5]); return { pKa, pH: Math.round((pKa + d) * 10) / 10, C: tire([0.010, 0.020, 0.050, 0.10]), V: tire([100, 250, 500]), T: tire([20, 25, 30]) }; },
+    build: (p, q) => {
+      const tokens = {
+        pKa: tok(`${nb(p.pKa, 2)}`, 'pKA du couple acide-base', p.pKa, ''),
+        pH: tok(`${nb(p.pH, 1)}`, 'pH de la solution', p.pH, ''),
+        C: tok(`${nb(p.C, 3)} mol/L`, 'Concentration totale du couple (AH + A⁻)', p.C, 'mol/L'),
+        V: tok(`${p.V} mL`, 'Volume de solution', p.V, 'mL'),
+        T: tok(`${p.T} °C`, 'Température de la solution', p.T, '°C'),
+      };
+      const debut = ['Un couple acide-base AH / A⁻ de pKA égal à ', T('pKa'), ' est en solution à pH = ', T('pH'), ' ; sa concentration totale (AH + A⁻) est ', T('C'), ', dans un volume de ', T('V'), ' à ', T('T'), '. '];
+      const r = 10 ** (p.pH - p.pKa);
+      if (q === 0) return { tokens, derivees: ['[A⁻] / [AH] = 10^(pH − pKA)'], texte: [...debut, 'Quel est le rapport [A⁻] / [AH] ?'],
+        utiles: ['pKa', 'pH'], raisons: { C: 'La concentration totale ne change pas le rapport des deux formes : elle fixe seulement leurs valeurs.', V: 'Le volume n’intervient pas dans le rapport de deux concentrations.', T: 'La température est constante : elle n’intervient pas dans le calcul, elle suppose que pKA garde sa valeur.' },
+        cherche: { bonne: 'Le rapport [A⁻] / [AH] (sans unité)', faux: ['La concentration de A⁻ (en mol/L)', 'Le pourcentage de la forme AH (en %)', 'Le produit ionique de l’eau Ke (sans unité)'] },
+        manque: null, solution: { txt: '[A⁻] / [AH] = 10^(pH − pKA)', val: r, u: '' } };
+      return { tokens, derivees: ['[A⁻] = C · r / (1 + r) avec r = 10^(pH − pKA)'], texte: [...debut, 'Quelle est la concentration de la forme basique A⁻ ?'],
+        utiles: ['pKa', 'pH', 'C'], raisons: { V: 'Le volume ne change pas les concentrations : il n’intervient pas ici.', T: 'La température est constante : elle n’intervient pas dans le calcul.' },
+        cherche: { bonne: 'Concentration de la forme basique A⁻ (mol/L)', faux: ['Le rapport [A⁻] / [AH] des deux formes (sans unité)', 'La concentration en ions oxonium (en mol/L)', 'Le pourcentage de forme basique (en %)'] },
+        manque: null, solution: { txt: '[A⁻] = C · r / (1 + r), avec r = 10^(pH − pKA)', val: p.C * r / (1 + r), u: 'mol/L' } };
+    },
+  },
+  {
+    id: 'pdi-sapp-indic', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Teinte d’un indicateur coloré à un pH donné', noms: ['Rapport des formes de l’indicateur', 'Pourcentage de la forme basique'],
+    gen: () => { const pKa = tire([4.6, 6.8, 8.8, 11.0]), d = tire([-2, -1.5, -1, 1, 1.5, 2]); return { pKa, pH: Math.round((pKa + d) * 10) / 10, mi: tire([2, 5, 10]), T: tire([20, 25, 30]), V: tire([5, 10, 20]) }; },
+    build: (p, q) => {
+      const tokens = {
+        pKa: tok(`${nb(p.pKa, 1)}`, 'pKA de l’indicateur coloré', p.pKa, ''),
+        pH: tok(`${nb(p.pH, 1)}`, 'pH de la solution', p.pH, ''),
+        mi: tok(`${p.mi} gouttes`, 'Nombre de gouttes d’indicateur versées', p.mi, ''),
+        V: tok(`${p.V} mL`, 'Volume de solution testée', p.V, 'mL'),
+        T: tok(`${p.T} °C`, 'Température de la solution', p.T, '°C'),
+      };
+      const debut = ['Un indicateur coloré HIn / In⁻ de pKA égal à ', T('pKa'), ' est ajouté (', T('mi'), ') à ', T('V'), ' d’une solution de pH ', T('pH'), ' à ', T('T'), '. '];
+      const r = 10 ** (p.pH - p.pKa);
+      if (q === 0) return { tokens, derivees: ['[In⁻] / [HIn] = 10^(pH − pKA)'], texte: [...debut, 'Quel est le rapport [In⁻] / [HIn] ?'],
+        utiles: ['pKa', 'pH'], raisons: { mi: 'Le nombre de gouttes fixe la quantité d’indicateur, pas le rapport de ses deux formes.', V: 'Le volume ne change pas un rapport de concentrations : il n’intervient pas.', T: 'La température est constante : elle n’intervient pas dans le calcul.' },
+        cherche: { bonne: 'Le rapport [In⁻] / [HIn] (sans unité)', faux: ['Le pourcentage de la forme HIn (en %)', 'La largeur de la zone de virage (en unités de pH)', 'La concentration de In⁻ (en mol/L)'] },
+        manque: null, solution: { txt: '[In⁻] / [HIn] = 10^(pH − pKA)', val: r, u: '' } };
+      return { tokens, derivees: ['r = [In⁻] / [HIn] = 10^(pH − pKA)'], texte: [...debut, 'Quel est le pourcentage de la forme basique In⁻ ?'],
+        utiles: ['pKa', 'pH'], raisons: { mi: 'Le nombre de gouttes ne modifie pas la proportion entre les deux formes.', V: 'Le volume n’intervient pas dans un pourcentage.', T: 'La température est constante : elle n’intervient pas dans le calcul.' },
+        cherche: { bonne: 'Le pourcentage de forme basique In⁻ (en %)', faux: ['Le rapport [In⁻] / [HIn] (sans unité)', 'Le pourcentage de la forme acide HIn (en %)', 'Le pH de début de virage (sans unité)'] },
+        manque: null, solution: { txt: '% In⁻ = 100 × r / (1 + r), avec r = 10^(pH − pKA)', val: 100 * r / (1 + r), u: '%' } };
+    },
+  },
   // ───────────────────────────── Titrage pH-métrique (TG) : concentration et composition
   {
     id: 'titph-ca', domaine: 'Titrage pH-métrique', titre: 'Contrôle d’une solution d’acide', noms: ['Concentration de l’acide', 'Volume équivalent attendu'],

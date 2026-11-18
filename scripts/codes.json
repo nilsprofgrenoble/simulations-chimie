@@ -910,5 +910,18 @@
  "77:plausible:fab-val-ka": "VAL225",
  "77:plausible:fab-val-impossible": "VAL226",
  "77:plausible:fab-val-pka": "VAL227",
- "36:fab-calcul": "REA34"
+ "36:fab-calcul": "REA34",
+ "34:pdi-sapp-couple.0": "SAPP227",
+ "34:pdi-sapp-couple.1": "SAPP228",
+ "34:pdi-sapp-indic.0": "SAPP229",
+ "34:pdi-sapp-indic.1": "SAPP230",
+ "37:prevoir:pdi-ana-predominance": "ANA426",
+ "37:prevoir:pdi-ana-distribution": "ANA427",
+ "37:prevoir:pdi-ana-croisement": "ANA428",
+ "37:prevoir:pdi-ana-indicateur": "ANA429",
+ "77:plausible:pdi-val-fraction": "VAL228",
+ "77:plausible:pdi-val-croisement": "VAL229",
+ "77:plausible:pdi-val-indicateur": "VAL230",
+ "77:plausible:pdi-val-ammonium": "VAL231",
+ "36:pdi-calcul": "REA35"
 }
