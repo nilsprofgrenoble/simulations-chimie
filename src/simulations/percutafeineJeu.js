@@ -1213,7 +1213,7 @@ export function cassure(pts) {
 export function donneesTitr(e) {
   const P = planDe(e, 'titr_carb_plan') || { m: 0.2, V0: 100, c: 0.1, vfin: 12, dv: 0.5 }, w = coohLot(e), suivi = e.f?.suivi || 'ph', ind = suivi === 'ind' ? INDICATEURS.find(i => i.id === e.f.indic) : null;
   const n = P.m * w / M_COOH, veq = n / P.c * 1000;           // mol ; mL
-  const epais = P.m / P.V0 * 100 > 0.6, sig = epais ? 0.22 : 0.04, vols = volumesTitr(P), N = vols.length - 1;
+  const epais = P.m / P.V0 * 100 > 0.6, sig = epais ? 0.12 : 0.012, vols = volumesTitr(P), N = vols.length - 1;
   const pHw = a => 6 + 2 * Math.log10((a + 0.02) / (1 - a + 0.02));
   const pH = v => { const a = P.c * v / 1000 / n; if (a < 0.995) return Math.max(2.8, pHw(a)); return Math.max(pHw(0.995), 14 + Math.log10(Math.max(1e-9, P.c * v / 1000 - n) / ((P.V0 + v) / 1000))); };
   const base = { P, w, n, veq, epais, N, suivi, ind, vols };
@@ -1271,6 +1271,7 @@ add('titr_live', {
 add('titr_carb_plan', {
   fiches: ['synthalen'],
   lieu: 'Salle de titrage', pnj: 'moi', station: 'plan', titre: 'Titrer les acides du Synthalen K',
+  visuels: () => [{ type: 'carbomere' }],
   texte: () => `Le Synthalen K est un polymère de l'acide acrylique réticulé : ses groupes acide carboxylique (–COOH, M = ${nf(M_COOH, 2)} g/mol pour le motif COOH ; la fiche technique donne la masse équivalente du polymère) sont neutralisés par la trolamine pour former le gel. Connaître leur quantité dans ton lot permet de calculer la base à prévoir. Tu disperses une masse m de poudre dans un volume d'eau, et tu la titres à la soude. À toi de concevoir ce titrage.`,
   hyp: "Hypothèses : tous les groupes COOH sont accessibles à la soude ; le milieu reste assez fluide pour que la mesure se stabilise ; l'équivalence est repérée selon la méthode de suivi choisie (maximum de dpH/dV, cassure des droites de conductivité, virage de l'indicateur).",
   aide: { pnj: 'lucas', textes: [
@@ -1295,28 +1296,57 @@ add('titr_carb', {
       : `${debut}\nTu n'as pas assez de points de part et d'autre de la cassure de la courbe de conductivité pour la repérer.`;
     if (d.suivi === 'pt') return `${debut}\nLa tension mesurée reste voisine de 250 mV pendant tout le titrage, sans saut ni changement de pente.`;
     return d.atteint
-      ? `${debut}\nLe maximum de la courbe dérivée est à V_éq = ${nf(d.vEq, 2)} mL.`
+      ? `${debut}\nTu disposes des mesures sous trois formes : courbe pH = f(V), courbe dérivée et tableau (avec la dérivée calculée). Repère le volume de soude versé à l'équivalence, V_éq.`
       : `Tu as versé jusqu'à ${nf(d.P.vfin, 1)} mL de soude à ${nf(d.P.c, 2)} mol/L : le pH monte sans jamais présenter de saut net, ou tu n'as pas assez de points pour le repérer. Tu n'as pas atteint l'équivalence.`; },
-  visuels: e => { const d = donneesTitr(e); if (d.suivi === 'ind') return []; if (d.suivi === 'ph') return [{ type: 'titrage', titre: 'Titrage du Synthalen K : pH = f(V soude)', pts: d.pts, der: d.der, veq: d.vEq }];
+  visuels: e => { const d = donneesTitr(e); if (d.suivi === 'ind') return []; if (d.suivi === 'ph') return [{ type: 'tableur', titre: 'Titrage du Synthalen K : pH = f(V soude)', pts: d.pts, ordonnee: 'pH' }];
     const g = GRANDEUR_TITR[d.suivi]; return [{ type: 'titrage', titre: `Titrage du Synthalen K : ${g.y} = f(V soude)`, pts: d.pts, der: [], veq: d.suivi === 'cond' ? d.vEq : null, y: g.y, yr: g.yr, droites: d.cass ? [d.cass.A, d.cass.B] : null }]; },
   hyp: 'Hypothèse : le saut de pH, très étalé pour un polyélectrolyte, est repéré au maximum de la dérivée ; avec la conductivité, l\'équivalence est à l\'intersection des deux droites ; avec un indicateur, au changement de couleur. L\'incertitude sur V_éq est de l\'ordre du pas d\'addition.',
   choix: e => donneesTitr(e).atteint
-    ? [{ t: 'Calculer la teneur en groupes COOH', duree: 0, vers: 'titr_carb_calc' }, { t: 'Refaire le titrage autrement', d: 'Nouvelle prise d\'essai, nouvelle mesure.', duree: 0, vers: 'titr_suivi' }]
+    ? [{ t: donneesTitr(e).suivi === 'ph' ? 'Lire V_éq sur les courbes' : 'Calculer la teneur en groupes COOH', duree: 0, vers: donneesTitr(e).suivi === 'ph' ? 'titr_carb_lecture' : 'titr_carb_calc' }, { t: 'Refaire le titrage autrement', d: 'Nouvelle prise d\'essai, nouvelle mesure.', duree: 0, vers: 'titr_suivi' }]
     : [{ t: 'Refaire le titrage autrement', d: 'Nouvelle prise d\'essai, nouvelle mesure.', duree: 0, vers: 'titr_suivi' }, { t: 'Renoncer à ce dosage', duree: 0, vers: 'hub', note: 'Titrage du Synthalen K abandonné.' }],
+});
+const vEqRetenu = e => (Number.isFinite(e.f.vLu) ? e.f.vLu : donneesTitr(e).vEq);
+const pctRetenu = e => { const d = donneesTitr(e); return d.P.c * vEqRetenu(e) / 1000 * M_COOH / d.P.m * 100; };
+export const COOH_FICHE = [56, 68];          // fiche technique (carbomère) : teneur en groupes COOH en % massique
+add('titr_carb_lecture', {
+  fiches: ['synthalen'],
+  lieu: 'Salle de titrage', pnj: 'moi', titre: 'Lire le volume à l\'équivalence',
+  visuels: e => SCENES.titr_carb.visuels(e),
+  texte: e => { const d = donneesTitr(e); return `Tu as titré ${nf(d.P.m, 3)} g de Synthalen K dans ${d.P.V0} mL d'eau par de la soude à ${nf(d.P.c, 2)} mol/L. Pour un polyélectrolyte, le saut de pH est très étalé : on repère l'équivalence au maximum de la courbe dérivée dpH/dV. Zoome autour du maximum pour lire V_éq avec la précision permise par tes pas d'addition.`; },
+  hyp: 'Hypothèse : le maximum de la dérivée donne l\'équivalence ; la dérivée est calculée entre deux points successifs et placée au volume moyen, donc l\'incertitude sur V_éq est de l\'ordre de la moitié du pas d\'addition à cet endroit.',
+  aide: { pnj: 'lucas', textes: [
+    () => '« Dans l\'onglet de la dérivée, où se trouve le point le plus haut ? Zoome autour pour le lire précisément. »',
+    () => '« Le volume à lire est celui du point le plus haut de la dérivée (le volume moyen indiqué sous le graphique). Avec des ajouts de 0,25 mL près de l\'équivalence, tu peux le lire à environ 0,1 mL. »',
+    () => '« Mets le curseur sur le sommet de la dérivée : la lecture donne V moyen. C\'est ton V_éq. »'] },
+  calcul: { q: 'Quel volume V_éq lis-tu au maximum de la courbe dérivée ?', unite: 'mL', vrai: e => donneesTitr(e).vEq, tolAbs: 0.3, cs: 2, indice: 'Place le curseur sur le point le plus haut de la courbe dérivée (onglet « Dérivée »), et lis le volume moyen affiché.',
+    ok: { vers: 'titr_carb_calc', duree: 3, run: n => ({ ...n, f: { ...n.f, vLu: (n.f.calcs.find(c => c.id === 'titr_carb_lecture').saisies.slice(-1)[0]) } }), note: 'Titrage du Synthalen K : volume à l\'équivalence lu sur la courbe dérivée.' },
+    ko: { vers: 'titr_carb_calc', duree: 0, run: n => ({ ...n, f: { ...n.f, vLu: donneesTitr(n).vEq } }) } },
 });
 add('titr_carb_calc', {
   fiches: ['synthalen'],
   visuels: e => SCENES.titr_carb.visuels(e),
   lieu: 'Salle de titrage', pnj: 'moi', titre: 'Teneur en groupes acides',
-  texte: e => { const d = donneesTitr(e); return `Prise d'essai m = ${nf(d.P.m, 3)} g de Synthalen K ; soude à c = ${nf(d.P.c, 2)} mol/L ; équivalence à V_éq = ${nf(d.vEq, 2)} mL. Un groupe COOH consomme un ion hydroxyde.`; },
+  texte: e => { const d = donneesTitr(e); return `Prise d'essai m = ${nf(d.P.m, 3)} g de Synthalen K ; soude à c = ${nf(d.P.c, 2)} mol/L ; équivalence à V_éq = ${nf(vEqRetenu(e), 2)} mL. Un groupe COOH consomme un ion hydroxyde.`; },
   hyp: "Hypothèse : chaque COOH du polymère réagit avec un seul HO⁻ ; la masse de COOH est calculée avec M = 45,02 g/mol (motif –COOH).",
   aide: { pnj: 'lucas', textes: [
     () => '« À l\'équivalence, combien de moles de HO⁻ as-tu versées, et à quoi correspondent-elles ? »',
     () => '« Chaque groupe COOH réagit avec un HO⁻ : n(COOH) = n(HO⁻ versées) = c × V_éq. »',
     () => '« m(COOH) = n × 45,02 g/mol, avec V_éq en litres ; puis m(COOH) / m(poudre) × 100. »'] },
-  calcul: { q: 'Quel est le pourcentage massique de groupes COOH dans le Synthalen K ?', unite: '%', vrai: e => donneesTitr(e).pctMes, tol: 0.04, cs: 1, indice: 'n(COOH) = c × V_éq (en mol, V en litres). Masse de COOH = n × 45,02 g/mol. Divise par la masse m de poudre.',
-    ok: { vers: 'hub', duree: 5, run: n => ({ ...marquer(n, 'titrCarb'), f: { ...n.f, cooh: arr(donneesTitr(n).pctMes, 1) } }), note: 'Titrage du Synthalen K : teneur en groupes COOH déterminée.' },
-    ko: { vers: 'hub', duree: 0, run: n => marquer(n, 'titrCarb') } },
+  calcul: { q: 'Quel est le pourcentage massique de groupes COOH dans le Synthalen K ?', unite: '%', vrai: e => pctRetenu(e), tol: 0.04, cs: 1, indice: 'n(COOH) = c × V_éq (en mol, V en litres). Masse de COOH = n × 45,02 g/mol. Divise par la masse m de poudre.',
+    ok: { vers: 'titr_carb_comp', duree: 5, run: n => ({ ...marquer(n, 'titrCarb'), f: { ...n.f, cooh: arr(pctRetenu(n), 1) } }), note: 'Titrage du Synthalen K : teneur en groupes COOH déterminée.' },
+    ko: { vers: 'titr_carb_comp', duree: 0, run: n => ({ ...marquer(n, 'titrCarb'), f: { ...n.f, cooh: arr(pctRetenu(n), 1) } }) } },
+});
+
+add('titr_carb_comp', {
+  fiches: ['synthalen', 'trolamine'],
+  lieu: 'Salle de titrage', pnj: 'moi', titre: 'Ton lot est-il conforme à la fiche ?',
+  texte: e => { const p = e.f.cooh, nG = p / 100 / M_COOH * 1000, [a, b] = COOH_FICHE, dans = p >= a && p <= b;
+    const verdict = dans ? `Ta teneur (${nf(p, 1)} %) est dans l'intervalle annoncé par la fiche (${a} à ${b} %) : la fiche décrit correctement ce lot.`
+      : p < a ? `Ta teneur (${nf(p, 1)} %) est sous l'intervalle annoncé par la fiche (${a} à ${b} %). Une poudre hygroscopique laissée longtemps dans un bidon ouvert se charge d'eau : une partie de la masse pesée n'est pas du polymère. Un lot dégradé est une autre possibilité, mais l'humidité est l'explication la plus probable.`
+      : `Ta teneur (${nf(p, 1)} %) dépasse l'intervalle annoncé par la fiche (${a} à ${b} %), ce qui est surprenant : relis ton calcul et ta lecture de V_éq avant d'en tirer une conclusion.`;
+    return `${verdict}\nPour 1 g de poudre de ton lot : n(COOH) = ${nf(p, 1)} % ÷ 45,02 g/mol = ${nf(nG, 1)} mmol. La fiche annonce, pour amener 1 g de polymère à pH 7, environ 10 mmol de base (1,5 g de trolamine) : cela revient à neutraliser environ ${nf(10 / (1000 / 76) * 100, 0)} % des groupes COOH de la fiche, et pas tous, car la trolamine est une base faible (pKa 7,8). La neutralisation complète demanderait ${nf(nG * 149.19 / 1000, 2)} g de trolamine par gramme de poudre de ton lot.\nEn neutralisant la même fraction des COOH de ton lot, il faut donc environ ${nf(10 / (1000 / 76) * nG * 149.19 / 1000, 2)} g de trolamine par gramme de poudre pour viser pH 7 (valeur indicative, à ajuster au pH-mètre).`; },
+  hyp: 'Hypothèse : la neutralisation du carbomère par la trolamine se fait groupe COOH par groupe COOH ; la quantité de base pour un pH donné est proportionnelle à la quantité de COOH, donc à la teneur du lot.',
+  choix: [{ t: 'Retourner à la paillasse', vers: 'hub', duree: 0 }],
 });
 
 // ───────────── Refaire un lot : les méthodes déjà au point ne sont pas à reconstruire ─────────────
