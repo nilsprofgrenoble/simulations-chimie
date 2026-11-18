@@ -65,7 +65,7 @@ const expert = {
   calc: (e, k) => J.nf(k.vrai(e), k.cs ?? 2),   // réponse arrondie comme affichée : doit être acceptée
   choix: (e, ch) => {
     if (e.scene === 'hub') { const ordre = ['es_balance', 'es_prep', 'eth1', 'titr_suivi', 'choix_caf', 'hplc_m', 'choix_eth', 'cpg_m', 'rheoC', 'es_calc1', 'es_calc2b', 'es_calc3', 'formule', 'eq_base', 'fab_choix', 'fab_disp', 'rheoF', 'uv_ajouts_plan', 'uv_ext_plan', 'hplc_gamme_plan', 'hplc_ei', 'cpg_inj', 'eq_ines', 'verdict'];
-      return [...ch].filter(c => !c.bloque && !c.pause).sort((a, b) => ordre.indexOf(a.vers) - ordre.indexOf(b.vers)).find(c => ordre.includes(c.vers)) || ch.find(c => !c.bloque && !c.pause); }
+      return [...ch].filter(c => !c.bloque && !c.pause && c.vers !== 'brook').sort((a, b) => ordre.indexOf(a.vers) - ordre.indexOf(b.vers)).find(c => ordre.includes(c.vers)) || ch.find(c => !c.bloque && !c.pause && c.vers !== 'brook'); }
     if (e.scene === 'titr_suivi') return ch.find(c => c.id === 'ph');
     if (e.scene === 'titr_indic') return ch.find(c => c.id === 'php');
     if (e.scene === 'choix_caf') return ch.find(c => c.id === (e.f.graine % 2 ? 'clhpExt' : 'clhpExt'));
