@@ -66,12 +66,13 @@ export default function FichesPercutafeine({ ids, ouvert = false }) {
         <Tableau lignes={[['Aspect', 'Liquide limpide à légèrement trouble, peu coloré'], ['Rôle', 'Émollient et agent solubilisant, adoucit le toucher du gel'], ['Solubilité', 'Soluble dans l\'eau et dans l\'éthanol'], ['Volatilité', 'Non volatil : reste dans l\'extrait sec'], ['Remarque du sujet', 'S\'il manque au laboratoire, il peut être remplacé par du glycérol']]} />
       </Feuille>);
     if (id === 'mo1') return (
-      <Feuille key={id} ouvert={ouvert} entete="Mode opératoire · document 1" titre="Dosage de la caféine par CLHP, étalon interne" sous="Préparation des solutions · éluant acétonitrile / eau acidifiée 70/30, détection UV à 273 nm" edition="reproduction du sujet">
+      <Feuille key={id} ouvert={ouvert} entete="Mode opératoire · document 1" titre="Dosage de la caféine par CLHP" sous="Préparation des solutions · éluant acétonitrile / eau acidifiée 70/30, détection UV à 273 nm" edition="reproduction du sujet">
         <Liste items={[
           'Solution de référence (fiole 3) : prélever 100 µL de la fiole 1 (caféine ≈ 50 mg dans 50 mL d\'éluant) et 200 µL de la fiole 2 (benzoïne ≈ 100 mg dans 50 mL d\'éluant), compléter à 20 mL avec l\'éluant.',
           'Solution échantillon : dissoudre environ exactement m g de gel dans environ 30 mL d\'éluant, filtrer sur papier plissé dans une fiole jaugée de 50 mL, rincer le filtre avec 10 mL d\'éluant et compléter au trait : c\'est la fiole 4.',
           'Fiole 5 : prélever 100 µL de la fiole 4 et 200 µL de la fiole 2, compléter à 20 mL avec l\'éluant. C\'est la solution échantillon injectée.',
-          'Exploitation : relever les aires des pics des fioles 3 et 5, puis calculer la concentration en caféine de l\'échantillon avec le rapport des aires caféine / benzoïne.',
+          'Exploitation, étalon interne : relever les aires des pics des fioles 3 et 5, puis calculer la concentration en caféine de l\'échantillon avec le rapport des aires caféine / benzoïne.',
+          'Exploitation, étalonnage externe : seule l\'aire de la caféine est utilisée ; la benzoïne ajoutée ne gêne pas. On compare l\'aire de la fiole 5 à celles d\'une gamme de solutions de caféine préparées par dilution de la fiole 1.',
         ]} />
         <SchemaFiolesClhp />
       </Feuille>);
