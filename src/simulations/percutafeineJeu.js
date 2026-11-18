@@ -120,7 +120,9 @@ export const niveaux = (vmin, vmax, n) => Array.from({ length: n }, (_, i) => Ma
 const absUv = (A, e, cle) => arr(Math.min(2.5, Math.max(0, A * (1 - 0.08 * Math.max(0, A - 0.8)) + 0.004 * gauss(e.f.graine, cle))), 3);   // écart à la loi de Beer-Lambert au-delà de A ≈ 0,8, bruit de 0,004
 export function donneesUv(e) {
   const g = e.f.graine, gel = gelVrai(e), mDef = arr(0.98 + 0.08 * unif(g, 'um'), 3);
-  const pa = planDe(e, 'uv_ajouts_plan') || { m: mDef, vp: 200, dv: 50, n: 5 }, pe = planDe(e, 'uv_ext_plan') || { m: mDef, vp: 200, vmin: 20, vmax: 200, n: 5 };
+  const pesee = (m, cle) => arr(m * (1 + 0.04 * (unif(g, cle) - 0.5)), 3);   // masse réellement pesée : proche de la masse visée, jamais exactement égale
+  const pa0 = planDe(e, 'uv_ajouts_plan') || { m: mDef, vp: 200, dv: 50, n: 5 }, pe0 = planDe(e, 'uv_ext_plan') || { m: mDef, vp: 200, vmin: 20, vmax: 200, n: 5 };
+  const pa = { ...pa0, m: pesee(pa0.m, 'upa') }, pe = { ...pe0, m: pesee(pe0.m, 'upe') };
   const cGel = (m, vp, cle) => gel.caf * m * pip(e, vp, cle) / 100;   // mg/L de caféine du gel dans la fiole de 20 mL
   const ajouts = Array.from({ length: pa.n }, (_, i) => { const v = i * pa.dv; return { v, c: arr(v * 1.003 / 20, 2), A: absUv(K_GEL * (cGel(pa.m, pa.vp, `uvp${i}`) + pip(e, v, `uvs${i}`) * 1.003 / 20), e, `ua${i}`) }; });
   const rg = regression(ajouts.map(p => [p.c, p.A])), a = arr(rg.a, 4), b = arr(rg.b, 4);
@@ -313,6 +315,7 @@ const taches = e => {
   if (!e.f.voieEth && !e.f.rapideEth) L.push(['Choisir comment contrôler l\'éthanol du gel', 'Quelle technique utiliser pour vérifier l\'éthanol ?', 'choix_eth']);
   if (e.f.voieEth === 'cpg' && !F.cpgPrep) L.push(['Préparer le dosage de l\'éthanol', 'Masse à peser, solution de référence, première injection.', 'cpg_m']);
   if (F.fab && !F.ph) L.push(['Neutraliser et mettre en pot', `Quand le Synthalen K est dispersé : ajouter la trolamine et contrôler le pH.${e.bg.gel > e.t ? ` Attention : dispersion en cours, prête dans ${duree(e.bg.gel - e.t)}, tu devras attendre.` : ''}`, 'fab_disp']);
+  if (!F.brook) L.push(['Mesurer la viscosité du gel commercial au viscosimètre Brookfield', 'Mobile et vitesse (20 tr/min) comme dans la fiche du Synthalen K, à 25 °C : de quoi prévoir la quantité de Synthalen K à mettre.', 'brook']);
   if (F.rheoC && !F.rheoF) L.push(['Comparer les rhéologies', 'La viscosité est la seule grandeur impossible à prévoir : mesure-la avant les dosages, et compare au gel commercial. Si elle est mauvaise, tu pourras refaire un gel.', 'rheoF', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
   if (F.hplcPrep && !F.caf && !e.f.rapideCaf) L.push(['Doser la caféine du gel formulé', e.f.methCaf === 'ajouts' ? 'Concevoir les fioles, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'ext' ? 'Concevoir la gamme, mesurer au spectrophotomètre UV.' : e.f.methCaf === 'gamme' ? `Concevoir la gamme, injecter en CLHP.${e.bg.clhp > e.t ? ` Attention : ${statutBg(e).clhp.toLowerCase()}, tu devras attendre.` : ''}` : `CLHP, méthode de l'étalon interne.${e.bg.clhp > e.t ? ` Attention : ${statutBg(e).clhp.toLowerCase()}, tu devras attendre.` : ''}`, e.f.methCaf === 'ajouts' ? 'uv_ajouts_plan' : e.f.methCaf === 'ext' ? 'uv_ext_plan' : e.f.methCaf === 'gamme' ? 'hplc_gamme_plan' : 'hplc_ei', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
   if (F.cpgPrep && !F.ethQC && !e.f.rapideEth) L.push(['Doser l\'éthanol du gel formulé', 'CPG avec étalon interne : une solution de référence, une solution de gel, le calcul.', 'cpg_inj', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
@@ -423,12 +426,12 @@ for (const [qui, lieu] of [['dubreuil', 'Bureau de Mme Dubreuil'], ['ines', 'Sal
 }
 
 // ───────────── Appareils du laboratoire qui ne répondent pas à la question ─────────────
-const leurre = (id, titre, texte, note, d = 15) => add(id, {
-  lieu: 'Laboratoire', pnj: 'moi', titre, texte: () => texte,
+const leurre = (id, titre, texte, note, d = 15, visuels) => add(id, {
+  lieu: 'Laboratoire', pnj: 'moi', titre, texte: () => texte, ...(visuels ? { visuels } : {}),
   choix: [{ t: 'Retour à la paillasse', duree: d, vers: 'hub', run: n => ({ ...marquer(n, id), f: { ...n.f, leurres: (n.f.leurres || 0) + 1 } }), note }],
 });
-leurre('leurre_ir', 'Spectre IR du gel', 'Le spectre ATR du gel est enregistré (4 000 à 650 cm⁻¹). Bandes relevées : large entre 3 600 et 3 000 cm⁻¹ ; 2 970 et 2 880 cm⁻¹ ; faibles vers 1 700 et 1 660 cm⁻¹ ; 1 450 cm⁻¹ ; massif intense vers 1 100 et 1 050 cm⁻¹ ; 880 cm⁻¹.', 'Spectre IR (ATR) du gel commercial enregistré.');
-leurre('leurre_refracto', 'Indice de réfraction du gel', 'Trois lectures à 20 °C sur le prisme : n = 1,364 ; 1,363 ; 1,364.', 'Indice de réfraction du gel commercial mesuré.');
+leurre('leurre_ir', 'Spectre IR du gel', 'Le spectre ATR du gel est enregistré (4 000 à 650 cm⁻¹). Bandes relevées : large entre 3 600 et 3 000 cm⁻¹ ; 2 970 et 2 880 cm⁻¹ ; faibles vers 1 700 et 1 660 cm⁻¹ ; 1 450 cm⁻¹ ; massif intense vers 1 100 et 1 050 cm⁻¹ ; 880 cm⁻¹.', 'Spectre IR (ATR) du gel commercial enregistré.', 15, () => [{ type: 'ir', titre: 'Spectre IR (ATR) du gel commercial', bandes: [[3330, 0.55, 180, 'O–H'], [2970, 0.35, 40, 'C–H'], [2880, 0.35, 40, ''], [1700, 0.08, 25, 'C=O (faible)'], [1660, 0.1, 25, ''], [1450, 0.25, 30, 'C–H'], [1100, 0.8, 45, 'C–O'], [1050, 0.85, 40, ''], [880, 0.3, 20, '']] }]);
+leurre('leurre_refracto', 'Indice de réfraction du gel', 'Trois lectures à 20 °C sur le prisme : n = 1,364 ; 1,363 ; 1,364.', 'Indice de réfraction du gel commercial mesuré.', 15, () => [{ type: 'refracto', n: 1.364 }]);
 leurre('leurre_polar', 'Pouvoir rotatoire du gel', 'Solution de 5 g de gel dans 50 mL d\'eau, cuve de 10 cm, lampe au sodium (589 nm). Trois lectures : 0,00° ; 0,01° ; 0,00°.', 'Pouvoir rotatoire du gel commercial mesuré.');
 leurre('leurre_titrgel', 'Titrage du gel commercial', 'Tu dissous 5 g de gel dans 50 mL d\'eau et tu ajoutes de la soude à 0,1 mol/L. pH de départ : 6,1. Après 5 mL : 6,8 ; 10 mL : 7,4 ; 15 mL : 8,0 ; 20 mL : 8,5. Chaque lecture met une à deux minutes à se stabiliser, et le milieu devient plus épais au fil des ajouts.', 'Titrage du gel commercial à la soude réalisé (20 mL versés).', 30);
 leurre('leurre_conduc', 'Conductivité du gel', 'Cellule plongée dans le gel, mesure à 20 °C. Après 3 minutes de stabilisation : 420 µS/cm.', 'Conductivité du gel commercial mesurée.');
@@ -835,6 +838,13 @@ add('rheoC', {
   hyp: "Hypothèse : chaque modèle est une loi empirique ; on garde le plus simple qui suit tous les points (écart relatif de quelques %). Les valeurs sont des données de scénario inspirées des mesures des élèves.",
   choix: [],
 });
+add('brook', {
+  lieu: 'Salle de rhéologie', pnj: 'lucas', titre: 'Viscosité du gel commercial au Brookfield',
+  fiches: ['synthalen'],
+  texte: () => `Lucas règle le viscosimètre Brookfield dans les conditions de la fiche du Synthalen K : mobile adapté, 20 tr/min, 25 °C.\nLecture sur le gel commercial : η ≈ 78 000 mPa·s (trois lectures voisines de 77 000 à 79 000).\nLa fiche annonce, dans les mêmes conditions, 40 000 à 60 000 mPa·s pour un gel à 0,5 % en masse de Synthalen K. Le gel commercial est donc plus visqueux que celui de la fiche : il contient plus de 0,5 % de Synthalen K. Garde cet ordre de grandeur pour fixer la masse de Synthalen K de ta formule (pour 200 g de gel).`,
+  hyp: "Hypothèse : à 20 tr/min et 25 °C, la viscosité du gel augmente avec la teneur en polymère (pas proportionnellement) ; la valeur de 78 000 mPa·s est une donnée du scénario.",
+  choix: [{ t: 'Noter la valeur et revenir à la paillasse', duree: 15, vers: 'hub', run: n => marquer(n, 'brook'), note: 'Viscosité du gel commercial (Brookfield, 20 tr/min, 25 °C) : environ 78 000 mPa·s, supérieure à celle d\'un gel à 0,5 % de Synthalen K (40 000 à 60 000 mPa·s).' }],
+});
 add('rheoC_faux', {
   lieu: 'Salle de rhéologie', pnj: 'lucas', titre: 'Relis la courbe',
   texte: e => e.f.rheoFaute === 'seuil' ? `Lucas : « Ton modèle est le bon, mais ton seuil est à côté. Le seuil τ₀ est la contrainte que le modèle donne quand γ̇ tend vers 0 : regarde le paramètre τ₀ de l'ajustement, il est d'environ ${nf(HB.tau0, 0)} Pa. »` : 'Lucas : « Regarde les points à faible gradient : la contrainte ne tend pas vers zéro, il y a un seuil d\'écoulement, et la viscosité diminue quand on cisaille davantage (rhéofluidifiant). Seul le modèle de Herschel-Bulkley, seuil plus loi de puissance, suit tous les points : les autres s\'en écartent d\'au moins 10 % à un bout de la courbe. »',
@@ -860,8 +870,8 @@ add('choix_caf', {
   texte: () => `Il faut vérifier que ton gel contient bien la caféine attendue, avec une incertitude raisonnable. Le laboratoire met à ta disposition les techniques suivantes : aucune n'est imposée, le choix t'appartient.`,
   choix: e => melange(e, 'caf', [
     { id: 'clhpExt', t: 'Chromatographie liquide (CLHP-UV, 273 nm) avec une gamme d\'étalonnage externe', d: 'Fioles de caféine de concentrations croissantes, à injecter une à une (10 min pour sortir la solution mère, puis la préparation et l\'injection de chaque fiole).', duree: 10, vers: 'hplc_m', f: { voieCaf: 'clhp', hplcGamme: true }, note: 'Caféine : technique choisie, CLHP avec gamme d\'étalonnage externe.' },
-    { id: 'uvAj', t: 'Spectrophotométrie UV (273 nm) avec ajouts dosés', d: 'Cuve de 1 cm ; cinq fioles à préparer à partir de la solution de gel.', duree: 10, vers: 'hub', f: { voieCaf: 'uv', methCaf: 'ajouts', panne: false }, run: n => marquer(n, 'hplcPrep'), note: 'Caféine : technique choisie, UV avec ajouts dosés.' },
-    { id: 'uvExt', t: 'Spectrophotométrie UV (273 nm) avec une gamme d\'étalonnage externe', d: 'Cuve de 1 cm ; gamme de caféine dans l\'éluant.', duree: 10, vers: 'hub', f: { voieCaf: 'uv', methCaf: 'ext', panne: false }, run: n => marquer(n, 'hplcPrep'), note: 'Caféine : technique choisie, UV avec étalonnage externe.' },
+    { id: 'uvAj', t: 'Spectrophotométrie UV (273 nm) avec ajouts dosés', d: 'Cuve de 1 cm ; cinq fioles à préparer à partir de la solution de gel.', duree: 10, vers: x => (x.fait.ph ? 'hub' : 'attente_gel'), f: { voieCaf: 'uv', methCaf: 'ajouts', panne: false }, run: n => marquer(n, 'hplcPrep'), note: 'Caféine : technique choisie, UV avec ajouts dosés.' },
+    { id: 'uvExt', t: 'Spectrophotométrie UV (273 nm) avec une gamme d\'étalonnage externe', d: 'Cuve de 1 cm ; gamme de caféine dans l\'éluant.', duree: 10, vers: x => (x.fait.ph ? 'hub' : 'attente_gel'), f: { voieCaf: 'uv', methCaf: 'ext', panne: false }, run: n => marquer(n, 'hplcPrep'), note: 'Caféine : technique choisie, UV avec étalonnage externe.' },
     { id: 'titrage', t: 'Titrage acido-basique de la caféine par la soude', d: 'pH-mètre et burette.', duree: 25, vers: 'caf_titrage', run: essaiInadapte, note: 'Caféine : titrage acido-basique essayé.' },
   ]),
 });
@@ -869,6 +879,11 @@ add('caf_titrage', {
   lieu: 'Paillasse', pnj: 'moi', titre: 'Titrage de la caféine : la courbe pH = f(V)',
   texte: () => `Tu traces la courbe : un seul saut de pH, très étalé, qui apparaît bien avant la quantité de soude attendue pour 5 % de caféine. Dans l'eau, l'acide conjugué de la caféine a un pKa d'environ 0,6 : la caféine est une base bien trop faible pour être dosée par un acide ou une base courants, alors que le Synthalen K et la trolamine du gel, eux, réagissent avec la soude. Cette courbe ne renseigne pas sur la caféine.\nTu as perdu 25 minutes.`,
   choix: [{ t: 'Choisir une autre technique', duree: 0, vers: 'choix_caf' }],
+});
+add('attente_gel', {
+  lieu: 'Salle des spectrophotomètres', pnj: 'moi', titre: 'Attendons d\'avoir le gel formulé',
+  texte: () => `Ta technique est choisie et notée dans ton cahier. Mais le gel à doser n'existe pas encore : il faut d'abord le formuler, le neutraliser et le mettre en pot. Tu reprendras ce dosage dès que le gel sera prêt ; il apparaîtra alors dans ta liste de tâches, à la paillasse.`,
+  choix: [{ t: 'Retour à la paillasse (suite lorsque le gel sera formulé)', duree: 0, vers: 'hub' }],
 });
 add('choix_eth', {
   lieu: 'Salle de chromatographie', pnj: 'moi', titre: 'Contrôler l\'éthanol du gel',
@@ -974,7 +989,7 @@ add('hplc_gamme_calc', {
   aide: { pnj: 'ines', textes: [
     () => '« Que te permet de calculer la droite d\'étalonnage à partir de l\'aire de ton échantillon ? »',
     () => '« Inverse la droite : concentration = (aire − ordonnée à l\'origine) / pente. C\'est la concentration de la fiole 5. »',
-    () => '« Multiplie par 200 pour la fiole 4, par 0,050 L pour la masse en mg, puis divise par la masse de gel. »'] },
+    () => '« En trois étapes : (1) la concentration lue est celle de la fiole 5 : multiplie par le facteur de dilution (200) pour la fiole 4 ; (2) passe de la concentration à la masse : m = C × 0,050 L (volume de la fiole mère), en mg si C est en mg/L ; (3) pourcentage massique = m(caféine) ÷ m(gel) × 100, avec les deux masses dans la même unité. »'] },
   calcul: { q: 'Quel est le pourcentage massique de caféine dans le gel ?', unite: '%', vrai: e => donneesHplcGamme(e).pct, tol: 0.03, cs: 2, indice: 'C_fiole5 = (aire − b) / pente. × 200 (dilution de la fiole 4 vers la fiole 5), × 0,050 L pour la masse en mg, ÷ masse de gel.',
     ok: { vers: 'hub', duree: 8, run: n => marquer(n, 'caf'), f: { cafMes: true } }, ko: { vers: 'hub', duree: 0, run: n => marquer(n, 'caf'), f: { cafMes: true } } },
 });
@@ -987,7 +1002,7 @@ add('hplc_ei', {
   aide: { pnj: 'ines', textes: [
     () => '« Que faut-il comparer entre la référence et l\'échantillon pour ne pas dépendre du volume injecté ? »',
     () => '« Le rapport des aires caféine / benzoïne dans chaque solution. La référence a une concentration connue : une proportionnalité donne celle de la fiole 5. »',
-    () => '« C_fiole5 = C_réf × (rapport éch) / (rapport réf). Remonte à la fiole 4 par la dilution (× 200), multiplie par 0,050 L, divise par la masse de gel. »'] },
+    () => '« En quatre étapes : (1) C_fiole5 = C_réf × (rapport éch) / (rapport réf) ; (2) la fiole 5 est une dilution de la fiole 4 : multiplie par le facteur de dilution (200) pour avoir C_fiole4 ; (3) passe de la concentration à la masse : m = C_fiole4 × 0,050 L (le volume de la fiole mère), en mg si C est en mg/L ; (4) pourcentage massique = m(caféine) ÷ m(gel) × 100, avec les deux masses dans la même unité. »'] },
   calcul: { q: 'Quel est le pourcentage massique de caféine dans le gel ?', unite: '%', vrai: e => donneesHplc(e).pct, tol: 0.03, cs: 2, indice: 'C_fiole5 = C_réf × (A_benz,réf / A_caf,réf) × (A_caf,éch / A_benz,éch). Puis × 200 (dilution de la fiole 4 vers la fiole 5), × 0,050 L pour la masse en mg, ÷ masse de gel.',
     ok: { vers: 'hub', duree: 25, run: n => marquer(n, 'caf'), f: { cafMes: true } }, ko: { vers: 'hub', duree: 0, run: n => marquer(n, 'caf'), f: { cafMes: true } } },
 });
@@ -1002,6 +1017,7 @@ add('uv_ajouts_plan', {
     () => '« Le gel contient environ 5 % de caféine : m grammes de gel dans 50 mL donnent environ 1 000 × m mg/L dans la fiole mère. Prélève une prise pour avoir à peu près 10 mg/L dans la fiole de 20 mL, puis ajoute de l\'étalon (1,003 g/L) pour doubler la concentration environ, sans dépasser A = 0,8. Évite de pipeter moins de 50 µL : l\'erreur relative devient grosse. »',
     () => '« Je ferais : 1 g de gel dans 50 mL, une prise de 160 µL, des ajouts de 30 µL, 6 fioles. »'],
     valeurs: () => ({ m: 1, vp: 160, dv: 30, n: 6 }) },
+  visuels: () => [{ type: 'schemaAjouts' }],
   plan: { infos: INFOS_UV, vers: 'uv_ajouts', duree: v => 8 + 3 * v.n, note: v => `Ajouts dosés UV : ${nf(v.m, 3)} g de gel dans 50 mL, prise de ${v.vp} µL, ajouts de ${v.dv} µL en ${v.n} fioles.`,
     champs: [{ id: 'm', l: 'Masse de gel dans la fiole mère de 50 mL', u: 'g', min: 0.05, max: 2.5 }, { id: 'vp', l: 'Prise de fiole mère dans chaque fiole de 20 mL', u: 'µL', min: 20, max: 5000 }, { id: 'dv', l: 'Pas d\'ajout de solution étalon (Δ)', u: 'µL', min: 20, max: 5000 }, { id: 'n', l: 'Nombre de fioles (la première sans ajout)', u: '', min: 3, max: 8, entier: true }],
     controle: v => volTotal(v.vp + (v.n - 1) * v.dv),
@@ -1012,18 +1028,18 @@ add('uv_ajouts', {
   texte: e => { const d = donneesUv(e); return `Gel formulé : ${nf(d.mPes, 3)} g dans 50 mL (fiole mère). Dans ${d.planA.n} fioles de 20 mL : ${d.planA.vp} µL de fiole mère + 0 à ${(d.planA.n - 1) * d.planA.dv} µL de solution étalon (1,003 g/L). Droite A = a·C_ajoutée + b, avec C en mg/L dans la fiole de 20 mL : a = ${nf(d.a, 4)} L/mg, b = ${nf(d.b, 4)}, R² = ${nf(d.r2, 4)}.`; },
   formule: 'ajouts',
   hyp: "Hypothèses : A proportionnelle à la concentration (Beer-Lambert) ; la matrice (excipients du gel) est identique dans les fioles, donc la sensibilité est la même pour la caféine du gel et pour la caféine ajoutée ; extrapolation linéaire jusqu'à A = 0. Vérifie les résidus.",
-  visuels: e => { const d = donneesUv(e); return [{ type: 'droite', titre: 'Ajouts dosés : A = f(C ajoutée)', xl: 'C ajoutée (mg/L)', yl: 'A', pts: d.ajouts.map(p => [p.c, p.A]), a: d.a, b: d.b, residus: d.residus }, { type: 'tableau', titre: 'Mesures', cols: ['V ajouté (µL)', 'C ajoutée (mg/L)', 'A'], lignes: d.ajouts.map(p => [String(p.v), nf(p.c, 2), nf(p.A, 3)]) }]; },
+  visuels: e => { const d = donneesUv(e); return [{ type: 'droite', titre: 'Ajouts dosés : A = f(C ajoutée)', xl: 'C ajoutée (mg/L)', yl: 'A', pts: d.ajouts.map(p => [p.c, p.A]), a: d.a, b: d.b, residus: d.residus }, { type: 'tableau', titre: 'Mesures', cols: ['V ajouté (µL)', 'C ajoutée (mg/L)', 'A'], lignes: d.ajouts.map(p => [String(p.v), nf(p.c, 2), nf(p.A, 3)]) }, { type: 'tableau', titre: 'Valeurs à retenir pour le calcul', cols: ['Grandeur', 'Valeur'], lignes: [['Masse de gel pesée dans la fiole de 50 mL', `${nf(d.mPes, 3)} g`], ['Prise de fiole mère par fiole de 20 mL', `${d.planA.vp} µL`], ['Pente a', `${nf(d.a, 4)} L/mg`], ['Ordonnée à l\'origine b', nf(d.b, 4)], ['R²', nf(d.r2, 4)]] }]; },
   choix: [{ t: 'Calculer le pourcentage de caféine', duree: 0, vers: 'uv_ajouts_calc' }, { t: 'Refaire mes fioles autrement', d: 'Nouvelle préparation, nouvelles mesures.', duree: 0, vers: 'uv_ajouts_plan', f: { refait: true } }],
 });
 add('uv_ajouts_calc', {
   lieu: 'Salle des spectrophotomètres', pnj: 'ines', titre: 'Caféine par ajouts dosés : calcul',
   texte: e => { const d = donneesUv(e); return `Droite A = a·C_ajoutée + b : a = ${nf(d.a, 4)} L/mg, b = ${nf(d.b, 4)}. Gel : ${nf(d.mPes, 3)} g dans 50 mL, prise de ${d.planA.vp} µL dans 20 mL.`; },
   formule: 'ajouts',
-  visuels: e => { const d = donneesUv(e); return [{ type: 'droite', titre: 'Ajouts dosés : A = f(C ajoutée)', xl: 'C ajoutée (mg/L)', yl: 'A', pts: d.ajouts.map(p => [p.c, p.A]), a: d.a, b: d.b, residus: d.residus }]; },
+  visuels: e => { const d = donneesUv(e); return [{ type: 'schemaAjouts' }, { type: 'droite', titre: 'Ajouts dosés : A = f(C ajoutée)', xl: 'C ajoutée (mg/L)', yl: 'A', pts: d.ajouts.map(p => [p.c, p.A]), a: d.a, b: d.b, residus: d.residus }]; },
   aide: { pnj: 'ines', textes: [
     () => '« Quand on n\'ajoute rien, quelle est la concentration de la solution ? La droite des ajouts te le dit en un point particulier. »',
     () => '« Prolonge la droite jusqu\'à A = 0 : l\'abscisse trouvée, changée de signe, est la concentration de la solution avant ajout. »',
-    () => '« C = b / a. Rapporte-la à la prise d\'essai (dilution de la fiole mère), multiplie par 0,050 L pour la masse en mg, divise par la masse de gel. »'] },
+    () => '« En quatre étapes : (1) C = b / a, concentration de la fiole de 20 mL avant ajout ; (2) la fiole de 20 mL est une dilution de la fiole mère (prise de vp µL dans 20 mL) : multiplie par 20 000 ÷ vp ; (3) passe de la concentration à la masse : m = C_mère × 0,050 L, en mg si C est en mg/L ; (4) pourcentage massique = m(caféine) ÷ m(gel) × 100, avec les deux masses dans la même unité. »'] },
   calcul: { q: 'Quel est le pourcentage massique de caféine dans le gel ?', unite: '%', vrai: e => donneesUv(e).pctAjouts, tol: 0.03, cs: 2, indice: 'À A = 0, C = −b/a : la concentration de caféine du gel dans la fiole de 20 mL vaut b/a. Rapporte-la à la prise (dilution de la fiole mère), multiplie par 0,050 L pour la masse en mg, et divise par la masse de gel.',
     ok: { vers: 'hub', duree: 8, run: n => marquer(n, 'caf'), f: { cafMes: true } }, ko: { vers: 'hub', duree: 0, run: n => marquer(n, 'caf'), f: { cafMes: true } } },
 });
@@ -1056,7 +1072,7 @@ add('uv_ext_calc', {
   aide: { pnj: 'ines', textes: [
     () => '« Que te donne la droite d\'étalonnage quand tu y reportes l\'absorbance de ta solution ? »',
     () => '« Inverse la droite : C = (A − b) / pente, concentration de la solution mesurée. »',
-    () => '« Rapporte-la à la prise (dilution de la fiole mère), multiplie par 0,050 L pour la masse en mg, divise par la masse de gel. »'] },
+    () => '« En trois étapes : (1) la solution mesurée est une dilution de la fiole mère (prise de vp µL dans 20 mL) : multiplie C par 20 000 ÷ vp pour avoir la concentration de la fiole mère ; (2) passe de la concentration à la masse : m = C_mère × 0,050 L, en mg si C est en mg/L ; (3) pourcentage massique = m(caféine) ÷ m(gel) × 100, avec les deux masses dans la même unité. »'] },
   calcul: { q: 'Quel est le pourcentage massique de caféine dans le gel ?', unite: '%', vrai: e => donneesUv(e).pctExt, tol: 0.03, cs: 2, indice: 'C_fiole = (A − b) / pente. Rapporte-la à la prise (dilution de la fiole mère), multiplie par 0,050 L pour la masse en mg, et divise par la masse de gel.',
     ok: { vers: 'uv_ext_dec', duree: 5, f: { extTente: true } }, ko: { vers: 'uv_ext_dec', duree: 0, f: { extTente: true } } },
 });
@@ -1078,7 +1094,7 @@ add('uv_ext_verif', {
 const eiNom = e => ({ propanol: 'propan-1-ol', butanol: 'butan-1-ol' })[e.f.ei || 'propanol'];
 add('cpg_ei', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Changer d\'étalon interne',
-  texte: () => `En CPG, le volume injecté (≈ 0,1 µL) n'est pas maîtrisé : l'aire d'un pic seul ne permet pas de remonter à la masse injectée, il faut un étalon interne dont le pic soit séparé de celui de l'éthanol. Colonne polaire CP Wax, four à 70 °C, durée d'analyse de 3 minutes. Voici les autres étalons internes que l'on peut utiliser et que l'on a en stock :`,
+  texte: e => `En CPG, le volume injecté (≈ 0,1 µL) n'est pas maîtrisé : l'aire d'un pic seul ne permet pas de remonter à la masse injectée, il faut un étalon interne dont le pic soit séparé de celui de l'éthanol. Colonne polaire CP Wax, four à 70 °C, durée d'analyse de ${e.f.cpgDur || 3} minutes. Voici les autres étalons internes que l'on peut utiliser et que l'on a en stock :`,
   hyp: "Hypothèse : le facteur de réponse éthanol / étalon interne est constant ; les deux pics doivent être résolus et sortir dans la durée d'analyse.",
   choix: e => melange(e, 'ei', [
     { id: 'butanol', t: 'Le butan-1-ol', d: 'Alcool primaire en C4.', duree: 10, vers: 'cpg_ref', f: { ei: 'butanol' }, note: 'Étalon interne CPG : butan-1-ol (fiole de référence refaite).' },
@@ -1094,7 +1110,7 @@ add('cpg_sim', {
 });
 add('cpg_pentanol', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Pentan-1-ol : pas de pic',
-  texte: () => `Tu injectes la référence : le pic de l'éthanol est là, mais aucun pic d'étalon interne avant la fin des 3 minutes d'analyse. Le pentan-1-ol, plus lourd, est encore dans la colonne quand l'enregistrement s'arrête.\nTu as perdu 15 minutes.`,
+  texte: e => `Tu injectes la référence : le pic de l'éthanol est là, mais ${(e.f.cpgDur || 3) >= 5 ? 'un pic large et bas apparaît enfin vers 4,6 minutes : le pentan-1-ol, plus lourd, est très retenu. Avec des analyses aussi longues, la série de trois injections par solution ne tient plus dans ta journée ; un étalon plus léger sera plus pratique.' : 'aucun pic d\'étalon interne avant la fin des ' + (e.f.cpgDur || 3) + ' minutes d\'analyse. Le pentan-1-ol, plus lourd, est encore dans la colonne quand l\'enregistrement s\'arrête (en réglant une analyse de 5 minutes, on l\'aurait vu).'}\nTu as perdu 15 minutes.`,
   choix: [{ t: 'Choisir un autre étalon interne', duree: 0, vers: 'cpg_ei' }],
 });
 add('cpg_sans', {
@@ -1119,15 +1135,27 @@ add('cpg_inj1', {
   fiches: ['mo3'],
   texte: () => 'Les fioles sont prêtes. Tu passes à l\'injection de la solution de référence en CPG.\nSur le schéma de l\'appareil, clique à l\'endroit où tu injectes la solution.',
   station: 'schema', schema: 'cpg', cible: 'injecteur',
-  choix: [{ t: 'Injecter la solution de référence', duree: 5, vers: 'cpg_ref' }],
+  choix: [3, 4, 5].map(m => ({ t: `Injecter la solution de référence : analyse de ${m} minutes`, d: m === 3 ? 'Durée habituelle pour un alcool léger.' : m === 5 ? 'Pour voir sortir des composés plus retenus, mais chaque injection coûte plus de temps.' : undefined, duree: m + 2, vers: 'cpg_ref', f: { cpgDur: m } })),
+});
+add('cpg_ident', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Qui est qui ?',
+  fiches: ['mo3'],
+  texte: e => `Tu injectes ${e.f.identQui === 'butanol' ? 'le butan-1-ol' : 'l\'éthanol'} seul, dans les mêmes conditions. Un seul pic, à ${e.f.identQui === 'butanol' ? '2,1' : '1,36'} min : l'autre pic du chromatogramme de la référence est donc l'${e.f.identQui === 'butanol' ? 'éthanol' : 'étalon interne'}. Tu peux étiqueter les pics.`,
+  visuels: e => [{ type: 'chroma', titre: `CPG · ${e.f.identQui === 'butanol' ? 'butan-1-ol' : 'éthanol'} seul`, tmax: e.f.cpgDur || 3, pics: e.f.identQui === 'butanol' ? [{ tr: 2.1, h: 0.9, l: 'butan-1-ol' }] : [{ tr: 1.36, h: 0.5, l: 'éthanol' }] }],
+  choix: [{ t: 'Revenir au chromatogramme de la référence', duree: 0, vers: 'cpg_ref', f: { cpgIdent: true } }],
 });
 add('cpg_ref', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Injection de la référence',
   fiches: ['mo3'],
-  texte: e => { if (e.f.ei === 'butanol') { const d = donneesCpg(e).ref; return `Chromatogramme de la référence : éthanol ${nf(d.aE, 2)} % de l'aire, butan-1-ol ${nf(d.aEI, 2)} %. Les deux pics sont bien séparés. Rapport des aires éthanol / butan-1-ol de la référence : ${nf(d.aE / d.aEI, 3)}. Ce rapport te servira à doser l'éthanol dès que ton gel sera prêt : on injectera alors la solution échantillon dans les mêmes conditions.`; }
+  texte: e => { if (e.f.ei === 'butanol') { const d = donneesCpg(e).ref;
+    if (!e.f.cpgIdent) return `Chromatogramme de la référence : deux pics bien séparés, le pic 1 (${nf(d.aE, 2)} % de l'aire) et le pic 2 (${nf(d.aEI, 2)} %). Le logiciel ne dit pas qui est qui : à toi de déterminer lequel est l'éthanol avant d'exploiter les aires.`;
+    return `Chromatogramme de la référence : éthanol ${nf(d.aE, 2)} % de l'aire, butan-1-ol ${nf(d.aEI, 2)} %. Les deux pics sont bien séparés. Rapport des aires éthanol / butan-1-ol de la référence : ${nf(d.aE / d.aEI, 3)}. Ce rapport te servira à doser l'éthanol dès que ton gel sera prêt : on injectera alors la solution échantillon dans les mêmes conditions.`; }
     return `Chromatogramme de la référence : un seul pic large et dissymétrique vers 1,4 min. L'éthanol (t_R ≈ 1,36 min) et le propan-1-ol (≈ 1,40 min) sortent presque en même temps : le logiciel ne propose qu'une aire pour l'ensemble.`; },
-  visuels: e => e.f.ei === 'butanol' ? [{ type: 'chroma', titre: 'CPG · référence (éthanol + butan-1-ol)', tmax: 3, pics: [{ tr: 1.36, h: 0.5, l: 'éthanol' }, { tr: 2.1, h: 0.9, l: 'butan-1-ol (EI)' }] }] : [{ type: 'chroma', titre: 'CPG · référence (éthanol + propan-1-ol)', tmax: 3, pics: [{ tr: 1.36, h: 0.8, l: 'éthanol + propan-1-ol' }, { tr: 1.42, h: 0.6, l: '' }] }],
-  choix: e => e.f.ei === 'butanol' ? [{ t: 'Retour à la paillasse', duree: 10, vers: 'hub', run: n => marquer(n, 'cpgPrep'), note: 'Référence CPG injectée avec le butan-1-ol : rapport des aires relevé.' }] : [
+  visuels: e => e.f.ei === 'butanol' ? [{ type: 'chroma', titre: 'CPG · référence (éthanol + butan-1-ol)', tmax: e.f.cpgDur || 3, pics: e.f.cpgIdent ? [{ tr: 1.36, h: 0.5, l: 'éthanol' }, { tr: 2.1, h: 0.9, l: 'butan-1-ol (EI)' }] : [{ tr: 1.36, h: 0.5, l: 'pic 1' }, { tr: 2.1, h: 0.9, l: 'pic 2' }] }] : [{ type: 'chroma', titre: 'CPG · référence (éthanol + propan-1-ol)', tmax: 3, pics: [{ tr: 1.36, h: 0.8, l: 'éthanol + propan-1-ol' }, { tr: 1.42, h: 0.6, l: '' }] }],
+  choix: e => e.f.ei === 'butanol' && !e.f.cpgIdent ? [
+    { t: 'Injecter l\'éthanol seul pour repérer son temps de rétention', d: 'Même méthode, une seule substance.', duree: 5, vers: 'cpg_ident', f: { identQui: 'ethanol' } },
+    { t: 'Injecter le butan-1-ol seul pour repérer son temps de rétention', d: 'Un seul des deux suffit pour savoir qui est qui.', duree: 5, vers: 'cpg_ident', f: { identQui: 'butanol' } },
+  ] : e.f.ei === 'butanol' ? [{ t: e.fait.ph ? 'Retour à la paillasse' : 'Retour à la paillasse (suite lorsque le gel sera formulé)', duree: 10, vers: 'hub', run: n => marquer(n, 'cpgPrep'), note: 'Référence CPG injectée avec le butan-1-ol : rapport des aires relevé.' }] : [
     { t: 'Essayer de séparer les deux pics en réglant l\'appareil', d: 'Températures de l\'injecteur, du four et du détecteur, pression du gaz vecteur.', duree: 0, vers: 'cpg_sim' },
     { t: 'Changer d\'étalon interne', d: 'Il faudra refaire la fiole de référence.', duree: 5, vers: 'cpg_ei', note: 'Référence CPG : coélution éthanol / propan-1-ol constatée.' },
     { t: 'Exploiter quand même ces aires, en séparant les deux pics au logiciel', duree: 10, vers: 'hub', run: n => marquer(n, 'cpgPrep'), f: { coelIgnore: true, errCoel: true }, note: 'Référence CPG : aires exploitées malgré la coélution.' },
@@ -1138,18 +1166,28 @@ add('cpg_inj', {
   texte: e => { const d = donneesCpg(e); return `Gel formulé : m' = ${nf(d.mP, 3)} g pesés dans la fiole de 20 mL (avec 500 µL de ${eiNom(e)}).\nRéférence : éthanol ${nf(d.ref.aE, 2)} %, ${eiNom(e)} ${nf(d.ref.aEI, 2)} % de l'aire (V_réf = 250 µL).\nÉchantillon : éthanol ${nf(d.ech.aE, 2)} %, ${eiNom(e)} ${nf(d.ech.aEI, 2)} % de l'aire.\n(Aires moyennées sur trois injections de chaque solution.)`; },
   formule: 'cpgEI',
   hyp: "Hypothèses : l'aire est proportionnelle à la quantité injectée pour chaque composé ; le facteur de réponse éthanol / EI est constant ; chaque solution est injectée trois fois et les aires sont moyennées (une injection seule a une dispersion d'environ 3 à 4 %, la moyenne d'environ 2 %) ; la méthode à un seul point de référence porte cette dispersion entièrement.",
-  visuels: e => { const d = donneesCpg(e); return [{ type: 'chroma', titre: 'CPG · échantillon (gel formulé)', tmax: 3, pics: e.f.ei === 'butanol' ? [{ tr: 1.36, h: 0.5 * d.rE / d.rR, l: 'éthanol' }, { tr: 2.1, h: 0.9, l: 'butan-1-ol (EI)' }] : [{ tr: 1.36, h: 0.8, l: 'éthanol + propan-1-ol' }, { tr: 1.42, h: 0.6, l: '' }] }]; },
+  visuels: e => { const d = donneesCpg(e); return [...(e.f.ei === 'butanol' ? [{ type: 'chroma', titre: 'CPG · référence (rappel)', tmax: e.f.cpgDur || 3, pics: [{ tr: 1.36, h: 0.5, l: 'éthanol' }, { tr: 2.1, h: 0.9, l: 'butan-1-ol (EI)' }] }] : []), { type: 'chroma', titre: 'CPG · échantillon (gel formulé)', tmax: e.f.cpgDur || 3, pics: e.f.ei === 'butanol' ? [{ tr: 1.36, h: 0.5 * d.rE / d.rR, l: 'éthanol' }, { tr: 2.1, h: 0.9, l: 'butan-1-ol (EI)' }] : [{ tr: 1.36, h: 0.8, l: 'éthanol + propan-1-ol' }, { tr: 1.42, h: 0.6, l: '' }] }]; },
   aide: { pnj: 'ines', textes: [
     () => '« Avec le même étalon interne dans les deux solutions, que te permet de comparer le rapport des aires éthanol / étalon interne ? »',
     () => '« Ce rapport est proportionnel à la quantité d\'éthanol. Compare celui de l\'échantillon à celui de la référence pour trouver le volume d\'éthanol de l\'échantillon. »',
-    () => '« V_éch = V_réf × (rapport éch) / (rapport réf). Passe en masse avec 0,789 g/mL, puis divise par m\'. »'] },
-  calcul: { q: 'Quel est le pourcentage massique d\'éthanol dans le gel (méthode de l\'étalon interne, un point) ?', unite: '%', vrai: e => donneesCpg(e).pctSimple, tol: 0.03, cs: 1, indice: 'V_éch = V_réf × (%A_EI,réf / %A_EtOH,réf) × (%A_EtOH,éch / %A_EI,éch). Puis m_EtOH = V_éch × 0,789 g/mL, et divise par m\'.',
+    () => '« V_éch = V_réf × (rapport éch) / (rapport réf) : c\'est le volume d\'éthanol pur dans ta fiole de 20 mL. Passe en masse avec 0,789 g/mL, puis divise par m\' (toute la masse de gel pesée dans la fiole : pas de dilution à reprendre ici, tout l\'éthanol de la fiole vient de ces m\' grammes). »'] },
+  calcul: { q: 'Quel est le pourcentage massique d\'éthanol pur (éthanol absolu) dans le gel, par la méthode de l\'étalon interne à un point ?', unite: '%', vrai: e => donneesCpg(e).pctSimple, tol: 0.03, cs: 1, indice: 'V_éch = V_réf × (%A_EI,réf / %A_EtOH,réf) × (%A_EtOH,éch / %A_EI,éch). Puis m_EtOH = V_éch × 0,789 g/mL, et divise par m\'.',
     ok: { vers: 'cpg_conclu', duree: 10 }, ko: { vers: 'cpg_conclu', duree: 0 } },
 });
 add('cpg_conclu', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Éthanol : résultat',
-  texte: e => { const d = donneesCpg(e); return `Par la méthode de l'étalon interne (référence et échantillon dans les mêmes conditions), le gel contient ${nf(d.pctSimple, 1)} % d'éthanol. Le facteur de réponse n'intervient pas : il est le même dans les deux solutions. Les aires sont des moyennes de trois injections, dispersion d'environ 2 % par solution, soit 3 % sur le résultat : retiens ce résultat avec cette incertitude quand tu le compareras à l'exigence (${nf(SPEC.eth[0], 1)} à ${nf(SPEC.eth[1], 1)} %).`; },
-  choix: [{ t: 'Noter le résultat', duree: 2, vers: 'hub', run: n => marquer(n, 'ethQC'), f: { ethMes: true }, note: 'Éthanol : résultat obtenu par étalon interne.' }],
+  texte: e => { const d = donneesCpg(e); return `Par la méthode de l'étalon interne (référence et échantillon dans les mêmes conditions), le gel contient ${nf(d.pctSimple, 1)} % d'éthanol pur. Le facteur de réponse n'intervient pas : il est le même dans les deux solutions. Compare ce résultat à l'exigence (${nf(SPEC.eth[0], 1)} à ${nf(SPEC.eth[1], 1)} % d'éthanol pur).`; },
+  choix: [{ t: 'Continuer : quelle quantité d\'éthanol à 96 % cela représente-t-il ?', duree: 2, vers: 'cpg_eth96', f: { ethVal: 'simple' } }],
+});
+add('cpg_eth96', {
+  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Éthanol : de l\'éthanol pur à l\'éthanol à 96 %',
+  texte: e => `Le gel contient ${nf(donneesCpg(e).pctSimple, 1)} % d'éthanol pur (absolu). Au laboratoire, c'est de l'éthanol à 96 % (en masse) qui a été versé : le flacon contient 96 g d'éthanol pur pour 100 g de solution. Pour retrouver ta formule, exprime la même teneur en éthanol à 96 %.`,
+  aide: { pnj: 'ines', textes: [
+    () => '« Une masse d\'éthanol à 96 % contient seulement 96 % d\'éthanol pur : il en faut donc un peu plus que la masse d\'éthanol pur. »',
+    () => '« Pour 100 g de gel, m(éthanol pur) = % pur. La masse d\'éthanol à 96 % qui l\'apporte est m(éthanol 96 %) = m(pur) / 0,96. »',
+    () => '« Divise ton pourcentage d\'éthanol pur par 0,96 : le résultat est la masse d\'éthanol à 96 % pour 100 g de gel (donc proche de 40 % pour le gel commercial). »'] },
+  calcul: { q: 'Quelle masse d\'éthanol à 96 % contiennent 100 g de gel ?', unite: 'g', vrai: e => donneesCpg(e).pctSimple / 0.96, tol: 0.03, cs: 1, indice: 'm(éthanol à 96 %) = m(éthanol pur) / 0,96.',
+    ok: { vers: 'hub', duree: 3, run: n => marquer(n, 'ethQC'), f: { ethMes: true }, note: 'Éthanol : résultat obtenu par étalon interne (éthanol pur et équivalent en éthanol à 96 %).' }, ko: { vers: 'hub', duree: 0, run: n => marquer(n, 'ethQC'), f: { ethMes: true }, note: 'Éthanol : résultat obtenu par étalon interne.' } },
 });
 add('cpg_gamme_plan', {
   lieu: 'Salle de chromatographie', pnj: 'moi', station: 'plan', titre: 'Éthanol : concevoir ma gamme',
@@ -1186,10 +1224,10 @@ add('cpg_gamme_calc', {
 });
 add('cpg_comp', {
   lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Les deux méthodes concordent-elles ?',
-  texte: e => { const d = donneesCpg(e); return `Étalon interne à un point : ${nf(d.pctSimple, 1)} %. Gamme : ${nf(d.pctGamme, 1)} %. Écart : ${nf(Math.abs(d.pctSimple - d.pctGamme), 1)} points.\nQuel commentaire est le plus juste ?`; },
+  texte: e => { const d = donneesCpg(e); return `Éthanol pur, étalon interne à un point : ${nf(d.pctSimple, 1)} %. Gamme : ${nf(d.pctGamme, 1)} %. Écart : ${nf(Math.abs(d.pctSimple - d.pctGamme), 1)} points.\nQuel commentaire est le plus juste ?`; },
   choix: [
-    { t: 'L\'écart est de l\'ordre de la dispersion d\'une injection (≈ 4 %) ; la gamme, qui s\'appuie sur plusieurs points, est plus fiable : je retiens son résultat', duree: 5, vers: 'hub', run: n => marquer(n, 'ethQC'), f: { ethMes: true }, note: 'Éthanol : résultat de la gamme retenu, écart avec le point unique commenté.' },
-    { t: 'Les deux méthodes sont équivalentes : je fais la moyenne', duree: 5, vers: 'hub', run: n => marquer(n, 'ethQC'), f: { ethMes: true, errComp: true }, note: 'Éthanol : moyenne des deux méthodes, sans discussion de leur fiabilité.' },
+    { t: 'L\'écart est de l\'ordre de la dispersion d\'une injection (≈ 4 %) ; la gamme, qui s\'appuie sur plusieurs points, est plus fiable : je retiens son résultat', duree: 5, vers: 'hub', run: n => marquer(n, 'ethQC'), f: { ethMes: true, ethVal: 'gamme' }, note: 'Éthanol : résultat de la gamme retenu, écart avec le point unique commenté.' },
+    { t: 'Les deux méthodes sont équivalentes : je fais la moyenne', duree: 5, vers: 'hub', run: n => marquer(n, 'ethQC'), f: { ethMes: true, errComp: true, ethVal: 'moyenne' }, note: 'Éthanol : moyenne des deux méthodes, sans discussion de leur fiabilité.' },
     { t: 'L\'écart prouve que le gel perd de l\'éthanol à l\'air', duree: 5, vers: 'hub', run: n => marquer(n, 'ethQC'), f: { ethMes: true, errComp: true }, note: 'Éthanol : écart attribué à une perte, sans preuve.' },
   ],
 });
@@ -1377,7 +1415,7 @@ add('rapide_eth', {
 });
 
 // ───────────── Conclusion ─────────────
-export const mesures = e => ({ caf: e.f.cafMes === 'ext' ? donneesUv(e).pctExt : e.f.methCaf === 'ajouts' ? donneesUv(e).pctAjouts : e.f.methCaf === 'gamme' ? donneesHplcGamme(e).pct : donneesHplc(e).pct, eth: donneesCpg(e).pctGamme, q: gelVrai(e).q });
+export const mesures = e => ({ caf: e.f.cafMes === 'ext' ? donneesUv(e).pctExt : e.f.methCaf === 'ajouts' ? donneesUv(e).pctAjouts : e.f.methCaf === 'gamme' ? donneesHplcGamme(e).pct : donneesHplc(e).pct, eth: e.f.ethVal === 'simple' ? donneesCpg(e).pctSimple : e.f.ethVal === 'moyenne' ? (donneesCpg(e).pctSimple + donneesCpg(e).pctGamme) / 2 : donneesCpg(e).pctGamme, q: gelVrai(e).q });
 add('verdict', {
   lieu: 'Bureau de Mme Dubreuil', pnj: 'dubreuil', titre: 'Le contretype est-il conforme ?',
   texte: e => { const m = mesures(e); return `Mme Dubreuil : « Je t'écoute. Qu'écris-tu sur le bon de contrôle ? »\nTes résultats : caféine ${nf(m.caf, 1)} % (exigence ${nf(SPEC.caf[0], 1)} à ${nf(SPEC.caf[1], 1)} %) ; éthanol ${nf(m.eth, 1)} % (exigence ${nf(SPEC.eth[0], 1)} à ${nf(SPEC.eth[1], 1)} %) ; viscosité : rapport des contraintes ${nf(m.q, 2)} (au moins ${nf(SPEC.q, 2)}).`; },

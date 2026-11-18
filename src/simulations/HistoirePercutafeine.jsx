@@ -2,7 +2,7 @@ import SchemaFiolesClhp from './SchemaFiolesClhp';
 import SchemasChromato from './SchemasChromato';
 import { SchemaBurette } from './titrageCommun';
 import { couleurIndicateur } from './acidesBasesModele.js';
-import FichesPercutafeine, { FormuleCarbomere } from './FichesPercutafeine';
+import FichesPercutafeine, { FormuleCarbomere, SchemaAjouts } from './FichesPercutafeine';
 import TableurTitrage from './TableurTitrage';
 import { useState, useEffect, useRef } from "react";
 import { useEtatPersistant, Formule, avecIndices } from "../commun";
@@ -117,10 +117,38 @@ function Droite({ v }) {
       <line x1={X(0)} y1={Y(v.b)} x2={X(xmax)} y2={Y(v.a * xmax + v.b)} stroke="#5eead4" strokeWidth="1.6" />
       {v.ech && <g><line x1={X(v.ech[0])} y1={Y(v.ech[1])} x2={X(v.ech[0])} y2="124" stroke="#fb923c" strokeDasharray="3 3" /><line x1={x0} y1={Y(v.ech[1])} x2={X(v.ech[0])} y2={Y(v.ech[1])} stroke="#fb923c" strokeDasharray="3 3" /><rect x={X(v.ech[0]) - 4} y={Y(v.ech[1]) - 4} width="8" height="8" fill="#fb923c" transform={`rotate(45 ${X(v.ech[0])} ${Y(v.ech[1])})`} /><text x={X(v.ech[0]) + 8} y={Y(v.ech[1]) - 6} fontSize="10" fill="#fdba74">gel</text></g>}
       {v.pts.map((p, i) => <circle key={i} cx={X(p[0])} cy={Y(p[1])} r="3.6" fill="#fde68a" />)}
-      <text x={x1} y="138" textAnchor="end" fontSize="10" fill="#9fc3d1">{v.xl}</text><text x="4" y="14" fontSize="10" fill="#9fc3d1">{v.yl}</text>
-      <text x={x0} y="156" fontSize="10" fill="#9fc3d1">Résidus (mesure − droite)</text>
-      <line x1={x0} y1="186" x2={x1} y2="186" stroke="#6b8794" strokeDasharray="3 3" />
-      {v.residus.map((r, i) => <circle key={i} cx={X(v.pts[i][0])} cy={186 - r / rmax * 22} r="3.2" fill={Math.abs(r) / rmax > 0.9 ? '#f87171' : '#93c5fd'} />)}
+      {gradsLin(xmax).map((g, i) => <g key={'x' + i}><line x1={X(g)} y1="124" x2={X(g)} y2="128" stroke="#6b8794" /><text x={X(g)} y="138" textAnchor="middle" fontSize="10" fill="#cfe3ea">{String(g).replace('.', ',')}</text></g>)}
+      {gradsLin(ymax).map((g, i) => <g key={'y' + i}><line x1={x0 - 4} y1={Y(g)} x2={x0} y2={Y(g)} stroke="#6b8794" /><text x={x0 - 6} y={Y(g) + 3} textAnchor="end" fontSize="10" fill="#cfe3ea">{String(g).replace('.', ',')}</text></g>)}
+      <text x={x1} y="150" textAnchor="end" fontSize="10" fill="#9fc3d1">{v.xl}</text><text x="4" y="10" fontSize="10" fill="#9fc3d1">{v.yl}</text>
+      <text x={x0} y="166" fontSize="10" fill="#9fc3d1">Résidus (mesure − droite)</text>
+      <line x1={x0} y1="190" x2={x1} y2="190" stroke="#6b8794" strokeDasharray="3 3" /><text x={x0 - 6} y="193" textAnchor="end" fontSize="10" fill="#cfe3ea">0</text>
+      {v.residus.map((r, i) => <circle key={i} cx={X(v.pts[i][0])} cy={190 - r / rmax * 20} r="3.2" fill={Math.abs(r) / rmax > 0.9 ? '#f87171' : '#93c5fd'} />)}
+    </svg>
+    <div style={{ fontSize: 13, color: '#9fc3d1', lineHeight: 1.45, marginTop: 6 }}>Points jaunes : tes mesures. Courbe verte : droite de régression. Sous le graphique, les <b>résidus</b> (écart de chaque mesure à la droite) : <span style={{ color: '#93c5fd' }}>● bleu</span> = écart ordinaire, <span style={{ color: '#f87171' }}>● rouge</span> = le plus grand écart de la série. Une droite convient si les résidus se répartissent au hasard de part et d'autre de 0, sans courbure.</div></Cadre>);
+}
+
+function SpectreIR({ v }) {
+  const W = 360, H = 190, x0 = 30, x1 = 350, yt = 20, yb = 150, X = s => x0 + (4000 - s) / (4000 - 650) * (x1 - x0), Ab = s => v.bandes.reduce((a, [c, h, w]) => a + h * Math.exp(-((s - c) ** 2) / (2 * (w / 2.355) ** 2)), 0);
+  const Y = (s, i = 0) => yt + 8 + Math.min(1, Ab(s)) * (yb - yt - 12) + 0.8 * Math.sin(i * 1.7);
+  const N = 340, d = Array.from({ length: N + 1 }, (_, i) => { const s = 4000 - i * (4000 - 650) / N; return `${i ? 'L' : 'M'}${X(s).toFixed(1)} ${Y(s, i).toFixed(1)}`; }).join('');
+  return (<Cadre titre={v.titre.toUpperCase()}>
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${v.titre} : bandes d'absorption vers ${v.bandes.map(b => b[0]).join(', ')} cm⁻¹`} style={{ width: '100%', maxWidth: 640, margin: '0 auto', display: 'block' }}>
+      <line x1={x0} y1={yb} x2={x1} y2={yb} stroke="#6b8794" /><line x1={x0} y1={yt} x2={x0} y2={yb} stroke="#6b8794" />
+      {[4000, 3000, 2000, 1500, 1000].map(s => <g key={s}><line x1={X(s)} y1={yb} x2={X(s)} y2={yb + 4} stroke="#6b8794" /><text x={X(s)} y={yb + 16} textAnchor="middle" fontSize="10" fill="#cfe3ea">{s}</text></g>)}
+      <text x={x1} y={yb + 30} textAnchor="end" fontSize="10" fill="#9fc3d1">nombre d'onde σ (cm⁻¹)</text><text x="4" y="12" fontSize="10" fill="#9fc3d1">absorbance (bandes vers le bas)</text>
+      <path d={d} fill="none" stroke="#5eead4" strokeWidth="1.6" />
+      {v.bandes.filter(b => b[3]).map((b, i) => <text key={i} x={X(b[0])} y={Math.min(yb - 3, Y(b[0]) + 11)} textAnchor="middle" fontSize="9" fill="#fde68a">{b[0]}</text>)}
+    </svg></Cadre>);
+}
+function Refracto({ v }) {
+  const nMin = 1.33, nMax = 1.40, pos = (v.n - nMin) / (nMax - nMin), yl = 30 + (1 - pos) * 100;
+  return (<Cadre titre="REFRACTOMÈTRE : LECTURE À 20 °C">
+    <svg viewBox="0 0 360 170" role="img" aria-label={`Champ du réfractomètre : la limite clair-sombre coupe l'échelle à ${v.n}`} style={{ width: '100%', maxWidth: 420, margin: '0 auto', display: 'block' }}>
+      <circle cx="120" cy="86" r="66" fill="#0f2430" stroke="#6b8794" /><clipPath id="rf"><circle cx="120" cy="86" r="65" /></clipPath>
+      <g clipPath="url(#rf)"><rect x="50" y="20" width="140" height={yl - 20} fill="#e0f2fe" /><rect x="50" y="20" width="140" height="140" fill="#1e293b" opacity="0" /><line x1="50" y1={yl} x2="190" y2={yl} stroke="#fb923c" strokeWidth="2" /></g>
+      {[1.33, 1.34, 1.35, 1.36, 1.37, 1.38, 1.39, 1.40].map(g => { const y = 30 + (1 - (g - nMin) / (nMax - nMin)) * 100; return <g key={g}><line x1="196" y1={y} x2="208" y2={y} stroke="#9fc3d1" /><text x="212" y={y + 3} fontSize="10" fill="#cfe3ea">{String(g.toFixed(2)).replace('.', ',')}</text></g>; })}
+      <line x1="196" y1={yl} x2="206" y2={yl} stroke="#fb923c" strokeWidth="2" />
+      <text x="290" y="90" fontSize="12" fill="#fde68a" textAnchor="middle">n</text><text x="290" y="106" fontSize="12" fill="#fde68a" textAnchor="middle" fontWeight="700">= {String(v.n.toFixed(3)).replace('.', ',')}</text>
     </svg></Cadre>);
 }
 
@@ -169,7 +197,7 @@ const TubeGel = () => (<figure style={{ margin: '12px 0', textAlign: 'center' }}
     <text x="118" y="82" textAnchor="middle" fontSize="12" fill="#9a3412">usage cutané</text>
   </svg>
   <figcaption style={{ fontSize: 13.5, color: C.doux }}>Le gel commercial à contre-typer (illustration).</figcaption></figure>);
-const Visuel = ({ v }) => v.type === 'balance' ? <BalanceVue v={v} /> : v.type === 'chroma' ? <Chroma v={v} /> : v.type === 'rheo' ? <Rheo v={v} /> : v.type === 'droite' ? <Droite v={v} /> : v.type === 'titrage' ? <CourbeTitrage v={v} /> : v.type === 'tableur' ? <TableurTitrage pts={v.pts} titre={v.titre} ordonnee={v.ordonnee} /> : v.type === 'carbomere' ? <FormuleCarbomere /> : v.type === 'tableau' ? <Tableau v={v} /> : v.type === 'fioles' ? <SchemaFiolesClhp /> : v.type === 'tube' ? <TubeGel /> : null;
+const Visuel = ({ v }) => v.type === 'balance' ? <BalanceVue v={v} /> : v.type === 'chroma' ? <Chroma v={v} /> : v.type === 'rheo' ? <Rheo v={v} /> : v.type === 'droite' ? <Droite v={v} /> : v.type === 'titrage' ? <CourbeTitrage v={v} /> : v.type === 'tableur' ? <TableurTitrage pts={v.pts} titre={v.titre} ordonnee={v.ordonnee} /> : v.type === 'carbomere' ? <FormuleCarbomere /> : v.type === 'schemaAjouts' ? <Cadre titre="MÉMO : MÉTHODE DES AJOUTS DOSÉS"><SchemaAjouts /></Cadre> : v.type === 'ir' ? <SpectreIR v={v} /> : v.type === 'refracto' ? <Refracto v={v} /> : v.type === 'tableau' ? <Tableau v={v} /> : v.type === 'fioles' ? <SchemaFiolesClhp /> : v.type === 'tube' ? <TubeGel /> : null;
 
 
 // ───────────── Briques d'interaction ─────────────
@@ -722,7 +750,7 @@ export function SimulationHistoirePercutafeine() {
       <div key={e.scene} className="pc-scene">
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: C.doux, background: FOND_LIEU[sc.lieu] || C.fond, borderRadius: 99, padding: '4px 12px 4px 6px' }}>
           <Avatar pnj={sc.pnj} taille={24} e={e} /><span>{sc.lieu} · {sc.pnj === 'moi' && pn(e) ? pn(e) : p.nom}</span></div>
-        {!peutRevenir(e) && peutSuspendre(e) && <div><button type="button" data-suspendre onClick={() => setEtat(suspendre(e))} style={{ marginTop: 8, background: 'none', border: 'none', color: C.accent, font: 'inherit', fontSize: 14.5, cursor: 'pointer', padding: '4px 0', textDecoration: 'underline' }}>↩ Revenir à la paillasse (je reprendrai cette étape plus tard)</button></div>}
+        {!peutRevenir(e) && peutSuspendre(e) && <div><button type="button" data-suspendre onClick={() => setEtat(suspendre(e))} style={{ marginTop: 8, background: 'none', border: 'none', color: C.accent, font: 'inherit', fontSize: 14.5, cursor: 'pointer', padding: '4px 0', textDecoration: 'underline' }}>⏸ Mettre en pause cette analyse et revenir à la paillasse (je la reprendrai plus tard)</button></div>}
         {peutRevenir(e) && <div><button type="button" data-retour onClick={() => setEtat(revenirHub(e))} style={{ marginTop: 8, background: 'none', border: 'none', color: C.accent, font: 'inherit', fontSize: 14.5, cursor: 'pointer', padding: '4px 0', textDecoration: 'underline' }}>← Revenir à la paillasse, sans rien faire</button></div>}
         {fin && <div style={{ marginTop: 10, borderRadius: 14, padding: '14px 18px', background: TONS[sc.fin.ton] + '14', border: `1.5px solid ${TONS[sc.fin.ton]}55` }}><div style={{ fontSize: 12, letterSpacing: 1.5, color: TONS[sc.fin.ton], fontWeight: 700 }}>FIN DU TP</div>
           <h3 ref={refTitre} tabIndex={-1} data-titre style={{ margin: '2px 0 0', fontSize: 'clamp(22px,5vw,28px)', outline: 'none', color: TONS[sc.fin.ton] }}>{sc.titre}</h3></div>}
