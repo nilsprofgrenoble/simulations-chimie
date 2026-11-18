@@ -78,7 +78,7 @@ export default function FichesPercutafeine({ ids, ouvert = false }) {
     if (id === 'mo3') return (
       <Feuille key={id} ouvert={ouvert} entete="Mode opératoire · document 3" titre="Dosage de l'éthanol par CPG, étalon interne" sous="Préparation des solutions de référence et d'échantillon" edition="reproduction du sujet">
         <div style={{ fontWeight: 700 }}>Solution de référence (fiole jaugée de 20 mL)</div>
-        <Liste items={['Introduire à la micropipette 500 µL d\'étalon interne et 250 µL d\'éthanol (étalon interne mis à disposition : propan-1-ol).', 'Compléter au trait de jauge avec de l\'eau, homogénéiser, injecter en CPG.']} />
+        <Liste items={['Introduire à la micropipette 500 µL d\'étalon interne et 250 µL d\'éthanol (étalon interne mis à disposition : propan-1-ol ; s\'il ne convient pas, un autre alcool primaire peut le remplacer, avec le même mode opératoire).', 'Compléter au trait de jauge avec de l\'eau, homogénéiser, injecter en CPG.']} />
         <div style={{ fontWeight: 700 }}>Solution échantillon (fiole jaugée de 20 mL)</div>
         <Liste items={['Dissoudre environ exactement m\' g de gel avec un peu d\'eau (peser directement dans la fiole), ajouter 500 µL d\'étalon interne, compléter au trait avec de l\'eau.', 'Facultatif, selon l\'allure de l\'échantillon : filtrer avant injection. Injecter en CPG.']} />
         <div style={{ color: '#475569' }}>Exploitation : relever les aires de pics de la référence et de l\'échantillon, puis calculer le volume d\'éthanol de l\'échantillon avec le rapport des aires éthanol / étalon interne.</div>
