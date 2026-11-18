@@ -60,6 +60,8 @@ export const coohLot = e => 45.02 / (72 + 14 * unif(e.f?.graine ?? 1, 'lotcooh')
 // pH du gel après ajout cumulé de m g de trolamine. Calé sur la fiche 3V : 0,01 équivalent de base par g de polymère (1,5 g de trolamine) donne pH 7,
 // soit un taux de neutralisation α ≈ 0,77 (masse équivalente 76) ; pH 3 sans base ; plafond vers 8 (la trolamine est une base faible, pKa 7,8).
 export const alphaNeutr = (e, m) => m * M_COOH / (M_TEA * (e.f.fm?.carb || 1.5) * coohLot(e));
+export const PH_COM = 6.2;   // pH du gel commercial (vérité cachée ; mesurable en 3 min)
+export function mesurerPhCom(e) { return { ...e, t: e.t + 3, f: { ...e.f, phCom: arr(PH_COM + 0.04 * gauss(e.f.graine, 'phcom'), 2) } }; }
 export function phDe(e, m) { return 3.0 + 5.0 * (1 - Math.exp(-alphaNeutr(e, m) / 0.478)); }
 export function gelVrai(e) {
   const fm = e.f.fm || { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 98.7 };
@@ -812,8 +814,10 @@ add('ph', {
   fiches: ['synthalen', 'trolamine'],
   lieu: 'Paillasse de formulation', pnj: 'lucas', station: 'ph', titre: 'Neutraliser et mettre en pot',
   video: { src: 'videos/neutralisation-carbopol.mp4', legende: 'Enregistrement du TP : le milieu agité s\'épaissit pendant la neutralisation.' },
-  texte: e => `« Ta formule prévoyait ${nf(e.f.fm?.trol ?? 0, 2)} g de trolamine : c'était une estimation. Verse-la en agitant : le milieu s'épaissit (regarde l'enregistrement ci-dessous), puis contrôle le pH au pH-mètre. La fiche du fabricant indique environ 1,5 g de trolamine par gramme de polymère pour un pH de 7 : si le pH est loin de cette valeur, corrige par un petit ajout. » ${e.f.disp === 'grumeaux' ? 'Le gel contient des grumeaux.' : ''}${e.f.cooh ? `\nD'après ton titrage, ${nf(e.f.fm?.carb || 1.5, 2)} g de Synthalen K contiennent ${nf((e.f.fm?.carb || 1.5) * e.f.cooh / 100 / M_COOH * 1000, 1)} mmol de COOH : les neutraliser tous demanderait ${nf((e.f.fm?.carb || 1.5) * e.f.cooh / 100 / M_COOH * M_TEA, 2)} g de trolamine.` : ''}`,
-  hyp: 'Hypothèse : la viscosité d\'un gel de Synthalen K dépend du pH (elle augmente de pH 3 à 6 environ puis reste sur un plateau jusqu\'à pH 11 environ, d\'après la fiche) ; la lecture du pH-mètre a une dispersion de ±0,04.',
+  texte: e => { const g = e.f.fm?.carb || 1.5, n = e.f.cooh ? g * e.f.cooh / 100 / M_COOH * 1000 : null;
+    return `« Ta formule prévoyait ${nf(e.f.fm?.trol ?? 0, 2)} g de trolamine : c'est une estimation, une valeur indicative à ajuster au pH-mètre. Verse la trolamine par petites fractions en agitant : le milieu s'épaissit (regarde l'enregistrement ci-dessous), relis le pH après chaque ajout et arrête-toi quand tu atteins le pH du gel commercial. » ${e.f.disp === 'grumeaux' ? 'Le gel contient des grumeaux.' : ''}
+${e.f.phCom != null ? `Le pH du gel commercial que tu as mesuré est ${nf(e.f.phCom, 2)} : c'est ta cible.` : "Quelle est la cible ? Le gel que tu copies a un pH précis : tu peux le mesurer en 3 minutes sur le pot de gel commercial (bouton ci-dessous)."}
+${n != null ? `Ordre de grandeur : d'après ton titrage, ${nf(g, 2)} g de Synthalen K contiennent ${nf(n, 1)} mmol de COOH. Chaque mole de trolamine neutralise au plus une mole de COOH : pour tous les neutraliser, il faudrait ${nf(n * M_TEA / 1000, 2)} g de trolamine (n(trolamine) = n(COOH), puis m = n × M, avec M = ${nf(M_TEA, 1)} g/mol). Comme la trolamine est une base faible, on ne neutralise pas tous les COOH : un pH proche de 6 à 7 correspond à une fraction seulement, donc à une masse plus petite. Voilà pourquoi la quantité de ta formule est indicative.` : "Tu n'as pas fait le titrage du Synthalen K : tu n'as donc que la fiche du fabricant, qui indique environ 1,5 g de trolamine par gramme de polymère pour un pH de 7. Pars de cette indication et ajuste au pH-mètre."}`; },  hyp: 'Hypothèse : la viscosité d\'un gel de Synthalen K dépend du pH (elle augmente de pH 3 à 6 environ puis reste sur un plateau jusqu\'à pH 11 environ, d\'après la fiche) ; la lecture du pH-mètre a une dispersion de ±0,04.',
   choix: [],
 });
 add('ph2', {
@@ -840,7 +844,7 @@ const causeVisco = e => { const g = gelVrai(e), fDisp = QDISP[e.f.disp] ?? 0.85,
   if (g.q >= 0.9) return 'similaires'; const m = Math.min(fDisp, fPH, fCarb); return m === fDisp ? 'dispersion' : m === fPH ? 'ph' : 'carbopol'; };
 add('rheoF', {
   lieu: 'Salle de rhéologie', pnj: 'lucas', titre: 'Gel formulé et gel commercial',
-  texte: e => { const q = gelVrai(e).q; return `Voici les deux courbes. Rapport des contraintes formulé / commercial : ${nf(q, 2)} (spécification du scénario : au moins ${nf(SPEC.q, 2)}).\nSi les courbes diffèrent, quelle est la cause la plus probable dans ta fabrication ?`; },
+  texte: e => { const q = gelVrai(e).q; return `Voici les deux courbes. On compare les deux gels par le rapport des contraintes, à même gradient de vitesse :\nq = σ_formulé / σ_commercial = ${nf(q, 2)}\nExigence du scénario : q ≥ ${nf(SPEC.q, 2)} (q = 1 : mêmes courbes ; q < 1 : ton gel est moins visqueux que le commercial).\nSi les courbes diffèrent, quelle est la cause la plus probable dans ta fabrication ?`; },
   hyp: 'Hypothèse : à composition proche, la différence de viscosité vient surtout de la dispersion du Synthalen K, du pH final ou de la teneur en Synthalen K.',
   visuels: e => [{ type: 'rheo', courbes: [{ nom: 'Gel commercial', pts: pointsRheo(e, 1, 'rc'), couleur: '#1e3a8a', points: true }, { nom: 'Gel formulé', pts: pointsRheo(e, gelVrai(e).q, 'rf'), couleur: '#b45309', points: true }] }],
   choix: e => { const bon = causeVisco(e), ok = c => c === bon;
