@@ -6,6 +6,25 @@ import SchemaFiolesClhp from './SchemaFiolesClhp';
 
 const Liste = ({ items }) => <ul style={{ margin: '4px 0 6px', paddingLeft: 20 }}>{items.map((t, i) => <li key={i} style={{ marginBottom: 3 }}>{t}</li>)}</ul>;
 
+// Motif du polymère de l'acide acrylique (Synthalen K : chaînes réticulées entre elles) ; le groupe acide carboxylique –COOH est en orange.
+export function FormuleCarbomere() {
+  return (<figure data-carbomere style={{ margin: '10px 0', textAlign: 'center' }}>
+    <svg viewBox="0 0 360 215" role="img" aria-label="Formule du motif du carbomère : chaîne carbonée portant un groupe acide carboxylique COOH sur un carbone sur deux" style={{ width: '100%', maxWidth: 420, background: '#fff', border: '1px solid #cbd5e1', borderRadius: 10 }}>
+      <polyline points="10,100 80,66 150,100 220,66 290,100 350,70" fill="none" stroke="#1e293b" strokeWidth="2.4" strokeLinejoin="round" />
+      {[150, 290].map(x => <g key={x}>
+        <line x1={x} y1="100" x2={x} y2="134" stroke="#ea580c" strokeWidth="2.4" />
+        <line x1={x - 3} y1="134" x2={x - 22} y2="152" stroke="#ea580c" strokeWidth="2.4" /><line x1={x - 8} y1="128" x2={x - 27} y2="146" stroke="#ea580c" strokeWidth="2.4" />
+        <line x1={x + 3} y1="134" x2={x + 22} y2="152" stroke="#ea580c" strokeWidth="2.4" />
+        <text x={x - 27} y="170" fontSize="17" fontWeight="700" fill="#ea580c" textAnchor="middle">O</text>
+        <text x={x + 22} y="170" fontSize="17" fontWeight="700" fill="#ea580c" textAnchor="middle">OH</text></g>)}
+      <path d="M62 50 H54 V178 H62" fill="none" stroke="#1e293b" strokeWidth="2" /><path d="M192 50 H200 V178 H192" fill="none" stroke="#1e293b" strokeWidth="2" />
+      <text x="208" y="190" fontSize="15" fontStyle="italic" fill="#1e293b">n</text>
+      <text x="150" y="200" fontSize="12" textAnchor="middle" fill="#9a3412">groupe –COOH</text>
+      <text x="340" y="118" fontSize="11" textAnchor="end" fill="#475569">chaîne –CH₂–CH–</text>
+    </svg>
+    <figcaption style={{ fontSize: 13.5, color: '#475569' }}>Motif de l'acide polyacrylique : un groupe acide carboxylique (–COOH) sur un carbone de la chaîne sur deux. Dans le Synthalen K, ces chaînes sont réticulées entre elles ; neutraliser les COOH par une base les charge négativement : les chaînes se repoussent, se déroulent et le milieu épaissit.</figcaption>
+  </figure>);
+}
 export default function FichesPercutafeine({ ids, ouvert = false }) {
   return (<div data-fiches>{ids.map(id => {
     if (id === 'notice') return (
@@ -25,10 +44,12 @@ export default function FichesPercutafeine({ ids, ouvert = false }) {
       <Feuille key={id} ouvert={ouvert} entete="Fiche technique" titre="Synthalen K" sous="Carbomère : polymère carboxyvinylique, agent épaississant" edition="fabricant 3V, valeurs typiques">
         <Tableau lignes={[
           ['pH d\'une dispersion à 0,5 % dans l\'eau', '2,7 à 3,5'],
+          ['Teneur en groupes carboxyliques (COOH)', '56 à 68 % en masse (produit sec)'],
           ['Masse équivalente moyenne', 'environ 76 (en g de polymère par mole de groupes acide)'],
           ['Viscosité après neutralisation (Brookfield, 20 tr/min, 25 °C)', '0,2 % : 20 000 à 30 000 mPa·s ; 0,5 % : 40 000 à 60 000 mPa·s'],
           ['Taux d\'emploi habituel', '0,1 à 1,5 %, selon la formule et la viscosité voulue'],
         ]} />
+        <FormuleCarbomere />
         <Liste items={[
           'Poudre blanche, très légère. Disperser par addition lente de la poudre, sous agitation, pour éviter les grumeaux, jusqu\'à ce que toutes les particules soient hydratées. Éviter l\'agitation turbulente, qui piège de l\'air difficile à éliminer ensuite.',
           'En milieu acide le polymère est enroulé et la dispersion est fluide ; la neutralisation par une base déroule les chaînes et forme le gel. D\'après la courbe viscosité en fonction du pH (figure 1 de la fiche), la viscosité monte fortement entre pH 3 et 6, puis reste sur un large plateau jusqu\'à pH 11 environ.',

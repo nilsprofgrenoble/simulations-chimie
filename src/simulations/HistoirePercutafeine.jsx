@@ -2,9 +2,10 @@ import SchemaFiolesClhp from './SchemaFiolesClhp';
 import SchemasChromato from './SchemasChromato';
 import { SchemaBurette } from './titrageCommun';
 import { couleurIndicateur } from './acidesBasesModele.js';
-import FichesPercutafeine from './FichesPercutafeine';
+import FichesPercutafeine, { FormuleCarbomere } from './FichesPercutafeine';
+import TableurTitrage from './TableurTitrage';
 import { useState, useEffect, useRef } from "react";
-import { useEtatPersistant, Formule } from "../commun";
+import { useEtatPersistant, Formule, avecIndices } from "../commun";
 import { Avatar as AvatarVisuel, STYLE_VISUELS } from './LaboVisuels';
 import {
   CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_FIN, T_MIDI, T_PAUSE, NB_AVATARS, avatarDe, pn, CHAMPS_FORMULE, FORMULE_REPLI, etatInitial, texteDe, choixDe, visuelsDe, choisir, valider, estFin, peutRevenir, revenirHub,
@@ -168,7 +169,7 @@ const TubeGel = () => (<figure style={{ margin: '12px 0', textAlign: 'center' }}
     <text x="118" y="82" textAnchor="middle" fontSize="12" fill="#9a3412">usage cutané</text>
   </svg>
   <figcaption style={{ fontSize: 13.5, color: C.doux }}>Le gel commercial à contre-typer (illustration).</figcaption></figure>);
-const Visuel = ({ v }) => v.type === 'balance' ? <BalanceVue v={v} /> : v.type === 'chroma' ? <Chroma v={v} /> : v.type === 'rheo' ? <Rheo v={v} /> : v.type === 'droite' ? <Droite v={v} /> : v.type === 'titrage' ? <CourbeTitrage v={v} /> : v.type === 'tableau' ? <Tableau v={v} /> : v.type === 'fioles' ? <SchemaFiolesClhp /> : v.type === 'tube' ? <TubeGel /> : null;
+const Visuel = ({ v }) => v.type === 'balance' ? <BalanceVue v={v} /> : v.type === 'chroma' ? <Chroma v={v} /> : v.type === 'rheo' ? <Rheo v={v} /> : v.type === 'droite' ? <Droite v={v} /> : v.type === 'titrage' ? <CourbeTitrage v={v} /> : v.type === 'tableur' ? <TableurTitrage pts={v.pts} titre={v.titre} ordonnee={v.ordonnee} /> : v.type === 'carbomere' ? <FormuleCarbomere /> : v.type === 'tableau' ? <Tableau v={v} /> : v.type === 'fioles' ? <SchemaFiolesClhp /> : v.type === 'tube' ? <TubeGel /> : null;
 
 
 // ───────────── Briques d'interaction ─────────────
@@ -180,7 +181,7 @@ function Avatar({ pnj, taille = 40, e }) {
 function BlocAideCalcul({ e, sc, onEtat }) {
   const aide = niveauAide(e), conseils = textesAide(e), pnjAide = PNJ[sc.aide.pnj];
   return (<div data-aide style={{ marginBottom: 12 }}>
-    {conseils.map((c, i) => <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '8px 0' }}><Avatar pnj={sc.aide.pnj} e={e} taille={36} /><div style={{ flex: 1, background: '#fff', border: `1.5px solid ${C.bord}`, borderRadius: 12, padding: '8px 12px', fontSize: 15, lineHeight: 1.5 }}>{c}</div></div>)}
+    {conseils.map((c, i) => <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '8px 0' }}><Avatar pnj={sc.aide.pnj} e={e} taille={36} /><div style={{ flex: 1, background: '#fff', border: `1.5px solid ${C.bord}`, borderRadius: 12, padding: '8px 12px', fontSize: 15, lineHeight: 1.5 }}>{avecIndices(c)}</div></div>)}
     {aide < 3 && <button type="button" data-aide-btn onClick={() => onEtat(demanderAide(e))} style={{ font: 'inherit', fontSize: 14.5, padding: '7px 14px', borderRadius: 99, border: `1.5px solid ${C.accent}`, background: '#fff', color: C.accent, cursor: 'pointer' }}>{aide === 0 ? `💬 Demander conseil à ${pnjAide.nom}` : aide === 1 ? `💬 Demander plus de précisions à ${pnjAide.nom}` : `💬 Demander à ${pnjAide.nom} comment poser le calcul`}</button>}
   </div>);
 }
@@ -190,14 +191,14 @@ function Calcul({ e, sc, onEtat }) {
   return (
     <form onSubmit={soumettre} data-calcul className="pc-inst" style={inst}>
       {sc.aide && <BlocAideCalcul e={e} sc={sc} onEtat={onEtat} />}
-      <div style={{ fontWeight: 700, marginBottom: 10 }}>🧮 {sc.calcul.q}</div>
+      <div style={{ fontWeight: 700, marginBottom: 10 }}>🧮 {avecIndices(sc.calcul.q)}</div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
         <input value={saisie} onChange={ev => setSaisie(ev.target.value)} inputMode="decimal" autoComplete="off" aria-label="Ta réponse" placeholder="?" style={{ width: 130, fontSize: 18, padding: '7px 11px', border: `1.5px solid ${C.bleu}`, borderRadius: 10, fontFamily: 'inherit', background: '#fff' }} />
         <span style={{ color: C.doux }}>{sc.calcul.unite}</span>
         <button type="submit" className="pc-btn" disabled={!saisie.trim()}>Vérifier</button>
       </div>
       <button type="button" data-solution onClick={() => onEtat(valider(e, '', true).etat)} style={{ marginTop: 10, background: 'none', border: 'none', color: C.accent, font: 'inherit', fontSize: 14.5, cursor: 'pointer', padding: '4px 0', textDecoration: 'underline' }}>Je ne sais pas : demander la solution complète à un collègue (5 min)</button>
-      {message && <div role="alert" style={{ marginTop: 10, color: C.ambre, fontSize: 14.5, lineHeight: 1.5 }}>Pas tout à fait. {message}<br /><span style={{ color: C.doux }}>(Chaque essai te coûte 5 minutes. Au deuxième, un collègue refait le calcul avec toi et on avance.)</span></div>}
+      {message && <div role="alert" style={{ marginTop: 10, color: C.ambre, fontSize: 14.5, lineHeight: 1.5 }}>Pas tout à fait. {avecIndices(message)}<br /><span style={{ color: C.doux }}>(Chaque essai te coûte 5 minutes. Au deuxième, un collègue refait le calcul avec toi et on avance.)</span></div>}
     </form>);
 }
 
@@ -215,7 +216,7 @@ function StationFormule({ e, onEtat }) {
   return (
     <form onSubmit={verifier} data-formule className="pc-inst" style={inst}>
       <div data-aide style={{ marginBottom: 10 }}>
-        {conseils.map((c, i) => <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '8px 0' }}><Avatar pnj={sc.aide.pnj} e={e} taille={36} /><div style={{ flex: 1, background: '#fff', border: `1.5px solid ${C.bord}`, borderRadius: 12, padding: '8px 12px', fontSize: 15, lineHeight: 1.5 }}>{c}</div></div>)}
+        {conseils.map((c, i) => <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '8px 0' }}><Avatar pnj={sc.aide.pnj} e={e} taille={36} /><div style={{ flex: 1, background: '#fff', border: `1.5px solid ${C.bord}`, borderRadius: 12, padding: '8px 12px', fontSize: 15, lineHeight: 1.5 }}>{avecIndices(c)}</div></div>)}
         {aide < 3 && <button type="button" data-aide-btn onClick={demander} style={{ font: 'inherit', fontSize: 14.5, padding: '7px 14px', borderRadius: 99, border: `1.5px solid ${C.accent}`, background: '#fff', color: C.accent, cursor: 'pointer' }}>{aide === 0 ? `💬 Demander conseil à ${pnjAide.nom}` : aide === 1 ? `💬 Demander plus de précisions à ${pnjAide.nom}` : `💬 Demander à ${pnjAide.nom} ce qu'il ferait`}</button>}
       </div>
       <div style={{ fontWeight: 700, marginBottom: 10 }}>📝 Masses à peser pour environ 200 g (en g)</div>
@@ -306,7 +307,7 @@ function StationPlan({ e, sc, onEtat }) {
   return (
     <div data-plan className="pc-inst" style={inst}>
       {sc.aide && <div data-aide style={{ marginBottom: 12 }}>
-        {conseils.map((c, i) => <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '8px 0' }}><Avatar pnj={sc.aide.pnj} e={e} taille={36} /><div style={{ flex: 1, background: '#fff', border: `1.5px solid ${C.bord}`, borderRadius: 12, padding: '8px 12px', fontSize: 15, lineHeight: 1.5 }}>{c}</div></div>)}
+        {conseils.map((c, i) => <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '8px 0' }}><Avatar pnj={sc.aide.pnj} e={e} taille={36} /><div style={{ flex: 1, background: '#fff', border: `1.5px solid ${C.bord}`, borderRadius: 12, padding: '8px 12px', fontSize: 15, lineHeight: 1.5 }}>{avecIndices(c)}</div></div>)}
         {aide < 3 && <button type="button" data-aide-btn onClick={demander} style={{ font: 'inherit', fontSize: 14.5, padding: '7px 14px', borderRadius: 99, border: `1.5px solid ${C.accent}`, background: '#fff', color: C.accent, cursor: 'pointer' }}>{aide === 0 ? `💬 Demander conseil à ${pnjAide.nom}` : aide === 1 ? `💬 Demander plus de précisions à ${pnjAide.nom}` : `💬 Demander à ${pnjAide.nom} ce qu'${sc.aide.pnj === 'ines' ? 'elle' : 'il'} ferait`}<span style={{ color: C.doux }}> ({aide === 2 ? 5 : 3} min)</span></button>}
       </div>}
       {P.materiel && <div data-materiel style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 8, margin: '0 0 12px' }}>{P.materiel.map(([k, v]) => <div key={k} style={{ background: '#fff', border: `1.5px solid ${C.bord}`, borderRadius: 10, padding: '8px 12px' }}><div style={{ fontSize: 13.5, color: C.doux }}>{k}</div><div style={{ fontSize: 17, fontWeight: 700 }}>{v}</div></div>)}</div>}
@@ -416,7 +417,7 @@ function StationTitrage({ e, sc, onEtat }) {
       {!fini && <button type="button" style={bt(false)} onClick={() => { setAuto(false); setI(k + 1); }}>Verser {nf(prochain, 2)} mL</button>}
       {!fini && <button type="button" style={bt(marche)} onClick={() => setAuto(a => !a)}>{marche ? '⏸ Pause' : '▶ Verser en continu'}</button>}
       {!fini && <button type="button" style={bt(false)} onClick={() => { setAuto(false); setI(ind && d.iVirage != null ? d.iVirage : N - 1); }}>{ind && d.iVirage != null ? 'Verser jusqu\'au virage' : 'Tout verser'}</button>}
-      {fini && <button type="button" style={bt(true)} onClick={() => onEtat(choisir(e, sc.choix[0]))}>Terminer le titrage</button>}
+      {fini && <button type="button" style={bt(true)} onClick={() => onEtat(choisir(e, sc.choix[0]))}>Terminer le titrage et passer à l'exploitation</button>}
     </div>
     {!ind && <CourbeTitrage v={{ titre: 'Courbe de titrage en direct', pts: d.pts.slice(0, k + 1), der: [], veq: null, vmax: d.P.vfin, y: g.y, yr: g.yr || [0, Math.max(...d.pts.map(p => p[1])) * 1.1] }} />}
   </div>);
@@ -534,10 +535,10 @@ function FicheCorrection({ e }) {
     {!L.length && <div style={{ color: C.doux }}>Aucun calcul saisi pendant cette partie.</div>}
     {L.map((c, i) => (<div key={c.id + i} style={{ border: `1px solid ${C.bord}`, borderLeft: `5px solid ${c.juste ? C.vert : C.ambre}`, borderRadius: 10, padding: '10px 12px', margin: '8px 0', fontSize: 14.5, lineHeight: 1.5, breakInside: 'avoid', background: '#fff' }}>
       <div style={{ fontWeight: 700 }}>{i + 1}. {c.titre}{c.juste ? ' ✅' : c.solution ? ' · solution donnée par un collègue' : ' · corrigé avec l\'aide d\'un collègue'}</div>
-      <div style={{ color: C.doux, whiteSpace: 'pre-line' }}>{c.donnees}</div>
-      <div><b>Question :</b> {c.q}</div>
+      <div style={{ color: C.doux, whiteSpace: 'pre-line' }}>{avecIndices(c.donnees)}</div>
+      <div><b>Question :</b> {avecIndices(c.q)}</div>
       <div><b>Ta réponse :</b> {c.saisies.map(fmt).join(' puis ')} · <b>Valeur attendue :</b> {c.attendu}</div>
-      <div><b>Démarche :</b><ul style={{ margin: '2px 0 0', paddingLeft: 20 }}>{c.demarche.map((d, k) => <li key={k}>{d}</li>)}</ul></div>
+      <div><b>Démarche :</b><ul style={{ margin: '2px 0 0', paddingLeft: 20 }}>{c.demarche.map((d, k) => <li key={k}>{avecIndices(d)}</li>)}</ul></div>
     </div>))}
     <div style={{ fontWeight: 700, margin: '14px 0 6px' }}>Bilan par compétence</div>
     {bilan(e).map(b => { const [ic, col, lib] = NIVEAUX[b.niveau]; return <div key={b.comp} style={{ margin: '6px 0', fontSize: 14.5, lineHeight: 1.5, breakInside: 'avoid' }}>{ic} <b>{b.comp}</b> · {b.titre} <span style={{ color: col, fontWeight: 700 }}>({lib})</span><div style={{ color: C.doux }}>{b.texte}</div></div>; })}
@@ -586,7 +587,7 @@ function RevoirResultats({ e }) {
     <summary style={{ cursor: 'pointer', fontWeight: 700 }}>📂 Revoir mes résultats ({ids.length})</summary>
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '10px 0' }}>{ids.map(i => <button key={i} type="button" data-revoir={i} aria-pressed={id === i} onClick={() => setId(id === i ? null : i)} style={{ font: 'inherit', fontSize: 13.5, padding: '5px 11px', borderRadius: 99, border: `1.5px solid ${id === i ? C.accent : C.bord}`, background: id === i ? '#e6f4f1' : '#fff', cursor: 'pointer' }}>{SCENES[i].titre}</button>)}</div>
     {sc && <div data-revoir-contenu style={{ borderTop: `1px solid ${C.bord}`, paddingTop: 6 }}>
-      {String(texteDe(e2)).split('\n').filter(l => l.trim()).map((l, k) => <p key={k} style={{ margin: '6px 0', lineHeight: 1.55, fontSize: 15 }}>{l}</p>)}
+      {String(texteDe(e2)).split('\n').filter(l => l.trim()).map((l, k) => <p key={k} style={{ margin: '6px 0', lineHeight: 1.55, fontSize: 15 }}>{avecIndices(l)}</p>)}
       {visuelsDe(e2).map((v, k) => <Visuel key={k} v={v} />)}
     </div>}
   </details>);
@@ -622,8 +623,8 @@ function Instruments({ e, s }) {
 
 function Dialogue({ sc, paragraphes, p, e }) {
   return <div>{paragraphes.map((l, i) => l.startsWith('«') || /^[A-ZÉÈÀ][\w'’ éèêàùçî-]* : «/.test(l) ?
-    <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '10px 0' }}><Avatar pnj={sc.pnj} e={e} /><div className="pc-bulle" style={{ flex: 1, margin: 0, borderColor: p.couleur + '66', background: p.couleur + '0d' }}>{l}</div></div>
-    : <p key={i} style={{ lineHeight: 1.65, margin: '10px 0', color: '#334155' }}>{l}</p>)}</div>;
+    <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '10px 0' }}><Avatar pnj={sc.pnj} e={e} /><div className="pc-bulle" style={{ flex: 1, margin: 0, borderColor: p.couleur + '66', background: p.couleur + '0d' }}>{avecIndices(l)}</div></div>
+    : <p key={i} style={{ lineHeight: 1.65, margin: '10px 0', color: '#334155' }}>{avecIndices(l)}</p>)}</div>;
 }
 
 const CONSTITUANTS_FICHE = [['caf', 'Caféine'], ['carb', 'Synthalen K'], ['coc', 'Cocoate de macrogol 7 glycérol'], ['eth', 'Éthanol à 96 %'], ['trol', 'Trolamine'], ['eau', 'Eau purifiée']];
