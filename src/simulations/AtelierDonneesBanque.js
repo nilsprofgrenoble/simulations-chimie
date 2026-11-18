@@ -270,6 +270,54 @@ export const ENONCES = [
         manque: null, solution: { txt: 'Qr = ([CH₃COO⁻] × [HCOOH]) / ([CH₃COOH] × [HCOO⁻]), concentrations initiales', val: (c0 * d0) / (a0 * b0), u: '' } };
     },
   },
+  // ───────────────────────────── Force des acides (TG) : K_A, pH, taux d'avancement
+  {
+    id: 'fab-sapp-ka', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Estimer la constante d’acidité d’un acide à partir du pH', noms: ['Constante d’acidité', 'Concentration en ions oxonium'],
+    gen: () => { const pKa = tire([4.2, 4.4, 4.6, 4.8, 5.0]), C = tire([0.010, 0.020, 0.050, 0.10]), Ka = 10 ** -pKa, x = (-Ka + Math.sqrt(Ka * Ka + 4 * Ka * C)) / 2, pH = Math.round(-Math.log10(x) * 100) / 100; return { C, pH, V: tire([100, 250, 500]), T: tire([20, 25, 30]) }; },
+    build: (p, q) => {
+      const tokens = {
+        C: tok(`${nb(p.C, 3)} mol/L`, 'Concentration apportée de l’acide', p.C, 'mol/L'),
+        pH: tok(`${nb(p.pH, 2)}`, 'pH de la solution mesuré avec un pH-mètre', p.pH, ''),
+        V: tok(`${p.V} mL`, 'Volume de la solution préparée', p.V, 'mL'),
+        T: tok(`${p.T} °C`, 'Température de la solution', p.T, '°C'),
+      };
+      const debut = ['On prépare ', T('V'), ' d’une solution d’un acide faible, de concentration apportée ', T('C'), ', à ', T('T'), '. Le pH-mètre indique ', T('pH'), '. '];
+      const h = 10 ** -p.pH;
+      if (q === 0) return { tokens, derivees: ['[H₃O⁺] = 10^(−pH) = [A⁻] ; [AH] = C − [H₃O⁺]'], texte: [...debut, 'Quelle est la constante d’acidité K_A de cet acide ?'],
+        utiles: ['C', 'pH'], raisons: { V: 'Le volume ne change pas les concentrations : il n’intervient pas dans le calcul de K_A.', T: 'La température est constante : elle n’intervient pas dans le calcul, elle indique seulement que K_A garde sa valeur.' },
+        cherche: { bonne: 'La constante d’acidité K_A (sans unité)', faux: ['Le taux d’avancement final τ (sans unité)', 'Le produit ionique de l’eau K_e (sans unité)', 'Le pK_A de l’acide (sans unité)'] },
+        manque: null, solution: { txt: 'K_A = [H₃O⁺]² / (C − [H₃O⁺]), avec [H₃O⁺] = 10^(−pH)', val: h * h / (p.C - h), u: '' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle est la concentration en ions oxonium de la solution ?'],
+        utiles: ['pH'], raisons: { C: 'La concentration apportée sert à calculer K_A ou τ, pas [H₃O⁺] : celle-ci se déduit du pH seul.', V: 'Le volume ne change pas le pH : il n’intervient pas.', T: 'La température est constante : elle n’intervient pas dans la relation entre pH et [H₃O⁺].' },
+        cherche: { bonne: 'La concentration en ions oxonium [H₃O⁺] (en mol/L)', faux: ['La constante d’acidité K_A de l’acide (sans unité)', 'Le taux d’avancement final τ de la solution', 'La concentration en ions hydroxyde [HO⁻] de la solution (en mol/L)'] },
+        manque: null, solution: { txt: '[H₃O⁺] = 10^(−pH)', val: h, u: 'mol/L' } };
+    },
+  },
+  {
+    id: 'fab-sapp-compar', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Comparer la force de deux acides', noms: ['Constante d’acidité de l’acide A', 'Taux d’avancement de l’acide B'],
+    gen: () => {
+      const fa = (pKa, C) => { const Ka = 10 ** -pKa, x = (-Ka + Math.sqrt(Ka * Ka + 4 * Ka * C)) / 2; return Math.round(-Math.log10(x) * 100) / 100; };
+      const pA = tire([4.0, 4.2, 4.4]), pB = tire([4.6, 4.8, 5.0]), CA = tire([0.010, 0.020, 0.050]), CB = tire([0.010, 0.020, 0.050, 0.10]);
+      return { CA, CB, pHA: fa(pA, CA), pHB: fa(pB, CB), V: tire([100, 200, 250]) };
+    },
+    build: (p, q) => {
+      const tokens = {
+        CA: tok(`${nb(p.CA, 3)} mol/L`, 'Concentration apportée de l’acide A', p.CA, 'mol/L'), pHA: tok(`${nb(p.pHA, 2)}`, 'pH de la solution de l’acide A', p.pHA, ''),
+        CB: tok(`${nb(p.CB, 3)} mol/L`, 'Concentration apportée de l’acide B', p.CB, 'mol/L'), pHB: tok(`${nb(p.pHB, 2)}`, 'pH de la solution de l’acide B', p.pHB, ''),
+        V: tok(`${p.V} mL`, 'Volume prélevé pour chaque mesure de pH', p.V, 'mL'),
+      };
+      const debut = ['On compare deux acides faibles à 25 °C. L’acide A, de concentration apportée ', T('CA'), ', donne un pH de ', T('pHA'), '. L’acide B, de concentration apportée ', T('CB'), ', donne un pH de ', T('pHB'), '. On prélève ', T('V'), ' de chaque solution pour mesurer le pH. '];
+      const hA = 10 ** -p.pHA, hB = 10 ** -p.pHB;
+      if (q === 0) return { tokens, derivees: ['[H₃O⁺] = 10^(−pH) pour l’acide A'], texte: [...debut, 'Quelle est la constante d’acidité K_A de l’acide A ?'],
+        utiles: ['CA', 'pHA'], raisons: { CB: 'Ces données sont celles de l’acide B : elles ne servent pas pour K_A de l’acide A.', pHB: 'Ce pH est celui de l’acide B : il ne sert pas pour K_A de l’acide A.', V: 'Le volume prélevé ne change ni le pH ni les concentrations : il n’intervient pas.' },
+        cherche: { bonne: 'La constante d’acidité K_A de l’acide A (sans unité)', faux: ['La constante d’acidité K_A de l’acide B (sans unité)', 'Le taux d’avancement final de l’acide A (sans unité)', 'Le pK_A de l’acide A (sans unité)'] },
+        manque: null, solution: { txt: 'K_A = [H₃O⁺]² / (C − [H₃O⁺]), avec [H₃O⁺] = 10^(−pH) de l’acide A', val: hA * hA / (p.CA - hA), u: '' } };
+      return { tokens, derivees: ['[H₃O⁺] = 10^(−pH) pour l’acide B'], texte: [...debut, 'Quel est le taux d’avancement final de l’acide B ?'],
+        utiles: ['CB', 'pHB'], raisons: { CA: 'Ces données sont celles de l’acide A : elles ne servent pas pour l’acide B.', pHA: 'Ce pH est celui de l’acide A : il ne sert pas pour l’acide B.', V: 'Le volume prélevé ne change ni le pH ni les concentrations : il n’intervient pas (le volume se simplifie dans τ).' },
+        cherche: { bonne: 'Le taux d’avancement final τ de l’acide B (sans unité)', faux: ['Le taux d’avancement final τ de l’acide A (sans unité)', 'La constante d’acidité K_A de l’acide B (sans unité)', 'La concentration en ions oxonium de l’acide A (mol/L)'] },
+        manque: null, solution: { txt: 'τ = [H₃O⁺] / C, avec [H₃O⁺] = 10^(−pH) de l’acide B', val: hB / p.CB, u: '' } };
+    },
+  },
   // ───────────────────────────── Titrage pH-métrique (TG) : concentration et composition
   {
     id: 'titph-ca', domaine: 'Titrage pH-métrique', titre: 'Contrôle d’une solution d’acide', noms: ['Concentration de l’acide', 'Volume équivalent attendu'],

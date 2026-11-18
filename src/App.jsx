@@ -83,6 +83,7 @@ const SimulationPlanFactoriel = paresseux(() => import("./simulations/PlanFactor
 const SimulationInteractions = paresseux(() => import("./simulations/Interactions"), "SimulationInteractions");
 const SimulationRadioactivite = paresseux(() => import("./simulations/Radioactivite"), "SimulationRadioactivite");
 const SimulationEquilibre = paresseux(() => import("./simulations/Equilibre"), "SimulationEquilibre");
+const SimulationForceAcides = paresseux(() => import("./simulations/ForceAcides"), "SimulationForceAcides");
 const SimulationAcidesBases = paresseux(() => import("./simulations/AcidesBases"), "SimulationAcidesBases");
 const SimulationEsterification = paresseux(() => import("./simulations/Esterification"), "SimulationEsterification");
 const SimulationChampForce = paresseux(() => import("./simulations/ChampForce"), "SimulationChampForce");
@@ -228,6 +229,8 @@ const SIMULATIONS = [
     component: SimulationRadioactivite },
   { id:125, label:"Équilibre chimique : quotient de réaction Qr, constante K et taux d’avancement final", niveau:"TG", icon:"⚖️", color:"#0f766e",
     component: SimulationEquilibre },
+  { id:129, label:"Force des acides : constante d’acidité KA, pKA et produit ionique Ke", niveau:"TG", icon:"🧪", color:"#0f766e",
+    component: SimulationForceAcides },
   { id:117, label:"L’œil et la loupe : accommodation, diamètre apparent, grossissement", niveau:"TSTL", icon:"👁️", color:"#0e7490",
     component: SimulationOeilLoupe },
   { id:118, label:"Le microscope : image intermédiaire, mise au point, grossissement", niveau:"TSTL", icon:"🔬", color:"#0e7490",

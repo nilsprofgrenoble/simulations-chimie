@@ -896,5 +896,19 @@
  "77:plausible:pfac-val-coefficient": "VAL222",
  "77:plausible:pfac-val-sature": "VAL223",
  "36:pmel-calcul": "REA32",
- "36:pfac-calcul": "REA33"
+ "36:pfac-calcul": "REA33",
+ "34:fab-sapp-ka.0": "SAPP223",
+ "34:fab-sapp-ka.1": "SAPP224",
+ "34:fab-sapp-compar.0": "SAPP225",
+ "34:fab-sapp-compar.1": "SAPP226",
+ "37:prevoir:fab-ana-fort-faible": "ANA421",
+ "37:prevoir:fab-ana-comparer": "ANA422",
+ "37:prevoir:fab-ana-dilution": "ANA423",
+ "37:prevoir:fab-ana-equation": "ANA424",
+ "37:prevoir:fab-ana-ke": "ANA425",
+ "77:plausible:fab-val-fort": "VAL224",
+ "77:plausible:fab-val-ka": "VAL225",
+ "77:plausible:fab-val-impossible": "VAL226",
+ "77:plausible:fab-val-pka": "VAL227",
+ "36:fab-calcul": "REA34"
 }

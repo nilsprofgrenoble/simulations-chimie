@@ -64,6 +64,7 @@ export const EXOS_DE_SIM = {
   122: [/(^|\.)cinv-/, /plausible\.cinv-/],
   123: [/(^|\.)rad-/, /plausible\.rad-/],
   125: [/(^|\.)equ-/, /plausible\.equ-/],
+  129: [/(^|\.)fab-/, /plausible\.fab-/],
   112: [/(^|\.)ext-/, /plausible\.ext-/],
   111: [/(^|\.)ir-/, /plausible\.ir-/],
   109: [/(^|\.)syn-/, /plausible\.syn-/, /(^|\.)ccm-/, /plausible\.ccm-/],

@@ -874,6 +874,35 @@ function genEquilibreTG() {
     retenir: ['Qr = [C]·[D] / ([A]·[B]), sans unité ; Qr < K : sens direct ; Qr > K : sens inverse.', 'À l’état final, Qr = K : on calcule K avec les concentrations de l’état final.', 'τ = x_f / x_max, sans unité, compris entre 0 et 1 ; τ < 1 : transformation non totale.'] };
 }
 
+// ───────────── Force des acides (TG) : pH d’un acide fort, K_A à partir du pH, [HO⁻] avec K_e, équation du second degré ─────────────
+function genForceAcidesTG() {
+  const sci = (x, cs = 2) => { const [a, e] = Number(x).toExponential(cs - 1).split('e'); return `${a.replace('.', ',')}${NB}×${NB}10${[...String(Number(e))].map(c => ({ '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' })[c]).join('')}`; };
+  const quad = (Ka, C) => (-Ka + Math.sqrt(Ka * Ka + 4 * Ka * C)) / 2;
+  const C1 = tire([0.0010, 0.0020, 0.0050, 0.020, 0.030, 0.050, 0.10]), pH1 = -Math.log10(C1);
+  const q1 = { id: 'f0', type: 'num', q: <>Une solution d’acide chlorhydrique (acide fort) a une concentration apportée <b>C = {nb(C1, 2)}{NB}mol/L</b>. Calculez son pH (c° = 1{NB}mol/L), avec 2 décimales.</>, unite: '', vrai: pH1, tolRel: 0.006, csMin: 3,
+    aide: 'Acide fort : la transformation est quasi-totale, donc [H₃O⁺] = C ; puis pH = −log([H₃O⁺] / c°) avec la touche log.',
+    pieges: [[-pH1, 'Le pH est positif ici : log C est négatif, donc −log C est positif.'], [-Math.log(C1), 'Vous avez utilisé le logarithme népérien ln ; il faut log (décimal).'], [C1, 'C’est la concentration [H₃O⁺] = C, pas le pH : pH = −log C.']],
+    expl: <>[H₃O⁺] = C = {nb(C1, 2)}{NB}mol/L ; pH = −log({nb(C1, 2)}) = <b>{nb(pH1, 3)}</b>, soit {nb(pH1, 2)} à 2 décimales.</> };
+  const C2 = tire([0.010, 0.020, 0.050, 0.10]), pKa2 = tire([4.0, 4.2, 4.4, 4.6, 4.8, 5.0]), pH2 = Math.round(-Math.log10(quad(10 ** -pKa2, C2)) * 100) / 100, h2 = 10 ** -pH2, Ka2 = h2 * h2 / (C2 - h2);
+  const q2 = { id: 'f1', type: 'num', q: <>Une solution d’un acide faible, de concentration apportée <b>C = {nb(C2, 2)}{NB}mol/L</b>, a un pH égal à <b>{nb(pH2, 2)}</b> à 25{NB}°C. Calculez la constante d’acidité K<sub>A</sub> de cet acide (sans unité), avec 2 chiffres significatifs.</>, unite: '', vrai: Ka2, tolRel: 0.10, csMin: 2,
+    aide: '[H₃O⁺] = [A⁻] = 10^(−pH) et [AH] = C − [H₃O⁺] ; K_A = [A⁻]·[H₃O⁺] / [AH]. Gardez un chiffre significatif de plus pour [H₃O⁺] pendant le calcul.',
+    pieges: [[h2 / C2, 'C’est le taux d’avancement τ = [H₃O⁺] / C, pas K_A : K_A = [H₃O⁺]² / (C − [H₃O⁺]).'], [h2, 'C’est [H₃O⁺] : K_A est un rapport qui fait intervenir [H₃O⁺] au carré.'], [(C2 - h2) / (h2 * h2), 'Le rapport est inversé : l’acide AH est au dénominateur.'], [10 ** -pH2 * C2, 'Il faut diviser par la concentration de l’acide non transformé, pas multiplier par C.']],
+    expl: <>[H₃O⁺] = [A⁻] = 10<sup>−{nb(pH2, 2)}</sup> = {sci(h2, 3)}{NB}mol/L ; [AH] = {nb(C2, 2)} − {sci(h2, 3)} = {sci(C2 - h2, 3)}{NB}mol/L ; K<sub>A</sub> = {sci(h2, 3)}² / {sci(C2 - h2, 3)} = <b>{sci(Ka2, 2)}</b>.</> };
+  const pH3 = tire([2.40, 3.10, 3.60, 4.20, 5.30, 6.50]), h3 = 10 ** -pH3, HO3 = 1e-14 / h3;
+  const q3 = { id: 'f2', type: 'num', q: <>À 25{NB}°C, une solution aqueuse a un pH égal à <b>{nb(pH3, 2)}</b>. Avec K<sub>e</sub> = [H₃O⁺]·[HO⁻] = 1,0 × 10⁻¹⁴, calculez la concentration en ions hydroxyde [HO⁻] en mol/L, avec 2 chiffres significatifs.</>, unite: 'mol/L', vrai: HO3, tolRel: 0.06, csMin: 2,
+    aide: '[H₃O⁺] = 10^(−pH), puis [HO⁻] = K_e / [H₃O⁺]. On peut aussi écrire [HO⁻] = 10^(pH − 14).',
+    pieges: [[1e-14 * h3, 'Il faut diviser K_e par [H₃O⁺], pas les multiplier.'], [h3, 'C’est [H₃O⁺] : [HO⁻] se déduit de K_e / [H₃O⁺].'], [14 - pH3, 'C’est 14 − pH (le pOH), pas une concentration : [HO⁻] = 10^(−pOH).'], [1e-14, 'C’est K_e lui-même : [HO⁻] = K_e / [H₃O⁺].']],
+    expl: <>[H₃O⁺] = 10<sup>−{nb(pH3, 2)}</sup> = {sci(h3, 3)}{NB}mol/L ; [HO⁻] = 1,0 × 10⁻¹⁴ / {sci(h3, 3)} = <b>{sci(HO3, 2)}{NB}mol/L</b>.</> };
+  const C4 = tire([0.0010, 0.0020, 0.0050]), Ka4 = tire([1.7e-5, 6.3e-5, 1.8e-4]), x4 = quad(Ka4, C4);
+  const q4 = { id: 'f3', type: 'num', q: <>On dissout un acide faible AH, de constante d’acidité K<sub>A</sub> = <b>{sci(Ka4, 2)}</b>, à la concentration apportée <b>C = {nb(C4, 2)}{NB}mol/L</b>. En posant x = [H₃O⁺] = [A⁻], on obtient x² + K<sub>A</sub>·x − K<sub>A</sub>·C = 0. Résolvez cette équation du second degré et donnez [H₃O⁺] en mol/L, avec 3 chiffres significatifs.</>, unite: 'mol/L', vrai: x4, tolRel: 0.01, csMin: 3,
+    aide: 'Équation a·x² + b·x + c = 0 avec a = 1, b = K_A et c = −K_A·C. Discriminant Δ = b² − 4ac ; racine positive x = (−b + √Δ) / (2a). Gardez 4 chiffres pendant le calcul.',
+    pieges: [[Math.sqrt(Ka4 * C4), 'Vous avez négligé x devant C (x ≈ √(K_A·C)) : ici l’acide réagit trop pour cette approximation, résolvez l’équation du second degré.'], [Ka4 * C4, 'C’est le terme K_A·C, pas la racine de l’équation.'], [(-Ka4 + Math.sqrt(Ka4 * Ka4 + 4 * Ka4 * C4)), 'Il manque la division par 2a = 2 dans la formule x = (−b + √Δ) / (2a).'], [-Math.log10(x4), 'C’est le pH ; on demande la concentration [H₃O⁺].']],
+    expl: <>Δ = K<sub>A</sub>² + 4·K<sub>A</sub>·C = {sci(Ka4 * Ka4 + 4 * Ka4 * C4, 4)} ; x = (−{sci(Ka4, 2)} + √Δ) / 2 = <b>{sci(x4, 3)}{NB}mol/L</b> (pH = {nb(-Math.log10(x4), 2)}).</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([y]) => isFinite(y) && Math.abs(y - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'Force des acides : pH d’un acide fort, constante d’acidité à partir du pH, ions hydroxyde avec K_e et équation du second degré.', questions: [q1, q2, q3, q4],
+    retenir: ['Acide fort : [H₃O⁺] = C et pH = −log C ; acide faible : pH > −log C.', 'K_A = [A⁻]·[H₃O⁺] / [AH] = [H₃O⁺]² / (C − [H₃O⁺]) ; K_e = [H₃O⁺]·[HO⁻] = 1,0 × 10⁻¹⁴ à 25 °C.', 'Acide faible : x² + K_A·x − K_A·C = 0 avec x = [H₃O⁺] ; on garde la racine positive.'] };
+}
+
 // ──────────────────────── Familles « Plans d'expériences » (BTS) ────────────────────────
 function genPlanMelange() {
   const comp = ['cire de candelilla (A)', 'huile de ricin (B)', 'cire d’abeille (C)'];
@@ -953,6 +982,7 @@ export const FAMILLES = [
   { id: 'cinv-calcul', groupe: 'Formules', titre: 'Cinétique : vitesse volumique, demi-réactions et constante d’ordre 1 (TG)', gen: genCinetiqueTG, domaine: 'Cinétique : vitesse volumique et ordre 1' },
   { id: 'rad-calcul', groupe: 'Formules', titre: 'Radioactivité : constante λ, noyaux restants, activité et datation (TG)', gen: genRadioactiviteTG, domaine: 'Radioactivité : décroissance et demi-vie' },
   { id: 'equ-calcul', groupe: 'Formules', titre: 'Équilibre chimique : Qr, K, taux d’avancement final et ajout d’un réactif (TG)', gen: genEquilibreTG, domaine: 'Équilibre chimique : Qr, K et taux d’avancement' },
+  { id: 'fab-calcul', groupe: 'Formules', titre: 'Force des acides : pH, K_A, ions hydroxyde et équation du second degré (TG)', gen: genForceAcidesTG, domaine: 'Force des acides et des bases : Ka et tampon' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },
   { id: 'simple', groupe: 'Unités', titre: 'Changement d’unité simple', gen: genSimple },
   { id: 'prefixes', groupe: 'Unités', titre: 'Préfixes et puissances de 10', gen: genPrefixes },
