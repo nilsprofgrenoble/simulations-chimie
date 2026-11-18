@@ -21,7 +21,7 @@ const TONS = { ok: C.vert, moyen: C.ambre, ko: C.rouge };
 const ICONES = { es_balance: '⚖️', cpg_m: '⚖️', titr_carb_plan: '🧪', leurre_titrgel: '🧪', leurre_ir: '📈', leurre_refracto: '🔍', leurre_polar: '🔍', leurre_conduc: '🔌', choix_caf: '🧪', choix_eth: '🧪', docs: '📄', obs_video: '🎞️', es_prep: '🔥', es_calc1: '📊', eth1: '⚖️', formule: '📝', eq_base: '⚗️', fab_choix: '⚗️', fab_disp: '🧴', rheoC: '🌀', rheoF: '🌀', hplc_m: '📈', cpg_ei: '🔬', cpg_inj: '🔬', uv_ajouts_plan: '🌈', uv_ext_plan: '🌈', hplc_gamme_plan: '📈', hplc_ei: '📈', verdict: '✅', eq_ines: '✅' };
 const FOND_LIEU = { 'Paillasse de formulation': '#ecf7ee', 'Salle de chromatographie': '#e8f1fa', 'Bureau': '#f3eefb', 'Bureau de Mme Dubreuil': '#f3eefb', 'Salle de rhéologie': '#fdf1e7', 'Salle des étuves': '#fdf1e7' };
 const STYLE = `${STYLE_VISUELS}
-@media print{body *{visibility:hidden!important}[data-impression],[data-impression] *{visibility:visible!important}[data-impression]{position:absolute;left:0;top:0;width:100%;padding:0 8mm;box-sizing:border-box;background:#fff}.pc-noprint{display:none!important}}
+@media print{[data-pc-cache]{display:none!important}[data-pc-anc]{overflow:visible!important;height:auto!important;max-height:none!important;position:static!important;box-shadow:none!important;border:none!important;padding:0!important;margin:0!important;background:#fff!important}html,body{height:auto!important;overflow:visible!important;background:#fff!important}[data-impression]{padding:0 8mm;box-sizing:border-box}.pc-noprint{display:none!important}}
 @keyframes pc-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .pc-scene{animation:pc-in .35s ease-out}
 .pc-choix{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;padding:12px 14px;margin:9px 0;border:1.5px solid #fdba74;border-radius:14px;background:#fff7ed;color:${C.encre};font:inherit;font-size:16px;line-height:1.45;cursor:pointer;transition:border-color .15s,background .15s,transform .15s,box-shadow .15s}
@@ -514,12 +514,19 @@ function Paillasse({ e, s, choix, onChoix }) {
   </div>);
 }
 
+// Impression : on masque tout ce qui entoure la fiche (sans quoi la page est coupée par les conteneurs de l'application)
+function imprimerFiche(el) {
+  const marques = [];
+  let n = el; while (n && n !== document.body) { const par = n.parentElement; if (!par) break; par.setAttribute('data-pc-anc', '1'); marques.push(par); [...par.children].forEach(s => { if (s !== n) { s.setAttribute('data-pc-cache', '1'); marques.push(s); } }); n = par; }
+  const nettoyer = () => { marques.forEach(m => { m.removeAttribute('data-pc-cache'); m.removeAttribute('data-pc-anc'); }); window.removeEventListener('afterprint', nettoyer); };
+  window.addEventListener('afterprint', nettoyer); window.print(); setTimeout(() => { if (marques.some(m => m.hasAttribute('data-pc-anc') || m.hasAttribute('data-pc-cache'))) nettoyer(); }, 60000);
+}
 function FicheCorrection({ e }) {
   const L = ficheCorrection(e), nom = pn(e);
   const fmt = v => v == null ? '—' : nf(v, Math.abs(v) < 10 ? 2 : 1);
   return (<section data-impression data-fiche-correction>
     <h4 style={{ margin: '20px 0 8px', fontSize: 17 }}>Fiche de correction{nom ? ` · ${nom}` : ''}</h4>
-    <button type="button" className="pc-btn pc-noprint" data-imprimer onClick={() => window.print()} style={{ marginBottom: 12 }}>🖨️ Imprimer la fiche (ou l'enregistrer en PDF)</button>
+    <button type="button" className="pc-btn pc-noprint" data-imprimer onClick={ev => imprimerFiche(ev.currentTarget.closest('[data-impression]'))} style={{ marginBottom: 12 }}>🖨️ Imprimer la fiche (ou l'enregistrer en PDF)</button>
     {ficheFormule(e) && (() => { const F = ficheFormule(e); return (<div style={{ border: `1px solid ${C.bord}`, borderLeft: `5px solid ${F.refus || F.aide ? C.ambre : C.vert}`, borderRadius: 10, padding: '10px 12px', margin: '8px 0', fontSize: 14.5, lineHeight: 1.5, breakInside: 'avoid', background: '#fff' }}>
       <div style={{ fontWeight: 700 }}>La formule du contretype ({F.tentatives} relecture{F.tentatives > 1 ? 's' : ''} par Mme Dubreuil{F.aide ? ', formule de départ donnée par un collègue' : ''})</div>
       <table style={{ width: '100%', borderCollapse: 'collapse', margin: '6px 0', fontSize: 14 }}><thead><tr style={{ textAlign: 'left', color: C.doux }}><th>Constituant</th><th>Ta formule</th><th>Référence</th></tr></thead>{F.lignes.map(([nomL, a, b, why]) => <tbody key={nomL} style={{ breakInside: 'avoid' }}><tr style={{ borderTop: `1px solid ${C.bord}` }}><td><b>{nomL}</b></td><td>{nf(a, 1)} g</td><td>{nf(b, 1)} g</td></tr><tr><td colSpan={3} style={{ color: C.doux, paddingBottom: 4 }}>{why}</td></tr></tbody>)}</table></div>); })()}
@@ -622,15 +629,39 @@ function Dialogue({ sc, paragraphes, p, e }) {
 const CONSTITUANTS_FICHE = [['caf', 'Caféine'], ['carb', 'Synthalen K'], ['coc', 'Cocoate de macrogol 7 glycérol'], ['eth', 'Éthanol à 96 %'], ['trol', 'Trolamine'], ['eau', 'Eau purifiée']];
 const lireTeneur = x => { const v = Number(String(x ?? '').replace(',', '.').trim()); return String(x ?? '').trim() !== '' && Number.isFinite(v) ? v : null; };
 // Fiche de formulation remise par Mme Dubreuil : toujours consultable, les pourcentages se notent au fur et à mesure (bloc-notes de l'élève, rien n'est corrigé ici)
+const CONSIGNES = [
+  ['Ta mission', 'Une cliente veut un gel équivalent à la Percutaféine (gel à la caféine, surcharges adipeuses localisées). Tu dois retrouver la formule du gel commercial, fabriquer environ 200 g d\'un contretype, puis contrôler sa qualité : caféine, éthanol, viscosité.'],
+  ['Ta journée', 'De 8 h à 17 h, avec une heure de pause à midi (tu peux la prendre plus tôt si tu n\'as rien à faire). L\'étuve et le ballon chauffent pendant que tu fais autre chose : organise-toi pour ne pas attendre devant. Les appareils sont fragiles, et une analyse qui ne donne pas ce qu\'on attend se discute.'],
+  ['La fiche de formulation', 'Tous les constituants y sont listés, mais aucune teneur n\'est connue. Note-y les pourcentages massiques au fur et à mesure (bloc-notes en bas de l\'écran). Les ampoules 💡 te donnent une piste pour chaque constituant.'],
+  ['La validation de la formule', 'Avant de fabriquer, je relis ta formule : elle doit être cohérente avec tes mesures et les fiches techniques, à quelques incertitudes près. Rien ne t\'impose de suivre le parcours que je propose : les scénarios sont une aide, pas une obligation.'],
+  ['Le contrôle du contretype', 'Caféine, éthanol et viscosité du gel fabriqué, comparés à ceux du gel commercial. Si un résultat sort de la tolérance, on cherche la cause avant de conclure.'],
+  ['Le compte rendu', 'Le cahier de laboratoire garde la trace de tes opérations ; il faut aussi y consacrer du temps pour rédiger le rapport de fin de journée.'],
+];
+function ConsignesDubreuil() {
+  return (<details data-consignes style={{ marginTop: 20, border: `1.5px dashed ${C.bord}`, borderRadius: 14, padding: '10px 14px', background: C.fond }}>
+    <summary style={{ cursor: 'pointer', fontWeight: 700, color: C.encre }}>📋 Consignes de Mme Dubreuil</summary>
+    <div style={{ marginTop: 8 }}>{CONSIGNES.map(([k, v]) => <p key={k} style={{ margin: '8px 0', fontSize: 14.5, lineHeight: 1.55 }}><b>{k}.</b> {v}</p>)}</div>
+  </details>);
+}
+const AMPOULES = {
+  caf: 'Relis la notice : elle donne la teneur en caféine du gel.',
+  carb: 'Mesure la viscosité du gel commercial, puis cherche dans la fiche technique du Synthalen K le pourcentage massique qui donne cette viscosité dans les mêmes conditions de mesure.',
+  coc: 'À déterminer en dernier : après l\'extrait sec, une fois estimés les pourcentages massiques de tous les autres constituants non volatils, il se déduit par différence.',
+  eth: 'La notice donne la masse d\'éthanol à 96 % contenue dans une quantité donnée de gel : tu peux en déduire le pourcentage massique (attention à la pureté de l\'éthanol). Un dosage par CPG pourra le vérifier.',
+  trol: 'Voir la fiche technique du Synthalen K : elle donne la masse de trolamine pour amener le polymère au pH voulu. Cette quantité est indicative, elle sera ajustée au pH-mètre pendant la fabrication. Le pH du gel commercial et le titrage du Synthalen K peuvent la préciser.',
+  eau: 'Elle se déduit de l\'extrait sec (tout ce qui s\'évapore est de l\'eau ou de l\'éthanol), ou par complément à 100 % une fois les autres constituants établis.',
+};
 function FicheFormulation({ e, setEtat }) {
+  const [ampoule, setAmpoule] = useState(null);
   const val = e.fichePct || {}, nombres = CONSTITUANTS_FICHE.map(([id]) => lireTeneur(val[id])), saisis = nombres.filter(x => x !== null), somme = saisis.reduce((a, b) => a + b, 0);
   return (<details data-fichepct style={{ marginTop: 20, border: `1.5px dashed ${C.bord}`, borderRadius: 14, padding: '10px 14px', background: C.fond }}>
     <summary style={{ cursor: 'pointer', fontWeight: 700, color: C.encre }}>🧪 Fiche de formulation de Mme Dubreuil{saisis.length ? ` (${saisis.length} sur ${CONSTITUANTS_FICHE.length} notés)` : ' (à compléter)'}</summary>
     <div style={{ fontSize: 14, color: C.doux, margin: '8px 0' }}>Note ici les pourcentages massiques au fur et à mesure que tu les trouves. Cette fiche est un bloc-notes : rien n'y est corrigé.</div>
     <table style={{ borderCollapse: 'collapse', fontSize: 15, width: '100%', maxWidth: 480 }}>
       <thead><tr><th style={{ textAlign: 'left', padding: '4px 8px', border: `1px solid ${C.bord}`, background: '#fff' }}>Constituant</th><th style={{ textAlign: 'right', padding: '4px 8px', border: `1px solid ${C.bord}`, background: '#fff' }}>% massique</th></tr></thead>
-      <tbody>{CONSTITUANTS_FICHE.map(([id, nom]) => <tr key={id}><td style={{ padding: '4px 8px', border: `1px solid ${C.bord}`, background: '#fff' }}><label htmlFor={`fp-${id}`}>{nom}</label></td>
-        <td style={{ padding: 2, border: `1px solid ${C.bord}`, background: '#fff', textAlign: 'right' }}><input id={`fp-${id}`} data-fp={id} inputMode="decimal" autoComplete="off" value={val[id] ?? ''} placeholder="?" onChange={ev => setEtat({ ...e, fichePct: { ...val, [id]: ev.target.value } })} style={{ width: 90, textAlign: 'right', font: 'inherit', padding: '6px 8px', border: `1px solid ${C.bord}`, borderRadius: 8 }} /></td></tr>)}
+      <tbody>{CONSTITUANTS_FICHE.flatMap(([id, nom]) => [<tr key={id}><td style={{ padding: '4px 8px', border: `1px solid ${C.bord}`, background: '#fff' }}><label htmlFor={`fp-${id}`}>{nom}</label> <button type="button" data-ampoule={id} aria-label={`Un conseil pour ${nom}`} aria-expanded={ampoule === id} onClick={() => setAmpoule(ampoule === id ? null : id)} style={{ background: ampoule === id ? '#fef3c7' : 'none', border: 'none', cursor: 'pointer', fontSize: 17, borderRadius: 8 }}>💡</button></td>
+        <td style={{ padding: 2, border: `1px solid ${C.bord}`, background: '#fff', textAlign: 'right' }}><input id={`fp-${id}`} data-fp={id} inputMode="decimal" autoComplete="off" value={val[id] ?? ''} placeholder="?" onChange={ev => setEtat({ ...e, fichePct: { ...val, [id]: ev.target.value } })} style={{ width: 90, textAlign: 'right', font: 'inherit', padding: '6px 8px', border: `1px solid ${C.bord}`, borderRadius: 8 }} /></td></tr>,
+        ...(ampoule === id ? [<tr key={id + 'a'}><td colSpan={2} data-ampoule-texte style={{ padding: '6px 10px', border: `1px solid ${C.bord}`, background: '#fffbeb', fontSize: 14, lineHeight: 1.5 }}>💡 {AMPOULES[id]}{(id === 'eth' || (id === 'coc' && e.fait.esLu)) && ['hub', 'formule'].includes(e.scene) && <div><button type="button" className="pc-btn2" data-pas-a-pas={id} onClick={() => setEtat(choisir(e, { vers: id === 'eth' ? 'eth1' : 'es_calc3', duree: 0 }))} style={{ marginTop: 6 }}>Faire ce calcul pas à pas</button></div>}</td></tr>] : [])])}
         <tr><td style={{ padding: '4px 8px', border: `1px solid ${C.bord}`, background: '#fff', fontWeight: 700 }}>Total</td><td style={{ padding: '4px 10px', border: `1px solid ${C.bord}`, background: '#fff', textAlign: 'right' }}>{saisis.length ? `${nf(somme, 2)} %` : '100 %'}</td></tr></tbody>
     </table>
   </details>);
@@ -738,6 +769,7 @@ export function SimulationHistoirePercutafeine() {
           {boiteFins}
         </>)}
       </div>
+      {!fin && <ConsignesDubreuil />}
       {!fin && <FicheFormulation e={e} setEtat={setEtat} />}
       <div data-carnet style={{ marginTop: 20, border: `1.5px dashed ${C.bord}`, borderRadius: 14, padding: '10px 14px', background: C.fond }}>
         <button type="button" onClick={() => setCarnetOuvert(o => !o)} aria-expanded={carnetOuvert} style={{ background: 'none', border: 'none', font: 'inherit', fontWeight: 700, cursor: 'pointer', padding: 0, color: C.encre }}>📓 Cahier de laboratoire ({e.carnet.length}) {carnetOuvert ? '▾' : '▸'}</button>
