@@ -848,9 +848,15 @@ add('rheoC', {
 add('brook', {
   lieu: 'Salle de rhéologie', pnj: 'lucas', titre: 'Viscosité du gel commercial au Brookfield',
   fiches: ['synthalen'],
-  texte: () => `Lucas règle le viscosimètre Brookfield dans les conditions de la fiche du Synthalen K : mobile adapté, 20 tr/min, 25 °C.\nLecture sur le gel commercial : η ≈ 78 000 mPa·s (trois lectures voisines de 77 000 à 79 000).\nLa fiche annonce, dans les mêmes conditions, 40 000 à 60 000 mPa·s pour un gel à 0,5 % en masse de Synthalen K. Le gel commercial est donc plus visqueux que celui de la fiche : il contient plus de 0,5 % de Synthalen K. Garde cet ordre de grandeur pour fixer la masse de Synthalen K de ta formule (pour 200 g de gel).`,
+  texte: () => `Lucas t'aide à installer le gel commercial sous le viscosimètre Brookfield, dans les conditions de la fiche du Synthalen K : mobile adapté, 20 tr/min, 25 °C.\nL'appareil est prêt : rien n'est encore mesuré.`,
+  choix: [{ t: 'Lancer l\'analyse', d: 'Environ 15 minutes.', duree: 15, vers: 'brook_res' }],
+});
+add('brook_res', {
+  lieu: 'Salle de rhéologie', pnj: 'lucas', titre: 'Viscosité du gel commercial au Brookfield',
+  fiches: ['synthalen'],
+  texte: () => `Lecture sur le gel commercial (mobile adapté, 20 tr/min, 25 °C) : η ≈ 78 000 mPa·s (trois lectures voisines de 77 000 à 79 000).\nLa fiche annonce, dans les mêmes conditions, 40 000 à 60 000 mPa·s pour un gel à 0,5 % en masse de Synthalen K. Le gel commercial est donc plus visqueux que celui de la fiche : il contient plus de 0,5 % de Synthalen K. Garde cet ordre de grandeur pour fixer la masse de Synthalen K de ta formule (pour 200 g de gel).`,
   hyp: "Hypothèse : à 20 tr/min et 25 °C, la viscosité du gel augmente avec la teneur en polymère (pas proportionnellement) ; la valeur de 78 000 mPa·s est une donnée du scénario.",
-  choix: [{ t: 'Noter la valeur et revenir à la paillasse', duree: 15, vers: 'hub', run: n => marquer(n, 'brook'), note: 'Viscosité du gel commercial (Brookfield, 20 tr/min, 25 °C) : environ 78 000 mPa·s, supérieure à celle d\'un gel à 0,5 % de Synthalen K (40 000 à 60 000 mPa·s).' }],
+  choix: [{ t: 'Noter la valeur et retourner à la paillasse', duree: 0, vers: 'hub', run: n => marquer(n, 'brook'), note: 'Viscosité du gel commercial (Brookfield, 20 tr/min, 25 °C) : environ 78 000 mPa·s, supérieure à celle d\'un gel à 0,5 % de Synthalen K (40 000 à 60 000 mPa·s).' }],
 });
 add('rheoC_faux', {
   lieu: 'Salle de rhéologie', pnj: 'lucas', titre: 'Relis la courbe',
