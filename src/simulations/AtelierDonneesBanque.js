@@ -365,6 +365,55 @@ export const ENONCES = [
         manque: null, solution: { txt: '% In⁻ = 100 × r / (1 + r), avec r = 10^(pH − pKA)', val: 100 * r / (1 + r), u: '%' } };
     },
   },
+  // ───────────────────────────── Solution tampon (TG) : ajout d'acide, composition à préparer
+  {
+    id: 'tmp-sapp-ajout', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Ajout d’acide dans une solution tampon', noms: ['Quantité d’ions oxonium ajoutés', 'Quantité de base A⁻ restante'],
+    gen: () => { const n0 = tire([10, 15, 20, 25]); return { n0, nAH: n0, nA: n0, V: tire([100, 150, 200]), Ca: tire([0.10, 0.20, 0.50]), Va: tire([2.0, 5.0, 10.0]), pKa: tire([4.76, 9.20]), T: tire([20, 25, 30]) }; },
+    build: (p, q) => {
+      const tokens = {
+        nAH: tok(`${nb(p.nAH, 1)} mmol`, 'Quantité d’acide faible AH dans le tampon', p.nAH, 'mmol'),
+        nA: tok(`${nb(p.nA, 1)} mmol`, 'Quantité de base conjuguée A⁻ dans le tampon', p.nA, 'mmol'),
+        V: tok(`${p.V} mL`, 'Volume du tampon', p.V, 'mL'),
+        Ca: tok(`${nb(p.Ca, 2)} mol/L`, 'Concentration de l’acide fort versé', p.Ca, 'mol/L'),
+        Va: tok(`${nb(p.Va, 1)} mL`, 'Volume d’acide fort versé', p.Va, 'mL'),
+        pKa: tok(`${nb(p.pKa, 2)}`, 'pKA du couple du tampon', p.pKa, ''),
+        T: tok(`${p.T} °C`, 'Température de la solution', p.T, '°C'),
+      };
+      const debut = ['Un tampon de ', T('V'), ' contient ', T('nAH'), ' d’acide faible AH et ', T('nA'), ' de sa base conjuguée A⁻ (pKA = ', T('pKa'), ', à ', T('T'), '). On y verse ', T('Va'), ' d’acide chlorhydrique de concentration ', T('Ca'), '. '];
+      const nH = p.Ca * p.Va;
+      if (q === 0) return { tokens, derivees: ['n(H₃O⁺) = C × V'], texte: [...debut, 'Quelle quantité d’ions oxonium a-t-on versée ?'],
+        utiles: ['Ca', 'Va'], raisons: { nAH: 'La quantité d’acide du tampon n’intervient pas dans la quantité d’ions versés.', nA: 'La quantité de base du tampon n’intervient pas dans la quantité d’ions versés.', V: 'Le volume du tampon ne change pas la quantité d’acide versée.', pKa: 'Le pKA n’intervient pas dans une quantité de matière versée.', T: 'La température est constante : elle n’intervient pas dans ce calcul.' },
+        cherche: { bonne: 'La quantité d’ions oxonium versés (en mmol)', faux: ['Le pH du tampon après l’ajout (sans unité)', 'La concentration de l’acide faible AH (en mol/L)', 'Le volume total de la solution (en mL)'] },
+        manque: null, solution: { txt: 'n(H₃O⁺) = C × V', val: nH, u: 'mmol' } };
+      return { tokens, derivees: ['n(H₃O⁺) versé = C × V', 'n(A⁻) restant = n(A⁻) initial − n(H₃O⁺) versé'], texte: [...debut, 'Quelle quantité de base A⁻ reste-t-il après la réaction avec l’acide versé ?'],
+        utiles: ['nA', 'Ca', 'Va'], raisons: { nAH: 'La forme acide AH n’est pas consommée par un acide : elle n’intervient pas dans la quantité de A⁻ restante.', V: 'Le volume du tampon ne change pas les quantités de matière.', pKa: 'Le pKA n’intervient pas dans un bilan de quantités de matière.', T: 'La température est constante : elle n’intervient pas dans ce bilan.' },
+        cherche: { bonne: 'La quantité de base A⁻ restante (en mmol)', faux: ['La quantité d’acide AH formée (en mmol)', 'La quantité d’ions oxonium versés (en mmol)', 'Le pH du tampon après l’ajout (sans unité)'] },
+        manque: null, solution: { txt: 'n(A⁻) = n(A⁻) initial − C × V', val: p.nA - nH, u: 'mmol' } };
+    },
+  },
+  {
+    id: 'tmp-sapp-prepa', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Préparer un tampon de pH donné', noms: ['Rapport des quantités à introduire', 'Quantité de base A⁻ à introduire'],
+    gen: () => { const pKa = tire([4.76, 9.20]), d = tire([-0.7, -0.5, -0.3, 0.3, 0.5, 0.7]); return { pKa, pH: Math.round((pKa + d) * 10) / 10, nAH: tire([10, 20, 25, 50]), V: tire([100, 250, 500]), Cs: tire([0.10, 0.50, 1.0]) }; },
+    build: (p, q) => {
+      const tokens = {
+        pKa: tok(`${nb(p.pKa, 2)}`, 'pKA du couple acide-base choisi', p.pKa, ''),
+        pH: tok(`${nb(p.pH, 1)}`, 'pH visé pour le tampon', p.pH, ''),
+        nAH: tok(`${p.nAH} mmol`, 'Quantité d’acide faible AH introduite', p.nAH, 'mmol'),
+        V: tok(`${p.V} mL`, 'Volume du tampon à préparer', p.V, 'mL'),
+        Cs: tok(`${nb(p.Cs, 2)} mol/L`, 'Concentration de la solution de base A⁻ disponible', p.Cs, 'mol/L'),
+      };
+      const debut = ['On veut préparer ', T('V'), ' d’un tampon de pH ', T('pH'), ' avec un couple acide-base de pKA égal à ', T('pKa'), '. On introduit ', T('nAH'), ' d’acide faible AH ; la base conjuguée A⁻ est disponible en solution à ', T('Cs'), '. '];
+      const r = 10 ** (p.pH - p.pKa);
+      if (q === 0) return { tokens, derivees: ['n(A⁻) / n(AH) = 10^(pH − pKA)'], texte: [...debut, 'Quel rapport n(A⁻) / n(AH) faut-il réaliser ?'],
+        utiles: ['pKa', 'pH'], raisons: { nAH: 'La quantité d’acide fixe la valeur de n(A⁻), mais pas le rapport demandé.', V: 'Le volume ne change pas un rapport de quantités de matière.', Cs: 'La concentration de la solution de base n’intervient pas dans le rapport.' },
+        cherche: { bonne: 'Le rapport n(A⁻) / n(AH) (sans unité)', faux: ['La quantité de A⁻ à introduire (en mmol)', 'Le volume de solution de base à verser (en mL)', 'La concentration de AH dans le tampon (en mol/L)'] },
+        manque: null, solution: { txt: 'n(A⁻) / n(AH) = 10^(pH − pKA)', val: r, u: '' } };
+      return { tokens, derivees: ['n(A⁻) = n(AH) × 10^(pH − pKA)'], texte: [...debut, 'Quelle quantité de base A⁻ faut-il introduire ?'],
+        utiles: ['pKa', 'pH', 'nAH'], raisons: { V: 'Le volume du tampon ne change pas le rapport des quantités ni n(A⁻).', Cs: 'La concentration de la solution de base ne sert qu’à convertir n(A⁻) en volume, ce que l’on ne demande pas ici.' },
+        cherche: { bonne: 'La quantité de base A⁻ à introduire (en mmol)', faux: ['Le rapport n(A⁻) / n(AH) (sans unité)', 'Le volume de solution de base à verser (en mL)', 'La concentration de A⁻ dans le tampon (en mol/L)'] },
+        manque: null, solution: { txt: 'n(A⁻) = n(AH) × 10^(pH − pKA)', val: p.nAH * r, u: 'mmol' } };
+    },
+  },
   // ───────────────────────────── Titrage pH-métrique (TG) : concentration et composition
   {
     id: 'titph-ca', domaine: 'Titrage pH-métrique', titre: 'Contrôle d’une solution d’acide', noms: ['Concentration de l’acide', 'Volume équivalent attendu'],

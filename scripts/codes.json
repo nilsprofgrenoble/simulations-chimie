@@ -923,5 +923,18 @@
  "77:plausible:pdi-val-croisement": "VAL229",
  "77:plausible:pdi-val-indicateur": "VAL230",
  "77:plausible:pdi-val-ammonium": "VAL231",
- "36:pdi-calcul": "REA35"
+ "36:pdi-calcul": "REA35",
+ "34:tmp-sapp-ajout.0": "SAPP231",
+ "34:tmp-sapp-ajout.1": "SAPP232",
+ "34:tmp-sapp-prepa.0": "SAPP233",
+ "34:tmp-sapp-prepa.1": "SAPP234",
+ "37:prevoir:tmp-ana-propriete": "ANA430",
+ "37:prevoir:tmp-ana-composition": "ANA431",
+ "37:prevoir:tmp-ana-reaction": "ANA432",
+ "37:prevoir:tmp-ana-dilution": "ANA433",
+ "77:plausible:tmp-val-neutre": "VAL232",
+ "77:plausible:tmp-val-dilution": "VAL233",
+ "77:plausible:tmp-val-limite": "VAL234",
+ "77:plausible:tmp-val-ammoniacal": "VAL235",
+ "36:tmp-calcul": "REA36"
 }
