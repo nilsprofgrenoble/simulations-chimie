@@ -85,3 +85,23 @@ export default function FichesPercutafeine({ ids, ouvert = false }) {
       </Feuille>);
     return null; })}</div>);
 }
+
+// Schéma de la méthode des ajouts dosés (d'après la fiche mémo : fioles de même volume total, même prise d'échantillon, étalon croissant)
+export function SchemaAjouts() {
+  const fiole = (x, k, vet) => <g key={k}>
+    <path d={`M${x + 10} 70 L${x + 10} 90 L${x - 6} 128 Q${x - 8} 140 ${x + 6} 140 L${x + 34} 140 Q${x + 48} 140 ${x + 46} 128 L${x + 30} 90 L${x + 30} 70`} fill="#e0f2fe" stroke="#475569" strokeWidth="1.5" />
+    <rect x={x + 8} y="66" width="24" height="6" fill="#fff" stroke="#475569" />
+    <path d={`M${x - 3} 118 L${x + 43} 118 L${x + 46} 128 Q${x + 48} 140 ${x + 34} 140 L${x + 6} 140 Q${x - 8} 140 ${x - 6} 128 Z`} fill="#bae6fd" />
+    <line x1={x + 10} y1="82" x2={x + 30} y2="82" stroke="#475569" strokeWidth="1.5" /><text x={x + 20} y="78" textAnchor="middle" fontSize="9" fill="#475569">V<tspan fontSize="7" dy="2">tot</tspan></text>
+    <text x={x + 20} y="156" textAnchor="middle" fontSize="10" fill="#0f172a">{k + 1}</text>
+    <text x={x + 20} y="170" textAnchor="middle" fontSize="10" fill="#c2410c">V<tspan fontSize="8" dy="2">ét</tspan><tspan dy="-2"> = {vet}</tspan></text></g>;
+  return (<svg viewBox="0 0 360 250" role="img" aria-label="Méthode des ajouts dosés : chaque fiole reçoit la même prise de solution d'échantillon et un volume croissant de solution étalon, puis est complétée au trait ; on trace I en fonction de la concentration ajoutée et on lit C échantillon = b / a." style={{ width: '100%', maxWidth: 520, display: 'block', margin: '8px auto', background: '#fff', borderRadius: 12, border: '1.5px solid #cbd5e1' }}>
+    <text x="180" y="18" textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f172a">Méthode des ajouts dosés</text>
+    <rect x="14" y="28" width="150" height="26" rx="6" fill="#dcfce7" stroke="#16a34a" /><text x="89" y="45" textAnchor="middle" fontSize="10.5" fill="#14532d">prise V<tspan fontSize="8" dy="2">éch</tspan><tspan dy="-2"> d'échantillon</tspan></text>
+    <rect x="196" y="28" width="150" height="26" rx="6" fill="#ffedd5" stroke="#ea580c" /><text x="271" y="45" textAnchor="middle" fontSize="10.5" fill="#7c2d12">V<tspan fontSize="8" dy="2">ét</tspan><tspan dy="-2"> croissant d'étalon</tspan></text>
+    {fiole(40, 0, '0')}{fiole(150, 1, 'Δ')}{fiole(260, 2, '2Δ')}
+    <text x="180" y="196" textAnchor="middle" fontSize="10.5" fill="#0f172a">C<tspan fontSize="8" dy="2">étalon</tspan><tspan dy="-2"> = C</tspan><tspan fontSize="8" dy="2">ét</tspan><tspan dy="-2"> × V</tspan><tspan fontSize="8" dy="2">ét</tspan><tspan dy="-2"> / V</tspan><tspan fontSize="8" dy="2">tot</tspan><tspan dy="-2">     C</tspan><tspan fontSize="8" dy="2">éch</tspan><tspan dy="-2"> = C</tspan><tspan fontSize="8" dy="2">X</tspan><tspan dy="-2"> × V</tspan><tspan fontSize="8" dy="2">éch</tspan><tspan dy="-2"> / V</tspan><tspan fontSize="8" dy="2">tot</tspan></text>
+    <text x="180" y="216" textAnchor="middle" fontSize="10.5" fill="#0f172a">On mesure I (ici l'absorbance A) : I = a × C<tspan fontSize="8" dy="2">étalon</tspan><tspan dy="-2"> + b</tspan></text>
+    <text x="180" y="238" textAnchor="middle" fontSize="11" fontWeight="700" fill="#b45309">a = k et b = k × C<tspan fontSize="8" dy="2">éch</tspan><tspan dy="-2">, donc C</tspan><tspan fontSize="8" dy="2">éch</tspan><tspan dy="-2"> = b / a (ordonnée à l'origine ÷ pente)</tspan></text>
+  </svg>);
+}
