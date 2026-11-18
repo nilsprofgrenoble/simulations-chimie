@@ -649,10 +649,44 @@ function Instruments({ e, s }) {
     {s.gel && carte('⚗️', 'Dispersion du gel', e.bg.gel, 90, 'Le Synthalen K se disperse')}</div>;
 }
 
-function Dialogue({ sc, paragraphes, p, e }) {
-  return <div>{paragraphes.map((l, i) => l.startsWith('«') || /^[A-ZÉÈÀ][\w'’ éèêàùçî-]* : «/.test(l) ?
-    <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '10px 0' }}><Avatar pnj={sc.pnj} e={e} /><div className="pc-bulle" style={{ flex: 1, margin: 0, borderColor: p.couleur + '66', background: p.couleur + '0d' }}>{avecIndices(l)}</div></div>
-    : <p key={i} style={{ lineHeight: 1.65, margin: '10px 0', color: '#334155' }}>{avecIndices(l)}</p>)}</div>;
+// Vitesse de lecture : caractères affichés par tick de 30 ms ; « Écran fixe » = tout d'un coup. Même mécanique que le jeu « Une journée au labo » :
+// chaque réplique s'écrit comme si la personne parlait (portrait animé), la suite de l'écran (documents, choix…) s'active quand tout est affiché.
+const LECTURES = [['lente', 'Lente', 1.2], ['normale', 'Normale', 2.6], ['rapide', 'Rapide', 6], ['fixe', 'Fixe', 0]];
+const PAUSE = 8;
+const estReplique = l => l.startsWith('«') || /^[A-ZÉÈÀ][\w'’ éèêàùçî-]* : «/.test(l);
+function ChoixLecture({ lecture, onChange }) {
+  return (<div role="group" aria-label="Vitesse de lecture" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', fontSize: 13, margin: '8px 0 0', color: C.doux }}>
+    <span>📖</span>
+    {LECTURES.map(([id, nom]) => <button key={id} type="button" data-lecture={id} aria-pressed={lecture === id} onClick={() => onChange(id)} style={{ padding: '1px 10px', borderRadius: 99, border: `1.5px solid ${lecture === id ? C.encre : '#b8c4d6'}`, background: lecture === id ? C.encre : '#fff', color: lecture === id ? '#fff' : C.encre, cursor: 'pointer', font: 'inherit', fontSize: 13 }}>{nom}</button>)}
+  </div>);
+}
+function Dialogue({ sc, paragraphes, p, e, lecture, children }) {
+  const texte = paragraphes.join('\n');
+  const pas = (LECTURES.find(l => l[0] === lecture) || LECTURES[1])[2];
+  const instant = pas === 0 || e.scene === 'hub' || !paragraphes.some(estReplique);   // pas d'animation sur la paillasse ni sur un écran sans personne qui parle
+  const debuts = []; let total = 0;
+  paragraphes.forEach(l => { debuts.push(total); total += l.length + PAUSE; });
+  const [avance, setAvance] = useState(0), [prec, setPrec] = useState(texte);
+  if (prec !== texte) { setPrec(texte); setAvance(0); }
+  const fini = instant || avance >= total;
+  useEffect(() => {
+    if (fini) return undefined;
+    const id = setInterval(() => setAvance(a => Math.min(total, a + pas)), 30);
+    return () => clearInterval(id);
+  }, [fini, pas, total]);
+  const tape = (l, n) => n >= l.length ? avecIndices(l) : <>{avecIndices(l.slice(0, n))}<span style={{ visibility: 'hidden' }}>{l.slice(n)}</span></>;
+  return (<>
+    <div onClick={fini ? undefined : () => setAvance(total)} title={fini ? undefined : 'Cliquer pour tout afficher'} style={{ cursor: fini ? 'default' : 'pointer' }}>
+      {paragraphes.map((l, i) => {
+        const n = instant ? l.length : Math.max(0, Math.min(l.length, Math.floor(avance - debuts[i]))), commence = instant || avance >= debuts[i], enCours = commence && n < l.length;
+        return estReplique(l) ?
+          <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '10px 0', opacity: commence ? 1 : 0, transition: 'opacity .2s' }}><AvatarVisuel id={sc.pnj === 'moi' ? avatarDe(e) : sc.pnj} taille={40} parle={enCours} /><div className="pc-bulle" style={{ flex: 1, margin: 0, borderColor: p.couleur + '66', background: p.couleur + '0d' }}>{tape(l, n)}</div></div>
+          : <p key={i} style={{ lineHeight: 1.65, margin: '10px 0', color: '#334155', opacity: commence ? 1 : 0 }}>{tape(l, n)}</p>;
+      })}
+    </div>
+    {!fini && <button type="button" data-tout-afficher onClick={() => setAvance(total)} style={{ display: 'block', marginLeft: 'auto', marginTop: 4, background: 'none', border: 'none', color: C.accent, textDecoration: 'underline', cursor: 'pointer', font: 'inherit', fontSize: 14 }}>Tout afficher ⏭</button>}
+    <div inert={!fini} style={{ opacity: fini ? 1 : 0, transition: 'opacity .3s' }}>{children}</div>
+  </>);
 }
 
 const CONSTITUANTS_FICHE = [['caf', 'Caféine'], ['carb', 'Synthalen K'], ['coc', 'Cocoate de macrogol 7 glycérol'], ['eth', 'Éthanol à 96 %'], ['trol', 'Trolamine'], ['eau', 'Eau purifiée']];
@@ -699,6 +733,7 @@ function FicheFormulation({ e, setEtat }) {
 export function SimulationHistoirePercutafeine() {
   const [etat, setEtat] = useEtatPersistant(CLE_ETAT, null);
   const [fins, setFins] = useEtatPersistant(CLE_FINS, []);
+  const [lecture, setLecture] = useEtatPersistant('percu-lecture-v1', () => (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'fixe' : 'normale'));
   const [joueur, setJoueur] = useEtatPersistant('percu-joueur-v1', { prenom: '', avatar: 0 });
   const [carnetOuvert, setCarnetOuvert] = useState(false);
   const refTitre = useRef(null), refCadre = useRef(null);
@@ -747,6 +782,7 @@ export function SimulationHistoirePercutafeine() {
   return (
     <div style={cadre} ref={refCadre} data-percu={fin ? 'fin' : 'jeu'}><style>{STYLE}</style>
       <BarreTemps t={e.t} />
+      <ChoixLecture lecture={lecture} onChange={setLecture} />
       <div key={e.scene} className="pc-scene">
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13.5, color: C.doux, background: FOND_LIEU[sc.lieu] || C.fond, borderRadius: 99, padding: '4px 12px 4px 6px' }}>
           <Avatar pnj={sc.pnj} taille={24} e={e} /><span>{sc.lieu} · {sc.pnj === 'moi' && pn(e) ? pn(e) : p.nom}</span></div>
@@ -756,7 +792,7 @@ export function SimulationHistoirePercutafeine() {
           <h3 ref={refTitre} tabIndex={-1} data-titre style={{ margin: '2px 0 0', fontSize: 'clamp(22px,5vw,28px)', outline: 'none', color: TONS[sc.fin.ton] }}>{sc.titre}</h3></div>}
         {!fin && <h3 ref={refTitre} tabIndex={-1} data-titre style={{ margin: '10px 0 6px', fontSize: 'clamp(21px,4.5vw,26px)', outline: 'none', color: C.encre }}>{sc.titre}</h3>}
         {e.f.corrige && <div data-corrige role="status" style={{ background: '#fef3c7', border: '1px solid #f5d98a', borderRadius: 12, padding: '9px 13px', fontSize: 14.5, margin: '8px 0' }}>🤝 {e.f.corrige}</div>}
-        <Dialogue sc={sc} paragraphes={paragraphes} p={p} e={e} />
+        <Dialogue sc={sc} paragraphes={paragraphes} p={p} e={e} lecture={lecture}>
         {sc.fiches && <FichesPercutafeine ids={e.scene === 'docs' ? docsDe(e) : sc.fiches} ouvert={e.scene === 'docs'} />}
         {!fin && !['hub', 'docs', 'intro', 'intro2'].includes(e.scene) && (() => { const autres = docsDe(e).filter(d => !(sc.fiches || []).includes(d)); return autres.length ? <details data-dossier style={{ margin: '12px 0', background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 12, padding: '8px 14px' }}><summary style={{ cursor: 'pointer', fontWeight: 700, fontSize: 15 }}>📄 Dossier du TP : notice, fiches techniques, modes opératoires</summary><FichesPercutafeine ids={autres} /></details> : null; })()}
         {sc.formule && <div data-relation style={{ margin: '12px 0', background: C.fond, border: `1px solid ${C.bord}`, borderRadius: 12, padding: '8px 12px', overflowX: 'auto' }}>{FORMULES[sc.formule]}</div>}
@@ -797,6 +833,7 @@ export function SimulationHistoirePercutafeine() {
           <button type="button" className="pc-btn" data-rejouer onClick={() => { setEtat(null); setCarnetOuvert(false); }} style={{ marginTop: 16 }}>Rejouer</button>
           {boiteFins}
         </>)}
+        </Dialogue>
       </div>
       {!fin && <ConsignesDubreuil />}
       {!fin && <FicheFormulation e={e} setEtat={setEtat} />}
