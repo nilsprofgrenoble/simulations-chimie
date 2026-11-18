@@ -469,7 +469,7 @@ const POSTES = [
   { id: 'ir', nom: 'Spectrométrie IR', vers: ['leurre_ir'] },
   { id: 'formulation', nom: 'Formulation', vers: ['relance', 'eq_base', 'fab_choix', 'fab_relance', 'fab_disp'] },
   { id: 'optique', nom: 'Réfractomètre, polarimètre', vers: ['leurre_refracto', 'leurre_polar'] },
-  { id: 'rheo', nom: 'Rhéologie', vers: ['rheoC', 'rheoF'] },
+  { id: 'rheo', nom: 'Rhéologie', vers: ['rheoC', 'rheoF', 'brook', 'brook_res'] },
   { id: 'titrage', nom: 'Titrage', vers: ['titr_suivi', 'titr_carb_plan', 'leurre_titrgel'] },
   { id: 'conduc', nom: 'Conductimètre', vers: ['leurre_conduc'] },
   { id: 'chroma', nom: 'Chromatographie, UV', vers: ['choix_caf', 'choix_eth', 'rapide_caf', 'rapide_eth', 'hplc_m', 'hplc_ei', 'hplc_gamme_plan', 'cpg_m', 'cpg_ei', 'cpg_sim', 'cpg_inj', 'uv_ajouts_plan', 'uv_ext_plan'] },
