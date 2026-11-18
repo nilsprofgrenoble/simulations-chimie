@@ -845,18 +845,20 @@ add('rheoC', {
   hyp: "Hypothèse : chaque modèle est une loi empirique ; on garde le plus simple qui suit tous les points (écart relatif de quelques %). Les valeurs sont des données de scénario inspirées des mesures des élèves.",
   choix: [],
 });
+const ETA_BROOK_20 = 78000, N_BROOK = [5, 10, 20, 50, 100];
+export const etaBrook = (e, N) => Math.round(ETA_BROOK_20 * Math.pow(N / 20, -0.65) * (1 + 0.01 * gauss(e.f.graine, 'brk' + N)) / 100) * 100;   // gel rhéofluidifiant : la viscosité apparente baisse quand la vitesse augmente
 add('brook', {
   lieu: 'Salle de rhéologie', pnj: 'lucas', titre: 'Viscosité du gel commercial au Brookfield',
-  fiches: ['synthalen'],
-  texte: () => `Lucas t'aide à installer le gel commercial sous le viscosimètre Brookfield, dans les conditions de la fiche du Synthalen K : mobile adapté, 20 tr/min, 25 °C.\nL'appareil est prêt : rien n'est encore mesuré.`,
-  choix: [{ t: 'Lancer l\'analyse', d: 'Environ 15 minutes.', duree: 15, vers: 'brook_res' }],
+  texte: () => `Lucas t'aide à installer le gel commercial sous le viscosimètre Brookfield : mobile adapté, thermostat à 25 °C. Il te laisse régler la vitesse de rotation. À toi de choisir la vitesse pour que la mesure serve à ton projet.\nL'appareil est prêt : rien n'est encore mesuré.`,
+  choix: N_BROOK.map(N => ({ t: `Régler la vitesse à ${N} tr/min et lancer l'analyse`, d: 'Environ 15 minutes.', duree: 15, vers: 'brook_res', f: { brookN: N } })),
 });
 add('brook_res', {
   lieu: 'Salle de rhéologie', pnj: 'lucas', titre: 'Viscosité du gel commercial au Brookfield',
   fiches: ['synthalen'],
-  texte: () => `Lecture sur le gel commercial (mobile adapté, 20 tr/min, 25 °C) : η ≈ 78 000 mPa·s (trois lectures voisines de 77 000 à 79 000).\nLa fiche annonce, dans les mêmes conditions, 40 000 à 60 000 mPa·s pour un gel à 0,5 % en masse de Synthalen K. Le gel commercial est donc plus visqueux que celui de la fiche : il contient plus de 0,5 % de Synthalen K. Garde cet ordre de grandeur pour fixer la masse de Synthalen K de ta formule (pour 200 g de gel).`,
-  hyp: "Hypothèse : à 20 tr/min et 25 °C, la viscosité du gel augmente avec la teneur en polymère (pas proportionnellement) ; la valeur de 78 000 mPa·s est une donnée du scénario.",
-  choix: [{ t: 'Noter la valeur et retourner à la paillasse', duree: 0, vers: 'hub', run: n => marquer(n, 'brook'), note: 'Viscosité du gel commercial (Brookfield, 20 tr/min, 25 °C) : environ 78 000 mPa·s, supérieure à celle d\'un gel à 0,5 % de Synthalen K (40 000 à 60 000 mPa·s).' }],
+  texte: e => { const N = e.f.brookN || 20, eta = etaBrook(e, N);
+    return `Lecture sur le gel commercial à ${N} tr/min, 25 °C : η ≈ ${nf(eta, 0)} mPa·s (trois lectures voisines, couple entre 20 et 90 % de l'échelle).\nLucas : « ${N === 20 ? 'À 20 tr/min, tu te places dans les mêmes conditions que beaucoup de fiches techniques : regarde dans celle du Synthalen K quelle viscosité elle annonce, et pour quelle teneur en polymère. »' : 'Une viscosité de gel dépend de la vitesse de rotation : pour comparer à une fiche technique, il faut se placer dans les mêmes conditions de vitesse et de température que celle-ci. Regarde dans quelles conditions la fiche du Synthalen K donne ses valeurs. »'}`; },
+  hyp: "Hypothèse : le gel est rhéofluidifiant, sa viscosité apparente diminue quand la vitesse de rotation augmente (modèle empirique du scénario, η ≈ 78 000 mPa·s à 20 tr/min).",
+  choix: e => [{ t: 'Noter la valeur et retourner à la paillasse', duree: 0, vers: 'hub', run: n => marquer(n, 'brook'), note: `Viscosité du gel commercial (Brookfield, 25 °C) : ${nf(etaBrook(e, e.f.brookN || 20), 0)} mPa·s à ${e.f.brookN || 20} tr/min.` }],
 });
 add('rheoC_faux', {
   lieu: 'Salle de rhéologie', pnj: 'lucas', titre: 'Relis la courbe',
