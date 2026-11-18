@@ -35,6 +35,7 @@ export function SimulationTampon() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('tampon');
   const [hypoOuv, setHypoOuv] = useState(false);
+  const [ouv, setOuv] = useState({ tampon: false, curseurs: false, essayer: false, retenir: false });
   const [ti, setTi] = useState(PRESET);
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const dd = enDefi && defi ? defi : null;
@@ -255,7 +256,7 @@ export function SimulationTampon() {
       <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Dilution</span>
       {(enExplore ? [1, 2, 10, 100, 1000] : [1, 2, 10]).map(f => <button key={f} onClick={() => setK(f)} aria-pressed={k === f} style={stylePetitBouton(k === f, '#0f766e')}>{f === 1 ? 'pas de dilution' : `× ${f}`}</button>)}
     </div>);
-  const reglages = (peutAcide || peutSoude || peutDil || peutCurseurs || enExplore) && (
+  const reglages = !enExplore && (peutAcide || peutSoude || peutDil || peutCurseurs) && (
     <div style={{ ...styleBoite, ...cadre('reglage') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages de l’expérience</div>
       {enExplore && <>
@@ -273,6 +274,39 @@ export function SimulationTampon() {
         <Curseur nom="Soude versée" valeur={vb} onChange={b => setV(b === 0 ? 0 : b)} min={0} max={150} pas={5} unite="mL"/>
       </>}
       {boutonsDil}
+    </div>);
+
+  // ---------- exploration : menus déroulants et blocs repliables ----------
+  const ouvre = c => ouv[c], bascule = c => setOuv(o => ({ ...o, [c]: !o[c] }));
+  const menuSt = { font: 'inherit', fontSize: 15, padding: '8px 10px', minHeight: 42, borderRadius: 10, border: `1px solid ${KIT.bord}`, background: '#fff', color: KIT.txt, width: '100%', boxSizing: 'border-box', marginTop: 2 };
+  const liste = (nom, valeur, options, onChange) => (
+    <label style={{ display: 'block', fontSize: 13, color: KIT.txt2, minWidth: 0 }}>{nom}
+      <select value={valeur} onChange={e => onChange(e.target.value)} style={menuSt}>{options.map(o => <option key={o.v} value={o.v}>{o.t}</option>)}</select>
+    </label>);
+  const resumeTampon = `${cp.AH} / ${cp.A} · ${nbf(ti.Ctot, 2)}${NB}mol/L · ${Math.round(ti.x * 100)}${NB}% de ${cp.A}`;
+  const reglagesEx = enExplore && (
+    <div className="tp-col">
+      <div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 2 }}>1. Préparer le tampon</div>
+        <Section titre={<span><span style={{ display: 'block' }}>Couple, concentration, composition</span><span style={{ display: 'block', fontSize: 13, fontWeight: 400, color: KIT.txt2, marginTop: 2 }}>{resumeTampon}</span></span>} ouvert={ouvre('tampon')} onBascule={() => bascule('tampon')}>
+          {liste('Couple du tampon', ti.c, M.ORDRE.map(id => ({ v: id, t: `${M.COUPLES[id].AH} / ${M.COUPLES[id].A}` })), v => setT({ c: v }))}
+          <div style={{ fontSize: 13, color: KIT.txt2, margin: '8px 0 2px', lineHeight: 1.4 }}>Part de la forme basique : 50 % signifie des quantités égales de AH et A⁻.</div>
+          <Curseur nom="Concentration totale (AH + A⁻)" valeur={ti.Ctot} onChange={c => setT({ Ctot: Math.round(c * 100) / 100 })} min={0.02} max={0.5} pas={0.01} decimales={2} unite="mol/L"/>
+          <Curseur nom="Part de la forme basique A⁻" valeur={Math.round(ti.x * 100)} onChange={p => setT({ x: p / 100 })} min={5} max={95} pas={5} unite="%"/>
+        </Section>
+      </div>
+      <div style={styleBoite}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 2 }}>2. Verser ou diluer</div>
+        <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 8, lineHeight: 1.4 }}>Acide ou soude à 0,10 mol·L⁻¹ ; l’eau pure subit les mêmes ajouts.</div>
+        {boutonsAjout}
+        {liste('Dilution', String(k), [1, 2, 10, 100, 1000].map(f => ({ v: String(f), t: f === 1 ? 'pas de dilution' : `× ${f}` })), x => setK(Number(x)))}
+        <div style={{ marginTop: 8 }}>
+          <Section titre="Volumes précis (curseurs)" ouvert={ouvre('curseurs')} onBascule={() => bascule('curseurs')}>
+            <Curseur nom="Acide versé" valeur={va} onChange={a => setV(a === 0 ? 0 : -a)} min={0} max={150} pas={5} unite="mL"/>
+            <Curseur nom="Soude versée" valeur={vb} onChange={b => setV(b === 0 ? 0 : b)} min={0} max={150} pas={5} unite="mL"/>
+          </Section>
+        </div>
+      </div>
     </div>);
 
   // ---------- scène, composition, courbe ----------
@@ -321,8 +355,7 @@ export function SimulationTampon() {
     </div>);
 
   const aEssayer = (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
+    <Section titre="À essayer (questions pour explorer)" ouvert={ouvre('essayer')} onBascule={() => bascule('essayer')}>
       <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
         <li>Versez 10 mL d’acide puis 10 mL de soude : de combien le pH du tampon varie-t-il dans chaque cas ? Et celui de l’eau pure ?</li>
         <li>Doublez la concentration du tampon : la variation de pH due à 10 mL d’acide est-elle plus petite ou plus grande ? Pourquoi ?</li>
@@ -331,9 +364,10 @@ export function SimulationTampon() {
         <li>Diluez le tampon × 10, × 100 puis × 1000 : jusqu’où le pH reste-t-il voisin de sa valeur de départ ?</li>
         <li>Passez au couple NH₄⁺ / NH₃ : le pH du tampon est-il encore voisin du pK<sub>A</sub> ?</li>
       </ul>
-    </div>);
+    </Section>);
   const retenirExplore = (
-    <ARetenir>
+    <Section titre="À retenir (idées clés)" ouvert={ouvre('retenir')} onBascule={() => bascule('retenir')}>
+    <ARetenir titre="IDÉES CLÉS">
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>Tampon = acide faible AH + base conjuguée A⁻ en quantités comparables</li>
         <li>pH voisin du pK_A (égal si n(A⁻) = n(AH)) ; zone tampon : pK_A ± 1</li>
@@ -341,7 +375,8 @@ export function SimulationTampon() {
         <li>pH presque inchangé par une dilution modérée (le rapport [A⁻] / [AH] ne change pas)</li>
         <li>Limites : tampon épuisé quand A⁻ ou AH a disparu ; dilution énorme ou ajout excessif</li>
       </ul>
-    </ARetenir>);
+    </ARetenir>
+    </Section>);
 
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
@@ -350,6 +385,8 @@ export function SimulationTampon() {
         .tp-l1.cote { grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
         .tp-l2 { display: grid; gap: 12px; align-items: start; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 12px; }
         .tp-col { display: flex; flex-direction: column; gap: 12px; }
+        .tp-ex { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 1fr); }
+        @media (min-width: 901px) { .tp-ex { grid-template-columns: minmax(0, 3fr) minmax(300px, 2fr); } .tp-ex > * { grid-column: 1; } .tp-ex > .tp-ctrl { grid-column: 2; grid-row: 1 / span 6; } }
         @media (min-width: 901px) { .tp-l1.cote .tp-carte { order: 2; } .tp-l1.cote .tp-main { order: 1; } }
         @media (max-width: 900px) { .tp-l1.cote { grid-template-columns: minmax(0, 1fr); } }
         @media (prefers-reduced-motion: no-preference) { .tp-in { animation: tp-fondu 0.35s ease-out; } @keyframes tp-fondu { from { opacity: 0; } to { opacity: 1; } } }
@@ -363,9 +400,10 @@ export function SimulationTampon() {
         {enGuide ? <div className="tp-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="tp-carte">{panneauHypo}</div> : null}
         <div className="tp-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'tampon' ? suiviT : suiviC}/></div>}
-          {!dd && <div className="tp-col">
+          {!dd && <div className={enExplore ? 'tp-ex' : 'tp-col'}>
             {reglages && <div className="tp-in">{reglages}</div>}
             {boxScene && <div className="tp-in">{boxScene}</div>}
+            {enExplore && <div className="tp-ctrl tp-col">{reglagesEx}{aEssayer}{retenirExplore}</div>}
             {mesures && <div className="tp-in">{mesures}</div>}
             {boxCompo && <div className="tp-in">{boxCompo}</div>}
             {boxReact && <div className="tp-in">{boxReact}</div>}
@@ -373,7 +411,6 @@ export function SimulationTampon() {
           </div>}
         </div>
       </div>
-      {enExplore && <div className="tp-l2">{aEssayer}{retenirExplore}</div>}
       {!enDefi && (!enGuide || deja('bilan')) && <div className="tp-l2">{panneauHypo}</div>}
     </div>
   );
