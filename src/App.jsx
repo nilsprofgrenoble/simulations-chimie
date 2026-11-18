@@ -88,6 +88,7 @@ const SimulationPredominance = paresseux(() => import("./simulations/Predominanc
 const SimulationTampon = paresseux(() => import("./simulations/Tampon"), "SimulationTampon");
 const SimulationPile = paresseux(() => import("./simulations/Pile"), "SimulationPile");
 const SimulationElectrolyse = paresseux(() => import("./simulations/Electrolyse"), "SimulationElectrolyse");
+const SimulationAminoAcides = paresseux(() => import("./simulations/AminoAcides"), "SimulationAminoAcides");
 const SimulationAcidesBases = paresseux(() => import("./simulations/AcidesBases"), "SimulationAcidesBases");
 const SimulationEsterification = paresseux(() => import("./simulations/Esterification"), "SimulationEsterification");
 const SimulationChampForce = paresseux(() => import("./simulations/ChampForce"), "SimulationChampForce");
@@ -239,6 +240,7 @@ const SIMULATIONS = [
   { id:131, label:"La solution tampon : un pH qui résiste aux ajouts d’acide, de base et d’eau", niveau:"TG", icon:"🛡️", color:"#0f766e", component: SimulationTampon },
   { id:132, label:"La pile : demi-piles, pont salin, tension à vide et capacité", niveau:"TG", icon:"🔋", color:"#b45309", component: SimulationPile },
   { id:133, label:"Électrolyse et accumulateur : forcer le sens d’évolution d’un système", niveau:"TG", icon:"⚡", color:"#b45309", component: SimulationElectrolyse },
+  { id:134, label:"Acides α-aminés : forme selon le pH", niveau:"TG", icon:"🧬", color:"#0f766e", component: SimulationAminoAcides },
   { id:117, label:"L’œil et la loupe : accommodation, diamètre apparent, grossissement", niveau:"TSTL", icon:"👁️", color:"#0e7490",
     component: SimulationOeilLoupe },
   { id:118, label:"Le microscope : image intermédiaire, mise au point, grossissement", niveau:"TSTL", icon:"🔬", color:"#0e7490",

@@ -2,6 +2,7 @@ import { Frac, avecIndices, lireNombre, nbCS } from "../commun";
 import { Chaine, ConvPrefixe, facteurK, analyser } from "./DebitsFluides";
 import { FigureVecteurs, Vec } from "./FigureVecteurs";
 import { genTrace, genPont, genTemps } from "./RealiserC1";
+import { ACIDES as AAM, ORDRE as AAM_ORDRE } from "./aminoAcidesModele";
 import { METAUX as PILE_M, PAIRES as PILE_PAIRES, poles as pilePoles, equationTexte as pileEquation, demiRed as pileRed, demiOx as pileOx } from "./pileModele";
 
 // ====================================================
@@ -932,6 +933,36 @@ function genPredominanceTG() {
     retenir: ['frac([A⁻]|[AH]) = 10^(pH − pK_A) : pH < pK_A ⇒ AH domine ; pH > pK_A ⇒ A⁻ domine ; pH = pK_A ⇒ 50 % de chaque forme.', 'Pourcentage de A⁻ = 100 × frac(r|1 + r) avec r = frac([A⁻]|[AH]) ; [AH] = frac(C|1 + r) pour une concentration totale C.', 'Pour une proportion p de A⁻ : pH = pK_A + log(frac(p|1 − p)).'] };
 }
 
+// ───────────── Acides α-aminés (TG, sim 134) : rapports des formes, pourcentages, pH pour une proportion donnée ─────────────
+function genAminoAcidesTG() {
+  const sci = (x, cs = 2) => { const [a, e] = Number(x).toExponential(cs - 1).split('e'); return `${a.replace('.', ',')}${NB}×${NB}10${[...String(Number(e))].map(c => ({ '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' }[c])).join('')}`; };
+  const a = AAM[tire(AAM_ORDRE)], K1 = a.pKa1, K2 = a.pKa2;
+  const d1 = tire([0.5, 1, 1.5]), pH1 = Math.round((K1 + d1) * 10) / 10, r1 = 10 ** (pH1 - K1);
+  const intro = <>{a.nom[0].toUpperCase() + a.nom.slice(1)} (chaîne latérale R = {a.R}) : <b>pK<sub>A1</sub> = {nb(K1, 2)}</b> (couple cation / zwitterion) et <b>pK<sub>A2</sub> = {nb(K2, 2)}</b> (couple zwitterion / anion), à 25 °C. Le pH de la solution est imposé.</>;
+  const q1 = { id: 'a0', type: 'num', q: <>{intro} À <b>pH = {nb(pH1, 2)}</b>, calculez le rapport {avecIndices('frac([zwitterion]|[cation])')} (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: r1, tolRel: 0.05, csMin: 2,
+    aide: 'Près de pK_A1, on lit le couple cation / zwitterion : frac([zwitterion]|[cation]) = 10^(pH − pK_A1).',
+    pieges: [[1 / r1, 'Le rapport est inversé : le zwitterion est au numérateur.'], [pH1 - K1, 'C’est l’exposant pH − pK_A1 ; le rapport est 10 puissance cette valeur.'], [10 ** (pH1 - K2), 'Vous avez utilisé pK_A2 : près de pK_A1, on lit le couple 1 (cation / zwitterion).']],
+    expl: <>pH − pK<sub>A1</sub> = {nb(pH1, 2)} − {nb(K1, 2)} = {nb(pH1 - K1, 2)} ; {avecIndices('frac([zwitterion]|[cation])')} = 10<sup>{nb(pH1 - K1, 2)}</sup> = <b>{nb(r1, 3)}</b>.</> };
+  const pctCat = 100 / (1 + r1);
+  const q2 = { id: 'a1', type: 'num', q: <>Pour la même solution (pH = {nb(pH1, 2)}), le rapport {avecIndices('frac([zwitterion]|[cation])')} vaut {nb(r1, 3)}. Calculez le <b>pourcentage de cation</b> (en %, 2 chiffres significatifs ; l’anion est négligeable à ce pH).</>, unite: '%', vrai: pctCat, tolRel: 0.05, csMin: 2,
+    aide: 'Il n’y a que deux formes en quantité notable : % cation = 100 × frac(1|1 + r) avec r = [zwitterion] / [cation].',
+    pieges: [[100 - pctCat, 'C’est le pourcentage de zwitterion ; on demande celui du cation.'], [100 / r1, 'Il faut diviser par la somme des deux formes (1 + r), pas par r seul.'], [1 / r1, 'C’est le rapport inversé [cation] / [zwitterion], pas un pourcentage du total.']],
+    expl: <>% cation = 100 × {avecIndices(`frac(1|1 + ${nb(r1, 3)})`)} = <b>{nb(pctCat, 2)}{NB}%</b> (et {nb(100 - pctCat, 3)}{NB}% de zwitterion).</> };
+  const d2 = tire([0.5, 1, 1.5, 2]), pH2 = Math.round((K2 - d2) * 10) / 10, r2 = 10 ** (pH2 - K2), pctAn = 100 * r2 / (1 + r2);
+  const q3 = { id: 'a2', type: 'num', q: <>Dans une autre solution de la même espèce, le pH est <b>{nb(pH2, 2)}</b>. Près de pK<sub>A2</sub> = {nb(K2, 2)}, calculez le <b>pourcentage d’anion</b> (en %, 2 chiffres significatifs ; le cation est négligeable).</>, unite: '%', vrai: pctAn, tolRel: 0.05, csMin: 2,
+    aide: 'Couple zwitterion / anion : r = frac([anion]|[zwitterion]) = 10^(pH − pK_A2), puis % anion = 100 × frac(r|1 + r).',
+    pieges: [[100 - pctAn, 'C’est le pourcentage de zwitterion, la forme dominante ; on demande celui de l’anion.'], [r2, 'C’est le rapport, pas un pourcentage du total : multipliez par 100 et divisez par (1 + r).'], [100 * r2, 'Il faut diviser par la somme des deux formes (1 + r).'], [100 * (10 ** (pH2 - K1)) / (1 + 10 ** (pH2 - K1)), 'Vous avez utilisé pK_A1 : l’anion fait partie du couple 2 (zwitterion / anion).']],
+    expl: <>r = 10<sup>{nb(pH2 - K2, 2)}</sup> = {sci(r2, 3)} ; % anion = 100 × {avecIndices('frac(r|1 + r)')} = <b>{nb(pctAn, 2)}{NB}%</b>.</> };
+  const p = tire([0.1, 0.25, 0.75, 0.9]), pHp = K2 + Math.log10(p / (1 - p));
+  const q4 = { id: 'a3', type: 'num', q: <>À quel pH l’anion représente-t-il <b>{nb(100 * p, 3)}{NB}%</b> de l’acide α-aminé ? Le couple utile est zwitterion / anion (pK<sub>A2</sub> = {nb(K2, 2)}) ; donnez le pH avec 2 décimales.</>, unite: '', vrai: pHp, tolRel: 0.005, csMin: 3,
+    aide: 'r = frac([anion]|[zwitterion]) = frac(p|1 − p) avec p = proportion d’anion ; puis pH = pK_A2 + log r.',
+    pieges: [[K2, 'C’est le pH où il y a 50 % de chaque forme ; ici la proportion est différente.'], [K2 - Math.log10(p / (1 - p)), 'Le signe du logarithme est inversé : si l’anion est majoritaire, pH > pK_A2 ; s’il est minoritaire, pH < pK_A2.'], [K1 + Math.log10(p / (1 - p)), 'Vous avez utilisé pK_A1 : l’anion est dans le couple 2.']],
+    expl: <>r = {avecIndices(`frac(${nb(p, 3)}|${nb(1 - p, 3)})`)} = {nb(p / (1 - p), 4)} ; pH = pK<sub>A2</sub> + log r = {nb(K2, 2)} + {nb(Math.log10(p / (1 - p)), 3)} = <b>{nb(pHp, 3)}</b>.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([y]) => isFinite(y) && Math.abs(y - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'Acide α-aminé : rapport des formes près d’une frontière, pourcentage de cation, pourcentage d’anion et pH pour une proportion donnée.', questions: [q1, q2, q3, q4],
+    retenir: ['Près de pK_A1 : frac([zwitterion]|[cation]) = 10^(pH − pK_A1) ; près de pK_A2 : frac([anion]|[zwitterion]) = 10^(pH − pK_A2).', 'Pourcentage de la forme basique d’un couple = 100 × frac(r|1 + r) ; pourcentage de la forme acide = 100 × frac(1|1 + r).', 'À pH = pK_A, 50 % de chaque forme du couple ; le zwitterion domine entre pK_A1 et pK_A2.'] };
+}
+
 // ───────────── Solution tampon (TG) : quantités avant/après un ajout d'acide, pH du tampon ─────────────
 function genTamponTG() {
   const pKa = tire([4.76, 9.20]), n0 = tire([10, 15, 20, 25]), Ca = tire([0.10, 0.20]), Va = tire([5, 10, 20]), nH = Ca * Va;
@@ -1110,6 +1141,7 @@ export const FAMILLES = [
   { id: 'fab-calcul', groupe: 'Formules', titre: 'Force des acides : pH, constante d’acidité, ions hydroxyde et équation du second degré (TG)', gen: genForceAcidesTG, domaine: 'Force des acides et des bases : Ka et tampon' },
   { id: 'pdi-calcul', groupe: 'Formules', titre: 'Couples acide-base : rapport des formes, pourcentage, concentration et pH (TG)', gen: genPredominanceTG, domaine: 'Force des acides et des bases : Ka et tampon' },
   { id: 'tmp-calcul', groupe: 'Formules', titre: 'Solution tampon : ajout d’acide, bilan de matière et pH du tampon (TG)', gen: genTamponTG, domaine: 'Force des acides et des bases : Ka et tampon' },
+  { id: 'aam-calcul', groupe: 'Formules', titre: 'Acides α-aminés : rapport des formes, pourcentages et pH pour une proportion (TG)', gen: genAminoAcidesTG, domaine: 'Acides α-aminés : forme selon le pH' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
   { id: 'ely-calcul', groupe: 'Formules', titre: 'Électrolyse : charge passée, électrons échangés, métal déposé et durée (TG)', gen: genElectrolyseTG, domaine: 'Électrolyse : forcer le sens d’évolution' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },

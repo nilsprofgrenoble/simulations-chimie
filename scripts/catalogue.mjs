@@ -43,6 +43,7 @@ const TACHES_FAMILLE = {
   '36:equ-calcul': () => ['quotient de réaction', 'constante d’équilibre', 'taux d’avancement', 'sens d’évolution'],
   '36:fab-calcul': () => ['force des acides', 'constante d’acidité', 'produit ionique de l’eau', 'équation du second degré'],
   '36:pdi-calcul': () => ['couple acide-base', 'prédominance', 'distribution', 'forme basique'],
+  '36:aam-calcul': () => ['couple acide-base', 'prédominance', 'distribution', 'forme basique'],
   '36:tmp-calcul': () => ['solution tampon', 'couple acide-base'],
   '36:pil-calcul': () => ['pile', 'capacité électrique', 'réactif limitant'],
   '36:ely-calcul': () => ['électrolyse', 'charge électrique', 'quantité d’électrons'],
