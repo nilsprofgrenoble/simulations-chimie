@@ -19,7 +19,7 @@ import {
 const C = { encre: '#1b2733', doux: '#5b6877', bord: '#dbe4ee', accent: '#0f766e', accentFond: '#e7f5f2', ambre: '#b45309', rouge: '#b91c1c', vert: '#15803d', bleu: '#1e3a8a', carte: '#ffffff', fond: '#f4f8fb' };
 const NIVEAUX = { ok: ['✅', C.vert, 'Maîtrisé'], moyen: ['🟡', C.ambre, 'À consolider'], ko: ['❌', C.rouge, 'À retravailler'], nd: ['⚪', C.doux, 'Non évalué'] };
 const TONS = { ok: C.vert, moyen: C.ambre, ko: C.rouge };
-const ICONES = { es_balance: '⚖️', cpg_m: '⚖️', titr_carb_plan: '🧪', leurre_titrgel: '🧪', leurre_ir: '📈', leurre_refracto: '🔍', leurre_polar: '🔍', leurre_conduc: '🔌', choix_caf: '🧪', choix_eth: '🧪', docs: '📄', obs_video: '🎞️', es_prep: '🔥', es_calc1: '📊', eth1: '⚖️', formule: '📝', eq_base: '⚗️', fab_choix: '⚗️', fab_disp: '🧴', rheoC: '🌀', rheoF: '🌀', hplc_m: '📈', cpg_ei: '🔬', cpg_inj: '🔬', uv_ajouts_plan: '🌈', uv_ext_plan: '🌈', hplc_gamme_plan: '📈', hplc_ei: '📈', verdict: '✅', eq_ines: '✅' };
+const ICONES = { es_balance: '⚖️', cpg_m: '⚖️', titr_carb_plan: '🧪', leurre_titrgel: '🧪', leurre_ir: '📈', leurre_refracto: '🔍', leurre_polar: '🔍', leurre_conduc: '🔌', choix_caf: '🧪', choix_eth: '🧪', docs: '📄', obs_video: '🎞️', es_prep: '🔥', es_calc1: '📊', eth1: '⚖️', formule: '📝', eq_base: '⚗️', fab_choix: '⚗️', fab_disp: '🧴', rheoC: '🌀', rheoF: '🌀', hplc_m: '📈', cpg_ei: '🔬', cpg_inj: '🔬', uv_ajouts_plan: '🌈', uv_ext_plan: '🌈', hplc_gamme_plan: '📈', verdict: '✅', eq_ines: '✅' };
 const FOND_LIEU = { 'Paillasse de formulation': '#ecf7ee', 'Salle de chromatographie': '#e8f1fa', 'Bureau': '#f3eefb', 'Bureau de Mme Dubreuil': '#f3eefb', 'Salle de rhéologie': '#fdf1e7', 'Salle des étuves': '#fdf1e7' };
 const STYLE = `${STYLE_VISUELS}
 @media print{[data-pc-cache]{display:none!important}[data-pc-anc]{overflow:visible!important;height:auto!important;max-height:none!important;position:static!important;box-shadow:none!important;border:none!important;padding:0!important;margin:0!important;background:#fff!important}html,body{height:auto!important;overflow:visible!important;background:#fff!important}[data-impression]{padding:0 8mm;box-sizing:border-box}.pc-noprint{display:none!important}}
@@ -472,7 +472,7 @@ const POSTES = [
   { id: 'rheo', nom: 'Rhéologie', vers: ['rheoC', 'rheoF', 'brook', 'brook_res'] },
   { id: 'titrage', nom: 'Titrage', vers: ['titr_suivi', 'titr_carb_plan', 'leurre_titrgel'] },
   { id: 'conduc', nom: 'Conductimètre', vers: ['leurre_conduc'] },
-  { id: 'chroma', nom: 'Chromatographie, UV', vers: ['choix_caf', 'choix_eth', 'rapide_caf', 'rapide_eth', 'hplc_m', 'hplc_ei', 'hplc_gamme_plan', 'cpg_m', 'cpg_ei', 'cpg_sim', 'cpg_inj', 'uv_ajouts_plan', 'uv_ext_plan'] },
+  { id: 'chroma', nom: 'Chromatographie, UV', vers: ['choix_caf', 'choix_eth', 'rapide_caf', 'rapide_eth', 'hplc_m', 'hplc_gamme_plan', 'cpg_m', 'cpg_ei', 'cpg_sim', 'cpg_inj', 'uv_ajouts_plan', 'uv_ext_plan'] },
 ];
 const PREFIXES = [[/^(hplc|cpg|uv|caf|eth_|choix_)/, 'chroma'], [/^titr/, 'titrage'], [/^es_/, 'etuve'], [/^rheo/, 'rheo'], [/^(fab|eq_base|ph)/, 'formulation']];
 const posteDe = vers => (POSTES.find(p => p.vers.includes(vers)) || { id: (PREFIXES.find(([re]) => re.test(vers)) || [0, 'bureau'])[1] }).id;

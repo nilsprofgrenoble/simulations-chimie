@@ -64,7 +64,7 @@ const expert = {
   plan: e => PLAN_EXPERT[e.scene],
   calc: (e, k) => J.nf(k.vrai(e), k.cs ?? 2),   // réponse arrondie comme affichée : doit être acceptée
   choix: (e, ch) => {
-    if (e.scene === 'hub') { const ordre = ['es_balance', 'es_prep', 'eth1', 'titr_suivi', 'choix_caf', 'hplc_m', 'choix_eth', 'cpg_m', 'rheoC', 'es_calc1', 'es_calc2b', 'es_calc3', 'formule', 'eq_base', 'fab_choix', 'fab_disp', 'rheoF', 'uv_ajouts_plan', 'uv_ext_plan', 'hplc_gamme_plan', 'hplc_ei', 'cpg_inj', 'eq_ines', 'verdict'];
+    if (e.scene === 'hub') { const ordre = ['es_balance', 'es_prep', 'eth1', 'titr_suivi', 'choix_caf', 'hplc_m', 'choix_eth', 'cpg_m', 'rheoC', 'es_calc1', 'es_calc2b', 'es_calc3', 'formule', 'eq_base', 'fab_choix', 'fab_disp', 'rheoF', 'uv_ajouts_plan', 'uv_ext_plan', 'hplc_gamme_plan', 'cpg_inj', 'eq_ines', 'verdict'];
       return [...ch].filter(c => !c.bloque && !c.pause && c.vers !== 'brook').sort((a, b) => ordre.indexOf(a.vers) - ordre.indexOf(b.vers)).find(c => ordre.includes(c.vers)) || ch.find(c => !c.bloque && !c.pause && c.vers !== 'brook'); }
     if (e.scene === 'titr_suivi') return ch.find(c => c.id === 'ph');
     if (e.scene === 'titr_indic') return ch.find(c => c.id === 'php');
@@ -295,7 +295,7 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   assert(J.niveauAide(e) === 3 && J.textesAide(e).length === 3, 'trois niveaux d\'aide à la formule');
   const r = J.validerFormule(e, J.SCENES.formule.aide.valeurs()); assert(r.ok && r.etat.f.repli, 'formule de Lucas retenue');
   const pan = J.choixDe({ ...J.etatInitial(5), scene: 'hplc_panne' }); const att = pan && pan.find(c => c.t.startsWith('Faire réparer'));
-  if (att) { const n = J.choisir({ ...J.etatInitial(5), scene: 'hplc_panne', t: 100 }, att); assert(n.bg.clhp === n.t + 75 && n.f.attente === 0, 'réparation en tâche de fond : aucune attente immédiate'); const w = J.aller({ ...n, fait: { ...n.fait, hplcPrep: true } }, 'hplc_ei'); assert(w.f.attente === 75 && w.t === n.bg.clhp, 'attente seulement si on revient trop tôt à la CLHP'); const w2 = J.aller({ ...n, t: n.t + 120 }, 'hplc_ei'); assert(w2.f.attente === 0, 'réparation terminée : aucune attente'); }
+  if (att) { const n = J.choisir({ ...J.etatInitial(5), scene: 'hplc_panne', t: 100 }, att); assert(n.bg.clhp === n.t + 75 && n.f.attente === 0, 'réparation en tâche de fond : aucune attente immédiate'); const w = J.aller({ ...n, fait: { ...n.fait, hplcPrep: true } }, 'hplc_gamme_plan'); assert(w.f.attente === 75 && w.t === n.bg.clhp, 'attente seulement si on revient trop tôt à la CLHP'); const w2 = J.aller({ ...n, t: n.t + 120 }, 'hplc_gamme_plan'); assert(w2.f.attente === 0, 'réparation terminée : aucune attente'); }
   console.log('audit Mistral : OK'); }
 // 19. Journée supportable : un élève « moyen » (deux appareils inutiles, un calcul raté, attente de la réparation) finit à l'heure dans la quasi-totalité des cas
 { const unif01 = e => ((e.f.graine * 9301 + e.t * 49297) % 233280) / 233280;
@@ -411,8 +411,8 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   const fab = J.choixDe(h).find(c => c.vers === 'eq_base'); assert(fab && fab.bloque && /Formuler les 200 g/.test(fab.t) && /valider ta formule au Bureau/.test(fab.bloque) && !/macrogol|extrait sec/.test(fab.bloque), 'formuler les 200 g : grisé, renvoie au Bureau');
   assert(!J.choixDe({ ...h, fait: { formule: true } }).find(c => c.vers === 'eq_base').bloque, 'formuler les 200 g déverrouillé après la formule');
   const h2 = { ...h, fait: { es: true, esRes: true, eth: true, hplcPrep: true } };
-  const c = J.choixDe(h2).find(c => c.vers === 'hplc_ei'); assert(c && c.bloque, 'dosage verrouillé tant que le gel n\'est pas en pot');
-  assert(!J.choixDe({ ...h2, fait: { ...h2.fait, ph: true } }).find(c => c.vers === 'hplc_ei').bloque, 'dosage déverrouillé après la mise en pot');
+  const c = J.choixDe(h2).find(c => c.vers === 'hplc_gamme_plan'); assert(c && c.bloque, 'dosage verrouillé tant que le gel n\'est pas en pot');
+  assert(!J.choixDe({ ...h2, fait: { ...h2.fait, ph: true } }).find(c => c.vers === 'hplc_gamme_plan').bloque, 'dosage déverrouillé après la mise en pot');
   const fc = J.choixDe({ ...J.etatInitial(3), scene: 'fab_choix' }); assert(fc.length === 4 && new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(g => J.choixDe({ ...J.etatInitial(g), scene: 'fab_choix' })[0].id)).size > 1, 'options de fabrication mélangées');
   assert(!/Lucas/.test(J.texteDe({ ...J.etatInitial(3), scene: 'fab_choix' })), 'pas de citation de Lucas sur la dispersion');
   assert(/seule espèce/.test(J.texteDe({ ...J.etatInitial(3), scene: 'hplc_panne', f: { ...J.etatInitial(3).f } })), 'UV : seule espèce qui absorbe');
