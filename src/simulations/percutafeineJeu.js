@@ -426,10 +426,17 @@ for (const [qui, lieu] of [['dubreuil', 'Bureau de Mme Dubreuil'], ['ines', 'Sal
 }
 
 // ───────────── Appareils du laboratoire qui ne répondent pas à la question ─────────────
-const leurre = (id, titre, texte, note, d = 15, visuels) => add(id, {
-  lieu: 'Laboratoire', pnj: 'moi', titre, texte: () => texte, ...(visuels ? { visuels } : {}),
-  choix: [{ t: 'Retour à la paillasse', duree: d, vers: 'hub', run: n => ({ ...marquer(n, id), f: { ...n.f, leurres: (n.f.leurres || 0) + 1 } }), note }],
-});
+const PREP_LEURRE = { leurre_ir: 'Tu poses une goutte de gel sur le cristal ATR du spectromètre IR, tu règles la plage (4 000 à 650 cm⁻¹) et le nombre de balayages.', leurre_refracto: 'Tu déposes une goutte de gel sur le prisme du réfractomètre d\'Abbe, thermostaté à 20 °C.', leurre_polar: 'Tu prépares 5 g de gel dans 50 mL d\'eau, tu remplis la cuve de 10 cm et tu allumes la lampe au sodium (589 nm).', leurre_titrgel: 'Tu dissous 5 g de gel dans 50 mL d\'eau et tu remplis la burette de soude à 0,1 mol/L.', leurre_conduc: 'Tu plonges la cellule de conductimétrie dans le gel, à 20 °C.' };
+const leurre = (id, titre, texte, note, d = 15, visuels) => {
+  add(id, {
+    lieu: 'Laboratoire', pnj: 'moi', titre, texte: () => `${PREP_LEURRE[id] || 'Tu prépares la mesure.'}\nL'appareil est prêt : rien n'est encore mesuré.`,
+    choix: [{ t: 'Lancer l\'analyse', d: `Environ ${d} minutes.`, duree: d, vers: id + '_res', run: n => ({ ...n, f: { ...n.f, leurres: (n.f.leurres || 0) + 1 } }) }],
+  });
+  add(id + '_res', {
+    lieu: 'Laboratoire', pnj: 'moi', titre, texte: () => texte, ...(visuels ? { visuels } : {}),
+    choix: [{ t: 'Noter le résultat et retourner à la paillasse', duree: 0, vers: 'hub', run: n => marquer(n, id), note }],
+  });
+};
 leurre('leurre_ir', 'Spectre IR du gel', 'Le spectre ATR du gel est enregistré (4 000 à 650 cm⁻¹). Bandes relevées : large entre 3 600 et 3 000 cm⁻¹ ; 2 970 et 2 880 cm⁻¹ ; faibles vers 1 700 et 1 660 cm⁻¹ ; 1 450 cm⁻¹ ; massif intense vers 1 100 et 1 050 cm⁻¹ ; 880 cm⁻¹.', 'Spectre IR (ATR) du gel commercial enregistré.', 15, () => [{ type: 'ir', titre: 'Spectre IR (ATR) du gel commercial', bandes: [[3330, 0.55, 180, 'O–H'], [2970, 0.35, 40, 'C–H'], [2880, 0.35, 40, ''], [1700, 0.08, 25, 'C=O (faible)'], [1660, 0.1, 25, ''], [1450, 0.25, 30, 'C–H'], [1100, 0.8, 45, 'C–O'], [1050, 0.85, 40, ''], [880, 0.3, 20, '']] }]);
 leurre('leurre_refracto', 'Indice de réfraction du gel', 'Trois lectures à 20 °C sur le prisme : n = 1,364 ; 1,363 ; 1,364.', 'Indice de réfraction du gel commercial mesuré.', 15, () => [{ type: 'refracto', n: 1.364 }]);
 leurre('leurre_polar', 'Pouvoir rotatoire du gel', 'Solution de 5 g de gel dans 50 mL d\'eau, cuve de 10 cm, lampe au sodium (589 nm). Trois lectures : 0,00° ; 0,01° ; 0,00°.', 'Pouvoir rotatoire du gel commercial mesuré.');

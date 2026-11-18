@@ -251,7 +251,7 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
 { let e = { ...J.etatInitial(3), scene: 'hub', t: 10 };
   const ids = J.choixDe(e).map(c => c.vers); assert(ids.includes('leurre_ir') && ids.includes('leurre_conduc'), 'appareils disponibles');
   e = J.choisir(e, J.choixDe(e).find(c => c.vers === 'leurre_ir')); assert(e.scene === 'leurre_ir', 'scène IR');
-  const t0 = e.t; e = J.choisir(e, J.choixDe(e)[0]); assert(e.scene === 'hub' && e.t >= t0 + 15 && e.f.leurres === 1, '15 min perdues');
+  const t0 = e.t; e = J.choisir(e, J.choixDe(e)[0]); assert(e.scene === 'leurre_ir_res' && e.t >= t0 + 15 && e.f.leurres === 1, 'analyse lancée : 15 min perdues'); e = J.choisir(e, J.choixDe(e)[0]); assert(e.scene === 'hub', 'résultat noté');
   assert(!J.choixDe(e).some(c => c.vers === 'leurre_ir'), 'mesure faite une fois');
   assert(J.consequences(e).some(c => c.cause.startsWith('Appareils sans rapport')), 'conséquence affichée');
   console.log('appareils sans rapport : OK'); }
@@ -271,9 +271,9 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   const bureau = J.choisir(e, J.choixDe(e).find(c => c.vers === 'es_balance')); assert(J.peutRevenir(bureau), 'retour possible au premier écran');
   const retour = J.revenirHub(bureau); assert(retour.scene === 'hub' && retour.t === 20 && !J.peutRevenir(retour), 'retour sans perte de temps');
   const ir = J.choisir(e, J.choixDe(e).find(c => c.vers === 'leurre_ir')); assert(J.peutRevenir(ir), 'retour possible avant la mesure');
-  const apres = J.choisir(ir, J.choixDe(ir)[0]); assert(apres.scene === 'hub' && !J.peutRevenir(apres), 'plus de retour une fois la mesure faite');
+  const apres = J.choisir(ir, J.choixDe(ir)[0]); assert(apres.scene === 'leurre_ir_res' && !J.peutRevenir(apres), 'plus de retour une fois l\'analyse lancée');
   const faux = J.valider({ ...J.etatInitial(31), scene: 'eth1', t: 20, retourHub: { scene: 'eth1', t: 20 } }, '12').etat; assert(!J.peutRevenir(faux), 'plus de retour après un essai de calcul');
-  const p = J.texteDe({ ...apres, scene: 'point_dubreuil' }); assert(p.includes('spectrométrie IR') && p.includes('apporté'), 'remarque sur les appareils');
+  const p = J.texteDe({ ...J.choisir(apres, J.choixDe(apres)[0]), scene: 'point_dubreuil' }); assert(p.includes('spectrométrie IR') && p.includes('apporté'), 'remarque sur les appareils');
   const p0 = J.texteDe({ ...e, scene: 'point_dubreuil' }); assert(!p0.includes('Je vois que tu es passé'), 'pas de remarque sinon');
   console.log('retour à la paillasse, remarque de midi : OK'); }
 // 15. Observations de la vidéo : ordre mélangé, stable pour une partie, différent d'une partie à l'autre
