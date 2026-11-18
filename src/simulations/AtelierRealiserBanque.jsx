@@ -2,6 +2,7 @@ import { Frac, avecIndices, lireNombre, nbCS } from "../commun";
 import { Chaine, ConvPrefixe, facteurK, analyser } from "./DebitsFluides";
 import { FigureVecteurs, Vec } from "./FigureVecteurs";
 import { genTrace, genPont, genTemps } from "./RealiserC1";
+import { METAUX as PILE_M, PAIRES as PILE_PAIRES, poles as pilePoles, equationTexte as pileEquation, demiRed as pileRed, demiOx as pileOx } from "./pileModele";
 
 // ====================================================
 //  BANQUE DE L'ATELIER « RÉALISER » (compétence S'APP : réaliser)
@@ -958,6 +959,43 @@ function genTamponTG() {
     retenir: ['n(H₃O⁺) versé = C × V ; il est consommé par la base A⁻ du tampon : n(A⁻) diminue et n(AH) augmente de la même quantité.', 'Le rapport n(A⁻) / n(AH) change peu si l’ajout est modéré, donc le pH aussi : pH = pK_A + log (n(A⁻) / n(AH)).', 'Un tampon est épuisé quand toute la base A⁻ (ajout d’acide) ou tout l’acide AH (ajout de base) est consommé.'] };
 }
 
+// Pile (TG, sim 132) : quantités initiales, réactif limitant, capacité Q = n(e⁻) × F et durée de fonctionnement Δt = Q ÷ I (commentaire)
+export function genPileTG() {
+  let t;
+  do {
+    const [a, b] = tire(PILE_PAIRES), { plus, moins } = pilePoles(a, b);
+    t = { plus, moins, c: tire([0.100, 0.150, 0.200]), V: tire([50.0, 100, 150]), m: tire([0.500, 1.00, 2.00, 3.00]), I: tire([20.0, 50.0, 100]) };
+    const C = PILE_M[plus], A = PILE_M[moins];
+    t.nIon = t.c * t.V; t.nMet = t.m / A.M * 1000; t.neIon = C.z * t.nIon; t.neMet = A.z * t.nMet;     // mmol
+  } while (Math.max(t.neIon, t.neMet) / Math.min(t.neIon, t.neMet) < 1.3);
+  const C = PILE_M[t.plus], A = PILE_M[t.moins], ne = Math.min(t.neIon, t.neMet), Q = ne / 1000 * 96500, dt = Q / (t.I / 1000) / 3600;
+  const ionLim = t.neIon < t.neMet;
+  const intro = <>Pile de réaction <b>{pileEquation(t.moins, t.plus)}</b>. Pôle + : <b>{nb(t.V, 3)}{NB}mL</b> de solution d’ions {C.ion} à <b>{nb(t.c, 3)}{NB}mol/L</b>. Pôle − : lame de {A.nom} de <b>{nb(t.m, 3)}{NB}g</b> (partie immergée ; M({A.m}) = {nb(A.M, 3)}{NB}g/mol). Demi-équations : {pileRed(t.plus)} ; {pileOx(t.moins)}. F = 9,65{NB}×{NB}10⁴{NB}C/mol.</>;
+  const q1 = { id: 'p0', type: 'num', q: <>{intro} Calculez la quantité initiale d’ions {C.ion} (en mmol, 3 chiffres significatifs).</>, unite: 'mmol', vrai: t.nIon, tolRel: 0.01, csMin: 3,
+    aide: 'n = c × V ; avec c en mol/L et V en mL, le produit est directement en mmol.',
+    pieges: [[t.nIon / 1000, 'Valeur en mol : avec V en mL, le produit c × V est en mmol.'], [t.V / t.c, 'Il faut multiplier la concentration par le volume, pas les diviser.']],
+    expl: <>n({C.ion}) = {nb(t.c, 3)}{NB}mol/L × {nb(t.V, 3)}{NB}mL = <b>{nb(t.nIon, 3)}{NB}mmol</b>.</> };
+  const q2 = { id: 'p1', type: 'num', q: <>Toujours pour cette pile, calculez la quantité initiale de {A.nom} (en mmol, 3 chiffres significatifs).</>, unite: 'mmol', vrai: t.nMet, tolRel: 0.01, csMin: 3,
+    aide: 'n = frac(m|M) donne des moles ; multipliez par 1000 pour obtenir des mmol.',
+    pieges: [[t.nMet / 1000, 'Valeur en mol : la réponse est demandée en mmol (× 1000).'], [t.m * A.M, 'Il faut diviser la masse par la masse molaire, pas les multiplier.']],
+    expl: <>n({A.m}) = <Frac haut={`${nb(t.m, 3)} g`} bas={`${nb(A.M, 3)} g/mol`}/> = {nb(t.nMet / 1000, 3)}{NB}mol = <b>{nb(t.nMet, 3)}{NB}mmol</b>.</> };
+  const q3 = { id: 'p2', type: 'num', q: <>Calculez la quantité maximale d’électrons que la pile peut échanger (en mmol, 3 chiffres significatifs). Les quantités de {C.ion} et de {A.nom} sont celles des deux questions précédentes.</>, unite: 'mmol', vrai: ne, tolRel: 0.01, csMin: 3,
+    aide: `Chaque ion ${C.ion} capte ${C.z} électron${C.z > 1 ? 's' : ''} et chaque atome de ${A.nom} en libère ${A.z} : comparez ${C.z} × n(${C.ion}) et ${A.z} × n(${A.m}) ; le plus petit correspond au réactif limitant.`,
+    pieges: [[Math.max(t.neIon, t.neMet), 'C’est la quantité d’électrons du réactif en excès : le réactif limitant donne la plus petite valeur.'], [Math.min(t.nIon, t.nMet), 'Vous avez oublié le nombre d’électrons échangés par ion ou par atome (demi-équations).'], [t.neIon + t.neMet, 'Ne faites pas la somme : seul le réactif limitant fixe la quantité d’électrons.']],
+    expl: <>{C.z} × {nb(t.nIon, 3)} = {nb(t.neIon, 3)}{NB}mmol et {A.z} × {nb(t.nMet, 3)} = {nb(t.neMet, 3)}{NB}mmol : le réactif limitant est {ionLim ? `l’ion ${C.ion}` : `le ${A.nom}`}, donc n(e⁻) = <b>{nb(ne, 3)}{NB}mmol</b>.</> };
+  const q4 = { id: 'p3', type: 'num', q: <>Calculez la capacité électrique Q de la pile (en C, 3 chiffres significatifs), à partir de n(e⁻) = {nb(ne, 3)}{NB}mmol.</>, unite: 'C', vrai: Q, tolRel: 0.01, csMin: 3,
+    aide: 'Q = n(e⁻) × F, avec n(e⁻) en mol (1 mmol = 10⁻³ mol).',
+    pieges: [[ne * 96500, 'Vous avez utilisé n(e⁻) en mmol : convertissez en mol avant de multiplier par F.'], [Q / C.z, 'La quantité d’électrons tient déjà compte des demi-équations : ne divisez pas.']],
+    expl: <>Q = {nb(ne / 1000, 3)}{NB}mol × 9,65{NB}×{NB}10⁴{NB}C/mol = <b>{nb(Q, 3)}{NB}C</b>.</> };
+  const q5 = { id: 'p4', type: 'num', q: <>La pile (Q = {nb(Q, 3)}{NB}C) débite un courant constant de <b>{nb(t.I, 3)}{NB}mA</b>. Calculez sa durée de fonctionnement (en h, 3 chiffres significatifs).</>, unite: 'h', vrai: dt, tolRel: 0.01, csMin: 3,
+    aide: 'Δt = frac(Q|I) avec I en A donne une durée en s ; divisez par 3 600 pour l’obtenir en heures.',
+    pieges: [[dt * 3600, 'Durée en secondes : divisez par 3 600 pour obtenir des heures.'], [dt * 1000, 'Vous avez laissé I en mA : 1 mA = 10⁻³ A.'], [dt * 60, 'Durée en minutes : divisez encore par 60.']],
+    expl: <>Δt = <Frac haut={`${nb(Q, 3)} C`} bas={`${nb(t.I / 1000, 3)} A`}/> = {nb(Q / (t.I / 1000), 3)}{NB}s, soit <b>{nb(dt, 3)}{NB}h</b>.</> };
+  [q1, q2, q3, q4, q5].forEach(q => { q.pieges = q.pieges.filter(([y]) => isFinite(y) && Math.abs(y - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'Pile : quantités initiales des réactifs, réactif limitant, quantité d’électrons échangés, capacité électrique et durée de fonctionnement.', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Quantités initiales : n = c × V pour l’ion du pôle +, n = frac(m|M) pour le métal du pôle −.', 'Le réactif limitant fixe la quantité d’électrons échangés, compte tenu des demi-équations : n(e⁻) = z × n.', 'Capacité : Q = n(e⁻) × F (n(e⁻) en mol) ; durée de fonctionnement : Δt = frac(Q|I).'] };
+}
+
 // ──────────────────────── Familles « Plans d'expériences » (BTS) ────────────────────────
 function genPlanMelange() {
   const comp = ['cire de candelilla (A)', 'huile de ricin (B)', 'cire d’abeille (C)'];
@@ -1040,6 +1078,7 @@ export const FAMILLES = [
   { id: 'fab-calcul', groupe: 'Formules', titre: 'Force des acides : pH, constante d’acidité, ions hydroxyde et équation du second degré (TG)', gen: genForceAcidesTG, domaine: 'Force des acides et des bases : Ka et tampon' },
   { id: 'pdi-calcul', groupe: 'Formules', titre: 'Couples acide-base : rapport des formes, pourcentage, concentration et pH (TG)', gen: genPredominanceTG, domaine: 'Force des acides et des bases : Ka et tampon' },
   { id: 'tmp-calcul', groupe: 'Formules', titre: 'Solution tampon : ajout d’acide, bilan de matière et pH du tampon (TG)', gen: genTamponTG, domaine: 'Force des acides et des bases : Ka et tampon' },
+  { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },
   { id: 'simple', groupe: 'Unités', titre: 'Changement d’unité simple', gen: genSimple },
   { id: 'prefixes', groupe: 'Unités', titre: 'Préfixes et puissances de 10', gen: genPrefixes },

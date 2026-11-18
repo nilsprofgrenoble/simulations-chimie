@@ -86,6 +86,7 @@ const SimulationEquilibre = paresseux(() => import("./simulations/Equilibre"), "
 const SimulationForceAcides = paresseux(() => import("./simulations/ForceAcides"), "SimulationForceAcides");
 const SimulationPredominance = paresseux(() => import("./simulations/Predominance"), "SimulationPredominance");
 const SimulationTampon = paresseux(() => import("./simulations/Tampon"), "SimulationTampon");
+const SimulationPile = paresseux(() => import("./simulations/Pile"), "SimulationPile");
 const SimulationAcidesBases = paresseux(() => import("./simulations/AcidesBases"), "SimulationAcidesBases");
 const SimulationEsterification = paresseux(() => import("./simulations/Esterification"), "SimulationEsterification");
 const SimulationChampForce = paresseux(() => import("./simulations/ChampForce"), "SimulationChampForce");
@@ -235,6 +236,7 @@ const SIMULATIONS = [
     component: SimulationForceAcides },
   { id:130, label:"Couples acide-base : diagrammes de prédominance et de distribution, indicateurs colorés", niveau:"TG", icon:"🌈", color:"#7c3aed", component: SimulationPredominance },
   { id:131, label:"La solution tampon : un pH qui résiste aux ajouts d’acide, de base et d’eau", niveau:"TG", icon:"🛡️", color:"#0f766e", component: SimulationTampon },
+  { id:132, label:"La pile : demi-piles, pont salin, tension à vide et capacité", niveau:"TG", icon:"🔋", color:"#b45309", component: SimulationPile },
   { id:117, label:"L’œil et la loupe : accommodation, diamètre apparent, grossissement", niveau:"TSTL", icon:"👁️", color:"#0e7490",
     component: SimulationOeilLoupe },
   { id:118, label:"Le microscope : image intermédiaire, mise au point, grossissement", niveau:"TSTL", icon:"🔬", color:"#0e7490",
