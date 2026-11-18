@@ -1,4 +1,4 @@
-import { Frac, lireNombre, nbCS } from "../commun";
+import { Frac, avecIndices, lireNombre, nbCS } from "../commun";
 import { Chaine, ConvPrefixe, facteurK, analyser } from "./DebitsFluides";
 import { FigureVecteurs, Vec } from "./FigureVecteurs";
 import { genTrace, genPont, genTemps } from "./RealiserC1";
@@ -907,28 +907,28 @@ function genForceAcidesTG() {
 function genPredominanceTG() {
   const sci = (x, cs = 2) => { const [a, e] = Number(x).toExponential(cs - 1).split('e'); return `${a.replace('.', ',')}${NB}×${NB}10${[...String(Number(e))].map(c => ({ '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' })[c]).join('')}`; };
   const pKa = tire([3.75, 4.20, 4.76, 9.20]), d1 = tire([-1.5, -1, -0.5, 0.5, 1, 1.5, 2]), pH = Math.round((pKa + d1) * 10) / 10, r = 10 ** (pH - pKa);
-  const q1 = { id: 'p0', type: 'num', q: <>Un couple acide-base AH / A⁻ de <b>pK<sub>A</sub> = {nb(pKa, 3)}</b> est dans une solution de <b>pH = {nb(pH, 2)}</b>. Calculez le rapport [A⁻] / [AH] (sans unité), avec 2 chiffres significatifs.</>, unite: '', vrai: r, tolRel: 0.05, csMin: 2,
-    aide: '[A⁻] / [AH] = K_A / [H₃O⁺] = 10^(pH − pK_A) : calculez d’abord la différence pH − pK_A, puis 10 puissance cette valeur.',
+  const q1 = { id: 'p0', type: 'num', q: <>Un couple acide-base AH / A⁻ de <b>pK<sub>A</sub> = {nb(pKa, 3)}</b> est dans une solution de <b>pH = {nb(pH, 2)}</b>. Calculez le rapport {avecIndices('frac([A⁻]|[AH])')} (sans unité), avec 2 chiffres significatifs.</>, unite: '', vrai: r, tolRel: 0.05, csMin: 2,
+    aide: 'frac([A⁻]|[AH]) = frac(K_A|[H₃O⁺]) = 10^(pH − pK_A) : calculez d’abord la différence pH − pK_A, puis 10 puissance cette valeur.',
     pieges: [[1 / r, 'Le rapport est inversé : A⁻ est au numérateur.'], [pH - pKa, 'C’est l’exposant pH − pK_A ; le rapport est 10 puissance cette valeur.'], [pH / pKa, 'Il ne faut pas diviser le pH par le pK_A : le rapport est 10^(pH − pK_A).'], [10 ** (pKa - pH), 'Le signe de l’exposant est inversé : c’est pH − pK_A, pas pK_A − pH.']],
-    expl: <>pH − pK<sub>A</sub> = {nb(pH, 2)} − {nb(pKa, 3)} = {nb(pH - pKa, 2)} ; [A⁻] / [AH] = 10<sup>{nb(pH - pKa, 2)}</sup> = <b>{sci(r, 3)}</b>.</> };
+    expl: <>pH − pK<sub>A</sub> = {nb(pH, 2)} − {nb(pKa, 3)} = {nb(pH - pKa, 2)} ; {avecIndices('frac([A⁻]|[AH])')} = 10<sup>{nb(pH - pKa, 2)}</sup> = <b>{sci(r, 3)}</b>.</> };
   const pct = 100 * r / (1 + r);
   const q2 = { id: 'p1', type: 'num', q: <>Pour le même couple (pK<sub>A</sub> = {nb(pKa, 3)}) à pH = {nb(pH, 2)}, calculez le <b>pourcentage de forme basique A⁻</b> parmi les deux formes (en %, 3 chiffres significatifs).</>, unite: '%', vrai: pct, tolRel: 0.012, csMin: 3,
-    aide: 'Avec r = [A⁻] / [AH] = 10^(pH − pK_A) : % A⁻ = 100 × [A⁻] / ([A⁻] + [AH]) = 100 × r / (1 + r).',
-    pieges: [[100 - pct, 'C’est le pourcentage de la forme acide AH ; on demande celui de A⁻.'], [r, 'C’est le rapport [A⁻] / [AH], pas un pourcentage du total.'], [100 * r, 'Il faut diviser par la somme des deux formes (1 + r) : le pourcentage est inférieur à 100 %.'], [pct / 100, 'C’est la fraction ; multipliez par 100 pour obtenir un pourcentage.']],
-    expl: <>r = {sci(r, 3)} ; % A⁻ = 100 × r / (1 + r) = <b>{nb(pct, 3)}{NB}%</b>.</> };
+    aide: 'Avec r = frac([A⁻]|[AH]) = 10^(pH − pK_A) : % A⁻ = 100 × frac([A⁻]|[A⁻] + [AH]) = 100 × frac(r|1 + r).',
+    pieges: [[100 - pct, 'C’est le pourcentage de la forme acide AH ; on demande celui de A⁻.'], [r, 'C’est le rapport frac([A⁻]|[AH]), pas un pourcentage du total.'], [100 * r, 'Il faut diviser par la somme des deux formes (1 + r) : le pourcentage est inférieur à 100 %.'], [pct / 100, 'C’est la fraction ; multipliez par 100 pour obtenir un pourcentage.']],
+    expl: <>r = {sci(r, 3)} ; % A⁻ = 100 × {avecIndices('frac(r|1 + r)')} = <b>{nb(pct, 3)}{NB}%</b>.</> };
   const C = tire([0.0010, 0.0050, 0.010, 0.020, 0.050]), AH = C / (1 + r);
   const q3 = { id: 'p2', type: 'num', q: <>La concentration totale du couple (AH + A⁻) est <b>C = {nb(C, 2)}{NB}mol/L</b>, toujours à pH = {nb(pH, 2)} et pK<sub>A</sub> = {nb(pKa, 3)}. Calculez la concentration de la forme acide [AH] en mol/L, avec 2 chiffres significatifs.</>, unite: 'mol/L', vrai: AH, tolRel: 0.05, csMin: 2,
-    aide: '[AH] + [A⁻] = C et [A⁻] = r·[AH], donc [AH] = C / (1 + r) avec r = 10^(pH − pK_A).',
-    pieges: [[C * r / (1 + r), 'C’est [A⁻] ; on demande [AH].'], [C / r, 'C / r serait [AH] si C était la concentration de A⁻ seule ; ici C est la somme des deux formes : [AH] = C / (1 + r).'], [C, 'C est la somme [AH] + [A⁻], pas [AH] seul.'], [C * (1 - r), 'Il ne faut pas soustraire r à 1 : [AH] = C / (1 + r).']],
-    expl: <>r = {sci(r, 3)} ; [AH] = C / (1 + r) = {nb(C, 2)} / {nb(1 + r, 4)} = <b>{sci(AH, 2)}{NB}mol/L</b>.</> };
+    aide: '[AH] + [A⁻] = C et [A⁻] = r·[AH], donc [AH] = frac(C|1 + r) avec r = 10^(pH − pK_A).',
+    pieges: [[C * r / (1 + r), 'C’est [A⁻] ; on demande [AH].'], [C / r, 'frac(C|r) serait [AH] si C était la concentration de A⁻ seule ; ici C est la somme des deux formes : [AH] = frac(C|1 + r).'], [C, 'C est la somme [AH] + [A⁻], pas [AH] seul.'], [C * (1 - r), 'Il ne faut pas soustraire r à 1 : [AH] = frac(C|1 + r).']],
+    expl: <>r = {sci(r, 3)} ; [AH] = {avecIndices('frac(C|1 + r)')} = {avecIndices(`frac(${nb(C, 2)}|${nb(1 + r, 4)})`)} = <b>{sci(AH, 2)}{NB}mol/L</b>.</> };
   const p = tire([0.2, 0.25, 0.8, 0.9, 0.95]), pHp = pKa + Math.log10(p / (1 - p));
   const q4 = { id: 'p3', type: 'num', q: <>Pour le couple de pK<sub>A</sub> = {nb(pKa, 3)}, à quel pH la forme basique A⁻ représente-t-elle <b>{nb(100 * p, 3)}{NB}%</b> du couple ? Donnez le pH avec 2 décimales.</>, unite: '', vrai: pHp, tolRel: 0.005, csMin: 3,
-    aide: '% A⁻ = 100 × r / (1 + r) donne r = p / (1 − p) avec p = fraction de A⁻ ; puis pH = pK_A + log r.',
-    pieges: [[pKa, 'C’est le pH où il y a 50 % de chaque forme ; ici la proportion est différente.'], [pKa - Math.log10(p / (1 - p)), 'Le signe du logarithme est inversé : une proportion de A⁻ supérieure à 50 % correspond à pH > pK_A.'], [pKa + Math.log10(p), 'Il faut le rapport p / (1 − p) dans le logarithme, pas p seul.'], [pKa + p / (1 - p), 'Il faut le logarithme décimal du rapport p / (1 − p), pas le rapport lui-même.']],
-    expl: <>r = p / (1 − p) = {nb(p, 3)} / {nb(1 - p, 3)} = {nb(p / (1 - p), 4)} ; pH = pK<sub>A</sub> + log r = {nb(pKa, 3)} + {nb(Math.log10(p / (1 - p)), 3)} = <b>{nb(pHp, 3)}</b>.</> };
+    aide: '% A⁻ = 100 × frac(r|1 + r) donne r = frac(p|1 − p) avec p = fraction de A⁻ ; puis pH = pK_A + log r.',
+    pieges: [[pKa, 'C’est le pH où il y a 50 % de chaque forme ; ici la proportion est différente.'], [pKa - Math.log10(p / (1 - p)), 'Le signe du logarithme est inversé : une proportion de A⁻ supérieure à 50 % correspond à pH > pK_A.'], [pKa + Math.log10(p), 'Il faut le rapport frac(p|1 − p) dans le logarithme, pas p seul.'], [pKa + p / (1 - p), 'Il faut le logarithme décimal du rapport frac(p|1 − p), pas le rapport lui-même.']],
+    expl: <>r = {avecIndices('frac(p|1 − p)')} = {avecIndices(`frac(${nb(p, 3)}|${nb(1 - p, 3)})`)} = {nb(p / (1 - p), 4)} ; pH = pK<sub>A</sub> + log r = {nb(pKa, 3)} + {nb(Math.log10(p / (1 - p)), 3)} = <b>{nb(pHp, 3)}</b>.</> };
   [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([y]) => isFinite(y) && Math.abs(y - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
   return { intro: 'Couples acide-base : rapport des deux formes, pourcentage de forme basique, concentration d’une forme et pH pour une proportion donnée.', questions: [q1, q2, q3, q4],
-    retenir: ['[A⁻] / [AH] = 10^(pH − pK_A) : pH < pK_A ⇒ AH domine ; pH > pK_A ⇒ A⁻ domine ; pH = pK_A ⇒ 50 % de chaque forme.', 'Pourcentage de A⁻ = 100 × r / (1 + r) avec r = [A⁻] / [AH] ; [AH] = C / (1 + r) pour une concentration totale C.', 'Pour une proportion p de A⁻ : pH = pK_A + log(p / (1 − p)).'] };
+    retenir: ['frac([A⁻]|[AH]) = 10^(pH − pK_A) : pH < pK_A ⇒ AH domine ; pH > pK_A ⇒ A⁻ domine ; pH = pK_A ⇒ 50 % de chaque forme.', 'Pourcentage de A⁻ = 100 × frac(r|1 + r) avec r = frac([A⁻]|[AH]) ; [AH] = frac(C|1 + r) pour une concentration totale C.', 'Pour une proportion p de A⁻ : pH = pK_A + log(frac(p|1 − p)).'] };
 }
 
 // ───────────── Solution tampon (TG) : quantités avant/après un ajout d'acide, pH du tampon ─────────────

@@ -1,7 +1,7 @@
 import CodeExo from '../CodeExo';
 import { ChoixListe } from "../ChoixListe";
 import { useState } from "react";
-import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, lireNombre, proche, exParam } from "../commun";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, lireNombre, proche, exParam, avecIndices } from "../commun";
 import { useSuivi } from "../suivi";
 import { ENONCES, nouvelEnonce, melange, nb } from "./AtelierDonneesBanque";
 import { SITUATIONS } from "./AtelierSituationsBanque";
@@ -74,7 +74,7 @@ function Texte({ ex, sel, onToggle, marque }) {
         </p>
       ))}
       {ex.b.schema && <div style={{ margin: '8px 0' }}><Visuel schema={ex.b.schema}/></div>}
-      {question && <div data-question style={{ marginTop: 8, fontSize: 16, fontWeight: 700, lineHeight: 1.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, padding: '8px 12px' }}>{question}</div>}
+      {question && <div data-question style={{ marginTop: 8, fontSize: 16, fontWeight: 700, lineHeight: 1.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, padding: '8px 12px' }}>{avecIndices(question)}</div>}
     </div>
   );
 }
@@ -162,11 +162,11 @@ function AtelierEnonces({ idDepart, onSituation }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
           {propositions(ex.b.cherche, ex.graine).map(o => (
             <button key={o} data-ok={o === ex.b.cherche.bonne ? 'true' : 'false'} onClick={() => { setRep(r => ({ ...r, cherche: o })); setChk(c => ({ ...c, cherche: false })); }}
-              style={{ ...styleBouton(rep.cherche === o, '#0ea5e9'), textAlign: 'left', padding: '6px 10px' }}>{o}</button>
+              style={{ ...styleBouton(rep.cherche === o, '#0ea5e9'), textAlign: 'left', padding: '6px 10px' }}>{avecIndices(o)}</button>
           ))}
         </div>
         {chk.cherche && <Verdict ok={okEtape.cherche}>{okEtape.cherche ? 'Oui, c’est bien la grandeur cherchée.' : 'Pas tout à fait : relisez la dernière phrase de l’énoncé et regardez l’unité demandée.'}</Verdict>}
-        {vu.cherche && <Correction>Réponse : {ex.b.cherche.bonne}</Correction>}
+        {vu.cherche && <Correction>Réponse : {avecIndices(ex.b.cherche.bonne)}</Correction>}
         {barre('cherche', stages.indexOf('cherche'))}
       </div>),
     sel: i => (
@@ -221,12 +221,12 @@ function AtelierEnonces({ idDepart, onSituation }) {
             const ok = derOk(rep, d);
             return (
               <div key={d.id} style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 14, minWidth: 220 }}>{d.nom}</span>
+                <span style={{ fontSize: 14, minWidth: 220 }}>{avecIndices(d.nom)}</span>
                 <input aria-label={d.nom} placeholder="?" value={(rep.der || {})[d.id] ?? ''} onChange={x => { const v = x.target.value; setRep(q => ({ ...q, der: { ...q.der, [d.id]: v } })); setChk(c => ({ ...c, der: false })); }}
                   style={{ width: 100, fontSize: 14, padding: '4px 6px', borderRadius: 6, border: `1.5px solid ${KIT.bord}` }}/>
                 <span style={{ fontSize: 14, color: KIT.txt2 }}>{d.u}</span>
                 {chk.der && <span style={{ fontWeight: 700, color: ok ? '#15803d' : '#b91c1c' }}>{ok ? '✅' : '❌'}</span>}
-                {chk.der && !ok && vu.der && <span style={{ fontSize: 13, color: '#075985' }}>→ {d.expr} = {nb(d.val)} {d.u}</span>}
+                {chk.der && !ok && vu.der && <span style={{ fontSize: 13, color: '#075985' }}>→ {avecIndices(d.expr)} = {nb(d.val)} {d.u}</span>}
               </div>);
           })}
         </div>
@@ -277,7 +277,7 @@ function AtelierEnonces({ idDepart, onSituation }) {
           <div style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginBottom: 4 }}>{defCourant.domaine} — {defCourant.titre}<CodeExo cle={`34:${choix.id}.${choix.q}`}/></div>
           <Texte ex={ex} sel={rep.sel} onToggle={toggle} marque={marqueSel}/>
           <div data-formule="1" style={{ marginTop: 8, background: '#f1f5f9', border: `1px solid ${KIT.bord}`, borderRadius: 8, padding: '6px 10px', fontSize: 15, color: KIT.txt }}>
-            <b>Formule à utiliser :</b> {ex.b.solution.txt}
+            <b>Formule à utiliser :</b> {avecIndices(ex.b.solution.txt)}
           </div>
         </div>
         {stages.filter((_, i) => i <= etp).map(k => blocs[k](stages.indexOf(k)))}

@@ -2880,14 +2880,14 @@ export const PREVOIR = [
     ] },
   { id: 'pdi-ana-predominance', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Quelle forme du couple prédomine ?',
     enonce: 'On considère le couple de l’acide méthanoïque et de l’ion méthanoate, HCOOH / HCOO⁻, de pK_A = 3,75. Le pH d’une solution est égal à 3,0.', q: 'Dans cette solution, quelle forme du couple prédomine ?', options: [
-      V('HCOOH, car le pH est inférieur au pK_A', 'pH = 3,0 est inférieur à pK_A = 3,75 : [HCOO⁻] / [HCOOH] = 10^(3,0 − 3,75) ≈ 0,18, inférieur à 1. La forme acide HCOOH est la plus abondante (environ 85 %).'),
+      V('HCOOH, car le pH est inférieur au pK_A', 'pH = 3,0 est inférieur à pK_A = 3,75 : frac([HCOO⁻]|[HCOOH]) = 10^(3,0 − 3,75) ≈ 0,18, inférieur à 1. La forme acide HCOOH est la plus abondante (environ 85 %).'),
       F('HCOO⁻, car la solution est acide donc la base domine', 'C’est l’inverse : à pH inférieur au pK_A, c’est la forme acide qui domine ; la base ne domine qu’au-dessus de pK_A.'),
       F('HCOO⁻, car le pH est inférieur à 7 donc la base domine', 'Le critère n’est pas la comparaison à 7 mais la comparaison au pK_A du couple : ici pH < 3,75, donc la forme acide domine.'),
       F('aucune, car le pH n’est pas égal au pK_A du couple', 'Les deux formes coexistent toujours ; l’une est plus abondante que l’autre sauf à pH = pK_A, où elles sont à 50 % chacune.'),
     ] },
   { id: 'pdi-ana-distribution', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Lire un diagramme de distribution',
     enonce: 'Un diagramme de distribution trace, en fonction du pH, le pourcentage de la forme acide AH et celui de la forme basique A⁻ d’un couple de pK_A égal à 4,8. On lit la composition à pH = 5,8, soit pK_A + 1.', q: 'À pH = 5,8, la composition du couple est d’environ…', options: [
-      V('91 % de A⁻ et 9 % de AH', 'À pH = pK_A + 1, [A⁻] / [AH] = 10 : sur 11 parties, 10 sont de la forme A⁻ (91 %) et 1 de la forme AH (9 %).'),
+      V('91 % de A⁻ et 9 % de AH', 'À pH = pK_A + 1, frac([A⁻]|[AH]) = 10 : sur 11 parties, 10 sont de la forme A⁻ (91 %) et 1 de la forme AH (9 %).'),
       F('100 % de A⁻ et aucune trace de AH', 'Une forme ne disparaît jamais complètement : à pK_A + 1, il reste 9 % de la forme AH. Il faut environ pK_A + 3 pour dépasser 99,9 %.'),
       F('50 % de A⁻ et 50 % de AH', 'Cette composition correspond à pH = pK_A (croisement des courbes), pas à pH = pK_A + 1.'),
       F('10 % de A⁻ et 90 % de AH', 'Le rapport est inversé : à un pH supérieur au pK_A, c’est la forme basique A⁻ qui est majoritaire.'),

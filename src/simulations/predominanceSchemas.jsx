@@ -108,16 +108,19 @@ export function SvgRapportCarte() {
   const lignes = [['pH = pK_A − 1', 100 / 11, '0,1'], ['pH = pK_A', 50, '1'], ['pH = pK_A + 1', 1000 / 11, '10']];
   const W = 150;
   return (
-    <svg viewBox="0 0 300 214" style={stl} role="img" aria-label="Pourcentage de forme acide et de forme basique : à pH égal pKA moins 1, 91 pour cent de forme acide et 9 pour cent de forme basique ; à pH égal pKA, 50 et 50 ; à pH égal pKA plus 1, 9 pour cent d’acide et 91 pour cent de base.">
-      <text x="150" y="20" fontSize="15" fontWeight="700" textAnchor="middle" fill={COL.txt}>Rapport [A⁻] / [AH]</text>
-      {lignes.map(([lab, b, r], i) => { const y = 36 + i * 56, acide = 100 - b;
+    <svg viewBox="0 0 300 236" style={stl} role="img" aria-label="Pourcentage de forme acide et de forme basique : à pH égal pKA moins 1, 91 pour cent de forme acide et 9 pour cent de forme basique ; à pH égal pKA, 50 et 50 ; à pH égal pKA plus 1, 9 pour cent d’acide et 91 pour cent de base.">
+      <text x="86" y="30" fontSize="15" fontWeight="700" textAnchor="middle" fill={COL.txt}>Rapport</text>
+      <text x="184" y="17" fontSize="15" fontWeight="700" textAnchor="middle" fill={COL.txt}>[A⁻]</text>
+      <line x1="150" y1="23" x2="218" y2="23" stroke={COL.txt} strokeWidth="1.8"/>
+      <text x="184" y="40" fontSize="15" fontWeight="700" textAnchor="middle" fill={COL.txt}>[AH]</text>
+      {lignes.map(([lab, b, r], i) => { const y = 50 + i * 56, acide = 100 - b;
         return <g key={lab}>
           <text x="10" y={y + 14} fontSize="14" fontWeight="700" fill={COL.txt}>{lab.replace('pK_A', 'pKA')}</text>
           <rect x="10" y={y + 22} width={W * acide / 100 * 1.8} height="18" fill={COL.bleu}/><rect x={10 + W * acide / 100 * 1.8} y={y + 22} width={W * b / 100 * 1.8} height="18" fill={COL.orange}/>
           <text x="284" y={y + 14} fontSize="14" fontWeight="700" textAnchor="end" fill={COL.gris}>rapport {r}</text>
         </g>; })}
-      <text x="10" y="206" fontSize="14" fill={COL.bleu} fontWeight="700">■ AH</text><text x="80" y="206" fontSize="14" fill={COL.orange} fontWeight="700">■ A⁻</text>
-      <text x="290" y="206" fontSize="14" textAnchor="end" fill={COL.txt}>rapport = 10<tspan dy="-5" fontSize="13">pH − pKA</tspan></text>
+      <text x="10" y="228" fontSize="14" fill={COL.bleu} fontWeight="700">■ AH</text><text x="80" y="228" fontSize="14" fill={COL.orange} fontWeight="700">■ A⁻</text>
+      <text x="290" y="228" fontSize="14" textAnchor="end" fill={COL.txt}>rapport = 10<tspan dy="-5" fontSize="13">pH − pKA</tspan></text>
     </svg>);
 }
 
