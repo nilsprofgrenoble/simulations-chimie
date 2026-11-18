@@ -465,6 +465,65 @@ export const ENONCES = [
         manque: null, solution: { txt: 'Q = I × Δt', val: (p.I / 1000) * p.t * 3600, u: 'C' } };
     },
   },
+  // ───────────────────────────── Électrolyse (TG) : zingage d'une pièce, recharge d'un accumulateur
+  {
+    id: 'ely-sapp-zingage', domaine: 'Électrolyse : forcer le sens d’évolution', titre: 'Déposer du zinc par électrolyse', noms: ['Charge électrique passée', 'Quantité de zinc déposé'],
+    gen: () => ({ I: tire([0.20, 0.50, 1.0]), t: tire([10, 20, 30]), U: tire([2.5, 3.0]), S: tire([12, 20, 25]), c: tire([0.50, 1.0]), Vb: tire([1.0, 2.0]) }),
+    build: (p, q) => {
+      const tokens = {
+        I: tok(`${nb(p.I, 2)} A`, 'Intensité du courant (constante)', p.I, 'A'),
+        t: tok(`${p.t} min`, 'Durée de l’électrolyse', p.t * 60, 's'),
+        U: tok(`${nb(p.U, 1)} V`, 'Tension du générateur', p.U, 'V'),
+        S: tok(`${p.S} cm²`, 'Surface de la pièce à recouvrir', p.S, 'cm²'),
+        c: tok(`${nb(p.c, 2)} mol/L`, 'Concentration du bain de sulfate de zinc', p.c, 'mol/L'),
+        Vb: tok(`${nb(p.Vb, 1)} L`, 'Volume du bain', p.Vb, 'L'),
+        M: tok('65,4 g/mol', 'Masse molaire du zinc', 65.4, 'g/mol'),
+        F: tok('9,65 × 10⁴ C/mol', 'Charge d’une mole d’électrons (constante de Faraday)', 96500, 'C/mol'),
+      };
+      const debut = ['Pour protéger de la corrosion une pièce d’acier de ', T('S'), ', on la recouvre de zinc par électrolyse (zingage). La pièce, reliée à la borne − d’un générateur réglé sur ', T('U'), ', plonge dans ', T('Vb'),
+        ' d’une solution de sulfate de zinc à ', T('c'), '. Le générateur fait passer un courant d’intensité constante ', T('I'), ' pendant ', T('t'), '. Sur la pièce : Zn²⁺(aq) + 2 e⁻ → Zn(s) ; M(Zn) = ', T('M'), ' ; F = ', T('F'), '. '];
+      const Q = p.I * p.t * 60;
+      const rU = 'La tension du générateur doit être assez grande pour forcer la réaction, mais elle n’intervient pas dans le calcul des quantités.';
+      const rS = 'La surface de la pièce fixe l’épaisseur du dépôt, pas la quantité de zinc déposé.';
+      const rc = 'La concentration du bain ne limite pas le dépôt tant qu’il reste des ions Zn²⁺ (le bain en contient beaucoup).';
+      const rV = 'Le volume du bain ne limite pas le dépôt : il reste largement assez d’ions Zn²⁺.';
+      if (q === 0) return { tokens, derivees: [{ id: 'ts', nom: 'Durée en secondes', expr: 'Δt = 60 × durée en min', val: p.t * 60, u: 's' }], texte: [...debut, 'Quelle charge électrique a traversé le circuit pendant l’électrolyse ?'],
+        utiles: ['I', 't'], raisons: { U: rU, S: rS, c: rc, Vb: rV, M: 'La masse molaire ne sert qu’à calculer une masse de zinc, non demandée ici.', F: 'La constante de Faraday sert à passer de la charge aux quantités de matière, pas à calculer la charge.' },
+        cherche: { bonne: 'La charge électrique Q passée (en C)', faux: ['La quantité de zinc déposé (en mol)', 'L’épaisseur du dépôt de zinc (en µm)', 'L’énergie fournie par le générateur (en J)'] },
+        manque: null, solution: { txt: 'Q = I × Δt', val: Q, u: 'C' } };
+      return { tokens, derivees: [{ id: 'Q', nom: 'Charge électrique passée', expr: 'Q = I × Δt', val: Q, u: 'C' }, { id: 'ne', nom: 'Quantité d’électrons échangés', expr: 'n(e⁻) = frac(Q|F)', val: Q / 96500, u: 'mol' }], texte: [...debut, 'Quelle quantité de zinc s’est déposée sur la pièce ?'],
+        utiles: ['I', 't', 'F'], raisons: { U: rU, S: rS, c: rc, Vb: rV, M: 'La masse molaire ne sert qu’à passer à la masse de zinc ; on demande ici une quantité de matière.' },
+        cherche: { bonne: 'La quantité de zinc déposé (en mol)', faux: ['La masse de zinc déposé (en g)', 'La charge électrique passée (en C)', 'La quantité d’ions Zn²⁺ restant dans le bain (en mol)'] },
+        manque: null, solution: { txt: 'n(Zn) = frac(n(e⁻)|2) = frac(I × Δt|2 F)', val: Q / (2 * 96500), u: 'mol' } };
+    },
+  },
+  {
+    id: 'ely-sapp-recharge', domaine: 'Électrolyse : forcer le sens d’évolution', titre: 'Recharger un accumulateur zinc-cuivre', noms: ['Durée de la recharge', 'Masse de zinc reformé'],
+    gen: () => ({ Q: tire([1200, 1930, 2900]), I: tire([0.10, 0.20, 0.25]), UG: tire([1.6, 1.8]), Tp: tire([20, 25]) }),
+    build: (p, q) => {
+      const tokens = {
+        Q: tok(`${nb(p.Q)} C`, 'Charge déjà débitée par l’accumulateur', p.Q, 'C'),
+        I: tok(`${nb(p.I, 2)} A`, 'Intensité du courant de charge (constante)', p.I, 'A'),
+        E: tok('1,10 V', 'Tension à vide de l’accumulateur', 1.10, 'V'),
+        UG: tok(`${nb(p.UG, 1)} V`, 'Tension du générateur', p.UG, 'V'),
+        Tp: tok(`${p.Tp} °C`, 'Température de la salle', p.Tp, '°C'),
+        M: tok('65,4 g/mol', 'Masse molaire du zinc', 65.4, 'g/mol'),
+        F: tok('9,65 × 10⁴ C/mol', 'Charge d’une mole d’électrons (constante de Faraday)', 96500, 'C/mol'),
+      };
+      const debut = ['Un accumulateur zinc-cuivre, de tension à vide ', T('E'), ', a débité une charge de ', T('Q'), '. Pour le recharger complètement, il faut faire repasser la même charge en sens inverse : on le relie à un générateur de tension ', T('UG'),
+        ' qui fait passer un courant constant ', T('I'), '. Pendant la charge, sur la lame de zinc : Zn²⁺(aq) + 2 e⁻ → Zn(s) ; M(Zn) = ', T('M'), ' ; F = ', T('F'), '. La salle est à ', T('Tp'), '. '];
+      const rE = 'La tension à vide sert seulement à vérifier que le générateur peut forcer la charge (tension du générateur plus grande) ; elle n’entre pas dans le calcul.';
+      const rUG = 'La tension du générateur doit dépasser la tension à vide, mais elle n’intervient pas dans les relations Q = I × Δt et n(e⁻) = frac(Q|F).';
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Combien de temps dure la recharge complète ?'],
+        utiles: ['Q', 'I'], raisons: { E: rE, UG: rUG, Tp: 'La température n’intervient pas dans la relation entre charge, intensité et durée.', M: 'La masse molaire ne sert qu’à calculer une masse de zinc.', F: 'La constante de Faraday sert à passer aux quantités de matière, pas à calculer une durée.' },
+        cherche: { bonne: 'La durée de la recharge complète (en s)', faux: ['La masse de zinc reformé (en g)', 'L’énergie stockée pendant la charge (en J)', 'L’intensité nécessaire pour recharger en 1 h (en A)'] },
+        manque: null, solution: { txt: 'Δt = frac(Q|I)', val: p.Q / p.I, u: 's' } };
+      return { tokens, derivees: [{ id: 'ne', nom: 'Quantité d’électrons à faire repasser', expr: 'n(e⁻) = frac(Q|F)', val: p.Q / 96500, u: 'mol' }, { id: 'nZn', nom: 'Quantité de zinc reformé', expr: 'n(Zn) = frac(n(e⁻)|2)', val: p.Q / 2 / 96500, u: 'mol' }], texte: [...debut, 'Quelle masse de zinc se reforme sur la lame pendant la recharge complète ?'],
+        utiles: ['Q', 'M', 'F'], raisons: { I: 'L’intensité fixe la durée de la recharge, pas la quantité de zinc reformé, qui ne dépend que de la charge à faire repasser.', E: rE, UG: rUG, Tp: 'La température n’intervient pas dans le bilan de matière.' },
+        cherche: { bonne: 'La masse de zinc reformé (en g)', faux: ['La durée de la recharge (en h)', 'La quantité d’électrons échangés (en mol)', 'La masse de cuivre déposé (en g)'] },
+        manque: null, solution: { txt: 'm(Zn) = frac(Q|2 F) × M', val: p.Q / 2 / 96500 * 65.4, u: 'g' } };
+    },
+  },
   // ───────────────────────────── Titrage pH-métrique (TG) : concentration et composition
   {
     id: 'titph-ca', domaine: 'Titrage pH-métrique', titre: 'Contrôle d’une solution d’acide', noms: ['Concentration de l’acide', 'Volume équivalent attendu'],

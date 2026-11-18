@@ -949,5 +949,18 @@
  "77:plausible:pil-val-facteur2": "VAL237",
  "77:plausible:pil-val-duree": "VAL238",
  "77:plausible:pil-val-tension": "VAL239",
- "36:pil-calcul": "REA37"
+ "36:pil-calcul": "REA37",
+ "34:ely-sapp-zingage.0": "SAPP239",
+ "34:ely-sapp-zingage.1": "SAPP240",
+ "34:ely-sapp-recharge.0": "SAPP241",
+ "34:ely-sapp-recharge.1": "SAPP242",
+ "37:prevoir:ely-ana-tension": "ANA438",
+ "37:prevoir:ely-ana-noms": "ANA439",
+ "37:prevoir:ely-ana-intensite": "ANA440",
+ "37:prevoir:ely-ana-qr": "ANA441",
+ "77:plausible:ely-val-facteur2": "VAL240",
+ "77:plausible:ely-val-duree": "VAL241",
+ "77:plausible:ely-val-spontane": "VAL242",
+ "77:plausible:ely-val-minutes": "VAL243",
+ "36:ely-calcul": "REA38"
 }
