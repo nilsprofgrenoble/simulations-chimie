@@ -414,6 +414,57 @@ export const ENONCES = [
         manque: null, solution: { txt: 'n(A⁻) = n(AH) × 10^(pH − pKA)', val: p.nAH * r, u: 'mmol' } };
     },
   },
+  // ───────────────────────────── Pile (TG) : capacité à partir de la constitution initiale, durée de fonctionnement
+  {
+    id: 'pil-sapp-capacite', domaine: 'Piles : fonctionnement et capacité', titre: 'Capacité d’une pile zinc-cuivre', noms: ['Quantité d’ions cuivre initiale', 'Capacité électrique de la pile'],
+    gen: () => ({ c: tire([0.050, 0.10, 0.20]), V: tire([50, 100, 150]), m: tire([3.0, 4.0, 5.0]), V2: tire([100, 150, 200]), U: tire([1.08, 1.10]), T: tire([20, 25]) }),
+    build: (p, q) => {
+      const tokens = {
+        c: tok(`${nb(p.c, 2)} mol/L`, 'Concentration de la solution de sulfate de cuivre', p.c, 'mol/L'),
+        V: tok(`${p.V} mL`, 'Volume de la solution de sulfate de cuivre', p.V / 1000, 'L'),
+        m: tok(`${nb(p.m, 1)} g`, 'Masse de la partie immergée de la lame de zinc', p.m, 'g'),
+        M: tok('65,4 g/mol', 'Masse molaire du zinc', 65.4, 'g/mol'),
+        V2: tok(`${p.V2} mL`, 'Volume de la solution de sulfate de zinc', p.V2 / 1000, 'L'),
+        U: tok(`${nb(p.U, 2)} V`, 'Tension à vide mesurée', p.U, 'V'),
+        T: tok(`${p.T} °C`, 'Température de la salle', p.T, '°C'),
+        F: tok('9,65 × 10⁴ C/mol', 'Charge d’une mole d’électrons (constante de Faraday)', 96500, 'C/mol'),
+      };
+      const debut = ['Une pile est formée d’une lame de cuivre plongeant dans ', T('V'), ' de solution de sulfate de cuivre à ', T('c'), ', et d’une lame de zinc (partie immergée : ', T('m'), ' ; M(Zn) = ', T('M'),
+        ') plongeant dans ', T('V2'), ' de solution de sulfate de zinc. Un pont salin relie les deux solutions ; à ', T('T'), ', sa tension à vide vaut ', T('U'),
+        '. Réaction de fonctionnement : Zn(s) + Cu²⁺(aq) → Zn²⁺(aq) + Cu(s) ; F = ', T('F'), '. '];
+      const nCu = p.c * p.V / 1000;
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle quantité d’ions Cu²⁺ la pile contient-elle au départ ?'],
+        utiles: ['c', 'V'], raisons: { m: 'La masse de zinc concerne l’autre réactif, pas les ions Cu²⁺.', M: 'La masse molaire du zinc ne sert qu’à calculer la quantité de zinc.', V2: 'Ce volume est celui de la solution de sulfate de zinc, pas de la solution d’ions Cu²⁺.', U: 'La tension à vide ne renseigne pas sur une quantité de matière.', T: 'La température n’intervient pas dans le calcul d’une quantité de matière.', F: 'La constante de Faraday sert à passer aux charges électriques, pas à compter les ions.' },
+        cherche: { bonne: 'La quantité initiale d’ions Cu²⁺ (en mol)', faux: ['La capacité électrique de la pile (en C)', 'La quantité de zinc de la lame (en mol)', 'La concentration finale en ions Zn²⁺ (en mol/L)'] },
+        manque: null, solution: { txt: 'n(Cu²⁺) = c × V', val: nCu, u: 'mol' } };
+      return { tokens, derivees: [{ id: 'nCu', nom: 'Quantité initiale d’ions Cu²⁺', expr: 'n(Cu²⁺) = c × V', val: nCu, u: 'mol' }, { id: 'nZn', nom: 'Quantité initiale de zinc', expr: 'n(Zn) = frac(m|M)', val: p.m / 65.4, u: 'mol' }, { id: 'ne', nom: 'Quantité d’électrons échangés (réactif limitant)', expr: 'n(e⁻) = 2 × x_max', val: 2 * Math.min(nCu, p.m / 65.4), u: 'mol' }], texte: [...debut, 'Quelle est la capacité électrique de cette pile ?'],
+        utiles: ['c', 'V', 'm', 'M', 'F'], raisons: { V2: 'Le volume de la solution de sulfate de zinc ne change pas la quantité des réactifs Zn et Cu²⁺.', U: 'La tension à vide ne dépend pas de la quantité de réactifs : elle ne sert pas à calculer la capacité.', T: 'La température n’intervient pas dans le bilan de matière.' },
+        cherche: { bonne: 'La capacité Q de la pile (en C)', faux: ['La tension à vide de la pile (en V)', 'La quantité initiale d’ions Cu²⁺ (en mol)', 'La masse de cuivre déposée (en g)'] },
+        manque: null, solution: { txt: 'Q = n(e⁻) × F = 2 × x_max × F', val: 2 * Math.min(nCu, p.m / 65.4) * 96500, u: 'C' } };
+    },
+  },
+  {
+    id: 'pil-sapp-duree', domaine: 'Piles : fonctionnement et capacité', titre: 'Combien de temps la pile fonctionnera-t-elle ?', noms: ['Durée de fonctionnement', 'Charge déjà débitée'],
+    gen: () => ({ Q: tire([1200, 1900, 2900, 3900]), I: tire([20, 40, 50, 80]), t: tire([2.0, 3.0, 4.0]), U: tire([1.10, 0.78, 1.53]), mp: tire([180, 250, 320]) }),
+    build: (p, q) => {
+      const tokens = {
+        Q: tok(`${nb(p.Q)} C`, 'Capacité électrique de la pile', p.Q, 'C'),
+        I: tok(`${p.I} mA`, 'Intensité du courant débité (constante)', p.I / 1000, 'A'),
+        t: tok(`${nb(p.t, 1)} h`, 'Durée de fonctionnement déjà écoulée', p.t * 3600, 's'),
+        U: tok(`${nb(p.U, 2)} V`, 'Tension à vide de la pile', p.U, 'V'),
+        mp: tok(`${p.mp} g`, 'Masse totale du montage', p.mp, 'g'),
+      };
+      const debut = ['Une pile de laboratoire a une capacité de ', T('Q'), ' et une tension à vide de ', T('U'), ' ; le montage complet pèse ', T('mp'), '. Elle alimente un petit moteur et débite un courant d’intensité constante ', T('I'), '. Elle fonctionne déjà depuis ', T('t'), '. '];
+      if (q === 0) return { tokens, derivees: [{ id: 'IA', nom: 'Intensité du courant en ampères', expr: 'I = frac(I (en mA)|1000)', val: p.I / 1000, u: 'A' }], texte: [...debut, 'Quelle est la durée totale de fonctionnement de la pile, depuis sa mise en service ?'],
+        utiles: ['Q', 'I'], raisons: { t: 'La durée déjà écoulée ne change pas la durée totale de fonctionnement.', U: 'La tension à vide n’intervient pas dans la relation Q = I × Δt.', mp: 'La masse du montage n’intervient pas dans la durée de fonctionnement.' },
+        cherche: { bonne: 'La durée totale de fonctionnement (en s)', faux: ['La charge déjà débitée par la pile (en C)', 'L’énergie stockée dans la pile au départ (en J)', 'La tension aux bornes du moteur (en V)'] },
+        manque: null, solution: { txt: 'Δt = frac(Q|I)', val: p.Q / (p.I / 1000), u: 's' } };
+      return { tokens, derivees: [{ id: 'IA', nom: 'Intensité du courant en ampères', expr: 'I = frac(I (en mA)|1000)', val: p.I / 1000, u: 'A' }, { id: 'ts', nom: 'Durée écoulée en secondes', expr: 'Δt = 3 600 × durée en h', val: p.t * 3600, u: 's' }], texte: [...debut, 'Quelle charge électrique la pile a-t-elle déjà débitée ?'],
+        utiles: ['I', 't'], raisons: { Q: 'La capacité est la charge maximale ; on demande ici la charge réellement débitée jusqu’à maintenant.', U: 'La tension à vide n’intervient pas dans la relation Q = I × Δt.', mp: 'La masse du montage n’intervient pas dans la charge débitée.' },
+        cherche: { bonne: 'La charge déjà débitée (en C)', faux: ['La durée totale de fonctionnement (en h)', 'La capacité électrique de la pile (en C)', 'L’intensité maximale du courant (en A)'] },
+        manque: null, solution: { txt: 'Q = I × Δt', val: (p.I / 1000) * p.t * 3600, u: 'C' } };
+    },
+  },
   // ───────────────────────────── Titrage pH-métrique (TG) : concentration et composition
   {
     id: 'titph-ca', domaine: 'Titrage pH-métrique', titre: 'Contrôle d’une solution d’acide', noms: ['Concentration de l’acide', 'Volume équivalent attendu'],

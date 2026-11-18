@@ -936,5 +936,18 @@
  "77:plausible:tmp-val-dilution": "VAL233",
  "77:plausible:tmp-val-limite": "VAL234",
  "77:plausible:tmp-val-ammoniacal": "VAL235",
- "36:tmp-calcul": "REA36"
+ "36:tmp-calcul": "REA36",
+ "34:pil-sapp-capacite.0": "SAPP235",
+ "34:pil-sapp-capacite.1": "SAPP236",
+ "34:pil-sapp-duree.0": "SAPP237",
+ "34:pil-sapp-duree.1": "SAPP238",
+ "37:prevoir:pil-ana-pont": "ANA434",
+ "37:prevoir:pil-ana-polarite": "ANA435",
+ "37:prevoir:pil-ana-volume": "ANA436",
+ "37:prevoir:pil-ana-electrons": "ANA437",
+ "77:plausible:pil-val-pont": "VAL236",
+ "77:plausible:pil-val-facteur2": "VAL237",
+ "77:plausible:pil-val-duree": "VAL238",
+ "77:plausible:pil-val-tension": "VAL239",
+ "36:pil-calcul": "REA37"
 }
