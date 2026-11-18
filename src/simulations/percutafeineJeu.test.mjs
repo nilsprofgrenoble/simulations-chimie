@@ -93,6 +93,7 @@ for (let g = 1; g <= 400; g++) {
   const { e, pas } = joue(expert, g * 7919); pasT.push(pas);
   fins[e.scene] = (fins[e.scene] || 0) + 1; temps.push(e.t); attentes.push(e.f.attente); pannes[e.f.panne ? 1 : 0]++;
 }
+if (process.env.DUMP) { const { writeFileSync } = await import('node:fs'); writeFileSync('/tmp/fin.json', JSON.stringify(joue(expert, 7919).e)); }
 const tMoy = temps.reduce((s, x) => s + x, 0) / temps.length; console.log("écrans par partie (expert) : moyenne", (pasT.reduce((s, x) => s + x, 0) / pasT.length).toFixed(0), "max", Math.max(...pasT));
 console.log("expert :", fins, `durée moyenne ${tMoy.toFixed(0)} min`, `max ${Math.max(...temps)}`, "pannes", pannes, `attente moyenne ${(attentes.reduce((s, x) => s + x, 0) / attentes.length).toFixed(0)} min`);
 assert((fins.fin_conforme || 0) >= 380, `l'expert doit conclure « conforme » (${fins.fin_conforme} / 400)`);
@@ -165,7 +166,8 @@ let nPh = 0, nPhOk = 0; for (let g = 1; g <= 60; g++) { const r = joue({ ...expP
 assert(nPh > 50 && nPhOk / nPh >= 0.75, `pH bas repris avec Lucas (${nPh}/60, ${nPhOk} dans les temps)`);
 // la formule est relue par Mme Dubreuil : mesures manquantes signalées, masses incohérentes refusées avec explication, valeurs conservées
 { const e0 = { ...J.etatInitial(3), scene: 'formule' }, ok = { caf: 10, carb: 1.5, coc: 8, eth96: 80, trol: 1.8, eau: 98.7 };
-  const r0 = J.validerFormule(e0, ok); assert(!r0.ok && r0.etat.f.formuleMsg.some(m => /extrait sec/.test(m)) && r0.etat.f.formuleMsg.some(m => /éthanol/.test(m)) && r0.etat.f.fmBrouillon.coc === '8', 'formule sans extrait sec ni éthanol : refusée avec consignes, valeurs gardées');
+  const r0 = J.validerFormule(e0, ok); assert(r0.ok && r0.etat.scene === 'formule_ok', 'formule correcte validée sans avoir fait les étapes du scénario');
+  const r00 = J.validerFormule(e0, { ...ok, caf: 30, coc: 1 }); assert(!r00.ok && !r00.etat.f.formuleMsg.some(m => /Va le faire|n'as pas encore/.test(m)) && r00.etat.f.fmBrouillon.coc === '1', 'formule fausse : refusée sans exiger d\'étape, valeurs gardées');
   const prets = { ...e0, fait: { es: true, esLu: true, esRes: true, eth: true }, f: { ...e0.f, es2: true } };
   const bas = J.validerFormule(prets, { ...ok, coc: 1, caf: 30 }); assert(!bas.ok && bas.etat.f.formuleMsg.length >= 2 && bas.etat.f.formuleMsg.some(m => /caféine/.test(m)), 'masses fausses : refusées avec explications');
   const r1 = J.validerFormule(prets, { ...ok, coc: Math.max(2 * (J.esRetenu(prets) - 6.65), 3) , eau: 0 }); assert(!r1.ok && r1.etat.f.formuleMsg.some(m => /total/.test(m)), 'somme signalée');
@@ -266,11 +268,11 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   console.log(`titrage du Synthalen K : OK (lot ${vrai.toFixed(1)} %, mesuré ${bon.pctMes.toFixed(1)} %)`); }
 // 14. Retour à la paillasse au premier écran d'une tâche ; remarque de Mme Dubreuil sur les appareils sans rapport
 { let e = { ...J.etatInitial(31), scene: 'hub', t: 20 };
-  const bureau = J.choisir(e, J.choixDe(e).find(c => c.vers === 'eth1')); assert(J.peutRevenir(bureau), 'retour possible au premier écran');
+  const bureau = J.choisir(e, J.choixDe(e).find(c => c.vers === 'es_balance')); assert(J.peutRevenir(bureau), 'retour possible au premier écran');
   const retour = J.revenirHub(bureau); assert(retour.scene === 'hub' && retour.t === 20 && !J.peutRevenir(retour), 'retour sans perte de temps');
   const ir = J.choisir(e, J.choixDe(e).find(c => c.vers === 'leurre_ir')); assert(J.peutRevenir(ir), 'retour possible avant la mesure');
   const apres = J.choisir(ir, J.choixDe(ir)[0]); assert(apres.scene === 'hub' && !J.peutRevenir(apres), 'plus de retour une fois la mesure faite');
-  const faux = J.valider(bureau, '12').etat; assert(!J.peutRevenir(faux), 'plus de retour après un essai de calcul');
+  const faux = J.valider({ ...J.etatInitial(31), scene: 'eth1', t: 20, retourHub: { scene: 'eth1', t: 20 } }, '12').etat; assert(!J.peutRevenir(faux), 'plus de retour après un essai de calcul');
   const p = J.texteDe({ ...apres, scene: 'point_dubreuil' }); assert(p.includes('spectrométrie IR') && p.includes('apporté'), 'remarque sur les appareils');
   const p0 = J.texteDe({ ...e, scene: 'point_dubreuil' }); assert(!p0.includes('Je vois que tu es passé'), 'pas de remarque sinon');
   console.log('retour à la paillasse, remarque de midi : OK'); }

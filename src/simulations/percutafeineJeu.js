@@ -290,7 +290,7 @@ export const cer = (cause, effet, remede) => `Cause : ${cause} Effet : ${effet} 
 
 // ───────────── La paillasse (hub) ─────────────
 export const statutBg = e => ({
-  es: e.fait.es && !e.fait.esRes ? (e.bg.es > e.t ? `Étuve en route, prête dans ${duree(e.bg.es - e.t)}` : 'Étuve terminée : les coupelles sont prêtes à peser') : null,
+  es: e.fait.es && !e.fait.esLu ? (e.bg.es > e.t ? `Étuve en route, prête dans ${duree(e.bg.es - e.t)}` : 'Étuve terminée : les coupelles sont prêtes à peser') : null,
   clhp: e.f.attendu && e.bg.clhp != null && !e.fait.caf ? (e.bg.clhp > e.t ? `CLHP en réparation, prête dans ${duree(e.bg.clhp - e.t)}` : (e.fait.ph ? 'CLHP réparée : elle est prête pour l\'injection' : 'CLHP réparée : tu pourras l\'utiliser quand ton gel sera prêt')) : null,
   gel: e.fait.fab && !e.fait.ph ? (e.bg.gel > e.t ? `Ballon en route, prêt dans ${duree(e.bg.gel - e.t)}` : 'Ballon terminé : le gel est prêt') : null,
 });
@@ -302,15 +302,13 @@ const taches = e => {
   L.push(['Relire les documents du dossier', 'Notice ANSM et fiches techniques (Synthalen K, trolamine, cocoate de macrogol).', 'docs']);
   if (!F.obs) L.push(['Noter mes observations sur le gel étalé', 'Ce que tu as vu dans la vidéo d\'Inès à ton arrivée ; tu peux la revoir si besoin (5 min).', 'obs_video']);
   if (!F.es) L.push(['Lancer l\'extrait sec du gel commercial', 'Peser, étaler, mettre à l\'étuve : 15 min de travail, puis l\'étuve tourne seule.', e.f.bal ? 'es_prep' : 'es_balance']);
-  if (!F.eth) L.push(['Raisonner sur l\'éthanol de la notice', 'Quelle masse d\'éthanol faut-il mettre dans 200 g de gel ?', 'eth1']);
   if (F.es && !F.esLu) L.push(e.f.es3Att ? ['Lire le troisième extrait sec', `Calculer la médiane des trois essais.${e.bg.es > e.t ? ` Attention : étuve en cours, prête dans ${duree(e.bg.es - e.t)}, tu devras attendre.` : ''}`, 'es_calc2b'] : ['Lire l\'extrait sec', `Calculer ES et vérifier la répétabilité.${e.bg.es > e.t ? ` Attention : étuve en cours, prête dans ${duree(e.bg.es - e.t)}, tu devras attendre.` : ''}`, 'es_calc1']);
-  if (F.esLu && !F.esRes) L.push(['Estimer le cocoate de macrogol', 'Déduire sa teneur de l\'extrait sec, avec les fiches techniques.', 'es_calc3']);
   if (!F.formule) L.push(['Écrire la formule du contretype', 'Fixer les masses des constituants pour environ 200 g de gel : la formule est à faire valider avant de formuler.', 'formule']);
   if (!F.fab) L.push(['Formuler les 200 g de gel', 'Choisir le procédé, lancer la dispersion du Synthalen K.', (e.f.lot || 1) > 1 ? 'fab_relance' : e.f.eq?.base ? 'fab_choix' : 'eq_base', F.formule ? undefined : { bloque: 'Fais d\'abord valider ta formule au Bureau.' }]);
   if (!F.rheoC) L.push(['Rhéologie du gel commercial', 'Mesurer la courbe d\'écoulement du témoin (10 min).', 'rheoC']);
   if (!e.f.voieCaf && !e.f.rapideCaf) L.push(['Choisir comment contrôler la caféine du gel', 'Quelle technique utiliser pour vérifier les 5 % de caféine ?', 'choix_caf']);
   if (e.f.voieCaf === 'clhp' && !F.hplcPrep) L.push(['Préparer le dosage de la caféine', 'Masse à peser, solution de référence, première injection.', 'hplc_m']);
-  if (F.eth && !e.f.voieEth && !e.f.rapideEth) L.push(['Choisir comment contrôler l\'éthanol du gel', 'Quelle technique utiliser pour vérifier l\'éthanol ?', 'choix_eth']);
+  if (!e.f.voieEth && !e.f.rapideEth) L.push(['Choisir comment contrôler l\'éthanol du gel', 'Quelle technique utiliser pour vérifier l\'éthanol ?', 'choix_eth']);
   if (e.f.voieEth === 'cpg' && !F.cpgPrep) L.push(['Préparer le dosage de l\'éthanol', 'Masse à peser, solution de référence, première injection.', 'cpg_m']);
   if (F.fab && !F.ph) L.push(['Neutraliser et mettre en pot', `Quand le Synthalen K est dispersé : ajouter la trolamine et contrôler le pH.${e.bg.gel > e.t ? ` Attention : dispersion en cours, prête dans ${duree(e.bg.gel - e.t)}, tu devras attendre.` : ''}`, 'fab_disp']);
   if (F.rheoC && !F.rheoF) L.push(['Comparer les rhéologies', 'La viscosité est la seule grandeur impossible à prévoir : mesure-la avant les dosages, et compare au gel commercial. Si elle est mauvaise, tu pourras refaire un gel.', 'rheoF', F.ph ? undefined : { bloque: 'Le gel doit d\'abord être fabriqué et mis en pot.' }]);
@@ -327,6 +325,8 @@ const taches = e => {
   if (!F.leurre_conduc) L.push(['Conductivité du gel', 'Plonger la cellule du conductimètre dans le gel : 15 min.', 'leurre_conduc']);
   L.push(['Demander conseil à un collègue ou à Mme Dubreuil', 'Tu hésites sur la suite, sur où aller ou par quoi commencer ? Demande : quelques minutes.', 'conseil']);
   if (F.caf && F.ethQC && F.rheoF) L.push(['Conclure : le contretype est-il conforme ?', 'Comparer aux exigences et décider.', e.f.eq?.ines ? 'verdict' : 'eq_ines']);
+  if (e.t >= 150 && e.t < T_MIDI && !e.f.pointD) L.push(['Prendre ma pause du midi maintenant', 'Rien ne t\'oblige à attendre midi : point d\'étape avec Mme Dubreuil, puis une heure de pause pendant que les appareils tournent.', 'point_dubreuil']);
+  if (e.t >= 45 && (e.f.crMin || 0) < 60) L.push(['Rédiger le compte rendu et assurer la traçabilité', `Mettre le cahier de laboratoire au propre et préparer le rapport de fin de journée : tu choisis le temps que tu y consacres${e.f.crMin ? ` (déjà ${duree(e.f.crMin)})` : ''}.`, 'compte_rendu']);
   if (enCours) L.push(['Prendre une pause de 10 minutes', 'Un café, un tour dehors : les appareils continuent de tourner pendant ce temps.', 'hub', { duree: 10, pause: true, note: 'Pause de 10 minutes pendant que les appareils tournent.' }]);
   return L;
 };
@@ -486,14 +486,14 @@ add('es_calc1', {
     () => '« ES = (m₂ − m₀) / m₁ × 100, avec les trois pesées de la coupelle 1. »'] },
   calcul: { q: 'Calcule l\'extrait sec ES₁ de la coupelle 1 (en % massique).', unite: '%', vrai: e => donneesEs(e)[0].ES, tol: 0.02, cs: 2, indice: 'ES = (m₂ − m₀) / m₁ × 100.',
     retour: (v, e) => { const d = donneesEs(e)[0]; return Math.abs(v - d.m2 / d.m1 * 100) < 1 ? cer('tu as divisé m₂ au lieu de (m₂ − m₀).', 'tu trouves une valeur d\'environ 3 000 %.', 'retire la masse de la coupelle vide avant de diviser.') : null; },
-    ok: { vers: e => e.f.es2 ? 'es_calc2' : 'hub', duree: 5, run: n => n.f.es2 ? n : marquer(n, 'esLu') }, ko: { vers: e => e.f.es2 ? 'es_calc2' : 'hub', duree: 0, run: n => n.f.es2 ? n : marquer(n, 'esLu') } },
+    ok: { vers: e => e.f.es2 ? 'es_calc2' : 'hub', duree: 5, run: n => nota(n.f.es2 ? n : marquer(n, 'esLu'), `Extrait sec, coupelle 1 : ES₁ = ${nf(donneesEs(n)[0].ES, 2)} %${n.f.es2 ? '' : ' (retenu)'}.`) }, ko: { vers: e => e.f.es2 ? 'es_calc2' : 'hub', duree: 0, run: n => nota(n.f.es2 ? n : marquer(n, 'esLu'), `Extrait sec, coupelle 1 : ES₁ = ${nf(donneesEs(n)[0].ES, 2)} %${n.f.es2 ? '' : ' (retenu)'}.`) } },
 });
 add('es_calc2', {
   lieu: 'Salle des étuves', pnj: 'moi', titre: 'Les deux essais sont-ils compatibles ?',
   texte: e => { const d = donneesEs(e), dc = BALANCES[e.f.bal || 'prec'].dec; return `Coupelle 2 : m₀ = ${nf(d[1].m0, dc)} g ; m₁ = ${nf(d[1].m1, dc)} g ; m₂ = ${nf(d[1].m2, dc)} g, soit ES₂ = ${nf(d[1].ES, 2)} %. Pour la coupelle 1, ES₁ = ${nf(d[0].ES, 2)} %.\nÉcart |ES₁ − ES₂| = ${nf(ecartEs(e), 2)} %. Critère de répétabilité pour deux essais : écart ≤ 2,8 × S_r = 1,4 %.`; },
   hyp: "Hypothèse : les deux essais suivent la même loi normale d'écart-type S_r = 0,5 % ; le critère 2,8·S_r correspond alors à un niveau de confiance de 95 % pour l'écart de deux essais.",
   choix: e => { const compat = ecartEs(e) <= 1.4; return [
-    { t: 'Les deux résultats sont compatibles : je retiens la moyenne', vers: 'hub', duree: 5, run: n => marquer(n, 'esLu'), f: compat ? {} : { errEs: true }, note: compat ? `Extrait sec retenu : moyenne de deux essais.` : 'Extrait sec : moyenne retenue malgré un écart trop grand.' },
+    { t: 'Les deux résultats sont compatibles : je retiens la moyenne', vers: 'hub', duree: 5, run: n => nota(marquer(n, 'esLu'), `Extrait sec : ES₁ = ${nf(donneesEs(n)[0].ES, 2)} %, ES₂ = ${nf(donneesEs(n)[1].ES, 2)} % ; valeur retenue (moyenne) : ES = ${nf(esRetenu(n), 2)} %.`), f: compat ? {} : { errEs: true } },
     ...(e.f.bal === 'std' ? [{ t: 'La balance au 0,01 g est trop peu précise pour un résidu d\'environ 0,1 g : je refais les deux essais sur la balance de précision', vers: 'es_prep', duree: 5, f: { bal: 'prec', es2: undefined, es3: undefined, refaitBal: true }, run: n => ({ ...n, fait: { ...n.fait, es: false, esRes: false, esLu: false }, bg: { ...n.bg, es: undefined } }), note: 'Extrait sec à refaire : balance de précision nécessaire pour un résidu d\'environ 0,1 g.' }] : []),
     { t: 'L\'écart est trop grand : je fais un troisième essai et je retiens la médiane', d: '10 min de travail, puis 1 h d\'étuve sans toi : tu reviens à la paillasse.', duree: 10, vers: 'hub', f: { es3: true, es3Att: true, errEs: compat }, run: n => ({ ...n, bg: { ...n.bg, es: n.t + 60 } }), note: 'Troisième essai d\'extrait sec lancé (médiane) : 1 h d\'étuve.' },
   ]; },
@@ -502,7 +502,7 @@ add('es_calc2b', {
   lieu: 'Salle des étuves', pnj: 'moi', titre: 'Troisième essai d\'extrait sec',
   entree: e => attendre(e, 'es'),
   texte: e => { const d = donneesEs(e); return `L'étuve est terminée. Les trois essais donnent ES₁ = ${nf(d[0].ES, 2)} %, ES₂ = ${nf(d[1].ES, 2)} % et ES₃ = ${nf(d[2].ES, 2)} %. La médiane est ${nf(esRetenu(e), 2)} %.`; },
-  choix: [{ t: 'Retenir la médiane', duree: 3, vers: 'hub', run: n => marquer(n, 'esLu'), note: 'Extrait sec retenu : médiane de trois essais.' }],
+  choix: [{ t: 'Retenir la médiane', duree: 3, vers: 'hub', run: n => { const d = donneesEs(n); return nota(marquer(n, 'esLu'), `Extrait sec : ES₁ = ${nf(d[0].ES, 2)} %, ES₂ = ${nf(d[1].ES, 2)} %, ES₃ = ${nf(d[2].ES, 2)} % ; valeur retenue (médiane) : ES = ${nf(esRetenu(n), 2)} %.`); } }],
 });
 add('es_calc3', {
   fiches: ['synthalen', 'trolamine', 'cocoate'],
@@ -524,21 +524,16 @@ export const REF_FORMULE = { caf: COM.caf * M_LOT / 100, carb: COM.carb * M_LOT 
 const gNum = x => parseFloat(String(x).replace(',', '.')) || 0;
 // Mme Dubreuil relit la formule : d'abord ce qui manque (mesures non faites), puis chaque masse par rapport à ce que les mesures et les fiches permettent d'établir
 export function relectureFormule(e, fm) {
-  const v = Object.fromEntries(Object.keys(FORMULE_REPLI).map(k => [k, gNum(fm[k])])), F = e.fait, manques = [], ecarts = [], tot = Object.values(v).reduce((s, x) => s + x, 0);
-  if (!F.es) manques.push('Tu n\'as pas encore lancé l\'extrait sec du gel commercial : sans lui tu ne peux pas connaître la part de cocoate de macrogol. Va le faire d\'abord.');
-  else if (!F.esLu) manques.push('L\'extrait sec est lancé, mais tu ne l\'as pas encore lu et calculé : il te faut ce résultat pour le cocoate de macrogol.');
-  else if (!F.esRes) manques.push('Tu as l\'extrait sec, mais tu n\'as pas encore estimé la teneur en cocoate de macrogol : fais le calcul avec les fiches techniques.');
-  if (!F.eth) manques.push('Tu n\'as pas encore raisonné sur l\'éthanol de la notice : quelle masse d\'éthanol à 96 % faut-il peser pour 200 g de gel ?');
-  if (manques.length) return { manques, ecarts: Math.abs(tot - M_LOT) > 6 ? [{ k: 'tot', t: `Le total fait ${nf(tot, 1)} g alors que tu fabriques ${M_LOT} g : complète ou corrige avec l'eau purifiée.` }] : [], v, tot };   // tant que des mesures manquent, on ne juge pas les masses
-  const r = REF_FORMULE;
+  const v = Object.fromEntries(Object.keys(FORMULE_REPLI).map(k => [k, gNum(fm[k])])), F = e.fait, ecarts = [], tot = Object.values(v).reduce((s, x) => s + x, 0), r = REF_FORMULE;
   if (Math.abs(tot - M_LOT) > 6) ecarts.push({ k: 'tot', t: `Le total fait ${nf(tot, 1)} g alors que tu fabriques ${M_LOT} g : complète ou corrige avec l'eau purifiée.` });
   if (v.caf < 9 || v.caf > 11) ecarts.push({ k: 'caf', t: `La notice indique 5 % de caféine : pour ${M_LOT} g de gel, cela fait environ ${nf(r.caf, 0)} g, et tu en as mis ${nf(v.caf, 1)} g.` });
   if (v.eth96 < 74 || v.eth96 > 86) ecarts.push({ k: 'eth96', t: `L'éthanol pur représente environ ${nf(ETH_PUR_COM, 1)} % du gel (notice). Ton éthanol de paillasse est à 96 % : pour ${M_LOT} g il en faut environ ${nf(r.eth96, 0)} g, et tu en as mis ${nf(v.eth96, 1)} g.` });
-  if (F.esRes) { const cocES = Math.max(0, 2 * (esRetenu(e) - 5 - 0.75 - 0.9)), prochesES = Math.abs(v.coc - cocES) <= 2.4, prochesRef = v.coc >= 5.8 && v.coc <= 10.2;   // cohérent avec SON extrait sec, ou avec la valeur du gel
+  if (F.esLu) { const cocES = Math.max(0, 2 * (esRetenu(e) - 5 - 0.75 - 0.9)), prochesES = Math.abs(v.coc - cocES) <= 2.4, prochesRef = v.coc >= 5.8 && v.coc <= 10.2;   // cohérent avec SON extrait sec, ou avec la valeur du gel
     if (!prochesES && !prochesRef) ecarts.push({ k: 'coc', t: `Avec ton extrait sec (ES = ${nf(esRetenu(e), 2)} %), il reste, une fois retirés la caféine (5 %), le Synthalen K et la trolamine, environ ${nf(cocES / 2, 1)} % de cocoate de macrogol, soit à peu près ${nf(cocES, 1)} g pour ${M_LOT} g ; tu en as mis ${nf(v.coc, 1)} g.` }); }
+  else if (v.coc < 5.8 || v.coc > 10.2) ecarts.push({ k: 'coc', t: `Le cocoate de macrogol ne se mesure pas directement : il se déduit par différence à partir de l'extrait sec, une fois estimés les autres constituants non volatils (caféine, Synthalen K, trolamine). Ta valeur de ${nf(v.coc, 1)} g me paraît éloignée de ce que ces données permettent d'établir : appuie-toi sur une mesure, ou demande conseil avec l'ampoule 💡 de la fiche de formulation.` });
   if (v.carb < 0.8 || v.carb > 2.4) ecarts.push({ k: 'carb', t: `Le Synthalen K ne se déduit pas d'une mesure directe : la fiche donne 0,1 à 1,5 % d'emploi. Une valeur moyenne, vers ${nf(COM.carb, 2)} % (environ ${nf(r.carb, 1)} g pour ${M_LOT} g), donne un gel à la bonne viscosité ; ${nf(v.carb, 2)} g ${v.carb < 0.8 ? 'donnerait un gel trop fluide' : 'donnerait un gel trop épais et inutilement cher'}.` });
   if (v.carb > 0 && (v.trol / v.carb < 0.8 || v.trol / v.carb > 1.9)) ecarts.push({ k: 'trol', t: `D'après la fiche du Synthalen K, il faut environ 1,5 g de trolamine par gramme de polymère pour atteindre pH 7. Pour ${nf(v.carb, 2)} g de Synthalen K, cela fait de l'ordre de ${nf(1.5 * v.carb, 1)} g ; tu en as prévu ${nf(v.trol, 1)} g (c'est une estimation, ajustée ensuite au pH-mètre).` });
-  return { manques, ecarts, v, tot };
+  return { manques: [], ecarts, v, tot };
 }
 export function controlesFormule(e, fm) { const r = relectureFormule(e, fm); return [...r.manques, ...r.ecarts.map(x => x.t)].map(t => ({ ok: false, t })); }
 // Mme Dubreuil ne laisse partir en fabrication qu'une formule cohérente avec les mesures et les fiches, à quelques incertitudes près.
@@ -720,17 +715,36 @@ add('reprise_eth', {
 
 const appareilsVus = F => { const l = [F.leurre_ir && 'la spectrométrie IR', F.leurre_refracto && 'le réfractomètre', F.leurre_polar && 'le polarimètre', F.leurre_conduc && 'le conductimètre', F.leurre_titrgel && 'le titrage du gel'].filter(Boolean); return l.length ? `\nMme Dubreuil : « Je vois que tu es passé par ${l.join(', ')}. Qu'est-ce que cela t'a apporté pour ton contretype ? »` : ''; };
 const resteFait = e => { const F = e.fait,
-  fait = [F.esRes && 'l\'extrait sec', F.formule && 'la formule', F.fab && 'le lancement du gel', F.rheoC && 'la rhéologie du témoin', (F.caf || F.hplcPrep) && 'la préparation de la caféine', F.ethQC && 'l\'éthanol'].filter(Boolean),
+  fait = [F.esLu && 'l\'extrait sec', F.formule && 'la formule', F.fab && 'le lancement du gel', F.rheoC && 'la rhéologie du témoin', (F.caf || F.hplcPrep) && 'la préparation de la caféine', F.ethQC && 'l\'éthanol'].filter(Boolean),
   reste = [!F.formule && 'la formule', !F.ph && 'la mise en pot du gel', !F.rheoF && 'la rhéologie du gel formulé', !F.caf && 'le dosage de la caféine', !F.ethQC && 'le dosage de l\'éthanol', 'la conclusion'].filter(Boolean);
   return { fait: fait.length ? fait.join(', ') : 'peu de choses', reste: reste.join(', '), heure: horloge(Math.min(T_FIN - 20, e.t + T_PAUSE + 40 * reste.length)) }; };
 add('point_dubreuil', {
   lieu: 'Paillasse', pnj: 'dubreuil', titre: 'Mme Dubreuil passe à la paillasse',
   entree: e => ({ ...e, f: { ...e.f, pointD: true } }),
-  texte: e => { const F = e.fait, fait = [F.esRes && 'l\'extrait sec', F.formule && 'la formule', F.ph && 'le gel formulé', F.rheoC && 'la rhéologie du témoin', (F.caf || F.hplcPrep) && 'la caféine (en cours)', F.ethQC && 'l\'éthanol'].filter(Boolean); return `Mme Dubreuil : « Il est ${horloge(e.t)}, c'est bientôt la pause déjeuner. Où en es-tu ? »\nTu as fait : ${fait.length ? fait.join(', ') : 'peu de choses pour l\'instant'}.${appareilsVus(F)}`; },
+  texte: e => { const F = e.fait, fait = [F.esLu && 'l\'extrait sec', F.formule && 'la formule', F.ph && 'le gel formulé', F.rheoC && 'la rhéologie du témoin', (F.caf || F.hplcPrep) && 'la caféine (en cours)', F.ethQC && 'l\'éthanol'].filter(Boolean); return `Mme Dubreuil : « Il est ${horloge(e.t)}, c'est bientôt la pause déjeuner. Où en es-tu ? »\nTu as fait : ${fait.length ? fait.join(', ') : 'peu de choses pour l\'instant'}.${appareilsVus(F)}`; },
   choix: e => [
-    { t: `« J'ai fait ${resteFait(e).fait}. Il me reste ${resteFait(e).reste}, et je pense finir vers ${resteFait(e).heure}. J'ai besoin d'un avis sur un point. »`, tag: 'ok', vers: 'hub', duree: 3, run: n => pauseDej(eqNote(n, 'ok', 'dub')), note: 'Point d\'étape précis avec Mme Dubreuil.' },
+    ...(appareilsVus(e.fait) ? [{ t: '« Je vous réponds sur ces appareils. »', vers: 'point_leurre', duree: 1 }] : []),
+    { t: `« J'ai fait ${resteFait(e).fait}. Il me reste ${resteFait(e).reste}, et je pense finir vers ${resteFait(e).heure}. J'ai besoin d'un avis sur un point. »`, tag: 'ok', vers: 'conseil_dubreuil', duree: 3, run: n => pauseDej(eqNote(n, 'ok', 'dub')), note: 'Point d\'étape précis avec Mme Dubreuil, puis conseil demandé sur un point.' },
     { t: '« Ça va, tout est sous contrôle. »', tag: 'moyen', vers: 'hub', duree: 1, run: n => pauseDej(eqNote(n, 'moyen', 'dub')), note: 'Point d\'étape vague avec Mme Dubreuil.' },
     { t: '« Laissez-moi travailler, je n\'ai pas le temps. »', tag: 'ko', vers: 'hub', duree: 2, run: n => pauseDej(eqNote(n, 'ko', 'dub')), note: 'Mme Dubreuil écartée sèchement.' },
+  ],
+});
+
+add('point_leurre', {
+  lieu: 'Paillasse', pnj: 'dubreuil', titre: 'À propos de tes autres mesures',
+  texte: e => `Mme Dubreuil t'écoute.${appareilsVus(e.fait).replace(/^\n/, '\n')}\n« Ces mesures renseignent sur la nature des constituants ou sur une propriété du gel, jamais sur les teneurs, qui sont ce qu'on te demande pour un contretype. Comparer l'empreinte infrarouge de ton gel à celle du commercial montrerait qu'on y retrouve les mêmes familles de molécules, mais pas combien. Ce n'est pas interdit, ça ne doit simplement pas prendre le temps des dosages. Qu'en retires-tu ? »`,
+  choix: [
+    { t: '« Elles ne m\'apportent pas de teneur : je me recentre sur la formule et les dosages. »', vers: 'point_dubreuil', duree: 1, note: 'Mme Dubreuil : les autres mesures ne donnent pas de teneur ; recentrage sur les dosages.' },
+    { t: '« Je voulais surtout vérifier qu\'on retrouve les mêmes constituants dans mon gel. »', vers: 'point_dubreuil', duree: 1, note: 'Mme Dubreuil : vérifier les constituants par spectrométrie confirme la nature, pas les teneurs.' },
+  ],
+});
+add('compte_rendu', {
+  lieu: 'Bureau', pnj: 'moi', titre: 'Compte rendu et traçabilité',
+  texte: e => `Tu t'installes au bureau : mettre le cahier de laboratoire au propre (pesées, lots, résultats, écarts constatés) et préparer le rapport de fin de journée. Les appareils continuent de tourner pendant ce temps. Temps déjà consacré : ${duree(e.f.crMin || 0)}.`,
+  choix: [
+    { t: 'Dix minutes : mettre le cahier au propre', vers: 'hub', duree: 10, run: n => ({ ...n, f: { ...n.f, crMin: (n.f.crMin || 0) + 10 } }), note: 'Cahier de laboratoire mis au propre (10 min).' },
+    { t: 'Vingt-cinq minutes : cahier et plan du rapport', vers: 'hub', duree: 25, run: n => ({ ...n, f: { ...n.f, crMin: (n.f.crMin || 0) + 25 } }), note: 'Cahier au propre et plan du rapport rédigés (25 min).' },
+    { t: 'Quarante minutes : rédaction du rapport', vers: 'hub', duree: 40, run: n => ({ ...n, f: { ...n.f, crMin: (n.f.crMin || 0) + 40 } }), note: 'Rapport de fin de journée rédigé (40 min).' },
   ],
 });
 
@@ -1414,7 +1428,7 @@ export function bilan(e, finId = e.scene) {
     { comp: 'C.2.1', titre: 'Préparer les produits et les calculs', niveau: f.repli ? 'moyen' : niv(nbErr + (f.errEs ? 1 : 0) + (f.aides || 0) + (f.errInj ? 1 : 0), 1, 4), texte: `${nbErr} réponse(s) de calcul fausse(s)${f.aides ? `, dont ${f.aides} refaite(s) avec l'aide d'un collègue` : ''}${f.errEth ? ' (titre de l\'éthanol à 96 %)' : ''}${f.repli ? ' ; formule de repli utilisée' : ''}${f.errInj ? ` ; ${f.errInj} erreur(s) pour repérer l'injecteur sur le schéma de l'appareil` : ''}.` },
     { comp: 'C.3.2', titre: 'Détecter les non-conformités', niveau: c3, texte: c3 === 'nd' ? 'Pas de conclusion rendue.' : f.secuErr && (finId === 'fin_conforme' || finId === 'fin_detecte') ? 'Décision cohérente avec le lot, mais le montage chauffant d\'éthanol a d\'abord été installé hors hotte : la sécurité fait partie de la détection des non-conformités.' : c3 === 'ok' ? 'Décision cohérente avec la réalité du lot.' : 'La décision ne correspond pas aux défauts réels du lot : relis tes résultats critère par critère.' },
     { comp: 'C.4', titre: 'Adapter son protocole face à un imprévu', niveau: c4, texte: c4 === 'nd' ? 'Pas de panne dans cette partie.' : c4 === 'ok' ? 'Panne de CLHP : bascule immédiate vers une méthode adaptée (ajouts dosés).' : c4 === 'moyen' ? 'Panne de CLHP : solution trouvée mais coûteuse ou après un détour.' : 'Résultat biaisé conservé sans vérification.' },
-    { comp: 'C.6.1', titre: 'Organiser le travail dans le respect des délais', niveau: finId === 'fin_temps' ? 'ko' : niv(att, 70, 130), texte: `${duree(att)} d'attente subie devant l'étuve, le ballon ou la CLHP en panne (l'étuve et la dispersion tournent seules : profites-en pour lancer d'autres manipulations)${att > 70 ? ' : lance les opérations longues en premier et prépare les analyses pendant ce temps' : ''}.` },
+    { comp: 'C.6.1', titre: 'Organiser le travail dans le respect des délais', niveau: finId === 'fin_temps' ? 'ko' : niv(att, 70, 130), texte: `${duree(att)} d'attente subie devant l'étuve, le ballon ou la CLHP en panne (l'étuve et la dispersion tournent seules : profites-en pour lancer d'autres manipulations)${att > 70 ? ' : lance les opérations longues en premier et prépare les analyses pendant ce temps' : ''}.${f.crMin ? ` Traçabilité : ${duree(f.crMin)} consacrées au compte rendu.` : ' Aucun temps consacré au compte rendu de fin de journée : la traçabilité fait partie du travail.'}` },
     { comp: 'C.7.3', titre: 'Travailler en équipe', niveau: eqNiveau(f).niveau, texte: eqNiveau(f).texte },
   ];
 }
