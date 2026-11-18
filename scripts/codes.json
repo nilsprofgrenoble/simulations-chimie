@@ -962,5 +962,18 @@
  "77:plausible:ely-val-duree": "VAL241",
  "77:plausible:ely-val-spontane": "VAL242",
  "77:plausible:ely-val-minutes": "VAL243",
- "36:ely-calcul": "REA38"
+ "36:ely-calcul": "REA38",
+ "34:aam-sapp-cation.0": "SAPP243",
+ "34:aam-sapp-cation.1": "SAPP244",
+ "34:aam-sapp-anion.0": "SAPP245",
+ "34:aam-sapp-anion.1": "SAPP246",
+ "37:prevoir:aam-ana-forme": "ANA442",
+ "37:prevoir:aam-ana-domaine": "ANA443",
+ "37:prevoir:aam-ana-amphotere": "ANA444",
+ "37:prevoir:aam-ana-distribution": "ANA445",
+ "77:plausible:aam-val-ordre": "VAL244",
+ "77:plausible:aam-val-neutre": "VAL245",
+ "77:plausible:aam-val-rapport": "VAL246",
+ "77:plausible:aam-val-sang": "VAL247",
+ "36:aam-calcul": "REA39"
 }

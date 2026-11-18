@@ -12,6 +12,7 @@
 //   • solution : le calcul final (affiché seulement dans le parcours guidé, pour montrer à quoi servent les données)
 // Aucune de ces fonctions ne dépend de React : elles sont testables seules.
 
+import { ACIDES as AAM, ORDRE as AAM_ORDRE } from "./aminoAcidesModele";
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
 const sci3 = x => { const [m, e] = Number(x).toExponential(2).split('e'); return `${Number(m).toLocaleString('fr-FR')} × 10${[...String(Number(e))].map(c => SUP[c]).join('')}`; };
@@ -412,6 +413,57 @@ export const ENONCES = [
         utiles: ['pKa', 'pH', 'nAH'], raisons: { V: 'Le volume du tampon ne change pas le rapport des quantités ni n(A⁻).', Cs: 'La concentration de la solution de base ne sert qu’à convertir n(A⁻) en volume, ce que l’on ne demande pas ici.' },
         cherche: { bonne: 'La quantité de base A⁻ à introduire (en mmol)', faux: ['Le rapport n(A⁻) / n(AH) (sans unité)', 'Le volume de solution de base à verser (en mL)', 'La concentration de A⁻ dans le tampon (en mol/L)'] },
         manque: null, solution: { txt: 'n(A⁻) = n(AH) × 10^(pH − pKA)', val: p.nAH * r, u: 'mmol' } };
+    },
+  },
+  // ───────────────────────────── Acides α-aminés (TG, sim 134) : rapport des formes et pourcentages près d’une frontière
+  {
+    id: 'aam-sapp-cation', domaine: 'Acides α-aminés : forme selon le pH', titre: 'Cation et zwitterion d’un acide α-aminé', noms: ['Rapport zwitterion / cation', 'Pourcentage de cation'],
+    gen: () => { const a = AAM[tire(AAM_ORDRE)], d = tire([-1, -0.5, 0.5, 1, 1.5]); return { ac: a.id, pKa1: a.pKa1, pKa2: a.pKa2, pH: Math.round((a.pKa1 + d) * 10) / 10, C: tire([0.010, 0.020, 0.050, 0.10]), V: tire([100, 250, 500]), T: tire([20, 25, 30]) }; },
+    build: (p, q) => {
+      const a = AAM[p.ac];
+      const tokens = {
+        pKa1: tok(`${nb(p.pKa1, 2)}`, 'pKA1 du couple cation / zwitterion (groupe –COOH)', p.pKa1, ''),
+        pKa2: tok(`${nb(p.pKa2, 2)}`, 'pKA2 du couple zwitterion / anion (groupe –NH₃⁺)', p.pKa2, ''),
+        pH: tok(`${nb(p.pH, 1)}`, 'pH imposé à la solution', p.pH, ''),
+        C: tok(`${nb(p.C, 3)} mol/L`, 'Concentration totale en acide α-aminé', p.C, 'mol/L'),
+        V: tok(`${p.V} mL`, 'Volume de solution', p.V, 'mL'),
+        T: tok(`${p.T} °C`, 'Température de la solution', p.T, '°C'),
+      };
+      const debut = ['Pour la ', a.nom, ', les constantes d’acidité sont pKA1 = ', T('pKa1'), ' et pKA2 = ', T('pKa2'), '. La solution, de concentration totale ', T('C'), ' et de volume ', T('V'), ' à ', T('T'), ', a un pH imposé égal à ', T('pH'), '. '];
+      const r = 10 ** (p.pH - p.pKa1);
+      if (q === 0) return { tokens, derivees: ['[zwitterion] / [cation] = 10^(pH − pKA1)'], texte: [...debut, 'Quel est le rapport [zwitterion] / [cation] ?'],
+        utiles: ['pKa1', 'pH'], raisons: { pKa2: 'pKA2 est trop éloigné du pH : près de pKA1, on lit seulement le couple cation / zwitterion.', C: 'La concentration totale ne change pas le rapport des deux formes : elle fixe seulement leurs valeurs.', V: 'Le volume n’intervient pas dans un rapport de deux concentrations.', T: 'La température est constante : elle suppose seulement que pKA garde sa valeur.' },
+        cherche: { bonne: 'Le rapport [zwitterion] / [cation] (sans unité)', faux: ['La concentration du zwitterion (en mol/L)', 'Le pourcentage de cation (en %)', 'Le pH de la solution (sans unité)'] },
+        manque: null, solution: { txt: '[zwitterion] / [cation] = 10^(pH − pKA1)', val: r, u: '' } };
+      return { tokens, derivees: ['% cation = 100 / (1 + r) avec r = 10^(pH − pKA1)'], texte: [...debut, 'Quel pourcentage de l’acide α-aminé est sous forme de cation ? (la forme anionique est négligeable à ce pH)'],
+        utiles: ['pKa1', 'pH'], raisons: { pKa2: 'pKA2 est trop éloigné du pH : l’anion est négligeable, on ne lit que le couple 1.', C: 'Un pourcentage ne dépend pas de la concentration totale.', V: 'Le volume ne change pas une proportion.', T: 'La température est constante : elle n’intervient pas dans le calcul.' },
+        cherche: { bonne: 'Le pourcentage de cation (en %)', faux: ['Le rapport [zwitterion] / [cation] (sans unité)', 'La concentration du cation (en mol/L)', 'Le pourcentage d’anion (en %)'] },
+        manque: null, solution: { txt: '% cation = 100 / (1 + r), avec r = 10^(pH − pKA1)', val: 100 / (1 + r), u: '%' } };
+    },
+  },
+  {
+    id: 'aam-sapp-anion', domaine: 'Acides α-aminés : forme selon le pH', titre: 'Zwitterion et anion d’un acide α-aminé en solution basique', noms: ['Rapport anion / zwitterion', 'Concentration de l’anion'],
+    gen: () => { const a = AAM[tire(AAM_ORDRE)], d = tire([-1.5, -1, -0.5, 0.5, 1]); return { ac: a.id, pKa1: a.pKa1, pKa2: a.pKa2, pH: Math.round((a.pKa2 + d) * 10) / 10, C: tire([0.010, 0.020, 0.050, 0.10]), V: tire([100, 250, 500]), T: tire([20, 25, 30]) }; },
+    build: (p, q) => {
+      const a = AAM[p.ac];
+      const tokens = {
+        pKa1: tok(`${nb(p.pKa1, 2)}`, 'pKA1 du couple cation / zwitterion (groupe –COOH)', p.pKa1, ''),
+        pKa2: tok(`${nb(p.pKa2, 2)}`, 'pKA2 du couple zwitterion / anion (groupe –NH₃⁺)', p.pKa2, ''),
+        pH: tok(`${nb(p.pH, 1)}`, 'pH imposé à la solution', p.pH, ''),
+        C: tok(`${nb(p.C, 3)} mol/L`, 'Concentration totale en acide α-aminé', p.C, 'mol/L'),
+        V: tok(`${p.V} mL`, 'Volume de solution', p.V, 'mL'),
+        T: tok(`${p.T} °C`, 'Température de la solution', p.T, '°C'),
+      };
+      const debut = ['Pour la ', a.nom, ', les constantes d’acidité sont pKA1 = ', T('pKa1'), ' et pKA2 = ', T('pKa2'), '. La solution, de concentration totale ', T('C'), ' et de volume ', T('V'), ' à ', T('T'), ', a un pH imposé égal à ', T('pH'), '. '];
+      const r = 10 ** (p.pH - p.pKa2);
+      if (q === 0) return { tokens, derivees: ['[anion] / [zwitterion] = 10^(pH − pKA2)'], texte: [...debut, 'Quel est le rapport [anion] / [zwitterion] ?'],
+        utiles: ['pKa2', 'pH'], raisons: { pKa1: 'pKA1 est trop éloigné du pH : près de pKA2, on lit seulement le couple zwitterion / anion.', C: 'La concentration totale ne change pas le rapport des deux formes.', V: 'Le volume n’intervient pas dans un rapport de deux concentrations.', T: 'La température est constante : elle suppose seulement que pKA garde sa valeur.' },
+        cherche: { bonne: 'Le rapport [anion] / [zwitterion] (sans unité)', faux: ['La concentration de l’anion (en mol/L)', 'Le pourcentage de zwitterion (en %)', 'Le pH de la solution (sans unité)'] },
+        manque: null, solution: { txt: '[anion] / [zwitterion] = 10^(pH − pKA2)', val: r, u: '' } };
+      return { tokens, derivees: ['[anion] = C × r / (1 + r) avec r = 10^(pH − pKA2)'], texte: [...debut, 'Quelle est la concentration de l’anion ? (la forme cationique est négligeable à ce pH)'],
+        utiles: ['pKa2', 'pH', 'C'], raisons: { pKa1: 'pKA1 est trop éloigné du pH : le cation est négligeable, on ne lit que le couple 2.', V: 'Le volume ne change pas les concentrations : il n’intervient pas ici.', T: 'La température est constante : elle n’intervient pas dans le calcul.' },
+        cherche: { bonne: 'La concentration de l’anion (en mol/L)', faux: ['Le rapport [anion] / [zwitterion] (sans unité)', 'La concentration en ions oxonium (en mol/L)', 'Le pourcentage d’anion (en %)'] },
+        manque: null, solution: { txt: '[anion] = C × r / (1 + r), avec r = 10^(pH − pKA2)', val: p.C * r / (1 + r), u: 'mol/L' } };
     },
   },
   // ───────────────────────────── Pile (TG) : capacité à partir de la constitution initiale, durée de fonctionnement
