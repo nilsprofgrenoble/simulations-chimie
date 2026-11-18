@@ -54,17 +54,30 @@ export function DiagDist({ pH, pKa, AH, A, nomme = true }) {
     </svg>);
 }
 
+// ---------- erlenmeyer : le liquide est découpé par la paroi (il ne dépasse jamais) ----------
+//  Repère local : col centré en 0, haut du col en y = 0, fond en y = 112 ; niveau = hauteur de liquide (0 à 1).
+let _id = 0;
+function Erlen({ cx, y0, s = 1, coul, niveau = 0.4 }) {
+  const id = `erl${++_id}`, d = 'M-14 0 h28 v34 L46 104 a6 6 0 0 1 -6 8 h-80 a6 6 0 0 1 -6 -8 L-14 34 z', yL = 112 - 78 * niveau;
+  return (
+    <g transform={`translate(${cx} ${y0}) scale(${s})`}>
+      <clipPath id={id}><path d={d}/></clipPath>
+      <rect x="-60" y={yL} width="120" height="120" fill={coul} clipPath={`url(#${id})`}/>
+      <path d={d} fill="none" stroke={COL.txt} strokeWidth={2.5 / s} strokeLinejoin="round"/>
+      <line x1="-18" y1="0" x2="18" y2="0" stroke={COL.txt} strokeWidth={3 / s} strokeLinecap="round"/>
+    </g>);
+}
+
 // ---------- flacon d'indicateur coloré (scène) ----------
 export function Flacon({ ind, pH }) {
   const coul = M.couleurIndic(ind, pH);
   return (
-    <svg viewBox="0 0 400 130" style={{ ...stl, maxWidth: 480 }} role="img" aria-label={`Flacon d’indicateur coloré ${ind.nom} à pH ${f1(pH)} : teinte ${M.teinte(ind, pH) === 'acide' ? 'de la forme acide' : M.teinte(ind, pH) === 'base' ? 'de la forme basique' : 'mélangée'}.`}>
-      <path d="M150 14 h40 v34 l26 52 q8 18 -10 18 h-72 q-18 0 -10 -18 l26 -52 z" fill="white" stroke={COL.txt} strokeWidth="2"/>
-      <path d="M143 78 h54 l19 38 q4 8 -6 8 h-80 q-10 0 -6 -8 z" fill={coul} stroke="none"/>
-      <text x="236" y="52" fontSize="14" fontWeight="700" fill={COL.txt}>{ind.nom}</text>
-      <text x="236" y="76" fontSize="14" fill={COL.txt}>pH = {f1(pH)}</text>
-      <rect x="236" y="88" width="14" height="14" fill={ind.acide} stroke="#94a3b8"/><text x="256" y="100" fontSize="13" fill={COL.txt}>forme HIn</text>
-      <rect x="320" y="88" width="14" height="14" fill={ind.base} stroke="#94a3b8"/><text x="340" y="100" fontSize="13" fill={COL.txt}>forme In⁻</text>
+    <svg viewBox="0 0 400 140" style={{ ...stl, maxWidth: 480 }} role="img" aria-label={`Flacon d’indicateur coloré ${ind.nom} à pH ${f1(pH)} : teinte ${M.teinte(ind, pH) === 'acide' ? 'de la forme acide' : M.teinte(ind, pH) === 'base' ? 'de la forme basique' : 'mélangée'}.`}>
+      <Erlen cx={110} y0={10} s={1.05} coul={coul} niveau={0.45}/>
+      <text x="200" y="38" fontSize="19" fontWeight="700" fill={COL.txt}>{ind.nom}</text>
+      <text x="200" y="66" fontSize="18" fill={COL.txt}>pH = {f1(pH)}</text>
+      <rect x="200" y="82" width="16" height="16" fill={ind.acide} stroke="#94a3b8"/><text x="224" y="96" fontSize="16" fill={COL.txt}>forme HIn</text>
+      <rect x="200" y="106" width="16" height="16" fill={ind.base} stroke="#94a3b8"/><text x="224" y="120" fontSize="16" fill={COL.txt}>forme In⁻</text>
     </svg>);
 }
 
@@ -138,8 +151,7 @@ export function SvgIndicCarte() {
       <text x="150" y="20" fontSize="15" fontWeight="700" textAnchor="middle" fill={COL.txt}>Un indicateur est un couple coloré</text>
       {fl.map(([p, lab], i) => { const cx = 50 + i * 100;
         return <g key={lab}>
-          <path d={`M${cx - 10} 34 h20 v22 l22 44 q6 14 -8 14 h-48 q-14 0 -8 -14 l22 -44 z`} fill="white" stroke={COL.txt} strokeWidth="2"/>
-          <path d={`M${cx - 20} 82 h40 l14 28 q3 6 -5 6 h-58 q-8 0 -5 -6 z`} fill={M.couleurIndic(ind, p)}/>
+          <Erlen cx={cx} y0={34} s={0.8} coul={M.couleurIndic(ind, p)} niveau={0.5}/>
           <text x={cx} y="146" fontSize="14" fontWeight="700" textAnchor="middle" fill={COL.txt}>{lab}</text>
           <text x={cx} y="166" fontSize="14" textAnchor="middle" fill={COL.gris}>{noms[i]}</text></g>; })}
       <text x="150" y="190" fontSize="14" textAnchor="middle" fill={COL.txt}>virage : de pK<Sb t="A"/><Rs> − 1 à pK</Rs><Sb t="A"/><Rs> + 1</Rs></text>

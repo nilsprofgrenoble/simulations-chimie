@@ -83,11 +83,13 @@ function Grille({ ac, tau, compte }) {
       {cases}
       <rect x="266" y="14" width="16" height="16" rx="3" fill="#ea580c" stroke="#9a3412"/>
       <text x="290" y="27" fontSize="14" fill="#0f172a">a réagi</text>
-      <text x="290" y="45" fontSize="14" fill="#0f172a">avec l’eau</text>
-      <rect x="266" y="76" width="16" height="16" rx="3" fill="#dbeafe" stroke="#93c5fd"/>
-      <text x="290" y="89" fontSize="14" fill="#0f172a">est resté</text>
-      <text x="290" y="107" fontSize="14" fill="#0f172a">sous forme</text>
-      <text x="290" y="125" fontSize="14" fontWeight="700" fill={COL.bleu}>{a.AH}</text>
+      <text x="290" y="45" fontSize="14" fill="#0f172a">avec l’eau :</text>
+      <text x="290" y="63" fontSize="14" fill="#0f172a">forme</text>
+      <text x="290" y="81" fontSize="14" fontWeight="700" fill={COL.orange}>{a.A}</text>
+      <rect x="266" y="112" width="16" height="16" rx="3" fill="#dbeafe" stroke="#93c5fd"/>
+      <text x="290" y="125" fontSize="14" fill="#0f172a">est resté</text>
+      <text x="290" y="143" fontSize="14" fill="#0f172a">sous forme</text>
+      <text x="290" y="161" fontSize="14" fontWeight="700" fill={COL.bleu}>{a.AH}</text>
       <text x="10" y="266" fontSize="14" fontWeight={compte ? 700 : 400} fill={compte ? COL.orange : COL.gris}>
         {compte ? (n === 0 ? 'moins d’une molécule sur 100 a réagi' : `${n} molécule${n > 1 ? 's' : ''} sur 100 ${n > 1 ? 'ont' : 'a'} réagi`) : '100 molécules d’acide introduites'}</text>
     </svg>);

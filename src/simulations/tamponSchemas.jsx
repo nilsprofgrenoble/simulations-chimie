@@ -14,18 +14,27 @@ const nbf = (v, d) => Number(v).toFixed(d).replace('.', ',');
 const volTxt = V => (V >= 1000 ? `${nbf(V / 1000, V % 1000 === 0 ? 0 : 2)} L` : `${nbf(V, 0)} mL`);
 
 // ---------- scène : béchers avec pH-mètre ----------
+let _idb = 0;
 export function SceneBechers({ items }) {
   const un = items.length === 1, w = un ? 150 : 120, xs = un ? [200] : [105, 295];
   return (
     <svg viewBox="0 0 400 250" style={{ ...stl, maxWidth: 480 }} role="img"
       aria-label={'Béchers avec pH-mètre : ' + items.map(it => `${it.titre}, volume ${volTxt(it.V)}, pH ${nbf(it.pH, 2)}`).join(' ; ') + '.'}>
-      {items.map((it, i) => { const cx = xs[i], h = Math.max(10, Math.min(1, it.V / 300) * 100), yL = 176 - h;
+      {items.map((it, i) => { const cx = xs[i], x1 = cx - w / 2, x2 = cx + w / 2, h = Math.max(10, Math.min(1, it.V / 300) * 100), yL = 176 - h, id = `bec${++_idb}`;
+        const paroi = `M${x1} 66 V168 Q${x1} 176 ${x1 + 8} 176 H${x2 - 8} Q${x2} 176 ${x2} 168 V66`;
         return <g key={it.titre}>
-          <rect x={cx - 62} y="6" width="124" height="38" rx="6" fill={COL.txt}/>
-          <text x={cx} y="33" fontSize="24" fontWeight="700" textAnchor="middle" fill="white">pH {nbf(it.pH, 2)}</text>
-          <line x1={cx} y1="44" x2={cx} y2={Math.max(yL + 12, 120)} stroke={COL.gris} strokeWidth="3"/>
-          <rect x={cx - w / 2 + 3} y={yL} width={w - 6} height={176 - yL - 1} fill={it.couleur || '#bfdbfe'} opacity="0.85"/>
-          <path d={`M${cx - w / 2} 66 V176 H${cx + w / 2} V66`} fill="none" stroke={COL.txt} strokeWidth="2.5"/>
+          <clipPath id={id}><path d={paroi + ' Z'}/></clipPath>
+          <rect x={x1} y={yL} width={w} height={180 - yL} fill={it.couleur || '#bfdbfe'} clipPath={`url(#${id})`}/>
+          <line x1={x1} y1={yL} x2={x2} y2={yL} stroke={COL.txt} strokeWidth="1.5" opacity="0.35"/>
+          <path d={paroi} fill="none" stroke={COL.txt} strokeWidth="2.5" strokeLinejoin="round"/>
+          <line x1={x1 - 5} y1="66" x2={x1 + 5} y2="66" stroke={COL.txt} strokeWidth="2.5" strokeLinecap="round"/><line x1={x2 - 5} y1="66" x2={x2 + 5} y2="66" stroke={COL.txt} strokeWidth="2.5" strokeLinecap="round"/>
+          {/* électrode de pH-mètre : câble vers l'afficheur, tête, tube de verre plongé dans la solution, bulle au bout */}
+          <rect x={cx - 62} y="4" width="124" height="38" rx="6" fill={COL.txt}/>
+          <text x={cx} y="31" fontSize="24" fontWeight="700" textAnchor="middle" fill="white">pH {nbf(it.pH, 2)}</text>
+          <line x1={cx} y1="42" x2={cx} y2="56" stroke={COL.txt} strokeWidth="4"/>
+          <rect x={cx - 10} y="54" width="20" height="16" rx="3" fill="#475569"/>
+          <rect x={cx - 5} y="70" width="10" height="82" fill="#e2e8f0" stroke={COL.txt} strokeWidth="2"/>
+          <ellipse cx={cx} cy="158" rx="8" ry="9" fill="#f1f5f9" stroke={COL.txt} strokeWidth="2"/>
           <text x={cx} y="200" fontSize="19" fontWeight="700" textAnchor="middle" fill={COL.txt}>{it.titre}</text>
           <text x={cx} y="228" fontSize="17" textAnchor="middle" fill={COL.gris}>{it.sous || volTxt(it.V)}</text>
         </g>; })}
