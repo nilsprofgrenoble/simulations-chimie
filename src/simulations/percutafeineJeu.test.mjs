@@ -77,7 +77,6 @@ const expert = {
     if (e.scene === 'hplc_panne') return ch[0];
     if (e.scene === 'cpg_ei') return ch.find(c => c.id === 'butanol');
     if (e.scene === 'cpg_ref') return ch[0];
-    if (e.scene === 'cpg_comp') return ch[0];
     if (e.scene.startsWith('eq_') || e.scene === 'point_dubreuil' || e.scene === 'secu') return ch.find(c => c.tag === 'ok');
     if (e.scene === 'cause') return ch.find(c => c.f.causeJuste);
     if (e.scene === 'avis') return ch[0];
@@ -224,10 +223,6 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   const bon = err({ uv_ajouts_plan: PLAN_EXPERT.uv_ajouts_plan }, aj), sature = err({ uv_ajouts_plan: { m: 1, vp: 1000, dv: 50, n: 5 } }, aj), petit = err({ uv_ajouts_plan: { m: 1, vp: 20, dv: 20, n: 4 } }, aj);
   console.log(`ajouts dosés : erreur moyenne ${bon.toFixed(1)} % (bien conçu), ${sature.toFixed(1)} % (solution trop concentrée), ${petit.toFixed(1)} % (volumes minuscules)`);
   assert(bon < 4 && sature > 3 * bon && petit > 2 * bon, 'la conception des fioles change la qualité du résultat');
-  const cg = Object.assign(x => J.donneesCpg(x).pctGamme, { ref: t => t.eth });
-  const cb = err({ cpg_gamme_plan: PLAN_EXPERT.cpg_gamme_plan }, cg), cm = err({ cpg_gamme_plan: { vmin: 1000, vmax: 3000, n: 4, rep: 1 } }, cg);
-  console.log(`gamme CPG : ${cb.toFixed(1)} % (encadre l'échantillon), ${cm.toFixed(1)} % (gamme trop haute)`);
-  assert(cb < 5 && cm > 2 * cb, 'gamme CPG');
   console.log('plans de préparation : OK'); }
 // 10. CPG : le protocole du sujet donne le propan-1-ol (coélué) ; l'élève change d'étalon interne ou exploite quand même
 { const e0 = { ...J.etatInitial(11), scene: 'cpg_ref', f: { ...J.etatInitial(11).f, ei: 'propanol', voieEth: 'cpg' } };
@@ -287,7 +282,7 @@ console.log('balance, sécurité, point d\'étape, film de la journée : OK');
   const r = J.choisir(e, J.choixDe(e)[0]); assert(r.scene === 'hub' && J.resultatsVus(r).includes('rheoF') && J.visuelsDe({ ...r, scene: 'rheoF' }).length, 'relisible après la conclusion');
   console.log('résultats relisibles : OK'); }
 // 17. Conseils graduels des collègues sur les stations de conception
-{ for (const id of ['titr_carb_plan', 'uv_ajouts_plan', 'uv_ext_plan', 'hplc_gamme_plan', 'cpg_gamme_plan']) {
+{ for (const id of ['titr_carb_plan', 'uv_ajouts_plan', 'uv_ext_plan', 'hplc_gamme_plan']) {
     let e = { ...J.etatInitial(41), scene: id, t: 100 }; const sc = J.SCENES[id]; assert(sc.aide && sc.aide.textes.length === 3, `aide prévue pour ${id}`);
     const t0 = e.t; for (let k = 1; k <= 3; k++) { e = J.demanderAide(e); assert(J.niveauAide(e) === k && J.textesAide(e).length === k, `niveau ${k}`); }
     assert(e.t === t0 + 11 && e.f.aidesPlan === 3, 'coût de 3 + 3 + 5 min'); assert(J.demanderAide(e) === e, 'pas de quatrième niveau');

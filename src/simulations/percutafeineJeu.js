@@ -1204,49 +1204,6 @@ add('cpg_eth96', {
   calcul: { q: 'Quelle masse d\'éthanol à 96 % contiennent 100 g de gel ?', unite: 'g', vrai: e => donneesCpg(e).pctSimple / 0.96, tol: 0.03, cs: 1, indice: 'm(éthanol à 96 %) = m(éthanol pur) / 0,96.',
     ok: { vers: 'hub', duree: 3, run: n => marquer(n, 'ethQC'), f: { ethMes: true }, note: 'Éthanol : résultat obtenu par étalon interne (éthanol pur et équivalent en éthanol à 96 %).' }, ko: { vers: 'hub', duree: 0, run: n => marquer(n, 'ethQC'), f: { ethMes: true }, note: 'Éthanol : résultat obtenu par étalon interne.' } },
 });
-add('cpg_gamme_plan', {
-  lieu: 'Salle de chromatographie', pnj: 'moi', station: 'plan', titre: 'Éthanol : concevoir ma gamme',
-  texte: e => `Pour une méthode plus fiable que le point unique, tu prépares une gamme de fioles de 20 mL contenant chacune 500 µL de ${eiNom(e)} et un volume V d'éthanol, et tu traces r = %A(éthanol) / %A(étalon interne) en fonction de V. Ton échantillon contient environ ${nf(donneesCpg(e).mP * ETH_PUR_COM / 100 / RHO_ETOH * 1000, 0)} µL d'éthanol si le gel est conforme. À toi de fixer la gamme.`,
-  hyp: "Hypothèse de travail : r est proportionnelle au volume d'éthanol sur la plage choisie.",
-  aide: { pnj: 'ines', textes: [
-    () => '« Ton échantillon contient environ la même quantité d\'éthanol que la référence. Ta gamme doit l\'encadrer, et mieux vaut prévoir plusieurs fioles par niveau pour voir la dispersion des injections. »',
-    () => '« Prends des volumes allant d\'environ 0,4 à 2 fois la quantité attendue, avec cinq niveaux et deux fioles par niveau. La micropipette de 100 à 1 000 µL est plus juste que celle de 20 à 200 µL pour ces volumes. »',
-    () => '« Je ferais : 5 niveaux de 100 à 600 µL d\'éthanol, deux fioles par niveau. »'],
-    valeurs: () => ({ vmin: 100, vmax: 600, n: 5, rep: 2 }) },
-  plan: { infos: ['Micropipettes disponibles : 20 à 200 µL, 100 à 1 000 µL, 1 à 5 mL. Une injection dure environ 3 minutes ; vingt fioles de 20 mL au plus.', 'Éthanol absolu pour la gamme ; étalon interne : 500 µL de propan-1-ol ou de butan-1-ol par fiole, selon ton choix.'], vers: 'cpg_gamme', duree: v => 6 + 2 * v.n * v.rep, note: v => `CPG, gamme : ${v.n} niveaux de ${v.vmin} à ${v.vmax} µL d'éthanol, ${v.rep} fiole(s) par niveau.`,
-    champs: [{ id: 'vmin', l: 'Plus petit volume d\'éthanol', u: 'µL', min: 20, max: 5000 }, { id: 'vmax', l: 'Plus grand volume d\'éthanol', u: 'µL', min: 20, max: 5000 }, { id: 'n', l: 'Nombre de niveaux', u: '', min: 3, max: 8, entier: true }, { id: 'rep', l: 'Fioles par niveau', u: '', min: 1, max: 3, entier: true }],
-    controle: v => v.vmax <= v.vmin ? 'Le plus grand volume doit dépasser le plus petit.' : v.n * v.rep > 20 ? 'Vingt fioles de 20 mL au plus.' : null,
-    apercu: v => ({ cols: ['Niveau', 'Éthanol (µL)', 'Fioles'], lignes: niveaux(v.vmin, v.vmax, v.n).map((x, i) => [String(i + 1), String(x), String(v.rep)]) }) },
-});
-add('cpg_gamme', {
-  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Éthanol : ta gamme',
-  texte: e => { const d = donneesCpg(e), pg = e.f.plans?.cpg_gamme_plan || { n: 5, rep: 2, vmin: 100, vmax: 1000 }; return `Tu as préparé ${pg.n * pg.rep} fioles (${pg.n} niveaux de ${pg.vmin} à ${pg.vmax} µL d'éthanol, ${pg.rep} par niveau) avec 500 µL de ${eiNom(e)}, et tracé r = %A(EtOH) / %A(EI) en fonction de V(EtOH). Régression : r = a·V + b avec a = ${nf(d.a, 6)} µL⁻¹, b = ${nf(d.b, 4)}, R² = ${nf(d.r2, 4)}.\nPour l'échantillon : r = ${nf(d.rE, 4)}.`; },
-  formule: 'gamme',
-  hyp: "Hypothèses : relation linéaire sur la plage choisie ; dispersion identique à tous les niveaux (homoscédasticité) ; résidus aléatoires, sans tendance. Vérifie le graphique des résidus.",
-  visuels: e => { const d = donneesCpg(e); return [{ type: 'droite', titre: 'Gamme CPG : r = f(V éthanol)', xl: 'V éthanol (µL)', yl: 'r', pts: d.gamme.map(p => [p.v, p.r]), a: d.a, b: d.b, residus: d.residus, ech: d.a > 0 ? [(d.rE - d.b) / d.a, d.rE] : null }]; },
-  choix: [{ t: 'Calculer le pourcentage d\'éthanol', duree: 0, vers: 'cpg_gamme_calc' }, { t: 'Refaire ma gamme autrement', d: 'Nouvelle préparation, nouvelles injections.', duree: 0, vers: 'cpg_gamme_plan' }],
-});
-add('cpg_gamme_calc', {
-  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Éthanol : calcul par la gamme',
-  texte: e => { const d = donneesCpg(e); return `Droite r = a·V + b avec a = ${nf(d.a, 6)} µL⁻¹ et b = ${nf(d.b, 4)}. Échantillon : r = ${nf(d.rE, 4)} pour m' = ${nf(d.mP, 3)} g de gel.`; },
-  formule: 'gamme',
-  aide: { pnj: 'ines', textes: [
-    () => '« Sur ta gamme, que porte-t-on en abscisse et en ordonnée ? Que cherches-tu à partir du rapport de ton échantillon ? »',
-    () => '« Inverse la droite : V = (r − b) / a, volume d\'éthanol de l\'échantillon, en µL. »',
-    () => '« m = V × 0,789 × 10⁻³ g. Divise par m\' pour avoir le pourcentage massique. »'] },
-  calcul: { q: 'Quel est le pourcentage massique d\'éthanol dans le gel (méthode de la gamme) ?', unite: '%', vrai: e => donneesCpg(e).pctGamme, tol: 0.03, cs: 1, indice: 'V_EtOH = (r_éch − b) / a, en µL. Puis m_EtOH = V × 0,789 g/mL = V × 0,789 × 10⁻³ g, et divise par m\'.',
-    ok: { vers: 'cpg_comp', duree: 5 }, ko: { vers: 'cpg_comp', duree: 0 } },
-});
-add('cpg_comp', {
-  lieu: 'Salle de chromatographie', pnj: 'ines', titre: 'Les deux méthodes concordent-elles ?',
-  texte: e => { const d = donneesCpg(e); return `Éthanol pur, étalon interne à un point : ${nf(d.pctSimple, 1)} %. Gamme : ${nf(d.pctGamme, 1)} %. Écart : ${nf(Math.abs(d.pctSimple - d.pctGamme), 1)} points.\nQuel commentaire est le plus juste ?`; },
-  choix: [
-    { t: 'L\'écart est de l\'ordre de la dispersion d\'une injection (≈ 4 %) ; la gamme, qui s\'appuie sur plusieurs points, est plus fiable : je retiens son résultat', duree: 5, vers: 'hub', run: n => marquer(n, 'ethQC'), f: { ethMes: true, ethVal: 'gamme' }, note: 'Éthanol : résultat de la gamme retenu, écart avec le point unique commenté.' },
-    { t: 'Les deux méthodes sont équivalentes : je fais la moyenne', duree: 5, vers: 'hub', run: n => marquer(n, 'ethQC'), f: { ethMes: true, errComp: true, ethVal: 'moyenne' }, note: 'Éthanol : moyenne des deux méthodes, sans discussion de leur fiabilité.' },
-    { t: 'L\'écart prouve que le gel perd de l\'éthanol à l\'air', duree: 5, vers: 'hub', run: n => marquer(n, 'ethQC'), f: { ethMes: true, errComp: true }, note: 'Éthanol : écart attribué à une perte, sans preuve.' },
-  ],
-});
-
 // ───────────── Titrage des acides du Synthalen K (matière première) ─────────────
 // Volumes de soude versés : pas grossier, pas fin dans la zone [vdeb ; vfz] autour de l'équivalence, puis de nouveau le pas grossier.
 export function volumesTitr(P) {
