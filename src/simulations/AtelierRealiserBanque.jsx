@@ -931,6 +931,33 @@ function genPredominanceTG() {
     retenir: ['[A⁻] / [AH] = 10^(pH − pK_A) : pH < pK_A ⇒ AH domine ; pH > pK_A ⇒ A⁻ domine ; pH = pK_A ⇒ 50 % de chaque forme.', 'Pourcentage de A⁻ = 100 × r / (1 + r) avec r = [A⁻] / [AH] ; [AH] = C / (1 + r) pour une concentration totale C.', 'Pour une proportion p de A⁻ : pH = pK_A + log(p / (1 − p)).'] };
 }
 
+// ───────────── Solution tampon (TG) : quantités avant/après un ajout d'acide, pH du tampon ─────────────
+function genTamponTG() {
+  const pKa = tire([4.76, 9.20]), n0 = tire([10, 15, 20, 25]), Ca = tire([0.10, 0.20]), Va = tire([5, 10, 20]), nH = Ca * Va;
+  const q1 = { id: 't0', type: 'num', q: <>Un tampon contient <b>{nb(n0, 3)}{NB}mmol</b> d’acide faible AH et <b>{nb(n0, 3)}{NB}mmol</b> de base conjuguée A⁻ (pK<sub>A</sub> = {nb(pKa, 3)}). On y verse <b>{nb(Va, 3)}{NB}mL</b> d’acide chlorhydrique à <b>{nb(Ca, 2)}{NB}mol/L</b>. Calculez la quantité d’ions H₃O⁺ versée (en mmol, 2 chiffres significatifs).</>, unite: 'mmol', vrai: nH, tolRel: 0.02, csMin: 2,
+    aide: 'n(H₃O⁺) = C × V ; avec C en mol/L et V en mL, le résultat est en mmol.',
+    pieges: [[Ca * Va / 1000, 'Vous avez converti en mol : avec V en mL et C en mol/L, le produit C × V est directement en mmol.'], [Va / Ca, 'Il faut multiplier la concentration par le volume, pas les diviser.'], [Ca + Va, 'Ne les additionnez pas : n = C × V.']],
+    expl: <>n(H₃O⁺) = {nb(Ca, 2)}{NB}mol/L × {nb(Va, 3)}{NB}mL = <b>{nb(nH, 3)}{NB}mmol</b>.</> };
+  const nA = n0 - nH;
+  const q2 = { id: 't1', type: 'num', q: <>Les ions H₃O⁺ versés ({nb(nH, 3)}{NB}mmol) réagissent de façon quasi totale avec la base du tampon : A⁻ + H₃O⁺ → AH + H₂O. Quelle quantité de A⁻ reste-t-il (en mmol, 3 chiffres significatifs) ?</>, unite: 'mmol', vrai: nA, tolRel: 0.006, csMin: 3,
+    aide: 'Chaque mole de H₃O⁺ consomme une mole de A⁻ : n(A⁻) final = n(A⁻) initial − n(H₃O⁺) versé.',
+    pieges: [[n0 + nH, 'C’est la quantité de AH après la réaction ; A⁻ est consommé, sa quantité diminue.'], [n0, 'Vous n’avez pas tenu compte de la réaction : A⁻ est consommé par les ions H₃O⁺.'], [nH, 'C’est la quantité d’ions H₃O⁺ versée, pas celle de A⁻ qui reste.']],
+    expl: <>n(A⁻) = {nb(n0, 3)} − {nb(nH, 3)} = <b>{nb(nA, 3)}{NB}mmol</b>.</> };
+  const nAH = n0 + nH;
+  const q3 = { id: 't2', type: 'num', q: <>Toujours pour ce tampon, quelle quantité d’acide AH contient-il après l’ajout (en mmol, 3 chiffres significatifs) ?</>, unite: 'mmol', vrai: nAH, tolRel: 0.006, csMin: 3,
+    aide: 'AH se forme à raison d’une mole par mole de H₃O⁺ consommé : n(AH) final = n(AH) initial + n(H₃O⁺) versé.',
+    pieges: [[n0 - nH, 'C’est la quantité de A⁻ qui reste ; AH, lui, est formé par la réaction.'], [n0, 'Vous n’avez pas tenu compte de la réaction : AH se forme à partir de A⁻.'], [nH, 'C’est seulement la quantité formée ; ajoutez-la à la quantité initiale de AH.']],
+    expl: <>n(AH) = {nb(n0, 3)} + {nb(nH, 3)} = <b>{nb(nAH, 3)}{NB}mmol</b>.</> };
+  const pHf = pKa + Math.log10(nA / nAH);
+  const q4 = { id: 't3', type: 'num', q: <>Le rapport des quantités n(A⁻) / n(AH) est égal au rapport des concentrations, et pH = pK<sub>A</sub> + log ([A⁻] / [AH]). Calculez le pH du tampon après l’ajout (2 décimales).</>, unite: '', vrai: pHf, tolRel: 0.004, csMin: 3,
+    aide: 'Calculez le rapport n(A⁻) / n(AH) après l’ajout (les deux quantités des questions précédentes), puis son logarithme décimal, à ajouter au pK_A.',
+    pieges: [[pKa, 'C’est le pH avant l’ajout (quantités égales) ; après l’ajout, le rapport n’est plus égal à 1.'], [pKa - Math.log10(nA / nAH), 'Le signe du logarithme est inversé : A⁻ a diminué, donc le pH est inférieur au pK_A.'], [pKa + Math.log10(nAH / nA), 'Le rapport est inversé : A⁻ est au numérateur.'], [Math.log10(nA / nAH), 'Il faut ajouter ce logarithme au pK_A, pas le donner seul.']],
+    expl: <>n(A⁻) / n(AH) = {nb(nA, 3)} / {nb(nAH, 3)} = {nb(nA / nAH, 4)} ; pH = {nb(pKa, 3)} + log({nb(nA / nAH, 4)}) = <b>{nb(pHf, 3)}</b> : le pH n’a baissé que de {nb(pKa - pHf, 2)} unité.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([y]) => isFinite(y) && Math.abs(y - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'Solution tampon : quantité d’acide versée, bilan de matière après la réaction avec la base du tampon, puis pH du tampon.', questions: [q1, q2, q3, q4],
+    retenir: ['n(H₃O⁺) versé = C × V ; il est consommé par la base A⁻ du tampon : n(A⁻) diminue et n(AH) augmente de la même quantité.', 'Le rapport n(A⁻) / n(AH) change peu si l’ajout est modéré, donc le pH aussi : pH = pK_A + log (n(A⁻) / n(AH)).', 'Un tampon est épuisé quand toute la base A⁻ (ajout d’acide) ou tout l’acide AH (ajout de base) est consommé.'] };
+}
+
 // ──────────────────────── Familles « Plans d'expériences » (BTS) ────────────────────────
 function genPlanMelange() {
   const comp = ['cire de candelilla (A)', 'huile de ricin (B)', 'cire d’abeille (C)'];
@@ -1012,6 +1039,7 @@ export const FAMILLES = [
   { id: 'equ-calcul', groupe: 'Formules', titre: 'Équilibre chimique : Qr, K, taux d’avancement final et ajout d’un réactif (TG)', gen: genEquilibreTG, domaine: 'Équilibre chimique : Qr, K et taux d’avancement' },
   { id: 'fab-calcul', groupe: 'Formules', titre: 'Force des acides : pH, constante d’acidité, ions hydroxyde et équation du second degré (TG)', gen: genForceAcidesTG, domaine: 'Force des acides et des bases : Ka et tampon' },
   { id: 'pdi-calcul', groupe: 'Formules', titre: 'Couples acide-base : rapport des formes, pourcentage, concentration et pH (TG)', gen: genPredominanceTG, domaine: 'Force des acides et des bases : Ka et tampon' },
+  { id: 'tmp-calcul', groupe: 'Formules', titre: 'Solution tampon : ajout d’acide, bilan de matière et pH du tampon (TG)', gen: genTamponTG, domaine: 'Force des acides et des bases : Ka et tampon' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },
   { id: 'simple', groupe: 'Unités', titre: 'Changement d’unité simple', gen: genSimple },
   { id: 'prefixes', groupe: 'Unités', titre: 'Préfixes et puissances de 10', gen: genPrefixes },
