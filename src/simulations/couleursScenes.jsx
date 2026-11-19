@@ -1,10 +1,44 @@
 // Scènes SVG de la simulation 160 « Couleurs » : disques de lumière, loupe sur un écran, œil, éclairage d'un objet, barres des trois bandes.
 // Les couleurs affichées viennent du modèle (couleursModele.js) : les dessins ne peuvent pas le contredire.
 // Illustration : les couleurs de l'écran du simulateur ne sont qu'une représentation approchée des couleurs réelles.
+import { useId } from "react";
 import { rgb, additif, traverse, nomCouleur, COULEURS } from "./couleursModele";
 
 import { C, stl, texteSur } from "./couleursStyle";
 const BLANC = [1, 1, 1];
+
+// ───────────── Éléments de dessin communs (soignés : pointes fines, faisceaux dégradés, œil en amande) ─────────────
+//  Rayon : trait fin à bouts arrondis avec une petite pointe pleine de la même couleur (taille fixe, indépendante de l'épaisseur du trait).
+export function Rayon({ x1, y1, x2, y2, couleur, epaisseur = 2, pointe = 8 }) {
+  const a = Math.atan2(y2 - y1, x2 - x1), c = Math.cos(a), sn = Math.sin(a);
+  const bx = x2 - c * pointe, by = y2 - sn * pointe;
+  return (
+    <g>
+      <line x1={x1} y1={y1} x2={bx + c * 1} y2={by + sn * 1} stroke={couleur} strokeWidth={epaisseur} strokeLinecap="round"/>
+      <path d={`M ${x2} ${y2} L ${bx - sn * pointe * 0.42} ${by + c * pointe * 0.42} L ${bx + sn * pointe * 0.42} ${by - c * pointe * 0.42} Z`} fill={couleur}/>
+    </g>);
+}
+//  Faisceau : trapèze de lumière qui s'estompe de la source vers l'objet (dégradé), bords fins.
+function Faisceau({ id, points, couleur, opaciteDebut = 0.6, opaciteFin = 0.14, x1, x2 }) {
+  const gid = `fz-${id}-${useId().replace(/:/g, '')}`;
+  return (
+    <g>
+      <defs><linearGradient id={gid} gradientUnits="userSpaceOnUse" x1={x1} y1="0" x2={x2} y2="0">
+        <stop offset="0" stopColor={couleur} stopOpacity={opaciteDebut}/><stop offset="1" stopColor={couleur} stopOpacity={opaciteFin}/>
+      </linearGradient></defs>
+      <polygon points={points} fill={`url(#${gid})`} stroke={couleur} strokeOpacity="0.35" strokeWidth="1" strokeLinejoin="round"/>
+    </g>);
+}
+//  Œil vu de profil simplifié : amande, iris, pupille, reflet ; regarde vers la gauche (vers l'objet).
+export function OeilMini({ cx, cy, fond = '#f8fafc', contour = '#94a3b8' }) {
+  return (
+    <g>
+      <path d={`M ${cx - 26} ${cy} Q ${cx} ${cy - 19} ${cx + 26} ${cy} Q ${cx} ${cy + 19} ${cx - 26} ${cy} Z`} fill={fond} stroke={contour} strokeWidth="1.5" strokeLinejoin="round"/>
+      <circle cx={cx - 5} cy={cy} r="9" fill="#475569"/>
+      <circle cx={cx - 5} cy={cy} r="4.5" fill="#0f172a"/>
+      <circle cx={cx - 8} cy={cy - 3} r="1.8" fill="white"/>
+    </g>);
+}
 
 // ───────────── Disques de lumière qui se superposent ─────────────
 //  mode 'add'  : lampes sur écran dans le noir, les intensités s'ajoutent ;
@@ -84,35 +118,48 @@ export function ScenePixels({ cible = COULEURS.jaune, revele = false }) {
             {revele && <text x={x + 13} y="154" textAnchor="middle" fontSize="19" fill={allume ? '#fde68a' : '#94a3b8'}>{allume ? '●' : '○'}</text>}
           </g>);
       }))}
-      <text x="210" y="182" textAnchor="middle" fontSize="16" fill={C.texteNuit}>R rouge, V vert, B bleu : 1 pixel = 3 sous-pixels{revele ? ' (● allumé, ○ éteint)' : ''}</text>
-      <text x="22" y="226" fontSize="18" fontWeight="700" fill={C.texteNuit}>Vu de loin :</text>
-      <rect x="150" y="204" width="130" height="34" rx="5" fill={revele ? rgb(cible) : '#64748b'} stroke="#94a3b8"/>
-      <text x="215" y="228" textAnchor="middle" fontSize="18" fontWeight="800" fill={revele ? texteSur(cible) : 'white'}>{revele ? nomCouleur(cible) : '?'}</text>
+      <text x="210" y="176" textAnchor="middle" fontSize="16" fill={C.texteNuit}>R rouge, V vert, B bleu : 1 pixel = 3 sous-pixels</text>
+      {revele && <text x="210" y="196" textAnchor="middle" fontSize="16" fill={C.texteNuit}>● allumé, ○ éteint</text>}
+      <text x="22" y="232" fontSize="18" fontWeight="700" fill={C.texteNuit}>Vu de loin :</text>
+      <rect x="150" y="210" width="130" height="34" rx="5" fill={revele ? rgb(cible) : '#64748b'} stroke="#94a3b8"/>
+      <text x="215" y="234" textAnchor="middle" fontSize="18" fontWeight="800" fill={revele ? texteSur(cible) : 'white'}>{revele ? nomCouleur(cible) : '?'}</text>
     </svg>);
 }
 
 // ───────────── L'œil et les cellules de la rétine (schéma simplifié) ─────────────
 export function SceneOeil() {
+  const GRIS = C.gris, ENCRE = C.encre;
+  const cone = (x, c) => <path key={c} d={`M ${x} 58 Q ${x + 10} 90 ${x + 10} 104 Q ${x} 110 ${x - 10} 104 Q ${x - 10} 90 ${x} 58 Z`} fill={c} stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>;
   return (
-    <svg viewBox="0 0 420 268" style={{ ...stl, background: 'white', border: `1px solid ${C.clair}` }} role="img"
-      aria-label="Schéma simplifié de l’œil : la lumière entre par la cornée et le cristallin, et arrive sur la rétine. Un agrandissement de la rétine montre trois types de cônes, sensibles au rouge, au vert et au bleu, et deux bâtonnets.">
-      <ellipse cx="120" cy="100" rx="80" ry="58" fill="#fffbeb" stroke={C.gris} strokeWidth="2.5"/>
-      <path d="M 54 66 Q 20 100 54 134" fill="#e0f2fe" stroke={C.gris} strokeWidth="2.5"/>
-      <ellipse cx="78" cy="100" rx="8" ry="24" fill="#bae6fd" stroke={C.gris} strokeWidth="1.5"/>
-      <path d="M 170 53 A 80 58 0 0 1 170 147" fill="none" stroke="#f472b6" strokeWidth="6"/>
-      {[84, 100, 116].map(y => <line key={y} x1="2" y1={y} x2="66" y2={y} stroke="#f59e0b" strokeWidth="2"/>)}
-      {[[84, 160, 91], [100, 188, 100], [116, 160, 109]].map(([y, x2, y2]) => <line key={y} x1="86" y1={y === 100 ? 100 : y === 84 ? 92 : 108} x2={x2} y2={y2} stroke="#f59e0b" strokeWidth="2" strokeDasharray="4 3"/>)}
-      <text x="100" y="18" textAnchor="middle" fontSize="18" fontWeight="700" fill={C.encre}>œil</text>
-      <line x1="200" y1="100" x2="258" y2="100" stroke={C.gris} strokeDasharray="4 4"/>
-      <circle cx="330" cy="100" r="76" fill="#fdf2f8" stroke="#db2777" strokeWidth="2"/>
-      {[[296, '#dc2626'], [326, '#16a34a'], [356, '#2563eb']].map(([x, c]) => <path key={c} d={`M ${x} 56 L ${x - 11} 100 L ${x + 11} 100 Z`} fill={c}/>)}
-      {[311, 341].map(x => <rect key={x} x={x - 5} y="108" width="10" height="46" rx="5" fill="#64748b"/>)}
-      <text x="330" y="190" textAnchor="middle" fontSize="17" fill={C.gris}>rétine agrandie</text>
-      <path d="M 14 214 L 30 214 L 22 198 Z" fill="#dc2626"/><path d="M 34 214 L 50 214 L 42 198 Z" fill="#16a34a"/><path d="M 54 214 L 70 214 L 62 198 Z" fill="#2563eb"/>
-      <text x="80" y="210" fontSize="18" fontWeight="700" fill={C.encre}>cônes : 3 types, la couleur</text>
-      <text x="80" y="230" fontSize="17" fill={C.gris}>sensibles au rouge, vert, bleu</text>
-      <rect x="14" y="240" width="10" height="20" rx="5" fill="#64748b"/>
-      <text x="80" y="256" fontSize="18" fontWeight="700" fill={C.encre}>bâtonnets : sans couleur</text>
+    <svg viewBox="0 0 420 300" style={{ ...stl, background: 'white', border: `1px solid ${C.clair}` }} role="img"
+      aria-label="Schéma simplifié de l’œil : la lumière entre par la cornée, traverse le cristallin et arrive sur la rétine. Un agrandissement de la rétine montre trois types de cônes, sensibles au rouge, au vert et au bleu, et deux bâtonnets.">
+      {/* globe, cornée, rétine */}
+      <ellipse cx="118" cy="112" rx="80" ry="60" fill="#fffbeb" stroke={GRIS} strokeWidth="2"/>
+      <path d="M 47 84 Q 22 112 47 140 Z" fill="#e0f2fe" stroke={GRIS} strokeWidth="2" strokeLinejoin="round"/>
+      <path d="M 176 71 A 80 60 0 0 1 176 153" fill="none" stroke="#ec4899" strokeWidth="5" strokeLinecap="round"/>
+      {/* iris et cristallin */}
+      <path d="M 92 58 V 90 M 92 134 V 166" stroke={GRIS} strokeWidth="3" strokeLinecap="round"/>
+      <path d="M 92 90 Q 80 112 92 134 Q 104 112 92 90 Z" fill="#bae6fd" stroke={GRIS} strokeWidth="1.5" strokeLinejoin="round"/>
+      {/* rayons : parallèles à l'entrée, convergents vers la rétine */}
+      {[[92, 98], [112, 112], [132, 126]].map(([y, yl]) => (
+        <g key={y}>
+          <path d={`M 8 ${y} L 90 ${yl} L 196 112`} stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+          <path d={`M 48 ${y + (yl - y) * 0.5 - 4.5} L 58 ${y + (yl - y) * 0.7} L 48 ${y + (yl - y) * 0.5 + 4.5} Z`} fill="#f59e0b"/>
+        </g>))}
+      <text x="118" y="34" textAnchor="middle" fontSize="16" fontWeight="700" fill={ENCRE}>œil</text>
+      {/* loupe vers l'agrandissement */}
+      <path d="M 178 72 L 276 74 M 178 152 L 276 150" stroke="#cbd5e1" strokeWidth="1.5" strokeDasharray="5 4" strokeLinecap="round" fill="none"/>
+      <circle cx="330" cy="112" r="66" fill="#fdf2f8" stroke="#db2777" strokeWidth="2"/>
+      {[[298, '#dc2626'], [330, '#16a34a'], [362, '#2563eb']].map(([x, c]) => cone(x, c))}
+      {[314, 346].map(x => <rect key={x} x={x - 5} y="122" width="10" height="38" rx="5" fill="#64748b"/>)}
+      <text x="330" y="202" textAnchor="middle" fontSize="16" fill={GRIS}>rétine agrandie</text>
+      {/* légende */}
+      <line x1="14" y1="222" x2="406" y2="222" stroke={C.clair} strokeWidth="1.5"/>
+      {[['#dc2626', 14], ['#16a34a', 36], ['#2563eb', 58]].map(([c, x]) => <path key={c} d={`M ${x} 258 L ${x + 16} 258 L ${x + 8} 238 Z`} fill={c} strokeLinejoin="round"/>)}
+      <text x="88" y="250" fontSize="17" fontWeight="700" fill={ENCRE}>cônes : 3 types, la couleur</text>
+      <text x="88" y="268" fontSize="15" fill={GRIS}>sensibles au rouge, au vert, au bleu</text>
+      <rect x="14" y="276" width="10" height="18" rx="5" fill="#64748b"/>
+      <text x="88" y="290" fontSize="17" fontWeight="700" fill={ENCRE}>bâtonnets : sans couleur</text>
     </svg>);
 }
 
@@ -134,7 +181,6 @@ function Forme({ forme, cx, cy, fill }) {
 export function SceneObjet({ lum, prop, propBlanc, forme = 'rond', transparent = false, revele = true, nom, nomLampe = 'lampe' }) {
   const renv = traverse(lum, prop), allumee = lum.some(x => x > 0.05);
   const couleurObjet = revele ? rgb(renv) : rgb(propBlanc || prop);
-  const faisceau = c => (c.some(x => x > 0.05) ? rgb(c) : 'none');
   const cx = 232, cy = 112, eyeX = 372;
   return (
     <svg viewBox="0 0 420 220" style={{ ...stl, background: C.nuit }} role="img"
@@ -142,28 +188,26 @@ export function SceneObjet({ lum, prop, propBlanc, forme = 'rond', transparent =
       <text x="210" y="18" textAnchor="middle" fontSize="17" fill="#94a3b8">pièce sans autre lumière</text>
       <rect x="10" y="94" width="52" height="38" rx="5" fill="#475569" stroke="#94a3b8"/>
       <ellipse cx="62" cy="113" rx="6" ry="17" fill={allumee ? rgb(lum) : '#1e293b'} stroke="#94a3b8"/>
-      {allumee && <polygon points={`64,100 64,126 ${transparent ? 200 : 198},166 ${transparent ? 200 : 198},60`} fill={faisceau(lum)} opacity="0.55"/>}
+      {allumee && <Faisceau id={`obj${transparent ? 't' : 'o'}`} points={`64,102 64,124 ${transparent ? 198 : 196},158 ${transparent ? 198 : 196},68`} couleur={rgb(lum)} x1={64} x2={transparent ? 198 : 196}/>}
       <text x="8" y="206" fontSize="18" fontWeight="700" fill={C.texteNuit}>{nomLampe}</text>
       {transparent ? (
         <g>
           <rect x="198" y="60" width="26" height="106" rx="3" fill={rgb(propBlanc || prop)} opacity="0.75" stroke="#e2e8f0" strokeWidth="1.5"/>
-          {revele && renv.some(x => x > 0.05) && <polygon points={`224,${cy - 20} 224,${cy + 20} ${eyeX - 26},${cy + 8} ${eyeX - 26},${cy - 8}`} fill={rgb(renv)} opacity="0.7"/>}
+          {revele && renv.some(x => x > 0.05) && <Faisceau id="sortie" points={`224,${cy - 20} 224,${cy + 20} ${eyeX - 28},${cy + 7} ${eyeX - 28},${cy - 7}`} couleur={rgb(renv)} opaciteDebut={0.75} opaciteFin={0.45} x1={224} x2={eyeX - 28}/>}
           {!revele && <g><line x1="230" y1={cy} x2={eyeX - 28} y2={cy} stroke="#94a3b8" strokeWidth="2" strokeDasharray="6 5"/><text x="300" y={cy - 10} textAnchor="middle" fontSize="26" fontWeight="800" fill="#e2e8f0">?</text></g>}
         </g>
       ) : (
         <g>
           <Forme forme={forme} cx={cx} cy={cy} fill={couleurObjet}/>
-          {revele && renv.some(x => x > 0.05) && [-16, 0, 16].map(dy => <line key={dy} x1={cx + 40} y1={cy + dy} x2={eyeX - 30} y2={cy + dy * 0.3} stroke={rgb(renv)} strokeWidth="3" markerEnd="url(#fleche-objet)"/>)}
+          {revele && renv.some(x => x > 0.05) && [-14, 0, 14].map(dy => <Rayon key={dy} x1={cx + 42} y1={cy + dy} x2={eyeX - 30} y2={cy + dy * 0.25} couleur={rgb(renv)} epaisseur={2} pointe={8}/>)}
           {!revele && <g><line x1={cx + 42} y1={cy} x2={eyeX - 28} y2={cy} stroke="#94a3b8" strokeWidth="2" strokeDasharray="6 5"/><text x="320" y={cy - 10} textAnchor="middle" fontSize="26" fontWeight="800" fill="#e2e8f0">?</text></g>}
         </g>
       )}
-      <ellipse cx={eyeX} cy={cy} rx="22" ry="15" fill="#f8fafc" stroke="#94a3b8"/>
-      <circle cx={eyeX - 5} cy={cy} r="7" fill={revele ? '#0f172a' : '#334155'}/>
+      <OeilMini cx={eyeX} cy={cy}/>
       <text x={eyeX} y={cy + 38} textAnchor="middle" fontSize="18" fontWeight="700" fill={C.texteNuit}>œil</text>
       <text x={cx} y={transparent ? 190 : 176 + (forme === 'ballon' ? 10 : 0)} textAnchor="middle" fontSize="18" fontWeight="700" fill={C.texteNuit}>{nom}</text>
       <rect x="316" y="164" width="98" height="28" rx="5" fill={revele ? rgb(renv) : '#475569'} stroke="#94a3b8"/>
       <text x="365" y="184" textAnchor="middle" fontSize="16" fontWeight="700" fill={revele ? texteSur(renv) : 'white'}>{revele ? nomCouleur(renv) : 'perçu : ?'}</text>
-      <defs><marker id="fleche-objet" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M 0 0 L 8 4 L 0 8 Z" fill="#e2e8f0"/></marker></defs>
     </svg>);
 }
 
@@ -178,13 +222,13 @@ export function SceneFiltres({ filtres, noms, revele = true }) {
       aria-label={`Une lumière blanche traverse ${noms.join(' puis ')}${revele ? `. Lumière transmise : ${nomCouleur(sortie)}.` : '. La couleur transmise est à trouver.'}`}>
       <rect x="10" y="74" width="50" height="38" rx="5" fill="#475569" stroke="#94a3b8"/>
       <ellipse cx="60" cy="93" rx="6" ry="17" fill="white" stroke="#94a3b8"/>
-      <polygon points={`64,80 64,106 ${xs[0]},120 ${xs[0]},66`} fill="white" opacity="0.5"/>
+      <Faisceau id="fb" points={`64,82 64,104 ${xs[0]},118 ${xs[0]},68`} couleur="#ffffff" x1={64} x2={xs[0]}/>
       {xs.map((x, i) => (
         <g key={i}>
           <rect x={x} y="56" width="24" height="74" rx="3" fill={rgb(filtres[i])} opacity="0.85" stroke="#e2e8f0" strokeWidth="1.5"/>
           <text x={x + 12} y="46" textAnchor="middle" fontSize="17" fontWeight="700" fill={C.texteNuit}>{filtres.length === 2 ? ['1er', '2e'][i] : ''}</text>
         </g>))}
-      {revele ? (!sombre && <polygon points={`${xs[xs.length - 1] + 24},68 ${xs[xs.length - 1] + 24},118 330,108 330,78`} fill={rgb(sortie)} opacity="0.75"/>)
+      {revele ? (!sombre && <Faisceau id="fs" points={`${xs[xs.length - 1] + 24},70 ${xs[xs.length - 1] + 24},116 328,106 328,80`} couleur={rgb(sortie)} opaciteDebut={0.8} opaciteFin={0.5} x1={xs[xs.length - 1] + 24} x2={328}/>)
         : <g><line x1={xs[xs.length - 1] + 28} y1="93" x2="326" y2="93" stroke="#94a3b8" strokeWidth="2" strokeDasharray="6 5"/><text x="300" y="82" textAnchor="middle" fontSize="26" fontWeight="800" fill="#e2e8f0">?</text></g>}
       <rect x="330" y="66" width="84" height="54" rx="6" fill={revele ? rgb(sortie) : '#475569'} stroke="#94a3b8"/>
       <text x="372" y="99" textAnchor="middle" fontSize="16" fontWeight="800" fill={revele ? texteSur(sortie) : 'white'}>{revele ? nomCouleur(sortie) : '?'}</text>
