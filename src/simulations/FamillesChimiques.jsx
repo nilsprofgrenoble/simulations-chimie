@@ -6,6 +6,7 @@ import { element, ELEMENTS, FAMILLES, HORS_LISTE, ionProbable, etatEntite, confi
   REACTIONS, PRECIPITES, bilanEquation, composeIonique, formuleIonique, nomIonique, CATIONS, ANIONS } from "./atomesModele";
 import { SchemaAtome, TableauPeriodique, COULEURS_FAMILLE } from "./atomesVue";
 import { Pic } from "../Pictos";
+import { FicheColonnes, FicheFamilles, FicheEquilibrer, FicheIonique, FicheArgent } from "./FamillesFiches";
 
 // ====================================================
 //  SIM 58 — FAMILLES CHIMIQUES (2GT, « Modéliser la matière à l'échelle microscopique »)
@@ -193,24 +194,14 @@ export function SimulationFamillesChimiques() {
 
   const ETAPES = [
     { id: 'colonnes', titre: 'Les colonnes du tableau périodique', depart: () => voirTab(3, 1),
-      retenirTitre: 'À RETENIR : COLONNES ET FAMILLES',
-      retenir: <>
-        <svg viewBox="0 0 360 122" role="img" aria-label="Extrait du tableau périodique jusqu’au calcium : colonnes 1 (alcalins), 2 (alcalino-terreux), 17 (halogènes) et 18 (gaz nobles) colorées par famille" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <rect x="10" y="22" width="19" height="19" fill="#ffffff" stroke="#cbd5e1" /><text x="19.5" y="35" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">H</text><rect x="333" y="22" width="19" height="19" fill="#e5e7eb" stroke="#4b5563" /><text x="342.5" y="35" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">He</text><rect x="10" y="41" width="19" height="19" fill="#fde7b5" stroke="#b97800" /><text x="19.5" y="54" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">Li</text><rect x="29" y="41" width="19" height="19" fill="#cfe9f8" stroke="#1f7fb5" /><text x="38.5" y="54" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">Be</text><rect x="238" y="41" width="19" height="19" fill="#ffffff" stroke="#cbd5e1" /><text x="247.5" y="54" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">B</text><rect x="257" y="41" width="19" height="19" fill="#ffffff" stroke="#cbd5e1" /><text x="266.5" y="54" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">C</text><rect x="276" y="41" width="19" height="19" fill="#ffffff" stroke="#cbd5e1" /><text x="285.5" y="54" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">N</text><rect x="295" y="41" width="19" height="19" fill="#ffffff" stroke="#cbd5e1" /><text x="304.5" y="54" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">O</text><rect x="314" y="41" width="19" height="19" fill="#f4d3e5" stroke="#a84c82" /><text x="323.5" y="54" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">F</text><rect x="333" y="41" width="19" height="19" fill="#e5e7eb" stroke="#4b5563" /><text x="342.5" y="54" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">Ne</text><rect x="10" y="60" width="19" height="19" fill="#fde7b5" stroke="#b97800" /><text x="19.5" y="73" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">Na</text><rect x="29" y="60" width="19" height="19" fill="#cfe9f8" stroke="#1f7fb5" /><text x="38.5" y="73" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">Mg</text><rect x="238" y="60" width="19" height="19" fill="#ffffff" stroke="#cbd5e1" /><text x="247.5" y="73" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">Al</text><rect x="257" y="60" width="19" height="19" fill="#ffffff" stroke="#cbd5e1" /><text x="266.5" y="73" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">Si</text><rect x="276" y="60" width="19" height="19" fill="#ffffff" stroke="#cbd5e1" /><text x="285.5" y="73" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">P</text><rect x="295" y="60" width="19" height="19" fill="#ffffff" stroke="#cbd5e1" /><text x="304.5" y="73" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">S</text><rect x="314" y="60" width="19" height="19" fill="#f4d3e5" stroke="#a84c82" /><text x="323.5" y="73" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">Cl</text><rect x="333" y="60" width="19" height="19" fill="#e5e7eb" stroke="#4b5563" /><text x="342.5" y="73" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">Ar</text><rect x="10" y="79" width="19" height="19" fill="#fde7b5" stroke="#b97800" /><text x="19.5" y="92" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">K</text><rect x="29" y="79" width="19" height="19" fill="#cfe9f8" stroke="#1f7fb5" /><text x="38.5" y="92" textAnchor="middle" fontSize="9" fontWeight="700" fill="#0f172a">Ca</text><text x="19.5" y="16" textAnchor="middle" fontSize="10" fontWeight="700" fill="#334155">1</text><text x="38.5" y="16" textAnchor="middle" fontSize="10" fontWeight="700" fill="#334155">2</text><text x="323.5" y="16" textAnchor="middle" fontSize="10" fontWeight="700" fill="#334155">17</text><text x="342.5" y="16" textAnchor="middle" fontSize="10" fontWeight="700" fill="#334155">18</text><rect x="10" y="106" width="10" height="10" fill="#fde7b5" stroke="#b97800" /><text x="24" y="115" fontSize="10.5" fill="#334155">alcalins</text><rect x="82" y="106" width="10" height="10" fill="#cfe9f8" stroke="#1f7fb5" /><text x="96" y="115" fontSize="10.5" fill="#334155">alcalino-terreux</text><rect x="190" y="106" width="10" height="10" fill="#f4d3e5" stroke="#a84c82" /><text x="204" y="115" fontSize="10.5" fill="#334155">halogènes</text><rect x="262" y="106" width="10" height="10" fill="#e5e7eb" stroke="#4b5563" /><text x="276" y="115" fontSize="10.5" fill="#334155">gaz nobles</text>
-        </svg>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Les éléments sont rangés par <strong>numéro atomique Z</strong> croissant. Une <strong>colonne</strong> = même nombre d’<strong>électrons de valence</strong> = une <strong>famille</strong> aux propriétés chimiques semblables.</li>
-          <li><strong>Électrons de valence :</strong> ceux de la dernière couche occupée. Colonnes 1 et 2 : 1 et 2 ; colonne 17 : 7 ; colonne 18 : 8 (2 pour l’hélium).</li>
-          <li><strong>Exemple :</strong> Li (Z = 3) : 1s² 2s¹ ; Na (Z = 11) : 1s² 2s² 2p⁶ 3s¹ ; tous deux 1 électron de valence, donc colonne 1.</li>
-          <li>Le tableau est limité ici aux éléments de Z = 1 à 20.</li>
-        </ul>
-      </>,
       texte: <>Le tableau périodique range les éléments par numéro atomique croissant. Chaque <strong>colonne</strong> rassemble des éléments qui ont <strong>le même nombre d’électrons de valence</strong> : ils ont des propriétés chimiques semblables, ils forment une <strong>famille</strong>.
         <ExempleResolu>Lithium Li (Z = 3) : {configTxt(3)}, 1 électron de valence. Sodium Na (Z = 11) : {configTxt(11)}, 1 électron de valence. Tous deux sont dans la <strong>colonne 1</strong>.
           {bouton('Voir le sodium', () => voirTab(11, 1))}</ExempleResolu>
         À vous : regardez le potassium (colonne 1 aussi).</>,
       tache: { type: 'qcm', q: 'Combien d’électrons de valence a le potassium K (Z = 19) ?', options: ['1', '19', '4', '8'], bonne: 0, expl: `Potassium : ${configTxt(19)} : un seul électron sur la dernière couche (4s¹). Même colonne que Li et Na.`, indice: "Écris la répartition des électrons par couches et compte ceux de la dernière couche occupée." } },
     { id: 'alcalins', titre: 'La famille des alcalins', depart: () => voirTab(11, 1),
+      retenirTitre: 'À RETENIR : COLONNES ET FAMILLES',
+      retenir: <FicheColonnes/>,
       texte: <>La colonne 1 (sauf l’hydrogène) forme la famille des <strong>alcalins</strong> : lithium, sodium, potassium… Ils ont <strong>1 électron de valence</strong> qu’ils perdent facilement pour atteindre la configuration d’un gaz noble.
         <ExempleResolu>Na → Na⁺ + e⁻. Na⁺ a 10 électrons : {configTxt(10)}, comme le néon. Tous les alcalins forment des ions de charge <strong>+1</strong> : Li⁺, Na⁺, K⁺.</ExempleResolu>
         À vous : quel ion forme le lithium ?</>,
@@ -230,23 +221,7 @@ export function SimulationFamillesChimiques() {
       tache: { type: 'qcm', q: 'Pourquoi le néon ne forme-t-il pas d’ion ?', options: ['Sa couche de valence est déjà complète (octet)', 'Il a un seul électron de valence', 'Il est trop lourd', 'Il n’a pas de noyau'], bonne: 0, expl: 'Néon : 2 + 6 = 8 électrons de valence, c’est déjà un octet : il est stable tel quel.', indice: "Combien d’électrons de valence a le néon ? Que signifie une couche de valence complète pour la stabilité d’un atome ?" } },
     { id: 'retenir1', titre: 'À retenir : les familles', depart: null,
       retenirTitre: 'À RETENIR : LES FAMILLES ET LEURS IONS',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Famille</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Colonne</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>e⁻ de valence</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Ion</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Exemples</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>alcalins</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>X⁺</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Li⁺, Na⁺, K⁺</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>alcalino-terreux</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>X²⁺</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Mg²⁺, Ca²⁺</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>halogènes</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>17</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>7</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>X⁻</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>F⁻, Cl⁻, Br⁻, I⁻</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>gaz nobles</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>18</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>8 (2 pour He)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>aucun</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>—</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Règle :</strong> un atome devient un ion en perdant ou gagnant des électrons pour avoir la couche externe d’un <strong>gaz noble</strong> (octet, ou duet pour He).</li>
-          <li><strong>Méthode :</strong> (1) trouver la colonne ; (2) compter les électrons de valence ; (3) en perdre 1 ou 2, ou gagner ce qui manque pour 8 ; (4) en déduire la charge.</li>
-          <li><strong>Exemple :</strong> Na → Na⁺ + e⁻ : Na⁺ a 10 électrons, comme le néon.</li>
-          <li><strong>Piège :</strong> la charge d’un ion est positive si l’atome perd des électrons, négative s’il en gagne.</li>
-        </ul>
-      </>,
+      retenir: <FicheFamilles/>,
       texte: <>Voici ce qu’il faut retenir sur les familles chimiques.</>, tache: null },
     { id: 'reac1', titre: 'Le sodium dans l’eau', depart: () => voirEau('Na'),
       texte: <>Les éléments d’une même famille réagissent de la même façon. Le sodium réagit avec l’eau : il se transforme en ion Na⁺ et il se forme du dihydrogène H₂ et des ions hydroxyde HO⁻. Pour écrire l’<strong>équation</strong>, il faut que les <strong>atomes</strong> et la <strong>charge électrique</strong> soient conservés : on ajuste des <strong>coefficients</strong> devant chaque espèce.
@@ -257,83 +232,28 @@ export function SimulationFamillesChimiques() {
       texte: <>Le potassium (comme le sodium, colonne 1) réagit de la même façon avec l’eau, plus violemment : K⁺ remplace Na⁺, et l’équation a la <strong>même forme</strong>.</>,
       tache: { type: 'action', ok: atelierEff === 'eau' && cleR === 'K' && bil.equilibree, consigne: 'Équilibrez l’équation du potassium dans l’eau.' } },
     { id: 'reac3', titre: 'Les alcalino-terreux : charge 2+', depart: () => voirEau('Mg'),
-      retenirTitre: 'À RETENIR : ÉQUILIBRER ATOMES ET CHARGE',
-      retenir: <>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Une équation conserve les <strong>atomes</strong> (de chaque élément) et la <strong>charge électrique</strong> : on ajuste les <strong>coefficients</strong>, jamais les formules.</li>
-          <li><strong>Méthode :</strong> (1) écrire réactifs et produits ; (2) compter les atomes de chaque élément à gauche et à droite ; (3) ajuster les coefficients ; (4) vérifier la charge totale des deux côtés.</li>
-          <li><strong>Même famille, même équation :</strong> sodium et potassium (X⁺) donnent la même forme d’équation avec l’eau.</li>
-          <li><strong>Colonne 2 :</strong> l’ion est X²⁺ ; il faut <strong>deux</strong> ions HO⁻ pour que la charge soit conservée (2+ et 2 × 1− se compensent).</li>
-          <li><strong>Hypothèse :</strong> le magnésium réagit en réalité lentement avec l’eau froide : on s’entraîne ici à équilibrer, pas à prévoir la vitesse.</li>
-        </ul>
-      </>,
       texte: <>Avec le magnésium (colonne 2), l’ion formé est Mg²⁺ : <strong>deux</strong> charges positives. Pour que la charge se conserve, il faut <strong>deux</strong> ions HO⁻ pour un ion Mg²⁺. (En réalité, le magnésium réagit très lentement avec l’eau froide, et l’hydroxyde de magnésium est peu soluble : on s’entraîne ici à équilibrer l’équation, pas à prévoir une réaction rapide.)
         <ExempleResolu>Charge à droite : (+2) + 2 × (−1) = 0 : c’est bien la charge de Mg + H₂O (neutres).</ExempleResolu></>,
       tache: { type: 'action', ok: atelierEff === 'eau' && cleR === 'Mg' && bil.equilibree, consigne: 'Équilibrez l’équation du magnésium dans l’eau.' } },
     { id: 'ionique', titre: 'Un solide ionique est neutre', depart: () => voirIon('Na', 'Cl'),
-      retenirTitre: 'À RETENIR : FORMULE D’UN SOLIDE IONIQUE',
-      retenir: <>
-        <Formule><mi>x</mi><mo>×</mo><msub><mi>q</mi><mtext>+</mtext></msub><mo>+</mo><mi>y</mi><mo>×</mo><msub><mi>q</mi><mtext>−</mtext></msub><mo>=</mo><mn>0</mn></Formule>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Ions</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Formule</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Nom</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Na⁺ + Cl⁻</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>NaCl</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>chlorure de sodium</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>K⁺ + F⁻</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>KF</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>fluorure de potassium</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Ca²⁺ + O²⁻</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>CaO</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>oxyde de calcium</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Ca²⁺ + F⁻</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>CaF₂</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>fluorure de calcium</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Un solide ionique est <strong>électriquement neutre</strong> : charges positives et négatives se compensent.</li>
-          <li><strong>Méthode :</strong> écrire les charges, chercher les plus petits x et y qui rendent le total nul, écrire la formule (cation d’abord), nommer (anion d’abord : « chlorure de sodium »).</li>
-          <li>La formule ne donne que le <strong>rapport</strong> des ions (CaF₂ : 1 Ca²⁺ pour 2 F⁻), pas une molécule.</li>
-        </ul>
-      </>,
+      retenirTitre: 'À RETENIR : ÉQUILIBRER ATOMES ET CHARGE',
+      retenir: <FicheEquilibrer/>,
       texte: <>Le sodium et le chlore forment le <strong>chlorure de sodium</strong> (sel de table) : un solide <strong>ionique</strong>, fait d’ions Na⁺ et Cl⁻. Il est <strong>électriquement neutre</strong> : charges positives et négatives se compensent.
         <ExempleResolu>Na⁺ et Cl⁻ : 1 × (+1) + 1 × (−1) = 0. Formule : <strong>NaCl</strong>. On cite l’anion en premier dans le nom : <em>chlorure de sodium</em>.</ExempleResolu>
         À vous : combinez Mg²⁺ et Cl⁻.</>,
       tache: { type: 'qcm', q: 'Quelle est la formule du chlorure de magnésium (ions Mg²⁺ et Cl⁻) ?', options: ['MgCl₂', 'MgCl', 'Mg₂Cl', 'Mg₂Cl₂'], bonne: 0, expl: 'Il faut 2 Cl⁻ (2 × −1 = −2) pour compenser un Mg²⁺ (+2) : MgCl₂.', indice: "Un solide ionique est électriquement neutre : les charges positives doivent compenser les charges négatives. Combien d’ions Cl⁻ faut-il pour compenser la charge de Mg²⁺ ?" } },
     { id: 'ionique2', titre: 'À vous : oxyde d’aluminium', depart: () => voirIon('Al', 'O'),
+      retenirTitre: 'À RETENIR : FORMULE D’UN SOLIDE IONIQUE',
+      retenir: <FicheIonique/>,
       texte: <>Al³⁺ (+3) et O²⁻ (−2). Il faut trouver x et y tels que <strong>x × 3 = y × 2</strong>, les plus petits possibles.
         <ExempleResolu>Pour Ca²⁺ et Cl⁻ : x × 2 = y × 1 → x = 1, y = 2 : CaCl₂. Pour Na⁺ et O²⁻ : x × 1 = y × 2 → x = 2, y = 1 : Na₂O.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Formule de l’oxyde d’aluminium (Al³⁺ et O²⁻) ?', options: ['Al₂O₃', 'AlO', 'Al₃O₂', 'Al₂O'], bonne: 0, expl: '2 Al³⁺ = +6 et 3 O²⁻ = −6 : Al₂O₃.', indice: "Neutralité du solide : total des charges positives = total des charges négatives. Cherche le plus petit nombre de chaque ion qui rend les deux totaux égaux (multiple commun de 3 et 2)." } },
     { id: 'halogenures', titre: 'Reconnaître les ions halogénure', depart: () => { setAtelier('halogene'); setHal('Cl'); },
-      retenirTitre: 'À RETENIR : TEST AUX IONS ARGENT',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Ion halogénure</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Précipité</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Aspect</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Cl⁻ (chlorure)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>AgCl</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>blanc</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Br⁻ (bromure)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>AgBr</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>jaune pâle</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>I⁻ (iodure)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>AgI</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>jaune</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Équation :</strong> Ag⁺ + X⁻ → AgX (solide) : atomes et charge conservés (1+ et 1− se compensent).</li>
-          <li>Le <strong>précipité</strong> est un solide qui se forme dans une solution ; sa couleur identifie l’ion halogénure.</li>
-          <li><strong>Piège :</strong> blanc, jaune pâle et jaune se ressemblent : comparer avec des témoins.</li>
-        </ul>
-      </>,
       texte: <>Comment reconnaître un ion halogénure en solution ? On ajoute des ions <strong>argent Ag⁺</strong> : il se forme un <strong>précipité</strong> (un solide), dont l’aspect dépend de l’halogénure : <strong>blanc</strong> pour Cl⁻, <strong>jaune pâle</strong> pour Br⁻, <strong>jaune</strong> pour I⁻. L’équation : <strong>Ag⁺ + X⁻ → AgX</strong>.</>,
       tache: { type: 'qcm', q: 'On ajoute des ions argent à une solution : un précipité blanc se forme. Quel ion contenait-elle ?', options: ['Cl⁻ (chlorure)', 'I⁻ (iodure)', 'Na⁺ (sodium)', 'Mg²⁺'], bonne: 0, expl: 'Précipité blanc : AgCl, donc la solution contenait des ions chlorure Cl⁻.', indice: "Chaque ion se reconnaît par un test caractéristique, souvent la couleur du précipité formé. Retrouve dans le cours quel ion donne un précipité blanc avec les ions argent." } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
-      retenirTitre: 'À RETENIR : LE BILAN',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Métal</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Équation (atomes et charge conservés)</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Na</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2 Na + 2 H₂O → 2 Na⁺ + H₂ + 2 HO⁻</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>K</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2 K + 2 H₂O → 2 K⁺ + H₂ + 2 HO⁻</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Mg</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Mg + 2 H₂O → Mg²⁺ + H₂ + 2 HO⁻</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Colonne = famille : alcalins (X⁺), alcalino-terreux (X²⁺), halogènes (X⁻), gaz nobles (stables).</li>
-          <li>Un solide ionique est <strong>neutre</strong> : x × q₊ + y × q₋ = 0 (NaCl, MgCl₂, Al₂O₃…).</li>
-          <li>Ag⁺ + Cl⁻ → AgCl (précipité blanc) : test des ions chlorure.</li>
-          <li><strong>Pièges :</strong> modifier une formule au lieu d’un coefficient ; oublier la charge ; nommer l’anion en second.</li>
-        </ul>
-      </>,
+      retenirTitre: 'À RETENIR : TEST AUX IONS ARGENT',
+      retenir: <FicheArgent/>,
       texte: <>Bravo : vous savez relier colonne, ion et formule. Voici le bilan à garder.</>, tache: null },
   ];
   useEffect(() => {
@@ -412,7 +332,8 @@ export function SimulationFamillesChimiques() {
           <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4 }}>Brome et iode ({HORS_LISTE.halogene.join(', ')}) sont des halogènes des périodes 4 et 5 : ils ont aussi 7 électrons de valence.</div></div>; })()}
     </div>);
 
-  const ateliers = (enExplore || enGuide) && (
+  const idxFin = ETAPES.findIndex(e => e.id === 'fin'), finVu = !enGuide || guide.etape >= idxFin;     // parcours : sélecteur d'atelier et hypothèses n'apparaissent qu'à la fin
+  const ateliers = enExplore && (
     <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
       <span style={{ fontSize: 13.5, color: KIT.txt2, fontWeight: 700 }}>Atelier :</span>
       {[['tableau', '🧩 Tableau périodique'], ['eau', '💧 Réactions dans l’eau'], ['ionique', '🧂 Solides ioniques'], ['halogene', '🧪 Test à l’ion argent']].map(([k, l]) =>
@@ -474,7 +395,7 @@ export function SimulationFamillesChimiques() {
         </div>
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : enDefi ? panneauHypo : null}
       </div>
-      {!enDefi && <div className="fc-l2">{panneauHypo}</div>}
+      {!enDefi && finVu && <div className="fc-l2">{panneauHypo}</div>}
       {enExplore && <div className="fc-l2">{aEssayer}{retenir}</div>}
     </div>
   );
