@@ -12,21 +12,24 @@ const fr = (v, d = 1) => Number(v).toFixed(d).replace('.', ',');
 
 // ---------- emplacements des points (ordre mélangé fixe : la position d'un point ne change pas quand on en ajoute) ----------
 const SLOTS = (() => {
-  const s = []; for (let r = 0; r < 6; r++) for (let c = 0; c < 8; c++) s.push([112 + c * 14 + (r % 2 ? 6 : 0), 168 + r * 14.5]);
+  const s = []; for (let r = 0; r < 5; r++) for (let c = 0; c < 9; c++) s.push([108 + c * 16.5 + (r % 2 ? 8 : 0), 170 + r * 17.5]);
   let g = 7; const al = () => { g = (g * 1103515245 + 12345) % 2147483648; return g / 2147483648; };
   for (let i = s.length - 1; i > 0; i--) { const j = Math.floor(al() * (i + 1)); [s[i], s[j]] = [s[j], s[i]]; }
   return s;
 })();
-const Point = ({ x, y, couleur, signe }) => (
-  <g><circle cx={x} cy={y} r="6.2" fill={couleur} stroke="#fff" strokeWidth="0.8"/>
-    <line x1={x - 3} y1={y} x2={x + 3} y2={y} stroke="#fff" strokeWidth="1.8"/>{signe > 0 && <line x1={x} y1={y - 3} x2={x} y2={y + 3} stroke="#fff" strokeWidth="1.8"/>}</g>);
+// Rayons symboliques (non à l'échelle) : Na⁺ plus petit que H₃O⁺, anions plus gros ; la taille aide à distinguer les ions sans compter sur la couleur
+const R = { H3O: 7.8, HO: 7.8, Na: 5.6, anion: 8.6 };
+const Point = ({ x, y, couleur, signe, r = 6.2 }) => { const a = r * 0.5, w = Math.max(1.4, r * 0.29);
+  return (
+    <g><circle cx={x} cy={y} r={r} fill={couleur} stroke="#fff" strokeWidth="0.8"/>
+      <line x1={x - a} y1={y} x2={x + a} y2={y} stroke="#fff" strokeWidth={w}/>{signe > 0 && <line x1={x} y1={y - a} x2={x} y2={y + a} stroke="#fff" strokeWidth={w}/>}</g>); };
 
 // ---------- scène : bécher, cellule de conductimétrie, conductimètre, burette ----------
 //  points : { H3O, HO, Na, anion, acide } (nombres de points) ; anionId : 'Cl' | 'NO3' | 'AcO' ; lecture : texte du conductimètre (null : afficher « — »)
 export function SceneConductimetrie({ points, anionId = 'Cl', lecture = null, cellule = true, burette = null, titre = '', legende = ['H3O', 'anion', 'Na'], acideLegende = null }) {
   const ordre = [['anion', IONS[anionId].couleur, -1], ['Na', IONS.Na.couleur, 1], ['H3O', IONS.H3O.couleur, 1], ['HO', IONS.HO.couleur, -1], ['acide', '#94a3b8', 0]];
   const dots = []; let k = 0;
-  for (const [id, coul, sg] of ordre) for (let i = 0; i < (points[id] || 0) && k < SLOTS.length; i++, k++) dots.push({ id, coul, sg, p: SLOTS[k] });
+  for (const [id, coul, sg] of ordre) for (let i = 0; i < (points[id] || 0) && k < SLOTS.length; i++, k++) dots.push({ id, coul, sg, r: R[id] || R.anion, p: SLOTS[k] });
   const niveauBurette = burette ? 18 + 3.9 * Math.min(burette.VB, V_BURETTE) : 0;
   const leg = legende.map(id => (id === 'anion' ? { id, f: IONS[anionId].f, c: IONS[anionId].couleur, sg: -1 } : id === 'acide' ? { id, f: acideLegende || 'molécule d’acide', c: '#94a3b8', sg: 0 } : { id, f: IONS[id].f, c: IONS[id].couleur, sg: IONS[id].z }));
   const ariaIons = leg.map(l => l.f).join(', ');
@@ -56,7 +59,7 @@ export function SceneConductimetrie({ points, anionId = 'Cl', lecture = null, ce
       {/* ions et molécules */}
       {dots.map((d, i) => d.id === 'acide'
         ? <rect key={i} x={d.p[0] - 6.5} y={d.p[1] - 4} width="13" height="8" rx="3" fill={d.coul} stroke="#fff" strokeWidth="0.8"/>
-        : <Point key={i} x={d.p[0]} y={d.p[1]} couleur={d.coul} signe={d.sg}/>)}
+        : <Point key={i} x={d.p[0]} y={d.p[1]} couleur={d.coul} signe={d.sg} r={d.r}/>)}
       {/* cellule de conductimétrie : câble, poignée, manchon de verre, deux plaques de platine noires */}
       {cellule && <g>
         <path d="M235 96 C235 60 262 78 300 70" fill="none" stroke="#334155" strokeWidth="3"/>
@@ -69,7 +72,7 @@ export function SceneConductimetrie({ points, anionId = 'Cl', lecture = null, ce
       </g>}
       {/* légende */}
       {leg.map((l, i) => { const x = 10 + (i % 3) * 130, y = 276 + Math.floor(i / 3) * 18;
-        return <g key={l.id}>{l.sg === 0 ? <rect x={x} y={y - 9} width="13" height="8" rx="3" fill={l.c}/> : <Point x={x + 6} y={y - 5} couleur={l.c} signe={l.sg}/>}<text x={x + 18} y={y} fontSize="16" fill={COL.txt}>{l.f}</text></g>; })}
+        return <g key={l.id}>{l.sg === 0 ? <rect x={x} y={y - 9} width="13" height="8" rx="3" fill={l.c}/> : <Point x={x + 8} y={y - 5} couleur={l.c} signe={l.sg} r={R[l.id] || R.anion}/>}<text x={x + 22} y={y} fontSize="16" fill={COL.txt}>{l.f}</text></g>; })}
     </svg>);
 }
 
@@ -129,20 +132,20 @@ export function SvgKohlrauschCarte() {
 
 // carte 2 : remplacer un ion par un autre
 export function SvgRemplacerCarte() {
-  const pt = (x, y, c, s) => <Point x={x} y={y} couleur={c} signe={s}/>;
+  const pt = (x, y, c, s, r) => <Point x={x} y={y} couleur={c} signe={s} r={r}/>;
   const fleche = (x, y1, y2, c) => <g><line x1={x} y1={y1} x2={x} y2={y2 - 8} stroke={c} strokeWidth="3"/><polygon points={`${x - 8},${y2 - 10} ${x + 8},${y2 - 10} ${x},${y2}`} fill={c}/></g>;
   return (
     <svg viewBox="0 0 400 282" style={stl} role="img" aria-label="Avant l’équivalence, un ion H3O+ (35,0) est remplacé par un ion Na+ (5,0) : la conductivité diminue de 30,0 par mole. Après l’équivalence, les ions HO- (19,9) et Na+ (5,0) s’ajoutent sans être consommés : la conductivité augmente de 24,9 par mole.">
       <rect x="6" y="8" width="190" height="198" rx="10" fill="#fef2f2" stroke="#fecaca"/><rect x="204" y="8" width="190" height="198" rx="10" fill="#f0fdf4" stroke="#bbf7d0"/>
       <text x="101" y="32" fontSize="16" fontWeight="700" textAnchor="middle" fill={COL.txt}>avant l’équivalence</text>
       <text x="299" y="32" fontSize="16" fontWeight="700" textAnchor="middle" fill={COL.txt}>après l’équivalence</text>
-      {pt(40, 62, IONS.H3O.couleur, 1)}<text x="56" y="68" fontSize="17" fontWeight="700" fill={COL.rouge}>H₃O⁺  35,0</text>
+      {pt(40, 62, IONS.H3O.couleur, 1, R.H3O)}<text x="56" y="68" fontSize="17" fontWeight="700" fill={COL.rouge}>H₃O⁺  35,0</text>
       {fleche(40, 78, 112, COL.gris)}<text x="56" y="100" fontSize="16" fill={COL.txt}>remplacé par</text>
-      {pt(40, 128, IONS.Na.couleur, 1)}<text x="56" y="134" fontSize="17" fontWeight="700" fill={COL.bleu}>Na⁺  5,0</text>
+      {pt(40, 128, IONS.Na.couleur, 1, R.Na)}<text x="56" y="134" fontSize="17" fontWeight="700" fill={COL.bleu}>Na⁺  5,0</text>
       <text x="101" y="172" fontSize="17" fontWeight="700" textAnchor="middle" fill={COL.rouge}>σ diminue</text><text x="101" y="194" fontSize="16" textAnchor="middle" fill={COL.txt}>perte de 30,0 par mole</text>
-      {pt(238, 62, IONS.HO.couleur, -1)}<text x="254" y="68" fontSize="17" fontWeight="700" fill={COL.violet}>HO⁻  19,9</text>
+      {pt(238, 62, IONS.HO.couleur, -1, R.HO)}<text x="254" y="68" fontSize="17" fontWeight="700" fill={COL.violet}>HO⁻  19,9</text>
       <text x="238" y="100" fontSize="16" fill={COL.txt}>s’ajoutent, sans</text><text x="238" y="118" fontSize="16" fill={COL.txt}>être consommés</text>
-      {pt(238, 134, IONS.Na.couleur, 1)}<text x="254" y="140" fontSize="17" fontWeight="700" fill={COL.bleu}>Na⁺  5,0</text>
+      {pt(238, 134, IONS.Na.couleur, 1, R.Na)}<text x="254" y="140" fontSize="17" fontWeight="700" fill={COL.bleu}>Na⁺  5,0</text>
       <text x="299" y="172" fontSize="17" fontWeight="700" textAnchor="middle" fill={COL.vert}>σ augmente</text><text x="299" y="194" fontSize="16" textAnchor="middle" fill={COL.txt}>gain de 24,9 par mole</text>
       <text x="200" y="236" fontSize="16" textAnchor="middle" fill={COL.txt}>un ion est remplacé par un autre :</text>
       <text x="200" y="258" fontSize="17" fontWeight="700" textAnchor="middle" fill={COL.vert}>seule la différence des λ compte</text>
