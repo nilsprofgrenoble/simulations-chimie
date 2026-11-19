@@ -69,6 +69,7 @@ export const EXOS_DE_SIM = {
   153: [/(^|\.)mol1g-conc-/, /plausible\.mol1g-conc-/],
   154: [/(^|\.)lewis1g-/, /plausible\.lewis1g-/],                                                              // Schéma de Lewis : établir celui d’une molécule ou d’un ion
   155: [/(^|\.)geo1g-/, /plausible\.geo1g-/],
+  158: [/(^|\.)savon1g-/, /plausible\.savon1g-/],                                                              // Savons et amphiphilie : pourquoi un savon lave
   125: [/(^|\.)equ-/, /plausible\.equ-/],
   129: [/(^|\.)fab-/, /plausible\.fab-/],
   130: [/(^|\.)pdi-/, /plausible\.pdi-/],

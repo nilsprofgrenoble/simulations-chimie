@@ -23,6 +23,7 @@ import * as EXT from "./extractionAcideBaseModele";
 import * as QM from "./quantiteMatiereModele";
 import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
+import * as SV from "./savonModele";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
@@ -394,6 +395,33 @@ export const ENONCES = [
         cherche: { bonne: 'Le nombre n_D de doublets d’électrons à répartir', faux: ['Le nombre de liaisons de l’atome central', 'Le nombre total n_T d’électrons de valence', 'Le nombre d’atomes de l’entité'] },
         manque: null, solution: { txt: 'n_D = n_T ÷ 2', val: n / 2, u: 'doublets' } };
     },
+  },
+  // ───────────────────────────── Savons et amphiphilie (1G) : quantité de matière de savon
+  {
+    id: 'savon1g-pain', domaine: 'Savons et amphiphilie', titre: 'Un pain de savon à base de sel de sodium d’acide gras', noms: ['Quantité de matière d’ions carboxylate dans le pain', 'Masse de savon pour une quantité de matière donnée'],
+    gen: () => ({ n: tire([10, 12, 14, 16]), m: tire([10.0, 20.0, 25.0, 50.0, 100.0]), nT: tire([0.0500, 0.100, 0.200, 0.500]), mE: tire([8.0, 12.0, 15.0]), Te: tire([20, 30, 40]) }),
+    build: epure((p, q) => {
+      const c = SV.carboxylate(p.n), nom = SV.SERIE.find(s => s[0] === p.n)[1], M = c.M, formule = `CH₃–(CH₂)${[...String(p.n)].map(d => '₀₁₂₃₄₅₆₇₈₉'[+d]).join('')}–COO⁻ Na⁺`;
+      const tokens = {
+        m: tok(`${nb(p.m, 1)} g`, 'Masse de savon (sel de sodium)', p.m, 'g'),
+        M: tok(`${nb(M, 1)} g/mol`, `Masse molaire du ${nom} de sodium`, M, 'g/mol'),
+        nT: tok(`${nb(p.nT, 3)} mol`, 'Quantité de matière de savon voulue', p.nT, 'mol'),
+        mE: tok(`${nb(p.mE, 1)} g`, 'Masse de l’emballage en carton', p.mE, 'g'),
+        Te: tok(`${p.Te} °C`, 'Température de l’eau de lavage', p.Te, '°C'),
+      };
+      const raisons = { mE: 'La masse de l’emballage ne fait pas partie du savon : elle ne sert pas pour la quantité de matière de savon.', Te: 'La température de l’eau de lavage n’intervient pas dans le calcul d’une quantité de matière à partir d’une masse.' };
+      const debut = ['Un savon est constitué de ', nom, ' de sodium, de formule semi-développée ', formule, ' ; sa masse molaire est ', T('M'), '. '];
+      if (q === 0) return { tokens, derivees: [{ id: 'n', nom: 'Quantité de matière de savon', expr: 'n = m / M', val: p.m / M, u: 'mol' }],
+        texte: [...debut, 'Un pain de savon pur pèse ', T('m'), ', dans un emballage de ', T('mE'), ' ; il sert à laver dans une eau à ', T('Te'), '. Quelle quantité de matière de savon contient-il ?'],
+        utiles: ['m', 'M'], raisons,
+        cherche: { bonne: 'La quantité de matière n de savon (en mol)', faux: ['La masse molaire du savon (en g/mol)', 'Le nombre d’atomes de carbone de l’ion carboxylate', 'La concentration du savon dans l’eau de lavage (en mol/L)'] },
+        manque: null, solution: { txt: 'n = m / M', val: p.m / M, u: 'mol' } };
+      return { tokens, derivees: [],
+        texte: [...debut, 'On veut préparer un lot qui contient ', T('nT'), ' de savon. Le savon est livré dans un emballage de ', T('mE'), ', et l’eau de lavage est à ', T('Te'), '. Quelle masse de savon faut-il peser ?'],
+        utiles: ['nT', 'M'], raisons,
+        cherche: { bonne: 'La masse m de savon à peser (en g)', faux: ['La quantité de matière de savon (en mol)', 'La masse molaire du savon (en g/mol)', 'La masse totale de savon et d’emballage (en g)'] },
+        manque: null, solution: { txt: 'm = n × M', val: p.nT * M, u: 'g' } };
+    }),
   },
   // ───────────────────────────── Concentration en quantité de matière (1G) : dissolution et dilution
   {
