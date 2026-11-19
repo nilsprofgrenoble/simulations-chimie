@@ -6,6 +6,8 @@ import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton,
 import { COMPOSES, PAR_ID, PHASES, GAZ, PARAMS_DEFAUT, SEUIL_RS, P_MAX, PANNES, FRACTION_VOL,
   analyse, ecoulement, signal, ligneBase, temperature, positionBande } from "./cpgModele";
 import { Pic } from "../Pictos";
+import { puces } from "./Travail";
+import { FChaineCPG, FPolarite, FIdentCPG, FResolution, FProgrammation, FSplitCPG, FDiagnosticCPG } from "./CpgSchemas";
 
 // ====================================================
 //  SIM 54 — CHROMATOGRAPHIE EN PHASE GAZEUSE (BTS)
@@ -425,10 +427,18 @@ const TITRES = { ordre: 'Ordre d’élution', identifier: 'Identifier des pics',
 // ====================================================
 //  SIMULATION
 // ====================================================
+const ORDRE_PARC = [
+  ['appareil', 'inj', 'teb', 'polaire', 'ident', 'ident3', 'coelution', 'colonne', 'bilan1'],
+  ['iso', 'prog', 'debit', 'split', 'methode', 'septum', 'liner', 'flamme', 'ressuage', 'hydrogene', 'fin']];
+
 export function SimulationCPG() {
   const [mode, setMode] = useState(() => modeOuverture('cpg-guide-v2'));
   useSignalerMode(mode);
-  const [guide, setGuide] = useEtatPersistant('cpg-guide-v2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('cpg-guide-v2', VIDE), [g2, setG2] = useEtatPersistant('cpg-guide-p2', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('cpg-parcours-choix', 1);
+  const parc = parcBrut === 2 ? 2 : 1;
+  const guide = parc === 1 ? g1 : g2, setGuide = parc === 1 ? setG1 : setG2;
   const [defi, setDefi] = useState(null);
   const [p, setP] = useState({ ...PARAMS_DEFAUT });
   const maj = (k, x) => setP(q => ({ ...q, [k]: x }));
@@ -467,27 +477,17 @@ export function SimulationCPG() {
   const rsDe = (ids, extra = {}) => { const r = analyse({ ...PARAMS_DEFAUT, ...extra }, ids); return r.res.length ? Math.min(...r.res.map(x => x.R)) : NaN; };
   const lent = { rampe: 1, T0: 30 };
   const t2 = (id, dt = 0) => v(trSeul(PARAMS_DEFAUT, id) + dt, 2);
-  const ETAPES = [
+  const TOUTES = [
     { id: 'appareil', titre: 'Le chemin de l’échantillon', focus: ['appareil'],
-      retenirTitre: 'À RETENIR : LA CHAÎNE DE LA CPG',
-      retenir: <>
-        <svg viewBox="0 0 400 120" role="img" aria-label="Chaîne d’une CPG : le gaz vecteur traverse l’injecteur chauffé où l’échantillon est vaporisé, puis la colonne capillaire dans le four, puis le détecteur FID qui trace le chromatogramme" style={{ width: '100%', maxWidth: 400, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-<rect x="6" y="30" width="88" height="44" rx="6" fill="#e8f1fa" stroke="#0072b2" strokeWidth="1.8" /><text x="50.0" y="50.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">Gaz vecteur</text><text x="50.0" y="63.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">(He)</text><rect x="100" y="30" width="88" height="44" rx="6" fill="#e8f1fa" stroke="#0072b2" strokeWidth="1.8" /><text x="144.0" y="50.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">Injecteur</text><text x="144.0" y="63.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">chauffé</text><rect x="194" y="30" width="88" height="44" rx="6" fill="#e8f1fa" stroke="#0072b2" strokeWidth="1.8" /><text x="238.0" y="50.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">Colonne</text><text x="238.0" y="63.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">dans le four</text><rect x="288" y="30" width="88" height="44" rx="6" fill="#e8f1fa" stroke="#0072b2" strokeWidth="1.8" /><text x="332.0" y="50.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">Détecteur</text><text x="332.0" y="63.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">FID</text><line x1="94" y1="52" x2="100" y2="52" stroke="#334155" strokeWidth="2" /><polygon points="100,48 104,52 100,56" fill="#334155" /><line x1="188" y1="52" x2="194" y2="52" stroke="#334155" strokeWidth="2" /><polygon points="194,48 198,52 194,56" fill="#334155" /><line x1="282" y1="52" x2="288" y2="52" stroke="#334155" strokeWidth="2" /><polygon points="288,48 292,52 288,56" fill="#334155" /><line x1="144" y1="74" x2="144" y2="94" stroke="#334155" strokeWidth="1.8" /><text x="144" y="108" textAnchor="middle" fontSize="11" fill="#334155">échantillon (0,2 µL)</text><text x="238" y="94" textAnchor="middle" fontSize="11" fontWeight="700" fill="#d55e00">programme de température</text><text x="394" y="18" textAnchor="end" fontSize="11" fill="#334155">→ chromatogramme</text>
-        </svg>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Élément</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Rôle</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>À retenir</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>gaz vecteur</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>entraîne l’échantillon vaporisé</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>débit constant, pression réglée en tête</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>injecteur</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>vaporise l’échantillon</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>split ou splitless</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>colonne (four)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>sépare les composés</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>polarité de la phase ; four isotherme ou programmé</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>détecteur FID</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>brûle les composés à la sortie</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>signal ↔ quantité de matière carbonée</td></tr>
-          </tbody>
-        </table>
-      </>,
       texte: <>Un chromatographe en phase gazeuse est une chaîne : le <strong>gaz vecteur</strong> (hélium) traverse l’<strong>injecteur</strong> chauffé où l’on vaporise l’échantillon, puis la <strong>colonne capillaire</strong> enroulée dans le <strong>four</strong>, et enfin le <strong>détecteur FID</strong>. Cliquez sur chaque élément du schéma pour lire son rôle et ce qu’on y contrôle.</>,
       tache: { type: 'qcm', q: 'Dans quel ordre l’échantillon vaporisé traverse-t-il l’appareil ?', options: ['injecteur → colonne (dans le four) → détecteur', 'colonne → injecteur → détecteur', 'injecteur → détecteur → colonne'], bonne: 0,
         expl: 'L’échantillon est vaporisé dans l’injecteur, séparé dans la colonne et détecté à sa sortie. Le gaz vecteur, lui, circule en permanence depuis la bouteille.', indice: "Suivez le trajet : injection, séparation dans le four, puis détection." } },
     { id: 'inj', titre: 'Injecter et regarder', focus: ['viz'],
+      retenirTitre: 'À RETENIR : LA CHAÎNE DE LA CPG',
+      retenir: <>
+        <FChaineCPG/>
+        {puces(<>Le <strong>gaz vecteur</strong> entraîne l’échantillon vaporisé : <strong>injecteur → colonne (dans le four) → détecteur</strong>.</>, <>La <strong>séparation</strong> a lieu dans la colonne ; le détecteur à ionisation de flamme (FID) trace le chromatogramme.</>)}
+      </>,
       texte: <>On injecte 0,2 µL d’un mélange d’éthanol, d’acétone, d’acétate d’éthyle, de toluène et d’o-xylène (5 % de chacun dans du CS₂, invisible au FID), sur colonne <strong>apolaire</strong>, avec un programme de 40 à 200 °C. Regardez les bandes avancer et le chromatogramme se tracer, puis survolez les pics.</>,
       tache: { type: 'action', ok: lancement > 0 && memeMelange(CINQ), label: '▶ Mettre le mélange et injecter', faire: () => mettre(CINQ), consigne: 'Glissez sur le chromatogramme pour zoomer sur les premiers pics.' } },
     { id: 'teb', titre: 'Sur colonne apolaire : l’ordre des températures d’ébullition', focus: ['viz', 'resultats'],
@@ -495,20 +495,6 @@ export function SimulationCPG() {
       tache: { type: 'qcm', q: 'Sur une colonne apolaire, les composés sortent à peu près…', options: ['dans l’ordre croissant de leur température d’ébullition', 'dans l’ordre décroissant de leur température d’ébullition', 'dans l’ordre de leur masse molaire, quelle que soit leur famille'], bonne: 0,
         expl: 'Sur une phase apolaire, la rétention dépend surtout de la volatilité : plus un composé est volatil, plus il passe de temps dans le gaz et sort tôt. Ce n’est qu’une tendance : l’éthanol (78 °C) sort avant l’acétone (56 °C) car ses liaisons hydrogène ne trouvent pas de partenaire dans la phase apolaire.', indice: "Avec une phase apolaire, pensez à ce qui rend un composé plus ou moins volatil." } },
     { id: 'polaire', titre: 'Sur colonne polaire : les liaisons hydrogène', focus: ['colonne', 'viz', 'resultats'],
-      retenirTitre: 'À RETENIR : CHOISIR LA POLARITÉ DE LA COLONNE',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Colonne</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Ce qui retient</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Ordre de sortie</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Cas particuliers</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>apolaire</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>volatilité</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ordre ≈ températures d’ébullition croissantes</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>alcools : plutôt tôt (peu retenus)</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>polaire (PEG, « WAX »)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>liaisons hydrogène et polarité</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>les composés qui font des liaisons hydrogène (alcools) sont retardés</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>hydrocarbures aromatiques : peu décalés</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Plus un composé est volatil, plus il passe de temps dans le gaz vecteur et plus il sort tôt.</li>
-          <li>Un même t<sub>R</sub> n’est qu’un <strong>indice</strong> d’identité : on confirme sur une colonne de polarité différente ou par spectrométrie de masse.</li>
-        </ul>
-      </>,
       texte: <>Une colonne <strong>polaire</strong> (phase PEG, dite « WAX ») retient surtout les composés capables de <strong>liaisons hydrogène</strong> (les alcools) ou très polaires, quelle que soit leur température d’ébullition.
         <ExempleResolu>Mélange : acétone (téb 56 °C), éthanol (78 °C), toluène (111 °C), o-xylène (144 °C), même programme.<br/>
           Colonne apolaire : {ordreTxt(MEL_POL)}.<br/>
@@ -519,6 +505,11 @@ export function SimulationCPG() {
         indice: 'Cherchez le composé qui peut faire des liaisons hydrogène avec la phase PEG.',
         expl: `Sur colonne apolaire l’ordre est : ${ordreTxt(EX_POL)}. Sur colonne polaire : ${ordreTxt(EX_POL, { phase: 'polaire' })}. Le butan-1-ol, retenu par liaisons hydrogène, passe de la 3e à la dernière place.` } },
     { id: 'ident', titre: 'Identifier un pic par son temps de rétention', focus: ['viz', 'resultats'],
+      retenirTitre: 'À RETENIR : POLARITÉ DE LA COLONNE',
+      retenir: <>
+        <FPolarite/>
+        {puces(<><strong>Apolaire</strong> : les composés sortent à peu près dans l’ordre de leur volatilité (température d’ébullition).</>, <><strong>Polaire</strong> : les composés capables de <strong>liaisons hydrogène</strong> (alcools) sont retardés, quelle que soit leur volatilité.</>, <><strong>Exemple :</strong> un alcool lourd comme le butan-1-ol sort en 3<sup>e</sup> position sur colonne apolaire, mais en dernier sur colonne polaire.</>)}
+      </>,
       texte: <>En routine, on identifie un composé en comparant son t<Ind>R</Ind> à celui d’un <strong>étalon injecté dans les mêmes conditions</strong> (même colonne, même programme, même débit). Étalon de toluène seul : t<Ind>R</Ind> = {v(trSeul(PARAMS_DEFAUT, 'tol'), 3)} min ; étalon d’o-xylène seul : {v(trSeul(PARAMS_DEFAUT, 'oxyl'), 3)} min.</>,
       tache: { type: 'qcm', q: `Dans un échantillon analysé avec la même méthode, un pic sort à ${v(trSeul(PARAMS_DEFAUT, 'tol'), 3)} min. Que peut-on conclure ?`, options: ['c’est probablement du toluène : il faut le confirmer (autre colonne ou spectre de masse)', 'c’est certainement du toluène', 'on ne peut rien dire sans calculer k'], bonne: 0,
         expl: 'Un même t_R est un indice fort mais pas une preuve : un autre composé peut sortir au même instant. On confirme en changeant de colonne (polarité différente) ou par CPG couplée à la spectrométrie de masse.', indice: "Un même t_R ne prouve pas l’identité : d’autres composés peuvent sortir au même moment." } },
@@ -533,14 +524,10 @@ export function SimulationCPG() {
         indice: 'Associez chaque pic à l’étalon de même t_R ; celui qui reste sans pic est absent.',
         expl: `Les pics sont l’acétone (${t2('acet')} min), le toluène (${t2('tol')} min) et le décane (${t2('c10')} min). L’acétate d’éthyle (${t2('aceet')} min) n’a pas de pic : il est absent. C’est la démarche du défi « Identifier des pics ».` } },
     { id: 'coelution', titre: 'Reconnaître une co-élution', focus: ['colonne', 'viz', 'resultats'],
-      retenirTitre: 'À RETENIR : CO-ÉLUTION ET RÉSOLUTION',
+      retenirTitre: 'À RETENIR : IDENTIFIER PAR LE TEMPS DE RÉTENTION',
       retenir: <>
-        <Formule><msub><mi>R</mi><mtext>s</mtext></msub><mo>=</mo><mn>1,18</mn><mo>×</mo><mfrac><mrow><msub><mi>t</mi><mtext>R2</mtext></msub><mo>−</mo><msub><mi>t</mi><mtext>R1</mtext></msub></mrow><mrow><msub><mi>W</mi><mtext>½,1</mtext></msub><mo>+</mo><msub><mi>W</mi><mtext>½,2</mtext></msub></mrow></mfrac></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>R<sub>s</sub> ≥ 1,5 : pics séparés ; R<sub>s</sub> &lt; 1,5 : <strong>co-élution</strong> possible (pic anormalement large).</li>
-          <li>Composés de <strong>volatilités voisines</strong> : le four (rampe plus lente) ne les départage pas ; il faut changer ce qui les distingue, la <strong>polarité de la colonne</strong>.</li>
-          <li>Les réglages du four servent ensuite à ajuster la durée de l’analyse.</li>
-        </ul>
+        <FIdentCPG/>
+        {puces(<>On compare chaque pic à des <strong>étalons injectés dans les mêmes conditions</strong> (même colonne, même programme, même débit), à quelques centièmes de minute près.</>, <>Un étalon sans pic correspondant est <strong>absent</strong> de l’échantillon.</>, <>Un même temps de rétention n’est qu’un <strong>indice</strong> : on confirme sur une autre colonne ou par spectrométrie de masse.</>)}
       </>,
       texte: <>Deux composés <strong>co-éluent</strong> quand leur résolution est trop faible : leurs pics se confondent. On le voit à R<Ind>s</Ind> &lt; 1,5 dans le tableau, ou à un pic anormalement large.
         <ExempleResolu>Éthanol, acétonitrile, acétone et propan-2-ol, méthode de départ.<br/>
@@ -554,46 +541,42 @@ export function SimulationCPG() {
       texte: <>À vous, avec un autre mélange difficile : butanone, hexane, acétate d’éthyle et chloroforme, quatre composés de volatilités voisines. {bouton('Mettre ce mélange (colonne apolaire)', () => mettre(VOISINS))} Sur colonne apolaire, deux pics se superposent. Passez sur la colonne <strong>polaire</strong> (PEG) et injectez à nouveau.</>,
       tache: { type: 'action', ok: memeMelange(VOISINS) && p.phase === 'polaire' && nbPics === 4 && rsMin >= SEUIL_RS[1], label: null,
         consigne: memeMelange(VOISINS) ? `Colonne ${p.phase} · R_s minimal : ${v(rsMin ?? 0)}` : 'Remettez le mélange avec le bouton ci-dessus.' } },
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      retenirTitre: 'À RETENIR : SÉPARATION ET RÉSOLUTION',
+      retenir: <>
+        <FResolution/>
+        <Formule><msub><mi>R</mi><mtext>s</mtext></msub><mo>=</mo><mn>1,18</mn><mo>×</mo><mfrac><mrow><msub><mi>t</mi><mtext>R2</mtext></msub><mo>−</mo><msub><mi>t</mi><mtext>R1</mtext></msub></mrow><mrow><msub><mi>W</mi><mtext>½,1</mtext></msub><mo>+</mo><msub><mi>W</mi><mtext>½,2</mtext></msub></mrow></mfrac></Formule>
+        {puces(<>R<sub>s</sub> ≥ 1,5 : pics séparés ; R<sub>s</sub> &lt; 1,5 : <strong>co-élution</strong> possible (pic anormalement large).</>, <>Pour des composés de <strong>volatilités voisines</strong>, le four ne suffit pas : ce qui les distingue, c’est la nature de la phase de la colonne.</>)}
+      </>,
+      texte: <>Vous savez prévoir l’ordre de sortie, identifier des pics et reconnaître une co-élution. Passez au parcours suivant, à l’exploration ou aux défis.</>, tache: null },
     { id: 'iso', titre: 'Isotherme ou programmation de température ?', focus: ['four', 'viz'],
       texte: <>Mélange très étalé : du très volatil (éthanol, 78 °C) au très lourd (dodécane, 216 °C). {bouton('Mettre ce mélange en isotherme à 40 °C', () => mettre(LARGE, { rampe: 0 }))} Essayez aussi un isotherme à 120 °C.</>,
       tache: { type: 'qcm', q: 'Que constate-t-on en isotherme ?', options: ['à basse température, les composés lourds sortent très tard et en pics larges et bas ; à haute température, les composés volatils sortent ensemble', 'l’isotherme sépare tout, rapidement', 'la température du four ne change pas les temps de rétention'], bonne: 0,
         expl: 'Aucune température unique ne convient à un mélange de volatilités très différentes. On programme donc le four : départ froid pour séparer les volatils, puis montée en température pour faire sortir les lourds plus tôt, en pics fins.', indice: "Comparez une température basse et une haute : que deviennent les composés lourds ? et les volatils ?" } },
     { id: 'prog', titre: 'Programmer le four', focus: ['four', 'viz', 'resultats'],
-      retenirTitre: 'À RETENIR : ISOTHERME OU PROGRAMMATION',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Four</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Avantage</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Limite</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>isotherme basse</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>volatils séparés</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>lourds très tard, pics larges et bas</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>isotherme haute</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>lourds rapides</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>volatils sortent ensemble</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>rampe (°C/min)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>volatils séparés au départ, lourds poussés en fin</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>pics fins, durée raisonnable</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Aucune température unique ne convient à un mélange de volatilités très différentes : on <strong>programme</strong> le four.</li>
-          <li>Débit plus grand : t<sub>0</sub> et tous les t<sub>R</sub> diminuent, mais la pression en tête augmente (elle est proportionnelle au débit).</li>
-        </ul>
-      </>,
       texte: <>Réglez une <strong>rampe de température</strong> (vitesse en °C/min non nulle) pour séparer les 7 composés (R<Ind>s</Ind> ≥ 1,5) avec un dernier pic avant 12 min.</>,
       tache: { type: 'action', ok: p.rampe > 0 && memeMelange(LARGE) && nbPics === 7 && rsMin >= SEUIL_RS[1] && dernierTr <= 12, label: null,
         consigne: memeMelange(LARGE) ? `${nbPics} pics sur 7 · R_s minimal : ${v(rsMin ?? 0)} · dernier pic à ${v(dernierTr)} min` : 'Remettez le mélange à l’étape précédente.' } },
     { id: 'debit', titre: 'Débit du gaz vecteur et pression', focus: ['appareil', 'colonne'],
+      retenirTitre: 'À RETENIR : ISOTHERME OU PROGRAMMATION',
+      retenir: <>
+        <FProgrammation/>
+        {puces(<>Aucune température unique ne convient à un mélange de volatilités très différentes : on <strong>programme</strong> le four (départ froid, puis rampe).</>, <>Les composés volatils sont séparés au début ; les lourds sortent plus tôt, en <strong>pics fins</strong>.</>)}
+      </>,
       texte: <>{bouton('Revenir au mélange de 5 composés (méthode de départ)', () => mettre(CINQ))} Le régulateur maintient un <strong>débit constant</strong> en ajustant la pression en tête de colonne : ≈ {Math.round(ref0)} kPa au départ. Changez le débit et regardez la pression, t<Ind>0</Ind> et les temps de rétention.</>,
       tache: { type: 'qcm', q: 'On passe de 1,2 à 2,4 mL/min. Que se passe-t-il ?', options: ['la pression en tête augmente et tous les composés sortent plus tôt', 'la pression diminue et les composés sortent plus tard', 'rien ne change : seule la température compte'], bonne: 0,
         expl: 'Pour faire passer plus de gaz dans le même tube, il faut plus de pression. Le gaz va plus vite : t₀ et tous les t_R diminuent. Un débit trop élevé élargit un peu les pics ; on garde le débit de la méthode validée.', indice: "Un gaz plus rapide traverse la colonne plus vite, mais rencontre plus de résistance." } },
     { id: 'split', titre: 'Split ou splitless ?', focus: ['injecteur', 'viz'],
-      retenirTitre: 'À RETENIR : SPLIT ET SPLITLESS',
-      retenir: <>
-        <Formule><mtext>fraction injectée</mtext><mo>=</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>+</mo><mtext>rapport de division</mtext></mrow></mfrac><mspace width="1.5em"/><mtext>1:100</mtext><mo>→</mo><mfrac><mn>1</mn><mn>101</mn></mfrac><mo>≈</mo><mn>1</mn><mtext> %</mtext></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Split</strong> : une vanne de fuite évacue la plus grande partie de l’échantillon ; adapté aux échantillons concentrés. Rapport 1:100 → 1:10 : aires × 9 environ.</li>
-          <li><strong>Splitless</strong> : presque tout entre dans la colonne ; réservé aux <strong>traces</strong>, avec un four froid au départ pour reconcentrer les composés en tête de colonne.</li>
-        </ul>
-      </>,
       texte: <>En mode <strong>split</strong>, la vanne de fuite évacue la plus grande partie de l’échantillon vaporisé : avec un rapport 1:100, environ 1 % seulement entre dans la colonne. Essayez 1:10, puis le mode <strong>splitless</strong>.</>,
       tache: { type: 'qcm', q: 'On passe du rapport de division 1:100 à 1:10. Les aires des pics…', options: ['sont multipliées par environ 9', 'sont divisées par 10', 'ne changent pas'], bonne: 0,
         expl: 'La fraction qui entre dans la colonne passe de 1/101 à 1/11 : les aires sont multipliées par ≈ 9. En splitless, presque tout l’échantillon entre : les pics d’un échantillon concentré se déforment (colonne saturée). Le splitless est réservé aux traces, avec un four froid au départ pour reconcentrer les composés en tête de colonne.', indice: "Le rapport 1:100 envoie 1/101 de l’échantillon dans la colonne, le rapport 1:10 en envoie 1/11. Comparez." } },
     { id: 'methode', titre: 'Diagnostiquer : la méthode', focus: ['controle'],
+      retenirTitre: 'À RETENIR : SPLIT ET SPLITLESS',
+      retenir: <>
+        <FSplitCPG/>
+        <Formule><mi>f</mi><mo>=</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>+</mo><mi>r</mi></mrow></mfrac><mspace width="1.5em"/><mi>r</mi><mo>=</mo><mn>50</mn><mo>→</mo><mi>f</mi><mo>=</mo><mfrac><mn>1</mn><mn>51</mn></mfrac><mo>≈</mo><mn>2</mn><mtext> %</mtext></Formule>
+        {puces(<>f : fraction injectée dans la colonne ; r : rapport de division (1:r).</>, <><strong>Split</strong> : une vanne de fuite évacue l’essentiel de l’échantillon ; pour les échantillons <strong>concentrés</strong>.</>, <><strong>Splitless</strong> : presque tout entre dans la colonne ; réservé aux <strong>traces</strong>, four froid au départ pour reconcentrer les composés en tête de colonne.</>)}
+      </>,
       texte: <>Face à une analyse anormale, on <strong>compare la journée à la méthode validée</strong>, indicateur par indicateur. Le « Contrôle de routine » du simulateur donne ces écarts.
         <ExempleResolu titre="Grille de lecture">
           <ul style={{ margin: '4px 0', paddingLeft: 18 }}>
@@ -626,17 +609,15 @@ export function SimulationCPG() {
       texte: <>{bouton('Charger la situation', () => mettre(CINQ, { panne: 'hydrogene' }))} Les pics sont présents, à leur place habituelle, mais leur hauteur est réduite à environ 40 % de la normale et la ligne de base est plus bruitée. La pression est normale.</>,
       tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.hydrogene.nom, PANNES.flamme.nom, PANNES.septum.nom], bonne: 0,
         expl: `Avec une flamme éteinte, il n’y aurait aucun pic ; avec un septum usé, la pression baisserait et les t_R augmenteraient. Ici seul le détecteur est affecté. Geste : ${PANNES.hydrogene.geste}`, indice: "Pensez à ce que provoque, sur le signal, le manque d’un des gaz du détecteur." } },
-    { id: 'fin', titre: 'À retenir', focus: [],
-      texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18 }}>
-        <li>Chaîne : <strong>gaz vecteur → injecteur → colonne (four) → FID</strong>.</li>
-        <li>Colonne <strong>apolaire</strong> : ordre ≈ températures d’ébullition. Colonne <strong>polaire</strong> : les composés capables de liaisons hydrogène (alcools) sont retardés.</li>
-        <li><strong>Co-élution</strong> (R<Ind>s</Ind> &lt; 1,5) entre composés de volatilités voisines : le four n’y peut rien, on change de colonne.</li>
-        <li>On <strong>identifie</strong> par t<Ind>R</Ind> (étalon dans les mêmes conditions) et on confirme par une autre méthode.</li>
-        <li>La <strong>programmation</strong> du four sépare les volatils et fait sortir les lourds plus tôt, en pics fins. Le débit raccourcit l’analyse mais augmente la pression.</li>
-        <li><strong>Split</strong> pour les échantillons concentrés, <strong>splitless</strong> pour les traces.</li>
-        <li>Diagnostic : pression ↓ et t<Ind>R</Ind> ↑ : fuite (septum). Traînée des polaires : liner. Aucun pic : flamme. Pics petits et bruit ↑ : débit de dihydrogène. Ligne de base qui monte : ressuage.</li></ul></ARetenir>,
-      tache: null },
+    { id: 'fin', titre: 'Le bilan', focus: [],
+      retenirTitre: 'À RETENIR : DIAGNOSTIQUER UNE PANNE',
+      retenir: <>
+        <FDiagnosticCPG/>
+        {puces(<>On lit les indicateurs <strong>dans l’ordre</strong> : pression, temps de rétention, forme et aires des pics, ligne de base.</>, <>Chaque panne a sa signature : on compare toujours à la méthode validée.</>)}
+      </>,
+      texte: <>Vous savez choisir et régler une méthode, puis diagnostiquer une panne. Passez à l’exploration ou aux défis.</>, tache: null },
   ];
+  const ETAPES = ORDRE_PARC[parc - 1].map(id => TOUTES.find(x => x.id === id));
   const cadre = id => enGuide && (ETAPES[Math.min(etape, ETAPES.length - 1)].focus || []).includes(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
 
   // ════════════════ DÉFIS ════════════════
@@ -870,6 +851,7 @@ export function SimulationCPG() {
     </ARetenir>);
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc === 1 && <button onClick={() => setParc(2)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours 2 : régler la méthode et diagnostiquer</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button></span>);
 
@@ -898,7 +880,12 @@ export function SimulationCPG() {
           {melange}
           {resultats}
         </div>
-        {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : enDefi ? hypotheses : null}
+        {enGuide ? <div>
+          <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: KIT.txt }}>Parcours :</span>
+            {[[1, '1. Séparer et identifier'], [2, '2. Régler la méthode et diagnostiquer']].map(([k, nom]) => <button key={k} aria-pressed={parc === k} onClick={() => setParc(k)} style={styleBouton(parc === k, ORANGE_GUIDE)}>{nom}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? hypotheses : null}
       </div>
       {!enDefi && <div style={{ marginBottom: 12 }}>{hypotheses}</div>}
       {mode === 'explore' && <div className="cg-l2">{aEssayer}{retenir}</div>}
