@@ -2450,6 +2450,58 @@ export const PLAUSIBLES = [
       F('elle est valide : des résidus nuls prouvent que la mesure n’a aucun bruit', 'Les résidus sont nuls par construction : le bruit existe, mais le modèle l’absorbe entièrement dans ses coefficients.'),
       F('elle est valide, il manque seulement un test de Student pour la confirmer', 'Le test de Student exige un écart-type estimé avec n − p > 0 degrés de liberté : ici le test est impossible.'),
     ] }),
+  // ───────────────────────────── Ondes mécaniques : célérité et retard (1G)
+  P({ id: 'ond1g-celerite-val-orage', domaine: 'Ondes mécaniques : célérité et retard', niveau: 1, titre: 'La distance d’un orage', plausible: true,
+    enonce: 'Un élève voit un éclair, puis entend le tonnerre 6,0 s plus tard. Il calcule : d = c × Δt = 340 m/s × 6,0 s = 2 040 m, soit environ 2,0 km.',
+    reperes: [['Célérité du son dans l’air', 'environ 340 m/s à 20 °C'], ['Lumière', 'quasi instantanée à cette échelle'], ['Règle pratique', '3 s entre l’éclair et le tonnerre ≈ 1 km']],
+    ver: 'La lumière arrive presque instantanément : Δt est la durée de propagation du son. d = 340 × 6,0 ≈ 2 040 m ≈ 2,0 km, ce qui correspond à la règle « 3 s ≈ 1 km ». Le résultat est plausible.',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('Plausible : 6,0 s correspondent à environ 2 km (« 3 s ≈ 1 km »)', 'Le calcul utilise la bonne relation et la bonne célérité, et l’ordre de grandeur est cohérent.'),
+      F('Pas plausible : un orage est toujours très proche, à moins de 100 m de l’observateur', 'Un orage est souvent à plusieurs kilomètres : le tonnerre s’entend de loin.'),
+      F('Pas plausible : il faut utiliser la célérité de la lumière', 'La durée mesurée est celle du son ; la lumière est quasi instantanée et ne compte pas dans Δt.'),
+    ] }),
+  P({ id: 'ond1g-celerite-val-inverse', domaine: 'Ondes mécaniques : célérité et retard', niveau: 1, titre: 'Célérité sur une corde', plausible: false,
+    enonce: 'Sur une corde, deux capteurs sont distants de d = 2,0 m et le retard est Δt = 0,50 s. Un élève calcule c = Δt ÷ d = 0,50 ÷ 2,0 = 0,25 m/s.',
+    reperes: [['Distance entre les capteurs', '2,0 m'], ['Retard mesuré', '0,50 s'], ['Unité de la célérité', 'm/s']],
+    ver: 'L’élève a divisé la durée par la distance : c = d ÷ Δt = 2,0 ÷ 0,50 = 4,0 m/s. Une célérité de 0,25 m/s signifierait qu’une bosse met 8 s pour parcourir 2 m, ce qui n’est pas ce que l’on observe.',
+    q2: 'Quelle erreur explique le mieux ce résultat ?',
+    options: [
+      V('il a inversé le rapport : il a calculé Δt ÷ d', 'Une célérité est une distance divisée par une durée : 2,0 m ÷ 0,50 s = 4,0 m/s.'),
+      F('il a oublié de convertir les mètres en kilomètres', 'Les unités m et s donnent directement des m/s : aucune conversion n’est nécessaire ici.'),
+      F('il a pris un retard trop grand pour la distance', 'Les données sont cohérentes : l’erreur est dans la formule, pas dans les mesures.'),
+    ] }),
+  P({ id: 'ond1g-celerite-val-eau', domaine: 'Ondes mécaniques : célérité et retard', niveau: 1, titre: 'Le son dans l’eau', plausible: false,
+    enonce: 'Un élève mesure la célérité du son dans l’eau d’un bassin et trouve c = 150 m/s. Il en conclut : « le son va moins vite dans l’eau que dans l’air (340 m/s) ».',
+    reperes: [['Son dans l’air', 'environ 340 m/s à 20 °C'], ['Son dans l’eau', 'environ 1 500 m/s'], ['Son dans l’acier', 'environ 5 900 m/s']],
+    ver: 'Dans l’eau, le son se propage à environ 1 500 m/s, soit plus de quatre fois plus vite que dans l’air. Une valeur de 150 m/s est dix fois trop petite : l’élève s’est probablement trompé d’un facteur 10 dans la durée ou la distance (conversion en ms ou en cm).',
+    q2: 'Que faut-il en conclure ?',
+    options: [
+      V('le résultat est dix fois trop petit : revoir les unités', 'La célérité du son dans l’eau vaut environ 1 500 m/s : un facteur 10 vient souvent d’une erreur de conversion (ms, cm).'),
+      F('le résultat est correct : l’eau freine le son, donc le son y est plus lent', 'L’eau, beaucoup moins compressible que l’air, transmet le son plus vite.'),
+      F('le résultat dépend de la source sonore utilisée', 'La célérité dépend du milieu, pas de la source.'),
+    ] }),
+  P({ id: 'ond1g-celerite-val-sonar', domaine: 'Ondes mécaniques : célérité et retard', niveau: 1, titre: 'La profondeur donnée par un sondeur', plausible: false,
+    enonce: 'Le sondeur d’un bateau reçoit l’écho du fond 0,16 s après l’émission. La célérité du son dans l’eau est de 1 500 m/s. L’élève calcule : profondeur = 1 500 × 0,16 = 240 m.',
+    reperes: [['Célérité du son dans l’eau', 'environ 1 500 m/s'], ['Durée mesurée', '0,16 s entre l’émission et la réception'], ['Relation', 'distance parcourue = c × Δt']],
+    ver: 'Le signal descend jusqu’au fond puis remonte : la distance parcourue c × Δt = 240 m est le double de la profondeur. La profondeur est donc 240 ÷ 2 = 120 m.',
+    q2: 'Que penser de ce calcul ?',
+    options: [
+      V('faux : le signal fait un aller-retour, la profondeur est 120 m', 'La distance parcourue par le signal, c × Δt = 240 m, est le double de la profondeur : profondeur = c × Δt ÷ 2 = 120 m.'),
+      F('juste : le signal parcourt 240 m depuis le bateau jusqu’au fond', 'Le signal descend jusqu’au fond puis remonte vers le bateau : les 240 m comprennent l’aller et le retour.'),
+      F('faux : la célérité du son dans l’eau est de 340 m/s, pas 1 500 m/s', 'La célérité du son dans l’eau vaut environ 1 500 m/s : la valeur utilisée est la bonne.'),
+    ] }),
+  P({ id: 'ond1g-celerite-val-seisme', domaine: 'Ondes mécaniques : célérité et retard', niveau: 1, titre: 'Distance d’un séisme', plausible: true,
+    enonce: 'Une station sismique reçoit une onde P 8,0 s après un séisme. La célérité des ondes P dans la croûte est c = 6,0 km/s. Un élève calcule d = 6,0 km/s × 8,0 s = 48 km.',
+    reperes: [['Ondes P dans la croûte', 'environ 6 km/s'], ['Relation', 'd = c × Δt'], ['Unités', 'km/s × s = km']],
+    ver: 'Les secondes se simplifient : 6,0 km/s × 8,0 s = 48 km. L’ordre de grandeur est cohérent avec la célérité des ondes sismiques (quelques km/s) et une durée de quelques secondes.',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('Plausible : d = c × Δt donne 48 km, un ordre de grandeur cohérent', 'Le résultat est exprimé directement en km, sans conversion, car c est en km/s et Δt en s.'),
+      F('Pas plausible : il faut d’abord convertir les km en m avant de multiplier', 'Ce n’est pas obligatoire : km/s × s donne des km. Convertir donnerait 48 000 m, la même distance.'),
+      F('Pas plausible : une onde ne peut pas parcourir 48 km en 8,0 s', 'Ce n’est pas impossible : à 6,0 km/s, une onde parcourt 48 km en 8,0 s.'),
+    ] }),
+
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────

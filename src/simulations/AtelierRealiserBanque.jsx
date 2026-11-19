@@ -483,6 +483,35 @@ function genLentilleSignes() {
     retenir: ['Repère : origine O (centre de la lentille), axe orienté dans le sens de la lumière.', 'Avant la lentille : négatif (OA < 0 pour un objet réel). Après la lentille : positif (OA′ > 0 pour une image réelle).', 'Remplacer AVEC les parenthèses et les signes : 1/f′ = 1/(+OA′) − 1/(−|OA|) = 1/OA′ + 1/|OA|.', 'OA′ < 0 : image virtuelle (même côté que l’objet). γ < 0 : image renversée.'] };
 }
 
+// ──────────────────────── Famille « Ondes mécaniques : célérité et retard » (1re spécialité) ────────────────────────
+function genOndCelerite() {
+  const dec = x => String(Number(x.toFixed(6))).replace('.', ',');
+  const [milieu, d, dt] = tire([['un matériau', 34, 1], ['un matériau', 51, 1.5], ['un matériau', 75, 0.5], ['un matériau', 150, 1], ['un matériau', 60, 0.5], ['un matériau', 64, 0.2], ['un matériau', 48, 0.2], ['un matériau', 40, 0.5], ['un matériau', 59, 0.1], ['un matériau', 118, 0.2]]);
+  const c = d * 10 / dt;                                        // m/s : d (cm) → m, Δt (ms) → s
+  const q1 = { id: 'o0', type: 'num', q: <>Deux capteurs, distants de <b>{d}{NB}cm</b>, détectent le même signal sonore dans {milieu} avec un retard de <b>{nb(dt, 2)}{NB}ms</b>. Calculez la célérité c du son, en <b>m/s</b>.</>, unite: 'm/s', vrai: c, csMin: 2,
+    aide: 'c = d ÷ Δt. Convertissez d en mètres (1 cm = 0,01 m) et Δt en secondes (1 ms = 0,001 s) avant de diviser.',
+    pieges: [[c / 10, 'Vous avez divisé directement des cm par des ms : 1 cm/ms = 10 m/s. Convertissez d en m et Δt en s.'], [dt / d * 10, 'Vous avez calculé Δt ÷ d : la célérité est d ÷ Δt.']],
+    expl: <>d = {d}{NB}cm = {dec(d / 100)}{NB}m et Δt = {nb(dt, 2)}{NB}ms = {dec(dt / 1000)}{NB}s, donc c = d ÷ Δt = <b>{avecU(c, 'm/s', 3)}</b>.</> };
+  const dtO = tire([2, 3, 4, 5, 7, 8, 10]), dkm = 0.34 * dtO;
+  const q2 = { id: 'o1', type: 'num', q: <>Un éclair est vu, puis le tonnerre est entendu <b>{dtO}{NB}s</b> plus tard. La célérité du son dans l’air est c = 340{NB}m/s ; la lumière arrive quasi instantanément. Calculez la distance de l’éclair, en <b>km</b>.</>, unite: 'km', vrai: dkm, csMin: 2, tolRel: 0.05,
+    aide: 'd = c × Δt, en mètres, puis convertissez en kilomètres (1 km = 1 000 m).',
+    pieges: [[340 * dtO, 'Ce résultat est en mètres : divisez par 1 000 pour l’exprimer en km.'], [340 / dtO, 'Vous avez divisé c par Δt : la distance est c × Δt.']],
+    expl: <>d = c × Δt = 340 × {dtO} = {dec(340 * dtO)}{NB}m, soit <b>{avecU(dkm, 'km', 2)}</b>.</> };
+  const dtE = tire([40, 60, 80, 100, 120, 160, 200]), H = 0.75 * dtE;
+  const q3 = { id: 'o2', type: 'num', q: <>Le sondeur d’un bateau reçoit l’écho du fond <b>{dtE}{NB}ms</b> après l’émission. La célérité du son dans l’eau est c = 1{NB}500{NB}m/s. Calculez la profondeur de la mer, en <b>m</b>.</>, unite: 'm', vrai: H, csMin: 2,
+    aide: 'Le signal fait un aller-retour : il parcourt c × Δt, soit deux fois la profondeur. Convertissez Δt en secondes.',
+    pieges: [[2 * H, 'Vous avez oublié l’aller-retour : la distance c × Δt est le double de la profondeur.'], [H * 1000, 'Vous avez gardé Δt en ms : convertissez-le en secondes (1 ms = 0,001 s) avant de calculer.']],
+    expl: <>Distance parcourue : c × Δt = 1 500 × {dec(dtE / 1000)} = {dec(2 * H)}{NB}m (aller-retour), donc profondeur = <b>{avecU(H, 'm', 2)}</b>.</> };
+  const k = tire([1, 2, 3, 5, 10]), dA = Number((5.9 * k).toFixed(1));
+  const q4 = { id: 'o3', type: 'num', q: <>Dans l’acier, la célérité du son est c = 5{NB}900{NB}m/s. Un signal parcourt une barre d’acier de <b>{dec(dA)}{NB}m</b>. Calculez la durée de propagation Δt, en <b>ms</b>.</>, unite: 'ms', vrai: k, csMin: 1,
+    aide: 'Δt = d ÷ c en secondes, puis multipliez par 1 000 pour obtenir des millisecondes.',
+    pieges: [[k / 1000, 'Ce résultat est en secondes : multipliez par 1 000 pour l’exprimer en ms.'], [5900 / dA, 'Vous avez divisé c par d : la durée est d ÷ c.']],
+    expl: <>Δt = d ÷ c = {dec(dA)} ÷ 5 900 = {dec(k / 1000)}{NB}s, soit <b>{avecU(k, 'ms', 2)}</b>.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > 0.03 * Math.abs(q.vrai)); });
+  return { intro: 'Ondes mécaniques : célérité, retard et distance, avec les conversions d’unités.', questions: [q1, q2, q3, q4],
+    retenir: ['Célérité : c = d ÷ Δt (distance en m, durée en s, célérité en m/s).', 'Distance parcourue : d = c × Δt ; durée de propagation : Δt = d ÷ c.', 'Un écho fait un aller-retour : profondeur = c × Δt ÷ 2.', 'Convertir avant de calculer : 1 cm = 0,01 m ; 1 ms = 0,001 s ; 1 km = 1 000 m.', 'La célérité dépend du milieu : air ≈ 340 m/s, eau ≈ 1 500 m/s, acier ≈ 5 900 m/s.'] };
+}
+
 // ──────────────────────── Famille « Lentille mince » (1re spécialité) ────────────────────────
 function genLentille() {
   const [d, f, Op] = tire([[30, 10, 15], [20, 10, 20], [60, 10, 12], [24, 12, 24], [36, 12, 18], [40, 8, 10], [15, 10, 30]]);
@@ -1920,6 +1949,7 @@ export const FAMILLES = [
   { id: 'tens-klevens', groupe: 'Formules', titre: 'CMC et longueur de la chaîne : prolongement du programme (BTS)', gen: genTensKlevens, domaine: 'Tensioactifs : de la structure à la CMC' },
   { id: 'microsc-mise-au-point', groupe: 'Formules', titre: 'Le microscope mis au point : positions et taille de l’image intermédiaire (terminale STL)', gen: genMicroMiseAuPoint, domaine: 'Microscope' },
   { id: 'lum1-conjugaison', groupe: 'Formules', titre: 'Lentille mince : conjugaison et grandissement (1re spé)', gen: genLentille, domaine: 'Lentille mince' },
+  { id: 'ond1g-celerite', groupe: 'Formules', titre: 'Ondes mécaniques : célérité, retard et distance (1re spé)', gen: genOndCelerite, domaine: 'Ondes mécaniques : célérité et retard' },
   { id: 'pmel-calcul', groupe: 'Formules', titre: 'Plan de mélange : fractions, écart au milieu, coefficient binaire et prévision (BTS)', gen: genPlanMelange, domaine: 'Plans' },
   { id: 'pfac-calcul', groupe: 'Formules', titre: 'Plan factoriel : codage, coefficient, prévision et degrés de liberté (BTS)', gen: genPlanFactoriel, domaine: 'Plans' },
   { id: 'dop-calcul', groupe: 'Formules', titre: 'Effet Doppler : du décalage à la vitesse (TSTL)', gen: genDoppler, domaine: 'Ondes' },

@@ -39,6 +39,7 @@ export const CHAPITRES = [
   { id: '1g-energie-meca', niveau: '1G', label: '🎢 Aspects énergétiques des phénomènes mécaniques', sims: [106, 107, 108], domaines: ['Mécanique'] },
   { id: '1g-mouvement', niveau: '1G', label: '🚀 Mouvement d’un système', sims: [52], domaines: ['Mécanique'] },
   { id: '1g-lentille', niveau: '1G', label: '🔍 Image donnée par une lentille mince', sims: [115], domaines: ['Lentille mince'] },
+  { id: 'ondes-meca', niveau: '1G', label: '🌊 Ondes mécaniques', sims: [150], domaines: ['Ondes mécaniques : célérité et retard'] },
 
   // TG : un chapitre = une partie numérotée du programme de terminale (la rubrique est le thème du programme) ; plusieurs simulations par chapitre.
   { id: 'tg-composition', niveau: 'TG', rubrique: 'Constitution et transformations de la matière', label: '🧪 Déterminer la composition d’un système par des méthodes physiques et chimiques', sims: [121, 119, 135, 136], domaines: ['pH et concentration en ions oxonium', 'Titrage pH-métrique', 'Conductimétrie : conductivité et titrage', 'Conductimétrie : étalonnage et conductance'] },

@@ -1147,5 +1147,21 @@
  "36:ab-pred-rea-rapport": "REA65",
  "36:ab-pred-rea-pka": "REA66",
  "36:ab-tamp-rea-melange": "REA67",
- "36:ab-tamp-rea-ajout": "REA68"
+ "36:ab-tamp-rea-ajout": "REA68",
+ "34:ond1g-celerite-sonar.0": "SAPP307",
+ "34:ond1g-celerite-sonar.1": "SAPP308",
+ "34:ond1g-celerite-station.0": "SAPP309",
+ "34:ond1g-celerite-station.1": "SAPP310",
+ "37:prevoir:ond1g-celerite-matiere": "ANA501",
+ "37:prevoir:ond1g-celerite-retard-distance": "ANA502",
+ "37:prevoir:ond1g-celerite-milieu": "ANA503",
+ "37:prevoir:ond1g-celerite-vitesse-point": "ANA504",
+ "37:prevoir:ond1g-celerite-premiere-station": "ANA505",
+ "37:prevoir:ond1g-celerite-secouer-plus-fort": "ANA506",
+ "77:plausible:ond1g-celerite-val-orage": "VAL276",
+ "77:plausible:ond1g-celerite-val-inverse": "VAL277",
+ "77:plausible:ond1g-celerite-val-eau": "VAL278",
+ "77:plausible:ond1g-celerite-val-sonar": "VAL279",
+ "77:plausible:ond1g-celerite-val-seisme": "VAL280",
+ "36:ond1g-celerite": "REA69"
 }

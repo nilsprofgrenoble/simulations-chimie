@@ -4278,6 +4278,50 @@ export const PREVOIR = [
       F('parce qu’on suppose que le facteur E n’a aucun effet sur la réponse', 'On suppose l’inverse : c’est l’interaction A·B·C·D que l’on juge négligeable, pas l’effet de E.'),
       F('parce que les 16 essais sont répétés pour estimer chaque effet à part', 'Répéter les essais précise la mesure mais ne sépare pas des colonnes identiques.'),
     ] },
+  // ───────────────────────────── Ondes mécaniques : célérité et retard (1G)
+  { id: 'ond1g-celerite-matiere', domaine: 'Ondes mécaniques : célérité et retard', titre: 'Un ruban noué sur une corde',
+    enonce: 'Une longue corde est tendue horizontalement. Un petit ruban rouge est noué en un point M de la corde. Une personne secoue l’extrémité de la corde : une bosse se propage le long de la corde, passe en M, puis continue vers l’autre extrémité.', q: 'Que fait le ruban pendant le passage de la bosse ?', options: [
+      V('il monte puis redescend, au même endroit', 'Une onde transporte une perturbation, pas de matière : chaque point de la corde se déplace seulement autour de sa position, ici vers le haut puis vers le bas.'),
+      F('il suit la bosse jusqu’à l’extrémité de la corde', 'La bosse avance, pas la matière : le ruban, attaché à un point de la corde, ne se déplace pas le long de la corde.'),
+      F('il reste immobile tant que la bosse passe', 'Le point M subit la perturbation : il monte puis redescend quand la bosse arrive en M.'),
+      F('il glisse vers la source puis revient', 'Un point de la corde ne se déplace pas le long de la corde : son mouvement est perpendiculaire à la direction de propagation.'),
+    ] },
+  { id: 'ond1g-celerite-retard-distance', domaine: 'Ondes mécaniques : célérité et retard', titre: 'Le retard quand on écarte les capteurs',
+    enonce: 'Sur une corde, deux capteurs distants de 2,0 m enregistrent la même bosse avec un retard de 0,40 s. Sans rien changer à la corde, on écarte les capteurs à 4,0 m l’un de l’autre.', q: 'Que devient le retard entre les deux capteurs ?', options: [
+      V('il double, il vaut 0,80 s', 'Dans un même milieu la célérité ne change pas : c = d ÷ Δt. La distance double, donc la durée double aussi (Δt = d ÷ c).'),
+      F('il reste égal à 0,40 s', 'Le retard dépend de la distance : la perturbation doit parcourir deux fois plus de chemin à la même célérité.'),
+      F('il est divisé par 2, il vaut 0,20 s', 'C’est l’inverse : plus la distance est grande, plus le retard est grand (à célérité constante).'),
+      F('il devient quatre fois plus grand', 'Le retard est proportionnel à la distance (et non à son carré) : doubler d double Δt.'),
+    ] },
+  { id: 'ond1g-celerite-milieu', domaine: 'Ondes mécaniques : célérité et retard', titre: 'Le même son dans l’air puis dans l’eau',
+    enonce: 'Un claquement est produit à une extrémité d’un long tube rempli d’air ; un microphone à l’autre extrémité mesure la durée de propagation du son. On refait la même expérience avec le même tube, rempli d’eau cette fois.', q: 'Que devient la durée de propagation ?', options: [
+      V('elle diminue : le son se propage plus vite dans l’eau', 'Dans l’eau la célérité du son (environ 1 500 m/s) est supérieure à celle dans l’air (340 m/s). La distance est la même : Δt = d ÷ c est plus petit.'),
+      F('elle augmente : le son se propage moins vite dans l’eau', 'C’est l’inverse : la célérité du son est plus grande dans l’eau que dans l’air, donc la durée diminue (Δt = d ÷ c).'),
+      F('elle ne change pas : seule la source du son compte ici', 'La célérité dépend du milieu de propagation, pas de la source : changer de milieu change la durée.'),
+      F('elle ne change pas : la distance parcourue est la même', 'La distance est la même, mais la célérité change avec le milieu : Δt = d ÷ c change donc aussi.'),
+    ] },
+  { id: 'ond1g-celerite-vitesse-point', domaine: 'Ondes mécaniques : célérité et retard', titre: 'Célérité et vitesse d’un point de la corde',
+    enonce: 'Une onde avance sur une corde avec une célérité c = 5,0 m/s. Un élève affirme : « le point M de la corde se déplace à 5,0 m/s vers la droite ».', q: 'Que penser de cette affirmation ?', options: [
+      V('fausse : c’est la vitesse de l’onde, pas celle de M', 'La célérité est la vitesse de propagation de la perturbation. Un point de la corde se déplace verticalement, avec une vitesse variable.'),
+      F('vraie : le point M avance avec l’onde à la même vitesse qu’elle', 'Il n’y a pas de transport de matière : M reste sur sa verticale et ne suit pas l’onde.'),
+      F('vraie en moyenne : M avance à 5,0 m/s, mais par à-coups', 'Il n’y a pas de transport de matière le long de la corde : M ne s’y déplace pas, ni en moyenne ni par à-coups.'),
+      F('fausse : M est immobile, seule la main qui secoue la corde bouge', 'M n’est pas immobile : il monte puis redescend au passage de la perturbation.'),
+    ] },
+  { id: 'ond1g-celerite-premiere-station', domaine: 'Ondes mécaniques : célérité et retard', titre: 'Quelle station enregistre le séisme en premier ?',
+    enonce: 'Un séisme superficiel se produit à un endroit donné. Trois stations sismiques A, B et C sont situées respectivement à 45 km, 30 km et 80 km de ce lieu. Les ondes se propagent à la même célérité dans toutes les directions.', q: 'Dans quel ordre les stations enregistrent-elles l’onde ?', options: [
+      V('B (30 km), puis A (45 km), puis C (80 km)', 'À célérité constante, Δt = d ÷ c : la durée est proportionnelle à la distance, donc la station la plus proche enregistre en premier.'),
+      F('C (80 km), puis A (45 km), puis B (30 km)', 'C’est l’ordre inverse : plus la station est loin, plus l’onde met de temps à l’atteindre.'),
+      F('A (45 km), puis C (80 km), puis B (30 km)', 'L’ordre ne suit pas la distance : la durée Δt = d ÷ c augmente avec d.'),
+      F('les trois en même temps, car la célérité est la même', 'La célérité est la même, mais les distances diffèrent : Δt = d ÷ c est plus grand pour la station la plus éloignée.'),
+    ] },
+  { id: 'ond1g-celerite-secouer-plus-fort', domaine: 'Ondes mécaniques : célérité et retard', titre: 'Secouer la corde plus fort',
+    enonce: 'Une bosse se propage sur une corde et met 0,50 s pour aller d’un capteur à l’autre. On recommence en secouant la corde plus vigoureusement : la bosse est deux fois plus haute. La corde n’a pas changé.', q: 'Que devient la durée de propagation entre les deux capteurs ?', options: [
+      V('elle ne change pas, elle reste égale à 0,50 s', 'La célérité dépend du milieu (ici la corde et sa tension), pas de la façon de produire la perturbation.'),
+      F('elle diminue, car la bosse est plus énergique', 'Secouer plus fort augmente la hauteur de la bosse, pas sa célérité.'),
+      F('elle double, car la bosse est plus haute', 'La hauteur de la bosse (l’amplitude) n’influence pas la célérité dans ce modèle.'),
+      F('elle augmente un peu, car la corde est plus déformée', 'Une bosse plus haute ne rend pas la corde plus lente : la célérité dépend de la corde et de sa tension, pas de la hauteur de la bosse.'),
+    ] },
+
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';
