@@ -3212,6 +3212,38 @@ export const PLAUSIBLES = [
       F('il aurait dû prendre des énergies de liaison plus grandes pour retrouver −890', 'Changer les énergies de liaison pour retrouver une valeur n’est pas une démarche valable : l’écart vient de l’état de l’eau, pas des données.'),
       F('il n’a pas équilibré l’équation avec le bon nombre de molécules de dioxygène', 'L’équation CH₄ + 2 O₂ → CO₂ + 2 H₂O est correcte : l’écart ne vient pas des coefficients mais de l’état physique de l’eau.'),
     ] }),
+  // ───────────────────────────── Formules topologiques et isomérie de constitution (TG, sim 172)
+  P({ id: 'top-val-cyclobutane', domaine: 'Formules topologiques et isomérie de constitution', niveau: 2, titre: 'Formule brute du cyclobutane', plausible: false,
+    enonce: 'Le cyclobutane est un cycle de 4 atomes de carbone : chaque carbone est lié à deux autres carbones du cycle. Un élève écrit sa formule brute : C₄H₁₀.',
+    reperes: [['Un atome de carbone', 'toujours 4 liaisons'], ['Chaîne ouverte saturée de 4 carbones', 'C₄H₁₀'], ['Un cycle', 'enlève 2 H par rapport à la chaîne saturée']],
+    ver: 'Dans le cycle, chaque carbone est lié à 2 carbones : il lui manque 2 liaisons, donc 2 H. Pour 4 carbones : 4 × 2 = 8 H, soit C₄H₈. C₄H₁₀ est la formule de la chaîne ouverte (butane), pas celle du cycle.',
+    q2: 'Quelle est l’erreur la plus probable ?',
+    options: [
+      V('il a écrit la formule de la chaîne ouverte, sans retrait de 2 H', 'En refermant la chaîne en cycle, on forme une liaison C–C de plus : les deux carbones concernés perdent chacun un H. D’où C₄H₈.'),
+      F('il a compté un carbone de trop dans le cycle de départ, avant de retirer les H', 'Le cycle compte bien 4 carbones, et le nombre de carbones de C₄H₁₀ est lui aussi 4 : l’erreur porte sur les hydrogènes.'),
+      F('il a ajouté 2 H à cause de la liaison qui ferme le cycle', 'La liaison qui ferme le cycle est une liaison C–C de plus : elle retire des H (un à chacun des deux carbones concernés), elle n’en ajoute pas.'),
+    ] }),
+  P({ id: 'top-val-nombre', domaine: 'Formules topologiques et isomérie de constitution', niveau: 2, titre: 'Combien d’isomères de C₄H₁₀ ?',
+    plausible: false,
+    enonce: 'Un élève cherche les isomères de constitution de C₄H₁₀ et en propose trois : le butane, le 2-méthylpropane et le « 3-méthylpropane ».',
+    reperes: [['Numérotation d’une chaîne', 'on choisit le sens qui donne le plus petit numéro'], ['Chaîne de 3 carbones : propane', 'les carbones 1 et 3 sont en bout de chaîne'], ['Isomères de constitution', 'enchaînements d’atomes différents']],
+    ver: 'Une ramification sur le carbone 3 d’une chaîne de 3 carbones est une ramification en bout de chaîne : en réalité la chaîne compte 4 carbones (butane). Le « 3-méthylpropane » est le 2-méthylpropane numéroté de l’autre bout, la même molécule : C₄H₁₀ n’a que 2 isomères.',
+    q2: 'Que penser de la liste de l’élève ?',
+    options: [
+      V('fausse : le « 3-méthylpropane » n’est pas un troisième isomère', 'Ce nom ne respecte pas la règle de numérotation et ne correspond à aucun nouvel enchaînement : il n’y a que 2 isomères, le butane et le 2-méthylpropane.'),
+      F('exacte : trois enchaînements différents sont possibles pour 4 carbones', 'Avec 4 carbones saturés, il n’y a que deux enchaînements : la chaîne droite, ou une chaîne de 3 carbones avec une ramification méthyle sur le carbone central.'),
+      F('exacte, mais il manque encore le cyclobutane', 'Le cyclobutane a pour formule brute C₄H₈ : il n’est pas un isomère de C₄H₁₀.'),
+    ] }),
+  P({ id: 'top-val-ok-penetene', domaine: 'Formules topologiques et isomérie de constitution', niveau: 1, titre: 'Pent-1-ène et cyclopentane', plausible: true,
+    enonce: 'Un élève écrit pour le pent-1-ène, CH₂=CH–CH₂–CH₂–CH₃, la formule brute C₅H₁₀ et remarque que le cyclopentane (cycle de 5 carbones, chacun portant 2 H) a la même formule brute.',
+    reperes: [['Chaîne saturée de 5 carbones', 'C₅H₁₂'], ['Une double liaison C=C ou un cycle', 'enlève 2 H'], ['Isomères de constitution', 'même formule brute, enchaînement différent']],
+    ver: 'Pent-1-ène : 2 + 1 + 2 + 2 + 3 = 10 H pour 5 carbones. Cyclopentane : 5 × 2 = 10 H. Les deux ont la formule C₅H₁₀ avec des enchaînements différents : ce sont des isomères de constitution.',
+    q2: 'Que penser de cette remarque ?',
+    options: [
+      V('cohérent : une C=C et un cycle font perdre 2 H chacun', 'Les deux structures ont 2 H de moins que la chaîne saturée C₅H₁₂, donc la même formule C₅H₁₀ : ce sont des isomères de constitution.'),
+      F('incohérent : un cycle et une double liaison n’ont pas la même formule', 'Dans les deux cas, 2 H manquent par rapport à la chaîne saturée : les formules brutes sont identiques.'),
+      F('incohérent : le cyclopentane doit avoir 12 H, comme la chaîne saturée', 'Fermer la chaîne en cycle enlève 2 H : le cyclopentane compte 10 H, pas 12.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────

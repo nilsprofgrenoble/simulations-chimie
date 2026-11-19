@@ -6,6 +6,7 @@
 // Option de QCM ou de choix multiple : [texte, juste (booléen), explication].
 
 import { presenter } from './presenter.js';
+import { figureTopo } from './topoFigure.js';
 const V = (t, e) => [t, true, e];
 const F = (t, e) => [t, false, e];
 
@@ -4783,6 +4784,29 @@ export const PREVOIR = [
       F('l’énergie libérée double, et l’énergie molaire E_r double elle aussi', 'E_r est ramenée à une mole de combustible : elle ne change pas quand on brûle plus de combustible ; seule l’énergie totale libérée est proportionnelle à n.'),
       F('l’énergie libérée reste la même, car la réaction chimique est la même', 'La réaction est la même, donc E_r aussi, mais deux fois plus de molécules brûlent : l’énergie totale libérée est doublée.'),
       F('l’énergie libérée quadruple : deux fois plus de molécules et de liaisons', 'Le nombre de liaisons rompues et formées est proportionnel à la quantité de combustible : doubler n double l’énergie, il ne la multiplie pas par quatre.'),
+    ] },
+  // ───────────────────────────── Formules topologiques et isomérie de constitution (TG, sim 172)
+  { id: 'top-ana-cinq-liaisons', domaine: 'Formules topologiques et isomérie de constitution', titre: 'Une double liaison mal placée',
+    enonce: 'Un élève veut écrire la formule semi-développée du but-2-ène, qui possède une double liaison C=C entre les carbones C2 et C3. Il écrit CH₃–CH₂=CH–CH₃.', q: 'Que dire de cette écriture ?', options: [
+      V('impossible : C2 aurait 5 liaisons au total', 'Le carbone C2 écrit « CH₂= » porte 2 liaisons C–H, une liaison simple avec C1 et une double liaison avec C3 : 2 + 1 + 2 = 5 liaisons. Un carbone en fait toujours 4 ; la bonne écriture est CH₃–CH=CH–CH₃.'),
+      F('correcte : la double liaison relie bien C2 et C3', 'La double liaison est bien entre C2 et C3, mais C2 doit alors ne porter qu’un seul H (CH) : avec CH₂ il compterait 5 liaisons.'),
+      F('incorrecte : il manque un atome d’hydrogène sur C3', 'C3 écrit « CH » a bien 4 liaisons : 1 H, une double liaison (2) et une liaison simple avec C4. Le défaut est sur C2.'),
+      F('correcte, mais c’est la formule du but-1-ène, pas du but-2-ène', 'Le but-1-ène s’écrit CH₂=CH–CH₂–CH₃ (double liaison entre C1 et C2). L’écriture proposée place bien la liaison entre C2 et C3, mais elle est impossible : C2 aurait 5 liaisons.'),
+    ] },
+  { id: 'top-ana-chaine-longue', domaine: 'Formules topologiques et isomérie de constitution', titre: 'Quelle est la chaîne principale ?',
+    enonce: 'Voici la formule topologique d’une molécule : trois traits partent du carbone central, l’un se termine par un seul carbone, les deux autres par deux carbones.', figure: figureTopo('CCC(C)CC', { opts: { racine: 3 }, aria: 'Formule topologique : un carbone central relié à un groupe d’un carbone et à deux groupes de deux carbones' }),
+    q: 'Quel est le nom de cette molécule ?', options: [
+      V('3-méthylpentane', 'La plus longue chaîne passe par les deux groupes de deux carbones et le carbone central : 5 carbones (pentane). Le groupe d’un seul carbone est une ramification méthyle, portée par le carbone 3.'),
+      F('2-éthylbutane', 'Une chaîne de 4 carbones avec un éthyle n’est pas la plus longue chaîne : en passant par les deux groupes de deux carbones, on en trouve 5.'),
+      F('hexane', 'Les 6 carbones ne sont pas alignés sur une seule chaîne : l’un d’eux forme une ramification. La chaîne principale compte 5 carbones.'),
+      F('1-éthyl-1-méthylpropane', 'Ce nom part d’une chaîne de 3 carbones et la numérote par le carbone central : la chaîne principale n’est pas la plus longue (5 carbones ici).'),
+    ] },
+  { id: 'top-ana-meme-molecule', domaine: 'Formules topologiques et isomérie de constitution', titre: 'Deux écritures, deux molécules ?',
+    enonce: 'Deux élèves écrivent les formules semi-développées A : CH₃–CH(CH₃)–CH₂–CH₃ et B : CH₃–CH₂–CH(CH₃)–CH₃.', q: 'Quelle relation y a-t-il entre A et B ?', options: [
+      V('la même molécule, écrite en sens inverse', 'En lisant B de droite à gauche, on retrouve A : une chaîne de 4 carbones avec une ramification méthyle sur le deuxième carbone (2-méthylbutane). Même enchaînement, donc même molécule.'),
+      F('deux isomères : la ramification n’est pas au même endroit', 'La ramification est sur le carbone 3 en comptant depuis la gauche pour B, mais sur le carbone 2 en comptant depuis la droite : on numérote pour avoir le plus petit numéro, c’est le même.'),
+      F('deux isomères de position : le groupe méthyle change de carbone', 'Pour qu’il y ait isomérie de position, il faut que le squelette reste le même et que la position change réellement. Ici, la position est la même : 2 dans les deux cas une fois bien numérotée.'),
+      F('deux molécules de formules brutes différentes', 'Les deux comptent 5 carbones et 12 hydrogènes (C₅H₁₂) : les formules brutes sont les mêmes.'),
     ] },
 ];
 

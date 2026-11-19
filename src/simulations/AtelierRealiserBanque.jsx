@@ -1,5 +1,6 @@
 import { Frac, avecIndices, lireNombre, nbCS } from "../commun";
 import { Chaine, ConvPrefixe, facteurK, analyser } from "./DebitsFluides";
+import { indice as indiceTopo } from "./topoModele";
 import { FigureVecteurs, Vec } from "./FigureVecteurs";
 import { genTrace, genPont, genTemps } from "./RealiserC1";
 import { ACIDES as AAM, ORDRE as AAM_ORDRE } from "./aminoAcidesModele";
@@ -2181,6 +2182,42 @@ function genFrenetTG() {
     retenir: ['Repère de Frenet : vec(u)_t tangent (sens du mouvement), vec(u)_n normal (vers le centre). Vitesse : vec(v) = v × vec(u)_t.', 'Accélération : a_t = frac(dv|dt) (sur vec(u)_t) et a_n = frac(v²|R) (sur vec(u)_n), v en m/s, R en m.', 'Mouvement circulaire uniforme : a_t = 0 mais a n’est pas nulle : a = frac(v²|R), vers le centre.', 'La norme est la racine de la somme des carrés de a_t et de a_n ; a_t > 0 si le point accélère, a_t < 0 s’il ralentit.'] };
 }
 
+// Formules topologiques et isomérie de constitution (TG, sim 172) : nombre d'hydrogènes d'après le squelette, degré d'insaturation, masse molaire
+function genTopoTG() {
+  // entiers : réponse exacte (tolRel 0) ; la masse molaire garde 5 % de marge, ses pièges restent à plus de 8 % de la bonne réponse
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && v2 !== q.vrai && (q.tolRel === 0 || Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai)))); };
+  const ch = v => String(v);
+  const n1 = tire([3, 4, 5, 6, 7, 8, 9]), h1 = 2 * n1 + 2;
+  const q1 = { id: 'tp0', type: 'num', q: <>Un alcane est un hydrocarbure à chaîne saturée, non cyclique (que des liaisons simples). Un alcane compte <b>{n1} atomes de carbone</b>. Combien d’atomes d’hydrogène sa molécule compte-t-elle ?</>, unite: 'atomes d’hydrogène', vrai: h1, tolRel: 0, csMin: ch(h1).length,
+    aide: 'Un carbone fait toujours 4 liaisons ; chaque liaison C–C en utilise une de deux carbones. Les liaisons qui restent sont des liaisons C–H.',
+    pieges: [[2 * n1, 'Ce serait le nombre d’H avec une double liaison ou un cycle : ici la chaîne est saturée, il y en a 2 de plus.'], [2 * n1 + 1, 'Il faut compter les deux carbones d’extrémité : chacun porte 3 H, les autres 2 H.'], [4 * n1, 'Vous avez compté 4 H par carbone : il faut retirer les liaisons C–C, qui ne sont pas des liaisons C–H.']],
+    expl: <>2 carbones d’extrémité (CH₃) : 6 H ; {n1 - 2} carbones intermédiaires (CH₂) : {2 * (n1 - 2)} H ; soit <b>{h1}</b> atomes d’hydrogène.</> };
+  const COMB = [[1, 0, 'une seule double liaison C=C', ''], [0, 1, '', 'un seul cycle']];
+  const [k2, r2, tk, tr] = tire(COMB), n2 = tire([4, 5, 6, 7]), h2 = 2 * n2 + 2 - 2 * k2 - 2 * r2;
+  const q2 = { id: 'tp1', type: 'num', q: <>Un hydrocarbure (que des atomes de carbone et d’hydrogène) compte <b>{n2} atomes de carbone</b> et comporte {[tk, tr].filter(Boolean).join(' et ')}, sans autre double liaison ni autre cycle. Combien d’atomes d’hydrogène sa molécule compte-t-elle ?</>, unite: 'atomes d’hydrogène', vrai: h2, tolRel: 0, csMin: ch(h2).length,
+    aide: 'Partez de la chaîne saturée à ce nombre de carbones : chaque double liaison C=C et chaque cycle fait perdre 2 atomes d’hydrogène.',
+    pieges: [[2 * n2 + 2, 'C’est la chaîne saturée : il faut retirer 2 H par double liaison et par cycle.'], [2 * n2 + 2 - k2 - r2, 'Chaque double liaison ou chaque cycle retire 2 H, pas 1.'], [2 * n2 + 2 - 2 * k2, 'Vous avez oublié de compter le cycle : il retire aussi 2 H.'], [2 * n2 + 2 - 2 * r2, 'Vous avez oublié de compter la double liaison : elle retire 2 H.']],
+    expl: <>Chaîne saturée : 2 × {n2} + 2 = {2 * n2 + 2} H ; on retire 2 H pour chaque double liaison ou cycle ({k2 + r2} au total, soit {2 * (k2 + r2)} H) : <b>{h2}</b> atomes d’hydrogène.</> };
+  const n3 = tire([3, 4, 5, 6, 7]), h3 = 2 * n3 + 2;
+  const q3 = { id: 'tp2', type: 'num', q: <>Un alcool saturé, non cyclique, possède <b>{n3} atomes de carbone</b> et un seul groupe –OH. Combien d’atomes d’hydrogène sa molécule compte-t-elle en tout, y compris celui du groupe –OH ?</>, unite: 'atomes d’hydrogène', vrai: h3, tolRel: 0, csMin: ch(h3).length,
+    aide: 'Le groupe –OH prend la place d’un H de l’alcane correspondant et apporte un H : le total ne change pas.',
+    pieges: [[2 * n3 + 1, 'Vous avez compté les H portés par les carbones, mais oublié celui du groupe –OH.'], [2 * n3 + 3, 'Le groupe –OH remplace un H de l’alcane, il n’en ajoute pas un de plus : un H part, un H arrive.'], [2 * n3, 'Un alcool saturé non cyclique n’a pas de double liaison ni de cycle : il garde le nombre d’H de l’alcane.']],
+    expl: <>Alcane à {n3} carbones : {h3} H ; le groupe –OH remplace un H et en apporte un : <b>{h3}</b> atomes d’hydrogène en tout (formule brute C{n3 > 1 ? indiceTopo(n3) : ''}H{indiceTopo(h3)}O).</> };
+  const n4 = tire([3, 4, 5, 6, 7, 8]), h4 = 2 * n4 + 1;
+  const q4 = { id: 'tp3', type: 'num', q: <>Un alcool saturé, non cyclique, possède <b>{n4} atomes de carbone</b> et un seul groupe –OH. Combien de liaisons C–H sa molécule compte-t-elle (la liaison O–H n’est pas une liaison C–H) ?</>, unite: 'liaisons C–H', vrai: h4, tolRel: 0, csMin: ch(h4).length,
+    aide: 'Partez du nombre total d’atomes d’hydrogène (2n + 2) et retirez celui qui est lié à l’oxygène.',
+    pieges: [[2 * n4 + 2, 'Vous avez compté aussi l’atome d’hydrogène du groupe –OH : il est lié à l’oxygène, pas à un carbone.'], [2 * n4, 'Il faut compter les H des carbones : 2n + 2 en tout, moins celui du groupe –OH.'], [2 * n4 + 3, 'Vérifiez le nombre total d’H : 2n + 2, pas 2n + 3.']],
+    expl: <>Nombre total d’atomes d’hydrogène : 2 × {n4} + 2 = {2 * n4 + 2} ; l’un est lié à l’oxygène (groupe –OH), les autres le sont à un carbone : <b>{h4}</b> liaisons C–H.</> };
+  const n5 = tire([4, 5, 6, 7, 8]), u5 = tire([0, 1]), m5 = 2 * n5 + 2 - 2 * u5, M5 = 12.0 * n5 + 1.0 * m5;
+  const q5 = { id: 'tp4', type: 'num', q: <>Calculez la masse molaire de l’hydrocarbure de formule brute <b>C{indiceTopo(n5)}H{indiceTopo(m5)}</b> (en g/mol), avec M(C) = 12,0 g/mol et M(H) = 1,0 g/mol (2 chiffres significatifs).</>, unite: 'g/mol', vrai: M5, tolRel: 0.05, csMin: 2,
+    aide: 'M = nombre de C × M(C) + nombre de H × M(H).',
+    pieges: [[12.0 * n5, 'Vous avez oublié les atomes d’hydrogène : ils comptent aussi dans la masse molaire.'], [1.0 * m5, 'Vous avez oublié les atomes de carbone : ils représentent l’essentiel de la masse.'], [13.0 * (n5 + m5), 'Il faut multiplier chaque nombre d’atomes par la masse molaire de son élément, pas par 13.'], [12.0 * n5 + 2 * m5, 'M(H) vaut 1,0 g/mol, pas 2,0 g/mol.']],
+    expl: <>M = {n5} × 12,0 + {m5} × 1,0 = {ch(12.0 * n5)} + {ch(m5)} = <b>{ch(M5)}</b> g/mol.</> };
+  [q1, q2, q3, q4, q5].forEach(tolOk);
+  return { intro: 'Formules topologiques : retrouver le nombre d’atomes d’hydrogène (4 liaisons par carbone, une double liaison ou un cycle retire 2 H), les liaisons C–H d’un alcool et la masse molaire.', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Un carbone fait toujours 4 liaisons ; les liaisons qui ne servent pas à relier des atomes lourds sont des liaisons C–H.', 'Chaîne saturée non cyclique de n carbones : 2n + 2 atomes d’hydrogène. Une double liaison C=C ou un cycle retire 2 H.', 'Le groupe –OH d’un alcool remplace un H et en apporte un : le nombre total d’H ne change pas.', 'Les liaisons C–H sont celles qui relient un H à un carbone : l’H du groupe –OH est lié à l’oxygène.'] };
+}
+
 function genUvvTG() {
   // pièges conservés seulement s'ils restent hors de la tolérance de la bonne réponse (tolérance × 1,5, plancher 8 %)
   const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
@@ -2642,6 +2679,7 @@ export const FAMILLES = [
   { id: 'cdt-calcul', groupe: 'Formules', titre: 'Conductimétrie : loi de Kohlrausch, concentration, volume équivalent et bilan après l’équivalence (TG)', gen: genConductimetrieTG, domaine: 'Conductimétrie : conductivité et titrage' },
   { id: 'etl-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage : constante de cellule, conductivité, droite d’étalonnage et dilution (TG)', gen: genEtalonnageTG, domaine: 'Conductimétrie : étalonnage et conductance' },
   { id: 'fre-calcul', groupe: 'Formules', titre: 'Mouvement circulaire : accélération dans le repère de Frenet, vitesse, composantes et norme (TG)', gen: genFrenetTG, domaine: 'Mouvement circulaire et repère de Frenet' },
+  { id: 'top-calcul', groupe: 'Formules', titre: 'Formules topologiques : nombre d’hydrogènes d’après le squelette, liaisons C–H et masse molaire (TG)', gen: genTopoTG, domaine: 'Formules topologiques et isomérie de constitution' },
   { id: 'uvv-calcul', groupe: 'Formules', titre: 'Spectrophotométrie : loi de Beer-Lambert, concentration, absorbance, dilution et concentration massique (TG)', gen: genUvvTG, domaine: 'Spectroscopie UV-visible et loi de Beer-Lambert' },
   { id: 'irt-calcul', groupe: 'Formules', titre: 'Spectroscopie infrarouge : nombre d’onde, longueur d’onde et lignes d’un tableau de données (TG)', gen: genIrTabTG, domaine: 'Spectroscopie infrarouge : données tabulées' },
   { id: 'lun-calcul', groupe: 'Formules', titre: 'Lunette afocale : grossissement, distance entre les lentilles, oculaire et angle du faisceau émergent (TG)', gen: genLunetteTG, domaine: 'Lunette afocale : schéma, faisceau et grossissement' },
