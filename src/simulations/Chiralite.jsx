@@ -34,11 +34,9 @@ const A_BCP = dispo('bromochloropropane', { A: 'Br', B: 'CH₃', W: 'H', D: 'CH�
 const A_AMP = dispo('aminopropanol', { A: 'CH₃', B: 'NH₂', W: 'CH₂OH', D: 'H' });
 const A_ALA = avecConf('aminobutanoique', 'R');
 const A_ALA2 = avecConf('aminobutanoique', 'S');
-const A_CLP = avecConf('chloropropanoique', 'R');
 const A_DIR = avecConf('aminopropanol', 'S', { dernier: 'D' });
 const A_DEV = avecConf('bromochloropropane', 'R', { dernier: 'W' });
-const A_SER = dispo('serine', { A: 'COOH', B: 'NH₂', W: 'CH₂OH', D: 'H' });
-const CONF_ALA = confDe('aminobutanoique', A_ALA), CONF_ALA2 = confDe('aminobutanoique', A_ALA2), CONF_CLP = confDe('chloropropanoique', A_CLP), CONF_DIR = confDe('aminopropanol', A_DIR), CONF_DEV = confDe('bromochloropropane', A_DEV);
+const CONF_ALA = confDe('aminobutanoique', A_ALA), CONF_ALA2 = confDe('aminobutanoique', A_ALA2), CONF_DIR = confDe('aminopropanol', A_DIR), CONF_DEV = confDe('bromochloropropane', A_DEV);
 const THR = MO('threonine');
 const CIBLE_THR = ['S', 'R'];                                   // (2S,3R) demandé à l’étape des deux carbones
 const FLIPS_DEPART = [[false, false], [false, true], [true, false], [true, true]].find(f => M.descripteurs(THR, M.affChaine(THR, f)).join() === CIBLE_THR.map(M.inverse).join());
@@ -186,11 +184,8 @@ function SimulationBase({ partie }) {
         calcul: () => ['C=O compte 2 fois : 2 atomes O.', '–OH : 1 atome O.', 'Total : 2 + 1 = 3. Les voisins sont (O, O, O).'], pieges: [[2, 'Il manque un O : la double liaison C=O compte pour 2, et –OH ajoute 1.'], [1, 'Une double liaison compte pour 2 atomes, pas pour 1.']],
         expl: 'Les voisins du carbone de COOH sont (O, O, O) : la double liaison C=O compte deux fois, plus l’oxygène de –OH.', indice: 'C=O compte pour deux O. Ajoutez celui de –OH.' } },
     { id: 'cip2-eleve', titre: 'À vous : un acide aminé', sc: 'cram', focus: ['scene'], depart: dep({ id: 'aminobutanoique', aff: A_ALA }),
-      texte: <>Classez les groupes du C* de l’<strong>acide 2-aminobutanoïque</strong>, CH₃CH₂–CH(NH₂)–COOH. Cliquez sur le n°1, puis le n°2, puis le n°3. Pour départager <strong>COOH</strong> (O, O, O) et <strong>CH₂CH₃</strong> (C, H, H), comparez leurs voisins.</>,
-      tache: { type: 'action', ok: enGuide && P.clics.length >= 3, consigne: 'Cliquez sur les groupes dans l’ordre de priorité : 1, 2, 3.' } },
-    { id: 'cip3-eleve', titre: 'À vous : la sérine', sc: 'cram', focus: ['scene'], depart: dep({ id: 'serine', aff: A_SER }),
       retenirTitre: 'À RETENIR : LA DOUBLE LIAISON', retenir: FICHES.double,
-      texte: <>Dernier classement, la <strong>sérine</strong> : HOCH₂–CH(NH₂)–COOH. Trois groupes sont liés par un carbone ou un azote : cherchez celui qui commence par l’atome de plus grand Z, puis départagez <strong>COOH</strong> (O, O, O) et <strong>CH₂OH</strong> (O, H, H) en comparant leurs voisins un à un.</>,
+      texte: <>Classez les groupes du C* de l’<strong>acide 2-aminobutanoïque</strong>, CH₃CH₂–CH(NH₂)–COOH. Cliquez sur le n°1, puis le n°2, puis le n°3. Pour départager <strong>COOH</strong> (O, O, O) et <strong>CH₂CH₃</strong> (C, H, H), comparez leurs voisins.</>,
       tache: { type: 'action', ok: enGuide && P.clics.length >= 3, consigne: 'Cliquez sur les groupes dans l’ordre de priorité : 1, 2, 3.' } },
     { id: 'axe', titre: 'Regarder depuis l’axe C → 4', sc: 'axe', focus: ['scene', 'reglages'], depart: dep({ id: 'aminobutanoique', aff: A_ALA, rangs: true }),
       texte: <>Pour trouver R ou S, on regarde la molécule <strong>depuis le côté opposé au groupe n°4</strong> : le groupe n°4 doit être <strong>derrière</strong> le carbone, loin de vous. Faites glisser le curseur « Tourner la molécule » jusqu’à 100 %. À la fin, le groupe n°4 est caché derrière le carbone et on voit les groupes 1, 2 et 3 autour de lui.</>,
@@ -203,10 +198,6 @@ function SimulationBase({ partie }) {
       texte: <>Autre molécule d’acide 2-aminobutanoïque, vue directement depuis l’axe C → 4 (le groupe 4 est caché derrière). Suivez 1 → 2 → 3 avec votre doigt.</>,
       tache: { type: 'qcm', q: 'Quelle est la configuration de cette molécule ?', ...qcmRS(CONF_ALA2),
         indice: 'Partez de la pastille 1, allez à la 2, puis à la 3 : tournez-vous comme une aiguille de montre ?', expl: `1 → 2 → 3 tourne dans le sens ${CONF_ALA2 === 'R' ? 'horaire : R' : 'antihoraire : S'}.` } },
-    { id: 'lire2', titre: 'Encore un exemple', sc: 'axe', focus: ['scene'], depart: dep({ id: 'chloropropanoique', aff: A_CLP, rangs: true, t: 1 }),
-      texte: <>Acide 2-chloropropanoïque, CH₃–CHCl–COOH, vu depuis l’axe C → 4. Classement : 1 = Cl, 2 = COOH, 3 = CH₃, 4 = H.</>,
-      tache: { type: 'qcm', q: 'Quelle est la configuration de cette molécule ?', ...qcmRS(CONF_CLP),
-        indice: 'Suivez 1 → 2 → 3 sur le dessin : horaire = R, antihoraire = S.', expl: `1 → 2 → 3 tourne dans le sens ${CONF_CLP === 'R' ? 'horaire : R' : 'antihoraire : S'}.` } },
     { id: 'cram-direct', titre: 'Lire directement sur le dessin de Cram', sc: 'cram', focus: ['scene'], depart: dep({ id: 'aminopropanol', aff: A_DIR, rangs: true }),
       retenirTitre: 'À RETENIR : LIRE R OU S', retenir: FICHES.lire,
       texte: <>Sur un dessin de Cram, si le groupe n°4 est en <strong>tirets</strong>, il est déjà derrière : on peut <strong>lire directement</strong> le sens 1 → 2 → 3 sur le dessin. Ici le n°4 (H) est en tirets.</>,

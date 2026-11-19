@@ -15,6 +15,7 @@
 import { ACIDES as AAM, ORDRE as AAM_ORDRE } from "./aminoAcidesModele";
 import { IONS as CDT_IONS } from "./conductimetrieModele";
 import * as ACF from "./acideFaibleModele";
+import * as AB from "./acidesBasesModele";
 import * as PRE from "./predoTstlModele";
 import * as TMP from "./tamponTstlModele";
 import * as CO2 from "./co2DissousModele";
@@ -397,6 +398,113 @@ export const ENONCES = [
         utiles: ['pKa', 'pH', 'V'], raisons,
         cherche: { bonne: 'Le volume de la solution de A⁻ à prélever (en mL)', faux: ['Le volume de la solution de AH à prélever (en mL)', 'Le rapport n(A⁻) sur n(AH) (sans unité)', 'La quantité de matière de A⁻ (en mmol)'] },
         manque: null, solution: { txt: 'V(A⁻) = V × r divisé par (1 + r), avec r = 10^(pH − pKa)', val: p.V * r / (1 + r), u: 'mL' } };
+    },
+  },
+  {
+    id: 'ab-acf-sapp-ph', domaine: 'Acides et bases', titre: 'pH et taux d’avancement d’un acide faible', noms: ['pH de la solution', 'Taux d’avancement de la réaction avec l’eau'],
+    gen: () => { for (;;) { const pKa = tire([3.8, 4.2, 4.7, 4.9]), C = tire([0.01, 0.02, 0.05, 0.1]); if (Math.abs(AB.pHAcideFaibleApprox(C, pKa) - AB.pH({ C, pKas: [pKa] })) < 0.02) return { pKa, C, V: tire([50, 100, 250]) }; } },
+    build: (p, q) => {
+      const pH = AB.pHAcideFaibleApprox(p.C, p.pKa);
+      const tokens = {
+        pKa: tok(`${nb(p.pKa, 1)}`, 'pKa du couple AH / A⁻', p.pKa, ''),
+        C: tok(`${nb(p.C, 2)} mol/L`, 'Concentration de la solution', p.C, 'mol/L'),
+        V: tok(`${p.V} mL`, 'Volume de solution préparé', p.V, 'mL'),
+        T: tok('25 °C', 'Température de la solution', 25, '°C'),
+      };
+      const debut = ['On prépare ', T('V'), ' de solution d’un acide faible AH de concentration ', T('C'), ' à ', T('T'), '. Le pKa du couple AH / A⁻ vaut ', T('pKa'), '. '];
+      const raisons = { V: 'Le volume ne change ni le pH ni le taux d’avancement : seule la concentration compte.', T: 'La température est constante : elle indique seulement que le pKa garde sa valeur.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le pH de la solution ?'], utiles: ['pKa', 'C'], raisons,
+        cherche: { bonne: 'Le pH de la solution (sans unité)', faux: ['La concentration en ions H₃O⁺ (en mol/L)', 'Le taux d’avancement de la réaction avec l’eau (sans unité)', 'Le pH d’un acide fort de même concentration (sans unité)'] },
+        manque: null, solution: { txt: 'pH = ½ × (pKa − log C)', val: pH, u: '' } };
+      return { tokens, derivees: ['pH = ½ × (pKa − log C)', '[H₃O⁺] = 10^(−pH)'], texte: [...debut, 'Quel est le taux d’avancement τ de la réaction de l’acide avec l’eau ?'], utiles: ['pKa', 'C'], raisons,
+        cherche: { bonne: 'Le taux d’avancement τ (sans unité)', faux: ['Le pH de la solution (sans unité)', 'La concentration en ions H₃O⁺ (en mol/L)', 'La concentration en ions A⁻ (en mol/L)'] },
+        manque: null, solution: { txt: 'τ = [H₃O⁺] divisé par C', val: 10 ** -pH / p.C, u: '' } };
+    },
+  },
+  {
+    id: 'ab-acf-sapp-dilution', domaine: 'Acides et bases', titre: 'Diluer une solution d’acide fort', noms: ['Concentration après dilution', 'pH après dilution'],
+    gen: () => { for (;;) { const f = tire([10, 20, 50, 100]), Vp = tire([5, 10, 20]); if (f * Vp <= 1000) return { C: tire([0.05, 0.1, 0.2]), Vp, Vf: f * Vp }; } },
+    build: (p, q) => {
+      const C1 = p.C * p.Vp / p.Vf, pH = -Math.log10(C1);
+      const tokens = {
+        C: tok(`${nb(p.C, 2)} mol/L`, 'Concentration de la solution mère d’acide fort', p.C, 'mol/L'),
+        Vp: tok(`${p.Vp} mL`, 'Volume de solution mère prélevé', p.Vp, 'mL'),
+        Vf: tok(`${p.Vf} mL`, 'Volume de la fiole jaugée', p.Vf, 'mL'),
+        T: tok('25 °C', 'Température de travail', 25, '°C'),
+      };
+      const debut = ['On prélève ', T('Vp'), ' d’une solution d’acide fort de concentration ', T('C'), ', puis on complète avec de l’eau distillée dans une fiole jaugée de ', T('Vf'), ', à ', T('T'), '. '];
+      const raisons = { T: 'La température est constante : elle ne change pas le calcul.' };
+      if (q === 0) return { tokens, derivees: ['facteur de dilution = Vf divisé par Vp'], texte: [...debut, 'Quelle est la concentration de la solution diluée ?'], utiles: ['C', 'Vp', 'Vf'], raisons,
+        cherche: { bonne: 'La concentration après dilution (en mol/L)', faux: ['Le facteur de dilution (sans unité)', 'Le pH de la solution diluée (sans unité)', 'La quantité d’acide prélevée (en mmol)'] },
+        manque: null, solution: { txt: 'C′ = C × Vp divisé par Vf', val: C1, u: 'mol/L' } };
+      return { tokens, derivees: ['concentration après dilution C′ = C × Vp divisé par Vf'], texte: [...debut, 'Quel est le pH de la solution diluée ?'], utiles: ['C', 'Vp', 'Vf'], raisons,
+        cherche: { bonne: 'Le pH de la solution diluée (sans unité)', faux: ['La concentration après dilution (en mol/L)', 'Le pH de la solution mère (sans unité)', 'Le facteur de dilution (sans unité)'] },
+        manque: null, solution: { txt: 'pH = −log C′ (acide fort, réaction totale)', val: pH, u: '' } };
+    },
+  },
+  {
+    id: 'ab-pred-sapp-rapport', domaine: 'Acides et bases', titre: 'Rapport des formes d’un couple selon le pH', noms: ['Rapport [A⁻] sur [AH]', 'Pourcentage de forme basique'],
+    gen: () => { const pKa = tire([3.8, 4.2, 4.9, 7.5]); return { pKa, pH: Math.round((pKa + tire([-1.4, -1, -0.6, 0.6, 1, 1.4])) * 10) / 10, C: tire([0.01, 0.05, 0.1]) }; },
+    build: (p, q) => {
+      const r = 10 ** (p.pH - p.pKa);
+      const tokens = {
+        pKa: tok(`${nb(p.pKa, 1)}`, 'pKa du couple AH / A⁻', p.pKa, ''),
+        pH: tok(`${nb(p.pH, 1)}`, 'pH de la solution', p.pH, ''),
+        C: tok(`${nb(p.C, 2)} mol/L`, 'Concentration totale en AH et A⁻', p.C, 'mol/L'),
+        T: tok('25 °C', 'Température de la solution', 25, '°C'),
+      };
+      const debut = ['Dans une solution de pH ', T('pH'), ', le couple AH / A⁻ de pKa ', T('pKa'), ' est présent à la concentration totale ', T('C'), ' (à ', T('T'), '). '];
+      const raisons = { T: 'La température est constante : elle indique seulement que le pKa garde sa valeur.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le rapport [A⁻] sur [AH] ?'], utiles: ['pKa', 'pH'], raisons: { ...raisons, C: 'Un rapport de concentrations ne dépend pas de la concentration totale.' },
+        cherche: { bonne: 'Le rapport [A⁻] sur [AH] (sans unité)', faux: ['La concentration en A⁻ (en mol/L)', 'Le pourcentage de forme basique (en %)', 'La différence pH − pKa (sans unité)'] },
+        manque: null, solution: { txt: '[A⁻] sur [AH] = 10^(pH − pKa)', val: r, u: '' } };
+      return { tokens, derivees: ['rapport [A⁻] sur [AH] = 10^(pH − pKa)'], texte: [...debut, 'Quel pourcentage du couple est sous la forme basique A⁻ ?'], utiles: ['pKa', 'pH'], raisons: { ...raisons, C: 'Un pourcentage ne dépend pas de la concentration totale.' },
+        cherche: { bonne: 'Le pourcentage de forme basique A⁻ (en %)', faux: ['Le rapport [A⁻] sur [AH] (sans unité)', 'La concentration en A⁻ (en mol/L)', 'Le pourcentage de forme acide AH (en %)'] },
+        manque: null, solution: { txt: 'pourcentage de A⁻ = 100 × r divisé par (1 + r), avec r = 10^(pH − pKa)', val: 100 * r / (1 + r), u: '%' } };
+    },
+  },
+  {
+    id: 'ab-pred-sapp-conc', domaine: 'Acides et bases', titre: 'Concentrations des deux formes d’un couple', noms: ['Concentration en A⁻', 'Concentration en AH'],
+    gen: () => { const pKa = tire([3.8, 4.2, 4.9, 7.5]); return { pKa, pH: Math.round((pKa + tire([-1.4, -1, -0.6, 0.6, 1, 1.4])) * 10) / 10, C: tire([0.01, 0.02, 0.05, 0.1]), V: tire([100, 250, 500]) }; },
+    build: (p, q) => {
+      const r = 10 ** (p.pH - p.pKa), cA = p.C * r / (1 + r), cAH = p.C / (1 + r);
+      const tokens = {
+        pKa: tok(`${nb(p.pKa, 1)}`, 'pKa du couple AH / A⁻', p.pKa, ''),
+        pH: tok(`${nb(p.pH, 1)}`, 'pH de la solution', p.pH, ''),
+        C: tok(`${nb(p.C, 2)} mol/L`, 'Concentration totale en AH et A⁻', p.C, 'mol/L'),
+        V: tok(`${p.V} mL`, 'Volume de la solution', p.V, 'mL'),
+      };
+      const debut = ['Une solution de ', T('V'), ' a un pH de ', T('pH'), '. Elle contient le couple AH / A⁻ de pKa ', T('pKa'), ', avec une concentration totale [AH] + [A⁻] = ', T('C'), '. '];
+      const raisons = { V: 'Le volume ne change pas les concentrations, qui sont déjà données.' };
+      if (q === 0) return { tokens, derivees: ['rapport r = [A⁻] sur [AH] = 10^(pH − pKa)'], texte: [...debut, 'Quelle est la concentration de la forme basique A⁻ ?'], utiles: ['pKa', 'pH', 'C'], raisons,
+        cherche: { bonne: 'La concentration en A⁻ (en mol/L)', faux: ['La concentration en AH (en mol/L)', 'Le rapport [A⁻] sur [AH] (sans unité)', 'La concentration en ions H₃O⁺ (en mol/L)'] },
+        manque: null, solution: { txt: '[A⁻] = C × r divisé par (1 + r)', val: cA, u: 'mol/L' } };
+      return { tokens, derivees: ['rapport r = [A⁻] sur [AH] = 10^(pH − pKa)'], texte: [...debut, 'Quelle est la concentration de la forme acide AH ?'], utiles: ['pKa', 'pH', 'C'], raisons,
+        cherche: { bonne: 'La concentration en AH (en mol/L)', faux: ['La concentration en A⁻ (en mol/L)', 'Le rapport [A⁻] sur [AH] (sans unité)', 'La concentration en ions H₃O⁺ (en mol/L)'] },
+        manque: null, solution: { txt: '[AH] = C divisé par (1 + r)', val: cAH, u: 'mol/L' } };
+    },
+  },
+  {
+    id: 'ab-tamp-sapp-melange', domaine: 'Acides et bases', titre: 'pH d’une solution tampon obtenue par mélange', noms: ['Rapport des quantités de matière', 'pH du mélange'],
+    gen: () => { for (;;) { const C1 = tire([0.1, 0.2]), V1 = tire([20, 40, 50]), C2 = tire([0.1, 0.2]), V2 = tire([20, 30, 60]), r = C2 * V2 / (C1 * V1); if (r > 0.2 && r < 5 && Math.abs(r - 1) > 0.1) return { pKa: tire([4.2, 4.9, 7.5]), C1, V1, C2, V2 }; } },
+    build: (p, q) => {
+      const r = (p.C2 * p.V2) / (p.C1 * p.V1);
+      const tokens = {
+        pKa: tok(`${nb(p.pKa, 1)}`, 'pKa du couple AH / A⁻', p.pKa, ''),
+        C1: tok(`${nb(p.C1, 2)} mol/L`, 'Concentration de la solution d’acide AH', p.C1, 'mol/L'),
+        V1: tok(`${p.V1} mL`, 'Volume de solution d’acide AH', p.V1, 'mL'),
+        C2: tok(`${nb(p.C2, 2)} mol/L`, 'Concentration de la solution de base A⁻', p.C2, 'mol/L'),
+        V2: tok(`${p.V2} mL`, 'Volume de solution de base A⁻', p.V2, 'mL'),
+        T: tok('25 °C', 'Température du mélange', 25, '°C'),
+      };
+      const debut = ['On mélange ', T('V1'), ' d’une solution de AH à ', T('C1'), ' et ', T('V2'), ' d’une solution de A⁻ (sel de sodium) à ', T('C2'), '. Le pKa du couple AH / A⁻ vaut ', T('pKa'), ' (mélange à ', T('T'), '). '];
+      const raisons = { T: 'La température est constante : elle indique seulement que le pKa garde sa valeur.' };
+      if (q === 0) return { tokens, derivees: ['n(AH) = C₁ × V₁', 'n(A⁻) = C₂ × V₂'], texte: [...debut, 'Quel est le rapport n(A⁻) sur n(AH) dans le mélange ?'], utiles: ['C1', 'V1', 'C2', 'V2'], raisons: { ...raisons, pKa: 'Le pKa ne sert pas pour un rapport de quantités de matière.' },
+        cherche: { bonne: 'Le rapport n(A⁻) sur n(AH) (sans unité)', faux: ['Le pH du mélange (sans unité)', 'La quantité de matière de AH (en mmol)', 'Le volume total du mélange (en mL)'] },
+        manque: null, solution: { txt: 'rapport = C₂ × V₂ divisé par (C₁ × V₁)', val: r, u: '' } };
+      return { tokens, derivees: ['n(AH) = C₁ × V₁', 'n(A⁻) = C₂ × V₂', 'rapport n(A⁻) sur n(AH)'], texte: [...debut, 'Quel est le pH du mélange ?'], utiles: ['pKa', 'C1', 'V1', 'C2', 'V2'], raisons,
+        cherche: { bonne: 'Le pH du mélange (sans unité)', faux: ['Le rapport n(A⁻) sur n(AH) (sans unité)', 'Le pKa du couple (sans unité)', 'La concentration en ions H₃O⁺ (en mol/L)'] },
+        manque: null, solution: { txt: 'pH = pKa + log(n(A⁻) divisé par n(AH))', val: p.pKa + Math.log10(r), u: '' } };
     },
   },
   {

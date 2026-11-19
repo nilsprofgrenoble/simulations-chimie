@@ -2490,6 +2490,27 @@ export const PREVOIR = [
       F('celui de pKa 12,0 : une valeur élevée donne un tampon plus stable', 'Le pKa doit être proche du pH visé : à pH 6,0 la forme acide serait presque seule, sans réserve de base.'),
       F('n’importe lequel : il suffit d’ajuster les quantités des deux formes', 'On peut toujours calculer un rapport, mais loin du pKa il sort de la zone 0,1 à 10 : le mélange ne résiste plus aux ajouts.'),
     ] },
+  { id: 'ab-pred-ana-egal', domaine: 'Acides et bases', titre: 'Quand le pH est égal au pKa',
+    enonce: 'Dans une solution, le pH est exactement égal au pKa du couple AH / A⁻.', q: 'Que peut-on dire des concentrations des deux formes ?', options: [
+      V('[AH] = [A⁻] : à pH = pKa, les deux formes sont en quantités égales', 'Le rapport [A⁻] sur [AH] vaut 10 puissance (pH − pKa), soit 10⁰ = 1 : les deux concentrations sont égales.'),
+      F('[AH] est majoritaire, car c’est l’acide qui a été introduit', 'Ce qui a été introduit ne décide pas : seul l’écart pH − pKa fixe la forme majoritaire.'),
+      F('[A⁻] vaut le double de [AH]', 'Un rapport 2 correspondrait à pH − pKa = 0,3 environ, pas à pH = pKa.'),
+      F('Il n’y a plus d’acide AH, il est entièrement transformé en A⁻', 'La transformation n’est jamais totale pour un acide faible : à pH = pKa, il reste autant de AH que de A⁻.'),
+    ] },
+  { id: 'ab-tamp-ana-dilution', domaine: 'Acides et bases', titre: 'Diluer une solution tampon 10 fois',
+    enonce: 'Une solution tampon, de pH 4,8, est diluée 10 fois avec de l’eau distillée.', q: 'Que devient son pH ?', options: [
+      V('Il reste pratiquement égal à 4,8', 'Les concentrations de AH et de A⁻ sont divisées par 10 toutes les deux : leur rapport ne change pas, donc le pH non plus (le pouvoir tampon, lui, diminue).'),
+      F('Il est divisé par 10', 'Le pH ne se divise pas comme une concentration : il dépend du rapport des deux formes, pas de leur valeur.'),
+      F('Il augmente de 1 unité, comme pour un acide fort dilué 10 fois', 'Pour un acide fort, la dilution 10 fois fait varier le pH de 1 unité ; ici le rapport des deux formes se conserve.'),
+      F('Il devient égal à 7, car on a ajouté de l’eau', 'L’eau distillée ne fixe pas le pH d’un tampon : le rapport des deux formes le maintient proche de sa valeur de départ.'),
+    ] },
+  { id: 'ab-tamp-ana-epuise', domaine: 'Acides et bases', titre: 'Dépasser la capacité d’un tampon',
+    enonce: 'Un tampon contient 5,0 mmol d’acide AH et 5,0 mmol de base A⁻. On y ajoute 6,0 mmol d’ions H₃O⁺ (acide fort).', q: 'Que se passe-t-il ?', options: [
+      V('Toute la base A⁻ est consommée et il reste 1,0 mmol de H₃O⁺ : la solution n’est plus un tampon, son pH chute', 'H₃O⁺ réagit sur A⁻, dont il n’y a que 5,0 mmol. L’excès de 1,0 mmol reste en solution : plus de base pour l’absorber.'),
+      F('Le pH varie très peu, car un tampon absorbe n’importe quelle quantité d’acide', 'Un tampon est limité par la quantité de base A⁻ disponible : au-delà, il n’agit plus.'),
+      F('Il reste 1,0 mmol de A⁻ après la réaction', 'On ne peut pas consommer plus de A⁻ qu’il n’y en a : 6,0 mmol de H₃O⁺ consomment au plus 5,0 mmol de A⁻.'),
+      F('Il se forme 6,0 mmol de AH et le pH reste égal au pKa', 'La quantité de AH formée est limitée par A⁻ consommé (5,0 mmol), et un excès de H₃O⁺ acidifie la solution.'),
+    ] },
   { id: 'tampstl-ana-ajout', domaine: 'Solution tampon : choix du couple et préparation', titre: 'Ajouter une base à un tampon',
     enonce: 'Un tampon contient 6,0 mmol de base A⁻ et 4,0 mmol d’acide AH. On y ajoute 1,0 mmol d’ions HO⁻, qui réagissent totalement.', q: 'Quelles sont les quantités de matière après la réaction ?', options: [
       V('n(AH) = 3,0 mmol et n(A⁻) = 7,0 mmol', 'Les ions HO⁻ sont une base : ils réagissent avec l’acide AH (HO⁻ + AH → A⁻ + H₂O). AH perd 1,0 mmol, A⁻ en gagne 1,0.'),
