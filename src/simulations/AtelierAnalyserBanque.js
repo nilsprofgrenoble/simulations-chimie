@@ -4676,6 +4676,42 @@ export const PREVOIR = [
       F('des 5 électrons : chaque électron s’associe à des ions H⁺ pour former de l’eau', 'Un électron n’est pas un atome d’hydrogène et n’en contient pas : les ions H⁺ servent à conserver l’élément H, pas à transporter les électrons.'),
       F('ils sont ajoutés pour équilibrer les charges, comme les électrons', 'Les charges s’équilibrent avec les électrons, en dernier. Les H⁺ servent d’abord à conserver l’élément hydrogène des molécules d’eau formées.'),
     ] },
+  // ───────────────────────────── Mesure et incertitudes (1G)
+  { id: 'mes1g-ana-n-quadruple', domaine: 'Mesure et incertitudes (1G)', titre: 'Quadrupler le nombre de mesures d’une série',
+    enonce: 'Un élève mesure la durée d’une chute avec un chronomètre à main. Sa série de 9 mesures a un écart-type expérimental s = 0,12 s. Il refait une série de 36 mesures, dans les mêmes conditions et avec le même chronomètre. On rappelle l’incertitude-type de type A de la moyenne : u = s / √N.', q: 'L’incertitude-type u de la moyenne, par rapport à celle de la première série, est…', options: [
+      V('deux fois plus petite : N est multiplié par 4 et u varie comme 1 / √N', 'Avec s inchangé, u passe de s / √9 = s / 3 à s / √36 = s / 6 : elle est divisée par 2 (0,040 s puis 0,020 s).'),
+      F('quatre fois plus petite : N est multiplié par 4, donc u est divisée par 4', 'Le nombre de mesures est multiplié par 4, mais u dépend de √N : elle est divisée par √4 = 2, pas par 4.'),
+      F('identique : les mesures sont faites avec le même chronomètre à main', 'L’instrument fixe s, pas u : la moyenne de plus de mesures est mieux connue, donc u diminue quand N augmente.'),
+      F('deux fois plus grande : on cumule les incertitudes de toutes les mesures', 'Les écarts aléatoires se compensent en partie dans la moyenne : u diminue quand N augmente, elle ne s’additionne pas.'),
+    ] },
+  { id: 'mes1g-ana-s-et-n', domaine: 'Mesure et incertitudes (1G)', titre: 'L’écart-type quand N augmente',
+    enonce: 'Un élève mesure 10 fois la longueur d’une feuille avec une règle graduée en millimètres et trouve un écart-type s. Il décide de faire 100 mesures, dans les mêmes conditions et avec la même règle.', q: 'L’écart-type s de la nouvelle série est probablement…', options: [
+      V('du même ordre : s décrit la dispersion d’UNE mesure, pas celle de la moyenne', 'Faire plus de mesures n’étale ni ne resserre chacune d’elles : s reste du même ordre (il est seulement mieux estimé). C’est u = s / √N qui diminue.'),
+      F('dix fois plus petit : avec dix fois plus de mesures, la dispersion diminue', 'C’est l’incertitude u de la moyenne qui diminue (en 1 / √N, soit environ 3 fois pour 10 fois plus de mesures), pas la dispersion d’une mesure.'),
+      F('dix fois plus grand : avec plus de mesures, il y a plus d’écarts à cumuler', 's est une moyenne quadratique des écarts (divisée par N − 1) : il ne s’additionne pas et ne grandit pas avec N.'),
+      F('à peu près trois fois plus petit : s diminue en 1 / √N, comme l’incertitude u', 'La dépendance en 1 / √N concerne l’incertitude de la moyenne u = s / √N, pas s lui-même.'),
+    ] },
+  { id: 'mes1g-ana-systematique', domaine: 'Mesure et incertitudes (1G)', titre: 'Mille pesées avec une balance décalée',
+    enonce: 'Une balance mal tarée indique toujours 5 mg de trop. On pèse 1 000 fois une masse marquée de 20,000 g et on calcule la moyenne x̄ et l’incertitude-type de type A u = s / √N.', q: 'Par rapport à une série de 10 pesées, avec 1 000 pesées…', options: [
+      V('u est beaucoup plus petite, mais x̄ reste décalée d’environ 5 mg par rapport à 20,000 g', 'Plus de mesures réduisent u, mais le décalage est le même à chaque pesée : il ne se compense pas dans la moyenne. Un type A très petit ne prouve pas que la mesure est juste.'),
+      F('u et l’écart entre x̄ et 20,000 g deviennent tous deux très petits : la moyenne corrige la balance', 'La moyenne atténue les variations aléatoires, pas un décalage systématique : l’écart à la référence reste d’environ 5 mg.'),
+      F('u reste la même et l’écart entre x̄ et 20,000 g diminue : la balance se corrige avec N', 'C’est l’inverse : u diminue avec N (en 1 / √N), alors que le décalage de la balance reste le même à chaque pesée.'),
+      F('u augmente avec N car l’erreur de 5 mg s’ajoute à chacune des 1 000 pesées', 'Le décalage n’augmente pas la dispersion : toutes les pesées sont décalées de la même quantité, donc s et u ne grandissent pas.'),
+    ] },
+  { id: 'mes1g-ana-protocole', domaine: 'Mesure et incertitudes (1G)', titre: 'Chronomètre à la main ou cellule',
+    enonce: 'On chronomètre 10 oscillations d’un pendule : d’abord avec un chronomètre déclenché à la main, puis avec un dispositif où une cellule photoélectrique lance et arrête le chronomètre. Dans les deux cas, on fait 15 mesures dans les mêmes conditions.', q: 'Pour la série faite avec la cellule, par rapport à la série faite à la main, on s’attend à…', options: [
+      V('un écart-type s plus petit : on réduit fortement la part due au geste', 'Le déclenchement à la main varie à chaque essai : c’est une source de dispersion. La cellule la réduit fortement, donc s diminue ; u = s / √N diminue aussi, à N identique.'),
+      F('un écart-type s identique : la dispersion ne dépend que du pendule', 'Le pendule est le même, mais la dispersion des mesures dépend aussi de l’instrument et du protocole : le geste de l’opérateur y contribue.'),
+      F('un écart-type s plus grand : un dispositif plus compliqué ajoute des erreurs', 'Une cellule déclenche à un repère fixe : elle réduit nettement la variation d’un essai à l’autre.'),
+      F('une moyenne x̄ très différente : la cellule change la durée des oscillations', 'Le dispositif ne change pas la durée du pendule ; il agit surtout sur la dispersion des mesures, pas sur leur valeur centrale.'),
+    ] },
+  { id: 'mes1g-ana-typeb-intervalle', domaine: 'Mesure et incertitudes (1G)', titre: 'Un intervalle de netteté deux fois plus large',
+    enonce: 'Pour mesurer la distance focale d’une lentille, on cherche la position de l’écran qui donne une image nette. Avec la lentille A, l’image paraît nette sur un intervalle de largeur 8 mm ; avec la lentille B, sur un intervalle de largeur 16 mm. Pour chacune, on suppose toutes les positions de l’intervalle équiprobables et on évalue l’incertitude-type de type B : u = a / √3, où a est la demi-largeur.', q: 'Le rapport u(B) / u(A) vaut…', options: [
+      V('2 : la demi-largeur a double, donc u double', 'a(A) = 4 mm et a(B) = 8 mm : u(A) = 2,3 mm et u(B) = 4,6 mm. Le facteur √3 est le même, il disparaît dans le rapport.'),
+      F('√2 : l’incertitude varie comme la racine de la largeur', 'La racine intervient seulement au dénominateur (√3, un nombre fixe) : u est proportionnelle à a, donc elle double.'),
+      F('1 : le facteur √3 est le même pour les deux lentilles', 'Le facteur √3 est le même, mais a ne l’est pas : u = a / √3 est proportionnelle à la demi-largeur, qui double.'),
+      F('4 : u varie comme le carré de la largeur de l’intervalle', 'u = a / √3 est proportionnelle à a, pas à a² : doubler la largeur double u.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

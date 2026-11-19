@@ -1318,5 +1318,19 @@
  "37:prevoir:lun-ana-diametre": "ANA559",
  "77:plausible:lun-val-g-inverse": "VAL333",
  "77:plausible:lun-val-fiche-ok": "VAL334",
- "36:lun-calcul": "REA83"
+ "36:lun-calcul": "REA83",
+ "34:mes1g-sapp-serie.0": "SAPP345",
+ "34:mes1g-sapp-serie.1": "SAPP346",
+ "34:mes1g-sapp-instrument.0": "SAPP347",
+ "37:prevoir:mes1g-ana-n-quadruple": "ANA560",
+ "37:prevoir:mes1g-ana-s-et-n": "ANA561",
+ "37:prevoir:mes1g-ana-systematique": "ANA562",
+ "37:prevoir:mes1g-ana-protocole": "ANA563",
+ "37:prevoir:mes1g-ana-typeb-intervalle": "ANA564",
+ "77:plausible:mes1g-val-u-egale-s": "VAL335",
+ "77:plausible:mes1g-val-ecriture": "VAL336",
+ "77:plausible:mes1g-val-typeb-eprouvette": "VAL337",
+ "77:plausible:mes1g-val-compat": "VAL338",
+ "77:plausible:mes1g-val-100-pesees": "VAL339",
+ "36:mes1g-calcul": "REA84"
 }

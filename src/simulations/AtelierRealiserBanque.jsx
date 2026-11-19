@@ -10,6 +10,7 @@ import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
 import * as SV from "./savonModele";
 import * as DM from "./dissolutionModele";
+import * as ME from "./mesureModele";
 import * as RX from "./redoxModele";
 import * as AB from "./acidesBasesModele";
 import * as PRE from "./predoTstlModele";
@@ -2425,6 +2426,58 @@ function genTitrageDirect() {
     retenir: ['À l’équivalence, les réactifs sont dans les proportions de l’équation : n(I₂)/1 = n(S₂O₃²⁻)/2.', 'n = c × V, avec V en litres.', 'La concentration cherchée se déduit de n(I₂) et du volume dosé V_A.'] };
 }
 
+// ───────────── Mesure et incertitudes (1G) : moyenne, incertitude-type de type A et de type B, arrondi, comparaison ─────────────
+function genMesure1G() {
+  // la balance est travaillée en milligrammes (valeurs de l'ordre de 20 000 mg), les autres instruments dans leur unité
+  const sit0 = ME.SITUATIONS[tire(ME.IDS_SITUATIONS)], k = sit0.id === 'balance' ? 1000 : 1;
+  const sit = k === 1 ? sit0 : { ...sit0, unite: 'mg', ref: sit0.ref * k, sigma: sit0.sigma * k, res: sit0.res * k, a: sit0.a * k, dec: 0 };
+  const dec = sit.dec, un = sit.unite, fm = (x, d = dec) => ME.fmt(x, d);
+  const lis = x => Number(x.toPrecision(2));
+  // q1 : valeur moyenne de 5 mesures (une décimale de plus que les mesures)
+  const v5 = ME.tirerSerie(sit, 5, 1 + Math.floor(Math.random() * 1e6)), m5 = ME.moyenne(v5);
+  const q1 = { id: 'x0', type: 'num', q: <>On mesure 5 fois {sit.mesurande} ({sit.nom.toLowerCase()}). Valeurs, en {un} : <b>{v5.map(v => fm(v)).join(' ; ')}</b>. Calculez la valeur moyenne, avec une décimale de plus que les mesures, en <b>{un}</b>.</>, unite: un, vrai: m5, csMin: 3, tolRel: 0.5 * Math.pow(10, -dec) / Math.abs(m5),
+    aide: 'Additionnez les 5 valeurs, puis divisez par le nombre de mesures N = 5.',
+    pieges: [[m5 * 5, 'C’est la somme des mesures : il faut la diviser par N = 5.']],
+    expl: <>x̄ = ({v5.map(v => fm(v)).join(' + ')}) / 5 = {fm(v5.reduce((x, y) => x + y, 0), dec)} / 5 = <b>{fm(m5, dec + 1)}{NB}{un}</b>.</> };
+  // q2 : incertitude-type de type A à partir de s et N
+  const N2 = tire([4, 9, 16, 25, 36]), s2 = lis(sit.sigma * tire([0.8, 1, 1.2, 1.5])), u2 = s2 / Math.sqrt(N2);
+  const q2 = { id: 'x1', type: 'num', q: <>Une série de <b>N = {N2}</b> mesures indépendantes de {sit.mesurande} a pour écart-type expérimental <b>s = {nb(s2, 2)}{NB}{un}</b>. Calculez l’incertitude-type de type A de la moyenne, en <b>{un}</b>.</>, unite: un, vrai: u2, csMin: 2, tolRel: 0.05,
+    aide: 'Type A : u = s / √N (racine carrée de N, pas N).',
+    pieges: [[s2 / N2, 'On divise par la racine carrée de N, pas par N : u = s / √N.'], [s2 * Math.sqrt(N2), 'On divise s par √N, on ne le multiplie pas : u est plus petite que s.'], [s2, 'u n’est pas égale à s : s décrit une mesure, u décrit la moyenne de N mesures.']],
+    expl: <>√{N2} = {nb(Math.sqrt(N2), 3)} ; u = s / √N = {nb(s2, 2)} / {nb(Math.sqrt(N2), 3)} = <b>{avecU(u2, un, 2)}</b>.</> };
+  // q3 : effet du nombre de mesures
+  const N3 = tire([4, 9, 25]), u3 = lis(sit.sigma * tire([0.8, 1, 1.2]) / Math.sqrt(N3));
+  const q3 = { id: 'x2', type: 'num', q: <>Avec <b>N = {N3}</b> mesures, l’incertitude-type de type A de la moyenne de {sit.mesurande} vaut <b>u = {nb(u3, 2)}{NB}{un}</b>. On refait la série avec <b>N = {4 * N3}</b> mesures, dans les mêmes conditions (s inchangé). Calculez la nouvelle incertitude-type, en <b>{un}</b>.</>, unite: un, vrai: u3 / 2, csMin: 2, tolRel: 0.05,
+    aide: 'u = s / √N : quand N est multiplié par 4, √N est multiplié par 2.',
+    pieges: [[u3 / 4, 'N est multiplié par 4 mais u est divisée par √4 = 2, pas par 4.'], [u3 * 2, 'Plus de mesures diminuent u : elle est divisée par 2, pas multipliée.']],
+    expl: <>√(N₂/N₁) = √4 = 2, donc u₂ = u₁ / 2 = {nb(u3, 2)} / 2 = <b>{avecU(u3 / 2, un, 2)}</b>.</> };
+  // q4 : type B à partir d'un intervalle
+  const a4 = sit.a * tire([1, 2]), min4 = sit.ref - a4, max4 = sit.ref + a4, u4 = a4 / Math.sqrt(3);
+  const q4 = { id: 'x3', type: 'num', q: <>Pour {sit.mesurande}, la valeur ne peut être précisée mieux que dans l’intervalle de <b>{fm(min4)}{NB}{un}</b> à <b>{fm(max4)}{NB}{un}</b> (précision de l’instrument : ± {fm(a4, dec + (a4 < 1 ? 1 : 0))}{NB}{un}). On suppose toutes les valeurs de l’intervalle équiprobables (loi uniforme). Calculez l’incertitude-type de type B, en <b>{un}</b>.</>, unite: un, vrai: u4, csMin: 2, tolRel: 0.05,
+    aide: 'D’abord la demi-largeur a = (valeur max − valeur min) / 2, puis u = a / √3.',
+    pieges: [[a4, 'C’est la demi-largeur a : il faut la diviser par √3.'], [2 * a4 / Math.sqrt(3), 'Vous avez pris la largeur totale de l’intervalle : a est la moitié.'], [a4 / 3, 'On divise par √3 ≈ 1,73, pas par 3.'], [a4 * Math.sqrt(3), 'On divise a par √3, on ne le multiplie pas.']],
+    expl: <>a = ({fm(max4)} − {fm(min4)}) / 2 = {nb(a4, 2)}{NB}{un} ; u = a / √3 = <b>{avecU(u4, un, 2)}</b>.</> };
+  // q5 : arrondi de l'incertitude-type (1 chiffre significatif, 2 si le premier est 1, par excès)
+  const raw = Number((sit.sigma * (0.25 + Math.random() * 0.9)).toPrecision(3)), u5 = ME.arrondiU(raw), p5 = ME.rangU(raw);
+  const bas5 = Number((Math.floor(raw / Math.pow(10, p5) + 1e-9) * Math.pow(10, p5)).toFixed(8));
+  const q5 = { id: 'x4', type: 'num', q: <>Un calcul donne une incertitude-type <b>u = {nb(raw, 3)}{NB}{un}</b>. Règle : u s’écrit avec 1 chiffre significatif (2 si son premier chiffre est 1), <b>arrondie par excès</b>. Écrivez u arrondie, en <b>{un}</b>.</>, unite: un, vrai: u5, tolRel: 0.001,
+    aide: 'Gardez le premier chiffre significatif (et le suivant si le premier est 1), puis arrondissez vers le haut.',
+    pieges: [[bas5, 'On arrondit par excès (vers le haut) pour ne pas sous-estimer l’incertitude.'], [Number(raw.toPrecision(2)), 'Trop de chiffres : 1 chiffre significatif suffit (2 seulement si le premier est 1).']],
+    expl: <>u = {nb(raw, 3)}{NB}{un} s’écrit <b>{fm(u5, ME.decimalesDe(raw))}{NB}{un}</b> ; la valeur estimée s’arrondit ensuite à la même décimale.</> };
+  // q6 : comparaison qualitative à la référence
+  const compat = Math.random() < 0.5, uc = ME.arrondiU(lis(sit.sigma * tire([0.4, 0.5, 0.6]))), dc = ME.decimalesDe(uc);
+  const mc = Number((sit.ref + (compat ? uc * tire([-0.6, -0.3, 0.4, 0.7]) : uc * tire([-5, -4, 4, 5]))).toFixed(dc + 1)), mr = ME.arrondiMoyenne(mc, uc);
+  const bonne6 = compat ? 'compatible : l’écart est de l’ordre de l’incertitude ou plus petit' : 'à expliquer : l’écart est nettement plus grand que l’incertitude';
+  const opts6 = melange([bonne6, compat ? 'à expliquer : l’écart est nettement plus grand que l’incertitude' : 'compatible : l’écart est de l’ordre de l’incertitude ou plus petit', 'incompatible : les deux valeurs ne sont pas identiques', 'on ne peut rien dire : une seule série ne permet pas de comparer']);
+  const q6 = { id: 'x5', type: 'qcm', q: <>Pour {sit.mesurande}, un élève obtient <b>{fm(mr, dc)} ± {fm(uc, dc)}{NB}{un}</b>. La valeur de référence est <b>{fm(sit.ref)}{NB}{un}</b> ({sit.refTxt}). On compare qualitativement l’écart à l’incertitude. Que conclure ?</>, options: opts6, bonne: opts6.indexOf(bonne6),
+    aide: 'Calculez l’écart |mesure − référence|, puis comparez-le à u : plus petit, du même ordre, ou plusieurs fois plus grand ?',
+    expl: <>Écart = |{fm(mr, dc)} − {fm(sit.ref)}| = {fm(Math.abs(mr - sit.ref), dc)}{NB}{un}, soit environ {nb(Math.abs(mr - sit.ref) / uc, 1)} fois u. Deux valeurs mesurées sont rarement rigoureusement identiques : on juge l’écart par rapport à l’incertitude.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai && Math.abs(x - q.vrai) > Math.max(q.tolRel * 1.5, 0.02) * Math.abs(q.vrai)); });
+  q5.pieges = q5.pieges.filter(([x]) => isFinite(x) && x > 0 && Math.abs(x - u5) > 1e-9);
+  return { intro: 'Mesure et incertitudes : valeur moyenne, incertitude-type de type A (s / √N) et de type B (a / √3), arrondi de l’incertitude et comparaison qualitative à une référence.', questions: [q1, q2, q3, q4, q5, q6],
+    retenir: ['Moyenne : x̄ = (x₁ + … + x_N) / N ; type A : u = s / √N, type B (loi uniforme sur ± a) : u = a / √3.', 'u s’écrit avec 1 chiffre significatif (2 si le premier est 1), arrondie par excès ; la valeur estimée est arrondie à la même décimale.', 'Comparer à une référence : écart de l’ordre de u ou plus petit, compatible ; nettement plus grand que u, à expliquer.'] };
+}
+
 export const FAMILLES = [
   { id: 'titrage-direct', groupe: 'Formules', titre: 'Titrage direct du diiode par le thiosulfate : équivalence, concentration, masse (1re spé)', gen: genTitrageDirect, domaine: 'Titrage direct' },
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
@@ -2476,6 +2529,7 @@ export const FAMILLES = [
   { id: 'rad-calcul', groupe: 'Formules', titre: 'Radioactivité : constante λ, noyaux restants, activité et datation (TG)', gen: genRadioactiviteTG, domaine: 'Radioactivité : décroissance et demi-vie' },
   { id: 'mol1g-qte-calcul', groupe: 'Formules', titre: 'Quantité de matière : masse molaire, masse, volume d’un gaz, d’un liquide et composition d’un mélange (1G)', gen: genQuantiteMatiere1G, domaine: 'Quantité de matière : masse molaire et volume molaire' },
   { id: 'mol1g-conc-calcul', groupe: 'Formules', titre: 'Concentration en quantité de matière : dissolution, masse à peser, prélèvement et dilution (1G)', gen: genConcentration1G, domaine: 'Concentration en quantité de matière : dissolution et dilution' },
+  { id: 'mes1g-calcul', groupe: 'Formules', titre: 'Mesure et incertitudes : moyenne, incertitude-type de type A et de type B, arrondi et comparaison à une référence (1G)', gen: genMesure1G, domaine: 'Mesure et incertitudes (1G)' },
   { id: 'diss1g-calcul', groupe: 'Formules', titre: 'Dissolution d’un solide ionique : équation, concentration en soluté apporté et concentration effective des ions (1G)', gen: genDissolutionIonique1G, domaine: 'Dissolution d’un solide ionique : équation et concentration des ions' },
   { id: 'lewis1g-calcul', groupe: 'Formules', titre: 'Schéma de Lewis : électrons de valence, doublets, doublets non liants et charge d’un atome (1G)', gen: genLewis1G, domaine: 'Schéma de Lewis des molécules et des ions' },
   { id: 'savon1g-calcul', groupe: 'Formules', titre: 'Savons : atomes de l’ion carboxylate, masse molaire du savon et quantité de matière (1G)', gen: genSavon1G, domaine: 'Savons et amphiphilie' },
