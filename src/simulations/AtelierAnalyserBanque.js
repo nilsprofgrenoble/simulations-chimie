@@ -4484,6 +4484,42 @@ export const PREVOIR = [
       F('O²⁻ : 6, autant que O seul ; Na⁺ : 1, autant que Na seul', 'La charge change le nombre d’électrons : 2 de plus pour 2−, 1 de moins pour +.'),
       F('O²⁻ : 7, un électron de plus ; Na⁺ : 0, un de moins', 'La charge 2− correspond à deux électrons gagnés, pas un seul : n_T = 6 + 2 = 8.'),
     ] },
+  // ───────────────────────────── Géométrie, électronégativité et polarité (1G)
+  { id: 'geo1g-ana-ccl4', domaine: 'Géométrie et polarité des entités', titre: 'Liaisons polarisées, molécule apolaire',
+    enonce: 'Dans la molécule de tétrachlorométhane CCl₄, quatre liaisons C–Cl identiques sont réparties autour de l’atome de carbone dans une géométrie tétraédrique. Chaque liaison C–Cl est polarisée (Δχ = 0,5 > 0,4).', q: 'La molécule CCl₄ est…', options: [
+      F('polaire : elle contient des liaisons polarisées', 'Des liaisons polarisées ne suffisent pas : il faut regarder comment elles sont orientées. Les quatre moments dipolaires de liaison peuvent se compenser.'),
+      V('apolaire : les quatre effets des liaisons se compensent', 'Dans une géométrie tétraédrique, les barycentres des charges partielles positives et négatives sont confondus au centre : le moment dipolaire de la molécule est nul.'),
+      F('polaire : le chlore est plus électronégatif que le carbone', 'C’est vrai pour chaque liaison C–Cl, mais cela décrit la polarité d’une liaison, pas celle de la molécule entière.'),
+      F('apolaire : une liaison C–Cl n’est pas polarisée', 'Faux : Δχ = |3,0 − 2,5| = 0,5 dépasse 0,4, donc chaque liaison C–Cl est bien polarisée.'),
+    ] },
+  { id: 'geo1g-ana-forme-eau-nh3', domaine: 'Géométrie et polarité des entités', titre: 'Même nombre de doublets, formes différentes',
+    enonce: 'Dans H₂O, l’atome central O porte 2 liaisons et 2 doublets non liants. Dans NH₃, l’atome central N porte 3 liaisons et 1 doublet non liant. Dans les deux cas, 4 doublets s’écartent au maximum les uns des autres autour de l’atome central (modèle VSEPR).', q: 'Les formes des deux molécules (positions des atomes seulement) sont…', options: [
+      F('identiques : 4 doublets, donc deux tétraèdres', 'Les doublets forment bien un arrangement tétragonal dans les deux cas, mais on décrit la forme avec les atomes seulement : les doublets non liants ne sont pas des atomes.'),
+      F('l’eau est linéaire et l’ammoniac est pyramidal', 'Avec 2 doublets non liants, la molécule d’eau n’est pas alignée : les 4 doublets sont répartis en tétraèdre, donc H–O–H est coudée.'),
+      V('l’eau est coudée et l’ammoniac est pyramidal', 'Même arrangement tétragonal des doublets, mais 2 atomes seulement autour de O (forme coudée) et 3 atomes autour de N (forme pyramidale).'),
+      F('l’eau est pyramidale et l’ammoniac est plan', 'C’est inversé : NH₃ est pyramidal (3 atomes plus 1 doublet non liant), et H₂O ne possède que 2 atomes liés à O.'),
+    ] },
+  { id: 'geo1g-ana-hcl-polaire', domaine: 'Géométrie et polarité des entités', titre: 'HCl et H₂ : deux molécules diatomiques',
+    enonce: 'Les molécules de dihydrogène H₂ et de chlorure d’hydrogène HCl sont toutes deux diatomiques, donc nécessairement linéaires. Pour H₂, Δχ = 0. Pour HCl, χ(H) = 2,2 et χ(Cl) = 3,0.', q: 'Parmi ces deux molécules, laquelle est polaire ?', options: [
+      F('les deux, car elles contiennent chacune une liaison covalente', 'Une liaison covalente n’est pas toujours polarisée : dans H₂, les deux atomes sont identiques et se partagent les électrons de façon égale.'),
+      F('aucune, car une molécule diatomique est linéaire', 'Une forme linéaire ne suffit pas à rendre une molécule apolaire : il faut aussi que les charges se compensent, ce qui n’est pas le cas pour HCl.'),
+      V('HCl seulement : Δχ = 0,8 et un seul sens de polarisation', 'Δχ = 0,8 > 0,4 : la liaison H–Cl est polarisée et, comme elle est seule, G⁺ et G⁻ ne sont pas confondus. H₂ est apolaire.'),
+      F('H₂ seulement : ses deux atomes sont identiques', 'Deux atomes identiques ont la même électronégativité : la liaison H–H n’est pas polarisée, donc H₂ est apolaire.'),
+    ] },
+  { id: 'geo1g-ana-ch4-apolaire', domaine: 'Géométrie et polarité des entités', titre: 'Pourquoi la molécule de méthane est-elle apolaire ?',
+    enonce: 'La molécule de méthane CH₄ est tétraédrique. Pour la liaison C–H : χ(C) = 2,5 et χ(H) = 2,2. On rappelle que, par convention, une liaison est considérée comme non polarisée si Δχ ≤ 0,4.', q: 'CH₄ est apolaire principalement parce que…', options: [
+      F('toute molécule tétraédrique est apolaire, c’est la règle', 'Faux : CH₃Cl est aussi tétraédrique, mais polaire, car ses liaisons ne sont pas identiques. La forme seule ne suffit pas.'),
+      V('Δχ = 0,3 : les liaisons C–H ne sont pas polarisées', 'Il n’y a aucune charge partielle notable : la molécule est apolaire. Sa forme tétraédrique n’intervient pas ici.'),
+      F('les quatre moments dipolaires C–H se compensent', 'Il n’y a pas de moments dipolaires de liaison à compenser : C–H n’est pas polarisée (Δχ = 0,3 ≤ 0,4).'),
+      F('l’atome de carbone ne porte aucun doublet non liant', 'L’absence de doublet non liant détermine la forme (tétraédrique), pas la polarité des liaisons.'),
+    ] },
+  { id: 'geo1g-ana-co2-lineaire', domaine: 'Géométrie et polarité des entités', titre: 'CO₂ et H₂O : deux molécules triatomiques',
+    enonce: 'Les molécules de dioxyde de carbone CO₂ et d’eau H₂O ont chacune un atome central lié à deux autres atomes et des liaisons polarisées. L’atome central de CO₂ ne porte aucun doublet non liant, celui de H₂O en porte deux.', q: 'La molécule de CO₂ est apolaire alors que celle de H₂O est polaire parce que…', options: [
+      F('les liaisons C=O de CO₂ ne sont pas polarisées', 'Δχ(C–O) = 1,0 > 0,4 : les liaisons C=O sont bien polarisées, mais leurs effets se compensent dans une molécule linéaire.'),
+      F('CO₂ est une molécule coudée et H₂O une molécule linéaire', 'C’est l’inverse : l’absence de doublet non liant donne CO₂ linéaire, et les 2 doublets non liants de l’oxygène donnent H₂O coudée.'),
+      V('CO₂ est linéaire : les deux liaisons se compensent', 'G⁺ et G⁻ sont confondus pour CO₂ (linéaire) ; pour H₂O (coudée), ils sont distincts : la molécule est polaire.'),
+      F('l’oxygène est plus électronégatif dans H₂O que dans CO₂', 'L’oxygène a la même électronégativité (3,5) dans les deux molécules : ce n’est pas elle qui distingue les deux cas, c’est la géométrie.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

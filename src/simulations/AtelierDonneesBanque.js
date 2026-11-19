@@ -3209,6 +3209,41 @@ export const ENONCES = [
         manque: null, solution: { txt: 'a = (Moy⁺ − Moy⁻) / 2', val: a, u: '' } };
     },
   },
+  // ───────────────────────────── Géométrie, électronégativité et polarité (1G)
+  {
+    id: 'geo1g-sapp-liaison', domaine: 'Géométrie et polarité des entités', titre: 'Polarité d’une liaison et d’une molécule', noms: ['Écart d’électronégativité de la liaison', 'Nombre de liaisons polarisées de la molécule'],
+    gen: () => ({ l: tire([['H', 'Cl', 2.2, 3.0, 127, 432], ['N', 'H', 3.0, 2.2, 101, 391], ['O', 'H', 3.5, 2.2, 96, 463], ['C', 'H', 2.5, 2.2, 109, 413], ['C', 'Cl', 2.5, 3.0, 177, 339]]), m: tire([['eau', 'H₂O', 'O', 'H', 2, 3.5, 2.2, 18.0], ['ammoniac', 'NH₃', 'N', 'H', 3, 3.0, 2.2, 17.0], ['tétrachlorométhane', 'CCl₄', 'C', 'Cl', 4, 2.5, 3.0, 154], ['dioxyde de carbone', 'CO₂', 'C', 'O', 2, 2.5, 3.5, 44.0]]) }),
+    build: (p, q) => {
+      const [a, b, xa, xb, d, E] = p.l;
+      const dchi = Math.round(Math.abs(xa - xb) * 10) / 10;
+      const tokens = {
+        xa: tok(`χ(${a}) = ${nb(xa, 1)}`, `Électronégativité de l’atome ${a} (échelle de Pauling)`, xa, ''),
+        xb: tok(`χ(${b}) = ${nb(xb, 1)}`, `Électronégativité de l’atome ${b} (échelle de Pauling)`, xb, ''),
+        d: tok(`${d} pm`, `Longueur de la liaison ${a}–${b}`, d, 'pm'),
+        E: tok(`${E} kJ/mol`, `Énergie de la liaison ${a}–${b}`, E, 'kJ/mol'),
+      };
+      if (q === 0) return { tokens, derivees: [],
+        texte: ['Dans une molécule, on étudie la liaison covalente ', a, '–', b, '. Sa longueur est ', T('d'), ' et son énergie ', T('E'), '. Les électronégativités sont ', T('xa'), ' et ', T('xb'), '. Quel est l’écart d’électronégativité Δχ de cette liaison ?'],
+        utiles: ['xa', 'xb'], raisons: { d: 'La longueur d’une liaison ne dit rien sur le partage des électrons : seul l’écart de χ compte.', E: 'L’énergie d’une liaison mesure sa solidité, pas la polarité.' },
+        cherche: { bonne: 'L’écart d’électronégativité Δχ de la liaison', faux: ['La longueur de la liaison (en pm)', 'L’énergie de la liaison (en kJ/mol)', 'Le nombre de liaisons polarisées de la molécule'] },
+        manque: null, solution: { txt: 'Δχ = |χ(A) − χ(B)|, écart entre les deux électronégativités', val: dchi, u: '' } };
+      const [nom, f, c, x, n, xc, xx, Mm] = p.m, lien = f === 'CO₂' ? '=' : '–';
+      const t2 = {
+        xc: tok(`χ(${c}) = ${nb(xc, 1)}`, `Électronégativité de l’atome ${c}`, xc, ''),
+        xx: tok(`χ(${x}) = ${nb(xx, 1)}`, `Électronégativité de l’atome ${x}`, xx, ''),
+        seuil: tok('0,4', 'Seuil de polarisation retenu en cours (convention : liaison non polarisée si Δχ ≤ 0,4)', 0.4, ''),
+        n: tok(`${n} liaisons`, `Nombre de liaisons ${c}${lien}${x} de la molécule`, n, ''),
+        M: tok(`${nb(Mm, 1)} g/mol`, 'Masse molaire de la molécule', Mm, 'g/mol'),
+      };
+      const dm = Math.round(Math.abs(xc - xx) * 10) / 10;
+      const nPol = dm > 0.4 + 1e-9 ? n : 0;
+      return { tokens: t2, derivees: [{ id: 'dm', nom: `Écart d’électronégativité Δχ de la liaison ${c}${lien}${x}`, expr: 'Δχ = |χ(A) − χ(B)|', val: dm, u: '' }],
+        texte: ['La molécule de ', nom, ' ', f, ' possède ', T('n'), ' ', c, lien, x, ' (masse molaire ', T('M'), '). Les électronégativités sont ', T('xc'), ' et ', T('xx'), '. Par convention, une liaison est considérée comme non polarisée si Δχ ≤ ', T('seuil'), '. Combien de liaisons polarisées cette molécule possède-t-elle ?'],
+        utiles: ['xc', 'xx', 'seuil', 'n'], raisons: { M: 'La masse molaire ne renseigne pas sur la polarité des liaisons.' },
+        cherche: { bonne: 'Le nombre de liaisons polarisées de la molécule', faux: ['L’écart d’électronégativité Δχ de la liaison, sans conclure', 'La polarité de la molécule entière (polaire ou apolaire)', 'La masse molaire de la molécule (en g/mol)'] },
+        manque: null, solution: { txt: nPol === 0 ? 'Δχ ≤ 0,4 : aucune liaison n’est polarisée' : 'Δχ > 0,4 : chacune des ' + n + ' liaisons est polarisée', val: nPol, u: 'liaisons' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
