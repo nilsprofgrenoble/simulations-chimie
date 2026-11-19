@@ -483,11 +483,11 @@ export const ENONCES = [
         sigma: tok(`${nb(sigma, 1)} mS·m⁻¹`, 'Conductivité mesurée à 25 °C', sigma, 'mS·m⁻¹'),
       };
       const debut = ['Une solution de ', s.nom, ' (', s.f, ', totalement dissocié en ', CDT_IONS[s.cat].f, ' et ', CDT_IONS[s.an].f, ') est diluée : ', 'λ(', CDT_IONS[s.cat].f, ') = ', T('lc'), ' et λ(', CDT_IONS[s.an].f, ') = ', T('la'), '. '];
-      if (q === 0) return { tokens, derivees: ['σ = λ(cation) × c + λ(anion) × c, avec c en mol·m⁻³ (1 mol/L = 1 000 mol·m⁻³)'], texte: [...debut, 'La solution, de concentration ', T('C'), ', occupe un volume de ', T('V'), '. Quelle est sa conductivité ?'],
+      if (q === 0) return { tokens, derivees: [{ id: 'cm', nom: 'Concentration en mol·m⁻³ (1 mol/L = 1 000 mol·m⁻³)', expr: 'c × 1 000', val: p.C * 1000, u: 'mol·m⁻³' }], texte: [...debut, 'La solution, de concentration ', T('C'), ', occupe un volume de ', T('V'), '. Quelle est sa conductivité ?'],
         utiles: ['lc', 'la', 'C'], raisons: { V: 'Le volume ne change pas la concentration, donc pas la conductivité : σ dépend des concentrations, pas de la quantité de solution.' },
         cherche: { bonne: 'La conductivité σ (en mS·m⁻¹)', faux: ['La concentration du soluté (en mol/L)', 'La conductivité ionique molaire du soluté (en mS·m²·mol⁻¹)', 'La résistance électrique de la cellule (en Ω)'] },
         manque: null, solution: { txt: 'σ = (λ(cation) + λ(anion)) × c, avec c en mol·m⁻³', val: somme * p.C * 1000, u: 'mS·m⁻¹' } };
-      return { tokens, derivees: ['c = σ / (λ(cation) + λ(anion)), en mol·m⁻³, puis conversion en mol/L'], texte: [...debut, 'La conductivité mesurée vaut ', T('sigma'), ' ; le volume de solution est ', T('V'), '. Quelle est la concentration du soluté ?'],
+      return { tokens, derivees: [{ id: 'som', nom: 'Somme des conductivités ioniques molaires', expr: 'λ(cation) + λ(anion)', val: somme, u: 'mS·m²·mol⁻¹' }], texte: [...debut, 'La conductivité mesurée vaut ', T('sigma'), ' ; le volume de solution est ', T('V'), '. Quelle est la concentration du soluté ?'],
         utiles: ['lc', 'la', 'sigma'], raisons: { V: 'Le volume ne change pas une concentration : on la déduit de σ et des conductivités ioniques molaires.' },
         cherche: { bonne: 'La concentration du soluté (en mol/L)', faux: ['La conductivité de la solution (en mS·m⁻¹)', 'La quantité de soluté dissous (en mmol)', 'La conductivité ionique molaire de la solution (en mS·m²·mol⁻¹)'] },
         manque: null, solution: { txt: 'c = σ / (λ(cation) + λ(anion)) = en mol·m⁻³, soit en mol/L après division par 1 000', val: sigma / somme / 1000, u: 'mol/L' } };
@@ -504,11 +504,11 @@ export const ENONCES = [
         VE: tok(`${nb(p.VE, 1)} mL`, 'Volume équivalent lu à la rupture de pente de la courbe', p.VE, 'mL'),
       };
       const debut = ['On titre une prise d’essai de ', T('VA'), ' d’acide chlorhydrique, de concentration cA inconnue, diluée dans ', T('eau'), ' d’eau, par une solution d’hydroxyde de sodium de concentration ', T('cB'), '. Le suivi de la conductivité donne une rupture de pente pour un volume versé ', T('VE'), '. '];
-      if (q === 0) return { tokens, derivees: ['à l’équivalence : cA × VA = cB × VE'], texte: [...debut, 'Quelle est la concentration cA de l’acide ?'],
+      if (q === 0) return { tokens, derivees: [{ id: 'nHO', nom: 'Quantité d’ions HO⁻ versée à l’équivalence', expr: 'n(HO⁻) = cB × VE', val: p.cB * p.VE, u: 'mmol' }], texte: [...debut, 'Quelle est la concentration cA de l’acide ?'],
         utiles: ['VA', 'cB', 'VE'], raisons: { eau: 'L’eau ajoutée dilue l’acide mais ne change pas sa quantité de matière : elle ne sert pas au calcul de cA.' },
         cherche: { bonne: 'La concentration cA de l’acide (en mol/L)', faux: ['La quantité d’acide titré (en mmol)', 'La concentration de la solution de soude (en mol/L)', 'La concentration de l’acide après dilution (en mol/L)'] },
         manque: null, solution: { txt: 'cA = cB × VE / VA (quantités égales à l’équivalence)', val: p.cB * p.VE / p.VA, u: 'mol/L' } };
-      return { tokens, derivees: ['n(HO⁻) versé à l’équivalence = cB × VE'], texte: [...debut, 'Quelle quantité d’ions HO⁻ a-t-on versée à l’équivalence ?'],
+      return { tokens, derivees: [], texte: [...debut, 'Quelle quantité d’ions HO⁻ a-t-on versée à l’équivalence ?'],
         utiles: ['cB', 'VE'], raisons: { VA: 'La prise d’essai sert à calculer la concentration de l’acide, pas la quantité de HO⁻ versée.', eau: 'L’eau de dilution ne contient pas d’ions HO⁻ : elle n’intervient pas.' },
         cherche: { bonne: 'La quantité n(HO⁻) versée (en mmol)', faux: ['La concentration en ions HO⁻ dans le bécher (en mol/L)', 'La quantité d’ions H₃O⁺ restants (en mmol)', 'Le volume équivalent (en mL)'] },
         manque: null, solution: { txt: 'n(HO⁻) = cB × VE (mol/L × mL = mmol)', val: p.cB * p.VE, u: 'mmol' } };
@@ -529,11 +529,11 @@ export const ENONCES = [
       };
       const fac = 1000 * p.dn / p.Vt;
       const debut = ['On titre une solution d’acide ', p.acide, ' par la soude (Na⁺, HO⁻). Conductivités ioniques molaires à 25 °C : λ(H₃O⁺) = ', T('lH'), ', λ(Na⁺) = ', T('lNa'), ', λ(HO⁻) = ', T('lHO'), ' et λ(', I[an].f, ') = ', T('lAn'), '. On ajoute ', T('dn'), ' d’ions HO⁻ ; le volume total, ', T('Vt'), ', est supposé constant. '];
-      if (q === 0) return { tokens, derivees: ['Δσ = (λ(Na⁺) − λ(H₃O⁺)) × Δc, avec Δc en mol·m⁻³ (1 mmol/mL = 1 000 mol·m⁻³)'], texte: [...debut, 'Avant l’équivalence, chaque ion HO⁻ réagit avec un ion H₃O⁺ et un ion Na⁺ apparaît. Quelle est la variation de la conductivité ?'],
+      if (q === 0) return { tokens, derivees: [{ id: 'dc', nom: 'Variation de concentration en mol·m⁻³ (1 mmol/mL = 1 000 mol·m⁻³)', expr: 'Δc = 1 000 × Δn / Vt', val: fac, u: 'mol·m⁻³' }], texte: [...debut, 'Avant l’équivalence, chaque ion HO⁻ réagit avec un ion H₃O⁺ et un ion Na⁺ apparaît. Quelle est la variation de la conductivité ?'],
         utiles: ['lH', 'lNa', 'dn', 'Vt'], raisons: { lHO: 'Avant l’équivalence, HO⁻ est consommé : il ne reste pas en solution, sa conductivité ionique molaire n’intervient pas.', lAn: 'L’ion spectateur ne change pas : sa concentration reste la même (à volume constant).' },
         cherche: { bonne: 'La variation Δσ de la conductivité (en mS·m⁻¹)', faux: ['La conductivité σ finale de la solution (en mS·m⁻¹)', 'La variation de la quantité d’ions Na⁺ (en mmol)', 'La variation du pH de la solution (sans unité)'] },
         manque: null, solution: { txt: 'Δσ = (λ(Na⁺) − λ(H₃O⁺)) × Δc, avec Δc = Δn / Vt en mol·m⁻³', val: (I.Na.lambda - I.H3O.lambda) * fac, u: 'mS·m⁻¹' } };
-      return { tokens, derivees: ['Δσ = (λ(Na⁺) + λ(HO⁻)) × Δc, avec Δc en mol·m⁻³'], texte: [...debut, 'Après l’équivalence, les ions HO⁻ ajoutés ne réagissent plus : ils s’accumulent avec les ions Na⁺ correspondants. Quelle est la variation de la conductivité ?'],
+      return { tokens, derivees: [{ id: 'dc', nom: 'Variation de concentration en mol·m⁻³ (1 mmol/mL = 1 000 mol·m⁻³)', expr: 'Δc = 1 000 × Δn / Vt', val: fac, u: 'mol·m⁻³' }], texte: [...debut, 'Après l’équivalence, les ions HO⁻ ajoutés ne réagissent plus : ils s’accumulent avec les ions Na⁺ correspondants. Quelle est la variation de la conductivité ?'],
         utiles: ['lNa', 'lHO', 'dn', 'Vt'], raisons: { lH: 'Après l’équivalence, il n’y a plus d’ions H₃O⁺ à consommer : cet ion n’intervient pas dans la variation.', lAn: 'L’ion spectateur ne change pas : sa concentration reste la même (à volume constant).' },
         cherche: { bonne: 'La variation Δσ de la conductivité (en mS·m⁻¹)', faux: ['La conductivité σ finale de la solution (en mS·m⁻¹)', 'La variation de la quantité d’ions HO⁻ (en mmol)', 'La variation du volume équivalent (en mL)'] },
         manque: null, solution: { txt: 'Δσ = (λ(Na⁺) + λ(HO⁻)) × Δc, avec Δc = Δn / Vt en mol·m⁻³', val: (I.Na.lambda + I.HO.lambda) * fac, u: 'mS·m⁻¹' } };
@@ -552,11 +552,11 @@ export const ENONCES = [
       };
       const reste = p.cB * p.VB - p.cA * p.VA, Vt = p.VA + p.eau + p.VB;
       const debut = ['Une prise d’essai de ', T('VA'), ' d’acide chlorhydrique à ', T('cA'), ' est diluée dans ', T('eau'), ' d’eau, puis titrée par de la soude à ', T('cB'), '. On a versé ', T('VB'), ' de soude, soit plus que le volume équivalent (la transformation est totale). '];
-      if (q === 0) return { tokens, derivees: ['n(HO⁻) restant = cB × VB − cA × VA (mol/L × mL = mmol)'], texte: [...debut, 'Quelle quantité d’ions HO⁻ reste-t-il dans le bécher ?'],
+      if (q === 0) return { tokens, derivees: [{ id: 'nH', nom: 'Quantité initiale d’ions H₃O⁺', expr: 'n(H₃O⁺) = cA × VA', val: p.cA * p.VA, u: 'mmol' }, { id: 'nB', nom: 'Quantité d’ions HO⁻ versée', expr: 'n(HO⁻) = cB × VB', val: p.cB * p.VB, u: 'mmol' }], texte: [...debut, 'Quelle quantité d’ions HO⁻ reste-t-il dans le bécher ?'],
         utiles: ['cA', 'VA', 'cB', 'VB'], raisons: { eau: 'L’eau de dilution ne change pas les quantités de matière : elle intervient seulement dans les concentrations.' },
         cherche: { bonne: 'La quantité n(HO⁻) restante (en mmol)', faux: ['La concentration en HO⁻ dans le bécher (en mol/L)', 'La quantité d’ions H₃O⁺ du départ (en mmol)', 'La quantité d’ions HO⁻ versés (en mmol)'] },
         manque: null, solution: { txt: 'n(HO⁻) restant = cB × VB − cA × VA', val: reste, u: 'mmol' } };
-      return { tokens, derivees: ['n(HO⁻) restant = cB × VB − cA × VA, puis [HO⁻] = n / (VA + volume d’eau + VB)'], texte: [...debut, 'Quelle est la concentration en ions HO⁻ dans le bécher ?'],
+      return { tokens, derivees: [{ id: 'nres', nom: 'Quantité d’ions HO⁻ restants', expr: 'n(HO⁻) = cB × VB − cA × VA', val: reste, u: 'mmol' }, { id: 'Vt', nom: 'Volume total du bécher', expr: 'VA + volume d’eau + VB', val: Vt, u: 'mL' }], texte: [...debut, 'Quelle est la concentration en ions HO⁻ dans le bécher ?'],
         utiles: ['cA', 'VA', 'eau', 'cB', 'VB'], raisons: {},
         cherche: { bonne: 'La concentration en HO⁻ (en mol/L)', faux: ['La quantité d’ions HO⁻ restants (en mmol)', 'La concentration de la soude versée (en mol/L)', 'La concentration en ions Na⁺ (en mol/L)'] },
         manque: null, solution: { txt: '[HO⁻] = (cB × VB − cA × VA) / (VA + volume d’eau + VB) ; mmol / mL = mol/L', val: reste / Vt, u: 'mol/L' } };
