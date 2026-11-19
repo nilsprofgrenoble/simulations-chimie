@@ -115,31 +115,40 @@ function PlancheForce({ scene, vec, setVec, editable, echelle, fantome, aide = t
 function Reciproques({ scene, F, mA, mB, montrer, masqueA = false }) {
   const une = montrer === true || montrer === 'une', deux = montrer === true;
   if (scene === 'dyno') {
-    const L = F * 10, cx = 218, cy = 114;
-    const dyna = (x0, nom, aff) => <g>
-      <rect x={x0} y="78" width="160" height="54" rx="9" fill="#e2e8f0" stroke="#334155" strokeWidth="2.5"/>
-      <rect x={x0 + 12} y="84" width="84" height="24" rx="4" fill="#fff" stroke="#334155" strokeWidth="1.8"/>
-      <text x={x0 + 54} y="103" textAnchor="middle" fontSize="19" fontWeight="800" fill="#0f172a">{aff}</text>
-      <g stroke="#475569" strokeWidth="1.8">{Array.from({ length: 15 }, (_, k) => <line key={k} x1={x0 + 12 + k * 9.6} y1="124" x2={x0 + 12 + k * 9.6} y2={k % 5 === 0 ? 114 + 4 : 120}/>)}</g>
-      <text x={x0 + 80} y="68" textAnchor="middle" fontSize="18" fontWeight="800" fill="#0f172a">Dynamomètre {nom}</text></g>;
+    const L = F * 10, cy = 112, s = F * 5;                     // s : allongement du ressort (5 px par newton) ; L : flèche de force (1 cm ↔ 4 N)
+    const xA = 40, tipA = xA + 128 + s, xB = tipA + 30, tipB = xB + 128 + s, cx = tipA + 15, mainX = tipB + 16;
+    const dyna = (x0, nom, aff) => {
+      const px = x0 + 24 + s, n = 16, pts = Array.from({ length: n + 1 }, (_, i) => `${x0 + 4 + (px - x0 - 4) * i / n},${cy + (i === 0 || i === n ? 0 : i % 2 ? 9 : -9)}`).join(' ');
+      return <g>
+        <text x={x0 + 55} y="52" textAnchor="middle" fontSize="17" fontWeight="800" fill="#0f172a">Dynamomètre {nom}</text>
+        <rect x={x0 + 18} y="60" width="74" height="26" rx="5" fill="#fff" stroke="#334155" strokeWidth="1.8"/>
+        <text x={x0 + 55} y="80" textAnchor="middle" fontSize="19" fontWeight="800" fill="#0f172a">{aff}</text>
+        <rect x={x0} y="92" width="110" height="40" rx="8" fill="#f1f5f9" stroke="#334155" strokeWidth="2.5"/>
+        <polyline points={pts} fill="none" stroke="#0f766e" strokeWidth="2.6" strokeLinejoin="round"/>
+        <line x1={px} y1={cy} x2={x0 + 128 + s} y2={cy} stroke="#334155" strokeWidth="4"/>
+        <rect x={px - 3} y={cy - 15} width="6" height="30" rx="2" fill="#475569"/>
+        <circle cx={x0 + 136 + s} cy={cy} r="8" fill="none" stroke="#334155" strokeWidth="3"/>
+        {nom === 'B' && <circle cx={x0 - 8} cy={cy} r="8" fill="none" stroke="#334155" strokeWidth="3"/>}</g>;
+    };
     return (
-      <svg viewBox={`0 0 ${W} 256`} width="100%" role="img" aria-label={`Deux dynamomètres A et B accrochés l’un à l’autre : A est fixé au mur, une main tire sur B vers la droite${masqueA ? '' : `. Chacun indique ${fr(F, 1)} N`}`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
+      <svg viewBox={`0 0 ${W} 262`} width="100%" role="img" aria-label={`Deux dynamomètres à ressort A et B accrochés l’un à l’autre : A est fixé au mur, une main tire sur B vers la droite. Les ressorts s’allongent quand la force augmente${masqueA ? '' : `. Chacun indique ${fr(F, 1)} N`}`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
         {une && <text x="10" y="24" fontSize="16" fill="#334155">Échelle : 1 cm ↔ 4 N</text>}
-        <rect x="8" y="70" width="16" height="90" fill="#94a3b8" stroke="#475569" strokeWidth="2.5"/><text x="16" y="182" textAnchor="middle" fontSize="16" fill="#334155">mur</text>
-        <line x1="24" y1={cy} x2="40" y2={cy} stroke="#334155" strokeWidth="3"/>
-        {dyna(40, 'A', masqueA ? '?' : `${fr(F, 1)} N`)}
-        {dyna(236, 'B', `${fr(F, 1)} N`)}
-        <circle cx="206" cy={cy} r="9" fill="none" stroke="#334155" strokeWidth="3"/><circle cx="226" cy={cy} r="9" fill="none" stroke="#334155" strokeWidth="3"/>
-        <line x1="396" y1={cy} x2="456" y2={cy} stroke="#334155" strokeWidth="3"/>
-        <rect x="452" y="96" width="46" height="38" rx="12" fill="#fde2d4" stroke="#334155" strokeWidth="2.5"/>
-        <g stroke="#334155" strokeWidth="2"><line x1="464" y1="102" x2="464" y2="128"/><line x1="476" y1="102" x2="476" y2="128"/><line x1="488" y1="102" x2="488" y2="128"/></g>
-        <Fleche x={504} y={cy} dx={32} dy={0} couleur="#94a3b8" ep={4}/><text x="520" y="100" textAnchor="middle" fontSize="15" fontWeight="700" fill="#64748b">on tire</text>
-        <text x="475" y="156" textAnchor="middle" fontSize="16" fill="#334155">main</text>
-        {une && <g><Fleche x={cx} y={cy} dx={L} dy={0} couleur={FORCE} ep={4.5}/><EtqF x={cx + 8} y={cy + 54} c={FORCE} ind="B/A"/></g>}
-        {deux && <g><Fleche x={cx} y={cy} dx={-L} dy={0} couleur={FORCE2} ep={4.5}/><EtqF x={cx - 8} y={cy + 54} c={FORCE2} ind="A/B" fin/></g>}
+        <rect x="8" y="70" width="16" height="90" fill="#94a3b8" stroke="#475569" strokeWidth="2.5"/><text x="20" y="182" textAnchor="middle" fontSize="16" fill="#334155">mur</text>
+        <line x1="24" y1={cy} x2={xA} y2={cy} stroke="#334155" strokeWidth="3"/>
+        {dyna(xA, 'A', masqueA ? '?' : `${fr(F, 1)} N`)}
+        {dyna(xB, 'B', `${fr(F, 1)} N`)}
+        <line x1={tipB + 16} y1={cy} x2={mainX + 4} y2={cy} stroke="#334155" strokeWidth="3"/>
+        <rect x={mainX + 2} y="94" width="46" height="36" rx="12" fill="#fde2d4" stroke="#334155" strokeWidth="2.5"/>
+        <g stroke="#334155" strokeWidth="2"><line x1={mainX + 14} y1="100" x2={mainX + 14} y2="124"/><line x1={mainX + 26} y1="100" x2={mainX + 26} y2="124"/><line x1={mainX + 38} y1="100" x2={mainX + 38} y2="124"/></g>
+        <text x={mainX + 25} y="152" textAnchor="middle" fontSize="16" fill="#334155">main</text>
+        {F > 0 && <g><Fleche x={mainX} y={cy} dx={L} dy={0} couleur="#7c3aed" ep={4.5}/><EtqF x={mainX} y={cy - 40} c="#7c3aed" ind="main/B"/>
+          <circle cx={mainX} cy={cy} r="5" fill="#0f172a"/></g>}
+        {une && F > 0 && <g><Fleche x={cx} y={cy} dx={L} dy={0} couleur={FORCE} ep={4.5}/><EtqF x={cx + 8} y={cy + 54} c={FORCE} ind="B/A"/></g>}
+        {deux && F > 0 && <g><Fleche x={cx} y={cy} dx={-L} dy={0} couleur={FORCE2} ep={4.5}/><EtqF x={cx - 8} y={cy + 54} c={FORCE2} ind="A/B" fin/></g>}
         <circle cx={cx} cy={cy} r="5" fill="#0f172a"/>
-        <text x={cx} y="208" textAnchor="middle" fontSize="15" fill="#334155">point noir : les deux crochets accrochés se touchent</text>
-        <text x="10" y="236" fontSize="16" fill="#334155">A est fixé au mur, B est accroché à A, on tire B vers la droite.</text>
+        <text x="10" y="212" fontSize="15" fill="#334155">Points noirs : crochets accrochés ; la main tient le crochet de B.</text>
+        <text x="10" y="236" fontSize="16" fill="#334155">A est fixé au mur, la main tire B vers la droite.</text>
+        <text x="10" y="256" fontSize="16" fill="#334155">Plus on tire fort, plus les ressorts s’allongent.</text>
       </svg>);
   }
   const C = { x: 280, y: 124 }, L = F / 80 * PX_CM;
@@ -388,7 +397,7 @@ export function SimulationForcesVecteurs() {
       </>,
       texte: <>Voici ce qu’il faut retenir sur la force et sa représentation.</>, tache: null },
     { id: 'recip1', titre: 'Deux dynamomètres accrochés', depart: () => { setAtelier('recip'); setRecip({ scene: 'dyno', F: 4, mA: 60, mB: 60, montrer: 'une' }); },
-      texte: <>Deux dynamomètres A et B sont accrochés l’un à l’autre. Le premier est fixé à un support. On tire sur B. Comme B tire sur A, <strong>A tire aussi sur B</strong> : si A agit sur B, alors B agit sur A. C’est le <strong>principe des actions réciproques</strong>. Sur le schéma, la flèche montre la force de B sur A.
+      texte: <>Deux dynamomètres A et B sont accrochés l’un à l’autre. Le premier est fixé à un support. On tire sur B. Comme B tire sur A, <strong>A tire aussi sur B</strong> : si A agit sur B, alors B agit sur A. C’est le <strong>principe des actions réciproques</strong>. Sur le schéma, la flèche orange montre la force de B sur A et la flèche violette la force de la main sur B ; les ressorts s’allongent quand la force augmente.
         <ExempleResolu>B tire A vers la droite avec <Fn a="B" r="A" vec/>. A tire B vers la gauche avec <Fn a="A" r="B" vec/>. Ces deux forces ont même direction, <strong>sens opposés</strong> et <strong>même intensité</strong>.</ExempleResolu>
         À vous : B indique 4 N.</>,
       tache: { type: 'num', q: 'Le dynamomètre B indique 4 N. Que lit-on sur le dynamomètre A ?', unite: 'N', vrai: 4, tol: 0.01, affiche: x => String(x), pieges: [[2, 'Pourquoi la moitié ? Les deux dynamomètres subissent des forces de même intensité.'], [8, 'Les forces ne s’additionnent pas : elles ont la même intensité.']],
