@@ -124,6 +124,7 @@ const SimulationPredoTstl = paresseux(() => import("./simulations/PredoTstl"), "
 const SimulationTamponTstl = paresseux(() => import("./simulations/TamponTstl"), "SimulationTamponTstl");
 const SimulationCo2Dissous = paresseux(() => import("./simulations/Co2Dissous"), "SimulationCo2Dissous");
 const SimulationExtractionAcideBase = paresseux(() => import("./simulations/ExtractionAcideBase"), "SimulationExtractionAcideBase");
+const SimulationStereoisomeres = paresseux(() => import("./simulations/Stereoisomeres"), "SimulationStereoisomeres");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
 const SimulationCircuits = paresseux(() => import("./simulations/Circuits"), "SimulationCircuits");
 const SimulationLoiOhm = paresseux(() => import("./simulations/LoiOhm"), "SimulationLoiOhm");
@@ -270,6 +271,8 @@ const SIMULATIONS = [
     component: SimulationCo2Dissous },
   { id:143, label:"Extraction acide-base : le pH décide où va le composé", niveau:"TSTL", icon:"⚗️", color:"#b45309",
     component: SimulationExtractionAcideBase },
+  { id:144, label:"Stéréoisomères : énantiomères, diastéréoisomères, Z et E", niveau:"TSTL", icon:"🪞", color:"#0f766e",
+    component: SimulationStereoisomeres },
   { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",

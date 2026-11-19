@@ -1088,5 +1088,17 @@
  "36:extrac-passes": "REA53",
  "36:crist-refroidissement": "REA54",
  "36:crist-evaporation": "REA55",
- "36:titrage-direct": "REA56"
+ "36:titrage-direct": "REA56",
+ "34:stereo-compter.0": "SAPP285",
+ "34:stereo-compter.1": "SAPP286",
+ "34:stereo-biologique.0": "SAPP287",
+ "34:stereo-biologique.1": "SAPP288",
+ "37:prevoir:stereo-ana-enantiomere": "ANA485",
+ "37:prevoir:stereo-ana-trois-centres": "ANA486",
+ "37:prevoir:stereo-ana-ze-condition": "ANA487",
+ "37:prevoir:stereo-ana-ze-priorite": "ANA488",
+ "77:plausible:stereo-val-meme-cote": "VAL267",
+ "77:plausible:stereo-val-racemique": "VAL268",
+ "36:stereo-nombre": "REA57",
+ "36:stereo-racemique": "REA58"
 }

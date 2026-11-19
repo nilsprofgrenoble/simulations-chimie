@@ -1192,6 +1192,53 @@ function genExtracPasses() {
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['Reste après un contact = 1 divisé par (1 + D × r) ; après n contacts avec du solvant neuf : cette fraction à la puissance n.', 'Plusieurs petites extractions valent mieux qu’une seule grande.'] };
 }
+function genStereoNombre() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const n = tire([3, 4]), N = 2 ** n, C = 2 ** (n - 1), Dd = N - 2;
+  const intro = `Une molécule possède ${n} carbones asymétriques, tous de substituants différents : il n’y a pas de composé méso, donc le nombre de stéréoisomères est maximal.`;
+  const q1 = { id: 's0', type: 'num', q: <>Combien de stéréoisomères cette molécule possède-t-elle (2<sup>n</sup>, sans unité) ?</>, unite: '', vrai: N, tolRel: 0.02, csMin: 1,
+    aide: 'Chaque carbone asymétrique a deux configurations, R ou S : on multiplie les possibilités.',
+    pieges: [[2 * n, 'Il faut élever 2 à la puissance n, et non multiplier 2 par n.'], [n * n, 'C’est n au carré : le nombre de stéréoisomères est 2 puissance n.'], [2 ** (n - 1), 'C’est le nombre de couples d’énantiomères : il y a deux fois plus de stéréoisomères.']],
+    expl: <>Avec {n} carbones asymétriques : 2<sup>{n}</sup> = <b>{N}</b> stéréoisomères.</> };
+  const q2 = { id: 's1', type: 'num', q: <>Chaque stéréoisomère a un seul énantiomère. Combien de <b>couples d’énantiomères</b> y a-t-il parmi les {N} stéréoisomères (sans unité) ?</>, unite: '', vrai: C, tolRel: 0.02, csMin: 1,
+    aide: 'Un couple d’énantiomères contient deux stéréoisomères : divisez le nombre total par 2.',
+    pieges: [[N, 'C’est le nombre de stéréoisomères : un couple en contient deux, il faut diviser par 2.'], [N / 4, 'Il faut diviser une seule fois par 2 : un couple contient deux stéréoisomères.'], [n, 'C’est le nombre de carbones asymétriques, pas le nombre de couples.']],
+    expl: <>{N} stéréoisomères répartis par couples de 2 : {N} divisé par 2 = <b>{C}</b> couples d’énantiomères.</> };
+  const q3 = { id: 's2', type: 'num', q: <>Combien de <b>diastéréoisomères</b> un stéréoisomère donné possède-t-il parmi les autres (sans unité) ?</>, unite: '', vrai: Dd, tolRel: 0.02, csMin: 1,
+    aide: 'Parmi les stéréoisomères, retirez celui qu’on étudie et son énantiomère : tous les autres sont ses diastéréoisomères.',
+    pieges: [[N - 1, 'Il faut retirer aussi son énantiomère : les diastéréoisomères sont les stéréoisomères autres que lui-même et que son énantiomère.'], [N, 'C’est le nombre total de stéréoisomères : il faut retirer le stéréoisomère étudié et son énantiomère.'], [N / 2 - 1, 'On retire deux stéréoisomères du total, pas la moitié du total.']],
+    expl: <>{N} stéréoisomères, moins le stéréoisomère étudié et son énantiomère : {N} − 2 = <b>{Dd}</b> diastéréoisomères.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['n carbones asymétriques (sans composé méso) : 2ⁿ stéréoisomères.', 'Les stéréoisomères vont par couples d’énantiomères : 2ⁿ divisé par 2 couples.', 'Les diastéréoisomères d’un stéréoisomère : tous les autres, sauf lui et son énantiomère, soit 2ⁿ − 2.'] };
+}
+function tirageStereoRacemique() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  for (let k = 0; k < 800; k++) {
+    const m = tire([80, 120, 160, 200]), N = tire([6, 10, 12, 20]), kk = tire([3, 5, 8]), v = [m / 2, N * m / 2, kk];
+    if (v.every((y, i) => v.every((z, j) => i === j || Math.abs(y - z) > 0.1 * Math.max(y, z)))) return { m, N, k: kk };
+  }
+  throw new Error('tirage stereo-racemique impossible');
+}
+function genStereoRacemique() {
+  const { m, N, k } = tirageStereoRacemique(), a = m / 2, D = k * a;
+  const intro = `Un médicament fictif contient une molécule chirale sous forme de mélange racémique : chaque comprimé a une masse de ${nbF(m, 0)} mg de ce mélange (parts égales des deux énantiomères). Seul l’énantiomère (R) est actif. Une boîte contient ${N} comprimés.`;
+  const q1 = { id: 'r0', type: 'num', q: <>Quelle masse de l’énantiomère actif (R) un comprimé contient-il (en mg, 2 chiffres significatifs) ?</>, unite: 'mg', vrai: a, tolRel: 0.05, csMin: 2,
+    aide: 'Un mélange racémique contient 50 % de chaque énantiomère.',
+    pieges: [[m, 'C’est la masse totale du comprimé : seule la moitié est l’énantiomère (R).'], [m / 4, 'Un racémique contient 50 % de chaque énantiomère, pas 25 %.'], [2 * m, 'La masse de (R) ne peut pas dépasser celle du comprimé : il faut en prendre la moitié.']],
+    expl: <>Un racémique contient 50 % de chaque énantiomère : {nbF(m, 0)} × 0,50 = <b>{nbF(a, 0)}{NB}mg</b> de (R).</> };
+  const q2 = { id: 'r1', type: 'num', q: <>Quelle masse de l’énantiomère inactif (S) la boîte entière contient-elle (en mg, 2 chiffres significatifs) ?</>, unite: 'mg', vrai: N * a, tolRel: 0.05, csMin: 2,
+    aide: 'Calculez la masse de (S) dans un comprimé, puis multipliez par le nombre de comprimés.',
+    pieges: [[N * m, 'C’est la masse des deux énantiomères : (S) n’en représente que la moitié.'], [a, 'C’est la masse de (S) dans un seul comprimé : il faut multiplier par le nombre de comprimés.'], [N * m / 4, 'Un racémique contient 50 % de (S), pas 25 %.']],
+    expl: <>Par comprimé : {nbF(a, 0)} mg de (S). Pour {N} comprimés : {N} × {nbF(a, 0)} = <b>{nbF(N * a, 0)}{NB}mg</b>.</> };
+  const q3 = { id: 'r2', type: 'num', q: <>Une étude demande <b>{nbF(D, 0)}{NB}mg</b> d’énantiomère actif (R). Combien de comprimés faut-il utiliser (sans unité) ?</>, unite: '', vrai: k, tolRel: 0.02, csMin: 1,
+    aide: 'Divisez la masse de (R) demandée par la masse de (R) que contient un comprimé.',
+    pieges: [[D / m, 'Un comprimé ne contient que la moitié de sa masse en (R) : il faut diviser par la masse de (R), pas par la masse du comprimé.'], [2 * k, 'Un comprimé contient déjà la moitié de sa masse en (R) : il ne faut pas doubler le nombre obtenu.'], [D, 'C’est la masse demandée, en mg : on cherche un nombre de comprimés.']],
+    expl: <>Un comprimé contient {nbF(a, 0)} mg de (R) : {nbF(D, 0)} divisé par {nbF(a, 0)} = <b>{k}</b> comprimés.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['Mélange racémique : 50 % de chaque énantiomère, en masse comme en quantité de matière.', 'Seul l’énantiomère actif compte pour l’effet : prendre la moitié de la masse du mélange.', 'Un nombre de comprimés = masse demandée divisée par la masse d’énantiomère actif d’un comprimé.'] };
+}
 function genPredoBeer() {
   const u = PRE.tirageIndicateur(), Cs = sciF(u.C), eps = sciF(u.eps), ls = nbF(u.l, 2), pHs = nbF(u.pH, 2), As = nbF(u.abs, 3);
   const Ind = u.abs / (u.eps * u.l), Ind2 = PRE.arrondiCS(Ind, 2), HInd2 = PRE.arrondiCS(u.C - Ind2, 2), r2 = PRE.arrondiCS(Ind2 / HInd2, 2), pKa2 = u.pH - Math.log10(r2);
@@ -1636,6 +1683,8 @@ export const FAMILLES = [
   { id: 'crist-evaporation', groupe: 'Formules', titre: 'Cristallisation par évaporation : eau à saturation et masse de cristaux (terminale STL)', gen: genCristEvaporation, domaine: 'Évaporation et cristallisation' },
   { id: 'extrac-partage', groupe: 'Formules', titre: 'Extraction acide-base : fraction extraite selon le pH (terminale STL)', gen: genExtracPartage, domaine: 'Extraction acide-base : choix du pH' },
   { id: 'extrac-passes', groupe: 'Formules', titre: 'Extraction acide-base : extractions successives (terminale STL)', gen: genExtracPasses, domaine: 'Extraction acide-base : choix du pH' },
+  { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
+  { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'microsc-mise-au-point', groupe: 'Formules', titre: 'Le microscope mis au point : positions et taille de l’image intermédiaire (terminale STL)', gen: genMicroMiseAuPoint, domaine: 'Microscope' },
   { id: 'lum1-conjugaison', groupe: 'Formules', titre: 'Lentille mince : conjugaison et grandissement (1re spé)', gen: genLentille, domaine: 'Lentille mince' },
   { id: 'pmel-calcul', groupe: 'Formules', titre: 'Plan de mélange : fractions, écart au milieu, coefficient binaire et prévision (BTS)', gen: genPlanMelange, domaine: 'Plans' },
