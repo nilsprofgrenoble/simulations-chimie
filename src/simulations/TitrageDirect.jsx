@@ -1,9 +1,11 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
-import { Formule, cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
+import { Formule, FormuleEnLigne, cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, IndiceDefi, OngletExercices } from "../commun";
 import { V_BURETTE, seuilVisible, couleurSolution, ContexteBanc, SchemaBurette, OutilTitrageGeneral } from "./titrageCommun";
 import { Pic } from "../Pictos";
+import { M_I2, ETIQUETTE, modeleLugol, erlenLugol } from "./titrageDirectModele";
+import { FichePrecis, FicheEquivalence, FicheRelation, FicheChaine, FicheConforme } from "./TitrageDirectFiches";
 
 const SIM_ID = 2;
 declarerDefis(SIM_ID, [['principal', 'Doser le diiode (concentration, masse)']]);
@@ -11,7 +13,7 @@ declarerDefis(SIM_ID, [['principal', 'Doser le diiode (concentration, masse)']])
 const reussiTitrageDirect = d => {
   const cVrai = d.Vmes != null ? 0.05 * d.Vmes / 2 / 10 : d.t * 10 / M_I2, mVrai = cVrai * 0.1 * M_I2;
   const conf = d.type !== 'controle' || (d.reps.conf || '').trim().toLowerCase() === (Math.abs(d.t - 1) <= 0.05 ? 'oui' : 'non');
-  return d.Vmes != null && proche(lireNombre(d.reps.c || ''), cVrai, 0.03) && proche(lireNombre(d.reps.m || ''), mVrai, 0.03) && conf;
+  return d.Vmes != null && proche(lireNombre(d.reps.c || ''), cVrai, 0.05) && proche(lireNombre(d.reps.m || ''), mVrai, 0.05) && conf;
 };
 
 // ====================================================
@@ -20,20 +22,7 @@ const reussiTitrageDirect = d => {
 // Exploration : titrage pour toute réaction, et le banc du diiode par le thiosulfate.
 // ====================================================
 
-const M_I2 = 253.8;          // g/mol
-const ETIQUETTE = 1.00;      // g de diiode pour 100 mL de Lugol
-
-function modeleLugol({ t = ETIQUETTE, VA = 10, cB = 0.05 }) {
-  const cA = t * 10 / M_I2;                       // mol/L (t g pour 100 mL)
-  const nI2 = cA * VA / 1000;
-  return { t, VA, cB, cA, nI2, Veq: 2 * nI2 / cB * 1000 };
-}
-function erlenLugol(mod, VB) {
-  const nI2 = Math.max(0, mod.nI2 - mod.cB * VB / 1000 / 2);
-  return { nI2, cI2: nI2 / ((mod.VA + VB) / 1000), nThio: Math.max(0, mod.cB * VB / 1000 - 2 * mod.nI2) };
-}
-
-const INDICE_Q = {"c": "À l’équivalence : n(I₂) = c_B × V_B,e / 2, puis c_A = n(I₂) / V_A, avec les volumes en litres.", "m": "Masse pour 100 mL = c_A × 0,100 L × M(I₂), avec M en g/mol.", "conf": "Compare la masse trouvée à celle annoncée sur le flacon : l’écart est-il inférieur à la tolérance de 5 % ?"};
+const INDICE_Q = {"c": "À l’équivalence : n(I₂) = frac(c_B × V_B,e|2), puis c_A = frac(n(I₂)|V_A), avec les volumes en litres.", "m": "Masse pour 100 mL = c_A × 0,100 L × M(I₂), avec M en g/mol.", "conf": "Compare la masse trouvée à celle annoncée sur le flacon : l’écart est-il inférieur à la tolérance de 5 % ?"};
 export function Simulation2() {
   const [mode, setMode] = useState(() => modeOuverture('titrage-direct-guide-v1'));
   useSignalerMode(mode);
@@ -41,7 +30,7 @@ export function Simulation2() {
   const [onglet, setOnglet] = useState('general');
   const [guide, setGuide] = useEtatPersistant('titrage-direct-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [mes, setMes] = useEtatPersistant('titrage-direct-mesures-v1', { Vrapide: null, Ve: null });
-  const [ouverts, setOuverts] = useState({ commandes: true, mesures: true });
+  const [ouverts, setOuverts] = useState({ commandes: true, mesures: true, hypo: false });
   const [VB, setVB] = useState(0);
   const [ouvert, setOuvert] = useState(false);
   const [thiodene, setThiodene] = useState(false);
@@ -126,81 +115,48 @@ export function Simulation2() {
         réactif en excès.</>,
       tache: { type: 'action', ok: sit.verif && situationsOk(sit), consigne: sit.verif && situationsOk(sit) ? null : 'Remplissez le tableau, puis vérifiez.' } },
     { id: 'equiv', titre: 'L’équivalence', focus: [],
-      retenirTitre: 'À RETENIR : AVANT, À ET APRÈS L’ÉQUIVALENCE',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Situation</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Réactif limitant</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Réactif en excès</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Solution</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>avant</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>le thiosulfate S₂O₃²⁻ (versé)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>le diiode I₂</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>colorée (jaune–brun, bleue avec le thiodène)</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>à l’équivalence</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>les deux</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>aucun</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>décolorée (la teinte bleue vient de disparaître)</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>après</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>le diiode (entièrement consommé)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>le thiosulfate (versé en excès)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>incolore</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>À l’<strong>équivalence</strong>, les réactifs ont été mélangés dans les <strong>proportions stœchiométriques</strong> : il n’en reste plus aucun.</li>
-          <li>La solution <strong>titrante</strong> (burette) a une concentration connue ; la solution <strong>titrée</strong> (erlenmeyer) est celle que l’on cherche.</li>
-        </ul>
-      </>,
       texte: <>À l'équivalence, les deux réactifs sont limitants : il n'en reste plus aucun.</>,
       tache: { type: 'qcm', q: 'Qu’est-ce que l’équivalence ?', options: ['Le moment où l’on a versé juste assez de thiosulfate pour faire réagir tout le diiode', 'Le moment où la burette est vide', 'Le moment où l’on a versé autant de thiosulfate que de Lugol'], bonne: 0,
         expl: 'À l’équivalence, les réactifs ont été introduits dans les proportions stœchiométriques.', indice: "À l’équivalence, les réactifs ont été introduits dans les proportions de l’équation de la réaction. Qu’est-ce qui vient juste de réagir complètement ?" } },
     { id: 'precis', titre: 'Un titrage précis', focus: ['burette', 'erlen'],
       retenirTitre: 'À RETENIR : L’INDICATEUR DE FIN DE RÉACTION',
-      retenir: <>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Le <strong>thiodène</strong> (empois d’amidon) forme avec le diiode un composé <strong>bleu très foncé</strong> : la couleur est visible même pour très peu de diiode.</li>
-          <li>On l’ajoute <strong>près de l’équivalence</strong> (environ 1 mL avant), quand la solution est devenue jaune pâle.</li>
-          <li>À l’équivalence, le diiode a disparu : la couleur bleue <strong>disparaît brutalement</strong> ; c’est le repère de V<sub>B,e</sub>.</li>
-          <li>On lit V<sub>B,e</sub> à la graduation de la burette (précision : une goutte, soit ≈ 0,05 mL).</li>
-        </ul>
-      </>,
+      retenir: <FichePrecis/>,
       texte: <>Nouveau titrage. Versez rapidement jusqu'à environ <strong>{mes.Vrapide != null ? `${fmt(Math.max(0, mes.Vrapide - 1), 1)} mL` : 'V_B,e − 1 mL'}</strong>,
         puis ajoutez le <strong>thiodène</strong> : il forme avec le diiode un composé bleu très foncé, qui disparaît brutalement à l'équivalence.
         Finissez <strong>goutte à goutte</strong> (1 goutte ≈ 0,05 mL ≈ 1 graduation), puis cliquez sur « C'est l'équivalence ! ».</>,
       tache: { type: 'action', ok: mes.Ve != null, consigne: mes.Ve != null ? `✅ V_B,e = ${fmt(mes.Ve, 2)} mL` : `Versé : ${fmt(VB, 2)} mL${thiodene ? ' ; thiodène ajouté' : ''}` } },
     { id: 'relation', titre: 'La relation à l’équivalence', focus: [],
-      retenirTitre: 'À RETENIR : LA RELATION À L’ÉQUIVALENCE',
-      retenir: <>
-        <Formule><mfrac><mrow><msub><mi>n</mi><mtext>initial</mtext></msub><mo>(</mo><msub><mtext>I</mtext><mn>2</mn></msub><mo>)</mo></mrow><mn>1</mn></mfrac><mo>=</mo><mfrac><mrow><msub><mi>n</mi><mrow><mtext>versé,e</mtext></mrow></msub><mo>(</mo><mtext>S₂O₃²⁻</mtext><mo>)</mo></mrow><mn>2</mn></mfrac></Formule>
-        <Formule><msub><mi>n</mi><mrow><mtext>versé,e</mtext></mrow></msub><mo>=</mo><msub><mi>c</mi><mi>B</mi></msub><mo>×</mo><msub><mi>V</mi><mrow><mi>B</mi><mo>,</mo><mi>e</mi></mrow></msub></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Les coefficients 1 et 2 viennent de l’équation : il faut <strong>2 ions thiosulfate pour 1 molécule de diiode</strong>.</li>
-          <li>Quantité de matière : n = c × V, avec V en <strong>litres</strong> (V<sub>B,e</sub> = 10,5 mL = 0,0105 L, par exemple).</li>
-        </ul>
-      </>,
-      texte: <>À l'équivalence : n<sub>initial</sub>(I₂) / 1 = n<sub>versé,e</sub>(S₂O₃²⁻) / 2.</>,
+      retenirTitre: 'À RETENIR : AVANT, À ET APRÈS L’ÉQUIVALENCE',
+      retenir: <FicheEquivalence/>,
+      texte: <>À l'équivalence, les quantités de matière sont liées par les coefficients de l'équation :
+        <Formule><mfrac><mrow><msub><mi>n</mi><mtext>initial</mtext></msub><mo>(</mo><msub><mtext>I</mtext><mn>2</mn></msub><mo>)</mo></mrow><mn>1</mn></mfrac><mo>=</mo><mfrac><mrow><msub><mi>n</mi><mtext>versé,e</mtext></msub><mo>(</mo><mtext>S₂O₃²⁻</mtext><mo>)</mo></mrow><mn>2</mn></mfrac></Formule></>,
       tache: { type: 'qcm', q: 'Pourquoi divise-t-on n(S₂O₃²⁻) par 2 ?', options: ['Il faut 2 ions thiosulfate pour 1 molécule de diiode', 'Parce que la burette fait 25 mL', 'Parce que le thiosulfate est dilué'], bonne: 0, indice: "Regarde les coefficients de l’équation de titrage : combien d’ions S₂O₃²⁻ réagissent avec une molécule de I₂ ?" } },
     { id: 'nThio', titre: 'Le thiosulfate versé', focus: ['burette'],
+      retenirTitre: 'À RETENIR : LA RELATION À L’ÉQUIVALENCE',
+      retenir: <FicheRelation/>,
       texte: <>Avec votre mesure V<sub>B,e</sub> = {fmt(Ve, 2)} mL et c<sub>B</sub> = 0,0500 mol/L.</>,
       tache: { type: 'num', q: 'Quantité de thiosulfate versée à l’équivalence n_versé,e(S₂O₃²⁻)', unite: 'mol', vrai: nThioE, tol: 0.02,
         calcul: () => ['Formule : n_versé,e(S₂O₃²⁻) = c_B × V_B,e, avec V_B,e en litres (c_B = 0,0500 mol/L, supposée exacte).',
           `V_B,e = ${fmt(Ve, 2)} mL = ${fmt(Ve / 1000, 5)} L.`, `n_versé,e = 0,0500 × ${fmt(Ve / 1000, 5)} = ${sci(nThioE, 3)} mol.`],
-        pieges: [[nThioE * 1000, 'Le volume doit être en litres.'], [ref.cB / (Ve / 1000), 'Formule à l’envers : une quantité de matière se calcule par n = c × V (et non c / V).']], aide: 'Écriture scientifique acceptée : 4,5e-4 par exemple.', indice: "n = c × V, avec c la concentration de la solution titrante et V le volume versé à l’équivalence (en litres)." } },
+        pieges: [[nThioE * 1000, 'Le volume doit être en litres.'], [ref.cB / (Ve / 1000), 'Formule à l’envers : une quantité de matière se calcule par n = c × V (et non c divisée par V).']], aide: 'Écriture scientifique acceptée : 4,5e-4 par exemple.', indice: "n = c × V, avec c la concentration de la solution titrante et V le volume versé à l’équivalence (en litres)." } },
     { id: 'nI2', titre: 'Le diiode titré', focus: ['erlen'],
       texte: <>On utilise la relation à l'équivalence, avec n<sub>versé,e</sub>(S₂O₃²⁻) = {sci(nThioE, 3)} mol.</>,
       tache: { type: 'num', q: 'Quantité de diiode n_initial(I₂) dans l’erlenmeyer', unite: 'mol', vrai: nI2E, tol: 0.02,
-        calcul: () => ['Équation : 2 S₂O₃²⁻ + I₂ → S₄O₆²⁻ + 2 I⁻ (réaction rapide et totale). À l’équivalence, les réactifs sont dans les proportions stœchiométriques : n_initial(I₂) / 1 = n_versé,e(S₂O₃²⁻) / 2.',
-          `n_initial(I₂) = ${sci(nThioE, 3)} / 2 = ${sci(nI2E, 3)} mol.`],
-        pieges: [[nThioE * 2, 'C’est n(S₂O₃²⁻) / 2, et non × 2.'], [nThioE, 'Pensez au coefficient 2 devant S₂O₃²⁻.']], indice: "Utilise le rapport des coefficients de l’équation entre S₂O₃²⁻ et I₂ pour passer de la quantité de thiosulfate à celle de diiode." } },
+        calcul: () => ['Équation : 2 S₂O₃²⁻ + I₂ → S₄O₆²⁻ + 2 I⁻ (réaction rapide et totale). À l’équivalence, les réactifs sont dans les proportions stœchiométriques : frac(n_initial(I₂)|1) = frac(n_versé,e(S₂O₃²⁻)|2).',
+          `n_initial(I₂) = frac(${sci(nThioE, 3)}|2) = ${sci(nI2E, 3)} mol.`],
+        pieges: [[nThioE * 2, 'C’est n(S₂O₃²⁻) divisée par 2, et non multipliée par 2.'], [nThioE, 'Pensez au coefficient 2 devant S₂O₃²⁻.']], indice: "Utilise le rapport des coefficients de l’équation entre S₂O₃²⁻ et I₂ pour passer de la quantité de thiosulfate à celle de diiode." } },
     { id: 'cA', titre: 'La concentration du Lugol', focus: ['erlen'],
       texte: <>Les n<sub>initial</sub>(I₂) = {sci(nI2E, 3)} mol de diiode étaient contenus dans V<sub>A</sub> = 10,0 mL de Lugol.</>,
       tache: { type: 'num', q: 'Concentration en diiode c_A du Lugol', unite: 'mol/L', vrai: cAE, tol: 0.02,
-        calcul: () => ['Formule : c_A = n_initial(I₂) / V_A, avec V_A en litres (V_A = 10,0 mL, prélevé à la pipette jaugée, supposé exact).',
-          'V_A = 10,0 mL = 0,0100 L.', `c_A = ${sci(nI2E, 3)} / 0,0100 = ${sci(cAE, 3)} mol/L.`],
-        pieges: [[cAE / 1000, 'Le volume doit être en litres : 10,0 mL = 0,0100 L.'], [0.0100 / nI2E, 'Formule à l’envers : c = n / V (la quantité de matière divisée par le volume).']], indice: "c_A = n(I₂) / V_A, avec V_A le volume de Lugol dosé, en litres." } },
+        calcul: () => ['Formule : c_A = frac(n_initial(I₂)|V_A), avec V_A en litres (V_A = 10,0 mL, prélevé à la pipette jaugée, supposé exact).',
+          'V_A = 10,0 mL = 0,0100 L.', `c_A = frac(${sci(nI2E, 3)}|0,0100) = ${sci(cAE, 3)} mol/L.`],
+        pieges: [[cAE / 1000, 'Le volume doit être en litres : 10,0 mL = 0,0100 L.'], [0.0100 / nI2E, 'Formule à l’envers : c = frac(n|V) (la quantité de matière divisée par le volume).']], indice: "c_A = frac(n(I₂)|V_A), avec V_A le volume de Lugol dosé, en litres." } },
     { id: 'litteral', titre: 'Pour les plus à l’aise : en une seule formule', focus: [],
-      retenirTitre: 'À RETENIR : LA CONCENTRATION ET LA MASSE',
-      retenir: <>
-        <Formule><msub><mi>c</mi><mi>A</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>c</mi><mi>B</mi></msub><mo>×</mo><msub><mi>V</mi><mrow><mi>B</mi><mo>,</mo><mi>e</mi></mrow></msub></mrow><mrow><mn>2</mn><mo>×</mo><msub><mi>V</mi><mi>A</mi></msub></mrow></mfrac><mspace width="1.5em"/><mi>m</mi><mo>=</mo><msub><mi>c</mi><mi>A</mi></msub><mo>×</mo><mi>V</mi><mo>×</mo><mi>M</mi></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Les volumes V<sub>B,e</sub> et V<sub>A</sub> sont dans la <strong>même unité</strong> (le rapport est sans unité) ; c<sub>A</sub> a la même unité que c<sub>B</sub> (mol·L⁻¹).</li>
-          <li>Masse dans un flacon de 100 mL : V = 0,100 L et M(I₂) = 253,8 g·mol⁻¹.</li>
-          <li>Comparer à l’étiquette (1,00 g pour 100 mL) : un écart de quelques pourcents s’explique par les erreurs de mesure (goutte, pipette, concentration du thiosulfate).</li>
-        </ul>
-      </>,
       texte: <>On peut regrouper les trois calculs précédents en une seule expression littérale.</>,
-      tache: { type: 'qcm', q: 'Quelle expression donne c_A ?', options: ['c_A = c_B × V_B,e / (2 × V_A)', 'c_A = 2 × c_B × V_B,e / V_A', 'c_A = c_B × V_A / (2 × V_B,e)'], bonne: 0, indice: "Exprime d’abord n(I₂) à partir de c_B, de V_B,e et du rapport des coefficients, puis divise par V_A." } },
+      tache: { type: 'qcm', q: 'Quelle expression donne c_A ?', options: ['c_A = frac(c_B × V_B,e|2 × V_A)', 'c_A = frac(2 × c_B × V_B,e|V_A)', 'c_A = frac(c_B × V_A|2 × V_B,e)'], bonne: 0, indice: "Exprime d’abord n(I₂) à partir de c_B, de V_B,e et du rapport des coefficients, puis divise par V_A." } },
     { id: 'masse', titre: 'Comparer à l’étiquette', focus: [],
+      retenirTitre: 'À RETENIR : DE V_B,e À LA MASSE',
+      retenir: <FicheChaine/>,
       texte: <>M(I₂) = 253,8 g/mol ; concentration du Lugol c<sub>A</sub> = {sci(cAE, 3)} mol/L.</>,
       tache: { type: 'num', q: 'Masse de diiode dans 100 mL de Lugol', unite: 'g', vrai: mE, tol: 0.02,
         calcul: () => ['On suppose la concentration c_A uniforme dans le flacon : 100 mL de Lugol contiennent n = c_A × V, avec V = 100 mL = 0,100 L.',
@@ -212,15 +168,8 @@ export function Simulation2() {
       tache: { type: 'qcm', q: 'Que conclure ?', options: ['Le résultat est en accord avec l’étiquette, aux erreurs de mesure près', 'L’étiquette est fausse', 'On ne peut rien conclure'], bonne: Math.abs(mE - 1) <= 0.05 ? 0 : 1,
         expl: 'Un écart de quelques pourcents vient de la lecture de la burette (à une goutte près), de la pipette et de la concentration du thiosulfate.', indice: "Compare ta valeur à celle de l’étiquette en tenant compte des erreurs de mesure : l’écart est-il important ?" } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
-      retenirTitre: 'À RETENIR : LE BILAN',
-      retenir: <>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Titrage direct</strong> : réaction rapide, totale, unique ; la burette contient la solution titrante (c<sub>B</sub> connue), l’erlenmeyer la solution titrée.</li>
-          <li><strong>Équivalence</strong> : réactifs en proportions stœchiométriques, aucun n’est en excès ; repérée par le changement de couleur (thiodène).</li>
-          <li><strong>Relation</strong> : n(I₂) / 1 = n<sub>versé,e</sub>(S₂O₃²⁻) / 2 ; n = c × V (V en litres).</li>
-          <li><strong>Méthode</strong> : titrage rapide → titrage précis → n(S₂O₃²⁻) → n(I₂) → c<sub>A</sub> → masse → comparaison à l’étiquette.</li>
-        </ul>
-      </>,
+      retenirTitre: 'À RETENIR : LE RÉSULTAT EST-IL CONFORME ?',
+      retenir: <FicheConforme/>,
       texte: <>Vous avez réalisé un titrage direct complet. En exploration libre, un onglet permet de simuler le titrage de n'importe
         quelle réaction, et l'exemple du Lugol propose tous les réglages. La simulation « Titrage en retour » montre une autre façon de
         doser : on titre l'excès d'un réactif.</>, tache: null },
@@ -369,7 +318,7 @@ export function Simulation2() {
           const cVrai = defi.Vmes != null ? 0.05 * defi.Vmes / 2 / 10 : defi.t * 10 / M_I2;
           const vrai = q.id === 'c' ? cVrai : cVrai * 0.1 * M_I2;
           const ok = q.id === 'conf' ? (defi.reps.conf || '').trim().toLowerCase() === (Math.abs(defi.t - 1) <= 0.05 ? 'oui' : 'non')
-            : proche(lireNombre(defi.reps[q.id] || ''), vrai, 0.03);
+            : proche(lireNombre(defi.reps[q.id] || ''), vrai, 0.05);
           return (
             <div key={q.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{k + 1}. {avecIndices(q.q)}</div>
@@ -387,6 +336,17 @@ export function Simulation2() {
         {defi.verifie && <div style={{ fontSize: 13, color: KIT.txt2 }}>Valeur réelle : {fmt(defi.t, 2)} g pour 100 mL. Votre résultat dépend de la précision de votre lecture de V<sub>B,e</sub>.</div>}
       </>}
     </div>
+  );
+
+  const hypotheses = (
+    <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
+      <li><strong>Réaction de titrage</strong> : 2 S₂O₃²⁻ + I₂ → S₄O₆²⁻ + 2 I⁻ est <strong>rapide, totale et unique</strong>. Sans cela, le volume équivalent ne se repère pas nettement.</li>
+      <li><strong>Données supposées exactes</strong> : c<sub>B</sub> (thiosulfate) et V<sub>A</sub> (pipette jaugée). En réalité elles ont une incertitude, qui s’ajoute à celle de la lecture de V<sub>B,e</sub>.</li>
+      <li><strong>Lecture de la burette</strong> à une goutte près (≈ 0,05 mL) : c’est la principale source d’incertitude sur c<sub>A</sub> (≈ 0,3 % pour V<sub>B,e</sub> ≈ 16 mL).</li>
+      <li><strong>Lugol homogène</strong> : la concentration est la même dans toute la bouteille, donc dans les 10,0 mL prélevés comme dans les 100 mL de l’étiquette.</li>
+      <li><strong>Seul le diiode est coloré</strong> ; le thiodène ne modifie pas la quantité de diiode qui réagit. Pas de perte de diiode par évaporation pendant le titrage.</li>
+      <li><strong>Tolérance de 5 %</strong> : on juge la conformité à l’étiquette avec cette tolérance, qui englobe les erreurs de mesure habituelles.</li>
+    </ul>
   );
 
   // ════════════════ MISE EN PAGE ════════════════
@@ -448,12 +408,13 @@ export function Simulation2() {
               </div>}
         </div>
         <div className="td-l2">
-          <div data-apparait={`${idx('rapide')} ${idx('precis')}`}>
+          {(!enGuide || vu('rapide')) && <div data-apparait={`${idx('rapide')} ${idx('precis')}`}>
             <Section titre="Commandes de la burette" ouvert={ouverts.commandes} onBascule={() => setOuverts(o => ({ ...o, commandes: !o.commandes }))}>
-              {enGuide && !vu('rapide') ? <div style={{ fontSize: 13, color: KIT.txt2 }}>Les commandes apparaîtront au fil du parcours.</div> : commandes}
+              {commandes}
             </Section>
-          </div>
-          <div><Section titre="Mesures" ouvert={ouverts.mesures} onBascule={() => setOuverts(o => ({ ...o, mesures: !o.mesures }))}>{mesures}</Section></div>
+          </div>}
+          {(!enGuide || vu('rapide')) && <div data-apparait={`${idx('rapide')}`}><Section titre="Mesures" ouvert={ouverts.mesures} onBascule={() => setOuverts(o => ({ ...o, mesures: !o.mesures }))}>{mesures}</Section></div>}
+          {(!enGuide || vu('bravo')) && <div style={{ gridColumn: '1 / -1' }}><Section titre="Hypothèses de travail" ouvert={ouverts.hypo} onBascule={() => setOuverts(o => ({ ...o, hypo: !o.hypo }))}>{hypotheses}</Section></div>}
           {enGuide && vu('schema') && etape <= idx('rapide') && <div style={styleBoite} data-apparait={`${idx('schema')}`}>
             <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Légendes du schéma</div>
             {legendes}

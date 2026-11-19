@@ -30,7 +30,7 @@ export const CHAPITRES = [
   { id: '2gt-forces', niveau: '2GT', label: '➡️ Modéliser une action par une force', sims: [59, 60, 140, 67], domaines: ['Forces et principe d’inertie'] },
   { id: '2gt-mouvement', niveau: '2GT', label: '🚃 Décrire un mouvement', sims: [56], domaines: ['Mouvement et vitesse'] },
 
-  { id: '1g-evolution', niveau: '1G', label: '⚗️ Suivi de l’évolution d’un système, siège d’une transformation', sims: [1, 2, 25, 10], domaines: ['Chimie'] },
+  { id: '1g-evolution', niveau: '1G', label: '⚗️ Suivi de l’évolution d’un système, siège d’une transformation', sims: [1, 2, 25, 10], domaines: ['Chimie', 'Titrage direct'] },
   { id: '1g-champ', niveau: '1G', label: '🌍 Interactions fondamentales et notion de champ', sims: [51, 48, 49, 50], domaines: ['Interactions et champs'] },
   { id: '1g-cohesion', niveau: '1G', label: '🧪 Cohésion, solubilité et miscibilité', sims: [53], domaines: ['Cohésion et solubilité'] },
   { id: '1g-organique', niveau: '1G', label: '🧬 La chimie organique', sims: [102, 111], domaines: ['Chimie organique'] },
